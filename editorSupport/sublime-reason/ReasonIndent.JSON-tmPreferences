@@ -1,0 +1,8 @@
+{
+    "name": "Reason Indent",
+    "scope": "source.reason",
+    "settings": {
+        "increaseIndentPattern": "^.*\\{[^}\"']*$",
+        "decreaseIndentPattern": "^(.*\\*/)?\\s*\\}.*$"
+    }
+}

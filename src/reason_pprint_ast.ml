@@ -1,0 +1,3997 @@
+(**************************************************************************)
+(*                                                                        *)
+(*                                OCaml                                   *)
+(*                                                                        *)
+(*    Thomas Gazagnaire (OCamlPro), Fabrice Le Fessant (INRIA Saclay)     *)
+(*    Hongbo Zhang (University of Pennsylvania)                           *)
+(*   Copyright 2007 Institut National de Recherche en Informatique et     *)
+(*   en Automatique.  All rights reserved.  This file is distributed      *)
+(*   under the terms of the Q Public License version 1.0.                 *)
+(*                                                                        *)
+(**************************************************************************)
+
+(* Original Code from Ber-metaocaml, modified for 3.12.0 and fixed *)
+(* Printing code expressions *)
+(* Authors:  Ed Pizzi, Fabrice Le Fessant *)
+(* Extensive Rewrite: Hongbo Zhang: University of Pennsylvania *)
+(* TODO more fine-grained precedence pretty-printing *)
+
+open Asttypes
+open Format
+open Location
+open Longident
+open Parsetree
+open Easy_format
+
+
+
+let (|>) = fun x f -> f x
+let (<|) = fun f x -> f x
+
+exception NotPossible of string
+
+let useSingleColonForNamedArgs = false
+
+let exprDescrString x =
+  x.pexp_loc.loc_start.Lexing.pos_fname ^
+    "[" ^
+    (string_of_int x.pexp_loc.loc_start.Lexing.pos_lnum) ^
+    ", " ^
+    (string_of_int x.pexp_loc.loc_end.Lexing.pos_lnum) ^
+    "]"
+
+(* Make a standard list *)
+type whenToDoSomething =
+  | Never
+  | IfNeed
+  | Always
+
+type easyFormatLabelFormatter = Easy_format.t -> Easy_format.t -> Easy_format.t
+type listConfig = {
+  (* If you are only grouping something for the sake of visual appearance, and
+   * not forming an actual conceptual sequence of items, then this is often
+   * useful. For example, if you're appending a semicolon etc. *)
+  attemptInterleaveComments: bool;
+  break: whenToDoSomething;
+  (* Break setting that becomes activated if a comment becomes interleaved into
+   * this list. Typically, if not specified, the behavior from [break] will be
+   * used.
+   *)
+  wrap: string * string;
+  inline: bool * bool;
+  sep: string;
+  indent: int;
+  sepLeft: bool;
+  preSpace: bool;
+  postSpace: bool;
+  pad: bool * bool;
+  (* A function, because the system might rearrange your previous settings, and
+   * a function allows you to not be locked into some configuration that is made
+   * out of date by the formatting system (suppose it removes the separator
+   * token etc.) Having a function allows you to instruct our formatter how to
+   * extend the "freshest" notion of the list config when comments are
+   * interleaved. *)
+  listConfigIfCommentsInterleaved: (listConfig -> listConfig) option;
+}
+
+(**
+ * These represent "intent to format" the AST, with some parts being annotated
+ * with original source location. The benefit of tracking this in an
+ * intermediate structure, is that we can then interleave comments throughout
+ * the tree before generating the final representation. That prevents the
+ * formatting code from having to thread comments everywhere.
+ *
+ * The final representation is rendered using Easy_format.
+ *)
+type layoutNode =
+  | SourceMap of listConfig * Location.t * layoutNode
+  | Sequence of listConfig * (layoutNode list)
+  | Label of easyFormatLabelFormatter * layoutNode * layoutNode
+  | Easy of Easy_format.t
+
+
+let expandLocation pos ~expand:(startPos, endPos) =
+  { pos with
+    loc_start = {
+      pos.loc_start with
+        Lexing.pos_cnum = pos.loc_start.Lexing.pos_cnum + startPos
+    };
+    loc_end = {
+      pos.loc_end with
+        Lexing.pos_cnum = pos.loc_end.Lexing.pos_cnum + endPos
+    }
+  }
+
+let rec sugarEmbeddedAttributes attrs =
+  match attrs with
+    | [] -> ([], [])
+    | (({txt="explicit_arity"; loc}, _) as emb)::atTl ->
+        let (tlEmbedded, tlNonEmbedded) = sugarEmbeddedAttributes atTl in
+        (emb::tlEmbedded, tlNonEmbedded)
+    | atHd::atTl ->
+        let (tlEmbedded, tlNonEmbedded) = sugarEmbeddedAttributes atTl in
+        (tlEmbedded, atHd::tlNonEmbedded)
+
+
+let rec sequentialIfBlocks x =
+  match x with
+    | Some ({pexp_desc=Pexp_ifthenelse (e1, e2, els)}) -> (
+       let (nestedIfs, finalExpression) = (sequentialIfBlocks els) in
+       ((e1, e2)::nestedIfs, finalExpression)
+      )
+    | Some e -> ([], Some e)
+    | None -> ([], None)
+
+(*
+  TODO: IDE integration beginning with Vim:
+
+  - Create recovering version of parser that creates regions of "unknown"
+    content in between let sequence bindings (anything between semicolons,
+    really).
+  - Use Easy_format's "style" features to tag each known node.
+  - Turn those style annotations into editor highlight commands.
+  - Editors have a set of keys that retrigger the parsing/rehighlighting
+    process (typically newline/semi/close-brace).
+  - On every parsing/rehighlighting, this pretty printer can be used to
+    determine the highlighting of recovered regions, and the editor plugin can
+    relegate highlighting of malformed regions to the editor which mostly does
+    so based on token patterns.
+
+*)
+
+(*
+     @avoidSingleTokenWrapping
+
+  +-----------------------------+
+  |+------+                     |     Another label
+  || let ( \                    |
+  ||    a  | Label              |
+  ||    o  |                    |     The thing to the right of any label must be a
+  ||    p _+ label RHS          |     list in order for it to wrap correctly. Lists
+  ||  ): /   v                  |     will wrap if they need to/can. NON-lists will
+  |+--+ sixteenTuple = echoTuple|(    wrap (indented) even though they're no lists!
+  +---/ 0,\---------------------+     To prevent a single item from wrapping, make
+        0,                            an unbreakable list via ensureSingleTokenSticksToLabel.
+        0
+      );                              In general, the best approach for indenting
+                                      let bindings is to keep building up labels from
+                                      the "let", always ensuring things that you want
+                                      to wrap will either be lists or guarded in
+                                      [ensureSingleTokenSticksToLabel].
+                                      If you must join several lists together (via =)
+                                      (or colon), ensure that joining is done via
+                                      [makeList] (which won't break), and that new
+                                      list is always appended to the left
+                                      hand side of the label. (So that the right hand
+                                      side may always be the untouched list that you want
+                                      to wrap with aligned closing).
+                                      Always make sure rhs of the label are the
+
+                                      Creating nested labels will preserve the original
+                                      indent location ("let" in this
+                                      case) as long as that nesting is
+                                      done on the left hand side of the labels.
+
+*)
+
+(*
+    Table 2.1. Precedence and associativity.
+    Precedence from highest to lowest: From RWOC, modified to include !=
+    ---------------------------------------
+
+    Operator prefix	Associativity
+    !..., ?..., ~...	                              Prefix
+    ., .(, .[	-
+    function application, constructor, assert, lazy	Left associative
+    -, -.                                           Prefix
+    **..., lsl, lsr, asr                            Right associative
+    *..., /..., %..., mod, land, lor, lxor          Left associative
+    +..., -...                                      Left associative
+    ::                                              Right associative
+    @..., ^...                                      Right associative
+---
+    !=                                              Left associative (INFIXOP0 listed first in lexer)
+    =..., <..., >..., |..., &..., $...              Left associative (INFIXOP0)
+    =, <, >                                         Left associative (IN SAME row as INFIXOP0 listed after)
+---
+    &, &&                                           Right associative
+    or, ||                                          Right associative
+    ,                                               -
+    <-, :=                                         	Right associative
+    if                                              -
+    ;                                               Right associative
+
+
+   Note: It would be much better if &... and |... were in separate precedence
+   groups just as & and | are. This way, we could encourage custom infix
+   operators to use one of the two precedences and no one would be confused as
+   to precedence (leading &, | are intuitive). Two precedence classes for the
+   majority of infix operators is totally sufficient.
+
+   TODO: Free up the (&) operator from pervasives so it can be reused for
+   something very common such as string concatenation or list appending.
+
+   let x = tail & head;
+ *)
+
+
+let prefix_symbols  = [ '!'; '?'; '~' ] ;;
+let infix_symbols = [ '='; '<'; '>'; '@'; '^'; '|'; '&'; '+'; '-'; '*'; '/';
+                      '$'; '%' ]
+let operator_chars = [ '!'; '$'; '%'; '&'; '*'; '+'; '-'; '.'; '/';
+                       ':'; '<'; '='; '>'; '?'; '@'; '^'; '|'; '~' ]
+let numeric_chars  = [ '0'; '1'; '2'; '3'; '4'; '5'; '6'; '7'; '8'; '9' ]
+
+let indexOfFirstMatch s lst =
+  let rec indexOfFirstMatchN s lst n = match lst with
+    | [] -> None
+    | []::tl -> indexOfFirstMatchN s tl (n + 1)
+    | (hdHd::hdTl)::tl -> (
+        match hdHd s with
+          | (prec, true) -> Some (prec, n)
+          | (_, false) -> indexOfFirstMatchN s (hdTl::tl) (n)
+    )
+  in
+  indexOfFirstMatchN s lst 0
+
+let rules = [
+    (* Note the special case for STARSTAR, BARBAR, and LESSMINUS, AMPERSAND(s) *)
+    [
+      (fun s -> (`Right, String.length s > 1 && s.[0] == '*' && s.[1] == '*'));
+      (fun s -> (`Right, s = "lsl"));
+      (fun s -> (`Right, s = "lsr"));
+      (fun s -> (`Right, s = "asr"));
+    ];
+    [
+      (fun s -> (`Left, s.[0] == '*' && (String.length s == 1 || s.[1] != '*')));
+      (fun s -> (`Left, s.[0] == '/'));
+      (fun s -> (`Left, s.[0] == '%' ));
+      (fun s -> (`Left, s = "mod" ));
+      (fun s -> (`Left, s = "land" ));
+      (fun s -> (`Left, s = "lor" ));
+      (fun s -> (`Left, s = "lxor" ));
+    ];
+    [
+      (fun s -> (`Left, s.[0] == '+' ));
+      (fun s -> (`Left, s.[0] == '-' ));
+    ];
+    [
+      (fun s -> (`Right, s = "::"));
+    ];
+    [
+      (fun s -> (`Right, s.[0] == '@'));
+      (fun s -> (`Right, s.[0] == '^'));
+    ];
+    [
+      (fun s -> (`Left, s = "!="));  (* Not preset in the RWO table! *)
+      (fun s -> (`Left, s.[0] == '=' && not (s = "=")));
+      (fun s -> (`Left, s.[0] == '<' && not (s = "<-") && not (s = "<")));
+      (fun s -> (`Left, s.[0] == '>' && not (s = ">")));
+      (fun s -> (`Left, s = "="));
+      (fun s -> (`Left, s = "<"));
+      (fun s -> (`Left, s = ">"));
+      (fun s -> (`Left, s.[0] == '|' && not (s = "||")));
+      (fun s -> (`Left, s.[0] == '&' && not (s = "&") && not (s = "&&")));
+      (fun s -> (`Left, s.[0] == '$'));
+    ];
+    [
+      (fun s -> (`Right, s = "&"));
+      (fun s -> (`Right, s = "&&"));
+    ];
+    [
+      (fun s -> (`Right, s = "or"));
+      (fun s -> (`Right, s = "||"));
+    ];
+    [
+      (fun s -> (`Right, s = ":="))
+    ]
+]
+
+(* Assuming it's an infix function application. *)
+let associatedInfixFunctionPrecedence s =
+  if String.length s == 0 then
+    raise (NotPossible "Passed zero length string")
+  else indexOfFirstMatch s rules
+
+let isLeftAssociative s = match associatedInfixFunctionPrecedence s with
+  | None -> false
+  | Some (`Left, _) -> true
+  | Some (`Right, _) -> false
+let isRightAssociative s = match associatedInfixFunctionPrecedence s with
+  | None -> false
+  | Some (`Right, _) -> true
+  | Some (`Left, _) -> false
+let higherPrecedenceThan s1 s2 = match ((associatedInfixFunctionPrecedence s1), (associatedInfixFunctionPrecedence s2)) with
+  | (_, None)
+  | (None, _) -> raise (NotPossible ("Cannot determine precedence of " ^ s1 ^ " and " ^ s2))
+  | (Some (_, p1), Some (_, p2)) -> p1 < p2
+
+let special_infix_strings =
+  ["asr"; "land"; "lor"; "lsl"; "lsr"; "lxor"; "mod"; "or"; ":="; "!=" ]
+
+(* determines if the string is an infix string.
+   checks backwards, first allowing a renaming postfix ("_102") which
+   may have resulted from Pexp -> Texp -> Pexp translation, then checking
+   if all the characters in the beginning of the string are valid infix
+   characters. *)
+let fixity_of_string  = function
+  | s when List.mem s special_infix_strings -> `Infix s
+  | s when List.mem s.[0] infix_symbols -> `Infix s
+  | s when List.mem s.[0] prefix_symbols -> `Prefix s
+  | _ -> `Normal
+
+let view_fixity_of_exp = function
+  | {pexp_desc = Pexp_ident {txt=Lident l}} -> fixity_of_string l
+  | _ -> `Normal  ;;
+
+let is_infix  = function  | `Infix _ -> true | _  -> false
+
+let is_predef_option = function
+  | (Ldot (Lident "*predef*","option")) -> true
+  | _ -> false
+
+
+(* Traditional comments /*....*/ necessitate escaping of certain infix operators. *)
+(* TODO: Revisit these - it's actually more difficult than it appears to
+   detect all the variety of infix operators not containing /* or */, allowing for
+   /\* and *\/
+
+   symbols_with_star_escaped =   [... "\\*" ... ]
+   symbols_with_divide_escaped = [... "\\/" ... ]
+   valid_non_trailing_symbols =
+    [STAR symbols_with_divide_escaped, DIVIDE symbols_with_star_escaped, every_symbol_except_star_divide]
+   valid_symbols_no_trailing = valid_non_trailing_symbols *
+   valid_symbols_trailing_divide = valid_non_trailing_symbols * DIVIDE
+   valid_symbols_trailing_star = valid_non_trailing_symbols * STAR
+
+ *)
+let usesTraditionalComments = true
+
+
+(* See note in [reason_lexer.mll] *)
+let escape_stars_slashes str =
+  if usesTraditionalComments then
+    let len = String.length str in
+    if len < 2 then
+      str
+    else
+      let ending = String.sub str 1 (len -1) in
+      String.sub str 0 1 ^
+        Str.global_replace
+          (* Regex is \*, with escaped backslashes *)
+          (Str.regexp "\\*")
+          (* Not a regex - actually the string literal "\*" *)
+          ("\\*")
+          (Str.global_replace (Str.regexp "/") "\\/" ending)
+  else
+    str
+
+(* which identifiers are in fact operators needing parentheses *)
+let needs_parens txt =
+  is_infix (fixity_of_string txt)
+  || List.mem txt.[0] prefix_symbols
+
+(* some infixes need spaces around parens to avoid clashes with comment
+   syntax. This isn't needed for comment syntax /* */ *)
+let needs_spaces txt =
+  txt.[0]='*' || txt.[String.length txt - 1] = '*'
+
+(* add parentheses to binders when they are in fact infix or prefix operators *)
+let protect_ident ppf txt =
+  let format : (_, _, _) format =
+    if not (needs_parens txt) then "%s"
+    else if needs_spaces txt then "(@;%s@;)"
+    else "(%s)"
+  in fprintf ppf format (escape_stars_slashes txt)
+
+let protect_longident ppf print_longident longprefix txt =
+  let format : (_, _, _) format =
+    if not (needs_parens txt) then "%a.%s"
+    else if needs_spaces txt then  "(@;%a.%s@;)"
+    else "(%a.%s)" in
+  fprintf ppf format print_longident longprefix (escape_stars_slashes txt)
+
+let rec longident f = function
+  | Lident s -> protect_ident f s
+  | Ldot(y,s) -> protect_longident f longident y s
+  | Lapply (y,s) ->
+      fprintf f "%a(%a)" longident y longident s
+
+type space_formatter = (unit, Format.formatter, unit) format
+
+let override = function
+  | Override -> "!"
+  | Fresh -> ""
+
+(* variance encoding: need to sync up with the [parser.mly] *)
+let type_variance = function
+  | Invariant -> ""
+  | Covariant -> "+"
+  | Contravariant -> "-"
+
+type construct =
+  [ `cons of expression list
+  | `list of expression list
+  | `nil
+  | `normal
+  | `simple of Longident.t
+  | `tuple ]
+
+let view_expr x =
+  match x.pexp_desc with
+    | Pexp_construct ( {txt= Lident "()"; _},_) -> `tuple
+    | Pexp_construct ( {txt= Lident "[]"},_) -> `nil
+    | Pexp_construct ( {txt= Lident"::"},Some _) ->
+        let rec loop exp acc = match exp with
+          | {pexp_desc=Pexp_construct ({txt=Lident "[]"},_)} ->
+              (List.rev acc,true)
+          | {pexp_desc=
+               Pexp_construct ({txt=Lident "::"},
+                 Some ({pexp_desc= Pexp_tuple([e1;e2])}))} ->
+              loop e2 (e1::acc)
+          | e -> (List.rev (e::acc),false) in
+        let (ls,b) = loop x []  in
+        if b then
+          `list ls
+        else `cons ls
+    | Pexp_construct (x,None) -> `simple (x.txt)
+    | _ -> `normal
+
+let is_simple_construct :construct -> bool = function
+  | `nil | `tuple | `list _ | `simple _ | `cons _  -> true
+  | `normal -> false
+
+let pp = fprintf
+
+let default = new Pprintast.printer ()
+
+type funcReturnStyle =
+  | ReturnValOnSameLine
+  | ReturnValOnNewLine
+
+
+let detectTernary l = match l with
+  | [{
+      pc_lhs={ppat_desc=Ppat_construct ({txt=Lident "true"}, _)};
+      pc_guard=None;
+      pc_rhs=ifTrue
+    };
+    {
+      pc_lhs={ppat_desc=Ppat_construct ({txt=Lident "false"}, _)};
+      pc_guard=None;
+      pc_rhs=ifFalse
+    }] -> Some (ifTrue, ifFalse)
+  | _ -> None
+type funcApplicationLabelStyle =
+  (* No attaching to the label, but if the entire application fits on one line,
+     the entire application will appear next to the label as you 'd expect. *)
+  | NeverWrapFinalItem
+  (* Attach the first term if there are exactly two terms involved in the
+     application.
+
+     let x = firstTerm (secondTerm_1 secondTerm_2) thirdTerm;
+
+     Ideally, we'd be able to attach all but the last argument into the label any
+     time all but the last term will fit - and *not* when (attaching all but
+     the last term isn't enough to prevent a wrap) - But there's no way to tell
+     ahead of time if it would prevent a wrap.
+
+     However, the number two is somewhat convenient. This models the
+     indentation that you'd prefer in non-curried syntax languages like
+     JavaScript, where application only ever has two terms.
+  *)
+  | WrapFinalListyItemIfFewerThan of int
+
+(*
+    space=2, indentWrappedPatternArgs=1, funcReturnStyle=ReturnValOnSameLine
+    ------------------------------------------------------------------------
+    (* When [ReturnValOnSameLine], [indentWrappedPatternArgs] has no effect! *)
+    let myFunc
+        (wrappedArgOne:int)
+        (wrappedArgTwo:int) => {
+      valOne: 10,
+      valTwo: 20
+    };
+
+    space=2, indentWrappedPatternArgs=2, funcReturnStyle=ReturnValOnSameLine
+    ------------------------------------------------------------------------
+    (* When [ReturnValOnSameLine], [indentWrappedPatternArgs] has no effect! *)
+    let myFunc
+        (wrappedArgOne:int)
+        (wrappedArgTwo:int) => {
+      valOne: 10,
+      valTwo: 20
+    };
+
+    space=2, indentWrappedPatternArgs=1, funcReturnStyle=ReturnValOnNewLine
+    -----------------------------------------------------------------------
+    let myFunc
+      (wrappedArgOne:int)
+      (wrappedArgTwo:int) =>
+    {
+      valOne: 10,
+      valTwo: 20
+    };
+
+    space=2, indentWrappedPatternArgs=2, funcReturnStyle=ReturnValOnNewLine
+    -----------------------------------------------------------------------
+    let myFunc
+        (wrappedArgOne:int)
+        (wrappedArgTwo:int) =>
+    {
+      valOne: 10,
+      valTwo: 20
+    };
+*)
+type matchStick =
+  | StickToBar
+  | StickToBarSplitCases
+  | StickToLastSplitCases
+
+type formatSettings = {
+  (* Whether or not to expect that the original parser that generated the AST
+     would have annotated constructor argument tuples with explicit arity to
+     indicate that they are multiple arguments. (True if parsed in original
+     OCaml AST, false if using Reason parser).
+  *)
+  constructorTupleImplicitArity: bool;
+  space: int;
+  (* Whether or not to begin a curried function's return expression immediately
+     after the [=>] without a newline.
+  *)
+  returnStyle: funcReturnStyle;
+
+  (* For curried arguments in function *definitions* only: Number of [space]s
+     to offset beyond the [let] keyword. Default 1.
+  *)
+  listsRecordsIndent: int;
+
+  (* When [funcReturnStyle] = [ReturnValOnSameLine],
+     [indentWrappedPatternArgs] is not adjustable - wrapped arguments will
+     always be aligned with the function name. *)
+  indentWrappedPatternArgs: int;
+
+  (* TODO: This is not respected unless a *not* being wrapped as
+   * applicationFinalWrapping etc. *)
+  indentMatchCases: int;
+
+  (* Amount to indent in label-like constructs such as wrapped function
+     applications, etc - or even record fields. This is not the same concept as an
+     indented curried argument list. *)
+  indentAfterLabels: int;
+
+  (*
+    [matchesStickTo] StickToBarSplitCases
+
+      match x with
+        | Short
+        | AlsoHasARecord a b {x, y} => (
+          retOne,
+          retTwo
+        )
+        | TwoCombos
+            (HeresTwoConstructorArguments x y)
+            (HeresTwoConstructorArguments a b) =>
+          ((a + b) + x) + y;
+
+    [matchesStickTo] StickToBar
+
+      match x with
+        | Short | AlsoHasARecord a b {x, y} => (
+          retOne,
+          retTwo
+        )
+        | TwoCombos
+            (HeresTwoConstructorArguments x y)
+            (HeresTwoConstructorArguments a b) =>
+          ((a + b) + x) + y;
+
+
+    [matchesStickTo] StickToLastSplitCases
+     Sticks the expression to the last item in a sequence in several [X | Y | Z
+     => expr], and forces X, Y, Z to be split onto several lines. (Otherwise,
+     sticking to Z would result in hanging expressions).
+     TODO: In the second example, it's clear that we want patterns to have an
+     "extra" indentation with matching in a "match". Create extra config param
+     to pass to [self#pattern] for extra indentation in this one case.
+
+      match x with
+        | Short
+        | AlsoHasARecord a b {x, y} => (
+            retOne,
+            retTwo
+          )
+        | TwoCombos
+            (HeresTwoConstructorArguments x y)
+            (HeresTwoConstructorArguments a b) =>
+            ((a + b) + x) + y;
+  *)
+  matchesStickTo: matchStick;
+
+  (* In the case of two term function application (when flattened), the first
+     term should become part of the label, and the second term should be able to wrap
+     This doesn't effect n != 2.
+
+       [true]
+       let x = reallyShort allFitsOnOneLine;
+       let x = someFunction {
+         reallyLongObject: true,
+         thatWouldntFitOnThe: true,
+         firstLine: true
+       };
+
+       [false]
+       let x = reallyShort allFitsOnOneLine;
+       let x =
+        someFunction
+          {
+            reallyLongObject: true,
+            thatWouldntFitOnThe: true,
+            firstLine: true
+          };
+  *)
+  funcApplicationLabelStyle: funcApplicationLabelStyle;
+
+  funcCurriedPatternStyle: funcApplicationLabelStyle;
+
+  width: int;
+}
+
+let defaultSettings = if true then {
+  constructorTupleImplicitArity = false;
+  space = 1;
+  returnStyle = ReturnValOnSameLine;
+  listsRecordsIndent = 2;
+  indentWrappedPatternArgs = 2;
+  indentMatchCases = 2;
+  indentAfterLabels = 2;
+  matchesStickTo = StickToLastSplitCases;
+  funcApplicationLabelStyle = WrapFinalListyItemIfFewerThan 3;
+  (* WrapFinalListyItemIfFewerThan is currently a bad idea for curried
+     arguments: It looks great in some cases:
+
+        let myFun (a:int) :(
+          int,
+          string
+        ) => (a, "this is a");
+
+     But horrible in others:
+
+        let myFun
+            {
+              myField,
+              yourField
+            } :someReturnType => myField + yourField;
+
+        let myFun
+            {            // Curried arg wraps
+              myField,
+              yourField
+            } : (       // But the last is "listy" so it docks
+          int,          // To the [let].
+          int,
+          int
+        ) => myField + yourField;
+
+     We probably want some special listy label docking/wrapping mode for
+     curried function bindings.
+
+  *)
+  funcCurriedPatternStyle = NeverWrapFinalItem;
+  width = 50;
+} else if true then {
+  constructorTupleImplicitArity = true;
+  (* Just getting the compiler's warnings to shut up *)
+  space = 1;
+  returnStyle = ReturnValOnNewLine;
+  listsRecordsIndent = 2;
+  indentWrappedPatternArgs = 2;
+  indentMatchCases = 2;
+  indentAfterLabels = 2;
+  matchesStickTo = StickToBarSplitCases;
+  funcApplicationLabelStyle = NeverWrapFinalItem;
+  funcCurriedPatternStyle = WrapFinalListyItemIfFewerThan 3;
+  width = 90;
+} else {
+  constructorTupleImplicitArity = true;
+  space = 1;
+  returnStyle = ReturnValOnNewLine;
+  listsRecordsIndent = 2;
+  indentWrappedPatternArgs = 2;
+  indentMatchCases = 2;
+  indentAfterLabels = 2;
+  matchesStickTo = StickToBar;
+  funcApplicationLabelStyle = NeverWrapFinalItem;
+  funcCurriedPatternStyle = WrapFinalListyItemIfFewerThan 3;
+  width = 90;
+}
+
+let configuredSettings = ref defaultSettings
+
+let configure ~width ~constructorTupleImplicitArity = (
+  configuredSettings := {defaultSettings with width; constructorTupleImplicitArity}
+)
+
+let createFormatter () =
+let module Formatter = struct
+
+let settings = !configuredSettings
+
+
+(* How do we make
+   this a label?
+
+   /---------------------\
+   let myVal = (oneThing, {
+   field: [],
+   anotherField: blah
+   });
+
+   But in this case, this wider region a label?
+   /------------------------------------------------------\
+   let myVal = callSomeFunc (oneThing, {field: [], anotherField: blah}, {
+   boo: 'hi'
+   });
+
+   This is difficult. You must form a label from the preorder traversal of every
+   node - except the last encountered in the traversal. An easier heuristic is:
+
+   - The last argument to a functor application is expanded.
+
+   React.CreateClass SomeThing {
+   let render {props} => {
+   };
+   }
+
+   - The last argument to a function application is expanded on the same line.
+   - Only if it's not curried with another invocation.
+   -- Optionally: "only if everything else is an atom"
+   -- Optionally: "only if there are no other args"
+
+   React.createClass someThing {
+   render: fn x => y,
+   }
+
+   !!! NOT THIS
+   React.createClass someThing {
+   render: fn x => y,
+   }
+   somethingElse
+*)
+
+let shouldInterpretTupleAsConstructorArgs attrs =
+  (!configuredSettings).constructorTupleImplicitArity ||
+  List.exists
+    (function
+      | ({txt="explicit_arity"; loc}, _) -> true
+      | _ -> false
+    )
+    attrs
+
+
+let list_settings = {
+  Easy_format.space_after_opening = false;
+  space_after_separator = false;
+  space_before_separator = false;
+  separators_stick_left = true;
+  space_before_closing = false;
+  stick_to_label = true;
+  align_closing = true;
+  wrap_body = `No_breaks;
+  indent_body = settings.listsRecordsIndent * settings.space;
+  list_style = None;
+  opening_style = None;
+  body_style = None;
+  separator_style = None;
+  closing_style = None;
+}
+
+let nullStyle = { Easy_format.atom_style = Some "null" }
+let boolStyle = { Easy_format.atom_style = Some "bool" }
+let intStyle = { Easy_format.atom_style = Some "int" }
+let stringStyle = { Easy_format.atom_style = Some "string" }
+let labelStringStyle = { Easy_format.atom_style = Some "label" }
+let colonStyle = { Easy_format.atom_style = Some "punct" }
+
+let simplifiedApplicationSettings = {
+  list_settings with
+    align_closing = true; (* So the semicolon sticks to end of application *)
+    (* This must be true to support this case:
+
+        let oneNestedInvocationThatWraps = outerFunc (
+          nestedFuncToInvokeThatCausesWrapping
+          []
+        );
+
+       Otherwise, we would get:
+        let oneNestedInvocationThatWraps = outerFunc
+          (nestedFuncToInvokeThatCausesWrapping []);
+    *)
+    stick_to_label = true; (* I don't believe this has a purpose *)
+    space_after_separator = true;
+    wrap_body = `Never_wrap
+}
+
+let easyListSettingsFromListConfig listConfig =
+  let {
+    break;
+    wrap;
+    inline;
+    indent;
+    sepLeft;
+    preSpace;
+    postSpace;
+    pad;
+    sep;
+  } = listConfig in
+  let (opn, cls) = wrap in
+  let (padOpn, padCls) = pad in
+  let (inlineStart, inlineEnd) = inline in
+  (opn, sep, cls, {
+    list_settings with
+      wrap_body = (
+        match break with
+          | Never -> `No_breaks
+          (* Yes, `Never_wrap is a horrible name - really means "if needed". *)
+          | IfNeed -> `Never_wrap
+          | Always -> `Force_breaks
+      );
+      indent_body = indent;
+      space_after_separator = postSpace;
+      space_before_separator = preSpace;
+      space_after_opening = padOpn;
+      space_before_closing = padCls;
+      stick_to_label = inlineStart;
+      align_closing = not inlineEnd;
+  })
+
+let makeListConfig
+    ?(attemptInterleaveComments=true)
+    ?listConfigIfCommentsInterleaved
+    ?(break=Never)
+    ?(wrap=("", ""))
+    ?(inline=(true, false))
+    ?(sep="")
+    ?(indent=list_settings.indent_body)
+    ?(sepLeft=true)
+    ?(preSpace=false)
+    ?(postSpace=false)
+    ?(pad=(false,false))
+    () =
+  {
+    attemptInterleaveComments;
+    listConfigIfCommentsInterleaved;
+    break;
+    wrap;
+    inline;
+    sep;
+    indent;
+    sepLeft;
+    preSpace;
+    postSpace;
+    pad;
+  }
+
+let easyListWithConfig listConfig easyListItems =
+  let (opn, sep, cls, settings) =
+    easyListSettingsFromListConfig listConfig in
+  Easy_format.List ((opn, sep, cls, settings), easyListItems)
+
+let makeEasyList
+    ?(attemptInterleaveComments=true)
+    ?(break=Never)
+    ?(wrap=("", ""))
+    ?(inline=(true, false))
+    ?(sep="")
+    ?(indent=list_settings.indent_body)
+    ?(sepLeft=true)
+    ?(preSpace=false)
+    ?(postSpace=false)
+    ?(pad=(false,false)) easyListItems =
+  let listConfig =
+    makeListConfig
+      ~attemptInterleaveComments
+      ~break
+      ~wrap
+      ~inline
+      ~sep
+      ~indent
+      ~sepLeft
+      ~preSpace
+      ~postSpace
+      ~pad
+      ()
+  in
+  let (opn, sep, cls, listSettings) = easyListSettingsFromListConfig listConfig in
+  Easy_format.List ((opn, sep, cls, listSettings), easyListItems)
+
+let makeList
+    (* Allows a fallback in the event that comments were interleaved with the
+     * list *)
+    ?(attemptInterleaveComments=true)
+    ?listConfigIfCommentsInterleaved
+    ?(break=Never)
+    ?(wrap=("", ""))
+    ?(inline=(true, false))
+    ?(sep="")
+    ?(indent=list_settings.indent_body)
+    ?(sepLeft=true)
+    ?(preSpace=false)
+    ?(postSpace=false)
+    ?(pad=(false,false)) lst =
+  let config =
+    makeListConfig
+      ~attemptInterleaveComments
+      ?listConfigIfCommentsInterleaved
+      ~break
+      ~wrap
+      ~inline
+      ~sep
+      ~indent
+      ~sepLeft
+      ~preSpace
+      ~postSpace
+      ~pad
+      ()
+  in
+  Sequence (config, lst)
+
+let makeAppList delimiter l =
+  let (preSpace, sep) = match delimiter with
+    | None -> (false, "")
+    | Some s -> (true, (s))
+  in
+  match l with
+  | hd::[] ->  hd
+  | _ -> makeList ~inline:(true, true) ~preSpace ~sep ~postSpace:true ~break:IfNeed l
+
+let ensureSingleTokenSticksToLabel x =
+  makeList
+    ~listConfigIfCommentsInterleaved: (
+      fun currentConfig -> {currentConfig with break=Always; postSpace=true; indent=0; inline=(true, true)}
+    )
+    [x]
+
+let easyLabel ?(space=false) ?(indent=settings.indentAfterLabels) labelTerm term =
+  let settings = {
+    space_after_label = space;
+    indent_after_label = indent;
+    label_style = None;
+  } in
+  Easy_format.Label ((labelTerm, settings), term)
+
+let label ?(space=false) ?(indent=settings.indentAfterLabels) (labelTerm:layoutNode) (term:layoutNode) =
+  Label (
+    (fun x y -> easyLabel ~space x y),
+    labelTerm,
+    term
+  )
+
+let labelSpace l r = label ~space:true l r
+
+let atom str = Easy (Easy_format.Atom(str, labelStringStyle))
+let easyAtom str = Easy_format.Atom(str, labelStringStyle)
+
+(** Take x,y,z and n and generate [x, y, z, ...n] *)
+let makeES6List lst last =
+  let last_dots = makeList [atom "..."; last] in
+  makeList ~wrap:("[", "]") ~break:IfNeed ~postSpace:true ~sep:"," (lst @ [last_dots])
+
+let makeNonIndentedBreakingList lst =
+    (* No align closing: So that semis stick to the ends of every break *)
+  makeList ~break:Always ~indent:0 ~inline:(true, true) lst
+
+let break =
+    (* No align closing: So that semis stick to the ends of every break *)
+  makeListConfig ~break:Always ~indent:0 ~inline:(true, true) ()
+
+let makeBreakableList lst = makeList ~break:IfNeed ~inline:(true, true) lst
+
+let makeNonIndentedBreakableEasyList lst = makeEasyList ~break:IfNeed ~inline:(true, true) ~indent:0 lst
+
+(* Like a <span> could place with other breakableInline lists without upsetting final semicolons *)
+let makeSpacedBreakableInlineList lst =
+  makeList ~break:IfNeed ~inline:(true, true) ~postSpace:true lst
+
+let makeCommaBreakableList lst = makeList ~break:IfNeed ~postSpace:true lst
+
+let makeCommaBreakableListSurround opn cls lst =
+  makeList ~break:IfNeed ~postSpace:true ~sep:"," ~wrap:(opn, cls) lst
+
+
+(* TODO: Allow configuration of spacing around colon symbol *)
+
+(* let formatCoerce expr optType coerced = *)
+(*   match optType with *)
+(*     | None -> Easy_format.Label (((makeList ~postSpace:true [expr; atom ":>"]), labelWithSpace), coerced) *)
+(*     | Some typ -> Easy_format.Label (((makeList ~postSpace:true [formatColon expr typ; atom ":>"]), labelWithSpace), coerced) *)
+(* Formats parentheses grouping precedence - only wrapping in an additional
+   array when necessary *)
+let formatPrecedence formattedTerm =
+  makeList ~wrap:("(", ")") ~break:IfNeed [formattedTerm]
+
+let isListy = function
+  | Easy_format.List _ -> true
+  | _ -> false
+
+
+let easyFormatToStdout x =
+  let formatter = Format.formatter_of_out_channel stdout in
+  let _ = Format.pp_set_margin formatter settings.width in
+  Easy_format.Pretty.to_formatter formatter x
+
+(* let _ = easyFormatToStdout (formatExpr json) *)
+
+let easyFormatToFormatter f x =
+  let _ = Format.pp_set_margin f settings.width in
+  Easy_format.Pretty.to_formatter f x
+
+
+let wrapToStr fn = fun term ->
+  ignore (flush_str_formatter ());
+  let f = str_formatter in
+  (fn f term; (flush_str_formatter ()))
+
+let wrap fn = fun term ->
+  ignore (flush_str_formatter ());
+  let f = str_formatter in
+  (fn f term; atom (flush_str_formatter ()))
+
+
+type commentOrItem =
+  | Comment of Easy_format.t
+  | Item of Easy_format.t
+
+(**
+ * Splits [comments] at [lexLoc].  Assumes the comments are in the correct
+ * file, and ordered. [leftIncludesSplit] indicates whether or not a comment
+ * ending *at* [lexLoc] should be included in the left split, otherwise, only
+ * comments that end *before* the [lexLoc] wil be included in the left split.
+ * It actually doesn't matter in practice.
+ *)
+let rec splitCommentsAt ~leftIncludesSplit lexLoc comments =
+  let open Lexing in
+  let leftIncludesChar =
+    if leftIncludesSplit then lexLoc.pos_cnum else lexLoc.pos_cnum - 1 in
+  match comments with
+    | [] -> ([], [])
+    | ((str, commLoc) as com)::tl ->
+      if commLoc.loc_end.pos_cnum <= leftIncludesChar then
+        let (recurseLeft, recurseRight) =
+          splitCommentsAt ~leftIncludesSplit lexLoc tl in
+        (com::recurseLeft, recurseRight)
+      else
+        (* Because comments are ordered, *all* comments must also not be to the
+           left of the split point. *)
+        ([], comments)
+
+
+let formatItemComment comm = match comm with
+  | (str, commLoc) ->
+    let wrapWith = if usesTraditionalComments then ("/*", "*/") else ("(*", "*)") in
+    (* Use the Str module for regex splitting *)
+    makeEasyList ~wrap:wrapWith [easyAtom str]
+
+let formatComments comms = List.map formatItemComment comms
+
+let convertIsListyToIsSequencey isListyImpl =
+  let rec isSequencey layoutNode = match layoutNode with
+    | SourceMap (_, _, subLayoutNode) -> isSequencey subLayoutNode
+    | Sequence _ -> true
+    | Label (_, _, _) -> false
+    | Easy easy -> isListyImpl easy
+  in
+  isSequencey
+
+let isSequencey = convertIsListyToIsSequencey isListy
+
+
+let removeSepFromListConfig listSettings =
+  {listSettings with sep=""; preSpace=false; postSpace=false;}
+
+
+(* Should return list with all location markers either stripped out or replaced
+   with comments that were "caught up" to that point. If returning a list with
+   a single item, that single item should be unpacked out of the list.
+*)
+let rec interleaveComments listConfig layoutListItems comments =
+  match layoutListItems with
+    | [] -> ([], comments)
+    | hd::tl ->
+      (* TODO: properly implement "stick to left", or expand the ~sep:"" API to
+       * include, left sticking items: Which would involve sticking spaces like:
+       * A<space>[sep<space>B]
+       * And then trimming the trailing white space as usual.
+       **)
+      let (itemComments, (easyItem, unconsumedComms)) = match (listConfig.attemptInterleaveComments, hd) with
+        | (true, SourceMap (sourceMapListConfig, location, subLayout)) ->
+          let (beforeStart, afterStart) =
+            splitCommentsAt ~leftIncludesSplit:false location.loc_start comments in
+          (beforeStart, layoutToEasyFormatAndSurplus subLayout afterStart)
+        | _ -> ([], layoutToEasyFormatAndSurplus hd comments)
+      in
+      let (recItems, recUnconsumedComms) = interleaveComments listConfig tl unconsumedComms in
+      let easyComments = List.map (fun c -> Comment (formatItemComment c)) itemComments in
+      (List.concat [easyComments; [Item easyItem]; recItems], recUnconsumedComms)
+
+and attach listConfig ~useSep easyItem = match (listConfig.sep, listConfig.preSpace, listConfig.postSpace) with
+    | ("", false, false) -> easyItem
+    | (sep, preSpace, postSpace) -> makeEasyList (
+        easyItem::
+        List.concat [
+          (if preSpace then [easyAtom " "] else []);
+          (if sep != "" && useSep then [easyAtom sep] else []);
+          (if postSpace then [easyAtom " "] else []);
+        ]
+      )
+
+and distributeCommentsToSequenceItems listConfig layoutListItems comments =
+  let (interleaved, unconsumed) = interleaveComments listConfig layoutListItems comments in
+  (* previousItem will become handy for stick to left *)
+  let rec process previousItem item remaining: Easy_format.t list =
+    match (item, remaining) with
+      | ((Item x | Comment x), []) -> [x]
+      | (Item i, rHd::rTl) ->
+          (attach listConfig ~useSep:true i)::(process (Some item) rHd rTl)
+      | (Comment c, rHd::rTl) -> (attach listConfig ~useSep:false c)::(process (Some item) rHd rTl)
+  in
+  match interleaved with
+    | [] -> ([], unconsumed)
+    | hd::tl -> ((process None hd tl), unconsumed)
+
+  (* Now grab any trailing comments that are known to be within the bounds of
+   * the "list" in the AST, but have not been prepended before another item.*)
+(* Returns unconsumed comments and the [Easy_format] structure. *)
+and layoutToEasyFormatAndSurplus layoutNode comments = match layoutNode with
+  | Easy easyFormatted -> (easyFormatted, comments)
+  | SourceMap (listConfig, location, subLayout) -> (
+      (* The [listConfig] is only used when the comment can't be embedded in
+       * a closest ancestor list. The [listConfig] will be used to attach
+       * comments to a *particular* layoutNode (subLayout), and only in the
+       * event that there are even comments to attach.
+       *
+       * TODO: Provide more controls over how the negotiation should occur.
+       * What if a [SourceMap] wants to specify that the
+       * [listConfig] should *always* be used even if it can be embedded into
+       * a list. Is the [listConfig] just a backup, or is it required?
+       *
+       * TODO: Provide more control over whether or not a single item should
+       * bypass use of the [listConfig] as we do currently.
+       *
+       * TODO: Provide ability to have even a *single* comment force breaking of
+       * the list.
+       *)
+      let (beforeStart, afterStart) = splitCommentsAt ~leftIncludesSplit:false location.loc_start comments in
+      (* This is not working, but is a good idea in theory *)
+      (* let (insideNode, unconsumedComms) = splitCommentsAt ~leftIncludesSplit:true location.loc_end afterStart in *)
+
+      (* Because comments should be formatted according to the list the best
+       * contains them, the sep property should not actually be used - instead
+       * it must be manually recreated inside of
+       * [distributeCommentsToSequenceItems] *)
+      let (items, unconsumed) =
+        distributeCommentsToSequenceItems
+          listConfig
+          [subLayout]
+          afterStart in
+      match (beforeStart, items, listConfig.wrap) with
+        | (_, [], _) -> raise (NotPossible "No items")
+        | ([], [singleItem], ("", "")) -> (singleItem, unconsumed)
+        | (leadingComms, items, _) -> (
+          easyListWithConfig
+            listConfig
+            (List.concat [formatComments leadingComms; items;]),
+          unconsumed
+        )
+
+  )
+
+  | Sequence (listConfig, subLayouts) -> (
+      let listConfigNoSep = removeSepFromListConfig listConfig in
+      let (distribution, unconsumedComms) =
+        distributeCommentsToSequenceItems
+          (* So the list may stick "trailing" comments as the final items. *)
+          listConfig
+          subLayouts
+          comments
+      in
+      let wereCommentsInterleaved = List.length subLayouts != List.length distribution in
+      let adjustedListConfig =
+        if wereCommentsInterleaved then
+          match listConfigNoSep.listConfigIfCommentsInterleaved with
+            | None -> listConfigNoSep
+            | Some f -> f listConfigNoSep
+        else
+          listConfigNoSep
+      in
+      (easyListWithConfig adjustedListConfig distribution, unconsumedComms)
+    )
+  | Label (labelFormatter, left, right) ->
+      let (easyLeft, unconsumedComms) = layoutToEasyFormatAndSurplus left comments in
+      let (easyRight, unconsumedComms) = layoutToEasyFormatAndSurplus right unconsumedComms in
+      (labelFormatter easyLeft easyRight, unconsumedComms)
+
+let layoutToEasyFormatNoComments layoutNode =
+  let (easyFormat, surplus) = layoutToEasyFormatAndSurplus layoutNode [] in
+  easyFormat
+
+let layoutToEasyFormat layoutNode comments =
+  let (easyFormat, surplus) = layoutToEasyFormatAndSurplus layoutNode comments in
+  makeEasyList ~break:Always ~indent:0 ~inline:(true, true) (easyFormat :: formatComments surplus)
+
+
+let partitionFinalWrapping listTester wrapFinalItemSetting x =
+  let rev = List.rev x in
+  match (rev, wrapFinalItemSetting) with
+    | ([], _) -> raise (NotPossible "shouldnt be partitioning 0 label attachments")
+    | (_, NeverWrapFinalItem) -> None
+    | (last::revEverythingButLast, WrapFinalListyItemIfFewerThan max) ->
+        if not (listTester last) || (List.length x) >= max then
+          None
+        else
+          Some (List.rev revEverythingButLast, last)
+
+let layoutEasy x = x
+
+let semiTerminated term = makeList [term; atom ";"]
+
+let makeLetSequence letItems =
+  makeList ~wrap:("{", "}") ~break:Always ~inline:(true, false) letItems
+
+let formatAttributed x y = makeList ~wrap:("(", ")") ~break:IfNeed [
+  makeList ~break:IfNeed ~wrap:("(", ")") [x];
+  y;
+]
+
+(* For when the type constraint should be treated as a separate breakable line item itself
+   not docked to some value/pattern label.
+   fun x
+       y
+       : retType => blah;
+ *)
+let formatJustTheTypeConstraint =
+  if useSingleColonForNamedArgs then
+    (fun typ ->
+       (makeList ~postSpace:true [atom ":"; typ]))
+  else
+    (fun typ ->
+       (makeList ~postSpace:false [atom ":"; typ]))
+
+let formatTypeConstraint =
+  if useSingleColonForNamedArgs then
+    (fun one two ->
+      label ~space:true (makeList ~postSpace:true [one; atom ":"]) two)
+  else
+    (fun one two ->
+      label ~space:true (makeList ~postSpace:false [one; atom ":"]) two)
+
+let formatLabeledArgument =
+  if useSingleColonForNamedArgs then
+    (fun lbl lblSuffix term ->
+      label ~space:false (makeList [lbl; atom (":" ^ lblSuffix)]) term)
+  else
+    (fun lbl lblSuffix term ->
+      label ~space:false (makeList [lbl; atom ("::" ^ lblSuffix)]) term)
+
+
+
+(* Standard function application style indentation - no special wrapping
+ * behavior.
+ *
+ * Formats like this:
+ *
+ *   let result =
+ *     someFunc
+ *       (10, 20);
+ *
+ *
+ * Instead of this:
+ *
+ *   let result =
+ *     someFunc (
+ *       10,
+ *       20
+ *     );
+ *
+ *)
+let formatIndentedApplication delimiter headApplicationItem argApplicationItems =
+  label
+    ~space:true
+    (match delimiter with
+      | None -> headApplicationItem
+      | Some s ->
+        makeList ~postSpace:true ~attemptInterleaveComments:false [headApplicationItem; atom (s)]
+    )
+    (makeAppList delimiter argApplicationItems)
+
+
+let formatAttachmentApplication finalWrapping (attachTo: (bool * layoutNode) option) (appTermItems, delimiter) =
+  let partitioning = finalWrapping appTermItems in
+  match partitioning with
+    | None -> (
+        match (appTermItems, attachTo) with
+          | ([], _) -> raise (NotPossible "No app terms")
+          | ([hd], None) -> hd
+          | ([hd], (Some (useSpace, toThis))) -> label ~space:useSpace toThis hd
+          | (hd::tl, None) ->
+              (formatIndentedApplication delimiter hd tl)
+          | (hd::tl, (Some (useSpace, toThis))) ->
+            label
+              ~space:useSpace
+              toThis
+              (formatIndentedApplication delimiter hd tl)
+      )
+    | Some (attachedList, wrappedListy) -> (
+        match (attachedList, attachTo) with
+          | ([], Some (useSpace, toThis)) -> label ~space:useSpace toThis wrappedListy
+          | ([], None) ->
+            (* Not Sure when this would happen *)
+            wrappedListy
+          | (hd::tl, Some (useSpace, toThis)) ->
+            let attachedArgs = makeAppList delimiter attachedList in
+            label
+              ~space:true
+              (
+                match delimiter with
+                  | Some s ->
+                    makeList ~postSpace:true  [
+                      (makeList ~postSpace:useSpace [toThis; attachedArgs]);
+                      (atom s);
+                    ]
+                  | None ->
+                    (label ~space:useSpace toThis attachedArgs)
+              )
+              wrappedListy
+          | (hd::tl, None) ->
+            (* Args that are "attached to nothing" *)
+            let appList = makeAppList delimiter attachedList in
+            let attachedArgs =
+              match delimiter with
+                | None -> appList
+                | Some s -> (label ~space:true appList (atom s))
+            in
+            label ~space:true attachedArgs wrappedListy
+      )
+
+(*
+  Preprocesses an expression term for the sake of label attachments ([letx =
+  expr]or record [field: expr]). Function application should have special
+  treatment when placed next to a label. (The invoked function term should
+  "stick" to the label in some cases). In others, the invoked function term
+  should become a new label for the remaining items to be indented under.
+ *)
+let applicationFinalWrapping x =
+  partitionFinalWrapping isSequencey settings.funcApplicationLabelStyle x
+
+let curriedFunctionFinalWrapping x =
+  partitionFinalWrapping isSequencey settings.funcCurriedPatternStyle x
+
+let typeApplicationFinalWrapping typeApplicationItems =
+  partitionFinalWrapping isSequencey settings.funcApplicationLabelStyle typeApplicationItems
+
+
+(* add parentheses to binders when they are in fact infix or prefix operators *)
+let protectIdentifier txt =
+  if not (needs_parens txt) then atom (escape_stars_slashes txt)
+  else if needs_spaces txt then makeList ~wrap:("(", ")") ~pad:(true, true) [atom (escape_stars_slashes txt)]
+  else atom ("(" ^ escape_stars_slashes txt ^ ")")
+
+let protectLongIdentifier longPrefix txt =
+  makeList [longPrefix; atom "."; protectIdentifier txt]
+
+
+
+class printer  ()= object(self:'self)
+  val pipe = false
+  val semi = false
+  (* The test and first branch of ternaries must be guarded *)
+  val inTernary = false
+  method underTernary = {<inTernary=true>}
+  method resetInTernary = {<inTernary=false>}
+  method under_pipe = {<pipe=true>}
+  method under_semi = {<semi=true>}
+  method reset_semi = {<semi=false>}
+  method reset_pipe = {<pipe=false>}
+  method reset = {<pipe=false;semi=false>}
+  method list : 'a . ?sep:space_formatter -> ?first:space_formatter ->
+    ?last:space_formatter -> (Format.formatter -> 'a -> unit) ->
+    Format.formatter -> 'a list -> unit
+    = default#list
+  method option : 'a. ?first:space_formatter -> ?last:space_formatter ->
+    (Format.formatter -> 'a -> unit) -> Format.formatter -> 'a option -> unit =
+    default#option
+
+  (* TODO: Get rid of this completely: was merely left over from old printer. *)
+  (* Rename this method simple_enough_to_appear_inside_if (actually, that might
+     not be good enough and this more "global" context tracking whether or not
+     you're "under an if" is likely better. *)
+  method paren ?(first="") ?(last="") shouldWrap fmtFunc term =
+    if shouldWrap then makeList ~wrap:(first, last) ~break:IfNeed [fmtFunc term]
+    else fmtFunc term
+
+  method longident = function
+    | Lident s -> (protectIdentifier s)
+    | Ldot(longPrefix, s) ->
+        (protectLongIdentifier (self#longident longPrefix) s)
+    | Lapply (y,s) -> makeList [self#longident y; atom "("; self#longident s; atom ")";]
+
+  method longident_loc x = self#longident x.txt
+  method constant = wrap default#constant
+
+  (* trailing space*)
+  method mutable_flag = wrap default#mutable_flag
+  method virtual_flag = wrap default#virtual_flag
+
+  (* trailing space added *)
+  method rec_flag = wrap default#rec_flag
+  method private_flag = wrap default#private_flag
+  method constant_string = wrap default#constant_string
+  method tyvar = wrap default#tyvar
+
+  (* c ['a,'b] *)
+  method class_params_def = wrap default#class_params_def
+  (* This will fall through to the simple version. *)
+  method non_arrowed_core_type x = self#non_arrowed_non_simple_core_type x
+
+  method core_type2 x =
+    if x.ptyp_attributes <> [] then
+      self#formatAttributedType x
+    else
+      let rec allArrowSegments xx = match xx.ptyp_desc with
+        | Ptyp_arrow (l, ct1, ct2) ->
+            (self#type_with_label (l,ct1))::(allArrowSegments ct2)
+        | _ -> [self#core_type2 xx]
+      in
+      match (x.ptyp_desc) with
+        | (Ptyp_arrow (l, ct1, ct2)) ->
+            let normalized =
+              makeList ~break:IfNeed ~sep:"=>" ~preSpace:true ~postSpace:true ~inline:(true, true) (allArrowSegments x)
+            in
+            SourceMap (break, x.ptyp_loc, normalized)
+        | Ptyp_poly (sl, ct) ->
+            let poly =
+              makeList ~break:IfNeed [
+                makeList ~postSpace:true [
+                  makeList ~postSpace:true (List.map (fun x -> layoutEasy (self#tyvar x)) sl);
+                  atom ".";
+                ];
+                self#core_type ct;
+              ]
+            in SourceMap (break, x.ptyp_loc, poly)
+
+        | _ -> self#non_arrowed_core_type x
+
+  (* Same as core_type2 but can be aliased *)
+  method core_type x =
+    if x.ptyp_attributes <> [] then
+      self#formatAttributedType x
+    else match (x.ptyp_desc) with
+      | (Ptyp_alias (ct, s)) ->
+        SourceMap (
+          break,
+          x.ptyp_loc,
+          (label
+            ~space:true
+            (self#core_type ct)
+            (makeList ~postSpace:true [atom "as"; atom ("'" ^ s)])
+          )
+        )
+      | _ -> self#core_type2 x
+
+  method type_with_label (label, ({ptyp_desc} as c)) =
+    match label with
+      | "" ->  self#non_arrowed_non_simple_core_type c (* otherwise parenthesize *)
+      | s  ->
+          if s.[0]='?' then
+            let len = String.length s - 1 in
+            let lbl = String.sub s 1 len in
+            match ptyp_desc with
+              | Ptyp_constr ({txt}, l) ->
+                  assert (is_predef_option txt);
+                  let everythingButQuestion =
+                    formatLabeledArgument
+                      (atom lbl)
+                      ""
+                      (makeList
+                         ~postSpace:true
+                         ~break:IfNeed
+                         ~inline:(true, true)
+                         (* Why not support aliasing here? *)
+                         (* I don't think you'll have more than one l here. *)
+                         (List.map (self#non_arrowed_non_simple_core_type) l)
+                      ) in
+                    makeList [everythingButQuestion; atom "?"]
+              | _ -> failwith "invalid input in print_type_with_label"
+          else formatLabeledArgument (atom s) "" (self#non_arrowed_non_simple_core_type c)
+
+  method type_param (ct, a) =
+    makeList [atom (type_variance a); self#core_type ct]
+
+  (* According to the parse rule [type_declaration], the "type declaration"'s
+   * physical location (as indicated by [td.ptype_loc]) begins with the
+   * identifier and includes the constraints. *)
+  method formatOneTypeDef prepend name assignToken ({ptype_params; ptype_kind; ptype_manifest; ptype_loc} as td) =
+    let (equalInitiatedSegments, constraints) = (self#type_declaration_binding_segments td) in
+    let formattedTypeParams = List.map self#type_param ptype_params in
+    let binding = makeList ~postSpace:true (prepend::name::[]) in
+    (*
+        /-----------everythingButConstraints--------------  | -constraints--\
+       /-innerL---| ------innerR--------------------------\
+      /binding\     /typeparams\ /--equalInitiatedSegments-\
+      type name      'v1    'v1  =  foo = private bar        constraint a = b
+    *)
+
+    let labelWithParams = match formattedTypeParams with
+        [] -> binding
+      | phd::ptl -> label ~space:true binding (makeList ~postSpace:true ~break:IfNeed ~inline:(true, true) (phd::ptl)) in
+    let everythingButConstraints =
+      let nameParamsEquals = makeList ~postSpace:true [labelWithParams; assignToken] in
+      match equalInitiatedSegments with
+        | [] -> labelWithParams
+        | hd::hd2::hd3::tl -> raise (NotPossible "More than two type segments.")
+        | hd::[] ->
+            formatAttachmentApplication
+              typeApplicationFinalWrapping
+              (Some (true, nameParamsEquals))
+              (hd, None)
+        | hd::hd2::[] ->
+            let first = makeList ~postSpace:true ~break:IfNeed ~inline:(true, true) hd in
+            let second = makeList ~postSpace:true ~break:IfNeed ~inline:(true, true) hd2 in
+            label ~space:true nameParamsEquals (
+              label ~space:true
+                (makeList ~postSpace:true [first; atom "="])
+                (second)
+            )
+    in
+    let everything =
+      match constraints with
+        | [] -> everythingButConstraints
+        | hd::tl -> makeList ~break:IfNeed ~indent:0 ~inline:(true, true) (everythingButConstraints::hd::tl)
+    in
+    (SourceMap (break, ptype_loc, everything))
+
+  (* shared by [Pstr_type,Psig_type]*)
+  method type_def_list l =
+    (* As oposed to used in type substitution. *)
+    let formatOneTypeDefStandard prepend td =
+      self#formatOneTypeDef
+        prepend
+        (SourceMap (break, td.ptype_name.loc, (atom td.ptype_name.txt)))
+        (atom "=")
+        td
+    in
+
+    match l with
+      | [] -> raise (NotPossible "asking for type list of nothing")
+      | hd::tl ->
+          let first = formatOneTypeDefStandard (atom "type") hd in
+          match tl with
+            (* Exactly one type *)
+            | [] -> first
+            | tlhd::tltl -> makeList ~indent:0 ~inline:(true, true) ~break:Always (
+                first::(List.map (formatOneTypeDefStandard (atom "and")) (tlhd::tltl))
+              )
+
+  (* Returns the type declaration partitioned into three segments - one
+     suitable for appending to a label, the actual type manifest
+     and the list of constraints. *)
+  method type_declaration_binding_segments x =
+    let type_variant_leaf {pcd_name; pcd_args; pcd_res; pcd_loc} =
+      let sourceMappedName = SourceMap (break, pcd_name.loc, atom pcd_name.txt) in
+      let nameOf = makeList ~postSpace:true [sourceMappedName; atom "of"] in
+      let barNameOf = makeList ~postSpace:true [atom "|"; nameOf] in
+      let barName = makeList ~postSpace:true [atom "|"; sourceMappedName] in
+
+      let args = (List.map self#non_arrowed_simple_core_type pcd_args) in
+      let gadtRes = match pcd_res with
+        | None -> None
+        | Some x -> Some (
+            makeList ~inline:(true, true) ~break:IfNeed [ (* Single row just so the entire return type breaks onto its own line *)
+              formatJustTheTypeConstraint (self#core_type x)
+            ]
+        )
+      in
+      let normalize lst = match lst with
+        | [] -> raise (NotPossible "should not be called")
+        | [hd] -> hd
+        | _::_ -> makeList ~inline:(true, true) ~break:IfNeed ~postSpace:true lst
+      in
+
+      let everything = match (settings.matchesStickTo, args, gadtRes) with
+        | (StickToBar, [], None)
+        | (StickToBarSplitCases, [], None)
+        | (StickToLastSplitCases, [], None) ->
+            barName
+        | (StickToBar, _::_, None)
+        | (StickToBarSplitCases, _::_, None) ->
+          label ~space:true barNameOf (normalize args)
+        | (StickToBar, [], Some res)
+        | (StickToBarSplitCases, [], Some res) ->
+          label ~space:true barName res
+        | (StickToBar, _::_, Some res)
+        | (StickToBarSplitCases, _::_, Some res) ->
+          (label ~space:true barNameOf (normalize (args@[res])))
+        | (StickToLastSplitCases, [], Some res) ->
+            makeList ~postSpace:true [
+              (atom "|");
+              label ~space:true sourceMappedName res
+            ]
+        | (StickToLastSplitCases, _::_, None) ->
+            makeList ~postSpace:true [
+              (atom "|");
+              label ~space:true nameOf (normalize args)
+            ]
+        | (StickToLastSplitCases, _::_, Some res) ->
+            makeList ~postSpace:true [
+              (atom "|");
+              (label ~space:true nameOf (normalize (args@[res])))
+            ]
+
+      in
+      (SourceMap (break, pcd_loc, everything))
+    in
+
+    (* Segments of the type binding (occuring after the type keyword) that
+       should begin with "=". Zero to two total sections.
+       This is just a straightforward reverse mapping from the original parser:
+        type_kind:
+            /*empty*/
+              { (Ptype_abstract, Public, None) }
+          | EQUAL core_type
+              { (Ptype_abstract, Public, Some $2) }
+          | EQUAL PRIVATE core_type
+              { (Ptype_abstract, Private, Some $3) }
+          | EQUAL constructor_declarations
+              { (Ptype_variant(List.rev $2), Public, None) }
+          | EQUAL PRIVATE constructor_declarations
+              { (Ptype_variant(List.rev $3), Private, None) }
+          | EQUAL private_flag BAR constructor_declarations
+              { (Ptype_variant(List.rev $4), $2, None) }
+          | EQUAL DOTDOT
+              { (Ptype_open, Public, None) }
+          | EQUAL private_flag LBRACE label_declarations opt_comma RBRACE
+              { (Ptype_record(List.rev $4), $2, None) }
+          | EQUAL core_type EQUAL private_flag opt_bar constructor_declarations
+              { (Ptype_variant(List.rev $6), $4, Some $2) }
+          | EQUAL core_type EQUAL DOTDOT
+              { (Ptype_open, Public, Some $2) }
+          | EQUAL core_type EQUAL private_flag LBRACE label_declarations opt_comma RBRACE
+              { (Ptype_record(List.rev $6), $4, Some $2) }
+    *)
+    let privateAtom = (atom "private") in
+    let privatize scope lst = match scope with
+      | Public -> lst
+      | Private -> privateAtom::lst in
+
+    let recordRow pld =
+      let nameColon =
+        SourceMap (
+          break,
+          pld.pld_name.loc,
+          makeList [atom pld.pld_name.txt; atom ":"]
+        ) in
+      let withMutable =
+        match pld.pld_mutable with
+          | Immutable -> nameColon
+          | Mutable -> makeList ~postSpace:true [atom "mutable"; nameColon]
+      in
+      SourceMap (
+        break,
+        pld.pld_loc,
+        label ~space:true withMutable (self#core_type pld.pld_type)
+      )
+    in
+    let recordize lst =
+      let rows = List.map recordRow lst in
+      makeList ~wrap:("{", "}") ~sep:"," ~postSpace:true ~break:IfNeed rows
+    in
+
+    let equalInitiatedSegments = match (x.ptype_kind, x.ptype_private, x.ptype_manifest) with
+      (* /*empty*/ {(Ptype_abstract, Public, None)} *)
+      | (Ptype_abstract, Public, None) -> [
+
+        ]
+      (* EQUAL core_type {(Ptype_abstract, Public, Some _)} *)
+      | (Ptype_abstract, Public, Some y) -> [
+          [self#core_type y]
+        ]
+      (* EQUAL PRIVATE core_type {(Ptype_abstract, Private, Some $3)} *)
+      | (Ptype_abstract, Private, Some y) -> [
+          [privateAtom; self#core_type y]
+        ]
+      (* EQUAL constructor_declarations {(Ptype_variant _., Public, None)} *)
+      (* This case is redundant *)
+      (* | (Ptype_variant lst, Public, None) -> [ *)
+      (*     [makeSpacedBreakableInlineList (List.map type_variant_leaf lst)] *)
+      (*   ] *)
+      (* EQUAL PRIVATE constructor_declarations {(Ptype_variant _, Private, None)} *)
+      | (Ptype_variant lst, Private, None) -> [
+          [privateAtom; makeList ~break:IfNeed ~postSpace:true ~inline:(true, true) (List.map type_variant_leaf lst)]
+        ]
+      (* EQUAL private_flag BAR constructor_declarations {(Ptype_variant _, $2, None)} *)
+      | (Ptype_variant lst, scope, None) ->  [
+          privatize scope [makeList ~break:IfNeed ~postSpace:true ~inline:(true, true) (List.map type_variant_leaf lst)]
+        ]
+      (* EQUAL DOTDOT {(Ptype_open, Public, None)} *)
+      | (Ptype_open, Public, None) -> [
+          [atom ".."]
+        ]
+      (* Super confusing how record/variants' manifest is not actually the
+         description of the structure. What's in the manifest in that case is
+         the *second* EQUALS asignment. *)
+
+      (* EQUAL private_flag LBRACE label_declarations opt_comma RBRACE {(Ptype_record _, $2, None)} *)
+      | (Ptype_record lst, scope, None) ->
+          [
+            privatize scope [recordize lst];
+          ]
+      (* And now all of the forms involving *TWO* equals *)
+      (* Again, super confusing how manifests of variants/records represent the
+         structure after the second equals. *)
+      (* ================================================*)
+
+
+      (* EQUAL core_type EQUAL private_flag opt_bar constructor_declarations {
+         (Ptype_variant _, _, Some _)} *)
+      | (Ptype_variant lst, scope, Some mani) -> [
+          [self#core_type mani];
+          let variant = makeList ~break:IfNeed ~postSpace:true ~inline:(true, true) (List.map type_variant_leaf lst) in
+          privatize scope [variant];
+        ]
+
+      (* EQUAL core_type EQUAL DOTDOT {(Ptype_open, Public, Some $2)} *)
+      | (Ptype_open, Public, Some mani) -> [
+          [self#core_type mani];
+          [atom ".."];
+        ]
+      (* EQUAL core_type EQUAL private_flag LBRACE label_declarations opt_comma RBRACE
+           {(Ptype_record _, $4, Some $2)} *)
+      | (Ptype_record lst, scope, Some mani) -> [
+          [self#core_type mani];
+          privatize scope [recordize lst];
+        ]
+
+      (* Everything else is impossible *)
+      (* ================================================*)
+
+      | (_, _, _ ) ->  raise (NotPossible "Encountered impossible type specification")
+    in
+
+    let makeConstraint (ct1, ct2, _) =
+      let constraintEq = makeList ~postSpace:true [
+        atom "constraint";
+        self#core_type ct1;
+        atom "=";
+      ] in
+      label ~space:true constraintEq (self#core_type ct2) in
+    let constraints = List.map makeConstraint x.ptype_cstrs in
+    (equalInitiatedSegments, constraints)
+
+  method string_quot x = "`" ^ x
+
+  method formatAttributedType x = makeList ~wrap:("(", ")") ~break:IfNeed [
+    self#non_arrowed_simple_core_type {x with ptyp_attributes=[]};
+    (self#attributes x.ptyp_attributes)
+  ]
+
+  method non_arrowed_non_simple_core_type x =
+    if x.ptyp_attributes <> [] then
+      self#formatAttributedType x
+    else
+      match x.ptyp_desc with
+    (* This significantly differs from the standard OCaml printer/parser:
+       Type constructors are no longer simple *)
+    | Ptyp_constr (li, l) ->
+
+      (*
+         The single identifier has to be wrapped in a [ensureSingleTokenSticksToLabel] to
+         avoid (@see @avoidSingleTokenWrapping):
+      *)
+        let sourceMappedIdent = SourceMap (break, li.loc, self#longident_loc li) in
+        let constr = match l with
+          | [] -> ensureSingleTokenSticksToLabel sourceMappedIdent
+          | hd::tl ->
+              let simpleTypeList = (List.map (self#non_arrowed_simple_core_type) (hd::tl)) in
+              (label ~space:true sourceMappedIdent (makeList ~inline:(true, true) ~postSpace:true ~break:IfNeed simpleTypeList))
+        in
+        (* It's actually better without this source mapped *)
+        constr
+    | _ -> self#non_arrowed_simple_core_type x
+
+  method non_arrowed_simple_core_type x =
+    if x.ptyp_attributes <> [] then
+      self#formatAttributedType x
+    else
+      let result =
+        match x.ptyp_desc with
+        (*   LPAREN core_type_comma_list RPAREN %prec below_NEWDOT *)
+        (*       { match $2 with *)
+        (*         | [] -> raise Parse_error *)
+        (*         | one::[] -> one *)
+        (*         | moreThanOne -> mktyp(Ptyp_tuple(List.rev moreThanOne)) } *)
+        | Ptyp_tuple l ->
+            makeList
+              ~wrap:("(",")")
+              ~sep:","
+              ~postSpace:true
+              ~break:IfNeed
+              (List.map (self#core_type) l)
+        (*   | QUOTE ident *)
+        (*       { mktyp(Ptyp_var $2) } *)
+        | Ptyp_var s -> ensureSingleTokenSticksToLabel (layoutEasy (self#tyvar s))
+        (*   | UNDERSCORE *)
+        (*       { mktyp(Ptyp_any) } *)
+        | Ptyp_any -> ensureSingleTokenSticksToLabel (atom "_")
+        (*   | type_longident *)
+        (*       { mktyp(Ptyp_constr(mkrhs $1 1, [])) } *)
+        | Ptyp_constr (li, []) ->
+            (* Only simple if zero type paramaters *)
+            ensureSingleTokenSticksToLabel (self#longident_loc li)
+        | Ptyp_variant (l, closed, low) -> layoutEasy (wrap (default#core_type1) x)
+        | Ptyp_object (l, o) -> layoutEasy (wrap (default#core_type1) x)
+        | Ptyp_class (li, l) -> (*FIXME*) layoutEasy (wrap (default#core_type1) x)
+        | Ptyp_package (lid, cstrs) -> layoutEasy (wrap (default#core_type1) x)
+        | Ptyp_extension (s, arg) -> layoutEasy (wrap (default#core_type1) x)
+        | Ptyp_constr (_, _::_)
+        | Ptyp_arrow (_, _, _)
+        | Ptyp_alias (_, _)
+        | Ptyp_poly (_, _) -> makeList ~wrap:("(",")") ~break:IfNeed [self#core_type x]
+      in
+      SourceMap (break, x.ptyp_loc, result)
+  (* TODO: ensure that we have a form of desugaring that protects *)
+  (* when final argument of curried pattern is a type constraint: *)
+  (* | COLON non_arrowed_core_type EQUALGREATER expr
+      { mkexp_constraint $4 (Some $2, None) }         *)
+  (*                         \----/   \--/
+                             constraint coerce
+
+                             Creates a ghost expression:
+                             mkexp_constraint | Some t, None -> ghexp(Pexp_constraint(e, t))
+  *)
+
+  method pattern_list_split_cons acc = function
+    | {
+      ppat_desc = Ppat_construct (
+        { txt = Lident("::"); loc=consLoc },
+        Some {ppat_desc = Ppat_tuple ([pat1; pat2])}
+      )
+    } ->
+        self#pattern_list_split_cons (pat1::acc) pat2
+    | p -> (List.rev acc), p
+
+  method pattern_list_helper pat =
+    let pat_list, pat_last = self#pattern_list_split_cons [] pat in
+    match pat_last with
+    | {ppat_desc = Ppat_construct ({txt=Lident "[]"},_)} -> (* [x,y,z] *)
+        makeList ~break:IfNeed ~wrap:("[", "]") ~sep:"," ~postSpace:true (List.map self#pattern pat_list)
+    | _ -> (* x::y *)
+        makeES6List (List.map self#pattern pat_list) (self#pattern pat_last)
+
+  method pattern x =
+    let patternSourceMap pt layout = (SourceMap (break, pt.ppat_loc, layout)) in
+    (* We require that all or patterns have a leading BAR *)
+    let rec list_of_pattern = function (* only consider ((A|B)|C)*)
+      | {ppat_desc = Ppat_or (p1, p2)} ->
+          let nextRow = makeList ~postSpace:true [atom "|"; self#pattern p1] in
+          let sourceMappedNextRow = patternSourceMap p1 nextRow in
+          sourceMappedNextRow::(list_of_pattern p2)
+      | x ->
+          let nextRow = makeList ~postSpace:true [atom "|"; self#pattern x] in
+          let sourceMappedNextRow = patternSourceMap x nextRow in
+          sourceMappedNextRow::[]
+    in
+    let (embeddedAttrs, nonEmbeddedAttrs) = sugarEmbeddedAttributes x.ppat_attributes in
+    if nonEmbeddedAttrs <> [] then
+      formatAttributed
+        (self#pattern {x with ppat_attributes=embeddedAttrs})
+        (self#attributes nonEmbeddedAttrs)
+    else match x.ppat_desc with
+      | Ppat_alias (p, s) ->
+          label ~space:true
+            (patternSourceMap p (self#pattern p))
+            (makeList ~postSpace:true [
+              atom "as";
+              (SourceMap (
+                break,
+                s.loc,
+                (protectIdentifier s.txt)
+              ))
+            ]) (* RA*)
+      | Ppat_or (p1, p2) ->
+          makeSpacedBreakableInlineList (list_of_pattern x)
+      | _ -> self#pattern1 x
+
+  method pattern1 x =
+    let (embeddedAttrs, nonEmbeddedAttrs) = sugarEmbeddedAttributes x.ppat_attributes in
+    if nonEmbeddedAttrs <> [] then
+      formatAttributed
+        (self#pattern1 {x with ppat_attributes=embeddedAttrs})
+        (self#attributes nonEmbeddedAttrs)
+    else
+      match x.ppat_desc with
+        | Ppat_variant (l, Some p) ->
+            let layout = (self#constructor_pattern embeddedAttrs (atom ("`" ^ l)) p) in
+            SourceMap (break, x.ppat_loc, layout)
+        | Ppat_construct (({txt} as li), po) when not (txt = Lident "::")-> (* FIXME The third field always false *)
+            let liSourceMapped = SourceMap (break, li.loc, (self#longident_loc li)) in
+            let formattedConstruction = match po with
+              (* TODO: Check the explicit_arity field on the pattern/constructor
+                 attributes to determine if should desugar to an *actual* tuple. *)
+              (* | Some ({ *)
+              (*   ppat_desc=Ppat_tuple l; *)
+              (*   ppat_attributes=[{txt="explicit_arity"; loc}] *)
+              (* }) -> *)
+              (*   label ~space:true (self#longident_loc li) (makeSpacedBreakableInlineList (List.map self#simple_pattern l)) *)
+              | Some xx ->
+                  (self#constructor_pattern embeddedAttrs liSourceMapped xx)
+              | None ->
+                  liSourceMapped
+
+            in
+            SourceMap (break, x.ppat_loc, formattedConstruction)
+        | _ -> self#simple_pattern x
+
+  method potentiallyConstrainedPattern1 x = match x.ppat_desc with
+    | Ppat_constraint (p, ct) ->
+        formatTypeConstraint (self#pattern p) (self#core_type ct)
+    | _  -> self#pattern x
+
+  method simple_pattern x =
+    let itm =
+      match x.ppat_desc with
+        | Ppat_construct (({loc; txt=Lident ("()"|"[]" as x)}), _) ->
+            (* Patterns' locations might include a leading bar depending on the
+             * context it was parsed in. Therefore, we need to include further
+             * information about the contents of the pattern such as tokens etc,
+             * in order to get comments to be distributed correctly.*)
+
+            SourceMap (break, loc, (atom x))
+        | Ppat_construct (({txt=Lident "::"}), po) ->
+              self#pattern_list_helper x (* LIST PATTERN *)
+        | Ppat_construct (({txt} as li), None) ->
+            let liSourceMapped = SourceMap (break, li.loc, (self#longident_loc li)) in
+            SourceMap (break, x.ppat_loc, liSourceMapped)
+        | Ppat_any -> atom "_"
+        | Ppat_var ({loc; txt = txt}) ->
+          (*
+             To prevent this:
+
+               let oneArgShouldWrapToAlignWith
+                 theFunctionNameBinding => theFunctionNameBinding;
+
+             And instead do:
+
+               let oneArgShouldWrapToAlignWith
+                   theFunctionNameBinding => theFunctionNameBinding;
+
+             We have to do something to the non "listy" patterns. Non listy
+             patterns don't indent the same amount as listy patterns when docked
+             to a label.
+
+             If wrapping the non-listy pattern in [ensureSingleTokenSticksToLabel]
+             you'll get the following (even though it should wrap)
+
+               let oneArgShouldWrapToAlignWith theFunctionNameBinding => theFunctionNameBinding;
+
+           *)
+            SourceMap (break, loc, (protectIdentifier txt))
+        | Ppat_array l ->
+            makeList ~wrap:("[|", "|]") ~break:IfNeed ~postSpace:true ~sep:"," (List.map self#pattern1 l)
+        | Ppat_unpack (s) ->
+            makeList ~wrap:("(", ")") ~break:IfNeed ~postSpace:true [atom "module"; atom s.txt]
+        | Ppat_type li ->
+            makeList [atom "#"; self#longident_loc li]
+        | Ppat_record (l, closed) ->
+            let longident_x_pattern (li, p) =
+              match (li, p.ppat_desc) with
+                | ({txt=Lident s}, Ppat_var {txt}) when s = txt ->
+                    self#longident_loc li
+                | _ ->
+                    label ~space:true (makeList [self#longident_loc li; atom ":"]) (self#pattern1 p)
+            in
+            let rows = (List.map longident_x_pattern l)@(
+              match closed with
+                | Closed -> []
+                | _ -> [atom "_"]
+            ) in
+            makeList ~wrap:("{", "}") ~break:IfNeed ~sep:"," ~postSpace:true rows
+        | Ppat_tuple l ->
+            makeList ~wrap:("(", ")") ~sep:"," ~postSpace:true ~break:IfNeed (List.map (self#potentiallyConstrainedPattern1) l)
+        | Ppat_constant (c) -> (self#constant c)
+        | Ppat_interval (c1, c2) -> makeList [self#constant c1; atom ".."; self#constant c2]
+        | Ppat_variant (l, None) -> makeList[atom "`"; atom l]
+        | Ppat_constraint (p, ct) ->
+            formatPrecedence (formatTypeConstraint (self#pattern1 p) (self#core_type ct))
+        | Ppat_lazy p ->
+            makeList ~postSpace:true ~wrap:("(", ")") [atom "lazy"; self#pattern1 p]
+        | Ppat_exception p ->
+            makeList ~postSpace:true [atom "exception"; self#pattern1 p]
+        | _ -> formatPrecedence (self#pattern x) (* May have a redundant sourcemap *)
+      in
+      SourceMap (break, x.ppat_loc, itm)
+
+  method label_exp (l,opt,p) =
+    if l = "" then
+      self#simple_pattern p (*single case pattern parens needed here *)
+    else
+    if l.[0] = '?' then
+      let len = String.length l - 1 in
+      let lbl = String.sub l 1 len in
+        (formatLabeledArgument
+           (atom lbl)
+           ""
+           (label
+             (makeList [(self#simple_pattern p); atom "="])
+             (match opt with None -> (atom "?") | Some o -> (self#expression o))))
+    else
+      match p.ppat_desc with
+        | _ ->
+          formatLabeledArgument
+            (atom l)
+            ""
+            (self#simple_pattern p)
+
+  (**
+   * TODO: Remove all this special syntax for mutatively setting things.
+   * Save the "monadic" arrow for some other more valuable pattner and
+   * remove a ton of complexity from the parser/printer.
+   *)
+  method sugar_expr e =
+    let access op cls e1 e2 = makeList [
+      (* Important that this be not breaking - at least to preserve same
+         behavior as stock desugarer. It might even be required (double check
+         in parser.mly) *)
+      e1;
+      atom ".";
+      atom op;
+      e2;
+      atom cls;
+    ] in
+    if e.pexp_attributes <> [] then None
+    (* should also check attributes underneath *)
+    else match e.pexp_desc with
+      | Pexp_apply (
+        {pexp_desc = Pexp_ident {txt = Ldot (Lident ("String"),"get")}},
+        [(_,e1);(_,e2)]
+      ) -> Some (access "[" "]" (self#simple_expr e1) (self#expression e2))
+      | Pexp_apply (
+        {pexp_desc = Pexp_ident {txt = Ldot (Lident ("Array"),"get")}},
+        [(_,e1);(_,e2)]
+      ) -> Some (access "(" ")" (self#simple_expr e1) (self#expression e2))
+      | Pexp_apply (
+        {pexp_desc= Pexp_ident {txt= Ldot (Lident ("Array"), "set")}},
+        [(_,e1);(_,e2);(_,e3)]
+      ) -> Some (
+        makeList ~postSpace:true [
+          access "(" ")" (self#simple_expr e1) (self#expression e2);
+          atom "<-"; self#expression e3
+        ])
+      | Pexp_apply (
+        {pexp_desc= Pexp_ident {txt= Ldot (Lident "String", "set")}},
+        [(_,e1);(_,e2);(_,e3)]
+      ) -> Some (
+        makeList ~postSpace:true [
+          (access "[" "]" (self#simple_expr e1) (self#expression e2));
+          atom "<-"; self#expression e3
+        ])
+      | Pexp_apply ({pexp_desc=Pexp_ident {txt=Lident "!"}}, [(_,e)]) ->
+          Some (makeList [atom "!"; self#simple_expr e])
+      | Pexp_apply (
+        {
+          pexp_desc= Pexp_ident {
+            txt = Ldot (Ldot (Lident "Bigarray", array), ("get"|"set" as gs));
+          };
+        },
+        label_exprs
+      ) -> (
+          (* All of the output for terms below use simple_expr to match the
+             previous version of the pretty printer. I'm not certain that is
+             correct. *)
+          match array,gs with
+            | "Genarray","get" -> (
+                match label_exprs with
+                  | [(_,a); (_,{pexp_desc=Pexp_array ls})] ->
+                      let formattedList = List.map self#simple_expr ls in
+                      Some (
+                        access "{" "}" (self#simple_expr a) (makeCommaBreakableList formattedList)
+                      )
+                  | _ -> None
+              )
+            | "Genarray","set" -> (
+                match label_exprs with
+                  | [(_,a);(_,{pexp_desc=Pexp_array ls});(_,c)]  ->
+                      let formattedList = List.map self#simple_expr ls in
+                      Some (
+                        (* TODO: Does the final portion have to be a simple
+                           expression? I don't see why. I believe it does - see the
+                           next section. *)
+                        makeList ~postSpace:true [
+                          access "{" "}" (self#simple_expr a) (makeCommaBreakableList formattedList);
+                          atom "<-";
+                          self#simple_expr c;
+                        ]
+                      )
+                  | _ -> None
+              )
+            | ("Array1"|"Array2"|"Array3"),"set" -> (
+                match label_exprs with
+                  | (_,a)::rest -> (
+                      match List.rev rest with
+                        | (_,v)::rest ->
+                            let args = List.map snd (List.rev rest) in
+                            let formattedList = List.map self#simple_expr args in
+                            Some (
+                              makeList ~postSpace:true [
+                                access "{" "}" (self#simple_expr a) (makeCommaBreakableList formattedList);
+                                atom "<-";
+                                self#simple_expr v;
+                              ]
+                            )
+                        | _ -> assert false
+                    )
+                  | _ -> assert false
+              )
+            | ("Array1"|"Array2"|"Array3"),"get" -> (
+                match label_exprs with
+                  |(_,a)::rest ->
+                      let formattedList = List.map self#simple_expr (List.map snd rest) in
+                      Some (
+                        access "{" "}" (self#simple_expr a) (makeCommaBreakableList formattedList)
+                      )
+                  | _ -> assert false
+              )
+            | _ -> None
+        )
+
+      | _ -> None
+
+  (*
+
+     How would we know not to print the sequence without { }; protecting the let a?
+
+                            let a
+                             |
+                           sequence
+                          /        \
+                    let a           print a
+                    alert a
+     let res = {
+       let a = something();
+       {                     \
+         alert(a);           | portion to be parsed as a sequence()
+         let a = 20;         | The final ; print(a) causes the entire
+         alert(a);           | portion to be parsed as a sequence()
+       };                    |
+       print (a);            /
+     }
+
+     ******************************************************************
+     Any time the First expression of a sequence is another sequence, or (as in
+     this case) a let, wrapping the first sequence expression in { } is
+     required.
+     ******************************************************************
+  *)
+
+
+
+  (*
+    Returns the breakable list of terms for function or (todo) constructor
+    application:
+
+    Should essentially return the list of formatted items that can be treated
+     "simply" (not necessarily "simple" expressions).
+
+     Two items:
+
+       let x = myFun (Red 10);
+
+     Still two items:
+
+       let x = Red 10;
+
+     Three items
+
+       let x = Red 10 20;
+  *)
+
+  method arraySugarApplicationItems x =
+    match x.pexp_desc with
+      | Pexp_apply (e, l) -> (
+          match self#sugar_expr x with
+            | Some s -> Some (layoutEasy s)
+            | None -> None
+      )
+      | _ -> None
+
+  method consecutiveInfixApplicationItems x =
+    match x.pexp_desc with
+      | Pexp_apply (e, ls) -> (
+          match (view_fixity_of_exp e, ls) with
+            | ((`Infix infixStr), [("", leftExpr); ("", rightExpr)]) -> (
+                match self#consecutiveInfixApplicationItemsRecurse x with
+                  | (None, _) -> None
+                  | (Some infixStr, lst) -> Some(infixStr, lst)
+              )
+            | _ -> None
+        )
+      | _  -> None
+
+  (**
+     TODO: Configure the optional ability to print the *minimum* number of
+     parens. It's simply a matter of changing [higherPrecedenceThan] to
+     [higherOrEqualPrecedenceThan].
+   *)
+  method consecutiveInfixApplicationItemsRecurse x =
+    let rightSideContribution infixStr origRight (rightRecurseOp, rightRecurseList) =
+      match rightRecurseOp with
+        | (Some s) ->
+          if not (s = infixStr) then
+            (if (higherPrecedenceThan s infixStr) then [self#expression origRight] else [self#simple_expr origRight])
+          else
+            (if isRightAssociative infixStr then rightRecurseList else [self#simple_expr origRight])
+        | None -> rightRecurseList (* Will only ever be len 1 *)
+    in
+    let leftSideContribution infixStr origLeft (leftRecurseOp, leftRecurseList) =
+      match leftRecurseOp with
+        | (Some s) ->
+          if not (s = infixStr) then
+            (if (higherPrecedenceThan s infixStr) then [self#expression origLeft] else [self#simple_expr origLeft])
+          else
+            (if isLeftAssociative infixStr then leftRecurseList else [self#simple_expr origLeft])
+        | None -> leftRecurseList (* Will only ever be len 1 *)
+    in
+    match x.pexp_desc with
+      | Pexp_apply (e, ls) -> (
+        match (view_fixity_of_exp e, ls) with
+          | (`Infix infixStr, [("", leftExpr); ("", rightExpr)]) ->
+            let rightRecurse = self#consecutiveInfixApplicationItemsRecurse rightExpr in
+            let leftRecurse = self#consecutiveInfixApplicationItemsRecurse leftExpr in
+            let rightItms = rightSideContribution infixStr rightExpr rightRecurse in
+            let leftItms = leftSideContribution infixStr leftExpr leftRecurse in
+            ((Some infixStr), List.concat [leftItms; rightItms])
+          (* Again, it's reall good that this only ever is caught at the
+             recursive step - otherwise we'd loop infinitely. *)
+          | (`Infix infixStr, lbls) -> (None, [self#expression x])
+          | (`Prefix s, _) -> (None, [self#simple_expr x])
+          (* We know that this can only ever occur at a recursive call - the
+             first call into this would have been infix. There is overlap with
+             this and the simple_enough_to_be_separated_by_infix case. Either
+             path would work. *)
+          | (`Normal, _) -> (None, [self#expression x])
+        )
+      | _ -> (None, [self#simple_enough_to_be_separated_by_infix x])
+
+  (*
+     It's not enough to only check if precedence of an infix left/right is
+     greater than the infix itself. We also should likely pay attention to
+     left/right associativity. So how do we render the minimum number of
+     parenthesis?
+
+     The intuition is that sequential right associative operators will
+     naturally build up deep trees on the right side (left builds up left-deep
+     trees). So by default, we add parens to model the tree structure that
+     we're rendering except when the parser will *naturally* parse the tree
+     structure that the parens assert.
+
+     Sequential identical infix operators:
+     ------------------------------------
+     So if we see a nested infix Y operator inside of a Y application that is X
+     associative on the X side of the function application, we don't need to
+     wrap in parens. In more detail:
+
+     -Add parens
+       Exception 1:Unless we are a left-assoc X operator in the left branch of an X operator.
+       Exception 2:Unless we are a right-assoc X operator in the right branch of an X operator.
+       Exception 3:Unless we are a _any_-assoc X operator in the _any_ branch of an Y operator where X has greater precedence than Y.
+
+     Note that the exceptions do not specify any special cases for mixing
+     left/right associativity. Precedence is what determines necessity of
+     parens for non operators with non-identical precedences. Associativity
+     only determines necessity of parens for identically precedented operators.
+
+     PLUS is left assoc:
+     - So this one *shouldn't* expand into two consecutive infix +:
+
+
+            [Pexp_apply]
+              /      \
+         first +   [Pexp_apply]
+                      /   \
+                  second + third
+
+
+     - This one *should*:
+
+                    [Pexp_apply]
+                      /      \
+           [  Pexp_apply  ] + third
+              /     \
+           first +  second
+
+
+
+     COLONCOLON is right assoc, so
+     - This one *should* expand into two consecutive infix ::  :
+
+            [Pexp_apply]
+              /      \
+         first ::   [Pexp_apply]
+                      /   \
+                  second :: third
+
+
+     - This one *shouldn't*:
+
+                    [Pexp_apply]
+                      /      \
+           [  Pexp_apply  ] :: third
+              /     \
+           first ::  second
+
+
+
+
+     Sequential differing infix operators:
+     ------------------------------------
+
+     Neither of the following require paren grouping because of rule 3.
+
+
+            [Pexp_apply]
+              /      \
+         first  +  [Pexp_apply]
+                      /   \
+                  second * third
+
+
+                    [Pexp_apply]
+                      /      \
+            [Pexp_apply  +  third
+              /     \
+           first *  second
+
+      The previous has nothing to do with the fact that + and * have the same
+      associativity. Exception 3 applies to the following where :: is right assoc
+      and + is left. + has higher precedence than ::
+
+      - so parens aren't required to group + when it is in a branch of a
+        lower precedence ::
+
+            [Pexp_apply]
+              /      \
+         first ::   [Pexp_apply]
+                      /   \
+                  second + third
+
+
+      - Whereas there is no Exception that applies in this case (Exception 3
+        doesn't apply) so parens are required around the :: in this case.
+
+                    [Pexp_apply]
+                      /      \
+           [  Pexp_apply  ] + third
+              /     \
+           first ::  second
+
+  *)
+
+  (* This likely needs to be rewritten and all the edge cases tested. *)
+  method prefixApplication (e, l) =
+    match view_fixity_of_exp e with
+      | `Prefix s ->
+        let s = if List.mem s ["~+";"~-";"~+.";"~-."] then String.sub s 1 (String.length s -1) else s in
+        (
+          match l with
+            (* Intentionally not spaced *)
+            | [v] -> Some (makeList ~break:IfNeed [atom (escape_stars_slashes s); self#label_x_expression_param v])
+            | _ -> Some (
+                makeList ~break:IfNeed [
+                  atom (escape_stars_slashes s);
+                  makeList
+                    ~break:IfNeed
+                    ~postSpace:true
+                    ~inline:(true, true)
+                    (List.map self#label_x_expression_param l)
+                ]
+              )
+        )
+    |  _ -> None
+
+
+  (**
+   * Returns the list of items to be formatted as a function application, in
+   * addition to an optional sequencer token that should separate them.
+   *)
+  method expressionToFormattedApplicationItems x =
+    match x.pexp_desc with
+      | Pexp_apply (e, l) -> (
+        match self#arraySugarApplicationItems x with
+          | Some fmt -> ([fmt], None)
+          | None  -> (
+            match self#consecutiveInfixApplicationItems x with
+              | Some (operator, items) -> (items, Some (escape_stars_slashes operator))
+              | None -> (
+                match self#prefixApplication (e, l) with
+                  | Some item -> ([item], None)
+                  | None -> (
+                    (* Standard application *)
+                    (*reset here only because [function,match,try,sequence] are lower priority*)
+                    (SourceMap (break, e.pexp_loc, (self#expression2 e))::
+                    (List.map self#reset#label_x_expression_param l)),
+                    None
+                  )
+              )
+          )
+      )
+      | _ -> ([SourceMap (break, x.pexp_loc, (self#expression x))], None)
+
+  method formatTernary x test ifTrue ifFalse =
+    if inTernary then
+      self#resetInTernary#simple_expr x
+    else
+      let withQuestion =
+        makeList ~postSpace:true [self#underTernary#expression test; atom "?"]
+      in
+      let trueFalseBranches =
+        makeList
+          ~inline:(true, true)
+          ~break:IfNeed
+          ~sep:":"
+          ~postSpace:true
+          ~preSpace:true [
+            self#underTernary#expression ifTrue;
+            self#resetInTernary#expression ifFalse
+          ]
+      in
+      label ~space:true withQuestion trueFalseBranches
+
+  (* Creates a list of simple module expressions corresponding to module
+     expression or functor application. *)
+  method moduleExpressionToFormattedApplicationItems x =
+    let rec functorApplicationList xx = match xx.pmod_desc with
+      | Pmod_apply (me1, me2) ->
+          SourceMap (break, me2.pmod_loc, (self#simple_module_expr me2))::
+            (functorApplicationList me1)
+      | _ -> SourceMap (break, xx.pmod_loc, (self#module_expr xx))::[]
+    in
+    (List.rev (functorApplicationList x), None)
+
+
+  (*
+
+     Watch out, if you see something like below (sixteenTuple getting put on a
+     newline), yet a paren-wrapped list wouldn't have had an extra newlin, you
+     might need to wrap the single token (sixteenTuple) in [ensureSingleTokenSticksToLabel].
+     let (
+        axx,
+        oxx,
+        pxx
+      ):
+        sixteenTuple = echoTuple (
+        0,
+        0,
+        0
+      );
+  *)
+
+  method formatSimplePatternBinding labelOpener layoutPattern typeConstraint appTerms =
+    let letPattern = label (atom labelOpener) layoutPattern in
+    let upUntilEqual =
+      match typeConstraint with
+        | None -> letPattern
+        | Some tc -> formatTypeConstraint letPattern tc
+    in
+    let includingEqual = makeList ~postSpace:true [upUntilEqual; atom "="] in
+    formatAttachmentApplication applicationFinalWrapping (Some (true, includingEqual)) appTerms
+
+  (* Only formats a type annotation for a value binding. *)
+  method formatSimpleSignatureBinding labelOpener bindingPattern typeConstraint =
+    let letPattern = (label ~space:true (atom labelOpener) bindingPattern) in
+    (formatTypeConstraint letPattern typeConstraint)
+
+
+  (* The [bindingLabel] is either the function name (if let binding) or first
+     arg (if lambda) *)
+  method wrapCurriedFunctionBinding prefixTextTrailingSpace bindingLabel patternList returnedAppTerms =
+    let allPatterns = bindingLabel::patternList in
+    let partitioning = curriedFunctionFinalWrapping allPatterns in
+    let everythingButReturnVal = match settings.returnStyle with
+        (*
+         Because align_closing is set to false, you get:
+
+         (Brackets[] inserted to show boundaries between open/close of pattern list)
+         let[firstThing
+             secondThing
+             thirdThing]
+
+         It only wraps to indent four by coincidence: If the "opening" token was
+         longer, you'd get:
+
+         letReallyLong[firstThing
+                       secondThing
+                       thirdThing]
+
+         For curried let bindings, we stick the arrow in the *last* pattern:
+         let[firstThing
+             secondThing
+             thirdThing =>]
+
+         But it could have just as easily been the "closing" token corresponding to
+         "let". This works because we have [align_closing = false]. The benefit of
+         shoving it in the last pattern, is that we can turn [align_closing = true]
+         and still have the arrow stuck to the last pattern (which is usually what we
+         want) (See modeTwo below).
+      *)
+      | ReturnValOnSameLine -> (
+          match partitioning with
+            | None ->
+                (* We want the binding label to break *with* the arguments. Again,
+                   there's no apparent way to add additional indenting for the
+                   args with this setting. *)
+
+                (**
+                   Formats lambdas by treating the first pattern as the
+                   "bindingLabel" which is kind of strange in some cases (when
+                   you only have one arg that wraps)...
+
+                      echoTheEchoer (
+                        fun (
+                              a,
+                              p
+                            ) => (
+                          a,
+                          b
+                        )
+
+                   But it makes sense in others (where you have multiple args):
+
+                      echoTheEchoer (
+                        fun (
+                              a,
+                              p
+                            )
+                            mySecondArg
+                            myThirdArg => (
+                          a,
+                          b
+                        )
+
+                   Try any other convention for wrapping that first arg and it
+                   won't look as balanced when adding multiple args.
+
+                *)
+              makeList
+                ~wrap:(prefixTextTrailingSpace, "")
+                ~indent:(settings.space * settings.indentWrappedPatternArgs)
+                ~postSpace:true
+                ~inline:(true, true)
+                ~break:IfNeed
+                allPatterns
+            | Some (attachedList, wrappedListy) ->
+                (* To get *only* the final argument to "break", while not
+                   necessarily breaking the prior arguments, we dock everything
+                   but the last item to a created label *)
+              label
+                ~space:true
+                (
+                  makeList
+                    ~wrap:(prefixTextTrailingSpace, "")
+                    ~indent:(settings.space * settings.indentWrappedPatternArgs)
+                    ~postSpace:true
+                    ~inline:(true, true)
+                    ~break:IfNeed
+                    attachedList
+                )
+                wrappedListy
+
+        ) | ReturnValOnNewLine ->
+        (*
+           Space must be on last token of pattern list (arrow) - just in case
+           it doesn't wrap, there will be a proper space after the arrow. It
+           will need to be cleaned up and the end of the process, if it *did*
+           wrap because it will be a trailing space. The [space_after_label]
+           will not work in this case because:
+           (Brackets show where the "label" is located). An "extra space"
+           after the label will push the opening bracket forward one.
+
+          [let myFunc
+               argOne
+               argTwo =>
+          ]{
+
+           }
+        *)
+          (* Not breakable! *)
+          let prefixWithBindingLabel =
+            makeList ~postSpace:true [atom (prefixTextTrailingSpace); bindingLabel] in
+          makeList
+            ~break:IfNeed
+            ~pad:(true, false)
+            ~indent:(settings.space * settings.indentWrappedPatternArgs)
+            ~postSpace:true
+            ~inline:(false, false)
+            (prefixWithBindingLabel::patternList)
+    in
+    (* Must be labelNoSpace for [ReturnValOnNewLine] two work *)
+    (* Adding any layer of indirection between expr will result in it not
+       sticking to the "label" - which is the entire curried pattern *)
+
+    let everythingIncludingArrow =
+      label
+        ~space:true
+        everythingButReturnVal
+        (layoutEasy (ensureSingleTokenSticksToLabel (atom "=>"))) in
+
+    formatAttachmentApplication
+      applicationFinalWrapping
+      (Some (true, everythingIncludingArrow))
+      returnedAppTerms
+
+  method leadingCurriedAbstractTypes x =
+    let rec argsAndReturn xx =
+      match xx.pexp_desc with
+        | Pexp_newtype (str,e) ->
+            let (nextArgs, return) = argsAndReturn e in
+            (str::nextArgs, return)
+        | _ -> ([], xx.pexp_desc)
+    in argsAndReturn x
+
+  (*
+    Returns the arguments list (if any, that occur before the =>), and the
+    final expression (that is either returned from the function (after =>) or
+    that is bound to the value (if there are no arguments, and this is just a
+    let pattern binding)).
+  *)
+  method curriedPatternsAndReturnVal x =
+    let rec argsAndReturn xx =
+      if xx.pexp_attributes <> [] then ([], xx)
+      else match xx.pexp_desc with
+        (* label * expression option * pattern * expression *)
+        | Pexp_fun (label, eo, p, e) ->
+            let (nextArgs, return) = argsAndReturn e in
+            if label="" then
+              let args =
+                SourceMap (break, p.ppat_loc, (self#simple_pattern p))::nextArgs in
+              (args, return)
+            else
+              (* This is slightly innacurate, because the pattern might have a
+                 leading ~/?
+               *)
+              let args =
+                SourceMap (break, p.ppat_loc, (self#label_exp (label, eo, p)))::
+                  nextArgs
+              in
+              (args, return)
+        | Pexp_newtype (str,e) ->
+            let typeParamLayout = SourceMap (
+              break,
+              { (* We have to *infer* the location of (type x) *)
+                loc_start = xx.pexp_loc.loc_start;
+                (* We suppose the (type x) ends at the start of expression *)
+                loc_end = e.pexp_loc.loc_start;
+                loc_ghost = false
+              },
+              (atom ("(type " ^ str ^ ")"))
+            ) in
+            let (nextArgs, return) = argsAndReturn e in
+            ((typeParamLayout)::nextArgs, return)
+        | _ -> ([], xx)
+    in argsAndReturn x
+
+  (* Returns the (curriedModule, returnStructure) for a functor *)
+  method curriedFunctorPatternsAndReturnStruct me = match me.pmod_desc with
+    (* string loc * module_type option * module_expr *)
+    | Pmod_functor(s, mt, me2) ->
+        let firstOne =
+          match mt with
+            | None -> atom "()"
+            | Some mt' -> makeList ~wrap:("(",")") ~break:IfNeed [formatTypeConstraint (atom s.txt) (layoutEasy (self#module_type mt'))]
+        in
+        let (functorArgsRecurse, returnStructure) = (self#curriedFunctorPatternsAndReturnStruct me2) in
+        (firstOne::functorArgsRecurse, returnStructure)
+    | _ -> ([], me)
+
+  (* Reinterpret this as a pattern constraint since we don't currently have a
+     way to disambiguate. There is currently a way to disambiguate a parsing
+     from Ppat_constraint vs.  Pexp_constraint. Currently (and consistent with
+     OCaml standard parser):
+
+       let (x: typ) = blah;
+         Becomes Ppat_constraint
+       let x:poly . type = blah;
+         Becomes Ppat_constraint
+       let x:typ = blah;
+         Becomes Pexp_constraint(ghost)
+       let x = (blah:typ);
+         Becomes Pexp_constraint(ghost)
+
+     How are double constraints represented?
+     let (x:typ) = (blah:typ);
+     If currently both constraints are parsed into a single Pexp_constraint,
+     then something must be lost, and how could you fail type checking on:
+     let x:int = (10:string) ?? Answer: It probably parses into a nested
+     Pexp_constraint.
+
+     Proposal:
+
+       let (x: typ) = blah;
+         Becomes Ppat_constraint   (still)
+       let x:poly . type = blah;
+         Becomes Ppat_constraint   (still)
+       let x:typ = blah;
+         Becomes Ppat_constraint
+       let x = blah:typ;
+         Becomes Pexp_constraint
+
+
+     Reasoning: Allows parsing of any of the currently valid ML forms, but
+     combines the two most similar into one form. The only lossyness is the
+     unnecessary parens, which there is already precedence for dropping in
+     expressions. In the existing approach, preserving a paren-constrained
+     expression is *impossible* because it becomes pretty printed as
+     let x:t =.... In the proposal, it is not impossible - it is only
+     impossible to preserve unnecessary parenthesis around the let binding.
+
+     The one downside is that integrating with existing code that uses [let x =
+     (blah:typ)] in standard OCaml will be parsed as a Pexp_constraint. There
+     might be some lossiness (beyond parens) that occurs in the original OCaml
+     parser.
+  *)
+  method binding {pvb_pat; pvb_expr=x} prefixText = (* TODO: print attributes *)
+    match (pvb_pat.ppat_desc) with
+      | (Ppat_var {txt}) ->
+          let layoutPattern = SourceMap (break, pvb_pat.ppat_loc, self#simple_pattern pvb_pat) in
+          let (argsList, return) = self#curriedPatternsAndReturnVal x in (
+            match (argsList, return.pexp_desc) with
+              | ([], Pexp_constraint (e, ct)) ->
+                  let typeLayout = SourceMap (
+                    break,
+                    ct.ptyp_loc,
+                    (self#core_type ct)
+                  ) in
+                  let appTerms = self#expressionToFormattedApplicationItems e in
+                  self#formatSimplePatternBinding
+                    prefixText
+                    layoutPattern
+                    (Some typeLayout)
+                    appTerms
+              | ([], _) ->
+                  let appTerms = self#expressionToFormattedApplicationItems x in
+                  self#formatSimplePatternBinding
+                    prefixText
+                    layoutPattern
+                    None
+                    appTerms
+              | (_, _) ->
+                  let bindingName = layoutEasy (self#simple_pattern pvb_pat) in
+                  let (argsWithConstraint, actualReturn) = self#normalizeFunctionArgsConstraint argsList return in
+                  let returnedAppTerms = self#expressionToFormattedApplicationItems actualReturn in
+                  self#wrapCurriedFunctionBinding prefixText bindingName argsWithConstraint returnedAppTerms
+          )
+
+      (* Currently only forms of [let (inParenVar:typ) =] or [let x: forall type =]*)
+      (* Eventually [let (inParenVar:typ) =] *or*  [let notInParen:typ =] *)
+      | (Ppat_constraint(p ,ty)) -> (
+          (* Locally abstract forall types are *seriously* mangled by the parsing
+             stage, and we have to be very smart about how to recover it.
+
+              let df_locallyAbstractFuncAnnotated:
+                type a b.
+                  a =>
+                  b =>
+                  (inputEchoRecord a, inputEchoRecord b) =
+                fun (input: a) (input2: b) => (
+                  {inputIs: input},
+                  {inputIs: input2}
+                );
+
+             becomes:
+
+               let df_locallyAbstractFuncAnnotatedTwo:
+                 'a 'b .
+                 'a => 'b => (inputEchoRecord 'a, inputEchoRecord 'b)
+                =
+                 fun (type a) (type b) => (
+                   fun (input: a) (input2: b) => ({inputIs: input}, {inputIs:input2}):
+                     a => b => (inputEchoRecord a, inputEchoRecord b)
+                 );
+          *)
+          let layoutPattern =
+            SourceMap (break, pvb_pat.ppat_loc, (self#simple_pattern p)) in
+          match (p.ppat_desc, ty.ptyp_desc, self#leadingCurriedAbstractTypes x) with
+            | (Ppat_var s, Ptyp_poly (pp, pty), (_::_ as absVars, Pexp_constraint(body, bodyType))) ->
+              (* This is potentially error proned, the above pattern would be
+                 highly unusual unless it was the result of the auto-transforming
+                 sugar for polymorphic locally abstract types sugar. But to be
+                 sure, we should check by re-varifying the bodyType and seeing if
+                 t matches [pty]. There is probably zero code that matches the
+                 above pattern yet is *not* the sugar we are assuming. *)
+              let appTerms = self#expressionToFormattedApplicationItems body in
+              let typeVars = (List.map atom absVars) in
+              let typeLayout =
+                SourceMap (break, bodyType.ptyp_loc, (self#core_type bodyType)) in
+              let polyType =
+                label
+                  ~space:true
+                  (* TODO: This isn't a correct use of sep! It ruins how
+                   * comments are interleaved. *)
+                  (makeList [makeList ~sep:" " (atom "type"::typeVars); atom "."])
+                  typeLayout
+                in
+              self#formatSimplePatternBinding
+                prefixText
+                layoutPattern
+                (Some polyType)
+                appTerms
+            | _ ->
+              let typeLayout = SourceMap (break, ty.ptyp_loc, (self#core_type ty)) in
+              let appTerms = self#expressionToFormattedApplicationItems x in
+              self#formatSimplePatternBinding
+                prefixText
+                layoutPattern
+                (Some typeLayout)
+                appTerms
+        )
+      | (_) ->
+          let layoutPattern =
+            SourceMap (break, pvb_pat.ppat_loc, (self#pattern pvb_pat)) in
+          let appTerms = self#expressionToFormattedApplicationItems x in
+          self#formatSimplePatternBinding prefixText layoutPattern None appTerms
+
+
+  method normalizeFunctionArgsConstraint argsList return =
+    match return.pexp_desc with
+      | Pexp_constraint (e, ct) ->
+        let typeLayout = SourceMap (
+          break,
+          ct.ptyp_loc,
+          (self#non_arrowed_non_simple_core_type ct)
+        ) in
+        (argsList@[formatJustTheTypeConstraint typeLayout], e)
+      | _ -> (argsList, return)
+
+  method bindingsLocationRange l =
+    let len = List.length l in
+    let fstLoc = (List.nth l 0).pvb_loc in
+    let lstLoc = (List.nth l (len - 1)).pvb_loc in
+    {
+      loc_start = fstLoc.loc_start;
+      loc_end = lstLoc.loc_end;
+      loc_ghost = false
+    }
+
+  method bindings (rf, l) =
+    let firstLine = (
+      match l with
+        | [] -> raise (NotPossible "no bindings supplied")
+        | x::[]
+        | x::_ -> (
+            let label = match rf with
+              | Nonrecursive -> "let "
+              | Recursive -> "let rec " in
+            SourceMap (break, x.pvb_loc, (self#binding x label))
+          )
+    ) in
+    let forEachRemaining = fun t -> SourceMap (
+        break,
+        t.pvb_loc,
+        (self#binding t "and ")
+      ) in
+    let remainingBindings = (
+      match l with
+        | [] -> []
+        | x::[] -> []
+        | x::x2::xtl -> List.map forEachRemaining (x2::xtl)
+    ) in
+    makeList
+      ~break:Always
+      ~indent:0
+      ~inline:(true, true)
+      (firstLine::remainingBindings)
+
+  method letList exprTerm =
+    match exprTerm.pexp_desc with
+      | Pexp_let (rf, l, e) ->
+        (* For "letList" bindings, the start/end isn't as simple as with
+         * module value bindings. For "let lists", the sequences were formed
+         * within braces {}. The parser relocates the first let binding to the
+         * first brace. *)
+         let bindingsLayout = (self#bindings (rf, l)) in
+         let bindingsLoc = self#bindingsLocationRange l in
+         let bindingsSourceMapped = SourceMap (
+           break,
+           bindingsLoc,
+           semiTerminated bindingsLayout
+         ) in
+         bindingsSourceMapped::(self#letList e)
+      | Pexp_open (ovf, lid, e) ->
+          let overrideStr = match ovf with | Override -> "!" | Fresh -> "" in
+          let openLayout = (makeList ~postSpace:true [
+             atom ("let open" ^ overrideStr);
+             self#longident_loc lid;
+           ]) in
+           let openSourceMapped = SourceMap (
+             break,
+             (* Just like the bindings, have to synthesize a location since the
+              * Pexp location is parsed (potentially) beginning with the open
+              * brace {} in the let sequence. *)
+             lid.loc,
+             semiTerminated openLayout
+           ) in
+           openSourceMapped::(self#letList e)
+      | Pexp_letmodule (s, me, e) ->
+          let prefixText = "let module " in
+          let bindingName = atom s.txt in
+          let moduleExpr = me in
+          let letModuleLayout =
+            (self#let_module_binding prefixText bindingName moduleExpr) in
+          let letModuleLoc = {
+            loc_start = s.loc.loc_start;
+            loc_end = me.pmod_loc.loc_end;
+            loc_ghost = false
+          } in
+          let letModuleSourceMapped = SourceMap (
+             break,
+             (* Just like the bindings, have to synthesize a location since the
+              * Pexp location is parsed (potentially) beginning with the open
+              * brace {} in the let sequence. *)
+             letModuleLoc,
+             semiTerminated letModuleLayout
+           ) in
+           letModuleSourceMapped::(self#letList e)
+      | Pexp_sequence (({pexp_desc=Pexp_sequence _ }) as e1, e2)
+      | Pexp_sequence (({pexp_desc=Pexp_let _      }) as e1, e2)
+      | Pexp_sequence (({pexp_desc=Pexp_open _     }) as e1, e2)
+      | Pexp_sequence (({pexp_desc=Pexp_letmodule _}) as e1, e2)
+      | Pexp_sequence (e1, e2) ->
+          let e1Layout = (self#expression e1) in
+          let e1SourceMapped = SourceMap (
+            break,
+            (* It's kind of difficult to synthesize a location here in the case
+             * where this is the first expression in the braces. We could consider
+             * deeply inspecting the leftmost token/term in the expression. *)
+            e1.pexp_loc,
+            semiTerminated e1Layout
+          ) in
+          e1SourceMapped::(self#letList e2)
+      | _ ->
+          let exprTermLayout = (self#expression exprTerm) in
+          let exprTermSourceMapped = SourceMap (
+            break,
+            exprTerm.pexp_loc,
+            semiTerminated exprTermLayout
+          ) in
+          (* Should really do something to prevent infinite loops here. Never
+             allowing a top level call into letList to recurse back to
+             self#expression- top level calls into letList *must* be one of the
+             special forms above whereas lower level recursive calls may be of
+             any form. *)
+          [exprTermSourceMapped]
+
+  method constructor_expression embeddedAttrs ctor eo =
+    let arguments =
+      match eo.pexp_desc with
+        | (Pexp_tuple l) when shouldInterpretTupleAsConstructorArgs embeddedAttrs -> (
+            match (List.map self#simple_expr l) with
+              | [] -> raise (NotPossible "no tuple items")
+              | hd::[] ->  hd
+              | hd::tl as all -> makeSpacedBreakableInlineList all
+          )
+        | _ -> self#simple_expr eo
+    in
+    label ~space:true
+      ctor
+      (if isSequencey arguments then arguments else (ensureSingleTokenSticksToLabel arguments))
+
+  method constructor_pattern embeddedAttrs ctor po =
+    let arguments =
+      match po.ppat_desc with
+        | Ppat_tuple l when shouldInterpretTupleAsConstructorArgs embeddedAttrs ->
+            (match (List.map self#simple_pattern l) with
+              | [] -> raise (NotPossible "no tuple items")
+              | [hd] -> hd
+              | hd::tl as all -> makeSpacedBreakableInlineList all
+            )
+        | _ -> self#simple_pattern po
+    in
+    label ~space:true
+      ctor
+      (if isSequencey arguments then arguments else (ensureSingleTokenSticksToLabel arguments))
+
+  method expression x =
+    let (embeddedAttrs, nonEmbeddedAttrs) = sugarEmbeddedAttributes x.pexp_attributes in
+    if nonEmbeddedAttrs <> [] then
+      (* TODO: Detect when parens are actually needed *)
+      SourceMap (
+        break,
+        x.pexp_loc,
+        formatAttributed
+          (self#expression {x with pexp_attributes=embeddedAttrs})
+          (self#attributes nonEmbeddedAttrs)
+      )
+    else
+      let itm = match x.pexp_desc with
+        (* Sequences don't require parens when under pipe in SugarML. *)
+        (* The only reason Pexp_fun must also be wrapped in parens is that its =>
+           token will be confused with the match token. *)
+        (* In Reason, we do not need to wrap matches in parens when we are under
+         * a pipe because we don't have the usual ambiguity that arises in OCaml.*)
+        | Pexp_function _ | Pexp_fun _
+          when pipe || semi ->
+            self#paren ~first:"(" ~last:")" true self#reset#expression x
+        (* | Pexp_let _ | Pexp_letmodule _ when semi -> *)
+        (*     self#paren true self#reset#expression x *)
+        | Pexp_fun _
+        | Pexp_newtype _ ->  (* Moved this from simple_expr - is that correct to do so? *)
+            (* label * expression option * pattern * expression *)
+            let (args, ret) = self#curriedPatternsAndReturnVal x in
+            (match args with
+              | [] -> raise (NotPossible "no arrow args")
+              | firstArg::tl ->
+                  (* For lambdas, "fun" plays the role that the binding name does in
+                     bindings *)
+                  let returnedAppTerms = self#expressionToFormattedApplicationItems ret in
+                  self#wrapCurriedFunctionBinding "fun " firstArg tl returnedAppTerms
+            )
+        | Pexp_function l ->
+            (* Anything that doesn't have wrappers (parens/braces) should be inline
+               so that when appearing in other inline contexts, semicolons bind to
+               the end etc.  *)
+          makeList
+            ~postSpace:true
+            ~break:Always
+            ~inline:(true, true)
+            ~wrap:("fun","")
+            ~pad:(true, false)
+            (self#case_list l)
+
+        | Pexp_try (e, l) ->
+            let switchWith = makeList ~postSpace:true ~inline:(true, false) ~break:Never [
+              atom "try";
+              (self#reset#simple_expr e);
+            ] in
+            label ~space:true switchWith (makeList ~wrap:("{", "}") ~break:Always (self#case_list l))
+        | Pexp_match (e, l) -> (
+            match detectTernary l with
+            | Some (ifTrue, ifFalse) -> self#formatTernary x e ifTrue ifFalse
+            | None ->
+              let switchWith = makeList ~postSpace:true ~inline:(true, false) ~break:Never [
+                atom "switch";
+                (self#reset#simple_expr e);
+              ] in
+              label
+                ~space:true
+                switchWith
+                (makeList ~wrap:("{", "}") ~break:Always (self#case_list l))
+          )
+
+        | Pexp_apply (e, l) -> (
+            match self#expressionToFormattedApplicationItems x with
+              | ([], _) ->
+                  raise (
+                    NotPossible (
+                      "no application items extracted " ^ (exprDescrString x)
+                    )
+                  )
+              | (sugarExpr::[], _) ->
+                  (* This can happen in the case of [sugar_expr] [arrayWithTwo.(1) <- 300] *)
+                  sugarExpr
+              | appTerms ->
+                formatAttachmentApplication
+                  applicationFinalWrapping
+                  None
+                  appTerms
+          )
+        | Pexp_construct (li, Some eo) when not (is_simple_construct (view_expr x)) -> (* Not efficient FIXME*)
+            (match view_expr x with
+              | `cons ls -> (* LIST EXPRESSION *)
+                  begin
+                    match List.rev (List.map self#simple_expr ls) with
+                    | last :: lst_rev ->
+                      let lst = List.rev lst_rev in
+                      makeES6List lst last
+                    | [] ->
+                      assert false
+                  end
+              (* TODO: Explicit arity *)
+              | `normal ->
+                  layoutEasy (self#constructor_expression embeddedAttrs (self#longident_loc li) eo)
+              | _ -> assert false)
+        | Pexp_setfield (e1, li, e2) ->
+          label ~space:true
+            (makeList ~postSpace:true [
+              label (makeList [self#simple_expr e1; atom "."]) (self#longident_loc li);
+              (atom "<-")
+            ])
+            (self#expression e2)
+        | Pexp_ifthenelse (e1, e2, eo) ->
+          let (blocks, finalExpression) = sequentialIfBlocks eo in
+          let rec sequence soFar remaining = (
+            match (remaining, finalExpression) with
+              | ([], None) -> soFar
+              | ([], Some e) ->
+                let soFarWithElseAppended = makeList ~postSpace:true [soFar; atom "else"] in
+                label ~space:true soFarWithElseAppended (makeLetSequence (self#letList e))
+              | (hd::tl, _) ->
+                let (e1, e2) = hd in
+                let soFarWithElseIfAppended =
+                  label
+                    ~space:true
+                    (makeList ~postSpace:true [soFar; atom "else if"])
+                    (self#simple_expr e1)
+                in
+                let nextSoFar =
+                  label ~space:true soFarWithElseIfAppended (makeLetSequence (self#letList e2)) in
+                sequence nextSoFar tl
+          ) in
+          let init =
+            label
+              ~space:true
+              (label ~space:true (atom "if") (self#simple_expr e1))
+              (makeLetSequence (self#letList e2)) in
+          sequence init blocks
+
+        | Pexp_new (li) ->
+            layoutEasy ((wrap default#expression) x)
+        | Pexp_setinstvar (s, e) ->
+            layoutEasy ((wrap default#expression) x)
+        | Pexp_override l -> (* FIXME *)
+            layoutEasy ((wrap default#expression) x)
+        | Pexp_assert e ->
+            layoutEasy ((wrap default#expression) x)
+        | Pexp_lazy (e) ->
+            layoutEasy ((wrap default#expression) x)
+        | Pexp_poly _ ->
+            assert false
+        | Pexp_variant (l, Some eo) ->
+            layoutEasy (self#constructor_expression embeddedAttrs (atom ("`" ^ l)) eo)
+        | Pexp_extension (s, arg) ->
+            layoutEasy ((wrap default#expression) x)
+        | _ -> self#expression1 x
+      in
+      SourceMap (break, x.pexp_loc, itm)
+
+
+  method potentiallyConstrainedExpr x =
+    match x.pexp_desc with
+      | Pexp_constraint (e, ct) ->
+          formatTypeConstraint (self#expression e) (layoutEasy (self#core_type ct))
+      | _ -> self#expression x
+
+  method expression1 x =
+    if x.pexp_attributes <> [] then self#simple_expr x
+    else match x.pexp_desc with
+      | Pexp_object cs -> layoutEasy (self#class_structure cs)
+      | _ -> self#expression2 x
+
+
+  (* Used in consecutiveInfixApplicationItems. For the most part, infix
+     operations have lower priority over everything else - infix operators
+     break apart other expressions (including function application) whether or
+     not they are simple. However, there are some special cases that *must* be
+     made simple when separated by infix operators.
+
+     This approach of breaking up levels of "simple"ness, is probably better
+     than the prior approach of tracking [when ifthenelse] etc.
+  *)
+
+  method simple_enough_to_be_separated_by_infix x =
+    let (embeddedAttrs, nonEmbeddedAttrs) = sugarEmbeddedAttributes x.pexp_attributes in
+    (* Don't want to go down the simple path when the only attributes are to
+       instruct about tuple constructors! *)
+    if nonEmbeddedAttrs <> [] then self#simple_expr x
+    else match x.pexp_desc with
+      (* Perhaps this simplifying of "match" is too aggressive *)
+      | Pexp_apply _ -> self#expression x
+      | Pexp_construct _ -> self#expression x
+      | _ -> self#expression2 x (* Which is pretty much what I consider to be *simple* *)
+
+  (* used in [Pexp_apply] *)
+  (* Not sure why this needs to exist - why not just use simple_expr ?*)
+  method expression2 x =
+    (* I don't think this pexp_attributes logic is correct *)
+    if x.pexp_attributes <> [] then self#simple_expr x
+    else match x.pexp_desc with
+      | Pexp_field (e, li) -> makeList [self#simple_enough_to_be_lhs_dot_send e; atom "."; self#longident_loc li]
+      | Pexp_send (e, s) ->  makeList [self#simple_enough_to_be_lhs_dot_send e; atom "#";  atom s]
+      | _ -> self#simple_expr x
+
+  (*
+   * Prefix application needs to apply to an entire sequence of dots/sends.
+   *
+   *     !x.y.z == !((x.y).z)
+   *     !x#y#z == !((x#y)#z)
+   *)
+  method simple_enough_to_be_lhs_dot_send x =
+    match x.pexp_desc with
+      | Pexp_apply (e, l) -> (
+        match self#prefixApplication (e, l) with
+          | Some item -> formatPrecedence item
+          | None -> self#simple_expr x
+      )
+      | _ -> self#simple_expr x
+
+  method simple_expr x =
+    let (embeddedAttrs, nonEmbeddedAttrs) = sugarEmbeddedAttributes x.pexp_attributes in
+    if nonEmbeddedAttrs <> [] then
+      (* TODO: Detect when parens are actually needed *)
+      formatAttributed
+        (self#simple_expr {x with pexp_attributes=embeddedAttrs})
+        (self#attributes nonEmbeddedAttrs)
+    else
+      let item = match x.pexp_desc with
+        | Pexp_construct _  when is_simple_construct (view_expr x) ->
+            (match view_expr x with
+              | `nil -> atom "[]"
+              | `tuple -> atom "()"
+              | `list xs -> (* LIST EXPRESSION *)
+                 makeList ~break:IfNeed ~wrap:("[", "]") ~sep:"," ~postSpace:true (List.map self#expression xs)
+              | `cons xs ->
+                let seq, ext = match List.rev xs with
+                  | ext :: seq_rev -> (List.rev seq_rev, ext)
+                  | [] -> assert false in
+                 makeES6List (List.map self#expression seq) (self#expression ext)
+              | `simple x -> self#longident x
+              | _ -> assert false)
+        | Pexp_ident li ->
+            (* Lone identifiers shouldn't break when to the right of a label *)
+            ensureSingleTokenSticksToLabel (self#longident_loc li)
+        (* (match view_fixity_of_exp x with *)
+        (* |`Normal -> self#longident_loc f li *)
+        (* | `Prefix _ | `Infix _ -> pp f "( %a )" self#longident_loc li) *)
+        | Pexp_constant c ->
+            (* Constants shouldn't break when to the right of a label *)
+            ensureSingleTokenSticksToLabel (layoutEasy (self#constant c))
+        | Pexp_apply (e, l) -> (
+            match self#expressionToFormattedApplicationItems x with
+              | ([], _) ->
+                  raise (
+                    NotPossible (
+                      "no application items extracted " ^ (exprDescrString x)
+                    )
+                  )
+              | (sugarExpr::[], _) ->
+                  (* This can happen in the case of [sugar_expr] [arrayWithTwo.(1) <- 300] *)
+                  sugarExpr
+              | appTerms -> makeList ~break:IfNeed ~postSpace:true ~wrap:("(", ")") [
+                formatAttachmentApplication
+                  applicationFinalWrapping
+                  None
+                  appTerms
+              ]
+          )
+        | Pexp_pack me ->
+            makeList
+              ~break:IfNeed
+              ~postSpace:true
+              ~wrap:("(", ")")
+              ~inline:(true, true)
+              [atom "module"; layoutEasy (self#module_expr me);]
+
+        | Pexp_tuple l ->
+            (* TODO: These may be simple, non-simple, or type constrained
+               non-simple expressions *)
+            makeList
+              ~wrap:("(", ")")
+              ~sep:","
+              ~break:IfNeed
+              ~postSpace:true
+              (List.map self#potentiallyConstrainedExpr l)
+        | Pexp_constraint (e, ct) ->
+            makeList
+              ~break:IfNeed
+              ~wrap:("(", ")")
+              [formatTypeConstraint (self#expression e) (layoutEasy (self#core_type ct))]
+        | Pexp_coerce (e, cto1, ct) ->
+            atom "COERCION NOT SUPPORTED"
+        (* let optFormattedType = match cto1 with None -> None | Some typ -> self#core_type cto1 in *)
+        (* makeBreakableList ["("; formatCoerce (self#expression e) optFormattedType (self#core_type ct) ;")"] *)
+        | Pexp_variant (l, None) ->
+            ensureSingleTokenSticksToLabel (atom ("`" ^ l))
+        | Pexp_record (l, eo) ->
+            let makeRow (li, e) appendComma =
+              let comma = atom "," in
+              let totalRowLoc = {
+                loc_start = li.Asttypes.loc.loc_start;
+                loc_end = e.pexp_loc.loc_end;
+                loc_ghost = false;
+              } in
+              let theRow =
+                match e.pexp_desc with
+                  (* Punning *)
+                  |  Pexp_ident {txt} when li.txt = txt ->
+                      makeList ((self#longident_loc li)::(if appendComma then [comma] else []))
+                  | _ ->
+                     let (argsList, return) = self#curriedPatternsAndReturnVal e in (
+                       match (argsList, return.pexp_desc) with
+                         | ([], _) ->
+                           let appTerms = self#expressionToFormattedApplicationItems e in
+                           let upToColon = makeList [self#longident_loc li; atom ":"] in
+                           let labelExpr =
+                             formatAttachmentApplication
+                               applicationFinalWrapping
+                               (Some (true, upToColon))
+                               appTerms in
+                           if appendComma then
+                             makeList [labelExpr; comma;]
+                           else
+                             labelExpr
+                         | (_, _) ->
+                             let (argsWithConstraint, actualReturn) = self#normalizeFunctionArgsConstraint argsList return in
+                             let returnedAppTerms = self#expressionToFormattedApplicationItems actualReturn in
+                             let lidentStr = (wrapToStr longident li.txt) in
+                             let labelExpr = self#wrapCurriedFunctionBinding (lidentStr ^ ": ") (atom "fun") argsWithConstraint returnedAppTerms in
+                             if appendComma then makeList [labelExpr; comma;] else labelExpr
+                     )
+              in SourceMap(break, totalRowLoc, theRow)
+            in
+            let rec getRows l =
+              match l with
+                | [] -> []
+                | hd::[] -> [makeRow hd false]
+                | hd::hd2::tl -> (makeRow hd true)::(getRows (hd2::tl))
+            in
+
+            let allRows = match eo with
+              | None -> getRows l
+              | Some withRecord ->
+                let firstRow = (
+                  match self#expressionToFormattedApplicationItems withRecord with
+                    | ([], _) -> raise (NotPossible ("no application items extracted " ^ (exprDescrString x)))
+                    | (sugarExpr::[], _) ->
+                        (makeList [atom "..."; sugarExpr; atom ","])
+                    | appTerms ->
+                       makeList [
+                         formatAttachmentApplication
+                            applicationFinalWrapping
+                            (Some (false, (atom "...")))
+                            appTerms;
+                         atom ",";
+                       ]
+                ) in
+                SourceMap (break, withRecord.pexp_loc, firstRow)::(getRows l)
+            in
+            makeList ~wrap:("{", "}") ~break:IfNeed ~preSpace:true allRows
+        | Pexp_array (l) ->
+          makeList
+            ~break:IfNeed
+            ~sep:","
+            ~postSpace:true
+            ~wrap:("[|", "|]")
+            (List.map self#expression l)
+        | Pexp_while (e1, e2) ->
+            label ~space:true (makeList ~postSpace:true [atom "while"; (self#simple_expr e1)]) (
+              makeLetSequence (self#letList e2)
+            )
+        | Pexp_for (s, e1, e2, df, e3) ->
+          (*
+           *  for longIdentifier in
+           *      (longInit expr) to
+           *      (longEnd expr) {
+           *    print_int longIdentifier;
+           *  };
+           *)
+          let identifierIn = (makeList ~postSpace:true [self#pattern s; atom "in";]) in
+          let dockedToFor =
+              (makeList
+                ~break:IfNeed
+                ~postSpace:true
+                ~inline:(true, true)
+                [
+                  identifierIn;
+                  makeList ~postSpace:true [self#simple_expr e1; self#direction_flag df];
+                  (self#simple_expr e2);
+                ]
+              )
+          in
+          let upToBody = makeList ~inline:(true, true) ~postSpace:true [atom "for"; dockedToFor] in
+          label ~space:true upToBody (makeLetSequence (self#letList e3))
+        | Pexp_let (rf, l, e) ->
+            makeLetSequence (self#letList x)
+        | Pexp_letmodule (s, me, e) ->
+            makeLetSequence (self#letList x)
+        | Pexp_open (ovf, lid, e) ->
+            makeLetSequence (self#letList x)
+        | Pexp_sequence _ ->
+              makeLetSequence (self#letList x)
+        | Pexp_field (e, li) -> makeList [self#simple_enough_to_be_lhs_dot_send e; atom "."; self#longident_loc li]
+        | Pexp_send (e, s) ->  makeList [self#simple_enough_to_be_lhs_dot_send e; atom "#";  atom s]
+        | _ ->  makeList ~break:IfNeed ~wrap:("(", ")") [self#expression x]
+      in
+      SourceMap (break, x.pexp_loc, item)
+
+  method direction_flag = function
+    | Upto -> atom "to"
+    | Downto -> atom "downto"
+  method attributes l =
+    layoutEasy ((wrap default#attributes) l)
+
+  method attribute = wrap default#attribute
+  method exception_declaration = wrap default#exception_declaration
+  method class_signature = wrap default#class_signature
+  method class_type = wrap default#class_type
+  method class_type_declaration_list = wrap default#class_type_declaration_list
+  method class_field = wrap default#class_field
+  method class_structure = wrap default#class_structure
+  method class_expr = wrap default#class_expr
+
+  method signature signatureItems =
+    Sequence (break, List.map self#signature_item signatureItems)
+
+  method value_description x =
+    if x.pval_prim<>[] then
+      makeList [
+        self#core_type x.pval_type;
+        atom "=";
+        makeSpacedBreakableInlineList (List.map self#constant_string x.pval_prim)
+      ]
+    else
+      self#core_type x.pval_type;
+
+  method signature_item x :layoutNode =
+    let item: layoutNode =
+      match x.psig_desc with
+        | Psig_type l ->
+            self#type_def_list l
+        | Psig_value vd ->
+            let intro = if vd.pval_prim = [] then atom "let" else atom "external" in
+            (formatTypeConstraint
+               (label ~space:true intro (protectIdentifier vd.pval_name.txt))
+               (self#value_description vd)
+            )
+
+        | Psig_typext te ->
+            self#type_extension te
+        | Psig_exception ed ->
+            self#exception_declaration ed
+        | Psig_class l ->
+            wrap (default#signature_item) x
+        | Psig_module {pmd_name; pmd_type={pmty_desc=Pmty_alias alias}} ->
+            label ~space:true
+              (makeList ~postSpace:true [
+                 atom "let module";
+                 atom pmd_name.txt;
+                 atom "="
+               ])
+              (self#longident_loc alias)
+        | Psig_module pmd ->
+            self#formatSimpleSignatureBinding
+              "let module"
+              (atom pmd.pmd_name.txt)
+              (self#module_type pmd.pmd_type);
+        | Psig_open od ->
+            label ~space:true
+              (atom ("open" ^ (override od.popen_override)))
+              (self#longident_loc od.popen_lid)
+        | Psig_include incl ->
+            label ~space:true
+              (atom "include")
+              (self#module_type incl.pincl_mod)
+        | Psig_modtype {pmtd_name=s; pmtd_type=md} -> (
+            match md with
+              | None -> makeList ~postSpace:true [atom "module type"; atom s.txt]
+              | Some mt ->
+                  label ~space:true
+                    (makeList ~postSpace:true [atom "module type"; atom s.txt; atom "="])
+                    (self#module_type mt)
+          )
+        | Psig_class_type (l) ->
+            (wrap default#signature_item) x
+        | Psig_recmodule decls ->
+            let first xx =
+              self#formatSimpleSignatureBinding
+                "let module rec"
+                (atom xx.pmd_name.txt)
+                (self#module_type xx.pmd_type)
+            in
+            let notFirst xx =
+              self#formatSimpleSignatureBinding
+                "and"
+                (atom xx.pmd_name.txt)
+                (self#module_type xx.pmd_type)
+            in
+
+            let moduleBindings = match decls with
+              | [] -> raise (NotPossible "No recursive module bindings")
+              | hd::tl -> (first hd)::(List.map notFirst tl)
+            in
+            makeNonIndentedBreakingList moduleBindings
+        | Psig_attribute _
+        | Psig_extension _ -> assert false in
+
+    SourceMap (break, x.psig_loc, (makeList [item; atom ";"]))
+
+  method non_arrowed_module_type x =
+    match x.pmty_desc with
+      | Pmty_alias li ->
+          formatPrecedence (label ~space:true (atom "module") (self#longident_loc li))
+      | Pmty_typeof me ->
+          label ~space:true
+            (atom "module type of")
+            (self#module_expr me)
+      | _ -> self#simple_module_type x
+
+  method simple_module_type x =
+    match x.pmty_desc with
+      | Pmty_ident li ->
+          self#longident_loc li;
+      | Pmty_signature s ->
+          makeList
+            ~wrap:("{","}")
+            ~postSpace:true
+            ~break:IfNeed
+            (List.map self#signature_item s)
+      (* Not sure what this is about. *)
+      | Pmty_extension _ -> assert false
+      | _ -> makeList ~break:IfNeed ~wrap:("(", ")") [self#module_type x]
+
+  method module_type x =
+    (* The segments that should be separated by arrows. *)
+    let rec functorTypeArgs xx = match xx.pmty_desc with
+      | Pmty_functor (_, None, mt2) -> (atom "()")::(functorTypeArgs mt2)
+      | Pmty_functor (s, Some mt1, mt2) ->
+          if s.txt = "_" then
+            (self#module_type mt1)::(functorTypeArgs mt2)
+          else
+            let cur =
+              makeList ~wrap:("(",")") [
+                formatTypeConstraint
+                  (atom s.txt)
+                  (self#module_type mt1)
+              ] in
+            cur::(functorTypeArgs mt2)
+      | _ -> [self#module_type xx]
+    in
+
+    match x.pmty_desc with
+      | Pmty_functor _ ->
+          let functorArgs = functorTypeArgs x in
+          makeList ~break:IfNeed ~sep:"=>" ~preSpace:true ~postSpace:true ~inline:(true, true) functorArgs
+
+      (* See comments in sugar_parser.mly about why WITH constraints aren't "non
+       * arrowed" *)
+      | Pmty_with (mt, l) ->
+          let modSub atm li2 token = makeList ~postSpace:true [
+            atom "module";
+            atm;
+            atom token;
+            self#longident_loc li2
+          ] in
+          let typeAtom = atom "type" in
+          let eqAtom = atom "=" in
+          let destrAtom = atom ":=" in
+          let with_constraint = function
+            | Pwith_type (li, ({ptype_params} as td)) ->
+                self#formatOneTypeDef
+                  typeAtom
+                  (SourceMap (break, li.loc, (self#longident_loc li)))
+                  eqAtom
+                  td
+            | Pwith_module (li, li2) ->
+                modSub (self#longident_loc li) li2 "="
+            | Pwith_typesubst ({ptype_params} as td) ->
+                self#formatOneTypeDef
+                  typeAtom
+                  (SourceMap (break, td.ptype_name.loc, (atom td.ptype_name.txt)))
+                  destrAtom
+                  td
+            | Pwith_modsubst (s, li2) -> modSub (atom s.txt) li2 ":="
+          in
+          (match l with
+            | [] -> self#module_type mt
+            | _ ->
+                label ~space:true
+                  (makeList ~postSpace:true [self#module_type mt; atom "with"])
+                  (makeList
+                     ~break:IfNeed
+                     ~inline:(true, true)
+                     ~sep:"and"
+                     ~postSpace:true
+                     ~preSpace:true
+                     (List.map with_constraint l));
+          )
+        (* Seems like an infinite loop just waiting to happen. *)
+        | _ -> self#non_arrowed_module_type x
+
+  method simple_module_expr x = match x.pmod_desc with
+    | Pmod_unpack e ->
+        formatPrecedence (makeList ~postSpace:true [atom "val"; self#expression e])
+    | Pmod_ident (li) ->
+        ensureSingleTokenSticksToLabel (self#longident_loc li)
+    | Pmod_constraint (unconstrainedRet, mt) ->
+        formatPrecedence (
+          formatTypeConstraint
+            (self#module_expr unconstrainedRet)
+            (self#module_type mt)
+        )
+    | Pmod_structure (s) ->
+      makeList
+        ~break:IfNeed
+        ~inline:(true, false)
+        ~wrap:("{", "}")
+        (List.map self#structure_item s)
+    | _ ->
+        (* For example, functor application will be wrapped. *)
+        formatPrecedence (self#module_expr x)
+
+  method module_expr x =
+    match x.pmod_desc with
+      | Pmod_functor _ ->
+          let (argsList, return) = self#curriedFunctorPatternsAndReturnStruct x in (
+            match (argsList, return.pmod_desc) with
+              | ([], _) -> raise (NotPossible "functor must have some arg")
+              | (firstArg::restArgs, _) ->
+                (* See #19/20 in syntax.mls - cannot annotate return type at
+                   the moment. *)
+                let returnedAppTerms = self#moduleExpressionToFormattedApplicationItems return in
+                self#wrapCurriedFunctionBinding "functor " firstArg restArgs returnedAppTerms
+          )
+      | Pmod_apply (me1, me2) ->
+          let appTerms = self#moduleExpressionToFormattedApplicationItems x in
+          (match appTerms with
+            | ([], _) -> raise (NotPossible "no functor application terms")
+            | ([hd], _) -> raise (NotPossible "one functor application terms")
+            | (hd::tl, d) -> formatIndentedApplication d hd tl
+          )
+      | Pmod_extension _ -> assert false
+      | Pmod_unpack _
+      | Pmod_ident _
+      | Pmod_constraint _
+      | Pmod_structure _ -> self#simple_module_expr x
+
+
+  method structure ?(extraBreaks=false) structureItems = Sequence (
+    break,
+    if extraBreaks then
+      List.concat (List.map (fun (i) -> [self#structure_item i; atom ""]) structureItems)
+    else
+      List.map self#structure_item structureItems
+  )
+
+  method payload = wrap default#payload
+
+
+
+  (*
+     How do modules become parsed?
+     let module (X: sig) = blah;
+       Will not parse! (Should just make it parse to let [X:sig =]).
+     let module X: sig = blah;
+       Becomes Pmod_constraint
+     let module X: sig = (blah:sig);
+       Becomes Pmod_constraint .. Pmod_constraint
+     let module X = blah:typ;
+       Becomes Pmod_constraint
+     let module X (Y:y) (Z:z):r => Q
+       Becomes Pmod_functor...=> Pmod_constraint
+
+     let module X (Y:y) (Z:z):r => (Q:r2)
+       Probably becomes Pmod_functor...=> (Pmod_constraint..
+       Pmod_constraint)
+
+    let (module X) =
+      Is a *completely* different thing (unpacking/packing first class modules).
+      We should make sure this is very well distinguished.
+      - Just replace all "let module" with a new three letter keyword (mod)?
+      - Reserve let (module X) for unpacking first class modules.
+
+    See the notes about how Ppat_constraint become parsed and attempt to unify
+    those as well.
+  *)
+
+  method let_module_binding prefixText bindingName moduleExpr =
+    let (argsList, return) = self#curriedFunctorPatternsAndReturnStruct moduleExpr in (
+      match (argsList, return.pmod_desc) with
+        (* Simple module with type constraint, no functor args. *)
+        | ([], Pmod_constraint (unconstrainedRetTerm, ct)) ->
+            let appTerms = self#moduleExpressionToFormattedApplicationItems unconstrainedRetTerm in
+            self#formatSimplePatternBinding prefixText bindingName (Some (layoutEasy (self#module_type ct))) appTerms
+        (* Simple module with type no constraint, no functor args. *)
+        | ([], _) ->
+            let appTerms = self#moduleExpressionToFormattedApplicationItems return in
+            self#formatSimplePatternBinding prefixText bindingName None appTerms
+        | (_, _) ->
+            (* A functor *)
+            let (argsWithConstraint, actualReturn) = (
+              match return.pmod_desc with
+                (* A functor with constrained return type:
+                 *
+                 * let module X = (A) (B) : Ret => ...
+                 * *)
+                | Pmod_constraint (me, ct) -> (argsList@[formatJustTheTypeConstraint (layoutEasy (self#non_arrowed_module_type ct))], me)
+                | _ -> (argsList, return)
+            ) in
+            let returnedAppTerms = self#moduleExpressionToFormattedApplicationItems actualReturn in
+            self#wrapCurriedFunctionBinding prefixText bindingName argsWithConstraint returnedAppTerms
+    )
+
+  method structure_item term =
+    let item = (
+      match term.pstr_desc with
+        | Pstr_eval (e, _attrs) -> self#expression e
+        | Pstr_type [] -> assert false
+        | Pstr_type l  -> (self#type_def_list l)
+        | Pstr_value (rf, l) -> (self#bindings (rf, l))
+        | Pstr_typext te -> (self#type_extension te)
+        | Pstr_exception ed -> (self#exception_declaration ed)
+        | Pstr_module x ->
+            let prefixText = "let module " in
+            let bindingName = atom x.pmb_name.txt in
+            let moduleExpr = x.pmb_expr in
+            self#let_module_binding prefixText bindingName moduleExpr
+        | Pstr_open od -> (
+            makeList ~postSpace:true [
+              atom ("open" ^ (override od.popen_override));
+              self#longident_loc od.popen_lid;
+            ]
+        )
+        | Pstr_modtype {pmtd_name=s; pmtd_type=md} -> (
+            match md with
+              | None -> makeList ~postSpace:true [atom "module type";atom s.txt]
+              | Some mt ->
+                  label ~space:true
+                    (makeList ~postSpace:true [atom "module type";atom s.txt; atom "="])
+                    (self#module_type mt)
+          )
+        | Pstr_class l ->
+            (atom ("let _ = \"Classes not supported by pretty printer\""))
+        (* let class_declaration f  (* for the second will be changed to and FIXME*) *)
+        (*     ({pci_params=ls; *)
+        (*       pci_name={txt}; *)
+        (*       pci_virt; *)
+        (*       pci_expr={pcl_desc}; *)
+        (*       _ } as x) = *)
+        (*   let rec  class_fun_helper f e = match e.pcl_desc with *)
+        (*     | Pcl_fun (l, eo, p, e) -> *)
+        (*         self#label_exp f (l,eo,p); *)
+        (*         class_fun_helper f e *)
+        (*     | _ -> e in *)
+        (*   pp f "%a%a%s %a"  self#virtual_flag pci_virt self#class_params_def ls txt *)
+        (*     (fun f _ -> *)
+        (*        let ce = *)
+        (*          (match pcl_desc with *)
+        (*            | Pcl_fun _ -> *)
+        (*                class_fun_helper f x.pci_expr; *)
+        (*            | _ -> x.pci_expr) in *)
+        (*        let ce = *)
+        (*          (match ce.pcl_desc with *)
+        (*            | Pcl_constraint (ce, ct) -> *)
+        (*                pp f ": @[%a@] " self#class_type  ct ; *)
+        (*                ce *)
+        (*            | _ -> ce ) in *)
+        (*        pp f "=@;%a" self#class_expr ce ) x in *)
+        (* (match l with *)
+        (*   | [] -> () *)
+        (*   | [x] -> pp f "@[<2>class %a@]" class_declaration x *)
+        (*   | xs ->  self#list *)
+        (*              ~first:"@[<v0>class @[<2>" *)
+        (*              ~sep:"@]@;and @[" *)
+        (*              ~last:"@]@]" class_declaration f xs) *)
+        | Pstr_class_type (l) ->
+            (atom ("let _ = \"Classes not supported by pretty printer\""))
+        | Pstr_primitive vd ->
+            makeList ~postSpace:true [
+              atom ("external");
+              atom (":");
+              protectIdentifier vd.pval_name.txt;
+              self#value_description  vd;
+            ]
+        | Pstr_include incl ->
+            (* Kind of a hack *)
+            let moduleExpr = incl.pincl_mod in
+            let returnedAppTerms = self#moduleExpressionToFormattedApplicationItems moduleExpr in
+            formatAttachmentApplication
+              applicationFinalWrapping
+              (Some (true, atom "include"))
+              returnedAppTerms
+
+        | Pstr_recmodule decls -> (* 3.07 *)
+            let first xx =
+              let prefixText = "let module rec " in
+              self#let_module_binding prefixText (atom xx.pmb_name.txt) xx.pmb_expr in
+            let notFirst xx =
+              let prefixText = "and " in
+              self#let_module_binding prefixText (atom xx.pmb_name.txt) xx.pmb_expr in
+
+            let moduleBindings = match decls with
+              | [] -> raise (NotPossible "No recursive module bindings")
+              | hd::tl -> (first hd)::(List.map notFirst tl)
+            in
+            (makeNonIndentedBreakingList moduleBindings)
+        | Pstr_attribute _ -> (atom "( /*attributes not yet supported*/ )")
+        | Pstr_extension _ -> assert false
+    ) in
+    SourceMap (break, term.pstr_loc, makeList [item; atom ";"])
+
+  method type_extension = wrap default#type_extension
+  method extension_constructor = wrap default#extension_constructor
+  method case_list l =
+    let rec appendLabelToLast items rhs =
+      match items with
+        | hd::[] -> (label ~space:true hd rhs)::[]
+        | hd::tl -> hd::(appendLabelToLast tl rhs)
+        | [] -> raise (NotPossible "Cannot append to last of nothing")
+    in
+
+    let rec orList = function (* only consider ((A|B)|C)*)
+      | {ppat_desc = Ppat_or (p1, p2)} -> (orList p1) @ (orList p2)
+      | x -> [x]
+        (* SourceMap ( *)
+        (*   break, *)
+        (*   x.ppat_loc, *)
+        (*   (self#pattern x) *)
+        (* ) *)
+    in
+    let case_row {pc_lhs; pc_guard; pc_rhs} =
+      let theOrs = orList pc_lhs in
+
+      (* match x with *)
+      (* | AnotherReallyLongVariantName (_, _, _)   *)
+      (* | AnotherReallyLongVariantName2 (_, _, _)
+           when true => {                           *)
+
+      (*   }                                        *)
+
+      (*<sbi><X>match x with</X>   *)
+      (*     <Y>everythingElse</Y> *)
+      (*</sbi>                     *)
+
+
+
+      (*     ............................................................
+             :    each or segment has a spaced list <> that ties its    :
+             : bar "|" to its pattern                                   :
+             ...:..........................................................:.....
+             :  :  each or-patterned match is grouped in SpacedBreakableInline  :
+             :  :                                                          :    :
+             v  v                                                          v    v
+             <sbi><>|<lb><A><>     FirstThingStandalone t =></A></><B>t</B></lb></></sbi>
+             <sbi><>|<C>           AnotherReallyLongVariantName (_, _, _)</C></>
+             ^    <>|<lb><><lb><D>AnotherReallyLongVariantNam2 (_, _, _)</D>             (label the last in or ptn for or and label it again for arrow)
+             :        ^  ^   ^     <E>when true<E></lb> =></><F>{
+             :        :  :   :    </F>}</lb></sbi> ^       ^
+             :        :  :   :            ^     ^   :      :
+             :        :  :   :            :     :   :      :
+             :        :  :   :If there is :a WHERE  :      :
+             :        :  :   :an extra    :label is :      :
+             :        :  :   :inserted bef:ore the  :      :
+             :        :  :   :arrow.      :     :   :      :
+             :        :  :   :............:.....:...:      :
+             :        :  :                :     :          :
+             :        :  :                :     :          :
+             :        :  :                :     :          :
+             :        :  :The left side of:this final label:
+             :        :  :uses a list to  :append the arrow:
+             :        :  :................:.....:..........:
+             :        :                   :     :
+             :        :                   :     :
+             :        :                   :     :
+             :        :Final or segment is:     :
+             :        :wrapped in lbl that:     :
+             :        :partitions pattern :     :
+             :        :and arrow from     :     :
+             :        :expression.        :     :
+             :        :                   :     :
+             :        :...................:     :
+             :     [orsWithWhereAndArrowOnLast] :
+             :                                  :
+             :..................................:
+                         [row]
+
+      *)
+      let bar xx = makeList ~postSpace:true [atom "|"; xx] in
+      let appendWhereAndArrow p = match pc_guard with
+          | None -> makeList ~postSpace:true [p; atom "=>"]
+          | Some g ->
+            (* when x should break as a whole - extra list added around it to make it break as one *)
+            let withWhen = label ~space:true p (makeList ~break:Never ~inline:(true, true) ~postSpace:true [label ~space:true (atom "when") (self#expression g)]) in
+            makeList ~inline:(true, true) ~postSpace:true [withWhen; atom "=>"]
+      in
+      let rec appendWhereAndArrowToLastOr = function
+        | [] -> []
+        | hd::tl -> (
+          let formattedHd = match tl with
+            | [] -> appendWhereAndArrow (self#pattern hd)
+            | tl::tlTl -> (self#pattern hd)
+          in
+          let sourceMappedHd = SourceMap (
+            break,
+            (* Make room for the => - not a foolproof solution, but probably
+             * catches a few extra*)
+            expandLocation hd.ppat_loc ~expand:(0, 0),
+            formattedHd
+          ) in
+          sourceMappedHd::(appendWhereAndArrowToLastOr tl)
+        )
+      in
+
+      let orsWithWhereAndArrowOnLast = appendWhereAndArrowToLastOr theOrs in
+      let rhs = (self#under_pipe#expression pc_rhs) in
+      let row = match settings.matchesStickTo with
+        | StickToBar ->
+          let everythingButExpr =
+            makeList
+              ~break:IfNeed
+              ~postSpace:true
+              ~inline:(true, true)
+              (List.map bar orsWithWhereAndArrowOnLast) in
+          label ~space:true everythingButExpr rhs
+        | StickToBarSplitCases ->
+          let everythingButExpr =
+            makeList ~break:Always ~inline:(true, true) (List.map bar orsWithWhereAndArrowOnLast) in
+          label ~space:true everythingButExpr rhs
+        | StickToLastSplitCases ->
+          let withoutBars =
+            appendLabelToLast orsWithWhereAndArrowOnLast rhs in
+          makeList ~break:Always ~inline:(true, true) (List.map bar withoutBars)
+      in
+        SourceMap (
+          break,
+          (* Fake shift the location to accomodate for the bar, to make sure
+           * the wrong comments don't make their way past the next bar. *)
+          expandLocation ~expand:(0, 0) {
+            loc_start = pc_lhs.ppat_loc.loc_start;
+            loc_end = pc_rhs.pexp_loc.loc_end;
+            loc_ghost = false;
+          },
+          row
+        )
+
+    in
+    (List.map case_row l)
+
+  method label_x_expression_param (l, e) =
+    let param =
+      match l with
+        | ""  -> self#expression2 e; (* level 2*)
+        | lbl ->
+            if lbl.[0] = '?' then
+              let str = String.sub lbl 1 (String.length lbl-1) in
+              formatLabeledArgument (atom str) "?" (self#simple_expr e)
+            else
+              formatLabeledArgument (atom lbl) "" (self#simple_expr e)
+    in
+    SourceMap (break, e.pexp_loc, param)
+
+  method directive_argument = wrap default#directive_argument
+  method toplevel_phrase = wrap default#toplevel_phrase
+end;;
+
+
+let easy = new printer ()
+
+let toplevel_phrase f x =
+  match x with
+    | Ptop_def (s) ->
+      easyFormatToFormatter f (layoutToEasyFormatNoComments (easy#structure s))
+    | Ptop_dir (s, da) -> print_string "(* top directives not supported *)"
+
+let expression f x =
+  easyFormatToFormatter f (layoutToEasyFormatNoComments (easy#expression x))
+
+
+let top_phrase f x =
+  pp_print_newline f () ;
+  toplevel_phrase f x;
+  pp f ";;" ;
+  pp_print_newline f ();;
+
+let core_type f x =
+  easyFormatToFormatter f (layoutToEasyFormatNoComments (easy#core_type x))
+let pattern f x =
+  easyFormatToFormatter f (layoutToEasyFormatNoComments (easy#pattern x))
+let signature comments f x =
+  easyFormatToFormatter f (layoutToEasyFormat (easy#signature x) comments)
+let structure comments f x =
+  easyFormatToFormatter f (layoutToEasyFormat (easy#structure ~extraBreaks:true x) comments)
+end
+in
+object
+  method core_type = Formatter.core_type
+  method pattern = Formatter.pattern
+  method signature = Formatter.signature
+  method structure = Formatter.structure
+end
+
+
+let defaultSettings = defaultSettings

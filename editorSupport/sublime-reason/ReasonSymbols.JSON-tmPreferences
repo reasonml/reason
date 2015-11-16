@@ -1,0 +1,5 @@
+{ "name": "Reason Symbols",
+  "scope": "entity.name.function.source.reason",
+  "settings":  {"showInSymbolList": 1},
+  "uuid": "d3270dd1-4ccd-428e-8dda-d3d20ee9fc7e"
+}

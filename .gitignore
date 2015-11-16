@@ -1,0 +1,11 @@
+*.native
+*.byte
+*.docdir
+_build
+*.install
+pkg/META
+src_gen/confusables.txt
+src_test/_tags
+.paths
+.settings
+.project

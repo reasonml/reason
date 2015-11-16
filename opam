@@ -1,0 +1,32 @@
+opam-version: "1.2"
+name: "reason"
+version: "1.0"
+maintainer: "Jordan Walke <jordojw@gmail.com>"
+authors: [ "Jordan Walke <jordojw@gmail.com>" ]
+license: "MIT"
+homepage: "https://github.com/jordwalke/reason"
+doc: "http://jordwalke.github.io/jordwalke"
+bug-reports: "https://github.com/jordwalke/reason/issues"
+dev-repo: "git://github.com/jordwalke/reason.git"
+tags: [ "syntax" ]
+substs: [ "pkg/META" ]
+build: [
+  "ocaml" "pkg/build.ml" "native=%{ocaml-native}%"
+                         "native-dynlink=%{ocaml-native-dynlink}%"
+                         "utop=%{utop:installed}%"
+]
+build-test: [
+  "ocamlbuild" "-classic-display" "-use-ocamlfind" "src_test/test_reason.byte" "--"
+]
+depends: [
+  "easy-format"  {>= "1.0.2"}
+  "ocamlfind"    {build}
+  "ounit"        {test}
+  "utop"         {>= "1.17"}
+]
+depopts: [
+]
+conflicts: [
+  "utop" {< "1.17"}
+]
+available: [ ocaml-version >= "4.02.0" ]
