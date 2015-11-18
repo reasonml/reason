@@ -13,24 +13,16 @@ endif
 
 " Syntax definitions {{{1
 " Basic keywords {{{2
-syn keyword   rustConditional match if else
+syn keyword   rustConditional switch match if else for in
 syn keyword   rustOperator    as
 
 syn match     rustAssert      "\<assert\(\w\)*!" contained
 syn match     rustPanic       "\<panic\(\w\)*!" contained
-syn keyword   rustKeyword     break
 syn keyword   rustKeyword     box nextgroup=rustBoxPlacement skipwhite skipempty
-syn keyword   rustKeyword     continue
 syn keyword   rustKeyword     extern nextgroup=rustExternCrate,rustObsoleteExternMod skipwhite skipempty
 " syn keyword   rustKeyword     fun nextgroup=rustFuncName skipwhite skipempty
-syn keyword   rustKeyword     loop pub
-syn keyword   rustKeyword     return super
 syn keyword   rustKeyword     unsafe where while
-syn keyword   rustKeyword     open nextgroup=modPath skipwhite skipempty
-syn keyword   rustKeyword     include nextgroup=modPath skipwhite skipempty
-
-syn keyword   rustStorage     for in if
-syn keyword   rustStorage     fun let and module type
+syn keyword   rustStorage     fun mutable let rec nonrec and module type exception open include
 " FIXME: Scoped impl's name is also fallen in this category
 " syn keyword   rustStorageIdent   let and module type nextgroup=rustIdentifier skipwhite skipempty
 
@@ -68,8 +60,7 @@ syn match rustMacroVariable "$\w\+"
 syn keyword   rustReservedKeyword alignof become do offsetof priv pure sizeof typeof unsized yield abstract virtual final override macro
 
 " Built-in types {{{2
-syn keyword   rustType        isize usize char bool u8 u16 u32 u64 f32
-syn keyword   rustType        f64 i8 i16 i32 i64 str Self
+syn keyword   rustType        int float option list array unit ref bool string
 
 " Things from the libstd v1 prelude (src/libstd/prelude/v1.rs) {{{2
 " This section is just straight transformation of the contents of the prelude,
@@ -211,7 +202,7 @@ hi def link rustCharacter     Character
 hi def link rustNumber        Number
 hi def link rustBoolean       Boolean
 hi def link rustEnum          rustType
-hi def link rustEnumVariant   rustConstant
+hi def link rustEnumVariant   Function
 hi def link rustModPath       Macro
 hi def link rustConstant      Constant
 hi def link rustSelf          Constant
@@ -220,14 +211,14 @@ hi def link rustArrowCharacter rustOperator
 hi def link rustOperator      Keyword
 hi def link rustKeyword       Keyword
 hi def link rustReservedKeyword Error
-hi def link rustConditional   Conditional
+hi def link rustConditional   StorageClass
 hi def link rustIdentifier    Identifier
 hi def link rustCapsIdent     rustIdentifier
 hi def link rustFunction      Function
 hi def link rustFuncName      Function
 hi def link rustShebang       Comment
 hi def link rustCommentLine   Comment
-hi def link rustCommentLineDoc SpecialComment
+hi def link rustCommentLineDoc Comment
 hi def link rustCommentBlock  rustCommentLine
 hi def link rustCommentBlockDoc rustCommentLineDoc
 hi def link rustAssert        PreCondit
@@ -236,7 +227,7 @@ hi def link rustType          Type
 hi def link rustTodo          Todo
 hi def link rustAttribute     PreProc
 hi def link rustDerive        PreProc
-hi def link rustStorage       StorageClass
+hi def link rustStorage       Conditional
 hi def link rustStorageIdent StorageClass
 hi def link rustObsoleteStorage Error
 hi def link rustExternCrate   rustKeyword
