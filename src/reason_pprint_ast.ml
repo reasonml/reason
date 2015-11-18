@@ -2022,7 +2022,7 @@ class printer  ()= object(self:'self)
            ""
            (label
              (makeList [(self#simple_pattern p); atom "="])
-             (match opt with None -> (atom "?") | Some o -> (self#expression o))))
+             (match opt with None -> (atom "?") | Some o -> (self#simple_expr o))))
     else
       match p.ppat_desc with
         | _ ->

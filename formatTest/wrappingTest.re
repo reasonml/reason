@@ -234,6 +234,8 @@ let explictlyPassed =
       None;
 
 
+let complex_default callback::callback=(fun k d => 4) x => 3;
+
 
 let myList = /*CommentAfterEqualBefore1 */[1, 2, 3];
 let myList = [1 /*CommentAfterOneBeforeCons */, 2, 3];

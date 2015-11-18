@@ -2058,6 +2058,10 @@ let explictlyPassed =
     /* None; */ 
     b::?None;
 
+let complex_default 
+    callback::callback=(fun k d => 4) 
+    x => 3;
+
 let myList = [
   /*CommentAfterEqualBefore1 */ 
   1, 
