@@ -1,13 +1,13 @@
 Reason: Meta Language Utility
 =========================================
 
-- Approachable ES6 style syntax.
-- Powerful, first class source code formatting.
-- Adopt Incrementally with straightforward JavaScript/C interop.
-- Bare metal compilation - No Virtual Machine.
+- Approachable syntax.
+- Bare metal compilation - *No Virtual Machine*.
 - Type inference, pattern matching, immutable by default.
-- Compatible with npm ecosystem, package.json based namespacing/builds.
-- Compile to debuggable JavaScript, using JavaScript‘s memory model.
+- Powerful, automatic source code formatting.
+- Adopt Incrementally with straightforward `JavaScript/C` interop.
+- Uses `npm` ecosystem, with `package.json` based namespacing/builds.
+- Optionally compile to debuggable `JavaScript`, using `JavaScript`'s memory model.
 
 
 Install/Build
