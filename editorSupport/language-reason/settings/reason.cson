@@ -1,0 +1,13 @@
+'.source.reason':
+  'editor':
+    'commentStart': '/* '
+    'foldEndPattern': '^\\s*\\}|^\\s*\\]|^\\s*\\)'
+    'increaseIndentPattern': '(?x)
+        \\{ [^}"\']* $
+      | \\[ [^\\]"\']* $
+      | \\( [^)"\']* $
+      '
+    'decreaseIndentPattern': '(?x)
+        ^ \\s* (\\s* /[*] .* [*]/ \\s*)* [}\\])]
+      '
+    'preferredLineLength': 110

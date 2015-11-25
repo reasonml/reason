@@ -1,0 +1,50 @@
+{
+  "name": "ide-reason",
+  "main": "./lib/ide-reason",
+  "version": "1.0.0",
+  "description": "Reason IDE for Atom",
+  "keywords": [
+    "ide-reason",
+    "ide"
+  ],
+  "repository": "",
+  "license": "MIT",
+  "engines": {
+    "atom": ">=1.0.0 <2.0.0"
+  },
+  "activationHooks": [
+    "language-reason:grammar-used"
+  ],
+  
+  "consumedServices": {
+    "ide-reason-upi": {
+      "description": "Uses ide-reason's unified pluggable interface",
+      "versions": {
+        "0.0.1": "consumeUPI"
+      }
+    }
+  },
+  "providedServices": {
+    "ide-reason-upi": {
+      "description": "Universal pluggable interface",
+      "versions": {
+        "0.0.1": "provideUpi"
+      }
+    },
+    "autocomplete.provider": {
+      "versions": {
+        "2.0.0": "createAutocompleteProvider"
+      }
+    }
+  },
+  "dependencies": {
+    "CommonML": "git://github.com/jordwalke/CommonML.git",
+    "temp": "^0.8.1",
+    "sub-atom": "^1.0.0",
+    "nuclide-commons": "0.0.32",
+    "nuclide-client": "0.0.32",
+    "ansi_up" : "1.3.0",
+    "diff": "2.2.0",
+    "cli-color": "1.1.0"
+  }
+}
