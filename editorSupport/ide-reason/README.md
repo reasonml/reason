@@ -13,10 +13,14 @@ Make sure to install two packages:
 - `ide-reason`
 - `language-reason`
 
-You can do this by creating symlinks from the following locations:
+You can do this by creating symlinks from the following locations, and then running
+`apm install` from within each of these directories:
 
 - `~/.atom/packages/ide-reason`
 - `~/.atom/packages/language-reason`
+
+All of this will be "one click" from the Atom GUI when `Reason` is public. For now, this is how you must install Atom plugins from private repos.
+
 
 Add this to your Atom config (accessible via the menu `Atom > Open Your Config`):
 Note that you must include a config
