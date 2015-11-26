@@ -8,16 +8,16 @@ Make sure Merlin is installed:
 - `opam install merlin.2.1.2`
 
 
-Make sure to install two packages:
+Make sure to install the two included included Atom plugins.
 
-- `ide-reason`
-- `language-reason`
+- `ide-reason`       (Autocomplete, file compilation, syntax checking, formatting)
+- `language-reason`  (Syntax highlighting)
 
-You can do this by creating symlinks from the following locations, and then running
-`apm install` from within each of these directories:
+1. Create symlinks from the following locations to the corresponding directories in the `Reason` repo
+  - `~/.atom/packages/ide-reason`
+  - `~/.atom/packages/language-reason`
 
-- `~/.atom/packages/ide-reason`
-- `~/.atom/packages/language-reason`
+2. Run `apm install` from within each of those two plugin directories in the `Reason` repo (`ide-reason`, `language-reason`).
 
 All of this will be "one click" from the Atom GUI when `Reason` is public. For now, this is how you must install Atom plugins from private repos.
 
