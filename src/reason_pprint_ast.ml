@@ -3140,7 +3140,7 @@ class printer  ()= object(self:'self)
         | Pexp_assert e -> (* FIXME *)
             layoutEasy ((wrap default#expression) x)
         | Pexp_lazy (e) ->
-            makeList ~postSpace:true [atom "lazy"; self#expression e]
+            makeList ~postSpace:true [atom "lazy"; self#simple_expr e]
         | Pexp_poly _ ->
             assert false
         | Pexp_variant (l, Some eo) ->
