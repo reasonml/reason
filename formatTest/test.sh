@@ -22,3 +22,12 @@
 ../reasonfmt_impl.native -print-width 50 -print re ./trailingSpaces.re 2>&1 >>./formatOutput.re
 
 ../reasonfmt_impl.native -print-width 50 -print re ./wrappingTest.rei 2>&1 >./formatOutput.rei
+
+
+
+# Let's start creating formatting test cases that must type check.
+# Errors in parsing/printing often are caught via the type system.
+ocamlc -c -pp ../reasonfmt_impl.native -intf-suffix rei -impl ./typeCheckedTests/sequences.re
+rm ./typeCheckedTests/sequences.cmi
+rm ./typeCheckedTests/sequences.cmo
+../reasonfmt_impl.native -print-width 50 -print re ./typeCheckedTests/sequences.re 2>&1 >>./formatOutput.re

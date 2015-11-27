@@ -350,7 +350,7 @@ let onlyDoingThisTopLevelLetToBypassTopLevelSequence = {
 
 type hasA = {a:int};
 let a = 10;
-let thisReturnsARecord () => {a};
+let returnsASequenceExpressionWithASingleIdentifier () => {a};
 let thisReturnsA () => {a;};
 let thisReturnsAAsWell () => a;
 

@@ -1235,6 +1235,7 @@ let layoutEasy x = x
 
 let semiTerminated term = makeList [term; atom ";"]
 
+(* TODO: Do not print the final semicolon *)
 let makeLetSequence letItems =
   makeList ~wrap:("{", "}") ~break:Always ~inline:(true, false) letItems
 
@@ -3289,7 +3290,7 @@ class printer  ()= object(self:'self)
         | Pexp_variant (l, None) ->
             ensureSingleTokenSticksToLabel (atom ("`" ^ l))
         | Pexp_record (l, eo) ->
-            let makeRow (li, e) appendComma =
+            let makeRow (li, e) appendComma shouldPun =
               let comma = atom "," in
               let totalRowLoc = {
                 loc_start = li.Asttypes.loc.loc_start;
@@ -3299,7 +3300,7 @@ class printer  ()= object(self:'self)
               let theRow =
                 match e.pexp_desc with
                   (* Punning *)
-                  |  Pexp_ident {txt} when li.txt = txt ->
+                  |  Pexp_ident {txt} when li.txt = txt && shouldPun ->
                       makeList ((self#longident_loc li)::(if appendComma then [comma] else []))
                   | _ ->
                      let (argsList, return) = self#curriedPatternsAndReturnVal e in (
@@ -3328,12 +3329,18 @@ class printer  ()= object(self:'self)
             let rec getRows l =
               match l with
                 | [] -> []
-                | hd::[] -> [makeRow hd false]
-                | hd::hd2::tl -> (makeRow hd true)::(getRows (hd2::tl))
+                | hd::[] -> [makeRow hd false true]
+                | hd::hd2::tl -> (makeRow hd true true)::(getRows (hd2::tl))
             in
 
             let allRows = match eo with
-              | None -> getRows l
+              | None -> (
+                match l with
+                  (* No punning (or comma) for records with only a single field. *)
+                  (* See comment in parser.mly for lbl_expr_list_with_at_least_one_non_punned_field *)
+                  | [hd] -> [makeRow hd false false]
+                  | _ -> getRows l
+                )
               | Some withRecord ->
                 let firstRow = (
                   match self#expressionToFormattedApplicationItems withRecord with

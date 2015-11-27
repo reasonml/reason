@@ -1444,7 +1444,7 @@ semi_terminated_seq_expr:
    *    a + b;
    *  };
    */
-  | expr SEMI  { reloc_exp $1 }
+  | expr opt_semi  { reloc_exp $1 }
   | LET ext_attributes rec_flag let_bindings_no_attrs SEMI semi_terminated_seq_expr
       { mkexp_attrs (Pexp_let($3, List.rev $4, $6)) $2 }
   | LET MODULE ext_attributes UIDENT module_binding_body SEMI semi_terminated_seq_expr
@@ -2129,7 +2129,7 @@ expr_optional_constraint:
 
 record_expr:
     DOTDOTDOT expr_optional_constraint COMMA lbl_expr_list   { (Some $2, $4) }
-  | lbl_expr_list                               { (None, $1) }
+  | lbl_expr_list_with_at_least_one_non_punned_field         { (None, $1) }
 ;
 lbl_expr_list:
      lbl_expr { [$1] }
@@ -2143,14 +2143,37 @@ lbl_expr:
       { (mkrhs $1 1, exp_of_label $1 1) }
 ;
 
-field_expr:
-  LIDENT COLON expr
-    { (mkrhs $1 1, $3) }
- | LIDENT
-    { (mkrhs $1 1, mkexp (Pexp_ident(mkrhs (Lident $1) 1))) }
+non_punned_lbl_expression:
+  label_longident COLON expr
+      { (mkrhs $1 1, $3) }
 ;
 
-field_expr_list:
+/**
+ * To allow sequence expressions to not *require* a final semicolon, we make a small tradeoff:
+ * {label} would normally be an ambiguity: Is it a punned record, or a sequence expression
+ * with only one item? It makes more sense to break the tie by interpreting it as a sequence
+ * expression with a single item, as opposed to a punned record with one field. Justification:
+ *
+ * - Constructing single field records is very rare.
+ * - Block sequences should not require a semicolon after their final item:
+ *   - let something = {print "hi"; foo};
+ *   - We often want to be able to print *single* values in block form, without a trailing semicolon.
+ *   - You should be able to delete `print "hi"` in the above statement and still parse intuitively.
+ *   - An equivalent scenario when you delete all but a single field from a punned record is more rare:
+ *     -  let myRecord = {deleteThisField, butLeaveThisOne};
+ * - For whatever tiny remaining confusion would occur, virtually all of them would be caught by the type system.
+ */
+lbl_expr_list_with_at_least_one_non_punned_field:
+  | non_punned_lbl_expression
+     { [$1] }
+  | non_punned_lbl_expression COMMA lbl_expr_list
+      { $1::$3 }
+;
+
+/**
+ * field_expr is distinct from record_expr because labels cannot/shouldn't be scoped.
+ */
+field_expr:
   /* Using LIDENT instead of label here, because a reduce/reduce conflict occurs on:
    *   {blah:x}
    *
@@ -2159,11 +2182,19 @@ field_expr_list:
    * Another approach would have been to place the `label` rule at at a precedence
    * of below_COLON or something.
    */
+  LIDENT COLON expr
+    { (mkrhs $1 1, $3) }
+ | LIDENT
+    { (mkrhs $1 1, mkexp (Pexp_ident(mkrhs (Lident $1) 1))) }
+;
+
+field_expr_list:
   field_expr
      { [$1] }
   | field_expr_list COMMA field_expr
       { $3::$1 }
 ;
+
 
 type_constraint_right_of_colon:
     core_type                             { (Some $1, None) }
