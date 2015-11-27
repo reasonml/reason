@@ -1,13 +1,11 @@
 Reason: Meta Language Utility
 =========================================
 
-- Approachable syntax.
-- Bare metal compilation - *No Virtual Machine*.
-- Type inference, pattern matching, immutable by default.
+- Approachable ES6 style syntax.
 - Powerful, automatic source code formatting.
 - Adopt Incrementally with straightforward `JavaScript/C` interop.
-- Uses `npm` ecosystem, with `package.json` based namespacing/builds.
-- Optionally compile to debuggable `JavaScript`, using `JavaScript`'s memory model.
+- Bare metal compilation - *No Virtual Machine*.
+- Type inference, pattern matching, immutable by default.
 
 
 Install/Build
@@ -29,7 +27,7 @@ Though the easiest way to use `Reason` with `ocamlc/opt` is by running the compi
 ```sh
 # intf-suffix tells the compiler where to look for corresponding interface files
 ocamlopt -pp reasonfmt -intf-suffix rei -impl myFile.re
-ocamlopt -pp reasonfmt -intf myFile.rei 
+ocamlopt -pp reasonfmt -intf myFile.rei
 ```
 
 `Reason` can also be activated using `ocamlfind`.
@@ -79,7 +77,7 @@ this likely won't be enough because `ocamlc`/`ocamlopt` will need the
 <**/*.{re,.rei}>: package(reason), syntax(utf8)
 ```
 
-[ReasonDocs](http://github.com/jordwalke/ReasonDocs) explains how to use
+[ReasonDocs](https://github.com/facebook/Reason/blob/master/docs.zip?raw=true) explains how to use
 `Reason` with the top level or with `utop`, but it can be manually activated
 from any top level by:
 
@@ -119,4 +117,3 @@ projects are under their original licenses.
 
 Editor plugins (which have also been forked) in the `editorSupport/` directory
 include their own licenses.
-
