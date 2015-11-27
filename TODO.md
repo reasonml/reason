@@ -1,5 +1,52 @@
 ### TODO
 
+Make tasks out of all of these:
+---------------
+
+Here is a list of the most important features needed to be completed.
+
+ * [EASY] Make `REPL` `<enter>` behavior match the Chrome console.
+ * [MED] There is currently a bug where functors do not obey function
+   application syntax when in type annotation position - see
+   `formatTest/modules.re`
+ * [MED/HARD]: Automatically generate `ocamldebug` initialization scripts that
+   have all of the source locations/build paths pre-loaded. So that we can use
+   `ocamldebug` (which is like `gdb`) to step through the time travelling
+   debugger.
+ * Automatically generate byte code debugger script. For any `CommonML`
+   project, after building, running the time-travelling debugger should be "one
+   click". (Currently, `JavaScript` target debugging w/ sourcemaps is
+   one-click and very easy, but we should also be able to debug with `gdb` or
+   the byte code debugger just as easily).
+ * Upgrade `JavaScript` compiler to take better advantage of in-browser
+   debugging with source maps.
+ * Integrate debugger into Vim, Sublime, and Nuclide (Integrated Vim
+   time-travelling debugger WIP).
+ * Migrating to the newest version of the AST to support many upcoming
+   features.
+ * Editor support for Nuclide and Sublime.
+ * Make pretty printer comprehensive (supporting obscure language features)
+ * Make pretty printer correctly distribute comments in all cases.
+ * Greatly improve `CommonML` so that it supports parallel, recoverable builds
+   (possibly replace with `Buck`).
+ * `Buck` plugin to support both native binary and `JavaScript` targets.
+ * Fix autocomplete by adding support for syntax extensions `-pp` to `merlin`.
+ * Use the `Reason` pretty printer to print `REPL` output and compiler error
+   messages. (Compiler message formatting WIP).
+ * [IMPORTANT] Fix formatting of unary minus (parenthesis aren't preserved
+   around places where they need to be) `add 2 (-x)`, although they are
+   preserved around `add 2 (-3)`. Another solution is to use the newly freed up
+   `~` symbol as unary minus which may never be confused for an infix
+   subtraction operator.
+ * Editor tooling to support "upgrading" the AST at break-neck speeds. Meaning,
+   if the stock `Reason` syntax/grammar changes, editors should be able to
+   handle it and automatically show code in the new syntax (this means creating
+   a mode that literally stores the AST on disk instead of the text - which is
+   actually very very close to what already happens).
+ * [Difficult] Implement async syntax transform.
+ * Test ppx attributes and confirm there is an upgrade path for people using
+   common camlp4 syntax extensions (such as with/deriving).
+
 
 TODO: First class module auto packing/unpacking.
   When eliminating `let module`, we will have to distinguish Constructor from
@@ -333,7 +380,7 @@ Also note that the function arrows make optional args defaults much nicer:
     let myFun @x @y? => result
     let myFun @x (@y?:list int) => result
     let myFun: @x:int @y?:int
-       
+
 
 TODO: Need to properly format unary minus as being simple. Formatting is
 correct when applied to constant numbers:
@@ -407,7 +454,7 @@ as long as there is always a leading bar before each match case.
 
      switch simpleExpr {
      }
- 
+
 
 An infix token for matching punts on the issue for matches, and resembles
 ternary.
@@ -691,7 +738,7 @@ With the current syntax, it's pretty easy to tell when to automatically
 pack/unpack modules as long as variants receive their own leading character
 that is not uppercase.
 
-X = {p = 
+X = {p =
 
 TODO: Find a way to allow a single expression without a semicolon inside of {}
 so that refactoring function return vals becomes easier.
@@ -726,9 +773,9 @@ requiring a leading `@` even in the optional case, makes it easier to remember.
 
     let myFunc
       @named
-      @anotherNamed? 
-      (@anotherNamedWithType:int) 
-      @anotherNamedOptional? 
+      @anotherNamed?
+      (@anotherNamedWithType:int)
+      @anotherNamedOptional?
       (@anotherNamedOptionalType?:int)
       @anotherNamedWithDefault?=20
       (@anotherNamedWithDefaultAndType?=20:int)
@@ -783,7 +830,7 @@ TODO: Consider allowing non-simple expressions before switch matches.
        | Some _ => 2
     };
 
-    
+
 TODO: Consider option for formatting chained ifelses:
 
 
@@ -829,4 +876,3 @@ in Reason comments they should be escaped.
 TODO: It's possible to create a better convention for symbol characters
 requiring escaping *only* when it would otherwise cause conflicts with
 comments. This should be a valid operator `|*`, `|/` and `|-**`.
-
