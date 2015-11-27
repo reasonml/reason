@@ -2022,7 +2022,7 @@ class printer  ()= object(self:'self)
            ""
            (label
              (makeList [(self#simple_pattern p); atom "="])
-             (match opt with None -> (atom "?") | Some o -> (self#simple_expr o))))
+             (match opt with None -> (atom "?") | Some o -> (self#simple_expression o))))
     else
       match p.ppat_desc with
         | _ ->
@@ -2053,17 +2053,17 @@ class printer  ()= object(self:'self)
       | Pexp_apply (
         {pexp_desc = Pexp_ident {txt = Ldot (Lident ("String"),"get")}},
         [(_,e1);(_,e2)]
-      ) -> Some (access "[" "]" (self#simple_expr e1) (self#expression e2))
+      ) -> Some (access "[" "]" (self#simple_expression e1) (self#expression e2))
       | Pexp_apply (
         {pexp_desc = Pexp_ident {txt = Ldot (Lident ("Array"),"get")}},
         [(_,e1);(_,e2)]
-      ) -> Some (access "(" ")" (self#simple_expr e1) (self#expression e2))
+      ) -> Some (access "(" ")" (self#simple_expression e1) (self#expression e2))
       | Pexp_apply (
         {pexp_desc= Pexp_ident {txt= Ldot (Lident ("Array"), "set")}},
         [(_,e1);(_,e2);(_,e3)]
       ) -> Some (
         makeList ~postSpace:true [
-          access "(" ")" (self#simple_expr e1) (self#expression e2);
+          access "(" ")" (self#simple_expression e1) (self#expression e2);
           atom "<-"; self#expression e3
         ])
       | Pexp_apply (
@@ -2071,11 +2071,11 @@ class printer  ()= object(self:'self)
         [(_,e1);(_,e2);(_,e3)]
       ) -> Some (
         makeList ~postSpace:true [
-          (access "[" "]" (self#simple_expr e1) (self#expression e2));
+          (access "[" "]" (self#simple_expression e1) (self#expression e2));
           atom "<-"; self#expression e3
         ])
       | Pexp_apply ({pexp_desc=Pexp_ident {txt=Lident "!"}}, [(_,e)]) ->
-          Some (makeList [atom "!"; self#simple_expr e])
+          Some (makeList [atom "!"; self#simple_expression e])
       | Pexp_apply (
         {
           pexp_desc= Pexp_ident {
@@ -2084,31 +2084,31 @@ class printer  ()= object(self:'self)
         },
         label_exprs
       ) -> (
-          (* All of the output for terms below use simple_expr to match the
+          (* All of the output for terms below use simple_expression to match the
              previous version of the pretty printer. I'm not certain that is
              correct. *)
           match array,gs with
             | "Genarray","get" -> (
                 match label_exprs with
                   | [(_,a); (_,{pexp_desc=Pexp_array ls})] ->
-                      let formattedList = List.map self#simple_expr ls in
+                      let formattedList = List.map self#simple_expression ls in
                       Some (
-                        access "{" "}" (self#simple_expr a) (makeCommaBreakableList formattedList)
+                        access "{" "}" (self#simple_expression a) (makeCommaBreakableList formattedList)
                       )
                   | _ -> None
               )
             | "Genarray","set" -> (
                 match label_exprs with
                   | [(_,a);(_,{pexp_desc=Pexp_array ls});(_,c)]  ->
-                      let formattedList = List.map self#simple_expr ls in
+                      let formattedList = List.map self#simple_expression ls in
                       Some (
                         (* TODO: Does the final portion have to be a simple
                            expression? I don't see why. I believe it does - see the
                            next section. *)
                         makeList ~postSpace:true [
-                          access "{" "}" (self#simple_expr a) (makeCommaBreakableList formattedList);
+                          access "{" "}" (self#simple_expression a) (makeCommaBreakableList formattedList);
                           atom "<-";
-                          self#simple_expr c;
+                          self#simple_expression c;
                         ]
                       )
                   | _ -> None
@@ -2119,12 +2119,12 @@ class printer  ()= object(self:'self)
                       match List.rev rest with
                         | (_,v)::rest ->
                             let args = List.map snd (List.rev rest) in
-                            let formattedList = List.map self#simple_expr args in
+                            let formattedList = List.map self#simple_expression args in
                             Some (
                               makeList ~postSpace:true [
-                                access "{" "}" (self#simple_expr a) (makeCommaBreakableList formattedList);
+                                access "{" "}" (self#simple_expression a) (makeCommaBreakableList formattedList);
                                 atom "<-";
-                                self#simple_expr v;
+                                self#simple_expression v;
                               ]
                             )
                         | _ -> assert false
@@ -2134,9 +2134,9 @@ class printer  ()= object(self:'self)
             | ("Array1"|"Array2"|"Array3"),"get" -> (
                 match label_exprs with
                   |(_,a)::rest ->
-                      let formattedList = List.map self#simple_expr (List.map snd rest) in
+                      let formattedList = List.map self#simple_expression (List.map snd rest) in
                       Some (
-                        access "{" "}" (self#simple_expr a) (makeCommaBreakableList formattedList)
+                        access "{" "}" (self#simple_expression a) (makeCommaBreakableList formattedList)
                       )
                   | _ -> assert false
               )
@@ -2226,18 +2226,18 @@ class printer  ()= object(self:'self)
       match rightRecurseOp with
         | (Some s) ->
           if not (s = infixStr) then
-            (if (higherPrecedenceThan s infixStr) then [self#expression origRight] else [self#simple_expr origRight])
+            (if (higherPrecedenceThan s infixStr) then [self#expression origRight] else [self#simple_expression origRight])
           else
-            (if isRightAssociative infixStr then rightRecurseList else [self#simple_expr origRight])
+            (if isRightAssociative infixStr then rightRecurseList else [self#simple_expression origRight])
         | None -> rightRecurseList (* Will only ever be len 1 *)
     in
     let leftSideContribution infixStr origLeft (leftRecurseOp, leftRecurseList) =
       match leftRecurseOp with
         | (Some s) ->
           if not (s = infixStr) then
-            (if (higherPrecedenceThan s infixStr) then [self#expression origLeft] else [self#simple_expr origLeft])
+            (if (higherPrecedenceThan s infixStr) then [self#expression origLeft] else [self#simple_expression origLeft])
           else
-            (if isLeftAssociative infixStr then leftRecurseList else [self#simple_expr origLeft])
+            (if isLeftAssociative infixStr then leftRecurseList else [self#simple_expression origLeft])
         | None -> leftRecurseList (* Will only ever be len 1 *)
     in
     match x.pexp_desc with
@@ -2252,7 +2252,7 @@ class printer  ()= object(self:'self)
           (* Again, it's reall good that this only ever is caught at the
              recursive step - otherwise we'd loop infinitely. *)
           | (`Infix infixStr, lbls) -> (None, [self#expression x])
-          | (`Prefix s, _) -> (None, [self#simple_expr x])
+          | (`Prefix s, _) -> (None, [self#simple_expression x])
           (* We know that this can only ever occur at a recursive call - the
              first call into this would have been infix. There is overlap with
              this and the simple_enough_to_be_separated_by_infix case. Either
@@ -2427,7 +2427,7 @@ class printer  ()= object(self:'self)
 
   method formatTernary x test ifTrue ifFalse =
     if inTernary then
-      self#resetInTernary#simple_expr x
+      self#resetInTernary#simple_expression x
     else
       let withQuestion =
         makeList ~postSpace:true [self#underTernary#expression test; atom "?"]
@@ -2972,12 +2972,12 @@ class printer  ()= object(self:'self)
     let arguments =
       match eo.pexp_desc with
         | (Pexp_tuple l) when shouldInterpretTupleAsConstructorArgs embeddedAttrs -> (
-            match (List.map self#simple_expr l) with
+            match (List.map self#simple_expression l) with
               | [] -> raise (NotPossible "no tuple items")
               | hd::[] ->  hd
               | hd::tl as all -> makeSpacedBreakableInlineList all
           )
-        | _ -> self#simple_expr eo
+        | _ -> self#simple_expression eo
     in
     label ~space:true
       ctor
@@ -3022,7 +3022,7 @@ class printer  ()= object(self:'self)
         (* | Pexp_let _ | Pexp_letmodule _ when semi -> *)
         (*     self#paren true self#reset#expression x *)
         | Pexp_fun _
-        | Pexp_newtype _ ->  (* Moved this from simple_expr - is that correct to do so? *)
+        | Pexp_newtype _ ->  (* Moved this from simple_expression - is that correct to do so? *)
             (* label * expression option * pattern * expression *)
             let (args, ret) = self#curriedPatternsAndReturnVal x in
             (match args with
@@ -3048,7 +3048,7 @@ class printer  ()= object(self:'self)
         | Pexp_try (e, l) ->
             let switchWith = makeList ~postSpace:true ~inline:(true, false) ~break:Never [
               atom "try";
-              (self#reset#simple_expr e);
+              (self#reset#simple_expression e);
             ] in
             label ~space:true switchWith (makeList ~wrap:("{", "}") ~break:Always (self#case_list l))
         | Pexp_match (e, l) -> (
@@ -3057,7 +3057,7 @@ class printer  ()= object(self:'self)
             | None ->
               let switchWith = makeList ~postSpace:true ~inline:(true, false) ~break:Never [
                 atom "switch";
-                (self#reset#simple_expr e);
+                (self#reset#simple_expression e);
               ] in
               label
                 ~space:true
@@ -3086,7 +3086,7 @@ class printer  ()= object(self:'self)
             (match view_expr x with
               | `cons ls -> (* LIST EXPRESSION *)
                   begin
-                    match List.rev (List.map self#simple_expr ls) with
+                    match List.rev (List.map self#simple_expression ls) with
                     | last :: lst_rev ->
                       let lst = List.rev lst_rev in
                       makeES6List lst last
@@ -3100,7 +3100,7 @@ class printer  ()= object(self:'self)
         | Pexp_setfield (e1, li, e2) ->
           label ~space:true
             (makeList ~postSpace:true [
-              label (makeList [self#simple_expr e1; atom "."]) (self#longident_loc li);
+              label (makeList [self#simple_expression e1; atom "."]) (self#longident_loc li);
               (atom "<-")
             ])
             (self#expression e2)
@@ -3118,7 +3118,7 @@ class printer  ()= object(self:'self)
                   label
                     ~space:true
                     (makeList ~postSpace:true [soFar; atom "else if"])
-                    (self#simple_expr e1)
+                    (self#simple_expression e1)
                 in
                 let nextSoFar =
                   label ~space:true soFarWithElseIfAppended (makeLetSequence (self#letList e2)) in
@@ -3127,7 +3127,7 @@ class printer  ()= object(self:'self)
           let init =
             label
               ~space:true
-              (label ~space:true (atom "if") (self#simple_expr e1))
+              (label ~space:true (atom "if") (self#simple_expression e1))
               (makeLetSequence (self#letList e2)) in
           sequence init blocks
 
@@ -3140,7 +3140,7 @@ class printer  ()= object(self:'self)
         | Pexp_assert e -> (* FIXME *)
             layoutEasy ((wrap default#expression) x)
         | Pexp_lazy (e) ->
-            makeList ~postSpace:true [atom "lazy"; self#simple_expr e]
+            makeList ~postSpace:true [atom "lazy"; self#simple_expression e]
         | Pexp_poly _ ->
             assert false
         | Pexp_variant (l, Some eo) ->
@@ -3159,7 +3159,7 @@ class printer  ()= object(self:'self)
       | _ -> self#expression x
 
   method expression1 x =
-    if x.pexp_attributes <> [] then self#simple_expr x
+    if x.pexp_attributes <> [] then self#simple_expression x
     else match x.pexp_desc with
       | Pexp_object cs -> layoutEasy (self#class_structure cs)
       | _ -> self#expression2 x
@@ -3179,7 +3179,7 @@ class printer  ()= object(self:'self)
     let (embeddedAttrs, nonEmbeddedAttrs) = sugarEmbeddedAttributes x.pexp_attributes in
     (* Don't want to go down the simple path when the only attributes are to
        instruct about tuple constructors! *)
-    if nonEmbeddedAttrs <> [] then self#simple_expr x
+    if nonEmbeddedAttrs <> [] then self#simple_expression x
     else match x.pexp_desc with
       (* Perhaps this simplifying of "match" is too aggressive *)
       | Pexp_apply _ -> self#expression x
@@ -3187,14 +3187,14 @@ class printer  ()= object(self:'self)
       | _ -> self#expression2 x (* Which is pretty much what I consider to be *simple* *)
 
   (* used in [Pexp_apply] *)
-  (* Not sure why this needs to exist - why not just use simple_expr ?*)
+  (* Not sure why this needs to exist - why not just use simple_expression ?*)
   method expression2 x =
     (* I don't think this pexp_attributes logic is correct *)
-    if x.pexp_attributes <> [] then self#simple_expr x
+    if x.pexp_attributes <> [] then self#simple_expression x
     else match x.pexp_desc with
       | Pexp_field (e, li) -> makeList [self#simple_enough_to_be_lhs_dot_send e; atom "."; self#longident_loc li]
       | Pexp_send (e, s) ->  makeList [self#simple_enough_to_be_lhs_dot_send e; atom "#";  atom s]
-      | _ -> self#simple_expr x
+      | _ -> self#simple_expression x
 
   (*
    * Prefix application needs to apply to an entire sequence of dots/sends.
@@ -3207,16 +3207,16 @@ class printer  ()= object(self:'self)
       | Pexp_apply (e, l) -> (
         match self#prefixApplication (e, l) with
           | Some item -> formatPrecedence item
-          | None -> self#simple_expr x
+          | None -> self#simple_expression x
       )
-      | _ -> self#simple_expr x
+      | _ -> self#simple_expression x
 
-  method simple_expr x =
+  method simple_expression x =
     let (embeddedAttrs, nonEmbeddedAttrs) = sugarEmbeddedAttributes x.pexp_attributes in
     if nonEmbeddedAttrs <> [] then
       (* TODO: Detect when parens are actually needed *)
       formatAttributed
-        (self#simple_expr {x with pexp_attributes=embeddedAttrs})
+        (self#simple_expression {x with pexp_attributes=embeddedAttrs})
         (self#attributes nonEmbeddedAttrs)
     else
       let item = match x.pexp_desc with
@@ -3360,7 +3360,7 @@ class printer  ()= object(self:'self)
             ~wrap:("[|", "|]")
             (List.map self#expression l)
         | Pexp_while (e1, e2) ->
-            label ~space:true (makeList ~postSpace:true [atom "while"; (self#simple_expr e1)]) (
+            label ~space:true (makeList ~postSpace:true [atom "while"; (self#simple_expression e1)]) (
               makeLetSequence (self#letList e2)
             )
         | Pexp_for (s, e1, e2, df, e3) ->
@@ -3379,8 +3379,8 @@ class printer  ()= object(self:'self)
                 ~inline:(true, true)
                 [
                   identifierIn;
-                  makeList ~postSpace:true [self#simple_expr e1; self#direction_flag df];
-                  (self#simple_expr e2);
+                  makeList ~postSpace:true [self#simple_expression e1; self#direction_flag df];
+                  (self#simple_expression e2);
                 ]
               )
           in
@@ -3947,9 +3947,9 @@ class printer  ()= object(self:'self)
         | lbl ->
             if lbl.[0] = '?' then
               let str = String.sub lbl 1 (String.length lbl-1) in
-              formatLabeledArgument (atom str) "?" (self#simple_expr e)
+              formatLabeledArgument (atom str) "?" (self#simple_expression e)
             else
-              formatLabeledArgument (atom lbl) "" (self#simple_expr e)
+              formatLabeledArgument (atom lbl) "" (self#simple_expression e)
     in
     SourceMap (break, e.pexp_loc, param)
 
