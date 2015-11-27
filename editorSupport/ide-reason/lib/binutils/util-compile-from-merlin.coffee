@@ -2,7 +2,6 @@
 nuclideCommons = require 'nuclide-commons'
 getReasonifyConfig = require '../getReasonifyConfig'
 
-reasonifyConfig = getReasonifyConfig()
 
 path = require 'path'
 fs   = require 'fs'
@@ -13,11 +12,11 @@ compile = (text, filePath, {onComplete, onFailure}) ->
   stdOutLines = []
   stdErrLines = []
 
-  compilerPath = atom.config.get('ide-reason.pathToCompiler')
-
+  reasonifyConfig = getReasonifyConfig()
   if (!reasonifyConfig.pathToReasonfmt)
     throw "Cannot compile because no value specified for config ide-reason.pathToReasonfmt"
 
+  compilerPath = atom.config.get('ide-reason.pathToCompiler')
   if (!compilerPath)
     throw "Cannot compile because no value specified for config ide-reason.pathToCompiler"
 

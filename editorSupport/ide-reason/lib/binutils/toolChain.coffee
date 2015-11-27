@@ -19,6 +19,7 @@ module.exports = ToolChain =
     preText = editor.getText()
     utilCompileFromMerlin.compile preText, editorPath,
       onFailure: (err) ->
+        raise err
         debugger
       onComplete: (code, stdOutText, stdErrText) ->
         # Warnings still result in code 0, but stdErrText

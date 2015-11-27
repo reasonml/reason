@@ -19,9 +19,6 @@ var getReasonifyConfig = require('./getReasonifyConfig');
 var getServiceByNuclideUri = nuclideClient.getServiceByNuclideUri;
 
 var child_process = require('child_process');
-var reasonifyConfig = getReasonifyConfig();
-Reasonify.setConfig(reasonifyConfig);
-
 var descriptionPrefixRegex = /(let\s*\S*\s*:|type\s*\S*\s*=\s*)/;
 
 
@@ -94,6 +91,9 @@ var MerlinResponseFormatter = {
         return Reasonify.niceifyType(entry.desc);
       });
       try {
+        var reasonifyConfig = getReasonifyConfig();
+        Reasonify.setConfig(reasonifyConfig);
+
         // Sometimes there's an error because it's not as simple as creating a single mli file.
         var newReasonifiedCompletionDescriptions =
           !reasonifyConfig.pathToReasonfmt ? niceOutputEntriesWithFixedTypeConstructors :
