@@ -12,14 +12,15 @@ Reason: Meta Language Utility
 
 Install/Build
 ----------
-Download the [ReasonDocs](https://github.com/jordwalke/Reason/blob/master/docs.zip?raw=true) and open the `index.html` file.
+Download the [ReasonDocs](https://github.com/facebook/Reason/blob/master/docs.zip?raw=true)
+and open the `index.html` file.
 
 Integrating with Existing Languages.
 ------------------------
 
  **`JavaScript` and `CommonJS`**:
 
-See the [ReasonDocs](https://github.com/jordwalke/Reason/blob/master/docs.zip?raw=true)
+See the [ReasonDocs](https://github.com/facebook/Reason/blob/master/docs.zip?raw=true)
 
 
 **`clang`/`ocamlc`/`ocamlopt`**:
