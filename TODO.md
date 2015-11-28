@@ -431,10 +431,6 @@ multiple record args:
   simply choose opposite encodings of an AST node's explicit arity flag.
 
 
-TODO: Parsing error with reference infix operators on RHS of switch arrows
-
-    | _ => (args := arg::!args)
-
 TODO: Create alternative pervasives for common infix operators that is more
 intuitive.
 

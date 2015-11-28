@@ -584,26 +584,41 @@ let mkctf_attrs d attrs =
 
 /* Precedences and associativities.
 
-Tokens and rules have precedences.  A reduce/reduce conflict is resolved
-in favor of the first rule (in source file order).  A shift/reduce conflict
-is resolved by comparing the precedence and associativity of the token to
-be shifted with those of the rule to be reduced.
+Tokens and rules have precedences and those precedences are used to
+resolve what would otherwise be a conflict in the grammar.
 
-By default, a rule has the precedence of its rightmost terminal (if any).
+Precedence and associativity:
+----------------------------
+- The list that follows this docblock determines precedence in order
+  form low to high along with an optional associativity.
+- Within each row in the list, the precedences are equivalent.
+- Each entry's position in the list either determines the relative precedence of the
+  mentioned token, or it creates a new "name" for a reusable precednece/associativity
+  (such as below_SEMI).
+  - By default, a rule has the precedence of its rightmost terminal (if any).
+  - But a rule can use one of the reusable "names" for precedence/associativity
+    from the list below.
 
-When there is a shift/reduce conflict between a rule and a token that
-have the same precedence, it is resolved using the associativity:
-if the token is left-associative, the parser will reduce; if
-right-associative, the parser will shift; if non-associative,
-the parser will declare a syntax error.
+Resolving conflicts in grammar:
+-------------------------------
+Different types of conflicts are resolved in different ways.
+- Reduce/reduce conflict:
+  - (Are not resolved using precedence?)
+  - (Instead?) Resolved in favor of the first rule (in source file order).
+- Shift/reduce conflict between rule and token being shifted:
+  - Resolved by comparing the "precedence" and "associativity" of the
+    token to be shifted with those of the rule to be reduced.
+  - When the rule and the token have the same precedence, it is resolved
+    using the associativity:
+    - If the token is left-associative, the parser will reduce.
+    - If the token is right-associative, the parser will shift.
+    - If non-associative, the parser will declare a syntax error.
 
 We will only use associativities with operators of the kind  x * x -> x
 for example, in the rules of the form    expr: expr BINOP expr
 in all other cases, we define two precedences if needed to resolve
 conflicts.
 
-The precedences must be listed from low to high.  Within each row, the
-      precedences are equivalent.
 */
 
 %nonassoc IN
@@ -611,6 +626,9 @@ The precedences must be listed from low to high.  Within each row, the
 %nonassoc SEMI                          /* below EQUAL ({lbl=...; lbl=...}) */
 %nonassoc LET                           /* above SEMI ( ...; let ... in ...) */
 %nonassoc below_WITH
+%nonassoc below_EQUALGREATER
+%right    EQUALGREATER                  /* core_type2 (t => t => t) */
+%right    MINUSGREATER                  /* core_type2 (t -> t -> t) */
 %nonassoc below_QUESTION
 %nonassoc QUESTION
 %nonassoc COLON
@@ -626,9 +644,6 @@ The precedences must be listed from low to high.  Within each row, the
 %left     BAR                           /* pattern (p|p|p) */
 %nonassoc below_COMMA
 %left     COMMA                         /* expr/expr_comma_list (e,e,e) */
-%nonassoc below_EQUALGREATER
-%right    EQUALGREATER                  /* core_type2 (t => t => t) */
-%right    MINUSGREATER                  /* core_type2 (t -> t -> t) */
 %right    OR BARBAR                     /* expr (e || e || e) */
 %right    AMPERSAND AMPERAMPER          /* expr (e && e && e) */
 %nonassoc below_EQUAL

@@ -31,3 +31,8 @@ ocamlc -c -pp ../reasonfmt_impl.native -intf-suffix rei -impl ./typeCheckedTests
 rm ./typeCheckedTests/sequences.cmi
 rm ./typeCheckedTests/sequences.cmo
 ../reasonfmt_impl.native -print-width 50 -print re ./typeCheckedTests/sequences.re 2>&1 >>./formatOutput.re
+
+ocamlc -c -pp ../reasonfmt_impl.native -intf-suffix rei -impl ./typeCheckedTests/mutation.re
+rm ./typeCheckedTests/mutation.cmi
+rm ./typeCheckedTests/mutation.cmo
+../reasonfmt_impl.native -print-width 50 -print re ./typeCheckedTests/mutation.re 2>&1 >>./formatOutput.re

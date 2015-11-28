@@ -1,3 +1,6 @@
+/**
+ * Testing Sequences.
+ */
 let result = {
   let twenty = 20;
   let result = twenty;
