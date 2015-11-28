@@ -233,7 +233,7 @@
   {
     'comment': 'Control keyword'
     'name': 'keyword.control.reason'
-    'match': '\\b(break|continue|else|if|in|for|loop|match|return|while)\\b'
+    'match': '\\b(break|continue|else|if|in|for|loop|switch|try|raise|while)\\b'
   }
   {
     'comment': 'Keyword'
