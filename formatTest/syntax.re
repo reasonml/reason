@@ -1346,3 +1346,10 @@ let nodeToRecurse = node ? Leaf as % | %;
 
 
 */
+
+/* Ensure that the parenthesis are preserved here because they are
+ * important:
+ */
+let something =
+  fun | None => (fun | [] => "emptyList" | [_, ..._] => "nonEmptyList")
+      | Some _ => (fun | [] => "emptyList" | [_, ..._] => "nonEmptyList");

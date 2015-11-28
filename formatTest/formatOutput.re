@@ -5808,7 +5808,20 @@ let nodeToRecurse = node ? Leaf as % | %;
 
 
 
-*//* - A good way to test if formatting of infix operators groups precedences
+*/
+/* Ensure that the parenthesis are preserved here because they are
+ * important:
+ */
+let something =
+  fun | None => (
+          fun | [] => "emptyList" 
+              | [_, ..._] => "nonEmptyList"
+        ) 
+      | Some _ => (
+          fun | [] => "emptyList" 
+              | [_, ..._] => "nonEmptyList"
+        );
+/* - A good way to test if formatting of infix operators groups precedences
    correctly, is to write an expression twice. Once in a form where parenthesis
    explicitly group according to the parse tree and write it another time
    without any parenthesis. After formatting, the two should be equal
