@@ -2131,7 +2131,7 @@ expr_optional_constraint:
 
 record_expr:
     DOTDOTDOT expr_optional_constraint COMMA lbl_expr_list   { (Some $2, $4) }
-  | lbl_expr_list_with_at_least_one_non_punned_field         { (None, $1) }
+  | lbl_expr_list_that_is_not_a_single_punned_field         { (None, $1) }
 ;
 lbl_expr_list:
      lbl_expr { [$1] }
@@ -2165,10 +2165,10 @@ non_punned_lbl_expression:
  *     -  let myRecord = {deleteThisField, butLeaveThisOne};
  * - For whatever tiny remaining confusion would occur, virtually all of them would be caught by the type system.
  */
-lbl_expr_list_with_at_least_one_non_punned_field:
+lbl_expr_list_that_is_not_a_single_punned_field:
   | non_punned_lbl_expression
      { [$1] }
-  | non_punned_lbl_expression COMMA lbl_expr_list
+  | lbl_expr COMMA lbl_expr_list
       { $1::$3 }
 ;
 

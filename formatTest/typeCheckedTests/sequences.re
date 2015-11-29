@@ -53,3 +53,27 @@ let cannotPunASingleFieldRecord = {number: number};
 let fourty = 20 + cannotPunASingleFieldRecord.number;
 let thisIsASequenceNotPunedRecord = {number};
 let fourty = 20 + thisIsASequenceNotPunedRecord;
+
+
+
+type recordType = {a: int, b: int, c: int};
+let a = 0;
+let b = 0;
+let c = 0;
+/* All of these will be printed as punned because they have more than one field. */
+let firstFieldPunned = {
+  a: a,
+  b,
+  c: c
+};
+let sndFieldPunned = {
+  a,
+  b: b,
+  c: c
+};
+let thirdFieldPunned = {
+  a: a,
+  b: b,
+  c
+};
+let singlePunAcceptedIfExtended = {...firstFieldPunned, a};
