@@ -3130,6 +3130,33 @@ class printer  ()= object(self:'self)
               (makeLetSequence (self#letList e2)) in
           sequence init blocks
 
+        | Pexp_while (e1, e2) ->
+            label ~space:true (makeList ~postSpace:true [atom "while"; (self#simple_expression e1)]) (
+              makeLetSequence (self#letList e2)
+            )
+        | Pexp_for (s, e1, e2, df, e3) ->
+          (*
+           *  for longIdentifier in
+           *      (longInit expr) to
+           *      (longEnd expr) {
+           *    print_int longIdentifier;
+           *  };
+           *)
+          let identifierIn = (makeList ~postSpace:true [self#pattern s; atom "in";]) in
+          let dockedToFor =
+              (makeList
+                ~break:IfNeed
+                ~postSpace:true
+                ~inline:(true, true)
+                [
+                  identifierIn;
+                  makeList ~postSpace:true [self#simple_expression e1; self#direction_flag df];
+                  (self#simple_expression e2);
+                ]
+              )
+          in
+          let upToBody = makeList ~inline:(true, true) ~postSpace:true [atom "for"; dockedToFor] in
+          label ~space:true upToBody (makeLetSequence (self#letList e3))
         | Pexp_new (li) ->
             layoutEasy ((wrap default#expression) x)
         | Pexp_setinstvar (s, e) ->
@@ -3200,6 +3227,13 @@ class printer  ()= object(self:'self)
    *
    *     !x.y.z == !((x.y).z)
    *     !x#y#z == !((x#y)#z)
+   *
+   *  Some would even have the prefix application be parsed with lower
+   *  precedence function *application*. In the case of !, where ! means not,
+   *  it makes a lot of sense because (!identifier)(arg) would be meaningless.
+   *
+   *  !callTheFunction(1, 2, 3)(andEvenCurriedArgs)
+   *
    *)
   method simple_enough_to_be_lhs_dot_send x =
     match x.pexp_desc with
@@ -3364,33 +3398,6 @@ class printer  ()= object(self:'self)
             ~postSpace:true
             ~wrap:("[|", "|]")
             (List.map self#expression l)
-        | Pexp_while (e1, e2) ->
-            label ~space:true (makeList ~postSpace:true [atom "while"; (self#simple_expression e1)]) (
-              makeLetSequence (self#letList e2)
-            )
-        | Pexp_for (s, e1, e2, df, e3) ->
-          (*
-           *  for longIdentifier in
-           *      (longInit expr) to
-           *      (longEnd expr) {
-           *    print_int longIdentifier;
-           *  };
-           *)
-          let identifierIn = (makeList ~postSpace:true [self#pattern s; atom "in";]) in
-          let dockedToFor =
-              (makeList
-                ~break:IfNeed
-                ~postSpace:true
-                ~inline:(true, true)
-                [
-                  identifierIn;
-                  makeList ~postSpace:true [self#simple_expression e1; self#direction_flag df];
-                  (self#simple_expression e2);
-                ]
-              )
-          in
-          let upToBody = makeList ~inline:(true, true) ~postSpace:true [atom "for"; dockedToFor] in
-          label ~space:true upToBody (makeLetSequence (self#letList e3))
         | Pexp_let (rf, l, e) ->
             makeLetSequence (self#letList x)
         | Pexp_letmodule (s, me, e) ->

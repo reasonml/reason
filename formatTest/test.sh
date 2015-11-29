@@ -36,6 +36,11 @@ rm ./typeCheckedTests/mutation.cmi
 rm ./typeCheckedTests/mutation.cmo
 ../reasonfmt_impl.native -print-width 50 -print re ./typeCheckedTests/mutation.re 2>&1 >>./formatOutput.re
 
+ocamlc -c -pp ../reasonfmt_impl.native -intf-suffix rei -impl ./typeCheckedTests/imperative.re
+rm ./typeCheckedTests/imperative.cmi
+rm ./typeCheckedTests/imperative.cmo
+../reasonfmt_impl.native -print-width 50 -print re ./typeCheckedTests/imperative.re 2>&1 >>./formatOutput.re
+
 # Parse the ml syntax, print it to the formatOutput.re.
 ../reasonfmt_impl.native -print-width 50 -parse ml -print re ./typeCheckedTests/mlSyntax.ml 2>&1 >>./formatOutput.re
 # Also generate a separate .re file so we can type check it.
