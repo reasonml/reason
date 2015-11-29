@@ -27,3 +27,9 @@ let result = match B with
   | E -> ()
 
 let nested_match = function | A (B | C | D | E) -> 3
+
+module EM = struct
+  exception E of int * int
+end
+
+exception Ealias = EM.E

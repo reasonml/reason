@@ -1577,31 +1577,32 @@ class printer  ()= object(self:'self)
                 first::(List.map (formatOneTypeDefStandard (atom "and")) (tlhd::tltl))
               )
 
-  (* Returns the type declaration partitioned into three segments - one
-     suitable for appending to a label, the actual type manifest
-     and the list of constraints. *)
-  method type_declaration_binding_segments x =
-    let type_variant_leaf {pcd_name; pcd_args; pcd_res; pcd_loc} =
-      let sourceMappedName = SourceMap (break, pcd_name.loc, atom pcd_name.txt) in
-      let nameOf = makeList ~postSpace:true [sourceMappedName; atom "of"] in
-      let barNameOf = makeList ~postSpace:true [atom "|"; nameOf] in
-      let barName = makeList ~postSpace:true [atom "|"; sourceMappedName] in
+  method type_variant_leaf = self#type_variant_leaf1 true
+  method type_variant_leaf_nobar = self#type_variant_leaf1 false
+  method type_variant_leaf1 print_bar {pcd_name; pcd_args; pcd_res; pcd_loc} =
+    let sourceMappedName = SourceMap (break, pcd_name.loc, atom pcd_name.txt) in
+    let nameOf = makeList ~postSpace:true [sourceMappedName; atom "of"] in
+    let barNameOf = makeList ~postSpace:true [atom "|"; nameOf] in
+    let barName = makeList ~postSpace:true [atom "|"; sourceMappedName] in
 
-      let args = (List.map self#non_arrowed_simple_core_type pcd_args) in
-      let gadtRes = match pcd_res with
-        | None -> None
-        | Some x -> Some (
-            makeList ~inline:(true, true) ~break:IfNeed [ (* Single row just so the entire return type breaks onto its own line *)
-              formatJustTheTypeConstraint (self#core_type x)
-            ]
-        )
+    let args = (List.map self#non_arrowed_simple_core_type pcd_args) in
+    let gadtRes = match pcd_res with
+      | None -> None
+      | Some x -> Some (
+          makeList ~inline:(true, true) ~break:IfNeed [ (* Single row just so the entire return type breaks onto its own line *)
+            formatJustTheTypeConstraint (self#core_type x)
+          ]
+      )
       in
       let normalize lst = match lst with
         | [] -> raise (NotPossible "should not be called")
         | [hd] -> hd
         | _::_ -> makeList ~inline:(true, true) ~break:IfNeed ~postSpace:true lst
       in
-
+      let add_bar name args =
+        let lbl = label ~space:true name args in
+        makeList ~postSpace:true (if print_bar then [atom "|"; lbl] else [lbl])
+      in
       let everything = match (settings.matchesStickTo, args, gadtRes) with
         | (StickToBar, [], None)
         | (StickToBarSplitCases, [], None)
@@ -1617,25 +1618,18 @@ class printer  ()= object(self:'self)
         | (StickToBarSplitCases, _::_, Some res) ->
           (label ~space:true barNameOf (normalize (args@[res])))
         | (StickToLastSplitCases, [], Some res) ->
-            makeList ~postSpace:true [
-              (atom "|");
-              label ~space:true sourceMappedName res
-            ]
+            add_bar sourceMappedName res
         | (StickToLastSplitCases, _::_, None) ->
-            makeList ~postSpace:true [
-              (atom "|");
-              label ~space:true nameOf (normalize args)
-            ]
+            add_bar nameOf (normalize args)
         | (StickToLastSplitCases, _::_, Some res) ->
-            makeList ~postSpace:true [
-              (atom "|");
-              (label ~space:true nameOf (normalize (args@[res])))
-            ]
-
+            add_bar nameOf (normalize (args@[res]))
       in
       (SourceMap (break, pcd_loc, everything))
-    in
 
+  (* Returns the type declaration partitioned into three segments - one
+     suitable for appending to a label, the actual type manifest
+     and the list of constraints. *)
+  method type_declaration_binding_segments x =
     (* Segments of the type binding (occuring after the type keyword) that
        should begin with "=". Zero to two total sections.
        This is just a straightforward reverse mapping from the original parser:
@@ -1711,11 +1705,11 @@ class printer  ()= object(self:'self)
       (*   ] *)
       (* EQUAL PRIVATE constructor_declarations {(Ptype_variant _, Private, None)} *)
       | (Ptype_variant lst, Private, None) -> [
-          [privateAtom; makeList ~break:IfNeed ~postSpace:true ~inline:(true, true) (List.map type_variant_leaf lst)]
+          [privateAtom; makeList ~break:IfNeed ~postSpace:true ~inline:(true, true) (List.map self#type_variant_leaf lst)]
         ]
       (* EQUAL private_flag BAR constructor_declarations {(Ptype_variant _, $2, None)} *)
       | (Ptype_variant lst, scope, None) ->  [
-          privatize scope [makeList ~break:IfNeed ~postSpace:true ~inline:(true, true) (List.map type_variant_leaf lst)]
+          privatize scope [makeList ~break:IfNeed ~postSpace:true ~inline:(true, true) (List.map self#type_variant_leaf lst)]
         ]
       (* EQUAL DOTDOT {(Ptype_open, Public, None)} *)
       | (Ptype_open, Public, None) -> [
@@ -1740,7 +1734,7 @@ class printer  ()= object(self:'self)
          (Ptype_variant _, _, Some _)} *)
       | (Ptype_variant lst, scope, Some mani) -> [
           [self#core_type mani];
-          let variant = makeList ~break:IfNeed ~postSpace:true ~inline:(true, true) (List.map type_variant_leaf lst) in
+          let variant = makeList ~break:IfNeed ~postSpace:true ~inline:(true, true) (List.map self#type_variant_leaf lst) in
           privatize scope [variant];
         ]
 
@@ -3414,7 +3408,18 @@ class printer  ()= object(self:'self)
     layoutEasy ((wrap default#attributes) l)
 
   method attribute = wrap default#attribute
-  method exception_declaration = wrap default#exception_declaration
+  method exception_declaration ed =
+    let pcd_name = ed.pext_name in
+    let pcd_loc = ed.pext_loc in
+    let pcd_attributes = ed.pext_attributes in
+    let exn_arg = match ed.pext_kind with
+      | Pext_decl (args, type_opt) ->
+          let pcd_args, pcd_res = args, type_opt in
+          [self#type_variant_leaf_nobar {pcd_name; pcd_args; pcd_res; pcd_loc; pcd_attributes}]
+      | Pext_rebind id ->
+          [atom pcd_name.txt; atom "="; (self#longident_loc id)] in
+    makeList ~postSpace:true ((atom "exception")::exn_arg)
+
   method class_signature = wrap default#class_signature
   method class_type = wrap default#class_type
   method class_type_declaration_list = wrap default#class_type_declaration_list

@@ -5770,3 +5770,7 @@ let result = switch B {
              };
 
 let nested_match = fun | A (B | C | D | E) => 3;
+
+let module EM = {exception E of int int;};
+
+exception Ealias = EM.E;
