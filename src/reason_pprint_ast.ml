@@ -397,6 +397,10 @@ let rec longident f = function
   | Lapply (y,s) ->
       fprintf f "%a(%a)" longident y longident s
 
+let rec orList = function (* only consider ((A|B)|C)*)
+  | {ppat_desc = Ppat_or (p1, p2)} -> (orList p1) @ (orList p2)
+  | x -> [x]
+
 type space_formatter = (unit, Format.formatter, unit) format
 
 let override = function
@@ -1870,17 +1874,6 @@ class printer  ()= object(self:'self)
 
   method pattern x =
     let patternSourceMap pt layout = (SourceMap (break, pt.ppat_loc, layout)) in
-    (* We require that all or patterns have a leading BAR *)
-    let rec list_of_pattern = function (* only consider ((A|B)|C)*)
-      | {ppat_desc = Ppat_or (p1, p2)} ->
-          let nextRow = makeList ~postSpace:true [atom "|"; self#pattern p1] in
-          let sourceMappedNextRow = patternSourceMap p1 nextRow in
-          sourceMappedNextRow::(list_of_pattern p2)
-      | x ->
-          let nextRow = makeList ~postSpace:true [atom "|"; self#pattern x] in
-          let sourceMappedNextRow = patternSourceMap x nextRow in
-          sourceMappedNextRow::[]
-    in
     let (embeddedAttrs, nonEmbeddedAttrs) = sugarEmbeddedAttributes x.ppat_attributes in
     if nonEmbeddedAttrs <> [] then
       formatAttributed
@@ -1899,7 +1892,14 @@ class printer  ()= object(self:'self)
               ))
             ]) (* RA*)
       | Ppat_or (p1, p2) ->
-          makeSpacedBreakableInlineList (list_of_pattern x)
+        (* But what about the source maps *)
+        makeList
+          ~break:IfNeed
+          ~inline:(true, true)
+          ~sep:"|"
+          ~postSpace:true
+          ~preSpace:true
+          (List.map self#pattern (orList x))
       | _ -> self#pattern1 x
 
   method pattern1 x =
@@ -3820,15 +3820,6 @@ class printer  ()= object(self:'self)
         | [] -> raise (NotPossible "Cannot append to last of nothing")
     in
 
-    let rec orList = function (* only consider ((A|B)|C)*)
-      | {ppat_desc = Ppat_or (p1, p2)} -> (orList p1) @ (orList p2)
-      | x -> [x]
-        (* SourceMap ( *)
-        (*   break, *)
-        (*   x.ppat_loc, *)
-        (*   (self#pattern x) *)
-        (* ) *)
-    in
     let case_row {pc_lhs; pc_guard; pc_rhs} =
       let theOrs = orList pc_lhs in
 

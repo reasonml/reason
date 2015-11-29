@@ -388,19 +388,20 @@ let blah = fun
 */
 
 let blahCurriedX x => fun  /* See, nothing says we can drop the => fun */
-  |(|Red x |Black x |Green x) => 1     /* With some effort, we can ammend the sugar rule that would */
+  |(Red x | Black x | Green x) => 1     /* With some effort, we can ammend the sugar rule that would */
   | Black x => 0                       /* Allow us to drop any => fun.. Just need to make pattern matching */
   | Green x => 0;                      /* Support that */
 
+/* This should be parsed/printed exactly as the previous */
 let blahCurriedX x => fun
-  | Red x |Black x |Green x => 1
+  | Red x | Black x | Green x => 1
   | Black x => 0
   | Green x => 0;
 
 /* Any time there are multiple match cases we require a leading BAR */
 
 let v = Red 10;
-let (|Black x |Red x |Green x) = v;    /* So this NON-function still parses */
+let (Black x | Red x | Green x) = v;    /* So this NON-function still parses */
 
 /* This doesn't parse, however (and it doesn't in OCaml either):
   let | Black x | Red x | Green x = v;
@@ -474,7 +475,7 @@ dummy res3;
 
 
 /* Some edge cases */
-let myFun firstArg (|Red x | Black x |Green x) => firstArg + x;
+let myFun firstArg (Red x | Black x | Green x) => firstArg + x;
 let matchesWithWhen a => switch a {
   | Red x when 1 > 0 => 10
   | Red _ => 10
@@ -489,9 +490,7 @@ let matchesWithWhen = fun
   | Green x => 10;
 
 
-/* This is also a nice extension of the simple curried pattern form with one pattern */
-
-let matchesOne (|`Red x) => 10;
+let matchesOne (`Red x) => 10;
 
 
 /*

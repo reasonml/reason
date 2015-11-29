@@ -258,7 +258,7 @@ let result: list string = [hd, ...tl];
 let result: list string = ["appendedToHead", "listTo", "append", "to"];
 
 /* To operate on lists, use pattern matching */
-let rec size => fun
+let rec size = fun
   | [] => 0
   | [hd, ...tl] => 1 + (size tl);
 
@@ -300,7 +300,7 @@ let ppp = switch (MyThing 20) {
   | YourThing x as ppp => ppp
 };
 
-let |MyThing _ as ppp |YourThing _ as ppp = ppp;
+let MyThing _ as ppp | YourThing _ as ppp = ppp;
 
 /*
  * in order to achieve the previous example in ocaml, you would have to group
@@ -311,11 +311,11 @@ let ppp = switch (MyThing 20) {
   | (YourThing x as ppp) => ppp
 };
 
-let |(MyThing _ as ppp) |(YourThing _ as ppp) = ppp;
+let (MyThing _ as ppp) |(YourThing _ as ppp) = ppp;
 /*
- * But this isn't needed in SugarML because OR patterns have much lower
- * precedence.
-*/
+ * But this isn't needed in Reason because OR patterns have much lower
+ * precedence - they should be pretty printed in the same way.
+ */
 
 
 

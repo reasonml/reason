@@ -379,7 +379,7 @@ let ppp =
     | YourThing x as ppp => ppp
   };
 
-let | MyThing _ as ppp | YourThing _ as ppp = ppp;
+let MyThing _ as ppp | YourThing _ as ppp = ppp;
 
 /*
  * in order to achieve the previous example in ocaml, you would have to group
@@ -391,12 +391,12 @@ let ppp =
     | YourThing x as ppp => ppp
   };
 
-let | MyThing _ as ppp | YourThing _ as ppp = ppp;
+let MyThing _ as ppp | YourThing _ as ppp = ppp;
 
 /*
- * But this isn't needed in SugarML because OR patterns have much lower
- * precedence.
-*/
+ * But this isn't needed in Reason because OR patterns have much lower
+ * precedence - they should be pretty printed in the same way.
+ */
 /* TODO: */
 /* let rec nestedMatch lstLst => match lstLst with { */
 /*   hd::tl: match tl with { */
@@ -1456,9 +1456,9 @@ let accessDeeply
 
 let accessDeeplyWithArg 
     (
-      | LocalModule.AccessedThroughModuleWith x 
-      | LocalModule.AccessedThroughModuleWithTwo
-          _ x
+      LocalModule.AccessedThroughModuleWith x | 
+      LocalModule.AccessedThroughModuleWithTwo
+        _ x
     ) => x;
 
 /* Destructured matching *not* at function definition */
@@ -1633,7 +1633,7 @@ let two = eval (App (App Add (Int 1)) (Int 1));
 type someVariant =
   | Purple of int | Yellow of int;
 
-let | Purple x | Yellow x =
+let Purple x | Yellow x =
   switch (Yellow 100, Purple 101) {
     | (Yellow y, Purple p) => Yellow (p + y)
     | (Purple p, Yellow y) => Purple (y + p)
@@ -4817,6 +4817,7 @@ let blahCurriedX x =>
       | Green x => 0;
 
 /* Support that */
+/* This should be parsed/printed exactly as the previous */
 let blahCurriedX x =>
   fun | Red x
       | Black x
@@ -4827,7 +4828,7 @@ let blahCurriedX x =>
 /* Any time there are multiple match cases we require a leading BAR */
 let v = Red 10;
 
-let | Black x | Red x | Green x = v;
+let Black x | Red x | Green x = v;
 
 /* So this NON-function still parses */
 /* This doesn't parse, however (and it doesn't in OCaml either):
@@ -4904,7 +4905,7 @@ dummy res2;
 dummy res3;
 
 /* Some edge cases */
-let myFun firstArg (| Red x | Black x | Green x) => firstArg + x;
+let myFun firstArg (Red x | Black x | Green x) => firstArg + x;
 
 let matchesWithWhen a =>
   switch a {
@@ -4920,7 +4921,6 @@ let matchesWithWhen =
       | Black x => 10 
       | Green x => 10;
 
-/* This is also a nice extension of the simple curried pattern form with one pattern */
 let matchesOne (`Red x) => 10;
 
 /*
@@ -5591,22 +5591,6 @@ let myFunc
     aaaa bbbb cccc dddd aaaa bbbb cccc dddd aaaa, 
   ...someType
 ];
-/*
- * Testing pattern matching using ml syntax to exercise nesting of cases.
- */
-let doubleBar = fun | Empty
-                    | Leaf _ _ _
-                    | HashCollision _ _
-                    | Sealife
-                    | Munro => true 
-                    | _ => false;
-
-let doubleBarNested = fun | Empty
-                          | Leaf _ _ _
-                          | HashCollision _ _
-                          | Sealife
-                          | Munro => true 
-                          | _ => false;
 let module M = Something.Create {
   type resource1 = MyModule.MySubmodule.t;
   type resource2 = MyModule.MySubmodule.t;
@@ -5734,3 +5718,35 @@ switch numberToSwitchOn {
 let mutativeFunction =
   fun | Some x => holdsAUnit.contents <- () 
       | None => holdsAUnit := ();
+/*
+ * Testing pattern matching using ml syntax to exercise nesting of cases.
+ */
+type xyz =
+  | X | Y of int int int | Z of int int | Q | R;
+
+let doubleBar =
+  fun | X
+      | Y _ _ _
+      | Z _ _
+      | Q => true 
+      | _ => false;
+
+let doubleBarNested =
+  fun | X
+      | Y _ _ _
+      | Z _ _
+      | Q => true 
+      | _ => false;
+
+type bcd = | B | C | D | E;
+
+type a = | A of bcd;
+
+let result = switch B {
+               | B
+               | C
+               | D
+               | E => ()
+             };
+
+let nested_match = fun | A (B | C | D | E) => 3;

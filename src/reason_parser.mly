@@ -640,7 +640,7 @@ conflicts.
 %right    COLONEQUAL                    /* expr (e := e := e) */
 %nonassoc below_AS
 %nonassoc AS
-%nonassoc below_BAR
+%nonassoc below_BAR                     /* Allows "building up" of many bars */
 %left     BAR                           /* pattern (p|p|p) */
 %nonassoc below_COMMA
 %left     COMMA                         /* expr/expr_comma_list (e,e,e) */
@@ -1574,12 +1574,15 @@ expr:
         mkexp_attrs (Pexp_fun(l, o, p, $4)) $2 }
   | FUN ext_attributes LPAREN TYPE LIDENT RPAREN fun_def
       { mkexp_attrs (Pexp_newtype($5, $7)) $2 }
-  | FUN ext_attributes required_bar_match_cases
-      { mkexp_attrs (Pexp_function(List.rev $3)) $2 }
-  | SWITCH ext_attributes simple_expr LBRACE required_bar_match_cases RBRACE
-      { mkexp_attrs (Pexp_match($3, List.rev $5)) $2 }
-  | TRY ext_attributes simple_expr LBRACE required_bar_match_cases RBRACE
-      { mkexp_attrs (Pexp_try($3, List.rev $5)) $2 }
+  /* List style rules like this often need a special precendence
+     such as below_BAR in order to let the entire list "build up"
+   */
+  | FUN ext_attributes BAR no_leading_bar_match_cases %prec below_BAR
+      { mkexp_attrs (Pexp_function(List.rev $4)) $2 }
+  | SWITCH ext_attributes simple_expr LBRACE BAR no_leading_bar_match_cases RBRACE
+      { mkexp_attrs (Pexp_match($3, List.rev $6)) $2 }
+  | TRY ext_attributes simple_expr LBRACE BAR no_leading_bar_match_cases RBRACE
+      { mkexp_attrs (Pexp_try($3, List.rev $6)) $2 }
   /* We must require the bar to allow both unified function syntax
    * with OR pattern matching simultaneously
     | FUNCTION ext_attributes opt_bar match_cases
@@ -2052,37 +2055,21 @@ curried_binding:
       { mkexp(Pexp_newtype($3, $5)) }
 ;
 
-required_bar_match_cases:
-   match_case_with_leading_bar { [$1] }
-  | required_bar_match_cases match_case_with_leading_bar { $2 :: $1 }
+no_leading_bar_match_cases:
+  | match_case { [$1] }
+  | no_leading_bar_match_cases BAR match_case { $3 :: $1 }
 ;
 
-/*
- * Conveniently includes the bar as part of the location. This is very useful
- * for distributing comments to their proper locations. It may make integration
- * with standard OCaml source more difficult.
- */
-bar_pattern:
-  | BAR pattern_without_or {$2}
-
-/* Once the required leading BAR has been seen, we expect everything following
-* to be BAR delimited. */
-bar_delimited_pattern:
-  | pattern_without_or {$1}
-  | pattern_without_or BAR bar_delimited_pattern
-    { mkpat(Ppat_or($1, $3)) }
-
-bar_prefixed_delimited_pattern:
-  | bar_pattern {$1} %prec below_BAR
-  /* I don't know how this isn't a shift/reduce conflict */
-  | bar_pattern bar_prefixed_delimited_pattern
-    { reloc_pat (mkpat(Ppat_or($1, $2))) }
+or_pattern:
+  /* The reloc_pat likely isn't helping anything here */
+  | pattern BAR pattern
+    { reloc_pat (mkpat(Ppat_or($1, $3))) }
 
 
-match_case_with_leading_bar:
-  | bar_prefixed_delimited_pattern EQUALGREATER expr
+match_case:
+  | pattern EQUALGREATER expr
       { Exp.case $1 $3 }
-  | bar_prefixed_delimited_pattern WHEN expr EQUALGREATER expr
+  | pattern WHEN expr EQUALGREATER expr
       { Exp.case $1 ~guard:$3 $5 }
 ;
 
@@ -2227,7 +2214,7 @@ type_constraint:
 
 pattern:
   | pattern_without_or {$1}
-  | bar_prefixed_delimited_pattern {$1}  %prec below_AS
+  | or_pattern {$1}  %prec below_AS
 
 pattern_without_or:
     simple_pattern

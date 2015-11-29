@@ -63,7 +63,7 @@ let doesntCareWhichFormAs x => switch x {
 let accessDeeply LocalModule.AccessedThroughModule => 10;
 
 let accessDeeplyWithArg
-    (| LocalModule.AccessedThroughModuleWith x | LocalModule.AccessedThroughModuleWithTwo _ x) => x;
+    (LocalModule.AccessedThroughModuleWith x | LocalModule.AccessedThroughModuleWithTwo _ x) => x;
 
 /* Destructured matching *not* at function definition */
 let accessDeeply x => switch x {
@@ -184,7 +184,7 @@ let two = eval (App (App Add (Int 1)) (Int 1));
 
 type someVariant = | Purple of int | Yellow of int;
 
-let | Purple x | Yellow x = switch (Yellow 100, Purple 101) {
+let Purple x | Yellow x = switch (Yellow 100, Purple 101) {
   | (Yellow y, Purple p) => Yellow (p + y)
   | (Purple p, Yellow y) => Purple (y + p)
   | (Purple p, Purple y) => Yellow (y + p)
