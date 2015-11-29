@@ -1582,8 +1582,12 @@ class printer  ()= object(self:'self)
   method type_variant_leaf1 print_bar {pcd_name; pcd_args; pcd_res; pcd_loc} =
     let sourceMappedName = SourceMap (break, pcd_name.loc, atom pcd_name.txt) in
     let nameOf = makeList ~postSpace:true [sourceMappedName; atom "of"] in
-    let barNameOf = makeList ~postSpace:true [atom "|"; nameOf] in
-    let barName = makeList ~postSpace:true [atom "|"; sourceMappedName] in
+    let barNameOf =
+      let lst = if print_bar then [atom "|"; nameOf] else [nameOf] in
+      makeList ~postSpace:true lst in
+    let barName =
+      let lst = if print_bar then [atom "|"; sourceMappedName] else [sourceMappedName] in
+      makeList ~postSpace:true lst in
 
     let args = (List.map self#non_arrowed_simple_core_type pcd_args) in
     let gadtRes = match pcd_res with
