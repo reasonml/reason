@@ -32,6 +32,15 @@ exception NotPossible of string
 
 let useSingleColonForNamedArgs = false
 
+let case_not_implemented msg loc (file, line, column) =
+  Format.fprintf Format.err_formatter
+    "Not Implemented Yet %s %a (from: %s:%s:%s)@."
+    msg
+    Location.print_loc loc
+    file
+    (string_of_int line)
+    (string_of_int column)
+
 let exprDescrString x =
   x.pexp_loc.loc_start.Lexing.pos_fname ^
     "[" ^
@@ -1830,15 +1839,28 @@ class printer  ()= object(self:'self)
         | Ptyp_constr (li, []) ->
             (* Only simple if zero type paramaters *)
             ensureSingleTokenSticksToLabel (self#longident_loc li)
-        | Ptyp_variant (l, closed, low) -> layoutEasy (wrap (default#core_type1) x)
-        | Ptyp_object (l, o) -> layoutEasy (wrap (default#core_type1) x)
-        | Ptyp_class (li, l) -> (*FIXME*) layoutEasy (wrap (default#core_type1) x)
-        | Ptyp_package (lid, cstrs) -> layoutEasy (wrap (default#core_type1) x)
-        | Ptyp_extension (s, arg) -> layoutEasy (wrap (default#core_type1) x)
+        | Ptyp_variant (l, closed, low) -> (* FIXME *)
+            case_not_implemented "Ptyp_variant" x.ptyp_loc (try assert false with Assert_failure x -> x);
+            layoutEasy (wrap (default#core_type1) x)
+        | Ptyp_object (l, o) -> (*FIXME*)
+            case_not_implemented "Ptyp_object" x.ptyp_loc (try assert false with Assert_failure x -> x);
+            layoutEasy (wrap (default#core_type1) x)
+        | Ptyp_class (li, l) -> (*FIXME*)
+            case_not_implemented "Ptyp_class" x.ptyp_loc (try assert false with Assert_failure x -> x);
+            layoutEasy (wrap (default#core_type1) x)
+        | Ptyp_package (lid, []) -> (* FIXME handle general case *)
+            layoutEasy (wrap (default#core_type1) x)
+        | Ptyp_package (lid, cstrs) -> (*FIXME*)
+            case_not_implemented "Ptyp_packge" x.ptyp_loc (try assert false with Assert_failure x -> x);
+            layoutEasy (wrap (default#core_type1) x)
+        | Ptyp_extension (s, arg) -> (*FIXME*)
+            case_not_implemented "Ptyp_extension" x.ptyp_loc (try assert false with Assert_failure x -> x);
+            layoutEasy (wrap (default#core_type1) x)
         | Ptyp_constr (_, _::_)
         | Ptyp_arrow (_, _, _)
         | Ptyp_alias (_, _)
-        | Ptyp_poly (_, _) -> makeList ~wrap:("(",")") ~break:IfNeed [self#core_type x]
+        | Ptyp_poly (_, _) ->
+            makeList ~wrap:("(",")") ~break:IfNeed [self#core_type x]
       in
       SourceMap (break, x.ptyp_loc, result)
   (* TODO: ensure that we have a form of desugaring that protects *)
@@ -3157,21 +3179,27 @@ class printer  ()= object(self:'self)
           in
           let upToBody = makeList ~inline:(true, true) ~postSpace:true [atom "for"; dockedToFor] in
           label ~space:true upToBody (makeLetSequence (self#letList e3))
-        | Pexp_new (li) ->
+        | Pexp_new (li) -> (*FIXME*)
+            case_not_implemented "Pexp_new" x.pexp_loc (try assert false with Assert_failure x -> x);
             layoutEasy ((wrap default#expression) x)
-        | Pexp_setinstvar (s, e) ->
+        | Pexp_setinstvar (s, e) -> (*FIXME*)
+            case_not_implemented "Pexp_setinstvar" x.pexp_loc (try assert false with Assert_failure x -> x);
             layoutEasy ((wrap default#expression) x)
-        | Pexp_override l -> (* FIXME *)
+        | Pexp_override l -> (*FIXME*)
+            case_not_implemented "Pexp_override" x.pexp_loc (try assert false with Assert_failure x -> x);
             layoutEasy ((wrap default#expression) x)
-        | Pexp_assert e -> (* FIXME *)
+        | Pexp_assert e -> (*FIXME*)
+            case_not_implemented "Pexp_assert" x.pexp_loc (try assert false with Assert_failure x -> x);
             layoutEasy ((wrap default#expression) x)
         | Pexp_lazy (e) ->
             makeList ~postSpace:true [atom "lazy"; self#simple_expression e]
-        | Pexp_poly _ ->
+        | Pexp_poly _ -> (*FIXME*)
+            case_not_implemented "Pexp_poly" x.pexp_loc (try assert false with Assert_failure x -> x);
             assert false
         | Pexp_variant (l, Some eo) ->
             layoutEasy (self#constructor_expression embeddedAttrs (atom ("`" ^ l)) eo)
-        | Pexp_extension (s, arg) ->
+        | Pexp_extension (s, arg) -> (*FIXME*)
+            case_not_implemented "Pexp_extension" x.pexp_loc (try assert false with Assert_failure x -> x);
             layoutEasy ((wrap default#expression) x)
         | _ -> self#expression1 x
       in
@@ -3467,7 +3495,8 @@ class printer  ()= object(self:'self)
             self#type_extension te
         | Psig_exception ed ->
             self#exception_declaration ed
-        | Psig_class l ->
+        | Psig_class l -> (*FIXME*)
+            case_not_implemented "Psig_class" x.psig_loc (try assert false with Assert_failure x -> x);
             wrap (default#signature_item) x
         | Psig_module {pmd_name; pmd_type={pmty_desc=Pmty_alias alias}} ->
             label ~space:true
@@ -3498,7 +3527,8 @@ class printer  ()= object(self:'self)
                     (makeList ~postSpace:true [atom "module type"; atom s.txt; atom "="])
                     (self#module_type mt)
           )
-        | Psig_class_type (l) ->
+        | Psig_class_type l -> (*FIXME*)
+            case_not_implemented "Psig_class_type" x.psig_loc (try assert false with Assert_failure x -> x);
             (wrap default#signature_item) x
         | Psig_recmodule decls ->
             let first xx =

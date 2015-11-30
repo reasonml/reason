@@ -1663,9 +1663,7 @@ let res =
         }
   };
 
-type somePolyVariant =
-  [ `Purple of int | `Yellow of int];
-
+/* FIXME type somePolyVariant = [ `Purple of int | `Yellow of int]; */
 let ylw = `Yellow (100, 100);
 
 let prp = `Purple (101, 100);
@@ -5020,19 +5018,11 @@ type yourThing = myOtherThing int int;
 
 /* Conveniently - this parses exactly how you would intend! No *need* to wrap
 in an extra [], but it doesn't hurt */
-type lookAtThesePolyVariants = list [ `Red];
-
-type bracketsGroupMultipleParamsAndPrecedence =
-  list (list (list [ `Red]));
-
-type youCanWrapExtraIfYouWant = list [ `Red];
-
-type hereAreMultiplePolyVariants =
-  list [ `Red | `Black];
-
-type hereAreMultiplePolyVariantsWithOptionalWrapping =
-  list [ `Red | `Black];
-
+/* FIXME type lookAtThesePolyVariants = list [`Red] ; */
+/* FIXME type bracketsGroupMultipleParamsAndPrecedence = list (list (list [`Red])); */
+/* FIXME type youCanWrapExtraIfYouWant = (list [`Red]); */
+/* FIXME type hereAreMultiplePolyVariants = list [`Red | `Black]; */
+/* FIXME type hereAreMultiplePolyVariantsWithOptionalWrapping = list ([`Red | `Black]); */
 /*
   /* Proposal: ES6 style lambdas: */
 

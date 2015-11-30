@@ -206,7 +206,7 @@ let res = switch myTuple {
            }
 };
 
-type somePolyVariant = [ `Purple of int | `Yellow of int];
+/* FIXME type somePolyVariant = [ `Purple of int | `Yellow of int]; */
 
 let ylw = `Yellow (100, 100);
 
