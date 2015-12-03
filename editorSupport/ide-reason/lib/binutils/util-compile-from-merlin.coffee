@@ -1,6 +1,8 @@
 {BufferedProcess} = require 'atom'
 nuclideCommons = require 'nuclide-commons'
 getReasonifyConfig = require '../getReasonifyConfig'
+nuclideClient = require 'nuclide-client'
+getServiceByNuclideUri = nuclideClient.getServiceByNuclideUri
 
 
 path = require 'path'
@@ -20,22 +22,11 @@ compile = (text, filePath, {onComplete, onFailure}) ->
   if (!compilerPath)
     throw "Cannot compile because no value specified for config ide-reason.pathToCompiler"
 
-  getMerlinFlags = (merlinContents) ->
-    lines = merlinContents.split('\n')
-    buildFlags = []
-    lines.forEach ((line) ->
-      match = line.match (/^B\s+(\S*)/)
-      if match && match[1]
-        buildFlags.push('-I')
-        buildFlags.push(match[1])
-    )
-    lines.forEach ((line) ->
-      match = line.match (/^FLG\s+([\S\s]*)/)
-      if match && match[1]
-        buildFlags.push.apply buildFlags, match[1].split(/\s+/)
-    )
-    buildFlags
-  performCompile = (compileFlagsFromMerlin) ->
+  performCompile = (buildFlagsResult, paths) ->
+    flags = buildFlagsResult && buildFlagsResult['.merlin'] && buildFlagsResult['.merlin'].slice(0) || []
+    pathFlags = (paths || []).forEach (p) ->
+      flags.push '-I'
+      flags.push p
     extension = path.extname(filePath)
     basename = path.basename(filePath)
     # We'll not lock ourselves into any extension scheme other than
@@ -58,7 +49,7 @@ compile = (text, filePath, {onComplete, onFailure}) ->
             '-impl'
         proc = new BufferedProcess
           command: compilerPath
-          args: ['-pp', reasonifyConfig.pathToReasonfmt].concat(compileFlagsFromMerlin).concat(['-c', '-o', outputPath, kindFlag, filePath])
+          args: ['-pp', reasonifyConfig.pathToReasonfmt].concat(flags).concat(['-c', '-o', outputPath, kindFlag, filePath])
           options:
             cwd: '.'
           stderr: (line) ->
@@ -76,20 +67,24 @@ compile = (text, filePath, {onComplete, onFailure}) ->
 
         proc.process.stdin.end()
 
-  nearestMerlin = nuclideCommons.findNearestFile '.merlin', filePath
-  nearestMerlin.then ((nearest) ->
-    if nearest == null
-      performCompile []
-    else
-      fs.readFile (path.join nearest, ".merlin"), (err, merlinContents) ->
-        if err
-          throw err
-        performCompile (getMerlinFlags (merlinContents.toString()))
-  )
+
+  merlinService = getServiceByNuclideUri 'MerlinService', filePath
+  (merlinService._getInstance (filePath)).then (merlinService) ->
+    buildFlagsResult = null
+    buildPathsResult = null
+    buildFlags = merlinService.runSingleCommand ["dump", "flags"]
+    buildFlags.then (flags) ->
+      buildFlagsResult = flags
+      buildPaths = merlinService.runSingleCommand ["path", "list", "build"]
+      buildPaths.then (paths) ->
+        buildPathsResult = paths
+        performCompile buildFlagsResult, buildPathsResult
+
+
 
   temp.cleanup (err, stats) ->
     ## This actually doesn't seem to be cleaning these up
-  
+
 module.exports = {
   compile
 }
