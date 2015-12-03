@@ -35,6 +35,11 @@
       "versions": {
         "2.0.0": "createAutocompleteProvider"
       }
+    },
+    "hyperclick.provider": {
+      "versions": {
+        "0.0.0": "getHyperclickProvider"
+      }
     }
   },
   "dependencies": {
@@ -42,6 +47,7 @@
     "temp": "^0.8.1",
     "sub-atom": "^1.0.0",
     "nuclide-commons": "0.0.32",
+    "nuclide-atom-helpers": "0.0.35",
     "nuclide-client": "0.0.32",
     "ansi_up" : "1.3.0",
     "diff": "2.2.0",

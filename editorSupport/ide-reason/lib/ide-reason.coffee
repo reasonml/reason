@@ -179,6 +179,10 @@ module.exports = IdeReason =
     disableForSelector: '.source.reason .comment',
     getSuggestions: AutoComplete.getAutocompleteSuggestions
 
+
+  getHyperclickProvider:() ->
+    require('./HyperclickProvider')
+
   deactivate: ->
     @pluginManager.deactivate()
     @pluginManager = null
