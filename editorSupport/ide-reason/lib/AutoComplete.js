@@ -79,14 +79,42 @@ var MerlinResponseFormatter = {
   normalizeCompletionItems: function(outputEntries, linePrefix) {
     var newReasonifiedCompletionDescriptions = null;
     var needsLookup = MerlinResponseFormatter.needsLookup(outputEntries);
+    var definitelyOldMerlin = false;
+    var definitelyNewMerlin = false;
     if (needsLookup) {
       var niceOutputEntriesWithFixedTypeConstructors = outputEntries.map(function(entry) {
-        if (entry.kind === 'Constructor') {
-          return Reasonify.niceifyType('type t = | ' + entry.desc);
-        }
+        var definitelyNewMerlin =
+          definitelyNewMerlin ||
+          (entry.kind === 'Value' && !entry.desc.startsWith('val') && !entry.desc.startsWith('external')) ||
+          (entry.kind === 'Constructor' && entry.desc.indexOf(entry.name + ' :') !== 0);
+        var definitelyOldMerlin =
+          definitelyOldMerlin ||
+          !definitelyNewMerlin ||
+          (entry.kind === 'Value' && entry.desc.startsWith('val') || entry.desc.startsWith('external')) ||
+          (entry.kind === 'Constructor' && entry.desc.indexOf(entry.name + ' :') === 0);
+
         // Special case crashes formatter.
         if (entry.desc == "type 'a list = [] | :: of 'a * 'a list") {
           return "type 'a list = list";
+        }
+        if (entry.kind === 'Value') {
+          if (definitelyNewMerlin) {
+            // New merlin has no "val" prefix, insert type.
+            return Reasonify.niceifyType('type t = ' + entry.desc);
+          } else {
+            // Else, old merlin already has a "val: or external:"
+            return Reasonify.niceifyType(entry.desc);
+          }
+        }
+        if (entry.kind === 'Constructor') {
+          // Old merlin lists constructor descriptions as:
+          //    Constructor : int * int
+          if (definitelyOldMerlin) {
+            return Reasonify.niceifyType('type t = | ' + entry.desc);
+          } else {
+            // Else, it's just contains a type description
+            return Reasonify.niceifyType('type t = ' + entry.desc);
+          }
         }
         return Reasonify.niceifyType(entry.desc);
       });
