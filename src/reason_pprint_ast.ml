@@ -54,6 +54,8 @@ type whenToDoSomething =
   | Never
   | IfNeed
   | Always
+  (* Always_rec not only will break, it will break recursively up to the root *)
+  | Always_rec
 
 type easyFormatLabelFormatter = Easy_format.t -> Easy_format.t -> Easy_format.t
 type listConfig = {
@@ -848,6 +850,7 @@ let easyListSettingsFromListConfig listConfig =
           (* Yes, `Never_wrap is a horrible name - really means "if needed". *)
           | IfNeed -> `Never_wrap
           | Always -> `Force_breaks
+          | Always_rec -> `Force_breaks_rec
       );
       indent_body = indent;
       space_after_separator = postSpace;
@@ -961,7 +964,7 @@ let makeAppList delimiter l =
 let ensureSingleTokenSticksToLabel x =
   makeList
     ~listConfigIfCommentsInterleaved: (
-      fun currentConfig -> {currentConfig with break=Always; postSpace=true; indent=0; inline=(true, true)}
+      fun currentConfig -> {currentConfig with break=Always_rec; postSpace=true; indent=0; inline=(true, true)}
     )
     [x]
 
@@ -992,11 +995,11 @@ let makeES6List lst last =
 
 let makeNonIndentedBreakingList lst =
     (* No align closing: So that semis stick to the ends of every break *)
-  makeList ~break:Always ~indent:0 ~inline:(true, true) lst
+  makeList ~break:Always_rec ~indent:0 ~inline:(true, true) lst
 
 let break =
     (* No align closing: So that semis stick to the ends of every break *)
-  makeListConfig ~break:Always ~indent:0 ~inline:(true, true) ()
+  makeListConfig ~break:Always_rec ~indent:0 ~inline:(true, true) ()
 
 let makeBreakableList lst = makeList ~break:IfNeed ~inline:(true, true) lst
 
@@ -1230,7 +1233,7 @@ let layoutToEasyFormatNoComments layoutNode =
 
 let layoutToEasyFormat layoutNode comments =
   let (easyFormat, surplus) = layoutToEasyFormatAndSurplus layoutNode comments in
-  makeEasyList ~break:Always ~indent:0 ~inline:(true, true) (easyFormat :: formatComments surplus)
+  makeEasyList ~break:Always_rec ~indent:0 ~inline:(true, true) (easyFormat :: formatComments surplus)
 
 
 let partitionFinalWrapping listTester wrapFinalItemSetting x =
@@ -1250,7 +1253,7 @@ let semiTerminated term = makeList [term; atom ";"]
 
 (* TODO: Do not print the final semicolon *)
 let makeLetSequence letItems =
-  makeList ~wrap:("{", "}") ~break:Always ~inline:(true, false) letItems
+  makeList ~wrap:("{", "}") ~break:Always_rec ~inline:(true, false) letItems
 
 let formatAttributed x y = makeList ~wrap:("(", ")") ~break:IfNeed [
   makeList ~break:IfNeed ~wrap:("(", ")") [x];
@@ -1582,7 +1585,7 @@ class printer  ()= object(self:'self)
           match tl with
             (* Exactly one type *)
             | [] -> first
-            | tlhd::tltl -> makeList ~indent:0 ~inline:(true, true) ~break:Always (
+            | tlhd::tltl -> makeList ~indent:0 ~inline:(true, true) ~break:Always_rec (
                 first::(List.map (formatOneTypeDefStandard (atom "and")) (tlhd::tltl))
               )
 
@@ -2905,7 +2908,7 @@ class printer  ()= object(self:'self)
         | x::x2::xtl -> List.map forEachRemaining (x2::xtl)
     ) in
     makeList
-      ~break:Always
+      ~break:Always_rec
       ~indent:0
       ~inline:(true, true)
       (firstLine::remainingBindings)
@@ -3060,30 +3063,31 @@ class printer  ()= object(self:'self)
                the end etc.  *)
           makeList
             ~postSpace:true
-            ~break:Always
+            ~break:Always_rec
             ~inline:(true, true)
             ~wrap:("fun","")
             ~pad:(true, false)
             (self#case_list l)
 
         | Pexp_try (e, l) ->
-            let switchWith = makeList ~postSpace:true ~inline:(true, false) ~break:Never [
-              atom "try";
-              (self#reset#simple_expression e);
-            ] in
-            label ~space:true switchWith (makeList ~wrap:("{", "}") ~break:Always (self#case_list l))
+            let switchWith =
+              label ~space:true
+                (atom "try")
+                (self#reset#simple_expression e);
+            in
+            label ~space:true switchWith (makeList ~wrap:("{", "}") ~break:Always_rec (self#case_list l))
         | Pexp_match (e, l) -> (
             match detectTernary l with
             | Some (ifTrue, ifFalse) -> self#formatTernary x e ifTrue ifFalse
             | None ->
-              let switchWith = makeList ~postSpace:true ~inline:(true, false) ~break:Never [
-                atom "switch";
+              let switchWith = label ~space:true
+                (atom "switch")
                 (self#reset#simple_expression e);
-              ] in
+              in
               label
                 ~space:true
                 switchWith
-                (makeList ~wrap:("{", "}") ~break:Always (self#case_list l))
+                (makeList ~wrap:("{", "}") ~break:Always_rec (self#case_list l))
           )
 
         | Pexp_apply (e, l) -> (
@@ -3153,9 +3157,10 @@ class printer  ()= object(self:'self)
           sequence init blocks
 
         | Pexp_while (e1, e2) ->
-            label ~space:true (makeList ~postSpace:true [atom "while"; (self#simple_expression e1)]) (
-              makeLetSequence (self#letList e2)
-            )
+          label
+            ~space:true
+            (label ~space:true (atom "while") (self#simple_expression e1))
+            (makeLetSequence (self#letList e2))
         | Pexp_for (s, e1, e2, df, e3) ->
           (*
            *  for longIdentifier in
@@ -3962,12 +3967,12 @@ class printer  ()= object(self:'self)
           label ~space:true everythingButExpr rhs
         | StickToBarSplitCases ->
           let everythingButExpr =
-            makeList ~break:Always ~inline:(true, true) (List.map bar orsWithWhereAndArrowOnLast) in
+            makeList ~break:Always_rec ~inline:(true, true) (List.map bar orsWithWhereAndArrowOnLast) in
           label ~space:true everythingButExpr rhs
         | StickToLastSplitCases ->
           let withoutBars =
             appendLabelToLast orsWithWhereAndArrowOnLast rhs in
-          makeList ~break:Always ~inline:(true, true) (List.map bar withoutBars)
+          makeList ~break:Always_rec ~inline:(true, true) (List.map bar withoutBars)
       in
         SourceMap (
           break,

@@ -614,11 +614,13 @@ let logTapSuccess self =>
     ();
   };
 
-if (if x {
-      true;
-    } else {
-      false;
-    }) {
+if (
+  if x {
+    true;
+  } else {
+    false;
+  }
+) {
   true;
 } else {
   false;
@@ -674,11 +676,13 @@ if printIfFirstArgGreater {
   thisDoesnt even have2 be simple;
 };
 
-if (if x {
-      true;
-    } else {
-      false;
-    }) {
+if (
+  if x {
+    true;
+  } else {
+    false;
+  }
+) {
   ();
 } else {
   ();
@@ -1080,9 +1084,13 @@ module type ASig = {let a: int;};
 
 module type BSig = {let b: int;};
 
-let module AMod = {let a = 10;};
+let module AMod = {
+  let a = 10;
+};
 
-let module BMod = {let b = 10;};
+let module BMod = {
+  let b = 10;
+};
 
 let module CurriedSugar (A: ASig) (B: BSig) => {
   let result = A.a + B.b;
@@ -1170,13 +1178,23 @@ let module CurriedSugarFunctorResult =
   CurriedSugar AMod BMod;
 
 let module CurriedSugarFunctorResultInline =
-  CurriedSugar {let a = 10;} {let b = 10;};
+  CurriedSugar {
+                 let a = 10;
+               } 
+               {
+                 let b = 10;
+               };
 
 let module CurriedNoSugarFunctorResult =
   CurriedNoSugar AMod BMod;
 
 let module CurriedNoSugarFunctorResultInline =
-  CurriedNoSugar {let a = 10;} {let b = 10;};
+  CurriedNoSugar {
+                   let a = 10;
+                 } 
+                 {
+                   let b = 10;
+                 };
 
 let module ResultFromNonSimpleFunctorArg =
   CurriedNoSugar (MakeAModule {}) BMod;
@@ -1221,7 +1239,9 @@ let module
   CurriedSugarWithAnnotationAndReturnAnnotated:
   ASig => BSig => SigResult =
   functor (A: ASig) (B: BSig) => (
-    {let result = A.a + B.b;}: SigResult
+    {
+      let result = A.a + B.b;
+    }: SigResult
   );
 
 let module ReturnsAFunctor 
@@ -1332,7 +1352,9 @@ include YourLib.CreateComponent {
 
 module type HasInt = {let x: int;};
 
-let module MyModule = {let x = 10;};
+let module MyModule = {
+  let x = 10;
+};
 
 let myFirstClass: (module HasInt) =
   (module MyModule);
@@ -4053,9 +4075,13 @@ module type ASig = {let a: int;};
 
 module type BSig = {let b: int;};
 
-let module AMod = {let a = 10;};
+let module AMod = {
+  let a = 10;
+};
 
-let module BMod = {let b = 10;};
+let module BMod = {
+  let b = 10;
+};
 
 let module CurriedSugar (A: ASig) (B: BSig) =>
   /* Commenting before First curried functor arg */
@@ -4064,7 +4090,9 @@ let module CurriedSugar (A: ASig) (B: BSig) =>
      * correclty due to the fold_left.
      */
   /* Commenting before Second curried functor arg */
-  {let result = A.a + B.b;};
+  {
+    let result = A.a + B.b;
+  };
 
 /* Comment at bottom of module expression */
 let module CurriedSugarFunctorResult =
@@ -4079,9 +4107,13 @@ let module CurriedSugarFunctorResultInline =
   /* Commenting before functor name*/
   CurriedSugar
     /* Commenting before functor arg 1 in app */ 
-    {let a = 10;} 
+    {
+      let a = 10;
+    } 
     /* Commenting before functor arg 2 in app */ 
-    {let b = 10;};
+    {
+      let b = 10;
+    };
 
 /*
  * Commenting locations
@@ -5539,9 +5571,12 @@ let includesACommentCloseInIdentifier = ( *\*\/ );
 
 let 
   shouldSimplifyAnythingExceptApplicationAndConstruction =
-  call "hi" ^ (switch x {
-                 | _ => "hi"
-               }) ^ "yo";
+  call "hi" ^ (
+                switch x {
+                  | _ => "hi"
+                }
+              ) ^ 
+              "yo";
 
 /* Add tests with IF/then mixed with infix/constructor application on left and right sides */
 /**
@@ -5733,56 +5768,72 @@ let mutativeFunction =
 
  * vim: set ft=reason:
  */
-switch (while true {
-          ();
-        }) {
+switch (
+  while true {
+    ();
+  }
+) {
   | _ => ()
 };
 
-try (while true {
-       ();
-     }) {
-  | _ => ()
-};
-
-switch (for i in 0 to 10 {
-          ();
-        }) {
-  | _ => ()
-};
-
-try (for i in 0 to 10 {
-       ();
-     }) {
+try (
+  while true {
+    ();
+  }
+) {
   | _ => ()
 };
 
 switch (
-         if true {
-           print_string "switching on true";
-         } else {
-           print_string "switching on false";
-         }
-       ) {
+  for i in 0 to 10 {
+    ();
+  }
+) {
   | _ => ()
 };
 
-try (for i in 0 to 10 {
-       ();
-     }) {
+try (
+  for i in 0 to 10 {
+    ();
+  }
+) {
+  | _ => ()
+};
+
+switch (
+  if true {
+    print_string "switching on true";
+  } else {
+    print_string "switching on false";
+  }
+) {
+  | _ => ()
+};
+
+try (
+  for i in 0 to 10 {
+    ();
+  }
+) {
   | _ => ()
 };
 
 let result =
-  (while false {
-     ();
-   }) == () ? false : true;
+  (
+    while false {
+      ();
+    }
+  ) == () ? false : true;
 
-switch (try (try () {
-               | _ => ()
-             }) {
-          | _ => ()
-        }) {
+switch (
+  try (
+    try () {
+      | _ => ()
+    }
+  ) {
+    | _ => ()
+  }
+) {
   | () => ()
 };
 
@@ -5794,9 +5845,9 @@ while shouldStillLoop.contents {
 };
 
 while {
-        shouldStillLoop.contents <- false;
-        shouldStillLoop.contents;
-      } {
+  shouldStillLoop.contents <- false;
+  shouldStillLoop.contents;
+} {
   print_string "Will never loop";
 };
 
