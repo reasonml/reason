@@ -1247,8 +1247,6 @@ let partitionFinalWrapping listTester wrapFinalItemSetting x =
         else
           Some (List.rev revEverythingButLast, last)
 
-let layoutEasy x = x
-
 let semiTerminated term = makeList [term; atom ";"]
 
 (* TODO: Do not print the final semicolon *)
@@ -1469,7 +1467,7 @@ class printer  ()= object(self:'self)
             let poly =
               makeList ~break:IfNeed [
                 makeList ~postSpace:true [
-                  makeList ~postSpace:true (List.map (fun x -> layoutEasy (self#tyvar x)) sl);
+                  makeList ~postSpace:true (List.map (fun x -> self#tyvar x) sl);
                   atom ".";
                 ];
                 self#core_type ct;
@@ -1833,7 +1831,7 @@ class printer  ()= object(self:'self)
               (List.map (self#core_type) l)
         (*   | QUOTE ident *)
         (*       { mktyp(Ptyp_var $2) } *)
-        | Ptyp_var s -> ensureSingleTokenSticksToLabel (layoutEasy (self#tyvar s))
+        | Ptyp_var s -> ensureSingleTokenSticksToLabel (self#tyvar s)
         (*   | UNDERSCORE *)
         (*       { mktyp(Ptyp_any) } *)
         | Ptyp_any -> ensureSingleTokenSticksToLabel (atom "_")
@@ -1844,21 +1842,21 @@ class printer  ()= object(self:'self)
             ensureSingleTokenSticksToLabel (self#longident_loc li)
         | Ptyp_variant (l, closed, low) -> (* FIXME *)
             case_not_implemented "Ptyp_variant" x.ptyp_loc (try assert false with Assert_failure x -> x);
-            layoutEasy (wrap (default#core_type1) x)
+            wrap (default#core_type1) x
         | Ptyp_object (l, o) -> (*FIXME*)
             case_not_implemented "Ptyp_object" x.ptyp_loc (try assert false with Assert_failure x -> x);
-            layoutEasy (wrap (default#core_type1) x)
+            wrap (default#core_type1) x
         | Ptyp_class (li, l) -> (*FIXME*)
             case_not_implemented "Ptyp_class" x.ptyp_loc (try assert false with Assert_failure x -> x);
-            layoutEasy (wrap (default#core_type1) x)
+            wrap (default#core_type1) x
         | Ptyp_package (lid, []) -> (* FIXME handle general case *)
-            layoutEasy (wrap (default#core_type1) x)
+            wrap (default#core_type1) x
         | Ptyp_package (lid, cstrs) -> (*FIXME*)
             case_not_implemented "Ptyp_packge" x.ptyp_loc (try assert false with Assert_failure x -> x);
-            layoutEasy (wrap (default#core_type1) x)
+            wrap (default#core_type1) x
         | Ptyp_extension (s, arg) -> (*FIXME*)
             case_not_implemented "Ptyp_extension" x.ptyp_loc (try assert false with Assert_failure x -> x);
-            layoutEasy (wrap (default#core_type1) x)
+            wrap (default#core_type1) x
         | Ptyp_constr (_, _::_)
         | Ptyp_arrow (_, _, _)
         | Ptyp_alias (_, _)
@@ -2222,7 +2220,7 @@ class printer  ()= object(self:'self)
     match x.pexp_desc with
       | Pexp_apply (e, l) -> (
           match self#sugar_expr x with
-            | Some s -> Some (layoutEasy s)
+            | Some s -> Some s
             | None -> None
       )
       | _ -> None
@@ -2447,7 +2445,7 @@ class printer  ()= object(self:'self)
               )
           )
       )
-      | _ -> ([SourceMap (break, x.pexp_loc, (self#expression x))], None)
+      | _ -> ([self#expression x], None)
 
   method formatTernary x test ifTrue ifFalse =
     if inTernary then
@@ -2644,7 +2642,7 @@ class printer  ()= object(self:'self)
       label
         ~space:true
         everythingButReturnVal
-        (layoutEasy (ensureSingleTokenSticksToLabel (atom "=>"))) in
+        (ensureSingleTokenSticksToLabel (atom "=>")) in
 
     formatAttachmentApplication
       applicationFinalWrapping
@@ -2709,7 +2707,7 @@ class printer  ()= object(self:'self)
         let firstOne =
           match mt with
             | None -> atom "()"
-            | Some mt' -> makeList ~wrap:("(",")") ~break:IfNeed [formatTypeConstraint (atom s.txt) (layoutEasy (self#module_type mt'))]
+            | Some mt' -> makeList ~wrap:("(",")") ~break:IfNeed [formatTypeConstraint (atom s.txt) (self#module_type mt')]
         in
         let (functorArgsRecurse, returnStructure) = (self#curriedFunctorPatternsAndReturnStruct me2) in
         (firstOne::functorArgsRecurse, returnStructure)
@@ -2787,7 +2785,7 @@ class printer  ()= object(self:'self)
                     None
                     appTerms
               | (_, _) ->
-                  let bindingName = layoutEasy (self#simple_pattern pvb_pat) in
+                  let bindingName = self#simple_pattern pvb_pat in
                   let (argsWithConstraint, actualReturn) = self#normalizeFunctionArgsConstraint argsList return in
                   let returnedAppTerms = self#expressionToFormattedApplicationItems actualReturn in
                   self#wrapCurriedFunctionBinding prefixText bindingName argsWithConstraint returnedAppTerms
@@ -3035,7 +3033,7 @@ class printer  ()= object(self:'self)
       )
     else
       let itm = match x.pexp_desc with
-        (* Sequences don't require parens when under pipe in SugarML. *)
+        (* Sequences don't require parens when under pipe in Reason. *)
         (* The only reason Pexp_fun must also be wrapped in parens is that its =>
            token will be confused with the match token. *)
         (* In Reason, we do not need to wrap matches in parens when we are under
@@ -3120,7 +3118,7 @@ class printer  ()= object(self:'self)
                   end
               (* TODO: Explicit arity *)
               | `normal ->
-                  layoutEasy (self#constructor_expression embeddedAttrs (self#longident_loc li) eo)
+                  self#constructor_expression embeddedAttrs (self#longident_loc li) eo
               | _ -> assert false)
         | Pexp_setfield (e1, li, e2) ->
           label ~space:true
@@ -3186,26 +3184,26 @@ class printer  ()= object(self:'self)
           label ~space:true upToBody (makeLetSequence (self#letList e3))
         | Pexp_new (li) -> (*FIXME*)
             case_not_implemented "Pexp_new" x.pexp_loc (try assert false with Assert_failure x -> x);
-            layoutEasy ((wrap default#expression) x)
+            (wrap default#expression) x
         | Pexp_setinstvar (s, e) -> (*FIXME*)
             case_not_implemented "Pexp_setinstvar" x.pexp_loc (try assert false with Assert_failure x -> x);
-            layoutEasy ((wrap default#expression) x)
+            (wrap default#expression) x
         | Pexp_override l -> (*FIXME*)
             case_not_implemented "Pexp_override" x.pexp_loc (try assert false with Assert_failure x -> x);
-            layoutEasy ((wrap default#expression) x)
+            (wrap default#expression) x
         | Pexp_assert e -> (*FIXME*)
             case_not_implemented "Pexp_assert" x.pexp_loc (try assert false with Assert_failure x -> x);
-            layoutEasy ((wrap default#expression) x)
+            (wrap default#expression) x
         | Pexp_lazy (e) ->
             makeList ~postSpace:true [atom "lazy"; self#simple_expression e]
         | Pexp_poly _ -> (*FIXME*)
             case_not_implemented "Pexp_poly" x.pexp_loc (try assert false with Assert_failure x -> x);
             assert false
         | Pexp_variant (l, Some eo) ->
-            layoutEasy (self#constructor_expression embeddedAttrs (atom ("`" ^ l)) eo)
+            self#constructor_expression embeddedAttrs (atom ("`" ^ l)) eo
         | Pexp_extension (s, arg) -> (*FIXME*)
             case_not_implemented "Pexp_extension" x.pexp_loc (try assert false with Assert_failure x -> x);
-            layoutEasy ((wrap default#expression) x)
+            (wrap default#expression) x
         | _ -> self#expression1 x
       in
       SourceMap (break, x.pexp_loc, itm)
@@ -3214,13 +3212,13 @@ class printer  ()= object(self:'self)
   method potentiallyConstrainedExpr x =
     match x.pexp_desc with
       | Pexp_constraint (e, ct) ->
-          formatTypeConstraint (self#expression e) (layoutEasy (self#core_type ct))
+          formatTypeConstraint (self#expression e) (self#core_type ct)
       | _ -> self#expression x
 
   method expression1 x =
     if x.pexp_attributes <> [] then self#simple_expression x
     else match x.pexp_desc with
-      | Pexp_object cs -> layoutEasy (self#class_structure cs)
+      | Pexp_object cs -> self#class_structure cs
       | _ -> self#expression2 x
 
 
@@ -3307,7 +3305,7 @@ class printer  ()= object(self:'self)
         (* | `Prefix _ | `Infix _ -> pp f "( %a )" self#longident_loc li) *)
         | Pexp_constant c ->
             (* Constants shouldn't break when to the right of a label *)
-            ensureSingleTokenSticksToLabel (layoutEasy (self#constant c))
+            ensureSingleTokenSticksToLabel (self#constant c)
         | Pexp_apply (e, l) -> (
             match self#expressionToFormattedApplicationItems x with
               | ([], _) ->
@@ -3332,7 +3330,7 @@ class printer  ()= object(self:'self)
               ~postSpace:true
               ~wrap:("(", ")")
               ~inline:(true, true)
-              [atom "module"; layoutEasy (self#module_expr me);]
+              [atom "module"; self#module_expr me;]
 
         | Pexp_tuple l ->
             (* TODO: These may be simple, non-simple, or type constrained
@@ -3347,7 +3345,7 @@ class printer  ()= object(self:'self)
             makeList
               ~break:IfNeed
               ~wrap:("(", ")")
-              [formatTypeConstraint (self#expression e) (layoutEasy (self#core_type ct))]
+              [formatTypeConstraint (self#expression e) (self#core_type ct)]
         | Pexp_coerce (e, cto1, ct) ->
             atom "COERCION NOT SUPPORTED"
         (* let optFormattedType = match cto1 with None -> None | Some typ -> self#core_type cto1 in *)
@@ -3449,7 +3447,7 @@ class printer  ()= object(self:'self)
     | Upto -> atom "to"
     | Downto -> atom "downto"
   method attributes l =
-    layoutEasy ((wrap default#attributes) l)
+    (wrap default#attributes l)
 
   method attribute = wrap default#attribute
   method exception_declaration ed =
@@ -3743,7 +3741,7 @@ class printer  ()= object(self:'self)
         (* Simple module with type constraint, no functor args. *)
         | ([], Pmod_constraint (unconstrainedRetTerm, ct)) ->
             let appTerms = self#moduleExpressionToFormattedApplicationItems unconstrainedRetTerm in
-            self#formatSimplePatternBinding prefixText bindingName (Some (layoutEasy (self#module_type ct))) appTerms
+            self#formatSimplePatternBinding prefixText bindingName (Some (self#module_type ct)) appTerms
         (* Simple module with type no constraint, no functor args. *)
         | ([], _) ->
             let appTerms = self#moduleExpressionToFormattedApplicationItems return in
@@ -3756,7 +3754,7 @@ class printer  ()= object(self:'self)
                  *
                  * let module X = (A) (B) : Ret => ...
                  * *)
-                | Pmod_constraint (me, ct) -> (argsList@[formatJustTheTypeConstraint (layoutEasy (self#non_arrowed_module_type ct))], me)
+                | Pmod_constraint (me, ct) -> (argsList@[formatJustTheTypeConstraint (self#non_arrowed_module_type ct)], me)
                 | _ -> (argsList, return)
             ) in
             let returnedAppTerms = self#moduleExpressionToFormattedApplicationItems actualReturn in
