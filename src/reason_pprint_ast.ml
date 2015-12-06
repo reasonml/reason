@@ -2514,7 +2514,7 @@ class printer  ()= object(self:'self)
 
   (* The [bindingLabel] is either the function name (if let binding) or first
      arg (if lambda) *)
-  method wrapCurriedFunctionBinding prefixTextTrailingSpace bindingLabel patternList returnedAppTerms =
+  method wrapCurriedFunctionBinding attachTo prefixTextTrailingSpace bindingLabel patternList returnedAppTerms =
     let allPatterns = bindingLabel::patternList in
     let partitioning = curriedFunctionFinalWrapping allPatterns in
     let everythingButReturnVal = match settings.returnStyle with
@@ -2638,12 +2638,16 @@ class printer  ()= object(self:'self)
     (* Adding any layer of indirection between expr will result in it not
        sticking to the "label" - which is the entire curried pattern *)
 
-    let everythingIncludingArrow =
+    let almostEverythingIncludingArrow =
       label
         ~space:true
         everythingButReturnVal
         (ensureSingleTokenSticksToLabel (atom "=>")) in
 
+    let everythingIncludingArrow = match attachTo with
+      | None -> almostEverythingIncludingArrow
+      | Some toThis -> label ~space:true toThis almostEverythingIncludingArrow
+    in
     formatAttachmentApplication
       applicationFinalWrapping
       (Some (true, everythingIncludingArrow))
@@ -2788,7 +2792,7 @@ class printer  ()= object(self:'self)
                   let bindingName = self#simple_pattern pvb_pat in
                   let (argsWithConstraint, actualReturn) = self#normalizeFunctionArgsConstraint argsList return in
                   let returnedAppTerms = self#expressionToFormattedApplicationItems actualReturn in
-                  self#wrapCurriedFunctionBinding prefixText bindingName argsWithConstraint returnedAppTerms
+                  self#wrapCurriedFunctionBinding None prefixText bindingName argsWithConstraint returnedAppTerms
           )
 
       (* Currently only forms of [let (inParenVar:typ) =] or [let x: forall type =]*)
@@ -3053,7 +3057,7 @@ class printer  ()= object(self:'self)
                   (* For lambdas, "fun" plays the role that the binding name does in
                      bindings *)
                   let returnedAppTerms = self#expressionToFormattedApplicationItems ret in
-                  self#wrapCurriedFunctionBinding "fun " firstArg tl returnedAppTerms
+                  self#wrapCurriedFunctionBinding None "fun " firstArg tl returnedAppTerms
             )
         | Pexp_function l ->
             (* Anything that doesn't have wrappers (parens/braces) should be inline
@@ -3380,12 +3384,11 @@ class printer  ()= object(self:'self)
                              makeList [labelExpr; comma;]
                            else
                              labelExpr
-                         | (_, _) ->
-                             let (argsWithConstraint, actualReturn) = self#normalizeFunctionArgsConstraint argsList return in
-                             let returnedAppTerms = self#expressionToFormattedApplicationItems actualReturn in
-                             let lidentStr = (wrapToStr longident li.txt) in
-                             let labelExpr = self#wrapCurriedFunctionBinding (lidentStr ^ ": ") (atom "fun") argsWithConstraint returnedAppTerms in
-                             if appendComma then makeList [labelExpr; comma;] else labelExpr
+                         | (firstArg::tl, _) ->
+                           let upToColon = makeList [self#longident_loc li; atom ":"] in
+                           let returnedAppTerms = self#expressionToFormattedApplicationItems return in
+                           let labelExpr = self#wrapCurriedFunctionBinding (Some upToColon) "fun " firstArg tl returnedAppTerms in
+                           if appendComma then makeList [labelExpr; comma;] else labelExpr
                      )
               in SourceMap(break, totalRowLoc, theRow)
             in
@@ -3680,7 +3683,7 @@ class printer  ()= object(self:'self)
                 (* See #19/20 in syntax.mls - cannot annotate return type at
                    the moment. *)
                 let returnedAppTerms = self#moduleExpressionToFormattedApplicationItems return in
-                self#wrapCurriedFunctionBinding "functor " firstArg restArgs returnedAppTerms
+                self#wrapCurriedFunctionBinding None "functor " firstArg restArgs returnedAppTerms
           )
       | Pmod_apply (me1, me2) ->
           let appTerms = self#moduleExpressionToFormattedApplicationItems x in
@@ -3758,7 +3761,7 @@ class printer  ()= object(self:'self)
                 | _ -> (argsList, return)
             ) in
             let returnedAppTerms = self#moduleExpressionToFormattedApplicationItems actualReturn in
-            self#wrapCurriedFunctionBinding prefixText bindingName argsWithConstraint returnedAppTerms
+            self#wrapCurriedFunctionBinding None prefixText bindingName argsWithConstraint returnedAppTerms
     )
 
   method structure_item term =

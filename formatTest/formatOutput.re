@@ -178,9 +178,8 @@ let result =
 
 let myRecord = {
   nestedRecord: {
-    anotherNestedRecord: fun 
-                         instaComp 
-                         displayRect =>
+    anotherNestedRecord:
+      fun instaComp displayRect =>
       if (
         Graphics.cgRectIntersectsWithSlop
           defaultCompositeTimerRectSlop 
@@ -2165,12 +2164,12 @@ type twoArgFunctionsInARecord = {
 
 let myFunctionsInARecordThatMustWrap = {
   /* Desired wrapping */ 
-  adder: fun 
-         reallyLongArgument 
-         anotherReallyLongArgument => reallyLongArgument, 
-  minuser: fun 
-           reallyLongArgument 
-           anotherReallyLongArgument => reallyLongArgument + anotherReallyLongArgument
+  adder:
+    fun reallyLongArgument 
+        anotherReallyLongArgument => reallyLongArgument, 
+  minuser:
+    fun reallyLongArgument 
+        anotherReallyLongArgument => reallyLongArgument + anotherReallyLongArgument
 };
 
 type threeArgFunctionsInARecord = {
@@ -2180,16 +2179,16 @@ type threeArgFunctionsInARecord = {
 
 let myFunctionsInARecordThatMustWrap = {
   /* Desired wrapping */ 
-  adder: fun 
-         /* Even if you have a comment before fun */ 
-         reallyLongArgument 
-         /* Or before the first arg */ 
-         anotherReallyLongArgument 
-         yetAnotherReallyLongArgument => reallyLongArgument, 
-  minuser: fun 
-           reallyLongArgument 
-           anotherReallyLongArgument 
-           anotherReallyLongArgument => reallyLongArgument + anotherReallyLongArgument
+  adder:
+    fun /* Even if you have a comment before fun */ 
+        reallyLongArgument 
+        /* Or before the first arg */ 
+        anotherReallyLongArgument 
+        yetAnotherReallyLongArgument => reallyLongArgument, 
+  minuser:
+    fun reallyLongArgument 
+        anotherReallyLongArgument 
+        anotherReallyLongArgument => reallyLongArgument + anotherReallyLongArgument
 };
 
 let oneArgShouldWrapToAlignWith 
