@@ -216,6 +216,10 @@ if printIfFirstArgGreater {
     };
 };
 
+fun a b => if (a > b) {
+             print_string "a > b";
+           };
+
 /* What you probably wanted was: */
 if printIfFirstArgGreater {
   fun a b => if (a > b) {
@@ -1030,7 +1034,7 @@ let module EmbedsSubPolyModule: HasSubPolyModule = {
   let module X = {type t 'a = list 'a;};
 };
 
-let module 
+let module
   EmbedsDestructivelySubstitutedPolyModule:
   HasDestructivelySubstitutedSubPolyModule = {
   let module X = {type t = list (int, int);};
@@ -1234,7 +1238,7 @@ let module CurriedSugarWithAnnotation:
 
 /* "functors" that are not in sugar curried form cannot annotate a return type
  * for now, so we settle for: */
-let module 
+let module
   CurriedSugarWithAnnotationAndReturnAnnotated:
   ASig => BSig => SigResult =
   functor (A: ASig) (B: BSig) => (
@@ -3563,7 +3567,7 @@ let (only, the, type_, should, have, to_, wrap): sevenStrings = (
   "wrap"
 );
 
-let 
+let
   ifTheNameIsReallyLongTheTypeAndValueShouldBothWrap: (
   string, 
   string, 
@@ -4766,7 +4770,7 @@ let module TryToExportTwice = {
   Wait, where would this ever be valid, even if we continued to support
   `let..in`?
 */
-let 
+let
   onlyDoingThisTopLevelLetToBypassTopLevelSequence = {
   let x = {
     print_int 1;
@@ -5568,7 +5572,7 @@ let includesACommentCloseInIdentifier = ( *\*\/ );
 
 let includesACommentCloseInIdentifier = ( *\*\/ );
 
-let 
+let
   shouldSimplifyAnythingExceptApplicationAndConstruction =
   call "hi" ^ (
                 switch x {

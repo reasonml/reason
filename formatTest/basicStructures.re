@@ -177,6 +177,8 @@ if printIfFirstArgGreater {
     };
 };
 
+fun a b => if (a > b) {print_string "a > b";};
+
 /* What you probably wanted was: */
 if printIfFirstArgGreater {
   fun a b => (if (a > b) {print_string "a > b";});

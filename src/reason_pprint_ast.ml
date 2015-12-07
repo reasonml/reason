@@ -462,7 +462,6 @@ let default = new Pprintast.printer ()
 
 type funcReturnStyle =
   | ReturnValOnSameLine
-  | ReturnValOnNewLine
 
 
 let detectTernary l = match l with
@@ -518,25 +517,6 @@ type funcApplicationLabelStyle =
       valTwo: 20
     };
 
-    space=2, indentWrappedPatternArgs=1, funcReturnStyle=ReturnValOnNewLine
-    -----------------------------------------------------------------------
-    let myFunc
-      (wrappedArgOne:int)
-      (wrappedArgTwo:int) =>
-    {
-      valOne: 10,
-      valTwo: 20
-    };
-
-    space=2, indentWrappedPatternArgs=2, funcReturnStyle=ReturnValOnNewLine
-    -----------------------------------------------------------------------
-    let myFunc
-        (wrappedArgOne:int)
-        (wrappedArgTwo:int) =>
-    {
-      valOne: 10,
-      valTwo: 20
-    };
 *)
 type matchStick =
   | StickToBar
@@ -698,7 +678,7 @@ let defaultSettings = if true then {
   constructorTupleImplicitArity = true;
   (* Just getting the compiler's warnings to shut up *)
   space = 1;
-  returnStyle = ReturnValOnNewLine;
+  returnStyle = ReturnValOnSameLine;
   listsRecordsIndent = 2;
   indentWrappedPatternArgs = 2;
   indentMatchCases = 2;
@@ -710,7 +690,7 @@ let defaultSettings = if true then {
 } else {
   constructorTupleImplicitArity = true;
   space = 1;
-  returnStyle = ReturnValOnNewLine;
+  returnStyle = ReturnValOnSameLine;
   listsRecordsIndent = 2;
   indentWrappedPatternArgs = 2;
   indentMatchCases = 2;
@@ -794,7 +774,7 @@ let list_settings = {
   align_closing = true;
   wrap_body = `No_breaks;
   indent_body = settings.listsRecordsIndent * settings.space;
-  list_style = None;
+  list_style = Some "list";
   opening_style = None;
   body_style = None;
   separator_style = None;
@@ -805,7 +785,7 @@ let nullStyle = { Easy_format.atom_style = Some "null" }
 let boolStyle = { Easy_format.atom_style = Some "bool" }
 let intStyle = { Easy_format.atom_style = Some "int" }
 let stringStyle = { Easy_format.atom_style = Some "string" }
-let labelStringStyle = { Easy_format.atom_style = Some "label" }
+let labelStringStyle = { Easy_format.atom_style = Some "atomClss" }
 let colonStyle = { Easy_format.atom_style = Some "punct" }
 
 let simplifiedApplicationSettings = {
@@ -968,11 +948,38 @@ let ensureSingleTokenSticksToLabel x =
     )
     [x]
 
+
+(* Just for debugging: Set debugWithHtml = true *)
+let debugWithHtml = ref false
+
+let html_escape_string s =
+  let buf = Buffer.create (2 * String.length s) in
+  for i = 0 to String.length s - 1 do
+    match s.[i] with
+        '&' -> Buffer.add_string buf "&amp;"
+      | '<' -> Buffer.add_string buf "&lt;"
+      | '>' -> Buffer.add_string buf "&gt;"
+      | c -> Buffer.add_char buf c
+  done;
+  Buffer.contents buf
+
+let html_escape = `Escape_string html_escape_string
+let html_style = [
+  "atom", { Easy_format.tag_open = "<a>"; tag_close = "</a>" };
+  "body", { tag_open = "<lb>"; tag_close = "</lb>" };
+  "list", { tag_open = "<l>"; tag_close = "</l>" };
+  "op", { tag_open = "<op>"; tag_close = "</op>" };
+  "cl", { tag_open = "<cl>"; tag_close = "</cl>" };
+  "sep", { tag_open = "<sep>"; tag_close = "</sep>" };
+  "label", { tag_open = "<la>"; tag_close = "</la>" };
+]
+
+
 let easyLabel ?(space=false) ?(indent=settings.indentAfterLabels) labelTerm term =
   let settings = {
     space_after_label = space;
     indent_after_label = indent;
-    label_style = None;
+    label_style = Some "label";
   } in
   Easy_format.Label ((labelTerm, settings), term)
 
@@ -1033,6 +1040,8 @@ let isListy = function
 
 let easyFormatToStdout x =
   let formatter = Format.formatter_of_out_channel stdout in
+  if debugWithHtml.contents then
+    Easy_format.Pretty.define_styles formatter html_escape html_style;
   let _ = Format.pp_set_margin formatter settings.width in
   Easy_format.Pretty.to_formatter formatter x
 
@@ -1040,6 +1049,8 @@ let easyFormatToStdout x =
 
 let easyFormatToFormatter f x =
   let _ = Format.pp_set_margin f settings.width in
+  if debugWithHtml.contents then
+    Easy_format.Pretty.define_styles f html_escape html_style;
   Easy_format.Pretty.to_formatter f x
 
 
@@ -2497,7 +2508,7 @@ class printer  ()= object(self:'self)
   *)
 
   method formatSimplePatternBinding labelOpener layoutPattern typeConstraint appTerms =
-    let letPattern = label (atom labelOpener) layoutPattern in
+    let letPattern = label ~space:true (atom labelOpener) layoutPattern in
     let upUntilEqual =
       match typeConstraint with
         | None -> letPattern
@@ -2514,7 +2525,7 @@ class printer  ()= object(self:'self)
 
   (* The [bindingLabel] is either the function name (if let binding) or first
      arg (if lambda) *)
-  method wrapCurriedFunctionBinding attachTo prefixTextTrailingSpace bindingLabel patternList returnedAppTerms =
+  method wrapCurriedFunctionBinding attachTo prefixText bindingLabel patternList returnedAppTerms =
     let allPatterns = bindingLabel::patternList in
     let partitioning = curriedFunctionFinalWrapping allPatterns in
     let everythingButReturnVal = match settings.returnStyle with
@@ -2583,7 +2594,8 @@ class printer  ()= object(self:'self)
 
                 *)
               makeList
-                ~wrap:(prefixTextTrailingSpace, "")
+                ~pad:(true, true)
+                ~wrap:(prefixText, "=>")
                 ~indent:(settings.space * settings.indentWrappedPatternArgs)
                 ~postSpace:true
                 ~inline:(true, true)
@@ -2597,7 +2609,8 @@ class printer  ()= object(self:'self)
                 ~space:true
                 (
                   makeList
-                    ~wrap:(prefixTextTrailingSpace, "")
+                    ~pad:(true, true)
+                    ~wrap:(prefixText, "=>")
                     ~indent:(settings.space * settings.indentWrappedPatternArgs)
                     ~postSpace:true
                     ~inline:(true, true)
@@ -2605,48 +2618,12 @@ class printer  ()= object(self:'self)
                     attachedList
                 )
                 wrappedListy
-
-        ) | ReturnValOnNewLine ->
-        (*
-           Space must be on last token of pattern list (arrow) - just in case
-           it doesn't wrap, there will be a proper space after the arrow. It
-           will need to be cleaned up and the end of the process, if it *did*
-           wrap because it will be a trailing space. The [space_after_label]
-           will not work in this case because:
-           (Brackets show where the "label" is located). An "extra space"
-           after the label will push the opening bracket forward one.
-
-          [let myFunc
-               argOne
-               argTwo =>
-          ]{
-
-           }
-        *)
-          (* Not breakable! *)
-          let prefixWithBindingLabel =
-            makeList ~postSpace:true [atom (prefixTextTrailingSpace); bindingLabel] in
-          makeList
-            ~break:IfNeed
-            ~pad:(true, false)
-            ~indent:(settings.space * settings.indentWrappedPatternArgs)
-            ~postSpace:true
-            ~inline:(false, false)
-            (prefixWithBindingLabel::patternList)
+        )
     in
-    (* Must be labelNoSpace for [ReturnValOnNewLine] two work *)
-    (* Adding any layer of indirection between expr will result in it not
-       sticking to the "label" - which is the entire curried pattern *)
-
-    let almostEverythingIncludingArrow =
-      label
-        ~space:true
-        everythingButReturnVal
-        (ensureSingleTokenSticksToLabel (atom "=>")) in
 
     let everythingIncludingArrow = match attachTo with
-      | None -> almostEverythingIncludingArrow
-      | Some toThis -> label ~space:true toThis almostEverythingIncludingArrow
+      | None -> everythingButReturnVal
+      | Some toThis -> label ~space:true toThis everythingButReturnVal
     in
     formatAttachmentApplication
       applicationFinalWrapping
@@ -2893,15 +2870,15 @@ class printer  ()= object(self:'self)
         | x::[]
         | x::_ -> (
             let label = match rf with
-              | Nonrecursive -> "let "
-              | Recursive -> "let rec " in
+              | Nonrecursive -> "let"
+              | Recursive -> "let rec" in
             SourceMap (break, x.pvb_loc, (self#binding x label))
           )
     ) in
     let forEachRemaining = fun t -> SourceMap (
         break,
         t.pvb_loc,
-        (self#binding t "and ")
+        (self#binding t "and")
       ) in
     let remainingBindings = (
       match l with
@@ -2946,7 +2923,7 @@ class printer  ()= object(self:'self)
            ) in
            openSourceMapped::(self#letList e)
       | Pexp_letmodule (s, me, e) ->
-          let prefixText = "let module " in
+          let prefixText = "let module" in
           let bindingName = atom s.txt in
           let moduleExpr = me in
           let letModuleLayout =
@@ -3057,7 +3034,7 @@ class printer  ()= object(self:'self)
                   (* For lambdas, "fun" plays the role that the binding name does in
                      bindings *)
                   let returnedAppTerms = self#expressionToFormattedApplicationItems ret in
-                  self#wrapCurriedFunctionBinding None "fun " firstArg tl returnedAppTerms
+                  self#wrapCurriedFunctionBinding None "fun" firstArg tl returnedAppTerms
             )
         | Pexp_function l ->
             (* Anything that doesn't have wrappers (parens/braces) should be inline
@@ -3387,7 +3364,7 @@ class printer  ()= object(self:'self)
                          | (firstArg::tl, _) ->
                            let upToColon = makeList [self#longident_loc li; atom ":"] in
                            let returnedAppTerms = self#expressionToFormattedApplicationItems return in
-                           let labelExpr = self#wrapCurriedFunctionBinding (Some upToColon) "fun " firstArg tl returnedAppTerms in
+                           let labelExpr = self#wrapCurriedFunctionBinding (Some upToColon) "fun" firstArg tl returnedAppTerms in
                            if appendComma then makeList [labelExpr; comma;] else labelExpr
                      )
               in SourceMap(break, totalRowLoc, theRow)
@@ -3683,7 +3660,7 @@ class printer  ()= object(self:'self)
                 (* See #19/20 in syntax.mls - cannot annotate return type at
                    the moment. *)
                 let returnedAppTerms = self#moduleExpressionToFormattedApplicationItems return in
-                self#wrapCurriedFunctionBinding None "functor " firstArg restArgs returnedAppTerms
+                self#wrapCurriedFunctionBinding None "functor" firstArg restArgs returnedAppTerms
           )
       | Pmod_apply (me1, me2) ->
           let appTerms = self#moduleExpressionToFormattedApplicationItems x in
@@ -3774,7 +3751,7 @@ class printer  ()= object(self:'self)
         | Pstr_typext te -> (self#type_extension te)
         | Pstr_exception ed -> (self#exception_declaration ed)
         | Pstr_module x ->
-            let prefixText = "let module " in
+            let prefixText = "let module" in
             let bindingName = atom x.pmb_name.txt in
             let moduleExpr = x.pmb_expr in
             self#let_module_binding prefixText bindingName moduleExpr
@@ -3846,10 +3823,10 @@ class printer  ()= object(self:'self)
 
         | Pstr_recmodule decls -> (* 3.07 *)
             let first xx =
-              let prefixText = "let module rec " in
+              let prefixText = "let module rec" in
               self#let_module_binding prefixText (atom xx.pmb_name.txt) xx.pmb_expr in
             let notFirst xx =
-              let prefixText = "and " in
+              let prefixText = "and" in
               self#let_module_binding prefixText (atom xx.pmb_name.txt) xx.pmb_expr in
 
             let moduleBindings = match decls with
