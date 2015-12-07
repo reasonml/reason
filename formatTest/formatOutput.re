@@ -1370,8 +1370,7 @@ let module MyModule = {
 let myFirstClass: (module HasInt) =
   (module MyModule);
 
-let myFirstClassWillBeFormattedAs:
-  (module HasInt) =
+let myFirstClassWillBeFormattedAs: (module HasInt) =
   (module MyModule);
 
 let acceptsAndUnpacksFirstClass 

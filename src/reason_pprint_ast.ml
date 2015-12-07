@@ -1835,12 +1835,31 @@ class printer  ()= object(self:'self)
         (*         | one::[] -> one *)
         (*         | moreThanOne -> mktyp(Ptyp_tuple(List.rev moreThanOne)) } *)
         | Ptyp_tuple l ->
-            makeList
-              ~wrap:("(",")")
-              ~sep:","
-              ~postSpace:true
-              ~break:IfNeed
-              (List.map (self#core_type) l)
+            makeList ~wrap:("(",")") ~sep:"," ~postSpace:true ~break:IfNeed (List.map (self#core_type) l)
+        | Ptyp_package (lid, cstrs) ->
+          let typeConstraint (s, ct) =
+            label
+              (makeList ~break:IfNeed ~postSpace:true [atom "type"; self#longident_loc s; atom "="])
+              (self#core_type ct)
+          in
+          (
+            match cstrs with
+              | [] ->
+                makeList ~wrap:("(", ")") [
+                  (makeList ~postSpace:true [atom "module"; self#longident_loc lid])
+                ]
+              | _ ->
+                makeList ~wrap:("(", ")") [
+                  label ~space:true
+                    (makeList ~postSpace:true [atom "module"; self#longident_loc lid])
+                    (makeList
+                      ~break:IfNeed
+                      ~sep:" and"
+                      ~wrap:("with", "")
+                      ~pad:(true, false)
+                      (List.map typeConstraint cstrs))
+                ]
+          )
         (*   | QUOTE ident *)
         (*       { mktyp(Ptyp_var $2) } *)
         | Ptyp_var s -> ensureSingleTokenSticksToLabel (self#tyvar s)
@@ -1860,11 +1879,6 @@ class printer  ()= object(self:'self)
             wrap (default#core_type1) x
         | Ptyp_class (li, l) -> (*FIXME*)
             case_not_implemented "Ptyp_class" x.ptyp_loc (try assert false with Assert_failure x -> x);
-            wrap (default#core_type1) x
-        | Ptyp_package (lid, []) -> (* FIXME handle general case *)
-            wrap (default#core_type1) x
-        | Ptyp_package (lid, cstrs) -> (*FIXME*)
-            case_not_implemented "Ptyp_packge" x.ptyp_loc (try assert false with Assert_failure x -> x);
             wrap (default#core_type1) x
         | Ptyp_extension (s, arg) -> (*FIXME*)
             case_not_implemented "Ptyp_extension" x.ptyp_loc (try assert false with Assert_failure x -> x);
