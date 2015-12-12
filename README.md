@@ -117,3 +117,6 @@ projects are under their original licenses.
 
 Editor plugins (which have also been forked) in the `editorSupport/` directory
 include their own licenses.
+
+Tests cases in formatTest/ocp/ were copied from ocp-indent and all retain their
+original LGPL license.
