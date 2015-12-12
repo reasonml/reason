@@ -19,7 +19,7 @@ build-test: [
   "ocamlbuild" "-classic-display" "-use-ocamlfind" "src_test/test_reason.byte" "--"
 ]
 depends: [
-  "easy-format"  {>= "1.1.0"}
+  "easy-format"  {>= "1.2.0"}
   "ocamlfind"    {build}
   "ounit"        {test}
   "utop"         {>= "1.17"}

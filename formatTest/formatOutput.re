@@ -194,13 +194,15 @@ let myRecord = {
 };
 
 if printIfFirstArgGreater {
-  fun a b => if (a > b) {
-               print_string "a > b";
-             };
+  fun a b =>
+    if (a > b) {
+      print_string "a > b";
+    };
 } else {
-  fun a b => if (a > b) {
-               print_string "b < a";
-             };
+  fun a b =>
+    if (a > b) {
+      print_string "b < a";
+    };
 };
 
 /* Should Be Parsed As: Cleary a type error, but at least the parsing makes that clear */
@@ -216,19 +218,22 @@ if printIfFirstArgGreater {
     };
 };
 
-fun a b => if (a > b) {
-             print_string "a > b";
-           };
+fun a b =>
+  if (a > b) {
+    print_string "a > b";
+  };
 
 /* What you probably wanted was: */
 if printIfFirstArgGreater {
-  fun a b => if (a > b) {
-               print_string "a > b";
-             };
+  fun a b =>
+    if (a > b) {
+      print_string "a > b";
+    };
 } else {
-  fun a b => if (a > b) {
-               print_string "b < a";
-             };
+  fun a b =>
+    if (a > b) {
+      print_string "b < a";
+    };
 };
 
 /* Mutative if statement: Not used to evaluate to something. */
@@ -1181,23 +1186,25 @@ let module CurriedSugarFunctorResult =
   CurriedSugar AMod BMod;
 
 let module CurriedSugarFunctorResultInline =
-  CurriedSugar {
-                 let a = 10;
-               } 
-               {
-                 let b = 10;
-               };
+  CurriedSugar
+    {
+      let a = 10;
+    } 
+    {
+      let b = 10;
+    };
 
 let module CurriedNoSugarFunctorResult =
   CurriedNoSugar AMod BMod;
 
 let module CurriedNoSugarFunctorResultInline =
-  CurriedNoSugar {
-                   let a = 10;
-                 } 
-                 {
-                   let b = 10;
-                 };
+  CurriedNoSugar
+    {
+      let a = 10;
+    } 
+    {
+      let b = 10;
+    };
 
 let module ResultFromNonSimpleFunctorArg =
   CurriedNoSugar (MakeAModule {}) BMod;
@@ -1244,7 +1251,8 @@ let module
   functor (A: ASig) (B: BSig) => (
     {
       let result = A.a + B.b;
-    }: SigResult
+    }:
+      SigResult
   );
 
 let module ReturnsAFunctor 
@@ -3878,19 +3886,22 @@ type term _ =
       /*first var arg */ 
       int 
       :/* First GADT res */
-       term int 
+       term
+         int 
   /* Second variant leaf of GADT */ 
   | Float of
       /*second var arg */ 
       int 
       :/* Second GADT res */
-       term int 
+       term
+         int 
   /* Third variant leaf of GADT */ 
   | Bool of
       /*third var arg */ 
       int 
       :/* Third GADT res */
-       term int;
+       term
+         int;
 
 /* Commented colors */
 type commentedTypeDef =
@@ -4322,23 +4333,27 @@ let lATNotSugaredCommentAfterArrow
   input;
 
 let lAtFuncAnnotatedCommentBeforeColon:
-  type a. /*BeforeColon*/
-          a => a =
+  type a.
+    /*BeforeColon*/
+    a => a =
   fun (type a) (input: a) => input;
 
 let lAtFuncAnnotatedCommentAfterColon:
-  type a. /*AfterColon*/
-          a => a =
+  type a.
+    /*AfterColon*/
+    a => a =
   fun (type a) (input: a) => input;
 
 let lAtFuncAnnotatedCommentBeforeTypeVar:
-  type a. /*BeforeTypeVar*/
-          a => a =
+  type a.
+    /*BeforeTypeVar*/
+    a => a =
   fun (type a) (input: a) => input;
 
 let lAtFuncAnnotatedCommentAfterTypeVar:
-  type a. /*AfterTypeVar*/
-          a => a =
+  type a.
+    /*AfterTypeVar*/
+    a => a =
   fun (type a) (input: a) => input;
 
 let lAtFuncAnnotatedBeforeEqual: type a. a => a =
@@ -5574,12 +5589,13 @@ let includesACommentCloseInIdentifier = ( *\*\/ );
 
 let
   shouldSimplifyAnythingExceptApplicationAndConstruction =
-  call "hi" ^ (
-                switch x {
-                  | _ => "hi"
-                }
-              ) ^ 
-              "yo";
+  call "hi" ^
+    (
+      switch x {
+        | _ => "hi"
+      }
+    ) ^ 
+    "yo";
 
 /* Add tests with IF/then mixed with infix/constructor application on left and right sides */
 /**
@@ -5826,7 +5842,9 @@ let result =
     while false {
       ();
     }
-  ) == () ? false : true;
+  ) ==
+    () ?
+    false : true;
 
 switch (
   try (
@@ -5881,14 +5899,16 @@ type bcd = | B | C | D | E;
 
 type a = | A of bcd;
 
-let result = switch B {
-               | B
-               | C
-               | D
-               | E => ()
-             };
+let result =
+  switch B {
+    | B
+    | C
+    | D
+    | E => ()
+  };
 
-let nested_match = fun | A (B | C | D | E) => 3;
+let nested_match =
+  fun | A (B | C | D | E) => 3;
 
 let module EM = {exception E of int int;};
 

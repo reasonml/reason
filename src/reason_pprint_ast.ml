@@ -977,6 +977,7 @@ let html_style = [
 
 let easyLabel ?(space=false) ?(indent=settings.indentAfterLabels) labelTerm term =
   let settings = {
+    label_break = `Auto;
     space_after_label = space;
     indent_after_label = indent;
     label_style = Some "label";
