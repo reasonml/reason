@@ -32,31 +32,17 @@ do
   ../reasonfmt_impl.native -print-width 50 -parse ml -print re "$file" 2>&1 >>./ocpFormatOutput.re
 done
 
+for file in ./typeCheckedTests/*.re
+do
+  ocamlc -c -pp ../reasonfmt_impl.native -intf-suffix rei -impl "$file"
+  ../reasonfmt_impl.native -print-width 50 -print re "$file" 2>&1 >>./formatOutput.re
+done
 
-
-# Let's start creating formatting test cases that must type check.
-# Errors in parsing/printing often are caught via the type system.
-ocamlc -c -pp ../reasonfmt_impl.native -intf-suffix rei -impl ./typeCheckedTests/sequences.re
-rm ./typeCheckedTests/sequences.cmi
-rm ./typeCheckedTests/sequences.cmo
-../reasonfmt_impl.native -print-width 50 -print re ./typeCheckedTests/sequences.re 2>&1 >>./formatOutput.re
-
-ocamlc -c -pp ../reasonfmt_impl.native -intf-suffix rei -impl ./typeCheckedTests/mutation.re
-rm ./typeCheckedTests/mutation.cmi
-rm ./typeCheckedTests/mutation.cmo
-../reasonfmt_impl.native -print-width 50 -print re ./typeCheckedTests/mutation.re 2>&1 >>./formatOutput.re
-
-ocamlc -c -pp ../reasonfmt_impl.native -intf-suffix rei -impl ./typeCheckedTests/imperative.re
-rm ./typeCheckedTests/imperative.cmi
-rm ./typeCheckedTests/imperative.cmo
-../reasonfmt_impl.native -print-width 50 -print re ./typeCheckedTests/imperative.re 2>&1 >>./formatOutput.re
-
-# Parse the ml syntax, print it to the formatOutput.re.
 ../reasonfmt_impl.native -print-width 50 -parse ml -print re ./typeCheckedTests/mlSyntax.ml 2>&1 >>./formatOutput.re
-# Also generate a separate .re file so we can type check it.
 ../reasonfmt_impl.native -parse ml -print re ./typeCheckedTests/mlSyntax.ml > ./typeCheckedTests/mlSyntax.re
 ocamlc -c -pp ../reasonfmt_impl.native -intf-suffix rei -impl ./typeCheckedTests/mlSyntax.re
-rm ./typeCheckedTests/mlSyntax.cmi
-rm ./typeCheckedTests/mlSyntax.cmo
 # Remove the generated .re version too
 rm ./typeCheckedTests/mlSyntax.re
+
+rm ./typeCheckedTests/*.cmi
+rm ./typeCheckedTests/*.cmo
