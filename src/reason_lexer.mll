@@ -612,17 +612,21 @@ and string = parse
       { () }
   | '\\' newline ([' ' '\t'] * as space)
       { update_loc lexbuf None 1 false (String.length space);
+        if in_comment () then store_lexeme lexbuf;
         string lexbuf
       }
   | '\\' ['\\' '\'' '"' 'n' 't' 'b' 'r' ' ']
-      { store_string_char(char_for_backslash(Lexing.lexeme_char lexbuf 1));
+      { if in_comment () then store_lexeme lexbuf
+        else store_string_char(char_for_backslash(Lexing.lexeme_char lexbuf 1));
         string lexbuf }
   | '\\' ['0'-'9'] ['0'-'9'] ['0'-'9']
-      { store_string_char(char_for_decimal_code lexbuf 1);
-         string lexbuf }
+      { if in_comment () then store_lexeme lexbuf
+        else store_string_char(char_for_decimal_code lexbuf 1);
+        string lexbuf }
   | '\\' 'x' ['0'-'9' 'a'-'f' 'A'-'F'] ['0'-'9' 'a'-'f' 'A'-'F']
-      { store_string_char(char_for_hexadecimal_code lexbuf 2);
-         string lexbuf }
+      { if in_comment () then store_lexeme lexbuf
+        else store_string_char(char_for_hexadecimal_code lexbuf 2);
+        string lexbuf }
   | '\\' _
       { if in_comment ()
         then string lexbuf

@@ -5638,6 +5638,10 @@ let module M = Something.Create {
   type resource1 = MyModule.MySubmodule.t;
   type resource2 = MyModule.MySubmodule.t;
 };
+/*
+let str = "@[.... some formatting ....@\n\010@.";
+*/
+let str = "@[.... some formatting ....@\n\n@.";
 /**
  * Testing Sequences.
  */
