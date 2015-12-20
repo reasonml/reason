@@ -85,7 +85,7 @@ let \_ =
     </td>
     <td>
       <pre>
-/\* -- TODO -- \*/ 
+/\* -- TODO -- \*/
       </pre>
     </td>
   </tr>
@@ -192,7 +192,7 @@ N/A
   <tr>
     <td>
       <pre>
-type tuple = (int, int)     
+type tuple = (int, int)
 let myTuple:tuple = (10, 30)
 
 type record =          {x: int, y: int};
@@ -207,7 +207,7 @@ let x:funcType = fun a => fun b => a + b;
     </td>
     <td>
       <pre>
-type tuple = int * int      
+type tuple = int * int
 let myTuple:tuple = (10, 30)
 
 type record =          {x: int, y: int};
@@ -227,7 +227,7 @@ N/A
     </td>
   </tr>
 </table>
-    
+
 
 ### Lambdas
 
@@ -282,7 +282,7 @@ N/A
   </tr>
 </table>
 
-    
+
 ### Annotating Function Args
 
 In both `Reason` and `OCaml`, arguments are annotated with types by (as with
@@ -324,16 +324,16 @@ module definition is local/top level.
   <tr>
     <td>
       <pre>
-let module X = .. /\* Top level     \*/        
-let module X = .. /\* Local module  \*/ 
-module type Y = ..                             
+let module X = .. /\* Top level     \*/
+let module X = .. /\* Local module  \*/
+module type Y = ..
       </pre>
     </td>
     <td>
       <pre>
-module X = ..     (\* Top level    \*) 
+module X = ..     (\* Top level    \*)
 let module X = .. (\* Local module \*)
-module type Y = ...                      
+module type Y = ...
       </pre>
     </td>
     <td>
@@ -429,7 +429,7 @@ let tuples: listOfPair = [(2, 3)];
 
 
 
-### Tuples as Type Parameters 
+### Tuples as Type Parameters
 
 Because `OCaml` uses parens and commas to represent multiple arguments to type
 constructors, it's confusing when one of the arguments to a type constructor is
@@ -621,10 +621,10 @@ more intuitively, without requiring extra wrapping in parenthesis.
   <tr>
     <td>
       <pre>
-let myFunctions = {               
-  myFun: fun x => x + 1,          
-  yourFun: fun a b => a + b       
-}                                 
+let myFunctions = {
+  myFun: fun x => x + 1,
+  yourFun: fun a b => a + b
+}
       </pre>
     </td>
     <td>
@@ -686,8 +686,8 @@ let tuple = ("hi": string, 20: int);
     </td>
     <td>
       <pre>
-let tuple = ((fun x => x), 20);
-let tuple = (("hi": string), (20: int));
+let tuple = ((fun x -> x), 20)
+let tuple = (("hi": string), (20: int))
       </pre>
     </td>
     <td>
