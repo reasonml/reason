@@ -119,7 +119,7 @@ Reason source files begin with a lowercase letter and use the `.re` file
 suffix. Each `.re` file includes a series of `let` bindings and/or `type`
 definitions, separated by semicolons. For example, you might have the file
 `react.re` and has two `let` bindings as shown. The
-[REPL](file:///Users/jwalke/github/Reason/docs/reference/index.html#reason-repl)
+[REPL](#reason-repl)
 can be used to input bindings line by line and receive feedback interactively.
 
 ```reason
@@ -165,7 +165,7 @@ increment 5;    /* Evaluates to six */
 sumBoth 6 1;   /* Evaluates to seven */
 ```
 
-##### 
+#####
 
 To resolve precedence when applying arguments, simply wrap in parenthesis.  In
 this example, `(increment 2)` is *first* evaluated to `3`, then `3` is passed
@@ -178,7 +178,7 @@ sumBoth 2 (increment 2);   /* 5 */
 This syntactic pattern of space-separated lists is used in many places in
 `Reason`.
 
-#### 
+####
 
 Functions can use sequence expressions as their return values in order to
 declare temporary variables while computing their result. This isn't some special
@@ -537,7 +537,7 @@ type carOwner =
 let CarOwner name {model: model, make: make} = CarOwner "Jo" toyota;
 ```
 
-##### 
+#####
 This deep pattern matching is especially expressive when used in `switch`
 expressions. In this example, the function `hasExactlyTwoCars` has specified
 what to return in four cases in very little code. Even more helpful, is the
@@ -788,7 +788,7 @@ let render: str => str;
 ```
 
 - Module signatures may also help ensure that [incremental
-  compilation](file:///Users/jwalke/github/Reason/docs/reference/index.html#scalable-development-incremental-compilation)
+  compilation](#scalable-development-incremental-compilation)
   remains fast.
 - Signatures have many powerful features for constraining relationships between
   modules in very nuanced ways. Those are out of the scope of this document.
@@ -1081,7 +1081,7 @@ Tooling
 
 ##### Vim Plugin
 
-The [VimReason Plugin](https://github.com/jordwalke/VimReason) plugin
+The [VimReason Plugin](https://github.com/facebook/Reason/tree/master/editorSupport/VimReason) plugin
 implements basic IDE features for `Reason`.
 
  * **Syntax Highlighting **
@@ -1095,8 +1095,8 @@ implements basic IDE features for `Reason`.
 ##### Sublime Plugin
 
 The
-[SublimeReason](https://github.com/jordwalke/Reason/tree/master/editorSupport/sublime-reason)
-plugin is included in the main [Reason](http://github.com/jordwalke/Reason)
+[SublimeReason](https://github.com/facebook/Reason/tree/master/editorSupport/sublime-reason)
+plugin is included in the main [Reason](http://github.com/facebook/Reason)
 repo. It includes basic highlighting support. Pull requests to invoke the
 formatting program (and reporting of parsing errors) are appreciated.
 
@@ -1125,7 +1125,7 @@ opam switch 4.02.1
 opam install utop.1.18
 opam install easy-format.1.0.2
 
-git clone git+ssh://git@github.com/jordwalke/Reason.git
+git clone git+ssh://git@github.com/facebook/Reason.git
 cd Reason
 make
 opam pin add reason .
@@ -1191,7 +1191,7 @@ cd formatTest
     <div class='left'>
       <h1><a href='index.html'>Reason</a></h1>
       <ul>
-        <li><a href='https://github.com/jordwalke/Reason'>View on GitHub</a></li>
+        <li><a href='https://github.com/facebook/Reason'>View on GitHub</a></li>
         <li><a href='javaScriptCompared.html'>JavaScript Compared</a></li>
         <li><a href='mlCompared.html'>ML Compared</a></li>
       </ul>
