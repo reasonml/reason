@@ -1,0 +1,957 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset='utf-8'>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width">
+
+  <title>Reason - compare to ML</title>
+
+  <!-- Flatdoc -->
+  <script src='support/vendor/jquery.js'></script>
+  <script src='legacy.js'></script>
+  <script src="highlightJs/build/highlight.pack.js"></script>
+  <link  href='highlightJs/src/styles/xcode.css' rel='stylesheet'>
+  <script src='flatdoc.js'></script>
+
+  <!-- Flatdoc theme -->
+  <link  href='theme-white/style.css' rel='stylesheet'>
+  <script src='theme-white/script.js'></script>
+  <link  href='support/theme.css' rel='stylesheet'>
+  <script src='support/theme.js'></script>
+
+  <script id="markdown" type="text/markdown" src="mlCompared.html">
+
+Reason vs. ML syntax
+=======
+
+###Comments
+
+Reason comments use the C-family style of comments, and OCaml comments use `(*
+*)` style comments. In Reason, nested `/**/` comments are validated at parse
+time, and in OCaml, nested `(* *)` are validated at parse time.
+
+<table>
+  <thead><tr> <th scope="col"><p >OCaml</p></th> <th scope="col"><p>Reason</p></th></tr></thead>
+  <tr>
+    <td>
+      <code>
+`(* OCaml Comment (*nest*) *)`
+      </code>
+    </td>
+    <td>
+      <code>
+`/* Reason Comment! /*nest*/  */`
+      </code>
+    </td>
+  </tr>
+</table>
+
+
+### Block Scope
+
+- In `Reason`, block scope can be created with the `{}` syntax, with both `let`
+  bindings and imperative commands *always* being separated by `;`.
+- In `Reason`, all blocks *evaluate* to the last line, and you can ignore that
+  evaluated result.
+- In `OCaml`, the `in` keyword creates blocked scope regions. To chain together
+  imperative statements, there are many options, the easiest of which to
+  remember is to assign the result to a dummy `_` variable. Other options
+  include using semicolons and double semicolons depending on whether or not
+  you use local scope vs. top level scope.
+
+<table>
+  <thead><tr> <th scope="col"><p>Reason</p></th><th scope="col"><p>OCaml</p></th><th scope="col"><p>Swift</p></th></tr></thead>
+  <tr>
+    <td>
+      <pre>
+{
+  let msg =  "Hello";
+  print\_string msg;
+  let msg2 = "Goodbye";
+  print\_string msg2;
+};
+      </pre>
+    </td>
+    <td>
+      <pre>
+let \_ =
+  let msg =  "Hello" in
+  let _ = print\_string msg in
+  let msg2 = "Goodbye" in
+  print\_string msg2
+
+      </pre>
+    </td>
+    <td>
+      <pre>
+/\* -- TODO -- \*/ 
+      </pre>
+    </td>
+  </tr>
+</table>
+
+### Local Scope And Top Level
+
+
+- Top level scope is the body of files or module implementations.
+- Local scope (Reason's "block scope") is the body of functions, or nested let
+  bindings.
+- In `Reason`, local `let` bindings/expressions/statements (such as when inside
+  a function "body") follow the *exact* same rules as the top level scope: Every
+  `let` or imperative statement ends with a `;`. This makes refactoring much
+  easier because you can just cut semicolon separated statements/bindings and
+  paste them anywhere.
+- In `OCaml`, top level scope uses a different syntax than local scopes. The
+  following chart demonstrates the differences. `OCaml`'s syntax offers two
+  options for scoping with imperitive operations and `let` bindings, but each
+  option requires different syntax depending on whether you are in top level
+  scope or local scope.
+
+<table>
+  <thead><tr> <th scope="col"><p>Reason</p></th><th scope="col"><p>OCaml</p></th><th scope="col"><p>OCaml Alternative</p></th></tr></thead>
+  <tr>
+    <td>
+      <pre>
+/\* Top level \*/
+let ten = 10;
+imperativeFunc ten ten;
+imperativeFunc 0 0;
+/\* Local Scope: Exact same. \*/
+let ten = 10;
+imperativeFunc ten ten;
+imperativeFunc 0 0;
+      </pre>
+    </td>
+    <td>
+      <pre>
+(\* Top level \*)
+let ten = 10
+let \_ = imperativeFunc ten ten
+let \_ = imperativeFunc 0 0
+(\* Local Scope: Different. \*)
+let ten = 10 in
+let \_ = imperativeFunc ten ten in
+imperativeFunc 0 0
+      </pre>
+    </td>
+    <td>
+      <pre>
+(\* Top level \*)
+let ten = 10
+imperativeFunc ten ten;;
+imperativeFunc 0 0;;
+(\* Local Scope: Different. \*)
+let ten = 10 in
+imperativeFunc ten ten;;
+imperativeFunc 0 0
+      </pre>
+    </td>
+  </tr>
+</table>
+
+### Tuples and Records
+
+- In `Reason`, tuples always require parenthesis. This requirement is easier to
+  read and also removes the need for type annotations inside of tuple members
+  to be wrapped in *additional* parenthesis.
+- In `Reason`, records more resemble `JSON`, using `:` instead of `=`.
+<table>
+  <thead><tr> <th scope="col"><p>Reason</p></th><th scope="col"><p>OCaml</p></th><th scope="col"><p>Swift</p></th></tr></thead>
+  <tr>
+    <td>
+      <pre>
+let myTuple = (10, 20);
+let myRecord = {x: 0, y: 10};
+      </pre>
+    </td>
+    <td>
+      <pre>
+let myTuple = (10, 20)
+let myTuple = 10, 20   (\* Parens optional \*)
+let myRecord = {x = 0; y = 10}
+      </pre>
+    </td>
+    <td>
+      <pre>
+N/A
+      </pre>
+    </td>
+  </tr>
+</table>
+
+### Type definitions
+
+- In `Reason`, types for tuples/records look like the corresponding values that
+  are constructed.
+- In `OCaml`'s syntax, types have a different shape than their values (except
+  functions).
+
+<table>
+  <thead><tr> <th scope="col"><p>Reason</p></th><th scope="col"><p>OCaml</p></th><th scope="col"><p>Swift</p></th></tr></thead>
+  <tr>
+    <td>
+      <pre>
+type tuple = (int, int)     
+let myTuple:tuple = (10, 30)
+
+type record =          {x: int, y: int};
+let myRecord: record = {x: 0, y: 10};
+
+type funcType  = int => int;
+let x:funcType = fun a => a + 1;
+
+type funcType  = int => int => int;
+let x:funcType = fun a => fun b => a + b;
+      </pre>
+    </td>
+    <td>
+      <pre>
+type tuple = int * int      
+let myTuple:tuple = (10, 30)
+
+type record =          {x: int, y: int};
+let myRecord: record = {x = 0, y = 10};
+
+type funcType  = int -> int;
+let x:funcType = fun a -> a + 1;
+
+type funcType  = int -> int -> int;
+let x:funcType = fun a -> fun b -> a + b;
+      </pre>
+    </td>
+    <td>
+      <pre>
+N/A
+      </pre>
+    </td>
+  </tr>
+</table>
+    
+
+### Lambdas
+
+`OCaml` has three ways to define functions:
+
+- Some `OCaml` forms use arrows `->`, some use equals `=`.
+- Some `OCaml` use the `fun` keyword, others use the `function` keyword.
+
+`Reason` also supports the same three ways to define lambdas, but for
+consistency:
+
+- Every `Reason` form uses an `=>` arrow in one way or another.\*
+- `Reason` uses at most one keyword (`fun`).
+- As with all pattern matching, the leading bar `|` is required in the single
+  argument pattern match form.
+
+\**There are
+  other reasons why this is a very good idea discussed later.*
+
+<table>
+  <thead><tr> <th scope="col"><p>Reason</p></th><th scope="col"><p>OCaml</p></th><th scope="col"><p>Swift</p></th></tr></thead>
+  <tr>
+    <td>
+      <pre>
+/\* One arg pattern match \*/
+let x = fun | pat => e;
+
+/\* Curried multi-arg  \*/
+let x = fun a b => e;
+
+/\* Curried multi-arg super-sugar \*/
+let x a b => e;
+      </pre>
+    </td>
+    <td>
+      <pre>
+(\* One arg pattern match \*)
+let x = function | pat -> e
+
+(\* Curried multi-arg  \*)
+let x = fun a b    -> e
+
+(\* Curried multi-arg super-sugar \*)
+let x a b = e
+      </pre>
+    </td>
+    <td>
+      <pre>
+N/A
+      </pre>
+    </td>
+  </tr>
+</table>
+
+    
+### Annotating Function Args
+
+In both `Reason` and `OCaml`, arguments are annotated with types by (as with
+everything else), wrapping them in parenthesis after appending
+`:typeAnnotation`.
+
+
+######OCaml
+
+    let myFunc (a:int) (b:int) :int * int = (a, b)
+    let myFunc (a:int) (b:int) :int list = [1]
+    let myFunc (a:int) (b:int) :int -> int = fun x -> x + a + b
+
+######Reason
+Because we're using `=>` for all functions everywhere, there's one case where
+we need to ensure extra parens around a return type that is itself a function
+type.
+
+    let myFunc (a:int) (b:int) :(int, int) => (a, b)
+    let myFunc (a:int) (b:int) :int list => [1]
+    let myFunc (a:int) (b:int) :(int => int) => fun x => x + a + b
+
+In both Reason and OCaml, the return type annotation is only possible in the
+super-sugar form of function let bindings `let x a b => a + b`, but if using
+other forms, you can always annotate the returned expression.
+`let x = fun a b => (a + b : int)`
+
+
+
+###Exported/local modules
+
+With `Reason` the syntax for defining local modules (Inside of block
+scope/function bodies) is largely the same as defining top level modules. The
+`OCaml` syntax has slightly different syntax depending on whether or not the
+module definition is local/top level.
+
+<table>
+  <thead><tr> <th scope="col"><p>Reason</p></th><th scope="col"><p>OCaml</p></th><th scope="col"><p>Swift</p></th></tr></thead>
+  <tr>
+    <td>
+      <pre>
+let module X = .. /\* Top level     \*/        
+let module X = .. /\* Local module  \*/ 
+module type Y = ..                             
+      </pre>
+    </td>
+    <td>
+      <pre>
+module X = ..     (\* Top level    \*) 
+let module X = .. (\* Local module \*)
+module type Y = ...                      
+      </pre>
+    </td>
+    <td>
+      <pre>
+N/A
+      </pre>
+    </td>
+  </tr>
+</table>
+
+
+### Type Parameters
+
+###### OCaml:
+
+OCaml's type applications (think "generics"), are applied in reverse order.
+
+With OCaml, there are some bizarre consequences of this precedence - examples
+are the best approach to conveying their nuance more succinctly.
+
+    let x: int list = [2]
+
+    type listOfListOfInts = int list list
+
+    (* Parsed as: *)
+    type listOfListOfInts = (int list) list
+
+
+Things get even more strange when type constructors accept multiple parameters.
+Multiple arguments require parenthesis and commas to separate type parameters,
+but those parenthesis don't represent tuples. The parenthesis/comma form must
+also be given when constructing type instances such as `(int, string) tuple`.
+
+    type ('a, 'b) tuple = 'a * 'b
+
+    type listOfTuplesOfStringAndInt = (string, int) tuple list
+
+    (* Which is parsed as: *)
+    type listOfTuplesOfStringAndInt = ((string, int) tuple) list
+
+    (* Which allows a list of (tuples of (string and int)) *)
+    let tuples: listOfTuplesOfStringAndInt = [("asdf", 3)]
+
+###### Reason:
+
+In summary, Reason unifies almost all of the syntax into simple "function
+application" style meaning that type parameters follow the same space-separated
+list seen everywhere else in the syntax. As with everything else, parenthesis
+may be used to enforce precedence. This results in fewer syntactic patterns to
+learn.
+
+For example, you can imagine `list` being a "function" that accepts a type and
+returns a new type.
+
+<table>
+  <thead><tr> <th scope="col"><p>Reason</p></th><th scope="col"><p>OCaml</p></th><th scope="col"><p>Swift</p></th></tr></thead>
+  <tr>
+    <td>
+      <pre>
+let x: list int = [2];
+type listOfListOfInts = list (list int);
+/\* Looks like function currying  \*/
+type tup 'a 'b = ('a, 'b);
+/\* Parenthesis group precedence \*/
+type listOfIntInts = list (tup int int)
+let tuples: listOfIntInts = [(2, 3)]
+      </pre>
+    </td>
+    <td>
+      <pre>
+let x: int list = [2]
+type listOfListOfInts = int list list
+(\* Parameters specified before name \*)
+type ('a, 'b) tup = ('a, 'b)
+(\* Arguments supplied with commas \*)
+type listOfPair = (int, int) tup list
+let tuples: listOfPair = [(2, 3)]
+      </pre>
+    </td>
+    <td>
+      <pre>
+let x:list&lt;int&gt; = [2];
+type listOfListOfInts = list&lt;list&lt;int&gt;&gt;;
+/\* Looks like function currying  \*/
+type tup&lt;a, b&gt; = (a, b);
+/\* &lt;&gt; group precedence \*/
+type listOfPair = list&lt;tup&lt;int,int&gt;&gt;;
+let tuples: listOfPair = [(2, 3)];
+      </pre>
+    </td>
+  </tr>
+</table>
+
+
+
+### Tuples as Type Parameters 
+
+Because `OCaml` uses parens and commas to represent multiple arguments to type
+constructors, it's confusing when one of the arguments to a type constructor is
+itself a tuple. In `OCaml`, it's difficult to remember the difference between a
+type constructor accepting multiple arguments and a type constructor accepting
+a single argument which happens to be a tuple.
+
+The following examples shows the difference between passing *two* type
+parameters to `list`, and a *single* type parameter that happens to be a tuple.
+<table>
+  <thead><tr> <th scope="col"><p>Reason</p></th><th scope="col"><p>OCaml</p></th><th scope="col"><p>Swift</p></th></tr></thead>
+  <tr>
+    <td>
+      <pre>
+type pairList = list int int;
+type pairList = list (int, int);
+      </pre>
+    </td>
+    <td>
+      <pre>
+type pairList = (int, int) list
+type pairList = (int \* int) list
+      </pre>
+    </td>
+    <td>
+      <pre>
+TODO
+      </pre>
+    </td>
+  </tr>
+</table>
+
+- In `Reason` syntax that represent tuple or tuple types, always look like
+  tuples.
+- In `Reason` syntax that represent records or record types, always look like
+  records.
+- Just about everything else uses the syntactic patter of function application
+  (space separated arguments).
+
+
+
+### Variants
+
+###### OCaml
+- `OCaml` already expects constructor argument types to be specified in tuple
+  form, so it's confusing when a single constructor expects a single argument
+  that *happens* to be a tuple type.
+- What's even more confusing is that the constructors don't *actually* accept
+  tuples, yet the syntax appear to resemble tuples.
+- Sometimes the syntax for instantiating a constructor with multiple arguments
+  overlaps the syntax for constructing a variant with a single argument that
+  happens to be a tuple - so it looks *exactly* like you *are* supplying a
+  tuple when you are not actually supplying a tuple.
+
+###### Reason
+
+- variant constructor types are expected to be listed as space separated lists,
+  using parenthesis to group precedence (as with **everything** else).
+- Constructing instances of the variant (as you would have guessed) follow
+  function application style (space separated lists).
+- Tuple **always** *look* like tuples, and anything that looks like a tuple
+  *is* a tuple.
+
+<table>
+  <thead><tr> <th scope="col"><p>Reason</p></th><th scope="col"><p>OCaml</p></th><th scope="col"><p>Swift</p></th></tr></thead>
+  <tr>
+    <td>
+      <pre>
+type myVariant =
+   | HasNothing
+   | HasASingleInt of int
+   | HasASingleTuple of (int, int)
+   | HasMultipleInts of int int
+   | HasMultipleTuples of (int, int) (int, int);
+
+let a = HasASingleInt 10;
+let a = HasASingleTuple (10, 10);
+let a = HasMultipleInts 10 10;
+let a = HasMultipleTuples (10, 10) (10, 10);
+
+let res = switch x {
+   | HasNothing => 0
+   | HasASingleInt x => 0
+   | HasASingleTuple (x, y) => 0
+   | HasMultipleInts x y => 0
+   | HasMultipleTuples (x, y) (q, r) => 0
+};
+      </pre>
+    </td>
+    <td>
+      <pre>
+type myVariant =
+   | HasNothing
+   | HasASingleInt of int
+   | HasASingleTuple of (int \* int)  (\* wat \*)
+   | HasMultipleInts of int \* int   (\* wat \*)
+   | HasMultipleTuples of (int \* int)\*(int\* int)
+
+let a = HasASingleInt 10
+let a = HasASingleTuple (10, 10)   (\* wat \*)
+let a = HasMultipleInts (10, 10)   (\* wat \*)
+let a = HasMultipleTuples ((10, 10), (10, 10))
+
+let res = match x with
+   | HasNothing -> 0
+   | HasASingleInt x -> 0
+   | HasASingleTuple (x, y) -> 0
+   | HasMultipleInts (x, y) -> 0
+   | HasMultipleTuples ((x, y), (q, r)) -> 0;
+
+      </pre>
+    </td>
+    <td>
+      <pre>
+TODO
+      </pre>
+    </td>
+  </tr>
+</table>
+
+
+### Pattern Matching
+
+###### OCaml
+
+
+###### Reason
+
+- Uses the `switch` keyword, and doesn't require `with`.
+- *Requires* wrapping `switch` cases in `{}` to avoid confusing and error
+  proned mis-parsing when pattern matching is embedded in other pattern
+  matching.
+- Uses the `=>`.
+- Requires the leading bar. (This is a good idea because it frees up other
+  possibilities in the grammar without conflicts.
+
+
+<table>
+  <thead><tr> <th scope="col"><p>Reason</p></th><th scope="col"><p>OCaml (BROKEN)</p></th><th scope="col"><p>Swift</p></th></tr></thead>
+  <tr>
+    <td>
+      <pre>
+let res = switch x {
+   | SingleTuple (x, y) => switch y {
+       | None => 0
+       | Some i => 10
+     }
+   | HasMultipleInts x y => 0
+};
+      </pre>
+    </td>
+    <td>
+      <pre>
+let res = match x with
+   | SingleTuple (x, y) -> match y with
+      | None -> 0
+      | Some i -> 10
+   | HasMultipleInts (x, y) -> 0
+
+      </pre>
+    </td>
+    <td>
+      <pre>
+TODO
+      </pre>
+    </td>
+  </tr>
+</table>
+
+Can you spot the error in the `OCaml` example? This is one of the most common
+mistakes for `OCaml` programmers. The second `match` *must* be wrapped in
+parenthesis, otherwise the `Some` case is parsed as belonging to the outer
+`match`. `Reason`'s required `{}` blocks around match cases prevents this
+issue.
+
+### Various Improvements
+
+OCaml doesn't require parens around sequences `(a;b;c;d)` or tuples `(x,y)`, so
+that ends up ruling out a bunch of other very convenient syntax rules.  Since
+Reason always uses `{}` to enclose sequences or let bindings, and `Reason`
+always requires `()` around tuples, many other syntax constructs are expressed
+more intuitively, without requiring extra wrapping in parenthesis.
+
+
+###### Lambdas as record fields no longer need extra parens
+
+<table>
+  <thead><tr> <th scope="col"><p>Reason</p></th><th scope="col"><p>OCaml</p></th><th scope="col"><p>Swift</p></th></tr></thead>
+  <tr>
+    <td>
+      <pre>
+let myFunctions = {               
+  myFun: fun x => x + 1,          
+  yourFun: fun a b => a + b       
+}                                 
+      </pre>
+    </td>
+    <td>
+      <pre>
+let myFunctions = {
+  myFun = (fun x -> x + 1);
+  yourFun = (fun a b -> a + b);
+}
+      </pre>
+    </td>
+    <td>
+      <pre>
+TODO
+      </pre>
+    </td>
+  </tr>
+</table>
+
+
+###### Lambdas as match results no longer need extra parens
+<table>
+  <thead><tr> <th scope="col"><p>Reason</p></th><th scope="col"><p>OCaml</p></th><th scope="col"><p>Swift</p></th></tr></thead>
+  <tr>
+    <td>
+      <pre>
+let thePrinter = switch prnt {
+  | None => fun comms ast => blah
+  | Some "none" => fun comms ast => ()
+  | Some "ml" => blah
+};
+      </pre>
+    </td>
+    <td>
+      <pre>
+let thePrinter = match prnt with
+  | None -> fun comms ast -> blah
+  (\* Extra parens required around this! \*)
+  | Some "none" -> (fun comms ast -> ())
+  | Some "ml" -> blah
+      </pre>
+    </td>
+    <td>
+      <pre>
+TODO
+      </pre>
+    </td>
+  </tr>
+</table>
+
+###### Lambdas and type annotations in tuples no longer require extra parens
+<table>
+  <thead><tr> <th scope="col"><p>Reason</p></th><th scope="col"><p>OCaml</p></th><th scope="col"><p>Swift</p></th></tr></thead>
+  <tr>
+    <td>
+      <pre>
+let tuple = (fun x => x, 20);
+let tuple = ("hi": string, 20: int);
+      </pre>
+    </td>
+    <td>
+      <pre>
+let tuple = ((fun x => x), 20);
+let tuple = (("hi": string), (20: int));
+      </pre>
+    </td>
+    <td>
+      <pre>
+TODO
+      </pre>
+    </td>
+  </tr>
+</table>
+
+### Modules and Signatures
+
+<table>
+  <thead><tr> <th scope="col"><p>Reason</p></th><th scope="col"><p>OCaml</p></th></tr></thead>
+  <tr>
+    <td>
+      <pre>
+module type MySig = {
+  type t = int;
+  let x: int;
+};
+let module MyModule: MySig = {
+  type t = int;
+  let x = 10;
+};
+let module MyModule = {
+  let module NestedModule = {
+     let msg = "hello";
+  };
+};
+      </pre>
+    </td>
+    <td>
+      <pre>
+module type MySig = sig
+  type t = int
+  val x: int
+end
+module MyModule: MySig = struct
+  type t = int
+  let x = 10
+end
+module MyModule = struct
+  module NestedModule = struct
+     let msg = "hello";
+  end
+end
+      </pre>
+    </td>
+  </tr>
+</table>
+
+
+### Functors Types
+
+In the same way that type parameters (think generics) were made consistent with
+function application syntax, `Reason` also unifies the syntax for Functors.
+
+In `Reason`, functor parsing rules are almost identical to the function
+  parsing rules, using `=>` to represent curried application.
+
+<table>
+  <thead><tr> <th scope="col"><p>Reason</p></th><th scope="col"><p>OCaml</p></th></tr></thead>
+  <tr>
+    <td>
+      <pre>
+module type FType =
+    (A: ASig) => (B:BSig) => Result;
+      </pre>
+    </td>
+    <td>
+      <pre>
+module type FType =
+    functor (A: ASig) -> functor (B:BSig) -> Result
+      </pre>
+    </td>
+  </tr>
+</table>
+
+### Functors
+
+- In `Reason`, the syntax for creating and applying functors is nearly identical
+to the syntax for creating/applying functions (but with the keyword `functor`
+instead of `fun`).
+- In `Reason` and `OCaml`, there is equivalent syntactic sugar for curried
+  functors that is consistent with function definitions.
+- However, in `Reason` functor *application* is also consistent with function
+  application (again, space separated lists).\*
+
+\* *Note: There is currently a bug where functors do not obey function
+  application syntax when in type annotation position - see
+  `formatTest/modules.re`.*
+
+<table>
+  <thead><tr> <th scope="col"><p>Reason</p></th><th scope="col"><p>OCaml</p></th></tr></thead>
+  <tr>
+    <td>
+      <pre>
+let module F = functor (A:ASig) => functor (B:BSig) => {};
+let module F = functor (A:ASig) (B:BSig) => {};
+let module F (A:ASig) (B:BSig) => {};
+let module Res = F A B;
+      </pre>
+    </td>
+    <td>
+      <pre>
+module F = functor (A:ASig) -> functor (B:BSig) -> struct end;
+module F = functor (A:ASig) (B:BSig) -> struct end;
+module F (A:ASig) (B:BSig) = struct end;
+let module Res = F(A)(B);
+      </pre>
+    </td>
+  </tr>
+</table>
+
+
+### `as` precedence
+
+OCaml:
+
+    let ppp = match MyThing 20 with
+      | (MyThing x as ppp)
+      | (YourThing x as ppp) => ppp;
+
+    let |(MyThing _ as ppp) |(YourThing _ as ppp) = ppp;
+
+Reason: parses `as` aliases differently than OCaml
+
+    let ppp = match MyThing 20 with
+      | MyThing x as ppp
+      | YourThing x as ppp => ppp;
+
+    let |MyThing _ as ppp |YourThing _ as ppp = ppp;
+
+
+
+### Prefix operators
+
+In Reason, ! (and other prefix operators have lower precedence than dot(.) or send(#).
+
+    (* OCaml *)                 /* Reason */
+    let x = !(foo.bar);         let x = !foo.bar;
+    let x = !(foo#bar);         let x = !foo#bar;
+    let x = !(!foo.bar);        let x = !(!foo).bar;
+    let x = !(!foo#bar);        let x = !(!foo)#bar;
+    let x = !(!(foo.bar));      let x = !(!foo.bar);
+    let x = !(!(foo#bar));      let x = !(!foo#bar);
+
+    let x = !!(foo.bar);        let x = !!foo.bar;
+    let x = !!(foo#bar);        let x = !!foo#bar;
+    let x = !~(foo.bar);        let x = !~foo.bar;
+    let x = !~(foo#bar);        let x = !~foo#bar;
+
+### Obscure/temporary differences:
+
+Because Reason uses C-style comments, some obscure custom prefix/infix
+operators must be written differently.  The rules for prefix/infix operators
+are the same as in OCaml, but with the following exceptions:
+
+Specifically, if any character except the first in an prefix/infix operator is
+a star or forwardslash, that must be first excaped with a backslash. These will
+be parsed *without* the backslash when added to the AST. When reprinted, the
+escape backslashes are added back in automatically.
+
+    OCaml                                    Reason
+    ------------------------                 --------------------------
+
+    let (/*) a b => a + b;                   let (/\*) a b => a + b;
+    let x = 12 /-* 23 /-* 12;                let x = 12 /-\* 23 /-\* 12;
+    let y = (/*) a b;                        let y = (/\*) a b;
+    let (!=*) q r => q + r;                  let (!=\*) q r => q + r;
+    let res = q (!=*) r;                     let res = q (!=\*) r;
+    let (!=/*) q r => q + r;                 let (!=\/\*) q r => q + r;
+    let res = q (!=/*) r;                    let res = q (!=\/\*) r;
+
+
+
+
+### Boring details:
+
+It might seem strange that in Reason, function bindings always have arrows  and
+maybe this should be revised `let add x y => x + y`. But one benefit is that it
+avoids conflicts when fully unifying the syntax between values and modules.
+Imagine that we only used equals for curried sugar function bindings. If we
+continue to use capital characters to not only indicate Constructors, but also
+Modules/Functors, then we cannot disambiguate one form.  Here's an example
+where super-sugared let curried functions do *not* use an arrow `=>`.
+
+
+    # Function
+    let x a = a + 1;
+
+    let MyConstructor a = MyConstructor a;
+
+    # At this point, it's already clear why `let x a b = ..` is a bad idea for
+    # expressing function bindings. One capital character can turn a function
+    # binding into a variant type binding. But now imagine if we want to add
+    # modules, unified with the syntax for values.
+
+    let XX A = {
+
+    };
+
+    # This is not just confusing, it may be impossible to disambiguate with #
+    Constructors as well! With arrows for curried binding sugar, we avoid that
+    issue.
+
+    let x a => a + 1;                          /* Clearly a function */
+    let MyConstructor a = MyConstructor a;     /* Clearly destructuring */
+    let XX A => {                              /* Clearly a functor */
+
+    };
+
+
+
+
+
+
+  </script>
+  <!-- Initializer -->
+  <script>
+    Flatdoc.run({
+      fetcher: function(callback) {
+        callback(null, document.getElementById('markdown').innerHTML);
+      },
+      highlight: function (code, value) {
+        return (value === 'reason') ? hljs.highlight('reason', code).value : hljs.highlight(value, code).value;
+      },
+    });
+
+  </script>
+
+  <!-- Meta -->
+  <meta property="og:image" content="./images/CubeRed598_614.png" />
+  <meta property="og:image:secure_url" content="./images/CubeRed598_614.png" />
+  <meta property="og:image:type" content="image/jpeg" />
+  <meta property="og:image:width" content="1196" />
+  <meta property="og:image:height" content="1228" />
+
+  <meta content="Reason: Rapid Expressive Systems Programming." name="description">
+  <meta content="Reason: Rapid Expressive Systems Programming." property="og:description">
+  <!-- <meta content="http://ricostacruz.com/flatdoc/support/preview.jpg" property="og:image"> -->
+</head>
+<body role='flatdoc' class='big-h3 large-brief no-literate'>
+
+  <!-- <div class='title&#45;area title&#45;card' style='background&#45;image: url(support/blur.jpg)'> -->
+  <div class='header'>
+    <div class='left'>
+      <h1><a href='index.html'>Reason</a></h1>
+      <ul>
+        <li><a href='https://github.com/jordwalke/Reason'>View on GitHub</a></li>
+        <li><a href='javaScriptCompared.html'>JavaScript Compared</a></li>
+        <li><a href='mlCompared.html'>ML Compared</a></li>
+      </ul>
+    </div>
+  </div>
+
+
+  <div class='content-root'>
+    <div class='menubar'>
+      <div class='menu section' role='flatdoc-menu'></div>
+    </div>
+    <div role='flatdoc-content' class='content'></div>
+  </div>
+
+</body>
+</html>

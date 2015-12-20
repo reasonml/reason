@@ -1,0 +1,254 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset='utf-8'>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width">
+
+  <title>Reason - compare to JavaScript</title>
+
+  <!-- Flatdoc -->
+  <script src='support/vendor/jquery.js'></script>
+  <script src='legacy.js'></script>
+  <script src="highlightJs/build/highlight.pack.js"></script>
+  <link  href='highlightJs/src/styles/xcode.css' rel='stylesheet'>
+  <script src='flatdoc.js'></script>
+
+  <!-- Flatdoc theme -->
+  <link  href='theme-white/style.css' rel='stylesheet'>
+  <script src='theme-white/script.js'></script>
+  <link  href='support/theme.css' rel='stylesheet'>
+  <script src='support/theme.js'></script>
+
+
+
+  <script id="markdown" type="text/markdown" src="javaScriptCompared.html">
+
+
+Reason and JavaScript
+=======
+Reason syntax resembles a typed subset of JavaScript. If you know JavaScript,
+you should be able to be productive quickly with Reason's syntax.
+
+The examples below attempt to recreate the Reason source in JavaScript, using
+abstractions that match as closely as possible (for example `const` in
+JavaScript is the closest thing to Reason `let`).
+
+
+### Basic language primitives.
+
+JavaScript                |   Reason
+--------------------------|--------------------------------
+<pre>3</pre>                       |  <pre>3</pre>                
+<pre> 3.1415 </pre>                |  <pre> 3.1415 </pre>                              
+<pre> "Hello world!" </pre>        |  <pre> "Hello world!" </pre>                      
+<pre> 'Hello world!' </pre>        |  Strings must use "  
+Characters are strings    |  <pre> 'a'  </pre>                                
+<pre>true</pre>                    |  <pre>true </pre>                      
+<pre> [1,2,3] </pre>               |  <pre>[1,2,3] </pre>                          
+<pre>null</pre>                    |  <pre>()</pre>                      
+<pre> const x = y;</pre>           |  <pre>let x = y;</pre>                          
+<pre> var x = y;</pre>             |  No equivalent for this terrible abomination.
+
+
+### Basic operations on primitives
+
+JavaScript                         |   Reason
+-----------------------------------|--------------------------------
+<pre>1 + 2</pre>                   |  <pre>1 + 2</pre>                
+<pre> 1.0 + 2.0 </pre>             |  <pre> 1.0 +. 2.0 </pre>                              
+<pre> "hello " + "world" </pre>    |  <pre> "hello " ^ "world" </pre>                      
+
+### Objects and Records
+JavaScript                |   Reason
+--------------------------|--------------------------------
+"Objects"                 |  "Records"
+no static types           |  <pre>type point = {x: int, mutable y: int};</pre>
+<pre>{x: 30, y: 20}</pre>          |  <pre>{x: 30, y: 20}</pre>
+<pre>point.x</pre>                 |  <pre>point.x</pre>
+<pre>point.y = 30;</pre>           |  <pre>point.y <- 30;</pre>
+<pre>{...point, x: 30}</pre>       |  <pre>{...point, x:30}</pre>
+
+
+### Lambdas
+JavaScript                        |   Reason
+----------------------------------|--------------------------------
+<pre>const incr = x => x + 1;</pre>        |  <pre>let incr = fun x => x + 1;</pre>
+<pre>const five = incr(4);</pre>           |  <pre>let five = incr 4;</pre>
+<pre>const add = (x, y) => x+y;</pre>      |  <pre>let add = fun x y => x+y;</pre>
+<pre>const x = add(3, 4);</pre>            |  <pre>let x = add 3 4;</pre>
+<pre>const y = add(3, add(0, 1));</pre>    |  <pre>let y = add 3 (add 0 1);</pre>
+
+### Blocks
+In `Reason`, "sequence expressions" are created with `{}` and evaluate to their
+last statement. In `JavaScript`, this can only be simulated via a temporary
+variable which must be created in an invalid state, then later mutated.
+
+<table>
+  <thead><tr> <th scope="col"><p >JavaScript</p></th> <th scope="col"><p>Reason</p></th></tr></thead>
+  <tr>
+    <td>
+      <pre>
+let res = undefined;
+{
+  const x = 23;
+  const y = 34;
+  res = x + y;
+};
+      </pre>
+    </td>
+    <td>
+      <pre>
+let res = {
+  let x = 23;
+  let y = 34;
+  x + y;
+};
+      </pre>
+    </td>
+  </tr>
+</table>
+
+
+Like `JavaScript`, `Reason` allows any expression on the right hand side of the
+lambda `=>`.
+
+<table>
+  <thead><tr> <th scope="col"><p >JavaScript</p></th> <th scope="col"><p>Reason</p></th></tr></thead>
+  <tr>
+    <td>
+      <pre>
+const add = (x, y) =>
+  x + x + y + y;
+      </pre>
+    </td>
+    <td>
+      <pre>
+let add = fun x y =>
+  x + x + y + y;
+      </pre>
+    </td>
+  </tr>
+</table>
+
+However, `JavaScript` allows lambdas to return `{}` blocks with `return`
+statements.  `Reason` doesn't *need* a concept of `return` statements, because
+it already has sequence *expressions* that *evaluate* to the last item in the
+sequence.
+
+<table>
+  <thead><tr> <th scope="col"><p >JavaScript</p></th> <th scope="col"><p>Reason</p></th></tr></thead>
+  <tr>
+    <td>
+      <pre>
+const myFun = (x, y) => {
+  const doubleX = x + x;
+  const doubleY = y + y;
+  return doubleX + doubleY;
+};
+      </pre>
+    </td>
+    <td>
+      <pre>
+let myFun = fun x y => {
+  let doubleX = x + x;
+  let doubleY = y + y;
+  doubleX + doubleY;
+};
+      </pre>
+    </td>
+  </tr>
+</table>
+
+In fact, in Reason, almost everything is an expression. For example, in
+`Reason`, the `switch` statement *evaluates* to a value, which makes
+programming less error prone. Notice how in the `JavaScript` version, there is
+some time when the program is in an invalid state.  The switch statement in
+`Reason` also provides many more super powers, discussed in [Pattern
+Matching](./index.html#syntax-basics-expressive-pattern-matching).
+
+<table>
+  <thead><tr> <th scope="col"><p >JavaScript</p></th> <th scope="col"><p>Reason</p></th></tr></thead>
+  <tr>
+    <td>
+      <pre>login ? "hi" : "bye" </pre>
+    </td>
+    <td>
+      <pre>login ? "hi" : "bye" </pre>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <pre>
+let res = undefined;
+switch (thing) {
+  case first:
+     res = "first";
+     break;
+  case second:
+     res = "second";
+     break;
+};
+      </pre>
+    </td>
+    <td>
+      <pre>
+let res = switch thing {
+  | first => "first"
+  | second => "second"
+};
+      </pre>
+    </td>
+  </tr>
+</table>
+
+
+
+  </script>
+  <!-- Initializer -->
+  <script>
+    Flatdoc.run({
+      fetcher: function(callback) {
+        callback(null, document.getElementById('markdown').innerHTML);
+      },
+      highlight: function (code, value) {
+        return (value === 'reason') ? hljs.highlight('reason', code).value : hljs.highlight(value, code).value;
+      },
+    });
+  </script>
+
+  <!-- Meta -->
+  <meta property="og:image" content="./images/CubeRed598_614.png" />
+  <meta property="og:image:secure_url" content="./images/CubeRed598_614.png" />
+  <meta property="og:image:type" content="image/jpeg" />
+  <meta property="og:image:width" content="1196" />
+  <meta property="og:image:height" content="1228" />
+
+  <meta content="Reason: Rapid Expressive Systems Programming." name="description">
+  <meta content="Reason: Rapid Expressive Systems Programming." property="og:description">
+  <!-- <meta content="http://ricostacruz.com/flatdoc/support/preview.jpg" property="og:image"> -->
+</head>
+<body role='flatdoc' class='no-literate big-h3 large-brief'>
+
+  <!-- <div class='title&#45;area title&#45;card' style='background&#45;image: url(support/blur.jpg)'> -->
+  <div class='header'>
+    <div class='left'>
+      <h1><a href='index.html'>Reason</a></h1>
+      <ul>
+        <li><a href='https://github.com/jordwalke/Reason'>View on GitHub</a></li>
+        <li><a href='javaScriptCompared.html'>JavaScript Compared</a></li>
+        <li><a href='mlCompared.html'>ML Compared</a></li>
+      </ul>
+    </div>
+  </div>
+
+
+  <div class='content-root'>
+    <div class='menubar'>
+      <div class='menu section' role='flatdoc-menu'></div>
+    </div>
+    <div role='flatdoc-content' class='content'></div>
+  </div>
+
+</body>
+</html>
