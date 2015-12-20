@@ -10,15 +10,14 @@ Reason: Meta Language Utility
 
 Install/Build
 ----------
-Download the [ReasonDocs](https://github.com/facebook/Reason/blob/master/docs.zip?raw=true)
-and open the `index.html` file.
+See [ReasonDocs](http://facebook.github.io/Reason/#reason-install)
 
 Integrating with Existing Languages.
 ------------------------
 
  **`JavaScript` and `CommonJS`**:
 
-See the [ReasonDocs](https://github.com/facebook/Reason/blob/master/docs.zip?raw=true)
+See the [ReasonDocs](http://facebook.github.io/Reason/javaScriptCompared.html)
 
 
 **`clang`/`ocamlc`/`ocamlopt`**:
@@ -77,7 +76,7 @@ this likely won't be enough because `ocamlc`/`ocamlopt` will need the
 <**/*.{re,.rei}>: package(reason), syntax(utf8)
 ```
 
-[ReasonDocs](https://github.com/facebook/Reason/blob/master/docs.zip?raw=true) explains how to use
+[ReasonDocs](http://facebook.github.io/Reason/index.html#reason-repl) explains how to use
 `Reason` with the top level or with `utop`, but it can be manually activated
 from any top level by:
 
