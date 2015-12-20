@@ -141,7 +141,7 @@ computed.
 let three = {
   let one = 1;
   let two = 2;
-  one + two;
+  one + two
 };
 /* one and two not accessible here! */
 ```
@@ -190,7 +190,7 @@ evaluating to the expression on the right side of the `=>`.
 let longerFunc = fun argOne argTwo => {
   let tmp = 2 * argOne;
   let next = 3 * argTwo;
-  tmp * next;
+  tmp * next
 };
 ```
 
@@ -202,7 +202,7 @@ let longerFunc = fun argOne argTwo => {
   let tmp = 2 * argOne;
   let next = 3 * argTwo;
   print_string "Returning from the function";
-  tmp * next;
+  tmp * next
 };
 ```
 
@@ -362,7 +362,7 @@ Notice how this resembles `C`/`JavaScript` style argument syntax.
 ```reason
 
 let addTupleFields = fun (first, second) => {
-  first + second;
+  first + second
 };
 let five = addTupleFields (4, 1);
 ```
@@ -373,7 +373,7 @@ always, record type definitions must be in scope when records are used.
 ```reason
 let isOverThirty = fun {name: n, age: a} => {
   let ret = a > 30;
-  ret;
+  ret
 };
 let overThirty = isOverThirty {name: "Jay", age: 31};
 ```
@@ -384,11 +384,11 @@ let (ten: int, twenty: int) = someInts;
 let {name: n:string, age: a:int} = somePerson;
 
 let addTupleFields = fun (first:int, second:int) => {
-  first + second;
+  first + second
 };
 let isOverThirty = fun {name: n:int, age: a:int} => {
   let ret = a > 30;
-  ret;
+  ret
 };
 ```
 
@@ -646,7 +646,7 @@ let module Login = {
 let module RepeatedLogin = {
   include Login;
   let loginTwice = fun auth => {
-    (login auth, login auth);
+    (login auth, login auth)
   };
 };
 ```

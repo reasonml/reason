@@ -39,15 +39,15 @@ JavaScript is the closest thing to Reason `let`).
 
 JavaScript                |   Reason
 --------------------------|--------------------------------
-<pre>3</pre>                       |  <pre>3</pre>                
-<pre> 3.1415 </pre>                |  <pre> 3.1415 </pre>                              
-<pre> "Hello world!" </pre>        |  <pre> "Hello world!" </pre>                      
-<pre> 'Hello world!' </pre>        |  Strings must use "  
-Characters are strings    |  <pre> 'a'  </pre>                                
-<pre>true</pre>                    |  <pre>true </pre>                      
-<pre> [1,2,3] </pre>               |  <pre>[1,2,3] </pre>                          
-<pre>null</pre>                    |  <pre>()</pre>                      
-<pre> const x = y;</pre>           |  <pre>let x = y;</pre>                          
+<pre>3</pre>                       |  <pre>3</pre>
+<pre> 3.1415 </pre>                |  <pre> 3.1415 </pre>
+<pre> "Hello world!" </pre>        |  <pre> "Hello world!" </pre>
+<pre> 'Hello world!' </pre>        |  Strings must use "
+Characters are strings    |  <pre> 'a'  </pre>
+<pre>true</pre>                    |  <pre>true </pre>
+<pre> [1,2,3] </pre>               |  <pre>[1,2,3] </pre>
+<pre>null</pre>                    |  <pre>()</pre>
+<pre> const x = y;</pre>           |  <pre>let x = y;</pre>
 <pre> var x = y;</pre>             |  No equivalent for this terrible abomination.
 
 
@@ -55,9 +55,9 @@ Characters are strings    |  <pre> 'a'  </pre>
 
 JavaScript                         |   Reason
 -----------------------------------|--------------------------------
-<pre>1 + 2</pre>                   |  <pre>1 + 2</pre>                
-<pre> 1.0 + 2.0 </pre>             |  <pre> 1.0 +. 2.0 </pre>                              
-<pre> "hello " + "world" </pre>    |  <pre> "hello " ^ "world" </pre>                      
+<pre>1 + 2</pre>                   |  <pre>1 + 2</pre>
+<pre> 1.0 + 2.0 </pre>             |  <pre> 1.0 +. 2.0 </pre>
+<pre> "hello " + "world" </pre>    |  <pre> "hello " ^ "world" </pre>
 
 ### Objects and Records
 JavaScript                |   Reason
@@ -102,7 +102,7 @@ let res = undefined;
 let res = {
   let x = 23;
   let y = 34;
-  x + y;
+  x + y
 };
       </pre>
     </td>
@@ -144,7 +144,7 @@ sequence.
 const myFun = (x, y) => {
   const doubleX = x + x;
   const doubleY = y + y;
-  return doubleX + doubleY;
+  return doubleX + doubleY
 };
       </pre>
     </td>
@@ -153,7 +153,7 @@ const myFun = (x, y) => {
 let myFun = fun x y => {
   let doubleX = x + x;
   let doubleY = y + y;
-  doubleX + doubleY;
+  doubleX + doubleY
 };
       </pre>
     </td>
