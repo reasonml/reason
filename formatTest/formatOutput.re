@@ -1,7 +1,7 @@
 let printSection s => {
   print_string "\n";
   print_string s;
-  print_string "\n---------------------\n";
+  print_string "\n---------------------\n"
 };
 
 let printLn s => print_string (s ^ "\n");
@@ -9,7 +9,7 @@ let run () => TestUtils.printSection "Basic Structures";
 
 while something {
   print_string "You're in a while loop";
-  print_newline ();
+  print_newline ()
 };
 
 for i in 0 to 5 {
@@ -17,8 +17,8 @@ for i in 0 to 5 {
   print_newline ();
   for i in 10 to 0 {
     print_string "Counting in reverse direction";
-    print_newline ();
-  };
+    print_newline ()
+  }
 };
 
 for i in 
@@ -30,8 +30,8 @@ for i in
       (theSame isTrue ofThe startOfRange) to 
       0 {
     print_string "Counting in reverse direction";
-    print_newline ();
-  };
+    print_newline ()
+  }
 };
 
 let x = !foo.bar;
@@ -79,76 +79,76 @@ let x = !!foo#bar;
 let something =
   if self.ext.logSuccess {
     print_string "Did tap";
-    print_newline ();
+    print_newline ()
   };
 
 let logTapSuccess self =>
   if self.ext.logSuccess {
     print_string "Did tap";
-    print_newline ();
+    print_newline ()
   } else {
-    ();
+    ()
   };
 
 let logTapSuccess self =>
   if self.ext.logSuccess {
     print_string "Did tap";
-    print_newline ();
+    print_newline ()
   };
 
 let loop appTime frameTime => {
   if hasSetup.contents {
     setupScene ();
     renderIntoTop ();
-    hasSetup.contents <- true;
+    hasSetup.contents <- true
   };
-  process appTime frameTime;
+  process appTime frameTime
 };
 
 /* These parens should be kept around the entire last if/then/else */
 if something {
   if somethingElse {
-    ();
+    ()
   } else {
-    "blah";
-  };
+    "blah"
+  }
 };
 
 /* These parens should be kept around just the last if/then*/
 if something {
   if somethingElse {
-    ();
+    ()
   } else {
-    "blah";
-  };
+    "blah"
+  }
 };
 
 /* Parens should be generated to wrap the entire final if then else.
  * To test that it's being parsed correclty, should print "one". */
 if true {
   if true {
-    print_string "one";
+    print_string "one"
   } else {
-    print_string "two";
-  };
+    print_string "two"
+  }
 };
 
 /* Should print two */
 if true {
   if false {
-    print_string "one";
+    print_string "one"
   } else {
-    print_string "two";
-  };
+    print_string "two"
+  }
 };
 
 /* Should not print */
 if false {
   if true {
-    print_string "one";
+    print_string "one"
   } else {
-    print_string "two";
-  };
+    print_string "two"
+  }
 };
 
 /* Should wrap (if a > b then a else b).
@@ -160,20 +160,20 @@ let result =
   if printIfFirstArgGreater {
     fun a b =>
       if (a > b) {
-        print_string "a > b";
+        print_string "a > b"
       } else {
-        print_string "b >= a";
-      };
+        print_string "b >= a"
+      }
   } else if (
     fun a b =>
       if (a > b) {
-        print_string "b < a";
+        print_string "b < a"
       } else {
-        print_string "a <= b";
+        print_string "a <= b"
       }
   ) {
     print_string "That could never possibly type check";
-    print_newline ();
+    print_newline ()
   };
 
 let myRecord = {
@@ -186,9 +186,9 @@ let myRecord = {
           instaComp.relativeRect 
           displayRect
       ) {
-        IoEligible;
+        IoEligible
       } else {
-        IoInelibleButTryComposition;
+        IoInelibleButTryComposition
       }
   }
 };
@@ -196,59 +196,59 @@ let myRecord = {
 if printIfFirstArgGreater {
   fun a b =>
     if (a > b) {
-      print_string "a > b";
-    };
+      print_string "a > b"
+    }
 } else {
   fun a b =>
     if (a > b) {
-      print_string "b < a";
-    };
+      print_string "b < a"
+    }
 };
 
 /* Should Be Parsed As: Cleary a type error, but at least the parsing makes that clear */
 if printIfFirstArgGreater {
   fun a b =>
     if (a > b) {
-      print_string "a > b";
+      print_string "a > b"
     } else {
       fun a b =>
         if (a > b) {
-          print_string "b < a";
-        };
-    };
+          print_string "b < a"
+        }
+    }
 };
 
 fun a b =>
   if (a > b) {
-    print_string "a > b";
+    print_string "a > b"
   };
 
 /* What you probably wanted was: */
 if printIfFirstArgGreater {
   fun a b =>
     if (a > b) {
-      print_string "a > b";
-    };
+      print_string "a > b"
+    }
 } else {
   fun a b =>
     if (a > b) {
-      print_string "b < a";
-    };
+      print_string "b < a"
+    }
 };
 
 /* Mutative if statement: Not used to evaluate to something. */
 if (10 < 100) {
   let msg = "If there was any doubt, 10 is in fact less than 100.";
-  print_string msg;
+  print_string msg
 } else {
   let msg = "All bets are off.";
-  print_string msg;
+  print_string msg
 };
 
 if (10 < 100) {
-  print_string "If there was any doubt, 10 is in fact less than 100.";
+  print_string "If there was any doubt, 10 is in fact less than 100."
 } else {
-  print_string "All bets are off.";
+  print_string "All bets are off."
 };
 
 /**                            TYPE CONSTRAINTS
@@ -298,7 +298,7 @@ let annotatingSingleFuncApplication = {
    * This demonstrates why named arguments cannot simply have the form (func
    * arg:val) - it is indistinguishable from a type constraint.
   */
-  2 + (_dummyFunc a: int);
+  2 + (_dummyFunc a: int)
 };
 
 let (
@@ -603,69 +603,69 @@ let anotherRecord = {
 let logTapSuccess self =>
   if (self > other) {
     print_string "Did tap";
-    print_newline ();
+    print_newline ()
   } else {
-    ();
+    ()
   };
 
 let something =
   if self.ext.logSuccess {
     print_string "Did tap";
-    print_newline ();
+    print_newline ()
   };
 
 let logTapSuccess self =>
   if self.ext.logSuccess {
     print_string "Did tap";
-    print_newline ();
+    print_newline ()
   } else {
-    ();
+    ()
   };
 
 if (
   if x {
-    true;
+    true
   } else {
-    false;
+    false
   }
 ) {
-  true;
+  true
 } else {
-  false;
+  false
 };
 
 /* Parens are required around if if it's an argument - this is the same as before. */
 if (
   callSomeFunction (
     if true {
-      true;
+      true
     } else {
-      false;
+      false
     }
   )
 ) {
-  true;
+  true
 } else {
-  false;
+  false
 };
 
 /* Notice that to do something strange, your code must *look* strange. */
 /* That's generally a good thing */
 if callSomeFunction {
   if true {
-    true;
-  };
+    true
+  }
 } else {
-  false;
+  false
 };
 
 if (
   callSomeFunction {
     thisIsAnArgument;
-    notTheControlFlow;
+    notTheControlFlow
   }
 ) {
-  thisIsTheControlFlow;
+  thisIsTheControlFlow
 };
 
 /* The braces around the test conditions of if statements are not required.
@@ -679,21 +679,21 @@ if (
  *
  */
 if printIfFirstArgGreater {
-  simpleThen;
+  simpleThen
 } else {
-  thisDoesnt even have2 be simple;
+  thisDoesnt even have2 be simple
 };
 
 if (
   if x {
-    true;
+    true
   } else {
-    false;
+    false
   }
 ) {
-  ();
+  ()
 } else {
-  ();
+  ()
 };
 
 /**                            TERNARY
@@ -794,13 +794,13 @@ let res =
  */
 let result =
   if something {
-    Console.log "First Branch";
+    Console.log "First Branch"
   } else if anotherThing {
-    Console.log "Second Branch";
+    Console.log "Second Branch"
   } else if yetAnotherThing {
-    Console.log "Third Branch";
+    Console.log "Third Branch"
   } else {
-    Console.log "Final Case";
+    Console.log "Final Case"
   };
 
 /*
@@ -1006,7 +1006,7 @@ let opensAModuleLocally = {
     let y: someType = 20;
   };
   let tmp = MyLocalModule.x + 22;
-  tmp + 30;
+  tmp + 30
 };
 
 module type HasTT = {type tt;};
@@ -1173,7 +1173,7 @@ let letsTryThatSyntaxInLocalModuleBindings () => {
     CurriedNoSugar AMod BMod;
   let module TempModule2 =
     CurriedSugarWithAnnotatedReturnVal AMod BMod;
-  TempModule.result + TempModule2.result;
+  TempModule.result + TempModule2.result
 };
 
 module type EmptySig = {};
@@ -1394,7 +1394,7 @@ let module N = {
   open M;
   let z = {
     let open M;
-    34;
+    34
   };
   let y = 44;
 };
@@ -1536,19 +1536,19 @@ let rec accessDeeplyWithArgRecursive x count =>
     | LocalModule.AccessedThroughModuleWith x as entirePattern =>
         /* It captures the whole pattern */
         if (count > 0) {
-          0;
+          0
         } else {
           accessDeeplyWithArgRecursive
-            entirePattern (count - 1);
+            entirePattern (count - 1)
         }
     | LocalModule.AccessedThroughModuleWithTwo
         x y as entirePattern =>
         /* It captures the whole pattern */
         if (count > 0) {
-          0;
+          0
         } else {
           accessDeeplyWithArgRecursive
-            entirePattern (count - 1);
+            entirePattern (count - 1)
         }
   };
 
@@ -1557,7 +1557,7 @@ accessDeeplyWithArgRecursive
 
 let run () => {
   TestUtils.printSection "Variants";
-  Printf.printf "%d %d \n" x y;
+  Printf.printf "%d %d \n" x y
 };
 
 type combination 'a =
@@ -4385,32 +4385,7 @@ let ternaryResult =
       false;
 
 let returningATernary x y => x > y ? "hi" : "by";
-/**
- * Typically the "interface file" is where you would write a ton of
- * comments/documentation.
- */
-type adders = {
-  /*
-   * Adds two numbers together.
-   */ 
-  addTwoNumbers: int => int => int, 
-  /*
-   * Amazingly, adds *three* numbers together.
-   */ 
-  addThreeNumbers: int => int => int => int, 
-  /*
-   * Tuple version of previous function.
-   */ 
-  addThreeNumbersTupled: (int, int, int) => int
-};
-/**
- * Public function.
- */
-let myRecordWithFunctions: adders;
-/**
- * Public result.
- */
-let result: int;( /*attributes not yet supported*/ );
+( /*attributes not yet supported*/ );
 
 Modules.run ();
 
@@ -4432,11 +4407,11 @@ let matchingFunc a =>
     | `Thingy x => {
         print_string "matched thingy x";
         let zz = 10;
-        zz;
+        zz
       }
     | `Other x => {
         print_string "matched other x";
-        x;
+        x
       }
   };
 
@@ -4685,7 +4660,7 @@ let point3D: point3D = {x: 10, y: 11, z: 80};
 /* Optional Comma */
 let printPoint (p: point) => {
   print_int p.x;
-  print_int p.y;
+  print_int p.y
 };
 
 let addPoints (p1: point, p2: point) => {
@@ -4744,7 +4719,7 @@ let o: person = {name: "bob", age: 10};
 
 let printPerson (p: person) => {
   let q: person = p;
-  p.name ^ p.name;
+  p.name ^ p.name
 };
 
 /* let dontParseMeBro x y:int = x = y;*/
@@ -4788,22 +4763,22 @@ let
   onlyDoingThisTopLevelLetToBypassTopLevelSequence = {
   let x = {
     print_int 1;
-    print_int 20;
+    print_int 20
   };
   /* Missing trailing SEMI */
   let x = {
     print_int 1;
     print_int 20;
     /* Ensure missing middle SEMI reported well */
-    print_int 20;
+    print_int 20
   };
   let x = {
     print_int 1;
     print_int 20;
-    10;
+    10
   };
   /* Missing final SEMI */
-  x + x;
+  x + x
 };
 
 type hasA = {a: int};
@@ -4890,9 +4865,9 @@ let res = {
   {
     print_string a;
     let a = 20;
-    print_int a;
+    print_int a
   };
-  print_string a;
+  print_string a
 };
 
 let res = {
@@ -4900,14 +4875,14 @@ let res = {
   let a = 20;
   print_int a;
   print_int a;
-  print_int a;
+  print_int a
 };
 
 let res = {
   let a = "a is always a string";
   print_string a;
   let b = 30;
-  print_int b;
+  print_int b
 };
 
 /* let result = LyList.map (fun | [] => true | _ => false) []; */
@@ -4929,16 +4904,16 @@ let blah =
 /* let arrowFunc = fun a b => print_string "returning aplusb from arrow"; a + b;;  */
 let arrowFunc a b => {
   print_string "returning aplusb from arrow";
-  a + b;
+  a + b
 };
 
 let add a b => {
   let extra = {
     print_string "adding";
-    0;
+    0
   };
   let anotherExtra = 0;
-  extra + a + b + anotherExtra;
+  extra + a + b + anotherExtra
 };
 
 print_string (string_of_int (add 4 34));
@@ -5003,13 +4978,13 @@ let lookTuplesRequireParens = (1, 2);
 let tupleInsideAParenSequence = {
   print_string "look, a tuple inside a sequence";
   let x = 10;
-  (x, x);
+  (x, x)
 };
 
 let tupleInsideALetSequence = {
   print_string "look, a tuple inside a sequence";
   let x = 10;
-  (x, x);
+  (x, x)
 };
 
 /* We *require* that function return types be wrapped in
@@ -5247,14 +5222,14 @@ let x =
 
 let res = {
   (constraintedSequenceItem: string);
-  (dontKnowWheYoudWantToActuallyDoThis: string);
+  (dontKnowWheYoudWantToActuallyDoThis: string)
 };
 
 let res = {
   (
     butTheyWillBePrintedWithAppropriateSpacing: string
   );
-  (soAsToInstillBestDevelopmentPractices: string);
+  (soAsToInstillBestDevelopmentPractices: string)
 };
 
 let x = [
@@ -5648,13 +5623,13 @@ let str = "@[.... some formatting ....@\n\n@.";
 let result = {
   let twenty = 20;
   let result = twenty;
-  result;
+  result
 };
 
 /* Final semicolon is not required */
 let result = {
   let twenty = result;
-  twenty;
+  twenty
 };
 
 let anInt = result + 20;
@@ -5680,15 +5655,15 @@ let unitValue = ();
  * it's not required.
  */
 while false {
-  unitValue;
+  unitValue
 };
 
 while false {
-  print_string "test";
+  print_string "test"
 };
 
 while false {
-  print_string "test";
+  print_string "test"
 };
 
 type myRecord = {number: int};
@@ -5792,7 +5767,7 @@ let mutativeFunction =
  */
 switch (
   while true {
-    ();
+    ()
   }
 ) {
   | _ => ()
@@ -5800,7 +5775,7 @@ switch (
 
 try (
   while true {
-    ();
+    ()
   }
 ) {
   | _ => ()
@@ -5808,7 +5783,7 @@ try (
 
 switch (
   for i in 0 to 10 {
-    ();
+    ()
   }
 ) {
   | _ => ()
@@ -5816,7 +5791,7 @@ switch (
 
 try (
   for i in 0 to 10 {
-    ();
+    ()
   }
 ) {
   | _ => ()
@@ -5824,9 +5799,9 @@ try (
 
 switch (
   if true {
-    print_string "switching on true";
+    print_string "switching on true"
   } else {
-    print_string "switching on false";
+    print_string "switching on false"
   }
 ) {
   | _ => ()
@@ -5834,7 +5809,7 @@ switch (
 
 try (
   for i in 0 to 10 {
-    ();
+    ()
   }
 ) {
   | _ => ()
@@ -5843,7 +5818,7 @@ try (
 let result =
   (
     while false {
-      ();
+      ()
     }
   ) ==
     () ?
@@ -5865,18 +5840,18 @@ let shouldStillLoop = {contents: false};
 
 while shouldStillLoop.contents {
   print_string "You're in a while loop";
-  print_newline ();
+  print_newline ()
 };
 
 while {
   shouldStillLoop.contents <- false;
-  shouldStillLoop.contents;
+  shouldStillLoop.contents
 } {
-  print_string "Will never loop";
+  print_string "Will never loop"
 };
 
 while ((shouldStillLoop := false) == ()) {
-  print_string "Forever in the loop";
+  print_string "Forever in the loop"
 };
 /*
  * Testing pattern matching using ml syntax to exercise nesting of cases.

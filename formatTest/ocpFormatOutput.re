@@ -14,7 +14,7 @@ switch s.src {
           ), 
         yy
       ];
-      foo;
+      foo
     }
   | Some s => {
       fww: (
@@ -54,20 +54,20 @@ let module M = {
 /* M4 */
 let f x =>
   if true {
-    0;
+    0
   } else if
     /* comment */
     false {
-    1;
+    1
   };
 
 let g x =>
   if true {
-    0;
+    0
   } else if
     /* comment */
     false {
-    1;
+    1
   };
 
 f x /* bla */ y /* bla */ z;
@@ -93,7 +93,7 @@ module type S =
       ) 
       ()
   );
-  ();
+  ()
 };
 
 /* Reason: Commenting out invalid parse */
@@ -145,9 +145,9 @@ let () =
   Date.to_string date, 
   " ", 
   ...if is_utc {
-       ["Z"];
+       ["Z"]
      } else {
-       bla;
+       bla
      }
 ];
 
@@ -158,7 +158,7 @@ let () =
   let module M = (
     val (m: (module S with type t =t'))
   );
-  x;
+  x
 };
 
 let (a, b, c) = d;
@@ -216,7 +216,7 @@ let module S:
 {
   let f x => bla
   and g x => bli;
-  ();
+  ()
 };
 
 include {
@@ -229,11 +229,11 @@ let should_check_can_sell_and_marking
   switch z {
     | `foo => {
         some_function argument;
-        flu;
+        flu
       }
     | `foo => {
         some_function argument;
-        flu;
+        flu
       }
   };
 
@@ -250,8 +250,8 @@ let mem {ar, cmp} el => {
   let len = Array.length ar;
   len > 0 && {
     let rec loop pos => bla;
-    blu;
-  };
+    blu
+  }
 };
 
 let blit_to (type a) (blit: Blit.t Base.t a) => {
@@ -263,7 +263,7 @@ let blit_to (type a) (blit: Blit.t Base.t a) => {
       src_len::t.len 
       dst::dst 
       dst_pos::dst_pos 
-      ();
+      ()
 };
 
 type t 'a =
@@ -302,11 +302,11 @@ type variant =
 let f x =>
   fun | A => {
           x;
-          2;
+          2
         } 
       | B => {
           y;
-          3;
+          3
         };
 
 /* if we were to fix to the case above, the second >>= would be below the _
@@ -367,21 +367,21 @@ let f x y => y + (
   somefun (fun x => x);
   somefun (
     if bla {
-      bli;
+      bli
     }
   );
   somefun (
     if bla {
-      bli;
+      bli
     } else {
-      blu;
+      blu
     }
-  );
+  )
 };
 
 {
   a;
-  b;
+  b
 };
 
 /* Surprisingly, this is the indentation correpsonding to OCaml's interpretation
@@ -410,9 +410,9 @@ let f x =>
       | A => true
     }
   ) {
-    1;
+    1
   } else {
-    0;
+    0
   };
 
 let f x =>
@@ -438,15 +438,15 @@ let f x => g (fun x => x) [] (x: x) y::?z () 0;
 
 let f p::p g::g () k::k=? () => {
   let x = 0;
-  p;
+  p
 };
 
 let f = {
   for i in 0 to 1 {
     a;
-    b;
+    b
   };
-  x;
+  x
 };
 
 external : f 'a => x::int => t="b";
@@ -456,7 +456,7 @@ external : g x::t => s::i => d::t => unit="b2";
 let f g::g=[] v x::x=0 l::l=? b => {
   let l = g b p::p l;
   c l::"foo" b p::p l::l;
-  u v p::p l::l b f;
+  u v p::p l::l b f
 };
 
 let f () => g x y x::?y y::?w a::b;
@@ -464,9 +464,9 @@ let f () => g x y x::?y y::?w a::b;
 let f () => f (
   fun () => {
     for i in 0 to 10 {
-      g;
+      g
     };
-    x;
+    x
   }
 );
 
@@ -474,7 +474,7 @@ external : f int => int="foo";
 
 let f () =>
   for i in 0 to 10 {
-    g;
+    g
   };
 
 let f () => {x: 1, y: 2};
@@ -487,14 +487,14 @@ let f () => {x: 1, y: 2};
 
 let f x =>
   if x {
-    x;
+    x
   } else {
     f @@ (
       fun () => {
         g;
-        h;
+        h
       }
-    );
+    )
   };
 /* Simple declaration : OK */
 type t = ..;
@@ -556,7 +556,7 @@ let rec sum: type a. term a => _ =
         | Add => 0
         | App f x => sum f + sum x
       };
-    y + 1;
+    y + 1
   };
 
 type typ _ =
@@ -574,7 +574,7 @@ let rec to_string: type t. typ t => t => string =
           Printf.sprintf
             "(%s,%s)" 
             (to_string t1 x1) 
-            (to_string t2 x2);
+            (to_string t2 x2)
         }
     };
 
@@ -608,12 +608,12 @@ let get_dyn: type a. typ a => dyn => option a =
 
 {
   let f: type a. list a => int = fun _x => 42;
-  f [];
+  f []
 };
 
 let nth t n =>
   if (n < 0) {
-    None;
+    None
   } else {
     let rec nth_aux:
       type b. t 'a b => int => option 'a =
@@ -622,12 +622,12 @@ let nth t n =>
           | Empty => None
           | Node a t =>
               if (n = 0) {
-                Some a;
+                Some a
               } else {
-                nth_aux t (n - 1);
+                nth_aux t (n - 1)
               }
         };
-    nth_aux t n;
+    nth_aux t n
   };
 
 let rec f: type a b. a =
@@ -635,12 +635,12 @@ let rec f: type a b. a =
 and g: type a. a =
   fun | _ => assert false;
 if (cond1 && cond2) {
-  ();
+  ()
 };
 
 fun | _ when x = 2 && y = 3 =>
         if (a = b || b = c && c = d) {
-          ();
+          ()
         };
 let module M:
   S with type a = b and type c = d and type e = f = {};
@@ -726,7 +726,7 @@ let () = {
   );
   raise (Bug ("foo" ^ "quux" ^ "bar"));
   raise (Bug (foo + quux ^ "bar"));
-  raise (Bug (foo + quux ^ "bar"));
+  raise (Bug (foo + quux ^ "bar"))
 };
 
 /* Except in specific cases, we want the argument indented relative to the
@@ -776,14 +776,14 @@ assert (foo ((bar + baz) <= quux));
                                            sim. to ^ above */
 /* Sim. indentation of if conditions: */
 if (a <= b) {
-  ();
+  ()
 };
 
 /* Comparisons are different than conditionals; we don't regard them as
      conceptually part of the [if] expression. */if (
                                         a <= b
                                         ) {
-                                        ();
+                                        ()
                                         };
 
 /* We regard the outermost condition terms as conceptually part of the [if]
@@ -793,9 +793,9 @@ if (a <= b) {
                                         0. = sys.plugs.edge_backoff && 
                                         0. = zero_acvol_edge_backoff
                                         ) {
-                                        0.;
+                                        0.
                                         } else {
-                                        1.;
+                                        1.
                                         };
 
 if (
@@ -803,9 +803,9 @@ if (
     0. = sys.plugs.edge_backoff && 
     0. = zero_acvol_edge_backoff
 ) {
-  0.;
+  0.
 } else {
-  1.;
+  1.
 };
 
 {
@@ -816,7 +816,7 @@ if (
         fun ts =>
           Pcre.pmatch pat::pat ts.RQ.description
       );
-  x;
+  x
 };
 
 /* combination of operator at BOL and -> at EOL: */
@@ -831,7 +831,7 @@ Shell.ssh_lines x |!
             (
               String.strip name, 
               String.strip path
-            );
+            )
           }
         )
       )
@@ -842,24 +842,24 @@ if (a (p ^\/ "s") [e] = Ok ()) {
   `S {
     let label count => sprintf "%d s" c ^ (
       if (c = 1) {
-        ":";
+        ":"
       } else {
-        "s";
+        "s"
       }
     );
-    x;
-  };
+    x
+  }
 };
 let f =
   fun | zoo => {
           foo;
-          bar;
+          bar
         };
 
 let g =
   fun | zoo => {
           foo;
-          bar;
+          bar
         };
 
 let () =
@@ -872,7 +872,7 @@ let assigned_to u =>
     f::(
       fun request =>
         if false {
-          ();
+          ()
         } else {
           status_request
             request::request 
@@ -882,7 +882,7 @@ let assigned_to u =>
             fun status => not (
               up_to_date_user status u
             )
-          );
+          )
         }
     );
 
@@ -1088,19 +1088,19 @@ argument, although I don't think that's crucial. */
 foo quux /* about bar */ bar /* about baz */ baz;
 let rec check_header t =>
   if (Iobuf.length t.buf < header_length) {
-    failwiths "Short packet" t !sexp_of_t;
+    failwiths "Short packet" t !sexp_of_t
   }
 and session t => {
   check_header t;
-  Session_id.of_int_exn id_int;
+  Session_id.of_int_exn id_int
 }
 and length t => {
   let len = raw_length t;
   if (len = eos_marker) {
-    0;
+    0
   } else {
-    len;
-  };
+    len
+  }
 }
 and sexp_of_t t =>
   /* something pretty for debugging */
@@ -1113,10 +1113,10 @@ and sexp_of_t t =>
       finally::(
         fun () => {
           Iobuf.Snapshot.rewind lo t.buf;
-          Iobuf.resize t.buf len;
+          Iobuf.resize t.buf len
         }
       ) 
-      (fun () => ());
+      (fun () => ())
   };
 /* preferred list style */
 let z = f [y, foo f::(fun () => arg)];
@@ -1184,17 +1184,17 @@ let () = expr >>| (
 
 let f = {
   f >>= m (fun f x => y);
-  z;
+  z
 };
 
 let f = {
   f |> m (fun f x => y);
-  z;
+  z
 };
 
 let f = {
   f |> m (fun f x => y);
-  z;
+  z
 };
 let module M = Foo G H;
 
@@ -1312,7 +1312,7 @@ let foo
     next 
     line => {
   bar ();
-  baz;
+  baz
 };
 
 /* The [some] above is indented less when [let foo] is the first line.  The
@@ -1346,14 +1346,14 @@ let parenthesized_let_tweak = {
           length::(35 + 29 + l) 
           f
       );
-  x;
+  x
 };
 
 let parenthesized_let_tweak =
   f
     x::{
       let n = S.S.g s.S.s s::s;
-      y;
+      y
     };
 /* mixed list styles */
 let cases = [
@@ -1382,8 +1382,8 @@ let mk_cont_parser cont_parse => {
   ();
   fun _state str max_pos::max_pos pos::pos => {
     let len = (max_pos - pos) + 1;
-    cont_parse pos::pos len::len str;
-  };
+    cont_parse pos::pos len::len str
+  }
 };
 
 /* sexp parser is sensitive to
@@ -1407,11 +1407,11 @@ let height =
       | B => 1;
 
 if x {
-  y;
+  y
 } else if x {
-  y;
+  y
 } else {
-  z;
+  z
 };
 
 type t = int => int;
@@ -1539,18 +1539,18 @@ List.filter_opt [
 let handle_query qs msg_client::_ => try_with (
   fun () =>
     if true {
-      f >>| (fun () => `Done ());
+      f >>| (fun () => `Done ())
     } else {
-      false;
+      false
     }
 );
 
 if false {
-  ();
+  ()
 } else {
   assert_branch_has_node branch node >>| (
     fun () => {...t, node, floating}
-  );
+  )
 };
 type x = {foo: int, bar: int};
 
@@ -1615,7 +1615,7 @@ x;
         )
     )
   ;
-  0;
+  0
 };
 
 /* js-type */
@@ -1723,7 +1723,7 @@ let f x => stop >>>
   (
     fun () => {
       don't_wait_for (close fd);
-      bind fd;
+      bind fd
     }
   );
 
@@ -1732,7 +1732,7 @@ let f x => {
     /* This is what was intended, which is indented correctly, although it's bad
      style on my part. */
     (fun () => don't_wait_for (close fd));
-  bind;
+  bind
 };
 type t = | A | B of int | C;
 let f x => x
@@ -1744,7 +1744,7 @@ and g: 'a .'a => 'a = fun x => h x
 and h: 'a .'a => 'a = fun x => f x;
 /* ... */{
            let open Option;
-           indented_line;
+           indented_line
          };
 let reset_cond =
   switch states {
@@ -2014,7 +2014,7 @@ let f =
   switch x {
     | {x: 3} => {
         let x = 4;
-        ();
+        ()
       }
   };
 
@@ -2046,7 +2046,7 @@ switch x {
   | Y => 1
   | X => {
       2;
-      3;
+      3
     }
   | A => 2
 };
@@ -2059,7 +2059,7 @@ let f g =>
     | A a _ _ b as x => {
         let x = f a
         and hr = f b;
-        f;
+        f
       }
   };
 
@@ -2156,16 +2156,16 @@ let read_raw_gen_ic read_pixel ic l c max => {
     Color.max: max, 
     Color.map: {
       let make_grey i => {r: i, g: i, b: i};
-      Array.init (max + 1) make_grey;
+      Array.init (max + 1) make_grey
     }
   };
   img.Index8.colormap <- greymap;
   for i in 0 to (l - 1) {
     for j in 0 to (c - 1) {
-      Index8.set img j i (read_pixel ic);
-    };
+      Index8.set img j i (read_pixel ic)
+    }
   };
-  img;
+  img
 };
 
 let func_darken_only org level => {
@@ -2173,23 +2173,23 @@ let func_darken_only org level => {
   {
     r:
       if (org.r > level) {
-        level;
+        level
       } else {
-        org.r;
+        org.r
       }, 
     g:
       if (org.g > level) {
-        level;
+        level
       } else {
-        org.g;
+        org.g
       }, 
     b:
       if (org.b > level) {
-        level;
+        level
       } else {
-        org.b;
+        org.b
       }
-  };
+  }
 };
 
 let f =
@@ -2214,258 +2214,258 @@ let module M = {
 let () = ();
 let () =
   if true {
-    "bla";
+    "bla"
   } else if
     true {
-    "bli";
+    "bli"
   } else {
-    "blo";
+    "blo"
   };
 
 let () =
   if true {
-    "bla";
+    "bla"
   } else if
     true {
-    "bli";
+    "bli"
   } else {
-    "hop";
+    "hop"
   };
 
 let () =
   if true {
-    "hop";
+    "hop"
   } else if
     true {
-    "hap";
+    "hap"
   } else {
     ();
-    "bla";
+    "bla"
   };
 
 let () = {
   if x {
-    y;
+    y
   } else {
-    (k, w);
+    (k, w)
   };
-  z;
+  z
 };
 
 let () =
   if x {
-    a;
+    a
   } else {
     let y = x / 42;
-    y;
+    y
   };
 
 let () = {
   if x {
-    a;
+    a
   } else if y {
-    b;
+    b
   } else {
-    blabla;
+    blabla
   };
-  x;
+  x
 };
 
 let () =
   if x {
-    a;
+    a
   } else {
     switch y {
       | A => x
       | B => y
-    };
+    }
   };
 
 let () =
   if x {
-    a;
+    a
   } else {
     switch y {
       | A => x
       | B => y
-    };
+    }
   };
 
 let () =
   if x {
-    a;
+    a
   } else {
-    fun x => y;
+    fun x => y
   };
 let () =
   if true {
-    "bla";
+    "bla"
   } else if
     true {
-    "bli";
+    "bli"
   } else {
-    "blo";
-  };
-
-let () =
-  if true {
-    "bla";
-  } else if
-    true {
-    "bli";
-  } else {
-    "hop";
+    "blo"
   };
 
 let () =
   if true {
-    "hop";
+    "bla"
   } else if
     true {
-    "hap";
+    "bli"
+  } else {
+    "hop"
+  };
+
+let () =
+  if true {
+    "hop"
+  } else if
+    true {
+    "hap"
   } else {
     ();
-    "bla";
+    "bla"
   };
 
 let () = {
   if x {
-    y;
+    y
   } else {
-    (k, w);
+    (k, w)
   };
-  z;
+  z
 };
 
 let () =
   if x {
-    a;
+    a
   } else {
     let y = x / 42;
-    y;
+    y
   };
 
 let () = {
   if x {
-    a;
+    a
   } else if y {
-    b;
+    b
   } else {
-    blabla;
+    blabla
   };
-  x;
+  x
 };
 
 let () =
   if x {
-    a;
+    a
   } else {
     switch y {
       | A => x
       | B => y
-    };
+    }
   };
 
 let () =
   if x {
-    a;
+    a
   } else {
     switch y {
       | A => x
       | B => y
-    };
+    }
   };
 
 let () =
   if x {
-    a;
+    a
   } else {
-    fun x => y;
+    fun x => y
   };
 let () =
   if true {
-    "bla";
+    "bla"
   } else if
     true {
-    "bli";
+    "bli"
   } else {
-    "blo";
-  };
-
-let () =
-  if true {
-    "bla";
-  } else if
-    true {
-    "bli";
-  } else {
-    "hop";
+    "blo"
   };
 
 let () =
   if true {
-    "hop";
+    "bla"
   } else if
     true {
-    "hap";
+    "bli"
+  } else {
+    "hop"
+  };
+
+let () =
+  if true {
+    "hop"
+  } else if
+    true {
+    "hap"
   } else {
     ();
-    "bla";
+    "bla"
   };
 
 let () = {
   if x {
-    y;
+    y
   } else {
-    (k, w);
+    (k, w)
   };
-  z;
+  z
 };
 
 let () =
   if x {
-    a;
+    a
   } else {
     let y = x / 42;
-    y;
+    y
   };
 
 let () = {
   if x {
-    a;
+    a
   } else if y {
-    b;
+    b
   } else {
-    blabla;
+    blabla
   };
-  x;
+  x
 };
 
 let () =
   if x {
-    a;
+    a
   } else {
     switch y {
       | A => x
       | B => y
-    };
+    }
   };
 
 let () =
   if x {
-    a;
+    a
   } else {
     switch y {
       | A => x
       | B => y
-    };
+    }
   };
 
 let () =
   if x {
-    a;
+    a
   } else {
-    fun x => y;
+    fun x => y
   };
 /*
     Copyright © 2011 MLstate
@@ -2942,7 +2942,7 @@ let f =
 /* local modules */
 let f = {
   let module M = F {};
-  M.f x;
+  M.f x
 };
 
 /* recursive modules */
@@ -2961,14 +2961,14 @@ let module Res = F X;
 
 {
   let open Res;
-  ();
+  ()
 };
 
 /* record shortcuts */
 {
   let x = 1
   and y = 2;
-  {x, y};
+  {x, y}
 };
 
 let f =
@@ -3223,7 +3223,7 @@ let x =
       | A => 0
       | B => 0
     };
-  x;
+  x
 };
 let f x =>
   switch x {
@@ -3247,14 +3247,14 @@ let f = {
       | `A => "A"
       | `B => "B"
     };
-  g;
+  g
 };
 
 let f = {
   let g =
     fun | `A => "A" 
         | `B => "B";
-  g;
+  g
 };
 
 let f = {
@@ -3263,7 +3263,7 @@ let f = {
       | `A => "A"
       | `B => "B"
     };
-  g;
+  g
 };
 
 let z =
@@ -3281,7 +3281,7 @@ let config_converter = {
             IndentConfig.update_from_string
               IndentConfig.default str
           );
-          `Ok str;
+          `Ok str
         } {
         | Invalid_argument s => `Error s
       }, 
@@ -3290,7 +3290,7 @@ let config_converter = {
         IndentConfig.default str
     )
   );
-  `Ok str;
+  `Ok str
 };
 
 let f =
