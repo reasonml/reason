@@ -1261,7 +1261,6 @@ let partitionFinalWrapping listTester wrapFinalItemSetting x =
 
 let semiTerminated term = makeList [term; atom ";"]
 
-(* TODO: Do not print the final semicolon *)
 let makeLetSequence letItems =
   makeList ~wrap:("{", "}") ~break:Always_rec ~inline:(true, false) letItems
 
@@ -2977,7 +2976,7 @@ class printer  ()= object(self:'self)
           let exprTermSourceMapped = SourceMap (
             break,
             exprTerm.pexp_loc,
-            semiTerminated exprTermLayout
+            exprTermLayout
           ) in
           (* Should really do something to prevent infinite loops here. Never
              allowing a top level call into letList to recurse back to
