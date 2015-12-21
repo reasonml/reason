@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 # 0. Touches .utoprc (otherwise utop will fail).
 # 1. Avoids "#use"ing ~/.ocamlinit before reason is required.
