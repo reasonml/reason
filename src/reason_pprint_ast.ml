@@ -3186,9 +3186,10 @@ class printer  ()= object(self:'self)
         | Pexp_override l -> (*FIXME*)
             case_not_implemented "Pexp_override" x.pexp_loc (try assert false with Assert_failure x -> x);
             (wrap default#expression) x
-        | Pexp_assert e -> (*FIXME*)
-            case_not_implemented "Pexp_assert" x.pexp_loc (try assert false with Assert_failure x -> x);
-            (wrap default#expression) x
+        | Pexp_assert e ->
+            label ~space:true
+              (atom "assert")
+              (self#reset#simple_expression e);
         | Pexp_lazy (e) ->
             makeList ~postSpace:true [atom "lazy"; self#simple_expression e]
         | Pexp_poly _ -> (*FIXME*)

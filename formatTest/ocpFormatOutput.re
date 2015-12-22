@@ -770,7 +770,7 @@ foo (
 
 /* We also wanted to tweak the operator indentation, making operators like <=
    not special cases in contexts like this:  */
-assert (foo ((bar + baz) <= quux));
+assert (foo (bar + baz <= quux));
 
 /* lined up under left argument to op,
                                            sim. to ^ above */
