@@ -1,4 +1,4 @@
-;;; packages.el --- ocaml Layer packages File for Spacemacs
+;;; packages.el --- reason Layer packages File for Spacemacs
 ;;
 ;; Copyright (c) 2012-2014 Sylvain Benner
 ;; Copyright (c) 2014-2015 Sylvain Benner & Contributors
@@ -10,28 +10,28 @@
 ;;
 ;;; License: GPLv3
 
-(setq ocaml-packages
+(setq reason-packages
   '(
     auto-complete
     company
-    ;; flycheck
-    ;; flycheck-ocaml
-     (reason-mode :location local)
-     merlin
-     utop
+    flycheck
+    flycheck-ocaml
+    (reason-mode :location local)
+    merlin
+    utop
   )
 )
 
-(defun ocaml/post-init-auto-complete ()
+(defun reason/post-init-auto-complete ()
   (spacemacs|enable-auto-complete merlin-mode))
 
-;; (defun ocaml/post-init-company ()
+;; (defun reason/post-init-company ()
   ;; (spacemacs|add-company-hook merlin-mode))
 
 (when (configuration-layer/layer-usedp 'syntax-checking)
-  (defun ocaml/post-init-flycheck ()
+  (defun reason/post-init-flycheck ()
     (spacemacs/add-flycheck-hook 'merlin-mode-hook))
-  (defun ocaml/init-flycheck-ocaml ()
+  (defun reason/init-flycheck-ocaml ()
     (use-package flycheck-ocaml
       :if (configuration-layer/package-usedp 'flycheck)
       :defer t
@@ -42,7 +42,7 @@
           (flycheck-ocaml-setup))
         ))))
 
-(defun ocaml/init-merlin ()
+(defun reason/init-merlin ()
   (use-package merlin
     :defer t
     :init
@@ -76,7 +76,8 @@
         "rd" 'merlin-destruct
         )))
 
-(defun ocaml/init-reason-mode ()
+;; Initialize the reason syntax mode
+(defun reason/init-reason-mode ()
   ;; For some reason, deferring does not work
   (use-package reason-mode
     :init
@@ -92,7 +93,7 @@
         (sp-local-pair 'reason-mode "`" nil :actions nil))
      ))
 
-(defun ocaml/init-utop ()
+(defun reason/init-utop ()
   (use-package utop
     :defer t
     :init (add-hook 'tuareg-mode-hook 'utop-minor-mode)

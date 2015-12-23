@@ -1,7 +1,7 @@
-#+TITLE: Ocaml layer
+#+TITLE: Reason layer
 #+HTML_HEAD_EXTRA: <link rel="stylesheet" type="text/css" href="../../../css/readtheorg.css" />
 
-[[file:img/ocaml.png]]
+# Fork of OCaml spacemacs layer
 
 * Table of Content                                          :TOC_4_org:noexport:
  - [[Description][Description]]
@@ -17,33 +17,46 @@
    - [[Add more keybindings for tuareg-mode][Add more keybindings for tuareg-mode]]
 
 * Description
-This is a very basic layer for editing ocaml files.
+This is a very basic layer for editing reason files.
 
 ** Features:
-- Syntax highlighting (major-mode) via [[https://github.com/ocaml/tuareg][tuareg-mode]]
-- Error reporting, completion and type display via [[https://github.com/the-lambda-church/merlin][merlin]]
+- Syntax highlighting (major-mode) via reason-mode local package.
+- SOON: Error reporting, completion and type display via [[https://github.com/the-lambda-church/merlin][merlin]]
 - auto-completion with company mode via [[https://github.com/the-lambda-church/merlin][merlin]]
-- syntax-checking via [[https://github.com/diml/utop][flycheck-ocaml]]
+- SOON: syntax-checking via [[https://github.com/diml/utop][flycheck-ocaml]]
 
 * Install
 ** Layer
 To use this contribution add it to your =~/.spacemacs=
 
 #+BEGIN_SRC emacs-lisp
-(setq-default dotspacemacs-configuration-layers '(ocaml))
+;; Make sure your local copy of Reason's editorSupport is searched for by emacs.
+(setq-default
+   dotspacemacs-configuration-layer-path '("/path/to/Reason/editorSupport/spacemacs/")
+)
+;; (Jadd reason to the dotspacemacs-configuration-layers list
+;; that already exists in your .spacemacs file)
+(setq-default dotspacemacs-configuration-layers '(reason))
+
+;; Restart emacs, open a .re file and you should see syntax highlighting
+;; and autocomplete should work if your file has a close-by .merlin project.
 #+END_SRC
+
+** Plain Emacs without Spacemacs
+You can also use the individual packages without using the spacemacs layer. Look at
+pacakges.el to determine how to setup the individual packages.
+
 
 ** OPAM packages
 This layer requires some [[http://opam.ocaml.org][opam]] packages:
 
 - =merlin= for auto-completion
 - =utop=
-- =ocp-indent=
 
 To install them, use the following command: 
 
 #+BEGIN_SRC sh
-  opam install merlin utop ocp-indent
+  opam install merlin utop
 #+END_SRC
 
 Make sure opam is initialized and configured.

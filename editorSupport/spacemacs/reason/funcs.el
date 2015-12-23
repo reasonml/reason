@@ -1,4 +1,4 @@
-;;; funcs.el --- ocaml Layer functions File for Spacemacs
+;;; funcs.el --- reason Layer functions File for Spacemacs
 ;;
 ;; Copyright (c) 2012-2014 Sylvain Benner
 ;; Copyright (c) 2014-2015 Sylvain Benner & Contributors
@@ -10,7 +10,7 @@
 ;;
 ;;; License: GPLv3
 
-(defun spacemacs//init-ocaml-opam ()
+(defun spacemacs//init-reason-opam ()
   (if (executable-find "opam")
       (let* ((output (shell-command-to-string
                       "opam config var share 2> /dev/null"))
@@ -22,4 +22,4 @@
           (add-to-list 'load-path opam-load-path))
     (spacemacs-buffer/warning
      (concat "Cannot find \"opam\" executable. "
-             "The ocaml layer won't work properly."))))
+             "The reason layer won't work properly."))))
