@@ -5770,13 +5770,13 @@ let mutativeFunction =
 let result = {
   let twenty = 20;
   let result = twenty;
-  result;
+  result
 };
 
 /* Final semicolon is not required */
 let result = {
   let twenty = result;
-  twenty;
+  twenty
 };
 
 let anInt = result + 20;
@@ -5802,15 +5802,15 @@ let unitValue = ();
  * it's not required.
  */
 while false {
-  unitValue;
+  unitValue
 };
 
 while false {
-  print_string "test";
+  print_string "test"
 };
 
 while false {
-  print_string "test";
+  print_string "test"
 };
 
 type myRecord = {number: int};
