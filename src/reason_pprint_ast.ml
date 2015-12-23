@@ -2426,11 +2426,18 @@ class printer  ()= object(self:'self)
   method prefixApplication (e, l) =
     match view_fixity_of_exp e with
       | `Prefix s ->
-        let s = if List.mem s ["~+";"~-";"~+.";"~-."] then String.sub s 1 (String.length s -1) else s in
+        let is_unary_plus_minus = List.mem s ["~+";"~-";"~+.";"~-."] in
+        let s =
+          if is_unary_plus_minus
+          then String.sub s 1 (String.length s -1)
+          else s in
         (
           match l with
             (* Intentionally not spaced *)
-            | [v] -> Some (makeList ~break:IfNeed [atom (escape_stars_slashes s); self#label_x_expression_param v])
+            | [v] ->
+              Some (makeList ~break:IfNeed ~postSpace:is_unary_plus_minus
+                [atom (escape_stars_slashes s);
+                 self#label_x_expression_param v])
             | _ -> Some (
                 makeList ~break:IfNeed [
                   atom (escape_stars_slashes s);

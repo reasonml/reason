@@ -1605,7 +1605,7 @@ x;
 /* js-args */
 {
   let min_closing_backoff = 
-    -.
+    -. 
     (
       Hidden_float.expose (
         arb.cfg.base_edge @! Buy
