@@ -12,21 +12,21 @@
 
 (setq ocaml-packages
   '(
-   ;; auto-complete
+    auto-complete
     company
-   ;; flycheck
-   ;; flycheck-ocaml
-    merlin
-    ocp-indent
-    tuareg
-    utop
-    ))
+    ;; flycheck
+    ;; flycheck-ocaml
+     (reason-mode :location local)
+     merlin
+     utop
+  )
+)
 
-;;(defun ocaml/post-init-auto-complete ()
-;;  (spacemacs|enable-auto-complete merlin-mode))
+(defun ocaml/post-init-auto-complete ()
+  (spacemacs|enable-auto-complete merlin-mode))
 
-(defun ocaml/post-init-company ()
-  (spacemacs|add-company-hook merlin-mode))
+;; (defun ocaml/post-init-company ()
+  ;; (spacemacs|add-company-hook merlin-mode))
 
 (when (configuration-layer/layer-usedp 'syntax-checking)
   (defun ocaml/post-init-flycheck ()
@@ -46,13 +46,12 @@
   (use-package merlin
     :defer t
     :init
-    (progn
-      (add-hook 'tuareg-mode-hook 'merlin-mode)
+      (add-hook 'reason-mode-hook 'merlin-mode)
 ;;      (set-default 'merlin-use-auto-complete-mode t)
       (set-default 'merlin-use-auto-complete-mode nil)
       (setq merlin-completion-with-doc t)
       (push 'merlin-company-backend company-backends-merlin-mode)
-      (spacemacs/set-leader-keys-for-major-mode 'tuareg-mode
+      (spacemacs/set-leader-keys-for-major-mode 'reason-mode
         "cp" 'merlin-project-check
         "cr" 'merlin-refresh
         "cv" 'merlin-goto-project-file
@@ -75,31 +74,23 @@
         "ht" 'merlin-type-enclosing
         "hT" 'merlin-type-expr
         "rd" 'merlin-destruct
-        ))))
+        )))
 
-(defun ocaml/init-ocp-indent ()
-  (use-package ocp-indent
-    :defer t
+(defun ocaml/init-reason-mode ()
+  ;; For some reason, deferring does not work
+  (use-package reason-mode
     :init
-    (add-hook 'tuareg-mode-hook 'ocp-indent-caml-mode-setup)))
-
-(defun ocaml/init-tuareg ()
-  (use-package tuareg
-    :defer t
-    :init
-    (progn
-      (spacemacs//init-ocaml-opam)
-      (spacemacs/set-leader-keys-for-major-mode 'tuareg-mode
-        "ga" 'tuareg-find-alternate-file
-        "cc" 'compile)
+      (add-to-list 'auto-mode-alist '("\\.re\\'" . reason-mode))
       ;; Make OCaml-generated files invisible to filename completion
       (dolist (ext '(".cmo" ".cmx" ".cma" ".cmxa" ".cmi" ".cmxs" ".cmt" ".annot"))
-        (add-to-list 'completion-ignored-extensions ext)))
+        (add-to-list 'completion-ignored-extensions ext))
     :config
-    (when (fboundp 'sp-local-pair)
-      ;; don't auto-close apostrophes (type 'a = foo) and backticks (`Foo)
-      (sp-local-pair 'tuareg-mode "'" nil :actions nil)
-      (sp-local-pair 'tuareg-mode "`" nil :actions nil))))
+    (progn
+      (when (fboundp 'sp-local-pair)
+        ;; Don't pair type variable identifiers, or poly variants.
+        (sp-local-pair 'reason-mode "'" nil :actions nil))
+        (sp-local-pair 'reason-mode "`" nil :actions nil))
+     ))
 
 (defun ocaml/init-utop ()
   (use-package utop
@@ -142,7 +133,7 @@
         (utop)
         (evil-insert-state))
 
-      (spacemacs/set-leader-keys-for-major-mode 'tuareg-mode
+      (spacemacs/set-leader-keys-for-major-mode 'reason-mode
         "sb" 'utop-eval-buffer
         "sB" 'spacemacs/utop-eval-buffer-and-go
         "si" 'utop

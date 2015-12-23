@@ -94,3 +94,6 @@ Make sure opam is initialized and configured.
 ** TODO Add more proper spacemacs key-bindings for basic merlin tasks
 ** TODO Add proper keybindings for ocamldebug
 ** TODO Add more keybindings for tuareg-mode
+
+** LICENSE
+See the license file. Separate local plugins in `local` are licensed under their own licenses.

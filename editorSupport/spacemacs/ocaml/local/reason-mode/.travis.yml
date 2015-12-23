@@ -1,0 +1,41 @@
+language: generic
+
+env:
+  matrix:
+    - EMACS=emacs23
+    - EMACS=emacs24
+    - EMACS=emacs-snapshot
+
+install:
+  - if [ "$EMACS" = 'emacs23' ]; then
+       sudo apt-get -qq update &&
+       sudo apt-get -qq -f install &&
+       sudo apt-get -qq install emacs23-gtk emacs23-el;
+    fi
+  - if [ "$EMACS" = 'emacs24' ]; then
+       sudo add-apt-repository -y ppa:cassou/emacs &&
+       sudo apt-get -qq update &&
+       sudo apt-get -qq -f install &&
+       sudo apt-get -qq install emacs24 emacs24-el;
+    fi
+  - if [ "$EMACS" = 'emacs-snapshot' ]; then
+       sudo add-apt-repository -y ppa:ubuntu-elisp/ppa &&
+       sudo apt-get -qq update &&
+       sudo apt-get -qq -f install &&
+       sudo apt-get -qq install emacs-snapshot &&
+       sudo apt-get -qq install emacs-snapshot-el;
+    fi
+
+# Emacs 23 does not come with ERT.  Download it and have emacs find it
+before_script:
+  - if [ "$EMACS" = 'emacs23' ]; then
+       curl -Os https://raw.githubusercontent.com/ohler/ert/c619b56c5bc6a866e33787489545b87d79973205/lisp/emacs-lisp/ert.el &&
+       export EMACSLOADPATH=$(emacs -batch -eval "(princ (mapconcat 'identity load-path \":\"))") &&
+       export EMACSLOADPATH="$EMACSLOADPATH:$PWD";
+    fi
+
+script:
+  - ./run_rust_emacs_tests.sh
+
+notifications:
+  email: false
