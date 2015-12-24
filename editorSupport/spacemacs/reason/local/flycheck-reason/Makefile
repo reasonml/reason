@@ -6,7 +6,7 @@ PKGDIR := $(shell EMACS=$(EMACS) $(CASK) package-directory)
 
 export EMACS
 
-SRCS = flycheck-ocaml.el
+SRCS = flycheck-reason.el
 OBJECTS = $(SRCS:.el=.elc)
 
 EMACSBATCH = $(EMACS) -Q --batch $(EMACSFLAGS)
@@ -24,7 +24,7 @@ deps : $(PKGDIR)
 # Testing
 test:
 	$(CASK) exec $(EMACSBATCH) \
-		-l flycheck-ocaml.el -l test/flycheck-ocaml-test.el \
+		-l flycheck-reason.el -l test/flycheck-reason-test.el \
 		-f ert-run-tests-batch-and-exit
 
 # Cleanup targets

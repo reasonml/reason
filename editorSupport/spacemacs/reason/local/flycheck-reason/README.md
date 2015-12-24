@@ -1,14 +1,11 @@
-flycheck-ocaml — Flycheck for OCaml
+flycheck-reason — Flycheck for Reason (based on Flycheck-ocaml)
 ===================================
 
 [![License GPL 3][badge-license]][copying]
-[![MELPA][badge-melpa]](http://melpa.org/#/flycheck-ocaml)
-[![MELPA Stable][badge-melpa-stable]](http://stable.melpa.org/#/flycheck-ocaml)
-[![Build Status][badge-travis]](https://travis-ci.org/flycheck/flycheck-ocaml)
 
-Add OCaml support to [Flycheck][]:
+Add Reason/Merlin support to [Flycheck][]:
 
-- Add a `ocaml-merlin` syntax checker using [Merlin][]
+- Add a `reason-merlin` syntax checker using [Merlin][]
 
 Installation
 ------------
@@ -21,7 +18,7 @@ In your [`Cask`][cask] file:
 (source gnu)
 (source melpa)
 
-(depends-on "flycheck-ocaml")
+(depends-on "flycheck-reason")
 ```
 
 In your `init.el`:
@@ -32,7 +29,7 @@ In your `init.el`:
   (setq merlin-error-after-save nil)
 
   ;; Enable Flycheck checker
-  (flycheck-ocaml-setup))
+  (flycheck-reason-setup))
 
 (add-hook 'tuareg-mode-hook #'merlin-mode)
 ```
@@ -41,11 +38,11 @@ Usage
 -----
 
 Just use Flycheck as usual in Tuareg Mode buffers.  Flycheck will automatically
-use the new `ocaml-merlin` syntax checker if Merlin Mode is enabled and Merlin's
+use the new `reason-merlin` syntax checker if Merlin Mode is enabled and Merlin's
 own error checking (`merlin-error-after-save`) is disabled.
 
 If you enable Merlin's error checking with `M-x merlin-toggle-view-errors`
-Flycheck will not use the `ocaml-merlin` syntax checker anymore, to avoid
+Flycheck will not use the `reason-merlin` syntax checker anymore, to avoid
 duplicate and redundant error reporting.
 
 License
@@ -75,3 +72,4 @@ See [`COPYING`][copying] for details.
 [MELPA]: http://melpa.org
 [MELPA Stable]: http://stable.melpa.org
 [cask]: http://cask.readthedocs.org
+

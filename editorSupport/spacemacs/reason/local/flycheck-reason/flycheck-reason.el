@@ -1,4 +1,4 @@
-;;; flycheck-ocaml.el --- Flycheck: OCaml support    -*- lexical-binding: t; -*-
+;;; flycheck-reason.el --- Flycheck: Reason support based on flycheck-ocaml   -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2014-2015  Sebastian Wiesner <swiesner@lunaryorn.com>
 ;; Copyright (C) 2015  Frédéric Bour <frederic.bour@lakaban.net>
@@ -28,7 +28,7 @@
 
 ;; This Flycheck extension provides a new `ocaml-merlin' syntax checker which
 ;; uses Merlin Mode (see URL `https://github.com/the-lambda-church/merlin') to
-;; check OCaml buffers for errors.
+;; check Reason buffers for errors.
 ;;
 ;; # Setup
 ;;
@@ -39,13 +39,13 @@
 ;;      (setq merlin-error-after-save nil)
 ;;
 ;;      ;; Enable Flycheck checker
-;;      (flycheck-ocaml-setup))
+;;      (flycheck-reason-setup))
 ;;
-;;    (add-hook 'tuareg-mode-hook #'merlin-mode)
+;;    (add-hook 'reason-mode-hook #'merlin-mode)
 ;;
 ;; # Usage
 ;;
-;; Just use Flycheck as usual in Tuareg Mode buffers.  Flycheck will
+;; Just use Flycheck as usual in Reason Mode buffers.  Flycheck will
 ;; automatically use the new `ocaml-merlin` syntax checker if Merlin Mode is
 ;; enabled and Merlin's own error checking (`merlin-error-after-save`) is
 ;; disabled.
@@ -56,13 +56,18 @@
 
 ;;; Code:
 
+
+(message "Loading flycheck-reason")
+
 (eval-when-compile
   (require 'let-alist))
 
-(require 'merlin)
+;; Merlin can't be required yet :(
+;; I think this is spacemacs' alphabetic load order
+;; (require 'merlin)
 (require 'flycheck)
 
-(defconst flycheck-ocaml-merlin-message-re
+(defconst flycheck-reason-merlin-message-re
   (rx string-start
       ;; Skip over leading spaces and punctuation
       (zero-or-more (any punct space control))
@@ -74,17 +79,17 @@
       (group-n 2 (one-or-more anything)) string-end)
   "Regular expression to parse a Merlin error message.")
 
-(defun flycheck-ocaml-merlin-parse-message (message)
+(defun flycheck-reason-merlin-parse-message (message)
   "Parse an error MESSAGE from a Merlin error.
 
 Return `(LEVEL . PARSED-MESSAGE)', where LEVEL is the Flycheck
 error level, and PARSED-MESSAGE is the real error message with
 irrelevant parts removed."
-  (when (string-match flycheck-ocaml-merlin-message-re message)
+  (when (string-match flycheck-reason-merlin-message-re message)
     (let ((level (pcase (match-string 1 message)
                    (`"Warning" 'warning)
                    (`"Error" 'error)
-                   (level (lwarn 'flycheck-ocaml :error
+                   (level (lwarn 'flycheck-reason :error
                                  "Unknown error level %S" level)))))
       (cons level
             ;; Collapse whitespace in error messages
@@ -92,14 +97,14 @@ irrelevant parts removed."
                                       " " (string-trim (match-string 2 message))
                                       'fixed-case 'literal)))))
 
-(defun flycheck-ocaml-merlin-parse-error (alist checker)
+(defun flycheck-reason-merlin-parse-error (alist checker)
   "Parse a Merlin error ALIST from CHECKER into a `flycheck-error'.
 
 Return the corresponding `flycheck-error'."
   (let-alist alist
     (when .message
       (pcase-let* ((`(,level . ,message)
-                    (flycheck-ocaml-merlin-parse-message .message)))
+                    (flycheck-reason-merlin-parse-message .message)))
         ;; OCaml columns seem to be zero-based, see
         ;; https://github.com/flycheck/flycheck-ocaml/issues/2
         (flycheck-error-new-at (or .start.line 1)
@@ -107,7 +112,7 @@ Return the corresponding `flycheck-error'."
                                (or level 'error) (or message .message)
                                :checker checker)))))
 
-(defun flycheck-verify-ocaml-merlin (_checker)
+(defun flycheck-verify-reason-merlin (_checker)
   "Verify the OCaml Merlin syntax checker."
   (let ((command (executable-find (merlin-command))))
     (list
@@ -124,7 +129,7 @@ Return the corresponding `flycheck-error'."
       :message (if merlin-error-after-save "enabled" "disabled")
       :face (if merlin-error-after-save '(bold warning) 'success)))))
 
-(defun flycheck-ocaml-merlin-start (checker callback)
+(defun flycheck-reason-merlin-start (checker callback)
   "Start a Merlin syntax check with CHECKER.
 
 CALLBACK is the status callback passed by Flycheck."
@@ -138,7 +143,7 @@ CALLBACK is the status callback passed by Flycheck."
                (let ((errors (delq nil
                                    (mapcar
                                     (lambda (alist)
-                                      (flycheck-ocaml-merlin-parse-error alist
+                                      (flycheck-reason-merlin-parse-error alist
                                                                          checker))
                                     data))))
                  (funcall callback 'finished errors))
@@ -150,22 +155,22 @@ CALLBACK is the status callback passed by Flycheck."
   "A syntax checker for OCaml using Merlin Mode.
 
 See URL `https://github.com/the-lambda-church/merlin'."
-  :start #'flycheck-ocaml-merlin-start
-  :verify #'flycheck-verify-ocaml-merlin
-  :modes '(caml-mode tuareg-mode)
+  :start #'flycheck-reason-merlin-start
+  :verify #'flycheck-verify-reason-merlin
+  :modes '(reason-mode)
   :predicate (lambda () (and merlin-mode
                              ;; Don't check if Merlin's own checking is
                              ;; enabled, to avoid duplicate overlays
                              (not merlin-error-after-save))))
 
 ;;;###autoload
-(defun flycheck-ocaml-setup ()
+(defun flycheck-reason-setup ()
   "Setup Flycheck OCaml.
 
 Add `ocaml-merlin' to `flycheck-checkers'."
   (interactive)
   (add-to-list 'flycheck-checkers 'ocaml-merlin))
 
-(provide 'flycheck-ocaml)
+(provide 'flycheck-reason)
 
-;;; flycheck-ocaml.el ends here
+;;; flycheck-reason.el ends here

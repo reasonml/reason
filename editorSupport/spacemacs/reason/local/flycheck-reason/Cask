@@ -1,7 +1,7 @@
 (source gnu)
 (source melpa)
 
-(package-file "flycheck-ocaml.el")
+(package-file "flycheck-reason.el")
 
 (development
- (depends-on "tuareg"))
+ (depends-on "reason-mode"))

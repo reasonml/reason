@@ -26,7 +26,7 @@ This is a very basic layer for editing reason files.
 - SOON: syntax-checking via [[https://github.com/diml/utop][flycheck-ocaml]]
 
 * Install
-** Layer
+** As a Spacemacs Layer
 To use this contribution add it to your =~/.spacemacs=
 
 #+BEGIN_SRC emacs-lisp
@@ -34,17 +34,18 @@ To use this contribution add it to your =~/.spacemacs=
 (setq-default
    dotspacemacs-configuration-layer-path '("/path/to/Reason/editorSupport/spacemacs/")
 )
-;; (Jadd reason to the dotspacemacs-configuration-layers list
-;; that already exists in your .spacemacs file)
-(setq-default dotspacemacs-configuration-layers '(reason))
+;; (add the following layers to your dotspacemacs-configuration-layers list
+;; in the following order.)
+(setq-default dotspacemacs-configuration-layers '(auto-completion ocaml reason syntax-checking))
 
 ;; Restart emacs, open a .re file and you should see syntax highlighting
 ;; and autocomplete should work if your file has a close-by .merlin project.
 #+END_SRC
 
-** Plain Emacs without Spacemacs
+** Emacs without Spacemacs
 You can also use the individual packages without using the spacemacs layer. Look at
-pacakges.el to determine how to setup the individual packages.
+pacakges.el to determine how to setup the individual packages. (TODO: Update
+this doc with better instructions, document what you find to work)
 
 
 ** OPAM packages
