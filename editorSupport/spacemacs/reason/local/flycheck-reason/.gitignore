@@ -1,0 +1,7 @@
+*.elc
+
+.dir-locals.el
+
+/.cask/
+/dist/
+/build/

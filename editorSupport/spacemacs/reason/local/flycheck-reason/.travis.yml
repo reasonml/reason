@@ -1,0 +1,23 @@
+language: emacs-lisp
+sudo: false
+env:
+  - EMACS_VERSION=24.3
+  - EMACS_VERSION=24.5
+  - EMACS_VERSION=snapshot EMACSFLAGS='--eval "(setq byte-compile-error-on-warn t)"'
+before_install:
+  # Install a proper Emacs for testing
+  - export PATH="$HOME/bin:$PATH"
+  - wget 'https://raw.githubusercontent.com/flycheck/emacs-travis/master/emacs-travis.mk'
+  - make -f emacs-travis.mk install_emacs
+  - make -f emacs-travis.mk install_cask
+  - emacs --version
+  # Install OPAM and OCaml
+  - wget https://raw.github.com/ocaml/opam/master/shell/opam_installer.sh -O - | sh -s "${HOME}/bin"
+  - opam init --yes --comp '4.02.3'
+  - eval $(opam config env)
+install:
+  - opam install --yes merlin
+  - cask install
+script:
+  - make compile
+  - make test
