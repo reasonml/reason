@@ -213,8 +213,8 @@ function or trait.  When nil, where will be aligned with fn or trait."
     ;; open bracket ends the line
     (when (not (looking-at "[[:blank:]]*\\(?://.*\\)?$"))
       (when (looking-at "[[:space:]]")
-    (forward-word 1)
-    (backward-word 1))
+        (forward-word 1)
+        (backward-word 1))
       (current-column))))
 
 (defun rust-rewind-to-beginning-of-current-level-expr ()
@@ -485,7 +485,7 @@ function or trait.  When nil, where will be aligned with fn or trait."
     "const" "continue" "crate"
     "do"
     "else" "enum" "extern"
-    "false" "fn" "for"
+    "false" "fun" "for"
     "if" "impl" "in"
     "let" "loop"
     "match" "mod" "move" "mut"
@@ -681,16 +681,16 @@ function or trait.  When nil, where will be aligned with fn or trait."
    ((member (char-before) '(?\] ?\) ))
     (let* ((is-paren (rust-looking-back-str ")"))
            (dest (save-excursion
-                  (backward-sexp)
-                  (rust-rewind-irrelevant)
-                  (or
-                   (when (rust-looking-back-str "->")
-                     (backward-char 2)
-                     (rust-rewind-irrelevant)
-                     (when (rust-looking-back-str ")")
-                       (backward-sexp)
-                       (point)))
-                   (and is-paren (point))))))
+                   (backward-sexp)
+                   (rust-rewind-irrelevant)
+                   (or
+                    (when (rust-looking-back-str "->")
+                      (backward-char 2)
+                      (rust-rewind-irrelevant)
+                      (when (rust-looking-back-str ")")
+                        (backward-sexp)
+                        (point)))
+                    (and is-paren (point))))))
       (when dest
         (goto-char dest))))))
 
@@ -699,29 +699,29 @@ function or trait.  When nil, where will be aligned with fn or trait."
   can have a where clause, rewind back to just before the name of
   the subject of that where clause and return the new point.
   Otherwise return nil"
-  
+
   (let* ((ident-pos (point))
          (newpos (save-excursion
                    (rust-rewind-irrelevant)
                    (rust-rewind-type-param-list)
                    (cond
-                       ((rust-looking-back-symbols '("fn" "trait" "enum" "struct" "impl" "type")) ident-pos)
+                    ((rust-looking-back-symbols '("fn" "trait" "enum" "struct" "impl" "type")) ident-pos)
 
-                       ((equal 5 (rust-syntax-class-before-point))
-                        (backward-sexp)
-                        (rust-rewind-to-decl-name))
+                    ((equal 5 (rust-syntax-class-before-point))
+                     (backward-sexp)
+                     (rust-rewind-to-decl-name))
 
-                       ((looking-back "[:,'+=]" (1- (point)))
-                        (backward-char)
-                        (rust-rewind-to-decl-name))
+                    ((looking-back "[:,'+=]" (1- (point)))
+                     (backward-char)
+                     (rust-rewind-to-decl-name))
 
-                       ((rust-looking-back-str "->")
-                        (backward-char 2)
-                        (rust-rewind-to-decl-name))
+                    ((rust-looking-back-str "->")
+                     (backward-char 2)
+                     (rust-rewind-to-decl-name))
 
-                       ((rust-looking-back-ident)
-                        (rust-rewind-qualified-ident)
-                        (rust-rewind-to-decl-name))))))
+                    ((rust-looking-back-ident)
+                     (rust-rewind-qualified-ident)
+                     (rust-rewind-to-decl-name))))))
     (when newpos (goto-char newpos))
     newpos))
 
@@ -742,7 +742,7 @@ function or trait.  When nil, where will be aligned with fn or trait."
       ;; A type alias or ascription could have a type param list.  Skip backwards past it.
       (when (member token '(ambiguous-operator open-brace))
         (rust-rewind-type-param-list))
-      
+
       (cond
 
        ;; Certain keywords always introduce expressions
@@ -757,7 +757,7 @@ function or trait.  When nil, where will be aligned with fn or trait."
        ;; An ident! followed by an open brace is a macro invocation.  Consider
        ;; it to be an expression.
        ((and (equal token 'open-brace) (rust-looking-back-macro)) t)
-       
+
        ;; An identifier is right after an ending paren, bracket, angle bracket
        ;; or curly brace.  It's a type if the last sexp was a type.
        ((and (equal token 'ident) (equal 5 (rust-syntax-class-before-point)))
@@ -771,7 +771,7 @@ function or trait.  When nil, where will be aligned with fn or trait."
         (backward-sexp)
         (rust-rewind-irrelevant)
         (looking-back "[{;]" (1- (point))))
-       
+
        ((rust-looking-back-ident)
         (rust-rewind-qualified-ident)
         (rust-rewind-irrelevant)
@@ -794,7 +794,7 @@ function or trait.  When nil, where will be aligned with fn or trait."
                         (rust-rewind-irrelevant)
                         (rust-looking-back-symbols '("enum" "struct" "trait" "type"))))))
            ))
-         
+
          ((equal token 'ambiguous-operator)
           (cond
            ;; An ampersand after an ident has to be an operator rather than a & at the beginning of a ref type
@@ -825,7 +825,7 @@ function or trait.  When nil, where will be aligned with fn or trait."
                   (rust-rewind-irrelevant)
                   (rust-looking-back-str "enum")))))
             t)
-           
+
            ;; Otherwise the ambiguous operator is a type if the identifier is a type
            ((rust-is-in-expression-context 'ident) t)))
 
@@ -860,7 +860,7 @@ function or trait.  When nil, where will be aligned with fn or trait."
            ;; Otherwise, if the ident: appeared with anything other than , or {
            ;; before it, it can't be part of a struct initializer and therefore
            ;; must be denoting a type.
-	   (t nil)
+           (t nil)
            ))
          ))
 
@@ -874,7 +874,7 @@ function or trait.  When nil, where will be aligned with fn or trait."
 
        ;; A :: introduces a type (or module, but not an expression in any case)
        ((rust-looking-back-str "::") nil)
-       
+
        ((rust-looking-back-str ":")
         (backward-char)
         (rust-is-in-expression-context 'colon))
@@ -910,7 +910,7 @@ function or trait.  When nil, where will be aligned with fn or trait."
 (defun rust-is-lt-char-operator ()
   "Return t if the < sign just after point is an operator rather
   than an opening angle bracket, otherwise nil."
-  
+
   (let ((case-fold-search nil))
     (save-excursion
       (rust-rewind-irrelevant)
@@ -922,7 +922,7 @@ function or trait.  When nil, where will be aligned with fn or trait."
        ((and (rust-looking-back-str "<")
              (not (equal 4 (rust-syntax-class-before-point)))
              (not (rust-looking-back-str "<<"))))
-       
+
        ;; On the other hand, if we are after a closing paren/brace/bracket it
        ;; can only be an operator, not an angle bracket.  Likewise, if we are
        ;; after a string it's an operator.  (The string case could actually be
@@ -947,7 +947,7 @@ function or trait.  When nil, where will be aligned with fn or trait."
          ;; The special types can't take type param lists, so a < after one is
          ;; always an operator
          (looking-at rust-re-special-types)
-         
+
          (rust-is-in-expression-context 'ident)))
 
        ;; Otherwise, assume it's an angle bracket
@@ -989,7 +989,7 @@ function or trait.  When nil, where will be aligned with fn or trait."
       ;; to balance regardless of the < and >, so if we don't treat any < or >
       ;; as angle brackets it won't mess up any paren balancing.
       ((rust-in-macro) t)
-      
+
       ((looking-at "<")
        (rust-is-lt-char-operator))
 
@@ -1023,7 +1023,7 @@ function or trait.  When nil, where will be aligned with fn or trait."
       (if (looking-at "/\\([*][*!][^*!]\\|/[/!][^/!]\\)")
           'font-lock-doc-face
         'font-lock-comment-face
-    ))))
+        ))))
 
 (defun rust-fill-prefix-for-comment-start (line-start)
   "Determine what to use for `fill-prefix' based on what is at the beginning of a line."
@@ -1224,7 +1224,7 @@ This is written mainly to be used as `end-of-defun-function' for Rust."
   ;; Allow paragraph fills for comments
   (setq-local comment-start-skip "\\(?://[/!]*\\|/\\*[*!]?\\)[[:space:]]*")
   (setq-local paragraph-start
-       (concat "[[:space:]]*\\(?:" comment-start-skip "\\|\\*/?[[:space:]]*\\|\\)$"))
+              (concat "[[:space:]]*\\(?:" comment-start-skip "\\|\\*/?[[:space:]]*\\|\\)$"))
   (setq-local paragraph-separate paragraph-start)
   (setq-local normal-auto-fill-function 'rust-do-auto-fill)
   (setq-local fill-paragraph-function 'rust-fill-paragraph)
@@ -1310,10 +1310,10 @@ See `compilation-error-regexp-alist' for help on their format.")
             (url-request-method "POST"))
         (url-retrieve shortener-url
                       (lambda (state)
-                        ; filter out the headers etc. included at the
-                        ; start of the buffer: the relevant text
-                        ; (shortened url or error message) is exactly
-                        ; the last line.
+                                        ; filter out the headers etc. included at the
+                                        ; start of the buffer: the relevant text
+                                        ; (shortened url or error message) is exactly
+                                        ; the last line.
                         (goto-char (point-max))
                         (let ((last-line (thing-at-point 'line t))
                               (err (plist-get state :error)))
@@ -1327,6 +1327,157 @@ See `compilation-error-regexp-alist' for help on their format.")
    on the Rust playpen."
   (interactive)
   (rust-playpen-region (point-min) (point-max)))
+
+(defcustom reasonfmt-command "reasonfmt"
+  "The 'reasonfmt' command.
+Some users may replace this with 'goimports'
+from https://github.com/bradfitz/goimports."
+  :type 'string
+  :group 'reason)
+
+(defcustom reasonfmt-show-errors 'buffer
+    "Where to display reasonfmt error output.
+It can either be displayed in its own buffer, in the echo area, or not at all.
+Please note that Emacs outputs to the echo area when writing
+files and will overwrite reasonfmt's echo output if used from inside
+a `before-save-hook'."
+    :type '(choice
+            (const :tag "Own buffer" buffer)
+            (const :tag "Echo area" echo)
+            (const :tag "None" nil))
+      :group 'go)
+
+(defun reason--goto-line (line)
+  (goto-char (point-min))
+    (forward-line (1- line)))
+
+(defun reason--delete-whole-line (&optional arg)
+    "Delete the current line without putting it in the `kill-ring'.
+Derived from function `kill-whole-line'.  ARG is defined as for that
+function."
+    (setq arg (or arg 1))
+    (if (and (> arg 0)
+             (eobp)
+             (save-excursion (forward-visible-line 0) (eobp)))
+        (signal 'end-of-buffer nil))
+    (if (and (< arg 0)
+             (bobp)
+             (save-excursion (end-of-visible-line) (bobp)))
+        (signal 'beginning-of-buffer nil))
+    (cond ((zerop arg)
+           (delete-region (progn (forward-visible-line 0) (point))
+                          (progn (end-of-visible-line) (point))))
+          ((< arg 0)
+           (delete-region (progn (end-of-visible-line) (point))
+                          (progn (forward-visible-line (1+ arg))
+                                 (unless (bobp)
+                                   (backward-char))
+                                 (point))))
+          (t
+           (delete-region (progn (forward-visible-line 0) (point))
+                                                  (progn (forward-visible-line arg) (point))))))
+
+(defun reason--apply-rcs-patch (patch-buffer)
+  "Apply an RCS-formatted diff from PATCH-BUFFER to the current buffer."
+  (let ((target-buffer (current-buffer))
+        ;; Relative offset between buffer line numbers and line numbers
+        ;; in patch.
+        ;;
+        ;; Line numbers in the patch are based on the source file, so
+        ;; we have to keep an offset when making changes to the
+        ;; buffer.
+        ;;
+        ;; Appending lines decrements the offset (possibly making it
+        ;; negative), deleting lines increments it. This order
+        ;; simplifies the forward-line invocations.
+        (line-offset 0))
+    (save-excursion
+      (with-current-buffer patch-buffer
+        (goto-char (point-min))
+        (while (not (eobp))
+          (unless (looking-at "^\\([ad]\\)\\([0-9]+\\) \\([0-9]+\\)")
+            (error "invalid rcs patch or internal error in reason--apply-rcs-patch"))
+          (forward-line)
+          (let ((action (match-string 1))
+                (from (string-to-number (match-string 2)))
+                (len  (string-to-number (match-string 3))))
+            (cond
+             ((equal action "a")
+              (let ((start (point)))
+                (forward-line len)
+                (let ((text (buffer-substring start (point))))
+                  (with-current-buffer target-buffer
+                    (decf line-offset len)
+                    (goto-char (point-min))
+                    (forward-line (- from len line-offset))
+                    (insert text)))))
+             ((equal action "d")
+              (with-current-buffer target-buffer
+                (reason--goto-line (- from line-offset))
+                (incf line-offset len)
+                (reason--delete-whole-line len)))
+             (t
+              (error "invalid rcs patch or internal error in reason--apply-rcs-patch")))))))))
+
+(defun reasonfmt--process-errors (filename tmpfile errorfile errbuf)
+  (with-current-buffer errbuf
+    (if (eq reasonfmt-show-errors 'echo)
+        (progn
+          (message "%s" (buffer-string))
+          (reasonfmt--kill-error-buffer errbuf))
+      (insert-file-contents errorfile nil nil nil)
+      ;; Convert the reasonfmt stderr to something understood by the compilation mode.
+      (goto-char (point-min))
+      (insert "reasonfmt errors:\n")
+      (while (search-forward-regexp (regexp-quote tmpfile) nil t)
+        (replace-match (file-name-nondirectory filename)))
+      (compilation-mode)
+      (display-buffer errbuf))))
+
+(defun reasonfmt--kill-error-buffer (errbuf)
+  (let ((win (get-buffer-window errbuf)))
+    (if win
+        (quit-window t win)
+      (with-current-buffer errbuf
+        (erase-buffer))
+      (kill-buffer errbuf))))
+
+(defun reasonfmt ()
+   "Format the current buffer according to the reasonfmt tool."
+   (interactive)
+   (let ((bufferfile (make-temp-file "reasonfmt" nil ".re"))
+         (outputfile (make-temp-file "reasonfmt" nil ".re"))
+         (errorfile (make-temp-file "reasonfmt" nil ".re"))
+         (errbuf (if reasonfmt-show-errors (get-buffer-create "*Reasonfmt Errors*")))
+         (patchbuf (get-buffer-create "*Reasonfmt patch*"))
+         (coding-system-for-read 'utf-8)
+         (coding-system-for-write 'utf-8))
+     (unwind-protect
+         (save-restriction
+           (widen)
+           (write-region nil nil bufferfile)
+           (if errbuf
+               (with-current-buffer errbuf
+                 (setq buffer-read-only nil)
+                 (erase-buffer)))
+           (with-current-buffer patchbuf
+                         (erase-buffer))
+           (if (zerop (call-process reasonfmt-command nil (list (list :file outputfile) errorfile)
+                                    nil "-parse" "re" "-print" "re" bufferfile))
+               (progn
+                 (call-process-region (point-min) (point-max) "diff" nil patchbuf nil "-n" "-"
+                                      outputfile)
+                 (reason--apply-rcs-patch patchbuf)
+                 (message "Applied reasonfmt")
+                (if errbuf (reasonfmt--kill-error-buffer errbuf)))
+             (message "Could not apply reasonfmt")
+             (if errbuf
+               (reasonfmt--process-errors (buffer-file-name) bufferfile errorfile errbuf)))))
+   (kill-buffer patchbuf)
+   (delete-file errorfile)
+   (delete-file bufferfile)
+   (delete-file outputfile)))
+
 
 (provide 'reason-mode)
 
