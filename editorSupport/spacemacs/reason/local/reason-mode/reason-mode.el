@@ -213,8 +213,8 @@ function or trait.  When nil, where will be aligned with fn or trait."
     ;; open bracket ends the line
     (when (not (looking-at "[[:blank:]]*\\(?://.*\\)?$"))
       (when (looking-at "[[:space:]]")
-    (forward-word 1)
-    (backward-word 1))
+        (forward-word 1)
+        (backward-word 1))
       (current-column))))
 
 (defun rust-rewind-to-beginning-of-current-level-expr ()
@@ -485,7 +485,7 @@ function or trait.  When nil, where will be aligned with fn or trait."
     "const" "continue" "crate"
     "do"
     "else" "enum" "extern"
-    "false" "fn" "for"
+    "false" "fun" "for"
     "if" "impl" "in"
     "let" "loop"
     "match" "mod" "move" "mut"
@@ -681,16 +681,16 @@ function or trait.  When nil, where will be aligned with fn or trait."
    ((member (char-before) '(?\] ?\) ))
     (let* ((is-paren (rust-looking-back-str ")"))
            (dest (save-excursion
-                  (backward-sexp)
-                  (rust-rewind-irrelevant)
-                  (or
-                   (when (rust-looking-back-str "->")
-                     (backward-char 2)
-                     (rust-rewind-irrelevant)
-                     (when (rust-looking-back-str ")")
-                       (backward-sexp)
-                       (point)))
-                   (and is-paren (point))))))
+                   (backward-sexp)
+                   (rust-rewind-irrelevant)
+                   (or
+                    (when (rust-looking-back-str "->")
+                      (backward-char 2)
+                      (rust-rewind-irrelevant)
+                      (when (rust-looking-back-str ")")
+                        (backward-sexp)
+                        (point)))
+                    (and is-paren (point))))))
       (when dest
         (goto-char dest))))))
 
@@ -699,29 +699,29 @@ function or trait.  When nil, where will be aligned with fn or trait."
   can have a where clause, rewind back to just before the name of
   the subject of that where clause and return the new point.
   Otherwise return nil"
-  
+
   (let* ((ident-pos (point))
          (newpos (save-excursion
                    (rust-rewind-irrelevant)
                    (rust-rewind-type-param-list)
                    (cond
-                       ((rust-looking-back-symbols '("fn" "trait" "enum" "struct" "impl" "type")) ident-pos)
+                    ((rust-looking-back-symbols '("fn" "trait" "enum" "struct" "impl" "type")) ident-pos)
 
-                       ((equal 5 (rust-syntax-class-before-point))
-                        (backward-sexp)
-                        (rust-rewind-to-decl-name))
+                    ((equal 5 (rust-syntax-class-before-point))
+                     (backward-sexp)
+                     (rust-rewind-to-decl-name))
 
-                       ((looking-back "[:,'+=]" (1- (point)))
-                        (backward-char)
-                        (rust-rewind-to-decl-name))
+                    ((looking-back "[:,'+=]" (1- (point)))
+                     (backward-char)
+                     (rust-rewind-to-decl-name))
 
-                       ((rust-looking-back-str "->")
-                        (backward-char 2)
-                        (rust-rewind-to-decl-name))
+                    ((rust-looking-back-str "->")
+                     (backward-char 2)
+                     (rust-rewind-to-decl-name))
 
-                       ((rust-looking-back-ident)
-                        (rust-rewind-qualified-ident)
-                        (rust-rewind-to-decl-name))))))
+                    ((rust-looking-back-ident)
+                     (rust-rewind-qualified-ident)
+                     (rust-rewind-to-decl-name))))))
     (when newpos (goto-char newpos))
     newpos))
 
@@ -742,7 +742,7 @@ function or trait.  When nil, where will be aligned with fn or trait."
       ;; A type alias or ascription could have a type param list.  Skip backwards past it.
       (when (member token '(ambiguous-operator open-brace))
         (rust-rewind-type-param-list))
-      
+
       (cond
 
        ;; Certain keywords always introduce expressions
@@ -757,7 +757,7 @@ function or trait.  When nil, where will be aligned with fn or trait."
        ;; An ident! followed by an open brace is a macro invocation.  Consider
        ;; it to be an expression.
        ((and (equal token 'open-brace) (rust-looking-back-macro)) t)
-       
+
        ;; An identifier is right after an ending paren, bracket, angle bracket
        ;; or curly brace.  It's a type if the last sexp was a type.
        ((and (equal token 'ident) (equal 5 (rust-syntax-class-before-point)))
@@ -771,7 +771,7 @@ function or trait.  When nil, where will be aligned with fn or trait."
         (backward-sexp)
         (rust-rewind-irrelevant)
         (looking-back "[{;]" (1- (point))))
-       
+
        ((rust-looking-back-ident)
         (rust-rewind-qualified-ident)
         (rust-rewind-irrelevant)
@@ -794,7 +794,7 @@ function or trait.  When nil, where will be aligned with fn or trait."
                         (rust-rewind-irrelevant)
                         (rust-looking-back-symbols '("enum" "struct" "trait" "type"))))))
            ))
-         
+
          ((equal token 'ambiguous-operator)
           (cond
            ;; An ampersand after an ident has to be an operator rather than a & at the beginning of a ref type
@@ -825,7 +825,7 @@ function or trait.  When nil, where will be aligned with fn or trait."
                   (rust-rewind-irrelevant)
                   (rust-looking-back-str "enum")))))
             t)
-           
+
            ;; Otherwise the ambiguous operator is a type if the identifier is a type
            ((rust-is-in-expression-context 'ident) t)))
 
@@ -860,7 +860,7 @@ function or trait.  When nil, where will be aligned with fn or trait."
            ;; Otherwise, if the ident: appeared with anything other than , or {
            ;; before it, it can't be part of a struct initializer and therefore
            ;; must be denoting a type.
-	   (t nil)
+           (t nil)
            ))
          ))
 
@@ -874,7 +874,7 @@ function or trait.  When nil, where will be aligned with fn or trait."
 
        ;; A :: introduces a type (or module, but not an expression in any case)
        ((rust-looking-back-str "::") nil)
-       
+
        ((rust-looking-back-str ":")
         (backward-char)
         (rust-is-in-expression-context 'colon))
@@ -910,7 +910,7 @@ function or trait.  When nil, where will be aligned with fn or trait."
 (defun rust-is-lt-char-operator ()
   "Return t if the < sign just after point is an operator rather
   than an opening angle bracket, otherwise nil."
-  
+
   (let ((case-fold-search nil))
     (save-excursion
       (rust-rewind-irrelevant)
@@ -922,7 +922,7 @@ function or trait.  When nil, where will be aligned with fn or trait."
        ((and (rust-looking-back-str "<")
              (not (equal 4 (rust-syntax-class-before-point)))
              (not (rust-looking-back-str "<<"))))
-       
+
        ;; On the other hand, if we are after a closing paren/brace/bracket it
        ;; can only be an operator, not an angle bracket.  Likewise, if we are
        ;; after a string it's an operator.  (The string case could actually be
@@ -947,7 +947,7 @@ function or trait.  When nil, where will be aligned with fn or trait."
          ;; The special types can't take type param lists, so a < after one is
          ;; always an operator
          (looking-at rust-re-special-types)
-         
+
          (rust-is-in-expression-context 'ident)))
 
        ;; Otherwise, assume it's an angle bracket
@@ -989,7 +989,7 @@ function or trait.  When nil, where will be aligned with fn or trait."
       ;; to balance regardless of the < and >, so if we don't treat any < or >
       ;; as angle brackets it won't mess up any paren balancing.
       ((rust-in-macro) t)
-      
+
       ((looking-at "<")
        (rust-is-lt-char-operator))
 
@@ -1023,7 +1023,7 @@ function or trait.  When nil, where will be aligned with fn or trait."
       (if (looking-at "/\\([*][*!][^*!]\\|/[/!][^/!]\\)")
           'font-lock-doc-face
         'font-lock-comment-face
-    ))))
+        ))))
 
 (defun rust-fill-prefix-for-comment-start (line-start)
   "Determine what to use for `fill-prefix' based on what is at the beginning of a line."
@@ -1224,7 +1224,7 @@ This is written mainly to be used as `end-of-defun-function' for Rust."
   ;; Allow paragraph fills for comments
   (setq-local comment-start-skip "\\(?://[/!]*\\|/\\*[*!]?\\)[[:space:]]*")
   (setq-local paragraph-start
-       (concat "[[:space:]]*\\(?:" comment-start-skip "\\|\\*/?[[:space:]]*\\|\\)$"))
+              (concat "[[:space:]]*\\(?:" comment-start-skip "\\|\\*/?[[:space:]]*\\|\\)$"))
   (setq-local paragraph-separate paragraph-start)
   (setq-local normal-auto-fill-function 'rust-do-auto-fill)
   (setq-local fill-paragraph-function 'rust-fill-paragraph)
@@ -1310,10 +1310,10 @@ See `compilation-error-regexp-alist' for help on their format.")
             (url-request-method "POST"))
         (url-retrieve shortener-url
                       (lambda (state)
-                        ; filter out the headers etc. included at the
-                        ; start of the buffer: the relevant text
-                        ; (shortened url or error message) is exactly
-                        ; the last line.
+                                        ; filter out the headers etc. included at the
+                                        ; start of the buffer: the relevant text
+                                        ; (shortened url or error message) is exactly
+                                        ; the last line.
                         (goto-char (point-max))
                         (let ((last-line (thing-at-point 'line t))
                               (err (plist-get state :error)))
@@ -1327,6 +1327,8 @@ See `compilation-error-regexp-alist' for help on their format.")
    on the Rust playpen."
   (interactive)
   (rust-playpen-region (point-min) (point-max)))
+
+(require 'reasonfmt)
 
 (provide 'reason-mode)
 
