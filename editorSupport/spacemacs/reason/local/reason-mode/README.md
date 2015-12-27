@@ -61,6 +61,19 @@ the packages for you (under `~/.emacs.d/elpa/`).
 
 * or using <kbd>M-x package-install reason-mode</kbd>
 
+### Features
+
+#### Auto-format before saving
+
+If you have reasonfmt installed, you can add this to your `.emacs` file to enable
+auto-format:
+```
+(add-hook 'reason-mode-hook (lambda ()
+          (add-hook 'before-save-hook 'reasonfmt-before-save)))
+```
+
+
+
 ### Tests via ERT
 
 The file `reason-mode-tests.el` contains tests that can be run via
