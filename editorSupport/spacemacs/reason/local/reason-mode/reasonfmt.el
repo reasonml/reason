@@ -34,9 +34,7 @@
 ;;; Code:
 
 (defcustom reasonfmt-command "reasonfmt"
-  "The 'reasonfmt' command.
-Some users may replace this with 'goimports'
-from https://github.com/bradfitz/goimports."
+  "The 'reasonfmt' command."
   :type 'string
   :group 'reason-fmt)
 
