@@ -38,7 +38,7 @@
 Some users may replace this with 'goimports'
 from https://github.com/bradfitz/goimports."
   :type 'string
-  :group 'reason)
+  :group 'reason-fmt)
 
 (defcustom reasonfmt-show-errors 'buffer
     "Where to display reasonfmt error output.
@@ -50,7 +50,7 @@ a `before-save-hook'."
             (const :tag "Own buffer" buffer)
             (const :tag "Echo area" echo)
             (const :tag "None" nil))
-      :group 'go)
+      :group 'reason-fmt)
 
 (defun reason--goto-line (line)
   (goto-char (point-min))
