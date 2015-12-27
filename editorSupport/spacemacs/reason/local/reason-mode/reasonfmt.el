@@ -50,6 +50,13 @@ a `before-save-hook'."
             (const :tag "None" nil))
       :group 'reason-fmt)
 
+;;;###autoload
+(defun reasonfmt-before-save ()
+  "Add this to .emacs to run reasonfmt on the current buffer when saving:
+ (add-hook 'before-save-hook 'reasonfmt-before-save)."
+    (interactive)
+      (when (eq major-mode 'reason-mode) (reasonfmt)))
+
 (defun reason--goto-line (line)
   (goto-char (point-min))
     (forward-line (1- line)))
