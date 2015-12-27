@@ -145,6 +145,11 @@
   :link '(url-link "http://www.rust-lang.org/")
   :group 'languages)
 
+(defcustom reason-mode-hook nil
+  "Hook called by `reason-mode'."
+  :type 'hook
+  :group 'reason-mode)
+
 (defcustom rust-indent-offset 4
   "Indent Rust code by this number of spaces."
   :type 'integer
