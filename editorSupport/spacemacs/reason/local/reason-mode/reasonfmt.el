@@ -34,11 +34,9 @@
 ;;; Code:
 
 (defcustom reasonfmt-command "reasonfmt"
-  "The 'reasonfmt' command.
-Some users may replace this with 'goimports'
-from https://github.com/bradfitz/goimports."
+  "The 'reasonfmt' command."
   :type 'string
-  :group 'reason)
+  :group 'reason-fmt)
 
 (defcustom reasonfmt-show-errors 'buffer
     "Where to display reasonfmt error output.
@@ -50,7 +48,14 @@ a `before-save-hook'."
             (const :tag "Own buffer" buffer)
             (const :tag "Echo area" echo)
             (const :tag "None" nil))
-      :group 'go)
+      :group 'reason-fmt)
+
+;;;###autoload
+(defun reasonfmt-before-save ()
+  "Add this to .emacs to run reasonfmt on the current buffer when saving:
+ (add-hook 'before-save-hook 'reasonfmt-before-save)."
+    (interactive)
+      (when (eq major-mode 'reason-mode) (reasonfmt)))
 
 (defun reason--goto-line (line)
   (goto-char (point-min))
