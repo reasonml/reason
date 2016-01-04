@@ -1870,9 +1870,17 @@ class printer  ()= object(self:'self)
         | Ptyp_constr (li, []) ->
             (* Only simple if zero type paramaters *)
             ensureSingleTokenSticksToLabel (self#longident_loc li)
-        | Ptyp_variant (l, closed, low) -> (* FIXME *)
-            case_not_implemented "Ptyp_variant" x.ptyp_loc (try assert false with Assert_failure x -> x);
-            wrap (default#core_type1) x
+        | Ptyp_variant (l, _, _) ->
+           let pcd_loc = x.ptyp_loc in
+           let pcd_attributes = x.ptyp_attributes in
+           let pcd_res = None in
+           let variant_helper rf = match rf with
+              | Rtag (label, _, _, pcd_args) -> let pcd_name = {
+                  txt = "`" ^ label;
+                  loc = x.ptyp_loc;
+              } in self#type_variant_leaf {pcd_name; pcd_args; pcd_res; pcd_loc; pcd_attributes}
+              | Rinherit ct -> self#core_type ct in
+           makeList ~wrap:("[","]") ~postSpace:true ~break:IfNeed  (List.map variant_helper l)
         | Ptyp_object (l, o) -> (*FIXME*)
             case_not_implemented "Ptyp_object" x.ptyp_loc (try assert false with Assert_failure x -> x);
             wrap (default#core_type1) x
