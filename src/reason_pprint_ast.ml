@@ -1598,10 +1598,11 @@ class printer  ()= object(self:'self)
                 first::(List.map (formatOneTypeDefStandard (atom "and")) (tlhd::tltl))
               )
 
-  method type_variant_leaf = self#type_variant_leaf1 true
-  method type_variant_leaf_nobar = self#type_variant_leaf1 false
-  method type_variant_leaf1 print_bar {pcd_name; pcd_args; pcd_res; pcd_loc} =
-    let sourceMappedName = SourceMap (break, pcd_name.loc, atom pcd_name.txt) in
+  method type_variant_leaf ?polymorphic:(p=false) = self#type_variant_leaf1 p true
+  method type_variant_leaf_nobar ?polymorphic:(p=false) = self#type_variant_leaf1 p false
+  method type_variant_leaf1 polymorphic print_bar {pcd_name; pcd_args; pcd_res; pcd_loc} =
+    let prefix = if polymorphic then "`" else "" in
+    let sourceMappedName = SourceMap (break, pcd_name.loc, atom (prefix ^ pcd_name.txt)) in
     let nameOf = makeList ~postSpace:true [sourceMappedName; atom "of"] in
     let barNameOf =
       let lst = if print_bar then [atom "|"; nameOf] else [nameOf] in
@@ -1870,17 +1871,25 @@ class printer  ()= object(self:'self)
         | Ptyp_constr (li, []) ->
             (* Only simple if zero type paramaters *)
             ensureSingleTokenSticksToLabel (self#longident_loc li)
-        | Ptyp_variant (l, _, _) ->
-           let pcd_loc = x.ptyp_loc in
-           let pcd_attributes = x.ptyp_attributes in
-           let pcd_res = None in
-           let variant_helper rf = match rf with
-              | Rtag (label, _, _, pcd_args) -> let pcd_name = {
-                  txt = "`" ^ label;
+        | Ptyp_variant (l, closed, low) ->
+          let pcd_loc = x.ptyp_loc in
+          let pcd_attributes = x.ptyp_attributes in
+          let pcd_res = None in
+          let variant_helper rf =
+            match rf with
+              | Rtag (label, _, _, pcd_args) ->
+                let pcd_name = {
+                  txt = label;
                   loc = x.ptyp_loc;
-              } in self#type_variant_leaf {pcd_name; pcd_args; pcd_res; pcd_loc; pcd_attributes}
+                } in
+                self#type_variant_leaf ~polymorphic:true {pcd_name; pcd_args; pcd_res; pcd_loc; pcd_attributes}
               | Rinherit ct -> self#core_type ct in
-           makeList ~wrap:("[","]") ~postSpace:true ~break:IfNeed  (List.map variant_helper l)
+          let designator =
+            match (closed,low) with
+              | (Closed,None) -> ""
+              | (Closed,Some _) -> "<"
+              | (Open,_) -> ">" in
+          makeList ~wrap:("[" ^ designator,"]") ~pad:(true, false) ~postSpace:true ~break:IfNeed (List.map variant_helper l)
         | Ptyp_object (l, o) -> (*FIXME*)
             case_not_implemented "Ptyp_object" x.ptyp_loc (try assert false with Assert_failure x -> x);
             wrap (default#core_type1) x
