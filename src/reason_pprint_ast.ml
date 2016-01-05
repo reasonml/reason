@@ -1406,7 +1406,6 @@ let protectLongIdentifier longPrefix txt =
   makeList [longPrefix; atom "."; protectIdentifier txt]
 
 
-
 class printer  ()= object(self:'self)
   val pipe = false
   val semi = false
@@ -1884,12 +1883,16 @@ class printer  ()= object(self:'self)
                 } in
                 self#type_variant_leaf ~polymorphic:true {pcd_name; pcd_args; pcd_res; pcd_loc; pcd_attributes}
               | Rinherit ct -> self#core_type ct in
-          let designator =
+          let (designator, tl) =
             match (closed,low) with
-              | (Closed,None) -> ""
-              | (Closed,Some _) -> "<"
-              | (Open,_) -> ">" in
-          makeList ~wrap:("[" ^ designator,"]") ~pad:(true, false) ~postSpace:true ~break:IfNeed (List.map variant_helper l)
+              | (Closed,None) -> ("", [])
+              | (Closed,Some tl) -> ("<", tl)
+              | (Open,_) -> (">", []) in
+          let node_list = List.map variant_helper l in
+          let ll = (List.map (fun t -> atom ("`" ^ t)) tl) in
+          let tag_list = makeList ~postSpace:true ~break:IfNeed ((atom ">")::ll) in
+          let type_list = if List.length tl != 0 then node_list@[tag_list] else node_list in
+          makeList ~wrap:("[" ^ designator,"]") ~pad:(true, false) ~postSpace:true ~break:IfNeed type_list
         | Ptyp_object (l, o) -> (*FIXME*)
             case_not_implemented "Ptyp_object" x.ptyp_loc (try assert false with Assert_failure x -> x);
             wrap (default#core_type1) x
