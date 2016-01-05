@@ -1,3 +1,4 @@
+#!/bin/bash
 # http://sc.tamu.edu/help/general/unix/redirection.html
 # ocamlc -c -pp reasonfmt -w -32-27-26-11 -dsource -I . -impl ./testUtils.re 2>&1 | sed -e 's/ *$//g' >./formatOutput.re
 # ocamlc -c -pp reasonfmt -w -32-27-26-11 -dsource -I . -impl ./basicStructures.re 2>&1 | sed -e 's/ *$//g' >>./formatOutput.re
@@ -8,6 +9,15 @@
 # ocamlc -c -pp reasonfmt -w -32-27-26-11 -dsource -I . -intf ./syntax.rei 2>&1 | sed -e 's/ *$//g' >>./formatOutput.re
 # ocamlc -c -pp reasonfmt -w -32-27-26-11 -dsource -I . -impl ./syntax.re 2>&1 | sed -e 's/ *$//g' >>./formatOutput.re
 
+function idempotent_test() {
+    ../reasonfmt_impl.native -print-width 50 -parse re -print re ./$1 2>&1 >./$1.formatted
+    ../reasonfmt_impl.native -print-width 50 -parse re -print re ./$1.formatted 2>&1 >./$1.formatted.formatted
+
+    diff --unchanged-line-format="" --new-line-format=":%dn: %L" --old-line-format=":%dn: %L" ./$1.formatted.formatted ./$1.formatted
+    if ! [[ $? -eq 0 ]]; then
+        echo "$1.re is not idempotent" 1>&2
+    fi
+}
 
 ../reasonfmt_impl.native -print-width 50 -print re ./testUtils.re 2>&1 >./formatOutput.re
 ../reasonfmt_impl.native -print-width 50 -print re ./basicStructures.re 2>&1 >>./formatOutput.re
@@ -20,6 +30,8 @@
 ../reasonfmt_impl.native -print-width 50 -print re ./infix.re 2>&1  >>./formatOutput.re
 ../reasonfmt_impl.native -print-width 50 -print re ./trailingSpaces.re 2>&1 >>./formatOutput.re
 ../reasonfmt_impl.native -print-width 50 -print re ./escapesInStrings.re 2>&1 >>./formatOutput.re
+
+idempotent_test ./formatOutput.re
 
 ../reasonfmt_impl.native -print-width 50 -print re ./wrappingTest.rei 2>&1 >./formatOutput.rei
 ../reasonfmt_impl.native -print-width 50 -print re ./syntax.rei 2>&1 >>./formatOutput.rei
@@ -46,3 +58,4 @@ rm ./typeCheckedTests/mlSyntax.re
 
 rm ./typeCheckedTests/*.cmi
 rm ./typeCheckedTests/*.cmo
+rm ./*.formatted
