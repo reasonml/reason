@@ -59,9 +59,9 @@ type colorList1 = [
   | `Black
 ];
 
-type colorList2 = [<
-  | `Red
-  | `Black
+type colorList = [<
+  | `Red of (int, int) &int
+  | `Black of &(int, int) &int
   | `Blue
   > `Red `Black
 ];
