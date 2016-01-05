@@ -17,6 +17,9 @@ run_utop: build
 		                        compiler-libs.common) \
 		_build/src/reason.cma _build/src/reason_utop.cmo
 
+test:
+	cd formatTest; ./test.sh
+
 clean:
 	ocamlbuild -clean
 
