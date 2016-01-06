@@ -3160,7 +3160,7 @@ module type MySig = {
   let a: [< | `s | `t' | `_00 | `Aa of int]; 
   let a: [ | `s | `t' | `_00 | `Aa of int]; 
   let a: [<
-    | `Bb of int string t 
+    | `Bb of int &string &t 
     int 
     > `a `_bbb `c `d
   ]; 

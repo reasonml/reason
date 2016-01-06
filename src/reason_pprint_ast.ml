@@ -1887,7 +1887,7 @@ class printer  ()= object(self:'self)
               | Rtag (label, _, opt_ampersand, pcd_args) ->
                 let pcd_name = {
                   txt = label;
-                  loc = x.ptyp_loc;
+                  loc = pcd_loc;
                 } in
                 self#type_variant_leaf ~opt_ampersand ~polymorphic:true {pcd_name; pcd_args; pcd_res; pcd_loc; pcd_attributes}
               | Rinherit ct -> self#core_type ct in
