@@ -53,6 +53,19 @@ let doesntCareWhichFormAs x => switch x {
   | FormThree => 20
 };
 
+type colorList1 = [
+  otherThingInheritedFrom
+  | `Red
+  | `Black
+];
+
+type colorList = [<
+  | `Red of (int, int) &int
+  | `Black of &(int, int) &int
+  | `Blue
+  > `Red `Black
+];
+
 1 + doesntCareWhichForm (FormOne 10);
 
 1 + doesntCareWhichForm (FormTwo 10);

@@ -1406,7 +1406,6 @@ let protectLongIdentifier longPrefix txt =
   makeList [longPrefix; atom "."; protectIdentifier txt]
 
 
-
 class printer  ()= object(self:'self)
   val pipe = false
   val semi = false
@@ -1598,10 +1597,11 @@ class printer  ()= object(self:'self)
                 first::(List.map (formatOneTypeDefStandard (atom "and")) (tlhd::tltl))
               )
 
-  method type_variant_leaf = self#type_variant_leaf1 true
-  method type_variant_leaf_nobar = self#type_variant_leaf1 false
-  method type_variant_leaf1 print_bar {pcd_name; pcd_args; pcd_res; pcd_loc} =
-    let sourceMappedName = SourceMap (break, pcd_name.loc, atom pcd_name.txt) in
+  method type_variant_leaf ?opt_ampersand:(a=false) ?polymorphic:(p=false) = self#type_variant_leaf1 a p true
+  method type_variant_leaf_nobar ?opt_ampersand:(a=false) ?polymorphic:(p=false) = self#type_variant_leaf1 a p false
+  method type_variant_leaf1 opt_ampersand polymorphic print_bar {pcd_name; pcd_args; pcd_res; pcd_loc} =
+    let prefix = if polymorphic then "`" else "" in
+    let sourceMappedName = SourceMap (break, pcd_name.loc, atom (prefix ^ pcd_name.txt)) in
     let nameOf = makeList ~postSpace:true [sourceMappedName; atom "of"] in
     let barNameOf =
       let lst = if print_bar then [atom "|"; nameOf] else [nameOf] in
@@ -1609,16 +1609,24 @@ class printer  ()= object(self:'self)
     let barName =
       let lst = if print_bar then [atom "|"; sourceMappedName] else [sourceMappedName] in
       makeList ~postSpace:true lst in
-
-    let args = (List.map self#non_arrowed_simple_core_type pcd_args) in
+    let ampersand_helper i arg =
+      let ct = [self#non_arrowed_simple_core_type arg] in
+      if polymorphic then
+        if i == 0 && not opt_ampersand then
+          ct
+        else
+          (atom "&") :: ct
+      else
+        ct
+    in
+    let args = List.map makeList (List.mapi ampersand_helper pcd_args) in
     let gadtRes = match pcd_res with
       | None -> None
       | Some x -> Some (
           makeList ~inline:(true, true) ~break:IfNeed [ (* Single row just so the entire return type breaks onto its own line *)
             formatJustTheTypeConstraint (self#core_type x)
           ]
-      )
-      in
+      ) in
       let normalize lst = match lst with
         | [] -> raise (NotPossible "should not be called")
         | [hd] -> hd
@@ -1870,9 +1878,29 @@ class printer  ()= object(self:'self)
         | Ptyp_constr (li, []) ->
             (* Only simple if zero type paramaters *)
             ensureSingleTokenSticksToLabel (self#longident_loc li)
-        | Ptyp_variant (l, closed, low) -> (* FIXME *)
-            case_not_implemented "Ptyp_variant" x.ptyp_loc (try assert false with Assert_failure x -> x);
-            wrap (default#core_type1) x
+        | Ptyp_variant (l, closed, low) ->
+          let pcd_loc = x.ptyp_loc in
+          let pcd_attributes = x.ptyp_attributes in
+          let pcd_res = None in
+          let variant_helper rf =
+            match rf with
+              | Rtag (label, _, opt_ampersand, pcd_args) ->
+                let pcd_name = {
+                  txt = label;
+                  loc = pcd_loc;
+                } in
+                self#type_variant_leaf ~opt_ampersand ~polymorphic:true {pcd_name; pcd_args; pcd_res; pcd_loc; pcd_attributes}
+              | Rinherit ct -> self#core_type ct in
+          let (designator, tl) =
+            match (closed,low) with
+              | (Closed,None) -> ("", [])
+              | (Closed,Some tl) -> ("<", tl)
+              | (Open,_) -> (">", []) in
+          let node_list = List.map variant_helper l in
+          let ll = (List.map (fun t -> atom ("`" ^ t)) tl) in
+          let tag_list = makeList ~postSpace:true ~break:IfNeed ((atom ">")::ll) in
+          let type_list = if List.length tl != 0 then node_list@[tag_list] else node_list in
+          makeList ~wrap:("[" ^ designator,"]") ~pad:(true, false) ~postSpace:true ~break:IfNeed type_list
         | Ptyp_object (l, o) -> (*FIXME*)
             case_not_implemented "Ptyp_object" x.ptyp_loc (try assert false with Assert_failure x -> x);
             wrap (default#core_type1) x

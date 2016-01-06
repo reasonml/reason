@@ -165,7 +165,7 @@ let (a, b, c) = d;
 
 type t = t0 = {a: int};
 
-type t2 = [ `a | `b];
+type t2 = [ | `a | `b];
 
 type t = private | A | B;
 
@@ -179,8 +179,8 @@ let module Map_and_set_binable = {
 
 /* val v */
 type compare =
-  [ `no_polymorphic_compare] => 
-  [ `no_polymorphic_compare];
+  [ | `no_polymorphic_compare] => 
+  [ | `no_polymorphic_compare];
 
 {Parts.sign: sign, hr};
 
@@ -293,10 +293,20 @@ find_thread_count (
   )
 );
 
-type variant =
-  [ `Jan | `Feb | `Mar | `Apr | `May | `Jun | `Jul | `Aug | `Sep | `Oct | 
-  `Nov
-| `Dec];
+type variant = [
+  | `Jan 
+  | `Feb 
+  | `Mar 
+  | `Apr 
+  | `May 
+  | `Jun 
+  | `Jul 
+  | `Aug 
+  | `Sep 
+  | `Oct 
+  | `Nov 
+  | `Dec
+];
 /* this could be fixed, but we actually want to handle the first case
    differently for when there is only one case (see next examples) */
 let f x =>
@@ -1057,22 +1067,22 @@ type foo = int;
 
 /* just in case */
 /* These two shouldn't be indented differently, but are. */
-type z = [ `Bar of foo | `Foo];
+type z = [ | `Bar of foo | `Foo];
 
 /* a comment [expected to apply to `Foo as below] */
-type z = [ `Bar | `Foo];
+type z = [ | `Bar | `Foo];
 
 /* a comment */
 /* On second thought, I kind of like this way of thinking about this
 indentation, even though it is kind of parasyntactic: */
 type z =
   /* Applies to "[" or `Bar. */
-  [ `Bar of foo | `Foo];
+  [ | `Bar of foo | `Foo];
 
 /* Applies to "|" or `Foo.  Indented too much. */
 type z =
   /* Applies to "[" or `Bar. */
-  [ `Bar | `Foo];
+  [ | `Bar | `Foo];
 
 /* Applies to "|" or `Foo. */
 /* The way we write code, that will line up more nicely. */
@@ -1294,9 +1304,9 @@ type t =
   D.t => 
   e::(f::G.t => H.t) => 
   I.t => 
-  jjj::[ `K | `L] => 
+  jjj::[ | `K | `L] => 
   M.t => 
-  nnn::[ `O | `P] => 
+  nnn::[ | `O | `P] => 
   qqq::(r::S.t => T.t) => 
   U.t;
 let foo 
@@ -1821,9 +1831,12 @@ type tt =
   | C of float 
   | D of char;
 
-type tt =
-  [ `a of int | `blskdjf of float | `problem_cause of [ `more_brackets]
-| `problematic_case of string];
+type tt = [
+  | `a of int 
+  | `blskdjf of float 
+  | `problem_cause of [ | `more_brackets] 
+  | `problematic_case of string
+];
 let module M = {
   let a = ();
   let a = ff (ff (ff (ff (ff (ff ())))));
@@ -1975,7 +1988,7 @@ type mip = {fup: int, /** fup field */ fip: int};
 /** Mip's documentation */
 type t = | Hey | Ho;
 /** Let's go. */
-type tp = [ `Hey | `Ho];
+type tp = [ | `Hey | `Ho];
 /** Tp doc.
     Second line. */
 /** Starting function f doc */
@@ -1984,7 +1997,7 @@ let f: 'a => 'b;
 let g: 'a => t;
 /** Function g doc.
     Second line. */
-let g: 'a => [ `Hey | `Ho];
+let g: 'a => [ | `Hey | `Ho];
 /** Let's go
     Second line. */
 let x: unit => unit;
@@ -2905,17 +2918,17 @@ type t = {
   mutable a: string => A.t unit
 };
 
-type t = [ `a | `b | `c];
+type t = [ | `a | `b | `c];
 
-type t = [ `a | `b | `c];
+type t = [ | `a | `b | `c];
 
-type t = [ `a | `b | `c];
+type t = [ | `a | `b | `c];
 
-type t = [ `a | `b | `c];
+type t = [ | `a | `b | `c];
 
-type t = [ `a | `b | `c];
+type t = [ | `a | `b | `c];
 
-type t = [ `a | `b | `c];
+type t = [ | `a | `b | `c];
 
 module type M = {
   type t = t0
@@ -3142,12 +3155,15 @@ module type MySig = {
   /* aliased */ 
   let a: int as 'bla; 
   /* polymorphic variants */ 
-  let a: [ `s | `t' | `_00 | `Aa of int]; 
-  let a: [ `s | `t' | `_00 | `Aa of int]; 
-  let a: [< `s | `t' | `_00 | `Aa of int]; 
-  let a: [ `s | `t' | `_00 | `Aa of int]; 
-  let a:
-    [< `Bb of int&string&t | int> `a `_bbb `c `d]; 
+  let a: [ | `s | `t' | `_00 | `Aa of int]; 
+  let a: [ | `s | `t' | `_00 | `Aa of int]; 
+  let a: [< | `s | `t' | `_00 | `Aa of int]; 
+  let a: [ | `s | `t' | `_00 | `Aa of int]; 
+  let a: [<
+    | `Bb of int &string &t 
+    int 
+    > `a `_bbb `c `d
+  ]; 
   /* objects */ 
   let a: <  >; 
   let a: < .. >; 
@@ -3163,21 +3179,21 @@ module type MySig = {
   let a: 'a#M.meth; 
   let a: ('a,('b* 'c))#M.meth;
 };
-type t = [ `aaa | `bbb | `ccc];
+type t = [ | `aaa | `bbb | `ccc];
 
-type t = [ `aaa | `bbb | `ccc];
+type t = [ | `aaa | `bbb | `ccc];
 
-type t = [ `aaa | `bbb | `ccc];
+type t = [ | `aaa | `bbb | `ccc];
 
-type t = [ `aaa | `bbb | `ccc];
+type t = [ | `aaa | `bbb | `ccc];
 
-type t = [ `aaa | `bbb | `ccc];
+type t = [ | `aaa | `bbb | `ccc];
 
-type t = [ `aaa | `bbb | `ccc];
+type t = [ | `aaa | `bbb | `ccc];
 
-type t = [ `aaa | `bbb | `ccc];
+type t = [ | `aaa | `bbb | `ccc];
 
-type t = [ `aaa | `bbb | `ccc];
+type t = [ | `aaa | `bbb | `ccc];
 let x =
   try y {
     | A => ()
