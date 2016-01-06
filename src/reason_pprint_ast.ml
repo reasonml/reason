@@ -1134,7 +1134,7 @@ let rec interleaveComments listConfig layoutListItems comments =
       let (itemComments, (easyItem, unconsumedComms)) = match (listConfig.attemptInterleaveComments, hd) with
         | (true, SourceMap (sourceMapListConfig, location, subLayout)) ->
           let (beforeStart, afterStart) =
-            splitCommentsAt ~leftIncludesSplit:false location.loc_start comments in
+            splitCommentsAt ~leftIncludesSplit:true location.loc_start comments in
           (beforeStart, layoutToEasyFormatAndSurplus subLayout afterStart)
         | _ -> ([], layoutToEasyFormatAndSurplus hd comments)
       in
@@ -1189,7 +1189,7 @@ and layoutToEasyFormatAndSurplus layoutNode comments = match layoutNode with
        * TODO: Provide ability to have even a *single* comment force breaking of
        * the list.
        *)
-      let (beforeStart, afterStart) = splitCommentsAt ~leftIncludesSplit:false location.loc_start comments in
+      let (beforeStart, afterStart) = splitCommentsAt ~leftIncludesSplit:true location.loc_start comments in
       (* This is not working, but is a good idea in theory *)
       (* let (insideNode, unconsumedComms) = splitCommentsAt ~leftIncludesSplit:true location.loc_end afterStart in *)
 
