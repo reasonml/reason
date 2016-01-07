@@ -1610,16 +1610,17 @@ class printer  ()= object(self:'self)
       let lst = if print_bar then [atom "|"; sourceMappedName] else [sourceMappedName] in
       makeList ~postSpace:true lst in
     let ampersand_helper i arg =
-      let ct = [self#non_arrowed_simple_core_type arg] in
+      let ct = self#non_arrowed_simple_core_type arg in
+      let add_ampersand = label (atom "&") in
       if polymorphic then
         if i == 0 && not opt_ampersand then
           ct
         else
-          (atom "&") :: ct
+          add_ampersand ct
       else
         ct
     in
-    let args = List.map makeList (List.mapi ampersand_helper pcd_args) in
+    let args = List.mapi ampersand_helper pcd_args in
     let gadtRes = match pcd_res with
       | None -> None
       | Some x -> Some (

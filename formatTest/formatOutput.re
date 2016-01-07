@@ -3896,19 +3896,22 @@ and anotherRecursiveType =
 type term _ =
   /* First variant leaf of GADT */ 
   | Int of
-      /*first var arg */int 
+      /*first var arg */ 
+      int 
       :/* First GADT res */
        term
          int 
   /* Second variant leaf of GADT */ 
   | Float of
-      /*second var arg */int 
+      /*second var arg */ 
+      int 
       :/* Second GADT res */
        term
          int 
   /* Third variant leaf of GADT */ 
   | Bool of
-      /*third var arg */int 
+      /*third var arg */ 
+      int 
       :/* Third GADT res */
        term
          int;
@@ -3919,11 +3922,11 @@ type commentedTypeDef =
    * Commenting first variant member.
    */ 
   | First of (
-               /* First field of tuple in first variant member */
-               int, 
-               /* Second field of tuple in first variant member */
-               int
-             ) 
+      /* First field of tuple in first variant member */
+      int, 
+      /* Second field of tuple in first variant member */
+      int
+    ) 
   /*
    * Commenting second variant member.
    */ 
@@ -3932,10 +3935,10 @@ type commentedTypeDef =
    * Commenting third variant member.
    */ 
   | Third of (
-               list
-                 /* Commenting deep in type def */ 
-                 (list int)
-             );
+      list
+        /* Commenting deep in type def */ 
+        (list int)
+    );
 
 type colors =
   | Red of int | Black of int | Green of int;
