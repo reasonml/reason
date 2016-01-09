@@ -484,7 +484,7 @@ rule token = parse
   | "+=" { PLUSEQ }
   | "-"  { MINUS }
   | "-." { MINUSDOT }
-
+  | "%"  { PERCENT }
   | "!" appropriate_operator_suffix_chars +
             { PREFIXOP(unescape_stars_slashes (Lexing.lexeme lexbuf)) }
   | ['~' '?'] appropriate_operator_suffix_chars +
@@ -506,15 +506,12 @@ rule token = parse
    *)
   | "*\\*" appropriate_operator_suffix_chars *
             { INFIXOP4(unescape_stars_slashes (Lexing.lexeme lexbuf))}
-
-
-  | '%'     { PERCENT }
+  | ['%'] appropriate_operator_suffix_chars *
+            { INFIXOP3("mod") }
   | ['*'] appropriate_operator_suffix_chars *
             { INFIXOP3(unescape_stars_slashes (Lexing.lexeme lexbuf)) }
   | ['/'] appropriate_operator_suffix_chars *
             { INFIXOP3(unescape_stars_slashes (Lexing.lexeme lexbuf))}
-  | ['%'] appropriate_operator_suffix_chars *
-            { INFIXOP3(Lexing.lexeme lexbuf) }
   | eof { EOF }
   | _
       { raise (Error(Illegal_character (Lexing.lexeme_char lexbuf 0),
@@ -711,4 +708,3 @@ and skip_sharp_bang = parse
     preprocessor := Some (init, preprocess)
 
 }
-

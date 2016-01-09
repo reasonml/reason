@@ -5312,6 +5312,8 @@ let newRecord = {
 
 let x = 10;
 
+let y = 5 % 3;
+
 /* Ensure that the parenthesis are preserved here because they are
  * important:
  */
