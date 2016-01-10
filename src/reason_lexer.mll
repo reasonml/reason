@@ -61,7 +61,7 @@ let keyword_table =
     "switch", SWITCH;
     "match", MATCH; (* Including MATCH for source transforming compat *)
     "method", METHOD;
-    "module", MODULE;
+    "mod", MOD;
     "mutable", MUTABLE;
     "new", NEW;
     "object", OBJECT;
@@ -84,7 +84,6 @@ let keyword_table =
     "while", WHILE;
     "with", WITH;
 
-    "mod", INFIXOP3("mod");
     "land", INFIXOP3("land");
     "lor", INFIXOP3("lor");
     "lxor", INFIXOP3("lxor");

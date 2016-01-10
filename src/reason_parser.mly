@@ -535,7 +535,7 @@ let mkctf_attrs d attrs =
 %token MINUS
 %token MINUSDOT
 %token MINUSGREATER
-%token MODULE
+%token MOD
 %token MUTABLE
 %token <nativeint> NATIVEINT
 %token NEW
@@ -907,14 +907,14 @@ structure_item:
       { mkstr(Pstr_typext $2) }
   | EXCEPTION str_exception_declaration
       { mkstr(Pstr_exception $2) }
-  | LET MODULE nonlocal_module_binding
-      { mkstr(Pstr_module $3) }
-  | LET MODULE REC nonlocal_module_bindings
-      { mkstr(Pstr_recmodule(List.rev $4)) }
-  | MODULE TYPE ident post_item_attributes
+  | MOD nonlocal_module_binding
+      { mkstr(Pstr_module $2) }
+  | MOD REC nonlocal_module_bindings
+      { mkstr(Pstr_recmodule(List.rev $3)) }
+  | MOD TYPE ident post_item_attributes
       { mkstr(Pstr_modtype (Mtd.mk (mkrhs $3 3)
                               ~attrs:$4 ~loc:(symbol_rloc()))) }
-  | MODULE TYPE ident EQUAL module_type post_item_attributes
+  | MOD TYPE ident EQUAL module_type post_item_attributes
       { mkstr(Pstr_modtype (Mtd.mk (mkrhs $3 3)
                               ~typ:$5 ~attrs:$6 ~loc:(symbol_rloc()))) }
   | open_statement { mkstr(Pstr_open $1) }
@@ -978,7 +978,7 @@ nonlocal_module_binding:
 /* Allowed in curried let bidings */
 non_arrowed_module_type:
   | simple_module_type {$1}
-  | MODULE TYPE OF module_expr %prec below_LBRACKETAT
+  | MOD TYPE OF module_expr %prec below_LBRACKETAT
       { mkmty(Pmty_typeof $4) }
   | module_type attribute
       { Mty.attr $1 $2 }
@@ -1006,7 +1006,7 @@ simple_module_type:
  *  simple_module_type: (Non arrowed implied)
  *  non_arrowed_module_type
  *  module_type ::=
- *    module_type WITH ...   
+ *    module_type WITH ...
  *    non_arrowed_module_type
  *    (arg : module_type) => module_type
  *    module_type => module_type
@@ -1049,7 +1049,7 @@ module_type:
      * with it.
      *
      * Update: I'm guessing it has something to do with the fact that this isn't
-     * parsed correctly because the => is considered part of "type dependenences" : 
+     * parsed correctly because the => is considered part of "type dependenences" :
      *
      *    let module CreateFactory
      *               (Spec: ContainerSpec)
@@ -1127,21 +1127,21 @@ signature_item:
       { mksig(Psig_typext $2) }
   | EXCEPTION sig_exception_declaration
       { mksig(Psig_exception $2) }
-  | LET MODULE UIDENT module_declaration post_item_attributes
-      { mksig(Psig_module (Md.mk (mkrhs $3 3)
-                             $4 ~attrs:$5 ~loc:(symbol_rloc()))) }
-  | LET MODULE UIDENT EQUAL mod_longident post_item_attributes
-      { mksig(Psig_module (Md.mk (mkrhs $3 3)
-                             (Mty.alias ~loc:(rhs_loc 5) (mkrhs $5 5))
-                             ~attrs:$6
+  | MOD UIDENT module_declaration post_item_attributes
+      { mksig(Psig_module (Md.mk (mkrhs $2 3)
+                             $3 ~attrs:$4 ~loc:(symbol_rloc()))) }
+  | MOD UIDENT EQUAL mod_longident post_item_attributes
+      { mksig(Psig_module (Md.mk (mkrhs $2 3)
+                             (Mty.alias ~loc:(rhs_loc 5) (mkrhs $4 5))
+                             ~attrs:$5
                              ~loc:(symbol_rloc())
                           )) }
-  | LET MODULE REC module_rec_declarations
-      { mksig(Psig_recmodule (List.rev $4)) }
-  | MODULE TYPE ident post_item_attributes
+  | MOD REC module_rec_declarations
+      { mksig(Psig_recmodule (List.rev $3)) }
+  | MOD TYPE ident post_item_attributes
       { mksig(Psig_modtype (Mtd.mk (mkrhs $3 3)
                               ~attrs:$4 ~loc:(symbol_rloc()))) }
-  | MODULE TYPE ident EQUAL module_type post_item_attributes
+  | MOD TYPE ident EQUAL module_type post_item_attributes
       { mksig(Psig_modtype (Mtd.mk (mkrhs $3 3) ~typ:$5
                               ~loc:(symbol_rloc())
                               ~attrs:$6)) }
@@ -1431,8 +1431,8 @@ seq_expr:
   | expr SEMI                     { reloc_exp $1 }
   | LET ext_attributes rec_flag let_bindings_no_attrs SEMI seq_expr
       { mkexp_attrs (Pexp_let($3, List.rev $4, $6)) $2 }
-  | LET MODULE ext_attributes UIDENT module_binding_body SEMI seq_expr
-      { mkexp_attrs (Pexp_letmodule(mkrhs $4 4, $5, $7)) $3 }
+  | MOD ext_attributes UIDENT module_binding_body SEMI seq_expr
+      { mkexp_attrs (Pexp_letmodule(mkrhs $3 4, $4, $6)) $2 }
   | LET OPEN override_flag ext_attributes mod_longident SEMI seq_expr
       { mkexp_attrs (Pexp_open($3, mkrhs $5 5, $7)) $4 }
   | expr SEMI seq_expr            { mkexp(Pexp_sequence($1, $3)) }
@@ -1462,8 +1462,8 @@ semi_terminated_seq_expr:
   | expr opt_semi  { reloc_exp $1 }
   | LET ext_attributes rec_flag let_bindings_no_attrs SEMI semi_terminated_seq_expr
       { mkexp_attrs (Pexp_let($3, List.rev $4, $6)) $2 }
-  | LET MODULE ext_attributes UIDENT module_binding_body SEMI semi_terminated_seq_expr
-      { mkexp_attrs (Pexp_letmodule(mkrhs $4 4, $5, $7)) $3 }
+  | MOD ext_attributes UIDENT module_binding_body SEMI semi_terminated_seq_expr
+      { mkexp_attrs (Pexp_letmodule(mkrhs $3 4, $4, $6)) $2 }
   | LET OPEN override_flag ext_attributes mod_longident SEMI semi_terminated_seq_expr
       { mkexp_attrs (Pexp_open($3, mkrhs $5 5, $7)) $4 }
   | expr SEMI semi_terminated_seq_expr            { mkexp(Pexp_sequence($1, $3)) }
@@ -1853,18 +1853,18 @@ simple_expr:
       { unclosed "{<" 3 ">}" 6 }
   | simple_expr SHARP label
       { mkexp(Pexp_send($1, $3)) }
-  | LPAREN MODULE module_expr RPAREN
+  | LPAREN MOD module_expr RPAREN
       { mkexp (Pexp_pack $3) }
-  | LPAREN MODULE module_expr COLON package_type RPAREN
+  | LPAREN MOD module_expr COLON package_type RPAREN
       { mkexp (Pexp_constraint (ghexp (Pexp_pack $3),
                                 ghtyp (Ptyp_package $5))) }
-  | LPAREN MODULE module_expr COLON error
+  | LPAREN MOD module_expr COLON error
       { unclosed "(" 1 ")" 5 }
-  | mod_longident DOT LPAREN MODULE module_expr COLON package_type RPAREN
+  | mod_longident DOT LPAREN MOD module_expr COLON package_type RPAREN
       { mkexp(Pexp_open(Fresh, mkrhs $1 1,
         mkexp (Pexp_constraint (ghexp (Pexp_pack $5),
                                 ghtyp (Ptyp_package $7))))) }
-  | mod_longident DOT LPAREN MODULE module_expr COLON error
+  | mod_longident DOT LPAREN MOD module_expr COLON error
       { unclosed "(" 3 ")" 7 }
   | extension
       { mkexp (Pexp_extension $1) }
@@ -2318,12 +2318,12 @@ simple_pattern_not_ident:
       { unclosed "(" 1 ")" 5 }
   | LPAREN pattern COLON error
       { expecting 4 "type" }
-  | LPAREN MODULE UIDENT RPAREN
+  | LPAREN MOD UIDENT RPAREN
       { mkpat(Ppat_unpack (mkrhs $3 3)) }
-  | LPAREN MODULE UIDENT COLON package_type RPAREN
+  | LPAREN MOD UIDENT COLON package_type RPAREN
       { mkpat(Ppat_constraint(mkpat(Ppat_unpack (mkrhs $3 3)),
                               ghtyp(Ptyp_package $5))) }
-  | LPAREN MODULE UIDENT COLON package_type error
+  | LPAREN MOD UIDENT COLON package_type error
       { unclosed "(" 1 ")" 6 }
   | extension
       { mkpat(Ppat_extension $1) }
@@ -2596,9 +2596,9 @@ with_constraint:
              ~manifest:$5
              ~loc:(symbol_rloc()))
     }
-  | MODULE mod_longident EQUAL mod_ext_longident
+  | MOD mod_longident EQUAL mod_ext_longident
       { Pwith_module (mkrhs $2 2, mkrhs $4 4) }
-  | MODULE UIDENT COLONEQUAL mod_ext_longident
+  | MOD UIDENT COLONEQUAL mod_ext_longident
       { Pwith_modsubst (mkrhs $2 2, mkrhs $4 4) }
 ;
 with_type_binder:
@@ -2842,7 +2842,7 @@ non_arrowed_simple_core_type:
       { mktyp(Ptyp_variant(List.rev $3, Closed, Some [])) }
   | LBRACKETLESS opt_bar row_field_list GREATER name_tag_list RBRACKET
       { mktyp(Ptyp_variant(List.rev $3, Closed, Some (List.rev $5))) }
-  | LPAREN MODULE package_type RPAREN
+  | LPAREN MOD package_type RPAREN
       { mktyp(Ptyp_package $3) }
   | extension
       { mktyp (Ptyp_extension $1) }
@@ -2942,7 +2942,7 @@ val_ident:
   | LPAREN operator RPAREN                      { $2 }
   | LPAREN operator error                       { unclosed "(" 1 ")" 3 }
   | LPAREN error                                { expecting 2 "operator" }
-  | LPAREN MODULE error                         { expecting 3 "module-expr" }
+  | LPAREN MOD error                         { expecting 3 "module-expr" }
 ;
 operator:
     PREFIXOP                                    { $1 }
@@ -3130,7 +3130,7 @@ single_attr_id:
   | LET { "let" }
   | SWITCH { "match" }
   | METHOD { "method" }
-  | MODULE { "module" }
+  | MOD { "mod" }
   | MUTABLE { "mutable" }
   | NEW { "new" }
   | OBJECT { "object" }
@@ -3197,5 +3197,3 @@ payload:
 
 
 %%
-
-

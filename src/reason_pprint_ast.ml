@@ -1854,12 +1854,12 @@ class printer  ()= object(self:'self)
             match cstrs with
               | [] ->
                 makeList ~wrap:("(", ")") [
-                  (makeList ~postSpace:true [atom "module"; self#longident_loc lid])
+                  (makeList ~postSpace:true [atom "mod"; self#longident_loc lid])
                 ]
               | _ ->
                 makeList ~wrap:("(", ")") [
                   label ~space:true
-                    (makeList ~postSpace:true [atom "module"; self#longident_loc lid])
+                    (makeList ~postSpace:true [atom "mod"; self#longident_loc lid])
                     (makeList
                       ~break:IfNeed
                       ~sep:" and"
@@ -2054,7 +2054,7 @@ class printer  ()= object(self:'self)
         | Ppat_array l ->
             makeList ~wrap:("[|", "|]") ~break:IfNeed ~postSpace:true ~sep:"," (List.map self#pattern1 l)
         | Ppat_unpack (s) ->
-            makeList ~wrap:("(", ")") ~break:IfNeed ~postSpace:true [atom "module"; atom s.txt]
+            makeList ~wrap:("(", ")") ~break:IfNeed ~postSpace:true [atom "mod"; atom s.txt]
         | Ppat_type li ->
             makeList [atom "#"; self#longident_loc li]
         | Ppat_record (l, closed) ->
@@ -2973,7 +2973,7 @@ class printer  ()= object(self:'self)
            ) in
            openSourceMapped::(self#letList e)
       | Pexp_letmodule (s, me, e) ->
-          let prefixText = "let module" in
+          let prefixText = "mod" in
           let bindingName = atom s.txt in
           let moduleExpr = me in
           let letModuleLayout =
@@ -3362,7 +3362,7 @@ class printer  ()= object(self:'self)
               ~postSpace:true
               ~wrap:("(", ")")
               ~inline:(true, true)
-              [atom "module"; self#module_expr me;]
+              [atom "mod"; self#module_expr me;]
 
         | Pexp_tuple l ->
             (* TODO: These may be simple, non-simple, or type constrained
@@ -3535,14 +3535,14 @@ class printer  ()= object(self:'self)
         | Psig_module {pmd_name; pmd_type={pmty_desc=Pmty_alias alias}} ->
             label ~space:true
               (makeList ~postSpace:true [
-                 atom "let module";
+                 atom "mod";
                  atom pmd_name.txt;
                  atom "="
                ])
               (self#longident_loc alias)
         | Psig_module pmd ->
             self#formatSimpleSignatureBinding
-              "let module"
+              "mod"
               (atom pmd.pmd_name.txt)
               (self#module_type pmd.pmd_type);
         | Psig_open od ->
@@ -3555,10 +3555,10 @@ class printer  ()= object(self:'self)
               (self#module_type incl.pincl_mod)
         | Psig_modtype {pmtd_name=s; pmtd_type=md} -> (
             match md with
-              | None -> makeList ~postSpace:true [atom "module type"; atom s.txt]
+              | None -> makeList ~postSpace:true [atom "mod type"; atom s.txt]
               | Some mt ->
                   label ~space:true
-                    (makeList ~postSpace:true [atom "module type"; atom s.txt; atom "="])
+                    (makeList ~postSpace:true [atom "mod type"; atom s.txt; atom "="])
                     (self#module_type mt)
           )
         | Psig_class_type l -> (*FIXME*)
@@ -3567,7 +3567,7 @@ class printer  ()= object(self:'self)
         | Psig_recmodule decls ->
             let first xx =
               self#formatSimpleSignatureBinding
-                "let module rec"
+                "mod rec"
                 (atom xx.pmd_name.txt)
                 (self#module_type xx.pmd_type)
             in
@@ -3591,10 +3591,10 @@ class printer  ()= object(self:'self)
   method non_arrowed_module_type x =
     match x.pmty_desc with
       | Pmty_alias li ->
-          formatPrecedence (label ~space:true (atom "module") (self#longident_loc li))
+          formatPrecedence (label ~space:true (atom "mod") (self#longident_loc li))
       | Pmty_typeof me ->
           label ~space:true
-            (atom "module type of")
+            (atom "mod type of")
             (self#module_expr me)
       | _ -> self#simple_module_type x
 
@@ -3639,7 +3639,7 @@ class printer  ()= object(self:'self)
        * arrowed" *)
       | Pmty_with (mt, l) ->
           let modSub atm li2 token = makeList ~postSpace:true [
-            atom "module";
+            atom "mod";
             atm;
             atom token;
             self#longident_loc li2
@@ -3802,7 +3802,7 @@ class printer  ()= object(self:'self)
         | Pstr_typext te -> (self#type_extension te)
         | Pstr_exception ed -> (self#exception_declaration ed)
         | Pstr_module x ->
-            let prefixText = "let module" in
+            let prefixText = "mod" in
             let bindingName = atom x.pmb_name.txt in
             let moduleExpr = x.pmb_expr in
             self#let_module_binding prefixText bindingName moduleExpr
@@ -3814,10 +3814,10 @@ class printer  ()= object(self:'self)
         )
         | Pstr_modtype {pmtd_name=s; pmtd_type=md} -> (
             match md with
-              | None -> makeList ~postSpace:true [atom "module type";atom s.txt]
+              | None -> makeList ~postSpace:true [atom "mod type";atom s.txt]
               | Some mt ->
                   label ~space:true
-                    (makeList ~postSpace:true [atom "module type";atom s.txt; atom "="])
+                    (makeList ~postSpace:true [atom "mod type";atom s.txt; atom "="])
                     (self#module_type mt)
           )
         | Pstr_class l ->
@@ -3874,7 +3874,7 @@ class printer  ()= object(self:'self)
 
         | Pstr_recmodule decls -> (* 3.07 *)
             let first xx =
-              let prefixText = "let module rec" in
+              let prefixText = "mod rec" in
               self#let_module_binding prefixText (atom xx.pmb_name.txt) xx.pmb_expr in
             let notFirst xx =
               let prefixText = "and" in
