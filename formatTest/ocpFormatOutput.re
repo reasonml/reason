@@ -43,7 +43,7 @@ type x = /* A */ | Foo /* B */ | Bar;
 /* D */
 let x = 3;
 
-let module M = {
+mod M = {
   /* M1 */
   let x = a;
   /* M2 */
@@ -74,7 +74,7 @@ f x /* bla */ y /* bla */ z;
 
 /* ending comments */exception IOError of int exn;
 
-module type S =
+mod type S =
   S with type map 'a 'b 'c := t 'a 'b 'c;
 
 {
@@ -124,7 +124,7 @@ let blit_string_bigstring
 
 let f = test bla Int32.to_string pack_signed_32;
 
-let module S:
+mod S:
   S1 with type t = S1.t with
     type comparator = S.comparator = {};
 
@@ -155,9 +155,7 @@ let () =
 /*   : t */
 /*  */
 {
-  let module M = (
-    val (m: (module S with type t =t'))
-  );
+  mod M = (val (m: (mod S with type t =t')));
   x
 };
 
@@ -169,12 +167,12 @@ type t2 = [ | `a | `b];
 
 type t = private | A | B;
 
-let module Make: S with type t = t' = {
+mod Make: S with type t = t' = {
   type contents = C.t;
 };
 
-let module Map_and_set_binable = {
-  let module C: S with type t = t = X;
+mod Map_and_set_binable = {
+  mod C: S with type t = t = X;
 };
 
 /* val v */
@@ -184,7 +182,7 @@ type compare =
 
 {Parts.sign: sign, hr};
 
-let module M (A: A) :{let bla: bla;} => {};
+mod M (A: A) :{let bla: bla;} => {};
 
 let marshal_blit:
   flags::list Marshal.extern_flags? => 
@@ -209,7 +207,7 @@ switch a {
   | A b when b => c
 };
 
-let module S:
+mod S:
   S1 with type t = S1.t with
     type comparator = S.comparator = {};
 
@@ -279,12 +277,12 @@ let create
       message=(Pid.to_string (Unix.getpid ())) 
     close_on_exec::close_on_exec=true => xx;
 
-let module Make_using_comparator 
-           (Elt: Comparator.S) 
-           :(
-              S with type Elt.t = Elt.t with
-                type Elt.comparator = Elt.comparator
-            ) => {};
+mod Make_using_comparator 
+    (Elt: Comparator.S) 
+    :(
+       S with type Elt.t = Elt.t with
+         type Elt.comparator = Elt.comparator
+     ) => {};
 
 find_thread_count (
   In_channel.read_lines (
@@ -521,24 +519,21 @@ type t +=
   | B;
 
 /* Inside modules :  same pb */
-let module P = {
-  type t = ..;
-  type t +=
+mod P = {type t = ..;type t +=
   | A
-  | B;
-};
+  | B;};
 
-let module Q = {type P.t +=
+mod Q = {type P.t +=
   | C
   | D;};
 
 /* another one */
-let module Q' = {type P.t +=
+mod Q' = {type P.t +=
   | C = P.A
   | D;};
 
 /* also */
-let module M = {
+mod M = {
   type t = ..;
   let a = 1;
   let b = 2;
@@ -652,7 +647,7 @@ fun | _ when x = 2 && y = 3 =>
         if (a = b || b = c && c = d) {
           ()
         };
-let module M:
+mod M:
   S with type a = b and type c = d and type e = f = {};
 let all_equal = a = b && c = d && e = f;
 
@@ -1024,12 +1019,12 @@ non-comments in verbatim sections
 duh
 
 v} */
-let module M = {
+mod M = {
   let x = 0;
 };
 
 /* reference */
-let module M = {
+mod M = {
   let () = ();
 };
 
@@ -1037,12 +1032,12 @@ let module M = {
        block-level indentation, even if it doesn't precede a declaration?  As
        long as the prior declaration is complete, I mean.  If there isn't a
        blank line, I can see associating the comment with the line before. */
-let module M = {
+mod M = {
   let () = ();
 };
 
 /* sim. */
-let module M = {
+mod M = {
   let () = ();
   /* no problem */
   let () = ();
@@ -1060,7 +1055,7 @@ let module M = {
 /*  */
 /* (* The only difference is the type "a b" instead of "a" for the labeled value *)
 (*    bar_snoo. *) */
-let module M: {let v: t 'a => s => t 'a;} =
+mod M: {let v: t 'a => s => t 'a;} =
   /* ... */
   {};
 type foo = int;
@@ -1206,9 +1201,9 @@ let f = {
   f |> m (fun f x => y);
   z
 };
-let module M = Foo G H;
+mod M = Foo G H;
 
-let module M =
+mod M =
   Foo
     G 
     {
@@ -1218,7 +1213,7 @@ let module M =
 
 /* To me, this looks fine as it is.  The rule seems fine as "indent arguments by
    2".  To illustrate, with a case where the functor name is longer: */
-let module M = Functor G H I;
+mod M = Functor G H I;
 
 include
   Foo
@@ -1275,7 +1270,7 @@ include
     } 
     Stable.Cr_soons_or_pending.V1;
 
-let module M =
+mod M =
   Foo
     {
       let x = ();
@@ -1284,19 +1279,19 @@ let module M =
       let y = ();
     };
 
-let module M: S = Make M;
+mod M: S = Make M;
 
-let module M: S with type t := int = Make M;
+mod M: S with type t := int = Make M;
 
-let module Simple_command (Arg: {}) => {};
+mod Simple_command (Arg: {}) => {};
 
-let module Simple_command (Arg: {}) => {};
+mod Simple_command (Arg: {}) => {};
 
-let module Simple_command (Arg: {}) => {};
+mod Simple_command (Arg: {}) => {};
 
-let module Simple_command (Arg: {}) => {};
+mod Simple_command (Arg: {}) => {};
 
-let module Simple_command (Arg: {}) => {};
+mod Simple_command (Arg: {}) => {};
 /* Get C.t and (r : S.t -> T.t) indented two chars right of their labels. */
 type t =
   A.t => 
@@ -1339,8 +1334,8 @@ let foo arguments => bar;
 let foo arguments => bar;
 
 /* This program parses, but the [let] is indented incorrectly. */
-let module M = {
-  let module M: module type of M = {
+mod M = {
+  mod M: mod type of M = {
     let x = ();
   };
 };
@@ -1652,7 +1647,7 @@ x;
    to the enclosing "()", by two spaces.  In a sense, this happens first, and
    then the first argument is aligned accordingly.  So, there's no manual
    indentation or spacing below. */
-module type SIG = {
+mod type SIG = {
   let instances:
     unit => 
     Command.Spec.t
@@ -1762,52 +1757,49 @@ let reset_cond =
     | _ => (fun s v clk => false)
   };
 
-/* … */let module M (S: S) => F.Make {
-  let module G = {
+/* … */mod M (S: S) => F.Make {
+  mod G = {
     type t;
     include (Foo: Foo with type t := t);
     include (Bar: Bar with type t := t);
   };
 };
 
-let module M = {type t;};
+mod M = {type t;};
 
-let module Update: {
+mod Update: {
   let f: t 'a 'b => 'a => unit; 
   let g: t 'a 'b => 'a => unit; 
-  let module M: C with type k = t; 
-  let module G: C with type k := f; 
+  mod M: C with type k = t; 
+  mod G: C with type k := f; 
   type t;
 } = {
   type t = int;
 };
 
-let module M:
+mod M:
   S with
     type t = x and type t' = y and type t' = y = {
   type t = int;
 };
 
-let module M:
+mod M:
   S with
     type t = x and type t' = y and type t' = y = {
   type t = int;
 };
 
-let module Make:
+mod Make:
   (M: T) => 
   {let f: int => int; let g: int => int;} =
   functor () => {};
 
-let module Store 
-           (K: API.KEY) 
-           (V: API.VALUE) 
-           :(
-              API.STORE with
-                module K = K and module V = V
-            ) => {};
+mod Store 
+    (K: API.KEY) 
+    (V: API.VALUE) 
+    :(API.STORE with mod K = K and mod V = V) => {};
 
-let module K = K;
+mod K = K;
 /* multiline-comments
      can be troublesome:
       let x =
@@ -1837,7 +1829,7 @@ type tt = [
   | `problem_cause of [ | `more_brackets] 
   | `problematic_case of string
 ];
-let module M = {
+mod M = {
   let a = ();
   let a = ff (ff (ff (ff (ff (ff ())))));
   let a = [[[[[[]]]]]];
@@ -1924,17 +1916,14 @@ class type my_class_type =
 /** The comment for variable x. */
 /** The commend for method m. */
 /** The comment for module Foo */
-let module Foo: {
-  /** The comment for x */ 
-  let x: int;
-};
+mod Foo: {/** The comment for x */ let x: int;};
 /** A special comment that is kept but not associated to any element */
 /** The comment for module type my_module_type. */
-module type my_module_type = {
+mod type my_module_type = {
   /** The comment for value x. */ 
   let x: int; 
   /** The comment for module M. */ 
-  let module M: {
+  mod M: {
     /** The comment for value y. */ 
     let y: int;
   };
@@ -1962,13 +1951,10 @@ class type my_class_type =
 /** The comment for the instance variable x. */
 /** The commend for method m. */
 /** The comment for module Foo */
-let module Foo: {
-  /** The comment for x */ 
-  let x: int;
-};
+mod Foo: {/** The comment for x */ let x: int;};
 /** A special comment in the class, but not associated to any element. */
 /** The comment for module type my_module_type. */
-module type my_module_type = {
+mod type my_module_type = {
   /* Comment for value x. */ 
   let x: int;
 };
@@ -2218,7 +2204,7 @@ switch a {
 };
 
 let x = ({kind: x}, {LibIndex.kind: x});
-let module M = {
+mod M = {
   let () = ();
   let f x => 3;
   let () = ();
@@ -2513,7 +2499,7 @@ open TraverseInterface;
 /*   val foldmap : ('acc -> 'expr -> 'acc * 'expr) -> 'acc -> 'code_elt -> 'acc * 'code_elt  */
 /* end */
 /** Some Extensions */
-let module Utils: {
+mod Utils: {
   /** A generalisation of the type needed in S
       ('a, 'at, 'bt ,'b) sub
       'a may be expressions where identifiers are strings
@@ -2575,7 +2561,7 @@ let module Utils: {
 };
 /* HACK: tmp until we merge it into TRAVERSE_CORE for TraverseInterface,
    and rename it into TRAVERSE */
-module type OLD_TRAVERSE = {
+mod type OLD_TRAVERSE = {
   type t 'pconstraint 'p = (_, _, _); 
   let traverse_iter:
     ((t 'p => unit) => t 'p => unit) => 
@@ -2748,10 +2734,10 @@ module type OLD_TRAVERSE = {
 };
 /** {6 First implementation} */
 /** Functor giving you the usual traverse functions */
-let module Make:
+mod Make:
   (X: S) => OLD_TRAVERSE with type t 'a = X.t 'a;
 /** Functor for map2, fold2, etc. */
-let module MakePair:
+mod MakePair:
   (Fst: S) => 
   (Snd: S) => 
   OLD_TRAVERSE with
@@ -2759,7 +2745,7 @@ let module MakePair:
 /** {6 Second implementation} */
 /** For the second version (S2), you may do not want to write the optimised version of fold, map, iter
     in this case you can use this unoptimzed constructors, to get them from the foldmap_children function */
-let module Unoptimized: {
+mod Unoptimized: {
   /** Simple recursion */ 
   type foldmap 'acc 't 't2 =
     ('acc => 't => ('acc, 't)) => 
@@ -2810,12 +2796,12 @@ let module Unoptimized: {
     'acc;
 };
 open TraverseInterface;
-let module Make2:
+mod Make2:
   (X: S2) => 
   TRAVERSE with
     type t 'a = X.t 'a and 
     type container 'a = X.t 'a;
-let module MakeLift1:
+mod MakeLift1:
   (Y: LIFT2) => 
   (X:
      TRAVERSE with
@@ -2824,7 +2810,7 @@ let module MakeLift1:
   TRAVERSE with
     type t 'a = X.t 'a and 
     type container 'a = Y.container 'a;
-let module MakeLift2:
+mod MakeLift2:
   (Y: LIFT2) => 
   (X: TRAVERSE with type container 'a = Y.t 'a) => 
   TRAVERSE with
@@ -2833,14 +2819,14 @@ let module MakeLift2:
 /* From there, you can build Box of Boxes with MakeBox */
 /* for example, for rewriting rules on a tuple of code, etc...*/
 /** {6 Mutual Recursive Trees} */
-let module MakeAB:
+mod MakeAB:
   (AB: AB) => 
   TRAVERSE_AB with
     type tA 'a = AB.tA 'a and 
     type tB 'a = AB.tB 'a;type a = | A
 and b = int;
 
-let module M = {
+mod M = {
   type s = t
   and t = {foo: s};
 };
@@ -2930,7 +2916,7 @@ type t = [ | `a | `b | `c];
 
 type t = [ | `a | `b | `c];
 
-module type M = {
+mod type M = {
   type t = t0
   and t'
   and t'' = t; 
@@ -2954,12 +2940,12 @@ let f =
 
 /* local modules */
 let f = {
-  let module M = F {};
+  mod M = F {};
   M.f x
 };
 
 /* recursive modules */
-let module rec M: S = {}
+mod rec M: S = {}
 and M1: S1 = {};
 
 /* private types */
@@ -2970,7 +2956,7 @@ type t = private {f1: t1, f2: t2};
 type t = private t';
 
 /* local opens */
-let module Res = F X;
+mod Res = F X;
 
 {
   let open Res;
@@ -2993,13 +2979,13 @@ let f (type t) (x: t) => ();
 let f (type t) (x: t) => ();
 
 /* first-class modules */
-type m = ((module M.Sig with type t ='b), unit);
+type m = ((mod M.Sig with type t ='b), unit);
 
 /* module type of */
-module type S = {include module type of M;};
+mod type S = {include mod type of M;};
 
 /* signature substitution */
-module type S = {
+mod type S = {
   include M0 with type t := t; 
   let x: unit;
 };
@@ -3013,45 +2999,45 @@ type t _ =
 /** ocaml module expressions
     (http://caml.inria.fr/pub/docs/manual-ocaml/manual019.html)
 */
-let module M = {};
+mod M = {};
 
-let module M = {};
+mod M = {};
 
-let module M (M1: T1) (M2: T2) => {};
+mod M (M1: T1) (M2: T2) => {};
 
-let module M (M1: T1) (M2: T2) => {};
+mod M (M1: T1) (M2: T2) => {};
 
-let module M (M1: T1) (M2: T2) => {};
+mod M (M1: T1) (M2: T2) => {};
 
-let module M (M1: T1) (M2: T2) => {};
+mod M (M1: T1) (M2: T2) => {};
 
-let module M = F X Y;
+mod M = F X Y;
 
-let module M: {} = {};
+mod M: {} = {};
 
-let module M: Sig = {};
+mod M: Sig = {};
 
-let module M (X1: T1) (X2: T2) => {};
+mod M (X1: T1) (X2: T2) => {};
 /** ocaml module types
     (http://caml.inria.fr/pub/docs/manual-ocaml/manual018.html)
 */
-module type T = M.T;
+mod type T = M.T;
 
-module type T = {};
+mod type T = {};
 
-module type T = {};
+mod type T = {};
 
-module type T = (M: T) => (M1: T1) => {};
+mod type T = (M: T) => (M1: T1) => {};
 
-module type T =
+mod type T =
   {} with
     type t 'a = 'b and 
-    module M = M'.MF(X) and 
+    mod M = M'.MF(X) and 
     type t' = t'';
 
-module type T = {};
+mod type T = {};
 
-module type T = {
+mod type T = {
   let v: t; 
   external x: 'a="stub"; 
   type t = int
@@ -3061,10 +3047,10 @@ module type T = {
 and cl2 : object  end; 
   class type clt = object  end
 and ['a] clt2 = object  end; 
-  let module M: Sig; 
-  let module M: (X: X) => (Y: Y) => Sig; 
-  module type Sig; 
-  module type Sig1 = {}; 
+  mod M: Sig; 
+  mod M: (X: X) => (Y: Y) => Sig; 
+  mod type Sig; 
+  mod type Sig1 = {}; 
   open M; 
   include M;
 };
@@ -3137,7 +3123,7 @@ exception E' = E;
 /** ocaml type expressions
     (http://caml.inria.fr/pub/docs/manual-ocaml/types.html)
 */
-module type MySig = {
+mod type MySig = {
   /* variables */ 
   let a: 'ident; 
   let a: _; 

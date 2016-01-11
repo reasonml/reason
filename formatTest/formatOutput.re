@@ -830,7 +830,7 @@ type intListTranformer = list int => list int;
 
 type x = list (int, string);
 
-let module HoldsAType = {
+mod HoldsAType = {
   type hasPrime 'a 'b 'c =
     Hashtbl.t (list 'a) (list 'b);
 };
@@ -926,7 +926,7 @@ let certainlyRequiresWrapping:
  * values. Modules, on the other hand do allow fields to reference other
  * fields. Appropriately, each field is introduced via the keyword `let`.
  */
-let module MyFirstModule = {
+mod MyFirstModule = {
   let x = 0;
   let y = x + x;
 };
@@ -934,7 +934,7 @@ let module MyFirstModule = {
 let result = MyFirstModule.x + MyFirstModule.y;
 
 /**
- * - A module is introduced with the `let module` phrase.
+ * - A module is introduced with the `mod` phrase.
  * - A module *must* have a capital letter as its first character.
  * - The exported fields of a module must be listed within `{}` braces and each
  * exported value binding is specified via a `let` keyword.
@@ -943,7 +943,7 @@ let result = MyFirstModule.x + MyFirstModule.y;
  * Another way that modules are more powerful than records, is that they may
  * also export types.
  */
-let module MySecondModule = {
+mod MySecondModule = {
   type someType = int;
   let x = 0;
   let y = x + x;
@@ -958,7 +958,7 @@ let myInt: MySecondModule.someType = 100;
  * "signatures". For example, `MySecondModule` has the following `module type`
  * signature:
  */
-module type MySecondModuleType = {
+mod type MySecondModuleType = {
   type someType = int; 
   let x: int; 
   let y: int;
@@ -974,7 +974,7 @@ module type MySecondModuleType = {
  * written code that matches your understanding. For example, `MySecondModule`
  * could have been written as:
 
- let module MySecondModule: MySecondModuleType = {
+ mod MySecondModule: MySecondModuleType = {
  type someType = int;
  let x = 0;
  let y = x + x;
@@ -995,12 +995,12 @@ module type MySecondModuleType = {
  * language.
  */
 let opensAModuleLocally = {
-  let module MyLocalModule = {
+  mod MyLocalModule = {
     type i = int;
     let x: i = 10;
   };
   /* Notice how local modules names may be used twice and are shadowed */
-  let module MyLocalModule: MySecondModuleType = {
+  mod MyLocalModule: MySecondModuleType = {
     type someType = int;
     let x: someType = 10;
     let y: someType = 20;
@@ -1009,53 +1009,51 @@ let opensAModuleLocally = {
   tmp + 30
 };
 
-module type HasTT = {type tt;};
+mod type HasTT = {type tt;};
 
-let module SubModule: HasTT = {type tt = int;};
+mod SubModule: HasTT = {type tt = int;};
 
-module type HasEmbeddedHasTT = {
-  let module SubModuleThatHasTT = SubModule;
+mod type HasEmbeddedHasTT = {
+  mod SubModuleThatHasTT = SubModule;
 };
 
-module type HasPolyType = {type t 'a;};
+mod type HasPolyType = {type t 'a;};
 
-module type HasDestructivelySubstitutedPolyType =
+mod type HasDestructivelySubstitutedPolyType =
   HasPolyType with type t 'a := list 'a;
 
-module type HasDestructivelySubstitutedSubPolyModule = {
+mod type HasDestructivelySubstitutedSubPolyModule = {
   /* Cannot perform destructive substitution on submodules! */ 
   /* module X: HasPolyType with type t := list (int, int); */ 
-  let module X:
-    HasDestructivelySubstitutedPolyType;
+  mod X: HasDestructivelySubstitutedPolyType;
 };
 
-module type HasSubPolyModule = {
+mod type HasSubPolyModule = {
   /* Cannot perform destructive substitution on submodules! */ 
   /* module X: HasPolyType with type t := list (int, int); */ 
-  let module X: HasPolyType;
+  mod X: HasPolyType;
 };
 
-let module EmbedsSubPolyModule: HasSubPolyModule = {
-  let module X = {type t 'a = list 'a;};
+mod EmbedsSubPolyModule: HasSubPolyModule = {
+  mod X = {type t 'a = list 'a;};
 };
 
-let module
-  EmbedsDestructivelySubstitutedPolyModule:
+mod EmbedsDestructivelySubstitutedPolyModule:
   HasDestructivelySubstitutedSubPolyModule = {
-  let module X = {type t = list (int, int);};
+  mod X = {type t = list (int, int);};
 };
 
-module type HasMultiPolyType = {
+mod type HasMultiPolyType = {
   type substituteThis 'a 'b; 
   type substituteThat 'a 'b;
 };
 
-module type HasDestructivelySubstitutedMultiPolyType =
+mod type HasDestructivelySubstitutedMultiPolyType =
   HasMultiPolyType with
     type substituteThis 'a 'b := Hashtbl.t 'a 'b and 
     type substituteThat 'a 'b := Hashtbl.t 'a 'b;
 
-let module InliningSig: {let x: int; let y: int;} = {
+mod InliningSig: {let x: int; let y: int;} = {
   /*
    * Comment inside of signature.
    */
@@ -1064,7 +1062,7 @@ let module InliningSig: {let x: int; let y: int;} = {
   let y = 20;
 };
 
-let module MyFunctor (M: HasTT) => {
+mod MyFunctor (M: HasTT) => {
   type reexportedTT = M.tt;
   /* Inline comment inside module. */
   /** Following special comment inside module. */
@@ -1078,36 +1076,36 @@ let module MyFunctor (M: HasTT) => {
    bottom of this file. [Actually, forgiving the trailing SEMI might not be
    such a great idea].
    */
-let module MyFunctorResult = MyFunctor {
+mod MyFunctorResult = MyFunctor {
   type tt = string;
 };
 
-let module LookNoParensNeeded = MyFunctor {
+mod LookNoParensNeeded = MyFunctor {
   type tt = string;
 };
 
-module type SigResult = {let result: int;};
+mod type SigResult = {let result: int;};
 
-module type ASig = {let a: int;};
+mod type ASig = {let a: int;};
 
-module type BSig = {let b: int;};
+mod type BSig = {let b: int;};
 
-let module AMod = {
+mod AMod = {
   let a = 10;
 };
 
-let module BMod = {
+mod BMod = {
   let b = 10;
 };
 
-let module CurriedSugar (A: ASig) (B: BSig) => {
+mod CurriedSugar (A: ASig) (B: BSig) => {
   let result = A.a + B.b;
 };
 
 /* Right now [CurriedSuperSugar] is parsed as being indistinguishable from
    the above.
 
-   let module CurriedSuperSugar (A:ASig) (B:BSig): SigResult => ({
+   mod CurriedSuperSugar (A:ASig) (B:BSig): SigResult => ({
    let result = A.a + B.b;
    }: SigResult);
 
@@ -1116,46 +1114,46 @@ let module CurriedSugar (A: ASig) (B: BSig) => {
 
    /* Not supported in OCaml OR SugarML */
    let x = (a:foo) :bar => baz;
-   module x = functor (A:Foo) :Bar => Baz;
+   mod x = functor (A:Foo) :Bar => Baz;
 
    /* Supported in both OCaml and SugarML */
    let x (a:foo) :bar => baz;
-   module x (A:Foo) :Bar => Baz;
+   mod x (A:Foo) :Bar => Baz;
 
    */
-let module CurriedSugarWithReturnType 
-           (A: ASig) 
-           (B: BSig) 
-           :SigResult => {
+mod CurriedSugarWithReturnType 
+    (A: ASig) 
+    (B: BSig) 
+    :SigResult => {
   let result = A.a + B.b;
 };
 
 /* This is parsed as being equivalent to the above example */
-let module CurriedSugarWithAnnotatedReturnVal 
-           (A: ASig) 
-           (B: BSig) 
-           :SigResult => {
+mod CurriedSugarWithAnnotatedReturnVal 
+    (A: ASig) 
+    (B: BSig) 
+    :SigResult => {
   let result = A.a + B.b;
 };
 
-let module CurriedNoSugar (A: ASig) (B: BSig) => {
+mod CurriedNoSugar (A: ASig) (B: BSig) => {
   let result = A.a + B.b;
 };
 
 let letsTryThatSyntaxInLocalModuleBindings () => {
-  let module CurriedSugarWithReturnType 
-             (A: ASig) 
-             (B: BSig) 
-             :SigResult => {
+  mod CurriedSugarWithReturnType 
+      (A: ASig) 
+      (B: BSig) 
+      :SigResult => {
     let result = A.a + B.b;
   };
-  let module CurriedSugarWithAnnotatedReturnVal 
-             (A: ASig) 
-             (B: BSig) 
-             :SigResult => {
+  mod CurriedSugarWithAnnotatedReturnVal 
+      (A: ASig) 
+      (B: BSig) 
+      :SigResult => {
     let result = A.a + B.b;
   };
-  let module CurriedNoSugar (A: ASig) (B: BSig) => {
+  mod CurriedNoSugar (A: ASig) (B: BSig) => {
     let result = A.a + B.b;
   };
   /*
@@ -1163,29 +1161,28 @@ let letsTryThatSyntaxInLocalModuleBindings () => {
    * parsed!
    *
    * let thisDoesntWorkInOCaml () =
-   * let module LocalModule(A:sig end) = struct let x = 10 end in
-   * let module Out = (LocalModule (struct end)) in
+   * mod LocalModule(A:sig end) = struct let x = 10 end in
+   * mod Out = (LocalModule (struct end)) in
    * let outVal = (LocalModule (struct end)).x in
    * let res = Out.x in
    * res;;
    */
-  let module TempModule =
-    CurriedNoSugar AMod BMod;
-  let module TempModule2 =
+  mod TempModule = CurriedNoSugar AMod BMod;
+  mod TempModule2 =
     CurriedSugarWithAnnotatedReturnVal AMod BMod;
   TempModule.result + TempModule2.result
 };
 
-module type EmptySig = {};
+mod type EmptySig = {};
 
-let module MakeAModule (X: EmptySig) => {
+mod MakeAModule (X: EmptySig) => {
   let a = 10;
 };
 
-let module CurriedSugarFunctorResult =
+mod CurriedSugarFunctorResult =
   CurriedSugar AMod BMod;
 
-let module CurriedSugarFunctorResultInline =
+mod CurriedSugarFunctorResultInline =
   CurriedSugar
     {
       let a = 10;
@@ -1194,10 +1191,10 @@ let module CurriedSugarFunctorResultInline =
       let b = 10;
     };
 
-let module CurriedNoSugarFunctorResult =
+mod CurriedNoSugarFunctorResult =
   CurriedNoSugar AMod BMod;
 
-let module CurriedNoSugarFunctorResultInline =
+mod CurriedNoSugarFunctorResultInline =
   CurriedNoSugar
     {
       let a = 10;
@@ -1206,23 +1203,21 @@ let module CurriedNoSugarFunctorResultInline =
       let b = 10;
     };
 
-let module ResultFromNonSimpleFunctorArg =
+mod ResultFromNonSimpleFunctorArg =
   CurriedNoSugar (MakeAModule {}) BMod;
 
 /* TODO: Functor type signatures should more resemble value signatures */
 let curriedFunc: int => int => int =
   fun a b => a + b;
 
-module type FunctorType =
-  ASig => BSig => SigResult;
+mod type FunctorType = ASig => BSig => SigResult;
 
 /* Which is sugar for:*/
-module type FunctorType2 =
-  ASig => BSig => SigResult;
+mod type FunctorType2 = ASig => BSig => SigResult;
 
 /* Just for compability with existing OCaml ASTs you can put something other
 * than an underscore */
-module type FunctorType3 =
+mod type FunctorType3 =
   (Blah: ASig) => 
   (ThisIsIgnored: BSig) => 
   SigResult;
@@ -1230,14 +1225,14 @@ module type FunctorType3 =
 /* The actual functors themselves now have curried sugar (which the pretty
  * printer will enforce as well */
 /* The following: */
-let module CurriedSugarWithAnnotation2:
+mod CurriedSugarWithAnnotation2:
   ASig => BSig => SigResult =
   functor (A: ASig) (B: BSig) => {
     let result = A.a + B.b;
   };
 
 /* Becomes: */
-let module CurriedSugarWithAnnotation:
+mod CurriedSugarWithAnnotation:
   ASig => BSig => SigResult =
   functor (A: ASig) (B: BSig) => {
     let result = A.a + B.b;
@@ -1245,8 +1240,7 @@ let module CurriedSugarWithAnnotation:
 
 /* "functors" that are not in sugar curried form cannot annotate a return type
  * for now, so we settle for: */
-let module
-  CurriedSugarWithAnnotationAndReturnAnnotated:
+mod CurriedSugarWithAnnotationAndReturnAnnotated:
   ASig => BSig => SigResult =
   functor (A: ASig) (B: BSig) => (
     {
@@ -1255,25 +1249,25 @@ let module
       SigResult
   );
 
-let module ReturnsAFunctor 
-           (A: ASig) 
-           (B: BSig) 
-           :(ASig => BSig => SigResult) =>
+mod ReturnsAFunctor 
+    (A: ASig) 
+    (B: BSig) 
+    :(ASig => BSig => SigResult) =>
   functor (A: ASig) (B: BSig) => {
     let result = 10;
   };
 
-let module ReturnsSigResult 
-           (A: ASig) 
-           (B: BSig) 
-           :SigResult => {
+mod ReturnsSigResult 
+    (A: ASig) 
+    (B: BSig) 
+    :SigResult => {
   let result = 10;
 };
 
-let module ReturnsAFunctor2 
-           (A: ASig) 
-           (B: BSig) 
-           :(ASig => BSig => SigResult) =>
+mod ReturnsAFunctor2 
+    (A: ASig) 
+    (B: BSig) 
+    :(ASig => BSig => SigResult) =>
   functor (A: ASig) (B: BSig) => {
     let result = 10;
   };
@@ -1282,7 +1276,7 @@ let module ReturnsAFunctor2
  * Recursive modules.
  * TODO: Test [Psig_recmodule]
  */
-let module rec A: {
+mod rec A: {
   type t = | Leaf of string | Node of ASet.t; 
   let compare: t => t => int;
 } = {
@@ -1301,8 +1295,8 @@ and ASet: Set.S with type elt = A.t = Set.Make A;
 /*
  * How recursive modules appear in signatures.
  */
-module type HasRecursiveModules = {
-  let module rec A: {
+mod type HasRecursiveModules = {
+  mod rec A: {
     type t = | Leaf of string | Node of ASet.t; 
     let compare: t => t => int;
   }
@@ -1310,28 +1304,26 @@ module type HasRecursiveModules = {
 };
 
 /* From http://stackoverflow.com/questions/1986374/higher-order-type-constructors-and-functors-in-ocaml */
-module type Type = {type t;};
+mod type Type = {type t;};
 
-let module Char = {type t = char;};
+mod Char = {type t = char;};
 
-let module List (X: Type) => {type t = list X.t;};
+mod List (X: Type) => {type t = list X.t;};
 
-let module Maybe (X: Type) => {
-  type t = option X.t;
-};
+mod Maybe (X: Type) => {type t = option X.t;};
 
-let module Id (X: Type) => X;
+mod Id (X: Type) => X;
 
-let module Compose 
-           (F: Type => Type) 
-           (G: Type => Type) 
-           (X: Type) => F (
+mod Compose 
+    (F: Type => Type) 
+    (G: Type => Type) 
+    (X: Type) => F (
   G X
 );
 
 let l: Compose(List)(Maybe)(Char).t = [Some 'a'];
 
-let module Example2 (F: Type => Type) (X: Type) => {
+mod Example2 (F: Type => Type) (X: Type) => {
   let iso (a: Compose(Id)(F)(X).t) :F(X).t => a;
 };
 
@@ -1340,11 +1332,11 @@ Printf.printf
   CurriedNoSugarFunctorResultInline.result;
 
 /* We would have: */
-/* let module CurriedSugarWithAnnotation: ASig => BSig => SigResult =
+/* mod CurriedSugarWithAnnotation: ASig => BSig => SigResult =
  functor (A:ASig) (B:BSig) => {let result = A.a + B.b;;
  */
 /*
- let module Typeahead = React.Create {
+ mod Typeahead = React.Create {
  type props = {initialCount: int};
  type state = {count: int};
  let getInitialState props => {count: 10};
@@ -1361,36 +1353,35 @@ include YourLib.CreateComponent {
   let myValue = {recordField: "hello"};
 };
 
-module type HasInt = {let x: int;};
+mod type HasInt = {let x: int;};
 
-let module MyModule = {
+mod MyModule = {
   let x = 10;
 };
 
-let myFirstClass: (module HasInt) =
-  (module MyModule);
+let myFirstClass: (mod HasInt) = (mod MyModule);
 
-let myFirstClassWillBeFormattedAs: (module HasInt) =
-  (module MyModule);
-
-let acceptsAndUnpacksFirstClass 
-    ((module M): (module HasInt)) => M.x + M.x;
+let myFirstClassWillBeFormattedAs: (mod HasInt) =
+  (mod MyModule);
 
 let acceptsAndUnpacksFirstClass 
-    ((module M): (module HasInt)) => M.x + M.x;
+    ((mod M): (mod HasInt)) => M.x + M.x;
 
-let module SecondClass = (val myFirstClass);
+let acceptsAndUnpacksFirstClass 
+    ((mod M): (mod HasInt)) => M.x + M.x;
 
-let module SecondClass2 = (
-  val ((module MyModule): (module HasInt))
+mod SecondClass = (val myFirstClass);
+
+mod SecondClass2 = (
+  val ((mod MyModule): (mod HasInt))
 );
 
 let p = SecondClass.x;
 
 /* Opening Modules */
-let module M = {let module Inner = {};};
+mod M = {mod Inner = {};};
 
-let module N = {
+mod N = {
   open M;
   let z = {
     let open M;
@@ -1404,7 +1395,7 @@ open M;
 open M.Inner;
 
 open M;
-let module LocalModule = {
+mod LocalModule = {
   type accessedThroughModule =
     | AccessedThroughModule;
   type accessedThroughModuleWithArg =
@@ -4098,19 +4089,19 @@ let result =
     /* Comment before second argument expression */ 
     (1 + 2 + 3 + 3);
 
-module type ASig = {let a: int;};
+mod type ASig = {let a: int;};
 
-module type BSig = {let b: int;};
+mod type BSig = {let b: int;};
 
-let module AMod = {
+mod AMod = {
   let a = 10;
 };
 
-let module BMod = {
+mod BMod = {
   let b = 10;
 };
 
-let module CurriedSugar (A: ASig) (B: BSig) =>
+mod CurriedSugar (A: ASig) (B: BSig) =>
   /* Commenting before First curried functor arg */
   /* If these comments aren't formatted correctly
      * see how functor args' locations aren't set
@@ -4122,7 +4113,7 @@ let module CurriedSugar (A: ASig) (B: BSig) =>
   };
 
 /* Comment at bottom of module expression */
-let module CurriedSugarFunctorResult =
+mod CurriedSugarFunctorResult =
   /* Commenting before functor name*/
   CurriedSugar
     /* Commenting before functor arg 1 in app */ 
@@ -4130,7 +4121,7 @@ let module CurriedSugarFunctorResult =
     /* Commenting before functor arg 2 in app */ 
     BMod;
 
-let module CurriedSugarFunctorResultInline =
+mod CurriedSugarFunctorResultInline =
   /* Commenting before functor name*/
   CurriedSugar
     /* Commenting before functor arg 1 in app */ 
@@ -4758,7 +4749,7 @@ let blah a {blahBlah} => a;
 
 let blah a {blahBlah} => a;
 
-let module TryToExportTwice = {
+mod TryToExportTwice = {
   let myVal = "hello";
 };
 
@@ -5626,7 +5617,7 @@ let myFunc
     aaaa bbbb cccc dddd aaaa bbbb cccc dddd aaaa, 
   ...someType
 ];
-let module M = Something.Create {
+mod M = Something.Create {
   type resource1 = MyModule.MySubmodule.t;
   type resource2 = MyModule.MySubmodule.t;
 };
@@ -5905,6 +5896,6 @@ let result =
 let nested_match =
   fun | A (B | C | D | E) => 3;
 
-let module EM = {exception E of int int;};
+mod EM = {exception E of int int;};
 
 exception Ealias = EM.E;

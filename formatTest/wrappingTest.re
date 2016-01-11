@@ -1621,11 +1621,11 @@ let result =
     /* Comment before second argument expression */
     (1 + 2 + 3 + 3);
 
-module type ASig = {let a:int;};
-module type BSig = {let b:int;};
-let module AMod = {let a = 10;};
-let module BMod = {let b = 10;};
-let module CurriedSugar
+mod type ASig = {let a:int;};
+mod type BSig = {let b:int;};
+mod AMod = {let a = 10;};
+mod BMod = {let b = 10;};
+mod CurriedSugar
     /* Commenting before First curried functor arg */
     /* If these comments aren't formatted correctly
      * see how functor args' locations aren't set
@@ -1638,7 +1638,7 @@ let module CurriedSugar
   /* Comment at bottom of module expression */
 };
 
-let module CurriedSugarFunctorResult =
+mod CurriedSugarFunctorResult =
   /* Commenting before functor name*/
   CurriedSugar
     /* Commenting before functor arg 1 in app */
@@ -1646,7 +1646,7 @@ let module CurriedSugarFunctorResult =
     /* Commenting before functor arg 2 in app */
     BMod;
 
-let module CurriedSugarFunctorResultInline =
+mod CurriedSugarFunctorResultInline =
   /* Commenting before functor name*/
   CurriedSugar
     /* Commenting before functor arg 1 in app */
