@@ -94,7 +94,8 @@ Additionally, it will pass all package include paths to such a preprocessor.
 Debugging Yacc Grammar Conflicts:
 -------------------------
 Run the main parser through yacc with the `-v` flag to have it print out
-details about the conflict.  `ocamlyacc -v src/reason_parser.mly`.
+details about the conflict.  `ocamlyacc -v src/reason_parser.mly`. The debug 
+information can be found at `src/reason_parser.output`.
 
 Testing:
 ------------------
