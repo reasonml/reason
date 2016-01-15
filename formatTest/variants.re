@@ -1,4 +1,4 @@
-let module LocalModule = {
+mod LocalModule = {
   type accessedThroughModule = | AccessedThroughModule;
   type accessedThroughModuleWithArg =
     | AccessedThroughModuleWith of int | AccessedThroughModuleWithTwo of int int;

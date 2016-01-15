@@ -13,7 +13,7 @@ type intListTranformer = list int => list int;
 type x = list (int, string);
 
 
-let module HoldsAType = {
+mod HoldsAType = {
   type hasPrime 'a 'b 'c = Hashtbl.t (list 'a) (list 'b);
 };
 

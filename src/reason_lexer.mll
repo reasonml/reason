@@ -61,7 +61,7 @@ let keyword_table =
     "switch", SWITCH;
     "match", MATCH; (* Including MATCH for source transforming compat *)
     "method", METHOD;
-    "module", MODULE;
+    "mod", MOD;
     "mutable", MUTABLE;
     "new", NEW;
     "object", OBJECT;
@@ -84,7 +84,6 @@ let keyword_table =
     "while", WHILE;
     "with", WITH;
 
-    "mod", INFIXOP3("mod");
     "land", INFIXOP3("land");
     "lor", INFIXOP3("lor");
     "lxor", INFIXOP3("lxor");
@@ -484,7 +483,7 @@ rule token = parse
   | "+=" { PLUSEQ }
   | "-"  { MINUS }
   | "-." { MINUSDOT }
-
+  | "%"  { PERCENT }
   | "!" appropriate_operator_suffix_chars +
             { PREFIXOP(unescape_stars_slashes (Lexing.lexeme lexbuf)) }
   | ['~' '?'] appropriate_operator_suffix_chars +
@@ -506,15 +505,12 @@ rule token = parse
    *)
   | "*\\*" appropriate_operator_suffix_chars *
             { INFIXOP4(unescape_stars_slashes (Lexing.lexeme lexbuf))}
-
-
-  | '%'     { PERCENT }
+  | ['%'] appropriate_operator_suffix_chars *
+            { INFIXOP3("mod") }
   | ['*'] appropriate_operator_suffix_chars *
             { INFIXOP3(unescape_stars_slashes (Lexing.lexeme lexbuf)) }
   | ['/'] appropriate_operator_suffix_chars *
             { INFIXOP3(unescape_stars_slashes (Lexing.lexeme lexbuf))}
-  | ['%'] appropriate_operator_suffix_chars *
-            { INFIXOP3(Lexing.lexeme lexbuf) }
   | eof { EOF }
   | _
       { raise (Error(Illegal_character (Lexing.lexeme_char lexbuf 0),
@@ -711,4 +707,3 @@ and skip_sharp_bang = parse
     preprocessor := Some (init, preprocess)
 
 }
-
