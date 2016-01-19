@@ -101,6 +101,92 @@ type layoutNode =
   | Easy of Easy_format.t
 
 
+let rec longIdentSame = function
+  | (Lident l1, Lident l2) -> String.compare l1 l2 == 0
+  | (Ldot (path1, l1), Ldot (path2, l2)) ->
+    longIdentSame (path1, path2) && String.compare l1 l2 == 0
+  | (Lapply (l11, l12), Lapply (l21, l22)) ->
+    longIdentSame (l11, l21) && longIdentSame (l12, l22)
+  | _ -> false
+
+let rec trueForEachPair l1 l2 tester = match (l1, l2) with
+  | ([], []) -> true
+  | ([], _::_) -> false
+  | (_::_, []) -> false
+  | (hd1::tl1, hd2::tl2) -> (tester hd1 hd2 && trueForEachPair tl1 tl2 tester)
+(*
+   Checks to see if two types are the same modulo the process of varification
+   which turns abstract types into type variables of the same name.
+   For example, [same_ast_modulo_varification] would consider (a => b) and ('a
+   => 'b) to have the same ast. This is useful in recovering syntactic sugar
+   for explicit polymorphic types with locally abstract types.
+
+   Does not compare attributes, or extensions intentionally.
+
+   TODO: This has one more issue: We need to compare only accepting t1's type
+   variables, to be considered compatible with t2's type constructors - not the
+   other way around.
+ *)
+let same_ast_modulo_varification_and_extensions t1 t2 =
+  let rec loop t1 t2 = match (t1.ptyp_desc, t2.ptyp_desc) with
+    (* Importantly, cover the case where type constructors (of the form [a])
+       are converted to type vars of the form ['a].
+     *)
+    | (Ptyp_constr({txt=Lident s1}, []), Ptyp_var s2) -> String.compare s1 s2 == 0
+    (* Now cover the case where type variables (of the form ['a]) are
+       converted to type constructors of the form [a].
+     *)
+    | (Ptyp_var s1, Ptyp_constr({txt=Lident s2}, [])) -> String.compare s1 s2 == 0
+    (* Now cover the typical case *)
+    | (Ptyp_constr(longident1, lst1), Ptyp_constr(longident2, lst2))  ->
+      longIdentSame (longident1.txt, longident2.txt) &&
+      trueForEachPair lst1 lst2 loop
+    | (Ptyp_any, Ptyp_any) -> true
+    | (Ptyp_var x1, Ptyp_var x2) -> String.compare x1 x2 == 0
+    | (Ptyp_arrow (label1, core_type1, core_type1'), Ptyp_arrow (label2, core_type2, core_type2')) ->
+      String.compare label1 label2 == 0 &&
+      loop core_type1 core_type2 &&
+      loop core_type1' core_type2'
+    | (Ptyp_tuple lst1, Ptyp_tuple lst2) -> trueForEachPair lst1 lst2 loop
+    | (Ptyp_object (lst1, o1), Ptyp_object (lst2, o2)) ->
+      let tester = fun (s1, attrs1, t1) (s2, attrs2, t2) ->
+        String.compare s1 s2 == 0 &&
+        loop t1 t2
+      in
+      trueForEachPair lst1 lst2 tester &&
+      o1 == o2
+    | (Ptyp_class (longident1, lst1), Ptyp_class (longident2, lst2)) ->
+      longIdentSame (longident1.txt, longident2.txt) &&
+      trueForEachPair lst1 lst2 loop
+    | (Ptyp_alias(core_type1, string1), Ptyp_alias(core_type2, string2)) ->
+      loop core_type1 core_type2 &&
+      String.compare string1 string2 == 0
+    | (Ptyp_variant(row_field_list1, flag1, lbl_lst_option1), Ptyp_variant(row_field_list2, flag2, lbl_lst_option2)) ->
+      trueForEachPair row_field_list1 row_field_list2 rowFieldEqual &&
+      flag1 == flag2 &&
+      lbl_lst_option1 == lbl_lst_option2
+    | (Ptyp_poly (string_lst1, core_type1), Ptyp_poly (string_lst2, core_type2))->
+      trueForEachPair string_lst1 string_lst2 (fun s1 s2 -> String.compare s1 s2 == 0) &&
+      loop core_type1 core_type2
+    | (Ptyp_package(longident1, lst1), Ptyp_package (longident2, lst2)) ->
+      longIdentSame (longident1.txt, longident2.txt) &&
+      trueForEachPair lst1 lst2 testPackageType
+    | (Ptyp_extension (s1, arg1), Ptyp_extension (s2, arg2)) ->
+      String.compare s1.txt s2.txt == 0
+    | _ -> false
+  and testPackageType (lblLongIdent1, ct1) (lblLongIdent2, ct2) =
+    longIdentSame (lblLongIdent1.txt, lblLongIdent2.txt) &&
+    loop ct1 ct2
+  and rowFieldEqual f1 f2 = match (f1, f2) with
+    | ((Rtag(label1, attrs1, flag1, lst1)), (Rtag (label2, attrs2, flag2, lst2))) ->
+      String.compare label1 label2 == 0 &&
+      flag1 == flag2 &&
+      trueForEachPair lst1 lst2 loop
+    | (Rinherit t1, Rinherit t2) -> loop t1 t2
+    | _ -> false
+  in
+  loop t1 t2
+
 let expandLocation pos ~expand:(startPos, endPos) =
   { pos with
     loc_start = {
@@ -132,6 +218,7 @@ let rec sequentialIfBlocks x =
       )
     | Some e -> ([], Some e)
     | None -> ([], None)
+
 
 (*
   TODO: IDE integration beginning with Vim:
@@ -1264,10 +1351,21 @@ let semiTerminated term = makeList [term; atom ";"]
 let makeLetSequence letItems =
   makeList ~wrap:("{", "}") ~break:Always_rec ~inline:(true, false) letItems
 
-let formatAttributed x y = makeList ~wrap:("(", ")") ~break:IfNeed [
-  makeList ~break:IfNeed ~wrap:("(", ")") [x];
-  y;
-]
+let formatSimpleAttributed x y =
+  makeList
+    ~wrap:("(", ")")
+    ~break:IfNeed
+    ~indent:0
+    ~postSpace:true
+    [x; y;]
+
+let formatAttributed x y =
+  makeList
+    ~break:IfNeed
+    ~inline:(true, true)
+    ~indent:0
+    ~postSpace:true
+    [x; y]
 
 (* For when the type constraint should be treated as a separate breakable line item itself
    not docked to some value/pattern label.
@@ -1440,27 +1538,29 @@ class printer  ()= object(self:'self)
         (protectLongIdentifier (self#longident longPrefix) s)
     | Lapply (y,s) -> makeList [self#longident y; atom "("; self#longident s; atom ")";]
 
+  (* This form allows applicative functors. *)
+  method longident_class_or_type_loc x = self#longident x.txt
+  (* TODO: Fail if observing applicative functors for this form. *)
   method longident_loc x = self#longident x.txt
   method constant = wrap default#constant
 
-  (* trailing space*)
-  method mutable_flag = wrap default#mutable_flag
-  method virtual_flag = wrap default#virtual_flag
-
-  (* trailing space added *)
-  method rec_flag = wrap default#rec_flag
-  method private_flag = wrap default#private_flag
   method constant_string = wrap default#constant_string
   method tyvar = wrap default#tyvar
 
   (* c ['a,'b] *)
-  method class_params_def = wrap default#class_params_def
+  method class_params_def = function
+    | [] -> atom ""
+    | l ->
+      makeList ~postSpace:true (List.map self#type_param l)
+
   (* This will fall through to the simple version. *)
   method non_arrowed_core_type x = self#non_arrowed_non_simple_core_type x
 
   method core_type2 x =
     if x.ptyp_attributes <> [] then
-      self#formatAttributedType x
+      formatAttributed
+        (self#non_arrowed_simple_core_type {x with ptyp_attributes=[]})
+        (self#attributes x.ptyp_attributes)
     else
       let rec allArrowSegments xx = match xx.ptyp_desc with
         | Ptyp_arrow (l, ct1, ct2) ->
@@ -1489,7 +1589,9 @@ class printer  ()= object(self:'self)
   (* Same as core_type2 but can be aliased *)
   method core_type x =
     if x.ptyp_attributes <> [] then
-      self#formatAttributedType x
+      formatAttributed
+        (self#non_arrowed_simple_core_type {x with ptyp_attributes=[]})
+        (self#attributes x.ptyp_attributes)
     else match (x.ptyp_desc) with
       | (Ptyp_alias (ct, s)) ->
         SourceMap (
@@ -1579,11 +1681,14 @@ class printer  ()= object(self:'self)
   method type_def_list l =
     (* As oposed to used in type substitution. *)
     let formatOneTypeDefStandard prepend td =
-      self#formatOneTypeDef
-        prepend
-        (SourceMap (break, td.ptype_name.loc, (atom td.ptype_name.txt)))
-        (atom "=")
-        td
+      let itm =
+        self#formatOneTypeDef
+          prepend
+          (SourceMap (break, td.ptype_name.loc, (atom td.ptype_name.txt)))
+          (atom "=")
+          td
+      in
+      self#attach_item_attributes td.ptype_attributes itm
     in
 
     match l with
@@ -1599,7 +1704,7 @@ class printer  ()= object(self:'self)
 
   method type_variant_leaf ?opt_ampersand:(a=false) ?polymorphic:(p=false) = self#type_variant_leaf1 a p true
   method type_variant_leaf_nobar ?opt_ampersand:(a=false) ?polymorphic:(p=false) = self#type_variant_leaf1 a p false
-  method type_variant_leaf1 opt_ampersand polymorphic print_bar {pcd_name; pcd_args; pcd_res; pcd_loc} =
+  method type_variant_leaf1 opt_ampersand polymorphic print_bar {pcd_name; pcd_args; pcd_res; pcd_loc; pcd_attributes} =
     let prefix = if polymorphic then "`" else "" in
     let sourceMappedName = SourceMap (break, pcd_name.loc, atom (prefix ^ pcd_name.txt)) in
     let nameOf = makeList ~postSpace:true [sourceMappedName; atom "of"] in
@@ -1658,7 +1763,13 @@ class printer  ()= object(self:'self)
         | (StickToLastSplitCases, _::_, Some res) ->
             add_bar nameOf (normalize (args@[res]))
       in
-      (SourceMap (break, pcd_loc, everything))
+      let everythingWithAttrs =
+        if pcd_attributes <> [] then
+          formatAttributed everything (self#attributes pcd_attributes)
+        else 
+          everything
+      in
+      (SourceMap (break, pcd_loc, everythingWithAttrs))
 
   (* Returns the type declaration partitioned into three segments - one
      suitable for appending to a label, the actual type manifest
@@ -1809,7 +1920,9 @@ class printer  ()= object(self:'self)
 
   method non_arrowed_non_simple_core_type x =
     if x.ptyp_attributes <> [] then
-      self#formatAttributedType x
+      formatAttributed
+        (self#non_arrowed_simple_core_type {x with ptyp_attributes=[]})
+        (self#attributes x.ptyp_attributes)
     else
       match x.ptyp_desc with
     (* This significantly differs from the standard OCaml printer/parser:
@@ -1833,7 +1946,9 @@ class printer  ()= object(self:'self)
 
   method non_arrowed_simple_core_type x =
     if x.ptyp_attributes <> [] then
-      self#formatAttributedType x
+      formatSimpleAttributed
+        (self#non_arrowed_simple_core_type {x with ptyp_attributes=[]})
+        (self#attributes x.ptyp_attributes)
     else
       let result =
         match x.ptyp_desc with
@@ -1844,6 +1959,22 @@ class printer  ()= object(self:'self)
         (*         | moreThanOne -> mktyp(Ptyp_tuple(List.rev moreThanOne)) } *)
         | Ptyp_tuple l ->
             makeList ~wrap:("(",")") ~sep:"," ~postSpace:true ~break:IfNeed (List.map (self#core_type) l)
+        | Ptyp_object (l, o) ->
+          let core_field_type (s, attrs, ct) =
+            self#attach_attributes
+              attrs
+              (
+                label ~space:true
+                  (label ~space:true (atom s) (atom ":"))
+                  (self#core_type ct)
+              )
+          in
+          let openness = match o with
+            | Closed -> []
+            | Open -> [atom ".."]
+          in
+          let rows = List.concat [(List.map core_field_type l); openness] in
+          makeList ~break:IfNeed ~postSpace:true ~wrap:("<", ">") ~sep:"," rows
         | Ptyp_package (lid, cstrs) ->
           let typeConstraint (s, ct) =
             label
@@ -1902,15 +2033,16 @@ class printer  ()= object(self:'self)
           let tag_list = makeList ~postSpace:true ~break:IfNeed ((atom ">")::ll) in
           let type_list = if List.length tl != 0 then node_list@[tag_list] else node_list in
           makeList ~wrap:("[" ^ designator,"]") ~pad:(true, false) ~postSpace:true ~break:IfNeed type_list
-        | Ptyp_object (l, o) -> (*FIXME*)
-            case_not_implemented "Ptyp_object" x.ptyp_loc (try assert false with Assert_failure x -> x);
-            wrap (default#core_type1) x
-        | Ptyp_class (li, l) -> (*FIXME*)
-            case_not_implemented "Ptyp_class" x.ptyp_loc (try assert false with Assert_failure x -> x);
-            wrap (default#core_type1) x
-        | Ptyp_extension (s, arg) -> (*FIXME*)
-            case_not_implemented "Ptyp_extension" x.ptyp_loc (try assert false with Assert_failure x -> x);
-            wrap (default#core_type1) x
+        | Ptyp_class (li, l) ->
+          (match l with
+            | [] -> makeList [atom "#"; self#longident_loc li]
+            | _::_ ->
+              label
+                ~space:true
+                (makeList [atom "#"; self#longident_loc li])
+                (makeList ~postSpace:true ~inline:(true, false) (List.map self#core_type l))
+          )
+        | Ptyp_extension e -> self#extension e
         | Ptyp_constr (_, _::_)
         | Ptyp_arrow (_, _, _)
         | Ptyp_alias (_, _)
@@ -1980,7 +2112,7 @@ class printer  ()= object(self:'self)
   method pattern1 x =
     let (embeddedAttrs, nonEmbeddedAttrs) = sugarEmbeddedAttributes x.ppat_attributes in
     if nonEmbeddedAttrs <> [] then
-      formatAttributed
+      formatSimpleAttributed
         (self#pattern1 {x with ppat_attributes=embeddedAttrs})
         (self#attributes nonEmbeddedAttrs)
     else
@@ -2013,78 +2145,84 @@ class printer  ()= object(self:'self)
     | _  -> self#pattern x
 
   method simple_pattern x =
-    let itm =
-      match x.ppat_desc with
-        | Ppat_construct (({loc; txt=Lident ("()"|"[]" as x)}), _) ->
-            (* Patterns' locations might include a leading bar depending on the
-             * context it was parsed in. Therefore, we need to include further
-             * information about the contents of the pattern such as tokens etc,
-             * in order to get comments to be distributed correctly.*)
+    let (embeddedAttrs, nonEmbeddedAttrs) = sugarEmbeddedAttributes x.ppat_attributes in
+    if nonEmbeddedAttrs <> [] then
+      formatAttributed
+        (self#simple_pattern {x with ppat_attributes=embeddedAttrs})
+        (self#attributes nonEmbeddedAttrs)
+    else
+      let itm =
+        match x.ppat_desc with
+          | Ppat_construct (({loc; txt=Lident ("()"|"[]" as x)}), _) ->
+              (* Patterns' locations might include a leading bar depending on the
+               * context it was parsed in. Therefore, we need to include further
+               * information about the contents of the pattern such as tokens etc,
+               * in order to get comments to be distributed correctly.*)
 
-            SourceMap (break, loc, (atom x))
-        | Ppat_construct (({txt=Lident "::"}), po) ->
-              self#pattern_list_helper x (* LIST PATTERN *)
-        | Ppat_construct (({txt} as li), None) ->
-            let liSourceMapped = SourceMap (break, li.loc, (self#longident_loc li)) in
-            SourceMap (break, x.ppat_loc, liSourceMapped)
-        | Ppat_any -> atom "_"
-        | Ppat_var ({loc; txt = txt}) ->
-          (*
-             To prevent this:
+              SourceMap (break, loc, (atom x))
+          | Ppat_construct (({txt=Lident "::"}), po) ->
+                self#pattern_list_helper x (* LIST PATTERN *)
+          | Ppat_construct (({txt} as li), None) ->
+              let liSourceMapped = SourceMap (break, li.loc, (self#longident_loc li)) in
+              SourceMap (break, x.ppat_loc, liSourceMapped)
+          | Ppat_any -> atom "_"
+          | Ppat_var ({loc; txt = txt}) ->
+            (*
+               To prevent this:
 
-               let oneArgShouldWrapToAlignWith
-                 theFunctionNameBinding => theFunctionNameBinding;
-
-             And instead do:
-
-               let oneArgShouldWrapToAlignWith
+                 let oneArgShouldWrapToAlignWith
                    theFunctionNameBinding => theFunctionNameBinding;
 
-             We have to do something to the non "listy" patterns. Non listy
-             patterns don't indent the same amount as listy patterns when docked
-             to a label.
+               And instead do:
 
-             If wrapping the non-listy pattern in [ensureSingleTokenSticksToLabel]
-             you'll get the following (even though it should wrap)
+                 let oneArgShouldWrapToAlignWith
+                     theFunctionNameBinding => theFunctionNameBinding;
 
-               let oneArgShouldWrapToAlignWith theFunctionNameBinding => theFunctionNameBinding;
+               We have to do something to the non "listy" patterns. Non listy
+               patterns don't indent the same amount as listy patterns when docked
+               to a label.
 
-           *)
-            SourceMap (break, loc, (protectIdentifier txt))
-        | Ppat_array l ->
-            makeList ~wrap:("[|", "|]") ~break:IfNeed ~postSpace:true ~sep:"," (List.map self#pattern1 l)
-        | Ppat_unpack (s) ->
-            makeList ~wrap:("(", ")") ~break:IfNeed ~postSpace:true [atom "module"; atom s.txt]
-        | Ppat_type li ->
-            makeList [atom "#"; self#longident_loc li]
-        | Ppat_record (l, closed) ->
-            let longident_x_pattern (li, p) =
-              match (li, p.ppat_desc) with
-                | ({txt=Lident s}, Ppat_var {txt}) when s = txt ->
-                    self#longident_loc li
-                | _ ->
-                    label ~space:true (makeList [self#longident_loc li; atom ":"]) (self#pattern1 p)
-            in
-            let rows = (List.map longident_x_pattern l)@(
-              match closed with
-                | Closed -> []
-                | _ -> [atom "_"]
-            ) in
-            makeList ~wrap:("{", "}") ~break:IfNeed ~sep:"," ~postSpace:true rows
-        | Ppat_tuple l ->
-            makeList ~wrap:("(", ")") ~sep:"," ~postSpace:true ~break:IfNeed (List.map (self#potentiallyConstrainedPattern1) l)
-        | Ppat_constant (c) -> (self#constant c)
-        | Ppat_interval (c1, c2) -> makeList [self#constant c1; atom ".."; self#constant c2]
-        | Ppat_variant (l, None) -> makeList[atom "`"; atom l]
-        | Ppat_constraint (p, ct) ->
-            formatPrecedence (formatTypeConstraint (self#pattern1 p) (self#core_type ct))
-        | Ppat_lazy p ->
-            makeList ~postSpace:true ~wrap:("(", ")") [atom "lazy"; self#pattern1 p]
-        | Ppat_exception p ->
-            makeList ~postSpace:true [atom "exception"; self#pattern1 p]
-        | _ -> formatPrecedence (self#pattern x) (* May have a redundant sourcemap *)
-      in
-      SourceMap (break, x.ppat_loc, itm)
+               If wrapping the non-listy pattern in [ensureSingleTokenSticksToLabel]
+               you'll get the following (even though it should wrap)
+
+                 let oneArgShouldWrapToAlignWith theFunctionNameBinding => theFunctionNameBinding;
+
+             *)
+              SourceMap (break, loc, (protectIdentifier txt))
+          | Ppat_array l ->
+              makeList ~wrap:("[|", "|]") ~break:IfNeed ~postSpace:true ~sep:"," (List.map self#pattern1 l)
+          | Ppat_unpack (s) ->
+              makeList ~wrap:("(", ")") ~break:IfNeed ~postSpace:true [atom "module"; atom s.txt]
+          | Ppat_type li ->
+              makeList [atom "#"; self#longident_loc li]
+          | Ppat_record (l, closed) ->
+              let longident_x_pattern (li, p) =
+                match (li, p.ppat_desc) with
+                  | ({txt=Lident s}, Ppat_var {txt}) when s = txt ->
+                      self#longident_loc li
+                  | _ ->
+                      label ~space:true (makeList [self#longident_loc li; atom ":"]) (self#pattern1 p)
+              in
+              let rows = (List.map longident_x_pattern l)@(
+                match closed with
+                  | Closed -> []
+                  | _ -> [atom "_"]
+              ) in
+              makeList ~wrap:("{", "}") ~break:IfNeed ~sep:"," ~postSpace:true rows
+          | Ppat_tuple l ->
+              makeList ~wrap:("(", ")") ~sep:"," ~postSpace:true ~break:IfNeed (List.map (self#potentiallyConstrainedPattern1) l)
+          | Ppat_constant (c) -> (self#constant c)
+          | Ppat_interval (c1, c2) -> makeList [self#constant c1; atom ".."; self#constant c2]
+          | Ppat_variant (l, None) -> makeList[atom "`"; atom l]
+          | Ppat_constraint (p, ct) ->
+              formatPrecedence (formatTypeConstraint (self#pattern1 p) (self#core_type ct))
+          | Ppat_lazy p -> makeList ~postSpace:true ~wrap:("(", ")") [atom "lazy"; self#pattern1 p]
+          | Ppat_extension e -> self#extension e
+          | Ppat_exception p ->
+              makeList ~postSpace:true [atom "exception"; self#pattern1 p]
+          | _ -> formatPrecedence (self#pattern x) (* May have a redundant sourcemap *)
+        in
+        SourceMap (break, x.ppat_loc, itm)
 
   method label_exp (l,opt,p) =
     if l = "" then
@@ -2483,30 +2621,68 @@ class printer  ()= object(self:'self)
 
   (**
    * Returns the list of items to be formatted as a function application, in
-   * addition to an optional sequencer token that should separate them.
+   * addition to an optional sequencer token that should separate them.  The
+   * returned list is only valid if in a context where prefix operators don't
+   * need to be guarded by parens. For example, this is valid on the RHS of
+   * bindings, record fields etc. Prefix operators that are identical to infix
+   * ones (I'm looking at you, "minus") are an abomination.
+   *
+   * Because (currently) ppx attributes are parsed as bing on the function
+   * application, as if it were an argument, this is the best place to extract
+   * those. It also means that infix applications must be wrapped in parens,
+   * and thus be wrapped in parens in their own "application item".
    *)
   method expressionToFormattedApplicationItems x =
     match x.pexp_desc with
       | Pexp_apply (e, l) -> (
+        let attributesAsList = (List.map self#attribute x.pexp_attributes) in
+        let exprWithoutAttrs = {x with pexp_attributes = []} in
         match self#arraySugarApplicationItems x with
           | Some fmt -> ([fmt], None)
           | None  -> (
             match self#consecutiveInfixApplicationItems x with
-              | Some (operator, items) -> (items, Some (escape_stars_slashes operator))
+              | Some (operator, items) ->
+                if x.pexp_attributes <> [] then
+                  (* We actually have to back out of this computation.  We know
+                     that unguarded infix/prefix are not compatible with
+                     attributes. Render it as simple. *)
+                  ((self#simple_expression exprWithoutAttrs :: attributesAsList), None)
+                else 
+                  (items, Some (escape_stars_slashes operator))
               | None -> (
                 match self#prefixApplication (e, l) with
-                  | Some item -> ([item], None)
+                  | Some item ->
+                    (* We actually have to back out of this computation.  We know
+                       that unguarded infix/prefix are not compatible with
+                       attributes. Render it as simple. *)
+                    if x.pexp_attributes <> [] then
+                      ((self#simple_expression exprWithoutAttrs  :: attributesAsList), None)
+                    else
+                      ([item], None)
                   | None -> (
                     (* Standard application *)
                     (*reset here only because [function,match,try,sequence] are lower priority*)
-                    (SourceMap (break, e.pexp_loc, (self#expression2 e))::
-                    (List.map self#reset#label_x_expression_param l)),
+                    List.concat [
+                      [SourceMap (break, e.pexp_loc, (self#expression2 e))];
+                      List.map self#reset#label_x_expression_param l;
+                      attributesAsList;
+                    ],
                     None
                   )
               )
           )
       )
       | _ -> ([self#expression x], None)
+
+  method classExpressionToFormattedApplicationItems x =
+    let itms = 
+      match x.pcl_desc with
+        | Pcl_apply (ce, l) ->
+          (self#simple_class_expr ce)::
+          (List.map self#label_x_expression_param l)
+        | _ -> [self#class_expr x]
+    in
+    (itms, None)
 
   method formatTernary x test ifTrue ifFalse =
     if inTernary then
@@ -2573,9 +2749,31 @@ class printer  ()= object(self:'self)
     (formatTypeConstraint letPattern typeConstraint)
 
 
-  (* The [bindingLabel] is either the function name (if let binding) or first
-     arg (if lambda) *)
-  method wrapCurriedFunctionBinding attachTo prefixText bindingLabel patternList returnedAppTerms =
+  (*
+     The [bindingLabel] is either the function name (if let binding) or first
+     arg (if lambda).
+
+     For defining layout of the following form:
+
+         lbl one
+             two
+             constraint => {
+           ...
+         }
+
+     If using "=" as the arrow, can also be used for:
+
+         met private
+             myMethod
+             constraint = fun ...
+
+   *)
+  method wrapCurriedFunctionBinding
+         ?(arrow="=>")
+         prefixText
+         bindingLabel
+         patternList
+         returnedAppTerms =
     let allPatterns = bindingLabel::patternList in
     let partitioning = curriedFunctionFinalWrapping allPatterns in
     let everythingButReturnVal = match settings.returnStyle with
@@ -2645,7 +2843,7 @@ class printer  ()= object(self:'self)
                 *)
               makeList
                 ~pad:(true, true)
-                ~wrap:(prefixText, "=>")
+                ~wrap:(prefixText, arrow)
                 ~indent:(settings.space * settings.indentWrappedPatternArgs)
                 ~postSpace:true
                 ~inline:(true, true)
@@ -2660,7 +2858,7 @@ class printer  ()= object(self:'self)
                 (
                   makeList
                     ~pad:(true, true)
-                    ~wrap:(prefixText, "=>")
+                    ~wrap:(prefixText, arrow)
                     ~indent:(settings.space * settings.indentWrappedPatternArgs)
                     ~postSpace:true
                     ~inline:(true, true)
@@ -2671,13 +2869,9 @@ class printer  ()= object(self:'self)
         )
     in
 
-    let everythingIncludingArrow = match attachTo with
-      | None -> everythingButReturnVal
-      | Some toThis -> label ~space:true toThis everythingButReturnVal
-    in
     formatAttachmentApplication
       applicationFinalWrapping
-      (Some (true, everythingIncludingArrow))
+      (Some (true, everythingButReturnVal))
       returnedAppTerms
 
   method leadingCurriedAbstractTypes x =
@@ -2688,6 +2882,22 @@ class printer  ()= object(self:'self)
             (str::nextArgs, return)
         | _ -> ([], xx.pexp_desc)
     in argsAndReturn x
+
+  method curriedConstructorPatternsAndReturnVal cl =
+    let rec argsAndReturn xx =
+      if xx.pcl_attributes <> [] then ([], xx)
+      else match xx.pcl_desc with
+      | Pcl_fun (label, eo, p, e) ->
+        let (nextArgs, return) = argsAndReturn e in
+        if label="" then
+          let args = SourceMap (break, p.ppat_loc, (self#simple_pattern p))::nextArgs in
+          (args, return)
+        else
+          let args = SourceMap (break, p.ppat_loc, (self#label_exp (label, eo, p)))::nextArgs in
+          (args, return)
+      | _ -> ([], xx)
+    in argsAndReturn cl
+
 
   (*
     Returns the arguments list (if any, that occur before the =>), and the
@@ -2703,17 +2913,10 @@ class printer  ()= object(self:'self)
         | Pexp_fun (label, eo, p, e) ->
             let (nextArgs, return) = argsAndReturn e in
             if label="" then
-              let args =
-                SourceMap (break, p.ppat_loc, (self#simple_pattern p))::nextArgs in
+              let args = SourceMap (break, p.ppat_loc, (self#simple_pattern p))::nextArgs in
               (args, return)
             else
-              (* This is slightly innacurate, because the pattern might have a
-                 leading ~/?
-               *)
-              let args =
-                SourceMap (break, p.ppat_loc, (self#label_exp (label, eo, p)))::
-                  nextArgs
-              in
+              let args = SourceMap (break, p.ppat_loc, (self#label_exp (label, eo, p)))::nextArgs in
               (args, return)
         | Pexp_newtype (str,e) ->
             let typeParamLayout = SourceMap (
@@ -2744,6 +2947,13 @@ class printer  ()= object(self:'self)
         (firstOne::functorArgsRecurse, returnStructure)
     | _ -> ([], me)
 
+  method isRenderableAsPolymorphicAbstractTypes
+         typeVars
+         polyType
+         leadingAbstractVars
+         nonVarifiedType =
+      same_ast_modulo_varification_and_extensions polyType nonVarifiedType &&
+      trueForEachPair typeVars leadingAbstractVars (fun x y -> String.compare x y == 0)
   (* Reinterpret this as a pattern constraint since we don't currently have a
      way to disambiguate. There is currently a way to disambiguate a parsing
      from Ppat_constraint vs.  Pexp_constraint. Currently (and consistent with
@@ -2790,41 +3000,107 @@ class printer  ()= object(self:'self)
      might be some lossiness (beyond parens) that occurs in the original OCaml
      parser.
   *)
+
+  method locallyAbstractPolymorphicFunctionBinding prefixText layoutPattern funWithNewTypes absVars bodyType =
+    let appTerms = self#expressionToFormattedApplicationItems funWithNewTypes in
+    let locallyAbstractTypes = (List.map atom absVars) in
+    let typeLayout =
+      SourceMap (break, bodyType.ptyp_loc, (self#core_type bodyType)) in
+    let polyType =
+      label
+        ~space:true
+        (* TODO: This isn't a correct use of sep! It ruins how
+         * comments are interleaved. *)
+        (makeList [makeList ~sep:" " (atom "type"::locallyAbstractTypes); atom "."])
+        typeLayout
+      in
+    self#formatSimplePatternBinding
+      prefixText
+      layoutPattern
+      (Some polyType)
+      appTerms
+
+  (**
+      Intelligently switches between:
+      Curried function binding w/ constraint on return expr:
+         lbl patt
+             pattAux
+             arg
+             :constraint => {
+           ...
+         }
+
+      Constrained:
+         lbl patt
+             pattAux...
+             :constraint = {
+           ...
+         }
+   *)
+  method wrappedBinding prefixText pattern patternAux expr =
+    let (argsList, return) = self#curriedPatternsAndReturnVal expr in
+    let patternList =
+      match patternAux with
+        | [] -> pattern
+        | _::_ -> makeList ~postSpace:true ~inline:(true, true) ~break:IfNeed (pattern::patternAux)
+    in
+    match (argsList, return.pexp_desc) with
+      | ([], Pexp_constraint (e, ct)) ->
+          let typeLayout = SourceMap (break, ct.ptyp_loc, (self#core_type ct)) in
+          let appTerms = self#expressionToFormattedApplicationItems e in
+          self#formatSimplePatternBinding prefixText patternList (Some typeLayout) appTerms
+      | ([], _) ->
+          let appTerms = self#expressionToFormattedApplicationItems expr in
+          self#formatSimplePatternBinding prefixText patternList None appTerms
+      | (_::_, _) ->
+          let (argsWithConstraint, actualReturn) = self#normalizeFunctionArgsConstraint argsList return in
+          let fauxArgs =
+            List.concat [patternAux; argsWithConstraint] in
+          let returnedAppTerms = self#expressionToFormattedApplicationItems actualReturn in
+          self#wrapCurriedFunctionBinding prefixText pattern fauxArgs returnedAppTerms
+
+  (* Similar to the above method. *)
+  method wrappedClassBinding prefixText pattern patternAux expr =
+    let (argsList, return) = self#curriedConstructorPatternsAndReturnVal expr in
+    let patternList =
+      match patternAux with
+        | [] -> pattern
+        | _::_ -> makeList ~postSpace:true ~inline:(true, true) ~break:IfNeed (pattern::patternAux)
+    in
+    match (argsList, return.pcl_desc) with
+      | ([], Pcl_constraint (e, ct)) ->
+          let typeLayout = SourceMap (break, ct.pcty_loc, (self#class_constructor_type ct)) in
+          let appTerms = self#classExpressionToFormattedApplicationItems e in
+          self#formatSimplePatternBinding prefixText patternList (Some typeLayout) appTerms
+      | ([], _) ->
+          let appTerms = self#classExpressionToFormattedApplicationItems expr in
+          self#formatSimplePatternBinding prefixText patternList None appTerms
+      | (_::_, _) ->
+          let (argsWithConstraint, actualReturn) =
+            self#normalizeConstructorArgsConstraint argsList return in
+          let returnedAppTerms = self#classExpressionToFormattedApplicationItems actualReturn in
+          let fauxArgs =
+            List.concat [patternAux; argsWithConstraint] in
+          self#wrapCurriedFunctionBinding prefixText pattern fauxArgs returnedAppTerms
+
   method binding {pvb_pat; pvb_expr=x} prefixText = (* TODO: print attributes *)
     match (pvb_pat.ppat_desc) with
       | (Ppat_var {txt}) ->
-          let layoutPattern = SourceMap (break, pvb_pat.ppat_loc, self#simple_pattern pvb_pat) in
-          let (argsList, return) = self#curriedPatternsAndReturnVal x in (
-            match (argsList, return.pexp_desc) with
-              | ([], Pexp_constraint (e, ct)) ->
-                  let typeLayout = SourceMap (
-                    break,
-                    ct.ptyp_loc,
-                    (self#core_type ct)
-                  ) in
-                  let appTerms = self#expressionToFormattedApplicationItems e in
-                  self#formatSimplePatternBinding
-                    prefixText
-                    layoutPattern
-                    (Some typeLayout)
-                    appTerms
-              | ([], _) ->
-                  let appTerms = self#expressionToFormattedApplicationItems x in
-                  self#formatSimplePatternBinding
-                    prefixText
-                    layoutPattern
-                    None
-                    appTerms
-              | (_, _) ->
-                  let bindingName = self#simple_pattern pvb_pat in
-                  let (argsWithConstraint, actualReturn) = self#normalizeFunctionArgsConstraint argsList return in
-                  let returnedAppTerms = self#expressionToFormattedApplicationItems actualReturn in
-                  self#wrapCurriedFunctionBinding None prefixText bindingName argsWithConstraint returnedAppTerms
-          )
+          let pattern = SourceMap (break, pvb_pat.ppat_loc, self#simple_pattern pvb_pat) in
+          self#wrappedBinding prefixText pattern [] x
+      (*
+         Ppat_constraint is used in bindings of the form
 
-      (* Currently only forms of [let (inParenVar:typ) =] or [let x: forall type =]*)
-      (* Eventually [let (inParenVar:typ) =] *or*  [let notInParen:typ =] *)
-      | (Ppat_constraint(p ,ty)) -> (
+            let (inParenVar:typ) = ...
+
+         And in the case of let bindings for explicitly polymorphic type
+         annotations (see parser for more details).
+
+         See reason_parser.mly for explanation of how we encode the two primary
+         forms of explicit polymorphic annotations in the parse tree, and how
+         we must recover them here.
+       *)
+      | (Ppat_constraint(p, ty)) -> (
           (* Locally abstract forall types are *seriously* mangled by the parsing
              stage, and we have to be very smart about how to recover it.
 
@@ -2851,31 +3127,56 @@ class printer  ()= object(self:'self)
           *)
           let layoutPattern =
             SourceMap (break, pvb_pat.ppat_loc, (self#simple_pattern p)) in
-          match (p.ppat_desc, ty.ptyp_desc, self#leadingCurriedAbstractTypes x) with
-            | (Ppat_var s, Ptyp_poly (pp, pty), (_::_ as absVars, Pexp_constraint(body, bodyType))) ->
-              (* This is potentially error proned, the above pattern would be
-                 highly unusual unless it was the result of the auto-transforming
-                 sugar for polymorphic locally abstract types sugar. But to be
-                 sure, we should check by re-varifying the bodyType and seeing if
-                 t matches [pty]. There is probably zero code that matches the
-                 above pattern yet is *not* the sugar we are assuming. *)
-              let appTerms = self#expressionToFormattedApplicationItems body in
-              let typeVars = (List.map atom absVars) in
-              let typeLayout =
-                SourceMap (break, bodyType.ptyp_loc, (self#core_type bodyType)) in
-              let polyType =
-                label
-                  ~space:true
-                  (* TODO: This isn't a correct use of sep! It ruins how
-                   * comments are interleaved. *)
-                  (makeList [makeList ~sep:" " (atom "type"::typeVars); atom "."])
-                  typeLayout
-                in
-              self#formatSimplePatternBinding
+          let leadingAbsTypesAndExpr = self#leadingCurriedAbstractTypes x in
+          match (p.ppat_desc, ty.ptyp_desc, leadingAbsTypesAndExpr) with
+            | (
+                Ppat_var s,
+                Ptyp_poly (typeVars, varifiedPolyType),
+                (_::_ as absVars, Pexp_constraint(funWithNewTypes, nonVarifiedExprType))
+              )
+              when self#isRenderableAsPolymorphicAbstractTypes
+                  typeVars
+                  (* If even artificially varified - don't know until returns*)
+                  varifiedPolyType
+                  absVars
+                  nonVarifiedExprType ->
+              (*
+                 We assume was the case whenever we see this pattern in the
+                 AST, it was because the parser parsed the polymorphic locally
+                 abstract type sugar.
+
+                 Ppat_var..Ptyp_poly...Pexp_constraint:
+
+                    let x: 'a 'b . 'a => 'b => 'b =
+                      fun (type a) (type b) =>
+                         (fun aVal bVal => bVal : a => b => b);
+
+                 We need to be careful not to accidentally detect similar
+                 forms, that cannot be printed as sugar.
+
+                    let x: 'a 'b . 'a => 'b => 'b =
+                      fun (type a) (type b) =>
+                         (fun aVal bVal => bVal : int => int => int);
+
+                 Should *NOT* be formatted as:
+
+                    let x: type a b. int => int => int = fun aVal bVal => bVal;
+
+                 The helper function
+                 [same_ast_modulo_varification_and_extensions] was created to
+                 help compare the varified constraint pattern body, and the
+                 non-varified expression constraint type.
+
+                 The second requirement that we check before assuming that the
+                 sugar form is correct, is to make sure the list of type vars
+                 corresponds to a leading prefix of the Pexp_newtype variables.
+              *)
+              self#locallyAbstractPolymorphicFunctionBinding
                 prefixText
                 layoutPattern
-                (Some polyType)
-                appTerms
+                funWithNewTypes
+                absVars
+                nonVarifiedExprType
             | _ ->
               let typeLayout = SourceMap (break, ty.ptyp_loc, (self#core_type ty)) in
               let appTerms = self#expressionToFormattedApplicationItems x in
@@ -2892,6 +3193,10 @@ class printer  ()= object(self:'self)
           self#formatSimplePatternBinding prefixText layoutPattern None appTerms
 
 
+  (* Ensures that the constraint is formatted properly for sake of function
+     binding (formatted without arrows)
+     let x y z : no_unguareded_arrows_allowed_here => ret;
+   *)
   method normalizeFunctionArgsConstraint argsList return =
     match return.pexp_desc with
       | Pexp_constraint (e, ct) ->
@@ -2899,6 +3204,17 @@ class printer  ()= object(self:'self)
           break,
           ct.ptyp_loc,
           (self#non_arrowed_non_simple_core_type ct)
+        ) in
+        (argsList@[formatJustTheTypeConstraint typeLayout], e)
+      | _ -> (argsList, return)
+
+  method normalizeConstructorArgsConstraint argsList return =
+    match return.pcl_desc with
+      | Pcl_constraint (e, ct) when return.pcl_attributes = [] ->
+        let typeLayout = SourceMap (
+          break,
+          ct.pcty_loc,
+          (self#non_arrowed_class_constructor_type ct)
         ) in
         (argsList@[formatJustTheTypeConstraint typeLayout], e)
       | _ -> (argsList, return)
@@ -2943,8 +3259,8 @@ class printer  ()= object(self:'self)
       (firstLine::remainingBindings)
 
   method letList exprTerm =
-    match exprTerm.pexp_desc with
-      | Pexp_let (rf, l, e) ->
+    match (exprTerm.pexp_attributes, exprTerm.pexp_desc) with
+      | ([], Pexp_let (rf, l, e)) ->
         (* For "letList" bindings, the start/end isn't as simple as with
          * module value bindings. For "let lists", the sequences were formed
          * within braces {}. The parser relocates the first let binding to the
@@ -2957,7 +3273,7 @@ class printer  ()= object(self:'self)
            semiTerminated bindingsLayout
          ) in
          bindingsSourceMapped::(self#letList e)
-      | Pexp_open (ovf, lid, e) ->
+      | ([], Pexp_open (ovf, lid, e)) ->
           let overrideStr = match ovf with | Override -> "!" | Fresh -> "" in
           let openLayout = (makeList ~postSpace:true [
              atom ("let open" ^ overrideStr);
@@ -2972,7 +3288,7 @@ class printer  ()= object(self:'self)
              semiTerminated openLayout
            ) in
            openSourceMapped::(self#letList e)
-      | Pexp_letmodule (s, me, e) ->
+      | ([], Pexp_letmodule (s, me, e)) ->
           let prefixText = "let module" in
           let bindingName = atom s.txt in
           let moduleExpr = me in
@@ -2992,11 +3308,11 @@ class printer  ()= object(self:'self)
              semiTerminated letModuleLayout
            ) in
            letModuleSourceMapped::(self#letList e)
-      | Pexp_sequence (({pexp_desc=Pexp_sequence _ }) as e1, e2)
-      | Pexp_sequence (({pexp_desc=Pexp_let _      }) as e1, e2)
-      | Pexp_sequence (({pexp_desc=Pexp_open _     }) as e1, e2)
-      | Pexp_sequence (({pexp_desc=Pexp_letmodule _}) as e1, e2)
-      | Pexp_sequence (e1, e2) ->
+      | ([], Pexp_sequence (({pexp_desc=Pexp_sequence _ }) as e1, e2))
+      | ([], Pexp_sequence (({pexp_desc=Pexp_let _      }) as e1, e2))
+      | ([], Pexp_sequence (({pexp_desc=Pexp_open _     }) as e1, e2))
+      | ([], Pexp_sequence (({pexp_desc=Pexp_letmodule _}) as e1, e2))
+      | ([], Pexp_sequence (e1, e2)) ->
           let e1Layout = (self#expression e1) in
           let e1SourceMapped = SourceMap (
             break,
@@ -3021,7 +3337,7 @@ class printer  ()= object(self:'self)
              any form. *)
           [exprTermSourceMapped]
 
-  method constructor_expression embeddedAttrs ctor eo =
+  method constructor_expression embeddedAttrs nonEmbeddedAttrs ctor eo =
     let arguments =
       match eo.pexp_desc with
         | (Pexp_tuple l) when shouldInterpretTupleAsConstructorArgs embeddedAttrs -> (
@@ -3032,9 +3348,14 @@ class printer  ()= object(self:'self)
           )
         | _ -> self#simple_expression eo
     in
-    label ~space:true
-      ctor
-      (if isSequencey arguments then arguments else (ensureSingleTokenSticksToLabel arguments))
+    let construction =
+      label ~space:true
+        ctor
+        (if isSequencey arguments then arguments else (ensureSingleTokenSticksToLabel arguments))
+    in
+    match nonEmbeddedAttrs with
+      | [] -> construction
+      | _::_ -> formatAttributed construction (self#attributes nonEmbeddedAttrs)
 
   method constructor_pattern embeddedAttrs ctor po =
     let arguments =
@@ -3053,15 +3374,14 @@ class printer  ()= object(self:'self)
 
   method expression x =
     let (embeddedAttrs, nonEmbeddedAttrs) = sugarEmbeddedAttributes x.pexp_attributes in
-    if nonEmbeddedAttrs <> [] then
-      (* TODO: Detect when parens are actually needed *)
-      SourceMap (
-        break,
-        x.pexp_loc,
-        formatAttributed
-          (self#expression {x with pexp_attributes=embeddedAttrs})
-          (self#attributes nonEmbeddedAttrs)
-      )
+    if nonEmbeddedAttrs <> []  && (not (self#expr_can_render_own_attributes x)) then
+      let withoutVisibleAttrs = {x with pexp_attributes=embeddedAttrs} in
+        let itm =
+          formatAttributed
+            (self#simple_expression withoutVisibleAttrs)
+            (self#attributes nonEmbeddedAttrs)
+      in
+      SourceMap (break, x.pexp_loc, itm)
     else
       let itm = match x.pexp_desc with
         (* Sequences don't require parens when under pipe in Reason. *)
@@ -3084,7 +3404,7 @@ class printer  ()= object(self:'self)
                   (* For lambdas, "fun" plays the role that the binding name does in
                      bindings *)
                   let returnedAppTerms = self#expressionToFormattedApplicationItems ret in
-                  self#wrapCurriedFunctionBinding None "fun" firstArg tl returnedAppTerms
+                  self#wrapCurriedFunctionBinding "fun" firstArg tl returnedAppTerms
             )
         | Pexp_function l ->
             (* Anything that doesn't have wrappers (parens/braces) should be inline
@@ -3149,7 +3469,7 @@ class printer  ()= object(self:'self)
                   end
               (* TODO: Explicit arity *)
               | `normal ->
-                  self#constructor_expression embeddedAttrs (self#longident_loc li) eo
+                  self#constructor_expression embeddedAttrs nonEmbeddedAttrs (self#longident_loc li) eo
               | _ -> assert false)
         | Pexp_setfield (e1, li, e2) ->
           label ~space:true
@@ -3158,6 +3478,16 @@ class printer  ()= object(self:'self)
               (atom "<-")
             ])
             (self#expression e2)
+        | Pexp_override l -> (* FIXME *)
+          let string_x_expression (s, e) =
+            label ~space:true (atom (s.txt ^ ":")) (self#expression e)
+          in
+          makeList
+            ~postSpace:true
+            ~wrap:("{<", ">}")
+            ~sep:","
+            (List.map string_x_expression l)
+
         | Pexp_ifthenelse (e1, e2, eo) ->
           let (blocks, finalExpression) = sequentialIfBlocks eo in
           let rec sequence soFar remaining = (
@@ -3213,30 +3543,27 @@ class printer  ()= object(self:'self)
           in
           let upToBody = makeList ~inline:(true, true) ~postSpace:true [atom "for"; dockedToFor] in
           label ~space:true upToBody (makeLetSequence (self#letList e3))
-        | Pexp_new (li) -> (*FIXME*)
-            case_not_implemented "Pexp_new" x.pexp_loc (try assert false with Assert_failure x -> x);
-            (wrap default#expression) x
-        | Pexp_setinstvar (s, e) -> (*FIXME*)
-            case_not_implemented "Pexp_setinstvar" x.pexp_loc (try assert false with Assert_failure x -> x);
-            (wrap default#expression) x
-        | Pexp_override l -> (*FIXME*)
-            case_not_implemented "Pexp_override" x.pexp_loc (try assert false with Assert_failure x -> x);
-            (wrap default#expression) x
+        | Pexp_new (li) ->
+          label ~space:true (atom "new") (self#longident_class_or_type_loc li);
+        | Pexp_setinstvar (s, e) ->
+          label
+            ~space:true
+            (makeList ~postSpace:true [(atom s.txt); (atom "<-")])
+            (self#expression e)
         | Pexp_assert e ->
             label ~space:true
               (atom "assert")
               (self#reset#simple_expression e);
         | Pexp_lazy (e) ->
             makeList ~postSpace:true [atom "lazy"; self#simple_expression e]
-        | Pexp_poly _ -> (*FIXME*)
-            case_not_implemented "Pexp_poly" x.pexp_loc (try assert false with Assert_failure x -> x);
-            assert false
+        | Pexp_poly _ ->
+          failwith (
+            "This version of the pretty printer assumes it is impossible to " ^
+            "construct a Pexp_poly outside of a method definition - yet it sees one."
+          )
         | Pexp_variant (l, Some eo) ->
-            self#constructor_expression embeddedAttrs (atom ("`" ^ l)) eo
-        | Pexp_extension (s, arg) -> (*FIXME*)
-            case_not_implemented "Pexp_extension" x.pexp_loc (try assert false with Assert_failure x -> x);
-            (wrap default#expression) x
-        | _ -> self#expression1 x
+            self#constructor_expression embeddedAttrs nonEmbeddedAttrs (atom ("`" ^ l)) eo
+        | _ -> self#simple_expression x
       in
       SourceMap (break, x.pexp_loc, itm)
 
@@ -3246,13 +3573,6 @@ class printer  ()= object(self:'self)
       | Pexp_constraint (e, ct) ->
           formatTypeConstraint (self#expression e) (self#core_type ct)
       | _ -> self#expression x
-
-  method expression1 x =
-    if x.pexp_attributes <> [] then self#simple_expression x
-    else match x.pexp_desc with
-      | Pexp_object cs -> self#class_structure cs
-      | _ -> self#expression2 x
-
 
   (* Used in consecutiveInfixApplicationItems. For the most part, infix
      operations have lower priority over everything else - infix operators
@@ -3307,15 +3627,40 @@ class printer  ()= object(self:'self)
       )
       | _ -> self#simple_expression x
 
+  (* The parsing precedence for dangling attributes is the same as function
+     application - or any other syntactic construct that has space separated
+     list of tokens. So if the following is parsed
+
+       x y [@attr]
+      
+     Then we can omit parens around (x y).
+   *)
+  method expr_can_render_own_attributes x =
+    match x.pexp_desc with
+      | Pexp_construct _ when not (is_simple_construct (view_expr x)) -> true
+      | Pexp_variant _
+      | Pexp_apply _ -> true
+      | _ -> false
+
   method simple_expression x =
     let (embeddedAttrs, nonEmbeddedAttrs) = sugarEmbeddedAttributes x.pexp_attributes in
-    if nonEmbeddedAttrs <> [] then
-      (* TODO: Detect when parens are actually needed *)
-      formatAttributed
-        (self#simple_expression {x with pexp_attributes=embeddedAttrs})
+    (* If the expr can render its own attributes, it will know better if
+       guarding the expression in parens is needed. *)
+    if nonEmbeddedAttrs <> [] && (not (self#expr_can_render_own_attributes x)) then
+      let withoutVisibleAttrs = {x with pexp_attributes=embeddedAttrs} in
+      formatSimpleAttributed
+        (self#simple_expression withoutVisibleAttrs)
         (self#attributes nonEmbeddedAttrs)
     else
       let item = match x.pexp_desc with
+        | Pexp_object cs ->
+          makeList
+            ~sep:";"
+            ~wrap:("{", "}")
+            ~break:IfNeed
+            ~postSpace:true
+            ~inline:(true, false)
+            (self#class_self_pattern_and_structure cs)
         | Pexp_construct _  when is_simple_construct (view_expr x) ->
             (match view_expr x with
               | `nil -> atom "[]"
@@ -3415,7 +3760,11 @@ class printer  ()= object(self:'self)
                          | (firstArg::tl, _) ->
                            let upToColon = makeList [self#longident_loc li; atom ":"] in
                            let returnedAppTerms = self#expressionToFormattedApplicationItems return in
-                           let labelExpr = self#wrapCurriedFunctionBinding (Some upToColon) "fun" firstArg tl returnedAppTerms in
+                           let labelExpr =
+                             label
+                               ~space:true
+                               upToColon
+                               (self#wrapCurriedFunctionBinding "fun" firstArg tl returnedAppTerms) in
                            if appendComma then makeList [labelExpr; comma;] else labelExpr
                      )
               in SourceMap(break, totalRowLoc, theRow)
@@ -3470,6 +3819,7 @@ class printer  ()= object(self:'self)
               makeLetSequence (self#letList x)
         | Pexp_field (e, li) -> makeList [self#simple_enough_to_be_lhs_dot_send e; atom "."; self#longident_loc li]
         | Pexp_send (e, s) ->  makeList [self#simple_enough_to_be_lhs_dot_send e; atom "#";  atom s]
+        | Pexp_extension e -> self#extension e
         | _ ->  makeList ~break:IfNeed ~wrap:("(", ")") [self#expression x]
       in
       SourceMap (break, x.pexp_loc, item)
@@ -3477,10 +3827,72 @@ class printer  ()= object(self:'self)
   method direction_flag = function
     | Upto -> atom "to"
     | Downto -> atom "downto"
-  method attributes l =
-    (wrap default#attributes l)
 
-  method attribute = wrap default#attribute
+  method payload ppxToken ppxId e =
+    let wrap = ("[" ^ ppxToken ^ ppxId.txt, "]") in
+    let break = IfNeed in
+    let pad = (true, false) in
+    let postSpace = true in
+    match e with
+      | PStr [] -> atom ("[" ^ ppxToken  ^ ppxId.txt  ^ "]")
+      | PStr [itm] ->
+        makeList ~wrap ~break ~pad [self#structure_item ~include_semi:false itm]
+      | PStr (_::_ as items) ->
+        let rows = (List.map (self#structure_item ~include_semi:true) items) in
+        makeList ~wrap ~break ~pad ~postSpace rows
+      | PTyp x ->
+        makeList ~wrap ~break ~pad [label ~space:true (atom ":") (self#core_type x)]
+      (* Signatures in attributes were added recently *)
+      (* | PSig x -> makeList [atom ":"; self#signature x] *)
+      | PPat (x, None) ->
+        makeList ~wrap ~break ~pad [label ~space:true (atom "?") (self#pattern x)]
+      | PPat (x, Some e) ->
+        makeList ~wrap ~break ~pad ~postSpace [
+          label ~space:true (atom "?") (self#pattern x);
+          label ~space:true (atom "when") (self#expression e)
+        ]
+
+  method extension (s, e) = (self#payload "%" s e)
+
+  method item_extension (s, e) = (self#payload "%%" s e)
+
+
+  (* @[ ...] Simple attributes *)
+  method attribute (s, e) = (self#payload "@" s e)
+
+  (* [@@ ... ] Attributes that occur after a major item in a structure/class *)
+  method item_attribute (s, e) = (self#payload "@@" s e)
+
+  (* [@@@ ...] Attributes that occur not *after* an item in some structure/class/sig, but
+     rather as their own standalone item. Note that syntactic distinction
+     between item_attribute and floating_attribute is no longer necessary with
+     Reason. Thank you semicolons. *)
+  method floating_attribute (s, e) = (self#payload "@@@" s e)
+
+
+  method attributes l =
+	    makeList ~break:IfNeed ~postSpace:true (List.map self#attribute l)
+
+  method attach_attributes l toThis =
+   match l with
+      | [] -> toThis
+      | _::_ -> makeList ~postSpace:true [toThis; (self#attributes l)]
+
+  method attach_item_attributes l toThis =
+   match l with
+      | [] -> toThis
+      | _::_ ->
+        makeList 
+          ~postSpace:true 
+          ~indent:0 
+          ~break:IfNeed 
+          ~inline:(true, true)
+          [toThis; (self#item_attributes l)]
+
+  method item_attributes l =
+	    makeList 
+       ~break:IfNeed ~postSpace:true (List.map self#item_attribute l)
+	
   method exception_declaration ed =
     let pcd_name = ed.pext_name in
     let pcd_loc = ed.pext_loc in
@@ -3493,12 +3905,419 @@ class printer  ()= object(self:'self)
           [atom pcd_name.txt; atom "="; (self#longident_loc id)] in
     makeList ~postSpace:true ((atom "exception")::exn_arg)
 
-  method class_signature = wrap default#class_signature
-  method class_type = wrap default#class_type
-  method class_type_declaration_list = wrap default#class_type_declaration_list
-  method class_field = wrap default#class_field
-  method class_structure = wrap default#class_structure
-  method class_expr = wrap default#class_expr
+  (*
+    Note: that override doesn't appear in class_sig_field, but does occur in
+    class/object expressions.
+    TODO: TODOATTRIBUTES
+   *)
+  method method_sig_flags_for s = function
+    | (Private, Virtual) -> [atom "private"; atom "virtual"; atom s]
+    | (Private, Concrete) -> [atom "private"; atom s]
+    | (Public, Virtual) -> [atom "virtual"; atom s]
+    | (Public, Concrete) ->  [atom s]
+
+  method method_flags_for s = function
+    | (Private, Virtual) -> [atom "private"; atom "virtual"; atom s]
+    | (Private, Concrete) -> [atom "private"; atom s]
+    | (Public, Virtual) -> [atom "virtual"; atom s]
+    | (Public, Concrete) ->  [atom s]
+
+  method value_type_flags_for s = function
+    | (Virtual, Mutable) -> [atom "virtual"; atom "mutable"; atom s]
+    | (Virtual, Immutable) -> [atom "virtual"; atom s]
+    | (Concrete, Mutable) -> [atom "mutable"; atom s]
+    | (Concrete, Immutable) -> [atom s]
+
+  method class_sig_field x =
+    match x.pctf_desc with
+    | Pctf_inherit (ct) ->
+      label ~space:true (atom "inherit") (self#class_constructor_type ct)
+    | Pctf_val (s, mf, vf, ct) ->
+      let valueFlags = self#value_type_flags_for (s ^ ":") (vf, mf) in
+      label
+        ~space:true
+        (
+          label ~space:true
+            (atom "val")
+            (makeList ~postSpace:true ~inline:(false, true) ~break:IfNeed valueFlags)
+        )
+        (self#core_type ct)
+    | Pctf_method (s, pf, vf, ct) ->
+      let methodFlags = self#method_sig_flags_for (s ^ ":") (pf, vf) in
+      label
+        ~space:true
+        (label ~space:true
+            (atom "method")
+            (makeList ~postSpace:true ~inline:(false, true) ~break:IfNeed methodFlags)
+        )
+        (self#core_type ct)
+    | Pctf_constraint (ct1, ct2) ->
+      label
+        (atom "constraint")
+        (label ~space:true
+            (makeList ~postSpace:true [self#core_type ct1; atom "="])
+            (self#core_type ct2)
+        )
+    | Pctf_attribute a -> self#floating_attribute a
+    | Pctf_extension e -> self#item_extension e
+
+  (* The type of something returned from a constructor. Formerly [class_signature]  *)
+  (* TODO: TODOATTRIBUTES *)
+  method class_instance_type x = match x.pcty_desc with
+    | Pcty_signature cs ->
+        let {pcsig_self = ct; pcsig_fields = l} = cs in
+        let instTypeFields = List.map self#class_sig_field l in
+        let allItems = match ct.ptyp_desc with
+          | Ptyp_any -> instTypeFields
+          | _ ->
+            label ~space:true (atom "instance as") (self#core_type ct) ::
+            instTypeFields
+        in
+        makeList
+          ~wrap:("{", "}")
+          ~postSpace:true
+          ~break:Always_rec
+          ~sep:";"
+          allItems
+    | Pcty_constr (li, l) -> (
+        match l with
+          | [] -> self#longident_loc li
+          | _::_ ->
+            label
+              ~space:true
+              (makeList ~wrap:("(", ")") ~sep:"," (List.map self#core_type l))
+              (self#longident_loc li)
+      )
+    | Pcty_extension e -> self#extension e
+    | Pcty_arrow _ -> failwith "class_instance_type should not be printed with Pcty_arrow"
+
+  method class_declaration_list l =
+    let class_declaration ?(class_keyword=false)
+        ({pci_params=ls; pci_name={txt}; pci_virt; pci_expr={pcl_desc}} as x) =
+      let (firstToken, pattern, patternAux) = self#class_opening class_keyword txt pci_virt ls in
+      let classBinding = self#wrappedClassBinding firstToken pattern patternAux x.pci_expr in
+      self#attach_item_attributes x.pci_attributes classBinding;
+    in
+    (match l with
+      | [] -> raise (NotPossible "Class definitions will have at least one item.")
+      | x::rest ->
+        makeNonIndentedBreakingList (
+          class_declaration ~class_keyword:true x ::
+          List.map class_declaration rest
+        )
+    )
+  (* For use with [class type a = class_instance_type]. Class type
+     declarations/definitions declare the types of instances generated by class
+     constructors.
+     Note: This should only call self#class_instance_type even though
+     class_constructor_type won't hurt - it's a superset.
+     TODO: TODOATTRIBUTES:
+  *)
+  method class_type_declaration_list l =
+    let class_type_declaration kwd ({pci_params=ls;pci_name={txt};pci_attributes} as x) =
+      let opener = match x.pci_virt with
+        | Virtual -> kwd ^ " " ^ "virtual"
+        | Concrete -> kwd
+      in
+
+      let upToName =
+        if ls == [] then
+          label ~space:true (atom opener) (atom txt)
+        else
+          label
+            ~space:true
+            (label ~space:true (atom opener) (atom txt))
+            (self#class_params_def ls)
+      in
+      let includingEqual = makeList ~postSpace:true [upToName; atom "="] in
+      let itm = label ~space:true includingEqual (self#class_constructor_type x.pci_expr) in
+      self#attach_item_attributes pci_attributes itm
+    in
+    match l with
+    | [] -> failwith "Should not call class_type_declaration with no classes"
+    | [x] -> class_type_declaration "class type" x
+    | x :: xs ->
+      makeList
+        ~break:Always_rec
+        ~indent:0
+        ~inline:(true, true)
+        (
+          (class_type_declaration "class type" x)::
+          List.map (class_type_declaration "and") xs
+        )
+
+  (*
+     Formerly the [class_type]
+     Notice how class_constructor_type doesn't have any type attributes -
+     class_instance_type does.
+     TODO: Divide into class_constructor_types that allow arrows and ones
+     that don't.
+   *)
+  method class_constructor_type x =
+    match x.pcty_desc with
+    | Pcty_arrow (l, co, cl) ->
+      let rec allArrowSegments xx = match xx.pcty_desc with
+        | Pcty_arrow (l, ct1, ct2) ->
+            (self#type_with_label (l, ct1))::(allArrowSegments ct2)
+        (* This "new" is unfortunate. See reason_parser.mly for details. *)
+        | _ -> [label ~space:true (atom "new") (self#class_constructor_type xx)]
+      in
+      let normalized =
+        makeList
+          ~break:IfNeed
+          ~sep:"=>"
+          ~preSpace:true
+          ~postSpace:true
+          ~inline:(true, true)
+          (allArrowSegments x)
+      in
+      SourceMap (break, x.pcty_loc, normalized)
+    | _ -> self#class_instance_type x
+
+  method non_arrowed_class_constructor_type x =
+    match x.pcty_desc with
+    | Pcty_arrow (l, co, cl) ->
+      let normalized = formatPrecedence (self#class_constructor_type x) in
+      SourceMap (break, x.pcty_loc, normalized)
+    | _ -> self#class_instance_type x
+
+  (* TODO: TODOATTRIBUTES. *)
+  method class_field x =
+    match x.pcf_desc with
+    | Pcf_inherit (ovf, ce, so) ->
+      let inheritText = ("inherit" ^ override ovf) in
+      let inheritExp = self#class_expr ce in
+      label
+        ~space:true
+        (atom inheritText)
+        (
+          match so with
+          | None -> inheritExp;
+          | Some (s) -> label ~space:true inheritExp (atom ("as " ^ s))
+        )
+    | Pcf_val (s, mf, Cfk_concrete (ovf, e)) ->
+      let opening = match mf with
+        | Mutable ->
+          let mutableName = [atom "mutable"; atom s.txt] in
+          label
+            ~space:true
+            (atom ("val" ^ override ovf))
+            (makeList ~postSpace:true ~inline:(false, true) ~break:IfNeed mutableName)
+        | Immutable -> label ~space:true (atom ("val" ^ override ovf)) (atom s.txt)
+      in
+      let valExprAndConstraint = match e.pexp_desc with
+        | Pexp_constraint (ex, ct) ->
+          let openingWithTypeConstraint = formatTypeConstraint opening (self#core_type ct) in
+          label
+            ~space:true
+            (makeList ~postSpace:true [openingWithTypeConstraint; atom "="])
+            (self#expression e)
+        | _ ->
+          label ~space:true (makeList ~postSpace:true [opening; atom "="]) (self#expression e)
+      in
+      valExprAndConstraint
+    | Pcf_val (s, mf, Cfk_virtual ct) ->
+      let opening = match mf with
+        | Mutable ->
+          let mutableVirtualName = [atom "mutable"; atom "virtual"; atom s.txt] in
+          let openingTokens =
+            (makeList ~postSpace:true ~inline:(false, true) ~break:IfNeed mutableVirtualName) in
+          label ~space:true (atom "val") openingTokens
+        | Immutable ->
+          let virtualName = [atom "virtual"; atom s.txt] in
+          let openingTokens =
+            (makeList ~postSpace:true ~inline:(false, true) ~break:IfNeed virtualName) in
+          label ~space:true (atom "val") openingTokens
+      in
+      formatTypeConstraint opening (self#core_type ct)
+    | Pcf_method (s, pf, Cfk_virtual ct) ->
+      let opening = match pf with
+        | Private ->
+          let privateVirtualName = [atom "private"; atom "virtual"; atom s.txt] in
+          let openingTokens =
+            (makeList ~postSpace:true ~inline:(false, true) ~break:IfNeed privateVirtualName) in
+          label ~space:true (atom "method") openingTokens
+        | Public ->
+          let virtualName = [atom "virtual"; atom s.txt] in
+          let openingTokens =
+            (makeList ~postSpace:true ~inline:(false, true) ~break:IfNeed virtualName) in
+          label ~space:true (atom "method") openingTokens
+      in
+      formatTypeConstraint opening (self#core_type ct)
+    | Pcf_method (s, pf, Cfk_concrete (ovf, e)) ->
+      let methodText = if ovf == Override then "method!" else "method" in
+      (* Should refactor the binding logic so faking out the AST isn't needed,
+         currently, it includes a ton of nuanced logic around recovering explicitly
+         polymorphic type definitions, and that furthermore, that representation...
+         Actually, let's do it.
+
+         For some reason, concrete methods are only ever parsed as Pexp_poly.
+         If there *is* no polymorphic function for the method, then the return
+         value of the function is wrapped in a ghost Pexp_poly with [None] for
+         the type vars.*)
+      (match e.pexp_desc with
+        | (Pexp_poly
+            ({pexp_desc=Pexp_constraint (methodFunWithNewtypes, nonVarifiedExprType)},
+              Some ({ptyp_desc=Ptyp_poly (typeVars, varifiedPolyType)})
+            )
+          ) when (
+            let (leadingAbstractVars, nonVarified) =
+              self#leadingCurriedAbstractTypes methodFunWithNewtypes in
+            self#isRenderableAsPolymorphicAbstractTypes
+              typeVars
+              (* If even artificially varified. Don't know until this returns*)
+              varifiedPolyType
+              leadingAbstractVars
+              nonVarifiedExprType
+        ) ->
+          let (leadingAbstractVars, nonVarified) =
+            self#leadingCurriedAbstractTypes methodFunWithNewtypes in
+          let fauxBindingPattern = match pf with
+            | Private -> (makeList ~postSpace:true ~break:IfNeed [atom "private"; atom s.txt])
+            | Public -> atom s.txt
+          in
+          self#locallyAbstractPolymorphicFunctionBinding
+            methodText
+            fauxBindingPattern
+            methodFunWithNewtypes
+            leadingAbstractVars
+            nonVarifiedExprType
+        | Pexp_poly (e, Some ct) ->
+          let typeLayout = SourceMap (break, ct.ptyp_loc, (self#core_type ct)) in
+          let appTerms = self#expressionToFormattedApplicationItems e in
+          let fauxBindingPattern = match pf with
+            | Private -> (makeList ~postSpace:true ~break:IfNeed [atom "private"; atom s.txt])
+            | Public -> atom s.txt
+          in
+          self#formatSimplePatternBinding methodText fauxBindingPattern (Some typeLayout) appTerms
+        (* This form means that there is no type constraint - it's a strange node name.*)
+        | Pexp_poly (e, None) ->
+          let (pattern, patternAux) = match pf with
+            | Private -> (atom "private", [atom s.txt])
+            | Public -> (atom s.txt, [])
+          in
+          self#wrappedBinding methodText pattern patternAux e
+        | _ -> failwith "Concrete methods should only ever have Pexp_poly."
+      )
+    | Pcf_constraint (ct1, ct2) ->
+      label
+        ~space:true
+        (atom "constraint")
+        (
+          makeList ~postSpace:true ~inline:(true, false) [
+            makeList ~postSpace:true [self#core_type ct1; atom "="];
+            self#core_type ct2
+          ]
+        )
+    | Pcf_initializer (e) ->
+      label
+        ~space:true
+        (atom "initializer =>")
+        (self#expression e)
+    | Pcf_attribute a -> self#floating_attribute a
+    | Pcf_extension e ->
+      (* And don't forget, we still need to print post_item_attributes even for
+         this case *)
+      self#item_extension e
+
+  method class_self_pattern_and_structure {pcstr_self = p; pcstr_fields = l} =
+    let fields = (List.map self#class_field l) in
+    (* Recall that by default self is bound to "this" at parse time. You'd
+       have to go out of your way to bind it to "_". *)
+    match (p.ppat_attributes, p.ppat_desc) with
+      | ([], Ppat_var ({loc; txt = "this"})) -> fields
+      | _ -> (label ~space:true (atom "instance as") (self#pattern p))::fields
+
+  method simple_class_expr x =
+    if x.pcl_attributes <> [] then
+      formatSimpleAttributed
+        (self#simple_class_expr {x with pcl_attributes=[]})
+        (self#attributes x.pcl_attributes)
+    else
+      let itm =
+        match x.pcl_desc with
+        | Pcl_constraint (ce, ct) ->
+          formatTypeConstraint (self#class_expr ce) (self#class_constructor_type ct)
+        (* In OCaml,
+          - In the most recent version of OCaml, when in the top level of a
+            module, let _ = ... is a PStr_eval.
+          - When in a function, it is a Pexp_let PPat_any
+          - When in class pre-member let bindings it is a Pcl_let PPat_any
+
+           Reason normalizes all of these to be simple imperative expressions
+           with trailing semicolons, *except* in the case of classes because it
+           will likely introduce a conflict with some proposed syntaxes for
+           objects.
+        *)
+        | Pcl_let _
+        | Pcl_structure _ ->
+            makeList ~wrap:("{", "}") ~break:Always_rec (self#classExprLetsAndRest x)
+        | Pcl_extension e -> self#extension e
+        | _ -> formatPrecedence (self#class_expr x)
+     in SourceMap (break, x.pcl_loc, itm)
+
+  method classExprLetsAndRest x =
+    match x.pcl_desc with
+      | Pcl_structure cs ->
+        let items = self#class_self_pattern_and_structure cs in
+        List.map semiTerminated items
+      | Pcl_let (rf, l, ce) ->
+        (* For "letList" bindings, the start/end isn't as simple as with
+         * module value bindings. For "let lists", the sequences were formed
+         * within braces {}. The parser relocates the first let binding to the
+         * first brace. *)
+         let bindingsLayout = (self#bindings (rf, l)) in
+         let bindingsLoc = self#bindingsLocationRange l in
+         let bindingsSourceMapped = SourceMap (
+           break,
+           bindingsLoc,
+           bindingsLayout
+         ) in
+         bindingsSourceMapped::(self#classExprLetsAndRest ce)
+      | _ -> [self#class_expr x]
+
+  method class_expr x =
+    (* We cannot handle the attributes here. Must handle them in each item *)
+    if x.pcl_attributes <> [] then
+      (* Do not need a "simple" attributes precedence wrapper. *)
+      formatAttributed 
+        (self#simple_class_expr {x with pcl_attributes=[]})
+        (self#attributes x.pcl_attributes)
+    else
+      match x.pcl_desc with
+      | Pcl_fun (l, eo, p, e) ->
+          label
+            ~space:true
+            (makeList ~postSpace:true [
+               (label ~space:true (atom "fun") (self#label_exp (l, eo, p)));
+              (atom "=>");
+            ])
+            (self#class_expr e);
+      | Pcl_apply (ce, l) ->
+        let applicationItems = self#classExpressionToFormattedApplicationItems x in
+        formatAttachmentApplication applicationFinalWrapping None applicationItems
+      | Pcl_constr (li, l) ->
+          (* TODO: Allow classes to use the same syntax as every other type
+             application. *)
+        (match l with
+          | [] -> label ~space:true (atom "class") (self#longident_loc li)
+          | ll ->
+            let typeParameters =
+              makeList
+                ~break:IfNeed
+                ~postSpace:true
+                ~inline:(true, true)
+                (List.map self#non_arrowed_simple_core_type l)
+            in
+            label
+              ~space:true
+              (makeList ~postSpace:true [atom "class"; self#longident_loc li])
+              typeParameters
+        )
+      | Pcl_constraint _
+      | Pcl_extension _
+      | Pcl_let _
+      | Pcl_structure _ -> self#simple_class_expr x;
 
   method signature signatureItems =
     Sequence (break, List.map self#signature_item signatureItems)
@@ -3529,9 +4348,26 @@ class printer  ()= object(self:'self)
             self#type_extension te
         | Psig_exception ed ->
             self#exception_declaration ed
-        | Psig_class l -> (*FIXME*)
-            case_not_implemented "Psig_class" x.psig_loc (try assert false with Assert_failure x -> x);
-            wrap (default#signature_item) x
+        | Psig_class l ->
+            let class_description ?(class_keyword=false) ({pci_params=ls;pci_name={txt}} as x) =
+              let (firstToken, pattern, patternAux) = self#class_opening class_keyword txt x.pci_virt ls in
+              let withColon = self#wrapCurriedFunctionBinding
+                ~arrow:":"
+                firstToken
+                pattern
+                patternAux
+                ([(self#class_constructor_type x.pci_expr)], None)
+              in
+              self#attach_item_attributes x.pci_attributes withColon
+            in
+            makeNonIndentedBreakingList (
+              match l with
+              | [] -> raise (NotPossible "No recursive class bindings")
+              | [x] -> [class_description ~class_keyword:true x]
+              | x :: xs ->
+                 (class_description ~class_keyword:true x)::
+                 (List.map class_description xs)
+            )
         | Psig_module {pmd_name; pmd_type={pmty_desc=Pmty_alias alias}} ->
             label ~space:true
               (makeList ~postSpace:true [
@@ -3561,9 +4397,7 @@ class printer  ()= object(self:'self)
                     (makeList ~postSpace:true [atom "module type"; atom s.txt; atom "="])
                     (self#module_type mt)
           )
-        | Psig_class_type l -> (*FIXME*)
-            case_not_implemented "Psig_class_type" x.psig_loc (try assert false with Assert_failure x -> x);
-            (wrap default#signature_item) x
+        | Psig_class_type l -> self#class_type_declaration_list l
         | Psig_recmodule decls ->
             let first xx =
               self#formatSimpleSignatureBinding
@@ -3583,8 +4417,10 @@ class printer  ()= object(self:'self)
               | hd::tl -> (first hd)::(List.map notFirst tl)
             in
             makeNonIndentedBreakingList moduleBindings
-        | Psig_attribute _
-        | Psig_extension _ -> assert false in
+        | Psig_attribute a -> self#floating_attribute a
+        | Psig_extension (e, a) ->
+          self#attach_item_attributes a (self#item_extension e)
+        in
 
     SourceMap (break, x.psig_loc, (makeList [item; atom ";"]))
 
@@ -3711,7 +4547,7 @@ class printer  ()= object(self:'self)
                 (* See #19/20 in syntax.mls - cannot annotate return type at
                    the moment. *)
                 let returnedAppTerms = self#moduleExpressionToFormattedApplicationItems return in
-                self#wrapCurriedFunctionBinding None "functor" firstArg restArgs returnedAppTerms
+                self#wrapCurriedFunctionBinding "functor" firstArg restArgs returnedAppTerms
           )
       | Pmod_apply (me1, me2) ->
           let appTerms = self#moduleExpressionToFormattedApplicationItems x in
@@ -3734,9 +4570,6 @@ class printer  ()= object(self:'self)
     else
       List.map self#structure_item structureItems
   )
-
-  method payload = wrap default#payload
-
 
 
   (*
@@ -3789,10 +4622,27 @@ class printer  ()= object(self:'self)
                 | _ -> (argsList, return)
             ) in
             let returnedAppTerms = self#moduleExpressionToFormattedApplicationItems actualReturn in
-            self#wrapCurriedFunctionBinding None prefixText bindingName argsWithConstraint returnedAppTerms
+            self#wrapCurriedFunctionBinding prefixText bindingName argsWithConstraint returnedAppTerms
     )
 
-  method structure_item term =
+    method class_opening class_keyword name pci_virt ls =
+      let firstToken = if class_keyword then "class" else "and" in
+      match (pci_virt, ls) with
+        (* When no class params, it's a very simple formatting for the
+           opener - no breaking. *)
+        | (Virtual, []) ->
+          (firstToken, atom "virtual", [atom name])
+        | (Concrete, []) ->
+          (firstToken, atom name, [])
+        | (Virtual, _::_) ->
+          (firstToken, atom "virtual", [atom name; self#class_params_def ls])
+        | (Concrete, _::_) ->
+          (firstToken, atom name, [self#class_params_def ls])
+
+
+  (* TODO: TODOATTRIBUTES: Structure items don't have attributes, but each
+     pstr_desc *)
+  method structure_item ?(include_semi=true) term =
     let item = (
       match term.pstr_desc with
         | Pstr_eval (e, _attrs) -> self#expression e
@@ -3820,42 +4670,8 @@ class printer  ()= object(self:'self)
                     (makeList ~postSpace:true [atom "module type";atom s.txt; atom "="])
                     (self#module_type mt)
           )
-        | Pstr_class l ->
-            (atom ("let _ = \"Classes not supported by pretty printer\""))
-        (* let class_declaration f  (* for the second will be changed to and FIXME*) *)
-        (*     ({pci_params=ls; *)
-        (*       pci_name={txt}; *)
-        (*       pci_virt; *)
-        (*       pci_expr={pcl_desc}; *)
-        (*       _ } as x) = *)
-        (*   let rec  class_fun_helper f e = match e.pcl_desc with *)
-        (*     | Pcl_fun (l, eo, p, e) -> *)
-        (*         self#label_exp f (l,eo,p); *)
-        (*         class_fun_helper f e *)
-        (*     | _ -> e in *)
-        (*   pp f "%a%a%s %a"  self#virtual_flag pci_virt self#class_params_def ls txt *)
-        (*     (fun f _ -> *)
-        (*        let ce = *)
-        (*          (match pcl_desc with *)
-        (*            | Pcl_fun _ -> *)
-        (*                class_fun_helper f x.pci_expr; *)
-        (*            | _ -> x.pci_expr) in *)
-        (*        let ce = *)
-        (*          (match ce.pcl_desc with *)
-        (*            | Pcl_constraint (ce, ct) -> *)
-        (*                pp f ": @[%a@] " self#class_type  ct ; *)
-        (*                ce *)
-        (*            | _ -> ce ) in *)
-        (*        pp f "=@;%a" self#class_expr ce ) x in *)
-        (* (match l with *)
-        (*   | [] -> () *)
-        (*   | [x] -> pp f "@[<2>class %a@]" class_declaration x *)
-        (*   | xs ->  self#list *)
-        (*              ~first:"@[<v0>class @[<2>" *)
-        (*              ~sep:"@]@;and @[" *)
-        (*              ~last:"@]@]" class_declaration f xs) *)
-        | Pstr_class_type (l) ->
-            (atom ("let _ = \"Classes not supported by pretty printer\""))
+        | Pstr_class l -> self#class_declaration_list l
+        | Pstr_class_type (l) -> self#class_type_declaration_list l
         | Pstr_primitive vd ->
             makeList ~postSpace:true [
               atom ("external");
@@ -3885,10 +4701,17 @@ class printer  ()= object(self:'self)
               | hd::tl -> (first hd)::(List.map notFirst tl)
             in
             (makeNonIndentedBreakingList moduleBindings)
-        | Pstr_attribute _ -> (atom "( /*attributes not yet supported*/ )")
-        | Pstr_extension _ -> assert false
+        | Pstr_attribute a -> self#floating_attribute a
+        | Pstr_extension (e, a) ->
+          (* Notice how extensions have attributes - but not every structure
+             item does. *)
+          self#item_extension e
     ) in
-    SourceMap (break, term.pstr_loc, makeList [item; atom ";"])
+    SourceMap (
+      break,
+      term.pstr_loc,
+      if include_semi then makeList [item; atom ";"] else item
+    )
 
   method type_extension = wrap default#type_extension
   method extension_constructor = wrap default#extension_constructor
