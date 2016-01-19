@@ -107,7 +107,7 @@ open Ast_helper
 
 let mktyp d = Typ.mk ~loc:(symbol_rloc()) d
 let mkpat d = Pat.mk ~loc:(symbol_rloc()) d
-let mkexp d = Exp.mk ~loc:(symbol_rloc()) d
+let mkexp ?(attrs=[]) d = Exp.mk ~attrs ~loc:(symbol_rloc()) d
 let mkmty d = Mty.mk ~loc:(symbol_rloc()) d
 let mksig d = Sig.mk ~loc:(symbol_rloc()) d
 let mkmod d = Mod.mk ~loc:(symbol_rloc()) d
@@ -153,6 +153,9 @@ let reloc_pat x = { x with ppat_loc = symbol_rloc () };;
    location of the left side of a rule) will naturally include the location of
    the parens [or whatever surrounds the expression]. *)
 let reloc_exp x = { x with pexp_loc = symbol_rloc () };;
+let reloc_class x = { x with pcl_loc = symbol_rloc () };;
+let reloc_class_field x = { x with pcf_loc = symbol_rloc () };;
+let reloc_class_type x = { x with pcty_loc = symbol_rloc () };;
 
 let mkoperator name pos =
   let loc = rhs_loc pos in
@@ -160,6 +163,10 @@ let mkoperator name pos =
 
 let mkpatvar name pos =
   Pat.mk ~loc:(rhs_loc pos) (Ppat_var (mkrhs name pos))
+
+let mk_ghost_patvar name pos =
+  Pat.mk ~loc:(symbol_gloc ()) (Ppat_var (mkrhs name pos))
+
 
 (*
   Ghost expressions and patterns:
@@ -183,11 +190,12 @@ let mkpatvar name pos =
    additional inner node. This is consistent with the above description, I
    believe.
 *)
-let ghexp d = Exp.mk ~loc:(symbol_gloc ()) d
+let ghexp ?(attrs=[]) d = Exp.mk ~attrs ~loc:(symbol_gloc ()) d
 let ghpat d = Pat.mk ~loc:(symbol_gloc ()) d
 let ghtyp d = Typ.mk ~loc:(symbol_gloc ()) d
 let ghloc d = { txt = d; loc = symbol_gloc () }
 let ghstr d = Str.mk ~loc:(symbol_gloc()) d
+let ghsig d = Sig.mk ~loc:(symbol_gloc()) d
 
 let ghunit () =
   ghexp (Pexp_construct (mknoloc (Lident "()"), None))
@@ -303,6 +311,8 @@ let mktailexp nilloc seq =
 let mktailpat nilloc seq =
   mktailpat_extension nilloc seq None
 
+(* Applies attributes to the structure item, not the expression itself. Makes
+ * structure item have same location as expression. *)
 let mkstrexp e attrs =
   { pstr_desc = Pstr_eval (e, attrs); pstr_loc = e.pexp_loc }
 
@@ -428,6 +438,11 @@ let varify_constructors var_names t =
   in
   loop t
 
+(**
+  I believe that wrap_type_annotation will automatically generate the type
+  arguments (type a) (type b) based on what was listed before the dot in a
+  polymorphic type annotation that uses locally abstract types.
+ *)
 let wrap_type_annotation newtypes core_type body =
   let exp = mkexp(Pexp_constraint(body,core_type)) in
   let exp =
@@ -436,15 +451,36 @@ let wrap_type_annotation newtypes core_type body =
   in
   (exp, ghtyp(Ptyp_poly(newtypes,varify_constructors newtypes core_type)))
 
-let wrap_exp_attrs body (ext, attrs) =
-  (* todo: keep exact location for the entire attribute *)
-  let body = {body with pexp_attributes = attrs @ body.pexp_attributes} in
-  match ext with
-  | None -> body
-  | Some id -> ghexp(Pexp_extension (id, PStr [mkstrexp body []]))
 
-let mkexp_attrs d attrs =
-  wrap_exp_attrs (mkexp d) attrs
+let struct_item_extension (ext_attrs, ext_id) structure_item =
+  ghstr (Pstr_extension ((ext_id, PStr [structure_item]), ext_attrs))
+
+let extension_expression (ext_attrs, ext_id) item_expr =
+  ghexp ~attrs:ext_attrs (Pexp_extension (ext_id, PStr [mkstrexp item_expr []]))
+
+(* There's no more need for these functions - this was for the following:
+ * 
+ *     fun % ext [@foo] arg => arg;
+ *
+ *   Becoming
+ *
+ *     [%ext  (fun arg => arg) [@foo]]
+ *
+ *   Which we no longer support.
+ *)
+(* Applies the attributes to the body, then wraps entire thing in an extension
+ * expression, whose payload consists of a single structure item that is body
+ *)
+(* let wrap_exp_attrs body (ext, attrs) = *)
+(*   (* todo: keep exact location for the entire attribute *) *)
+(*   let body = {body with pexp_attributes = attrs @ body.pexp_attributes} in *)
+(*   match ext with *)
+(*   | None -> body *)
+(*   | Some id -> ghexp(Pexp_extension (id, PStr [mkstrexp body []])) *)
+
+(* Why not just mkexp with the right attributes in the first place? *)
+(* let mkexp_attrs d attrs = *)
+(*   wrap_exp_attrs (mkexp d) attrs *)
 
 let mkcf_attrs d attrs =
   Cf.mk ~loc:(symbol_rloc()) ~attrs d
@@ -452,12 +488,105 @@ let mkcf_attrs d attrs =
 let mkctf_attrs d attrs =
   Ctf.mk ~loc:(symbol_rloc()) ~attrs d
 
+
+type let_binding =
+  { lb_pattern: pattern;
+    lb_expression: expression;
+    (* The meaning of lb_leading_attributes and lbs_extension are dependent on
+     * the context of the let binding (module/expression etc) *)
+    lb_attributes: attributes;
+    (* lb_docs: docs Lazy.t; *)
+    (* lb_text: text Lazy.t; *)
+    lb_loc: Location.t; }
+
+type let_bindings =
+  { lbs_bindings: let_binding list;
+    lbs_rec: rec_flag;
+    lbs_extension: string Asttypes.loc option;
+    (* In Reason, we use this field to represent
+       extension attributes attached to the extension on a series of "let/and"
+       bindings As in: let [@extAttrs ] [%id] [@attribute] x = ...; It only
+       makes sense to have [lbs_attributes] when there is an [lbs_extension].
+     *)
+    lbs_attributes: attributes;
+    lbs_loc: Location.t }
+
+let mklb (p, e) attrs =
+  { lb_pattern = p;
+    lb_expression = e;
+    (* Only some individual let bindings are allowed to have attributes
+     * depending on the context *)
+    lb_attributes = attrs;
+    (* lb_docs = symbol_docs_lazy (); *)
+    (* lb_text = symbol_text_lazy (); *)
+    lb_loc = symbol_rloc (); }
+
+let mklbs (extAttrs, extId) rf lb =
+  { lbs_bindings = [lb];
+    lbs_rec = rf;
+    lbs_extension = extId ;
+    lbs_attributes = extAttrs;
+    lbs_loc = symbol_rloc (); }
+
+let addlb lbs lb =
+  { lbs with lbs_bindings = lb :: lbs.lbs_bindings }
+
+let val_of_let_bindings lbs =
+  let bindings =
+    List.map
+      (fun lb ->
+         Vb.mk ~loc:lb.lb_loc ~attrs:lb.lb_attributes
+           (* ~docs:(Lazy.force lb.lb_docs) *)
+           (* ~text:(Lazy.force lb.lb_text) *)
+           lb.lb_pattern lb.lb_expression)
+      lbs.lbs_bindings
+  in
+  let str = mkstr(Pstr_value(lbs.lbs_rec, List.rev bindings)) in
+  (* Note that for value bindings, when there's an extension, the
+   * lbs_attributes are attributes on the extension *)
+  match (lbs.lbs_extension) with
+    | None -> str
+    | Some ext_id -> struct_item_extension (lbs.lbs_attributes, ext_id) str
+
+let expr_of_let_bindings lbs body =
+  let bindings =
+    List.map
+      (fun lb ->
+         (* Individual let bindings in an *expression* can't have item attributes. *)
+         if lb.lb_attributes <> [] then
+           raise Syntaxerr.(Error(Not_expecting(lb.lb_loc, "item attribute")));
+         Vb.mk ~loc:lb.lb_loc lb.lb_pattern lb.lb_expression)
+      lbs.lbs_bindings
+  in
+  (* The location of this expression unfortunately includes the entire rule,
+   * which will include any preceeding extensions. *)
+  let item_expr = mkexp (Pexp_let(lbs.lbs_rec, List.rev bindings, body)) in
+  (* Note that for let expression bindings, when there's an extension, the
+   * lbs_attributes are attributes on the entire [let ..in x] expression. *)
+  match lbs.lbs_extension with
+    | None -> item_expr
+    | Some ext_id -> extension_expression (lbs.lbs_attributes, ext_id) item_expr
+
+let class_of_let_bindings lbs body =
+  let bindings =
+    List.map
+      (fun lb ->
+         if lb.lb_attributes <> [] then
+           raise Syntaxerr.(Error(Not_expecting(lb.lb_loc, "item attribute")));
+         Vb.mk ~loc:lb.lb_loc lb.lb_pattern lb.lb_expression)
+      lbs.lbs_bindings
+  in
+    if lbs.lbs_extension <> None then
+      raise Syntaxerr.(Error(Not_expecting(lbs.lbs_loc, "extension")));
+    if lbs.lbs_attributes <> [] then
+      raise Syntaxerr.(Error(Not_expecting(lbs.lbs_loc, "attributes")));
+    mkclass(Pcl_let (lbs.lbs_rec, List.rev bindings, body))
+
+
 %}
 
 /* Tokens */
 
-%token LBRACE_STRUCT
-%token RBRACE_STRUCT
 %token AMPERAMPER
 %token AMPERSAND
 %token AND
@@ -539,6 +668,7 @@ let mkctf_attrs d attrs =
 %token MUTABLE
 %token <nativeint> NATIVEINT
 %token NEW
+%token INSTANCEAS
 %token OBJECT
 %token OF
 %token OPEN
@@ -613,6 +743,8 @@ Different types of conflicts are resolved in different ways.
     - If the token is left-associative, the parser will reduce.
     - If the token is right-associative, the parser will shift.
     - If non-associative, the parser will declare a syntax error.
+  - Question: What about when the rule to reduce has no precedence because it
+  has no rightmost terminal?
 
 We will only use associativities with operators of the kind  x * x -> x
 for example, in the rules of the form    expr: expr BINOP expr
@@ -649,14 +781,64 @@ conflicts.
 %nonassoc below_EQUAL
 %left     INFIXOP0 EQUAL LESS GREATER   /* expr (e OP e OP e) */
 %right    INFIXOP1                      /* expr (e OP e OP e) */
-%nonassoc below_LBRACKETAT
-%nonassoc LBRACKETAT
-%nonassoc LBRACKETATAT
 %right    COLONCOLON                    /* expr (e :: e :: e) */
-
 %left     INFIXOP2 PLUS PLUSDOT MINUS MINUSDOT PLUSEQ /* expr (e OP e OP e) */
 %left     PERCENT INFIXOP3 STAR                 /* expr (e OP e OP e) */
 %right    INFIXOP4                      /* expr (e OP e OP e) */
+
+/**
+ * With the way attributes are currently parsed, if we want consistent precedence for
+ *
+ * The OCaml parser parses the following attributes:
+ *
+ *    let x = true && (false [@attrOnFalse])
+ *    let x = true && false [@attrOnFalse]
+ *    let x = 10 + 20 [@attrOn20]
+ *    let x = (10 + 20) [@attrEntireAddition]
+ * 
+ * As:
+ *
+ *    let x = true && ((false)[@attrOnFalse ])
+ *    let x = true && ((false)[@attrOnFalse ])
+ *    let x = ((10 + 20)[@attrOn20 ])
+ *    let x = ((10 + 20)[@attrEntireAddition ])
+ *
+ * That is because the precedence of tokens is configured as following, which
+ * only serves to treat certain infix operators as different than others with
+ * respect to attributes *only*.
+ *
+ *    %right    OR BARBAR
+ *    %right    AMPERSAND AMPERAMPER
+ *    %nonassoc below_EQUAL
+ *    %left     INFIXOP0 EQUAL LESS GREATER
+ *    %right    INFIXOP1
+ *    %nonassoc below_LBRACKETAT
+ *    %nonassoc LBRACKETAT
+ *    %nonassoc LBRACKETATAT
+ *    %right    COLONCOLON
+ *    %left     INFIXOP2 PLUS PLUSDOT MINUS MINUSDOT PLUSEQ
+ *    %left     PERCENT INFIXOP3 STAR
+ *    %right    INFIXOP4
+ *
+ * So instead, with Reason, we treat all infix operators identically w.r.t.
+ * attributes. In expressions, they have the same precedence as function
+ * arguments, as if they are additional arguments to a function application.
+ *
+ * Note that prefix unary subtractive/plus parses are still higher in than
+ * attributes, unlike infix. This means that:
+ *
+ *   let = - something blah blah [@attr];
+ * 
+ * Will have the attribute applied to the entire content to the right.
+ *
+ * Where arrows occur, it will (as always) obey the rules of function/type
+ * application.
+ *
+ *   type x = int => int [@onlyAppliedToTheInt];
+ *   type x = (int => int) [@appliedToTheArrow];
+ *
+ */
+
 %nonassoc prec_unary_minus prec_unary_plus /* unary - */
 %nonassoc prec_constant_constructor     /* cf. simple_expr (C versus C x) */
 /* Now that commas require wrapping parens (for tuples), prec_constr_appl no
@@ -667,9 +849,14 @@ conflicts.
 %nonassoc SHARP                         /* simple_expr/toplevel_directive */
 %nonassoc below_DOT
 %nonassoc DOT
+
+%nonassoc below_LBRACKETAT
+%nonassoc LBRACKETAT
+%nonassoc LBRACKETATAT
+
 /* Finally, the first tokens of simple_expr are above everything else. */
 %nonassoc BACKQUOTE BANG BEGIN CHAR FALSE FLOAT INT INT32 INT64
-          LBRACE_STRUCT LBRACE LBRACELESS LBRACKET LBRACKETBAR LIDENT LPAREN
+          LBRACE LBRACELESS LBRACKET LBRACKETBAR LIDENT LPAREN
           NEW NATIVEINT PREFIXOP STRING TRUE UIDENT
           LBRACKETPERCENT LBRACKETPERCENTPERCENT
 
@@ -798,8 +985,9 @@ module_expr:
       { unclosed "struct" 1 "end" 3 }
   /**
    * Although it would be nice (and possible) to support annotated return value
-   * here, that wouldn't be consistent with what is possible for functions. See
-   * TODOs 19/20.
+   * here, that wouldn't be consistent with what is possible for functions.
+   * Update: In upstream, it *is* possible to annotate return values for
+   * lambdas.
    */
   | FUNCTOR functor_args EQUALGREATER module_expr
       { mkFunctorThatReturns $2 $4 }
@@ -819,45 +1007,68 @@ module_expr:
       { Mod.attr $1 $2 }
 ;
 
-/* The existance of the optional leading `seq_expr` at the beginning of every
- * file (and after every semicolon) makes it impossible to further unify the
- * module syntax and non-module syntax. We would like to allow:
+/**
+ * Attributes/Extension points TODO:
+ * - Faux-ternary to support extension points (printing/parsing).
+ * - Audit to ensure every [item attributes] [item extensions] is supported.
+ * - wrap_exp_attrs / mkexp_attrs cleanup - no need for the confusing
+ * indirection.
+ * - Ensure proper parsing as ensured by commit:
+ *   4c48d802cb9e8110ab3b57ca0b6a02fdd5655283
+ * - Support the Item Extension + Item Attributes pattern/sugar/unification for
+ * all items in let sequences (let module etc / let open).
+ */
+
+/*
+ * In OCaml there are (confusingly) two ways to execute imperitive code at the
+ * top level:
  *
- *   let MyExportedModule = {..};
- *
- * At the top level to export a submodule, but a conflict arises because it
- * isn't clear if it is the beginning of of seq_expr:
- *
- *
- *   let MyExportedModule = {..} in blah; blah + blah;
- *
- * Not only that, it's quite bizarre in OCaml how there are two ways to execute
- * imperitive code at the top level:
- *
- *   doStuff();      (* seq_expr begin *)
- *   doMoreStuff();  (* seq_expr end *)
+ *   doStuff();      (* parsed as let _ = ... *)
+ *   doMoreStuff();  (* parsed as let _ = ... *)
  *   ;;              (* SEMISEMI *)
  *   let exportedThing = blah
  *
- *   let _ = doStuff()          (* seq_expr begin *)
- *   let _ = doStuff()          (* seq_expr end *)
+ *   let _ = doStuff()
+ *   let _ = doStuff()
  *   let exportedThing = blah   (* SEMISEMI not needed if no leading seq_expr *)
  *
- *   If we just *require* that every module export is terminated by a SEMI,
- *   and forbid the SEMISEMI, we can actually just *allow* imperitive commands
- *   within a module structure without requiring `let _ =`, and without
- *   requiring SEMISEMI. Killing SEMISEMI makes so many things better. There
- *   doesn't seem to be a reason why it exists in the first place.
  *
+ * SEMISEMI (and a bunch of other inconsistencies/suprises) are the price you
+ * pay for not requiring a delimiter after each binding/imperitive action.
  *
- *   doStuff();          (* seq_expr begin *)
- *   doStuff();          (* seq_expr end *)
- *   let exportedThing = blah;   (* SEMISEMI not needed if no leading seq_expr *)
+ *    let myFn () =
+ *       let x = 0 in
+ *       let y = 10 in
+ *       x + y
+ *
+ * Also, in OCaml, there is a different syntax for let bindings in function
+ * bodies, where each let bindings group must end with IN.
+ *
+ * If we just *require* that every module export is terminated by a SEMI, and
+ * require that sequence expressions are grouped by some surrounding tokens {},
+ * then we can have a consistent, familiar way of executing imperitive code, or
+ * let bindings (without introducing SEMISEMI and without forcing you to write
+ * [let _ = imperitive()]).
+ *
+ *   doStuff();
+ *   doStuff();
+ *   let exportedThing = blah;   (* SEMISEMI not needed *)
+ *
+ * Also, we can then make function scoped let bindings have a consistent syntax
+ * with the top level module syntax.
+ *
+ *    let myFn () => {
+ *      let x = 0;
+ *      let y = 10;
+ *      x + y;
+ *    };
+ }
  *
  * There are other practical reasons to require each structure item (or record
  * item etc) to be terminated by a SEMI. It allows IDEs to correct indentation
- * as you type. Otherwise (as in OCaml) it has to wait until you type
- * `let` again.
+ * as you type. Otherwise (as in OCaml) your editor has to wait until you type
+ * `let` again to determine the indentation of the new line - for many editors,
+ * achieving that configuration is not easy.
  *
  *  structure:
  *      seq_expr post_item_attributes structure_tail { mkstrexp $1 $2 :: $3 }
@@ -870,62 +1081,76 @@ module_expr:
  */
 
 structure:
-    /* empty */          { [] }
+
+  | /* Empty */           {[]}
+  | structure_item { [$1] }
   | structure_item SEMI structure { $1 :: $3 }
 ;
 
 structure_item:
-  /* Don't require the strange let _ = expr, instead, just allow any embedded
-   * expression. Before removing SEMISEMI, and before all structure items were
-   * to be SEMI delimited, this would have caused conflicts in the grammar. */
-  | expr
-      { mkstr(Pstr_eval (wrap_exp_attrs $1 (None, []), [])) }
-
-  | LET ext_attributes rec_flag let_bindings
-      {
-        match $4 with
-          [ {pvb_pat = { ppat_desc = Ppat_any; ppat_loc = _ };
-             pvb_expr = exp; pvb_attributes = attrs}] ->
-            let exp = wrap_exp_attrs exp $2 in
-            mkstr(Pstr_eval (exp, attrs))
-        | l ->
-            let str = mkstr(Pstr_value($3, List.rev l)) in
-            let (ext, attrs) = $2 in
-            if attrs <> [] then not_expecting 2 "attribute";
-            match ext with
-            | None -> str
-            | Some id -> ghstr (Pstr_extension((id, PStr [str]), []))
-      }
-  | EXTERNAL val_ident COLON core_type EQUAL primitive_declaration
-    post_item_attributes
-      { mkstr
-          (Pstr_primitive (Val.mk (mkrhs $2 2) $4
-                             ~prim:$6 ~attrs:$7 ~loc:(symbol_rloc ()))) }
-  | TYPE type_declarations
-      { mkstr(Pstr_type (List.rev $2) ) }
-  | TYPE str_type_extension
-      { mkstr(Pstr_typext $2) }
-  | EXCEPTION str_exception_declaration
-      { mkstr(Pstr_exception $2) }
-  | LET MODULE nonlocal_module_binding
-      { mkstr(Pstr_module $3) }
-  | LET MODULE REC nonlocal_module_bindings
-      { mkstr(Pstr_recmodule(List.rev $4)) }
-  | MODULE TYPE ident post_item_attributes
-      { mkstr(Pstr_modtype (Mtd.mk (mkrhs $3 3)
-                              ~attrs:$4 ~loc:(symbol_rloc()))) }
-  | MODULE TYPE ident EQUAL module_type post_item_attributes
-      { mkstr(Pstr_modtype (Mtd.mk (mkrhs $3 3)
-                              ~typ:$5 ~attrs:$6 ~loc:(symbol_rloc()))) }
-  | open_statement { mkstr(Pstr_open $1) }
-  | CLASS class_declarations
-      { mkstr(Pstr_class (List.rev $2)) }
-  | CLASS TYPE class_type_declarations
-      { mkstr(Pstr_class_type (List.rev $3)) }
-  | INCLUDE module_expr post_item_attributes
-      { mkstr(Pstr_include (Incl.mk $2 ~attrs:$3 ~loc:(symbol_rloc()))) }
-  | item_extension post_item_attributes
-      { mkstr(Pstr_extension ($1, $2)) }
+  | item_extension_sugar structure_item_without_item_extension_sugar {
+    struct_item_extension $1 $2
+  }
+  | structure_item_without_item_extension_sugar {
+    $1
+  }
+  /* Each let binding has its own post_item_attributes */
+  | let_bindings { val_of_let_bindings $1 }
+;
+structure_item_without_item_extension_sugar:
+  /* We consider a floating expression to be equivalent to a single let binding
+     to the "_" (any) pattern.  */
+  | expr post_item_attributes {
+      {pstr_desc = Pstr_eval($1, $2); pstr_loc=symbol_rloc()}
+    }
+  | EXTERNAL val_ident COLON core_type EQUAL primitive_declaration post_item_attributes {
+      mkstr
+        (Pstr_primitive (Val.mk (mkrhs $2 2) $4 ~prim:$6 ~attrs:$7 ~loc:(symbol_rloc ())))
+    }
+  | many_type_declarations {
+      mkstr(Pstr_type (List.rev $1))
+    }
+  | str_type_extension {
+      mkstr(Pstr_typext $1)
+    }
+  | str_exception_declaration {
+      mkstr(Pstr_exception $1)
+    }
+  | LET MODULE nonlocal_module_binding_details post_item_attributes {
+      let (ident, body) = $3 in
+      mkstr(Pstr_module (Mb.mk ident body ~attrs:$4 ~loc:(symbol_rloc ())))
+    }
+  | many_nonlocal_module_bindings {
+      mkstr(Pstr_recmodule(List.rev $1))
+    }
+  | MODULE TYPE ident post_item_attributes {
+      let item_attrs = $4 in
+      let ident = (mkrhs $3 3) in
+      mkstr(Pstr_modtype (Mtd.mk ident ~attrs:item_attrs ~loc:(symbol_rloc())))
+    }
+  | MODULE TYPE ident EQUAL module_type post_item_attributes {
+      let ident = (mkrhs $3 3) in
+      mkstr(Pstr_modtype (Mtd.mk ident ~typ:$5 ~attrs:$6 ~loc:(symbol_rloc())))
+    }
+  | open_statement {
+      mkstr(Pstr_open $1)
+    }
+  | many_class_declarations {
+      (* Each declaration has their own preceeding post_item_attributes *)
+      mkstr(Pstr_class (List.rev $1))
+    }
+  | many_class_type_declarations {
+      (* Each declaration has their own preceeding post_item_attributes *)
+      mkstr(Pstr_class_type (List.rev $1))
+    }
+  | INCLUDE module_expr post_item_attributes {
+      mkstr(Pstr_include (Incl.mk $2 ~attrs:$3 ~loc:(symbol_rloc())))
+    }
+  | item_extension post_item_attributes {
+    (* No sense in having item_extension_sugar for something that's already an
+     * item_extension *)
+    mkstr(Pstr_extension ($1, $2))
+  }
   | floating_attribute
       { mkstr(Pstr_attribute $1) }
 ;
@@ -950,13 +1175,27 @@ module_binding_body:
     module_binding_body_expr { $1 }
   | module_binding_body_functor { $1 }
 
-nonlocal_module_bindings:
-    nonlocal_module_binding                        { [$1] }
-  | nonlocal_module_bindings AND nonlocal_module_binding    { $3 :: $1 }
+many_nonlocal_module_bindings:
+  | LET MODULE REC nonlocal_module_binding_details post_item_attributes {
+    let (ident, body) = $4 in
+    [Mb.mk ident body ~attrs:$5 ~loc:(symbol_rloc ())]
+  }
+  | many_nonlocal_module_bindings and_nonlocal_module_bindings {
+    $2::$1
+  }
 ;
-nonlocal_module_binding:
-    UIDENT module_binding_body post_item_attributes
-    { Mb.mk (mkrhs $1 1) $2 ~attrs:$3 ~loc:(symbol_rloc ()) }
+
+and_nonlocal_module_bindings:
+  | AND nonlocal_module_binding_details post_item_attributes {
+    let (ident, body) = $2 in
+    Mb.mk ident body ~attrs:$3 ~loc:(symbol_rloc ())
+  }
+;
+
+nonlocal_module_binding_details:
+    UIDENT module_binding_body{
+      ((mkrhs $1 1), $2)
+    }
 ;
 
 /* Module types */
@@ -1006,7 +1245,7 @@ simple_module_type:
  *  simple_module_type: (Non arrowed implied)
  *  non_arrowed_module_type
  *  module_type ::=
- *    module_type WITH ...   
+ *    module_type WITH ...
  *    non_arrowed_module_type
  *    (arg : module_type) => module_type
  *    module_type => module_type
@@ -1049,7 +1288,7 @@ module_type:
      * with it.
      *
      * Update: I'm guessing it has something to do with the fact that this isn't
-     * parsed correctly because the => is considered part of "type dependenences" : 
+     * parsed correctly because the => is considered part of "type dependenences" :
      *
      *    let module CreateFactory
      *               (Spec: ContainerSpec)
@@ -1112,54 +1351,65 @@ signature:
 ;
 
 signature_item:
-
-    LET val_ident COLON core_type post_item_attributes
-      { mksig(Psig_value
-                (Val.mk (mkrhs $2 2) $4 ~attrs:$5 ~loc:(symbol_rloc()))) }
-  | EXTERNAL val_ident COLON core_type EQUAL primitive_declaration
-    post_item_attributes
-      { mksig(Psig_value
-                (Val.mk (mkrhs $2 2) $4 ~prim:$6 ~attrs:$7
-                   ~loc:(symbol_rloc()))) }
-  | TYPE type_declarations
-      { mksig(Psig_type (List.rev $2)) }
-  | TYPE sig_type_extension
-      { mksig(Psig_typext $2) }
-  | EXCEPTION sig_exception_declaration
-      { mksig(Psig_exception $2) }
-  | LET MODULE UIDENT module_declaration post_item_attributes
-      { mksig(Psig_module (Md.mk (mkrhs $3 3)
-                             $4 ~attrs:$5 ~loc:(symbol_rloc()))) }
-  | LET MODULE UIDENT EQUAL mod_longident post_item_attributes
-      { mksig(Psig_module (Md.mk (mkrhs $3 3)
-                             (Mty.alias ~loc:(rhs_loc 5) (mkrhs $5 5))
-                             ~attrs:$6
-                             ~loc:(symbol_rloc())
-                          )) }
-  | LET MODULE REC module_rec_declarations
-      { mksig(Psig_recmodule (List.rev $4)) }
-  | MODULE TYPE ident post_item_attributes
-      { mksig(Psig_modtype (Mtd.mk (mkrhs $3 3)
-                              ~attrs:$4 ~loc:(symbol_rloc()))) }
-  | MODULE TYPE ident EQUAL module_type post_item_attributes
-      { mksig(Psig_modtype (Mtd.mk (mkrhs $3 3) ~typ:$5
-                              ~loc:(symbol_rloc())
-                              ~attrs:$6)) }
-  | open_statement
-      { mksig(Psig_open $1) }
-  | INCLUDE module_type post_item_attributes %prec below_WITH
-      { mksig(Psig_include (Incl.mk $2 ~attrs:$3 ~loc:(symbol_rloc()))) }
-  | CLASS class_descriptions
-      { mksig(Psig_class (List.rev $2)) }
-  | CLASS TYPE class_type_declarations
-      { mksig(Psig_class_type (List.rev $3)) }
-  | item_extension post_item_attributes
-      { mksig(Psig_extension ($1, $2)) }
-  | floating_attribute
-      { mksig(Psig_attribute $1) }
+    LET val_ident COLON core_type post_item_attributes {
+        mksig(Psig_value (Val.mk (mkrhs $2 2) $4 ~attrs:$5 ~loc:(symbol_rloc())))
+    }
+  | EXTERNAL val_ident COLON core_type EQUAL primitive_declaration post_item_attributes {
+      mksig(Psig_value (Val.mk (mkrhs $2 2) $4 ~prim:$6 ~attrs:$7 ~loc:(symbol_rloc())))
+    }
+  | many_type_declarations {
+      mksig(Psig_type (List.rev $1))
+    }
+  | sig_type_extension {
+      mksig(Psig_typext $1)
+    }
+  | sig_exception_declaration {
+      mksig(Psig_exception $1)
+    }
+  | LET MODULE UIDENT module_declaration post_item_attributes {
+      mksig(Psig_module (Md.mk (mkrhs $3 3) $4 ~attrs:$5 ~loc:(symbol_rloc())))
+    }
+  | LET MODULE UIDENT EQUAL mod_longident post_item_attributes {
+      mksig(
+        Psig_module (
+          Md.mk
+            (mkrhs $3 3)
+            (Mty.alias ~loc:(rhs_loc 5) (mkrhs $5 5))
+            ~attrs:$6
+            ~loc:(symbol_rloc())
+        )
+      )
+    }
+  | many_module_rec_declarations {
+      mksig(Psig_recmodule (List.rev $1))
+    }
+  | MODULE TYPE ident post_item_attributes {
+      mksig(Psig_modtype (Mtd.mk (mkrhs $3 3) ~attrs:$4 ~loc:(symbol_rloc())))
+    }
+  | MODULE TYPE ident EQUAL module_type post_item_attributes {
+      mksig(Psig_modtype (Mtd.mk (mkrhs $3 3) ~typ:$5 ~loc:(symbol_rloc()) ~attrs:$6))
+    }
+  | open_statement {
+      mksig(Psig_open $1)
+    }
+  | INCLUDE module_type post_item_attributes %prec below_WITH {
+      mksig(Psig_include (Incl.mk $2 ~attrs:$3 ~loc:(symbol_rloc())))
+    }
+  | many_class_descriptions {
+      mksig(Psig_class (List.rev $1))
+    }
+  | many_class_type_declarations {
+      mksig(Psig_class_type (List.rev $1))
+    }
+  | item_extension post_item_attributes {
+      mksig(Psig_extension ($1, $2))
+    }
+  | floating_attribute {
+      mksig(Psig_attribute $1)
+    }
 ;
 open_statement:
-  | OPEN override_flag mod_longident post_item_attributes
+  | OPEN override_flag mod_longident post_item_attributes 
       { Opn.mk (mkrhs $3 3) ~override:$2 ~attrs:$4 ~loc:(symbol_rloc()) }
 ;
 module_declaration:
@@ -1170,46 +1420,124 @@ module_declaration:
   | LPAREN RPAREN module_declaration
       { mkmty(Pmty_functor(mkrhs "*" 1, None, $3)) }
 ;
-module_rec_declarations:
-    module_rec_declaration                              { [$1] }
-  | module_rec_declarations AND module_rec_declaration  { $3 :: $1 }
+
+module_rec_declaration_details:
+  | UIDENT COLON module_type { ((mkrhs $1 1), $3) }
 ;
-module_rec_declaration:
-    UIDENT COLON module_type post_item_attributes
-    { Md.mk (mkrhs $1 1) $3 ~attrs:$4 ~loc:(symbol_rloc()) }
+
+many_module_rec_declarations:
+  | LET MODULE REC module_rec_declaration_details post_item_attributes {
+      let (ident, body) = $4 in
+      [Md.mk ident body ~attrs:$5 ~loc:(symbol_rloc())]
+    }
+  | many_module_rec_declarations and_module_rec_declaration  {
+      $2::$1
+    }
 ;
+
+and_module_rec_declaration:
+  | AND module_rec_declaration_details post_item_attributes {
+      let (ident, body) = $2 in
+      Md.mk ident body ~attrs:$3 ~loc:(symbol_rloc())
+    }
+;
+
 
 /* Class expressions */
 
-class_declarations:
-    class_declarations AND class_declaration    { $3 :: $1 }
-  | class_declaration                           { [$1] }
+many_class_declarations:
+  | CLASS class_declaration_details post_item_attributes {
+    let (ident, binding, virt, params) = $2 in
+    [Ci.mk ident binding ~virt ~params ~attrs:$3 ~loc:(symbol_rloc ())]
+  }
+  | many_class_declarations and_class_declaration {
+    $2::$1
+  }
 ;
-class_declaration:
-    virtual_flag class_type_parameters LIDENT class_fun_binding
-    post_item_attributes
+
+and_class_declaration:
+  AND class_declaration_details post_item_attributes {
+    let (ident, binding, virt, params) = $2 in
+    Ci.mk ident binding ~virt ~params ~attrs:$3 ~loc:(symbol_rloc ())
+  }
+;
+
+/* Having a rule makes it easier to correctly apply the location */
+constrained_class_declaration:
+   | COLON class_constructor_type EQUAL class_expr
+      { mkclass(Pcl_constraint($4, $2)) }
+
+class_declaration_details:
+  /*
+     Used in order to parse: class ['a, 'b] myClass argOne argTwo (:retType) => cl_expr
+   */
+  | virtual_flag LIDENT class_type_parameters class_fun_binding
       {
-       Ci.mk (mkrhs $3 3) $4
-         ~virt:$1 ~params:$2
-         ~attrs:$5 ~loc:(symbol_rloc ())
+       ((mkrhs $2 2), $4, $1, List.rev $3)
       }
+  /*
+     We make a special rule here because we only accept colon after the
+     identifier - can't be a part of class_fun_binding. Used in order to parse:
+     class ['a, 'b] myClass: class_constructor_type = class_expr
+   */
+  | virtual_flag LIDENT class_type_parameters constrained_class_declaration
+    {
+       ((mkrhs $2 2), $4, $1, List.rev $3)
+    }
+
+  /*
+     Used in order to parse:  class ['a, 'b] myClass = class_expr
+   */
+  | virtual_flag LIDENT class_type_parameters EQUAL class_expr
+    {
+       ((mkrhs $2 2), $5, $1, List.rev $3)
+    }
 ;
+
+/**
+ * Had to split class_fun_return rom class_fun_binding to prevent arrow from
+ * being used when no arguments.
+ * Without that, there were difficult parsing conflicts between:
+ *
+ *   class thisDoesntParse : blah =>
+ *   class thisDoesParse   : blah =
+ *
+ * Now, you can do:
+ *
+ *   class myClass arg blah : instance_type => {
+ *     method blah => ..;  
+ *   }
+ *
+ * But you cannot constrain with a function Pcty_arrow
+ *
+ *   class myClass arg blah : (int => instance_type) =>
+ *      fun i => {...};
+ *
+ * Instead, you must write the previous as:
+ * (And the printer must ensure this)
+ *
+ *   class myClass arg blah =>
+ *      (fun i => {...} : int => instance_type);
+ */
 class_fun_binding:
-    EQUALGREATER class_expr
-      { $2 }
-    /**
-     * Notice how class constructors have the same requirement as curried return
-     * value annotations - they must be wrapped in parens
-     * let add (a:int) (b:int) (:int) -> a + b;
-     */
-  | LPAREN COLON class_type RPAREN EQUALGREATER class_expr
-      { mkclass(Pcl_constraint($6, $3)) }
   | labeled_simple_pattern class_fun_binding
       { let (l,o,p) = $1 in mkclass(Pcl_fun(l, o, p, $2)) }
+  | labeled_simple_pattern class_fun_return
+      { let (l,o,p) = $1 in mkclass(Pcl_fun(l, o, p, $2)) }
 ;
+
+class_fun_return:
+    EQUALGREATER class_expr
+      { $2 }
+  | COLON non_arrowed_class_constructor_type EQUALGREATER class_expr
+      { mkclass(Pcl_constraint($4, $2)) }
+;
+
 class_type_parameters:
-    /*empty*/                                   { [] }
-  | LBRACKET type_parameter_list RBRACKET       { List.rev $2 }
+  /* Empty */ { [] }
+  | class_type_parameters type_parameter {
+      $2::$1
+    }
 ;
 class_fun_def:
   | labeled_simple_pattern EQUALGREATER class_expr
@@ -1217,56 +1545,84 @@ class_fun_def:
   | labeled_simple_pattern class_fun_def
       { let (l,o,p) = $1 in mkclass(Pcl_fun(l, o, p, $2)) }
 ;
+
+class_expr_lets_and_rest:
+  /* expr will present a conflict */
+  /* | expr opt_semi  { reloc_exp $1 } */
+  | class_self_pattern_and_structure { mkclass(Pcl_structure $1)}
+  | class_expr {$1}
+  | let_bindings SEMI class_expr_lets_and_rest {
+    class_of_let_bindings $1 $3
+  }
+;
+
+class_self_pattern:
+  /* Empty is by default the pattern identifier [this] */
+  | { mk_ghost_patvar "this" 0 }
+  /* Whereas in OCaml, specifying nothing means "_", in Reason, you'd
+     have to explicity specify "_" (any) pattern. In Reason, writing nothing
+     is how you specify the "this" pattern. */
+  | INSTANCEAS pattern SEMI
+      { $2 }
+;
+
+class_self_pattern_and_structure:
+  | class_self_pattern semi_terminated_class_fields
+    { Cstr.mk $1 $2 }
+;
+
 class_expr:
     class_simple_expr
       { $1 }
   | FUN class_fun_def
       { $2 }
   | class_simple_expr simple_labeled_expr_list
+      /**
+       * This is an interesting way to "partially apply" class construction:
+       *
+       * let inst = new oldclass 20;
+       * class newclass = oldclass withInitArg;
+       * let inst = new newclass;
+       */
       { mkclass(Pcl_apply($1, List.rev $2)) }
-  | LET rec_flag let_bindings_no_attrs IN class_expr
-      { mkclass(Pcl_let ($2, List.rev $3, $5)) }
   | class_expr attribute
       { Cl.attr $1 $2 }
+
+  /*
+    When referring to class expressions (not regular types that happen to be
+    classes), you must refer to it as a class. This gives syntactic real estate
+    to place type parameters which are distinguished from constructor application
+    of arguments.
+
+       class myClass 'x = (class yourClass 'x int) y z;
+       inherit (class yourClass float int) initArg initArg;
+       ...
+       let myVal: myClass int = new myClass 10;
+
+   */
+  | CLASS class_longident non_arrowed_simple_core_type_list {
+      mkclass(Pcl_constr(mkloc $2 (rhs_loc 2), List.rev $3))
+    }
+      
   | extension
       { mkclass(Pcl_extension $1) }
 ;
 class_simple_expr:
-    LBRACKET core_type_comma_list RBRACKET class_longident
-      { mkclass(Pcl_constr(mkloc $4 (rhs_loc 4), List.rev $2)) }
   | class_longident
-      { mkclass(Pcl_constr(mkrhs $1 1, [])) }
-  | OBJECT class_structure END
-      { mkclass(Pcl_structure($2)) }
-  | OBJECT class_structure error
-      { unclosed "object" 1 "end" 3 }
-  | LPAREN class_expr COLON class_type RPAREN
+    { mkclass(Pcl_constr(mkrhs $1 1, [])) }
+  | LBRACE class_expr_lets_and_rest RBRACE { reloc_class $2 }
+  | LBRACE class_expr_lets_and_rest error
+    { unclosed "{" 1 "}" 3 }
+  | LPAREN class_expr COLON class_constructor_type RPAREN
       { mkclass(Pcl_constraint($2, $4)) }
-  | LPAREN class_expr COLON class_type error
+  | LPAREN class_expr COLON class_constructor_type error
       { unclosed "(" 1 ")" 5 }
   | LPAREN class_expr RPAREN
-      { $2 }
+      { reloc_class $2 }
   | LPAREN class_expr error
       { unclosed "(" 1 ")" 3 }
 ;
-class_structure:
-    class_self_pattern class_fields
-      { Cstr.mk $1 (List.rev $2) }
-;
-class_self_pattern:
-    LPAREN pattern RPAREN
-      { reloc_pat $2 }
-  | LPAREN pattern COLON core_type RPAREN
-      { mkpat(Ppat_constraint($2, $4)) }
-  | /* empty */
-      { ghpat(Ppat_any) }
-;
-class_fields:
-    /* empty */
-      { [] }
-  | class_fields class_field
-      { $2 :: $1 }
-;
+
 class_field:
   | INHERIT override_flag class_expr parent_binder post_item_attributes
       { mkcf_attrs (Pcf_inherit ($2, $3, $4)) $5 }
@@ -1276,13 +1632,22 @@ class_field:
       { mkcf_attrs (Pcf_method $2) $3 }
   | CONSTRAINT constrain_field post_item_attributes
       { mkcf_attrs (Pcf_constraint $2) $3 }
-  | INITIALIZER seq_expr post_item_attributes
-      { mkcf_attrs (Pcf_initializer $2) $3 }
+  | INITIALIZER EQUALGREATER expr post_item_attributes
+      { mkcf_attrs (Pcf_initializer $3) $4 }
   | item_extension post_item_attributes
       { mkcf_attrs (Pcf_extension $1) $2 }
   | floating_attribute
       { mkcf (Pcf_attribute $1) }
 ;
+
+/* Don't need opt_semi here because of the empty rule (which normally doesn't
+happen for things like records */
+semi_terminated_class_fields:
+  | /* Empty */           {[]}
+  | class_field           { [reloc_class_field $1] }
+  | class_field SEMI semi_terminated_class_fields   { $1::$3 }
+;
+
 parent_binder:
     AS LIDENT
           { Some $2 }
@@ -1291,14 +1656,19 @@ parent_binder:
 ;
 value:
 /* TODO: factorize these rules (also with method): */
-    override_flag MUTABLE VIRTUAL label COLON core_type
-      { if $1 = Override then syntax_error ();
-        mkloc $4 (rhs_loc 4), Mutable, Cfk_virtual $6 }
+    override_flag MUTABLE VIRTUAL label COLON core_type {
+      if $1 = Override then not_expecting 7 "not expecting equal - cannot specify value for virtual val"
+      else mkloc $4 (rhs_loc 4), Mutable, Cfk_virtual $6
+    }
+  | override_flag MUTABLE VIRTUAL label COLON core_type EQUAL
+      { not_expecting 7 "not expecting equal - cannot specify value for virtual val" }
   | VIRTUAL mutable_flag label COLON core_type
       { mkrhs $3 3, $2, Cfk_virtual $5 }
-  | override_flag mutable_flag label EQUAL seq_expr
+  | VIRTUAL mutable_flag label COLON core_type EQUAL
+      { not_expecting 6 "not expecting equal - cannot specify value for virtual val" }
+  | override_flag mutable_flag label EQUAL expr
       { mkrhs $3 3, $2, Cfk_concrete ($1, $5) }
-  | override_flag mutable_flag label type_constraint EQUAL seq_expr
+  | override_flag mutable_flag label type_constraint EQUAL expr
       {
        let e = mkexp_constraint $6 $4 in
        mkrhs $3 3, $2, Cfk_concrete ($1, e)
@@ -1315,70 +1685,209 @@ method_:
   | override_flag private_flag label curried_binding
       { mkloc $3 (rhs_loc 3), $2,
         Cfk_concrete ($1, ghexp(Pexp_poly ($4, None))) }
-  | override_flag private_flag label COLON poly_type EQUAL seq_expr
+  | override_flag private_flag label COLON poly_type EQUAL expr
+      /* Without locally abstract types, you'll see a Ptyp_poly in the Pexp_poly */
       { mkloc $3 (rhs_loc 3), $2,
         Cfk_concrete ($1, ghexp(Pexp_poly($7, Some $5))) }
-  | override_flag private_flag label COLON TYPE lident_list DOT core_type EQUAL seq_expr
-      { let exp, poly = wrap_type_annotation $6 $8 $10 in
-        mkloc $3 (rhs_loc 3), $2,
-        Cfk_concrete ($1, ghexp(Pexp_poly(exp, Some poly))) }
+  | override_flag private_flag label EQUAL expr
+      { mkloc $3 (rhs_loc 3), $2,
+        Cfk_concrete ($1, ghexp(Pexp_poly($5, None))) }
+  | override_flag private_flag label COLON TYPE lident_list DOT core_type EQUAL expr
+      /* WITH locally abstract types, you'll see a Ptyp_poly in the Pexp_poly,
+         but the expression will be a Pexp_newtype and type vars will be
+         "varified". */
+      {
+
+        (* For non, methods we'd create a pattern binding:
+           ((Ppat_constraint(mkpatvar ..., Ptyp_poly (typeVars, poly_type_varified))),
+            exp_with_newtypes_constrained_by_non_varified)
+
+           For methods, we create:
+           Pexp_poly (Pexp_constraint (methodFunWithNewtypes, non_varified), Some (Ptyp_poly newTypes varified))
+         *)
+        let (exp_with_newtypes_constrained_by_non_varified, poly_type_varified) =
+          wrap_type_annotation $6 $8 $10 in
+        (
+          mkloc $3 (rhs_loc 3),
+          $2,
+          Cfk_concrete (
+            $1,
+            ghexp(Pexp_poly(exp_with_newtypes_constrained_by_non_varified, Some poly_type_varified))
+          )
+        )
+      }
 ;
 
-/* Class types */
+/* A parsing of class_constructor_type is the type of the class's constructor - and if the
+   constructor takes no arguments, then simply the class_instance_type of what is
+   returned.
 
-class_type:
-    class_signature
-      { $1 }
-  | LIDENT EXPLICITLY_PASSED_OPTIONAL non_arrowed_simple_core_type EQUALGREATER class_type
+   The class_instance_type is type of the thing returned from a class constructor
+   which can either be:
+    - The identifier of another class.
+    - Type construction of a class type. [v1, v2] classIdentifier
+    - The type definition of the object returned (which is much like the type
+      of anonymous object but with different syntax, and ability to specify
+      inheritance):
+      - The class signature body may contain the type of methods (just like object types do)
+      - Inheritance of another class_instance_type.
+      - The instance variable "val"s.
+      - Constraints (same syntax that is used at class *definition* time)
+
+   There are two primary language "class" constructs that are included in modules:
+     Class Definitions, and Class Type Definitions.
+
+     A Class Definition:
+     -------------------
+     Brings three things into the environment. For a class defined with name
+     [myClass], the environment would then contain the following:
+       1. A type called [myClass] which represents instances that have the same
+       structure as what is returned from the constructor - and do not have
+       any *more* members than what is returned from the constructor.
+       2. A type called [#myClass] which loosely speaking represents objects
+       that have the same structure as what is returned from the constructor,
+       but can also have *additional* fields as well. This ability to have
+       additional fields is accomplished via the same row-polymorphism of
+       objects without classes. Any reference to [#myClass] implicitly includes
+       a type variable, whose name we may not mention.
+       3. The class constructor for [myClass] - a function that "new" can be
+       invoked on. If the constructor is a function that takes arguments, then
+       the type of the constructor is the type of that function (including
+       the type of object returned). If it doesn't take arguments, then the
+       type of the constructor is the type of the object returned. You can
+       explicitly annotate/constrain the type of the constructor, and can
+       annotate them in module signatures as well.
+
+     The type constraint on a constructor has one syntactic nuance. The final
+     item separated by arrow must be prefixed with "new". This is merely to
+     resolve parsing conflicts. This can be fixed by making a parse rule for
+     types that parses *either* non-arowed class_instance_type or core_types,
+     but that means deferring the interpretation of patterns like "lowercase
+     identifier" and "type application", until it is known if that item was the
+     *final* arrow segment.
+
+     A Class Type Definition:
+     -----------------------
+     Brings two things into the environment. For a class type definition with
+     name [myClass], the environment would then contain the following:
+       1. A type called [myClass] which describes any object having *exactly*
+       the fields listed in the definition.
+       2. A type called [#myClass] which loosely speaking represents objects
+       that have the same structure as the definition, but can also have
+       *additional* fields as well.
+
+
+    When in signatures:
+    A Class Definition merely includes the type of that classes constructor.
+    [class myClass: args => new classType;]
+
+    A Class Type Definition is specified exactly as it is in a module (of
+    course, it may be abstract).
+
+
+    Here are the parsing rules for everything discussed above:
+
+     (Note: I have renamed class_type from the upstream compiler to
+     class_constructor_type and class_signature to class_instance_type for
+     clarity)
+
+     constructor_type:
+        | class_instance_type
+        | constructorFunction => typeWithArrows => class_instance_type
+
+     Modules
+       Class Definitions
+       many_class_declarations
+         | class LIDENT = class_expr
+         | class LIDENT = (class_expr : constructor_type)
+         "Pstr_class"
+
+       Class Type Definition
+       many_class_type_declarations
+         CLASS TYPE ident = class_instance_type
+         "Pstr_class_type"
+
+     Signatures
+       Class Descriptions (describes Class Definitions in Module)
+       many_class_descriptions
+         CLASS ident : constructor_type
+         "Psig_class"
+
+       Class Type Declarations (subset of Class Type Definitions in Module)
+       many_class_type_declarations
+         CLASS TYPE ident = class_instance_type
+        "Psig_class_type"
+
+ */
+class_constructor_type:
+  | NEW class_instance_type
+      { $2 }
+  | LIDENT EXPLICITLY_PASSED_OPTIONAL non_arrowed_core_type EQUALGREATER class_constructor_type
       { mkcty(Pcty_arrow("?" ^ $1, mkoption $3, $5)) }
-  | LIDENT COLONCOLON non_arrowed_simple_core_type EQUALGREATER class_type
+  | LIDENT COLONCOLON non_arrowed_core_type EQUALGREATER class_constructor_type
       { mkcty(Pcty_arrow($1, $3, $5)) }
-  | non_arrowed_simple_core_type EQUALGREATER class_type
+  | non_arrowed_core_type EQUALGREATER class_constructor_type
       { mkcty(Pcty_arrow("", $1, $3)) }
 ;
 
-class_signature:
-    LBRACKET core_type_comma_list RBRACKET clty_longident
-      { mkcty(Pcty_constr (mkloc $4 (rhs_loc 4), List.rev $2)) }
+non_arrowed_class_constructor_type:
+  | class_instance_type
+      { $1 }
+  | LPAREN class_constructor_type RPAREN { reloc_class_type $2}
+;
+
+class_instance_type:
   | clty_longident
       { mkcty(Pcty_constr (mkrhs $1 1, [])) }
-  | OBJECT class_sig_body END
+  | clty_longident non_arrowed_simple_core_type_list
+      { mkcty(Pcty_constr (mkloc $1 (rhs_loc 1), List.rev $2)) }
+  | LBRACE class_sig_body RBRACE
       { mkcty(Pcty_signature $2) }
-  | OBJECT class_sig_body error
-      { unclosed "object" 1 "end" 3 }
-  | class_type attribute
+  | LBRACE class_sig_body error
+      { unclosed "{" 1 "}" 3 }
+  | class_instance_type attribute
+      /* Note that this will compound attributes - so they will become
+         attached to whatever */
       { Cty.attr $1 $2 }
   | extension
       { mkcty(Pcty_extension $1) }
 ;
+
+
 class_sig_body:
-    class_self_type class_sig_fields
-    { Csig.mk $1 (List.rev $2) }
+    class_self_type class_sig_fields opt_semi
+    { Csig.mk $1 (List.rev $2 )}
 ;
 class_self_type:
-    LPAREN core_type RPAREN
+    INSTANCEAS core_type SEMI
       { $2 }
   | /* empty */
       { mktyp(Ptyp_any) }
 ;
 class_sig_fields:
-    /* empty */                                 { [] }
-| class_sig_fields class_sig_field     { $2 :: $1 }
+    /* empty */                         { [] }
+| class_sig_field { [$1] }
+| class_sig_fields SEMI class_sig_field { $3 :: $1 }
 ;
 class_sig_field:
-    INHERIT class_signature post_item_attributes
-      { mkctf_attrs (Pctf_inherit $2) $3 }
-  | VAL value_type post_item_attributes
-      { mkctf_attrs (Pctf_val $2) $3 }
-  | METHOD private_virtual_flags label COLON poly_type post_item_attributes
-      {
-       let (p, v) = $2 in
-       mkctf_attrs (Pctf_method ($3, p, v, $5)) $6
-      }
-  | CONSTRAINT constrain_field post_item_attributes
-      { mkctf_attrs (Pctf_constraint $2) $3 }
-  | item_extension post_item_attributes
-      { mkctf_attrs (Pctf_extension $1) $2 }
+  /* The below_LBRACKETAT and two forms below are needed (but not in upstream
+     for some reason) */
+  | INHERIT class_instance_type %prec below_LBRACKETAT
+      { mkctf_attrs (Pctf_inherit $2) [] }
+  | INHERIT class_instance_type item_attribute post_item_attributes
+      { mkctf_attrs (Pctf_inherit $2) ($3::$4) }
+  | VAL value_type post_item_attributes {
+      mkctf_attrs (Pctf_val $2) $3
+    }
+  | METHOD private_virtual_flags label COLON poly_type post_item_attributes 
+       {
+        let (p, v) = $2 in
+        mkctf_attrs (Pctf_method ($3, p, v, $5)) $6
+       }
+  | CONSTRAINT constrain_field post_item_attributes 
+       { mkctf_attrs (Pctf_constraint $2) $3 }
+  | item_extension post_item_attributes 
+       { mkctf_attrs (Pctf_extension $1) $2 }
   | floating_attribute
       { mkctf(Pctf_attribute $1) }
 ;
@@ -1396,77 +1905,116 @@ constrain:
 constrain_field:
         core_type EQUAL core_type          { $1, $3 }
 ;
-class_descriptions:
-    class_descriptions AND class_description    { $3 :: $1 }
-  | class_description                           { [$1] }
+many_class_descriptions:
+  | CLASS class_description_details post_item_attributes {
+    let (ident, binding, virt, params) = $2 in
+    [Ci.mk ident binding ~virt ~params ~attrs:$3 ~loc:(symbol_rloc ())]
+  }
+  | many_class_descriptions and_class_description {
+    $2 :: $1
+  }
 ;
-class_description:
-    virtual_flag class_type_parameters LIDENT COLON class_type
-    post_item_attributes
-      {
-       Ci.mk (mkrhs $3 3) $5
-         ~virt:$1 ~params:$2
-         ~attrs:$6 ~loc:(symbol_rloc ())
-      }
+and_class_description:
+  | AND class_description_details post_item_attributes {
+    let (ident, binding, virt, params) = $2 in
+    Ci.mk ident binding ~virt ~params ~attrs:$3 ~loc:(symbol_rloc ())
+  }
 ;
-class_type_declarations:
-    class_type_declarations AND class_type_declaration  { $3 :: $1 }
-  | class_type_declaration                              { [$1] }
+class_description_details:
+  | virtual_flag LIDENT class_type_parameters COLON class_constructor_type {
+    ((mkrhs $2 2), $5, $1, List.rev $3)
+  }
 ;
-class_type_declaration:
-    virtual_flag class_type_parameters LIDENT EQUAL class_signature
-    post_item_attributes
-      {
-       Ci.mk (mkrhs $3 3) $5
-         ~virt:$1 ~params:$2
-         ~attrs:$6 ~loc:(symbol_rloc ())
-      }
+
+many_class_type_declarations:
+  | CLASS TYPE class_type_declaration_details post_item_attributes {
+    let (ident, instance_type, virt, class_type_params) = $3 in
+    [Ci.mk ident instance_type ~virt:virt ~params:class_type_params ~attrs:$4 ~loc:(symbol_rloc ())]
+  }
+  | many_class_type_declarations and_class_type_declaration {
+    $2::$1
+  }
+;
+
+and_class_type_declaration:
+  AND class_type_declaration_details post_item_attributes {
+    let (ident, instance_type, virt, class_type_params) = $2 in
+    Ci.mk ident instance_type ~virt:virt ~params:class_type_params ~attrs:$3 ~loc:(symbol_rloc ())
+  }
+;
+
+class_type_declaration_details:
+    virtual_flag LIDENT class_type_parameters EQUAL class_instance_type {
+      ((mkrhs $2 2), $5, $1, List.rev $3)
+    }
 ;
 
 /* Core expressions */
 
-/* This still might be useful - sequences that are *might* be semi terminated */
-seq_expr:
-  | expr        %prec below_SEMI  { $1 }
-  | expr SEMI                     { reloc_exp $1 }
-  | LET ext_attributes rec_flag let_bindings_no_attrs SEMI seq_expr
-      { mkexp_attrs (Pexp_let($3, List.rev $4, $6)) $2 }
-  | LET MODULE ext_attributes UIDENT module_binding_body SEMI seq_expr
-      { mkexp_attrs (Pexp_letmodule(mkrhs $4 4, $5, $7)) $3 }
-  | LET OPEN override_flag ext_attributes mod_longident SEMI seq_expr
-      { mkexp_attrs (Pexp_open($3, mkrhs $5 5, $7)) $4 }
-  | expr SEMI seq_expr            { mkexp(Pexp_sequence($1, $3)) }
-;
-
+/* Note: If we will parse this as Pexp_apply, and it will
+ * not be printed with the braces, except in a couple of cases such as if/while
+ * loops.
+ *
+ *  let add a b = {
+ *    a + b;
+ *  };
+ *  TODO: Rename to [semi_delimited_block_sequence]
+ *
+ * Since semi_terminated_seq_expr doesn't require a final SEMI, then without
+ * a final SEMI, a braced sequence with a single identifier is
+ * indistinguishable from a punned record.
+ *
+ *   let myThing = {x};
+ *
+ * Is it {x:x} the record or x the identifier? We simply decided to break
+ * the tie and say that it should be parsed as a single identifier because
+ * single field records are incredibly rare. Apart from this one
+ * disadvantage, there's no disadvantage to not requiring the final brace.
+ *
+ * For each valid sequence item, we must list three forms:
+ *
+ *   [item_extension_sugar] [nonempty_item_attributes] ITEM
+ *   [nonempty_item_attributes] ITEM
+ *   ITEM
+ */
 semi_terminated_seq_expr:
-  /** By allowing a seq_expr to not include a final SEMI, we were ruining the
-    * opportunity to have sequences wrapped by braces, as is familiar to many
-    * programmers.
-    * Without a final SEMI, a braced sequence is indistinguishable from a
-    * punned record.
-    *
-    *   let myThing = {x}; (*is it {x:x} or x ?*)
-    *
-    * Apart from this one disadvantage, there's no disadvantage to using more
-    * familiar brace style sequences as opposed to parenthesis.
-    * Therefore, [semi_terminated_seq_expr] was created to ensure a terminating
-    * SEMI is included, which allows braces to be used to form sequences.
-    */
-  /* If we actually parse this as Pexp_sequence of length one, the following
-   * will not get automatically simplified by pretty printers.
-   *
-   *  let add a b = {
-   *    a + b;
-   *  };
+  | item_extension_sugar semi_terminated_seq_expr_row {
+      extension_expression $1 $2
+    }
+  | semi_terminated_seq_expr_row {
+      $1
+    }
+  /**
+   * Let bindings already have their potential item_extension_sugar.
    */
-  | expr opt_semi  { reloc_exp $1 }
-  | LET ext_attributes rec_flag let_bindings_no_attrs SEMI semi_terminated_seq_expr
-      { mkexp_attrs (Pexp_let($3, List.rev $4, $6)) $2 }
-  | LET MODULE ext_attributes UIDENT module_binding_body SEMI semi_terminated_seq_expr
-      { mkexp_attrs (Pexp_letmodule(mkrhs $4 4, $5, $7)) $3 }
-  | LET OPEN override_flag ext_attributes mod_longident SEMI semi_terminated_seq_expr
-      { mkexp_attrs (Pexp_open($3, mkrhs $5 5, $7)) $4 }
-  | expr SEMI semi_terminated_seq_expr            { mkexp(Pexp_sequence($1, $3)) }
+  | let_bindings SEMI semi_terminated_seq_expr {
+      expr_of_let_bindings $1 $3
+    }
+;
+semi_terminated_seq_expr_row:
+  /**
+   * Expression SEMI
+   */
+  | expr post_item_attributes opt_semi  {
+      let expr = reloc_exp $1 in
+      let item_attrs = $2 in
+      (* Final item in the sequence - just append item attributes to the
+       * expression attributes *)
+      {expr with pexp_attributes = item_attrs @ expr.pexp_attributes}
+    }
+  | LET MODULE UIDENT module_binding_body post_item_attributes SEMI semi_terminated_seq_expr {
+      let item_attrs = $5 in
+      mkexp ~attrs:item_attrs (Pexp_letmodule(mkrhs $3 3, $4, $7))
+    }
+  | LET OPEN override_flag mod_longident post_item_attributes SEMI semi_terminated_seq_expr {
+      let item_attrs = $5 in
+      mkexp ~attrs:item_attrs (Pexp_open($3, mkrhs $4 4, $7))
+    }
+  | expr post_item_attributes SEMI semi_terminated_seq_expr  {
+      let item_attrs = $2 in
+      mkexp ~attrs:item_attrs (Pexp_sequence($1, $4))
+    }
+  
 ;
 
 /*
@@ -1569,30 +2117,22 @@ expr:
       { $1 }
   | less_aggressive_simple_expression simple_labeled_expr_list
       { mkexp(Pexp_apply($1, List.rev $2)) }
-  | FUN ext_attributes labeled_simple_pattern fun_def
-      { let (l,o,p) = $3 in
-        mkexp_attrs (Pexp_fun(l, o, p, $4)) $2 }
-  | FUN ext_attributes LPAREN TYPE LIDENT RPAREN fun_def
-      { mkexp_attrs (Pexp_newtype($5, $7)) $2 }
+  | FUN labeled_simple_pattern fun_def {
+      let (l,o,p) = $2 in
+      mkexp (Pexp_fun(l, o, p, $3))
+    }
+  | FUN LPAREN TYPE LIDENT RPAREN fun_def
+      { mkexp (Pexp_newtype($4, $6)) }
   /* List style rules like this often need a special precendence
      such as below_BAR in order to let the entire list "build up"
    */
-  | FUN ext_attributes BAR no_leading_bar_match_cases %prec below_BAR
-      { mkexp_attrs (Pexp_function(List.rev $4)) $2 }
-  | SWITCH ext_attributes simple_expr LBRACE BAR no_leading_bar_match_cases RBRACE
-      { mkexp_attrs (Pexp_match($3, List.rev $6)) $2 }
-  | TRY ext_attributes simple_expr LBRACE BAR no_leading_bar_match_cases RBRACE
-      { mkexp_attrs (Pexp_try($3, List.rev $6)) $2 }
-  /* We must require the bar to allow both unified function syntax
-   * with OR pattern matching simultaneously
-    | FUNCTION ext_attributes opt_bar match_cases
-        { mkexp_attrs (Pexp_function(List.rev $4)) $2 }
-    | SWITCH ext_attributes expr WITH opt_bar match_cases
-        { mkexp_attrs (Pexp_match($3, List.rev $6)) $2 }
-    | TRY ext_attributes simple_expr WITH opt_bar match_cases
-        { mkexp_attrs (Pexp_try($3, List.rev $6)) $2 }
-  */
-  | TRY ext_attributes simple_expr WITH error
+  | FUN BAR no_leading_bar_match_cases %prec below_BAR
+      { mkexp (Pexp_function(List.rev $3)) }
+  | SWITCH simple_expr LBRACE BAR no_leading_bar_match_cases RBRACE
+      { mkexp (Pexp_match($2, List.rev $5)) }
+  | TRY simple_expr LBRACE BAR no_leading_bar_match_cases RBRACE
+      { mkexp (Pexp_try($2, List.rev $5)) }
+  | TRY simple_expr WITH error
       { syntax_error() }
   | constr_longident simple_non_labeled_expr_list_as_tuple
     {
@@ -1602,14 +2142,14 @@ expr:
     {
       mkexp(Pexp_variant($1, Some $2))
     }
-  | IF ext_attributes simple_expr simple_expr ELSE expr
-      { mkexp_attrs(Pexp_ifthenelse($3, $4, Some $6)) $2 }
-  | IF ext_attributes simple_expr simple_expr
-      { mkexp_attrs (Pexp_ifthenelse($3, $4, None)) $2 }
-  | WHILE ext_attributes simple_expr simple_expr
-      { mkexp_attrs (Pexp_while($3, $4)) $2 }
-  | FOR ext_attributes pattern IN simple_expr direction_flag simple_expr simple_expr
-      { mkexp_attrs(Pexp_for($3, $5, $7, Upto, $8)) $2 }
+  | IF simple_expr simple_expr ELSE expr
+      { mkexp(Pexp_ifthenelse($2, $3, Some $5)) }
+  | IF simple_expr simple_expr
+      { mkexp (Pexp_ifthenelse($2, $3, None)) }
+  | WHILE simple_expr simple_expr
+      { mkexp (Pexp_while($2, $3)) }
+  | FOR pattern IN simple_expr direction_flag simple_expr simple_expr
+      { mkexp(Pexp_for($2, $4, $6, Upto, $7)) }
 
   | LPAREN COLONCOLON RPAREN LPAREN expr COMMA expr RPAREN
       { mkexp_cons (rhs_loc 2) (ghexp(Pexp_tuple[$5;$7])) (symbol_rloc()) }
@@ -1659,46 +2199,20 @@ expr:
       { mkuplus $1 $2 }
   | simple_expr DOT label_longident LESSMINUS expr
       { mkexp(Pexp_setfield($1, mkrhs $3 3, $5)) }
-  | simple_expr DOT LPAREN seq_expr RPAREN LESSMINUS expr
+  | simple_expr DOT LPAREN expr RPAREN LESSMINUS expr
       { mkexp(Pexp_apply(ghexp(Pexp_ident(array_function "Array" "set")),
                          ["",$1; "",$4; "",$7])) }
-  | simple_expr DOT LBRACKET seq_expr RBRACKET LESSMINUS expr
+  | simple_expr DOT LBRACKET expr RBRACKET LESSMINUS expr
       { mkexp(Pexp_apply(ghexp(Pexp_ident(array_function "String" "set")),
                          ["",$1; "",$4; "",$7])) }
   | simple_expr DOT LBRACE expr RBRACE LESSMINUS expr
       { bigarray_set $1 $4 $7 }
   | label LESSMINUS expr
       { mkexp(Pexp_setinstvar(mkrhs $1 1, $3)) }
-  | ASSERT ext_attributes simple_expr %prec below_NEWDOT
-      { mkexp_attrs (Pexp_assert $3) $2 }
-  | LAZY ext_attributes simple_expr %prec below_NEWDOT
-      { mkexp_attrs (Pexp_lazy $3) $2 }
-  /* Todo: Why is this not a simple_expr ? Previously, objects were not simple,
-   * so this likely inherited that feature */
-  | LBRACE_STRUCT field_expr_list opt_comma RBRACE_STRUCT {
-    (* Not supporting `with` extension yet! *)
-    let recordFields = $2 in
-    let classSelfPattern = ghpat(Ppat_any) in
-    let recordFieldToClassField (labelTerm, e) =
-      let methodMatch = (labelTerm, Public, Cfk_concrete (Fresh, ghexp(Pexp_poly (e, None)))) in
-      mkcf_attrs (Pcf_method methodMatch) []
-    in
-    (** classField matched:
-     *    | METHOD method_ post_item_attributes
-     *  { mkcf_attrs (Pcf_method $2) $3 }
-     *  where: method_ matched
-     *    | Fresh Public LIDENT e
-     *  { mkloc $3 (rhs_loc 3), $2, Cfk_concrete ($1, ghexp(Pexp_poly ($4, None)))}
-     *)
-    let classFields = List.map recordFieldToClassField recordFields in
-    let classStructure = Cstr.mk classSelfPattern (List.rev classFields) in
-    mkexp (Pexp_object classStructure)
-  }
-  | OBJECT ext_attributes class_structure END
-      { mkexp_attrs (Pexp_object $3) $2 }
-  | OBJECT ext_attributes class_structure error
-      { unclosed "object" 1 "end" 4 }
-
+  | ASSERT simple_expr %prec below_NEWDOT
+      { mkexp (Pexp_assert $2) }
+  | LAZY simple_expr %prec below_NEWDOT
+      { mkexp (Pexp_lazy $2) }
   /*
    * Ternary is just a shortcut for:
    *
@@ -1732,8 +2246,7 @@ expr:
         Pat.mk ~loc:(rhs_loc 4) (Ppat_construct({txt = Lident "false"; loc = rhs_loc 4}, None)) in
       let fauxMatchCaseTrue = Exp.case fauxTruePat $3 in
       let fauxMatchCaseFalse = Exp.case fauxFalsePat $5 in
-      let fauxSwitch =
-        mkexp_attrs (Pexp_match ($1, [fauxMatchCaseTrue; fauxMatchCaseFalse])) (None, []) in
+      let fauxSwitch = mkexp (Pexp_match ($1, [fauxMatchCaseTrue; fauxMatchCaseFalse])) in
       fauxSwitch
     }
   | expr attribute
@@ -1753,7 +2266,7 @@ simple_expr:
 
   | name_tag %prec prec_constant_constructor
       { mkexp(Pexp_variant($1, None)) }
-  | LPAREN seq_expr RPAREN
+  | LPAREN expr RPAREN
       { reloc_exp $2 }
   | LPAREN expr error
       { unclosed "(" 1 ")" 3 }
@@ -1762,35 +2275,27 @@ simple_expr:
    */
   | LPAREN expr type_constraint RPAREN
       { mkexp_constraint $2 $3 }
-
   | LBRACE semi_terminated_seq_expr RBRACE
       { reloc_exp $2 }
   | LPAREN expr_comma_list RPAREN
       { mkexp(Pexp_tuple(List.rev $2)) }
   | LPAREN expr_comma_list error
       { unclosed "(" 1 ")" 3 }
-  | BEGIN ext_attributes seq_expr END
-      { wrap_exp_attrs (reloc_exp $3) $2 (* check location *) }
-  | BEGIN ext_attributes END
-      { mkexp_attrs (Pexp_construct (mkloc (Lident "()") (symbol_rloc ()),
-                               None)) $2 }
-  | BEGIN ext_attributes seq_expr error
-      { unclosed "begin" 1 "end" 3 }
   | simple_expr DOT label_longident
       { mkexp(Pexp_field($1, mkrhs $3 3)) }
-  | mod_longident DOT LPAREN seq_expr RPAREN
+  | mod_longident DOT LPAREN expr RPAREN
       { mkexp(Pexp_open(Fresh, mkrhs $1 1, $4)) }
-  | mod_longident DOT LPAREN seq_expr error
+  | mod_longident DOT LPAREN expr error
       { unclosed "(" 3 ")" 5 }
-  | simple_expr DOT LPAREN seq_expr RPAREN
+  | simple_expr DOT LPAREN expr RPAREN
       { mkexp(Pexp_apply(ghexp(Pexp_ident(array_function "Array" "get")),
                          ["",$1; "",$4])) }
-  | simple_expr DOT LPAREN seq_expr error
+  | simple_expr DOT LPAREN expr error
       { unclosed "(" 3 ")" 5 }
-  | simple_expr DOT LBRACKET seq_expr RBRACKET
+  | simple_expr DOT LBRACKET expr RBRACKET
       { mkexp(Pexp_apply(ghexp(Pexp_ident(array_function "String" "get")),
                          ["",$1; "",$4])) }
-  | simple_expr DOT LBRACKET seq_expr error
+  | simple_expr DOT LBRACKET expr error
       { unclosed "[" 3 "]" 5 }
   | simple_expr DOT LBRACE expr RBRACE
       { bigarray_get $1 $4 }
@@ -1806,6 +2311,12 @@ simple_expr:
       { let (exten, fields) = $2 in mkexp (Pexp_record(fields, exten)) }
   | LBRACE record_expr error
       { unclosed "{" 1 "}" 3 }
+  /* Todo: Why is this not a simple_expr? */
+  | LBRACE class_self_pattern_and_structure RBRACE
+      { mkexp (Pexp_object $2) }
+  | LBRACE class_self_pattern_and_structure error
+      { unclosed "{" 1 "}" 4 }
+
   | mod_longident DOT LBRACE record_expr RBRACE
       { let (exten, fields) = $4 in
         let rec_exp = mkexp(Pexp_record(fields, exten)) in
@@ -1839,8 +2350,8 @@ simple_expr:
    */
   | BANG simple_expr %prec below_DOT_AND_SHARP
       { mkexp(Pexp_apply(mkoperator "!" 1, ["",$2])) }
-  | NEW ext_attributes class_longident
-      { mkexp_attrs (Pexp_new(mkrhs $3 3)) $2 }
+  | NEW class_longident
+      { mkexp (Pexp_new(mkrhs $2 2)) }
   | LBRACELESS field_expr_list opt_comma GREATERRBRACE
       { mkexp (Pexp_override(List.rev $2)) }
   | LBRACELESS field_expr_list opt_comma error
@@ -1869,6 +2380,7 @@ simple_expr:
   | extension
       { mkexp (Pexp_extension $1) }
 ;
+
 
 /**
  * Nice reusable version of simple_expr that waits to be reduced until enough
@@ -1926,34 +2438,50 @@ label_expr:
   | LIDENT EXPLICITLY_PASSED_OPTIONAL less_aggressive_simple_expression
       { ("?" ^ $1, $3) }
 ;
+
+and_let_binding:
+  /* AND bindings don't accept a preceeding extension ID, but do accept
+   * preceeding post_item_attributes. These preceeding post_item_attributes will cause an
+   * error if this is an *expression * let binding. Otherwise, they become
+   * post_item_attributes on the structure item for the "and" binding.
+   */
+  AND let_binding_body post_item_attributes 
+      { mklb $2 $3 }
+;
 let_bindings:
-    let_binding                                 { [$1] }
-  | let_bindings AND let_binding                { $3 :: $1 }
+    let_binding                                 { $1 }
+  | let_bindings and_let_binding                { addlb $1 $2 }
 ;
-
-let_bindings_no_attrs:
-   let_bindings {
-     let l = $1 in
-     List.iter
-       (fun vb ->
-          if vb.pvb_attributes <> [] then
-            raise Syntaxerr.(Error(Not_expecting(vb.pvb_loc,"item attribute")))
-       )
-       l;
-     l
-   }
-;
-
 lident_list:
     LIDENT                            { [$1] }
   | LIDENT lident_list                { $1 :: $2 }
 ;
-let_binding:
-    let_binding_ post_item_attributes {
-      let (p, e) = $1 in Vb.mk ~loc:(symbol_rloc()) ~attrs:$2 p e
+let_binding_impl:
+  /* Form with item extension sugar */
+  | LET rec_flag let_binding_body post_item_attributes {
+      ($2, $3, $4)
     }
 ;
-let_binding_:
+
+let_binding:
+  /* Form with item extension sugar */
+  | let_binding_impl {
+    let (rec_flag, body, item_attrs) = $1 in
+    mklbs ([], None) rec_flag (mklb body item_attrs)
+  }
+  /**
+   * This is frustrating. We had to manually inline the sugar rule here, to
+   * avoid a parsing conflict. Why is that the case? How can we treat rules as
+   * "exactly the same as being inlined?".
+   */
+  | item_extension_sugar let_binding_impl {
+      let (rec_flag, body, item_attrs) = $2 in
+      let (ext_attrs, ext_id) = $1 in
+      mklbs (ext_attrs, Some ext_id) rec_flag (mklb body item_attrs)
+    }
+;
+
+let_binding_body:
   | val_ident EQUAL expr
       { (mkpatvar $1 1, $3) }
 
@@ -1988,6 +2516,30 @@ let_binding_:
    *  When [a] is in the first arg to [PTyp_poly] the second arg [core_type]
    *  expects to see [a] and ['a] is not allowed anywhere.
    *  When pretty printing, we must reverse this entire process!
+   *
+   *  All of this is consistent with the Manual which states:
+   *
+   *    let rec f : type t1 t2. t1 * t2 list -> t1 = ...
+   *
+   *  is automatically expanded into
+   *
+   *    let rec f : 't1 't2. 't1 * 't2 list -> 't1 =
+   *      fun (type t1) (type t2) -> (... : t1 * t2 list -> t1)
+   *
+   * So therefore we end up generating the following two forms of parse trees
+   * for the two primary forms of explicitly polymorphic type annotations:
+   *
+   *
+   *           /-----------Ppat_constraint--------\ /-PExp_constraint--\
+   *       let x: locallyAbstractTypes . typeVars       =      exp
+   *
+   *     or
+   *           /-------------Ppat_constraint-----------\     /----PExp_constraint------\
+   *       let x: type abstractTypes . varified_core_type = (exp : core_type_non_varified)
+   *       where carified_core_type must equal (varify_constructors core_type_non_varified)
+   *
+   *     And in the later case
+   *
    */
      {
        let exp, poly = wrap_type_annotation $4 $6 $8 in
@@ -1996,10 +2548,10 @@ let_binding_:
 
   /* The combination of the following two rules encompass every type of
    * pattern *except* val_identifier. The fact that we want handle the
-   * val_ident separately as a separate rule in let_binding_ alone justifies the
+   * val_ident separately as a separate rule in let_binding_body alone justifies the
    * need for the strange structuring of
    * [pattern]/[simple_pattern_not_ident]/[simple_pattern] - it allows us
-   * to isolate [val_ident] in the special case of [let_binding_].
+   * to isolate [val_ident] in the special case of [let_binding_body].
    *
    * TODO:
    * Unfortunately, it means we cannot do: let (myCurriedFunc: int -> int) a -> a;
@@ -2127,8 +2679,6 @@ expr_optional_constraint:
   | expr type_constraint { mkexp_constraint $1 $2 }
 ;
 
-
-
 record_expr:
     DOTDOTDOT expr_optional_constraint COMMA lbl_expr_list   { (Some $2, $4) }
   | lbl_expr_list_that_is_not_a_single_punned_field         { (None, $1) }
@@ -2252,6 +2802,11 @@ pattern_without_or:
       { mkpat(Ppat_lazy $2) }
   | EXCEPTION pattern_without_or %prec prec_constr_appl
       { mkpat(Ppat_exception $2) }
+  /**
+   * Attribute "attribute" everything to the left of the attribute,
+   * up until the point of to the start of an expression, left paren, left
+   * bracket, comma, bar - whichever comes first.
+   */
   | pattern_without_or attribute
       { Pat.attr $1 $2 }
 ;
@@ -2392,17 +2947,29 @@ primitive_declaration:
 
 /* Type declarations */
 
-type_declarations:
-    type_declaration                            { [$1] }
-  | type_declarations AND type_declaration      { $3 :: $1 }
+many_type_declarations:
+  | TYPE type_declaration_details post_item_attributes {
+      let (ident, params, constraints, kind, priv, manifest) = $2 in
+      [Type.mk ident
+        ~params:params ~cstrs:constraints
+        ~kind ~priv ?manifest ~attrs:$3 ~loc:(symbol_rloc())]
+  }
+  | many_type_declarations and_type_declaration      { $2 :: $1 }
 ;
 
-type_declaration:
-    LIDENT optional_type_parameters type_kind constraints post_item_attributes
+and_type_declaration:
+  | AND type_declaration_details post_item_attributes {
+    let (ident, params, constraints, kind, priv, manifest) = $2 in
+    Type.mk ident
+      ~params:params ~cstrs:constraints
+      ~kind ~priv ?manifest ~attrs:$3 ~loc:(symbol_rloc())
+  }
+;
+
+type_declaration_details:
+    LIDENT optional_type_parameters type_kind constraints
       { let (kind, priv, manifest) = $3 in
-        Type.mk (mkrhs $1 1)
-          ~params:$2 ~cstrs:(List.rev $4)
-          ~kind ~priv ?manifest ~attrs:$5 ~loc:(symbol_rloc())
+        ((mkrhs $1 1), $2, List.rev $4, kind, priv, manifest)
        }
 ;
 constraints:
@@ -2462,38 +3029,36 @@ type_variance:
 type_variable:
     QUOTE ident                                 { mktyp(Ptyp_var $2) }
 ;
-type_parameter_list:
-    type_parameter                              { [$1] }
-  | type_parameter_list COMMA type_parameter    { $3 :: $1 }
-;
+
 constructor_declarations:
     constructor_declaration                     { [$1] }
   | constructor_declarations BAR constructor_declaration { $3 :: $1 }
 ;
 constructor_declaration:
-  | constr_ident attributes generalized_constructor_arguments
+  | constr_ident generalized_constructor_arguments attributes
       {
-       let args,res = $3 in
-       Type.constructor (mkrhs $1 1) ~args ?res ~loc:(symbol_rloc()) ~attrs:$2
+       let args,res = $2 in
+       Type.constructor (mkrhs $1 1) ~args ?res ~loc:(symbol_rloc()) ~attrs:$3
       }
 ;
+/* Why are there already post_item_attributes on the extension_constructor_declaration? */
 str_exception_declaration:
-  | extension_constructor_declaration post_item_attributes
+  | EXCEPTION extension_constructor_declaration post_item_attributes
       {
-        let ext = $1 in
-        {ext with pext_attributes = ext.pext_attributes @ $2}
+        let ext = $2 in
+        {ext with pext_attributes = ext.pext_attributes @ $3}
       }
-  | extension_constructor_rebind post_item_attributes
+  | EXCEPTION extension_constructor_rebind post_item_attributes 
       {
-        let ext = $1 in
-        {ext with pext_attributes = ext.pext_attributes @ $2}
+        let ext = $2 in
+        {ext with pext_attributes = ext.pext_attributes @ $3}
       }
 ;
 sig_exception_declaration:
-  | extension_constructor_declaration post_item_attributes
+  | EXCEPTION extension_constructor_declaration post_item_attributes 
       {
-        let ext = $1 in
-        {ext with pext_attributes = ext.pext_attributes @ $2}
+        let ext = $2 in
+        {ext with pext_attributes = ext.pext_attributes @ $3}
       }
 ;
 generalized_constructor_arguments:
@@ -2513,9 +3078,9 @@ label_declarations:
 ;
 
 label_declaration:
-    attributes mutable_flag LIDENT COLON poly_type
+    mutable_flag LIDENT COLON poly_type attributes
       {
-       Type.field (mkrhs $3 3) $5 ~mut:$2 ~attrs:$1 ~loc:(symbol_rloc())
+       Type.field (mkrhs $2 2) $4 ~mut:$1 ~attrs:$5 ~loc:(symbol_rloc())
       }
 ;
 
@@ -2526,21 +3091,26 @@ potentially_long_ident_and_optional_type_parameters:
   | type_strictly_longident optional_type_parameters {(mkrhs $1 1, $2)}
 ;
 
-str_type_extension:
+str_type_extension: 
+  TYPE
   potentially_long_ident_and_optional_type_parameters
-  PLUSEQ private_flag opt_bar str_extension_constructors post_item_attributes
+  PLUSEQ private_flag opt_bar str_extension_constructors
+  post_item_attributes
   {
-    let (potentially_long_ident, optional_type_parameters) = $1 in
-    Te.mk potentially_long_ident (List.rev $5)
-          ~params:optional_type_parameters ~priv:$3 ~attrs:$6 }
+    let (potentially_long_ident, optional_type_parameters) = $2 in
+    Te.mk potentially_long_ident (List.rev $6)
+          ~params:optional_type_parameters ~priv:$4 ~attrs:$7 }
 ;
-sig_type_extension:
+sig_type_extension: 
+  TYPE
   potentially_long_ident_and_optional_type_parameters
-  PLUSEQ private_flag opt_bar sig_extension_constructors post_item_attributes
+  PLUSEQ private_flag opt_bar sig_extension_constructors
+  post_item_attributes
   {
-    let (potentially_long_ident, optional_type_parameters) = $1 in
-    Te.mk potentially_long_ident (List.rev $5)
-          ~params:optional_type_parameters ~priv:$3 ~attrs:$6 }
+    let (potentially_long_ident, optional_type_parameters) = $2 in
+    Te.mk potentially_long_ident (List.rev $6)
+          ~params:optional_type_parameters ~priv:$4 ~attrs:$7
+  }
 ;
 str_extension_constructors:
     extension_constructor_declaration                     { [$1] }
@@ -2556,13 +3126,13 @@ sig_extension_constructors:
       { $3 :: $1 }
 ;
 extension_constructor_declaration:
-  | constr_ident attributes generalized_constructor_arguments
-      { let args, res = $3 in
-        Te.decl (mkrhs $1 1) ~args ?res ~loc:(symbol_rloc()) ~attrs:$2 }
+  | constr_ident generalized_constructor_arguments attributes
+      { let args, res = $2 in
+        Te.decl (mkrhs $1 1) ~args ?res ~loc:(symbol_rloc()) ~attrs:$3 }
 ;
 extension_constructor_rebind:
-  | constr_ident attributes EQUAL constr_longident
-      { Te.rebind (mkrhs $1 1) (mkrhs $4 4) ~loc:(symbol_rloc()) ~attrs:$2 }
+  | constr_ident EQUAL constr_longident attributes
+      { Te.rebind (mkrhs $1 1) (mkrhs $3 3) ~loc:(symbol_rloc()) ~attrs:$4 }
 ;
 
 /* "with" constraints (additional type equations over signature components) */
@@ -2790,21 +3360,13 @@ non_arrowed_core_type:
 non_arrowed_non_simple_core_type:
   | type_longident non_arrowed_simple_core_type_list
       { mktyp(Ptyp_constr(mkrhs $1 1, List.rev $2)) }
-  | SHARP class_longident
-      { mktyp(Ptyp_class(mkrhs $2 2, [])) }
-  | non_arrowed_simple_core_type SHARP class_longident
-      { mktyp(Ptyp_class(mkrhs $3 3, [$1])) }
-  | LBRACKET core_type_comma_list RBRACKET SHARP class_longident
-      { mktyp(Ptyp_class(mkrhs $5 5, List.rev $2)) }
+  | SHARP class_longident non_arrowed_simple_core_type_list
+      { mktyp(Ptyp_class(mkrhs $2 2, List.rev $3)) }
+  | non_arrowed_core_type attribute
+      { Typ.attr $1 $2 }
 ;
 
 non_arrowed_simple_core_type:
-  /* Just making something really ugly that doesn't conflict for attributes as
-   * a placeholder */
-  /* The parser asks that you *really* help it understand the precedence - this
-   * makes printing easier */
-  | LPAREN non_arrowed_simple_core_type attribute RPAREN
-      { Typ.attr $2 $3 }
   | LPAREN core_type_comma_list RPAREN %prec below_NEWDOT
       { match $2 with
         | [] -> raise Parse_error
@@ -2812,6 +3374,8 @@ non_arrowed_simple_core_type:
         | moreThanOne -> mktyp(Ptyp_tuple(List.rev moreThanOne)) }
   | QUOTE ident
       { mktyp(Ptyp_var $2) }
+  | SHARP class_longident
+      { mktyp(Ptyp_class(mkrhs $2 2, [])) }
   | UNDERSCORE
       { mktyp(Ptyp_any) }
   | type_longident
@@ -2819,10 +3383,6 @@ non_arrowed_simple_core_type:
   | LESS meth_list GREATER
       { let (f, c) = $2 in mktyp(Ptyp_object (f, c)) }
   | LESS GREATER
-      { mktyp(Ptyp_object ([], Closed)) }
-  | LBRACE_STRUCT meth_list RBRACE_STRUCT
-      { let (f, c) = $2 in mktyp(Ptyp_object (f, c)) }
-  | LBRACE_STRUCT RBRACE_STRUCT
       { mktyp(Ptyp_object ([], Closed)) }
   | LBRACKET tag_field RBRACKET
       { mktyp(Ptyp_variant([$2], Closed, None)) }
@@ -2867,8 +3427,8 @@ row_field:
   | non_arrowed_simple_core_type                            { Rinherit $1 }
 ;
 tag_field:
-    name_tag attributes OF opt_ampersand amper_type_list
-      { Rtag ($1, $2, $4, List.rev $5) }
+    name_tag OF opt_ampersand amper_type_list attributes
+      { Rtag ($1, $5, $3, List.rev $4) }
   | name_tag attributes
       { Rtag ($1, $2, true, []) }
 ;
@@ -2900,7 +3460,7 @@ meth_list:
   | DOTDOT                                      { [], Open }
 ;
 field:
-    label attributes COLON poly_type            { ($1, $2, $4) }
+    label COLON poly_type attributes           { ($1, $4, $3) }
 ;
 label:
     LIDENT                                      { $1 }
@@ -3098,7 +3658,6 @@ additive:
   | PLUSDOT                                     { "+." }
 ;
 
-/* Attributes and extensions */
 
 single_attr_id:
     LIDENT { $1 }
@@ -3161,28 +3720,47 @@ attr_id:
 attribute:
   LBRACKETAT attr_id payload RBRACKET { ($2, $3) }
 ;
-post_item_attribute:
+item_attribute:
   LBRACKETATAT attr_id payload RBRACKET { ($2, $3) }
 ;
+
 floating_attribute:
-  LBRACKETATATAT attr_id payload RBRACKET { ($2, $3) }
+  | LBRACKETATATAT attr_id payload RBRACKET {($2, $3)}
 ;
-post_item_attributes:
-    /* empty */  { [] }
-  | post_item_attribute post_item_attributes { $1 :: $2 }
-;
+
 attributes:
     /* empty */{ [] }
   | attribute attributes { $1 :: $2 }
 ;
-ext_attributes:
-    /* empty */  { None, [] }
-  | attribute attributes { None, $1 :: $2 }
-  | PERCENT attr_id attributes { Some $2, $3 }
+
+post_item_attributes:
+    /* empty */{ [] }
+  | item_attribute post_item_attributes { $1 :: $2 }
 ;
+
+item_extension_sugar:
+  /**
+   * Note, this form isn't really super useful, but wouldn't cause any parser
+   * conflicts. Not supporting it though just to avoid having to write the
+   * pretty printing logic.
+   *
+   *   [@attrsOnExtension] %extSugarId [@attrOnLet] LET ..
+   *
+   * We won't document it though, and probably won't format it as such.
+   *  | PERCENT attr_id item_attribute post_item_attributes {
+   *     ($3::$4, $2)
+   *    }
+   */
+  | PERCENT attr_id {
+      ([], $2)
+    }
+;
+
 extension:
   LBRACKETPERCENT attr_id payload RBRACKET { ($2, $3) }
 ;
+
+
 item_extension:
   LBRACKETPERCENTPERCENT attr_id payload RBRACKET { ($2, $3) }
 ;
@@ -3197,5 +3775,6 @@ payload:
 
 
 %%
+
 
 
