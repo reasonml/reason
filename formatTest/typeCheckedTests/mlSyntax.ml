@@ -18,6 +18,16 @@ let doubleBarNested = function
   | X | Y (_, _, _) | (Z (_, _) | Q)  -> true
   | _ -> false
 
+
+(* Liberal use of the Any pattern being compatible with multiple arguments  *)
+let doubleBarAnyPatterns = function
+  | X | Y  _ | Z  _ | Q -> true
+  | _ -> false
+
+let doubleBarNestedAnyPatterns = function
+  | X | Y  _ | (Z  _ | Q)  -> true
+  | _ -> false
+
 type bcd = B | C | D | E
 type a = A of bcd
 let result = match B with

@@ -124,6 +124,8 @@ let mkoption d =
   Typ.mk ~loc (Ptyp_constr(mkloc (Ldot (Lident "*predef*", "option")) loc,[d]))
 
 
+let simple_ghost_text_attr txt = [({txt; loc=symbol_gloc ()}, PStr [])]
+
 let mkExplicitArityTuplePat pat =
   (* Tell OCaml type system that what this tuple construction represents is
      not actually a tuple, and should represent several constructor
@@ -134,14 +136,18 @@ let mkExplicitArityTuplePat pat =
   *)
   Pat.mk
     ~loc:(symbol_rloc())
-    ~attrs:[({txt="explicit_arity"; loc=symbol_gloc ()}, PStr [])]
+    ~attrs:(simple_ghost_text_attr "explicit_arity")
     pat
 
 let mkExplicitArityTupleExp exp =
   Exp.mk
     ~loc:(symbol_rloc())
-    ~attrs:[({txt="explicit_arity"; loc=symbol_gloc (); }, PStr [])]
+    ~attrs:(simple_ghost_text_attr "explicit_arity")
     exp
+
+let is_pattern_list_single_any = function
+  | [{ppat_desc=Ppat_any; ppat_attributes=[]} as onlyItem] -> Some onlyItem
+  | _ -> None
 
 let reloc_pat x = { x with ppat_loc = symbol_rloc () };;
 
@@ -2783,8 +2789,14 @@ pattern_without_or:
     */
   | constr_longident simple_pattern_list %prec prec_constr_appl
     {
-      let argPattern = simple_pattern_list_to_tuple $2 in
-      mkExplicitArityTuplePat (Ppat_construct(mkrhs $1 1, Some argPattern))
+      match is_pattern_list_single_any $2 with
+        | Some singleAnyPat ->
+            Pat.mk
+              ~loc:(symbol_rloc())
+              (Ppat_construct(mkrhs $1 1, Some singleAnyPat))
+        | None ->
+          let argPattern = simple_pattern_list_to_tuple $2 in
+          mkExplicitArityTuplePat (Ppat_construct(mkrhs $1 1, Some argPattern))
     }
   | name_tag simple_pattern %prec prec_constr_appl
     {
