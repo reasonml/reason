@@ -16,10 +16,10 @@ let matchingFunc a => switch a {
     let zz = 10;
     zz;
   }
-  | `Other x => (
+  | `Other x => {
     print_string "matched other x";
     x;
-  )
+  }
 };
 
 type firstTwoShouldBeGroupedInParens =
@@ -292,10 +292,10 @@ let o: (person) = {name: "bob", age: 10};
 /* Parens needed? Nope! */
 let o: person = {name: "bob", age: 10};
 
-let printPerson (p: person) => (
+let printPerson (p: person) => {
   let q: person = p;
   p.name ^ p.name;
-);
+};
 
 /* let dontParseMeBro x y:int = x = y;*/
 
@@ -459,9 +459,9 @@ let blah = fun   |Red _           =>      1   |Black _ => 0 |Green _ => 0;
 
 /* Won't work! */
 /* let arrowFunc = fun a b => print_string "returning aplusb from arrow"; a + b;;  */
-let arrowFunc = fun a b => (print_string "returning aplusb from arrow"; a + b;);
+let arrowFunc = fun a b => {print_string "returning aplusb from arrow"; a + b;};
 let add a b => {
-  let extra = (print_string "adding"; 0;);
+  let extra = {print_string "adding"; 0;};
   let anotherExtra = 0;
   extra + a + b + anotherExtra;
 };
@@ -514,11 +514,11 @@ let result = myRecordWithFunctions.addThreeNumbersTupled (10, 20, 30);
 
 let lookTuplesRequireParens = (1, 2);
 /* let thisDoesntParse = 1, 2;  */
-let tupleInsideAParenSequence = (
+let tupleInsideAParenSequence = {
   print_string "look, a tuple inside a sequence";
   let x = 10;
   (x, x);
-);
+};
 
 let tupleInsideALetSequence = {
   print_string "look, a tuple inside a sequence";
@@ -537,10 +537,10 @@ let (myAnnotatedValBinding:int) = 10;
 
 /* Class functions (constructors) and methods are unified in the same way */
 
-class classWithNoArg => object
-  method x => 0
-  method y => 0
-end;
+class classWithNoArg = {
+  method x => 0;
+  method y => 0;
+};
 
 /* This parses but doesn't type check
   class myClass init => object
@@ -549,11 +549,8 @@ end;
   end;
 */
 
-/* TODO: Unify class constructor return values with function return values */
-class myClassWithAnnotatedReturnType init (:object method x:int method y:int end) => object
-  method x => init
-  method y => init
-end;
+
+
 
 let myFunc (a:int) (b:int) :(int, int) => (a, b);
 let myFunc (a:int) (b:int) :list int => [1];

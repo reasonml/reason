@@ -64,6 +64,7 @@ let keyword_table =
     "module", MODULE;
     "mutable", MUTABLE;
     "new", NEW;
+    "instanceas", INSTANCEAS;
     "object", OBJECT;
     "of", OF;
     "open", OPEN;
@@ -314,12 +315,6 @@ rule token = parse
       }
   | blank +
       { token lexbuf }
-  (* Temporary replacement for {| |} - which conflicts with switch cases when
-     reformatting. *)
-  | "{_|"
-      { LBRACE_STRUCT}
-  | "|_}"
-      { RBRACE_STRUCT}
   | "_"
       { UNDERSCORE }
   | "~"
