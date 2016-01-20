@@ -74,7 +74,7 @@ let res = (if true false else false) [@onEntireIf];
 
 let add a b => (a [@onA] + b) [@onEverything];
 let add a b => (a [@onA] + (b [@onB])) [@onEverything];
-let add = fun a b => a + b [@onEverything];
+let add = fun a b => a + b [@onB];
 
 let both = (fun a => a) [@onEntireFunction];
 let both a b => (a [@onA] && b) [@onEverything];

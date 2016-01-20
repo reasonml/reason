@@ -830,12 +830,14 @@ conflicts.
  * attributes. In expressions, they have the same precedence as function
  * arguments, as if they are additional arguments to a function application.
  *
- * Note that prefix unary subtractive/plus parses are still higher in than
- * attributes, unlike infix. This means that:
+ * Note that prefix unary subtractive/plus parses with lower precedence than
+ * function application (and attributes) This means that:
  *
  *   let = - something blah blah [@attr];
  * 
- * Will have the attribute applied to the entire content to the right.
+ * Will have the attribute applied to the entire content to the right of the
+ * unary minus, as if the attribute was merely another argument to the function
+ * application.
  *
  * Where arrows occur, it will (as always) obey the rules of function/type
  * application.
