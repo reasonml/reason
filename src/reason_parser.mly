@@ -465,7 +465,7 @@ let extension_expression (ext_attrs, ext_id) item_expr =
   ghexp ~attrs:ext_attrs (Pexp_extension (ext_id, PStr [mkstrexp item_expr []]))
 
 (* There's no more need for these functions - this was for the following:
- * 
+ *
  *     fun % ext [@foo] arg => arg;
  *
  *   Becoming
@@ -801,7 +801,7 @@ conflicts.
  *    let x = true && false [@attrOnFalse]
  *    let x = 10 + 20 [@attrOn20]
  *    let x = (10 + 20) [@attrEntireAddition]
- * 
+ *
  * As:
  *
  *    let x = true && ((false)[@attrOnFalse ])
@@ -834,7 +834,7 @@ conflicts.
  * function application (and attributes) This means that:
  *
  *   let = - something blah blah [@attr];
- * 
+ *
  * Will have the attribute applied to the entire content to the right of the
  * unary minus, as if the attribute was merely another argument to the function
  * application.
@@ -1417,7 +1417,7 @@ signature_item:
     }
 ;
 open_statement:
-  | OPEN override_flag mod_longident post_item_attributes 
+  | OPEN override_flag mod_longident post_item_attributes
       { Opn.mk (mkrhs $3 3) ~override:$2 ~attrs:$4 ~loc:(symbol_rloc()) }
 ;
 module_declaration:
@@ -1513,7 +1513,7 @@ class_declaration_details:
  * Now, you can do:
  *
  *   class myClass arg blah : instance_type => {
- *     method blah => ..;  
+ *     method blah => ..;
  *   }
  *
  * But you cannot constrain with a function Pcty_arrow
@@ -1611,7 +1611,7 @@ class_expr:
   | CLASS class_longident non_arrowed_simple_core_type_list {
       mkclass(Pcl_constr(mkloc $2 (rhs_loc 2), List.rev $3))
     }
-      
+
   | extension
       { mkclass(Pcl_extension $1) }
 ;
@@ -1887,14 +1887,14 @@ class_sig_field:
   | VAL value_type post_item_attributes {
       mkctf_attrs (Pctf_val $2) $3
     }
-  | METHOD private_virtual_flags label COLON poly_type post_item_attributes 
+  | METHOD private_virtual_flags label COLON poly_type post_item_attributes
        {
         let (p, v) = $2 in
         mkctf_attrs (Pctf_method ($3, p, v, $5)) $6
        }
-  | CONSTRAINT constrain_field post_item_attributes 
+  | CONSTRAINT constrain_field post_item_attributes
        { mkctf_attrs (Pctf_constraint $2) $3 }
-  | item_extension post_item_attributes 
+  | item_extension post_item_attributes
        { mkctf_attrs (Pctf_extension $1) $2 }
   | floating_attribute
       { mkctf(Pctf_attribute $1) }
@@ -2022,7 +2022,7 @@ semi_terminated_seq_expr_row:
       let item_attrs = $2 in
       mkexp ~attrs:item_attrs (Pexp_sequence($1, $4))
     }
-  
+
 ;
 
 /*
@@ -2453,7 +2453,7 @@ and_let_binding:
    * error if this is an *expression * let binding. Otherwise, they become
    * post_item_attributes on the structure item for the "and" binding.
    */
-  AND let_binding_body post_item_attributes 
+  AND let_binding_body post_item_attributes
       { mklb $2 $3 }
 ;
 let_bindings:
@@ -2580,9 +2580,30 @@ let_binding_body:
  *   let x: int -> 10;
  *   let y (:returnType) -> 20;  (* wat *)
  */
+
+
 curried_binding_return_typed:
-    curried_binding
-      { $1 }
+    EQUALGREATER expr
+      {
+          let nil = { txt = Lident "()"; loc = symbol_gloc () } in
+          ghexp(Pexp_fun("", None, ghpat(Ppat_construct (nil, None)), $2))
+      }
+  | labeled_simple_pattern curried_binding_return_typed_
+      { let (l, o, p) = $1 in ghexp(Pexp_fun(l, o, p, $2)) }
+  | LPAREN TYPE LIDENT RPAREN curried_binding_return_typed_
+      { mkexp(Pexp_newtype($3, $5)) }
+  | COLON non_arrowed_core_type EQUALGREATER expr
+      {
+          let nil = { txt = Lident "()"; loc = symbol_gloc () } in
+          let exp = ghexp(Pexp_fun("", None, ghpat(Ppat_construct (nil, None)), $4)) in
+          mkexp_constraint exp (Some $2, None)
+      }
+;
+
+curried_binding_return_typed_:
+  curried_binding
+    {$1}
+
   /* Parens are required around function return value annotations to allow
    * unifying of arrow syntax for all functions:
    *
@@ -2609,9 +2630,9 @@ curried_binding_return_typed:
 curried_binding:
     EQUALGREATER expr
       { $2 }
-  | labeled_simple_pattern curried_binding_return_typed
+  | labeled_simple_pattern curried_binding_return_typed_
       { let (l, o, p) = $1 in ghexp(Pexp_fun(l, o, p, $2)) }
-  | LPAREN TYPE LIDENT RPAREN curried_binding_return_typed
+  | LPAREN TYPE LIDENT RPAREN curried_binding_return_typed_
       { mkexp(Pexp_newtype($3, $5)) }
 ;
 
@@ -3062,14 +3083,14 @@ str_exception_declaration:
         let ext = $2 in
         {ext with pext_attributes = ext.pext_attributes @ $3}
       }
-  | EXCEPTION extension_constructor_rebind post_item_attributes 
+  | EXCEPTION extension_constructor_rebind post_item_attributes
       {
         let ext = $2 in
         {ext with pext_attributes = ext.pext_attributes @ $3}
       }
 ;
 sig_exception_declaration:
-  | EXCEPTION extension_constructor_declaration post_item_attributes 
+  | EXCEPTION extension_constructor_declaration post_item_attributes
       {
         let ext = $2 in
         {ext with pext_attributes = ext.pext_attributes @ $3}
@@ -3105,7 +3126,7 @@ potentially_long_ident_and_optional_type_parameters:
   | type_strictly_longident optional_type_parameters {(mkrhs $1 1, $2)}
 ;
 
-str_type_extension: 
+str_type_extension:
   TYPE
   potentially_long_ident_and_optional_type_parameters
   PLUSEQ private_flag opt_bar str_extension_constructors
@@ -3115,7 +3136,7 @@ str_type_extension:
     Te.mk potentially_long_ident (List.rev $6)
           ~params:optional_type_parameters ~priv:$4 ~attrs:$7 }
 ;
-sig_type_extension: 
+sig_type_extension:
   TYPE
   potentially_long_ident_and_optional_type_parameters
   PLUSEQ private_flag opt_bar sig_extension_constructors
@@ -3789,6 +3810,3 @@ payload:
 
 
 %%
-
-
-
