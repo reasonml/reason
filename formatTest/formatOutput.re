@@ -5757,7 +5757,7 @@ let add a b => ((a [@onA]) + b) [@onEverything];
 let add a b =>
   ((a [@onA]) + (b [@onB])) [@onEverything];
 
-let add a b => a + (b [@onEverything]);
+let add a b => a + (b [@onB]);
 
 let both = (fun a => a) [@onEntireFunction];
 
