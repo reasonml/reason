@@ -1584,14 +1584,14 @@ let x = {M.foo: 3};
 
 /* multicomponent record module pathname */
 {A.B.a: b, c: d};
-let () = f x ([%sexp_of int]) y;
+let () = f x [%sexp_of int] y;
 
 /* y */
-let z = some_function ([%sexp_of foo]);
+let z = some_function [%sexp_of foo];
 
 let z = some_function argument;
 
-let d = print_sexp ([%sexp_of unit]) ();
+let d = print_sexp [%sexp_of unit] ();
 /* gigantic string with weird characters that causes trouble */
 TEST_UNIT =
   eprintf
@@ -1603,12 +1603,18 @@ TEST_UNIT =
 x;
 /* s */
 [%raise_structural_sexp
-  "feature's tip is already an ancestor of new base"
-    { feature_tip = (old_tip : Rev.t); new_base = (new_base : Rev.t) }];
+  "feature's tip is already an ancestor of new base" {
+    feature_tip: (old_tip: Rev.t), 
+    new_base: (new_base: Rev.t)
+  }
+];
 
 [%raise_structural_sexp
-  "feature's tip is already an ancestor of new base"
-    { feature_tip = (old_tip : Rev.t); new_base = (new_base : Rev.t) }];
+  "feature's tip is already an ancestor of new base" {
+    feature_tip: (old_tip: Rev.t), 
+    new_base: (new_base: Rev.t)
+  }
+];
 /* Indentation that Jane Street needs to think about and make precise.
 
    These are long term ideas, possibly even conflicting with other tests. */
@@ -1843,11 +1849,21 @@ let module M = {
   let a = [[[[[[]]]]]];
   let a = [ff [ff [ff [ff [ff [ff []]]]]]];
 };
-let x = object inherit  foo method bar = () end;
+let x = {
+  instance as _; 
+  inherit class foo; 
+  method bar = ()
+};
 
-let _ = "Classes not supported by pretty printer";
+class foo = {
+  instance as _;
+  method x = 2;
+  inherit class bar;
+};
 
-let _ = "Classes not supported by pretty printer";
+class foo = {
+  inherit class bar;
+};
 type predicate =
   | Pred_Byte | Pred_Native | Pred_Toploop;
 
@@ -1901,28 +1917,36 @@ let foo: string;
 let bar: string;
 /** This comment is assciated to bar. */
 /** The comment for class my_class */
-class my_class :
-  object
-    inherit cl
-    val  mutable tutu : string
-    val  toto : int
-    val  titi : string
-    method  toto : string
-    method  m : float -> int
-  end;
-/** A comment to describe inheritance from cl */
-/** The comment for attribute tutu */
-/** The comment for attribute toto. */
-/** This comment is not attached to titi since
+class my_class : {
+  inherit cl; 
+  val mutable tutu:
+    /** A comment to describe inheritance from cl */
+    /** The comment for attribute tutu */
+    string; 
+  val toto:
+    /** The comment for attribute toto. */
+    int; 
+  val titi:
+    /** This comment is not attached to titi since
         there is a blank line before titi, but is kept
         as a comment in the class. */
-/** Comment for method toto */
-/** Comment for method m */
+    string; 
+  method toto:
+    /** Comment for method toto */
+    string; 
+  method m:
+    /** Comment for method m */
+    float => int
+};
 /** The comment for the class type my_class_type */
-class type my_class_type =
-  object val  mutable x : int method  m : int -> int end;
-/** The comment for variable x. */
-/** The commend for method m. */
+class type my_class_type = {
+  val mutable x:
+    /** The comment for variable x. */
+    int; 
+  method m:
+    /** The commend for method m. */
+    int => int
+};
 /** The comment for module Foo */
 let module Foo: {
   /** The comment for x */ 
@@ -1957,10 +1981,14 @@ module type my_module_type = {
 /*     method m (f : float) = 1 */
 /*   end */
 /** The comment for class type my_class_type */
-class type my_class_type =
-  object val  mutable x : int method  m : int -> int end;
-/** The comment for the instance variable x. */
-/** The commend for method m. */
+class type my_class_type = {
+  val mutable x:
+    /** The comment for the instance variable x. */
+    int; 
+  method m:
+    /** The commend for method m. */
+    int => int
+};
 /** The comment for module Foo */
 let module Foo: {
   /** The comment for x */ 
@@ -2124,32 +2152,65 @@ let x = [%x f 3 5];
 
 let x = [%x f 3 5];
 
-let x = 3 + ([%f f]);
+let x = 3 + [%f f];
 
-let x = ([%f f]) * ([%f f]) + ([%f f]);
+let x = [%f f] * [%f f] + [%f f];
 
-let x = ([%f f 4 2]) * ([%f f 3 4]);
+let x = [%f f 4 2] * [%f f 3 4];
 
-let x = ([%f f 2 3]) * ([%f f 3 4]) + (
-  [%f f 2 3]
-);
+let x = [%f f 2 3] * [%f f 3 4] + [%f f 2 3];
 
-let x = ([%f f 2 3]) * ([%f f 3 4]) + (
-  [%f f 2 3]
-);
+let x = [%f f 2 3] * [%f f 3 4] + [%f f 2 3];
 
-let x =
-  ([%f f 2 3]) + ([%f f 3 4]) * ([%f f 2 3]);
+let x = [%f f 2 3] + [%f f 3 4] * [%f f 2 3];
 
-let x =
-  ([%f f 2 3]) + ([%f f 3 4]) * ([%f f 2 3]);
+let x = [%f f 2 3] + [%f f 3 4] * [%f f 2 3];
 
-let x =
-  ([%f f 2 3]) + ([%f f 3 4]) + ([%f f 2 3]);
+let x = [%f f 2 3] + [%f f 3 4] + [%f f 2 3];
 
-let x = ([%f f 4 2]) * ([%f f 3 4]);
+let x = [%f f 4 2] * [%f f 3 4];
 
-let x = ([%f.u f 4 2]) * ([%f.u f 3 4]);
+let x = [%f.u f 4 2] * [%f.u f 3 4];
+let x = 3;
+
+[%%a
+  let x = [3, 2]
+];
+
+let module S = {
+  let x = 3;
+  [%%b
+    let x = [3, 2]
+  ];
+};
+
+[%%c
+  let x = [3, 2]; 
+  [%%d
+    let x = [3, 2]
+  ];
+];
+
+[%%x 2 * 3 + x];
+
+[%%x 2 + 3 * x];
+
+[%%x 2];
+
+[%%x.y 2];
+
+[%%x.y 2];
+
+[%%x.y 2];
+
+[%%x 2];
+
+let module S = {
+  let x = 3;
+  [%%x.y 2];
+  [%%x.y 2];
+  [%%x.y 2];
+};
 type t = {
   a: int, 
   /** blablabla */ 
@@ -3005,7 +3066,12 @@ module type S = {
 };
 
 /* class overriding */
-let _ = "Classes not supported by pretty printer";
+class cl = {
+  instance as _;
+  inherit! class cl;
+  val! v = v;
+  method! m = m;
+};
 
 /* GADTs */
 type t _ =
@@ -3057,10 +3123,10 @@ module type T = {
   type t = int
   and t2 = t; 
   exception Error of int; 
-  class virtual ['a] cl : object  end
-and cl2 : object  end; 
-  class type clt = object  end
-and ['a] clt2 = object  end; 
+  class virtual cl 'a : {}
+  and cl2 : {}; 
+  class type clt = {}
+  and clt2 'a = {}; 
   let module M: Sig; 
   let module M: (X: X) => (Y: Y) => Sig; 
   module type Sig; 
@@ -3165,19 +3231,23 @@ module type MySig = {
     > `a `_bbb `c `d
   ]; 
   /* objects */ 
-  let a: <  >; 
-  let a: < .. >; 
-  let a:
-    < meth :int option ;meth2 :'a . 'a option ;meth3 :'a 'b . ('a,'b) Hashtbl.t 
+  let a: <>; 
+  let a: <..>; 
+  let a: <
+    meth : option int, 
+    meth2 : 'a .option 'a, 
+    meth3 : 'a 'b .Hashtbl.t 'a 'b
   >; 
-  let a:
-    <
-  meth :int option ;meth2 :'a . 'a option ;meth3 :'a 'b . ('a,'b) Hashtbl.t  ;..
+  let a: <
+    meth : option int, 
+    meth2 : 'a .option 'a, 
+    meth3 : 'a 'b .Hashtbl.t 'a 'b, 
+    ..
   >; 
   /* #-types */ 
   let a: #M.meth; 
-  let a: 'a#M.meth; 
-  let a: ('a,('b* 'c))#M.meth;
+  let a: #M.meth 'a; 
+  let a: #M.meth 'a ('b, 'c);
 };
 type t = [ | `aaa | `bbb | `ccc];
 

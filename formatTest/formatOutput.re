@@ -180,16 +180,16 @@ let myRecord = {
   nestedRecord: {
     anotherNestedRecord:
       fun instaComp displayRect =>
-      if (
-        Graphics.cgRectIntersectsWithSlop
-          defaultCompositeTimerRectSlop 
-          instaComp.relativeRect 
-          displayRect
-      ) {
-        IoEligible
-      } else {
-        IoInelibleButTryComposition
-      }
+        if (
+          Graphics.cgRectIntersectsWithSlop
+            defaultCompositeTimerRectSlop 
+            instaComp.relativeRect 
+            displayRect
+        ) {
+          IoEligible
+        } else {
+          IoInelibleButTryComposition
+        }
   }
 };
 
@@ -2177,8 +2177,10 @@ let myFunctionsInARecord = {
 
 let myFunctionsInARecordThatMustWrap = {
   /* Desired wrapping */ 
-  adder: fun reallyLongArgument => reallyLongArgument, 
-  minuser: fun anotherReallyLongArgument => anotherReallyLongArgument
+  adder:
+    fun reallyLongArgument => reallyLongArgument, 
+  minuser:
+    fun anotherReallyLongArgument => anotherReallyLongArgument
 };
 
 /* Comment at bottom of record */
@@ -4185,24 +4187,27 @@ let commentingAfterEqualAfterType: withThreeFields =
     occupation: "programmer"
   };
 
-/*beforePattern*/
-let commentingBeforePattern: withThreeFields = {
+let
+  /*beforePattern*/
+  commentingBeforePattern: withThreeFields = {
   name: "hello", 
   age: 20, 
   occupation: "programmer"
 };
 
-/*beforePattern*/
-/*beforePattern2 */
-let commentingBeforePattern2: withThreeFields = {
+let
+  /*beforePattern*/
+  /*beforePattern2 */
+  commentingBeforePattern2: withThreeFields = {
   name: "hello", 
   age: 20, 
   occupation: "programmer"
 };
 
-/**beforePattern*/
-/*beforePattern2 */
-let commentingBeforePatternSpecial: withThreeFields = {
+let
+  /**beforePattern*/
+  /*beforePattern2 */
+  commentingBeforePatternSpecial: withThreeFields = {
   name: "hello", 
   age: 20, 
   occupation: "programmer"
@@ -4400,7 +4405,10 @@ let ternaryResult =
       false;
 
 let returningATernary x y => x > y ? "hi" : "by";
-( /*attributes not yet supported*/ );
+[@@@autoFormat
+  let wrap = 80; 
+  let shift = 2;
+];
 
 Modules.run ();
 
@@ -4540,7 +4548,7 @@ type instatiatedTypeDef = myTypeDef int => int;
  */
 type something = (
   int, 
-  (int[@lookAtThisAttribute ])
+  int [@lookAtThisAttribute]
 );
 
 type longWrappingTypeDefinitionExample =
@@ -4974,8 +4982,8 @@ type adders = {
 let myRecordWithFunctions = {
   addTwoNumbers: fun a b => a + b, 
   addThreeNumbers: fun a b c => a + b + c, 
-  addThreeNumbersTupled: fun (a, b, c) =>
-    a + b + c
+  addThreeNumbersTupled:
+    fun (a, b, c) => a + b + c
 };
 
 let result =
@@ -5013,7 +5021,10 @@ let makeIncrementer (delta: int) :(int => int) =>
 let myAnnotatedValBinding: int = 10;
 
 /* Class functions (constructors) and methods are unified in the same way */
-let _ = "Classes not supported by pretty printer";
+class classWithNoArg = {
+  method x = 0;
+  method y = 0;
+};
 
 /* This parses but doesn't type check
   class myClass init => object
@@ -5021,9 +5032,6 @@ let _ = "Classes not supported by pretty printer";
     method y => init
   end;
 */
-/* TODO: Unify class constructor return values with function return values */
-let _ = "Classes not supported by pretty printer";
-
 let myFunc (a: int) (b: int) :(int, int) => (
   a, 
   b
@@ -5308,7 +5316,7 @@ let newRecord = {
   developmentHabbits: 1
 };
 
-( /*attributes not yet supported*/ );
+[@@@thisIsAThing];
 
 let x = 10;
 
@@ -5632,6 +5640,291 @@ let module M = Something.Create {
 let str = "@[.... some formatting ....@\n\010@.";
 */
 let str = "@[.... some formatting ....@\n\n@.";
+/**
+ * Generally, dangling attributes [@..] apply to everything to the left of it,
+ * up until a comma, equals asignment, arrow, bar, or infix symbol (+/-) or
+ * prefix.
+ *
+ * This has a nice side effect when printing the terms:
+ * If a node has attributes attached to it,
+ */
+/**
+ * Core language features:
+ * ----------------------
+ */
+type x = int [@@itemAttributeOnTypeDef];
+
+type attributedInt = int [@onTopLevelTypeDef];
+
+type attributedIntsInTuple = (
+  int [@onInt], 
+  float [@onFloat]
+) 
+[@@onTopLevelTypeDef];
+
+type myDataType 'x 'y = | MyDataType of 'x 'y;
+
+type myType =
+  (
+    myDataType
+      ((option int) [@onOptionInt]) 
+      ((option float) [@onOption])
+  ) 
+  [@onEntireType];
+
+let thisInst: myType =
+  MyDataType (Some 10) (Some 10.0) 
+  [@attOnEntireDatatype];
+
+let thisInst: myType =
+  MyDataType
+    (Some 10 [@onFirstParam]) (Some 10.0) 
+  [@attOnEntireDatatype];
+
+let x = "hello" [@onHello];
+
+let x = "hello" [@onHello];
+
+let x = "hello" ^ ("goodbye" [@onGoodbye]);
+
+let x = ("hello" [@onHello]) ^ "goodbye";
+
+let x = ("hello" [@onHello]) ^ "goodbye";
+
+let x = "hello" ^ ("goodbye" [@onGoodbye]);
+
+let x = ("hello" ^ "goodbye") [@onEverything];
+
+let x = 10 + (20 [@on20]);
+
+let x = 10 + (20 [@on20]);
+
+let x = (10 [@on10]) + 20;
+
+let x = (10 [@on10]) + 20;
+
+let x = (10 + 20) [@attrEverything];
+
+let x = 10 - (20 [@on20]);
+
+let x = 10 - (20 [@on20]);
+
+let x = (10 [@on10]) - 20;
+
+let x = (10 [@on10]) - 20;
+
+let x = (10 - 20) [@attrEntireEverything];
+
+let x = true && (false [@onFalse]);
+
+let x = true && (false [@onFalse]);
+
+let x = (true [@onTrue]) && false;
+
+let x = (true [@onTrue]) && false;
+
+let x = (true && false) [@attrEverything];
+
+/* now make sure to try with variants (tagged and `) */
+/**
+ * How attribute parsings respond to other syntactic constructs.
+ */
+let add a => a [@onRet];
+
+let add a => a [@onRet];
+
+let add = (fun a => a) [@onEntireFunction];
+
+let res =
+  if true {
+    false
+  } else {
+    false [@onFalse]
+  };
+
+let res =
+  (
+    if true {
+      false
+    } else {
+      false
+    }
+  ) 
+  [@onEntireIf];
+
+let add a b => ((a [@onA]) + b) [@onEverything];
+
+let add a b =>
+  ((a [@onA]) + (b [@onB])) [@onEverything];
+
+let add a b => a + (b [@onEverything]);
+
+let both = (fun a => a) [@onEntireFunction];
+
+let both a b => ((a [@onA]) && b) [@onEverything];
+
+let both a b => (a [@onA]) && (b [@onB] [@onB]);
+
+let both a b => (a && b) [@onEverything];
+
+let thisVal = 10;
+
+let x = 20 + 
+  - 
+  (add thisVal thisVal [@onFunctionCall])
+;
+
+let x =
+  (20 + - (add thisVal thisVal)) [@onEverything];
+
+let x = - (add thisVal thisVal [@onFunctionCall]);
+
+let x = - (add thisVal thisVal) [@onEverything];
+
+let bothTrue x y => {contents: x && y};
+
+let something =
+  !(bothTrue true true)
+    [@onEverythingToRightOfEquals];
+
+let res =
+  add 2 4 [@appliesToEntireFunctionApplication];
+
+add 2 4 [@appliesToEntireFunctionApplication];
+
+let myObj = {method p () => {method z () => 10}};
+
+let result =
+  (myObj#p () [@attOnFirstSend])#z
+    () [@onSecondSend];
+
+type recordFunctions = {
+  p: unit => recordFunctions [@onUnit], 
+  q: (unit => unit) [@onArrow]
+} 
+[@@onRecordFunctions]
+and unusedType = unit [@@onUnusedType];
+
+let rec myRecord = {
+  p: fun () => myRecord, 
+  q: fun () => ()
+}
+and unused = ();
+
+let result =
+  (myRecord.p () [@attOnFirstSend]).q
+    () [@onSecondSend];
+
+type variantType =
+  | Foo of int [@onInt] 
+  | Bar of (int [@onInt]) 
+  | Baz 
+[@@onVariantType];
+
+type gadtType 'x =
+  | Foo of int :(gadtType int) [@onFirstRow] 
+  | Bar of
+      (int [@onInt]) 
+      :(gadtType unit) [@onSecondRow] 
+  | Baz
+      :(gadtType (unit [@onUnit])) [@onThirdRow] 
+[@@onVariantType];
+
+[@@@floatingTopLevelStructureItem hello];
+
+print_string "hello";
+
+let firstBinding = "first"
+and secondBinding = "second";
+
+/**
+ * Let bindings.
+ * ----------------------
+ */
+let showLets () =>
+  {
+    let tmp = 20;
+    {
+      let tmpTmp = tmp + tmp;
+      tmpTmp + tmpTmp
+    } 
+    [@onFinalLet]
+  } 
+  [@onOuterLet];
+
+/**
+ * Classes:
+ * ------------
+ */
+/**
+ * In curried sugar, the class_expr attribute will apply to the return.
+ */
+class boxA 'a (init: 'a) =>
+  {
+    method pr = init + init + init;
+  } 
+  [@onReturnClassExpr] 
+[@@moduleItemAttribute];
+
+/**
+ * In non-curried sugar, the class_expr still sticks to "the simple thing".
+ */
+class boxB 'a (init: 'a) =>
+  {
+    method pr = init + init + init;
+  } 
+  [@stillOnTheReturnBecauseItsSimple];
+
+/* To be able to put an attribute on just the return in that case, use
+ * parens. */
+class boxC 'a =
+  (
+    fun (init: 'a) =>
+      {
+        method pr = init + init + init;
+      } 
+      [@onReturnClassExpr]
+  ) 
+  [@onEntireFunction] 
+[@@onBoxC x; y;];
+
+class tupleClass 'a 'b (init: ('a, 'b)) => {
+  let one = 10 [@exprAttr ten]
+  let two = 20 [@exprAttr twenty]
+  and three = 30 [@exprAttr twenty]
+  method pr = one + two + three;
+} 
+[@@moduleItemAttribute onTheTupleClassItem];
+
+class type addablePointClassType = {
+  method x: int; 
+  method y: int; 
+  method add:
+    addablePointClassType => 
+    addablePointClassType => 
+    int
+} 
+[@@structureItem]
+and anotherClassType = {
+  method foo: int; 
+  method bar: int
+} 
+[@@structureItem];
+
+let module NestedModule = {
+  [@@@floatingNestedStructureItem hello];
+};
+
+module type HasAttrs = {
+  type t = int [@@onTypeDef]; 
+  [@@@floatingNestedSigItem hello]; 
+  class type foo = {
+    method foo: int; 
+    method bar: int
+  } 
+  [@@sigItem]; 
+  class fooBar : int => new foo [@@sigItem];
+};
 /*
  * Syntax and fallback syntax.
 
