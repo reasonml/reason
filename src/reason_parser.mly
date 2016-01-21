@@ -1607,6 +1607,10 @@ class_expr:
        let myVal: myClass int = new myClass 10;
 
    */
+  | CLASS class_longident {
+      mkclass(Pcl_constr(mkloc $2 (rhs_loc 2), []))
+    }
+
   | CLASS class_longident non_arrowed_simple_core_type_list {
       mkclass(Pcl_constr(mkloc $2 (rhs_loc 2), List.rev $3))
     }

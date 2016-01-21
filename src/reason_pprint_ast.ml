@@ -4113,7 +4113,7 @@ class printer  ()= object(self:'self)
             label
               ~space:true
               (makeList ~postSpace:true [openingWithTypeConstraint; atom "="])
-              (self#expression e)
+              (self#expression ex)
           | _ ->
             label ~space:true (makeList ~postSpace:true [opening; atom "="]) (self#expression e)
         in
