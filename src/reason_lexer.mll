@@ -479,6 +479,8 @@ rule token = parse
   | "+=" { PLUSEQ }
   | "-"  { MINUS }
   | "-." { MINUSDOT }
+  | "(TODO_REMOVE_AMBIGUITY__" { LBRACKETTODO }
+  | "__TODO_REMOVE_AMBIGUITY)" { RBRACKETTODO }
 
   | "!" appropriate_operator_suffix_chars +
             { PREFIXOP(unescape_stars_slashes (Lexing.lexeme lexbuf)) }
@@ -706,4 +708,3 @@ and skip_sharp_bang = parse
     preprocessor := Some (init, preprocess)
 
 }
-

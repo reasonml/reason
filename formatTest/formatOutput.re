@@ -6201,15 +6201,19 @@ type xyz =
 
 let doubleBar =
   fun | X
-      | Y _ _ _
-      | Z _ _
+      | Y
+          (TODO_REMOVE_AMBIGUITY__ _ _ _ __TODO_REMOVE_AMBIGUITY)
+      | Z
+          (TODO_REMOVE_AMBIGUITY__ _ _ __TODO_REMOVE_AMBIGUITY)
       | Q => true 
       | _ => false;
 
 let doubleBarNested =
   fun | X
-      | Y _ _ _
-      | Z _ _
+      | Y
+          (TODO_REMOVE_AMBIGUITY__ _ _ _ __TODO_REMOVE_AMBIGUITY)
+      | Z
+          (TODO_REMOVE_AMBIGUITY__ _ _ __TODO_REMOVE_AMBIGUITY)
       | Q => true 
       | _ => false;
 
