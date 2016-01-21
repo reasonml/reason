@@ -6109,7 +6109,7 @@ class virtual stack 'a init => {
    * The "as this" is implicit and will be formatted away.
    */
   val virtual dummy: unit; 
-  val mutable v: list 'a = (init: list 'a); 
+  val mutable v: list 'a = init; 
   method virtual implementMe: int => int; 
   method pop =
     switch v {
@@ -6143,7 +6143,7 @@ class virtual stackWithAttributes 'a init =>
     [@@@floatingAttribute]; 
     /* Virtual member */
     val virtual dummy: unit; 
-    val mutable v: list 'a = (init: list 'a); 
+    val mutable v: list 'a = init; 
     method virtual implementMe: int => int; 
     method pop =
       switch v {
