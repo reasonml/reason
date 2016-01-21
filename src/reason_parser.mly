@@ -1570,7 +1570,7 @@ class_self_pattern:
      have to explicity specify "_" (any) pattern. In Reason, writing nothing
      is how you specify the "this" pattern. */
   | AS pattern SEMI
-      { $2 }
+      { reloc_pat $2 }
 ;
 
 class_self_pattern_and_structure:
