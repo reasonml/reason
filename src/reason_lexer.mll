@@ -64,7 +64,6 @@ let keyword_table =
     "module", MODULE;
     "mutable", MUTABLE;
     "new", NEW;
-    "instanceas", INSTANCEAS;
     "object", OBJECT;
     "of", OF;
     "open", OPEN;
@@ -706,4 +705,3 @@ and skip_sharp_bang = parse
     preprocessor := Some (init, preprocess)
 
 }
-
