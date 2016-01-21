@@ -1766,7 +1766,7 @@ class printer  ()= object(self:'self)
       let everythingWithAttrs =
         if pcd_attributes <> [] then
           formatAttributed everything (self#attributes pcd_attributes)
-        else 
+        else
           everything
       in
       (SourceMap (break, pcd_loc, everythingWithAttrs))
@@ -2647,7 +2647,7 @@ class printer  ()= object(self:'self)
                      that unguarded infix/prefix are not compatible with
                      attributes. Render it as simple. *)
                   ((self#simple_expression exprWithoutAttrs :: attributesAsList), None)
-                else 
+                else
                   (items, Some (escape_stars_slashes operator))
               | None -> (
                 match self#prefixApplication (e, l) with
@@ -2675,7 +2675,7 @@ class printer  ()= object(self:'self)
       | _ -> ([self#expression x], None)
 
   method classExpressionToFormattedApplicationItems x =
-    let itms = 
+    let itms =
       match x.pcl_desc with
         | Pcl_apply (ce, l) ->
           (self#simple_class_expr ce)::
@@ -3632,7 +3632,7 @@ class printer  ()= object(self:'self)
      list of tokens. So if the following is parsed
 
        x y [@attr]
-      
+
      Then we can omit parens around (x y).
    *)
   method expr_can_render_own_attributes x =
@@ -3882,17 +3882,17 @@ class printer  ()= object(self:'self)
    match l with
       | [] -> toThis
       | _::_ ->
-        makeList 
-          ~postSpace:true 
-          ~indent:0 
-          ~break:IfNeed 
+        makeList
+          ~postSpace:true
+          ~indent:0
+          ~break:IfNeed
           ~inline:(true, true)
           [toThis; (self#item_attributes l)]
 
   method item_attributes l =
-	    makeList 
+	    makeList
        ~break:IfNeed ~postSpace:true (List.map self#item_attribute l)
-	
+
   method exception_declaration ed =
     let pcd_name = ed.pext_name in
     let pcd_loc = ed.pext_loc in
@@ -3970,7 +3970,7 @@ class printer  ()= object(self:'self)
         let allItems = match ct.ptyp_desc with
           | Ptyp_any -> instTypeFields
           | _ ->
-            label ~space:true (atom "instance as") (self#core_type ct) ::
+            label ~space:true (atom "as") (self#core_type ct) ::
             instTypeFields
         in
         makeList
@@ -4226,7 +4226,7 @@ class printer  ()= object(self:'self)
        have to go out of your way to bind it to "_". *)
     match (p.ppat_attributes, p.ppat_desc) with
       | ([], Ppat_var ({loc; txt = "this"})) -> fields
-      | _ -> (label ~space:true (atom "instance as") (self#pattern p))::fields
+      | _ -> (label ~space:true (atom "as") (self#pattern p))::fields
 
   method simple_class_expr x =
     if x.pcl_attributes <> [] then
@@ -4280,7 +4280,7 @@ class printer  ()= object(self:'self)
     (* We cannot handle the attributes here. Must handle them in each item *)
     if x.pcl_attributes <> [] then
       (* Do not need a "simple" attributes precedence wrapper. *)
-      formatAttributed 
+      formatAttributed
         (self#simple_class_expr {x with pcl_attributes=[]})
         (self#attributes x.pcl_attributes)
     else

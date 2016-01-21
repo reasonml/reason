@@ -1850,13 +1850,13 @@ let module M = {
   let a = [ff [ff [ff [ff [ff [ff []]]]]]];
 };
 let x = {
-  instance as _; 
+  as _; 
   inherit class foo; 
   method bar = ()
 };
 
 class foo = {
-  instance as _;
+  as _;
   method x = 2;
   inherit class bar;
 };
@@ -3067,7 +3067,7 @@ module type S = {
 
 /* class overriding */
 class cl = {
-  instance as _;
+  as _;
   inherit! class cl;
   val! v = v;
   method! m = m;
