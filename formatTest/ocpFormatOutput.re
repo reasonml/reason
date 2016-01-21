@@ -1856,8 +1856,8 @@ let x = {
 };
 
 class foo = {
-  as _;
-  method x = 2;
+  as _; 
+  method x = 2; 
   inherit class bar;
 };
 
@@ -3067,9 +3067,9 @@ module type S = {
 
 /* class overriding */
 class cl = {
-  as _;
-  inherit! class cl;
-  val! v = v;
+  as _; 
+  inherit! class cl; 
+  val! v = v; 
   method! m = m;
 };
 

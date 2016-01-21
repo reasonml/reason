@@ -1346,7 +1346,7 @@ let partitionFinalWrapping listTester wrapFinalItemSetting x =
         else
           Some (List.rev revEverythingButLast, last)
 
-let semiTerminated term = makeList [term; atom ";"]
+let semiTerminated term = makeList ~attemptInterleaveComments:false [term; atom ";"]
 
 let makeLetSequence letItems =
   makeList ~wrap:("{", "}") ~break:Always_rec ~inline:(true, false) letItems
@@ -3993,10 +3993,11 @@ class printer  ()= object(self:'self)
 
   method class_declaration_list l =
     let class_declaration ?(class_keyword=false)
-        ({pci_params=ls; pci_name={txt}; pci_virt; pci_expr={pcl_desc}} as x) =
+        ({pci_params=ls; pci_name={txt}; pci_virt; pci_expr={pcl_desc}; pci_loc} as x) =
       let (firstToken, pattern, patternAux) = self#class_opening class_keyword txt pci_virt ls in
       let classBinding = self#wrappedClassBinding firstToken pattern patternAux x.pci_expr in
-      self#attach_item_attributes x.pci_attributes classBinding;
+      let itm = self#attach_item_attributes x.pci_attributes classBinding in
+      SourceMap (break, pci_loc, itm)
     in
     (match l with
       | [] -> raise (NotPossible "Class definitions will have at least one item.")
@@ -4083,142 +4084,145 @@ class printer  ()= object(self:'self)
 
   (* TODO: TODOATTRIBUTES. *)
   method class_field x =
-    match x.pcf_desc with
-    | Pcf_inherit (ovf, ce, so) ->
-      let inheritText = ("inherit" ^ override ovf) in
-      let inheritExp = self#class_expr ce in
-      label
-        ~space:true
-        (atom inheritText)
-        (
-          match so with
-          | None -> inheritExp;
-          | Some (s) -> label ~space:true inheritExp (atom ("as " ^ s))
-        )
-    | Pcf_val (s, mf, Cfk_concrete (ovf, e)) ->
-      let opening = match mf with
-        | Mutable ->
-          let mutableName = [atom "mutable"; atom s.txt] in
-          label
-            ~space:true
-            (atom ("val" ^ override ovf))
-            (makeList ~postSpace:true ~inline:(false, true) ~break:IfNeed mutableName)
-        | Immutable -> label ~space:true (atom ("val" ^ override ovf)) (atom s.txt)
-      in
-      let valExprAndConstraint = match e.pexp_desc with
-        | Pexp_constraint (ex, ct) ->
-          let openingWithTypeConstraint = formatTypeConstraint opening (self#core_type ct) in
-          label
-            ~space:true
-            (makeList ~postSpace:true [openingWithTypeConstraint; atom "="])
-            (self#expression e)
-        | _ ->
-          label ~space:true (makeList ~postSpace:true [opening; atom "="]) (self#expression e)
-      in
-      valExprAndConstraint
-    | Pcf_val (s, mf, Cfk_virtual ct) ->
-      let opening = match mf with
-        | Mutable ->
-          let mutableVirtualName = [atom "mutable"; atom "virtual"; atom s.txt] in
-          let openingTokens =
-            (makeList ~postSpace:true ~inline:(false, true) ~break:IfNeed mutableVirtualName) in
-          label ~space:true (atom "val") openingTokens
-        | Immutable ->
-          let virtualName = [atom "virtual"; atom s.txt] in
-          let openingTokens =
-            (makeList ~postSpace:true ~inline:(false, true) ~break:IfNeed virtualName) in
-          label ~space:true (atom "val") openingTokens
-      in
-      formatTypeConstraint opening (self#core_type ct)
-    | Pcf_method (s, pf, Cfk_virtual ct) ->
-      let opening = match pf with
-        | Private ->
-          let privateVirtualName = [atom "private"; atom "virtual"; atom s.txt] in
-          let openingTokens =
-            (makeList ~postSpace:true ~inline:(false, true) ~break:IfNeed privateVirtualName) in
-          label ~space:true (atom "method") openingTokens
-        | Public ->
-          let virtualName = [atom "virtual"; atom s.txt] in
-          let openingTokens =
-            (makeList ~postSpace:true ~inline:(false, true) ~break:IfNeed virtualName) in
-          label ~space:true (atom "method") openingTokens
-      in
-      formatTypeConstraint opening (self#core_type ct)
-    | Pcf_method (s, pf, Cfk_concrete (ovf, e)) ->
-      let methodText = if ovf == Override then "method!" else "method" in
-      (* Should refactor the binding logic so faking out the AST isn't needed,
-         currently, it includes a ton of nuanced logic around recovering explicitly
-         polymorphic type definitions, and that furthermore, that representation...
-         Actually, let's do it.
+    let itm = 
+      match x.pcf_desc with
+      | Pcf_inherit (ovf, ce, so) ->
+        let inheritText = ("inherit" ^ override ovf) in
+        let inheritExp = self#class_expr ce in
+        label
+          ~space:true
+          (atom inheritText)
+          (
+            match so with
+            | None -> inheritExp;
+            | Some (s) -> label ~space:true inheritExp (atom ("as " ^ s))
+          )
+      | Pcf_val (s, mf, Cfk_concrete (ovf, e)) ->
+        let opening = match mf with
+          | Mutable ->
+            let mutableName = [atom "mutable"; atom s.txt] in
+            label
+              ~space:true
+              (atom ("val" ^ override ovf))
+              (makeList ~postSpace:true ~inline:(false, true) ~break:IfNeed mutableName)
+          | Immutable -> label ~space:true (atom ("val" ^ override ovf)) (atom s.txt)
+        in
+        let valExprAndConstraint = match e.pexp_desc with
+          | Pexp_constraint (ex, ct) ->
+            let openingWithTypeConstraint = formatTypeConstraint opening (self#core_type ct) in
+            label
+              ~space:true
+              (makeList ~postSpace:true [openingWithTypeConstraint; atom "="])
+              (self#expression e)
+          | _ ->
+            label ~space:true (makeList ~postSpace:true [opening; atom "="]) (self#expression e)
+        in
+        valExprAndConstraint
+      | Pcf_val (s, mf, Cfk_virtual ct) ->
+        let opening = match mf with
+          | Mutable ->
+            let mutableVirtualName = [atom "mutable"; atom "virtual"; atom s.txt] in
+            let openingTokens =
+              (makeList ~postSpace:true ~inline:(false, true) ~break:IfNeed mutableVirtualName) in
+            label ~space:true (atom "val") openingTokens
+          | Immutable ->
+            let virtualName = [atom "virtual"; atom s.txt] in
+            let openingTokens =
+              (makeList ~postSpace:true ~inline:(false, true) ~break:IfNeed virtualName) in
+            label ~space:true (atom "val") openingTokens
+        in
+        formatTypeConstraint opening (self#core_type ct)
+      | Pcf_method (s, pf, Cfk_virtual ct) ->
+        let opening = match pf with
+          | Private ->
+            let privateVirtualName = [atom "private"; atom "virtual"; atom s.txt] in
+            let openingTokens =
+              (makeList ~postSpace:true ~inline:(false, true) ~break:IfNeed privateVirtualName) in
+            label ~space:true (atom "method") openingTokens
+          | Public ->
+            let virtualName = [atom "virtual"; atom s.txt] in
+            let openingTokens =
+              (makeList ~postSpace:true ~inline:(false, true) ~break:IfNeed virtualName) in
+            label ~space:true (atom "method") openingTokens
+        in
+        formatTypeConstraint opening (self#core_type ct)
+      | Pcf_method (s, pf, Cfk_concrete (ovf, e)) ->
+        let methodText = if ovf == Override then "method!" else "method" in
+        (* Should refactor the binding logic so faking out the AST isn't needed,
+           currently, it includes a ton of nuanced logic around recovering explicitly
+           polymorphic type definitions, and that furthermore, that representation...
+           Actually, let's do it.
 
-         For some reason, concrete methods are only ever parsed as Pexp_poly.
-         If there *is* no polymorphic function for the method, then the return
-         value of the function is wrapped in a ghost Pexp_poly with [None] for
-         the type vars.*)
-      (match e.pexp_desc with
-        | (Pexp_poly
-            ({pexp_desc=Pexp_constraint (methodFunWithNewtypes, nonVarifiedExprType)},
-              Some ({ptyp_desc=Ptyp_poly (typeVars, varifiedPolyType)})
-            )
-          ) when (
+           For some reason, concrete methods are only ever parsed as Pexp_poly.
+           If there *is* no polymorphic function for the method, then the return
+           value of the function is wrapped in a ghost Pexp_poly with [None] for
+           the type vars.*)
+        (match e.pexp_desc with
+          | (Pexp_poly
+              ({pexp_desc=Pexp_constraint (methodFunWithNewtypes, nonVarifiedExprType)},
+                Some ({ptyp_desc=Ptyp_poly (typeVars, varifiedPolyType)})
+              )
+            ) when (
+              let (leadingAbstractVars, nonVarified) =
+                self#leadingCurriedAbstractTypes methodFunWithNewtypes in
+              self#isRenderableAsPolymorphicAbstractTypes
+                typeVars
+                (* If even artificially varified. Don't know until this returns*)
+                varifiedPolyType
+                leadingAbstractVars
+                nonVarifiedExprType
+          ) ->
             let (leadingAbstractVars, nonVarified) =
               self#leadingCurriedAbstractTypes methodFunWithNewtypes in
-            self#isRenderableAsPolymorphicAbstractTypes
-              typeVars
-              (* If even artificially varified. Don't know until this returns*)
-              varifiedPolyType
+            let fauxBindingPattern = match pf with
+              | Private -> (makeList ~postSpace:true ~break:IfNeed [atom "private"; atom s.txt])
+              | Public -> atom s.txt
+            in
+            self#locallyAbstractPolymorphicFunctionBinding
+              methodText
+              fauxBindingPattern
+              methodFunWithNewtypes
               leadingAbstractVars
               nonVarifiedExprType
-        ) ->
-          let (leadingAbstractVars, nonVarified) =
-            self#leadingCurriedAbstractTypes methodFunWithNewtypes in
-          let fauxBindingPattern = match pf with
-            | Private -> (makeList ~postSpace:true ~break:IfNeed [atom "private"; atom s.txt])
-            | Public -> atom s.txt
-          in
-          self#locallyAbstractPolymorphicFunctionBinding
-            methodText
-            fauxBindingPattern
-            methodFunWithNewtypes
-            leadingAbstractVars
-            nonVarifiedExprType
-        | Pexp_poly (e, Some ct) ->
-          let typeLayout = SourceMap (break, ct.ptyp_loc, (self#core_type ct)) in
-          let appTerms = self#expressionToFormattedApplicationItems e in
-          let fauxBindingPattern = match pf with
-            | Private -> (makeList ~postSpace:true ~break:IfNeed [atom "private"; atom s.txt])
-            | Public -> atom s.txt
-          in
-          self#formatSimplePatternBinding methodText fauxBindingPattern (Some typeLayout) appTerms
-        (* This form means that there is no type constraint - it's a strange node name.*)
-        | Pexp_poly (e, None) ->
-          let (pattern, patternAux) = match pf with
-            | Private -> (atom "private", [atom s.txt])
-            | Public -> (atom s.txt, [])
-          in
-          self#wrappedBinding methodText pattern patternAux e
-        | _ -> failwith "Concrete methods should only ever have Pexp_poly."
-      )
-    | Pcf_constraint (ct1, ct2) ->
-      label
-        ~space:true
-        (atom "constraint")
-        (
-          makeList ~postSpace:true ~inline:(true, false) [
-            makeList ~postSpace:true [self#core_type ct1; atom "="];
-            self#core_type ct2
-          ]
+          | Pexp_poly (e, Some ct) ->
+            let typeLayout = SourceMap (break, ct.ptyp_loc, (self#core_type ct)) in
+            let appTerms = self#expressionToFormattedApplicationItems e in
+            let fauxBindingPattern = match pf with
+              | Private -> (makeList ~postSpace:true ~break:IfNeed [atom "private"; atom s.txt])
+              | Public -> atom s.txt
+            in
+            self#formatSimplePatternBinding methodText fauxBindingPattern (Some typeLayout) appTerms
+          (* This form means that there is no type constraint - it's a strange node name.*)
+          | Pexp_poly (e, None) ->
+            let (pattern, patternAux) = match pf with
+              | Private -> (atom "private", [atom s.txt])
+              | Public -> (atom s.txt, [])
+            in
+            self#wrappedBinding methodText pattern patternAux e
+          | _ -> failwith "Concrete methods should only ever have Pexp_poly."
         )
-    | Pcf_initializer (e) ->
-      label
-        ~space:true
-        (atom "initializer =>")
-        (self#expression e)
-    | Pcf_attribute a -> self#floating_attribute a
-    | Pcf_extension e ->
-      (* And don't forget, we still need to print post_item_attributes even for
-         this case *)
-      self#item_extension e
+      | Pcf_constraint (ct1, ct2) ->
+        label
+          ~space:true
+          (atom "constraint")
+          (
+            makeList ~postSpace:true ~inline:(true, false) [
+              makeList ~postSpace:true [self#core_type ct1; atom "="];
+              self#core_type ct2
+            ]
+          )
+      | Pcf_initializer (e) ->
+        label
+          ~space:true
+          (atom "initializer =>")
+          (self#expression e)
+      | Pcf_attribute a -> self#floating_attribute a
+      | Pcf_extension e ->
+        (* And don't forget, we still need to print post_item_attributes even for
+           this case *)
+        self#item_extension e
+    in
+    SourceMap(break, x.pcf_loc, itm)
 
   method class_self_pattern_and_structure {pcstr_self = p; pcstr_fields = l} =
     let fields = (List.map self#class_field l) in
@@ -4226,7 +4230,13 @@ class printer  ()= object(self:'self)
        have to go out of your way to bind it to "_". *)
     match (p.ppat_attributes, p.ppat_desc) with
       | ([], Ppat_var ({loc; txt = "this"})) -> fields
-      | _ -> (label ~space:true (atom "as") (self#pattern p))::fields
+      | _ ->
+        SourceMap (
+          break,
+          p.ppat_loc,
+          (label ~space:true (atom "as") (self#pattern p))
+        )
+        ::fields
 
   method simple_class_expr x =
     if x.pcl_attributes <> [] then
@@ -4251,16 +4261,15 @@ class printer  ()= object(self:'self)
         *)
         | Pcl_let _
         | Pcl_structure _ ->
-            makeList ~wrap:("{", "}") ~break:Always_rec (self#classExprLetsAndRest x)
+          let rows = (self#classExprLetsAndRest x) in
+          makeList ~wrap:("{", "}") ~inline:(true, false) ~postSpace:true ~break:Always_rec (List.map semiTerminated rows)
         | Pcl_extension e -> self#extension e
         | _ -> formatPrecedence (self#class_expr x)
      in SourceMap (break, x.pcl_loc, itm)
 
   method classExprLetsAndRest x =
     match x.pcl_desc with
-      | Pcl_structure cs ->
-        let items = self#class_self_pattern_and_structure cs in
-        List.map semiTerminated items
+      | Pcl_structure cs -> self#class_self_pattern_and_structure cs
       | Pcl_let (rf, l, ce) ->
         (* For "letList" bindings, the start/end isn't as simple as with
          * module value bindings. For "let lists", the sequences were formed
@@ -4349,7 +4358,9 @@ class printer  ()= object(self:'self)
         | Psig_exception ed ->
             self#exception_declaration ed
         | Psig_class l ->
-            let class_description ?(class_keyword=false) ({pci_params=ls;pci_name={txt}} as x) =
+            let class_description
+                ?(class_keyword=false)
+                ({pci_params=ls; pci_name={txt}; pci_loc} as x) =
               let (firstToken, pattern, patternAux) = self#class_opening class_keyword txt x.pci_virt ls in
               let withColon = self#wrapCurriedFunctionBinding
                 ~arrow:":"
@@ -4358,7 +4369,8 @@ class printer  ()= object(self:'self)
                 patternAux
                 ([(self#class_constructor_type x.pci_expr)], None)
               in
-              self#attach_item_attributes x.pci_attributes withColon
+              let itm = self#attach_item_attributes x.pci_attributes withColon in
+              SourceMap (break, pci_loc, itm)
             in
             makeNonIndentedBreakingList (
               match l with
