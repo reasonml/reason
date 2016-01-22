@@ -3380,7 +3380,7 @@ class printer  ()= object(self:'self)
         makeList
             ~break:IfNeed
             ~inline:(true, true)
-            ~wrap:("(TODO_REMOVE_AMBIGUITY__","__TODO_REMOVE_AMBIGUITY)")
+            ~wrap:("__TODO_REMOVE_AMBIGUITY(",")TODO_REMOVE_AMBIGUITY__")
             ~pad:(true, true)
             [makeSpacedBreakableInlineList
              (List.map self#simple_pattern l)]

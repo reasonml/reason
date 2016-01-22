@@ -554,7 +554,7 @@ let rec eval: type a. term a => a =
       | Add => (fun x y => x + y) 
       /* a = int -> int -> int */ 
       | App
-          (TODO_REMOVE_AMBIGUITY__ f x __TODO_REMOVE_AMBIGUITY) =>
+          __TODO_REMOVE_AMBIGUITY( f x )TODO_REMOVE_AMBIGUITY__ =>
           (eval f) (eval x);
 
 /* eval called at types (b->a) and b for fresh b */
@@ -575,7 +575,7 @@ let rec sum: type a. term a => _ =
         | Int n => n
         | Add => 0
         | App
-            (TODO_REMOVE_AMBIGUITY__ f x __TODO_REMOVE_AMBIGUITY) =>
+            __TODO_REMOVE_AMBIGUITY( f x )TODO_REMOVE_AMBIGUITY__ =>
             sum f + sum x
       };
     y + 1
@@ -592,7 +592,7 @@ let rec to_string: type t. typ t => t => string =
       | Int => string_of_int x
       | String => Printf.sprintf "%S" x
       | Pair
-          (TODO_REMOVE_AMBIGUITY__ t1 t2 __TODO_REMOVE_AMBIGUITY) => {
+          __TODO_REMOVE_AMBIGUITY( t1 t2 )TODO_REMOVE_AMBIGUITY__ => {
           let (x1, x2) = x;
           Printf.sprintf
             "(%s,%s)" 
@@ -614,9 +614,9 @@ let rec eq_type:
       | (String, String) => Some Eq
       | (
           Pair
-            (TODO_REMOVE_AMBIGUITY__ a1 a2 __TODO_REMOVE_AMBIGUITY), 
+            __TODO_REMOVE_AMBIGUITY( a1 a2 )TODO_REMOVE_AMBIGUITY__, 
           Pair
-            (TODO_REMOVE_AMBIGUITY__ b1 b2 __TODO_REMOVE_AMBIGUITY)
+            __TODO_REMOVE_AMBIGUITY( b1 b2 )TODO_REMOVE_AMBIGUITY__
         ) =>
           switch (eq_type a1 b1, eq_type a2 b2) {
             | (Some Eq, Some Eq) => Some Eq
@@ -631,7 +631,7 @@ let get_dyn: type a. typ a => dyn => option a =
   fun a 
       (
         Dyn
-          (TODO_REMOVE_AMBIGUITY__ b x __TODO_REMOVE_AMBIGUITY)
+          __TODO_REMOVE_AMBIGUITY( b x )TODO_REMOVE_AMBIGUITY__
       ) =>
     switch (eq_type a b) {
       | None => None
@@ -653,7 +653,7 @@ let nth t n =>
         switch t {
           | Empty => None
           | Node
-              (TODO_REMOVE_AMBIGUITY__ a t __TODO_REMOVE_AMBIGUITY) =>
+              __TODO_REMOVE_AMBIGUITY( a t )TODO_REMOVE_AMBIGUITY__ =>
               if (n = 0) {
                 Some a
               } else {
@@ -2131,7 +2131,7 @@ let f g =>
     | Z
     | B _ => x
     | A
-        (TODO_REMOVE_AMBIGUITY__ a _ _ b __TODO_REMOVE_AMBIGUITY) as x => {
+        __TODO_REMOVE_AMBIGUITY( a _ _ b )TODO_REMOVE_AMBIGUITY__ as x => {
         let x = f a
         and hr = f b;
         f
