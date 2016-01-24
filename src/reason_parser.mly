@@ -2583,9 +2583,30 @@ let_binding_body:
  *   let x: int -> 10;
  *   let y (:returnType) -> 20;  (* wat *)
  */
+
+
 curried_binding_return_typed:
-    curried_binding
-      { $1 }
+    EQUALGREATER expr
+      {
+          let nil = { txt = Lident "()"; loc = symbol_gloc () } in
+          ghexp(Pexp_fun("", None, ghpat(Ppat_construct (nil, None)), $2))
+      }
+  | labeled_simple_pattern curried_binding_return_typed_
+      { let (l, o, p) = $1 in ghexp(Pexp_fun(l, o, p, $2)) }
+  | LPAREN TYPE LIDENT RPAREN curried_binding_return_typed_
+      { mkexp(Pexp_newtype($3, $5)) }
+  | COLON non_arrowed_core_type EQUALGREATER expr
+      {
+          let nil = { txt = Lident "()"; loc = symbol_gloc () } in
+          let exp = ghexp(Pexp_fun("", None, ghpat(Ppat_construct (nil, None)), $4)) in
+          mkexp_constraint exp (Some $2, None)
+      }
+;
+
+curried_binding_return_typed_:
+  curried_binding
+    {$1}
+
   /* Parens are required around function return value annotations to allow
    * unifying of arrow syntax for all functions:
    *
@@ -2612,9 +2633,9 @@ curried_binding_return_typed:
 curried_binding:
     EQUALGREATER expr
       { $2 }
-  | labeled_simple_pattern curried_binding_return_typed
+  | labeled_simple_pattern curried_binding_return_typed_
       { let (l, o, p) = $1 in ghexp(Pexp_fun(l, o, p, $2)) }
-  | LPAREN TYPE LIDENT RPAREN curried_binding_return_typed
+  | LPAREN TYPE LIDENT RPAREN curried_binding_return_typed_
       { mkexp(Pexp_newtype($3, $5)) }
 ;
 
