@@ -841,14 +841,16 @@ let settings = !configuredSettings
    somethingElse
 *)
 
-let shouldInterpretTupleAsConstructorArgs attrs =
-  (!configuredSettings).constructorTupleImplicitArity ||
+let isExplictArity attrs =
   List.exists
     (function
       | ({txt="explicit_arity"; loc}, _) -> true
       | _ -> false
     )
     attrs
+
+let shouldInterpretTupleAsConstructorArgs attrs =
+  isExplictArity attrs
 
 
 let list_settings = {
@@ -2118,7 +2120,7 @@ class printer  ()= object(self:'self)
     else
       match x.ppat_desc with
         | Ppat_variant (l, Some p) ->
-            let layout = (self#constructor_pattern embeddedAttrs (atom ("`" ^ l)) p) in
+            let layout = (self#constructor_pattern ~polymorphic:true embeddedAttrs (atom ("`" ^ l)) p) in
             SourceMap (break, x.ppat_loc, layout)
         | Ppat_construct (({txt} as li), po) when not (txt = Lident "::")-> (* FIXME The third field always false *)
             let liSourceMapped = SourceMap (break, li.loc, (self#longident_loc li)) in
@@ -3337,15 +3339,23 @@ class printer  ()= object(self:'self)
              any form. *)
           [exprTermSourceMapped]
 
-  method constructor_expression embeddedAttrs nonEmbeddedAttrs ctor eo =
+  method constructor_expression ?polymorphic:(p=false) embeddedAttrs nonEmbeddedAttrs ctor eo =
     let arguments =
-      match eo.pexp_desc with
-        | (Pexp_tuple l) when shouldInterpretTupleAsConstructorArgs embeddedAttrs -> (
+      match (eo.pexp_desc, p) with
+        | (Pexp_tuple l, _) when shouldInterpretTupleAsConstructorArgs embeddedAttrs -> (
             match (List.map self#simple_expression l) with
               | [] -> raise (NotPossible "no tuple items")
               | hd::[] ->  hd
               | hd::tl as all -> makeSpacedBreakableInlineList all
           )
+        | (Pexp_tuple l, false) ->
+            makeList
+              ~break:IfNeed
+              ~inline:(true, true)
+              ~wrap:("(TODO_REMOVE_AMBIGUITY__","__TODO_REMOVE_AMBIGUITY)")
+              ~pad:(true, true)
+              [makeSpacedBreakableInlineList
+              (List.map self#simple_expression l)]
         | _ -> self#simple_expression eo
     in
     let construction =
@@ -3357,19 +3367,26 @@ class printer  ()= object(self:'self)
       | [] -> construction
       | _::_ -> formatAttributed construction (self#attributes nonEmbeddedAttrs)
 
-  method constructor_pattern embeddedAttrs ctor po =
+  method constructor_pattern ?polymorphic:(p=false) embeddedAttrs ctor po =
     let arguments =
-      match po.ppat_desc with
-        | Ppat_tuple l when shouldInterpretTupleAsConstructorArgs embeddedAttrs ->
+      match (po.ppat_desc, p) with
+        | (Ppat_tuple l, _) when shouldInterpretTupleAsConstructorArgs embeddedAttrs ->
             (match (List.map self#simple_pattern l) with
               | [] -> raise (NotPossible "no tuple items")
               | [hd] -> hd
               | hd::tl as all -> makeSpacedBreakableInlineList all
             )
+        | (Ppat_tuple l, false) ->
+        makeList
+            ~break:IfNeed
+            ~inline:(true, true)
+            ~wrap:("__TODO_REMOVE_AMBIGUITY(",")TODO_REMOVE_AMBIGUITY__")
+            ~pad:(true, true)
+            [makeSpacedBreakableInlineList
+             (List.map self#simple_pattern l)]
         | _ -> self#simple_pattern po
     in
-    label ~space:true
-      ctor
+    label ~space:true ctor
       (if isSequencey arguments then arguments else (ensureSingleTokenSticksToLabel arguments))
 
   method expression x =
@@ -3562,7 +3579,7 @@ class printer  ()= object(self:'self)
             "construct a Pexp_poly outside of a method definition - yet it sees one."
           )
         | Pexp_variant (l, Some eo) ->
-            self#constructor_expression embeddedAttrs nonEmbeddedAttrs (atom ("`" ^ l)) eo
+            self#constructor_expression ~polymorphic:true embeddedAttrs nonEmbeddedAttrs (atom ("`" ^ l)) eo
         | _ -> self#simple_expression x
       in
       SourceMap (break, x.pexp_loc, itm)

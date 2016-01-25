@@ -664,6 +664,7 @@ let class_of_let_bindings lbs body =
 %token LBRACKETAT
 %token LBRACKETATAT
 %token LBRACKETATATAT
+%token LBRACKETTODO
 %token SWITCH
 %token MATCH
 %token METHOD
@@ -691,6 +692,7 @@ let class_of_let_bindings lbs body =
 %token QUOTE
 %token RBRACE
 %token RBRACKET
+%token RBRACKETTODO
 %token REC
 %token RPAREN
 %token SEMI
@@ -2145,6 +2147,12 @@ expr:
       { mkexp (Pexp_try($2, List.rev $5)) }
   | TRY simple_expr WITH error
       { syntax_error() }
+  | constr_longident LBRACKETTODO simple_non_labeled_expr_list_as_tuple RBRACKETTODO
+    {
+      Exp.mk
+        ~loc:(symbol_rloc())
+        (Pexp_construct(mkrhs $1 1, Some $3))
+    }
   | constr_longident simple_non_labeled_expr_list_as_tuple
     {
       mkExplicitArityTupleExp (Pexp_construct(mkrhs $1 1, Some $2))
@@ -2823,6 +2831,12 @@ pattern_without_or:
         | None ->
           let argPattern = simple_pattern_list_to_tuple $2 in
           mkExplicitArityTuplePat (Ppat_construct(mkrhs $1 1, Some argPattern))
+    }
+  | constr_longident LBRACKETTODO simple_pattern_list RBRACKETTODO %prec prec_constr_appl
+    {
+    Pat.mk
+      ~loc:(symbol_rloc())
+      (Ppat_construct(mkrhs $1 1, Some (simple_pattern_list_to_tuple_or_single_pattern $3)))
     }
   | name_tag simple_pattern %prec prec_constr_appl
     {

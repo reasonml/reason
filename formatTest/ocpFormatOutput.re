@@ -6,12 +6,12 @@ switch s.src {
   | Some s => {
       [
         Variable
-          s_src 
-          (
-            OpamFormat.make_string (
-              OpamFilename.to_string s
-            )
-          ), 
+          (TODO_REMOVE_AMBIGUITY__ s_src 
+                                   (
+                                     OpamFormat.make_string (
+                                       OpamFilename.to_string s
+                                     )
+                                   ) __TODO_REMOVE_AMBIGUITY), 
         yy
       ];
       foo
@@ -553,10 +553,20 @@ let rec eval: type a. term a => a =
       /* a = int */ 
       | Add => (fun x y => x + y) 
       /* a = int -> int -> int */ 
-      | App f x => (eval f) (eval x);
+      | App
+          __TODO_REMOVE_AMBIGUITY( f x )TODO_REMOVE_AMBIGUITY__ =>
+          (eval f) (eval x);
 
 /* eval called at types (b->a) and b for fresh b */
-let two = eval (App (App Add (Int 1)) (Int 1));
+let two = eval (
+  App
+    (TODO_REMOVE_AMBIGUITY__ (
+                               App
+                                 (TODO_REMOVE_AMBIGUITY__ 
+                               Add (Int 1) __TODO_REMOVE_AMBIGUITY)
+                             ) 
+                             (Int 1) __TODO_REMOVE_AMBIGUITY)
+);
 
 let rec sum: type a. term a => _ =
   fun x => {
@@ -564,7 +574,9 @@ let rec sum: type a. term a => _ =
       switch x {
         | Int n => n
         | Add => 0
-        | App f x => sum f + sum x
+        | App
+            __TODO_REMOVE_AMBIGUITY( f x )TODO_REMOVE_AMBIGUITY__ =>
+            sum f + sum x
       };
     y + 1
   };
@@ -579,7 +591,8 @@ let rec to_string: type t. typ t => t => string =
     switch t {
       | Int => string_of_int x
       | String => Printf.sprintf "%S" x
-      | Pair t1 t2 => {
+      | Pair
+          __TODO_REMOVE_AMBIGUITY( t1 t2 )TODO_REMOVE_AMBIGUITY__ => {
           let (x1, x2) = x;
           Printf.sprintf
             "(%s,%s)" 
@@ -599,7 +612,12 @@ let rec eq_type:
     switch (a, b) {
       | (Int, Int) => Some Eq
       | (String, String) => Some Eq
-      | (Pair a1 a2, Pair b1 b2) =>
+      | (
+          Pair
+            __TODO_REMOVE_AMBIGUITY( a1 a2 )TODO_REMOVE_AMBIGUITY__, 
+          Pair
+            __TODO_REMOVE_AMBIGUITY( b1 b2 )TODO_REMOVE_AMBIGUITY__
+        ) =>
           switch (eq_type a1 b1, eq_type a2 b2) {
             | (Some Eq, Some Eq) => Some Eq
             | _ => None
@@ -610,7 +628,11 @@ let rec eq_type:
 type dyn = | Dyn of (typ 'a) 'a :dyn;
 
 let get_dyn: type a. typ a => dyn => option a =
-  fun a (Dyn b x) =>
+  fun a 
+      (
+        Dyn
+          __TODO_REMOVE_AMBIGUITY( b x )TODO_REMOVE_AMBIGUITY__
+      ) =>
     switch (eq_type a b) {
       | None => None
       | Some Eq => Some x
@@ -630,7 +652,8 @@ let nth t n =>
       fun t n =>
         switch t {
           | Empty => None
-          | Node a t =>
+          | Node
+              __TODO_REMOVE_AMBIGUITY( a t )TODO_REMOVE_AMBIGUITY__ =>
               if (n = 0) {
                 Some a
               } else {
@@ -1367,10 +1390,20 @@ let parenthesized_let_tweak =
     };
 /* mixed list styles */
 let cases = [
-  Group "publishing" [basic_pre2 name::name], 
+  Group
+    (TODO_REMOVE_AMBIGUITY__ "publishing" 
+                             [
+                               basic_pre2
+                                 name::name
+                             ] __TODO_REMOVE_AMBIGUITY), 
   /* I think this line and the 2 preceding ones are indented one space too
            few by ocp-indent */ 
-  Group "recovery" [basic_pre2 name::name]
+  Group
+    (TODO_REMOVE_AMBIGUITY__ "recovery" 
+                             [
+                               basic_pre2
+                                 name::name
+                             ] __TODO_REMOVE_AMBIGUITY)
 ];
 /* Relatively low priority Jane Street indentation bugs. */
 /* js-args */
@@ -2097,7 +2130,8 @@ let f g =>
   switch z {
     | Z
     | B _ => x
-    | A a _ _ b as x => {
+    | A
+        __TODO_REMOVE_AMBIGUITY( a _ _ b )TODO_REMOVE_AMBIGUITY__ as x => {
         let x = f a
         and hr = f b;
         f
