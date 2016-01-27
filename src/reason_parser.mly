@@ -331,15 +331,71 @@ let mkexp_constraint e (t1, t2) =
 let array_function str name =
   ghloc (Ldot(Lident str, (if !Clflags.fast then "unsafe_" ^ name else name)))
 
+let syntax_error_extension () = ((mkloc "SyntaxError" (rhs_loc 1)), PStr [])
+
+let syntax_error_str () =
+  if !Reason_config.recoverable then
+    Str.mk ~loc:(rhs_loc 1) (Pstr_extension (syntax_error_extension (), []))
+  else
+    raise(Syntaxerr.Error(Syntaxerr.Other (rhs_loc 1)))
+
 let syntax_error () =
   raise Syntaxerr.Escape_error
+
+let syntax_error_Pexp () =
+  if !Reason_config.recoverable then
+    mkexp(Pexp_extension (syntax_error_extension ()))
+  else
+    syntax_error ()
 
 let unclosed opening_name opening_num closing_name closing_num =
   raise(Syntaxerr.Error(Syntaxerr.Unclosed(rhs_loc opening_num, opening_name,
                                            rhs_loc closing_num, closing_name)))
 
+let unclosed_Pmod opening_name opening_num closing_name closing_num =
+  if !Reason_config.recoverable then
+    mkmod(Pmod_extension (syntax_error_extension ()))
+  else
+    unclosed opening_name opening_num closing_name closing_num
+
+let unclosed_Pcl opening_name opening_num closing_name closing_num =
+  if !Reason_config.recoverable then
+    mkclass(Pcl_extension (syntax_error_extension ()))
+  else
+    unclosed opening_name opening_num closing_name closing_num
+
+let unclosed_Pmty opening_name opening_num closing_name closing_num =
+  if !Reason_config.recoverable then
+    mkmty(Pmty_extension (syntax_error_extension ()))
+  else
+    unclosed opening_name opening_num closing_name closing_num
+
+let unclosed_Pcty opening_name opening_num closing_name closing_num =
+  if !Reason_config.recoverable then
+    mkcty(Pcty_extension (syntax_error_extension ()))
+  else
+    unclosed opening_name opening_num closing_name closing_num
+
+let unclosed_Pexp opening_name opening_num closing_name closing_num =
+  if !Reason_config.recoverable then
+    mkexp(Pexp_extension (syntax_error_extension ()))
+  else
+    unclosed opening_name opening_num closing_name closing_num
+
+let unclosed_Ppat opening_name opening_num closing_name closing_num =
+  if !Reason_config.recoverable then
+    mkpat(Ppat_extension (syntax_error_extension ()))
+  else
+    unclosed opening_name opening_num closing_name closing_num
+
 let expecting pos nonterm =
     raise Syntaxerr.(Error(Expecting(rhs_loc pos, nonterm)))
+
+let expecting_Ppat pos nonterm =
+  if !Reason_config.recoverable then
+    mkpat(Ppat_extension (syntax_error_extension ()))
+  else
+    expecting pos nonterm
 
 let not_expecting pos nonterm =
     raise Syntaxerr.(Error(Not_expecting(rhs_loc pos, nonterm)))
@@ -465,7 +521,7 @@ let extension_expression (ext_attrs, ext_id) item_expr =
   ghexp ~attrs:ext_attrs (Pexp_extension (ext_id, PStr [mkstrexp item_expr []]))
 
 (* There's no more need for these functions - this was for the following:
- * 
+ *
  *     fun % ext [@foo] arg => arg;
  *
  *   Becoming
@@ -587,7 +643,6 @@ let class_of_let_bindings lbs body =
     if lbs.lbs_attributes <> [] then
       raise Syntaxerr.(Error(Not_expecting(lbs.lbs_loc, "attributes")));
     mkclass(Pcl_let (lbs.lbs_rec, List.rev bindings, body))
-
 
 %}
 
@@ -801,7 +856,7 @@ conflicts.
  *    let x = true && false [@attrOnFalse]
  *    let x = 10 + 20 [@attrOn20]
  *    let x = (10 + 20) [@attrEntireAddition]
- * 
+ *
  * As:
  *
  *    let x = true && ((false)[@attrOnFalse ])
@@ -834,7 +889,7 @@ conflicts.
  * function application (and attributes) This means that:
  *
  *   let = - something blah blah [@attr];
- * 
+ *
  * Will have the attribute applied to the entire content to the right of the
  * unary minus, as if the attribute was merely another argument to the function
  * application.
@@ -889,8 +944,12 @@ conflicts.
 
 /* Entry points */
 
+
+
 implementation:
     structure EOF                        { $1 }
+    | error SEMI                         { [syntax_error_str ()] }
+    | error SEMI implementation          {  syntax_error_str () :: $3 }
 ;
 interface:
     signature EOF                        { $1 }
@@ -965,7 +1024,7 @@ simple_module_expr:
   | LPAREN module_expr COLON module_type RPAREN
       { mkmod(Pmod_constraint($2, $4)) }
   | LPAREN module_expr COLON module_type error
-      { unclosed "(" 1 ")" 5 }
+      { unclosed_Pmod "(" 1 ")" 5 }
   | LPAREN module_expr RPAREN
       { $2 }
   | LPAREN VAL expr RPAREN
@@ -990,7 +1049,7 @@ module_expr:
     simple_module_expr
       { $1 }
   | LBRACE structure error
-      { unclosed "struct" 1 "end" 3 }
+      { unclosed_Pmod "struct" 1 "end" 3 }
   /**
    * Although it would be nice (and possible) to support annotated return value
    * here, that wouldn't be consistent with what is possible for functions.
@@ -1002,15 +1061,15 @@ module_expr:
   | module_expr simple_module_expr
       { mkmod(Pmod_apply($1, $2)) }
   | module_expr LPAREN module_expr error
-      { unclosed "(" 2 ")" 4 }
+      { unclosed_Pmod "(" 2 ")" 4 }
   | LPAREN module_expr error
-      { unclosed "(" 1 ")" 3 }
+      { unclosed_Pmod "(" 1 ")" 3 }
   | LPAREN VAL expr COLON error
-      { unclosed "(" 1 ")" 5 }
+      { unclosed_Pmod "(" 1 ")" 5 }
   | LPAREN VAL expr COLONGREATER error
-      { unclosed "(" 1 ")" 5 }
+      { unclosed_Pmod "(" 1 ")" 5 }
   | LPAREN VAL expr error
-      { unclosed "(" 1 ")" 4 }
+      { unclosed_Pmod "(" 1 ")" 4 }
   | module_expr attribute
       { Mod.attr $1 $2 }
 ;
@@ -1089,7 +1148,6 @@ module_expr:
  */
 
 structure:
-
   | /* Empty */           {[]}
   | structure_item { [$1] }
   | structure_item SEMI structure { $1 :: $3 }
@@ -1234,13 +1292,13 @@ simple_module_type:
   | LPAREN module_type RPAREN
       { $2 }
   | LPAREN module_type error
-      { unclosed "(" 1 ")" 3 }
+      { unclosed_Pmty "(" 1 ")" 3 }
   | mty_longident
     { mkmty(Pmty_ident (mkrhs $1 1)) }
   | LBRACE signature RBRACE
       { mkmty(Pmty_signature $2) }
   | LBRACE signature error
-      { unclosed "sig" 1 "}" 3 }
+      { unclosed_Pmty "sig" 1 "}" 3 }
 /*  | LPAREN MODULE mod_longident RPAREN
       { mkmty (Pmty_alias (mkrhs $3 3)) } */
   | extension
@@ -1417,7 +1475,7 @@ signature_item:
     }
 ;
 open_statement:
-  | OPEN override_flag mod_longident post_item_attributes 
+  | OPEN override_flag mod_longident post_item_attributes
       { Opn.mk (mkrhs $3 3) ~override:$2 ~attrs:$4 ~loc:(symbol_rloc()) }
 ;
 module_declaration:
@@ -1513,7 +1571,7 @@ class_declaration_details:
  * Now, you can do:
  *
  *   class myClass arg blah : instance_type => {
- *     method blah => ..;  
+ *     method blah => ..;
  *   }
  *
  * But you cannot constrain with a function Pcty_arrow
@@ -1611,7 +1669,7 @@ class_expr:
   | CLASS class_longident non_arrowed_simple_core_type_list {
       mkclass(Pcl_constr(mkloc $2 (rhs_loc 2), List.rev $3))
     }
-      
+
   | extension
       { mkclass(Pcl_extension $1) }
 ;
@@ -1620,15 +1678,15 @@ class_simple_expr:
     { mkclass(Pcl_constr(mkrhs $1 1, [])) }
   | LBRACE class_expr_lets_and_rest RBRACE { reloc_class $2 }
   | LBRACE class_expr_lets_and_rest error
-    { unclosed "{" 1 "}" 3 }
+    { unclosed_Pcl "{" 1 "}" 3 }
   | LPAREN class_expr COLON class_constructor_type RPAREN
       { mkclass(Pcl_constraint($2, $4)) }
   | LPAREN class_expr COLON class_constructor_type error
-      { unclosed "(" 1 ")" 5 }
+      { unclosed_Pcl "(" 1 ")" 5 }
   | LPAREN class_expr RPAREN
       { reloc_class $2 }
   | LPAREN class_expr error
-      { unclosed "(" 1 ")" 3 }
+      { unclosed_Pcl "(" 1 ")" 3 }
 ;
 
 class_field:
@@ -1852,7 +1910,7 @@ class_instance_type:
   | LBRACE class_sig_body RBRACE
       { mkcty(Pcty_signature $2) }
   | LBRACE class_sig_body error
-      { unclosed "{" 1 "}" 3 }
+      { unclosed_Pcty "{" 1 "}" 3 }
   | class_instance_type attribute
       /* Note that this will compound attributes - so they will become
          attached to whatever */
@@ -1887,14 +1945,14 @@ class_sig_field:
   | VAL value_type post_item_attributes {
       mkctf_attrs (Pctf_val $2) $3
     }
-  | METHOD private_virtual_flags label COLON poly_type post_item_attributes 
+  | METHOD private_virtual_flags label COLON poly_type post_item_attributes
        {
         let (p, v) = $2 in
         mkctf_attrs (Pctf_method ($3, p, v, $5)) $6
        }
-  | CONSTRAINT constrain_field post_item_attributes 
+  | CONSTRAINT constrain_field post_item_attributes
        { mkctf_attrs (Pctf_constraint $2) $3 }
-  | item_extension post_item_attributes 
+  | item_extension post_item_attributes
        { mkctf_attrs (Pctf_extension $1) $2 }
   | floating_attribute
       { mkctf(Pctf_attribute $1) }
@@ -2022,7 +2080,7 @@ semi_terminated_seq_expr_row:
       let item_attrs = $2 in
       mkexp ~attrs:item_attrs (Pexp_sequence($1, $4))
     }
-  
+
 ;
 
 /*
@@ -2141,7 +2199,7 @@ expr:
   | TRY simple_expr LBRACE BAR no_leading_bar_match_cases RBRACE
       { mkexp (Pexp_try($2, List.rev $5)) }
   | TRY simple_expr WITH error
-      { syntax_error() }
+      { syntax_error_Pexp () }
   | constr_longident simple_non_labeled_expr_list_as_tuple
     {
       mkExplicitArityTupleExp (Pexp_construct(mkrhs $1 1, Some $2))
@@ -2277,7 +2335,7 @@ simple_expr:
   | LPAREN expr RPAREN
       { reloc_exp $2 }
   | LPAREN expr error
-      { unclosed "(" 1 ")" 3 }
+      { unclosed_Pexp "(" 1 ")" 3 }
   /**
    * A single expression can be type constrained.
    */
@@ -2288,29 +2346,29 @@ simple_expr:
   | LPAREN expr_comma_list RPAREN
       { mkexp(Pexp_tuple(List.rev $2)) }
   | LPAREN expr_comma_list error
-      { unclosed "(" 1 ")" 3 }
+      { unclosed_Pexp "(" 1 ")" 3 }
   | simple_expr DOT label_longident
       { mkexp(Pexp_field($1, mkrhs $3 3)) }
   | mod_longident DOT LPAREN expr RPAREN
       { mkexp(Pexp_open(Fresh, mkrhs $1 1, $4)) }
   | mod_longident DOT LPAREN expr error
-      { unclosed "(" 3 ")" 5 }
+      { unclosed_Pexp "(" 3 ")" 5 }
   | simple_expr DOT LPAREN expr RPAREN
       { mkexp(Pexp_apply(ghexp(Pexp_ident(array_function "Array" "get")),
                          ["",$1; "",$4])) }
   | simple_expr DOT LPAREN expr error
-      { unclosed "(" 3 ")" 5 }
+      { unclosed_Pexp "(" 3 ")" 5 }
   | simple_expr DOT LBRACKET expr RBRACKET
       { mkexp(Pexp_apply(ghexp(Pexp_ident(array_function "String" "get")),
                          ["",$1; "",$4])) }
   | simple_expr DOT LBRACKET expr error
-      { unclosed "[" 3 "]" 5 }
+      { unclosed_Pexp "[" 3 "]" 5 }
   | simple_expr DOT LBRACE expr RBRACE
       { bigarray_get $1 $4 }
 
   /* This might not be needed anymore
   | simple_expr DOT LBRACE expr_comma_list error
-      { unclosed "{" 3 "}" 5 }
+      { unclosed_Pexp "{" 3 "}" 5 }
   */
 
   /* TODO: Let Sequence? */
@@ -2323,24 +2381,24 @@ simple_expr:
   | LBRACE class_self_pattern_and_structure RBRACE
       { mkexp (Pexp_object $2) }
   | LBRACE class_self_pattern_and_structure error
-      { unclosed "{" 1 "}" 4 }
+      { unclosed_Pexp "{" 1 "}" 4 }
 
   | mod_longident DOT LBRACE record_expr RBRACE
       { let (exten, fields) = $4 in
         let rec_exp = mkexp(Pexp_record(fields, exten)) in
         mkexp(Pexp_open(Fresh, mkrhs $1 1, rec_exp)) }
   | mod_longident DOT LBRACE record_expr error
-      { unclosed "{" 3 "}" 5 }
+      { unclosed_Pexp "{" 3 "}" 5 }
   | LBRACKETBAR expr_comma_seq opt_comma BARRBRACKET
       { mkexp (Pexp_array(List.rev $2)) }
   | LBRACKETBAR expr_comma_seq opt_comma error
-      { unclosed "[|" 1 "|]" 4 }
+      { unclosed_Pexp "[|" 1 "|]" 4 }
   | LBRACKETBAR BARRBRACKET
       { mkexp (Pexp_array []) }
   | mod_longident DOT LBRACKETBAR expr_comma_seq opt_comma BARRBRACKET
       { mkexp(Pexp_open(Fresh, mkrhs $1 1, mkexp(Pexp_array(List.rev $4)))) }
   | mod_longident DOT LBRACKETBAR expr_comma_seq opt_comma error
-      { unclosed "[|" 3 "|]" 6 }
+      { unclosed_Pexp "[|" 3 "|]" 6 }
   | LBRACKET expr_comma_seq_extension
       { let seq, ext_opt = $2 in
         reloc_exp (mktailexp_extension (rhs_loc 4) seq ext_opt) }
@@ -2363,13 +2421,13 @@ simple_expr:
   | LBRACELESS field_expr_list opt_comma GREATERRBRACE
       { mkexp (Pexp_override(List.rev $2)) }
   | LBRACELESS field_expr_list opt_comma error
-      { unclosed "{<" 1 ">}" 4 }
+      { unclosed_Pexp "{<" 1 ">}" 4 }
   | LBRACELESS GREATERRBRACE
       { mkexp (Pexp_override [])}
   | mod_longident DOT LBRACELESS field_expr_list opt_comma GREATERRBRACE
       { mkexp(Pexp_open(Fresh, mkrhs $1 1, mkexp (Pexp_override(List.rev $4))))}
   | mod_longident DOT LBRACELESS field_expr_list opt_comma error
-      { unclosed "{<" 3 ">}" 6 }
+      { unclosed_Pexp "{<" 3 ">}" 6 }
   | simple_expr SHARP label
       { mkexp(Pexp_send($1, $3)) }
   | LPAREN MODULE module_expr RPAREN
@@ -2378,13 +2436,13 @@ simple_expr:
       { mkexp (Pexp_constraint (ghexp (Pexp_pack $3),
                                 ghtyp (Ptyp_package $5))) }
   | LPAREN MODULE module_expr COLON error
-      { unclosed "(" 1 ")" 5 }
+      { unclosed_Pexp "(" 1 ")" 5 }
   | mod_longident DOT LPAREN MODULE module_expr COLON package_type RPAREN
       { mkexp(Pexp_open(Fresh, mkrhs $1 1,
         mkexp (Pexp_constraint (ghexp (Pexp_pack $5),
                                 ghtyp (Ptyp_package $7))))) }
   | mod_longident DOT LPAREN MODULE module_expr COLON error
-      { unclosed "(" 3 ")" 7 }
+      { unclosed_Pexp "(" 3 ")" 7 }
   | extension
       { mkexp (Pexp_extension $1) }
 ;
@@ -2453,7 +2511,7 @@ and_let_binding:
    * error if this is an *expression * let binding. Otherwise, they become
    * post_item_attributes on the structure item for the "and" binding.
    */
-  AND let_binding_body post_item_attributes 
+  AND let_binding_body post_item_attributes
       { mklb $2 $3 }
 ;
 let_bindings:
@@ -2671,8 +2729,6 @@ expr_comma_seq_extension:
     { ([], Some $2) }
   | expr_optional_constraint opt_comma RBRACKET
     { ([$1], None) }
-  | expr_optional_constraint opt_comma error
-    { unclosed "[" 1 "]" 3 }
   | expr_optional_constraint COMMA expr_comma_seq_extension
     { let seq, ext = $3 in ($1::seq, ext) }
 ;
@@ -2764,8 +2820,6 @@ type_constraint_right_of_colon:
 type_constraint:
     COLON type_constraint_right_of_colon        { $2 }
   | COLONGREATER core_type                      { (None, Some $2) }
-  | COLON error                                 { syntax_error() }
-  | COLONGREATER error                          { syntax_error() }
 ;
 
 /* Patterns */
@@ -2780,7 +2834,7 @@ pattern_without_or:
   | pattern_without_or AS val_ident
       { mkpat(Ppat_alias($1, mkrhs $3 3)) }
   | pattern_without_or AS error
-      { expecting 3 "identifier" }
+      { expecting_Ppat 3 "identifier" }
   /**
     * Parses a (comma-less) list of patterns into a tuple, or a single pattern
     * (if there is only one item in the list). This is kind of sloppy as there
@@ -2807,11 +2861,11 @@ pattern_without_or:
   | pattern_without_or COLONCOLON pattern_without_or
       { mkpat_cons (rhs_loc 2) (ghpat(Ppat_tuple[$1;$3])) (symbol_rloc()) }
   | pattern_without_or COLONCOLON error
-      { expecting 3 "pattern" }
+      { expecting_Ppat 3 "pattern" }
   | LPAREN COLONCOLON RPAREN LPAREN pattern_without_or COMMA pattern_without_or RPAREN
       { mkpat_cons (rhs_loc 2) (ghpat(Ppat_tuple[$5;$7])) (symbol_rloc()) }
   | LPAREN COLONCOLON RPAREN LPAREN pattern_without_or COMMA pattern_without_or error
-      { unclosed "(" 4 ")" 8 }
+      { unclosed_Ppat "(" 4 ")" 8 }
   | LAZY simple_pattern
       { mkpat(Ppat_lazy $2) }
   | EXCEPTION pattern_without_or %prec prec_constr_appl
@@ -2860,40 +2914,40 @@ simple_pattern_not_ident:
   | LBRACE lbl_pattern_list RBRACE
       { let (fields, closed) = $2 in mkpat(Ppat_record(fields, closed)) }
   | LBRACE lbl_pattern_list error
-      { unclosed "{" 1 "}" 3 }
+      { unclosed_Ppat "{" 1 "}" 3 }
 
   | LBRACKET pattern_comma_list_extension opt_semi RBRACKET
       { let seq, ext_opt = $2 in
         reloc_pat (mktailpat_extension (rhs_loc 4) (List.rev seq) ext_opt) }
   | LBRACKET pattern_comma_list_extension opt_semi error
-      { unclosed "[" 1 "]" 4 }
+      { unclosed_Ppat "[" 1 "]" 4 }
 
   | LBRACKETBAR pattern_comma_list opt_semi BARRBRACKET
       { mkpat(Ppat_array(List.rev $2)) }
   | LBRACKETBAR BARRBRACKET
       { mkpat(Ppat_array []) }
   | LBRACKETBAR pattern_comma_list opt_semi error
-      { unclosed "[|" 1 "|]" 4 }
+      { unclosed_Ppat "[|" 1 "|]" 4 }
   | LPAREN pattern RPAREN
       { reloc_pat $2 }
   | LPAREN pattern_two_or_more_comma_list RPAREN
       { mkpat(Ppat_tuple(List.rev $2)) }
   | LPAREN pattern error
-      { unclosed "(" 1 ")" 3 }
+      { unclosed_Ppat "(" 1 ")" 3 }
 
   | LPAREN pattern COLON core_type RPAREN
       { mkpat(Ppat_constraint($2, $4)) }
   | LPAREN pattern COLON core_type error
-      { unclosed "(" 1 ")" 5 }
+      { unclosed_Ppat "(" 1 ")" 5 }
   | LPAREN pattern COLON error
-      { expecting 4 "type" }
+      { expecting_Ppat 4 "type" }
   | LPAREN MODULE UIDENT RPAREN
       { mkpat(Ppat_unpack (mkrhs $3 3)) }
   | LPAREN MODULE UIDENT COLON package_type RPAREN
       { mkpat(Ppat_constraint(mkpat(Ppat_unpack (mkrhs $3 3)),
                               ghtyp(Ptyp_package $5))) }
   | LPAREN MODULE UIDENT COLON package_type error
-      { unclosed "(" 1 ")" 6 }
+      { unclosed_Ppat "(" 1 ")" 6 }
   | extension
       { mkpat(Ppat_extension $1) }
 ;
@@ -2909,8 +2963,6 @@ pattern_two_or_more_comma_list:
     { $3::$1 }
   | pattern_optional_constraint COMMA pattern_optional_constraint
     { [$3; $1] }
-  | pattern_optional_constraint COMMA error
-    { expecting 3 "pattern" }
 ;
 
 simple_pattern_list:
@@ -3062,14 +3114,14 @@ str_exception_declaration:
         let ext = $2 in
         {ext with pext_attributes = ext.pext_attributes @ $3}
       }
-  | EXCEPTION extension_constructor_rebind post_item_attributes 
+  | EXCEPTION extension_constructor_rebind post_item_attributes
       {
         let ext = $2 in
         {ext with pext_attributes = ext.pext_attributes @ $3}
       }
 ;
 sig_exception_declaration:
-  | EXCEPTION extension_constructor_declaration post_item_attributes 
+  | EXCEPTION extension_constructor_declaration post_item_attributes
       {
         let ext = $2 in
         {ext with pext_attributes = ext.pext_attributes @ $3}
@@ -3105,7 +3157,7 @@ potentially_long_ident_and_optional_type_parameters:
   | type_strictly_longident optional_type_parameters {(mkrhs $1 1, $2)}
 ;
 
-str_type_extension: 
+str_type_extension:
   TYPE
   potentially_long_ident_and_optional_type_parameters
   PLUSEQ private_flag opt_bar str_extension_constructors
@@ -3115,7 +3167,7 @@ str_type_extension:
     Te.mk potentially_long_ident (List.rev $6)
           ~params:optional_type_parameters ~priv:$4 ~attrs:$7 }
 ;
-sig_type_extension: 
+sig_type_extension:
   TYPE
   potentially_long_ident_and_optional_type_parameters
   PLUSEQ private_flag opt_bar sig_extension_constructors
@@ -3514,9 +3566,6 @@ ident:
 val_ident:
     LIDENT                                      { $1 }
   | LPAREN operator RPAREN                      { $2 }
-  | LPAREN operator error                       { unclosed "(" 1 ")" 3 }
-  | LPAREN error                                { expecting 2 "operator" }
-  | LPAREN MODULE error                         { expecting 3 "module-expr" }
 ;
 operator:
     PREFIXOP                                    { $1 }
@@ -3789,6 +3838,3 @@ payload:
 
 
 %%
-
-
-
