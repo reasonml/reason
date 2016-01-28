@@ -2769,6 +2769,7 @@ class printer  ()= object(self:'self)
 
    *)
   method wrapCurriedFunctionBinding
+         ?(attachTo)
          ?(arrow="=>")
          prefixText
          bindingLabel
@@ -2869,9 +2870,13 @@ class printer  ()= object(self:'self)
         )
     in
 
+    let everythingButAppTerms = match attachTo with
+      | None -> everythingButReturnVal
+      | Some toThis -> label ~space:true toThis everythingButReturnVal
+    in
     formatAttachmentApplication
       applicationFinalWrapping
-      (Some (true, everythingButReturnVal))
+      (Some (true, everythingButAppTerms))
       returnedAppTerms
 
   method leadingCurriedAbstractTypes x =
@@ -3761,10 +3766,7 @@ class printer  ()= object(self:'self)
                            let upToColon = makeList [self#longident_loc li; atom ":"] in
                            let returnedAppTerms = self#expressionToFormattedApplicationItems return in
                            let labelExpr =
-                             label
-                               ~space:true
-                               upToColon
-                               (self#wrapCurriedFunctionBinding "fun" firstArg tl returnedAppTerms) in
+                               (self#wrapCurriedFunctionBinding ~attachTo:upToColon "fun" firstArg tl returnedAppTerms) in
                            if appendComma then makeList [labelExpr; comma;] else labelExpr
                      )
               in SourceMap(break, totalRowLoc, theRow)

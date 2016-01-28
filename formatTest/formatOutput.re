@@ -180,16 +180,16 @@ let myRecord = {
   nestedRecord: {
     anotherNestedRecord:
       fun instaComp displayRect =>
-        if (
-          Graphics.cgRectIntersectsWithSlop
-            defaultCompositeTimerRectSlop 
-            instaComp.relativeRect 
-            displayRect
-        ) {
-          IoEligible
-        } else {
-          IoInelibleButTryComposition
-        }
+      if (
+        Graphics.cgRectIntersectsWithSlop
+          defaultCompositeTimerRectSlop 
+          instaComp.relativeRect 
+          displayRect
+      ) {
+        IoEligible
+      } else {
+        IoInelibleButTryComposition
+      }
   }
 };
 
@@ -2177,10 +2177,8 @@ let myFunctionsInARecord = {
 
 let myFunctionsInARecordThatMustWrap = {
   /* Desired wrapping */ 
-  adder:
-    fun reallyLongArgument => reallyLongArgument, 
-  minuser:
-    fun anotherReallyLongArgument => anotherReallyLongArgument
+  adder: fun reallyLongArgument => reallyLongArgument, 
+  minuser: fun anotherReallyLongArgument => anotherReallyLongArgument
 };
 
 /* Comment at bottom of record */
@@ -4982,8 +4980,8 @@ type adders = {
 let myRecordWithFunctions = {
   addTwoNumbers: fun a b => a + b, 
   addThreeNumbers: fun a b c => a + b + c, 
-  addThreeNumbersTupled:
-    fun (a, b, c) => a + b + c
+  addThreeNumbersTupled: fun (a, b, c) =>
+    a + b + c
 };
 
 let result =
