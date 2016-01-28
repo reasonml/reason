@@ -1,4 +1,5 @@
 *.native
+reasonfmt_merlin_impl.sh
 *.byte
 *.docdir
 _build

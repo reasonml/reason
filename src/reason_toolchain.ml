@@ -9,7 +9,7 @@
 (**
  * Provides a simple interface to the most common parsing entrypoints required
  * by editor/IDE toolchains, preprocessors, and pretty printers.
- * 
+ *
  * The form of this entrypoint includes more than what the standard OCaml
  * toolchain (oprof/ocamldoc) expects, but is still compatible.
  *
@@ -182,7 +182,7 @@ module JS_syntax = struct
         raise(Syntaxerr.Error(Syntaxerr.Other loc))
     | _ as x ->
         raise x
-        
+
   let format_interface_with_comments comments formatter signature =
     let reason_formatter = Reason_pprint_ast.createFormatter () in
     reason_formatter#signature comments formatter signature

@@ -27,12 +27,13 @@ let reasonBinaryParser chan =
  * effectively m17n's parser.
  *)
 let () =
-  let (filename, load_path, prnt, prse, intf, print_width, use_stdin) =
+  let (filename, load_path, prnt, prse, intf, print_width, use_stdin, recoverable) =
     let filename = ref "" in
     let prnt = ref None in
     let prse = ref None in
     let use_stdin = ref false in
     let intf = ref None in
+    let recoverable = ref false in
     let print_width = ref None in
     let load_path = ref [] in
     Arg.parse [
@@ -40,6 +41,7 @@ let () =
         "-ignore", Arg.Unit ignore, "ignored";
         "-is-interface-pp", Arg.Bool (fun x -> intf := Some x), "<interface> parse AST as <interface> (either true or false)";
         "-use-stdin", Arg.Bool (fun x -> use_stdin := x), "<use_stdin> parse AST from <use_stdin> (either true, false). You still must provide a file name even if using stdin for errors to be reported";
+        "-recoverable", Arg.Bool (fun x -> recoverable := x), "Enable recoverable parser";
         "-parse", Arg.String (fun x -> prse := Some x), "<parse> parse AST as <parse> (either 'ml', 're', 'binary_reason(for interchange between Reason versions')";
         (* Use a print option of "none" to simply perform a parsing validation -
          * useful for IDE error messages etc.*)
@@ -48,7 +50,7 @@ let () =
       ]
       (fun arg -> filename := arg)
       "Reason: Meta Language Utility";
-    (!filename, load_path, !prnt, !prse, !intf, !print_width, !use_stdin)
+    (!filename, load_path, !prnt, !prse, !intf, !print_width, !use_stdin, !recoverable)
   in
   let print_width = match print_width with
       | None -> default_print_width
@@ -61,6 +63,9 @@ let () =
           let file_chan = open_in filename in
           seek_in file_chan 0;
           file_chan
+  in
+  let _ = if recoverable then
+    Reason_config.configure ~r:true
   in
   Location.input_name := filename;
   let lexbuf = Lexing.from_channel chan in

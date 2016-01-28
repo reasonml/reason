@@ -1,6 +1,8 @@
 build:
 	cp pkg/META.in pkg/META
 	ocaml pkg/build.ml native=true native-dynlink=true utop=true
+	chmod +x $(shell pwd)/_build/src/reasonfmt_merlin_impl.sh
+	ln -fs $(shell pwd)/_build/src/reasonfmt_merlin_impl.sh reasonfmt_merlin_impl.sh
 
 install:
 	opam pin add reason . -y
