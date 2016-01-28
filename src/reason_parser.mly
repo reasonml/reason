@@ -331,20 +331,22 @@ let mkexp_constraint e (t1, t2) =
 let array_function str name =
   ghloc (Ldot(Lident str, (if !Clflags.fast then "unsafe_" ^ name else name)))
 
-let syntax_error_extension () = ((mkloc "SyntaxError" (rhs_loc 1)), PStr [])
+let syntax_error_extension loc descriptions =
+  let suffix = String.concat "." ("SyntaxError" :: descriptions)
+  in ((mkloc suffix loc), PStr [])
 
-let syntax_error_str () =
+let syntax_error_str loc =
   if !Reason_config.recoverable then
-    Str.mk ~loc:(rhs_loc 1) (Pstr_extension (syntax_error_extension (), []))
+    Str.mk ~loc:loc (Pstr_extension (syntax_error_extension loc [], []))
   else
-    raise(Syntaxerr.Error(Syntaxerr.Other (rhs_loc 1)))
+    raise(Syntaxerr.Error(Syntaxerr.Other loc))
 
 let syntax_error () =
   raise Syntaxerr.Escape_error
 
-let syntax_error_Pexp () =
+let syntax_error_Pexp loc =
   if !Reason_config.recoverable then
-    mkexp(Pexp_extension (syntax_error_extension ()))
+    mkexp(Pexp_extension (syntax_error_extension loc []))
   else
     syntax_error ()
 
@@ -352,39 +354,42 @@ let unclosed opening_name opening_num closing_name closing_num =
   raise(Syntaxerr.Error(Syntaxerr.Unclosed(rhs_loc opening_num, opening_name,
                                            rhs_loc closing_num, closing_name)))
 
+let unclosed_extension closing_num closing_name =
+  syntax_error_extension (rhs_loc closing_num) ["Expecting"; "\"" ^ closing_name ^ "\""]
+
 let unclosed_Pmod opening_name opening_num closing_name closing_num =
   if !Reason_config.recoverable then
-    mkmod(Pmod_extension (syntax_error_extension ()))
+    mkmod(Pmod_extension (unclosed_extension closing_num closing_name))
   else
     unclosed opening_name opening_num closing_name closing_num
 
 let unclosed_Pcl opening_name opening_num closing_name closing_num =
   if !Reason_config.recoverable then
-    mkclass(Pcl_extension (syntax_error_extension ()))
+    mkclass(Pcl_extension (unclosed_extension closing_num closing_name))
   else
     unclosed opening_name opening_num closing_name closing_num
 
 let unclosed_Pmty opening_name opening_num closing_name closing_num =
   if !Reason_config.recoverable then
-    mkmty(Pmty_extension (syntax_error_extension ()))
+    mkmty(Pmty_extension (unclosed_extension closing_num closing_name))
   else
     unclosed opening_name opening_num closing_name closing_num
 
 let unclosed_Pcty opening_name opening_num closing_name closing_num =
   if !Reason_config.recoverable then
-    mkcty(Pcty_extension (syntax_error_extension ()))
+    mkcty(Pcty_extension (unclosed_extension closing_num closing_name))
   else
     unclosed opening_name opening_num closing_name closing_num
 
 let unclosed_Pexp opening_name opening_num closing_name closing_num =
   if !Reason_config.recoverable then
-    mkexp(Pexp_extension (syntax_error_extension ()))
+    mkexp(Pexp_extension (unclosed_extension closing_num closing_name))
   else
     unclosed opening_name opening_num closing_name closing_num
 
 let unclosed_Ppat opening_name opening_num closing_name closing_num =
   if !Reason_config.recoverable then
-    mkpat(Ppat_extension (syntax_error_extension ()))
+    mkpat(Ppat_extension (unclosed_extension closing_num closing_name))
   else
     unclosed opening_name opening_num closing_name closing_num
 
@@ -393,7 +398,7 @@ let expecting pos nonterm =
 
 let expecting_Ppat pos nonterm =
   if !Reason_config.recoverable then
-    mkpat(Ppat_extension (syntax_error_extension ()))
+    mkpat(Ppat_extension (syntax_error_extension (rhs_loc pos) ["Expecting"; "nonterm"]))
   else
     expecting pos nonterm
 
@@ -948,8 +953,8 @@ conflicts.
 
 implementation:
     structure EOF                        { $1 }
-    | error SEMI                         { [syntax_error_str ()] }
-    | error SEMI implementation          {  syntax_error_str () :: $3 }
+    | error SEMI                         { [syntax_error_str (rhs_loc 1)] }
+    | error SEMI implementation          {  syntax_error_str (rhs_loc 1) :: $3 }
 ;
 interface:
     signature EOF                        { $1 }
@@ -2199,7 +2204,7 @@ expr:
   | TRY simple_expr LBRACE BAR no_leading_bar_match_cases RBRACE
       { mkexp (Pexp_try($2, List.rev $5)) }
   | TRY simple_expr WITH error
-      { syntax_error_Pexp () }
+      { syntax_error_Pexp (rhs_loc 4) }
   | constr_longident simple_non_labeled_expr_list_as_tuple
     {
       mkExplicitArityTupleExp (Pexp_construct(mkrhs $1 1, Some $2))
