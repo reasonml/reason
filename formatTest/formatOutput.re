@@ -1709,20 +1709,32 @@ let res =
   };
 
 /* FIXME type somePolyVariant = [ `Purple of int | `Yellow of int]; */
-let ylw = `Yellow (100, 100);
+let ylw = `Yellow (100, 100) [@implicit_arity];
 
-let prp = `Purple (101, 100);
+let prp = `Purple (101, 100) [@implicit_arity];
 
 let res =
   switch (ylw, prp) {
-    | (`Yellow (y, y2), `Purple (p, p2)) =>
-        `Yellow (p + y, 0)
-    | (`Purple (p, p2), `Yellow (y, y2)) =>
-        `Purple (y + p, 0)
-    | (`Purple (p, p2), `Purple (y, y2)) =>
-        `Yellow (y + p, 0)
-    | (`Yellow (p, p2), `Yellow (y, y2)) =>
-        `Purple (y + p, 0)
+    | (
+        `Yellow (y, y2) [@implicit_arity], 
+        `Purple (p, p2) [@implicit_arity]
+      ) =>
+        `Yellow (p + y, 0) [@implicit_arity]
+    | (
+        `Purple (p, p2) [@implicit_arity], 
+        `Yellow (y, y2) [@implicit_arity]
+      ) =>
+        `Purple (y + p, 0) [@implicit_arity]
+    | (
+        `Purple (p, p2) [@implicit_arity], 
+        `Purple (y, y2) [@implicit_arity]
+      ) =>
+        `Yellow (y + p, 0) [@implicit_arity]
+    | (
+        `Yellow (p, p2) [@implicit_arity], 
+        `Yellow (y, y2) [@implicit_arity]
+      ) =>
+        `Purple (y + p, 0) [@implicit_arity]
   };
 
 let ylw = `Yellow 100;
@@ -1755,20 +1767,32 @@ let res =
  *
  * Though, I'm not sure this will even work.
  */
-let ylw = `Yellow (100, 100);
+let ylw = `Yellow (100, 100) [@implicit_arity];
 
-let prp = `Purple (101, 101);
+let prp = `Purple (101, 101) [@implicit_arity];
 
 let res =
   switch (ylw, prp) {
-    | (`Yellow (y, y2), `Purple (p, p2)) =>
-        `Yellow (p + y, 0)
-    | (`Purple (p, p2), `Yellow (y, y2)) =>
-        `Purple (y + p, 0)
-    | (`Purple (p, p2), `Purple (y, y2)) =>
-        `Yellow (y + p, 0)
-    | (`Yellow (p, p2), `Yellow (y, y2)) =>
-        `Purple (y + p, 0)
+    | (
+        `Yellow (y, y2) [@implicit_arity], 
+        `Purple (p, p2) [@implicit_arity]
+      ) =>
+        `Yellow (p + y, 0) [@implicit_arity]
+    | (
+        `Purple (p, p2) [@implicit_arity], 
+        `Yellow (y, y2) [@implicit_arity]
+      ) =>
+        `Purple (y + p, 0) [@implicit_arity]
+    | (
+        `Purple (p, p2) [@implicit_arity], 
+        `Purple (y, y2) [@implicit_arity]
+      ) =>
+        `Yellow (y + p, 0) [@implicit_arity]
+    | (
+        `Yellow (p, p2) [@implicit_arity], 
+        `Yellow (y, y2) [@implicit_arity]
+      ) =>
+        `Purple (y + p, 0) [@implicit_arity]
   };
 
 let rec atLeastOneFlushableChildAndNoWipNoPending 
@@ -1818,12 +1842,14 @@ let rec atLeastOneFlushableChildAndNoWipNoPending
 /*
  * When pretty printed, this appears to be multi-argument constructors.
  */
-let prp = `Purple (101, 101);
+let prp = `Purple (101, 101) [@implicit_arity];
 
 let res =
   switch prp {
-    | `Yellow (y, y2) => `Yellow (y2 + y, 0)
-    | `Purple (p, p2) => `Purple (p2 + p, 0)
+    | `Yellow (y, y2) [@implicit_arity] =>
+        `Yellow (y2 + y, 0) [@implicit_arity]
+    | `Purple (p, p2) [@implicit_arity] =>
+        `Purple (p2 + p, 0) [@implicit_arity]
   };
 
 /*
@@ -6522,15 +6548,15 @@ type xyz =
 
 let doubleBar =
   fun | X
-      | Y _ _ _
-      | Z _ _
+      | Y (_, _, _) [@implicit_arity]
+      | Z (_, _) [@implicit_arity]
       | Q => true 
       | _ => false;
 
 let doubleBarNested =
   fun | X
-      | Y _ _ _
-      | Z _ _
+      | Y (_, _, _) [@implicit_arity]
+      | Z (_, _) [@implicit_arity]
       | Q => true 
       | _ => false;
 
