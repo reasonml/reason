@@ -612,12 +612,6 @@ type matchStick =
   | StickToLastSplitCases
 
 type formatSettings = {
-  (* Whether or not to expect that the original parser that generated the AST
-     would have annotated constructor argument tuples with explicit arity to
-     indicate that they are multiple arguments. (True if parsed in original
-     OCaml AST, false if using Reason parser).
-  *)
-  constructorTupleImplicitArity: bool;
   space: int;
   (* Whether or not to begin a curried function's return expression immediately
      after the [=>] without a newline.
@@ -718,10 +712,11 @@ type formatSettings = {
   funcCurriedPatternStyle: funcApplicationLabelStyle;
 
   width: int;
+
+  assumeExplicitArity: bool;
 }
 
 let defaultSettings = if true then {
-  constructorTupleImplicitArity = false;
   space = 1;
   returnStyle = ReturnValOnSameLine;
   listsRecordsIndent = 2;
@@ -762,8 +757,8 @@ let defaultSettings = if true then {
   *)
   funcCurriedPatternStyle = NeverWrapFinalItem;
   width = 50;
+  assumeExplicitArity = false;
 } else if true then {
-  constructorTupleImplicitArity = true;
   (* Just getting the compiler's warnings to shut up *)
   space = 1;
   returnStyle = ReturnValOnSameLine;
@@ -775,8 +770,8 @@ let defaultSettings = if true then {
   funcApplicationLabelStyle = NeverWrapFinalItem;
   funcCurriedPatternStyle = WrapFinalListyItemIfFewerThan 3;
   width = 90;
+  assumeExplicitArity = false;
 } else {
-  constructorTupleImplicitArity = true;
   space = 1;
   returnStyle = ReturnValOnSameLine;
   listsRecordsIndent = 2;
@@ -787,12 +782,13 @@ let defaultSettings = if true then {
   funcApplicationLabelStyle = NeverWrapFinalItem;
   funcCurriedPatternStyle = WrapFinalListyItemIfFewerThan 3;
   width = 90;
+  assumeExplicitArity = false;
 }
 
 let configuredSettings = ref defaultSettings
 
-let configure ~width ~constructorTupleImplicitArity = (
-  configuredSettings := {defaultSettings with width; constructorTupleImplicitArity}
+let configure ~width ~assumeExplicitArity = (
+  configuredSettings := {defaultSettings with width; assumeExplicitArity}
 )
 
 let createFormatter () =
@@ -843,6 +839,7 @@ let settings = !configuredSettings
 *)
 
 let shouldInterpretTupleAsConstructorArgs attrs =
+  (!configuredSettings).assumeExplicitArity ||
   List.exists
     (function
       | ({txt="explicit_arity"; loc}, _) -> true
@@ -3346,7 +3343,7 @@ class printer  ()= object(self:'self)
     let tupleAsArgs = shouldInterpretTupleAsConstructorArgs embeddedAttrs in
     let (implicit_arity, arguments) =
       match eo.pexp_desc with
-        | (Pexp_tuple l) when tupleAsArgs -> (
+        | (Pexp_tuple l) when tupleAsArgs  -> (
             match (List.map self#simple_expression l) with
               | [] -> raise (NotPossible "no tuple items")
               | hd::[] -> (false, hd)
