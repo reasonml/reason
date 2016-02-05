@@ -2118,7 +2118,10 @@ class printer  ()= object(self:'self)
     else
       match x.ppat_desc with
         | Ppat_variant (l, Some p) ->
-            let layout = (self#constructor_pattern embeddedAttrs (atom ("`" ^ l)) p) in
+            if embeddedAttrs != [] then
+              raise (NotPossible "Should never see embedded attributes on poly variant")
+            else
+            let layout = (self#constructor_pattern ~interpretTupleAsConstructorArgs:false (atom ("`" ^ l)) p) in
             SourceMap (break, x.ppat_loc, layout)
         | Ppat_construct (({txt} as li), po) when not (txt = Lident "::")-> (* FIXME The third field always false *)
             let liSourceMapped = SourceMap (break, li.loc, (self#longident_loc li)) in
@@ -2131,7 +2134,8 @@ class printer  ()= object(self:'self)
               (* }) -> *)
               (*   label ~space:true (self#longident_loc li) (makeSpacedBreakableInlineList (List.map self#simple_pattern l)) *)
               | Some xx ->
-                  (self#constructor_pattern embeddedAttrs liSourceMapped xx)
+                let interpretTupleAsConstructorArgs = shouldInterpretTupleAsConstructorArgs embeddedAttrs in
+                self#constructor_pattern ~interpretTupleAsConstructorArgs liSourceMapped xx
               | None ->
                   liSourceMapped
 
@@ -3342,10 +3346,10 @@ class printer  ()= object(self:'self)
              any form. *)
           [exprTermSourceMapped]
 
-  method constructor_expression embeddedAttrs nonEmbeddedAttrs ctor eo =
+  method constructor_expression ~interpretTupleAsConstructorArgs nonEmbeddedAttrs ctor eo =
     let arguments =
       match eo.pexp_desc with
-        | (Pexp_tuple l) when shouldInterpretTupleAsConstructorArgs embeddedAttrs -> (
+        | (Pexp_tuple l) when interpretTupleAsConstructorArgs -> (
             match (List.map self#simple_expression l) with
               | [] -> raise (NotPossible "no tuple items")
               | hd::[] ->  hd
@@ -3362,10 +3366,10 @@ class printer  ()= object(self:'self)
       | [] -> construction
       | _::_ -> formatAttributed construction (self#attributes nonEmbeddedAttrs)
 
-  method constructor_pattern embeddedAttrs ctor po =
+  method constructor_pattern ~interpretTupleAsConstructorArgs ctor po =
     let arguments =
       match po.ppat_desc with
-        | Ppat_tuple l when shouldInterpretTupleAsConstructorArgs embeddedAttrs ->
+        | Ppat_tuple l when interpretTupleAsConstructorArgs ->
             (match (List.map self#simple_pattern l) with
               | [] -> raise (NotPossible "no tuple items")
               | [hd] -> hd
@@ -3474,7 +3478,8 @@ class printer  ()= object(self:'self)
                   end
               (* TODO: Explicit arity *)
               | `normal ->
-                  self#constructor_expression embeddedAttrs nonEmbeddedAttrs (self#longident_loc li) eo
+                  let interpretTupleAsConstructorArgs = shouldInterpretTupleAsConstructorArgs embeddedAttrs in
+                  self#constructor_expression ~interpretTupleAsConstructorArgs nonEmbeddedAttrs (self#longident_loc li) eo
               | _ -> assert false)
         | Pexp_setfield (e1, li, e2) ->
           label ~space:true
@@ -3567,7 +3572,10 @@ class printer  ()= object(self:'self)
             "construct a Pexp_poly outside of a method definition - yet it sees one."
           )
         | Pexp_variant (l, Some eo) ->
-            self#constructor_expression embeddedAttrs nonEmbeddedAttrs (atom ("`" ^ l)) eo
+            if embeddedAttrs != [] then
+              raise (NotPossible "Should never see embedded attributes on poly variant")
+            else
+              self#constructor_expression ~interpretTupleAsConstructorArgs:false nonEmbeddedAttrs (atom ("`" ^ l)) eo
         | _ -> self#simple_expression x
       in
       SourceMap (break, x.pexp_loc, itm)
