@@ -2179,7 +2179,37 @@ labeled_simple_pattern:
  * expr: contains function application, but simple_expr doesn't (unless it's
  * wrapped in parens).
  */
+
 expr:
+  /** If both implicit_arity and explicit_arity exist,
+    * remove explicit_arity.
+    * If we simply remove explicit_arity, we ended up with a
+    * wrapping tuple which has one component (innter tuple), this is against the
+    * invariance that tuples must have 2+ components.
+    * Therefore, in the case we have to remove explicit_arity, we also need to
+    * unwrap the tuple to expose the inner tuple directly.
+    */
+  expr_ {
+    match $1 with
+      | {pexp_desc=Pexp_construct(lid, Some {pexp_desc = Pexp_tuple [sp]});
+         pexp_loc=pexp_loc;
+         pexp_attributes=pexp_attributes} ->
+        let attribute_is t = function
+          | ({txt=t2; loc}, _) -> t2 = t
+        in
+        let attribute_exists txt attributes = List.exists (attribute_is txt) attributes in
+        if attribute_exists "implicit_arity" pexp_attributes &&
+           attribute_exists "explicit_arity" pexp_attributes
+        then
+          {pexp_desc=Pexp_construct(lid, Some sp); pexp_loc=pexp_loc; pexp_attributes=
+            List.filter (fun x -> not (attribute_is "explicit_arity" x)) pexp_attributes}
+        else
+           $1
+      | _ -> $1
+  }
+
+
+expr_:
   /** One reason for below_NEWDOT (in [less_aggressive_simple_expression] and
     * others) is so that Module.Long.ident does not cause `Module` to be parsed
     * as a simple expression. This precedence causes the parser to "wait" and
@@ -2854,7 +2884,32 @@ type_constraint:
 /* Patterns */
 
 pattern:
-  | pattern_without_or {$1}
+  /** If both implicit_arity and explicit_arity exist,
+    * remove explicit_arity.
+    * If we simply remove explicit_arity, we ended up with a
+    * wrapping tuple which has one component (innter tuple), this is against the
+    * invariance that tuples must have 2+ components.
+    * Therefore, in the case we have to remove explicit_arity, we also need to
+    * unwrap the tuple to expose the inner tuple directly.
+    */
+  | pattern_without_or {
+    match $1 with
+      | {ppat_desc=Ppat_construct(lid, Some {ppat_desc = Ppat_tuple [sp]});
+         ppat_loc=ppat_loc;
+         ppat_attributes=ppat_attributes} ->
+        let attribute_is t = function
+          | ({txt=t2; loc}, _) -> t2 = t
+        in
+        let attribute_exists txt attributes = List.exists (attribute_is txt) attributes in
+        if attribute_exists "implicit_arity" ppat_attributes &&
+           attribute_exists "explicit_arity" ppat_attributes
+        then
+          {ppat_desc=Ppat_construct(lid, Some sp); ppat_loc=ppat_loc; ppat_attributes=
+            List.filter (fun x -> not (attribute_is "explicit_arity" x)) ppat_attributes}
+        else
+           $1
+      | _ -> $1
+  }
   | or_pattern {$1}  %prec below_AS
 
 pattern_without_or:

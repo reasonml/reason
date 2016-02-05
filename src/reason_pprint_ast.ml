@@ -202,7 +202,8 @@ let expandLocation pos ~expand:(startPos, endPos) =
 let rec sugarEmbeddedAttributes attrs =
   match attrs with
     | [] -> ([], [])
-    | (({txt="explicit_arity"; loc}, _) as emb)::atTl ->
+    | (({txt="explicit_arity"; loc}, _) as emb)::atTl
+    | (({txt="implicit_arity"; loc}, _) as emb)::atTl ->
         let (tlEmbedded, tlNonEmbedded) = sugarEmbeddedAttributes atTl in
         (emb::tlEmbedded, tlNonEmbedded)
     | atHd::atTl ->
@@ -611,12 +612,6 @@ type matchStick =
   | StickToLastSplitCases
 
 type formatSettings = {
-  (* Whether or not to expect that the original parser that generated the AST
-     would have annotated constructor argument tuples with explicit arity to
-     indicate that they are multiple arguments. (True if parsed in original
-     OCaml AST, false if using Reason parser).
-  *)
-  constructorTupleImplicitArity: bool;
   space: int;
   (* Whether or not to begin a curried function's return expression immediately
      after the [=>] without a newline.
@@ -717,10 +712,11 @@ type formatSettings = {
   funcCurriedPatternStyle: funcApplicationLabelStyle;
 
   width: int;
+
+  assumeExplicitArity: bool;
 }
 
 let defaultSettings = if true then {
-  constructorTupleImplicitArity = false;
   space = 1;
   returnStyle = ReturnValOnSameLine;
   listsRecordsIndent = 2;
@@ -761,8 +757,8 @@ let defaultSettings = if true then {
   *)
   funcCurriedPatternStyle = NeverWrapFinalItem;
   width = 50;
+  assumeExplicitArity = false;
 } else if true then {
-  constructorTupleImplicitArity = true;
   (* Just getting the compiler's warnings to shut up *)
   space = 1;
   returnStyle = ReturnValOnSameLine;
@@ -774,8 +770,8 @@ let defaultSettings = if true then {
   funcApplicationLabelStyle = NeverWrapFinalItem;
   funcCurriedPatternStyle = WrapFinalListyItemIfFewerThan 3;
   width = 90;
+  assumeExplicitArity = false;
 } else {
-  constructorTupleImplicitArity = true;
   space = 1;
   returnStyle = ReturnValOnSameLine;
   listsRecordsIndent = 2;
@@ -786,12 +782,13 @@ let defaultSettings = if true then {
   funcApplicationLabelStyle = NeverWrapFinalItem;
   funcCurriedPatternStyle = WrapFinalListyItemIfFewerThan 3;
   width = 90;
+  assumeExplicitArity = false;
 }
 
 let configuredSettings = ref defaultSettings
 
-let configure ~width ~constructorTupleImplicitArity = (
-  configuredSettings := {defaultSettings with width; constructorTupleImplicitArity}
+let configure ~width ~assumeExplicitArity = (
+  configuredSettings := {defaultSettings with width; assumeExplicitArity}
 )
 
 let createFormatter () =
@@ -842,7 +839,7 @@ let settings = !configuredSettings
 *)
 
 let shouldInterpretTupleAsConstructorArgs attrs =
-  (!configuredSettings).constructorTupleImplicitArity ||
+  (!configuredSettings).assumeExplicitArity ||
   List.exists
     (function
       | ({txt="explicit_arity"; loc}, _) -> true
@@ -3343,39 +3340,62 @@ class printer  ()= object(self:'self)
           [exprTermSourceMapped]
 
   method constructor_expression embeddedAttrs nonEmbeddedAttrs ctor eo =
-    let arguments =
+    let tupleAsArgs = shouldInterpretTupleAsConstructorArgs embeddedAttrs in
+    let (implicit_arity, arguments) =
       match eo.pexp_desc with
-        | (Pexp_tuple l) when shouldInterpretTupleAsConstructorArgs embeddedAttrs -> (
+        | (Pexp_tuple l) when tupleAsArgs  -> (
             match (List.map self#simple_expression l) with
               | [] -> raise (NotPossible "no tuple items")
-              | hd::[] ->  hd
-              | hd::tl as all -> makeSpacedBreakableInlineList all
+              | hd::[] -> (false, hd)
+              | hd::tl as all -> (false, makeSpacedBreakableInlineList all)
           )
-        | _ -> self#simple_expression eo
+        | Pexp_tuple l -> (
+            (* There is no ambiguity when the number of tuple components is 1.
+               We don't need put implicit_arity in that case *)
+            (List.length l > 1, self#simple_expression eo)
+          )
+        | _ -> (false, self#simple_expression eo)
     in
     let construction =
       label ~space:true
         ctor
         (if isSequencey arguments then arguments else (ensureSingleTokenSticksToLabel arguments))
     in
-    match nonEmbeddedAttrs with
+    let attrs =
+      if implicit_arity then
+        ({txt="implicit_arity"; loc=eo.pexp_loc}, PStr []) :: nonEmbeddedAttrs
+      else
+        nonEmbeddedAttrs
+    in
+    match attrs with
       | [] -> construction
-      | _::_ -> formatAttributed construction (self#attributes nonEmbeddedAttrs)
+      | _::_ -> formatAttributed construction (self#attributes attrs)
 
   method constructor_pattern embeddedAttrs ctor po =
-    let arguments =
+    let tupleAsArgs = shouldInterpretTupleAsConstructorArgs embeddedAttrs in
+    let (implicit_arity, arguments) =
       match po.ppat_desc with
-        | Ppat_tuple l when shouldInterpretTupleAsConstructorArgs embeddedAttrs ->
+        | Ppat_tuple l when tupleAsArgs ->
             (match (List.map self#simple_pattern l) with
               | [] -> raise (NotPossible "no tuple items")
-              | [hd] -> hd
-              | hd::tl as all -> makeSpacedBreakableInlineList all
+              | [hd] -> (false, hd)
+              | hd::tl as all -> (false, makeSpacedBreakableInlineList all)
             )
-        | _ -> self#simple_pattern po
+        | Ppat_tuple l -> (
+            (* There is no ambiguity when the number of tuple components is 1.
+               We don't need put implicit_arity in that case *)
+            (List.length l > 1, self#simple_pattern po)
+          )
+        | _ -> (false, self#simple_pattern po)
     in
-    label ~space:true
+    let construction = label ~space:true
       ctor
-      (if isSequencey arguments then arguments else (ensureSingleTokenSticksToLabel arguments))
+      (if isSequencey arguments then arguments else (ensureSingleTokenSticksToLabel arguments)) in
+    if implicit_arity then
+      formatAttributed construction (self#attributes [({txt="implicit_arity"; loc=po.ppat_loc}, PStr [])])
+    else
+      construction
+
 
   method expression x =
     let (embeddedAttrs, nonEmbeddedAttrs) = sugarEmbeddedAttributes x.pexp_attributes in
@@ -4086,7 +4106,7 @@ class printer  ()= object(self:'self)
 
   (* TODO: TODOATTRIBUTES. *)
   method class_field x =
-    let itm = 
+    let itm =
       match x.pcf_desc with
       | Pcf_inherit (ovf, ce, so) ->
         let inheritText = ("inherit" ^ override ovf) in
