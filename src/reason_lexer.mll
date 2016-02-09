@@ -478,7 +478,8 @@ rule token = parse
   | "+=" { PLUSEQ }
   | "-"  { MINUS }
   | "-." { MINUSDOT }
-
+  | "<>" { LESSGREATER }
+  | "<..>" { LESSDOTDOTGREATER }
   | "!" appropriate_operator_suffix_chars +
             { PREFIXOP(unescape_stars_slashes (Lexing.lexeme lexbuf)) }
   | ['~' '?'] appropriate_operator_suffix_chars +
