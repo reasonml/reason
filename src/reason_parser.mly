@@ -716,6 +716,8 @@ let class_of_let_bindings lbs body =
 %token LBRACKETPERCENT
 %token LBRACKETPERCENTPERCENT
 %token LESS
+%token LESSGREATER
+%token LESSDOTDOTGREATER
 %token LESSMINUS
 %token EQUALGREATER
 %token LET
@@ -2248,6 +2250,10 @@ expr:
       { mkinfix $1 "-" $3 }
   | expr MINUSDOT expr
       { mkinfix $1 "-." $3 }
+  | expr LESSDOTDOTGREATER expr
+      { mkinfix $1 "<..>" $3 }
+  | expr LESSGREATER expr
+      { mkinfix $1 "<>" $3 }
   | expr STAR expr
       { mkinfix $1 "*" $3 }
   | expr PERCENT expr
@@ -3478,7 +3484,9 @@ non_arrowed_simple_core_type:
       { mktyp(Ptyp_constr(mkrhs $1 1, [])) }
   | LESS meth_list GREATER
       { let (f, c) = $2 in mktyp(Ptyp_object (f, c)) }
-  | LESS GREATER
+  | LESSDOTDOTGREATER
+      { mktyp(Ptyp_object ([], Open)) }
+  | LESSGREATER
       { mktyp(Ptyp_object ([], Closed)) }
   | LBRACKET tag_field RBRACKET
       { mktyp(Ptyp_variant([$2], Closed, None)) }
@@ -3550,11 +3558,13 @@ non_arrowed_simple_core_type_list:
     non_arrowed_simple_core_type %prec below_LBRACKETAT     { [$1] }
   | non_arrowed_simple_core_type_list non_arrowed_simple_core_type  %prec below_LBRACKETAT     { $2 :: $1 }
 ;
+
 meth_list:
     field COMMA meth_list                     { let (f, c) = $3 in ($1 :: f, c) }
   | field opt_comma                              { [$1], Closed }
   | DOTDOT                                      { [], Open }
 ;
+
 field:
     label COLON poly_type attributes           { ($1, $4, $3) }
 ;
@@ -3593,10 +3603,12 @@ ident:
     UIDENT                                      { $1 }
   | LIDENT                                      { $1 }
 ;
+
 val_ident:
     LIDENT                                      { $1 }
   | LPAREN operator RPAREN                      { $2 }
 ;
+
 operator:
     PREFIXOP                                    { $1 }
   | INFIXOP0                                    { $1 }
@@ -3620,6 +3632,8 @@ operator:
   | COLONEQUAL                                  { ":=" }
   | PLUSEQ                                      { "+=" }
   | PERCENT                                     { "%" }
+  | LESSGREATER                                 { "<>" }
+  | LESSDOTDOTGREATER                           { "<..>" }
 ;
 constr_ident:
     UIDENT                                      { $1 }

@@ -34,7 +34,7 @@ let tmp = {
 /**
  * Comment on stackWithAttributes.
  */
-class virtual stackWithAttributes 'a init => 
+class virtual stackWithAttributes 'a init =>
 /* Before class */
 {
 
@@ -111,6 +111,12 @@ and secondRecursiveClass init => {
 /**
  * Anonymous objects.
  */
+
+type closedObj = <>;
+
+let (<..>) a b => a + b;
+let five = 2 <..> 3;
+
 type typeDefForClosedObj = <x: int, y:int>;
 type typeDefForOpenObj 'a = <x:int, y:int, ..> as 'a;
 let anonClosedObject: <x:int, y:int> = {
@@ -276,4 +282,3 @@ class addablePoint2 = (fun init => {
   method x => (init : int);
   method y => init;
 } : int => new addablePointClassType);
-

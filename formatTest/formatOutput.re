@@ -6202,6 +6202,12 @@ and secondRecursiveClass init => {
 /**
  * Anonymous objects.
  */
+type closedObj = <>;
+
+let (<..>) a b => a + b;
+
+let five = 2 <..> 3;
+
 type typeDefForClosedObj = <x : int, y : int>;
 
 type typeDefForOpenObj 'a =
