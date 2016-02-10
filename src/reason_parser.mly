@@ -954,6 +954,7 @@ implementation:
     structure EOF                        { $1 }
     | error SEMI                         { [syntax_error_str (rhs_loc 1)] }
     | error SEMI implementation          {  syntax_error_str (rhs_loc 1) :: $3 }
+    | error EOF                          { [syntax_error_str (rhs_loc 1)] }
 ;
 interface:
     signature EOF                        { $1 }
