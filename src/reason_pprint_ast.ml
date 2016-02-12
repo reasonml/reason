@@ -1673,7 +1673,7 @@ class printer  ()= object(self:'self)
     let everything =
       match constraints with
         | [] -> everythingButConstraints
-        | hd::tl -> makeList ~break:IfNeed ~indent:0 ~inline:(true, true) (everythingButConstraints::hd::tl)
+        | hd::tl -> makeList ~break:IfNeed ~postSpace:true ~indent:0 ~inline:(true, true) (everythingButConstraints::hd::tl)
     in
     (SourceMap (break, ptype_loc, everything))
 
@@ -4094,7 +4094,7 @@ class printer  ()= object(self:'self)
 
   (* TODO: TODOATTRIBUTES. *)
   method class_field x =
-    let itm = 
+    let itm =
       match x.pcf_desc with
       | Pcf_inherit (ovf, ce, so) ->
         let inheritText = ("inherit" ^ override ovf) in
