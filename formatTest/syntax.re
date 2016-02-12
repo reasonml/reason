@@ -128,7 +128,7 @@ type semiLongWrappingTypeWithConstraint =
     constraint 'a = (unit, unit)
   ;
 
-
+type onelineConstrain = 'a constraint 'a = int;
 
 /* This must be in trunk but not in this branch of OCaml */
 /* type withNestedRecords = MyConstructor of {myField: int} */
@@ -647,7 +647,7 @@ L: let defOptionalAliasAnnot ?a:(aa:int=10) ?b:(bb:int=10)      = 10 in
 
 let a = 10;
 let b = 20;
-  
+
 /*A*/
 let named                 a::a      b::b             => a + b;
 type named =              a::int => b::int => int;
@@ -777,7 +777,7 @@ let something = (thisIsANamedArg: thing blah);
 
 let something = (aTypeAnnotation: thing blah);
 
-  
+
 
 let something = (thisIsANamedArg thing:blah);
 let something = (typeAnnotation thing : blah);

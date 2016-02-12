@@ -2637,7 +2637,7 @@ let module Utils: {
 /* HACK: tmp until we merge it into TRAVERSE_CORE for TraverseInterface,
    and rename it into TRAVERSE */
 module type OLD_TRAVERSE = {
-  type t 'pconstraint 'p = (_, _, _); 
+  type t 'p constraint 'p = (_, _, _); 
   let traverse_iter:
     ((t 'p => unit) => t 'p => unit) => 
     t 'p => 
@@ -3184,15 +3184,15 @@ type t = {
   f4: 'a 'b .t2
 };
 
-type t 'aconstraint 'a = tconstraint 'b = 'a;
+type t 'a constraint 'a = t constraint 'b = 'a;
 
 type t 'a +'b -'c -'d = {
   f1: t1, 
   f2: 'a, 
   mutable f3: t2, 
   f4: (t1, t2)
-}
-constraint 'a = t
+} 
+constraint 'a = t 
 constraint 'b = 'a;
 
 exception E;

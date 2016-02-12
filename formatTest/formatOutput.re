@@ -4569,8 +4569,10 @@ type semiLongWrappingTypeWithConstraint =
   M_ReactKit__Gesture.Types.instance
     'a 
     TapGestureRecognizerFinal.tapGestureFields 
-    TapGestureRecognizerFinal.tapGestureMethods
+    TapGestureRecognizerFinal.tapGestureMethods 
 constraint 'a = (unit, unit);
+
+type onelineConstrain = 'a constraint 'a = int;
 
 /* This must be in trunk but not in this branch of OCaml */
 /* type withNestedRecords = MyConstructor of {myField: int} */
