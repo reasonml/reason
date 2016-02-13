@@ -36,14 +36,6 @@ idempotent_test ./formatOutput.re
 ../reasonfmt_impl.native -print-width 50 -print re ./wrappingTest.rei 2>&1 >./formatOutput.rei
 ../reasonfmt_impl.native -print-width 50 -print re ./syntax.rei 2>&1 >>./formatOutput.rei
 
-touch ./ocpFormatOutput.re
-
-echo "" > ./ocpFormatOutput.re
-for file in ./ocp-indent/*
-do
-  ../reasonfmt_impl.native -print-width 50 -parse ml -print re "$file" 2>&1 >>./ocpFormatOutput.re
-done
-
 for file in ./typeCheckedTests/*.re
 do
   ocamlc -c -pp ../reasonfmt_impl.native -intf-suffix rei -impl "$file"
