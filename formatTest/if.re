@@ -1,16 +1,16 @@
-let logTapSuccess = fun self => if (self > other) {
-                            print_string "Did tap";
+let logTSuccess = fun self => if (self > other) {
+                            print_string "Did T";
                             print_newline ();
                           } else {
                             ();
                           };
 let something = if self.ext.logSuccess {
-                            print_string "Did tap";
+                            print_string "Did T";
                             print_newline ();
                           };
 
-let logTapSuccess = fun self => if self.ext.logSuccess {
-                            print_string "Did tap";
+let logTSuccess = fun self => if self.ext.logSuccess {
+                            print_string "Did T";
                             print_newline ();
                           } else {
                             ();

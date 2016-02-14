@@ -600,9 +600,9 @@ let anotherRecord = {
   name: "joe++", 
   age: testRecord.age + 10
 };
-let logTapSuccess self =>
+let logTSuccess self =>
   if (self > other) {
-    print_string "Did tap";
+    print_string "Did T";
     print_newline ()
   } else {
     ()
@@ -610,13 +610,13 @@ let logTapSuccess self =>
 
 let something =
   if self.ext.logSuccess {
-    print_string "Did tap";
+    print_string "Did T";
     print_newline ()
   };
 
-let logTapSuccess self =>
+let logTSuccess self =>
   if self.ext.logSuccess {
-    print_string "Did tap";
+    print_string "Did T";
     print_newline ()
   } else {
     ()
@@ -4550,26 +4550,20 @@ type something = (
 );
 
 type longWrappingTypeDefinitionExample =
-  M_ReactKit__Gesture.Types.instance
-    (
-      TapGestureRecognizer.tapGestureFields
-        unit unit
-    ) 
-    (
-      TapGestureRecognizer.tapGestureMethods
-        unit unit
-    );
+  M_RK__G.Types.instance
+    (TGRecognizer.tGFields unit unit) 
+    (TGRecognizer.tGMethods unit unit);
 
 type semiLongWrappingTypeDefinitionExample =
-  M_ReactKit__Gesture.Types.instance
-    TapGestureRecognizerFinal.tapGestureFields 
-    TapGestureRecognizerFinal.tapGestureMethods;
+  M_RK__Gesture.Types.instance
+    TGRecognizerFinal.tGFields 
+    TGRecognizerFinal.tGMethods;
 
 type semiLongWrappingTypeWithConstraint =
-  M_ReactKit__Gesture.Types.instance
+  M_RK__Gesture.Types.instance
     'a 
-    TapGestureRecognizerFinal.tapGestureFields 
-    TapGestureRecognizerFinal.tapGestureMethods 
+    TGRecognizerFinal.tGFields 
+    TGRecognizerFinal.tGMethods 
 constraint 'a = (unit, unit);
 
 type onelineConstrain = 'a constraint 'a = int;
