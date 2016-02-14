@@ -101,30 +101,30 @@ type instatiatedTypeDef = myTypeDef int => int;
 type something = (int, (int [@lookAtThisAttribute] ));
 
 type longWrappingTypeDefinitionExample =
-  M_ReactKit__Gesture.Types.instance
+  M_RK__G.Types.instance
     (
-      TapGestureRecognizer.tapGestureFields
+      TGRecognizer.tGFields
         unit
         unit
 
     )
     (
-      TapGestureRecognizer.tapGestureMethods
+      TGRecognizer.tGMethods
         unit
         unit
 
     )
   ;
 type semiLongWrappingTypeDefinitionExample =
-  M_ReactKit__Gesture.Types.instance
-    TapGestureRecognizerFinal.tapGestureFields
-    TapGestureRecognizerFinal.tapGestureMethods
+  M_RK__Gesture.Types.instance
+    TGRecognizerFinal.tGFields
+    TGRecognizerFinal.tGMethods
   ;
 
 type semiLongWrappingTypeWithConstraint =
-  M_ReactKit__Gesture.Types.instance 'a
-    TapGestureRecognizerFinal.tapGestureFields
-    TapGestureRecognizerFinal.tapGestureMethods
+  M_RK__Gesture.Types.instance 'a
+    TGRecognizerFinal.tGFields
+    TGRecognizerFinal.tGMethods
     constraint 'a = (unit, unit)
   ;
 
