@@ -26,13 +26,13 @@
 
 Reason
 =======
-Rapid systems language toolchain.
 
-* Approachable ES6 style syntax.
-* Powerful, automatic source code formatting.
-* Adopt Incrementally with straightforward `JavaScript/C` interop.
-* Bare metal compilation - *No Virtual Machine*.
-* Type inference, pattern matching, immutable by default.
+- **Learn rapidly:** Familiar, functional syntax.
+- **Edit rapidly:** Powerful, always-consistent source formatting.
+- **Execute rapidly:** Ahead of Time, bare metal compilation - No Virtual Machine.
+- **Adopt incrementally:** One file at a time, link with `clang` or `JavaScript`.
+- **Build and Share easily:** `package.json` driven compilation/sharing.
+
 
 Install
 ---------------
@@ -49,27 +49,29 @@ opam init
 
 opam switch 4.02.1
 opam install utop
+opam pin add -y reasonsyntax git@github.com:facebook/ReasonSyntax.git
 opam pin add -y reason git@github.com:facebook/Reason.git
 ```
 
 REPL
 ---------------
 
-`Reason` comes with a REPL program called `rtop` that lets you interactively
-write `Reason` syntax in the REPL, and see printed results for each command. To
-submit commands, end each entry with a `;` and the REPL will print the
-resulting value and inferred type.
+`Reason` comes with a custom build of the REPL called `rtop` which lets you
+interactively evaluate `Reason` syntax in the REPL. It will show printed results
+for each command. To submit commands, end each entry with a `;` and the REPL
+will print the resulting value and inferred type.
+
+```sh
+# The rtop command begins a REPL session
+rtop
+```
 
 ```reason
-rtop
-
 >   let myVar = "Hello Reason!";
 <   val myVar : bytes = "Hello Reason!"
 
->   42;
-<   -: int = 42
 
-> exit 0; /* Or press ctrl+d */
+>   exit 0; /* Or press ctrl+d */
 ```
 
 > Note: `rtop` is a merely a thin wrapper around the excellent `utop` REPL but
@@ -80,15 +82,13 @@ rtop
 Syntax Basics
 =======
 
-The section below discusses Reason's most important syntax constructs. It is
-best read in the order presented.
+Much of Reason's core syntax should be familiar to anyone that has ever
+used `JavaScript` or `Rust`.
 
 > While no substitute for the guide below, these references are helpful to
 > quickly compare syntaxes with other syntaxes.
 
-> [JavaScript >](./javaScriptCompared.html) [Compare ML >](./mlCompared.html)
-
-
+> [JavaScript >](./javaScriptCompared.html) [ML >](./mlCompared.html)
 
 
 ######Primitives
@@ -165,7 +165,7 @@ increment 5;    /* Evaluates to six */
 sumBoth 6 1;   /* Evaluates to seven */
 ```
 
-#####
+##### 
 
 To resolve precedence when applying arguments, simply wrap in parenthesis.  In
 this example, `(increment 2)` is *first* evaluated to `3`, then `3` is passed
@@ -178,7 +178,7 @@ sumBoth 2 (increment 2);   /* 5 */
 This syntactic pattern of space-separated lists is used in many places in
 `Reason`.
 
-####
+#### 
 
 Functions can use sequence expressions as their return values in order to
 declare temporary variables while computing their result. This isn't some special
@@ -537,7 +537,7 @@ type carOwner =
 let CarOwner name {model: model, make: make} = CarOwner "Jo" toyota;
 ```
 
-#####
+##### 
 This deep pattern matching is especially expressive when used in `switch`
 expressions. In this example, the function `hasExactlyTwoCars` has specified
 what to return in four cases in very little code. Even more helpful, is the
@@ -1067,10 +1067,40 @@ be recompiled against the new artifact for `X`, and *then* relinked with `X`'s
 new artifact.
 
 
+How Reason Works
+=========================
+
+
+`Reason` implements a completely new *frontend* compiler toolchain
+including parsing (both with and without error recovery), printing,
+building, and namespacing. Like many other language toolchains
+(such as `Flow` and `Hack`), `Reason` is mostly implemented in
+`OCaml`, however `Reason` is different because it also uses later
+stages of the `OCaml` `compiler-libs` to type check the `Reason` AST.
+This approach has many benefits:
+
+- Allows sharing of industrial grade developer tools such as
+the excellent [`Merlin`](https://github.com/the-lambda-church/merlin) and `utop`.
+- Allows direct use of the `ocamlopt` compiler backend
+to generate (Ahead of Time) efficient native machine code without a
+Virtual Machine.
+- Allows seamless interop with, as well as an upgrade path for any
+`OCaml` project.
+- Allows building native libraries that can be linked with `clang`.
+
+
 Interop
 ==============
 
-Binding to C/JavaScript:
+Integrating with C:
+
+> Instructions Coming Soon
+
+Integrating with JavaScript:
+
+> Instructions Coming Soon
+
+Integrating with OCaml projects
 
 > Instructions Coming Soon
 
@@ -1078,6 +1108,26 @@ Binding to C/JavaScript:
 
 Tooling
 ==============
+
+`Reason` includes editor support for popular editors. Consistent,
+line-wrapping AST based formatting is an important feature of `Reason`
+that we've integrated directly into editors. Furthermore, because
+`Reason` is fully compatible with [`Merlin`](https://github.com/the-lambda-church/merlin),
+the `Reason` plugins provide professional IDE-quality autocompletion,
+in-editor type checking (even when the file is invalid).
+
+
+##### Atom Plugin
+
+
+ * **Syntax Highlighting **
+ * **Error Reporting **
+ * **Powerful source formatting/indenting/wrapping **
+ * **Basic autocompletion  **
+
+
+<img src="images/VimReason.png" width=470 height=440 />
+
 
 ##### Vim Plugin
 
@@ -1114,40 +1164,47 @@ Getting Involved
 
 Developing/Contributing
 ---------------
-If you would like to contribute by fixing bugs, or improving `Reason's` source
-formatting toolchain, make sure you `unpin` any previous version, then clone
-the repo, then `make` and "`pin`" that local git clone using `OPAM`.
 
+**1. Prepare Environemnt:**
+If you already [installed](./index.html#reason-install) Reason by `pin`ing the
+github repos, then you only need to unpin the packages and continue
+to the next step.
 ```sh
-# Installing local clone
+opam unpin reasonsyntax
 opam unpin reason
-opam switch 4.02.1
-opam install utop.1.18
-opam install easy-format.1.0.2
-
-git clone git+ssh://git@github.com/facebook/Reason.git
-cd Reason
-make
-opam pin add reason .
-# Answer Y to all the questions
 ```
-
-To test any changes, quickly unpin, rebuild and repin the newly built Reason.
+Otherwise, you may need to install some dependencies first:
 ```sh
-# Testing a change to Reason
-make
-opam pin add reason .
-
-# `unpin` after developing to restore env.
-# opam unpin reason
+opam install easy-format.1.2.0
+opam install utop.1.18
 ```
+### 
+**2. Clone and `pin` locally:** Pinning makes built packages visible globally.
+Pinning `ReasonSyntax` allows `Reason` to depend on it. Pinning `Reason` makes the
+`reasonfmt` program available on the command line. Any time you change `ReasonSyntax`,
+you must repin it so that `Reason` may be rebuilt while seeing those new changes. Any
+time you change `Reason`, you must rebuild and repin it if you want the global `reasonfmt`
+command to reflect those changes.
 
+```sh
+opam switch 4.02.1
+git clone git+ssh://git@github.com/facebook/ReasonSyntax.git
+git clone git+ssh://git@github.com/facebook/Reason.git
+cd ReasonSyntax
+make
+opam pin add -y reasonsyntax .
+cd ../Reason
+make
+opam pin add -y reason .
+```
+### 
+**3. Run Test Cases:**
 To test the pretty printer/parser, run the formatting tests and verify any
 changes in the output file.
 
 ```sh
 # Test changes - verify output in formatOutput.re
-cd formatTest
+cd Reason/formatTest
 ./test.sh
 ```
   </script>
