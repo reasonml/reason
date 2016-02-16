@@ -1,5 +1,6 @@
 #!/usr/bin/env ocaml
 #use ".ocamlinit";;
+#require "reasonsyntax";;
 #require "reason";;
 
 print_string

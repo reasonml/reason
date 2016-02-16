@@ -10,3 +10,4 @@ src_test/_tags
 .paths
 .settings
 .project
+.DS_Store
