@@ -12,17 +12,34 @@ Reason: Meta Language Utility
 - Bare metal compilation - *No Virtual Machine*.
 - Type inference, pattern matching, immutable by default.
 
-
 Install/Build
 ----------
-See [ReasonDocs](http://facebook.github.io/Reason/#reason-install)
+```sh
+brew install opam --HEAD
+opam init
+# Add this to your ~/.bashrc (or ~/.zshrc):
+#   eval `opam config env`
+
+opam switch 4.02.1
+opam install utop
+opam pin add -y reasonsyntax git@github.com:facebook/ReasonSyntax.git
+opam pin add -y reason git@github.com:facebook/Reason.git
+```
+
+Get Started Now
+---------------
+Download the up-to-date [docs](https://github.com/facebook/Reason/archive/docs.zip) which guide you through the basic syntax and toolchain features.
+
+Contribute back to that documentation in the [`docs` branch](https://github.com/facebook/Reason/tree/docs).
+
+
 
 Integrating with Existing Languages.
 ------------------------
 
  **`JavaScript` and `CommonJS`**:
 
-See the [ReasonDocs](http://facebook.github.io/Reason/javaScriptCompared.html)
+Comming Soon.
 
 
 **`clang`/`ocamlc`/`ocamlopt`**:
@@ -81,14 +98,6 @@ this likely won't be enough because `ocamlc`/`ocamlopt` will need the
 <**/*.{re,.rei}>: package(reason), syntax(utf8)
 ```
 
-[ReasonDocs](http://facebook.github.io/Reason/index.html#reason-repl) explains how to use
-`Reason` with the top level or with `utop`, but it can be manually activated
-from any top level by:
-
-```
-#require "reason";;
-```
-
 Additionally, the OCaml compiler exports its internals, including the parser,
 in a package `compiler-libs`. This allows us to parse *directly* into the
 `OCaml` AST, instead of having an additional AST -> AST conversion step.
@@ -96,16 +105,9 @@ in a package `compiler-libs`. This allows us to parse *directly* into the
 Findlib provides an interface that allows registering a preprocessor.
 Additionally, it will pass all package include paths to such a preprocessor.
 
-Debugging Yacc Grammar Conflicts:
+Developing:
 -------------------------
-Run the main parser through yacc with the `-v` flag to have it print out
-details about the conflict.  `ocamlyacc -v src/reason_parser.mly`. The debug 
-information can be found at `src/reason_parser.output`.
-
-Testing:
-------------------
-Run the tests in the `./formatTest/` directory and observe differences in
-output. The test files contain the most obscure syntax forms intentionally.
+See [DEVELOPING.md](./developing.md).
 
 Credit:
 -------
