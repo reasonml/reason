@@ -1,0 +1,13 @@
+<snippet>
+  <content>
+  	<![CDATA[print_string(
+	Format.sprintf
+		("Print: %s\n")
+		("${1:string expression}")
+);]]>
+  </content>
+  <scope>source.reason</scope>
+  <tabTrigger>print</tabTrigger>
+  <description>print!(…)</description>
+</snippet>
+

@@ -1,0 +1,23 @@
+# See https://atom.io/docs/latest/hacking-atom-package-word-count#menus for more details
+# Portions Copyright (c) 2015-present, Facebook, Inc. All rights reserved.
+'context-menu':
+  'atom-text-editor': [
+    {
+      'label': 'Toggle language-reason'
+      'command': 'language-reason:toggle'
+    }
+  ]
+'menu': [
+  {
+    'label': 'Packages'
+    'submenu': [
+      'label': 'language-reason'
+      'submenu': [
+        {
+          'label': 'Toggle'
+          'command': 'language-reason:toggle'
+        }
+      ]
+    ]
+  }
+]

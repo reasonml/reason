@@ -1,0 +1,10 @@
+
+
+<snippet>
+  <content>
+  	<![CDATA[let ${1:pattern} = $0;]]>
+  </content>
+  <scope>source.reason</scope>
+  <tabTrigger>lt</tabTrigger>
+  <description>let x = …;</description>
+</snippet>

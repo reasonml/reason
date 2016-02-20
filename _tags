@@ -1,0 +1,10 @@
+true: warn(@5@8@10@11@12@14@23-24@26@29@40), bin_annot, safe_string, debug
+
+"editorSupport": -traverse
+"src": include
+<src/*>: package(unix compiler-libs.common findlib easy-format str reasonsyntax.lib)
+<src/reason_utop.*>: package(utop str reasonsyntax.lib)
+
+<src_gen/*>: package(sedlex str)
+
+<src_test/*>|<src_test/**/*>: debug, reason, package(oUnit)

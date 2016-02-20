@@ -1,0 +1,26 @@
+# Copyright (c) 2015-present, Facebook, Inc. All rights reserved.
+
+version = "%{version}%"
+description = "Reason: Meta Language Abstraction"
+error(pkg_camlp4) = "reason is incompatible with camlp4"
+
+# Batch compilation
+archive(syntax, preprocessor, utf8) = "-ignore"
+# This preprocessor doesn't seem to be installed
+preprocessor = "ocamlreason_preprocessor_where_does_this_end_up"
+
+# Toplevel
+archive(byte, toploop) = "@compiler-libs/ocamlcommon.cma @str/str.cma"
+archive(byte, toploop) += "@easy-format/easy_format.cmo reason.cma"
+archive(byte, toploop, -pkg_utop) += "reason_toploop.cmo"
+archive(byte, toploop, pkg_utop) += "reason_utop.cmo"
+
+package "lib" (
+  version = "%{version}%"
+  description = "Library version of reason"
+  requires = "compiler-libs.common reasonsyntax easy-format"
+
+  archive(byte) = "reason.cma"
+  archive(native) = "reason.cmxa"
+  archive(native, plugin) = "reason.cmxs"
+)

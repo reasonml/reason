@@ -1,0 +1,8 @@
+[
+  { "keys": ["'"], "command": "insert_snippet", "args": {"contents": "'"}, "context":
+    [{ "key": "selector", "operator": "equal", "operand": "source.reason" }]
+  },
+  { "keys": ["super+shift+m"], "command": "reason_format", "context":
+    [{ "key": "selector", "operator": "equal", "operand": "source.reason" }]
+  }
+]
