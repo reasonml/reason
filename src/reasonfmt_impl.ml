@@ -4,7 +4,7 @@
 exception Invalid_config of string
 
 
-let default_print_width = 50
+let default_print_width = 90
 
 let defaultImplementationParserFor filename lexbuf =
   if Filename.check_suffix filename ".re" then (Reason_toolchain.JS.canonical_implementation_with_comments lexbuf, false, false)
