@@ -5,6 +5,7 @@ let () =
      List.exists ((=) "camlp4r") !Topfind.predicates then
     print_endline "Reason is incompatible with camlp4!"
   else begin
+    UTop.prompt := fst (React.S.create LTerm_text.(eval [B_fg (LTerm_style.green); S "# "]));
     UTop.parse_toplevel_phrase := UTop.parse_default (
       Reason_util.correctly_catch_parse_errors Reason_parser.toplevel_phrase);
     UTop.parse_use_file := UTop.parse_default (
