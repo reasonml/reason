@@ -23,13 +23,13 @@ for i in 0 to 5 {
   }
 };
 
-for i in 
-    0 to 
+for i in
+    0 to
     (endOfRangeMustBeSimple expr soWrap) {
   print_int i;
   print_newline ();
-  for i in 
-      (theSame isTrue ofThe startOfRange) to 
+  for i in
+      (theSame isTrue ofThe startOfRange) to
       0 {
     print_string "Counting in reverse direction";
     print_newline ()
@@ -184,8 +184,8 @@ let myRecord = {
       fun instaComp displayRect =>
       if (
         Graphics.cgRectIntersectsWithSlop
-          defaultCompositeTimerRectSlop 
-          instaComp.relativeRect 
+          defaultCompositeTimerRectSlop
+          instaComp.relativeRect
           displayRect
       ) {
         IoEligible
@@ -275,7 +275,7 @@ type pairOfInts = (int, int);
 let letBindingWithTypeConstraint: int = 10;
 
 let (tupleItem: int, withTypeConstraint: int) = (
-  10, 
+  10,
   20
 );
 
@@ -283,7 +283,7 @@ let (tupleItem: int, withTypeConstraint: int) = (
 let _dummyFunc x => 10;
 
 let annotatingFuncApplication = (
-  _dummyFunc "a": int, 
+  _dummyFunc "a": int,
   _dummyFunc "a": int
 );
 
@@ -304,18 +304,18 @@ let annotatingSingleFuncApplication = {
 };
 
 let (
-  tupleItem: int, 
+  tupleItem: int,
   constrainedWithoutGrouping: int
 ) = (
-  10, 
+  10,
   20
 );
 
 let (tupleItem, withOutsideTypeConstraint): (
-  int, 
+  int,
   int
 ) = (
-  10, 
+  10,
   20
 );
 
@@ -334,15 +334,15 @@ let result: list string = [hd, ...tl];
 
 /* Is the same as writing */
 let result: list string = [
-  "appendedToHead", 
-  "listTo", 
-  "append", 
+  "appendedToHead",
+  "listTo",
+  "append",
   "to"
 ];
 
 /* To operate on lists, use pattern matching */
 let rec size =
-  fun | [] => 0 
+  fun | [] => 0
       | [hd, ...tl] => 1 + size tl;
 
 /* Optimize for tail recursion */
@@ -473,8 +473,8 @@ let addValues (a: int, b: int) => a + b;
 /* Impossible to annotate return values of fun lambdas - just like in OCaml */
 let addValues (a: int, b: int) => a + b;
 
-let functionReturnValueType 
-    (i: int, s: string) 
+let functionReturnValueType
+    (i: int, s: string)
     :(int => int) =>
   fun x => x + 1;
 
@@ -482,16 +482,16 @@ let curriedFormOne (i: int, s: string) =>
   s ^ string_of_int i;
 
 let curriedFormTwo (i: int, x: int) :(int, int) => (
-  i, 
+  i,
   x
 );
 
 /* let nonCurriedFormTwo = fun (i:int, x:int) (:(int, int)) => (i, x); */
-let curriedFormThree 
-    (i: int, (a: int, b: int): (int, int)) 
+let curriedFormThree
+    (i: int, (a: int, b: int): (int, int))
     :(int, int, int) => (
-  i, 
-  a, 
+  i,
+  a,
   b
 );
 
@@ -505,11 +505,11 @@ type myFuncType = (int, int) => int;
 
 let myFunc: myFuncType = fun (a, b) => a + b;
 
-let funcWithTypeLocallyAbstractTypes 
-    (type atype) 
-    (type btype) 
-    a 
-    b 
+let funcWithTypeLocallyAbstractTypes
+    (type atype)
+    (type btype)
+    a
+    b
     (c: atype => btype => unit) =>
   c a b;
 
@@ -518,88 +518,88 @@ let funcWithTypeLocallyAbstractTypes
  *=============================================================================
  */
 type withThreeFields = {
-  name: string, 
-  age: int, 
+  name: string,
+  age: int,
   occupation: string
 };
 
 let testRecord = {
-  name: "joe", 
-  age: 20, 
+  name: "joe",
+  age: 20,
   occupation: "engineer"
 };
 
 let anotherRecord = {
-  ...testRecord, 
-  name: "joe++", 
+  ...testRecord,
+  name: "joe++",
   age: testRecord.age + 10
 };
 
 let makeRecordBase () => {
-  name: "Joe", 
-  age: 30, 
+  name: "Joe",
+  age: 30,
   occupation: "Engineer"
 };
 
 let anotherRecord = {
-  /* These parens should be evaporated. */ 
-  ...makeRecordBase (), 
-  name: "joe++", 
+  /* These parens should be evaporated. */
+  ...makeRecordBase (),
+  name: "joe++",
   age: testRecord.age + 10
 };
 
 let anotherRecord = {
-  /* Comments should be correctly placed before ... expression */ 
-  ...makeRecordBase (), 
-  /* Comment after record extension */ 
-  name: "joe++", 
+  /* Comments should be correctly placed before ... expression */
+  ...makeRecordBase (),
+  /* Comment after record extension */
+  name: "joe++",
   age: testRecord.age + 10
 };
 
 let anotherRecord = {
-  /* Currently, type annotations must be wrapped in parens - that's easy to improve */ 
-  ...(makeRecordBase (): withThreeFields), 
-  name: "joe++", 
+  /* Currently, type annotations must be wrapped in parens - that's easy to improve */
+  ...(makeRecordBase (): withThreeFields),
+  name: "joe++",
   age: testRecord.age + 10
 };
 
 let anotherRecord = {
-  /* This is meaningless, sure */ 
-  ...someArray.[0] <- 20, 
-  name: "joe++", 
+  /* This is meaningless, sure */
+  ...someArray.[0] <- 20,
+  name: "joe++",
   age: testRecord.age + 10
 };
 
 let anotherRecord = {
   ...SomeReally.longFunctionCall {
-    passingRecordField: 0, 
+    passingRecordField: 0,
     andThisOtherRecordField: 10
-  }, 
-  name: "joe++", 
+  },
+  name: "joe++",
   age: testRecord.age + 10
 };
 
 let anotherRecord = {
   ...
     SomeReally.longFunctionCall
-      withArguments (thatWrap: bool), 
-  name: "joe++", 
+      withArguments (thatWrap: bool),
+  name: "joe++",
   age: testRecord.age + 10
 };
 
 let anotherRecord = {
   ...
     SomeReally.longFunctionCall
-      withArg 
+      withArg
       [
-        "and", 
-        "final", 
-        "list", 
-        "that", 
-        "should", 
+        "and",
+        "final",
+        "list",
+        "that",
+        "should",
         "break"
-      ], 
-  name: "joe++", 
+      ],
+  name: "joe++",
   age: testRecord.age + 10
 };
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
@@ -717,13 +717,13 @@ let annotatedBranch = true && (
 /* The following should be... */
 let whatShouldThisBeParsedAs =
   something ?
-    callThisFunction withThisArg : 
+    callThisFunction withThisArg :
     trailingTest ? true : false;
 
 /* ... it should be parsed as */
 let whatShouldThisBeParsedAs =
   something ?
-    callThisFunction withThisArg : 
+    callThisFunction withThisArg :
     trailingTest ? true : false;
 
 /* Should *not* be parsed as */
@@ -736,43 +736,43 @@ let whatShouldThisBeParsedAs =
 
 let ternaryResult =
   aaaaaa ?
-    bbbbbbb : 
+    bbbbbbb :
     ccccc ? ddddddd : eeeee ? fffffff : ggggg;
 
 /* Should be parsed as: */
 let ternaryResult =
   aaaaaa ?
-    bbbbbbb : 
+    bbbbbbb :
     ccccc ? ddddddd : eeeee ? fffffff : ggggg;
 
 let ternaryResult =
   /* The first Parens *must* be preserved! */
   (x ? y : z) ?
-    bbbbbbb : 
+    bbbbbbb :
     ccccccc ? ddddddd : eeeeeee ? fffffff : ggggg;
 
 let ternaryResult =
   aaaaaaa ?
-    bbbbbbb : 
-    /* The second Parens *must* be preserved! */  
+    bbbbbbb :
+    /* The second Parens *must* be preserved! */
     (x ? y : z) ?
       ddddddd : eeeeeee ? fffffff : ggggg;
 
 let ternaryResult =
   aaaaaaa ?
-    bbbbbbb : 
+    bbbbbbb :
     x ?
-      y : 
+      y :
       z ?
-        ddddddd : 
-        /* The final parent don't need to be preserved */  
+        ddddddd :
+        /* The final parent don't need to be preserved */
         eeeeeee ? fffffff : x ? y : z;
 
 let addOne x => x + 1;
 
 let result =
   addOne 0 + 0 > 1 ?
-    print_string "this wont print" : 
+    print_string "this wont print" :
     print_string "this will";
 
 /*
@@ -780,7 +780,7 @@ let result =
  */
 let result =
   addOne 0 + 0 > 1 ?
-    print_string "this wont print" : 
+    print_string "this wont print" :
     print_string "this will";
 
 /*
@@ -817,7 +817,7 @@ let res = someExpression ? "true" : "false";
 
 let pngSuffix =
   pixRation > 1 ?
-    "@" ^ string_of_int pixRation ^ "x.png" : 
+    "@" ^ string_of_int pixRation ^ "x.png" :
     ".png";
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 let run () => TestUtils.printSection "Polymorphism";
@@ -844,27 +844,27 @@ type myType2 =
 
 /* Confusing because => looks like part
                                      of the return type signature. */
-let myFunc 
-    (a: int => int) 
-    (b: int => int) 
+let myFunc
+    (a: int => int)
+    (b: int => int)
     :myType int => [
   a 20 + b 30
 ];
 
-let myFunc 
-    (a: int => int) 
-    (b: int => int) 
+let myFunc
+    (a: int => int)
+    (b: int => int)
     :(myType int => myType int) =>
   fun lst => lst;
 
 let certainlyRequiresWrapping:
-  option (Mod.handler p re, Mod.Types.handler) => 
+  option (Mod.handler p re, Mod.Types.handler) =>
   option
     (
-      Mod.touch props (props, state) resource, 
+      Mod.touch props (props, state) resource,
       (list Mod.t, list Mod.t)
-    ) => 
-  list (Mod.update props (props, state) resource) => 
+    ) =>
+  list (Mod.update props (props, state) resource) =>
   list (Mod.update props (props, state) resource) =
   ();
 
@@ -964,8 +964,8 @@ let myInt: MySecondModule.someType = 100;
  * signature:
  */
 module type MySecondModuleType = {
-  type someType = int; 
-  let x: int; 
+  type someType = int;
+  let x: int;
   let y: int;
 };
 
@@ -1028,15 +1028,15 @@ module type HasDestructivelySubstitutedPolyType =
   HasPolyType with type t 'a := list 'a;
 
 module type HasDestructivelySubstitutedSubPolyModule = {
-  /* Cannot perform destructive substitution on submodules! */ 
-  /* module X: HasPolyType with type t := list (int, int); */ 
+  /* Cannot perform destructive substitution on submodules! */
+  /* module X: HasPolyType with type t := list (int, int); */
   let module X:
     HasDestructivelySubstitutedPolyType;
 };
 
 module type HasSubPolyModule = {
-  /* Cannot perform destructive substitution on submodules! */ 
-  /* module X: HasPolyType with type t := list (int, int); */ 
+  /* Cannot perform destructive substitution on submodules! */
+  /* module X: HasPolyType with type t := list (int, int); */
   let module X: HasPolyType;
 };
 
@@ -1051,13 +1051,13 @@ let module
 };
 
 module type HasMultiPolyType = {
-  type substituteThis 'a 'b; 
+  type substituteThis 'a 'b;
   type substituteThat 'a 'b;
 };
 
 module type HasDestructivelySubstitutedMultiPolyType =
   HasMultiPolyType with
-    type substituteThis 'a 'b := Hashtbl.t 'a 'b and 
+    type substituteThis 'a 'b := Hashtbl.t 'a 'b and
     type substituteThat 'a 'b := Hashtbl.t 'a 'b;
 
 let module InliningSig: {let x: int; let y: int;} = {
@@ -1128,17 +1128,17 @@ let module CurriedSugar (A: ASig) (B: BSig) => {
    module x (A:Foo) :Bar => Baz;
 
    */
-let module CurriedSugarWithReturnType 
-           (A: ASig) 
-           (B: BSig) 
+let module CurriedSugarWithReturnType
+           (A: ASig)
+           (B: BSig)
            :SigResult => {
   let result = A.a + B.b;
 };
 
 /* This is parsed as being equivalent to the above example */
-let module CurriedSugarWithAnnotatedReturnVal 
-           (A: ASig) 
-           (B: BSig) 
+let module CurriedSugarWithAnnotatedReturnVal
+           (A: ASig)
+           (B: BSig)
            :SigResult => {
   let result = A.a + B.b;
 };
@@ -1148,15 +1148,15 @@ let module CurriedNoSugar (A: ASig) (B: BSig) => {
 };
 
 let letsTryThatSyntaxInLocalModuleBindings () => {
-  let module CurriedSugarWithReturnType 
-             (A: ASig) 
-             (B: BSig) 
+  let module CurriedSugarWithReturnType
+             (A: ASig)
+             (B: BSig)
              :SigResult => {
     let result = A.a + B.b;
   };
-  let module CurriedSugarWithAnnotatedReturnVal 
-             (A: ASig) 
-             (B: BSig) 
+  let module CurriedSugarWithAnnotatedReturnVal
+             (A: ASig)
+             (B: BSig)
              :SigResult => {
     let result = A.a + B.b;
   };
@@ -1194,7 +1194,7 @@ let module CurriedSugarFunctorResultInline =
   CurriedSugar
     {
       let a = 10;
-    } 
+    }
     {
       let b = 10;
     };
@@ -1206,7 +1206,7 @@ let module CurriedNoSugarFunctorResultInline =
   CurriedNoSugar
     {
       let a = 10;
-    } 
+    }
     {
       let b = 10;
     };
@@ -1228,8 +1228,8 @@ module type FunctorType2 =
 /* Just for compability with existing OCaml ASTs you can put something other
 * than an underscore */
 module type FunctorType3 =
-  (Blah: ASig) => 
-  (ThisIsIgnored: BSig) => 
+  (Blah: ASig) =>
+  (ThisIsIgnored: BSig) =>
   SigResult;
 
 /* The actual functors themselves now have curried sugar (which the pretty
@@ -1260,24 +1260,24 @@ let module
       SigResult
   );
 
-let module ReturnsAFunctor 
-           (A: ASig) 
-           (B: BSig) 
+let module ReturnsAFunctor
+           (A: ASig)
+           (B: BSig)
            :(ASig => BSig => SigResult) =>
   functor (A: ASig) (B: BSig) => {
     let result = 10;
   };
 
-let module ReturnsSigResult 
-           (A: ASig) 
-           (B: BSig) 
+let module ReturnsSigResult
+           (A: ASig)
+           (B: BSig)
            :SigResult => {
   let result = 10;
 };
 
-let module ReturnsAFunctor2 
-           (A: ASig) 
-           (B: BSig) 
+let module ReturnsAFunctor2
+           (A: ASig)
+           (B: BSig)
            :(ASig => BSig => SigResult) =>
   functor (A: ASig) (B: BSig) => {
     let result = 10;
@@ -1288,7 +1288,7 @@ let module ReturnsAFunctor2
  * TODO: Test [Psig_recmodule]
  */
 let module rec A: {
-  type t = | Leaf of string | Node of ASet.t; 
+  type t = | Leaf of string | Node of ASet.t;
   let compare: t => t => int;
 } = {
   type t = | Leaf of string | Node of ASet.t;
@@ -1308,7 +1308,7 @@ and ASet: Set.S with type elt = A.t = Set.Make A;
  */
 module type HasRecursiveModules = {
   let module rec A: {
-    type t = | Leaf of string | Node of ASet.t; 
+    type t = | Leaf of string | Node of ASet.t;
     let compare: t => t => int;
   }
   and ASet: Set.S with type elt = A.t;
@@ -1327,9 +1327,9 @@ let module Maybe (X: Type) => {
 
 let module Id (X: Type) => X;
 
-let module Compose 
-           (F: Type => Type) 
-           (G: Type => Type) 
+let module Compose
+           (F: Type => Type)
+           (G: Type => Type)
            (X: Type) => F (
   G X
 );
@@ -1341,7 +1341,7 @@ let module Example2 (F: Type => Type) (X: Type) => {
 };
 
 Printf.printf
-  "\nModules And Functors: %n\n" 
+  "\nModules And Functors: %n\n"
   CurriedNoSugarFunctorResultInline.result;
 
 /* We would have: */
@@ -1378,10 +1378,10 @@ let myFirstClass: (module HasInt) =
 let myFirstClassWillBeFormattedAs: (module HasInt) =
   (module MyModule);
 
-let acceptsAndUnpacksFirstClass 
+let acceptsAndUnpacksFirstClass
     ((module M): (module HasInt)) => M.x + M.x;
 
-let acceptsAndUnpacksFirstClass 
+let acceptsAndUnpacksFirstClass
     ((module M): (module HasInt)) => M.x + M.x;
 
 let module SecondClass = (val myFirstClass);
@@ -1414,7 +1414,7 @@ let module LocalModule = {
   type accessedThroughModule =
     | AccessedThroughModule;
   type accessedThroughModuleWithArg =
-    | AccessedThroughModuleWith of int 
+    | AccessedThroughModuleWith of int
     | AccessedThroughModuleWithTwo of int int;
 };
 
@@ -1437,7 +1437,7 @@ let notTupled: notTupleVariant =
 
 /* Doesn't work because we've correctly annotated parse tree nodes with explicit_arity! */
 /* let notTupled: notTupleVariant = NotActuallyATuple (10, 10); */
-let funcOnNotActuallyATuple 
+let funcOnNotActuallyATuple
     (NotActuallyATuple x y) => x + y;
 
 /* let funcOnNotActuallyATuple (NotActuallyATuple (x, y)) => x + y; */
@@ -1483,15 +1483,15 @@ let doesntCareWhichFormAs x =>
   };
 
 type colorList1 = [
-  otherThingInheritedFrom 
-  | `Red 
+  otherThingInheritedFrom
+  | `Red
   | `Black
 ];
 
 type colorList = [<
-  | `Red of (int, int) &int 
-  | `Black of &(int, int) &int 
-  | `Blue 
+  | `Red of (int, int) &int
+  | `Black of &(int, int) &int
+  | `Blue
   > `Red `Black
 ];
 
@@ -1502,12 +1502,12 @@ type colorList = [<
 1 + doesntCareWhichForm FormThree;
 
 /* Destructured matching at function definition */
-let accessDeeply 
+let accessDeeply
     LocalModule.AccessedThroughModule => 10;
 
-let accessDeeplyWithArg 
+let accessDeeplyWithArg
     (
-      LocalModule.AccessedThroughModuleWith x | 
+      LocalModule.AccessedThroughModuleWith x |
       LocalModule.AccessedThroughModuleWithTwo
         _ x
     ) => x;
@@ -1584,11 +1584,11 @@ type combination 'a =
 
 /** But then how do we parse matches in function arguments? */
 /* We must require parenthesis around construction matching in function args only*/
-let howWouldWeMatchFunctionArgs 
+let howWouldWeMatchFunctionArgs
     (HeresTwoConstructorArguments x y) => x + y;
 
 /* How would we annotate said arg? */
-let howWouldWeMatchFunctionArgs 
+let howWouldWeMatchFunctionArgs
     (
       HeresTwoConstructorArguments x y:
         combination 'wat
@@ -1597,7 +1597,7 @@ let howWouldWeMatchFunctionArgs
 let matchingTwoCurriedConstructorsInTuple x =>
   switch x {
     | (
-        HeresTwoConstructorArguments x y, 
+        HeresTwoConstructorArguments x y,
         HeresTwoConstructorArguments a b
       ) =>
         x + y + a + b
@@ -1610,7 +1610,7 @@ type twoCurriedConstructors =
 let matchingTwoCurriedConstructorInConstructor x =>
   switch x {
     | TwoCombos
-        (HeresTwoConstructorArguments x y) 
+        (HeresTwoConstructorArguments x y)
         (HeresTwoConstructorArguments a b) =>
         a + b + x + y
   };
@@ -1631,12 +1631,12 @@ let result =
     | AlsoHasARecord a b {x, y} => a + b + x + y
   };
 
-let rec commentPolymorphicCases: 
+let rec commentPolymorphicCases:
   'a .
   option 'a => int
  =
-  fun | Some a => 1 
-      /* Comment on one */ 
+  fun | Some a => 1
+      /* Comment on one */
       | None => 0;
 
 let thisWontCompileButLetsSeeHowItFormats =
@@ -1647,7 +1647,7 @@ let thisWontCompileButLetsSeeHowItFormats =
 
 let thisWontCompileButLetsSeeHowItFormats =
   fun | Zero
-      | One _ _ _ => 10 
+      | One _ _ _ => 10
       | Two => 20;
 
 /* Comment on two */
@@ -1655,15 +1655,15 @@ let thisWontCompileButLetsSeeHowItFormats =
  * GADTs.
  */
 type term _ =
-  | Int of int :term int 
-  | Add :term (int => int => int) 
+  | Int of int :term int
+  | Add :term (int => int => int)
   | App of (term ('b => 'a)) (term 'b) :term 'a;
 
 let rec eval: type a. term a => a =
-  fun | Int n => n 
-      /* a = int */ 
-      | Add => (fun x y => x + y) 
-      /* a = int => int => int */ 
+  fun | Int n => n
+      /* a = int */
+      | Add => (fun x y => x + y)
+      /* a = int => int => int */
       | App f x => (eval f) (eval x);
 
 let rec eval: type a. term a => a =
@@ -1693,9 +1693,9 @@ let Purple x | Yellow x =
   };
 
 type tuples =
-  | Zero 
-  | One of int 
-  | Two of int int 
+  | Zero
+  | One of int
+  | Two of int int
   | OneTuple of (int, int);
 
 let myTuple = OneTuple (20, 30);
@@ -1777,8 +1777,8 @@ let res =
         `Purple (y + p, 0)
   };
 
-let rec atLeastOneFlushableChildAndNoWipNoPending 
-        composition 
+let rec atLeastOneFlushableChildAndNoWipNoPending
+        composition
         atPriority =>
   switch composition {
     | [] => false
@@ -1792,21 +1792,21 @@ let rec atLeastOneFlushableChildAndNoWipNoPending
           | OpaqueGraph {
               lifecycle:
                 ReconciledFlushable (
-                  priority, 
-                  _, 
-                  _, 
-                  _, 
-                  _, 
+                  priority,
+                  _,
+                  _,
+                  _,
+                  _,
                   _
                 )
             }
           | OpaqueGraph {
               lifecycle:
                 NeverReconciledFlushable (
-                  priority, 
-                  _, 
-                  _, 
-                  _, 
+                  priority,
+                  _,
+                  _,
+                  _,
                   _
                 )
             }
@@ -1837,9 +1837,9 @@ let res =
  */
 let rec map f =>
   fun | Node None m =>
-          Node None (M.map (map f) m) 
+          Node None (M.map (map f) m)
       | Node LongModule.Path.None m =>
-          Node None (M.map (map f) m) 
+          Node None (M.map (map f) m)
       | Node (LongModule.Path.Some v) m =>
           Node (Some (f v)) (M.map (map f) m);
 
@@ -1847,14 +1847,14 @@ let myFunc x y None => "asdf";
 
 let rec map f =>
   fun | Node None m =>
-          Node None (M.map (map f) m) 
+          Node None (M.map (map f) m)
       | Node LongModule.Path.None m =>
           LongModule.Path.Node
-            LongModule.Path.None 
-            (M.map (map f) m) 
+            LongModule.Path.None
+            (M.map (map f) m)
       | Node (LongModule.Path.Some v) m =>
           LongModule.Path.Node
-            (LongModule.Path.Some (f v)) 
+            (LongModule.Path.Some (f v))
             (M.map (map f) m);
 
 let myFunc x y LongModule.Path.None => "asdf";
@@ -1880,8 +1880,8 @@ let listPatternMayEvenIncludeAliases x =>
     | [] => ()
     /* Although this would never typecheck! */
     | [
-        Blah x y as head, 
-        Foo a b as head2, 
+        Blah x y as head,
+        Foo a b as head2,
         ...Something x as tail
       ] =>
         ()
@@ -1898,15 +1898,15 @@ let andYetAnotherReallyLongIdent = 30;
 
 let something =
   reallyLongIdent +
-    andYetAnotherReallyLongIdent + 
+    andYetAnotherReallyLongIdent +
     reallyLongIdent;
 
 let something =
   /* Hopefully */
   reallyLongIdent +
-    /* It will indent like this */  
-    andYetAnotherReallyLongIdent + 
-    /* And no further */  
+    /* It will indent like this */
+    andYetAnotherReallyLongIdent +
+    /* And no further */
     reallyLongIdent;
 
 /*
@@ -1915,7 +1915,7 @@ let something =
  */
 let testPrintingPrecedence =
   reallyLongIdent +
-    reallyLongIdent * andYetAnotherReallyLongIdent + 
+    reallyLongIdent * andYetAnotherReallyLongIdent +
     reallyLongIdent;
 
 let testPrintingPrecedence =
@@ -1923,10 +1923,10 @@ let testPrintingPrecedence =
     /*
      * In this case, grouping of the right expression is needed because the
      * right side of the infix operator is of *lower* precedence than STAR.
-     */  
+     */
     reallyLongIdent * (
       reallyLongIdent + andYetAnotherReallyLongIdent
-    ) + 
+    ) +
     reallyLongIdent * 10;
 
 let testPrintingPrecedence =
@@ -1934,10 +1934,10 @@ let testPrintingPrecedence =
     /*
      * In this case, grouping of the right expression is needed because the
      * right side of the infix operator is of *lower* precedence than STAR.
-     */  
+     */
     reallyLongIdent * (
       reallyLongIdent + andYetAnotherReallyLongIdent
-    ) + 
+    ) +
     reallyLongIdent;
 
 let add x y => x + y;
@@ -1947,11 +1947,11 @@ let testPrintingPrecedence =
     /*
      * In this case, grouping of the right expression is needed because the
      * right side isn't even infix at all.
-     */  
+     */
     reallyLongIdent *
       add
-        reallyLongIdent 
-        andYetAnotherReallyLongIdent + 
+        reallyLongIdent
+        andYetAnotherReallyLongIdent +
     reallyLongIdent;
 
 /*
@@ -1966,114 +1966,114 @@ let b = 20;
 let named /* a::a */ a::a /* b::b */ b::b => /* a + b */ a + b;
 
 /*B*/
-let namedAlias 
-    /* a::aa */ 
-    a::aa 
-    /* b::bb */ 
+let namedAlias
+    /* a::aa */
+    a::aa
+    /* b::bb */
     b::bb => /* aa + bb */ aa + bb;
 
 /*C*/
-let namedAnnot 
-    /* a::(a: option int) */ 
-    a::(a: option int) 
-    /* b::(b: option int) */ 
+let namedAnnot
+    /* a::(a: option int) */
+    a::(a: option int)
+    /* b::(b: option int) */
     b::(b: option int) =>
   /* 20 */
   20;
 
 /*D*/
-let namedAliasAnnot 
-    /* a::(aa: option int) */ 
-    a::(aa: option int) 
-    /* b::(bb: option int) */ 
+let namedAliasAnnot
+    /* a::(aa: option int) */
+    a::(aa: option int)
+    /* b::(bb: option int) */
     b::(bb: option int) =>
   /* 20 */
   20;
 
 /*E*/
-let optional 
-    /* a::a=? */ 
-    a::a=? 
-    /* b::b=? */ 
-    b::b=? 
-    /* () */ 
+let optional
+    /* a::a=? */
+    a::a=?
+    /* b::b=? */
+    b::b=?
+    /* () */
     () =>
   /* 10 */
   10;
 
 /*F*/
-let optionalAlias 
-    /* a::aa */ 
-    a::aa=? 
-    /* ?b:bb */ 
-    b::bb=? 
-    /* () */ 
+let optionalAlias
+    /* a::aa */
+    a::aa=?
+    /* ?b:bb */
+    b::bb=?
+    /* () */
     () =>
   /* 10 */
   10;
 
 /*G*/
-let optionalAnnot 
-    /* a::(a: option int)=? */ 
-    a::(a: option int)=? 
-    /* ?b:(b: option int) */ 
-    b::(b: option int)=? 
-    /* () */ 
+let optionalAnnot
+    /* a::(a: option int)=? */
+    a::(a: option int)=?
+    /* ?b:(b: option int) */
+    b::(b: option int)=?
+    /* () */
     () =>
   /* 10 */
   10;
 
 /*H*/
-let optionalAliasAnnot 
-    /* a::(aa: option int)=? */ 
-    a::(aa: option int)=? 
-    /* b::(bb: option int)=? */ 
-    b::(bb: option int)=? 
-    /* () => */ 
+let optionalAliasAnnot
+    /* a::(aa: option int)=? */
+    a::(aa: option int)=?
+    /* b::(bb: option int)=? */
+    b::(bb: option int)=?
+    /* () => */
     () =>
   /* 10 */
   10;
 
 /*I: This one is really annoying? Where's the visual label?*/
-let defOptional 
-    /* a::a=10 */ 
-    a::a=10 
-    /* b::b=10 */ 
-    b::b=10 
-    /* () => */ 
+let defOptional
+    /* a::a=10 */
+    a::a=10
+    /* b::b=10 */
+    b::b=10
+    /* () => */
     () =>
   /* 10 */
   10;
 
 /*J*/
-let defOptionalAlias 
-    /* a::aa=10 */ 
-    a::aa=10 
-    /* b::bb=10 */ 
-    b::bb=10 
-    /* () => */ 
+let defOptionalAlias
+    /* a::aa=10 */
+    a::aa=10
+    /* b::bb=10 */
+    b::bb=10
+    /* () => */
     () =>
   /* 10; */
   10;
 
 /*K*/
-let defOptionalAnnot 
-    /* a::(a:int)=10 */ 
-    a::(a: int)=10 
-    /* b::(b:int)=10 */ 
-    b::(b: int)=10 
-    /* () => */ 
+let defOptionalAnnot
+    /* a::(a:int)=10 */
+    a::(a: int)=10
+    /* b::(b:int)=10 */
+    b::(b: int)=10
+    /* () => */
     () =>
   /* 10; */
   10;
 
 /*L*/
-let defOptionalAliasAnnot 
-    /* a::(aa:int)=10 */ 
-    a::(aa: int)=10 
-    /* b::(bb:int)=10 */ 
-    b::(bb: int)=10 
-    /* () => */ 
+let defOptionalAliasAnnot
+    /* a::(aa:int)=10 */
+    a::(aa: int)=10
+    /* b::(bb:int)=10 */
+    b::(bb: int)=10
+    /* () => */
     () =>
   /* 10; */
   10;
@@ -2090,11 +2090,11 @@ optional /* a::a */ a::a /* b::b; */ b::b;
 let explictlyPassed =
   /* optional */
   optional
-    /* a::? */ 
-    /* None */ 
-    a::?None 
-    /* b::? */ 
-    /* None; */ 
+    /* a::? */
+    /* None */
+    a::?None
+    /* b::? */
+    /* None; */
     b::?None;
 
 let a = None;
@@ -2102,14 +2102,14 @@ let a = None;
 let explictlyPassed =
   /* optional */
   optional
-    /* a::? */ 
-    a::?a 
-    /* b::? */ 
-    /* None; */ 
+    /* a::? */
+    a::?a
+    /* b::? */
+    /* None; */
     b::?None;
 
-let complex_default 
-    callback::callback=(fun k d => 4) 
+let complex_default
+    callback::callback=(fun k d => 4)
     x => 3;
 
 let myList =
@@ -2117,23 +2117,23 @@ let myList =
   [1, 2, 3];
 
 let myList = [
-  1, 
-  /*CommentAfterOneBeforeCons */ 
-  2, 
+  1,
+  /*CommentAfterOneBeforeCons */
+  2,
   3
 ];
 
 let myList = [
-  1, 
-  2, 
-  /*CommentAfterTwoBeforeCons */ 
+  1,
+  2,
+  /*CommentAfterTwoBeforeCons */
   3
 ];
 
 let myList = [
-  1, 
-  2, 
-  /*CommentAfterConsBeforeThree */ 
+  1,
+  2,
+  /*CommentAfterConsBeforeThree */
   3
 ];
 
@@ -2141,9 +2141,9 @@ let myList = [1, 2, 3];
 
 /*CommentAfterThreeBeforeCons */
 let myList = [
-  1, 
-  2, 
-  3, 
+  1,
+  2,
+  3,
   .../*CommentAfterConsBeforeAppendedTo */myList
 ];
 
@@ -2164,81 +2164,81 @@ type nameAge = {age: int, name: string};
 type hasABunch = {
   /*
    * Field comment
-   */ 
-  fieldOne: int, 
-  fieldtwo: list int, 
-  fieldThree: list string, 
+   */
+  fieldOne: int,
+  fieldtwo: list int,
+  fieldThree: list string,
   fieldFour: nameAge
 };
 
 /* Comment at bottom of record type def */
 type functionsInARecord = {
-  adder: int => int, 
+  adder: int => int,
   minuser: int => int
 };
 
 let myFunctionsInARecord = {
-  adder: fun x => x, 
+  adder: fun x => x,
   minuser: fun x => x
 };
 
 let myFunctionsInARecordThatMustWrap = {
-  /* Desired wrapping */ 
-  adder: fun reallyLongArgument => reallyLongArgument, 
+  /* Desired wrapping */
+  adder: fun reallyLongArgument => reallyLongArgument,
   minuser: fun anotherReallyLongArgument => anotherReallyLongArgument
 };
 
 /* Comment at bottom of record */
 type twoArgFunctionsInARecord = {
-  adder: int => int => int, 
+  adder: int => int => int,
   minuser: int => int => int
 };
 
 let myFunctionsInARecordThatMustWrap = {
-  /* Desired wrapping */ 
+  /* Desired wrapping */
   adder:
-    fun reallyLongArgument 
-        anotherReallyLongArgument => reallyLongArgument, 
+    fun reallyLongArgument
+        anotherReallyLongArgument => reallyLongArgument,
   minuser:
-    fun reallyLongArgument 
+    fun reallyLongArgument
         anotherReallyLongArgument => reallyLongArgument + anotherReallyLongArgument
 };
 
 type threeArgFunctionsInARecord = {
-  adder: int => int => int => int, 
+  adder: int => int => int => int,
   minuser: int => int => int => int
 };
 
 let myFunctionsInARecordThatMustWrap = {
-  /* Desired wrapping */ 
+  /* Desired wrapping */
   adder:
-    fun /* Even if you have a comment before fun */ 
-        reallyLongArgument 
-        /* Or before the first arg */ 
-        anotherReallyLongArgument 
-        yetAnotherReallyLongArgument => reallyLongArgument, 
+    fun /* Even if you have a comment before fun */
+        reallyLongArgument
+        /* Or before the first arg */
+        anotherReallyLongArgument
+        yetAnotherReallyLongArgument => reallyLongArgument,
   minuser:
-    fun reallyLongArgument 
-        anotherReallyLongArgument 
+    fun reallyLongArgument
+        anotherReallyLongArgument
         anotherReallyLongArgument => reallyLongArgument + anotherReallyLongArgument
 };
 
-let oneArgShouldWrapToAlignWith 
+let oneArgShouldWrapToAlignWith
     theFunctionNameBinding => theFunctionNameBinding;
 
-let twoArgsShouldWrapToAlignWith 
-    firstArgHere 
+let twoArgsShouldWrapToAlignWith
+    firstArgHere
     secondArgThere => secondArgThere;
 
-let rec oneArgShouldWrapToAlignWith 
+let rec oneArgShouldWrapToAlignWith
         theFunctionNameBinding => theFunctionNameBinding;
 
-let rec twoArgsShouldWrapToAlignWith 
-        firstArgHere 
+let rec twoArgsShouldWrapToAlignWith
+        firstArgHere
         secondArgThere => secondArgThere;
 
-let secondArgShouldWrap 
-    pointLess 
+let secondArgShouldWrap
+    pointLess
     (a, b, c, d, e, f, g, h) =>
   pointLess + a + b + c + d + e;
 
@@ -2249,15 +2249,15 @@ let result = oneArgShouldWrapToAlignWith reallyReallyLongVarName;
 
 let result =
   twoArgsShouldWrapToAlignWith
-    reallyReallyLongVarName 
+    reallyReallyLongVarName
     reallyReallyLongVarName;
 
 let justReturn x => x;
 
 /* With default formatting settings: Two arguments are special cased in
    function application "justReturn hasABunch" */
-let acceptsTwoThings 
-    (nameAge: nameAge) 
+let acceptsTwoThings
+    (nameAge: nameAge)
     (hasABunch: hasABunch) => justReturn hasABunch;
 
 /*
@@ -2269,46 +2269,46 @@ let acceptsTwoThings
  */
 let result =
   acceptsTwoThings
-    {age: 20, name: "a"} 
+    {age: 20, name: "a"}
     {
-      fieldOne: 10, 
-      fieldtwo: [10, 20], 
-      fieldThree: ["one", "two"], 
+      fieldOne: 10,
+      fieldtwo: [10, 20],
+      fieldThree: ["one", "two"],
       fieldFour: {age: 20, name: "joe"}
     };
 
-let howDoesInfixOperatorsWrapWhenYouMustWrapQuestionMark 
-    x 
-    y 
+let howDoesInfixOperatorsWrapWhenYouMustWrapQuestionMark
+    x
+    y
     z =>
   x + y + z;
 
-let howDoesInfixOperatorsWrapWhenYouMustWrapQuestionMark 
-    x 
+let howDoesInfixOperatorsWrapWhenYouMustWrapQuestionMark
+    x
     y => x + y;
 
-let reallyHowDoesInfixOperatorsWrapWhenYouMustWrapQuestionMark 
-    x 
-    y 
+let reallyHowDoesInfixOperatorsWrapWhenYouMustWrapQuestionMark
+    x
+    y
     z =>
   x + y + z;
 
-let reallyHowDoesInfixOperatorsWrapWhenYouMustWrapQuestionMark 
-    x 
+let reallyHowDoesInfixOperatorsWrapWhenYouMustWrapQuestionMark
+    x
     y => x + y;
 
 let reallyLongFunctionNameThatJustConcats a =>
   String.concat "-" a;
 
 let seeHowLongValuesWrap = {
-  age: 30, 
+  age: 30,
   name: reallyLongFunctionNameThatJustConcats [
-    "one", 
-    "two", 
-    "two", 
-    "two", 
-    "two", 
-    "two", 
+    "one",
+    "two",
+    "two",
+    "two",
+    "two",
+    "two",
     "two"
   ]
 };
@@ -2318,509 +2318,509 @@ let seeHowLongValuesWrap = {
                           /-append => to last-\
 /-----------------------\ /--------------------\ */
 let onlyReturnWraps (a, b, c, d, e, f) => (
-  a, 
-  b, 
-  c, 
-  d, 
-  e, 
+  a,
+  b,
+  c,
+  d,
+  e,
   f
 );
 
-let bothArgsWrapAndIndent 
-    (a, b, c, d, e, f) 
+let bothArgsWrapAndIndent
+    (a, b, c, d, e, f)
     (h, i, j, k, l, m) => (
-  a, 
-  b, 
-  c, 
-  d, 
-  e, 
+  a,
+  b,
+  c,
+  d,
+  e,
   f
 );
 
 let result = onlyReturnWraps (
-  10, 
-  11, 
-  12, 
-  13, 
-  14, 
+  10,
+  11,
+  12,
+  13,
+  14,
   15
 );
 
 let result =
   bothArgsWrapAndIndent
-    (10, 11, 12, 13, 14, 15) 
+    (10, 11, 12, 13, 14, 15)
     (10, 11, 12, 13, 14, 15);
 
 type sixteenTuple = (
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
   int
 );
 
 /* Nothing annotated */
-let echoTuple 
+let echoTuple
     (
-      a, 
-      b, 
-      c, 
-      d, 
-      e, 
-      f, 
-      g, 
-      h, 
-      i, 
-      j, 
-      k, 
-      l, 
-      m, 
-      n, 
-      o, 
+      a,
+      b,
+      c,
+      d,
+      e,
+      f,
+      g,
+      h,
+      i,
+      j,
+      k,
+      l,
+      m,
+      n,
+      o,
       p
     ) => (
-  a, 
-  b, 
-  c, 
-  d, 
-  e, 
-  f, 
-  g, 
-  h, 
-  i, 
-  j, 
-  k, 
-  l, 
-  m, 
-  n, 
-  o, 
+  a,
+  b,
+  c,
+  d,
+  e,
+  f,
+  g,
+  h,
+  i,
+  j,
+  k,
+  l,
+  m,
+  n,
+  o,
   p
 );
 
 /* Nothing annotated fun */
-let echoTuple 
+let echoTuple
     (
-      a, 
-      b, 
-      c, 
-      d, 
-      e, 
-      f, 
-      g, 
-      h, 
-      i, 
-      j, 
-      k, 
-      l, 
-      m, 
-      n, 
-      o, 
+      a,
+      b,
+      c,
+      d,
+      e,
+      f,
+      g,
+      h,
+      i,
+      j,
+      k,
+      l,
+      m,
+      n,
+      o,
       p
     ) => (
-  a, 
-  b, 
-  c, 
-  d, 
-  e, 
-  f, 
-  g, 
-  h, 
-  i, 
-  j, 
-  k, 
-  l, 
-  m, 
-  n, 
-  o, 
+  a,
+  b,
+  c,
+  d,
+  e,
+  f,
+  g,
+  h,
+  i,
+  j,
+  k,
+  l,
+  m,
+  n,
+  o,
   p
 );
 
-let echoTheEchoer 
-    (x: sixteenTuple => sixteenTuple) 
+let echoTheEchoer
+    (x: sixteenTuple => sixteenTuple)
     :(sixteenTuple => sixteenTuple) => x;
 
 /* Nothing annotated fun, passed to func */
 echoTheEchoer (
   fun (
-        a, 
-        b, 
-        c, 
-        d, 
-        e, 
-        f, 
-        g, 
-        h, 
-        i, 
-        j, 
-        k, 
-        l, 
-        m, 
-        n, 
-        o, 
+        a,
+        b,
+        c,
+        d,
+        e,
+        f,
+        g,
+        h,
+        i,
+        j,
+        k,
+        l,
+        m,
+        n,
+        o,
         p
       ) => (
-    a, 
-    b, 
-    c, 
-    d, 
-    e, 
-    f, 
-    g, 
-    h, 
-    i, 
-    j, 
-    k, 
-    l, 
-    m, 
-    n, 
-    o, 
+    a,
+    b,
+    c,
+    d,
+    e,
+    f,
+    g,
+    h,
+    i,
+    j,
+    k,
+    l,
+    m,
+    n,
+    o,
     p
   )
 );
 
 /* Argument annotated */
-let echoTuple 
+let echoTuple
     (
       (
-        a, 
-        b, 
-        c, 
-        d, 
-        e, 
-        f, 
-        g, 
-        h, 
-        i, 
-        j, 
-        k, 
-        l, 
-        m, 
-        n, 
-        o, 
+        a,
+        b,
+        c,
+        d,
+        e,
+        f,
+        g,
+        h,
+        i,
+        j,
+        k,
+        l,
+        m,
+        n,
+        o,
         p
       ): sixteenTuple
     ) => (
-  a, 
-  b, 
-  c, 
-  d, 
-  e, 
-  f, 
-  g, 
-  h, 
-  i, 
-  j, 
-  k, 
-  l, 
-  m, 
-  n, 
-  o, 
+  a,
+  b,
+  c,
+  d,
+  e,
+  f,
+  g,
+  h,
+  i,
+  j,
+  k,
+  l,
+  m,
+  n,
+  o,
   p
 );
 
 /* Argument annotated fun */
-let echoTuple 
+let echoTuple
     (
       (
-        a, 
-        b, 
-        c, 
-        d, 
-        e, 
-        f, 
-        g, 
-        h, 
-        i, 
-        j, 
-        k, 
-        l, 
-        m, 
-        n, 
-        o, 
+        a,
+        b,
+        c,
+        d,
+        e,
+        f,
+        g,
+        h,
+        i,
+        j,
+        k,
+        l,
+        m,
+        n,
+        o,
         p
       ): sixteenTuple
     ) => (
-  a, 
-  b, 
-  c, 
-  d, 
-  e, 
-  f, 
-  g, 
-  h, 
-  i, 
-  j, 
-  k, 
-  l, 
-  m, 
-  n, 
-  o, 
+  a,
+  b,
+  c,
+  d,
+  e,
+  f,
+  g,
+  h,
+  i,
+  j,
+  k,
+  l,
+  m,
+  n,
+  o,
   p
 );
 
 /* Argument annotated, return type annotated */
-let echoTuple 
+let echoTuple
     (
       (
-        a, 
-        b, 
-        c, 
-        d, 
-        e, 
-        f, 
-        g, 
-        h, 
-        i, 
-        j, 
-        k, 
-        l, 
-        m, 
-        n, 
-        o, 
+        a,
+        b,
+        c,
+        d,
+        e,
+        f,
+        g,
+        h,
+        i,
+        j,
+        k,
+        l,
+        m,
+        n,
+        o,
         p
       ): sixteenTuple
-    ) 
+    )
     :sixteenTuple => (
-  a, 
-  b, 
-  c, 
-  d, 
-  e, 
-  f, 
-  g, 
-  h, 
-  i, 
-  j, 
-  k, 
-  l, 
-  m, 
-  n, 
-  o, 
+  a,
+  b,
+  c,
+  d,
+  e,
+  f,
+  g,
+  h,
+  i,
+  j,
+  k,
+  l,
+  m,
+  n,
+  o,
   p
 );
 
 /* Desired formatting if first line fits within margin */
 let makeTuple a b c d e f g h i j k l m n o p => (
-  a, 
-  b, 
-  c, 
-  d, 
-  e, 
-  f, 
-  g, 
-  h, 
-  i, 
-  j, 
-  k, 
-  l, 
-  m, 
-  n, 
-  o, 
+  a,
+  b,
+  c,
+  d,
+  e,
+  f,
+  g,
+  h,
+  i,
+  j,
+  k,
+  l,
+  m,
+  n,
+  o,
   p
 );
 
 /* Desired formatting if first line fits within margin (70) */
 let (
-  a, 
-  b, 
-  c, 
-  d, 
-  e, 
-  f, 
-  g, 
-  h, 
-  i, 
-  j, 
-  k, 
-  l, 
-  m, 
-  n, 
-  o, 
+  a,
+  b,
+  c,
+  d,
+  e,
+  f,
+  g,
+  h,
+  i,
+  j,
+  k,
+  l,
+  m,
+  n,
+  o,
   p
 ) =
   makeTuple 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
 
 /* Annotated version */
 let (
-  a, 
-  b, 
-  c, 
-  d, 
-  e, 
-  f, 
-  g, 
-  h, 
-  i, 
-  j, 
-  k, 
-  l, 
-  m, 
-  n, 
-  o, 
+  a,
+  b,
+  c,
+  d,
+  e,
+  f,
+  g,
+  h,
+  i,
+  j,
+  k,
+  l,
+  m,
+  n,
+  o,
   p
 ): sixteenTuple =
   makeTuple 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
 
 /* Annotated inline */
 let x: (
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
   int
 ) =
   makeTuple 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
 
 let (
-  a, 
-  b, 
-  c, 
-  d, 
-  e, 
-  f, 
-  g, 
-  h, 
-  i, 
-  j, 
-  k, 
-  l, 
-  m, 
-  n, 
-  o, 
+  a,
+  b,
+  c,
+  d,
+  e,
+  f,
+  g,
+  h,
+  i,
+  j,
+  k,
+  l,
+  m,
+  n,
+  o,
   p
 ) = echoTuple (
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
   0
 );
 
 /* Annotated version */
 let (
-  a, 
-  b, 
-  c, 
-  d, 
-  e, 
-  f, 
-  g, 
-  h, 
-  i, 
-  j, 
-  k, 
-  l, 
-  m, 
-  n, 
-  o, 
+  a,
+  b,
+  c,
+  d,
+  e,
+  f,
+  g,
+  h,
+  i,
+  j,
+  k,
+  l,
+  m,
+  n,
+  o,
   p
 ): sixteenTuple = echoTuple (
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
   0
 );
 
 /* Annotated inline */
 let x: (
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
   int
 ) = echoTuple (
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
   0
 );
 
 /* Desired formatting if pattern does not fit, arguments do (margin 70) */
 /* Destructured */
 let (
-  axx, 
-  bxx, 
-  cxx, 
-  dxx, 
-  exx, 
-  fxx, 
-  gxx, 
-  hxx, 
-  ixx, 
-  jxx, 
-  kxx, 
-  lxx, 
-  mxx, 
-  nxx, 
-  oxx, 
+  axx,
+  bxx,
+  cxx,
+  dxx,
+  exx,
+  fxx,
+  gxx,
+  hxx,
+  ixx,
+  jxx,
+  kxx,
+  lxx,
+  mxx,
+  nxx,
+  oxx,
   pxx
 ) =
   makeTuple 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
@@ -2828,21 +2828,21 @@ let (
 /* Annotated */
 /* Destructured */
 let (
-  axx, 
-  bxx, 
-  cxx, 
-  dxx, 
-  exx, 
-  fxx, 
-  gxx, 
-  hxx, 
-  ixx, 
-  jxx, 
-  kxx, 
-  lxx, 
-  mxx, 
-  nxx, 
-  oxx, 
+  axx,
+  bxx,
+  cxx,
+  dxx,
+  exx,
+  fxx,
+  gxx,
+  hxx,
+  ixx,
+  jxx,
+  kxx,
+  lxx,
+  mxx,
+  nxx,
+  oxx,
   pxx
 ): sixteenTuple =
   makeTuple 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
@@ -2851,38 +2851,38 @@ let (
 /* Destructured */
 /* Inline */
 let (
-  axx, 
-  bxx, 
-  cxx, 
-  dxx, 
-  exx, 
-  fxx, 
-  gxx, 
-  hxx, 
-  ixx, 
-  jxx, 
-  kxx, 
-  lxx, 
-  mxx, 
-  nxx, 
-  oxx, 
+  axx,
+  bxx,
+  cxx,
+  dxx,
+  exx,
+  fxx,
+  gxx,
+  hxx,
+  ixx,
+  jxx,
+  kxx,
+  lxx,
+  mxx,
+  nxx,
+  oxx,
   pxx
 ): (
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
   int
 ) =
   makeTuple 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
@@ -2900,735 +2900,735 @@ let someResult: sixteenTuple =
 /* Not-Destructured */
 /* Inline */
 let someResult: (
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
   int
 ) =
   makeTuple 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
 
 /* Destructured */
 let (
-  axx, 
-  bxx, 
-  cxx, 
-  dxx, 
-  exx, 
-  fxx, 
-  gxx, 
-  hxx, 
-  ixx, 
-  jxx, 
-  kxx, 
-  lxx, 
-  mxx, 
-  nxx, 
-  oxx, 
+  axx,
+  bxx,
+  cxx,
+  dxx,
+  exx,
+  fxx,
+  gxx,
+  hxx,
+  ixx,
+  jxx,
+  kxx,
+  lxx,
+  mxx,
+  nxx,
+  oxx,
   pxx
 ) = echoTuple (
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
   0
 );
 
 /* Annotated */
 let (
-  axx, 
-  bxx, 
-  cxx, 
-  dxx, 
-  exx, 
-  fxx, 
-  gxx, 
-  hxx, 
-  ixx, 
-  jxx, 
-  kxx, 
-  lxx, 
-  mxx, 
-  nxx, 
-  oxx, 
+  axx,
+  bxx,
+  cxx,
+  dxx,
+  exx,
+  fxx,
+  gxx,
+  hxx,
+  ixx,
+  jxx,
+  kxx,
+  lxx,
+  mxx,
+  nxx,
+  oxx,
   pxx
 ): sixteenTuple = echoTuple (
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
   0
 );
 
 /* Annotated Inline */
 let (
-  axx, 
-  bxx, 
-  cxx, 
-  dxx, 
-  exx, 
-  fxx, 
-  gxx, 
-  hxx, 
-  ixx, 
-  jxx, 
-  kxx, 
-  lxx, 
-  mxx, 
-  nxx, 
-  oxx, 
+  axx,
+  bxx,
+  cxx,
+  dxx,
+  exx,
+  fxx,
+  gxx,
+  hxx,
+  ixx,
+  jxx,
+  kxx,
+  lxx,
+  mxx,
+  nxx,
+  oxx,
   pxx
 ): (
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
   int
 ) = echoTuple (
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
   0
 );
 
 /* Not-Destructured */
 let someResult = echoTuple (
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
   0
 );
 
 /* Annotated */
 /* Not-Destructured */
 let someResult: sixteenTuple = echoTuple (
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
   0
 );
 
 /* Annotated Inline */
 /* Not-Destructured */
 let someResult: (
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
   int
 ) = echoTuple (
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
-  0, 
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
   0
 );
 
 /* Desired formatting if neither fit on one line (margin 70) */
 /* Destructured */
 let (
-  axx, 
-  bxx, 
-  cxx, 
-  dxx, 
-  exx, 
-  fxx, 
-  gxx, 
-  hxx, 
-  ixx, 
-  jxx, 
-  kxx, 
-  lxx, 
-  mxx, 
-  nxx, 
-  oxx, 
+  axx,
+  bxx,
+  cxx,
+  dxx,
+  exx,
+  fxx,
+  gxx,
+  hxx,
+  ixx,
+  jxx,
+  kxx,
+  lxx,
+  mxx,
+  nxx,
+  oxx,
   pxx
 ) =
   makeTuple
-    axx 
-    bxx 
-    cxx 
-    dxx 
-    exx 
-    fxx 
-    gxx 
-    hxx 
-    ixx 
-    jxx 
-    kxx 
-    lxx 
-    mxx 
-    nxx 
-    oxx 
+    axx
+    bxx
+    cxx
+    dxx
+    exx
+    fxx
+    gxx
+    hxx
+    ixx
+    jxx
+    kxx
+    lxx
+    mxx
+    nxx
+    oxx
     pxx;
 
 /* Annoted */
 let (
-  axx, 
-  bxx, 
-  cxx, 
-  dxx, 
-  exx, 
-  fxx, 
-  gxx, 
-  hxx, 
-  ixx, 
-  jxx, 
-  kxx, 
-  lxx, 
-  mxx, 
-  nxx, 
-  oxx, 
+  axx,
+  bxx,
+  cxx,
+  dxx,
+  exx,
+  fxx,
+  gxx,
+  hxx,
+  ixx,
+  jxx,
+  kxx,
+  lxx,
+  mxx,
+  nxx,
+  oxx,
   pxx
 ): sixteenTuple =
   makeTuple
-    axx 
-    bxx 
-    cxx 
-    dxx 
-    exx 
-    fxx 
-    gxx 
-    hxx 
-    ixx 
-    jxx 
-    kxx 
-    lxx 
-    mxx 
-    nxx 
-    oxx 
+    axx
+    bxx
+    cxx
+    dxx
+    exx
+    fxx
+    gxx
+    hxx
+    ixx
+    jxx
+    kxx
+    lxx
+    mxx
+    nxx
+    oxx
     pxx;
 
 /* Annoted inline */
 let (
-  axx, 
-  bxx, 
-  cxx, 
-  dxx, 
-  exx, 
-  fxx, 
-  gxx, 
-  hxx, 
-  ixx, 
-  jxx, 
-  kxx, 
-  lxx, 
-  mxx, 
-  nxx, 
-  oxx, 
+  axx,
+  bxx,
+  cxx,
+  dxx,
+  exx,
+  fxx,
+  gxx,
+  hxx,
+  ixx,
+  jxx,
+  kxx,
+  lxx,
+  mxx,
+  nxx,
+  oxx,
   pxx
 ): (
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
   int
 ) =
   makeTuple
-    axx 
-    bxx 
-    cxx 
-    dxx 
-    exx 
-    fxx 
-    gxx 
-    hxx 
-    ixx 
-    jxx 
-    kxx 
-    lxx 
-    mxx 
-    nxx 
-    oxx 
+    axx
+    bxx
+    cxx
+    dxx
+    exx
+    fxx
+    gxx
+    hxx
+    ixx
+    jxx
+    kxx
+    lxx
+    mxx
+    nxx
+    oxx
     pxx;
 
 /* Not-Destructured */
 let someResult =
   makeTuple
-    axx 
-    bxx 
-    cxx 
-    dxx 
-    exx 
-    fxx 
-    gxx 
-    hxx 
-    ixx 
-    jxx 
-    kxx 
-    lxx 
-    mxx 
-    nxx 
-    oxx 
+    axx
+    bxx
+    cxx
+    dxx
+    exx
+    fxx
+    gxx
+    hxx
+    ixx
+    jxx
+    kxx
+    lxx
+    mxx
+    nxx
+    oxx
     pxx;
 
 /* Not-Destructured */
 /* Annoted */
 let someResult: sixteenTuple =
   makeTuple
-    axx 
-    bxx 
-    cxx 
-    dxx 
-    exx 
-    fxx 
-    gxx 
-    hxx 
-    ixx 
-    jxx 
-    kxx 
-    lxx 
-    mxx 
-    nxx 
-    oxx 
+    axx
+    bxx
+    cxx
+    dxx
+    exx
+    fxx
+    gxx
+    hxx
+    ixx
+    jxx
+    kxx
+    lxx
+    mxx
+    nxx
+    oxx
     pxx;
 
 /* Not-Destructured */
 /* Annoted inline */
 let someResult: (
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
   int
 ) =
   makeTuple
-    axx 
-    bxx 
-    cxx 
-    dxx 
-    exx 
-    fxx 
-    gxx 
-    hxx 
-    ixx 
-    jxx 
-    kxx 
-    lxx 
-    mxx 
-    nxx 
-    oxx 
+    axx
+    bxx
+    cxx
+    dxx
+    exx
+    fxx
+    gxx
+    hxx
+    ixx
+    jxx
+    kxx
+    lxx
+    mxx
+    nxx
+    oxx
     pxx;
 
 /* Desired formatting if neither fit on one line (margin 70) */
 /* Destructured */
 let (
-  axx, 
-  bxx, 
-  cxx, 
-  dxx, 
-  exx, 
-  fxx, 
-  gxx, 
-  hxx, 
-  ixx, 
-  jxx, 
-  kxx, 
-  lxx, 
-  mxx, 
-  nxx, 
-  oxx, 
+  axx,
+  bxx,
+  cxx,
+  dxx,
+  exx,
+  fxx,
+  gxx,
+  hxx,
+  ixx,
+  jxx,
+  kxx,
+  lxx,
+  mxx,
+  nxx,
+  oxx,
   pxx
 ) = echoTuple (
-  1000, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
+  1000,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
   10
 );
 
 /* Annoted */
 /* Destructured */
 let (
-  axx, 
-  bxx, 
-  cxx, 
-  dxx, 
-  exx, 
-  fxx, 
-  gxx, 
-  hxx, 
-  ixx, 
-  jxx, 
-  kxx, 
-  lxx, 
-  mxx, 
-  nxx, 
-  oxx, 
+  axx,
+  bxx,
+  cxx,
+  dxx,
+  exx,
+  fxx,
+  gxx,
+  hxx,
+  ixx,
+  jxx,
+  kxx,
+  lxx,
+  mxx,
+  nxx,
+  oxx,
   pxx
 ): sixteenTuple = echoTuple (
-  1000, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
+  1000,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
   10
 );
 
 /* Annoted Inline */
 /* Destructured */
 let (
-  axx, 
-  bxx, 
-  cxx, 
-  dxx, 
-  exx, 
-  fxx, 
-  gxx, 
-  hxx, 
-  ixx, 
-  jxx, 
-  kxx, 
-  lxx, 
-  mxx, 
-  nxx, 
-  oxx, 
+  axx,
+  bxx,
+  cxx,
+  dxx,
+  exx,
+  fxx,
+  gxx,
+  hxx,
+  ixx,
+  jxx,
+  kxx,
+  lxx,
+  mxx,
+  nxx,
+  oxx,
   pxx
 ): (
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
   int
 ) = echoTuple (
-  1000, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
+  1000,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
   10
 );
 
 /* Desired formatting if neither fit on one line (margin 70) */
 /* Not-Destructured */
 let someResult = echoTuple (
-  1000, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
+  1000,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
   10
 );
 
 /* Annoted */
 /* Not-Destructured */
 let someResult: sixteenTuple = echoTuple (
-  1000, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
+  1000,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
   10
 );
 
 /* Annoted Inline */
 /* Not-Destructured */
 let someResult: (
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
   int
 ) = echoTuple (
-  1000, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
-  10, 
+  1000,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
   10
 );
 
 let someResult: (
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
-  int, 
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
   int
 ) = someResult;
 
 /* This shouldn't be broken onto its own newline: @see ensureSingleTokenSticksToLabel */
 type sevenStrings = (
-  string, 
-  string, 
-  string, 
-  string, 
-  string, 
-  string, 
+  string,
+  string,
+  string,
+  string,
+  string,
+  string,
   string
 );
 
 let (only, the, type_, should, have, to_, wrap) = (
-  "only", 
-  "the", 
-  "type", 
-  "should", 
-  "have", 
-  "to", 
+  "only",
+  "the",
+  "type",
+  "should",
+  "have",
+  "to",
   "wrap"
 );
 
 let (only, the, type_, should, have, to_, wrap): sevenStrings = (
-  "only", 
-  "the", 
-  "type", 
-  "should", 
-  "have", 
-  "to", 
+  "only",
+  "the",
+  "type",
+  "should",
+  "have",
+  "to",
   "wrap"
 );
 
 let
   ifTheNameIsReallyLongTheTypeAndValueShouldBothWrap: (
-  string, 
-  string, 
-  string, 
-  string, 
-  string, 
-  string, 
+  string,
+  string,
+  string,
+  string,
+  string,
+  string,
   string
 ) = (
-  "only", 
-  "the", 
-  "type", 
-  "should", 
-  "have", 
-  "to", 
+  "only",
+  "the",
+  "type",
+  "should",
+  "have",
+  "to",
   "wrap"
 );
 
 let (the, type_, and_, value, should, both, wrap): (
-  string, 
-  string, 
-  string, 
-  string, 
-  string, 
-  string, 
+  string,
+  string,
+  string,
+  string,
+  string,
+  string,
   string
 ) = (
-  "but", 
-  "the", 
-  "destructured", 
-  "assignment", 
-  "should", 
-  "not", 
+  "but",
+  "the",
+  "destructured",
+  "assignment",
+  "should",
+  "not",
   "wrap"
 );
 
@@ -3638,8 +3638,8 @@ let myNonPolyFunc: 'a => 'a = fun o => o;
 
 let locallyAbstractFunc (type a) (input: a) => input;
 
-let locallyAbstractFuncNotSugared 
-    (type a) 
+let locallyAbstractFuncNotSugared
+    (type a)
     (input: a) => input;
 
 let locallyAbstractFuncAnnotated: type a. a => a =
@@ -3655,26 +3655,26 @@ let df_myNonPolyFunc: 'a => 'a = fun o => o;
 
 type nameBlahType = {nameBlah: int};
 
-let myFunc 
-    firstArg::firstArg 
-    another::another 
+let myFunc
+    firstArg::firstArg
+    another::another
     fl::fl => {
   nameBlah: 10
 };
 
 type inputEchoRecord 'a = {inputIs: 'a};
 
-let df_locallyAbstractFunc 
-    (type a) 
-    (type b) 
+let df_locallyAbstractFunc
+    (type a)
+    (type b)
     (input: a) => {
   inputIs: input
 };
 
 /* With setting ReturnValOnSameLine */
-let df_locallyAbstractFuncNotSugared 
-    (type a) 
-    (type b) 
+let df_locallyAbstractFuncNotSugared
+    (type a)
+    (type b)
     (input: a) => {
   inputIs: input
 };
@@ -3737,11 +3737,11 @@ let df_locallyAbstractFuncAnnotatedRef:
  */
 let df_locallyAbstractFuncAnnotated:
   type a b.
-    a => 
-    b => 
+    a =>
+    b =>
     (inputEchoRecord a, inputEchoRecord b) =
   fun (input: a) (input2: b) => (
-    {inputIs: input}, 
+    {inputIs: input},
     {inputIs: input2}
   );
 
@@ -3754,33 +3754,33 @@ let df_locallyAbstractFuncAnnotated:
 let df_locallyAbstractFuncAnnotated: 'figureMeOut =
   fun (type a) (type b) => (
     fun (input: a) (input2: b) => (
-      {inputIs: input}, 
+      {inputIs: input},
       {inputIs: input2}
     ):
-      a => 
-      b => 
+      a =>
+      b =>
       (inputEchoRecord a, inputEchoRecord b)
   );
 
-let createTuple_thisFuncShouldWrapCorrectlyNow: 
+let createTuple_thisFuncShouldWrapCorrectlyNow:
   'a .
   'a => 'a => 'a => ('a, 'a, 'a)
  =
   fun someVar someVar2 someVar3 => (
-    someVar, 
-    someVar2, 
+    someVar,
+    someVar2,
     someVar3
   );
 
 let theTupleTypeAnnotationShouldWrap: (
-  string, 
-  string, 
-  string, 
+  string,
+  string,
+  string,
   string
 ) = (
-  "now these tuple values should wrap", 
-  "now these tuple values should wrap", 
-  "now these tuple values should wrap", 
+  "now these tuple values should wrap",
+  "now these tuple values should wrap",
+  "now these tuple values should wrap",
   "now these tuple values should wrap"
 );
 
@@ -3805,7 +3805,7 @@ type doubleEqualsDoublePrivateVariant =
     private | BigSize of int | SmallSize of int;
 
 type myRecordWithReallyLongName = {
-  xx: int, 
+  xx: int,
   yy: int
 };
 
@@ -3820,7 +3820,7 @@ type someConstructor =
   | SomeConstructorHi of int int;
 
 type someRecord = {
-  firstFieldInRecord: int, 
+  firstFieldInRecord: int,
   secondField: int
 };
 
@@ -3830,19 +3830,19 @@ type someRecord = {
   terms in the binding/argument pattern list (the name, followed by one
   pattern).
 */
-let funcOnSomeConstructorHi 
+let funcOnSomeConstructorHi
     (SomeConstructorHi x y) => x + y;
 
-let funcOnSomeConstructorHi 
-    (SomeConstructorHi x y) 
+let funcOnSomeConstructorHi
+    (SomeConstructorHi x y)
     secondArg => x + y;
 
 /* With two args */
-let funcOnSomeRecord 
+let funcOnSomeRecord
     {firstFieldInRecord, secondField} => firstFieldInRecord + secondField;
 
-let funcOnSomeRecord 
-    {firstFieldInRecord, secondField} 
+let funcOnSomeRecord
+    {firstFieldInRecord, secondField}
     secondArg => firstFieldInRecord + secondField;
 
 /*
@@ -3851,19 +3851,19 @@ let funcOnSomeRecord
   terms in the binding/argument pattern list (the name, followed by one
   pattern).
 */
-let funcOnSomeConstructorHi 
+let funcOnSomeConstructorHi
     (SomeConstructorHi x y) => x + y;
 
-let funcOnSomeRecord 
+let funcOnSomeRecord
     {firstFieldInRecord, secondField} => firstFieldInRecord + secondField;
 
 /* With two args */
-let funcOnSomeConstructorHi 
-    (SomeConstructorHi x y) 
+let funcOnSomeConstructorHi
+    (SomeConstructorHi x y)
     secondArg => x + y;
 
-let funcOnSomeRecord 
-    {firstFieldInRecord, secondField} 
+let funcOnSomeRecord
+    {firstFieldInRecord, secondField}
     secondArg => firstFieldInRecord + secondField;
 
 type simpleTupleVariant =
@@ -3876,7 +3876,7 @@ let shouldWrapLike whenLongArg =>
   SimpleActuallyATuple (whenLongArg, whenLongArg);
 
 type recordWithLong = {
-  someField: int, 
+  someField: int,
   anotherField: string
 };
 
@@ -3884,41 +3884,41 @@ type recordWithLong = {
  * Commenting first of two mutualy recursive types.
  */
 type recursiveType =
-  /* First variant of first mutually recursive */ 
-  | Blah 
-  /* Second variant of first mutually recursive */ 
+  /* First variant of first mutually recursive */
+  | Blah
+  /* Second variant of first mutually recursive */
   | Another of (option anotherRecursiveType)
 /*
  * Commenting second of two mutually recursive types.
  */
 and anotherRecursiveType =
-  /* Second variant of second mutually recursive */ 
-  | Baz 
-  /* Second variant of second mutually recursive */ 
+  /* Second variant of second mutually recursive */
+  | Baz
+  /* Second variant of second mutually recursive */
   | Recursive of (option recursiveType);
 
 /**
  * Commented GADT definition.
  */
 type term _ =
-  /* First variant leaf of GADT */ 
+  /* First variant leaf of GADT */
   | Int of
-      /*first var arg */ 
-      int 
+      /*first var arg */
+      int
       :/* First GADT res */
        term
-         int 
-  /* Second variant leaf of GADT */ 
+         int
+  /* Second variant leaf of GADT */
   | Float of
-      /*second var arg */ 
-      int 
+      /*second var arg */
+      int
       :/* Second GADT res */
        term
-         int 
-  /* Third variant leaf of GADT */ 
+         int
+  /* Third variant leaf of GADT */
   | Bool of
-      /*third var arg */ 
-      int 
+      /*third var arg */
+      int
       :/* Third GADT res */
        term
          int;
@@ -3927,23 +3927,23 @@ type term _ =
 type commentedTypeDef =
   /*
    * Commenting first variant member.
-   */ 
+   */
   | First of (
       /* First field of tuple in first variant member */
-      int, 
+      int,
       /* Second field of tuple in first variant member */
       int
-    ) 
+    )
   /*
    * Commenting second variant member.
-   */ 
-  | Second of int 
+   */
+  | Second of int
   /*
    * Commenting third variant member.
-   */ 
+   */
   | Third of (
       list
-        /* Commenting deep in type def */ 
+        /* Commenting deep in type def */
         (list int)
     );
 
@@ -3967,23 +3967,23 @@ let blah arg =>
   };
 
 let blah =
-  fun | Red _ => 1 
-      | Black _ => 0 
+  fun | Red _ => 1
+      | Black _ => 0
       | Green _ => 1;
 
 let blahCurriedX x =>
-  fun /* Comment before first bar */ 
-      /* Comment between first bar and OR pattern */ 
+  fun /* Comment before first bar */
+      /* Comment between first bar and OR pattern */
       | Red x
       | Black x
-      | Green x => 1 
-      /* Comment before second bar */ 
-      | Black x => 0 
+      | Green x => 1
+      /* Comment before second bar */
+      | Black x => 0
       | Green x => 0;
 
 type reallyLongVariantNames =
-  | ReallyLongVariantName of recordWithLong 
-  | AnotherReallyLongVariantName of int int int 
+  | ReallyLongVariantName of recordWithLong
+  | AnotherReallyLongVariantName of int int int
   | AnotherReallyLongVariantName2 of int int int;
 
 let howDoLongMultiBarPatternsWrap x =>
@@ -3991,7 +3991,7 @@ let howDoLongMultiBarPatternsWrap x =>
     | AnotherReallyLongVariantName _ _ _ => 0
     | AnotherReallyLongVariantName2 _ _ _ => 0
     | ReallyLongVariantName {
-        someField, 
+        someField,
         anotherField
       } => 0
   };
@@ -4001,7 +4001,7 @@ let letsCombineTwoLongPatternsIntoOneCase x =>
     | AnotherReallyLongVariantName _ _ _
     | AnotherReallyLongVariantName2 _ _ _ => 0
     | ReallyLongVariantName {
-        someField, 
+        someField,
         anotherField
       } => 0
   };
@@ -4012,7 +4012,7 @@ let letsPutAWhereClauseOnTheFirstTwo x =>
     | AnotherReallyLongVariantName2 _ _ _
         when true => 0
     | ReallyLongVariantName {
-        someField, 
+        someField,
         anotherField
       } => 0
   };
@@ -4022,7 +4022,7 @@ let letsPutAWhereClauseOnTheLast x =>
     | AnotherReallyLongVariantName _ _ _
     | AnotherReallyLongVariantName2 _ _ _ => 0
     | ReallyLongVariantName {
-        someField, 
+        someField,
         anotherField
       }
         when true => 0
@@ -4030,33 +4030,33 @@ let letsPutAWhereClauseOnTheLast x =>
 
 type wrappingGadt _ =
   | ThisIsLongSoTypeWillWrap of
-      int :wrappingGadt int 
-  | Add :wrappingGadt (int => int => int) 
+      int :wrappingGadt int
+  | Add :wrappingGadt (int => int => int)
   | App of
-      (wrappingGadt ('b => 'a)) 
-      (wrappingGadt 'b) 
+      (wrappingGadt ('b => 'a))
+      (wrappingGadt 'b)
       :wrappingGadt 'a;
 
 type withThreeFields = {
-  name: string, 
-  age: int, 
+  name: string,
+  age: int,
   occupation: string
 };
 
 let testRecord = {
-  name: "joe", 
-  age: 20, 
+  name: "joe",
+  age: 20,
   occupation: "engineer"
 };
 
 let anotherRecord = {
-  ...testRecord, 
-  name: "joe++", 
+  ...testRecord,
+  name: "joe++",
   age: testRecord.age + 10
 };
 
 type polymorphicCommentedType
-  /* Commenting the first type variable */'a 
+  /* Commenting the first type variable */'a
   /* Commenting the second type variable */'b =
   list ('a, 'b);
 
@@ -4064,11 +4064,11 @@ type polymorphicCommentedType
  * Commenting the entire record definition.
  */
 type withThreeFieldsCommented = {
-  /* Commenting the first field */ 
-  nameCommented: string, 
-  /* Commenting the second field */ 
-  ageCommented: int, 
-  /* Commenting the third field */ 
+  /* Commenting the first field */
+  nameCommented: string,
+  /* Commenting the second field */
+  ageCommented: int,
+  /* Commenting the third field */
   occupationCommented: string
 };
 
@@ -4076,22 +4076,22 @@ type withThreeFieldsCommented = {
  * Commenting the entire record.
  */
 let testRecordCommented = {
-  /* Commenting the first field */ 
-  nameCommented: "joe", 
-  /* Commenting the second field */ 
-  ageCommented: 20, 
-  /* Commenting the last field */ 
+  /* Commenting the first field */
+  nameCommented: "joe",
+  /* Commenting the second field */
+  ageCommented: 20,
+  /* Commenting the last field */
   occupationCommented: "engineer"
 };
 
 /*
  * Test comments near the arguments.
  */
-let callMeWithComments 
-    /* Comment before first arg "a" */ 
-    (a: int) 
-    /* Comment before second arg "b" */ 
-    (b: int) 
+let callMeWithComments
+    /* Comment before first arg "a" */
+    (a: int)
+    /* Comment before second arg "b" */
+    (b: int)
     :/* Comment before return type annotation "int" */int =>
   /* Comment above return value a + b + c */
   a +
@@ -4100,9 +4100,9 @@ let callMeWithComments
 let result =
   /* Comment before function to invoke */
   callMeWithComments
-    /* Comment before first argument expression */ 
-    (1 + 2 + 3 + 3) 
-    /* Comment before second argument expression */ 
+    /* Comment before first argument expression */
+    (1 + 2 + 3 + 3)
+    /* Comment before second argument expression */
     (1 + 2 + 3 + 3);
 
 module type ASig = {let a: int;};
@@ -4132,19 +4132,19 @@ let module CurriedSugar (A: ASig) (B: BSig) =>
 let module CurriedSugarFunctorResult =
   /* Commenting before functor name*/
   CurriedSugar
-    /* Commenting before functor arg 1 in app */ 
-    AMod 
-    /* Commenting before functor arg 2 in app */ 
+    /* Commenting before functor arg 1 in app */
+    AMod
+    /* Commenting before functor arg 2 in app */
     BMod;
 
 let module CurriedSugarFunctorResultInline =
   /* Commenting before functor name*/
   CurriedSugar
-    /* Commenting before functor arg 1 in app */ 
+    /* Commenting before functor arg 1 in app */
     {
       let a = 10;
-    } 
-    /* Commenting before functor arg 2 in app */ 
+    }
+    /* Commenting before functor arg 2 in app */
     {
       let b = 10;
     };
@@ -4155,48 +4155,48 @@ let module CurriedSugarFunctorResultInline =
 let commentingBeforeEqual =
   /*beforeEqual*/
   {
-    name: "hello", 
-    age: 20, 
+    name: "hello",
+    age: 20,
     occupation: "programmer"
   };
 
 let commentingAfterEqual =
   /*afterEqual*/
   {
-    name: "hello", 
-    age: 20, 
+    name: "hello",
+    age: 20,
     occupation: "programmer"
   };
 
 let commentingBeforeEqualBeforeType:
   /*beforeEqualBeforeType*/
   withThreeFields = {
-  name: "hello", 
-  age: 20, 
+  name: "hello",
+  age: 20,
   occupation: "programmer"
 };
 
 let commentingBeforeEqualAfterType: withThreeFields =
   /*beforeEqualAfterType*/
   {
-    name: "hello", 
-    age: 20, 
+    name: "hello",
+    age: 20,
     occupation: "programmer"
   };
 
 let commentingAfterEqualAfterType: withThreeFields =
   /*afterEqual*/
   {
-    name: "hello", 
-    age: 20, 
+    name: "hello",
+    age: 20,
     occupation: "programmer"
   };
 
 let
   /*beforePattern*/
   commentingBeforePattern: withThreeFields = {
-  name: "hello", 
-  age: 20, 
+  name: "hello",
+  age: 20,
   occupation: "programmer"
 };
 
@@ -4204,8 +4204,8 @@ let
   /*beforePattern*/
   /*beforePattern2 */
   commentingBeforePattern2: withThreeFields = {
-  name: "hello", 
-  age: 20, 
+  name: "hello",
+  age: 20,
   occupation: "programmer"
 };
 
@@ -4213,46 +4213,46 @@ let
   /**beforePattern*/
   /*beforePattern2 */
   commentingBeforePatternSpecial: withThreeFields = {
-  name: "hello", 
-  age: 20, 
+  name: "hello",
+  age: 20,
   occupation: "programmer"
 };
 
 let produceRecord /*commentBeforeArg*/ x => {
-  name: "hello", 
-  age: 20, 
+  name: "hello",
+  age: 20,
   occupation: "programmer"
 };
 
 let produceRecord x =>
   /*commentAfterArg*/
   {
-    name: "hello", 
-    age: 20, 
+    name: "hello",
+    age: 20,
     occupation: "programmer"
   };
 
-let myPolyFuncCommentBeforeColon: 
+let myPolyFuncCommentBeforeColon:
   'a .
   /*beforeColon */
   'a => 'a
  =
   fun o => o;
 
-let myPolyFuncCommentAfterColon: 
+let myPolyFuncCommentAfterColon:
   'a .
   /*afterColon */
   'a => 'a
  =
   fun o => o;
 
-let myPolyFuncCommentBeforeArrow: 
+let myPolyFuncCommentBeforeArrow:
   'a .
   'a => /*beforeArrow */  'a
  =
   fun o => o;
 
-let myPolyFuncCommentAfterArrow: 
+let myPolyFuncCommentAfterArrow:
   'a .
   'a => /*afterArrow */  'a
  =
@@ -4292,66 +4292,66 @@ let myNonPolyFuncCommentAfterEqual: 'a => 'a =
   /*AfterEqual */
   fun o => o;
 
-let lATCurrySugarCommentBeforeType 
-    /*BeforeType */ 
-    (type a) 
+let lATCurrySugarCommentBeforeType
+    /*BeforeType */
+    (type a)
     (input: a) => input;
 
-let lATCurrySugarCommentAfterType 
-    /*AfterType */ 
-    (type a) 
+let lATCurrySugarCommentAfterType
+    /*AfterType */
+    (type a)
     (input: a) => input;
 
-let lATCurrySugarCommentBeforeArg 
-    (type a) 
-    /*BeforeArg */ 
+let lATCurrySugarCommentBeforeArg
+    (type a)
+    /*BeforeArg */
     (input: a) => input;
 
-let lATCurrySugarCommentAfterArg 
-    (type a) 
+let lATCurrySugarCommentAfterArg
+    (type a)
     (input: a) =>
   /*AfterArg */
   input;
 
-let lATCurrySugarCommentAfterArrow 
-    (type a) 
+let lATCurrySugarCommentAfterArrow
+    (type a)
     (input: a) =>
   /*AfterArrow */
   input;
 
-let lATNotSugaredCommentBeforeEqual 
-    /*BeforeEqual*/ 
-    (type a) 
+let lATNotSugaredCommentBeforeEqual
+    /*BeforeEqual*/
+    (type a)
     (input: a) => input;
 
-let lATNotSugaredCommentAfterEqual 
-    /*AfterEqual*/ 
-    (type a) 
+let lATNotSugaredCommentAfterEqual
+    /*AfterEqual*/
+    (type a)
     (input: a) => input;
 
-let lATNotSugaredCommentBeforeType 
-    (type a) 
-    /*BeforeType*/ 
+let lATNotSugaredCommentBeforeType
+    (type a)
+    /*BeforeType*/
     (input: a) => input;
 
-let lATNotSugaredCommentAfterType 
-    (type a) 
-    /*AfterType*/ 
+let lATNotSugaredCommentAfterType
+    (type a)
+    /*AfterType*/
     (input: a) => input;
 
-let lATNotSugaredCommentBeforeArg 
-    (type a) 
-    /*BeforeArg*/ 
+let lATNotSugaredCommentBeforeArg
+    (type a)
+    /*BeforeArg*/
     (input: a) => input;
 
-let lATNotSugaredCommentAfterArg 
-    (type a) 
+let lATNotSugaredCommentAfterArg
+    (type a)
     (input: a) =>
   /*AfterArg*/
   input;
 
-let lATNotSugaredCommentAfterArrow 
-    (type a) 
+let lATNotSugaredCommentAfterArrow
+    (type a)
     (input: a) =>
   /*AfterArrow*/
   input;
@@ -4392,27 +4392,27 @@ let lAtFuncAnnotatedAfterEqual: type a. a => a =
 let ternaryResult =
   /* Before Test */
   something ?
-    /* Before ifTrue */  
-    callThisFunction withThisArg : 
-    /* Before ifFalse */  
+    /* Before ifTrue */
+    callThisFunction withThisArg :
+    /* Before ifFalse */
     thatResult;
 
 let ternaryResult =
   /* Before Test */
   something ?
-    /* Before ifTrue */  
-    callThisFunction withThisArg : 
-    /* Before ifFalse */  
+    /* Before ifTrue */
+    callThisFunction withThisArg :
+    /* Before ifFalse */
     trailingTest ?
-      /* before nested ifTrue */  
-      true : 
-      /* before nested ifFalse */  
+      /* before nested ifTrue */
+      true :
+      /* before nested ifFalse */
       false;
 
 let returningATernary x y => x > y ? "hi" : "by";
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 [@@@autoFormat
-  let wrap = 80; 
+  let wrap = 80;
   let shift = 2;
 ];
 
@@ -4461,13 +4461,13 @@ type allParensCanBeRemoved =
   list int => list int => list int => list int;
 
 type firstTwoShouldBeGroupedAndFirstThree =
-  ((list int => list int) => list int) => 
+  ((list int => list int) => list int) =>
   list int;
 
 type myRecordType = {
   firstTwoShouldBeGroupedInParens:
-    (int => int) => int => int, 
-  allParensCanBeRemoved: int => int => int => int, 
+    (int => int) => int => int,
+  allParensCanBeRemoved: int => int => int => int,
   firstTwoShouldBeGroupedAndFirstThree:
     ((int => int) => int) => int
 };
@@ -4483,36 +4483,36 @@ type firstTwoShouldBeGroupedAndFirstThree =
 
 /* Same thing now, but with type constructors instead of int */
 type firstNamedArgShouldBeGroupedInParens =
-  first::(list int => list int) => 
-  second::list int => 
+  first::(list int => list int) =>
+  second::list int =>
   list int;
 
 type allParensCanBeRemoved =
-  first::list int => 
-  second::list int => 
-  third::list int => 
+  first::list int =>
+  second::list int =>
+  third::list int =>
   list int;
 
 type firstTwoShouldBeGroupedAndFirstThree =
-  first::((list int => list int) => list int) => 
+  first::((list int => list int) => list int) =>
   list int;
 
 type firstNamedArgShouldBeGroupedInParens =
-  first::(int => int)? => 
-  second::int list? => 
+  first::(int => int)? =>
+  second::int list? =>
   int;
 
 /* The arrow necessitates parens around the next two args. The ? isn't what
  * makes the parens necessary. */
 type firstNamedArgShouldBeGroupedInParensAndSecondNamedArg =
-  first::(int => int)? => 
-  second::(int => int)? => 
+  first::(int => int)? =>
+  second::(int => int)? =>
   int;
 
 type allParensCanBeRemoved =
-  first::int? => 
-  second::int? => 
-  third::int? => 
+  first::int? =>
+  second::int? =>
+  third::int? =>
   int;
 
 type firstTwoShouldBeGroupedAndFirstThree =
@@ -4553,25 +4553,25 @@ type instatiatedTypeDef = myTypeDef int => int;
  * printing).
  */
 type something = (
-  int, 
+  int,
   int [@lookAtThisAttribute]
 );
 
 type longWrappingTypeDefinitionExample =
   M_RK__G.Types.instance
-    (TGRecognizer.tGFields unit unit) 
+    (TGRecognizer.tGFields unit unit)
     (TGRecognizer.tGMethods unit unit);
 
 type semiLongWrappingTypeDefinitionExample =
   M_RK__Gesture.Types.instance
-    TGRecognizerFinal.tGFields 
+    TGRecognizerFinal.tGFields
     TGRecognizerFinal.tGMethods;
 
 type semiLongWrappingTypeWithConstraint =
   M_RK__Gesture.Types.instance
-    'a 
-    TGRecognizerFinal.tGFields 
-    TGRecognizerFinal.tGMethods 
+    'a
+    TGRecognizerFinal.tGFields
+    TGRecognizerFinal.tGMethods
 constraint 'a = (unit, unit);
 
 type onelineConstrain = 'a constraint 'a = int;
@@ -4618,9 +4618,9 @@ let desiredFormattingForWrappedLambda:
 type longerInt = int;
 
 let desiredFormattingForWrappedLambdaWrappedArrow:
-  longerInt => 
-  longerInt => 
-  longerInt => 
+  longerInt =>
+  longerInt =>
+  longerInt =>
   nameBlahType =
   /*
 
@@ -4632,15 +4632,15 @@ let desiredFormattingForWrappedLambdaWrappedArrow:
     nameBlah: 10
   };
 
-let desiredFormattingForWrappedLambdaReturnOnNewLine 
+let desiredFormattingForWrappedLambdaReturnOnNewLine
     /*
 
  fun is
  pre-   /firstarg\
  fix   /-coupled--\
-  |-\ /-to-prefix--\       */ 
-    curriedArg 
-    anotherArg 
+  |-\ /-to-prefix--\       */
+    curriedArg
+    anotherArg
     lastArg => {
   nameBlah: 10
 };
@@ -4650,9 +4650,9 @@ let is
 pre-
 fix    /-function binding name---\
 |-\   / is coupled to prefix      \   */
-let desiredFormattingForWrappedSugar 
-    curriedArg 
-    anotherArg 
+let desiredFormattingForWrappedSugar
+    curriedArg
+    anotherArg
     lastArg => {
   nameBlah: 10
 };
@@ -4662,9 +4662,9 @@ let is
 pre-
 fix    /-function binding name---\
 |-\   / is coupled to prefix      \   */
-let desiredFormattingForWrappedSugarReturnOnNewLine 
-    curriedArg 
-    anotherArg 
+let desiredFormattingForWrappedSugarReturnOnNewLine
+    curriedArg
+    anotherArg
     lastArg => {
   nameBlah: 10
 };
@@ -4689,14 +4689,14 @@ let printPoint (p: point) => {
 };
 
 let addPoints (p1: point, p2: point) => {
-  x: p1.x + p2.x, 
+  x: p1.x + p2.x,
   y: p1.y + p2.y
 };
 
 let res1 = printPoint point2D;
 
 let res2 = printPoint {
-  x: point3D.x, 
+  x: point3D.x,
   y: point3D.y
 };
 
@@ -4724,7 +4724,7 @@ let res2 = printPoint {
 */
 let res3 = printPoint (
   addPoints (
-    point2D, 
+    point2D,
     {x: point3D.x, y: point3D.y}
   )
 );
@@ -4732,8 +4732,8 @@ let res3 = printPoint (
 type person = {age: int, name: string};
 
 type hiredPerson = {
-  age: string, 
-  name: string, 
+  age: string,
+  name: string,
   dateHired: int
 };
 
@@ -4810,7 +4810,7 @@ type hasA = {a: int};
 
 let a = 10;
 
-let returnsASequenceExpressionWithASingleIdentifier 
+let returnsASequenceExpressionWithASingleIdentifier
     () => a;
 
 let thisReturnsA () => a;
@@ -4820,11 +4820,11 @@ let thisReturnsAAsWell () => a;
 let recordVal: int = (thisReturnsARecord ()).a;
 
 Printf.printf
-  "\nproof that thisReturnsARecord: %n\n" 
+  "\nproof that thisReturnsARecord: %n\n"
   recordVal;
 
 Printf.printf
-  "\nproof that thisReturnsA: %n\n" 
+  "\nproof that thisReturnsA: %n\n"
   (thisReturnsA ());
 
 /* Pattern matching */
@@ -4842,8 +4842,8 @@ let blah arg =>
 /* Any function that pattern matches a multicase match is interpretted as a
  * single arg that is then matched on. Instead of the above `blah` example:*/
 let blah =
-  fun | Red _ => 1 
-      | Black _ => 0 
+  fun | Red _ => 1
+      | Black _ => 0
       | Green _ => 1;
 
 /* `fun a => a` is read as "a function that maps a to a". Then the */
@@ -4854,13 +4854,13 @@ let blah =
    Theres no sugar rule for dropping => fun, only = fun
 */
 let blahCurriedX x =>
-  fun /* See, nothing says we can drop the => fun */ 
+  fun /* See, nothing says we can drop the => fun */
       | Red x
       | Black x
-      | Green x => 1 
-      /* With some effort, we can ammend the sugar rule that would */ 
-      | Black x => 0 
-      /* Allow us to drop any => fun.. Just need to make pattern matching */ 
+      | Green x => 1
+      /* With some effort, we can ammend the sugar rule that would */
+      | Black x => 0
+      /* Allow us to drop any => fun.. Just need to make pattern matching */
       | Green x => 0;
 
 /* Support that */
@@ -4868,8 +4868,8 @@ let blahCurriedX x =>
 let blahCurriedX x =>
   fun | Red x
       | Black x
-      | Green x => 1 
-      | Black x => 0 
+      | Green x => 1
+      | Black x => 0
       | Green x => 0;
 
 /* Any time there are multiple match cases we require a leading BAR */
@@ -4921,8 +4921,8 @@ let blah a {blahBlah} => a;
 /*            match_case             */
 /*     pattern EQUALGREATER  expr */
 let blah =
-  fun | Red _ => 1 
-      | Black _ => 0 
+  fun | Red _ => 1
+      | Black _ => 0
       | Green _ => 0;
 
 /* Won't work! */
@@ -4963,9 +4963,9 @@ let matchesWithWhen a =>
   };
 
 let matchesWithWhen =
-  fun | Red x when 1 > 0 => 10 
-      | Red _ => 10 
-      | Black x => 10 
+  fun | Red x when 1 > 0 => 10
+      | Red _ => 10
+      | Black x => 10
       | Green x => 10;
 
 let matchesOne (`Red x) => 10;
@@ -4976,14 +4976,14 @@ can't tell if a semicolon is a sequence operator. Even if we had records use
 commas to separate fields,
 */
 type adders = {
-  addTwoNumbers: int => int => int, 
-  addThreeNumbers: int => int => int => int, 
+  addTwoNumbers: int => int => int,
+  addThreeNumbers: int => int => int => int,
   addThreeNumbersTupled: (int, int, int) => int
 };
 
 let myRecordWithFunctions = {
-  addTwoNumbers: fun a b => a + b, 
-  addThreeNumbers: fun a b c => a + b + c, 
+  addTwoNumbers: fun a b => a + b,
+  addThreeNumbers: fun a b c => a + b + c,
   addThreeNumbersTupled: fun (a, b, c) =>
     a + b + c
 };
@@ -4992,8 +4992,8 @@ let result =
   myRecordWithFunctions.addThreeNumbers 10 20 30;
 
 let result = myRecordWithFunctions.addThreeNumbersTupled (
-  10, 
-  20, 
+  10,
+  20,
   30
 );
 
@@ -5024,7 +5024,7 @@ let myAnnotatedValBinding: int = 10;
 
 /* Class functions (constructors) and methods are unified in the same way */
 class classWithNoArg = {
-  method x = 0; 
+  method x = 0;
   method y = 0;
 };
 
@@ -5035,19 +5035,19 @@ class classWithNoArg = {
   end;
 */
 let myFunc (a: int) (b: int) :(int, int) => (
-  a, 
+  a,
   b
 );
 
 let myFunc (a: int) (b: int) :list int => [1];
 
 let myFunc (a: int) (b: int) :point => {
-  x: a, 
+  x: a,
   y: b
 };
 
 let myFunc (a: int, b: int) :point => {
-  x: a, 
+  x: a,
   y: b
 };
 
@@ -5160,9 +5160,9 @@ let optionalAlias a::aa=? b::bb=? () => 10;
 let optionalAnnot a::(a: int)=? b::(b: int)=? () => 10;
 
 /*H*/
-let optionalAliasAnnot 
-    a::(aa: int)=? 
-    b::(bb: int)=? 
+let optionalAliasAnnot
+    a::(aa: int)=?
+    b::(bb: int)=?
     () => 10;
 
 /*I: */
@@ -5174,15 +5174,15 @@ type named = a::int? => b::int? => unit => int;
 let defOptionalAlias a::aa=10 b::bb=10 () => 10;
 
 /*K*/
-let defOptionalAnnot 
-    a::(a: int)=10 
-    b::(b: int)=10 
+let defOptionalAnnot
+    a::(a: int)=10
+    b::(b: int)=10
     () => 10;
 
 /*L*/
-let defOptionalAliasAnnot 
-    a::(aa: int)=10 
-    b::(bb: int)=10 
+let defOptionalAliasAnnot
+    a::(aa: int)=10
+    b::(bb: int)=10
     () => 10;
 
 /*M: Invoking them - Punned */
@@ -5228,14 +5228,14 @@ let explictlyPassedAnnotated: int =
 type typeWithNestedNamedArgs =
   outerOne::(
     innerOne::int => innerTwo::int => int
-  ) => 
-  outerTwo::int => 
+  ) =>
+  outerTwo::int =>
   int;
 
 type typeWithNestedOptionalNamedArgs =
   outerOne::
-    (innerOne::int => innerTwo::int => int)? => 
-  outerTwo::int? => 
+    (innerOne::int => innerTwo::int => int)? =>
+  outerTwo::int? =>
   int;
 
 type typeWithNestedOptionalNamedArgs =
@@ -5258,36 +5258,36 @@ let res = {
 };
 
 let x = [
-  (eachItemInListCanBeAnnotated: int), 
-  (typeConstraints: float), 
+  (eachItemInListCanBeAnnotated: int),
+  (typeConstraints: float),
   (
-    tupleConstraints: int, 
+    tupleConstraints: int,
     andNotFunctionInvocations: int
   )
 ];
 
 let x = [
-  (butWeWillPrint: int), 
-  (themAsSpaceSeparated: float), 
+  (butWeWillPrint: int),
+  (themAsSpaceSeparated: float),
   (toInfluenceYour: int, developmentHabbits: int)
 ];
 
 let newRecord = {
-  ...(annotatedSpreadRecord: someRec), 
+  ...(annotatedSpreadRecord: someRec),
   x: y
 };
 
 let newRecord = {
-  ...(annotatedSpreadRecord: someRec), 
-  blah: 0, 
+  ...(annotatedSpreadRecord: someRec),
+  blah: 0,
   foo: 1
 };
 
 let newRecord = {
   ...(
        youCanEvenCallMethodsHereAndAnnotate them: someRec
-     ), 
-  blah: 0, 
+     ),
+  blah: 0,
   foo: 1
 };
 
@@ -5295,8 +5295,8 @@ let newRecord = {
   ...(
        youCanEvenCallMethodsHereAndAnnotate
          them named::10: someRec
-     ), 
-  blah: 0, 
+     ),
+  blah: 0,
   foo: 1
 };
 
@@ -5313,8 +5313,8 @@ let something: blah = typeAnnotation thing;
 let newRecord = {
   ...(
        heresAFunctionWithNamedArgs argOne::i: annotatedResult
-     ), 
-  soAsToInstill: 0, 
+     ),
+  soAsToInstill: 0,
   developmentHabbits: 1
 };
 
@@ -5327,11 +5327,11 @@ let x = 10;
  */
 let something =
   fun | None => (
-          fun | [] => "emptyList" 
+          fun | [] => "emptyList"
               | [_, ..._] => "nonEmptyList"
-        ) 
+        )
       | Some _ => (
-          fun | [] => "emptyList" 
+          fun | [] => "emptyList"
               | [_, ..._] => "nonEmptyList"
         );
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
@@ -5438,7 +5438,7 @@ first || second || third;
 /* No parens should be added/removed from the following when formatting */
 let seeWhichCharacterHasHigherPrecedence = (
                                         first |>
-                                        second |> 
+                                        second |>
                                         third
                                         ) ^> fourth;
 
@@ -5453,7 +5453,7 @@ let comparison = (=);
 /* Why would the following two cases have different grouping? */
 let res =
   blah ||
-    DataConstructor 10 || 
+    DataConstructor 10 ||
     DataConstructor 10 && 10;
 
 let res =
@@ -5594,7 +5594,7 @@ let
       switch x {
         | _ => "hi"
       }
-    ) ^ 
+    ) ^
     "yo";
 
 /* Add tests with IF/then mixed with infix/constructor application on left and right sides */
@@ -5621,18 +5621,18 @@ let ( ~\* ) a => a + 1;
 let res = ~\*10;
 
 /* The semicolon should be attached to someType */
-let myFunc 
-    aaaa 
-    bbbb 
-    cccc 
-    dddd 
-    aaaa 
-    bbbb 
-    cccc 
-    dddd 
+let myFunc
+    aaaa
+    bbbb
+    cccc
+    dddd
+    aaaa
+    bbbb
+    cccc
+    dddd
     aaaa => [
   blah
-    aaaa bbbb cccc dddd aaaa bbbb cccc dddd aaaa, 
+    aaaa bbbb cccc dddd aaaa bbbb cccc dddd aaaa,
   ...someType
 ];
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
@@ -5663,9 +5663,9 @@ type x = int [@@itemAttributeOnTypeDef];
 type attributedInt = int [@onTopLevelTypeDef];
 
 type attributedIntsInTuple = (
-  int [@onInt], 
+  int [@onInt],
   float [@onFloat]
-) 
+)
 [@@onTopLevelTypeDef];
 
 type myDataType 'x 'y = | MyDataType of 'x 'y;
@@ -5673,18 +5673,18 @@ type myDataType 'x 'y = | MyDataType of 'x 'y;
 type myType =
   (
     myDataType
-      ((option int) [@onOptionInt]) 
+      ((option int) [@onOptionInt])
       ((option float) [@onOption])
-  ) 
+  )
   [@onEntireType];
 
 let thisInst: myType =
-  MyDataType (Some 10) (Some 10.0) 
+  MyDataType (Some 10) (Some 10.0)
   [@attOnEntireDatatype];
 
 let thisInst: myType =
   MyDataType
-    (Some 10 [@onFirstParam]) (Some 10.0) 
+    (Some 10 [@onFirstParam]) (Some 10.0)
   [@attOnEntireDatatype];
 
 let x = "hello" [@onHello];
@@ -5755,7 +5755,7 @@ let res =
     } else {
       false
     }
-  ) 
+  )
   [@onEntireIf];
 
 let add a b => ((a [@onA]) + b) [@onEverything];
@@ -5775,8 +5775,8 @@ let both a b => (a && b) [@onEverything];
 
 let thisVal = 10;
 
-let x = 20 + 
-  - 
+let x = 20 +
+  -
   (add thisVal thisVal [@onFunctionCall])
 ;
 
@@ -5805,14 +5805,14 @@ let result =
     () [@onSecondSend];
 
 type recordFunctions = {
-  p: unit => recordFunctions [@onUnit], 
+  p: unit => recordFunctions [@onUnit],
   q: (unit => unit) [@onArrow]
-} 
+}
 [@@onRecordFunctions]
 and unusedType = unit [@@onUnusedType];
 
 let rec myRecord = {
-  p: fun () => myRecord, 
+  p: fun () => myRecord,
   q: fun () => ()
 }
 and unused = ();
@@ -5822,18 +5822,18 @@ let result =
     () [@onSecondSend];
 
 type variantType =
-  | Foo of int [@onInt] 
-  | Bar of (int [@onInt]) 
-  | Baz 
+  | Foo of int [@onInt]
+  | Bar of (int [@onInt])
+  | Baz
 [@@onVariantType];
 
 type gadtType 'x =
-  | Foo of int :(gadtType int) [@onFirstRow] 
+  | Foo of int :(gadtType int) [@onFirstRow]
   | Bar of
-      (int [@onInt]) 
-      :(gadtType unit) [@onSecondRow] 
+      (int [@onInt])
+      :(gadtType unit) [@onSecondRow]
   | Baz
-      :(gadtType (unit [@onUnit])) [@onThirdRow] 
+      :(gadtType (unit [@onUnit])) [@onThirdRow]
 [@@onVariantType];
 
 [@@@floatingTopLevelStructureItem hello];
@@ -5853,9 +5853,9 @@ let showLets () =>
     {
       let tmpTmp = tmp + tmp;
       tmpTmp + tmpTmp
-    } 
+    }
     [@onFinalLet]
-  } 
+  }
   [@onOuterLet];
 
 /**
@@ -5868,8 +5868,8 @@ let showLets () =>
 class boxA 'a (init: 'a) =>
   {
     method pr = init + init + init;
-  } 
-  [@onReturnClassExpr] 
+  }
+  [@onReturnClassExpr]
 [@@moduleItemAttribute];
 
 /**
@@ -5878,7 +5878,7 @@ class boxA 'a (init: 'a) =>
 class boxB 'a (init: 'a) =>
   {
     method pr = init + init + init;
-  } 
+  }
   [@stillOnTheReturnBecauseItsSimple];
 
 /* To be able to put an attribute on just the return in that case, use
@@ -5888,33 +5888,33 @@ class boxC 'a =
     fun (init: 'a) =>
       {
         method pr = init + init + init;
-      } 
+      }
       [@onReturnClassExpr]
-  ) 
-  [@onEntireFunction] 
+  )
+  [@onEntireFunction]
 [@@onBoxC x; y;];
 
 class tupleClass 'a 'b (init: ('a, 'b)) => {
-  let one = 10 [@exprAttr ten]; 
+  let one = 10 [@exprAttr ten];
   let two = 20 [@exprAttr twenty]
-  and three = 30 [@exprAttr twenty]; 
+  and three = 30 [@exprAttr twenty];
   method pr = one + two + three;
-} 
+}
 [@@moduleItemAttribute onTheTupleClassItem];
 
 class type addablePointClassType = {
-  method x: int; 
-  method y: int; 
+  method x: int;
+  method y: int;
   method add:
-    addablePointClassType => 
-    addablePointClassType => 
+    addablePointClassType =>
+    addablePointClassType =>
     int
-} 
+}
 [@@structureItem]
 and anotherClassType = {
-  method foo: int; 
+  method foo: int;
   method bar: int
-} 
+}
 [@@structureItem];
 
 let module NestedModule = {
@@ -5922,13 +5922,13 @@ let module NestedModule = {
 };
 
 module type HasAttrs = {
-  type t = int [@@onTypeDef]; 
-  [@@@floatingNestedSigItem hello]; 
+  type t = int [@@onTypeDef];
+  [@@@floatingNestedSigItem hello];
   class type foo = {
-    method foo: int; 
+    method foo: int;
     method bar: int
-  } 
-  [@@sigItem]; 
+  }
+  [@@sigItem];
   class fooBar : int => new foo [@@sigItem];
 };
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
@@ -5939,14 +5939,14 @@ let reasonDoubleBar =
   fun | X
       | Y _ _ _
       | Z _ _
-      | Q => true 
+      | Q => true
       | _ => false;
 
 let reasonDoubleBarNested =
   fun | X
       | Y _ _ _
       | Z _ _
-      | Q => true 
+      | Q => true
       | _ => false;
 
 /* Liberal use of the Any pattern being compatible with multiple
@@ -5955,14 +5955,14 @@ let reasonDoubleBarAnyPatterns =
   fun | X
       | Y _
       | Z _
-      | Q => true 
+      | Q => true
       | _ => false;
 
 let reasonDoubleBarNestedAnyPatterns =
   fun | X
       | Y _
       | Z _
-      | Q => true 
+      | Q => true
       | _ => false;
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 /*
@@ -6099,11 +6099,11 @@ switch numberToSwitchOn {
   | 1 => holdsAUnit.contents <- holdsAnInt := 0
   | 2 =>
       true ?
-        holdsAUnit.contents <- () : 
+        holdsAUnit.contents <- () :
         holdsABool.contents ? () : ()
   | 3 =>
       true ?
-        holdsAUnit := () : 
+        holdsAUnit := () :
         holdsABool.contents ? () : ()
   | 4 => true ? holdsAnInt := 40 : ()
   | 5 => holdsAnInt := 40
@@ -6111,16 +6111,16 @@ switch numberToSwitchOn {
 };
 
 let mutativeFunction =
-  fun | Some x => holdsAUnit.contents <- () 
+  fun | Some x => holdsAUnit.contents <- ()
       | None => holdsAUnit := ();
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 class virtual stack 'a init => {
   /*
    * The "as this" is implicit and will be formatted away.
    */
-  val virtual dummy: unit; 
-  val mutable v: list 'a = init; 
-  method virtual implementMe: int => int; 
+  val virtual dummy: unit;
+  val mutable v: list 'a = init;
+  method virtual implementMe: int => int;
   method pop =
     switch v {
       | [hd, ...tl] => {
@@ -6128,8 +6128,8 @@ class virtual stack 'a init => {
           Some hd
         }
       | [] => None
-    }; 
-  method push hd => v <- [hd, ...v]; 
+    };
+  method push hd => v <- [hd, ...v];
   initializer =>
     print_string "initializing object";
 };
@@ -6137,7 +6137,7 @@ class virtual stack 'a init => {
 let tmp = {
   /**
    * comment here.
-   */ 
+   */
   val x = 10
 };
 
@@ -6148,13 +6148,13 @@ class virtual stackWithAttributes 'a init =>
   /* Before class */
   {
     /* The "as this" should not be formatted away because attributes. */
-    as this [@thisShouldntBeFormattedAway]; 
+    as this [@thisShouldntBeFormattedAway];
     /* Before floatting attribute */
-    [@@@floatingAttribute]; 
+    [@@@floatingAttribute];
     /* Virtual member */
-    val virtual dummy: unit; 
-    val mutable v: list 'a = init; 
-    method virtual implementMe: int => int; 
+    val virtual dummy: unit;
+    val mutable v: list 'a = init;
+    method virtual implementMe: int => int;
     method pop =
       switch v {
         | [hd, ...tl] => {
@@ -6162,22 +6162,22 @@ class virtual stackWithAttributes 'a init =>
             Some hd
           }
         | [] => None
-      }; 
-    method push hd => v <- [hd, ...v]; 
+      };
+    method push hd => v <- [hd, ...v];
     initializer =>
       print_string "initializing object";
-  } 
+  }
 [@@x];
 
 class extendedStack 'a init => {
-  inherit (class stack 'a) init; 
-  val dummy = (); 
+  inherit (class stack 'a) init;
+  val dummy = ();
   method implementMe i => i;
 };
 
 class extendedStackAcknowledgeOverride 'a init => {
-  inherit (class stack 'a) init; 
-  val dummy = (); 
+  inherit (class stack 'a) init;
+  val dummy = ();
   method implementMe i => i + 1;
 };
 
@@ -6226,66 +6226,66 @@ type typeDefForOpenObj 'a =
   <x : int, y : int, ..> as 'a;
 
 let anonClosedObject: <x : int, y : int> = {
-  method x = 0; 
+  method x = 0;
   method y = 0
 };
 
-let acceptsOpenAnonObjAsArg 
+let acceptsOpenAnonObjAsArg
     (o: <x : int, y : int, ..>) => o#x + o#y;
 
-let acceptsClosedAnonObjAsArg 
+let acceptsClosedAnonObjAsArg
     (o: <x : int, y : int>) => o#x + o#y;
 
 let res = acceptsOpenAnonObjAsArg {
-  method x = 0; 
+  method x = 0;
   method y = 10
 };
 
 let res = acceptsOpenAnonObjAsArg {
-  method x = 0; 
-  method y = 10; 
+  method x = 0;
+  method y = 10;
   method z = 10
 };
 
 let res = acceptsClosedAnonObjAsArg {
-  method x = 0; 
+  method x = 0;
   method y = 10
 };
 
 /* TODO: Unify class constructor return values with function return values */
-class myClassWithAnnotatedReturnType 
-      init 
+class myClassWithAnnotatedReturnType
+      init
       :{
-         method x: int; 
+         method x: int;
          method y: int
        } => {
-  method x: int = init; 
+  method x: int = init;
   method y = init;
 };
 
 /**
  * May include a trailing semi after type row.
  */
-class myClassWithAnnotatedReturnType2 
-      init 
+class myClassWithAnnotatedReturnType2
+      init
       :{
-         method x: int; 
+         method x: int;
          method y: int
        } => {
-  method x: int = init; 
+  method x: int = init;
   method y = init;
 };
 
 /**
  * May use equals sign, and may include colon if so.
  */
-class myClassWithAnnotatedReturnType3 
-      init 
+class myClassWithAnnotatedReturnType3
+      init
       :{
-         method x: int; 
+         method x: int;
          method y: int
        } => {
-  method x: int = init; 
+  method x: int = init;
   method y: int = init;
 };
 
@@ -6310,13 +6310,13 @@ class myClassWithAnnotatedReturnType3
  */
 class
   myClassWithAnnotatedReturnType3_annotated_constructor:
-  int => 
+  int =>
   new {
-    method x: int; 
+    method x: int;
     method y: int
   } =
   fun init => {
-    method x: int = init; 
+    method x: int = init;
     method y: int = init;
   };
 
@@ -6327,18 +6327,18 @@ class tupleClass 'a 'b (init: ('a, 'b)) => {
 let module HasTupleClasses: {
   /**
    * exportedClass.
-   */ 
+   */
   class exportedClass :
-    int => 
+    int =>
     new {
-      method x: int; 
+      method x: int;
       method y: int
-    }; 
+    };
   /**
    * anotherExportedClass.
-   */ 
+   */
   class anotherExportedClass 'a 'b :
-    ('a, 'b) => 
+    ('a, 'b) =>
     new {
       method pr: ('a, 'b)
     };
@@ -6360,7 +6360,7 @@ class intTuples = class tupleClass int int;
 class intTuplesHardcoded = (
   class tupleClass int int
 ) (
-  8, 
+  8,
   8
 );
 
@@ -6380,8 +6380,8 @@ let x: tupleClass int int = {
 let x: #tupleClass int int = x;
 
 let incrementMyClassInstance:
-  int => 
-  #tupleClass int int => 
+  int =>
+  #tupleClass int int =>
   #tupleClass int int =
   fun i inst => {
     let (x, y) = inst#pr;
@@ -6409,11 +6409,11 @@ type optionalMyClassSubtype 'a =
  *   adheres to the "interface.")
  */
 class type addablePointClassType = {
-  method x: int; 
-  method y: int; 
+  method x: int;
+  method y: int;
   method add:
-    addablePointClassType => 
-    addablePointClassType => 
+    addablePointClassType =>
+    addablePointClassType =>
     int
 };
 
@@ -6423,24 +6423,24 @@ class type addablePointClassType = {
 class addablePoint:
   int => new addablePointClassType =
   fun init => {
-    as self; 
-    method add 
-           (one: addablePointClassType) 
+    as self;
+    method add
+           (one: addablePointClassType)
            (two: addablePointClassType) =>
-      one#x + two#x + one#y + two#x; 
-    method x: int = init; 
+      one#x + two#x + one#y + two#x;
+    method x: int = init;
     method y = init;
   };
 
 class addablePoint2:
   int => new addablePointClassType =
   fun init => {
-    as self; 
-    method add 
-           (one: addablePointClassType) 
+    as self;
+    method add
+           (one: addablePointClassType)
            (two: addablePointClassType) =>
-      one#x + two#x + one#y + two#x; 
-    method x: int = init; 
+      one#x + two#x + one#y + two#x;
+    method x: int = init;
     method y = init;
   };
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
@@ -6530,7 +6530,7 @@ let sndFieldPunned = {a, b, c};
 let thirdFieldPunned = {a, b, c};
 
 let singlePunAcceptedIfExtended = {
-  ...firstFieldPunned, 
+  ...firstFieldPunned,
   a
 };
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
@@ -6544,14 +6544,14 @@ let doubleBar =
   fun | X
       | Y _ _ _
       | Z _ _
-      | Q => true 
+      | Q => true
       | _ => false;
 
 let doubleBarNested =
   fun | X
       | Y _ _ _
       | Z _ _
-      | Q => true 
+      | Q => true
       | _ => false;
 
 /* Liberal use of the Any pattern being compatible with multiple arguments  */
@@ -6559,14 +6559,14 @@ let doubleBarAnyPatterns =
   fun | X
       | Y _
       | Z _
-      | Q => true 
+      | Q => true
       | _ => false;
 
 let doubleBarNestedAnyPatterns =
   fun | X
       | Y _
       | Z _
-      | Q => true 
+      | Q => true
       | _ => false;
 
 type bcd = | B | C | D | E;
@@ -6589,7 +6589,7 @@ let module EM = {exception E of int int;};
 exception Ealias = EM.E;
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 type polyVariantsInMl = [
-  | `IntTuple of (int, int) 
+  | `IntTuple of (int, int)
   | `StillAnIntTuple of (int, int)
 ];
 
@@ -6598,5 +6598,5 @@ let intTuple = `IntTuple (1, 2);
 let stillAnIntTuple = `StillAnIntTuple (4, 5);
 
 let sumThem =
-  fun | `IntTuple (x, y) => x + y 
+  fun | `IntTuple (x, y) => x + y
       | `StillAnIntTuple (a, b) => a + b;
