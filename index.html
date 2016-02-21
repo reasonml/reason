@@ -37,9 +37,9 @@ Reason
 Install
 ---------------
 Install `OPAM` so that you can easily switch compiler versions (using
-[Homebrew](http://brew.sh/)). Then switch to the compiler version supported by
-`Reason` (`4.02.1`). Finally have `OPAM` install `Reason` from Github by
-"pinning" it.
+[Homebrew](http://brew.sh/)). Then switch to a supported compiler version
+(`4.02.1` or `4.02.3` will work). Finally have `OPAM` install `Reason` from
+Github by "pinning" it.
 
 ```sh
 brew install opam --HEAD
@@ -148,7 +148,7 @@ let three = {
 
 #### Functions
 
-Functions are first class values and can assigned to a let binding. Functions
+Functions are first class values and can be assigned to a let binding. Functions
 are introduced with the `fun` keyword, followed by a list of arguments, an
 arrow `=>` then any expression acting as the return value.
 
@@ -510,13 +510,6 @@ let sumsZero = switch x {
   | NoTuple a b c => a + b + b == 0
 };
 
-
-let module X = {
-   let myVal (a, b) => {
-      a + b;
-   };
-};
-
 ```
 
 Expressive Pattern Matching
@@ -551,7 +544,7 @@ it compiles, it works!".
 
 ```reason
 type carList =
-  | List of car list
+  | List of car carList
   | NoMore;
 
 let chevy = {make: "Chevy", model: "Suburban"};
@@ -563,7 +556,7 @@ let hasExactlyTwoCars = fun lst =>
     | NoMore => false                         /* 0 */
     | List p NoMore => false                  /* 1 */
     | List p (List p2 NoMore) => true         /* 2 */
-    | List p (List p2 (List p3 rest) => false  /* 3+ */
+    | List p (List p2 (List p3 rest)) => false  /* 3+ */
   };
 
 let justTwo = hasExactlyTwoCars myCarList;  /* true! */
@@ -666,13 +659,13 @@ Similar to how records are described by types, modules themselves can be
 described by *module* types, which we call "signatures". Signatures are similar
 to record type definitions, with the following differences:
 
-- They describe *modules* (which are compile-time constructs) instead of
-  describing *values* (which are runtime constructs).
+- They describe the structure of *modules* (which are compile-time constructs)
+  instead of describing *values* (which are runtime constructs).
+- They describe values being inside of modules via the following syntax: `let q: s;` (as opposed to
+  `key:keyType,`).
 - Signatures can include entries for `type` fields - which is admitedly
   difficult to wrap your head around.
-- Their field value types are specified as `let q: s;` (as opposed to
-  `key:keyType,`).
-- Variables that refer to signatures must begin with a capital letter.
+- Identifiers that refer to signatures must begin with a capital letter.
 - The rules for satisfying signatures are based on "subtyping", whereas records
   are more rigid.
 
@@ -1187,6 +1180,7 @@ time you change `Reason`, you must rebuild and repin it if you want the global `
 command to reflect those changes.
 
 ```sh
+# 4.02.3 should also work
 opam switch 4.02.1
 git clone git+ssh://git@github.com/facebook/ReasonSyntax.git
 git clone git+ssh://git@github.com/facebook/Reason.git
