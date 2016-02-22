@@ -63,15 +63,15 @@
     'name': 'keyword.operator.sigil.reason'
     'match': '[&*](?=[a-zA-Z0-9_\\(\\[\\|\\"]+)'
   }
-  'self': {
-    'comment': 'Self variable'
+  'variant': {
+    'comment': 'variant value/type or module'
     'name': 'variable.language.reason'
-    'match': '\\bself\\b'
+    'match': '\\b[A-Z][a-zA-Z0-9\'_]*\\b'
   }
-  'mut': {
+  'mutable': {
     'comment': 'Mutable storage modifier'
     'name': 'storage.modifier.mut.reason'
-    'match': '\\bmut\\b'
+    'match': '\\bmutable\\b'
   }
   'box': {
     'comment': 'Box storage modifier'
@@ -97,12 +97,7 @@
   'core_types': {
     'comment': 'Built-in/core type'
     'name': 'storage.type.core.reason'
-    'match': '\\b(bool|option|string|char|usize|isize|u8|u16|u32|u64|i8|i16|i32|i64|f32|f64|str|self)\\b'
-  }
-  'core_vars': {
-    'comment': 'Core type variant'
-    'name': 'support.constant.core.reason'
-    'match': '\\b(Some|None|Ok|Err)\\b'
+    'match': '\\b(bool|option|string|float|int|list|array|char|usize|isize|u8|u16|u32|u64|i8|i16|i32|i64|f32|f64|str|self)\\b'
   }
   'core_marker': {
     'comment': 'Core trait (marker)'
@@ -119,11 +114,6 @@
     'name': 'storage.class.std.reason'
     'match': '\\b(Box|String|Vec|Path|PathBuf)\\b'
   }
-  'std_vars': {
-    'comment': 'Standard library type variant'
-    'name': 'support.constant.std.reason'
-    'match': '\\b(Some|None|Ok|Err)\\b'
-  }
   'std_traits': {
     'comment': 'Standard library trait'
     'name': 'support.type.std.reason'
@@ -138,7 +128,7 @@
       { 'include': '#block_comment' }
       { 'include': '#line_comment' }
       { 'include': '#sigils' }
-      { 'include': '#mut' }
+      { 'include': '#mutable' }
       { 'include': '#lifetime' }
       { 'include': '#core_types' }
       { 'include': '#core_marker' }
@@ -254,8 +244,8 @@
     'match': '\\bunsafe\\b'
   }
   { 'include': '#sigils' }
-  { 'include': '#self' }
-  { 'include': '#mut' }
+  { 'include': '#variant' }
+  { 'include': '#mutable' }
   { 'include': '#box' }
   { 'include': '#lifetime' }
   { 'include': '#ref_lifetime' }
@@ -267,7 +257,6 @@
   }
   # Standard types and traits
   { 'include': '#core_types' }
-  { 'include': '#core_vars' }
   { 'include': '#core_marker' }
   { 'include': '#traits' }
   { 'include': '#std_types' }
@@ -333,7 +322,7 @@
       { 'include': '#block_comment' }
       { 'include': '#line_comment' }
       { 'include': '#sigils' }
-      { 'include': '#mut' }
+      { 'include': '#mutable' }
       { 'include': '#ref_lifetime' }
       { 'include': '#core_types' }
       { 'include': '#core_marker' }
@@ -355,7 +344,7 @@
       { 'include': '#block_comment' }
       { 'include': '#line_comment' }
       { 'include': '#sigils' }
-      { 'include': '#mut' }
+      { 'include': '#mutable' }
       { 'include': '#ref_lifetime' }
       { 'include': '#core_types' }
       { 'include': '#core_marker' }
