@@ -1,0 +1,103 @@
+{
+  "name": "NuclideReason",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Provides support for Reason in Nuclide",
+  "keywords": [
+    "Reason"
+  ],
+  "activationHooks": [
+    "language-reason:grammar-used"
+  ],
+  "nuclide": {
+    "config": {
+      "pathToFlow": {
+        "title": "Path to Flow Executable",
+        "type": "string",
+        "default": "flow",
+        "description": "Absolute path to the Flow executable on your system."
+      },
+      "enableTypeHints": {
+        "title": "Enable Type Hints",
+        "type": "boolean",
+        "default": true,
+        "description": "Display tooltips with Flow types"
+      },
+      "enableStructuredTypeHints": {
+        "title": "Enable Tree-structured Type Hints",
+        "type": "boolean",
+        "default": false,
+        "description": "EXPERIMENTAL: Show tree-structured type hints. Type hints must first be enabled. Requires Flow v0.17.0"
+      },
+      "diagnosticsOnFly": {
+        "type": "boolean",
+        "default": false,
+        "title": "Diagnostics As You Type",
+        "description": "EXPERIMENTAL: Report Flow errors and warnings as you type, rather than waiting for a save"
+      }
+    },
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "dependencies": {
+    "nuclide": "0.115.1",
+    "CommonML": "git://github.com/jordwalke/CommonML.git",
+    "ansi_up" : "1.3.0",
+    "diff": "2.2.0",
+    "cli-color": "1.1.0"
+  },
+  "providedServices": {
+    "autocomplete.provider": {
+      "versions": {
+        "2.0.0": "createAutocompleteProvider"
+      }
+    },
+    "hyperclick.provider": {
+      "versions": {
+        "0.0.0": "getHyperclickProvider"
+      }
+    },
+    "nuclide-diagnostics-provider": {
+      "versions": {
+        "0.1.0": "provideDiagnostics"
+      }
+    },
+    "nuclide-busy-signal": {
+      "versions": {
+        "0.1.0": "provideBusySignal"
+      }
+    },
+    "nuclide-code-format.provider": {
+      "versions": {
+        "0.0.0": "createCodeFormatProvider"
+      }
+    }
+  },
+  "consumedServices": {
+   "status-bar": {
+     "versions": {
+       "^1.0.0": "consumeStatusBar"
+     }
+    }
+  },
+  "scripts": {"start": "node node_modules/CommonML/build.js --logUnextractedErrors=true --minVersion=11 --forDebug=true  --concurrency=3 --jsCompile=true --errorFormatter=./Reasonify/formatErrorMessages.js"},
+  "CommonML": {
+    "exports": ["Index"],
+    "compileFlags": ["-w","-30","-w","-40", "-bin-annot"],
+    "preprocessor": "reasonfmt",
+    "extensions": [{
+      "interface": ".rei",
+      "implementation": ".re"
+    }],
+    "jsPlaceBuildArtifactsIn": "compiledSrc",
+    "findlibPackages": [{"dependency": "js_of_ocaml"}],
+    "linkFlags": [],
+    "docFlags": [
+      "-colorize-code",
+      "-css-style",
+      "docStyle.css",
+      "-latex"
+    ]
+  }
+}
