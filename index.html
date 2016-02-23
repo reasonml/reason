@@ -1085,18 +1085,27 @@ Virtual Machine.
 Interop
 ==============
 
-Integrating with C:
+**Integrating with `clang`/`gcc`:**
 
 > Instructions Coming Soon
 
-Integrating with JavaScript:
+**Integrating with JavaScript:**
 
 > Instructions Coming Soon
 
-Integrating with OCaml projects
+**Integrating with OCaml projects:**
 
-> Instructions Coming Soon
+Soon, there will be a drop in replacement for `ocamlbuild` called `rebuild`, that will
+automatically build any `reason` file along with your `ocaml` files, with no
+additional configuration.
 
+Until then, the easiest way to use `Reason` with `ocamlopt/ocamlc` is by running the compiler with the following flags:
+```sh
+# intf-suffix tells the compiler where to look for corresponding interface files
+ocamlopt -pp reasonfmt -intf-suffix rei -impl myFile.re
+ocamlopt -pp reasonfmt -intf myFile.rei
+
+```
 
 
 Tooling
