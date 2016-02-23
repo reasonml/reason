@@ -14,10 +14,13 @@ To install manually, check out this repository and add this to your
 ```lisp
 (add-to-list 'load-path "/path/to/reason-mode/")
 (autoload 'reason-mode "reason-mode" nil t)
-(add-to-list 'auto-mode-alist '("\\.rs\\'" . reason-mode))
+(setq auto-mode-alist
+      (append '(("\\.re\\'" . reason-mode)
+                ("\\.rei\\'" . reason-mode))
+              auto-mode-alist))
 ```
 
-This associates `reason-mode` with `.rs` files. To enable it explicitly, do
+This associates `reason-mode` with `.re` and `.rei` files. To enable it explicitly, do
 <kbd>M-x reason-mode</kbd>.
 
 ### `package.el` installation via MELPA
