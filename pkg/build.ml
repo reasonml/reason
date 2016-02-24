@@ -9,9 +9,12 @@ let () =
     (* The .mllib *)
     Pkg.lib ~exts:Exts.library "src/reason";
     Pkg.lib ~exts:[".cmo"] "src/reason_toploop";
+    Pkg.lib ~exts:[".cmx"; ".o"] "src/reasonbuild";
     Pkg.lib ~cond:(Env.bool "utop") ~exts:[".cmo"] "src/reason_utop";
     Pkg.bin ~auto:true "src/reasonfmt_impl" ~dst:"reasonfmt";
     Pkg.bin  "src/reasonfmt_merlin_impl.sh" ~dst:"reasonfmt_merlin";
+    Pkg.bin  "src/reopt.sh" ~dst:"reopt";
+    Pkg.bin  "src/rebuild.sh" ~dst:"rebuild";
     Pkg.bin  "src/rtop.sh" ~dst:"rtop";
     Pkg.bin  "src/rtop_init.ml" ~dst:"rtop_init.ml";
     Pkg.doc "README.md";
