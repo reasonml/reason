@@ -415,10 +415,26 @@ let module M = {
 let module N = {
 open M;
 let z = { let open M; 34; };
+let z = { let open M; 34; 35; };
+let z = { let open M; {} };
+let z = { let open M; {x:10} };
+let z = { let open M; [foo, bar] };
+let z = { let open M; ([foo, bar]) };
+let z = { let open M; ({x: 10, y:20}) };
+let z = { let open M; let open M2; value };
+let z = { let open M; M2.value };
+let z = { let open! M; 34; };
+let z = { let open! M; 34; 35; };
+let z = { let open! M; {} };
+let z = { let open! M; {x:10} };
+let z = { let open! M; [foo, bar] };
+let z = { let open! M; ([foo, bar]) };
+let z = { let open! M; ({x: 10, y:20}) };
+let z = { let open! M; let open! M2; value };
+let z = { let open! M; M2.value };
 let y = 44;
 };
 
 open M;
 open M.Inner;
 open M;
-
