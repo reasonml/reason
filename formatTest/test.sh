@@ -38,6 +38,18 @@ idempotent_test ./formatOutput.re
 ../reasonfmt_impl.native -print-width 50 -print re ./wrappingTest.rei 2>&1 >./formatOutput.rei
 ../reasonfmt_impl.native -print-width 50 -print re ./syntax.rei 2>&1 >>./formatOutput.rei
 
+touch ./customMLFormatOutput.re
+
+echo "" > ./customMLFormatOutput.re
+
+shopt -s nullglob # prevent file from being set to "./customMLFiles/*.ml"
+for file in ./customMLFiles/*.ml
+do
+  ../reasonfmt_impl.native -print-width 50 -parse ml -print re "$file" 2>&1 >> ./customMLFormatOutput.re
+done
+
+idempotent_test ./customMLFormatOutput.re
+
 for file in ./typeCheckedTests/*.re
 do
   ocamlc -c -pp ../reasonfmt_impl.native -intf-suffix rei -impl "$file"

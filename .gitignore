@@ -11,3 +11,5 @@ src_test/_tags
 .settings
 .project
 .DS_Store
+formatTest/customMLFiles/*.ml
+formatTest/customMLFormatOutput.re
