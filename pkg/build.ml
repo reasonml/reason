@@ -18,6 +18,7 @@ let () =
     Pkg.bin  "src/rtop.sh" ~dst:"rtop";
     Pkg.bin  "src/rtop_init.ml" ~dst:"rtop_init.ml";
     Pkg.bin  ~auto:true "src/reason_error_reporter" ~dst:"refmterr";
+    Pkg.bin  ~auto:true "src/reason_format_type" ~dst:"refmttype";
     Pkg.doc "README.md";
     Pkg.doc "LICENSE.txt";
     Pkg.doc "CHANGELOG.md";

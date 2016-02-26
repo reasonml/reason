@@ -2,20 +2,12 @@
 
 let reasonFormatter = Reason_pprint_ast.createFormatter ()
 
-let reasonTypesOfOcamlTypes str =
-  let lexbuf = Lexing.from_string str in
-  let parsedTree = Reason_toolchain.ML.canonical_core_type lexbuf in
-  (* will print the resulting string to the string formatter buffer *)
-  reasonFormatter#core_type Format.str_formatter parsedTree;
-  (* will return the formatted string *)
-  Format.flush_str_formatter ()
-
 let customIncompatibleTypeForReason errorBody cachedContent range =
   let open BetterErrorsTypes in
   match BetterErrorsParseError.type_IncompatibleType errorBody cachedContent range with
   | Type_IncompatibleType {actual; expected; actualEquivalentType; expectedEquivalentType; extra} ->
-    let actual = reasonTypesOfOcamlTypes actual in
-    let expected = reasonTypesOfOcamlTypes expected in
+    let actual = Reason_type_of_ocaml_type.convert actual in
+    let expected = Reason_type_of_ocaml_type.convert expected in
     Type_IncompatibleType {
       actual;
       expected;
