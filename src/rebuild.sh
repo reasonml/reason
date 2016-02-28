@@ -59,11 +59,11 @@ MYOCAMLBUILD="$(pwd)/myocamlbuild.ml"
 if [ -f MYOCAMLBUILD ];
 then
     # pass OCAMLOPT as an environment variable
-    ocamlbuild -ocamlopt "env OCAMLOPT=$OCAMLOPT $REOPT" $@
+    ocamlbuild -ocamlopt "env OCAMLOPT=\"$OCAMLOPT\" $REOPT" "$@"
 else
     # create a temperate myocamlbuild so that reasonbuild rules can be triggered
     touch $MYOCAMLBUILD
     # pass OCAMLOPT as an environment variable
-    ocamlbuild -ocamlopt "env OCAMLOPT=$OCAMLOPT $REOPT" $@
+    ocamlbuild -ocamlopt "env OCAMLOPT=\"$OCAMLOPT\" $REOPT" "$@"
     rm $MYOCAMLBUILD
 fi

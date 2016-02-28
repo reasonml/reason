@@ -22,7 +22,6 @@ fi
 # Expand special subtitions like '~'
 eval REASON_BUILD_DIR=$REASON_BUILD_DIR
 
-echo "${OCAML_BUILD}"
 if [[ "${@: -2}" = "${MY_OCAML_BUILD}" ]];
 then
     # Link reason build rules
@@ -31,4 +30,4 @@ fi
 echo $OCAMLOPT $@
 
 # use OCAMLOPT that's passed in by rebuild
-$OCAMLOPT $@
+$OCAMLOPT "$@"
