@@ -29,13 +29,14 @@ let reasonBinaryParser chan =
  * effectively m17n's parser.
  *)
 let () =
-  let (filename, load_path, prnt, prse, intf, print_width, use_stdin, recoverable) =
+  let (filename, load_path, prnt, prse, intf, print_width, use_stdin, recoverable, assume_explicit_arity) =
     let filename = ref "" in
     let prnt = ref None in
     let prse = ref None in
     let use_stdin = ref false in
     let intf = ref None in
     let recoverable = ref false in
+    let assume_explicit_arity = ref false in
     let print_width = ref None in
     let load_path = ref [] in
     Arg.parse [
@@ -44,6 +45,7 @@ let () =
         "-is-interface-pp", Arg.Bool (fun x -> intf := Some x), "<interface> parse AST as <interface> (either true or false)";
         "-use-stdin", Arg.Bool (fun x -> use_stdin := x), "<use_stdin> parse AST from <use_stdin> (either true, false). You still must provide a file name even if using stdin for errors to be reported";
         "-recoverable", Arg.Bool (fun x -> recoverable := x), "Enable recoverable parser";
+        "-assume-explicit-arity", Arg.Unit (fun () -> assume_explicit_arity := true), "If a constructor's argument is a tuple, always interpret it as multiple arguments";
         "-parse", Arg.String (fun x -> prse := Some x), "<parse> parse AST as <parse> (either 'ml', 're', 'binary_reason(for interchange between Reason versions')";
         (* Use a print option of "none" to simply perform a parsing validation -
          * useful for IDE error messages etc.*)
@@ -52,7 +54,7 @@ let () =
       ]
       (fun arg -> filename := arg)
       "Reason: Meta Language Utility";
-    (!filename, load_path, !prnt, !prse, !intf, !print_width, !use_stdin, !recoverable)
+    (!filename, load_path, !prnt, !prse, !intf, !print_width, !use_stdin, !recoverable, !assume_explicit_arity)
   in
   let print_width = match print_width with
       | None -> default_print_width
@@ -93,7 +95,7 @@ let () =
           raise (Invalid_config ("The file parsed does not appear to be an interface file.")) in
       let _ = Reason_pprint_ast.configure
           ~width: print_width
-          ~constructorTupleImplicitArity:parsedAsML
+          ~assumeExplicitArity
       in
       let thePrinter = match prnt with
         | Some "binary_reason" -> fun comments ast -> (
@@ -137,7 +139,7 @@ let () =
           raise (Invalid_config ("The file parsed does not appear to be an implementation file.")) in
       let _ = Reason_pprint_ast.configure
           ~width: print_width
-          ~constructorTupleImplicitArity:parsedAsML
+          ~assumeExplicitArity:assume_explicit_arity
       in
       let thePrinter = match prnt with
         | Some "binary_reason" -> fun comments ast -> (
