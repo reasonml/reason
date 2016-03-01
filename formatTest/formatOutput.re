@@ -1492,7 +1492,7 @@ let funcOnNotActuallyATuple
 /* At least the above acts as proof that there *is* a distinction that is
 honored. */
 let simpleTupled: simpleTupleVariant =
-  SimpleActuallyATuple (10, 10);
+  SimpleActuallyATuple (10, 10) [@implicit_arity];
 
 let simpleTupled: simpleTupleVariant =
   SimpleActuallyATuple intTuple;
@@ -1504,10 +1504,10 @@ let NotActuallyATuple x y =
 /* Doesn't work because we've correctly annotated parse tree nodes with explicit_arity! */
 /* let unfortunatelyThisStillWorks: simpleTupleVariant = SimpleActuallyATuple 10 10; */
 let yesTupled: tupleVariant =
-  ActuallyATuple (10, 10);
+  ActuallyATuple (10, 10) [@implicit_arity];
 
 let yesTupled: tupleVariant =
-  ActuallyATuple (10, 10);
+  ActuallyATuple (10, 10) [@implicit_arity];
 
 let yesTupled: tupleVariant =
   ActuallyATuple intTuple;
@@ -1745,7 +1745,7 @@ type tuples =
   | Two of int int
   | OneTuple of (int, int);
 
-let myTuple = OneTuple (20, 30);
+let myTuple = OneTuple (20, 30) [@implicit_arity];
 
 let res =
   switch myTuple {
@@ -1856,7 +1856,9 @@ let rec atLeastOneFlushableChildAndNoWipNoPending
     | [hd, ...tl] =>
         switch hd {
           | OpaqueGraph {
-              lifecycle: Reconciled (_, [])
+              lifecycle:
+                Reconciled (_, [])
+                [@implicit_arity]
             } =>
               atLeastOneFlushableChildAndNoWipNoPending
                 tl atPriority
@@ -1870,6 +1872,7 @@ let rec atLeastOneFlushableChildAndNoWipNoPending
                   _,
                   _
                 )
+                [@implicit_arity]
             }
           | OpaqueGraph {
               lifecycle:
@@ -1880,6 +1883,7 @@ let rec atLeastOneFlushableChildAndNoWipNoPending
                   _,
                   _
                 )
+                [@implicit_arity]
             }
               when priority == AtPriority =>
               noWipNoPending tl atPriority
@@ -3943,10 +3947,11 @@ type simpleTupleVariant =
   | SimpleActuallyATuple of (int, int);
 
 let returnTheSimpleTupleVariant i =>
-  SimpleActuallyATuple (i, i);
+  SimpleActuallyATuple (i, i) [@implicit_arity];
 
 let shouldWrapLike whenLongArg =>
-  SimpleActuallyATuple (whenLongArg, whenLongArg);
+  SimpleActuallyATuple (whenLongArg, whenLongArg)
+  [@implicit_arity];
 
 type recordWithLong = {
   someField: int,

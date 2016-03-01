@@ -95,7 +95,7 @@ let () =
           raise (Invalid_config ("The file parsed does not appear to be an interface file.")) in
       let _ = Reason_pprint_ast.configure
           ~width: print_width
-          ~assumeExplicitArity
+          ~assumeExplicitArity: assume_explicit_arity
       in
       let thePrinter = match prnt with
         | Some "binary_reason" -> fun comments ast -> (
