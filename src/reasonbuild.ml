@@ -42,13 +42,14 @@ let compile_ocaml_interf rei cmi env build =
   let comp_c = if Tags.mem "native" tags then ocamlopt_c else ocamlc_c in
     comp_c tags rei cmi false
 
-let ocamldep_command arg out env _build =
-let out = List.map env out in
-let out = List.map (fun n -> Px n) out in
-let teeout = [Sh"|"; P "tee"] @ out in
-let arg = env arg in
-let tags = tags_of_pathname arg in
-  Cmd(S([ocamldep_command' tags; A "-pp"; P reasonfmt; A"-impl"; P arg] @ teeout));;
+let ocamldep_command ~impl arg out env _build =
+  let out = List.map env out in
+  let out = List.map (fun n -> Px n) out in
+  let teeout = [Sh"|"; P "tee"] @ out in
+  let arg = env arg in
+  let tags = tags_of_pathname arg in
+  let impl_str = if impl then "-impl" else "-intf" in
+  Cmd(S([ocamldep_command' tags; A "-pp"; P reasonfmt; A impl_str; P arg] @ teeout));;
 
 rule "rei -> cmi"
   ~prod:"%.cmi"
@@ -59,7 +60,12 @@ rule "re dependecies"
 ~prods:["%.re.depends"; "%.ml.depends" (* .ml.depends is also needed since
     the function "prepare_link" requires .ml.depends *)]
    ~deps:(["%.re"])
-   (ocamldep_command "%.re" ["%.re.depends"; "%.ml.depends"]);;
+   (ocamldep_command ~impl:true "%.re" ["%.re.depends"; "%.ml.depends"]);;
+
+rule "rei dependencies"
+  ~prods:["%.rei.depends"; "%.mli.depends"]
+  ~dep:"%.rei"
+  (ocamldep_command ~impl:false "%.rei" ["%.rei.depends"; "%.mli.depends"]);;
 
 rule "re -> d.cmo & cmi"
   ~prods:["%.d.cmo"]
@@ -87,9 +93,3 @@ rule "re & rei -> cmx & o"
    ~prods:["%.cmx"; x_o]
    ~deps:["%.re"; "%.ml.depends"; "%.cmi"]
    (native_compile_re_implem "%.re");;
-
-
-rule "rei dependencies"
-  ~prods:["%.rei.depends"; "%.mli.depends"]
-  ~dep:"%.rei"
-  (ocamldep_command "%.mli" ["%.mli.depends"; "%.rei.depends"]);;
