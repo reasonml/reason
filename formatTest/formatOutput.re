@@ -1772,32 +1772,20 @@ let res =
   };
 
 /* FIXME type somePolyVariant = [ `Purple of int | `Yellow of int]; */
-let ylw = `Yellow (100, 100) [@implicit_arity];
+let ylw = `Yellow (100, 100);
 
-let prp = `Purple (101, 100) [@implicit_arity];
+let prp = `Purple (101, 100);
 
 let res =
   switch (ylw, prp) {
-    | (
-        `Yellow (y, y2) [@implicit_arity],
-        `Purple (p, p2) [@implicit_arity]
-      ) =>
-        `Yellow (p + y, 0) [@implicit_arity]
-    | (
-        `Purple (p, p2) [@implicit_arity],
-        `Yellow (y, y2) [@implicit_arity]
-      ) =>
-        `Purple (y + p, 0) [@implicit_arity]
-    | (
-        `Purple (p, p2) [@implicit_arity],
-        `Purple (y, y2) [@implicit_arity]
-      ) =>
-        `Yellow (y + p, 0) [@implicit_arity]
-    | (
-        `Yellow (p, p2) [@implicit_arity],
-        `Yellow (y, y2) [@implicit_arity]
-      ) =>
-        `Purple (y + p, 0) [@implicit_arity]
+    | (`Yellow (y, y2), `Purple (p, p2)) =>
+        `Yellow (p + y, 0)
+    | (`Purple (p, p2), `Yellow (y, y2)) =>
+        `Purple (y + p, 0)
+    | (`Purple (p, p2), `Purple (y, y2)) =>
+        `Yellow (y + p, 0)
+    | (`Yellow (p, p2), `Yellow (y, y2)) =>
+        `Purple (y + p, 0)
   };
 
 let ylw = `Yellow 100;
@@ -1830,32 +1818,20 @@ let res =
  *
  * Though, I'm not sure this will even work.
  */
-let ylw = `Yellow (100, 100) [@implicit_arity];
+let ylw = `Yellow (100, 100);
 
-let prp = `Purple (101, 101) [@implicit_arity];
+let prp = `Purple (101, 101);
 
 let res =
   switch (ylw, prp) {
-    | (
-        `Yellow (y, y2) [@implicit_arity],
-        `Purple (p, p2) [@implicit_arity]
-      ) =>
-        `Yellow (p + y, 0) [@implicit_arity]
-    | (
-        `Purple (p, p2) [@implicit_arity],
-        `Yellow (y, y2) [@implicit_arity]
-      ) =>
-        `Purple (y + p, 0) [@implicit_arity]
-    | (
-        `Purple (p, p2) [@implicit_arity],
-        `Purple (y, y2) [@implicit_arity]
-      ) =>
-        `Yellow (y + p, 0) [@implicit_arity]
-    | (
-        `Yellow (p, p2) [@implicit_arity],
-        `Yellow (y, y2) [@implicit_arity]
-      ) =>
-        `Purple (y + p, 0) [@implicit_arity]
+    | (`Yellow (y, y2), `Purple (p, p2)) =>
+        `Yellow (p + y, 0)
+    | (`Purple (p, p2), `Yellow (y, y2)) =>
+        `Purple (y + p, 0)
+    | (`Purple (p, p2), `Purple (y, y2)) =>
+        `Yellow (y + p, 0)
+    | (`Yellow (p, p2), `Yellow (y, y2)) =>
+        `Purple (y + p, 0)
   };
 
 let rec atLeastOneFlushableChildAndNoWipNoPending
@@ -1909,14 +1885,12 @@ let rec atLeastOneFlushableChildAndNoWipNoPending
 /*
  * When pretty printed, this appears to be multi-argument constructors.
  */
-let prp = `Purple (101, 101) [@implicit_arity];
+let prp = `Purple (101, 101);
 
 let res =
   switch prp {
-    | `Yellow (y, y2) [@implicit_arity] =>
-        `Yellow (y2 + y, 0) [@implicit_arity]
-    | `Purple (p, p2) [@implicit_arity] =>
-        `Purple (p2 + p, 0) [@implicit_arity]
+    | `Yellow (y, y2) => `Yellow (y2 + y, 0)
+    | `Purple (p, p2) => `Purple (p2 + p, 0)
   };
 
 /*
@@ -6681,13 +6655,10 @@ type polyVariantsInMl = [
   | `StillAnIntTuple of (int, int)
 ];
 
-let intTuple = `IntTuple (1, 2) [@implicit_arity];
+let intTuple = `IntTuple (1, 2);
 
-let stillAnIntTuple =
-  `StillAnIntTuple (4, 5) [@implicit_arity];
+let stillAnIntTuple = `StillAnIntTuple (4, 5);
 
 let sumThem =
-  fun | `IntTuple (x, y) [@implicit_arity] =>
-          x + y
-      | `StillAnIntTuple (a, b) [@implicit_arity] =>
-          a + b;
+  fun | `IntTuple (x, y) => x + y
+      | `StillAnIntTuple (a, b) => a + b;
