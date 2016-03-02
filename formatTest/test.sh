@@ -52,7 +52,7 @@ idempotent_test ./customMLFormatOutput.re
 
 for file in ./typeCheckedTests/*.re
 do
-  ocamlc -c -pp ../reasonfmt_impl.native -intf-suffix rei -impl "$file"
+  ocamlc -c -pp ../reasonfmt_impl.native -intf-suffix .rei -impl "$file"
   ../reasonfmt_impl.native -print-width 50 -print re "$file" 2>&1 >>./formatOutput.re
 done
 
@@ -61,9 +61,9 @@ done
 ../reasonfmt_impl.native -print-width 50 -parse ml -print re ./typeCheckedTests/mlVariants.ml 2>&1 >>./formatOutput.re
 # Then print them to individual files for compiling.
 ../reasonfmt_impl.native -parse ml -print re ./typeCheckedTests/mlSyntax.ml > ./typeCheckedTests/mlSyntax.re
-ocamlc -c -pp ../reasonfmt_impl.native -intf-suffix rei -impl ./typeCheckedTests/mlSyntax.re
+ocamlc -c -pp ../reasonfmt_impl.native -intf-suffix .rei -impl ./typeCheckedTests/mlSyntax.re
 ../reasonfmt_impl.native -parse ml -print re ./typeCheckedTests/mlVariants.ml > ./typeCheckedTests/mlVariants.re
-ocamlc -c -pp ../reasonfmt_impl.native -intf-suffix rei -impl ./typeCheckedTests/mlVariants.re
+ocamlc -c -pp ../reasonfmt_impl.native -intf-suffix .rei -impl ./typeCheckedTests/mlVariants.re
 # Remove the generated .re version too
 rm ./typeCheckedTests/mlSyntax.re
 rm ./typeCheckedTests/mlVariants.re
