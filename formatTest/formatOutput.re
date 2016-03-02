@@ -98,6 +98,16 @@ let logTapSuccess self =>
     print_newline ()
   };
 
+(!data).field <- true;
+
+(!data).field1.field2 <- true;
+
+(!data.field1).field2 <- true;
+
+(!data).field1.field2 <- true;
+
+(!data.field1).field2 <- true;
+
 let loop appTime frameTime => {
   if hasSetup.contents {
     setupScene ();
