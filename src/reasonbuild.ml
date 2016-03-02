@@ -13,7 +13,7 @@ let ocamlc_c tags arg out impl =
 let tags = tags++"ocaml"++"byte" in
 Cmd (S [!Options.ocamlc; A"-c"; T(tags++"compile");
        Ocaml_utils.ocaml_ppflags tags; Ocaml_utils.ocaml_include_flags arg;
-       A "-pp"; P reasonfmt; A"-o"; Px out; if impl then A"-impl" else A"-intf-suffix"; P arg])
+       A "-pp"; P reasonfmt; A"-o"; Px out; if impl then A"-impl" else A"-intf"; P arg])
 
 let byte_compile_re_implem ?tag re cmo env build =
   let re = env re and cmo = env cmo in
@@ -26,7 +26,7 @@ let ocamlopt_c tags arg out impl =
           T(tags++"compile"); Ocaml_utils.ocaml_ppflags tags; Ocaml_utils.ocaml_include_flags arg;
           A "-pp"; P reasonfmt;
           A"-o"; Px out (* FIXME ocamlopt bug -o cannot be after the input file *);
-          if impl then A"-impl" else A"-intf-suffix"; P arg])
+          if impl then A"-impl" else A"-intf"; P arg])
 
 let native_compile_re_implem ?tag ?(cmx_ext="cmx") re env build =
   let re = env re in
