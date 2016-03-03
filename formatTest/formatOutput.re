@@ -5347,17 +5347,17 @@ let newRecord = {
 
 let newRecord = {
   ...(
-       youCanEvenCallMethodsHereAndAnnotate them: someRec
-     ),
+    youCanEvenCallMethodsHereAndAnnotate them: someRec
+  ),
   blah: 0,
   foo: 1
 };
 
 let newRecord = {
   ...(
-       youCanEvenCallMethodsHereAndAnnotate
-         them named::10: someRec
-     ),
+    youCanEvenCallMethodsHereAndAnnotate
+      them named::10: someRec
+  ),
   blah: 0,
   foo: 1
 };
@@ -5374,8 +5374,8 @@ let something: blah = typeAnnotation thing;
 
 let newRecord = {
   ...(
-       heresAFunctionWithNamedArgs argOne::i: annotatedResult
-     ),
+    heresAFunctionWithNamedArgs argOne::i: annotatedResult
+  ),
   soAsToInstill: 0,
   developmentHabbits: 1
 };
@@ -5700,6 +5700,14 @@ let ( ~\* ) a => a + 1;
 
 let res = ~\*10;
 
+let res = f - (- x);
+
+let res = f - (- x);
+
+let res = - (- x);
+
+let res = f (- x);
+
 /* The semicolon should be attached to someType */
 let myFunc
     aaaa
@@ -5855,17 +5863,17 @@ let both a b => (a && b) [@onEverything];
 
 let thisVal = 10;
 
-let x = 20 +
-  -
-  (add thisVal thisVal [@onFunctionCall])
-;
+let x = 20 + (
+  - (add thisVal thisVal [@onFunctionCall])
+);
 
 let x =
-  (20 + - (add thisVal thisVal)) [@onEverything];
+  (20 + (- (add thisVal thisVal)))
+    [@onEverything];
 
 let x = - (add thisVal thisVal [@onFunctionCall]);
 
-let x = - (add thisVal thisVal) [@onEverything];
+let x = (- (add thisVal thisVal)) [@onEverything];
 
 let bothTrue x y => {contents: x && y};
 

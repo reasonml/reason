@@ -248,6 +248,15 @@ let ( ~\* ) a => a + 1;
 
 let res = ~\*10;
 
+let res = f - - x;
+
+let res = f - (- x);
+
+let res = - (- x);
+
+let res = f (- x);
+
+
 /* The semicolon should be attached to someType */
 let myFunc aaaa bbbb cccc dddd aaaa bbbb cccc dddd aaaa =>
   [blah aaaa bbbb cccc dddd aaaa bbbb cccc dddd aaaa, ...someType];
