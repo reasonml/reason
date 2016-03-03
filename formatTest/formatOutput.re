@@ -5396,6 +5396,18 @@ let something =
           fun | [] => "emptyList"
               | [_, ..._] => "nonEmptyList"
         );
+
+let A | B = X;
+
+let A | (B | C) = X;
+
+let (A | B) | (C | D) = X;
+
+let (A | B) | (C | D) = X;
+
+let A | B | C = X;
+
+let A | B | C = X;
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 /* - A good way to test if formatting of infix operators groups precedences
    correctly, is to write an expression twice. Once in a form where parenthesis
@@ -5996,6 +6008,13 @@ module type HasAttrs = {
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 type reasonXyz =
   | X | Y of int int int | Z of int int | Q | R;
+
+let reasonBarAs =
+  fun | ((Y _ | Z _) as t, _) => {
+          let _ = t;
+          true
+        }
+      | _ => false;
 
 let reasonDoubleBar =
   fun | X

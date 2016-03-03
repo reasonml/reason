@@ -7,6 +7,10 @@ type reasonXyz =
   | Q
   | R;
 
+let reasonBarAs = fun
+  | ((Y _ | Z _) as t, _) => {let _ = t; true}
+  | _ => false;
+
 let reasonDoubleBar = fun
   | X | Y _ _ _ | Z _ _ | Q => true
   | _ => false;

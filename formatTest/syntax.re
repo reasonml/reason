@@ -800,3 +800,15 @@ let x = 10;
 let something =
   fun | None => (fun | [] => "emptyList" | [_, ..._] => "nonEmptyList")
       | Some _ => (fun | [] => "emptyList" | [_, ..._] => "nonEmptyList");
+
+let A | B = X;
+
+let A | (B | C) = X;
+
+let (A | B) | (C | D) = X;
+
+let A | B | (C | D) = X;
+
+let (A | B) | C = X;
+
+let A | B | C = X;
