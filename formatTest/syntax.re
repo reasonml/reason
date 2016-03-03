@@ -801,14 +801,20 @@ let something =
   fun | None => (fun | [] => "emptyList" | [_, ..._] => "nonEmptyList")
       | Some _ => (fun | [] => "emptyList" | [_, ..._] => "nonEmptyList");
 
+/*  A | B = X; */
 let A | B = X;
 
+/*  A | (B | C) = X; */
 let A | (B | C) = X;
 
+/* (A | B) | (C | D) = X; */
 let (A | B) | (C | D) = X;
 
+/*  A | B | (C | D) = X; */
 let A | B | (C | D) = X;
 
+/* (A | B) | C = X; */
 let (A | B) | C = X;
 
+/*  A | B | C = X; */
 let A | B | C = X;

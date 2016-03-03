@@ -5397,16 +5397,22 @@ let something =
               | [_, ..._] => "nonEmptyList"
         );
 
+/*  A | B = X; */
 let A | B = X;
 
+/*  A | (B | C) = X; */
 let A | (B | C) = X;
 
-let (A | B) | (C | D) = X;
+/* (A | B) | (C | D) = X; */
+let A | B | (C | D) = X;
 
-let (A | B) | (C | D) = X;
+/*  A | B | (C | D) = X; */
+let A | B | (C | D) = X;
 
+/* (A | B) | C = X; */
 let A | B | C = X;
 
+/*  A | B | C = X; */
 let A | B | C = X;
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 /* - A good way to test if formatting of infix operators groups precedences
