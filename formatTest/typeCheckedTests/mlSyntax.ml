@@ -40,6 +40,12 @@ let result = match B with
 
 let nested_match = function | A (B | C | D | E) -> 3
 
+let some = Some (1, 2, 3)
+
+let nestedSome = Some (1, 2, Some (1, 2, 3))
+
+let nestedSomeSimple = Some (Some (1, 2, 3))
+
 module EM = struct
   exception E of int * int
 end

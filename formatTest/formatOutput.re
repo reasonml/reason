@@ -6674,6 +6674,15 @@ let result =
 let nested_match =
   fun | A (B | C | D | E) => 3;
 
+let some = Some 1 2 3 [@implicit_arity];
+
+let nestedSome =
+  Some 1 2 (Some 1 2 3 [@implicit_arity])
+  [@implicit_arity];
+
+let nestedSomeSimple =
+  Some (Some 1 2 3 [@implicit_arity]);
+
 let module EM = {exception E of int int;};
 
 exception Ealias = EM.E;
