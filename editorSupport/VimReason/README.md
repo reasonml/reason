@@ -6,37 +6,73 @@ Installation:
 
 [VimBox](https://github.com/jordwalke/vimbox) is a great way to get started with a modern Vim configuration. Eventually, `VimReason` will come pre-loaded in `VimBox`.
 
+0. Install `reason` by following the main instructions in the
+   [`Reason`](www.github.com/facebook/reason) repo.
+
+
 1. Install `merlin` using `OPAM` (`brew install opam` if needed).
 
 
     opam install merlin
 
 
-2. Once you installed `VimBox` *just* install `VimReason` by adding the following to `~/.vim/bundlesVimRc` (if using `VimBox`), or wherever you specify your Vim packages if you're using something else.
+2. [`NeoBundle`](https://github.com/Shougo/neobundle.vim) is the best way to
+   install plugins for Vim (either from github or disk). `VimBox` includes
+   `NeoBundle`, but you can use `NeoBundle` by itself to install `VimReason`.
+
+  If using `VimBox`, place the following command in your `~/.vim/bundlesVimRc`.
+  If using `NeoBundle` by itself, place it at the end of your `.vimrc`.
+
 
 ```vim
 " Bundle for VimReason
-NeoBundle 'jordwalke/VimReason'
+NeoBundleLocal /path/to/Reason/editorSupport/
+
+if !empty(system('which opam'))
+  " =================================== Merlin ================================
+  let s:merlinPath=substitute(system('opam config var share'),'\n$','','') . "/merlin"
+  execute "set rtp+=".s:merlinPath."/vim"
+  execute "set rtp+=".s:merlinPath."/vimbufsync"
+  let g:syntastic_ocaml_checkers=['merlin']
+  let g:syntastic_reason_checkers=['merlin']
+else
+  " TODO: figure out opam for windows
+endif
+
 ```
-Depending on permissions, the Bundle might not get installed. To install it manually: 
-```vim
-    ln -s `pwd`/VimReason ~/.vim/bundle/
+
+IDE Features:
+=============
+You must add the following lines to your `.merlin` file:
+
 ```
+FLG -pp reasonfmt_merlin
+SUFFIX .re .rei
+```
+
+If you installed `VimBox`, autocomplete is already set up to work like a modern
+IDE. Inside of a `.re` file, type `String` followed by a `.` and you will see
+the autocomplete window automatically pop up (hit enter to accept). If not
+using `VimBox`, Vim makes you press the bizarre key combination (`c-x c-u`) to
+trigger autocomplete. As always, make sure to add the right
+[Merlin](https://github.com/the-lambda-church/merlin) flags to your `.merlin`
+file so that your build artifacts and source files can be found.
+
 
 Syntastic Integration:
 ==========
 
-If you installed `VimBox`, this is already set up for you. If you didn't
-install `VimBox`, install `Syntastic` the same way you installed `VimReason` -
-by adding the following to your `.vimrc`:
+If you installed `VimBox`, Syntastic is already installed and errors will be
+underlined in red. If you didn't install `VimBox`, install `Syntastic` by
+putting this command in the appropriate place:
 
 ```vim
-NeoBundle "https://github.com/scrooloose/syntastic"
+NeoBundle "scrooloose/syntastic"
 ```
 
-Now, when you save any `.re`/`.rei` file, syntax errors and compile errors will
-be shown in the location list window and the lines with errors will be
-underlined in red.
+When you save any `.re`/`.rei` file, syntax errors and compile errors will be
+shown in the location list window and the lines with errors will be underlined
+in red.
 
 Formatting:
 ===========
