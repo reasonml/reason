@@ -99,6 +99,7 @@ let module MerlinResponseFormatter = {
   };
   /**
    * Normalizes Merlin response entries into formatted, pretty printed
+
    * names/descriptions.
    */
   let normalizeCompletionItems (outputEntries, linePrefix) => {

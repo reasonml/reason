@@ -5,7 +5,6 @@
  * vim: set ft=rust:
  * vim: set ft=reason:
  */
-
 let log st => {
   print_string st;
   flush_all ()

@@ -37,13 +37,7 @@ let trimTrailingWhiteSpace (s: string) => Js.to_string (
 
 let module JsonType = {
   type t =
-    | JsonString of string
-    | JsonNum of float
-    | JsonBool of bool
-    | JsonArray of (array t)
-    | JsonVal of t
-    | JsonNull
-    | Empty;
+    | JsonString of string | JsonNum of float | JsonBool of bool | JsonArray of (array t) | JsonNull | Empty;
 };
 
 type completionEntry = {desc: string, info: string, kind: string, name: string};
@@ -56,17 +50,16 @@ module type JsonValueSig = {
   /* We never want to reveal that t is actually just an unsafe JS value.
    * We want everyone to go through the Apis which provide type safety. */
   type t;
-  /* Just getting it to infer the type of create - lazy */
-  let get: t => string => JsonType.t;
-  let create: Js.t Js.js_string => JsonType.t;
+  let fromJs: Js.t Js.js_string => JsonType.t;
+  let toJs: JsonType.t => Js.Unsafe.any;
 };
 
 let module JsonValue: JsonValueSig = {
   open JsonType;
   type t = Js.Unsafe.any;
-  let create fieldVal =>
+  let rec fromJs fieldVal =>
     if (Js.Unsafe.fun_call _arrayIsArray [|Js.Unsafe.inject fieldVal|]) {
-      let jsArray = Js.to_array (Js.Unsafe.coerce fieldVal);
+      let jsArray = Array.map fromJs (Js.to_array (Js.Unsafe.coerce fieldVal));
       JsonArray jsArray
     } else if (
       Js.Unsafe.fun_call _isString [|Js.Unsafe.inject fieldVal|]
@@ -87,16 +80,24 @@ let module JsonValue: JsonValueSig = {
     } else {
       Empty
     };
-  let get jsonObj key => {
-    let fieldVal = Js.Unsafe.get jsonObj "key";
-    create fieldVal
-  };
+  let rec toJs =
+    fun | JsonString str => Js.Unsafe.inject (Js.string str)
+        | JsonNum f => Js.Unsafe.inject (Js.float f)
+        | JsonBool b => Js.Unsafe.inject (Js.bool b)
+        | JsonArray a => Js.Unsafe.inject (Js.array (Array.map toJs a))
+        | JsonNull => Js.Unsafe.inject Js.null
+        | Empty => Js.Unsafe.inject Js.undefined;
 };
 
 let module Config = {
   let get configKey :JsonType.t => {
     let config = Js.Unsafe.get atomGlobal "config";
-    JsonValue.create (Js.Unsafe.meth_call config "get" [|Js.Unsafe.inject (Js.string configKey)|])
+    JsonValue.fromJs (Js.Unsafe.meth_call config "get" [|Js.Unsafe.inject (Js.string configKey)|])
+  };
+  let set configKey (v: JsonType.t) :unit => {
+    let config = Js.Unsafe.get atomGlobal "config";
+    let jsVal = JsonValue.toJs v;
+    Js.Unsafe.meth_call config "set" [|Js.Unsafe.inject (Js.string configKey), Js.Unsafe.inject jsVal|]
   };
 };
 
@@ -220,6 +221,7 @@ let module NotificationManager = {
   let defaultOptions = {detail: "MessageNotProvided", dismissable: false, icon: "flame"};
   let addError options::opts={...defaultOptions, icon: "flame"} title :unit =>
     Js.Unsafe.meth_call
+
       (Js.Unsafe.get atomGlobal "notifications")
       "addError"
       [|Js.Unsafe.inject (Js.string title), optionsToJs opts|];
@@ -230,7 +232,6 @@ let module NotificationManager = {
       [|Js.Unsafe.inject (Js.string title), optionsToJs opts|];
   let addInfo options::opts={...defaultOptions, icon: "info"} title :unit =>
     Js.Unsafe.meth_call
-
       (Js.Unsafe.get atomGlobal "notifications")
       "addInfo"
       [|Js.Unsafe.inject (Js.string title), optionsToJs opts|];

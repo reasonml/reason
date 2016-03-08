@@ -5,7 +5,6 @@
  * vim: set ft=rust:
  * vim: set ft=reason:
  */
-
 let require s => Js.Unsafe.fun_call (Js.Unsafe.js_expr "require") [|Js.Unsafe.inject (Js.string s)|];
 
 let export s itm => Js.Unsafe.set (Js.Unsafe.js_expr "exports") s itm;

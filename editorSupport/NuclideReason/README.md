@@ -13,10 +13,10 @@ Installing
 Currently, only works with bleeding edge merlins/patches that have not
 yet been checked into merlin/master.
 
-1. Make sure bleeding edge merlin, and `Reason` installed via `OPAM`.
+1. Make sure bleeding edge merlin `master` branch, and `Reason` installed via `OPAM`.
   ```sh
   opam switch 4.02.1
-  opam install merlin
+  opam pin add -y merlin https://github.com/the-lambda-church/merlin.git
   opam pin add -y reasonsyntax git@github.com:facebook/ReasonSyntax.git
   opam pin add -y reason git@github.com:facebook/Reason.git
 
@@ -34,16 +34,13 @@ npm install
 apm link
 ```
 
-4. Add this to your Atom config (accessible via the menu `Atom > Open Your Config`). Replace `user` with your login name. Also, confirm that those locations exist and are correct. Indentation matters.
+4. Add this to your Atom config (accessible via the menu `Atom > Open Your Config`). Replace `yourname` with your login name. Also, confirm that those locations exist and are correct. Indentation matters!
 ```cson
 "*":
   NuclideReason:
-    pathToCompiler: "/usr/local/bin/ocamlc"
-    pathToReasonfmt: "/Users/user/.opam/system/bin/reasonfmt"
-
-  nuclide:
-    "nuclide-ocaml":
-      pathToMerlin: "/Users/user/github/merlin/ocamlmerlin"
+    merlinFlags: "-pp /Users/yourname/.opam/system/bin/reasonfmt_merlin"
+    pathToMerlin: "/Users/jwalke/.opam/system/bin/ocamlmerlin"
+    pathToReasonfmt: "/Users/yourname/.opam/system/bin/reasonfmt"
 ```
 
 5. Finally, open a `.re` file and select `Reason` as the current language.

@@ -6,8 +6,8 @@
  * vim: set ft=reason:
  */
 /**
- * This module wraps the JS merlin service.
- * The inputs and outputs should be Reason. The internals might use JS.
+ * This module wraps the JS merlin service. The inputs and outputs should be
+ * Reason. The internals might use JS.
  */
 type service;
 
@@ -15,11 +15,32 @@ let nuclideClient = Js.Unsafe.js_expr "require('nuclide/pkg/nuclide/client')";
 
 let dotCall x y z => Js.Unsafe.meth_call x y z;
 
-let getService filePath =>
+let getService filePath => {
+  let nuclideOCamlPathToMerlin = Atom.Config.get "nuclide.nuclide-ocaml.pathToMerlin";
+  let nuclideOCamlMerlinFlags = Atom.Config.get "nuclide.nuclide-ocaml.merlinFlags";
+  let nuclideOCamlPathToMerlinOverwrite = Atom.Config.get "nuclide.nuclide-ocaml.nuclideReasonOverwroteYour_pathToMerlin";
+  let nuclideOCamlMerlinFlagsOverwrite = Atom.Config.get "nuclide.nuclide-ocaml.nuclideReasonOverwroteYour_merlinFlags";
+  let nuclideReasonPathToMerlin = Atom.Config.get "NuclideReason.pathToMerlin";
+  let nuclideReasonMerlinFlags = Atom.Config.get "NuclideReason.merlinFlags";
+  switch (nuclideOCamlPathToMerlin, nuclideOCamlPathToMerlinOverwrite) {
+    | (_, Empty) =>
+        Atom.Config.set
+          "nuclide.nuclide-ocaml.nuclideReasonOverwroteYour_pathToMerlin" nuclideOCamlPathToMerlin
+    | _ => ()
+  };
+  switch (nuclideOCamlMerlinFlags, nuclideOCamlMerlinFlagsOverwrite) {
+    | (_, Empty) =>
+        Atom.Config.set
+          "nuclide.nuclide-ocaml.nuclideReasonOverwroteYour_merlinFlags" nuclideOCamlMerlinFlags
+    | _ => ()
+  };
+  Atom.Config.set "nuclide.nuclide-ocaml.pathToMerlin" nuclideReasonPathToMerlin;
+  Atom.Config.set "nuclide.nuclide-ocaml.merlinFlags" nuclideReasonMerlinFlags;
   Js.Unsafe.meth_call
     nuclideClient
     "getServiceByNuclideUri"
-    [|Js.Unsafe.inject (Js.string "MerlinService"), Js.Unsafe.inject (Js.string filePath)|];
+    [|Js.Unsafe.inject (Js.string "MerlinService"), Js.Unsafe.inject (Js.string filePath)|]
+};
 
 /**
  * Will turn the array into a jsArray.
@@ -33,7 +54,7 @@ let runSingleCommand (service: service) (filePath: string) jsCmd andThen => {
 
 let complete (service: service) (filePath: string) (line: int) (col: int) (prefix: string) andThen => {
   let onResolve result =>
-    if (Js.Opt.test (Js.Opt.return output)) {
+    if (Js.Opt.test (Js.Opt.return result)) {
       let lengthValue = Js.Unsafe.get result "length";
       let jsEntries =
         Js.Opt.case lengthValue (fun () => Js.Unsafe.get result "entries") (fun jsLen => result);

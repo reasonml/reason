@@ -114,6 +114,7 @@ module.exports = {
     // TODO(mbolin): Find a way to unregister the autocomplete provider from
     // ServiceHub, or set a boolean in the autocomplete provider to always return
     // empty results.
+    // TODO: Figure out how to dispose of the merlin service that had spawned via MerlinService.re.
     getServiceByNuclideUri('MerlinService').dispose();
     if (disposables) {
       disposables.dispose();
@@ -124,4 +125,34 @@ module.exports = {
       reasonDiagnosticsProvider = null;
     }
   },
+  config: {
+    "pathToReasonfmt": {
+      "title": "Path To Reasonfmt",
+      "type": "string",
+      "default": "reasonfmt",
+      "description":
+        "Absolute path of `reasonfmt` binary - Reason syntax source formatter."
+    },
+    "printWidth": {
+      "title": "Default Print Width of Reasonfmt",
+      "type": "number",
+      "default": 110,
+      "description": "Default line wrapping width for pretty printing"
+    },
+    "pathToMerlin": {
+      "title": "Path To Merlin",
+      "type": "string",
+      "default": "ocamlmerlin",
+      "description":
+        "Absolute path of `ocamlmerlin` binary, which may override other plugins' settings for merlin paths (Nuclide for example)"
+    },
+    "merlinFlags": {
+      "title": "Flags Passed To Merlin Executable",
+      "type": "string",
+      "default": "-pp reasonfmt_merlin",
+      "description":
+        "Flags to pass to the Merlin executable - important for configuring Reason syntax."
+    },
+  }
+
 };
