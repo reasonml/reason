@@ -34,13 +34,13 @@ npm install
 apm link
 ```
 
-4. Add this to your Atom config (accessible via the menu `Atom > Open Your Config`). Replace `yourname` with your login name. Also, confirm that those locations exist and are correct. Indentation matters!
+4. Add this to your Atom config (accessible via the menu `Atom > Open Your Config`). Replace `{{yourname}}` with your login name. Also, confirm that those locations exist and are correct. Indentation matters!
 ```cson
 "*":
   NuclideReason:
-    merlinFlags: "-pp /Users/yourname/.opam/system/bin/reasonfmt_merlin"
-    pathToMerlin: "/Users/jwalke/.opam/system/bin/ocamlmerlin"
-    pathToReasonfmt: "/Users/yourname/.opam/system/bin/reasonfmt"
+    merlinFlags: "-pp /Users/{{yourname}}/.opam/system/bin/reasonfmt_merlin"
+    pathToMerlin: "/Users/{{yourname}}/.opam/system/bin/ocamlmerlin"
+    pathToReasonfmt: "/Users/{{yourname}}/.opam/system/bin/reasonfmt"
 ```
 
 5. Finally, open a `.re` file and select `Reason` as the current language.
