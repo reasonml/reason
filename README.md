@@ -58,7 +58,7 @@ ocamlopt -pp reasonfmt -intf myFile.rei
 ocamlfind ocamlc -package reason ...
 ```
 
-Convert Your Project to Reason:
+Convert Your Project from OCaml to Reason:
 ------------------------------------------------------------
 `Reason` includes a program `reasonfmt` which will parse and print and
 convert various syntaxes. You can specify which syntax to parse, and
@@ -66,6 +66,65 @@ which to print via that flags `-parse` and `-print` flags. For example,
 you can convert your `ocaml` project to `Reason` by processing each file
 with the command `reasonfmt -parse ml -print re yourFile.ml`. Execute
 `reasonfmt -help` for more options.
+
+### Removing `[@implicit_arity]`
+
+The converted Reason code may attach `[@implicit_arity]` to constructors like `C 1 2 [@implicit_arity]`.
+This is due to the fact that OCaml has the ambiguous syntax where a multi-arguments
+constructor is expecting argument in a tuple form. So at parsing time we don't
+know if `C (1, 2)` in OCaml should be translated to `C (1, 2)` or `C 1 2` in Reason.
+By default, we will convert it to `C 1 2 [@implicit_arity]`, which tells the compiler
+this can be either `C 1 2` or `C (1, 2)`.
+
+To prevent `[@implicit_arity]` from being generated, one can supply `-assume-explicit-arity`
+to `reasonfmt`. This forces the formatter to generate `C 1 2` instead of `C 1 2 [@implicit_arity]`.
+
+However, since `C 1 2` requires multiple arugments, it may fail the compilation if it is actually
+a constructor with a single tuple as an arugment (e.g., `Some`).
+We already have some internal exception rules to cover the common constructors who requires a single tuple
+as argument so that they will be converted correctly (e.g., `Some (1, 2)` will be converted
+to `Some (1, 2)` instead of `Some 1 2`, which doesn't compile).
+
+To provide your own exception list, create a line-separated file that contains all constructors (without module prefix)
+in your project that expects a single tuple as argument, and use `-heuristics-file <filename>`
+to tell `reasonfmt` that all constructors
+listed in the file will be treated as constructor with a single tuple as argument:
+```
+> cat heuristics.txt
+TupleConstructor
+And
+Or
+
+> cat test.ml
+type tm = TupleConstructor of (int * int) | MultiArgumentsConstructor of int * int
+
+let _ = TupleConstructor(1, 2)
+let _ = MultiArgumentsConstructor(1, 2)
+
+module Test = struct
+  type a = | And of (int * int) | Or of (int * int)
+end;;
+
+let _ = Test.And (1, 2)
+let _ = Test.Or (1, 2)
+let _ = Some (1, 2)
+
+> reasonfmt -heuristics-file ./heuristics.txt -assume-explicit-arity -parse ml -print re test.ml
+type tm = | TupleConstructor of (int, int) | MultiArgumentsConstructor of int int;
+
+let a = TupleConstructor (1, 2);
+
+let b = MultiArgumentsConstructor 1 2;
+
+let module Test = {type a = | And of (int, int) | Or of (int, int);};
+
+Test.And (1, 2);
+
+Test.Or (1, 2);
+
+Some (1, 2);
+
+```
 
 
 Upgrading Existing Source Code After Changing Parse/Printing:
