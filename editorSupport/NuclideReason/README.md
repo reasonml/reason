@@ -31,6 +31,8 @@ apm link
 # Install the IDE integration
 cd ../NuclideReason
 npm install
+# Build the project so you have autocompletion for it.
+npm start
 apm link
 ```
 
