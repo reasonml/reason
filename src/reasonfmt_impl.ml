@@ -29,59 +29,72 @@ let reasonBinaryParser chan =
  * effectively m17n's parser.
  *)
 let () =
-  let (filename, load_path, prnt, prse, intf, print_width, use_stdin, recoverable, assumeExplicitArity) =
-    let filename = ref "" in
-    let prnt = ref None in
-    let prse = ref None in
-    let use_stdin = ref false in
-    let intf = ref None in
-    let recoverable = ref false in
-    let assumeExplicitArity = ref false in
-    let print_width = ref None in
-    let load_path = ref [] in
-    Arg.parse [
-        "-I", Arg.String (fun x -> load_path := x :: !load_path), "<path> add <path> to load path";
-        "-ignore", Arg.Unit ignore, "ignored";
-        "-is-interface-pp", Arg.Bool (fun x -> intf := Some x), "<interface> parse AST as <interface> (either true or false)";
-        "-use-stdin", Arg.Bool (fun x -> use_stdin := x), "<use_stdin> parse AST from <use_stdin> (either true, false). You still must provide a file name even if using stdin for errors to be reported";
-        "-recoverable", Arg.Bool (fun x -> recoverable := x), "Enable recoverable parser";
-        "-assume-explicit-arity", Arg.Unit (fun () -> assumeExplicitArity := true), "If a constructor's argument is a tuple, always interpret it as multiple arguments";
-        "-parse", Arg.String (fun x -> prse := Some x), "<parse> parse AST as <parse> (either 'ml', 're', 'binary_reason(for interchange between Reason versions')";
-        (* Use a print option of "none" to simply perform a parsing validation -
-         * useful for IDE error messages etc.*)
-        "-print", Arg.String (fun x -> prnt := Some x), "<print> print AST in <print> (either 'ml', 're', 'binary(default - for compiler input)', 'binary_reason(for interchange between Reason versions)', 'none')";
-        "-print-width", Arg.Int (fun x -> print_width := Some x), "<print-width> wrapping width for printing the AST";
-      ]
-      (fun arg -> filename := arg)
-      "Reason: Meta Language Utility";
-    (!filename, load_path, !prnt, !prse, !intf, !print_width, !use_stdin, !recoverable, !assumeExplicitArity)
+  let filename = ref "" in
+  let prnt = ref None in
+  let prse = ref None in
+  let use_stdin = ref false in
+  let intf = ref None in
+  let recoverable = ref false in
+  let assumeExplicitArity = ref false in
+  let heuristics_file = ref None in
+  let print_width = ref None in
+  let () = Arg.parse [
+    "-ignore", Arg.Unit ignore, "ignored";
+    "-is-interface-pp", Arg.Bool (fun x -> intf := Some x), "<interface>, parse AST as <interface> (either true or false)";
+    "-use-stdin", Arg.Bool (fun x -> use_stdin := x), "<use_stdin>, parse AST from <use_stdin> (either true, false). You still must provide a file name even if using stdin for errors to be reported";
+    "-recoverable", Arg.Bool (fun x -> recoverable := x), "Enable recoverable parser";
+    "-assume-explicit-arity", Arg.Unit (fun () -> assumeExplicitArity := true), "If a constructor's argument is a tuple, always interpret it as multiple arguments";
+    "-parse", Arg.String (fun x -> prse := Some x), "<parse>, parse AST as <parse> (either 'ml', 're', 'binary_reason(for interchange between Reason versions')";
+    (* Use a print option of "none" to simply perform a parsing validation -
+     * useful for IDE error messages etc.*)
+    "-print", Arg.String (fun x -> prnt := Some x), "<print>, print AST in <print> (either 'ml', 're', 'binary(default - for compiler input)', 'binary_reason(for interchange between Reason versions)', 'none')";
+    "-print-width", Arg.Int (fun x -> print_width := Some x), "<print-width>, wrapping width for printing the AST";
+    "-heuristics-file", Arg.String (fun x -> heuristics_file := Some x),
+    "<path>, load path as a heuristics file to specify whtich constructors are defined with multi-arguments. Mostly used in removing [@implicit_arity] introduced from OCaml conversion.\n\t\texample.txt:\n\t\tConstructor1\n\t\tConstructor2";
+  ]
+  (fun arg -> filename := arg)
+  "Reason: Meta Language Utility"
   in
-  let print_width = match print_width with
-      | None -> default_print_width
-      | Some x -> x
+  let filename = !filename in
+  let print_width = match !print_width with
+    | None -> default_print_width
+    | Some x -> x
+  in
+  let constructorLists = match !heuristics_file with
+    | None -> []
+    | Some file ->
+      let list = ref [] in
+      let chan = open_in file in
+      try
+        while true; do
+          list := input_line chan :: !list
+        done; []
+      with End_of_file ->
+        close_in chan;
+        List.rev !list
   in
   let chan =
-    match use_stdin with
+    match !use_stdin with
       | true -> stdin
       | false ->
           let file_chan = open_in filename in
           seek_in file_chan 0;
           file_chan
   in
-  let _ = if recoverable then
+  let _ = if !recoverable then
     Reason_config.configure ~r:true
   in
   Location.input_name := filename;
   let lexbuf = Lexing.from_channel chan in
   Location.init lexbuf filename;
-  let intf = match intf with
+  let intf = match !intf with
     | None when (Filename.check_suffix filename ".rei" || Filename.check_suffix filename ".mli") -> true
     | None -> false
     | Some b -> b
   in
   try
     if intf then (
-      let ((ast, comments), parsedAsML, parsedAsInterface) = match prse with
+      let ((ast, comments), parsedAsML, parsedAsInterface) = match !prse with
         | None -> (defaultInterfaceParserFor filename) lexbuf
         | Some "binary_reason" -> reasonBinaryParser chan
         | Some "ml" -> ((Reason_toolchain.ML.canonical_interface_with_comments lexbuf), true, true)
@@ -95,9 +108,10 @@ let () =
           raise (Invalid_config ("The file parsed does not appear to be an interface file.")) in
       let _ = Reason_pprint_ast.configure
           ~width: print_width
-          ~assumeExplicitArity
+          ~assumeExplicitArity: !assumeExplicitArity
+          ~constructorLists
       in
-      let thePrinter = match prnt with
+      let thePrinter = match !prnt with
         | Some "binary_reason" -> fun comments ast -> (
           (* Our special format for interchange between reason should keep the
            * comments separate.  This is not compatible for input into the
@@ -126,7 +140,7 @@ let () =
       in
       thePrinter comments ast
     ) else (
-      let ((ast, comments), parsedAsML, parsedAsInterface) = match prse with
+      let ((ast, comments), parsedAsML, parsedAsInterface) = match !prse with
         | None -> (defaultImplementationParserFor filename) lexbuf
         | Some "binary_reason" -> reasonBinaryParser chan
         | Some "ml" -> ((Reason_toolchain.ML.canonical_implementation_with_comments lexbuf), true, false)
@@ -139,9 +153,10 @@ let () =
           raise (Invalid_config ("The file parsed does not appear to be an implementation file.")) in
       let _ = Reason_pprint_ast.configure
           ~width: print_width
-          ~assumeExplicitArity
+          ~assumeExplicitArity: !assumeExplicitArity
+          ~constructorLists
       in
-      let thePrinter = match prnt with
+      let thePrinter = match !prnt with
         | Some "binary_reason" -> fun comments ast -> (
           (* Our special format for interchange between reason should keep the
            * comments separate.  This is not compatible for input into the

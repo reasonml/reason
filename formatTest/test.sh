@@ -42,13 +42,14 @@ touch ./customMLFormatOutput.re
 
 echo "" > ./customMLFormatOutput.re
 
-shopt -s nullglob # prevent file from being set to "./customMLFiles/*.ml"
+shopt -s nullglob # prevent the variable 'file' from being set to "./customMLFiles/*.ml"
 for file in ./customMLFiles/*.ml
 do
   ../reasonfmt_impl.native -print-width 50 -parse ml -print re "$file" 2>&1 >> ./customMLFormatOutput.re
 done
 
 idempotent_test ./customMLFormatOutput.re
+
 
 for file in ./typeCheckedTests/*.re
 do
@@ -64,6 +65,10 @@ done
 ocamlc -c -pp ../reasonfmt_impl.native -intf-suffix .rei -impl ./typeCheckedTests/mlSyntax.re
 ../reasonfmt_impl.native -parse ml -print re ./typeCheckedTests/mlVariants.ml > ./typeCheckedTests/mlVariants.re
 ocamlc -c -pp ../reasonfmt_impl.native -intf-suffix .rei -impl ./typeCheckedTests/mlVariants.re
+
+../reasonfmt_impl.native -heuristics-file ./typeCheckedTests/arity.txt -assume-explicit-arity -parse ml -print re ./typeCheckedTests/arityConversion.ml > ./typeCheckedTests/arityConversion.re
+ocamlc -c -pp ../reasonfmt_impl.native -intf-suffix .rei -impl ./typeCheckedTests/arityConversion.re 2>&1 | ../reason_error_reporter.native
+
 # Remove the generated .re version too
 rm ./typeCheckedTests/mlSyntax.re
 rm ./typeCheckedTests/mlVariants.re
