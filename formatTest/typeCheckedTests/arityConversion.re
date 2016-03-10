@@ -1,6 +1,6 @@
 Some (1, 2, 3);
 
-type tm = | TupleConstructor of (int, int) | MultiArgumentsConstructor of int int;
+type bcd = | TupleConstructor of (int, int) | MultiArgumentsConstructor of int int;
 
 let a = TupleConstructor (1, 2);
 
@@ -12,4 +12,4 @@ Test.And (1, 2);
 
 Test.Or (1, 2);
 
-Some (1, 2);
+Some 1;
