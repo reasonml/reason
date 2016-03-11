@@ -5,7 +5,6 @@
  * vim: set ft=rust:
  * vim: set ft=reason:
  */
-
 open NuclideReasonCommon;
 
 open StringUtils;
@@ -119,10 +118,8 @@ let formatImpl editor subText isInterface onComplete onFailure => {
  * - If text before cursor changed in ways beyond "whitespace" changes, fall
  * back to current behavior.
  */
-let getFormatting jsEditor jsRange notifySuccess notifyInvalid notifyInfo => {
-  let editor = Editor.fromJs jsEditor;
+let getFormatting editor (rangeStart, rangeEnd) notifySuccess notifyInvalid notifyInfo => {
   let maybeFilePath = Editor.getPath editor;
-  let (rangeStart, rangeEnd) = Range.fromJs jsRange;
   let buffer = Editor.getBuffer editor;
   let startPosition = Buffer.characterIndexForPosition buffer rangeStart;
   let endPosition = Buffer.characterIndexForPosition buffer rangeEnd;
@@ -141,29 +138,20 @@ let getFormatting jsEditor jsRange notifySuccess notifyInvalid notifyInfo => {
   let promise = Atom.Promise.create (
     fun resolve reject => {
       let onComplete code formatResult stdErr => {
+        /* One bit of Js logic remaining in this otherwise "pure" module. */
         let formatResultStr = NuclideJs.FileFormat.toJs formatResult;
         if (not (code = 0.0)) {
-          ignore (Js.Unsafe.fun_call notifyInvalid [|Js.Unsafe.inject (Js.string "Syntax Error")|])
-        } else if (
-          formatResult.formatted === text
-        ) {
-          let result = String.compare formatResult.formatted text;
-          print_string "printing result:";
-          print_int result;
-          let msg = "Already Formatted";
-          ignore (Js.Unsafe.fun_call notifyInfo [|Js.Unsafe.inject (Js.string msg)|])
+          notifyInvalid "Syntax Error"
+        } else if (formatResult.formatted === text) {
+          notifyInfo "Already Formatted"
         } else {
-          let result = String.compare formatResult.formatted text;
-          print_string "printing result:";
-          print_int result;
-          let msg = "Format: Success";
-          ignore (Js.Unsafe.fun_call notifySuccess [|Js.Unsafe.inject (Js.string msg)|])
+          notifySuccess "Format: Success"
         };
         code = 0.0 ? resolve formatResultStr : reject stdErr
       };
       formatImpl editor subText isInterface onComplete reject
     }
   );
-  Atom.Promise.toJs promise
+  promise
 };
 

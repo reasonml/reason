@@ -11,8 +11,8 @@
     "language-reason:grammar-used"
   ],
   "dependencies": {
-    "nuclide": "git://github.com/jordwalke/nuclide.git",
-    "CommonML": "git://github.com/jordwalke/CommonML.git",
+    "nuclide": "git://github.com/facebook/nuclide.git#20ee6bf",
+    "CommonML": "git://github.com/jordwalke/CommonML.git#2498211",
     "ansi_up" : "1.3.0",
     "diff": "2.2.0",
     "cli-color": "1.1.0"
