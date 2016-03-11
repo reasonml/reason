@@ -108,11 +108,7 @@ module.exports = {
     statusBarTile && statusBarTile.destroy();
     statusBarTile = null;
 
-    // TODO(mbolin): Find a way to unregister the autocomplete provider from
-    // ServiceHub, or set a boolean in the autocomplete provider to always return
-    // empty results.
     // TODO: Figure out how to dispose of the merlin service that had spawned via MerlinService.re.
-    getServiceByNuclideUri('MerlinService').dispose();
     if (disposables) {
       disposables.dispose();
       disposables = null;
