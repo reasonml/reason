@@ -19,8 +19,6 @@ const NuclideReason = require('../compiledSrc/jsBuild/app.js');
 const invariant = require('assert');
 const {CompositeDisposable} = require('atom');
 
-import {track} from 'nuclide/pkg/nuclide/analytics';
-
 import {RE_GRAMMARS, RE_WORD_REGEX} from './constants';
 const GRAMMARS_STRING = RE_GRAMMARS.join(', ');
 
@@ -55,7 +53,6 @@ module.exports = {
       // We want to get ranked higher than the snippets provider.
       suggestionPriority: 5,
       onDidInsertSuggestion: () => {
-        track('NuclideReason.autocomplete-chosen');
       }
     };
   },
