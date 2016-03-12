@@ -152,7 +152,7 @@
   :type 'hook
   :group 'reason-mode)
 
-(defcustom rust-indent-offset 4
+(defcustom rust-indent-offset 2
   "Indent Rust code by this number of spaces."
   :type 'integer
   :group 'reason-mode
@@ -192,24 +192,25 @@ function or trait.  When nil, where will be aligned with fn or trait."
   "Face for the `unsafe' keyword."
   :group 'reason-mode)
 
-(defun rust-paren-level () (nth 0 (syntax-ppss)))
-(defun rust-in-str-or-cmnt () (nth 8 (syntax-ppss)))
-(defun rust-rewind-past-str-cmnt () (goto-char (nth 8 (syntax-ppss))))
-(defun rust-rewind-irrelevant ()
+(defun reason-paren-level () (nth 0 (syntax-ppss)))
+(defun reason-in-str-or-cmnt () (nth 8 (syntax-ppss)))
+(defun reason-rewind-past-str-cmnt () (goto-char (nth 8 (syntax-ppss))))
+(defun reason-rewind-irrelevant ()
+  (interactive)
   (let ((starting (point)))
     (skip-chars-backward "[:space:]\n")
     (if (rust-looking-back-str "*/") (backward-char))
-    (if (rust-in-str-or-cmnt)
-        (rust-rewind-past-str-cmnt))
+    (if (reason-in-str-or-cmnt)
+        (reason-rewind-past-str-cmnt))
     (if (/= starting (point))
-        (rust-rewind-irrelevant))))
+        (reason-rewind-irrelevant))))
 (defun rust-in-macro ()
   (save-excursion
-    (when (> (rust-paren-level) 0)
+    (when (> (reason-paren-level) 0)
       (backward-up-list)
-      (rust-rewind-irrelevant)
+      (reason-rewind-irrelevant)
       (or (rust-looking-back-macro)
-          (and (rust-looking-back-ident) (save-excursion (backward-sexp) (rust-rewind-irrelevant) (rust-looking-back-str "macro_rules!")))
+          (and (rust-looking-back-ident) (save-excursion (backward-sexp) (reason-rewind-irrelevant) (rust-looking-back-str "macro_rules!")))
           (rust-in-macro))
       )))
 
@@ -225,12 +226,13 @@ function or trait.  When nil, where will be aligned with fn or trait."
       (current-column))))
 
 (defun rust-rewind-to-beginning-of-current-level-expr ()
-  (let ((current-level (rust-paren-level)))
+  (interactive)
+  (let ((current-level (reason-paren-level)))
     (back-to-indentation)
     (when (looking-at "->")
-      (rust-rewind-irrelevant)
+      (reason-rewind-irrelevant)
       (back-to-indentation))
-    (while (> (rust-paren-level) current-level)
+    (while (> (reason-paren-level) current-level)
       (backward-up-list)
       (back-to-indentation))
     ;; When we're in the where clause, skip over it.  First find out the start
@@ -241,7 +243,7 @@ function or trait.  When nil, where will be aligned with fn or trait."
         (back-to-indentation)
         ;; Avoid using multiple-value-bind
         (setq function-start (point)
-              function-level (rust-paren-level)))
+              function-level (reason-paren-level)))
       ;; On a where clause
       (when (or (looking-at "\\bwhere\\b")
                 ;; or in one of the following lines, e.g.
@@ -306,71 +308,21 @@ function or trait.  When nil, where will be aligned with fn or trait."
          (save-excursion
            (back-to-indentation)
            ;; Point is now at beginning of current line
-           (let* ((level (rust-paren-level))
+           (let* ((level (reason-paren-level))
                   (baseline
                    ;; Our "baseline" is one level out from the indentation of the expression
-                   ;; containing the innermost enclosing opening bracket.  That
+                   ;; containing the innermost enclosing opening bracket. That
                    ;; way if we are within a block that has a different
                    ;; indentation than this mode would give it, we still indent
                    ;; the inside of it correctly relative to the outside.
                    (if (= 0 level)
                        0
-                     (or
-                      (when rust-indent-method-chain
-                        (rust-align-to-method-chain))
                       (save-excursion
-                        (rust-rewind-irrelevant)
+                        (reason-rewind-irrelevant)
                         (backward-up-list)
                         (rust-rewind-to-beginning-of-current-level-expr)
-                        (+ (current-column) rust-indent-offset))))))
+                        (+ (current-column) rust-indent-offset)))))
              (cond
-              ;; Indent inside a non-raw string only if the the previous line
-              ;; ends with a backslash that is inside the same string
-              ((nth 3 (syntax-ppss))
-               (let*
-                   ((string-begin-pos (nth 8 (syntax-ppss)))
-                    (end-of-prev-line-pos (when (> (line-number-at-pos) 1)
-                                            (save-excursion
-                                              (forward-line -1)
-                                              (end-of-line)
-                                              (point)))))
-                 (when
-                     (and
-                      ;; If the string begins with an "r" it's a raw string and
-                      ;; we should not change the indentation
-                      (/= ?r (char-after string-begin-pos))
-
-                      ;; If we're on the first line this will be nil and the
-                      ;; rest does not apply
-                      end-of-prev-line-pos
-
-                      ;; The end of the previous line needs to be inside the
-                      ;; current string...
-                      (> end-of-prev-line-pos string-begin-pos)
-
-                      ;; ...and end with a backslash
-                      (= ?\\ (char-before end-of-prev-line-pos)))
-
-                   ;; Indent to the same level as the previous line, or the
-                   ;; start of the string if the previous line starts the string
-                   (if (= (line-number-at-pos end-of-prev-line-pos) (line-number-at-pos string-begin-pos))
-                       ;; The previous line is the start of the string.
-                       ;; If the backslash is the only character after the
-                       ;; string beginning, indent to the next indent
-                       ;; level.  Otherwise align with the start of the string.
-                       (if (> (- end-of-prev-line-pos string-begin-pos) 2)
-                           (save-excursion
-                             (goto-char (+ 1 string-begin-pos))
-                             (current-column))
-                         baseline)
-
-                     ;; The previous line is not the start of the string, so
-                     ;; match its indentation.
-                     (save-excursion
-                       (goto-char end-of-prev-line-pos)
-                       (back-to-indentation)
-                       (current-column))))))
-
               ;; A function return type is indented to the corresponding function arguments
               ((looking-at "->")
                (save-excursion
@@ -379,16 +331,11 @@ function or trait.  When nil, where will be aligned with fn or trait."
                      (+ baseline rust-indent-offset))))
 
               ;; A closing brace is 1 level unindented
-              ((looking-at "}") (- baseline rust-indent-offset))
+              ((looking-at "}\\|)\\|\\]") (- baseline rust-indent-offset))
 
               ;; Doc comments in /** style with leading * indent to line up the *s
               ((and (nth 4 (syntax-ppss)) (looking-at "*"))
                (+ 1 baseline))
-
-              ;; When the user chose not to indent the start of the where
-              ;; clause, put it on the baseline.
-              ((and (not rust-indent-where-clause) (looking-at "\\bwhere\\b"))
-               baseline)
 
               ;; If we're in any other token-tree / sexp, then:
               (t
@@ -398,7 +345,7 @@ function or trait.  When nil, where will be aligned with fn or trait."
                 ;; it as fields and align them.
                 (when (> level 0)
                   (save-excursion
-                    (rust-rewind-irrelevant)
+                    (reason-rewind-irrelevant)
                     (backward-up-list)
                     ;; Point is now at the beginning of the containing set of braces
                     (rust-align-to-expr-after-brace)))
@@ -416,7 +363,7 @@ function or trait.  When nil, where will be aligned with fn or trait."
                       (back-to-indentation)
                       ;; Avoid using multiple-value-bind
                       (setq function-start (point)
-                            function-level (rust-paren-level)))
+                            function-level (reason-paren-level)))
                     ;; When we're not on a line starting with "where ", but
                     ;; still on a where-clause line, go to "where "
                     (when (and
@@ -457,7 +404,7 @@ function or trait.  When nil, where will be aligned with fn or trait."
                        (looking-at "\\<else\\>\\|{\\|/[/*]")
 
                        (save-excursion
-                         (rust-rewind-irrelevant)
+                         (reason-rewind-irrelevant)
                          ;; Point is now at the end of the previous line
                          (or
                           ;; If we are at the start of the buffer, no
@@ -467,8 +414,7 @@ function or trait.  When nil, where will be aligned with fn or trait."
                           ;;     { ? : ( , ; [ }
                           ;; then we are at the beginning of an expression, so stay on the baseline...
                           (looking-back "[(,:;?[{}]\\|[^|]|" (- (point) 2))
-                          ;; or if the previous line is the end of an attribute, stay at the baseline...
-                          (progn (rust-rewind-to-beginning-of-current-level-expr) (looking-at "#")))))
+                          )))
                       baseline
 
                     ;; Otherwise, we are continuing the same expression from the previous line,
@@ -488,17 +434,15 @@ function or trait.  When nil, where will be aligned with fn or trait."
 ;; Font-locking definitions and helpers
 (defconst reason-mode-keywords
   '("as"
-    "box" "break"
-    "const" "continue" "crate"
-    "do"
-    "else" "enum" "extern"
+    "break"
+    "else" "extern"
     "false" "fun" "for"
     "if" "impl" "in"
-    "let" "loop"
-    "match" "mod" "move" "mut"
+    "let"
+    "module" "match" "mod" "move" "mut"
     "priv" "pub"
     "ref" "return"
-    "self" "static" "struct" "super"
+    "self" "static" "switch" "struct" "super"
     "true" "trait" "type"
     "use"
     "virtual"
@@ -672,16 +616,16 @@ function or trait.  When nil, where will be aligned with fn or trait."
 (defun rust-rewind-qualified-ident ()
   (while (rust-looking-back-ident)
     (backward-sexp)
-    (when (save-excursion (rust-rewind-irrelevant) (rust-looking-back-str "::"))
-      (rust-rewind-irrelevant)
+    (when (save-excursion (reason-rewind-irrelevant) (rust-looking-back-str "::"))
+      (reason-rewind-irrelevant)
       (backward-char 2)
-      (rust-rewind-irrelevant))))
+      (reason-rewind-irrelevant))))
 
 (defun rust-rewind-type-param-list ()
   (cond
    ((and (rust-looking-back-str ">") (equal 5 (rust-syntax-class-before-point)))
     (backward-sexp)
-    (rust-rewind-irrelevant))
+    (reason-rewind-irrelevant))
 
    ;; We need to be able to back up past the Fn(args) -> RT form as well.  If
    ;; we're looking back at this, we want to end up just after "Fn".
@@ -689,11 +633,11 @@ function or trait.  When nil, where will be aligned with fn or trait."
     (let* ((is-paren (rust-looking-back-str ")"))
            (dest (save-excursion
                    (backward-sexp)
-                   (rust-rewind-irrelevant)
+                   (reason-rewind-irrelevant)
                    (or
                     (when (rust-looking-back-str "->")
                       (backward-char 2)
-                      (rust-rewind-irrelevant)
+                      (reason-rewind-irrelevant)
                       (when (rust-looking-back-str ")")
                         (backward-sexp)
                         (point)))
@@ -709,7 +653,7 @@ function or trait.  When nil, where will be aligned with fn or trait."
 
   (let* ((ident-pos (point))
          (newpos (save-excursion
-                   (rust-rewind-irrelevant)
+                   (reason-rewind-irrelevant)
                    (rust-rewind-type-param-list)
                    (cond
                     ((rust-looking-back-symbols '("fn" "trait" "enum" "struct" "impl" "type")) ident-pos)
@@ -744,7 +688,7 @@ function or trait.  When nil, where will be aligned with fn or trait."
 
   (save-excursion
     (let ((postchar (char-after)))
-      (rust-rewind-irrelevant)
+      (reason-rewind-irrelevant)
 
       ;; A type alias or ascription could have a type param list.  Skip backwards past it.
       (when (member token '(ambiguous-operator open-brace))
@@ -776,12 +720,12 @@ function or trait.  When nil, where will be aligned with fn or trait."
        ;; introducing a loop, so the y is an expression
        ((and (equal token 'ident) (rust-looking-back-symbols '("for")))
         (backward-sexp)
-        (rust-rewind-irrelevant)
+        (reason-rewind-irrelevant)
         (looking-back "[{;]" (1- (point))))
 
        ((rust-looking-back-ident)
         (rust-rewind-qualified-ident)
-        (rust-rewind-irrelevant)
+        (reason-rewind-irrelevant)
         (cond
          ((equal token 'open-brace)
           ;; We now know we have:
@@ -798,7 +742,7 @@ function or trait.  When nil, where will be aligned with fn or trait."
            ((equal ?{ postchar)
             (not (and (rust-rewind-to-decl-name)
                       (progn
-                        (rust-rewind-irrelevant)
+                        (reason-rewind-irrelevant)
                         (rust-looking-back-symbols '("enum" "struct" "trait" "type"))))))
            ))
 
@@ -810,7 +754,7 @@ function or trait.  When nil, where will be aligned with fn or trait."
            ;; A : followed by a type then an = introduces an expression (unless it is part of a where clause of a "type" declaration)
            ((and (equal postchar ?=)
                  (looking-back "[^:]:" (- (point) 2))
-                 (not (save-excursion (and (rust-rewind-to-decl-name) (progn (rust-rewind-irrelevant) (rust-looking-back-symbols '("type"))))))))
+                 (not (save-excursion (and (rust-rewind-to-decl-name) (progn (reason-rewind-irrelevant) (rust-looking-back-symbols '("type"))))))))
 
            ;; "let ident =" introduces an expression--and so does "const" and "mut"
            ((and (equal postchar ?=) (rust-looking-back-symbols '("let" "const" "mut"))) t)
@@ -820,16 +764,16 @@ function or trait.  When nil, where will be aligned with fn or trait."
            ;; In this case, this is a c-like enum and despite Ident
            ;; representing a type, what comes after the = is an expression
            ((and
-             (> (rust-paren-level) 0)
+             (> (reason-paren-level) 0)
              (save-excursion
                (backward-up-list)
-               (rust-rewind-irrelevant)
+               (reason-rewind-irrelevant)
                (rust-rewind-type-param-list)
                (and
                 (rust-looking-back-ident)
                 (progn
                   (rust-rewind-qualified-ident)
-                  (rust-rewind-irrelevant)
+                  (reason-rewind-irrelevant)
                   (rust-looking-back-str "enum")))))
             t)
 
@@ -840,7 +784,7 @@ function or trait.  When nil, where will be aligned with fn or trait."
           (cond
            ;; If we see a ident: not inside any braces/parens, we're at top level.
            ;; There are no allowed expressions after colons there, just types.
-           ((<= (rust-paren-level) 0) nil)
+           ((<= (reason-paren-level) 0) nil)
 
            ;; We see ident: inside a list
            ((looking-back "[{,]" (1- (point)))
@@ -850,7 +794,7 @@ function or trait.  When nil, where will be aligned with fn or trait."
             ;; anything other than curly braces, it can't be a field
             ;; initializer and must be denoting a type.
             (when (looking-at "{")
-              (rust-rewind-irrelevant)
+              (reason-rewind-irrelevant)
               (rust-rewind-type-param-list)
               (when (rust-looking-back-ident)
                 ;; We have a context that looks like this:
@@ -920,7 +864,7 @@ function or trait.  When nil, where will be aligned with fn or trait."
 
   (let ((case-fold-search nil))
     (save-excursion
-      (rust-rewind-irrelevant)
+      (reason-rewind-irrelevant)
       ;; We are now just after the character syntactically before the <.
       (cond
 
@@ -989,7 +933,7 @@ function or trait.  When nil, where will be aligned with fn or trait."
       ((not rust-match-angle-brackets) t)
 
       ;; We don't take < or > in strings or comments to be angle brackets
-      ((rust-in-str-or-cmnt) t)
+      ((reason-in-str-or-cmnt) t)
 
       ;; Inside a macro we don't really know the syntax.  Any < or > may be an
       ;; angle bracket or it may not.  But we know that the other braces have
@@ -1007,7 +951,7 @@ function or trait.  When nil, where will be aligned with fn or trait."
 
         ;; If we are at top level and not in any list, it can't be a closing
         ;; angle bracket
-        ((>= 0 (rust-paren-level)) t)
+        ((>= 0 (reason-paren-level)) t)
 
         ;; Otherwise, treat the > as a closing angle bracket if it would
         ;; match an opening one
