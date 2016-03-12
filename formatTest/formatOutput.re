@@ -358,31 +358,31 @@ let rec size =
 /* Optimize for tail recursion */
 let rec size soFar lst =>
   switch lst {
-    | [] => 0
-    | [hd, ...tl] => size (soFar + 1) tl
+  | [] => 0
+  | [hd, ...tl] => size (soFar + 1) tl
   };
 
 let nestedMatch lstLst =>
   switch lstLst {
-    | [hd, ...tl] when false => 10
-    | [hd, ...tl] =>
-        switch tl {
-          | [] => 0 + 0
-          | [tlHd, ...tlTl] => 0 + 1
-        }
-    | [] => 0
+  | [hd, ...tl] when false => 10
+  | [hd, ...tl] =>
+      switch tl {
+      | [] => 0 + 0
+      | [tlHd, ...tlTl] => 0 + 1
+      }
+  | [] => 0
   };
 
 let nestedMatchWithWhen lstLst =>
   switch lstLst {
-    | [hd, ...tl] when false => 10
-    | [hd, ...tl] when true =>
-        switch tl {
-          | [] when false => 0 + 0
-          | [] when true => 0 + 0
-          | [tlHd, ...tlTl] => 0 + 1
-        }
-    | [] => 0
+  | [hd, ...tl] when false => 10
+  | [hd, ...tl] when true =>
+      switch tl {
+      | [] when false => 0 + 0
+      | [] when true => 0 + 0
+      | [tlHd, ...tlTl] => 0 + 1
+      }
+  | [] => 0
   };
 
 /**
@@ -395,8 +395,8 @@ type mine = | MyThing of int | YourThing of int;
 */
 let ppp =
   switch (MyThing 20) {
-    | MyThing x as ppp
-    | YourThing x as ppp => ppp
+  | MyThing x as ppp
+  | YourThing x as ppp => ppp
   };
 
 let MyThing _ as ppp | YourThing _ as ppp = ppp;
@@ -407,8 +407,8 @@ let MyThing _ as ppp | YourThing _ as ppp = ppp;
  */
 let ppp =
   switch (MyThing 20) {
-    | MyThing x as ppp
-    | YourThing x as ppp => ppp
+  | MyThing x as ppp
+  | YourThing x as ppp => ppp
   };
 
 let MyThing _ as ppp | YourThing _ as ppp = ppp;
@@ -798,8 +798,8 @@ let result =
  */
 let res =
   try something {
-    | true => "hi"
-    | false => "bye"
+  | true => "hi"
+  | false => "bye"
   };
 
 /*
@@ -1304,11 +1304,11 @@ let module rec A: {
   type t = | Leaf of string | Node of ASet.t;
   let compare t1 t2 =>
     switch (t1, t2) {
-      | (Leaf s1, Leaf s2) =>
-          Pervasives.compare s1 s2
-      | (Leaf _, Node _) => 1
-      | (Node _, Leaf _) => (-1)
-      | (Node n1, Node n2) => ASet.compare n1 n2
+    | (Leaf s1, Leaf s2) =>
+        Pervasives.compare s1 s2
+    | (Leaf _, Node _) => 1
+    | (Node _, Leaf _) => (-1)
+    | (Node n1, Node n2) => ASet.compare n1 n2
     };
 }
 and ASet: Set.S with type elt = A.t = Set.Make A;
@@ -1527,16 +1527,16 @@ type threeForms =
 
 let doesntCareWhichForm x =>
   switch x {
-    | FormOne q
-    | FormTwo q => 10
-    | FormThree => 20
+  | FormOne q
+  | FormTwo q => 10
+  | FormThree => 20
   };
 
 let doesntCareWhichFormAs x =>
   switch x {
-    | FormOne q as ppp
-    | FormTwo q as ppp => 10
-    | FormThree => 20
+  | FormOne q as ppp
+  | FormTwo q as ppp => 10
+  | FormThree => 20
   };
 
 type colorList1 = [
@@ -1572,14 +1572,14 @@ let accessDeeplyWithArg
 /* Destructured matching *not* at function definition */
 let accessDeeply x =>
   switch x {
-    | LocalModule.AccessedThroughModule => 10
-    | _ => 0
+  | LocalModule.AccessedThroughModule => 10
+  | _ => 0
   };
 
 let accessDeeplyWithArg x =>
   switch x {
-    | LocalModule.AccessedThroughModuleWith x => 10
-    | _ => 0
+  | LocalModule.AccessedThroughModuleWith x => 10
+  | _ => 0
   };
 
 /* In OCaml's syntax, to capture the wrapped data, you do:
@@ -1592,40 +1592,39 @@ let accessDeeplyWithArg x =>
  */
 let accessDeeply x =>
   switch x {
-    | LocalModule.AccessedThroughModule as ppp => 1
+  | LocalModule.AccessedThroughModule as ppp => 1
   };
 
 let accessDeeplyWithArg x =>
   switch x {
-    | LocalModule.AccessedThroughModuleWith (
-        x as retVal
-      ) =>
-        retVal + 1
-    | LocalModule.AccessedThroughModuleWithTwo
-        (x as retVal1) (y as retVal2) =>
-        retVal1 + retVal2 + 1
+  | LocalModule.AccessedThroughModuleWith (
+      x as retVal
+    ) =>
+      retVal + 1
+  | LocalModule.AccessedThroughModuleWithTwo
+      (x as retVal1) (y as retVal2) =>
+      retVal1 + retVal2 + 1
   };
 
 /* Just to show that by default `as` captures much less aggresively */
 let rec accessDeeplyWithArgRecursive x count =>
   switch x {
-    | LocalModule.AccessedThroughModuleWith x as entirePattern =>
-        /* It captures the whole pattern */
-        if (count > 0) {
-          0
-        } else {
-          accessDeeplyWithArgRecursive
-            entirePattern (count - 1)
-        }
-    | LocalModule.AccessedThroughModuleWithTwo
-        x y as entirePattern =>
-        /* It captures the whole pattern */
-        if (count > 0) {
-          0
-        } else {
-          accessDeeplyWithArgRecursive
-            entirePattern (count - 1)
-        }
+  | LocalModule.AccessedThroughModuleWith x as entirePattern =>
+      /* It captures the whole pattern */
+      if (count > 0) {
+        0
+      } else {
+        accessDeeplyWithArgRecursive
+          entirePattern (count - 1)
+      }
+  | LocalModule.AccessedThroughModuleWithTwo x y as entirePattern =>
+      /* It captures the whole pattern */
+      if (count > 0) {
+        0
+      } else {
+        accessDeeplyWithArgRecursive
+          entirePattern (count - 1)
+      }
   };
 
 accessDeeplyWithArgRecursive
@@ -1653,11 +1652,11 @@ let howWouldWeMatchFunctionArgs
 
 let matchingTwoCurriedConstructorsInTuple x =>
   switch x {
-    | (
-        HeresTwoConstructorArguments x y,
-        HeresTwoConstructorArguments a b
-      ) =>
-        x + y + a + b
+  | (
+      HeresTwoConstructorArguments x y,
+      HeresTwoConstructorArguments a b
+    ) =>
+      x + y + a + b
   };
 
 type twoCurriedConstructors =
@@ -1666,10 +1665,10 @@ type twoCurriedConstructors =
 
 let matchingTwoCurriedConstructorInConstructor x =>
   switch x {
-    | TwoCombos
-        (HeresTwoConstructorArguments x y)
-        (HeresTwoConstructorArguments a b) =>
-        a + b + x + y
+  | TwoCombos
+      (HeresTwoConstructorArguments x y)
+      (HeresTwoConstructorArguments a b) =>
+      a + b + x + y
   };
 
 type twoCurriedConstructorsPolyMorphic 'a =
@@ -1684,8 +1683,8 @@ type alsoHasARecord =
 
 let result =
   switch (AlsoHasARecord 10 10 {x: 10, y: 20}) {
-    | Blah => 1000
-    | AlsoHasARecord a b {x, y} => a + b + x + y
+  | Blah => 1000
+  | AlsoHasARecord a b {x, y} => a + b + x + y
   };
 
 let rec commentPolymorphicCases:
@@ -1698,8 +1697,8 @@ let rec commentPolymorphicCases:
 
 let thisWontCompileButLetsSeeHowItFormats =
   switch something {
-    | Zero
-    | One => 10
+  | Zero
+  | One => 10
   };
 
 let thisWontCompileButLetsSeeHowItFormats =
@@ -1726,11 +1725,11 @@ let rec eval: type a. term a => a =
 let rec eval: type a. term a => a =
   fun x =>
     switch x {
-      | Int n => n
-      /* a = int */
-      | Add => (fun x y => x + y)
-      /* a = int => int => int */
-      | App f x => (eval f) (eval x)
+    | Int n => n
+    /* a = int */
+    | Add => (fun x y => x + y)
+    /* a = int => int => int */
+    | App f x => (eval f) (eval x)
     };
 
 /* eval called at types (b=>a) and b for fresh b */
@@ -1743,10 +1742,10 @@ type someVariant =
 
 let Purple x | Yellow x =
   switch (Yellow 100, Purple 101) {
-    | (Yellow y, Purple p) => Yellow (p + y)
-    | (Purple p, Yellow y) => Purple (y + p)
-    | (Purple p, Purple y) => Yellow (y + p)
-    | (Yellow p, Yellow y) => Purple (y + p)
+  | (Yellow y, Purple p) => Yellow (p + y)
+  | (Purple p, Yellow y) => Purple (y + p)
+  | (Purple p, Purple y) => Yellow (y + p)
+  | (Yellow p, Yellow y) => Purple (y + p)
   };
 
 type tuples =
@@ -1759,16 +1758,16 @@ let myTuple = OneTuple (20, 30);
 
 let res =
   switch myTuple {
-    | Two x y =>
-        try (Two x y) {
-          | One => "hi"
-          | Two => "bye"
-        }
-    | One =>
-        switch One {
-          | One => "hi"
-          | _ => "bye"
-        }
+  | Two x y =>
+      try (Two x y) {
+      | One => "hi"
+      | Two => "bye"
+      }
+  | One =>
+      switch One {
+      | One => "hi"
+      | _ => "bye"
+      }
   };
 
 /* FIXME type somePolyVariant = [ `Purple of int | `Yellow of int]; */
@@ -1778,14 +1777,14 @@ let prp = `Purple (101, 100);
 
 let res =
   switch (ylw, prp) {
-    | (`Yellow (y, y2), `Purple (p, p2)) =>
-        `Yellow (p + y, 0)
-    | (`Purple (p, p2), `Yellow (y, y2)) =>
-        `Purple (y + p, 0)
-    | (`Purple (p, p2), `Purple (y, y2)) =>
-        `Yellow (y + p, 0)
-    | (`Yellow (p, p2), `Yellow (y, y2)) =>
-        `Purple (y + p, 0)
+  | (`Yellow (y, y2), `Purple (p, p2)) =>
+      `Yellow (p + y, 0)
+  | (`Purple (p, p2), `Yellow (y, y2)) =>
+      `Purple (y + p, 0)
+  | (`Purple (p, p2), `Purple (y, y2)) =>
+      `Yellow (y + p, 0)
+  | (`Yellow (p, p2), `Yellow (y, y2)) =>
+      `Purple (y + p, 0)
   };
 
 let ylw = `Yellow 100;
@@ -1794,10 +1793,10 @@ let prp = `Purple 101;
 
 let res =
   switch (ylw, prp) {
-    | (`Yellow y, `Purple p) => `Yellow (p + y)
-    | (`Purple p, `Yellow y) => `Purple (y + p)
-    | (`Purple p, `Purple y) => `Yellow (y + p)
-    | (`Yellow p, `Yellow y) => `Purple (y + p)
+  | (`Yellow y, `Purple p) => `Yellow (p + y)
+  | (`Purple p, `Yellow y) => `Purple (y + p)
+  | (`Purple p, `Purple y) => `Yellow (y + p)
+  | (`Yellow p, `Yellow y) => `Purple (y + p)
   };
 
 /*
@@ -1824,58 +1823,58 @@ let prp = `Purple (101, 101);
 
 let res =
   switch (ylw, prp) {
-    | (`Yellow (y, y2), `Purple (p, p2)) =>
-        `Yellow (p + y, 0)
-    | (`Purple (p, p2), `Yellow (y, y2)) =>
-        `Purple (y + p, 0)
-    | (`Purple (p, p2), `Purple (y, y2)) =>
-        `Yellow (y + p, 0)
-    | (`Yellow (p, p2), `Yellow (y, y2)) =>
-        `Purple (y + p, 0)
+  | (`Yellow (y, y2), `Purple (p, p2)) =>
+      `Yellow (p + y, 0)
+  | (`Purple (p, p2), `Yellow (y, y2)) =>
+      `Purple (y + p, 0)
+  | (`Purple (p, p2), `Purple (y, y2)) =>
+      `Yellow (y + p, 0)
+  | (`Yellow (p, p2), `Yellow (y, y2)) =>
+      `Purple (y + p, 0)
   };
 
 let rec atLeastOneFlushableChildAndNoWipNoPending
         composition
         atPriority =>
   switch composition {
-    | [] => false
-    | [hd, ...tl] =>
-        switch hd {
-          | OpaqueGraph {
-              lifecycle: Reconciled (_, [])
-            } =>
-              atLeastOneFlushableChildAndNoWipNoPending
-                tl atPriority
-          | OpaqueGraph {
-              lifecycle:
-                ReconciledFlushable (
-                  priority,
-                  _,
-                  _,
-                  _,
-                  _,
-                  _
-                )
-            }
-          | OpaqueGraph {
-              lifecycle:
-                NeverReconciledFlushable (
-                  priority,
-                  _,
-                  _,
-                  _,
-                  _
-                )
-            }
-              when priority == AtPriority =>
-              noWipNoPending tl atPriority
-          | SuperLongNameThatWontBreakByItselfSoWhenWillHaveToBreak
-              when
-                priority ==
-                  AtPrasldkfjalsdfjasdlfalsdkf =>
-              noWipNoPending tl atPriority
-          | _ => false
+  | [] => false
+  | [hd, ...tl] =>
+      switch hd {
+      | OpaqueGraph {
+          lifecycle: Reconciled (_, [])
+        } =>
+          atLeastOneFlushableChildAndNoWipNoPending
+            tl atPriority
+      | OpaqueGraph {
+          lifecycle:
+            ReconciledFlushable (
+              priority,
+              _,
+              _,
+              _,
+              _,
+              _
+            )
         }
+      | OpaqueGraph {
+          lifecycle:
+            NeverReconciledFlushable (
+              priority,
+              _,
+              _,
+              _,
+              _
+            )
+        }
+          when priority == AtPriority =>
+          noWipNoPending tl atPriority
+      | SuperLongNameThatWontBreakByItselfSoWhenWillHaveToBreak
+          when
+            priority ==
+              AtPrasldkfjalsdfjasdlfalsdkf =>
+          noWipNoPending tl atPriority
+      | _ => false
+      }
   };
 
 /*
@@ -1885,8 +1884,8 @@ let prp = `Purple (101, 101);
 
 let res =
   switch prp {
-    | `Yellow (y, y2) => `Yellow (y2 + y, 0)
-    | `Purple (p, p2) => `Purple (p2 + p, 0)
+  | `Yellow (y, y2) => `Yellow (y2 + y, 0)
+  | `Purple (p, p2) => `Purple (p2 + p, 0)
   };
 
 /*
@@ -1918,31 +1917,31 @@ let myFunc x y LongModule.Path.None => "asdf";
 
 let listPatternMembersNeedntBeSimple x =>
   switch x {
-    | [] => ()
-    | [Blah x y, Foo a b, ...rest] => ()
-    | [Blah x y, Bar a b, ...rest] => ()
-    | _ => ()
+  | [] => ()
+  | [Blah x y, Foo a b, ...rest] => ()
+  | [Blah x y, Bar a b, ...rest] => ()
+  | _ => ()
   };
 
 let listTailPatternNeedntBeSimple x =>
   switch x {
-    | [] => ()
-    /* Although this would never typecheck! */
-    | [Blah x y, Foo a b, ...Something x] => ()
-    | _ => ()
+  | [] => ()
+  /* Although this would never typecheck! */
+  | [Blah x y, Foo a b, ...Something x] => ()
+  | _ => ()
   };
 
 let listPatternMayEvenIncludeAliases x =>
   switch x {
-    | [] => ()
-    /* Although this would never typecheck! */
-    | [
-        Blah x y as head,
-        Foo a b as head2,
-        ...Something x as tail
-      ] =>
-        ()
-    | _ => ()
+  | [] => ()
+  /* Although this would never typecheck! */
+  | [
+      Blah x y as head,
+      Foo a b as head2,
+      ...Something x as tail
+    ] =>
+      ()
+  | _ => ()
   };
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 /* Run the formatting pretty printer with width 50 */
@@ -2208,8 +2207,8 @@ let myList = [3, 4, 5];
 
 let simpleListPattern x =>
   switch x {
-    | [1, 2, 3] => 0
-    | _ => 0
+  | [1, 2, 3] => 0
+  | _ => 0
   };
 
 type blahType = string;
@@ -4009,18 +4008,18 @@ type colors =
 
 let blah arg =>
   switch arg {
-    /* Comment before Bar */
-    /* Comment between bar/pattern */
-    | Red _ => 1
-    /* Comment Before non-first bar */
-    /* Comment betwen bar/pattern */
-    /* These will be formatted into the wrong place
+  /* Comment before Bar */
+  /* Comment between bar/pattern */
+  | Red _ => 1
+  /* Comment Before non-first bar */
+  /* Comment betwen bar/pattern */
+  /* These will be formatted into the wrong place
      * and there's nothing you can do about it because
      * the bar essentially doesn't exist once parsed -
      * its location is lost - "case"s don't have locs
      */
-    | Black _ => 0
-    | Green _ => 0
+  | Black _ => 0
+  | Green _ => 0
   };
 
 let blah =
@@ -4045,44 +4044,43 @@ type reallyLongVariantNames =
 
 let howDoLongMultiBarPatternsWrap x =>
   switch x {
-    | AnotherReallyLongVariantName _ _ _ => 0
-    | AnotherReallyLongVariantName2 _ _ _ => 0
-    | ReallyLongVariantName {
-        someField,
-        anotherField
-      } => 0
+  | AnotherReallyLongVariantName _ _ _ => 0
+  | AnotherReallyLongVariantName2 _ _ _ => 0
+  | ReallyLongVariantName {
+      someField,
+      anotherField
+    } => 0
   };
 
 let letsCombineTwoLongPatternsIntoOneCase x =>
   switch x {
-    | AnotherReallyLongVariantName _ _ _
-    | AnotherReallyLongVariantName2 _ _ _ => 0
-    | ReallyLongVariantName {
-        someField,
-        anotherField
-      } => 0
+  | AnotherReallyLongVariantName _ _ _
+  | AnotherReallyLongVariantName2 _ _ _ => 0
+  | ReallyLongVariantName {
+      someField,
+      anotherField
+    } => 0
   };
 
 let letsPutAWhereClauseOnTheFirstTwo x =>
   switch x {
-    | AnotherReallyLongVariantName _ _ _
-    | AnotherReallyLongVariantName2 _ _ _
-        when true => 0
-    | ReallyLongVariantName {
-        someField,
-        anotherField
-      } => 0
+  | AnotherReallyLongVariantName _ _ _
+  | AnotherReallyLongVariantName2 _ _ _ when true => 0
+  | ReallyLongVariantName {
+      someField,
+      anotherField
+    } => 0
   };
 
 let letsPutAWhereClauseOnTheLast x =>
   switch x {
-    | AnotherReallyLongVariantName _ _ _
-    | AnotherReallyLongVariantName2 _ _ _ => 0
-    | ReallyLongVariantName {
-        someField,
-        anotherField
-      }
-        when true => 0
+  | AnotherReallyLongVariantName _ _ _
+  | AnotherReallyLongVariantName2 _ _ _ => 0
+  | ReallyLongVariantName {
+      someField,
+      anotherField
+    }
+      when true => 0
   };
 
 type wrappingGadt _ =
@@ -4490,15 +4488,15 @@ TestUtils.printSection "General Syntax";
 /*  */
 let matchingFunc a =>
   switch a {
-    | `Thingy x => {
-        print_string "matched thingy x";
-        let zz = 10;
-        zz
-      }
-    | `Other x => {
-        print_string "matched other x";
-        x
-      }
+  | `Thingy x => {
+      print_string "matched thingy x";
+      let zz = 10;
+      zz
+    }
+  | `Other x => {
+      print_string "matched other x";
+      x
+    }
   };
 
 type firstTwoShouldBeGroupedInParens =
@@ -4887,13 +4885,13 @@ Printf.printf
 /* Pattern matching */
 let blah arg =>
   switch arg {
-    /* Comment before Bar */
-    /* Comment between bar/pattern */
-    | Red _ => 1
-    /* Comment Before non-first bar */
-    /* Comment betwen bar/pattern */
-    | Black _ => 0
-    | Green _ => 0
+  /* Comment before Bar */
+  /* Comment between bar/pattern */
+  | Red _ => 1
+  /* Comment Before non-first bar */
+  /* Comment betwen bar/pattern */
+  | Black _ => 0
+  | Green _ => 0
   };
 
 /* Any function that pattern matches a multicase match is interpretted as a
@@ -5013,10 +5011,10 @@ let myFun firstArg (Red x | Black x | Green x) => firstArg + x;
 
 let matchesWithWhen a =>
   switch a {
-    | Red x when 1 > 0 => 10
-    | Red _ => 10
-    | Black x => 10
-    | Green x => 10
+  | Red x when 1 > 0 => 10
+  | Red _ => 10
+  | Black x => 10
+  | Green x => 10
   };
 
 let matchesWithWhen =
@@ -5667,7 +5665,7 @@ let
   call "hi" ^
     (
       switch x {
-        | _ => "hi"
+      | _ => "hi"
       }
     ) ^
     "yo";
@@ -6084,7 +6082,7 @@ switch (
     ()
   }
 ) {
-  | _ => ()
+| _ => ()
 };
 
 try (
@@ -6092,7 +6090,7 @@ try (
     ()
   }
 ) {
-  | _ => ()
+| _ => ()
 };
 
 switch (
@@ -6100,7 +6098,7 @@ switch (
     ()
   }
 ) {
-  | _ => ()
+| _ => ()
 };
 
 try (
@@ -6108,7 +6106,7 @@ try (
     ()
   }
 ) {
-  | _ => ()
+| _ => ()
 };
 
 switch (
@@ -6118,7 +6116,7 @@ switch (
     print_string "switching on false"
   }
 ) {
-  | _ => ()
+| _ => ()
 };
 
 try (
@@ -6126,7 +6124,7 @@ try (
     ()
   }
 ) {
-  | _ => ()
+| _ => ()
 };
 
 let result =
@@ -6141,13 +6139,13 @@ let result =
 switch (
   try (
     try () {
-      | _ => ()
+    | _ => ()
     }
   ) {
-    | _ => ()
+  | _ => ()
   }
 ) {
-  | () => ()
+| () => ()
 };
 
 let shouldStillLoop = {contents: false};
@@ -6201,22 +6199,22 @@ holdsABool.contents <- holdsAnInt.contents == 100;
 let numberToSwitchOn = 100;
 
 switch numberToSwitchOn {
-  | (-3)
-  | (-2)
-  | (-1) => ()
-  | 0 => holdsAUnit.contents <- ()
-  | 1 => holdsAUnit.contents <- holdsAnInt := 0
-  | 2 =>
-      true ?
-        holdsAUnit.contents <- () :
-        holdsABool.contents ? () : ()
-  | 3 =>
-      true ?
-        holdsAUnit := () :
-        holdsABool.contents ? () : ()
-  | 4 => true ? holdsAnInt := 40 : ()
-  | 5 => holdsAnInt := 40
-  | _ => ()
+| (-3)
+| (-2)
+| (-1) => ()
+| 0 => holdsAUnit.contents <- ()
+| 1 => holdsAUnit.contents <- holdsAnInt := 0
+| 2 =>
+    true ?
+      holdsAUnit.contents <- () :
+      holdsABool.contents ? () : ()
+| 3 =>
+    true ?
+      holdsAUnit := () :
+      holdsABool.contents ? () : ()
+| 4 => true ? holdsAnInt := 40 : ()
+| 5 => holdsAnInt := 40
+| _ => ()
 };
 
 let mutativeFunction =
@@ -6232,11 +6230,11 @@ class virtual stack 'a init => {
   method virtual implementMe: int => int;
   method pop =
     switch v {
-      | [hd, ...tl] => {
-          v <- tl;
-          Some hd
-        }
-      | [] => None
+    | [hd, ...tl] => {
+        v <- tl;
+        Some hd
+      }
+    | [] => None
     };
   method push hd => v <- [hd, ...v];
   initializer =>
@@ -6266,11 +6264,11 @@ class virtual stackWithAttributes 'a init =>
     method virtual implementMe: int => int;
     method pop =
       switch v {
-        | [hd, ...tl] => {
-            v <- tl;
-            Some hd
-          }
-        | [] => None
+      | [hd, ...tl] => {
+          v <- tl;
+          Some hd
+        }
+      | [] => None
       };
     method push hd => v <- [hd, ...v];
     initializer =>
@@ -6691,10 +6689,10 @@ type a = | A of bcd;
 
 let result =
   switch B {
-    | B
-    | C
-    | D
-    | E => ()
+  | B
+  | C
+  | D
+  | E => ()
   };
 
 let nested_match =
