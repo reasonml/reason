@@ -283,3 +283,8 @@ class addablePoint2 = (fun init => {
   method x => (init : int);
   method y => init;
 } : int => new addablePointClassType);
+
+module type T = {
+  class virtual cl 'a : new {}
+  and cl2 : new {};
+};
