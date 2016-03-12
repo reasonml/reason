@@ -6552,6 +6552,13 @@ class addablePoint2:
     method x: int = init;
     method y = init;
   };
+
+module type T = {
+  class virtual cl 'a :
+    new {}
+  and cl2 :
+    new {};
+};
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 /**
  * Testing Sequences.
