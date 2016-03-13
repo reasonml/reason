@@ -16,7 +16,9 @@ export
   (
     Js.wrap_callback (
       fun text path onComplete onFailure => {
-        let onComplete arr => Js.Unsafe.fun_call onComplete [|Js.Unsafe.inject (Js.array arr)|];
+        let onComplete arr =>
+          Js.Unsafe.fun_call
+            onComplete [|Js.Unsafe.inject (Js.array (Array.map NuclideJs.Diagnostic.Message.toJs arr))|];
         let onFailure str => Js.Unsafe.fun_call onComplete [|Js.Unsafe.inject (Js.string str)|];
         NuclideReasonDiagnostics.getMerlinDiagnostics text path onComplete onFailure
       }
