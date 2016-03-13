@@ -273,12 +273,13 @@
   }
   # let binding.
   {
-    'comment': 'let binding'
-    'match': '\\b(and|(let(\\s+module)?(\\s+rec)?))\\s+([a-zA-Z_][a-zA-Z0-9_]*)?'
+    'comment': 'binding'
+    'match': '\\b(val(\\s+virtual)?|class(\\s+virtual)?|and|method|(let(\\s+module)?(\\s+rec)?))(\\s+mutable)?\\s+([a-zA-Z_][a-zA-Z0-9_]*)?'
     'captures': {
       '1': { 'name': 'keyword.other.fun.reason' }
       '2': { 'name': 'keyword.other.fun.reason' }
       '3': { 'name': 'keyword.other.fun.reason' }
+      '4': { 'name': 'keyword.other.fun.reason' }
       '4': { 'name': 'keyword.other.fun.reason' }
       '5': { 'name': 'entity.name.reason' }
     }

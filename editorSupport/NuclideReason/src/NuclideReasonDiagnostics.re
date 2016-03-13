@@ -34,7 +34,7 @@ type t;
     {
       "start": { "line": 66, "col": 35 }, "end": { "line": 66, "col": 48 },
       "type": "type", "sub": [], "valid": true,
-      "message": "Error: Unbound value makeJsTellCmd"
+      "message": "Error: Unbound value makeTellComand"
     },
     {
       "start":{"line":5,"col":8},"end":{"line":5,"col":9},
@@ -43,11 +43,9 @@ type t;
     }
   ]
  */
-let makeJsTellCmd text => Js.Unsafe.inject (
-  Js.array [|Js.string "tell", Js.string "start", Js.string "end", Js.string text|]
-);
+let makeTellComand text => ["tell", "start", "end", text];
 
-let jsErrorsCmd = Js.Unsafe.inject (Js.array [|Js.string "errors"|]);
+let errorsCommand = ["errors"];
 
 /**
  * This looks strange that we are converting to ML data but then quickly
@@ -55,18 +53,15 @@ let jsErrorsCmd = Js.Unsafe.inject (Js.array [|Js.string "errors"|]);
  * else above and below is ML, we have to start the conversion somewhere.
  */
 let getMerlinDiagnostics text path onComplete onFailure => {
-  let text = Js.to_string text;
-  let path = Js.to_string path;
   let service = MerlinService.getService path;
-  let contextifiedJsTellCmd = MerlinService.contextifyQuery (makeJsTellCmd text) path;
-  let contextifiedJsErrorsCmd = MerlinService.contextifyQuery jsErrorsCmd path;
+  let contextifiedTellCmd = MerlinService.contextifyQuery (makeTellComand text) path;
+  let contextifiedErrorsCmd = MerlinService.contextifyQuery errorsCommand path;
   let afterTellText result => {
     let afterErrors errors => onComplete (
-      Array.map
-        NuclideJs.Diagnostic.Message.toJs
-        (MerlinServiceConvert.jsMerlinErrorsToNuclideDiagnostics path errors)
+      MerlinServiceConvert.jsMerlinErrorsToNuclideDiagnostics path errors
     );
-    MerlinService.runSingleCommand service path contextifiedJsErrorsCmd afterErrors
+    MerlinService.runSingleCommand service path contextifiedErrorsCmd afterErrors
   };
-  MerlinService.runSingleCommand service path contextifiedJsTellCmd afterTellText
+  MerlinService.runSingleCommand service path contextifiedTellCmd afterTellText
 };
+

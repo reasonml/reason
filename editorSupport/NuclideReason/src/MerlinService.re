@@ -23,16 +23,15 @@ let getService filePath => {
   let nuclideReasonPathToMerlin = Atom.Config.get "NuclideReason.pathToMerlin";
   let nuclideReasonMerlinFlags = Atom.Config.get "NuclideReason.merlinFlags";
   switch (nuclideOCamlPathToMerlin, nuclideOCamlPathToMerlinOverwrite) {
-    | (_, Empty) =>
-        Atom.Config.set
-          "nuclide.nuclide-ocaml.nuclideReasonOverwroteYour_pathToMerlin" nuclideOCamlPathToMerlin
-    | _ => ()
+  | (_, Empty) =>
+      Atom.Config.set
+        "nuclide.nuclide-ocaml.nuclideReasonOverwroteYour_pathToMerlin" nuclideOCamlPathToMerlin
+  | _ => ()
   };
   switch (nuclideOCamlMerlinFlags, nuclideOCamlMerlinFlagsOverwrite) {
-    | (_, Empty) =>
-        Atom.Config.set
-          "nuclide.nuclide-ocaml.nuclideReasonOverwroteYour_merlinFlags" nuclideOCamlMerlinFlags
-    | _ => ()
+  | (_, Empty) =>
+      Atom.Config.set "nuclide.nuclide-ocaml.nuclideReasonOverwroteYour_merlinFlags" nuclideOCamlMerlinFlags
+  | _ => ()
   };
   Atom.Config.set "nuclide.nuclide-ocaml.pathToMerlin" nuclideReasonPathToMerlin;
   Atom.Config.set "nuclide.nuclide-ocaml.merlinFlags" nuclideReasonMerlinFlags;
@@ -80,8 +79,8 @@ let complete (service: service) (filePath: string) (line: int) (col: int) (prefi
   dotCall runSingleCommandPromise "then" [|Js.Unsafe.inject (Js.wrap_callback onResolve)|]
 };
 
-let contextifyQuery jsCmd filePath => Js.Unsafe.obj [|
-  ("query", jsCmd),
+let contextifyQuery cmdList filePath => Js.Unsafe.obj [|
+  ("query", Js.Unsafe.inject (Js.array (Array.map Js.string (Array.of_list cmdList)))),
   ("context", Js.Unsafe.inject (Js.array [|Js.string "auto", Js.string filePath|]))
 |];
 
