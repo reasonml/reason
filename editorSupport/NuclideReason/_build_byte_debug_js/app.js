@@ -5740,85 +5740,85 @@
      { /*<<pervasives.ml 484 20>>*/ return  /*<<pervasives.ml 484 20>>*/ flush_all_bL_
               (0) /*<<pervasives.ml 484 39>>*/ }
     function _dI_(a_a_)
-     { /*<<array.ml 48 2>>*/  /*<<array.ml 48 2>>*/ var l_b_=a_a_.length-1;
-       /*<<array.ml 48 22>>*/ return 0===l_b_
+     { /*<<array.ml 52 2>>*/  /*<<array.ml 52 2>>*/ var l_b_=a_a_.length-1;
+       /*<<array.ml 52 22>>*/ return 0===l_b_
               ?[0]
-              : /*<<array.ml 48 46>>*/ caml_array_sub_c$_(a_a_,0,l_b_) /*<<array.ml 48 62>>*/ }
+              : /*<<array.ml 52 46>>*/ caml_array_sub_c$_(a_a_,0,l_b_) /*<<array.ml 52 62>>*/ }
     function _w_(a1_a_,a2_b_)
-     { /*<<array.ml 51 2>>*/  /*<<array.ml 51 2>>*/ var l1_c_=a1_a_.length-1;
-       /*<<array.ml 52 2>>*/ return 0===l1_c_
-              ? /*<<array.ml 52 17>>*/ _dI_(a2_b_)
+     { /*<<array.ml 55 2>>*/  /*<<array.ml 55 2>>*/ var l1_c_=a1_a_.length-1;
+       /*<<array.ml 56 2>>*/ return 0===l1_c_
+              ? /*<<array.ml 56 17>>*/ _dI_(a2_b_)
               :0===a2_b_.length-1
-                ? /*<<array.ml 53 29>>*/ caml_array_sub_c$_(a1_a_,0,l1_c_)
-                : /*<<array.ml 54 7>>*/ caml_array_append_hf_(a1_a_,a2_b_) /*<<array.ml 54 24>>*/ }
+                ? /*<<array.ml 57 29>>*/ caml_array_sub_c$_(a1_a_,0,l1_c_)
+                : /*<<array.ml 58 7>>*/ caml_array_append_hf_(a1_a_,a2_b_) /*<<array.ml 58 24>>*/ }
     function _x_(f_a_,a_b_)
-     { /*<<array.ml 76 2>>*/  /*<<array.ml 76 2>>*/ var l_d_=a_b_.length-1;
-       /*<<array.ml 77 2>>*/ if(0===l_d_)return [0];
-       /*<<array.ml 76 2>>*/ var
-        /*<<array.ml 77 26>>*/ _g_=a_b_[1],
-        /*<<array.ml 78 21>>*/ _h_=
-         /*<<array.ml 78 21>>*/ caml_call_gen1_o_(f_a_,_g_),
-        /*<<array.ml 78 40>>*/ r_e_=
-         /*<<array.ml 78 40>>*/ caml_make_vect_at_(l_d_,_h_),
-        /*<<array.ml 78 40>>*/ _i_=1,
-        /*<<array.ml 79 4>>*/ _f_=l_d_-1|0;
-       /*<<array.ml 79 4>>*/ if(!(_f_<1))
+     { /*<<array.ml 80 2>>*/  /*<<array.ml 80 2>>*/ var l_d_=a_b_.length-1;
+       /*<<array.ml 81 2>>*/ if(0===l_d_)return [0];
+       /*<<array.ml 80 2>>*/ var
+        /*<<array.ml 81 26>>*/ _g_=a_b_[1],
+        /*<<array.ml 82 21>>*/ _h_=
+         /*<<array.ml 82 21>>*/ caml_call_gen1_o_(f_a_,_g_),
+        /*<<array.ml 82 40>>*/ r_e_=
+         /*<<array.ml 82 40>>*/ caml_make_vect_at_(l_d_,_h_),
+        /*<<array.ml 82 40>>*/ _i_=1,
+        /*<<array.ml 83 4>>*/ _f_=l_d_-1|0;
+       /*<<array.ml 83 4>>*/ if(!(_f_<1))
        {var i_c_=_i_;
-         /*<<array.ml 80 6>>*/ for(;;)
-         { /*<<array.ml 80 6>>*/ var
-            /*<<array.ml 80 6>>*/ _j_=a_b_[i_c_+1],
-            /*<<array.ml 80 21>>*/ _k_=
-             /*<<array.ml 80 21>>*/ caml_call_gen1_o_(f_a_,_j_);
-           /*<<array.ml 80 40>>*/ r_e_[i_c_+1]=_k_;
-           /*<<array.ml 80 6>>*/  /*<<array.ml 80 40>>*/ var _l_=i_c_+1|0;
+         /*<<array.ml 84 6>>*/ for(;;)
+         { /*<<array.ml 84 6>>*/ var
+            /*<<array.ml 84 6>>*/ _j_=a_b_[i_c_+1],
+            /*<<array.ml 84 21>>*/ _k_=
+             /*<<array.ml 84 21>>*/ caml_call_gen1_o_(f_a_,_j_);
+           /*<<array.ml 84 40>>*/ r_e_[i_c_+1]=_k_;
+           /*<<array.ml 84 6>>*/  /*<<array.ml 84 40>>*/ var _l_=i_c_+1|0;
           if(_f_!==i_c_){var i_c_=_l_;continue}
           break}}
-       /*<<array.ml 82 4>>*/ return r_e_ /*<<array.ml 83 5>>*/ }
+       /*<<array.ml 86 4>>*/ return r_e_ /*<<array.ml 87 5>>*/ }
     function _ae_(a_e_)
-     { /*<<array.ml 99 2>>*/ function tolist_a_(i_a_,res_b_)
+     { /*<<array.ml 103 2>>*/ function tolist_a_(i_a_,res_b_)
        {var i_c_=i_a_,res_d_=res_b_;
-         /*<<array.ml 100 4>>*/ for(;;)
-         { /*<<array.ml 100 4>>*/ if(0<=i_c_)
-           { /*<<array.ml 100 27>>*/ var
-              /*<<array.ml 100 27>>*/ _f_=[0,a_e_[i_c_+1],res_d_],
+         /*<<array.ml 104 4>>*/ for(;;)
+         { /*<<array.ml 104 4>>*/ if(0<=i_c_)
+           { /*<<array.ml 104 27>>*/ var
+              /*<<array.ml 104 27>>*/ _f_=[0,a_e_[i_c_+1],res_d_],
              i_c_=i_c_-1|0,
              res_d_=_f_;
             continue}
-           /*<<array.ml 100 18>>*/ return res_d_} /*<<array.ml 100 65>>*/ }
-       /*<<array.ml 101 2>>*/ return  /*<<array.ml 101 2>>*/ tolist_a_
-              (a_e_.length-1-1|0,0) /*<<array.ml 101 26>>*/ }
+           /*<<array.ml 104 18>>*/ return res_d_} /*<<array.ml 104 65>>*/ }
+       /*<<array.ml 105 2>>*/ return  /*<<array.ml 105 2>>*/ tolist_a_
+              (a_e_.length-1-1|0,0) /*<<array.ml 105 26>>*/ }
     function _dJ_(accu_a_,param_b_)
      {var accu_d_=accu_a_,param_c_=param_b_;
       for(;;)
        {if(param_c_)
-         { /*<<array.ml 106 12>>*/ var
-            /*<<array.ml 106 12>>*/ t_e_=param_c_[2],
+         { /*<<array.ml 110 12>>*/ var
+            /*<<array.ml 110 12>>*/ t_e_=param_c_[2],
            accu_d_=accu_d_+1|0,
            param_c_=t_e_;
           continue}
-         /*<<array.ml 105 10>>*/ return accu_d_}}
+         /*<<array.ml 109 10>>*/ return accu_d_}}
     function ___(l_a_)
-     { /*<<array.ml 109 14>>*/ if(l_a_)
-       { /*<<array.ml 112 6>>*/ var
+     { /*<<array.ml 113 14>>*/ if(l_a_)
+       { /*<<array.ml 116 6>>*/ var
          tl_b_=l_a_[2],
          hd_c_=l_a_[1],
-          /*<<array.ml 112 6>>*/ _d_=0,
-          /*<<array.ml 112 21>>*/ _f_= /*<<array.ml 112 21>>*/ _dJ_(_d_,l_a_),
-          /*<<array.ml 112 38>>*/ a_e_=
-           /*<<array.ml 112 38>>*/ caml_make_vect_at_(_f_,hd_c_),
-          /*<<array.ml 113 6>>*/ fill_g_=
+          /*<<array.ml 116 6>>*/ _d_=0,
+          /*<<array.ml 116 21>>*/ _f_= /*<<array.ml 116 21>>*/ _dJ_(_d_,l_a_),
+          /*<<array.ml 116 38>>*/ a_e_=
+           /*<<array.ml 116 38>>*/ caml_make_vect_at_(_f_,hd_c_),
+          /*<<array.ml 117 6>>*/ fill_g_=
           function(i_a_,param_b_)
            {var i_d_=i_a_,param_c_=param_b_;
             for(;;)
              {if(param_c_)
                {var tl_f_=param_c_[2],hd_g_=param_c_[1];
-                 /*<<array.ml 115 39>>*/ a_e_[i_d_+1]=hd_g_;
+                 /*<<array.ml 119 39>>*/ a_e_[i_d_+1]=hd_g_;
                 var i_d_=i_d_+1|0,param_c_=tl_f_;
                 continue}
-               /*<<array.ml 114 16>>*/ return a_e_}};
-         /*<<array.ml 116 6>>*/ return  /*<<array.ml 116 6>>*/ fill_g_
+               /*<<array.ml 118 16>>*/ return a_e_}};
+         /*<<array.ml 120 6>>*/ return  /*<<array.ml 120 6>>*/ fill_g_
                 (1,tl_b_)}
-       /*<<array.ml 110 10>>*/ return [0] /*<<array.ml 116 15>>*/ }
+       /*<<array.ml 114 10>>*/ return [0] /*<<array.ml 120 15>>*/ }
     caml_set_oo_id_ad_([num_248_r_,_dK_,0]);
     function _dL_(len_a_,param_b_)
      {var len_d_=len_a_,param_c_=param_b_;
@@ -5908,7 +5908,7 @@
      { /*<<bytes.ml 129 15>>*/ var
         /*<<bytes.ml 129 15>>*/ _b_=param_a_-9|0,
         /*<<bytes.ml 129 15>>*/ switch_c_=4<_b_>>>0?23===_b_?1:0:2===_b_?0:1;
-       /*<<camlinternalFormatBasics.ml 465 8>>*/ return switch_c_?1:0 /*<<bytes.ml 131 14>>*/ }
+       /*<<camlinternalFormatBasics.ml 502 8>>*/ return switch_c_?1:0 /*<<bytes.ml 131 14>>*/ }
      /*<<bytes.ml 45 20>>*/ function _dW_(s_a_)
      { /*<<bytes.ml 134 2>>*/ var
         /*<<bytes.ml 134 2>>*/ len_d_=
@@ -6055,7 +6055,7 @@
      { /*<<string.ml 78 15>>*/ var
         /*<<string.ml 78 15>>*/ _b_=param_a_-9|0,
         /*<<string.ml 78 15>>*/ switch_c_=4<_b_>>>0?23===_b_?1:0:2===_b_?0:1;
-       /*<<camlinternalFormatBasics.ml 465 8>>*/ return switch_c_?1:0 /*<<string.ml 80 14>>*/ }
+       /*<<camlinternalFormatBasics.ml 502 8>>*/ return switch_c_?1:0 /*<<string.ml 80 14>>*/ }
     function _aB_(s_a_)
      { /*<<string.ml 83 5>>*/  /*<<string.ml 83 5>>*/ var
        _b_=
@@ -6516,746 +6516,746 @@
          /*<<js.ml 451 18>>*/ caml_js_to_string_n_(jsoo_res_c_);
        /*<<js.ml 451 43>>*/ return [0,_d_] /*<<js.ml 451 44>>*/ }
      /*<<js.ml 447 2>>*/  /*<<js.ml 447 2>>*/ register_printer_bV_(_eC_);
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 9 21>>*/ function
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 9 21>>*/ function
      jsTrimTrailing_eD_
      (s_a_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 9 34>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 9 41>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 9 41>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 9 41>>*/ s_a_.split
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 9 34>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 9 41>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 9 41>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 9 41>>*/ s_a_.split
                 (str_n_aj_).map
                (function(ss_a_)
-                 { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 9 73>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 9 80>>*/ ss_a_.trimRight
-                          () /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 9 59>>*/ }).join
-              (str_n_aj_) /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 9 21>>*/ }
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 11 17>>*/ var
-      /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 11 17>>*/ atomGlobal_a8_=
+                 { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 9 73>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 9 80>>*/ ss_a_.trimRight
+                          () /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 9 59>>*/ }).join
+              (str_n_aj_) /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 9 21>>*/ }
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 11 17>>*/ var
+      /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 11 17>>*/ atomGlobal_a8_=
       atom,
-      /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 13 16>>*/ atomRange_eE_=
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 13 16>>*/ require
+      /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 13 16>>*/ atomRange_eE_=
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 13 16>>*/ require
        (str_atom_cO_).Range,
-      /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 15 22>>*/ bufferedProcess_eF_=
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 15 22>>*/ require
+      /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 15 22>>*/ bufferedProcess_eF_=
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 15 22>>*/ require
        (str_atom_cO_).BufferedProcess;
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 18 16>>*/ function
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 18 16>>*/ function
      isString_eG_
      (s_a_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 18 29>>*/ return typeof
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 18 29>>*/ return typeof
              s_a_===
              str_string_aI_||
-             s_a_ instanceof String /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 18 16>>*/ }
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 20 16>>*/ function
+             s_a_ instanceof String /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 18 16>>*/ }
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 20 16>>*/ function
      isNumber_eH_
      (n_a_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 20 29>>*/ return typeof
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 20 29>>*/ return typeof
              n_a_===
-             "number" /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 20 16>>*/ }
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 22 19>>*/ (function
+             "number" /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 20 16>>*/ }
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 22 19>>*/ (function
       (n_a_)
-      { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 22 32>>*/ return typeof
+      { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 22 32>>*/ return typeof
               n_a_===
-              "undefined" /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 22 19>>*/ });
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 24 14>>*/ function
+              "undefined" /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 22 19>>*/ });
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 24 14>>*/ function
      isNull_eI_
      (n_a_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 24 27>>*/ return n_a_===
-             null /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 24 14>>*/ }
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 26 14>>*/ function
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 24 27>>*/ return n_a_===
+             null /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 24 14>>*/ }
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 26 14>>*/ function
      isBool_eJ_
      (n_a_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 26 27>>*/ return typeof
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 26 27>>*/ return typeof
              n_a_===
-             "boolean" /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 26 14>>*/ }
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 28 20>>*/ var
-      /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 28 20>>*/ arrayIsArray_a9_=
+             "boolean" /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 26 14>>*/ }
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 28 20>>*/ var
+      /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 28 20>>*/ arrayIsArray_a9_=
       Array.isArray,
-      /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 30 14>>*/ _eK_=
+      /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 30 14>>*/ _eK_=
       Promise;
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
      _eL_
      (s_a_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 35 55>>*/ var
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 35 55>>*/ _b_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 35 55>>*/ s_a_.toString
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 35 55>>*/ var
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 35 55>>*/ _b_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 35 55>>*/ s_a_.toString
          (),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 34 55>>*/ _c_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 34 55>>*/ jsTrimTrailing_eD_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 34 55>>*/ _c_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 34 55>>*/ jsTrimTrailing_eD_
          (_b_);
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 36 1>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 36 1>>*/ caml_js_to_string_n_
-              (_c_) /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 36 1>>*/ }
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 36 1>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 36 1>>*/ caml_js_to_string_n_
+              (_c_) /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 36 1>>*/ }
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
      _b0_
      (fieldVal_a_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 61 7>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 61 7>>*/ var
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 61 7>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 61 7>>*/ var
        _b_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 61 7>>*/ arrayIsArray_a9_
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 61 7>>*/ arrayIsArray_a9_
          (fieldVal_a_);
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 61 71>>*/ if
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 61 71>>*/ if
        (_b_)
-       { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 62 37>>*/ var
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 62 37>>*/ _c_=
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 62 37>>*/ caml_js_to_array_P_
+       { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 62 37>>*/ var
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 62 37>>*/ _c_=
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 62 37>>*/ caml_js_to_array_P_
            (fieldVal_a_),
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 62 20>>*/ jsArray_d_=
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 62 20>>*/ _x_
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 62 20>>*/ jsArray_d_=
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 62 20>>*/ _x_
            (_b0_,_c_);
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 63 6>>*/ return [3,
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 63 6>>*/ return [3,
                 jsArray_d_]}
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 61 7>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 64 14>>*/ var
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 61 7>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 64 14>>*/ var
        _e_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 64 14>>*/ isString_eG_
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 64 14>>*/ isString_eG_
          (fieldVal_a_);
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 66 5>>*/ if
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 66 5>>*/ if
        (_e_)
-       { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 67 17>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 67 17>>*/ var
+       { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 67 17>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 67 17>>*/ var
          _f_=
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 67 17>>*/ caml_js_to_string_n_
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 67 17>>*/ caml_js_to_string_n_
            (fieldVal_a_);
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 67 40>>*/ return [0,
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 67 40>>*/ return [0,
                 _f_]}
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 61 7>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 68 14>>*/ var
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 61 7>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 68 14>>*/ var
        _g_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 68 14>>*/ isBool_eJ_
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 68 14>>*/ isBool_eJ_
          (fieldVal_a_);
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 70 5>>*/ if
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 70 5>>*/ if
        (_g_)
-       { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 71 15>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 71 15>>*/ var
+       { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 71 15>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 71 15>>*/ var
          _h_=
           fieldVal_a_|0;
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 71 55>>*/ return [2,
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 71 55>>*/ return [2,
                 _h_]}
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 61 7>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 72 14>>*/ var
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 61 7>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 72 14>>*/ var
        _i_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 72 14>>*/ isNumber_eH_
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 72 14>>*/ isNumber_eH_
          (fieldVal_a_);
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 74 5>>*/ if
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 74 5>>*/ if
        (_i_)
        return [1,fieldVal_a_];
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 61 7>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 76 14>>*/ var
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 61 7>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 76 14>>*/ var
        _j_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 76 14>>*/ isNull_eI_
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 76 14>>*/ isNull_eI_
          (fieldVal_a_);
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 78 5>>*/ return _j_
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 78 5>>*/ return _j_
               ?0
-              :1 /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 82 5>>*/ }
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
+              :1 /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 82 5>>*/ }
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
      _b1_
      (param_a_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 84 4>>*/ if
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 84 4>>*/ if
        (typeof param_a_==="number")
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 84 4>>*/ return 0===
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 84 4>>*/ return 0===
                param_a_
                ?null_a6_
                :undefined_a7_;
       else
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 84 4>>*/ switch
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 84 4>>*/ switch
         (param_a_[0])
         {case 0:
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 84 28>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 84 28>>*/ var
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 84 28>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 84 28>>*/ var
            str_b_=
             param_a_[1];
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 84 28>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 84 28>>*/ str_b_.toString
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 84 28>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 84 28>>*/ str_b_.toString
                   ();
          case 1:
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 85 23>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 85 23>>*/ var
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 85 23>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 85 23>>*/ var
            f_c_=
             param_a_[1];
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 85 23>>*/ return f_c_;
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 85 23>>*/ return f_c_;
          case 2:
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 86 24>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 86 24>>*/ var
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 86 24>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 86 24>>*/ var
            b_d_=
             param_a_[1];
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 86 24>>*/ return !!b_d_;
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 86 24>>*/ return !!b_d_;
          default:
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 87 25>>*/ var
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 87 25>>*/ a_e_=
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 87 25>>*/ var
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 87 25>>*/ a_e_=
             param_a_[1],
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 87 52>>*/ _f_=
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 87 52>>*/ _x_
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 87 52>>*/ _f_=
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 87 52>>*/ _x_
              (_b1_,a_e_);
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 87 70>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 87 70>>*/ caml_js_from_array_q_
-                  (_f_)} /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 89 48>>*/ }
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 87 70>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 87 70>>*/ caml_js_from_array_q_
+                  (_f_)} /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 89 48>>*/ }
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
      _Q_
      (configKey_a_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 93 35>>*/ var
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 93 35>>*/ config_b_=
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 93 35>>*/ var
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 93 35>>*/ config_b_=
         atomGlobal_a8_.config,
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 95 4>>*/ _c_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 95 4>>*/ configKey_a_.toString
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 95 4>>*/ _c_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 95 4>>*/ configKey_a_.toString
          (),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 95 21>>*/ _d_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 95 21>>*/ config_b_.get
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 95 21>>*/ _d_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 95 21>>*/ config_b_.get
          (_c_);
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 95 98>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 95 98>>*/ _b0_
-              (_d_) /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 96 3>>*/ }
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 95 98>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 95 98>>*/ _b0_
+              (_d_) /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 96 3>>*/ }
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
      _aE_
      (configKey_a_,v_b_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 97 45>>*/ var
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 97 45>>*/ config_c_=
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 97 45>>*/ var
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 97 45>>*/ config_c_=
         atomGlobal_a8_.config,
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 99 16>>*/ jsVal_d_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 99 16>>*/ _b1_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 99 16>>*/ jsVal_d_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 99 16>>*/ _b1_
          (v_b_),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 100 56>>*/ _e_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 100 56>>*/ configKey_a_.toString
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 100 56>>*/ _e_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 100 56>>*/ configKey_a_.toString
          ();
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 100 77>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 100 77>>*/ config_c_.set
-              (_e_,jsVal_d_) /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 101 3>>*/ }
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 100 77>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 100 77>>*/ config_c_.set
+              (_e_,jsVal_d_) /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 101 3>>*/ }
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
      _a__
      (param_a_)
      {var column_b_=param_a_[2],row_c_=param_a_[1];
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 106 28>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 106 28>>*/ caml_js_from_array_q_
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 106 28>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 106 28>>*/ caml_js_from_array_q_
               ([0,row_c_,column_b_])}
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
      _a$_
      (jsP_a_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 108 7>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 108 7>>*/ var
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 108 7>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 108 7>>*/ var
        _c_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 108 7>>*/ arrayIsArray_a9_
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 108 7>>*/ arrayIsArray_a9_
          (jsP_a_);
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 108 66>>*/ if
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 108 66>>*/ if
        (_c_)
-       { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 108 67>>*/ var
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 108 67>>*/ arr_b_=
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 108 67>>*/ caml_js_to_array_P_
+       { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 108 67>>*/ var
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 108 67>>*/ arr_b_=
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 108 67>>*/ caml_js_to_array_P_
            (jsP_a_),
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 108 67>>*/ _d_=
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 108 67>>*/ _d_=
           1,
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 110 16>>*/ _e_=
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 110 16>>*/ caml_check_bound_l_
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 110 16>>*/ _e_=
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 110 16>>*/ caml_check_bound_l_
             (arr_b_,1)
            [_d_+1],
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 110 23>>*/ _f_=
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 110 23>>*/ _f_=
           0,
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 110 7>>*/ _g_=
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 110 7>>*/ caml_check_bound_l_
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 110 7>>*/ _g_=
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 110 7>>*/ caml_check_bound_l_
             (arr_b_,0)
            [_f_+1];
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 110 14>>*/ return [0,
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 110 14>>*/ return [0,
                 _g_,
                 _e_]}
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 108 7>>*/ var
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 111 11>>*/ row_h_=
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 108 7>>*/ var
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 111 11>>*/ row_h_=
         jsP_a_.row,
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 113 6>>*/ col_i_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 113 6>>*/ col_i_=
         jsP_a_.column;
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 114 6>>*/ return [0,
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 114 6>>*/ return [0,
               row_h_,
-              col_i_] /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 115 5>>*/ }
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
+              col_i_] /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 115 5>>*/ }
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
      _ba_
      (param_a_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 125 61>>*/ var
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 125 61>>*/ var
        endRowColumn_b_=param_a_[2],
        startRowColumn_c_=param_a_[1],
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 125 61>>*/ _d_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 125 61>>*/ _a__
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 125 61>>*/ _d_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 125 61>>*/ _a__
          (endRowColumn_b_),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 125 34>>*/ _e_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 125 34>>*/ _a__
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 125 34>>*/ _e_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 125 34>>*/ _a__
          (startRowColumn_c_);
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 125 59>>*/ return new
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 125 59>>*/ return new
               atomRange_eE_
               (_e_,_d_)}
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
      _eN_
      (jsRange_a_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 127 7>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 127 7>>*/ var
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 127 7>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 127 7>>*/ var
        _e_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 127 7>>*/ arrayIsArray_a9_
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 127 7>>*/ arrayIsArray_a9_
          (jsRange_a_);
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 127 70>>*/ if
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 127 70>>*/ if
        (_e_)
-       { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 127 71>>*/ var
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 127 71>>*/ arr_b_=
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 127 71>>*/ caml_js_to_array_P_
+       { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 127 71>>*/ var
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 127 71>>*/ arr_b_=
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 127 71>>*/ caml_js_to_array_P_
            (jsRange_a_),
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 127 71>>*/ _f_=
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 127 71>>*/ _f_=
           0,
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 129 35>>*/ _g_=
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 129 35>>*/ caml_check_bound_l_
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 129 35>>*/ _g_=
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 129 35>>*/ caml_check_bound_l_
             (arr_b_,0)
            [_f_+1],
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 129 42>>*/ startPoint_c_=
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 129 42>>*/ caml_js_to_array_P_
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 129 42>>*/ startPoint_c_=
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 129 42>>*/ caml_js_to_array_P_
            (_g_),
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 129 42>>*/ _h_=
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 129 42>>*/ _h_=
           1,
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 130 33>>*/ _i_=
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 130 33>>*/ caml_check_bound_l_
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 130 33>>*/ _i_=
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 130 33>>*/ caml_check_bound_l_
             (arr_b_,1)
            [_h_+1],
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 130 40>>*/ endPoint_d_=
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 130 40>>*/ caml_js_to_array_P_
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 130 40>>*/ endPoint_d_=
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 130 40>>*/ caml_js_to_array_P_
            (_i_),
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 130 40>>*/ _j_=
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 130 40>>*/ _j_=
           1,
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 131 56>>*/ _k_=
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 131 56>>*/ caml_check_bound_l_
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 131 56>>*/ _k_=
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 131 56>>*/ caml_check_bound_l_
             (endPoint_d_,1)
            [_j_+1],
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 131 68>>*/ _m_=
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 131 68>>*/ _m_=
           0,
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 131 42>>*/ _n_=
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 131 42>>*/ caml_check_bound_l_
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 131 42>>*/ _n_=
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 131 42>>*/ caml_check_bound_l_
             (endPoint_d_,0)
            [_m_+1],
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 131 54>>*/ _o_=
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 131 54>>*/ _o_=
           [0,_n_,_k_],
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 131 54>>*/ _p_=
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 131 54>>*/ _p_=
           1,
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 131 24>>*/ _q_=
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 131 24>>*/ caml_check_bound_l_
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 131 24>>*/ _q_=
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 131 24>>*/ caml_check_bound_l_
             (startPoint_c_,1)
            [_p_+1],
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 131 38>>*/ _r_=
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 131 38>>*/ _r_=
           0,
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 131 8>>*/ _s_=
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 131 8>>*/ caml_check_bound_l_
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 131 8>>*/ _s_=
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 131 8>>*/ caml_check_bound_l_
             (startPoint_c_,0)
            [_r_+1];
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 131 22>>*/ return [0,
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 131 22>>*/ return [0,
                 [0,_s_,_q_],
                 _o_]}
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 127 7>>*/ var
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 132 11>>*/ startPoint_t_=
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 127 7>>*/ var
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 132 11>>*/ startPoint_t_=
         jsRange_a_.start,
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 134 6>>*/ endPoint_u_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 134 6>>*/ endPoint_u_=
         jsRange_a_.end,
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 135 32>>*/ _v_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 135 32>>*/ _a$_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 135 32>>*/ _v_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 135 32>>*/ _a$_
          (endPoint_u_),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 135 7>>*/ _w_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 135 7>>*/ _a$_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 135 7>>*/ _w_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 135 7>>*/ _a$_
          (startPoint_t_);
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 135 30>>*/ return [0,
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 135 30>>*/ return [0,
               _w_,
-              _v_] /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 136 5>>*/ }
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
+              _v_] /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 136 5>>*/ }
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
      _b2_
      (buffer_a_,rowColumn_b_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 144 78>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 144 78>>*/ var
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 144 78>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 144 78>>*/ var
        _c_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 144 78>>*/ _a__
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 144 78>>*/ _a__
          (rowColumn_b_);
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 144 100>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 144 100>>*/ buffer_a_.characterIndexForPosition
-              (_c_) /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 144 102>>*/ }
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 144 100>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 144 100>>*/ buffer_a_.characterIndexForPosition
+              (_c_) /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 144 102>>*/ }
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
      _eO_
      (buffer_a_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 145 50>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 145 50>>*/ var
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 145 50>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 145 50>>*/ var
        _b_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 145 50>>*/ buffer_a_.getText
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 145 50>>*/ buffer_a_.getText
          ();
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 145 98>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 145 98>>*/ caml_js_to_string_n_
-              (_b_) /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 145 98>>*/ }
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 145 98>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 145 98>>*/ caml_js_to_string_n_
+              (_b_) /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 145 98>>*/ }
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
      _b3_
      (cursor_a_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 152 52>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 152 52>>*/ var
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 152 52>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 152 52>>*/ var
        _b_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 152 52>>*/ cursor_a_.getBufferPosition
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 152 52>>*/ cursor_a_.getBufferPosition
          ();
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 154 3>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 154 3>>*/ _a$_
-              (_b_) /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 154 3>>*/ }
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 154 3>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 154 3>>*/ _a$_
+              (_b_) /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 154 3>>*/ }
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
      _eP_
      (jsCursor_a_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 160 25>>*/ return jsCursor_a_ /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 160 33>>*/ }
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 160 25>>*/ return jsCursor_a_ /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 160 33>>*/ }
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
      _b4_
      (jsEditor_a_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 165 28>>*/ return jsEditor_a_ /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 165 36>>*/ }
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 165 28>>*/ return jsEditor_a_ /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 165 36>>*/ }
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
      _eQ_
      (editor_a_,bufferRow_b_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 167 65>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 167 65>>*/ var
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 167 65>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 167 65>>*/ var
        _c_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 167 65>>*/ editor_a_.lineTextForBufferRow
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 167 65>>*/ editor_a_.lineTextForBufferRow
          (bufferRow_b_);
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 169 3>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 169 3>>*/ caml_js_to_string_n_
-              (_c_) /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 169 3>>*/ }
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 169 3>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 169 3>>*/ caml_js_to_string_n_
+              (_c_) /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 169 3>>*/ }
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
      _eR_
      (editor_a_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 170 36>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 170 36>>*/ editor_a_.getBuffer
-              () /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 170 84>>*/ }
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 170 36>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 170 36>>*/ editor_a_.getBuffer
+              () /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 170 84>>*/ }
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
      _b5_
      (editor_a_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 171 24>>*/ var
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 171 24>>*/ path_b_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 171 24>>*/ editor_a_.getPath
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 171 24>>*/ var
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 171 24>>*/ path_b_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 171 24>>*/ editor_a_.getPath
          (),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 173 4>>*/ match_c_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 173 4>>*/ _bY_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 173 4>>*/ match_c_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 173 4>>*/ _bY_
          (path_b_);
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 173 20>>*/ if
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 173 20>>*/ if
        (0===match_c_)
        return 0;
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 171 24>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 173 28>>*/ var
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 171 24>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 173 28>>*/ var
        _d_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 173 28>>*/ caml_js_to_string_n_
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 173 28>>*/ caml_js_to_string_n_
          (path_b_);
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 173 47>>*/ return [0,
-              _d_] /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 174 3>>*/ }
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 173 47>>*/ return [0,
+              _d_] /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 174 3>>*/ }
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
      _b6_
      (editor_a_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 176 51>>*/ var
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 176 51>>*/ _b_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 176 51>>*/ editor_a_.getCursors
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 176 51>>*/ var
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 176 51>>*/ _b_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 176 51>>*/ editor_a_.getCursors
          (),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 176 102>>*/ _c_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 176 102>>*/ caml_js_to_array_P_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 176 102>>*/ _c_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 176 102>>*/ caml_js_to_array_P_
          (_b_),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 176 14>>*/ arr_d_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 176 14>>*/ _x_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 176 14>>*/ arr_d_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 176 14>>*/ _x_
          (_eP_,_c_);
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 177 4>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 177 4>>*/ _ae_
-              (arr_d_) /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 178 3>>*/ }
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 177 4>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 177 4>>*/ _ae_
+              (arr_d_) /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 178 3>>*/ }
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
      _eS_
      (p_a_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 194 16>>*/ return p_a_
-              [1] /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 194 37>>*/ }
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 194 16>>*/ return p_a_
+              [1] /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 194 37>>*/ }
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
      _eT_
      (executor_a_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 195 25>>*/ var
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 195 25>>*/ jsCurriedExecutor_c_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 195 25>>*/ caml_js_wrap_callback_F_
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 195 25>>*/ var
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 195 25>>*/ jsCurriedExecutor_c_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 195 25>>*/ caml_js_wrap_callback_F_
          (executor_a_),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 197 4>>*/ underlyingJsPromise_b_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 197 4>>*/ underlyingJsPromise_b_=
         new _eK_(jsCurriedExecutor_c_);
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 198 4>>*/ return [0,
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 198 4>>*/ return [0,
               underlyingJsPromise_b_,
               function(onResolve_a_)
-               { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 201 74>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 201 74>>*/ var
+               { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 201 74>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 201 74>>*/ var
                  _c_=
-                   /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 201 74>>*/ caml_js_wrap_callback_F_
+                   /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 201 74>>*/ caml_js_wrap_callback_F_
                    (onResolve_a_);
-                 /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 201 102>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 201 102>>*/ underlyingJsPromise_b_.then
-                        (_c_) /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 201 104>>*/ }] /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 203 3>>*/ }
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
+                 /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 201 102>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 201 102>>*/ underlyingJsPromise_b_.then
+                        (_c_) /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 201 104>>*/ }] /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 203 3>>*/ }
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
      _eU_
      (opts_a_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 216 26>>*/ var
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 216 26>>*/ _b_=
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 216 26>>*/ var
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 216 26>>*/ _b_=
         opts_a_[3],
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 219 30>>*/ _c_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 219 30>>*/ _b_.toString
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 219 30>>*/ _c_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 219 30>>*/ _b_.toString
          (),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 219 51>>*/ _d_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 219 51>>*/ _d_=
         opts_a_[2],
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 218 37>>*/ _e_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 218 37>>*/ _e_=
         !!_d_,
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 218 63>>*/ _f_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 218 63>>*/ _f_=
         opts_a_[1],
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 217 32>>*/ _g_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 217 32>>*/ _f_.toString
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 217 32>>*/ _g_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 217 32>>*/ _f_.toString
          ();
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 217 55>>*/ return {"detail":
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 217 55>>*/ return {"detail":
               _g_,
               "dismissable":_e_,
-              "icon":_c_} /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 220 4>>*/ }
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
+              "icon":_c_} /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 220 4>>*/ }
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
      _eV_
      (opt_a_,title_b_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 223 4>>*/ if
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 223 4>>*/ if
        (opt_a_)
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 222 29>>*/ var
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 222 29>>*/ sth_d_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 222 29>>*/ var
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 222 29>>*/ sth_d_=
          opt_a_[1],
         opts_c_=sth_d_;
       else
        var opts_c_=[0,_aF_[1],_aF_[2],_eW_];
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 227 44>>*/ var
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 227 44>>*/ _e_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 227 44>>*/ _eU_
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 227 44>>*/ var
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 227 44>>*/ _e_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 227 44>>*/ _eU_
          (opts_c_),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 227 25>>*/ _f_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 227 25>>*/ title_b_.toString
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 227 25>>*/ _f_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 227 25>>*/ title_b_.toString
          (),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 225 6>>*/ _g_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 225 6>>*/ _g_=
         atomGlobal_a8_.notifications;
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 225 48>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 225 48>>*/ _g_.addError
-              (_f_,_e_) /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 227 62>>*/ }
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 225 48>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 225 48>>*/ _g_.addError
+              (_f_,_e_) /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 227 62>>*/ }
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
      _eX_
      (process_a_,str_b_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 256 83>>*/ var
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 256 83>>*/ _c_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 256 83>>*/ str_b_.toString
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 256 83>>*/ var
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 256 83>>*/ _c_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 256 83>>*/ str_b_.toString
          (),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 256 24>>*/ _d_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 256 24>>*/ _d_=
         process_a_.stdin;
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 256 55>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 256 55>>*/ _d_.write
-              (_c_) /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 256 100>>*/ }
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 256 55>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 256 55>>*/ _d_.write
+              (_c_) /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 256 100>>*/ }
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
      _eY_
      (process_a_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 257 51>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 257 51>>*/ var
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 257 51>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 257 51>>*/ var
        _b_=
         process_a_.stdin;
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 257 82>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 257 82>>*/ _b_.end
-              () /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 257 98>>*/ }
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 257 82>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 257 82>>*/ _b_.end
+              () /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 257 98>>*/ }
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
      _eZ_
      (opts_a_,stdOut_b_,stdErr_c_,exit_d_,cmd_e_,args_f_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 278 63>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 278 63>>*/ var
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 278 63>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 278 63>>*/ var
        _m_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 278 63>>*/ ___
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 278 63>>*/ ___
          (args_f_);
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 278 83>>*/ function
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 278 83>>*/ function
        _p_
        (_a_)
        { /*<<?>>*/ return _a_.toString()}
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 278 42>>*/ var
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 278 42>>*/ _r_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 278 42>>*/ _x_
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 278 42>>*/ var
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 278 42>>*/ _r_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 278 42>>*/ _x_
          (_p_,_m_),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 278 84>>*/ _s_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 278 84>>*/ caml_js_from_array_q_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 278 84>>*/ _s_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 278 84>>*/ caml_js_from_array_q_
          (_r_),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 278 85>>*/ _t_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 278 85>>*/ _t_=
         [0,_e0_,_s_],
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 277 35>>*/ _u_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 277 35>>*/ cmd_e_.toString
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 277 35>>*/ _u_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 277 35>>*/ cmd_e_.toString
          (),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 277 50>>*/ fields_k_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 277 50>>*/ fields_k_=
         [0,[0,_e1_,_u_],_t_];
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 280 4>>*/ if
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 280 4>>*/ if
        (opts_a_)
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 283 23>>*/ var
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 283 23>>*/ opts_g_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 283 23>>*/ var
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 283 23>>*/ opts_g_=
          opts_a_[1],
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 283 23>>*/ _v_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 283 23>>*/ _v_=
          opts_g_[2],
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 285 76>>*/ _y_=
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 285 76>>*/ ___
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 285 76>>*/ _y_=
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 285 76>>*/ ___
           (_v_),
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 285 100>>*/ _z_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 285 100>>*/ _z_=
          function(param_a_)
-          { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 285 24>>*/ var
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 285 24>>*/ v_b_=
+          { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 285 24>>*/ var
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 285 24>>*/ v_b_=
              param_a_[2],
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 285 24>>*/ k_c_=
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 285 24>>*/ k_c_=
              param_a_[1],
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 285 39>>*/ _d_=
-              /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 285 39>>*/ v_b_.toString
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 285 39>>*/ _d_=
+              /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 285 39>>*/ v_b_.toString
               ();
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 285 73>>*/ return [0,
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 285 73>>*/ return [0,
                    k_c_,
-                   _d_] /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 285 75>>*/ },
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 285 14>>*/ envFields_A_=
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 285 14>>*/ _x_
+                   _d_] /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 285 75>>*/ },
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 285 14>>*/ envFields_A_=
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 285 14>>*/ _x_
           (_z_,_y_),
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 286 12>>*/ jsEnv_B_=
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 286 12>>*/ caml_js_object_as_
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 286 12>>*/ jsEnv_B_=
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 286 12>>*/ caml_js_object_as_
           (envFields_A_),
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 287 12>>*/ _C_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 287 12>>*/ _C_=
          opts_g_[4],
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 291 44>>*/ _D_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 291 44>>*/ _D_=
          !!_C_,
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 291 67>>*/ _E_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 291 67>>*/ _E_=
          opts_g_[3],
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 290 62>>*/ _G_=
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 290 62>>*/ ___
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 290 62>>*/ _G_=
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 290 62>>*/ ___
           (_E_),
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 290 88>>*/ _H_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 290 88>>*/ _H_=
          function(_a_){ /*<<?>>*/ return _a_.toString()},
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 290 41>>*/ _I_=
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 290 41>>*/ _x_
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 290 41>>*/ _I_=
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 290 41>>*/ _x_
           (_H_,_G_),
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 290 89>>*/ jsOptions_J_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 290 89>>*/ jsOptions_J_=
          {"cwd":opts_g_[1],"env":jsEnv_B_,"stdio":_I_,"detached":_D_},
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 293 12>>*/ _K_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 293 12>>*/ _K_=
          [0,[0,_e2_,jsOptions_J_]],
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 293 12>>*/ _L_=
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 293 12>>*/ _w_
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 293 12>>*/ _L_=
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 293 12>>*/ _w_
           (fields_k_,_K_),
         fields_h_=_L_;
       else
        var fields_h_=fields_k_;
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 296 4>>*/ if
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 296 4>>*/ if
        (stdOut_b_)
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 299 21>>*/ var
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 299 21>>*/ so_M_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 299 21>>*/ var
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 299 21>>*/ so_M_=
          stdOut_b_[1],
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 299 21>>*/ cb_N_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 299 21>>*/ cb_N_=
          function(jsStr_a_)
-          { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 300 31>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 300 31>>*/ var
+          { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 300 31>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 300 31>>*/ var
             _b_=
-              /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 300 31>>*/ caml_js_to_string_n_
+              /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 300 31>>*/ caml_js_to_string_n_
               (jsStr_a_);
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 300 51>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 300 51>>*/ caml_call_gen1_o_
-                   (so_M_,_b_) /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 300 51>>*/ },
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 301 12>>*/ _O_=
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 301 12>>*/ caml_js_wrap_callback_F_
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 300 51>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 300 51>>*/ caml_call_gen1_o_
+                   (so_M_,_b_) /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 300 51>>*/ },
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 301 12>>*/ _O_=
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 301 12>>*/ caml_js_wrap_callback_F_
           (cb_N_),
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 301 83>>*/ _P_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 301 83>>*/ _P_=
          [0,[0,_e3_,_O_]],
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 301 12>>*/ _Q_=
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 301 12>>*/ _w_
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 301 12>>*/ _Q_=
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 301 12>>*/ _w_
           (fields_h_,_P_),
         fields_i_=_Q_;
       else
        var fields_i_=fields_h_;
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 304 4>>*/ if
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 304 4>>*/ if
        (stdErr_c_)
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 307 21>>*/ var
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 307 21>>*/ si_R_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 307 21>>*/ var
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 307 21>>*/ si_R_=
          stdErr_c_[1],
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 307 21>>*/ cb_S_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 307 21>>*/ cb_S_=
          function(jsStr_a_)
-          { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 308 31>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 308 31>>*/ var
+          { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 308 31>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 308 31>>*/ var
             _b_=
-              /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 308 31>>*/ caml_js_to_string_n_
+              /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 308 31>>*/ caml_js_to_string_n_
               (jsStr_a_);
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 308 51>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 308 51>>*/ caml_call_gen1_o_
-                   (si_R_,_b_) /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 308 51>>*/ },
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 309 12>>*/ _T_=
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 309 12>>*/ caml_js_wrap_callback_F_
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 308 51>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 308 51>>*/ caml_call_gen1_o_
+                   (si_R_,_b_) /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 308 51>>*/ },
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 309 12>>*/ _T_=
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 309 12>>*/ caml_js_wrap_callback_F_
           (cb_S_),
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 309 82>>*/ _U_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 309 82>>*/ _U_=
          [0,[0,_e4_,_T_]],
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 309 12>>*/ _V_=
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 309 12>>*/ _w_
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 309 12>>*/ _V_=
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 309 12>>*/ _w_
           (fields_i_,_U_),
         fields_j_=_V_;
       else
        var fields_j_=fields_i_;
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 312 4>>*/ if
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 312 4>>*/ if
        (exit_d_)
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 315 20>>*/ var
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 315 20>>*/ e_W_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 315 20>>*/ var
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 315 20>>*/ e_W_=
          exit_d_[1],
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 315 20>>*/ cb_X_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 315 20>>*/ cb_X_=
          function(eCode_a_)
-          { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 316 28>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 316 28>>*/ caml_call_gen1_o_
-                   (e_W_,eCode_a_) /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 316 49>>*/ },
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 317 12>>*/ _Y_=
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 317 12>>*/ caml_js_wrap_callback_F_
+          { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 316 28>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 316 28>>*/ caml_call_gen1_o_
+                   (e_W_,eCode_a_) /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 316 49>>*/ },
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 317 12>>*/ _Y_=
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 317 12>>*/ caml_js_wrap_callback_F_
           (cb_X_),
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 317 81>>*/ _Z_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 317 81>>*/ _Z_=
          [0,[0,_e5_,_Y_]],
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 317 12>>*/ _$_=
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 317 12>>*/ _w_
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 317 12>>*/ _$_=
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 317 12>>*/ _w_
           (fields_j_,_Z_),
         fields_l_=_$_;
       else
        var fields_l_=fields_j_;
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 278 42>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 320 4>>*/ var
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 278 42>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 320 4>>*/ var
        _aa_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 320 4>>*/ caml_js_object_as_
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 320 4>>*/ caml_js_object_as_
          (fields_l_);
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 320 60>>*/ return new
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 320 60>>*/ return new
               bufferedProcess_eF_
-              (_aa_) /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 321 3>>*/ }
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
+              (_aa_) /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 321 3>>*/ }
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
      _e6_
      (buffProcess_a_,fn_b_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 322 47>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 322 47>>*/ var
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 322 47>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 322 47>>*/ var
        wrappedCb_c_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 322 47>>*/ caml_js_wrap_callback_F_
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 322 47>>*/ caml_js_wrap_callback_F_
          (function(jsErrHandle_a_)
-           { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 324 64>>*/ var
-              /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 324 64>>*/ _c_=
+           { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 324 64>>*/ var
+              /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 324 64>>*/ _c_=
               jsErrHandle_a_.handle,
-              /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 324 28>>*/ _d_=
+              /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 324 28>>*/ _d_=
               jsErrHandle_a_.error;
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 324 63>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 324 63>>*/ caml_call_gen2_bd_
-                    (fn_b_,_d_,_c_) /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 324 100>>*/ });
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 326 4>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 326 4>>*/ buffProcess_a_.onWillThrowError
-              (wrappedCb_c_) /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 327 3>>*/ }
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 324 63>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 324 63>>*/ caml_call_gen2_bd_
+                    (fn_b_,_d_,_c_) /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 324 100>>*/ });
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 326 4>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 326 4>>*/ buffProcess_a_.onWillThrowError
+              (wrappedCb_c_) /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 327 3>>*/ }
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 30 41>>*/ function
      _e7_
      (bufferedProcess_a_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 328 38>>*/ return bufferedProcess_a_.process /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Atom.re 328 77>>*/ }
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 328 38>>*/ return bufferedProcess_a_.process /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Atom.re 328 77>>*/ }
     function _e8_(st_a_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Console.re 9 2>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Console.re 9 2>>*/ print_string_dG_
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Console.re 9 2>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Console.re 9 2>>*/ print_string_dG_
        (st_a_);
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Console.re 9 17>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Console.re 9 17>>*/ flush_all_bL_
-              (0) /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Console.re 11 1>>*/ }
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/JsUtils.re 9 16>>*/ (function
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Console.re 9 17>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Console.re 9 17>>*/ flush_all_bL_
+              (0) /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Console.re 11 1>>*/ }
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/JsUtils.re 9 16>>*/ (function
       (a_a_)
-      { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/JsUtils.re 10 31>>*/ return !!a_a_ /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/JsUtils.re 10 18>>*/ });
+      { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/JsUtils.re 10 31>>*/ return !!a_a_ /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/JsUtils.re 10 18>>*/ });
     function _bb_(x_a_,d_b_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 9 2>>*/ if
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 9 2>>*/ if
        (x_a_)
-       { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 11 16>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 11 16>>*/ var
+       { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 11 16>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 11 16>>*/ var
          s_c_=
           x_a_[1];
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 11 16>>*/ return s_c_}
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 10 14>>*/ return d_b_ /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 12 3>>*/ }
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 11 16>>*/ return s_c_}
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 10 14>>*/ return d_b_ /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 12 3>>*/ }
     function _b7_(param_a_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 17 4>>*/ return 0===
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 17 4>>*/ return 0===
               param_a_
               ?"Error"
-              :"Warning" /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 18 40>>*/ }
+              :"Warning" /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 18 40>>*/ }
     function _b8_(trace_a_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 26 27>>*/ var
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 26 27>>*/ range_c_=
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 26 27>>*/ var
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 26 27>>*/ range_c_=
         trace_a_[5],
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 26 27>>*/ html_d_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 26 27>>*/ html_d_=
         trace_a_[3],
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 26 27>>*/ filePath_g_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 26 27>>*/ filePath_g_=
         trace_a_[4],
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 26 27>>*/ text_h_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 26 27>>*/ text_h_=
         trace_a_[2],
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 28 6>>*/ _i_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 28 6>>*/ filePath_g_.toString
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 28 6>>*/ _i_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 28 6>>*/ filePath_g_.toString
          (),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 31 58>>*/ _j_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 31 58>>*/ _j_=
         [0,_e9_,_i_],
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 30 45>>*/ _k_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 30 45>>*/ _bb_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 30 45>>*/ _k_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 30 45>>*/ _bb_
          (text_h_,_e__),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 30 58>>*/ _l_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 30 58>>*/ _k_.toString
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 30 58>>*/ _l_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 30 58>>*/ _k_.toString
          (),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 30 59>>*/ _m_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 30 59>>*/ _m_=
         [0,_e$_,_l_],
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 29 34>>*/ _n_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 29 34>>*/ _n_=
         str_trace_aL_,
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 29 53>>*/ fields_e_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 29 53>>*/ fields_e_=
         [0,[0,_fa_,_n_],_m_,_j_];
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 33 6>>*/ if
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 33 6>>*/ if
        (html_d_)
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 36 22>>*/ var
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 36 22>>*/ h_o_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 36 22>>*/ var
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 36 22>>*/ h_o_=
          html_d_[1],
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 36 22>>*/ _p_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 36 22>>*/ _p_=
          [0,[0,_fb_,h_o_]],
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 36 22>>*/ _q_=
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 36 22>>*/ _w_
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 36 22>>*/ _q_=
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 36 22>>*/ _w_
           (fields_e_,_p_),
         fields_b_=_q_;
       else
        var fields_b_=fields_e_;
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 38 6>>*/ if
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 38 6>>*/ if
        (range_c_)
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 41 22>>*/ var
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 41 22>>*/ r_r_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 41 22>>*/ var
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 41 22>>*/ r_r_=
          range_c_[1],
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 41 71>>*/ _s_=
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 41 71>>*/ _ba_
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 41 71>>*/ _s_=
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 41 71>>*/ _ba_
           (r_r_),
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 41 90>>*/ _t_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 41 90>>*/ _t_=
          [0,[0,_fc_,_s_]],
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 41 22>>*/ _u_=
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 41 22>>*/ _w_
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 41 22>>*/ _u_=
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 41 22>>*/ _w_
           (fields_b_,_t_),
         fields_f_=_u_;
       else
        var fields_f_=fields_b_;
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 43 6>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 43 6>>*/ caml_js_object_as_
-              (fields_f_) /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 44 5>>*/ }
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 43 6>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 43 6>>*/ caml_js_object_as_
+              (fields_f_) /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 44 5>>*/ }
     function _fd_(diagnosticMessage_a_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 49 6>>*/ if
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 49 6>>*/ if
        (0===diagnosticMessage_a_[0])
-       { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 56 51>>*/ var
+       { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 56 51>>*/ var
          match_b_=diagnosticMessage_a_[1],
          trace_h_=match_b_[8],
          range_i_=match_b_[7],
@@ -7264,83 +7264,83 @@
          filePath_t_=match_b_[4],
          typee_u_=match_b_[3],
          providerName_v_=match_b_[2],
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 56 51>>*/ _y_=
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 56 51>>*/ _bb_
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 56 51>>*/ _y_=
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 56 51>>*/ _bb_
            (text_s_,_fe_),
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 56 64>>*/ _z_=
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 56 64>>*/ _y_.toString
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 56 64>>*/ _z_=
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 56 64>>*/ _y_.toString
            (),
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 56 65>>*/ _A_=
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 56 65>>*/ _A_=
           [0,_ff_,_z_],
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 55 44>>*/ _B_=
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 55 44>>*/ filePath_t_.toString
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 55 44>>*/ _B_=
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 55 44>>*/ filePath_t_.toString
            (),
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 55 64>>*/ _C_=
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 55 64>>*/ _C_=
           [0,_fg_,_B_],
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 54 40>>*/ _D_=
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 54 40>>*/ _b7_
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 54 40>>*/ _D_=
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 54 40>>*/ _b7_
            (typee_u_),
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 54 66>>*/ _E_=
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 54 66>>*/ _E_=
           [0,_fh_,_D_],
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 53 48>>*/ _F_=
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 53 48>>*/ providerName_v_.toString
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 53 48>>*/ _F_=
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 53 48>>*/ providerName_v_.toString
            (),
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 53 72>>*/ _G_=
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 53 72>>*/ _G_=
           [0,_fi_,_F_],
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 52 41>>*/ _H_=
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 52 41>>*/ _H_=
           "file",
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 52 59>>*/ fields_k_=
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 52 59>>*/ fields_k_=
           [0,[0,_fj_,_H_],_G_,_E_,_C_,_A_];
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 58 12>>*/ if
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 58 12>>*/ if
          (html_j_)
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 61 28>>*/ var
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 61 28>>*/ h_I_=
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 61 28>>*/ var
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 61 28>>*/ h_I_=
            html_j_[1],
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 61 28>>*/ _J_=
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 61 28>>*/ _J_=
            [0,[0,_fk_,h_I_]],
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 61 28>>*/ _K_=
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 61 28>>*/ _w_
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 61 28>>*/ _K_=
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 61 28>>*/ _w_
             (fields_k_,_J_),
           fields_d_=_K_;
         else
          var fields_d_=fields_k_;
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 63 12>>*/ if
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 63 12>>*/ if
          (range_i_)
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 66 28>>*/ var
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 66 28>>*/ r_L_=
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 66 28>>*/ var
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 66 28>>*/ r_L_=
            range_i_[1],
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 66 77>>*/ _M_=
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 66 77>>*/ _ba_
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 66 77>>*/ _M_=
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 66 77>>*/ _ba_
             (r_L_),
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 66 96>>*/ _N_=
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 66 96>>*/ _N_=
            [0,[0,_fl_,_M_]],
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 66 28>>*/ _O_=
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 66 28>>*/ _w_
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 66 28>>*/ _O_=
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 66 28>>*/ _w_
             (fields_d_,_N_),
           fields_e_=_O_;
         else
          var fields_e_=fields_d_;
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 68 12>>*/ if
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 68 12>>*/ if
          (trace_h_)
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 72 62>>*/ var
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 72 62>>*/ var
           ts_P_=trace_h_[1],
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 72 62>>*/ _Q_=
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 72 62>>*/ _x_
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 72 62>>*/ _Q_=
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 72 62>>*/ _x_
             (_b8_,ts_P_),
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 72 87>>*/ jsTraces_R_=
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 72 87>>*/ caml_js_from_array_q_
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 72 87>>*/ jsTraces_R_=
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 72 87>>*/ caml_js_from_array_q_
             (_Q_),
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 73 20>>*/ _S_=
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 73 20>>*/ _S_=
            [0,[0,_fm_,jsTraces_R_]],
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 73 20>>*/ _T_=
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 73 20>>*/ _w_
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 73 20>>*/ _T_=
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 73 20>>*/ _w_
             (fields_e_,_S_),
           fields_l_=_T_;
         else
          var fields_l_=fields_e_;
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 76 12>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 76 12>>*/ caml_js_object_as_
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 76 12>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 76 12>>*/ caml_js_object_as_
                 (fields_l_)}
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 83 51>>*/ var
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 83 51>>*/ var
        match_c_=diagnosticMessage_a_[1],
        trace_m_=match_c_[7],
        range_n_=match_c_[6],
@@ -7348,301 +7348,301 @@
        text_U_=match_c_[4],
        typee_V_=match_c_[3],
        providerName_W_=match_c_[2],
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 83 51>>*/ _X_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 83 51>>*/ _bb_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 83 51>>*/ _X_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 83 51>>*/ _bb_
          (text_U_,_fn_),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 83 64>>*/ _Y_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 83 64>>*/ _X_.toString
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 83 64>>*/ _Y_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 83 64>>*/ _X_.toString
          (),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 83 65>>*/ _Z_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 83 65>>*/ _Z_=
         [0,_fo_,_Y_],
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 82 40>>*/ ___=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 82 40>>*/ _b7_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 82 40>>*/ ___=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 82 40>>*/ _b7_
          (typee_V_),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 82 66>>*/ _$_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 82 66>>*/ _$_=
         [0,_fp_,___],
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 81 48>>*/ _aa_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 81 48>>*/ providerName_W_.toString
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 81 48>>*/ _aa_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 81 48>>*/ providerName_W_.toString
          (),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 81 72>>*/ _ab_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 81 72>>*/ _ab_=
         [0,_fq_,_aa_],
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 80 41>>*/ _ac_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 80 41>>*/ _ac_=
         "project",
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 80 62>>*/ fields_p_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 80 62>>*/ fields_p_=
         [0,[0,_fr_,_ac_],_ab_,_$_,_Z_];
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 85 12>>*/ if
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 85 12>>*/ if
        (html_o_)
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 88 28>>*/ var
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 88 28>>*/ h_ad_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 88 28>>*/ var
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 88 28>>*/ h_ad_=
          html_o_[1],
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 88 28>>*/ _ae_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 88 28>>*/ _ae_=
          [0,[0,_fs_,h_ad_]],
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 88 28>>*/ _af_=
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 88 28>>*/ _w_
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 88 28>>*/ _af_=
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 88 28>>*/ _w_
           (fields_p_,_ae_),
         fields_f_=_af_;
       else
        var fields_f_=fields_p_;
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 90 12>>*/ if
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 90 12>>*/ if
        (range_n_)
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 93 28>>*/ var
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 93 28>>*/ r_ag_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 93 28>>*/ var
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 93 28>>*/ r_ag_=
          range_n_[1],
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 93 77>>*/ _ah_=
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 93 77>>*/ _ba_
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 93 77>>*/ _ah_=
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 93 77>>*/ _ba_
           (r_ag_),
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 93 96>>*/ _ai_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 93 96>>*/ _ai_=
          [0,[0,_ft_,_ah_]],
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 93 28>>*/ _aj_=
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 93 28>>*/ _w_
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 93 28>>*/ _aj_=
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 93 28>>*/ _w_
           (fields_f_,_ai_),
         fields_g_=_aj_;
       else
        var fields_g_=fields_f_;
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 95 12>>*/ if
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 95 12>>*/ if
        (trace_m_)
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 99 62>>*/ var
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 99 62>>*/ var
         ts_ak_=trace_m_[1],
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 99 62>>*/ _al_=
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 99 62>>*/ _x_
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 99 62>>*/ _al_=
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 99 62>>*/ _x_
           (_b8_,ts_ak_),
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 99 87>>*/ jsTraces_am_=
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 99 87>>*/ caml_js_from_array_q_
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 99 87>>*/ jsTraces_am_=
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 99 87>>*/ caml_js_from_array_q_
           (_al_),
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 100 20>>*/ _an_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 100 20>>*/ _an_=
          [0,[0,_fu_,jsTraces_am_]],
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 100 20>>*/ _ao_=
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 100 20>>*/ _w_
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 100 20>>*/ _ao_=
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 100 20>>*/ _w_
           (fields_g_,_an_),
         fields_r_=_ao_;
       else
        var fields_r_=fields_g_;
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 103 12>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 103 12>>*/ caml_js_object_as_
-              (fields_r_) /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 105 7>>*/ }
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 103 12>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 103 12>>*/ caml_js_object_as_
+              (fields_r_) /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 105 7>>*/ }
     function _fv_(result_a_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 110 50>>*/ var
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 110 50>>*/ _b_=
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 110 50>>*/ var
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 110 50>>*/ _b_=
         result_a_[2],
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 112 35>>*/ _c_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 112 35>>*/ _b_.toString
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 112 35>>*/ _c_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 112 35>>*/ _b_.toString
          (),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 112 63>>*/ _d_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 112 63>>*/ _d_=
         result_a_[1];
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 111 87>>*/ return {"newCursor":
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 111 87>>*/ return {"newCursor":
               _d_,
-              "formatted":_c_} /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 113 4>>*/ }
+              "formatted":_c_} /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 113 4>>*/ }
     function _fw_(o_a_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 120 25>>*/ var
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 120 25>>*/ _b_=
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 120 25>>*/ var
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 120 25>>*/ _b_=
         o_a_.prefix,
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 120 51>>*/ _c_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 120 51>>*/ caml_js_to_string_n_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 120 51>>*/ _c_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 120 51>>*/ caml_js_to_string_n_
          (_b_),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 119 31>>*/ _d_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 119 31>>*/ _d_=
         o_a_.editor,
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 119 12>>*/ _e_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 119 12>>*/ _b4_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 119 12>>*/ _e_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 119 12>>*/ _b4_
          (_d_);
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 119 57>>*/ return [0,
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 119 57>>*/ return [0,
               _e_,
-              _c_] /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 121 3>>*/ }
+              _c_] /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 121 3>>*/ }
     function _fx_(param_a_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 127 4>>*/ switch
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 127 4>>*/ switch
        (param_a_)
        {case 0:
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 131 22>>*/ return "variable";
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 131 22>>*/ return "variable";
         case 1:
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 132 22>>*/ return "constant";
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 132 22>>*/ return "constant";
         case 2:
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 133 22>>*/ return "property";
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 133 22>>*/ return "property";
         case 3:
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 127 19>>*/ return str_value_cH_;
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 127 19>>*/ return str_value_cH_;
         case 4:
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 134 20>>*/ return "method";
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 134 20>>*/ return "method";
         case 5:
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 135 22>>*/ return str_function_M_;
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 135 22>>*/ return str_function_M_;
         case 6:
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 128 19>>*/ return "class";
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 128 19>>*/ return "class";
         case 7:
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 129 21>>*/ return "require";
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 129 21>>*/ return "require";
         case 8:
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 130 18>>*/ return str_type_ao_;
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 130 18>>*/ return str_type_ao_;
         case 9:
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 136 21>>*/ return "keyword";
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 136 21>>*/ return "keyword";
         case 10:
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 137 17>>*/ return "tag";
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 137 17>>*/ return "tag";
         case 11:
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 138 21>>*/ return "snippet";
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 138 21>>*/ return "snippet";
         default:
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 139 20>>*/ return "import"} /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 139 38>>*/ }
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 139 20>>*/ return "import"} /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 139 38>>*/ }
     function _fy_(e_a_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 140 21>>*/ var
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 140 21>>*/ _b_=
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 140 21>>*/ var
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 140 21>>*/ _b_=
         e_a_[6],
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 146 43>>*/ _c_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 146 43>>*/ _b_.toString
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 146 43>>*/ _c_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 146 43>>*/ _b_.toString
          (),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 146 74>>*/ _d_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 146 74>>*/ _d_=
         e_a_[5],
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 145 37>>*/ _e_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 145 37>>*/ _d_.toString
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 145 37>>*/ _e_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 145 37>>*/ _d_.toString
          (),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 145 62>>*/ _f_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 145 62>>*/ _f_=
         e_a_[4],
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 144 30>>*/ _g_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 144 30>>*/ _fx_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 144 30>>*/ _g_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 144 30>>*/ _fx_
          (_f_),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 144 48>>*/ _h_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 144 48>>*/ _h_=
         e_a_[3],
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 143 37>>*/ _i_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 143 37>>*/ _h_.toString
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 143 37>>*/ _i_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 143 37>>*/ _h_.toString
          (),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 143 62>>*/ _j_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 143 62>>*/ _j_=
         e_a_[2],
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 142 30>>*/ _k_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 142 30>>*/ _j_.toString
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 142 30>>*/ _k_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 142 30>>*/ _j_.toString
          (),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 142 48>>*/ _l_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 142 48>>*/ _l_=
         e_a_[1],
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 141 35>>*/ _m_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 141 35>>*/ _l_.toString
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 141 35>>*/ _m_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 141 35>>*/ _l_.toString
          ();
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 141 58>>*/ return {"leftLabel":
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 141 58>>*/ return {"leftLabel":
               _m_,
               "text":_k_,
               "displayText":_i_,
               "type":_g_,
               "description":_e_,
-              "replacementPrefix":_c_} /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 147 4>>*/ }
+              "replacementPrefix":_c_} /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideJs.re 147 4>>*/ }
     function _bc_(s_a_,itm_b_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonCommon.re 10 34>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonCommon.re 10 34>>*/ var
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonCommon.re 10 34>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonCommon.re 10 34>>*/ var
        _c_=
         exports;
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonCommon.re 10 63>>*/ return _c_
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonCommon.re 10 63>>*/ return _c_
               [s_a_]=
-             itm_b_ /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonCommon.re 10 69>>*/ }
+             itm_b_ /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonCommon.re 10 69>>*/ }
     function _aG_(a_a_,b_b_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/StringUtils.re 8 17>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/StringUtils.re 8 17>>*/ var
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/StringUtils.re 8 17>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/StringUtils.re 8 17>>*/ var
        _c_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/StringUtils.re 8 17>>*/ _a4_
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/StringUtils.re 8 17>>*/ _a4_
          (a_a_,b_b_);
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/StringUtils.re 8 35>>*/ return 0===
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/StringUtils.re 8 35>>*/ return 0===
               _c_
               ?1
-              :0 /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/StringUtils.re 8 40>>*/ }
+              :0 /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/StringUtils.re 8 40>>*/ }
     function _ab_(str_a_,searchFor_b_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/StringUtils.re 10 32>>*/ var
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/StringUtils.re 10 32>>*/ searchForLen_c_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/StringUtils.re 10 32>>*/ caml_ml_string_length_f_
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/StringUtils.re 10 32>>*/ var
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/StringUtils.re 10 32>>*/ searchForLen_c_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/StringUtils.re 10 32>>*/ caml_ml_string_length_f_
          (searchFor_b_),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/StringUtils.re 12 2>>*/ strLen_e_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/StringUtils.re 12 2>>*/ caml_ml_string_length_f_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/StringUtils.re 12 2>>*/ strLen_e_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/StringUtils.re 12 2>>*/ caml_ml_string_length_f_
          (str_a_),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/StringUtils.re 13 2>>*/ _d_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/StringUtils.re 13 2>>*/ _d_=
         searchForLen_c_<=strLen_e_?1:0;
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/StringUtils.re 13 2>>*/ if
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/StringUtils.re 13 2>>*/ if
        (_d_)
-       { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/StringUtils.re 13 28>>*/ var
+       { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/StringUtils.re 13 28>>*/ var
          _g_=0,
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/StringUtils.re 13 28>>*/ _h_=
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/StringUtils.re 13 28>>*/ _aa_
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/StringUtils.re 13 28>>*/ _h_=
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/StringUtils.re 13 28>>*/ _aa_
            (str_a_,_g_,searchForLen_c_);
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/StringUtils.re 13 57>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/StringUtils.re 13 57>>*/ _aG_
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/StringUtils.re 13 57>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/StringUtils.re 13 57>>*/ _aG_
                 (_h_,searchFor_b_)}
-      return _d_ /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/StringUtils.re 14 1>>*/ }
+      return _d_ /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/StringUtils.re 14 1>>*/ }
     function _fz_(s_a_,r_b_,replaceWith_c_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/StringUtils.re 23 67>>*/ var
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/StringUtils.re 23 67>>*/ _d_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/StringUtils.re 23 67>>*/ replaceWith_c_.toString
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/StringUtils.re 23 67>>*/ var
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/StringUtils.re 23 67>>*/ _d_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/StringUtils.re 23 67>>*/ replaceWith_c_.toString
          (),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/StringUtils.re 23 4>>*/ _e_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/StringUtils.re 23 4>>*/ s_a_.toString
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/StringUtils.re 23 4>>*/ _e_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/StringUtils.re 23 4>>*/ s_a_.toString
          (),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/StringUtils.re 23 17>>*/ _f_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/StringUtils.re 23 17>>*/ _e_.replace
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/StringUtils.re 23 17>>*/ _f_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/StringUtils.re 23 17>>*/ _e_.replace
          (r_b_,_d_);
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/StringUtils.re 24 1>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/StringUtils.re 24 1>>*/ caml_js_to_string_n_
-              (_f_) /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/StringUtils.re 24 1>>*/ }
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/StringUtils.re 24 1>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/StringUtils.re 24 1>>*/ caml_js_to_string_n_
+              (_f_) /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/StringUtils.re 24 1>>*/ }
     function _fA_(s_a_,r_b_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/StringUtils.re 26 38>>*/ var
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/StringUtils.re 26 38>>*/ s_c_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/StringUtils.re 26 38>>*/ s_a_.toString
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/StringUtils.re 26 38>>*/ var
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/StringUtils.re 26 38>>*/ s_c_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/StringUtils.re 26 38>>*/ s_a_.toString
          (),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/StringUtils.re 28 2>>*/ jsArr_d_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/StringUtils.re 28 2>>*/ s_c_.split
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/StringUtils.re 28 2>>*/ jsArr_d_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/StringUtils.re 28 2>>*/ s_c_.split
          (r_b_),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/StringUtils.re 29 12>>*/ lst_e_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/StringUtils.re 29 12>>*/ _ae_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/StringUtils.re 29 12>>*/ lst_e_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/StringUtils.re 29 12>>*/ _ae_
          (jsArr_d_);
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/StringUtils.re 30 2>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/StringUtils.re 30 2>>*/ _$_
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/StringUtils.re 30 2>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/StringUtils.re 30 2>>*/ _$_
               (function(itm_a_)
-                { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/StringUtils.re 30 23>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/StringUtils.re 30 23>>*/ caml_js_to_string_n_
-                         (itm_a_) /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/StringUtils.re 30 39>>*/ },
-               lst_e_) /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/StringUtils.re 31 1>>*/ }
+                { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/StringUtils.re 30 23>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/StringUtils.re 30 23>>*/ caml_js_to_string_n_
+                         (itm_a_) /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/StringUtils.re 30 39>>*/ },
+               lst_e_) /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/StringUtils.re 31 1>>*/ }
     function _fB_(stdOutLines_a_,param_b_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 23 85>>*/ var
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 23 85>>*/ var
        curCursorColumn_q_=param_b_[2],
        curCursorRow_r_=param_b_[1],
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 23 85>>*/ result_g_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 23 85>>*/ result_g_=
         [0,_fC_],
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 25 2>>*/ arrLen_s_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 25 2>>*/ arrLen_s_=
         stdOutLines_a_.length-
         1,
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 25 2>>*/ _t_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 25 2>>*/ _t_=
         0,
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 26 2>>*/ charCount_h_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 26 2>>*/ charCount_h_=
         [0,_t_],
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 26 2>>*/ _u_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 26 2>>*/ _u_=
         0,
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 27 2>>*/ colCount_d_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 27 2>>*/ colCount_d_=
         [0,_u_],
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 27 2>>*/ _v_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 27 2>>*/ _v_=
         0,
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 28 2>>*/ rowCount_i_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 28 2>>*/ rowCount_i_=
         [0,_v_],
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 28 2>>*/ _w_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 28 2>>*/ _w_=
         0,
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 29 2>>*/ finalCharCount_k_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 29 2>>*/ finalCharCount_k_=
         [0,_w_],
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 29 2>>*/ _x_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 29 2>>*/ _x_=
         0,
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 30 2>>*/ _m_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 30 2>>*/ _m_=
         arrLen_s_-
         1|
         0;
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 30 2>>*/ if
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 30 2>>*/ if
        (!(_m_<0))
        {var iArr_c_=_x_;
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 30 32>>*/ for
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 30 32>>*/ for
          (;;)
-         { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 30 32>>*/ var
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 30 32>>*/ line_j_=
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 30 32>>*/ caml_check_bound_l_
+         { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 30 32>>*/ var
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 30 32>>*/ line_j_=
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 30 32>>*/ caml_check_bound_l_
               (stdOutLines_a_,iArr_c_)
              [iArr_c_+1],
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 32 4>>*/ lineLen_y_=
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 32 4>>*/ caml_ml_string_length_f_
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 32 4>>*/ lineLen_y_=
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 32 4>>*/ caml_ml_string_length_f_
              (line_j_),
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 32 4>>*/ _z_=
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 32 4>>*/ _z_=
             0,
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 34 4>>*/ lenNotEndingInWhiteSpace_n_=
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 34 4>>*/ lenNotEndingInWhiteSpace_n_=
             [0,_z_],
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 34 4>>*/ _A_=
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 34 4>>*/ _A_=
             0,
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 36 4>>*/ _o_=
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 36 4>>*/ _o_=
             lineLen_y_-
             1|
             0;
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 36 4>>*/ if
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 36 4>>*/ if
            (!(_o_<0))
            {var chPos_e_=_A_;
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 36 36>>*/ for
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 36 36>>*/ for
              (;;)
-             { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 36 36>>*/ var
-                /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 36 36>>*/ ch_p_=
-                 /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 36 36>>*/ caml_string_get_V_
+             { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 36 36>>*/ var
+                /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 36 36>>*/ ch_p_=
+                 /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 36 36>>*/ caml_string_get_V_
                  (line_j_,chPos_e_),
-                /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 38 6>>*/ switch_I_=
+                /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 38 6>>*/ switch_I_=
                 10===ch_p_
                  ?0
                  :13===ch_p_
@@ -7656,341 +7656,341 @@
                      1|
                      0,
                      1);
-               /*<<camlinternalFormatBasics.ml 465 8>>*/ if(!switch_I_)
-               { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 38 36>>*/ rowCount_i_
+               /*<<camlinternalFormatBasics.ml 502 8>>*/ if(!switch_I_)
+               { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 38 36>>*/ rowCount_i_
                  [1]=
                 rowCount_i_[1]+
                 1|
                 0;
-                 /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 40 8>>*/ colCount_d_
+                 /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 40 8>>*/ colCount_d_
                  [1]=
                 0}
-               /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 45 6>>*/ charCount_h_
+               /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 45 6>>*/ charCount_h_
                [1]=
               charCount_h_[1]+
               1|
               0;
-               /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 46 6>>*/ if
+               /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 46 6>>*/ if
                (rowCount_i_[1]<=curCursorRow_r_)
                if(colCount_d_[1]<=curCursorColumn_q_)
                 finalCharCount_k_[1]=charCount_h_[1];
-               /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 36 36>>*/ var
+               /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 36 36>>*/ var
                _G_=
                 chPos_e_+1|0;
               if(_o_!==chPos_e_){var chPos_e_=_G_;continue}
               break}}
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 30 32>>*/ var
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 52 41>>*/ _B_=
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 52 41>>*/ _eL_
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 30 32>>*/ var
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 52 41>>*/ _B_=
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 52 41>>*/ _eL_
              (line_j_),
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 52 41>>*/ _C_=
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 52 41>>*/ _H_
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 52 41>>*/ _C_=
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 52 41>>*/ _H_
              (_B_,_fD_),
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 52 80>>*/ _D_=
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 52 80>>*/ _D_=
             result_g_[1],
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 52 23>>*/ _E_=
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 52 23>>*/ _H_
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 52 23>>*/ _E_=
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 52 23>>*/ _H_
              (_D_,_C_);
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 52 80>>*/ result_g_
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 52 80>>*/ result_g_
            [1]=
           _E_;
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 30 32>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 52 80>>*/ var
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 30 32>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 52 80>>*/ var
            _F_=
             iArr_c_+1|0;
           if(_m_!==iArr_c_){var iArr_c_=_F_;continue}
           break}}
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 54 2>>*/ return [0,
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 54 2>>*/ return [0,
               finalCharCount_k_[1],
               result_g_[1]]}
     function _fE_
      (editor_a_,subText_b_,isInterface_c_,onComplete_d_,onFailure_e_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 59 2>>*/ var
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 59 2>>*/ stdOutLines_h_=
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 59 2>>*/ var
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 59 2>>*/ stdOutLines_h_=
         [0,[0]],
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 60 2>>*/ stdErrLines_i_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 60 2>>*/ stdErrLines_i_=
         [0,[0]],
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 62 11>>*/ match_j_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 62 11>>*/ _Q_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 62 11>>*/ match_j_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 62 11>>*/ _Q_
          (_fF_);
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 62 60>>*/ if
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 62 60>>*/ if
        (typeof match_j_!=="number"&&0===match_j_[0])
-       { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 63 26>>*/ var
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 63 26>>*/ pth_l_=
+       { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 63 26>>*/ var
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 63 26>>*/ pth_l_=
           match_j_[1],
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 67 11>>*/ match_f_=
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 67 11>>*/ _Q_
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 67 11>>*/ match_f_=
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 67 11>>*/ _Q_
            (_fH_);
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 67 55>>*/ if
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 67 55>>*/ if
          (typeof match_f_==="number")
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 67 55>>*/ if
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 67 55>>*/ if
           (1===match_f_)
           var printWidth_m_=110,switch_g_=1;
          else
           var switch_g_=0;
         else
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 67 55>>*/ if
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 67 55>>*/ if
           (1===match_f_[0])
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 68 21>>*/ var
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 68 21>>*/ n_N_=
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 68 21>>*/ var
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 68 21>>*/ n_N_=
             match_f_[1],
            printWidth_m_=n_N_|0,
            switch_g_=1;
          else
           var switch_g_=0;
-         /*<<camlinternalFormatBasics.ml 465 8>>*/ if(switch_g_)
-         { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 72 2>>*/ var
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 72 2>>*/ onStdOut_t_=
+         /*<<camlinternalFormatBasics.ml 502 8>>*/ if(switch_g_)
+         { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 72 2>>*/ var
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 72 2>>*/ onStdOut_t_=
             function(line_a_)
-             { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 72 23>>*/ var
-                /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 72 23>>*/ _b_=
+             { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 72 23>>*/ var
+                /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 72 23>>*/ _b_=
                 [0,line_a_],
-                /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 72 23>>*/ _c_=
+                /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 72 23>>*/ _c_=
                 stdOutLines_h_[1],
-                /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 72 47>>*/ _d_=
-                 /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 72 47>>*/ _w_
+                /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 72 47>>*/ _d_=
+                 /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 72 47>>*/ _w_
                  (_c_,_b_);
-               /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 72 89>>*/ stdOutLines_h_
+               /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 72 89>>*/ stdOutLines_h_
                [1]=
               _d_;
-               /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 72 89>>*/ return 0 /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 72 89>>*/ },
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 73 2>>*/ onStdErr_u_=
+               /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 72 89>>*/ return 0 /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 72 89>>*/ },
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 73 2>>*/ onStdErr_u_=
             function(line_a_)
-             { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 73 23>>*/ var
-                /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 73 23>>*/ _b_=
+             { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 73 23>>*/ var
+                /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 73 23>>*/ _b_=
                 [0,line_a_],
-                /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 73 23>>*/ _c_=
+                /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 73 23>>*/ _c_=
                 stdErrLines_i_[1],
-                /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 73 47>>*/ _d_=
-                 /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 73 47>>*/ _w_
+                /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 73 47>>*/ _d_=
+                 /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 73 47>>*/ _w_
                  (_c_,_b_);
-               /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 73 89>>*/ stdErrLines_i_
+               /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 73 89>>*/ stdErrLines_i_
                [1]=
               _d_;
-               /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 73 89>>*/ return 0 /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 73 89>>*/ },
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 74 16>>*/ cursors_n_=
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 74 16>>*/ _b6_
+               /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 73 89>>*/ return 0 /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 73 89>>*/ },
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 74 16>>*/ cursors_n_=
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 74 16>>*/ _b6_
              (editor_a_);
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 75 2>>*/ if
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 75 2>>*/ if
            (cursors_n_)
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 78 32>>*/ var
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 78 32>>*/ firstCursor_v_=
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 78 32>>*/ var
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 78 32>>*/ firstCursor_v_=
              cursors_n_[1],
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 78 32>>*/ _x_=
-              /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 78 32>>*/ _b3_
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 78 32>>*/ _x_=
+              /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 78 32>>*/ _b3_
               (firstCursor_v_),
             match_k_=_x_;
           else
            var match_k_=_fW_;
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 72 2>>*/ var
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 72 2>>*/ var
            origCursorCol_y_=match_k_[2],
            origCursorRow_z_=match_k_[1],
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 80 2>>*/ onExit_A_=
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 80 2>>*/ onExit_A_=
             function(code_a_)
-             { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 80 21>>*/ var
-                /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 80 21>>*/ _b_=
+             { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 80 21>>*/ var
+                /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 80 21>>*/ _b_=
                 [0,origCursorRow_z_,origCursorCol_y_],
-                /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 80 21>>*/ _c_=
+                /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 80 21>>*/ _c_=
                 stdOutLines_h_[1],
-                /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 81 23>>*/ formatResult_e_=
-                 /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 81 23>>*/ _fB_
+                /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 81 23>>*/ formatResult_e_=
+                 /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 81 23>>*/ _fB_
                  (_c_,_b_),
-                /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 82 4>>*/ _f_=
+                /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 82 4>>*/ _f_=
                 stdErrLines_i_[1],
-                /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 82 36>>*/ _g_=
-                 /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 82 36>>*/ _ae_
+                /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 82 36>>*/ _g_=
+                 /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 82 36>>*/ _ae_
                  (_f_),
-                /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 82 17>>*/ stdErr_j_=
-                 /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 82 17>>*/ _d3_
+                /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 82 17>>*/ stdErr_j_=
+                 /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 82 17>>*/ _d3_
                  (_fJ_,_g_);
-               /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 83 4>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 83 4>>*/ caml_call_gen3_hd_
-                      (onComplete_d_,code_a_,formatResult_e_,stdErr_j_) /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 84 3>>*/ },
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 80 2>>*/ _B_=
+               /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 83 4>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 83 4>>*/ caml_call_gen3_hd_
+                      (onComplete_d_,code_a_,formatResult_e_,stdErr_j_) /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 84 3>>*/ },
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 80 2>>*/ _B_=
             0,
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 85 2>>*/ _C_=
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 85 2>>*/ _C_=
             0===isInterface_c_?_fK_:_fV_,
            _D_=
             [0,
              _fR_,
              [0,_fQ_,[0,_fP_,[0,_fO_,[0,_fN_,[0,_fM_,[0,_fL_,[0,_C_,_B_]]]]]]]],
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 87 4>>*/ _E_=
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 87 4>>*/ string_of_int_bK_
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 87 4>>*/ _E_=
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 87 4>>*/ string_of_int_bK_
              (printWidth_m_),
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 87 28>>*/ args_F_=
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 87 28>>*/ args_F_=
             [0,_fS_,[0,_E_,_D_]],
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 97 2>>*/ _G_=
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 97 2>>*/ _G_=
             [0,onExit_A_],
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 97 2>>*/ _I_=
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 97 2>>*/ _I_=
             [0,onStdErr_u_],
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 97 2>>*/ _J_=
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 97 2>>*/ _J_=
             [0,onStdOut_t_],
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 97 2>>*/ _K_=
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 97 2>>*/ _K_=
             0,
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 97 13>>*/ proc_p_=
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 97 13>>*/ _eZ_
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 97 13>>*/ proc_p_=
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 97 13>>*/ _eZ_
              (_K_,_J_,_I_,_G_,pth_l_,args_F_),
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 98 19>>*/ errorTitle_L_=
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 98 19>>*/ _H_
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 98 19>>*/ errorTitle_L_=
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 98 19>>*/ _H_
              (_fT_,pth_l_),
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 99 2>>*/ handleError_M_=
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 99 2>>*/ handleError_M_=
             function(error_a_,handle_b_)
-             { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 99 34>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 99 34>>*/ var
+             { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 99 34>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 99 34>>*/ var
                _c_=
                 [0,[0,error_a_,_aF_[2],_aF_[3]]];
-               /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 100 4>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 100 4>>*/ _eV_
+               /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 100 4>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 100 4>>*/ _eV_
                (_c_,errorTitle_L_);
-               /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 101 4>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 101 4>>*/ caml_call_gen1_o_
+               /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 101 4>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 101 4>>*/ caml_call_gen1_o_
                (onFailure_e_,_fU_);
-               /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 101 24>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 101 24>>*/ caml_call_gen1_o_
-                      (handle_b_,0) /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 103 3>>*/ };
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 104 2>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 104 2>>*/ _e6_
+               /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 101 24>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 101 24>>*/ caml_call_gen1_o_
+                      (handle_b_,0) /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 103 3>>*/ };
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 104 2>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 104 2>>*/ _e6_
            (proc_p_,handleError_M_);
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 72 2>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 106 16>>*/ var
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 72 2>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 106 16>>*/ var
            process_q_=
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 106 16>>*/ _e7_
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 106 16>>*/ _e7_
              (proc_p_);
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 107 2>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 107 2>>*/ _eX_
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 107 2>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 107 2>>*/ _eX_
            (process_q_,subText_b_);
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 107 41>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 107 41>>*/ _eY_
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 107 41>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 107 41>>*/ _eY_
                   (process_q_)}
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 63 26>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 70 13>>*/ var
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 63 26>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 70 13>>*/ var
          _s_=
           [0,_az_,_fI_];
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 70 83>>*/ throw _s_}
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 59 2>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 64 13>>*/ var
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 70 83>>*/ throw _s_}
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 59 2>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 64 13>>*/ var
        _r_=
         [0,_az_,_fG_];
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 64 104>>*/ throw _r_ /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 108 31>>*/ }
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 64 104>>*/ throw _r_ /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 108 31>>*/ }
     function _fX_
      (editor_a_,param_b_,notifySuccess_m_,notifyInvalid_d_,notifyInfo_e_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 122 22>>*/ var
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 122 22>>*/ var
        rangeEnd_n_=param_b_[2],
        rangeStart_p_=param_b_[1],
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 122 22>>*/ maybeFilePath_h_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 122 22>>*/ _b5_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 122 22>>*/ maybeFilePath_h_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 122 22>>*/ _b5_
          (editor_a_),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 123 15>>*/ buffer_c_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 123 15>>*/ _eR_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 123 15>>*/ buffer_c_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 123 15>>*/ _eR_
          (editor_a_),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 124 22>>*/ startPosition_i_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 124 22>>*/ _b2_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 124 22>>*/ startPosition_i_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 124 22>>*/ _b2_
          (buffer_c_,rangeStart_p_),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 125 20>>*/ endPosition_q_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 125 20>>*/ _b2_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 125 20>>*/ endPosition_q_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 125 20>>*/ _b2_
          (buffer_c_,rangeEnd_n_),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 126 13>>*/ text_j_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 126 13>>*/ _eO_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 126 13>>*/ text_j_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 126 13>>*/ _eO_
          (buffer_c_),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 127 2>>*/ _r_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 127 2>>*/ _r_=
         endPosition_q_-
         startPosition_i_|
         0,
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 127 16>>*/ subText_s_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 127 16>>*/ _aa_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 127 16>>*/ subText_s_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 127 16>>*/ _aa_
          (text_j_,startPosition_i_,_r_);
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 129 2>>*/ if
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 129 2>>*/ if
        (maybeFilePath_h_)
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 132 35>>*/ var
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 132 35>>*/ var
         filePath_g_=maybeFilePath_h_[1],
         _t_=46,
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 132 35>>*/ lastExtensionIndex_k_=
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 132 35>>*/ _d7_
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 132 35>>*/ lastExtensionIndex_k_=
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 132 35>>*/ _d7_
           (filePath_g_,_t_),
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 133 10>>*/ _u_=
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 133 10>>*/ caml_ml_string_length_f_
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 133 10>>*/ _u_=
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 133 10>>*/ caml_ml_string_length_f_
           (filePath_g_)-
          lastExtensionIndex_k_|
          0,
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 133 10>>*/ _v_=
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 133 10>>*/ _aa_
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 133 10>>*/ _v_=
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 133 10>>*/ _aa_
           (filePath_g_,lastExtensionIndex_k_,_u_),
         ext_l_=_v_;
       else
        var ext_l_=_f2_;
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 122 22>>*/ var
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 137 20>>*/ _w_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 137 20>>*/ _a4_
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 122 22>>*/ var
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 137 20>>*/ _w_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 137 20>>*/ _a4_
          (_fY_,ext_l_),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 137 45>>*/ isInterface_x_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 137 45>>*/ isInterface_x_=
         0===_w_?1:0;
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 138 2>>*/ function
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 138 2>>*/ function
        _y_
        (resolve_g_,reject_f_)
-       { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 139 26>>*/ function
+       { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 139 26>>*/ function
          onComplete_b_
          (code_a_,formatResult_b_,stdErr_c_)
-         { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 142 30>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 142 30>>*/ var
+         { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 142 30>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 142 30>>*/ var
            formatResultStr_h_=
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 142 30>>*/ _fv_
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 142 30>>*/ _fv_
              (formatResult_b_);
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 143 8>>*/ if
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 143 8>>*/ if
            (code_a_==0)
-           { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 145 15>>*/ var
-              /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 145 15>>*/ _i_=
+           { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 145 15>>*/ var
+              /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 145 15>>*/ _i_=
               formatResult_b_[2],
-              /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 145 18>>*/ _k_=
-               /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 145 18>>*/ _aG_
+              /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 145 18>>*/ _k_=
+               /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 145 18>>*/ _aG_
                (_i_,text_j_);
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 145 51>>*/ if
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 145 51>>*/ if
              (_k_)
-              /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 145 52>>*/ caml_call_gen1_o_
+              /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 145 52>>*/ caml_call_gen1_o_
               (notifyInfo_e_,_fZ_);
             else
-              /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 147 15>>*/ caml_call_gen1_o_
+              /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 147 15>>*/ caml_call_gen1_o_
               (notifySuccess_m_,_f0_)}
           else
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 143 30>>*/ caml_call_gen1_o_
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 143 30>>*/ caml_call_gen1_o_
             (notifyInvalid_d_,_f1_);
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 149 9>>*/ return 0===
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 149 9>>*/ return 0===
                   (code_a_==0?1:0)
-                  ? /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 150 47>>*/ caml_call_gen1_o_
+                  ? /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 150 47>>*/ caml_call_gen1_o_
                     (reject_f_,stdErr_c_)
-                  : /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 150 21>>*/ caml_call_gen1_o_
-                    (resolve_g_,formatResultStr_h_) /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 151 7>>*/ }
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 152 6>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 152 6>>*/ _fE_
-                (editor_a_,subText_s_,isInterface_x_,onComplete_b_,reject_f_) /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 153 5>>*/ }
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 138 16>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 138 16>>*/ var
+                  : /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 150 21>>*/ caml_call_gen1_o_
+                    (resolve_g_,formatResultStr_h_) /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 151 7>>*/ }
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 152 6>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 152 6>>*/ _fE_
+                (editor_a_,subText_s_,isInterface_x_,onComplete_b_,reject_f_) /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 153 5>>*/ }
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 138 16>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 138 16>>*/ var
        promise_z_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 138 16>>*/ _eT_
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 138 16>>*/ _eT_
          (_y_);
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 155 2>>*/ return promise_z_}
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonFormat.re 155 2>>*/ return promise_z_}
     function _f3_(filePath_a_,jsMerlinError_b_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 8 63>>*/ var
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 8 63>>*/ merlinStart_c_=
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 8 63>>*/ var
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 8 63>>*/ merlinStart_c_=
         jsMerlinError_b_.start,
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 10 2>>*/ merlnEndd_d_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 10 2>>*/ merlnEndd_d_=
         jsMerlinError_b_.end,
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 11 2>>*/ _f_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 11 2>>*/ _f_=
         undefined_a7_===merlinStart_c_?1:0,
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 11 2>>*/ _g_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 11 2>>*/ _g_=
         _f_||
         (undefined_a7_===merlnEndd_d_?1:0);
       if(0===_g_)
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 16 45>>*/ var
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 16 45>>*/ _h_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 16 45>>*/ var
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 16 45>>*/ _h_=
          merlnEndd_d_.col,
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 16 9>>*/ _i_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 16 9>>*/ _i_=
          merlnEndd_d_.line,
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 16 39>>*/ _j_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 16 39>>*/ _j_=
          [0,_i_-1|0,_h_],
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 15 47>>*/ _k_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 15 47>>*/ _k_=
          merlinStart_c_.col,
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 15 9>>*/ _l_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 15 9>>*/ _l_=
          merlinStart_c_.line,
         range_e_=[0,[0,_l_-1|0,_k_],_j_];
       else
        var range_e_=_eM_;
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 8 63>>*/ var
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 18 2>>*/ message_m_=
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 8 63>>*/ var
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 18 2>>*/ message_m_=
         jsMerlinError_b_.message,
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 20 2>>*/ merlinType_n_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 20 2>>*/ merlinType_n_=
         jsMerlinError_b_.type,
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 22 4>>*/ _o_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 22 4>>*/ _o_=
         "warning",
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 22 23>>*/ diagnosticType_p_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 22 23>>*/ diagnosticType_p_=
         0===(_o_===merlinType_n_?1:0)?0:1,
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 23 2>>*/ _q_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 23 2>>*/ _q_=
         0;
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 23 2>>*/ return [0,
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 23 2>>*/ return [0,
               [0,
                -1011102084,
                _f4_,
@@ -7999,20 +7999,20 @@
                [0,message_m_],
                0,
                [0,range_e_],
-               _q_]] /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 33 1>>*/ }
+               _q_]] /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 33 1>>*/ }
     function _f5_(filePath_c_,errors_b_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 36 56>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 36 56>>*/ var
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 36 56>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 36 56>>*/ var
        _a_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 36 56>>*/ caml_js_to_array_P_
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 36 56>>*/ caml_js_to_array_P_
          (errors_b_);
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 36 12>>*/ function
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 36 12>>*/ function
        _d_
        (_a_)
        { /*<<?>>*/ return _f3_(filePath_c_,_a_)}
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 36 55>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 36 55>>*/ _x_
-              (_d_,_a_) /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 36 76>>*/ }
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 36 55>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 36 55>>*/ _x_
+              (_d_,_a_) /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 36 76>>*/ }
     function _f6_(s_a_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 39 2>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 39 2>>*/ caml_string_notequal_b_
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 39 2>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 39 2>>*/ caml_string_notequal_b_
                (s_a_,_f7_)
               ?caml_string_notequal_b_(s_a_,_f8_)
                 ?caml_string_notequal_b_(s_a_,_f9_)
@@ -8027,252 +8027,252 @@
                     :0
                   :6
                 :4
-              :2 /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 49 3>>*/ }
+              :2 /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 49 3>>*/ }
     function _gd_(k_a_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 52 2>>*/ switch
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 52 2>>*/ switch
        (k_a_)
        {case 0:
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 54 22>>*/ return 3;
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 54 22>>*/ return 3;
         case 2:
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 56 28>>*/ return 6;
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 56 28>>*/ return 6;
         case 4:
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 55 23>>*/ return 7;
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 55 23>>*/ return 7;
         case 6:
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 53 21>>*/ return 8;
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 53 21>>*/ return 8;
         default:
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 57 11>>*/ return 3} /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 58 3>>*/ }
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 57 11>>*/ return 3} /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 58 3>>*/ }
     function _ge_(o_a_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 64 21>>*/ var
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 64 21>>*/ _b_=
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 64 21>>*/ var
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 64 21>>*/ _b_=
         o_a_.name,
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 64 45>>*/ _c_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 64 45>>*/ caml_js_to_string_n_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 64 45>>*/ _c_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 64 45>>*/ caml_js_to_string_n_
          (_b_),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 63 56>>*/ _d_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 63 56>>*/ _d_=
         o_a_.kind,
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 63 80>>*/ _e_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 63 80>>*/ caml_js_to_string_n_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 63 80>>*/ _e_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 63 80>>*/ caml_js_to_string_n_
          (_d_),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 63 8>>*/ _f_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 63 8>>*/ _f6_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 63 8>>*/ _f_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 63 8>>*/ _f6_
          (_e_),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 62 21>>*/ _g_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 62 21>>*/ _g_=
         o_a_.info,
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 62 45>>*/ _h_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 62 45>>*/ caml_js_to_string_n_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 62 45>>*/ _h_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 62 45>>*/ caml_js_to_string_n_
          (_g_),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 61 28>>*/ _i_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 61 28>>*/ _i_=
         o_a_.desc,
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 61 52>>*/ _j_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 61 52>>*/ caml_js_to_string_n_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 61 52>>*/ _j_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 61 52>>*/ caml_js_to_string_n_
          (_i_);
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 61 52>>*/ return [0,
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 61 52>>*/ return [0,
               _j_,
               _h_,
               _f_,
-              _c_] /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 65 1>>*/ }
+              _c_] /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 65 1>>*/ }
     function _gf_(replacementPrefix_a_,e_b_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 67 58>>*/ var
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 67 58>>*/ _c_=
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 67 58>>*/ var
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 67 58>>*/ _c_=
         e_b_[1],
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 67 58>>*/ _d_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 67 58>>*/ _d_=
         e_b_[3],
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 75 9>>*/ _e_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 75 9>>*/ _gd_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 75 9>>*/ _e_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 75 9>>*/ _gd_
          (_d_);
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 75 50>>*/ return [0,
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 75 50>>*/ return [0,
               e_b_[4],
               e_b_[4],
               e_b_[1],
               _e_,
               _c_,
-              replacementPrefix_a_] /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 80 1>>*/ }
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 14 20>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 14 20>>*/ var
+              replacementPrefix_a_] /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 80 1>>*/ }
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 14 20>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 14 20>>*/ var
      _gg_=
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 14 20>>*/ require
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 14 20>>*/ require
        ("nuclide/pkg/nuclide/client");
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 14 77>>*/ function
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 14 77>>*/ function
      _aH_
      (x_a_,y_b_,z_c_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 16 21>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 16 21>>*/ caml_js_meth_call_hw_
-              (x_a_,y_b_,z_c_) /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 16 46>>*/ }
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 14 77>>*/ function
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 16 21>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 16 21>>*/ caml_js_meth_call_hw_
+              (x_a_,y_b_,z_c_) /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 16 46>>*/ }
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 14 77>>*/ function
      _b9_
      (filePath_a_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 19 33>>*/ var
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 19 33>>*/ nuclideOCamlPathToMerlin_d_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 19 33>>*/ _Q_
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 19 33>>*/ var
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 19 33>>*/ nuclideOCamlPathToMerlin_d_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 19 33>>*/ _Q_
          (_gh_),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 20 32>>*/ nuclideOCamlMerlinFlags_e_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 20 32>>*/ _Q_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 20 32>>*/ nuclideOCamlMerlinFlags_e_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 20 32>>*/ _Q_
          (_gi_),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 21 42>>*/ match_b_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 21 42>>*/ _Q_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 21 42>>*/ match_b_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 21 42>>*/ _Q_
          (_gj_),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 22 41>>*/ nuclideOCamlMerlinFlagsOverwrite_c_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 22 41>>*/ _Q_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 22 41>>*/ nuclideOCamlMerlinFlagsOverwrite_c_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 22 41>>*/ _Q_
          (_gk_),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 23 34>>*/ nuclideReasonPathToMerlin_f_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 23 34>>*/ _Q_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 23 34>>*/ nuclideReasonPathToMerlin_f_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 23 34>>*/ _Q_
          (_gl_),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 24 33>>*/ nuclideReasonMerlinFlags_g_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 24 33>>*/ _Q_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 24 33>>*/ nuclideReasonMerlinFlags_g_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 24 33>>*/ _Q_
          (_gm_),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 25 2>>*/ switch_j_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 25 2>>*/ switch_j_=
         typeof match_b_==="number"
          ?0===match_b_
            ?0
-           :( /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 27 6>>*/ _aE_
+           :( /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 27 6>>*/ _aE_
               (_gq_,nuclideOCamlPathToMerlin_d_),
              1)
          :0,
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 31 2>>*/ switch_k_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 31 2>>*/ switch_k_=
         typeof nuclideOCamlMerlinFlagsOverwrite_c_==="number"
          ?0===nuclideOCamlMerlinFlagsOverwrite_c_
            ?0
-           :( /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 33 6>>*/ _aE_
+           :( /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 33 6>>*/ _aE_
               (_gp_,nuclideOCamlMerlinFlags_e_),
              1)
          :0;
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 36 2>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 36 2>>*/ _aE_
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 36 2>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 36 2>>*/ _aE_
        (_gn_,nuclideReasonPathToMerlin_f_);
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 37 2>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 37 2>>*/ _aE_
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 37 2>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 37 2>>*/ _aE_
        (_go_,nuclideReasonMerlinFlags_g_);
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 19 33>>*/ var
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 41 69>>*/ _h_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 41 69>>*/ filePath_a_.toString
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 19 33>>*/ var
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 41 69>>*/ _h_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 41 69>>*/ filePath_a_.toString
          (),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 41 23>>*/ _i_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 41 23>>*/ _i_=
         "MerlinService";
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 41 50>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 41 50>>*/ _gg_.getServiceByNuclideUri
-              (_i_,_h_) /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 42 1>>*/ }
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 14 77>>*/ function
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 41 50>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 41 50>>*/ _gg_.getServiceByNuclideUri
+              (_i_,_h_) /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 42 1>>*/ }
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 14 77>>*/ function
      _b__
      (service_a_,filePath_b_,jsCmd_c_,andThen_d_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 47 76>>*/ function
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 47 76>>*/ function
        onResolve_e_
        (result_a_)
-       { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 48 26>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 48 26>>*/ caml_call_gen1_o_
-                (andThen_d_,result_a_) /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 48 40>>*/ }
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 50 58>>*/ var
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 50 58>>*/ _f_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 50 58>>*/ filePath_b_.toString
+       { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 48 26>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 48 26>>*/ caml_call_gen1_o_
+                (andThen_d_,result_a_) /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 48 40>>*/ }
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 50 58>>*/ var
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 50 58>>*/ _f_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 50 58>>*/ filePath_b_.toString
          (),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 50 78>>*/ _g_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 50 78>>*/ _g_=
         [0,_f_,jsCmd_c_],
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 50 4>>*/ runSingleCommandPromise_h_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 50 4>>*/ _aH_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 50 4>>*/ runSingleCommandPromise_h_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 50 4>>*/ _aH_
          (service_a_,_gr_,_g_),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 51 2>>*/ _i_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 51 2>>*/ caml_js_wrap_callback_F_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 51 2>>*/ _i_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 51 2>>*/ caml_js_wrap_callback_F_
          (onResolve_e_);
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 51 88>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 51 88>>*/ _aH_
-              (runSingleCommandPromise_h_,_gs_,[0,_i_]) /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 52 1>>*/ }
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 14 77>>*/ function
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 51 88>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 51 88>>*/ _aH_
+              (runSingleCommandPromise_h_,_gs_,[0,_i_]) /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 52 1>>*/ }
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 14 77>>*/ function
      _gt_
      (service_a_,filePath_b_,line_c_,col_d_,prefix_e_,andThen_f_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 54 102>>*/ function
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 54 102>>*/ function
        onResolve_g_
        (result_b_)
-       { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 56 20>>*/ var
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 56 20>>*/ _a_=
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 56 20>>*/ _eu_
+       { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 56 20>>*/ var
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 56 20>>*/ _a_=
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 56 20>>*/ _eu_
            (result_b_),
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 56 7>>*/ _c_=
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 56 7>>*/ _bY_
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 56 7>>*/ _c_=
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 56 7>>*/ _bY_
            (_a_);
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 56 43>>*/ if
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 56 43>>*/ if
          (_c_)
-         { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 56 44>>*/ var
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 56 44>>*/ lengthValue_d_=
+         { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 56 44>>*/ var
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 56 44>>*/ lengthValue_d_=
             result_b_.length,
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 58 6>>*/ _e_=
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 58 6>>*/ _e_=
             function(jsLen_a_)
-             { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 59 89>>*/ return result_b_ /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 59 95>>*/ },
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 58 6>>*/ _g_=
+             { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 59 89>>*/ return result_b_ /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 59 95>>*/ },
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 58 6>>*/ _g_=
             function(param_a_)
-             { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 59 43>>*/ return result_b_.entries /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 59 73>>*/ },
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 59 8>>*/ jsEntries_h_=
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 59 8>>*/ _ev_
+             { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 59 43>>*/ return result_b_.entries /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 59 73>>*/ },
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 59 8>>*/ jsEntries_h_=
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 59 8>>*/ _ev_
              (lengthValue_d_,_g_,_e_),
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 60 6>>*/ _i_=
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 60 6>>*/ caml_js_to_array_P_
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 60 6>>*/ _i_=
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 60 6>>*/ caml_js_to_array_P_
              (jsEntries_h_),
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 60 30>>*/ _j_=
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 60 30>>*/ _x_
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 60 30>>*/ _j_=
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 60 30>>*/ _x_
              (_ge_,_i_),
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 60 16>>*/ res_k_=
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 60 16>>*/ _ae_
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 60 16>>*/ res_k_=
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 60 16>>*/ _ae_
              (_j_),
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 63 30>>*/ _l_=
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 63 30>>*/ caml_call_gen1_o_
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 63 30>>*/ _l_=
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 63 30>>*/ caml_call_gen1_o_
              (andThen_f_,res_k_),
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 63 15>>*/ _m_=
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 63 15>>*/ ___
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 63 15>>*/ _m_=
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 63 15>>*/ ___
              (_l_);
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 63 44>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 63 44>>*/ caml_js_from_array_q_
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 63 44>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 63 44>>*/ caml_js_from_array_q_
                   (_m_)}
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 64 11>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 64 11>>*/ caml_js_from_array_q_
-                ([0]) /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 66 5>>*/ }
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 67 2>>*/ var
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 67 2>>*/ _h_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 67 2>>*/ prefix_e_.toString
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 64 11>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 64 11>>*/ caml_js_from_array_q_
+                ([0]) /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 66 5>>*/ }
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 67 2>>*/ var
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 67 2>>*/ _h_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 67 2>>*/ prefix_e_.toString
          (),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 72 25>>*/ _i_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 72 25>>*/ filePath_b_.toString
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 72 25>>*/ _i_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 72 25>>*/ filePath_b_.toString
          (),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 72 45>>*/ _j_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 72 45>>*/ _j_=
         [0,_i_,line_c_,col_d_,_h_],
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 68 4>>*/ runSingleCommandPromise_k_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 68 4>>*/ _aH_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 68 4>>*/ runSingleCommandPromise_k_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 68 4>>*/ _aH_
          (service_a_,_gu_,_j_),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 79 2>>*/ _l_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 79 2>>*/ caml_js_wrap_callback_F_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 79 2>>*/ _l_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 79 2>>*/ caml_js_wrap_callback_F_
          (onResolve_g_);
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 79 88>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 79 88>>*/ _aH_
-              (runSingleCommandPromise_k_,_gv_,[0,_l_]) /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 80 1>>*/ }
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 14 77>>*/ function
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 79 88>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 79 88>>*/ _aH_
+              (runSingleCommandPromise_k_,_gv_,[0,_l_]) /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 80 1>>*/ }
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 14 77>>*/ function
      _b$_
      (cmdList_a_,filePath_b_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 84 61>>*/ var
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 84 61>>*/ _c_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 84 61>>*/ filePath_b_.toString
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 84 61>>*/ var
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 84 61>>*/ _c_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 84 61>>*/ filePath_b_.toString
          (),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 84 43>>*/ _d_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 84 43>>*/ _d_=
         "auto",
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 84 59>>*/ _e_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 84 59>>*/ _e_=
         [0,_d_,_c_],
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 84 31>>*/ _f_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 84 31>>*/ caml_js_from_array_q_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 84 31>>*/ _f_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 84 31>>*/ caml_js_from_array_q_
          (_e_),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 83 60>>*/ _g_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 83 60>>*/ ___
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 83 60>>*/ _g_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 83 60>>*/ ___
          (cmdList_a_);
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 83 83>>*/ function
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 83 83>>*/ function
        _h_
        (_a_)
        { /*<<?>>*/ return _a_.toString()}
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 83 39>>*/ var
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 83 39>>*/ _i_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 83 39>>*/ _x_
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 83 39>>*/ var
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 83 39>>*/ _i_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 83 39>>*/ _x_
          (_h_,_g_),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 83 84>>*/ _j_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 83 84>>*/ caml_js_from_array_q_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 83 84>>*/ _j_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 83 84>>*/ caml_js_from_array_q_
          (_i_);
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 83 85>>*/ return {"query":
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 83 85>>*/ return {"query":
               _j_,
-              "context":_f_} /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/MerlinService.re 85 2>>*/ }
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 10 29>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 10 29>>*/ var
+              "context":_f_} /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 85 2>>*/ }
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 10 29>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 10 29>>*/ var
      descriptionPrefixRegex_gw_=
       /(let\s*\S*\s*:|type\s*\S*\s*=\s*)/;
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 10 86>>*/ function
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 10 86>>*/ function
      getReasonifyConfig_gx_
      (param_a_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 12 29>>*/ return {showSourcePreviews:
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 12 29>>*/ return {showSourcePreviews:
               false,
               showFileHeaders:false,
               pathToReasonfmt:
-               /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 16 50>>*/ atom.config.get
+               /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 16 50>>*/ atom.config.get
                (str_NuclideReason_pa_abr_c0_),
               errorPreviewExpand:5,
               warningPreviewExpand:2,
@@ -8280,190 +8280,190 @@
               indentHuman:0,
               niceifyModuleAliases:true,
               renderHtml:true,
-              columns:90} /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 24 2>>*/ }
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 32 16>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 32 16>>*/ var
+              columns:90} /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 24 2>>*/ }
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 32 16>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 32 16>>*/ var
      reasonify_ca_=
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 32 16>>*/ require
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 32 16>>*/ require
        ("../Reasonify");
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 32 59>>*/ function
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 32 59>>*/ function
      _ag_
      (param_a_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 42 51>>*/ var
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 42 51>>*/ var
        config_b_=param_a_[2],
        str_c_=param_a_[1],
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 42 51>>*/ _d_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 42 51>>*/ str_c_.toString
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 42 51>>*/ _d_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 42 51>>*/ str_c_.toString
          (),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 40 14>>*/ _e_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 40 14>>*/ reasonify_ca_.niceifyType
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 40 14>>*/ _e_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 40 14>>*/ reasonify_ca_.niceifyType
          (_d_,config_b_),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 43 5>>*/ _f_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 43 5>>*/ _e_.toString
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 43 5>>*/ _f_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 43 5>>*/ _e_.toString
          ();
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 44 3>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 44 3>>*/ caml_js_to_string_n_
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 44 3>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 44 3>>*/ caml_js_to_string_n_
               (_f_)}
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 32 59>>*/ function
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 32 59>>*/ function
      _gz_
      (strList_a_,width_b_,config_c_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 46 46>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 46 46>>*/ var
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 46 46>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 46 46>>*/ var
        _d_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 46 46>>*/ ___
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 46 46>>*/ ___
          (strList_a_);
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 46 69>>*/ function
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 46 69>>*/ function
        _e_
        (_a_)
        { /*<<?>>*/ return _a_.toString()}
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 46 25>>*/ var
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 46 25>>*/ _f_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 46 25>>*/ _x_
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 46 25>>*/ var
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 46 25>>*/ _f_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 46 25>>*/ _x_
          (_e_,_d_),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 46 70>>*/ jsArr_g_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 46 70>>*/ caml_js_from_array_q_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 46 70>>*/ jsArr_g_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 46 70>>*/ caml_js_from_array_q_
          (_f_),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 47 26>>*/ _h_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 47 26>>*/ reasonify_ca_.reasonifyManySignatureItems
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 47 26>>*/ _h_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 47 26>>*/ reasonify_ca_.reasonifyManySignatureItems
          (jsArr_g_,width_b_,config_c_),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 52 5>>*/ arr_i_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 52 5>>*/ caml_js_to_array_P_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 52 5>>*/ arr_i_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 52 5>>*/ caml_js_to_array_P_
          (_h_);
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 53 4>>*/ function
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 53 4>>*/ function
        _j_
        (_a_)
        { /*<<?>>*/ return caml_js_to_string_n_(_a_)}
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 53 18>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 53 18>>*/ var
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 53 18>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 53 18>>*/ var
        _k_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 53 18>>*/ _x_
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 53 18>>*/ _x_
          (_j_,arr_i_);
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 53 46>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 53 46>>*/ _ae_
-              (_k_) /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 54 3>>*/ }
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 32 59>>*/ var
-      /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 32 59>>*/ _gA_=
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 53 46>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 53 46>>*/ _ae_
+              (_k_) /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 54 3>>*/ }
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 32 59>>*/ var
+      /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 32 59>>*/ _gA_=
       7,
-      /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 32 59>>*/ _gB_=
+      /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 32 59>>*/ _gB_=
       0,
-      /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 83 20>>*/ _ah_=
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 83 20>>*/ _en_
+      /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 83 20>>*/ _ah_=
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 83 20>>*/ _en_
        (_gB_,_gA_);
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 83 36>>*/ function
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 83 36>>*/ function
      _gC_
      (outputEntries_a_)
      { /*<<?>>*/ var outputEntries_b_=outputEntries_a_;
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 85 4>>*/ for
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 85 4>>*/ for
        (;;)
-       { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 85 4>>*/ if
+       { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 85 4>>*/ if
          (outputEntries_b_)
-         { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 87 23>>*/ var
+         { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 87 23>>*/ var
            hd_d_=outputEntries_b_[1],
            tl_f_=outputEntries_b_[2],
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 87 23>>*/ desc_g_=
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 87 23>>*/ desc_g_=
             hd_d_[1],
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 89 10>>*/ _h_=
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 89 10>>*/ _a4_
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 89 10>>*/ _h_=
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 89 10>>*/ _a4_
              (desc_g_,_gD_),
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 89 32>>*/ _e_=
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 89 32>>*/ _e_=
             0!==_h_?1:0;
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 89 32>>*/ if
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 89 32>>*/ if
            (_e_)
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 89 45>>*/ var
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 89 45>>*/ var
             _i_=hd_d_[1],
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 89 45>>*/ _j_=
-              /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 89 45>>*/ _a5_
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 89 45>>*/ _j_=
+              /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 89 45>>*/ _a5_
               (_ah_,_i_),
             _c_=1-_j_;
           else
            var _c_=_e_;
           if(_c_)return _c_;
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 87 23>>*/ var
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 87 23>>*/ var
            outputEntries_b_=
             tl_f_;
           continue}
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 86 14>>*/ return 0} /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 91 5>>*/ }
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 83 36>>*/ function
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 86 14>>*/ return 0} /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 91 5>>*/ }
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 83 36>>*/ function
      _gE_
      (desc_a_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 94 36>>*/ var
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 94 36>>*/ _e_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 94 36>>*/ _fz_
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 94 36>>*/ var
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 94 36>>*/ _e_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 94 36>>*/ _fz_
          (desc_a_,descriptionPrefixRegex_gw_,_gF_),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 94 24>>*/ withoutPrefix_b_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 94 24>>*/ _aB_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 94 24>>*/ withoutPrefix_b_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 94 24>>*/ _aB_
          (_e_),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 96 4>>*/ lastIndex_c_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 96 4>>*/ caml_ml_string_length_f_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 96 4>>*/ lastIndex_c_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 96 4>>*/ caml_ml_string_length_f_
          (withoutPrefix_b_)-
         1|
         0,
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 97 14>>*/ _g_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 97 14>>*/ caml_string_get_V_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 97 14>>*/ _g_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 97 14>>*/ caml_string_get_V_
          (withoutPrefix_b_,lastIndex_c_);
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 97 39>>*/ if
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 97 39>>*/ if
        (0===(59===_g_?1:0))
        var ret_d_=withoutPrefix_b_;
       else
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 97 49>>*/ var
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 97 49>>*/ _h_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 97 49>>*/ var
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 97 49>>*/ _h_=
          0,
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 97 49>>*/ _i_=
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 97 49>>*/ _aa_
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 97 49>>*/ _i_=
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 97 49>>*/ _aa_
           (withoutPrefix_b_,_h_,lastIndex_c_),
         ret_d_=_i_;
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 98 4>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 98 4>>*/ _aB_
-              (ret_d_) /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 99 3>>*/ }
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 83 36>>*/ function
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 98 4>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 98 4>>*/ _aB_
+              (ret_d_) /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 99 3>>*/ }
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 83 36>>*/ function
      _gG_
      (param_a_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 106 22>>*/ var
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 106 22>>*/ var
        outputEntries_c_=param_a_[1],
        linePrefix_i_=param_a_[2],
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 106 22>>*/ needsLookup_f_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 106 22>>*/ _gC_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 106 22>>*/ needsLookup_f_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 106 22>>*/ _gC_
          (outputEntries_c_),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 106 22>>*/ _j_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 106 22>>*/ _j_=
         0,
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 107 4>>*/ definitelyOldMerlin_g_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 107 4>>*/ definitelyOldMerlin_g_=
         [0,_j_],
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 107 4>>*/ _k_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 107 4>>*/ _k_=
         0,
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 108 4>>*/ definitelyNewMerlin_d_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 108 4>>*/ definitelyNewMerlin_d_=
         [0,_k_];
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 109 4>>*/ if
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 109 4>>*/ if
        (needsLookup_f_)
-       { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 109 19>>*/ var
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 109 19>>*/ _l_=
+       { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 109 19>>*/ var
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 109 19>>*/ _l_=
           0,
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 110 19>>*/ config_b_=
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 110 19>>*/ getReasonifyConfig_gx_
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 110 19>>*/ config_b_=
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 110 19>>*/ getReasonifyConfig_gx_
            (_l_),
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 111 6>>*/ getNiceOutputEntry_m_=
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 111 6>>*/ getNiceOutputEntry_m_=
           function(entry_a_)
-           { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 111 38>>*/ var
-              /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 111 38>>*/ _r_=
+           { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 111 38>>*/ var
+              /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 111 38>>*/ _r_=
               entry_a_[4],
-              /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 112 24>>*/ nameColon_s_=
-               /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 112 24>>*/ _H_
+              /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 112 24>>*/ nameColon_s_=
+               /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 112 24>>*/ _H_
                (_r_,_gH_),
-              /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 113 8>>*/ _j_=
+              /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 113 8>>*/ _j_=
               definitelyNewMerlin_d_[1];
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 113 8>>*/ if
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 113 8>>*/ if
              (_j_)
              var _e_=_j_;
             else
              {var _o_=0===entry_a_[3]?1:0;
               if(_o_)
-               { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 116 18>>*/ var
+               { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 116 18>>*/ var
                  _G_=entry_a_[1],
-                  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 116 18>>*/ _I_=
-                   /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 116 18>>*/ _ab_
+                  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 116 18>>*/ _I_=
+                   /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 116 18>>*/ _ab_
                    (_G_,_gQ_),
-                  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 116 47>>*/ _p_=
+                  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 116 47>>*/ _p_=
                   1-
                   _I_;
-                 /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 116 47>>*/ if
+                 /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 116 47>>*/ if
                  (_p_)
-                  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 116 55>>*/ var
+                  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 116 55>>*/ var
                   _J_=entry_a_[1],
-                   /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 116 55>>*/ _K_=
-                    /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 116 55>>*/ _ab_
+                   /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 116 55>>*/ _K_=
+                    /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 116 55>>*/ _ab_
                     (_J_,_gR_),
                   _f_=1-_K_;
                 else
@@ -8475,21 +8475,21 @@
               else
                {var _q_=2===entry_a_[3]?1:0;
                 if(_q_)
-                  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 117 45>>*/ var
+                  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 117 45>>*/ var
                   _L_=entry_a_[1],
-                   /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 117 45>>*/ _M_=
-                    /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 117 45>>*/ _ab_
+                   /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 117 45>>*/ _M_=
+                    /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 117 45>>*/ _ab_
                     (_L_,nameColon_s_),
                   _e_=1-_M_;
                 else
                  var _e_=_q_}}
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 118 8>>*/ definitelyNewMerlin_d_
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 118 8>>*/ definitelyNewMerlin_d_
              [1]=
             _e_;
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 111 38>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 118 8>>*/ var
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 111 38>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 118 8>>*/ var
              _k_=
               definitelyOldMerlin_g_[1];
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 118 8>>*/ if
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 118 8>>*/ if
              (_k_)
              var _c_=_k_;
             else
@@ -8502,273 +8502,273 @@
                  var
                   _B_=entry_a_[1],
                   _h_=
-                    /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 121 36>>*/ _ab_
+                    /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 121 36>>*/ _ab_
                     (_B_,_gN_);
                 else
                  var _h_=_m_;
-                 /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 121 63>>*/ if
+                 /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 121 63>>*/ if
                  (_h_)
                  var _i_=_h_;
                 else
                  var
                   _F_=entry_a_[1],
                   _i_=
-                    /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 121 67>>*/ _ab_
+                    /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 121 67>>*/ _ab_
                     (_F_,_gP_);
-                 /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 121 99>>*/ if
+                 /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 121 99>>*/ if
                  (_i_)
                  var _c_=_i_;
                 else
                  {var _n_=2===entry_a_[3]?1:0;
                   if(_n_)
-                    /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 122 63>>*/ var
+                    /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 122 63>>*/ var
                     _C_=entry_a_[4],
-                     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 122 63>>*/ _D_=
-                      /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 122 63>>*/ _H_
+                     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 122 63>>*/ _D_=
+                      /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 122 63>>*/ _H_
                       (_C_,_gO_),
-                     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 122 82>>*/ _E_=
+                     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 122 82>>*/ _E_=
                      entry_a_[1],
                     _c_=
-                      /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 122 41>>*/ _ab_
+                      /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 122 41>>*/ _ab_
                       (_E_,_D_);
                   else
                    var _c_=_n_}}}
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 122 82>>*/ definitelyOldMerlin_g_
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 122 82>>*/ definitelyOldMerlin_g_
              [1]=
             _c_;
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 111 38>>*/ var
-              /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 124 8>>*/ _t_=
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 111 38>>*/ var
+              /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 124 8>>*/ _t_=
               entry_a_[1],
-              /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 124 11>>*/ _u_=
-               /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 124 11>>*/ _aG_
+              /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 124 11>>*/ _u_=
+               /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 124 11>>*/ _aG_
                (_t_,_gI_);
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 124 68>>*/ if
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 124 68>>*/ if
              (_u_)
              return _gJ_;
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 126 15>>*/ if
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 126 15>>*/ if
              (0===entry_a_[3])
-             { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 128 10>>*/ if
+             { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 128 10>>*/ if
                (0===definitelyNewMerlin_d_[1])
-               return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 133 12>>*/ _ag_
+               return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 133 12>>*/ _ag_
                        ([0,entry_a_[1],config_b_]);
-               /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 131 12>>*/ var
-                /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 131 12>>*/ _v_=
+               /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 131 12>>*/ var
+                /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 131 12>>*/ _v_=
                 entry_a_[1],
-                /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 131 35>>*/ _w_=
-                 /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 131 35>>*/ _H_
+                /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 131 35>>*/ _w_=
+                 /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 131 35>>*/ _H_
                  (_gK_,_v_);
-               /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 131 59>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 131 59>>*/ _ag_
+               /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 131 59>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 131 59>>*/ _ag_
                       ([0,_w_,config_b_])}
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 134 15>>*/ if
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 134 15>>*/ if
              (2===entry_a_[3])
-             { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 136 10>>*/ if
+             { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 136 10>>*/ if
                (definitelyOldMerlin_g_[1])
-               { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 140 41>>*/ var
-                  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 140 41>>*/ _x_=
+               { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 140 41>>*/ var
+                  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 140 41>>*/ _x_=
                   entry_a_[1],
-                  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 141 35>>*/ _y_=
-                   /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 141 35>>*/ _H_
+                  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 141 35>>*/ _y_=
+                   /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 141 35>>*/ _H_
                    (_gL_,_x_);
-                 /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 141 61>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 141 61>>*/ _ag_
+                 /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 141 61>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 141 61>>*/ _ag_
                         ([0,_y_,config_b_])}
-               /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 142 17>>*/ var
-                /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 142 17>>*/ _z_=
+               /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 142 17>>*/ var
+                /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 142 17>>*/ _z_=
                 entry_a_[1],
-                /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 145 14>>*/ _A_=
-                 /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 145 14>>*/ _H_
+                /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 145 14>>*/ _A_=
+                 /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 145 14>>*/ _H_
                  (_gM_,_z_);
-               /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 145 38>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 145 38>>*/ _ag_
+               /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 145 38>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 145 38>>*/ _ag_
                       ([0,_A_,config_b_])}
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 149 15>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 149 15>>*/ _ag_
-                    ([0,entry_a_[1],config_b_]) /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 152 7>>*/ },
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 153 55>>*/ niceOutputEntriesWithFixedTypeConstructors_e_=
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 153 55>>*/ _$_
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 149 15>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 149 15>>*/ _ag_
+                    ([0,entry_a_[1],config_b_]) /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 152 7>>*/ },
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 153 55>>*/ niceOutputEntriesWithFixedTypeConstructors_e_=
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 153 55>>*/ _$_
            (getNiceOutputEntry_m_,outputEntries_c_);
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 154 6>>*/ try
-         { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 155 12>>*/ var
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 154 6>>*/ try
+         { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 155 12>>*/ var
            _q_=999,
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 155 12>>*/ _r_=
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 155 12>>*/ _gz_
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 155 12>>*/ _r_=
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 155 12>>*/ _gz_
              (niceOutputEntriesWithFixedTypeConstructors_e_,_q_,config_b_),
            newReasonifiedCompletionDescriptions_h_=_r_}
         catch(_f_)
-         { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 157 26>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 157 26>>*/ var
+         { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 157 26>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 157 26>>*/ var
            _n_=
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 157 26>>*/ _H_
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 157 26>>*/ _H_
              (fmtErrMsg_gy_,linePrefix_i_);
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 157 14>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 157 14>>*/ _e8_
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 157 14>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 157 14>>*/ _e8_
            (_n_);
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 157 26>>*/ var
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 157 26>>*/ var
            newReasonifiedCompletionDescriptions_h_=
             niceOutputEntriesWithFixedTypeConstructors_e_}
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 109 19>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 161 6>>*/ var
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 109 19>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 161 6>>*/ var
          cacheEntry_o_=
           function(entry_a_,newReasonifiedCompletionDescription_b_)
-           { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 162 8>>*/ var
-              /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 162 8>>*/ _e_=
+           { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 162 8>>*/ var
+              /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 162 8>>*/ _e_=
               entry_a_[1],
-              /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 162 16>>*/ _f_=
-               /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 162 16>>*/ _aG_
+              /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 162 16>>*/ _f_=
+               /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 162 16>>*/ _aG_
                (_e_,_gS_),
-              /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 162 35>>*/ _d_=
+              /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 162 35>>*/ _d_=
               1-
               _f_;
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 162 35>>*/ if
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 162 35>>*/ if
              (_d_)
-              /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 162 43>>*/ var
+              /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 162 43>>*/ var
               _g_=entry_a_[1],
-               /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 162 43>>*/ _h_=
-                /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 162 43>>*/ _a5_
+               /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 162 43>>*/ _h_=
+                /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 162 43>>*/ _a5_
                 (_ah_,_g_),
               _c_=1-_h_;
             else
              var _c_=_d_;
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 162 81>>*/ if
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 162 81>>*/ if
              (_c_)
-             { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 163 45>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 163 45>>*/ var
+             { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 163 45>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 163 45>>*/ var
                _i_=
-                 /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 163 45>>*/ _gE_
+                 /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 163 45>>*/ _gE_
                  (newReasonifiedCompletionDescription_b_);
-               /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 163 109>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 163 109>>*/ _ep_
+               /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 163 109>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 163 109>>*/ _ep_
                       (_ah_,entry_a_[1],_i_)}
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 111 38>>*/ return _c_ /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 164 9>>*/ };
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 165 6>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 165 6>>*/ _dS_
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 111 38>>*/ return _c_ /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 164 9>>*/ };
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 165 6>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 165 6>>*/ _dS_
          (cacheEntry_o_,
           outputEntries_c_,
           newReasonifiedCompletionDescriptions_h_)}
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 167 4>>*/ function
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 167 4>>*/ function
        getFormattedCompletion_p_
        (entry_a_)
-       { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 167 40>>*/ var
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 167 40>>*/ _c_=
+       { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 167 40>>*/ var
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 167 40>>*/ _c_=
           entry_a_[1],
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 168 17>>*/ match_d_=
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 168 17>>*/ _a5_
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 168 17>>*/ match_d_=
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 168 17>>*/ _a5_
            (_ah_,_c_);
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 168 51>>*/ if
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 168 51>>*/ if
          (0===match_d_)
          var desc_b_=entry_a_[1];
         else
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 168 54>>*/ var
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 168 54>>*/ _e_=
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 168 54>>*/ var
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 168 54>>*/ _e_=
            entry_a_[1],
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 168 54>>*/ _f_=
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 168 54>>*/ _er_
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 168 54>>*/ _f_=
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 168 54>>*/ _er_
             (_ah_,_e_),
           desc_b_=_f_;
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 169 6>>*/ return [0,
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 169 6>>*/ return [0,
                 desc_b_,
                 entry_a_[2],
                 entry_a_[3],
-                entry_a_[4]] /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 170 5>>*/ }
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 171 4>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 171 4>>*/ _$_
+                entry_a_[4]] /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 170 5>>*/ }
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 171 4>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 171 4>>*/ _$_
               (getFormattedCompletion_p_,outputEntries_c_)}
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 83 36>>*/ function
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 83 36>>*/ function
      _gT_
      (request_a_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 175 51>>*/ var
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 175 51>>*/ editor_e_=
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 175 51>>*/ var
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 175 51>>*/ editor_e_=
         request_a_[1],
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 177 2>>*/ prefix_b_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 177 2>>*/ prefix_b_=
         request_a_[2],
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 178 59>>*/ _r_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 178 59>>*/ _b6_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 178 59>>*/ _r_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 178 59>>*/ _b6_
          (editor_e_),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 178 50>>*/ _s_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 178 50>>*/ _dN_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 178 50>>*/ _s_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 178 50>>*/ _dN_
          (_r_),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 178 20>>*/ match_h_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 178 20>>*/ _b3_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 178 20>>*/ match_h_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 178 20>>*/ _b3_
          (_s_),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 178 91>>*/ col_i_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 178 91>>*/ col_i_=
         match_h_[2],
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 178 91>>*/ line_j_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 178 91>>*/ line_j_=
         match_h_[1],
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 184 2>>*/ _t_=
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 184 2>>*/ _t_=
         0,
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 184 30>>*/ _u_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 184 30>>*/ _eQ_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 184 30>>*/ _u_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 184 30>>*/ _eQ_
          (editor_e_,line_j_),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 184 19>>*/ linePrefix_c_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 184 19>>*/ _aa_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 184 19>>*/ linePrefix_c_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 184 19>>*/ _aa_
          (_u_,_t_,col_i_);
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 185 2>>*/ if
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 185 2>>*/ if
        (0===
         (0===
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 185 2>>*/ caml_ml_string_length_f_
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 185 2>>*/ caml_ml_string_length_f_
            (linePrefix_c_)
           ?1
           :0))
-       { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 188 6>>*/ var
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 188 6>>*/ regex_v_=
+       { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 188 6>>*/ var
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 188 6>>*/ regex_v_=
           /([ \t\[\](){}<>,+*\/-])/,
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 190 18>>*/ lst_k_=
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 190 18>>*/ _fA_
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 190 18>>*/ lst_k_=
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 190 18>>*/ _fA_
            (linePrefix_c_,regex_v_),
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 191 18>>*/ len_l_=
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 191 18>>*/ _dM_
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 191 18>>*/ len_l_=
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 191 18>>*/ _dM_
            (lst_k_);
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 192 8>>*/ if
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 192 8>>*/ if
          (0===(0<len_l_?1:0))
          var linePrefix_m_=linePrefix_c_;
         else
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 192 18>>*/ var
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 192 18>>*/ _H_=
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 192 18>>*/ var
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 192 18>>*/ _H_=
            len_l_-
            1|
            0,
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 192 18>>*/ _I_=
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 192 18>>*/ _dP_
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 192 18>>*/ _I_=
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 192 18>>*/ _dP_
             (lst_k_,_H_),
           linePrefix_m_=_I_;
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 188 6>>*/ var
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 188 6>>*/ var
          linePrefix_d_=
           linePrefix_m_}
       else
        var linePrefix_d_=linePrefix_c_;
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 175 51>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 194 20>>*/ var
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 175 51>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 194 20>>*/ var
        _w_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 194 20>>*/ _aB_
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 194 20>>*/ _aB_
          (linePrefix_d_);
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 194 44>>*/ if
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 194 44>>*/ if
        (0!==
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 194 44>>*/ caml_ml_string_length_f_
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 194 44>>*/ caml_ml_string_length_f_
          (_w_))
-       { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 194 67>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 194 67>>*/ var
+       { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 194 67>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 194 67>>*/ var
          _x_=
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 194 67>>*/ _aB_
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 194 67>>*/ _aB_
            (prefix_b_);
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 194 87>>*/ if
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 194 87>>*/ if
          (0!==
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 194 87>>*/ caml_ml_string_length_f_
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 194 87>>*/ caml_ml_string_length_f_
            (_x_))
-         { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 203 13>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 203 13>>*/ var
+         { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 203 13>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 203 13>>*/ var
            match_n_=
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 203 13>>*/ _b5_
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 203 13>>*/ _b5_
              (editor_e_);
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 203 41>>*/ if
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 203 41>>*/ if
            (match_n_)
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 205 23>>*/ var
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 205 23>>*/ path_y_=
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 205 23>>*/ var
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 205 23>>*/ path_y_=
              match_n_[1],
             path_g_=path_y_;
           else
            var path_g_=_gU_;
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 203 13>>*/ var
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 207 24>>*/ merlinService_z_=
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 207 24>>*/ _b9_
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 203 13>>*/ var
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 207 24>>*/ merlinService_z_=
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 207 24>>*/ _b9_
              (path_g_),
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 207 24>>*/ _A_=
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 207 24>>*/ _A_=
             46,
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 209 6>>*/ _o_=
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 209 6>>*/ _bR_
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 209 6>>*/ _o_=
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 209 6>>*/ _bR_
              (prefix_b_,_A_);
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 209 32>>*/ if
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 209 32>>*/ if
            (_o_)
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 209 36>>*/ var
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 209 36>>*/ var
             _B_=46,
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 209 36>>*/ _C_=
-              /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 209 36>>*/ _d6_
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 209 36>>*/ _C_=
+              /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 209 36>>*/ _d6_
               (prefix_b_,_B_),
             _p_=0===_C_?1:0;
           else
@@ -8776,178 +8776,178 @@
           if(0===_p_)
            var replacementPrefix_q_=prefix_b_;
           else
-            /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 210 8>>*/ var
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 210 8>>*/ _E_=
-              /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 210 8>>*/ caml_ml_string_length_f_
+            /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 210 8>>*/ var
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 210 8>>*/ _E_=
+              /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 210 8>>*/ caml_ml_string_length_f_
               (prefix_b_)-
              1|
              0,
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 210 8>>*/ _F_=
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 210 8>>*/ _F_=
              1,
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 210 8>>*/ _G_=
-              /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 210 8>>*/ _aa_
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 210 8>>*/ _G_=
+              /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 210 8>>*/ _aa_
               (prefix_b_,_F_,_E_),
             replacementPrefix_q_=_G_;
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 203 13>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 211 4>>*/ var
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 203 13>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 211 4>>*/ var
            onOutput_D_=
             function(output_a_)
-             { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 211 27>>*/ var
-                /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 211 27>>*/ _b_=
+             { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 211 27>>*/ var
+                /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 211 27>>*/ _b_=
                 [0,output_a_,linePrefix_d_],
-                /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 212 38>>*/ normalizedCompletionItems_c_=
-                 /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 212 38>>*/ _gG_
+                /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 212 38>>*/ normalizedCompletionItems_c_=
+                 /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 212 38>>*/ _gG_
                  (_b_);
-               /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 216 10>>*/ function
+               /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 216 10>>*/ function
                _e_
                (_a_)
                { /*<<?>>*/ return _gf_(replacementPrefix_q_,_a_)}
-               /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 214 8>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 214 8>>*/ var
+               /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 214 8>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 214 8>>*/ var
                nuclideJsEntries_f_=
-                 /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 214 8>>*/ _$_
+                 /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 214 8>>*/ _$_
                  (_e_,normalizedCompletionItems_c_);
-               /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 217 6>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 217 6>>*/ _$_
-                      (_fy_,nuclideJsEntries_f_) /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 218 5>>*/ };
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 219 4>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 219 4>>*/ _gt_
+               /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 217 6>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 217 6>>*/ _$_
+                      (_fy_,nuclideJsEntries_f_) /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 218 5>>*/ };
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 219 4>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 219 4>>*/ _gt_
                   (merlinService_z_,
                    path_g_,
                    line_j_,
                    col_i_,
                    linePrefix_d_,
                    onOutput_D_)}}
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 194 94>>*/ return 0 /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 221 1>>*/ }
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 194 94>>*/ return 0 /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 221 1>>*/ }
     function _gV_(text_a_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 46 27>>*/ return [0,
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 46 27>>*/ return [0,
               _gY_,
-              [0,_gX_,[0,_gW_,[0,text_a_,0]]]] /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 46 57>>*/ }
+              [0,_gX_,[0,_gW_,[0,text_a_,0]]]] /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 46 57>>*/ }
     function _g0_(text_a_,path_b_,onComplete_c_,onFailure_d_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 56 16>>*/ var
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 56 16>>*/ service_e_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 56 16>>*/ _b9_
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 56 16>>*/ var
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 56 16>>*/ service_e_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 56 16>>*/ _b9_
          (path_b_),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 57 58>>*/ _f_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 57 58>>*/ _gV_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 57 58>>*/ _f_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 57 58>>*/ _gV_
          (text_a_),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 57 28>>*/ contextifiedTellCmd_g_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 57 28>>*/ _b$_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 57 28>>*/ contextifiedTellCmd_g_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 57 28>>*/ _b$_
          (_f_,path_b_),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 58 30>>*/ contextifiedErrorsCmd_h_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 58 30>>*/ _b$_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 58 30>>*/ contextifiedErrorsCmd_h_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 58 30>>*/ _b$_
          (_gZ_,path_b_);
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 59 2>>*/ function
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 59 2>>*/ function
        afterTellText_i_
        (result_a_)
-       { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 59 30>>*/ function
+       { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 59 30>>*/ function
          afterErrors_d_
          (errors_a_)
-         { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 60 41>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 60 41>>*/ var
+         { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 60 41>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 60 41>>*/ var
            _d_=
-             /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 60 41>>*/ _f5_
+             /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 60 41>>*/ _f5_
              (path_b_,errors_a_);
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 62 5>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 62 5>>*/ caml_call_gen1_o_
-                  (onComplete_c_,_d_) /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 62 5>>*/ }
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 63 4>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 63 4>>*/ _b__
-                (service_e_,path_b_,contextifiedErrorsCmd_h_,afterErrors_d_) /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 64 3>>*/ }
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 65 2>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 65 2>>*/ _b__
-              (service_e_,path_b_,contextifiedTellCmd_g_,afterTellText_i_) /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 66 1>>*/ }
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 62 5>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 62 5>>*/ caml_call_gen1_o_
+                  (onComplete_c_,_d_) /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 62 5>>*/ }
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 63 4>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 63 4>>*/ _b__
+                (service_e_,path_b_,contextifiedErrorsCmd_h_,afterErrors_d_) /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 64 3>>*/ }
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 65 2>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 65 2>>*/ _b__
+              (service_e_,path_b_,contextifiedTellCmd_g_,afterTellText_i_) /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 66 1>>*/ }
     function _g1_(text_a_,path_b_,onComplete_c_,onFailure_d_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 18 44>>*/ function
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 18 44>>*/ function
        onComplete_e_
        (arr_a_)
-       { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 21 52>>*/ var
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 21 52>>*/ _b_=
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 21 52>>*/ _x_
+       { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 21 52>>*/ var
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 21 52>>*/ _b_=
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 21 52>>*/ _x_
            (_fd_,arr_a_),
-          /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 21 101>>*/ _d_=
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 21 101>>*/ caml_js_from_array_q_
+          /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 21 101>>*/ _d_=
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 21 101>>*/ caml_js_from_array_q_
            (_b_);
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 21 102>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 21 102>>*/ onComplete_c_
-                (_d_) /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 21 104>>*/ }
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 22 8>>*/ function
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 21 102>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 21 102>>*/ onComplete_c_
+                (_d_) /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 21 104>>*/ }
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 22 8>>*/ function
        onFailure_f_
        (str_a_)
-       { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 22 78>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 22 78>>*/ var
+       { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 22 78>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 22 78>>*/ var
          _b_=
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 22 78>>*/ str_a_.toString
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 22 78>>*/ str_a_.toString
            ();
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 22 93>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 22 93>>*/ onComplete_e_
-                (_b_) /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 22 95>>*/ }
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 23 8>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 23 8>>*/ _g0_
-              (text_a_,path_b_,onComplete_e_,onFailure_f_) /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 24 7>>*/ }
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 16 2>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 16 2>>*/ var
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 22 93>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 22 93>>*/ onComplete_e_
+                (_b_) /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 22 95>>*/ }
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 23 8>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 23 8>>*/ _g0_
+              (text_a_,path_b_,onComplete_e_,onFailure_f_) /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 24 7>>*/ }
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 16 2>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 16 2>>*/ var
      _g2_=
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 16 2>>*/ caml_js_wrap_callback_F_
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 16 2>>*/ caml_js_wrap_callback_F_
        (_g1_);
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 14 0>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 14 0>>*/ _bc_
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 14 0>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 14 0>>*/ _bc_
      (_g3_,_g2_);
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 26 3>>*/ function
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 26 3>>*/ function
      _g4_
      (jsEditor_a_,
       jsRange_b_,
       jsNotifySuccess_c_,
       jsNotifyInvalid_d_,
       jsNotifyInfo_e_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 33 21>>*/ var
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 33 21>>*/ editor_f_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 33 21>>*/ _b4_
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 33 21>>*/ var
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 33 21>>*/ editor_f_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 33 21>>*/ _b4_
          (jsEditor_a_),
-        /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 34 20>>*/ range_g_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 34 20>>*/ _eN_
+        /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 34 20>>*/ range_g_=
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 34 20>>*/ _eN_
          (jsRange_b_);
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 35 8>>*/ function
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 35 8>>*/ function
        notifySuccess_h_
        (msg_a_)
-       { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 35 87>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 35 87>>*/ var
+       { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 35 87>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 35 87>>*/ var
          _b_=
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 35 87>>*/ msg_a_.toString
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 35 87>>*/ msg_a_.toString
            ();
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 35 102>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 35 102>>*/ jsNotifySuccess_c_
-                (_b_) /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 35 104>>*/ }
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 36 8>>*/ function
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 35 102>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 35 102>>*/ jsNotifySuccess_c_
+                (_b_) /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 35 104>>*/ }
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 36 8>>*/ function
        notifyInvalid_i_
        (msg_a_)
-       { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 36 87>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 36 87>>*/ var
+       { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 36 87>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 36 87>>*/ var
          _b_=
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 36 87>>*/ msg_a_.toString
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 36 87>>*/ msg_a_.toString
            ();
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 36 102>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 36 102>>*/ jsNotifyInvalid_d_
-                (_b_) /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 36 104>>*/ }
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 37 8>>*/ function
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 36 102>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 36 102>>*/ jsNotifyInvalid_d_
+                (_b_) /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 36 104>>*/ }
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 37 8>>*/ function
        notifyInfo_j_
        (msg_a_)
-       { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 37 81>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 37 81>>*/ var
+       { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 37 81>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 37 81>>*/ var
          _b_=
-           /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 37 81>>*/ msg_a_.toString
+           /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 37 81>>*/ msg_a_.toString
            ();
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 37 96>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 37 96>>*/ jsNotifyInfo_e_
-                (_b_) /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 37 98>>*/ }
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 38 22>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 38 22>>*/ var
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 37 96>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 37 96>>*/ jsNotifyInfo_e_
+                (_b_) /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 37 98>>*/ }
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 38 22>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 38 22>>*/ var
        promise_k_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 38 22>>*/ _fX_
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 38 22>>*/ _fX_
          (editor_f_,range_g_,notifySuccess_h_,notifyInvalid_i_,notifyInfo_j_);
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 39 8>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 39 8>>*/ _eS_
-              (promise_k_) /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 40 7>>*/ }
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 30 2>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 30 2>>*/ var
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 39 8>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 39 8>>*/ _eS_
+              (promise_k_) /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 40 7>>*/ }
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 30 2>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 30 2>>*/ var
      _g5_=
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 30 2>>*/ caml_js_wrap_callback_F_
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 30 2>>*/ caml_js_wrap_callback_F_
        (_g4_);
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 28 0>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 28 0>>*/ _bc_
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 28 0>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 28 0>>*/ _bc_
      (_g6_,_g5_);
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 42 3>>*/ function
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 42 3>>*/ function
      _g7_
      (r_a_)
-     { /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 48 85>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 48 85>>*/ var
+     { /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 48 85>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 48 85>>*/ var
        _b_=
-         /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 48 85>>*/ _fw_
+         /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 48 85>>*/ _fw_
          (r_a_);
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 50 7>>*/ return  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 50 7>>*/ _gT_
-              (_b_) /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 50 7>>*/ }
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 46 2>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 46 2>>*/ var
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 50 7>>*/ return  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 50 7>>*/ _gT_
+              (_b_) /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 50 7>>*/ }
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 46 2>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 46 2>>*/ var
      _g8_=
-       /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 46 2>>*/ caml_js_wrap_callback_F_
+       /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 46 2>>*/ caml_js_wrap_callback_F_
        (_g7_);
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 44 0>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 44 0>>*/ _bc_
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 44 0>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 44 0>>*/ _bc_
      (_g9_,_g8_);
-     /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 46 2>>*/  /*<</Users/jwalke/github/Reason/editorSupport/NuclideReason/src/Index.re 52 3>>*/ var
+     /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 46 2>>*/  /*<</Users/chenglou/Documents/Github/Reason/editorSupport/NuclideReason/src/Index.re 52 3>>*/ var
      _g__=
       0;
      /*<<std_exit.ml 16 8>>*/  /*<<std_exit.ml 16 8>>*/ do_at_exit_dH_(_g__);
