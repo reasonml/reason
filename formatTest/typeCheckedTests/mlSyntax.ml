@@ -42,6 +42,20 @@ let nested_match = function | A (B | C | D | E) -> 3
 
 let some = Some (1, 2, 3)
 
+let (===) = (=)
+
+let physicalEquality = 1 = 1
+
+let physicalInequality = 1 <> 2
+
+let referentialEquality = 2 == 2
+
+let referentialInequality = 2 != 2
+
+let equalityInIf = if 1 = 1 then true else false
+
+let equalityWithIdentifiers = physicalEquality = referentialEquality
+
 let nestedSome = Some (1, 2, Some (1, 2, 3))
 
 let nestedSomeSimple = Some (Some (1, 2, 3))

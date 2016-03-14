@@ -12,13 +12,13 @@ class virtual stack 'a init => {
   method pop =>
     switch v {
       | [hd, ...tl] => {
-        v <- tl;
+        v = tl;
         Some hd;
       }
       | [] => None
     };
 
-  method push hd => {v <- [hd, ...v]};
+  method push hd => {v = [hd, ...v]};
   initializer => {
     print_string "initializing object";
   };
@@ -51,13 +51,13 @@ class virtual stackWithAttributes 'a init =>
   method pop =>
     switch v {
       | [hd, ...tl] => {
-        v <- tl;
+        v = tl;
         Some hd;
       }
       | [] => None
     };
 
-  method push hd => {v <- [hd, ...v]};
+  method push hd => {v = [hd, ...v]};
   initializer => {
     print_string "initializing object";
   };

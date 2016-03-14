@@ -11,32 +11,64 @@
    verifies), but the additional parenthesis is nice.
  */
 /* < > = all have same precedence level/direction(left) */
-let parseTree = ((x > y > z) < a < b) = c = d;
+let parseTree = ((x > y > z) < a < b) == c == d;
 
-let minParens = ((x > y > z) < a < b) = c = d;
+let minParens = ((x > y > z) < a < b) == c == d;
 
-let formatted = ((x > y > z) < a < b) = c = d;
+let formatted = ((x > y > z) < a < b) == c == d;
+
+/* Case with === */
+
+let parseTree = ((x > y > z) < a < b) === c === d;
+
+let minParens = ((x > y > z) < a < b) === c === d;
+
+let formatted = ((x > y > z) < a < b) === c === d;
 
 /* < > = all have same precedence level and direction (left) */
-let parseTree = a1 < a2 < (b1 > b2 > (y = x = z));
+let parseTree = a1 < a2 < (b1 > b2 > (y == x == z));
 
-let minParens = a1 < a2 < (b1 > b2 > (y = x = z));
+let minParens = a1 < a2 < (b1 > b2 > (y == x == z));
 
-let formatted = a1 < a2 < (b1 > b2 > (y = x = z));
+let formatted = a1 < a2 < (b1 > b2 > (y == x == z));
+
+/* Case with === */
+
+let parseTree = a1 < a2 < (b1 > b2 > (y === x === z));
+
+let minParens = a1 < a2 < (b1 > b2 > (y === x === z));
+
+let formatted = a1 < a2 < (b1 > b2 > (y === x === z));
 
 /* !=...(left) same level =(left) is higher than :=(right) */
-let parseTree = a1 := a2 := b1 = b2 = (y != x != z);
+let parseTree = a1 := a2 := b1 == b2 == (y != x != z);
 
-let minParens = a1 := a2 := b1 = b2 = (y != x != z);
+let minParens = a1 := a2 := b1 == b2 == (y != x != z);
 
-let formatted = a1 := a2 := b1 = b2 = (y != x != z);
+let formatted = a1 := a2 := b1 == b2 == (y != x != z);
+
+/* Case with === */
+
+let parseTree = a1 := a2 := b1 === b2 === (y !== x !== z);
+
+let minParens = a1 := a2 := b1 === b2 === (y !== x !== z);
+
+let formatted = a1 := a2 := b1 === b2 === (y !== x !== z);
 
 /* !=...(left) same level =(left) is higher than :=(right) */
-let parseTree = a1 := a2 := b1 = ((b2 = y) != x != z);
+let parseTree = a1 := a2 := b1 == ((b2 == y) != x != z);
 
-let minParens = a1 := a2 := b1 = ((b2 = y) != x != z);
+let minParens = a1 := a2 := b1 == ((b2 == y) != x != z);
 
-let formatted = a1 := a2 := b1 = ((b2 = y) != x != z);
+let formatted = a1 := a2 := b1 == ((b2 == y) != x != z);
+
+/* Case with === */
+
+let parseTree = a1 := a2 := b1 === ((b2 === y) !== x !== z);
+
+let minParens = a1 := a2 := b1 === ((b2 === y) !== x !== z);
+
+let formatted = a1 := a2 := b1 === ((b2 === y) !== x !== z);
 
 /* &...(left) is higher than &(right). &(right) is equal to &&(right) */
 let parseTree = a1 && a2 && (b1 & b2 & y &|| x &|| z);
@@ -97,7 +129,7 @@ let seeWhichCharacterHasHigherPrecedence = first |> second |> third;
 
 let seeWhichCharacterHasHigherPrecedence = first + second + third;
 
-let comparison = (=);
+let comparison = (==);
 
 /* Why would the following two cases have different grouping? */
 let res = blah || DataConstructor 10 || DataConstructor 10 && 10;
@@ -106,7 +138,7 @@ let res = blah && DataConstructor 10 && DataConstructor 10 + 10;
 
 /* This demonstrates how broken infix pretty printing is:
  */
-let curriedComparison = (=) 10;
+let curriedComparison = (==) 10;
 
 let resultOfAdd = 10 + 20 + 40;
 
@@ -202,15 +234,15 @@ let (++): int => int = (++);
 (++) label::20 label2::30 + 40;
 
 /* Great idea! */
-let (=) a b => a < 0;
+let (==) a b => a < 0;
 
-let (=) a b => a < 0;
+let (==) a b => a < 0;
 
-let (=) = (=);
+let (==) = (==);
 
-let (=): int => int = (=);
+let (==): int => int = (==);
 
-let equal = Pervasives.(=);
+let equal = Pervasives.(==);
 
 let starInfix_makeSureSpacesSurround = ( * );
 
