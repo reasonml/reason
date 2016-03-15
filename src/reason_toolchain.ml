@@ -117,18 +117,12 @@ module Create_parse_entrypoint
    * crash the process. TODO: Report more accurate location in those cases.
    *)
   let canonical_implementation_with_comments = fun lexbuf ->
-    let (ast, comments) =
-      try wrap_with_comments Toolchain_impl.Parser_impl.implementation lexbuf with
-      | err -> (syntax_error_str err (Location.curr lexbuf), [])
-      in
-    (ast, comments)
+    try wrap_with_comments Toolchain_impl.Parser_impl.implementation lexbuf with
+    | err -> (syntax_error_str err (Location.curr lexbuf), [])
 
   let canonical_interface_with_comments = fun lexbuf ->
-    let (ast, comments) =
-      try wrap_with_comments Toolchain_impl.Parser_impl.interface lexbuf with
-      | err -> (syntax_error_sig err (Location.curr lexbuf), [])
-      in
-    (ast, comments)
+    try wrap_with_comments Toolchain_impl.Parser_impl.interface lexbuf with
+    | err -> (syntax_error_sig err (Location.curr lexbuf), [])
 
   (* Printing *)
   let print_canonical_interface_with_comments comments interface =
