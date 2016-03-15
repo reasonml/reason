@@ -152,7 +152,7 @@
   :type 'hook
   :group 'reason-mode)
 
-(defcustom rust-indent-offset 2
+(defcustom reason-indent-offset 2
   "Indent Rust code by this number of spaces."
   :type 'integer
   :group 'reason-mode
@@ -225,7 +225,7 @@ function or trait.  When nil, where will be aligned with fn or trait."
         (backward-word 1))
       (current-column))))
 
-(defun rust-rewind-to-beginning-of-current-level-expr ()
+(defun reason-rewind-to-beginning-of-current-level-expr ()
   (interactive)
   (let ((current-level (reason-paren-level)))
     (back-to-indentation)
@@ -239,7 +239,7 @@ function or trait.  When nil, where will be aligned with fn or trait."
     ;; of the function and its paren level.
     (let ((function-start nil) (function-level nil))
       (save-excursion
-        (rust-beginning-of-defun)
+        (reason-beginning-of-defun)
         (back-to-indentation)
         ;; Avoid using multiple-value-bind
         (setq function-start (point)
@@ -253,54 +253,6 @@ function or trait.  When nil, where will be aligned with fn or trait."
                        (re-search-backward "\\bwhere\\b" function-start t))
                      (= current-level function-level)))
         (goto-char function-start)))))
-
-(defun rust-align-to-method-chain ()
-  (save-excursion
-    ;; for method-chain alignment to apply, we must be looking at
-    ;; another method call or field access or something like
-    ;; that. This avoids rather "eager" jumps in situations like:
-    ;;
-    ;; {
-    ;;     something.foo()
-    ;; <indent>
-    ;;
-    ;; Without this check, we would wind up with the cursor under the
-    ;; `.`. In an older version, I had the inverse of the current
-    ;; check, where we checked for situations that should NOT indent,
-    ;; vs checking for the one situation where we SHOULD. It should be
-    ;; clear that this is more robust, but also I find it mildly less
-    ;; annoying to have to press tab again to align to a method chain
-    ;; than to have an over-eager indent in all other cases which must
-    ;; be undone via tab.
-
-    (when (looking-at (concat "\s*\." rust-re-ident))
-      (forward-line -1)
-      (end-of-line)
-
-      (let
-          ;; skip-dot-identifier is used to position the point at the
-          ;; `.` when looking at something like
-          ;;
-          ;;      foo.bar
-          ;;         ^   ^
-          ;;         |   |
-          ;;         |  position of point
-          ;;       returned offset
-          ;;
-          ((skip-dot-identifier
-            (lambda ()
-              (when (and (rust-looking-back-ident) (save-excursion (forward-thing 'symbol -1) (= ?. (char-before))))
-                (forward-thing 'symbol -1)
-                (backward-char)
-                (- (current-column) rust-indent-offset)))))
-        (cond
-         ;; foo.bar(...)
-         ((rust-looking-back-str ")")
-          (backward-list 1)
-          (funcall skip-dot-identifier))
-
-         ;; foo.bar
-         (t (funcall skip-dot-identifier)))))))
 
 (defun reason-mode-indent-line ()
   (interactive)
@@ -320,18 +272,22 @@ function or trait.  When nil, where will be aligned with fn or trait."
                       (save-excursion
                         (reason-rewind-irrelevant)
                         (backward-up-list)
-                        (rust-rewind-to-beginning-of-current-level-expr)
-                        (+ (current-column) rust-indent-offset)))))
+                        (reason-rewind-to-beginning-of-current-level-expr)
+                        (if (looking-at "|")
+                            (+ (current-column) (* reason-indent-offset 2))
+                            (+ (current-column) reason-indent-offset)
+                            )
+                        ))))
              (cond
               ;; A function return type is indented to the corresponding function arguments
               ((looking-at "->")
                (save-excursion
                  (backward-list)
                  (or (rust-align-to-expr-after-brace)
-                     (+ baseline rust-indent-offset))))
+                     (+ baseline reason-indent-offset))))
 
               ;; A closing brace is 1 level unindented
-              ((looking-at "}\\|)\\|\\]") (- baseline rust-indent-offset))
+              ((looking-at "}\\|)\\|\\]") (- baseline reason-indent-offset))
 
               ;; Doc comments in /** style with leading * indent to line up the *s
               ((and (nth 4 (syntax-ppss)) (looking-at "*"))
@@ -359,7 +315,7 @@ function or trait.  When nil, where will be aligned with fn or trait."
                   ;; our search for "where ".
                   (let ((function-start nil) (function-level nil))
                     (save-excursion
-                      (rust-beginning-of-defun)
+                      (reason-beginning-of-defun)
                       (back-to-indentation)
                       ;; Avoid using multiple-value-bind
                       (setq function-start (point)
@@ -384,7 +340,7 @@ function or trait.  When nil, where will be aligned with fn or trait."
                       (if (eolp)
                           ;; in this case the type parameters bounds are just
                           ;; indented once
-                          (+ baseline rust-indent-offset)
+                          (+ baseline reason-indent-offset)
                         ;; otherwise, skip over whitespace,
                         (skip-chars-forward "[:space:]")
                         ;; get the column of the type parameter and use that
@@ -393,33 +349,31 @@ function or trait.  When nil, where will be aligned with fn or trait."
 
                 (progn
                   (back-to-indentation)
-                  ;; Point is now at the beginning of the current line
-                  (if (or
-                       ;; If this line begins with "else" or "{", stay on the
-                       ;; baseline as well (we are continuing an expression,
-                       ;; but the "else" or "{" should align with the beginning
-                       ;; of the expression it's in.)
-                       ;; Or, if this line starts a comment, stay on the
-                       ;; baseline as well.
-                       (looking-at "\\<else\\>\\|{\\|/[/*]")
-
-                       (save-excursion
+                  (cond ((looking-at (regexp-opt '("constraint" "and" "type")))
+                         baseline)
+                        ((save-excursion
                          (reason-rewind-irrelevant)
-                         ;; Point is now at the end of the previous line
-                         (or
-                          ;; If we are at the start of the buffer, no
-                          ;; indentation is needed, so stay at baseline...
-                          (= (point) 1)
-                          ;; ..or if the previous line ends with any of these:
-                          ;;     { ? : ( , ; [ }
-                          ;; then we are at the beginning of an expression, so stay on the baseline...
-                          (looking-back "[(,:;?[{}]\\|[^|]|" (- (point) 2))
-                          )))
-                      baseline
-
-                    ;; Otherwise, we are continuing the same expression from the previous line,
-                    ;; so add one additional indent level
-                    (+ baseline rust-indent-offset))))))))))
+                         (= (point) 1))
+                         baseline)
+                        ((save-excursion
+                           (while (looking-at "|")
+                             (reason-rewind-irrelevant)
+                             (back-to-indentation))
+                           (looking-at (regexp-opt '("type")))
+                           )
+                         (+ baseline reason-indent-offset))
+                        ((looking-at "|\\|/[/*]")
+                         (- baseline reason-indent-offset))
+                        ((save-excursion
+                         (reason-rewind-irrelevant)
+                         (looking-back "[{;,\\[(]" (- (point) 2)))
+                         baseline)
+                        (t
+                         (+ baseline reason-indent-offset)
+                         )
+                        )
+                  ;; Point is now at the beginning of the current line
+                  ))))))))
 
     (when indent
       ;; If we're at the beginning of the line (before or at the current
@@ -434,7 +388,6 @@ function or trait.  When nil, where will be aligned with fn or trait."
 ;; Font-locking definitions and helpers
 (defconst reason-mode-keywords
   '("as"
-    "break"
     "else" "extern"
     "false" "fun" "for"
     "if" "impl" "in"
@@ -1053,76 +1006,30 @@ function or trait.  When nil, where will be aligned with fn or trait."
             fill-prefix)))
     (funcall body)))
 
-(defun rust-find-fill-prefix ()
-  (rust-in-comment-paragraph (lambda () (rust-with-comment-fill-prefix (lambda () fill-prefix)))))
-
-(defun rust-fill-paragraph (&rest args)
-  "Special wrapping for `fill-paragraph' to handle multi-line comments with a * prefix on each line."
-  (rust-in-comment-paragraph
-   (lambda ()
-     (rust-with-comment-fill-prefix
-      (lambda ()
-        (let
-            ((fill-paragraph-function
-              (if (not (eq fill-paragraph-function 'rust-fill-paragraph))
-                  fill-paragraph-function))
-             (fill-paragraph-handle-comment t))
-          (apply 'fill-paragraph args)
-          t))))))
-
-(defun rust-do-auto-fill (&rest args)
-  "Special wrapping for `do-auto-fill' to handle multi-line comments with a * prefix on each line."
-  (rust-with-comment-fill-prefix
-   (lambda ()
-     (apply 'do-auto-fill args)
-     t)))
-
-(defun rust-fill-forward-paragraph (arg)
-  ;; This is to work around some funny behavior when a paragraph separator is
-  ;; at the very top of the file and there is a fill prefix.
-  (let ((fill-prefix nil)) (forward-paragraph arg)))
-
 (defun rust-comment-indent-new-line (&optional arg)
   (rust-with-comment-fill-prefix
    (lambda () (comment-indent-new-line arg))))
 
-;;; Imenu support
-(defvar rust-imenu-generic-expression
-  (append (mapcar #'(lambda (x)
-                      (list nil (rust-re-item-def x) 1))
-                  '("enum" "struct" "type" "mod" "fn" "trait"))
-          `(("Impl" ,(rust-re-item-def "impl") 1)))
-  "Value for `imenu-generic-expression' in Rust mode.
-
-Create a flat index of the item definitions in a Rust file.
-
-Imenu will show all the enums, structs, etc. at the same level.
-Implementations will be shown under the `Impl` subheading.  Use
-idomenu (imenu with `ido-mode') for best mileage.")
-
 ;;; Defun Motions
 
-;;; Start of a Rust item
-(defvar rust-top-item-beg-re
-  (concat "^\\s-*\\(?:priv\\|pub\\)?\\s-*"
-          (regexp-opt
-           '("enum" "struct" "type" "mod" "use" "fn" "static" "impl"
-             "extern" "impl" "static" "trait"))))
+;;; Start of a reason binding
+(defvar reason-binding
+  (regexp-opt '("let" "type")))
 
-(defun rust-beginning-of-defun (&optional arg)
+(defun reason-beginning-of-defun (&optional arg)
   "Move backward to the beginning of the current defun.
 
 With ARG, move backward multiple defuns.  Negative ARG means
 move forward.
 
-This is written mainly to be used as `beginning-of-defun-function' for Rust.
+This is written mainly to be used as `beginning-of-defun-function'.
 Don't move to the beginning of the line. `beginning-of-defun',
 which calls this, does that afterwards."
   (interactive "p")
-  (re-search-backward (concat "^\\(" rust-top-item-beg-re "\\)\\_>")
+  (re-search-backward (concat "^\\(" reason-binding "\\)\\_>")
                       nil 'move (or arg 1)))
 
-(defun rust-end-of-defun ()
+(defun reason-end-of-defun ()
   "Move forward to the next end of defun.
 
 With argument, do it that many times.
@@ -1131,7 +1038,7 @@ Negative argument -N means move back to Nth preceding end of defun.
 Assume that this is called after beginning-of-defun. So point is
 at the beginning of the defun body.
 
-This is written mainly to be used as `end-of-defun-function' for Rust."
+This is written mainly to be used as `end-of-defun-function' for Reason."
   (interactive)
   ;; Find the opening brace
   (if (re-search-forward "[{]" nil t)
@@ -1168,28 +1075,21 @@ This is written mainly to be used as `end-of-defun-function' for Rust."
                                    ))
 
   ;; Misc
-  (setq-local comment-start "// ")
-  (setq-local comment-end   "")
+  (setq-local comment-start "/*")
+  (setq-local comment-end   "*/")
   (setq-local indent-tabs-mode nil)
 
   ;; Allow paragraph fills for comments
-  (setq-local comment-start-skip "\\(?://[/!]*\\|/\\*[*!]?\\)[[:space:]]*")
+  (setq-local comment-start-skip "/\\*+[ \t]*")
   (setq-local paragraph-start
-              (concat "[[:space:]]*\\(?:" comment-start-skip "\\|\\*/?[[:space:]]*\\|\\)$"))
+              (concat "^[ \t]*$\\|\\*)$\\|" page-delimiter))
   (setq-local paragraph-separate paragraph-start)
-  (setq-local normal-auto-fill-function 'rust-do-auto-fill)
-  (setq-local fill-paragraph-function 'rust-fill-paragraph)
-  (setq-local fill-forward-paragraph-function 'rust-fill-forward-paragraph)
-  (setq-local adaptive-fill-function 'rust-find-fill-prefix)
-  (setq-local adaptive-fill-first-line-regexp "")
+  (setq-local require-final-newline t)
+  (setq-local normal-auto-fill-function nil)
   (setq-local comment-multi-line t)
-  (setq-local comment-line-break-function 'rust-comment-indent-new-line)
-  (setq-local imenu-generic-expression rust-imenu-generic-expression)
-  (setq-local beginning-of-defun-function 'rust-beginning-of-defun)
-  (setq-local end-of-defun-function 'rust-end-of-defun)
+  (setq-local beginning-of-defun-function 'reason-beginning-of-defun)
+  (setq-local end-of-defun-function 'reason-end-of-defun)
   (setq-local parse-sexp-lookup-properties t)
-  (setq-local electric-pair-inhibit-predicate 'rust-electric-pair-inhibit-predicate-wrap)
-  (add-hook 'after-revert-hook 'rust--after-revert-hook 'LOCAL)
   )
 
 ;;;###autoload
@@ -1200,84 +1100,6 @@ This is written mainly to be used as `end-of-defun-function' for Rust."
   (unload-feature 'reason-mode)
   (require 'reason-mode)
   (reason-mode))
-
-;; Issue #104: When reverting the buffer, make sure all fontification is redone
-;; so that we don't end up missing a non-angle-bracket '<' or '>' character.
-(defun rust--after-revert-hook ()
-  (let
-      ;; Newer emacs versions (25 and later) make `font-lock-fontify-buffer'
-      ;; interactive-only, and want lisp code to call `font-lock-flush' or
-      ;; `font-lock-ensure'.  But those don't exist in emacs 24 and earlier.
-      ((font-lock-ensure-fn (if (fboundp 'font-lock-ensure) 'font-lock-ensure 'font-lock-fontify-buffer)))
-    (funcall font-lock-ensure-fn))
-  )
-
-;; Issue #6887: Rather than inheriting the 'gnu compilation error
-;; regexp (which is broken on a few edge cases), add our own 'rust
-;; compilation error regexp and use it instead.
-(defvar rustc-compilation-regexps
-  (let ((file "\\([^\n]+\\)")
-        (start-line "\\([0-9]+\\)")
-        (start-col  "\\([0-9]+\\)")
-        (end-line   "\\([0-9]+\\)")
-        (end-col    "\\([0-9]+\\)")
-        (msg-type   "\\(?:[Ee]rror\\|\\([Ww]arning\\)\\|\\([Nn]ote\\|[Hh]elp\\)\\)"))
-    (let ((re (concat "^" file ":" start-line ":" start-col
-                      ": " end-line ":" end-col
-                      " " msg-type ":")))
-      (cons re '(1 (2 . 4) (3 . 5) (6 . 7)))))
-  "Specifications for matching errors in rustc invocations.
-See `compilation-error-regexp-alist' for help on their format.")
-
-;; Match test run failures and panics during compilation as
-;; compilation warnings
-(defvar cargo-compilation-regexps
-  '("^\\s-+thread '[^']+' panicked at \\('[^']+', \\([^:]+\\):\\([0-9]+\\)\\)" 2 3 nil nil 1)
-  "Specifications for matching panics in cargo test invocations.
-See `compilation-error-regexp-alist' for help on their format.")
-
-(eval-after-load 'compile
-  '(progn
-     (add-to-list 'compilation-error-regexp-alist-alist
-                  (cons 'rustc rustc-compilation-regexps))
-     (add-to-list 'compilation-error-regexp-alist 'rustc)
-     (add-to-list 'compilation-error-regexp-alist-alist
-                  (cons 'cargo cargo-compilation-regexps))
-     (add-to-list 'compilation-error-regexp-alist 'cargo)))
-
-;;; Functions to submit (parts of) buffers to the rust playpen, for
-;;; sharing.
-(defun rust-playpen-region (begin end)
-  "Create a sharable URL for the contents of the current region
-   on the Rust playpen."
-  (interactive "r")
-  (let* ((data (buffer-substring begin end))
-         (escaped-data (url-hexify-string data))
-         (escaped-playpen-url (url-hexify-string (format rust-playpen-url-format escaped-data))))
-    (if (> (length escaped-playpen-url) 5000)
-        (error "encoded playpen data exceeds 5000 character limit (length %s)"
-               (length escaped-playpen-url))
-      (let ((shortener-url (format rust-shortener-url-format escaped-playpen-url))
-            (url-request-method "POST"))
-        (url-retrieve shortener-url
-                      (lambda (state)
-                                        ; filter out the headers etc. included at the
-                                        ; start of the buffer: the relevant text
-                                        ; (shortened url or error message) is exactly
-                                        ; the last line.
-                        (goto-char (point-max))
-                        (let ((last-line (thing-at-point 'line t))
-                              (err (plist-get state :error)))
-                          (kill-buffer)
-                          (if err
-                              (error "failed to shorten playpen url: %s" last-line)
-                            (message "%s" last-line)))))))))
-
-(defun rust-playpen-buffer ()
-  "Create a sharable URL for the contents of the current buffer
-   on the Rust playpen."
-  (interactive)
-  (rust-playpen-region (point-min) (point-max)))
 
 (require 'reasonfmt)
 
