@@ -69,17 +69,9 @@ module.exports = {
     return busySignalProvider;
   },
 
-  provideDiagnostics() {
-    if (!reasonDiagnosticsProvider) {
-      const ReasonDiagnosticsProvider = require('./ReasonDiagnosticsProvider');
-      reasonDiagnosticsProvider = new ReasonDiagnosticsProvider();
-    }
-    const {projects} = require('nuclide/pkg/nuclide/atom-helpers');
-    disposables.add(projects.onDidRemoveProjectPath(projectPath => {
-      reasonDiagnosticsProvider.invalidateProjectPath(projectPath);
-    }));
-    
-    return reasonDiagnosticsProvider;
+  provideLinter(): LinterProvider {
+    const ReasonDiagnosticsProvider = require('./ReasonDiagnosticsProvider');
+    return ReasonDiagnosticsProvider;
   },
   
   createCodeFormatProvider() {
