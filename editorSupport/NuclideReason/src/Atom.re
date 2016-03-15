@@ -279,43 +279,43 @@ let module BufferedProcess = {
     |];
     let fields =
       switch opts {
-        | None => fields
-        | Some opts => {
-            let envFields =
-              Array.map (fun (k, v) => (k, Js.Unsafe.inject (Js.string v))) (Array.of_list opts.env);
-            let jsEnv = Js.Unsafe.inject (Js.Unsafe.obj envFields);
-            let jsOptions = Js.Unsafe.obj [|
-              ("cwd", Js.Unsafe.inject opts.cwd),
-              ("env", jsEnv),
-              ("stdio", Js.Unsafe.inject (Array.map Js.string (Array.of_list opts.stdio))),
-              ("detached", Js.Unsafe.inject (Js.bool opts.detached))
-            |];
-            Array.append fields [|("options", jsOptions)|]
-          }
+      | None => fields
+      | Some opts => {
+          let envFields =
+            Array.map (fun (k, v) => (k, Js.Unsafe.inject (Js.string v))) (Array.of_list opts.env);
+          let jsEnv = Js.Unsafe.inject (Js.Unsafe.obj envFields);
+          let jsOptions = Js.Unsafe.obj [|
+            ("cwd", Js.Unsafe.inject opts.cwd),
+            ("env", jsEnv),
+            ("stdio", Js.Unsafe.inject (Array.map Js.string (Array.of_list opts.stdio))),
+            ("detached", Js.Unsafe.inject (Js.bool opts.detached))
+          |];
+          Array.append fields [|("options", jsOptions)|]
+        }
       };
     let fields =
       switch stdOut {
-        | None => fields
-        | Some so => {
-            let cb jsStr => so (Js.to_string jsStr);
-            Array.append fields [|("stdout", Js.Unsafe.inject (Js.wrap_callback cb))|]
-          }
+      | None => fields
+      | Some so => {
+          let cb jsStr => so (Js.to_string jsStr);
+          Array.append fields [|("stdout", Js.Unsafe.inject (Js.wrap_callback cb))|]
+        }
       };
     let fields =
       switch stdErr {
-        | None => fields
-        | Some si => {
-            let cb jsStr => si (Js.to_string jsStr);
-            Array.append fields [|("stdin", Js.Unsafe.inject (Js.wrap_callback cb))|]
-          }
+      | None => fields
+      | Some si => {
+          let cb jsStr => si (Js.to_string jsStr);
+          Array.append fields [|("stdin", Js.Unsafe.inject (Js.wrap_callback cb))|]
+        }
       };
     let fields =
       switch exit {
-        | None => fields
-        | Some e => {
-            let cb eCode => e (Js.to_float eCode);
-            Array.append fields [|("exit", Js.Unsafe.inject (Js.wrap_callback cb))|]
-          }
+      | None => fields
+      | Some e => {
+          let cb eCode => e (Js.to_float eCode);
+          Array.append fields [|("exit", Js.Unsafe.inject (Js.wrap_callback cb))|]
+        }
       };
     Js.Unsafe.new_obj bufferedProcess [|Js.Unsafe.obj fields|]
   };

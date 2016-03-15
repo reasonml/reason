@@ -28,9 +28,9 @@
         "0.0.0": "getHyperclickProvider"
       }
     },
-    "nuclide-diagnostics-provider": {
+    "linter": {
       "versions": {
-        "0.1.0": "provideDiagnostics"
+        "1.0.0": "provideLinter"
       }
     },
     "nuclide-busy-signal": {

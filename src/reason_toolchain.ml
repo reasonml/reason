@@ -20,6 +20,26 @@
  * printers, editor, IDE and VCS integration.
  *)
 
+open Ast_helper
+open Location
+
+let syntax_error_extension loc descriptions =
+  let suffix = String.concat "." ("SyntaxError" :: descriptions)
+  in ((mkloc suffix loc), Parsetree.PStr [])
+
+let invalidLex = "invalidCharacter.orComment.orString"
+let syntax_error_str err loc =
+  if !Reason_config.recoverable then
+    [Str.mk ~loc:loc (Parsetree.Pstr_extension (syntax_error_extension loc [invalidLex], []))]
+  else
+    raise err
+
+let syntax_error_sig err loc =
+  if !Reason_config.recoverable then
+    [Sig.mk ~loc:loc (Parsetree.Psig_extension (syntax_error_extension loc [invalidLex], []))]
+  else
+    raise err
+
 module type Toolchain = sig
   val canonical_implementation: Lexing.lexbuf -> Parsetree.structure
   val canonical_interface: Lexing.lexbuf -> Parsetree.signature
@@ -86,14 +106,31 @@ module Create_parse_entrypoint
   let canonical_core_type = wrap Toolchain_impl.Parser_impl.parse_core_type
   let canonical_expression = wrap Toolchain_impl.Parser_impl.parse_expression
   let canonical_pattern = wrap Toolchain_impl.Parser_impl.parse_pattern
-  let canonical_implementation_with_comments = wrap_with_comments Toolchain_impl.Parser_impl.implementation
-  let canonical_interface_with_comments = wrap_with_comments Toolchain_impl.Parser_impl.interface
+
+  (*
+   * The canonical interface/implementations (with comments) are used with
+   * recovering mode for IDE integration. The parser itself likely
+   * implements its own recovery, but we need to recover in the event
+   * that the file couldn't even lex.
+   * Note, the location reported here is broken for some lexing errors
+   * (nested comments or unbalanced strings in comments) but at least we don't
+   * crash the process. TODO: Report more accurate location in those cases.
+   *)
+  let canonical_implementation_with_comments = fun lexbuf ->
+    try wrap_with_comments Toolchain_impl.Parser_impl.implementation lexbuf with
+    | err -> (syntax_error_str err (Location.curr lexbuf), [])
+
+  let canonical_interface_with_comments = fun lexbuf ->
+    try wrap_with_comments Toolchain_impl.Parser_impl.interface lexbuf with
+    | err -> (syntax_error_sig err (Location.curr lexbuf), [])
 
   (* Printing *)
   let print_canonical_interface_with_comments comments interface =
     Toolchain_impl.format_interface_with_comments comments Format.std_formatter interface
   let print_canonical_implementation_with_comments comments implementation =
     Toolchain_impl.format_implementation_with_comments comments Format.std_formatter implementation
+
+
 end
 
 module OCaml_syntax = struct
