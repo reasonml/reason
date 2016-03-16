@@ -4,24 +4,29 @@ VimReason: Vim support for Reason
 Installation:
 ============
 
-[VimBox](https://github.com/jordwalke/vimbox) is a great way to get started with a modern Vim configuration. Eventually, `VimReason` will come pre-loaded in `VimBox`.
+[VimBox](https://github.com/jordwalke/vimbox) is a great way to get started
+with a modern Vim configuration. For example, the plugins it uses will enable
+autocompletion when hitting the "." key after module names etc.
 
-0. Install `reason` by following the main instructions in the
-   [`Reason`](www.github.com/facebook/reason) repo.
+Installing
+------------------
+
+Currently, only works with bleeding edge merlin master branch on github.
+
+0. Make sure bleeding edge merlin `master` branch, and `Reason` installed via `OPAM`.
+  ```sh
+  opam switch 4.02.1
+  opam pin add -y merlin https://github.com/the-lambda-church/merlin.git
+  opam pin add -y reasonsyntax git@github.com:facebook/ReasonSyntax.git
+  opam pin add -y reason git@github.com:facebook/Reason.git
 
 
-1. Install `merlin` using `OPAM` (`brew install opam` if needed).
 
-
-    opam install merlin
-
-
-2. [`NeoBundle`](https://github.com/Shougo/neobundle.vim) is the best way to
+1. [`NeoBundle`](https://github.com/Shougo/neobundle.vim) is the best way to
    install plugins for Vim (either from github or disk). `VimBox` includes
    `NeoBundle`, but you can use `NeoBundle` by itself to install `VimReason`.
 
-  If using `VimBox`, place the following command in your `~/.vim/bundlesVimRc`.
-  If using `NeoBundle` by itself, place it at the end of your `.vimrc`.
+  If using `NeoBundle` place this at the end of your `.vimrc`.
 
 
 ```vim
@@ -33,8 +38,8 @@ if !empty(system('which opam'))
   let s:merlinPath=substitute(system('opam config var share'),'\n$','','') . "/merlin"
   execute "set rtp+=".s:merlinPath."/vim"
   execute "set rtp+=".s:merlinPath."/vimbufsync"
-  let g:syntastic_ocaml_checkers=['merlin']
   let g:syntastic_reason_checkers=['merlin']
+  let g:merlin_binary_flags = ["-pp", "reasonfmt_merlin"]
 else
   " TODO: figure out opam for windows
 endif
@@ -43,7 +48,7 @@ endif
 
 IDE Features:
 =============
-You must add the following lines to your `.merlin` file:
+For all the features to work, you must add the following lines to your `.merlin` file:
 
 ```
 FLG -pp reasonfmt_merlin
