@@ -51,7 +51,27 @@ let runSingleCommand (service: service) (filePath: string) jsCmd andThen => {
   dotCall runSingleCommandPromise "then" [|Js.Unsafe.inject (Js.wrap_callback onResolve)|]
 };
 
+let contextifyStringQuery cmdList filePath => Js.Unsafe.obj [|
+  ("query", Js.Unsafe.inject (Js.array (Array.map Js.string (Array.of_list cmdList)))),
+  ("context", Js.Unsafe.inject (Js.array [|Js.string "auto", Js.string filePath|]))
+|];
+
+let contextifyQuery cmdArray filePath => Js.Unsafe.obj [|
+  ("query", Js.Unsafe.inject (Js.array cmdArray)),
+  ("context", Js.Unsafe.inject (Js.array [|Js.string "auto", Js.string filePath|]))
+|];
+
 let complete (service: service) (filePath: string) (line: int) (col: int) (prefix: string) andThen => {
+  let lineCol = Js.Unsafe.inject (
+    Js.Unsafe.obj [|("line", Js.Unsafe.inject (line + 1)), ("col", Js.Unsafe.inject (col + 1))|]
+  );
+  let completeCommand = [|
+    Js.Unsafe.inject (Js.string "complete"),
+    Js.Unsafe.inject (Js.string "prefix"),
+    Js.Unsafe.inject (Js.string prefix),
+    Js.Unsafe.inject (Js.string "at"),
+    lineCol
+  |];
   let onResolve result =>
     if (Js.Opt.test (Js.Opt.return result)) {
       let lengthValue = Js.Unsafe.get result "length";
@@ -64,23 +84,8 @@ let complete (service: service) (filePath: string) (line: int) (col: int) (prefi
     } else {
       Js.array [||]
     };
-  let runSingleCommandPromise =
-    dotCall
-      service
-      "complete"
-      [|
-        Js.Unsafe.inject (Js.string filePath),
-        Js.Unsafe.inject line,
-        Js.Unsafe.inject col,
-        Js.Unsafe.inject (Js.string prefix)
-      |];
   /** TODO: We should first check if the MerlinService could be found and if not, provide
     * troubleshooting information. */
-  dotCall runSingleCommandPromise "then" [|Js.Unsafe.inject (Js.wrap_callback onResolve)|]
+  runSingleCommand service filePath (contextifyQuery completeCommand filePath) onResolve
 };
-
-let contextifyQuery cmdList filePath => Js.Unsafe.obj [|
-  ("query", Js.Unsafe.inject (Js.array (Array.map Js.string (Array.of_list cmdList)))),
-  ("context", Js.Unsafe.inject (Js.array [|Js.string "auto", Js.string filePath|]))
-|];
 
