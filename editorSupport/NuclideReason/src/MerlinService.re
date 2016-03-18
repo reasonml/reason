@@ -88,4 +88,3 @@ let complete (service: service) (filePath: string) (line: int) (col: int) (prefi
     * troubleshooting information. */
   runSingleCommand service filePath (contextifyQuery completeCommand filePath) onResolve
 };
-
