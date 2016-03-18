@@ -54,8 +54,8 @@ let errorsCommand = ["errors"];
  */
 let getMerlinDiagnostics text path onComplete onFailure => {
   let service = MerlinService.getService path;
-  let contextifiedTellCmd = MerlinService.contextifyQuery (makeTellComand text) path;
-  let contextifiedErrorsCmd = MerlinService.contextifyQuery errorsCommand path;
+  let contextifiedTellCmd = MerlinService.contextifyStringQuery (makeTellComand text) path;
+  let contextifiedErrorsCmd = MerlinService.contextifyStringQuery errorsCommand path;
   let afterTellText result => {
     let afterErrors errors => onComplete (
       MerlinServiceConvert.jsMerlinErrorsToNuclideDiagnostics path errors
