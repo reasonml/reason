@@ -118,13 +118,11 @@ let formatImpl editor subText isInterface onComplete onFailure => {
  * - If text before cursor changed in ways beyond "whitespace" changes, fall
  * back to current behavior.
  */
-let getFormatting editor (rangeStart, rangeEnd) notifySuccess notifyInvalid notifyInfo => {
+let getFormatting editor range notifySuccess notifyInvalid notifyInfo => {
   let maybeFilePath = Editor.getPath editor;
   let buffer = Editor.getBuffer editor;
-  let startPosition = Buffer.characterIndexForPosition buffer rangeStart;
-  let endPosition = Buffer.characterIndexForPosition buffer rangeEnd;
   let text = Buffer.getText buffer;
-  let subText = String.sub text startPosition (endPosition - startPosition);
+  let subText = Buffer.getTextInRange buffer range;
   /* Including dot */
   let ext =
     switch maybeFilePath {
@@ -154,4 +152,3 @@ let getFormatting editor (rangeStart, rangeEnd) notifySuccess notifyInvalid noti
   );
   promise
 };
-
