@@ -79,7 +79,22 @@ module.exports = {
       selector: GRAMMARS_STRING,
       inclusionPriority: 1,
       formatEntireFile(editor: atom$TextEditor, range: atom$Range): Promise<string> {
-        return NuclideReason.getFormatting(editor, range, Notiflyer.showSuccesBar, Notiflyer.showFailBar, Notiflyer.showInfoBar);
+        return NuclideReason.getEntireFormatting(
+          editor,
+          range,
+          Notiflyer.showSuccesBar,
+          Notiflyer.showFailBar,
+          Notiflyer.showInfoBar,
+        );
+      },
+      formatCode(editor: atom$TextEditor, range: atom$Range): Promise<string> {
+        return NuclideReason.getPartialFormatting(
+          editor,
+          range,
+          Notiflyer.showSuccesBar,
+          Notiflyer.showFailBar,
+          Notiflyer.showInfoBar,
+        );
       },
     };
   },

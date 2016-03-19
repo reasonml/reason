@@ -98,6 +98,9 @@ let formatImpl editor subText isInterface onComplete onFailure => {
   let errorTitle = "NuclideReason could not spawn " ^ fmtPath;
   let handleError error handle => {
     NotificationManager.addError options::{...NotificationManager.defaultOptions, detail: error} errorTitle;
+    /* TODO: this doesn't type check, but sits across the border of js <-> reason so it passes. onFailure (the
+    promise `reject`) takes in a reason string, when it reality it should take in a Js.string like the other
+    locations in this file where we do `reject stdErr` */
     onFailure "Failure!";
     handle ()
   };
@@ -118,7 +121,7 @@ let formatImpl editor subText isInterface onComplete onFailure => {
  * - If text before cursor changed in ways beyond "whitespace" changes, fall
  * back to current behavior.
  */
-let getFormatting editor range notifySuccess notifyInvalid notifyInfo => {
+let getFormatting editor range onComplete => {
   let maybeFilePath = Editor.getPath editor;
   let buffer = Editor.getBuffer editor;
   let text = Buffer.getText buffer;
@@ -135,7 +138,20 @@ let getFormatting editor range notifySuccess notifyInvalid notifyInfo => {
   let isInterface = String.compare ".rei" ext == 0;
   let promise = Atom.Promise.create (
     fun resolve reject => {
-      let onComplete code formatResult stdErr => {
+      let onCompleteWrap code formatResult stdErr =>
+        onComplete code formatResult stdErr text subText resolve reject;
+      formatImpl editor subText isInterface onCompleteWrap reject
+    }
+  );
+  promise
+};
+
+let getEntireFormatting editor range notifySuccess notifyInvalid notifyInfo =>
+  getFormatting
+    editor
+    range
+    (
+      fun code (formatResult: Nuclide.FileFormat.result) stdErr text subText resolve reject => {
         /* One bit of Js logic remaining in this otherwise "pure" module. */
         let formatResultStr = NuclideJs.FileFormat.toJs formatResult;
         if (not (code = 0.0)) {
@@ -146,9 +162,23 @@ let getFormatting editor range notifySuccess notifyInvalid notifyInfo => {
           notifySuccess "Format: Success"
         };
         code = 0.0 ? resolve formatResultStr : reject stdErr
-      };
-      formatImpl editor subText isInterface onComplete reject
-    }
-  );
-  promise
-};
+      }
+    );
+
+let getPartialFormatting editor range notifySuccess notifyInvalid notifyInfo =>
+  getFormatting
+    editor
+    range
+    (
+      fun code (formatResult: Nuclide.FileFormat.result) stdErr text subText resolve reject => {
+        if (not (code = 0.0)) {
+          notifyInvalid "Syntax Error"
+        } else if (formatResult.formatted === subText) {
+          notifyInfo "Already Formatted"
+        } else {
+          notifySuccess "Format: Success"
+        };
+        /* One bit of Js logic remaining in this otherwise "pure" module. */
+        code = 0.0 ? resolve (Js.string formatResult.formatted) : reject stdErr
+      }
+    );
