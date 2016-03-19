@@ -142,6 +142,9 @@ let module Buffer = {
   let characterIndexForPosition (buffer: t) rowColumn =>
     Js.Unsafe.meth_call buffer "characterIndexForPosition" [|Js.Unsafe.inject (Point.toJs rowColumn)|];
   let getText (buffer: t) :string => Js.to_string (Js.Unsafe.meth_call buffer "getText" emptyArgs);
+  let getTextInRange (buffer: t) (range: Range.t) :string => Js.to_string (
+    Js.Unsafe.meth_call buffer "getTextInRange" [|Range.toJs range|]
+  );
 };
 
 let module Cursor = {
@@ -326,4 +329,3 @@ let module BufferedProcess = {
   };
   let process (bufferedProcess: t) => Js.Unsafe.get bufferedProcess "process";
 };
-
