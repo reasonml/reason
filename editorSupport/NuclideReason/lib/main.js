@@ -38,11 +38,11 @@ module.exports = {
       disposables = new CompositeDisposable();
     }
   },
-  
+
   consumeStatusBar: (statusBar) => {
     statusBarTile = statusBar.addLeftTile({item: Notiflyer.feedbackBar, priority: 100});
   },
- 
+
   /** Provider for autocomplete service. */
   createAutocompleteProvider(): atom$AutocompleteProvider {
     return {
@@ -73,7 +73,7 @@ module.exports = {
     const ReasonDiagnosticsProvider = require('./ReasonDiagnosticsProvider');
     return ReasonDiagnosticsProvider;
   },
-  
+
   createCodeFormatProvider() {
     return {
       selector: GRAMMARS_STRING,
@@ -84,18 +84,15 @@ module.exports = {
     };
   },
 
-  // createTypeHintProvider(): Object {
-  //   const {FlowTypeHintProvider} = require('./FlowTypeHintProvider');
-  //   const flowTypeHintProvider = new FlowTypeHintProvider();
-  //   const typeHint = flowTypeHintProvider.typeHint.bind(flowTypeHintProvider);
-  //   return {
-  //     selector: GRAMMARS_STRING,
-  //     providerName: PACKAGE_NAME,
-  //     inclusionPriority: 1,
-  //     typeHint,
-  //   };
-  // },
-  //
+  createTypeHintProvider() {
+    return {
+      selector: GRAMMARS_STRING,
+      providerName: PACKAGE_NAME,
+      inclusionPriority: 1,
+      typeHint: NuclideReason.getNuclideJsTypeHint,
+    };
+  },
+
   deactivate() {
     statusBarTile && statusBarTile.destroy();
     statusBarTile = null;

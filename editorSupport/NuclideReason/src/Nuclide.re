@@ -6,6 +6,8 @@
  * vim: set ft=reason:
  */
 
+/* This is the js <-> reason conversion point for Nuclide-specific data structures, akin to Atom.re */
+
 type range = ((int, int), (int, int));
 
 let module Diagnostic = {
@@ -86,4 +88,3 @@ let module Autocomplete = {
     replacementPrefix: string
   };
 };
-

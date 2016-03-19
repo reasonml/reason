@@ -11,6 +11,7 @@
  */
 open NuclideReasonCommon;
 
+/* These exports will be visible to main.js, under NuclideReason */
 export
   "getDiagnostics"
   (
@@ -51,3 +52,15 @@ export
     )
   );
 
+export
+  "getNuclideJsTypeHint"
+  (
+    Js.wrap_callback (
+      fun editor position => {
+        let position = Atom.Point.fromJs position;
+        let text = Atom.Buffer.getText (Atom.Editor.getBuffer editor);
+        let promise = NuclideReasonTypeHint.getMerlinTypeHint editor text position;
+        Atom.Promise.toJs promise;
+      }
+    )
+  );
