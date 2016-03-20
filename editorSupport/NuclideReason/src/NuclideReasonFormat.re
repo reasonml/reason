@@ -12,16 +12,13 @@ open StringUtils;
 open Atom;
 
 /**
- * TODO: Strip trailing whitespace in this as well (though that will eventually
- * be done in the formatting toolchain anyways).
- *
  * @param (Array.t string) standard output formatting of file.
  * @param int curCursorRow Current cursor row before formatting.
  * @param int curCursorColumn Current cursor column before formatting.
  * @return Nuclide.FileFormat.result
  */
 let characterIndexForPositionInString stdOutLines (curCursorRow, curCursorColumn) => {
-  let result = {contents: ""};
+  let result = {contents: []};
   let arrLen = Array.length stdOutLines;
   let charCount = {contents: 0};
   let colCount = {contents: 0};
@@ -49,9 +46,12 @@ let characterIndexForPositionInString stdOutLines (curCursorRow, curCursorColumn
         }
       }
     };
-    result.contents <- result.contents ^ Atom.trimTrailingWhiteSpace line ^ "\n"
+    result.contents <- [Atom.trimTrailingWhiteSpace line, ...result.contents]
   };
-  {Nuclide.FileFormat.newCursor: finalCharCount.contents, Nuclide.FileFormat.formatted: result.contents}
+  {
+    Nuclide.FileFormat.newCursor: finalCharCount.contents,
+    Nuclide.FileFormat.formatted: String.concat "\n" (List.rev result.contents)
+  }
 };
 
 let formatImpl editor subText isInterface onComplete onFailure => {
