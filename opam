@@ -1,6 +1,6 @@
-opam-version: "1.2"
+opam-version: "0.0.1"
 name: "reason"
-version: "1.0"
+version: "0.0.1"
 maintainer: "Jordan Walke <jordojw@gmail.com>"
 authors: [ "Jordan Walke <jordojw@gmail.com>" ]
 license: "MIT"
@@ -19,7 +19,7 @@ build-test: [
   "ocamlbuild" "-classic-display" "-use-ocamlfind" "src_test/test_reason.byte" "--"
 ]
 depends: [
-  "reasonsyntax"  {>= "0.0.0"}
+  "reasonsyntax"  {= "0.0.1"}
   "ocamlfind"    {build}
   "ounit"        {test}
   "utop"         {>= "1.17"}
