@@ -1502,7 +1502,7 @@ let funcOnNotActuallyATuple
 /* At least the above acts as proof that there *is* a distinction that is
 honored. */
 let simpleTupled: simpleTupleVariant =
-  SimpleActuallyATuple (10, 10);
+  SimpleActuallyATuple 10 10 [@implicit_arity];
 
 let simpleTupled: simpleTupleVariant =
   SimpleActuallyATuple intTuple;
@@ -1514,10 +1514,10 @@ let NotActuallyATuple x y =
 /* Doesn't work because we've correctly annotated parse tree nodes with explicit_arity! */
 /* let unfortunatelyThisStillWorks: simpleTupleVariant = SimpleActuallyATuple 10 10; */
 let yesTupled: tupleVariant =
-  ActuallyATuple (10, 10);
+  ActuallyATuple 10 10 [@implicit_arity];
 
 let yesTupled: tupleVariant =
-  ActuallyATuple (10, 10);
+  ActuallyATuple 10 10 [@implicit_arity];
 
 let yesTupled: tupleVariant =
   ActuallyATuple intTuple;
@@ -1754,7 +1754,7 @@ type tuples =
   | Two of int int
   | OneTuple of (int, int);
 
-let myTuple = OneTuple (20, 30);
+let myTuple = OneTuple 20 30 [@implicit_arity];
 
 let res =
   switch myTuple {
@@ -1841,30 +1841,22 @@ let rec atLeastOneFlushableChildAndNoWipNoPending
   | [hd, ...tl] =>
       switch hd {
       | OpaqueGraph {
-          lifecycle: Reconciled (_, [])
+          lifecycle:
+            Reconciled _ [] [@implicit_arity]
         } =>
           atLeastOneFlushableChildAndNoWipNoPending
             tl atPriority
       | OpaqueGraph {
           lifecycle:
-            ReconciledFlushable (
-              priority,
-              _,
-              _,
-              _,
-              _,
-              _
-            )
+            ReconciledFlushable
+              priority _ _ _ _ _
+            [@implicit_arity]
         }
       | OpaqueGraph {
           lifecycle:
-            NeverReconciledFlushable (
-              priority,
-              _,
-              _,
-              _,
-              _
-            )
+            NeverReconciledFlushable
+              priority _ _ _ _
+            [@implicit_arity]
         }
           when priority == AtPriority =>
           noWipNoPending tl atPriority
@@ -3926,10 +3918,11 @@ type simpleTupleVariant =
   | SimpleActuallyATuple of (int, int);
 
 let returnTheSimpleTupleVariant i =>
-  SimpleActuallyATuple (i, i);
+  SimpleActuallyATuple i i [@implicit_arity];
 
 let shouldWrapLike whenLongArg =>
-  SimpleActuallyATuple (whenLongArg, whenLongArg);
+  SimpleActuallyATuple whenLongArg whenLongArg
+  [@implicit_arity];
 
 type recordWithLong = {
   someField: int,
@@ -5288,8 +5281,9 @@ type typeWithNestedNamedArgs =
   int;
 
 type typeWithNestedOptionalNamedArgs =
-  outerOne::
-    (innerOne::int => innerTwo::int => int)? =>
+  outerOne::(
+    innerOne::int => innerTwo::int => int
+  )? =>
   outerTwo::int? =>
   int;
 
@@ -5721,6 +5715,40 @@ let module M = Something.Create {
   type resource1 = MyModule.MySubmodule.t;
   type resource2 = MyModule.MySubmodule.t;
 };
+type t = | A of {a: int} | B;
+
+let f =
+  fun | B => 0
+      | A {a} => a;
+
+type nonrec u 'a = | Box of 'a;
+
+type expr 'a =
+  | Val of {value: 'a} :expr 'a
+  | Add of
+      {left: expr int, right: expr int} :expr int
+  | Is0 of {test: expr int} :expr bool
+  | If of
+      {
+        pred: expr bool,
+        true_branch: expr 'a,
+        false_branch: expr 'a
+      }
+      :expr 'a;
+
+let rec eval: type a. expr a => a =
+  fun e =>
+    switch e {
+    | Is0 {test} => eval test = 0
+    | Val {value} => value
+    | Add {left, right} => eval left + eval right
+    | If {pred, true_branch, false_branch} =>
+        if (eval pred) {
+          eval true_branch
+        } else {
+          eval false_branch
+        }
+    };
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 /*
 let str = "@[.... some formatting ....@\n\010@.";
@@ -5732,7 +5760,7 @@ type bcd =
   | TupleConstructor of (int, int)
   | MultiArgumentsConstructor of int int;
 
-let a = TupleConstructor (1, 2);
+let a = TupleConstructor 1 2 [@implicit_arity];
 
 let b = MultiArgumentsConstructor 1 2;
 
@@ -5740,9 +5768,9 @@ let module Test = {
   type a = | And of (int, int) | Or of (int, int);
 };
 
-Test.And (1, 2);
+Test.And 1 2 [@implicit_arity];
 
-Test.Or (1, 2);
+Test.Or 1 2 [@implicit_arity];
 
 Some 1;
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
