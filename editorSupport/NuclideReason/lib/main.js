@@ -9,10 +9,10 @@
  * the root directory of this source tree.
  */
 
-import type {HyperclickProvider} from 'nuclide/pkg/nuclide/hyperclick-interfaces';
+import type {HyperclickProvider} from 'nuclide/pkg/hyperclick-interfaces';
 import type {
   BusySignalProviderBase as BusySignalProviderBaseType,
-} from 'nuclide/pkg/nuclide/busy-signal-provider-base';
+} from 'nuclide/pkg/nuclide-busy-signal-provider-base';
 
 const Notiflyer = require('./Notiflyer');
 const NuclideReason = require('../compiledSrc/jsBuild/app.js');
@@ -25,7 +25,7 @@ const GRAMMARS_STRING = RE_GRAMMARS.join(', ');
 const PACKAGE_NAME = 'NuclideReason';
 
 function getServiceByNuclideUri(service, file?) {
-  return require('nuclide/pkg/nuclide/client').getServiceByNuclideUri(service, file);
+  return require('nuclide/pkg/nuclide-client').getServiceByNuclideUri(service, file);
 }
 
 let busySignalProvider;
@@ -63,7 +63,7 @@ module.exports = {
 
   provideBusySignal(): BusySignalProviderBaseType {
     if (!busySignalProvider) {
-      const {DedupedBusySignalProviderBase} = require('nuclide/pkg/nuclide/busy-signal-provider-base');
+      const {DedupedBusySignalProviderBase} = require('nuclide/pkg/nuclide-busy-signal-provider-base');
       busySignalProvider = new DedupedBusySignalProviderBase();
     }
     return busySignalProvider;
