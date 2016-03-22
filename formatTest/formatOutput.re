@@ -6111,6 +6111,16 @@ let reasonDoubleBarNestedAnyPatterns =
       | Z _
       | Q => true
       | _ => false;
+
+let (\+) = (+);
+
+let (\===) = (===);
+
+let expectedPrecendence =
+  1 + 1 \=== 1 + 1 && 1 + 1 !== 1 + 1;
+
+let expectedPrecendence =
+  1 \+ 1 \=== 1 \+ 1 && 1 \+ 1 !== 1 \+ 1;
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 /*
  * Syntax and fallback syntax.
@@ -6740,7 +6750,7 @@ let nested_match =
 
 let some = Some (1, 2, 3);
 
-let (===\/) = (==);
+let (\===) = (==);
 
 let physicalEquality = 1 == 1;
 
