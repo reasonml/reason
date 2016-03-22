@@ -15,7 +15,7 @@ let startsWith str searchFor => {
 
 let module Regex = {
   type t;
-  let create (s: string) :t => Js.Unsafe.new_obj "RegExp" [|Js.Unsafe.inject s|];
+  let create (s: string) :t => Js.Unsafe.new_obj "RegExp" [|Js.Unsafe.inject (Js.string s)|];
 };
 
 let replace (s: string) (r: Regex.t) (replaceWith: string) :string => Js.to_string (
@@ -26,7 +26,6 @@ let replace (s: string) (r: Regex.t) (replaceWith: string) :string => Js.to_stri
 let split (s: string) (r: Regex.t) => {
   let s = Js.string s;
   let jsArr = Js.Unsafe.meth_call s "split" [|Js.Unsafe.inject r|];
-  let lst = Array.to_list jsArr;
+  let lst = Array.to_list (Js.to_array jsArr);
   List.map (fun itm => Js.to_string itm) lst
 };
-
