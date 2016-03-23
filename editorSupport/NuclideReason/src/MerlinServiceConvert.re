@@ -65,12 +65,12 @@ let jsMerlinCompletionEntryToMerlinEntry o => {
 };
 
 let merlinCompletionEntryToNuclide replacementPrefix e => {
-  Nuclide.Autocomplete.leftLabel: e.Merlin.name,
+  Nuclide.Autocomplete.leftLabel: e.Merlin.desc,
   /* Even though we display the type in the center (main column) */
   /* we replace at cursor with the item.name. */
   text: e.name,
   /* Item.desc is the type sig.   */
-  displayText: e.desc,
+  displayText: e.Merlin.name,
   /* type is the "kind" of label to use. */
   typee: merlinCompletionEntryKindToNuclide e.kind,
   /* Include the full type in the description just in case it gets truncated in */
