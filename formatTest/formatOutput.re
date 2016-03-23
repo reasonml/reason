@@ -5407,6 +5407,11 @@ let A | B | C = X;
 
 /*  A | B | C = X; */
 let A | B | C = X;
+
+/** External function declaration
+ *
+ */
+external f : int => int = "foo";
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 /* - A good way to test if formatting of infix operators groups precedences
    correctly, is to write an expression twice. Once in a form where parenthesis
