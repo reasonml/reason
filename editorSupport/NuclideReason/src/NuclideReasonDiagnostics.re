@@ -64,4 +64,3 @@ let getMerlinDiagnostics text path onComplete onFailure => {
   };
   MerlinService.runSingleCommand service path contextifiedTellCmd afterTellText
 };
-
