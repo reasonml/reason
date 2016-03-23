@@ -11,7 +11,7 @@
  */
 type service;
 
-let nuclideClient = Js.Unsafe.js_expr "require('nuclide/pkg/nuclide/client')";
+let nuclideClient = Js.Unsafe.js_expr "require('nuclide/pkg/nuclide-client')";
 
 let dotCall x y z => Js.Unsafe.meth_call x y z;
 
