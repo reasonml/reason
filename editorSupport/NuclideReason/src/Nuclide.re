@@ -5,9 +5,7 @@
  * vim: set ft=rust:
  * vim: set ft=reason:
  */
-
 /* This is the js <-> reason conversion point for Nuclide-specific data structures, akin to Atom.re */
-
 type range = ((int, int), (int, int));
 
 let module Diagnostic = {
