@@ -9,4 +9,3 @@ let log st => {
   print_string st;
   flush_all ()
 };
-

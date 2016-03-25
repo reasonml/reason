@@ -49,7 +49,7 @@ let result = while false {
 
 switch (
   try (
-    try () { | _ => () } 
+    try () { | _ => () }
   ) {
     | _ => ()
   }
@@ -65,7 +65,7 @@ while shouldStillLoop.contents {
 };
 
 while {
-        shouldStillLoop.contents <- false;
+        shouldStillLoop.contents = false;
         shouldStillLoop.contents;
       } {
   print_string "Will never loop";

@@ -22,7 +22,7 @@ module.exports = {
   priority: 20,
   providerName: 'NuclideReason',
   async getSuggestionForWord(textEditor: TextEditor, text: string, range: atom$Range) {
-    const {getServiceByNuclideUri} = require('nuclide/pkg/nuclide/client');
+    const {getServiceByNuclideUri} = require('nuclide/pkg/nuclide-client');
 
     if (!GRAMMARS.has(textEditor.getGrammar().scopeName)) {
       return null;
@@ -53,7 +53,7 @@ module.exports = {
           return;
         }
 
-        const {goToLocation} = require('nuclide/pkg/nuclide/atom-helpers');
+        const {goToLocation} = require('nuclide/pkg/nuclide-atom-helpers');
         goToLocation(location.file, location.pos.line - 1, location.pos.col);
       },
     };

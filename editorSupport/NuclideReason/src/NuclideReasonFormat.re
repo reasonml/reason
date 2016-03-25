@@ -12,16 +12,13 @@ open StringUtils;
 open Atom;
 
 /**
- * TODO: Strip trailing whitespace in this as well (though that will eventually
- * be done in the formatting toolchain anyways).
- *
  * @param (Array.t string) standard output formatting of file.
  * @param int curCursorRow Current cursor row before formatting.
  * @param int curCursorColumn Current cursor column before formatting.
  * @return Nuclide.FileFormat.result
  */
 let characterIndexForPositionInString stdOutLines (curCursorRow, curCursorColumn) => {
-  let result = {contents: ""};
+  let result = {contents: []};
   let arrLen = Array.length stdOutLines;
   let charCount = {contents: 0};
   let colCount = {contents: 0};
@@ -35,23 +32,26 @@ let characterIndexForPositionInString stdOutLines (curCursorRow, curCursorColumn
     /* No guarantee that each line is actually a single line. */
     for chPos in 0 to (lineLen - 1) {
       let ch = line.[chPos];
-      if (ch == '\n' || ch == '\r') {
-        rowCount.contents <- rowCount.contents + 1;
-        colCount.contents <- 0
+      if (ch === '\n' || ch === '\r') {
+        rowCount.contents = rowCount.contents + 1;
+        colCount.contents = 0
       } else {
-        colCount.contents <- colCount.contents + 1;
-        lenNotEndingInWhiteSpace.contents <- lenNotEndingInWhiteSpace.contents + 1
+        colCount.contents = colCount.contents + 1;
+        lenNotEndingInWhiteSpace.contents = lenNotEndingInWhiteSpace.contents + 1
       };
-      charCount.contents <- charCount.contents + 1;
+      charCount.contents = charCount.contents + 1;
       if (rowCount.contents <= curCursorRow) {
         if (colCount.contents <= curCursorColumn) {
-          finalCharCount.contents <- charCount.contents
+          finalCharCount.contents = charCount.contents
         }
       }
     };
-    result.contents <- result.contents ^ Atom.trimTrailingWhiteSpace line ^ "\n"
+    result.contents = [Atom.trimTrailingWhiteSpace line, ...result.contents]
   };
-  {Nuclide.FileFormat.newCursor: finalCharCount.contents, Nuclide.FileFormat.formatted: result.contents}
+  {
+    Nuclide.FileFormat.newCursor: finalCharCount.contents,
+    Nuclide.FileFormat.formatted: String.concat "\n" (List.rev result.contents)
+  }
 };
 
 let formatImpl editor subText isInterface onComplete onFailure => {
@@ -60,22 +60,22 @@ let formatImpl editor subText isInterface onComplete onFailure => {
   let stdErrLines = {contents: [||]};
   let fmtPath =
     switch (Atom.Config.get "NuclideReason.pathToReasonfmt") {
-      | JsonString pth => pth
-      | _ => raise (Invalid_argument "You must setup NuclideReason.pathToReasonfmt in your Atom config")
+    | JsonString pth => pth
+    | _ => raise (Invalid_argument "You must setup NuclideReason.pathToReasonfmt in your Atom config")
     };
   let printWidth =
     switch (Atom.Config.get "NuclideReason.printWidth") {
-      | JsonNum n => int_of_float n
-      | Empty => 110
-      | _ => raise (Invalid_argument "NuclideReason.printWidth must be an integer")
+    | JsonNum n => int_of_float n
+    | Empty => 110
+    | _ => raise (Invalid_argument "NuclideReason.printWidth must be an integer")
     };
-  let onStdOut line => stdOutLines.contents <- Array.append stdOutLines.contents [|line|];
-  let onStdErr line => stdErrLines.contents <- Array.append stdErrLines.contents [|line|];
+  let onStdOut line => stdOutLines.contents = Array.append stdOutLines.contents [|line|];
+  let onStdErr line => stdErrLines.contents = Array.append stdErrLines.contents [|line|];
   let cursors = Editor.getCursors editor;
   let (origCursorRow, origCursorCol) =
     switch cursors {
-      | [] => (0, 0)
-      | [firstCursor, ...tl] => Atom.Cursor.getBufferPosition firstCursor
+    | [] => (0, 0)
+    | [firstCursor, ...tl] => Atom.Cursor.getBufferPosition firstCursor
     };
   let onExit code => {
     let formatResult = characterIndexForPositionInString stdOutLines.contents (origCursorRow, origCursorCol);
@@ -129,13 +129,13 @@ let getFormatting editor range onComplete => {
   /* Including dot */
   let ext =
     switch maybeFilePath {
-      | Some filePath => {
-          let lastExtensionIndex = String.rindex filePath '.';
-          String.sub filePath lastExtensionIndex (String.length filePath - lastExtensionIndex)
-        }
-      | None => ".re"
+    | Some filePath => {
+        let lastExtensionIndex = String.rindex filePath '.';
+        String.sub filePath lastExtensionIndex (String.length filePath - lastExtensionIndex)
+      }
+    | None => ".re"
     };
-  let isInterface = String.compare ".rei" ext == 0;
+  let isInterface = String.compare ".rei" ext === 0;
   let promise = Atom.Promise.create (
     fun resolve reject => {
       let onCompleteWrap code formatResult stdErr =>
@@ -154,9 +154,9 @@ let getEntireFormatting editor range notifySuccess notifyInvalid notifyInfo =>
       fun code (formatResult: Nuclide.FileFormat.result) stdErr text subText resolve reject => {
         /* One bit of Js logic remaining in this otherwise "pure" module. */
         let formatResultStr = NuclideJs.FileFormat.toJs formatResult;
-        if (not (code = 0.0)) {
+        if (not (code == 0.0)) {
           notifyInvalid "Syntax Error"
-        } else if (formatResult.formatted === text) {
+        } else if (formatResult.formatted \=== text) {
           notifyInfo "Already Formatted"
         } else {
           notifySuccess "Format: Success"

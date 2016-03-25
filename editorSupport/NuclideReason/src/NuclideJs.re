@@ -5,14 +5,12 @@
  * vim: set ft=rust:
  * vim: set ft=reason:
  */
-
 /* This exposes the modules (e.g. autocomplete, diagnostic) that do the conversion from reason data structures
 (with the help of types from nuclide.re) to js ones */
-
 let def x d =>
   switch x {
-    | None => d
-    | Some s => s
+  | None => d
+  | Some s => s
   };
 
 let module Diagnostic = {
@@ -36,13 +34,13 @@ let module Diagnostic = {
       |];
       let fields =
         switch html {
-          | None => fields
-          | Some h => Array.append fields [|("html", Js.Unsafe.inject h)|]
+        | None => fields
+        | Some h => Array.append fields [|("html", Js.Unsafe.inject h)|]
         };
       let fields =
         switch range {
-          | None => fields
-          | Some r => Array.append fields [|("range", Js.Unsafe.inject (Atom.Range.toJs r))|]
+        | None => fields
+        | Some r => Array.append fields [|("range", Js.Unsafe.inject (Atom.Range.toJs r))|]
         };
       Js.Unsafe.obj fields
     };
@@ -51,61 +49,61 @@ let module Diagnostic = {
     open Nuclide.Diagnostic.Message;
     let toJs diagnosticMessage =>
       switch diagnosticMessage {
-        | FileDiagnosticMessage {providerName, typee, filePath, text, html, range, trace} => {
-            let fields = [|
-              ("scope", Js.Unsafe.inject (Js.string "file")),
-              ("providerName", Js.Unsafe.inject (Js.string providerName)),
-              ("type", Js.Unsafe.inject (diagnosticTypeToJs typee)),
-              ("filePath", Js.Unsafe.inject (Js.string filePath)),
-              ("text", Js.Unsafe.inject (Js.string (def text "")))
-            |];
-            let fields =
-              switch html {
-                | None => fields
-                | Some h => Array.append fields [|("html", Js.Unsafe.inject h)|]
-              };
-            let fields =
-              switch range {
-                | None => fields
-                | Some r => Array.append fields [|("range", Js.Unsafe.inject (Atom.Range.toJs r))|]
-              };
-            let fields =
-              switch trace {
-                | None => fields
-                | Some ts => {
-                    let jsTraces = Js.Unsafe.inject (Js.array (Array.map Trace.toJs ts));
-                    Array.append fields [|("trace", jsTraces)|]
-                  }
-              };
-            Js.Unsafe.obj fields
-          }
-        | ProjectDiagnosticMessage {providerName, typee, text, html, range, trace} => {
-            let fields = [|
-              ("scope", Js.Unsafe.inject (Js.string "project")),
-              ("providerName", Js.Unsafe.inject (Js.string providerName)),
-              ("type", Js.Unsafe.inject (diagnosticTypeToJs typee)),
-              ("text", Js.Unsafe.inject (Js.string (def text "")))
-            |];
-            let fields =
-              switch html {
-                | None => fields
-                | Some h => Array.append fields [|("html", Js.Unsafe.inject h)|]
-              };
-            let fields =
-              switch range {
-                | None => fields
-                | Some r => Array.append fields [|("range", Js.Unsafe.inject (Atom.Range.toJs r))|]
-              };
-            let fields =
-              switch trace {
-                | None => fields
-                | Some ts => {
-                    let jsTraces = Js.Unsafe.inject (Js.array (Array.map Trace.toJs ts));
-                    Array.append fields [|("trace", jsTraces)|]
-                  }
-              };
-            Js.Unsafe.obj fields
-          }
+      | FileDiagnosticMessage {providerName, typee, filePath, text, html, range, trace} => {
+          let fields = [|
+            ("scope", Js.Unsafe.inject (Js.string "file")),
+            ("providerName", Js.Unsafe.inject (Js.string providerName)),
+            ("type", Js.Unsafe.inject (diagnosticTypeToJs typee)),
+            ("filePath", Js.Unsafe.inject (Js.string filePath)),
+            ("text", Js.Unsafe.inject (Js.string (def text "")))
+          |];
+          let fields =
+            switch html {
+            | None => fields
+            | Some h => Array.append fields [|("html", Js.Unsafe.inject h)|]
+            };
+          let fields =
+            switch range {
+            | None => fields
+            | Some r => Array.append fields [|("range", Js.Unsafe.inject (Atom.Range.toJs r))|]
+            };
+          let fields =
+            switch trace {
+            | None => fields
+            | Some ts => {
+                let jsTraces = Js.Unsafe.inject (Js.array (Array.map Trace.toJs ts));
+                Array.append fields [|("trace", jsTraces)|]
+              }
+            };
+          Js.Unsafe.obj fields
+        }
+      | ProjectDiagnosticMessage {providerName, typee, text, html, range, trace} => {
+          let fields = [|
+            ("scope", Js.Unsafe.inject (Js.string "project")),
+            ("providerName", Js.Unsafe.inject (Js.string providerName)),
+            ("type", Js.Unsafe.inject (diagnosticTypeToJs typee)),
+            ("text", Js.Unsafe.inject (Js.string (def text "")))
+          |];
+          let fields =
+            switch html {
+            | None => fields
+            | Some h => Array.append fields [|("html", Js.Unsafe.inject h)|]
+            };
+          let fields =
+            switch range {
+            | None => fields
+            | Some r => Array.append fields [|("range", Js.Unsafe.inject (Atom.Range.toJs r))|]
+            };
+          let fields =
+            switch trace {
+            | None => fields
+            | Some ts => {
+                let jsTraces = Js.Unsafe.inject (Js.array (Array.map Trace.toJs ts));
+                Array.append fields [|("trace", jsTraces)|]
+              }
+            };
+          Js.Unsafe.obj fields
+        }
       };
   };
 };

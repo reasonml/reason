@@ -60,7 +60,7 @@ export
         let position = Atom.Point.fromJs position;
         let text = Atom.Buffer.getText (Atom.Editor.getBuffer editor);
         let promise = NuclideReasonTypeHint.getMerlinTypeHint editor text position;
-        Atom.Promise.toJs promise;
+        Atom.Promise.toJs promise
       }
     )
   );

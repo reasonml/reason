@@ -11,7 +11,7 @@
     "language-reason:grammar-used"
   ],
   "dependencies": {
-    "nuclide": "git://github.com/facebook/nuclide.git#20ee6bf",
+    "nuclide": "git://github.com/facebook/nuclide.git#45514a2",
     "CommonML": "git://github.com/jordwalke/CommonML.git#2498211",
     "ansi_up" : "1.3.0",
     "diff": "2.2.0",

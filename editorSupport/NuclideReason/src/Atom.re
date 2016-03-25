@@ -223,7 +223,6 @@ let module NotificationManager = {
   let defaultOptions = {detail: "MessageNotProvided", dismissable: false, icon: "flame"};
   let addError options::opts={...defaultOptions, icon: "flame"} title :unit =>
     Js.Unsafe.meth_call
-
       (Js.Unsafe.get atomGlobal "notifications")
       "addError"
       [|Js.Unsafe.inject (Js.string title), optionsToJs opts|];

@@ -1,6 +1,5 @@
-# Copyright (c) 2015-present, Facebook, Inc. All rights reserved.
-
 #!/bin/bash
+# Copyright (c) 2015-present, Facebook, Inc. All rights reserved.
 # http://sc.tamu.edu/help/general/unix/redirection.html
 # ocamlc -c -pp reasonfmt -w -32-27-26-11 -dsource -I . -impl ./testUtils.re 2>&1 | sed -e 's/ *$//g' >./formatOutput.re
 # ocamlc -c -pp reasonfmt -w -32-27-26-11 -dsource -I . -impl ./basicStructures.re 2>&1 | sed -e 's/ *$//g' >>./formatOutput.re

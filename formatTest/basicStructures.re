@@ -87,17 +87,17 @@ let logTapSuccess self => if self.ext.logSuccess {
                             print_newline ();
                           };
 
-(!data).field <- true;
-(!data).field1.field2 <- true;
-(!data.field1).field2 <- true;
-((!data).field1).field2 <- true;
-(!(data.field1)).field2 <- true;
+(!data).field = true;
+(!data).field1.field2 = true;
+(!data.field1).field2 = true;
+((!data).field1).field2 = true;
+(!(data.field1)).field2 = true;
 
 let loop appTime frameTime => {
   if hasSetup.contents {
     setupScene ();
     renderIntoTop ();
-    hasSetup.contents <- true;
+    hasSetup.contents = true;
   };
   process appTime frameTime;
 };
@@ -355,7 +355,7 @@ let secondItem = Array.get arrayWithTwo 1;
 /* Get an array item at index 1 */
 let secondItem = arrayWithTwo.(1);
 /* Set an array item at index 1 */
-arrayWithTwo.(1) <- 300;
+arrayWithTwo.(1) = 300;
 
 
 /**
@@ -364,7 +364,7 @@ arrayWithTwo.(1) <- 300;
  *  The language supports mutating strings, but that should not be depended upon.
  */
 let myString = "asdf";
-myString.[2] <- '9'; /* Replacing a character: I could do without this sugar */
+myString.[2] = '9'; /* Replacing a character: I could do without this sugar */
 
 
 
@@ -474,7 +474,7 @@ let anotherRecord = {
 
 let anotherRecord = {
   /* This is meaningless, sure */
-  ...someArray.[0] <- 20,
+  ...someArray.[0] = 20,
   name: "joe++",
   age: testRecord.age + 10
 };

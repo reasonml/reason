@@ -9,7 +9,7 @@ let jsMerlinErrorToNuclideDiagnostic filePath jsMerlinError => {
   let merlinStart = Js.Unsafe.get jsMerlinError "start";
   let merlnEndd = Js.Unsafe.get jsMerlinError "end";
   let range =
-    Js.undefined == merlinStart || Js.undefined == merlnEndd ?
+    Js.undefined === merlinStart || Js.undefined === merlnEndd ?
       Atom.Range.emptyRange :
       (
         (Js.Unsafe.get merlinStart "line" - 1, Js.Unsafe.get merlinStart "col"),
@@ -19,7 +19,7 @@ let jsMerlinErrorToNuclideDiagnostic filePath jsMerlinError => {
   /* One of  ("type"|"parser"|"env"|"warning"|"unkown") */
   let merlinType = Js.Unsafe.get jsMerlinError "type";
   let diagnosticType =
-    Js.string "warning" == merlinType ? Nuclide.Diagnostic.Warning : Nuclide.Diagnostic.Error;
+    Js.string "warning" === merlinType ? Nuclide.Diagnostic.Warning : Nuclide.Diagnostic.Error;
   Nuclide.Diagnostic.Message.FileDiagnosticMessage {
     Nuclide.Diagnostic.Message.scope: `file,
     providerName: "Merlin",
@@ -37,24 +37,24 @@ let jsMerlinErrorsToNuclideDiagnostics filePath errors =>
 
 let stringToMerlinCompletionEntryKind s =>
   switch s {
-    | "type" => Merlin.Type
-    | "Type" => Merlin.Type
-    | "value" => Merlin.Value
-    | "Value" => Merlin.Value
-    | "module" => Merlin.Module
-    | "Module" => Merlin.Module
-    | "constructor" => Merlin.Constructor
-    | "Constructor" => Merlin.Constructor
-    | _ => Merlin.Value
+  | "type" => Merlin.Type
+  | "Type" => Merlin.Type
+  | "value" => Merlin.Value
+  | "Value" => Merlin.Value
+  | "module" => Merlin.Module
+  | "Module" => Merlin.Module
+  | "constructor" => Merlin.Constructor
+  | "Constructor" => Merlin.Constructor
+  | _ => Merlin.Value
   };
 
 let merlinCompletionEntryKindToNuclide k =>
   switch k {
-    | Merlin.Type => Nuclide.Autocomplete.Type
-    | Merlin.Value => Nuclide.Autocomplete.Value
-    | Merlin.Module => Nuclide.Autocomplete.Require
-    | Merlin.Constructor => Nuclide.Autocomplete.Class
-    | _ => Nuclide.Autocomplete.Value
+  | Merlin.Type => Nuclide.Autocomplete.Type
+  | Merlin.Value => Nuclide.Autocomplete.Value
+  | Merlin.Module => Nuclide.Autocomplete.Require
+  | Merlin.Constructor => Nuclide.Autocomplete.Class
+  | _ => Nuclide.Autocomplete.Value
   };
 
 let jsMerlinCompletionEntryToMerlinEntry o => {
@@ -65,12 +65,12 @@ let jsMerlinCompletionEntryToMerlinEntry o => {
 };
 
 let merlinCompletionEntryToNuclide replacementPrefix e => {
-  Nuclide.Autocomplete.leftLabel: e.Merlin.name,
+  Nuclide.Autocomplete.leftLabel: e.Merlin.desc,
   /* Even though we display the type in the center (main column) */
   /* we replace at cursor with the item.name. */
   text: e.name,
   /* Item.desc is the type sig.   */
-  displayText: e.desc,
+  displayText: e.Merlin.name,
   /* type is the "kind" of label to use. */
   typee: merlinCompletionEntryKindToNuclide e.kind,
   /* Include the full type in the description just in case it gets truncated in */
@@ -81,7 +81,7 @@ let merlinCompletionEntryToNuclide replacementPrefix e => {
 
 let jsMerlinTypeHintEntryToNuclide arr => {
   let length = Js.Unsafe.get arr "length";
-  if (length = 0) {
+  if (length == 0) {
     Js.undefined
   } else {
     /* TODO: merlin gives us further type information if we expand our selection. Use it */

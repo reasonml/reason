@@ -818,3 +818,9 @@ let (A | B) | C = X;
 
 /*  A | B | C = X; */
 let A | B | C = X;
+
+
+/** External function declaration
+ *
+ */
+external f : int => int = "foo";

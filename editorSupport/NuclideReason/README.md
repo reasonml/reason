@@ -10,9 +10,6 @@ Supported Features
 Installing
 ------------------
 
-Currently, only works with bleeding edge merlins/patches that have not
-yet been checked into merlin/master.
-
 1. Make sure bleeding edge merlin `master` branch, and `Reason` installed via `OPAM`.
   ```sh
   opam switch 4.02.1
@@ -49,9 +46,9 @@ Building and Adding Features
 ------------------
 To build `NuclideReason`, you must have `js_of_ocaml` installed, in addition to `Reason`, and `ocamlmerlin`.
 ```sh
-opam install js_of_ocaml
+opam pin add -y js_of_ocaml https://github.com/ocsigen/js_of_ocaml.git
 cd NuclideReason
-# Build the changes.
+# Build the changes (npm install/apm link are only needed the first time)
 npm install
 npm start
 apm link
