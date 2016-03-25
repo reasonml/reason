@@ -165,7 +165,7 @@ increment 5;    /* Evaluates to six */
 sumBoth 6 1;   /* Evaluates to seven */
 ```
 
-##### 
+#####
 
 To resolve precedence when applying arguments, simply wrap in parenthesis.  In
 this example, `(increment 2)` is *first* evaluated to `3`, then `3` is passed
@@ -178,7 +178,7 @@ sumBoth 2 (increment 2);   /* 5 */
 This syntactic pattern of space-separated lists is used in many places in
 `Reason`.
 
-#### 
+####
 
 Functions can use sequence expressions as their return values in order to
 declare temporary variables while computing their result. This isn't some special
@@ -318,7 +318,7 @@ let meNextYear =  {
 
 ##### Mutable record fields.
 
-If you must, record fields may be mutated with the `<-` operator, but only if
+If you must, record fields may be mutated with the `=` operator, but only if
 the record type has marked a field `mutable`. In general, having language level
 distinction between `mutable` and immutable, allows the compiler to make
 several optimizations, including avoiding allocations.
@@ -329,7 +329,7 @@ type person = {
   mutable age: int
 };
 let me = {name: "Jordan", age: 30};
-me.age <- me.age + 1;
+me.age = me.age + 1;
 ```
 
 Destructuring
@@ -530,7 +530,7 @@ type carOwner =
 let CarOwner name {model: model, make: make} = CarOwner "Jo" toyota;
 ```
 
-##### 
+#####
 This deep pattern matching is especially expressive when used in `switch`
 expressions. In this example, the function `hasExactlyTwoCars` has specified
 what to return in four cases in very little code. Even more helpful, is the
@@ -1180,7 +1180,7 @@ Otherwise, you may need to install some dependencies first:
 opam install easy-format.1.2.0
 opam install utop.1.18
 ```
-### 
+###
 **2. Clone and `pin` locally:** Pinning makes built packages visible globally.
 Pinning `ReasonSyntax` allows `Reason` to depend on it. Pinning `Reason` makes the
 `reasonfmt` program available on the command line. Any time you change `ReasonSyntax`,
@@ -1200,7 +1200,7 @@ cd ../Reason
 make
 opam pin add -y reason .
 ```
-### 
+###
 **3. Run Test Cases:**
 To test the pretty printer/parser, run the formatting tests and verify any
 changes in the output file.
