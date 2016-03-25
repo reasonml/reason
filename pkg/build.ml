@@ -21,6 +21,8 @@ let () =
     Pkg.bin "_reasonbuild/_build/myocamlbuild" ~dst:"reasonbuild";
     Pkg.bin  ~auto:true "src/reason_error_reporter" ~dst:"refmterr";
     Pkg.bin  ~auto:true "src/reason_format_type" ~dst:"refmttype";
+    Pkg.share "editorSupport/emacs/reasonfmt.el" ~dst:"../emacs/site-lisp/reasonfmt.el";
+    Pkg.share "editorSupport/emacs/reason-mode.el" ~dst:"../emacs/site-lisp/reason-mode.el";
     Pkg.doc "README.md";
     Pkg.doc "LICENSE.txt";
     Pkg.doc "CHANGELOG.md";
