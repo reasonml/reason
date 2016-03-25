@@ -17,7 +17,7 @@ while something {
 for i in 0 to 5 {
   print_int i;
   print_newline ();
-  for i in 10 to 0 {
+  for i in 10 downto 0 {
     print_string "Counting in reverse direction";
     print_newline ()
   }
@@ -29,7 +29,7 @@ for i in
   print_int i;
   print_newline ();
   for i in
-      (theSame isTrue ofThe startOfRange) to
+      (theSame isTrue ofThe startOfRange) downto
       0 {
     print_string "Counting in reverse direction";
     print_newline ()
