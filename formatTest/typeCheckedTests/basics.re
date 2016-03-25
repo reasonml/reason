@@ -29,3 +29,11 @@ let reasonDoubleBarAnyPatterns = fun
 let reasonDoubleBarNestedAnyPatterns = fun
   | X | Y _ | (Z _ | Q)  => true
   | _ => false;
+
+let (\+) = (+);
+
+let (\===) = (===);
+
+let expectedPrecendence = 1 + 1 \=== 1 + 1 && 1 + 1 \!== 1 + 1;
+
+let expectedPrecendence = 1 \+ 1 \=== 1 \+ 1 && 1 \+ 1 \!== 1 \+ 1;

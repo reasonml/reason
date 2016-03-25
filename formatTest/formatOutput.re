@@ -98,21 +98,21 @@ let logTapSuccess self =>
     print_newline ()
   };
 
-(!data).field <- true;
+(!data).field = true;
 
-(!data).field1.field2 <- true;
+(!data).field1.field2 = true;
 
-(!data.field1).field2 <- true;
+(!data.field1).field2 = true;
 
-(!data).field1.field2 <- true;
+(!data).field1.field2 = true;
 
-(!data.field1).field2 <- true;
+(!data.field1).field2 = true;
 
 let loop appTime frameTime => {
   if hasSetup.contents {
     setupScene ();
     renderIntoTop ();
-    hasSetup.contents <- true
+    hasSetup.contents = true
   };
   process appTime frameTime
 };
@@ -445,7 +445,7 @@ let secondItem = arrayWithTwo.(1);
 let secondItem = arrayWithTwo.(1);
 
 /* Set an array item at index 1 */
-arrayWithTwo.(1) <- 300;
+arrayWithTwo.(1) = 300;
 
 /**
  *                                STRINGS
@@ -454,7 +454,7 @@ arrayWithTwo.(1) <- 300;
  */
 let myString = "asdf";
 
-myString.[2] <- '9';
+myString.[2] = '9';
 
 /* Replacing a character: I could do without this sugar */
 /*                           FUNCTIONS
@@ -575,7 +575,7 @@ let anotherRecord = {
 
 let anotherRecord = {
   /* This is meaningless, sure */
-  ...someArray.[0] <- 20,
+  ...someArray.[0] = 20,
   name: "joe++",
   age: testRecord.age + 10
 };
@@ -5401,6 +5401,11 @@ let A | B | C = X;
 
 /*  A | B | C = X; */
 let A | B | C = X;
+
+/** External function declaration
+ *
+ */
+external f : int => int = "foo";
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 /* - A good way to test if formatting of infix operators groups precedences
    correctly, is to write an expression twice. Once in a form where parenthesis
@@ -5413,38 +5418,78 @@ let A | B | C = X;
    verifies), but the additional parenthesis is nice.
  */
 /* < > = all have same precedence level/direction(left) */
-let parseTree = ((x > y > z) < a < b) = c = d;
+let parseTree = ((x > y > z) < a < b) == c == d;
 
-let minParens = ((x > y > z) < a < b) = c = d;
+let minParens = ((x > y > z) < a < b) == c == d;
 
-let formatted = ((x > y > z) < a < b) = c = d;
+let formatted = ((x > y > z) < a < b) == c == d;
+
+/* Case with === */
+let parseTree = ((x > y > z) < a < b) === c === d;
+
+let minParens = ((x > y > z) < a < b) === c === d;
+
+let formatted = ((x > y > z) < a < b) === c === d;
 
 /* < > = all have same precedence level and direction (left) */
-let parseTree = a1 < a2 < (b1 > b2 > (y = x = z));
+let parseTree =
+  a1 < a2 < (b1 > b2 > (y == x == z));
 
-let minParens = a1 < a2 < (b1 > b2 > (y = x = z));
+let minParens =
+  a1 < a2 < (b1 > b2 > (y == x == z));
 
-let formatted = a1 < a2 < (b1 > b2 > (y = x = z));
+let formatted =
+  a1 < a2 < (b1 > b2 > (y == x == z));
+
+/* Case with === */
+let parseTree =
+  a1 < a2 < (b1 > b2 > (y === x === z));
+
+let minParens =
+  a1 < a2 < (b1 > b2 > (y === x === z));
+
+let formatted =
+  a1 < a2 < (b1 > b2 > (y === x === z));
 
 /* !=...(left) same level =(left) is higher than :=(right) */
 let parseTree =
-  a1 := a2 := b1 = b2 = (y != x != z);
+  a1 := a2 := b1 == b2 == (y != x != z);
 
 let minParens =
-  a1 := a2 := b1 = b2 = (y != x != z);
+  a1 := a2 := b1 == b2 == (y != x != z);
 
 let formatted =
-  a1 := a2 := b1 = b2 = (y != x != z);
+  a1 := a2 := b1 == b2 == (y != x != z);
+
+/* Case with === */
+let parseTree =
+  a1 := a2 := b1 === b2 === (y !== x !== z);
+
+let minParens =
+  a1 := a2 := b1 === b2 === (y !== x !== z);
+
+let formatted =
+  a1 := a2 := b1 === b2 === (y !== x !== z);
 
 /* !=...(left) same level =(left) is higher than :=(right) */
 let parseTree =
-  a1 := a2 := b1 = ((b2 = y) != x != z);
+  a1 := a2 := b1 == ((b2 == y) != x != z);
 
 let minParens =
-  a1 := a2 := b1 = ((b2 = y) != x != z);
+  a1 := a2 := b1 == ((b2 == y) != x != z);
 
 let formatted =
-  a1 := a2 := b1 = ((b2 = y) != x != z);
+  a1 := a2 := b1 == ((b2 == y) != x != z);
+
+/* Case with === */
+let parseTree =
+  a1 := a2 := b1 === ((b2 === y) !== x !== z);
+
+let minParens =
+  a1 := a2 := b1 === ((b2 === y) !== x !== z);
+
+let formatted =
+  a1 := a2 := b1 === ((b2 === y) !== x !== z);
 
 /* &...(left) is higher than &(right). &(right) is equal to &&(right) */
 let parseTree =
@@ -5515,7 +5560,7 @@ let seeWhichCharacterHasHigherPrecedence =
 let seeWhichCharacterHasHigherPrecedence =
   first + second + third;
 
-let comparison = (=);
+let comparison = (==);
 
 /* Why would the following two cases have different grouping? */
 let res =
@@ -5529,7 +5574,7 @@ let res =
 
 /* This demonstrates how broken infix pretty printing is:
  */
-let curriedComparison = (=) 10;
+let curriedComparison = (==) 10;
 
 let resultOfAdd = 10 + 20 + 40;
 
@@ -5635,15 +5680,15 @@ let (++): int => int = (++);
 (++) label::20 label2::30 + 40;
 
 /* Great idea! */
-let (=) a b => a < 0;
+let (==) a b => a < 0;
 
-let (=) a b => a < 0;
+let (==) a b => a < 0;
 
-let (=) = (=);
+let (==) = (==);
 
-let (=): int => int = (=);
+let (==): int => int = (==);
 
-let equal = Pervasives.(=);
+let equal = Pervasives.(==);
 
 let starInfix_makeSureSpacesSurround = ( * );
 
@@ -6099,6 +6144,16 @@ let reasonDoubleBarNestedAnyPatterns =
       | Z _
       | Q => true
       | _ => false;
+
+let (\+) = (+);
+
+let (\===) = (===);
+
+let expectedPrecendence =
+  1 + 1 \=== 1 + 1 && 1 + 1 !== 1 + 1;
+
+let expectedPrecendence =
+  1 \+ 1 \=== 1 \+ 1 && 1 \+ 1 !== 1 \+ 1;
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 /*
  * Syntax and fallback syntax.
@@ -6184,7 +6239,7 @@ while shouldStillLoop.contents {
 };
 
 while {
-  shouldStillLoop.contents <- false;
+  shouldStillLoop.contents = false;
   shouldStillLoop.contents
 } {
   print_string "Will never loop"
@@ -6214,15 +6269,15 @@ let () = holdsAUnit := holdsABool := false;
 /*
  * The following:
  *
- *   something <- x := e
+ *   something = x := e
  *
  * Should be parsed as:
  *
- *   something <- (x := e)
+ *   something = (x := e)
  */
-holdsAUnit.contents <- holdsAnInt := 0;
+holdsAUnit.contents = holdsAnInt := 0;
 
-holdsABool.contents <- holdsAnInt.contents == 100;
+holdsABool.contents = holdsAnInt.contents == 100;
 
 let numberToSwitchOn = 100;
 
@@ -6230,11 +6285,11 @@ switch numberToSwitchOn {
 | (-3)
 | (-2)
 | (-1) => ()
-| 0 => holdsAUnit.contents <- ()
-| 1 => holdsAUnit.contents <- holdsAnInt := 0
+| 0 => holdsAUnit.contents = ()
+| 1 => holdsAUnit.contents = holdsAnInt := 0
 | 2 =>
     true ?
-      holdsAUnit.contents <- () :
+      holdsAUnit.contents = () :
       holdsABool.contents ? () : ()
 | 3 =>
     true ?
@@ -6246,7 +6301,7 @@ switch numberToSwitchOn {
 };
 
 let mutativeFunction =
-  fun | Some x => holdsAUnit.contents <- ()
+  fun | Some x => holdsAUnit.contents = ()
       | None => holdsAUnit := ();
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 class virtual stack 'a init => {
@@ -6259,12 +6314,12 @@ class virtual stack 'a init => {
   method pop =
     switch v {
     | [hd, ...tl] => {
-        v <- tl;
+        v = tl;
         Some hd
       }
     | [] => None
     };
-  method push hd => v <- [hd, ...v];
+  method push hd => v = [hd, ...v];
   initializer =>
     print_string "initializing object";
 };
@@ -6293,12 +6348,12 @@ class virtual stackWithAttributes 'a init =>
     method pop =
       switch v {
       | [hd, ...tl] => {
-          v <- tl;
+          v = tl;
           Some hd
         }
       | [] => None
       };
-    method push hd => v <- [hd, ...v];
+    method push hd => v = [hd, ...v];
     initializer =>
       print_string "initializing object";
   }
@@ -6727,6 +6782,25 @@ let nested_match =
   fun | A (B | C | D | E) => 3;
 
 let some = Some (1, 2, 3);
+
+let (\===) = (==);
+
+let physicalEquality = 1 == 1;
+
+let physicalInequality = 1 != 2;
+
+let referentialEquality = 2 === 2;
+
+let referentialInequality = 2 !== 2;
+
+let equalityInIf =
+  if (1 == 1) {
+    true
+  } else {
+    false
+  };
+
+let equalityWithIdentifiers = physicalEquality == referentialEquality;
 
 let nestedSome = Some (1, 2, Some (1, 2, 3));
 

@@ -16,6 +16,7 @@ let () =
     Pkg.bin  "src/reopt.sh" ~dst:"reopt";
     Pkg.bin  "src/rebuild.sh" ~dst:"rebuild";
     Pkg.bin  "src/rtop.sh" ~dst:"rtop";
+    Pkg.bin  "src/reup.sh" ~dst:"reup";
     Pkg.bin  "src/rtop_init.ml" ~dst:"rtop_init.ml";
     Pkg.bin "_reasonbuild/_build/myocamlbuild" ~dst:"reasonbuild";
     Pkg.bin  ~auto:true "src/reason_error_reporter" ~dst:"refmterr";

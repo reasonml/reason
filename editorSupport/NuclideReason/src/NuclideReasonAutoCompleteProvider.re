@@ -83,18 +83,18 @@ let module MerlinResponseFormatter = {
   let formatCache = Hashtbl.create 7;
   let rec needsLookup outputEntries =>
     switch outputEntries {
-      | [] => false
-      | [hd, ...tl] => {
-          let desc = hd.desc;
-          String.compare desc "" != 0 && not (Hashtbl.mem formatCache hd.desc) || needsLookup tl
-        }
+    | [] => false
+    | [hd, ...tl] => {
+        let desc = hd.desc;
+        String.compare desc "" !== 0 && not (Hashtbl.mem formatCache hd.desc) || needsLookup tl
+      }
     };
   let trimReasonifiedDescription (desc: string) => {
     /* Conveniently this won't match types of the form: type t 'a = list 'a; */
     let withoutPrefix = String.trim (StringUtils.replace desc descriptionPrefixRegex "");
     /*desc.replace(descriptionPrefixRegex, function(x) {return "";}).trim();*/
     let lastIndex = String.length withoutPrefix - 1;
-    let ret = withoutPrefix.[lastIndex] == ';' ? String.sub withoutPrefix 0 lastIndex : withoutPrefix;
+    let ret = withoutPrefix.[lastIndex] === ';' ? String.sub withoutPrefix 0 lastIndex : withoutPrefix;
     String.trim ret
   };
   /**
@@ -110,21 +110,21 @@ let module MerlinResponseFormatter = {
       let config = getReasonifyConfig ();
       let getNiceOutputEntry entry => {
         let nameColon = entry.name ^ ":";
-        definitelyNewMerlin.contents <-
+        definitelyNewMerlin.contents =
           definitelyNewMerlin.contents ||
-            entry.kind == Value &&
+            entry.kind === Value &&
               not (startsWith entry.desc "val") && not (startsWith entry.desc "external") ||
-            entry.kind == Constructor && not (startsWith entry.desc nameColon);
-        definitelyOldMerlin.contents <-
+            entry.kind === Constructor && not (startsWith entry.desc nameColon);
+        definitelyOldMerlin.contents =
           definitelyOldMerlin.contents ||
             not definitelyNewMerlin.contents ||
-            (entry.kind == Value && startsWith entry.desc "val" || startsWith entry.desc "external") ||
-            entry.kind == Constructor && startsWith entry.desc (entry.name ^ " :");
+            (entry.kind === Value && startsWith entry.desc "val" || startsWith entry.desc "external") ||
+            entry.kind === Constructor && startsWith entry.desc (entry.name ^ " :");
         /* Special case crashes formatter */
-        if (entry.desc === "type 'a list = [] | :: of 'a * 'a list") {
+        if (entry.desc \=== "type 'a list = [] | :: of 'a * 'a list") {
           "type 'a list = list"
         } else if (
-          entry.kind == Value
+          entry.kind === Value
         ) {
           definitelyNewMerlin.contents ?
             /* New merlin has no "val" prefix, insert type. */
@@ -132,7 +132,7 @@ let module MerlinResponseFormatter = {
             /* Else, old merlin already has a "val: or external:" */
             Reasonify.niceifyType (entry.desc, config)
         } else if (
-          entry.kind == Constructor
+          entry.kind === Constructor
         ) {
           if
             /* Old merlin lists constructor descriptions as:
@@ -153,13 +153,13 @@ let module MerlinResponseFormatter = {
       let niceOutputEntriesWithFixedTypeConstructors = List.map getNiceOutputEntry outputEntries;
       let newReasonifiedCompletionDescriptions =
         try (Reasonify.reasonifyManySignatureItems niceOutputEntriesWithFixedTypeConstructors 999 config) {
-          | _ => {
-              Console.log (fmtErrMsg ^ linePrefix);
-              niceOutputEntriesWithFixedTypeConstructors
-            }
+        | _ => {
+            Console.log (fmtErrMsg ^ linePrefix);
+            niceOutputEntriesWithFixedTypeConstructors
+          }
         };
       let cacheEntry entry newReasonifiedCompletionDescription =>
-        if (not (entry.desc === "") && not (Hashtbl.mem formatCache entry.desc)) {
+        if (not (entry.desc \=== "") && not (Hashtbl.mem formatCache entry.desc)) {
           Hashtbl.add formatCache entry.desc (trimReasonifiedDescription newReasonifiedCompletionDescription)
         };
       List.iter2 cacheEntry outputEntries newReasonifiedCompletionDescriptions
@@ -183,7 +183,7 @@ let getNuclideJsAutocompleteSuggestions request => {
    */
   let linePrefix = String.sub (Atom.Editor.lineTextForBufferRow editor line) 0 col;
   let linePrefix =
-    String.length linePrefix == 0 ?
+    String.length linePrefix === 0 ?
       linePrefix :
       {
         let regex = Js.Unsafe.js_expr {|/([ \t\[\](){}<>,+*\/-])/|};
@@ -191,7 +191,7 @@ let getNuclideJsAutocompleteSuggestions request => {
         let len = List.length lst;
         len > 0 ? List.nth lst (len - 1) : linePrefix
       };
-  if (String.length (String.trim linePrefix) == 0 || String.length (String.trim prefix) == 0) {
+  if (String.length (String.trim linePrefix) === 0 || String.length (String.trim prefix) === 0) {
     []
   } else {
     /*
@@ -201,22 +201,20 @@ let getNuclideJsAutocompleteSuggestions request => {
      */
     let path =
       switch (Atom.Editor.getPath editor) {
-        | None => "tmp.re"
-        | Some path => path
+      | None => "tmp.re"
+      | Some path => path
       };
     let merlinService = MerlinService.getService path;
     let replacementPrefix =
-      String.contains prefix '.' && String.index prefix '.' == 0 ?
+      String.contains prefix '.' && String.index prefix '.' === 0 ?
         String.sub prefix 1 (String.length prefix - 1) : prefix;
     let onOutput output => {
       let normalizedCompletionItems = MerlinResponseFormatter.normalizeCompletionItems (output, linePrefix);
       let nuclideJsEntries =
         List.map
-
           (MerlinServiceConvert.merlinCompletionEntryToNuclide replacementPrefix) normalizedCompletionItems;
       List.map NuclideJs.Autocomplete.entryToJs nuclideJsEntries
     };
     MerlinService.complete merlinService path line col linePrefix onOutput
   }
 };
-

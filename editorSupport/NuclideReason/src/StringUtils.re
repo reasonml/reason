@@ -5,12 +5,12 @@
  * vim: set ft=rust:
  * vim: set ft=reason:
  */
-let (===) a b => String.compare a b == 0;
+let (\===) a b => String.compare a b === 0;
 
 let startsWith str searchFor => {
   let searchForLen = String.length searchFor;
   let strLen = String.length str;
-  searchForLen <= strLen && String.sub str 0 searchForLen === searchFor
+  searchForLen <= strLen && String.sub str 0 searchForLen \=== searchFor
 };
 
 let module Regex = {
