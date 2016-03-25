@@ -161,7 +161,7 @@ let getEntireFormatting editor range notifySuccess notifyInvalid notifyInfo =>
         } else {
           notifySuccess "Format: Success"
         };
-        code = 0.0 ? resolve formatResultStr : reject stdErr
+        code == 0.0 ? resolve formatResultStr : reject stdErr
       }
     );
 
@@ -171,7 +171,7 @@ let getPartialFormatting editor range notifySuccess notifyInvalid notifyInfo =>
     range
     (
       fun code (formatResult: Nuclide.FileFormat.result) stdErr text subText resolve reject => {
-        if (not (code = 0.0)) {
+        if (not (code == 0.0)) {
           notifyInvalid "Syntax Error"
         } else if (formatResult.formatted === subText) {
           notifyInfo "Already Formatted"
@@ -179,6 +179,6 @@ let getPartialFormatting editor range notifySuccess notifyInvalid notifyInfo =>
           notifySuccess "Format: Success"
         };
         /* One bit of Js logic remaining in this otherwise "pure" module. */
-        code = 0.0 ? resolve (Js.string formatResult.formatted) : reject stdErr
+        code == 0.0 ? resolve (Js.string formatResult.formatted) : reject stdErr
       }
     );
