@@ -7,13 +7,13 @@
  */
 let jsMerlinErrorToNuclideDiagnostic filePath jsMerlinError => {
   let merlinStart = Js.Unsafe.get jsMerlinError "start";
-  let merlnEndd = Js.Unsafe.get jsMerlinError "end";
+  let merlinEnd = Js.Unsafe.get jsMerlinError "end";
   let range =
-    Js.undefined === merlinStart || Js.undefined === merlnEndd ?
+    Js.undefined === merlinStart || Js.undefined === merlinEnd ?
       Atom.Range.emptyRange :
       (
         (Js.Unsafe.get merlinStart "line" - 1, Js.Unsafe.get merlinStart "col"),
-        (Js.Unsafe.get merlnEndd "line" - 1, Js.Unsafe.get merlnEndd "col")
+        (Js.Unsafe.get merlinEnd "line" - 1, Js.Unsafe.get merlinEnd "col")
       );
   let message = Js.Unsafe.get jsMerlinError "message";
   /* One of  ("type"|"parser"|"env"|"warning"|"unkown") */
