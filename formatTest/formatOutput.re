@@ -17,7 +17,7 @@ while something {
 for i in 0 to 5 {
   print_int i;
   print_newline ();
-  for i in 10 to 0 {
+  for i in 10 downto 0 {
     print_string "Counting in reverse direction";
     print_newline ()
   }
@@ -29,7 +29,7 @@ for i in
   print_int i;
   print_newline ();
   for i in
-      (theSame isTrue ofThe startOfRange) to
+      (theSame isTrue ofThe startOfRange) downto
       0 {
     print_string "Counting in reverse direction";
     print_newline ()
@@ -1502,7 +1502,7 @@ let funcOnNotActuallyATuple
 /* At least the above acts as proof that there *is* a distinction that is
 honored. */
 let simpleTupled: simpleTupleVariant =
-  SimpleActuallyATuple 10 10 [@implicit_arity];
+  SimpleActuallyATuple (10, 10);
 
 let simpleTupled: simpleTupleVariant =
   SimpleActuallyATuple intTuple;
@@ -1514,10 +1514,10 @@ let NotActuallyATuple x y =
 /* Doesn't work because we've correctly annotated parse tree nodes with explicit_arity! */
 /* let unfortunatelyThisStillWorks: simpleTupleVariant = SimpleActuallyATuple 10 10; */
 let yesTupled: tupleVariant =
-  ActuallyATuple 10 10 [@implicit_arity];
+  ActuallyATuple (10, 10);
 
 let yesTupled: tupleVariant =
-  ActuallyATuple 10 10 [@implicit_arity];
+  ActuallyATuple (10, 10);
 
 let yesTupled: tupleVariant =
   ActuallyATuple intTuple;
@@ -1754,7 +1754,7 @@ type tuples =
   | Two of int int
   | OneTuple of (int, int);
 
-let myTuple = OneTuple 20 30 [@implicit_arity];
+let myTuple = OneTuple (20, 30);
 
 let res =
   switch myTuple {
@@ -3918,11 +3918,10 @@ type simpleTupleVariant =
   | SimpleActuallyATuple of (int, int);
 
 let returnTheSimpleTupleVariant i =>
-  SimpleActuallyATuple i i [@implicit_arity];
+  SimpleActuallyATuple (i, i);
 
 let shouldWrapLike whenLongArg =>
-  SimpleActuallyATuple whenLongArg whenLongArg
-  [@implicit_arity];
+  SimpleActuallyATuple (whenLongArg, whenLongArg);
 
 type recordWithLong = {
   someField: int,
@@ -5784,7 +5783,7 @@ type expr 'a =
 let rec eval: type a. expr a => a =
   fun e =>
     switch e {
-    | Is0 {test} => eval test = 0
+    | Is0 {test} => eval test == 0
     | Val {value} => value
     | Add {left, right} => eval left + eval right
     | If {pred, true_branch, false_branch} =>
@@ -5805,7 +5804,7 @@ type bcd =
   | TupleConstructor of (int, int)
   | MultiArgumentsConstructor of int int;
 
-let a = TupleConstructor 1 2 [@implicit_arity];
+let a = TupleConstructor (1, 2);
 
 let b = MultiArgumentsConstructor 1 2;
 
@@ -5813,11 +5812,11 @@ let module Test = {
   type a = | And of (int, int) | Or of (int, int);
 };
 
-Test.And 1 2 [@implicit_arity];
+let _ = Test.And (1, 2);
 
-Test.Or 1 2 [@implicit_arity];
+let _ = Test.Or (1, 2);
 
-Some 1;
+let _ = Some 1;
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 /**
  * Generally, dangling attributes [@..] apply to everything to the left of it,
