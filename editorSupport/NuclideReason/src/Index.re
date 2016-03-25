@@ -26,21 +26,21 @@ export
     )
   );
 
-export
-  "getFormatting"
-  (
-    Js.wrap_callback (
-      fun jsEditor jsRange jsNotifySuccess jsNotifyInvalid jsNotifyInfo => {
-        let editor = Atom.Editor.fromJs jsEditor;
-        let range = Atom.Range.fromJs jsRange;
-        let notifySuccess msg => Js.Unsafe.fun_call jsNotifySuccess [|Js.Unsafe.inject (Js.string msg)|];
-        let notifyInvalid msg => Js.Unsafe.fun_call jsNotifyInvalid [|Js.Unsafe.inject (Js.string msg)|];
-        let notifyInfo msg => Js.Unsafe.fun_call jsNotifyInfo [|Js.Unsafe.inject (Js.string msg)|];
-        let promise = NuclideReasonFormat.getFormatting editor range notifySuccess notifyInvalid notifyInfo;
-        Atom.Promise.toJs promise
-      }
-    )
-  );
+let getFormatting f => Js.wrap_callback (
+  fun jsEditor jsRange jsNotifySuccess jsNotifyInvalid jsNotifyInfo => {
+    let editor = Atom.Editor.fromJs jsEditor;
+    let range = Atom.Range.fromJs jsRange;
+    let notifySuccess msg => Js.Unsafe.fun_call jsNotifySuccess [|Js.Unsafe.inject (Js.string msg)|];
+    let notifyInvalid msg => Js.Unsafe.fun_call jsNotifyInvalid [|Js.Unsafe.inject (Js.string msg)|];
+    let notifyInfo msg => Js.Unsafe.fun_call jsNotifyInfo [|Js.Unsafe.inject (Js.string msg)|];
+    let promise = f editor range notifySuccess notifyInvalid notifyInfo;
+    Atom.Promise.toJs promise
+  }
+);
+
+export "getEntireFormatting" (getFormatting NuclideReasonFormat.getEntireFormatting);
+
+export "getPartialFormatting" (getFormatting NuclideReasonFormat.getPartialFormatting);
 
 export
   "getNuclideJsAutocompleteSuggestions"
