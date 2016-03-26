@@ -114,8 +114,8 @@ let print_out_value ppf tree =
     function
       [] -> ()
     | (name, tree) :: fields ->
-        if not first then fprintf ppf ";@ ";
-        fprintf ppf "@[<1>%a@ =@ %a@]" print_ident name (cautious print_tree_1)
+        if not first then fprintf ppf ",@ ";
+        fprintf ppf "@[<1>%a@ :@ %a@]" print_ident name (cautious print_tree_1)
           tree;
         print_fields false ppf fields
   and print_tree_list print_item sep ppf tree_list =
@@ -508,7 +508,7 @@ and print_out_constr ppf (name, tyl,ret_type_opt) =
 
 
 and print_out_label ppf (name, mut, arg) =
-  fprintf ppf "@[<2>%s%s :@ %a@];" (if mut then "mutable " else "") name
+  fprintf ppf "@[<2>%s%s :@ %a@]," (if mut then "mutable " else "") name
     !out_type arg
 
 and print_out_extension_constructor ppf ext =
