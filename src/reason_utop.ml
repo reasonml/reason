@@ -10,15 +10,19 @@ let () =
       Reason_util.correctly_catch_parse_errors Reason_parser.toplevel_phrase);
     UTop.parse_use_file := UTop.parse_default (
       Reason_util.correctly_catch_parse_errors  Reason_parser.use_file);
-    (* Toploop.print_out_sig_item := M17n_util.utf8_print_out_sig_item !Toploop.print_out_sig_item; *)
-    (* Toploop.install_printer Predef.path_string Predef.type_string *)
-    (*   (fun fmt obj -> M17n_util.utf8_print_string fmt (Obj.magic obj)); *)
-    (* As of 1.16, utop does not actually invoke UTop.parse_use_file. *)
     Toploop.parse_use_file := Reason_util.correctly_catch_parse_errors Reason_parser.use_file;
+    (* Printing in Reason syntax *)
+    Toploop.print_out_value := !Reason_oprint.out_value;
+    Toploop.print_out_type := !Reason_oprint.out_type;
+    Toploop.print_out_class_type := !Reason_oprint.out_class_type;
+    Toploop.print_out_module_type := !Reason_oprint.out_module_type;
+    Toploop.print_out_type_extension := !Reason_oprint.out_type_extension;
+    Toploop.print_out_sig_item := !Reason_oprint.out_sig_item;
+    Toploop.print_out_signature := !Reason_oprint.out_signature;
+    Toploop.print_out_phrase := !Reason_oprint.out_phrase;
   end
 
 let _ = UTop.set_phrase_terminator ";"
-
 
 (* With the Reason utop extension, single semicolons are sufficient for
    submitting to the top level *)
