@@ -46,7 +46,7 @@ let characterIndexForPositionInString stdOutLines (curCursorRow, curCursorColumn
         }
       }
     };
-    result.contents = [Atom.trimTrailingWhiteSpace line, ...result.contents]
+    result.contents = [line, ...result.contents]
   };
   {
     Nuclide.FileFormat.newCursor: finalCharCount.contents,
