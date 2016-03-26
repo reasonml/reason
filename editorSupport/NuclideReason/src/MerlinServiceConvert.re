@@ -86,14 +86,18 @@ let jsMerlinTypeHintEntryToNuclide arr => {
   } else {
     /* TODO: merlin gives us further type information if we expand our selection. Use it */
     let firstType = Js.Unsafe.get arr "0";
-    let hint = Js.Unsafe.get firstType "type";
+    /* we'll need an official merlin API to format the output type strings from ocaml ones to reason ones */
+    let reasonHint =
+      [Js.to_string (Js.Unsafe.get firstType "type")]
+      |> OcamlTypeToReasonType.format
+      |> List.hd;
     let merlinStartPos = Js.Unsafe.get firstType "start";
     let merlinEndPos = Js.Unsafe.get firstType "end";
     /* lines (rows) are 1-based for merlin, not 0-based, like for Atom */
     let startRowColumn = (Js.Unsafe.get merlinStartPos "line" - 1, Js.Unsafe.get merlinStartPos "col");
     let endRowColumn = (Js.Unsafe.get merlinEndPos "line" - 1, Js.Unsafe.get merlinEndPos "col");
     Js.Unsafe.obj [|
-      ("hint", Js.Unsafe.inject (Js.string hint)),
+      ("hint", Js.Unsafe.inject (Js.string reasonHint)),
       ("range", Js.Unsafe.inject (Atom.Range.toJs (startRowColumn, endRowColumn)))
     |]
   }
