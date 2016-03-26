@@ -8,61 +8,31 @@ https://github.com/rust-lang/rust-mode
 
 ### Manual Installation
 
-To install manually, check out this repository and add this to your
+To install manually, install both reason and merlin, add this to your
 `.emacs` file:
 
 ```lisp
-(add-to-list 'load-path "/path/to/reason-mode/")
-(autoload 'reason-mode "reason-mode" nil t)
-(setq auto-mode-alist
-      (append '(("\\.re\\'" . reason-mode)
-                ("\\.rei\\'" . reason-mode))
-              auto-mode-alist))
+;;----------------------------------------------------------------------------
+;; Reason setup
+;;----------------------------------------------------------------------------
+
+
+(setq opam (substring (shell-command-to-string "opam config var prefix 2> /dev/null") 0 -1))
+(add-to-list 'load-path (concat opam "/share/emacs/site-lisp"))
+(setq reasonfmt-command (concat opam "/bin/reasonfmt"))
+(setq reason-merlinfmt-command (concat opam "/bin/reasonfmt_merlin"))
+
+(require 'reason-mode)
+(require 'merlin)
+(setq merlin-ac-setup t)
+(add-hook 'reason-mode-hook (lambda ()
+                              (add-hook 'before-save-hook 'reasonfmt-before-save)
+                              (merlin-mode)))
+(setq merlin-default-flags ("-pp" reason-merlinfmt-command))
 ```
 
 This associates `reason-mode` with `.re` and `.rei` files. To enable it explicitly, do
 <kbd>M-x reason-mode</kbd>.
-
-### `package.el` installation via MELPA
-
-It can be more convenient to use Emacs's package manager to handle
-installation for you if you use many elisp libraries. If you have
-`package.el` but haven't added MELPA, the community
-package source, yet, add this to `~/.emacs.d/init.el`:
-
-```lisp
-(require 'package)
-(add-to-list 'package-archives
-             '("melpa" . "https://melpa.org/packages/") t)
-(package-initialize)
-```
-
-Then do this to load the package listing:
-
-* <kbd>M-x eval-buffer</kbd>
-* <kbd>M-x package-refresh-contents</kbd>
-
-If you use a version of Emacs prior to 24 that doesn't include
-`package.el`, you can get it from [here](http://git.savannah.gnu.org/gitweb/?p=emacs.git;a=blob_plain;hb=ba08b24186711eaeb3748f3d1f23e2c2d9ed0d09;f=lisp/emacs-lisp/package.el).
-
-If you have an older ELPA `package.el` installed from tromey.com, you
-should upgrade in order to support installation from multiple sources.
-The ELPA archive is deprecated and no longer accepting new packages,
-so the version there (1.7.1) is very outdated.
-
-#### Install `reason-mode`
-
-One you have `package.el`, you can install `reason-mode` or any other
-modes by choosing them from a list:
-
-* <kbd>M-x package-list-packages</kbd>
-
-Now, to install packages, move your cursor to them and press
-<kbd>i</kbd>. This will mark the packages for installation. When
-you're done with marking, press <kbd>x</kbd>, and ELPA will install
-the packages for you (under `~/.emacs.d/elpa/`).
-
-* or using <kbd>M-x package-install reason-mode</kbd>
 
 ### Features
 
@@ -74,8 +44,6 @@ auto-format:
 (add-hook 'reason-mode-hook (lambda ()
           (add-hook 'before-save-hook 'reasonfmt-before-save)))
 ```
-
-
 
 ### Tests via ERT
 
