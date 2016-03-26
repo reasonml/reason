@@ -20,7 +20,9 @@ let () =
     try
       Sys.argv.(1)
       |> split ~by:'"'
-      |> List.map Reason_type_of_ocaml_type.convert
+      |> List.map (fun input ->
+        Reason_type_of_ocaml_type.convert input |> String.trim
+      )
       |> List.iter print_endline
     with Syntaxerr.Error a ->
       prerr_endline "Failed to parse the input type(s)."
