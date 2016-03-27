@@ -97,9 +97,9 @@ let print_out_value ppf tree =
           Invalid_argument "String.create" -> fprintf ppf "<huge string>"
         end
     | Oval_list tl ->
-        fprintf ppf "@[<1>[%a]@]" (print_tree_list print_tree_1 ";") tl
+        fprintf ppf "@[<1>[%a]@]" (print_tree_list print_tree_1 ",") tl
     | Oval_array tl ->
-        fprintf ppf "@[<2>[|%a|]@]" (print_tree_list print_tree_1 ";") tl
+        fprintf ppf "@[<2>[|%a|]@]" (print_tree_list print_tree_1 ",") tl
     | Oval_constr (name, []) -> print_ident ppf name
     | Oval_variant (name, None) -> fprintf ppf "`%s" name
     | Oval_stuff s -> pp_print_string ppf s
@@ -130,8 +130,6 @@ let print_out_value ppf tree =
     cautious (print_list true) ppf tree_list
   in
   cautious print_tree_1 ppf tree
-
-let out_value = ref print_out_value
 
 (* Types *)
 
@@ -273,8 +271,6 @@ and print_typargs ppf =
       print_typlist print_out_type "" ppf tyl;
       pp_close_box ppf ()
 
-let out_type = ref print_out_type
-
 (* Class types *)
 
 let type_parameter ppf (ty, (co, cn)) =
@@ -297,7 +293,7 @@ let rec print_out_class_type ppf =
         function
           [] -> ()
         | tyl ->
-            fprintf ppf "@[<1>[%a]@]@ " (print_typlist !out_type ",") tyl
+            fprintf ppf "@[<1>[%a]@]@ " (print_typlist print_out_type ",") tyl
       in
       fprintf ppf "@[%a%a@]" pr_tyl tyl print_ident id
   | Octy_arrow (lab, ty, cty) ->
@@ -306,7 +302,7 @@ let rec print_out_class_type ppf =
   | Octy_signature (self_ty, csil) ->
       let pr_param ppf =
         function
-          Some ty -> fprintf ppf "@ @[(%a)@]" !out_type ty
+          Some ty -> fprintf ppf "@ @[(%a)@]" print_out_type ty
         | None -> ()
       in
       fprintf ppf "@[<hv 2>@[<2>object%a@]@ %a@;<1 -2>end@]" pr_param self_ty
@@ -315,26 +311,19 @@ let rec print_out_class_type ppf =
 and print_out_class_sig_item ppf =
   function
     Ocsg_constraint (ty1, ty2) ->
-      fprintf ppf "@[<2>constraint %a =@ %a@]" !out_type ty1
-        !out_type ty2
+      fprintf ppf "@[<2>constraint %a =@ %a@]" print_out_type ty1
+        print_out_type ty2
   | Ocsg_method (name, priv, virt, ty) ->
       fprintf ppf "@[<2>method %s%s%s :@ %a@]"
         (if priv then "private " else "") (if virt then "virtual " else "")
-        name !out_type ty
+        name print_out_type ty
   | Ocsg_value (name, mut, vr, ty) ->
       fprintf ppf "@[<2>val %s%s%s :@ %a@]"
         (if mut then "mutable " else "")
         (if vr then "virtual " else "")
-        name !out_type ty
-
-let out_class_type = ref print_out_class_type
+        name print_out_type ty
 
 (* Signature *)
-
-let out_module_type = ref (fun _ -> failwith "Oprint.out_module_type")
-let out_sig_item = ref (fun _ -> failwith "Oprint.out_sig_item")
-let out_signature = ref (fun _ -> failwith "Oprint.out_signature")
-let out_type_extension = ref (fun _ -> failwith "Oprint.out_type_extension")
 
 let rec print_out_functor ppf =
   function
@@ -351,12 +340,12 @@ and print_out_module_type ppf =
       fprintf ppf "@[<2>functor@ %a@]" print_out_functor t
   | Omty_ident id -> fprintf ppf "%a" print_ident id
   | Omty_signature sg ->
-      fprintf ppf "@[<hv 2>sig@ %a@;<1 -2>end@]" !out_signature sg
+      fprintf ppf "@[<hv 2>sig@ %a@;<1 -2>end@]" print_out_signature sg
   | Omty_alias id -> fprintf ppf "(module %a)" print_ident id
 and print_out_signature ppf =
   function
     [] -> ()
-  | [item] -> !out_sig_item ppf item
+  | [item] -> print_out_sig_item ppf item
   | Osig_typext(ext, Oext_first) :: items ->
       (* Gather together the extension constructors *)
       let rec gather_extensions acc items =
@@ -378,21 +367,21 @@ and print_out_signature ppf =
           otyext_constructors = exts;
           otyext_private = ext.oext_private }
       in
-        fprintf ppf "%a@ %a" !out_type_extension te print_out_signature items
+        fprintf ppf "%a@ %a" print_out_type_extension te print_out_signature items
   | item :: items ->
-      fprintf ppf "%a@ %a" !out_sig_item item print_out_signature items
+      fprintf ppf "%a@ %a" print_out_sig_item item print_out_signature items
 and print_out_sig_item ppf =
   function
     Osig_class (vir_flag, name, params, clt, rs) ->
       fprintf ppf "@[<2>%s%s@ %a%s@ :@ %a@]"
         (if rs = Orec_next then "and" else "class")
         (if vir_flag then " virtual" else "") print_out_class_params params
-        name !out_class_type clt
+        name print_out_class_type clt
   | Osig_class_type (vir_flag, name, params, clt, rs) ->
       fprintf ppf "@[<2>%s%s@ %a%s@ =@ %a@]"
         (if rs = Orec_next then "and" else "class type")
         (if vir_flag then " virtual" else "") print_out_class_params params
-        name !out_class_type clt
+        name print_out_class_type clt
   | Osig_typext (ext, Oext_exception) ->
       fprintf ppf "@[<2>exception %a@]"
         print_out_constr (ext.oext_name, ext.oext_args, ext.oext_ret_type)
@@ -401,7 +390,7 @@ and print_out_sig_item ppf =
   | Osig_modtype (name, Omty_abstract) ->
       fprintf ppf "@[<2>module type %s@]" name
   | Osig_modtype (name, mty) ->
-      fprintf ppf "@[<2>module type %s =@ %a@]" name !out_module_type mty
+      fprintf ppf "@[<2>module type %s =@ %a@]" name print_out_module_type mty
   | Osig_module (name, Omty_alias id, _) ->
       fprintf ppf "@[<2>module %s =@ %a@]" name print_ident id
   | Osig_module (name, mty, rs) ->
@@ -409,7 +398,7 @@ and print_out_sig_item ppf =
         (match rs with Orec_not -> "module"
                      | Orec_first -> "module rec"
                      | Orec_next -> "and")
-        name !out_module_type mty
+        name print_out_module_type mty
   | Osig_type(td, rs) ->
         print_out_type_decl
           (match rs with
@@ -426,15 +415,15 @@ and print_out_sig_item ppf =
             fprintf ppf "@ = \"%s\"" s;
             List.iter (fun s -> fprintf ppf "@ \"%s\"" s) sl
       in
-      fprintf ppf "@[<2>%s %a :@ %a%a@]" kwd value_ident name !out_type
+      fprintf ppf "@[<2>%s %a :@ %a%a@]" kwd value_ident name print_out_type
         ty pr_prims prims
 
 and print_out_type_decl kwd ppf td =
   let print_constraints ppf =
     List.iter
       (fun (ty1, ty2) ->
-         fprintf ppf "@ @[<2>constraint %a =@ %a@]" !out_type ty1
-           !out_type ty2)
+         fprintf ppf "@ @[<2>constraint %a =@ %a@]" print_out_type ty1
+           print_out_type ty2)
       td.otype_cstrs
   in
   let type_defined ppf =
@@ -449,7 +438,7 @@ and print_out_type_decl kwd ppf td =
   in
   let print_manifest ppf =
     function
-      Otyp_manifest (ty, _) -> fprintf ppf " =@ %a" !out_type ty
+      Otyp_manifest (ty, _) -> fprintf ppf " =@ %a" print_out_type ty
     | _ -> ()
   in
   let print_name_params ppf =
@@ -479,7 +468,7 @@ and print_out_type_decl kwd ppf td =
   | ty ->
       fprintf ppf " =%a@;<1 2>%a"
         print_private td.otype_private
-        !out_type ty
+        print_out_type ty
   in
   fprintf ppf "@[<2>@[<hv 2>%t%a@]%t@]"
     print_name_params
@@ -509,7 +498,7 @@ and print_out_constr ppf (name, tyl,ret_type_opt) =
 
 and print_out_label ppf (name, mut, arg) =
   fprintf ppf "@[<2>%s%s :@ %a@]," (if mut then "mutable " else "") name
-    !out_type arg
+    print_out_type arg
 
 and print_out_extension_constructor ppf ext =
   let print_extended_type ppf =
@@ -559,11 +548,6 @@ and print_out_type_extension ppf te =
     (print_list print_out_constr (fun ppf -> fprintf ppf "@ | "))
     te.otyext_constructors
 
-let _ = out_module_type := print_out_module_type
-let _ = out_signature := print_out_signature
-let _ = out_sig_item := print_out_sig_item
-let _ = out_type_extension := print_out_type_extension
-
 (* Phrases *)
 
 let print_out_exception ppf exn outv =
@@ -572,7 +556,7 @@ let print_out_exception ppf exn outv =
   | Out_of_memory -> fprintf ppf "Out of memory during evaluation.@."
   | Stack_overflow ->
       fprintf ppf "Stack overflow during evaluation (looping recursion?).@."
-  | _ -> fprintf ppf "@[Exception:@ %a.@]@." !out_value outv
+  | _ -> fprintf ppf "@[Exception:@ %a.@]@." print_out_value outv
 
 let rec print_items ppf =
   function
@@ -598,23 +582,21 @@ let rec print_items ppf =
           otyext_constructors = exts;
           otyext_private = ext.oext_private }
       in
-        fprintf ppf "@[%a@]" !out_type_extension te;
+        fprintf ppf "@[%a@]" print_out_type_extension te;
         if items <> [] then fprintf ppf "@ %a" print_items items
   | (tree, valopt) :: items ->
       begin match valopt with
         Some v ->
-          fprintf ppf "@[<2>%a =@ %a@]" !out_sig_item tree
-            !out_value v
-      | None -> fprintf ppf "@[%a@]" !out_sig_item tree
+          fprintf ppf "@[<2>%a =@ %a@]" print_out_sig_item tree
+            print_out_value v
+      | None -> fprintf ppf "@[%a@]" print_out_sig_item tree
       end;
       if items <> [] then fprintf ppf "@ %a" print_items items
 
 let print_out_phrase ppf =
   function
     Ophr_eval (outv, ty) ->
-      fprintf ppf "@[- : %a@ =@ %a@]@." !out_type ty !out_value outv
+      fprintf ppf "@[- : %a@ =@ %a@]@." print_out_type ty print_out_value outv
   | Ophr_signature [] -> ()
   | Ophr_signature items -> fprintf ppf "@[<v>%a@]@." print_items items
   | Ophr_exception (exn, outv) -> print_out_exception ppf exn outv
-
-let out_phrase = ref print_out_phrase
