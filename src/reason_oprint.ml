@@ -150,6 +150,17 @@ let pr_present =
 let pr_vars =
   print_list (fun ppf s -> fprintf ppf "'%s" s) (fun ppf -> fprintf ppf "@ ")
 
+type label =
+  | Nonlabeled
+  | Labeled of string
+  | Optional of string
+
+let get_label lbl =
+  if lbl = "" then Nonlabeled
+  else if String.get lbl 0 = '?' then
+    Optional (String.sub lbl 1 @@ String.length lbl - 1)
+  else Labeled lbl
+
 let rec print_out_type ppf =
   function
   | Otyp_alias (ty, s) ->
@@ -165,8 +176,20 @@ and print_out_type_1 ppf =
   function
     Otyp_arrow (lab, ty1, ty2) ->
       pp_open_box ppf 0;
-      if lab <> "" then (pp_print_string ppf lab; pp_print_char ppf ':');
+      let suffix =
+        match get_label lab with
+        | Nonlabeled -> ""
+        | Labeled lab ->
+            pp_print_string ppf lab;
+            pp_print_string ppf "::";
+            ""
+        | Optional lab ->
+            pp_print_string ppf lab;
+            pp_print_string ppf "::";
+            "?"
+      in
       print_out_type_2 ppf ty1;
+      pp_print_string ppf suffix;
       pp_print_string ppf " =>";
       pp_print_space ppf ();
       print_out_type_1 ppf ty2;
