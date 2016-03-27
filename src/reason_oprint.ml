@@ -348,6 +348,13 @@ and print_out_class_sig_item ppf =
 
 (* Signature *)
 
+let is_rec_next = function
+  | Osig_class (_, _, _, _, Orec_next)::_
+  | Osig_class_type (_, _, _, _, Orec_next)::_
+  | Osig_module (_, _, Orec_next)::_
+  | Osig_type (_, Orec_next)::_ -> true
+  | _ -> false
+
 let rec print_out_functor ppf =
   function
     Omty_functor (_, None, mty_res) ->
@@ -363,12 +370,13 @@ and print_out_module_type ppf =
       fprintf ppf "@[<2>functor@ %a@]" print_out_functor t
   | Omty_ident id -> fprintf ppf "%a" print_ident id
   | Omty_signature sg ->
-      fprintf ppf "@[<hv 2>sig@ %a@;<1 -2>end@]" print_out_signature sg
+      fprintf ppf "@[<hv 2>{@ %a@;<1 -2>}@]" print_out_signature sg
   | Omty_alias id -> fprintf ppf "(module %a)" print_ident id
 and print_out_signature ppf =
   function
     [] -> ()
-  | [item] -> print_out_sig_item ppf item
+  | [item] ->
+      fprintf ppf "%a;" print_out_sig_item item
   | Osig_typext(ext, Oext_first) :: items ->
       (* Gather together the extension constructors *)
       let rec gather_extensions acc items =
@@ -390,9 +398,11 @@ and print_out_signature ppf =
           otyext_constructors = exts;
           otyext_private = ext.oext_private }
       in
-        fprintf ppf "%a@ %a" print_out_type_extension te print_out_signature items
+      let sep = if is_rec_next items then "" else ";" in
+      fprintf ppf "%a%s@ %a" print_out_type_extension te sep print_out_signature items
   | item :: items ->
-      fprintf ppf "%a@ %a" print_out_sig_item item print_out_signature items
+      let sep = if is_rec_next items then "" else ";" in
+      fprintf ppf "%a%s@ %a" print_out_sig_item item sep print_out_signature items
 and print_out_sig_item ppf =
   function
     Osig_class (vir_flag, name, params, clt, rs) ->
@@ -417,11 +427,16 @@ and print_out_sig_item ppf =
   | Osig_module (name, Omty_alias id, _) ->
       fprintf ppf "@[<2>module %s =@ %a@]" name print_ident id
   | Osig_module (name, mty, rs) ->
-      fprintf ppf "@[<2>%s %s :@ %a@]"
-        (match rs with Orec_not -> "module"
-                     | Orec_first -> "module rec"
-                     | Orec_next -> "and")
-        name print_out_module_type mty
+      begin match rs with
+      | Orec_not ->
+          fprintf ppf "@[<2>module type %s =@ %a@]" name print_out_module_type mty
+      | _ ->
+          fprintf ppf "@[<2>%s %s :@ %a@]"
+            (match rs with Orec_not -> failwith "Osig_module: impossible"
+                        | Orec_first -> "let module rec"
+                        | Orec_next -> "and")
+            name print_out_module_type mty
+      end
   | Osig_type(td, rs) ->
         print_out_type_decl
           (match rs with
@@ -430,7 +445,7 @@ and print_out_sig_item ppf =
            | Orec_next  -> "and")
           ppf td
   | Osig_value (name, ty, prims) ->
-      let kwd = if prims = [] then "val" else "external" in
+      let kwd = if prims = [] then "let" else "external" in
       let pr_prims ppf =
         function
           [] -> ()
