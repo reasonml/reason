@@ -7,6 +7,8 @@
  */
 open StringUtils;
 
+let makeTellCommand text => ["tell", "start", "end", text];
+
 let descriptionPrefixRegex = Js.Unsafe.js_expr {|/(let\s*\S*\s*:|type\s*\S*\s*=\s*)/|};
 
 let getReasonifyConfig () => Js.Unsafe.js_expr {|
@@ -175,6 +177,7 @@ let module MerlinResponseFormatter = {
 let getNuclideJsAutocompleteSuggestions request => {
   let editor = request.Nuclide.AutocompleteProviderRequest.editor;
   let prefix = request.prefix;
+  let text = Atom.Buffer.getText (Atom.Editor.getBuffer editor);
   let (line, col) = Atom.Cursor.getBufferPosition (List.hd (Atom.Editor.getCursors editor));
   /**
    * The default prefix at something like `Printf.[cursor]` is just the dot. Compute
@@ -215,6 +218,8 @@ let getNuclideJsAutocompleteSuggestions request => {
           (MerlinServiceConvert.merlinCompletionEntryToNuclide replacementPrefix) normalizedCompletionItems;
       List.map NuclideJs.Autocomplete.entryToJs nuclideJsEntries
     };
-    MerlinService.complete merlinService path line col linePrefix onOutput
+    let contextifiedTellCmd = MerlinService.contextifyStringQuery (makeTellCommand text) path;
+    MerlinService.runSingleCommand merlinService path contextifiedTellCmd
+      (fun result => MerlinService.complete merlinService path line col linePrefix onOutput)
   }
 };

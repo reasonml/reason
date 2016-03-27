@@ -34,7 +34,7 @@ type t;
     {
       "start": { "line": 66, "col": 35 }, "end": { "line": 66, "col": 48 },
       "type": "type", "sub": [], "valid": true,
-      "message": "Error: Unbound value makeTellComand"
+      "message": "Error: Unbound value makeTellCommand"
     },
     {
       "start":{"line":5,"col":8},"end":{"line":5,"col":9},
@@ -43,7 +43,7 @@ type t;
     }
   ]
  */
-let makeTellComand text => ["tell", "start", "end", text];
+let makeTellCommand text => ["tell", "start", "end", text];
 
 let errorsCommand = ["errors"];
 
@@ -54,7 +54,7 @@ let errorsCommand = ["errors"];
  */
 let getMerlinDiagnostics text path onComplete onFailure => {
   let service = MerlinService.getService path;
-  let contextifiedTellCmd = MerlinService.contextifyStringQuery (makeTellComand text) path;
+  let contextifiedTellCmd = MerlinService.contextifyStringQuery (makeTellCommand text) path;
   let contextifiedErrorsCmd = MerlinService.contextifyStringQuery errorsCommand path;
   let afterTellText result => {
     let afterErrors errors => onComplete (

@@ -7,7 +7,7 @@
  */
 open NuclideReasonCommon;
 
-let makeTellComand text => ["tell", "start", "end", text];
+let makeTellCommand text => ["tell", "start", "end", text];
 
 let makeTypeHintCommand (line, col) => [|
   Js.Unsafe.inject (Js.string "type"),
@@ -32,7 +32,7 @@ let getMerlinTypeHint editor text position => {
   let service = MerlinService.getService path;
   let promise = Atom.Promise.create (
     fun resolve reject => {
-      let contextifiedTellCmd = MerlinService.contextifyStringQuery (makeTellComand text) path;
+      let contextifiedTellCmd = MerlinService.contextifyStringQuery (makeTellCommand text) path;
       let contextifiedTypeHintCmd = MerlinService.contextifyQuery (makeTypeHintCommand position) path;
       let afterTellText result =>
         MerlinService.runSingleCommand
