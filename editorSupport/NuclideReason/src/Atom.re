@@ -88,6 +88,12 @@ let module JsonValue: JsonValueSig = {
         | Empty => Js.Unsafe.inject Js.undefined;
 };
 
+let module Env = {
+  let setEnvVar envVar strVal => {
+    Js.Unsafe.set (Js.Unsafe.get (Js.Unsafe.get Js.Unsafe.global "process") "env") envVar (Js.string strVal)
+  };
+};
+
 let module Config = {
   let get configKey :JsonType.t => {
     let config = Js.Unsafe.get atomGlobal "config";

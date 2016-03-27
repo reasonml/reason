@@ -22,6 +22,12 @@ let getService filePath => {
   let nuclideOCamlMerlinFlagsOverwrite = Atom.Config.get "nuclide.nuclide-ocaml.nuclideReasonOverwroteYour_merlinFlags";
   let nuclideReasonPathToMerlin = Atom.Config.get "NuclideReason.pathToMerlin";
   let nuclideReasonMerlinFlags = Atom.Config.get "NuclideReason.merlinFlags";
+  let nuclideReasonMerlinLogFile = Atom.Config.get "NuclideReason.merlinLogFile";
+  switch nuclideReasonMerlinLogFile {
+  | JsonString "" => ()
+  | JsonString s => Atom.Env.setEnvVar "MERLIN_LOG" s
+  | _ => ()
+  };
   switch (nuclideOCamlPathToMerlin, nuclideOCamlPathToMerlinOverwrite) {
   | (_, Empty) =>
       Atom.Config.set
