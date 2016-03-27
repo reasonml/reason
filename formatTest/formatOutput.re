@@ -6757,6 +6757,8 @@ let some = Some (1, 2, 3);
 
 let (\===) = (==);
 
+Pervasives.(==);
+
 let physicalEquality = 1 == 1;
 
 let physicalInequality = 1 != 2;
