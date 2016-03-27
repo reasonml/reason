@@ -135,6 +135,13 @@ module.exports = {
       "description":
         "Flags to pass to the Merlin executable - important for configuring Reason syntax."
     },
+    "merlinLogFile": {
+      "title": "Absolute File Path For Writing Merlin Log",
+      "type": "string",
+      "default": "",
+      "description":
+        "Destination file (such as /Users/you/merlinLog.txt) that Merlin should log to. Requires Atom restart."
+    },
   }
 
 };

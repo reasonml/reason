@@ -17,6 +17,8 @@ export
   (
     Js.wrap_callback (
       fun text path onComplete onFailure => {
+        let path = Js.to_string path;
+        let text = Js.to_string text;
         let onComplete arr =>
           Js.Unsafe.fun_call
             onComplete [|Js.Unsafe.inject (Js.array (Array.map NuclideJs.Diagnostic.Message.toJs arr))|];
