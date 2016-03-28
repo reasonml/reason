@@ -2,15 +2,18 @@
 
 (* No String.split in stdlib... *)
 let split str ~by =
-  let rec split' str ~by idx accum =
+  let rec split' str ~by accum =
     try
-      let foundIdx = String.index_from str idx by in
-      split' str ~by (foundIdx + 1) ((String.sub str idx foundIdx) :: accum)
+      let foundIdx = String.index_from str 0 by in
+      let subStr = String.sub str 0 foundIdx in
+      split'
+        (String.sub str (foundIdx + 1) (String.length str - foundIdx - 1))
+        ~by
+        (subStr :: accum)
     with Not_found ->
-      let lastStrPiece = String.sub str idx (String.length str - idx) in
-      List.rev (lastStrPiece :: accum)
+      List.rev (str :: accum)
   in
-  split' str ~by 0 []
+  split' str ~by []
 
 let () =
   if Array.length Sys.argv <> 2 then
