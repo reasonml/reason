@@ -417,6 +417,8 @@ open M;
 let z = { let open M; 34; };
 let z = { let open M; 34; 35; };
 let z = { let open M; {} };
+let z = M.{};
+let z = M.({});
 let z = { let open M; {x:10} };
 let z = { let open M; [foo, bar] };
 let z = { let open M; ([foo, bar]) };
