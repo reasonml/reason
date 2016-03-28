@@ -360,14 +360,14 @@ let rec print_out_functor ppf =
     Omty_functor (_, None, mty_res) ->
       fprintf ppf "() %a" print_out_functor mty_res
   | Omty_functor (name , Some mty_arg, mty_res) ->
-      fprintf ppf "(%s : %a) %a" name
+      fprintf ppf "(%s : %a) => %a" name
         print_out_module_type mty_arg print_out_functor mty_res
-  | m -> fprintf ppf "->@ %a" print_out_module_type m
+  | m -> fprintf ppf "%a" print_out_module_type m
 and print_out_module_type ppf =
   function
     Omty_abstract -> ()
   | Omty_functor _ as t ->
-      fprintf ppf "@[<2>functor@ %a@]" print_out_functor t
+      fprintf ppf "@[<2>%a@]" print_out_functor t
   | Omty_ident id -> fprintf ppf "%a" print_ident id
   | Omty_signature sg ->
       fprintf ppf "@[<hv 2>{@ %a@;<1 -2>}@]" print_out_signature sg
