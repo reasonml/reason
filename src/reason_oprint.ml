@@ -198,13 +198,13 @@ and print_out_type_1 ppf =
 and print_out_type_2 ppf =
   function
     Otyp_tuple tyl ->
-      fprintf ppf "@[<0>%a@]" (print_typlist print_simple_out_type ",") tyl
+      fprintf ppf "@[<0>(%a)@]" (print_typlist print_simple_out_type ",") tyl
   | ty -> print_simple_out_type ppf ty
 and print_simple_out_type ppf =
   function
     Otyp_class (ng, id, tyl) ->
-      fprintf ppf "@[%a%s#%a@]" print_typargs tyl (if ng then "_" else "")
-        print_ident id
+      fprintf ppf "@[%s#%a%a@]" (if ng then "_" else "")
+        print_ident id print_typargs tyl
   | Otyp_constr (id, tyl) ->
       pp_open_box ppf 0;
       print_ident ppf id;
@@ -261,12 +261,12 @@ and print_fields rest ppf =
   | [s, t] ->
       fprintf ppf "%s : %a" s print_out_type t;
       begin match rest with
-        Some _ -> fprintf ppf ";@ "
+        Some _ -> fprintf ppf ",@ "
       | None -> ()
       end;
       print_fields rest ppf []
   | (s, t) :: l ->
-      fprintf ppf "%s : %a;@ %a" s print_out_type t (print_fields rest) l
+      fprintf ppf "%s : %a,@ %a" s print_out_type t (print_fields rest) l
 and print_row_field ppf (l, opt_amp, tyl) =
   let pr_of ppf =
     if opt_amp then fprintf ppf " of@ &@ "
@@ -284,14 +284,19 @@ and print_typlist print_elem sep ppf =
       pp_print_string ppf sep;
       pp_print_space ppf ();
       print_typlist print_elem sep ppf tyl
+and print_out_wrap_type ppf =
+  function
+  | (Otyp_constr (id, _::_)) as ty ->
+      fprintf ppf "@[<0>(%a)@]" print_out_type ty
+  | ty -> print_out_type ppf ty
 and print_typargs ppf =
   function
     [] -> ()
-  | [ty1] -> pp_print_space ppf (); print_simple_out_type ppf ty1
+  | [ty1] -> pp_print_space ppf (); print_out_wrap_type ppf ty1
   | tyl ->
       pp_print_space ppf ();
       pp_open_box ppf 1;
-      print_typlist print_out_type "" ppf tyl;
+      print_typlist print_out_wrap_type "" ppf tyl;
       pp_close_box ppf ()
 
 (* Class types *)
@@ -305,8 +310,8 @@ let print_out_class_params ppf =
   function
     [] -> ()
   | tyl ->
-      fprintf ppf "@[<1>[%a]@]@ "
-        (print_list type_parameter (fun ppf -> fprintf ppf ", "))
+      fprintf ppf "@[<1>%a@]@ "
+        (print_list type_parameter (fun ppf -> fprintf ppf " "))
         tyl
 
 let rec print_out_class_type ppf =
@@ -316,9 +321,9 @@ let rec print_out_class_type ppf =
         function
           [] -> ()
         | tyl ->
-            fprintf ppf "@[<1>[%a]@]@ " (print_typlist print_out_type ",") tyl
+            fprintf ppf "@[<1> %a@]" (print_typlist print_out_wrap_type "") tyl
       in
-      fprintf ppf "@[%a%a@]" pr_tyl tyl print_ident id
+      fprintf ppf "@[%a%a@]" print_ident id pr_tyl tyl
   | Octy_arrow (lab, ty, cty) ->
       fprintf ppf "@[%s%a =>@ %a@]" (if lab <> "" then lab ^ ":" else "")
         print_out_type_2 ty print_out_class_type cty
@@ -406,15 +411,15 @@ and print_out_signature ppf =
 and print_out_sig_item ppf =
   function
     Osig_class (vir_flag, name, params, clt, rs) ->
-      fprintf ppf "@[<2>%s%s@ %a%s@ :@ %a@]"
+      fprintf ppf "@[<2>%s%s@ %s %a@,:@ %a@]"
         (if rs = Orec_next then "and" else "class")
-        (if vir_flag then " virtual" else "") print_out_class_params params
-        name print_out_class_type clt
+        (if vir_flag then " virtual" else "") name print_out_class_params params
+        print_out_class_type clt
   | Osig_class_type (vir_flag, name, params, clt, rs) ->
-      fprintf ppf "@[<2>%s%s@ %a%s@ =@ %a@]"
+      fprintf ppf "@[<2>%s%s@ %s %a@,=@ %a@]"
         (if rs = Orec_next then "and" else "class type")
-        (if vir_flag then " virtual" else "") print_out_class_params params
-        name print_out_class_type clt
+        (if vir_flag then " virtual" else "") name print_out_class_params params
+        print_out_class_type clt
   | Osig_typext (ext, Oext_exception) ->
       fprintf ppf "@[<2>exception %a@]"
         print_out_constr (ext.oext_name, ext.oext_args, ext.oext_ret_type)
