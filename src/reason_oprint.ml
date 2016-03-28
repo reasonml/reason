@@ -320,7 +320,7 @@ let rec print_out_class_type ppf =
       in
       fprintf ppf "@[%a%a@]" pr_tyl tyl print_ident id
   | Octy_arrow (lab, ty, cty) ->
-      fprintf ppf "@[%s%a ->@ %a@]" (if lab <> "" then lab ^ ":" else "")
+      fprintf ppf "@[%s%a =>@ %a@]" (if lab <> "" then lab ^ ":" else "")
         print_out_type_2 ty print_out_class_type cty
   | Octy_signature (self_ty, csil) ->
       let pr_param ppf =
@@ -328,8 +328,8 @@ let rec print_out_class_type ppf =
           Some ty -> fprintf ppf "@ @[(%a)@]" print_out_type ty
         | None -> ()
       in
-      fprintf ppf "@[<hv 2>@[<2>object%a@]@ %a@;<1 -2>end@]" pr_param self_ty
-        (print_list print_out_class_sig_item (fun ppf -> fprintf ppf "@ "))
+      fprintf ppf "@[<hv 2>@[<2>{%a@]@ %a@;<1 -2>}@]" pr_param self_ty
+        (print_list print_out_class_sig_item (fun ppf -> fprintf ppf ";@ "))
         csil
 and print_out_class_sig_item ppf =
   function
@@ -427,16 +427,11 @@ and print_out_sig_item ppf =
   | Osig_module (name, Omty_alias id, _) ->
       fprintf ppf "@[<2>module %s =@ %a@]" name print_ident id
   | Osig_module (name, mty, rs) ->
-      begin match rs with
-      | Orec_not ->
-          fprintf ppf "@[<2>module type %s =@ %a@]" name print_out_module_type mty
-      | _ ->
-          fprintf ppf "@[<2>%s %s :@ %a@]"
-            (match rs with Orec_not -> failwith "Osig_module: impossible"
-                        | Orec_first -> "let module rec"
-                        | Orec_next -> "and")
-            name print_out_module_type mty
-      end
+      fprintf ppf "@[<2>%s %s :@ %a@]"
+        (match rs with Orec_not -> "module"
+                    | Orec_first -> "module rec"
+                    | Orec_next -> "and")
+        name print_out_module_type mty
   | Osig_type(td, rs) ->
         print_out_type_decl
           (match rs with
