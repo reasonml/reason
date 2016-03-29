@@ -173,7 +173,7 @@ let getPartialFormatting editor range notifySuccess notifyInvalid notifyInfo =>
       fun code (formatResult: Nuclide.FileFormat.result) stdErr text subText resolve reject => {
         if (not (code == 0.0)) {
           notifyInvalid "Syntax Error"
-        } else if (formatResult.formatted === subText) {
+        } else if (formatResult.formatted \=== subText) {
           notifyInfo "Already Formatted"
         } else {
           notifySuccess "Format: Success"
