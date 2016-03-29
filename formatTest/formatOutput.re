@@ -1841,30 +1841,22 @@ let rec atLeastOneFlushableChildAndNoWipNoPending
   | [hd, ...tl] =>
       switch hd {
       | OpaqueGraph {
-          lifecycle: Reconciled (_, [])
+          lifecycle:
+            Reconciled _ [] [@implicit_arity]
         } =>
           atLeastOneFlushableChildAndNoWipNoPending
             tl atPriority
       | OpaqueGraph {
           lifecycle:
-            ReconciledFlushable (
-              priority,
-              _,
-              _,
-              _,
-              _,
-              _
-            )
+            ReconciledFlushable
+              priority _ _ _ _ _
+            [@implicit_arity]
         }
       | OpaqueGraph {
           lifecycle:
-            NeverReconciledFlushable (
-              priority,
-              _,
-              _,
-              _,
-              _
-            )
+            NeverReconciledFlushable
+              priority _ _ _ _
+            [@implicit_arity]
         }
           when priority == AtPriority =>
           noWipNoPending tl atPriority
@@ -5288,8 +5280,9 @@ type typeWithNestedNamedArgs =
   int;
 
 type typeWithNestedOptionalNamedArgs =
-  outerOne::
-    (innerOne::int => innerTwo::int => int)? =>
+  outerOne::(
+    innerOne::int => innerTwo::int => int
+  )? =>
   outerTwo::int? =>
   int;
 
@@ -5766,6 +5759,40 @@ let module M = Something.Create {
   type resource1 = MyModule.MySubmodule.t;
   type resource2 = MyModule.MySubmodule.t;
 };
+type t = | A of {a: int} | B;
+
+let f =
+  fun | B => 0
+      | A {a} => a;
+
+type nonrec u 'a = | Box of 'a;
+
+type expr 'a =
+  | Val of {value: 'a} :expr 'a
+  | Add of
+      {left: expr int, right: expr int} :expr int
+  | Is0 of {test: expr int} :expr bool
+  | If of
+      {
+        pred: expr bool,
+        true_branch: expr 'a,
+        false_branch: expr 'a
+      }
+      :expr 'a;
+
+let rec eval: type a. expr a => a =
+  fun e =>
+    switch e {
+    | Is0 {test} => eval test == 0
+    | Val {value} => value
+    | Add {left, right} => eval left + eval right
+    | If {pred, true_branch, false_branch} =>
+        if (eval pred) {
+          eval true_branch
+        } else {
+          eval false_branch
+        }
+    };
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 /*
 let str = "@[.... some formatting ....@\n\010@.";
@@ -5785,11 +5812,11 @@ let module Test = {
   type a = | And of (int, int) | Or of (int, int);
 };
 
-Test.And (1, 2);
+let _ = Test.And (1, 2);
 
-Test.Or (1, 2);
+let _ = Test.Or (1, 2);
 
-Some 1;
+let _ = Some 1;
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 /**
  * Generally, dangling attributes [@..] apply to everything to the left of it,

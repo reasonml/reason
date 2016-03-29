@@ -8,8 +8,8 @@ let b = MultiArgumentsConstructor 1 2;
 
 let module Test = {type a = | And of (int, int) | Or of (int, int);};
 
-Test.And (1, 2);
+let _ = Test.And (1, 2);
 
-Test.Or (1, 2);
+let _ = Test.Or (1, 2);
 
-Some 1;
+let _ = Some 1;

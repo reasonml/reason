@@ -30,6 +30,8 @@ function idempotent_test() {
 ../reasonfmt_impl.native -print-width 50 -print re ./syntax.re 2>&1 >>./formatOutput.re
 ../reasonfmt_impl.native -print-width 50 -print re ./infix.re 2>&1  >>./formatOutput.re
 ../reasonfmt_impl.native -print-width 50 -print re ./trailingSpaces.re 2>&1 >>./formatOutput.re
+../reasonfmt_impl.native -print-width 50 -print re ./features403.re 2>&1 >>./formatOutput.re
+
 ../reasonfmt_impl.native -print-width 50 -print re ./escapesInStrings.re 2>&1 >>./formatOutput.re
 
 idempotent_test ./formatOutput.re
