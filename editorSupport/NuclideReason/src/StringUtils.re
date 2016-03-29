@@ -23,7 +23,7 @@ let replace (s: string) (r: Regex.t) (replaceWith: string) :string => Js.to_stri
     (Js.string s) "replace" [|Js.Unsafe.inject r, Js.Unsafe.inject (Js.string replaceWith)|]
 );
 
-let split (s: string) (r: Regex.t) => {
+let split by::(r: Regex.t) (s: string) => {
   let s = Js.string s;
   let jsArr = Js.Unsafe.meth_call s "split" [|Js.Unsafe.inject r|];
   let lst = Array.to_list (Js.to_array jsArr);

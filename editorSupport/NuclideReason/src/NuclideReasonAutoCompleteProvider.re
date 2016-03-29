@@ -25,7 +25,7 @@ let getNuclideJsAutocompleteSuggestions request => {
       linePrefix :
       {
         let regex = Js.Unsafe.js_expr {|/([ \t\[\](){}<>,+*\/-])/|};
-        let lst = StringUtils.split linePrefix regex;
+        let lst = StringUtils.split linePrefix by::regex;
         let len = List.length lst;
         len > 0 ? List.nth lst (len - 1) : linePrefix
       };
@@ -50,7 +50,7 @@ let getNuclideJsAutocompleteSuggestions request => {
       Merlin.(
         output
         |> List.map (fun entry => entry.desc)
-        |> OcamlTypeToReasonType.format
+        |> OcamlTypeToReasonType.formatMany
         |> List.map2 (fun entry reasonType => {...entry, desc: reasonType}) output
         |> List.map (MerlinServiceConvert.merlinCompletionEntryToNuclide replacementPrefix)
         |> List.map NuclideJs.Autocomplete.entryToJs

@@ -24,7 +24,7 @@ let () =
       Sys.argv.(1)
       |> split ~by:'"'
       |> List.map (fun input ->
-        Reason_type_of_ocaml_type.convert input |> String.trim
+        Reason_type_of_ocaml_type.convert input |> String.trim |> String.escaped
       )
       |> List.iter print_endline
     with Syntaxerr.Error a ->

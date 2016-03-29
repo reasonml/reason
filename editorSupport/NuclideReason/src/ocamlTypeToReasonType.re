@@ -29,7 +29,42 @@ let insert at::at item::item l => {
   List.rev result.contents
 };
 
-let format ocamlTypes => {
+/* Shell out to the terminal, get result back. */
+let refmttype ocamlTypes => {
+  let refmttypePath =
+    Atom.JsonType.(
+      switch (Atom.Config.get "NuclideReason.pathToRefmttype") {
+      | JsonString str => str
+      | _ => raise (Invalid_argument "refmttypePath went wrong.")
+      }
+    );
+  /* Concatenating with special, recognized separator that can't be present in what we need to format. */
+  let cmd = refmttypePath ^ " \"" ^ String.concat "\\\"" ocamlTypes ^ "\"";
+  Js.Unsafe.meth_call
+    childProcess
+    "execSync"
+    [|
+      Js.Unsafe.inject (Js.string cmd),
+      Js.Unsafe.inject (Js.Unsafe.obj [|("encoding", Js.Unsafe.inject (Js.string "utf-8"))|])
+    |]
+  |> Js.to_string
+  |> String.trim
+  |> StringUtils.split by::(Js.Unsafe.js_expr {|/\n/|}) /* Output printed types are one type per line. */
+  |> List.map Scanf.unescaped /* Restore the escaped line breaks. */
+};
+
+let formatOne ocamlType =>
+  try (Hashtbl.find formatCache ocamlType) {
+  | Not_found => {
+      let output = List.hd (refmttype [ocamlType]);
+      Hashtbl.add formatCache ocamlType output;
+      output
+    }
+  };
+
+/* More elaborate logic on batch formatting + shelling out a single time, instead of iterating through each
+type and call `formatOne` (which equates to n shell out command, which is expensive). */
+let formatMany ocamlTypes => {
   let indices = {contents: []};
   let formattedFromCache = {contents: []};
   let unformatted = {contents: []};
@@ -55,27 +90,7 @@ let format ocamlTypes => {
   indices.contents = List.rev indices.contents;
   formattedFromCache.contents = List.rev formattedFromCache.contents;
   unformatted.contents = List.rev unformatted.contents;
-  let refmttypePath =
-    Atom.JsonType.(
-      switch (Atom.Config.get "NuclideReason.pathToRefmttype") {
-      | JsonString str => str
-      | _ => raise (Invalid_argument "refmttypePath went wrong.")
-      }
-    );
-  /* Concatenating with special, recognized separator that can't be present in what we need to format. */
-  let cmd = refmttypePath ^ " \"" ^ String.concat "\\\"" unformatted.contents ^ "\"";
-  let output =
-    Js.Unsafe.meth_call
-      childProcess
-      "execSync"
-      [|
-        Js.Unsafe.inject (Js.string cmd),
-        Js.Unsafe.inject (Js.Unsafe.obj [|("encoding", Js.Unsafe.inject (Js.string "utf-8"))|])
-      |]
-    |> Js.to_string
-    |> String.trim;
-  /* Output printed types are one type per line. */
-  let returnedResults = {contents: StringUtils.split output (Js.Unsafe.js_expr {|/\n/|})};
+  let returnedResults = {contents: refmttype unformatted.contents};
   /* Mergining cached and uncached now */
   List.iteri
     (
