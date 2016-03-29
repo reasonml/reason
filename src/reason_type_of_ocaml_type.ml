@@ -3,7 +3,7 @@
 let () = Reason_pprint_ast.configure
   (* This will likely be pluggable in the future. In the meantime, it's more
   convenient to have the output on a single line *)
-  ~width:99999
+  ~width:80
   ~assumeExplicitArity:false
   ~constructorLists:[]
 
