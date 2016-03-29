@@ -707,6 +707,23 @@ let a = None;
 let explictlyPassed =           myOptional a::?a b::?None;
 let explictlyPassedAnnotated = (myOptional a::?a b::?None :int);
 
+let nestedLet = {
+  let _ = 1
+};
+
+let nestedLet = {
+  let _ = 1;
+};
+
+let nestedLet = {
+  let _ = 1;
+  ()
+};
+
+let nestedLet = {
+  let _ = 1;
+  2
+};
 
 /*
  * Showing many combinations of type annotations and named arguments.
