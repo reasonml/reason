@@ -1,0 +1,14 @@
+@import "ui-variables";
+
+.nuclide-datatip-content pre {
+  // Adapt to default app background. Inherit won't work here; when we hover the
+  // datatip it'd highlight; we want to keep this area un-highlighted.
+  background-color: @app-background-color;
+  font-size: inherit;
+  // Copied over from type-hint.
+  padding: 4px 10px;
+  // This is to offset some `pre` margin.
+  margin: 0px -6px;
+  // Reset `pre` style.
+  border-radius: 0px;
+}
