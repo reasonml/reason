@@ -99,12 +99,16 @@ module.exports = {
     };
   },
 
+  // Note that we're actually creating a nuclide-datatip provider, not
+  // nuclide-type-hint provider. We historically used type-hint provider, but it
+  // doesn't display rich content as of this diff. We'll switch back when I get
+  // bored enough to submit a PR against nuclide.
   createTypeHintProvider() {
     return {
-      selector: GRAMMARS_STRING,
+      validForScope: scope => scope === 'source.reason',
       providerName: PACKAGE_NAME,
       inclusionPriority: 1,
-      typeHint: NuclideReason.getNuclideJsTypeHint,
+      datatip: NuclideReason.getNuclideJsTypeHint,
     };
   },
 
