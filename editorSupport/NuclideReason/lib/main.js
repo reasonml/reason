@@ -10,7 +10,7 @@
  */
 
 const Notiflyer = require('./Notiflyer');
-const NuclideReason = require('../compiledSrc/jsBuild/app.js');
+const NuclideReason = require('../output_byte_debug_js/app.js');
 const invariant = require('assert');
 const {CompositeDisposable} = require('atom');
 

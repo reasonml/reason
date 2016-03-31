@@ -59,7 +59,7 @@
     }
   },
   "scripts": {
-    "start": "node node_modules/CommonML/build.js --logUnextractedErrors=true --minVersion=11 --forDebug=true  --concurrency=3 --jsCompile=true --errorFormatter=./Reasonify/formatErrorMessages.js"
+    "start": "node node_modules/CommonML/build.js --buildDir=output --logUnextractedErrors=true --minVersion=11 --forDebug=true  --concurrency=3 --jsCompile=true --errorFormatter=./Reasonify/formatErrorMessages.js"
   },
   "CommonML": {
     "exports": [
@@ -73,18 +73,11 @@
       "-bin-annot"
     ],
     "preprocessor": "reasonfmt",
-    "extensions": [
-      {
-        "interface": ".rei",
-        "implementation": ".re"
-      }
-    ],
-    "jsPlaceBuildArtifactsIn": "compiledSrc",
-    "findlibPackages": [
-      {
-        "dependency": "js_of_ocaml"
-      }
-    ],
+    "extensions": [{
+      "interface": ".rei",
+      "implementation": ".re"
+    }],
+    "findlibPackages": [{"dependency": "js_of_ocaml"}],
     "linkFlags": [],
     "docFlags": [
       "-colorize-code",

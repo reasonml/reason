@@ -23,6 +23,40 @@ let () =
     Pkg.bin  ~auto:true "src/reason_format_type" ~dst:"refmttype";
     Pkg.share "editorSupport/emacs/reasonfmt.el" ~dst:"../emacs/site-lisp/reasonfmt.el";
     Pkg.share "editorSupport/emacs/reason-mode.el" ~dst:"../emacs/site-lisp/reason-mode.el";
+    (* NuclideReason *)
+    (* Unfortunately we have to specificy each individual file *)
+    Pkg.share "editorSupport/NuclideReason/package.json" ~dst:"editorSupport/NuclideReason/package.json";
+    Pkg.share "editorSupport/NuclideReason/README.md" ~dst:"editorSupport/NuclideReason/README.md";
+    Pkg.share "editorSupport/NuclideReason/output_byte_debug_js/app.js" ~dst:"editorSupport/NuclideReason/output_byte_debug_js/app.js";
+    Pkg.share "editorSupport/NuclideReason/output_byte_debug_js/app.map" ~dst:"editorSupport/NuclideReason/output_byte_debug_js/app.map";
+
+    Pkg.share "editorSupport/NuclideReason/lib/main.js" ~dst:"editorSupport/NuclideReason/lib/main.js";
+    Pkg.share "editorSupport/NuclideReason/lib/ReasonDiagnosticsProvider.js" ~dst:"editorSupport/NuclideReason/lib/ReasonDiagnosticsProvider.js";
+    Pkg.share "editorSupport/NuclideReason/lib/ReasonHyperclickProvider.js" ~dst:"editorSupport/NuclideReason/lib/ReasonHyperclickProvider.js";
+    Pkg.share "editorSupport/NuclideReason/lib/constants.js" ~dst:"editorSupport/NuclideReason/lib/constants.js";
+    Pkg.share "editorSupport/NuclideReason/lib/Notiflyer.js" ~dst:"editorSupport/NuclideReason/lib/Notiflyer.js";
+
+    Pkg.share "editorSupport/NuclideReason/Reasonify/formatErrorMessages.js" ~dst:"editorSupport/NuclideReason/Reasonify/formatErrorMessages.js";
+    Pkg.share "editorSupport/NuclideReason/Reasonify/index.js" ~dst:"editorSupport/NuclideReason/Reasonify/index.js";
+
+    Pkg.share "editorSupport/NuclideReason/styles/status-bar.less" ~dst:"editorSupport/NuclideReason/styles/status-bar.less";
+
+    (* NuclideReason has a copy of language-reason (temporary solution) *)
+    Pkg.share "editorSupport/NuclideReason/output_byte_debug_js/language-reason/grammars/reason.cson" ~dst:"editorSupport/NuclideReason/output_byte_debug_js/language-reason/grammars/reason.cson";
+    Pkg.share "editorSupport/NuclideReason/output_byte_debug_js/language-reason/package.json" ~dst:"editorSupport/NuclideReason/output_byte_debug_js/language-reason/package.json";
+
+    (* language-reason *)
+    Pkg.share "editorSupport/language-reason/package.json" ~dst:"editorSupport/language-reason/package.json";
+    Pkg.share "editorSupport/language-reason/grammars/reason.cson" ~dst:"editorSupport/language-reason/grammars/reason.cson";
+    Pkg.share "editorSupport/language-reason/settings/reason.cson" ~dst:"editorSupport/language-reason/settings/reason.cson";
+    Pkg.share "editorSupport/language-reason/styles/language-reason.less" ~dst:"editorSupport/language-reason/styles/language-reason.less";
+    Pkg.share "editorSupport/language-reason/snippets/reason.cson" ~dst:"editorSupport/language-reason/snippets/reason.cson";
+    Pkg.share "editorSupport/language-reason/lib/language-reason-view.coffee" ~dst:"editorSupport/language-reason/lib/language-reason-view.coffee";
+    Pkg.share "editorSupport/language-reason/lib/language-reason.coffee" ~dst:"editorSupport/language-reason/lib/language-reason.coffee";
+    Pkg.share "editorSupport/language-reason/menus/language-reason.cson" ~dst:"editorSupport/language-reason/menus/language-reason.cson";
+    Pkg.share "editorSupport/language-reason/README.md" ~dst:"editorSupport/language-reason/README.md";
+    Pkg.share "editorSupport/language-reason/LICENSE.md" ~dst:"editorSupport/language-reason/LICENSE.md";
+    Pkg.share "editorSupport/language-reason/LICENSE.grammar" ~dst:"editorSupport/language-reason/LICENSE.grammar";
     Pkg.doc "README.md";
     Pkg.doc "LICENSE.txt";
     Pkg.doc "CHANGELOG.md";
