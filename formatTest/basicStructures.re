@@ -268,9 +268,10 @@ let result: list string = [hd, ...tl];
 let result: list string = ["appendedToHead", "listTo", "append", "to"];
 
 /* To operate on lists, use pattern matching */
-let rec size = fun
+let rec size = fun {
   | [] => 0
   | [hd, ...tl] => 1 + (size tl);
+};
 
 /* Optimize for tail recursion */
 let rec size = fun soFar lst => switch lst {

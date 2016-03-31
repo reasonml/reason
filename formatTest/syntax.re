@@ -374,10 +374,10 @@ let blah = fun arg => switch arg {
 /* Any function that pattern matches a multicase match is interpretted as a
  * single arg that is then matched on. Instead of the above `blah` example:*/
 
-let blah = fun
+let blah = fun {
   | Red _ => 1
   | Black _ => 0
-  | Green _ => 1;
+  | Green _ => 1};
 
 /* `fun a => a` is read as "a function that maps a to a". Then the */
 /* above example is read: "a function that 'either maps' Red to.. or maps .." */
@@ -390,15 +390,16 @@ let blah = fun
 */
 
 let blahCurriedX x => fun  /* See, nothing says we can drop the => fun */
-  |(Red x | Black x | Green x) => 1     /* With some effort, we can ammend the sugar rule that would */
+  { |(Red x | Black x | Green x) => 1      /* With some effort, we can ammend the sugar rule that would */
   | Black x => 0                       /* Allow us to drop any => fun.. Just need to make pattern matching */
   | Green x => 0;                      /* Support that */
+};
 
 /* This should be parsed/printed exactly as the previous */
-let blahCurriedX x => fun
+let blahCurriedX x => fun {
   | Red x | Black x | Green x => 1
   | Black x => 0
-  | Green x => 0;
+  | Green x => 0 };
 
 /* Any time there are multiple match cases we require a leading BAR */
 
@@ -456,7 +457,7 @@ let blah      a       {blahBlah}         =>             a;
 
                /*            match_case             */
                /*     pattern EQUALGREATER  expr */
-let blah = fun   |Red _           =>      1   |Black _ => 0 |Green _ => 0;
+let blah = fun {   |Red _           =>      1   |Black _ => 0 |Green _ => 0 };
 
 
 /* Won't work! */
@@ -485,11 +486,12 @@ let matchesWithWhen a => switch a {
   | Green x => 10
 };
 
-let matchesWithWhen = fun
+let matchesWithWhen = fun {
   | Red x when 1 > 0 => 10
   | Red _ => 10
   | Black x => 10
   | Green x => 10;
+};
 
 
 let matchesOne (`Red x) => 10;
@@ -708,7 +710,7 @@ let explictlyPassed =           myOptional a::?a b::?None;
 let explictlyPassedAnnotated = (myOptional a::?a b::?None :int);
 
 let nestedLet = {
-  let _ = 1
+  let _ = 1;
 };
 
 let nestedLet = {
@@ -815,8 +817,8 @@ let x = 10;
  * important:
  */
 let something =
-  fun | None => (fun | [] => "emptyList" | [_, ..._] => "nonEmptyList")
-      | Some _ => (fun | [] => "emptyList" | [_, ..._] => "nonEmptyList");
+  fun { | None => (fun { | [] => "emptyList" | [_, ..._] => "nonEmptyList" } )
+      | Some _ => (fun { | [] => "emptyList" | [_, ..._] => "nonEmptyList" } )};
 
 /*  A | B = X; */
 let A | B = X;
@@ -835,6 +837,16 @@ let (A | B) | C = X;
 
 /*  A | B | C = X; */
 let A | B | C = X;
+
+switch a {
+| PatternEndingWithSemi => 1;
+| PatternEndingWithoutSemi => 1
+};
+
+fun {
+| PatternEndingWithSemi => 1;
+| PatternEndingWithoutSemi => 1
+};
 
 
 /** External function declaration

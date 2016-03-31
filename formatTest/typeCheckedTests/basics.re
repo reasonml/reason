@@ -7,28 +7,31 @@ type reasonXyz =
   | Q
   | R;
 
-let reasonBarAs = fun
+let reasonBarAs = fun {
   | ((Y _ | Z _) as t, _) => {let _ = t; true}
   | _ => false;
+};
 
-let reasonDoubleBar = fun
+let reasonDoubleBar = fun {
   | X | Y _ _ _ | Z _ _ | Q => true
   | _ => false;
+};
 
-let reasonDoubleBarNested = fun
+let reasonDoubleBarNested = fun {
   | X | Y _ _ _ | (Z _ _ | Q)  => true
   | _ => false;
+};
 
 
 /* Liberal use of the Any pattern being compatible with multiple
   arguments  */
-let reasonDoubleBarAnyPatterns = fun
+let reasonDoubleBarAnyPatterns = fun {
   | X | Y _ | Z _ | Q => true
-  | _ => false;
+  | _ => false; };
 
-let reasonDoubleBarNestedAnyPatterns = fun
+let reasonDoubleBarNestedAnyPatterns = fun {
   | X | Y _ | (Z _ | Q)  => true
-  | _ => false;
+  | _ => false; };
 
 let (\+) = (+);
 
