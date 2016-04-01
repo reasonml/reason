@@ -4,13 +4,13 @@
 #use "topkg.ml"
 
 let () =
-  Pkg.describe "reason" ~builder:`OCamlbuild [
+  Pkg.describe "reason" ~builder:(`OCamlbuild [] ) [
     Pkg.lib "pkg/META";
     (* The .mllib *)
     Pkg.lib ~exts:Exts.library "src/reason";
-    Pkg.lib ~exts:[".cmo"] "src/reason_toploop";
-    Pkg.lib ~exts:[".cmx"; ".o"] "src/reasonbuild";
-    Pkg.lib ~cond:(Env.bool "utop") ~exts:[".cmo"] "src/reason_utop";
+    Pkg.lib ~exts:[`Ext ".cmo"] "src/reason_toploop";
+    Pkg.lib ~exts:[`Ext ".cmx"; `Ext ".o"] "src/reasonbuild";
+    Pkg.lib ~cond:(Env.bool "utop") ~exts:[`Ext ".cmo"] "src/reason_utop";
     Pkg.bin ~auto:true "src/reasonfmt_impl" ~dst:"reasonfmt";
     Pkg.bin  "src/reasonfmt_merlin_impl.sh" ~dst:"reasonfmt_merlin";
     Pkg.bin  "src/reopt.sh" ~dst:"reopt";
