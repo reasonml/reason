@@ -59,10 +59,23 @@ export
   (
     Js.wrap_callback (
       fun editor position => {
+        /* TODO: make selection work in conjunction with expansion */
+        /* TODO: currently gets the first type hint. The rest are the types of the expanded scope. Will use
+        them one day. */
         let position = Atom.Point.fromJs position;
         let text = Atom.Buffer.getText (Atom.Editor.getBuffer editor);
-        let promise = NuclideReasonTypeHint.getMerlinTypeHint editor text position;
-        Atom.Promise.toJs promise
+        /*
+         * This is likely slightly broken. If you open a file without a file name, but
+         * later save it to a different location on disk, you likely will not pick up the
+         * right merlin path.
+         */
+        let path =
+          switch (Atom.Editor.getPath editor) {
+          | None => "tmp.re"
+          | Some path => path
+          };
+        /* This returns a js promise. */
+        SuperMerlin.getTypeHint path::path text::text position::position
       }
     )
   );
