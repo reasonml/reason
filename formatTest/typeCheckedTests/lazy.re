@@ -20,4 +20,4 @@ let tmp: int = thisIsActuallyAPatternMatch;
 let (lazy (Box i), x) = (lazy (Box 200), 100);
 let tmp: int = i;
 
-let myComputation = lazy (200 + Lazy.force myComputation);
+let myComputation = lazy (200);
