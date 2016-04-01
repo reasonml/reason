@@ -51,6 +51,7 @@ module type JsonValueSig = {
   type t;
   let fromJs: Js.t Js.js_string => JsonType.t;
   let toJs: JsonType.t => Js.Unsafe.any;
+  let unsafeExtractString: JsonType.t => string;
 };
 
 let module JsonValue: JsonValueSig = {
@@ -86,12 +87,16 @@ let module JsonValue: JsonValueSig = {
         | JsonArray a => Js.Unsafe.inject (Js.array (Array.map toJs a))
         | JsonNull => Js.Unsafe.inject Js.null
         | Empty => Js.Unsafe.inject Js.undefined;
+  let unsafeExtractString o =>
+    switch o {
+    | JsonType.JsonString s => s
+    | _ => raise (Invalid_argument "unsafeExtractString: not a string")
+    };
 };
 
 let module Env = {
-  let setEnvVar envVar strVal => {
-    Js.Unsafe.set (Js.Unsafe.get (Js.Unsafe.get Js.Unsafe.global "process") "env") envVar (Js.string strVal)
-  };
+  let setEnvVar envVar strVal =>
+    Js.Unsafe.set (Js.Unsafe.get (Js.Unsafe.get Js.Unsafe.global "process") "env") envVar (Js.string strVal);
 };
 
 let module Config = {
@@ -218,6 +223,7 @@ let module Notification = {
   let getMessage (n: t) => Js.to_string (Js.Unsafe.meth_call n "getMessage" emptyArgs);
   let dismiss (n: t) => Js.Unsafe.meth_call n "dismiss" emptyArgs;
 };
+
 
 let module NotificationManager = {
   type options = {detail: string, dismissable: bool, icon: string};
