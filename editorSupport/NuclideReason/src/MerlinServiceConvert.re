@@ -94,7 +94,15 @@ let () =
         Js.Unsafe.obj [|
           (
             "modulePath",
-            Js.Unsafe.inject (Js.Unsafe.js_expr "require.resolve('language-reason/package.json')")
+            /* Forgive me father for I have sinned. */
+            /* as of
+            github.com/atom/highlights/blob/59f889c74a3e32d2303b3dabcac3194bafc60cba/src/highlights.coffee#L75
+            the api searches for the cson grammar file inside the "grammars" folder of the custom language
+            package here. Due to our unconventional bundling method, we can't do a global
+            require('language-reason') here. So we've copied over language-reason's bare minumum package.json
+            and the grammar itself over into where this current file is compiled to, aka commonML's
+            _build_byte_debug_js directory.*/
+            Js.Unsafe.inject (Js.Unsafe.js_expr "require.resolve('./language-reason/package.json')")
           )
         |]
       )

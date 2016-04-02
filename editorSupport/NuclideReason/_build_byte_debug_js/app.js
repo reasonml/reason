@@ -18833,76 +18833,76 @@
        ("react"),
       /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 86 18>>*/ highlighter_fq_=
       new highlight_n7_(),
-      /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 97 29>>*/ _n9_=
-       /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 97 29>>*/ require.resolve
-       ("language-reason/package.json"),
+      /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 105 29>>*/ _n9_=
+       /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 105 29>>*/ require.resolve
+       ("./language-reason/package.json"),
       /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 93 23>>*/ _n__=
       {"modulePath":_n9_};
      /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 89 2>>*/  /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 89 2>>*/ highlighter_fq_.requireGrammarsSync
      (_n__);
-     /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 101 6>>*/ function
+     /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 109 6>>*/ function
      _n$_
      (arr_a_)
-     { /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 103 42>>*/  /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 103 42>>*/ var
+     { /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 111 42>>*/  /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 111 42>>*/ var
        length_f_=
         arr_a_.length;
-       /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 105 2>>*/ if
+       /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 113 2>>*/ if
        (0===length_f_)
        return undefined_b4_;
-       /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 103 42>>*/ var
-        /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 107 9>>*/ firstType_b_=
+       /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 111 42>>*/ var
+        /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 115 9>>*/ firstType_b_=
         arr_a_[caml_new_string_c_(str_0_W_)],
-        /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 111 67>>*/ _g_=
+        /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 119 67>>*/ _g_=
         firstType_b_.type,
-        /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 111 99>>*/ _h_=
-         /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 111 99>>*/ caml_js_to_string_u_
+        /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 119 99>>*/ _h_=
+         /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 119 99>>*/ caml_js_to_string_u_
          (_g_),
-        /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 111 21>>*/ reasonHint_i_=
-         /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 111 21>>*/ _nl_
+        /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 119 21>>*/ reasonHint_i_=
+         /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 119 21>>*/ _nl_
          (_h_),
-        /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 112 4>>*/ merlinStartPos_d_=
+        /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 120 4>>*/ merlinStartPos_d_=
         firstType_b_.start,
-        /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 113 4>>*/ merlinEndPos_e_=
+        /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 121 4>>*/ merlinEndPos_e_=
         firstType_b_.end,
-        /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 115 67>>*/ _j_=
+        /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 123 67>>*/ _j_=
         merlinStartPos_d_.col,
-        /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 115 26>>*/ _k_=
+        /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 123 26>>*/ _k_=
         merlinStartPos_d_.line,
-        /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 115 61>>*/ startRowColumn_l_=
+        /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 123 61>>*/ startRowColumn_l_=
         [0,_k_-1|0,_j_],
-        /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 116 63>>*/ _m_=
+        /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 124 63>>*/ _m_=
         merlinEndPos_e_.col,
-        /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 116 24>>*/ _n_=
+        /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 124 24>>*/ _n_=
         merlinEndPos_e_.line,
-        /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 116 57>>*/ endRowColumn_o_=
+        /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 124 57>>*/ endRowColumn_o_=
         [0,_n_-1|0,_m_],
-        /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 117 4>>*/ _p_=
+        /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 125 4>>*/ _p_=
         "source.reason",
-        /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 123 46>>*/ _q_=
-         /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 123 46>>*/ reasonHint_i_.toString
+        /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 131 46>>*/ _q_=
+         /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 131 46>>*/ reasonHint_i_.toString
          (),
-        /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 122 10>>*/ _r_=
+        /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 130 10>>*/ _r_=
         {"fileContents":_q_,"scopeName":_p_},
-        /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 125 12>>*/ reasonHintHTMLString_s_=
-         /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 125 12>>*/ highlighter_fq_.highlightSync
+        /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 133 12>>*/ reasonHintHTMLString_s_=
+         /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 133 12>>*/ highlighter_fq_.highlightSync
          (_r_),
-        /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 137 33>>*/ _t_=
+        /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 145 33>>*/ _t_=
         {"__html":reasonHintHTMLString_s_},
-        /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 133 27>>*/ _v_=
+        /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 141 27>>*/ _v_=
         {"dangerouslySetInnerHTML":_t_},
-        /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 132 27>>*/ _w_=
+        /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 140 27>>*/ _w_=
         "div",
-        /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 132 44>>*/ reasonHintComponent_x_=
-         /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 132 44>>*/ react_n8_.createElement
+        /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 140 44>>*/ reasonHintComponent_x_=
+         /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 140 44>>*/ react_n8_.createElement
          (_w_,_v_),
-        /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 142 4>>*/ _y_=
+        /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 150 4>>*/ _y_=
         [0,startRowColumn_l_,endRowColumn_o_],
-        /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 144 33>>*/ _z_=
-         /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 144 33>>*/ _bu_
+        /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 152 33>>*/ _z_=
+         /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 152 33>>*/ _bu_
          (_y_);
-       /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 144 81>>*/ return {"component":
+       /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 152 81>>*/ return {"component":
               reasonHintComponent_x_,
-              "range":_z_} /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 147 1>>*/ }
+              "range":_z_} /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinServiceConvert.re 155 1>>*/ }
      /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 14 20>>*/  /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 14 20>>*/ var
      _oa_=
        /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/MerlinService.re 14 20>>*/ require

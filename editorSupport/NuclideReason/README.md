@@ -25,16 +25,12 @@ Installing
 cd Reason/editorSupport/language-reason
 # Get all the dependencies.
 npm install
-# Make this module globally accessible for npm.
-npm link
 # Same, but for atom.
 apm link
 
 # Install the IDE integration
 cd ../NuclideReason
 npm install
-# Specifically install the previously npm-linked language-reason.
-npm link language-reason
 apm link
 ```
 
