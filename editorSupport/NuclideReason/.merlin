@@ -1,7 +1,7 @@
 
-B _build_byte_debug/NuclideReason/publicInnerModules
-B _build_byte_debug/NuclideReason/privateInnerModules
-B _build_byte_debug/NuclideReason
+B output_byte_debug/NuclideReason/publicInnerModules
+B output_byte_debug/NuclideReason/privateInnerModules
+B output_byte_debug/NuclideReason
 
 PKG js_of_ocaml
 FLG -w -30 -w -40 -open NuclideReason

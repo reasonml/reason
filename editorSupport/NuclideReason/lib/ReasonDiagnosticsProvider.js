@@ -11,7 +11,7 @@
 
 import {RE_GRAMMARS} from './constants';
 
-const NuclideReason = require('../compiledSrc/jsBuild/app.js');
+const NuclideReason = require('../output_byte_debug_js/app.js');
 
 const PROVIDER_NAME = 'Merlin';
 
