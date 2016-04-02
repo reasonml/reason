@@ -12,7 +12,7 @@ let childProcess = Js.Unsafe.js_expr "require('child_process')";
 /* Shelling out each type to pretty-print is expensive. We'll cache each result to avoid shelling out so much.
 We'll also batch all the (uncached) types we need to shell out into a list and make the terminal command
 take them and print them all at once. */
-let formatCache: Hashtbl.t string string = Hashtbl.create 20;
+let formatCache = Hashtbl.create 20;
 
 /* Rarely used helper that isn't in the stdlib for totally understandable reasons. */
 let insert at::at item::item l => {
@@ -30,28 +30,32 @@ let insert at::at item::item l => {
 };
 
 /* Shell out to the terminal, get result back. */
-let refmttype ocamlTypes => {
-  let refmttypePath =
-    Atom.JsonType.(
-      switch (Atom.Config.get "NuclideReason.pathToRefmttype") {
-      | JsonString str => str
-      | _ => raise (Invalid_argument "refmttypePath went wrong.")
-      }
-    );
-  /* Concatenating with special, recognized separator that can't be present in what we need to format. */
-  let cmd = refmttypePath ^ " \"" ^ String.concat "\\\"" ocamlTypes ^ "\"";
-  Js.Unsafe.meth_call
-    childProcess
-    "execSync"
-    [|
-      Js.Unsafe.inject (Js.string cmd),
-      Js.Unsafe.inject (Js.Unsafe.obj [|("encoding", Js.Unsafe.inject (Js.string "utf-8"))|])
-    |]
-  |> Js.to_string
-  |> String.trim
-  |> StringUtils.split by::(Js.Unsafe.js_expr {|/\n/|}) /* Output printed types are one type per line. */
-  |> List.map Scanf.unescaped /* Restore the escaped line breaks. */
-};
+let refmttype ocamlTypes =>
+  if (ocamlTypes == []) {
+    /* Special handling. According to our subsequent logic [] maps to "" then back to [""], which violates
+    the invariant that n input items maps to n outputs. */
+    []
+  } else {
+    let refmttypePath =
+      Atom.JsonType.(
+        switch (Atom.Config.get "NuclideReason.pathToRefmttype") {
+        | JsonString str => str
+        | _ => raise (Invalid_argument "refmttypePath went wrong.")
+        }
+      );
+    /* Concatenating with special, recognized separator that can't be present in what we need to format. */
+    let cmd = refmttypePath ^ " \"" ^ String.concat "\\\"" ocamlTypes ^ "\"";
+    Js.Unsafe.meth_call
+      childProcess
+      "execSync"
+      [|
+        Js.Unsafe.inject (Js.string cmd),
+        Js.Unsafe.inject (Js.Unsafe.obj [|("encoding", Js.Unsafe.inject (Js.string "utf-8"))|])
+      |]
+    |> Js.to_string
+    |> StringUtils.split by::(Js.Unsafe.js_expr {|/\n/|}) /* Output printed types are one type per line. */
+    |> List.map Scanf.unescaped /* Restore the escaped line breaks. */
+  };
 
 let formatOne ocamlType =>
   try (Hashtbl.find formatCache ocamlType) {
@@ -92,6 +96,7 @@ let formatMany ocamlTypes => {
   unformatted.contents = List.rev unformatted.contents;
   let returnedResults = {contents: refmttype unformatted.contents};
   /* Mergining cached and uncached now */
+  assert (List.length returnedResults.contents == List.length unformatted.contents);
   List.iteri
     (
       fun _ index => {

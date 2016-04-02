@@ -1,8 +1,7 @@
 (* Portions Copyright (c) 2015-present, Facebook, Inc. All rights reserved. *)
 
 let () = Reason_pprint_ast.configure
-  (* This will likely be pluggable in the future. In the meantime, it's more
-  convenient to have the output on a single line *)
+  (* This can be made pluggable in the future. *)
   ~width:80
   ~assumeExplicitArity:false
   ~constructorLists:[]

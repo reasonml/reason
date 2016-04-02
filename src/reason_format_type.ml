@@ -26,6 +26,10 @@ let () =
       |> List.map (fun input ->
         Reason_type_of_ocaml_type.convert input |> String.trim |> String.escaped
       )
-      |> List.iter print_endline
+      |> String.concat "\n"
+      (* We omit printing one last line break in order to conserve the invariant
+      that 1 type maps to 1 line. E.g. ["a"] maps to "a" and ["a", ""] maps to
+      "a\n" *)
+      |> print_string
     with Syntaxerr.Error a ->
       prerr_endline "Failed to parse the input type(s)."
