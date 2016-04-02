@@ -3,20 +3,22 @@
   "repository": "https://github.com/facebook/nuclide",
   "main": "./lib/main",
   "version": "0.0.0",
-  "description": "Provides support for Reason in Nuclide",
+  "description": "Reason IDE implementation - installed by atom-reason",
   "keywords": [
     "Reason"
   ],
   "activationHooks": [
     "language-reason:grammar-used"
   ],
+  "devDependencies": {
+    "CommonML": "git://github.com/jordwalke/CommonML.git#2498211"
+  },
   "dependencies": {
-    "CommonML": "git://github.com/jordwalke/CommonML.git#2498211",
     "ansi_up": "1.3.0",
     "cli-color": "1.1.0",
     "diff": "2.2.0",
     "highlights": "^1.3.1",
-    "nuclide": "git://github.com/facebook/nuclide.git#45514a2",
+    "nuclide": "0.127.0",
     "react": "^0.14.7"
   },
   "providedServices": {
