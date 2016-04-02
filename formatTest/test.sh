@@ -1,4 +1,6 @@
 #!/bin/bash
+set -x
+set -e
 # Copyright (c) 2015-present, Facebook, Inc. All rights reserved.
 # http://sc.tamu.edu/help/general/unix/redirection.html
 # ocamlc -c -pp reasonfmt -w -32-27-26-11 -dsource -I . -impl ./testUtils.re 2>&1 | sed -e 's/ *$//g' >./formatOutput.re

@@ -352,8 +352,10 @@ let result: list string = [
 
 /* To operate on lists, use pattern matching */
 let rec size =
-  fun | [] => 0
-      | [hd, ...tl] => 1 + size tl;
+  fun {
+  | [] => 0
+  | [hd, ...tl] => 1 + size tl
+  };
 
 /* Optimize for tail recursion */
 let rec size soFar lst =>
@@ -1691,9 +1693,11 @@ let rec commentPolymorphicCases:
   'a .
   option 'a => int
  =
-  fun | Some a => 1
-      /* Comment on one */
-      | None => 0;
+  fun {
+  | Some a => 1
+  /* Comment on one */
+  | None => 0
+  };
 
 let thisWontCompileButLetsSeeHowItFormats =
   switch something {
@@ -1702,9 +1706,11 @@ let thisWontCompileButLetsSeeHowItFormats =
   };
 
 let thisWontCompileButLetsSeeHowItFormats =
-  fun | Zero
-      | One _ _ _ => 10
-      | Two => 20;
+  fun {
+  | Zero
+  | One _ _ _ => 10
+  | Two => 20
+  };
 
 /* Comment on two */
 /**
@@ -1716,11 +1722,13 @@ type term _ =
   | App of (term ('b => 'a)) (term 'b) :term 'a;
 
 let rec eval: type a. term a => a =
-  fun | Int n => n
-      /* a = int */
-      | Add => (fun x y => x + y)
-      /* a = int => int => int */
-      | App f x => (eval f) (eval x);
+  fun {
+  | Int n => n
+  /* a = int */
+  | Add => (fun x y => x + y)
+  /* a = int => int => int */
+  | App f x => (eval f) (eval x)
+  };
 
 let rec eval: type a. term a => a =
   fun x =>
@@ -1892,26 +1900,27 @@ let res =
  * Testing explicit arity.
  */
 let rec map f =>
-  fun | Node None m =>
-          Node None (M.map (map f) m)
-      | Node LongModule.Path.None m =>
-          Node None (M.map (map f) m)
-      | Node (LongModule.Path.Some v) m =>
-          Node (Some (f v)) (M.map (map f) m);
+  fun {
+  | Node None m => Node None (M.map (map f) m)
+  | Node LongModule.Path.None m =>
+      Node None (M.map (map f) m)
+  | Node (LongModule.Path.Some v) m =>
+      Node (Some (f v)) (M.map (map f) m)
+  };
 
 let myFunc x y None => "asdf";
 
 let rec map f =>
-  fun | Node None m =>
-          Node None (M.map (map f) m)
-      | Node LongModule.Path.None m =>
-          LongModule.Path.Node
-            LongModule.Path.None
-            (M.map (map f) m)
-      | Node (LongModule.Path.Some v) m =>
-          LongModule.Path.Node
-            (LongModule.Path.Some (f v))
-            (M.map (map f) m);
+  fun {
+  | Node None m => Node None (M.map (map f) m)
+  | Node LongModule.Path.None m =>
+      LongModule.Path.Node
+        LongModule.Path.None (M.map (map f) m)
+  | Node (LongModule.Path.Some v) m =>
+      LongModule.Path.Node
+        (LongModule.Path.Some (f v))
+        (M.map (map f) m)
+  };
 
 let myFunc x y LongModule.Path.None => "asdf";
 
@@ -4023,19 +4032,23 @@ let blah arg =>
   };
 
 let blah =
-  fun | Red _ => 1
-      | Black _ => 0
-      | Green _ => 1;
+  fun {
+  | Red _ => 1
+  | Black _ => 0
+  | Green _ => 1
+  };
 
 let blahCurriedX x =>
-  fun /* Comment before first bar */
-      /* Comment between first bar and OR pattern */
-      | Red x
-      | Black x
-      | Green x => 1
-      /* Comment before second bar */
-      | Black x => 0
-      | Green x => 0;
+  fun {
+  /* Comment before first bar */
+  /* Comment between first bar and OR pattern */
+  | Red x
+  | Black x
+  | Green x => 1
+  /* Comment before second bar */
+  | Black x => 0
+  | Green x => 0
+  };
 
 type reallyLongVariantNames =
   | ReallyLongVariantName of recordWithLong
@@ -4897,9 +4910,11 @@ let blah arg =>
 /* Any function that pattern matches a multicase match is interpretted as a
  * single arg that is then matched on. Instead of the above `blah` example:*/
 let blah =
-  fun | Red _ => 1
-      | Black _ => 0
-      | Green _ => 1;
+  fun {
+  | Red _ => 1
+  | Black _ => 0
+  | Green _ => 1
+  };
 
 /* `fun a => a` is read as "a function that maps a to a". Then the */
 /* above example is read: "a function that 'either maps' Red to.. or maps .." */
@@ -4909,23 +4924,27 @@ let blah =
    Theres no sugar rule for dropping => fun, only = fun
 */
 let blahCurriedX x =>
-  fun /* See, nothing says we can drop the => fun */
-      | Red x
-      | Black x
-      | Green x => 1
-      /* With some effort, we can ammend the sugar rule that would */
-      | Black x => 0
-      /* Allow us to drop any => fun.. Just need to make pattern matching */
-      | Green x => 0;
+  fun {
+  /* See, nothing says we can drop the => fun */
+  | Red x
+  | Black x
+  | Green x => 1
+  /* With some effort, we can ammend the sugar rule that would */
+  | Black x => 0
+  /* Allow us to drop any => fun.. Just need to make pattern matching */
+  | Green x => 0
+  };
 
 /* Support that */
 /* This should be parsed/printed exactly as the previous */
 let blahCurriedX x =>
-  fun | Red x
-      | Black x
-      | Green x => 1
-      | Black x => 0
-      | Green x => 0;
+  fun {
+  | Red x
+  | Black x
+  | Green x => 1
+  | Black x => 0
+  | Green x => 0
+  };
 
 /* Any time there are multiple match cases we require a leading BAR */
 let v = Red 10;
@@ -4976,9 +4995,11 @@ let blah a {blahBlah} => a;
 /*            match_case             */
 /*     pattern EQUALGREATER  expr */
 let blah =
-  fun | Red _ => 1
-      | Black _ => 0
-      | Green _ => 0;
+  fun {
+  | Red _ => 1
+  | Black _ => 0
+  | Green _ => 0
+  };
 
 /* Won't work! */
 /* let arrowFunc = fun a b => print_string "returning aplusb from arrow"; a + b;;  */
@@ -5018,10 +5039,12 @@ let matchesWithWhen a =>
   };
 
 let matchesWithWhen =
-  fun | Red x when 1 > 0 => 10
-      | Red _ => 10
-      | Black x => 10
-      | Green x => 10;
+  fun {
+  | Red x when 1 > 0 => 10
+  | Red _ => 10
+  | Black x => 10
+  | Green x => 10
+  };
 
 let matchesOne (`Red x) => 10;
 
@@ -5401,14 +5424,20 @@ let x = 10;
  * important:
  */
 let something =
-  fun | None => (
-          fun | [] => "emptyList"
-              | [_, ..._] => "nonEmptyList"
-        )
-      | Some _ => (
-          fun | [] => "emptyList"
-              | [_, ..._] => "nonEmptyList"
-        );
+  fun {
+  | None => (
+      fun {
+      | [] => "emptyList"
+      | [_, ..._] => "nonEmptyList"
+      }
+    )
+  | Some _ => (
+      fun {
+      | [] => "emptyList"
+      | [_, ..._] => "nonEmptyList"
+      }
+    )
+  };
 
 /*  A | B = X; */
 let A | B = X;
@@ -5427,6 +5456,16 @@ let A | B | C = X;
 
 /*  A | B | C = X; */
 let A | B | C = X;
+
+switch a {
+| PatternEndingWithSemi => 1
+| PatternEndingWithoutSemi => 1
+};
+
+fun {
+| PatternEndingWithSemi => 1
+| PatternEndingWithoutSemi => 1
+};
 
 /** External function declaration
  *
@@ -6101,41 +6140,51 @@ type reasonXyz =
   | X | Y of int int int | Z of int int | Q | R;
 
 let reasonBarAs =
-  fun | ((Y _ | Z _) as t, _) => {
-          let _ = t;
-          true
-        }
-      | _ => false;
+  fun {
+  | ((Y _ | Z _) as t, _) => {
+      let _ = t;
+      true
+    }
+  | _ => false
+  };
 
 let reasonDoubleBar =
-  fun | X
-      | Y _ _ _
-      | Z _ _
-      | Q => true
-      | _ => false;
+  fun {
+  | X
+  | Y _ _ _
+  | Z _ _
+  | Q => true
+  | _ => false
+  };
 
 let reasonDoubleBarNested =
-  fun | X
-      | Y _ _ _
-      | Z _ _
-      | Q => true
-      | _ => false;
+  fun {
+  | X
+  | Y _ _ _
+  | Z _ _
+  | Q => true
+  | _ => false
+  };
 
 /* Liberal use of the Any pattern being compatible with multiple
   arguments  */
 let reasonDoubleBarAnyPatterns =
-  fun | X
-      | Y _
-      | Z _
-      | Q => true
-      | _ => false;
+  fun {
+  | X
+  | Y _
+  | Z _
+  | Q => true
+  | _ => false
+  };
 
 let reasonDoubleBarNestedAnyPatterns =
-  fun | X
-      | Y _
-      | Z _
-      | Q => true
-      | _ => false;
+  fun {
+  | X
+  | Y _
+  | Z _
+  | Q => true
+  | _ => false
+  };
 
 let (\+) = (+);
 
@@ -6293,8 +6342,10 @@ switch numberToSwitchOn {
 };
 
 let mutativeFunction =
-  fun | Some x => holdsAUnit.contents = ()
-      | None => holdsAUnit := ();
+  fun {
+  | Some x => holdsAUnit.contents = ()
+  | None => holdsAUnit := ()
+  };
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 class virtual stack 'a init => {
   /*
@@ -6730,33 +6781,41 @@ type xyz =
   | X | Y of int int int | Z of int int | Q | R;
 
 let doubleBar =
-  fun | X
-      | Y _ _ _ [@implicit_arity]
-      | Z _ _ [@implicit_arity]
-      | Q => true
-      | _ => false;
+  fun {
+  | X
+  | Y _ _ _ [@implicit_arity]
+  | Z _ _ [@implicit_arity]
+  | Q => true
+  | _ => false
+  };
 
 let doubleBarNested =
-  fun | X
-      | Y _ _ _ [@implicit_arity]
-      | Z _ _ [@implicit_arity]
-      | Q => true
-      | _ => false;
+  fun {
+  | X
+  | Y _ _ _ [@implicit_arity]
+  | Z _ _ [@implicit_arity]
+  | Q => true
+  | _ => false
+  };
 
 /* Liberal use of the Any pattern being compatible with multiple arguments  */
 let doubleBarAnyPatterns =
-  fun | X
-      | Y _
-      | Z _
-      | Q => true
-      | _ => false;
+  fun {
+  | X
+  | Y _
+  | Z _
+  | Q => true
+  | _ => false
+  };
 
 let doubleBarNestedAnyPatterns =
-  fun | X
-      | Y _
-      | Z _
-      | Q => true
-      | _ => false;
+  fun {
+  | X
+  | Y _
+  | Z _
+  | Q => true
+  | _ => false
+  };
 
 type bcd = | B | C | D | E;
 
@@ -6771,7 +6830,9 @@ let result =
   };
 
 let nested_match =
-  fun | A (B | C | D | E) => 3;
+  fun {
+  | A (B | C | D | E) => 3
+  };
 
 let some = Some (1, 2, 3);
 
@@ -6815,5 +6876,7 @@ let intTuple = `IntTuple (1, 2);
 let stillAnIntTuple = `StillAnIntTuple (4, 5);
 
 let sumThem =
-  fun | `IntTuple (x, y) => x + y
-      | `StillAnIntTuple (a, b) => a + b;
+  fun {
+  | `IntTuple (x, y) => x + y
+  | `StillAnIntTuple (a, b) => a + b
+  };
