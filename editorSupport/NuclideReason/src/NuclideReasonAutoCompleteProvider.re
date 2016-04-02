@@ -24,7 +24,7 @@ let getNuclideJsAutocompleteSuggestions request => {
     String.length linePrefix === 0 ?
       linePrefix :
       {
-        let regex = Js.Unsafe.js_expr {|/([ \t\[\](){}<>,+*\/-])/|};
+        let regex = Js.Unsafe.js_expr {|/([ |\t\[\](){}<>,+*\/-])/|};
         let lst = StringUtils.split linePrefix by::regex;
         let len = List.length lst;
         len > 0 ? List.nth lst (len - 1) : linePrefix
