@@ -19164,24 +19164,24 @@
           :0))
        { /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 26 6>>*/ var
           /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 26 6>>*/ regex_y_=
-          /([ \t\[\](){}<>,+*\/-])/,
-          /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 29 18>>*/ lst_k_=
-           /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 29 18>>*/ _fn_
+          /([ |\t\[\](){}<>,+*\/-])/,
+          /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 28 18>>*/ lst_k_=
+           /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 28 18>>*/ _fn_
            (regex_y_,linePrefix_e_),
-          /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 30 18>>*/ len_l_=
-           /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 30 18>>*/ _ea_
+          /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 29 18>>*/ len_l_=
+           /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 29 18>>*/ _ea_
            (lst_k_);
-         /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 31 8>>*/ if
+         /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 30 8>>*/ if
          (0===(0<len_l_?1:0))
          var linePrefix_m_=linePrefix_e_;
         else
-          /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 31 18>>*/ var
-           /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 31 18>>*/ _L_=
+          /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 30 18>>*/ var
+           /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 30 18>>*/ _L_=
            len_l_-
            1|
            0,
-           /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 31 18>>*/ _M_=
-            /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 31 18>>*/ _ec_
+           /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 30 18>>*/ _M_=
+            /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 30 18>>*/ _ec_
             (lst_k_,_L_),
           linePrefix_m_=_M_;
          /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 26 6>>*/ var
@@ -19189,49 +19189,49 @@
           linePrefix_m_}
       else
        var linePrefix_g_=linePrefix_e_;
-       /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 12 51>>*/  /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 33 20>>*/ var
+       /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 12 51>>*/  /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 32 20>>*/ var
        _z_=
-         /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 33 20>>*/ _cF_
+         /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 32 20>>*/ _cF_
          (linePrefix_g_);
-       /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 33 44>>*/ if
+       /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 32 44>>*/ if
        (0!==
-         /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 33 44>>*/ caml_ml_string_length_f_
+         /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 32 44>>*/ caml_ml_string_length_f_
          (_z_))
-       { /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 33 68>>*/  /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 33 68>>*/ var
+       { /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 32 68>>*/  /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 32 68>>*/ var
          _A_=
-           /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 33 68>>*/ _cF_
+           /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 32 68>>*/ _cF_
            (prefix_b_);
-         /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 33 88>>*/ if
+         /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 32 88>>*/ if
          (0!==
-           /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 33 88>>*/ caml_ml_string_length_f_
+           /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 32 88>>*/ caml_ml_string_length_f_
            (_A_))
-         { /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 42 13>>*/  /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 42 13>>*/ var
+         { /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 41 13>>*/  /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 41 13>>*/ var
            match_n_=
-             /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 42 13>>*/ _c__
+             /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 41 13>>*/ _c__
              (editor_d_);
-           /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 42 41>>*/ if
+           /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 41 41>>*/ if
            (match_n_)
-            /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 44 21>>*/ var
-             /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 44 21>>*/ path_B_=
+            /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 43 21>>*/ var
+             /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 43 21>>*/ path_B_=
              match_n_[1],
             path_c_=path_B_;
           else
            var path_c_=_ox_;
-           /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 42 13>>*/ var
-            /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 46 24>>*/ merlinService_o_=
-             /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 46 24>>*/ _fs_
+           /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 41 13>>*/ var
+            /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 45 24>>*/ merlinService_o_=
+             /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 45 24>>*/ _fs_
              (path_c_),
-            /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 46 24>>*/ _C_=
+            /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 45 24>>*/ _C_=
             46,
-            /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 48 6>>*/ _p_=
-             /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 48 6>>*/ _eo_
+            /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 47 6>>*/ _p_=
+             /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 47 6>>*/ _eo_
              (prefix_b_,_C_);
-           /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 48 32>>*/ if
+           /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 47 32>>*/ if
            (_p_)
-            /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 48 36>>*/ var
+            /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 47 36>>*/ var
             _D_=46,
-             /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 48 36>>*/ _E_=
-              /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 48 36>>*/ _h3_
+             /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 47 36>>*/ _E_=
+              /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 47 36>>*/ _h3_
               (prefix_b_,_D_),
             _q_=0===_E_?1:0;
           else
@@ -19239,67 +19239,67 @@
           if(0===_q_)
            var replacementPrefix_r_=prefix_b_;
           else
-            /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 49 8>>*/ var
-             /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 49 8>>*/ _I_=
-              /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 49 8>>*/ caml_ml_string_length_f_
+            /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 48 8>>*/ var
+             /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 48 8>>*/ _I_=
+              /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 48 8>>*/ caml_ml_string_length_f_
               (prefix_b_)-
              1|
              0,
-             /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 49 8>>*/ _J_=
+             /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 48 8>>*/ _J_=
              1,
-             /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 49 8>>*/ _K_=
-              /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 49 8>>*/ _ai_
+             /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 48 8>>*/ _K_=
+              /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 48 8>>*/ _ai_
               (prefix_b_,_J_,_I_),
             replacementPrefix_r_=_K_;
-           /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 42 13>>*/ var
-            /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 50 4>>*/ onOutput_F_=
+           /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 41 13>>*/ var
+            /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 49 4>>*/ onOutput_F_=
             function(output_a_)
-             { /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 52 8>>*/ var
-                /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 52 8>>*/ _b_=
-                 /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 52 8>>*/ _nm_
-                 ( /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 52 8>>*/ _a9_
+             { /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 51 8>>*/ var
+                /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 51 8>>*/ _b_=
+                 /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 51 8>>*/ _nm_
+                 ( /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 51 8>>*/ _a9_
                    (function(entry_a_)
-                     { /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 53 34>>*/ return entry_a_
-                              [1] /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 53 44>>*/ },
+                     { /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 52 34>>*/ return entry_a_
+                              [1] /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 52 44>>*/ },
                     output_a_)),
-                /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 52 8>>*/ _c_=
-                 /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 52 8>>*/ _ef_
+                /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 51 8>>*/ _c_=
+                 /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 51 8>>*/ _ef_
                  (function(entry_a_,reasonType_b_)
-                   { /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 55 46>>*/ return [0,
+                   { /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 54 46>>*/ return [0,
                             reasonType_b_,
                             entry_a_[2],
                             entry_a_[3],
-                            entry_a_[4]] /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 55 74>>*/ },
+                            entry_a_[4]] /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 54 74>>*/ },
                   output_a_,
                   _b_);
-               /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 56 20>>*/ function
+               /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 55 20>>*/ function
                _d_
                (_a_)
                { /*<<?>>*/ return merlinCompletionEntryToNuclide_n6_
                         (replacementPrefix_r_,_a_)}
-               /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 56 91>>*/ return  /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 56 91>>*/ _a9_
+               /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 55 91>>*/ return  /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 55 91>>*/ _a9_
                       (_nb_,
-                        /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 56 91>>*/ _a9_
-                        (_d_,_c_)) /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 57 52>>*/ },
-            /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 60 66>>*/ _G_=
-             /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 60 66>>*/ _os_
+                        /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 55 91>>*/ _a9_
+                        (_d_,_c_)) /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 56 52>>*/ },
+            /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 59 66>>*/ _G_=
+             /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 59 66>>*/ _os_
              (text_t_),
-            /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 60 30>>*/ contextifiedTellCmd_H_=
-             /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 60 30>>*/ _da_
+            /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 59 30>>*/ contextifiedTellCmd_H_=
+             /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 59 30>>*/ _da_
              (_G_,path_c_);
-           /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 61 4>>*/ return  /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 61 4>>*/ _b8_
+           /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 60 4>>*/ return  /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 60 4>>*/ _b8_
                   (merlinService_o_,
                    path_c_,
                    contextifiedTellCmd_H_,
                    function(result_a_)
-                    { /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 62 21>>*/ return  /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 62 21>>*/ _or_
+                    { /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 61 21>>*/ return  /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 61 21>>*/ _or_
                              (merlinService_o_,
                               path_c_,
                               line_j_,
                               col_i_,
                               linePrefix_g_,
-                              onOutput_F_) /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 62 91>>*/ })}}
-       /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 33 96>>*/ return 0 /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 64 1>>*/ }
+                              onOutput_F_) /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 61 91>>*/ })}}
+       /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 32 96>>*/ return 0 /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonAutoCompleteProvider.re 63 1>>*/ }
     function _oy_(text_a_)
      { /*<</Users/chenglou/Github/Reason/editorSupport/NuclideReason/src/NuclideReasonDiagnostics.re 46 28>>*/ return [0,
               _oB_,
