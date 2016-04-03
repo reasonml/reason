@@ -47,8 +47,7 @@ opam init
 # Add this to your ~/.bashrc (or ~/.zshrc):
 #   eval `opam config env`
 
-opam switch 4.02.1
-opam install utop
+opam switch 4.02.3
 opam pin add -y reasonsyntax git@github.com:facebook/ReasonSyntax.git
 opam pin add -y reason git@github.com:facebook/Reason.git
 ```
@@ -107,6 +106,7 @@ Float Division/Multiplication         |  <pre>2.0 /. 23.0 \*. 1.0</pre>
 String Concatenation                  |  <pre>"Hello" ^ "World"</pre>
 Immutable Lists                       |  <pre>[1, 2, 3]</pre>
 Immutable Lists append                |  <pre>[hd, hd2, ...tl]</pre>
+Reference Equality Comparison         |  <pre>thisThing === thatThing</pre>
 
 
 
@@ -381,12 +381,12 @@ let overThirty = isOverThirty {name: "Jay", age: 31};
 Destructuring also allows type annotations *while* destructuring.
 ```reason
 let (ten: int, twenty: int) = someInts;
-let {name: n:string, age: a:int} = somePerson;
+let {name: (n:string), age: (a:int)} = somePerson;
 
 let addTupleFields = fun (first:int, second:int) => {
   first + second
 };
-let isOverThirty = fun {name: n:int, age: a:int} => {
+let isOverThirty = fun {name: (n:int), age: (a:int)} => {
   let ret = a > 30;
   ret
 };
@@ -786,29 +786,30 @@ let render: str => str;
 - Signatures have many powerful features for constraining relationships between
   modules in very nuanced ways. Those are out of the scope of this document.
 
-Functors
+Module Functions
 ----------------------------------
 Modules act as compile-time records, and signatures act as the types of those
 compile-time records, but the most power comes from being able to pass modules
 through functions. But since modules are compile-time constructs, we can't use
 *regular* runtime functions - we need functions that can operate on *modules*.
-We call these "functors".
+We call these special functions "functors", and designate them by using the keyword
+`functor` instead of `fun` at definition time.
 
-> The combination of modules, signatures and functors are incredibly
+> The combination of modules, signatures and module functions are incredibly
 powerful, especially when combined with module `include`ing. Together they
 provide power that feels much like a type based macro systems, allowing the
 creation of sophisticated type hierarchies, generators, and factories. Covering
 all of these use cases are out of the scope of this document.
 
-The syntax for defining and using functors is very much like the syntax for
+The syntax for defining and using module functions is very much like the syntax for
 defining and using regular functions. The primary differences are:
 
 
-- Functors use the `let module` keywords instead of `let` and the `functor`
+- Module functions use the `let module` keywords instead of `let` and the `functor`
   keyword instead of `fun`.
-- Functors accept modules as arguments and return a module.
-- Functors *require* annotating arguments.
-- Functors must start with a capital letter (like modules/signatures).
+- Module functions accept modules as arguments and return a module.
+- Module functions *require* annotating arguments.
+- Module functions must start with a capital letter (just like modules/signatures).
 
 ```reason
 module type HasT = {
@@ -819,9 +820,9 @@ let module Pairify = functor (X: HasT) => {
    let create = fun (x: X.t) => (x, x);
 };
 ```
-Functors can be "applied" using function application syntax, by passing modules
+Module functions can be "applied" using function application syntax, by passing modules
 as their space-separated arguments.
-In this case, a module *literal* is passed as the functor argument, but we
+In this case, a module *literal* is passed as the module functions argument, but we
 could have passed the name of a module instead.
 
 ```reason
@@ -832,24 +833,22 @@ let module IntPair = Pairify {
 let ints = IntPair.create 200;
 ```
 
-Functors, among other things can for powerful module type (*and* value)
-factories. Functors can even accept other functors as arguments.
+Module functions, among other things can for powerful module type (*and* value)
+factories. Module functions can even accept other Module functions as arguments!
 
-> Exercise for the reader: Implement a traditional Object Oriented class system
-> in terms of modules, functors (and functors accepting other functors).
 
-###### Functor types
+###### Module functions types
 
-Functors may have type assertions applied with `:` as we've seen with values
-and modules. Like with module types, functor types also act to *constrain* what
-we may assume about functors, beyond what is true about functors (you may hide
-things about the functor).
-The syntax for functor types are consistent with those for function types, but
-with types capitalized to represent the signatures of modules the functor
+Module functions may have type assertions applied with `:` as we've seen with values
+and modules. Like with module types, module function types also act to *constrain* what
+we may assume about module functions, beyond what is true about them (you may hide
+things about the module function).
+The syntax for module function types are consistent with those for function types, but
+with types capitalized to represent the signatures of modules the module function
 accepts as arguments and return values.
 
 
-> Previous example with functor type assertions.
+> Previous example with module function type assertions.
 
 ```reason
 module type HasT = {
@@ -911,9 +910,9 @@ let add = fun a b => a + b;
 let add = fun a => fun b => a + b;
 ```
 
-##### Functor Binding Sugar
+##### Module function Binding Sugar
 
-[Functors](#syntax-basics-functors) follow the same sugar convention as regular
+[Module Functions](#syntax-basics-module-functions) follow the same sugar convention as regular
 functions. Space-separated arguments are actually currified *module functions*
 and the `= functor` may be omitted, resulting in three forms of module function
 definitions which are all equivalent.
