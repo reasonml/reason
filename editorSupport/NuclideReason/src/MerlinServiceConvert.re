@@ -79,34 +79,14 @@ let merlinCompletionEntryToNuclide replacementPrefix e => {
   replacementPrefix
 };
 
-/* let highlight = Js.Unsafe.js_expr "require('highlights')"; */
-
 let react = Js.Unsafe.js_expr "require('react')";
 
-/* let highlighter = Js.Unsafe.new_obj highlight [||]; */
-
-/* let () =
-  Js.Unsafe.meth_call
-    highlighter
-    "requireGrammarsSync"
-    [|
-      Js.Unsafe.inject (
-        Js.Unsafe.obj [|
-          (
-            "modulePath",
-            /* Forgive me father for I have sinned. */
-            /* as of
-            github.com/atom/highlights/blob/59f889c74a3e32d2303b3dabcac3194bafc60cba/src/highlights.coffee#L75
-            the api searches for the cson grammar file inside the "grammars" folder of the custom language
-            package here. Due to our unconventional bundling method, we can't do a global
-            require('language-reason') here. So we've copied over language-reason's bare minumum package.json
-            and the grammar itself over into where this current file is compiled to, aka commonML's
-            _build_byte_debug_js directory.*/
-            Js.Unsafe.inject (Js.Unsafe.js_expr "require.resolve('./language-reason/package.json')")
-          )
-        |]
-      )
-    |]; */
+let highlighter = Js.Unsafe.js_expr {|
+  function() {
+    var Highlights = require('highlights-native');
+    return new Highlights({registry: atom.grammars});
+  }()
+|};
 
 let jsMerlinTypeHintEntryToNuclide arr => {
   let length = Js.Unsafe.get arr "length";
@@ -122,7 +102,7 @@ let jsMerlinTypeHintEntryToNuclide arr => {
     /* lines (rows) are 1-based for merlin, not 0-based, like for Atom */
     let startRowColumn = (Js.Unsafe.get merlinStartPos "line" - 1, Js.Unsafe.get merlinStartPos "col");
     let endRowColumn = (Js.Unsafe.get merlinEndPos "line" - 1, Js.Unsafe.get merlinEndPos "col");
-    /* let reasonHintHTMLString =
+    let reasonHintHTMLString =
       Js.Unsafe.meth_call
         highlighter
         "highlightSync"
@@ -131,8 +111,7 @@ let jsMerlinTypeHintEntryToNuclide arr => {
             ("fileContents", Js.Unsafe.inject (Js.string reasonHint)),
             ("scopeName", Js.Unsafe.inject (Js.string "source.reason"))
           |]
-        |]; */
-    let reasonHintHTMLString = Js.string ("<pre>" ^ reasonHint ^ "</pre>");
+        |];
     let reasonHintComponent =
       Js.Unsafe.meth_call
         react

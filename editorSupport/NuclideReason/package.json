@@ -17,6 +17,7 @@
     "ansi_up": "1.3.0",
     "cli-color": "1.1.0",
     "diff": "2.2.0",
+    "highlights-native": "^2.1.0",
     "nuclide": "git://github.com/facebook/nuclide.git#45514a2",
     "react": "^0.14.7"
   },
@@ -74,11 +75,17 @@
       "-bin-annot"
     ],
     "preprocessor": "reasonfmt",
-    "extensions": [{
-      "interface": ".rei",
-      "implementation": ".re"
-    }],
-    "findlibPackages": [{"dependency": "js_of_ocaml"}],
+    "extensions": [
+      {
+        "interface": ".rei",
+        "implementation": ".re"
+      }
+    ],
+    "findlibPackages": [
+      {
+        "dependency": "js_of_ocaml"
+      }
+    ],
     "linkFlags": [],
     "docFlags": [
       "-colorize-code",
