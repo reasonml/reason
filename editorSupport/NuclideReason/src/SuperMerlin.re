@@ -124,8 +124,7 @@ let readOneLine merlinProcess::merlinProcess cmd::cmd => {
             response = null;
           }
           if (!response || !Array.isArray(response) || response.length !== 2) {
-            logger.error('Unexpected response from ocamlmerlin: ' + line);
-            reject(Error('Unexpected ocamlmerlin output format'));
+            reject(Error('Unexpected ocamlmerlin output format: ' + line));
             return;
           }
 
@@ -139,8 +138,7 @@ let readOneLine merlinProcess::merlinProcess cmd::cmd => {
           };
 
           if (errorResponses[status]) {
-            logger.error('Ocamlmerlin raised an error: ' + line);
-            reject(Error('Ocamlmerlin returned an error'));
+            reject(Error('Ocamlmerlin returned an error: ' + line));
             return;
           }
 
@@ -163,45 +161,59 @@ let contextify query::query path::path => Js.Unsafe.obj [|
 |];
 
 /* The tell command allows us to synchronize our text with Merlin's internal buffer. */
-let makeTellCommand text => Js.array @@ Array.map Js.string [|"tell", "start", "end", text|];
+let makeTellCommand text => Js.array [|Js.string "tell", Js.string "start", Js.string "end", Js.string text|];
 
-let makeTypeHintCommand (line, col) => Js.array [|
+let positionToJsMerlinPosition (line, col) => Js.Unsafe.obj [|
+  /* lines (rows) are 1-based for merlin, not 0-based, like for Atom */
+  ("line", Js.Unsafe.inject (Js.number_of_float (float_of_int (line + 1)))),
+  ("col", Js.Unsafe.inject (Js.number_of_float (float_of_int col)))
+|];
+
+let makeTypeHintCommand position => Js.array [|
   Js.Unsafe.inject (Js.string "type"),
   Js.Unsafe.inject (Js.string "enclosing"),
   Js.Unsafe.inject (Js.string "at"),
-  Js.Unsafe.inject (
-    Js.Unsafe.obj [|
-      /* lines (rows) are 1-based for merlin, not 0-based, like for Atom */
-      ("line", Js.Unsafe.inject (Js.number_of_float (float_of_int (line + 1)))),
-      ("col", Js.Unsafe.inject (Js.number_of_float (float_of_int col)))
-    |]
-  )
+  Js.Unsafe.inject (positionToJsMerlinPosition position)
 |];
 
 let getTypeHint path::path text::text position::position => {
   let merlin = getMerlinProcess path;
-  let res1 = readOneLine merlinProcess::merlin cmd::(contextify query::(makeTellCommand text) path::path);
-  let res2 =
-    Js.Unsafe.meth_call
-      res1
-      "then"
-      [|
-        Js.Unsafe.inject (
-          Js.wrap_callback (
-            fun _ =>
-              readOneLine
-                merlinProcess::merlin cmd::(contextify query::(makeTypeHintCommand position) path::path)
-          )
+  let res = readOneLine merlinProcess::merlin cmd::(contextify query::(makeTellCommand text) path::path);
+  Js.Unsafe.meth_call
+    res
+    "then"
+    [|
+      Js.Unsafe.inject (
+        Js.wrap_callback (
+          fun _ =>
+            readOneLine
+              merlinProcess::merlin cmd::(contextify query::(makeTypeHintCommand position) path::path)
         )
-      |];
-  let res3 =
-    Js.Unsafe.meth_call
-      res2
-      "then"
-      [|
-        Js.Unsafe.inject (
-          Js.wrap_callback (fun result => MerlinServiceConvert.jsMerlinTypeHintEntryToNuclide result)
+      )
+    |]
+};
+
+let makeCompleteCommand position prefix => Js.array [|
+  Js.Unsafe.inject (Js.string "complete"),
+  Js.Unsafe.inject (Js.string "prefix"),
+  Js.Unsafe.inject (Js.string prefix),
+  Js.Unsafe.inject (Js.string "at"),
+  Js.Unsafe.inject (positionToJsMerlinPosition position)
+|];
+
+let getAutoCompleteSuggestions path::path text::text position::position prefix::prefix => {
+  let merlin = getMerlinProcess path;
+  let res = readOneLine merlinProcess::merlin cmd::(contextify query::(makeTellCommand text) path::path);
+  Js.Unsafe.meth_call
+    res
+    "then"
+    [|
+      Js.Unsafe.inject (
+        Js.wrap_callback (
+          fun _ =>
+            readOneLine
+              merlinProcess::merlin cmd::(contextify query::(makeCompleteCommand position prefix) path::path)
         )
-      |];
-  res3
+      )
+    |]
 };

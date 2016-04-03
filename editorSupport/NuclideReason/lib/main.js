@@ -102,7 +102,7 @@ module.exports = {
     statusBarTile && statusBarTile.destroy();
     statusBarTile = null;
 
-    // TODO: Figure out how to dispose of the merlin service that had spawned via MerlinService.re.
+    // TODO: Figure out how to dispose of the merlin service that had spawned via SuperMerlin.re.
     if (disposables) {
       disposables.dispose();
       disposables = null;
