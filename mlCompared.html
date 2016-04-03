@@ -47,6 +47,104 @@ time, and in OCaml, nested `(* *)` are validated at parse time.
   </tr>
 </table>
 
+###Mutable Record Field Updates
+
+<table>
+  <thead><tr> <th scope="col"><p >OCaml</p></th> <th scope="col"><p>Reason</p></th></tr></thead>
+  <tr>
+    <td>
+      <pre>
+myRecord.myField <- "new value"
+      </pre>
+    </td>
+    <td>
+      <pre>
+myRecord.myField = "new value"
+      </pre>
+    </td>
+  </tr>
+</table>
+
+###Operator Renaming
+
+In order to support the familiar/intuitive record update syntax, `Reason` needed to
+use another symbol besides `=` in order to express "polymorphic equality", which in
+OCaml uses the `=` symbol. `Reason` uses the exact same AST representation as OCaml,
+and including identifiers. But `Reason` has a slightly different way of _expressing_
+that same AST. The following is a list of the new ways that `Reason` expects the programmer
+to express various infix identifiers. The justification for this new way is that
+it is more familiar to a wider set of programmers, and that it allows syntactic room
+for the record field update which uses the `=` infix symbol.
+
+<table>
+  <thead><tr> <th scope="col"><p>Identifier</p></th><th scope="col"><p>Meaning</p></th> <th scope="col"><p>Expressed in OCaml</p></th> <th scope="col"><p>Expressed in Reason</p></th></tr></thead>
+  <tr>
+    <td>
+      <pre>
+"="
+      </pre>
+    </td>
+    <td>
+      <pre>
+structural equality
+      </pre>
+    </td>
+    <td>
+      <pre>
+x = y
+      </pre>
+    </td>
+    <td>
+      <pre>
+x == y
+      </pre>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <pre>
+"=="
+      </pre>
+    </td>
+    <td>
+      <pre>
+reference equality
+      </pre>
+    </td>
+    <td>
+      <pre>
+x == y
+      </pre>
+    </td>
+    <td>
+      <pre>
+x === y
+      </pre>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <pre>
+"==="
+      </pre>
+    </td>
+    <td>
+      <pre>
+A custom operator
+      </pre>
+    </td>
+    <td>
+      <pre>
+x === y
+      </pre>
+    </td>
+    <td>
+      <pre>
+x \=== y
+      </pre>
+    </td>
+  </tr>
+</table>
 
 ### Block Scope
 
@@ -61,7 +159,7 @@ time, and in OCaml, nested `(* *)` are validated at parse time.
   you use local scope vs. top level scope.
 
 <table>
-  <thead><tr> <th scope="col"><p>Reason</p></th><th scope="col"><p>OCaml</p></th><th scope="col"><p>Swift</p></th></tr></thead>
+  <thead><tr> <th scope="col"><p>Reason</p></th><th scope="col"><p>OCaml</p></th></tr></thead>
   <tr>
     <td>
       <pre>
@@ -81,11 +179,6 @@ let \_ =
   let msg2 = "Goodbye" in
   print\_string msg2
 
-      </pre>
-    </td>
-    <td>
-      <pre>
-/\* -- TODO -- \*/
       </pre>
     </td>
   </tr>
@@ -109,7 +202,7 @@ let \_ =
   scope or local scope.
 
 <table>
-  <thead><tr> <th scope="col"><p>Reason</p></th><th scope="col"><p>OCaml</p></th><th scope="col"><p>OCaml Alternative</p></th></tr></thead>
+  <thead><tr> <th scope="col"><p>Reason</p></th><th scope="col"><p>OCaml</p></th></tr></thead>
   <tr>
     <td>
       <pre>
@@ -135,18 +228,6 @@ let \_ = imperativeFunc ten ten in
 imperativeFunc 0 0
       </pre>
     </td>
-    <td>
-      <pre>
-(\* Top level \*)
-let ten = 10
-imperativeFunc ten ten;;
-imperativeFunc 0 0;;
-(\* Local Scope: Different. \*)
-let ten = 10 in
-imperativeFunc ten ten;;
-imperativeFunc 0 0
-      </pre>
-    </td>
   </tr>
 </table>
 
@@ -157,7 +238,7 @@ imperativeFunc 0 0
   to be wrapped in *additional* parenthesis.
 - In `Reason`, records more resemble `JSON`, using `:` instead of `=`.
 <table>
-  <thead><tr> <th scope="col"><p>Reason</p></th><th scope="col"><p>OCaml</p></th><th scope="col"><p>Swift</p></th></tr></thead>
+  <thead><tr> <th scope="col"><p>Reason</p></th><th scope="col"><p>OCaml</p></th></tr></thead>
   <tr>
     <td>
       <pre>
@@ -172,11 +253,6 @@ let myTuple = 10, 20   (\* Parens optional \*)
 let myRecord = {x = 0; y = 10}
       </pre>
     </td>
-    <td>
-      <pre>
-N/A
-      </pre>
-    </td>
   </tr>
 </table>
 
@@ -188,7 +264,7 @@ N/A
   functions).
 
 <table>
-  <thead><tr> <th scope="col"><p>Reason</p></th><th scope="col"><p>OCaml</p></th><th scope="col"><p>Swift</p></th></tr></thead>
+  <thead><tr> <th scope="col"><p>Reason</p></th><th scope="col"><p>OCaml</p></th></tr></thead>
   <tr>
     <td>
       <pre>
@@ -220,11 +296,6 @@ type funcType  = int -> int -> int;
 let x:funcType = fun a -> fun b -> a + b;
       </pre>
     </td>
-    <td>
-      <pre>
-N/A
-      </pre>
-    </td>
   </tr>
 </table>
 
@@ -248,7 +319,7 @@ consistency:
   other reasons why this is a very good idea discussed later.*
 
 <table>
-  <thead><tr> <th scope="col"><p>Reason</p></th><th scope="col"><p>OCaml</p></th><th scope="col"><p>Swift</p></th></tr></thead>
+  <thead><tr> <th scope="col"><p>Reason</p></th><th scope="col"><p>OCaml</p></th></tr></thead>
   <tr>
     <td>
       <pre>
@@ -272,11 +343,6 @@ let x = fun a b    -> e
 
 (\* Curried multi-arg super-sugar \*)
 let x a b = e
-      </pre>
-    </td>
-    <td>
-      <pre>
-N/A
       </pre>
     </td>
   </tr>
@@ -315,12 +381,12 @@ other forms, you can always annotate the returned expression.
 ###Exported/local modules
 
 With `Reason` the syntax for defining local modules (Inside of block
-scope/function bodies) is largely the same as defining top level modules. The
+scope/function bodies) is exactly the same as defining top level modules. The
 `OCaml` syntax has slightly different syntax depending on whether or not the
 module definition is local/top level.
 
 <table>
-  <thead><tr> <th scope="col"><p>Reason</p></th><th scope="col"><p>OCaml</p></th><th scope="col"><p>Swift</p></th></tr></thead>
+  <thead><tr> <th scope="col"><p>Reason</p></th><th scope="col"><p>OCaml</p></th></tr></thead>
   <tr>
     <td>
       <pre>
@@ -334,11 +400,6 @@ module type Y = ..
 module X = ..     (\* Top level    \*)
 let module X = .. (\* Local module \*)
 module type Y = ...
-      </pre>
-    </td>
-    <td>
-      <pre>
-N/A
       </pre>
     </td>
   </tr>
@@ -389,7 +450,7 @@ For example, you can imagine `list` being a "function" that accepts a type and
 returns a new type.
 
 <table>
-  <thead><tr> <th scope="col"><p>Reason</p></th><th scope="col"><p>OCaml</p></th><th scope="col"><p>Swift</p></th></tr></thead>
+  <thead><tr> <th scope="col"><p>Reason</p></th><th scope="col"><p>OCaml</p></th></tr></thead>
   <tr>
     <td>
       <pre>
@@ -413,17 +474,6 @@ type listOfPair = (int, int) tup list
 let tuples: listOfPair = [(2, 3)]
       </pre>
     </td>
-    <td>
-      <pre>
-let x:list&lt;int&gt; = [2];
-type listOfListOfInts = list&lt;list&lt;int&gt;&gt;;
-/\* Looks like function currying  \*/
-type tup&lt;a, b&gt; = (a, b);
-/\* &lt;&gt; group precedence \*/
-type listOfPair = list&lt;tup&lt;int,int&gt;&gt;;
-let tuples: listOfPair = [(2, 3)];
-      </pre>
-    </td>
   </tr>
 </table>
 
@@ -440,7 +490,7 @@ a single argument which happens to be a tuple.
 The following examples shows the difference between passing *two* type
 parameters to `list`, and a *single* type parameter that happens to be a tuple.
 <table>
-  <thead><tr> <th scope="col"><p>Reason</p></th><th scope="col"><p>OCaml</p></th><th scope="col"><p>Swift</p></th></tr></thead>
+  <thead><tr> <th scope="col"><p>Reason</p></th><th scope="col"><p>OCaml</p></th></tr></thead>
   <tr>
     <td>
       <pre>
@@ -452,11 +502,6 @@ type pairList = list (int, int);
       <pre>
 type pairList = (int, int) list
 type pairList = (int \* int) list
-      </pre>
-    </td>
-    <td>
-      <pre>
-TODO
       </pre>
     </td>
   </tr>
@@ -494,7 +539,7 @@ TODO
   *is* a tuple.
 
 <table>
-  <thead><tr> <th scope="col"><p>Reason</p></th><th scope="col"><p>OCaml</p></th><th scope="col"><p>Swift</p></th></tr></thead>
+  <thead><tr> <th scope="col"><p>Reason</p></th><th scope="col"><p>OCaml</p></th></tr></thead>
   <tr>
     <td>
       <pre>
@@ -542,11 +587,6 @@ let res = match x with
 
       </pre>
     </td>
-    <td>
-      <pre>
-TODO
-      </pre>
-    </td>
   </tr>
 </table>
 
@@ -568,7 +608,7 @@ TODO
 
 
 <table>
-  <thead><tr> <th scope="col"><p>Reason</p></th><th scope="col"><p>OCaml (BROKEN)</p></th><th scope="col"><p>Swift</p></th></tr></thead>
+  <thead><tr> <th scope="col"><p>Reason</p></th><th scope="col"><p>OCaml (BROKEN)</p></th></tr></thead>
   <tr>
     <td>
       <pre>
@@ -589,11 +629,6 @@ let res = match x with
       | Some i -> 10
    | HasMultipleInts (x, y) -> 0
 
-      </pre>
-    </td>
-    <td>
-      <pre>
-TODO
       </pre>
     </td>
   </tr>
@@ -617,7 +652,7 @@ more intuitively, without requiring extra wrapping in parenthesis.
 ###### Lambdas as record fields no longer need extra parens
 
 <table>
-  <thead><tr> <th scope="col"><p>Reason</p></th><th scope="col"><p>OCaml</p></th><th scope="col"><p>Swift</p></th></tr></thead>
+  <thead><tr> <th scope="col"><p>Reason</p></th><th scope="col"><p>OCaml</p></th></tr></thead>
   <tr>
     <td>
       <pre>
@@ -635,18 +670,13 @@ let myFunctions = {
 }
       </pre>
     </td>
-    <td>
-      <pre>
-TODO
-      </pre>
-    </td>
   </tr>
 </table>
 
 
 ###### Lambdas as match results no longer need extra parens
 <table>
-  <thead><tr> <th scope="col"><p>Reason</p></th><th scope="col"><p>OCaml</p></th><th scope="col"><p>Swift</p></th></tr></thead>
+  <thead><tr> <th scope="col"><p>Reason</p></th><th scope="col"><p>OCaml</p></th></tr></thead>
   <tr>
     <td>
       <pre>
@@ -666,17 +696,12 @@ let thePrinter = match prnt with
   | Some "ml" -> blah
       </pre>
     </td>
-    <td>
-      <pre>
-TODO
-      </pre>
-    </td>
   </tr>
 </table>
 
 ###### Lambdas and type annotations in tuples no longer require extra parens
 <table>
-  <thead><tr> <th scope="col"><p>Reason</p></th><th scope="col"><p>OCaml</p></th><th scope="col"><p>Swift</p></th></tr></thead>
+  <thead><tr> <th scope="col"><p>Reason</p></th><th scope="col"><p>OCaml</p></th></tr></thead>
   <tr>
     <td>
       <pre>
@@ -688,11 +713,6 @@ let tuple = ("hi": string, 20: int);
       <pre>
 let tuple = ((fun x -> x), 20)
 let tuple = (("hi": string), (20: int))
-      </pre>
-    </td>
-    <td>
-      <pre>
-TODO
       </pre>
     </td>
   </tr>
@@ -869,7 +889,7 @@ escape backslashes are added back in automatically.
 ### Boring details:
 
 It might seem strange that in Reason, function bindings always have arrows  and
-maybe this should be revised `let add x y => x + y`. But one benefit is that it
+maybe this should be revised (`let add x y => x + y`). One benefit is that it
 avoids conflicts when fully unifying the syntax between values and modules.
 Imagine that we only used equals for curried sugar function bindings. If we
 continue to use capital characters to not only indicate Constructors, but also
