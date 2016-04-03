@@ -66,31 +66,3 @@ let contextifyQuery cmdArray filePath => Js.Unsafe.obj [|
   ("query", Js.Unsafe.inject (Js.array cmdArray)),
   ("context", Js.Unsafe.inject (Js.array [|Js.string "auto", Js.string filePath|]))
 |];
-
-let complete (service: service) (filePath: string) (line: int) (col: int) (prefix: string) andThen => {
-  let lineCol = Js.Unsafe.inject (
-    Js.Unsafe.obj [|("line", Js.Unsafe.inject (line + 1)), ("col", Js.Unsafe.inject (col + 1))|]
-  );
-  let completeCommand = [|
-    Js.Unsafe.inject (Js.string "complete"),
-    Js.Unsafe.inject (Js.string "prefix"),
-    Js.Unsafe.inject (Js.string prefix),
-    Js.Unsafe.inject (Js.string "at"),
-    lineCol
-  |];
-  let onResolve result =>
-    if (Js.Opt.test (Js.Opt.return result)) {
-      let lengthValue = Js.Unsafe.get result "length";
-      let jsEntries =
-        Js.Opt.case lengthValue (fun () => Js.Unsafe.get result "entries") (fun jsLen => result);
-      let res = Array.to_list (
-        Array.map MerlinServiceConvert.jsMerlinCompletionEntryToMerlinEntry (Js.to_array jsEntries)
-      );
-      Js.array (Array.of_list (andThen res))
-    } else {
-      Js.array [||]
-    };
-  /** TODO: We should first check if the MerlinService could be found and if not, provide
-    * troubleshooting information. */
-  runSingleCommand service filePath (contextifyQuery completeCommand filePath) onResolve
-};

@@ -7,7 +7,7 @@
  */
 /*
  * Ideally, most of NuclideReason would be in pure Reason, and the parts that need to
- * to convert to/from JS would be at the edges (Index.re, and MerlinService.re).
+ * to convert to/from JS would be at the edges (Index.re, and SuperMerlin.re).
  */
 open NuclideReasonCommon;
 
@@ -44,13 +44,80 @@ export "getEntireFormatting" (getFormatting NuclideReasonFormat.getEntireFormatt
 
 export "getPartialFormatting" (getFormatting NuclideReasonFormat.getPartialFormatting);
 
+/*
+ * This is likely slightly broken. If you open a file without a file name, but
+ * later save it to a different location on disk, you likely will not pick up the
+ * right merlin path.
+ */
+let path editor =>
+  switch (Atom.Editor.getPath editor) {
+  | None => "tmp.re"
+  | Some path => path
+  };
+
 export
   "getNuclideJsAutocompleteSuggestions"
   (
     Js.wrap_callback (
-      fun r => NuclideReasonAutoCompleteProvider.getNuclideJsAutocompleteSuggestions (
-        NuclideJs.AutocompleteProviderRequest.fromJs r
-      )
+      fun request => {
+        let request = NuclideJs.AutocompleteProviderRequest.fromJs request;
+        let editor = request.Nuclide.AutocompleteProviderRequest.editor;
+        let prefix = request.prefix;
+        let text = Atom.Buffer.getText (Atom.Editor.getBuffer editor);
+        let (line, col) as position = Atom.Cursor.getBufferPosition (List.hd (Atom.Editor.getCursors editor));
+        /**
+         * The default prefix at something like `Printf.[cursor]` is just the dot. Compute
+         * `linePrefix` so that ocamlmerlin gets more context. Compute `replacementPrefix`
+         * to make sure that the existing dot doesn't get clobbered when autocompleting.
+         */
+        let linePrefix = String.sub (Atom.Editor.lineTextForBufferRow editor line) 0 col;
+        let linePrefix =
+          String.length linePrefix === 0 ?
+            linePrefix :
+            {
+              let regex = Js.Unsafe.js_expr {|/([ |\t\[\](){}<>,+*\/-])/|};
+              let lst = StringUtils.split linePrefix by::regex;
+              let len = List.length lst;
+              len > 0 ? List.nth lst (len - 1) : linePrefix
+            };
+        if (String.length (String.trim linePrefix) === 0 || String.length (String.trim prefix) === 0) {
+          Js.Unsafe.js_expr {|new Promise(function(resolve) {resolve([]);})|}
+        } else {
+          let replacementPrefix =
+            if (String.contains prefix '.' && String.index prefix '.' === 0) {
+              String.sub prefix 1 (String.length prefix - 1)
+            } else {
+              prefix
+            };
+          let res =
+            SuperMerlin.getAutoCompleteSuggestions
+              path::(path editor) text::text position::position prefix::linePrefix;
+          Js.Unsafe.meth_call
+            res
+            "then"
+            [|
+              Js.Unsafe.inject (
+                Js.wrap_callback (
+                  fun result => {
+                    let resultRe =
+                      Js.Unsafe.get result "entries" |>
+                        Js.to_array |>
+                        Array.to_list |>
+                        List.map MerlinServiceConvert.jsMerlinCompletionEntryToMerlinEntry;
+                    resultRe |>
+                      List.map (fun entry => entry.Merlin.desc) |>
+                      OcamlTypeToReasonType.formatMany |>
+                      List.map2 (fun entry reasonType => {...entry, Merlin.desc: reasonType}) resultRe |>
+                      List.map (MerlinServiceConvert.merlinCompletionEntryToNuclide replacementPrefix) |>
+                      List.map NuclideJs.Autocomplete.entryToJs |>
+                      Array.of_list |>
+                      Js.array
+                  }
+                )
+              )
+            |]
+        }
+      }
     )
   );
 
@@ -64,18 +131,17 @@ export
         them one day. */
         let position = Atom.Point.fromJs position;
         let text = Atom.Buffer.getText (Atom.Editor.getBuffer editor);
-        /*
-         * This is likely slightly broken. If you open a file without a file name, but
-         * later save it to a different location on disk, you likely will not pick up the
-         * right merlin path.
-         */
-        let path =
-          switch (Atom.Editor.getPath editor) {
-          | None => "tmp.re"
-          | Some path => path
-          };
         /* This returns a js promise. */
-        SuperMerlin.getTypeHint path::path text::text position::position
+        let res = SuperMerlin.getTypeHint path::(path editor) text::text position::position;
+        /* This also returns a js promise. */
+        Js.Unsafe.meth_call
+          res
+          "then"
+          [|
+            Js.Unsafe.inject (
+              Js.wrap_callback (fun result => MerlinServiceConvert.jsMerlinTypeHintEntryToNuclide result)
+            )
+          |]
       }
     )
   );
