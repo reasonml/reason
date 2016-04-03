@@ -11,17 +11,12 @@
 
 const Notiflyer = require('./Notiflyer');
 const NuclideReason = require('../output_byte_debug_js/app.js');
-const invariant = require('assert');
 const {CompositeDisposable} = require('atom');
 
 import {RE_GRAMMARS, RE_WORD_REGEX} from './constants';
 const GRAMMARS_STRING = RE_GRAMMARS.join(', ');
 
 const PACKAGE_NAME = 'NuclideReason';
-
-function getServiceByNuclideUri(service, file?) {
-  return require('nuclide/pkg/nuclide-client').getServiceByNuclideUri(service, file);
-}
 
 let reasonDiagnosticsProvider;
 let disposables;
