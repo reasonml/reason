@@ -13,6 +13,10 @@
   "devDependencies": {
     "CommonML": "git://github.com/jordwalke/CommonML.git#2498211"
   },
+  "messagesToInstaller": {
+    "0.0.0":
+      "These messages will be given to the respective version of the auto-installer. They're a nice way to message the user when the one thing that can't be updated, needs to be updated"
+  },
   "dependencies": {
     "ansi_up": "1.3.0",
     "cli-color": "1.1.0",
