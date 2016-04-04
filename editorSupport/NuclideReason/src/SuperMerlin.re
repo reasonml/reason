@@ -236,3 +236,53 @@ let getDiagnostics path::path text::text => {
       )
     |]
 };
+
+let makeLocateCommand position extension => Js.array [|
+  Js.Unsafe.inject (Js.string "locate"),
+  Js.Unsafe.inject (Js.string ""),
+  Js.Unsafe.inject (Js.string extension),
+  Js.Unsafe.inject (Js.string "at"),
+  Js.Unsafe.inject (positionToJsMerlinPosition position)
+|];
+
+/* TODO: put this logic into reason and somewhere else. */
+let normalizeLocateCommandResult' = Js.Unsafe.js_expr {|
+  function(o, path) {
+    if (typeof o === "string") {
+      return o
+    }
+    if (o.file == null) {
+      return {
+        file: path,
+        pos: o.pos,
+      };
+    }
+    return o;
+  }
+|};
+
+let normalizeLocateCommandResult o path =>
+  Js.Unsafe.fun_call normalizeLocateCommandResult' [|o, Js.Unsafe.inject (Js.string path)|];
+
+let locate path::path text::text extension::extension position::position => {
+  let merlin = getMerlinProcess path;
+  let res = readOneLine merlinProcess::merlin cmd::(contextify query::(makeTellCommand text) path::path);
+  let res1 =
+    Js.Unsafe.meth_call
+      res
+      "then"
+      [|
+        Js.Unsafe.inject (
+          Js.wrap_callback (
+            fun _ =>
+              readOneLine
+                merlinProcess::merlin
+                cmd::(contextify query::(makeLocateCommand position extension) path::path)
+          )
+        )
+      |];
+  Js.Unsafe.meth_call
+    res1
+    "then"
+    [|Js.Unsafe.inject (Js.wrap_callback (fun result => normalizeLocateCommandResult result path))|]
+};
