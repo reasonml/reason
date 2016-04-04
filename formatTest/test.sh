@@ -17,6 +17,7 @@ function idempotent_test() {
     diff --unchanged-line-format="" --new-line-format=":%dn: %L" --old-line-format=":%dn: %L" ./$1.formatted.formatted ./$1.formatted
     if ! [[ $? -eq 0 ]]; then
         echo "$1.re is not idempotent" 1>&2
+        exit 1
     fi
 }
 

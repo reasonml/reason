@@ -1,3 +1,5 @@
+/* reason: version=0.0.2 */
+
 Some (1, 2, 3);
 
 type bcd = | TupleConstructor of (int, int) | MultiArgumentsConstructor of int int;

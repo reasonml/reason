@@ -1,3 +1,5 @@
+/* reason: version=0.0.2 */
+
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 let printSection s => {
   print_string "\n";
@@ -6,6 +8,8 @@ let printSection s => {
 };
 
 let printLn s => print_string (s ^ "\n");
+/* reason: version=0.0.2 */
+
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 let run () => TestUtils.printSection "Basic Structures";
 
@@ -612,6 +616,8 @@ let anotherRecord = {
   name: "joe++",
   age: testRecord.age + 10
 };
+/* reason: version=0.0.2 */
+
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 let logTSuccess self =>
   if (self > other) {
@@ -829,6 +835,8 @@ let pngSuffix =
   pixRation > 1 ?
     "@" ^ string_of_int pixRation ^ "x.png" :
     ".png";
+/* reason: version=0.0.2 */
+
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 let run () => TestUtils.printSection "Polymorphism";
 
@@ -916,7 +924,9 @@ let certainlyRequiresWrapping:
   /* This parses, but doesn't type check */
   let module TryExtendingType = {type t = Hello of string;};
   type TryExtendingType.t += LookANewExtension of string;
-*//* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
+*//* reason: version=0.0.2 */
+
+/* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 let run () => TestUtils.printSection "Modules";
 
 /**
@@ -1466,6 +1476,8 @@ open M;
 open M.Inner;
 
 open M;
+/* reason: version=0.0.2 */
+
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 let module LocalModule = {
   type accessedThroughModule =
@@ -1943,6 +1955,8 @@ let listPatternMayEvenIncludeAliases x =>
       ()
   | _ => ()
   };
+/* reason: version=0.0.2 */
+
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 /* Run the formatting pretty printer with width 50 */
 /*
@@ -4465,6 +4479,8 @@ let ternaryResult =
       false;
 
 let returningATernary x y => x > y ? "hi" : "by";
+/* reason: version=0.0.2 */
+
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 [@@@autoFormat
   let wrap = 80;
@@ -5432,6 +5448,8 @@ let A | B | C = X;
  *
  */
 external f : int => int = "foo";
+/* reason: version=0.0.2 */
+
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 /* - A good way to test if formatting of infix operators groups precedences
    correctly, is to write an expression twice. Once in a form where parenthesis
@@ -5781,16 +5799,22 @@ let myFunc
     aaaa bbbb cccc dddd aaaa bbbb cccc dddd aaaa,
   ...someType
 ];
+/* reason: version=0.0.2 */
+
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 let module M = Something.Create {
   type resource1 = MyModule.MySubmodule.t;
   type resource2 = MyModule.MySubmodule.t;
 };
+/* reason: version=0.0.2 */
+
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 /*
 let str = "@[.... some formatting ....@\n\010@.";
 */
 let str = "@[.... some formatting ....@\n\n@.";
+/* reason: version=0.0.2 */
+
 Some (1, 2, 3);
 
 type bcd =
@@ -5810,6 +5834,8 @@ Test.And (1, 2);
 Test.Or (1, 2);
 
 Some 1;
+/* reason: version=0.0.2 */
+
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 /**
  * Generally, dangling attributes [@..] apply to everything to the left of it,
@@ -6096,6 +6122,8 @@ module type HasAttrs = {
   [@@sigItem];
   class fooBar : int => new foo [@@sigItem];
 };
+/* reason: version=0.0.2 */
+
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 type reasonXyz =
   | X | Y of int int int | Z of int int | Q | R;
@@ -6146,6 +6174,8 @@ let expectedPrecendence =
 
 let expectedPrecendence =
   1 \+ 1 \=== 1 \+ 1 && 1 \+ 1 !== 1 \+ 1;
+/* reason: version=0.0.2 */
+
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 /*
  * Syntax and fallback syntax.
@@ -6240,6 +6270,8 @@ while {
 while ((shouldStillLoop := false) == ()) {
   print_string "Forever in the loop"
 };
+/* reason: version=0.0.2 */
+
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 /**
  * Testing mutations.
@@ -6295,6 +6327,8 @@ switch numberToSwitchOn {
 let mutativeFunction =
   fun | Some x => holdsAUnit.contents = ()
       | None => holdsAUnit := ();
+/* reason: version=0.0.2 */
+
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 class virtual stack 'a init => {
   /*
@@ -6632,6 +6666,8 @@ module type T = {
   and cl2 :
     new {};
 };
+/* reason: version=0.0.2 */
+
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 /**
  * Testing Sequences.
@@ -6722,6 +6758,8 @@ let singlePunAcceptedIfExtended = {
   ...firstFieldPunned,
   a
 };
+/* reason: version=0.0.2 */
+
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 /*
  * Testing pattern matching using ml syntax to exercise nesting of cases.
@@ -6804,6 +6842,8 @@ let nestedSomeSimple = Some (Some (1, 2, 3));
 let module EM = {exception E of int int;};
 
 exception Ealias = EM.E;
+/* reason: version=0.0.2 */
+
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 type polyVariantsInMl = [
   | `IntTuple of (int, int)
