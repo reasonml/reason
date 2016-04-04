@@ -37,6 +37,12 @@ let parseAsCoreModuleType str formatter =
   |> Reason_toolchain.ML.canonical_interface
   |> reasonFormatter#signature [] formatter
 
+(* Quirky merlin/ocaml output that doesn't really parse. *)
+let parseAsWeirdListSyntax str a =
+  if str = "type 'a list = [] | :: of 'a * 'a list" then "type list 'a = [] | :: of list 'a 'a"
+  (* Manually creating an error is tedious, so we'll put a hack here to throw the previous error. *)
+  else raise (Syntaxerr.Error a)
+
 let convert str =
   let formatter = Format.str_formatter in
   try (parseAsCoreType str formatter; Format.flush_str_formatter ())
@@ -45,4 +51,6 @@ let convert str =
   with Syntaxerr.Error _ ->
   try (parseAsInterface str formatter; Format.flush_str_formatter ())
   with Syntaxerr.Error _ ->
-  (parseAsCoreModuleType str formatter; Format.flush_str_formatter ())
+  try (parseAsCoreModuleType str formatter; Format.flush_str_formatter ())
+  with Syntaxerr.Error a ->
+  (parseAsWeirdListSyntax str a)
