@@ -53,14 +53,15 @@ let errorsCommand = ["errors"];
  * else above and below is ML, we have to start the conversion somewhere.
  */
 let getMerlinDiagnostics text path onComplete onFailure => {
-  let service = MerlinService.getService path;
-  let contextifiedTellCmd = MerlinService.contextifyStringQuery (makeTellCommand text) path;
-  let contextifiedErrorsCmd = MerlinService.contextifyStringQuery errorsCommand path;
-  let afterTellText result => {
-    let afterErrors errors => onComplete (
-      MerlinServiceConvert.jsMerlinErrorsToNuclideDiagnostics path errors
-    );
-    MerlinService.runSingleCommand service path contextifiedErrorsCmd afterErrors
-  };
-  MerlinService.runSingleCommand service path contextifiedTellCmd afterTellText
+  let res = SuperMerlin.getDiagnostics path::path text::text;
+  Js.Unsafe.meth_call
+    res
+    "then"
+    [|
+      Js.Unsafe.inject (
+        Js.wrap_callback (
+          fun errors => onComplete (MerlinServiceConvert.jsMerlinErrorsToNuclideDiagnostics path errors)
+        )
+      )
+    |]
 };
