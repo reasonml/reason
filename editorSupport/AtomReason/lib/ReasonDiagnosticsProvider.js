@@ -11,12 +11,12 @@
 
 import {RE_GRAMMARS} from './constants';
 
-const NuclideReason = require('../output_byte_debug_js/app.js');
+const AtomReason = require('../output_byte_debug_js/app.js');
 
 const PROVIDER_NAME = 'Merlin';
 
 module.exports = {
-  name: 'nuclide-reason',
+  name: 'atom-reason',
   grammarScopes: RE_GRAMMARS,
   scope: 'file',
   lintOnFly: true,
@@ -28,7 +28,7 @@ module.exports = {
     return new Promise((resolve, reject) => {
       const onSuccess = (diagnostics) => {resolve(diagnostics);};
       const onFailure = (err) => {reject(err);};
-      NuclideReason.getDiagnostics(textEditor.getBuffer().getText())(filePath)(onSuccess)(onFailure);
+      AtomReason.getDiagnostics(textEditor.getBuffer().getText())(filePath)(onSuccess)(onFailure);
     });
   },
 };

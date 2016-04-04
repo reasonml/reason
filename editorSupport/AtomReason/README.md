@@ -29,7 +29,7 @@ npm install
 apm link
 
 # Install the IDE integration
-cd ../NuclideReason
+cd ../AtomReason
 npm install
 apm link
 ```
@@ -37,7 +37,7 @@ apm link
 4. Add this to your Atom config (accessible via the menu `Atom > Open Your Config`). Replace `{{yourname}}` with your login name. Also, confirm that those locations exist and are correct. Indentation matters!
 ```cson
 "*":
-  NuclideReason:
+  AtomReason:
     merlinFlags: "-pp /Users/{{yourname}}/.opam/system/bin/reasonfmt_merlin"
     pathToMerlin: "/Users/{{yourname}}/.opam/system/bin/ocamlmerlin"
     pathToReasonfmt: "/Users/{{yourname}}/.opam/system/bin/reasonfmt"
@@ -59,10 +59,10 @@ Note that all these issues are temporary. When we release the official plugin, t
 
 Building and Adding Features
 ------------------
-To build `NuclideReason`, you must have `js_of_ocaml` installed, in addition to `Reason`, and `ocamlmerlin`.
+To build `AtomReason`, you must have `js_of_ocaml` installed, in addition to `Reason`, and `ocamlmerlin`.
 ```sh
 opam pin add -y js_of_ocaml https://github.com/ocsigen/js_of_ocaml.git
-cd NuclideReason
+cd AtomReason
 # Build the changes (npm install/apm link are only needed the first time)
 npm install
 npm start

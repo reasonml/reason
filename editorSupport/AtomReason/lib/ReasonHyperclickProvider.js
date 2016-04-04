@@ -20,7 +20,7 @@ const EXTENSIONS = {
 
 module.exports = {
   priority: 20,
-  providerName: 'NuclideReason',
+  providerName: 'AtomReason',
   async getSuggestionForWord(textEditor: TextEditor, text: string, range: atom$Range) {
     const {getServiceByNuclideUri} = require('nuclide/pkg/nuclide-client');
 

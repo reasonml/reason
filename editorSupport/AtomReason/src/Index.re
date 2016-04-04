@@ -6,12 +6,12 @@
  * vim: set ft=reason:
  */
 /*
- * Ideally, most of NuclideReason would be in pure Reason, and the parts that need to
+ * Ideally, most of AtomReason would be in pure Reason, and the parts that need to
  * to convert to/from JS would be at the edges (Index.re, and SuperMerlin.re).
  */
-open NuclideReasonCommon;
+open AtomReasonCommon;
 
-/* These exports will be visible to main.js, under NuclideReason */
+/* These exports will be visible to main.js, under AtomReason */
 export
   "getDiagnostics"
   (
@@ -24,7 +24,7 @@ export
             onComplete [|Js.Unsafe.inject (Js.array (Array.map NuclideJs.Diagnostic.Message.toJs arr))|];
         /* TODO: this has never been used. */
         let onFailure str => Js.Unsafe.fun_call onComplete [|Js.Unsafe.inject (Js.string str)|];
-        NuclideReasonDiagnostics.getMerlinDiagnostics text path onComplete onFailure
+        AtomReasonDiagnostics.getMerlinDiagnostics text path onComplete onFailure
       }
     )
   );
@@ -41,9 +41,9 @@ let getFormatting f => Js.wrap_callback (
   }
 );
 
-export "getEntireFormatting" (getFormatting NuclideReasonFormat.getEntireFormatting);
+export "getEntireFormatting" (getFormatting AtomReasonFormat.getEntireFormatting);
 
-export "getPartialFormatting" (getFormatting NuclideReasonFormat.getPartialFormatting);
+export "getPartialFormatting" (getFormatting AtomReasonFormat.getPartialFormatting);
 
 /*
  * This is likely slightly broken. If you open a file without a file name, but

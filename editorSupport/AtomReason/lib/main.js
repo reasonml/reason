@@ -10,13 +10,13 @@
  */
 
 const Notiflyer = require('./Notiflyer');
-const NuclideReason = require('../output_byte_debug_js/app.js');
+const AtomReason = require('../output_byte_debug_js/app.js');
 const {CompositeDisposable} = require('atom');
 
 import {RE_GRAMMARS, RE_WORD_REGEX} from './constants';
 const GRAMMARS_STRING = RE_GRAMMARS.join(', ');
 
-const PACKAGE_NAME = 'NuclideReason';
+const PACKAGE_NAME = 'AtomReason';
 
 let reasonDiagnosticsProvider;
 let disposables;
@@ -38,7 +38,7 @@ module.exports = {
       selector: '.source.reason',
       inclusionPriority: 1,
       disableForSelector: '.source.reason .comment',
-      getSuggestions: NuclideReason.getNuclideJsAutocompleteSuggestions,
+      getSuggestions: AtomReason.getNuclideJsAutocompleteSuggestions,
       // We want to get ranked higher than the snippets provider.
       suggestionPriority: 5,
       onDidInsertSuggestion: () => {
@@ -49,8 +49,8 @@ module.exports = {
   getHyperclickProvider() {
     return {
       priority: 20,
-      providerName: 'NuclideReason',
-      getSuggestionForWord: NuclideReason.getLocation,
+      providerName: 'AtomReason',
+      getSuggestionForWord: AtomReason.getLocation,
     };
   },
 
@@ -64,7 +64,7 @@ module.exports = {
       selector: GRAMMARS_STRING,
       inclusionPriority: 1,
       formatEntireFile(editor: atom$TextEditor, range: atom$Range): Promise<string> {
-        return NuclideReason.getEntireFormatting(
+        return AtomReason.getEntireFormatting(
           editor,
           range,
           Notiflyer.showSuccesBar,
@@ -73,7 +73,7 @@ module.exports = {
         );
       },
       formatCode(editor: atom$TextEditor, range: atom$Range): Promise<string> {
-        return NuclideReason.getPartialFormatting(
+        return AtomReason.getPartialFormatting(
           editor,
           range,
           Notiflyer.showSuccesBar,
@@ -93,7 +93,7 @@ module.exports = {
       validForScope: scope => scope === 'source.reason',
       providerName: PACKAGE_NAME,
       inclusionPriority: 1,
-      datatip: NuclideReason.getNuclideJsTypeHint,
+      datatip: AtomReason.getNuclideJsTypeHint,
     };
   },
 

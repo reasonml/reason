@@ -5,7 +5,7 @@
  * vim: set ft=rust:
  * vim: set ft=reason:
  */
-open NuclideReasonCommon;
+open AtomReasonCommon;
 
 type t;
 
