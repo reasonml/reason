@@ -41,10 +41,6 @@ let () =
 
     Pkg.share "editorSupport/NuclideReason/styles/status-bar.less" ~dst:"editorSupport/NuclideReason/styles/status-bar.less";
 
-    (* NuclideReason has a copy of language-reason (temporary solution) *)
-    Pkg.share "editorSupport/NuclideReason/output_byte_debug_js/language-reason/grammars/reason.cson" ~dst:"editorSupport/NuclideReason/output_byte_debug_js/language-reason/grammars/reason.cson";
-    Pkg.share "editorSupport/NuclideReason/output_byte_debug_js/language-reason/package.json" ~dst:"editorSupport/NuclideReason/output_byte_debug_js/language-reason/package.json";
-
     (* language-reason *)
     Pkg.share "editorSupport/language-reason/package.json" ~dst:"editorSupport/language-reason/package.json";
     Pkg.share "editorSupport/language-reason/grammars/reason.cson" ~dst:"editorSupport/language-reason/grammars/reason.cson";
