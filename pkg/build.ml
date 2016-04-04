@@ -23,24 +23,24 @@ let () =
     Pkg.bin  ~auto:true "src/reason_format_type" ~dst:"refmttype";
     Pkg.share "editorSupport/emacs/reasonfmt.el" ~dst:"../emacs/site-lisp/reasonfmt.el";
     Pkg.share "editorSupport/emacs/reason-mode.el" ~dst:"../emacs/site-lisp/reason-mode.el";
-    (* NuclideReason *)
+    (* AtomReason *)
     (* Unfortunately we have to specificy each individual file *)
-    Pkg.share "editorSupport/NuclideReason/package.json" ~dst:"editorSupport/NuclideReason/package.json";
-    Pkg.share "editorSupport/NuclideReason/README.md" ~dst:"editorSupport/NuclideReason/README.md";
-    Pkg.share "editorSupport/NuclideReason/output_byte_debug_js/app.js" ~dst:"editorSupport/NuclideReason/output_byte_debug_js/app.js";
-    Pkg.share "editorSupport/NuclideReason/output_byte_debug_js/app.map" ~dst:"editorSupport/NuclideReason/output_byte_debug_js/app.map";
+    Pkg.share "editorSupport/AtomReason/package.json" ~dst:"editorSupport/AtomReason/package.json";
+    Pkg.share "editorSupport/AtomReason/README.md" ~dst:"editorSupport/AtomReason/README.md";
+    Pkg.share "editorSupport/AtomReason/output_byte_debug_js/app.js" ~dst:"editorSupport/AtomReason/output_byte_debug_js/app.js";
+    Pkg.share "editorSupport/AtomReason/output_byte_debug_js/app.map" ~dst:"editorSupport/AtomReason/output_byte_debug_js/app.map";
 
-    Pkg.share "editorSupport/NuclideReason/lib/main.js" ~dst:"editorSupport/NuclideReason/lib/main.js";
-    Pkg.share "editorSupport/NuclideReason/lib/ReasonDiagnosticsProvider.js" ~dst:"editorSupport/NuclideReason/lib/ReasonDiagnosticsProvider.js";
-    Pkg.share "editorSupport/NuclideReason/lib/ReasonHyperclickProvider.js" ~dst:"editorSupport/NuclideReason/lib/ReasonHyperclickProvider.js";
-    Pkg.share "editorSupport/NuclideReason/lib/constants.js" ~dst:"editorSupport/NuclideReason/lib/constants.js";
-    Pkg.share "editorSupport/NuclideReason/lib/Notiflyer.js" ~dst:"editorSupport/NuclideReason/lib/Notiflyer.js";
+    Pkg.share "editorSupport/AtomReason/lib/main.js" ~dst:"editorSupport/AtomReason/lib/main.js";
+    Pkg.share "editorSupport/AtomReason/lib/ReasonDiagnosticsProvider.js" ~dst:"editorSupport/AtomReason/lib/ReasonDiagnosticsProvider.js";
+    Pkg.share "editorSupport/AtomReason/lib/ReasonHyperclickProvider.js" ~dst:"editorSupport/AtomReason/lib/ReasonHyperclickProvider.js";
+    Pkg.share "editorSupport/AtomReason/lib/constants.js" ~dst:"editorSupport/AtomReason/lib/constants.js";
+    Pkg.share "editorSupport/AtomReason/lib/Notiflyer.js" ~dst:"editorSupport/AtomReason/lib/Notiflyer.js";
 
-    Pkg.share "editorSupport/NuclideReason/Reasonify/formatErrorMessages.js" ~dst:"editorSupport/NuclideReason/Reasonify/formatErrorMessages.js";
-    Pkg.share "editorSupport/NuclideReason/Reasonify/index.js" ~dst:"editorSupport/NuclideReason/Reasonify/index.js";
+    Pkg.share "editorSupport/AtomReason/Reasonify/formatErrorMessages.js" ~dst:"editorSupport/AtomReason/Reasonify/formatErrorMessages.js";
+    Pkg.share "editorSupport/AtomReason/Reasonify/index.js" ~dst:"editorSupport/AtomReason/Reasonify/index.js";
 
-    Pkg.share "editorSupport/NuclideReason/styles/status-bar.less" ~dst:"editorSupport/NuclideReason/styles/status-bar.less";
-    Pkg.share "editorSupport/NuclideReason/styles/type-hint.less" ~dst:"editorSupport/NuclideReason/styles/type-hint.less";
+    Pkg.share "editorSupport/AtomReason/styles/status-bar.less" ~dst:"editorSupport/AtomReason/styles/status-bar.less";
+    Pkg.share "editorSupport/AtomReason/styles/type-hint.less" ~dst:"editorSupport/AtomReason/styles/type-hint.less";
 
     (* language-reason *)
     Pkg.share "editorSupport/language-reason/package.json" ~dst:"editorSupport/language-reason/package.json";

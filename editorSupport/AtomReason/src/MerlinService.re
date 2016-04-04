@@ -18,12 +18,12 @@ let dotCall x y z => Js.Unsafe.meth_call x y z;
 let getService filePath => {
   let nuclideOCamlPathToMerlin = Atom.Config.get "nuclide.nuclide-ocaml.pathToMerlin";
   let nuclideOCamlMerlinFlags = Atom.Config.get "nuclide.nuclide-ocaml.merlinFlags";
-  let nuclideOCamlPathToMerlinOverwrite = Atom.Config.get "nuclide.nuclide-ocaml.nuclideReasonOverwroteYour_pathToMerlin";
-  let nuclideOCamlMerlinFlagsOverwrite = Atom.Config.get "nuclide.nuclide-ocaml.nuclideReasonOverwroteYour_merlinFlags";
-  let nuclideReasonPathToMerlin = Atom.Config.get "NuclideReason.pathToMerlin";
-  let nuclideReasonMerlinFlags = Atom.Config.get "NuclideReason.merlinFlags";
-  let nuclideReasonMerlinLogFile = Atom.Config.get "NuclideReason.merlinLogFile";
-  switch nuclideReasonMerlinLogFile {
+  let nuclideOCamlPathToMerlinOverwrite = Atom.Config.get "nuclide.nuclide-ocaml.atomReasonOverwroteYour_pathToMerlin";
+  let nuclideOCamlMerlinFlagsOverwrite = Atom.Config.get "nuclide.nuclide-ocaml.atomReasonOverwroteYour_merlinFlags";
+  let atomReasonPathToMerlin = Atom.Config.get "AtomReason.pathToMerlin";
+  let atomReasonMerlinFlags = Atom.Config.get "AtomReason.merlinFlags";
+  let atomReasonMerlinLogFile = Atom.Config.get "AtomReason.merlinLogFile";
+  switch atomReasonMerlinLogFile {
   | JsonString "" => ()
   | JsonString s => Atom.Env.setEnvVar "MERLIN_LOG" s
   | _ => ()
@@ -31,16 +31,16 @@ let getService filePath => {
   switch (nuclideOCamlPathToMerlin, nuclideOCamlPathToMerlinOverwrite) {
   | (_, Empty) =>
       Atom.Config.set
-        "nuclide.nuclide-ocaml.nuclideReasonOverwroteYour_pathToMerlin" nuclideOCamlPathToMerlin
+        "nuclide.nuclide-ocaml.atomReasonOverwroteYour_pathToMerlin" nuclideOCamlPathToMerlin
   | _ => ()
   };
   switch (nuclideOCamlMerlinFlags, nuclideOCamlMerlinFlagsOverwrite) {
   | (_, Empty) =>
-      Atom.Config.set "nuclide.nuclide-ocaml.nuclideReasonOverwroteYour_merlinFlags" nuclideOCamlMerlinFlags
+      Atom.Config.set "nuclide.nuclide-ocaml.atomReasonOverwroteYour_merlinFlags" nuclideOCamlMerlinFlags
   | _ => ()
   };
-  Atom.Config.set "nuclide.nuclide-ocaml.pathToMerlin" nuclideReasonPathToMerlin;
-  Atom.Config.set "nuclide.nuclide-ocaml.merlinFlags" nuclideReasonMerlinFlags;
+  Atom.Config.set "nuclide.nuclide-ocaml.pathToMerlin" atomReasonPathToMerlin;
+  Atom.Config.set "nuclide.nuclide-ocaml.merlinFlags" atomReasonMerlinFlags;
   Js.Unsafe.meth_call
     nuclideClient
     "getServiceByNuclideUri"

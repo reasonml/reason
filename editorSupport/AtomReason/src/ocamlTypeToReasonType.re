@@ -38,7 +38,7 @@ let refmttype ocamlTypes =>
   } else {
     let refmttypePath =
       Atom.JsonType.(
-        switch (Atom.Config.get "NuclideReason.pathToRefmttype") {
+        switch (Atom.Config.get "AtomReason.pathToRefmttype") {
         | JsonString str => str
         | _ => raise (Invalid_argument "refmttypePath went wrong.")
         }

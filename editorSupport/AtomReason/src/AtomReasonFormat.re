@@ -5,7 +5,7 @@
  * vim: set ft=rust:
  * vim: set ft=reason:
  */
-open NuclideReasonCommon;
+open AtomReasonCommon;
 
 open StringUtils;
 
@@ -59,15 +59,15 @@ let formatImpl editor subText isInterface onComplete onFailure => {
   let stdOutLines = {contents: [||]};
   let stdErrLines = {contents: [||]};
   let fmtPath =
-    switch (Atom.Config.get "NuclideReason.pathToReasonfmt") {
+    switch (Atom.Config.get "AtomReason.pathToReasonfmt") {
     | JsonString pth => pth
-    | _ => raise (Invalid_argument "You must setup NuclideReason.pathToReasonfmt in your Atom config")
+    | _ => raise (Invalid_argument "You must setup AtomReason.pathToReasonfmt in your Atom config")
     };
   let printWidth =
-    switch (Atom.Config.get "NuclideReason.printWidth") {
+    switch (Atom.Config.get "AtomReason.printWidth") {
     | JsonNum n => int_of_float n
     | Empty => 110
-    | _ => raise (Invalid_argument "NuclideReason.printWidth must be an integer")
+    | _ => raise (Invalid_argument "AtomReason.printWidth must be an integer")
     };
   let onStdOut line => stdOutLines.contents = Array.append stdOutLines.contents [|line|];
   let onStdErr line => stdErrLines.contents = Array.append stdErrLines.contents [|line|];
@@ -95,7 +95,7 @@ let formatImpl editor subText isInterface onComplete onFailure => {
     isInterface ? "true" : "false"
   ];
   let proc = Atom.BufferedProcess.create stdout::onStdOut stderr::onStdErr exit::onExit args::args fmtPath;
-  let errorTitle = "NuclideReason could not spawn " ^ fmtPath;
+  let errorTitle = "AtomReason could not spawn " ^ fmtPath;
   let handleError error handle => {
     NotificationManager.addError options::{...NotificationManager.defaultOptions, detail: error} errorTitle;
     /* TODO: this doesn't type check, but sits across the border of js <-> reason so it passes. onFailure (the

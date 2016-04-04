@@ -1,0 +1,9 @@
+
+B output_byte_debug/AtomReason/publicInnerModules
+B output_byte_debug/AtomReason/privateInnerModules
+B output_byte_debug/AtomReason
+
+PKG js_of_ocaml
+FLG -w -30 -w -40 -open AtomReason
+SUFFIX .re .rei
+
