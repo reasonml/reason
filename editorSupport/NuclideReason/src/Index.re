@@ -146,3 +146,53 @@ export
       }
     )
   );
+
+export
+  "getLocation"
+  (
+    Js.wrap_callback (
+      fun editor _ range => {
+        /* TODO: put the non-conversion logic somewhere else. */
+        let callback = Js.wrap_callback (
+          fun () => {
+            let (startPosition, _) = Atom.Range.fromJs range;
+            let text = Atom.Buffer.getText (Atom.Editor.getBuffer editor);
+            let p = path editor;
+            let extension =
+              if (Filename.check_suffix p "re") {
+                "ml"
+              } else {
+                "mli"
+              };
+            /* This returns a js promise. */
+            let res =
+              SuperMerlin.locate path::(path editor) text::text extension::extension position::startPosition;
+            Js.Unsafe.meth_call
+              res
+              "then"
+              [|
+                Js.Unsafe.inject (
+                  Js.wrap_callback (
+                    fun result => {
+                      let f = Js.Unsafe.js_expr {|
+                      function(res) {
+                        // TODO: rewrite this in reason.
+                        var goToLocation = require('nuclide/pkg/nuclide-atom-helpers').goToLocation;
+                        if (typeof res === "string") {
+                          console.error(res);
+                          return;
+                        }
+                        goToLocation(res.file, res.pos.line - 1, res.pos.col);
+                      }
+                    |};
+                      Js.Unsafe.fun_call f [|result|]
+                    }
+                  )
+                )
+              |]
+          }
+        );
+        Js.Unsafe.obj [|("range", Js.Unsafe.inject range), ("callback", Js.Unsafe.inject callback)|]
+      }
+    )
+  );

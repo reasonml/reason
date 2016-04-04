@@ -47,7 +47,11 @@ module.exports = {
   },
 
   getHyperclickProvider() {
-    return require('./ReasonHyperclickProvider');
+    return {
+      priority: 20,
+      providerName: 'NuclideReason',
+      getSuggestionForWord: NuclideReason.getLocation,
+    };
   },
 
   provideLinter(): LinterProvider {
