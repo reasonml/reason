@@ -40,6 +40,7 @@ let () =
     Pkg.share "editorSupport/NuclideReason/Reasonify/index.js" ~dst:"editorSupport/NuclideReason/Reasonify/index.js";
 
     Pkg.share "editorSupport/NuclideReason/styles/status-bar.less" ~dst:"editorSupport/NuclideReason/styles/status-bar.less";
+    Pkg.share "editorSupport/NuclideReason/styles/type-hint.less" ~dst:"editorSupport/NuclideReason/styles/type-hint.less";
 
     (* language-reason *)
     Pkg.share "editorSupport/language-reason/package.json" ~dst:"editorSupport/language-reason/package.json";
