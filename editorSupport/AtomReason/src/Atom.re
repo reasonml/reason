@@ -29,6 +29,8 @@ let _arrayIsArray = Js.Unsafe.js_expr "Array.isArray";
 
 let promise = Js.Unsafe.js_expr "Promise";
 
+let fixedEnv = Js.Unsafe.js_expr "require('../lib/fixedEnv')";
+
 let emptyArgs = [||];
 
 let trimTrailingWhiteSpace (s: string) => Js.to_string (
@@ -96,8 +98,10 @@ let module JsonValue: JsonValueSig = {
 };
 
 let module Env = {
-  let setEnvVar envVar strVal =>
+  let setEnvVar envVar strVal => {
     Js.Unsafe.set (Js.Unsafe.get (Js.Unsafe.get Js.Unsafe.global "process") "env") envVar (Js.string strVal);
+    Js.Unsafe.set fixedEnv envVar (Js.string strVal)
+  }
 };
 
 let module Config = {
@@ -260,8 +264,8 @@ let module NotificationManager = {
 };
 
 let module Process = {
-  type options = {cwd: string, env: list (string, string), stdio: list string, detached: bool};
-  let defaultOptions = {cwd: ".", env: [], stdio: [], detached: false};
+  type options = {cwd: string, env: Js.t unit, detached: bool};
+  let defaultOptions = {cwd: ".", env: Js.Unsafe.obj [||], detached: false};
 };
 
 let module ChildProcess = {
@@ -295,13 +299,9 @@ let module BufferedProcess = {
       switch opts {
       | None => fields
       | Some opts => {
-          let envFields =
-            Array.map (fun (k, v) => (k, Js.Unsafe.inject (Js.string v))) (Array.of_list opts.env);
-          let jsEnv = Js.Unsafe.inject (Js.Unsafe.obj envFields);
           let jsOptions = Js.Unsafe.obj [|
             ("cwd", Js.Unsafe.inject opts.cwd),
-            ("env", jsEnv),
-            ("stdio", Js.Unsafe.inject (Array.map Js.string (Array.of_list opts.stdio))),
+            ("env", Js.Unsafe.inject opts.env),
             ("detached", Js.Unsafe.inject (Js.bool opts.detached))
           |];
           Array.append fields [|("options", jsOptions)|]

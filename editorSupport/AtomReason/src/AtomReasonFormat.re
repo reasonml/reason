@@ -11,6 +11,8 @@ open StringUtils;
 
 open Atom;
 
+let fixedEnv = Js.Unsafe.js_expr "require('../lib/fixedEnv')";
+
 /**
  * @param (Array.t string) standard output formatting of file.
  * @param int curCursorRow Current cursor row before formatting.
@@ -94,7 +96,7 @@ let formatImpl editor subText isInterface onComplete onFailure => {
     "-is-interface-pp",
     isInterface ? "true" : "false"
   ];
-  let proc = Atom.BufferedProcess.create stdout::onStdOut stderr::onStdErr exit::onExit args::args fmtPath;
+  let proc = Atom.BufferedProcess.create options::{...Atom.Process.defaultOptions, env: fixedEnv} stdout::onStdOut stderr::onStdErr exit::onExit args::args fmtPath;
   let errorTitle = "AtomReason could not spawn " ^ fmtPath;
   let handleError error handle => {
     NotificationManager.addError options::{...NotificationManager.defaultOptions, detail: error} errorTitle;
