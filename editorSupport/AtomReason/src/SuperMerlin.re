@@ -7,6 +7,8 @@
  */
 let startedMerlin: ref (option Js.Unsafe.any) = {contents: None};
 
+let fixedEnv = Js.Unsafe.js_expr "require('../lib/fixedEnv')";
+
 /* This and the subsequent big js blocks are copied over from Nuclide. More convenient for now. */
 let findNearestMerlinFile' = Js.Unsafe.js_expr {|
   function findNearestMerlinFile(beginAtFilePath) {
@@ -36,12 +38,12 @@ let findNearestMerlinFile beginAtFilePath::path => {
 };
 
 let createMerlinProcessOnce' = Js.Unsafe.js_expr {|
-  function createThingOnce(ocamlMerlinPath, ocamlMerlinFlags, dotMerlinDir) {
+  function createThingOnce(ocamlMerlinPath, ocamlMerlinFlags, dotMerlinDir, fixedEnv) {
     var spawn = require('child_process').spawn;
     // To split while stripping out any leading/trailing space, we match on all
     // *non*-whitespace.
     var items = ocamlMerlinFlags.match(/\S+/g);
-    var merlinProcess = spawn(ocamlMerlinPath, items, {cwd: dotMerlinDir});
+    var merlinProcess = spawn(ocamlMerlinPath, items, {cwd: dotMerlinDir, env: fixedEnv});
     merlinProcess.stderr.on('data', function(d) {
       console.error('Ocamlmerlin: something wrong happened:');
       console.error(d.toString());
@@ -61,7 +63,8 @@ let createMerlinProcessOnce pathToMerlin::pathToMerlin merlinFlags::merlinFlags 
     [|
       Js.Unsafe.inject (Js.string pathToMerlin),
       Js.Unsafe.inject (Js.string merlinFlags),
-      Js.Unsafe.inject (Js.string dotMerlinPath)
+      Js.Unsafe.inject (Js.string dotMerlinPath),
+      Js.Unsafe.inject fixedEnv
     |];
 
 let getMerlinProcess path::path =>
