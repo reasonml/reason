@@ -217,3 +217,22 @@ let getAutoCompleteSuggestions path::path text::text position::position prefix::
       )
     |]
 };
+
+let getDiagnostics path::path text::text => {
+  let merlin = getMerlinProcess path;
+  let res = readOneLine merlinProcess::merlin cmd::(contextify query::(makeTellCommand text) path::path);
+  Js.Unsafe.meth_call
+    res
+    "then"
+    [|
+      Js.Unsafe.inject (
+
+        Js.wrap_callback (
+          fun _ =>
+            readOneLine
+              merlinProcess::merlin
+              cmd::(contextify query::(Js.array [|Js.Unsafe.inject (Js.string "errors")|]) path::path)
+        )
+      )
+    |]
+};

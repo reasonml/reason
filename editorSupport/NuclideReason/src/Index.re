@@ -22,6 +22,7 @@ export
         let onComplete arr =>
           Js.Unsafe.fun_call
             onComplete [|Js.Unsafe.inject (Js.array (Array.map NuclideJs.Diagnostic.Message.toJs arr))|];
+        /* TODO: this has never been used. */
         let onFailure str => Js.Unsafe.fun_call onComplete [|Js.Unsafe.inject (Js.string str)|];
         NuclideReasonDiagnostics.getMerlinDiagnostics text path onComplete onFailure
       }
