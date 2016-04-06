@@ -7,10 +7,15 @@ let () =
   else begin
     UTop.prompt := fst (React.S.create LTerm_text.(eval [B_fg (LTerm_style.green); S "# "]));
     UTop.parse_toplevel_phrase := UTop.parse_default (
-      Reason_util.correctly_catch_parse_errors Reason_parser.toplevel_phrase);
+      Reason_util.correctly_catch_parse_errors
+      Reason_toolchain.JS.canonical_toplevel_phrase
+    );
     UTop.parse_use_file := UTop.parse_default (
-      Reason_util.correctly_catch_parse_errors  Reason_parser.use_file);
-    Toploop.parse_use_file := Reason_util.correctly_catch_parse_errors Reason_parser.use_file;
+      Reason_util.correctly_catch_parse_errors
+      Reason_toolchain.JS.canonical_use_file
+    );
+    Toploop.parse_use_file := Reason_util.correctly_catch_parse_errors
+                                Reason_toolchain.JS.canonical_use_file;
     (* Printing in Reason syntax *)
     Toploop.print_out_value := Reason_oprint.print_out_value;
     Toploop.print_out_type := Reason_oprint.print_out_type;

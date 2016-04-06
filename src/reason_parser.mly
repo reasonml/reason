@@ -1094,6 +1094,7 @@ implementation:
 interface:
     signature EOF                        { apply_mapper_chain_to_signature $1 default_mapper_chain }
 ;
+
 toplevel_phrase:
     structure_item SEMI                 { Ptop_def [$1]}
   | toplevel_directive SEMISEMI         { $1 }
