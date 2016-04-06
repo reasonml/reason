@@ -23,20 +23,18 @@
 open Ast_helper
 open Location
 
-let syntax_error_extension loc descriptions =
-  let suffix = String.concat "." ("SyntaxError" :: descriptions)
-  in ((mkloc suffix loc), Parsetree.PStr [])
-
 let invalidLex = "invalidCharacter.orComment.orString"
 let syntax_error_str err loc =
   if !Reason_config.recoverable then
-    [Str.mk ~loc:loc (Parsetree.Pstr_extension (syntax_error_extension loc [invalidLex], []))]
+    [
+      Str.mk ~loc:loc (Parsetree.Pstr_extension (Reason_utils.syntax_error_extension_node loc invalidLex, []))
+    ]
   else
     raise err
 
 let syntax_error_sig err loc =
   if !Reason_config.recoverable then
-    [Sig.mk ~loc:loc (Parsetree.Psig_extension (syntax_error_extension loc [invalidLex], []))]
+    [Sig.mk ~loc:loc (Parsetree.Psig_extension (Reason_utils.syntax_error_extension_node loc invalidLex, []))]
   else
     raise err
 
