@@ -71,10 +71,6 @@ let getMerlinProcess path::path =>
   switch startedMerlin.contents {
   | Some m => m
   | None => {
-      let nuclideOCamlPathToMerlin = Atom.Config.get "nuclide.nuclide-ocaml.pathToMerlin";
-      let nuclideOCamlMerlinFlags = Atom.Config.get "nuclide.nuclide-ocaml.merlinFlags";
-      let nuclideOCamlPathToMerlinOverwrite = Atom.Config.get "nuclide.nuclide-ocaml.atomReasonOverwroteYour_pathToMerlin";
-      let nuclideOCamlMerlinFlagsOverwrite = Atom.Config.get "nuclide.nuclide-ocaml.atomReasonOverwroteYour_merlinFlags";
       let atomReasonPathToMerlin = Atom.Config.get "AtomReason.pathToMerlin";
       let atomReasonMerlinFlags = Atom.Config.get "AtomReason.merlinFlags";
       let atomReasonMerlinLogFile = Atom.Config.get "AtomReason.merlinLogFile";
@@ -83,24 +79,10 @@ let getMerlinProcess path::path =>
       | JsonString s => Atom.Env.setEnvVar "MERLIN_LOG" s
       | _ => ()
       };
-      switch (nuclideOCamlPathToMerlin, nuclideOCamlPathToMerlinOverwrite) {
-      | (_, Empty) =>
-          Atom.Config.set
-            "nuclide.nuclide-ocaml.atomReasonOverwroteYour_pathToMerlin" nuclideOCamlPathToMerlin
-      | _ => ()
-      };
-      switch (nuclideOCamlMerlinFlags, nuclideOCamlMerlinFlagsOverwrite) {
-      | (_, Empty) =>
-          Atom.Config.set
-            "nuclide.nuclide-ocaml.atomReasonOverwroteYour_merlinFlags" nuclideOCamlMerlinFlags
-      | _ => ()
-      };
-      Atom.Config.set "nuclide.nuclide-ocaml.pathToMerlin" atomReasonPathToMerlin;
-      Atom.Config.set "nuclide.nuclide-ocaml.merlinFlags" atomReasonMerlinFlags;
       let merlinProcess =
         createMerlinProcessOnce
-          pathToMerlin::(Atom.JsonValue.unsafeExtractString nuclideOCamlPathToMerlin)
-          merlinFlags::(Atom.JsonValue.unsafeExtractString nuclideOCamlMerlinFlags)
+          pathToMerlin::(Atom.JsonValue.unsafeExtractString atomReasonPathToMerlin)
+          merlinFlags::(Atom.JsonValue.unsafeExtractString atomReasonMerlinFlags)
           dotMerlinPath::(findNearestMerlinFile beginAtFilePath::path);
       startedMerlin.contents = Some merlinProcess;
       merlinProcess
