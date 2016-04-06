@@ -1413,7 +1413,9 @@ let module N = {
     34;
     35
   };
-  let z = M.({});
+  let z = M.{};
+  let z = M.{};
+  let z = M.{};
   let z = M.{x: 10};
   let z = M.[foo, bar];
   let z = M.[foo, bar];
