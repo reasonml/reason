@@ -1,5 +1,6 @@
 (* Portions Copyright (c) 2015-present, Facebook, Inc. All rights reserved. *)
 
+open Lexing
 
 exception Invalid_config of string
 
@@ -112,7 +113,7 @@ let () =
           ~constructorLists
       in
       let thePrinter = match !prnt with
-        | Some "binary_reason" -> fun comments ast -> (
+        | Some "binary_reason" -> fun (ast, comments) -> (
           (* Our special format for interchange between reason should keep the
            * comments separate.  This is not compatible for input into the
            * ocaml compiler - only for input into another version of Reason. We
@@ -124,25 +125,26 @@ let () =
           );
         )
         | Some "binary"
-        | None -> fun comments ast -> (
+        | None -> fun (ast, comments) -> (
           output_string stdout Config.ast_intf_magic_number;
           output_value  stdout filename;
           output_value  stdout ast
         )
-        | Some "ast" -> fun comments ast -> (
+        | Some "ast" -> fun (ast, comments) -> (
           Printast.interface Format.std_formatter ast
         )
         (* If you don't wrap the function in parens, it's a totally different
          * meaning #thanksOCaml *)
-        | Some "none" -> (fun comments ast -> ())
+        | Some "none" -> (fun (ast, comments) -> ())
         | Some "ml" -> Reason_toolchain.ML.print_canonical_interface_with_comments
         | Some "re" -> Reason_toolchain.JS.print_canonical_interface_with_comments
         | Some s -> (
           raise (Invalid_config ("Invalid -print setting for interface '" ^ s ^ "'."))
         )
       in
-      thePrinter comments ast
+      thePrinter (ast, comments)
     ) else (
+      (*    Printf.fprintf stderr "syntax error: %s\n" (Reason_error_report.report checkpoint); [] in *)
       let ((ast, comments), parsedAsML, parsedAsInterface) = match !prse with
         | None -> (defaultImplementationParserFor filename) lexbuf
         | Some "binary_reason" -> reasonBinaryParser chan
@@ -160,7 +162,7 @@ let () =
           ~constructorLists
       in
       let thePrinter = match !prnt with
-        | Some "binary_reason" -> fun comments ast -> (
+        | Some "binary_reason" -> fun (ast, comments) -> (
           (* Our special format for interchange between reason should keep the
            * comments separate.  This is not compatible for input into the
            * ocaml compiler - only for input into another version of Reason. We
@@ -172,24 +174,24 @@ let () =
           );
         )
         | Some "binary"
-        | None -> fun comments ast -> (
+        | None -> fun (ast, comments) -> (
           output_string stdout Config.ast_impl_magic_number;
           output_value stdout filename;
           output_value stdout ast
         )
-        | Some "ast" -> fun comments ast -> (
+        | Some "ast" -> fun (ast, comments) -> (
           Printast.implementation Format.std_formatter ast
         )
         (* If you don't wrap the function in parens, it's a totally different
          * meaning #thanksOCaml *)
-        | Some "none" -> (fun comments ast -> ())
+        | Some "none" -> (fun (ast, comments) -> ())
         | Some "ml" -> Reason_toolchain.ML.print_canonical_implementation_with_comments
         | Some "re" -> Reason_toolchain.JS.print_canonical_implementation_with_comments
         | Some s -> (
           raise (Invalid_config ("Invalid -print setting for implementation '" ^ s ^ "'."))
         )
       in
-      thePrinter comments ast
+      thePrinter (ast, comments)
     )
   with
   | Parsing.Parse_error | Syntaxerr.Escape_error ->
