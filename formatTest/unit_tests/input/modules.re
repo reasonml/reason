@@ -176,7 +176,7 @@ let module InliningSig: {let x: int; let y:int;} = {
   let y = 20;
 };
 
-let module MyFunctor = functor (M: HasTT) => {
+let module MyFunctor = fun (M: HasTT) => {
   type reexportedTT = M.tt;
   /* Inline comment inside module. */
   /** Following special comment inside module. */
@@ -213,14 +213,11 @@ let module CurriedSugar (A:ASig) (B:BSig) => {
    let result = A.a + B.b;
    }: SigResult);
 
-   SugarML unifies the functor and function syntax. The same currying/annotation
-   patterns are available for both module/functors and value/functions.
+   /* Not supported in OCaml OR Reason (Edit: now supported in OCaml for functions) */
+   let x = fun (a:foo) :bar => baz;
+   module x = fun (A:Foo) :Bar => Baz;
 
-   /* Not supported in OCaml OR SugarML */
-   let x = (a:foo) :bar => baz;
-   module x = functor (A:Foo) :Bar => Baz;
-
-   /* Supported in both OCaml and SugarML */
+   /* Supported in both OCaml and Reason */
    let x (a:foo) :bar => baz;
    module x (A:Foo) :Bar => Baz;
 
@@ -234,7 +231,7 @@ let module CurriedSugarWithAnnotatedReturnVal (A:ASig) (B:BSig) => ({
   let result = A.a + B.b;
 }: SigResult);
 
-let module CurriedNoSugar = functor (A:ASig) => functor (B:BSig) => {
+let module CurriedNoSugar = fun (A:ASig) => fun (B:BSig) => {
   let result = A.a + B.b;
 };
 
@@ -246,7 +243,7 @@ let letsTryThatSyntaxInLocalModuleBindings () => {
     let result = A.a + B.b;
   }: SigResult);
 
-  let module CurriedNoSugar = functor (A:ASig) => functor (B:BSig) => {
+  let module CurriedNoSugar = fun (A:ASig) => fun (B:BSig) => {
     let result = A.a + B.b;
   };
 
@@ -293,20 +290,20 @@ module type FunctorType3 = (Blah:ASig) => (ThisIsIgnored:BSig) => SigResult;
  * printer will enforce as well */
 /* The following: */
 let module CurriedSugarWithAnnotation2: ASig => BSig => SigResult =
-  functor (A:ASig) => functor (B:BSig) => {let result = A.a + B.b;};
+  fun (A:ASig) => fun (B:BSig) => {let result = A.a + B.b;};
 
 /* Becomes: */
 let module CurriedSugarWithAnnotation: ASig => BSig => SigResult =
-  functor (A:ASig) (B:BSig) => {let result = A.a + B.b;};
+  fun (A:ASig) (B:BSig) => {let result = A.a + B.b;};
 
 
 /* "functors" that are not in sugar curried form cannot annotate a return type
  * for now, so we settle for: */
 let module CurriedSugarWithAnnotationAndReturnAnnotated: ASig => BSig => SigResult =
-  functor (A:ASig) (B:BSig) => ({let result = A.a + B.b;}: SigResult);
+  fun (A:ASig) (B:BSig) => ({let result = A.a + B.b;}: SigResult);
 
 let module ReturnsAFunctor (A:ASig) (B:BSig): (ASig => BSig => SigResult) =>
-  functor (A:ASig) (B:BSig) => {
+  fun (A:ASig) (B:BSig) => {
     let result = 10;
   };
 
@@ -315,7 +312,7 @@ let module ReturnsSigResult (A:ASig) (B:BSig): SigResult => {
 };
 
 let module ReturnsAFunctor2 (A:ASig) (B:BSig): (ASig => BSig => SigResult) =>
-  functor (A:ASig) (B:BSig) => {let result = 10;};
+  fun (A:ASig) (B:BSig) => {let result = 10;};
 
 /*
  * Recursive modules.
@@ -357,6 +354,14 @@ let module Id (X:Type) => X;
 let module Compose (F:Type=>Type) (G:Type=>Type) (X:Type) => F(G(X));
 let l : Compose(List)(Maybe)(Char).t = [Some 'a'];
 let module Example2 (F:Type=>Type) (X:Type) => {
+  /**
+   * Note: This is the one remaining syntactic issue where
+   * modules/functions do not have syntax unified with values.
+   * It should be:
+   *
+   *   let iso (a:(Compose Id F X).t): (F X).t => a;
+   *
+   */
   let iso (a:Compose(Id)(F)(X).t): F(X).t => a;
 };
 
@@ -364,7 +369,7 @@ Printf.printf "\nModules And Functors: %n\n" (CurriedNoSugarFunctorResultInline.
 
 /* We would have: */
 /* let module CurriedSugarWithAnnotation: ASig => BSig => SigResult =
- functor (A:ASig) (B:BSig) => {let result = A.a + B.b;;
+ fun (A:ASig) (B:BSig) => {let result = A.a + B.b;;
  */
 
 /*
