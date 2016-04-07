@@ -32,7 +32,6 @@ let () =
 
     Pkg.share "editorSupport/AtomReason/lib/main.js" ~dst:"editorSupport/AtomReason/lib/main.js";
     Pkg.share "editorSupport/AtomReason/lib/ReasonDiagnosticsProvider.js" ~dst:"editorSupport/AtomReason/lib/ReasonDiagnosticsProvider.js";
-    Pkg.share "editorSupport/AtomReason/lib/ReasonHyperclickProvider.js" ~dst:"editorSupport/AtomReason/lib/ReasonHyperclickProvider.js";
     Pkg.share "editorSupport/AtomReason/lib/constants.js" ~dst:"editorSupport/AtomReason/lib/constants.js";
     Pkg.share "editorSupport/AtomReason/lib/Notiflyer.js" ~dst:"editorSupport/AtomReason/lib/Notiflyer.js";
     Pkg.share "editorSupport/AtomReason/lib/fixedEnv.js" ~dst:"editorSupport/AtomReason/lib/fixedEnv.js";

@@ -43,25 +43,22 @@ type t;
     }
   ]
  */
-let makeTellCommand text => ["tell", "start", "end", text];
-
-let errorsCommand = ["errors"];
 
 /**
  * This looks strange that we are converting to ML data but then quickly
  * converting back to JS types, but it will make more sense when everything
  * else above and below is ML, we have to start the conversion somewhere.
  */
-let getMerlinDiagnostics text path onComplete onFailure => {
-  let res = SuperMerlin.getDiagnostics path::path text::text;
-  Js.Unsafe.meth_call
-    res
-    "then"
-    [|
-      Js.Unsafe.inject (
-        Js.wrap_callback (
-          fun errors => onComplete (MerlinServiceConvert.jsMerlinErrorsToNuclideDiagnostics path errors)
-        )
+let getMerlinDiagnostics editor::editor resolve reject => {
+  let text = Atom.Buffer.getText (Atom.Editor.getBuffer editor);
+  let path = AtomReasonCommon.path editor;
+  SuperMerlin.getDiagnostics
+    path::path
+    text::text
+    (
+      fun successResult => resolve (
+        MerlinServiceConvert.jsMerlinErrorsToNuclideDiagnostics path successResult
       )
-    |]
+    )
+    reject
 };

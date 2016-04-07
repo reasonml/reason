@@ -101,7 +101,7 @@ let module Env = {
   let setEnvVar envVar strVal => {
     Js.Unsafe.set (Js.Unsafe.get (Js.Unsafe.get Js.Unsafe.global "process") "env") envVar (Js.string strVal);
     Js.Unsafe.set fixedEnv envVar (Js.string strVal)
-  }
+  };
 };
 
 let module Config = {
@@ -220,6 +220,9 @@ let module Promise = {
     }
   };
   let resolve v => create (fun jsResolveCb jsRejectCb => Js.Unsafe.fun_call jsResolveCb [|v|]);
+  /* For our current purposes, a promise (with no chaining abilities) is enough. */
+  let createFakePromise (executor: ('a => unit) => ('b => unit) => unit) =>
+    Js.Unsafe.new_obj promise [|Js.Unsafe.inject (Js.wrap_callback executor)|];
 };
 
 let module Notification = {
@@ -228,7 +231,6 @@ let module Notification = {
   let getMessage (n: t) => Js.to_string (Js.Unsafe.meth_call n "getMessage" emptyArgs);
   let dismiss (n: t) => Js.Unsafe.meth_call n "dismiss" emptyArgs;
 };
-
 
 let module NotificationManager = {
   type options = {detail: string, dismissable: bool, icon: string};
