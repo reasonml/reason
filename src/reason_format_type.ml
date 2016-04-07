@@ -24,7 +24,10 @@ let () =
       Sys.argv.(1)
       |> split ~by:'"'
       |> List.map (fun input ->
-        Reason_type_of_ocaml_type.convert input |> String.trim |> String.escaped
+        try Reason_type_of_ocaml_type.convert input |> String.trim |> String.escaped
+        with Syntaxerr.Error a ->
+          (* Can't parse the input for some reason? Return the (slightly modified) result and don't crash. *)
+          "ML: " ^ input
       )
       |> String.concat "\n"
       (* We omit printing one last line break in order to conserve the invariant
