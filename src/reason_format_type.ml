@@ -26,11 +26,8 @@ let () =
       |> List.map (fun input ->
         try Reason_type_of_ocaml_type.convert input |> String.trim |> String.escaped
         with Syntaxerr.Error a ->
-          (* Can't parse the input for some reason? Log to disk and return the input (don't crash). *)
-          let oc = open_out_gen [Open_creat; Open_text; Open_append] 0o640 "./unprintable_ocaml_type_error_please_report.txt" in
-          output_string oc input;
-          close_out oc;
-          input
+          (* Can't parse the input for some reason? Return the (slightly modified) result and don't crash. *)
+          "ML: " ^ input
       )
       |> String.concat "\n"
       (* We omit printing one last line break in order to conserve the invariant
