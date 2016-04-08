@@ -13,19 +13,36 @@ type intListTranformer = list int => list int;
 
 type x = list (int, string);
 
-let module HoldsAType = {type hasPrime 'a 'b 'c = Hashtbl.t (list 'a) (list 'b);};
+let module HoldsAType = {
+  type hasPrime 'a 'b 'c =
+    Hashtbl.t (list 'a) (list 'b);
+};
 
-type myType2 = myTwoParamType (myType (int => int)) int => int;
+type myType2 =
+  myTwoParamType (myType (int => int)) int => int;
 
 /* Confusing because => looks like part
                                      of the return type signature. */
-let myFunc (a: int => int) (b: int => int) :myType int => [a 20 + b 30];
+let myFunc
+    (a: int => int)
+    (b: int => int)
+    :myType int => [
+  a 20 + b 30
+];
 
-let myFunc (a: int => int) (b: int => int) :(myType int => myType int) => fun lst => lst;
+let myFunc
+    (a: int => int)
+    (b: int => int)
+    :(myType int => myType int) =>
+  fun lst => lst;
 
 let certainlyRequiresWrapping:
   option (Mod.handler p re, Mod.Types.handler) =>
-  option (Mod.touch props (props, state) resource, (list Mod.t, list Mod.t)) =>
+  option
+    (
+      Mod.touch props (props, state) resource,
+      (list Mod.t, list Mod.t)
+    ) =>
   list (Mod.update props (props, state) resource) =>
   list (Mod.update props (props, state) resource) =
   ();
