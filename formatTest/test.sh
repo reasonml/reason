@@ -24,9 +24,11 @@ UNIT_TEST_OUTPUT=$TEST_DIR/unit_tests/output
 UNIT_TEST_EXPECTED_OUTPUT=$DIR/unit_tests/expected_output
 
 
-TYPE_TEST_INPUT=$DIR/typeCheckedTests
+TYPE_TEST_INPUT=$DIR/typeCheckedTests/input
 
 TYPE_TEST_OUTPUT=$TEST_DIR/typeCheckedTests/output
+
+TYPE_TEST_EXPECTED_OUTPUT=$DIR/typeCheckedTests/expected_output
 
 function info() {
     printf "${INFO}$1${RESET}\n"
@@ -54,11 +56,23 @@ function unit_test() {
     OUTPUT=$3
     EXPECTED_OUTPUT=$4
 
+
     info "=============="
     echo "Unit testing $FILE"
     info "Generating output:"
-    echo " '$REASONFMT -parse re -print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE'"
-    $REASONFMT -parse re -print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE
+    if [ "$(basename $FILE)" != "$(basename $FILE .ml)" ]; then
+        REFILE="$(basename $FILE .ml).re"
+        echo "$REASONFMT -heuristics-file $INPUT/arity.txt -print-width 50 -parse ml -print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
+        $REASONFMT -heuristics-file $INPUT/arity.txt -print-width 50 -parse ml -print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE
+        if ! [[ $? -eq 0 ]]; then
+            warning "TEST FAILED CONVERTING ML TO RE\n"
+            exit 1
+        fi
+        FILE=$REFILE
+    else
+      echo " '$REASONFMT -print-width 50 -parse re -print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE'"
+      $REASONFMT -print-width 50 -parse re -print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE
+    fi
 
     info "Comparing results:"
     echo " diff $OUTPUT/$FILE $EXPECTED_OUTPUT/$FILE"
@@ -84,14 +98,34 @@ function idempotent_test() {
     OUTPUT=$3
 
     info "=============="
-    echo "Property testing $FILE"
+    echo "Testing idempotent property $FILE"
     info "Generating output:"
-    echo " '$REASONFMT -parse re -print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE'"
-    $REASONFMT -parse re -print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE
+    if [ "$(basename $FILE)" != "$(basename $FILE .ml)" ]; then
+        REFILE="$(basename $FILE .ml).re"
+        info "Converting $FILE to $REFILE:"
 
-    info "Generating output again:"
-    echo "$REASONFMT -parse re -print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted"
-    $REASONFMT -parse re -print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted
+        echo "$REASONFMT -heuristics-file $INPUT/arity.txt -print-width 50 -parse ml -print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
+        $REASONFMT -heuristics-file $INPUT/arity.txt -print-width 50 -parse ml -print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE
+        if ! [[ $? -eq 0 ]]; then
+            warning "TEST FAILED\n"
+            exit 1
+        fi
+        FILE=$REFILE
+        echo " '$REASONFMT -print-width 50 -parse re -print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE'"
+        $REASONFMT -print-width 50 -parse re -print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE
+
+        info "Generating output again:"
+        echo "$REASONFMT -print-width 50 -parse re -print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted"
+        $REASONFMT -print-width 50 -parse re -print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted
+
+    else
+      echo " '$REASONFMT -print-width 50 -parse re -print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE'"
+      $REASONFMT -print-width 50 -parse re -print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE
+
+      info "Generating output again:"
+      echo "$REASONFMT -print-width 50 -parse re -print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted"
+      $REASONFMT -print-width 50 -parse re -print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted
+    fi
 
     diff --unchanged-line-format="" --new-line-format=":%dn: %L" --old-line-format=":%dn: %L" $OUTPUT/$FILE $OUTPUT/$FILE.formatted
     if ! [[ $? -eq 0 ]]; then
@@ -117,8 +151,8 @@ function typecheck_test() {
     if [ "$(basename $FILE)" != "$(basename $FILE .ml)" ]; then
         REFILE="$(basename $FILE .ml).re"
         info "Converting $FILE to $REFILE:"
-        echo "$REASONFMT -heuristics-file $INPUT/arity.txt -parse ml -print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
-        $REASONFMT -heuristics-file $INPUT/arity.txt -parse ml -print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE
+        echo "$REASONFMT -heuristics-file $INPUT/arity.txt -print-width 50 -parse ml -print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
+        $REASONFMT -heuristics-file $INPUT/arity.txt -print-width 50 -parse ml -print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE
         if ! [[ $? -eq 0 ]]; then
             warning "TEST FAILED\n"
             exit 1
@@ -126,8 +160,8 @@ function typecheck_test() {
         FILE=$REFILE
     else
         info "Formatting:"
-        echo "$REASONFMT -parse re -print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
-        $REASONFMT -parse re -print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE
+        echo "$REASONFMT -print-width 50 -parse re -print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
+        $REASONFMT -print-width 50 -parse re -print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE
         if ! [[ $? -eq 0 ]]; then
             warning "TEST FAILED\n"
             exit 1
@@ -155,6 +189,8 @@ done
 
 cd $TYPE_TEST_INPUT && find . -type f \( -name "*.re" -or -name "*.ml" \) | while read file; do
         typecheck_test $file $TYPE_TEST_INPUT $TYPE_TEST_OUTPUT
+        unit_test $file $TYPE_TEST_INPUT $TYPE_TEST_OUTPUT $TYPE_TEST_EXPECTED_OUTPUT
+        idempotent_test $file $TYPE_TEST_INPUT $TYPE_TEST_OUTPUT $TYPE_TEST_EXPECTED_OUTPUT
 done
 
 

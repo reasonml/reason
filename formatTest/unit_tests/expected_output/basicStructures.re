@@ -15,10 +15,14 @@ for i in 0 to 5 {
   }
 };
 
-for i in 0 to (endOfRangeMustBeSimple expr soWrap) {
+for i in
+    0 to
+    (endOfRangeMustBeSimple expr soWrap) {
   print_int i;
   print_newline ();
-  for i in (theSame isTrue ofThe startOfRange) downto 0 {
+  for i in
+      (theSame isTrue ofThe startOfRange) downto
+      0 {
     print_string "Counting in reverse direction";
     print_newline ()
   }
@@ -178,10 +182,13 @@ let result =
 
 let myRecord = {
   nestedRecord: {
-    anotherNestedRecord: fun instaComp displayRect =>
+    anotherNestedRecord:
+      fun instaComp displayRect =>
       if (
         Graphics.cgRectIntersectsWithSlop
-          defaultCompositeTimerRectSlop instaComp.relativeRect displayRect
+          defaultCompositeTimerRectSlop
+          instaComp.relativeRect
+          displayRect
       ) {
         IoEligible
       } else {
@@ -269,12 +276,18 @@ type pairOfInts = (int, int);
 
 let letBindingWithTypeConstraint: int = 10;
 
-let (tupleItem: int, withTypeConstraint: int) = (10, 20);
+let (tupleItem: int, withTypeConstraint: int) = (
+  10,
+  20
+);
 
 /* To make sure that tuple field annotations are annotating the entire field */
 let _dummyFunc x => 10;
 
-let annotatingFuncApplication = (_dummyFunc "a": int, _dummyFunc "a": int);
+let annotatingFuncApplication = (
+  _dummyFunc "a": int,
+  _dummyFunc "a": int
+);
 
 /* Pretty printer might stick the [int] at the label. */
 let annotatingSingleFuncApplication: int = _dummyFunc "a";
@@ -292,9 +305,21 @@ let annotatingSingleFuncApplication = {
   2 + (_dummyFunc a: int)
 };
 
-let (tupleItem: int, constrainedWithoutGrouping: int) = (10, 20);
+let (
+  tupleItem: int,
+  constrainedWithoutGrouping: int
+) = (
+  10,
+  20
+);
 
-let (tupleItem, withOutsideTypeConstraint): (int, int) = (10, 20);
+let (tupleItem, withOutsideTypeConstraint): (
+  int,
+  int
+) = (
+  10,
+  20
+);
 
 /**                        Immutable Lists
  * ============================================================================
@@ -310,7 +335,12 @@ let tl = ["listTo", "append", "to"];
 let result: list string = [hd, ...tl];
 
 /* Is the same as writing */
-let result: list string = ["appendedToHead", "listTo", "append", "to"];
+let result: list string = [
+  "appendedToHead",
+  "listTo",
+  "append",
+  "to"
+];
 
 /* To operate on lists, use pattern matching */
 let rec size =
@@ -445,14 +475,27 @@ let addValues (a: int, b: int) => a + b;
 /* Impossible to annotate return values of fun lambdas - just like in OCaml */
 let addValues (a: int, b: int) => a + b;
 
-let functionReturnValueType (i: int, s: string) :(int => int) => fun x => x + 1;
+let functionReturnValueType
+    (i: int, s: string)
+    :(int => int) =>
+  fun x => x + 1;
 
-let curriedFormOne (i: int, s: string) => s ^ string_of_int i;
+let curriedFormOne (i: int, s: string) =>
+  s ^ string_of_int i;
 
-let curriedFormTwo (i: int, x: int) :(int, int) => (i, x);
+let curriedFormTwo (i: int, x: int) :(int, int) => (
+  i,
+  x
+);
 
 /* let nonCurriedFormTwo = fun (i:int, x:int) (:(int, int)) => (i, x); */
-let curriedFormThree (i: int, (a: int, b: int): (int, int)) :(int, int, int) => (i, a, b);
+let curriedFormThree
+    (i: int, (a: int, b: int): (int, int))
+    :(int, int, int) => (
+  i,
+  a,
+  b
+);
 
 /* let nonCurriedFormThree = fun (i:int, (a:int, b:int):(int, int)) (:(int, int, int)) => (i, a, b);  */
 /** TODO: But this, however doesn't work.
@@ -476,13 +519,29 @@ let funcWithTypeLocallyAbstractTypes
  * Records:
  *=============================================================================
  */
-type withThreeFields = {name: string, age: int, occupation: string};
+type withThreeFields = {
+  name: string,
+  age: int,
+  occupation: string
+};
 
-let testRecord = {name: "joe", age: 20, occupation: "engineer"};
+let testRecord = {
+  name: "joe",
+  age: 20,
+  occupation: "engineer"
+};
 
-let anotherRecord = {...testRecord, name: "joe++", age: testRecord.age + 10};
+let anotherRecord = {
+  ...testRecord,
+  name: "joe++",
+  age: testRecord.age + 10
+};
 
-let makeRecordBase () => {name: "Joe", age: 30, occupation: "Engineer"};
+let makeRecordBase () => {
+  name: "Joe",
+  age: 30,
+  occupation: "Engineer"
+};
 
 let anotherRecord = {
   /* These parens should be evaporated. */
@@ -514,13 +573,10 @@ let anotherRecord = {
 };
 
 let anotherRecord = {
-  ...SomeReally.longFunctionCall {passingRecordField: 0, andThisOtherRecordField: 10},
-  name: "joe++",
-  age: testRecord.age + 10
-};
-
-let anotherRecord = {
-  ...SomeReally.longFunctionCall withArguments (thatWrap: bool),
+  ...SomeReally.longFunctionCall {
+    passingRecordField: 0,
+    andThisOtherRecordField: 10
+  },
   name: "joe++",
   age: testRecord.age + 10
 };
@@ -528,7 +584,23 @@ let anotherRecord = {
 let anotherRecord = {
   ...
     SomeReally.longFunctionCall
-      withArg ["and", "final", "list", "that", "should", "break"],
+      withArguments (thatWrap: bool),
+  name: "joe++",
+  age: testRecord.age + 10
+};
+
+let anotherRecord = {
+  ...
+    SomeReally.longFunctionCall
+      withArg
+      [
+        "and",
+        "final",
+        "list",
+        "that",
+        "should",
+        "break"
+      ],
   name: "joe++",
   age: testRecord.age + 10
 };

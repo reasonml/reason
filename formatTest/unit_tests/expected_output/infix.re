@@ -24,53 +24,74 @@ let minParens = ((x > y > z) < a < b) === c === d;
 let formatted = ((x > y > z) < a < b) === c === d;
 
 /* < > = all have same precedence level and direction (left) */
-let parseTree = a1 < a2 < (b1 > b2 > (y == x == z));
+let parseTree =
+  a1 < a2 < (b1 > b2 > (y == x == z));
 
-let minParens = a1 < a2 < (b1 > b2 > (y == x == z));
+let minParens =
+  a1 < a2 < (b1 > b2 > (y == x == z));
 
-let formatted = a1 < a2 < (b1 > b2 > (y == x == z));
+let formatted =
+  a1 < a2 < (b1 > b2 > (y == x == z));
 
 /* Case with === */
-let parseTree = a1 < a2 < (b1 > b2 > (y === x === z));
+let parseTree =
+  a1 < a2 < (b1 > b2 > (y === x === z));
 
-let minParens = a1 < a2 < (b1 > b2 > (y === x === z));
+let minParens =
+  a1 < a2 < (b1 > b2 > (y === x === z));
 
-let formatted = a1 < a2 < (b1 > b2 > (y === x === z));
+let formatted =
+  a1 < a2 < (b1 > b2 > (y === x === z));
 
 /* !=...(left) same level =(left) is higher than :=(right) */
-let parseTree = a1 := a2 := b1 == b2 == (y != x != z);
+let parseTree =
+  a1 := a2 := b1 == b2 == (y != x != z);
 
-let minParens = a1 := a2 := b1 == b2 == (y != x != z);
+let minParens =
+  a1 := a2 := b1 == b2 == (y != x != z);
 
-let formatted = a1 := a2 := b1 == b2 == (y != x != z);
+let formatted =
+  a1 := a2 := b1 == b2 == (y != x != z);
 
 /* Case with === */
-let parseTree = a1 := a2 := b1 === b2 === (y !== x !== z);
+let parseTree =
+  a1 := a2 := b1 === b2 === (y !== x !== z);
 
-let minParens = a1 := a2 := b1 === b2 === (y !== x !== z);
+let minParens =
+  a1 := a2 := b1 === b2 === (y !== x !== z);
 
-let formatted = a1 := a2 := b1 === b2 === (y !== x !== z);
+let formatted =
+  a1 := a2 := b1 === b2 === (y !== x !== z);
 
 /* !=...(left) same level =(left) is higher than :=(right) */
-let parseTree = a1 := a2 := b1 == ((b2 == y) != x != z);
+let parseTree =
+  a1 := a2 := b1 == ((b2 == y) != x != z);
 
-let minParens = a1 := a2 := b1 == ((b2 == y) != x != z);
+let minParens =
+  a1 := a2 := b1 == ((b2 == y) != x != z);
 
-let formatted = a1 := a2 := b1 == ((b2 == y) != x != z);
+let formatted =
+  a1 := a2 := b1 == ((b2 == y) != x != z);
 
 /* Case with === */
-let parseTree = a1 := a2 := b1 === ((b2 === y) !== x !== z);
+let parseTree =
+  a1 := a2 := b1 === ((b2 === y) !== x !== z);
 
-let minParens = a1 := a2 := b1 === ((b2 === y) !== x !== z);
+let minParens =
+  a1 := a2 := b1 === ((b2 === y) !== x !== z);
 
-let formatted = a1 := a2 := b1 === ((b2 === y) !== x !== z);
+let formatted =
+  a1 := a2 := b1 === ((b2 === y) !== x !== z);
 
 /* &...(left) is higher than &(right). &(right) is equal to &&(right) */
-let parseTree = a1 && a2 && (b1 & b2 & y &|| x &|| z);
+let parseTree =
+  a1 && a2 && (b1 & b2 & y &|| x &|| z);
 
-let minParens = a1 && a2 && (b1 & b2 & y &|| x &|| z);
+let minParens =
+  a1 && a2 && (b1 & b2 & y &|| x &|| z);
 
-let formatted = a1 && a2 && (b1 & b2 & y &|| x &|| z);
+let formatted =
+  a1 && a2 && (b1 & b2 & y &|| x &|| z);
 
 /* **...(right) is higher than *...(left) */
 let parseTree = b1 *| b2 *| y *\*| x *\*| z;
@@ -80,11 +101,14 @@ let minParens = b1 *| b2 *| y *\*| x *\*| z;
 let formatted = b1 *| b2 *| y *\*| x *\*| z;
 
 /* **...(right) is higher than *...(left) */
-let parseTree = b1 *| b2 *| y *\*| (x *\*| z *| a);
+let parseTree =
+  b1 *| b2 *| y *\*| (x *\*| z *| a);
 
-let minParens = b1 *| b2 *| y *\*| (x *\*| z *| a);
+let minParens =
+  b1 *| b2 *| y *\*| (x *\*| z *| a);
 
-let formatted = b1 *| b2 *| y *\*| (x *\*| z *| a);
+let formatted =
+  b1 *| b2 *| y *\*| (x *\*| z *| a);
 
 /* |...(left) is higher than ||(right) */
 /* All parens should be removed when formatting n > 0 times */
@@ -116,18 +140,29 @@ first || second || third;
 (first || second) || third;
 
 /* No parens should be added/removed from the following when formatting */
-let seeWhichCharacterHasHigherPrecedence = (first |> second |> third) ^> fourth;
+let seeWhichCharacterHasHigherPrecedence = (
+                                        first |>
+                                        second |>
+                                        third
+                                        ) ^> fourth;
 
-let seeWhichCharacterHasHigherPrecedence = first |> second |> third;
+let seeWhichCharacterHasHigherPrecedence =
+  first |> second |> third;
 
-let seeWhichCharacterHasHigherPrecedence = first + second + third;
+let seeWhichCharacterHasHigherPrecedence =
+  first + second + third;
 
 let comparison = (==);
 
 /* Why would the following two cases have different grouping? */
-let res = blah || DataConstructor 10 || DataConstructor 10 && 10;
+let res =
+  blah ||
+    DataConstructor 10 ||
+    DataConstructor 10 && 10;
 
-let res = blah && DataConstructor 10 && DataConstructor 10 + 10;
+let res =
+  blah &&
+    DataConstructor 10 && DataConstructor 10 + 10;
 
 /* This demonstrates how broken infix pretty printing is:
  */
@@ -171,7 +206,8 @@ let res = (|>) first::first second::second;
 let res = (|>) first::first;
 
 /* Custom infix accepting *three* without labeled args */
-let (|>) firsfirst second third => first + second + third;
+let (|>) firsfirst second third =>
+  first + second + third;
 
 /* Should reformat to actually be placed infix if passed two args */
 let res = first |> second;
@@ -202,16 +238,25 @@ let leftAssocGrouping = first |> second |> third;
 let rightAssocGrouping = first ^> second ^> third;
 
 /* It's definitely the caret. */
-let seeWhichCharacterHasHigherPrecedence = first |> second ^> third;
+let seeWhichCharacterHasHigherPrecedence =
+  first |> second ^> third;
 
-let seeWhichCharacterHasHigherPrecedence = first ^> second |> third;
+let seeWhichCharacterHasHigherPrecedence = first
+                                        ^> second |> third;
 
-let seeWhichCharacterHasHigherPrecedence = first ^> (second |> third) |> fourth;
+let seeWhichCharacterHasHigherPrecedence = first
+                                        ^> (
+                                        second |> third
+                                        ) |> fourth;
 
-let res = blah && DataConstructor 10 && DataConstructor 10 + 10;
+let res =
+  blah &&
+    DataConstructor 10 && DataConstructor 10 + 10;
 
 /* Should be parsed as */
-let res = blah && DataConstructor 10 && DataConstructor 10 + 10;
+let res =
+  blah &&
+    DataConstructor 10 && DataConstructor 10 + 10;
 
 let (++) label::label label2::label2 => label + label2;
 
@@ -246,7 +291,8 @@ let includesACommentCloseInIdentifier = ( *\*\/ );
 
 let includesACommentCloseInIdentifier = ( *\*\/ );
 
-let shouldSimplifyAnythingExceptApplicationAndConstruction =
+let
+  shouldSimplifyAnythingExceptApplicationAndConstruction =
   call "hi" ^
     (
       switch x {
@@ -287,7 +333,17 @@ let res = - (- x);
 let res = f (- x);
 
 /* The semicolon should be attached to someType */
-let myFunc aaaa bbbb cccc dddd aaaa bbbb cccc dddd aaaa => [
-  blah aaaa bbbb cccc dddd aaaa bbbb cccc dddd aaaa,
+let myFunc
+    aaaa
+    bbbb
+    cccc
+    dddd
+    aaaa
+    bbbb
+    cccc
+    dddd
+    aaaa => [
+  blah
+    aaaa bbbb cccc dddd aaaa bbbb cccc dddd aaaa,
   ...someType
 ];

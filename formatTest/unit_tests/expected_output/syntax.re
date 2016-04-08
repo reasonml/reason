@@ -32,70 +32,103 @@ let matchingFunc a =>
     }
   };
 
-type firstTwoShouldBeGroupedInParens = (int => int) => int => int;
+type firstTwoShouldBeGroupedInParens =
+  (int => int) => int => int;
 
-type allParensCanBeRemoved = int => int => int => int;
-
-type firstTwoShouldBeGroupedAndFirstThree = ((int => int) => int) => int;
-
-/* Same thing now but with type constructors instead of each int */
-type firstTwoShouldBeGroupedInParens = (list int => list int) => list int => list int;
-
-type allParensCanBeRemoved = list int => list int => list int => list int;
+type allParensCanBeRemoved =
+  int => int => int => int;
 
 type firstTwoShouldBeGroupedAndFirstThree =
-  ((list int => list int) => list int) => list int;
+  ((int => int) => int) => int;
+
+/* Same thing now but with type constructors instead of each int */
+type firstTwoShouldBeGroupedInParens =
+  (list int => list int) => list int => list int;
+
+type allParensCanBeRemoved =
+  list int => list int => list int => list int;
+
+type firstTwoShouldBeGroupedAndFirstThree =
+  ((list int => list int) => list int) =>
+  list int;
 
 type myRecordType = {
-  firstTwoShouldBeGroupedInParens: (int => int) => int => int,
+  firstTwoShouldBeGroupedInParens:
+    (int => int) => int => int,
   allParensCanBeRemoved: int => int => int => int,
-  firstTwoShouldBeGroupedAndFirstThree: ((int => int) => int) => int
+  firstTwoShouldBeGroupedAndFirstThree:
+    ((int => int) => int) => int
 };
 
-type firstNamedArgShouldBeGroupedInParens = first::(int => int) => second::int => int;
+type firstNamedArgShouldBeGroupedInParens =
+  first::(int => int) => second::int => int;
 
-type allParensCanBeRemoved = first::int => second::int => third::int => int;
+type allParensCanBeRemoved =
+  first::int => second::int => third::int => int;
 
-type firstTwoShouldBeGroupedAndFirstThree = first::((int => int) => int) => int;
+type firstTwoShouldBeGroupedAndFirstThree =
+  first::((int => int) => int) => int;
 
 /* Same thing now, but with type constructors instead of int */
 type firstNamedArgShouldBeGroupedInParens =
-  first::(list int => list int) => second::list int => list int;
+  first::(list int => list int) =>
+  second::list int =>
+  list int;
 
 type allParensCanBeRemoved =
-  first::list int => second::list int => third::list int => list int;
+  first::list int =>
+  second::list int =>
+  third::list int =>
+  list int;
 
 type firstTwoShouldBeGroupedAndFirstThree =
-  first::((list int => list int) => list int) => list int;
+  first::((list int => list int) => list int) =>
+  list int;
 
 type firstNamedArgShouldBeGroupedInParens =
-  first::(int => int)? => second::int list? => int;
+  first::(int => int)? =>
+  second::int list? =>
+  int;
 
 /* The arrow necessitates parens around the next two args. The ? isn't what
  * makes the parens necessary. */
 type firstNamedArgShouldBeGroupedInParensAndSecondNamedArg =
-  first::(int => int)? => second::(int => int)? => int;
+  first::(int => int)? =>
+  second::(int => int)? =>
+  int;
 
-type allParensCanBeRemoved = first::int? => second::int? => third::int? => int;
+type allParensCanBeRemoved =
+  first::int? =>
+  second::int? =>
+  third::int? =>
+  int;
 
-type firstTwoShouldBeGroupedAndFirstThree = first::((int => int) => int) => int;
+type firstTwoShouldBeGroupedAndFirstThree =
+  first::((int => int) => int) => int;
 
-type noParens = one::int => int => int => two::int => int;
+type noParens =
+  one::int => int => int => two::int => int;
 
-type noParensNeeded = one::int => int => int => two::int => int;
+type noParensNeeded =
+  one::int => int => int => two::int => int;
 
-type firstNamedArgNeedsParens = one::(int => int => int) => two::int => int;
+type firstNamedArgNeedsParens =
+  one::(int => int => int) => two::int => int;
 
 /* Now, let's try type aliasing */
 /* Unless wrapped in parens, types between arrows may not be aliased, may not
  * themselves be arrows. */
-type parensRequiredAroundFirstArg = (list int as 'a) => int as 'a;
+type parensRequiredAroundFirstArg =
+  (list int as 'a) => int as 'a;
 
-type parensRequiredAroundReturnType = (list int as 'a) => (int as 'a);
+type parensRequiredAroundReturnType =
+  (list int as 'a) => (int as 'a);
 
-type parensRequiredAroundReturnType = (list int as 'a) => (int as 'a) as 'b;
+type parensRequiredAroundReturnType =
+  (list int as 'a) => (int as 'a) as 'b;
 
-type noParensNeededWhenInTuple = (list int as 'a, list int as 'b) as 'entireThing;
+type noParensNeededWhenInTuple =
+  (list int as 'a, list int as 'b) as 'entireThing;
 
 type myTypeDef 'a = list 'a;
 
@@ -107,24 +140,34 @@ type instatiatedTypeDef = myTypeDef int => int;
  * implementations (fewer conflicts during parsing, fewer edge cases during
  * printing).
  */
-type something = (int, int [@lookAtThisAttribute]);
+type something = (
+  int,
+  int [@lookAtThisAttribute]
+);
 
 type longWrappingTypeDefinitionExample =
   M_RK__G.Types.instance
-    (TGRecognizer.tGFields unit unit) (TGRecognizer.tGMethods unit unit);
+    (TGRecognizer.tGFields unit unit)
+    (TGRecognizer.tGMethods unit unit);
 
 type semiLongWrappingTypeDefinitionExample =
-  M_RK__Gesture.Types.instance TGRecognizerFinal.tGFields TGRecognizerFinal.tGMethods;
+  M_RK__Gesture.Types.instance
+    TGRecognizerFinal.tGFields
+    TGRecognizerFinal.tGMethods;
 
 type semiLongWrappingTypeWithConstraint =
-  M_RK__Gesture.Types.instance 'a TGRecognizerFinal.tGFields TGRecognizerFinal.tGMethods
+  M_RK__Gesture.Types.instance
+    'a
+    TGRecognizerFinal.tGFields
+    TGRecognizerFinal.tGMethods
 constraint 'a = (unit, unit);
 
 type onelineConstrain = 'a constraint 'a = int;
 
 /* This must be in trunk but not in this branch of OCaml */
 /* type withNestedRecords = MyConstructor of {myField: int} */
-type colors = | Red of int | Black of int | Green of int;
+type colors =
+  | Red of int | Black of int | Green of int;
 
 /* Another approach is to require declared variants to wrap any record */
 /* type myRecord = MyRecord of {name: int}; */
@@ -142,30 +185,40 @@ let {nameBlah}: nameBlahType = {nameBlah: 20};
 
 print_int nameBlah;
 
-let {nameBlah: aliasedToThisVar}: nameBlahType = {nameBlah: 20};
+let {nameBlah: aliasedToThisVar}: nameBlahType = {
+  nameBlah: 20
+};
 
 print_int aliasedToThisVar;
 
-let desiredFormattingForWrappedLambda: int => int => int => nameBlahType =
+let desiredFormattingForWrappedLambda:
+  int => int => int => nameBlahType =
   /*
 
  fun is
  pre-   /firstarg\
  fix   /-coupled--\
   |-\ /-to-prefix--\       */
-  fun curriedArg anotherArg lastArg => {nameBlah: 10};
+  fun curriedArg anotherArg lastArg => {
+    nameBlah: 10
+  };
 
 type longerInt = int;
 
 let desiredFormattingForWrappedLambdaWrappedArrow:
-  longerInt => longerInt => longerInt => nameBlahType =
+  longerInt =>
+  longerInt =>
+  longerInt =>
+  nameBlahType =
   /*
 
  fun is
  pre-   /firstarg\
  fix   /-coupled--\
   |-\ /-to-prefix--\       */
-  fun curriedArg anotherArg lastArg => {nameBlah: 10};
+  fun curriedArg anotherArg lastArg => {
+    nameBlah: 10
+  };
 
 let desiredFormattingForWrappedLambdaReturnOnNewLine
     /*
@@ -185,14 +238,22 @@ let is
 pre-
 fix    /-function binding name---\
 |-\   / is coupled to prefix      \   */
-let desiredFormattingForWrappedSugar curriedArg anotherArg lastArg => {nameBlah: 10};
+let desiredFormattingForWrappedSugar
+    curriedArg
+    anotherArg
+    lastArg => {
+  nameBlah: 10
+};
 
 /*
 let is
 pre-
 fix    /-function binding name---\
 |-\   / is coupled to prefix      \   */
-let desiredFormattingForWrappedSugarReturnOnNewLine curriedArg anotherArg lastArg => {
+let desiredFormattingForWrappedSugarReturnOnNewLine
+    curriedArg
+    anotherArg
+    lastArg => {
   nameBlah: 10
 };
 
@@ -215,11 +276,17 @@ let printPoint (p: point) => {
   print_int p.y
 };
 
-let addPoints (p1: point, p2: point) => {x: p1.x + p2.x, y: p1.y + p2.y};
+let addPoints (p1: point, p2: point) => {
+  x: p1.x + p2.x,
+  y: p1.y + p2.y
+};
 
 let res1 = printPoint point2D;
 
-let res2 = printPoint {x: point3D.x, y: point3D.y};
+let res2 = printPoint {
+  x: point3D.x,
+  y: point3D.y
+};
 
 /*
    When () were used to indicate sequences, the parser used seq_expr not only
@@ -243,11 +310,20 @@ let res2 = printPoint {x: point3D.x, y: point3D.y};
        let x = {a};    /* Record {a:a} */
        let x = {a;};   /* Single item sequence returning identifier {a} */
 */
-let res3 = printPoint (addPoints (point2D, {x: point3D.x, y: point3D.y}));
+let res3 = printPoint (
+  addPoints (
+    point2D,
+    {x: point3D.x, y: point3D.y}
+  )
+);
 
 type person = {age: int, name: string};
 
-type hiredPerson = {age: string, name: string, dateHired: int};
+type hiredPerson = {
+  age: string,
+  name: string,
+  dateHired: int
+};
 
 let o: person = {name: "bob", age: 10};
 
@@ -296,7 +372,8 @@ let module TryToExportTwice = {
   Wait, where would this ever be valid, even if we continued to support
   `let..in`?
 */
-let onlyDoingThisTopLevelLetToBypassTopLevelSequence = {
+let
+  onlyDoingThisTopLevelLetToBypassTopLevelSequence = {
   let x = {
     print_int 1;
     print_int 20
@@ -321,7 +398,8 @@ type hasA = {a: int};
 
 let a = 10;
 
-let returnsASequenceExpressionWithASingleIdentifier () => a;
+let returnsASequenceExpressionWithASingleIdentifier
+    () => a;
 
 let thisReturnsA () => a;
 
@@ -329,9 +407,13 @@ let thisReturnsAAsWell () => a;
 
 let recordVal: int = (thisReturnsARecord ()).a;
 
-Printf.printf "\nproof that thisReturnsARecord: %n\n" recordVal;
+Printf.printf
+  "\nproof that thisReturnsARecord: %n\n"
+  recordVal;
 
-Printf.printf "\nproof that thisReturnsA: %n\n" (thisReturnsA ());
+Printf.printf
+  "\nproof that thisReturnsA: %n\n"
+  (thisReturnsA ());
 
 /* Pattern matching */
 let blah arg =>
@@ -490,12 +572,18 @@ type adders = {
 let myRecordWithFunctions = {
   addTwoNumbers: fun a b => a + b,
   addThreeNumbers: fun a b c => a + b + c,
-  addThreeNumbersTupled: fun (a, b, c) => a + b + c
+  addThreeNumbersTupled: fun (a, b, c) =>
+    a + b + c
 };
 
-let result = myRecordWithFunctions.addThreeNumbers 10 20 30;
+let result =
+  myRecordWithFunctions.addThreeNumbers 10 20 30;
 
-let result = myRecordWithFunctions.addThreeNumbersTupled (10, 20, 30);
+let result = myRecordWithFunctions.addThreeNumbersTupled (
+  10,
+  20,
+  30
+);
 
 let lookTuplesRequireParens = (1, 2);
 
@@ -514,7 +602,8 @@ let tupleInsideALetSequence = {
 
 /* We *require* that function return types be wrapped in
   parenthesis. In this example, there's no ambiguity */
-let makeIncrementer (delta: int) :(int => int) => fun a => a + delta;
+let makeIncrementer (delta: int) :(int => int) =>
+  fun a => a + delta;
 
 /* We could even force that consistency with let bindings - it's allowed
    currently but not forced.
@@ -533,13 +622,22 @@ class classWithNoArg = {
     method y => init
   end;
 */
-let myFunc (a: int) (b: int) :(int, int) => (a, b);
+let myFunc (a: int) (b: int) :(int, int) => (
+  a,
+  b
+);
 
 let myFunc (a: int) (b: int) :list int => [1];
 
-let myFunc (a: int) (b: int) :point => {x: a, y: b};
+let myFunc (a: int) (b: int) :point => {
+  x: a,
+  y: b
+};
 
-let myFunc (a: int, b: int) :point => {x: a, y: b};
+let myFunc (a: int, b: int) :point => {
+  x: a,
+  y: b
+};
 
 type myThing = (int, int);
 
@@ -550,7 +648,8 @@ type stillARecord = {name: string, age: int};
 /* type ('a, 'b) myOtherThing = Leaf of {first:'a, second: 'b} | Null; */
 type branch 'a 'b = {first: 'a, second: 'b};
 
-type myOtherThing 'a 'b = | Leaf of (branch 'a 'b) | Null;
+type myOtherThing 'a 'b =
+  | Leaf of (branch 'a 'b) | Null;
 
 type yourThing = myOtherThing int int;
 
@@ -649,7 +748,10 @@ let optionalAlias a::aa=? b::bb=? () => 10;
 let optionalAnnot a::(a: int)=? b::(b: int)=? () => 10;
 
 /*H*/
-let optionalAliasAnnot a::(aa: int)=? b::(bb: int)=? () => 10;
+let optionalAliasAnnot
+    a::(aa: int)=?
+    b::(bb: int)=?
+    () => 10;
 
 /*I: */
 let defOptional a::a=10 b::b=10 () => 10;
@@ -660,10 +762,16 @@ type named = a::int? => b::int? => unit => int;
 let defOptionalAlias a::aa=10 b::bb=10 () => 10;
 
 /*K*/
-let defOptionalAnnot a::(a: int)=10 b::(b: int)=10 () => 10;
+let defOptionalAnnot
+    a::(a: int)=10
+    b::(b: int)=10
+    () => 10;
 
 /*L*/
-let defOptionalAliasAnnot a::(aa: int)=10 b::(bb: int)=10 () => 10;
+let defOptionalAliasAnnot
+    a::(aa: int)=10
+    b::(bb: int)=10
+    () => 10;
 
 /*M: Invoking them - Punned */
 let resNotAnnotated = named a::a b::b;
@@ -687,17 +795,20 @@ let resAnnotated = named a::a b::b;
 let resAnnotated: ty = named a::a b;
 
 /*S: Explicitly passed optionals are a nice way to say "use the default value"*/
-let explictlyPassed = myOptional a::?None b::?None;
+let explictlyPassed =
+  myOptional a::?None b::?None;
 
 /*T: Annotating the return value of the entire function call */
-let explictlyPassedAnnotated: int = myOptional a::?None b::?None;
+let explictlyPassedAnnotated: int =
+  myOptional a::?None b::?None;
 
 /*U: Explicitly passing optional with identifier expression */
 let a = None;
 
 let explictlyPassed = myOptional a::?a b::?None;
 
-let explictlyPassedAnnotated: int = myOptional a::?a b::?None;
+let explictlyPassedAnnotated: int =
+  myOptional a::?a b::?None;
 
 let nestedLet = {
   let _ = 1;
@@ -723,14 +834,24 @@ let nestedLet = {
  * Showing many combinations of type annotations and named arguments.
  */
 type typeWithNestedNamedArgs =
-  outerOne::(innerOne::int => innerTwo::int => int) => outerTwo::int => int;
+  outerOne::(
+    innerOne::int => innerTwo::int => int
+  ) =>
+  outerTwo::int =>
+  int;
 
 type typeWithNestedOptionalNamedArgs =
-  outerOne::(innerOne::int => innerTwo::int => int)? => outerTwo::int? => int;
+  outerOne::
+    (innerOne::int => innerTwo::int => int)? =>
+  outerTwo::int? =>
+  int;
 
-type typeWithNestedOptionalNamedArgs = outerOne::list string? => outerTwo::int? => int;
+type typeWithNestedOptionalNamedArgs =
+  outerOne::list string? => outerTwo::int? => int;
 
-let x = callSomeFunction withArg::10 andOtherArg::wrappedArg;
+let x =
+  callSomeFunction
+    withArg::10 andOtherArg::wrappedArg;
 
 let res = {
   (constraintedSequenceItem: string);
@@ -738,14 +859,19 @@ let res = {
 };
 
 let res = {
-  (butTheyWillBePrintedWithAppropriateSpacing: string);
+  (
+    butTheyWillBePrintedWithAppropriateSpacing: string
+  );
   (soAsToInstillBestDevelopmentPractices: string)
 };
 
 let x = [
   (eachItemInListCanBeAnnotated: int),
   (typeConstraints: float),
-  (tupleConstraints: int, andNotFunctionInvocations: int)
+  (
+    tupleConstraints: int,
+    andNotFunctionInvocations: int
+  )
 ];
 
 let x = [
@@ -754,18 +880,30 @@ let x = [
   (toInfluenceYour: int, developmentHabbits: int)
 ];
 
-let newRecord = {...(annotatedSpreadRecord: someRec), x: y};
-
-let newRecord = {...(annotatedSpreadRecord: someRec), blah: 0, foo: 1};
+let newRecord = {
+  ...(annotatedSpreadRecord: someRec),
+  x: y
+};
 
 let newRecord = {
-  ...(youCanEvenCallMethodsHereAndAnnotate them: someRec),
+  ...(annotatedSpreadRecord: someRec),
   blah: 0,
   foo: 1
 };
 
 let newRecord = {
-  ...(youCanEvenCallMethodsHereAndAnnotate them named::10: someRec),
+  ...(
+    youCanEvenCallMethodsHereAndAnnotate them: someRec
+  ),
+  blah: 0,
+  foo: 1
+};
+
+let newRecord = {
+  ...(
+    youCanEvenCallMethodsHereAndAnnotate
+      them named::10: someRec
+  ),
   blah: 0,
   foo: 1
 };
@@ -781,7 +919,9 @@ let something: blah = thisIsANamedArg thing;
 let something: blah = typeAnnotation thing;
 
 let newRecord = {
-  ...(heresAFunctionWithNamedArgs argOne::i: annotatedResult),
+  ...(
+    heresAFunctionWithNamedArgs argOne::i: annotatedResult
+  ),
   soAsToInstill: 0,
   developmentHabbits: 1
 };
