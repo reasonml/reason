@@ -96,13 +96,20 @@ let formatImpl editor subText isInterface onComplete onFailure => {
     "-is-interface-pp",
     isInterface ? "true" : "false"
   ];
-  let proc = Atom.BufferedProcess.create options::{...Atom.Process.defaultOptions, env: fixedEnv} stdout::onStdOut stderr::onStdErr exit::onExit args::args fmtPath;
+  let proc =
+    Atom.BufferedProcess.create
+      options::{...Atom.Process.defaultOptions, env: fixedEnv}
+      stdout::onStdOut
+      stderr::onStdErr
+      exit::onExit
+      args::args
+      fmtPath;
   let errorTitle = "AtomReason could not spawn " ^ fmtPath;
   let handleError error handle => {
     NotificationManager.addError options::{...NotificationManager.defaultOptions, detail: error} errorTitle;
     /* TODO: this doesn't type check, but sits across the border of js <-> reason so it passes. onFailure (the
-    promise `reject`) takes in a reason string, when it reality it should take in a Js.string like the other
-    locations in this file where we do `reject stdErr` */
+    promise `onFailure`) takes in a reason string, when it reality it should take in a Js.string like the other
+    locations in this file where we do `onFailure stdErr` */
     onFailure "Failure!";
     handle ()
   };
@@ -123,39 +130,17 @@ let formatImpl editor subText isInterface onComplete onFailure => {
  * - If text before cursor changed in ways beyond "whitespace" changes, fall
  * back to current behavior.
  */
-let getFormatting editor range onComplete => {
-  let maybeFilePath = Editor.getPath editor;
+
+let getEntireFormatting editor range notifySuccess notifyInvalid notifyInfo resolve reject => {
   let buffer = Editor.getBuffer editor;
   let text = Buffer.getText buffer;
   let subText = Buffer.getTextInRange buffer range;
-  /* Including dot */
-  let ext =
-    switch maybeFilePath {
-    | Some filePath => {
-        let lastExtensionIndex = String.rindex filePath '.';
-        String.sub filePath lastExtensionIndex (String.length filePath - lastExtensionIndex)
-      }
-    | None => ".re"
-    };
-  let isInterface = String.compare ".rei" ext === 0;
-  let promise = Atom.Promise.create (
-    fun resolve reject => {
-      let onCompleteWrap code formatResult stdErr =>
-        onComplete code formatResult stdErr text subText resolve reject;
-      formatImpl editor subText isInterface onCompleteWrap reject
-    }
-  );
-  promise
-};
-
-let getEntireFormatting editor range notifySuccess notifyInvalid notifyInfo =>
-  getFormatting
+  formatImpl
     editor
-    range
+    subText
+    (isInterface (Editor.getPath editor))
     (
-      fun code (formatResult: Nuclide.FileFormat.result) stdErr text subText resolve reject => {
-        /* One bit of Js logic remaining in this otherwise "pure" module. */
-        let formatResultStr = NuclideJs.FileFormat.toJs formatResult;
+      fun code (formatResult: Nuclide.FileFormat.result) stdErr => {
         if (not (code == 0.0)) {
           notifyInvalid "Syntax Error"
         } else if (formatResult.formatted \=== text) {
@@ -163,16 +148,21 @@ let getEntireFormatting editor range notifySuccess notifyInvalid notifyInfo =>
         } else {
           notifySuccess "Format: Success"
         };
-        code == 0.0 ? resolve formatResultStr : reject stdErr
+        code == 0.0 ? resolve formatResult : reject stdErr
       }
-    );
+    )
+    reject
+};
 
-let getPartialFormatting editor range notifySuccess notifyInvalid notifyInfo =>
-  getFormatting
+let getPartialFormatting editor range notifySuccess notifyInvalid notifyInfo resolve reject => {
+  let buffer = Editor.getBuffer editor;
+  let subText = Buffer.getTextInRange buffer range;
+  formatImpl
     editor
-    range
+    subText
+    (isInterface (Editor.getPath editor))
     (
-      fun code (formatResult: Nuclide.FileFormat.result) stdErr text subText resolve reject => {
+      fun code (formatResult: Nuclide.FileFormat.result) stdErr => {
         if (not (code == 0.0)) {
           notifyInvalid "Syntax Error"
         } else if (formatResult.formatted \=== subText) {
@@ -181,6 +171,8 @@ let getPartialFormatting editor range notifySuccess notifyInvalid notifyInfo =>
           notifySuccess "Format: Success"
         };
         /* One bit of Js logic remaining in this otherwise "pure" module. */
-        code == 0.0 ? resolve (Js.string formatResult.formatted) : reject stdErr
+        code == 0.0 ? resolve formatResult.formatted : reject stdErr
       }
-    );
+    )
+    reject
+};

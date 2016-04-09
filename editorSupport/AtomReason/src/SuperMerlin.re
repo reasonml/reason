@@ -89,54 +89,60 @@ let getMerlinProcess path::path =>
     }
   };
 
-let readOneLine merlinProcess::merlinProcess cmd::cmd => {
-  let func = Js.Unsafe.js_expr {|
-    function(merlinProcess, cmd) {
-      return new Promise(function(resolve, reject) {
-        var cmdString = JSON.stringify(cmd);
-        var readline = require('readline');
-        var reader = readline.createInterface({
-          input: merlinProcess.stdout,
-          terminal: false,
-        });
+let readOneLine' = Js.Unsafe.js_expr {|
+  function(merlinProcess, cmd, resolve, reject) {
+    var cmdString = JSON.stringify(cmd);
+    var readline = require('readline');
+    var reader = readline.createInterface({
+      input: merlinProcess.stdout,
+      terminal: false,
+    });
 
-        reader.on('line', function(line) {
-          reader.close();
-          var response;
-          try {
-            response = JSON.parse(line);
-          } catch (err) {
-            response = null;
-          }
-          if (!response || !Array.isArray(response) || response.length !== 2) {
-            reject(Error('Unexpected ocamlmerlin output format: ' + line));
-            return;
-          }
+    reader.on('line', function(line) {
+      var asdasd = line;
+      var asdasd2 = cmd;
+      reader.close();
+      var response;
+      try {
+        response = JSON.parse(line);
+      } catch (err) {
+        response = null;
+      }
+      if (!response || !Array.isArray(response) || response.length !== 2) {
+        reject(Error('Unexpected ocamlmerlin output format: ' + line));
+        return;
+      }
 
-          var status = response[0];
-          var content = response[1];
+      var status = response[0];
+      var content = response[1];
 
-          var errorResponses = {
-            'failure': true,
-            'error': true,
-            'exception': true,
-          };
+      var errorResponses = {
+        'failure': true,
+        'error': true,
+        'exception': true,
+      };
 
-          if (errorResponses[status]) {
-            reject(Error('Ocamlmerlin returned an error: ' + line));
-            return;
-          }
+      if (errorResponses[status]) {
+        reject(Error('Ocamlmerlin returned an error: ' + line));
+        return;
+      }
 
-          resolve(content);
-        });
+      resolve(content);
+    });
 
-        merlinProcess.stdin.write(cmdString);
-      })
-    }
-  |};
-  /* TODO: arbitrary input returns nothing */
-  Js.Unsafe.fun_call func [|Js.Unsafe.inject merlinProcess, Js.Unsafe.inject cmd|]
-};
+    merlinProcess.stdin.write(cmdString);
+  }
+|};
+
+let readOneLine merlinProcess::merlinProcess cmd::cmd resolve reject =>
+  Js.Unsafe.fun_call
+    readOneLine'
+    [|
+      Js.Unsafe.inject merlinProcess,
+      Js.Unsafe.inject cmd,
+      Js.Unsafe.inject (Js.wrap_callback resolve),
+      Js.Unsafe.inject (Js.wrap_callback reject)
+    |];
 
 /* contextify is important for avoiding different buffers calling the backing merlin at the same time. */
 /* https://github.com/the-lambda-church/merlin/blob/d98a08d318ca14d9c702bbd6eeadbb762d325ce7/doc/dev/PROTOCOL.md#contextual-commands */
@@ -161,21 +167,20 @@ let makeTypeHintCommand position => Js.array [|
   Js.Unsafe.inject (positionToJsMerlinPosition position)
 |];
 
-let getTypeHint path::path text::text position::position => {
+let getTypeHint path::path text::text position::position resolve reject => {
   let merlin = getMerlinProcess path;
-  let res = readOneLine merlinProcess::merlin cmd::(contextify query::(makeTellCommand text) path::path);
-  Js.Unsafe.meth_call
-    res
-    "then"
-    [|
-      Js.Unsafe.inject (
-        Js.wrap_callback (
-          fun _ =>
-            readOneLine
-              merlinProcess::merlin cmd::(contextify query::(makeTypeHintCommand position) path::path)
-        )
-      )
-    |]
+  readOneLine
+    merlinProcess::merlin
+    cmd::(contextify query::(makeTellCommand text) path::path)
+    (
+      fun _ =>
+        readOneLine
+          merlinProcess::merlin
+          cmd::(contextify query::(makeTypeHintCommand position) path::path)
+          resolve
+          reject
+    )
+    reject
 };
 
 let makeCompleteCommand position prefix => Js.array [|
@@ -186,40 +191,37 @@ let makeCompleteCommand position prefix => Js.array [|
   Js.Unsafe.inject (positionToJsMerlinPosition position)
 |];
 
-let getAutoCompleteSuggestions path::path text::text position::position prefix::prefix => {
+let getAutoCompleteSuggestions path::path text::text position::position prefix::prefix resolve reject => {
   let merlin = getMerlinProcess path;
-  let res = readOneLine merlinProcess::merlin cmd::(contextify query::(makeTellCommand text) path::path);
-  Js.Unsafe.meth_call
-    res
-    "then"
-    [|
-      Js.Unsafe.inject (
-        Js.wrap_callback (
-          fun _ =>
-            readOneLine
-              merlinProcess::merlin cmd::(contextify query::(makeCompleteCommand position prefix) path::path)
-        )
-      )
-    |]
+  readOneLine
+    merlinProcess::merlin
+    cmd::(contextify query::(makeTellCommand text) path::path)
+    (
+      fun _ =>
+        readOneLine
+          merlinProcess::merlin
+          cmd::(contextify query::(makeCompleteCommand position prefix) path::path)
+          resolve
+          reject
+    )
+    reject
 };
 
-let getDiagnostics path::path text::text => {
+let getDiagnostics path::path text::text resolve reject => {
   let merlin = getMerlinProcess path;
-  let res = readOneLine merlinProcess::merlin cmd::(contextify query::(makeTellCommand text) path::path);
-  Js.Unsafe.meth_call
-    res
-    "then"
-    [|
-      Js.Unsafe.inject (
+  readOneLine
+    merlinProcess::merlin
+    cmd::(contextify query::(makeTellCommand text) path::path)
+    (
+      fun _ =>
+        readOneLine
+          merlinProcess::merlin
 
-        Js.wrap_callback (
-          fun _ =>
-            readOneLine
-              merlinProcess::merlin
-              cmd::(contextify query::(Js.array [|Js.Unsafe.inject (Js.string "errors")|]) path::path)
-        )
-      )
-    |]
+          cmd::(contextify query::(Js.array [|Js.Unsafe.inject (Js.string "errors")|]) path::path)
+          resolve
+          reject
+    )
+    reject
 };
 
 let makeLocateCommand position extension => Js.array [|
@@ -249,25 +251,18 @@ let normalizeLocateCommandResult' = Js.Unsafe.js_expr {|
 let normalizeLocateCommandResult o path =>
   Js.Unsafe.fun_call normalizeLocateCommandResult' [|o, Js.Unsafe.inject (Js.string path)|];
 
-let locate path::path text::text extension::extension position::position => {
+let locate path::path text::text extension::extension position::position resolve reject => {
   let merlin = getMerlinProcess path;
-  let res = readOneLine merlinProcess::merlin cmd::(contextify query::(makeTellCommand text) path::path);
-  let res1 =
-    Js.Unsafe.meth_call
-      res
-      "then"
-      [|
-        Js.Unsafe.inject (
-          Js.wrap_callback (
-            fun _ =>
-              readOneLine
-                merlinProcess::merlin
-                cmd::(contextify query::(makeLocateCommand position extension) path::path)
-          )
-        )
-      |];
-  Js.Unsafe.meth_call
-    res1
-    "then"
-    [|Js.Unsafe.inject (Js.wrap_callback (fun result => normalizeLocateCommandResult result path))|]
+  readOneLine
+    merlinProcess::merlin
+    cmd::(contextify query::(makeTellCommand text) path::path)
+    (
+      fun _ =>
+        readOneLine
+          merlinProcess::merlin
+          cmd::(contextify query::(makeLocateCommand position extension) path::path)
+          (fun successResult => resolve (normalizeLocateCommandResult successResult path))
+          reject
+    )
+    reject
 };

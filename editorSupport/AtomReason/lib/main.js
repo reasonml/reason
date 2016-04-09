@@ -55,8 +55,13 @@ module.exports = {
   },
 
   provideLinter(): LinterProvider {
-    const ReasonDiagnosticsProvider = require('./ReasonDiagnosticsProvider');
-    return ReasonDiagnosticsProvider;
+    return {
+      name: 'atom-reason',
+      grammarScopes: RE_GRAMMARS,
+      scope: 'file',
+      lintOnFly: true,
+      lint: AtomReason.getDiagnostics,
+    };
   },
 
   createCodeFormatProvider() {
