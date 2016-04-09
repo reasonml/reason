@@ -8,11 +8,28 @@
  * If a node has attributes attached to it,
  */
 
+[@@@ocaml.text "Floating comment text should be removed"];
 
 /**
  * Core language features:
  * ----------------------
  */
+
+[@@@ocaml.doc "Floating doc text should be removed"];
+
+type itemText = int [@@itemAttributeOnTypeDef] [@@ocaml.text "removed text on type def"];
+type nodeText = int [@ocaml.text "removed text on item"];
+type nodeAndItemText =
+  int [@ocaml.text "removed text on item"]
+  [@@itemAttributeOnTypeDef]
+  [@@ocaml.text "removed text on type def"];
+
+type itemDoc = int [@@itemAttributeOnTypeDef] [@@ocaml.doc "removed doc on type def"];
+type nodeDoc = int [@ocaml.text "removed text on item"] [@@itemAttributeOnTypeDef];
+type nodeAndItemDoc =
+  int [@ocaml.text "removed text on item"]
+  [@@itemAttributeOnTypeDef] [@@ocaml.doc "removed doc on type def"];
+
 type x = int [@@itemAttributeOnTypeDef];
 type attributedInt = int [@onTopLevelTypeDef];
 type attributedIntsInTuple = (int [@onInt], float [@onFloat]) [@@onTopLevelTypeDef];
@@ -152,6 +169,8 @@ let showLets () => {
  * In curried sugar, the class_expr attribute will apply to the return.
  */
 class boxA 'a (init: 'a) => {
+  [@@@ocaml.text "Floating comment text should be removed"];
+  [@@@ocaml.doc "Floating comment text should be removed"];
   method pr => init + init + init;
 } [@onReturnClassExpr] [@@moduleItemAttribute];
 
@@ -183,6 +202,8 @@ class tupleClass 'a 'b (init: ('a, 'b)) => {
 } [@@moduleItemAttribute onTheTupleClassItem;];
 
 class type addablePointClassType = {
+  [@@@ocaml.text "Floating comment text should be removed"];
+  [@@@ocaml.doc "Floating comment text should be removed"];
   method x: int;
   method y: int;
   method add: addablePointClassType => addablePointClassType => int;
@@ -205,5 +226,22 @@ module type HasAttrs = {
   [@@sigItem];
   class fooBar: int => new foo
   [@@sigItem];
+  [@@@ocaml.text "Floating comment text should be removed"];
+  [@@@ocaml.doc "Floating comment text should be removed"];
 }
 [@@structureItem];
+
+type s = S of string;
+
+let S (str [@onStr]) = S ("hello" [@onHello]);
+let (S str) [@onConstruction] = (S "hello") [@onConstruction];
+
+type xy = | X of string
+          | Y of string;
+
+let myFun = fun (X hello [@onConstruction] | Y hello [@onConstruction]) => hello;
+let myFun = fun (X (hello [@onHello]) | Y (hello [@onHello])) => hello;
+
+/* Another bug: Cannot have an attribute on or pattern
+let myFun = fun ((X hello | Y hello) [@onOrPattern]) => hello;
+*/
