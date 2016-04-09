@@ -208,14 +208,11 @@ let module CurriedSugar (A: ASig) (B: BSig) => {
    let result = A.a + B.b;
    }: SigResult);
 
-   SugarML unifies the functor and function syntax. The same currying/annotation
-   patterns are available for both module/functors and value/functions.
+   /* Not supported in OCaml OR Reason (Edit: now supported in OCaml for functions) */
+   let x = fun (a:foo) :bar => baz;
+   module x = fun (A:Foo) :Bar => Baz;
 
-   /* Not supported in OCaml OR SugarML */
-   let x = (a:foo) :bar => baz;
-   module x = functor (A:Foo) :Bar => Baz;
-
-   /* Supported in both OCaml and SugarML */
+   /* Supported in both OCaml and Reason */
    let x (a:foo) :bar => baz;
    module x (A:Foo) :Bar => Baz;
 
@@ -329,14 +326,14 @@ module type FunctorType3 =
 /* The following: */
 let module CurriedSugarWithAnnotation2:
   ASig => BSig => SigResult =
-  functor (A: ASig) (B: BSig) => {
+  fun (A: ASig) (B: BSig) => {
     let result = A.a + B.b;
   };
 
 /* Becomes: */
 let module CurriedSugarWithAnnotation:
   ASig => BSig => SigResult =
-  functor (A: ASig) (B: BSig) => {
+  fun (A: ASig) (B: BSig) => {
     let result = A.a + B.b;
   };
 
@@ -345,7 +342,7 @@ let module CurriedSugarWithAnnotation:
 let module
   CurriedSugarWithAnnotationAndReturnAnnotated:
   ASig => BSig => SigResult =
-  functor (A: ASig) (B: BSig) => (
+  fun (A: ASig) (B: BSig) => (
     {
       let result = A.a + B.b;
     }:
@@ -356,7 +353,7 @@ let module ReturnsAFunctor
            (A: ASig)
            (B: BSig)
            :(ASig => BSig => SigResult) =>
-  functor (A: ASig) (B: BSig) => {
+  fun (A: ASig) (B: BSig) => {
     let result = 10;
   };
 
@@ -371,7 +368,7 @@ let module ReturnsAFunctor2
            (A: ASig)
            (B: BSig)
            :(ASig => BSig => SigResult) =>
-  functor (A: ASig) (B: BSig) => {
+  fun (A: ASig) (B: BSig) => {
     let result = 10;
   };
 
@@ -429,6 +426,14 @@ let module Compose
 let l: Compose(List)(Maybe)(Char).t = [Some 'a'];
 
 let module Example2 (F: Type => Type) (X: Type) => {
+  /**
+   * Note: This is the one remaining syntactic issue where
+   * modules/functions do not have syntax unified with values.
+   * It should be:
+   *
+   *   let iso (a:(Compose Id F X).t): (F X).t => a;
+   *
+   */
   let iso (a: Compose(Id)(F)(X).t) :F(X).t => a;
 };
 
@@ -438,7 +443,7 @@ Printf.printf
 
 /* We would have: */
 /* let module CurriedSugarWithAnnotation: ASig => BSig => SigResult =
- functor (A:ASig) (B:BSig) => {let result = A.a + B.b;;
+ fun (A:ASig) (B:BSig) => {let result = A.a + B.b;;
  */
 /*
  let module Typeahead = React.Create {
