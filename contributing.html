@@ -1,0 +1,127 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset='utf-8'>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width">
+
+  <title>Reason - compare to JavaScript</title>
+
+  <!-- Flatdoc -->
+  <script src='support/vendor/jquery.js'></script>
+  <script src='legacy.js'></script>
+  <script src="highlightJs/build/highlight.pack.js"></script>
+  <link  href='highlightJs/src/styles/xcode.css' rel='stylesheet'>
+  <script src='flatdoc.js'></script>
+
+  <!-- Flatdoc theme -->
+  <link  href='theme-white/style.css' rel='stylesheet'>
+  <script src='theme-white/script.js'></script>
+  <link  href='support/theme.css' rel='stylesheet'>
+  <script src='support/theme.js'></script>
+
+
+
+  <script id="markdown" type="text/markdown" src="javaScriptCompared.html">
+
+
+Getting Involved
+==============
+
+
+Developing/Contributing
+---------------
+
+**1. Prepare Environemnt:**
+If you already [installed](./index.html#reason-install) Reason by `pin`ing the
+github repos, then you only need to unpin the packages and continue
+to the next step.
+```sh
+opam unpin reasonsyntax
+opam unpin reason
+```
+Otherwise, you may need to install some dependencies first:
+```sh
+opam install easy-format.1.2.0
+opam install utop.1.18
+```
+### 
+**2. Clone and `pin` locally:** Pinning makes built packages visible globally.
+Pinning `ReasonSyntax` allows `Reason` to depend on it. Pinning `Reason` makes the
+`reasonfmt` program available on the command line. Any time you change `ReasonSyntax`,
+you must repin it so that `Reason` may be rebuilt while seeing those new changes. Any
+time you change `Reason`, you must rebuild and repin it if you want the global `reasonfmt`
+command to reflect those changes.
+
+```sh
+# 4.02.3 should also work
+opam switch 4.02.1
+git clone git+ssh://git@github.com/facebook/ReasonSyntax.git
+git clone git+ssh://git@github.com/facebook/Reason.git
+cd ReasonSyntax
+make
+opam pin add -y reasonsyntax .
+cd ../Reason
+make
+opam pin add -y reason .
+```
+### 
+**3. Run Test Cases:**
+To test the pretty printer/parser, run the formatting tests and verify any
+changes in the output file.
+
+```sh
+# Test changes - verify output in formatOutput.re
+cd Reason/formatTest
+./test.sh
+```
+  </script>
+  <!-- Initializer -->
+  <script>
+    Flatdoc.run({
+      fetcher: function(callback) {
+        callback(null, document.getElementById('markdown').innerHTML);
+      },
+      highlight: function (code, value) {
+        return (value === 'reason') ? hljs.highlight('reason', code).value : hljs.highlight(value, code).value;
+      },
+    });
+  </script>
+
+  <!-- Meta -->
+  <meta property="og:image" content="./images/CubeRed598_614.png" />
+  <meta property="og:image:secure_url" content="./images/CubeRed598_614.png" />
+  <meta property="og:image:type" content="image/jpeg" />
+  <meta property="og:image:width" content="1196" />
+  <meta property="og:image:height" content="1228" />
+
+  <meta content="Reason: Rapid Expressive Systems Programming." name="description">
+  <meta content="Reason: Rapid Expressive Systems Programming." property="og:description">
+  <!-- <meta content="http://ricostacruz.com/flatdoc/support/preview.jpg" property="og:image"> -->
+</head>
+<body role='flatdoc' class='no-literate big-h3 large-brief'>
+
+  <!-- <div class='title&#45;area title&#45;card' style='background&#45;image: url(support/blur.jpg)'> -->
+  <div class='header'>
+    <div class='left'>
+      <h1><a href='index.html'>Reason</a></h1>
+      <ul>
+        <li><a href='motivation.html'>Motivation</a></li>
+        <li><a href='syntax.html'>Syntax</a></li>
+        <li><a href='advanced.html'>Advanced Features</a></li>
+        <li><a href='how.html'>How Reason Works</a></li>
+        <li><a href='contributing.html'>Contributing</a></li>
+        <li><a href='https://github.com/facebook/Reason'>View on GitHub</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class='content-root'>
+    <div class='menubar'>
+      <div class='menu section' role='flatdoc-menu'></div>
+    </div>
+    <div role='flatdoc-content' class='content'></div>
+  </div>
+
+</body>
+</html>
