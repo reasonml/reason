@@ -11,6 +11,20 @@
  * Core language features:
  * ----------------------
  */
+type itemText = int [@@itemAttributeOnTypeDef];
+
+type nodeText = int;
+
+type nodeAndItemText = int
+[@@itemAttributeOnTypeDef];
+
+type itemDoc = int [@@itemAttributeOnTypeDef];
+
+type nodeDoc = int [@@itemAttributeOnTypeDef];
+
+type nodeAndItemDoc = int
+[@@itemAttributeOnTypeDef];
+
 type x = int [@@itemAttributeOnTypeDef];
 
 type attributedInt = int [@onTopLevelTypeDef];
@@ -284,3 +298,25 @@ module type HasAttrs = {
   [@@sigItem];
   class fooBar : int => new foo [@@sigItem];
 };
+
+type s = | S of string;
+
+let S (str [@onStr]) = S ("hello" [@onHello]);
+
+let S str [@onConstruction] =
+  S "hello" [@onConstruction];
+
+type xy = | X of string | Y of string;
+
+let myFun
+    (
+      X hello [@onConstruction] |
+      Y hello [@onConstruction]
+    ) => hello;
+
+let myFun
+    (X (hello [@onHello]) | Y (hello [@onHello])) => hello;
+
+/* Another bug: Cannot have an attribute on or pattern
+let myFun = fun ((X hello | Y hello) [@onOrPattern]) => hello;
+*/
