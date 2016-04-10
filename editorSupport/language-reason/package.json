@@ -1,10 +1,14 @@
 {
   "name": "language-reason",
   "main": "./lib/language-reason",
-  "version": "0.0.0",
+  "version": "0.0.9",
   "description": "Reason syntax for Atom",
   "keywords": [
   ],
+  "messagesToInstaller": {
+    "0.0.0":
+      "These messages will be given to the respective version of the auto-installer. They're a nice way to message the user when the one thing that can't be updated, needs to be updated"
+  },
   "activationCommands": { },
   "repository": "https://github.com/atom/language-reason",
   "license": "MIT",

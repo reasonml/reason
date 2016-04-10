@@ -134,4 +134,4 @@ DEALINGS IN THE SOFTWARE.
 
 ---
 
-`./editorSupport/NuclideReason` (coming soon) is forked from Facebook's own [Nuclide](https://github.com/facebook/nuclide) (the flow plugin).
+`./editorSupport/AtomReason` (coming soon) is forked from Facebook's own [Nuclide](https://github.com/facebook/nuclide) (the flow plugin).

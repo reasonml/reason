@@ -19,6 +19,11 @@ then
     exit 1
 fi
 
+if [ -z "$OCAMLOPT" ];
+then
+    OCAMLOPT="ocamlopt"
+fi
+
 
 # Expand special subtitions like '~'
 eval REASON_BUILD_DIR=$REASON_BUILD_DIR

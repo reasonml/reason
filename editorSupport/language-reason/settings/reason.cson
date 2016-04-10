@@ -2,6 +2,7 @@
 '.source.reason':
   'editor':
     'commentStart': '/* '
+    'commentEnd': ' */'
     'foldEndPattern': '^\\s*\\}|^\\s*\\]|^\\s*\\)'
     'increaseIndentPattern': '(?x)
         \\{ [^}"\']* $

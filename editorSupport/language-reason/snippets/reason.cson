@@ -1,0 +1,54 @@
+".source.reason":
+
+  "Reason: Special Comment":
+    prefix: "sc"
+    body: """
+      /**\n * ${1:comment}\n */
+    """
+  "Reason: Comment":
+    prefix: "com"
+    body: """
+      /*\n * ${1:comment}\n */
+    """
+
+  "Reason: Inline Comment":
+    prefix: "ic"
+    body: """
+      /* ${1:comment} */
+    """
+
+  "Reason: Type alias":
+    prefix: "lt"
+    body: """
+       type ${1:t} = ${2:typ};
+    """
+
+  "Reason: Let Binding":
+    prefix: "lt"
+    body: """
+       let ${1:name} = ${2:value};
+    """
+  "Reason: Let Function":
+    prefix: "lf"
+    body: """
+       let ${1:funcName} ${2:args} => {
+         $0
+       };
+    """
+
+  "Reason: Let Module":
+    prefix: "lm"
+    body: """
+       let module ${1:Module} = {
+         ${0}
+       };
+    """
+
+  "Reason: Switch Pattern Match":
+    prefix: "sw"
+    body: """
+       switch expr {
+         | ${2:firstCase} => ${3:result}
+       }
+    """
+

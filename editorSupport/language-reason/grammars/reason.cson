@@ -253,7 +253,7 @@
   {
     'comment': 'Operator'
     'name': 'keyword.operator.reason'
-    'match': '(\\+|-|/|\\*|=|<=|>=|\\^|&|\\||!|%|::|\\bas\\b|<<|>>|>|<)'
+    'match': '(\\+|-|/|\\*|=|<=|>=|\\^|&|\\||!|%|<<|>>|>|<)'
   }
   # Standard types and traits
   { 'include': '#core_types' }
@@ -265,20 +265,21 @@
   # TODO: procs and closures
   # Function and macro calls
   {
-    'comment': 'Invokation of a macro'
-    'match': '\\b([a-zA-Z_][a-zA-Z0-9_]*\\!)\\s*[({\\[]'
+    'comment': 'Named argument'
+    'match': '\\b([a-zA-Z_][a-zA-Z0-9_]*::\\s*)'
     'captures': {
       '1': { 'name': 'entity.name.function.macro.reason' }
     }
   }
   # let binding.
   {
-    'comment': 'let binding'
-    'match': '\\b(and|(let(\\s+module)?(\\s+rec)?))\\s+([a-zA-Z_][a-zA-Z0-9_]*)'
+    'comment': 'binding'
+    'match': '\\b(val(\\s+virtual)?|class(\\s+virtual)?|and|method|(let(\\s+module)?(\\s+rec)?))(\\s+mutable)?\\s+([a-zA-Z_][a-zA-Z0-9_]*)?'
     'captures': {
       '1': { 'name': 'keyword.other.fun.reason' }
       '2': { 'name': 'keyword.other.fun.reason' }
       '3': { 'name': 'keyword.other.fun.reason' }
+      '4': { 'name': 'keyword.other.fun.reason' }
       '4': { 'name': 'keyword.other.fun.reason' }
       '5': { 'name': 'entity.name.reason' }
     }

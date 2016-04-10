@@ -20,4 +20,4 @@ then
     exit 1
 fi
 
-$REASON_FMT $@ -recoverable true
+$REASON_FMT $@ -recoverable true -parse re
