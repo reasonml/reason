@@ -21,7 +21,7 @@ fi
 
 if [ -z "$OCAMLOPT" ];
 then
-    OCAMLOPT="ocamlopt"
+    OCAMLOPT="ocamlopt.opt"
 fi
 
 
