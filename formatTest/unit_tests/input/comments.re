@@ -3,10 +3,14 @@
  */
 
 /*
+
+
+ */
+
+/*
  * Multiline comment with a // single line comment
  */
 // Single line comment
-// Single line comment with a multiline /* starting
 let testPostComment = "";
 // let commentedCode = "";
 
@@ -42,7 +46,7 @@ let x = {
 // /* this is a valid nested comment*/ this is a valid comment
 
 
-// valid /* this is a valid comment
+// valid /* this is a valid comment */
 
 let z = 10;
 
