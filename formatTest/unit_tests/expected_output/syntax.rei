@@ -17,10 +17,12 @@ type adders = {
    */
   addThreeNumbersTupled: (int, int, int) => int
 };
+
 /**
  * Public function.
  */
 let myRecordWithFunctions: adders;
+
 /**
  * Public result.
  */
