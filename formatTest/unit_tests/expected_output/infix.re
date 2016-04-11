@@ -7,8 +7,7 @@
    - Reformatting n > 0 times should be idempotent.
    - Our formatting algorithm *could* decide to leave equivalently precedented
    infix applications ungrouped in parenthesis (which is what the above test
-   verifies), but the additional parenthesis is nice.
- */
+   verifies), but the additional parenthesis is nice.  */
 /* < > = all have same precedence level/direction(left) */
 let parseTree = ((x > y > z) < a < b) == c == d;
 
@@ -126,7 +125,7 @@ first + (second + third);
 first + second + third;
 
 /* But that's just because + is left associative. Since & is right associative,
-* it's the opposite. */
+ * it's the opposite. */
 /* This one *should* expand into two consecutive infix * */
 first & second & third;
 

@@ -32,7 +32,7 @@ let funcOnNotActuallyATuple
 /* let funcOnNotActuallyATuple (NotActuallyATuple (x, y)) => x + y; */
 /* let notTupled: notTupleVariant = NotActuallyATuple intTuple; /*Doesn't work! */ */
 /* At least the above acts as proof that there *is* a distinction that is
-honored. */
+   honored. */
 let simpleTupled: simpleTupleVariant =
   SimpleActuallyATuple (10, 10);
 

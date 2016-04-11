@@ -174,7 +174,7 @@ type colors =
 /* let myValue = MyRecord {name: int}; */
 /* This would force importing of the module */
 /* This would also lend itself naturally to pattern matching - and avoid having
-to use `.` operator at all since you normally destructure. */
+   to use `.` operator at all since you normally destructure. */
 type nameBlahType = {nameBlah: int};
 
 let myRecord = {nameBlah: 20};
@@ -195,10 +195,10 @@ let desiredFormattingForWrappedLambda:
   int => int => int => nameBlahType =
   /*
 
- fun is
- pre-   /firstarg\
- fix   /-coupled--\
-  |-\ /-to-prefix--\       */
+   fun is
+   pre-   /firstarg\
+   fix   /-coupled--\
+    |-\ /-to-prefix--\       */
   fun curriedArg anotherArg lastArg => {
     nameBlah: 10
   };
@@ -212,10 +212,10 @@ let desiredFormattingForWrappedLambdaWrappedArrow:
   nameBlahType =
   /*
 
- fun is
- pre-   /firstarg\
- fix   /-coupled--\
-  |-\ /-to-prefix--\       */
+   fun is
+   pre-   /firstarg\
+   fix   /-coupled--\
+    |-\ /-to-prefix--\       */
   fun curriedArg anotherArg lastArg => {
     nameBlah: 10
   };
@@ -223,10 +223,10 @@ let desiredFormattingForWrappedLambdaWrappedArrow:
 let desiredFormattingForWrappedLambdaReturnOnNewLine
     /*
 
- fun is
- pre-   /firstarg\
- fix   /-coupled--\
-  |-\ /-to-prefix--\       */
+     fun is
+     pre-   /firstarg\
+     fix   /-coupled--\
+      |-\ /-to-prefix--\       */
     curriedArg
     anotherArg
     lastArg => {
@@ -234,10 +234,10 @@ let desiredFormattingForWrappedLambdaReturnOnNewLine
 };
 
 /*
-let is
-pre-
-fix    /-function binding name---\
-|-\   / is coupled to prefix      \   */
+ let is
+ pre-
+ fix    /-function binding name---\
+ |-\   / is coupled to prefix      \   */
 let desiredFormattingForWrappedSugar
     curriedArg
     anotherArg
@@ -246,10 +246,10 @@ let desiredFormattingForWrappedSugar
 };
 
 /*
-let is
-pre-
-fix    /-function binding name---\
-|-\   / is coupled to prefix      \   */
+ let is
+ pre-
+ fix    /-function binding name---\
+ |-\   / is coupled to prefix      \   */
 let desiredFormattingForWrappedSugarReturnOnNewLine
     curriedArg
     anotherArg
@@ -258,10 +258,10 @@ let desiredFormattingForWrappedSugarReturnOnNewLine
 };
 
 /*
-  let  : type t1 t2. t1 * t2 list -> t1 = ...
-  let rec f : 't1 't2. 't1 * 't2 list -> 't1 =
-    fun (type t1) (type t2) -> (... : t1 * t2 list -> t1)
-*/
+   let  : type t1 t2. t1 * t2 list -> t1 = ...
+   let rec f : 't1 't2. 't1 * 't2 list -> 't1 =
+     fun (type t1) (type t2) -> (... : t1 * t2 list -> t1)
+ */
 type point = {x: int, y: int};
 
 type point3D = {x: int, y: int, z: int};
@@ -289,27 +289,27 @@ let res2 = printPoint {
 };
 
 /*
-   When () were used to indicate sequences, the parser used seq_expr not only
-   for grouping sequences, but also to form standard precedences.
-                         /------- sequence_expr ------\
-   let res3 = printPoint (addPoints (point2D, point3D));
+    When () were used to indicate sequences, the parser used seq_expr not only
+    for grouping sequences, but also to form standard precedences.
+                          /------- sequence_expr ------\
+    let res3 = printPoint (addPoints (point2D, point3D));
 
-   Interestingly, it knew that tuples aren't sequences.
+    Interestingly, it knew that tuples aren't sequences.
 
-   To move towards semi delimited, semi-terminated, braces-grouped sequences:
-   while allowing any non-sequence expression to be grouped on parens, we make
-   an explicit rule that allows one single non-semi ended expression to be
-   grouped in parens.
+    To move towards semi delimited, semi-terminated, braces-grouped sequences:
+    while allowing any non-sequence expression to be grouped on parens, we make
+    an explicit rule that allows one single non-semi ended expression to be
+    grouped in parens.
 
-   Actually: We will allow an arbitrary number of semi-delimited expressions to
-   be wrapped in parens, but the braces grouped semi delimited (sequence)
-   expressions must *also* be terminated with a semicolon.
+    Actually: We will allow an arbitrary number of semi-delimited expressions to
+    be wrapped in parens, but the braces grouped semi delimited (sequence)
+    expressions must *also* be terminated with a semicolon.
 
-   This allows the parser to distinguish between
+    This allows the parser to distinguish between
 
-       let x = {a};    /* Record {a:a} */
-       let x = {a;};   /* Single item sequence returning identifier {a} */
-*/
+        let x = {a};    /* Record {a:a} */
+        let x = {a;};   /* Single item sequence returning identifier {a} */
+ */
 let res3 = printPoint (
   addPoints (
     point2D,
@@ -361,17 +361,17 @@ let module TryToExportTwice = {
 };
 
 /*
-  Unifying top level module syntax with local module syntax is probably a bad
-  idea at the moment because it makes it more difficult to continue to support
-  `let .. in` bindings. We can distinguish local modules for `let..in` that
-  just happen to be defined at the top level (but not exported).
+   Unifying top level module syntax with local module syntax is probably a bad
+   idea at the moment because it makes it more difficult to continue to support
+   `let .. in` bindings. We can distinguish local modules for `let..in` that
+   just happen to be defined at the top level (but not exported).
 
-    let MyModule = {let myVal = 20;} in
-    MyModule.x
+     let MyModule = {let myVal = 20;} in
+     MyModule.x
 
-  Wait, where would this ever be valid, even if we continued to support
-  `let..in`?
-*/
+   Wait, where would this ever be valid, even if we continued to support
+   `let..in`?
+ */
 let
   onlyDoingThisTopLevelLetToBypassTopLevelSequence = {
   let x = {
@@ -438,9 +438,9 @@ let blah =
 /* above example is read: "a function that 'either maps' Red to.. or maps .." */
 /* Thc00f564e first bar is read as "either maps" */
 /* Curried form is not supported:
-   let blah x | Red _ => 1 | Black _ => 0;
-   Theres no sugar rule for dropping => fun, only = fun
-*/
+      let blah x | Red _ => 1 | Black _ => 0;
+      Theres no sugar rule for dropping => fun, only = fun
+   */
 let blahCurriedX x =>
   fun /* See, nothing says we can drop the => fun */
       | Red x
@@ -467,12 +467,12 @@ let Black x | Red x | Green x = v;
 
 /* So this NON-function still parses */
 /* This doesn't parse, however (and it doesn't in OCaml either):
-  let | Black x | Red x | Green x = v;
-*/
+     let | Black x | Red x | Green x = v;
+   */
 print_int x;
 
 /* Scoping: Let sequences. Familiar syntax for lexical ML style scope and
-sequences. */
+   sequences. */
 let res = {
   let a = "a starts out as";
   {
@@ -559,10 +559,10 @@ let matchesWithWhen =
 let matchesOne (`Red x) => 10;
 
 /*
-Typical OCaml would make you *wrap the functions in parens*! This is because it
-can't tell if a semicolon is a sequence operator. Even if we had records use
-commas to separate fields,
-*/
+ Typical OCaml would make you *wrap the functions in parens*! This is because it
+ can't tell if a semicolon is a sequence operator. Even if we had records use
+ commas to separate fields,
+ */
 type adders = {
   addTwoNumbers: int => int => int,
   addThreeNumbers: int => int => int => int,
@@ -601,13 +601,13 @@ let tupleInsideALetSequence = {
 };
 
 /* We *require* that function return types be wrapped in
-  parenthesis. In this example, there's no ambiguity */
+   parenthesis. In this example, there's no ambiguity */
 let makeIncrementer (delta: int) :(int => int) =>
   fun a => a + delta;
 
 /* We could even force that consistency with let bindings - it's allowed
-   currently but not forced.
-*/
+      currently but not forced.
+   */
 let myAnnotatedValBinding: int = 10;
 
 /* Class functions (constructors) and methods are unified in the same way */
@@ -617,11 +617,11 @@ class classWithNoArg = {
 };
 
 /* This parses but doesn't type check
-  class myClass init => object
-    method x => init
-    method y => init
-  end;
-*/
+     class myClass init => object
+       method x => init
+       method y => init
+     end;
+   */
 let myFunc (a: int) (b: int) :(int, int) => (
   a,
   b
@@ -644,7 +644,7 @@ type myThing = (int, int);
 type stillARecord = {name: string, age: int};
 
 /* Rebase latest OCaml to get the following: And fixup
-  `generalized_constructor_arguments` according to master. */
+   `generalized_constructor_arguments` according to master. */
 /* type ('a, 'b) myOtherThing = Leaf of {first:'a, second: 'b} | Null; */
 type branch 'a 'b = {first: 'a, second: 'b};
 
@@ -654,62 +654,62 @@ type myOtherThing 'a 'b =
 type yourThing = myOtherThing int int;
 
 /* Conveniently - this parses exactly how you would intend! No *need* to wrap
-in an extra [], but it doesn't hurt */
+   in an extra [], but it doesn't hurt */
 /* FIXME type lookAtThesePolyVariants = list [`Red] ; */
 /* FIXME type bracketsGroupMultipleParamsAndPrecedence = list (list (list [`Red])); */
 /* FIXME type youCanWrapExtraIfYouWant = (list [`Red]); */
 /* FIXME type hereAreMultiplePolyVariants = list [`Red | `Black]; */
 /* FIXME type hereAreMultiplePolyVariantsWithOptionalWrapping = list ([`Red | `Black]); */
 /*
-  /* Proposal: ES6 style lambdas: */
+   /* Proposal: ES6 style lambdas: */
 
-  /* Currying */
-  let lookES6Style = (`Red x) (`Black y) => { };
-  let lookES6Style (`Red x) (`Black y) => { };
+   /* Currying */
+   let lookES6Style = (`Red x) (`Black y) => { };
+   let lookES6Style (`Red x) (`Black y) => { };
 
-  /* Matching the single argument */
-  let lookES6Style = oneArg => match oneArg with
-    | `Red x => x
-    | `Black x => x;
+   /* Matching the single argument */
+   let lookES6Style = oneArg => match oneArg with
+     | `Red x => x
+     | `Black x => x;
 
-  /* The "trick" to currying that we already have is basically the same - we just
-   * have to reword it a bit:
-   * From:
-   * "Any time you see [let x = fun ...] just replace it with [let x ...]"
-   * To:
-   * "Any time you see [let x = ... => ] just replace it with [let x ... => ]"
-   */
-  let lookES6Style oneArg => match oneArg with
-    | `Red x => x
-    | `Black x => x;
+   /* The "trick" to currying that we already have is basically the same - we just
+    * have to reword it a bit:
+    * From:
+    * "Any time you see [let x = fun ...] just replace it with [let x ...]"
+    * To:
+    * "Any time you see [let x = ... => ] just replace it with [let x ... => ]"
+    */
+   let lookES6Style oneArg => match oneArg with
+     | `Red x => x
+     | `Black x => x;
 
-*/
+ */
 /** Current OCaml Named Arguments. Any aliasing is more than just aliasing!
-OCaml allows full on pattern matching of named args. */
+    OCaml allows full on pattern matching of named args. */
 /*
-A: let named              ~a    ~b                = aa + bb in
-B: let namedAlias         ~a:aa ~b:bb             = aa + bb in
-C: let namedAnnot         ~(a:int) ~(b:int)       = a + b in
-D: let namedAliasAnnot    ~a:(aa:int) ~b:(bb:int) = aa + bb in
-E: let optional           ?a    ?b                              = 10 in
-F: let optionalAlias      ?a:aa ?b:bb                           = 10 in
-G: let optionalAnnot      ?(a:int option) ?(b:int option)       = 10 in
-H: let optionalAliasAnnot ?a:(aa:int option) ?b:(bb:int option) = 10 in
-/*
-Look! When a default is provided, annotation causes inferred type of argument
-to not be "option" since it's automatically destructured (because we know it
-will always be available one way or another.)
-*/
-I: let defOptional           ?(a=10)    ?(b=10)                 = 10 in
-J: let defOptionalAlias      ?a:(aa=10) ?b:(bb=10)              = 10 in
-K: let defOptionalAnnot      ?(a:int=10) ?(b:int=10)            = 10 in
-                            \       \
-                             \label_let_pattern opt_default: no longer needed in SugarML
+ A: let named              ~a    ~b                = aa + bb in
+ B: let namedAlias         ~a:aa ~b:bb             = aa + bb in
+ C: let namedAnnot         ~(a:int) ~(b:int)       = a + b in
+ D: let namedAliasAnnot    ~a:(aa:int) ~b:(bb:int) = aa + bb in
+ E: let optional           ?a    ?b                              = 10 in
+ F: let optionalAlias      ?a:aa ?b:bb                           = 10 in
+ G: let optionalAnnot      ?(a:int option) ?(b:int option)       = 10 in
+ H: let optionalAliasAnnot ?a:(aa:int option) ?b:(bb:int option) = 10 in
+ /*
+ Look! When a default is provided, annotation causes inferred type of argument
+ to not be "option" since it's automatically destructured (because we know it
+ will always be available one way or another.)
+ */
+ I: let defOptional           ?(a=10)    ?(b=10)                 = 10 in
+ J: let defOptionalAlias      ?a:(aa=10) ?b:(bb=10)              = 10 in
+ K: let defOptionalAnnot      ?(a:int=10) ?(b:int=10)            = 10 in
+                             \       \
+                              \label_let_pattern opt_default: no longer needed in SugarML
 
-L: let defOptionalAliasAnnot ?a:(aa:int=10) ?b:(bb:int=10)      = 10 in
-                              \        \
-                               \let_pattern: still a useful syntactic building block in SugarML
-*/
+ L: let defOptionalAliasAnnot ?a:(aa:int=10) ?b:(bb:int=10)      = 10 in
+                               \        \
+                                \let_pattern: still a useful syntactic building block in SugarML
+ */
 /**
  * In Reason, the syntax for named args uses double semicolon, since
  * the syntax for lists uses ES6 style [], freeing up the ::.
