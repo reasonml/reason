@@ -104,7 +104,7 @@ function idempotent_test() {
     info "=============="
     echo "Testing idempotent property $FILE"
     info "Generating output:"
-    if [ "$(basename $FILE)" != "$(basename $FILE .ml)" ] || ["$(basename $FILE)" != "$(basename $FILE .mli)"]; then
+    if [ "$(basename $FILE)" != "$(basename $FILE .ml)" ] || [ "$(basename $FILE)" != "$(basename $FILE .mli)" ]; then
         if [ "$(basename $FILE)" != "$(basename $FILE .ml)" ]; then
           REFILE="$(basename $FILE .ml).re"
         else
@@ -119,13 +119,9 @@ function idempotent_test() {
             exit 1
         fi
         FILE=$REFILE
-        echo " '$REASONFMT -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE'"
-        $REASONFMT -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE
-
         info "Generating output again:"
         echo "$REASONFMT -print-width 50 -print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted"
         $REASONFMT -print-width 50 -print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted
-
     else
       echo " '$REASONFMT -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE'"
       $REASONFMT -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE
@@ -156,7 +152,7 @@ function typecheck_test() {
 
     info "=============="
     echo "Typecheck testing $FILE"
-    if [ "$(basename $FILE)" != "$(basename $FILE .ml)" ] || ["$(basename $FILE)" != "$(basename $FILE .mli)"]; then
+    if [ "$(basename $FILE)" != "$(basename $FILE .ml)" ] || [ "$(basename $FILE)" != "$(basename $FILE .mli)" ]; then
         if [ "$(basename $FILE)" != "$(basename $FILE .ml)" ]; then
           REFILE="$(basename $FILE .ml).re"
         else
