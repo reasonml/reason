@@ -1,6 +1,6 @@
 (* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. *)
 
-(*
+(**
  * Testing pattern matching using ml syntax to exercise nesting of cases.
  *)
 
@@ -64,6 +64,7 @@ let nestedSome = Some (1, 2, Some (1, 2, 3))
 let nestedSomeSimple = Some (Some (1, 2, 3))
 
 module EM = struct
+  (** Exception *)
   exception E of int * int
 end
 

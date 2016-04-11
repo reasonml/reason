@@ -1,5 +1,5 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
-/*
+/**
  * Testing pattern matching using ml syntax to exercise nesting of cases.
  */
 type xyz =
@@ -77,6 +77,9 @@ let nestedSome = Some (1, 2, Some (1, 2, 3));
 
 let nestedSomeSimple = Some (Some (1, 2, 3));
 
-let module EM = {exception E of int int;};
+let module EM = {
+  /** Exception */
+  exception E of int int;
+};
 
 exception Ealias = EM.E;
