@@ -44,7 +44,7 @@ do
 done
 
 # found ocamlopt, parsing
-OCAMLOPT="ocamlopt"
+OCAMLOPT="ocamlopt.opt"
 if [[ $OCAMLOPTIDX -ne -1 ]];
 then
     # The argument after "-ocamlopt" will be parsed into reopt as ocamlopt to be used
