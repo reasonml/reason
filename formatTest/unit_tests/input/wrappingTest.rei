@@ -47,13 +47,13 @@ let test: int;
   /** This comment will be corrected.
       when printed. */
 let test:int;
-  
+
 /**  Comments with text on line zero
  *   Still work well with comments that have stars on the left side.
  */
 let test:int;
 
-let test =
+let test
     /* This kind of comment doesn't exactly render well though.
        Not many people write comments like this.
      */
