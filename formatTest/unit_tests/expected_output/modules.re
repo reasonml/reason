@@ -315,7 +315,7 @@ module type FunctorType2 =
   ASig => BSig => SigResult;
 
 /* Just for compability with existing OCaml ASTs you can put something other
-* than an underscore */
+ * than an underscore */
 module type FunctorType3 =
   (Blah: ASig) =>
   (ThisIsIgnored: BSig) =>
@@ -443,8 +443,7 @@ Printf.printf
 
 /* We would have: */
 /* let module CurriedSugarWithAnnotation: ASig => BSig => SigResult =
- fun (A:ASig) (B:BSig) => {let result = A.a + B.b;;
- */
+   fun (A:ASig) (B:BSig) => {let result = A.a + B.b;; */
 /*
  let module Typeahead = React.Create {
  type props = {initialCount: int};

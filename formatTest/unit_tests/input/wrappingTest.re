@@ -24,6 +24,30 @@ let something =
     /* And no further */
     reallyLongIdent;
 
+/* Comments can be written like this.
+   No leading star is required on each line.
+   Everything will line up just fine.
+   In this form, include the final closing on the last line. */
+let test = 10;
+
+/*     You could begin the block bar out like this.
+       And it still works correctly. */
+let test = 10;
+
+/** Include multiple opening stars if you like.
+    And it will still work. */
+let test = 10;
+
+  /** This comment will be corrected.
+      when printed. */
+let test = 10;
+
+/**  Comments with text on line zero
+ *   Still work well with comments that have stars on the left side.
+ */
+let test = 10;
+
+
 /*
  * Even though the precedence of the operators are different, no
  * "simplification" grouping is needed.
@@ -1770,3 +1794,39 @@ let ternaryResult =
 
 
 let returningATernary x y => x > y ? "hi" : "by";
+
+
+/** Testing some special comment alignment features */
+
+/* Comments can be written like this.
+   No leading star is required on each line.
+   Everything will line up just fine.
+   In this form, include the final closing on the last line. */
+let test = 10;
+let test =
+    /* And if the entire block needs to be re-indented
+       such as this case, everything will still look okay. */
+    10;
+
+/*     You could begin the block bar out like this.
+       And it still works correctly. */
+let test = 10;
+
+/** Include multiple opening stars if you like.
+    And it will still work. */
+let test = 10;
+
+  /** This comment will be corrected.
+      when printed. */
+let test = 10;
+
+/**  Comments with text on line zero
+ *   Still work well with comments that have stars on the left side.
+ */
+let test = 10;
+
+let test =
+    /* This kind of comment doesn't exactly render well though.
+       Not many people write comments like this.
+     */
+    10;

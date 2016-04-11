@@ -257,7 +257,7 @@ if (10 < 100) {
 
 /**                            TYPE CONSTRAINTS
  *============================================================================
-*/
+ */
 let x: int = 10;
 
 let x: int = 10;
@@ -271,7 +271,7 @@ let x: int = (10: int);
 /**                            TUPLES
  *============================================================================
  */
-/* In SugarML, types look like the data they model! Tuples are no exception. */
+/* In Reason, types look like the data they model! Tuples are no exception. */
 type pairOfInts = (int, int);
 
 let letBindingWithTypeConstraint: int = 10;
@@ -301,7 +301,7 @@ let annotatingSingleFuncApplication = {
   /*
    * This demonstrates why named arguments cannot simply have the form (func
    * arg:val) - it is indistinguishable from a type constraint.
-  */
+   */
   2 + (_dummyFunc a: int)
 };
 
@@ -383,8 +383,8 @@ let nestedMatchWithWhen lstLst =>
 type mine = | MyThing of int | YourThing of int;
 
 /*
- * SugarML parses "as" aliases differently than OCaml.
-*/
+ * Reason parses "as" aliases differently than OCaml.
+ */
 let ppp =
   switch (MyThing 20) {
   | MyThing x as ppp

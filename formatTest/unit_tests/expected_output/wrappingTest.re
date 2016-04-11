@@ -20,6 +20,29 @@ let something =
     /* And no further */
     reallyLongIdent;
 
+/* Comments can be written like this.
+   No leading star is required on each line.
+   Everything will line up just fine.
+   In this form, include the final closing on the last line. */
+let test = 10;
+
+/*     You could begin the block bar out like this.
+       And it still works correctly. */
+let test = 10;
+
+/** Include multiple opening stars if you like.
+    And it will still work. */
+let test = 10;
+
+/** This comment will be corrected.
+    when printed. */
+let test = 10;
+
+/**  Comments with text on line zero
+ *   Still work well with comments that have stars on the left side.
+ */
+let test = 10;
+
 /*
  * Even though the precedence of the operators are different, no
  * "simplification" grouping is needed.
@@ -425,9 +448,9 @@ let seeHowLongValuesWrap = {
 };
 
 /*
-/--Everything up to the arrow is label left--\  /-The return is label right-\
-                          /-append => to last-\
-/-----------------------\ /--------------------\ */
+ /--Everything up to the arrow is label left--\  /-The return is label right-\
+                           /-append => to last-\
+ /-----------------------\ /--------------------\ */
 let onlyReturnWraps (a, b, c, d, e, f) => (
   a,
   b,
@@ -1936,11 +1959,11 @@ type someRecord = {
 };
 
 /*
-  With settings.functionBindingStyle = AttachFirstTermToLabelIffTwoTotalTerms,
-  the binding name becomes part of the label when there are only two total
-  terms in the binding/argument pattern list (the name, followed by one
-  pattern).
-*/
+   With settings.functionBindingStyle = AttachFirstTermToLabelIffTwoTotalTerms,
+   the binding name becomes part of the label when there are only two total
+   terms in the binding/argument pattern list (the name, followed by one
+   pattern).
+ */
 let funcOnSomeConstructorHi
     (SomeConstructorHi x y) => x + y;
 
@@ -1957,11 +1980,11 @@ let funcOnSomeRecord
     secondArg => firstFieldInRecord + secondField;
 
 /*
-  With settings.functionBindingStyle = DontAttachFirstTermToLabel,
-  the binding name becomes part of the label when there are only two total
-  terms in the binding/argument pattern list (the name, followed by one
-  pattern).
-*/
+   With settings.functionBindingStyle = DontAttachFirstTermToLabel,
+   the binding name becomes part of the label when there are only two total
+   terms in the binding/argument pattern list (the name, followed by one
+   pattern).
+ */
 let funcOnSomeConstructorHi
     (SomeConstructorHi x y) => x + y;
 
@@ -2069,10 +2092,10 @@ let blah arg =>
   /* Comment Before non-first bar */
   /* Comment betwen bar/pattern */
   /* These will be formatted into the wrong place
-     * and there's nothing you can do about it because
-     * the bar essentially doesn't exist once parsed -
-     * its location is lost - "case"s don't have locs
-     */
+   * and there's nothing you can do about it because
+   * the bar essentially doesn't exist once parsed -
+   * its location is lost - "case"s don't have locs
+   */
   | Black _ => 0
   | Green _ => 0
   };
@@ -2230,9 +2253,9 @@ let module BMod = {
 let module CurriedSugar (A: ASig) (B: BSig) =>
   /* Commenting before First curried functor arg */
   /* If these comments aren't formatted correctly
-     * see how functor args' locations aren't set
-     * correclty due to the fold_left.
-     */
+   * see how functor args' locations aren't set
+   * correclty due to the fold_left.
+   */
   /* Commenting before Second curried functor arg */
   {
     let result = A.a + B.b;
@@ -2520,3 +2543,38 @@ let ternaryResult =
       false;
 
 let returningATernary x y => x > y ? "hi" : "by";
+
+/** Testing some special comment alignment features */
+/* Comments can be written like this.
+   No leading star is required on each line.
+   Everything will line up just fine.
+   In this form, include the final closing on the last line. */
+let test = 10;
+
+let test =
+  /* And if the entire block needs to be re-indented
+     such as this case, everything will still look okay. */
+  10;
+
+/*     You could begin the block bar out like this.
+       And it still works correctly. */
+let test = 10;
+
+/** Include multiple opening stars if you like.
+    And it will still work. */
+let test = 10;
+
+/** This comment will be corrected.
+    when printed. */
+let test = 10;
+
+/**  Comments with text on line zero
+ *   Still work well with comments that have stars on the left side.
+ */
+let test = 10;
+
+let test =
+  /* This kind of comment doesn't exactly render well though.
+       Not many people write comments like this.
+     */
+  10;

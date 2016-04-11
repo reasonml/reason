@@ -24,7 +24,7 @@ let reasonDoubleBarNested =
       | _ => false;
 
 /* Liberal use of the Any pattern being compatible with multiple
-  arguments  */
+   arguments  */
 let reasonDoubleBarAnyPatterns =
   fun | X
       | Y _

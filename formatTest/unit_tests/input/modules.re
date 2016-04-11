@@ -369,8 +369,7 @@ Printf.printf "\nModules And Functors: %n\n" (CurriedNoSugarFunctorResultInline.
 
 /* We would have: */
 /* let module CurriedSugarWithAnnotation: ASig => BSig => SigResult =
- fun (A:ASig) (B:BSig) => {let result = A.a + B.b;;
- */
+    fun (A:ASig) (B:BSig) => {let result = A.a + B.b;; */
 
 /*
  let module Typeahead = React.Create {
