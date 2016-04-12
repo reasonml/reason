@@ -11,7 +11,7 @@
     "language-reason:grammar-used"
   ],
   "devDependencies": {
-    "CommonML": "git://github.com/jordwalke/CommonML.git#2498211"
+    "CommonML": "git://github.com/jordwalke/CommonML.git#9f8cb35"
   },
   "messagesToInstaller": {
     "0.0.0":
