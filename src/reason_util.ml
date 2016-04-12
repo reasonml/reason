@@ -70,6 +70,3 @@ let correctly_catch_parse_errors fn lexbuf =
           | Reason_lexer.Error _ -> transmogrify_exn exn exn_Lexer_Error
           | Syntaxerr.Error _ -> transmogrify_exn exn exn_Syntaxerr_Error
           | _ -> exn)
-
-
-
