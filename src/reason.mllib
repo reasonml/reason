@@ -1,6 +1,7 @@
 Reason_parser
 Reason_lexer
 Reason_pprint_ast
+Reason_oprint
 Reason_config
 Reason_utils
 Reason_util
