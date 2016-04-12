@@ -1265,12 +1265,21 @@ let smallestLeadingSpaces strs =
   in
   smallestLeadingSpaces 99999 strs
 
-let formatItemComment (str, commLoc, physCommLoc) =
+(*
+  forceMultiline should be set to true in cases where the comment
+  is part of a list that could potentially break to prevent inline
+  comments from being rendered as line comments
+*)
+let formatItemComment ?(forceMultiline=false) (str, commLoc, physCommLoc) =
   let commLines = Str.split_delim (Str.regexp "\n") ("/*" ^ str ^ "*/") in
   match commLines with
   | [] -> easyAtom ""
   | [hd] ->
-    makeEasyList ~inline:(true, true) ~postSpace:true ~preSpace:true ~indent:0 ~break:IfNeed [easyAtom hd]
+    if forceMultiline then
+      makeEasyList ~inline:(true, true) ~postSpace:true ~preSpace:true ~indent:0 ~break:IfNeed [easyAtom hd]
+    (* caveat: single line comment . *)
+    else
+      makeEasyList ~inline:(true, true) ~postSpace:true ~preSpace:true ~indent:0 ~break:IfNeed [easyAtom ("//" ^ str)]
   | zero::one::tl ->
     let lineZero = List.nth commLines 0 in
     let lineOne = List.nth commLines 1 in
@@ -1290,7 +1299,7 @@ let formatItemComment (str, commLoc, physCommLoc) =
     (* Use the Str module for regex splitting *)
     makeEasyList ~inline:(true, true) ~indent:0 ~break:Always_rec (List.map easyAtom lines)
 
-let formatComments comms = List.map formatItemComment comms
+let formatComments ?(forceMultiline=false) comms = List.map (formatItemComment ~forceMultiline:forceMultiline) comms
 
 let convertIsListyToIsSequencey isListyImpl =
   let rec isSequencey layoutNode = match layoutNode with
@@ -1340,7 +1349,16 @@ let rec interleaveComments ?endMaxChar listConfig layoutListItems comments =
       let eolEasyComments = List.map formatItemComment endOfLineComments in
       let item = Item (easyItem, eolEasyComments) in
       let (rest, recUnconsumedComms) = interleaveComments ?endMaxChar listConfig tl itemUnconsumed in
-      let easyComments = List.map (fun c -> ItemComment (formatItemComment c, (isDocComment c))) onItem in
+      let easyComments = match listConfig.break with
+        (*
+         * If the comment is part of a list that isn't meant to break, or potentially might not break,
+         * we need to force it to be a multiline string due to interleaving
+         *)
+        | IfNeed | Never ->
+          List.map (fun c -> ItemComment (formatItemComment ~forceMultiline:true c, (isDocComment c))) onItem
+        | _ ->
+          List.map (fun c -> ItemComment (formatItemComment ~forceMultiline:false c, (isDocComment c))) onItem
+      in
       (List.concat [easyComments; [item]; rest], recUnconsumedComms)
 
 (*
