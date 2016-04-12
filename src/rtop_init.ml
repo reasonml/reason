@@ -1,7 +1,6 @@
 #!/usr/bin/env ocaml
 #use ".ocamlinit";;
 #require "menhirLib";;
-#require "reasonsyntax";;
 #require "reason";;
 
 print_string
