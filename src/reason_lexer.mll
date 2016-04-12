@@ -58,6 +58,7 @@ type error =
   | Illegal_character of char
   | Illegal_escape of string
   | Unterminated_comment of Location.t
+  | Unmatched_nested_comment of Location.t
   | Unterminated_string
   | Unterminated_string_in_comment of Location.t * Location.t
   | Keyword_as_label of string
@@ -166,6 +167,8 @@ let get_stored_string () =
 (* To store the position of the beginning of a string and comment *)
 let string_start_loc = ref Location.none;;
 let comment_start_loc = ref [];;
+let line_comment_start_loc = ref [];;
+let single_line_comment = ref false;;
 let in_comment () = !comment_start_loc <> [];;
 let is_in_string = ref false
 let in_string () = !is_in_string
@@ -265,6 +268,8 @@ let report_error ppf = function
       fprintf ppf "Illegal backslash escape in string or character (%s)" s
   | Unterminated_comment _ ->
       fprintf ppf "Comment not terminated"
+  | Unmatched_nested_comment _ ->
+      fprintf ppf "Unmatched nested comment"
   | Unterminated_string ->
       fprintf ppf "String literal not terminated"
   | Unterminated_string_in_comment (_, loc) ->
@@ -418,6 +423,17 @@ rule token = parse
         let esc = String.sub l 1 (String.length l - 1) in
         raise (Error(Illegal_escape esc, Location.curr lexbuf))
       }
+  | "//"
+      { let start_loc = Location.curr lexbuf  in
+        single_line_comment := true;
+        line_comment_start_loc := [start_loc];
+        reset_string_buffer ();
+        let end_loc = comment lexbuf in
+        let s = get_stored_string () in
+        reset_string_buffer ();
+        COMMENT (s, { start_loc with
+                      Location.loc_end = end_loc.Location.loc_end })
+      }
   | "/*"
       { let start_loc = Location.curr lexbuf  in
         comment_start_loc := [start_loc];
@@ -546,15 +562,33 @@ rule token = parse
       }
 
 and comment = parse
-    "/*"
-      { comment_start_loc := (Location.curr lexbuf) :: !comment_start_loc;
+  | "/*"
+      {
+        comment_start_loc := (Location.curr lexbuf) :: !comment_start_loc;
         store_lexeme lexbuf;
         comment lexbuf;
       }
   | "*/"
-      { match !comment_start_loc with
-        | [] -> assert false
-        | [_] -> comment_start_loc := []; Location.curr lexbuf
+      {
+        match !comment_start_loc with
+        | [] ->
+            (* If it's part of a single line comment, we should raise an
+             * unterminated nested comment error *)
+          if !single_line_comment then (
+            let loc = Location.curr lexbuf in
+            let start = List.hd (List.rev !line_comment_start_loc) in
+            raise (Error (Unmatched_nested_comment loc, start))
+          )
+          else assert false
+        | [_] ->
+          if !single_line_comment then (
+            comment_start_loc := [];
+            store_lexeme lexbuf;
+            comment lexbuf;
+          )
+          else (
+            comment_start_loc := []; Location.curr lexbuf
+          )
         | _ :: l -> comment_start_loc := l;
                   store_lexeme lexbuf;
                   comment lexbuf;
@@ -624,9 +658,28 @@ and comment = parse
           raise (Error (Unterminated_comment start, loc))
       }
   | newline
-      { update_loc lexbuf None 1 false 0;
-        store_lexeme lexbuf;
-        comment lexbuf
+      {
+        if not !single_line_comment then (
+          update_loc lexbuf None 1 false 0;
+          store_lexeme lexbuf;
+          comment lexbuf
+        )
+        else (
+          update_loc lexbuf None 1 false 0;
+          (* check if there are any unmatched nested comments *)
+          match !comment_start_loc with
+            | [] -> (
+              (* reset since we're done parsing a single line comment *)
+              single_line_comment := false;
+              match !line_comment_start_loc with
+                | [] -> assert false
+                | _ -> line_comment_start_loc := []; Location.curr lexbuf
+            )
+            | _ ->
+              let start = List.hd (List.rev !comment_start_loc) in
+              comment_start_loc := [];
+              raise (Error (Unmatched_nested_comment start, Location.curr lexbuf))
+        )
       }
   | _
       { store_lexeme lexbuf; comment lexbuf }
