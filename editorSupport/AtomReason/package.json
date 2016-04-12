@@ -1,0 +1,101 @@
+{
+  "name": "AtomReason",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.4",
+  "description": "Reason IDE implementation - installed by atom-reason",
+  "keywords": [
+    "Reason"
+  ],
+  "activationHooks": [
+    "language-reason:grammar-used"
+  ],
+  "devDependencies": {
+    "CommonML": "git://github.com/jordwalke/CommonML.git#2498211"
+  },
+  "messagesToInstaller": {
+    "0.0.0":
+      "These messages will be given to the respective version of the auto-installer. They're a nice way to message the user when the one thing that can't be updated, needs to be updated"
+  },
+  "dependencies": {
+    "ansi_up": "1.3.0",
+    "cli-color": "1.1.0",
+    "diff": "2.2.0",
+    "highlights-native": "^2.1.0",
+    "nuclide": "git://github.com/facebook/nuclide.git#45514a2",
+    "react": "^0.14.7"
+  },
+  "providedServices": {
+    "autocomplete.provider": {
+      "versions": {
+        "2.0.0": "createAutocompleteProvider"
+      }
+    },
+    "hyperclick.provider": {
+      "versions": {
+        "0.0.0": "getHyperclickProvider"
+      }
+    },
+    "linter": {
+      "versions": {
+        "1.0.0": "provideLinter"
+      }
+    },
+    "nuclide-busy-signal": {
+      "versions": {
+        "0.1.0": "provideBusySignal"
+      }
+    },
+    "nuclide-code-format.provider": {
+      "versions": {
+        "0.0.0": "createCodeFormatProvider"
+      }
+    },
+    "nuclide-datatip.provider": {
+      "versions": {
+        "0.0.0": "createTypeHintProvider"
+      }
+    }
+  },
+  "consumedServices": {
+    "status-bar": {
+      "versions": {
+        "^1.0.0": "consumeStatusBar"
+      }
+    }
+  },
+  "scripts": {
+    "start": "node node_modules/CommonML/build.js --buildDir=output --logUnextractedErrors=true --minVersion=11 --forDebug=true  --concurrency=3 --jsCompile=true --errorFormatter=./Reasonify/formatErrorMessages.js"
+  },
+  "CommonML": {
+    "exports": [
+      "Index"
+    ],
+    "compileFlags": [
+      "-w",
+      "-30",
+      "-w",
+      "-40",
+      "-bin-annot"
+    ],
+    "preprocessor": "reasonfmt",
+    "extensions": [
+      {
+        "interface": ".rei",
+        "implementation": ".re"
+      }
+    ],
+    "findlibPackages": [
+      {
+        "dependency": "js_of_ocaml"
+      }
+    ],
+    "linkFlags": [],
+    "docFlags": [
+      "-colorize-code",
+      "-css-style",
+      "docStyle.css",
+      "-latex"
+    ]
+  }
+}

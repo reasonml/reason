@@ -47,7 +47,7 @@ let () =
     "-parse", Arg.String (fun x -> prse := Some x), "<parse>, parse AST as <parse> (either 'ml', 're', 'binary_reason(for interchange between Reason versions')";
     (* Use a print option of "none" to simply perform a parsing validation -
      * useful for IDE error messages etc.*)
-    "-print", Arg.String (fun x -> prnt := Some x), "<print>, print AST in <print> (either 'ml', 're', 'binary(default - for compiler input)', 'binary_reason(for interchange between Reason versions)', 'none')";
+    "-print", Arg.String (fun x -> prnt := Some x), "<print>, print AST in <print> (either 'ml', 're', 'binary(default - for compiler input)', 'binary_reason(for interchange between Reason versions)', 'ast (print human readable directly)', 'none')";
     "-print-width", Arg.Int (fun x -> print_width := Some x), "<print-width>, wrapping width for printing the AST";
     "-heuristics-file", Arg.String (fun x -> heuristics_file := Some x),
     "<path>, load path as a heuristics file to specify whtich constructors are defined with multi-arguments. Mostly used in removing [@implicit_arity] introduced from OCaml conversion.\n\t\texample.txt:\n\t\tConstructor1\n\t\tConstructor2";
@@ -129,6 +129,9 @@ let () =
           output_value  stdout filename;
           output_value  stdout ast
         )
+        | Some "ast" -> fun comments ast -> (
+          Printast.interface Format.std_formatter ast
+        )
         (* If you don't wrap the function in parens, it's a totally different
          * meaning #thanksOCaml *)
         | Some "none" -> (fun comments ast -> ())
@@ -173,6 +176,9 @@ let () =
           output_string stdout Config.ast_impl_magic_number;
           output_value stdout filename;
           output_value stdout ast
+        )
+        | Some "ast" -> fun comments ast -> (
+          Printast.implementation Format.std_formatter ast
         )
         (* If you don't wrap the function in parens, it's a totally different
          * meaning #thanksOCaml *)

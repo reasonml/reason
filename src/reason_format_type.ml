@@ -2,15 +2,18 @@
 
 (* No String.split in stdlib... *)
 let split str ~by =
-  let rec split' str ~by idx accum =
+  let rec split' str ~by accum =
     try
-      let foundIdx = String.index_from str idx by in
-      split' str ~by (foundIdx + 1) ((String.sub str idx foundIdx) :: accum)
+      let foundIdx = String.index_from str 0 by in
+      let subStr = String.sub str 0 foundIdx in
+      split'
+        (String.sub str (foundIdx + 1) (String.length str - foundIdx - 1))
+        ~by
+        (subStr :: accum)
     with Not_found ->
-      let lastStrPiece = String.sub str idx (String.length str - idx) in
-      List.rev (lastStrPiece :: accum)
+      List.rev (str :: accum)
   in
-  split' str ~by 0 []
+  split' str ~by []
 
 let () =
   if Array.length Sys.argv <> 2 then
@@ -21,8 +24,15 @@ let () =
       Sys.argv.(1)
       |> split ~by:'"'
       |> List.map (fun input ->
-        Reason_type_of_ocaml_type.convert input |> String.trim
+        try Reason_type_of_ocaml_type.convert input |> String.trim |> String.escaped
+        with Syntaxerr.Error a ->
+          (* Can't parse the input for some reason? Return the (slightly modified) result and don't crash. *)
+          "ML: " ^ input
       )
-      |> List.iter print_endline
+      |> String.concat "\n"
+      (* We omit printing one last line break in order to conserve the invariant
+      that 1 type maps to 1 line. E.g. ["a"] maps to "a" and ["a", ""] maps to
+      "a\n" *)
+      |> print_string
     with Syntaxerr.Error a ->
       prerr_endline "Failed to parse the input type(s)."
