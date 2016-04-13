@@ -7,6 +7,7 @@ where:
     -h: show this text
     -w <print-width=90>: change print-width of upgraded files
     -d <path>: source code directory to be upgraded
+    -b <path>: path for backup directory
     -f <x.y.z>: current version of the source file to be upgraded
     " 1>&2; exit 1;
 }
@@ -87,11 +88,13 @@ function install_reasonfmt {
     rm -rf $OPAM_BIN_SANDBOX
 }
 
-while getopts ':hf:d:w:' option; do
+while getopts ':hf:d:w:b:' option; do
     case "$option" in
         h) usage
            ;;
         d) DIR=$OPTARG
+           ;;
+        b) BACKUP_DIR=$OPTARG
            ;;
         f) FROM=$OPTARG
            ;;
@@ -111,7 +114,7 @@ DIR=`cd "$DIR"; pwd`
 
 if [[ -z $FROM ]];
 then
-    echo "No -f provided" 1>&2
+    echo "No -f <from_version> provided" 1>&2
     usage
 fi
 
@@ -123,8 +126,20 @@ fi
 
 install_reasonfmt $FROM
 
-BACKUP_DIR=$DIR.backup
-cp -arf $DIR $BACKUP_DIR
+if [[ -z $BACKUP_DIR ]];
+then
+    echo "No -b <backup_dir> specified, default to use $DIR.backup"
+    BACKUP_DIR=$DIR.backup
+fi
+
+if [[ -d $BACKUP_DIR ]];
+then
+    echo "Fail to backup: $BACKUP_DIR already exists, exiting" 1>&2
+    usage
+fi
+
+echo "Backing up at $BACKUP_DIR"
+cp -af $DIR $BACKUP_DIR
 
 find $DIR -type f -name "*.re" | while read file; do
     set -x
