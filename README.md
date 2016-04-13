@@ -23,7 +23,6 @@ opam init
 opam switch 4.02.1
 opam install utop
 opam pin add -y BetterErrors git@github.com:chenglou/ocaml-better-errors.git
-opam pin add -y reasonsyntax git@github.com:facebook/ReasonSyntax.git
 opam pin add -y reason git@github.com:facebook/Reason.git
 ```
 
