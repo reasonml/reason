@@ -22,6 +22,7 @@
 
 open Ast_helper
 open Location
+open Lexing
 
 let invalidLex = "invalidCharacter.orComment.orString"
 let syntax_error_str err loc =
@@ -32,78 +33,67 @@ let syntax_error_str err loc =
   else
     raise err
 
+let syntax_error_core_type err loc =
+  if !Reason_config.recoverable then
+    Typ.mk ~loc:loc (Parsetree.Ptyp_extension (Reason_utils.syntax_error_extension_node loc invalidLex))
+  else
+    raise err
+
 let syntax_error_sig err loc =
   if !Reason_config.recoverable then
     [Sig.mk ~loc:loc (Parsetree.Psig_extension (Reason_utils.syntax_error_extension_node loc invalidLex, []))]
   else
     raise err
 
+type comments = (String.t * Location.t) list
+
 module type Toolchain = sig
+  (* Parsing *)
+  val canonical_core_type_with_comments: Lexing.lexbuf -> (Parsetree.core_type * comments)
+  val canonical_implementation_with_comments: Lexing.lexbuf -> (Parsetree.structure * comments)
+  val canonical_interface_with_comments: Lexing.lexbuf -> (Parsetree.signature * comments)
+
+  val canonical_core_type: Lexing.lexbuf -> Parsetree.core_type
   val canonical_implementation: Lexing.lexbuf -> Parsetree.structure
   val canonical_interface: Lexing.lexbuf -> Parsetree.signature
-  val canonical_toplevel_phrase: Lexing.lexbuf -> Parsetree.toplevel_phrase
-  val canonical_use_file: Lexing.lexbuf -> (Parsetree.toplevel_phrase list)
-  val canonical_core_type: Lexing.lexbuf -> Parsetree.core_type
-  val canonical_expression: Lexing.lexbuf -> Parsetree.expression
-  val canonical_pattern: Lexing.lexbuf -> Parsetree.pattern
-  val canonical_implementation_with_comments: Lexing.lexbuf -> (Parsetree.structure * ((String.t * Location.t) list))
-  val canonical_interface_with_comments: Lexing.lexbuf -> (Parsetree.signature * ((String.t * Location.t) list))
 
   (* Printing *)
-  val print_canonical_interface_with_comments: (String.t * Location.t) list -> Parsetree.signature -> unit
-  val print_canonical_implementation_with_comments: (String.t * Location.t) list -> Parsetree.structure -> unit
+  val print_canonical_interface_with_comments: (Parsetree.signature * comments) -> unit
+  val print_canonical_implementation_with_comments: (Parsetree.structure * comments) -> unit
+
 end
 
 module type Toolchain_spec = sig
   val safeguard_parsing: Lexing.lexbuf ->
-    (unit -> 'a * ((String.t * Location.t) list)) ->
-    'a * ((String.t * Location.t) list)
+    (unit -> ('a * comments)) -> ('a * comments)
 
   module rec Lexer_impl: sig
     val init: unit -> unit
     val token: Lexing.lexbuf -> Parser_impl.token
     val comments: unit -> (String.t * Location.t) list
   end
+
   and Parser_impl: sig
     type token
-    val implementation: (Lexing.lexbuf -> token) -> Lexing.lexbuf -> Parsetree.structure
-    val interface: (Lexing.lexbuf -> token) -> Lexing.lexbuf -> Parsetree.signature
-    val toplevel_phrase: (Lexing.lexbuf -> token) -> Lexing.lexbuf -> Parsetree.toplevel_phrase
-    val use_file: (Lexing.lexbuf -> token) -> Lexing.lexbuf -> (Parsetree.toplevel_phrase list)
-    val parse_core_type: (Lexing.lexbuf -> token) -> Lexing.lexbuf -> Parsetree.core_type
-    val parse_expression: (Lexing.lexbuf -> token) -> Lexing.lexbuf -> Parsetree.expression
-    val parse_pattern: (Lexing.lexbuf -> token) -> Lexing.lexbuf -> Parsetree.pattern
   end
 
-  val format_interface_with_comments: (String.t * Location.t) list -> Format.formatter -> Parsetree.signature -> unit
-  val format_implementation_with_comments: (String.t * Location.t) list -> Format.formatter -> Parsetree.structure -> unit
+  val core_type: Lexing.lexbuf -> Parsetree.core_type
+  val implementation: Lexing.lexbuf -> Parsetree.structure
+  val interface: Lexing.lexbuf -> Parsetree.signature
+
+  val format_interface_with_comments: (Parsetree.signature * comments) -> Format.formatter -> unit
+  val format_implementation_with_comments: (Parsetree.structure * comments) -> Format.formatter -> unit
 end
 
-module Create_parse_entrypoint
-       (Toolchain_impl: Toolchain_spec)
-       :(Toolchain) = struct
-
+module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = struct
   let wrap_with_comments parsing_fun lexbuf =
     Toolchain_impl.safeguard_parsing lexbuf (fun () ->
-      Toolchain_impl.Lexer_impl.init ();
-      let ast = parsing_fun Toolchain_impl.Lexer_impl.token lexbuf in
-      let comments = Toolchain_impl.Lexer_impl.comments() in (
-        Parsing.clear_parser();
-        (ast, comments)
-      )
+      let _ = Toolchain_impl.Lexer_impl.init () in
+      let ast = parsing_fun lexbuf in
+      let comments = Toolchain_impl.Lexer_impl.comments() in
+      let _  = Parsing.clear_parser() in
+      (ast, comments)
     )
-
-  let wrap parsing_fun lexbuf =
-    let (ast, comments) = wrap_with_comments parsing_fun lexbuf in
-    ast
-
-  let canonical_implementation = wrap Toolchain_impl.Parser_impl.implementation
-  let canonical_interface = wrap Toolchain_impl.Parser_impl.interface
-  let canonical_toplevel_phrase = wrap Toolchain_impl.Parser_impl.toplevel_phrase
-  let canonical_use_file = wrap Toolchain_impl.Parser_impl.use_file
-  let canonical_core_type = wrap Toolchain_impl.Parser_impl.parse_core_type
-  let canonical_expression = wrap Toolchain_impl.Parser_impl.parse_expression
-  let canonical_pattern = wrap Toolchain_impl.Parser_impl.parse_pattern
 
   (*
    * The canonical interface/implementations (with comments) are used with
@@ -114,26 +104,39 @@ module Create_parse_entrypoint
    * (nested comments or unbalanced strings in comments) but at least we don't
    * crash the process. TODO: Report more accurate location in those cases.
    *)
-  let canonical_implementation_with_comments = fun lexbuf ->
-    try wrap_with_comments Toolchain_impl.Parser_impl.implementation lexbuf with
+  let canonical_implementation_with_comments lexbuf =
+    try wrap_with_comments Toolchain_impl.implementation lexbuf with
     | err -> (syntax_error_str err (Location.curr lexbuf), [])
 
-  let canonical_interface_with_comments = fun lexbuf ->
-    try wrap_with_comments Toolchain_impl.Parser_impl.interface lexbuf with
+  let canonical_core_type_with_comments lexbuf =
+    try wrap_with_comments Toolchain_impl.core_type lexbuf with
+    | err -> (syntax_error_core_type err (Location.curr lexbuf), [])
+
+  let canonical_interface_with_comments lexbuf =
+    try wrap_with_comments Toolchain_impl.interface lexbuf with
     | err -> (syntax_error_sig err (Location.curr lexbuf), [])
 
+  let canonical_implementation = Toolchain_impl.implementation
+
+  let canonical_core_type = Toolchain_impl.core_type
+
+  let canonical_interface = Toolchain_impl.interface
+
   (* Printing *)
-  let print_canonical_interface_with_comments comments interface =
-    Toolchain_impl.format_interface_with_comments comments Format.std_formatter interface
-  let print_canonical_implementation_with_comments comments implementation =
-    Toolchain_impl.format_implementation_with_comments comments Format.std_formatter implementation
+  let print_canonical_interface_with_comments interface =
+    Toolchain_impl.format_interface_with_comments interface Format.std_formatter
 
-
+  let print_canonical_implementation_with_comments implementation =
+    Toolchain_impl.format_implementation_with_comments implementation Format.std_formatter
 end
 
 module OCaml_syntax = struct
   module Lexer_impl = Lexer
   module Parser_impl = Parser
+
+  let implementation = Parser.implementation Lexer.token
+  let core_type = Parser.parse_core_type Lexer.token
+  let interface = Parser.interface Lexer.token
   (* Skip tokens to the end of the phrase *)
   (* TODO: consolidate these copy-paste skip/trys into something that works for
    * every syntax (also see [reason_util]). *)
@@ -174,15 +177,117 @@ module OCaml_syntax = struct
 
   (* Unfortunately we drop the comments because there doesn't exist an ML
    * printer that formats comments *and* line wrapping! (yet) *)
-  let format_interface_with_comments comments formatter signature =
+  let format_interface_with_comments (signature, _) formatter =
     Pprintast.signature formatter signature
-  let format_implementation_with_comments comments formatter signature =
-    Pprintast.structure formatter signature
+  let format_implementation_with_comments (implementation, _) formatter =
+    Pprintast.structure formatter implementation
 end
 
 module JS_syntax = struct
+  module I = Reason_parser.MenhirInterpreter
   module Lexer_impl = Reason_lexer
   module Parser_impl = Reason_parser
+
+  (* [loop_handle_yacc] mimic yacc's error handling mechanism in menhir.
+     When it hits an error state, it pops up the stack until it finds a
+     state when the error can be shifted or reduced.
+
+     This is similar to Menhir's default behavior for error handling, with
+     one subtle difference:
+     When loop_handle_yacc recovers from the error, unlike Menhir, it doesn't
+     discard the input token immediately. Instead, it restarts the parsing
+     from recovered state with the original lookahead token that caused the
+     error. If there is still an error, the look ahead token is then discarded.
+
+     yacc's behavior gives us a chance to recover the following code :
+     ```
+     {
+       let a = 1;
+       Js.
+     }
+     ```
+     , where "}" is the lookahead token that triggers an error state. With
+     yacc's behavior, "}" will still be shifted once we recover from "Js.",
+     giving the parser the ability to reduce the whole program to a sequence
+     expression.
+  *)
+
+  let rec loop_handle_yacc read triple in_error checkpoint =
+    match checkpoint with
+    | I.InputNeeded _ ->
+       if in_error then
+         begin
+           match triple with
+           | Some triple ->
+              (* We just recovered from the error state, try the original token again*)
+              let check_point_with_previous_token = I.offer checkpoint triple in
+              let accept_new = I.loop_test
+                                 (fun _ _ -> true)
+                                 check_point_with_previous_token
+                                 false
+              in
+              if accept_new then
+                loop_handle_yacc read None false check_point_with_previous_token
+              else
+                (* The original token still fail to be parsed, discard *)
+                loop_handle_yacc read None false checkpoint
+           | None -> assert false
+         end
+       else
+         let triple = read() in
+         let checkpoint = I.offer checkpoint triple in
+         loop_handle_yacc read (Some triple) false checkpoint
+    | I.Shifting _
+      | I.AboutToReduce _ ->
+       let checkpoint = I.resume checkpoint in
+       loop_handle_yacc read triple in_error checkpoint
+    | I.HandlingError env ->
+       let checkpoint = I.resume checkpoint in
+       (* Enter error state *)
+       loop_handle_yacc read triple true checkpoint
+    | I.Rejected ->
+       assert false
+    | I.Accepted v ->
+       (* The parser has succeeded and produced a semantic value. *)
+       v
+
+  let initial_checkpoint constructor lexbuf =
+    (constructor lexbuf.lex_curr_p)
+
+  (* [lexbuf_to_supplier] returns a supplier to be feed into Menhir's incremental API.
+   * Each time the supplier is called, a new token in the lexbuf is returned.
+   * If the supplier is called after an EOF is already returned, a syntax error will be raised.
+   *
+   * This makes sure at most one EOF token is returned by supplier, which
+   * is the default behavior of ocamlyacc.
+   *)
+  let lexbuf_to_supplier lexbuf =
+    let s = I.lexer_lexbuf_to_supplier Reason_lexer.token lexbuf in
+    let eof_met = ref false in
+    fun () ->
+      let (token, s, e) = s () in
+      if token = Reason_parser.EOF then
+        if not !eof_met then
+          let _ = eof_met := true in
+          (token, s, e)
+        else
+          raise(Syntaxerr.Error(Syntaxerr.Other (Location.curr lexbuf)))
+      else
+        (token, s, e)
+
+  let implementation lexbuf =
+    let cp = initial_checkpoint Reason_parser.Incremental.implementation lexbuf in
+    loop_handle_yacc (lexbuf_to_supplier lexbuf) None false cp
+
+  let interface lexbuf =
+    let cp = initial_checkpoint Reason_parser.Incremental.interface lexbuf in
+    loop_handle_yacc (lexbuf_to_supplier lexbuf) None false cp
+
+  let core_type lexbuf =
+    let cp = initial_checkpoint Reason_parser.Incremental.parse_core_type lexbuf in
+    loop_handle_yacc (lexbuf_to_supplier lexbuf) None false cp
+
+
   (* Skip tokens to the end of the phrase *)
   let rec skip_phrase lexbuf =
     try
@@ -217,18 +322,16 @@ module JS_syntax = struct
         if !Location.input_name = "//toplevel//"
         then maybe_skip_phrase lexbuf;
         raise(Syntaxerr.Error(Syntaxerr.Other loc))
-    | _ as x ->
-        raise x
+    | x -> raise x
 
-  let format_interface_with_comments comments formatter signature =
+  let format_interface_with_comments (signature, comments) formatter =
     let reason_formatter = Reason_pprint_ast.createFormatter () in
     reason_formatter#signature comments formatter signature
-  let format_implementation_with_comments comments formatter signature =
+  let format_implementation_with_comments (implementation, comments) formatter =
     let reason_formatter = Reason_pprint_ast.createFormatter () in
-    reason_formatter#structure comments formatter signature
+    reason_formatter#structure comments formatter implementation
 
 end
-
 
 module ML = Create_parse_entrypoint (OCaml_syntax)
 module JS = Create_parse_entrypoint (JS_syntax)
