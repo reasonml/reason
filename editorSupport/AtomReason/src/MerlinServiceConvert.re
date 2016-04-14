@@ -79,15 +79,6 @@ let merlinCompletionEntryToNuclide replacementPrefix e => {
   replacementPrefix
 };
 
-let react = Js.Unsafe.js_expr "require('react')";
-
-let highlighter = Js.Unsafe.js_expr {|
-  function() {
-    var Highlights = require('highlights-native');
-    return new Highlights({registry: atom.grammars});
-  }()
-|};
-
 let jsMerlinTypeHintEntryToNuclide arr => {
   let length = Js.Unsafe.get arr "length";
   if (length == 0) {
@@ -102,33 +93,8 @@ let jsMerlinTypeHintEntryToNuclide arr => {
     /* lines (rows) are 1-based for merlin, not 0-based, like for Atom */
     let startRowColumn = (Js.Unsafe.get merlinStartPos "line" - 1, Js.Unsafe.get merlinStartPos "col");
     let endRowColumn = (Js.Unsafe.get merlinEndPos "line" - 1, Js.Unsafe.get merlinEndPos "col");
-    let reasonHintHTMLString =
-      Js.Unsafe.meth_call
-        highlighter
-        "highlightSync"
-        [|
-          Js.Unsafe.obj [|
-            ("fileContents", Js.Unsafe.inject (Js.string reasonHint)),
-            ("scopeName", Js.Unsafe.inject (Js.string "source.reason"))
-          |]
-        |];
-    let reasonHintComponent =
-      Js.Unsafe.meth_call
-        react
-        "createElement"
-        [|
-          Js.Unsafe.inject (Js.string "div"),
-          Js.Unsafe.inject (
-            Js.Unsafe.obj [|
-              (
-                "dangerouslySetInnerHTML",
-                Js.Unsafe.inject (Js.Unsafe.obj [|("__html", Js.Unsafe.inject reasonHintHTMLString)|])
-              )
-            |]
-          )
-        |];
     Js.Unsafe.obj [|
-      ("component", Js.Unsafe.inject reasonHintComponent),
+      ("hint", Js.Unsafe.inject (Js.string reasonHint)),
       ("range", Js.Unsafe.inject (Atom.Range.toJs (startRowColumn, endRowColumn)))
     |]
   }
