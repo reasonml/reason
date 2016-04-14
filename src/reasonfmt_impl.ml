@@ -7,16 +7,18 @@ exception Invalid_config of string
 
 let default_print_width = 90
 
+(* Note: filename should only be used with .ml files. See reason_toolchain. *)
 let defaultImplementationParserFor filename lexbuf =
   if Filename.check_suffix filename ".re" then (Reason_toolchain.JS.canonical_implementation_with_comments lexbuf, false, false)
-  else if Filename.check_suffix filename ".ml" then (Reason_toolchain.ML.canonical_implementation_with_comments lexbuf, true, false)
+  else if Filename.check_suffix filename ".ml" then (Reason_toolchain.ML.canonical_implementation_with_comments ~filename:filename lexbuf, true, false)
   else (
     raise (Invalid_config ("Cannot determine default implementation parser for filename '" ^ filename ^ "'."))
   )
 
+(* Note: filename should only be used with .mli files. See reason_toolchain. *)
 let defaultInterfaceParserFor filename lexbuf =
   if Filename.check_suffix filename ".rei" then (Reason_toolchain.JS.canonical_interface_with_comments lexbuf, false, true)
-  else if Filename.check_suffix filename ".mli" then (Reason_toolchain.ML.canonical_interface_with_comments lexbuf, true, true)
+  else if Filename.check_suffix filename ".mli" then (Reason_toolchain.ML.canonical_interface_with_comments ~filename:filename lexbuf, true, true)
   else (
     raise (Invalid_config ("Cannot determine default interface parser for filename '" ^ filename ^ "'."))
   )
@@ -98,7 +100,8 @@ let () =
       let ((ast, comments), parsedAsML, parsedAsInterface) = match !prse with
         | None -> (defaultInterfaceParserFor filename) lexbuf
         | Some "binary_reason" -> reasonBinaryParser chan
-        | Some "ml" -> ((Reason_toolchain.ML.canonical_interface_with_comments lexbuf), true, true)
+        (* Do not use the filename if using stdin *)
+        | Some "ml" -> ((Reason_toolchain.ML.canonical_interface_with_comments ~filename:(if !use_stdin then "" else filename) lexbuf), true, true)
         | Some "re" -> ((Reason_toolchain.JS.canonical_interface_with_comments lexbuf), false, true)
         | Some s -> (
           raise (Invalid_config ("Invalid -parse setting for interface '" ^ s ^ "'."))
@@ -148,7 +151,8 @@ let () =
       let ((ast, comments), parsedAsML, parsedAsInterface) = match !prse with
         | None -> (defaultImplementationParserFor filename) lexbuf
         | Some "binary_reason" -> reasonBinaryParser chan
-        | Some "ml" -> ((Reason_toolchain.ML.canonical_implementation_with_comments lexbuf), true, false)
+        (* Do not use the filename if using stdin *)
+        | Some "ml" -> ((Reason_toolchain.ML.canonical_implementation_with_comments  ~filename:(if !use_stdin then "" else filename) lexbuf), true, false)
         | Some "re" -> ((Reason_toolchain.JS.canonical_implementation_with_comments lexbuf), false, false)
         | Some s -> (
           raise (Invalid_config ("Invalid -parse setting for interface '" ^ s ^ "'."))
