@@ -151,8 +151,42 @@ let contextify query::query path::path => Js.Unsafe.obj [|
   ("context", Js.Unsafe.inject (Js.array [|Js.string "auto", Js.string path|]))
 |];
 
-/* The tell command allows us to synchronize our text with Merlin's internal buffer. */
-let makeTellCommand text => Js.array [|Js.string "tell", Js.string "start", Js.string "end", Js.string text|];
+let prepareCommand text::text path::path query::query resolve reject => {
+  let merlinProcess = getMerlinProcess path;
+  /* These two commands should be run before every main command. */
+  readOneLine
+    merlinProcess::merlinProcess
+    cmd::(
+      contextify
+        /* The protocol command tells Merlin which API version we want to use. (2 for us) */
+        query::(
+          Js.array [|
+            Js.Unsafe.inject (Js.string "protocol"),
+            Js.Unsafe.inject (Js.string "version"),
+            Js.Unsafe.inject (Js.number_of_float 2.)
+          |]
+        )
+        path::path
+    )
+    (
+      fun _ =>
+        readOneLine
+          merlinProcess::merlinProcess
+          cmd::(
+            contextify
+              /* The tell command allows us to synchronize our text with Merlin's internal buffer. */
+              query::(Js.array [|Js.string "tell", Js.string "start", Js.string "end", Js.string text|])
+              path::path
+          )
+          (
+            fun _ =>
+              readOneLine
+                merlinProcess::merlinProcess cmd::(contextify query::query path::path) resolve reject
+          )
+          reject
+    )
+    reject
+};
 
 let positionToJsMerlinPosition (line, col) => Js.Unsafe.obj [|
   /* lines (rows) are 1-based for merlin, not 0-based, like for Atom */
@@ -160,77 +194,41 @@ let positionToJsMerlinPosition (line, col) => Js.Unsafe.obj [|
   ("col", Js.Unsafe.inject (Js.number_of_float (float_of_int col)))
 |];
 
-let makeTypeHintCommand position => Js.array [|
-  Js.Unsafe.inject (Js.string "type"),
-  Js.Unsafe.inject (Js.string "enclosing"),
-  Js.Unsafe.inject (Js.string "at"),
-  Js.Unsafe.inject (positionToJsMerlinPosition position)
-|];
-
-let getTypeHint path::path text::text position::position resolve reject => {
-  let merlin = getMerlinProcess path;
-  readOneLine
-    merlinProcess::merlin
-    cmd::(contextify query::(makeTellCommand text) path::path)
-    (
-      fun _ =>
-        readOneLine
-          merlinProcess::merlin
-          cmd::(contextify query::(makeTypeHintCommand position) path::path)
-          resolve
-          reject
+/* Actual merlin commands we'll use. */
+let getTypeHint path::path text::text position::position resolve reject =>
+  prepareCommand
+    text::text
+    path::path
+    query::(
+      Js.array [|
+        Js.Unsafe.inject (Js.string "type"),
+        Js.Unsafe.inject (Js.string "enclosing"),
+        Js.Unsafe.inject (Js.string "at"),
+        Js.Unsafe.inject (positionToJsMerlinPosition position)
+      |]
     )
-    reject
-};
+    resolve
+    reject;
 
-let makeCompleteCommand position prefix => Js.array [|
-  Js.Unsafe.inject (Js.string "complete"),
-  Js.Unsafe.inject (Js.string "prefix"),
-  Js.Unsafe.inject (Js.string prefix),
-  Js.Unsafe.inject (Js.string "at"),
-  Js.Unsafe.inject (positionToJsMerlinPosition position)
-|];
-
-let getAutoCompleteSuggestions path::path text::text position::position prefix::prefix resolve reject => {
-  let merlin = getMerlinProcess path;
-  readOneLine
-    merlinProcess::merlin
-    cmd::(contextify query::(makeTellCommand text) path::path)
-    (
-      fun _ =>
-        readOneLine
-          merlinProcess::merlin
-          cmd::(contextify query::(makeCompleteCommand position prefix) path::path)
-          resolve
-          reject
+let getAutoCompleteSuggestions path::path text::text position::position prefix::prefix resolve reject =>
+  prepareCommand
+    text::text
+    path::path
+    query::(
+      Js.array [|
+        Js.Unsafe.inject (Js.string "complete"),
+        Js.Unsafe.inject (Js.string "prefix"),
+        Js.Unsafe.inject (Js.string prefix),
+        Js.Unsafe.inject (Js.string "at"),
+        Js.Unsafe.inject (positionToJsMerlinPosition position)
+      |]
     )
-    reject
-};
+    resolve
+    reject;
 
-let getDiagnostics path::path text::text resolve reject => {
-  let merlin = getMerlinProcess path;
-  readOneLine
-    merlinProcess::merlin
-    cmd::(contextify query::(makeTellCommand text) path::path)
-    (
-      fun _ =>
-        readOneLine
-          merlinProcess::merlin
-
-          cmd::(contextify query::(Js.array [|Js.Unsafe.inject (Js.string "errors")|]) path::path)
-          resolve
-          reject
-    )
-    reject
-};
-
-let makeLocateCommand position extension => Js.array [|
-  Js.Unsafe.inject (Js.string "locate"),
-  Js.Unsafe.inject (Js.string ""),
-  Js.Unsafe.inject (Js.string extension),
-  Js.Unsafe.inject (Js.string "at"),
-  Js.Unsafe.inject (positionToJsMerlinPosition position)
-|];
+let getDiagnostics path::path text::text resolve reject =>
+  prepareCommand
+    text::text path::path query::(Js.array [|Js.Unsafe.inject (Js.string "errors")|]) resolve reject;
 
 /* TODO: put this logic into reason and somewhere else. */
 let normalizeLocateCommandResult' = Js.Unsafe.js_expr {|
@@ -251,18 +249,19 @@ let normalizeLocateCommandResult' = Js.Unsafe.js_expr {|
 let normalizeLocateCommandResult o path =>
   Js.Unsafe.fun_call normalizeLocateCommandResult' [|o, Js.Unsafe.inject (Js.string path)|];
 
-let locate path::path text::text extension::extension position::position resolve reject => {
-  let merlin = getMerlinProcess path;
-  readOneLine
-    merlinProcess::merlin
-    cmd::(contextify query::(makeTellCommand text) path::path)
-    (
-      fun _ =>
-        readOneLine
-          merlinProcess::merlin
-          cmd::(contextify query::(makeLocateCommand position extension) path::path)
-          (fun successResult => resolve (normalizeLocateCommandResult successResult path))
-          reject
+let locate path::path text::text extension::extension position::position resolve reject =>
+  prepareCommand
+    text::text
+    path::path
+    query::(
+      Js.array [|
+        Js.Unsafe.inject (Js.string "locate"),
+        Js.Unsafe.inject (Js.string ""),
+        Js.Unsafe.inject (Js.string extension),
+
+        Js.Unsafe.inject (Js.string "at"),
+        Js.Unsafe.inject (positionToJsMerlinPosition position)
+      |]
     )
-    reject
-};
+    (fun successResult => resolve (normalizeLocateCommandResult successResult path))
+    reject;
