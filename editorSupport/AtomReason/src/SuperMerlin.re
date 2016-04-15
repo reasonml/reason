@@ -37,8 +37,8 @@ let findNearestMerlinFile beginAtFilePath::path => {
   Js.to_string result
 };
 
-let createMerlinProcessOnce' = Js.Unsafe.js_expr {|
-  function createThingOnce(ocamlMerlinPath, ocamlMerlinFlags, dotMerlinDir, fixedEnv) {
+let createMerlinReaderFnOnce' = Js.Unsafe.js_expr {|
+  function(ocamlMerlinPath, ocamlMerlinFlags, dotMerlinDir, fixedEnv) {
     var spawn = require('child_process').spawn;
     // To split while stripping out any leading/trailing space, we match on all
     // *non*-whitespace.
@@ -53,13 +53,62 @@ let createMerlinProcessOnce' = Js.Unsafe.js_expr {|
       console.error('Ocamlmerlin: closed.');
     });
 
-    return merlinProcess;
+    var cmdQueue = [];
+    var hasStartedReading = false;
+
+    var readline = require('readline');
+    var reader = readline.createInterface({
+      input: merlinProcess.stdout,
+      terminal: false,
+    });
+
+    return function(cmd, resolve, reject) {
+      cmdQueue.push([resolve, reject]);
+
+      if (!hasStartedReading) {
+        hasStartedReading = true;
+        reader.on('line', function(line) {
+          var response;
+          try {
+            response = JSON.parse(line);
+          } catch (err) {
+            response = null;
+          }
+          var resolveReject = cmdQueue.shift();
+          var resolve = resolveReject[0];
+          var reject = resolveReject[1];
+
+          if (!response || !Array.isArray(response) || response.length !== 2) {
+            reject(new Error('Unexpected ocamlmerlin output format: ' + line));
+            return;
+          }
+
+          var status = response[0];
+          var content = response[1];
+
+          var errorResponses = {
+            'failure': true,
+            'error': true,
+            'exception': true,
+          };
+
+          if (errorResponses[status]) {
+            reject(new Error('Ocamlmerlin returned an error: ' + line));
+            return;
+          }
+
+          resolve(content);
+        });
+      }
+
+      merlinProcess.stdin.write(JSON.stringify(cmd));
+    };
   }
 |};
 
-let createMerlinProcessOnce pathToMerlin::pathToMerlin merlinFlags::merlinFlags dotMerlinPath::dotMerlinPath =>
+let createMerlinReaderFnOnce pathToMerlin::pathToMerlin merlinFlags::merlinFlags dotMerlinPath::dotMerlinPath =>
   Js.Unsafe.fun_call
-    createMerlinProcessOnce'
+    createMerlinReaderFnOnce'
     [|
       Js.Unsafe.inject (Js.string pathToMerlin),
       Js.Unsafe.inject (Js.string merlinFlags),
@@ -67,9 +116,9 @@ let createMerlinProcessOnce pathToMerlin::pathToMerlin merlinFlags::merlinFlags 
       Js.Unsafe.inject fixedEnv
     |];
 
-let getMerlinProcess path::path =>
+let startMerlinProcess path::path =>
   switch startedMerlin.contents {
-  | Some m => m
+  | Some readerFn => ()
   | None => {
       let atomReasonPathToMerlin = Atom.Config.get "AtomReason.pathToMerlin";
       let atomReasonMerlinFlags = Atom.Config.get "AtomReason.merlinFlags";
@@ -79,70 +128,27 @@ let getMerlinProcess path::path =>
       | JsonString s => Atom.Env.setEnvVar "MERLIN_LOG" s
       | _ => ()
       };
-      let merlinProcess =
-        createMerlinProcessOnce
+      let readerFn =
+        createMerlinReaderFnOnce
           pathToMerlin::(Atom.JsonValue.unsafeExtractString atomReasonPathToMerlin)
           merlinFlags::(Atom.JsonValue.unsafeExtractString atomReasonMerlinFlags)
           dotMerlinPath::(findNearestMerlinFile beginAtFilePath::path);
-      startedMerlin.contents = Some merlinProcess;
-      merlinProcess
+      startedMerlin.contents = Some readerFn
     }
   };
 
-let readOneLine' = Js.Unsafe.js_expr {|
-  function(merlinProcess, cmd, resolve, reject) {
-    var cmdString = JSON.stringify(cmd);
-    var readline = require('readline');
-    var reader = readline.createInterface({
-      input: merlinProcess.stdout,
-      terminal: false,
-    });
-
-    reader.on('line', function(line) {
-      var asdasd = line;
-      var asdasd2 = cmd;
-      reader.close();
-      var response;
-      try {
-        response = JSON.parse(line);
-      } catch (err) {
-        response = null;
-      }
-      if (!response || !Array.isArray(response) || response.length !== 2) {
-        reject(Error('Unexpected ocamlmerlin output format: ' + line));
-        return;
-      }
-
-      var status = response[0];
-      var content = response[1];
-
-      var errorResponses = {
-        'failure': true,
-        'error': true,
-        'exception': true,
-      };
-
-      if (errorResponses[status]) {
-        reject(Error('Ocamlmerlin returned an error: ' + line));
-        return;
-      }
-
-      resolve(content);
-    });
-
-    merlinProcess.stdin.write(cmdString);
-  }
-|};
-
-let readOneLine merlinProcess::merlinProcess cmd::cmd resolve reject =>
-  Js.Unsafe.fun_call
-    readOneLine'
-    [|
-      Js.Unsafe.inject merlinProcess,
-      Js.Unsafe.inject cmd,
-      Js.Unsafe.inject (Js.wrap_callback resolve),
-      Js.Unsafe.inject (Js.wrap_callback reject)
-    |];
+let readOneLine cmd::cmd resolve reject =>
+  switch startedMerlin.contents {
+  | None => raise Not_found
+  | Some readerFn =>
+      Js.Unsafe.fun_call
+        readerFn
+        [|
+          Js.Unsafe.inject cmd,
+          Js.Unsafe.inject (Js.wrap_callback resolve),
+          Js.Unsafe.inject (Js.wrap_callback reject)
+        |]
+  };
 
 /* contextify is important for avoiding different buffers calling the backing merlin at the same time. */
 /* https://github.com/the-lambda-church/merlin/blob/d98a08d318ca14d9c702bbd6eeadbb762d325ce7/doc/dev/PROTOCOL.md#contextual-commands */
@@ -152,10 +158,9 @@ let contextify query::query path::path => Js.Unsafe.obj [|
 |];
 
 let prepareCommand text::text path::path query::query resolve reject => {
-  let merlinProcess = getMerlinProcess path;
+  startMerlinProcess path;
   /* These two commands should be run before every main command. */
   readOneLine
-    merlinProcess::merlinProcess
     cmd::(
       contextify
         /* The protocol command tells Merlin which API version we want to use. (2 for us) */
@@ -171,18 +176,13 @@ let prepareCommand text::text path::path query::query resolve reject => {
     (
       fun _ =>
         readOneLine
-          merlinProcess::merlinProcess
           cmd::(
             contextify
               /* The tell command allows us to synchronize our text with Merlin's internal buffer. */
               query::(Js.array [|Js.string "tell", Js.string "start", Js.string "end", Js.string text|])
               path::path
           )
-          (
-            fun _ =>
-              readOneLine
-                merlinProcess::merlinProcess cmd::(contextify query::query path::path) resolve reject
-          )
+          (fun _ => readOneLine cmd::(contextify query::query path::path) resolve reject)
           reject
     )
     reject
@@ -239,6 +239,7 @@ let normalizeLocateCommandResult' = Js.Unsafe.js_expr {|
     if (o.file == null) {
       return {
         file: path,
+
         pos: o.pos,
       };
     }
@@ -256,9 +257,9 @@ let locate path::path text::text extension::extension position::position resolve
     query::(
       Js.array [|
         Js.Unsafe.inject (Js.string "locate"),
+
         Js.Unsafe.inject (Js.string ""),
         Js.Unsafe.inject (Js.string extension),
-
         Js.Unsafe.inject (Js.string "at"),
         Js.Unsafe.inject (positionToJsMerlinPosition position)
       |]
