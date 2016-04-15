@@ -16,4 +16,4 @@
 touch $HOME/.utoprc
 touch $HOME/.utop-history
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-utop -init $DIR/rtop_init.ml -I $HOME
+utop -init $DIR/rtop_init.ml -I $HOME "$@"
