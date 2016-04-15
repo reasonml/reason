@@ -4,6 +4,7 @@
 WARNING='\033[0;31m'
 SUCCESS='\033[0;32m'
 INFO=''
+DEBUG=''
 RESET='\033[0m'
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -31,16 +32,21 @@ TYPE_TEST_OUTPUT=$TEST_DIR/typeCheckedTests/output
 
 TYPE_TEST_EXPECTED_OUTPUT=$DIR/typeCheckedTests/expected_output
 
-SOMETESTFAILED=0
+FAILED_TESTS=$TEST_DIR/failed_tests
 
 function info() {
     printf "${INFO}$1${RESET}\n"
 }
 
+function debug() {
+    if [ ! -z "$VERBOSE" ]; then
+        printf "${debug}$1${RESET}\n"
+    fi
+}
+
 function success() {
     printf "${SUCCESS}$1${RESET}\n"
 }
-
 
 function output() {
     printf "$1\n"
@@ -54,6 +60,7 @@ function setup_test_dir() {
     echo "Setting up test dir at $UNIT_TEST_EXPECTED_OUTPUT"
     mkdir -p $UNIT_TEST_OUTPUT
     mkdir -p $TYPE_TEST_OUTPUT
+    touch $FAILED_TESTS
 }
 
 setup_test_dir
@@ -63,8 +70,6 @@ function unit_test() {
     INPUT=$2
     OUTPUT=$3
     EXPECTED_OUTPUT=$4
-
-
     info "Unit Test: $FILE"
     if [ "$(basename $FILE)" != "$(basename $FILE .ml)" ] || [ "$(basename $FILE)" != "$(basename $FILE .mli)" ]; then
         if [ "$(basename $FILE)" != "$(basename $FILE .ml)" ]; then
@@ -72,31 +77,29 @@ function unit_test() {
         else
           REFILE="$(basename $FILE .mli).rei"
         fi
-        echo "$REASONFMT -heuristics-file $INPUT/arity.txt -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
+        debug "$REASONFMT -heuristics-file $INPUT/arity.txt -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
         $REASONFMT -heuristics-file $INPUT/arity.txt -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE
         if ! [[ $? -eq 0 ]]; then
             warning "  ⊘ TEST FAILED CONVERTING ML TO RE\n"
-            SOMETESTFAILED=1
-            return
+            return 1
         fi
         FILE=$REFILE
     else
-      echo "  '$REASONFMT -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE'"
+      debug "  '$REASONFMT -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE'"
       $REASONFMT -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE
     fi
 
-    info "  Comparing results:  diff $OUTPUT/$FILE $EXPECTED_OUTPUT/$FILE"
+    debug "  Comparing results:  diff $OUTPUT/$FILE $EXPECTED_OUTPUT/$FILE"
 
     diff --unchanged-line-format="" --new-line-format=":%dn: %L" --old-line-format=":%dn: %L" $OUTPUT/$FILE $EXPECTED_OUTPUT/$FILE
 
     if ! [[ $? -eq 0 ]]; then
         warning "  ⊘ FAILED\n"
-        SOMETESTFAILED=1
         info "  ${INFO}$OUTPUT/$FILE${RESET}"
-        echo "  doesn't match expected output"
+        info "  doesn't match expected output"
         info "  ${INFO}$EXPECTED_OUTPUT/$FILE${RESET}"
-        echo "" 
-        return
+        echo ""
+        return 1
     fi
 
     success "  ☑ PASS"
@@ -115,34 +118,32 @@ function idempotent_test() {
         else
           REFILE="$(basename $FILE .mli).rei"
         fi
-        info "  Converting $FILE to $REFILE:"
+        debug "  Converting $FILE to $REFILE:"
 
-        echo "  Formatting Once: $REASONFMT -heuristics-file $INPUT/arity.txt -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
+        debug "  Formatting Once: $REASONFMT -heuristics-file $INPUT/arity.txt -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
         $REASONFMT -heuristics-file $INPUT/arity.txt -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE
         if ! [[ $? -eq 0 ]]; then
             warning "⊘ FAILED\n"
-            SOMETESTFAILED=1
-            return
+            return 1
         fi
         FILE=$REFILE
-        info "  Generating output again: $REASONFMT -print-width 50 -print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted"
+        debug "  Generating output again: $REASONFMT -print-width 50 -print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted"
         $REASONFMT -print-width 50 -print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted
     else
-      echo "  Formatting Once: '$REASONFMT -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE'"
+      debug "  Formatting Once: '$REASONFMT -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE'"
       $REASONFMT -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE
 
-      info "  Generating output again: $REASONFMT -print-width 50 -print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted"
+      debug "  Generating output again: $REASONFMT -print-width 50 -print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted"
       $REASONFMT -print-width 50 -print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted
     fi
 
     diff --unchanged-line-format="" --new-line-format=":%dn: %L" --old-line-format=":%dn: %L" $OUTPUT/$FILE $OUTPUT/$FILE.formatted
     if ! [[ $? -eq 0 ]]; then
         warning "⊘ FAILED\n"
-        SOMETESTFAILED=1
         info "  ${INFO}$OUTPUT/$FILE${RESET}\n"
-        echo "  is not same as"
+        info "  is not same as"
         info "  ${INFO}$EXPECTED_OUTPUT/$FILE${RESET}"
-        return
+        return 1
     fi
 
     success "  ☑ PASS"
@@ -161,22 +162,20 @@ function typecheck_test() {
         else
           REFILE="$(basename $FILE .mli).rei"
         fi
-        info "  Converting $FILE to $REFILE:"
-        echo "$REASONFMT -heuristics-file $INPUT/arity.txt -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
+        debug "  Converting $FILE to $REFILE:"
+        debug "$REASONFMT -heuristics-file $INPUT/arity.txt -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
         $REASONFMT -heuristics-file $INPUT/arity.txt -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE
         if ! [[ $? -eq 0 ]]; then
             warning "  ⊘ FAILED\n"
-            SOMETESTFAILED=1
-            return
+            return 1
         fi
         FILE=$REFILE
     else
-        info "  Formatting: $REASONFMT -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
+        debug "  Formatting: $REASONFMT -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
         $REASONFMT -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE
         if ! [[ $? -eq 0 ]]; then
             warning "  ⊘ FAILED\n"
-            SOMETESTFAILED=1
-            return
+            return 1
         fi
     fi
     if [ "$(basename $FILE)" != "$(basename $FILE .re)" ]; then
@@ -185,38 +184,53 @@ function typecheck_test() {
       COMPILE_FLAGS="-intf"
     fi
 
-    info "  Compiling: ocamlc -c -pp $REASONFMT $COMPILE_FLAGS $OUTPUT/$FILE"
+    debug "  Compiling: ocamlc -c -pp $REASONFMT $COMPILE_FLAGS $OUTPUT/$FILE"
     ocamlc -c -pp $REASONFMT $COMPILE_FLAGS "$OUTPUT/$FILE"
     if ! [[ $? -eq 0 ]]; then
         warning "  ⊘ FAILED\n"
-        return
+        return 1
     fi
 
     success "  ☑ PASS"
     echo
 }
 
-
 cd $UNIT_TEST_INPUT && find . -type f \( -name "*.re*" -or -name "*.ml*" \) | while read file; do
         unit_test $file $UNIT_TEST_INPUT $UNIT_TEST_OUTPUT $UNIT_TEST_EXPECTED_OUTPUT
+        if ! [[ $? -eq 0 ]]; then
+            echo "$file -- unit_test" >> $FAILED_TESTS
+        fi
+
         idempotent_test $file $UNIT_TEST_INPUT $UNIT_TEST_OUTPUT $UNIT_TEST_EXPECTED_OUTPUT
+        if ! [[ $? -eq 0 ]]; then
+            echo "$file -- idempotent_test" >> $FAILED_TESTS
+        fi
 done
 
 cd $TYPE_TEST_INPUT && find . -type f \( -name "*.re*" -or -name "*.ml*" \) | while read file; do
         typecheck_test $file $TYPE_TEST_INPUT $TYPE_TEST_OUTPUT
+        if ! [[ $? -eq 0 ]]; then
+            echo "$file -- typecheck_test" >> $FAILED_TESTS
+        fi
         unit_test $file $TYPE_TEST_INPUT $TYPE_TEST_OUTPUT $TYPE_TEST_EXPECTED_OUTPUT
+        if ! [[ $? -eq 0 ]]; then
+            echo "$file -- unit_test" >> $FAILED_TESTS
+        fi
         idempotent_test $file $TYPE_TEST_INPUT $TYPE_TEST_OUTPUT $TYPE_TEST_EXPECTED_OUTPUT
+        if ! [[ $? -eq 0 ]]; then
+            echo "$file -- idempotent_test" >> $FAILED_TESTS
+        fi
 done
 
-if [ "$SOMETESTFAILED" -eq "1" ]; then
-  warning "⊘ There were test failures - scroll up to inspect them. They might be pre-existing failures. ⊘"
+if [[ -s $FAILED_TESTS ]]; then
+  warning "Failed tests:"
+  cat $FAILED_TESTS
   exit 1
 fi
 
-
-# if [ -z "$KEEP" ]; then
-#     info "Removing up $TEST_DIR (set env keep=1 to keep build directory)"
-#     rm -rf $TEST_DIR
-# fi
+if [ -z "$KEEP" ]; then
+    info "Removing up $TEST_DIR (set env keep=1 to keep build directory)"
+    rm -rf $TEST_DIR
+fi
 
 exit 0
