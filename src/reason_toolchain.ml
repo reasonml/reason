@@ -56,6 +56,8 @@ module type Toolchain = sig
   val canonical_core_type: Lexing.lexbuf -> Parsetree.core_type
   val canonical_implementation: Lexing.lexbuf -> Parsetree.structure
   val canonical_interface: Lexing.lexbuf -> Parsetree.signature
+  val canonical_toplevel_phrase: Lexing.lexbuf -> Parsetree.toplevel_phrase
+  val canonical_use_file: Lexing.lexbuf -> Parsetree.toplevel_phrase list
 
   (* Printing *)
   val print_canonical_interface_with_comments: (Parsetree.signature * comments) -> unit
@@ -80,6 +82,8 @@ module type Toolchain_spec = sig
   val core_type: Lexing.lexbuf -> Parsetree.core_type
   val implementation: Lexing.lexbuf -> Parsetree.structure
   val interface: Lexing.lexbuf -> Parsetree.signature
+  val toplevel_phrase: Lexing.lexbuf -> Parsetree.toplevel_phrase
+  val use_file: Lexing.lexbuf -> Parsetree.toplevel_phrase list
 
   val format_interface_with_comments: (Parsetree.signature * comments) -> Format.formatter -> unit
   val format_implementation_with_comments: (Parsetree.structure * comments) -> Format.formatter -> unit
@@ -122,6 +126,10 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
 
   let canonical_interface = Toolchain_impl.interface
 
+  let canonical_toplevel_phrase = Toolchain_impl.toplevel_phrase
+
+  let canonical_use_file = Toolchain_impl.use_file
+
   (* Printing *)
   let print_canonical_interface_with_comments interface =
     Toolchain_impl.format_interface_with_comments interface Format.std_formatter
@@ -137,6 +145,9 @@ module OCaml_syntax = struct
   let implementation = Parser.implementation Lexer.token
   let core_type = Parser.parse_core_type Lexer.token
   let interface = Parser.interface Lexer.token
+  let toplevel_phrase = Parser.toplevel_phrase Lexer.token
+  let use_file = Parser.use_file Lexer.token
+
   (* Skip tokens to the end of the phrase *)
   (* TODO: consolidate these copy-paste skip/trys into something that works for
    * every syntax (also see [reason_util]). *)
@@ -287,6 +298,13 @@ module JS_syntax = struct
     let cp = initial_checkpoint Reason_parser.Incremental.parse_core_type lexbuf in
     loop_handle_yacc (lexbuf_to_supplier lexbuf) None false cp
 
+  let toplevel_phrase lexbuf =
+    let cp = initial_checkpoint Reason_parser.Incremental.toplevel_phrase lexbuf in
+    loop_handle_yacc (lexbuf_to_supplier lexbuf) None false cp
+
+  let use_file lexbuf =
+    let cp = initial_checkpoint Reason_parser.Incremental.use_file lexbuf in
+    loop_handle_yacc (lexbuf_to_supplier lexbuf) None false cp
 
   (* Skip tokens to the end of the phrase *)
   let rec skip_phrase lexbuf =

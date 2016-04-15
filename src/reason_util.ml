@@ -42,26 +42,7 @@ let maybe_skip_phrase lexbuf =
 let correctly_catch_parse_errors fn lexbuf =
   let kind = if !Toploop.input_name = "//toplevel//" then `Toplevel else `Batch in
   try
-    try
-      Reason_lexer.init ();
-      let ast = fn Reason_lexer.token lexbuf in
-      Parsing.clear_parser();
-      ast
-    with
-    | Reason_lexer.Error(Reason_lexer.Illegal_character _, _) as err when kind = `Toplevel ->
-      skip_phrase lexbuf;
-      raise err
-    | Syntaxerr.Error _ as err when kind = `Toplevel ->
-      maybe_skip_phrase lexbuf;
-      raise err
-    | Parsing.Parse_error | Syntaxerr.Escape_error ->
-      let loc = Location.{
-        loc_ghost = false;
-        loc_start = lexbuf.Lexing.lex_start_p;
-        loc_end   = lexbuf.Lexing.lex_curr_p;
-      } in
-      if kind = `Toplevel then maybe_skip_phrase lexbuf;
-      raise (Syntaxerr.Error (Syntaxerr.Other loc))
+    fn lexbuf
   with exn when kind = `Toplevel ->
     (* In expunged toplevel, we have a split-brain situation where toplevel
        and m17n have different internal IDs for the "same" exceptions.
