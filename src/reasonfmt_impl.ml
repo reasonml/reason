@@ -27,6 +27,20 @@ let reasonBinaryParser chan =
   let (magic_number, filename, ast, comments, parsedAsML, parsedAsInterface) = input_value chan in
   ((ast, comments), parsedAsML, parsedAsInterface)
 
+let stdin_input = ref ""
+
+let from_stdin chan =
+  Lexing.from_function (fun buf n -> (
+    (* keep input from stdin in memory so that it can be used to reformat comment tokens *)
+    let nchar = input chan buf 0 n in
+    if nchar > 0 then (
+      stdin_input := !stdin_input ^ Bytes.sub_string buf 0 nchar;
+      nchar
+    )
+    else nchar
+  ))
+
+
 (*
  * As soon as m17n vends comments, this should be replaced with what is
  * effectively m17n's parser.
@@ -88,7 +102,9 @@ let () =
     Reason_config.configure ~r:true
   in
   Location.input_name := filename;
-  let lexbuf = Lexing.from_channel chan in
+  (* Use custom method of lexing from the channel to keep track of the input so that we can
+     reformat tokens in the toolchain*)
+  let lexbuf = if !use_stdin then from_stdin chan else Lexing.from_channel chan in
   Location.init lexbuf filename;
   let intf = match !intf with
     | None when (Filename.check_suffix filename ".rei" || Filename.check_suffix filename ".mli") -> true
@@ -101,7 +117,11 @@ let () =
         | None -> (defaultInterfaceParserFor filename) lexbuf
         | Some "binary_reason" -> reasonBinaryParser chan
         (* Do not use the filename if using stdin *)
-        | Some "ml" -> ((Reason_toolchain.ML.canonical_interface_with_comments ~filename:(if !use_stdin then "" else filename) lexbuf), true, true)
+        | Some "ml" -> (
+          if !use_stdin
+          then (Reason_toolchain.ML.canonical_interface_with_comments ~stdin_input_ref:stdin_input lexbuf), true, true
+          else (Reason_toolchain.ML.canonical_interface_with_comments ~filename:filename lexbuf), true, true
+        )
         | Some "re" -> ((Reason_toolchain.JS.canonical_interface_with_comments lexbuf), false, true)
         | Some s -> (
           raise (Invalid_config ("Invalid -parse setting for interface '" ^ s ^ "'."))
@@ -152,7 +172,11 @@ let () =
         | None -> (defaultImplementationParserFor filename) lexbuf
         | Some "binary_reason" -> reasonBinaryParser chan
         (* Do not use the filename if using stdin *)
-        | Some "ml" -> ((Reason_toolchain.ML.canonical_implementation_with_comments  ~filename:(if !use_stdin then "" else filename) lexbuf), true, false)
+        | Some "ml" -> (
+          if !use_stdin
+          then (Reason_toolchain.ML.canonical_implementation_with_comments  ~stdin_input_ref:stdin_input lexbuf), true, false
+          else (Reason_toolchain.ML.canonical_implementation_with_comments  ~filename:filename lexbuf), true, false
+        )
         | Some "re" -> ((Reason_toolchain.JS.canonical_implementation_with_comments lexbuf), false, false)
         | Some s -> (
           raise (Invalid_config ("Invalid -parse setting for interface '" ^ s ^ "'."))

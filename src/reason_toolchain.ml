@@ -45,13 +45,35 @@ let syntax_error_sig err loc =
   else
     raise err
 
+(* given a comment string and the first two characters read from a channel, check if the comment
+   should be reformatted *)
+let modify_comment comment c1 c2 =
+  (* This handles the 4.02.3 case of docstrings (starting with `STAR`
+     and `WHITESPACE`) having their strings truncated *)
+  if c1 == '*' &&
+     c2 == ' ' &&
+     (if String.length comment >= 2
+      then String.compare (String.sub comment 0 2) "* " <> 0
+      else true)  (* 4.02.1 will correctly start with `* ` *)
+  then "*" ^ comment
+  (* This handles the 4.02.3 case of comments of the form
+     `LPAREN`(`STAR`)(`STAR`)*.. returning `STAR``LPAREN``STAR`(`STAR`)*... *)
+  else if c1 == '*' &&
+          c2 == '*' &&
+          (if String.length comment >= 3
+           then String.compare (String.sub comment 0 3) "*(*" == 0
+           else true) (* 4.02.3 incorrectly start with `STAR LPAREN STAR` *)
+  then String.sub comment 3 (String.length comment - 4) ^ " "
+  else comment
+
 type comments = (String.t * Location.t) list
 
 module type Toolchain = sig
   (* Parsing *)
   val canonical_core_type_with_comments: Lexing.lexbuf -> (Parsetree.core_type * comments)
-  val canonical_implementation_with_comments: ?filename:String.t -> Lexing.lexbuf -> (Parsetree.structure * comments)
-  val canonical_interface_with_comments: ?filename:String.t -> Lexing.lexbuf -> (Parsetree.signature * comments)
+  (* Note: stdin_input must be passed in as a ref because the lexer has not yet run when this is called*)
+  val canonical_implementation_with_comments: ?stdin_input_ref:String.t ref -> ?filename:String.t -> Lexing.lexbuf -> (Parsetree.structure * comments)
+  val canonical_interface_with_comments: ?stdin_input_ref:String.t ref -> ?filename:String.t -> Lexing.lexbuf -> (Parsetree.signature * comments)
 
   val canonical_core_type: Lexing.lexbuf -> Parsetree.core_type
   val canonical_implementation: Lexing.lexbuf -> Parsetree.structure
@@ -91,42 +113,47 @@ module type Toolchain_spec = sig
 end
 
 module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = struct
-  let wrap_with_comments ?(filename="") parsing_fun lexbuf =
+  (* Note: stdin_input must be passed in as a ref because the lexing has not yet occured when wrap_with_comments
+     is initially called. It is only called after safeguard_parsing is run *)
+  let wrap_with_comments ?(stdin_input_ref=ref "") ?(filename="") parsing_fun lexbuf =
     Toolchain_impl.safeguard_parsing lexbuf (fun () ->
       let _ = Toolchain_impl.Lexer_impl.init () in
       let ast = parsing_fun lexbuf in
       let unmodified_comments = Toolchain_impl.Lexer_impl.comments() in
       match filename with
-        | "" ->
-          (
-            let _  = Parsing.clear_parser() in
-            (ast, unmodified_comments)
-          )
+        | "" -> (
+          match !stdin_input_ref with
+            | "" ->
+              (
+                let _  = Parsing.clear_parser() in
+                (ast, unmodified_comments)
+              )
+            | _ -> (
+              let modified_comments =
+                List.map (fun (str, loc) ->
+                  let cnum = loc.loc_start.pos_cnum in
+                  let char1 = String.get !stdin_input_ref (cnum + 2) in  (* ignore the leading `LPAREN STAR` *)
+                  let char2 = String.get !stdin_input_ref (cnum + 3) in
+                  let modified_comment = modify_comment str char1 char2 in
+                  (modified_comment, loc)
+                )
+                unmodified_comments
+              in (
+                let _  = Parsing.clear_parser() in
+                (ast, modified_comments)
+              )
+            )
+        )
         | _ ->
           let file_chan = open_in filename in
           let modified_comments =
             List.map (fun (str, loc) ->
-            let cnum = loc.loc_start.pos_cnum in
+              let cnum = loc.loc_start.pos_cnum in
               seek_in file_chan (cnum + 2);  (* ignore the leading `LPAREN STAR` *)
               let char1 = input_char file_chan in
               let char2 = input_char file_chan in
-              (* This handles the 4.02.3 case of docstrings (starting with `STAR`
-                 and `WHITESPACE`) having their strings truncated *)
-              if char1 == '*' &&
-                 char2 == ' ' &&
-                 (if String.length str >= 2
-                  then String.compare (String.sub str 0 2) "* " <> 0
-                  else true)  (* 4.02.1 will correctly start with `* ` *)
-              then ("*" ^ str, loc)
-              (* This handles the 4.02.3 case of comments of the form
-                 `LPAREN`(`STAR`)(`STAR`)*.. returning `STAR``LPAREN``STAR`(`STAR`)*... *)
-              else if char1 == '*' &&
-                      char2 == '*' &&
-                      (if String.length str >= 3
-                       then String.compare (String.sub str 0 3) "*(*" == 0
-                       else true) (* 4.02.3 incorrectly start with `STAR LPAREN STAR` *)
-              then (String.sub str 3 (String.length str - 4) ^ " ", loc)
-              else (str, loc)
+              let modified_comment = modify_comment str char1 char2 in
+              (modified_comment, loc)
             )
             unmodified_comments
           in
@@ -149,16 +176,16 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
    * to modify the comment tokens given back by the lexer due to the discrepancies
    * between 4.02.3 and 4.02.1
    *)
-  let canonical_implementation_with_comments ?(filename="") lexbuf =
-    try wrap_with_comments ~filename:filename Toolchain_impl.implementation lexbuf with
+  let canonical_implementation_with_comments ?(stdin_input_ref=ref "") ?(filename="") lexbuf =
+    try wrap_with_comments ~stdin_input_ref:stdin_input_ref ~filename:filename Toolchain_impl.implementation lexbuf with
     | err -> (syntax_error_str err (Location.curr lexbuf), [])
 
   let canonical_core_type_with_comments lexbuf =
     try wrap_with_comments Toolchain_impl.core_type lexbuf with
     | err -> (syntax_error_core_type err (Location.curr lexbuf), [])
 
-  let canonical_interface_with_comments ?(filename="") lexbuf =
-    try wrap_with_comments ~filename:filename Toolchain_impl.interface lexbuf with
+  let canonical_interface_with_comments ?(stdin_input_ref= ref "") ?(filename="") lexbuf =
+    try wrap_with_comments ~stdin_input_ref:stdin_input_ref ~filename:filename Toolchain_impl.interface lexbuf with
     | err -> (syntax_error_sig err (Location.curr lexbuf), [])
 
   let canonical_toplevel_phrase_with_comments lexbuf =
