@@ -1097,6 +1097,8 @@ interface:
 
 toplevel_phrase:
     structure_item SEMI                 { Ptop_def [$1]}
+  | structure_item EOF                  { Ptop_def []}
+  | EOF                                 { raise End_of_file}
   | toplevel_directive SEMISEMI         { $1 }
 ;
 
