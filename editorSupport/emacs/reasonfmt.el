@@ -51,11 +51,13 @@ a `before-save-hook'."
             (const :tag "None" nil))
       :group 'reason-fmt)
 
-(defcustom reasonfmt-use-window-width t
-  "Use window width when formatting buffer contents, otherwise use fill-column"
-  :type 'boolean
-  :safe #'booleanp
-  :group 'reason-mode)
+(defcustom reasonfmt-width-mode nil
+  "Specify width when formatting buffer contents."
+  :type '(choice
+          (const :tag "Window width" window)
+          (const :tag "Fill column" fill)
+          (const :tag "None" nil))
+  :group 'reason-fmt)
 
 ;;;###autoload
 (defun reasonfmt-before-save ()
@@ -169,7 +171,14 @@ function."
          (patchbuf (get-buffer-create "*Reasonfmt patch*"))
          (coding-system-for-read 'utf-8)
          (coding-system-for-write 'utf-8)
-         (width (if reasonfmt-use-window-width (window-body-width) fill-column)))
+         (width-args
+          (cond
+           ((equal reasonfmt-width-mode 'window)
+            (list "-print-width" (number-to-string (window-body-width))))
+           ((equal reasonfmt-width-mode 'fill)
+            (list "-print-width" (number-to-string fill-column)))
+           (t
+            '()))))
      (unwind-protect
          (save-restriction
            (widen)
@@ -180,9 +189,9 @@ function."
                  (erase-buffer)))
            (with-current-buffer patchbuf
                          (erase-buffer))
-           (if (zerop (call-process reasonfmt-command nil (list (list :file outputfile) errorfile)
-                                    nil "-print-width" (number-to-string width)
-                                    "-parse" "re" "-print" "re" bufferfile))
+           (if (zerop (apply 'call-process
+                             reasonfmt-command nil (list (list :file outputfile) errorfile)
+                             nil (append width-args (list "-parse" "re" "-print" "re" bufferfile))))
                (progn
                  (call-process-region (point-min) (point-max) "diff" nil patchbuf nil "-n" "-"
                                       outputfile)
