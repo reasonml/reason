@@ -120,11 +120,16 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
     try wrap_with_comments Toolchain_impl.interface lexbuf with
     | err -> (syntax_error_sig err (Location.curr lexbuf), [])
 
-  let canonical_implementation = Toolchain_impl.implementation
+  (** [ast_only] wraps a function to return only the ast component
+   *)
+  let ast_only f =
+    (fun lexbuf -> lexbuf |> f |> fst)
 
-  let canonical_core_type = Toolchain_impl.core_type
+  let canonical_implementation = ast_only canonical_implementation_with_comments
 
-  let canonical_interface = Toolchain_impl.interface
+  let canonical_core_type = ast_only canonical_core_type_with_comments
+
+  let canonical_interface = ast_only canonical_interface_with_comments
 
   let canonical_toplevel_phrase = Toolchain_impl.toplevel_phrase
 
