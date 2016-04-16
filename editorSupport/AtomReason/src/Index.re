@@ -156,7 +156,7 @@ export
       fun jsEditor position => {
         /* TODO: make selection work in conjunction with expansion */
         /* TODO: currently gets the first type hint. The rest are the types of the expanded scope. Will use
-        them one day. */
+           them one day. */
         let position = Atom.Point.fromJs position;
         let text = Atom.Buffer.getText (Atom.Editor.getBuffer jsEditor);
         Atom.Promise.createFakePromise (

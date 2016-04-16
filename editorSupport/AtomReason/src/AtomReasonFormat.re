@@ -52,7 +52,7 @@ let characterIndexForPositionInString stdOutLines (curCursorRow, curCursorColumn
   };
   {
     Nuclide.FileFormat.newCursor: finalCharCount.contents,
-    Nuclide.FileFormat.formatted: String.concat "\n" (List.rev result.contents)
+    Nuclide.FileFormat.formatted: String.concat "" (List.rev result.contents)
   }
 };
 
@@ -108,8 +108,8 @@ let formatImpl editor subText isInterface onComplete onFailure => {
   let handleError error handle => {
     NotificationManager.addError options::{...NotificationManager.defaultOptions, detail: error} errorTitle;
     /* TODO: this doesn't type check, but sits across the border of js <-> reason so it passes. onFailure (the
-    promise `onFailure`) takes in a reason string, when it reality it should take in a Js.string like the other
-    locations in this file where we do `onFailure stdErr` */
+       promise `onFailure`) takes in a reason string, when it reality it should take in a Js.string like the other
+       locations in this file where we do `onFailure stdErr` */
     onFailure "Failure!";
     handle ()
   };
@@ -130,7 +130,6 @@ let formatImpl editor subText isInterface onComplete onFailure => {
  * - If text before cursor changed in ways beyond "whitespace" changes, fall
  * back to current behavior.
  */
-
 let getEntireFormatting editor range notifySuccess notifyInvalid notifyInfo resolve reject => {
   let buffer = Editor.getBuffer editor;
   let text = Buffer.getText buffer;
