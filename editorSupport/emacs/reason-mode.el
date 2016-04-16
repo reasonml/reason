@@ -387,7 +387,7 @@ function or trait.  When nil, where will be aligned with fn or trait."
 
 ;; Font-locking definitions and helpers
 (defconst reason-mode-keywords
-  '("as"
+  '("and" "as"
     "else" "extern"
     "false" "fun" "for"
     "if" "impl" "in"
@@ -466,7 +466,8 @@ function or trait.  When nil, where will be aligned with fn or trait."
    (mapcar #'(lambda (x)
                (list (rust-re-item-def (car x))
                      1 (cdr x)))
-           '(("enum" . font-lock-type-face)
+           '(("and" . font-lock-type-face)
+             ("enum" . font-lock-type-face)
              ("struct" . font-lock-type-face)
              ("type" . font-lock-type-face)
              ("mod" . font-lock-type-face)
