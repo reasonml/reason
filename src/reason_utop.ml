@@ -14,8 +14,12 @@ let () =
       Reason_util.correctly_catch_parse_errors
       Reason_toolchain.JS.canonical_use_file
     );
+    UTop.history_file_name :=
+      Some (Filename.concat LTerm_resources.home ".rtop-history");
+
     Toploop.parse_use_file := Reason_util.correctly_catch_parse_errors
                                 Reason_toolchain.JS.canonical_use_file;
+
     (* Printing in Reason syntax *)
     Toploop.print_out_value := Reason_oprint.print_out_value;
     Toploop.print_out_type := Reason_oprint.print_out_type;
