@@ -257,7 +257,6 @@ let locate path::path text::text extension::extension position::position resolve
     query::(
       Js.array [|
         Js.Unsafe.inject (Js.string "locate"),
-
         Js.Unsafe.inject (Js.string ""),
         Js.Unsafe.inject (Js.string extension),
         Js.Unsafe.inject (Js.string "at"),

@@ -6,7 +6,7 @@
  * vim: set ft=reason:
  */
 /* This exposes the modules (e.g. autocomplete, diagnostic) that do the conversion from reason data structures
-(with the help of types from nuclide.re) to js ones */
+   (with the help of types from nuclide.re) to js ones */
 let def x d =>
   switch x {
   | None => d
