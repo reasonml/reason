@@ -1095,14 +1095,16 @@ interface:
     signature EOF                        { apply_mapper_chain_to_signature $1 default_mapper_chain }
 ;
 
-toplevel_phrase:
+toplevel_phrase: _toplevel_phrase {apply_mapper_chain_to_toplevel_phrase $1 default_mapper_chain}
+_toplevel_phrase:
     structure_item SEMI                 { Ptop_def [$1]}
   | structure_item EOF                  { Ptop_def []}
   | EOF                                 { raise End_of_file}
   | toplevel_directive SEMISEMI         { $1 }
 ;
 
-use_file:
+use_file: _use_file {apply_mapper_chain_to_use_file $1 default_mapper_chain}
+_use_file:
   SEMISEMI SEMISEMI {[]}
   /*
     use_file_tail                        { $1 }
