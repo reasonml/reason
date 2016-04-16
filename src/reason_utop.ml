@@ -1,11 +1,17 @@
 (* Portions Copyright (c) 2015-present, Facebook, Inc. All rights reserved. *)
 
-let () =
+type top_kind = RTop | UTop
+let current_top = ref RTop
+
+let init_reason () =
   if List.exists ((=) "camlp4o") !Topfind.predicates ||
      List.exists ((=) "camlp4r") !Topfind.predicates then
     print_endline "Reason is incompatible with camlp4!"
   else begin
-    UTop.prompt := fst (React.S.create LTerm_text.(eval [B_fg (LTerm_style.green); S "# "]));
+    current_top := RTop;
+    UTop.set_phrase_terminator ";";
+    UTop.prompt := fst (React.S.create LTerm_text.
+                     (eval [B_fg (LTerm_style.green); S "Reason # "]));
     UTop.parse_toplevel_phrase := UTop.parse_default (
       Reason_util.correctly_catch_parse_errors
       Reason_toolchain.JS.canonical_toplevel_phrase
@@ -31,25 +37,22 @@ let () =
     Toploop.print_out_phrase := Reason_oprint.print_out_phrase;
   end
 
-let _ = UTop.set_phrase_terminator ";"
+let init_ocaml () =
+  current_top := UTop;
+  UTop.set_phrase_terminator ";;";
+  UTop.prompt := fst (React.S.create LTerm_text.
+                   (eval[B_fg (LTerm_style.green); S "OCaml # "]));
+  UTop.parse_toplevel_phrase := UTop.parse_toplevel_phrase_default;
+  UTop.parse_use_file := UTop.parse_use_file_default;
+  UTop.history_file_name :=
+      Some (Filename.concat LTerm_resources.home ".utop-history")
 
-(* With the Reason utop extension, single semicolons are sufficient for
-   submitting to the top level *)
-(* let toggle_semi = *)
-(*   let original = !UTop.parse_toplevel_phrase in *)
-(*   let no_semi str eos_is_error = *)
-(*     let len = String.length str in *)
-(*     if len > 1 && str.[len - 1] != ';' then *)
-(*       original (str) eos_is_error *)
-(*     else if len > 0 && str.[len - 1] = ';' then *)
-(*       original (str ^ "; ") eos_is_error *)
-(*     else  *)
-(*       original str eos_is_error *)
-(*   in *)
-(*   let semi = ref true in *)
-(*   fun () -> *)
-(*     UTop.parse_toplevel_phrase := if !semi then no_semi else original; *)
-(*     semi := not !semi *)
-(* ;; *)
-(* (* Include this line to not require ;; by default *) *)
-(* toggle_semi ();; *)
+let toggle_syntax () =
+  match !current_top with
+  | RTop -> init_ocaml ()
+  | UTop -> init_reason ()
+
+let _ =
+  Hashtbl.add Toploop.directive_table "toggle_syntax"
+    (Toploop.Directive_none toggle_syntax);
+  init_reason ()
