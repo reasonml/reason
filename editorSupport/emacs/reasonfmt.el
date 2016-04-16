@@ -51,6 +51,12 @@ a `before-save-hook'."
             (const :tag "None" nil))
       :group 'reason-fmt)
 
+(defcustom reasonfmt-use-window-width t
+  "Use window width when formatting buffer contents, otherwise use fill-column"
+  :type 'boolean
+  :safe #'booleanp
+  :group 'reason-mode)
+
 ;;;###autoload
 (defun reasonfmt-before-save ()
   "Add this to .emacs to run reasonfmt on the current buffer when saving:
@@ -162,7 +168,8 @@ function."
          (errbuf (if reasonfmt-show-errors (get-buffer-create "*Reasonfmt Errors*")))
          (patchbuf (get-buffer-create "*Reasonfmt patch*"))
          (coding-system-for-read 'utf-8)
-         (coding-system-for-write 'utf-8))
+         (coding-system-for-write 'utf-8)
+         (width (if reasonfmt-use-window-width (window-body-width) fill-column)))
      (unwind-protect
          (save-restriction
            (widen)
@@ -174,7 +181,8 @@ function."
            (with-current-buffer patchbuf
                          (erase-buffer))
            (if (zerop (call-process reasonfmt-command nil (list (list :file outputfile) errorfile)
-                                    nil "-parse" "re" "-print" "re" bufferfile))
+                                    nil "-print-width" (number-to-string width)
+                                    "-parse" "re" "-print" "re" bufferfile))
                (progn
                  (call-process-region (point-min) (point-max) "diff" nil patchbuf nil "-n" "-"
                                       outputfile)
