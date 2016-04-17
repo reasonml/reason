@@ -1100,30 +1100,26 @@ _toplevel_phrase:
     structure_item SEMI                 { Ptop_def [$1]}
   | structure_item EOF                  { Ptop_def []}
   | EOF                                 { raise End_of_file}
-  | toplevel_directive SEMISEMI         { $1 }
+  | toplevel_directive SEMI             { $1 }
 ;
 
 use_file: _use_file {apply_mapper_chain_to_use_file $1 default_mapper_chain}
 _use_file:
-  SEMISEMI SEMISEMI {[]}
-  /*
     use_file_tail                        { $1 }
   | expr post_item_attributes use_file_tail
                                          { Ptop_def[mkstrexp $1 $2] :: $3 }
-  */
 ;
-/*
+
 use_file_tail:
     EOF                                       { [] }
-  | SEMISEMI EOF                              { [] }
-  | SEMISEMI expr post_item_attributes use_file_tail
+  | SEMI EOF                                  { [] }
+  | SEMI expr post_item_attributes use_file_tail
                                               { Ptop_def[mkstrexp $2 $3] :: $4 }
-  | SEMISEMI structure_item use_file_tail     { Ptop_def[$2] :: $3 }
-  | SEMISEMI toplevel_directive use_file_tail { $2 :: $3 }
+  | SEMI structure_item use_file_tail         { Ptop_def[$2] :: $3 }
+  | SEMI toplevel_directive use_file_tail     { $2 :: $3 }
   | structure_item use_file_tail              { Ptop_def[$1] :: $2 }
   | toplevel_directive use_file_tail          { $1 :: $2 }
 ;
-*/
 
 parse_core_type:
     core_type EOF { apply_mapper_chain_to_type $1 default_mapper_chain }
