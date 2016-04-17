@@ -52,58 +52,29 @@ let from_stdin chan =
   Lexing.from_function (fun buf n -> (
     (* keep input from stdin in memory so that it can be used to reformat comment tokens *)
     let nchar = input chan buf 0 n in
-    if nchar > 0 then (
-      stdin_input := !stdin_input ^ Bytes.sub_string buf 0 nchar;
-      nchar
-    )
-    else nchar
+    stdin_input := !stdin_input ^ Bytes.sub_string buf 0 nchar;
+    nchar
   ))
 
 let setup_lexbuf use_stdin filename =
-  let chan =
-    match use_stdin with
-      | true -> stdin
-      | false ->
-          let file_chan = open_in filename in
-          seek_in file_chan 0;
-          file_chan
-  in
   (* Use custom method of lexing from the channel to keep track of the input so that we can
      reformat tokens in the toolchain*)
-  let lexbuf = if use_stdin then from_stdin chan else Lexing.from_channel chan in
+  let lexbuf = 
+    match use_stdin with
+      | true ->
+        from_stdin stdin
+      | false -> 
+        let file_chan = open_in filename in
+        seek_in file_chan 0;
+        Lexing.from_channel file_chan
+  in
   Location.init lexbuf filename;
   lexbuf
-
-(* given a comment string and the first two characters read from a channel, check if the comment
-   should be reformatted *)
-let modify_comment comment c1 c2 c3 =
-  (* This handles the 4.02.3 case of docstrings (starting with `STAR`
-     and `WHITESPACE`) having their strings truncated *)
-
-  if c1 == '*' &&  (* the second `*` in the docstring *)
-     (c2 == '\n' ||  (* multiline docstring *)
-      c2 == ' ') &&   (* inline docstring *)
-       (* 4.02.1 will correctly start with `*` ^ c2 *)
-      (if String.length comment >= 2
-        then String.get comment 0 != '*' || String.get comment 1 != c2
-        else true)
-  then "*" ^ comment
-  (* This handles the 4.02.3 case of comments of the form
-     `LPAREN`(`STAR`)(`STAR`)*.. returning `STAR``LPAREN``STAR`(`STAR`)*... *)
-  else if c1 == '*' &&  (* the second `*` in the docstring *)
-          c2 == '*' &&
-          (* 4.02.3 incorrectly start with `STAR LPAREN STAR` *)
-          (if String.length comment >= 3
-           then String.compare (String.sub comment 0 3) "*(*" == 0
-          else true)
-  then String.sub comment 3 (String.length comment - 4) ^ " "
-  else comment
 
 type comments = (String.t * Location.t) list
 
 module type Toolchain = sig
   (* Parsing *)
-  val canonical_channel_setup: bool -> String.t -> (?use_stdin:bool -> ?filename:String.t -> Lexing.lexbuf -> ('a * comments)) -> ('a * comments)
   val canonical_core_type_with_comments: ?use_stdin:bool -> ?filename:String.t -> Lexing.lexbuf -> (Parsetree.core_type * comments)
   val canonical_implementation_with_comments: ?use_stdin:bool -> ?filename:String.t -> Lexing.lexbuf -> (Parsetree.structure * comments)
   val canonical_interface_with_comments: ?use_stdin:bool -> ?filename:String.t -> Lexing.lexbuf -> (Parsetree.signature * comments)
@@ -151,59 +122,39 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
       let _ = Toolchain_impl.Lexer_impl.init () in
       let ast = parsing_fun lexbuf in
       let unmodified_comments = Toolchain_impl.Lexer_impl.comments() in
-      if Toolchain_impl.modify_comments then (
-        match filename with
-          | "" -> (
-            match use_stdin with
-              | false ->
-                (
-                  let _  = Parsing.clear_parser() in
-                  (ast, unmodified_comments)
-                )
-              | true -> (
-                let modified_comments =
-                  List.map (fun (str, loc) ->
-                    let cnum = loc.loc_start.pos_cnum in
-                    let char1 = String.get !stdin_input (cnum + 2) in  (* ignore the leading `LPAREN STAR` *)
-                    let char2 = String.get !stdin_input (cnum + 3) in
-                    let char3 = String.get !stdin_input (cnum + 4) in
-                    let modified_comment = modify_comment str char1 char2 char3 in
-                    (modified_comment, loc)
-                  )
-                  unmodified_comments
-                in (
-                  let _  = Parsing.clear_parser() in
-                  (ast, modified_comments)
-                )
-              )
-          )
-          | _ ->
+
+      match (Toolchain_impl.modify_comments, filename, use_stdin) with 
+        | (false, _, _)
+        | (true, "", false) ->
+          let _  = Parsing.clear_parser() in
+          (ast, unmodified_comments)
+        | (true, "", true) -> 
+          let modified_comments =
+            List.map (fun (str, loc) ->
+              let comment_length = (loc.loc_end.pos_cnum - loc.loc_start.pos_cnum - 4) in
+              let original_comment_contents = String.sub !stdin_input (loc.loc_start.pos_cnum + 2) comment_length in
+              (original_comment_contents, loc)
+            )
+            unmodified_comments
+          in 
+          let _  = Parsing.clear_parser() in
+          (ast, modified_comments)
+        | (true, _, _) -> 
             let file_chan = open_in filename in
             let modified_comments =
               List.map (fun (str, loc) ->
-                let cnum = loc.loc_start.pos_cnum in
-                seek_in file_chan (cnum + 2);  (* ignore the leading `LPAREN STAR` *)
-                let char1 = input_char file_chan in
-                let char2 = input_char file_chan in
-                let char3 = input_char file_chan in
-                let modified_comment = modify_comment str char1 char2 char3 in
-                (modified_comment, loc)
+                seek_in file_chan (loc.loc_start.pos_cnum + 2);  (* ignore the leading `LPAREN STAR` *)
+                let comment_length = (loc.loc_end.pos_cnum - loc.loc_start.pos_cnum - 4) in
+                let buf = Bytes.create comment_length in 
+                let _ = input file_chan buf 0 comment_length in
+                let original_comment_contents = Bytes.to_string buf in
+                (original_comment_contents, loc)
               )
               unmodified_comments
             in
-            (
-              let _  = Parsing.clear_parser() in
-              (ast, modified_comments)
-            )
-      ) else (
-        let _  = Parsing.clear_parser() in
-        (ast, unmodified_comments)
-      )
+            let _  = Parsing.clear_parser() in
+            (ast, modified_comments)
     )
-
-  let canonical_channel_setup use_stdin filename (f:?use_stdin:bool -> ?filename:String.t -> Lexing.lexbuf -> ('a * comments)) =
-      let lexbuf = setup_lexbuf use_stdin filename in
-      f ~use_stdin:use_stdin ~filename:filename lexbuf
 
   (*
    * The canonical interface/implementations (with comments) are used with
@@ -230,11 +181,11 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
     try wrap_with_comments use_stdin filename Toolchain_impl.interface lexbuf with
     | err -> (syntax_error_sig err (Location.curr lexbuf), [])
 
-  let canonical_toplevel_phrase_with_comments lexbuf =
-    wrap_with_comments Toolchain_impl.toplevel_phrase lexbuf
+  let canonical_toplevel_phrase_with_comments ?(use_stdin=false) ?(filename="") lexbuf =
+    wrap_with_comments use_stdin filename Toolchain_impl.toplevel_phrase lexbuf
 
-  let canonical_use_file_with_comments lexbuf =
-    wrap_with_comments Toolchain_impl.use_file lexbuf
+  let canonical_use_file_with_comments ?(use_stdin=false) ?(filename="") lexbuf =
+    wrap_with_comments use_stdin filename Toolchain_impl.use_file lexbuf
 
   (** [ast_only] wraps a function to return only the ast component
    *)

@@ -9,16 +9,16 @@ let default_print_width = 90
 
 (* Note: filename should only be used with .ml files. See reason_toolchain. *)
 let defaultImplementationParserFor use_stdin filename =
-  if Filename.check_suffix filename ".re" then (Reason_toolchain.JS.canonical_channel_setup use_stdin filename Reason_toolchain.JS.canonical_implementation_with_comments, false, false)
-  else if Filename.check_suffix filename ".ml" then (Reason_toolchain.ML.canonical_channel_setup use_stdin filename Reason_toolchain.ML.canonical_implementation_with_comments, true, false)
+  if Filename.check_suffix filename ".re" then (Reason_toolchain.JS.canonical_implementation_with_comments ~use_stdin ~filename (Reason_toolchain.setup_lexbuf use_stdin filename), false, false)
+  else if Filename.check_suffix filename ".ml" then (Reason_toolchain.ML.canonical_implementation_with_comments ~use_stdin ~filename (Reason_toolchain.setup_lexbuf use_stdin filename), true, false)
   else (
     raise (Invalid_config ("Cannot determine default implementation parser for filename '" ^ filename ^ "'."))
   )
 
 (* Note: filename should only be used with .mli files. See reason_toolchain. *)
 let defaultInterfaceParserFor use_stdin filename =
-  if Filename.check_suffix filename ".rei" then (Reason_toolchain.JS.canonical_channel_setup use_stdin filename Reason_toolchain.JS.canonical_interface_with_comments, false, true)
-  else if Filename.check_suffix filename ".mli" then (Reason_toolchain.ML.canonical_channel_setup use_stdin filename Reason_toolchain.ML.canonical_interface_with_comments, true, true)
+  if Filename.check_suffix filename ".rei" then (Reason_toolchain.JS.canonical_interface_with_comments ~use_stdin ~filename (Reason_toolchain.setup_lexbuf use_stdin filename) , false, true)
+  else if Filename.check_suffix filename ".mli" then (Reason_toolchain.ML.canonical_interface_with_comments ~use_stdin ~filename (Reason_toolchain.setup_lexbuf use_stdin filename), true, true)
   else (
     raise (Invalid_config ("Cannot determine default interface parser for filename '" ^ filename ^ "'."))
   )
@@ -99,8 +99,8 @@ let () =
       let ((ast, comments), parsedAsML, parsedAsInterface) = match !prse with
         | None -> (defaultInterfaceParserFor use_stdin filename)
         | Some "binary_reason" -> reasonBinaryParser use_stdin filename
-        | Some "ml" -> ((Reason_toolchain.ML.canonical_channel_setup use_stdin filename Reason_toolchain.ML.canonical_interface_with_comments), true, true)
-        | Some "re" -> ((Reason_toolchain.JS.canonical_channel_setup use_stdin filename Reason_toolchain.JS.canonical_interface_with_comments), false, true)
+        | Some "ml" -> ((Reason_toolchain.ML.canonical_interface_with_comments ~use_stdin ~filename (Reason_toolchain.setup_lexbuf use_stdin filename)), true, true)
+        | Some "re" -> ((Reason_toolchain.JS.canonical_interface_with_comments ~use_stdin ~filename (Reason_toolchain.setup_lexbuf use_stdin filename)), false, true)
         | Some s -> (
           raise (Invalid_config ("Invalid -parse setting for interface '" ^ s ^ "'."))
         )
@@ -149,8 +149,8 @@ let () =
       let ((ast, comments), parsedAsML, parsedAsInterface) = match !prse with
         | None -> (defaultImplementationParserFor use_stdin filename)
         | Some "binary_reason" -> reasonBinaryParser use_stdin filename
-        | Some "ml" -> ((Reason_toolchain.ML.canonical_channel_setup use_stdin filename Reason_toolchain.ML.canonical_implementation_with_comments), true, false)
-        | Some "re" -> ((Reason_toolchain.JS.canonical_channel_setup use_stdin filename Reason_toolchain.JS.canonical_implementation_with_comments), false, false)
+        | Some "ml" -> (Reason_toolchain.ML.canonical_implementation_with_comments ~use_stdin ~filename (Reason_toolchain.setup_lexbuf use_stdin filename), true, false)
+        | Some "re" -> (Reason_toolchain.JS.canonical_implementation_with_comments ~use_stdin ~filename (Reason_toolchain.setup_lexbuf use_stdin filename), false, false)
         | Some s -> (
           raise (Invalid_config ("Invalid -parse setting for interface '" ^ s ^ "'."))
         )
