@@ -76,22 +76,26 @@ let setup_lexbuf use_stdin filename =
 
 (* given a comment string and the first two characters read from a channel, check if the comment
    should be reformatted *)
-let modify_comment comment c1 c2 =
+let modify_comment comment c1 c2 c3 =
   (* This handles the 4.02.3 case of docstrings (starting with `STAR`
      and `WHITESPACE`) having their strings truncated *)
-  if c1 == '*' &&
-     c2 == ' ' &&
-     (if String.length comment >= 2
-      then String.compare (String.sub comment 0 2) "* " <> 0
-      else true)  (* 4.02.1 will correctly start with `* ` *)
+
+  if c1 == '*' &&  (* the second `*` in the docstring *)
+     (c2 == '\n' ||  (* multiline docstring *)
+      c2 == ' ') &&   (* inline docstring *)
+       (* 4.02.1 will correctly start with `*` ^ c2 *)
+      (if String.length comment >= 2
+        then String.get comment 0 != '*' || String.get comment 1 != c2
+        else true)
   then "*" ^ comment
   (* This handles the 4.02.3 case of comments of the form
      `LPAREN`(`STAR`)(`STAR`)*.. returning `STAR``LPAREN``STAR`(`STAR`)*... *)
-  else if c1 == '*' &&
+  else if c1 == '*' &&  (* the second `*` in the docstring *)
           c2 == '*' &&
+          (* 4.02.3 incorrectly start with `STAR LPAREN STAR` *)
           (if String.length comment >= 3
            then String.compare (String.sub comment 0 3) "*(*" == 0
-           else true) (* 4.02.3 incorrectly start with `STAR LPAREN STAR` *)
+          else true)
   then String.sub comment 3 (String.length comment - 4) ^ " "
   else comment
 
@@ -162,7 +166,8 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
                     let cnum = loc.loc_start.pos_cnum in
                     let char1 = String.get !stdin_input (cnum + 2) in  (* ignore the leading `LPAREN STAR` *)
                     let char2 = String.get !stdin_input (cnum + 3) in
-                    let modified_comment = modify_comment str char1 char2 in
+                    let char3 = String.get !stdin_input (cnum + 4) in
+                    let modified_comment = modify_comment str char1 char2 char3 in
                     (modified_comment, loc)
                   )
                   unmodified_comments
@@ -180,7 +185,8 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
                 seek_in file_chan (cnum + 2);  (* ignore the leading `LPAREN STAR` *)
                 let char1 = input_char file_chan in
                 let char2 = input_char file_chan in
-                let modified_comment = modify_comment str char1 char2 in
+                let char3 = input_char file_chan in
+                let modified_comment = modify_comment str char1 char2 char3 in
                 (modified_comment, loc)
               )
               unmodified_comments
