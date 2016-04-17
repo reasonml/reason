@@ -570,28 +570,23 @@ and comment = parse
       }
   | "*/"
       {
-        match !comment_start_loc with
-        | [] ->
-            (* If it's part of a single line comment, we should raise an
-             * unterminated nested comment error *)
-          if !single_line_comment then (
-            let loc = Location.curr lexbuf in
-            let start = List.hd (List.rev !line_comment_start_loc) in
-            raise (Error (Unmatched_nested_comment loc, start))
-          )
-          else assert false
-        | [_] ->
-          if !single_line_comment then (
-            comment_start_loc := [];
-            store_lexeme lexbuf;
-            comment lexbuf;
-          )
-          else (
-            comment_start_loc := []; Location.curr lexbuf
-          )
-        | _ :: l -> comment_start_loc := l;
-                  store_lexeme lexbuf;
-                  comment lexbuf;
+        match (!comment_start_loc, !single_line_comment) with
+        | ([], false) -> 
+          assert false
+        | ([], true) ->
+          let loc = Location.curr lexbuf in
+          let start = List.hd (List.rev !line_comment_start_loc) in
+          raise (Error (Unmatched_nested_comment loc, start))
+        | ([_], true) ->
+          comment_start_loc := [];
+          store_lexeme lexbuf;
+          comment lexbuf;
+        | ([_], false) ->
+          comment_start_loc := []; Location.curr lexbuf
+        | (_ :: l, _) -> 
+          comment_start_loc := l;
+          store_lexeme lexbuf;
+          comment lexbuf;
        }
   | "\""
       {
@@ -667,15 +662,14 @@ and comment = parse
         else (
           update_loc lexbuf None 1 false 0;
           (* check if there are any unmatched nested comments *)
-          match !comment_start_loc with
-            | [] -> (
-              (* reset since we're done parsing a single line comment *)
-              single_line_comment := false;
-              match !line_comment_start_loc with
-                | [] -> assert false
-                | _ -> line_comment_start_loc := []; Location.curr lexbuf
-            )
-            | _ ->
+
+          single_line_comment := false;
+          match (!comment_start_loc, !line_comment_start_loc) with
+            | ([], []) -> 
+              assert false
+            | ([], _) ->
+              line_comment_start_loc := []; Location.curr lexbuf
+            | (_, _) ->
               let start = List.hd (List.rev !comment_start_loc) in
               comment_start_loc := [];
               raise (Error (Unmatched_nested_comment start, Location.curr lexbuf))
