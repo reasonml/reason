@@ -169,12 +169,20 @@ let normalized_attributes attribute attributes =
  * ordering from left to right.
  *)
 let apply_mapper_chain_to_structure =
-    List.fold_left (fun s mapper -> mapper.structure mapper s )
+  List.fold_left (fun s mapper -> mapper.structure mapper s )
 let apply_mapper_chain_to_signature =
-    List.fold_left (fun s mapper -> mapper.signature mapper s )
+  List.fold_left (fun s mapper -> mapper.signature mapper s )
 let apply_mapper_chain_to_type =
-    List.fold_left (fun s mapper -> mapper.typ mapper s )
+  List.fold_left (fun s mapper -> mapper.typ mapper s )
 let apply_mapper_chain_to_expr =
-    List.fold_left (fun s mapper -> mapper.expr mapper s )
+  List.fold_left (fun s mapper -> mapper.expr mapper s )
 let apply_mapper_chain_to_pattern =
-    List.fold_left (fun s mapper -> mapper.pat mapper s )
+  List.fold_left (fun s mapper -> mapper.pat mapper s )
+
+let apply_mapper_chain_to_toplevel_phrase toplevel_phrase chain =
+  match toplevel_phrase with
+  | Ptop_def x -> Ptop_def (apply_mapper_chain_to_structure x chain)
+  | x -> x
+
+let apply_mapper_chain_to_use_file use_file chain =
+  List.map (fun x -> apply_mapper_chain_to_toplevel_phrase x chain) use_file
