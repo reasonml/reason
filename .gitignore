@@ -1,0 +1,10 @@
+.DS_Store
+
+*.native
+reasonfmt_merlin_impl.sh
+
+/_build/
+/editorSupport/
+/formatTest/
+/pkg/
+/reason.install
