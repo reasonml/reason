@@ -120,6 +120,12 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
     try wrap_with_comments Toolchain_impl.interface lexbuf with
     | err -> (syntax_error_sig err (Location.curr lexbuf), [])
 
+  let canonical_toplevel_phrase_with_comments lexbuf =
+    wrap_with_comments Toolchain_impl.toplevel_phrase lexbuf
+
+  let canonical_use_file_with_comments lexbuf =
+    wrap_with_comments Toolchain_impl.use_file lexbuf
+
   (** [ast_only] wraps a function to return only the ast component
    *)
   let ast_only f =
@@ -131,9 +137,9 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
 
   let canonical_interface = ast_only canonical_interface_with_comments
 
-  let canonical_toplevel_phrase = Toolchain_impl.toplevel_phrase
+  let canonical_toplevel_phrase = ast_only canonical_toplevel_phrase_with_comments
 
-  let canonical_use_file = Toolchain_impl.use_file
+  let canonical_use_file = ast_only canonical_use_file_with_comments
 
   (* Printing *)
   let print_canonical_interface_with_comments interface =
@@ -349,7 +355,7 @@ module JS_syntax = struct
   let rec skip_phrase lexbuf =
     try
       match Lexer_impl.token lexbuf with
-        Parser_impl.SEMISEMI | Parser_impl.EOF -> ()
+        Parser_impl.SEMI | Parser_impl.EOF -> ()
       | _ -> skip_phrase lexbuf
     with
       | Lexer_impl.Error (Lexer_impl.Unterminated_comment _, _)
@@ -358,7 +364,7 @@ module JS_syntax = struct
       | Lexer_impl.Error (Lexer_impl.Illegal_character _, _) -> skip_phrase lexbuf
 
   let maybe_skip_phrase lexbuf =
-    if Parsing.is_current_lookahead Parser_impl.SEMISEMI
+    if Parsing.is_current_lookahead Parser_impl.SEMI
     || Parsing.is_current_lookahead Parser_impl.EOF
     then ()
     else skip_phrase lexbuf
