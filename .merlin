@@ -1,0 +1,3 @@
+PKG utop str reasonsyntax.lib merlin_extend
+B _build/src
+S src
