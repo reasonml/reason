@@ -131,9 +131,6 @@ export
                         Array.to_list |>
                         List.map MerlinServiceConvert.jsMerlinCompletionEntryToMerlinEntry;
                     resultRe |>
-                      List.map (fun entry => entry.Merlin.desc) |>
-                      OcamlTypeToReasonType.formatMany |>
-                      List.map2 (fun entry reasonType => {...entry, Merlin.desc: reasonType}) resultRe |>
                       List.map (MerlinServiceConvert.merlinCompletionEntryToNuclide replacementPrefix) |>
                       List.map NuclideJs.Autocomplete.entryToJs |>
                       Array.of_list |>

@@ -42,7 +42,7 @@ let createMerlinReaderFnOnce' = Js.Unsafe.js_expr {|
     var spawn = require('child_process').spawn;
     // To split while stripping out any leading/trailing space, we match on all
     // *non*-whitespace.
-    var items = ocamlMerlinFlags.match(/\S+/g);
+    var items = ocamlMerlinFlags === '' ? [] : ocamlMerlinFlags.split(/\s+/);
     var merlinProcess = spawn(ocamlMerlinPath, items, {cwd: dotMerlinDir, env: fixedEnv});
     merlinProcess.stderr.on('data', function(d) {
       console.error('Ocamlmerlin: something wrong happened:');

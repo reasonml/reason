@@ -143,7 +143,7 @@ module.exports = {
     "merlinFlags": {
       "title": "Flags Passed To Merlin Executable",
       "type": "string",
-      "default": "-pp reasonfmt_merlin",
+      "default": "",
       "description":
         "Flags to pass to the Merlin executable - important for configuring Reason syntax."
     },
