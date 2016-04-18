@@ -115,6 +115,33 @@ let anonClosedObject: <x : int, y : int> = {
   method y = 0
 };
 
+let onlyHasX = {method x = 0};
+
+let xs: list <x : int> = [
+  onlyHasX,
+  (anonClosedObject :> <x : int>)
+];
+
+let constrainedAndCoerced = (
+  [anonClosedObject, anonClosedObject]:
+    list <x : int, y : int> :>
+    list <x : int>
+);
+
+/* If one day, unparenthesized type constraints are allowed on the RHS of a
+ * record value, we're going to have to be careful here because >} is parsed as
+ * a separate kind of token (for now). Any issues would likely be caught in the
+ * idempotent test case.
+ */
+let xs: ref <x : int> = {
+  contents: (anonClosedObject :> <x : int>)
+};
+
+let coercedReturn = {
+  let tmp = anonClosedObject;
+  (tmp :> <x : int>)
+};
+
 let acceptsOpenAnonObjAsArg
     (o: <x : int, y : int, ..>) => o#x + o#y;
 

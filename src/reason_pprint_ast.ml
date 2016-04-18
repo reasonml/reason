@@ -1110,13 +1110,8 @@ let makeCommaBreakableList lst = makeList ~break:IfNeed ~postSpace:true lst
 let makeCommaBreakableListSurround opn cls lst =
   makeList ~break:IfNeed ~postSpace:true ~sep:"," ~wrap:(opn, cls) lst
 
-
 (* TODO: Allow configuration of spacing around colon symbol *)
 
-(* let formatCoerce expr optType coerced = *)
-(*   match optType with *)
-(*     | None -> Easy_format.Label (((makeList ~postSpace:true [expr; atom ":>"]), labelWithSpace), coerced) *)
-(*     | Some typ -> Easy_format.Label (((makeList ~postSpace:true [formatColon expr typ; atom ":>"]), labelWithSpace), coerced) *)
 (* Formats parentheses grouping precedence - only wrapping in an additional
    array when necessary *)
 let formatPrecedence formattedTerm =
@@ -1451,6 +1446,12 @@ let formatLabeledArgument =
     (fun lbl lblSuffix term ->
       label ~space:false (makeList [lbl; atom ("::" ^ lblSuffix)]) term)
 
+let formatCoerce expr optType coerced =
+  match optType with
+    | None ->
+      label ~space:true (makeList ~postSpace:true [expr; atom ":>"]) coerced
+    | Some typ ->
+      label ~space:true (makeList ~postSpace:true [formatTypeConstraint expr typ; atom ":>"]) coerced
 
 
 (* Standard function application style indentation - no special wrapping
@@ -3879,9 +3880,13 @@ class printer  ()= object(self:'self)
               ~wrap:("(", ")")
               [formatTypeConstraint (self#expression e) (self#core_type ct)]
         | Pexp_coerce (e, cto1, ct) ->
-            atom "COERCION NOT SUPPORTED"
-        (* let optFormattedType = match cto1 with None -> None | Some typ -> self#core_type cto1 in *)
-        (* makeBreakableList ["("; formatCoerce (self#expression e) optFormattedType (self#core_type ct) ;")"] *)
+            let optFormattedType = match cto1 with
+              | None -> None
+              | Some typ -> Some (self#core_type typ) in
+            makeList
+              ~break:IfNeed
+              ~wrap:("(", ")")
+              [formatCoerce (self#expression e) optFormattedType (self#core_type ct)]
         | Pexp_variant (l, None) ->
             ensureSingleTokenSticksToLabel (atom ("`" ^ l))
         | Pexp_record (l, eo) ->
