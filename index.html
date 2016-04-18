@@ -48,9 +48,9 @@ opam init
 #   eval `opam config env`
 
 opam switch 4.02.3
-opam pin add -y reasonsyntax git@github.com:facebook/ReasonSyntax.git#68d504daa9c8579e125e31c563c7388b7008ae86
 opam pin add -y reason git@github.com:facebook/Reason.git#bdd6f3990570d20a7f70e7667223d4a68f4e4915
-opam pin add -y merlin git@github.com:the-lambda-church/merlin.git#7f2f29ba85e07c9d0367456649e626d6ea6d037d
+opam pin add -y merlin git@github.com:the-lambda-church/merlin.git#8211529bf77936e3c20d3689243c22744936f02f
+opam pin add -y merlin_extend git@github.com:def-lkb/merlin-extend.git#f2cd1f260c2bcfad033faaf02146935bdf9e5883
 ```
 
 REPL
@@ -100,9 +100,9 @@ Those other plugins include `NuclideReason` (IDE features), and `language-reason
 > (lower right corner of Atom). Restarting Atom after installation is not a bad idea but should not be necessary.
 
 #### Features/Configuration
-The `Reason` IDE experience is powered by `refmt`, the `Reason` AST formatting tool, and
+The `Reason` IDE experience is powered by `reasonfmt`, the `Reason` AST formatting tool, and
 even moreso by the excellent [merlin](https://github.com/the-lambda-church/merlin) project.
-`refmt` provides source code beautifying/printing, and Merlin provides type information, autocompletion,
+`reasonfmt` provides source code beautifying/printing, and Merlin provides type information, autocompletion,
 and professional IDE features even in the face of partially invalid files/projects.
 
 To configure Merlin, include a `.merlin` file at the root of your project that notes the location
@@ -134,11 +134,11 @@ SUFFIX .re .rei
 
 > **Powerful Reformatting**
 >
-> - `Reason` for Atom integrates `refmt`, the `Reason` AST formatter.
+> - `Reason` for Atom integrates `reasonfmt`, the `Reason` AST formatter.
 > - With Nuclide, `⌘+shift+c` will reformat the entire file or let you know
 > if a syntax error prevented formatting.
-> - As always, `refmt` will remove superfluous parenthesis, or precedence tokens.
-> - `refmt` will wrap your lines at the width you have configured in your
+> - As always, `reasonfmt` will remove superfluous parenthesis, or precedence tokens.
+> - `reasonfmt` will wrap your lines at the width you have configured in your
 > plugin settings. To change these, open the Package Settings (`Packages > Settings View > Manage Packages)
 > and click on `NuclideReason` in order to customize the "print width" configuration.
 
