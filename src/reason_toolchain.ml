@@ -204,6 +204,53 @@ module JS_syntax = struct
   module Lexer_impl = Reason_lexer
   module Parser_impl = Reason_parser
 
+  let initial_checkpoint constructor lexbuf =
+    (constructor lexbuf.lex_curr_p)
+
+  (* [tracking_supplier] is a supplier that tracks the last token read *)
+  type tracking_supplier = {
+      (* The last token that was obtained from the lexer, together with its start
+     and end positions. Warning: before the first call to the lexer has taken
+     place, a None value is stored here. *)
+
+      triple: (Reason_parser.token * Lexing.position * Lexing.position) option ref;
+
+      (* A supplier function that returns one token at a time*)
+      supplier: unit -> (Reason_parser.token * Lexing.position * Lexing.position)
+    }
+
+  (* [lexbuf_to_supplier] returns a supplier to be feed into Menhir's incremental API.
+   * Each time the supplier is called, a new token in the lexbuf is returned.
+   * If the supplier is called after an EOF is already returned, a syntax error will be raised.
+   *
+   * This makes sure at most one EOF token is returned by supplier, which
+   * is the default behavior of ocamlyacc.
+   *)
+  let lexbuf_to_supplier lexbuf =
+    let s = I.lexer_lexbuf_to_supplier Reason_lexer.token lexbuf in
+    let eof_met = ref false in
+    let supplier = fun () ->
+      let (token, s, e) = s () in
+      if token = Reason_parser.EOF then
+        if not !eof_met then
+          let _ = eof_met := true in
+          (token, s, e)
+        else
+          raise(Syntaxerr.Error(Syntaxerr.Other (Location.curr lexbuf)))
+      else
+        (token, s, e)
+    in
+    let triple = ref None in
+    {triple; supplier}
+
+  let read {triple; supplier} =
+    let t = supplier() in
+    let _ = triple := Some t in
+    t
+
+  let last_token {triple; _} =
+    !triple
+
   (* [loop_handle_yacc] mimic yacc's error handling mechanism in menhir.
      When it hits an error state, it pops up the stack until it finds a
      state when the error can be shifted or reduced.
@@ -228,88 +275,75 @@ module JS_syntax = struct
      expression.
   *)
 
-  let rec loop_handle_yacc read triple in_error checkpoint =
+  let rec loop_handle_yacc supplier in_error checkpoint =
+
     match checkpoint with
     | I.InputNeeded _ ->
        if in_error then
          begin
-           match triple with
+           match last_token supplier with
            | Some triple ->
               (* We just recovered from the error state, try the original token again*)
-              let check_point_with_previous_token = I.offer checkpoint triple in
+              let checkpoint_with_previous_token = I.offer checkpoint triple in
               let accept_new = I.loop_test
                                  (fun _ _ -> true)
-                                 check_point_with_previous_token
+                                 checkpoint_with_previous_token
                                  false
               in
               if accept_new then
-                loop_handle_yacc read None false check_point_with_previous_token
+                loop_handle_yacc supplier false checkpoint_with_previous_token
               else
                 (* The original token still fail to be parsed, discard *)
-                loop_handle_yacc read None false checkpoint
+                loop_handle_yacc supplier false checkpoint
            | None -> assert false
          end
        else
-         let triple = read() in
+         let triple = read supplier in
          let checkpoint = I.offer checkpoint triple in
-         loop_handle_yacc read (Some triple) false checkpoint
+         loop_handle_yacc supplier false checkpoint
     | I.Shifting _
       | I.AboutToReduce _ ->
        let checkpoint = I.resume checkpoint in
-       loop_handle_yacc read triple in_error checkpoint
+       loop_handle_yacc supplier in_error checkpoint
     | I.HandlingError env ->
        let checkpoint = I.resume checkpoint in
        (* Enter error state *)
-       loop_handle_yacc read triple true checkpoint
+       loop_handle_yacc supplier true checkpoint
     | I.Rejected ->
-       assert false
+       begin
+         match last_token supplier with
+         | Some (_, s, e) ->
+            let loc = {
+                loc_start = s;
+                loc_end = e;
+                loc_ghost = false;
+              } in
+            raise Syntaxerr.(Error(Syntaxerr.Other loc))
+         | None -> assert false
+       end
     | I.Accepted v ->
        (* The parser has succeeded and produced a semantic value. *)
        v
 
-  let initial_checkpoint constructor lexbuf =
-    (constructor lexbuf.lex_curr_p)
-
-  (* [lexbuf_to_supplier] returns a supplier to be feed into Menhir's incremental API.
-   * Each time the supplier is called, a new token in the lexbuf is returned.
-   * If the supplier is called after an EOF is already returned, a syntax error will be raised.
-   *
-   * This makes sure at most one EOF token is returned by supplier, which
-   * is the default behavior of ocamlyacc.
-   *)
-  let lexbuf_to_supplier lexbuf =
-    let s = I.lexer_lexbuf_to_supplier Reason_lexer.token lexbuf in
-    let eof_met = ref false in
-    fun () ->
-      let (token, s, e) = s () in
-      if token = Reason_parser.EOF then
-        if not !eof_met then
-          let _ = eof_met := true in
-          (token, s, e)
-        else
-          raise(Syntaxerr.Error(Syntaxerr.Other (Location.curr lexbuf)))
-      else
-        (token, s, e)
-
   let implementation lexbuf =
     let cp = initial_checkpoint Reason_parser.Incremental.implementation lexbuf in
-    loop_handle_yacc (lexbuf_to_supplier lexbuf) None false cp
+    loop_handle_yacc (lexbuf_to_supplier lexbuf) false cp
 
   let interface lexbuf =
     let cp = initial_checkpoint Reason_parser.Incremental.interface lexbuf in
-    loop_handle_yacc (lexbuf_to_supplier lexbuf) None false cp
+    loop_handle_yacc (lexbuf_to_supplier lexbuf) false cp
 
   let core_type lexbuf =
     let cp = initial_checkpoint Reason_parser.Incremental.parse_core_type lexbuf in
-    loop_handle_yacc (lexbuf_to_supplier lexbuf) None false cp
+    loop_handle_yacc (lexbuf_to_supplier lexbuf) false cp
 
   let toplevel_phrase lexbuf =
     let cp = initial_checkpoint Reason_parser.Incremental.toplevel_phrase lexbuf in
-    loop_handle_yacc (lexbuf_to_supplier lexbuf) None false cp
+    loop_handle_yacc (lexbuf_to_supplier lexbuf) false cp
 
   let use_file lexbuf =
     let cp = initial_checkpoint Reason_parser.Incremental.use_file lexbuf in
-    loop_handle_yacc (lexbuf_to_supplier lexbuf) None false cp
+    loop_handle_yacc (lexbuf_to_supplier lexbuf) false cp
 
   (* Skip tokens to the end of the phrase *)
   let rec skip_phrase lexbuf =
