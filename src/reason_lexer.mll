@@ -486,7 +486,11 @@ rule token = parse
   | "||" { BARBAR }
   | "|]" { BARRBRACKET }
   | ">"  { GREATER }
+  (* Having a GREATERRBRACKET makes it difficult to parse patterns such
+     as > ]. The space in between then becomes significant and must be
+     maintained when printing etc. >] isn't even needed!
   | ">]" { GREATERRBRACKET }
+  *)
   | "}"  { RBRACE }
   | ">}" { GREATERRBRACE }
   | "[@" { LBRACKETAT }
