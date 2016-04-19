@@ -1,6 +1,6 @@
 {
   "name": "AtomReason",
-  "repository": "https://github.com/facebook/nuclide",
+  "repository": "https://github.com/facebook/Reason/tree/master/editorSupport/AtomReason",
   "main": "./lib/main",
   "version": "0.0.4",
   "description": "Reason IDE implementation - installed by atom-reason",
