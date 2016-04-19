@@ -194,6 +194,10 @@ let module Editor = {
     let arr = Array.map Cursor.fromJs (Js.to_array (Js.Unsafe.meth_call editor "getCursors" emptyArgs));
     Array.to_list arr
   };
+  let setSelectedBufferRanges editor bufferRanges => {
+    let arr = Array.map Range.toJs bufferRanges |> Js.array;
+    Js.Unsafe.meth_call editor "setSelectedBufferRanges" [|Js.Unsafe.inject arr|];
+  }
 };
 
 /**

@@ -183,3 +183,26 @@ export
       }
     )
   );
+
+export
+  "selectOccurrences"
+  (
+    Js.wrap_callback (
+      fun jsEditor => {
+        let editor = Atom.Editor.fromJs jsEditor;
+        let position = Atom.Cursor.getBufferPosition (List.hd (Atom.Editor.getCursors editor));
+        let text = Atom.Buffer.getText (Atom.Editor.getBuffer jsEditor);
+        SuperMerlin.getOccurrences
+          path::(path jsEditor)
+          text::text
+          position::position
+          (
+            fun result =>
+              MerlinServiceConvert.jsMerlinOccurrencesToAtom result |>
+                AtomReasonOccurrences.selectOccurrences editor::editor
+          )
+          /* TODO: do something here. */
+          (fun rejectedMsg => ())
+      }
+    )
+  );

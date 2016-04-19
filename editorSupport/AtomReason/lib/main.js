@@ -25,6 +25,14 @@ module.exports = {
   activate() {
     if (!disposables) {
       disposables = new CompositeDisposable();
+
+      disposables.add(atom.commands.add('atom-workspace', 'atom-reason:select-in-scope', function() {
+        var editor = atom.workspace.getActiveTextEditor();
+        // sometimes there's no active editor, e.g. we're on the Settings page.
+        if (editor) {
+          AtomReason.selectOccurrences(editor);
+        }
+      }));
     }
   },
 
