@@ -5,16 +5,33 @@
  * vim: set ft=rust:
  * vim: set ft=reason:
  */
+/* This is lifted from nuclide source, from the helper function of the same name. */
 let goToLocation' = Js.Unsafe.js_expr {|
-  function(res) {
-    // TODO: rewrite this in reason.
-    var goToLocation = require('nuclide/pkg/nuclide-atom-helpers').goToLocation;
-    if (typeof res === "string") {
-      console.error(res);
-      return;
+  function() {
+    function goToLocation(file, line, column, center) {
+      center = center == null ? true : center;
+      return atom.workspace.open(file, {
+        initialLine: line,
+        initialColumn: column,
+        searchAllPanes: true,
+      })
+      .then(function(editor) {
+        if (center) {
+          return editor.scrollToBufferPosition([line, column], {center: true});
+        }
+        return editor;
+      });
     }
-    goToLocation(res.file, res.pos.line - 1, res.pos.col);
-  }
+
+    return function(res) {
+      // TODO: rewrite this in reason.
+      if (typeof res === "string") {
+        console.error(res);
+        return;
+      }
+      goToLocation(res.file, res.pos.line - 1, res.pos.col);
+    }
+  }()
 |};
 
 let goToLocation result => Js.Unsafe.fun_call goToLocation' [|result|];

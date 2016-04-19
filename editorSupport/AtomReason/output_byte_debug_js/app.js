@@ -8179,57 +8179,72 @@
        /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/MerlinServiceConvert.re 96 54>>*/ return {"hint":
               _r_,
               "range":_q_} /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/MerlinServiceConvert.re 100 1>>*/ }
-     /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 8 20>>*/ function
-     _gc_
-     (res_a_)
-     { /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 11 24>>*/  /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 11 41>>*/ var
-       goToLocation_b_=
-         /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 11 43>>*/ require
-         ("nuclide/pkg/nuclide-atom-helpers").goToLocation;
-       /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 12 24>>*/ if
-       (typeof res_a_===str_string_aa_)
-        /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 12 53>>*/ { /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 13 26>>*/ console.error
-         (res_a_);
-         /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 14 26>>*/ return}
-       /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 16 24>>*/ goToLocation_b_
-       (res_a_.file,res_a_.pos.line-1,res_a_.pos.col) /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 9 22>>*/ }
-     /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 18 2>>*/ function
+     /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 9 20>>*/  /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 9 20>>*/ var
+     _gc_=
+       /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 10 22>>*/ function
+        ()
+        { /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 11 24>>*/ function
+          goToLocation_b_
+          (file_a_,line_b_,column_c_,center_d_)
+          {center_d_=center_d_==null?true:center_d_;
+            /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 13 26>>*/ return  /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 13 33>>*/  /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 13 33>>*/ atom.workspace.open
+                    (file_a_,
+                     {initialLine:line_b_,
+                      initialColumn:column_c_,
+                      searchAllPanes:true}).then
+                   (function(editor_a_)
+                     { /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 19 28>>*/ if
+                       (center_d_)
+                        /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 19 40>>*/ return  /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 20 37>>*/ editor_a_.scrollToBufferPosition
+                               ([line_b_,column_c_],{center:true});
+                       /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 22 28>>*/ return editor_a_ /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 18 32>>*/ }) /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 24 24>>*/ }
+          /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 26 24>>*/ return function
+          (res_a_)
+          { /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 28 26>>*/ if
+            (typeof res_a_===str_string_aa_)
+             /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 28 55>>*/ { /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 29 28>>*/ console.error
+              (res_a_);
+              /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 30 28>>*/ return}
+            /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 32 26>>*/ goToLocation_b_
+            (res_a_.file,res_a_.pos.line-1,res_a_.pos.col) /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 26 31>>*/ } /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 10 22>>*/ }
+       ();
+     /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 35 2>>*/ function
      _gd_
      (result_a_)
-     { /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 20 27>>*/ return  /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 20 27>>*/ _gc_
-              (result_a_) /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 20 70>>*/ }
-     /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 18 2>>*/ function
+     { /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 37 27>>*/ return  /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 37 27>>*/ _gc_
+              (result_a_) /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 37 70>>*/ }
+     /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 35 2>>*/ function
      _ge_
      (editor_a_,range_b_)
-     { /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 23 13>>*/ var
-        /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 23 13>>*/ path_c_=
-         /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 23 13>>*/ _aF_
+     { /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 40 13>>*/ var
+        /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 40 13>>*/ path_c_=
+         /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 40 13>>*/ _aF_
          (editor_a_),
-        /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 24 2>>*/ _d_=
+        /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 41 2>>*/ _d_=
         [0,path_c_],
-        /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 24 18>>*/ match_e_=
-         /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 24 18>>*/ _a$_
+        /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 41 18>>*/ match_e_=
+         /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 41 18>>*/ _a$_
          (_d_),
-        /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 24 58>>*/ extension_f_=
+        /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 41 58>>*/ extension_f_=
         0===match_e_?_gf_:_gg_,
-        /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 25 13>>*/ text_g_=
-         /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 25 13>>*/ _al_
+        /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 42 13>>*/ text_g_=
+         /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 42 13>>*/ _al_
          (editor_a_),
-        /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 26 2>>*/ startPosition_h_=
+        /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 43 2>>*/ startPosition_h_=
         range_b_[1];
-       /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 27 2>>*/ function
+       /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 44 2>>*/ function
        _i_
        (param_a_)
-       { /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 34 14>>*/ return 0 /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 34 16>>*/ }
-       /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 27 2>>*/ return  /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 27 2>>*/ _fV_
+       { /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 51 14>>*/ return 0 /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 51 16>>*/ }
+       /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 44 2>>*/ return  /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 44 2>>*/ _fV_
               (path_c_,
                text_g_,
                extension_f_,
                startPosition_h_,
                function(successResult_a_)
-                { /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 32 26>>*/ return  /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 32 26>>*/ _gd_
-                         (successResult_a_) /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 32 52>>*/ },
-               _i_) /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 35 1>>*/ }
+                { /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 49 26>>*/ return  /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 49 26>>*/ _gd_
+                         (successResult_a_) /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 49 52>>*/ },
+               _i_) /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonLocate.re 52 1>>*/ }
      /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonFormat.re 14 15>>*/  /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonFormat.re 14 15>>*/ var
      _gh_=
        /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonFormat.re 14 15>>*/ require
