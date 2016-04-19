@@ -85,6 +85,10 @@ function unit_test() {
     INPUT=$2
     OUTPUT=$3
     EXPECTED_OUTPUT=$4
+
+    FILENAME=$(basename $FILE)
+    FILEEXT="${FILENAME##*.}"
+
     info "Unit Test: $FILE"
     if [ "$(basename $FILE)" != "$(basename $FILE .ml)" ] || [ "$(basename $FILE)" != "$(basename $FILE .mli)" ]; then
         if [ "$(basename $FILE)" != "$(basename $FILE .ml)" ]; then
@@ -117,6 +121,34 @@ function unit_test() {
         return 1
     fi
 
+    info "Testing -use-stdin"
+    if [[ $FILEEXT = "re" ]]; then
+      cat $INPUT/$1 | $REFMT -is-interface-pp false -print-width 50 -parse re -print re -use-stdin true 2>&1 > $OUTPUT/$FILE
+    elif [[ $FILEEXT = "rei" ]]; then
+      cat $INPUT/$1 | $REFMT -is-interface-pp true -print-width 50 -parse re -print re -use-stdin true 2>&1 > $OUTPUT/$FILE
+    elif [[ $FILEEXT = "ml" ]]; then
+      cat $INPUT/$1 | $REFMT -is-interface-pp false -print-width 50 -parse ml -print re -use-stdin true 2>&1 > $OUTPUT/$FILE
+    elif [[ $FILEEXT = "mli" ]]; then
+      cat $INPUT/$1 | $REFMT -is-interface-pp true -print-width 50 -parse ml -print re -use-stdin true 2>&1 > $OUTPUT/$FILE
+    else
+      warning "  ⊘ FAILED -use-stdin \n"
+      info "  Cannot determine default implementation parser for extension ${FILEEXT}"
+      echo ""
+      return 1
+    fi
+
+    debug "  Comparing -use-stdin results:  diff $OUTPUT/$FILE $EXPECTED_OUTPUT/$FILE"
+    diff --unchanged-line-format="" --new-line-format=":%dn: %L" --old-line-format=":%dn: %L" $OUTPUT/$FILE $EXPECTED_OUTPUT/$FILE
+
+    if ! [[ $? -eq 0 ]]; then
+        warning "  ⊘ FAILED -use-stdin \n"
+        info "  ${INFO}$OUTPUT/$FILE${RESET}"
+        info "  doesn't match expected output"
+        info "  ${INFO}$EXPECTED_OUTPUT/$FILE${RESET}"
+        echo ""
+        return 1
+    fi
+
     success "  ☑ PASS"
     echo
 }
@@ -125,6 +157,9 @@ function idempotent_test() {
     FILE=$1
     INPUT=$2
     OUTPUT=$3
+
+    FILENAME=$(basename $FILE)
+    FILEEXT="${FILENAME##*.}"
 
     info "Idempotent Test: $FILE"
     if [ "$(basename $FILE)" != "$(basename $FILE .ml)" ] || [ "$(basename $FILE)" != "$(basename $FILE .mli)" ]; then
@@ -155,9 +190,43 @@ function idempotent_test() {
     diff --unchanged-line-format="" --new-line-format=":%dn: %L" --old-line-format=":%dn: %L" $OUTPUT/$FILE $OUTPUT/$FILE.formatted
     if ! [[ $? -eq 0 ]]; then
         warning "⊘ FAILED\n"
-        info "  ${INFO}$OUTPUT/$FILE${RESET}\n"
+        info "  ${INFO}$OUTPUT/$FILE.formatted${RESET}\n"
         info "  is not same as"
-        info "  ${INFO}$EXPECTED_OUTPUT/$FILE${RESET}"
+        info "  ${INFO}$OUTPUT/$FILE${RESET}"
+        return 1
+    fi
+
+    info "Testing -use-stdin"
+
+
+    if [[ $FILEEXT = "re" ]]; then
+      cat $INPUT/$1 | $REFMT -is-interface-pp false -print-width 50 -parse re -print re -use-stdin true 2>&1 > $OUTPUT/$FILE
+      cat $OUTPUT/$FILE | $REFMT -is-interface-pp false -print-width 50 -parse re -print re -use-stdin true 2>&1 > $OUTPUT/$FILE.formatted
+    elif [[ $FILEEXT = "rei" ]]; then
+      cat $INPUT/$1 | $REFMT -is-interface-pp true -print-width 50 -parse re -print re -use-stdin true 2>&1 > $OUTPUT/$FILE
+      cat $OUTPUT/$FILE | $REFMT -is-interface-pp true -print-width 50 -parse re -print re -use-stdin true 2>&1 > $OUTPUT/$FILE.formatted
+    elif [[ $FILEEXT = "ml" ]]; then
+      cat $INPUT/$1 | $REFMT -is-interface-pp false -print-width 50 -parse ml -print re -use-stdin true 2>&1 > $OUTPUT/$FILE
+      cat $OUTPUT/$FILE | $REFMT -is-interface-pp false -print-width 50 -parse re -print re -use-stdin true 2>&1 > $OUTPUT/$FILE.formatted
+    elif [[ $FILEEXT = "mli" ]]; then
+      cat $INPUT/$1 | $REFMT -is-interface-pp true -print-width 50 -parse ml -print re -use-stdin true 2>&1 > $OUTPUT/$FILE
+      cat $OUTPUT/$FILE | $REFMT -is-interface-pp true -print-width 50 -parse re -print re -use-stdin true 2>&1 > $OUTPUT/$FILE.formatted
+    else
+      warning "  ⊘ FAILED -use-stdin \n"
+      info "  Cannot determine default implementation parser for extension ${FILEEXT}"
+      echo ""
+      return 1
+    fi
+
+    debug "  Comparing -use-stdin results:  diff $OUTPUT/$FILE $OUTPUT/$FILE.formatted"
+    diff --unchanged-line-format="" --new-line-format=":%dn: %L" --old-line-format=":%dn: %L" $OUTPUT/$FILE $OUTPUT/$FILE.formatted
+
+    if ! [[ $? -eq 0 ]]; then
+        warning "  ⊘ FAILED -use-stdin \n"
+        info "  ${INFO}$OUTPUT/$FILE.formatted${RESET}\n"
+        info "  is not same as"
+        info "  ${INFO}$OUTPUT/$FILE${RESET}"
+        echo ""
         return 1
     fi
 
