@@ -265,3 +265,18 @@ let locate path::path text::text extension::extension position::position resolve
     )
     (fun successResult => resolve (normalizeLocateCommandResult successResult path))
     reject;
+
+let getOccurrences path::path text::text position::position resolve reject =>
+  prepareCommand
+    text::text
+    path::path
+    query::(
+      Js.array [|
+        Js.Unsafe.inject (Js.string "occurrences"),
+        Js.Unsafe.inject (Js.string "ident"),
+        Js.Unsafe.inject (Js.string "at"),
+        Js.Unsafe.inject (positionToJsMerlinPosition position)
+      |]
+    )
+    resolve
+    reject;

@@ -5,16 +5,21 @@
  * vim: set ft=rust:
  * vim: set ft=reason:
  */
-let jsMerlinErrorToNuclideDiagnostic filePath jsMerlinError => {
-  let merlinStart = Js.Unsafe.get jsMerlinError "start";
-  let merlinEnd = Js.Unsafe.get jsMerlinError "end";
+let jsMerlinPositionToAtomRange position => {
+  let merlinStart = Js.Unsafe.get position "start";
+  let merlinEnd = Js.Unsafe.get position "end";
   let range =
     Js.undefined === merlinStart || Js.undefined === merlinEnd ?
       Atom.Range.emptyRange :
       (
+        /* lines (rows) are 1-based for merlin, not 0-based, like for Atom */
         (Js.Unsafe.get merlinStart "line" - 1, Js.Unsafe.get merlinStart "col"),
         (Js.Unsafe.get merlinEnd "line" - 1, Js.Unsafe.get merlinEnd "col")
       );
+  range
+};
+
+let jsMerlinErrorToNuclideDiagnostic filePath jsMerlinError => {
   let message = Js.Unsafe.get jsMerlinError "message";
   /* One of  ("type"|"parser"|"env"|"warning"|"unkown") */
   let merlinType = Js.Unsafe.get jsMerlinError "type";
@@ -27,7 +32,7 @@ let jsMerlinErrorToNuclideDiagnostic filePath jsMerlinError => {
     filePath,
     text: Some message,
     html: None,
-    range: Some range,
+    range: Some (jsMerlinPositionToAtomRange jsMerlinError),
     trace: None
   }
 };
@@ -87,14 +92,11 @@ let jsMerlinTypeHintEntryToNuclide arr => {
     /* TODO: merlin gives us further type information if we expand our selection. Use it */
     let firstType = Js.Unsafe.get arr "0";
     let reasonHint = Js.to_string (Js.Unsafe.get firstType "type");
-    let merlinStartPos = Js.Unsafe.get firstType "start";
-    let merlinEndPos = Js.Unsafe.get firstType "end";
-    /* lines (rows) are 1-based for merlin, not 0-based, like for Atom */
-    let startRowColumn = (Js.Unsafe.get merlinStartPos "line" - 1, Js.Unsafe.get merlinStartPos "col");
-    let endRowColumn = (Js.Unsafe.get merlinEndPos "line" - 1, Js.Unsafe.get merlinEndPos "col");
     Js.Unsafe.obj [|
       ("hint", Js.Unsafe.inject (Js.string reasonHint)),
-      ("range", Js.Unsafe.inject (Atom.Range.toJs (startRowColumn, endRowColumn)))
+      ("range", Js.Unsafe.inject (Atom.Range.toJs (jsMerlinPositionToAtomRange firstType)))
     |]
   }
 };
+
+let jsMerlinOccurrencesToAtom arr => Js.to_array arr |> Array.map jsMerlinPositionToAtomRange;
