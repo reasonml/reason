@@ -1,6 +1,6 @@
 *.native
-reasonfmt_merlin_impl.sh
-refmt_merlin_impl.sh
+/reasonfmt_merlin_impl.sh
+/refmt_merlin_impl.sh
 *.byte
 *.docdir
 _build
