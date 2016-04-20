@@ -91,7 +91,16 @@ let () =
   Location.input_name := filename;
   let intf = match !intf with
     | None when (Filename.check_suffix filename ".rei" || Filename.check_suffix filename ".mli") -> true
-    | None -> false
+    | None -> 
+      begin match (use_stdin, !prse) with
+        (* If binary_reason, whether or not it's an interface will be parsed in reasonBinaryParser *)
+        | (_, Some "binary_reason") ->
+          false
+        | (true, _) ->
+          raise (Invalid_config ("Unable to determine if stdin input is an interface file. Invalid -is-interface-pp setting."))
+        | (_, _) ->
+          false
+      end
     | Some b -> b
   in
   try
