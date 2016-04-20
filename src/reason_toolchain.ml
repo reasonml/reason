@@ -66,7 +66,7 @@ let setup_lexbuf use_stdin filename =
       | false -> 
         let file_chan = open_in filename in
         seek_in file_chan 0;
-        Lexing.from_channel file_chan
+        from_stdin file_chan
   in
   Location.init lexbuf filename;
   lexbuf
@@ -75,9 +75,9 @@ type comments = (String.t * Location.t) list
 
 module type Toolchain = sig
   (* Parsing *)
-  val canonical_core_type_with_comments: ?use_stdin:bool -> ?filename:String.t -> Lexing.lexbuf -> (Parsetree.core_type * comments)
-  val canonical_implementation_with_comments: ?use_stdin:bool -> ?filename:String.t -> Lexing.lexbuf -> (Parsetree.structure * comments)
-  val canonical_interface_with_comments: ?use_stdin:bool -> ?filename:String.t -> Lexing.lexbuf -> (Parsetree.signature * comments)
+  val canonical_core_type_with_comments: ?modify_comments:bool -> Lexing.lexbuf -> (Parsetree.core_type * comments)
+  val canonical_implementation_with_comments: ?modify_comments:bool -> Lexing.lexbuf -> (Parsetree.structure * comments)
+  val canonical_interface_with_comments: ?modify_comments:bool -> Lexing.lexbuf -> (Parsetree.signature * comments)
 
   val canonical_core_type: Lexing.lexbuf -> Parsetree.core_type
   val canonical_implementation: Lexing.lexbuf -> Parsetree.structure
@@ -117,18 +117,18 @@ module type Toolchain_spec = sig
 end
 
 module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = struct
-  let wrap_with_comments use_stdin filename parsing_fun lexbuf =
+  let wrap_with_comments modify_comments parsing_fun lexbuf =
     Toolchain_impl.safeguard_parsing lexbuf (fun () ->
       let _ = Toolchain_impl.Lexer_impl.init () in
       let ast = parsing_fun lexbuf in
       let unmodified_comments = Toolchain_impl.Lexer_impl.comments() in
 
-      match (Toolchain_impl.modify_comments, filename, use_stdin) with 
-        | (false, _, _)
-        | (true, "", false) ->
+      match (Toolchain_impl.modify_comments, modify_comments) with 
+        | (false, _)
+        | (_, false) ->
           let _  = Parsing.clear_parser() in
           (ast, unmodified_comments)
-        | (true, "", true) -> 
+        | (true, true) -> 
           let modified_comments =
             List.map (fun (str, loc) ->
               let comment_length = (loc.loc_end.pos_cnum - loc.loc_start.pos_cnum - 4) in
@@ -139,21 +139,6 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
           in 
           let _  = Parsing.clear_parser() in
           (ast, modified_comments)
-        | (true, _, _) -> 
-            let file_chan = open_in filename in
-            let modified_comments =
-              List.map (fun (str, loc) ->
-                seek_in file_chan (loc.loc_start.pos_cnum + 2);  (* ignore the leading `LPAREN STAR` *)
-                let comment_length = (loc.loc_end.pos_cnum - loc.loc_start.pos_cnum - 4) in
-                let buf = Bytes.create comment_length in 
-                let _ = input file_chan buf 0 comment_length in
-                let original_comment_contents = Bytes.to_string buf in
-                (original_comment_contents, loc)
-              )
-              unmodified_comments
-            in
-            let _  = Parsing.clear_parser() in
-            (ast, modified_comments)
     )
 
   (*
@@ -164,28 +149,24 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
    * Note, the location reported here is broken for some lexing errors
    * (nested comments or unbalanced strings in comments) but at least we don't
    * crash the process. TODO: Report more accurate location in those cases.
-   *
-   * The filename is needed when converting .ml files. The channel is accessed
-   * to modify the comment tokens given back by the lexer due to the discrepancies
-   * between 4.02.3 and 4.02.1
    *)
-  let canonical_implementation_with_comments ?(use_stdin=false) ?(filename="") lexbuf =
-    try wrap_with_comments use_stdin filename Toolchain_impl.implementation lexbuf with
+  let canonical_implementation_with_comments ?(modify_comments=false) lexbuf =
+    try wrap_with_comments modify_comments Toolchain_impl.implementation lexbuf with
     | err -> (syntax_error_str err (Location.curr lexbuf), [])
 
-  let canonical_core_type_with_comments ?(use_stdin=false) ?(filename="") lexbuf =
-    try wrap_with_comments use_stdin filename Toolchain_impl.core_type lexbuf with
+  let canonical_core_type_with_comments ?(modify_comments=false) lexbuf =
+    try wrap_with_comments modify_comments Toolchain_impl.core_type lexbuf with
     | err -> (syntax_error_core_type err (Location.curr lexbuf), [])
 
-  let canonical_interface_with_comments ?(use_stdin=false) ?(filename="") lexbuf =
-    try wrap_with_comments use_stdin filename Toolchain_impl.interface lexbuf with
+  let canonical_interface_with_comments ?(modify_comments=false) lexbuf =
+    try wrap_with_comments modify_comments Toolchain_impl.interface lexbuf with
     | err -> (syntax_error_sig err (Location.curr lexbuf), [])
 
-  let canonical_toplevel_phrase_with_comments ?(use_stdin=false) ?(filename="") lexbuf =
-    wrap_with_comments use_stdin filename Toolchain_impl.toplevel_phrase lexbuf
+  let canonical_toplevel_phrase_with_comments ?(modify_comments=false) lexbuf =
+    wrap_with_comments modify_comments Toolchain_impl.toplevel_phrase lexbuf
 
-  let canonical_use_file_with_comments ?(use_stdin=false) ?(filename="") lexbuf =
-    wrap_with_comments use_stdin filename Toolchain_impl.use_file lexbuf
+  let canonical_use_file_with_comments ?(modify_comments=false) lexbuf =
+    wrap_with_comments modify_comments Toolchain_impl.use_file lexbuf
 
   (** [ast_only] wraps a function to return only the ast component
    *)
