@@ -90,8 +90,7 @@ opam init
 #   eval `opam config env`
 
 opam switch 4.02.3
-opam pin add -y reasonsyntax git@github.com:facebook/ReasonSyntax.git#68d504daa9c8579e125e31c563c7388b7008ae86
-opam pin add -y reason git@github.com:facebook/Reason.git#bdd6f3990570d20a7f70e7667223d4a68f4e4915
+opam pin add -y reason git@github.com:facebook/Reason.git#cf964becc9969ce16175fcdea52e0c95cc8b2056
 opam pin add -y merlin git@github.com:the-lambda-church/merlin.git#7f2f29ba85e07c9d0367456649e626d6ea6d037d
 
 ```
@@ -1183,7 +1182,6 @@ If you already [installed](./index.html#reason-install) Reason by `pin`ning the
 github repository, then you only need to unpin the package and continue
 to the next step.
 ```sh
-opam unpin reasonsyntax
 opam unpin reason
 ```
 Otherwise, you may need to install some dependencies first:
