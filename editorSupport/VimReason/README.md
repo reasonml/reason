@@ -39,7 +39,7 @@ if !empty(system('which opam'))
   execute "set rtp+=".s:merlinPath."/vim"
   execute "set rtp+=".s:merlinPath."/vimbufsync"
   let g:syntastic_reason_checkers=['merlin']
-  let g:merlin_binary_flags = ["-pp", "refmt_merlin"]
+  let g:merlin_binary_flags = [""]
 else
   " TODO: figure out opam for windows
 endif
@@ -51,7 +51,6 @@ IDE Features:
 For all the features to work, you must add the following lines to your `.merlin` file:
 
 ```
-FLG -pp refmt_merlin
 SUFFIX .re .rei
 ```
 
