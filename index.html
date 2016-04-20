@@ -71,7 +71,7 @@ A new, approachable interface to the ML language.
 
 </table>
 
-`Reason` is a new "interface" to the ML langauge - a toolchain for writing, building,
+`Reason` is a new "interface" to the ML language - a toolchain for writing, building,
 and sharing code that targets the OCaml compiler. Reason's completely new syntax
 works well with your existing tools and build systems. It is possible to use all
 of `Reason` or just a portion, while gradually upgrading one file at a time.
@@ -81,7 +81,7 @@ Install
 Install `OPAM` so that you can easily switch compiler versions (using
 [Homebrew](http://brew.sh/)). Then switch to a supported compiler version
 (`4.02.1` or `4.02.3` will work). Finally have `OPAM` install `Reason` from
-Github by "pinning" it.
+GitHub by "pinning" it.
 
 ```sh
 brew install opam --HEAD
@@ -829,7 +829,7 @@ new versions of functions that are the same as the old ones, but with _some_ of
 the argument data filled in. Here, `addFour` is like a specialized version of `add`
 with the first argument "filled in".
 
-Instead of having a function accept a tuple as an argument, you might chose to
+Instead of having a function accept a tuple as an argument, you might choose to
 make that function curried instead. Currying accomplishes the same goal, but
 allows you to supply the set of input data one at a time, potentially "pausing"
 when you've only supplied a portion of the argument data. Compare this to
@@ -1116,7 +1116,7 @@ let sumsToZero = fun {first, second} => first + second == 0;
 ```
 
 
-Advanced 
+Advanced
 =======
 
 With the basic constructs covered, here are more advanced features.
@@ -1162,7 +1162,7 @@ several technologies that make the `Reason` developer
 experience possible.
 
 - `OCaml` itself.
-- `utop` - highly customizable top level.
+- `utop` - highly customizable repl.
 - `Merlin` - assistant for editing OCaml code that The Merlin team has extensively
 refactored to support `Reason`.
 
@@ -1187,7 +1187,7 @@ opam pin remove reason
 
 **2. `pin` the `master` versions of everything:**
 This updates all your globally installed packages to their respective master
-branches. It also makes `reasonfmt` and other programs available in your
+branches. It also makes `refmt` and other programs available in your
 `PATH`.
 ```sh
 opam pin add -y merlin git@github.com:the-lambda-church/merlin.git
