@@ -40,13 +40,13 @@ no additional configuration. This allows you to add `Reason` files to your exist
 
 We will update this document with instructions for integrating with `clang/gcc`.
 
-If your build system executes explicit build commands then the easiest way to
+If your build system executes explicit build commands, then the easiest way to
 use `Reason` with `ocamlopt/ocamlc` is by adding the following flags to each
 compilation step:
 ```sh
 # intf-suffix tells the compiler where to look for corresponding interface files
-ocamlopt -pp reasonfmt -intf-suffix rei -impl myFile.re
-ocamlopt -pp reasonfmt -intf myFile.rei
+ocamlopt -pp refmt -intf-suffix rei -impl myFile.re
+ocamlopt -pp refmt -intf myFile.rei
 
 ```
 
@@ -208,4 +208,3 @@ new artifact.
 
 </body>
 </html>
-

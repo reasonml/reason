@@ -66,13 +66,13 @@ Reason also supports line comments, which are not supported in OCaml.
   </tr>
 </table>
 
-###Top Level
+###REPL ([Read-Eval-Print-Loop](https://en.wikipedia.org/wiki/Read–eval–print_loop))
 
-In `Reason`'s top level `rtop` (a customized `utop`), each input is submitted via
-a single `;` semicolon. `OCaml`'s top level requires two semicolons `;;`.
+In `Reason`'s repl `rtop` (a customized `utop`), each input is submitted via
+a single `;` semicolon. `OCaml`'s repl requires two semicolons `;;`.
 
 > <table>
-  <thead><tr> <th scope="col"><p >OCaml Top Level</p></th> <th scope="col"><p>Reason Top Level</p></th></tr></thead>
+  <thead><tr> <th scope="col"><p >OCaml REPL</p></th> <th scope="col"><p>Reason REPL</p></th></tr></thead>
   <tr>
     <td>
       <pre>;;</pre>
@@ -89,7 +89,7 @@ a single `;` semicolon. `OCaml`'s top level requires two semicolons `;;`.
 are *expressed* differently.
 In `Reason`, structural equality is written as `==`, and reference equality
 (physical equality)
-is written as `===` (so just remember to add an extra equals to what `OCaml`
+is written as `===` (so just remember to add an extra `=` to what `OCaml`
 requires). In `Reason`, to achieve the corresponding *inequality*,
 simply swap the first character with a `!` character. (`!=` for structural
 inequality, and `!==` for reference inequality). `Reason`'s
@@ -320,8 +320,8 @@ to be wrapped in *additional* parentheses.
     </td>
   </tr>
 </table>
-  
-In `Reason`, records resemble JavaScript , using `:` instead of `=`. Because
+
+In `Reason`, records resemble JavaScript, using `:` instead of `=`. Because
 `Reason` tuples always require wrapping parens, records may contain lambdas as values
 without needing extra parens.
 > <table>
@@ -1132,7 +1132,7 @@ operators must be written differently.  The rules for prefix/infix operators
 are the same as in OCaml syntax, but with the following exceptions:
 
 Specifically, if any character except the first in an prefix/infix operator is
-a star or forward slash, that must be first excaped with a backslash. These will
+a star or forward slash, that must be first escaped with a backslash. These will
 be parsed *without* the backslash when added to the AST. When reprinted, the
 escape backslashes are added back in automatically.
 
@@ -1152,7 +1152,7 @@ escape backslashes are added back in automatically.
 ###### Operator Renaming
 If `Reason` uses `==` to represent `OCaml`'s `=`, and
 uses `===` to represent `OCaml`'s `==`, then how would `Reason` represent `OCaml`'s
-`===` symbol (if it were defined)? `Reason` provides a way! "Escape" the triple 
+`===` symbol (if it were defined)? `Reason` provides a way! "Escape" the triple
 equals symbol!
 
 > <table>
@@ -1231,6 +1231,3 @@ x \=== y</pre>
 
 </body>
 </html>
-
-
-
