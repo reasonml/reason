@@ -36,6 +36,7 @@ improvements that OCaml programmers would notice most.
 Reason comments use the C-family style of comments, and OCaml comments use `(*
 *)` style comments. In Reason, nested `/**/` comments are validated at parse
 time, and in OCaml, nested `(* *)` are validated at parse time.
+Reason also supports line comments, which are not supported in OCaml.
 
 > <table>
   <thead><tr> <th scope="col"><p >OCaml</p></th> <th scope="col"><p>Reason</p></th></tr></thead>
@@ -51,11 +52,23 @@ time, and in OCaml, nested `(* *)` are validated at parse time.
       </code>
     </td>
   </tr>
+  <tr>
+    <td>
+      <code>
+`not supported`
+      </code>
+    </td>
+    <td>
+      <code>
+`// line comment`
+      </code>
+    </td>
+  </tr>
 </table>
 
 ###Top Level
 
-`Reason`'s top level `rtop` (customized `utop`), each input is submitted via
+In `Reason`'s top level `rtop` (a customized `utop`), each input is submitted via
 a single `;` semicolon. `OCaml`'s top level requires two semicolons `;;`.
 
 > <table>
@@ -74,13 +87,13 @@ a single `;` semicolon. `OCaml`'s top level requires two semicolons `;;`.
 
 `Reason` has all of `OCaml`'s infix operators, but a couple of operators
 are *expressed* differently.
-In `Reason`, structural identity is written as `==`, and reference identity is
-written as `===` (so just remember to add an extra equals to what `OCaml`
+In `Reason`, structural equality is written as `==`, and reference equality
+(physical equality)
+is written as `===` (so just remember to add an extra equals to what `OCaml`
 requires). In `Reason`, to achieve the corresponding *inequality*,
 simply swap the first character with a `!` character. (`!=` for structural
 inequality, and `!==` for reference inequality). `Reason`'s
-symbol choices are slightly more consistent and abides by the conventions
-of ES6.
+symbol choices are slightly more consistent and follow the ES6 conventions.
 > <table>
   <thead><tr><th scope="col"><p>Equality</p></th> <th scope="col"><p>Expressed in OCaml via</p></th> <th scope="col"><p>Expressed in Reason via</p></th></tr></thead>
   <tr>
@@ -144,8 +157,8 @@ x !== y</pre>
 
 ###Mutable Record Field Updates
 
-Because equality/inequality have been made more consistent, the `=` operator
-is now available for mutable field update.
+Because equalities and their negations have been made more consistent in `Reason`,
+the `=` operator is available for mutable field update.
 > <table>
   <thead><tr> <th scope="col"><p >OCaml</p></th> <th scope="col"><p>Reason</p></th></tr></thead>
   <tr>
@@ -165,7 +178,7 @@ myRec.field = "next"</pre>
 `Reason`'s lexical scoping is exactly the same as `OCaml`'s, but let bindings
 syntactically resemble "block scope" which is more familiar to many
 developers. In `Reason`, they are created with `{}` braces, which
-may contain both `let` bindings and imperative commands, each separated `;`.
+may contain both `let` bindings and imperative commands, separated by `;`.
 All blocks *evaluate* to the last line and the semicolon on the last line is
 optional. `{}` braces are only needed if you have more than one item to chain
 together via `;`.
@@ -176,15 +189,15 @@ together via `;`.
     <td>
       <pre>
 let \_ =
-  let msg =  "Hello" in
-  let _ = print\_string msg in
+  let msg = "Hello" in
+  print\_string msg;
   let msg2 = "Goodbye" in
   print\_string msg2</pre>
     </td>
     <td>
       <pre>
 {
-  let msg =  "Hello";
+  let msg = "Hello";
   print\_string msg;
   let msg2 = "Goodbye";
   print\_string msg2
@@ -204,10 +217,10 @@ syntax:
 ### Local Scope Vs. Module Bodies
 
 In `Reason`, everything that can go between the `{}` in [Local
-Scopes](#reason-vs-ml-syntax-local-scope) can go in module bodies. You can usually
-even cut/paste code between the two contexts. In `OCaml`, the syntax for the two
+Scopes](#reason-vs-ml-syntax-local-scope) and in module bodies. You can usually
+even cut/paste code between the two contexts. In `OCaml`, the syntaxes for the two
 contexts are very different. (Local scope requires trailing `in`, but module bodies do
-not and some imperative statements must be assigned to `_`, or else use double `;;`).
+not and some imperative statements must be assigned to `_` or `()`, or else use double `;;`).
 `Reason` greatly simplifies the syntax for new _and_ experienced ML programmers.
 
 > <table>
@@ -216,8 +229,8 @@ not and some imperative statements must be assigned to `_`, or else use double `
 >     <td>
 >       <pre>
 > let ten = 10
-> let \_ = imperativeFunc ten ten
-> let \_ = imperativeFunc 0 0</pre>
+> let () = imperativeFunc ten ten
+> let () = imperativeFunc 0 0</pre>
 >     </td>
 >     <td>
 >       <pre>
@@ -277,9 +290,9 @@ not and some imperative statements must be assigned to `_`, or else use double `
 
 ### Tuples and Records
 
-In `Reason`, tuples always require parenthesis. This requirement makes `Reason` easier to
+In `Reason`, tuples always require parentheses. This requirement makes `Reason` easier to
 read and also removes the need for type annotations inside of tuple members
-to be wrapped in *additional* parenthesis.
+to be wrapped in *additional* parentheses.
 > <table>
   <thead><tr> <th scope="col"><p>OCaml</p></th><th scope="col"><p>Reason</p></th></tr></thead>
   <tr>
@@ -468,7 +481,7 @@ fun | pat => e
   </tr>
 </table>
 
-###### Let binding sugar for curried functions
+###### Let binding for curried functions
 
 Both `OCaml` and `Reason` syntax offer a syntactic sugar for expressing curried
 functions. The following table shows three equivalent definitions which are
@@ -543,11 +556,11 @@ let myFunc (a:int) (b:int) :int -> int = fun x -> x + a + b
 ```reason
 /* Reason */
 let myFunc (a:int) (b:int) :(int, int) => (a, b)
-let myFunc (a:int) (b:int) :int list => [1]
+let myFunc (a:int) (b:int) :list int => [1]
 let myFunc (a:int) (b:int) :(int => int) => fun x => x + a + b
 ```
 > Because we're using `=>` for all functions everywhere in `Reason`, there's
-one case where we need to ensure extra parens around a return type that is
+one case where we need to add extra parens around a return type that is
 itself a function type.
 
 
@@ -603,7 +616,7 @@ With OCaml, there are some unintuitive consequences of this.
 
 Things get even more strange when type constructors accept multiple parameters.
 Multiple arguments require parenthesis and commas to separate type parameters,
-but those parenthesis don't represent tuples. The parenthesis/comma form must
+but those parentheses don't represent tuples. The parentheses/comma form must
 also be given when constructing type instances such as `(int, string) tuple`.
 
 
@@ -624,7 +637,7 @@ also be given when constructing type instances such as `(int, string) tuple`.
 In summary, Reason unifies almost all of the syntax into simple "function
 application" style meaning that type parameters follow the same space-separated
 list pattern seen everywhere else in the syntax. As with everything else,
-parenthesis may be used to enforce precedence. This results in fewer syntactic
+parentheses may be used to enforce precedence. This results in fewer syntactic
 patterns to learn.
 
 For example, you can imagine `list` being a "function" for types that accepts a
@@ -682,11 +695,11 @@ type pairList = (int \* int) list</pre>
   </tr>
 </table>
 
-- In `Reason` syntax that represent tuple or tuple types, always look like
+- In `Reason`, syntax that represent tuple or tuple types, always looks like
   tuples.
-- In `Reason` syntax that represent records or record types, always look like
+- In `Reason`, syntax that represent records or record types, always look like
   records.
-- Just about everything else uses the syntactic patter of function application
+- Just about everything else uses the syntactic pattern of function application
   (space separated arguments).
 
 
@@ -706,11 +719,11 @@ type pairList = (int \* int) list</pre>
 
 ###### Reason
 
-- variant constructor types are expected to be listed as space separated lists,
+- Variant constructor types are expected to be listed as space separated lists,
   using parenthesis to group precedence (as with **everything** else).
-- Constructing instances of the variant (as you would have guessed) follow
+- Constructing instances of the variant (as you would have guessed) follows
   function application style (space separated lists).
-- Tuple **always** *look* like tuples, and anything that looks like a tuple
+- Tuples **always** *look* like tuples, and anything that looks like a tuple
   *is* a tuple.
 
 <table>
@@ -785,17 +798,17 @@ let res = match x with
 
 - Uses the `switch` keyword, and doesn't require `with`.
 - *Requires* wrapping `switch` cases in `{}` to avoid confusing and error
-  proned mis-parsing when pattern matching is embedded in other pattern
+  prone mis-parsing when pattern matching is embedded in other pattern
   matching.
 - Uses the `=>`.
-- Requires the leading bar. (This is a good idea because it frees up other
+- Requires the leading bar. This is a good idea because it frees up other
   possibilities in the grammar without conflicts.
 
 
 Can you spot the error in the `OCaml` example? This is one of the most common
 mistakes among `OCaml` programmers. The second `match` *must* be wrapped in
-parenthesis, otherwise the `Some` case is parsed as belonging to the outer
-`match`. `Reason`'s required `{}` blocks around match cases prevents this
+parentheses, otherwise the `Some` case is parsed as belonging to the outer
+`match`. `Reason`'s required `{}` blocks around match cases prevent this
 issue.
 
 > <table>
@@ -899,7 +912,7 @@ module type FType =
 
 In `Reason`, the syntax for creating and applying functors is nearly identical
 to the syntax for creating/applying functions. Also, functor *application* is
-also consistent with function application (again, space separated lists).
+consistent with function application (again, space separated lists).
 
 
 > <table>
@@ -1095,7 +1108,7 @@ let | MyThing \_ as ppp
 
 ##### Prefix operators
 
-In Reason, `!` (and other prefix operators have lower precedence than dot `.` or send `#`.
+In Reason, `!` and other prefix operators have lower precedence than dot `.` or send `#`.
 This is more consistent with what other languages do, and is more practical
 when (or if) the `!` symbol is used to represent boolean `not`.
 
@@ -1119,7 +1132,7 @@ operators must be written differently.  The rules for prefix/infix operators
 are the same as in OCaml syntax, but with the following exceptions:
 
 Specifically, if any character except the first in an prefix/infix operator is
-a star or forwardslash, that must be first excaped with a backslash. These will
+a star or forward slash, that must be first excaped with a backslash. These will
 be parsed *without* the backslash when added to the AST. When reprinted, the
 escape backslashes are added back in automatically.
 
