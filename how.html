@@ -1,0 +1,179 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset='utf-8'>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width">
+
+  <title>Reason - compare to JavaScript</title>
+
+  <!-- Flatdoc -->
+  <script src='support/vendor/jquery.js'></script>
+  <script src='legacy.js'></script>
+  <script src="highlightJs/build/highlight.pack.js"></script>
+  <link  href='highlightJs/src/styles/xcode.css' rel='stylesheet'>
+  <script src='flatdoc.js'></script>
+
+  <!-- Flatdoc theme -->
+  <link  href='theme-white/style.css' rel='stylesheet'>
+  <script src='theme-white/script.js'></script>
+  <link  href='support/theme.css' rel='stylesheet'>
+  <script src='support/theme.js'></script>
+
+
+
+  <script id="markdown" type="text/markdown" src="javaScriptCompared.html">
+
+
+
+How Reason Works
+=========================
+
+
+`Reason` implements a completely new *frontend* compiler toolchain
+including parsing (both with and without error recovery), printing,
+building, and namespacing. Like many other language toolchains
+(such as `Flow` and `Hack`), `Reason` is mostly implemented in
+`OCaml`, however `Reason` is different because it also uses later
+stages of the `OCaml` `compiler-libs` to type check the `Reason` AST.
+This approach has many benefits:
+
+- Allows sharing of industrial grade developer tools such as
+the excellent [`Merlin`](https://github.com/the-lambda-church/merlin) and `utop`.
+- Allows direct use of the `ocamlopt` compiler backend
+to generate (Ahead of Time) efficient native machine code without a
+Virtual Machine.
+- Allows seamless interop with, as well as an upgrade path for any
+`OCaml` project.
+- Allows building native libraries that can be linked with `clang`.
+
+
+Interop
+==============
+
+**Integrating with `clang`/`gcc`:**
+
+> Instructions Coming Soon
+
+**Integrating with JavaScript:**
+
+> Instructions Coming Soon
+
+**Integrating with OCaml projects:**
+
+Soon, there will be a drop in replacement for `ocamlbuild` called `rebuild`, that will
+automatically build any `reason` file along with your `ocaml` files, with no
+additional configuration.
+
+Until then, the easiest way to use `Reason` with `ocamlopt/ocamlc` is by running the compiler with the following flags:
+```sh
+# intf-suffix tells the compiler where to look for corresponding interface files
+ocamlopt -pp reasonfmt -intf-suffix rei -impl myFile.re
+ocamlopt -pp reasonfmt -intf myFile.rei
+
+```
+
+
+Tooling
+==============
+
+`Reason` includes editor support for popular editors. Consistent,
+line-wrapping AST based formatting is an important feature of `Reason`
+that we've integrated directly into editors. Furthermore, because
+`Reason` is fully compatible with [`Merlin`](https://github.com/the-lambda-church/merlin),
+the `Reason` plugins provide professional IDE-quality autocompletion,
+in-editor type checking (even when the file is invalid).
+
+
+##### Atom Plugin
+
+
+ * **Syntax Highlighting **
+ * **Error Reporting **
+ * **Powerful source formatting/indenting/wrapping **
+ * **Basic autocompletion  **
+
+
+<img src="images/VimReason.png" width=470 height=440 />
+
+
+##### Vim Plugin
+
+The [VimReason Plugin](https://github.com/facebook/Reason/tree/master/editorSupport/VimReason) plugin
+implements basic IDE features for `Reason`.
+
+ * **Syntax Highlighting **
+ * **Error Reporting **
+ * **Powerful source formatting/indenting/wrapping **
+ * **Basic autocompletion  **
+
+
+<img src="images/VimReason.png" width=470 height=440 />
+
+##### Sublime Plugin
+
+The
+[SublimeReason](https://github.com/facebook/Reason/tree/master/editorSupport/sublime-reason)
+plugin is included in the main [Reason](http://github.com/facebook/Reason)
+repo. It includes basic highlighting support. Pull requests to invoke the
+formatting program (and reporting of parsing errors) are appreciated.
+
+
+* **Syntax Highlighting **
+
+<img src="images/SublimeReason.png" width=470 height=440 />
+
+
+<img src="images/SublimeReason.png" width=470 height=440 />
+
+
+  </script>
+  <!-- Initializer -->
+  <script>
+    Flatdoc.run({
+      fetcher: function(callback) {
+        callback(null, document.getElementById('markdown').innerHTML);
+      },
+      highlight: function (code, value) {
+        return (value === 'reason') ? hljs.highlight('reason', code).value : hljs.highlight(value, code).value;
+      },
+    });
+  </script>
+
+  <!-- Meta -->
+  <meta property="og:image" content="./images/CubeRed598_614.png" />
+  <meta property="og:image:secure_url" content="./images/CubeRed598_614.png" />
+  <meta property="og:image:type" content="image/jpeg" />
+  <meta property="og:image:width" content="1196" />
+  <meta property="og:image:height" content="1228" />
+
+  <meta content="Reason: Rapid Expressive Systems Programming." name="description">
+  <meta content="Reason: Rapid Expressive Systems Programming." property="og:description">
+  <!-- <meta content="http://ricostacruz.com/flatdoc/support/preview.jpg" property="og:image"> -->
+</head>
+<body role='flatdoc' class='no-literate big-h3 large-brief'>
+
+  <!-- <div class='title&#45;area title&#45;card' style='background&#45;image: url(support/blur.jpg)'> -->
+  <div class='header'>
+    <div class='left'>
+      <h1><a href='index.html'>Reason</a></h1>
+      <ul>
+        <li><a href='motivation.html'>Motivation</a></li>
+        <li><a href='syntax.html'>Syntax</a></li>
+        <li><a href='advanced.html'>Advanced Features</a></li>
+        <li><a href='how.html'>How Reason Works</a></li>
+        <li><a href='contributing.html'>Contributing</a></li>
+        <li><a href='https://github.com/facebook/Reason'>View on GitHub</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class='content-root'>
+    <div class='menubar'>
+      <div class='menu section' role='flatdoc-menu'></div>
+    </div>
+    <div role='flatdoc-content' class='content'></div>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,563 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset='utf-8'>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width">
+
+  <title>Reason - compare to JavaScript</title>
+
+  <!-- Flatdoc -->
+  <script src='support/vendor/jquery.js'></script>
+  <script src='legacy.js'></script>
+  <script src="highlightJs/build/highlight.pack.js"></script>
+  <link  href='highlightJs/src/styles/xcode.css' rel='stylesheet'>
+  <script src='flatdoc.js'></script>
+
+  <!-- Flatdoc theme -->
+  <link  href='theme-white/style.css' rel='stylesheet'>
+  <script src='theme-white/script.js'></script>
+  <link  href='support/theme.css' rel='stylesheet'>
+  <script src='support/theme.js'></script>
+
+
+
+  <script id="markdown" type="text/markdown" src="javaScriptCompared.html">
+
+Syntax Basics
+=======
+
+Much of Reason's core syntax should be familiar to anyone that has ever
+used `JavaScript` or `Rust`.
+
+> While no substitute for the guide below, these references are helpful to
+> quickly compare syntaxes with other syntaxes.
+
+> [JavaScript >](./javaScriptCompared.html) [ML >](./mlCompared.html)
+
+
+######Primitives
+
+Primitive                                  | Example
+--------------------------------------|--------------------------------
+Strings                               |  <pre>"Hello"</pre>
+Characters                            |  <pre>'x'</pre>
+Integers                              |  <pre>23</pre>
+Floats                                |  <pre>23.0</pre>
+Negative Integer                      |  <pre>-23</pre>
+Integer Addition                      |  <pre>23 + 1</pre>
+Float Addition                        |  <pre>23.0 +. 1.0</pre>
+Integer Division/Multiplication       |  <pre>2 / 23 * 1</pre>
+Float Division/Multiplication         |  <pre>2.0 /. 23.0 \*. 1.0</pre>
+String Concatenation                  |  <pre>"Hello" ^ "World"</pre>
+Immutable Lists                       |  <pre>[1, 2, 3]</pre>
+Immutable Lists append                |  <pre>[hd, hd2, ...tl]</pre>
+Reference Equality Comparison         |  <pre>thisThing === thatThing</pre>
+Records                               |  <pre>{contents: 100}</pre>
+Record Field Update (if mutable field)|  <pre>myRecord.contents = 200</pre>
+
+
+
+Bindings and Functions
+------------
+
+#### Let Bindings in Source Files
+
+Reason source files begin with a lowercase letter and use the `.re` file
+suffix. Each `.re` file includes a series of `let` bindings and/or `type`
+definitions, separated by semicolons. For example, you might have the file
+`react.re` and has two `let` bindings as shown. The
+[REPL](#reason-repl)
+can be used to input bindings line by line and receive feedback interactively.
+
+```reason
+/*
+ * Contents of react.re
+ */
+let frameworkName = "React";
+let renderCount = 0;
+```
+
+`let` binds names to values that may be accessed within "block scope". To
+further limit scope of bindings, `Reason` provides `{}` block *expressions*
+which sequence `let`s together and *evaluates* to the last item in the
+sequence. In this example, the binding `three` evaluates to the `integer` `3`.
+The `{}` block ensures that `one` and `two` are not accessible after `three` is
+computed.
+
+```reason
+let three = {
+  let one = 1;
+  let two = 2;
+  one + two
+};
+/* one and two not accessible here! */
+```
+
+#### Functions
+
+Functions are first class values and can be assigned to a let binding. Functions
+are introduced with the `fun` keyword, followed by a list of arguments, an
+arrow `=>` then any expression acting as the return value.
+
+```reason
+let increment = fun x => x + 1;
+let sumBoth = fun x y => x + y;
+```
+
+Functions "application" is expressed by simply supplying the arguments
+separated by spaces, after the name of the function.
+
+```reason
+increment 5;    /* Evaluates to six */
+sumBoth 6 1;   /* Evaluates to seven */
+```
+
+##### 
+
+To resolve precedence when applying arguments, simply wrap in parenthesis.  In
+this example, `(increment 2)` is *first* evaluated to `3`, then `3` is passed
+as the second argument to `sumBoth`.
+
+```reason
+sumBoth 2 (increment 2);   /* 5 */
+```
+
+This syntactic pattern of space-separated lists is used in many places in
+`Reason`.
+
+#### 
+
+Functions can use sequence expressions as their return values in order to
+declare temporary variables while computing their result. This isn't some special
+kind of function body on the right side of the `=>`, it's just a standard
+sequence expression, and the function is doing what functions always do -
+evaluating to the expression on the right side of the `=>`.
+
+```reason
+let longerFunc = fun argOne argTwo => {
+  let tmp = 2 * argOne;
+  let next = 3 * argTwo;
+  tmp * next
+};
+```
+
+As with any sequence or module scope, you may invoke other functions that
+perform side effects such as printing, logging, or warming a cache.
+```reason
+let longerFunc = fun argOne argTwo => {
+  print_string "Entering the function";
+  let tmp = 2 * argOne;
+  let next = 3 * argTwo;
+  print_string "Returning from the function";
+  tmp * next
+};
+```
+
+Types Basics
+--------------------------
+
+#### Type Annotations
+
+Even though types are inferred, you may still choose to write "type assertions"
+on any expression. These assertions are then verified by the compiler. Just
+append `: yourType` to an expression, and wrap the result in parenthesis.
+```reason
+let bindingOne = 5;
+let bindingOne = (5 :int);
+let bindingOne = (5 :int) + (4 :int);
+let bindingOne = ((5 :int) + (4 :int) :int);
+```
+The other place that type assertions are accepted, is immediately following the
+`let` keyword. This is equivalent to asserting the type of the expression on
+the right hand side of the `=`.
+
+```reason
+/* Equivalent type assertions. */
+let frameworkName = ("React": string);
+let frameworkName: string = "React";
+```
+
+#### Type Aliases
+
+You may refer to a type by a different name, by creating a type alias with the
+`type` keyword. The new type alias may be used in annotations as well. You can
+see there is somewhat of a "scope" for `type` aliases, similar to `let`
+bindings, but type aliases must be placed directly in a module file, and not
+inside of a sequence expression.
+
+```reason
+type myType = int;
+let x: myType = 10;  /* Now we can "see" myType */
+```
+
+#### Function Types
+To describe the types of functions, we list the types of the arguments,
+separated by `=>`, and then list the return type after one final `=>`.
+
+For example:
+```reason
+type addsTwoInts = int => int => int;
+let myFun: addsTwoInts = fun a b => a + b;
+```
+
+Tuples
+--------------------------
+
+A tuple is a list of values of *known* size, such as "pair". They differ from
+lists not only in that they are of known size, but in that every item in a
+tuple may be of a different type. They are written as comma delimited lists,
+always wrapped in parenthesis.
+
+
+```reason
+let myPairOfInts = (20, 40);
+let myThreeFloats = (20.0, 30.0, 100.0);
+let myIntAndString = (20, "totallyNotAnInteger");
+```
+
+Tuples have types and those types can be used in type annotations as well.
+Tuple types resemble tuples themselves - comma delimited lists of types,
+wrapped in parenthesis.
+
+```reason
+let myPairOfInts: (int, int) = (20, 40);
+let myThreeFloats: (float, float, float)  = (20.0, 30.0, 100.0);
+let myIntAndString: (int, string) = (20, "totallyNotAnInteger");
+```
+
+You may create type aliases for tuple types just like you can with any other
+type.
+```reason
+type pairOfInts = (int, int);
+type threeFloats = (float, float, float);
+type intAndString = (int, string);
+
+let myPairOfInts: pairOfInts = (20, 40);
+let myThreeFloats: threeFloats = (20.0, 30.0, 100.0);
+let myIntAndString: intAndString = (20, "totallyNotAnInteger");
+```
+
+Records
+-------
+
+Records are an unordered collection of named fields. Records are similar to
+"objects" that you might be familiar with, but they are much simpler, less
+flexible, and compile to very efficient machine code. To create a record, some
+type definition describing its fields must be in scope.  In `Reason`,  type
+definitions for records resemble the shape of the records values they describe.
+
+```reason
+type person = {age: int, name: string};
+let me = {age: 30, name: "Jordan"};
+print_string me.name;
+```
+
+New records may be easily created from old records with the `...` spread
+operator, which changes a subset of the fields, but doesn't alter the original
+record.
+
+```reason
+let meNextYear =  {
+  ...me,
+  age: me.age + 1
+};
+```
+
+##### Mutable record fields.
+
+If you must, record fields may be mutated with the `=` operator, but only if
+the record type has marked a field `mutable`. In general, having language level
+distinction between `mutable` and immutable, allows the compiler to make
+several optimizations, including avoiding allocations.
+
+```reason
+type person = {
+  name: string,
+  mutable age: int
+};
+let me = {name: "Jordan", age: 30};
+me.age = me.age + 1;
+```
+
+Destructuring
+-------------
+"Destructuring" can be used to extract one or more fields from a record or
+tuple, while automatically binding them to local variables. Any place variables
+are introduced into scope, you may use destructuring. To destructure, instead
+of writing the variable name as usual, write out the deep shape of the object.
+
+
+> The following binds variables:
+> `ten = 10`, `twenty = 20`
+
+```reason
+let someInts = (10, 20);
+let (ten, twenty) = someInts;
+```
+
+> The following binds variables:
+> `n = "Guy"`, `a = 30`
+
+```reason
+let somePerson = {name: "Guy", age: 30};
+let {name: n, age: a} = somePerson;
+```
+Function arguments may also be destructured. This function takes one tuple
+argument and destructures that tuple's fields "on the way into" the function.
+Notice how this resembles `C`/`JavaScript` style argument syntax.
+
+```reason
+
+let addTupleFields = fun (first, second) => {
+  first + second
+};
+let five = addTupleFields (4, 1);
+```
+
+Named arguments can be simulated via one destructured record argument. As
+always, record type definitions must be in scope when records are used.
+
+```reason
+let isOverThirty = fun {name: n, age: a} => {
+  let ret = a > 30;
+  ret
+};
+let overThirty = isOverThirty {name: "Jay", age: 31};
+```
+
+Destructuring also allows type annotations *while* destructuring.
+```reason
+let (ten: int, twenty: int) = someInts;
+let {name: (n:string), age: (a:int)} = somePerson;
+
+let addTupleFields = fun (first:int, second:int) => {
+  first + second
+};
+let isOverThirty = fun {name: (n:int), age: (a:int)} => {
+  let ret = a > 30;
+  ret
+};
+```
+
+Variants
+--------
+
+Variant types allows data to have either one form *or* another. In Reason, each
+form is given a capitalized name called a "constructor" (not in the OO sense).
+To declare a variant type, enumerate every constructor by the `|` token.
+
+```reason
+type response =
+  | Yes
+  | No
+  | PrettyMuch;
+let areYouCrushingIt = Yes;
+```
+
+`switch` expressions are like large `if/elseif/elseif..` expressions but much
+more powerful because they ensure that all cases are covered. To use `switch`,
+enumerate every variant constructor in "table" form followed by an `=>` and
+finally the value to be returned by the `switch` for that case. In this
+example, the `message` variable is assigned the string `"..."`.
+
+
+> Note: Compilation will raise a type error if you've forgotten to have your
+> `switch` cover a case, or if two cases are redundant.
+
+```reason
+let isSafeToLaunchRocket = PrettyMuch;
+let message = switch isSafeToLaunchRocket {
+    | No => "Check Integrity."
+    | Yes => "All Systems Go."
+    | PrettyMuch => "..."
+  };
+```
+##### Constructor Arguments
+
+Constructors may contain one or more pieces of data by declaring those
+contained types in a space-separated list after an `of` keyword.
+```reason
+type account =
+  | None
+  | Facebook of string int
+  | Instagram of string;
+
+```
+
+> Instantiating a constructor that carries data is exactly the same as
+calling a function. Supply the data as space separated "arguments".
+
+```reason
+let myAccount = Facebook "Kay" 1234;  /* Accepts two arguments */
+let yourAccount = None;               /* Accepts no arguments */
+```
+
+##### Destructuring Arguments of a Constructor
+
+Once created, constructor data can be extracted via destructuring, much like
+with tuples. In this example, a local variable `x` is bound to `42`.
+`getTheInt` extracts a `Leaf`'s contained integer "on the way into" the function.
+
+```reason
+type intLeaf = | Leaf of int;
+let myIntLeaf = Leaf 42;
+
+let Leaf x = myIntLeaf;
+let getTheInt = fun (Leaf q) => q;
+let fourtyTwo = getTheInt myIntLeaf;
+let twentyNine = getTheInt (Leaf 29);
+```
+
+** When Simple Destructuring Isn't Enough: **
+Simple destructuring isn't sufficient for variants types with many
+constructors. The following example would clearly have to fail at runtime!
+Fortunately, the compiler forbids this.
+
+```reason
+type possibleNum =
+  | NotDefined
+  | Defined of integer;
+
+let myNumber = NotDefined;
+let Defined x = myNumber;   /* Type error! */
+```
+** The Solution: ** To recover data in variants with many constructors,
+`switch` allows us to enumerate each constructor *while* destructuring the
+constructor's data on the left side of the `=>`.  Unlike our previous naive
+attempt, this works because we enumerate every possible constructor name inside
+of the `switch`.
+
+> Note: We've safely unpacked the `i` from `Defined i`, because we've *also*
+> specified what to do when `myNumber` was `NotDefined`.
+
+```reason
+let x = switch myNumber {
+  | Defined i => i
+  | NotDefined => 0
+};
+```
+##### Multiple Arguments vs. Tuples (*Details*)
+
+Notice that a variant constructor that contains many fields is different than a
+variant constructor that carries a single field that happens to be a tuple.
+Among other differences, tuples are not "inlined" into the variant object's
+runtime representation, whereas, multiple constructor arguments incur no
+additional abstraction cost (they are "inlined" into the variant data).
+
+```reason
+type toTupleOrNotToTuple =
+   | HasTuple of (int, int, int)
+   | NoTuple of int int int;
+
+let aTuple = HasTuple (1, 2, 3);
+let notTuple = NoTuple 1 2 3;
+
+let sumsZero = switch x {
+  | HasTuple (a, b, c) => a + b + b == 0
+  | NoTuple a b c => a + b + b == 0
+};
+
+```
+
+Expressive Pattern Matching
+---------------------------
+There are several destructuring conveniences that pair well with compiler
+verified `switch` expressions.
+For example, you can express arbitrarily nested destructuring "patterns", which
+the compiler will ensure have no uncovered cases. In this example, `name` is
+bound to `"Jo"` and `model` is bound to `"Tacoma"`.
+
+```reason
+type car = {model: string, make: string};
+let toyota = {make: "Toyota", model: "Tacoma"};
+
+type carOwner =
+  | CarOwner of string car; /* May as well be a tuple */
+
+let CarOwner name {model: model, make: make} = CarOwner "Jo" toyota;
+```
+
+##### 
+This deep pattern matching is especially expressive when used in `switch`
+expressions. In this example, the function `hasExactlyTwoCars` has specified
+what to return in four cases in very little code. Even more helpful, is the
+fact that the compiler verifies that no two edge cases are redundant, and that
+every possible case has been covered. It turns out, that pattern matching
+becomes an extremely powerful tool to enforce constraints in your program. The
+more you model your program in terms of variants, the more the compiler assists
+you stop bugs before they even run - the end result being more rapid
+development. This `ML` pattern matching is famous for coining the phrase: "If
+it compiles, it works!".
+
+```reason
+type carList =
+  | List of car carList
+  | NoMore;
+
+let chevy = {make: "Chevy", model: "Suburban"};
+let toyota = {make: "Toyota", model: "Tacoma"};
+let myCarList = List chevy (List toyota NoMore);
+
+let hasExactlyTwoCars = fun lst =>
+  switch lst {
+    | NoMore => false                         /* 0 */
+    | List p NoMore => false                  /* 1 */
+    | List p (List p2 NoMore) => true         /* 2 */
+    | List p (List p2 (List p3 rest)) => false  /* 3+ */
+  };
+
+let justTwo = hasExactlyTwoCars myCarList;  /* true! */
+
+```
+
+  </script>
+  <!-- Initializer -->
+  <script>
+    Flatdoc.run({
+      fetcher: function(callback) {
+        callback(null, document.getElementById('markdown').innerHTML);
+      },
+      highlight: function (code, value) {
+        return (value === 'reason') ? hljs.highlight('reason', code).value : hljs.highlight(value, code).value;
+      },
+    });
+  </script>
+
+  <!-- Meta -->
+  <meta property="og:image" content="./images/CubeRed598_614.png" />
+  <meta property="og:image:secure_url" content="./images/CubeRed598_614.png" />
+  <meta property="og:image:type" content="image/jpeg" />
+  <meta property="og:image:width" content="1196" />
+  <meta property="og:image:height" content="1228" />
+
+  <meta content="Reason: Rapid Expressive Systems Programming." name="description">
+  <meta content="Reason: Rapid Expressive Systems Programming." property="og:description">
+  <!-- <meta content="http://ricostacruz.com/flatdoc/support/preview.jpg" property="og:image"> -->
+</head>
+<body role='flatdoc' class='no-literate big-h3 large-brief'>
+
+  <!-- <div class='title&#45;area title&#45;card' style='background&#45;image: url(support/blur.jpg)'> -->
+  <div class='header'>
+    <div class='left'>
+      <h1><a href='index.html'>Reason</a></h1>
+      <ul>
+        <li><a href='motivation.html'>Motivation</a></li>
+        <li><a href='syntax.html'>Syntax</a></li>
+        <li><a href='advanced.html'>Advanced Features</a></li>
+        <li><a href='how.html'>How Reason Works</a></li>
+        <li><a href='contributing.html'>Contributing</a></li>
+        <li><a href='https://github.com/facebook/Reason'>View on GitHub</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class='content-root'>
+    <div class='menubar'>
+      <div class='menu section' role='flatdoc-menu'></div>
+    </div>
+    <div role='flatdoc-content' class='content'></div>
+  </div>
+
+</body>
+</html>
