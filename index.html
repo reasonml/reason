@@ -71,9 +71,9 @@ A new, approachable interface to the ML language.
 
 </table>
 
-`Reason` is a new "interface" to the ML langauge - a toolchain writing, building,
+`Reason` is a new "interface" to the ML langauge - a toolchain for writing, building,
 and sharing code that targets the OCaml compiler. Reason's completely new syntax
-works well with your existing tools/build systems so it is possible to use all
+works well with your existing tools and build systems. It is possible to use all
 of `Reason` or just a portion, while gradually upgrading one file at a time.
 
 Install
@@ -99,8 +99,8 @@ opam pin add -y merlin git@github.com:the-lambda-church/merlin.git#7f2f29ba85e07
 REPL
 ---------------
 
-`Reason` comes with REPL called `rtop` which lets you interactively evaluate
-`Reason` syntax in the REPL. It will also show printed results in `Reason` syntax.
+`Reason` comes with a REPL called `rtop` which lets you interactively evaluate
+`Reason` syntax. It will also show printed results in `Reason` syntax.
 It features intelligent, type-driven autocompletion (thanks to `utop`).
 To submit commands, end each entry with a `;` and the REPL will print the
 resulting value and inferred type.
@@ -118,7 +118,7 @@ let result = 100 + 200;
 # result : int = 300;
 ```
 
-> Note: `rtop` is a merely a wrapper around the excellent `utop` REPL
+> Note: `rtop` is merely a wrapper around the excellent `utop` REPL
 that has been customized for `Reason`.
 
 
@@ -135,14 +135,14 @@ overview of the most important language constructs and their respective syntax.
 > Characters                            |  <pre>'x'</pre>
 > Integers                              |  <pre>23</pre>
 > Floats                                |  <pre>23.0</pre>
-> Negative Integer                      |  <pre>-23</pre>
+> Negative Integers                      |  <pre>-23</pre>
 > Integer Addition                      |  <pre>23 + 1</pre>
 > Float Addition                        |  <pre>23.0 +. 1.0</pre>
 > Integer Division/Multiplication       |  <pre>2 / 23 * 1</pre>
 > Float Division/Multiplication         |  <pre>2.0 /. 23.0 \*. 1.0</pre>
-> String Concatenation                  |  <pre>"Hello" ^ "World"</pre>
+> String Concatenation                  |  <pre>"Hello" ^ " " ^ "World"</pre>
 > Immutable Lists                       |  <pre>[1, 2, 3]</pre>
-> Immutable Lists append                |  <pre>[hd, hd2, ...tl]</pre>
+> Immutable Lists Append                |  <pre>[hd, hd2, ...tl]</pre>
 > Reference Equality Comparison         |  <pre>thisThing === thatThing</pre>
 > Records                               |  <pre>{contents: 100}</pre>
 > Record Field Update (if mutable field)|  <pre>myRecord.contents = 200</pre>
