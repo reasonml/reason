@@ -16,12 +16,12 @@ plugin as well - language syntax and this plugin will be evolved together.
 In your Sublime Text preferances (`Cmd+,` on Mac) you can add
 
 ```json
-"reasonfmt_bin": "/Users/frantic/.opam/4.02.1/bin/reasonfmt",
+"refmt_bin": "/Users/frantic/.opam/4.02.1/bin/refmt",
 "reason_max_width": 80,
 ```
 
-When working on Reason itself, it's useful to point `reasonfmt_bin` to your
-local development version (usually `/path/to/reason/reasonfmt_impl.native`).
+When working on Reason itself, it's useful to point `refmt_bin` to your
+local development version (usually `/path/to/reason/refmt_impl.native`).
 
 ## Development
 

@@ -1,7 +1,7 @@
 #!/bin/sh
 # Copyright (c) 2015-present, Facebook, Inc. All rights reserved.
-# First arg is old reasonfmt
-# Second arg is new reasonfmt
+# First arg is old refmt
+# Second arg is new refmt
 # Third arg is printwidth
 die () {
   echo >&2 "$@"

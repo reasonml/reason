@@ -23,9 +23,9 @@ let () =
     Pkg.lib ~exts:[`Ext ".cmo"] "src/reason_toploop";
     Pkg.lib ~exts:[`Ext ".cmx"; `Ext ".o"] "src/reasonbuild";
     Pkg.lib ~cond:(Env.bool "utop") ~exts:[`Ext ".cmo"] "src/reason_utop";
-    Pkg.bin ~auto:true "src/reasonfmt_impl" ~dst:"reasonfmt";
+    Pkg.bin ~auto:true "src/refmt_impl" ~dst:"refmt";
     Pkg.bin ~auto:true "src/ocamlmerlin_reason" ~dst:"ocamlmerlin-reason";
-    Pkg.bin  "src/reasonfmt_merlin_impl.sh" ~dst:"reasonfmt_merlin";
+    Pkg.bin  "src/refmt_merlin_impl.sh" ~dst:"refmt_merlin";
     Pkg.bin  "src/reopt.sh" ~dst:"reopt";
     Pkg.bin  "src/rebuild.sh" ~dst:"rebuild";
     Pkg.bin  "src/rtop.sh" ~dst:"rtop";
@@ -34,7 +34,7 @@ let () =
     Pkg.bin "_reasonbuild/_build/myocamlbuild" ~dst:"reasonbuild";
     Pkg.bin  ~auto:true "src/reason_error_reporter" ~dst:"refmterr";
     Pkg.bin  ~auto:true "src/reason_format_type" ~dst:"refmttype";
-    Pkg.share "editorSupport/emacs/reasonfmt.el" ~dst:"../emacs/site-lisp/reasonfmt.el";
+    Pkg.share "editorSupport/emacs/refmt.el" ~dst:"../emacs/site-lisp/refmt.el";
     Pkg.share "editorSupport/emacs/reason-mode.el" ~dst:"../emacs/site-lisp/reason-mode.el";
     (* AtomReason *)
     (* Unfortunately we have to specificy each individual file *)

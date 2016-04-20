@@ -47,8 +47,8 @@ Comming Soon.
 Though the easiest way to use `Reason` with `ocamlc/opt` is by running the compiler with the following flags:
 ```sh
 # intf-suffix tells the compiler where to look for corresponding interface files
-ocamlopt -pp reasonfmt -intf-suffix rei -impl myFile.re
-ocamlopt -pp reasonfmt -intf myFile.rei
+ocamlopt -pp refmt -intf-suffix rei -impl myFile.re
+ocamlopt -pp refmt -intf myFile.rei
 ```
 
 `Reason` can also be activated using `ocamlfind`.
@@ -59,12 +59,12 @@ ocamlfind ocamlc -package reason ...
 
 Convert Your Project from OCaml to Reason:
 ------------------------------------------------------------
-`Reason` includes a program `reasonfmt` which will parse and print and
+`Reason` includes a program `refmt` which will parse and print and
 convert various syntaxes. You can specify which syntax to parse, and
 which to print via that flags `-parse` and `-print` flags. For example,
 you can convert your `ocaml` project to `Reason` by processing each file
-with the command `reasonfmt -parse ml -print re yourFile.ml`. Execute
-`reasonfmt -help` for more options.
+with the command `refmt -parse ml -print re yourFile.ml`. Execute
+`refmt -help` for more options.
 
 ### Removing `[@implicit_arity]`
 
@@ -76,7 +76,7 @@ By default, we will convert it to `C 1 2 [@implicit_arity]`, which tells the com
 this can be either `C 1 2` or `C (1, 2)`.
 
 To prevent `[@implicit_arity]` from being generated, one can supply `-assume-explicit-arity`
-to `reasonfmt`. This forces the formatter to generate `C 1 2` instead of `C 1 2 [@implicit_arity]`.
+to `refmt`. This forces the formatter to generate `C 1 2` instead of `C 1 2 [@implicit_arity]`.
 
 However, since `C 1 2` requires multiple arugments, it may fail the compilation if it is actually
 a constructor with a single tuple as an arugment (e.g., `Some`).
@@ -86,7 +86,7 @@ to `Some (1, 2)` instead of `Some 1 2`, which doesn't compile).
 
 To provide your own exception list, create a line-separated file that contains all constructors (without module prefix)
 in your project that expects a single tuple as argument, and use `-heuristics-file <filename>`
-to tell `reasonfmt` that all constructors
+to tell `refmt` that all constructors
 listed in the file will be treated as constructor with a single tuple as argument:
 ```
 > cat heuristics.txt
@@ -108,7 +108,7 @@ let _ = Test.And (1, 2)
 let _ = Test.Or (1, 2)
 let _ = Some (1, 2)
 
-> reasonfmt -heuristics-file ./heuristics.txt -assume-explicit-arity -parse ml -print re test.ml
+> refmt -heuristics-file ./heuristics.txt -assume-explicit-arity -parse ml -print re test.ml
 type tm = | TupleConstructor of (int, int) | MultiArgumentsConstructor of int int;
 
 let a = TupleConstructor (1, 2);
@@ -138,12 +138,12 @@ The script `upgradeSyntax.sh` will execute reformattings for the entire
 subdirectory repo across two separate builds of `Reason`. It expects you to
 supply the path/command to the old build of Reason, the path/command for the
 new build of Reason, and the print width (use `110`).  For example, if you had
-an old version of `Reason` globally pinned as `reasonfmt`, and a local build of
-`Reason` at `~/github/Reason/reasonfmt_impl.native`:
+an old version of `Reason` globally pinned as `refmt`, and a local build of
+`Reason` at `~/github/Reason/refmt_impl.native`:
 
 ```sh
 # Run from whichever directory you want to search
-~/github/Reason/upgradeSyntax.sh reasonfmt ~/github/Reason/reasonfmt_impl.native 110
+~/github/Reason/upgradeSyntax.sh refmt ~/github/Reason/refmt_impl.native 110
 ```
 
 Deeper OCaml integration

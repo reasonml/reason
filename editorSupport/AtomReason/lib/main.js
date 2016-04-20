@@ -121,12 +121,12 @@ module.exports = {
     }
   },
   config: {
-    "pathToReasonfmt": {
-      "title": "Path To Reasonfmt",
+    "pathToRefmt": {
+      "title": "Path To Refmt",
       "type": "string",
-      "default": "reasonfmt",
+      "default": "refmt",
       "description":
-        "Absolute path of `reasonfmt` binary - Reason syntax source formatter."
+        "Absolute path of `refmt` binary - Reason syntax source formatter."
     },
     "pathToRefmttype": {
       "title": "Path To Refmttype",
@@ -136,7 +136,7 @@ module.exports = {
         "Absolute path of `refmttype` binary - Ocaml type to Reason type formatter."
     },
     "printWidth": {
-      "title": "Default Print Width of Reasonfmt",
+      "title": "Default Print Width of Refmt",
       "type": "number",
       "default": 110,
       "description": "Default line wrapping width for pretty printing"

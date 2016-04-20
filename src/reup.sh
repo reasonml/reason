@@ -20,14 +20,14 @@ OPAM_BIN=$(opam config var bin)
 
 PRINTWIDTH=90
 
-function install_reasonfmt {
+function install_refmt {
     VERSION=$1
-    if [[ -f $OPAM_BIN/reasonfmt-$VERSION ]];
+    if [[ -f $OPAM_BIN/refmt-$VERSION ]];
     then
-        echo "reasonfmt-$VERSION already exists at $OPAM_BIN/reasonfmt-$VERSION, skipping installation"
+        echo "refmt-$VERSION already exists at $OPAM_BIN/refmt-$VERSION, skipping installation"
         return 0
     fi
-    read -p "reasonfmt-$VERSION is needed but not found at $OPAM_BIN/reasonfmt-$VERSION, do you want me to install it? [Y/n]:" -n 1 -r
+    read -p "refmt-$VERSION is needed but not found at $OPAM_BIN/refmt-$VERSION, do you want me to install it? [Y/n]:" -n 1 -r
     if [[ ! $REPLY =~ ^[Yy]$ ]]
     then
         exit 1
@@ -77,11 +77,11 @@ function install_reasonfmt {
         exit 1;
     fi
 
-    echo "Installing reasonfmt-$VERSION to OPAM_BIN/reasonfmt-$VERSION"
+    echo "Installing refmt-$VERSION to OPAM_BIN/refmt-$VERSION"
 
     OPAM_BIN_SANDBOX=$(opam config var bin --root $OPAM_DIR)
 
-    cp $OPAM_BIN_SANDBOX/reasonfmt $OPAM_BIN/reasonfmt-$VERSION
+    cp $OPAM_BIN_SANDBOX/refmt $OPAM_BIN/refmt-$VERSION
 
     echo "Removing sandbox $OPAM_BIN_SANDBOX"
 
@@ -124,7 +124,7 @@ then
     usage
 fi
 
-install_reasonfmt $FROM
+install_refmt $FROM
 
 if [[ -z $BACKUP_DIR ]];
 then
@@ -143,14 +143,14 @@ cp -af $DIR $BACKUP_DIR
 
 find $DIR -type f -name "*.re" | while read file; do
     set -x
-    $OPAM_BIN/reasonfmt-$VERSION -print binary_reason $file | $OPAM_BIN/reasonfmt -print-width $PRINTWIDTH -use-stdin true -parse binary_reason -print re > $file.new
+    $OPAM_BIN/refmt-$VERSION -print binary_reason $file | $OPAM_BIN/refmt -print-width $PRINTWIDTH -use-stdin true -parse binary_reason -print re > $file.new
     mv -f $file.new $file
     set +x
 done
 
 set -x
 find $DIR -type f -name "*.rei" | while read file; do
-    $OPAM_BIN/reasonfmt-$VERSION -is-interface-pp true -print binary_reason $file | $OPAM_BIN/reasonfmt -is-interface-pp true -print-width $PRINTWIDTH -use-stdin true -parse binary_reason -print re > $file.new
+    $OPAM_BIN/refmt-$VERSION -is-interface-pp true -print binary_reason $file | $OPAM_BIN/refmt -is-interface-pp true -print-width $PRINTWIDTH -use-stdin true -parse binary_reason -print re > $file.new
     mv -f $file.new $file
 done
 set +x

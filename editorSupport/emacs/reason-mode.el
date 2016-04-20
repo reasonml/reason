@@ -1103,7 +1103,7 @@ This is written mainly to be used as `end-of-defun-function' for Reason."
   (require 'reason-mode)
   (reason-mode))
 
-(require 'reasonfmt)
+(require 'refmt)
 
 (provide 'reason-mode)
 

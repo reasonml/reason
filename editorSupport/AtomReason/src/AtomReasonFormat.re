@@ -61,9 +61,9 @@ let formatImpl editor subText isInterface onComplete onFailure => {
   let stdOutLines = {contents: [||]};
   let stdErrLines = {contents: [||]};
   let fmtPath =
-    switch (Atom.Config.get "AtomReason.pathToReasonfmt") {
+    switch (Atom.Config.get "AtomReason.pathToRefmt") {
     | JsonString pth => pth
-    | _ => raise (Invalid_argument "You must setup AtomReason.pathToReasonfmt in your Atom config")
+    | _ => raise (Invalid_argument "You must setup AtomReason.pathToRefmt in your Atom config")
     };
   let printWidth =
     switch (Atom.Config.get "AtomReason.printWidth") {

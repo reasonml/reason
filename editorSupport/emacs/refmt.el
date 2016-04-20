@@ -1,4 +1,4 @@
-;;; reasonfmt.el --- utility functions to format reason code
+;;; refmt.el --- utility functions to format reason code
 
 ;; Copyright (c) 2014 The go-mode Authors. All rights reserved.
 ;; Portions Copyright (c) 2015-present, Facebook, Inc. All rights reserved.
@@ -34,16 +34,16 @@
 
 ;;; Code:
 
-(defcustom reasonfmt-command "reasonfmt"
-  "The 'reasonfmt' command."
+(defcustom refmt-command "refmt"
+  "The 'refmt' command."
   :type 'string
   :group 'reason-fmt)
 
-(defcustom reasonfmt-show-errors 'buffer
-    "Where to display reasonfmt error output.
+(defcustom refmt-show-errors 'buffer
+    "Where to display refmt error output.
 It can either be displayed in its own buffer, in the echo area, or not at all.
 Please note that Emacs outputs to the echo area when writing
-files and will overwrite reasonfmt's echo output if used from inside
+files and will overwrite refmt's echo output if used from inside
 a `before-save-hook'."
     :type '(choice
             (const :tag "Own buffer" buffer)
@@ -51,7 +51,7 @@ a `before-save-hook'."
             (const :tag "None" nil))
       :group 'reason-fmt)
 
-(defcustom reasonfmt-width-mode nil
+(defcustom refmt-width-mode nil
   "Specify width when formatting buffer contents."
   :type '(choice
           (const :tag "Window width" window)
@@ -60,11 +60,11 @@ a `before-save-hook'."
   :group 'reason-fmt)
 
 ;;;###autoload
-(defun reasonfmt-before-save ()
-  "Add this to .emacs to run reasonfmt on the current buffer when saving:
- (add-hook 'before-save-hook 'reasonfmt-before-save)."
+(defun refmt-before-save ()
+  "Add this to .emacs to run refmt on the current buffer when saving:
+ (add-hook 'before-save-hook 'refmt-before-save)."
     (interactive)
-      (when (eq major-mode 'reason-mode) (reasonfmt)))
+      (when (eq major-mode 'reason-mode) (refmt)))
 
 (defun reason--goto-line (line)
   (goto-char (point-min))
@@ -138,22 +138,22 @@ function."
              (t
               (error "invalid rcs patch or internal error in reason--apply-rcs-patch")))))))))
 
-(defun reasonfmt--process-errors (filename tmpfile errorfile errbuf)
+(defun refmt--process-errors (filename tmpfile errorfile errbuf)
   (with-current-buffer errbuf
-    (if (eq reasonfmt-show-errors 'echo)
+    (if (eq refmt-show-errors 'echo)
         (progn
           (message "%s" (buffer-string))
-          (reasonfmt--kill-error-buffer errbuf))
+          (refmt--kill-error-buffer errbuf))
       (insert-file-contents errorfile nil nil nil)
-      ;; Convert the reasonfmt stderr to something understood by the compilation mode.
+      ;; Convert the refmt stderr to something understood by the compilation mode.
       (goto-char (point-min))
-      (insert "reasonfmt errors:\n")
+      (insert "refmt errors:\n")
       (while (search-forward-regexp (regexp-quote tmpfile) nil t)
         (replace-match (file-name-nondirectory filename)))
       (compilation-mode)
       (display-buffer errbuf))))
 
-(defun reasonfmt--kill-error-buffer (errbuf)
+(defun refmt--kill-error-buffer (errbuf)
   (let ((win (get-buffer-window errbuf)))
     (if win
         (quit-window t win)
@@ -161,21 +161,21 @@ function."
         (erase-buffer))
       (kill-buffer errbuf))))
 
-(defun reasonfmt ()
-   "Format the current buffer according to the reasonfmt tool."
+(defun refmt ()
+   "Format the current buffer according to the refmt tool."
    (interactive)
-   (let ((bufferfile (make-temp-file "reasonfmt" nil ".re"))
-         (outputfile (make-temp-file "reasonfmt" nil ".re"))
-         (errorfile (make-temp-file "reasonfmt" nil ".re"))
-         (errbuf (if reasonfmt-show-errors (get-buffer-create "*Reasonfmt Errors*")))
-         (patchbuf (get-buffer-create "*Reasonfmt patch*"))
+   (let ((bufferfile (make-temp-file "refmt" nil ".re"))
+         (outputfile (make-temp-file "refmt" nil ".re"))
+         (errorfile (make-temp-file "refmt" nil ".re"))
+         (errbuf (if refmt-show-errors (get-buffer-create "*Refmt Errors*")))
+         (patchbuf (get-buffer-create "*Refmt patch*"))
          (coding-system-for-read 'utf-8)
          (coding-system-for-write 'utf-8)
          (width-args
           (cond
-           ((equal reasonfmt-width-mode 'window)
+           ((equal refmt-width-mode 'window)
             (list "-print-width" (number-to-string (window-body-width))))
-           ((equal reasonfmt-width-mode 'fill)
+           ((equal refmt-width-mode 'fill)
             (list "-print-width" (number-to-string fill-column)))
            (t
             '()))))
@@ -190,22 +190,22 @@ function."
            (with-current-buffer patchbuf
                          (erase-buffer))
            (if (zerop (apply 'call-process
-                             reasonfmt-command nil (list (list :file outputfile) errorfile)
+                             refmt-command nil (list (list :file outputfile) errorfile)
                              nil (append width-args (list "-parse" "re" "-print" "re" bufferfile))))
                (progn
                  (call-process-region (point-min) (point-max) "diff" nil patchbuf nil "-n" "-"
                                       outputfile)
                  (reason--apply-rcs-patch patchbuf)
-                 (message "Applied reasonfmt")
-                (if errbuf (reasonfmt--kill-error-buffer errbuf)))
-             (message "Could not apply reasonfmt")
+                 (message "Applied refmt")
+                (if errbuf (refmt--kill-error-buffer errbuf)))
+             (message "Could not apply refmt")
              (if errbuf
-               (reasonfmt--process-errors (buffer-file-name) bufferfile errorfile errbuf)))))
+               (refmt--process-errors (buffer-file-name) bufferfile errorfile errbuf)))))
    (kill-buffer patchbuf)
    (delete-file errorfile)
    (delete-file bufferfile)
    (delete-file outputfile)))
 
-(provide 'reasonfmt)
+(provide 'refmt)
 
-;;; reasonfmt.el ends here
+;;; refmt.el ends here

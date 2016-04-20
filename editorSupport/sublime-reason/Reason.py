@@ -24,10 +24,10 @@ def is_interface(file_name):
 
 def reason_command_line(file_name):
     settings = sublime.load_settings('Preferences.sublime-settings')
-    reasonfmt = settings.get('reasonfmt_bin', 'reasonfmt')
+    refmt = settings.get('refmt_bin', 'refmt')
 
     return [
-        reasonfmt,
+        refmt,
         '-use-stdin', 'true',
         '-parse', 're',
         '-is-interface-pp', is_interface(file_name),
@@ -47,9 +47,9 @@ class ReasonFormatCommand(sublime_plugin.TextCommand):
             ], stdin=PIPE, stdout=PIPE, stderr=PIPE)
         except FileNotFoundError:
             error = 'Can\'t find `%s` ($PATH=%s).\n\n' \
-                'You can set reasonfmt binary in your settings (Cmd+,) ' \
-                'by adding "reasonfmt_bin": "/a/b/c".' \
-                % (reasonfmt, os.environ['PATH'])
+                'You can set refmt binary in your settings (Cmd+,) ' \
+                'by adding "refmt_bin": "/a/b/c".' \
+                % (refmt, os.environ['PATH'])
             sublime.error_message(error)
             return
 

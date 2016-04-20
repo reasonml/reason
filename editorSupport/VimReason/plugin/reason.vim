@@ -22,7 +22,7 @@ endif
 
 " From auto-format plugin:
 " https://github.com/Chiel92/vim-autoformat/blob/master/plugin/autoformat.vim
-let g:vimreason_reason = "reasonfmt"
+let g:vimreason_reason = "refmt"
 let g:vimreason_args_expr_reason = '"-use-stdin true -print re " .' .  "expand('%')"
 "
 function! Strip(input_string)
@@ -117,7 +117,7 @@ function! s:set_formatprg(...)
         let i = i - 1
       endwhile
       if numModifications == 0
-        echomsg "ReasonFmt: Already Formatted"
+        echomsg "Refmt: Already Formatted"
       endif
       return 1
     endif
@@ -165,4 +165,3 @@ command -nargs=* ReasonPrettyPrint :call DoReasonPrettyPrint(<f-args>)
 
 let &cpo = s:save_cpo
 unlet s:save_cpo
-
