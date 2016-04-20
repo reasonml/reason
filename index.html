@@ -125,9 +125,12 @@ that has been customized for `Reason`.
 Syntax Basics
 =======
 
-Much of Reason's core syntax should be familiar to anyone that has ever used
-modern `JavaScript`/`Flow` or `Rust`. The examples in this document give an
+Much of Reason's core syntax should be familiar to anyone who has ever used
+modern `JavaScript` / [Flow](http://flowtype.org/) or `Rust`. The examples in this document give an
 overview of the most important language constructs and their respective syntax.
+
+Primitives
+----------
 
 > Primitive                                  | Example
 > --------------------------------------|--------------------------------
@@ -662,7 +665,7 @@ let sumsZero = switch x {
 ```
 
 Loops and Tests
---------------------------
+---------------
 
 #### If Expressions
 
@@ -790,7 +793,7 @@ Diving Deeper
 ==============
 
 Curried Functions
--------------------
+-----------------
 
 "Curried" functions are simply functions that, when called, return another function.
 Any language that allows first class functions supports currying and there is
@@ -1022,7 +1025,7 @@ Syntax Sugars
 ----------------------------------
 
 
-##### Function sugar
+##### Function Sugar
 You've already seen one form of function syntax sugar. Though it appears that
 functions accept multiple arguments, every function actually only accepts a
 single argument. "Multiple arguments" separated by spaces are actually defining
@@ -1052,7 +1055,7 @@ let five = add (firstEvaluateThis 0 0) 1;
 when they are invoked with all arguments. You may even ignore the fact that
 currying is occurring at all, if you like.
 
-##### Function let binding sugar
+##### Function Let Binding Sugar
 There's one more function binding syntax that hasn't yet been shown: When
 assigning a `let` binding to a function, the `= fun` portion may be omitted.
 This means writing functions in the form: `let functionName arg1 arg2 =>
@@ -1067,7 +1070,7 @@ let add = fun a b => a + b;
 let add = fun a => fun b => a + b;
 ```
 
-##### Module function Binding Sugar
+##### Module Function Binding Sugar
 
 [Module Functions](./modules.html#modules-module-functions) follow the same sugar convention as regular
 functions. Space-separated arguments are actually currified *module functions*
@@ -1099,7 +1102,7 @@ let theRecord = {first, second: 0};
 
 ```
 
-##### Record *pattern* punning
+##### Record *Pattern* Punning
 
 The same record "punning" syntax may be used with destructuring, in all of the
 places where destructuring is allowed (`let` bindings, function arguments,
@@ -1116,7 +1119,8 @@ let sumsToZero = fun {first, second} => first + second == 0;
 Advanced 
 =======
 
-###### Modules:
+Modules
+-------
 
 See [Modules](./modules.html)
 
@@ -1165,7 +1169,8 @@ Getting Involved
 ==============
 
 
-#### Developing/Contributing
+Developing/Contributing
+-----------------------
 
 **1. Prepare Environemnt:**
 If you already [installed](./index.html#reason-install) Reason by `pin`ing the
