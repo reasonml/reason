@@ -1,6 +1,7 @@
 .DS_Store
 
 *.native
+*.pxm
 reasonfmt_merlin_impl.sh
 
 /_build/
@@ -8,3 +9,5 @@ reasonfmt_merlin_impl.sh
 /formatTest/
 /pkg/
 /reason.install
+/node_modules
+**/node_modules

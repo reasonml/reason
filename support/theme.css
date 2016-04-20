@@ -1,4 +1,65 @@
 
+
+.hljs-forDocGrammarHighlighting {
+  border-radius: 9px;
+  background-color: rgb(246, 246, 255);
+  border: 1px solid rgb(228, 228, 236);
+  padding-top: 1px;
+  padding-bottom: 0px;
+  padding-left: 4px;
+  padding-right: 4px;
+  box-sizing: border-box;
+  color: rgb(103, 103, 120)
+}
+.featureContainer {
+  font-family: Open Sans, sans-serif;
+  margin-top: 20px;
+  display:flex;
+  text-align: center;
+}
+
+.featureIcon {
+  font-size:64px;
+}
+
+.featureColumn {
+  text-align: center;
+  flex-direction: column;
+  display:flex;
+  flex:1;
+}
+.featureItemBox {
+  margin-top: 14px;
+  padding:2px;
+  padding-top:14px;
+  padding-bottom:14px;
+  margin: 5px;
+  flex:1;
+}
+.featureComingSoon {
+  opacity: 0.4;
+}
+.featureItemBox:first-child {
+  margin-left: 0px;
+}
+.featureItemBox:last-child {
+  margin-right: 0px;
+}
+
+.featureHeader {
+  margin-bottom: 8px;
+  display:block;
+  vertical-align: middle;
+  text-align: center;
+  font-weight: bold;
+  font-size:15px;
+}
+
+.featureDet {
+  margin-bottom:4px;
+  text-align: center;
+}
+
 .menubar {
   background-color: #444;
 }

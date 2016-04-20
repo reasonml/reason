@@ -12,6 +12,7 @@
   <script src='legacy.js'></script>
   <script src="highlightJs/build/highlight.pack.js"></script>
   <link  href='highlightJs/src/styles/xcode.css' rel='stylesheet'>
+  <link rel="stylesheet" href="./octicons/octicons.css">
   <script src='flatdoc.js'></script>
 
 
@@ -24,15 +25,56 @@
 
   <script id="markdown" type="text/markdown" src="index.html">
 
+
 Reason
 =======
+A new, approachable interface to the ML language.
 
-- **Learn rapidly:** Familiar, functional syntax.
-- **Edit rapidly:** Powerful, always-consistent source formatting.
-- **Execute rapidly:** Ahead of Time, bare metal compilation - No Virtual Machine.
-- **Adopt incrementally:** One file at a time, link with `clang` or `JavaScript`.
-- **Build and Share easily:** `package.json` driven compilation/sharing.
+<table style="width:100%">
+  <tr style="border:none">
+    <td style="border:none; padding:0px">
+      <div class="featureContainer" style="">
+        <div class="featureColumn" style="">
+          <div class="featureIcon octicon octicon-code"></div>
+          <div class="featureItemBox" style="">
+            <span class="featureHeader">
+              Syntax
+            </span>
+          </div>
+        </div>
+        <div class="featureColumn featureComingSoon" style="">
+          <div class="featureIcon octicon octicon-zap"></div>
+          <div class="featureItemBox" style="">
+            <span class="featureHeader">
+              Build
+            </span>
+          </div>
+        </div>
+        <div class="featureColumn featureComingSoon" style="">
+          <div class="featureIcon octicon octicon-package"></div>
+          <div class="featureItemBox" style="">
+            <span class="featureHeader">
+              Share
+            </span>
+          </div>
+        </div>
+      </div>
+    </td>
+  </tr>
+  <tr style="border:none">
+    <td style="padding: 20px; border:none; text-align:center">
+[Compare JS >](./javaScriptCompared.html) [Compare ML >](./mlCompared.html)
+    </td>
 
+  </tr>
+
+
+</table>
+
+`Reason` is a new "interface" to the ML langauge - a toolchain writing, building,
+and sharing code that targets the OCaml compiler. Reason's completely new syntax
+works well with your existing tools/build systems so it is possible to use all
+of `Reason` or just a portion, while gradually upgrading one file at a time.
 
 Install
 ---------------
@@ -51,15 +93,17 @@ opam switch 4.02.3
 opam pin add -y reasonsyntax git@github.com:facebook/ReasonSyntax.git#68d504daa9c8579e125e31c563c7388b7008ae86
 opam pin add -y reason git@github.com:facebook/Reason.git#bdd6f3990570d20a7f70e7667223d4a68f4e4915
 opam pin add -y merlin git@github.com:the-lambda-church/merlin.git#7f2f29ba85e07c9d0367456649e626d6ea6d037d
+
 ```
 
 REPL
 ---------------
 
-`Reason` comes with a custom build of the REPL called `rtop` which lets you
-interactively evaluate `Reason` syntax in the REPL. It will show printed results
-for each command. To submit commands, end each entry with a `;` and the REPL
-will print the resulting value and inferred type.
+`Reason` comes with REPL called `rtop` which lets you interactively evaluate
+`Reason` syntax in the REPL. It will also show printed results in `Reason` syntax.
+It features intelligent, type-driven autocompletion (thanks to `utop`).
+To submit commands, end each entry with a `;` and the REPL will print the
+resulting value and inferred type.
 
 ```sh
 # The rtop command begins a REPL session
@@ -74,123 +118,54 @@ let result = 100 + 200;
 # result : int = 300;
 ```
 
-> Note: `rtop` is a merely a thin wrapper around the excellent `utop` REPL but
-> with a custom extension to handle `Reason` syntax. Correct value printing is
-> still under development.
+> Note: `rtop` is a merely a wrapper around the excellent `utop` REPL
+that has been customized for `Reason`.
 
-
-Reason Atom IDE.
--------
-
-#### Install
-`Reason` works best in Atom when the `Nuclide` plugin is installed. There is _one_ plugin called `atom-reason-loader` that must be installed using the instructions here.
-`atom-reason-loader` has one job - to dynamically install any other necessary `Reason` plugins. Your
-OPAM installation of `Reason` provides the _real_ IDE plugins, that `atom-reason-loader` will install.
-Those other plugins include `NuclideReason` (IDE features), and `language-reason` (syntax highlighting).
-
-> **Installation Instructions**
->
-> - Install [Atom](https://atom.io/) editor.
-> - Open the package installer from the menu `Packages > Settings View > Install Packages/Themes`.
-> - Search for and install `nuclide` if not already installed.
-> - Then install `atom-reason-loader`.
-> - `atom-reason-loader` will automatically install/load two plugins (`NuclideReason` and
-> `language-reason`) and will walk you through removing any existing conflicting versions.
-> - When installation is complete, open a `.re` file and make sure the `Reason` syntax is selected
-> (lower right corner of Atom). Restarting Atom after installation is not a bad idea but should not be necessary.
-
-#### Features/Configuration
-The `Reason` IDE experience is powered by `refmt`, the `Reason` AST formatting tool, and
-even moreso by the excellent [merlin](https://github.com/the-lambda-church/merlin) project.
-`refmt` provides source code beautifying/printing, and Merlin provides type information, autocompletion,
-and professional IDE features even in the face of partially invalid files/projects.
-
-To configure Merlin, include a `.merlin` file at the root of your project that notes the location
-of source files and build artifacts. Also register the `Reason` suffixes with Merlin using the `SUFFIX` config.
-See [this doc](https://github.com/the-lambda-church/merlin/wiki/project-configuration) for more
-details, and note the example here.
-
-
-> Example `.merlin` file
-```
-S relative/path/to/your/sourcefiles/dir/
-B relative/path/to/your/build/artifacts/dir/
-SUFFIX .re .rei
-```
-
-<img width=470 height=440 src="images/NuclideReason.png" />
-
-> **Type Driven Development**
->
-> - (Coming soon) With [`hyperclick`](https://atom.io/packages/hyperclick) installed/enabled -
-`⌘+click` will allow navigating to definition location.
-> - When you save your file, you will see compilation errors/warnings highlighted.
-> Open the "Diagnostics" window to see a summary of errors.
-> - With `Nuclide` type-hints enabled, hovering over your source code will display
-> a pretty printed type annotation for the term.
-
-
-<img width=470 height=440 src="images/autoformat.png" />
-
-> **Powerful Reformatting**
->
-> - `Reason` for Atom integrates `refmt`, the `Reason` AST formatter.
-> - With Nuclide, `⌘+shift+c` will reformat the entire file or let you know
-> if a syntax error prevented formatting.
-> - As always, `refmt` will remove superfluous parenthesis, or precedence tokens.
-> - `refmt` will wrap your lines at the width you have configured in your
-> plugin settings. To change these, open the Package Settings (`Packages > Settings View > Manage Packages)
-> and click on `NuclideReason` in order to customize the "print width" configuration.
-
-
-<img width=470 height=440 src="images/autocomplete.png" />
-> `Reason` for Atom uses Merlin's powerful autocompletion system.
 
 Syntax Basics
 =======
 
-Much of Reason's core syntax should be familiar to anyone that has ever
-used `JavaScript` or `Rust`.
+Much of Reason's core syntax should be familiar to anyone that has ever used
+modern `JavaScript`/`Flow` or `Rust`. The examples in this document give an
+overview of the most important language constructs and their respective syntax.
 
-> While no substitute for the guide below, these references are helpful to
-> quickly compare syntaxes with other syntaxes.
-
-> [JavaScript >](./javaScriptCompared.html) [ML >](./mlCompared.html)
-
-
-######Primitives
-
-Primitive                                  | Example
---------------------------------------|--------------------------------
-Strings                               |  <pre>"Hello"</pre>
-Characters                            |  <pre>'x'</pre>
-Integers                              |  <pre>23</pre>
-Floats                                |  <pre>23.0</pre>
-Negative Integer                      |  <pre>-23</pre>
-Integer Addition                      |  <pre>23 + 1</pre>
-Float Addition                        |  <pre>23.0 +. 1.0</pre>
-Integer Division/Multiplication       |  <pre>2 / 23 * 1</pre>
-Float Division/Multiplication         |  <pre>2.0 /. 23.0 \*. 1.0</pre>
-String Concatenation                  |  <pre>"Hello" ^ "World"</pre>
-Immutable Lists                       |  <pre>[1, 2, 3]</pre>
-Immutable Lists append                |  <pre>[hd, hd2, ...tl]</pre>
-Reference Equality Comparison         |  <pre>thisThing === thatThing</pre>
-Records                               |  <pre>{contents: 100}</pre>
-Record Field Update (if mutable field)|  <pre>myRecord.contents = 200</pre>
+> Primitive                                  | Example
+> --------------------------------------|--------------------------------
+> Strings                               |  <pre>"Hello"</pre>
+> Characters                            |  <pre>'x'</pre>
+> Integers                              |  <pre>23</pre>
+> Floats                                |  <pre>23.0</pre>
+> Negative Integer                      |  <pre>-23</pre>
+> Integer Addition                      |  <pre>23 + 1</pre>
+> Float Addition                        |  <pre>23.0 +. 1.0</pre>
+> Integer Division/Multiplication       |  <pre>2 / 23 * 1</pre>
+> Float Division/Multiplication         |  <pre>2.0 /. 23.0 \*. 1.0</pre>
+> String Concatenation                  |  <pre>"Hello" ^ "World"</pre>
+> Immutable Lists                       |  <pre>[1, 2, 3]</pre>
+> Immutable Lists append                |  <pre>[hd, hd2, ...tl]</pre>
+> Reference Equality Comparison         |  <pre>thisThing === thatThing</pre>
+> Records                               |  <pre>{contents: 100}</pre>
+> Record Field Update (if mutable field)|  <pre>myRecord.contents = 200</pre>
 
 
-
-Bindings and Functions
+Let Bindings
 ------------
+`let` bindings give names to values. Those bindings can be seen and referenced
+by code that comes after those bindings, so long as the bindings are still "in scope".
+To make `let` bindings, use the `let` keyword with an `=` symbol, and put a `;` after
+the binding. Try creating some bindings in the [`rtop REPL`](#reason-repl)
+
+```reason
+let identifier = expression;
+let identifier = expression;
+...
+```
 
 #### Let Bindings in Source Files
 
 Reason source files begin with a lowercase letter and use the `.re` file
-suffix. Each `.re` file includes a series of `let` bindings and/or `type`
-definitions, separated by semicolons. For example, you might have the file
-`react.re` and has two `let` bindings as shown. The
-[REPL](#reason-repl)
-can be used to input bindings line by line and receive feedback interactively.
+suffix. Among other things, each `.re` file includes a series of `let` bindings.
+In this example, a file `react.re` has two `let` bindings.
 
 ```reason
 /*
@@ -200,12 +175,14 @@ let frameworkName = "React";
 let renderCount = 0;
 ```
 
-`let` binds names to values that may be accessed within "block scope". To
-further limit scope of bindings, `Reason` provides `{}` block *expressions*
-which sequence `let`s together and *evaluates* to the last item in the
-sequence. In this example, the binding `three` evaluates to the `integer` `3`.
-The `{}` block ensures that `one` and `two` are not accessible after `three` is
-computed.
+#### Limiting Scope
+
+`let` bindings tie a name to a value and that name may be referenced at a later
+point in the file. To further limit scope of bindings, `Reason` provides `{}`
+block *expressions* which let you sequence `let`s together and then *evaluates*
+to the last item in the sequence. In this example, the binding `three`
+evaluates to the `integer` `3`.  The `{}` block ensures that `one` and `two`
+are not accessible after `three` is computed.
 
 ```reason
 let three = {
@@ -215,64 +192,36 @@ let three = {
 };
 /* one and two not accessible here! */
 ```
+> Note that the last item may optionally include a terminating semicolon.
 
-#### Functions
+#### Constant bindings
 
-Functions are first class values and can be assigned to a let binding. Functions
-are introduced with the `fun` keyword, followed by a list of arguments, an
-arrow `=>` then any expression acting as the return value.
+`let` bindings are immutable. Once a binding refers to a value, it cannot
+refer to anything else. However, you may create a new binding of the same
+name which will *shadow* the previous binding.
 
 ```reason
-let increment = fun x => x + 1;
-let sumBoth = fun x y => x + y;
+/* Prints "hello bye" */
+let msg = "hello ";
+print_string msg;
+let msg = "bye";
+print_string msg;
 ```
 
-Functions "application" is expressed by simply supplying the arguments
-separated by spaces, after the name of the function.
+
+#### Imperative Code
+
+You may interleave imperative commands such as logging along with your let
+bindings. This works both for `let` bindings in files, and also in block
+scopes. Interleaved imperative commands don't change what block expressions
+evaluate to.
 
 ```reason
-increment 5;    /* Evaluates to six */
-sumBoth 6 1;   /* Evaluates to seven */
-```
-
-##### 
-
-To resolve precedence when applying arguments, simply wrap in parenthesis.  In
-this example, `(increment 2)` is *first* evaluated to `3`, then `3` is passed
-as the second argument to `sumBoth`.
-
-```reason
-sumBoth 2 (increment 2);   /* 5 */
-```
-
-This syntactic pattern of space-separated lists is used in many places in
-`Reason`.
-
-#### 
-
-Functions can use sequence expressions as their return values in order to
-declare temporary variables while computing their result. This isn't some special
-kind of function body on the right side of the `=>`, it's just a standard
-sequence expression, and the function is doing what functions always do -
-evaluating to the expression on the right side of the `=>`.
-
-```reason
-let longerFunc = fun argOne argTwo => {
-  let tmp = 2 * argOne;
-  let next = 3 * argTwo;
-  tmp * next
-};
-```
-
-As with any sequence or module scope, you may invoke other functions that
-perform side effects such as printing, logging, or warming a cache.
-```reason
-let longerFunc = fun argOne argTwo => {
-  print_string "Entering the function";
-  let tmp = 2 * argOne;
-  let next = 3 * argTwo;
-  print_string "Returning from the function";
-  tmp * next
+let three = {
+  let one = 1;
+  print_string "fire the missiles";
+  let two = 2;
+  one + two
 };
 ```
 
@@ -282,22 +231,36 @@ Types Basics
 #### Type Annotations
 
 Even though types are inferred, you may still choose to write "type assertions"
-on any expression. These assertions are then verified by the compiler. Just
-append `: yourType` to an expression, and wrap the result in parenthesis.
+on any expression. Anywhere you would normally write an expression, just append
+`: yourType`, and then wrap the result in parenthesis.
+
+
+```reason
+(expression : typeConstraint)
+```
+
+
+These assertions are then verified by the compiler.
 ```reason
 let bindingOne = 5;
-let bindingOne = (5 :int);
-let bindingOne = (5 :int) + (4 :int);
-let bindingOne = ((5 :int) + (4 :int) :int);
+let bindingOne = (5 : int);
+let bindingOne = (5 : int) + (4 : int);
+let bindingOne = ((5 : int) + (4 : int) : int);
 ```
 The other place that type assertions are accepted, is immediately following the
 `let` keyword. This is equivalent to asserting the type of the expression on
 the right hand side of the `=`.
+```reason
+let identifier : typeConstraint = expression;
+let identifier = (expression : typeConstraint);
+```
+
+<br />
 
 ```reason
 /* Equivalent type assertions. */
 let frameworkName = ("React": string);
-let frameworkName: string = "React";
+let frameworkName : string = "React";
 ```
 
 #### Type Aliases
@@ -305,35 +268,21 @@ let frameworkName: string = "React";
 You may refer to a type by a different name, by creating a type alias with the
 `type` keyword. The new type alias may be used in annotations as well. You can
 see there is somewhat of a "scope" for `type` aliases, similar to `let`
-bindings, but type aliases must be placed directly in a module file, and not
-inside of a sequence expression.
+bindings.
 
 ```reason
 type myType = int;
 let x: myType = 10;  /* Now we can "see" myType */
 ```
 
-#### Function Types
-To describe the types of functions, we list the types of the arguments,
-separated by `=>`, and then list the return type after one final `=>`.
-
-For example:
-```reason
-type addsTwoInts = int => int => int;
-let myFun: addsTwoInts = fun a b => a + b;
-```
-
 Tuples
 --------------------------
 
-A tuple is a list of values of *known* size, such as "pair". They differ from
-lists not only in that they are of known size, but in that every item in a
-tuple may be of a different type. They are written as comma delimited lists,
-always wrapped in parenthesis.
+A tuple is a list of values of *known* size, such as "pair". They are written
+as comma delimited lists, always wrapped in parenthesis.
 
 
 ```reason
-let myPairOfInts = (20, 40);
 let myThreeFloats = (20.0, 30.0, 100.0);
 let myIntAndString = (20, "totallyNotAnInteger");
 ```
@@ -343,19 +292,24 @@ Tuple types resemble tuples themselves - comma delimited lists of types,
 wrapped in parenthesis.
 
 ```reason
-let myPairOfInts: (int, int) = (20, 40);
 let myThreeFloats: (float, float, float)  = (20.0, 30.0, 100.0);
 let myIntAndString: (int, string) = (20, "totallyNotAnInteger");
+```
+
+Tuples represent two or more values together, but sometimes you want to
+represent *zero* values. In `Reason`, you can express this idea by writing
+`()`. We call this thing "unit", and it has type `unit`.
+
+```reason
+let nothing = ();
 ```
 
 You may create type aliases for tuple types just like you can with any other
 type.
 ```reason
-type pairOfInts = (int, int);
 type threeFloats = (float, float, float);
 type intAndString = (int, string);
 
-let myPairOfInts: pairOfInts = (20, 40);
 let myThreeFloats: threeFloats = (20.0, 30.0, 100.0);
 let myIntAndString: intAndString = (20, "totallyNotAnInteger");
 ```
@@ -363,11 +317,12 @@ let myIntAndString: intAndString = (20, "totallyNotAnInteger");
 Records
 -------
 
-Records are an unordered collection of named fields. Records are similar to
-"objects" that you might be familiar with, but they are much simpler, less
-flexible, and compile to very efficient machine code. To create a record, some
-type definition describing its fields must be in scope.  In `Reason`,  type
-definitions for records resemble the shape of the records values they describe.
+Records are a set of named values. They resemble "objects" (from OO) but they
+are simpler, less flexible, and offer extremely fast field access. To create a
+record, some type definition describing its fields must be in scope.  In
+`Reason`,  type definitions for records resemble the shape of the records
+values they describe.
+
 
 ```reason
 type person = {age: int, name: string};
@@ -388,14 +343,14 @@ let meNextYear =  {
 
 ##### Mutable record fields.
 
-If you must, record fields may be mutated with the `=` operator, but only if
-the record type has marked a field `mutable`. In general, having language level
-distinction between `mutable` and immutable, allows the compiler to make
-several optimizations, including avoiding allocations.
+When defining the record type, you can mark some record fields as `mutable`.
+This allows you to update those fields with the `=` operator. In general,
+having language level distinction between `mutable` and immutable offers
+opportunities for compile time performance optimizations.
 
 ```reason
 type person = {
-  name: string,
+name: string,
   mutable age: int
 };
 let me = {name: "Jordan", age: 30};
@@ -425,20 +380,108 @@ let (ten, twenty) = someInts;
 let somePerson = {name: "Guy", age: 30};
 let {name: n, age: a} = somePerson;
 ```
-Function arguments may also be destructured. This function takes one tuple
-argument and destructures that tuple's fields "on the way into" the function.
-Notice how this resembles `C`/`JavaScript` style argument syntax.
+
+Destructuring also allows type annotations *while* destructuring.
+```reason
+let (ten: int, twenty: int) = someInts;
+let {name: (n:string), age: (a:int)} = somePerson;
+```
+
+
+
+Functions
+---------
+
+Functions are introduced with the `fun` keyword, followed by the name of the
+arguments, an arrow `=>` then any expression acting as the return value.  All
+functions accept a single argument, and return a single value. This ends up
+being very convenient.
 
 ```reason
+fun argument => expression
+```
+Functions are first class and you can use `let` bindings to give them names.
 
+
+```reason
+let increment = fun x => x + 1;
+let double = fun x => x + x;
+```
+To call a function, supply its argument after the name of the function.
+
+```reason
+let six = increment(5);
+let thirteen = increment(double(6));
+```
+The parenthesis around the argument may be omitted if the argument is
+clearly "one unit" (such as a single word or number). In this example, the `5`
+is clearly one unit so the `()` were omitted. The parenthesis around `double
+6`, could _not_ be omitted because `double 6` is not "one unit".
+
+```reason
+let six = increment 5;
+let thirteen = increment (double 6);
+```
+
+#### 
+
+Although functions can return any expression, "block expressions" are often
+chosen because they allow declaring temporary, block-scoped variables, and
+allow performing side effects.
+
+```reason
+let doSomeMath = fun arg => {
+  let tmp = 2 * arg;
+  let next = 3 * arg;
+  tmp * next
+};
+
+let performsSideEffects = fun arg => {
+  print_string "Entering the function";
+  let tmp = 2 * arg;
+  let next = 3 * arg;
+  print_string "Returning from the function";
+  tmp * next
+};
+```
+
+#### Arguments
+
+If you want to pass more data to the input of your function all at once, simply
+pass a tuple containing all the data.  Function arguments may be
+[destructured](#syntax-basics-destructuring) "on the
+way into" the function. This example of passes a tuple to a function and
+destructuring that tuple on the way in.
+```reason
 let addTupleFields = fun (first, second) => {
   first + second
 };
 let five = addTupleFields (4, 1);
 ```
 
-Named arguments can be simulated via one destructured record argument. As
-always, record type definitions must be in scope when records are used.
+The tuple is still first class, and the function still accepts a single argument, so
+you could have also called the function like this:
+```reason
+let myTuple = (4, 1);
+let five = addTupleFields myTuple;
+```
+
+
+You can pass, and destructure a tuple with zero elements as well.
+
+```reason
+let logToUser = fun () => {
+  print_string "Logging to user";
+  print_string "Okay, logging done";
+};
+/* Now call it */
+logToUser ();
+```
+
+
+#### 
+You can pass/destructure records too. (If record type
+definitions are in scope).
 
 ```reason
 let isOverThirty = fun {name: n, age: a} => {
@@ -448,11 +491,9 @@ let isOverThirty = fun {name: n, age: a} => {
 let overThirty = isOverThirty {name: "Jay", age: 31};
 ```
 
-Destructuring also allows type annotations *while* destructuring.
+You may annotate the types of individual parts of the destructuring on the way
+into the function.
 ```reason
-let (ten: int, twenty: int) = someInts;
-let {name: (n:string), age: (a:int)} = somePerson;
-
 let addTupleFields = fun (first:int, second:int) => {
   first + second
 };
@@ -461,6 +502,44 @@ let isOverThirty = fun {name: (n:int), age: (a:int)} => {
   ret
 };
 ```
+
+
+#### Function Types
+Function types are written by listing the argument type, an arrow, and then
+the return type.
+
+```reason
+argumentType => expressionType
+```
+
+Here, we create a type alias for the types of functions in the previous
+examples and then we assert that they are compatible with those functions.
+
+```reason
+type intTupleToInt = (int, int) => int
+type intToInt = int => int;
+let a = (increment : intToInt);
+let b = (addTupleFields : intTupleToInt);
+```
+
+
+
+
+#### Recursive Functions
+
+By default, values can't see a binding that points to it, but including the
+`rec` keyword in a `let` binding makes this possible. This allows functions
+to see and call themselves, giving us the power of recursion.
+
+```reason
+let rec neverTerminate = fun n => n + neverTerminate (n - 1);
+```
+
+
+
+#### Mutually Recursive Functions
+
+
 
 Variants
 --------
@@ -490,10 +569,10 @@ example, the `message` variable is assigned the string `"..."`.
 ```reason
 let isSafeToLaunchRocket = PrettyMuch;
 let message = switch isSafeToLaunchRocket {
-    | No => "Check Integrity."
-    | Yes => "All Systems Go."
-    | PrettyMuch => "..."
-  };
+  | No => "Check Integrity."
+  | Yes => "All Systems Go."
+  | PrettyMuch => "..."
+};
 ```
 ##### Constructor Arguments
 
@@ -582,6 +661,312 @@ let sumsZero = switch x {
 
 ```
 
+Loops and Tests
+--------------------------
+
+#### If Expressions
+
+The syntax for `if` expressions should look very familiar. Just like within
+function "bodies", the `{}` braces may include a sequence of temporary `let`
+bindings or imperative commands, all separated by `;`. An `if` statement may
+include an optional `else` branch.
+
+```reason
+if (testCondition) {
+  ifTrue
+};
+
+if (testCondition) {
+  ifTrue
+} else {
+  ifFalse
+};
+```
+
+In this example, the word `"hi"` is printed if `sayHi` is `true`, and prints
+`"bye"` otherwise.
+```reason
+if (sayHi) {
+  print_string "hi";
+} else {
+  print_string "bye";
+};
+```
+
+> Note: The parenthesis around the test condition may be omitted if the test
+condition is "simple" enough (meaning it is a single, standalone word).
+
+If expressions aren't just for imperative code - they can also be used to
+compute a result. Just place an expression on the final line of the `{}`
+sequence for each branch. If your `if` expression has no `else` branch, it
+is clearly only useful for imperative programming and therefore the entire `if`
+will evaluate to the unit value `()`.
+
+
+```reason
+let valueToLog =
+  if (booleanTest) {
+    let tmp = "name";
+    String.capitalize tmp;
+  } else {
+    "default";
+  };
+```
+
+`if`/`else` expressions may be chained together in a familiar manner.
+
+```reason
+if (sayHi) {
+  print_string "hi";
+} else if (sayBye) {
+  print_string "bye";
+} else {
+  print_string "nothing to say";
+};
+```
+#### Ternaries
+
+For smaller boolean if else statements, `Reason` includes a ternary expression
+which might look more aesthetically pleasing in some cases.
+
+```reason
+testCondition ? ifTrue : ifFalse
+```
+
+```reason
+let valueToLog = shouldUseDefault ? 200 : yourNumber;
+```
+
+
+#### For Loops
+
+For loops are fully imperative constructs that iterate through a range of
+numbers, from a beginning value up to (and including) the ending value. The
+general form of a `for` loop includes an identifier that is incremented each
+iteration, and a range `startVal` to `endVal`.
+
+```reason
+for identifier in (startVal) to (endVal) {
+  statements
+}
+```
+
+The parenthesis around the `startVal` and `endVal` may be omitted if they are
+clearly unnecessary as in the following example.
+
+```reason
+let xStart = 1;
+let xEnd = 3;
+/* prints: 1 2 3 */
+for x in xStart to xEnd {
+  print_int x;
+  print_string " ";
+}
+```
+
+You can make the `for` loop count in the opposite direction by using the `downto`
+keyword.
+
+```reason
+for identifier in (startVal) downto (endVal) {
+  statements
+}
+```
+
+```reason
+let xStart = 3;
+let xEnd = 1;
+/* prints: 3 2 1 */
+for x in xStart downto xEnd {
+  print_int x;
+  print_string " ";
+}
+```
+
+#### While Loops
+
+
+Diving Deeper
+==============
+
+Curried Functions
+-------------------
+
+"Curried" functions are simply functions that, when called, return another function.
+Any language that allows first class functions supports currying and there is
+nothing special about curried functions. Currying is something _you_ the
+programmer do - it's not typically a language feature. In general, curried
+functions have the following form:
+
+```reason
+let curried =
+  fun argOne => fun argTwo => ... fun finalArg => expression
+```
+When `curried` is called with an argument, it returns another function. When
+_that_ function is called with _its_ argument, it returns yet another function.
+This continues on until finally the last function is called, and then
+`expression` is returned.
+
+```reason
+let result = curried(argOne)(argTwo) ... (finalArg);
+```
+
+It's much easier to understand what's going on by looking at a simple example.
+
+
+```reason
+let add = fun a => fun b => a + b;
+let eight = add(2)(6);
+let nine = add(2)(add 6 1);
+let addFour = add (4);
+let five = addFour(1);
+let six = addFour (2);
+```
+> This example shows why currying can be elegant - it allows you to easily create
+new versions of functions that are the same as the old ones, but with _some_ of
+the argument data filled in. Here, `addFour` is like a specialized version of `add`
+with the first argument "filled in".
+
+Instead of having a function accept a tuple as an argument, you might chose to
+make that function curried instead. Currying accomplishes the same goal, but
+allows you to supply the set of input data one at a time, potentially "pausing"
+when you've only supplied a portion of the argument data. Compare this to
+passing a tuple where you must supply all of the data at once.
+
+#### Syntax to make currying easier
+
+Reason includes the following syntax shortcut to make currying easier: The
+following two are equivalent.
+
+```reason
+fun argOne => fun argTwo => expression
+```
+```reason
+fun argOne argTwo => expression
+```
+
+When applying curried functions, the ability to omit parenthesis when arguments
+are "obviously one unit" makes applying curried arguments much cleaner. Putting
+it all together:
+```reason
+let add = fun a b => a + b;
+let eight = add 2 6;
+let nine = add 2 (add 6 1);
+```
+
+#### Curried function types
+
+A function defined as:
+```reason
+let add = fun a => fun b => a + b;
+```
+
+Will have the following type:
+```
+int => int => int
+```
+
+In general, the following function definitions:
+```reason
+fun argOne argTwo ... finalArg => expression
+```
+
+Will will have the following type:
+```reason
+argOneType => argTwoType ... => finalArgType => expression
+```
+
+
+#### Named Curried Functions
+
+One downside to curried functions is that they are "biased" to arguments that
+appear first. Meaning, when you curry functions, you can "partially apply" some
+of the arguments, saving the rest for later, but you can only partially apply
+the arguments that come *first*. Labelled curried functions address this
+concern by letting you assign *labels* to arguments, and then partially apply
+arguments by their label, regardless of their *position*. Labels are created by
+simply prepending `labelName::` to the function argument.
+
+```reason
+
+let add =
+  fun first::f second::s => f + s;
+
+let result = add first::10 second::20;
+
+let addFour = add second::4;
+
+let five = addFour first::1;
+
+```
+
+Labelled curried arguments also allow setting default values using the equals
+sign. The way defaults work is a little tricky, but here's the general rule:
+When calling functions, default arguments are "filled in" as soon as you supply
+a *non-named* argument. More specifically - all of the default arguments to the
+*left* of that non-named argument are filled in, as soon as the non-named argument
+is supplied at invocation time.
+
+```reason
+
+/* Notice how `by` is to the left of `num` */
+let increment = fun by::by=0 num => num + by;
+
+let two = increment by::1 1;
+
+let four = increment 4;
+
+```
+
+
+Type Families
+---------------------------
+
+*TODO: Improve this*
+
+Some types are very specific, such as `int`, or `string`, but other types
+are much more general. For example, knowing that a value has type `list`,
+leaves so many unanswered questions - namely, what's in the list?! Sometimes
+you don't *need* to know that level of detail, but other times you do.
+
+In `Reason`, the type of a `list` that contains `string`s is written as `list string`.
+
+```reason
+let listOfStrings : list string = ["hi", "bye"];
+```
+
+The type of a `list` containing `int`s is written `list int`.
+
+```reason
+let listOfInts : list string = [4, 4];
+```
+
+It's clear that `list` represents an entire "family" of types. `list` can be
+thought of as a "function" that generates types - you pass it a type, and it
+generates a new type.
+
+The way you can define your own custom "family" of types is by using the
+following syntax. Notice the `'` before the `argOne`.
+
+```reason
+type 'argOne = typeStructure;
+```
+
+For example, you could define a family of tuple types like this:
+
+```reason
+type awesomeTuple 'a = ('a, 'a);
+```
+
+Then you could create more specific types by "calling" the `awesomeTuple` type
+generating "function" as follows:
+
+```reason
+type awesomeTuple 'a = ('a, 'a);
+type tupleOfInts = awesomeTuple int;
+```
+
+
 Expressive Pattern Matching
 ---------------------------
 There are several destructuring conveniences that pair well with compiler
@@ -633,309 +1018,6 @@ let justTwo = hasExactlyTwoCars myCarList;  /* true! */
 
 ```
 
-Advanced Features
-=======
-
-The section below demonstrates the syntax for advanced language constructs such
-as modules, which enable rapid large-scale development.
-
-Modules
-----------------------------------
-*Note: This documentation on modules is a temporary, and will be improved*
-
-Modules are like records, but with the following differences.
-
-- They are "compile-time" concepts, not easy to pass to standard functions.
-- They may contain types, instead of just values.
-- Their values are specified using `let` bindings.
-- Variables that refer to modules must begin with a capital letter.
-- They form the basis for separate compilation and namespacing.
-
-
-###### Creating Modules
-To create a module, use the `let module` keywords instead of `let`, and ensure
-that the variable name given to the module begins with a capital letter.
-
-```reason
-let module MyModule = {
-  /* Module contents here */
-};
-```
-The contents of modules are placed between the `{}` blocks. In fact, you
-already know how to define module contents - the rules for module contents are
-the exact same as the rules for the contents of `.re` files. Whatever you could
-place in a `.re` file, you may place inside a module definition's `{}` block.
-That means that you can include `let` bindings, and even `type` definitions.
-
-```reason
-let module MyModule = {
-  type twoStrings = (string, string);
-  let makePair = fun s => {
-    let returnVal = (s, s): twoString;
-    returnVal;
-  };
-};
-```
-
-Once a module has been defined, the contents of the module may be accessed much
-like a record using the `.` notation. Furthermore, even a module's declared
-*types* may be accessed using that same `.` notation. This demonstrates
-modules' utility for namespacing.
-
-```reason
-let twoStrings: MyModule.twoString = MyModule.makePair "hello modules";
-```
-
-```reason
-let module MyModule = {
-  let module NestedModule = {
-     let msg = "hello";
-  };
-};
-
-let msg = MyModule.NestedModule.msg;
-```
-
-###### Extending modules
-Contents of modules may be *copied* into other modules by using the `include`
-keyword. Once `include`d, following `let` bindings can "see" the `include`d
-content. This can often fulfill the role of "inheritance".
-
-
-```reason
-let module Login = {
-   let login = fun auth => 0;
-};
-let module RepeatedLogin = {
-  include Login;
-  let loginTwice = fun auth => {
-    (login auth, login auth)
-  };
-};
-```
-
-
-###### Every `.re` file is a module
-Furthermore, ever file *is* a module. The file `react.re` implicitly forms a
-module `React`, which can be seen by other source files. The [build
-system](#scalable-development-modules-and-package-visibility) determines which
-particular files can see `React`.
-
-
-
-Signatures
-----------------------------------
-Similar to how records are described by types, modules themselves can be
-described by *module* types, which we call "signatures". Signatures are similar
-to record type definitions, with the following differences:
-
-- They describe the structure of *modules* (which are compile-time constructs)
-  instead of describing *values* (which are runtime constructs).
-- They describe values being inside of modules via the following syntax: `let q: s;` (as opposed to
-  `key:keyType,`).
-- Signatures can include entries for `type` fields - which is admitedly
-  difficult to wrap your head around.
-- Identifiers that refer to signatures must begin with a capital letter.
-- The rules for satisfying signatures are based on "subtyping", whereas records
-  are more rigid.
-
-###### Creating Signatures
-Module signatures are declared using the `module type` keywords.  Module
-signatures define the list of requirements that a module must satisfy in order
-for that module to "match". Those requirements are of the form:
-
-- `let x: typeOfName;` to require that a module have a `let` binding named `x`.
-- `type t = someType;` to require that a module have a type field `t` being
-  equal to `someType`.
-- `type t;` to require that a module have a type field `t`, but without
-  imposing any requirements on the actual type of `t`. We can still use this `t`
-  in other entries in the signature, which will require enforce certain
-  relationships between `t` and other types/fields *within* the signature, but
-  we cannot, for example, assume that `t` is an `int`.
-
-To illustrate the various kinds of type entries, consider the signature
-`HasXAndTInt` which requires that a module:
-
-- Declare a type definition under the name `t` being equivalent to `int`.
-- Must include a `let` binding named `x` assigned to an `int`.
-
-```reason
-module type HasXAndTInt = {
-   type t = int;
-   let x: int;
-};
-```
-
-Constrast that with the signature `HasXAndTAbstract` which requires that a
-module:
-
-- Declare a type definition under the name `t`.
-- Have a `let` binding `x` that is of that *same* type `t`, regardless of what `t` happens to be.
-
-```reason
-module type HasXAndTAbstract = {
-   type t;
-   let x: t;
-};
-```
-
-###### Asserting
-Similar to what we saw with type assertions, we can assert that various
-*modules* implement various *signatures*, via the type assertion operator `:`.
-
-In this example, the first type assertion asserts that `XTInt` implements
-`HasXAndTInt` and it succeeds because `XTint` has all of the members of
-`HasXAndTInt` and the types of those members match exactly.  The second
-assertion asserts that `XTInt` implements `HasXAndTAbstract` and succeeds
-because `XTInt.x` is in fact of type `XTint.t`. `XTint.t` also happens to be an
-`int`, but `HasXAndTAbstract` never specified what `t` could or could not be -
-it only required that `x` be of type `t`.
-
-```reason
-let module XTInt: HasXAndTInt = {
-   type t = int;
-   let x = 20;
-};
-let module XTInt: HasXAndTAbstract = {
-   type t = int;
-   let x = 20;
-};
-```
-###### Constraining
-What it means to "implement" a signature is fairly intuitive, and roughly
-corresponds to the popular notion of "implementing an interface". For example,
-modules may implement a signature while having *more* fields (but no fewer)
-than the signature required.
-
-Because of this, signature assertions do more than just *verify* that a module
-implements, a signature - they also *constrain* a module to the signature. In
-this example, `XYAndT.y` is visible, but `Constrained.y` is not.  Furthermore,
-`XYAndT.t` is of type `int`, whereas `Constrained.t` now matches the signature
-in that it is now "abstract". If you were to ask the `REPL` what the type of
-`Constrained.t` is, it will tell you `Constrained.t`! If you asked it what the
-type of `Constrained.x` was, it would again tell you `Constrained.t`. It has
-lost track of the type itself, but not lost track of the fact that the type of
-`Constrained.x` is identical to the type of `Constrained.t`.
-
-```reason
-let module XYAndT = {
-   type t = int;
-   let x = 20;
-   let y = "you'll never see me!";
-};
-let module Constrained: HasXAndTAbstract = XYAndT;
-```
-> This kind of "constraining" allows *hiding* of information that should be
-> considered implementation details.
-
-
-###### Every `.rei` file is a signature
-Similar to how every `react.re` file implicitly defines a module `React`, every
-file `react.rei` implicitly defines a signature that is automatically asserts
-and constrains `React`. The optional `react.rei` file would include the
-contents of a module signature (stuff in between the `{}`). `.rei` files also
-serve as a place to document the public API for their corresponding modules.
-
-> Example contents of react.re
-
-```reason
-type descriptor = int;
-let render = fun str => str;
-```
-
-> Example contents of react.rei
-
-```reason
-type descriptor = int;
-let render: str => str;
-```
-
-- Module signatures may also help ensure that [incremental
-  compilation](#scalable-development-incremental-compilation)
-  remains fast.
-- Signatures have many powerful features for constraining relationships between
-  modules in very nuanced ways. Those are out of the scope of this document.
-
-Module Functions
-----------------------------------
-Modules act as compile-time records, and signatures act as the types of those
-compile-time records, but the most power comes from being able to pass modules
-through functions. But since modules are compile-time constructs, we can't use
-*regular* runtime functions - we need functions that can operate on *modules*.
-We call these special functions "functors", and designate them by using the keyword
-`functor` instead of `fun` at definition time.
-
-> The combination of modules, signatures and module functions are incredibly
-powerful, especially when combined with module `include`ing. Together they
-provide power that feels much like a type based macro systems, allowing the
-creation of sophisticated type hierarchies, generators, and factories. Covering
-all of these use cases are out of the scope of this document.
-
-The syntax for defining and using module functions is very much like the syntax for
-defining and using regular functions. The primary differences are:
-
-
-- Module functions use the `let module` keywords instead of `let` and the `functor`
-  keyword instead of `fun`.
-- Module functions accept modules as arguments and return a module.
-- Module functions *require* annotating arguments.
-- Module functions must start with a capital letter (just like modules/signatures).
-
-```reason
-module type HasT = {
-  type t;
-};
-let module Pairify = functor (X: HasT) => {
-   type p = (X.t, X.t);
-   let create = fun (x: X.t) => (x, x);
-};
-```
-Module functions can be "applied" using function application syntax, by passing modules
-as their space-separated arguments.
-In this case, a module *literal* is passed as the module functions argument, but we
-could have passed the name of a module instead.
-
-```reason
-let module IntPair = Pairify {
-  type t = int;
-};
-
-let ints = IntPair.create 200;
-```
-
-Module functions, among other things can for powerful module type (*and* value)
-factories. Module functions can even accept other Module functions as arguments!
-
-
-###### Module functions types
-
-Module functions may have type assertions applied with `:` as we've seen with values
-and modules. Like with module types, module function types also act to *constrain* what
-we may assume about module functions, beyond what is true about them (you may hide
-things about the module function).
-The syntax for module function types are consistent with those for function types, but
-with types capitalized to represent the signatures of modules the module function
-accepts as arguments and return values.
-
-
-> Previous example with module function type assertions.
-
-```reason
-module type HasT = {
-  type t;
-};
-module type ParifyT = (HasTInstance: HasT) => {
-  type p;
-  let create: HasTInstance.t => p;
-};
-
-let module Pairify: ParifyT = functor (X:HasT) => {
-  type p = (X.t, X.t);
-  let create = fun (x: X.t) => (x, x);
-};
-```
-
-
 Syntax Sugars
 ----------------------------------
 
@@ -951,15 +1033,20 @@ let add = fun a b => a + b;
 let add = fun a => fun b => a + b;
 ```
 
-You've also seen a sugar for applying arguments to curried functions. Space
-separated function application such as `x y z` is sugar that first invokes `x`
-with single argument `y` which returns a separate function, which is then
-invoked with the single argument `z`. For example, the following two are
-*always* equivalent.
+Because parenthesis around the function argument may be omitted if the argument
+is clearly a single word or a grouping, function application for a curried
+function can look very clean in many cases.
 
 ```reason
+let five = add(4)(1);
+/* Is the same as */
 let five = add 4 1;
-let five = ((add 4) 1);
+```
+
+You only need to include parenthesis around arguments when it otherwise
+wouldn't obviously be a single item.
+```reason
+let five = add (firstEvaluateThis 0 0) 1;
 ```
 > Note: You pay no additional performance cost for curried functions
 when they are invoked with all arguments. You may even ignore the fact that
@@ -982,7 +1069,7 @@ let add = fun a => fun b => a + b;
 
 ##### Module function Binding Sugar
 
-[Module Functions](#syntax-basics-module-functions) follow the same sugar convention as regular
+[Module Functions](./modules.html#modules-module-functions) follow the same sugar convention as regular
 functions. Space-separated arguments are actually currified *module functions*
 and the `= functor` may be omitted, resulting in three forms of module function
 definitions which are all equivalent.
@@ -1025,207 +1112,52 @@ let {first, second} = theRecord;   /* Shortcut */
 let sumsToZero = fun {first, second} => first + second == 0;
 ```
 
-Scalable Development
-=====================================
 
-Example Project
-------------------------
+Advanced 
+=======
 
-#### Clone the Sample Project
+###### Modules:
 
-Clone the example `Reason` project and use `npm` to install its dependencies.
-`Reason` uses [`CommonML`](http://github.com/jordwalke/CommonML) for
-`package.json` style sharing and building of native modules. Several
-compilation modes are supported such as bytecode, full-metal binary, and even
-debuggable `JavaScript`.
-
-```sh
-git clone git+ssh://git@github.com/jordwalke/ReasonExampleProject.git
-cd ReasonExampleProject
-npm install
-```
-
-###### Build Interpreted Mode
-
-The default compilation mode compiles very quickly, and is ideal for rapid
-development.
-
-```sh
-node ./node_modules/CommonML/build.js     # Build
-_build_byte/ReasonExampleProject/reasonExampleProject.out  # Run
-```
-
-
-###### Build for Native
-
-Passing `--compiler=native` will generate fast bare metal binaries.
-
-
-```sh
-node ./node_modules/CommonML/build.js --compiler=native
-_build_native/ReasonExampleProject/reasonExampleProject.out
-```
-
-###### Compile to `JavaScript`
-
-Passing `--forDebug=true --jSCompile=true` will compile debuggable `JavaScript`
-builds of your native application, with source maps support.
-
-```sh
-node ./node_modules/CommonML/build.js --forDebug=true --jsCompile=true
-node _build_byte/ReasonExampleProject/reasonExampleProject.out
-```
-
-Modules and Package Visibility
---------------------
-
-Reason creates opinionated conventions for defining namespaces for the code you
-write in `.re` files.
-
-**Who can access my modules?**:
-Suppose two packages exist as shown in the diagram. `myModule.re` can access
-the module `Utils`, and `utils.re` can access the module `MyModule`. If
-`YourProject` depends on `MyProject`, then `yourModule.re` can access
-`MyProject.MyModule` and `MyProject.Utils`. The build system does not support
-circular dependencies.
-
-    └── MyProject/
-        ├── package.json
-        └── src/
-            ├── myModule.re
-            └── myUtils/
-                └── utils.re
-
-    └── YourProject/
-        ├── package.json   #depends on MyProject
-        └── src/
-            └── yourModule.re
-
-** Adding new privately visible modules **
-
-To add a new privately visible module, just add a new `yourModule.re` file
-anywhere in your project. Other internal modules will instantly be able to see
-it as `YourModule`. Adding a corresponding `yourModule.rei` in the same
-directory will ensure that compilation times remain fast, and allow you to
-constrain the type of `YourModule`.
-
-** Adding new publicly visible modules **
-
-The process for adding new publicly visible modules is the same as private
-modules, but they must be added to the `CommonML.exports` field of the
-`package.json`
-
-Incremental Compilation
------------------------
-Module signatures can greatly reduce compilation time by providing separate
-compilation boundaries. They can play the role of "header files" in some sense.
-If a module `X`'s, implementation changes we must recompile `X`.  If `X` had
-been explicitly constrained to have a signature `XSig` which has *not* changed,
-then other modules `Y`, `Z`, that depend on `X`, don't need to be recompiled
-against the new build for `X`. We merely need to *relink* the previous build
-artifacts for `Y` and `Z` against the new `X` artifact (which is much quicker).
-However, if `X` did *not* constrain its signature to `XSig`, `Y` and `Z` *must*
-be recompiled against the new artifact for `X`, and *then* relinked with `X`'s
-new artifact.
+See [Modules](./modules.html)
 
 
 How Reason Works
 =========================
 
+The OCaml compiler is organized into several stages, which are exposed as
+libraries. `Reason` replaces part of the compiler toolchain with a completely
+new syntax parser that, is more approachable, while still fully compatible with
+the rest of the compiler.  `Reason` also implemented a new source printer which
+integrates into your IDE and the new custom [`REPL`](#reason-repl).
 
-`Reason` implements a completely new *frontend* compiler toolchain
-including parsing (both with and without error recovery), printing,
-building, and namespacing. Like many other language toolchains
-(such as `Flow` and `Hack`), `Reason` is mostly implemented in
-`OCaml`, however `Reason` is different because it also uses later
-stages of the `OCaml` `compiler-libs` to type check the `Reason` AST.
-This approach has many benefits:
+###### Why OCaml?
 
-- Allows sharing of industrial grade developer tools such as
-the excellent [`Merlin`](https://github.com/the-lambda-church/merlin) and `utop`.
-- Allows direct use of the `ocamlopt` compiler backend
-to generate (Ahead of Time) efficient native machine code without a
-Virtual Machine.
-- Allows seamless interop with, as well as an upgrade path for any
-`OCaml` project.
-- Allows building native libraries that can be linked with `clang`.
-
-
-Interop
-==============
-
-**Integrating with `clang`/`gcc`:**
-
-> Instructions Coming Soon
-
-**Integrating with JavaScript:**
-
-> Instructions Coming Soon
-
-**Integrating with OCaml projects:**
-
-Soon, there will be a drop in replacement for `ocamlbuild` called `rebuild`, that will
-automatically build any `reason` file along with your `ocaml` files, with no
-additional configuration.
-
-Until then, the easiest way to use `Reason` with `ocamlopt/ocamlc` is by running the compiler with the following flags:
-```sh
-# intf-suffix tells the compiler where to look for corresponding interface files
-ocamlopt -pp reasonfmt -intf-suffix rei -impl myFile.re
-ocamlopt -pp reasonfmt -intf myFile.rei
-
-```
+OCaml is a great tool for writing highly expressive, type inferenced functional
+*or* imperative code that performs very well. In this role, OCaml has helped
+Facebook quickly build scalable infrastructure such as
+[Hack](http://hacklang.org/), [Flow](http://flowtype.org/), and
+[Infer](http://fbinfer.com/). It is also used for other performance sensitive
+applications in the financial industry (Jane Street, Bloomberg). At the same
+time, OCaml has a very mature (*and still growing*) ecosystem for targeting
+browser and `JavaScript` environments with a focus on interop and integration
+with existing `JavaScript` code.
 
 
-Tooling
-==============
+`Reason`'s non-invasive approach to the `OCaml` compiler allows `Reason` code
+to take advantage of all of the existing `OCaml` compiler
+optimizations/backends such as bare metal `ARM`, `x86`, and even `JavaScript`
+compilation.
 
-`Reason` includes editor support for popular editors. Consistent,
-line-wrapping AST based formatting is an important feature of `Reason`
-that we've integrated directly into editors. Furthermore, because
-`Reason` is fully compatible with [`Merlin`](https://github.com/the-lambda-church/merlin),
-the `Reason` plugins provide professional IDE-quality autocompletion,
-in-editor type checking (even when the file is invalid).
+###### Acknowledgments
 
+`Reason` is also a curation of best-in-class tools. It already incorporate or
+directly includes several technologies that make the `Reason` developer
+experience possible.
 
-##### Atom Plugin
-
-
- * **Syntax Highlighting **
- * **Error Reporting **
- * **Powerful source formatting/indenting/wrapping **
- * **Basic autocompletion  **
-
-
-<img src="images/VimReason.png" width=470 height=440 />
-
-
-##### Vim Plugin
-
-The [VimReason Plugin](https://github.com/facebook/Reason/tree/master/editorSupport/VimReason) plugin
-implements basic IDE features for `Reason`.
-
- * **Syntax Highlighting **
- * **Error Reporting **
- * **Powerful source formatting/indenting/wrapping **
- * **Basic autocompletion  **
-
-
-<img src="images/VimReason.png" width=470 height=440 />
-
-##### Sublime Plugin
-
-The
-[SublimeReason](https://github.com/facebook/Reason/tree/master/editorSupport/sublime-reason)
-plugin is included in the main [Reason](http://github.com/facebook/Reason)
-repo. It includes basic highlighting support. Pull requests to invoke the
-formatting program (and reporting of parsing errors) are appreciated.
-
-
-* **Syntax Highlighting **
-
-<img src="images/SublimeReason.png" width=470 height=440 />
-
+- `OCaml` - itself.
+- `utop` - highly customizable top level.
+- `Merlin` - The Merlin team has completely refactored Merlin to be able to
+support `Reason`'s, use case.
 
 
 
@@ -1233,8 +1165,7 @@ Getting Involved
 ==============
 
 
-Developing/Contributing
----------------
+#### Developing/Contributing
 
 **1. Prepare Environemnt:**
 If you already [installed](./index.html#reason-install) Reason by `pin`ing the
@@ -1320,9 +1251,11 @@ cd Reason/formatTest
     <div class='left'>
       <h1><a href='index.html'>Reason</a></h1>
       <ul>
-        <li><a href='https://github.com/facebook/Reason'>View on GitHub</a></li>
-        <li><a href='javaScriptCompared.html'>JavaScript Compared</a></li>
-        <li><a href='mlCompared.html'>ML Compared</a></li>
+        <li><a href='index.html#reason-install-link'>Install</a></li>
+        <li><a href='index.html#syntax-basics'>Learn</a></li>
+        <li><a href='projects.html'>Projects</a></li>
+        <li><a href='tools.html'>Tools</a></li>
+        <li><a href='https://github.com/facebook/Reason'>Github</a></li>
       </ul>
     </div>
   </div>
@@ -1336,3 +1269,5 @@ cd Reason/formatTest
 
 </body>
 </html>
+
+

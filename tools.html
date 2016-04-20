@@ -1,0 +1,179 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset='utf-8'>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width">
+
+  <title>Reason</title>
+
+  <!-- Flatdoc -->
+  <script src='support/vendor/jquery.js'></script>
+  <script src='legacy.js'></script>
+  <script src="highlightJs/build/highlight.pack.js"></script>
+  <link  href='highlightJs/src/styles/xcode.css' rel='stylesheet'>
+  <link rel="stylesheet" href="./octicons/octicons.css">
+  <script src='flatdoc.js'></script>
+
+
+  <!-- Flatdoc theme -->
+  <link  href='theme-white/style.css' rel='stylesheet'>
+  <script src='theme-white/script.js'></script>
+  <link  href='support/theme.css' rel='stylesheet'>
+  <script src='support/theme.js'></script>
+
+
+  <script id="markdown" type="text/markdown" src="index.html">
+Tooling
+==============
+
+`Reason` includes editor support for popular editors. Consistent,
+line-wrapping AST based formatting is an important feature of `Reason`
+that we've integrated directly into editors. Furthermore, because
+`Reason` is fully compatible with [`Merlin`](https://github.com/the-lambda-church/merlin),
+the `Reason` plugins provide professional IDE-quality autocompletion,
+in-editor type checking (even when the file is invalid).
+
+
+
+Atom
+----------
+
+##### Install
+`Reason` works best in Atom when the `Nuclide` plugin is installed. There is _one_ plugin called `atom-reason-loader` that must be installed using the instructions here.
+`atom-reason-loader` has one job - to dynamically install any other necessary `Reason` plugins. Your
+OPAM installation of `Reason` provides the _real_ IDE plugins, that `atom-reason-loader` will install.
+Those other plugins include `NuclideReason` (IDE features), and `language-reason` (syntax highlighting).
+
+> **Installation Instructions**
+>
+> - Install [Atom](https://atom.io/) editor.
+> - Open the package installer from the menu `Packages > Settings View > Install Packages/Themes`.
+> - Search for and install `nuclide` if not already installed.
+> - Then install `atom-reason-loader`.
+> - `atom-reason-loader` will automatically install/load two plugins (`NuclideReason` and
+> `language-reason`) and will walk you through removing any existing conflicting versions.
+> - When installation is complete, open a `.re` file and make sure the `Reason` syntax is selected
+> (lower right corner of Atom). Restarting Atom after installation is not a bad idea but should not be necessary.
+
+#### Features/Configuration
+The `Reason` IDE experience is powered by `refmt`, the `Reason` AST formatting tool, and
+even moreso by the excellent [merlin](https://github.com/the-lambda-church/merlin) project.
+`refmt` provides source code beautifying/printing, and Merlin provides type information, autocompletion,
+and professional IDE features even in the face of partially invalid files/projects.
+
+To configure Merlin, include a `.merlin` file at the root of your project that notes the location
+of source files and build artifacts. Also register the `Reason` suffixes with Merlin using the `SUFFIX` config.
+See [this doc](https://github.com/the-lambda-church/merlin/wiki/project-configuration) for more
+details, and note the example here.
+
+
+> Example `.merlin` file
+```
+S relative/path/to/your/sourcefiles/dir/
+B relative/path/to/your/build/artifacts/dir/
+SUFFIX .re .rei
+```
+
+<img width=470 height=440 src="images/NuclideReason.png" />
+
+> **Type Driven Development**
+>
+> - (Coming soon) With [`hyperclick`](https://atom.io/packages/hyperclick) installed/enabled -
+`⌘+click` will allow navigating to definition location.
+> - When you save your file, you will see compilation errors/warnings highlighted.
+> Open the "Diagnostics" window to see a summary of errors.
+> - With `Nuclide` type-hints enabled, hovering over your source code will display
+> a pretty printed type annotation for the term.
+
+
+<img width=470 height=440 src="images/autoformat.png" />
+
+> **Powerful Reformatting**
+>
+> - `Reason` for Atom integrates `refmt`, the `Reason` AST formatter.
+> - With Nuclide, `⌘+shift+c` will reformat the entire file or let you know
+> if a syntax error prevented formatting.
+> - As always, `refmt` will remove superfluous parenthesis, or precedence tokens.
+> - `refmt` will wrap your lines at the width you have configured in your
+> plugin settings. To change these, open the Package Settings (`Packages > Settings View > Manage Packages)
+> and click on `NuclideReason` in order to customize the "print width" configuration.
+
+
+<img width=470 height=440 src="images/autocomplete.png" />
+> `Reason` for Atom uses Merlin's powerful autocompletion system.
+
+Vim
+----------
+
+The [VimReason Plugin](https://github.com/facebook/Reason/tree/master/editorSupport/VimReason) plugin
+implements basic IDE features for `Reason`.
+
+ * **Syntax Highlighting **
+ * **Error Reporting **
+ * **Powerful source formatting/indenting/wrapping **
+ * **Basic autocompletion  **
+
+
+<img src="images/VimReason.png" width=470 height=440 />
+
+Emacs
+----------
+
+The [Emacs Plugin](https://github.com/facebook/Reason/tree/master/editorSupport/emacs)
+has the same feature set that the Vim plugin supports.
+
+
+
+
+  </script>
+
+  <!-- Initializer -->
+  <script>
+    Flatdoc.run({
+      fetcher: function(callback) {
+        callback(null, document.getElementById('markdown').innerHTML);
+      },
+      highlight: function (code, value) {
+        return (value === 'reason') ? hljs.highlight('reason', code).value : hljs.highlight(value, code).value;
+      },
+    });
+  </script>
+
+  <!-- Meta -->
+  <meta property="og:image" content="./images/CubeRed598_614.png" />
+  <meta property="og:image:secure_url" content="./images/CubeRed598_614.png" />
+  <meta property="og:image:type" content="image/jpeg" />
+  <meta property="og:image:width" content="1196" />
+  <meta property="og:image:height" content="1228" />
+
+  <meta content="Reason: Rapid Expressive Systems Programming." name="description">
+  <meta content="Reason: Rapid Expressive Systems Programming." property="og:description">
+  <!-- <meta content="http://ricostacruz.com/flatdoc/support/preview.jpg" property="og:image"> -->
+</head>
+<body role='flatdoc' class='big-h3 large-brief'>
+
+  <!-- <div class='title&#45;area title&#45;card' style='background&#45;image: url(support/blur.jpg)'> -->
+
+  <div class='header'>
+    <div class='left'>
+      <h1><a href='index.html'>Reason</a></h1>
+      <ul>
+        <li><a href='index.html#reason-install-link'>Install</a></li>
+        <li><a href='index.html#syntax-basics'>Learn</a></li>
+        <li><a href='projects.html'>Projects</a></li>
+        <li><a href='tools.html'>Tools</a></li>
+        <li><a href='https://github.com/facebook/Reason'>Github</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class='content-root'>
+    <div class='menubar'>
+      <div class='menu section' role='flatdoc-menu'></div>
+    </div>
+    <div role='flatdoc-content' class='content'></div>
+  </div>
+
+</body>
+</html>

@@ -113,6 +113,9 @@ body,
 td,
 textarea,
 input {
+/* If both this and window's overflow-x is hidden, scroll perf suffers
+   * horribly, but the sticky menubar flicker is fixed */
+/*overflow-x: hidden*/
   font-family: Helvetica Neue, Open Sans, sans-serif;
   line-height: 1.6;
   font-size: 13px;
@@ -162,6 +165,11 @@ a:hover {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
+.content h6 {
+  margin-top: 10px;
+  color: #888;
+  font-size: 0.9em;
+}
 .content pre {
   font-family: Menlo, monospace;
 }
@@ -205,7 +213,7 @@ a:hover {
 .content i,
 .content em {
   font-style: italic;
-  color: #959595;
+  color: #858585;
 }
 .content code {
   font-family: Menlo, monospace;
@@ -219,28 +227,12 @@ a:hover {
   font-size: 0.85em;
   letter-spacing: -1px;
 }
-/* jordwalke: Only paragraphs - otherwise tables headers are effected */
-/* .content blockquote :first-child { */
-/*   padding-top: 0; */
-/* } */
-.content blockquote p:first-child {
+.content blockquote:first-child {
   padding-top: 0;
 }
-/* .content blockquote :last-child { */
-/*   padding-bottom: 0; */
-/* } */
-.content blockquote p:last-child {
+.content blockquote:last-child {
   padding-bottom: 0;
 }
-.content table {
-  margin-top: 10px;
-  margin-bottom: 10px;
-  padding: 0;
-  border-collapse: collapse;
-  clear: both;
-}
-
-/* P is required to maintain propper size, but don't want to pay extra padding */
 .content table p {
   padding: 0px;
 }
@@ -250,35 +242,36 @@ a:hover {
 .content table pre {
   padding: 0px;
 }
+.content table {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  padding: 0;
+  border-collapse: collapse;
+  clear: both;
+}
 .content table tr {
-  border-top: 1px solid #DFDEDE;
+  border-top: 1px solid #dfdede;
   background-color: #fff;
   margin: 0;
   padding: 0;
-}
-.content table tr :nth-child(2n) {
+/*:nth-child(2n)
+        background-color: #f8f8f8 */
 }
 .content table tr th {
   text-align: auto;
+  font-size: 0.85em;
   font-weight: bold;
-  border: 1px solid #DFDEDE;
+  border: 1px solid #dfdede;
   margin: 0;
-  padding: 6px 13px;
+  padding: 4px 10px;
   background-color: #fbfafa;
 }
 .content table tr td {
+  font-size: 0.85em;
   text-align: auto;
-  border: 1px solid #DFDEDE;
+  border: 1px solid #dfdede;
   margin: 0;
-  padding: 6px 13px;
-}
-.content table tr th :first-child,
-.content table tr td :first-child {
-  margin-top: 0;
-}
-.content table tr th :last-child,
-.content table tr td :last-child {
-  margin-bottom: 0;
+  padding: 4px 10px;
 }
 /* ----------------------------------------------------------------------------
  * Content
@@ -347,16 +340,15 @@ body.big-h3 .content h3 {
 body.big-h3 .content h3:before {
   display: block;
   content: '';
-  background: -webkit-gradient(linear, left top, right top, color-stop(0.8, #f1f1f0), color-stop(1, rgba(231,231,231,0)));
-  background: -webkit-linear-gradient(left, #f1f1f0 80%, rgba(231,231,231,0) 100%);
-  background: -moz-linear-gradient(left, #f1f1f0 80%, rgba(231,231,231,0) 100%);
-  background: -o-linear-gradient(left, #f1f1f0 80%, rgba(231,231,231,0) 100%);
-  background: -ms-linear-gradient(left, #f1f1f0 80%, rgba(231,231,231,0) 100%);
-  background: linear-gradient(left, #f1f1f0 80%, rgba(231,231,231,0) 100%);
-  -webkit-box-shadow: 0 1px 0 rgba(255,255,255,0.1);
-  box-shadow: 0 1px 0 rgba(255,255,255,0.1);
+  background: -webkit-gradient(linear, left top, right top, color-stop(0.8, #e7e7e7), color-stop(1, rgba(231,231,231,0)));
+  background: -webkit-linear-gradient(left, #e7e7e7 80%, rgba(231,231,231,0) 100%);
+  background: -moz-linear-gradient(left, #e7e7e7 80%, rgba(231,231,231,0) 100%);
+  background: -o-linear-gradient(left, #e7e7e7 80%, rgba(231,231,231,0) 100%);
+  background: -ms-linear-gradient(left, #e7e7e7 80%, rgba(231,231,231,0) 100%);
+  background: linear-gradient(left, #e7e7e7 80%, rgba(231,231,231,0) 100%);
+  -webkit-box-shadow: 0 1px 0 rgba(255,255,255,0.4);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.4);
   height: 1px;
-  position: relative;
   top: -40px;
   left: -40px;
   width: 100%;
@@ -383,13 +375,11 @@ body.big-h3 .content h3:before {
 .content .small-heading,
 body:not(.big-h3) .content h3 {
   border-bottom: solid 1px rgba(0,0,0,0.06);
-  color: #777;
+  color: #959595;
   padding-top: 30px;
   padding-bottom: 10px;
 }
-.content h6 {
-  margin-top: 10px;
-  color: #888;
+body:not(.big-h3) .content h3 {
   font-size: 0.9em;
 }
 .content h1:first-child {
@@ -450,8 +440,8 @@ body.no-literate .content pre > code:hover::-webkit-scrollbar-thumb {
 }
 @media (max-width: 1180px) {
   .content pre > code {
-    background: #fbfafa;  /* Normally, code has background of #fdfcfc */
-    border: solid 1px #f1f0f0;
+    background: #fbfafa;
+    border: solid 1px #eee;
     display: block;
     padding: 10px;
     -webkit-border-radius: 1px;
@@ -478,6 +468,16 @@ body.no-literate .content pre > code:hover::-webkit-scrollbar-thumb {
 .button {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  -webkit-transition: background-color 0.2s ease;
+  -moz-transition: background-color 0.2s ease;
+  -o-transition: background-color 0.2s ease;
+  -ms-transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease;
+  -webkit-transition: border-color 0.2s ease;
+  -moz-transition: border-color 0.2s ease;
+  -o-transition: border-color 0.2s ease;
+  -ms-transition: border-color 0.2s ease;
+  transition: border-color 0.2s ease;
   font-family: montserrat, sans-serif;
   letter-spacing: -1px;
   font-weight: bold;
@@ -608,6 +608,7 @@ body.no-literate .content pre > code:hover::-webkit-scrollbar-thumb {
 }
 .header {
   background: #fbfafa;
+/*text-shadow: 0 1px 0 rgba(white, 0.5)*/
   border-bottom: solid 1px #e7e7e7;
   padding: 15px 15px 15px 30px;
   zoom: 1;
@@ -642,20 +643,34 @@ body.no-literate .content pre > code:hover::-webkit-scrollbar-thumb {
   font-family: montserrat, sans-serif;
   font-size: 14px;
 }
+.header h1 a {
+  -webkit-transition: color 0.1s ease;
+  -moz-transition: color 0.1s ease;
+  -o-transition: color 0.1s ease;
+  -ms-transition: color 0.1s ease;
+  transition: color 0.1s ease;
+}
 .header h1,
 .header h1 a,
 .header h1 a:visited {
   color: #959595;
 }
-.header h1 a:hover {
+.header h1 a:hover,
+.header h1 a:focus {
   color: #505050;
 }
 .header li a {
+  -webkit-transition: color 0.1s ease;
+  -moz-transition: color 0.1s ease;
+  -o-transition: color 0.1s ease;
+  -ms-transition: color 0.1s ease;
+  transition: color 0.1s ease;
   font-size: 13px;
   color: #959595;
   display: block;
 }
-.header li a:hover {
+.header li a:hover,
+.header li a:focus {
   color: #3c3c3c;
 }
 @media (min-width: 480px) {
@@ -840,7 +855,7 @@ a.big.button:visited {
   background: #fbfafa;
 }
 .docTable {
-  border: 1px solid rgba(233,233,233,1);
+  border: 1px solid #e9e9e9;
   border-collapse: collapse;
   border-spacing: 0;
   empty-cells: hide;
@@ -853,45 +868,21 @@ a.big.button:visited {
   text-align: left;
   margin-top: 8px;
   margin-bottom: 8px;
-  color: #A5A5A5;
+  color: #a5a5a5;
 }
-code ._promptInput,
-code ._promptOutput {
-  margin-right: 6px;
-  font-weight: bold;
-  color: #CCC;
+code .string,
+code .number {
+  color: #5f7b45;
 }
-
-/* Prevents copy/pasting the prompt arrows */
-._promptInput::after {
-  content: ">";
-}
-._promptOutput::after {
-  content: "<";
-}
-code ._number {
-  color: #1C00CF;
-}
-code ._init {
+code .init {
   color: #383;
 }
-code ._error {
-  border-bottom: 1px red dotted;
+code .keyword {
+  color: #455c7b;
+  font-weight: bold;
 }
-code ._keyword {
-  color: rgba(184,51,161,1);
-}
-code ._structure {
-  color: #AE7272;
-}
-code ._typeAssertion {
-  color: #948E8E;
-}
-code ._comment {
-  color: rgba(0,131,18,1);
-}
-code ._string {
-  color: #C41A16;
+code .comment {
+  color: #b3b3b3;
 }
 .large-brief .content > h1:first-child + p,
 .content > p.brief {
