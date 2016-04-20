@@ -9,13 +9,13 @@ RESET='\033[0m'
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-REASONFMT="$DIR/../reasonfmt_impl.native"
+REFMT="$DIR/../refmt_impl.native"
 
 TEST_DIR=$(mktemp -d -t reason_test)
 
-if [[ -f REASONFMT ]];
+if [[ -f REFMT ]];
 then
-    echo "Cannot find reasonfmt at $REASONFMT" 1>&2
+    echo "Cannot find refmt at $REFMT" 1>&2
     exit 1;
 fi
 
@@ -77,16 +77,16 @@ function unit_test() {
         else
           REFILE="$(basename $FILE .mli).rei"
         fi
-        debug "$REASONFMT -heuristics-file $INPUT/arity.txt -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
-        $REASONFMT -heuristics-file $INPUT/arity.txt -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE
+        debug "$REFMT -heuristics-file $INPUT/arity.txt -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
+        $REFMT -heuristics-file $INPUT/arity.txt -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE
         if ! [[ $? -eq 0 ]]; then
             warning "  ⊘ TEST FAILED CONVERTING ML TO RE\n"
             return 1
         fi
         FILE=$REFILE
     else
-      debug "  '$REASONFMT -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE'"
-      $REASONFMT -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE
+      debug "  '$REFMT -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE'"
+      $REFMT -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE
     fi
 
     debug "  Comparing results:  diff $OUTPUT/$FILE $EXPECTED_OUTPUT/$FILE"
@@ -120,21 +120,21 @@ function idempotent_test() {
         fi
         debug "  Converting $FILE to $REFILE:"
 
-        debug "  Formatting Once: $REASONFMT -heuristics-file $INPUT/arity.txt -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
-        $REASONFMT -heuristics-file $INPUT/arity.txt -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE
+        debug "  Formatting Once: $REFMT -heuristics-file $INPUT/arity.txt -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
+        $REFMT -heuristics-file $INPUT/arity.txt -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE
         if ! [[ $? -eq 0 ]]; then
             warning "⊘ FAILED\n"
             return 1
         fi
         FILE=$REFILE
-        debug "  Generating output again: $REASONFMT -print-width 50 -print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted"
-        $REASONFMT -print-width 50 -print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted
+        debug "  Generating output again: $REFMT -print-width 50 -print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted"
+        $REFMT -print-width 50 -print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted
     else
-      debug "  Formatting Once: '$REASONFMT -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE'"
-      $REASONFMT -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE
+      debug "  Formatting Once: '$REFMT -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE'"
+      $REFMT -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE
 
-      debug "  Generating output again: $REASONFMT -print-width 50 -print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted"
-      $REASONFMT -print-width 50 -print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted
+      debug "  Generating output again: $REFMT -print-width 50 -print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted"
+      $REFMT -print-width 50 -print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted
     fi
 
     diff --unchanged-line-format="" --new-line-format=":%dn: %L" --old-line-format=":%dn: %L" $OUTPUT/$FILE $OUTPUT/$FILE.formatted
@@ -163,16 +163,16 @@ function typecheck_test() {
           REFILE="$(basename $FILE .mli).rei"
         fi
         debug "  Converting $FILE to $REFILE:"
-        debug "$REASONFMT -heuristics-file $INPUT/arity.txt -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
-        $REASONFMT -heuristics-file $INPUT/arity.txt -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE
+        debug "$REFMT -heuristics-file $INPUT/arity.txt -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
+        $REFMT -heuristics-file $INPUT/arity.txt -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE
         if ! [[ $? -eq 0 ]]; then
             warning "  ⊘ FAILED\n"
             return 1
         fi
         FILE=$REFILE
     else
-        debug "  Formatting: $REASONFMT -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
-        $REASONFMT -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE
+        debug "  Formatting: $REFMT -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
+        $REFMT -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE
         if ! [[ $? -eq 0 ]]; then
             warning "  ⊘ FAILED\n"
             return 1
@@ -184,8 +184,8 @@ function typecheck_test() {
       COMPILE_FLAGS="-intf"
     fi
 
-    debug "  Compiling: ocamlc -c -pp $REASONFMT $COMPILE_FLAGS $OUTPUT/$FILE"
-    ocamlc -c -pp $REASONFMT $COMPILE_FLAGS "$OUTPUT/$FILE"
+    debug "  Compiling: ocamlc -c -pp $REFMT $COMPILE_FLAGS $OUTPUT/$FILE"
+    ocamlc -c -pp $REFMT $COMPILE_FLAGS "$OUTPUT/$FILE"
     if ! [[ $? -eq 0 ]]; then
         warning "  ⊘ FAILED\n"
         return 1

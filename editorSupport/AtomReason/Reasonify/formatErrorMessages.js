@@ -7,7 +7,7 @@ var desiredTableMargin = 4;
 
 var config = {
   // Amount to expand source preview in each direction. If -1, shows no preview
-  pathToReasonfmt: 'reasonfmt',
+  pathToRefmt: 'refmt',
   showSourcePreviews: true,
   // Whether or not to show the file path/line in the error formatting
   showFileHeaders: true,
@@ -510,7 +510,7 @@ var KindPrinters = {
       var expectedEquivalentType = expectedEquivalentTypes[i];
       var niceInferredEquivalentType = inferredEquivalentType && Reasonify.niceifyType(inferredEquivalentType, config);
       var niceExpectedEquivalentType = expectedEquivalentType && Reasonify.niceifyType(expectedEquivalentType, config);
-      var addedInferredLines = 
+      var addedInferredLines =
         niceInferredEquivalentType ?
           reasonifyTypeLines(niceInferredEquivalentType, Math.round(config.columns / 2) - 4) : [];
       var addedExpectedLines =
@@ -555,7 +555,7 @@ var KindPrinters = {
           '  =',
           config
         ) : [];
-      var addedExpectedLines = 
+      var addedExpectedLines =
         expectedConflictEquivalentTypes ?
           joinArrays(
             Reasonify.reasonifyEquivalentTypeLines(

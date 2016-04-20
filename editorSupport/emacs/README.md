@@ -18,14 +18,14 @@ To install manually, install both reason and merlin, add this to your
 
 (setq opam (substring (shell-command-to-string "opam config var prefix 2> /dev/null") 0 -1))
 (add-to-list 'load-path (concat opam "/share/emacs/site-lisp"))
-(setq reasonfmt-command (concat opam "/bin/reasonfmt"))
-(setq reason-merlinfmt-command (concat opam "/bin/reasonfmt_merlin"))
+(setq refmt-command (concat opam "/bin/refmt"))
+(setq reason-merlinfmt-command (concat opam "/bin/refmt_merlin"))
 
 (require 'reason-mode)
 (require 'merlin)
 (setq merlin-ac-setup t)
 (add-hook 'reason-mode-hook (lambda ()
-                              (add-hook 'before-save-hook 'reasonfmt-before-save)
+                              (add-hook 'before-save-hook 'refmt-before-save)
                               (merlin-mode)))
 (setq merlin-default-flags (list "-pp" reason-merlinfmt-command))
 ```
@@ -37,11 +37,11 @@ This associates `reason-mode` with `.re` and `.rei` files. To enable it explicit
 
 #### Auto-format before saving
 
-If you have reasonfmt installed, you can add this to your `.emacs` file to enable
+If you have refmt installed, you can add this to your `.emacs` file to enable
 auto-format:
 ```
 (add-hook 'reason-mode-hook (lambda ()
-          (add-hook 'before-save-hook 'reasonfmt-before-save)))
+          (add-hook 'before-save-hook 'refmt-before-save)))
 ```
 
 ### Tests via ERT

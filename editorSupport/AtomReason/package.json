@@ -75,7 +75,7 @@
       "-40",
       "-bin-annot"
     ],
-    "preprocessor": "reasonfmt",
+    "preprocessor": "refmt",
     "extensions": [
       {
         "interface": ".rei",

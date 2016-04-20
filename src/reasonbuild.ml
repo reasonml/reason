@@ -4,7 +4,7 @@ open Ocamlbuild_plugin
 let ext_obj = !Options.ext_obj;;
 let x_o = "%"-.-ext_obj;;
 
-let reasonfmt = "reasonfmt"
+let refmt = "refmt"
 
 let ocamldep_command' tags =
   let tags' = tags++"ocaml"++"ocamldep" in
@@ -37,7 +37,7 @@ let compile_c ~impl ~native tags arg out =
       T tags;
       Ocaml_utils.ocaml_ppflags tags;
       Ocaml_utils.ocaml_include_flags arg;
-      A "-pp"; P reasonfmt;
+      A "-pp"; P refmt;
       A "-o"; Px out ]
     @ impl_intf ~impl ~intf_suffix:true arg in
   Cmd (S specs)
@@ -69,7 +69,7 @@ let ocamldep_command ~impl arg out env _build =
   let tags = tags_of_pathname arg in
   let specs =
     [ ocamldep_command' tags;
-      A "-pp"; P reasonfmt ]
+      A "-pp"; P refmt ]
     @ impl_intf ~impl arg
     @ teeout in
   Cmd (S specs)

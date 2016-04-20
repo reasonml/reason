@@ -33,7 +33,7 @@ exports.reasonifyManySignatureItems = function(items, width, config) {
   // accurate as the Reason -> Reason printer.
   var mlText = items.join(' (*SPLIT*) ');
   var resplit = child_process.execSync(
-    config.pathToReasonfmt + ' -is-interface-pp true -use-stdin true -parse ml -print re -print-width ' + (width - 1),
+    config.pathToRefmt + ' -is-interface-pp true -use-stdin true -parse ml -print re -print-width ' + (width - 1),
     {input: mlText}
   ).toString().split('/*SPLIT*/');
   return resplit;
@@ -45,7 +45,7 @@ exports.reasonifyTypeLines = function(mlType, width, config) {
   return exports.removeBlankLines(
     exports.removeLeftPadding(
       exports.replaceDummyType(
-        child_process.execSync(config.pathToReasonfmt + ' -use-stdin true -parse ml -print re -print-width ' + (width - 1),
+        child_process.execSync(config.pathToRefmt + ' -use-stdin true -parse ml -print re -print-width ' + (width - 1),
           {input: mlType}
         ).toString()
       ).split('\n')
@@ -86,4 +86,3 @@ exports.reasonifyEquivalentTypeLines = function(mlTypes, width, config) {
 exports.reasonifyType = function(mlType, width, config) {
   return exports.reasonifyTypeLines(mlType, width, config).join('\n').trimRight();
 };
-

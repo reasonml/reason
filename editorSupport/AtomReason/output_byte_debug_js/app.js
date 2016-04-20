@@ -5798,10 +5798,10 @@
      _gJ_=caml_new_string_c_(str_Format_Success_cU_),
      _gE_=caml_new_string_c_("Failure!"),
      _gt_=caml_new_string_c_("\n"),
-     _gp_=caml_new_string_c_("AtomReason.pathToReasonfmt"),
+     _gp_=caml_new_string_c_("AtomReason.pathToRefmt"),
      _gq_=
       caml_new_string_c_
-       ("You must setup AtomReason.pathToReasonfmt in your Atom config"),
+       ("You must setup AtomReason.pathToRefmt in your Atom config"),
      _gr_=caml_new_string_c_("AtomReason.printWidth"),
      _gs_=caml_new_string_c_("AtomReason.printWidth must be an integer"),
      _gG_=[0,0,0],
@@ -8423,7 +8423,7 @@
         /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonFormat.re 64 11>>*/ match_k_=
          /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonFormat.re 64 11>>*/ _an_
          (_gp_);
-       /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonFormat.re 64 57>>*/ if
+       /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonFormat.re 64 53>>*/ if
        (typeof match_k_!=="number"&&0===match_k_[0])
        { /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonFormat.re 65 24>>*/ var
           /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonFormat.re 65 24>>*/ pth_m_=
@@ -8570,7 +8570,7 @@
        /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonFormat.re 61 2>>*/  /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonFormat.re 66 11>>*/ var
        _r_=
         [0,_ak_,_gq_];
-       /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonFormat.re 66 99>>*/ throw _r_ /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonFormat.re 120 31>>*/ }
+       /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonFormat.re 66 95>>*/ throw _r_ /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonFormat.re 120 31>>*/ }
      /*<</Users/chenglou/Github/Reason/editorSupport/AtomReason/src/AtomReasonFormat.re 14 61>>*/ function
      _gH_
      (editor_a_,

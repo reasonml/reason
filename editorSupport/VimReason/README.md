@@ -39,7 +39,7 @@ if !empty(system('which opam'))
   execute "set rtp+=".s:merlinPath."/vim"
   execute "set rtp+=".s:merlinPath."/vimbufsync"
   let g:syntastic_reason_checkers=['merlin']
-  let g:merlin_binary_flags = ["-pp", "reasonfmt_merlin"]
+  let g:merlin_binary_flags = ["-pp", "refmt_merlin"]
 else
   " TODO: figure out opam for windows
 endif
@@ -51,7 +51,7 @@ IDE Features:
 For all the features to work, you must add the following lines to your `.merlin` file:
 
 ```
-FLG -pp reasonfmt_merlin
+FLG -pp refmt_merlin
 SUFFIX .re .rei
 ```
 
@@ -82,7 +82,7 @@ in red.
 Formatting:
 ===========
 
-The command `:ReasonPrettyPrint` invokes the binary `reasonfmt` which must be
+The command `:ReasonPrettyPrint` invokes the binary `refmt` which must be
 available on your `PATH`.
 
 `VimReason`, doesn't use Vim's standard external formatting program bridge
@@ -93,7 +93,7 @@ are actually modified (so that undo/redo take you to the position where
 formatting actually effected the file).
 
 You can set `g:vimreason_extra_args_expr_reason` to control the arguments
-passed to `reasonfmt` (such as `-print-width`). The contents of
+passed to `refmt` (such as `-print-width`). The contents of
 `g:vimreason_extra_args_expr_reason` is a string that contains a `VimScript`
 expression. This allows you do dynamically determine the formatting arguments
 based on things like your window width.
