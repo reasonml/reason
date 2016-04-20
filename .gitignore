@@ -3,11 +3,12 @@
 *.native
 *.pxm
 reasonfmt_merlin_impl.sh
+refmt_merlin_impl.sh
 
 /_build/
 /editorSupport/
 /formatTest/
 /pkg/
 /reason.install
-/node_modules
-**/node_modules
+/src
+node_modules
