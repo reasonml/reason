@@ -37,7 +37,7 @@
 (defcustom refmt-command "refmt"
   "The 'refmt' command."
   :type 'string
-  :group 'reason-fmt)
+  :group 're-fmt)
 
 (defcustom refmt-show-errors 'buffer
     "Where to display refmt error output.
@@ -49,7 +49,7 @@ a `before-save-hook'."
             (const :tag "Own buffer" buffer)
             (const :tag "Echo area" echo)
             (const :tag "None" nil))
-      :group 'reason-fmt)
+      :group 're-fmt)
 
 (defcustom refmt-width-mode nil
   "Specify width when formatting buffer contents."
@@ -57,7 +57,7 @@ a `before-save-hook'."
           (const :tag "Window width" window)
           (const :tag "Fill column" fill)
           (const :tag "None" nil))
-  :group 'reason-fmt)
+  :group 're-fmt)
 
 ;;;###autoload
 (defun refmt-before-save ()
