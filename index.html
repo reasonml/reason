@@ -1021,24 +1021,26 @@ let justTwo = hasExactlyTwoCars myCarList;  /* true! */
 
 ```
 
-Syntax Sugars
+Syntactic Sugar (Abbreviations)
 ----------------------------------
 
 
-##### Function Sugar
-You've already seen one form of function syntax sugar. Though it appears that
+##### Function Definitions
+You have already seen one form of function syntactic sugar. Though it appears that
 functions accept multiple arguments, every function actually only accepts a
 single argument. "Multiple arguments" separated by spaces are actually defining
-a series of curried functions. These two function definitions are equivalent.
+a series of curried functions. The two function definitions on the right are equivalent.
 
 ```reason
 let add = fun a b => a + b;
+/* Is the same as */
 let add = fun a => fun b => a + b;
 ```
 
-Because parenthesis around the function argument may be omitted if the argument
-is clearly a single word or a grouping, function application for a curried
-function can look very clean in many cases.
+Function application for a curried
+function can look very clean in many cases,
+because parentheses around the function argument may be omitted if the argument
+is clearly a single word or a grouping.
 
 ```reason
 let five = add(4)(1);
@@ -1046,63 +1048,62 @@ let five = add(4)(1);
 let five = add 4 1;
 ```
 
-You only need to include parenthesis around arguments when it otherwise
+You only need to include parentheses around arguments when it otherwise
 wouldn't obviously be a single item.
 ```reason
 let five = add (firstEvaluateThis 0 0) 1;
 ```
 > Note: You pay no additional performance cost for curried functions
-when they are invoked with all arguments. You may even ignore the fact that
+when they are invoked with all the arguments. You may even ignore the fact that
 currying is occurring at all, if you like.
 
-##### Function Let Binding Sugar
-There's one more function binding syntax that hasn't yet been shown: When
-assigning a `let` binding to a function, the `= fun` portion may be omitted.
-This means writing functions in the form: `let functionName arg1 arg2 =>
-expression`.
+##### Function Let Binding
+There is one more function binding syntax that has not yet been shown: When a function
+is defined with a `let` binding, the syntax `= fun` may be omitted.
+All the function definitions on the right are equivalent.
 
 ```reason
-/**
- * All of the following are equivalent:
- */
+/* All of the following are equivalent. */
 let add a b => a + b;
 let add = fun a b => a + b;
 let add = fun a => fun b => a + b;
 ```
 
-##### Module Function Binding Sugar
+##### Module Functions Definitions
 
-[Module Functions](./modules.html#modules-module-functions) follow the same sugar convention as regular
+[Module Functions](./modules.html#modules-module-functions) follow the same syntactic convention as regular
 functions. Space-separated arguments are actually currified *module functions*
-and the `= functor` may be omitted, resulting in three forms of module function
+and the syntax `= functor` may be omitted, resulting in three forms of module function
 definitions which are all equivalent.
 
 ```reason
+/* All of the following are equivalent. */
 let module ModuleFunc (A:ASig) (B:BSig) => {};
 let module ModuleFunc = functor (A:ASig) (B:BSig) => {};
 let module ModuleFunc = functor (A:ASig) => functor (B:BSig) => {};
 ```
 
-##### Record value "punning"
+##### Record *Value* "Punning"
 
-If variables names in scope perfectly correspond to record property names, then
-records can be written in a shorter form.
+If variables in scope have the same name as record fields,
+then record expressions can be written in a shorter form,
+where `name:name` can be abbreviated as `name`. This is called "punning".
 
 ```reason
 type myRecord = {first: int, second: int};
 let first = "f";
 let second = "s";
 
-/* These following are equivalent. */
+/* The following are equivalent. */
 let theRecord = {first:first, second:second};
 let theRecord = {first, second};
 
-/* Or only take the shortcut for a subset of the fields */
+/* Or only take the shortcut for a subset of the fields. */
 let theRecord = {first, second: 0};
 
 ```
 
-##### Record *Pattern* Punning
+##### Record *Pattern* "Punning"
 
 The same record "punning" syntax may be used with destructuring, in all of the
 places where destructuring is allowed (`let` bindings, function arguments,
@@ -1110,7 +1111,7 @@ places where destructuring is allowed (`let` bindings, function arguments,
 
 ```reason
 let {first:first, second:second} = theRecord;
-let {first, second} = theRecord;   /* Shortcut */
+let {first, second} = theRecord;   /* Abbreviation */
 
 let sumsToZero = fun {first, second} => first + second == 0;
 ```
@@ -1118,6 +1119,8 @@ let sumsToZero = fun {first, second} => first + second == 0;
 
 Advanced 
 =======
+
+With the basic constructs covered, here are more advanced features.
 
 Modules
 -------
@@ -1130,21 +1133,22 @@ How Reason Works
 
 The OCaml compiler is organized into several stages, which are exposed as
 libraries. `Reason` replaces part of the compiler toolchain with a completely
-new syntax parser that, is more approachable, while still fully compatible with
-the rest of the compiler.  `Reason` also implemented a new source printer which
+new syntax parser that is more approachable, while still fully compatible with
+the rest of the compiler.  `Reason` also implements a new source printer which
 integrates into your IDE and the new custom [`REPL`](#reason-repl).
 
 ###### Why OCaml?
 
-OCaml is a great tool for writing highly expressive, type inferenced functional
-*or* imperative code that performs very well. In this role, OCaml has helped
+OCaml is a great tool for writing highly expressive,functional
+*or* imperative code, with type inference. The code has a good runtime performance.
+Because of these properties, OCaml has helped
 Facebook quickly build scalable infrastructure such as
 [Hack](http://hacklang.org/), [Flow](http://flowtype.org/), and
 [Infer](http://fbinfer.com/). It is also used for other performance sensitive
 applications in the financial industry (Jane Street, Bloomberg). At the same
 time, OCaml has a very mature (*and still growing*) ecosystem for targeting
-browser and `JavaScript` environments with a focus on interop and integration
-with existing `JavaScript` code.
+browser and `JavaScript` environments with a focus on language interoperability
+and integration with existing `JavaScript` code.
 
 
 `Reason`'s non-invasive approach to the `OCaml` compiler allows `Reason` code
@@ -1154,27 +1158,29 @@ compilation.
 
 ###### Acknowledgments
 
-`Reason` is also a curation of best-in-class tools. It already incorporate or
-directly includes several technologies that make the `Reason` developer
+`Reason` is also a curation of best-in-class tools. It already incorporates
+several technologies that make the `Reason` developer
 experience possible.
 
-- `OCaml` - itself.
+- `OCaml` itself.
 - `utop` - highly customizable top level.
-- `Merlin` - The Merlin team has completely refactored Merlin to be able to
-support `Reason`'s, use case.
+- `Merlin` - assistant for editing OCaml code that The Merlin team has extensively
+refactored to support `Reason`.
 
 
 
-Getting Involved
+Get Involved
 ==============
 
 
-Developing/Contributing
+Develop/Contribute
 -----------------------
 
-**1. Prepare Environemnt:**
-If you already [installed](./index.html#reason-install) Reason by `pin`ing the
-github repos, then you only need to unpin the packages and continue
+Reason welcomes contributions from the community of developers.
+
+**1. Environment Set Up:**
+If you already [installed](./index.html#reason-install) Reason by `pin`ning the
+github repository, then you only need to unpin the package and continue
 to the next step.
 ```sh
 opam unpin reasonsyntax
@@ -1185,35 +1191,28 @@ Otherwise, you may need to install some dependencies first:
 opam install easy-format.1.2.0
 opam install utop.1.18
 ```
-### 
-**2. Clone and `pin` locally:** Pinning makes built packages visible globally.
-Pinning `ReasonSyntax` allows `Reason` to depend on it. Pinning `Reason` makes the
-`reasonfmt` program available on the command line. Any time you change `ReasonSyntax`,
-you must repin it so that `Reason` may be rebuilt while seeing those new changes. Any
-time you change `Reason`, you must rebuild and repin it if you want the global `reasonfmt`
+
+**2. Clone and `pin` Locally:** Pinning makes built packages visible globally.
+Pinning `Reason` makes the Reason toolchain available on the command line.
+Any time you change `Reason`, you must rebuild and repin it if you want the global `reasonfmt`
 command to reflect those changes.
 
 ```sh
 # 4.02.3 should also work
 opam switch 4.02.1
-git clone git+ssh://git@github.com/facebook/ReasonSyntax.git
 git clone git+ssh://git@github.com/facebook/Reason.git
-cd ReasonSyntax
-make
-opam pin add -y reasonsyntax .
-cd ../Reason
+cd Reason
 make
 opam pin add -y reason .
 ```
-### 
+
 **3. Run Test Cases:**
-To test the pretty printer/parser, run the formatting tests and verify any
-changes in the output file.
+To test the pretty printer/parser, run the formatting tests.
 
 ```sh
-# Test changes - verify output in formatOutput.re
-cd Reason/formatTest
-./test.sh
+# Test changes
+cd Reason
+make test
 ```
   </script>
 
