@@ -43,7 +43,7 @@ The end result is that `Reason`:
 - Allows writing code that a wide range of developers can **easily read**.
 - Can be **mastered quickly**.
 - Delivers the true **"if it compiles, it works"** experience pioneered by the `ML` language.
-- Compiles **bare metal** executables, *or* compilation to `JavaScript`.
+- Compiles to **bare metal** native binaries, *or* to `JavaScript`.
 
 ### Basic Language Primitives
 
@@ -81,7 +81,7 @@ no static types           |  <pre>type point = {x: int, mutable y: int};</pre>
 <pre>{x: 30, y: 20}</pre>          |  <pre>{x: 30, y: 20}</pre>
 <pre>point.x</pre>                 |  <pre>point.x</pre>
 <pre>point.y = 30;</pre>           |  <pre>point.y = 30;</pre>
-<pre>{...point, x: 30}</pre>       |  <pre>{...point, x:30}</pre>
+<pre>{...point, x: 30}</pre>       |  <pre>{...point, x: 30}</pre>
 
 ### Blocks
 In `Reason`, "sequence expressions" are created with `{}` and evaluate to their
@@ -219,13 +219,13 @@ let result = add myArgs;</pre>
 
 ### Function Application
 
-In `Reason`, parenthesis are typically optional in places where it is obvious
-they aren't needed. This means that when invoking functions, parenthesis
+In `Reason`, parentheses are typically optional in places where it is obvious
+they aren't needed. This means that when invoking functions, parentheses
 aren't always required around the argument. `Reason` will let you add the
-parenthesis if you really want them, but it's good to know why some samples
+parentheses if you really want them, but it's good to know why some samples
 you read have omitted them. See how in this example, arguments that are clearly
 single words, or that have balanced "bookends" (such as `{ }`) do not need
-the parenthesis.
+the parentheses.
 
 > <table>
   <thead><tr> <th scope="col"><p >JavaScript</p></th> <th scope="col"><p>Reason</p></th></tr></thead>
@@ -259,7 +259,7 @@ Both `JavaScript` and `Reason` support currying, but with `Reason`, when using
 the native compiler (or even a `JavaScript` backend), currying is optimized.
 (Specifically, you are not penalized for currying in `Reason`, whenever you
 happen to supply all the arguments). The main syntactic difference when defining
-curried functions is that, `Reason` lambdas always begin with the `fun` keyword.
+curried functions is that `Reason` lambdas always begin with the `fun` keyword.
 
 > <table>
   <thead><tr> <th scope="col"><p >JavaScript</p></th> <th scope="col"><p>Reason</p></th></tr></thead>
@@ -310,7 +310,7 @@ functions.
   </tr>
   <tr>
     <td>
-      <pre>// No sugar needed</pre>
+      <pre>// No syntactic sugar needed</pre>
     </td>
     <td>
       <pre>let add = fun a b => a + b;</pre>
