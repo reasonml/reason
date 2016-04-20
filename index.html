@@ -1168,50 +1168,55 @@ refactored to support `Reason`.
 
 
 
-Get Involved
-==============
+Contribute
+==================
 
+*After* setting up `OPAM` and your `switch` in the general [installation
+instructions](./index.html#reason-install), do the following to live on the
+bleeding edge and make changes to `Reason`.
 
-Develop/Contribute
------------------------
-
-Reason welcomes contributions from the community of developers.
-
-**1. Environment Set Up:**
-If you already [installed](./index.html#reason-install) Reason by `pin`ning the
-github repository, then you only need to unpin the package and continue
-to the next step.
+**1. Ensure a Clean Slate:**
+These commands remove any versions of packages you might
+have installed in the stable [installation
+instructions](./index.html#reason-install).
 ```sh
-opam unpin reason
-```
-Otherwise, you may need to install some dependencies first:
-```sh
-opam install easy-format.1.2.0
-opam install utop.1.18
+opam pin remove merlin
+opam pin remove merlin_extend
+opam pin remove reason
 ```
 
-**2. Clone and `pin` Locally:** Pinning makes built packages visible globally.
-Pinning `Reason` makes the Reason toolchain available on the command line.
-Any time you change `Reason`, you must rebuild and repin it if you want the global `reasonfmt`
-command to reflect those changes.
+**2. `pin` the `master` versions of everything:**
+This updates all your globally installed packages to their respective master
+branches. It also makes `reasonfmt` and other programs available in your
+`PATH`.
+```sh
+opam pin add -y merlin git@github.com:the-lambda-church/merlin.git
+opam pin add -y merlin_extend git@github.com:def-lkb/merlin-extend.git
+opam pin add -y reason git@github.com:facebook/reason.git
+```
+
+**3. Clone `Reason` and `pin` that local clone:** Pinning your locally built
+`Reason` clone makes your local build of `Reason` visible globally.
 
 ```sh
-# 4.02.3 should also work
-opam switch 4.02.1
 git clone git+ssh://git@github.com/facebook/Reason.git
 cd Reason
 make
 opam pin add -y reason .
 ```
 
-**3. Run Test Cases:**
-To test the pretty printer/parser, run the formatting tests.
+**4. Make Changes and `upgrade`:**
+When you make changes to `Reason`, and build successfully, those changes don't
+take effect in the globally installed version of `Reason` until you `upgrade`
+`Reason`.
 
 ```sh
 # Test changes
 cd Reason
-make test
+make
+opam upgrade reason
 ```
+
   </script>
 
   <!-- Initializer -->
