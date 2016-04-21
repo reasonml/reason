@@ -144,7 +144,7 @@ Primitives
 > Float Division/Multiplication         |  <pre>2.0 /. 23.0 \*. 1.0</pre>
 > String Concatenation                  |  <pre>"Hello" ^ " " ^ "World"</pre>
 > Immutable Lists                       |  <pre>[1, 2, 3]</pre>
-> Immutable Lists Append                |  <pre>[hd, hd2, ...tl]</pre>
+> Immutable Lists Append                |  <pre>[item1, item2, ...rest]</pre>
 > Reference Equality Comparison         |  <pre>thisThing === thatThing</pre>
 > Records                               |  <pre>{contents: 100}</pre>
 > Record Field Update (if mutable field)|  <pre>myRecord.contents = 200</pre>
@@ -336,6 +336,8 @@ New records may be easily created from old records with the `...` spread
 operator, which changes a subset of the fields, but doesn't alter the original
 record.
 
+> Note: spread cannot add new fields.
+
 ```reason
 let meNextYear =  {
   ...me,
@@ -379,6 +381,7 @@ let (ten, twenty) = someInts;
 > `n = "Guy"`, `a = 30`
 
 ```reason
+type person = {name: string, age: int};
 let somePerson = {name: "Guy", age: 30};
 let {name: n, age: a} = somePerson;
 ```
@@ -558,15 +561,16 @@ type response =
 let areYouCrushingIt = Yes;
 ```
 
-`switch` expressions are like large `if/elseif/elseif..` expressions but much
-more powerful because they ensure that all cases are covered. To use `switch`,
-enumerate every variant constructor in "table" form followed by an `=>` and
-finally the value to be returned by the `switch` for that case. In this
-example, the `message` variable is assigned the string `"..."`.
+`switch` expressions are like large `if/elseif/elseif..` expressions, but much
+more powerful. To use `switch`, enumerate every variant constructor in "table"
+form followed by an `=>` and finally the value to be returned by the `switch`
+for that case. In this example, the `message` variable is assigned the string `"..."`.
 
 
-> Note: Compilation will raise a type error if you've forgotten to have your
-> `switch` cover a case, or if two cases are redundant.
+> Note: `switch` in Reason is much more commonly used than in other languages,
+because the compiler will raise a type error if you've forgotten to cover a case
+of your variant or if two cases are redundant, and because it allows you to
+destructure while covering the cases.
 
 ```reason
 let isSafeToLaunchRocket = PrettyMuch;
@@ -578,8 +582,10 @@ let message = switch isSafeToLaunchRocket {
 ```
 ##### Constructor Arguments
 
-Constructors may contain one or more pieces of data by declaring those
+Reason constructors are not your OO constructors. They're more like functions
+for variants. They may contain one or more pieces of data by declaring those
 contained types in a space-separated list after an `of` keyword.
+
 ```reason
 type account =
   | None
@@ -1084,9 +1090,9 @@ let module ModuleFunc = functor (A:ASig) => functor (B:BSig) => {};
 
 ##### Record *Value* "Punning"
 
-If variables in scope have the same name as record fields,
-then record expressions can be written in a shorter form,
-where `name:name` can be abbreviated as `name`. This is called "punning".
+If variables in scope have the same name as record fields, then record
+expressions can be written in a shorter form, where `name:name` can be
+abbreviated as `name`. This is called "punning" (just like JavaScript).
 
 ```reason
 type myRecord = {first: int, second: int};
