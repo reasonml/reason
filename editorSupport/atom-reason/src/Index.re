@@ -6,7 +6,7 @@
  * vim: set ft=reason:
  */
 /*
- * Ideally, most of AtomReason would be in pure Reason, and the parts that need to
+ * Ideally, most of atom-reason would be in pure Reason, and the parts that need to
  * to convert to/from JS would be at the edges (Index.re, and SuperMerlin.re).
  */
 open AtomReasonCommon;

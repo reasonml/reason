@@ -120,9 +120,9 @@ let startMerlinProcess path::path =>
   switch startedMerlin.contents {
   | Some readerFn => ()
   | None => {
-      let atomReasonPathToMerlin = Atom.Config.get "AtomReason.pathToMerlin";
-      let atomReasonMerlinFlags = Atom.Config.get "AtomReason.merlinFlags";
-      let atomReasonMerlinLogFile = Atom.Config.get "AtomReason.merlinLogFile";
+      let atomReasonPathToMerlin = Atom.Config.get "atom-reason.pathToMerlin";
+      let atomReasonMerlinFlags = Atom.Config.get "atom-reason.merlinFlags";
+      let atomReasonMerlinLogFile = Atom.Config.get "atom-reason.merlinLogFile";
       switch atomReasonMerlinLogFile {
       | JsonString "" => ()
       | JsonString s => Atom.Env.setEnvVar "MERLIN_LOG" s
