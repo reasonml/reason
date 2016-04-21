@@ -45,14 +45,14 @@ let syntax_error_sig err loc =
   else
     raise err
 
-let stdin_input = ref ""
+let chan_input = ref ""
 
-(* replaces Lexing.from_channel for std_in so we can keep track of the input for comment modification *)
-let from_stdin chan =
+(* replaces Lexing.from_channel so we can keep track of the input for comment modification *)
+let keep_from_chan chan =
   Lexing.from_function (fun buf n -> (
-    (* keep input from stdin in memory so that it can be used to reformat comment tokens *)
+    (* keep input from chan in memory so that it can be used to reformat comment tokens *)
     let nchar = input chan buf 0 n in
-    stdin_input := !stdin_input ^ Bytes.sub_string buf 0 nchar;
+    chan_input := !chan_input ^ Bytes.sub_string buf 0 nchar;
     nchar
   ))
 
@@ -62,11 +62,11 @@ let setup_lexbuf use_stdin filename =
   let lexbuf = 
     match use_stdin with
       | true ->
-        from_stdin stdin
+        keep_from_chan stdin
       | false -> 
         let file_chan = open_in filename in
         seek_in file_chan 0;
-        from_stdin file_chan
+        keep_from_chan file_chan
   in
   Location.init lexbuf filename;
   lexbuf
@@ -75,9 +75,9 @@ type comments = (String.t * Location.t) list
 
 module type Toolchain = sig
   (* Parsing *)
-  val canonical_core_type_with_comments: ?modify_comments:bool -> Lexing.lexbuf -> (Parsetree.core_type * comments)
-  val canonical_implementation_with_comments: ?modify_comments:bool -> Lexing.lexbuf -> (Parsetree.structure * comments)
-  val canonical_interface_with_comments: ?modify_comments:bool -> Lexing.lexbuf -> (Parsetree.signature * comments)
+  val canonical_core_type_with_comments: Lexing.lexbuf -> (Parsetree.core_type * comments)
+  val canonical_implementation_with_comments: Lexing.lexbuf -> (Parsetree.structure * comments)
+  val canonical_interface_with_comments: Lexing.lexbuf -> (Parsetree.signature * comments)
 
   val canonical_core_type: Lexing.lexbuf -> Parsetree.core_type
   val canonical_implementation: Lexing.lexbuf -> Parsetree.structure
@@ -104,7 +104,6 @@ module type Toolchain_spec = sig
   and Parser_impl: sig
     type token
   end
-  val modify_comments: bool
 
   val core_type: Lexing.lexbuf -> Parsetree.core_type
   val implementation: Lexing.lexbuf -> Parsetree.structure
@@ -117,22 +116,21 @@ module type Toolchain_spec = sig
 end
 
 module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = struct
-  let wrap_with_comments modify_comments parsing_fun lexbuf =
+  let wrap_with_comments parsing_fun lexbuf =
     Toolchain_impl.safeguard_parsing lexbuf (fun () ->
       let _ = Toolchain_impl.Lexer_impl.init () in
       let ast = parsing_fun lexbuf in
       let unmodified_comments = Toolchain_impl.Lexer_impl.comments() in
 
-      match (Toolchain_impl.modify_comments, modify_comments) with 
-        | (false, _)
-        | (_, false) ->
+      match !chan_input with 
+        | "" ->
           let _  = Parsing.clear_parser() in
           (ast, unmodified_comments)
-        | (true, true) -> 
+        | _ -> 
           let modified_comments =
             List.map (fun (str, loc) ->
               let comment_length = (loc.loc_end.pos_cnum - loc.loc_start.pos_cnum - 4) in
-              let original_comment_contents = String.sub !stdin_input (loc.loc_start.pos_cnum + 2) comment_length in
+              let original_comment_contents = String.sub !chan_input (loc.loc_start.pos_cnum + 2) comment_length in
               (original_comment_contents, loc)
             )
             unmodified_comments
@@ -150,23 +148,23 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
    * (nested comments or unbalanced strings in comments) but at least we don't
    * crash the process. TODO: Report more accurate location in those cases.
    *)
-  let canonical_implementation_with_comments ?(modify_comments=false) lexbuf =
-    try wrap_with_comments modify_comments Toolchain_impl.implementation lexbuf with
+  let canonical_implementation_with_comments lexbuf =
+    try wrap_with_comments Toolchain_impl.implementation lexbuf with
     | err -> (syntax_error_str err (Location.curr lexbuf), [])
 
-  let canonical_core_type_with_comments ?(modify_comments=false) lexbuf =
-    try wrap_with_comments modify_comments Toolchain_impl.core_type lexbuf with
+  let canonical_core_type_with_comments lexbuf =
+    try wrap_with_comments Toolchain_impl.core_type lexbuf with
     | err -> (syntax_error_core_type err (Location.curr lexbuf), [])
 
-  let canonical_interface_with_comments ?(modify_comments=false) lexbuf =
-    try wrap_with_comments modify_comments Toolchain_impl.interface lexbuf with
+  let canonical_interface_with_comments lexbuf =
+    try wrap_with_comments Toolchain_impl.interface lexbuf with
     | err -> (syntax_error_sig err (Location.curr lexbuf), [])
 
-  let canonical_toplevel_phrase_with_comments ?(modify_comments=false) lexbuf =
-    wrap_with_comments modify_comments Toolchain_impl.toplevel_phrase lexbuf
+  let canonical_toplevel_phrase_with_comments lexbuf =
+    wrap_with_comments Toolchain_impl.toplevel_phrase lexbuf
 
-  let canonical_use_file_with_comments ?(modify_comments=false) lexbuf =
-    wrap_with_comments modify_comments Toolchain_impl.use_file lexbuf
+  let canonical_use_file_with_comments lexbuf =
+    wrap_with_comments Toolchain_impl.use_file lexbuf
 
   (** [ast_only] wraps a function to return only the ast component
    *)
@@ -195,7 +193,6 @@ module OCaml_syntax = struct
   module Lexer_impl = Lexer
   module Parser_impl = Parser
 
-  let modify_comments = true
   let implementation = Parser.implementation Lexer.token
   let core_type = Parser.parse_core_type Lexer.token
   let interface = Parser.interface Lexer.token
@@ -253,7 +250,6 @@ module JS_syntax = struct
   module Lexer_impl = Reason_lexer
   module Parser_impl = Reason_parser
 
-  let modify_comments = false
 
   let initial_checkpoint constructor lexbuf =
     (constructor lexbuf.lex_curr_p)
