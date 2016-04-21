@@ -1769,7 +1769,7 @@ class printer  ()= object(self:'self)
   method type_variant_leaf1 opt_ampersand polymorphic print_bar x =
     let {pcd_name; pcd_args; pcd_res; pcd_loc; pcd_attributes} = x in
     let (arityAttrs, docAtrs, stdAttrs) = partitionAttributes pcd_attributes in
-    let prefix = if polymorphic then "`" else "" in
+    let prefix = if polymorphic then "#" else "" in
     let sourceMappedName = SourceMap (break, pcd_name.loc, atom (prefix ^ pcd_name.txt)) in
     let nameOf = makeList ~postSpace:true [sourceMappedName; atom "of"] in
     let barNameOf =
@@ -2088,7 +2088,7 @@ class printer  ()= object(self:'self)
               | (Closed,Some tl) -> ("<", tl)
               | (Open,_) -> (">", []) in
           let node_list = List.map variant_helper l in
-          let ll = (List.map (fun t -> atom ("`" ^ t)) tl) in
+          let ll = (List.map (fun t -> atom ("#" ^ t)) tl) in
           let tag_list = makeList ~postSpace:true ~break:IfNeed ((atom ">")::ll) in
           let type_list = if List.length tl != 0 then node_list@[tag_list] else node_list in
           makeList ~wrap:("[" ^ designator,"]") ~pad:(true, false) ~postSpace:true ~break:IfNeed type_list
@@ -2184,7 +2184,7 @@ class printer  ()= object(self:'self)
           if arityAttrs != [] then
             raise (NotPossible "Should never see embedded attributes on poly variant")
           else
-            let layout = (self#constructor_pattern ~polyVariant:true ~arityIsClear:true (atom ("`" ^ l)) p) in
+            let layout = (self#constructor_pattern ~polyVariant:true ~arityIsClear:true (atom ("#" ^ l)) p) in
             SourceMap (break, x.ppat_loc, layout)
       | Ppat_lazy p -> label ~space:true (atom "lazy") (self#simple_pattern p)
       | Ppat_construct (({txt} as li), po) when not (txt = Lident "::")-> (* FIXME The third field always false *)
@@ -2302,7 +2302,7 @@ class printer  ()= object(self:'self)
               makeList ~wrap:("(", ")") ~sep:"," ~postSpace:true ~break:IfNeed (List.map (self#potentiallyConstrainedPattern1) l)
           | Ppat_constant (c) -> (self#constant c)
           | Ppat_interval (c1, c2) -> makeList [self#constant c1; atom ".."; self#constant c2]
-          | Ppat_variant (l, None) -> makeList[atom "`"; atom l]
+          | Ppat_variant (l, None) -> makeList[atom "#"; atom l]
           | Ppat_constraint (p, ct) ->
               formatPrecedence (formatTypeConstraint (self#pattern p) (self#core_type ct))
           | Ppat_lazy p ->formatPrecedence (label ~space:true (atom "lazy") (self#simple_pattern p))
@@ -3717,7 +3717,7 @@ class printer  ()= object(self:'self)
             if arityAttrs != [] then
               raise (NotPossible "Should never see embedded attributes on poly variant")
             else
-              self#constructor_expression ~polyVariant:true ~arityIsClear:true stdAttrs (atom ("`" ^ l)) eo
+              self#constructor_expression ~polyVariant:true ~arityIsClear:true stdAttrs (atom ("#" ^ l)) eo
         | _ -> self#simple_expression x
       in
       SourceMap (break, x.pexp_loc, itm)
@@ -3888,7 +3888,7 @@ class printer  ()= object(self:'self)
               ~wrap:("(", ")")
               [formatCoerce (self#expression e) optFormattedType (self#core_type ct)]
         | Pexp_variant (l, None) ->
-            ensureSingleTokenSticksToLabel (atom ("`" ^ l))
+            ensureSingleTokenSticksToLabel (atom ("#" ^ l))
         | Pexp_record (l, eo) ->
             let makeRow (li, e) appendComma shouldPun =
               let comma = atom "," in
