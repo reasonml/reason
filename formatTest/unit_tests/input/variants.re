@@ -57,15 +57,15 @@ let doesntCareWhichFormAs x => switch x {
 
 type colorList1 = [
   otherThingInheritedFrom
-  | #Red
-  | #Black
+  | `Red
+  | `Black
 ];
 
 type colorList = [<
-  | #Red of (int, int) &int
-  | #Black of &(int, int) &int
-  | #Blue
-  > #Red #Black
+  | `Red of (int, int) &int
+  | `Black of &(int, int) &int
+  | `Blue
+  > `Red `Black
 ];
 
 1 + doesntCareWhichForm (FormOne 10);
@@ -221,28 +221,28 @@ let res = switch myTuple {
            }
 };
 
-/* FIXME type somePolyVariant = [ #Purple of int | #Yellow of int]; */
+/* FIXME type somePolyVariant = [ `Purple of int | `Yellow of int]; */
 
-let ylw = #Yellow (100, 100);
+let ylw = `Yellow (100, 100);
 
-let prp = #Purple (101, 100);
+let prp = `Purple (101, 100);
 
 let res = switch (ylw, prp) {
-  | (#Yellow (y, y2), #Purple (p, p2)) => #Yellow (p + y, 0)
-  | (#Purple (p, p2), #Yellow (y, y2)) => #Purple (y + p, 0)
-  | (#Purple (p, p2), #Purple (y, y2)) => #Yellow (y + p, 0)
-  | (#Yellow (p, p2), #Yellow (y, y2)) => #Purple (y + p, 0)
+  | (`Yellow (y, y2), `Purple (p, p2)) => `Yellow (p + y, 0)
+  | (`Purple (p, p2), `Yellow (y, y2)) => `Purple (y + p, 0)
+  | (`Purple (p, p2), `Purple (y, y2)) => `Yellow (y + p, 0)
+  | (`Yellow (p, p2), `Yellow (y, y2)) => `Purple (y + p, 0)
 };
 
-let ylw = #Yellow 100;
+let ylw = `Yellow 100;
 
-let prp = #Purple 101;
+let prp = `Purple 101;
 
 let res = switch (ylw, prp) {
-  | (#Yellow y, #Purple p) => #Yellow (p + y)
-  | (#Purple p, #Yellow y) => #Purple (y + p)
-  | (#Purple p, #Purple y) => #Yellow (y + p)
-  | (#Yellow p, #Yellow y) => #Purple (y + p)
+  | (`Yellow y, `Purple p) => `Yellow (p + y)
+  | (`Purple p, `Yellow y) => `Purple (y + p)
+  | (`Purple p, `Purple y) => `Yellow (y + p)
+  | (`Yellow p, `Yellow y) => `Purple (y + p)
 };
 
 /*
@@ -263,15 +263,15 @@ let res = switch (ylw, prp) {
  *
  * Though, I'm not sure this will even work.
  */
-let ylw = #Yellow (100, 100);
+let ylw = `Yellow (100, 100);
 
-let prp = #Purple (101, 101);
+let prp = `Purple (101, 101);
 
 let res = switch (ylw, prp) {
-  | (#Yellow (y, y2), #Purple (p, p2)) => #Yellow (p + y, 0)
-  | (#Purple (p, p2), #Yellow (y, y2)) => #Purple (y + p, 0)
-  | (#Purple (p, p2), #Purple (y, y2)) => #Yellow (y + p, 0)
-  | (#Yellow (p, p2), #Yellow (y, y2)) => #Purple (y + p, 0)
+  | (`Yellow (y, y2), `Purple (p, p2)) => `Yellow (p + y, 0)
+  | (`Purple (p, p2), `Yellow (y, y2)) => `Purple (y + p, 0)
+  | (`Purple (p, p2), `Purple (y, y2)) => `Yellow (y + p, 0)
+  | (`Yellow (p, p2), `Yellow (y, y2)) => `Purple (y + p, 0)
 };
 
 let rec atLeastOneFlushableChildAndNoWipNoPending composition atPriority => switch composition {
@@ -294,11 +294,11 @@ let rec atLeastOneFlushableChildAndNoWipNoPending composition atPriority => swit
 /*
  * When pretty printed, this appears to be multi-argument constructors.
  */
-let prp = #Purple (101, 101);
+let prp = `Purple (101, 101);
 
 let res = switch prp {
-  | #Yellow (y, y2) => #Yellow (y2 + y, 0)
-  | #Purple (p, p2) => #Purple (p2 + p, 0)
+  | `Yellow (y, y2) => `Yellow (y2 + y, 0)
+  | `Purple (p, p2) => `Purple (p2 + p, 0)
 };
 
 /*

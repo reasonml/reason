@@ -4111,7 +4111,7 @@ toplevel_directive:
 /* Miscellaneous */
 
 name_tag:
-    SHARP ident                             { $2 }
+    BACKQUOTE ident                             { $2 }
 ;
 rec_flag:
     /* empty */                                 { Nonrecursive }
