@@ -164,21 +164,22 @@ function."
 (defun refmt ()
    "Format the current buffer according to the refmt tool."
    (interactive)
-   (let ((bufferfile (make-temp-file "refmt" nil ".re"))
-         (outputfile (make-temp-file "refmt" nil ".re"))
-         (errorfile (make-temp-file "refmt" nil ".re"))
-         (errbuf (if refmt-show-errors (get-buffer-create "*Refmt Errors*")))
-         (patchbuf (get-buffer-create "*Refmt patch*"))
-         (coding-system-for-read 'utf-8)
-         (coding-system-for-write 'utf-8)
-         (width-args
-          (cond
-           ((equal refmt-width-mode 'window)
-            (list "-print-width" (number-to-string (window-body-width))))
-           ((equal refmt-width-mode 'fill)
-            (list "-print-width" (number-to-string fill-column)))
-           (t
-            '()))))
+   (let* ((ext (file-name-extension buffer-file-name t))
+          (bufferfile (make-temp-file "refmt" nil ext))
+          (outputfile (make-temp-file "refmt" nil ext))
+          (errorfile (make-temp-file "refmt" nil ext))
+          (errbuf (if refmt-show-errors (get-buffer-create "*Refmt Errors*")))
+          (patchbuf (get-buffer-create "*Refmt patch*"))
+          (coding-system-for-read 'utf-8)
+          (coding-system-for-write 'utf-8)
+          (width-args
+           (cond
+            ((equal refmt-width-mode 'window)
+             (list "-print-width" (number-to-string (window-body-width))))
+            ((equal refmt-width-mode 'fill)
+             (list "-print-width" (number-to-string fill-column)))
+            (t
+             '()))))
      (unwind-protect
          (save-restriction
            (widen)
@@ -188,7 +189,7 @@ function."
                  (setq buffer-read-only nil)
                  (erase-buffer)))
            (with-current-buffer patchbuf
-                         (erase-buffer))
+             (erase-buffer))
            (if (zerop (apply 'call-process
                              refmt-command nil (list (list :file outputfile) errorfile)
                              nil (append width-args (list "-parse" "re" "-print" "re" bufferfile))))
@@ -197,14 +198,14 @@ function."
                                       outputfile)
                  (reason--apply-rcs-patch patchbuf)
                  (message "Applied refmt")
-                (if errbuf (refmt--kill-error-buffer errbuf)))
+                 (if errbuf (refmt--kill-error-buffer errbuf)))
              (message "Could not apply refmt")
              (if errbuf
-               (refmt--process-errors (buffer-file-name) bufferfile errorfile errbuf)))))
-   (kill-buffer patchbuf)
-   (delete-file errorfile)
-   (delete-file bufferfile)
-   (delete-file outputfile)))
+                 (refmt--process-errors (buffer-file-name) bufferfile errorfile errbuf)))))
+     (kill-buffer patchbuf)
+     (delete-file errorfile)
+     (delete-file bufferfile)
+     (delete-file outputfile)))
 
 (provide 'refmt)
 
