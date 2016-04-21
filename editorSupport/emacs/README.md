@@ -19,7 +19,6 @@ To install manually, install both reason and merlin, add this to your
 (setq opam (substring (shell-command-to-string "opam config var prefix 2> /dev/null") 0 -1))
 (add-to-list 'load-path (concat opam "/share/emacs/site-lisp"))
 (setq refmt-command (concat opam "/bin/refmt"))
-(setq reason-merlinfmt-command (concat opam "/bin/refmt_merlin"))
 
 (require 'reason-mode)
 (require 'merlin)
@@ -27,7 +26,7 @@ To install manually, install both reason and merlin, add this to your
 (add-hook 'reason-mode-hook (lambda ()
                               (add-hook 'before-save-hook 'refmt-before-save)
                               (merlin-mode)))
-(setq merlin-default-flags (list "-pp" reason-merlinfmt-command))
+(setq merlin-default-flags (list ""))
 ```
 
 This associates `reason-mode` with `.re` and `.rei` files. To enable it explicitly, do
