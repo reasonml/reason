@@ -11,6 +11,7 @@ module Reason_reader = struct
   let parse {text; path} =
     let l = String.length path in
     let buf = Lexing.from_string text in
+    Location.init buf (Filename.basename path);
     if l > 0 && path.[l - 1] = 'i' then
       Signature (Reason_toolchain.JS.canonical_interface buf)
     else
