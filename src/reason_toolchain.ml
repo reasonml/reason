@@ -59,11 +59,11 @@ let keep_from_chan chan =
 let setup_lexbuf use_stdin filename =
   (* Use custom method of lexing from the channel to keep track of the input so that we can
      reformat tokens in the toolchain*)
-  let lexbuf = 
+  let lexbuf =
     match use_stdin with
       | true ->
         keep_from_chan stdin
-      | false -> 
+      | false ->
         let file_chan = open_in filename in
         seek_in file_chan 0;
         keep_from_chan file_chan
@@ -122,11 +122,11 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
       let ast = parsing_fun lexbuf in
       let unmodified_comments = Toolchain_impl.Lexer_impl.comments() in
 
-      match !chan_input with 
+      match !chan_input with
         | "" ->
           let _  = Parsing.clear_parser() in
           (ast, unmodified_comments)
-        | _ -> 
+        | _ ->
           let modified_comments =
             List.map (fun (str, loc) ->
               let comment_length = (loc.loc_end.pos_cnum - loc.loc_start.pos_cnum - 4) in
@@ -134,7 +134,7 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
               (original_comment_contents, loc)
             )
             unmodified_comments
-          in 
+          in
           let _  = Parsing.clear_parser() in
           (ast, modified_comments)
     )
@@ -260,10 +260,10 @@ module JS_syntax = struct
      and end positions. Warning: before the first call to the lexer has taken
      place, a None value is stored here. *)
 
-      triple: (Reason_parser.token * Lexing.position * Lexing.position) option ref;
+      mutable last_token: (Reason_parser.token * Lexing.position * Lexing.position) option;
 
       (* A supplier function that returns one token at a time*)
-      supplier: unit -> (Reason_parser.token * Lexing.position * Lexing.position)
+      get_token: unit -> (Reason_parser.token * Lexing.position * Lexing.position)
     }
 
   (* [lexbuf_to_supplier] returns a supplier to be feed into Menhir's incremental API.
@@ -276,7 +276,7 @@ module JS_syntax = struct
   let lexbuf_to_supplier lexbuf =
     let s = I.lexer_lexbuf_to_supplier Reason_lexer.token lexbuf in
     let eof_met = ref false in
-    let supplier = fun () ->
+    let get_token = fun () ->
       let (token, s, e) = s () in
       if token = Reason_parser.EOF then
         if not !eof_met then
@@ -287,16 +287,13 @@ module JS_syntax = struct
       else
         (token, s, e)
     in
-    let triple = ref None in
-    {triple; supplier}
+    let last_token = None in
+    {last_token; get_token}
 
-  let read {triple; supplier} =
-    let t = supplier() in
-    let _ = triple := Some t in
+  let read supplier =
+    let t = supplier.get_token () in
+    supplier.last_token <- Some t;
     t
-
-  let last_token {triple; _} =
-    !triple
 
   (* [loop_handle_yacc] mimic yacc's error handling mechanism in menhir.
      When it hits an error state, it pops up the stack until it finds a
@@ -328,7 +325,7 @@ module JS_syntax = struct
     | I.InputNeeded _ ->
        if in_error then
          begin
-           match last_token supplier with
+           match supplier.last_token with
            | Some triple ->
               (* We just recovered from the error state, try the original token again*)
               let checkpoint_with_previous_token = I.offer checkpoint triple in
@@ -358,7 +355,7 @@ module JS_syntax = struct
        loop_handle_yacc supplier true checkpoint
     | I.Rejected ->
        begin
-         match last_token supplier with
+         match supplier.last_token with
          | Some (_, s, e) ->
             let loc = {
                 loc_start = s;
