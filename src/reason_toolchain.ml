@@ -104,7 +104,6 @@ module type Toolchain_spec = sig
   and Parser_impl: sig
     type token
   end
-  val modify_comments: bool
 
   val core_type: Lexing.lexbuf -> Parsetree.core_type
   val implementation: Lexing.lexbuf -> Parsetree.structure
@@ -123,12 +122,11 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
       let ast = parsing_fun lexbuf in
       let unmodified_comments = Toolchain_impl.Lexer_impl.comments() in
 
-      match (Toolchain_impl.modify_comments, !chan_input) with 
-        | (false, _)
-        | (_, "") ->
+      match !chan_input with 
+        | "" ->
           let _  = Parsing.clear_parser() in
           (ast, unmodified_comments)
-        | (true, _) -> 
+        | _ -> 
           let modified_comments =
             List.map (fun (str, loc) ->
               let comment_length = (loc.loc_end.pos_cnum - loc.loc_start.pos_cnum - 4) in
@@ -195,7 +193,6 @@ module OCaml_syntax = struct
   module Lexer_impl = Lexer
   module Parser_impl = Parser
 
-  let modify_comments = true
   let implementation = Parser.implementation Lexer.token
   let core_type = Parser.parse_core_type Lexer.token
   let interface = Parser.interface Lexer.token
@@ -253,7 +250,6 @@ module JS_syntax = struct
   module Lexer_impl = Reason_lexer
   module Parser_impl = Reason_parser
 
-  let modify_comments = false
 
   let initial_checkpoint constructor lexbuf =
     (constructor lexbuf.lex_curr_p)
