@@ -1197,7 +1197,7 @@ mark_position_pat(X):
 %inline with_patvar(X):
     x = X
     { let loc = mklocation $symbolstartpos $endpos in
-      mkpat (Ppat_var (mkloc x loc)) }
+      mkpat ~loc (Ppat_var (mkloc x loc)) }
 
 functor_arg:
     LPAREN RPAREN
