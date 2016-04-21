@@ -16,17 +16,17 @@ TestUtils.printSection "General Syntax";
 
 /* Won't work! */
 /* let matchingFunc a = match a with */
-/*   `Thingy x => (print_string "matched thingy x"); x */
-/*   | `Other x => (print_string "matched other x"); x;; */
+/*   #Thingy x => (print_string "matched thingy x"); x */
+/*   | #Other x => (print_string "matched other x"); x;; */
 /*  */
 let matchingFunc a =>
   switch a {
-  | `Thingy x => {
+  | #Thingy x => {
       print_string "matched thingy x";
       let zz = 10;
       zz
     }
-  | `Other x => {
+  | #Other x => {
       print_string "matched other x";
       x
     }
@@ -556,7 +556,7 @@ let matchesWithWhen =
       | Black x => 10
       | Green x => 10;
 
-let matchesOne (`Red x) => 10;
+let matchesOne (#Red x) => 10;
 
 /*
  Typical OCaml would make you *wrap the functions in parens*! This is because it
@@ -655,22 +655,22 @@ type yourThing = myOtherThing int int;
 
 /* Conveniently - this parses exactly how you would intend! No *need* to wrap
    in an extra [], but it doesn't hurt */
-/* FIXME type lookAtThesePolyVariants = list [`Red] ; */
-/* FIXME type bracketsGroupMultipleParamsAndPrecedence = list (list (list [`Red])); */
-/* FIXME type youCanWrapExtraIfYouWant = (list [`Red]); */
-/* FIXME type hereAreMultiplePolyVariants = list [`Red | `Black]; */
-/* FIXME type hereAreMultiplePolyVariantsWithOptionalWrapping = list ([`Red | `Black]); */
+/* FIXME type lookAtThesePolyVariants = list [#Red] ; */
+/* FIXME type bracketsGroupMultipleParamsAndPrecedence = list (list (list [#Red])); */
+/* FIXME type youCanWrapExtraIfYouWant = (list [#Red]); */
+/* FIXME type hereAreMultiplePolyVariants = list [#Red | #Black]; */
+/* FIXME type hereAreMultiplePolyVariantsWithOptionalWrapping = list ([#Red | #Black]); */
 /*
    /* Proposal: ES6 style lambdas: */
 
    /* Currying */
-   let lookES6Style = (`Red x) (`Black y) => { };
-   let lookES6Style (`Red x) (`Black y) => { };
+   let lookES6Style = (#Red x) (#Black y) => { };
+   let lookES6Style (#Red x) (#Black y) => { };
 
    /* Matching the single argument */
    let lookES6Style = oneArg => match oneArg with
-     | `Red x => x
-     | `Black x => x;
+     | #Red x => x
+     | #Black x => x;
 
    /* The "trick" to currying that we already have is basically the same - we just
     * have to reword it a bit:
@@ -680,8 +680,8 @@ type yourThing = myOtherThing int int;
     * "Any time you see [let x = ... => ] just replace it with [let x ... => ]"
     */
    let lookES6Style oneArg => match oneArg with
-     | `Red x => x
-     | `Black x => x;
+     | #Red x => x
+     | #Black x => x;
 
  */
 /** Current OCaml Named Arguments. Any aliasing is more than just aliasing!
