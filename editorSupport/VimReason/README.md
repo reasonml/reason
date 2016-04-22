@@ -11,48 +11,47 @@ autocompletion when hitting the "." key after module names etc.
 Installing
 ------------------
 
-Currently, only works with bleeding edge merlin master branch on github.
+Currently, only works with bleeding edge pins of these packages:
 
-0. Make sure bleeding edge merlin `master` branch, and `Reason` installed via `OPAM`.
+0.  (Note: You may use your OPAM `4.02.1` switch if you like)
   ```sh
-  opam switch 4.02.1
-  opam pin add -y merlin https://github.com/the-lambda-church/merlin.git
-  opam pin add -y reasonsyntax git@github.com:facebook/ReasonSyntax.git
-  opam pin add -y reason git@github.com:facebook/Reason.git
+  opam switch 4.02.3
+  opam pin add -y merlin git@github.com:the-lambda-church/merlin.git#c0b46bfef5d2d489123dce79d6964eef794891fb
+  opam pin add -y merlin_extend git@github.com:def-lkb/merlin-extend.git#ef634252a793542b05ec00a90f3c17de8fe0a357
+  opam pin add -y reason git@github.com:facebook/reason.git#8cbe55554c07980d6da1a52b8ba593971395ffd0
+  ```
 
-
-
-1. [`NeoBundle`](https://github.com/Shougo/neobundle.vim) is the best way to
-   install plugins for Vim (either from github or disk). `VimBox` includes
-   `NeoBundle`, but you can use `NeoBundle` by itself to install `VimReason`.
-
-  If using `NeoBundle` place this at the end of your `.vimrc`.
-
+1. Add the following to your "vim rc" folder (usually `~/.vimrc`). This will
+   load the `Reason` and `merlin` Vim plugins from your installed opam packages.
+   This causes them to always be kept in sync with your installed opam
+   packages.
 
 ```vim
-" Bundle for VimReason
-NeoBundleLocal /path/to/Reason/editorSupport/
-
 if !empty(system('which opam'))
-  " =================================== Merlin ================================
-  let s:merlinPath=substitute(system('opam config var share'),'\n$','','') . "/merlin"
-  execute "set rtp+=".s:merlinPath."/vim"
-  execute "set rtp+=".s:merlinPath."/vimbufsync"
+  " Merlin plugin
+  let s:ocamlmerlin=substitute(system('opam config var share'),'\n$','','') . "/merlin"
+  execute "set rtp+=".s:ocamlmerlin."/vim"
+  execute "set rtp+=".s:ocamlmerlin."/vimbufsync"
+  let g:syntastic_ocaml_checkers=['merlin']
+  
+  " Reason plugin which uses Merlin
+  let s:reasondir=substitute(system('opam config var share'),'\n$','','') . "/reason"
+  execute "set rtp+=".s:reasondir."/editorSupport/VimReason"
   let g:syntastic_reason_checkers=['merlin']
-  let g:merlin_binary_flags = [""]
 else
-  " TODO: figure out opam for windows
+  
 endif
-
 ```
 
-IDE Features:
-=============
-For all the features to work, you must add the following lines to your `.merlin` file:
 
-```
-SUFFIX .re .rei
-```
+2. While step one causes the `merlin`/`Reason` plugins to be loaded from your
+installed opam packages, normally you install plugins using a plugin manager
+such as [`NeoBundle`](https://github.com/Shougo/neobundle.vim) or `Vundle`.
+
+[VimBox](https://github.com/jordwalke/vimbox) includes `NeoBundle`, but you
+can just install `NeoBundle` by itself. The rest of this document describes the
+plugins that you probably want to install alongside `VimReason` and `merlin`.
+
 
 If you installed `VimBox`, autocomplete is already set up to work like a modern
 IDE. Inside of a `.re` file, type `String` followed by a `.` and you will see
