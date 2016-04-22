@@ -61,15 +61,15 @@ let formatImpl editor subText isInterface onComplete onFailure => {
   let stdOutLines = {contents: [||]};
   let stdErrLines = {contents: [||]};
   let fmtPath =
-    switch (Atom.Config.get "AtomReason.pathToRefmt") {
+    switch (Atom.Config.get "atom-reason.pathToRefmt") {
     | JsonString pth => pth
-    | _ => raise (Invalid_argument "You must setup AtomReason.pathToRefmt in your Atom config")
+    | _ => raise (Invalid_argument "You must setup atom-reason.pathToRefmt in your Atom config")
     };
   let printWidth =
-    switch (Atom.Config.get "AtomReason.printWidth") {
+    switch (Atom.Config.get "atom-reason.printWidth") {
     | JsonNum n => int_of_float n
     | Empty => 110
-    | _ => raise (Invalid_argument "AtomReason.printWidth must be an integer")
+    | _ => raise (Invalid_argument "atom-reason.printWidth must be an integer")
     };
   let onStdOut line => stdOutLines.contents = Array.append stdOutLines.contents [|line|];
   let onStdErr line => stdErrLines.contents = Array.append stdErrLines.contents [|line|];
@@ -104,7 +104,7 @@ let formatImpl editor subText isInterface onComplete onFailure => {
       exit::onExit
       args::args
       fmtPath;
-  let errorTitle = "AtomReason could not spawn " ^ fmtPath;
+  let errorTitle = "atom-reason could not spawn " ^ fmtPath;
   let handleError error handle => {
     NotificationManager.addError options::{...NotificationManager.defaultOptions, detail: error} errorTitle;
     /* TODO: this doesn't type check, but sits across the border of js <-> reason so it passes. onFailure (the

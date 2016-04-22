@@ -16,7 +16,7 @@ const {CompositeDisposable} = require('atom');
 import {RE_GRAMMARS, RE_WORD_REGEX} from './constants';
 const GRAMMARS_STRING = RE_GRAMMARS.join(', ');
 
-const PACKAGE_NAME = 'AtomReason';
+const PACKAGE_NAME = 'atom-reason';
 
 let reasonDiagnosticsProvider;
 let disposables;
@@ -57,7 +57,7 @@ module.exports = {
   getHyperclickProvider() {
     return {
       priority: 20,
-      providerName: 'AtomReason',
+      providerName: PACKAGE_NAME,
       getSuggestionForWord: AtomReason.getLocation,
     };
   },
