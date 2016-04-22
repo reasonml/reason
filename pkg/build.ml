@@ -56,6 +56,8 @@ let () =
     Pkg.share "editorSupport/atom-reason/styles/status-bar.less" ~dst:"editorSupport/atom-reason/styles/status-bar.less";
     Pkg.share "editorSupport/atom-reason/styles/type-hint.less" ~dst:"editorSupport/atom-reason/styles/type-hint.less";
 
+    Pkg.share "editorSupport/atom-reason/keymaps/atom-reason.json" ~dst:"editorSupport/atom-reason/keymaps/atom-reason.json";
+
     (* language-reason *)
     Pkg.share "editorSupport/language-reason/package.json" ~dst:"editorSupport/language-reason/package.json";
     Pkg.share "editorSupport/language-reason/grammars/reason.cson" ~dst:"editorSupport/language-reason/grammars/reason.cson";
