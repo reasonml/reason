@@ -247,8 +247,15 @@ let complex_default
     x => 3;
 
 let myList =
-  /*CommentAfterEqualBefore1 */
+  /*CommentAfterEqualBeforeList */
   [1, 2, 3];
+
+let myList = [
+  /*CommentAfterEqualBefore1 */
+  1,
+  2,
+  3
+];
 
 let myList = [
   1,

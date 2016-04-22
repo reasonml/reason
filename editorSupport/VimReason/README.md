@@ -16,7 +16,7 @@ Currently, only works with bleeding edge pins of these packages:
 0.  (Note: You may use your OPAM `4.02.1` switch if you like)
   ```sh
   opam switch 4.02.3
-  opam pin add -y merlin git@github.com:the-lambda-church/merlin.git#c0b46bfef5d2d489123dce79d6964eef794891fb
+  opam pin add -y merlin git@github.com:the-lambda-church/merlin.git#df48da122f02e2276b14bcab58490350749215fa
   opam pin add -y merlin_extend git@github.com:def-lkb/merlin-extend.git#ef634252a793542b05ec00a90f3c17de8fe0a357
   opam pin add -y reason git@github.com:facebook/reason.git#8cbe55554c07980d6da1a52b8ba593971395ffd0
   ```

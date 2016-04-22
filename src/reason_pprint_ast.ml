@@ -1292,16 +1292,16 @@ and attach listConfig ~useSep easyItem = match (listConfig.sep, listConfig.preSp
 and distributeCommentsToSequenceItems listConfig layoutListItems comments =
   let (interleaved, unconsumed) = interleaveComments listConfig layoutListItems comments in
   (* previousItem will become handy for stick to left *)
-  let rec process previousItem item remaining: Easy_format.t list =
-    match (item, remaining) with
+  let rec attachSeparators previousItem item remainingComments: Easy_format.t list =
+    match (item, remainingComments) with
       | ((Item x | Comment x), []) -> [x]
       | (Item i, rHd::rTl) ->
-          (attach listConfig ~useSep:true i)::(process (Some item) rHd rTl)
-      | (Comment c, rHd::rTl) -> (attach listConfig ~useSep:false c)::(process (Some item) rHd rTl)
+          (attach listConfig ~useSep:true i)::(attachSeparators (Some item) rHd rTl)
+      | (Comment c, rHd::rTl) -> (attach listConfig ~useSep:false c)::(attachSeparators (Some item) rHd rTl)
   in
   match interleaved with
     | [] -> ([], unconsumed)
-    | hd::tl -> ((process None hd tl), unconsumed)
+    | hd::tl -> ((attachSeparators None hd tl), unconsumed)
 
   (* Now grab any trailing comments that are known to be within the bounds of
    * the "list" in the AST, but have not been prepended before another item.*)
