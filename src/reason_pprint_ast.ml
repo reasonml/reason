@@ -1153,22 +1153,19 @@ type commentOrItem =
   | Item of Easy_format.t
 
 (**
- * Splits [comments] at [lexLoc].  Assumes the comments are in the correct
- * file, and ordered. [leftIncludesSplit] indicates whether or not a comment
- * ending *at* [lexLoc] should be included in the left split, otherwise, only
- * comments that end *before* the [lexLoc] wil be included in the left split.
- * It actually doesn't matter in practice.
+ * Splits [comments] at [lexLoc]. Assumes the comments are in the correct
+ * file, and ordered.
  *)
-let rec splitCommentsAt ~leftIncludesSplit lexLoc comments =
+let rec splitCommentsAt lexLoc comments =
   let open Lexing in
-  let leftIncludesChar =
-    if leftIncludesSplit then lexLoc.pos_cnum else lexLoc.pos_cnum - 1 in
+  (* There might be an issue here - we shouldn't have to split "up to and including".
+     Up to should be sufficient. Comments' end position might be off by one (too large) *)
+  let leftSplitUpToAndIncluding = lexLoc.pos_cnum in
   match comments with
     | [] -> ([], [])
     | ((str, commLoc) as com)::tl ->
-      if commLoc.loc_end.pos_cnum <= leftIncludesChar then
-        let (recurseLeft, recurseRight) =
-          splitCommentsAt ~leftIncludesSplit lexLoc tl in
+      if commLoc.loc_end.pos_cnum <= leftSplitUpToAndIncluding then
+        let (recurseLeft, recurseRight) = splitCommentsAt lexLoc tl in
         (com::recurseLeft, recurseRight)
       else
         (* Because comments are ordered, *all* comments must also not be to the
@@ -1267,10 +1264,10 @@ let rec interleaveComments listConfig layoutListItems comments =
        * And then trimming the trailing white space as usual.
        **)
       let (itemComments, (easyItem, unconsumedComms)) = match (listConfig.attemptInterleaveComments, hd) with
-        | (true, SourceMap (sourceMapListConfig, location, subLayout)) ->
+        | (true, SourceMap (listConfigIfCommentsInterleaved, location, sourceMappedLayout)) ->
           let (beforeStart, afterStart) =
-            splitCommentsAt ~leftIncludesSplit:true location.loc_start comments in
-          (beforeStart, layoutToEasyFormatAndSurplus subLayout afterStart)
+            splitCommentsAt location.loc_start comments in
+          (beforeStart, layoutToEasyFormatAndSurplus sourceMappedLayout afterStart)
         | _ -> ([], layoutToEasyFormatAndSurplus hd comments)
       in
       let (recItems, recUnconsumedComms) = interleaveComments listConfig tl unconsumedComms in
@@ -1325,9 +1322,9 @@ and layoutToEasyFormatAndSurplus layoutNode comments = match layoutNode with
        * TODO: Provide ability to have even a *single* comment force breaking of
        * the list.
        *)
-      let (beforeStart, afterStart) = splitCommentsAt ~leftIncludesSplit:true location.loc_start comments in
+      let (beforeStart, afterStart) = splitCommentsAt location.loc_start comments in
       (* This is not working, but is a good idea in theory *)
-      (* let (insideNode, unconsumedComms) = splitCommentsAt ~leftIncludesSplit:true location.loc_end afterStart in *)
+      (* let (insideNode, unconsumedComms) = splitCommentsAt ~location.loc_end afterStart in *)
 
       (* Because comments should be formatted according to the list the best
        * contains them, the sep property should not actually be used - instead
