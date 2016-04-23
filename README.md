@@ -24,6 +24,7 @@ opam switch 4.02.1
 opam install utop
 opam pin add -y BetterErrors git@github.com:chenglou/ocaml-better-errors.git
 opam pin add -y reason git@github.com:facebook/Reason.git
+opam pin add -y merlin_extend git@github.com:def-lkb/merlin-extend.git
 ```
 
 Get Started Now
