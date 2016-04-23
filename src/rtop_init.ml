@@ -12,8 +12,7 @@ print_string
                  / , _/ _// __ |_\\ \\/ /_/ /    /
                 /_/|_/___/_/ |_/___/\\____/_/|_/
 
-  - Execute statements/let bindings. Hit <enter> after the semicolon.
-  - Note: Responses values are not yet formatted in the Reason syntax.
+  Execute statements/let bindings. Hit <enter> after the semicolon.
 
         >   let myVar = \"Hello Reason!\";
         >   let myList: list string = [\"first\", \"second\"];
