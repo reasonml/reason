@@ -431,7 +431,7 @@ rule token = parse
         let end_loc = comment lexbuf in
         let s = get_stored_string () in
         reset_string_buffer ();
-        COMMENT (s, { start_loc with
+        COMMENT (s, true, { start_loc with
                       Location.loc_end = end_loc.Location.loc_end })
       }
   | "/*"
@@ -441,7 +441,7 @@ rule token = parse
         let end_loc = comment lexbuf in
         let s = get_stored_string () in
         reset_string_buffer ();
-        COMMENT (s, { start_loc with
+        COMMENT (s, false, { start_loc with
                       Location.loc_end = end_loc.Location.loc_end })
       }
   | "/*/"
@@ -453,7 +453,7 @@ rule token = parse
         let end_loc = comment lexbuf in
         let s = get_stored_string () in
         reset_string_buffer ();
-        COMMENT (s, { loc with Location.loc_end = end_loc.Location.loc_end })
+        COMMENT (s, false, { loc with Location.loc_end = end_loc.Location.loc_end })
       }
   | "*/"
       { let loc = Location.curr lexbuf in
@@ -646,7 +646,20 @@ and comment = parse
       { store_lexeme lexbuf; comment lexbuf }
   | eof
       { match !comment_start_loc with
-        | [] -> assert false
+        | [] ->
+          (* if the file ends with a single line comment then  *)
+          if !single_line_comment then (
+            single_line_comment := false;
+            match (!comment_start_loc, !line_comment_start_loc) with
+              | ([], []) -> 
+                assert false
+              | ([], _) ->
+                line_comment_start_loc := []; Location.curr lexbuf
+              | (_, _) ->
+                let start = List.hd (List.rev !comment_start_loc) in
+                comment_start_loc := [];
+                raise (Error (Unmatched_nested_comment start, Location.curr lexbuf))
+          ) else assert false
         | loc :: _ ->
           let start = List.hd (List.rev !comment_start_loc) in
           comment_start_loc := [];
@@ -764,8 +777,8 @@ and skip_sharp_bang = parse
   let last_comments = ref []
   let rec token lexbuf =
     match token_with_comments lexbuf with
-        COMMENT (s, comment_loc) ->
-          last_comments := (s, comment_loc) :: !last_comments;
+        COMMENT (s, is_line_comment, comment_loc) ->
+          last_comments := (s, is_line_comment, comment_loc) :: !last_comments;
           token lexbuf
       | tok -> tok
   let comments () = List.rev !last_comments

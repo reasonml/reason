@@ -1221,15 +1221,13 @@ let rec extractComments comments tester =
   let open Lexing in
   (* There might be an issue here - we shouldn't have to split "up to and including".
      Up to should be sufficient. Comments' end position might be off by one (too large) *)
-  comments |> List.partition (fun (str, attLoc, physLoc) ->
+  comments |> List.partition (fun (str, isLineComment, attLoc, physLoc) ->
     let oneGreaterThanAttachmentLocEnd = attLoc.loc_end.pos_cnum in
     let attachmentLocLastChar = oneGreaterThanAttachmentLocEnd - 1 in
     let oneGreaterThanPhysLocEnd = physLoc.loc_end.pos_cnum in
     let physLastChar = oneGreaterThanPhysLocEnd - 1 in
     tester attLoc.loc_start.pos_cnum attachmentLocLastChar physLoc.loc_start.pos_cnum physLastChar
   )
-
-
 
 let space = " "
 (* Can't you tell the difference? *)
@@ -1270,17 +1268,15 @@ let smallestLeadingSpaces strs =
   is part of a list that could potentially break to prevent inline
   comments from being rendered as line comments
 *)
-let formatItemComment ?(forceMultiline=false) (str, commLoc, physCommLoc) =
+let formatItemComment ?(forceMultiline=false) (str, is_line_comment, commLoc, physCommLoc) =
   let commLines = Str.split_delim (Str.regexp "\n") ("/*" ^ str ^ "*/") in
-  match commLines with
-  | [] -> easyAtom ""
-  | [hd] ->
-    if forceMultiline then
-      makeEasyList ~inline:(true, true) ~postSpace:true ~preSpace:true ~indent:0 ~break:IfNeed [easyAtom hd]
-    (* caveat: single line comment . *)
-    else
-      makeEasyList ~inline:(true, true) ~postSpace:true ~preSpace:true ~indent:0 ~break:IfNeed [easyAtom ("//" ^ str)]
-  | zero::one::tl ->
+  match (commLines, is_line_comment, forceMultiline) with
+  | (_, true, false) ->
+    makeEasyList ~inline:(true, true) ~postSpace:true ~preSpace:true ~indent:0 ~break:IfNeed [easyAtom ("//" ^ str)]
+  | ([], _, _) -> easyAtom ""
+  | ([hd], _, _) ->
+    makeEasyList ~inline:(true, true) ~postSpace:true ~preSpace:true ~indent:0 ~break:IfNeed [easyAtom hd]
+  | (zero::one::tl, _, _) ->
     let lineZero = List.nth commLines 0 in
     let lineOne = List.nth commLines 1 in
     let hasMeaningfulContentOnLineZero = lineZeroHasMeaningfulContent lineZero in
@@ -1321,7 +1317,7 @@ let removeSepFromListConfig listSettings =
    1. Before-line items break in unison with list items.
    2. End of line comments are placed *after* separators.  *)
 let rec interleaveComments ?endMaxChar listConfig layoutListItems comments =
-  let isDocComment (c, _, _) = String.length c > 0 && c.[0] == '*' in
+  let isDocComment (c, _, _, _) = String.length c > 0 && c.[0] == '*' in
   match (layoutListItems, endMaxChar) with
     | ([], None)-> ([], comments)
     | ([], Some endMax)->

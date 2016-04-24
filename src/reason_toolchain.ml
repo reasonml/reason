@@ -124,8 +124,8 @@ let setup_lexbuf use_stdin filename =
   Location.init lexbuf filename;
   lexbuf
 
-(* (comment text, attachment_location, physical location) *)
-type attached_comments = (String.t * Location.t * Location.t) list
+(* (comment text, is_line_comment, attachment_location, physical location) *)
+type attached_comments = (String.t * bool * Location.t * Location.t) list
 
 module type Toolchain = sig
   (* Parsing *)
@@ -152,7 +152,6 @@ module type Toolchain_spec = sig
   module rec Lexer_impl: sig
     val init: unit -> unit
     val token: Lexing.lexbuf -> Parser_impl.token
-    val comments: unit -> (String.t * Location.t) list
   end
 
   and Parser_impl: sig
@@ -164,6 +163,7 @@ module type Toolchain_spec = sig
   val interface: Lexing.lexbuf -> Parsetree.signature
   val toplevel_phrase: Lexing.lexbuf -> Parsetree.toplevel_phrase
   val use_file: Lexing.lexbuf -> Parsetree.toplevel_phrase list
+  val comments: unit -> (String.t * bool * Location.t) list
 
   val format_interface_with_comments: (Parsetree.signature * attached_comments) -> Format.formatter -> unit
   val format_implementation_with_comments: (Parsetree.structure * attached_comments) -> Format.formatter -> unit
@@ -180,21 +180,21 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
     Toolchain_impl.safeguard_parsing lexbuf (fun () ->
       let _ = Toolchain_impl.Lexer_impl.init () in
       let ast = parsing_fun lexbuf in
-      let unmodified_comments = Toolchain_impl.Lexer_impl.comments() in
+      let unmodified_comments = Toolchain_impl.comments() in
       match !chan_input with
         | "" ->
           let _  = Parsing.clear_parser() in
-          (ast, unmodified_comments |> List.map (fun (txt, phys_loc) -> (txt, phys_loc, phys_loc)))
+          (ast, unmodified_comments |> List.map (fun (txt, is_line_comment, phys_loc) -> (txt, is_line_comment, phys_loc, phys_loc)))
         | _ ->
           let modified_and_attached_comments =
-            List.map (fun (str, physical_loc) ->
+            List.map (fun (str, is_line_comment, physical_loc) ->
               (* When searching for "^" regexp, returns location of newline + 1 *)
               let first_char_of_line = Str.search_backward new_line !chan_input physical_loc.loc_start.pos_cnum in
               let end_pos_plus_one = physical_loc.loc_end.pos_cnum in
               let comment_length = (end_pos_plus_one - physical_loc.loc_start.pos_cnum - 4) in
               (* Also, the string contents originally reported are incorrect! *)
               let original_comment_contents = String.sub !chan_input (physical_loc.loc_start.pos_cnum + 2) comment_length in
-              let (com, attachment_location) =
+              let (com, is_line_comment, attachment_location) =
                 match Str.search_forward line_content !chan_input first_char_of_line
                 with
                   | n ->
@@ -205,13 +205,14 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
                       Str.string_match space_before_newline !chan_input one_greater_than_comment_end in
                     if n < physical_loc.loc_start.pos_cnum && comment_is_last_thing_on_line then (
                       original_comment_contents,
+                      is_line_comment,
                       {physical_loc with loc_start = {physical_loc.loc_start with pos_cnum = n}}
                     )
                     else
-                      (original_comment_contents, physical_loc)
-                  | exception Not_found -> (original_comment_contents, physical_loc)
+                      (original_comment_contents, is_line_comment, physical_loc)
+                  | exception Not_found -> (original_comment_contents, is_line_comment, physical_loc)
               in
-              (com, attachment_location, physical_loc)
+              (com, is_line_comment, attachment_location, physical_loc)
             )
             unmodified_comments
           in
@@ -272,6 +273,8 @@ end
 module OCaml_syntax = struct
   module Lexer_impl = Lexer
   module Parser_impl = Parser
+  let comments () = 
+    List.map (fun (str, loc) -> (str, false, loc)) (Lexer_impl.comments())  
 
   let implementation = Parser.implementation Lexer.token
   let core_type = Parser.parse_core_type Lexer.token
@@ -349,6 +352,8 @@ module JS_syntax = struct
   module I = Reason_parser.MenhirInterpreter
   module Lexer_impl = Reason_lexer
   module Parser_impl = Reason_parser
+  let comments () = 
+    Lexer_impl.comments()
 
 
   let initial_checkpoint constructor lexbuf =

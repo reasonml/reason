@@ -1,6 +1,14 @@
 /*
  * Multiline comment
  */
+
+// Empty comments, or comments with whitespaces:
+//
+// 
+// 
+//a
+/*inlinecommentwithnospaces*/
+
 /*
 
 
@@ -185,5 +193,4 @@ let x = [
 ];
 
 
-
-
+// File ends with a comment

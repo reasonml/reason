@@ -915,7 +915,7 @@ let built_in_explicit_arity_constructors = ["Some"; "Assert_failure"; "Match_fai
 %token WHEN
 %token WHILE
 %token WITH
-%token <string * Location.t> COMMENT
+%token <string * bool * Location.t> COMMENT
 
 %token EOL
 
