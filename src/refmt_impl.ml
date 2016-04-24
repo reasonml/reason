@@ -91,7 +91,11 @@ let () =
   Location.input_name := filename;
   let intf = match !intf with
     | None when (Filename.check_suffix filename ".rei" || Filename.check_suffix filename ".mli") -> true
-    | None -> false
+    | None -> 
+      if use_stdin then
+        raise (Invalid_config ("Unable to determine if stdin input is an interface file. Invalid -is-interface-pp setting."))
+      else
+        false
     | Some b -> b
   in
   try
