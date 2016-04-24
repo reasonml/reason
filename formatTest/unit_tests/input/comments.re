@@ -1,7 +1,6 @@
 /*
  * Multiline comment
  */
-
 /*
 
 
@@ -10,11 +9,12 @@
 /*
  * Multiline comment with a // single line comment
  */
+
 // Single line comment
 let testPostComment = "";
 // let commentedCode = "";
 
-// Test inter-code comments
+// Test: inter-code comments
 let testMultiline a => switch a {
   //  single line comment
   | `Thingy x => {
@@ -30,12 +30,10 @@ let testMultiline a => switch a {
   //  single line comment below
 };
 
-
 /* short comment */
 let x = [
     "test",
 ];
-
 
 /* short comment */
 let x = {
@@ -45,15 +43,14 @@ let x = {
 
 // /* this is a valid nested comment*/ this is a valid comment
 
-
-// valid /* this is a valid comment */
+// valid /* this is also a valid nested comment */
 
 let z = 10;
 
-
-
+///////////////////////////////////////////////////////////////////////////////////
 // The following tests will test the conversion of /* */ to single line
 // comments as well as the wrapping of interleaved comments within short sequences.
+///////////////////////////////////////////////////////////////////////////////////
 
 /*
  * Test wrapping every form of named arguments where various parts are
@@ -172,5 +169,21 @@ let defOptionalAnnot
     () =>
   /* 10; */
   10;
+
+// This tests a short inline comment that should retain it's inline properties when formatted
+let x = [
+  /* sh */
+  "te",
+];
+
+// This tests an empty /* */ nested comment
+
+// This tests a line comment that should be converted to an inline comment when formatted
+let x = [
+  // sh
+  "te",
+];
+
+
 
 
