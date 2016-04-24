@@ -130,7 +130,7 @@ type listConfig = {
  * The final representation is rendered using Easy_format.
  *)
 type layoutNode =
-  | SourceMap of listConfig * Location.t * layoutNode
+  | SourceMap of Location.t * layoutNode
   | Sequence of listConfig * (layoutNode list)
   | Label of easyFormatLabelFormatter * layoutNode * layoutNode
   | Easy of Easy_format.t
@@ -149,6 +149,7 @@ let rec trueForEachPair l1 l2 tester = match (l1, l2) with
   | ([], _::_) -> false
   | (_::_, []) -> false
   | (hd1::tl1, hd2::tl2) -> (tester hd1 hd2 && trueForEachPair tl1 tl2 tester)
+
 (*
    Checks to see if two types are the same modulo the process of varification
    which turns abstract types into type variables of the same name.
@@ -1117,6 +1118,9 @@ let makeCommaBreakableListSurround opn cls lst =
 let formatPrecedence formattedTerm =
   makeList ~wrap:("(", ")") ~break:IfNeed [formattedTerm]
 
+(* What to do when a comment wasn't interleaved in a list - default is to attach and break. *)
+let fallbackCommentListConfig = break
+
 let isListy = function
   | Easy_format.List _ -> true
   | _ -> false
@@ -1153,22 +1157,19 @@ type commentOrItem =
   | Item of Easy_format.t
 
 (**
- * Splits [comments] at [lexLoc].  Assumes the comments are in the correct
- * file, and ordered. [leftIncludesSplit] indicates whether or not a comment
- * ending *at* [lexLoc] should be included in the left split, otherwise, only
- * comments that end *before* the [lexLoc] wil be included in the left split.
- * It actually doesn't matter in practice.
+ * Splits [comments] at [lexLoc]. Assumes the comments are in the correct
+ * file, and ordered.
  *)
-let rec splitCommentsAt ~leftIncludesSplit lexLoc comments =
+let rec splitCommentsAt lexLoc comments =
   let open Lexing in
-  let leftIncludesChar =
-    if leftIncludesSplit then lexLoc.pos_cnum else lexLoc.pos_cnum - 1 in
+  (* There might be an issue here - we shouldn't have to split "up to and including".
+     Up to should be sufficient. Comments' end position might be off by one (too large) *)
+  let leftSplitUpToAndIncluding = lexLoc.pos_cnum in
   match comments with
     | [] -> ([], [])
     | ((str, commLoc) as com)::tl ->
-      if commLoc.loc_end.pos_cnum <= leftIncludesChar then
-        let (recurseLeft, recurseRight) =
-          splitCommentsAt ~leftIncludesSplit lexLoc tl in
+      if commLoc.loc_end.pos_cnum <= leftSplitUpToAndIncluding then
+        let (recurseLeft, recurseRight) = splitCommentsAt lexLoc tl in
         (com::recurseLeft, recurseRight)
       else
         (* Because comments are ordered, *all* comments must also not be to the
@@ -1239,7 +1240,7 @@ let formatComments comms = List.map formatItemComment comms
 
 let convertIsListyToIsSequencey isListyImpl =
   let rec isSequencey layoutNode = match layoutNode with
-    | SourceMap (_, _, subLayoutNode) -> isSequencey subLayoutNode
+    | SourceMap (_, subLayoutNode) -> isSequencey subLayoutNode
     | Sequence _ -> true
     | Label (_, _, _) -> false
     | Easy easy -> isListyImpl easy
@@ -1267,10 +1268,10 @@ let rec interleaveComments listConfig layoutListItems comments =
        * And then trimming the trailing white space as usual.
        **)
       let (itemComments, (easyItem, unconsumedComms)) = match (listConfig.attemptInterleaveComments, hd) with
-        | (true, SourceMap (sourceMapListConfig, location, subLayout)) ->
+        | (true, SourceMap (location, sourceMappedLayout)) ->
           let (beforeStart, afterStart) =
-            splitCommentsAt ~leftIncludesSplit:true location.loc_start comments in
-          (beforeStart, layoutToEasyFormatAndSurplus subLayout afterStart)
+            splitCommentsAt location.loc_start comments in
+          (beforeStart, layoutToEasyFormatAndSurplus sourceMappedLayout afterStart)
         | _ -> ([], layoutToEasyFormatAndSurplus hd comments)
       in
       let (recItems, recUnconsumedComms) = interleaveComments listConfig tl unconsumedComms in
@@ -1303,53 +1304,26 @@ and distributeCommentsToSequenceItems listConfig layoutListItems comments =
     | [] -> ([], unconsumed)
     | hd::tl -> ((attachSeparators None hd tl), unconsumed)
 
-  (* Now grab any trailing comments that are known to be within the bounds of
-   * the "list" in the AST, but have not been prepended before another item.*)
-(* Returns unconsumed comments and the [Easy_format] structure. *)
+(*
+ * All comments are interleaved into lists when list items are [SourceMap]s. If
+ * the [SourceMap] is not embedded in a [Sequence], we'll implement some basic
+ * fallback behavior.
+ * Returns unconsumed comments and the [Easy_format] structure.
+ *)
 and layoutToEasyFormatAndSurplus layoutNode comments = match layoutNode with
   | Easy easyFormatted -> (easyFormatted, comments)
-  | SourceMap (listConfig, location, subLayout) -> (
-      (* The [listConfig] is only used when the comment can't be embedded in
-       * a closest ancestor list. The [listConfig] will be used to attach
-       * comments to a *particular* layoutNode (subLayout), and only in the
-       * event that there are even comments to attach.
-       *
-       * TODO: Provide more controls over how the negotiation should occur.
-       * What if a [SourceMap] wants to specify that the
-       * [listConfig] should *always* be used even if it can be embedded into
-       * a list. Is the [listConfig] just a backup, or is it required?
-       *
-       * TODO: Provide more control over whether or not a single item should
-       * bypass use of the [listConfig] as we do currently.
-       *
-       * TODO: Provide ability to have even a *single* comment force breaking of
-       * the list.
-       *)
-      let (beforeStart, afterStart) = splitCommentsAt ~leftIncludesSplit:true location.loc_start comments in
-      (* This is not working, but is a good idea in theory *)
-      (* let (insideNode, unconsumedComms) = splitCommentsAt ~leftIncludesSplit:true location.loc_end afterStart in *)
-
-      (* Because comments should be formatted according to the list the best
-       * contains them, the sep property should not actually be used - instead
-       * it must be manually recreated inside of
-       * [distributeCommentsToSequenceItems] *)
-      let (items, unconsumed) =
-        distributeCommentsToSequenceItems
-          listConfig
-          [subLayout]
-          afterStart in
-      match (beforeStart, items, listConfig.wrap) with
-        | (_, [], _) -> raise (NotPossible "No items")
-        | ([], [singleItem], ("", "")) -> (singleItem, unconsumed)
-        | (leadingComms, items, _) -> (
+  | SourceMap (location, subLayout) -> (
+      let (beforeStart, afterStart) = splitCommentsAt location.loc_start comments in
+      let (subLayoutInEasyFormat, unconsumed) = layoutToEasyFormatAndSurplus subLayout afterStart in
+      match beforeStart with
+        | [] -> (subLayoutInEasyFormat, unconsumed)
+        | hd::tl ->  (
           easyListWithConfig
-            listConfig
-            (List.concat [formatComments leadingComms; items;]),
+            fallbackCommentListConfig
+            (List.concat [formatComments beforeStart; [subLayoutInEasyFormat]]),
           unconsumed
         )
-
   )
-
   | Sequence (listConfig, subLayouts) -> (
       let listConfigNoSep = removeSepFromListConfig listConfig in
       let (distribution, unconsumedComms) =
@@ -1630,7 +1604,7 @@ class printer  ()= object(self:'self)
             let normalized =
               makeList ~break:IfNeed ~sep:"=>" ~preSpace:true ~postSpace:true ~inline:(true, true) (allArrowSegments x)
             in
-            SourceMap (break, x.ptyp_loc, normalized)
+            SourceMap (x.ptyp_loc, normalized)
         | Ptyp_poly (sl, ct) ->
             let poly =
               makeList ~break:IfNeed [
@@ -1640,7 +1614,7 @@ class printer  ()= object(self:'self)
                 ];
                 self#core_type ct;
               ]
-            in SourceMap (break, x.ptyp_loc, poly)
+            in SourceMap (x.ptyp_loc, poly)
 
         | _ -> self#non_arrowed_core_type x
 
@@ -1654,7 +1628,6 @@ class printer  ()= object(self:'self)
     else match (x.ptyp_desc) with
       | (Ptyp_alias (ct, s)) ->
         SourceMap (
-          break,
           x.ptyp_loc,
           (label
             ~space:true
@@ -1734,7 +1707,7 @@ class printer  ()= object(self:'self)
         | [] -> everythingButConstraints
         | hd::tl -> makeList ~break:IfNeed ~postSpace:true ~indent:0 ~inline:(true, true) (everythingButConstraints::hd::tl)
     in
-    (SourceMap (break, ptype_loc, everything))
+    (SourceMap (ptype_loc, everything))
 
   (* shared by [Pstr_type,Psig_type]*)
   method type_def_list l =
@@ -1743,7 +1716,7 @@ class printer  ()= object(self:'self)
       let itm =
         self#formatOneTypeDef
           prepend
-          (SourceMap (break, td.ptype_name.loc, (atom td.ptype_name.txt)))
+          (SourceMap (td.ptype_name.loc, (atom td.ptype_name.txt)))
           (atom "=")
           td
       in
@@ -1770,7 +1743,7 @@ class printer  ()= object(self:'self)
     let {pcd_name; pcd_args; pcd_res; pcd_loc; pcd_attributes} = x in
     let (arityAttrs, docAtrs, stdAttrs) = partitionAttributes pcd_attributes in
     let prefix = if polymorphic then "`" else "" in
-    let sourceMappedName = SourceMap (break, pcd_name.loc, atom (prefix ^ pcd_name.txt)) in
+    let sourceMappedName = SourceMap (pcd_name.loc, atom (prefix ^ pcd_name.txt)) in
     let nameOf = makeList ~postSpace:true [sourceMappedName; atom "of"] in
     let barNameOf =
       let lst = if print_bar then [atom "|"; nameOf] else [nameOf] in
@@ -1833,7 +1806,7 @@ class printer  ()= object(self:'self)
         else
           everything
       in
-      (SourceMap (break, pcd_loc, everythingWithAttrs))
+      (SourceMap (pcd_loc, everythingWithAttrs))
 
   (* Returns the type declaration partitioned into three segments - one
      suitable for appending to a label, the actual type manifest
@@ -1872,22 +1845,13 @@ class printer  ()= object(self:'self)
       | Private -> privateAtom::lst in
 
     let recordRow pld =
-      let nameColon =
-        SourceMap (
-          break,
-          pld.pld_name.loc,
-          makeList [atom pld.pld_name.txt; atom ":"]
-        ) in
+      let nameColon = SourceMap (pld.pld_name.loc, makeList [atom pld.pld_name.txt; atom ":"]) in
       let withMutable =
         match pld.pld_mutable with
           | Immutable -> nameColon
           | Mutable -> makeList ~postSpace:true [atom "mutable"; nameColon]
       in
-      SourceMap (
-        break,
-        pld.pld_loc,
-        label ~space:true withMutable (self#core_type pld.pld_type)
-      )
+      SourceMap (pld.pld_loc, label ~space:true withMutable (self#core_type pld.pld_type))
     in
     let recordize lst =
       let rows = List.map recordRow lst in
@@ -1991,7 +1955,7 @@ class printer  ()= object(self:'self)
          The single identifier has to be wrapped in a [ensureSingleTokenSticksToLabel] to
          avoid (@see @avoidSingleTokenWrapping):
       *)
-        let sourceMappedIdent = SourceMap (break, li.loc, self#longident_loc li) in
+        let sourceMappedIdent = SourceMap (li.loc, self#longident_loc li) in
         let constr = match l with
           | [] -> ensureSingleTokenSticksToLabel sourceMappedIdent
           | hd::tl ->
@@ -2108,7 +2072,7 @@ class printer  ()= object(self:'self)
         | Ptyp_poly (_, _) ->
             makeList ~wrap:("(",")") ~break:IfNeed [self#core_type x]
       in
-      SourceMap (break, x.ptyp_loc, result)
+      SourceMap (x.ptyp_loc, result)
   (* TODO: ensure that we have a form of desugaring that protects *)
   (* when final argument of curried pattern is a type constraint: *)
   (* | COLON non_arrowed_core_type EQUALGREATER expr
@@ -2160,7 +2124,7 @@ class printer  ()= object(self:'self)
       [left; right]
 
   method pattern_without_or x =
-    let patternSourceMap pt layout = (SourceMap (break, pt.ppat_loc, layout)) in
+    let patternSourceMap pt layout = (SourceMap (pt.ppat_loc, layout)) in
     (* TODOATTRIBUTES: Handle the stdAttrs here *)
     let (arityAttrs, docAtrs, _) = partitionAttributes x.ppat_attributes in
     match x.ppat_desc with
@@ -2174,21 +2138,17 @@ class printer  ()= object(self:'self)
             (patternSourceMap p pattern_with_precedence)
             (makeList ~postSpace:true [
               atom "as";
-              (SourceMap (
-                break,
-                s.loc,
-                (protectIdentifier s.txt)
-              ))
+              (SourceMap (s.loc, (protectIdentifier s.txt)))
             ]) (* RA*)
       | Ppat_variant (l, Some p) ->
           if arityAttrs != [] then
             raise (NotPossible "Should never see embedded attributes on poly variant")
           else
             let layout = (self#constructor_pattern ~polyVariant:true ~arityIsClear:true (atom ("`" ^ l)) p) in
-            SourceMap (break, x.ppat_loc, layout)
+            SourceMap (x.ppat_loc, layout)
       | Ppat_lazy p -> label ~space:true (atom "lazy") (self#simple_pattern p)
       | Ppat_construct (({txt} as li), po) when not (txt = Lident "::")-> (* FIXME The third field always false *)
-          let liSourceMapped = SourceMap (break, li.loc, (self#longident_loc li)) in
+          let liSourceMapped = SourceMap (li.loc, (self#longident_loc li)) in
           let formattedConstruction = match po with
             (* TODO: Check the explicit_arity field on the pattern/constructor
                attributes to determine if should desugar to an *actual* tuple. *)
@@ -2204,7 +2164,7 @@ class printer  ()= object(self:'self)
                 liSourceMapped
 
           in
-            SourceMap (break, x.ppat_loc, formattedConstruction)
+            SourceMap (x.ppat_loc, formattedConstruction)
       | _ -> self#simple_pattern x
 
   method pattern x=
@@ -2248,12 +2208,12 @@ class printer  ()= object(self:'self)
                * information about the contents of the pattern such as tokens etc,
                * in order to get comments to be distributed correctly.*)
 
-              SourceMap (break, loc, (atom x))
+              SourceMap (loc, (atom x))
           | Ppat_construct (({txt=Lident "::"}), po) ->
                 self#pattern_list_helper x (* LIST PATTERN *)
           | Ppat_construct (({txt} as li), None) ->
-              let liSourceMapped = SourceMap (break, li.loc, (self#longident_loc li)) in
-              SourceMap (break, x.ppat_loc, liSourceMapped)
+              let liSourceMapped = SourceMap (li.loc, (self#longident_loc li)) in
+              SourceMap (x.ppat_loc, liSourceMapped)
           | Ppat_any -> atom "_"
           | Ppat_var ({loc; txt = txt}) ->
             (*
@@ -2277,7 +2237,7 @@ class printer  ()= object(self:'self)
                  let oneArgShouldWrapToAlignWith theFunctionNameBinding => theFunctionNameBinding;
 
              *)
-              SourceMap (break, loc, (protectIdentifier txt))
+              SourceMap (loc, (protectIdentifier txt))
           | Ppat_array l ->
               makeList ~wrap:("[|", "|]") ~break:IfNeed ~postSpace:true ~sep:"," (List.map self#pattern l)
           | Ppat_unpack (s) ->
@@ -2311,7 +2271,7 @@ class printer  ()= object(self:'self)
               makeList ~postSpace:true [atom "exception"; self#pattern p]
           | _ -> formatPrecedence (self#pattern x) (* May have a redundant sourcemap *)
         in
-        SourceMap (break, x.ppat_loc, itm)
+        SourceMap (x.ppat_loc, itm)
 
   method label_exp (l,opt,p) =
     if l = "" then
@@ -2754,7 +2714,7 @@ class printer  ()= object(self:'self)
                     (* Standard application *)
                     (*reset here only because [function,match,try,sequence] are lower priority*)
                     List.concat [
-                      [SourceMap (break, e.pexp_loc, (self#expression2 e))];
+                      [SourceMap (e.pexp_loc, (self#expression2 e))];
                       List.map self#reset#label_x_expression_param l;
                       attributesAsList;
                     ],
@@ -2801,9 +2761,9 @@ class printer  ()= object(self:'self)
   method moduleExpressionToFormattedApplicationItems x =
     let rec functorApplicationList xx = match xx.pmod_desc with
       | Pmod_apply (me1, me2) ->
-          SourceMap (break, me2.pmod_loc, (self#simple_module_expr me2))::
+          SourceMap (me2.pmod_loc, (self#simple_module_expr me2))::
             (functorApplicationList me1)
-      | _ -> SourceMap (break, xx.pmod_loc, (self#module_expr xx))::[]
+      | _ -> SourceMap (xx.pmod_loc, (self#module_expr xx))::[]
     in
     (List.rev (functorApplicationList x), None)
 
@@ -2987,10 +2947,10 @@ class printer  ()= object(self:'self)
       | Pcl_fun (label, eo, p, e) ->
         let (nextArgs, return) = argsAndReturn e in
         if label="" then
-          let args = SourceMap (break, p.ppat_loc, (self#simple_pattern p))::nextArgs in
+          let args = SourceMap (p.ppat_loc, (self#simple_pattern p))::nextArgs in
           (args, return)
         else
-          let args = SourceMap (break, p.ppat_loc, (self#label_exp (label, eo, p)))::nextArgs in
+          let args = SourceMap (p.ppat_loc, (self#label_exp (label, eo, p)))::nextArgs in
           (args, return)
       | _ -> ([], xx)
     in argsAndReturn cl
@@ -3010,14 +2970,13 @@ class printer  ()= object(self:'self)
         | Pexp_fun (label, eo, p, e) ->
             let (nextArgs, return) = argsAndReturn e in
             if label="" then
-              let args = SourceMap (break, p.ppat_loc, (self#simple_pattern p))::nextArgs in
+              let args = SourceMap (p.ppat_loc, (self#simple_pattern p))::nextArgs in
               (args, return)
             else
-              let args = SourceMap (break, p.ppat_loc, (self#label_exp (label, eo, p)))::nextArgs in
+              let args = SourceMap (p.ppat_loc, (self#label_exp (label, eo, p)))::nextArgs in
               (args, return)
         | Pexp_newtype (str,e) ->
             let typeParamLayout = SourceMap (
-              break,
               { (* We have to *infer* the location of (type x) *)
                 loc_start = xx.pexp_loc.loc_start;
                 (* We suppose the (type x) ends at the start of expression *)
@@ -3102,7 +3061,7 @@ class printer  ()= object(self:'self)
     let appTerms = combinedAppItems (self#expressionToFormattedApplicationItems funWithNewTypes) in
     let locallyAbstractTypes = (List.map atom absVars) in
     let typeLayout =
-      SourceMap (break, bodyType.ptyp_loc, (self#core_type bodyType)) in
+      SourceMap (bodyType.ptyp_loc, (self#core_type bodyType)) in
     let polyType =
       label
         ~space:true
@@ -3143,7 +3102,7 @@ class printer  ()= object(self:'self)
     in
     match (argsList, return.pexp_desc) with
       | ([], Pexp_constraint (e, ct)) ->
-          let typeLayout = SourceMap (break, ct.ptyp_loc, (self#core_type ct)) in
+          let typeLayout = SourceMap (ct.ptyp_loc, (self#core_type ct)) in
           let appTerms = combinedAppItems (self#expressionToFormattedApplicationItems e) in
           self#formatSimplePatternBinding prefixText patternList (Some typeLayout) appTerms
       | ([], _) ->
@@ -3166,7 +3125,7 @@ class printer  ()= object(self:'self)
     in
     match (argsList, return.pcl_desc) with
       | ([], Pcl_constraint (e, ct)) ->
-          let typeLayout = SourceMap (break, ct.pcty_loc, (self#class_constructor_type ct)) in
+          let typeLayout = SourceMap (ct.pcty_loc, (self#class_constructor_type ct)) in
           let appTerms = self#classExpressionToFormattedApplicationItems e in
           self#formatSimplePatternBinding prefixText patternList (Some typeLayout) appTerms
       | ([], _) ->
@@ -3183,7 +3142,7 @@ class printer  ()= object(self:'self)
   method binding {pvb_pat; pvb_expr=x} prefixText = (* TODO: print attributes *)
     match (pvb_pat.ppat_desc) with
       | (Ppat_var {txt}) ->
-          let pattern = SourceMap (break, pvb_pat.ppat_loc, self#simple_pattern pvb_pat) in
+          let pattern = SourceMap (pvb_pat.ppat_loc, self#simple_pattern pvb_pat) in
           self#wrappedBinding prefixText pattern [] x
       (*
          Ppat_constraint is used in bindings of the form
@@ -3223,7 +3182,7 @@ class printer  ()= object(self:'self)
                  );
           *)
           let layoutPattern =
-            SourceMap (break, pvb_pat.ppat_loc, (self#simple_pattern p)) in
+            SourceMap (pvb_pat.ppat_loc, (self#simple_pattern p)) in
           let leadingAbsTypesAndExpr = self#leadingCurriedAbstractTypes x in
           match (p.ppat_desc, ty.ptyp_desc, leadingAbsTypesAndExpr) with
             | (
@@ -3275,7 +3234,7 @@ class printer  ()= object(self:'self)
                 absVars
                 nonVarifiedExprType
             | _ ->
-              let typeLayout = SourceMap (break, ty.ptyp_loc, (self#core_type ty)) in
+              let typeLayout = SourceMap (ty.ptyp_loc, (self#core_type ty)) in
               let appTerms = combinedAppItems (self#expressionToFormattedApplicationItems x) in
               self#formatSimplePatternBinding
                 prefixText
@@ -3285,7 +3244,7 @@ class printer  ()= object(self:'self)
         )
       | (_) ->
           let layoutPattern =
-            SourceMap (break, pvb_pat.ppat_loc, (self#pattern pvb_pat)) in
+            SourceMap (pvb_pat.ppat_loc, (self#pattern pvb_pat)) in
           let appTerms = combinedAppItems (self#expressionToFormattedApplicationItems x) in
           self#formatSimplePatternBinding prefixText layoutPattern None appTerms
 
@@ -3297,22 +3256,14 @@ class printer  ()= object(self:'self)
   method normalizeFunctionArgsConstraint argsList return =
     match return.pexp_desc with
       | Pexp_constraint (e, ct) ->
-        let typeLayout = SourceMap (
-          break,
-          ct.ptyp_loc,
-          (self#non_arrowed_non_simple_core_type ct)
-        ) in
+        let typeLayout = SourceMap (ct.ptyp_loc, (self#non_arrowed_non_simple_core_type ct)) in
         (argsList@[formatJustTheTypeConstraint typeLayout], e)
       | _ -> (argsList, return)
 
   method normalizeConstructorArgsConstraint argsList return =
     match return.pcl_desc with
       | Pcl_constraint (e, ct) when return.pcl_attributes = [] ->
-        let typeLayout = SourceMap (
-          break,
-          ct.pcty_loc,
-          (self#non_arrowed_class_constructor_type ct)
-        ) in
+        let typeLayout = SourceMap (ct.pcty_loc, (self#non_arrowed_class_constructor_type ct)) in
         (argsList@[formatJustTheTypeConstraint typeLayout], e)
       | _ -> (argsList, return)
 
@@ -3335,14 +3286,10 @@ class printer  ()= object(self:'self)
             let label = match rf with
               | Nonrecursive -> "let"
               | Recursive -> "let rec" in
-            SourceMap (break, x.pvb_loc, (self#binding x label))
+            SourceMap (x.pvb_loc, (self#binding x label))
           )
     ) in
-    let forEachRemaining = fun t -> SourceMap (
-        break,
-        t.pvb_loc,
-        (self#binding t "and")
-      ) in
+    let forEachRemaining = fun t -> SourceMap (t.pvb_loc, (self#binding t "and")) in
     let remainingBindings = (
       match l with
         | [] -> []
@@ -3364,11 +3311,7 @@ class printer  ()= object(self:'self)
          * first brace. *)
          let bindingsLayout = (self#bindings (rf, l)) in
          let bindingsLoc = self#bindingsLocationRange l in
-         let bindingsSourceMapped = SourceMap (
-           break,
-           bindingsLoc,
-           semiTerminated bindingsLayout
-         ) in
+         let bindingsSourceMapped = SourceMap (bindingsLoc, semiTerminated bindingsLayout) in
          bindingsSourceMapped::(self#letList e)
       | ([], Pexp_open (ovf, lid, e)) ->
         let listItems = (self#letList e) in
@@ -3412,14 +3355,10 @@ class printer  ()= object(self:'self)
               (atom ("let open" ^ overrideStr))
               (self#longident_loc lid)
             in
-            let openSourceMapped = SourceMap (
-              break,
-              (* Just like the bindings, have to synthesize a location since the
-               * Pexp location is parsed (potentially) beginning with the open
-               * brace {} in the let sequence. *)
-              lid.loc,
-              semiTerminated openLayout
-            ) in
+            (* Just like the bindings, have to synthesize a location since the
+             * Pexp location is parsed (potentially) beginning with the open
+             * brace {} in the let sequence. *)
+            let openSourceMapped = SourceMap (lid.loc, semiTerminated openLayout) in
             openSourceMapped::listItems
       | ([], Pexp_letmodule (s, me, e)) ->
           let prefixText = "let module" in
@@ -3432,14 +3371,10 @@ class printer  ()= object(self:'self)
             loc_end = me.pmod_loc.loc_end;
             loc_ghost = false
           } in
-          let letModuleSourceMapped = SourceMap (
-             break,
-             (* Just like the bindings, have to synthesize a location since the
-              * Pexp location is parsed (potentially) beginning with the open
-              * brace {} in the let sequence. *)
-             letModuleLoc,
-             semiTerminated letModuleLayout
-           ) in
+          (* Just like the bindings, have to synthesize a location since the
+           * Pexp location is parsed (potentially) beginning with the open
+           * brace {} in the let sequence. *)
+          let letModuleSourceMapped = SourceMap (letModuleLoc, semiTerminated letModuleLayout) in
            letModuleSourceMapped::(self#letList e)
       | ([], Pexp_sequence (({pexp_desc=Pexp_sequence _ }) as e1, e2))
       | ([], Pexp_sequence (({pexp_desc=Pexp_let _      }) as e1, e2))
@@ -3447,22 +3382,14 @@ class printer  ()= object(self:'self)
       | ([], Pexp_sequence (({pexp_desc=Pexp_letmodule _}) as e1, e2))
       | ([], Pexp_sequence (e1, e2)) ->
           let e1Layout = (self#expression e1) in
-          let e1SourceMapped = SourceMap (
-            break,
-            (* It's kind of difficult to synthesize a location here in the case
-             * where this is the first expression in the braces. We could consider
-             * deeply inspecting the leftmost token/term in the expression. *)
-            e1.pexp_loc,
-            semiTerminated e1Layout
-          ) in
+          (* It's kind of difficult to synthesize a location here in the case
+           * where this is the first expression in the braces. We could consider
+           * deeply inspecting the leftmost token/term in the expression. *)
+          let e1SourceMapped = SourceMap (e1.pexp_loc, semiTerminated e1Layout) in
           e1SourceMapped::(self#letList e2)
       | _ ->
           let exprTermLayout = (self#expression exprTerm) in
-          let exprTermSourceMapped = SourceMap (
-            break,
-            exprTerm.pexp_loc,
-            exprTermLayout
-          ) in
+          let exprTermSourceMapped = SourceMap (exprTerm.pexp_loc, exprTermLayout) in
           (* Should really do something to prevent infinite loops here. Never
              allowing a top level call into letList to recurse back to
              self#expression- top level calls into letList *must* be one of the
@@ -3532,7 +3459,7 @@ class printer  ()= object(self:'self)
             (self#simple_expression withoutVisibleAttrs)
             (self#attributes stdAttrs)
       in
-      SourceMap (break, x.pexp_loc, itm)
+      SourceMap (x.pexp_loc, itm)
     else
       let itm = match x.pexp_desc with
         (* Sequences don't require parens when under pipe in Reason. *)
@@ -3720,7 +3647,7 @@ class printer  ()= object(self:'self)
               self#constructor_expression ~polyVariant:true ~arityIsClear:true stdAttrs (atom ("`" ^ l)) eo
         | _ -> self#simple_expression x
       in
-      SourceMap (break, x.pexp_loc, itm)
+      SourceMap (x.pexp_loc, itm)
 
 
   method potentiallyConstrainedExpr x =
@@ -3924,7 +3851,7 @@ class printer  ()= object(self:'self)
                                (self#wrapCurriedFunctionBinding ~attachTo:upToColon "fun" firstArg tl returnedAppTerms) in
                            if appendComma then makeList [labelExpr; comma;] else labelExpr
                      )
-              in SourceMap(break, totalRowLoc, theRow)
+              in SourceMap (totalRowLoc, theRow)
             in
             let rec getRows l =
               match l with
@@ -3956,7 +3883,7 @@ class printer  ()= object(self:'self)
                          atom ",";
                        ]
                 ) in
-                SourceMap (break, withRecord.pexp_loc, firstRow)::(getRows l)
+                SourceMap (withRecord.pexp_loc, firstRow)::(getRows l)
             in
             makeList ~wrap:("{", "}") ~break:IfNeed ~preSpace:true allRows
         | Pexp_array (l) ->
@@ -3994,7 +3921,7 @@ class printer  ()= object(self:'self)
         | Pexp_extension e -> self#extension e
         | _ ->  makeList ~break:IfNeed ~wrap:("(", ")") [self#expression x]
       in
-      SourceMap (break, x.pexp_loc, item)
+      SourceMap (x.pexp_loc, item)
 
   method direction_flag = function
     | Upto -> atom "to"
@@ -4183,7 +4110,7 @@ class printer  ()= object(self:'self)
       let (firstToken, pattern, patternAux) = self#class_opening class_keyword txt pci_virt ls in
       let classBinding = self#wrappedClassBinding firstToken pattern patternAux x.pci_expr in
       let itm = self#attach_std_item_attrs x.pci_attributes classBinding in
-      SourceMap (break, pci_loc, itm)
+      SourceMap (pci_loc, itm)
     in
     (match l with
       | [] -> raise (NotPossible "Class definitions will have at least one item.")
@@ -4258,7 +4185,7 @@ class printer  ()= object(self:'self)
           ~inline:(true, true)
           (allArrowSegments x)
       in
-      SourceMap (break, x.pcty_loc, normalized)
+      SourceMap (x.pcty_loc, normalized)
     | _ ->
       (* Unfortunately, we have to have final components of a class_constructor_type
          be prefixed with the `new` keyword.  Hopefully this is temporary. *)
@@ -4268,7 +4195,7 @@ class printer  ()= object(self:'self)
     match x.pcty_desc with
     | Pcty_arrow (l, co, cl) ->
       let normalized = formatPrecedence (self#class_constructor_type x) in
-      SourceMap (break, x.pcty_loc, normalized)
+      SourceMap (x.pcty_loc, normalized)
     | _ -> self#class_instance_type x
 
   (* TODO: TODOATTRIBUTES. *)
@@ -4374,7 +4301,7 @@ class printer  ()= object(self:'self)
               leadingAbstractVars
               nonVarifiedExprType
           | Pexp_poly (e, Some ct) ->
-            let typeLayout = SourceMap (break, ct.ptyp_loc, (self#core_type ct)) in
+            let typeLayout = SourceMap (ct.ptyp_loc, (self#core_type ct)) in
             let appTerms = combinedAppItems (self#expressionToFormattedApplicationItems e) in
             let fauxBindingPattern = match pf with
               | Private -> (makeList ~postSpace:true ~break:IfNeed [atom "private"; atom s.txt])
@@ -4411,7 +4338,7 @@ class printer  ()= object(self:'self)
            this case *)
         self#item_extension e
     in
-    SourceMap(break, x.pcf_loc, itm)
+    SourceMap (x.pcf_loc, itm)
 
   method class_self_pattern_and_structure {pcstr_self = p; pcstr_fields = l} =
     let fields = (List.map self#class_field (List.filter self#shouldDisplayClassField l)) in
@@ -4420,11 +4347,7 @@ class printer  ()= object(self:'self)
     match (p.ppat_attributes, p.ppat_desc) with
       | ([], Ppat_var ({loc; txt = "this"})) -> fields
       | _ ->
-        SourceMap (
-          break,
-          p.ppat_loc,
-          (label ~space:true (atom "as") (self#pattern p))
-        )
+        SourceMap (p.ppat_loc, (label ~space:true (atom "as") (self#pattern p)))
         ::fields
 
   method simple_class_expr x =
@@ -4455,7 +4378,7 @@ class printer  ()= object(self:'self)
           makeList ~wrap:("{", "}") ~inline:(true, false) ~postSpace:true ~break:Always_rec (List.map semiTerminated rows)
         | Pcl_extension e -> self#extension e
         | _ -> formatPrecedence (self#class_expr x)
-     in SourceMap (break, x.pcl_loc, itm)
+     in SourceMap (x.pcl_loc, itm)
 
   method classExprLetsAndRest x =
     match x.pcl_desc with
@@ -4467,11 +4390,7 @@ class printer  ()= object(self:'self)
          * first brace. *)
          let bindingsLayout = (self#bindings (rf, l)) in
          let bindingsLoc = self#bindingsLocationRange l in
-         let bindingsSourceMapped = SourceMap (
-           break,
-           bindingsLoc,
-           bindingsLayout
-         ) in
+         let bindingsSourceMapped = SourceMap (bindingsLoc, bindingsLayout) in
          bindingsSourceMapped::(self#classExprLetsAndRest ce)
       | _ -> [self#class_expr x]
 
@@ -4568,7 +4487,7 @@ class printer  ()= object(self:'self)
                 ([(self#class_constructor_type x.pci_expr)], None)
               in
               let itm = self#attach_std_item_attrs x.pci_attributes withColon in
-              SourceMap (break, pci_loc, itm)
+              SourceMap (pci_loc, itm)
             in
             makeNonIndentedBreakingList (
               match l with
@@ -4632,7 +4551,7 @@ class printer  ()= object(self:'self)
           self#attach_std_item_attrs a (self#item_extension e)
         in
 
-    SourceMap (break, x.psig_loc, (makeList [item; atom ";"]))
+    SourceMap (x.psig_loc, (makeList [item; atom ";"]))
 
   method non_arrowed_module_type x =
     match x.pmty_desc with
@@ -4697,7 +4616,7 @@ class printer  ()= object(self:'self)
             | Pwith_type (li, ({ptype_params} as td)) ->
                 self#formatOneTypeDef
                   typeAtom
-                  (SourceMap (break, li.loc, (self#longident_loc li)))
+                  (SourceMap (li.loc, (self#longident_loc li)))
                   eqAtom
                   td
             | Pwith_module (li, li2) ->
@@ -4705,7 +4624,7 @@ class printer  ()= object(self:'self)
             | Pwith_typesubst ({ptype_params} as td) ->
                 self#formatOneTypeDef
                   typeAtom
-                  (SourceMap (break, td.ptype_name.loc, (atom td.ptype_name.txt)))
+                  (SourceMap (td.ptype_name.loc, (atom td.ptype_name.txt)))
                   destrAtom
                   td
             | Pwith_modsubst (s, li2) -> modSub (atom s.txt) li2 ":="
@@ -4919,11 +4838,7 @@ class printer  ()= object(self:'self)
              item does. *)
           self#item_extension e
     ) in
-    SourceMap (
-      break,
-      term.pstr_loc,
-      if include_semi then makeList [item; atom ";"] else item
-    )
+    SourceMap (term.pstr_loc, if include_semi then makeList [item; atom ";"] else item)
 
   method type_extension = wrap default#type_extension
   method extension_constructor = wrap default#extension_constructor
@@ -5007,8 +4922,7 @@ class printer  ()= object(self:'self)
             | [] -> appendWhereAndArrow (self#pattern hd)
             | tl::tlTl -> (self#pattern hd)
           in
-          let sourceMappedHd = SourceMap (
-            break,
+          let sourceMappedHd = SourceMap(
             (* Make room for the => - not a foolproof solution, but probably
              * catches a few extra*)
             expandLocation hd.ppat_loc ~expand:(0, 0),
@@ -5039,7 +4953,6 @@ class printer  ()= object(self:'self)
           makeList ~break:Always_rec ~inline:(true, true) (List.map bar withoutBars)
       in
         SourceMap (
-          break,
           (* Fake shift the location to accomodate for the bar, to make sure
            * the wrong comments don't make their way past the next bar. *)
           expandLocation ~expand:(0, 0) {
@@ -5064,7 +4977,7 @@ class printer  ()= object(self:'self)
             else
               formatLabeledArgument (atom lbl) "" (self#simple_expression e)
     in
-    SourceMap (break, e.pexp_loc, param)
+    SourceMap (e.pexp_loc, param)
 
   method directive_argument = wrap default#directive_argument
   method toplevel_phrase = wrap default#toplevel_phrase
