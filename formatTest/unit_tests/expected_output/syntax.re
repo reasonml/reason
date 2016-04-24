@@ -268,9 +268,13 @@ type point3D = {x: int, y: int, z: int};
 
 let point2D = {x: 20, y: 30};
 
-let point3D: point3D = {x: 10, y: 11, z: 80};
+let point3D: point3D = {
+  x: 10,
+  y: 11,
+  z: 80
+  /* Optional Comma */
+};
 
-/* Optional Comma */
 let printPoint (p: point) => {
   print_int p.x;
   print_int p.y
@@ -377,8 +381,8 @@ let
   let x = {
     print_int 1;
     print_int 20
+    /* Missing trailing SEMI */
   };
-  /* Missing trailing SEMI */
   let x = {
     print_int 1;
     print_int 20;

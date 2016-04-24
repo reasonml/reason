@@ -1253,15 +1253,13 @@ let isSequencey = convertIsListyToIsSequencey isListy
 let removeSepFromListConfig listSettings =
   {listSettings with sep=""; preSpace=false; postSpace=false;}
 
-
-(* Should return list with all location markers either stripped out or replaced
-   with comments that were "caught up" to that point. If returning a list with
-   a single item, that single item should be unpacked out of the list.
-*)
-let rec interleaveComments listConfig layoutListItems comments =
-  match layoutListItems with
-    | [] -> ([], comments)
-    | hd::tl ->
+let rec interleaveComments ?interleaveCommentsUpTo listConfig layoutListItems comments =
+  match (layoutListItems, interleaveCommentsUpTo) with
+    | ([], None)-> ([], comments)
+    | ([], Some locEnd)->
+      let (commentsInSequence, unconsumed) = splitCommentsAt locEnd comments in
+      (List.map (fun c -> Comment (formatItemComment c)) commentsInSequence, unconsumed)
+    | (hd::tl, _) ->
       (* TODO: properly implement "stick to left", or expand the ~sep:"" API to
        * include, left sticking items: Which would involve sticking spaces like:
        * A<space>[sep<space>B]
@@ -1274,36 +1272,59 @@ let rec interleaveComments listConfig layoutListItems comments =
           (beforeStart, layoutToEasyFormatAndSurplus sourceMappedLayout afterStart)
         | _ -> ([], layoutToEasyFormatAndSurplus hd comments)
       in
-      let (recItems, recUnconsumedComms) = interleaveComments listConfig tl unconsumedComms in
+      let (recItems, recUnconsumedComms) =
+        interleaveComments ?interleaveCommentsUpTo listConfig tl unconsumedComms in
       let easyComments = List.map (fun c -> Comment (formatItemComment c)) itemComments in
       (List.concat [easyComments; [Item easyItem]; recItems], recUnconsumedComms)
 
 and attach listConfig ~useSep easyItem = match (listConfig.sep, listConfig.preSpace, listConfig.postSpace) with
-    | ("", false, false) -> easyItem
-    | (sep, preSpace, postSpace) -> makeEasyList (
-        easyItem::
-        List.concat [
-          (if preSpace then [easyAtom " "] else []);
-          (if sep != "" && useSep then [easyAtom sep] else []);
-          (if postSpace then [easyAtom " "] else []);
-        ]
-      )
+  | ("", false, false) -> easyItem
+  | (sep, preSpace, postSpace) -> makeEasyList (
+      easyItem::
+      List.concat [
+        (if preSpace then [easyAtom " "] else []);
+        (if sep != "" && useSep then [easyAtom sep] else []);
+        (if postSpace then [easyAtom " "] else []);
+      ]
+    )
 
-(* Interleaves comments, and then applies the formatting config sep/post/preSpace properties. *)
-and distributeCommentsToSequenceItems listConfig layoutListItems comments =
-  let (interleaved, unconsumed) = interleaveComments listConfig layoutListItems comments in
-  (* previousItem will become handy for stick to left *)
-  let rec attachSeparators previousItem item remainingComments: Easy_format.t list =
-    match (item, remainingComments) with
+(* Catches up comments to a node which has already been converted to an `Easy_format` node. *)
+and catchUpComments startLoc comments continue =
+  let (beforeStart, afterStart) = splitCommentsAt startLoc comments in
+  let (easyFormat, unconsumed) = continue afterStart in
+  match beforeStart with
+  | [] -> (easyFormat, unconsumed)
+  | hd::tl ->  (
+    easyListWithConfig fallbackCommentListConfig (List.concat [formatComments beforeStart; [easyFormat]]),
+    unconsumed
+  )
+
+and layoutSequenceToEasyFormatAndSurplus ?interleaveCommentsUpTo listConfig subLayouts comments =
+  let listConfigNoSep = removeSepFromListConfig listConfig in
+  let (distribution, unconsumedComms) =
+    let (interleaved, unconsumed) = interleaveComments ?interleaveCommentsUpTo listConfig subLayouts comments in
+    (* previousItem will become handy for stick to left *)
+    let rec attachSeparators previousItem item remainingComments: Easy_format.t list =
+      match (item, remainingComments) with
       | ((Item x | Comment x), []) -> [x]
       | (Item i, rHd::rTl) ->
           (attach listConfig ~useSep:true i)::(attachSeparators (Some item) rHd rTl)
       | (Comment c, rHd::rTl) -> (attach listConfig ~useSep:false c)::(attachSeparators (Some item) rHd rTl)
-  in
-  match interleaved with
+    in
+    match interleaved with
     | [] -> ([], unconsumed)
     | hd::tl -> ((attachSeparators None hd tl), unconsumed)
-
+  in
+  let wereCommentsInterleaved = List.length subLayouts != List.length distribution in
+  let adjustedListConfig =
+    if wereCommentsInterleaved then
+      match listConfigNoSep.listConfigIfCommentsInterleaved with
+      | None -> listConfigNoSep
+      | Some f -> f listConfigNoSep
+    else
+      listConfigNoSep
+  in
+  (easyListWithConfig adjustedListConfig distribution, unconsumedComms)
 (*
  * All comments are interleaved into lists when list items are [SourceMap]s. If
  * the [SourceMap] is not embedded in a [Sequence], we'll implement some basic
@@ -1312,37 +1333,13 @@ and distributeCommentsToSequenceItems listConfig layoutListItems comments =
  *)
 and layoutToEasyFormatAndSurplus layoutNode comments = match layoutNode with
   | Easy easyFormatted -> (easyFormatted, comments)
+  | Sequence (listConfig, subLayouts) -> layoutSequenceToEasyFormatAndSurplus listConfig subLayouts comments
   | SourceMap (location, subLayout) -> (
-      let (beforeStart, afterStart) = splitCommentsAt location.loc_start comments in
-      let (subLayoutInEasyFormat, unconsumed) = layoutToEasyFormatAndSurplus subLayout afterStart in
-      match beforeStart with
-        | [] -> (subLayoutInEasyFormat, unconsumed)
-        | hd::tl ->  (
-          easyListWithConfig
-            fallbackCommentListConfig
-            (List.concat [formatComments beforeStart; [subLayoutInEasyFormat]]),
-          unconsumed
-        )
-  )
-  | Sequence (listConfig, subLayouts) -> (
-      let listConfigNoSep = removeSepFromListConfig listConfig in
-      let (distribution, unconsumedComms) =
-        distributeCommentsToSequenceItems
-          (* So the list may stick "trailing" comments as the final items. *)
-          listConfig
-          subLayouts
-          comments
-      in
-      let wereCommentsInterleaved = List.length subLayouts != List.length distribution in
-      let adjustedListConfig =
-        if wereCommentsInterleaved then
-          match listConfigNoSep.listConfigIfCommentsInterleaved with
-            | None -> listConfigNoSep
-            | Some f -> f listConfigNoSep
-        else
-          listConfigNoSep
-      in
-      (easyListWithConfig adjustedListConfig distribution, unconsumedComms)
+    match subLayout with
+      | Sequence (listConfig, subLayouts) ->
+        let continue = (layoutSequenceToEasyFormatAndSurplus ~interleaveCommentsUpTo:location.loc_end listConfig subLayouts) in
+        catchUpComments location.loc_start comments continue
+      | _ -> catchUpComments location.loc_start comments (layoutToEasyFormatAndSurplus subLayout)
     )
   | Label (labelFormatter, left, right) ->
       let (easyLeft, unconsumedComms) = layoutToEasyFormatAndSurplus left comments in
