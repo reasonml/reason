@@ -188,31 +188,34 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
         | _ ->
           let modified_and_attached_comments =
             List.map (fun (str, is_line_comment, physical_loc) ->
-              (* When searching for "^" regexp, returns location of newline + 1 *)
-              let first_char_of_line = Str.search_backward new_line !chan_input physical_loc.loc_start.pos_cnum in
-              let end_pos_plus_one = physical_loc.loc_end.pos_cnum in
-              let comment_length = (end_pos_plus_one - physical_loc.loc_start.pos_cnum - 4) in
-              (* Also, the string contents originally reported are incorrect! *)
-              let original_comment_contents = String.sub !chan_input (physical_loc.loc_start.pos_cnum + 2) comment_length in
-              let (com, is_line_comment, attachment_location) =
-                match Str.search_forward line_content !chan_input first_char_of_line
-                with
-                  | n ->
-                    (* Recall that all end positions are actually the position of end + 1. *)
-                    let one_greater_than_comment_end = end_pos_plus_one in
-                    (* Str.string_match lets you specify a position one greater than last position *)
-                    let comment_is_last_thing_on_line =
-                      Str.string_match space_before_newline !chan_input one_greater_than_comment_end in
-                    if n < physical_loc.loc_start.pos_cnum && comment_is_last_thing_on_line then (
-                      original_comment_contents,
-                      is_line_comment,
-                      {physical_loc with loc_start = {physical_loc.loc_start with pos_cnum = n}}
-                    )
-                    else
-                      (original_comment_contents, is_line_comment, physical_loc)
-                  | exception Not_found -> (original_comment_contents, is_line_comment, physical_loc)
-              in
-              (com, is_line_comment, attachment_location, physical_loc)
+              if not is_line_comment then
+                (* When searching for "^" regexp, returns location of newline + 1 *)
+                let first_char_of_line = Str.search_backward new_line !chan_input physical_loc.loc_start.pos_cnum in
+                let end_pos_plus_one = physical_loc.loc_end.pos_cnum in
+                let comment_length = (end_pos_plus_one - physical_loc.loc_start.pos_cnum - 4) in
+                (* Also, the string contents originally reported are incorrect! *)
+                let original_comment_contents = String.sub !chan_input (physical_loc.loc_start.pos_cnum + 2) comment_length in
+                let (com, is_line_comment, attachment_location) =
+                  match Str.search_forward line_content !chan_input first_char_of_line
+                  with
+                    | n ->
+                      (* Recall that all end positions are actually the position of end + 1. *)
+                      let one_greater_than_comment_end = end_pos_plus_one in
+                      (* Str.string_match lets you specify a position one greater than last position *)
+                      let comment_is_last_thing_on_line =
+                        Str.string_match space_before_newline !chan_input one_greater_than_comment_end in
+                      if n < physical_loc.loc_start.pos_cnum && comment_is_last_thing_on_line then (
+                        original_comment_contents,
+                        is_line_comment,
+                        {physical_loc with loc_start = {physical_loc.loc_start with pos_cnum = n}}
+                      )
+                      else
+                        (original_comment_contents, is_line_comment, physical_loc)
+                    | exception Not_found -> (original_comment_contents, is_line_comment, physical_loc)
+                in
+                (com, is_line_comment, attachment_location, physical_loc)
+              else
+                (str, is_line_comment, physical_loc, physical_loc)
             )
             unmodified_comments
           in
