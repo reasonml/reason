@@ -1,13 +1,15 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Copyright (c) 2015-present, Facebook, Inc. All rights reserved.
 
-set -e
+set -eu
 
 WARNING='\033[0;31m'
 SUCCESS='\033[0;32m'
 INFO=''
 DEBUG=''
 RESET='\033[0m'
+VERBOSE=${VERBOSE:-}
+KEEP=${KEEP:-}
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -66,6 +68,8 @@ function setup_test_dir() {
 }
 
 setup_test_dir
+
+set +e
 
 function unit_test() {
     FILE=$1
@@ -231,7 +235,7 @@ if [[ -s $FAILED_TESTS ]]; then
 fi
 
 if [ -z "$KEEP" ]; then
-    info "Removing up $TEST_DIR (set env keep=1 to keep build directory)"
+    info "Removing $TEST_DIR (set env KEEP=1 to keep build directory)"
     rm -rf $TEST_DIR
 fi
 
