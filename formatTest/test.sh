@@ -1,6 +1,8 @@
 #!/bin/bash
 # Copyright (c) 2015-present, Facebook, Inc. All rights reserved.
 
+set -e
+
 WARNING='\033[0;31m'
 SUCCESS='\033[0;32m'
 INFO=''
@@ -11,7 +13,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 REFMT="$DIR/../refmt_impl.native"
 
-TEST_DIR=$(mktemp -d -t reason_test)
+TEST_DIR=$(mktemp -d -t reason_test.XXXXXXXX)
 
 if [[ -f REFMT ]];
 then
