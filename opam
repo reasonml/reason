@@ -19,12 +19,13 @@ build-test: [
   "ocamlbuild" "-classic-display" "-use-ocamlfind" "src_test/test_reason.byte" "--"
 ]
 depends: [
-  "easy-format"  {>= "1.2.0"}
-  "ocamlfind"    {build}
-  "ounit"        {test}
-  "utop"         {>= "1.17"}
-  "BetterErrors" {>= "0.0.1"}
-  "menhir"       {>= "20160303"}
+  "easy-format"   {>= "1.2.0"}
+  "ocamlfind"     {build}
+  "ounit"         {test}
+  "utop"          {>= "1.17"}
+  "BetterErrors"  {>= "0.0.1"}
+  "menhir"        {>= "20160303"}
+  "merlin_extend" {> "0.2"}
 ]
 depopts: [
 ]

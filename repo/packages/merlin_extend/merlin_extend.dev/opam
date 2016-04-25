@@ -1,0 +1,16 @@
+opam-version: "1.2"
+name: "merlin_extend"
+maintainer: "Frederic Bour <frederic.bour@lakaban.net>"
+authors: "Frederic Bour <frederic.bour@lakaban.net>"
+homepage: "https://github.com/def-lkb/merlin-extend"
+bug-reports: "https://github.com/def-lkb/merlin-extend"
+license: "MIT"
+dev-repo: "https://github.com/def-lkb/merlin-extend.git"
+build: [
+  [make]
+]
+install: [make "install"]
+remove: ["ocamlfind" "remove" "merlin_extend"]
+depends: [
+  "ocamlfind" {build}
+]

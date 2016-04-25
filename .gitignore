@@ -14,3 +14,4 @@ src_test/_tags
 .DS_Store
 formatTest/customMLFiles/*.ml
 formatTest/customMLFormatOutput.re
+.dopam/

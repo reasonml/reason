@@ -1,0 +1,49 @@
+opam-version: "1.2"
+maintainer: "defree@gmail.com"
+authors: "The Merlin team"
+homepage: "https://github.com/the-lambda-church/merlin"
+bug-reports: "https://github.com/the-lambda-church/merlin/issues"
+dev-repo: "https://github.com/the-lambda-church/merlin.git"
+build: [
+  ["./configure" "--prefix" prefix]
+  ["rm" "-rf" "%{prefix}%/share/ocamlmerlin"]
+  [make "-j" jobs]
+]
+depends: [
+  "ocamlfind" {>= "1.5.2"}
+  "yojson"
+]
+available: [ocaml-version >= "4.00.0"]
+post-messages: [
+  "
+merlin installed.
+
+Quick setup for VIM
+-------------------
+Append this to your .vimrc to add merlin to vim's runtime-path:
+  let g:opamshare = substitute(system('opam config var share'),'\\n$','','''')
+  execute \"set rtp+=\" . g:opamshare . \"/merlin/vim\"
+
+Also run the following line in vim to index the documentation:
+  :execute \"helptags \" . g:opamshare . \"/merlin/vim/doc\"
+
+Quick setup for EMACS
+-------------------
+Add opam emacs directory to your load-path by appending this to your .emacs:
+  ;; Add opam emacs directory to the load-path
+  (setq opam-share (substring (shell-command-to-string \"opam config var share 2> /dev/null\") 0 -1))
+  (add-to-list 'load-path (concat opam-share \"/emacs/site-lisp\"))
+  ;; Load merlin-mode
+  (require 'merlin)
+  ;; Start merlin on ocaml files
+  (add-hook 'tuareg-mode-hook 'merlin-mode t)
+  (add-hook 'caml-mode-hook 'merlin-mode t)
+  ;; Enable auto-complete
+  (setq merlin-use-auto-complete-mode 'easy)
+  ;; Use opam switch to lookup ocamlmerlin binary
+  (setq merlin-command 'opam)
+
+Take a look at https://github.com/the-lambda-church/merlin for more information
+  "
+    {success}
+]
