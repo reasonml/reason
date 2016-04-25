@@ -7,7 +7,7 @@ Read the [docs](https://github.com/facebook/Reason/tree/docs) for installation i
 Upgrading Reason
 ------------------
 
-- To upgrade `Reason`, you should do `opam upgrade reason`/`opam upgrade reasonsyntax`: this will repin reason/reasonsyntax, rebuilding the fresh command line tools (e.g. `refmt`, `refmttype`) which the editor plugin uses internally. Then restarting Atom will cause `atom-reason-loader` to detect the new version of `Reason` and (if needed) install the new version of the plugins.
+- To upgrade `Reason`, you should do `opam upgrade reason`: this will repin reason, rebuilding the fresh command line tools (e.g. `refmt`, `refmttype`) which the editor plugin uses internally. Then restarting Atom will cause `atom-reason-loader` to detect the new version of `Reason` and (if needed) install the new version of the plugins.
 
 
 Building and Adding Features
