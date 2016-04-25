@@ -13,8 +13,8 @@ where:
 }
 
 REASON_GIT="git@github.com:facebook/Reason.git"
-REASONSYNTAX_GIT="git@github.com:facebook/ReasonSyntax.git"
 BETTERERRORS_GIT="git@github.com:chenglou/BetterErrors.git"
+MERLINEXTEND_GIT="git@github.com:def-lkb/merlin-extend.git"
 
 OPAM_BIN=$(opam config var bin)
 
@@ -35,8 +35,8 @@ function install_refmt {
     BUILD_DIR=$(mktemp -d -t reason_upgrade)
     OPAM_DIR="$BUILD_DIR/opam"
     REASON_DIR="$BUILD_DIR/reason"
-    REASONSYNTAX_DIR="$BUILD_DIR/reason_syntax"
     BETTERERRORS_DIR="$BUILD_DIR/BetterErrors"
+    MERLINEXTEND_DIR="$BUILD_DIR/merlin-extend"
     echo "Initing opam at $OPAM_DIR"
     opam init --quiet -n --root $OPAM_DIR
     if [[ $? -ne 0 ]]; then
@@ -48,16 +48,6 @@ function install_refmt {
         echo "Couldn't clone reason from $REASON_GIT to $REASON_DIR, exiting" 1>&2
         exit 1;
     fi
-    git clone $REASONSYNTAX_GIT --branch $VERSION --depth 1 $REASONSYNTAX_DIR;
-    if [[ $? -ne 0 ]]; then
-        echo "Couldn't clone reasonsyntax from $REASONSYNTAX_GIT to $REASONSYNTAX_DIR, exiting" 1>&2
-        exit 1;
-    fi
-    opam pin add $REASONSYNTAX_DIR --root $OPAM_DIR -y
-    if [[ $? -ne 0 ]]; then
-        echo "Couldn't opam pin $REASONSYNTAX_DIR into $OPAM_DIR" 1>&2
-        exit 1;
-    fi
 
     # TODO: remove this after BetterErrors is published to opam
     git clone $BETTERERRORS_GIT --depth 1 $BETTERERRORS_DIR;
@@ -65,9 +55,20 @@ function install_refmt {
         echo "Couldn't clone bettererrors from $BETTERERRORS_GIT to $BETTERERRORS_DIR exiting" 1>&2
         exit 1;
     fi
-    opam pin add BetterErrors $BETTERERRORS_GIT --root $OPAM_DIR -y
+    opam pin add BetterErrors $BETTERERRORS_DIR --root $OPAM_DIR -y
     if [[ $? -ne 0 ]]; then
         echo "Couldn't opam pin $BETTERERRORS_GIT into $OPAM_DIR" 1>&2
+        exit 1;
+    fi
+
+    git clone $MERLINEXTEND_GIT --depth 1 $MERLINEXTEND_DIR;
+    if [[ $? -ne 0 ]]; then
+        echo "Couldn't clone merlin-extend from $MERLINEXTEND_GIT to $MERLINEXTEND_DIR, exiting" 1>&2
+        exit 1;
+    fi
+    opam pin add $MERLINEXTEND_DIR --root $OPAM_DIR -y
+    if [[ $? -ne 0 ]]; then
+        echo "Couldn't opam pin $MERLINEXTEND_DIR into $OPAM_DIR" 1>&2
         exit 1;
     fi
 
