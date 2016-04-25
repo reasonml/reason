@@ -278,9 +278,13 @@ let myList = [
   3
 ];
 
-let myList = [1, 2, 3];
+let myList = [
+  1,
+  2,
+  3,
+  /*CommentAfterThreeBeforeCons */
+];
 
-/*CommentAfterThreeBeforeCons */
 let myList = [
   1,
   2,
@@ -327,9 +331,9 @@ let myFunctionsInARecordThatMustWrap = {
   /* Desired wrapping */
   adder: fun reallyLongArgument => reallyLongArgument,
   minuser: fun anotherReallyLongArgument => anotherReallyLongArgument
+  /* Comment at bottom of record */
 };
 
-/* Comment at bottom of record */
 type twoArgFunctionsInARecord = {
   adder: int => int => int,
   minuser: int => int => int
@@ -2266,9 +2270,9 @@ let module CurriedSugar (A: ASig) (B: BSig) =>
   /* Commenting before Second curried functor arg */
   {
     let result = A.a + B.b;
+    /* Comment at bottom of module expression */
   };
 
-/* Comment at bottom of module expression */
 let module CurriedSugarFunctorResult =
   /* Commenting before functor name*/
   CurriedSugar
