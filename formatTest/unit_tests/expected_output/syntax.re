@@ -271,8 +271,8 @@ let point2D = {x: 20, y: 30};
 let point3D: point3D = {
   x: 10,
   y: 11,
-  z: 80
   /* Optional Comma */
+  z: 80
 };
 
 let printPoint (p: point) => {
@@ -341,18 +341,18 @@ let printPerson (p: person) => {
 
 /* let dontParseMeBro x y:int = x = y;*/
 /* With this unification, anywhere eyou see `= fun` you can just ommit it */
-let blah a => a;
-
 /* Done */
 let blah a => a;
 
 /* Done (almost) */
-let blah a b => a;
+let blah a => a;
 
 /* Done */
 let blah a b => a;
 
 /* Done (almost) */
+let blah a b => a;
+
 /* More than one consecutive pattern must have a single case */
 type blah = {blahBlah: int};
 
@@ -380,21 +380,21 @@ let
   onlyDoingThisTopLevelLetToBypassTopLevelSequence = {
   let x = {
     print_int 1;
-    print_int 20
     /* Missing trailing SEMI */
+    print_int 20
   };
   let x = {
     print_int 1;
-    print_int 20;
     /* Ensure missing middle SEMI reported well */
+    print_int 20;
     print_int 20
   };
   let x = {
     print_int 1;
     print_int 20;
     10
+    /* Missing final SEMI */
   };
-  /* Missing final SEMI */
   x + x
 };
 
@@ -445,17 +445,17 @@ let blah =
       let blah x | Red _ => 1 | Black _ => 0;
       Theres no sugar rule for dropping => fun, only = fun
    */
+/* See, nothing says we can drop the => fun */
 let blahCurriedX x =>
-  fun /* See, nothing says we can drop the => fun */
+  fun /* With some effort, we can ammend the sugar rule that would */
       | Red x
       | Black x
       | Green x => 1
-      /* With some effort, we can ammend the sugar rule that would */
-      | Black x => 0
       /* Allow us to drop any => fun.. Just need to make pattern matching */
+      | Black x => 0
+      /* Support that */
       | Green x => 0;
 
-/* Support that */
 /* This should be parsed/printed exactly as the previous */
 let blahCurriedX x =>
   fun | Red x
@@ -467,9 +467,9 @@ let blahCurriedX x =>
 /* Any time there are multiple match cases we require a leading BAR */
 let v = Red 10;
 
+/* So this NON-function still parses */
 let Black x | Red x | Green x = v;
 
-/* So this NON-function still parses */
 /* This doesn't parse, however (and it doesn't in OCaml either):
      let | Black x | Red x | Green x = v;
    */

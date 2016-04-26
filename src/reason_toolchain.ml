@@ -18,9 +18,60 @@
  * [implementation_with_comments] and [interface_with_comments] includes
  * additional information (about comments) suitable for building pretty
  * printers, editor, IDE and VCS integration.
+ *
+ * The comments include the full text of the comment (typically in between the
+ * "(*" and the "*)", as well as location information for that comment.
+ *
+ * WARNING: The "end" location is one greater than the actual final position!
+ * (for both [associatedTextLoc] and [commentLoc]).
+ *
+ * Currently, the location information for comments is of the form:
+ *
+ *  (associatedTextLoc)
+ *
+ * But we should quickly change it to be of the form:
+ *
+ *  (associatedTextLoc, commentLoc)
+ *
+ * Where the [commentLoc] is the actual original location of the comment,
+ * and the [associatedTextLoc] records the location in the file that the
+ * comment is attached to. If [associatedTextLoc] and [commentLoc] are the
+ * same, then the comment is "free floating" in that it only attaches to itself.
+ * The [Reason] pretty printer will try its best to interleave those comments
+ * in the containing list etc. But if [associatedTextLoc] expands beyond
+ * the [commentLoc] it means the comment and the AST that is captured by
+ * the [associatedTextLoc] are related - where "related" is something
+ * this [reason_toolchain] decides (but in short it handles "end of line
+ * comments"). Various pretty printers can decide how to preserve this
+ * relatedness. Ideally, it would preserve end of line comments, but in the
+ * short term, it might merely use that relatedness to correctly attach
+ * end of line comments to the "top" of the AST node.
+ *
+ *    let lst = [
+ *
+ *    ];   (*    Comment    *)
+ *         ----commentLoc-----
+ *    ---associatedTextLoc----
+ *
+ *
+ * Ideally that would be formatted as:
+ *
+ *    let lst = [
+ *
+ *    ];   (*    Comment    *)
+ *
+ * Or:
+ *
+ *    let lst = [ ];   (*    Comment    *)
+ *
+ *
+ * But a shorter term solution would use that [associatedTextLoc] to at least
+ * correctly attach the comment to the correct node, even if not "end of line".
+ *
+ *   (*    Comment    *)
+ *   let lst = [ ];
  *)
 
-open Ast_helper
 open Location
 open Lexing
 
@@ -28,20 +79,20 @@ let invalidLex = "invalidCharacter.orComment.orString"
 let syntax_error_str err loc =
   if !Reason_config.recoverable then
     [
-      Str.mk ~loc:loc (Parsetree.Pstr_extension (Reason_utils.syntax_error_extension_node loc invalidLex, []))
+      Ast_helper.Str.mk ~loc:loc (Parsetree.Pstr_extension (Reason_utils.syntax_error_extension_node loc invalidLex, []))
     ]
   else
     raise err
 
 let syntax_error_core_type err loc =
   if !Reason_config.recoverable then
-    Typ.mk ~loc:loc (Parsetree.Ptyp_extension (Reason_utils.syntax_error_extension_node loc invalidLex))
+    Ast_helper.Typ.mk ~loc:loc (Parsetree.Ptyp_extension (Reason_utils.syntax_error_extension_node loc invalidLex))
   else
     raise err
 
 let syntax_error_sig err loc =
   if !Reason_config.recoverable then
-    [Sig.mk ~loc:loc (Parsetree.Psig_extension (Reason_utils.syntax_error_extension_node loc invalidLex, []))]
+    [Ast_helper.Sig.mk ~loc:loc (Parsetree.Psig_extension (Reason_utils.syntax_error_extension_node loc invalidLex, []))]
   else
     raise err
 
@@ -115,13 +166,16 @@ module type Toolchain_spec = sig
   val format_implementation_with_comments: (Parsetree.structure * comments) -> Format.formatter -> unit
 end
 
+let line_content = Str.regexp "[^ \t]+"
+let space_before_newline = Str.regexp "[ \t]*$"
+let new_line = Str.regexp "^"
+
 module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = struct
   let wrap_with_comments parsing_fun lexbuf =
     Toolchain_impl.safeguard_parsing lexbuf (fun () ->
       let _ = Toolchain_impl.Lexer_impl.init () in
       let ast = parsing_fun lexbuf in
       let unmodified_comments = Toolchain_impl.Lexer_impl.comments() in
-
       match !chan_input with
         | "" ->
           let _  = Parsing.clear_parser() in
@@ -129,9 +183,25 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
         | _ ->
           let modified_comments =
             List.map (fun (str, loc) ->
+              (* When searching for "^" regexp, returns location of newline + 1 *)
+              let first_char_of_line = Str.search_backward new_line !chan_input loc.loc_start.pos_cnum in
               let comment_length = (loc.loc_end.pos_cnum - loc.loc_start.pos_cnum - 4) in
               let original_comment_contents = String.sub !chan_input (loc.loc_start.pos_cnum + 2) comment_length in
-              (original_comment_contents, loc)
+              let (com, attachment_location) =
+                match Str.search_forward line_content !chan_input first_char_of_line
+                with
+                  | n ->
+                    (* Recall that comment end position is messed up. *)
+                    let one_greater_than_comment_end = loc.loc_end.pos_cnum in
+                    (* Str.string_match lets you specify a position one greater than last position *)
+                    let comment_is_last_thing_on_line = Str.string_match space_before_newline !chan_input one_greater_than_comment_end in
+                    if n < loc.loc_start.pos_cnum && comment_is_last_thing_on_line then
+                      (original_comment_contents, {loc with loc_start = {loc.loc_start with pos_cnum = n}})
+                    else
+                      (original_comment_contents, loc)
+                  | exception Not_found -> (original_comment_contents, loc)
+              in
+              (com, attachment_location)
             )
             unmodified_comments
           in
