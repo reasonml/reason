@@ -281,7 +281,7 @@ let myList = [
 let myList = [
   1,
   2,
-  3,
+  3
   /*CommentAfterThreeBeforeCons */
 ];
 
@@ -1707,9 +1707,9 @@ let someResult: (
   int,
   int,
   int
+  /* This shouldn't be broken onto its own newline: @see ensureSingleTokenSticksToLabel */
 ) = someResult;
 
-/* This shouldn't be broken onto its own newline: @see ensureSingleTokenSticksToLabel */
 type sevenStrings = (
   string,
   string,
@@ -1814,9 +1814,9 @@ let df_locallyAbstractFunc
     (type b)
     (input: a) => {
   inputIs: input
+  /* With setting ReturnValOnSameLine */
 };
 
-/* With setting ReturnValOnSameLine */
 let df_locallyAbstractFuncNotSugared
     (type a)
     (type b)

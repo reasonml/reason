@@ -1168,7 +1168,7 @@ let rec splitCommentsAt lexLoc comments =
   match comments with
     | [] -> ([], [])
     | ((str, commLoc) as com)::tl ->
-      if commLoc.loc_end.pos_cnum <= leftSplitUpToAndIncluding then
+      if commLoc.loc_start.pos_cnum <= leftSplitUpToAndIncluding then
         let (recurseLeft, recurseRight) = splitCommentsAt lexLoc tl in
         (com::recurseLeft, recurseRight)
       else
@@ -1303,17 +1303,22 @@ and layoutSequenceToEasyFormatAndSurplus ?interleaveCommentsUpTo listConfig subL
   let listConfigNoSep = removeSepFromListConfig listConfig in
   let (distribution, unconsumedComms) =
     let (interleaved, unconsumed) = interleaveComments ?interleaveCommentsUpTo listConfig subLayouts comments in
-    (* previousItem will become handy for stick to left *)
-    let rec attachSeparators previousItem item remainingComments: Easy_format.t list =
+    let rec attachSeparators item remainingComments =
       match (item, remainingComments) with
-      | ((Item x | Comment x), []) -> [x]
+      | (Item x, []) -> (true, [x])
+      | (Comment x, []) -> (false, [x])
       | (Item i, rHd::rTl) ->
-          (attach listConfig ~useSep:true i)::(attachSeparators (Some item) rHd rTl)
-      | (Comment c, rHd::rTl) -> (attach listConfig ~useSep:false c)::(attachSeparators (Some item) rHd rTl)
+          let (hadMoreItems, results) = (attachSeparators rHd rTl) in
+          (true, (attach listConfig ~useSep:hadMoreItems i)::results)
+      | (Comment c, rHd::rTl) ->
+        let (hadMoreItems, results) = (attachSeparators rHd rTl) in
+        (hadMoreItems, (attach listConfig ~useSep:false c)::results)
     in
     match interleaved with
     | [] -> ([], unconsumed)
-    | hd::tl -> ((attachSeparators None hd tl), unconsumed)
+    | hd::tl ->
+    let (_, withSeparators) = (attachSeparators hd tl) in
+    (withSeparators, unconsumed)
   in
   let wereCommentsInterleaved = List.length subLayouts != List.length distribution in
   let adjustedListConfig =
@@ -3458,193 +3463,203 @@ class printer  ()= object(self:'self)
       in
       SourceMap (x.pexp_loc, itm)
     else
-      let itm = match x.pexp_desc with
+      match x.pexp_desc with
         (* Sequences don't require parens when under pipe in Reason. *)
         (* The only reason Pexp_fun must also be wrapped in parens is that its =>
            token will be confused with the match token. *)
         (* In Reason, we do not need to wrap matches in parens when we are under
          * a pipe because we don't have the usual ambiguity that arises in OCaml.*)
-        | Pexp_function _ | Pexp_fun _
-          when pipe || semi ->
-            self#paren ~first:"(" ~last:")" true self#reset#expression x
-        (* | Pexp_let _ | Pexp_letmodule _ when semi -> *)
-        (*     self#paren true self#reset#expression x *)
-        | Pexp_fun _
-        | Pexp_newtype _ ->  (* Moved this from simple_expression - is that correct to do so? *)
-            (* label * expression option * pattern * expression *)
-            let (args, ret) = self#curriedPatternsAndReturnVal x in
-            (match args with
-              | [] -> raise (NotPossible "no arrow args")
-              | firstArg::tl ->
-                  (* For lambdas, "fun" plays the role that the binding name does in
-                     bindings *)
-                  let returnedAppTerms = combinedAppItems (self#expressionToFormattedApplicationItems ret) in
-                  self#wrapCurriedFunctionBinding "fun" firstArg tl returnedAppTerms
-            )
+        | Pexp_function _
+           when pipe || semi -> self#paren ~first:"(" ~last:")" true self#reset#expression x
         | Pexp_function l ->
             (* Anything that doesn't have wrappers (parens/braces) should be inline
                so that when appearing in other inline contexts, semicolons bind to
                the end etc.  *)
-          makeList
-            ~postSpace:true
-            ~break:Always_rec
-            ~inline:(true, true)
-            ~wrap:("fun","")
-            ~pad:(true, false)
-            (self#case_list l)
-
-        | Pexp_try (e, l) ->
-            let switchWith =
-              label ~space:true
-                (atom "try")
-                (self#reset#simple_expression e);
-            in
-            label ~space:true switchWith (makeList ~indent:settings.trySwitchIndent ~wrap:("{", "}") ~break:Always_rec (self#case_list l))
-        | Pexp_match (e, l) -> (
-            match detectTernary l with
-            | Some (ifTrue, ifFalse) -> self#formatTernary x e ifTrue ifFalse
-            | None ->
-              let switchWith = label ~space:true
-                (atom "switch")
-                (self#reset#simple_expression e);
-              in
-              label
-                ~space:true
-                switchWith
-                (makeList ~indent:settings.trySwitchIndent ~wrap:("{", "}") ~break:Always_rec (self#case_list l))
-          )
-
-        | Pexp_apply (e, l) -> (
-            match self#expressionToFormattedApplicationItems x with
-              | ([], [], _) ->
-                  raise (
-                    NotPossible (
-                      "no application items extracted " ^ (exprDescrString x)
-                    )
+            makeList
+              ~postSpace:true
+              ~break:Always_rec
+              ~inline:(true, true)
+              ~wrap:("fun","")
+              ~pad:(true, false)
+              (self#case_list l)
+          | _ ->
+            (* The Pexp_function cases above don't use location because comment printing
+              breaks for them. *)
+            let itm = match x.pexp_desc with
+              (* Sequences don't require parens when under pipe in Reason. *)
+              (* The only reason Pexp_fun must also be wrapped in parens is that its =>
+                 token will be confused with the match token. *)
+              (* In Reason, we do not need to wrap matches in parens when we are under
+               * a pipe because we don't have the usual ambiguity that arises in OCaml.*)
+              | Pexp_fun _
+                when pipe || semi ->
+                  self#paren ~first:"(" ~last:")" true self#reset#expression x
+              (* | Pexp_let _ | Pexp_letmodule _ when semi -> *)
+              (*     self#paren true self#reset#expression x *)
+              | Pexp_fun _
+              | Pexp_newtype _ ->  (* Moved this from simple_expression - is that correct to do so? *)
+                  (* label * expression option * pattern * expression *)
+                  let (args, ret) = self#curriedPatternsAndReturnVal x in
+                  (match args with
+                    | [] -> raise (NotPossible "no arrow args")
+                    | firstArg::tl ->
+                        (* For lambdas, "fun" plays the role that the binding name does in
+                           bindings *)
+                        let returnedAppTerms = combinedAppItems (self#expressionToFormattedApplicationItems ret) in
+                        self#wrapCurriedFunctionBinding "fun" firstArg tl returnedAppTerms
                   )
-              | ([], sugarExpr::[], _) ->
-                  (* This can happen in the case of [sugar_expr] [arrayWithTwo.(1) <- 300] *)
-                  sugarExpr
-              | appTerms ->
-                formatAttachmentApplication
-                  applicationFinalWrapping
-                  None
-                  (combinedAppItems appTerms)
-          )
-        | Pexp_construct (li, Some eo) when not (is_simple_construct (view_expr x)) -> (* Not efficient FIXME*)
-            (match view_expr x with
-              | `cons ls -> (* LIST EXPRESSION *)
-                  begin
-                    match List.rev (List.map self#simple_expression ls) with
-                    | last :: lst_rev ->
-                      let lst = List.rev lst_rev in
-                      makeES6List lst last
-                    | [] ->
-                      assert false
-                  end
-              (* TODO: Explicit arity *)
-              | `normal ->
-                  let arityIsClear = isArityClear arityAttrs in
-                  self#constructor_expression ~arityIsClear stdAttrs (self#longident_loc li) eo
-              | _ -> assert false)
-        | Pexp_setfield (e1, li, e2) ->
-          label ~space:true
-            (makeList ~postSpace:true [
-              label (makeList [self#simple_enough_to_be_lhs_dot_send e1; atom "."]) (self#longident_loc li);
-              (atom "=")
-            ])
-            (self#expression e2)
-        | Pexp_override l -> (* FIXME *)
-          let string_x_expression (s, e) =
-            label ~space:true (atom (s.txt ^ ":")) (self#expression e)
-          in
-          makeList
-            ~postSpace:true
-            ~wrap:("{<", ">}")
-            ~sep:","
-            (List.map string_x_expression l)
+              | Pexp_try (e, l) ->
+                  let switchWith =
+                    label ~space:true
+                      (atom "try")
+                      (self#reset#simple_expression e);
+                  in
+                  label ~space:true switchWith (makeList ~indent:settings.trySwitchIndent ~wrap:("{", "}") ~break:Always_rec (self#case_list l))
+              | Pexp_match (e, l) -> (
+                  match detectTernary l with
+                  | Some (ifTrue, ifFalse) -> self#formatTernary x e ifTrue ifFalse
+                  | None ->
+                    let switchWith = label ~space:true
+                      (atom "switch")
+                      (self#reset#simple_expression e);
+                    in
+                    label
+                      ~space:true
+                      switchWith
+                      (makeList ~indent:settings.trySwitchIndent ~wrap:("{", "}") ~break:Always_rec (self#case_list l))
+                )
 
-        | Pexp_ifthenelse (e1, e2, eo) ->
-          let (blocks, finalExpression) = sequentialIfBlocks eo in
-          let rec sequence soFar remaining = (
-            match (remaining, finalExpression) with
-              | ([], None) -> soFar
-              | ([], Some e) ->
-                let soFarWithElseAppended = makeList ~postSpace:true [soFar; atom "else"] in
-                label ~space:true soFarWithElseAppended (makeLetSequence (self#letList e))
-              | (hd::tl, _) ->
-                let (e1, e2) = hd in
-                let soFarWithElseIfAppended =
+              | Pexp_apply (e, l) -> (
+                  match self#expressionToFormattedApplicationItems x with
+                    | ([], [], _) ->
+                        raise (
+                          NotPossible (
+                            "no application items extracted " ^ (exprDescrString x)
+                          )
+                        )
+                    | ([], sugarExpr::[], _) ->
+                        (* This can happen in the case of [sugar_expr] [arrayWithTwo.(1) <- 300] *)
+                        sugarExpr
+                    | appTerms ->
+                      formatAttachmentApplication
+                        applicationFinalWrapping
+                        None
+                        (combinedAppItems appTerms)
+                )
+              | Pexp_construct (li, Some eo) when not (is_simple_construct (view_expr x)) -> (* Not efficient FIXME*)
+                  (match view_expr x with
+                    | `cons ls -> (* LIST EXPRESSION *)
+                        begin
+                          match List.rev (List.map self#simple_expression ls) with
+                          | last :: lst_rev ->
+                            let lst = List.rev lst_rev in
+                            makeES6List lst last
+                          | [] ->
+                            assert false
+                        end
+                    (* TODO: Explicit arity *)
+                    | `normal ->
+                        let arityIsClear = isArityClear arityAttrs in
+                        self#constructor_expression ~arityIsClear stdAttrs (self#longident_loc li) eo
+                    | _ -> assert false)
+              | Pexp_setfield (e1, li, e2) ->
+                label ~space:true
+                  (makeList ~postSpace:true [
+                    label (makeList [self#simple_enough_to_be_lhs_dot_send e1; atom "."]) (self#longident_loc li);
+                    (atom "=")
+                  ])
+                  (self#expression e2)
+              | Pexp_override l -> (* FIXME *)
+                let string_x_expression (s, e) =
+                  label ~space:true (atom (s.txt ^ ":")) (self#expression e)
+                in
+                makeList
+                  ~postSpace:true
+                  ~wrap:("{<", ">}")
+                  ~sep:","
+                  (List.map string_x_expression l)
+
+              | Pexp_ifthenelse (e1, e2, eo) ->
+                let (blocks, finalExpression) = sequentialIfBlocks eo in
+                let rec sequence soFar remaining = (
+                  match (remaining, finalExpression) with
+                    | ([], None) -> soFar
+                    | ([], Some e) ->
+                      let soFarWithElseAppended = makeList ~postSpace:true [soFar; atom "else"] in
+                      label ~space:true soFarWithElseAppended (makeLetSequence (self#letList e))
+                    | (hd::tl, _) ->
+                      let (e1, e2) = hd in
+                      let soFarWithElseIfAppended =
+                        label
+                          ~space:true
+                          (makeList ~postSpace:true [soFar; atom "else if"])
+                          (self#simple_expression e1)
+                      in
+                      let nextSoFar =
+                        label ~space:true soFarWithElseIfAppended (makeLetSequence (self#letList e2)) in
+                      sequence nextSoFar tl
+                ) in
+                let init =
                   label
                     ~space:true
-                    (makeList ~postSpace:true [soFar; atom "else if"])
-                    (self#simple_expression e1)
-                in
-                let nextSoFar =
-                  label ~space:true soFarWithElseIfAppended (makeLetSequence (self#letList e2)) in
-                sequence nextSoFar tl
-          ) in
-          let init =
-            label
-              ~space:true
-              (label ~space:true (atom "if") (self#simple_expression e1))
-              (makeLetSequence (self#letList e2)) in
-          sequence init blocks
+                    (label ~space:true (atom "if") (self#simple_expression e1))
+                    (makeLetSequence (self#letList e2)) in
+                sequence init blocks
 
-        | Pexp_while (e1, e2) ->
-          label
-            ~space:true
-            (label ~space:true (atom "while") (self#simple_expression e1))
-            (makeLetSequence (self#letList e2))
-        | Pexp_for (s, e1, e2, df, e3) ->
-          (*
-           *  for longIdentifier in
-           *      (longInit expr) to
-           *      (longEnd expr) {
-           *    print_int longIdentifier;
-           *  };
-           *)
-          let identifierIn = (makeList ~postSpace:true [self#pattern s; atom "in";]) in
-          let dockedToFor =
-              (makeList
-                ~break:IfNeed
-                ~postSpace:true
-                ~inline:(true, true)
-                [
-                  identifierIn;
-                  makeList ~postSpace:true [self#simple_expression e1; self#direction_flag df];
-                  (self#simple_expression e2);
-                ]
-              )
-          in
-          let upToBody = makeList ~inline:(true, true) ~postSpace:true [atom "for"; dockedToFor] in
-          label ~space:true upToBody (makeLetSequence (self#letList e3))
-        | Pexp_new (li) ->
-          label ~space:true (atom "new") (self#longident_class_or_type_loc li);
-        | Pexp_setinstvar (s, e) ->
-          label
-            ~space:true
-            (makeList ~postSpace:true [(atom s.txt); (atom "=")])
-            (self#expression e)
-        | Pexp_assert e ->
-            label ~space:true
-              (atom "assert")
-              (self#reset#simple_expression e);
-        | Pexp_lazy (e) ->
-            label ~space:true (atom "lazy") (self#simple_expression e)
-        | Pexp_poly _ ->
-          failwith (
-            "This version of the pretty printer assumes it is impossible to " ^
-            "construct a Pexp_poly outside of a method definition - yet it sees one."
-          )
-        | Pexp_variant (l, Some eo) ->
-            if arityAttrs != [] then
-              raise (NotPossible "Should never see embedded attributes on poly variant")
-            else
-              self#constructor_expression ~polyVariant:true ~arityIsClear:true stdAttrs (atom ("`" ^ l)) eo
-        | _ -> self#simple_expression x
-      in
-      SourceMap (x.pexp_loc, itm)
+              | Pexp_while (e1, e2) ->
+                label
+                  ~space:true
+                  (label ~space:true (atom "while") (self#simple_expression e1))
+                  (makeLetSequence (self#letList e2))
+              | Pexp_for (s, e1, e2, df, e3) ->
+                (*
+                 *  for longIdentifier in
+                 *      (longInit expr) to
+                 *      (longEnd expr) {
+                 *    print_int longIdentifier;
+                 *  };
+                 *)
+                let identifierIn = (makeList ~postSpace:true [self#pattern s; atom "in";]) in
+                let dockedToFor =
+                    (makeList
+                      ~break:IfNeed
+                      ~postSpace:true
+                      ~inline:(true, true)
+                      [
+                        identifierIn;
+                        makeList ~postSpace:true [self#simple_expression e1; self#direction_flag df];
+                        (self#simple_expression e2);
+                      ]
+                    )
+                in
+                let upToBody = makeList ~inline:(true, true) ~postSpace:true [atom "for"; dockedToFor] in
+                label ~space:true upToBody (makeLetSequence (self#letList e3))
+              | Pexp_new (li) ->
+                label ~space:true (atom "new") (self#longident_class_or_type_loc li);
+              | Pexp_setinstvar (s, e) ->
+                label
+                  ~space:true
+                  (makeList ~postSpace:true [(atom s.txt); (atom "=")])
+                  (self#expression e)
+              | Pexp_assert e ->
+                  label ~space:true
+                    (atom "assert")
+                    (self#reset#simple_expression e);
+              | Pexp_lazy (e) ->
+                  label ~space:true (atom "lazy") (self#simple_expression e)
+              | Pexp_poly _ ->
+                failwith (
+                  "This version of the pretty printer assumes it is impossible to " ^
+                  "construct a Pexp_poly outside of a method definition - yet it sees one."
+                )
+              | Pexp_variant (l, Some eo) ->
+                  if arityAttrs != [] then
+                    raise (NotPossible "Should never see embedded attributes on poly variant")
+                  else
+                    self#constructor_expression ~polyVariant:true ~arityIsClear:true stdAttrs (atom ("`" ^ l)) eo
+              | _ -> self#simple_expression x
+            in
+            SourceMap (x.pexp_loc, itm)
 
 
   method potentiallyConstrainedExpr x =

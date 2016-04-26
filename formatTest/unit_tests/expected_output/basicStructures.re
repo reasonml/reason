@@ -446,9 +446,9 @@ arrayWithTwo.(1) = 300;
  */
 let myString = "asdf";
 
+/* Replacing a character: I could do without this sugar */
 myString.[2] = '9';
 
-/* Replacing a character: I could do without this sugar */
 /*                           FUNCTIONS
  *=============================================================================
  */
