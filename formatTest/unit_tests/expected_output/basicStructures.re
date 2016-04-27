@@ -344,8 +344,9 @@ let result: list string = [
 
 /* To operate on lists, use pattern matching */
 let rec size =
-  fun | [] => 0
-      | [hd, ...tl] => 1 + size tl;
+  fun
+  | [] => 0
+  | [hd, ...tl] => 1 + size tl;
 
 /* Optimize for tail recursion */
 let rec size soFar lst =>

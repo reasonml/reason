@@ -9,5 +9,6 @@ let intTuple = `IntTuple (1, 2);
 let stillAnIntTuple = `StillAnIntTuple (4, 5);
 
 let sumThem =
-  fun | `IntTuple (x, y) => x + y
-      | `StillAnIntTuple (a, b) => a + b;
+  fun
+  | `IntTuple (x, y) => x + y
+  | `StillAnIntTuple (a, b) => a + b;

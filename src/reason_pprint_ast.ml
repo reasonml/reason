@@ -3477,11 +3477,10 @@ class printer  ()= object(self:'self)
                the end etc.  *)
             makeList
               ~postSpace:true
-              ~break:Always_rec
+              ~break:IfNeed
               ~inline:(true, true)
-              ~wrap:("fun","")
-              ~pad:(true, false)
-              (self#case_list l)
+              ~pad:(false, false)
+              ((atom "fun")::(self#case_list l))
           | _ ->
             (* The Pexp_function cases above don't use location because comment printing
               breaks for them. *)

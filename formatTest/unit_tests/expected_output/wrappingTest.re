@@ -2112,19 +2112,21 @@ let blah arg =>
   };
 
 let blah =
-  fun | Red _ => 1
-      | Black _ => 0
-      | Green _ => 1;
+  fun
+  | Red _ => 1
+  | Black _ => 0
+  | Green _ => 1;
 
 let blahCurriedX x =>
-  fun /* Comment before first bar */
-      /* Comment between first bar and OR pattern */
-      | Red x
-      | Black x
-      | Green x => 1
-      /* Comment before second bar */
-      | Black x => 0
-      | Green x => 0;
+  fun
+  /* Comment before first bar */
+  /* Comment between first bar and OR pattern */
+  | Red x
+  | Black x
+  | Green x => 1
+  /* Comment before second bar */
+  | Black x => 0
+  | Green x => 0;
 
 type reallyLongVariantNames =
   | ReallyLongVariantName of recordWithLong

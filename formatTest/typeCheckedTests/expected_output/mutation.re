@@ -51,5 +51,6 @@ switch numberToSwitchOn {
 };
 
 let mutativeFunction =
-  fun | Some x => holdsAUnit.contents = ()
-      | None => holdsAUnit := ();
+  fun
+  | Some x => holdsAUnit.contents = ()
+  | None => holdsAUnit := ();

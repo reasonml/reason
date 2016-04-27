@@ -223,9 +223,10 @@ let rec commentPolymorphicCases:
   'a .
   option 'a => int
  =
-  fun | Some a => 1
-      /* Comment on one */
-      | None => 0;
+  fun
+  | Some a => 1
+  /* Comment on one */
+  | None => 0;
 
 let thisWontCompileButLetsSeeHowItFormats =
   switch something {
@@ -234,9 +235,10 @@ let thisWontCompileButLetsSeeHowItFormats =
   };
 
 let thisWontCompileButLetsSeeHowItFormats =
-  fun | Zero
-      | One _ _ _ => 10
-      | Two => 20;
+  fun
+  | Zero
+  | One _ _ _ => 10
+  | Two => 20;
 
 /* Comment on two */
 /**
@@ -248,11 +250,12 @@ type term _ =
   | App of (term ('b => 'a)) (term 'b) :term 'a;
 
 let rec eval: type a. term a => a =
-  fun | Int n => n
-      /* a = int */
-      | Add => (fun x y => x + y)
-      /* a = int => int => int */
-      | App f x => (eval f) (eval x);
+  fun
+  | Int n => n
+  /* a = int */
+  | Add => (fun x y => x + y)
+  /* a = int => int => int */
+  | App f x => (eval f) (eval x);
 
 let rec eval: type a. term a => a =
   fun x =>
@@ -424,26 +427,25 @@ let res =
  * Testing explicit arity.
  */
 let rec map f =>
-  fun | Node None m =>
-          Node None (M.map (map f) m)
-      | Node LongModule.Path.None m =>
-          Node None (M.map (map f) m)
-      | Node (LongModule.Path.Some v) m =>
-          Node (Some (f v)) (M.map (map f) m);
+  fun
+  | Node None m => Node None (M.map (map f) m)
+  | Node LongModule.Path.None m =>
+      Node None (M.map (map f) m)
+  | Node (LongModule.Path.Some v) m =>
+      Node (Some (f v)) (M.map (map f) m);
 
 let myFunc x y None => "asdf";
 
 let rec map f =>
-  fun | Node None m =>
-          Node None (M.map (map f) m)
-      | Node LongModule.Path.None m =>
-          LongModule.Path.Node
-            LongModule.Path.None
-            (M.map (map f) m)
-      | Node (LongModule.Path.Some v) m =>
-          LongModule.Path.Node
-            (LongModule.Path.Some (f v))
-            (M.map (map f) m);
+  fun
+  | Node None m => Node None (M.map (map f) m)
+  | Node LongModule.Path.None m =>
+      LongModule.Path.Node
+        LongModule.Path.None (M.map (map f) m)
+  | Node (LongModule.Path.Some v) m =>
+      LongModule.Path.Node
+        (LongModule.Path.Some (f v))
+        (M.map (map f) m);
 
 let myFunc x y LongModule.Path.None => "asdf";
 
