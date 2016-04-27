@@ -23,10 +23,21 @@ endif
 " From auto-format plugin:
 " https://github.com/Chiel92/vim-autoformat/blob/master/plugin/autoformat.vim
 let g:vimreason_reason = "refmt"
-let g:vimreason_args_expr_reason = '"-use-stdin true -print re " .' .  "expand('%')"
-"
+let g:vimreason_args_expr_reason = '"-use-stdin true -print re -is-interface-pp " .  (match(expand("%"), "\\.rei$") == -1 ? "false " : "true ")  . expand("%")'
+
 function! Strip(input_string)
   return substitute(a:input_string, '\s*$', '\1', '')
+endfunction
+
+" http://vim.wikia.com/wiki/Get_shortened_messages_from_using_echomsg
+function! ShortMsg(msg)
+  " regular :echomsg doesn't shorten messages with +T
+  " but for some reason, with "norm echomsg", it does.
+  " The same trick doesn't work for echoerr :(
+  let saved=&shortmess
+  set shortmess+=T
+  exe "norm :echomsg a:msg\n"
+  let &shortmess=saved
 endfunction
 
 function! s:set_formatprg(...)
@@ -64,7 +75,7 @@ function! s:set_formatprg(...)
     if !executable(s:formatprg)
         "Configured formatprg not installed
         if exists("g:autoformat_verbosemode")
-            echoerr "Defined formatter ".eval(s:vimreason_var)." is not executable."
+            let res = ShortMsg("Defined formatter ".eval(s:vimreason_var)." is not executable.")
         endif
         return 0
     endif
@@ -87,7 +98,7 @@ function! s:set_formatprg(...)
       let out = substitute(out, '\m\s\{2,}', ' ', 'g')
       let out = substitute(out, '\m^\s\+', '', '')
       let out = substitute(out, '\m\s\+$', '', '')
-      echomsg out
+      let res = ShortMsg(out)
       return 0
     else
       let numModifications = 0
@@ -117,7 +128,7 @@ function! s:set_formatprg(...)
         let i = i - 1
       endwhile
       if numModifications == 0
-        echomsg "Refmt: Already Formatted"
+        let res = ShortMsg("Refmt: Already Formatted")
       endif
       return 1
     endif
