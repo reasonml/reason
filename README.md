@@ -18,11 +18,13 @@ Install Stable
 > Stable: Not as many features
 
 ```sh
+brew update
 brew install opam --HEAD
 opam init
 # Add this to your ~/.bashrc (or ~/.zshrc):
 #   eval `opam config env`
 
+opam update
 opam switch 4.02.3
 opam pin add -y reason git@github.com:facebook/Reason.git#cf964becc9969ce16175fcdea52e0c95cc8b2056
 opam pin add -y merlin git@github.com:the-lambda-church/merlin.git#7f2f29ba85e07c9d0367456649e626d6ea6d037d
