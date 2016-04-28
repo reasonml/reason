@@ -15,8 +15,6 @@ Reason: Meta Language Utility
 Install Stable
 ----------
 
-> Stable: Not as many features
-
 ```sh
 brew update
 brew install opam --HEAD
@@ -26,24 +24,9 @@ opam init
 
 opam update
 opam switch 4.02.3
-opam pin add -y reason git@github.com:facebook/Reason.git#cf964becc9969ce16175fcdea52e0c95cc8b2056
-opam pin add -y merlin git@github.com:the-lambda-church/merlin.git#7f2f29ba85e07c9d0367456649e626d6ea6d037d
-
-```
-
-Install Bleeding Edge
-----------
-> Bleeding Edge: (More features, probably some bugs)
-
-```sh
-# Remove your previous pins from above
-opam pin remove merlin
-opam pin remove merlin_extend
-opam pin remove reason
-# Pin bleeding edge packages
 opam pin add -y merlin git@github.com:the-lambda-church/merlin.git#df48da122f02e2276b14bcab58490350749215fa
 opam pin add -y merlin_extend git@github.com:def-lkb/merlin-extend.git#ef634252a793542b05ec00a90f3c17de8fe0a357
-opam pin add -y reason git@github.com:facebook/reason.git#a3c919738fbb0ff227b3c9f205b44957b003f744
+opam pin add -y reason git@github.com:facebook/reason.git#bfd713953dd16daac7d5e4ff609369d2dca56a7e
 
 ```
 
