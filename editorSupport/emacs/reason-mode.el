@@ -930,6 +930,26 @@ function or trait.  When nil, where will be aligned with fn or trait."
         'font-lock-comment-face
         ))))
 
+(defun reason-mode-try-find-alternate-file (mod-name extension)
+  "Switch to the file given by MOD-NAME and EXTENSION."
+  (let* ((filename (concat mod-name extension))
+         (buffer (get-file-buffer filename)))
+    (if buffer (switch-to-buffer buffer)
+      (find-file filename))))
+
+(defun reason-mode-find-alternate-file ()
+  "Switch to implementation/interface file."
+  (interactive)
+  (let ((name buffer-file-name))
+    (when (string-match "\\`\\(.*\\)\\.re\\([il]\\)?\\'" name)
+      (let ((mod-name (match-string 1 name))
+            (e (match-string 2 name)))
+        (cond
+         ((string= e "i")
+            (reason-mode-try-find-alternate-file mod-name ".re"))
+         (t
+          (reason-mode-try-find-alternate-file mod-name ".rei")))))))
+
 (defun rust-fill-prefix-for-comment-start (line-start)
   "Determine what to use for `fill-prefix' based on what is at the beginning of a line."
   (let ((result
@@ -1058,9 +1078,19 @@ This is written mainly to be used as `end-of-defun-function' for Reason."
 (defalias 'reason-parent-mode
   (if (fboundp 'prog-mode) 'prog-mode 'fundamental-mode))
 
+(defvar reason-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map "\C-c\C-a" 'reason-mode-find-alternate-file)
+    map
+    )
+  "Keymap for Reason major mode."
+)
+
 ;;;###autoload
 (define-derived-mode reason-mode reason-parent-mode "Reason"
-  "Major mode for Reason code."
+  "Major mode for Reason code.
+
+\\{reason-mode-map}"
   :group 'reason-mode
   :syntax-table reason-mode-syntax-table
 
@@ -1096,6 +1126,7 @@ This is written mainly to be used as `end-of-defun-function' for Reason."
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.re\\'" . reason-mode))
 (add-to-list 'auto-mode-alist '("\\.rei\\'" . reason-mode))
+
 
 (defun reason-mode-reload ()
   (interactive)
