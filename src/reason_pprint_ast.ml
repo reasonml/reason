@@ -1490,7 +1490,7 @@ let formatAttachmentApplication finalWrapping (attachTo: (bool * layoutNode) opt
                 match delimiter with
                   | Some s ->
                     makeList ~postSpace:true  [
-                      (makeList ~postSpace:useSpace [toThis; attachedArgs]);
+                      (label ~space:useSpace toThis attachedArgs);
                       (atom s);
                     ]
                   | None ->

@@ -97,14 +97,18 @@ let a = 10;
 let b = 20;
 
 /*A*/
-let named /* a::a */ a::a /* b::b */ b::b => /* a + b */ a + b;
+let named /* a::a */ a::a /* b::b */ b::b =>
+  /* a + b */
+  a + b;
 
 /*B*/
 let namedAlias
     /* a::aa */
     a::aa
     /* b::bb */
-    b::bb => /* aa + bb */ aa + bb;
+    b::bb =>
+  /* aa + bb */
+  aa + bb;
 
 /*C*/
 let namedAnnot
@@ -2591,3 +2595,16 @@ let test =
        Not many people write comments like this.
      */
   10;
+
+let x =
+  calWith
+    reallyLongName
+    reallyReallyLongName
+    reallyReallyLongName
+    reallyReallyLongName
+    reallyReallyLongName
+    reallyReallyLongName
+    a
+    a
+    a
+    alskdjfalskdjfalsdf + reallyReallyLongName;

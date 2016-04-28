@@ -140,10 +140,8 @@ first || second || third;
 
 /* No parens should be added/removed from the following when formatting */
 let seeWhichCharacterHasHigherPrecedence = (
-                                        first |>
-                                        second |>
-                                        third
-                                        ) ^> fourth;
+  first |> second |> third
+) ^> fourth;
 
 let seeWhichCharacterHasHigherPrecedence =
   first |> second |> third;
@@ -240,13 +238,11 @@ let rightAssocGrouping = first ^> second ^> third;
 let seeWhichCharacterHasHigherPrecedence =
   first |> second ^> third;
 
-let seeWhichCharacterHasHigherPrecedence = first
-                                        ^> second |> third;
+let seeWhichCharacterHasHigherPrecedence =
+  first ^> second |> third;
 
-let seeWhichCharacterHasHigherPrecedence = first
-                                        ^> (
-                                        second |> third
-                                        ) |> fourth;
+let seeWhichCharacterHasHigherPrecedence =
+  first ^> (second |> third) |> fourth;
 
 let res =
   blah &&
