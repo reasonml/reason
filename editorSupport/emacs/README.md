@@ -26,7 +26,6 @@ To install manually, install both reason and merlin, add this to your
 (add-hook 'reason-mode-hook (lambda ()
                               (add-hook 'before-save-hook 'refmt-before-save)
                               (merlin-mode)))
-(setq merlin-default-flags (list ""))
 ```
 
 This associates `reason-mode` with `.re` and `.rei` files. To enable it explicitly, do
