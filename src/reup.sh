@@ -144,7 +144,7 @@ cp -af $DIR $BACKUP_DIR
 
 find $DIR -type f -name "*.re" | while read file; do
     set -x
-    $OPAM_BIN/refmt-$VERSION -print binary_reason $file | $OPAM_BIN/refmt -print-width $PRINTWIDTH -use-stdin true -parse binary_reason -print re > $file.new
+    $OPAM_BIN/refmt-$VERSION -print binary_reason $file | $OPAM_BIN/refmt -print-width $PRINTWIDTH -use-stdin true -is-interface-pp false -parse binary_reason -print re > $file.new
     mv -f $file.new $file
     set +x
 done
