@@ -1105,20 +1105,11 @@ _toplevel_phrase:
 
 use_file: _use_file {apply_mapper_chain_to_use_file $1 default_mapper_chain}
 _use_file:
-    use_file_tail                        { $1 }
-  | expr post_item_attributes use_file_tail
-                                         { Ptop_def[mkstrexp $1 $2] :: $3 }
-;
-
-use_file_tail:
-    EOF                                       { [] }
-  | SEMI EOF                                  { [] }
-  | SEMI expr post_item_attributes use_file_tail
-                                              { Ptop_def[mkstrexp $2 $3] :: $4 }
-  | SEMI structure_item use_file_tail         { Ptop_def[$2] :: $3 }
-  | SEMI toplevel_directive use_file_tail     { $2 :: $3 }
-  | structure_item use_file_tail              { Ptop_def[$1] :: $2 }
-  | toplevel_directive use_file_tail          { $1 :: $2 }
+    EOF                                            { [] }
+  | structure_item SEMI use_file                   { Ptop_def[$1] :: $3 }
+  | toplevel_directive SEMI use_file               { $1 :: $3 }
+  | structure_item EOF                             { [Ptop_def[$1]] }
+  | toplevel_directive EOF                         { [$1] }
 ;
 
 parse_core_type:
