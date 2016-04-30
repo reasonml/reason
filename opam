@@ -23,6 +23,8 @@ build-test: [
 depends: [
   "easy-format"  {>= "1.2.0"}
   "ocamlfind"    {build}
+  "ounit"        {test}
+  "cmdliner"     {>= "0.9.8"}
   "utop"         {>= "1.17"}
   "menhir"       {>= "20160303"}
   "merlin-extend"{>= "0.3"}
