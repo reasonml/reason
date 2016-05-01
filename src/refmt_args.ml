@@ -2,11 +2,11 @@ open Cmdliner
 
 let is_interface_pp =
   let doc = "parse AST as interface" in
-  Arg.(value & flag & info ["i"; "interface"] ~doc)
+  Arg.(value & flag & info ["i"; "is-interface-pp"] ~doc)
 
 let use_stdin =
   let doc = "parse AST from stdin" in
-  Arg.(value & flag & info ["s"; "stdin"] ~doc)
+  Arg.(value & flag & info ["s"; "use-stdin"] ~doc)
 
 let recoverable =
   let doc = "enable recoverable parser" in
@@ -17,7 +17,7 @@ let explicit_arity =
     "If a constructor's argument is a tuple, always interpret \
      it as multiple arguments"
   in
-  Arg.(value & flag & info ["e"; "explicit_arity"] ~doc)
+  Arg.(value & flag & info ["e"; "assume-explicit-arity"] ~doc)
 
 let parse_ast =
   let doc =
@@ -37,7 +37,7 @@ let print =
 
 let print_width =
   let doc = "wrapping width for printing the AST" in
-  Arg.(value & opt (some int) (Some 90) & info ["w"; "print_width"] ~doc)
+  Arg.(value & opt (some int) (Some 90) & info ["w"; "print-width"] ~doc)
 
 let heuristics_file =
   let doc =
@@ -45,7 +45,7 @@ let heuristics_file =
      multi-arguments. Mostly used in removing [@implicit_arity] introduced from \
      OCaml conversion.\n\t\texample.txt:\n\t\tConstructor1\n\t\tConstructor2"
   in
-  Arg.(value & opt (some file) None & info ["h"; "heuristic"] ~doc)
+  Arg.(value & opt (some file) None & info ["h"; "heuristics-file"] ~doc)
 
 let input =
   let doc = "input files" in
