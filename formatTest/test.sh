@@ -83,16 +83,16 @@ function unit_test() {
         else
           REFILE="$(basename $FILE .mli).rei"
         fi
-        debug "$REFMT -heuristics-file $INPUT/arity.txt -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
-        $REFMT -heuristics-file $INPUT/arity.txt -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE
+        debug "$REFMT --heuristics-file $INPUT/arity.txt --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
+        $REFMT --heuristics-file $INPUT/arity.txt --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE
         if ! [[ $? -eq 0 ]]; then
             warning "  ⊘ TEST FAILED CONVERTING ML TO RE\n"
             return 1
         fi
         FILE=$REFILE
     else
-      debug "  '$REFMT -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE'"
-      $REFMT -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE
+      debug "  '$REFMT --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE'"
+      $REFMT --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE
     fi
 
     debug "  Comparing results:  diff $OUTPUT/$FILE $EXPECTED_OUTPUT/$FILE"
@@ -126,21 +126,21 @@ function idempotent_test() {
         fi
         debug "  Converting $FILE to $REFILE:"
 
-        debug "  Formatting Once: $REFMT -heuristics-file $INPUT/arity.txt -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
-        $REFMT -heuristics-file $INPUT/arity.txt -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE
+        debug "  Formatting Once: $REFMT --heuristics-file $INPUT/arity.txt --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
+        $REFMT --heuristics-file $INPUT/arity.txt --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE
         if ! [[ $? -eq 0 ]]; then
             warning "⊘ FAILED\n"
             return 1
         fi
         FILE=$REFILE
         debug "  Generating output again: $REFMT -print-width 50 -print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted"
-        $REFMT -print-width 50 -print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted
+        $REFMT --print-width 50 --print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted
     else
       debug "  Formatting Once: '$REFMT -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE'"
-      $REFMT -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE
+      $REFMT --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE
 
       debug "  Generating output again: $REFMT -print-width 50 -print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted"
-      $REFMT -print-width 50 -print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted
+      $REFMT --print-width 50 --print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted
     fi
 
     diff --unchanged-line-format="" --new-line-format=":%dn: %L" --old-line-format=":%dn: %L" $OUTPUT/$FILE $OUTPUT/$FILE.formatted
@@ -169,25 +169,25 @@ function typecheck_test() {
           REFILE="$(basename $FILE .mli).rei"
         fi
         debug "  Converting $FILE to $REFILE:"
-        debug "$REFMT -heuristics-file $INPUT/arity.txt -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
-        $REFMT -heuristics-file $INPUT/arity.txt -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE
+        debug "$REFMT --heuristics-file $INPUT/arity.txt --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
+        $REFMT --heuristics-file $INPUT/arity.txt --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE
         if ! [[ $? -eq 0 ]]; then
             warning "  ⊘ FAILED\n"
             return 1
         fi
         FILE=$REFILE
     else
-        debug "  Formatting: $REFMT -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE"
-        $REFMT -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE
+        debug "  Formatting: $REFMT --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
+        $REFMT --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE
         if ! [[ $? -eq 0 ]]; then
             warning "  ⊘ FAILED\n"
             return 1
         fi
     fi
     if [ "$(basename $FILE)" != "$(basename $FILE .re)" ]; then
-      COMPILE_FLAGS="-intf-suffix .rei -impl"
+      COMPILE_FLAGS="--intf-suffix .rei -impl"
     else
-      COMPILE_FLAGS="-intf"
+      COMPILE_FLAGS="--intf"
     fi
 
     debug "  Compiling: ocamlc -c -pp $REFMT $COMPILE_FLAGS $OUTPUT/$FILE"
