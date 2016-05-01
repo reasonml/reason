@@ -623,10 +623,6 @@ type funcApplicationLabelStyle =
     };
 
 *)
-type matchStick =
-  | StickToBar
-  | StickToBarSplitCases
-  | StickToLastSplitCases
 
 type formatSettings = {
   (* Whether or not to expect that the original parser that generated the AST
@@ -651,8 +647,6 @@ type formatSettings = {
      always be aligned with the function name. *)
   indentWrappedPatternArgs: int;
 
-  (* TODO: This is not respected unless a *not* being wrapped as
-   * applicationFinalWrapping etc. *)
   indentMatchCases: int;
 
   (* Amount to indent in label-like constructs such as wrapped function
@@ -660,56 +654,35 @@ type formatSettings = {
      indented curried argument list. *)
   indentAfterLabels: int;
 
-  (* Amount to indent after the opening brace of switch/try *)
-  trySwitchIndent: int;
-
-  (*
-    [matchesStickTo] StickToBarSplitCases
-
-      match x with
-        | Short
-        | AlsoHasARecord a b {x, y} => (
-          retOne,
-          retTwo
-        )
-        | TwoCombos
-            (HeresTwoConstructorArguments x y)
-            (HeresTwoConstructorArguments a b) =>
-          ((a + b) + x) + y;
-
-    [matchesStickTo] StickToBar
-
-      match x with
-        | Short | AlsoHasARecord a b {x, y} => (
-          retOne,
-          retTwo
-        )
-        | TwoCombos
-            (HeresTwoConstructorArguments x y)
-            (HeresTwoConstructorArguments a b) =>
-          ((a + b) + x) + y;
-
-
-    [matchesStickTo] StickToLastSplitCases
+  (* Amount to indent after the opening brace of switch/try.
+     Here's an example of what it would look like w/ [trySwitchIndent = 2]:
      Sticks the expression to the last item in a sequence in several [X | Y | Z
      => expr], and forces X, Y, Z to be split onto several lines. (Otherwise,
-     sticking to Z would result in hanging expressions).
-     TODO: In the second example, it's clear that we want patterns to have an
-     "extra" indentation with matching in a "match". Create extra config param
-     to pass to [self#pattern] for extra indentation in this one case.
+     sticking to Z would result in hanging expressions).  TODO: In the first case,
+     it's clear that we want patterns to have an "extra" indentation with matching
+     in a "match". Create extra config param to pass to [self#pattern] for extra
+     indentation in this one case.
 
-      match x with
-        | Short
-        | AlsoHasARecord a b {x, y} => (
-            retOne,
-            retTwo
-          )
-        | TwoCombos
-            (HeresTwoConstructorArguments x y)
-            (HeresTwoConstructorArguments a b) =>
-            ((a + b) + x) + y;
+      switch x {
+      | TwoCombos
+          (HeresTwoConstructorArguments x y)
+          (HeresTwoConstructorArguments a b) =>
+          ((a + b) + x) + y;
+      | Short
+      | AlsoHasARecord a b {x, y} => (
+          retOne,
+          retTwo
+        )
+      | AlsoHasARecord a b {x, y} =>
+        callMyFunction
+          withArg
+          withArg
+          withArg
+          withArg;
+      }
   *)
-  matchesStickTo: matchStick;
+  trySwitchIndent: int;
+
 
   (* In the case of two term function application (when flattened), the first
      term should become part of the label, and the second term should be able to wrap
@@ -753,7 +726,6 @@ let defaultSettings = {
   indentMatchCases = 2;
   indentAfterLabels = 2;
   trySwitchIndent = 0;
-  matchesStickTo = StickToLastSplitCases;
   funcApplicationLabelStyle = WrapFinalListyItemIfFewerThan 3;
   (* WrapFinalListyItemIfFewerThan is currently a bad idea for curried
      arguments: It looks great in some cases:
@@ -1075,7 +1047,7 @@ let easyLabel ?(space=false) ?(indent=settings.indentAfterLabels) labelTerm term
 
 let label ?(space=false) ?(indent=settings.indentAfterLabels) (labelTerm:layoutNode) (term:layoutNode) =
   Label (
-    (fun x y -> easyLabel ~space x y),
+    (fun x y -> easyLabel ~indent ~space x y),
     labelTerm,
     term
   )
@@ -1747,9 +1719,6 @@ class printer  ()= object(self:'self)
     let prefix = if polymorphic then "`" else "" in
     let sourceMappedName = SourceMap (pcd_name.loc, atom (prefix ^ pcd_name.txt)) in
     let nameOf = makeList ~postSpace:true [sourceMappedName; atom "of"] in
-    let barNameOf =
-      let lst = if print_bar then [atom "|"; nameOf] else [nameOf] in
-      makeList ~postSpace:true lst in
     let barName =
       let lst = if print_bar then [atom "|"; sourceMappedName] else [sourceMappedName] in
       makeList ~postSpace:true lst in
@@ -1781,26 +1750,11 @@ class printer  ()= object(self:'self)
         let lbl = label ~space:true name args in
         makeList ~postSpace:true (if print_bar then [atom "|"; lbl] else [lbl])
       in
-      let everything = match (settings.matchesStickTo, args, gadtRes) with
-        | (StickToBar, [], None)
-        | (StickToBarSplitCases, [], None)
-        | (StickToLastSplitCases, [], None) ->
-            barName
-        | (StickToBar, _::_, None)
-        | (StickToBarSplitCases, _::_, None) ->
-          label ~space:true barNameOf (normalize args)
-        | (StickToBar, [], Some res)
-        | (StickToBarSplitCases, [], Some res) ->
-          label ~space:true barName res
-        | (StickToBar, _::_, Some res)
-        | (StickToBarSplitCases, _::_, Some res) ->
-          (label ~space:true barNameOf (normalize (args@[res])))
-        | (StickToLastSplitCases, [], Some res) ->
-            add_bar sourceMappedName res
-        | (StickToLastSplitCases, _::_, None) ->
-            add_bar nameOf (normalize args)
-        | (StickToLastSplitCases, _::_, Some res) ->
-            add_bar nameOf (normalize (args@[res]))
+      let everything = match (args, gadtRes) with
+        | ([], None) -> barName
+        | ([], Some res) -> add_bar sourceMappedName res
+        | (_::_, None) -> add_bar nameOf (normalize args)
+        | (_::_, Some res) -> add_bar nameOf (normalize (args@[res]))
       in
       let everythingWithAttrs =
         if stdAttrs <> [] then
@@ -3513,7 +3467,10 @@ class printer  ()= object(self:'self)
                       (atom "try")
                       (self#reset#simple_expression e);
                   in
-                  label ~space:true switchWith (makeList ~indent:settings.trySwitchIndent ~wrap:("{", "}") ~break:Always_rec (self#case_list l))
+                  label
+                  ~space:true
+                  switchWith
+                  (makeList ~indent:settings.trySwitchIndent ~wrap:("{", "}") ~break:Always_rec (self#case_list ~allowUnguardedSequenceBodies:true l))
               | Pexp_match (e, l) -> (
                   match detectTernary l with
                   | Some (ifTrue, ifFalse) -> self#formatTernary x e ifTrue ifFalse
@@ -3525,7 +3482,12 @@ class printer  ()= object(self:'self)
                     label
                       ~space:true
                       switchWith
-                      (makeList ~indent:settings.trySwitchIndent ~wrap:("{", "}") ~break:Always_rec (self#case_list l))
+                      (makeList
+                        ~indent:settings.trySwitchIndent
+                        ~wrap:("{", "}")
+                        ~break:Always_rec
+                        (self#case_list ~allowUnguardedSequenceBodies:true l)
+                      )
                 )
 
               | Pexp_apply (e, l) -> (
@@ -4853,10 +4815,12 @@ class printer  ()= object(self:'self)
 
   method type_extension = wrap default#type_extension
   method extension_constructor = wrap default#extension_constructor
-  method case_list l =
+  (* [allowUnguardedSequenceBodies] allows sequence expressions {} to the right of `=>` to not
+     be guarded in `{}` braces. *)
+  method case_list ?(allowUnguardedSequenceBodies=false) l =
     let rec appendLabelToLast items rhs =
       match items with
-        | hd::[] -> (label ~space:true hd rhs)::[]
+        | hd::[] -> (label ~indent:0 ~space:true hd rhs)::[]
         | hd::tl -> hd::(appendLabelToLast tl rhs)
         | [] -> raise (NotPossible "Cannot append to last of nothing")
     in
@@ -4926,6 +4890,7 @@ class printer  ()= object(self:'self)
             let withWhen = label ~space:true p (makeList ~break:Never ~inline:(true, true) ~postSpace:true [label ~space:true (atom "when") (self#expression g)]) in
             makeList ~inline:(true, true) ~postSpace:true [withWhen; atom "=>"]
       in
+
       let rec appendWhereAndArrowToLastOr = function
         | [] -> []
         | hd::tl -> (
@@ -4944,24 +4909,18 @@ class printer  ()= object(self:'self)
       in
 
       let orsWithWhereAndArrowOnLast = appendWhereAndArrowToLastOr theOrs in
-      let rhs = (self#under_pipe#expression pc_rhs) in
-      let row = match settings.matchesStickTo with
-        | StickToBar ->
-          let everythingButExpr =
-            makeList
-              ~break:IfNeed
-              ~postSpace:true
-              ~inline:(true, true)
-              (List.map bar orsWithWhereAndArrowOnLast) in
-          label ~space:true everythingButExpr rhs
-        | StickToBarSplitCases ->
-          let everythingButExpr =
-            makeList ~break:Always_rec ~inline:(true, true) (List.map bar orsWithWhereAndArrowOnLast) in
-          label ~space:true everythingButExpr rhs
-        | StickToLastSplitCases ->
-          let withoutBars =
-            appendLabelToLast orsWithWhereAndArrowOnLast rhs in
-          makeList ~break:Always_rec ~inline:(true, true) (List.map bar withoutBars)
+      let sequenceIndent = 0 (*indentForUnguardedSequence settings*) in
+      let rhs =
+        if allowUnguardedSequenceBodies then
+          match (self#under_pipe#letList pc_rhs) with
+            | [hd] -> hd
+            (* In this case, we don't need any additional indentation, because there aren't
+               wrapping {} which would cause zero indentation to look strange. *)
+            | lst -> makeList ~indent:sequenceIndent ~break:Always_rec ~inline:(true, true) lst
+        else self#under_pipe#expression pc_rhs in
+      let row =
+        let withoutBars = appendLabelToLast orsWithWhereAndArrowOnLast rhs in
+        makeList ~break:Always_rec ~inline:(true, true) (List.map bar withoutBars)
       in
         SourceMap (
           (* Fake shift the location to accomodate for the bar, to make sure

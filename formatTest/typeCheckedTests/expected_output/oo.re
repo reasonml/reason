@@ -8,10 +8,9 @@ class virtual stack 'a init => {
   method virtual implementMe: int => int;
   method pop =
     switch v {
-    | [hd, ...tl] => {
-        v = tl;
-        Some hd
-      }
+    | [hd, ...tl] =>
+      v = tl;
+      Some hd
     | [] => None
     };
   method push hd => v = [hd, ...v];
@@ -42,10 +41,9 @@ class virtual stackWithAttributes 'a init =>
     method virtual implementMe: int => int;
     method pop =
       switch v {
-      | [hd, ...tl] => {
-          v = tl;
-          Some hd
-        }
+      | [hd, ...tl] =>
+        v = tl;
+        Some hd
       | [] => None
       };
     method push hd => v = [hd, ...v];

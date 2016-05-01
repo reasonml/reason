@@ -2494,9 +2494,9 @@ _expr:
    */
   | FUN BAR no_leading_bar_match_cases %prec below_BAR
       { mkexp (Pexp_function(List.rev $3)) }
-  | SWITCH simple_expr LBRACE BAR no_leading_bar_match_cases RBRACE
+  | SWITCH simple_expr LBRACE BAR no_leading_bar_match_cases_to_sequence_body RBRACE
       { mkexp (Pexp_match($2, List.rev $5)) }
-  | TRY simple_expr LBRACE BAR no_leading_bar_match_cases RBRACE
+  | TRY simple_expr LBRACE BAR no_leading_bar_match_cases_to_sequence_body RBRACE
       { mkexp (Pexp_try($2, List.rev $5)) }
   | TRY simple_expr WITH error
       { syntax_error_exp (rhs_loc 4) "Invalid try with"}
@@ -3038,10 +3038,22 @@ no_leading_bar_match_cases:
   | no_leading_bar_match_cases BAR match_case { $3 :: $1 }
 ;
 
+no_leading_bar_match_cases_to_sequence_body:
+  | match_case_to_sequence_body { [$1] }
+  | no_leading_bar_match_cases_to_sequence_body BAR match_case_to_sequence_body { $3 :: $1 }
+;
+
 or_pattern: mark_position_pat(_or_pattern) {$1}
 _or_pattern:
   | pattern BAR pattern
     { mkpat(Ppat_or($1, $3)) }
+
+match_case_to_sequence_body:
+  | pattern EQUALGREATER semi_terminated_seq_expr
+      { Exp.case $1 $3 }
+  | pattern WHEN expr EQUALGREATER semi_terminated_seq_expr
+      { Exp.case $1 ~guard:$3 $5 }
+;
 
 
 match_case:
