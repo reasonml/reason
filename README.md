@@ -65,7 +65,7 @@ Convert Your Project from OCaml to Reason:
 ------------------------------------------------------------
 `Reason` includes a program `refmt` which will parse and print and
 convert various syntaxes. You can specify which syntax to parse, and
-which to print via that flags `-parse` and `-print` flags. For example,
+which to print via `-parse` and `-print` flags. For example,
 you can convert your `ocaml` project to `Reason` by processing each file
 with the command `refmt -parse ml -print re yourFile.ml`. Execute
 `refmt -help` for more options.
@@ -101,41 +101,40 @@ Or
 > cat test.ml
 type tm = TupleConstructor of (int * int) | MultiArgumentsConstructor of int * int
 
-let _ = TupleConstructor(1, 2)
-let _ = MultiArgumentsConstructor(1, 2)
+let x = TupleConstructor(1, 2)
+let y = MultiArgumentsConstructor(1, 2)
 
 module Test = struct
   type a = | And of (int * int) | Or of (int * int)
 end;;
 
-let _ = Test.And (1, 2)
-let _ = Test.Or (1, 2)
-let _ = Some (1, 2)
+let a = Test.And (1, 2)
+let b = Test.Or (1, 2)
+let c = Some (1, 2)
 
 > refmt -heuristics-file ./heuristics.txt -assume-explicit-arity -parse ml -print re test.ml
 type tm = | TupleConstructor of (int, int) | MultiArgumentsConstructor of int int;
 
-let a = TupleConstructor (1, 2);
+let x = TupleConstructor (1, 2);
 
-let b = MultiArgumentsConstructor 1 2;
+let y = MultiArgumentsConstructor 1 2;
 
 let module Test = {type a = | And of (int, int) | Or of (int, int);};
 
-Test.And (1, 2);
+let a = Test.And (1, 2);
 
-Test.Or (1, 2);
+let b = Test.Or (1, 2);
 
-Some (1, 2);
-
+let c = Some (1, 2);
 ```
 
 
 Upgrading Existing Source Code After Changing Parse/Printing:
 ------------------------------------------------------------
-To upgrade existing `Reason` syntax to a new version of the `Reason` parser
-you should parse the code in the old version of the parser, and print it with
+To upgrade existing `Reason` code to a new version of the `Reason` syntax,
+you should parse the code with the old version of the parser, and print it with
 the new version of the printer. The easiest way to do this is to build the new
-version locally, while the old one is pinned globally, but any way that you
+version of `Reason` locally, while the old one is pinned globally, but any way that you
 have two versions installed locally will work.
 
 The script `upgradeSyntax.sh` will execute reformattings for the entire
