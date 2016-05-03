@@ -30,6 +30,21 @@ opam pin add -y reason git@github.com:facebook/reason.git#b105ecd2b6728e3f62f11f
 
 ```
 
+Quick Start with Docker
+-----------------------
+
+You can try Reason without any developer tools being installed by using Docker for Mac.
+Install the [dopam](https://github.com/avsm/dopam) helper and:
+
+``sh
+dopam init reason <src>
+# list the other options such as distro/arch/compiler
+dopam help
+```
+
+All of the tools below will be installed in the container, and your source code directory
+`<src>` will be mounted in `/home/opam/src`.
+
 Get Started Now
 ---------------
 Download the up-to-date [docs](https://github.com/facebook/Reason/archive/docs.zip) which guide you through the basic syntax and toolchain features.
