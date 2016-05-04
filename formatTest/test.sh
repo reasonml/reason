@@ -44,7 +44,7 @@ function info() {
 
 function debug() {
     if [ ! -z "$VERBOSE" ]; then
-        printf "${debug}$1${RESET}\n"
+        printf "${DEBUG}$1${RESET}\n"
     fi
 }
 
@@ -177,7 +177,7 @@ function typecheck_test() {
         fi
         FILE=$REFILE
     else
-        debug "  Formatting: $REFMT -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
+        debug "  Formatting: $REFMT -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE"
         $REFMT -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE
         if ! [[ $? -eq 0 ]]; then
             warning "  ⊘ FAILED\n"
@@ -213,7 +213,7 @@ cd $UNIT_TEST_INPUT && find . -type f \( -name "*.re*" -or -name "*.ml*" \) | wh
         fi
 done
 
-cd $TYPE_TEST_INPUT && find . -type f \( -name "*.re*" -or -name "*.ml*" \) | while read file; do
+cd $TYPE_TEST_INPUT && find . -type f \( -name "*.re*" -or -name "*.ml*" \) | sort | while read file; do
         typecheck_test $file $TYPE_TEST_INPUT $TYPE_TEST_OUTPUT
         if ! [[ $? -eq 0 ]]; then
             echo "$file -- typecheck_test" >> $FAILED_TESTS
