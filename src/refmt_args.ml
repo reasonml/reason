@@ -2,7 +2,7 @@ open Cmdliner
 
 let is_interface_pp =
   let doc = "parse AST as interface" in
-  Arg.(value & flag & info ["i"; "is-interface-pp"] ~doc)
+  Arg.(value & opt (some bool) None & info ["i"; "is-interface-pp"] ~doc)
 
 let use_stdin =
   let doc = "parse AST from stdin" in

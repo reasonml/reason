@@ -10,6 +10,7 @@ build:
 
 install:
 	opam pin add reason . -y
+	./refmt_impl.native --help=groff > $(shell opam config var man)/man1/refmt.1
 
 run: build
 	rlwrap ocaml \
