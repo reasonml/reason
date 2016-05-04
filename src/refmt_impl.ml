@@ -207,7 +207,7 @@ let top_level_info =
 
 let () =
   match Cmdliner.Term.eval (entry_point, top_level_info) with
-  | `Error _ ->
-    "This is unexpected, please report to github.com/facebook/Reason"
+  | `Error `Exn ->
+    "This is unexpected, please report to http://github.com/facebook/Reason"
     |> prerr_endline
   | _ -> ()
