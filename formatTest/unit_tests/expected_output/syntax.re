@@ -21,15 +21,13 @@ TestUtils.printSection "General Syntax";
 /*  */
 let matchingFunc a =>
   switch a {
-  | `Thingy x => {
-      print_string "matched thingy x";
-      let zz = 10;
-      zz
-    }
-  | `Other x => {
-      print_string "matched other x";
-      x
-    }
+  | `Thingy x =>
+    print_string "matched thingy x";
+    let zz = 10;
+    zz
+  | `Other x =>
+    print_string "matched other x";
+    x
   };
 
 type firstTwoShouldBeGroupedInParens =

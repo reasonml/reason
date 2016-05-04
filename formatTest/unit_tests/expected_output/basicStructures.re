@@ -359,10 +359,10 @@ let nestedMatch lstLst =>
   switch lstLst {
   | [hd, ...tl] when false => 10
   | [hd, ...tl] =>
-      switch tl {
-      | [] => 0 + 0
-      | [tlHd, ...tlTl] => 0 + 1
-      }
+    switch tl {
+    | [] => 0 + 0
+    | [tlHd, ...tlTl] => 0 + 1
+    }
   | [] => 0
   };
 
@@ -370,11 +370,11 @@ let nestedMatchWithWhen lstLst =>
   switch lstLst {
   | [hd, ...tl] when false => 10
   | [hd, ...tl] when true =>
-      switch tl {
-      | [] when false => 0 + 0
-      | [] when true => 0 + 0
-      | [tlHd, ...tlTl] => 0 + 1
-      }
+    switch tl {
+    | [] when false => 0 + 0
+    | [] when true => 0 + 0
+    | [tlHd, ...tlTl] => 0 + 1
+    }
   | [] => 0
   };
 

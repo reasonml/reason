@@ -132,31 +132,31 @@ let accessDeeplyWithArg x =>
   | LocalModule.AccessedThroughModuleWith (
       x as retVal
     ) =>
-      retVal + 1
+    retVal + 1
   | LocalModule.AccessedThroughModuleWithTwo
       (x as retVal1) (y as retVal2) =>
-      retVal1 + retVal2 + 1
+    retVal1 + retVal2 + 1
   };
 
 /* Just to show that by default `as` captures much less aggresively */
 let rec accessDeeplyWithArgRecursive x count =>
   switch x {
   | LocalModule.AccessedThroughModuleWith x as entirePattern =>
-      /* It captures the whole pattern */
-      if (count > 0) {
-        0
-      } else {
-        accessDeeplyWithArgRecursive
-          entirePattern (count - 1)
-      }
+    /* It captures the whole pattern */
+    if (count > 0) {
+      0
+    } else {
+      accessDeeplyWithArgRecursive
+        entirePattern (count - 1)
+    }
   | LocalModule.AccessedThroughModuleWithTwo x y as entirePattern =>
-      /* It captures the whole pattern */
-      if (count > 0) {
-        0
-      } else {
-        accessDeeplyWithArgRecursive
-          entirePattern (count - 1)
-      }
+    /* It captures the whole pattern */
+    if (count > 0) {
+      0
+    } else {
+      accessDeeplyWithArgRecursive
+        entirePattern (count - 1)
+    }
   };
 
 accessDeeplyWithArgRecursive
@@ -188,7 +188,7 @@ let matchingTwoCurriedConstructorsInTuple x =>
       HeresTwoConstructorArguments x y,
       HeresTwoConstructorArguments a b
     ) =>
-      x + y + a + b
+    x + y + a + b
   };
 
 type twoCurriedConstructors =
@@ -200,7 +200,7 @@ let matchingTwoCurriedConstructorInConstructor x =>
   | TwoCombos
       (HeresTwoConstructorArguments x y)
       (HeresTwoConstructorArguments a b) =>
-      a + b + x + y
+    a + b + x + y
   };
 
 type twoCurriedConstructorsPolyMorphic 'a =
@@ -294,15 +294,15 @@ let myTuple = OneTuple (20, 30);
 let res =
   switch myTuple {
   | Two x y =>
-      try (Two x y) {
-      | One => "hi"
-      | Two => "bye"
-      }
+    try (Two x y) {
+    | One => "hi"
+    | Two => "bye"
+    }
   | One =>
-      switch One {
-      | One => "hi"
-      | _ => "bye"
-      }
+    switch One {
+    | One => "hi"
+    | _ => "bye"
+    }
   };
 
 /* FIXME type somePolyVariant = [ `Purple of int | `Yellow of int]; */
@@ -313,13 +313,13 @@ let prp = `Purple (101, 100);
 let res =
   switch (ylw, prp) {
   | (`Yellow (y, y2), `Purple (p, p2)) =>
-      `Yellow (p + y, 0)
+    `Yellow (p + y, 0)
   | (`Purple (p, p2), `Yellow (y, y2)) =>
-      `Purple (y + p, 0)
+    `Purple (y + p, 0)
   | (`Purple (p, p2), `Purple (y, y2)) =>
-      `Yellow (y + p, 0)
+    `Yellow (y + p, 0)
   | (`Yellow (p, p2), `Yellow (y, y2)) =>
-      `Purple (y + p, 0)
+    `Purple (y + p, 0)
   };
 
 let ylw = `Yellow 100;
@@ -359,13 +359,13 @@ let prp = `Purple (101, 101);
 let res =
   switch (ylw, prp) {
   | (`Yellow (y, y2), `Purple (p, p2)) =>
-      `Yellow (p + y, 0)
+    `Yellow (p + y, 0)
   | (`Purple (p, p2), `Yellow (y, y2)) =>
-      `Purple (y + p, 0)
+    `Purple (y + p, 0)
   | (`Purple (p, p2), `Purple (y, y2)) =>
-      `Yellow (y + p, 0)
+    `Yellow (y + p, 0)
   | (`Yellow (p, p2), `Yellow (y, y2)) =>
-      `Purple (y + p, 0)
+    `Purple (y + p, 0)
   };
 
 let rec atLeastOneFlushableChildAndNoWipNoPending
@@ -374,42 +374,40 @@ let rec atLeastOneFlushableChildAndNoWipNoPending
   switch composition {
   | [] => false
   | [hd, ...tl] =>
-      switch hd {
-      | OpaqueGraph {
-          lifecycle: Reconciled (_, [])
-        } =>
-          atLeastOneFlushableChildAndNoWipNoPending
-            tl atPriority
-      | OpaqueGraph {
-          lifecycle:
-            ReconciledFlushable (
-              priority,
-              _,
-              _,
-              _,
-              _,
-              _
-            )
-        }
-      | OpaqueGraph {
-          lifecycle:
-            NeverReconciledFlushable (
-              priority,
-              _,
-              _,
-              _,
-              _
-            )
-        }
-          when priority == AtPriority =>
-          noWipNoPending tl atPriority
-      | SuperLongNameThatWontBreakByItselfSoWhenWillHaveToBreak
-          when
-            priority ==
-              AtPrasldkfjalsdfjasdlfalsdkf =>
-          noWipNoPending tl atPriority
-      | _ => false
+    switch hd {
+    | OpaqueGraph {lifecycle: Reconciled (_, [])} =>
+      atLeastOneFlushableChildAndNoWipNoPending
+        tl atPriority
+    | OpaqueGraph {
+        lifecycle:
+          ReconciledFlushable (
+            priority,
+            _,
+            _,
+            _,
+            _,
+            _
+          )
       }
+    | OpaqueGraph {
+        lifecycle:
+          NeverReconciledFlushable (
+            priority,
+            _,
+            _,
+            _,
+            _
+          )
+      }
+        when priority == AtPriority =>
+      noWipNoPending tl atPriority
+    | SuperLongNameThatWontBreakByItselfSoWhenWillHaveToBreak
+        when
+          priority ==
+            AtPrasldkfjalsdfjasdlfalsdkf =>
+      noWipNoPending tl atPriority
+    | _ => false
+    }
   };
 
 /*
@@ -430,9 +428,9 @@ let rec map f =>
   fun
   | Node None m => Node None (M.map (map f) m)
   | Node LongModule.Path.None m =>
-      Node None (M.map (map f) m)
+    Node None (M.map (map f) m)
   | Node (LongModule.Path.Some v) m =>
-      Node (Some (f v)) (M.map (map f) m);
+    Node (Some (f v)) (M.map (map f) m);
 
 let myFunc x y None => "asdf";
 
@@ -440,12 +438,12 @@ let rec map f =>
   fun
   | Node None m => Node None (M.map (map f) m)
   | Node LongModule.Path.None m =>
-      LongModule.Path.Node
-        LongModule.Path.None (M.map (map f) m)
+    LongModule.Path.Node
+      LongModule.Path.None (M.map (map f) m)
   | Node (LongModule.Path.Some v) m =>
-      LongModule.Path.Node
-        (LongModule.Path.Some (f v))
-        (M.map (map f) m);
+    LongModule.Path.Node
+      (LongModule.Path.Some (f v))
+      (M.map (map f) m);
 
 let myFunc x y LongModule.Path.None => "asdf";
 
@@ -474,6 +472,6 @@ let listPatternMayEvenIncludeAliases x =>
       Foo a b as head2,
       ...Something x as tail
     ] =>
-      ()
+    ()
   | _ => ()
   };
