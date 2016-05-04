@@ -8,29 +8,34 @@ exception Invalid_config of string
 let default_print_width = 90
 
 (* Note: filename should only be used with .ml files. See reason_toolchain. *)
-let defaultImplementationParserFor use_stdin filename =
-  if Filename.check_suffix filename ".re" then (Reason_toolchain.JS.canonical_implementation_with_comments (Reason_toolchain.setup_lexbuf use_stdin filename), false, false)
-  else if Filename.check_suffix filename ".ml" then (Reason_toolchain.ML.canonical_implementation_with_comments (Reason_toolchain.setup_lexbuf use_stdin filename), true, false)
-  else (
-    raise (Invalid_config ("Cannot determine default implementation parser for filename '" ^ filename ^ "'."))
+let defaultImplementationParserFor use_stdin filename = Reason_toolchain.(
+    if Filename.check_suffix filename ".re"
+    then (JS.canonical_implementation_with_comments (setup_lexbuf use_stdin filename), false, false)
+    else if Filename.check_suffix filename ".ml"
+    then (ML.canonical_implementation_with_comments (setup_lexbuf use_stdin filename), true, false)
+    else
+      (Invalid_config ("Cannot determine default implementation parser for filename '" ^ filename ^ "'."))
+      |> raise
   )
 
 (* Note: filename should only be used with .mli files. See reason_toolchain. *)
-let defaultInterfaceParserFor use_stdin filename =
-  if Filename.check_suffix filename ".rei" then (Reason_toolchain.JS.canonical_interface_with_comments (Reason_toolchain.setup_lexbuf use_stdin filename) , false, true)
-  else if Filename.check_suffix filename ".mli" then (Reason_toolchain.ML.canonical_interface_with_comments (Reason_toolchain.setup_lexbuf use_stdin filename), true, true)
-  else (
-    raise (Invalid_config ("Cannot determine default interface parser for filename '" ^ filename ^ "'."))
+let defaultInterfaceParserFor use_stdin filename = Reason_toolchain.(
+    if Filename.check_suffix filename ".rei"
+    then (JS.canonical_interface_with_comments (setup_lexbuf use_stdin filename) , false, true)
+    else if Filename.check_suffix filename ".mli"
+    then (ML.canonical_interface_with_comments (setup_lexbuf use_stdin filename), true, true)
+    else
+      (Invalid_config ("Cannot determine default interface parser for filename '" ^ filename ^ "'."))
+      |> raise
   )
 
 let reasonBinaryParser use_stdin filename =
   let chan =
-    match use_stdin with
-      | true -> stdin
-      | false ->
-          let file_chan = open_in filename in
-          seek_in file_chan 0;
-          file_chan
+    if use_stdin then stdin
+    else
+      let file_chan = open_in filename in
+      seek_in file_chan 0;
+      file_chan
   in
   let (magic_number, filename, ast, comments, parsedAsML, parsedAsInterface) = input_value chan in
   ((ast, comments), parsedAsML, parsedAsInterface)
