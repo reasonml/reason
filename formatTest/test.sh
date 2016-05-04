@@ -266,9 +266,9 @@ function typecheck_test() {
         fi
     fi
     if [ "$(basename $FILE)" != "$(basename $FILE .re)" ]; then
-      COMPILE_FLAGS="--intf-suffix .rei -impl"
+      COMPILE_FLAGS="-intf-suffix .rei -impl"
     else
-      COMPILE_FLAGS="--intf"
+      COMPILE_FLAGS="-intf"
     fi
 
     debug "  Compiling: ocamlc -c -pp $REFMT $COMPILE_FLAGS $OUTPUT/$FILE"
