@@ -1,3 +1,3 @@
-PKG utop str merlin_extend cmdliner
+PKG utop str merlin_extend cmdliner compiler-libs
 B _build/src
 S src
