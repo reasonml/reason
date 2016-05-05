@@ -26,7 +26,7 @@ opam update
 opam switch 4.02.3
 opam pin add -y merlin git@github.com:the-lambda-church/merlin.git#87ea0e7998c04f16e4821676c27f19d3879dc2d1
 opam pin add -y merlin_extend git@github.com:def-lkb/merlin-extend.git#ef634252a793542b05ec00a90f3c17de8fe0a357
-opam pin add -y reason git@github.com:facebook/reason.git#c5af1ef4d003aac91abc110560b5e51d0d4d12f3
+opam pin add -y reason git@github.com:facebook/reason.git#b105ecd2b6728e3f62f11f82a2947c8ca2b59fed
 
 ```
 
