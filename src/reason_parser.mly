@@ -637,6 +637,12 @@ let mkcf_attrs ?(loc=dummy_loc()) d attrs =
 let mkctf_attrs d attrs =
   Ctf.mk ~attrs d
 
+let add_nonrec rf attrs pos =
+  match rf with
+  | Recursive -> attrs
+  | Nonrecursive ->
+      let name = { txt = "nonrec"; loc = rhs_loc pos } in
+        (name, PStr []) :: attrs
 
 type let_binding =
   { lb_pattern: pattern;
@@ -869,6 +875,7 @@ let built_in_explicit_arity_constructors = ["Some"; "Assert_failure"; "Match_fai
 %token MUTABLE
 %token <nativeint> NATIVEINT
 %token NEW
+%token NONREC
 %token OBJECT
 %token OF
 %token OPEN
@@ -3417,14 +3424,14 @@ primitive_declaration:
 /* Type declarations */
 
 many_type_declarations:
-  | TYPE type_declaration_details post_item_attributes {
-      let (ident, params, constraints, kind, priv, manifest) = $2 in
+  | TYPE nonrec_flag type_declaration_details post_item_attributes {
+      let (ident, params, constraints, kind, priv, manifest) = $3 in
       let loc = mklocation $symbolstartpos $endpos in
       [Type.mk ident
-        ~params:params ~cstrs:constraints
-        ~kind ~priv ?manifest ~attrs:$3 ~loc]
+       ~params:params ~cstrs:constraints
+       ~kind ~priv ?manifest ~attrs:(add_nonrec $2 $4 2) ~loc]
   }
-  | many_type_declarations and_type_declaration      { $2 :: $1 }
+  | many_type_declarations and_type_declaration { $2 :: $1 }
 ;
 
 and_type_declaration:
@@ -3579,24 +3586,25 @@ potentially_long_ident_and_optional_type_parameters:
 ;
 
 str_type_extension:
-  TYPE
-  potentially_long_ident_and_optional_type_parameters
+  TYPE nonrec_flag potentially_long_ident_and_optional_type_parameters
   PLUSEQ private_flag opt_bar str_extension_constructors
   post_item_attributes
   {
-    let (potentially_long_ident, optional_type_parameters) = $2 in
-    Te.mk potentially_long_ident (List.rev $6)
-          ~params:optional_type_parameters ~priv:$4 ~attrs:$7 }
+    if $2 <> Recursive then not_expecting 2 "nonrec flag";
+    let (potentially_long_ident, optional_type_parameters) = $3 in
+    Te.mk potentially_long_ident (List.rev $7)
+          ~params:optional_type_parameters ~priv:$5 ~attrs:$8
+  }
 ;
 sig_type_extension:
-  TYPE
-  potentially_long_ident_and_optional_type_parameters
+  TYPE nonrec_flag potentially_long_ident_and_optional_type_parameters
   PLUSEQ private_flag opt_bar sig_extension_constructors
   post_item_attributes
   {
-    let (potentially_long_ident, optional_type_parameters) = $2 in
-    Te.mk potentially_long_ident (List.rev $6)
-          ~params:optional_type_parameters ~priv:$4 ~attrs:$7
+    if $2 <> Recursive then not_expecting 2 "nonrec flag";
+    let (potentially_long_ident, optional_type_parameters) = $3 in
+    Te.mk potentially_long_ident (List.rev $7)
+          ~params:optional_type_parameters ~priv:$5 ~attrs:$8
   }
 ;
 str_extension_constructors:
@@ -4120,6 +4128,10 @@ rec_flag:
     /* empty */                                 { Nonrecursive }
   | REC                                         { Recursive }
 ;
+nonrec_flag:
+    /* empty */                                 { Recursive }
+  | NONREC                                      { Nonrecursive }
+;
 direction_flag:
     TO                                          { Upto }
   | DOWNTO                                      { Downto }
@@ -4203,6 +4215,7 @@ single_attr_id:
   | MODULE { "module" }
   | MUTABLE { "mutable" }
   | NEW { "new" }
+  | NONREC { "nonrec" }
   | OBJECT { "object" }
   | OF { "of" }
   | OPEN { "open" }
