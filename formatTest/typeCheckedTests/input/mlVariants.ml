@@ -12,3 +12,5 @@ let stillAnIntTuple = `StillAnIntTuple (4, 5)
 let sumThem = function
   | `IntTuple (x, y) -> x + y
   | `StillAnIntTuple (a, b) -> a + b
+
+type nonrec t = A of int | B of bool
