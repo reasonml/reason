@@ -253,6 +253,11 @@ let rec partitionAttributes attrs =
         let (tlArity, tlDoc, tlStandard) = partitionAttributes atTl in
         (tlArity, tlDoc, atHd::tlStandard)
 
+let partitionNonrecAttr attrs = List.partition (fun attr ->
+    match attr with
+    | ({txt="nonrec"; _}, _) -> true
+    | _ -> false) attrs
+
 let extractStdAttrs attrs =
   let (arityAttrs, docAttrs, standard_attrs) = partitionAttributes attrs in
   standard_attrs
@@ -1700,7 +1705,13 @@ class printer  ()= object(self:'self)
     match l with
       | [] -> raise (NotPossible "asking for type list of nothing")
       | hd::tl ->
-          let first = formatOneTypeDefStandard (atom "type") hd in
+          let first =
+            match partitionNonrecAttr hd.ptype_attributes with
+            | ([], _) -> formatOneTypeDefStandard (atom "type") hd
+            | (_, attrs) ->
+                let newHd = { hd with ptype_attributes = attrs } in
+                formatOneTypeDefStandard (atom "type nonrec") newHd
+          in
           match tl with
             (* Exactly one type *)
             | [] -> first
