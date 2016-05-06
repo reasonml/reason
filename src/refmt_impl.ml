@@ -5,7 +5,7 @@ open Lexing
 exception Invalid_config of string
 
 
-let default_print_width = 90
+let default_print_width = 100
 
 (* Note: filename should only be used with .ml files. See reason_toolchain. *)
 let defaultImplementationParserFor use_stdin filename =
