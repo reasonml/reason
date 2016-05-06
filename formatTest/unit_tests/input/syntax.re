@@ -346,6 +346,7 @@ let onlyDoingThisTopLevelLetToBypassTopLevelSequence = {
       print_int 1;
       print_int 20;
       10;
+      /* Comment in final position */
     };  /* Missing final SEMI */
     x + x;
 };
@@ -389,10 +390,32 @@ let blah = fun
    Theres no sugar rule for dropping => fun, only = fun
 */
 
-let blahCurriedX x => fun  /* See, nothing says we can drop the => fun */
-  |(Red x | Black x | Green x) => 1     /* With some effort, we can ammend the sugar rule that would */
-  | Black x => 0                       /* Allow us to drop any => fun.. Just need to make pattern matching */
-  | Green x => 0;                      /* Support that */
+/* Not idempotent! */
+/* let blahCurriedX x => fun  /* See, nothing says we can drop the => fun */ */
+/*   |(Red x | Black x | Green x) => 1     /* With some effort, we can ammend the sugar rule that would */ */
+/*   | Black x => 0                       /* Allow us to drop any => fun.. Just need to make pattern matching */ */
+/*   | Green x => 0;                      /* Support that */ */
+/*  */
+
+let blahCurriedX x =>
+  fun
+  | Red x
+  | Black x
+  | Green x => 1  /* With some effort, we can ammend the sugar rule that would */
+  | Black x => 0  /* Allow us to drop any => fun.. Just need to make pattern matching */
+  | Green x => 0; /* Support that */
+
+let sameThingInLocal = {
+  let blahCurriedX x =>
+    fun
+    | Red x
+    | Black x
+    | Green x => 1  /* With some effort, we can ammend the sugar rule that would */
+    | Black x => 0  /* Allow us to drop any => fun.. Just need to make pattern matching */
+    | Green x => 0; /* Support that */
+  blahCurriedX;
+
+};
 
 /* This should be parsed/printed exactly as the previous */
 let blahCurriedX x => fun

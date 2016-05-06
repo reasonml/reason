@@ -118,6 +118,9 @@ type listConfig = {
    * extend the "freshest" notion of the list config when comments are
    * interleaved. *)
   listConfigIfCommentsInterleaved: (listConfig -> listConfig) option;
+
+  (* Formatting to use if an item in a list had an end-of-line comment appended *)
+  listConfigIfEolCommentsInterleaved: (listConfig -> listConfig) option;
 }
 
 (**
@@ -910,6 +913,7 @@ let easyListSettingsFromListConfig listConfig =
 let makeListConfig
     ?(attemptInterleaveComments=true)
     ?listConfigIfCommentsInterleaved
+    ?(listConfigIfEolCommentsInterleaved)
     ?(break=Never)
     ?(wrap=("", ""))
     ?(inline=(true, false))
@@ -923,6 +927,7 @@ let makeListConfig
   {
     attemptInterleaveComments;
     listConfigIfCommentsInterleaved;
+    listConfigIfEolCommentsInterleaved;
     break;
     wrap;
     inline;
@@ -972,6 +977,7 @@ let makeList
      * list *)
     ?(attemptInterleaveComments=true)
     ?listConfigIfCommentsInterleaved
+    ?listConfigIfEolCommentsInterleaved
     ?(break=Never)
     ?(wrap=("", ""))
     ?(inline=(true, false))
@@ -985,6 +991,7 @@ let makeList
     makeListConfig
       ~attemptInterleaveComments
       ?listConfigIfCommentsInterleaved
+      ?listConfigIfEolCommentsInterleaved
       ~break
       ~wrap
       ~inline
@@ -1009,6 +1016,7 @@ let makeAppList delimiter l =
 
 let ensureSingleTokenSticksToLabel x =
   makeList
+    ~attemptInterleaveComments:false
     ~listConfigIfCommentsInterleaved: (
       fun currentConfig -> {currentConfig with break=Always_rec; postSpace=true; indent=0; inline=(true, true)}
     )
@@ -1098,6 +1106,8 @@ let formatPrecedence formattedTerm =
 (* What to do when a comment wasn't interleaved in a list - default is to attach and break. *)
 let fallbackCommentListConfig = break
 
+let eolCommentListConfig = makeListConfig ~break:Never ~postSpace:true ~inline:(true, true) ()
+
 let isListy = function
   | Easy_format.List _ -> true
   | _ -> false
@@ -1131,27 +1141,38 @@ let wrap fn = fun term ->
 
 type commentOrItem =
   | Comment of Easy_format.t
-  | Item of Easy_format.t
+  (* The item, and a list of "end of line" comments to render *)
+  | Item of (Easy_format.t * Easy_format.t list)
+
 
 (**
- * Splits [comments] at [lexLoc]. Assumes the comments are in the correct
- * file, and ordered.
+ * Invokes the supplied partitioning function with normalized location
+ * positions. AST nodes and comments' locations have endpoints that are not one
+ * beyond the actual end. [extractComments] normalizes this and provides
+ * the exact first/last character position. The function should return true iff
+ * an item with that exact location is to be included in the left partition.
+ *
+ * The callback is invoked with both normalized physical location, as well as
+ * the "attachment" location. The attachment location makes note of where
+ * the comment was relative to indentation or the beginning of a line.
+ *
+ * Attachment location: What portion of text is the comment annotating
+ * (including the comment text itself)?
+ * Physical location: Where in the file was the comment? Usually a subset of
+ * attachment location.
  *)
-let rec splitCommentsAt lexLoc comments =
+let rec extractComments comments tester =
   let open Lexing in
   (* There might be an issue here - we shouldn't have to split "up to and including".
      Up to should be sufficient. Comments' end position might be off by one (too large) *)
-  let leftSplitUpToAndIncluding = lexLoc.pos_cnum in
-  match comments with
-    | [] -> ([], [])
-    | ((str, commLoc) as com)::tl ->
-      if commLoc.loc_start.pos_cnum <= leftSplitUpToAndIncluding then
-        let (recurseLeft, recurseRight) = splitCommentsAt lexLoc tl in
-        (com::recurseLeft, recurseRight)
-      else
-        (* Because comments are ordered, *all* comments must also not be to the
-           left of the split point. *)
-        ([], comments)
+  comments |> List.partition (fun (str, attLoc, physLoc) ->
+    let oneGreaterThanAttachmentLocEnd = attLoc.loc_end.pos_cnum in
+    let attachmentLocLastChar = oneGreaterThanAttachmentLocEnd - 1 in
+    let oneGreaterThanPhysLocEnd = physLoc.loc_end.pos_cnum in
+    let physLastChar = oneGreaterThanPhysLocEnd - 1 in
+    tester attLoc.loc_start.pos_cnum attachmentLocLastChar physLoc.loc_start.pos_cnum physLastChar
+  )
+
 
 
 let space = " "
@@ -1188,7 +1209,7 @@ let smallestLeadingSpaces strs =
   in
   smallestLeadingSpaces 99999 strs
 
-let formatItemComment (str, commLoc) =
+let formatItemComment (str, commLoc, physCommLoc) =
   let commLines = Str.split_delim (Str.regexp "\n") ("/*" ^ str ^ "*/") in
   match commLines with
   | [] -> easyAtom ""
@@ -1230,11 +1251,18 @@ let isSequencey = convertIsListyToIsSequencey isListy
 let removeSepFromListConfig listSettings =
   {listSettings with sep=""; preSpace=false; postSpace=false;}
 
-let rec interleaveComments ?interleaveCommentsUpTo listConfig layoutListItems comments =
-  match (layoutListItems, interleaveCommentsUpTo) with
+(** Interleaves both preceeding comments as well as "end of line" comments.
+   This logic is best done here so that:
+   1. Before-line items break in unison with list items.
+   2. End of line comments are placed *after* separators.  *)
+let rec interleaveComments ?endMaxChar listConfig layoutListItems comments =
+  match (layoutListItems, endMaxChar) with
     | ([], None)-> ([], comments)
-    | ([], Some locEnd)->
-      let (commentsInSequence, unconsumed) = splitCommentsAt locEnd comments in
+    | ([], Some endMax)->
+      let (commentsInSequence, unconsumed) =
+        extractComments comments (
+          fun comAttachFirst comAttachLast comPhysFirst comPhysLast -> comAttachLast <= endMax
+        ) in
       (List.map (fun c -> Comment (formatItemComment c)) commentsInSequence, unconsumed)
     | (hd::tl, _) ->
       (* TODO: properly implement "stick to left", or expand the ~sep:"" API to
@@ -1242,18 +1270,103 @@ let rec interleaveComments ?interleaveCommentsUpTo listConfig layoutListItems co
        * A<space>[sep<space>B]
        * And then trimming the trailing white space as usual.
        **)
-      let (itemComments, (easyItem, unconsumedComms)) = match (listConfig.attemptInterleaveComments, hd) with
-        | (true, SourceMap (location, sourceMappedLayout)) ->
-          let (beforeStart, afterStart) =
-            splitCommentsAt location.loc_start comments in
-          (beforeStart, layoutToEasyFormatAndSurplus sourceMappedLayout afterStart)
-        | _ -> ([], layoutToEasyFormatAndSurplus hd comments)
+      let (onItem, endOfLineComments, unconsumed) = match (listConfig.attemptInterleaveComments, hd) with
+        | (true, SourceMap (loc, sourceMappedLayout)) ->
+          partitionItemComments loc comments
+        | _ -> ([], [], comments)
       in
-      let (recItems, recUnconsumedComms) =
-        interleaveComments ?interleaveCommentsUpTo listConfig tl unconsumedComms in
-      let easyComments = List.map (fun c -> Comment (formatItemComment c)) itemComments in
-      (List.concat [easyComments; [Item easyItem]; recItems], recUnconsumedComms)
+      let (easyItem, itemUnconsumed) = layoutToEasyFormatAndSurplus hd unconsumed in
+      let endOfLineEasyComments = formatComments endOfLineComments in
+      let item = Item (easyItem, endOfLineEasyComments) in
+      let (rest, recUnconsumedComms) = interleaveComments ?endMaxChar listConfig tl itemUnconsumed in
+      let easyComments = List.map (fun c -> Comment (formatItemComment c)) onItem in
+      (List.concat [easyComments; [item]; rest], recUnconsumedComms)
 
+(*
+ * Covers the case where the trailing end of line comment is relocated to the }
+ * brace.
+ *
+ *   let x = {
+ *      item: blah
+ *   };  /* Trailing end of line comment */
+ *
+ * Should be treated as:
+ *
+ *  /* Trailing end of line comment */
+ *   let x = {
+ *      item: blah
+ *   };
+ *
+ *
+ * Also,
+ *
+ *   let x = {  /* On the entire let binding */
+ *      item: blah
+ *   };
+ *
+ * Should be treated as:
+ *
+ *   /* On the entire let binding */
+ *   let x = {
+ *      item: blah
+ *   };
+ *)
+
+and partitionItemComments loc comments =
+  let firstChar = loc.loc_start.Lexing.pos_cnum in
+  let oneGreaterThanLocEnd = loc.loc_end in
+  let lastChar = oneGreaterThanLocEnd.Lexing.pos_cnum - 1 in
+  let (onItem, afterStart) = extractComments comments (
+    fun comAttachFirst comAttachLast comPhysFirst comPhysLast ->
+      let entirelyPhysicallyAbove = comPhysFirst < firstChar && comPhysLast < firstChar in
+      (* let entirelyPhysicallyInside = comPhysFirst >= firstChar && comPhysLast <= lastChar in *)
+      (* entirelyPhysicallyAbove || (entirelyPhysicallyInside && comAttachFirst <= firstChar) *)
+      let entirelyPhysicallyAfter = comPhysFirst >= lastChar && comPhysLast >= lastChar in
+      let attachmentEnclosesPartialEnd = entirelyPhysicallyAfter && comAttachFirst < lastChar && comAttachFirst > firstChar in
+      let entirelyPhysicallyInside = comPhysFirst > firstChar && comPhysLast < lastChar in
+      let attachmentEnclosesPartialFirstLine = entirelyPhysicallyInside && comAttachFirst == firstChar in
+      entirelyPhysicallyAbove || attachmentEnclosesPartialEnd || attachmentEnclosesPartialFirstLine
+  ) in
+  (* We currently support the following as an "end of line" comment:
+
+       let x = {
+         item:blah
+       }  /* On the entire value binding only */
+       and y = {
+
+       };
+
+     This doesn't work well because we don't have special interaction with
+     lists, that ensure those kinds of end-of-line comments cause that list to
+     *always* breaks. Currently, the item compressing onto one line
+     changes the meaning entirely. In the following case, the comment becomes
+     attached to the entire let binding. That is a source of non-idempotent
+     formatting.
+
+       let x = {item:blah}  /* On the entire let binding */
+       and y = {
+       };
+
+   *)
+  let (endOfLineComments, unconsumed) = extractComments afterStart (
+    fun comAttachFirst comAttachLast comPhysFirst comPhysLast ->
+      let entirelyPhysicallyAfter = comPhysFirst >= lastChar && comPhysLast >= lastChar in
+      let attachmentEnclosesEntireThing = comAttachFirst <= firstChar in
+      attachmentEnclosesEntireThing && entirelyPhysicallyAfter
+  ) in
+  (onItem, endOfLineComments, unconsumed)
+
+(** Only finds the comments that occurred before the location.  When you don't
+    have a wrapping list to interleave comments in, this is the least error
+    prone function to use.
+ *)
+and partitionPreviousItemComments loc comments =
+  let firstChar = loc.loc_start.Lexing.pos_cnum in
+  extractComments comments (
+    fun comAttachFirst comAttachLast comPhysFirst comPhysLast ->
+      let entirelyPhysicallyAbove = comPhysFirst < firstChar && comPhysLast < firstChar in
+      entirelyPhysicallyAbove
+  )
 and attach listConfig ~useSep easyItem = match (listConfig.sep, listConfig.preSpace, listConfig.postSpace) with
   | ("", false, false) -> easyItem
   | (sep, preSpace, postSpace) -> makeEasyList (
@@ -1265,37 +1378,48 @@ and attach listConfig ~useSep easyItem = match (listConfig.sep, listConfig.preSp
       ]
     )
 
-(* Catches up comments to a node which has already been converted to an `Easy_format` node. *)
-and catchUpComments startLoc comments continue =
-  let (beforeStart, afterStart) = splitCommentsAt startLoc comments in
-  let (easyFormat, unconsumed) = continue afterStart in
-  match beforeStart with
-  | [] -> (easyFormat, unconsumed)
-  | hd::tl ->  (
-    easyListWithConfig fallbackCommentListConfig (List.concat [formatComments beforeStart; [easyFormat]]),
-    unconsumed
-  )
 
-and layoutSequenceToEasyFormatAndSurplus ?interleaveCommentsUpTo listConfig subLayouts comments =
+(* Catches up comments to a node which has already been converted to an
+   `Easy_format` node. Use this on nodes not in a list whose location is known.  *)
+and catchUpComments loc comments continue =
+  let (onItem, unconsumed) = partitionPreviousItemComments loc comments in
+  let (easyFormat, unconsumed) = continue unconsumed in
+  match (onItem) with
+  | ([]) -> (easyFormat, unconsumed)
+  | (_::_) -> (
+      (easyListWithConfig fallbackCommentListConfig (List.concat [formatComments onItem; [easyFormat]])),
+      unconsumed
+    )
+
+and layoutSequenceToEasyFormatAndSurplus ?endMaxChar listConfig subLayouts comments =
   let listConfigNoSep = removeSepFromListConfig listConfig in
-  let (distribution, unconsumedComms) =
-    let (interleaved, unconsumed) = interleaveComments ?interleaveCommentsUpTo listConfig subLayouts comments in
-    let rec attachSeparators item remainingComments =
-      match (item, remainingComments) with
-      | (Item x, []) -> (true, [x])
-      | (Comment x, []) -> (false, [x])
-      | (Item i, rHd::rTl) ->
-          let (hadMoreItems, results) = (attachSeparators rHd rTl) in
-          (true, (attach listConfig ~useSep:hadMoreItems i)::results)
+  let (distribution, hadEolComment, unconsumedComms) =
+    let (interleaved, unconsumed) = interleaveComments ?endMaxChar listConfig subLayouts comments in
+    let rec attachSeparatorsAndEndOfLineComments row remaining =
+      match (row, remaining) with
+      | (Item (x, endOfLineEasyComments), []) ->
+        (match endOfLineEasyComments with
+          | [] -> (true, false, [x])
+          | _::_ -> (true, true, [easyListWithConfig eolCommentListConfig (x::endOfLineEasyComments)]))
+      | (Comment x, []) -> (false, false, [x])
+      | (Item (i, endOfLineEasyComments), rHd::rTl) ->
+        let (hadMoreItems, hadEolComment, rest) = (attachSeparatorsAndEndOfLineComments rHd rTl) in
+        let withSep = attach listConfig ~useSep:hadMoreItems i in
+        (match endOfLineEasyComments with
+          | [] -> (true, hadEolComment, withSep::rest)
+          | _::_ ->
+            let withSepAndEolComment = easyListWithConfig eolCommentListConfig (withSep::endOfLineEasyComments) in
+            (true, true, withSepAndEolComment::rest)
+        )
       | (Comment c, rHd::rTl) ->
-        let (hadMoreItems, results) = (attachSeparators rHd rTl) in
-        (hadMoreItems, (attach listConfig ~useSep:false c)::results)
+        let (hadMoreItems, hadEolComment, rest) = (attachSeparatorsAndEndOfLineComments rHd rTl) in
+        (hadMoreItems, hadEolComment, (attach listConfig ~useSep:false c)::rest)
     in
     match interleaved with
-    | [] -> ([], unconsumed)
+    | [] -> ([], false, unconsumed)
     | hd::tl ->
-    let (_, withSeparators) = (attachSeparators hd tl) in
-    (withSeparators, unconsumed)
+      let (_, hadEolComment, withSeparators) = (attachSeparatorsAndEndOfLineComments hd tl) in
+      (withSeparators, hadEolComment, unconsumed)
   in
   let wereCommentsInterleaved = List.length subLayouts != List.length distribution in
   let adjustedListConfig =
@@ -1305,6 +1429,16 @@ and layoutSequenceToEasyFormatAndSurplus ?interleaveCommentsUpTo listConfig subL
       | Some f -> f listConfigNoSep
     else
       listConfigNoSep
+  in
+  let adjustedListConfig =
+    if hadEolComment then
+      match adjustedListConfig.listConfigIfEolCommentsInterleaved with
+      (* By default, we need to break if an EOL comment exists to preserve
+         its end of line-ness. *)
+      | None -> {adjustedListConfig with break=Always_rec}
+      | Some f -> f adjustedListConfig
+    else
+      adjustedListConfig
   in
   (easyListWithConfig adjustedListConfig distribution, unconsumedComms)
 (*
@@ -1316,17 +1450,24 @@ and layoutSequenceToEasyFormatAndSurplus ?interleaveCommentsUpTo listConfig subL
 and layoutToEasyFormatAndSurplus layoutNode comments = match layoutNode with
   | Easy easyFormatted -> (easyFormatted, comments)
   | Sequence (listConfig, subLayouts) -> layoutSequenceToEasyFormatAndSurplus listConfig subLayouts comments
-  | SourceMap (location, subLayout) -> (
+  | SourceMap (loc, subLayout) -> (
     match subLayout with
       | Sequence (listConfig, subLayouts) ->
-        let continue = (layoutSequenceToEasyFormatAndSurplus ~interleaveCommentsUpTo:location.loc_end listConfig subLayouts) in
-        catchUpComments location.loc_start comments continue
-      | _ -> catchUpComments location.loc_start comments (layoutToEasyFormatAndSurplus subLayout)
+        let oneGreaterThanLocEnd = loc.loc_end in
+        let lastChar = oneGreaterThanLocEnd.Lexing.pos_cnum - 1 in
+        (* But the last char isn't sufficient! We need to interleave comments that are entirely
+           contained within the sequence! So subtract one more *)
+        let maxChar = lastChar - 1 in
+        let continue = (layoutSequenceToEasyFormatAndSurplus ~endMaxChar:maxChar listConfig subLayouts) in
+        (* catchUpComments loc comments continue *)
+        let (recurse, unconsumed) = catchUpComments loc comments continue in
+        (recurse, unconsumed)
+      | _ -> catchUpComments loc comments (layoutToEasyFormatAndSurplus subLayout)
     )
   | Label (labelFormatter, left, right) ->
-      let (easyLeft, unconsumedComms) = layoutToEasyFormatAndSurplus left comments in
-      let (easyRight, unconsumedComms) = layoutToEasyFormatAndSurplus right unconsumedComms in
-      (labelFormatter easyLeft easyRight, unconsumedComms)
+    let (easyLeft, unconsumedComms) = layoutToEasyFormatAndSurplus left comments in
+    let (easyRight, unconsumedComms) = layoutToEasyFormatAndSurplus right unconsumedComms in
+    (labelFormatter easyLeft easyRight, unconsumedComms)
 
 let layoutToEasyFormatNoComments layoutNode =
   let (easyFormat, surplus) = layoutToEasyFormatAndSurplus layoutNode [] in
@@ -1349,6 +1490,32 @@ let partitionFinalWrapping listTester wrapFinalItemSetting x =
           Some (List.rev revEverythingButLast, last)
 
 let semiTerminated term = makeList ~attemptInterleaveComments:false [term; atom ";"]
+
+(* Support interleaving comments *before* the terminating semicolon
+
+      let something = withFirstArg + andSecondArg /* before semi */ ;
+ *)
+let commentInterleavedSemiTerminated loc item =
+  SourceMap (
+    loc,
+    makeList
+      ~attemptInterleaveComments:true
+      ~listConfigIfCommentsInterleaved: (
+        fun currentConfig -> {
+          currentConfig with
+          break = IfNeed;
+          postSpace=true;
+          indent=0;
+          pad=(false, false);
+          inline=(false, true)
+        }
+      )
+      ~listConfigIfEolCommentsInterleaved: (
+        fun currentConfig -> {currentConfig with break = Always_rec; indent=0; inline=(true, false)}
+      )
+      ~wrap:("", ";")
+      [item]
+  )
 
 let makeLetSequence letItems =
   makeList ~wrap:("{", "}") ~break:Always_rec ~inline:(true, false) letItems
@@ -1594,7 +1761,6 @@ class printer  ()= object(self:'self)
                 self#core_type ct;
               ]
             in SourceMap (x.ptyp_loc, poly)
-
         | _ -> self#non_arrowed_core_type x
 
   (* Same as core_type2 but can be aliased *)
@@ -1922,15 +2088,19 @@ class printer  ()= object(self:'self)
          The single identifier has to be wrapped in a [ensureSingleTokenSticksToLabel] to
          avoid (@see @avoidSingleTokenWrapping):
       *)
-        let sourceMappedIdent = SourceMap (li.loc, self#longident_loc li) in
-        let constr = match l with
-          | [] -> ensureSingleTokenSticksToLabel sourceMappedIdent
-          | hd::tl ->
-              let simpleTypeList = (List.map (self#non_arrowed_simple_core_type) (hd::tl)) in
-              (label ~space:true sourceMappedIdent (makeList ~inline:(true, true) ~postSpace:true ~break:IfNeed simpleTypeList))
-        in
-        (* It's actually better without this source mapped *)
-        constr
+      let constr = match l with
+        (* [ensureSingleTokenSticksToLabel] loses location information which is important
+           when you are embedded inside a list and comments are to be interleaved around you.
+           Therefore, we wrap the result in the correct [SourceMap].
+         *)
+        | [] -> SourceMap (li.loc, ensureSingleTokenSticksToLabel (self#longident_loc li))
+        | hd::tl ->
+            let sourceMappedIdent = SourceMap (li.loc, self#longident_loc li) in
+            let simpleTypeList = (List.map (self#non_arrowed_simple_core_type) (hd::tl)) in
+            (label ~space:true sourceMappedIdent (makeList ~inline:(true, true) ~postSpace:true ~break:IfNeed simpleTypeList))
+      in
+      (* It's actually better without this source mapped *)
+      constr
     | _ -> self#non_arrowed_simple_core_type x
 
   method non_arrowed_simple_core_type x =
@@ -3249,12 +3419,12 @@ class printer  ()= object(self:'self)
       match l with
         | [] -> raise (NotPossible "no bindings supplied")
         | x::[]
-        | x::_ -> (
-            let label = match rf with
-              | Nonrecursive -> "let"
-              | Recursive -> "let rec" in
-            SourceMap (x.pvb_loc, (self#binding x label))
-          )
+        | x::_ ->
+          let label = match rf with
+            | Nonrecursive -> "let"
+            | Recursive -> "let rec" in
+          SourceMap (x.pvb_loc, (self#binding x label))
+
     ) in
     let forEachRemaining = fun t -> SourceMap (t.pvb_loc, (self#binding t "and")) in
     let remainingBindings = (
@@ -3733,7 +3903,7 @@ class printer  ()= object(self:'self)
               | `nil -> atom "[]"
               | `tuple -> atom "()"
               | `list xs -> (* LIST EXPRESSION *)
-                 makeList ~break:IfNeed ~wrap:("[", "]") ~sep:"," ~postSpace:true (List.map self#expression xs)
+                makeList ~break:IfNeed ~wrap:("[", "]") ~sep:"," ~postSpace:true (List.map self#expression xs)
               | `cons xs ->
                 let seq, ext = match List.rev xs with
                   | ext :: seq_rev -> (List.rev seq_rev, ext)
@@ -4533,9 +4703,8 @@ class printer  ()= object(self:'self)
         | Psig_attribute a -> self#floating_attribute a
         | Psig_extension (e, a) ->
           self#attach_std_item_attrs a (self#item_extension e)
-        in
-
-    SourceMap (x.psig_loc, (makeList [item; atom ";"]))
+    in
+    commentInterleavedSemiTerminated x.psig_loc item
 
   method non_arrowed_module_type x =
     match x.pmty_desc with
@@ -4822,7 +4991,9 @@ class printer  ()= object(self:'self)
              item does. *)
           self#item_extension e
     ) in
-    SourceMap (term.pstr_loc, if include_semi then makeList [item; atom ";"] else item)
+      if include_semi then
+        commentInterleavedSemiTerminated term.pstr_loc item
+      else item
 
   method type_extension = wrap default#type_extension
   method extension_constructor = wrap default#extension_constructor
