@@ -22,6 +22,7 @@ depends: [
   "easy-format"  {>= "1.2.0"}
   "ocamlfind"    {build}
   "ounit"        {test}
+  "cmdliner"     {>= "0.9.8"}
   "utop"         {>= "1.17"}
   "BetterErrors" {>= "0.0.1"}
   "menhir"       {>= "20160303"}
