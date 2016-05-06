@@ -1,4 +1,4 @@
-opam-version: "0.0.2"
+opam-version: "1.2"
 name: "reason"
 version: "0.0.2"
 maintainer: "Jordan Walke <jordojw@gmail.com>"
