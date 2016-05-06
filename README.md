@@ -169,7 +169,7 @@ Additionally, it will pass all package include paths to such a preprocessor.
 
 Developing:
 -------------------------
-See [DEVELOPING.md](./developing.md).
+See [DEVELOPING.md](./DEVELOPING.md).
 
 Credit:
 -------
