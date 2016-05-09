@@ -11,9 +11,10 @@ dev-repo: "git://github.com/jordwalke/reason.git"
 tags: [ "syntax" ]
 substs: [ "pkg/META" ]
 build: [
-  "ocaml" "pkg/build.ml" "native=%{ocaml-native}%"
+  ["make" "compile_error"]
+  ["ocaml" "pkg/build.ml" "native=%{ocaml-native}%"
                          "native-dynlink=%{ocaml-native-dynlink}%"
-                         "utop=%{utop:installed}%"
+                         "utop=%{utop:installed}%"]
 ]
 build-test: [
   "ocamlbuild" "-classic-display" "-use-ocamlfind" "src_test/test_reason.byte" "--"
