@@ -67,9 +67,8 @@ let formatImpl editor subText isInterface onComplete onFailure => {
     };
   let printWidth =
     switch (Atom.Config.get "atom-reason.printWidth") {
-    | JsonNum n => int_of_float n
-    | Empty => 110
-    | _ => raise (Invalid_argument "atom-reason.printWidth must be an integer")
+    | JsonNum n when int_of_float n > 0 => Some (int_of_float n)
+    | _ => None
     };
   let onStdOut line => stdOutLines.contents = Array.append stdOutLines.contents [|line|];
   let onStdErr line => stdErrLines.contents = Array.append stdErrLines.contents [|line|];
@@ -80,22 +79,28 @@ let formatImpl editor subText isInterface onComplete onFailure => {
     | [firstCursor, ...tl] => Atom.Cursor.getBufferPosition firstCursor
     };
   let onExit code => {
-    let formatResult = characterIndexForPositionInString stdOutLines.contents (origCursorRow, origCursorCol);
+    let formatResult =
+      characterIndexForPositionInString stdOutLines.contents (origCursorRow, origCursorCol);
     let stdErr = String.concat "\n" (Array.to_list stdErrLines.contents);
     onComplete code formatResult stdErr
   };
-  let args = [
-    "-print-width",
-    string_of_int printWidth,
-    "-use-stdin",
-    "true",
-    "-parse",
-    "re",
-    "-print",
-    "re",
-    "-is-interface-pp",
-    isInterface ? "true" : "false"
-  ];
+  let args = {
+    let printWidthArgs =
+      switch printWidth {
+      | Some printWidth => ["-print-width", string_of_int printWidth]
+      | None => []
+      };
+    printWidthArgs @ [
+      "-use-stdin",
+      "true",
+      "-parse",
+      "re",
+      "-print",
+      "re",
+      "-is-interface-pp",
+      isInterface ? "true" : "false"
+    ]
+  };
   let proc =
     Atom.BufferedProcess.create
       options::{...Atom.Process.defaultOptions, env: fixedEnv}

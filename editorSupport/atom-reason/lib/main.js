@@ -138,7 +138,7 @@ module.exports = {
     "printWidth": {
       "title": "Default Print Width of Refmt",
       "type": "number",
-      "default": 110,
+      "default": 0,
       "description": "Default line wrapping width for pretty printing"
     },
     "pathToMerlin": {
