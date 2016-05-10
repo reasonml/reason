@@ -44,12 +44,17 @@ let module Diagnostic = {
       trace: option (array Trace.t)
     };
     type t =
-      | FileDiagnosticMessage of fileDiagnosticMessage | ProjectDiagnosticMessage of projectDiagnosticMessage;
+      | FileDiagnosticMessage of fileDiagnosticMessage
+      | ProjectDiagnosticMessage of projectDiagnosticMessage;
   };
 };
 
 let module FileFormat = {
-  type result = {/* Character offset into new formatted string. */ newCursor: int, formatted: string};
+  type result = {
+    /* Character offset into new formatted string. */
+    newCursor: int,
+    formatted: string
+  };
 };
 
 let module AutocompleteProviderRequest = {

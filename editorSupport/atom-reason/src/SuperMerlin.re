@@ -106,7 +106,10 @@ let createMerlinReaderFnOnce' = Js.Unsafe.js_expr {|
   }
 |};
 
-let createMerlinReaderFnOnce pathToMerlin::pathToMerlin merlinFlags::merlinFlags dotMerlinPath::dotMerlinPath =>
+let createMerlinReaderFnOnce
+    pathToMerlin::pathToMerlin
+    merlinFlags::merlinFlags
+    dotMerlinPath::dotMerlinPath =>
   Js.Unsafe.fun_call
     createMerlinReaderFnOnce'
     [|
@@ -119,35 +122,34 @@ let createMerlinReaderFnOnce pathToMerlin::pathToMerlin merlinFlags::merlinFlags
 let startMerlinProcess path::path =>
   switch startedMerlin.contents {
   | Some readerFn => ()
-  | None => {
-      let atomReasonPathToMerlin = Atom.Config.get "atom-reason.pathToMerlin";
-      let atomReasonMerlinFlags = Atom.Config.get "atom-reason.merlinFlags";
-      let atomReasonMerlinLogFile = Atom.Config.get "atom-reason.merlinLogFile";
-      switch atomReasonMerlinLogFile {
-      | JsonString "" => ()
-      | JsonString s => Atom.Env.setEnvVar "MERLIN_LOG" s
-      | _ => ()
-      };
-      let readerFn =
-        createMerlinReaderFnOnce
-          pathToMerlin::(Atom.JsonValue.unsafeExtractString atomReasonPathToMerlin)
-          merlinFlags::(Atom.JsonValue.unsafeExtractString atomReasonMerlinFlags)
-          dotMerlinPath::(findNearestMerlinFile beginAtFilePath::path);
-      startedMerlin.contents = Some readerFn
-    }
+  | None =>
+    let atomReasonPathToMerlin = Atom.Config.get "atom-reason.pathToMerlin";
+    let atomReasonMerlinFlags = Atom.Config.get "atom-reason.merlinFlags";
+    let atomReasonMerlinLogFile = Atom.Config.get "atom-reason.merlinLogFile";
+    switch atomReasonMerlinLogFile {
+    | JsonString "" => ()
+    | JsonString s => Atom.Env.setEnvVar "MERLIN_LOG" s
+    | _ => ()
+    };
+    let readerFn =
+      createMerlinReaderFnOnce
+        pathToMerlin::(Atom.JsonValue.unsafeExtractString atomReasonPathToMerlin)
+        merlinFlags::(Atom.JsonValue.unsafeExtractString atomReasonMerlinFlags)
+        dotMerlinPath::(findNearestMerlinFile beginAtFilePath::path);
+    startedMerlin.contents = Some readerFn
   };
 
 let readOneLine cmd::cmd resolve reject =>
   switch startedMerlin.contents {
   | None => raise Not_found
   | Some readerFn =>
-      Js.Unsafe.fun_call
-        readerFn
-        [|
-          Js.Unsafe.inject cmd,
-          Js.Unsafe.inject (Js.wrap_callback resolve),
-          Js.Unsafe.inject (Js.wrap_callback reject)
-        |]
+    Js.Unsafe.fun_call
+      readerFn
+      [|
+        Js.Unsafe.inject cmd,
+        Js.Unsafe.inject (Js.wrap_callback resolve),
+        Js.Unsafe.inject (Js.wrap_callback reject)
+      |]
   };
 
 /* contextify is important for avoiding different buffers calling the backing merlin at the same time. */
@@ -179,7 +181,9 @@ let prepareCommand text::text path::path query::query resolve reject => {
           cmd::(
             contextify
               /* The tell command allows us to synchronize our text with Merlin's internal buffer. */
-              query::(Js.array [|Js.string "tell", Js.string "start", Js.string "end", Js.string text|])
+              query::(
+                Js.array [|Js.string "tell", Js.string "start", Js.string "end", Js.string text|]
+              )
               path::path
           )
           (fun _ => readOneLine cmd::(contextify query::query path::path) resolve reject)
@@ -210,7 +214,13 @@ let getTypeHint path::path text::text position::position resolve reject =>
     resolve
     reject;
 
-let getAutoCompleteSuggestions path::path text::text position::position prefix::prefix resolve reject =>
+let getAutoCompleteSuggestions
+    path::path
+    text::text
+    position::position
+    prefix::prefix
+    resolve
+    reject =>
   prepareCommand
     text::text
     path::path
@@ -228,7 +238,11 @@ let getAutoCompleteSuggestions path::path text::text position::position prefix::
 
 let getDiagnostics path::path text::text resolve reject =>
   prepareCommand
-    text::text path::path query::(Js.array [|Js.Unsafe.inject (Js.string "errors")|]) resolve reject;
+    text::text
+    path::path
+    query::(Js.array [|Js.Unsafe.inject (Js.string "errors")|])
+    resolve
+    reject;
 
 /* TODO: put this logic into reason and somewhere else. */
 let normalizeLocateCommandResult' = Js.Unsafe.js_expr {|

@@ -39,8 +39,10 @@ export
       fun jsEditor jsRange jsNotifySuccess jsNotifyInvalid jsNotifyInfo => {
         let editor = Atom.Editor.fromJs jsEditor;
         let range = Atom.Range.fromJs jsRange;
-        let notifySuccess msg => Js.Unsafe.fun_call jsNotifySuccess [|Js.Unsafe.inject (Js.string msg)|];
-        let notifyInvalid msg => Js.Unsafe.fun_call jsNotifyInvalid [|Js.Unsafe.inject (Js.string msg)|];
+        let notifySuccess msg =>
+          Js.Unsafe.fun_call jsNotifySuccess [|Js.Unsafe.inject (Js.string msg)|];
+        let notifyInvalid msg =>
+          Js.Unsafe.fun_call jsNotifyInvalid [|Js.Unsafe.inject (Js.string msg)|];
         let notifyInfo msg => Js.Unsafe.fun_call jsNotifyInfo [|Js.Unsafe.inject (Js.string msg)|];
         Atom.Promise.createFakePromise (
           fun resolve reject =>
@@ -64,8 +66,10 @@ export
       fun jsEditor jsRange jsNotifySuccess jsNotifyInvalid jsNotifyInfo => {
         let editor = Atom.Editor.fromJs jsEditor;
         let range = Atom.Range.fromJs jsRange;
-        let notifySuccess msg => Js.Unsafe.fun_call jsNotifySuccess [|Js.Unsafe.inject (Js.string msg)|];
-        let notifyInvalid msg => Js.Unsafe.fun_call jsNotifyInvalid [|Js.Unsafe.inject (Js.string msg)|];
+        let notifySuccess msg =>
+          Js.Unsafe.fun_call jsNotifySuccess [|Js.Unsafe.inject (Js.string msg)|];
+        let notifyInvalid msg =>
+          Js.Unsafe.fun_call jsNotifyInvalid [|Js.Unsafe.inject (Js.string msg)|];
         let notifyInfo msg => Js.Unsafe.fun_call jsNotifyInfo [|Js.Unsafe.inject (Js.string msg)|];
         Atom.Promise.createFakePromise (
           fun resolve reject =>
@@ -91,7 +95,9 @@ export
         let editor = request.Nuclide.AutocompleteProviderRequest.editor;
         let prefix = request.prefix;
         let text = Atom.Buffer.getText (Atom.Editor.getBuffer editor);
-        let (line, col) as position = Atom.Cursor.getBufferPosition (List.hd (Atom.Editor.getCursors editor));
+        let (line, col) as position = Atom.Cursor.getBufferPosition (
+          List.hd (Atom.Editor.getCursors editor)
+        );
         /**
          * The default prefix at something like `Printf.[cursor]` is just the dot. Compute
          * `linePrefix` so that ocamlmerlin gets more context. Compute `replacementPrefix`
@@ -107,7 +113,9 @@ export
               let len = List.length lst;
               len > 0 ? List.nth lst (len - 1) : linePrefix
             };
-        if (String.length (String.trim linePrefix) === 0 || String.length (String.trim prefix) === 0) {
+        if (
+          String.length (String.trim linePrefix) === 0 || String.length (String.trim prefix) === 0
+        ) {
           Atom.Promise.createFakePromise (fun resolve reject => resolve (Js.array [||]))
         } else {
           let replacementPrefix =
@@ -131,7 +139,9 @@ export
                         Array.to_list |>
                         List.map MerlinServiceConvert.jsMerlinCompletionEntryToMerlinEntry;
                     resultRe |>
-                      List.map (MerlinServiceConvert.merlinCompletionEntryToNuclide replacementPrefix) |>
+                      List.map (
+                        MerlinServiceConvert.merlinCompletionEntryToNuclide replacementPrefix
+                      ) |>
                       List.map NuclideJs.Autocomplete.entryToJs |>
                       Array.of_list |>
                       Js.array |>
@@ -179,7 +189,10 @@ export
             AtomReasonLocate.getMerlinLocation
               editor::(Atom.Editor.fromJs jsEditor) range::(Atom.Range.fromJs range)
         );
-        Js.Unsafe.obj [|("range", Js.Unsafe.inject range), ("callback", Js.Unsafe.inject callback)|]
+        Js.Unsafe.obj [|
+          ("range", Js.Unsafe.inject range),
+          ("callback", Js.Unsafe.inject callback)
+        |]
       }
     )
   );

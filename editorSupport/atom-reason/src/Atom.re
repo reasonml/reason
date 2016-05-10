@@ -39,7 +39,12 @@ let trimTrailingWhiteSpace (s: string) => Js.to_string (
 
 let module JsonType = {
   type t =
-    | JsonString of string | JsonNum of float | JsonBool of bool | JsonArray of (array t) | JsonNull | Empty;
+    | JsonString of string
+    | JsonNum of float
+    | JsonBool of bool
+    | JsonArray of (array t)
+    | JsonNull
+    | Empty;
 };
 
 type completionEntry = {desc: string, info: string, kind: string, name: string};
@@ -84,12 +89,13 @@ let module JsonValue: JsonValueSig = {
       Empty
     };
   let rec toJs =
-    fun | JsonString str => Js.Unsafe.inject (Js.string str)
-        | JsonNum f => Js.Unsafe.inject (Js.float f)
-        | JsonBool b => Js.Unsafe.inject (Js.bool b)
-        | JsonArray a => Js.Unsafe.inject (Js.array (Array.map toJs a))
-        | JsonNull => Js.Unsafe.inject Js.null
-        | Empty => Js.Unsafe.inject Js.undefined;
+    fun
+    | JsonString str => Js.Unsafe.inject (Js.string str)
+    | JsonNum f => Js.Unsafe.inject (Js.float f)
+    | JsonBool b => Js.Unsafe.inject (Js.bool b)
+    | JsonArray a => Js.Unsafe.inject (Js.array (Array.map toJs a))
+    | JsonNull => Js.Unsafe.inject Js.null
+    | Empty => Js.Unsafe.inject Js.undefined;
   let unsafeExtractString o =>
     switch o {
     | JsonType.JsonString s => s
@@ -99,7 +105,8 @@ let module JsonValue: JsonValueSig = {
 
 let module Env = {
   let setEnvVar envVar strVal => {
-    Js.Unsafe.set (Js.Unsafe.get (Js.Unsafe.get Js.Unsafe.global "process") "env") envVar (Js.string strVal);
+    Js.Unsafe.set
+      (Js.Unsafe.get (Js.Unsafe.get Js.Unsafe.global "process") "env") envVar (Js.string strVal);
     Js.Unsafe.set fixedEnv envVar (Js.string strVal)
   };
 };
@@ -112,13 +119,16 @@ let module Config = {
   let set configKey (v: JsonType.t) :unit => {
     let config = Js.Unsafe.get atomGlobal "config";
     let jsVal = JsonValue.toJs v;
-    Js.Unsafe.meth_call config "set" [|Js.Unsafe.inject (Js.string configKey), Js.Unsafe.inject jsVal|]
+    Js.Unsafe.meth_call
+      config "set" [|Js.Unsafe.inject (Js.string configKey), Js.Unsafe.inject jsVal|]
   };
 };
 
 let module Point = {
   type t = (int, int);
-  let toJs (row, column) => Js.Unsafe.inject (Js.array [|Js.Unsafe.inject row, Js.Unsafe.inject column|]);
+  let toJs (row, column) => Js.Unsafe.inject (
+    Js.array [|Js.Unsafe.inject row, Js.Unsafe.inject column|]
+  );
   let fromJs jsP =>
     if (Js.Unsafe.fun_call _arrayIsArray [|Js.Unsafe.inject jsP|]) {
       let arr = Js.to_array jsP;
@@ -156,7 +166,8 @@ let module Buffer = {
   let fromJs jsBuffer :t => jsBuffer;
   let toJs (buffer: t) :Js.Unsafe.any => buffer;
   let characterIndexForPosition (buffer: t) rowColumn =>
-    Js.Unsafe.meth_call buffer "characterIndexForPosition" [|Js.Unsafe.inject (Point.toJs rowColumn)|];
+    Js.Unsafe.meth_call
+      buffer "characterIndexForPosition" [|Js.Unsafe.inject (Point.toJs rowColumn)|];
   let getText (buffer: t) :string => Js.to_string (Js.Unsafe.meth_call buffer "getText" emptyArgs);
   let getTextInRange (buffer: t) (range: Range.t) :string => Js.to_string (
     Js.Unsafe.meth_call buffer "getTextInRange" [|Range.toJs range|]
@@ -191,13 +202,14 @@ let module Editor = {
     Js.Opt.test path ? Some (Js.to_string path) : None
   };
   let getCursors editor => {
-    let arr = Array.map Cursor.fromJs (Js.to_array (Js.Unsafe.meth_call editor "getCursors" emptyArgs));
+    let arr =
+      Array.map Cursor.fromJs (Js.to_array (Js.Unsafe.meth_call editor "getCursors" emptyArgs));
     Array.to_list arr
   };
   let setSelectedBufferRanges editor bufferRanges => {
     let arr = Array.map Range.toJs bufferRanges |> Js.array;
-    Js.Unsafe.meth_call editor "setSelectedBufferRanges" [|Js.Unsafe.inject arr|];
-  }
+    Js.Unsafe.meth_call editor "setSelectedBufferRanges" [|Js.Unsafe.inject arr|]
+  };
 };
 
 /**
@@ -220,7 +232,8 @@ let module Promise = {
     {
       underlyingJsPromise,
       thn: fun onResolve =>
-        Js.Unsafe.meth_call underlyingJsPromise "then" [|Js.Unsafe.inject (Js.wrap_callback onResolve)|]
+        Js.Unsafe.meth_call
+          underlyingJsPromise "then" [|Js.Unsafe.inject (Js.wrap_callback onResolve)|]
     }
   };
   let resolve v => create (fun jsResolveCb jsRejectCb => Js.Unsafe.fun_call jsResolveCb [|v|]);
@@ -265,7 +278,9 @@ let module NotificationManager = {
       "addSuccess"
       [|Js.Unsafe.inject (Js.string title), optionsToJs opts|];
   let getNotifications () => Array.to_list (
-    Js.to_array (Js.Unsafe.meth_call (Js.Unsafe.get atomGlobal "notifications") "getNotifications" emptyArgs)
+    Js.to_array (
+      Js.Unsafe.meth_call (Js.Unsafe.get atomGlobal "notifications") "getNotifications" emptyArgs
+    )
   );
 };
 
@@ -277,7 +292,8 @@ let module Process = {
 let module ChildProcess = {
   type t;
   let writeStdin (process: t) str :unit =>
-    Js.Unsafe.meth_call (Js.Unsafe.get process "stdin") "write" [|Js.Unsafe.inject (Js.string str)|];
+    Js.Unsafe.meth_call
+      (Js.Unsafe.get process "stdin") "write" [|Js.Unsafe.inject (Js.string str)|];
   let endStdin (process: t) => Js.Unsafe.meth_call (Js.Unsafe.get process "stdin") "end" emptyArgs;
 };
 
@@ -304,44 +320,41 @@ let module BufferedProcess = {
     let fields =
       switch opts {
       | None => fields
-      | Some opts => {
-          let jsOptions = Js.Unsafe.obj [|
-            ("cwd", Js.Unsafe.inject opts.cwd),
-            ("env", Js.Unsafe.inject opts.env),
-            ("detached", Js.Unsafe.inject (Js.bool opts.detached))
-          |];
-          Array.append fields [|("options", jsOptions)|]
-        }
+      | Some opts =>
+        let jsOptions = Js.Unsafe.obj [|
+          ("cwd", Js.Unsafe.inject opts.cwd),
+          ("env", Js.Unsafe.inject opts.env),
+          ("detached", Js.Unsafe.inject (Js.bool opts.detached))
+        |];
+        Array.append fields [|("options", jsOptions)|]
       };
     let fields =
       switch stdOut {
       | None => fields
-      | Some so => {
-          let cb jsStr => so (Js.to_string jsStr);
-          Array.append fields [|("stdout", Js.Unsafe.inject (Js.wrap_callback cb))|]
-        }
+      | Some so =>
+        let cb jsStr => so (Js.to_string jsStr);
+        Array.append fields [|("stdout", Js.Unsafe.inject (Js.wrap_callback cb))|]
       };
     let fields =
       switch stdErr {
       | None => fields
-      | Some si => {
-          let cb jsStr => si (Js.to_string jsStr);
-          Array.append fields [|("stdin", Js.Unsafe.inject (Js.wrap_callback cb))|]
-        }
+      | Some si =>
+        let cb jsStr => si (Js.to_string jsStr);
+        Array.append fields [|("stdin", Js.Unsafe.inject (Js.wrap_callback cb))|]
       };
     let fields =
       switch exit {
       | None => fields
-      | Some e => {
-          let cb eCode => e (Js.to_float eCode);
-          Array.append fields [|("exit", Js.Unsafe.inject (Js.wrap_callback cb))|]
-        }
+      | Some e =>
+        let cb eCode => e (Js.to_float eCode);
+        Array.append fields [|("exit", Js.Unsafe.inject (Js.wrap_callback cb))|]
       };
     Js.Unsafe.new_obj bufferedProcess [|Js.Unsafe.obj fields|]
   };
   let onWillThrowError buffProcess fn :unit => {
     let wrappedCb = Js.wrap_callback (
-      fun jsErrHandle => fn (Js.Unsafe.get jsErrHandle "error") (Js.Unsafe.get jsErrHandle "handle")
+      fun jsErrHandle =>
+        fn (Js.Unsafe.get jsErrHandle "error") (Js.Unsafe.get jsErrHandle "handle")
     );
     Js.Unsafe.meth_call buffProcess "onWillThrowError" [|Js.Unsafe.inject wrappedCb|]
   };

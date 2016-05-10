@@ -111,7 +111,8 @@ let formatImpl editor subText isInterface onComplete onFailure => {
       fmtPath;
   let errorTitle = "atom-reason could not spawn " ^ fmtPath;
   let handleError error handle => {
-    NotificationManager.addError options::{...NotificationManager.defaultOptions, detail: error} errorTitle;
+    NotificationManager.addError
+      options::{...NotificationManager.defaultOptions, detail: error} errorTitle;
     /* TODO: this doesn't type check, but sits across the border of js <-> reason so it passes. onFailure (the
        promise `onFailure`) takes in a reason string, when it reality it should take in a Js.string like the other
        locations in this file where we do `onFailure stdErr` */
@@ -147,7 +148,9 @@ let getEntireFormatting editor range notifySuccess notifyInvalid notifyInfo reso
       fun code (formatResult: Nuclide.FileFormat.result) stdErr => {
         if (not (code == 0.0)) {
           notifyInvalid "Syntax Error"
-        } else if (formatResult.formatted \=== text) {
+        } else if (
+          formatResult.formatted \=== text
+        ) {
           notifyInfo "Already Formatted"
         } else {
           notifySuccess "Format: Success"
@@ -169,7 +172,9 @@ let getPartialFormatting editor range notifySuccess notifyInvalid notifyInfo res
       fun code (formatResult: Nuclide.FileFormat.result) stdErr => {
         if (not (code == 0.0)) {
           notifyInvalid "Syntax Error"
-        } else if (formatResult.formatted \=== subText) {
+        } else if (
+          formatResult.formatted \=== subText
+        ) {
           notifyInfo "Already Formatted"
         } else {
           notifySuccess "Format: Success"
