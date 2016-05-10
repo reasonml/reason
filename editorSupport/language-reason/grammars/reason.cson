@@ -323,6 +323,7 @@
       { 'include': '#block_comment' }
       { 'include': '#line_comment' }
       { 'include': '#sigils' }
+      { 'include': '#variant' }
       { 'include': '#mutable' }
       { 'include': '#ref_lifetime' }
       { 'include': '#core_types' }
