@@ -122,13 +122,14 @@ let setup_lexbuf use_stdin filename =
   Location.init lexbuf filename;
   lexbuf
 
-type comments = (String.t * Location.t) list
+(* (comment text, attachment_location, physical location) *)
+type attached_comments = (String.t * Location.t * Location.t) list
 
 module type Toolchain = sig
   (* Parsing *)
-  val canonical_core_type_with_comments: Lexing.lexbuf -> (Parsetree.core_type * comments)
-  val canonical_implementation_with_comments: Lexing.lexbuf -> (Parsetree.structure * comments)
-  val canonical_interface_with_comments: Lexing.lexbuf -> (Parsetree.signature * comments)
+  val canonical_core_type_with_comments: Lexing.lexbuf -> (Parsetree.core_type * attached_comments)
+  val canonical_implementation_with_comments: Lexing.lexbuf -> (Parsetree.structure * attached_comments)
+  val canonical_interface_with_comments: Lexing.lexbuf -> (Parsetree.signature * attached_comments)
 
   val canonical_core_type: Lexing.lexbuf -> Parsetree.core_type
   val canonical_implementation: Lexing.lexbuf -> Parsetree.structure
@@ -137,14 +138,14 @@ module type Toolchain = sig
   val canonical_use_file: Lexing.lexbuf -> Parsetree.toplevel_phrase list
 
   (* Printing *)
-  val print_canonical_interface_with_comments: (Parsetree.signature * comments) -> unit
-  val print_canonical_implementation_with_comments: (Parsetree.structure * comments) -> unit
+  val print_canonical_interface_with_comments: (Parsetree.signature * attached_comments) -> unit
+  val print_canonical_implementation_with_comments: (Parsetree.structure * attached_comments) -> unit
 
 end
 
 module type Toolchain_spec = sig
   val safeguard_parsing: Lexing.lexbuf ->
-    (unit -> ('a * comments)) -> ('a * comments)
+    (unit -> ('a * attached_comments)) -> ('a * attached_comments)
 
   module rec Lexer_impl: sig
     val init: unit -> unit
@@ -162,8 +163,8 @@ module type Toolchain_spec = sig
   val toplevel_phrase: Lexing.lexbuf -> Parsetree.toplevel_phrase
   val use_file: Lexing.lexbuf -> Parsetree.toplevel_phrase list
 
-  val format_interface_with_comments: (Parsetree.signature * comments) -> Format.formatter -> unit
-  val format_implementation_with_comments: (Parsetree.structure * comments) -> Format.formatter -> unit
+  val format_interface_with_comments: (Parsetree.signature * attached_comments) -> Format.formatter -> unit
+  val format_implementation_with_comments: (Parsetree.structure * attached_comments) -> Format.formatter -> unit
 end
 
 let line_content = Str.regexp "[^ \t]+"
@@ -179,34 +180,39 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
       match !chan_input with
         | "" ->
           let _  = Parsing.clear_parser() in
-          (ast, unmodified_comments)
+          (ast, unmodified_comments |> List.map (fun (txt, phys_loc) -> (txt, phys_loc, phys_loc)))
         | _ ->
-          let modified_comments =
-            List.map (fun (str, loc) ->
+          let modified_and_attached_comments =
+            List.map (fun (str, physical_loc) ->
               (* When searching for "^" regexp, returns location of newline + 1 *)
-              let first_char_of_line = Str.search_backward new_line !chan_input loc.loc_start.pos_cnum in
-              let comment_length = (loc.loc_end.pos_cnum - loc.loc_start.pos_cnum - 4) in
-              let original_comment_contents = String.sub !chan_input (loc.loc_start.pos_cnum + 2) comment_length in
+              let first_char_of_line = Str.search_backward new_line !chan_input physical_loc.loc_start.pos_cnum in
+              let end_pos_plus_one = physical_loc.loc_end.pos_cnum in
+              let comment_length = (end_pos_plus_one - physical_loc.loc_start.pos_cnum - 4) in
+              (* Also, the string contents originally reported are incorrect! *)
+              let original_comment_contents = String.sub !chan_input (physical_loc.loc_start.pos_cnum + 2) comment_length in
               let (com, attachment_location) =
                 match Str.search_forward line_content !chan_input first_char_of_line
                 with
                   | n ->
-                    (* Recall that comment end position is messed up. *)
-                    let one_greater_than_comment_end = loc.loc_end.pos_cnum in
+                    (* Recall that all end positions are actually the position of end + 1. *)
+                    let one_greater_than_comment_end = end_pos_plus_one in
                     (* Str.string_match lets you specify a position one greater than last position *)
-                    let comment_is_last_thing_on_line = Str.string_match space_before_newline !chan_input one_greater_than_comment_end in
-                    if n < loc.loc_start.pos_cnum && comment_is_last_thing_on_line then
-                      (original_comment_contents, {loc with loc_start = {loc.loc_start with pos_cnum = n}})
+                    let comment_is_last_thing_on_line =
+                      Str.string_match space_before_newline !chan_input one_greater_than_comment_end in
+                    if n < physical_loc.loc_start.pos_cnum && comment_is_last_thing_on_line then (
+                      original_comment_contents,
+                      {physical_loc with loc_start = {physical_loc.loc_start with pos_cnum = n}}
+                    )
                     else
-                      (original_comment_contents, loc)
-                  | exception Not_found -> (original_comment_contents, loc)
+                      (original_comment_contents, physical_loc)
+                  | exception Not_found -> (original_comment_contents, physical_loc)
               in
-              (com, attachment_location)
+              (com, attachment_location, physical_loc)
             )
             unmodified_comments
           in
           let _  = Parsing.clear_parser() in
-          (ast, modified_comments)
+          (ast, modified_and_attached_comments)
     )
 
   (*

@@ -286,7 +286,91 @@ let myList = [
   1,
   2,
   3
-  /*CommentAfterThreeBeforeCons */
+  /*CommentAfterThreeBeforeCons*/
+];
+
+let myList = [
+  1,
+  2,
+  3
+  /*same w space after three    */
+];
+
+let myList = [
+  1,
+  2,
+  3
+  /*same w space before rbracket*/
+];
+
+let myList = [
+  1,
+  2,
+  3
+  /*same w both                 */
+];
+
+/* End of line comments */
+let myList = [
+  1,
+  2,
+  3 /*no space after three    */
+];
+
+let myList = [
+  1,
+  2,
+  3 /*same w space after three    */
+];
+
+let myList = [
+  1,
+  2,  /*no space after two comma    */
+  3
+];
+
+let myList = [
+  1,
+  2,  /*same w space after two comma    */
+  3
+];
+
+/* End of line comments */
+let myList = [
+  1,
+  2,  /*no space after two comma    */
+  3
+];
+
+let myList = [
+  1,
+  2,  /*same w space after two comma    */
+  3
+];
+
+let myRec = {
+  x: 1,
+  y: 2,  /*no space after two    */
+  z: 3
+};
+
+let myRec = {
+  x: 1,
+  y: 2,  /*same w space after two    */
+  z: 3
+};
+
+/* Ensure end of line comments force breaks */
+let myList = [
+  1,
+  2,
+  3 /* */
+];
+
+let myList = [
+  1,
+  2,  /**/
+  3
 ];
 
 let myList = [
@@ -318,9 +402,9 @@ type hasABunch = {
   fieldtwo: list int,
   fieldThree: list string,
   fieldFour: nameAge
-};
+}
+/* Comment at bottom of record type def */;
 
-/* Comment at bottom of record type def */
 type functionsInARecord = {
   adder: int => int,
   minuser: int => int
@@ -1694,6 +1778,7 @@ let someResult: (
   10
 );
 
+/* The rhs of = shouldn't be broken onto its own newline: @see ensureSingleTokenSticksToLabel */
 let someResult: (
   int,
   int,
@@ -1711,7 +1796,6 @@ let someResult: (
   int,
   int,
   int
-  /* This shouldn't be broken onto its own newline: @see ensureSingleTokenSticksToLabel */
 ) = someResult;
 
 type sevenStrings = (
@@ -1813,12 +1897,12 @@ let myFunc
 
 type inputEchoRecord 'a = {inputIs: 'a};
 
+/* With setting ReturnValOnSameLine */
 let df_locallyAbstractFunc
     (type a)
     (type b)
     (input: a) => {
   inputIs: input
-  /* With setting ReturnValOnSameLine */
 };
 
 let df_locallyAbstractFuncNotSugared
@@ -2608,3 +2692,45 @@ let x =
     a
     a
     alskdjfalskdjfalsdf + reallyReallyLongName;
+
+let
+  onlyDoingThisTopLevelLetToBypassTopLevelSequence = {
+  let x = {
+    print_int 1;
+    print_int 20 /* Missing trailing SEMI */
+  };
+  let x = {
+    print_int 1;
+    print_int 20; /* Ensure missing middle SEMI reported well */
+    print_int 20
+  };
+  let x = {
+    print_int 1;
+    print_int 20;
+    10
+  };
+  /* Missing final SEMI */
+  let x = {
+    print_int 1;
+    print_int 20;
+    10
+  };
+  x + x /* Final item */
+};
+
+/* With this unification, anywhere eyou see `= fun` you can just ommit it */
+let blah a => a; /* Done */
+
+let blah a => a; /* Done (almost) */
+
+let blah a b => a; /* Done */
+
+let blah a b => a; /* Done (almost) */
+
+let tryingTheSameInLocalScope = {
+  let blah a => a; /* Done */
+  let blah a => a; /* Done (almost) */
+  let blah a b => a; /* Done */
+  let blah a b => a; /* Done (almost) */
+  ()
+};
