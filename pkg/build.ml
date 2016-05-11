@@ -17,9 +17,11 @@ let () =
     Pkg.lib ~exts:[`Ext ".cmo"; `Ext ".cmx";`Ext ".cmi"; `Ext ".cmt";`Ext ".mli"] "src/reason_parser";
     Pkg.lib ~exts:[`Ext ".cmo"; `Ext ".cmx";`Ext ".cmi";] "src/reason_lexer";
     Pkg.lib ~exts:[`Ext ".cmo"; `Ext ".cmx";`Ext ".cmi"; `Ext ".cmt"] "src/reason_pprint_ast";
-    Pkg.lib ~exts:[`Ext ".cmo"; `Ext ".cmx";`Ext ".cmi"; `Ext ".cmt"] "src/reason_oprint";
+    Pkg.lib ~exts:[`Ext ".cmo"; `Ext ".cmx";`Ext ".cmi"; `Ext ".cmt"; `Ext ".cmxs"] "src/reason_oprint";
     Pkg.lib ~exts:[`Ext ".cmo"; `Ext ".cmx";`Ext  ".cmi"; `Ext ".cmt"] "src/reason_config";
     Pkg.lib ~exts:[`Ext ".cmo"; `Ext ".cmx";`Ext  ".cmi"; `Ext ".cmt"] "src/reason_utils";
+    Pkg.lib ~exts:[`Ext ".cmo"; `Ext ".cmx";`Ext  ".cmi"; `Ext ".cmt"; `Ext ".cmxs"] "src/redoc_html";
+    Pkg.lib ~exts:Exts.library "src/reasondoc";
     Pkg.lib ~exts:[`Ext ".cmo"] "src/reason_toploop";
     Pkg.lib ~exts:[`Ext ".cmx"; `Ext ".o"] "src/reasonbuild";
     Pkg.lib ~cond:(Env.bool "utop") ~exts:[`Ext ".cmo"] "src/reason_utop";
@@ -29,6 +31,7 @@ let () =
     Pkg.bin  "src/reopt.sh" ~dst:"reopt";
     Pkg.bin  "src/rebuild.sh" ~dst:"rebuild";
     Pkg.bin  "src/rtop.sh" ~dst:"rtop";
+    Pkg.bin  "src/redoc.sh" ~dst:"redoc";
     Pkg.bin  "src/reup.sh" ~dst:"reup";
     Pkg.bin  "src/rtop_init.ml" ~dst:"rtop_init.ml";
     Pkg.bin "_reasonbuild/_build/myocamlbuild" ~dst:"reasonbuild";
