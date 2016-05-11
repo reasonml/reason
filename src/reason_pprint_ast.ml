@@ -1259,11 +1259,15 @@ let rec interleaveComments ?endMaxChar listConfig layoutListItems comments =
   match (layoutListItems, endMaxChar) with
     | ([], None)-> ([], comments)
     | ([], Some endMax)->
-      let (commentsInSequence, unconsumed) =
-        extractComments comments (
-          fun comAttachFirst comAttachLast comPhysFirst comPhysLast -> comAttachLast <= endMax
-        ) in
-      (List.map (fun c -> Comment (formatItemComment c)) commentsInSequence, unconsumed)
+      if not listConfig.attemptInterleaveComments then
+        ([], comments)
+      else
+        let (commentsInSequence, unconsumed) =
+          extractComments
+            comments
+            (fun comAttachFirst comAttachLast comPhysFirst comPhysLast -> comAttachLast <= endMax)
+        in
+        (List.map (fun c -> Comment (formatItemComment c)) commentsInSequence, unconsumed)
     | (hd::tl, _) ->
       (* TODO: properly implement "stick to left", or expand the ~sep:"" API to
        * include, left sticking items: Which would involve sticking spaces like:
@@ -1319,8 +1323,6 @@ and partitionItemComments loc comments =
   let (onItem, afterStart) = extractComments comments (
     fun comAttachFirst comAttachLast comPhysFirst comPhysLast ->
       let entirelyPhysicallyAbove = comPhysFirst < firstChar && comPhysLast < firstChar in
-      (* let entirelyPhysicallyInside = comPhysFirst >= firstChar && comPhysLast <= lastChar in *)
-      (* entirelyPhysicallyAbove || (entirelyPhysicallyInside && comAttachFirst <= firstChar) *)
       let entirelyPhysicallyAfter = comPhysFirst >= lastChar && comPhysLast >= lastChar in
       let attachmentEnclosesPartialEnd = entirelyPhysicallyAfter && comAttachFirst < lastChar && comAttachFirst > firstChar in
       let entirelyPhysicallyInside = comPhysFirst > firstChar && comPhysLast < lastChar in
@@ -1381,7 +1383,7 @@ and attach listConfig ~useSep easyItem = match (listConfig.sep, listConfig.preSp
 
 (* Catches up comments to a node which has already been converted to an
    `Easy_format` node. Use this on nodes not in a list whose location is known.  *)
-and catchUpComments loc comments continue =
+and catchUpPreviousComments loc comments continue =
   let (onItem, unconsumed) = partitionPreviousItemComments loc comments in
   let (easyFormat, unconsumed) = continue unconsumed in
   match (onItem) with
@@ -1459,10 +1461,10 @@ and layoutToEasyFormatAndSurplus layoutNode comments = match layoutNode with
            contained within the sequence! So subtract one more *)
         let maxChar = lastChar - 1 in
         let continue = (layoutSequenceToEasyFormatAndSurplus ~endMaxChar:maxChar listConfig subLayouts) in
-        (* catchUpComments loc comments continue *)
-        let (recurse, unconsumed) = catchUpComments loc comments continue in
+        (* catchUpPreviousComments loc comments continue *)
+        let (recurse, unconsumed) = catchUpPreviousComments loc comments continue in
         (recurse, unconsumed)
-      | _ -> catchUpComments loc comments (layoutToEasyFormatAndSurplus subLayout)
+      | _ -> catchUpPreviousComments loc comments (layoutToEasyFormatAndSurplus subLayout)
     )
   | Label (labelFormatter, left, right) ->
     let (easyLeft, unconsumedComms) = layoutToEasyFormatAndSurplus left comments in
