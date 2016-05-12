@@ -4,7 +4,7 @@
 #use "topkg.ml"
 let trace = try let _ = Sys.getenv "trace" in true with | Not_found -> false
 
-let menhir_options = "'menhir --fixed-exception --table " ^ (if trace then "--trace" else "") ^ " '"
+let menhir_options = "'menhir --strict --unused-tokens --fixed-exception --table " ^ (if trace then "--trace" else "") ^ " '"
 let menhir_command = "-menhir " ^ menhir_options
 
 (* ; "-menhir 'menhir --trace'" *)
