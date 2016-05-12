@@ -125,20 +125,45 @@ type t2 = (int, int);
 /* End of line on (int, int) */
 type t3 = (int, int);
 
-/* On the entire type */
+/* End of line on Y */
 type variant =
   | X of (int, int)  /* End of line on X */
   | Y of (int, int);
 
+/* Comment on entire type def for variant */
+/* Before let */
+/* After final semi in switch */
 let res =
+  /* Before switch */
   switch (X (2, 3)) {
   /* Above X line */
-  | X _ => "result of X" /* End of X line */
+  | X _ => "result of X" /* End of arrow and X line */
   /* Above Y line */
-  | Y _ => "result of Y" /* End of Y line */
+  | Y _ => "result of Y" /* End of arrow and Y line */
   };
 
-/* On entire type */
+let res =
+  switch (X (2, 3)) {
+  /* End of X body line */
+  |
+      X (0, 0)  /* After X arrow */
+      =>
+     "result of X"
+  /* End of X body line */
+  | X (1, 0) =>
+    /* Before X's arrow */
+    "result of X"
+  /* End of X body line */
+  |
+      X _  /* After X _ arrow */
+      =>
+     "result of X"
+  /* Above Y line */
+  | Y _ =>
+    /* Comment above Y body */
+    "result of Y"
+  };
+
 type variant2 =
   /* Comment above X */
   | X of (int, int)  /* End of line on X */
@@ -152,20 +177,89 @@ type variant3 =
   /* Comment above Y */
   | Y of (int, int);
 
-/* On entire type */
 /* attached *above* x */
-type x = {fieldOne: int}
+type x = {fieldOne: int, fieldA: int}
 /* Attached end of line after x */
 /* attached *above* y */
 and y = {fieldTwo: int}
 /* Attached end of line after y */;
 
 /* attached *above* x2 */
-/* Attached to entire set of bindings */
-type x2 = {fieldOne: int}
+type x2 = {fieldOne: int, fieldA: int}
 /* Attached end of line after x2 */
 /* attached *above* y2 */
 and y2 = {fieldTwo: int};
+
+let result =
+  switch None {
+  |
+      Some {fieldOne: 20, fieldA: a}  /* Where does this comment go? */
+      =>
+
+    let tmp = 0;
+    2 + tmp
+  | Some {fieldOne: n, fieldA: a} =>
+    /* How about this one */
+    let tmp = n;
+    n + tmp
+  | None => 20
+  };
+
+let res =
+  /* Before switch */
+  switch (X (2, 3)) {
+  /* Above X line */
+  | X _ => "result of X" /* End of arrow and X line */
+  /* Above Y line */
+  | Y _ => "result of Y" /* End of arrow and Y line */
+  };
+
+/*
+ * Now these end of line comments *should* be retained.
+ */
+let result =
+  switch None {
+  | Some {
+      fieldOne: 20,
+      fieldA:
+        /* end of line */
+        a
+      /* end of line */
+    } =>
+    let tmp = 0;
+    2 + tmp
+  | Some {
+      fieldOne: n,
+      fieldA:
+        /* end of line */
+        a
+      /* end of line */
+    } =>
+    let tmp = n;
+    n + tmp
+  | None => 20
+  };
+
+/*
+ * These end of line comments *should* be retained.
+ * To get the simple expression eol comment to be retained, we just need to
+ * implement label breaking eol behavior much like we did with sequences.
+ * Otherwise, right now they are not idempotent.
+ */
+let res =
+  switch (
+    X
+      /* Retain this */
+      (2, 3)
+  ) {
+  /* Above X line */
+  | X (
+      _,  /* retain this */
+      _ /* retain this */
+    ) => "result of X"
+  /* Above Y line */
+  | Y _ => "result of Y" /* End of arrow and Y line */
+  };
 
 type optionalTuple =
   | OptTup of (
