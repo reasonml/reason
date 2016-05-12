@@ -9,7 +9,7 @@ let menhir_command = "-menhir " ^ menhir_options
 
 (* ; "-menhir 'menhir --trace'" *)
 let () =
-  Pkg.describe "reason" ~builder:(`OCamlbuild ["-use-menhir"; menhir_command ]) [
+  Pkg.describe "reason" ~builder:(`OCamlbuild ["-use-menhir"; menhir_command; "-cflags -I,+ocamldoc"]) [
     Pkg.lib "pkg/META";
     (* The .mllib *)
     (* So much redundancy - this should be implicit in the mllib! *)

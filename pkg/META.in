@@ -19,7 +19,7 @@ archive(byte, toploop, pkg_utop) += "reason_utop.cmo"
 package "lib" (
   version = "%{version}%"
   description = "Library version of reason"
-  requires = "compiler-libs.common easy-format BetterErrors menhirLib ocamldoc"
+  requires = "compiler-libs.common easy-format BetterErrors menhirLib"
 
   archive(byte) = "reason.cma"
   archive(native) = "reason.cmxa"
