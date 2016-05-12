@@ -36,6 +36,14 @@ TYPE_TEST_OUTPUT=$TEST_DIR/typeCheckedTests/output
 
 TYPE_TEST_EXPECTED_OUTPUT=$DIR/typeCheckedTests/expected_output
 
+
+ERROR_TEST_INPUT=$DIR/errorTests/input
+
+ERROR_TEST_OUTPUT=$TEST_DIR/errorTests/output
+
+ERROR_TEST_EXPECTED_OUTPUT=$DIR/errorTests/expected_output
+
+
 FAILED_TESTS=$TEST_DIR/failed_tests
 
 function info() {
@@ -64,6 +72,7 @@ function setup_test_dir() {
     echo "Setting up test dir at $UNIT_TEST_EXPECTED_OUTPUT"
     mkdir -p $UNIT_TEST_OUTPUT
     mkdir -p $TYPE_TEST_OUTPUT
+    mkdir -p $ERROR_TEST_OUTPUT
     touch $FAILED_TESTS
 }
 
@@ -201,6 +210,41 @@ function typecheck_test() {
     echo
 }
 
+function error_test() {
+    FILE=$1
+    INPUT=$2
+    OUTPUT=$3
+    EXPECTED_OUTPUT=$4
+
+    info "Error Test: $FILE"
+    if [ "$(basename $FILE)" != "$(basename $FILE .ml)" ] || [ "$(basename $FILE)" != "$(basename $FILE .mli)" ]; then
+      warning "  ⊘ FAILED: .ml files should not need to be run against error tests. \n"
+      return 1
+    else
+      debug "  '$REFMT -print-width 50 -print re $INPUT/$FILE &> $OUTPUT/$FILE'"
+      # ensure errors are not absolute filepaths
+      cd $INPUT
+      $REFMT -print-width 50 -print re $(basename $FILE) &> $OUTPUT/$FILE
+      cd -
+    fi
+
+    debug "  Comparing results:  diff $OUTPUT/$FILE $EXPECTED_OUTPUT/$FILE"
+
+    diff --unchanged-line-format="" --new-line-format=":%dn: %L" --old-line-format=":%dn: %L" $OUTPUT/$FILE $EXPECTED_OUTPUT/$FILE
+
+    if ! [[ $? -eq 0 ]]; then
+        warning "  ⊘ FAILED\n"
+        info "  ${INFO}$OUTPUT/$FILE${RESET}"
+        info "  doesn't match expected output"
+        info "  ${INFO}$EXPECTED_OUTPUT/$FILE${RESET}"
+        echo ""
+        return 1
+    fi
+
+    success "  ☑ PASS"
+    echo
+}
+
 cd $UNIT_TEST_INPUT && find . -type f \( -name "*.re*" -or -name "*.ml*" \) | while read file; do
         unit_test $file $UNIT_TEST_INPUT $UNIT_TEST_OUTPUT $UNIT_TEST_EXPECTED_OUTPUT
         if ! [[ $? -eq 0 ]]; then
@@ -225,6 +269,13 @@ cd $TYPE_TEST_INPUT && find . -type f \( -name "*.re*" -or -name "*.ml*" \) | so
         idempotent_test $file $TYPE_TEST_INPUT $TYPE_TEST_OUTPUT $TYPE_TEST_EXPECTED_OUTPUT
         if ! [[ $? -eq 0 ]]; then
             echo "$file -- idempotent_test" >> $FAILED_TESTS
+        fi
+done
+
+cd $ERROR_TEST_INPUT && find . -type f \( -name "*.re*" -or -name "*.ml*" \) | while read file; do
+        error_test $file $ERROR_TEST_INPUT $ERROR_TEST_OUTPUT $ERROR_TEST_EXPECTED_OUTPUT
+        if ! [[ $? -eq 0 ]]; then
+            echo "$file -- error_test" >> $FAILED_TESTS
         fi
 done
 
