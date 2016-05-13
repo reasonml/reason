@@ -287,3 +287,19 @@ if true {
   /* hello */
   ()
 };
+
+type color =
+  | Red of int /* After red end of line */
+  | Black of int /* After black end of line */
+  | Green of int /* After green end of line */
+; /* On next line after color type def */
+
+let blahCurriedX x =>
+  fun
+  | Red 10
+  | Black 20
+  | Green 10 => 1 /* After or pattern green */
+  | Red x => 0 /* After red */
+  | Black x => 0 /* After black */
+  | Green x => 0 /* After second green */
+; /* On next line after blahCurriedX def */

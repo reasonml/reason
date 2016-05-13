@@ -309,3 +309,23 @@ if true {
   ()
 }
 /* hello */;
+
+/* After green end of line */
+type color =
+  | Red of int  /* After red end of line */
+  | Black of int  /* After black end of line */
+  | Green of int;
+
+/* On next line after color type def */
+/* After second green */
+let blahCurriedX x =>
+  fun
+  /* After or pattern green */
+  | Red 10
+  | Black 20
+  | Green 10 => 1
+  | Red x => 0  /* After red */
+  | Black x => 0  /* After black */
+  | Green x => 0;
+
+/* On next line after blahCurriedX def */
