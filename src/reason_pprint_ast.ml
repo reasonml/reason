@@ -1323,11 +1323,7 @@ and partitionItemComments loc comments =
   let (onItem, afterStart) = extractComments comments (
     fun comAttachFirst comAttachLast comPhysFirst comPhysLast ->
       let entirelyPhysicallyAbove = comPhysFirst < firstChar && comPhysLast < firstChar in
-      let entirelyPhysicallyAfter = comPhysFirst >= lastChar && comPhysLast >= lastChar in
-      let attachmentEnclosesPartialEnd = entirelyPhysicallyAfter && comAttachFirst < lastChar && comAttachFirst > firstChar in
-      (* let entirelyPhysicallyInside = comPhysFirst > firstChar && comPhysLast < lastChar in *)
-      (* let attachmentEnclosesPartialFirstLine = entirelyPhysicallyInside && comAttachFirst == firstChar in *)
-      entirelyPhysicallyAbove || attachmentEnclosesPartialEnd
+      entirelyPhysicallyAbove
   ) in
   (* We currently support the following as an "end of line" comment:
 

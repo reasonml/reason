@@ -1897,7 +1897,6 @@ let myFunc
 
 type inputEchoRecord 'a = {inputIs: 'a};
 
-/* With setting ReturnValOnSameLine */
 let df_locallyAbstractFunc
     (type a)
     (type b)
@@ -1905,6 +1904,7 @@ let df_locallyAbstractFunc
   inputIs: input
 };
 
+/* With setting ReturnValOnSameLine */
 let df_locallyAbstractFuncNotSugared
     (type a)
     (type b)

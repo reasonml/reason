@@ -65,32 +65,32 @@ let testingEndOfLineComments = [
 /* Comment after rbracket */;
 
 /* The space between ; and comment shoudn't matter */
-/* Comment after semi */
 let testPlacementOfTrailingComment = [
   "Item 0"  /* */
   /* Comment after last item in list. */
 ];
 
+/* Comment after semi */
 /* The space between ; and comment shoudn't matter */
-/* Comment after semi */
 let testPlacementOfTrailingComment = [
   "Item 0"  /* */
   /* Comment after last item in list. */
 ];
 
-/* Try again but without other things in the list */
 /* Comment after semi */
+/* Try again but without other things in the list */
 let testPlacementOfTrailingComment = [
   "Item 0" /* */
 ];
 
-/* The space between ; and comment shoudn't matter */
 /* Comment after semi */
+/* The space between ; and comment shoudn't matter */
 let testPlacementOfTrailingComment = [
   "Item 0"  /* */
   /* Comment after last item in list. */
 ];
 
+/* Comment after semi */
 let testingEndOfLineComments = []; /* Comment after entire let binding */
 
 /* The following is not yet idempotent */
@@ -99,13 +99,13 @@ let testingEndOfLineComments = []; /* Comment after entire let binding */
 /*     andSecondArg  => { /* Second Arg */ */
 /*   withFirstArg + andSecondArg /* before semi */ ; */
 /* }; */
-/* After Semi */
 let myFunction
     /* First arg */
     withFirstArg
     /* Second Arg */
     andSecondArg => withFirstArg + andSecondArg;
 
+/* After Semi */
 type point = {
   x: string,  /* x field */
   y: string /* y field */
@@ -121,20 +121,18 @@ type anotherpoint = {
 
 type t = (int, int); /* End of line on t */
 
-/* End of line on (int, int) */
-type t2 = (int, int);
+type t2 = (int, int)
+/* End of line on (int, int) */;
 
-/* End of line on (int, int) */
 type t3 = (int, int);
 
-/* End of line on Y */
+/* End of line on (int, int) */
 type variant =
   | X of (int, int)  /* End of line on X */
-  | Y of (int, int);
+  | Y of (int, int) /* End of line on Y */;
 
 /* Comment on entire type def for variant */
 /* Before let */
-/* After final semi in switch */
 let res =
   /* Before switch */
   switch (X (2, 3)) {
@@ -144,9 +142,9 @@ let res =
   | Y _ => "result of Y" /* End of arrow and Y line */
   };
 
+/* After final semi in switch */
 let res =
   switch (X (2, 3)) {
-  /* End of X body line */
   | X (0, 0) =>
     /* After X arrow */
     "result of X"
@@ -158,6 +156,7 @@ let res =
   | X _ =>
     /* After X _ arrow */
     "result of X"
+  /* End of X body line */
   /* Above Y line */
   | Y _ =>
     /* Comment above Y body */
@@ -170,12 +169,11 @@ type variant2 =
   /* Comment above Y */
   | Y of (int, int);
 
-/* End of line on Y  */
 type variant3 =
   /* Comment above X */
   | X of (int, int)  /* End of line on X */
   /* Comment above Y */
-  | Y of (int, int);
+  | Y of (int, int) /* End of line on Y  */;
 
 type x = {
   /* not attached *above* x */
@@ -318,22 +316,20 @@ if true {
 }
 /* hello */;
 
-/* After green end of line */
 type color =
   | Red of int  /* After red end of line */
   | Black of int  /* After black end of line */
-  | Green of int;
+  | Green of int /* After green end of line */;
 
 /* On next line after color type def */
-/* After second green */
 let blahCurriedX x =>
   fun
-  /* After or pattern green */
   | Red 10
   | Black 20
   | Green 10 => 1
+  /* After or pattern green */
   | Red x => 0  /* After red */
   | Black x => 0  /* After black */
-  | Green x => 0;
+  | Green x => 0 /* After second green */;
 
 /* On next line after blahCurriedX def */
