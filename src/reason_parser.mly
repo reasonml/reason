@@ -3439,17 +3439,17 @@ type_kind:
   | EQUAL PRIVATE core_type
       { (Ptype_abstract, Private, Some $3) }
   | EQUAL constructor_declarations
-      { (Ptype_variant(List.rev $2), Public, None) }
+      { (Ptype_variant($2),  Public, None) }
   | EQUAL PRIVATE constructor_declarations
-      { (Ptype_variant(List.rev $3), Private, None) }
-  | EQUAL private_flag BAR constructor_declarations
-      { (Ptype_variant(List.rev $4), $2, None) }
+      { (Ptype_variant($3), Private, None) }
   | EQUAL DOTDOT
       { (Ptype_open, Public, None) }
   | EQUAL private_flag LBRACE label_declarations opt_comma RBRACE
       { (Ptype_record(List.rev $4), $2, None) }
-  | EQUAL core_type EQUAL private_flag opt_bar constructor_declarations
-      { (Ptype_variant(List.rev $6), $4, Some $2) }
+  | EQUAL core_type EQUAL constructor_declarations
+      { (Ptype_variant($4), Public,  Some $2) }
+  | EQUAL core_type EQUAL PRIVATE constructor_declarations
+      { (Ptype_variant($5), Private, Some $2) }
   | EQUAL core_type EQUAL DOTDOT
       { (Ptype_open, Public, Some $2) }
   | EQUAL core_type EQUAL private_flag LBRACE label_declarations opt_comma RBRACE
@@ -3490,21 +3490,37 @@ type_variance:
   | PLUS                                        { Covariant }
   | MINUS                                       { Contravariant }
 ;
+
 type_variable: mark_position_typ(_type_variable) {$1}
 _type_variable:
     QUOTE ident                                 { mktyp (Ptyp_var $2) }
 ;
 
-constructor_declarations:
-    constructor_declaration                     { [$1] }
-  | constructor_declarations BAR constructor_declaration { $3 :: $1 }
+constructor_declarations_leading_bar:
+  | constructor_declaration_leading_bar                                      { [$1] }
+  | constructor_declarations_leading_bar constructor_declaration_leading_bar { $2 :: $1 }
 ;
-constructor_declaration:
+
+constructor_declarations:
+  | constructor_declarations_leading_bar                                        { List.rev $1 }
+  | constructor_declaration_no_leading_bar                                      { [$1] }
+  | constructor_declaration_no_leading_bar constructor_declarations_leading_bar  { $1 :: List.rev $2 }
+;
+
+constructor_declaration_no_leading_bar:
   | as_loc(constr_ident) generalized_constructor_arguments attributes
       {
        let args,res = $2 in
        let loc = mklocation $symbolstartpos $endpos in
        Type.constructor $1 ~args ?res ~loc ~attrs:$3
+      }
+;
+constructor_declaration_leading_bar:
+  | BAR as_loc(constr_ident) generalized_constructor_arguments attributes
+      {
+       let args,res = $3 in
+       let loc = mklocation $symbolstartpos $endpos in
+       Type.constructor $2 ~args ?res ~loc ~attrs:$4
       }
 ;
 /* Why are there already post_item_attributes on the extension_constructor_declaration? */
