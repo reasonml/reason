@@ -14,10 +14,8 @@ let blahCurriedX x =>
   | Red 10
   | Black 20
   | Green 10 => 1
-  | Red x => 0
-  /* After red */
-  | Black x => 0
-  /* After black */
+  | Red x => 0  /* After red */
+  | Black x => 0  /* After black */
   | Green x => 0;
 
 /* On next line after blahCurriedX def */

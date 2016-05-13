@@ -1353,7 +1353,16 @@ and partitionItemComments loc comments =
   let (endOfLineComments, unconsumed) = extractComments afterStart (
     fun comAttachFirst comAttachLast comPhysFirst comPhysLast ->
       let entirelyPhysicallyAfter = comPhysFirst >= lastChar && comPhysLast >= lastChar in
-      let attachmentEnclosesEntireThing = comAttachFirst == firstChar in
+      (* In case we're converting from OCaml, OCaml's parser parses | X with
+         the location of X but only sometimes. Reason's parser always parses
+         the X pattern as having the location start of |.
+         However, in either case the attachment location is always at the
+         location of the bar.
+         This - 2 subtraction hack is only to pretend that OCaml had located
+         the X pattern consistent with Reason.
+      *)
+      let firstCharPossiblyBar = (comAttachFirst == firstChar - 2) in
+      let attachmentEnclosesEntireThing = comAttachFirst == firstChar || firstCharPossiblyBar in
       attachmentEnclosesEntireThing && entirelyPhysicallyAfter
   ) in
   (onItem, endOfLineComments, unconsumed)
