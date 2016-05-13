@@ -959,33 +959,22 @@ in all other cases, we define two precedences if needed to resolve
 conflicts.
 
 */
-%nonassoc IN
 %nonassoc below_SEMI
-%nonassoc SEMI                          /* below EQUAL ({lbl=...; lbl=...}) */
-%nonassoc LET                           /* above SEMI ( ...; let ... in ...) */
-%nonassoc below_WITH
 %nonassoc below_EQUALGREATER
 %right    EQUALGREATER                  /* core_type2 (t => t => t) */
-%right    MINUSGREATER                  /* core_type2 (t -> t -> t) */
 %nonassoc below_QUESTION
 %nonassoc QUESTION
-%nonassoc COLON
-%nonassoc FUN FUNCTION WITH             /* below BAR  (match ... with ...) */
+%nonassoc WITH             /* below BAR  (match ... with ...) */
 %nonassoc AND             /* above WITH (module rec A: SIG with ... and ...) */
-%nonassoc THEN                          /* below ELSE (if ... then ...) */
 %nonassoc ELSE                          /* (if ... then ... else ...) */
 %nonassoc EQUAL                         /* below COLONEQUAL (lbl = x := e) */
 %right    COLONEQUAL                    /* expr (e := e := e) */
-%nonassoc below_AS
 %nonassoc AS
 %nonassoc below_BAR                     /* Allows "building up" of many bars */
 %left     BAR                           /* pattern (p|p|p) */
 
-%nonassoc below_COMMA
-%left     COMMA                         /* expr/expr_comma_list (e,e,e) */
 %right    OR BARBAR                     /* expr (e || e || e) */
 %right    AMPERSAND AMPERAMPER          /* expr (e && e && e) */
-%nonassoc below_EQUAL
 %left     INFIXOP0 LESS GREATER         /* expr (e OP e OP e) */
 %left     LESSGREATER LESSDOTDOTGREATER /* expr (e OP e OP e) */
 %right    INFIXOP1                      /* expr (e OP e OP e) */
@@ -1054,7 +1043,6 @@ conflicts.
 /* Now that commas require wrapping parens (for tuples), prec_constr_appl no
 * longer needs to be above COMMA, but it doesn't hurt */
 %nonassoc prec_constr_appl              /* above AS BAR COLONCOLON COMMA */
-%nonassoc below_SHARP
 %nonassoc below_DOT_AND_SHARP           /* practically same as below_SHARP but we convey purpose */
 %nonassoc SHARP                         /* simple_expr/toplevel_directive */
 %nonassoc below_DOT
@@ -1062,13 +1050,12 @@ conflicts.
 
 %nonassoc below_LBRACKETAT
 %nonassoc LBRACKETAT
-%nonassoc LBRACKETATAT
 
 /* Finally, the first tokens of simple_expr are above everything else. */
-%nonassoc BACKQUOTE BANG BEGIN CHAR FALSE FLOAT INT INT32 INT64
+%nonassoc BACKQUOTE BANG CHAR FALSE FLOAT INT INT32 INT64
           LBRACE LBRACELESS LBRACKET LBRACKETBAR LIDENT LPAREN
           NEW NATIVEINT PREFIXOP STRING TRUE UIDENT
-          LBRACKETPERCENT LBRACKETPERCENTPERCENT
+          LBRACKETPERCENT
 
 /* Fail fast on errors */
 %nonassoc error
@@ -1581,7 +1568,7 @@ _module_type:
      *)
     $1
   }
-  | LPAREN as_loc(functor_arg_name) COLON module_type RPAREN EQUALGREATER module_type %prec below_WITH {
+  | LPAREN as_loc(functor_arg_name) COLON module_type RPAREN EQUALGREATER module_type %prec below_SEMI {
     (* Why does this rule cause a conflict with core_type2? It has nothing to do
      * with it.
      *
@@ -1595,7 +1582,7 @@ _module_type:
      *)
       mkmty(Pmty_functor($2, Some $4, $7))
      }
-  | module_type EQUALGREATER module_type %prec below_WITH {
+  | module_type EQUALGREATER module_type %prec below_SEMI {
       (**
        * In OCaml, this is invalid:
        * module MyFunctor: functor MT -> (sig end) = functor MT -> (struct end);;
@@ -1699,7 +1686,7 @@ _signature_item:
   | open_statement {
       mksig(Psig_open $1)
     }
-  | INCLUDE module_type post_item_attributes %prec below_WITH {
+  | INCLUDE module_type post_item_attributes {
       let loc = mklocation $symbolstartpos $endpos in
       mksig(Psig_include (Incl.mk $2 ~attrs:$3 ~loc))
     }
@@ -1882,7 +1869,7 @@ _class_expr_lets_and_rest:
 class_self_pattern: mark_position_pat(_class_self_pattern) {$1}
 _class_self_pattern:
   /* Empty is by default the pattern identifier [this] */
-  | %prec below_SEMI {
+  | {
     let loc = mklocation $symbolstartpos $endpos in
     mkpat (Ppat_var (mkloc "this" loc))
   }
@@ -2234,7 +2221,7 @@ class_sig_field: mark_position_ctf (_class_sig_field) {$1}
 _class_sig_field:
   /* The below_LBRACKETAT and two forms below are needed (but not in upstream
      for some reason) */
-   | INHERIT class_instance_type %prec below_LBRACKETAT
+   | INHERIT class_instance_type
       { mkctf_attrs (Pctf_inherit $2) [] }
   | INHERIT class_instance_type item_attribute post_item_attributes
       { mkctf_attrs (Pctf_inherit $2) ($3::$4) }
@@ -2566,9 +2553,9 @@ _expr:
       }
   | as_loc(label) EQUAL expr
       { mkexp(Pexp_setinstvar($1, $3)) }
-  | ASSERT simple_expr %prec below_SHARP
+  | ASSERT simple_expr
       { mkexp (Pexp_assert $2) }
-  | LAZY simple_expr %prec below_SHARP
+  | LAZY simple_expr
       { mkexp (Pexp_lazy $2) }
   /*
    * Ternary is just a shortcut for:
@@ -2778,7 +2765,7 @@ _simple_expr:
  * of the input has been observed, in order to consider Module.X.Y a single simple_expr
  */
 less_aggressive_simple_expression:
-  simple_expr %prec below_SHARP {$1}
+  simple_expr {$1}
 ;
 
 simple_non_labeled_expr_list:
@@ -2868,10 +2855,7 @@ let_binding:
 ;
 
 let_binding_body:
-  | with_patvar(val_ident) EQUAL expr
-      { ($1, $3) }
-
-  | with_patvar(val_ident) type_constraint EQUAL expr
+    with_patvar(val_ident) type_constraint EQUAL expr
       {
         let loc = mklocation $symbolstartpos $endpos in
         ($1, ghexp_constraint loc $4 $2)
@@ -2985,13 +2969,6 @@ _curried_binding_return_typed:
       }
   | LPAREN TYPE LIDENT RPAREN curried_binding_return_typed_
       { mkexp(Pexp_newtype($3, $5)) }
-  | COLON non_arrowed_core_type EQUALGREATER expr
-      {
-          let loc = mklocation $symbolstartpos $endpos in
-          let nil = { txt = Lident "()"; loc = make_ghost_loc loc } in
-          let exp = mkexp ~ghost:true ~loc (Pexp_fun("", None, mkpat ~ghost:true ~loc (Ppat_construct (nil, None)), $4)) in
-          ghexp_constraint loc exp (Some $2, None)
-      }
 ;
 
 curried_binding_return_typed_:
@@ -3218,7 +3195,7 @@ type_constraint:
 
 pattern:
   | pattern_without_or { $1 }
-  | or_pattern { $1 }  %prec below_AS
+  | or_pattern { $1 }
 
 pattern_without_or: mark_position_pat(_pattern_without_or) {$1}
 _pattern_without_or:
@@ -3236,7 +3213,7 @@ _pattern_without_or:
     * constructors are not actually tuples either in underlying representation or
     * semantics (they are not first class).
     */
-  | as_loc(constr_longident) simple_pattern_list %prec prec_constr_appl
+  | as_loc(constr_longident) simple_pattern_list
     {
       match is_pattern_list_single_any $2 with
         | Some singleAnyPat ->
@@ -3247,7 +3224,7 @@ _pattern_without_or:
           let argPattern = simple_pattern_list_to_tuple ~loc $2 in
           mkExplicitArityTuplePat (Ppat_construct($1, Some argPattern))
     }
-  | name_tag simple_pattern %prec prec_constr_appl
+  | name_tag simple_pattern
     {
       mkpat (Ppat_variant($1, Some $2))
     }
@@ -3296,7 +3273,7 @@ _pattern_without_or:
  */
 simple_pattern: mark_position_pat(_simple_pattern) {$1}
 _simple_pattern:
-    as_loc(val_ident) %prec below_EQUAL
+    as_loc(val_ident)
       { mkpat(Ppat_var $1) }
   | simple_pattern_not_ident { $1 }
 ;
@@ -3757,8 +3734,8 @@ _poly_type:
   *   core_type2 => core_type2
   *
   * non_arrowed_core_type ::=
-  *    non_arrowed_non_simple_core_type  %prec below_SHARP
-  *    non_arrowed_simple_core_type %prec below_SHARP
+  *    non_arrowed_non_simple_core_type
+  *    non_arrowed_simple_core_type
   *
   * non_arrowed_non_simple_core_type ::=
   *   type_longident non_arrowed_simple_core_type_list
@@ -3858,9 +3835,9 @@ _core_type2:
  * type x = SomeConstructor x y;
  */
 non_arrowed_core_type:
-   non_arrowed_non_simple_core_type  %prec below_SHARP
+   non_arrowed_non_simple_core_type
     { $1 }
- | non_arrowed_simple_core_type %prec below_SHARP
+ | non_arrowed_simple_core_type
     { $1 }
 ;
 
@@ -3876,7 +3853,7 @@ _non_arrowed_non_simple_core_type:
 
 non_arrowed_simple_core_type: mark_position_typ(_non_arrowed_simple_core_type) {$1}
 _non_arrowed_simple_core_type:
-  | LPAREN core_type_comma_list RPAREN %prec below_SHARP
+  | LPAREN core_type_comma_list RPAREN
       {
         let loc = mklocation $symbolstartpos $endpos in
         match $2 with
@@ -3964,8 +3941,8 @@ core_type_comma_list:
 ;
 
 non_arrowed_simple_core_type_list:
-    non_arrowed_simple_core_type %prec below_LBRACKETAT     { [$1] }
-  | non_arrowed_simple_core_type_list non_arrowed_simple_core_type  %prec below_LBRACKETAT     { $2 :: $1 }
+    non_arrowed_simple_core_type     { [$1] }
+  | non_arrowed_simple_core_type_list non_arrowed_simple_core_type   { $2 :: $1 }
 ;
 
 meth_list:
