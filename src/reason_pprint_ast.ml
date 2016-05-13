@@ -1325,18 +1325,9 @@ and partitionItemComments loc comments =
       let entirelyPhysicallyAbove = comPhysFirst < firstChar && comPhysLast < firstChar in
       let entirelyPhysicallyAfter = comPhysFirst >= lastChar && comPhysLast >= lastChar in
       let attachmentEnclosesPartialEnd = entirelyPhysicallyAfter && comAttachFirst < lastChar && comAttachFirst > firstChar in
-      let entirelyPhysicallyInside = comPhysFirst > firstChar && comPhysLast < lastChar in
-      (* [attachmentEnclosesPartialFirstLine] is inherently not idempotent when
-         used to move comments to "before" items. For example, in this snippet
-         the first comment will be moved above the bar, and thethe second
-         comment will be next time the formatting happens.
-
-             | /* Comment */
-               /* Comment */ => 
-
-       *)
-      let attachmentEnclosesPartialFirstLine = entirelyPhysicallyInside && comAttachFirst == firstChar in
-      entirelyPhysicallyAbove || attachmentEnclosesPartialEnd || attachmentEnclosesPartialFirstLine
+      (* let entirelyPhysicallyInside = comPhysFirst > firstChar && comPhysLast < lastChar in *)
+      (* let attachmentEnclosesPartialFirstLine = entirelyPhysicallyInside && comAttachFirst == firstChar in *)
+      entirelyPhysicallyAbove || attachmentEnclosesPartialEnd
   ) in
   (* We currently support the following as an "end of line" comment:
 
@@ -5077,11 +5068,11 @@ class printer  ()= object(self:'self)
       *)
       let bar xx = makeList ~postSpace:true [atom "|"; xx] in
       let appendWhereAndArrow p = match pc_guard with
-          | None -> makeList ~postSpace:true [p; atom "=>"]
+          | None -> makeList ~attemptInterleaveComments:false ~postSpace:true [p; atom "=>"]
           | Some g ->
             (* when x should break as a whole - extra list added around it to make it break as one *)
             let withWhen = label ~space:true p (makeList ~break:Never ~inline:(true, true) ~postSpace:true [label ~space:true (atom "when") (self#expression g)]) in
-            makeList ~inline:(true, true) ~postSpace:true [withWhen; atom "=>"]
+            makeList ~attemptInterleaveComments:false ~inline:(true, true) ~postSpace:true [withWhen; atom "=>"]
       in
 
       let rec appendWhereAndArrowToLastOr = function
@@ -5091,13 +5082,7 @@ class printer  ()= object(self:'self)
             | [] -> appendWhereAndArrow (self#pattern hd)
             | tl::tlTl -> (self#pattern hd)
           in
-          let sourceMappedHd = SourceMap(
-            (* Make room for the => - not a foolproof solution, but probably
-             * catches a few extra*)
-            expandLocation hd.ppat_loc ~expand:(0, 0),
-            formattedHd
-          ) in
-          sourceMappedHd::(appendWhereAndArrowToLastOr tl)
+          formattedHd::(appendWhereAndArrowToLastOr tl)
         )
       in
 

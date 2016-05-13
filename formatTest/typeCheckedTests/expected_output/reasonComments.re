@@ -1,8 +1,10 @@
-/*-*/
-3;
 
-/*-*/
-3;
+3 /*-*/
+;
+
+
+3 /*-*/
+;
 
 3 /*-*/;
 
@@ -144,16 +146,18 @@ let res =
 
 let res =
   switch (X (2, 3)) {
-  /* After X arrow */
   /* End of X body line */
-  | X (0, 0) => "result of X"
+  | X (0, 0) =>
+    /* After X arrow */
+    "result of X"
   /* End of X body line */
   | X (1, 0) =>
     /* Before X's arrow */
     "result of X"
-  /* After X _ arrow */
   /* End of X body line */
-  | X _ => "result of X"
+  | X _ =>
+    /* After X _ arrow */
+    "result of X"
   /* Above Y line */
   | Y _ =>
     /* Comment above Y body */
@@ -173,23 +177,33 @@ type variant3 =
   /* Comment above Y */
   | Y of (int, int);
 
-/* attached *above* x */
-type x = {fieldOne: int, fieldA: int}
+type x = {
+  /* not attached *above* x */
+  fieldOne: int,
+  fieldA: int
+}
 /* Attached end of line after x */
-/* attached *above* y */
-and y = {fieldTwo: int}
+and y = {
+  /* not attached *above* y */
+  fieldTwo: int
+}
 /* Attached end of line after y */;
 
-/* attached *above* x2 */
-type x2 = {fieldOne: int, fieldA: int}
+type x2 = {
+  /* not attached *above* x2 */
+  fieldOne: int,
+  fieldA: int
+}
 /* Attached end of line after x2 */
-/* attached *above* y2 */
-and y2 = {fieldTwo: int};
+and y2 = {
+  /* not attached *above* y2 */
+  fieldTwo: int
+};
 
 let result =
   switch None {
-  /* Where does this comment go? */
   | Some {fieldOne: 20, fieldA: a} =>
+    /* Where does this comment go? */
     let tmp = 0;
     2 + tmp
   | Some {fieldOne: n, fieldA: a} =>

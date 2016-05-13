@@ -1578,8 +1578,7 @@ let blah = fun arg => switch arg {
     /* (In OCaml but not Reason) These will be formatted into the wrong place
      * and there's nothing you can do about it because the bar essentially
      * doesn't exist once parsed - its location is lost - "case"s don't have
-     * locs. In Reason they won't be formatted for other reasons, but who
-     * puts comments right after the bar?
+     * locs.
      */
     Black _ => 0
   | Green _ => 0

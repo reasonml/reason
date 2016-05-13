@@ -161,20 +161,20 @@ type variant3 =
 ;
 
 
-type x = { /* attached *above* x */
+type x = { /* not attached *above* x */
   fieldOne : int,
   fieldA : int
 } /* Attached end of line after x */
-and y = { /* attached *above* y */
+and y = { /* not attached *above* y */
   fieldTwo : int
 } /* Attached end of line after y */
 ;
 
-type x2 = { /* attached *above* x2 */
+type x2 = { /* not attached *above* x2 */
   fieldOne : int,
   fieldA : int
 } /* Attached end of line after x2 */
-and y2 = { /* attached *above* y2 */
+and y2 = { /* not attached *above* y2 */
   fieldTwo : int
 };
 

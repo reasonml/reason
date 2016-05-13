@@ -58,11 +58,9 @@ let testingEndOfLineComments = [];
 /* Comment after list bracket */
 type t = (int, int); /* End of line on t */
 
-/* End of t2 line on int * int */
-type t2 = (int, int);
-
-/* End of t22 line on type t22 = */
-type t22 = (int, int);
+type t22 =
+  /* End of t22 line on type t22 = */
+  (int, int);
 
 /* End of line on Y */
 type variant =
@@ -72,11 +70,15 @@ type variant =
   | Y of int;
 
 /* Comment on entire type def for variant */
-/* attached *above* x */
-type x = {fieldOne: int}
+type x = {
+  /* not attached *above* x */
+  fieldOne: int
+}
 /* Attached end of line after x */
-/* attached *above* y */
-and y = {fieldTwo: int};
+and y = {
+  /* not attached *above* y */
+  fieldTwo: int
+};
 
 /* Attached end of line after y */
 let result =
@@ -103,25 +105,3 @@ let result =
     n + tmp
   | None => 20
   };
-
-/* After green */
-type color =
-  | Red of int  /* After red */
-  | Black of int  /* After black */
-  | Green of int;
-
-/* On next line after color type def */
-/* After second green */
-let blahCurriedX x =>
-  fun
-  /* After or pattern green */
-  | Red 10
-  | Black 20
-  | Green 10 => 1
-  | Red x => 0
-  /* After red */
-  | Black x => 0
-  /* After black */
-  | Green x => 0;
-
-/* On next line after blahCurriedX def */

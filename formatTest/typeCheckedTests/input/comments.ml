@@ -63,8 +63,7 @@ let testingEndOfLineComments = [
 
 
 type t = int * int (* End of line on t *)
-type t2 =
-  int * int (* End of t2 line on int * int *)
+
 type t22 = (* End of t22 line on type t22 = *)
   int * int
 
@@ -77,10 +76,10 @@ type variant =
 (* Comment on entire type def for variant *)
 
 
-type x = { (* attached *above* x *)
+type x = { (* not attached *above* x *)
   fieldOne : int
 } (* Attached end of line after x *)
-and y = { (* attached *above* y *)
+and y = { (* not attached *above* y *)
   fieldTwo : int
 } (* Attached end of line after y *)
 
@@ -104,19 +103,3 @@ let result = match None with
     n + tmp
   | None -> 20
 
-
-type color =
-  | Red of int (* After red *)
-  | Black of int (* After black *)
-  | Green of int (* After green *)
-(* On next line after color type def *)
-
-let blahCurriedX x =
-  function
-  | Red 10
-  | Black 20
-  | Green 10 -> 1 (* After or pattern green *)
-  | Red x -> 0 (* After red *)
-  | Black x -> 0 (* After black *)
-  | Green x -> 0 (* After second green *)
-(* On next line after blahCurriedX def *)
