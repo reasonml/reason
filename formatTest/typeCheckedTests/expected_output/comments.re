@@ -81,10 +81,8 @@ and y = {fieldTwo: int};
 /* Attached end of line after y */
 let result =
   switch (X 3) {
-  |
-      X x  /* Where does this comment go? */
-      =>
-
+  | X x =>
+    /* Where does this comment go? */
     let tmp = x;
     x + tmp
   | Y x =>
@@ -95,10 +93,8 @@ let result =
 
 let result =
   switch None {
-  |
-      Some {fieldOne: 20}  /* Where does this comment go? */
-      =>
-
+  | Some {fieldOne: 20} =>
+    /* Where does this comment go? */
     let tmp = 0;
     2 + tmp
   | Some {fieldOne: n} =>
@@ -122,8 +118,10 @@ let blahCurriedX x =>
   | Red 10
   | Black 20
   | Green 10 => 1
-  | Red x => 0  /* After red */
-  | Black x => 0  /* After black */
+  | Red x => 0
+  /* After red */
+  | Black x => 0
+  /* After black */
   | Green x => 0;
 
 /* On next line after blahCurriedX def */

@@ -137,27 +137,27 @@ let res =
   /* Before switch */
   switch (X (2, 3)) {
   /* Above X line */
-  | X _ => "result of X" /* End of arrow and X line */
+  | X _ => "result of X"
+  /* End of arrow and X line */
   /* Above Y line */
-  | Y _ => "result of Y" /* End of arrow and Y line */
-  };
+  | Y _ => "result of Y"
+  }
+/* End of arrow and Y line */;
 
 let res =
   switch (X (2, 3)) {
   /* End of X body line */
-  |
-      X (0, 0)  /* After X arrow */
-      =>
-     "result of X"
+  | X (0, 0) =>
+    /* After X arrow */
+    "result of X"
   /* End of X body line */
   | X (1, 0) =>
     /* Before X's arrow */
     "result of X"
   /* End of X body line */
-  |
-      X _  /* After X _ arrow */
-      =>
-     "result of X"
+  | X _ =>
+    /* After X _ arrow */
+    "result of X"
   /* Above Y line */
   | Y _ =>
     /* Comment above Y body */
@@ -192,10 +192,8 @@ and y2 = {fieldTwo: int};
 
 let result =
   switch None {
-  |
-      Some {fieldOne: 20, fieldA: a}  /* Where does this comment go? */
-      =>
-
+  | Some {fieldOne: 20, fieldA: a} =>
+    /* Where does this comment go? */
     let tmp = 0;
     2 + tmp
   | Some {fieldOne: n, fieldA: a} =>
@@ -209,10 +207,12 @@ let res =
   /* Before switch */
   switch (X (2, 3)) {
   /* Above X line */
-  | X _ => "result of X" /* End of arrow and X line */
+  | X _ => "result of X"
+  /* End of arrow and X line */
   /* Above Y line */
-  | Y _ => "result of Y" /* End of arrow and Y line */
-  };
+  | Y _ => "result of Y"
+  }
+/* End of arrow and Y line */;
 
 /*
  * Now these end of line comments *should* be retained.
@@ -258,8 +258,9 @@ let res =
       _ /* retain this */
     ) => "result of X"
   /* Above Y line */
-  | Y _ => "result of Y" /* End of arrow and Y line */
-  };
+  | Y _ => "result of Y"
+  }
+/* End of arrow and Y line */;
 
 type optionalTuple =
   | OptTup of (
@@ -324,8 +325,10 @@ let blahCurriedX x =>
   | Red 10
   | Black 20
   | Green 10 => 1
-  | Red x => 0  /* After red */
-  | Black x => 0  /* After black */
+  | Red x => 0
+  /* After red */
+  | Black x => 0
+  /* After black */
   | Green x => 0;
 
 /* On next line after blahCurriedX def */

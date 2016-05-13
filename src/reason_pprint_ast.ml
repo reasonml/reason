@@ -1353,7 +1353,7 @@ and partitionItemComments loc comments =
   let (endOfLineComments, unconsumed) = extractComments afterStart (
     fun comAttachFirst comAttachLast comPhysFirst comPhysLast ->
       let entirelyPhysicallyAfter = comPhysFirst >= lastChar && comPhysLast >= lastChar in
-      let attachmentEnclosesEntireThing = comAttachFirst <= firstChar in
+      let attachmentEnclosesEntireThing = comAttachFirst == firstChar in
       attachmentEnclosesEntireThing && entirelyPhysicallyAfter
   ) in
   (onItem, endOfLineComments, unconsumed)

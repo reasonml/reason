@@ -451,7 +451,8 @@ let blahCurriedX x =>
   | Red x
   | Black x
   | Green x => 1
-  | Black x => 0  /* Allow us to drop any => fun.. Just need to make pattern matching */
+  | Black x => 0
+  /* Allow us to drop any => fun.. Just need to make pattern matching */
   | Green x => 0;
 
 let sameThingInLocal = {
@@ -462,7 +463,8 @@ let sameThingInLocal = {
     | Red x
     | Black x
     | Green x => 1
-    | Black x => 0  /* Allow us to drop any => fun.. Just need to make pattern matching */
+    | Black x => 0
+    /* Allow us to drop any => fun.. Just need to make pattern matching */
     | Green x => 0;
   blahCurriedX
 };
