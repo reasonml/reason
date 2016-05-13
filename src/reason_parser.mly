@@ -2486,12 +2486,12 @@ _expr:
   /* List style rules like this often need a special precendence
      such as below_BAR in order to let the entire list "build up"
    */
-  | FUN BAR no_leading_bar_match_cases %prec below_BAR
-      { mkexp (Pexp_function(List.rev $3)) }
-  | SWITCH simple_expr LBRACE BAR no_leading_bar_match_cases_to_sequence_body RBRACE
-      { mkexp (Pexp_match($2, List.rev $5)) }
-  | TRY simple_expr LBRACE BAR no_leading_bar_match_cases_to_sequence_body RBRACE
-      { mkexp (Pexp_try($2, List.rev $5)) }
+  | FUN leading_bar_match_cases %prec below_BAR
+      { mkexp (Pexp_function(List.rev $2)) }
+  | SWITCH simple_expr LBRACE leading_bar_match_cases_to_sequence_body RBRACE
+      { mkexp (Pexp_match($2, List.rev $4)) }
+  | TRY simple_expr LBRACE leading_bar_match_cases_to_sequence_body RBRACE
+      { mkexp (Pexp_try($2, List.rev $4)) }
   | TRY simple_expr WITH error
       { syntax_error_exp (rhs_loc 4) "Invalid try with"}
   | as_loc(constr_longident) simple_non_labeled_expr_list_as_tuple
@@ -3017,14 +3017,14 @@ curried_binding:
       }
 ;
 
-no_leading_bar_match_cases:
-  | match_case { [$1] }
-  | no_leading_bar_match_cases BAR match_case { $3 :: $1 }
+leading_bar_match_cases:
+  | leading_bar_match_case { [$1] }
+  | leading_bar_match_cases leading_bar_match_case { $2 :: $1 }
 ;
 
-no_leading_bar_match_cases_to_sequence_body:
-  | match_case_to_sequence_body { [$1] }
-  | no_leading_bar_match_cases_to_sequence_body BAR match_case_to_sequence_body { $3 :: $1 }
+leading_bar_match_cases_to_sequence_body:
+  | leading_bar_match_case_to_sequence_body { [$1] }
+  | leading_bar_match_cases_to_sequence_body leading_bar_match_case_to_sequence_body { $2 :: $1 }
 ;
 
 or_pattern: mark_position_pat(_or_pattern) {$1}
@@ -3032,18 +3032,31 @@ _or_pattern:
   | pattern BAR pattern
     { mkpat(Ppat_or($1, $3)) }
 
-match_case_to_sequence_body:
-  | pattern EQUALGREATER semi_terminated_seq_expr
-      { Exp.case $1 $3 }
-  | pattern WHEN expr EQUALGREATER semi_terminated_seq_expr
+
+/**
+ * Makes the bar part of the pattern location. This makes it much easier to
+ * interleave comments. Normally in switch/fun| each case doesn't have a
+ * position, but the left end of the pattern and right end of the expression is
+ * used as the location. We need to make the left location of the pattern match
+ * what end of line comments appear to be attaching to.
+ */
+bar_located_pattern: BAR pattern  {
+  let relocPattern = {$2 with ppat_loc = {$2.ppat_loc with loc_start = $symbolstartpos; loc_end = $endpos}} in
+  relocPattern
+}
+
+leading_bar_match_case:
+  | bar_located_pattern EQUALGREATER expr {
+      Exp.case $1 $3
+    }
+  | bar_located_pattern WHEN expr EQUALGREATER expr
       { Exp.case $1 ~guard:$3 $5 }
 ;
 
-
-match_case:
-  | pattern EQUALGREATER expr
+leading_bar_match_case_to_sequence_body:
+  | bar_located_pattern EQUALGREATER semi_terminated_seq_expr
       { Exp.case $1 $3 }
-  | pattern WHEN expr EQUALGREATER expr
+  | bar_located_pattern WHEN expr EQUALGREATER semi_terminated_seq_expr
       { Exp.case $1 ~guard:$3 $5 }
 ;
 

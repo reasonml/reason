@@ -1326,6 +1326,15 @@ and partitionItemComments loc comments =
       let entirelyPhysicallyAfter = comPhysFirst >= lastChar && comPhysLast >= lastChar in
       let attachmentEnclosesPartialEnd = entirelyPhysicallyAfter && comAttachFirst < lastChar && comAttachFirst > firstChar in
       let entirelyPhysicallyInside = comPhysFirst > firstChar && comPhysLast < lastChar in
+      (* [attachmentEnclosesPartialFirstLine] is inherently not idempotent when
+         used to move comments to "before" items. For example, in this snippet
+         the first comment will be moved above the bar, and thethe second
+         comment will be next time the formatting happens.
+
+             | /* Comment */
+               /* Comment */ => 
+
+       *)
       let attachmentEnclosesPartialFirstLine = entirelyPhysicallyInside && comAttachFirst == firstChar in
       entirelyPhysicallyAbove || attachmentEnclosesPartialEnd || attachmentEnclosesPartialFirstLine
   ) in
