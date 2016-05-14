@@ -83,33 +83,44 @@ set +e
 function stdin_test() {
     INPUT_FILE=$1
     OUTPUT_FILE=$2
-    INPUT=$3
-    OUTPUT=$4
-    EXPECTED_OUTPUT=$5
+    EXPECTED_OUTPUT_FILE=$3
+    # explicitly pass in heuristics file because idempotent tests read from output directory
+    HEURISTICS_FILE=$4
+
+    FILENAME=$(basename $INPUT_FILE)
+    FILEEXT="${FILENAME##*.}"
 
     if [[ $FILEEXT = "re" ]]; then
-      cat $INPUT/$INPUT_FILE | $REFMT -is-interface-pp false -print-width 50 -parse re -print re -use-stdin true 2>&1 > $OUTPUT/$OUTPUT_FILE
+      cat $INPUT_FILE | $REFMT -is-interface-pp false -print-width 50 -parse re -print re -use-stdin true 2>&1 > $OUTPUT_FILE
     elif [[ $FILEEXT = "rei" ]]; then
-      cat $INPUT/$INPUT_FILE | $REFMT -is-interface-pp true -print-width 50 -parse re -print re -use-stdin true 2>&1 > $OUTPUT/$OUTPUT_FILE
+      cat $INPUT_FILE | $REFMT -is-interface-pp true -print-width 50 -parse re -print re -use-stdin true 2>&1 > $OUTPUT_FILE
     elif [[ $FILEEXT = "ml" ]]; then
-      cat $INPUT/$INPUT_FILE | $REFMT -is-interface-pp false -print-width 50 -parse ml -print re -use-stdin true 2>&1 > $OUTPUT/$OUTPUT_FILE
+      cat $INPUT_FILE | $REFMT -heuristics-file $HEURISTICS_FILE -is-interface-pp false -print-width 50 -parse ml -print re -use-stdin true 2>&1 > $OUTPUT_FILE
     elif [[ $FILEEXT = "mli" ]]; then
-      cat $INPUT/$INPUT_FILE | $REFMT -is-interface-pp true -print-width 50 -parse ml -print re -use-stdin true 2>&1 > $OUTPUT/$OUTPUT_FILE
+      cat $INPUT_FILE | $REFMT -heuristics-file $HEURISTICS_FILE -is-interface-pp true -print-width 50 -parse ml -print re -use-stdin true 2>&1 > $OUTPUT_FILE
     else
       warning "  ⊘ FAILED -use-stdin \n"
       info "  Cannot determine default implementation parser for extension ${FILEEXT}"
-      echo ""
       return 1
     fi
 
-    info "  Comparing -use-stdin results:  diff $OUTPUT/$OUTPUT_FILE $EXPECTED_OUTPUT/$OUTPUT_FILE"
-    diff --unchanged-line-format="" --new-line-format=":%dn: %L" --old-line-format=":%dn: %L" $OUTPUT/$OUTPUT_FILE $EXPECTED_OUTPUT/$OUTPUT_FILE
+    if ! [[ $? -eq 0 ]]; then
+        warning "  ⊘ FAILED -use-stdin \n"
+        info "  There was an error when testing -use-stdin"
+        info "  for input file $INPUT_FILE"
+        info "  and output file $OUTPUT_FILE${RESET}"
+        echo ""
+        return 1
+    fi
+
+    debug "  Comparing -use-stdin results:  diff $OUTPUT_FILE $EXPECTED_OUTPUT_FILE"
+    diff --unchanged-line-format="" --new-line-format=":%dn: %L" --old-line-format=":%dn: %L" $OUTPUT_FILE $EXPECTED_OUTPUT_FILE
 
     if ! [[ $? -eq 0 ]]; then
         warning "  ⊘ FAILED -use-stdin \n"
-        info "  ${INFO}$OUTPUT/$OUTPUT_FILE${RESET}"
+        info "  ${INFO}$OUTPUT_FILE${RESET}"
         info "  doesn't match expected output"
-        info "  ${INFO}$EXPECTED_OUTPUT/$OUTPUT_FILE${RESET}"
+        info "  ${INFO}$EXPECTED_OUTPUT_FILE${RESET}"
         echo ""
         return 1
     fi
@@ -157,8 +168,8 @@ function unit_test() {
         return 1
     fi
 
-    info "Testing -use-stdin"
-    stdin_test $1 $FILE $INPUT $OUTPUT $EXPECTED_OUTPUT
+    debug "Testing -use-stdin"
+    stdin_test $INPUT/$1 $OUTPUT/$FILE $EXPECTED_OUTPUT/$FILE $INPUT/arity.txt
 
     if ! [[ $? -eq 0 ]]; then
       return 1
@@ -211,15 +222,20 @@ function idempotent_test() {
         return 1
     fi
 
-    info "Testing -use-stdin"
-    stdin_test $1 $FILE $INPUT $OUTPUT $OUTPUT
+    debug "Testing -use-stdin"
+    stdin_test $INPUT/$1 $OUTPUT/$FILE $OUTPUT/$FILE $INPUT/arity.txt
 
     if ! [[ $? -eq 0 ]]; then
       return 1
     else
-      stdin_test $FILE $FILE.formatted $OUTPUT $OUTPUT $OUTPUT
-      success "  ☑ PASS"
-      echo
+      echo $FILE
+      stdin_test $OUTPUT/$FILE $OUTPUT/$FILE.formatted $OUTPUT/$FILE $INPUT/arity.txt
+      if ! [[ $? -eq 0 ]]; then
+        return 1
+      else 
+        success "  ☑ PASS"
+        echo
+      fi
     fi
 }
 
