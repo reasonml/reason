@@ -1,7 +1,8 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
+
 [@@@autoFormat
   let wrap = 80;
-  let shift = 2;
+  let shift = 2
 ];
 
 Modules.run ();
@@ -449,7 +450,7 @@ let blahCurriedX x =>
   | Black x
   | Green x => 1
   /* With some effort, we can ammend the sugar rule that would */
-  | Black x => 0  /* Allow us to drop any => fun.. Just need to make pattern matching */
+  | Black x => 0 /* Allow us to drop any => fun.. Just need to make pattern matching */
   | Green x => 0 /* Support that */;
 
 let sameThingInLocal = {
@@ -459,7 +460,7 @@ let sameThingInLocal = {
     | Black x
     | Green x => 1
     /* With some effort, we can ammend the sugar rule that would */
-    | Black x => 0  /* Allow us to drop any => fun.. Just need to make pattern matching */
+    | Black x => 0 /* Allow us to drop any => fun.. Just need to make pattern matching */
     | Green x => 0 /* Support that */;
   blahCurriedX
 };
@@ -977,6 +978,7 @@ let A | B | C = X;
 
 /*  A | B | C = X; */
 let A | B | C = X;
+
 
 /** External function declaration
  *

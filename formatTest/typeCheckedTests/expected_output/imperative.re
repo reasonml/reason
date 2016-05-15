@@ -4,6 +4,7 @@
 
  * vim: set ft=reason:
  */
+
 switch (
   while true {
     ()

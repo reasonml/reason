@@ -168,7 +168,9 @@ module type Toolchain_spec = sig
 end
 
 let line_content = Str.regexp "[^ \t]+"
-let space_before_newline = Str.regexp "[ \t]*$"
+(* We allow semicolons to be considered white space for sake of determining if
+   an item is the last thing on the line. *)
+let space_before_newline = Str.regexp "[,; \t]*$"
 let new_line = Str.regexp "^"
 
 module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = struct

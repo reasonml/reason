@@ -1,4 +1,5 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
+
 type reasonXyz =
   | X | Y of int int int | Z of int int | Q | R;
 

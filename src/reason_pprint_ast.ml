@@ -94,10 +94,19 @@ type whenToDoSomething =
 
 type easyFormatLabelFormatter = Easy_format.t -> Easy_format.t -> Easy_format.t
 type listConfig = {
+  (* Newlines above items that do not have any comments immediately above it.
+     Only really useful when used with break:Always/Always_rec *)
+  newlinesAboveItems: int;
+  (* Newlines above regular comments *)
+  newlinesAboveComments: int;
+  (* Newlines above doc comments *)
+  newlinesAboveDocComments: int;
   (* If you are only grouping something for the sake of visual appearance, and
    * not forming an actual conceptual sequence of items, then this is often
    * useful. For example, if you're appending a semicolon etc. *)
   attemptInterleaveComments: bool;
+  (* Whether or not to render the final separator *)
+  renderFinalSep: bool;
   break: whenToDoSomething;
   (* Break setting that becomes activated if a comment becomes interleaved into
    * this list. Typically, if not specified, the behavior from [break] will be
@@ -911,9 +920,13 @@ let easyListSettingsFromListConfig listConfig =
   })
 
 let makeListConfig
+    ?(newlinesAboveItems=0)
+    ?(newlinesAboveComments=0)
+    ?(newlinesAboveDocComments=0)
     ?(attemptInterleaveComments=true)
     ?listConfigIfCommentsInterleaved
     ?(listConfigIfEolCommentsInterleaved)
+    ?(renderFinalSep=false)
     ?(break=Never)
     ?(wrap=("", ""))
     ?(inline=(true, false))
@@ -925,9 +938,13 @@ let makeListConfig
     ?(pad=(false,false))
     () =
   {
+    newlinesAboveItems;
+    newlinesAboveComments;
+    newlinesAboveDocComments;
     attemptInterleaveComments;
     listConfigIfCommentsInterleaved;
     listConfigIfEolCommentsInterleaved;
+    renderFinalSep;
     break;
     wrap;
     inline;
@@ -945,7 +962,11 @@ let easyListWithConfig listConfig easyListItems =
   Easy_format.List ((opn, sep, cls, settings), easyListItems)
 
 let makeEasyList
+    ?(newlinesAboveItems=0)
+    ?(newlinesAboveComments=0)
+    ?(newlinesAboveDocComments=0)
     ?(attemptInterleaveComments=true)
+    ?(renderFinalSep=false)
     ?(break=Never)
     ?(wrap=("", ""))
     ?(inline=(true, false))
@@ -957,7 +978,13 @@ let makeEasyList
     ?(pad=(false,false)) easyListItems =
   let listConfig =
     makeListConfig
+      ~newlinesAboveItems
+      ~newlinesAboveComments
+      ~newlinesAboveDocComments
       ~attemptInterleaveComments
+      (* This is unused at this point - separators are handled by our pretty printer,
+         not Easy_format (so that we can interleave comments intelligently) *)
+      ~renderFinalSep
       ~break
       ~wrap
       ~inline
@@ -975,9 +1002,13 @@ let makeEasyList
 let makeList
     (* Allows a fallback in the event that comments were interleaved with the
      * list *)
+    ?(newlinesAboveItems=0)
+    ?(newlinesAboveComments=0)
+    ?(newlinesAboveDocComments=0)
     ?(attemptInterleaveComments=true)
     ?listConfigIfCommentsInterleaved
     ?listConfigIfEolCommentsInterleaved
+    ?(renderFinalSep=false)
     ?(break=Never)
     ?(wrap=("", ""))
     ?(inline=(true, false))
@@ -989,9 +1020,13 @@ let makeList
     ?(pad=(false,false)) lst =
   let config =
     makeListConfig
+      ~newlinesAboveItems
+      ~newlinesAboveComments
+      ~newlinesAboveDocComments
       ~attemptInterleaveComments
       ?listConfigIfCommentsInterleaved
       ?listConfigIfEolCommentsInterleaved
+      ~renderFinalSep
       ~break
       ~wrap
       ~inline
@@ -1016,12 +1051,20 @@ let makeAppList delimiter l =
 
 let ensureSingleTokenSticksToLabel x =
   makeList
-    ~attemptInterleaveComments:false
+    ~attemptInterleaveComments:true
     ~listConfigIfCommentsInterleaved: (
       fun currentConfig -> {currentConfig with break=Always_rec; postSpace=true; indent=0; inline=(true, true)}
     )
     [x]
 
+let easyLabelForEolComment labelTerm term =
+  let settings = {
+    label_break = `Never;
+    space_after_label = false;
+    indent_after_label = 0;
+    label_style = Some "commentAttachment";
+  } in
+  Easy_format.Label ((labelTerm, settings), term)
 
 (* Just for debugging: Set debugWithHtml = true *)
 let debugWithHtml = ref false
@@ -1139,8 +1182,11 @@ let wrap fn = fun term ->
   (fn f term; atom (flush_str_formatter ()))
 
 
+(** Either an ItemComment  (not eol) designates if it's a doc comment (which
+    have extra leading stars).  Or an Item which might include its eol
+    comments. *)
 type commentOrItem =
-  | Comment of Easy_format.t
+  | ItemComment of Easy_format.t * bool
   (* The item, and a list of "end of line" comments to render *)
   | Item of (Easy_format.t * Easy_format.t list)
 
@@ -1256,6 +1302,7 @@ let removeSepFromListConfig listSettings =
    1. Before-line items break in unison with list items.
    2. End of line comments are placed *after* separators.  *)
 let rec interleaveComments ?endMaxChar listConfig layoutListItems comments =
+  let isDocComment (c, _, _) = String.length c > 0 && c.[0] == '*' in
   match (layoutListItems, endMaxChar) with
     | ([], None)-> ([], comments)
     | ([], Some endMax)->
@@ -1267,7 +1314,7 @@ let rec interleaveComments ?endMaxChar listConfig layoutListItems comments =
             comments
             (fun comAttachFirst comAttachLast comPhysFirst comPhysLast -> comAttachLast <= endMax)
         in
-        (List.map (fun c -> Comment (formatItemComment c)) commentsInSequence, unconsumed)
+        ((List.map (fun c -> ItemComment (formatItemComment c, isDocComment c)) commentsInSequence), unconsumed)
     | (hd::tl, _) ->
       (* TODO: properly implement "stick to left", or expand the ~sep:"" API to
        * include, left sticking items: Which would involve sticking spaces like:
@@ -1280,10 +1327,10 @@ let rec interleaveComments ?endMaxChar listConfig layoutListItems comments =
         | _ -> ([], [], comments)
       in
       let (easyItem, itemUnconsumed) = layoutToEasyFormatAndSurplus hd unconsumed in
-      let endOfLineEasyComments = formatComments endOfLineComments in
-      let item = Item (easyItem, endOfLineEasyComments) in
+      let eolEasyComments = List.map formatItemComment endOfLineComments in
+      let item = Item (easyItem, eolEasyComments) in
       let (rest, recUnconsumedComms) = interleaveComments ?endMaxChar listConfig tl itemUnconsumed in
-      let easyComments = List.map (fun c -> Comment (formatItemComment c)) onItem in
+      let easyComments = List.map (fun c -> ItemComment (formatItemComment c, (isDocComment c))) onItem in
       (List.concat [easyComments; [item]; rest], recUnconsumedComms)
 
 (*
@@ -1374,14 +1421,21 @@ and partitionPreviousItemComments loc comments =
       let entirelyPhysicallyAbove = comPhysFirst < firstChar && comPhysLast < firstChar in
       entirelyPhysicallyAbove
   )
-and attach listConfig ~useSep easyItem = match (listConfig.sep, listConfig.preSpace, listConfig.postSpace) with
-  | ("", false, false) -> easyItem
-  | (sep, preSpace, postSpace) -> makeEasyList (
+
+
+(* Even if we don't "renderSepChar" we still, need the spaces as if there was a
+   sep.  When interleaving comments, we don't render `;` separators, but we
+   still need spaces around those interleaved comments. *)
+and attach listConfig ~renderSepChar ~renderSepSpace easyItem =
+  match (listConfig.sep, listConfig.preSpace, listConfig.postSpace, renderSepChar, renderSepSpace) with
+  | ("", false, false, _, _) -> easyItem
+  | (_, _, _, false, false) -> easyItem
+  | (sep, preSpace, postSpace, _, _) -> makeEasyList (
       easyItem::
       List.concat [
-        (if preSpace then [easyAtom " "] else []);
-        (if sep != "" && useSep then [easyAtom sep] else []);
-        (if postSpace then [easyAtom " "] else []);
+        (if renderSepSpace && preSpace then [easyAtom " "] else []);
+        (if renderSepChar && sep != "" && renderSepChar then [easyAtom sep] else []);
+        (if renderSepSpace && postSpace then [easyAtom " "] else []);
       ]
     )
 
@@ -1398,34 +1452,61 @@ and catchUpPreviousComments loc comments continue =
       unconsumed
     )
 
+
+and prependEasyAtomSpaces n toThis =
+  if n == 0 then toThis else (easyAtom "")::(prependEasyAtomSpaces (n - 1) toThis)
+
+and processListsWithComments listConfig revPreviousRows remaining =
+  match (revPreviousRows, remaining) with
+  | (_, []) -> (false, false, [])
+  (* No need to inject any space at all for the first comment, or consecutive comments *)
+  | ((ItemComment _)::_, ((ItemComment (x, isDoc)) as hd) :: tl)
+  | ([], ((ItemComment (x, isDoc)) as hd) :: tl) ->
+    let (hadMoreItems, hadEolComment, rest) = (processListsWithComments listConfig (hd::revPreviousRows) tl) in
+    let withSep = attach listConfig ~renderSepSpace:(tl != []) ~renderSepChar:false x in
+    (hadMoreItems, hadEolComment, withSep::rest)
+
+  (* Inject comment for first comment after an item. *)
+  | ((Item _)::_, ((ItemComment (x, isDoc)) as hd) :: tl) ->
+    let (hadMoreItems, hadEolComment, rest) = processListsWithComments listConfig (hd::revPreviousRows) tl in
+    let injectLineCount = if isDoc then listConfig.newlinesAboveDocComments else listConfig.newlinesAboveComments in
+    let withSep = attach listConfig ~renderSepSpace:(tl != []) ~renderSepChar:false x in
+    let next = prependEasyAtomSpaces injectLineCount (withSep::rest) in
+    (hadMoreItems, hadEolComment, next)
+  | (_, (Item (i, eolEasyComments) as hd) :: tl) ->
+    let (recHadMoreItems, recHadEolComment, rest) = (processListsWithComments listConfig (hd::revPreviousRows) tl) in
+    let (renderSepChar, renderSepSpace) =
+      match (tl, recHadMoreItems, listConfig.renderFinalSep, eolEasyComments) with
+      | ([]  , false, true , []  ) -> (true, false)
+      | (_   , _    , true , _   ) -> (true, true)
+      | (_   , true , _    , _   ) -> (true, true)
+      | ([]  , false, false, []) -> (false, false)
+      | (_::_, false, false, _) -> (false, true)
+      | (_   , false, false, _::_) -> (false, true)
+    in
+    let withSep = attach listConfig ~renderSepChar ~renderSepSpace i in
+    let prependNewlinesTo = match eolEasyComments with
+      | [] ->
+        withSep::rest
+      | _::_ ->
+        let withEolAndSep = easyLabelForEolComment withSep (easyListWithConfig eolCommentListConfig eolEasyComments) in
+        withEolAndSep::rest
+    in
+    let spaceCount = match revPreviousRows with
+      | (ItemComment _)::_
+      | [] -> 0
+      | _ -> listConfig.newlinesAboveItems
+    in
+    (true, recHadEolComment || eolEasyComments != [], prependEasyAtomSpaces spaceCount prependNewlinesTo)
+
 and layoutSequenceToEasyFormatAndSurplus ?endMaxChar listConfig subLayouts comments =
   let listConfigNoSep = removeSepFromListConfig listConfig in
   let (distribution, hadEolComment, unconsumedComms) =
     let (interleaved, unconsumed) = interleaveComments ?endMaxChar listConfig subLayouts comments in
-    let rec attachSeparatorsAndEndOfLineComments row remaining =
-      match (row, remaining) with
-      | (Item (x, endOfLineEasyComments), []) ->
-        (match endOfLineEasyComments with
-          | [] -> (true, false, [x])
-          | _::_ -> (true, true, [easyListWithConfig eolCommentListConfig (x::endOfLineEasyComments)]))
-      | (Comment x, []) -> (false, false, [x])
-      | (Item (i, endOfLineEasyComments), rHd::rTl) ->
-        let (hadMoreItems, hadEolComment, rest) = (attachSeparatorsAndEndOfLineComments rHd rTl) in
-        let withSep = attach listConfig ~useSep:hadMoreItems i in
-        (match endOfLineEasyComments with
-          | [] -> (true, hadEolComment, withSep::rest)
-          | _::_ ->
-            let withSepAndEolComment = easyListWithConfig eolCommentListConfig (withSep::endOfLineEasyComments) in
-            (true, true, withSepAndEolComment::rest)
-        )
-      | (Comment c, rHd::rTl) ->
-        let (hadMoreItems, hadEolComment, rest) = (attachSeparatorsAndEndOfLineComments rHd rTl) in
-        (hadMoreItems, hadEolComment, (attach listConfig ~useSep:false c)::rest)
-    in
     match interleaved with
     | [] -> ([], false, unconsumed)
     | hd::tl ->
-      let (_, hadEolComment, withSeparators) = (attachSeparatorsAndEndOfLineComments hd tl) in
+      let (_, hadEolComment, withSeparators) = (processListsWithComments listConfig [] interleaved) in
       (withSeparators, hadEolComment, unconsumed)
   in
   let wereCommentsInterleaved = List.length subLayouts != List.length distribution in
@@ -1524,8 +1605,9 @@ let commentInterleavedSemiTerminated loc item =
       [item]
   )
 
+(* postSpace is so that when comments are interleaved, we still use spacing rules. *)
 let makeLetSequence letItems =
-  makeList ~wrap:("{", "}") ~break:Always_rec ~inline:(true, false) letItems
+  makeList ~wrap:("{", "}") ~postSpace:true ~break:Always_rec ~inline:(true, false) letItems
 
 let formatSimpleAttributed x y =
   makeList
@@ -3650,32 +3732,22 @@ class printer  ()= object(self:'self)
                         self#wrapCurriedFunctionBinding "fun" firstArg tl returnedAppTerms
                   )
               | Pexp_try (e, l) ->
-                  let switchWith =
-                    label ~space:true
-                      (atom "try")
-                      (self#reset#simple_expression e);
-                  in
-                  label
+                let cases = (self#case_list ~allowUnguardedSequenceBodies:true l) in
+                let switchWith = label ~space:true (atom "try") (self#reset#simple_expression e) in
+                label
                   ~space:true
                   switchWith
-                  (makeList ~indent:settings.trySwitchIndent ~wrap:("{", "}") ~break:Always_rec (self#case_list ~allowUnguardedSequenceBodies:true l))
+                  (makeList ~indent:settings.trySwitchIndent ~wrap:("{", "}") ~break:Always_rec ~postSpace:true cases)
               | Pexp_match (e, l) -> (
                   match detectTernary l with
                   | Some (ifTrue, ifFalse) -> self#formatTernary x e ifTrue ifFalse
                   | None ->
-                    let switchWith = label ~space:true
-                      (atom "switch")
-                      (self#reset#simple_expression e);
-                    in
+                    let cases = (self#case_list ~allowUnguardedSequenceBodies:true l) in
+                    let switchWith = label ~space:true (atom "switch") (self#reset#simple_expression e) in
                     label
                       ~space:true
                       switchWith
-                      (makeList
-                        ~indent:settings.trySwitchIndent
-                        ~wrap:("{", "}")
-                        ~break:Always_rec
-                        (self#case_list ~allowUnguardedSequenceBodies:true l)
-                      )
+                      (makeList ~indent:settings.trySwitchIndent ~wrap:("{", "}") ~break:Always_rec ~postSpace:true cases)
                 )
 
               | Pexp_apply (e, l) -> (
@@ -4093,13 +4165,14 @@ class printer  ()= object(self:'self)
     let break = IfNeed in
     let pad = (true, false) in
     let postSpace = true in
+    let sep = ";" in
     match e with
       | PStr [] -> atom ("[" ^ ppxToken  ^ ppxId.txt  ^ "]")
       | PStr [itm] ->
-        makeList ~wrap ~break ~pad [self#structure_item ~include_semi:false itm]
+        makeList ~wrap ~break ~pad [self#structure_item itm]
       | PStr (_::_ as items) ->
-        let rows = (List.map (self#structure_item ~include_semi:true) items) in
-        makeList ~wrap ~break ~pad ~postSpace rows
+        let rows = (List.map (self#structure_item) items) in
+        makeList ~wrap ~break ~pad ~postSpace ~sep rows
       | PTyp x ->
         makeList ~wrap ~break ~pad [label ~space:true (atom ":") (self#core_type x)]
       (* Signatures in attributes were added recently *)
@@ -4821,7 +4894,14 @@ class printer  ()= object(self:'self)
         ~break:IfNeed
         ~inline:(true, false)
         ~wrap:("{", "}")
+        ~newlinesAboveComments:0
+        ~newlinesAboveItems:0
+        ~newlinesAboveDocComments:1
+        ~renderFinalSep:true
+        ~postSpace:true
+        ~sep:";"
         (List.map self#structure_item (List.filter self#shouldDisplayStructureItem s))
+
     | _ ->
         (* For example, functor application will be wrapped. *)
         formatPrecedence (self#module_expr x)
@@ -4853,14 +4933,26 @@ class printer  ()= object(self:'self)
 
 
   method structure ?(extraBreaks=false) structureItems =
-    let structureItems = List.filter self#shouldDisplayStructureItem structureItems in
-    Sequence (
-      break,
-      if extraBreaks then
-        List.concat (List.map (fun (i) -> [self#structure_item i; atom ""]) structureItems)
-      else
-        List.map self#structure_item structureItems
-    )
+    if List.length structureItems == 0 then
+      atom ""
+    else
+      let structureItems = List.filter self#shouldDisplayStructureItem structureItems in
+      let first = List.nth structureItems 0 in
+      let last = List.nth structureItems (List.length structureItems - 1) in
+      SourceMap (
+        {loc_start=first.pstr_loc.loc_start; loc_end=last.pstr_loc.loc_end; loc_ghost=false},
+        makeList
+          ~newlinesAboveComments:1
+          ~newlinesAboveItems:1
+          ~newlinesAboveDocComments:2
+          ~renderFinalSep:true
+          ~postSpace:true
+          ~break:Always_rec
+          ~indent:0
+          ~inline:(true, false)
+          ~sep:";"
+          (List.map self#structure_item structureItems)
+      )
 
 
   (*
@@ -4933,7 +5025,7 @@ class printer  ()= object(self:'self)
 
   (* TODO: TODOATTRIBUTES: Structure items don't have attributes, but each
      pstr_desc *)
-  method structure_item ?(include_semi=true) term =
+  method structure_item term =
     let item = (
       match term.pstr_desc with
         | Pstr_eval (e, _attrs) -> self#expression e
@@ -4998,9 +5090,7 @@ class printer  ()= object(self:'self)
              item does. *)
           self#item_extension e
     ) in
-      if include_semi then
-        commentInterleavedSemiTerminated term.pstr_loc item
-      else item
+    SourceMap(term.pstr_loc, item)
 
   method type_extension = wrap default#type_extension
   method extension_constructor = wrap default#extension_constructor

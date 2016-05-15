@@ -1,4 +1,5 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
+
 let logTSuccess self =>
   if (self > other) {
     print_string "Did T";
@@ -94,6 +95,7 @@ if (
 } else {
   ()
 };
+
 
 /**                            TERNARY
  *============================================================================

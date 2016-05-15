@@ -1,3 +1,4 @@
+
 type point = {x: int, y: int};
 
 let id x => x;
@@ -47,6 +48,7 @@ let res =
       two
   };
 
+
 /**
  * Match bodies may include sequence expressions, but without the `{}`
  * braces required.
@@ -82,6 +84,7 @@ let res =
       two
       two
   };
+
 
 /**
  * Ensure that nested Pexp_functions are correctly wrapped in parens.

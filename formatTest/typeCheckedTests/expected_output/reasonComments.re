@@ -1,13 +1,15 @@
 
-3 /*-*/
-;
+3; /* - */
 
+3;
 
-3 /*-*/
-;
+/*-*/
+3;
 
-3 /*-*/;
+/*-*/
+3;
 
+/*-*/
 /* **** comment */
 /*** comment */
 /** docstring */
@@ -41,39 +43,34 @@
  **
  */
 let testingEndOfLineComments = [
-  "Item 1",
-  /* Comment For First Item */
-  "Item 2",
-  /* Comment For Second Item */
-  "Item 3",
-  /* Comment For Third Item */
-  "Item 4"
-  /* Comment For Fourth Item - but before trailing comma */
+  "Item 1", /* Comment For First Item */
+  "Item 2", /* Comment For Second Item */
+  "Item 3", /* Comment For Third Item */
+  "Item 4" /* Comment For Fourth Item - but before trailing comma */
   /* Comment after last item in list. */
 ]
 /* Comment after rbracket */;
 
 /* But if you place them after the comma at eol, they're preserved as such */
 let testingEndOfLineComments = [
-  "Item 1",  /* Comment For First Item */
-  "Item 2",  /* Comment For Second Item */
-  "Item 3",  /* Comment For Third Item */
-  "Item 4"
-  /* Comment For Fourth Item - but before trailing comma */
+  "Item 1", /* Comment For First Item */
+  "Item 2", /* Comment For Second Item */
+  "Item 3", /* Comment For Third Item */
+  "Item 4" /* Comment For Fourth Item - but before trailing comma */
   /* Comment after last item in list. */
 ]
 /* Comment after rbracket */;
 
 /* The space between ; and comment shoudn't matter */
 let testPlacementOfTrailingComment = [
-  "Item 0"  /* */
+  "Item 0" /* */
   /* Comment after last item in list. */
 ];
 
 /* Comment after semi */
 /* The space between ; and comment shoudn't matter */
 let testPlacementOfTrailingComment = [
-  "Item 0"  /* */
+  "Item 0" /* */
   /* Comment after last item in list. */
 ];
 
@@ -86,7 +83,7 @@ let testPlacementOfTrailingComment = [
 /* Comment after semi */
 /* The space between ; and comment shoudn't matter */
 let testPlacementOfTrailingComment = [
-  "Item 0"  /* */
+  "Item 0" /* */
   /* Comment after last item in list. */
 ];
 
@@ -107,28 +104,28 @@ let myFunction
 
 /* After Semi */
 type point = {
-  x: string,  /* x field */
+  x: string, /* x field */
   y: string /* y field */
 };
 
 /* The way the last row comment is formatted is suboptimal becuase
  * record type definitions do not include enough location information */
 type anotherpoint = {
-  x: string,  /* x field */
+  x: string, /* x field */
   y: string /* y field */
-}
-/* comment as last row of record */;
+};
 
+/* comment as last row of record */
 type t = (int, int); /* End of line on t */
 
-type t2 = (int, int)
-/* End of line on (int, int) */;
+type t2 = (int, int);
 
+/* End of line on (int, int) */
 type t3 = (int, int);
 
 /* End of line on (int, int) */
 type variant =
-  | X of (int, int)  /* End of line on X */
+  | X of (int, int) /* End of line on X */
   | Y of (int, int) /* End of line on Y */;
 
 /* Comment on entire type def for variant */
@@ -165,13 +162,13 @@ let res =
 
 type variant2 =
   /* Comment above X */
-  | X of (int, int)  /* End of line on X */
+  | X of (int, int) /* End of line on X */
   /* Comment above Y */
   | Y of (int, int);
 
 type variant3 =
   /* Comment above X */
-  | X of (int, int)  /* End of line on X */
+  | X of (int, int) /* End of line on X */
   /* Comment above Y */
   | Y of (int, int) /* End of line on Y  */;
 
@@ -260,7 +257,7 @@ let res =
   ) {
   /* Above X line */
   | X (
-      _,  /* retain this */
+      _, /* retain this */
       _ /* retain this */
     ) => "result of X"
   /* Above Y line */
@@ -271,7 +268,7 @@ type optionalTuple =
   | OptTup of (
       option
         (
-          int,  /* First int */
+          int, /* First int */
           int /* Second int */
         )
     );
@@ -279,12 +276,12 @@ type optionalTuple =
 type optionTuple =
   option
     (
-      int,  /* First int */
+      int, /* First int */
       int /* Second int */
     );
 
 type intPair = (
-  int,  /* First int */
+  int, /* First int */
   int /* Second int */
 );
 
@@ -308,17 +305,17 @@ let a = ();
 
 for i in 0 to 10 {
   a
-}
-/* bla  */;
+  /* bla  */
+};
 
 if true {
   ()
-}
-/* hello */;
+};
 
+/* hello */
 type color =
-  | Red of int  /* After red end of line */
-  | Black of int  /* After black end of line */
+  | Red of int /* After red end of line */
+  | Black of int /* After black end of line */
   | Green of int /* After green end of line */;
 
 /* On next line after color type def */
@@ -328,8 +325,8 @@ let blahCurriedX x =>
   | Black 20
   | Green 10 => 1
   /* After or pattern green */
-  | Red x => 0  /* After red */
-  | Black x => 0  /* After black */
+  | Red x => 0 /* After red */
+  | Black x => 0 /* After black */
   | Green x => 0 /* After second green */;
 
 /* On next line after blahCurriedX def */

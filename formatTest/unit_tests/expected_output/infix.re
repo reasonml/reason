@@ -9,6 +9,7 @@
    infix applications ungrouped in parenthesis (which is what the above test
    verifies), but the additional parenthesis is nice.  */
 /* < > = all have same precedence level/direction(left) */
+
 let parseTree = ((x > y > z) < a < b) == c == d;
 
 let minParens = ((x > y > z) < a < b) == c == d;

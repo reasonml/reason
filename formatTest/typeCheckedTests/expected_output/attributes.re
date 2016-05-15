@@ -11,6 +11,7 @@
  * Core language features:
  * ----------------------
  */
+
 type itemText = int [@@itemAttributeOnTypeDef];
 
 type nodeText = int;
@@ -210,6 +211,7 @@ print_string "hello";
 let firstBinding = "first"
 and secondBinding = "second";
 
+
 /**
  * Let bindings.
  * ----------------------
@@ -225,6 +227,7 @@ let showLets () =>
   }
   [@onOuterLet];
 
+
 /**
  * Classes:
  * ------------
@@ -238,6 +241,7 @@ class boxA 'a (init: 'a) =>
   }
   [@onReturnClassExpr]
 [@@moduleItemAttribute];
+
 
 /**
  * In non-curried sugar, the class_expr still sticks to "the simple thing".
@@ -259,7 +263,7 @@ class boxC 'a =
       [@onReturnClassExpr]
   )
   [@onEntireFunction]
-[@@onBoxC x; y;];
+[@@onBoxC x; y];
 
 class tupleClass 'a 'b (init: ('a, 'b)) => {
   let one = 10 [@exprAttr ten];

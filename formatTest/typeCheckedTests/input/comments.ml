@@ -44,7 +44,7 @@
 let testingNotQuiteEndOfLineComments = [
   "Item 1"(* Comment For First Item *);  
   "Item 2" (* Comment For Second Item *);
-  "Item 3" (* Comment For Third Item *);
+  "Item 3" (* Comment For Third Item *) ;
   "Item 4" (* Comment For Fourth Item - but no semi *)
   (* Comment after last item in list. *)
 ] (* Comment after list bracket *)

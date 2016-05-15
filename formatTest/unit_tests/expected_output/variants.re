@@ -1,4 +1,5 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
+
 let module LocalModule = {
   type accessedThroughModule =
     | AccessedThroughModule;
@@ -169,6 +170,7 @@ let run () => {
 
 type combination 'a =
   | HeresTwoConstructorArguments of int int;
+
 
 /** But then how do we parse matches in function arguments? */
 /* We must require parenthesis around construction matching in function args only*/

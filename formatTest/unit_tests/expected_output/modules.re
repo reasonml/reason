@@ -1,5 +1,7 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
+
 let run () => TestUtils.printSection "Modules";
+
 
 /**
  * Modules:
@@ -30,6 +32,7 @@ let module MyFirstModule = {
 
 let result = MyFirstModule.x + MyFirstModule.y;
 
+
 /**
  * - A module is introduced with the `let module` phrase.
  * - A module *must* have a capital letter as its first character.
@@ -48,6 +51,7 @@ let module MySecondModule = {
 
 let myInt: MySecondModule.someType = 100;
 
+
 /** Module signatures:
  * ----------------------------------------------------------------------------
  * Not only may modules export types, but modules *themselves* can be described
@@ -60,6 +64,7 @@ module type MySecondModuleType = {
   let x: int;
   let y: int;
 };
+
 
 /**
  * Much like how you can ensure that a value is compatible with a specific
