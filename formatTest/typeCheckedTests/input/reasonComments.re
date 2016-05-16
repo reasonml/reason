@@ -336,3 +336,10 @@ let blahCurriedX x =>
   | Green x => 0 /* After second green */
 ; /* On next line after blahCurriedX def */
 
+let name_equal x y => x == y;
+
+let equal i1 i2 =>
+  i1.contents === i2.contents && true; /* most unlikely first */
+
+let equal i1 i2 =>
+  compare (compare 0 0) (compare 1 1); /* END OF LINE HERE */

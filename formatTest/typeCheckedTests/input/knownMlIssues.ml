@@ -1,3 +1,5 @@
+
+(* [x] fixed *)
 type t2 =
   int * int (* attributed to entire type not binding *)
 

@@ -1066,6 +1066,15 @@ let easyLabelForEolComment labelTerm term =
   } in
   Easy_format.Label ((labelTerm, settings), term)
 
+let easyLabelForEolCommentOnLabelRight labelTerm term =
+  let settings = {
+    label_break = `Never;
+    space_after_label = true;
+    indent_after_label = 0;
+    label_style = Some "labelCommentAttachment";
+  } in
+  Easy_format.Label ((labelTerm, settings), term)
+
 (* Just for debugging: Set debugWithHtml = true *)
 let debugWithHtml = ref false
 
@@ -1148,6 +1157,7 @@ let formatPrecedence formattedTerm =
 
 (* What to do when a comment wasn't interleaved in a list - default is to attach and break. *)
 let fallbackCommentListConfig = break
+
 
 let eolCommentListConfig = makeListConfig ~break:Never ~postSpace:true ~inline:(true, true) ()
 
@@ -1552,6 +1562,24 @@ and layoutToEasyFormatAndSurplus layoutNode comments = match layoutNode with
         (recurse, unconsumed)
       | _ -> catchUpPreviousComments loc comments (layoutToEasyFormatAndSurplus subLayout)
     )
+  (* We attempt to allow the rhs of a label include eol comments *)
+  | Label (labelFormatter, left, (SourceMap (rLoc, rSubLayout) as right)) ->
+    let (easyLeft, unconsumed) = layoutToEasyFormatAndSurplus left comments in
+    let (aboveRight, endOfLineCommentsRight, unconsumed) = partitionItemComments rLoc unconsumed in
+    let (easyRight, unconsumed) = layoutToEasyFormatAndSurplus right unconsumed in
+    let rightWithOnComments =
+      match aboveRight with
+      | [] -> easyRight
+      | _::_ ->
+        easyListWithConfig fallbackCommentListConfig (List.concat [List.map formatItemComment aboveRight; [easyRight]]) in
+    let easyRightWithEolComms =
+      match endOfLineCommentsRight with
+      | [] -> rightWithOnComments
+      | _::_ ->
+        let eolEasyComments = List.map formatItemComment endOfLineCommentsRight in
+        easyLabelForEolCommentOnLabelRight rightWithOnComments (easyListWithConfig eolCommentListConfig eolEasyComments)
+    in
+    (labelFormatter easyLeft easyRightWithEolComms, unconsumed)
   | Label (labelFormatter, left, right) ->
     let (easyLeft, unconsumedComms) = layoutToEasyFormatAndSurplus left comments in
     let (easyRight, unconsumedComms) = layoutToEasyFormatAndSurplus right unconsumedComms in
@@ -1693,29 +1721,36 @@ let formatIndentedApplication delimiter headApplicationItem argApplicationItems 
     (makeAppList delimiter argApplicationItems)
 
 
-let formatAttachmentApplication finalWrapping (attachTo: (bool * layoutNode) option) (appTermItems, delimiter) =
+(* The loc, is an optional location or the returned app terms *)
+let formatAttachmentApplication finalWrapping (attachTo: (bool * layoutNode) option) (appTermItems, delimiter, loc) =
   let partitioning = finalWrapping appTermItems in
+  let maybeSourceMap maybeLoc x =
+    match maybeLoc with
+      | None -> x
+      | Some loc -> SourceMap (loc, x)
+  in
   match partitioning with
     | None -> (
         match (appTermItems, attachTo) with
           | ([], _) -> raise (NotPossible "No app terms")
-          | ([hd], None) -> hd
-          | ([hd], (Some (useSpace, toThis))) -> label ~space:useSpace toThis hd
+          | ([hd], None) -> maybeSourceMap loc hd
+          | ([hd], (Some (useSpace, toThis))) -> label ~space:useSpace toThis (maybeSourceMap loc hd)
           | (hd::tl, None) ->
-              (formatIndentedApplication delimiter hd tl)
+            maybeSourceMap loc (formatIndentedApplication delimiter hd tl)
           | (hd::tl, (Some (useSpace, toThis))) ->
             label
               ~space:useSpace
               toThis
-              (formatIndentedApplication delimiter hd tl)
+              (maybeSourceMap loc (formatIndentedApplication delimiter hd tl))
       )
     | Some (attachedList, wrappedListy) -> (
         match (attachedList, attachTo) with
-          | ([], Some (useSpace, toThis)) -> label ~space:useSpace toThis wrappedListy
+          | ([], Some (useSpace, toThis)) -> label ~space:useSpace toThis (maybeSourceMap loc wrappedListy)
           | ([], None) ->
             (* Not Sure when this would happen *)
-            wrappedListy
+            maybeSourceMap loc wrappedListy
           | (hd::tl, Some (useSpace, toThis)) ->
+            (* TODO: Can't attach location to this - maybe rewrite anyways *)
             let attachedArgs = makeAppList delimiter attachedList in
             label
               ~space:true
@@ -1738,7 +1773,7 @@ let formatAttachmentApplication finalWrapping (attachTo: (bool * layoutNode) opt
                 | None -> appList
                 | Some s -> (label ~space:true appList (atom s))
             in
-            label ~space:true attachedArgs wrappedListy
+            maybeSourceMap loc (label ~space:true attachedArgs wrappedListy)
       )
 
 (*
@@ -1767,8 +1802,8 @@ let protectIdentifier txt =
 let protectLongIdentifier longPrefix txt =
   makeList ~interleaveComments:false [longPrefix; atom "."; protectIdentifier txt]
 
-let combinedAppItems (regularItems, sugaredItems, delimiter) =
-    (regularItems @ sugaredItems, delimiter)
+let combinedAppItems (regularItems, sugaredItems, delimiter, loc) =
+    (regularItems @ sugaredItems, delimiter, loc)
 
 class printer  ()= object(self:'self)
   val pipe = false
@@ -1926,7 +1961,7 @@ class printer  ()= object(self:'self)
             formatAttachmentApplication
               typeApplicationFinalWrapping
               (Some (true, nameParamsEquals))
-              (hd, None)
+              (hd, None, None)
         | hd::hd2::[] ->
             let first = makeList ~postSpace:true ~break:IfNeed ~inline:(true, true) hd in
             let second = makeList ~postSpace:true ~break:IfNeed ~inline:(true, true) hd2 in
@@ -2927,7 +2962,7 @@ class printer  ()= object(self:'self)
         let attributesAsList = (List.map self#attribute x.pexp_attributes) in
         let exprWithoutAttrs = {x with pexp_attributes = []} in
         match self#arraySugarApplicationItems x with
-          | Some fmt -> ([], [fmt], None)
+          | Some fmt -> ([], [fmt], None, Some x.pexp_loc)
           | None  -> (
             match self#consecutiveInfixApplicationItems x with
               | Some (operator, items) ->
@@ -2935,9 +2970,9 @@ class printer  ()= object(self:'self)
                   (* We actually have to back out of this computation.  We know
                      that unguarded infix/prefix are not compatible with
                      attributes. Render it as simple. *)
-                  ((self#simple_expression exprWithoutAttrs :: attributesAsList), [], None)
+                  ((self#simple_expression exprWithoutAttrs :: attributesAsList), [], None, Some x.pexp_loc)
                 else
-                  (items, [], Some operator)
+                  (items, [], Some operator, Some x.pexp_loc)
               | None -> (
                 match self#prefixApplication (e, l) with
                   | Some item ->
@@ -2945,9 +2980,9 @@ class printer  ()= object(self:'self)
                        that unguarded infix/prefix are not compatible with
                        attributes. Render it as simple. *)
                     if x.pexp_attributes <> [] then
-                      ((self#simple_expression exprWithoutAttrs  :: attributesAsList), [], None)
+                      ((self#simple_expression exprWithoutAttrs  :: attributesAsList), [], None, Some x.pexp_loc)
                     else
-                      ([item], [], None)
+                      ([item], [], None, Some x.pexp_loc)
                   | None -> (
                     (* Standard application *)
                     (*reset here only because [function,match,try,sequence] are lower priority*)
@@ -2957,12 +2992,13 @@ class printer  ()= object(self:'self)
                       attributesAsList;
                     ],
                     [],
-                    None
+                    None,
+                    Some x.pexp_loc
                   )
               )
           )
       )
-      | _ -> ([self#expression x], [], None)
+      | _ -> ([self#expression x], [], None, Some x.pexp_loc)
 
   method classExpressionToFormattedApplicationItems x =
     let itms =
@@ -2972,7 +3008,7 @@ class printer  ()= object(self:'self)
           (List.map self#label_x_expression_param l)
         | _ -> [self#class_expr x]
     in
-    (itms, None)
+    (itms, None, None)
 
   method formatTernary x test ifTrue ifFalse =
     if inTernary then
@@ -3003,7 +3039,7 @@ class printer  ()= object(self:'self)
             (functorApplicationList me1)
       | _ -> SourceMap (xx.pmod_loc, (self#module_expr xx))::[]
     in
-    (List.rev (functorApplicationList x), None)
+    (List.rev (functorApplicationList x), None, None)
 
 
   (*
@@ -3764,13 +3800,13 @@ class printer  ()= object(self:'self)
 
               | Pexp_apply (e, l) -> (
                   match self#expressionToFormattedApplicationItems x with
-                    | ([], [], _) ->
+                    | ([], [], _, _) ->
                         raise (
                           NotPossible (
                             "no application items extracted " ^ (exprDescrString x)
                           )
                         )
-                    | ([], sugarExpr::[], _) ->
+                    | ([], sugarExpr::[], _, _) ->
                         (* This can happen in the case of [sugar_expr] [arrayWithTwo.(1) <- 300] *)
                         sugarExpr
                     | appTerms ->
@@ -4017,13 +4053,13 @@ class printer  ()= object(self:'self)
             ensureSingleTokenSticksToLabel (self#constant c)
         | Pexp_apply (e, l) -> (
             match self#expressionToFormattedApplicationItems x with
-              | ([], [], _) ->
+              | ([], [], _, _) ->
                   raise (
                     NotPossible (
                       "no application items extracted " ^ (exprDescrString x)
                     )
                   )
-              | ([], sugarExpr::[], _) ->
+              | ([], sugarExpr::[], _, _) ->
                   (* This can happen in the case of [sugar_expr] [arrayWithTwo.(1) <- 300] *)
                   sugarExpr
               | appTerms -> makeList ~break:IfNeed ~postSpace:true ~wrap:("(", ")") [
@@ -4120,8 +4156,8 @@ class printer  ()= object(self:'self)
               | Some withRecord ->
                 let firstRow = (
                   match self#expressionToFormattedApplicationItems withRecord with
-                    | ([], [], _) -> raise (NotPossible ("no application items extracted " ^ (exprDescrString x)))
-                    | ([], sugarExpr::[], _) ->
+                    | ([], [], _, _) -> raise (NotPossible ("no application items extracted " ^ (exprDescrString x)))
+                    | ([], sugarExpr::[], _, _) ->
                         (makeList [atom "..."; sugarExpr; atom ","])
                     | appTerms ->
                        makeList [
@@ -4749,7 +4785,7 @@ class printer  ()= object(self:'self)
                 firstToken
                 pattern
                 patternAux
-                ([(self#class_constructor_type x.pci_expr)], None)
+                ([(self#class_constructor_type x.pci_expr)], None, None)
               in
               let itm = self#attach_std_item_attrs x.pci_attributes withColon in
               SourceMap (pci_loc, itm)
@@ -4958,9 +4994,9 @@ class printer  ()= object(self:'self)
       | Pmod_apply (me1, me2) ->
           let appTerms = self#moduleExpressionToFormattedApplicationItems x in
           (match appTerms with
-            | ([], _) -> raise (NotPossible "no functor application terms")
-            | ([hd], _) -> raise (NotPossible "one functor application terms")
-            | (hd::tl, d) -> formatIndentedApplication d hd tl
+            | ([], _, _) -> raise (NotPossible "no functor application terms")
+            | ([hd], _, _) -> raise (NotPossible "one functor application terms")
+            | (hd::tl, d, _) -> formatIndentedApplication d hd tl
           )
       | Pmod_extension _ -> assert false
       | Pmod_unpack _

@@ -1,8 +1,7 @@
+/* [x] fixed */
 
-type t2 = (
-  int, /* attributed to entire type not binding */
-  int
-);
+type t2 =
+  (int, int) /* attributed to entire type not binding */;
 
 type color =
   | Red of int /* After red */
