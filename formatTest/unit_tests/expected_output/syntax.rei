@@ -3,6 +3,7 @@
  * Typically the "interface file" is where you would write a ton of
  * comments/documentation.
  */
+
 type adders = {
   /*
    * Adds two numbers together.
@@ -18,10 +19,12 @@ type adders = {
   addThreeNumbersTupled: (int, int, int) => int
 };
 
+
 /**
  * Public function.
  */
 let myRecordWithFunctions: adders;
+
 
 /**
  * Public result.
