@@ -16,8 +16,11 @@ Install Stable
 ----------
 
 ```sh
+# On OSX, install opam via Homebrew:
 brew update
 brew install opam --HEAD
+# On Linux, see here (you will need opam >= 1.2.2): http://opam.ocaml.org/doc/Install.html
+
 opam init
 # Add this to your ~/.bashrc (or ~/.zshrc):
 #   eval `opam config env`
