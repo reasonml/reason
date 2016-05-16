@@ -251,6 +251,7 @@ let module HasTupleClasses: {
       method x: int;
       method y: int
     };
+
   /**
    * anotherExportedClass.
    */

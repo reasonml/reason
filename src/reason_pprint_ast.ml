@@ -1579,31 +1579,6 @@ let partitionFinalWrapping listTester wrapFinalItemSetting x =
 
 let semiTerminated term = makeList ~attemptInterleaveComments:false [term; atom ";"]
 
-(* Support interleaving comments *before* the terminating semicolon
-
-      let something = withFirstArg + andSecondArg /* before semi */ ;
- *)
-let commentInterleavedSemiTerminated loc item =
-  SourceMap (
-    loc,
-    makeList
-      ~attemptInterleaveComments:true
-      ~listConfigIfCommentsInterleaved: (
-        fun currentConfig -> {
-          currentConfig with
-          break = IfNeed;
-          postSpace=true;
-          indent=0;
-          pad=(false, false);
-          inline=(false, true)
-        }
-      )
-      ~listConfigIfEolCommentsInterleaved: (
-        fun currentConfig -> {currentConfig with break = Always_rec; indent=0; inline=(true, false)}
-      )
-      ~wrap:("", ";")
-      [item]
-  )
 
 (* postSpace is so that when comments are interleaved, we still use spacing rules. *)
 let makeLetSequence letItems =
@@ -4684,15 +4659,30 @@ class printer  ()= object(self:'self)
       | Pcl_let _
       | Pcl_structure _ -> self#simple_class_expr x;
 
-  method signature ?(extraBreaks=false) signatureItems =
+  method signature signatureItems =
     let signatureItems = List.filter self#shouldDisplaySigItem signatureItems in
-    Sequence (
-      break,
-      if extraBreaks then
-        List.concat (List.map (fun (i) -> [self#signature_item i; atom ""]) signatureItems)
-      else
-        List.map self#signature_item signatureItems
-    )
+    if List.length signatureItems == 0 then
+      atom ""
+    else
+      let signatureItems = List.filter self#shouldDisplaySigItem signatureItems in
+      let first = List.nth signatureItems 0 in
+      let last = List.nth signatureItems (List.length signatureItems - 1) in
+      SourceMap (
+        {loc_start=first.psig_loc.loc_start; loc_end=last.psig_loc.loc_end; loc_ghost=false},
+        makeList
+          ~newlinesAboveComments:1
+          ~newlinesAboveItems:1
+          ~newlinesAboveDocComments:2
+          ~renderFinalSep:true
+          ~postSpace:true
+          ~break:Always_rec
+          ~indent:0
+          ~inline:(true, false)
+          ~sep:";"
+          (List.map self#signature_item signatureItems)
+      )
+
+
 
   method value_description x =
     if x.pval_prim<>[] then
@@ -4796,7 +4786,7 @@ class printer  ()= object(self:'self)
         | Psig_extension (e, a) ->
           self#attach_std_item_attrs a (self#item_extension e)
     in
-    commentInterleavedSemiTerminated x.psig_loc item
+    SourceMap (x.psig_loc, item)
 
   method non_arrowed_module_type x =
     match x.pmty_desc with
@@ -4814,9 +4804,15 @@ class printer  ()= object(self:'self)
           self#longident_loc li;
       | Pmty_signature s ->
           makeList
-            ~wrap:("{","}")
-            ~postSpace:true
             ~break:IfNeed
+            ~inline:(true, false)
+            ~wrap:("{", "}")
+            ~newlinesAboveComments:0
+            ~newlinesAboveItems:0
+            ~newlinesAboveDocComments:1
+            ~renderFinalSep:true
+            ~postSpace:true
+            ~sep:";"
             (List.map self#signature_item (List.filter self#shouldDisplaySigItem s))
       (* Not sure what this is about. *)
       | Pmty_extension _ -> assert false
@@ -4944,7 +4940,7 @@ class printer  ()= object(self:'self)
       | Pmod_structure _ -> self#simple_module_expr x
 
 
-  method structure ?(extraBreaks=false) structureItems =
+  method structure structureItems =
     if List.length structureItems == 0 then
       atom ""
     else
@@ -5340,9 +5336,9 @@ let core_type f x =
 let pattern f x =
   easyFormatToFormatter f (layoutToEasyFormatNoComments (easy#pattern (apply_mapper_chain_to_pattern x preprocessing_chain)))
 let signature comments f x =
-  easyFormatToFormatter f (layoutToEasyFormat (easy#signature ~extraBreaks:true (apply_mapper_chain_to_signature x preprocessing_chain)) comments)
+  easyFormatToFormatter f (layoutToEasyFormat (easy#signature (apply_mapper_chain_to_signature x preprocessing_chain)) comments)
 let structure comments f x =
-  easyFormatToFormatter f (layoutToEasyFormat (easy#structure ~extraBreaks:true (apply_mapper_chain_to_structure x preprocessing_chain)) comments)
+  easyFormatToFormatter f (layoutToEasyFormat (easy#structure (apply_mapper_chain_to_structure x preprocessing_chain)) comments)
 end
 in
 object
