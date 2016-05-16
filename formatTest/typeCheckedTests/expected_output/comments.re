@@ -101,3 +101,19 @@ let result =
     n + tmp
   | None => 20
   };
+
+type pointWithManyKindsOfComments = {
+  /* Line before x */
+  x: string, /* x field */
+  /* Line before y */
+  y: string /* y field */
+  /* Final row of record */
+};
+
+type typeParamPointWithComments 'a = {
+  /* Line before x */
+  x: 'a, /* x field */
+  /* Line before y */
+  y: 'a /* y field */
+  /* Final row of record */
+};

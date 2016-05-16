@@ -2073,11 +2073,24 @@ class printer  ()= object(self:'self)
           | Immutable -> nameColon
           | Mutable -> makeList ~postSpace:true [atom "mutable"; nameColon]
       in
-      SourceMap (pld.pld_loc, label ~space:true withMutable (self#core_type pld.pld_type))
+      SourceMap (
+        pld.pld_loc,
+        label ~space:true withMutable (self#core_type pld.pld_type)
+      )
     in
-    let recordize lst =
+    let recordize ?assumeRecordLoc lst =
       let rows = List.map recordRow lst in
-      makeList ~wrap:("{", "}") ~sep:"," ~postSpace:true ~break:IfNeed rows
+      let rowList = makeList ~wrap:("{", "}") ~sep:"," ~postSpace:true ~break:IfNeed rows in
+      match assumeRecordLoc with
+        | None -> rowList
+        | Some loc -> SourceMap(loc, rowList)
+    in
+
+    let estimateRecordOpenBracePoint () =
+      match x.ptype_params with
+        | [] -> x.ptype_name.loc.loc_end
+        | hd::tl ->
+          (fst (List.nth x.ptype_params (List.length x.ptype_params - 1))).ptyp_loc.loc_end
     in
 
     let equalInitiatedSegments = match (x.ptype_kind, x.ptype_private, x.ptype_manifest) with
@@ -2116,9 +2129,8 @@ class printer  ()= object(self:'self)
 
       (* EQUAL private_flag LBRACE label_declarations opt_comma RBRACE {(Ptype_record _, $2, None)} *)
       | (Ptype_record lst, scope, None) ->
-          [
-            privatize scope [recordize lst];
-          ]
+          let assumeRecordLoc = {loc_start = estimateRecordOpenBracePoint(); loc_end = x.ptype_loc.loc_end; loc_ghost = false} in
+          [privatize scope [recordize ~assumeRecordLoc lst]]
       (* And now all of the forms involving *TWO* equals *)
       (* Again, super confusing how manifests of variants/records represent the
          structure after the second equals. *)

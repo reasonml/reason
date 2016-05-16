@@ -102,6 +102,37 @@ type point = {
   y: string, /* y field */
 };
 
+type pointWithManyKindsOfComments = {
+  /* Line before x */
+  x: string, /* x field */
+  /* Line before y */
+  y: string, /* y field */
+  /* Final row of record */
+};
+
+type typeParamPointWithComments 'a = {
+  /* Line before x */
+  x: 'a, /* x field */
+  /* Line before y */
+  y: 'a /* y field */
+  /* Final row of record */
+};
+
+/* Now, interleaving comments in type params */
+type
+  /* Type name */
+  typeParamPointWithComments2
+  /* The a type param */
+  'a
+  /* The b type apram */
+  'b = {
+  /* Line before x */
+  x: 'a, /* x field */
+  /* Line before y */
+  y: 'a /* y field */
+  /* Final row of record */
+};
+
 /* The way the last row comment is formatted is suboptimal becuase
  * record type definitions do not include enough location information */
 type anotherpoint = {
@@ -304,3 +335,4 @@ let blahCurriedX x =>
   | Black x => 0 /* After black */
   | Green x => 0 /* After second green */
 ; /* On next line after blahCurriedX def */
+

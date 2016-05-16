@@ -406,9 +406,9 @@ type hasABunch = {
   fieldtwo: list int,
   fieldThree: list string,
   fieldFour: nameAge
+  /* Comment at bottom of record type def */
 };
 
-/* Comment at bottom of record type def */
 type functionsInARecord = {
   adder: int => int,
   minuser: int => int
