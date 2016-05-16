@@ -1,5 +1,3 @@
-output_byte_debug/
-_build_byte_debug/
 npm-debug.log
 lib/.DS_Store
 src/.DS_Store

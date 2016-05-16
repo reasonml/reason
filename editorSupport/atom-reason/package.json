@@ -11,16 +11,12 @@
     "language-reason:grammar-used"
   ],
   "devDependencies": {
-    "CommonML": "git://github.com/jordwalke/CommonML.git#25cc983"
   },
   "messagesToInstaller": {
     "0.0.0":
       "These messages will be given to the respective version of the auto-installer. They're a nice way to message the user when the one thing that can't be updated, needs to be updated"
   },
   "dependencies": {
-    "ansi_up": "1.3.0",
-    "cli-color": "1.1.0",
-    "diff": "2.2.0"
   },
   "providedServices": {
     "autocomplete.provider": {
@@ -62,37 +58,6 @@
     }
   },
   "scripts": {
-    "start": "node node_modules/CommonML/build.js --buildDir=output --logUnextractedErrors=true --minVersion=11 --forDebug=true  --concurrency=3 --jsCompile=true --errorFormatter=./Reasonify/formatErrorMessages.js"
-  },
-  "CommonML": {
-    "exports": [
-      "Index"
-    ],
-    "compileFlags": [
-      "-w",
-      "-30",
-      "-w",
-      "-40",
-      "-bin-annot"
-    ],
-    "preprocessor": "refmt",
-    "extensions": [
-      {
-        "interface": ".rei",
-        "implementation": ".re"
-      }
-    ],
-    "findlibPackages": [
-      {
-        "dependency": "js_of_ocaml"
-      }
-    ],
-    "linkFlags": [],
-    "docFlags": [
-      "-colorize-code",
-      "-css-style",
-      "docStyle.css",
-      "-latex"
-    ]
+    "start": "rm -rf ./node_modules && refmt -parse re -print ml jengarootReal.re | sed 's/\\[@explicit_arity \\]//g' > jengaroot.ml && time jenga && cp _build/top/app.{js,map} ./output_byte_debug_js"
   }
 }
