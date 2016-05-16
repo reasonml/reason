@@ -1,3 +1,4 @@
+3; /* - */
 3 /*-*/
 ;
 3/*-*/
@@ -101,6 +102,37 @@ type point = {
   y: string, /* y field */
 };
 
+type pointWithManyKindsOfComments = {
+  /* Line before x */
+  x: string, /* x field */
+  /* Line before y */
+  y: string, /* y field */
+  /* Final row of record */
+};
+
+type typeParamPointWithComments 'a = {
+  /* Line before x */
+  x: 'a, /* x field */
+  /* Line before y */
+  y: 'a /* y field */
+  /* Final row of record */
+};
+
+/* Now, interleaving comments in type params */
+type
+  /* Type name */
+  typeParamPointWithComments2
+  /* The a type param */
+  'a
+  /* The b type apram */
+  'b = {
+  /* Line before x */
+  x: 'a, /* x field */
+  /* Line before y */
+  y: 'a /* y field */
+  /* Final row of record */
+};
+
 /* The way the last row comment is formatted is suboptimal becuase
  * record type definitions do not include enough location information */
 type anotherpoint = {
@@ -120,44 +152,126 @@ type t3 =
 
 type variant =
   | X of (int, int) /* End of line on X */
-  | Y of (int, int); /* On the entire type */
+  | Y of (int, int) /* End of line on Y */
+; /* Comment on entire type def for variant */
+
+/* Before let */
+let res =
+  /* Before switch */
+  switch (X (2, 3)) {
+    /* Above X line */
+    | X _ => "result of X"  /* End of arrow and X line */
+    /* Above Y line */
+    | Y _ => "result of Y"  /* End of arrow and Y line */
+  }; /* After final semi in switch */
 
 let res =
   switch (X (2, 3)) {
-    /* Above X line */
-    | X _ => "result of X"  /* End of X line */
+    | X (0, 0) => /* After X arrow */
+      "result of X"  /* End of X body line */
+    | X (1, 0) /* Before X's arrow */ =>
+      "result of X"  /* End of X body line */
+    | X _ => /* After X _ arrow */
+      "result of X"  /* End of X body line */
     /* Above Y line */
-    | Y _ => "result of Y"  /* End of Y line */
+    | Y _ =>
+      /* Comment above Y body */
+      "result of Y"
   };
 
 type variant2 =
   /* Comment above X */
   | X of (int, int) /* End of line on X */
   /* Comment above Y */
-  | Y of (int, int); /* On entire type */
+  | Y of (int, int);
 
 type variant3 =
   /* Comment above X */
   | X of (int, int) /* End of line on X */
   /* Comment above Y */
   | Y of (int, int) /* End of line on Y  */
-; /* On entire type */
+;
 
 
-type x = { /* attached *above* x */
-  fieldOne : int
+type x = { /* not attached *above* x */
+  fieldOne : int,
+  fieldA : int
 } /* Attached end of line after x */
-and y = { /* attached *above* y */
+and y = { /* not attached *above* y */
   fieldTwo : int
 } /* Attached end of line after y */
 ;
 
-type x2 = { /* attached *above* x2 */
-  fieldOne : int
+type x2 = { /* not attached *above* x2 */
+  fieldOne : int,
+  fieldA : int
 } /* Attached end of line after x2 */
-and y2 = { /* attached *above* y2 */
+and y2 = { /* not attached *above* y2 */
   fieldTwo : int
-}; /* Attached to entire set of bindings */
+};
+
+
+let result =
+  switch None {
+  | Some {fieldOne: 20, fieldA:a} => /* Where does this comment go? */
+    let tmp = 0;
+    2 + tmp
+  | Some {fieldOne: n, fieldA:a} =>
+    /* How about this one */
+    let tmp = n;
+    n + tmp
+  | None => 20
+  };
+
+let res =
+  /* Before switch */
+  switch (X (2, 3)) {
+    /* Above X line */
+    | X _ => "result of X"  /* End of arrow and X line */
+    /* Above Y line */
+    | Y _ => "result of Y"  /* End of arrow and Y line */
+  };
+
+/*
+ * Now these end of line comments *should* be retained.
+ */
+let result = switch None {
+  | Some {
+      fieldOne: 20, /* end of line */
+      fieldA:a /* end of line */
+    } =>
+    let tmp = 0;
+    2 + tmp
+  | Some {
+      fieldOne: n, /* end of line */
+      fieldA:a /* end of line */
+    } =>
+    let tmp = n;
+    n + tmp
+  | None => 20
+  };
+
+/*
+ * These end of line comments *should* be retained.
+ * To get the simple expression eol comment to be retained, we just need to
+ * implement label breaking eol behavior much like we did with sequences.
+ * Otherwise, right now they are not idempotent.
+ */
+let res =
+  switch ( /* Retain this */
+    X (2, 3)
+  )
+  {
+    /* Above X line */
+    | X (
+        _, /* retain this */
+        _ /* retain this */
+      ) => "result of X"
+
+    /* Above Y line */
+    | Y _ => "result of Y"  /* End of arrow and Y line */
+  };
+
 
 type optionalTuple =
   | OptTup of (
@@ -205,3 +319,20 @@ if true {
   /* hello */
   ()
 };
+
+type color =
+  | Red of int /* After red end of line */
+  | Black of int /* After black end of line */
+  | Green of int /* After green end of line */
+; /* On next line after color type def */
+
+let blahCurriedX x =>
+  fun
+  | Red 10
+  | Black 20
+  | Green 10 => 1 /* After or pattern green */
+  | Red x => 0 /* After red */
+  | Black x => 0 /* After black */
+  | Green x => 0 /* After second green */
+; /* On next line after blahCurriedX def */
+

@@ -1,7 +1,8 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
+
 [@@@autoFormat
   let wrap = 80;
-  let shift = 2;
+  let shift = 2
 ];
 
 Modules.run ();
@@ -415,11 +416,11 @@ Printf.printf
 let blah arg =>
   switch arg {
   /* Comment before Bar */
-  /* Comment between bar/pattern */
-  | Red _ => 1
+  | /* Comment between bar/pattern */
+    Red _ => 1
   /* Comment Before non-first bar */
-  /* Comment betwen bar/pattern */
-  | Black _ => 0
+  | /* Comment betwen bar/pattern */
+    Black _ => 0
   | Green _ => 0
   };
 
@@ -438,32 +439,29 @@ let blah =
       let blah x | Red _ => 1 | Black _ => 0;
       Theres no sugar rule for dropping => fun, only = fun
    */
-/* Not idempotent! */
 /* let blahCurriedX x => fun  /* See, nothing says we can drop the => fun */ */
 /*   |(Red x | Black x | Green x) => 1     /* With some effort, we can ammend the sugar rule that would */ */
 /*   | Black x => 0                       /* Allow us to drop any => fun.. Just need to make pattern matching */ */
 /*   | Green x => 0;                      /* Support that */ */
 /*  */
-/* Support that */
 let blahCurriedX x =>
   fun
-  /* With some effort, we can ammend the sugar rule that would */
   | Red x
   | Black x
   | Green x => 1
-  | Black x => 0  /* Allow us to drop any => fun.. Just need to make pattern matching */
-  | Green x => 0;
+  /* With some effort, we can ammend the sugar rule that would */
+  | Black x => 0 /* Allow us to drop any => fun.. Just need to make pattern matching */
+  | Green x => 0 /* Support that */;
 
 let sameThingInLocal = {
-  /* Support that */
   let blahCurriedX x =>
     fun
-    /* With some effort, we can ammend the sugar rule that would */
     | Red x
     | Black x
     | Green x => 1
-    | Black x => 0  /* Allow us to drop any => fun.. Just need to make pattern matching */
-    | Green x => 0;
+    /* With some effort, we can ammend the sugar rule that would */
+    | Black x => 0 /* Allow us to drop any => fun.. Just need to make pattern matching */
+    | Green x => 0 /* Support that */;
   blahCurriedX
 };
 
@@ -980,6 +978,7 @@ let A | B | C = X;
 
 /*  A | B | C = X; */
 let A | B | C = X;
+
 
 /** External function declaration
  *

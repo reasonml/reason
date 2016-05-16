@@ -1,4 +1,5 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
+
 type t = <>;
 
 type t = <u : int, v : int>;

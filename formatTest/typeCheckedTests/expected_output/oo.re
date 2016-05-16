@@ -1,4 +1,5 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
+
 class virtual stack 'a init => {
   /*
    * The "as this" is implicit and will be formatted away.
@@ -24,6 +25,7 @@ let tmp = {
    */
   val x = 10
 };
+
 
 /**
  * Comment on stackWithAttributes.
@@ -66,6 +68,7 @@ class extendedStackAcknowledgeOverride 'a init => {
 
 let inst = (new extendedStack) [1, 2];
 
+
 /**
  * Recursive classes.
  */
@@ -81,6 +84,7 @@ class firstRecursiveClass init => {
 and secondRecursiveClass init => {
   val v = init;
 };
+
 
 /**
  * For now, mostly for historic reasons, the syntax for type
@@ -173,6 +177,7 @@ class myClassWithAnnotatedReturnType
   method y = init;
 };
 
+
 /**
  * May include a trailing semi after type row.
  */
@@ -186,6 +191,7 @@ class myClassWithAnnotatedReturnType2
   method y = init;
 };
 
+
 /**
  * May use equals sign, and may include colon if so.
  */
@@ -198,6 +204,7 @@ class myClassWithAnnotatedReturnType3
   method x: int = init;
   method y: int = init;
 };
+
 
 /**
  * The one difference between class_constructor_types and expression
@@ -258,6 +265,7 @@ let module HasTupleClasses: {
    */
   class exportedClass =
     class myClassWithAnnotatedReturnType3;
+
   /**
    * anotherExportedClass.
    */
@@ -273,6 +281,7 @@ class intTuplesHardcoded = (
   8,
   8
 );
+
 
 /**
  * Note that the inner tupleClass doesn't have the "class" prefix because
@@ -300,11 +309,13 @@ let incrementMyClassInstance:
 
 class myClassWithNoTypeParams = {};
 
+
 /**
  * The #myClassWithNoTypeParams should be treated as "simple"
  */
 type optionalMyClassSubtype 'a =
   option #myClassWithNoTypeParams as 'a;
+
 
 /**
  * Remember, "class type" is really "class_instance_type" (which is the type of
@@ -326,6 +337,7 @@ class type addablePointClassType = {
     addablePointClassType =>
     int
 };
+
 
 /**
  * Class constructor types can be annotated.

@@ -1,4 +1,5 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
+
 let run () => TestUtils.printSection "Basic Structures";
 
 while something {
@@ -255,6 +256,7 @@ if (10 < 100) {
   print_string "All bets are off."
 };
 
+
 /**                            TYPE CONSTRAINTS
  *============================================================================
  */
@@ -321,6 +323,7 @@ let (tupleItem, withOutsideTypeConstraint): (
   20
 );
 
+
 /**                        Immutable Lists
  * ============================================================================
  */
@@ -377,6 +380,7 @@ let nestedMatchWithWhen lstLst =>
     }
   | [] => 0
   };
+
 
 /**
  * Aliasing with "as" during matches.
@@ -439,6 +443,7 @@ let secondItem = arrayWithTwo.(1);
 
 /* Set an array item at index 1 */
 arrayWithTwo.(1) = 300;
+
 
 /**
  *                                STRINGS
@@ -514,6 +519,7 @@ let funcWithTypeLocallyAbstractTypes
     b
     (c: atype => btype => unit) =>
   c a b;
+
 
 /**
  * Records:

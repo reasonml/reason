@@ -3,6 +3,7 @@
 /*
  * Testing infix wrapping
  */
+
 let reallyLongIdent = 100;
 
 let andYetAnotherReallyLongIdent = 30;
@@ -30,13 +31,16 @@ let test = 10;
        And it still works correctly. */
 let test = 10;
 
+
 /** Include multiple opening stars if you like.
     And it will still work. */
 let test = 10;
 
+
 /** This comment will be corrected.
     when printed. */
 let test = 10;
+
 
 /**  Comments with text on line zero
  *   Still work well with comments that have stars on the left side.
@@ -325,38 +329,38 @@ let myList = [
 
 let myList = [
   1,
-  2,  /*no space after two comma    */
+  2, /*no space after two comma    */
   3
 ];
 
 let myList = [
   1,
-  2,  /*same w space after two comma    */
+  2, /*same w space after two comma    */
   3
 ];
 
 /* End of line comments */
 let myList = [
   1,
-  2,  /*no space after two comma    */
+  2, /*no space after two comma    */
   3
 ];
 
 let myList = [
   1,
-  2,  /*same w space after two comma    */
+  2, /*same w space after two comma    */
   3
 ];
 
 let myRec = {
   x: 1,
-  y: 2,  /*no space after two    */
+  y: 2, /*no space after two    */
   z: 3
 };
 
 let myRec = {
   x: 1,
-  y: 2,  /*same w space after two    */
+  y: 2, /*same w space after two    */
   z: 3
 };
 
@@ -369,7 +373,7 @@ let myList = [
 
 let myList = [
   1,
-  2,  /**/
+  2, /**/
   3
 ];
 
@@ -402,8 +406,8 @@ type hasABunch = {
   fieldtwo: list int,
   fieldThree: list string,
   fieldFour: nameAge
-}
-/* Comment at bottom of record type def */;
+  /* Comment at bottom of record type def */
+};
 
 type functionsInARecord = {
   adder: int => int,
@@ -1897,7 +1901,6 @@ let myFunc
 
 type inputEchoRecord 'a = {inputIs: 'a};
 
-/* With setting ReturnValOnSameLine */
 let df_locallyAbstractFunc
     (type a)
     (type b)
@@ -1905,12 +1908,14 @@ let df_locallyAbstractFunc
   inputIs: input
 };
 
+/* With setting ReturnValOnSameLine */
 let df_locallyAbstractFuncNotSugared
     (type a)
     (type b)
     (input: a) => {
   inputIs: input
 };
+
 
 /**
  * The following is automatically expanded at the parser level into:
@@ -1929,6 +1934,7 @@ let df_locallyAbstractFuncAnnotated:
   type a. a => a => inputEchoRecord a =
   fun (input: a) (input: a) => {inputIs: input};
 
+
 /**
  * The following is automatically expanded at the parser level into:
  *
@@ -1944,6 +1950,7 @@ let df_locallyAbstractFuncAnnotated:
  */
 let df_locallyAbstractFuncAnnotatedRef:
   type a. a => a => inputEchoRecord a = df_locallyAbstractFuncAnnotated;
+
 
 /**
  * Doesn't do what you want:
@@ -1977,6 +1984,7 @@ let df_locallyAbstractFuncAnnotated:
     {inputIs: input},
     {inputIs: input2}
   );
+
 
 /**
  * This case shows why inferring what was originally sugar type a b . blahblah
@@ -2130,6 +2138,7 @@ and anotherRecursiveType =
   /* Second variant of second mutually recursive */
   | Recursive of (option recursiveType);
 
+
 /**
  * Commented GADT definition.
  */
@@ -2186,16 +2195,16 @@ type colors =
 let blah arg =>
   switch arg {
   /* Comment before Bar */
-  /* Comment between bar/pattern */
-  | Red _ => 1
+  | /* Comment between bar/pattern */
+    Red _ => 1
   /* Comment Before non-first bar */
-  /* Comment betwen bar/pattern */
-  /* These will be formatted into the wrong place
-   * and there's nothing you can do about it because
-   * the bar essentially doesn't exist once parsed -
-   * its location is lost - "case"s don't have locs
-   */
-  | Black _ => 0
+  | /* Comment betwen bar/pattern */
+    /* (In OCaml but not Reason) These will be formatted into the wrong place
+     * and there's nothing you can do about it because the bar essentially
+     * doesn't exist once parsed - its location is lost - "case"s don't have
+     * locs.
+     */
+    Black _ => 0
   | Green _ => 0
   };
 
@@ -2208,8 +2217,7 @@ let blah =
 let blahCurriedX x =>
   fun
   /* Comment before first bar */
-  /* Comment between first bar and OR pattern */
-  | Red x
+  | /* Comment between first bar and OR pattern */ Red x
   | Black x
   | Green x => 1
   /* Comment before second bar */
@@ -2294,6 +2302,7 @@ type polymorphicCommentedType
   /* Commenting the second type variable */'b =
   list ('a, 'b);
 
+
 /**
  * Commenting the entire record definition.
  */
@@ -2305,6 +2314,7 @@ type withThreeFieldsCommented = {
   /* Commenting the third field */
   occupationCommented: string
 };
+
 
 /**
  * Commenting the entire record.
@@ -2645,6 +2655,7 @@ let ternaryResult =
 
 let returningATernary x y => x > y ? "hi" : "by";
 
+
 /** Testing some special comment alignment features */
 /* Comments can be written like this.
    No leading star is required on each line.
@@ -2661,13 +2672,16 @@ let test =
        And it still works correctly. */
 let test = 10;
 
+
 /** Include multiple opening stars if you like.
     And it will still work. */
 let test = 10;
 
+
 /** This comment will be corrected.
     when printed. */
 let test = 10;
+
 
 /**  Comments with text on line zero
  *   Still work well with comments that have stars on the left side.
