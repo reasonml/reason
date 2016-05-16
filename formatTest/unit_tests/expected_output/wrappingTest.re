@@ -2338,8 +2338,7 @@ let callMeWithComments
     (b: int)
     :/* Comment before return type annotation "int" */int =>
   /* Comment above return value a + b + c */
-  a +
-    b + c;
+  a + b + c;
 
 let result =
   /* Comment before function to invoke */

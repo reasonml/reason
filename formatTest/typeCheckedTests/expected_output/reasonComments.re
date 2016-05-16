@@ -145,12 +145,12 @@ type anotherpoint = {
 
 type t = (int, int); /* End of line on t */
 
-type t2 = (int, int);
+type t2 =
+  (int, int) /* End of line on (int, int) */;
 
-/* End of line on (int, int) */
-type t3 = (int, int);
+type t3 =
+  (int, int) /* End of line on (int, int) */;
 
-/* End of line on (int, int) */
 type variant =
   | X of (int, int) /* End of line on X */
   | Y of (int, int) /* End of line on Y */;
@@ -171,16 +171,13 @@ let res =
   switch (X (2, 3)) {
   | X (0, 0) =>
     /* After X arrow */
-    "result of X"
-  /* End of X body line */
+    "result of X" /* End of X body line */
   | X (1, 0) =>
     /* Before X's arrow */
-    "result of X"
-  /* End of X body line */
+    "result of X" /* End of X body line */
   | X _ =>
     /* After X _ arrow */
-    "result of X"
-  /* End of X body line */
+    "result of X" /* End of X body line */
   /* Above Y line */
   | Y _ =>
     /* Comment above Y body */
@@ -357,3 +354,10 @@ let blahCurriedX x =>
   | Green x => 0 /* After second green */;
 
 /* On next line after blahCurriedX def */
+let name_equal x y => x == y;
+
+let equal i1 i2 =>
+  i1.contents === i2.contents && true /* most unlikely first */;
+
+let equal i1 i2 =>
+  compare (compare 0 0) (compare 1 1) /* END OF LINE HERE */;

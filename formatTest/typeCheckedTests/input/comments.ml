@@ -119,3 +119,27 @@ type 'a typeParamPointWithComments = {
   (* Final row of record *)
 }
 
+
+let name_equal x y = x = y
+
+let equal i1 i2 =
+  i1.contents == i2.contents && true (* most unlikely first *)
+
+let equal i1 i2 =
+  compare (compare 0 0) (compare 1 1) (* END OF LINE HERE *)
+
+
+
+module Temp = struct
+  let v = true
+  let logIt str () = print_string str
+end
+
+let store_attributes arg =
+  let attributes_file = "test" in
+  let proc_name = attributes_file ^ ".proc" in
+  let should_write = (* only overwrite defined procedures *)
+    Temp.v ||
+    not (Temp.v) in
+  if should_write then
+    Temp.logIt proc_name ()

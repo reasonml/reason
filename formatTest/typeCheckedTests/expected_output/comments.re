@@ -117,3 +117,27 @@ type typeParamPointWithComments 'a = {
   y: 'a /* y field */
   /* Final row of record */
 };
+
+let name_equal x y => x == y;
+
+let equal i1 i2 =>
+  i1.contents === i2.contents && true /* most unlikely first */;
+
+let equal i1 i2 =>
+  compare (compare 0 0) (compare 1 1) /* END OF LINE HERE */;
+
+let module Temp = {
+  let v = true;
+  let logIt str () => print_string str;
+};
+
+let store_attributes arg => {
+  let attributes_file = "test";
+  let proc_name = attributes_file ^ ".proc";
+  let should_write =
+    /* only overwrite defined procedures */
+    Temp.v || not Temp.v;
+  if should_write {
+    Temp.logIt proc_name ()
+  }
+};
