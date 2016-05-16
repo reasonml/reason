@@ -104,7 +104,7 @@ type listConfig = {
   (* If you are only grouping something for the sake of visual appearance, and
    * not forming an actual conceptual sequence of items, then this is often
    * useful. For example, if you're appending a semicolon etc. *)
-  attemptInterleaveComments: bool;
+  interleaveComments: bool;
   (* Whether or not to render the final separator *)
   renderFinalSep: bool;
   break: whenToDoSomething;
@@ -923,7 +923,7 @@ let makeListConfig
     ?(newlinesAboveItems=0)
     ?(newlinesAboveComments=0)
     ?(newlinesAboveDocComments=0)
-    ?(attemptInterleaveComments=true)
+    ?(interleaveComments=true)
     ?listConfigIfCommentsInterleaved
     ?(listConfigIfEolCommentsInterleaved)
     ?(renderFinalSep=false)
@@ -941,7 +941,7 @@ let makeListConfig
     newlinesAboveItems;
     newlinesAboveComments;
     newlinesAboveDocComments;
-    attemptInterleaveComments;
+    interleaveComments;
     listConfigIfCommentsInterleaved;
     listConfigIfEolCommentsInterleaved;
     renderFinalSep;
@@ -965,7 +965,7 @@ let makeEasyList
     ?(newlinesAboveItems=0)
     ?(newlinesAboveComments=0)
     ?(newlinesAboveDocComments=0)
-    ?(attemptInterleaveComments=true)
+    ?(interleaveComments=true)
     ?(renderFinalSep=false)
     ?(break=Never)
     ?(wrap=("", ""))
@@ -981,7 +981,7 @@ let makeEasyList
       ~newlinesAboveItems
       ~newlinesAboveComments
       ~newlinesAboveDocComments
-      ~attemptInterleaveComments
+      ~interleaveComments
       (* This is unused at this point - separators are handled by our pretty printer,
          not Easy_format (so that we can interleave comments intelligently) *)
       ~renderFinalSep
@@ -1005,7 +1005,7 @@ let makeList
     ?(newlinesAboveItems=0)
     ?(newlinesAboveComments=0)
     ?(newlinesAboveDocComments=0)
-    ?(attemptInterleaveComments=true)
+    ?(interleaveComments=true)
     ?listConfigIfCommentsInterleaved
     ?listConfigIfEolCommentsInterleaved
     ?(renderFinalSep=false)
@@ -1023,7 +1023,7 @@ let makeList
       ~newlinesAboveItems
       ~newlinesAboveComments
       ~newlinesAboveDocComments
-      ~attemptInterleaveComments
+      ~interleaveComments
       ?listConfigIfCommentsInterleaved
       ?listConfigIfEolCommentsInterleaved
       ~renderFinalSep
@@ -1051,7 +1051,7 @@ let makeAppList delimiter l =
 
 let ensureSingleTokenSticksToLabel x =
   makeList
-    ~attemptInterleaveComments:true
+    ~interleaveComments:true
     ~listConfigIfCommentsInterleaved: (
       fun currentConfig -> {currentConfig with break=Always_rec; postSpace=true; indent=0; inline=(true, true)}
     )
@@ -1306,7 +1306,7 @@ let rec interleaveComments ?endMaxChar listConfig layoutListItems comments =
   match (layoutListItems, endMaxChar) with
     | ([], None)-> ([], comments)
     | ([], Some endMax)->
-      if not listConfig.attemptInterleaveComments then
+      if not listConfig.interleaveComments then
         ([], comments)
       else
         let (commentsInSequence, unconsumed) =
@@ -1321,7 +1321,7 @@ let rec interleaveComments ?endMaxChar listConfig layoutListItems comments =
        * A<space>[sep<space>B]
        * And then trimming the trailing white space as usual.
        **)
-      let (onItem, endOfLineComments, unconsumed) = match (listConfig.attemptInterleaveComments, hd) with
+      let (onItem, endOfLineComments, unconsumed) = match (listConfig.interleaveComments, hd) with
         | (true, SourceMap (loc, sourceMappedLayout)) ->
           partitionItemComments loc comments
         | _ -> ([], [], comments)
@@ -1577,12 +1577,37 @@ let partitionFinalWrapping listTester wrapFinalItemSetting x =
         else
           Some (List.rev revEverythingButLast, last)
 
-let semiTerminated term = makeList ~attemptInterleaveComments:false [term; atom ";"]
+let semiTerminated term = makeList ~interleaveComments:false [term; atom ";"]
 
 
 (* postSpace is so that when comments are interleaved, we still use spacing rules. *)
 let makeLetSequence letItems =
-  makeList ~wrap:("{", "}") ~postSpace:true ~break:Always_rec ~inline:(true, false) letItems
+  makeList
+    ~break:Always_rec
+    ~inline:(true, false)
+    ~wrap:("{", "}")
+    ~newlinesAboveComments:0
+    ~newlinesAboveItems:0
+    ~newlinesAboveDocComments:1
+    ~renderFinalSep:false
+    ~postSpace:true
+    ~sep:";"
+    letItems
+
+(* postSpace is so that when comments are interleaved, we still use spacing rules. *)
+let makeUngaurdedLetSequence letItems =
+  makeList
+    ~break:Always_rec
+    ~inline:(true, true)
+    ~wrap:("", "")
+    ~newlinesAboveComments:0
+    ~indent:0
+    ~newlinesAboveItems:0
+    ~newlinesAboveDocComments:1
+    ~renderFinalSep:false
+    ~postSpace:true
+    ~sep:";"
+    letItems
 
 let formatSimpleAttributed x y =
   makeList
@@ -1663,7 +1688,7 @@ let formatIndentedApplication delimiter headApplicationItem argApplicationItems 
     (match delimiter with
       | None -> headApplicationItem
       | Some s ->
-        makeList ~postSpace:true ~attemptInterleaveComments:false [headApplicationItem; atom (s)]
+        makeList ~postSpace:true ~interleaveComments:false [headApplicationItem; atom (s)]
     )
     (makeAppList delimiter argApplicationItems)
 
@@ -1736,11 +1761,11 @@ let typeApplicationFinalWrapping typeApplicationItems =
 (* add parentheses to binders when they are in fact infix or prefix operators *)
 let protectIdentifier txt =
   if not (needs_parens txt) then atom txt
-  else if needs_spaces txt then makeList ~wrap:("(", ")") ~pad:(true, true) [atom txt]
+  else if needs_spaces txt then makeList ~interleaveComments:false ~wrap:("(", ")") ~pad:(true, true) [atom txt]
   else atom ("(" ^ txt ^ ")")
 
 let protectLongIdentifier longPrefix txt =
-  makeList [longPrefix; atom "."; protectIdentifier txt]
+  makeList ~interleaveComments:false [longPrefix; atom "."; protectIdentifier txt]
 
 let combinedAppItems (regularItems, sugaredItems, delimiter) =
     (regularItems @ sugaredItems, delimiter)
@@ -1777,7 +1802,7 @@ class printer  ()= object(self:'self)
     | Lident s -> (protectIdentifier s)
     | Ldot(longPrefix, s) ->
         (protectLongIdentifier (self#longident longPrefix) s)
-    | Lapply (y,s) -> makeList [self#longident y; atom "("; self#longident s; atom ")";]
+    | Lapply (y,s) -> makeList ~interleaveComments:false [self#longident y; atom "("; self#longident s; atom ")";]
 
   (* This form allows applicative functors. *)
   method longident_class_or_type_loc x = self#longident x.txt
@@ -2513,7 +2538,7 @@ class printer  ()= object(self:'self)
    * remove a ton of complexity from the parser/printer.
    *)
   method sugar_expr e =
-    let access op cls e1 e2 = makeList [
+    let access op cls e1 e2 = makeList ~interleaveComments:false [
       (* Important that this be not breaking - at least to preserve same
          behavior as stock desugarer. It might even be required (double check
          in parser.mly) *)
@@ -3524,7 +3549,7 @@ class printer  ()= object(self:'self)
          * first brace. *)
          let bindingsLayout = (self#bindings (rf, l)) in
          let bindingsLoc = self#bindingsLocationRange l in
-         let bindingsSourceMapped = SourceMap (bindingsLoc, semiTerminated bindingsLayout) in
+         let bindingsSourceMapped = SourceMap (bindingsLoc, bindingsLayout) in
          bindingsSourceMapped::(self#letList e)
       | ([], Pexp_open (ovf, lid, e)) ->
         let listItems = (self#letList e) in
@@ -3571,7 +3596,7 @@ class printer  ()= object(self:'self)
             (* Just like the bindings, have to synthesize a location since the
              * Pexp location is parsed (potentially) beginning with the open
              * brace {} in the let sequence. *)
-            let openSourceMapped = SourceMap (lid.loc, semiTerminated openLayout) in
+            let openSourceMapped = SourceMap (lid.loc, openLayout) in
             openSourceMapped::listItems
       | ([], Pexp_letmodule (s, me, e)) ->
           let prefixText = "let module" in
@@ -3587,7 +3612,7 @@ class printer  ()= object(self:'self)
           (* Just like the bindings, have to synthesize a location since the
            * Pexp location is parsed (potentially) beginning with the open
            * brace {} in the let sequence. *)
-          let letModuleSourceMapped = SourceMap (letModuleLoc, semiTerminated letModuleLayout) in
+          let letModuleSourceMapped = SourceMap (letModuleLoc, letModuleLayout) in
            letModuleSourceMapped::(self#letList e)
       | ([], Pexp_sequence (({pexp_desc=Pexp_sequence _ }) as e1, e2))
       | ([], Pexp_sequence (({pexp_desc=Pexp_let _      }) as e1, e2))
@@ -3598,7 +3623,7 @@ class printer  ()= object(self:'self)
           (* It's kind of difficult to synthesize a location here in the case
            * where this is the first expression in the braces. We could consider
            * deeply inspecting the leftmost token/term in the expression. *)
-          let e1SourceMapped = SourceMap (e1.pexp_loc, semiTerminated e1Layout) in
+          let e1SourceMapped = SourceMap (e1.pexp_loc, e1Layout) in
           e1SourceMapped::(self#letList e2)
       | _ ->
           let exprTermLayout = (self#expression exprTerm) in
@@ -3772,8 +3797,10 @@ class printer  ()= object(self:'self)
                     | _ -> assert false)
               | Pexp_setfield (e1, li, e2) ->
                 label ~space:true
-                  (makeList ~postSpace:true [
-                    label (makeList [self#simple_enough_to_be_lhs_dot_send e1; atom "."]) (self#longident_loc li);
+                  ( makeList ~postSpace:true [
+                    label
+                      (makeList ~interleaveComments:false [self#simple_enough_to_be_lhs_dot_send e1; atom "."])
+                      (self#longident_loc li);
                     (atom "=")
                   ])
                   (self#expression e2)
@@ -3903,8 +3930,10 @@ class printer  ()= object(self:'self)
     (* I don't think this pexp_attributes logic is correct *)
     if x.pexp_attributes <> [] then self#simple_expression x
     else match x.pexp_desc with
-      | Pexp_field (e, li) -> makeList [self#simple_enough_to_be_lhs_dot_send e; atom "."; self#longident_loc li]
-      | Pexp_send (e, s) ->  makeList [self#simple_enough_to_be_lhs_dot_send e; atom "#";  atom s]
+      | Pexp_field (e, li) ->
+          makeList ~interleaveComments:false [self#simple_enough_to_be_lhs_dot_send e; atom "."; self#longident_loc li]
+      | Pexp_send (e, s) ->
+          makeList ~interleaveComments:false [self#simple_enough_to_be_lhs_dot_send e; atom "#";  atom s]
       | _ -> self#simple_expression x
 
   (*
@@ -5171,11 +5200,11 @@ class printer  ()= object(self:'self)
       *)
       let bar xx = makeList ~postSpace:true [atom "|"; xx] in
       let appendWhereAndArrow p = match pc_guard with
-          | None -> makeList ~attemptInterleaveComments:false ~postSpace:true [p; atom "=>"]
+          | None -> makeList ~interleaveComments:false ~postSpace:true [p; atom "=>"]
           | Some g ->
             (* when x should break as a whole - extra list added around it to make it break as one *)
             let withWhen = label ~space:true p (makeList ~break:Never ~inline:(true, true) ~postSpace:true [label ~space:true (atom "when") (self#expression g)]) in
-            makeList ~attemptInterleaveComments:false ~inline:(true, true) ~postSpace:true [withWhen; atom "=>"]
+            makeList ~interleaveComments:false ~inline:(true, true) ~postSpace:true [withWhen; atom "=>"]
       in
 
       let rec appendWhereAndArrowToLastOr = function
@@ -5188,16 +5217,16 @@ class printer  ()= object(self:'self)
           formattedHd::(appendWhereAndArrowToLastOr tl)
         )
       in
-
       let orsWithWhereAndArrowOnLast = appendWhereAndArrowToLastOr theOrs in
-      let sequenceIndent = 0 (*indentForUnguardedSequence settings*) in
       let rhs =
         if allowUnguardedSequenceBodies then
           match (self#under_pipe#letList pc_rhs) with
+            (* TODO: Still render a list with located information here so that
+               comments (eol) are interleaved *)
             | [hd] -> hd
             (* In this case, we don't need any additional indentation, because there aren't
                wrapping {} which would cause zero indentation to look strange. *)
-            | lst -> makeList ~indent:sequenceIndent ~break:Always_rec ~inline:(true, true) lst
+            | lst -> makeUngaurdedLetSequence lst
         else self#under_pipe#expression pc_rhs in
       let row =
         let withoutBars = appendLabelToLast orsWithWhereAndArrowOnLast rhs in
