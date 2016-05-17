@@ -427,7 +427,7 @@ let six = increment 5;
 let thirteen = increment (double 6);
 ```
 
-####
+#### 
 
 Functions can return any expression, but "block expressions" are often chosen
 because they allow declaring temporary, block-scoped variables, and allow
@@ -482,7 +482,7 @@ logToUser ();
 ```
 
 
-####
+#### 
 You can pass/destructure records too. (If record type
 definitions are in scope).
 
@@ -980,7 +980,7 @@ type carOwner =
 let CarOwner name {model: model, make: make} = CarOwner "Jo" toyota;
 ```
 
-#####
+##### 
 This deep pattern matching is especially expressive when used in `switch`
 expressions. In this example, the function `hasExactlyTwoCars` has specified
 what to return in four cases in very little code. Even more helpful, is the
