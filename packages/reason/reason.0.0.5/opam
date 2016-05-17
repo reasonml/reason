@@ -1,0 +1,36 @@
+opam-version: "1.2"
+name: "reason"
+version: "0.0.5"
+maintainer: "Jordan Walke <jordojw@gmail.com>"
+authors: [ "Jordan Walke <jordojw@gmail.com>" ]
+license: "MIT"
+homepage: "https://github.com/facebook/reason"
+doc: "http://facebook.github.io/reason"
+bug-reports: "https://github.com/facebook/reason/issues"
+dev-repo: "https://github.com/facebook/reason.git"
+tags: [ "syntax" ]
+substs: [ "pkg/META" ]
+build: [
+  ["make" "compile_error"]
+  ["ocaml" "pkg/build.ml" "native=%{ocaml-native}%"
+                         "native-dynlink=%{ocaml-native-dynlink}%"
+                         "utop=%{utop:installed}%"]
+]
+build-test: [
+  "ocamlbuild" "-classic-display" "-use-ocamlfind" "src_test/test_reason.byte" "--"
+]
+depends: [
+  "easy-format"   {>= "1.2.0"}
+  "ocamlfind"     {build}
+  "ounit"         {test}
+  "utop"          {>= "1.17"}
+  "BetterErrors"  {>= "0.0.1"}
+  "menhir"        {>= "20160303"}
+  "merlin_extend" {> "0.2"}
+]
+depopts: [
+]
+conflicts: [
+  "utop" {< "1.17"}
+]
+available: [ ocaml-version >= "4.02.3" ]
