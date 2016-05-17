@@ -33,6 +33,21 @@ opam pin add -y reason git@github.com:facebook/reason.git#0.0.5
 
 ```
 
+Test Installation
+----------
+
+Test the [installation](#install-stable) by compiling the following program:
+
+
+```sh
+echo print_string \"Hello world\" > hello.re
+
+ocamlopt -pp refmt -impl hello.re
+
+./a.out
+
+```
+
 Get Started Now
 ---------------
 Download the up-to-date [docs](https://github.com/facebook/Reason/archive/docs.zip) which guide you through the basic syntax and toolchain features.
