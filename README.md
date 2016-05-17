@@ -40,11 +40,11 @@ Test the [installation](#install-stable) by compiling the following program:
 
 
 ```sh
-echo print_string \"Hello world\" > hello.re
+echo print_string \"Hello world\" > Hello.re
 
-rebuild hello.native # Automatically generates hello.native from hello.re
+rebuild hello.native # Automatically generates Hello.native from Hello.re
 
-./hello.native
+./Hello.native
 
 ```
 
