@@ -42,7 +42,7 @@ Test the [installation](#install-stable) by compiling the following program:
 ```sh
 echo print_string \"Hello world\" > Hello.re
 
-rebuild hello.native # Automatically generates Hello.native from Hello.re
+rebuild Hello.native # Automatically generates Hello.native from Hello.re
 
 ./Hello.native
 
