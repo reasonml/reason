@@ -1,8 +1,8 @@
 
-Reason: A New Interface To The ML Language
+Reason: Build Systems Rapidly
 =========================================
 
-- Approachable ES6 style syntax.
+- Approachable style syntax.
 - Powerful, automatic source code formatting.
 - Adopt Incrementally with straightforward `JavaScript/C` interop.
 - Bare metal compilation - *No Virtual Machine*.
