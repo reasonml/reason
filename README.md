@@ -2,7 +2,7 @@
 Reason: Build Systems Rapidly
 =========================================
 
-- Approachable style syntax.
+- Approachable syntax.
 - Powerful, automatic source code formatting.
 - Adopt Incrementally with straightforward `JavaScript/C` interop.
 - Bare metal compilation - *No Virtual Machine*.
