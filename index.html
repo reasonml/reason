@@ -695,8 +695,8 @@ let aTuple = HasTuple (1, 2, 3);
 let notTuple = NoTuple 1 2 3;
 
 let sumsZero = switch x {
-  | HasTuple (a, b, c) => a + b + b == 0
-  | NoTuple a b c => a + b + b == 0
+  | HasTuple (a, b, c) => a + b + c == 0
+  | NoTuple a b c => a + b + c == 0
 };
 
 ```
