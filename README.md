@@ -14,18 +14,17 @@ Install Stable
 ```sh
 # On OSX, install opam via Homebrew:
 brew update
-brew install opam --HEAD
+brew install opam
 # On Linux, see here (you will need opam >= 1.2.2): http://opam.ocaml.org/doc/Install.html
 
 opam init
 # Add this to your ~/.bashrc (or ~/.zshrc):
 #   eval `opam config env`
 
-opam update
 opam switch 4.02.3
-opam pin add -y merlin git@github.com:the-lambda-church/merlin.git#reason-0.0.1
-opam pin add -y merlin_extend git@github.com:let-def/merlin-extend.git#reason-0.0.1
-opam pin add -y reason git@github.com:facebook/reason.git#0.0.5
+opam pin add -y merlin https://github.com/the-lambda-church/merlin.git#reason-0.0.1
+opam pin add -y merlin_extend https://github.com/let-def/merlin-extend.git#reason-0.0.1
+opam pin add -y reason https://github.com/facebook/reason.git#0.0.5
 
 ```
 
