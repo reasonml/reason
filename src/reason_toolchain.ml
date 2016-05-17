@@ -75,6 +75,8 @@
 open Location
 open Lexing
 
+module S = MenhirLib.General (* Streams *)
+
 let invalidLex = "invalidCharacter.orComment.orString"
 let syntax_error_str err loc =
   if !Reason_config.recoverable then
@@ -323,6 +325,26 @@ module OCaml_syntax = struct
     Pprintast.structure formatter implementation
 end
 
+
+(* The following logic defines our own Error object
+ * and register it with ocaml so it knows how to print it
+ *)
+type error = Syntax_error of string
+
+exception Error of Location.t * error
+
+let report_error ppf (Syntax_error err) =
+  Format.(fprintf ppf "%s" err)
+
+let () =
+  Location.register_error_of_exn
+    (function
+     | Error (loc, err) ->
+        Some (Location.error_of_printer loc report_error err)
+     | _ ->
+        None
+     )
+
 module JS_syntax = struct
   module I = Reason_parser.MenhirInterpreter
   module Lexer_impl = Reason_lexer
@@ -372,6 +394,33 @@ module JS_syntax = struct
     let t = supplier.get_token () in
     supplier.last_token <- Some t;
     t
+
+  (* read last token's location from a supplier *)
+  let last_token_loc supplier =
+    match supplier.last_token with
+    | Some (_, s, e) ->
+       {
+         loc_start = s;
+         loc_end = e;
+         loc_ghost = false;
+       }
+    | None -> assert false
+
+  (* get the stack of a checkpoint *)
+  let stack checkpoint =
+    match checkpoint with
+    | I.HandlingError env ->
+       I.stack env
+    | _ ->
+       assert false
+
+  (* get state number of a checkpoint *)
+  let state checkpoint : int =
+    match Lazy.force (stack checkpoint) with
+    | S.Nil ->
+       0
+    | S.Cons (I.Element (s, _, _, _), _) ->
+             I.number s
 
   (* [loop_handle_yacc] mimic yacc's error handling mechanism in menhir.
      When it hits an error state, it pops up the stack until it finds a
@@ -428,20 +477,26 @@ module JS_syntax = struct
        let checkpoint = I.resume checkpoint in
        loop_handle_yacc supplier in_error checkpoint
     | I.HandlingError env ->
-       let checkpoint = I.resume checkpoint in
-       (* Enter error state *)
-       loop_handle_yacc supplier true checkpoint
+       if !Reason_config.recoverable then
+         let checkpoint = I.resume checkpoint in
+         (* Enter error recovery state *)
+         loop_handle_yacc supplier true checkpoint
+       else
+         (* If not in a recoverable state, fail early by raising a
+          * customized Error object
+          *)
+         let loc = last_token_loc supplier in
+         let state = state checkpoint in
+         (* Check the error database to see what's the error message
+          * associated with the current parser state
+          *)
+         let msg = Reason_parser_message.message state in
+         let msg_with_state = Printf.sprintf "%d: %s" state msg in
+         raise (Error (loc, (Syntax_error msg_with_state)))
     | I.Rejected ->
        begin
-         match supplier.last_token with
-         | Some (_, s, e) ->
-            let loc = {
-                loc_start = s;
-                loc_end = e;
-                loc_ghost = false;
-              } in
-            raise Syntaxerr.(Error(Syntaxerr.Other loc))
-         | None -> assert false
+         let loc = last_token_loc supplier in
+         raise Syntaxerr.(Error(Syntaxerr.Other loc))
        end
     | I.Accepted v ->
        (* The parser has succeeded and produced a semantic value. *)
@@ -501,6 +556,15 @@ module JS_syntax = struct
         if !Location.input_name = "//toplevel//"
         then maybe_skip_phrase lexbuf;
         raise(Syntaxerr.Error(Syntaxerr.Other loc))
+    | Error _ as x ->
+       let loc = Location.curr lexbuf in
+       if !Location.input_name = "//toplevel//"
+       then
+         let _ = maybe_skip_phrase lexbuf in
+         raise(Syntaxerr.Error(Syntaxerr.Other loc))
+       else
+         let _ = print_string !Location.input_name in
+         raise x
     | x -> raise x
 
   let format_interface_with_comments (signature, comments) formatter =

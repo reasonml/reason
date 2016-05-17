@@ -1076,6 +1076,43 @@ conflicts.
 %type <Parsetree.expression> parse_expression
 %start parse_pattern
 %type <Parsetree.pattern> parse_pattern
+
+
+/* Instead of reporting an error directly, productions specified
+ * below will be reduced first and poped up in the stack to a higher
+ * level production.
+ *
+ * This is essential to error reporting as it is much friendier to provide
+ * a higher level error (e.g., "Expecting the parens to be closed" )
+ * as opposed to a low-level one (e.g., "Expecting to finish
+ * current type definition").
+ *
+ * See Menhir's manual for more details.
+ */
+%on_error_reduce _curried_binding_return_typed
+                 _structure_item let_binding_body
+                 let_binding_impl
+                 post_item_attributes
+                 _expr
+                 _simple_expr
+                 less_aggressive_simple_expression
+                 type_longident
+                 _non_arrowed_simple_core_type
+                 _core_type
+                 _core_type2
+                 _pattern_optional_constraint
+                 attributes
+                 type_constraint_right_of_colon
+                 constr_longident
+                 _simple_pattern_not_ident
+                 pattern
+                 optional_type_parameters
+                 nonrec_flag
+                 _simple_non_labeled_expr_list_as_tuple
+                 val_ident
+                 opt_semi
+                 curried_binding
+                 expr_optional_constraint
 %%
 
 /* Entry points */
