@@ -11,7 +11,6 @@ dev-repo: "https://github.com/facebook/reason.git"
 tags: [ "syntax" ]
 substs: [ "pkg/META" ]
 build: [
-  ["make" "compile_error"]
   ["ocaml" "pkg/build.ml" "native=%{ocaml-native}%"
                          "native-dynlink=%{ocaml-native-dynlink}%"
                          "utop=%{utop:installed}%"]
