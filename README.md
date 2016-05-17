@@ -42,9 +42,9 @@ Test the [installation](#install-stable) by compiling the following program:
 ```sh
 echo print_string \"Hello world\" > hello.re
 
-ocamlopt -pp refmt -impl hello.re
+rebuild hello.native
 
-./a.out
+./hello.native
 
 ```
 
