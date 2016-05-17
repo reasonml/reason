@@ -518,7 +518,7 @@ body.no-literate .content pre > code:hover::-webkit-scrollbar-thumb {
   body:not(.no-literate) .content-root {
     background-color: #fdfcfc;
     -webkit-box-shadow: inset 780px 0 #fff, inset 781px 0 #e7e7e7, inset 790px 0 3px -10px rgba(0,0,0,0.05);
-    box-shadow: inset 780px 0 #fff, inset 781px 0 #e7e7e7, inset 790px 0 3px -10px rgba(0,0,0,0.05);
+    /* box-shadow: inset 780px 0 #fff, inset 781px 0 #e7e7e7, inset 790px 0 3px -10px rgba(0,0,0,0.05); */
   }
 }
 @media (min-width: 1180px) {
