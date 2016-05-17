@@ -1,7 +1,7 @@
 
 Installing
 ------------------
-Read the [docs](https://github.com/facebook/Reason/tree/docs) for installation instructions.
+Read the [docs](https://github.com/facebook/reason/tree/docs) for installation instructions.
 
 
 Upgrading Reason
