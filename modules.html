@@ -1,0 +1,376 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset='utf-8'>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width">
+
+  <title>Reason - compare to JavaScript</title>
+
+  <!-- Flatdoc -->
+  <script src='support/vendor/jquery.js'></script>
+  <script src='legacy.js'></script>
+  <script src="highlightJs/build/highlight.pack.js"></script>
+  <link  href='highlightJs/src/styles/xcode.css' rel='stylesheet'>
+  <script src='flatdoc.js'></script>
+
+  <!-- Flatdoc theme -->
+  <link  href='theme-white/style.css' rel='stylesheet'>
+  <script src='theme-white/script.js'></script>
+  <link  href='support/theme.css' rel='stylesheet'>
+  <script src='support/theme.js'></script>
+
+
+
+  <script id="markdown" type="text/markdown" src="javaScriptCompared.html">
+Modules
+===========
+The section below demonstrates the syntax for advanced language constructs such
+as modules.
+
+
+> *Note: This documentation on modules is just a rough sketch, and will be improved*
+
+Basic Modules
+-------
+
+Modules are like records, but with the following differences.
+
+- They are "compile-time" concepts, not easy to pass to standard functions.
+- They may contain types, instead of just values.
+- Their values are specified using `let` bindings.
+- Variables that refer to modules must begin with a capital letter.
+- They form the basis for separate compilation and namespacing.
+
+
+###### Creating Modules
+To create a module, use the `let module` keywords instead of `let`, and ensure
+that the variable name given to the module begins with a capital letter.
+
+```reason
+let module MyModule = {
+  /* Module contents here */
+};
+```
+The contents of modules are placed between the `{}` blocks. In fact, you
+already know how to define module contents - the rules for module contents are
+the exact same as the rules for the contents of `.re` files. Whatever you could
+place in a `.re` file, you may place inside a module definition's `{}` block.
+That means that you can include `let` bindings, and even `type` definitions.
+
+```reason
+let module MyModule = {
+  type twoStrings = (string, string);
+  let makePair = fun s => {
+    let returnVal = (s, s): twoString;
+    returnVal;
+  };
+};
+```
+
+Once a module has been defined, the contents of the module may be accessed much
+like a record using the `.` notation. Furthermore, even a module's declared
+*types* may be accessed using that same `.` notation. This demonstrates
+modules' utility for namespacing.
+
+```reason
+let twoStrings: MyModule.twoString = MyModule.makePair "hello modules";
+```
+
+```reason
+let module MyModule = {
+  let module NestedModule = {
+     let msg = "hello";
+  };
+};
+
+let msg = MyModule.NestedModule.msg;
+```
+
+###### Extending modules
+Contents of modules may be *copied* into other modules by using the `include`
+keyword. Once `include`d, following `let` bindings can "see" the `include`d
+content. This can often fulfill the role of "inheritance".
+
+
+```reason
+let module Login = {
+   let login = fun auth => 0;
+};
+let module RepeatedLogin = {
+  include Login;
+  let loginTwice = fun auth => {
+    (login auth, login auth)
+  };
+};
+```
+
+
+###### Every `.re` file is a module
+Furthermore, every file *is* a module. The file `react.re` implicitly forms a
+module `React`, which can be seen by other source files. The [build
+system](#scalable-development-modules-and-package-visibility) determines which
+particular files can see `React`.
+
+
+
+Signatures
+----------------------------------
+Similar to how records are described by types, modules themselves can be
+described by *module* types, which we call "signatures". Signatures are similar
+to record type definitions, with the following differences:
+
+- They describe the structure of *modules* (which are compile-time constructs)
+  instead of describing *values* (which are runtime constructs).
+- They describe values being inside of modules via the following syntax: `let q: s;` (as opposed to
+  `key:keyType,`).
+- Signatures can include entries for `type` fields - which is admittedly
+  difficult to wrap your head around.
+- Identifiers that refer to signatures must begin with a capital letter.
+- The rules for satisfying signatures are based on "subtyping", whereas records
+  are more rigid.
+
+###### Creating Signatures
+Module signatures are declared using the `module type` keywords.  Module
+signatures define the list of requirements that a module must satisfy in order
+for that module to "match". Those requirements are of the form:
+
+- `let x: typeOfName;` to require that a module have a `let` binding named `x`.
+- `type t = someType;` to require that a module have a type field `t` being
+  equal to `someType`.
+- `type t;` to require that a module have a type field `t`, but without
+  imposing any requirements on the actual type of `t`. We can still use this `t`
+  in other entries in the signature, which will require enforce certain
+  relationships between `t` and other types/fields *within* the signature, but
+  we cannot, for example, assume that `t` is an `int`.
+
+To illustrate the various kinds of type entries, consider the signature
+`HasXAndTInt` which requires that a module:
+
+- Declare a type definition under the name `t` being equivalent to `int`.
+- Must include a `let` binding named `x` assigned to an `int`.
+
+```reason
+module type HasXAndTInt = {
+   type t = int;
+   let x: int;
+};
+```
+
+Contrast that with the signature `HasXAndTAbstract` which requires that a
+module:
+
+- Declare a type definition under the name `t`.
+- Have a `let` binding `x` that is of that *same* type `t`, regardless of what `t` happens to be.
+
+```reason
+module type HasXAndTAbstract = {
+   type t;
+   let x: t;
+};
+```
+
+###### Asserting
+Similar to what we saw with type assertions, we can assert that various
+*modules* implement various *signatures*, via the type assertion operator `:`.
+
+In this example, the first type assertion asserts that `XTInt` implements
+`HasXAndTInt` and it succeeds because `XTint` has all of the members of
+`HasXAndTInt` and the types of those members match exactly.  The second
+assertion asserts that `XTInt` implements `HasXAndTAbstract` and succeeds
+because `XTInt.x` is in fact of type `XTint.t`. `XTint.t` also happens to be an
+`int`, but `HasXAndTAbstract` never specified what `t` could or could not be -
+it only required that `x` be of type `t`.
+
+```reason
+let module XTInt: HasXAndTInt = {
+   type t = int;
+   let x = 20;
+};
+let module XTInt: HasXAndTAbstract = {
+   type t = int;
+   let x = 20;
+};
+```
+###### Constraining
+What it means to "implement" a signature is fairly intuitive, and roughly
+corresponds to the popular notion of "implementing an interface". For example,
+modules may implement a signature while having *more* fields (but no fewer)
+than the signature required.
+
+Because of this, signature assertions do more than just *verify* that a module
+implements, a signature - they also *constrain* a module to the signature. In
+this example, `XYAndT.y` is visible, but `Constrained.y` is not.  Furthermore,
+`XYAndT.t` is of type `int`, whereas `Constrained.t` now matches the signature
+in that it is now "abstract". If you were to ask the `REPL` what the type of
+`Constrained.t` is, it will tell you `Constrained.t`! If you asked it what the
+type of `Constrained.x` was, it would again tell you `Constrained.t`. It has
+lost track of the type itself, but not lost track of the fact that the type of
+`Constrained.x` is identical to the type of `Constrained.t`.
+
+```reason
+let module XYAndT = {
+   type t = int;
+   let x = 20;
+   let y = "you'll never see me!";
+};
+let module Constrained: HasXAndTAbstract = XYAndT;
+```
+> This kind of "constraining" allows *hiding* of information that should be
+> considered implementation details.
+
+
+###### Every `.rei` file is a signature
+Similar to how every `react.re` file implicitly defines a module `React`, every
+file `react.rei` implicitly defines a signature that is automatically asserts
+and constrains `React`. The optional `react.rei` file would include the
+contents of a module signature (stuff in between the `{}`). `.rei` files also
+serve as a place to document the public API for their corresponding modules.
+
+> Example contents of react.re
+
+```reason
+type descriptor = int;
+let render = fun str => str;
+```
+
+> Example contents of react.rei
+
+```reason
+type descriptor = int;
+let render: str => str;
+```
+
+- Module signatures may also help ensure that [incremental
+  compilation](#scalable-development-incremental-compilation)
+  remains fast.
+- Signatures have many powerful features for constraining relationships between
+  modules in very nuanced ways. Those are out of the scope of this document.
+
+Module Functions
+----------------------------------
+Modules act as compile-time records, and signatures act as the types of those
+compile-time records, but the most power comes from being able to pass modules
+through functions. But since modules are compile-time constructs, we can't use
+*regular* runtime functions - we need functions that can operate on *modules*.
+We call these special functions "functors", and designate them by using the keyword
+`functor` instead of `fun` at definition time.
+
+> The combination of modules, signatures and module functions are incredibly
+powerful, especially when combined with module `include`ing. Together they
+provide power that feels much like a type based macro systems, allowing the
+creation of sophisticated type hierarchies, generators, and factories. Covering
+all of these use cases are out of the scope of this document.
+
+The syntax for defining and using module functions is very much like the syntax for
+defining and using regular functions. The primary differences are:
+
+
+- Module functions use the `let module` keywords instead of `let` and the `functor`
+  keyword instead of `fun`.
+- Module functions accept modules as arguments and return a module.
+- Module functions *require* annotating arguments.
+- Module functions must start with a capital letter (just like modules/signatures).
+
+```reason
+module type HasT = {
+  type t;
+};
+let module Pairify = functor (X: HasT) => {
+   type p = (X.t, X.t);
+   let create = fun (x: X.t) => (x, x);
+};
+```
+Module functions can be "applied" using function application syntax, by passing modules
+as their space-separated arguments.
+In this case, a module *literal* is passed as the module functions argument, but we
+could have passed the name of a module instead.
+
+```reason
+let module IntPair = Pairify {
+  type t = int;
+};
+
+let ints = IntPair.create 200;
+```
+
+Module functions, among other things can for powerful module type (*and* value)
+factories. Module functions can even accept other Module functions as arguments!
+
+
+###### Module functions types
+
+Module functions may have type assertions applied with `:` as we've seen with values
+and modules. Like with module types, module function types also act to *constrain* what
+we may assume about module functions, beyond what is true about them (you may hide
+things about the module function).
+The syntax for module function types are consistent with those for function types, but
+with types capitalized to represent the signatures of modules the module function
+accepts as arguments and return values.
+
+
+> Previous example with module function type assertions.
+
+```reason
+module type HasT = {
+  type t;
+};
+module type ParifyT = (HasTInstance: HasT) => {
+  type p;
+  let create: HasTInstance.t => p;
+};
+
+let module Pairify: ParifyT = functor (X:HasT) => {
+  type p = (X.t, X.t);
+  let create = fun (x: X.t) => (x, x);
+};
+```
+
+  </script>
+  <!-- Initializer -->
+  <script>
+    Flatdoc.run({
+      fetcher: function(callback) {
+        callback(null, document.getElementById('markdown').innerHTML);
+      },
+      highlight: function (code, value) {
+        return (value === 'reason') ? hljs.highlight('reason', code).value : hljs.highlight(value, code).value;
+      },
+    });
+  </script>
+
+  <!-- Meta -->
+  <meta property="og:image" content="./images/CubeRed598_614.png" />
+  <meta property="og:image:secure_url" content="./images/CubeRed598_614.png" />
+  <meta property="og:image:type" content="image/jpeg" />
+  <meta property="og:image:width" content="1196" />
+  <meta property="og:image:height" content="1228" />
+
+  <meta content="Reason: Rapid Expressive Systems Programming." name="description">
+  <meta content="Reason: Rapid Expressive Systems Programming." property="og:description">
+  <!-- <meta content="http://ricostacruz.com/flatdoc/support/preview.jpg" property="og:image"> -->
+</head>
+<body role='flatdoc' class='big-h3 large-brief'>
+
+  <!-- <div class='title&#45;area title&#45;card' style='background&#45;image: url(support/blur.jpg)'> -->
+
+  <div class='header'>
+    <div class='left'>
+      <h1><a href='index.html'>Reason</a></h1>
+      <ul>
+        <li><a href='projects.html'>Projects</a></li>
+        <li><a href='tools.html'>Tools</a></li>
+        <li><a href='https://github.com/facebook/Reason'>Github</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class='content-root'>
+    <div class='menubar'>
+      <div class='menu section' role='flatdoc-menu'></div>
+    </div>
+    <div role='flatdoc-content' class='content'></div>
+  </div>
+
+</body>
+</html>
