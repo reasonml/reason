@@ -1,7 +1,7 @@
 
 Installing
 ------------------
-Read the [docs](https://github.com/facebook/reason/tree/docs) for installation instructions.
+Read the [docs](http://facebook.github.io/reason/tools.html#merlin-atom) for installation instructions.
 
 
 Upgrading Reason
