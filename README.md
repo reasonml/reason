@@ -1,7 +1,3 @@
-NOTE: THIS REPO IS PRIVATE BUT HAS PUBLIC CONTRIBUTORS!
-=======================================================
-
------
 
 Reason: A New Interface To The ML Language
 =========================================
