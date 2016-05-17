@@ -1,8 +1,28 @@
+# [merlin](https://github.com/the-lambda-church/merlin) is a static analyser for
+# OCaml that provides autocompletion, jump-to-location, recoverable syntax
+# errors, type errors detection, etc., that your editor can use. To activate it,
+# one usually provides a .merlin file at the root of a project, describing where
+# the sources and artifacts are. Since we dictated the project structure, we can
+# auto generate .merlin files!
+
+# S is the merlin flag for source files
 S src
+
+# Include all the third-party sources too.
 S ./node_modules/**/src
+
+# B stands for build (artifacts). We generate ours into _build
 
 B ./_build/*
 
+# PKG lists packages found through ocamlfind (findlib), a utility for finding
+# the location of third-party dependencies. For us, all third-party deps reside
+# in `node_modules/`. One of the exceptions being js_of_ocaml. So we pass it to
+# PKG here and let ocamlfind find its source instead.
 PKG js_of_ocaml
 
+# FLG is the set of flags to pass to Merlin, as if it used ocamlc to compile and
+# understand our sources. You don't have to understand what these flags are for
+# now; but if you're curious, go check the jengaroot.ml that generated this
+# .merlin.
 FLG -w -30 -w -40 -open Top
