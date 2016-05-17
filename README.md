@@ -46,9 +46,9 @@ rebuild Hello.native # Automatically generates Hello.native from Hello.re
 
 Get Started Now
 ---------------
-Download the up-to-date [docs](https://github.com/facebook/Reason/archive/docs.zip) which guide you through the basic syntax and toolchain features.
+Checkout the [docs](http://facebook.github.io/Reason) which guide you through the basic syntax and toolchain features.
 
-Contribute back to that documentation in the [`docs` branch](https://github.com/facebook/Reason/tree/docs).
+Contribute back to that documentation in the [`gh-pages` branch](https://github.com/facebook/Reason/tree/gh-pages).
 
 
 
