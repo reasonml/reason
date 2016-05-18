@@ -156,23 +156,6 @@ x !== y</pre>
   </tr>
 </table>
 
-###Mutable Record Field Updates
-
-Because equalities and their negations have been made more consistent in `Reason`,
-the `=` operator is available for mutable field update.
-> <table>
-  <thead><tr> <th scope="col"><p >OCaml</p></th> <th scope="col"><p>Reason</p></th></tr></thead>
-  <tr>
-    <td>
-      <pre>
-myRec.field <- "next"</pre>
-    </td>
-    <td>
-      <pre>
-myRec.field = "next"</pre>
-    </td>
-  </tr>
-</table>
 
 ### Local Scope
 
@@ -1106,6 +1089,23 @@ let | MyThing \_ as ppp
   </tr>
 </table>
 
+###Mutable Record Field Updates
+
+Because equalities and their negations have been made more consistent in `Reason`,
+the `=` operator is available for mutable field update.
+> <table>
+  <thead><tr> <th scope="col"><p >OCaml</p></th> <th scope="col"><p>Reason</p></th></tr></thead>
+  <tr>
+    <td>
+      <pre>
+myRec.field <- "next"</pre>
+    </td>
+    <td>
+      <pre>
+myRec.field = "next"</pre>
+    </td>
+  </tr>
+</table>
 
 ##### Prefix operators
 
