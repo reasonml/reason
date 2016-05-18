@@ -1,7 +1,7 @@
 (**
  * All of this was coppied from @whitequark's m17n project.
- *)
- (* Portions Copyright (c) 2015-present, Facebook, Inc. All rights reserved. *)
+*)
+(* Portions Copyright (c) 2015-present, Facebook, Inc. All rights reserved. *)
 
 
 let transmogrify_exn exn template =
@@ -48,7 +48,7 @@ let correctly_catch_parse_errors fn lexbuf =
        and m17n have different internal IDs for the "same" exceptions.
        Fixup. *)
     raise (match exn with
-          | Reason_lexer.Error _ -> transmogrify_exn exn exn_Lexer_Error
-          | Syntaxerr.Error _ -> transmogrify_exn exn exn_Syntaxerr_Error
-          | Reason_toolchain.Error (loc, _) -> transmogrify_exn (Syntaxerr.Error(Syntaxerr.Other loc)) exn_Syntaxerr_Error
-          | _ -> exn)
+        | Reason_lexer.Error _ -> transmogrify_exn exn exn_Lexer_Error
+        | Syntaxerr.Error _ -> transmogrify_exn exn exn_Syntaxerr_Error
+        | Reason_toolchain.Error (loc, _) -> transmogrify_exn (Syntaxerr.Error(Syntaxerr.Other loc)) exn_Syntaxerr_Error
+        | _ -> exn)

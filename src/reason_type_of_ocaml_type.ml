@@ -1,15 +1,15 @@
 (* Portions Copyright (c) 2015-present, Facebook, Inc. All rights reserved. *)
 
 let () = Reason_pprint_ast.configure
-  (* This can be made pluggable in the future. *)
-  ~width:80
-  ~assumeExplicitArity:false
-  ~constructorLists:[]
+    (* This can be made pluggable in the future. *)
+    ~width:80
+    ~assumeExplicitArity:false
+    ~constructorLists:[]
 
 let reasonFormatter = Reason_pprint_ast.createFormatter ()
 
 (* "Why would you ever pass in some of these to print into Reason?"
-"Because Merlin returns these as type signature sometimes" *)
+   "Because Merlin returns these as type signature sometimes" *)
 
 (* int list *)
 let parseAsCoreType str formatter =
@@ -31,7 +31,7 @@ let parseAsInterface str formatter =
 
 (* sig val a: int list end *)
 (* This one is a hack; we should have our own parser entry point to module_type.
-But that'd require modifying compiler-libs, which we'll refrain from doing. *)
+   But that'd require modifying compiler-libs, which we'll refrain from doing. *)
 let parseAsCoreModuleType str formatter =
   Lexing.from_string ("module X: " ^ str)
   |> Reason_toolchain.ML.canonical_interface
@@ -53,4 +53,4 @@ let convert str =
   with Syntaxerr.Error _ ->
   try (parseAsCoreModuleType str formatter; Format.flush_str_formatter ())
   with Syntaxerr.Error a ->
-  (parseAsWeirdListSyntax str a)
+    (parseAsWeirdListSyntax str a)

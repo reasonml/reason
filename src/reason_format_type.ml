@@ -18,21 +18,21 @@ let split str ~by =
 let () =
   if Array.length Sys.argv <> 2 then
     print_endline @@ "Please provide a single, quoted string of all the " ^
-      "types you want transformed, separated by the escaped double quote \\\""
+                     "types you want transformed, separated by the escaped double quote \\\""
   else
     try
       Sys.argv.(1)
       |> split ~by:'"'
       |> List.map (fun input ->
-        try Reason_type_of_ocaml_type.convert input |> String.trim |> String.escaped
-        with Syntaxerr.Error a ->
-          (* Can't parse the input for some reason? Return the (slightly modified) result and don't crash. *)
-          "ML: " ^ input
-      )
+          try Reason_type_of_ocaml_type.convert input |> String.trim |> String.escaped
+          with Syntaxerr.Error a ->
+            (* Can't parse the input for some reason? Return the (slightly modified) result and don't crash. *)
+            "ML: " ^ input
+        )
       |> String.concat "\n"
       (* We omit printing one last line break in order to conserve the invariant
-      that 1 type maps to 1 line. E.g. ["a"] maps to "a" and ["a", ""] maps to
-      "a\n" *)
+         that 1 type maps to 1 line. E.g. ["a"] maps to "a" and ["a", ""] maps to
+         "a\n" *)
       |> print_string
     with Syntaxerr.Error a ->
       prerr_endline "Failed to parse the input type(s)."

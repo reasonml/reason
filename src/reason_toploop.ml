@@ -7,10 +7,10 @@ let () =
     print_endline "Reason is incompatible with camlp4!"
   else begin
     Toploop.parse_toplevel_phrase := Reason_util.correctly_catch_parse_errors
-                                       Reason_toolchain.JS.canonical_toplevel_phrase;
+        Reason_toolchain.JS.canonical_toplevel_phrase;
     Toploop.parse_use_file := Reason_util.correctly_catch_parse_errors
-                                Reason_toolchain.JS.canonical_use_file;
-     (* Toploop.print_out_sig_item := M17n_util.utf8_print_out_sig_item !Toploop.print_out_sig_item; *)
+        Reason_toolchain.JS.canonical_use_file;
+    (* Toploop.print_out_sig_item := M17n_util.utf8_print_out_sig_item !Toploop.print_out_sig_item; *)
     (* Toploop.install_printer Predef.path_string Predef.type_string *)
     (*   (fun fmt obj -> M17n_util.utf8_print_string fmt (Obj.magic obj)); *)
     prerr_endline "Reason: Meta Language Utility";
