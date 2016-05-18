@@ -72,7 +72,7 @@ New Styles:
 
 - *Atelier Cave*, *Atelier Estuary*,
   *Atelier Plateau* and *Atelier Savanna* by [Bram de Haan][]
-- *Github Gist* by [Louis Barranqueiro][]
+- *GitHub Gist* by [Louis Barranqueiro][]
 
 Notable fixes and improvements to existing languages:
 
