@@ -1,5 +1,5 @@
 #!/usr/bin/env ocaml
-               #use ".ocamlinit";;
+#use ".ocamlinit";;
 #require "menhirLib";;
 #require "reason";;
 
