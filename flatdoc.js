@@ -70,7 +70,7 @@
   };
 
   /**
-   * Github fetcher.
+   * GitHub fetcher.
    * Fetches from repo `repo` (in format 'user/repo').
    *
    * If the parameter `filepath` is supplied, it fetches the contents of that
@@ -115,7 +115,7 @@
    * See: http://ben.onfabrik.com/posts/embed-bitbucket-source-code-on-your-website
    * Bitbucket appears to have stricter restrictions on
    * Access-Control-Allow-Origin, and so the method here is a bit
-   * more complicated than for Github
+   * more complicated than for GitHub
    *
    * If you don't pass a branch name, then 'default' for Hg repos is assumed
    * For git, you should pass 'master'. In both cases, you should also be able

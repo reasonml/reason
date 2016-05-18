@@ -1021,7 +1021,7 @@ its [contributors][c]. It is sponsored by my startup, [Sinefunc, Inc][sf].
 
  * [My website](http://ricostacruz.com) (ricostacruz.com)
  * [Sinefunc, Inc.](http://sinefunc.com) (sinefunc.com)
- * [Github](http://github.com/rstacruz) (@rstacruz)
+ * [GitHub](http://github.com/rstacruz) (@rstacruz)
  * [Twitter](http://twitter.com/rstacruz) (@rstacruz)
 
 [rsc]: http://ricostacruz.com
