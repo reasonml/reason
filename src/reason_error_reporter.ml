@@ -12,18 +12,18 @@ let customIncompatibleTypeForReason errorBody cachedContent range =
       actual;
       expected;
       (* we're using the error reporter's typeDiff logic temporarily. That diff
-      is semantic, aka knows about module boundaries from dot, and function
-      argument boundaries from ->. But since reason uses => as function
-      delimiter we'll need to customize the diff function soon *)
+         is semantic, aka knows about module boundaries from dot, and function
+         argument boundaries from ->. But since reason uses => as function
+         delimiter we'll need to customize the diff function soon *)
       differingPortion = BetterErrorsParseError.typeDiff actual expected;
       actualEquivalentType;
       expectedEquivalentType;
       extra;
     }
   (* currently the error reporter logic asks you to throw in order to pass onto
-  the next parser that tries to parse the error. This branch, however, will
-  never be reached because type_IncompatibleType always returns the
-  `Type_IncompatibleType blaRecord` variant *)
+     the next parser that tries to parse the error. This branch, however, will
+     never be reached because type_IncompatibleType always returns the
+     `Type_IncompatibleType blaRecord` variant *)
   | _ -> raise Not_found
 
 let () =

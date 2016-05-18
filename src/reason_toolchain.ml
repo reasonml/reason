@@ -70,7 +70,7 @@
  *
  *   (*    Comment    *)
  *   let lst = [ ];
- *)
+*)
 
 open Location
 open Lexing
@@ -103,23 +103,23 @@ let chan_input = ref ""
 (* replaces Lexing.from_channel so we can keep track of the input for comment modification *)
 let keep_from_chan chan =
   Lexing.from_function (fun buf n -> (
-    (* keep input from chan in memory so that it can be used to reformat comment tokens *)
-    let nchar = input chan buf 0 n in
-    chan_input := !chan_input ^ Bytes.sub_string buf 0 nchar;
-    nchar
-  ))
+        (* keep input from chan in memory so that it can be used to reformat comment tokens *)
+        let nchar = input chan buf 0 n in
+        chan_input := !chan_input ^ Bytes.sub_string buf 0 nchar;
+        nchar
+      ))
 
 let setup_lexbuf use_stdin filename =
   (* Use custom method of lexing from the channel to keep track of the input so that we can
      reformat tokens in the toolchain*)
   let lexbuf =
     match use_stdin with
-      | true ->
-        keep_from_chan stdin
-      | false ->
-        let file_chan = open_in filename in
-        seek_in file_chan 0;
-        keep_from_chan file_chan
+    | true ->
+      keep_from_chan stdin
+    | false ->
+      let file_chan = open_in filename in
+      seek_in file_chan 0;
+      keep_from_chan file_chan
   in
   Location.init lexbuf filename;
   lexbuf
@@ -178,25 +178,25 @@ let new_line = Str.regexp "^"
 module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = struct
   let wrap_with_comments parsing_fun lexbuf =
     Toolchain_impl.safeguard_parsing lexbuf (fun () ->
-      let _ = Toolchain_impl.Lexer_impl.init () in
-      let ast = parsing_fun lexbuf in
-      let unmodified_comments = Toolchain_impl.Lexer_impl.comments() in
-      match !chan_input with
+        let _ = Toolchain_impl.Lexer_impl.init () in
+        let ast = parsing_fun lexbuf in
+        let unmodified_comments = Toolchain_impl.Lexer_impl.comments() in
+        match !chan_input with
         | "" ->
           let _  = Parsing.clear_parser() in
           (ast, unmodified_comments |> List.map (fun (txt, phys_loc) -> (txt, phys_loc, phys_loc)))
         | _ ->
           let modified_and_attached_comments =
             List.map (fun (str, physical_loc) ->
-              (* When searching for "^" regexp, returns location of newline + 1 *)
-              let first_char_of_line = Str.search_backward new_line !chan_input physical_loc.loc_start.pos_cnum in
-              let end_pos_plus_one = physical_loc.loc_end.pos_cnum in
-              let comment_length = (end_pos_plus_one - physical_loc.loc_start.pos_cnum - 4) in
-              (* Also, the string contents originally reported are incorrect! *)
-              let original_comment_contents = String.sub !chan_input (physical_loc.loc_start.pos_cnum + 2) comment_length in
-              let (com, attachment_location) =
-                match Str.search_forward line_content !chan_input first_char_of_line
-                with
+                (* When searching for "^" regexp, returns location of newline + 1 *)
+                let first_char_of_line = Str.search_backward new_line !chan_input physical_loc.loc_start.pos_cnum in
+                let end_pos_plus_one = physical_loc.loc_end.pos_cnum in
+                let comment_length = (end_pos_plus_one - physical_loc.loc_start.pos_cnum - 4) in
+                (* Also, the string contents originally reported are incorrect! *)
+                let original_comment_contents = String.sub !chan_input (physical_loc.loc_start.pos_cnum + 2) comment_length in
+                let (com, attachment_location) =
+                  match Str.search_forward line_content !chan_input first_char_of_line
+                  with
                   | n ->
                     (* Recall that all end positions are actually the position of end + 1. *)
                     let one_greater_than_comment_end = end_pos_plus_one in
@@ -210,14 +210,14 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
                     else
                       (original_comment_contents, physical_loc)
                   | exception Not_found -> (original_comment_contents, physical_loc)
-              in
-              (com, attachment_location, physical_loc)
-            )
-            unmodified_comments
+                in
+                (com, attachment_location, physical_loc)
+              )
+              unmodified_comments
           in
           let _  = Parsing.clear_parser() in
           (ast, modified_and_attached_comments)
-    )
+      )
 
   (*
    * The canonical interface/implementations (with comments) are used with
@@ -247,7 +247,7 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
     wrap_with_comments Toolchain_impl.use_file lexbuf
 
   (** [ast_only] wraps a function to return only the ast component
-   *)
+  *)
   let ast_only f =
     (fun lexbuf -> lexbuf |> f |> fst)
 
@@ -288,11 +288,11 @@ module OCaml_syntax = struct
         Parser_impl.SEMISEMI | Parser_impl.EOF -> ()
       | _ -> skip_phrase lexbuf
     with
-      | Lexer_impl.Error (Lexer_impl.Unterminated_comment _, _)
-      | Lexer_impl.Error (Lexer_impl.Unterminated_string, _)
-      | Lexer_impl.Error (Lexer_impl.Unterminated_string_in_comment _, _)
-      | Lexer_impl.Error (Lexer_impl.Illegal_character _, _) ->
-          skip_phrase lexbuf
+    | Lexer_impl.Error (Lexer_impl.Unterminated_comment _, _)
+    | Lexer_impl.Error (Lexer_impl.Unterminated_string, _)
+    | Lexer_impl.Error (Lexer_impl.Unterminated_string_in_comment _, _)
+    | Lexer_impl.Error (Lexer_impl.Illegal_character _, _) ->
+      skip_phrase lexbuf
 
   let maybe_skip_phrase lexbuf =
     if Parsing.is_current_lookahead Parser_impl.SEMISEMI
@@ -305,17 +305,17 @@ module OCaml_syntax = struct
     with
     | Lexer_impl.Error(Lexer_impl.Illegal_character _, _) as err
       when !Location.input_name = "//toplevel//"->
-        skip_phrase lexbuf;
-        raise err
+      skip_phrase lexbuf;
+      raise err
     | Syntaxerr.Error _ as err
       when !Location.input_name = "//toplevel//" ->
-        maybe_skip_phrase lexbuf;
-        raise err
+      maybe_skip_phrase lexbuf;
+      raise err
     | Parsing.Parse_error | Syntaxerr.Escape_error ->
-        let loc = Location.curr lexbuf in
-        if !Location.input_name = "//toplevel//"
-        then maybe_skip_phrase lexbuf;
-        raise(Syntaxerr.Error(Syntaxerr.Other loc))
+      let loc = Location.curr lexbuf in
+      if !Location.input_name = "//toplevel//"
+      then maybe_skip_phrase lexbuf;
+      raise(Syntaxerr.Error(Syntaxerr.Other loc))
 
   (* Unfortunately we drop the comments because there doesn't exist an ML
    * printer that formats comments *and* line wrapping! (yet) *)
@@ -328,7 +328,7 @@ end
 
 (* The following logic defines our own Error object
  * and register it with ocaml so it knows how to print it
- *)
+*)
 type error = Syntax_error of string
 
 exception Error of Location.t * error
@@ -339,11 +339,11 @@ let report_error ppf (Syntax_error err) =
 let () =
   Location.register_error_of_exn
     (function
-     | Error (loc, err) ->
+      | Error (loc, err) ->
         Some (Location.error_of_printer loc report_error err)
-     | _ ->
+      | _ ->
         None
-     )
+    )
 
 module JS_syntax = struct
   module I = Reason_parser.MenhirInterpreter
@@ -356,15 +356,15 @@ module JS_syntax = struct
 
   (* [tracking_supplier] is a supplier that tracks the last token read *)
   type tracking_supplier = {
-      (* The last token that was obtained from the lexer, together with its start
-     and end positions. Warning: before the first call to the lexer has taken
-     place, a None value is stored here. *)
+    (* The last token that was obtained from the lexer, together with its start
+       and end positions. Warning: before the first call to the lexer has taken
+       place, a None value is stored here. *)
 
-      mutable last_token: (Reason_parser.token * Lexing.position * Lexing.position) option;
+    mutable last_token: (Reason_parser.token * Lexing.position * Lexing.position) option;
 
-      (* A supplier function that returns one token at a time*)
-      get_token: unit -> (Reason_parser.token * Lexing.position * Lexing.position)
-    }
+    (* A supplier function that returns one token at a time*)
+    get_token: unit -> (Reason_parser.token * Lexing.position * Lexing.position)
+  }
 
   (* [lexbuf_to_supplier] returns a supplier to be feed into Menhir's incremental API.
    * Each time the supplier is called, a new token in the lexbuf is returned.
@@ -372,7 +372,7 @@ module JS_syntax = struct
    *
    * This makes sure at most one EOF token is returned by supplier, which
    * is the default behavior of ocamlyacc.
-   *)
+  *)
   let lexbuf_to_supplier lexbuf =
     let s = I.lexer_lexbuf_to_supplier Reason_lexer.token lexbuf in
     let eof_met = ref false in
@@ -399,28 +399,28 @@ module JS_syntax = struct
   let last_token_loc supplier =
     match supplier.last_token with
     | Some (_, s, e) ->
-       {
-         loc_start = s;
-         loc_end = e;
-         loc_ghost = false;
-       }
+      {
+        loc_start = s;
+        loc_end = e;
+        loc_ghost = false;
+      }
     | None -> assert false
 
   (* get the stack of a checkpoint *)
   let stack checkpoint =
     match checkpoint with
     | I.HandlingError env ->
-       I.stack env
+      I.stack env
     | _ ->
-       assert false
+      assert false
 
   (* get state number of a checkpoint *)
   let state checkpoint : int =
     match Lazy.force (stack checkpoint) with
     | S.Nil ->
-       0
+      0
     | S.Cons (I.Element (s, _, _, _), _) ->
-             I.number s
+      I.number s
 
   (* [loop_handle_yacc] mimic yacc's error handling mechanism in menhir.
      When it hits an error state, it pops up the stack until it finds a
@@ -450,57 +450,57 @@ module JS_syntax = struct
 
     match checkpoint with
     | I.InputNeeded _ ->
-       if in_error then
-         begin
-           match supplier.last_token with
-           | Some triple ->
-              (* We just recovered from the error state, try the original token again*)
-              let checkpoint_with_previous_token = I.offer checkpoint triple in
-              let accept_new = I.loop_test
-                                 (fun _ _ -> true)
-                                 checkpoint_with_previous_token
-                                 false
-              in
-              if accept_new then
-                loop_handle_yacc supplier false checkpoint_with_previous_token
-              else
-                (* The original token still fail to be parsed, discard *)
-                loop_handle_yacc supplier false checkpoint
-           | None -> assert false
-         end
-       else
-         let triple = read supplier in
-         let checkpoint = I.offer checkpoint triple in
-         loop_handle_yacc supplier false checkpoint
+      if in_error then
+        begin
+          match supplier.last_token with
+          | Some triple ->
+            (* We just recovered from the error state, try the original token again*)
+            let checkpoint_with_previous_token = I.offer checkpoint triple in
+            let accept_new = I.loop_test
+                (fun _ _ -> true)
+                checkpoint_with_previous_token
+                false
+            in
+            if accept_new then
+              loop_handle_yacc supplier false checkpoint_with_previous_token
+            else
+              (* The original token still fail to be parsed, discard *)
+              loop_handle_yacc supplier false checkpoint
+          | None -> assert false
+        end
+      else
+        let triple = read supplier in
+        let checkpoint = I.offer checkpoint triple in
+        loop_handle_yacc supplier false checkpoint
     | I.Shifting _
-      | I.AboutToReduce _ ->
-       let checkpoint = I.resume checkpoint in
-       loop_handle_yacc supplier in_error checkpoint
+    | I.AboutToReduce _ ->
+      let checkpoint = I.resume checkpoint in
+      loop_handle_yacc supplier in_error checkpoint
     | I.HandlingError env ->
-       if !Reason_config.recoverable then
-         let checkpoint = I.resume checkpoint in
-         (* Enter error recovery state *)
-         loop_handle_yacc supplier true checkpoint
-       else
-         (* If not in a recoverable state, fail early by raising a
-          * customized Error object
-          *)
-         let loc = last_token_loc supplier in
-         let state = state checkpoint in
-         (* Check the error database to see what's the error message
-          * associated with the current parser state
-          *)
-         let msg = Reason_parser_message.message state in
-         let msg_with_state = Printf.sprintf "%d: %s" state msg in
-         raise (Error (loc, (Syntax_error msg_with_state)))
+      if !Reason_config.recoverable then
+        let checkpoint = I.resume checkpoint in
+        (* Enter error recovery state *)
+        loop_handle_yacc supplier true checkpoint
+      else
+        (* If not in a recoverable state, fail early by raising a
+         * customized Error object
+        *)
+        let loc = last_token_loc supplier in
+        let state = state checkpoint in
+        (* Check the error database to see what's the error message
+         * associated with the current parser state
+        *)
+        let msg = Reason_parser_message.message state in
+        let msg_with_state = Printf.sprintf "%d: %s" state msg in
+        raise (Error (loc, (Syntax_error msg_with_state)))
     | I.Rejected ->
-       begin
-         let loc = last_token_loc supplier in
-         raise Syntaxerr.(Error(Syntaxerr.Other loc))
-       end
+      begin
+        let loc = last_token_loc supplier in
+        raise Syntaxerr.(Error(Syntaxerr.Other loc))
+      end
     | I.Accepted v ->
-       (* The parser has succeeded and produced a semantic value. *)
-       v
+      (* The parser has succeeded and produced a semantic value. *)
+      v
 
   let implementation lexbuf =
     let cp = initial_checkpoint Reason_parser.Incremental.implementation lexbuf in
@@ -529,10 +529,10 @@ module JS_syntax = struct
         Parser_impl.SEMI | Parser_impl.EOF -> ()
       | _ -> skip_phrase lexbuf
     with
-      | Lexer_impl.Error (Lexer_impl.Unterminated_comment _, _)
-      | Lexer_impl.Error (Lexer_impl.Unterminated_string, _)
-      | Lexer_impl.Error (Lexer_impl.Unterminated_string_in_comment _, _)
-      | Lexer_impl.Error (Lexer_impl.Illegal_character _, _) -> skip_phrase lexbuf
+    | Lexer_impl.Error (Lexer_impl.Unterminated_comment _, _)
+    | Lexer_impl.Error (Lexer_impl.Unterminated_string, _)
+    | Lexer_impl.Error (Lexer_impl.Unterminated_string_in_comment _, _)
+    | Lexer_impl.Error (Lexer_impl.Illegal_character _, _) -> skip_phrase lexbuf
 
   let maybe_skip_phrase lexbuf =
     if Parsing.is_current_lookahead Parser_impl.SEMI
@@ -545,26 +545,26 @@ module JS_syntax = struct
     with
     | Lexer_impl.Error(Lexer_impl.Illegal_character _, _) as err
       when !Location.input_name = "//toplevel//"->
-        skip_phrase lexbuf;
-        raise err
+      skip_phrase lexbuf;
+      raise err
     | Syntaxerr.Error _ as err
       when !Location.input_name = "//toplevel//" ->
-        maybe_skip_phrase lexbuf;
-        raise err
+      maybe_skip_phrase lexbuf;
+      raise err
     | Parsing.Parse_error | Syntaxerr.Escape_error ->
-        let loc = Location.curr lexbuf in
-        if !Location.input_name = "//toplevel//"
-        then maybe_skip_phrase lexbuf;
-        raise(Syntaxerr.Error(Syntaxerr.Other loc))
+      let loc = Location.curr lexbuf in
+      if !Location.input_name = "//toplevel//"
+      then maybe_skip_phrase lexbuf;
+      raise(Syntaxerr.Error(Syntaxerr.Other loc))
     | Error _ as x ->
-       let loc = Location.curr lexbuf in
-       if !Location.input_name = "//toplevel//"
-       then
-         let _ = maybe_skip_phrase lexbuf in
-         raise(Syntaxerr.Error(Syntaxerr.Other loc))
-       else
-         let _ = print_string !Location.input_name in
-         raise x
+      let loc = Location.curr lexbuf in
+      if !Location.input_name = "//toplevel//"
+      then
+        let _ = maybe_skip_phrase lexbuf in
+        raise(Syntaxerr.Error(Syntaxerr.Other loc))
+      else
+        let _ = print_string !Location.input_name in
+        raise x
     | x -> raise x
 
   let format_interface_with_comments (signature, comments) formatter =

@@ -11,20 +11,20 @@ let init_reason () =
     current_top := RTop;
     UTop.set_phrase_terminator ";";
     UTop.prompt := fst (React.S.create LTerm_text.
-                     (eval [B_fg (LTerm_style.green); S "Reason # "]));
+                                         (eval [B_fg (LTerm_style.green); S "Reason # "]));
     UTop.parse_toplevel_phrase := UTop.parse_default (
-      Reason_util.correctly_catch_parse_errors
-      Reason_toolchain.JS.canonical_toplevel_phrase
-    );
+        Reason_util.correctly_catch_parse_errors
+          Reason_toolchain.JS.canonical_toplevel_phrase
+      );
     UTop.parse_use_file := UTop.parse_default (
-      Reason_util.correctly_catch_parse_errors
-      Reason_toolchain.JS.canonical_use_file
-    );
+        Reason_util.correctly_catch_parse_errors
+          Reason_toolchain.JS.canonical_use_file
+      );
     UTop.history_file_name :=
       Some (Filename.concat LTerm_resources.home ".rtop-history");
 
     Toploop.parse_use_file := Reason_util.correctly_catch_parse_errors
-                                Reason_toolchain.JS.canonical_use_file;
+        Reason_toolchain.JS.canonical_use_file;
 
     (* Printing in Reason syntax *)
     Toploop.print_out_value := Reason_oprint.print_out_value;
@@ -41,11 +41,11 @@ let init_ocaml () =
   current_top := UTop;
   UTop.set_phrase_terminator ";;";
   UTop.prompt := fst (React.S.create LTerm_text.
-                   (eval[B_fg (LTerm_style.green); S "OCaml # "]));
+                                       (eval[B_fg (LTerm_style.green); S "OCaml # "]));
   UTop.parse_toplevel_phrase := UTop.parse_toplevel_phrase_default;
   UTop.parse_use_file := UTop.parse_use_file_default;
   UTop.history_file_name :=
-      Some (Filename.concat LTerm_resources.home ".utop-history")
+    Some (Filename.concat LTerm_resources.home ".utop-history")
 
 let toggle_syntax () =
   match !current_top with

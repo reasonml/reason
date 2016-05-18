@@ -82,7 +82,7 @@ rule "rei -> cmi"
 ;;
 rule "re dependecies"
   ~prods:["%.re.depends"; "%.ml.depends" (* .ml.depends is also needed since
-    the function "prepare_link" requires .ml.depends *)]
+                                            the function "prepare_link" requires .ml.depends *)]
   ~deps:(["%.re"])
   (ocamldep_command ~impl:true "%.re" ["%.re.depends"; "%.ml.depends"])
 ;;
@@ -110,7 +110,7 @@ rule "re -> cmo & cmi"
 rule "re & cmi -> d.cmo"
   ~prod:"%.d.cmo"
   ~deps:["%.rei"(* This one is inserted to force this rule to be skipped when
-        a .re is provided without a .rei *); "%.re"; "%.re.depends"; "%.cmi"]
+                   a .re is provided without a .rei *); "%.re"; "%.re.depends"; "%.cmi"]
   (byte_compile_re_implem ~tag:"debug" "%.re" "%.d.cmo")
 ;;
 rule "re & rei -> cmx & o"

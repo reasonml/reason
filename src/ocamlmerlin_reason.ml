@@ -28,14 +28,14 @@ module Reason_reader = struct
 
   let print_outcome ppf =
     let open Reason_oprint in function
-    | Out_value          x -> print_out_value          ppf x
-    | Out_type           x -> print_out_type           ppf x
-    | Out_class_type     x -> print_out_class_type     ppf x
-    | Out_module_type    x -> print_out_module_type    ppf x
-    | Out_sig_item       x -> print_out_sig_item       ppf x
-    | Out_signature      x -> print_out_signature      ppf x
-    | Out_type_extension x -> print_out_type_extension ppf x
-    | Out_phrase         x -> print_out_phrase         ppf x
+      | Out_value          x -> print_out_value          ppf x
+      | Out_type           x -> print_out_type           ppf x
+      | Out_class_type     x -> print_out_class_type     ppf x
+      | Out_module_type    x -> print_out_module_type    ppf x
+      | Out_sig_item       x -> print_out_sig_item       ppf x
+      | Out_signature      x -> print_out_signature      ppf x
+      | Out_type_extension x -> print_out_type_extension ppf x
+      | Out_phrase         x -> print_out_phrase         ppf x
 end
 
 let () =
