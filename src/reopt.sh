@@ -7,7 +7,6 @@
 
 MY_OCAML_BUILD="-o myocamlbuild"
 
-echo "$REASON_BUILD_DIR"
 if [ -z "$REASON_BUILD_DIR" ];
 then
     REASON_BUILD_DIR=$(ocamlfind query reason)
@@ -59,7 +58,6 @@ then
     # Link reason build rules
     set -- "${@:1:$#-3}" "$REASON_BUILD_DIR/reasonbuild.cmx" "${@: -3}"
 fi
-echo $OCAMLOPT $@
 
 # use OCAMLOPT that's passed in by rebuild
 $OCAMLOPT "$@"

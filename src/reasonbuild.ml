@@ -64,14 +64,17 @@ let compile_ocaml_interf rei cmi env build =
 let ocamldep_command ~impl arg out env _build =
   let out = List.map env out in
   let out = List.map (fun n -> Px n) out in
-  let teeout = [Sh "|"; P "tee"] @ out in
+  let out =
+    match List.rev out with
+    | ([] | [_]) as out -> out
+    | last :: rev_prefix -> [Sh "|"; P "tee"] @ List.rev_append rev_prefix [Sh ">"; last] in
   let arg = env arg in
   let tags = tags_of_pathname arg in
   let specs =
     [ ocamldep_command' tags;
       A "-pp"; P refmt ]
     @ impl_intf ~impl arg
-    @ teeout in
+    @ out in
   Cmd (S specs)
 
 ;;
