@@ -41,63 +41,6 @@ let chopSuffixExn str => String.slice str 0 (String.rindex_exn str '.');
 
 let fileNameNoExtNoDir path => Path.basename path |> chopSuffixExn;
 
-/* generic testing/logging helpers */
-let tap n a =>
-  if (n == 0) {
-    print_endline "tap---------";
-    print_endline a;
-    a
-  } else {
-    a
-  };
-
-tap;
-
-let tapl n a =>
-  if (n == 0) {
-    print_endline "tapl---------";
-    List.iter f::print_endline a;
-    a
-  } else {
-    a
-  };
-
-tapl;
-
-let taplp n a =>
-  if (n == 0) {
-    print_endline "taplp---------";
-    List.iter f::(fun a => print_endline (ts a)) a;
-    a
-  } else {
-    a
-  };
-
-taplp;
-
-let tapp n a =>
-  if (n == 0) {
-    print_endline "tapp---------";
-    print_endline @@ ts a;
-    a
-  } else {
-    a
-  };
-
-tapp;
-
-let tapAssocList n a =>
-  if (n == 0) {
-    print_endline "tapAssocList---------";
-    List.iter
-      a f::(fun (path, deps) => print_endline @@ (path ^ ": " ^ String.concat sep::" " deps));
-    a
-  } else {
-    a
-  };
-
-tapAssocList;
-
 /* this jengaroot-specific helpers */
 let topLibName = "top";
 
@@ -111,82 +54,94 @@ let buildDirRoot = rel dir::root "_build";
 
 let topSrcDir = rel dir::root "src";
 
-/* Wrapper around the ocamldep CLI which gives us back the modules a file depends on. However, the
-   implementation isn't perfect. Notably, if we have: `open Foo; let a = Bar.x;` we might have a false
-   positive `Bar` when it's really from Foo.Bar */
-let ocamlDepModules sourcePath::sourcePath => {
-  let ocamlDepModules' subdirs => {
-    let execDir = Path.dirname sourcePath;
-    let thirdPartyBuildRoots =
-      List.map subdirs f::(fun subdir => rel dir::buildDirRoot (Path.basename subdir));
+/* Wrapper for the CLI `ocamldep`. Take the output, process it a bit, and pretend we've just called a regular
+   ocamldep OCaml function. Note: the `ocamldep` utility doesn't give us enough info for fine, accurate */
+let ocamlDep sourcePath::sourcePath => {
+  let srcDir = Path.dirname sourcePath;
+  let action = Dep.action_stdout (
     mapD
+      (Dep.path sourcePath)
       (
-        Dep.action_stdout (
-          mapD
-            (
-              Dep.all_unit [
-                Dep.path sourcePath,
-                Dep.all_unit (
-                  List.map
-                    thirdPartyBuildRoots
-                    /* We depend on the module alias file of the third-party libraries being compiled. */
-                    f::(fun buildRoot => relD dir::buildRoot (Path.basename buildRoot ^ ".cmi"))
-                )
-              ]
-            )
-            (
-              fun () =>
-                bashf
-                  dir::execDir
-                  "ocamldep -pp refmt %s -ml-synonym .re -mli-synonym .rei -one-line %s"
-                  (
-                    thirdPartyBuildRoots |>
-                      List.map f::(fun path => Path.reach_from dir::execDir path) |>
-                      List.map f::(fun path => "-I " ^ path) |>
-                      String.concat sep::" "
-                  )
-                  (Path.basename sourcePath)
-            )
-        )
+        fun () =>
+          bashf
+            dir::srcDir "ocamldep -pp refmt -modules -one-line -impl %s" (Path.basename sourcePath)
       )
-      (
-        fun string =>
-          switch (
-            String.strip string |> String.split on::'\n' |> List.hd_exn |> String.split on::':'
-          ) {
-          | [original, deps] =>
-            String.split deps on::' ' |>
-              List.filter f::nonBlank |>
-              List.map f::chopSuffixExn |>
-              /* TODO: mother of all fragile logic. */
-              /* node_modules/bookshop/src/Index.cmo : node_modules/bookshop/src/Index.cmi */
-              /* ^ this means that there's a rei interface file for it. Doesn't mean much else, and definitely
-                 doesn't mean we're using Index inside Index. Filter it out */
-              List.filter f::(fun m => m != chopSuffixExn original) |>
-              /* TODO: fragile logic. The result might be ../_build/bookshop/bookshop.cmo so this is how we
-                 temporarily detect it */
-              List.map
-                f::(
-                  fun m =>
-                    switch (String.rindex m '/') {
-                    | None => m
-                    | Some idx => String.slice m (idx + 1) (String.length m) |> cap
-                    }
-                )
-          | _ => failwith "expected exactly one ':' in ocamldep output line"
-          }
-      )
-  };
-  bindD (Dep.subdirs dir::nodeModulesRoot) ocamlDepModules'
+  );
+  let processRawString string =>
+    switch (String.strip string |> String.split on::':') {
+    | [original, deps] => (original, String.split deps on::' ' |> List.filter f::nonBlank)
+    | _ => failwith "expected exactly one ':' in ocamldep output line"
+    };
+  mapD action processRawString
 };
 
-ocamlDepModules;
+/* Get only the dependencies on sources in the current library. */
+let ocamlDepCurrentSources sourcePath::sourcePath => {
+  let srcDir = Path.dirname sourcePath;
+  bindD
+    (ocamlDep sourcePath::sourcePath)
+    (
+      fun (original, deps) =>
+        mapD
+          (Dep.glob_listing (Glob.create dir::srcDir "*.re"))
+          (
+            fun sourcePaths => {
+              let sourceModules = List.map sourcePaths f::fileNameNoExtNoDir;
+              /* If the current file's Foo.re, and it depend on Foo, then it's certainly not depending on
+                 itself, which means that Foo either comes from a third-party module (which we can ignore
+                 here), or is a nested module from an `open`ed module, which ocamldep would have detected and
+                 returned in this list. */
+              List.filter deps f::(fun m => m != chopSuffixExn original) |>
+                List.filter f::(fun m => List.exists sourceModules f::(fun m' => m == m'))
+            }
+          )
+    )
+};
 
+/* Like above, but include third-party deps too. */
+let ocamlDepIncludingThirdParty sourcePath::sourcePath => {
+  let srcDir = Path.dirname sourcePath;
+  bindD
+    (ocamlDep sourcePath::sourcePath)
+    (
+      fun (original, deps) =>
+        mapD
+          (
+            Dep.both
+              (Dep.subdirs dir::nodeModulesRoot)
+              (Dep.glob_listing (Glob.create dir::srcDir "*.re"))
+          )
+          (
+            fun (thirdPartyRoots, sourcePaths) => {
+              let sourceModules = List.map sourcePaths f::fileNameNoExtNoDir;
+              let thirdPartyModules = [
+                /* Special-case js_of_ocaml as a magical global. */
+                "Js",
+                ...List.map thirdPartyRoots f::(fun r => Path.basename r |> String.capitalize)
+              ];
+              /* See comment in `ocamlDepCurrentSources` for this first filter. */
+              List.filter deps f::(fun m => m != chopSuffixExn original) |>
+                List.filter
+                  f::(
+                    fun m =>
+                      List.exists sourceModules f::(fun m' => m == m') ||
+                        List.exists thirdPartyModules f::(fun m' => m == m')
+                  )
+            }
+          )
+    )
+};
+
+/* Basically (ocamlDepIncludingThirdParty - ocamlDepCurrentSources) for all source files in the library in
+   question */
 let getThirdPartyDepsForLib srcDir::srcDir => {
   let getThirdPartyDepsForLib' sourcePaths =>
     mapD
       (
-        Dep.all (List.map sourcePaths f::(fun sourcePath => ocamlDepModules sourcePath::sourcePath))
+        Dep.all (
+          List.map
+            sourcePaths f::(fun sourcePath => ocamlDepIncludingThirdParty sourcePath::sourcePath)
+        )
       )
       (
         fun sourcePathsDeps => {
@@ -199,10 +154,10 @@ let getThirdPartyDepsForLib srcDir::srcDir => {
   bindD (Dep.glob_listing (Glob.create dir::srcDir "*.re")) getThirdPartyDepsForLib'
 };
 
-getThirdPartyDepsForLib;
-
+/* Generic sorting algorithm on directed acyclic graph. Example: [(a, [b, c, d]), (b, [c]), (d, [c])] will be
+   sorted into [c, d, b, a] or [c, b, d, a], aka the ones being depended on will always come before the
+   dependent */
 let topologicalSort graph => {
-  ignore @@ tapAssocList 1 graph;
   let graph = {contents: graph};
   let rec topologicalSort' currNode accum => {
     let nodeDeps =
@@ -225,6 +180,8 @@ let topologicalSort graph => {
   List.rev accum.contents
 };
 
+/* Figure out the order in which third-party libs should be compiled, based on their dependencies (the
+   depended is compiled before the dependent). */
 let sortTransitiveThirdParties =
   bindD
     (Dep.subdirs dir::nodeModulesRoot)
@@ -245,43 +202,19 @@ let sortTransitiveThirdParties =
       }
     );
 
-let sortPathsTopologically dir::dir paths::paths =>
-  /* don't remove this piece of code! This is the `ocamldep -sort`-less version. Except it doesn't traverse
-     the whole graph (see comment on topologicalSort) so we get free dead code elimination. But we do want
-     merlin to pick up newly added files, and DCE means they're not even compiled. We'll change
-     topologicalSort to traverse the whole graph soon. */
-  /* let pathsAsModules =
-       List.map paths f::(fun path => fileNameNoExtNoDir  path |> stringCapitalize);
-     let sourcePathsDepsD = Dep.all (List.map paths f::(fun path => ocamlDepModules sourcePath::path));
-     sourcePathsDepsD *>>| (
-       fun sourcePathsDeps =>
-         List.zip_exn pathsAsModules sourcePathsDeps |>
-           topologicalSort mainNode::"Main" |>
-           List.filter f::(fun m => List.exists pathsAsModules f::(fun m' => m' == m)) |>
-           List.map f::(fun m => rel dir::dir ( m ^ ".re")) |>
-           taplp 0
-     ) */
+let sortPathsTopologically dir::dir paths::paths => {
+  let pathsAsModules = List.map paths f::(fun path => fileNameNoExtNoDir path);
+  let depsForPathsD = Dep.all (
+    List.map paths f::(fun path => ocamlDepCurrentSources sourcePath::path)
+  );
   mapD
+    depsForPathsD
     (
-      Dep.action_stdout (
-        mapD
-          (Dep.all_unit (List.map paths f::Dep.path))
-          (
-            fun () => {
-              let pathsString = List.map (taplp 1 paths) f::Path.basename |> String.concat sep::" ";
-              bashf
-                dir::dir
-                "ocamldep -pp refmt -ml-synonym .re -mli-synonym .rei -sort -one-line %s"
-                (tap 1 pathsString)
-            }
-          )
-      )
+      fun depsForPaths =>
+        List.zip_exn pathsAsModules depsForPaths |>
+          topologicalSort |> List.map f::(fun m => rel dir::dir (m ^ ".re"))
     )
-    (
-      fun string =>
-        String.split string on::' ' |>
-          List.filter f::nonBlank |> List.map f::(rel dir::dir) |> taplp 1
-    );
+};
 
 /* the module alias file takes the current library foo's first-party sources, e.g. A.re, B.re, and turn them
    into a foo.re file whose content is:
@@ -307,47 +240,40 @@ let moduleAliasFileScheme buildDir::buildDir sourceModules::sourceModules libNam
           Printf.sprintf "let module %s = %s__%s;\n" moduleName (cap libName) moduleName
       ) |>
       String.concat sep::"";
+  let action =
+    bashf
+      dir::buildDir
+      /* We suppress a few warnings here through -w.
+         - 49: Absent cmi file when looking up module alias. Aka Foo__A and Foo__B's compiled cmis
+         can't be found at the moment this module alias file is compiled. This is normal, since the
+         module alias file is the first thing that's compiled (so that we can open it during
+         compilation of A.re and B.re into Foo__A and Foo__B). Think of this as forward declaration.
+
+         - 30: Two labels or constructors of the same name are defined in two mutually recursive
+         types. I forgot...
+
+         - 40: Constructor or label name used out of scope. I forgot too. Great comment huh?
+
+         More flags:
+         -pp refmt option makes ocamlc take our reason syntax source code and pass it through our
+         refmt parser first, before operating on the AST.
+
+         -bin-annot: generates cmt files that contains info such as types and bindings, for use with
+         Merlin.
+
+         -g: add debugging info. You don't really ever compile without this flag.
+
+         -impl: source file. This flag's needed if the source extension isn't ml. I think.
+
+         -o: output name
+         */
+      "ocamlc -pp refmt -bin-annot -g -no-alias-deps -w -49 -w -30 -w -40 -c -impl %s -o %s"
+      (Path.basename sourcePath)
+      (Path.basename cmo);
+  let compileRule =
+    Rule.create targets::[cmo, cmi, cmt] (mapD (Dep.path sourcePath) (fun () => action));
   let contentRule =
     Rule.create targets::[sourcePath] (Dep.return (Action.save fileContent target::sourcePath));
-  let compileRule =
-    Rule.create
-      targets::[cmo, cmi, cmt]
-      (
-        mapD
-          (Dep.path sourcePath)
-          (
-            fun () =>
-              bashf
-                dir::buildDir
-                /* We suppress a few warnings here through -w.
-                   - 49: Absent cmi file when looking up module alias. Aka Foo__A and Foo__B's compiled cmis
-                   can't be found at the moment this module alias file is compiled. This is normal, since the
-                   module alias file is the first thing that's compiled (so that we can open it during
-                   compilation of A.re and B.re into Foo__A and Foo__B). Think of this as forward declaration.
-
-                   - 30: Two labels or constructors of the same name are defined in two mutually recursive
-                   types. I forgot...
-
-                   - 40: Constructor or label name used out of scope. I forgot too. Great comment huh?
-
-                   More flags:
-                   -pp refmt option makes ocamlc take our reason syntax source code and pass it through our
-                   refmt parser first, before operating on the AST.
-
-                   -bin-annot: generates cmt files that contains info such as types and bindings, for use with
-                   Merlin.
-
-                   -g: add debugging info. You don't really ever compile without this flag.
-
-                   -impl: source file. This flag's needed if the source extension isn't ml. I think.
-
-                   -o: output name
-                   */
-                "ocamlc -pp refmt -bin-annot -g -no-alias-deps -w -49 -w -30 -w -40 -c -impl %s -o %s"
-                (Path.basename sourcePath)
-                (Path.basename cmo)
-          )
-      );
   Scheme.rules [contentRule, compileRule]
 };
 
@@ -364,7 +290,7 @@ let compileSourcesScheme buildDir::buildDir libName::libName sourcePaths::source
     let moduleAliasDep extension => relD dir::buildDir (libName ^ "." ^ extension);
     let compileEachSourcePath path =>
       mapD
-        (ocamlDepModules sourcePath::path)
+        (ocamlDepIncludingThirdParty sourcePath::path)
         (
           fun modules => {
             let thirdPartyModules =
@@ -429,43 +355,40 @@ let compileSourcesScheme buildDir::buildDir libName::libName sourcePaths::source
               thirdPartiesCmisDep,
               ...firstPartyModuleDeps
             ];
-            Rule.create
-              targets::[cmi, cmo, cmt]
-              (
-                mapD
-                  deps
-                  (
-                    fun () =>
-                      bashf
-                        dir::buildDir
-                        /* Most of the flags here have been explained previously in `moduleAliasFileScheme`.
-                           -intf-suffix: tells ocamlc what the interface file's extension is.
+            /* Only include js_of_ocaml in the modules search path if the current source mentions that Js
+               module. Might speed up some things? */
+            let jsooIncludeString =
+              List.exists thirdPartyModules f::(fun m => m == "Js") ?
+                Printf.sprintf "-I %s %s/js_of_ocaml.cma" jsooLocation jsooLocation : "";
+            let action =
+              bashf
+                dir::buildDir
+                /* Most of the flags here have been explained previously in `moduleAliasFileScheme`.
+                   -intf-suffix: tells ocamlc what the interface file's extension is.
 
-                           -c: compile only, don't link yet.
-                           */
-                        /* Example command: ocamlc -pp refmt -bin-annot -g -w -30 -w -40 -open Foo -I \
-                           path/to/js_of_ocaml path/to/js_of_ocaml/js_of_ocaml.cma -I ./ -I ../fooDependsOnMe -I \
-                           ../fooDependsOnMeToo -o foo__CurrentSourcePath -intf-suffix rei -c -impl \
-                           path/to/CurrentSourcePath.re */
-                        "ocamlc -pp refmt -bin-annot -g -w -30 -w -40 -open %s -I %s %s/js_of_ocaml.cma -I %s %s -o %s -intf-suffix rei -c -impl %s"
-                        (cap libName)
-                        jsooLocation
-                        jsooLocation
-                        (ts buildDir)
-                        (
-                          List.map
-                            thirdPartyModules
-                            f::(
-                              fun m => "-I " ^ (
-                                uncap m |> rel dir::buildDirRoot |> Path.reach_from dir::buildDir
-                              )
-                            ) |>
-                            String.concat sep::" "
-                        )
-                        outNameNoExtNoDir
-                        (Path.reach_from dir::buildDir path)
-                  )
-              )
+                   -c: compile only, don't link yet.
+                   */
+                /* Example command: ocamlc -pp refmt -bin-annot -g -w -30 -w -40 -open Foo -I \
+                   path/to/js_of_ocaml path/to/js_of_ocaml/js_of_ocaml.cma -I ./ -I ../fooDependsOnMe -I \
+                   ../fooDependsOnMeToo -o foo__CurrentSourcePath -intf-suffix rei -c -impl \
+                   path/to/CurrentSourcePath.re */
+                "ocamlc -pp refmt -bin-annot -g -w -30 -w -40 -open %s %s -I %s %s -o %s -intf-suffix rei -c -impl %s"
+                (cap libName)
+                jsooIncludeString
+                (ts buildDir)
+                (
+                  List.map
+                    thirdPartyModules
+                    f::(
+                      fun m => "-I " ^ (
+                        uncap m |> rel dir::buildDirRoot |> Path.reach_from dir::buildDir
+                      )
+                    ) |>
+                    String.concat sep::" "
+                )
+                outNameNoExtNoDir
+                (Path.reach_from dir::buildDir path);
+            Rule.create targets::[cmi, cmo, cmt] (mapD deps (fun () => action))
           }
         );
     Scheme.rules_dep (Dep.all (List.map sourcePaths f::compileEachSourcePath))
@@ -473,7 +396,8 @@ let compileSourcesScheme buildDir::buildDir libName::libName sourcePaths::source
   Scheme.dep (mapD jsooLocationD compileSourcesScheme')
 };
 
-/* Cma is a library file for the current library which bundles up all the lib's first-party compiled sources.
+/* This function assumes we're not using it at the top level.
+   Cma is a library file for the current library which bundles up all the lib's first-party compiled sources.
    This way, it's much easier, at the end, at the top level, to include each library's cma file to compile the
    final executable, than to tediously pass every single source file from every lib in order.
 
@@ -481,13 +405,9 @@ let compileSourcesScheme buildDir::buildDir libName::libName sourcePaths::source
    bundled up its third-party deps' cma too, but then we might get into duplicate artifact problem caused by
    e.g. library A and B both requiring and bundling C. So we can only bundle first-party code, and then, at
    the top, take all the transitive dependencies (libraries) cmas, figure out their relative order, and pass
-   them in that order to the ocamlc command. Still tedious, but at least we're not passing individual source
-   files in order. */
-let compileCmaScheme
-    sortedSourcePaths::sortedSourcePaths
-    libName::libName
-    isTopLevelLib::isTopLevelLib
-    buildDir::buildDir => {
+   them in that order to the ocamlc command (this logic is in `finalOutputsScheme` below). Still tedious, but
+   at least we're not passing individual source files in order. */
+let compileCmaScheme sortedSourcePaths::sortedSourcePaths libName::libName buildDir::buildDir => {
   let cmaPath = rel dir::buildDir libraryFileName;
   let moduleAliasCmoPath = rel dir::buildDir (libName ^ ".cmo");
   let cmos =
@@ -497,114 +417,108 @@ let compileCmaScheme
       f::(fun path => rel dir::buildDir (libName ^ "__" ^ fileNameNoExtNoDir path ^ ".cmo"));
   let cmosString = List.map cmos f::Path.basename |> String.concat sep::" ";
   /* Final bundling. Time to get all the transitive dependencies... */
-  if isTopLevelLib {
-    Scheme.dep (
-      mapD
-        (Dep.both jsooLocationD sortTransitiveThirdParties)
-        (
-          fun (jsooLocation, thirdPartyTransitiveDeps) => {
-            let transitiveCmaPaths =
-              List.map
-                thirdPartyTransitiveDeps
-                f::(fun dep => rel dir::(rel dir::buildDirRoot (uncap dep)) libraryFileName);
-            Scheme.rules [
-              Rule.simple
-                targets::[cmaPath]
-                deps::(
-                  /* TODO: I don't think cmis and cmts are being read here, so we don't need to include them. */
-                  [moduleAliasCmoPath] @ cmos @ transitiveCmaPaths |>
-                    List.map f::Dep.path
-                )
-                action::(
-                  bashf
-                    dir::buildDir
-                    /* For ease of coding, we'll blindly include js_of_ocaml in the -I search path here, in case
-                       the module invokes some jsoo's Js module-related stuff. */
-                    /* Example command: ocamlc -g -I path/to/js_of_ocaml path/to/js_of_ocaml/js_of_ocaml.cma \
-                       -open Top -a -o lib.cma  ../barDependsOnMe/lib.cma ../bar/lib.cma ../baz/lib.cma \
-                       top.cmo aDependsOnMe.cmo a.cmo moreFirstPartyCmo.cmo */
-                    /* Flags:
-                       -I: search path(s), when ocamlc looks for modules referenced inside the file.
-
-                       -open: compile the file as if [file being opened] was opened at the top of the file. In
-                       our case, we open our module alias file generated with `moduleAliasFileScheme`. See that
-                       function for more comment.
-
-                       -a: flag for building a library.
-
-                       -o: output file name.
-                       */
-                    "ocamlc -g -I %s %s/js_of_ocaml.cma -open %s -a -o %s %s %s %s"
-                    jsooLocation
-                    jsooLocation
-                    (cap libName)
-                    (Path.basename cmaPath)
-                    (
-                      transitiveCmaPaths |>
-                        List.map f::(Path.reach_from dir::buildDir) |> String.concat sep::" "
-                    )
-                    (Path.basename moduleAliasCmoPath)
-                    cmosString
-                )
-            ]
-          }
-        )
-    )
-  } else {
-    Scheme.rules [
-      Rule.simple
-        targets::[cmaPath]
-        deps::(List.map [moduleAliasCmoPath, ...cmos] f::Dep.path)
-        action::(
-          bashf
-            dir::buildDir
-            /* Example command: ocamlc -g -open Foo -a -o lib.cma foo.cmo aDependsOnMe.cmo a.cmo b.cmo */
-            "ocamlc -g -open %s -a -o %s %s %s"
-            (cap libName)
-            (Path.basename cmaPath)
-            (Path.basename moduleAliasCmoPath)
-            cmosString
-        )
-    ]
-  }
-};
-
-/* This function assumes we're using it only at the top level. */
-/* We'll output an executable, plus a js_of_ocaml JavaScript file. Throughout the compilation of the source
-   files, we've already mingled in the correctly jsoo search paths in ocamlc to make this final compilation
-   work.
-
-   The output step is simple because the lib.cma library file already has all the information (including
-   dependencies) inside. */
-let finalOutputsScheme topBuildDir::topBuildDir => {
-  let cmaPath = rel dir::topBuildDir libraryFileName;
-  let binaryPath = rel dir::topBuildDir (finalOutputName ^ ".out");
-  let jsooPath = rel dir::topBuildDir (finalOutputName ^ ".js");
   Scheme.rules [
     Rule.simple
-      targets::[binaryPath]
-      /* Currently assume the entry file is Index.re, compiled into myLibraryName__Index.cmo */
-      deps::[Dep.path cmaPath, relD dir::topBuildDir (topLibName ^ "__Index.cmo")]
+      targets::[cmaPath]
+      deps::(List.map [moduleAliasCmoPath, ...cmos] f::Dep.path)
       action::(
         bashf
-          dir::topBuildDir
-          "ocamlc -g -o %s %s %s"
-          (Path.basename binaryPath)
+          dir::buildDir
+          /* Flags:
+             -open: compile the file as if [file being opened] was opened at the top of the file. In
+             our case, we open our module alias file generated with `moduleAliasFileScheme`. See that
+             function for more comment.
+
+             -a: flag for building a library.
+
+             -o: output file name.
+             */
+          /* Example command: ocamlc -g -open Foo -a -o lib.cma foo.cmo aDependsOnMe.cmo a.cmo b.cmo */
+          "ocamlc -g -open %s -a -o %s %s %s"
+          (cap libName)
           (Path.basename cmaPath)
-          (topLibName ^ "__Index.cmo")
-      ),
-    Rule.simple
-      targets::[jsooPath]
-      deps::[Dep.path binaryPath]
-      action::(
-        bashf
-          dir::topBuildDir
-          /* I don't know what the --linkall flag does, and does the --pretty flag work? Because the output is
-             still butt ugly. Just kidding I love you guys. */
-          "js_of_ocaml --source-map --no-inline --debug-info --pretty --linkall %s"
-          (Path.basename binaryPath)
+          (Path.basename moduleAliasCmoPath)
+          cmosString
       )
   ]
+};
+
+/* This function assumes we're using it only at the top level.
+   We'll output an executable, plus a js_of_ocaml JavaScript file. Throughout the compilation of the source
+   files, we've already mingled in the correctly jsoo search paths in ocamlc to make this final compilation
+   work. */
+let finalOutputsScheme sortedSourcePaths::sortedSourcePaths => {
+  let buildDir = rel dir::buildDirRoot topLibName;
+  let binaryPath = rel dir::buildDir (finalOutputName ^ ".out");
+  let jsooPath = rel dir::buildDir (finalOutputName ^ ".js");
+  let moduleAliasCmoPath = rel dir::buildDir (topLibName ^ ".cmo");
+  let cmos =
+    List.map
+      /* To compile one cma file, we need to pass the compiled first-party sources in order to ocamlc */
+      sortedSourcePaths
+      f::(fun path => rel dir::buildDir (topLibName ^ "__" ^ fileNameNoExtNoDir path ^ ".cmo"));
+  let cmosString = List.map cmos f::Path.basename |> String.concat sep::" ";
+  Scheme.dep (
+    mapD
+      (Dep.both jsooLocationD sortTransitiveThirdParties)
+      (
+        fun (jsooLocation, thirdPartyTransitiveDeps) => {
+          let transitiveCmaPaths =
+            List.map
+              thirdPartyTransitiveDeps
+              f::(fun dep => rel dir::(rel dir::buildDirRoot (uncap dep)) libraryFileName);
+          let action =
+            bashf
+              dir::buildDir
+              /* For ease of coding, we'll blindly include js_of_ocaml in the -I search path here, in case
+                 the module invokes some jsoo's Js module-related stuff. */
+              /* Example command: ocamlc -g -I path/to/js_of_ocaml path/to/js_of_ocaml/js_of_ocaml.cma \
+                 -open Top -o app.out  ../barDependsOnMe/lib.cma ../bar/lib.cma ../baz/lib.cma \
+                 top.cmo aDependsOnMe.cmo a.cmo moreFirstPartyCmo.cmo */
+              /* Flags:
+                 -I: search path(s), when ocamlc looks for modules referenced inside the file.
+
+                 -open: compile the file as if [file being opened] was opened at the top of the file. In
+                 our case, we open our module alias file generated with `moduleAliasFileScheme`. See that
+                 function for more comment.
+
+                 -o: output file name.
+                 */
+              "ocamlc -g -I %s %s/js_of_ocaml.cma -open %s -o %s %s %s %s"
+              jsooLocation
+              jsooLocation
+              (cap topLibName)
+              (Path.basename binaryPath)
+              (
+                transitiveCmaPaths |>
+                  List.map f::(Path.reach_from dir::buildDir) |> String.concat sep::" "
+              )
+              (Path.basename moduleAliasCmoPath)
+              cmosString;
+          Scheme.rules [
+            Rule.simple
+              targets::[binaryPath]
+              deps::(
+                /* TODO: I don't think cmis and cmts are being read here, so we don't need to include them. */
+                [moduleAliasCmoPath] @ cmos @ transitiveCmaPaths |>
+                  List.map f::Dep.path
+              )
+              action::action,
+            Rule.simple
+              targets::[jsooPath]
+              deps::[Dep.path binaryPath]
+              action::(
+                bashf
+                  dir::buildDir
+                  /* I don't know what the --linkall flag does, and does the --pretty flag work? Because the
+                     output is still butt ugly. Just kidding I love you guys. */
+                  "js_of_ocaml --source-map --no-inline --debug-info --pretty --linkall %s"
+                  (Path.basename binaryPath)
+              )
+          ]
+        }
+      )
+  )
 };
 
 /* The function that ties together all the previous steps and compiles a given library, whether it be our top
@@ -627,12 +541,12 @@ let compileLibScheme
                 libName::libName
                 sourceModules::(List.map unsortedPaths f::fileNameNoExtNoDir),
               compileSourcesScheme buildDir::buildDir libName::libName sourcePaths::unsortedPaths,
-              compileCmaScheme
-                buildDir::buildDir
-                isTopLevelLib::isTopLevelLib
-                libName::libName
-                sortedSourcePaths::sortedPaths,
-              isTopLevelLib ? finalOutputsScheme topBuildDir::buildDir : Scheme.no_rules
+              isTopLevelLib ?
+                /* if we're at the final, top level compilation, there's no need to build a cma output (and
+                   then generate an executable from it). We can cut straight to generating the executable. See
+                   `finalOutputsScheme`. */
+                finalOutputsScheme sortedSourcePaths::sortedPaths :
+                compileCmaScheme buildDir::buildDir libName::libName sortedSourcePaths::sortedPaths
             ]
           )
     )
