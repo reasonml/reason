@@ -563,7 +563,6 @@ module JS_syntax = struct
          let _ = maybe_skip_phrase lexbuf in
          raise(Syntaxerr.Error(Syntaxerr.Other loc))
        else
-         let _ = print_string !Location.input_name in
          raise x
     | x -> raise x
 
