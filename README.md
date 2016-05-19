@@ -24,9 +24,9 @@ opam init
 opam switch 4.02.3
 eval `opam config env`
 opam update
-opam pin add -y merlin https://github.com/the-lambda-church/merlin.git#reason-0.0.1
-opam pin add -y merlin_extend https://github.com/let-def/merlin-extend.git#reason-0.0.1
-opam pin add -y reason https://github.com/facebook/reason.git#0.0.6
+opam pin add -y merlin 'https://github.com/the-lambda-church/merlin.git#reason-0.0.1'
+opam pin add -y merlin_extend 'https://github.com/let-def/merlin-extend.git#reason-0.0.1'
+opam pin add -y reason 'https://github.com/facebook/reason.git#0.0.6'
 
 ```
 
