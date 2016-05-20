@@ -536,7 +536,7 @@ By default, values can't see a binding that points to it, but including the
 to see and call themselves, giving us the power of recursion.
 
 ```reason
-let rec neverTerminate = fun n => n + neverTerminate (n - 1);
+let rec neverTerminate = fun () => neverTerminate ();
 ```
 
 #### Mutually Recursive Functions
