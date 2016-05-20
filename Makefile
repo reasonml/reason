@@ -33,12 +33,12 @@ clean:
 
 # Compile error messages into ml file, checks if the error messages are complete and not redundent
 compile_error: update_error
-	menhir --strict --unused-tokens src/reason_parser.mly --compile-errors src/reason_parser.messages > src/reason_parser_message.ml
+	menhir --explain --strict --unused-tokens src/reason_parser.mly --compile-errors src/reason_parser.messages > src/reason_parser_message.ml
 
 # Update error messages based on new grammar
 update_error:
 	@ cp -f src/reason_parser.messages src/reason_parser.messages.bak
-	@ if ! menhir --strict --unused-tokens src/reason_parser.mly --update-errors src/reason_parser.messages.bak | sed -e 's/[[:space:]]*$$//g' > src/reason_parser.messages ; then \
+	@ if ! menhir --explain --strict --unused-tokens src/reason_parser.mly --update-errors src/reason_parser.messages.bak | sed -e 's/[[:space:]]*$$//g' > src/reason_parser.messages ; then \
 		cp src/reason_parser.messages.bak src/reason_parser.messages ; \
 		exit 1 ; \
 	fi
