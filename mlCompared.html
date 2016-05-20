@@ -326,25 +326,15 @@ let myRec = {x: 0, y: 10};</pre>
 let myFuncs = {
   myFun = (fun x -> x + 1);
   your = (fun a b -> a + b);
-}</pre>
+};</pre>
     </td>
     <td>
       <pre>
 let myFuncs = {
   myFun: fun x => x + 1,
   your: fun a b => a + b
-}</pre>
+};</pre>
     </td>
-  <tr>
-    <td>
-      <pre>
-let myRec = {x = 0; y = 10}</pre>
-    </td>
-    <td>
-      <pre>
-let myRec = {x: 0, y: 10};</pre>
-    </td>
-  </tr>
 </table>
 
 ### Type Definitions
@@ -365,8 +355,9 @@ there are separate syntaxes for tuple types `(x * y)` and tuple values values
 >     </td>
 >     <td>
 >       <pre>
-> type tuple = (int, int)
-> let tup: tuple = (10, 30)</pre>
+> type tuple = (int, int);
+> let tup: tuple = (10, 30);</pre>
+>     </td>
 >   </tr>
 > <thead><tr> <th scope="col"><p>OCaml Records</p></th><th scope="col"><p>Reason Records</p></th></tr></thead>
 >   <tr>
@@ -382,6 +373,7 @@ there are separate syntaxes for tuple types `(x * y)` and tuple values values
 > type r =
 >   {x: int, y: int};
 > let myRec: r = {x: 0, y: 10};</pre>
+>     </td>
 >   </tr>
 > <thead><tr> <th scope="col"><p>OCaml Functions</p></th><th scope="col"><p>Reason Functions</p></th></tr></thead>
 >   <tr>
@@ -394,6 +386,7 @@ there are separate syntaxes for tuple types `(x * y)` and tuple values values
 >       <pre>
 > type func = int => int;
 > let x: func = fun a => a + 1;</pre>
+>     </td>
 >   </tr>
 > </table>
 
@@ -513,15 +506,15 @@ everything else), wrapping them in parenthesis after appending
 `:typeAnnotation`.
 
 ```reason
-fun (arg : argType) => returnValue
+fun (arg : argType) => returnValue;
 ```
 
 ```reason
-fun (arg : argType) => fun (arg2 : arg2Type) => returnValue
+fun (arg : argType) => fun (arg2 : arg2Type) => returnValue;
 ```
 
 ```reason
-fun (arg : argType) (arg2 : arg2Type) => returnValue
+fun (arg : argType) (arg2 : arg2Type) => returnValue;
 ```
 
 
@@ -539,9 +532,9 @@ let myFunc (a:int) (b:int) :int -> int = fun x -> x + a + b
 
 ```reason
 /* Reason */
-let myFunc (a:int) (b:int) :(int, int) => (a, b)
-let myFunc (a:int) (b:int) :list int => [1]
-let myFunc (a:int) (b:int) :(int => int) => fun x => x + a + b
+let myFunc (a:int) (b:int) :(int, int) => (a, b);
+let myFunc (a:int) (b:int) :list int => [1];
+let myFunc (a:int) (b:int) :(int => int) => fun x => x + a + b;
 ```
 > Because we're using `=>` for all functions everywhere in `Reason`, there's
 one case where we need to add extra parens around a return type that is
@@ -549,7 +542,7 @@ itself a function type.
 
 
 
-###Exported/Local Modules
+### Exported/Local Modules
 
 With `Reason` the syntax for defining local modules (Inside of block
 scope/function bodies) is exactly the same as defining top level modules. The
@@ -664,17 +657,17 @@ a single argument which happens to be a tuple.
 The following examples shows the difference between passing *two* type
 parameters to `list`, and a *single* type parameter that happens to be a tuple.
 <table>
-  <thead><tr> <th scope="col"><p>Reason</p></th><th scope="col"><p>OCaml</p></th></tr></thead>
+  <thead><tr> <th scope="col"><p>OCaml</p></th><th scope="col"><p>Reason</p></th></tr></thead>
   <tr>
-    <td>
-      <pre>
-type pairList = list int int;
-type pairList = list (int, int);</pre>
-    </td>
     <td>
       <pre>
 type pairList = (int, int) list
 type pairList = (int \* int) list</pre>
+    </td>
+    <td>
+      <pre>
+type pairList = list int int;
+type pairList = list (int, int);</pre>
     </td>
   </tr>
 </table>
@@ -711,8 +704,36 @@ type pairList = (int \* int) list</pre>
   *is* a tuple.
 
 <table>
-  <thead><tr> <th scope="col"><p>Reason</p></th><th scope="col"><p>OCaml</p></th></tr></thead>
+  <thead><tr> <th scope="col"><p>OCaml</p></th><th scope="col"><p>Reason</p></th></tr></thead>
   <tr>
+    <td>
+      <pre>
+type myVariant =
+   | HasNothing
+   | HasSingleInt of int
+   | HasSingleTuple of (int \* int)
+   | HasMultipleInts of int \* int
+   | HasMultipleTuples
+      of (int \* int) \* (int\* int)
+
+let a = HasSingleInt 10
+let a = HasSingleTuple (10, 10)
+let a = HasMultipleInts (10, 10)
+let a =
+  HasMultipleTuples (
+    (10, 10),
+    (10, 10)
+  )
+
+let res = match x with
+   | HasNothing -> 0
+   | HasSingleInt x -> 0
+   | HasSingleTuple (x, y) -> 0
+   | HasMultipleInts (x, y) -> 0
+   | HasMultipleTuples
+      ((x, y),
+       (q, r)) -> 0</pre>
+    </td>
     <td>
       <pre>
 type myVariant =
@@ -740,34 +761,6 @@ let res = switch x {
       (x, y)
       (q, r) => 0
 };</pre>
-    </td>
-    <td>
-      <pre>
-type myVariant =
-   | HasNothing
-   | HasSingleInt of int
-   | HasSingleTuple of (int \* int)
-   | HasMultipleInts of int \* int
-   | HasMultipleTuples
-      of (int \* int) \* (int\* int)
-
-let a = HasSingleInt 10
-let a = HasSingleTuple (10, 10)
-let a = HasMultipleInts (10, 10)
-let a =
-  HasMultipleTuples (
-    (10, 10),
-    (10, 10)
-  )
-
-let res = match x with
-   | HasNothing -> 0
-   | HasSingleInt x -> 0
-   | HasSingleTuple (x, y) -> 0
-   | HasMultipleInts (x, y) -> 0
-   | HasMultipleTuples
-      ((x, y),
-       (q, r)) -> 0;</pre>
     </td>
   </tr>
 </table>
@@ -809,11 +802,11 @@ let res = match x with
     <td>
       <pre>
 let res = switch x {
- | A (x, y) => switch y {
-   | None => 0
-   | Some i => 10
-   }
- | B x y => 0
+  | A (x, y) => switch y {
+    | None => 0
+    | Some i => 10
+  }
+  | B x y => 0
 };</pre>
     </td>
   </tr>
