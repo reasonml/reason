@@ -3278,7 +3278,7 @@ _pattern_without_or:
     {
       mkpat (Ppat_variant($1, Some $2))
     }
-  | pattern_without_or as_loc(COLONCOLON) pattern_without_or
+  | pattern_without_or COLONCOLON pattern_without_or
       { not_expecting 2 "::" }
   | pattern_without_or COLONCOLON as_loc(error)
       { expecting_pat (with_txt $3 "pattern") }
