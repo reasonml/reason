@@ -276,7 +276,7 @@ let res = switch (ylw, prp) {
 
 let rec atLeastOneFlushableChildAndNoWipNoPending composition atPriority => switch composition {
   | [] => false
-  | hd::tl =>
+  | [hd, ...tl] =>
       switch hd {
         | OpaqueGraph {lifecycle: Reconciled (_, [])} =>
             atLeastOneFlushableChildAndNoWipNoPending tl atPriority
