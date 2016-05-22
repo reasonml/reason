@@ -1,6 +1,6 @@
 # Portions Copyright (c) 2015-present, Facebook, Inc. All rights reserved.
 
-SHELL=/bin/bash -o pipefail
+SHELL=bash -o pipefail
 
 default: build test
 
