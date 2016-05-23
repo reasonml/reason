@@ -81,20 +81,20 @@ let invalidLex = "invalidCharacter.orComment.orString"
 let syntax_error_str err loc =
   if !Reason_config.recoverable then
     [
-      Ast_helper.Str.mk ~loc:loc (Parsetree.Pstr_extension (Reason_utils.syntax_error_extension_node loc invalidLex, []))
+      Ast_helper.Str.mk ~loc:loc (Parsetree.Pstr_extension (Syntax_util.syntax_error_extension_node loc invalidLex, []))
     ]
   else
     raise err
 
 let syntax_error_core_type err loc =
   if !Reason_config.recoverable then
-    Ast_helper.Typ.mk ~loc:loc (Parsetree.Ptyp_extension (Reason_utils.syntax_error_extension_node loc invalidLex))
+    Ast_helper.Typ.mk ~loc:loc (Parsetree.Ptyp_extension (Syntax_util.syntax_error_extension_node loc invalidLex))
   else
     raise err
 
 let syntax_error_sig err loc =
   if !Reason_config.recoverable then
-    [Ast_helper.Sig.mk ~loc:loc (Parsetree.Psig_extension (Reason_utils.syntax_error_extension_node loc invalidLex, []))]
+    [Ast_helper.Sig.mk ~loc:loc (Parsetree.Psig_extension (Syntax_util.syntax_error_extension_node loc invalidLex, []))]
   else
     raise err
 
@@ -281,7 +281,7 @@ module OCaml_syntax = struct
 
   (* Skip tokens to the end of the phrase *)
   (* TODO: consolidate these copy-paste skip/trys into something that works for
-   * every syntax (also see [reason_util]). *)
+   * every syntax (also see [syntax_util]). *)
   let rec skip_phrase lexbuf =
     try
       match Lexer_impl.token lexbuf with
@@ -324,26 +324,6 @@ module OCaml_syntax = struct
   let format_implementation_with_comments (implementation, _) formatter =
     Pprintast.structure formatter implementation
 end
-
-
-(* The following logic defines our own Error object
- * and register it with ocaml so it knows how to print it
- *)
-type error = Syntax_error of string
-
-exception Error of Location.t * error
-
-let report_error ppf (Syntax_error err) =
-  Format.(fprintf ppf "%s" err)
-
-let () =
-  Location.register_error_of_exn
-    (function
-     | Error (loc, err) ->
-        Some (Location.error_of_printer loc report_error err)
-     | _ ->
-        None
-     )
 
 module JS_syntax = struct
   module I = Reason_parser.MenhirInterpreter
@@ -492,7 +472,7 @@ module JS_syntax = struct
           *)
          let msg = Reason_parser_message.message state in
          let msg_with_state = Printf.sprintf "%d: %s" state msg in
-         raise (Error (loc, (Syntax_error msg_with_state)))
+         raise (Syntax_util.Error (loc, (Syntax_util.Syntax_error msg_with_state)))
     | I.Rejected ->
        begin
          let loc = last_token_loc supplier in

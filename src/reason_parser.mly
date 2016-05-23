@@ -56,7 +56,7 @@ open Longident
 open Parsetree
 open Ast_helper
 open Ast_mapper
-open Reason_utils
+open Syntax_util
 
 (*
    TODO:
@@ -418,7 +418,7 @@ let array_function ?(loc=dummy_loc()) str name =
 
 let syntax_error_str loc msg =
   if !Reason_config.recoverable then
-    Str.mk ~loc:loc (Pstr_extension (Reason_utils.syntax_error_extension_node loc msg, []))
+    Str.mk ~loc:loc (Pstr_extension (Syntax_util.syntax_error_extension_node loc msg, []))
   else
     raise(Syntaxerr.Error(Syntaxerr.Other loc))
 
@@ -427,7 +427,7 @@ let syntax_error () =
 
 let syntax_error_exp loc msg =
   if !Reason_config.recoverable then
-    Exp.mk ~loc (Pexp_extension (Reason_utils.syntax_error_extension_node loc msg))
+    Exp.mk ~loc (Pexp_extension (Syntax_util.syntax_error_extension_node loc msg))
   else
     syntax_error ()
 
@@ -436,7 +436,7 @@ let unclosed opening closing =
                                            closing.loc, closing.txt)))
 
 let unclosed_extension closing =
-  Reason_utils.syntax_error_extension_node closing.loc ("Expecting \"" ^ closing.txt ^ "\"")
+  Syntax_util.syntax_error_extension_node closing.loc ("Expecting \"" ^ closing.txt ^ "\"")
 
 let unclosed_mod opening closing =
   if !Reason_config.recoverable then
@@ -479,7 +479,7 @@ let expecting nonterm =
 
 let expecting_pat nonterm =
   if !Reason_config.recoverable then
-    mkpat(Ppat_extension (Reason_utils.syntax_error_extension_node nonterm.loc ("Expecting " ^ nonterm.txt)))
+    mkpat(Ppat_extension (Syntax_util.syntax_error_extension_node nonterm.loc ("Expecting " ^ nonterm.txt)))
   else
     expecting nonterm
 

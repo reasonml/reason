@@ -55,7 +55,7 @@ open Location
 open Longident
 open Parsetree
 open Easy_format
-open Reason_utils
+open Syntax_util
 open Ast_mapper
 
 

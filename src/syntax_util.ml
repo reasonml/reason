@@ -186,3 +186,23 @@ let apply_mapper_chain_to_toplevel_phrase toplevel_phrase chain =
 
 let apply_mapper_chain_to_use_file use_file chain =
   List.map (fun x -> apply_mapper_chain_to_toplevel_phrase x chain) use_file
+
+(* The following logic defines our own Error object
+ * and register it with ocaml so it knows how to print it
+ *)
+
+type error = Syntax_error of string
+
+exception Error of Location.t * error
+
+let report_error ppf (Syntax_error err) =
+  Format.(fprintf ppf "%s" err)
+
+let () =
+  Location.register_error_of_exn
+    (function
+     | Error (loc, err) ->
+        Some (Location.error_of_printer loc report_error err)
+     | _ ->
+        None
+     )
