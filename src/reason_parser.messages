@@ -398,7 +398,7 @@ parse_pattern: LBRACKET UNDERSCORE COMMA DOTDOTDOT WITH
 ## pattern_comma_list COMMA DOTDOTDOT
 ##
 
-<SYNTAX ERROR>
+Expecting a valid list identifier.
 
 parse_pattern: LBRACKET UNDERSCORE COMMA UNDERSCORE RPAREN
 ##
