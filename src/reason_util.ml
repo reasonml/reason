@@ -3,7 +3,6 @@
  *)
  (* Portions Copyright (c) 2015-present, Facebook, Inc. All rights reserved. *)
 
-
 let transmogrify_exn exn template =
   assert (Obj.tag (Obj.repr exn) = 0);
   Obj.set_field (Obj.repr exn) 0 (Obj.field (Obj.repr template) 0);
@@ -50,5 +49,5 @@ let correctly_catch_parse_errors fn lexbuf =
     raise (match exn with
           | Reason_lexer.Error _ -> transmogrify_exn exn exn_Lexer_Error
           | Syntaxerr.Error _ -> transmogrify_exn exn exn_Syntaxerr_Error
-          | Reason_toolchain.Error (loc, _) -> transmogrify_exn (Syntaxerr.Error(Syntaxerr.Other loc)) exn_Syntaxerr_Error
+          | Syntax_util.Error (loc, _) -> transmogrify_exn (Syntaxerr.Error(Syntaxerr.Other loc)) exn_Syntaxerr_Error
           | _ -> exn)
