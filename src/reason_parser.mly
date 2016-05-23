@@ -3278,8 +3278,8 @@ _pattern_without_or:
     {
       mkpat (Ppat_variant($1, Some $2))
     }
-  | pattern_without_or COLONCOLON pattern_without_or
-      { not_expecting 2 "::" }
+  | pattern_without_or as_loc(COLONCOLON) pattern_without_or
+      { Location.raise_errorf ~loc:$2.loc ":: is not supported in Reason, please use [hd, ...tl] instead" }
   | pattern_without_or COLONCOLON as_loc(error)
       { expecting_pat (with_txt $3 "pattern") }
   | LPAREN COLONCOLON RPAREN LPAREN pattern_without_or COMMA pattern_without_or RPAREN
