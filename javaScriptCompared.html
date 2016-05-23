@@ -61,8 +61,8 @@ Characters are strings               |  <pre>'a'  </pre>
 <pre>const x = y;</pre>              |  <pre>let x = y;</pre>
 <pre>let x = y;</pre>                |  <pre>reference cells</pre>
 <pre>var x = y;</pre>                |  No equivalent (thankfully)
-<pre>[...x, lst] (linear time)</pre> | <pre>[...x, lst] (constant time)</pre>
-<pre>[lst, ...x] (linear time)</pre> | <pre>Not supported</pre>
+<pre>[x, ...lst] (linear time)</pre> | <pre>[x, ...lst] (constant time)</pre>
+<pre>[...lst, x] (linear time)</pre> | <pre>Not supported</pre>
 <pre>{...obj, x: y}</pre>            | <pre>{...obj, x: y}</pre>
 
 
