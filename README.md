@@ -4,8 +4,8 @@ Reason: Build Systems Rapidly
 
 - Approachable syntax.
 - Powerful, automatic source code formatting.
-- Adopt Incrementally with straightforward `JavaScript/C` interop.
-- Bare metal compilation - *No Virtual Machine*.
+- Adopt Incrementally with `JavaScript/C` interop.
+- Ahead of time compilation to assembly - without a language level VM.
 - Rapidly develop and share projects.
 
 Install Stable
