@@ -663,7 +663,7 @@ let message =
     | 1157 ->
         "<SYNTAX ERROR>\n"
     | 1278 ->
-        "Defining a function?\nExpecting one of the following:\n  - \"=>\" to start the function body\n  - an identifier to add an function parameter\n  - \":\" to specify the return type\n"
+        "Defining a function?\nExpecting one of the following:\n  - \"=>\" to start the function body\n  - an identifier to add a function parameter\n  - \":\" to specify the return type\n"
     | 1246 ->
         "<SYNTAX ERROR>\n"
     | 1162 ->
@@ -2295,7 +2295,7 @@ let message =
     | 747 ->
         "<SYNTAX ERROR>\n"
     | 745 ->
-        "<SYNTAX ERROR>\n"
+        "Expecting a valid list identifier\n"
     | 746 ->
         "<SYNTAX ERROR>\n"
     | 749 ->
