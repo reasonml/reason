@@ -470,7 +470,12 @@ module JS_syntax = struct
          (* Check the error database to see what's the error message
           * associated with the current parser state
           *)
-         let msg = Reason_parser_message.message state in
+         let msg =
+           try
+             Reason_parser_message.message state
+           with
+             | Not_found -> "<UNKNOWN SYNTAX ERROR>"
+         in
          let msg_with_state = Printf.sprintf "%d: %s" state msg in
          raise (Syntax_util.Error (loc, (Syntax_util.Syntax_error msg_with_state)))
     | I.Rejected ->

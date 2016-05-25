@@ -398,7 +398,7 @@ parse_pattern: LBRACKET UNDERSCORE COMMA DOTDOTDOT WITH
 ## pattern_comma_list COMMA DOTDOTDOT
 ##
 
-Expecting a valid list identifier.
+Expecting a valid list identifier
 
 parse_pattern: LBRACKET UNDERSCORE COMMA UNDERSCORE RPAREN
 ##
@@ -13359,7 +13359,7 @@ implementation: LET LIDENT UNDERSCORE WITH
 Defining a function?
 Expecting one of the following:
   - "=>" to start the function body
-  - an identifier to add an function parameter
+  - an identifier to add a function parameter
   - ":" to specify the return type
 
 implementation: LET LIDENT WITH
