@@ -36,6 +36,11 @@
 /**
  **
  */
+
+let module JustString = {
+  include Map.Make Int32; /* Comment eol include */
+};
+
 let testingEndOfLineComments =
   [
     "Item 1" /* Comment For First Item */,
