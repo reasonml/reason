@@ -255,7 +255,7 @@ compile-time records, but the most power comes from being able to pass modules
 through functions. But since modules are compile-time constructs, we can't use
 *regular* runtime functions - we need functions that can operate on *modules*.
 We call these special functions "functors", and designate them by using the keyword
-`functor` instead of `fun` at definition time.
+`fun` at definition time.
 
 > The combination of modules, signatures and module functions are incredibly
 powerful, especially when combined with module `include`ing. Together they
@@ -267,8 +267,8 @@ The syntax for defining and using module functions is very much like the syntax 
 defining and using regular functions. The primary differences are:
 
 
-- Module functions use the `let module` keywords instead of `let` and the `functor`
-  keyword instead of `fun`.
+- Module functions use the `let module` keywords instead of `let` and the `fun` 
+keyword designates functor in this case.
 - Module functions accept modules as arguments and return a module.
 - Module functions *require* annotating arguments.
 - Module functions must start with a capital letter (just like modules/signatures).
@@ -277,7 +277,7 @@ defining and using regular functions. The primary differences are:
 module type HasT = {
   type t;
 };
-let module Pairify = functor (X: HasT) => {
+let module Pairify = fun (X: HasT) => {
    type p = (X.t, X.t);
    let create = fun (x: X.t) => (x, x);
 };
@@ -321,7 +321,7 @@ module type ParifyT = (HasTInstance: HasT) => {
   let create: HasTInstance.t => p;
 };
 
-let module Pairify: ParifyT = functor (X:HasT) => {
+let module Pairify: ParifyT = fun (X:HasT) => {
   type p = (X.t, X.t);
   let create = fun (x: X.t) => (x, x);
 };
