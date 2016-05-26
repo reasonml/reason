@@ -3,7 +3,39 @@ open Asttypes
 open Parsetree
 open Longident
 
-let a = Str.global_replace
+(** [is_prefixed prefix i str] checks if prefix is the prefix of str
+  * starting from position i
+  *)
+let is_prefixed prefix i str =
+  let len = String.length prefix in
+  if i + len > String.length str then
+    1
+  else
+    String.compare (String.sub str i len) prefix
+
+
+let rec replace_string_ old_str new_str i str buffer =
+  if i >= String.length str then
+    ()
+  else
+    (* found match *)
+    if 0 = is_prefixed old_str i str then
+      (* split string *)
+      let old_str_len = String.length old_str in
+      Buffer.add_string buffer new_str;
+      replace_string_ old_str new_str (i + old_str_len) str buffer
+    else
+      let start = String.sub str i 1 in
+      Buffer.add_string buffer start;
+      replace_string_ old_str new_str (i + 1) str buffer
+
+
+(** [replace_string old_str new_str str] replaces old_str to new_str in str *)
+let replace_string old_str new_str str =
+  let buffer = Buffer.create (String.length old_str * 2) in
+  replace_string_ old_str new_str 0 str buffer;
+  Buffer.contents buffer
+
 
 module StringMap = Map.Make (String)
 
@@ -89,12 +121,8 @@ let unescape_stars_slashes_mapper =
     else
       let ending = String.sub str 1 (len - 1) in
     String.sub str 0 1 ^
-      Str.global_replace
-        (* Regex is: \\\*, but escaped into string form. *)
-        (Str.regexp "\\\\\\*")
-        ("*")
-        (* Regex is: \\/, but escaped into string form. *)
-        (Str.global_replace (Str.regexp "\\\\/") "/" ending)
+      replace_string "\\*" "*"
+        (replace_string ("\\/") "/" ending)
   in
   identifier_mapper unescape_stars_slashes
 
@@ -108,12 +136,8 @@ let escape_stars_slashes_mapper =
     else
       let ending = String.sub str 1 (len -1) in
       String.sub str 0 1 ^
-        Str.global_replace
-          (* Regex is \*, with escaped backslashes *)
-          (Str.regexp "\\*")
-          (* Not a regex - actually the string literal "\*" *)
-          ("\\*")
-          (Str.global_replace (Str.regexp "/") "\\/" ending)
+        replace_string "*" "\\*"
+          (replace_string "/" "\\/" ending)
   in
   identifier_mapper escape_stars_slashes
 
