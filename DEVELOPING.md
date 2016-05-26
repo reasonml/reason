@@ -1,8 +1,8 @@
-Debugging Yacc Grammar Conflicts:
+Debugging Grammar Conflicts:
 -------------------------
-Run the main parser through yacc with the `-v` flag to have it print out
-details about the conflict.  `ocamlyacc -v src/reason_parser.mly`. The debug 
-information can be found at `src/reason_parser.output`.
+Run the main parser through menhir with the `--explain` flag to have it print out
+details about the conflict.  `menhir src/reason_parser.mly --explain`. The debug 
+information can be found at `src/reason_parser.conflicts`.
 
 Debugging the parser state at runtime:
 ------------------------
