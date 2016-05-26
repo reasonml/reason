@@ -277,7 +277,7 @@ keyword designates functor in this case.
 module type HasT = {
   type t;
 };
-let module Pairify = func (X: HasT) => {
+let module Pairify = fun (X: HasT) => {
    type p = (X.t, X.t);
    let create = fun (x: X.t) => (x, x);
 };
