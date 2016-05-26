@@ -24,9 +24,10 @@ if [ ! -f $HOME/.reasoninit ]; then
     # TODO: ideally we should generate this file by refmtting
     # .ocamlinit. But refmt doesn't support toplevel formatting yet
     echo "/* Added by rtop */
-try Topdirs.dir_directory (Sys.getenv \"OCAML_TOPLEVEL_PATH\")
-with Not_found => ()
-" > $HOME/.reasoninit
+let () =
+  try (Topdirs.dir_directory (Sys.getenv \"OCAML_TOPLEVEL_PATH\")) {
+  | Not_found => ()
+  };" > $HOME/.reasoninit
 fi
 
 utop -init $DIR/rtop_init.ml -I $HOME
