@@ -364,8 +364,8 @@ there are separate syntaxes for tuple types `(x * y)` and tuple values values
 >     <td>
 >       <pre>
 > type r =
->   {x: int, y: int};
-> let myRec: r = {x = 0, y = 10};</pre>
+>   {x: int; y: int};
+> let myRec: r = {x = 0; y = 10};</pre>
 >
 >     </td>
 >     <td>
@@ -628,7 +628,7 @@ type and returns a new type.
 let x: int list = [2]
 type listOfListOfInts =
   int list list
-type ('a, 'b) tup = ('a, 'b)
+type ('a, 'b) tup = ('a \* 'b)
 type pairs = (int, int) tup list
 let tuples: pairs = [(2, 3)]</pre>
     </td>
