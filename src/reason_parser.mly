@@ -1129,7 +1129,6 @@ interface:
 toplevel_phrase: _toplevel_phrase {apply_mapper_chain_to_toplevel_phrase $1 default_mapper_chain}
 _toplevel_phrase:
     structure_item SEMI                 { Ptop_def [$1]}
-  | structure_item EOF                  { Ptop_def []}
   | EOF                                 { raise End_of_file}
   | toplevel_directive SEMI             { $1 }
 ;
