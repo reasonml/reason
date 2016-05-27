@@ -655,18 +655,18 @@ type constructor accepting multiple arguments and a type constructor accepting
 a single argument which happens to be a tuple.
 
 The following examples shows the difference between passing *two* type
-parameters to `list`, and a *single* type parameter that happens to be a tuple.
+parameters to `pair`, and a *single* type parameter that happens to be a tuple.
 <table>
   <thead><tr> <th scope="col"><p>OCaml</p></th><th scope="col"><p>Reason</p></th></tr></thead>
   <tr>
     <td>
       <pre>
-type pairList = (int, int) list
+type intPair = (int, int) pair
 type pairList = (int \* int) list</pre>
     </td>
     <td>
       <pre>
-type pairList = list int int;
+type intPair = pair int int;
 type pairList = list (int, int);</pre>
     </td>
   </tr>
