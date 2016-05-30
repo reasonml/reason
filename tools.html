@@ -95,10 +95,10 @@ them use `Merlin` to power their type driven interactive editing experience.
 ### Atom
 
 ##### Install
-`Reason` works best in Atom when the `Nuclide` plugin is installed. There is _one_ plugin called `atom-reason-loader` that must be installed using the instructions here.
+`Reason` works best in Atom when the `nuclide` plugin is installed. There is _one_ plugin called `atom-reason-loader` that must be installed using the instructions here.
 `atom-reason-loader` has one job - to dynamically install any other necessary `Reason` plugins. Your
 OPAM installation of `Reason` provides the _real_ IDE plugins, that `atom-reason-loader` will install.
-Those other plugins include `NuclideReason` (IDE features), and `language-reason` (syntax highlighting).
+Those plugins include `atom-reason` (IDE features), and `language-reason` (syntax highlighting).
 
 > **Installation Instructions**
 >
@@ -106,7 +106,7 @@ Those other plugins include `NuclideReason` (IDE features), and `language-reason
 > - Open the package installer from the menu `Packages > Settings View > Install Packages/Themes`.
 > - Search for and install `nuclide` if not already installed.
 > - Then install `atom-reason-loader`.
-> - `atom-reason-loader` will automatically install/load two plugins (`NuclideReason` and
+> - `atom-reason-loader` will automatically install/load two plugins (`atom-reason` and
 > `language-reason`) and will walk you through removing any existing conflicting versions.
 > - When installation is complete, open a `.re` file and make sure the `Reason` syntax is selected
 > (lower right corner of Atom). Restarting Atom after installation is not a bad idea but should not be necessary.
