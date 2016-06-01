@@ -31,6 +31,7 @@ fi
 # here and rebuild it in reopt
 
 OCAMLOPTIDX=-1
+USEOCAMLFIND=-1
 
 # find ocamlopt in argument list
 i=1
@@ -39,6 +40,10 @@ do
     if [[ $var = "-ocamlopt" ]];
     then
         OCAMLOPTIDX=$i
+    fi
+    if [[ $var = "-use-ocamlfind" ]];
+    then
+        USEOCAMLFIND=1
     fi
     i=$i+1
 done
@@ -54,5 +59,10 @@ then
     set -- "${@:1:OCAMLOPTIDX-1}" "${@: VALUEIDX+1}"
 fi
 
-# pass OCAMLOPT as an environment variable
-reasonbuild -ocamlopt "env OCAMLOPT=\"$OCAMLOPT\" $REOPT" "$@"
+if [[ $USEOCAMLFIND -ne -1 ]];
+then
+    env OCAMLFIND_COMMANDS="ocamlc=$REOPT" reasonbuild "$@"
+else
+   # pass OCAMLOPT as an environment variable
+   reasonbuild -ocamlopt "env OCAMLOPT=\"$OCAMLOPT\" $REOPT" "$@"
+fi
