@@ -3,8 +3,6 @@
 #require "reason";;
 #use ".reasoninit";;
 
-let interactive = try let _ = Sys.getenv "stdin" in false with | Not_found -> true in
-if interactive then
 print_string
 "
                    ___  _______   ________  _  __

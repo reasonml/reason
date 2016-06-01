@@ -16,9 +16,7 @@
 touch $HOME/.utoprc
 touch $HOME/.utop-history
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-if [[ $@ =~ "stdin" ]]; then
-   export stdin=1
-fi
+
 
 if [ ! -f $HOME/.reasoninit ]; then
     # TODO: ideally we should generate this file by refmtting
@@ -30,4 +28,8 @@ let () =
   };" > $HOME/.reasoninit
 fi
 
-utop -init $DIR/rtop_init.ml -I $HOME
+if [[ $@ =~ "stdin" ]]; then
+    refmt -parse re -print ml -use-stdin true -is-interface-pp false | utop $@
+else
+    utop -init $DIR/rtop_init.ml -I $HOME
+fi
