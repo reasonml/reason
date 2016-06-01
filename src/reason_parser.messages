@@ -1,6 +1,6 @@
 use_file: SHARP LIDENT SEMI WITH
 ##
-## Ends in an error in state: 2639.
+## Ends in an error in state: 2638.
 ##
 ## _use_file -> toplevel_directive SEMI . use_file [ # ]
 ##
@@ -12,7 +12,7 @@ use_file: SHARP LIDENT SEMI WITH
 
 use_file: SHARP LIDENT TRUE WITH
 ##
-## Ends in an error in state: 2638.
+## Ends in an error in state: 2637.
 ##
 ## _use_file -> toplevel_directive . SEMI use_file [ # ]
 ## _use_file -> toplevel_directive . EOF [ # ]
@@ -25,7 +25,7 @@ use_file: SHARP LIDENT TRUE WITH
 
 use_file: UIDENT RPAREN
 ##
-## Ends in an error in state: 2641.
+## Ends in an error in state: 2640.
 ##
 ## _use_file -> structure_item . SEMI use_file [ # ]
 ## _use_file -> structure_item . EOF [ # ]
@@ -58,7 +58,7 @@ use_file: UIDENT RPAREN
 
 use_file: UIDENT SEMI WITH
 ##
-## Ends in an error in state: 2642.
+## Ends in an error in state: 2641.
 ##
 ## _use_file -> structure_item SEMI . use_file [ # ]
 ##
@@ -70,7 +70,7 @@ use_file: UIDENT SEMI WITH
 
 use_file: WITH
 ##
-## Ends in an error in state: 2635.
+## Ends in an error in state: 2634.
 ##
 ## use_file' -> . use_file [ # ]
 ##
@@ -166,7 +166,6 @@ toplevel_phrase: UIDENT RPAREN
 ## Ends in an error in state: 2631.
 ##
 ## _toplevel_phrase -> structure_item . SEMI [ # ]
-## _toplevel_phrase -> structure_item . EOF [ # ]
 ##
 ## The known suffix of the stack is as follows:
 ## structure_item

@@ -2336,15 +2336,15 @@ let message =
         "<SYNTAX ERROR>\n"
     | 2629 ->
         "<SYNTAX ERROR>\n"
-    | 2635 ->
-        "<SYNTAX ERROR>\n"
-    | 2642 ->
+    | 2634 ->
         "<SYNTAX ERROR>\n"
     | 2641 ->
         "<SYNTAX ERROR>\n"
-    | 2638 ->
+    | 2640 ->
         "<SYNTAX ERROR>\n"
-    | 2639 ->
+    | 2637 ->
+        "<SYNTAX ERROR>\n"
+    | 2638 ->
         "<SYNTAX ERROR>\n"
     | _ ->
         raise Not_found
