@@ -4,9 +4,9 @@ type t2 =
   (int, int) /* attributed to entire type not binding */;
 
 type color =
-  | Red of int /* After red */
-  | Black of int /* After black */
-  | Green of int /* Does not remain here */;
+  | Red int /* After red */
+  | Black int /* After black */
+  | Green int /* Does not remain here */;
 
 let blahCurriedX x =>
   fun

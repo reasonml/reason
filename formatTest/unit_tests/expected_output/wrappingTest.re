@@ -2039,11 +2039,11 @@ type x = private int;
 type myType 'a 'b 'c = private ('a, 'b, 'c);
 
 type privateVariant = private
-  | BigSize of int | SmallSize of int;
+  | BigSize int | SmallSize int;
 
 type doubleEqualsDoublePrivateVariant =
   privateVariant =
-    private | BigSize of int | SmallSize of int;
+    private | BigSize int | SmallSize int;
 
 type myRecordWithReallyLongName = {
   xx: int,
@@ -2058,7 +2058,7 @@ type doubleEqualsDoublePrivateRecord =
     private {xx: int, yy: int};
 
 type someConstructor =
-  | SomeConstructorHi of int int;
+  | SomeConstructorHi int int;
 
 type someRecord = {
   firstFieldInRecord: int,
@@ -2108,7 +2108,7 @@ let funcOnSomeRecord
     secondArg => firstFieldInRecord + secondField;
 
 type simpleTupleVariant =
-  | SimpleActuallyATuple of (int, int);
+  | SimpleActuallyATuple (int, int);
 
 let returnTheSimpleTupleVariant i =>
   SimpleActuallyATuple (i, i);
@@ -2128,7 +2128,7 @@ type recursiveType =
   /* First variant of first mutually recursive */
   | Blah
   /* Second variant of first mutually recursive */
-  | Another of (option anotherRecursiveType)
+  | Another (option anotherRecursiveType)
 /*
  * Commenting second of two mutually recursive types.
  */
@@ -2136,7 +2136,7 @@ and anotherRecursiveType =
   /* Second variant of second mutually recursive */
   | Baz
   /* Second variant of second mutually recursive */
-  | Recursive of (option recursiveType);
+  | Recursive (option recursiveType);
 
 
 /**
@@ -2144,21 +2144,21 @@ and anotherRecursiveType =
  */
 type term _ =
   /* First variant leaf of GADT */
-  | Int of
+  | Int
       /*first var arg */
       int
       :/* First GADT res */
        term
          int
   /* Second variant leaf of GADT */
-  | Float of
+  | Float
       /*second var arg */
       int
       :/* Second GADT res */
        term
          int
   /* Third variant leaf of GADT */
-  | Bool of
+  | Bool
       /*third var arg */
       int
       :/* Third GADT res */
@@ -2170,7 +2170,7 @@ type commentedTypeDef =
   /*
    * Commenting first variant member.
    */
-  | First of (
+  | First (
       /* First field of tuple in first variant member */
       int,
       /* Second field of tuple in first variant member */
@@ -2179,18 +2179,17 @@ type commentedTypeDef =
   /*
    * Commenting second variant member.
    */
-  | Second of int
+  | Second int
   /*
    * Commenting third variant member.
    */
-  | Third of (
+  | Third (
       list
         /* Commenting deep in type def */
         (list int)
     );
 
-type colors =
-  | Red of int | Black of int | Green of int;
+type colors = | Red int | Black int | Green int;
 
 let blah arg =>
   switch arg {
@@ -2225,9 +2224,9 @@ let blahCurriedX x =>
   | Green x => 0;
 
 type reallyLongVariantNames =
-  | ReallyLongVariantName of recordWithLong
-  | AnotherReallyLongVariantName of int int int
-  | AnotherReallyLongVariantName2 of int int int;
+  | ReallyLongVariantName recordWithLong
+  | AnotherReallyLongVariantName int int int
+  | AnotherReallyLongVariantName2 int int int;
 
 let howDoLongMultiBarPatternsWrap x =>
   switch x {
@@ -2271,10 +2270,10 @@ let letsPutAWhereClauseOnTheLast x =>
   };
 
 type wrappingGadt _ =
-  | ThisIsLongSoTypeWillWrap of
+  | ThisIsLongSoTypeWillWrap
       int :wrappingGadt int
   | Add :wrappingGadt (int => int => int)
-  | App of
+  | App
       (wrappingGadt ('b => 'a))
       (wrappingGadt 'b)
       :wrappingGadt 'a;

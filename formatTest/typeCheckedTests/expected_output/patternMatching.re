@@ -4,12 +4,11 @@ type point = {x: int, y: int};
 let id x => x;
 
 type myVariant =
-  | TwoCombos of inner inner
+  | TwoCombos inner inner
   | Short
-  | AlsoHasARecord of int int point
+  | AlsoHasARecord int int point
 and inner =
-  | Unused
-  | HeresTwoConstructorArguments of int int;
+  | Unused | HeresTwoConstructorArguments int int;
 
 let computeTuple a b c d e f g h => (
   a + b,

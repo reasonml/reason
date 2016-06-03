@@ -10,239 +10,237 @@ let message =
         "<SYNTAX ERROR>\n"
     | 2 ->
         "<SYNTAX ERROR>\n"
-    | 2590 ->
+    | 2598 ->
         "<SYNTAX ERROR>\n"
-    | 568 ->
-        "Expecting one of the following:\n  - an identifier to access a member of an object\n  - \"[\" + expression + \"]\" to access an element of a list\n  - \"(\" + expression + \")\"\n  - \"{\" + expression + \"}\"\n"
     | 569 ->
+        "Expecting one of the following:\n  - an identifier to access a member of an object\n  - \"[\" + expression + \"]\" to access an element of a list\n  - \"(\" + expression + \")\"\n  - \"{\" + expression + \"}\"\n"
+    | 570 ->
         "Expecting an expression\n"
-    | 2279 ->
+    | 2286 ->
         "Expecting one of the following:\n  - an infix operation to connect two expressions\n  - \")\" to close the block\n"
-    | 2281 ->
+    | 2288 ->
         "Expecting an expression\n"
-    | 2282 ->
+    | 2289 ->
         "Expecting one of the following:\n  - an infix operation to connect two expressions\n  - \"}\" to close the block\n"
-    | 2284 ->
+    | 2291 ->
         "Expecting an expression\n"
-    | 2285 ->
+    | 2292 ->
         "Expecting one of the following:\n  - an infix operation to connect two expressions\n  - \"}\" to close the block\n"
-    | 1182 ->
+    | 1183 ->
         "Expecting an expression\n"
-    | 566 ->
+    | 567 ->
         "Expecting an identifier\n"
-    | 1115 ->
+    | 1116 ->
         "Expecting a structure item\n"
-    | 2595 ->
+    | 2603 ->
         "Invalid token\n"
-    | 1236 ->
-        "Expecting an expression\n"
     | 1237 ->
-        "Expecting one of the following:\n  - The continuation of the previous expression\n  - \":\" to start the next expression\n"
+        "Expecting an expression\n"
     | 1238 ->
+        "Expecting one of the following:\n  - The continuation of the previous expression\n  - \":\" to start the next expression\n"
+    | 1239 ->
         "Expecting an expression\n"
-    | 1197 ->
+    | 1198 ->
         "Expecting an expression\n"
-    | 1203 ->
+    | 1204 ->
         "Expecting an expression\n"
-    | 1205 ->
+    | 1206 ->
         "Expecting an expression\n"
-    | 1199 ->
+    | 1200 ->
         "Expecting an expression\n"
-    | 1207 ->
+    | 1208 ->
         "Expecting an expression\n"
-    | 1209 ->
+    | 1210 ->
         "Expecting an expression\n"
-    | 1211 ->
+    | 1212 ->
         "Expecting an expression\n"
     | 15 ->
         "Expecting one of the following:\n  - \")\" to form a unit value \"()\"\n  - \"module\" to start a module expression\n  - an expression\n  - an operator to denote the prefix form of an operator\n"
-    | 1213 ->
+    | 1214 ->
         "Expecting an expression\n"
-    | 1219 ->
+    | 1220 ->
         "Expecting an expression\n"
-    | 1221 ->
+    | 1222 ->
         "Expecting an expression\n"
-    | 2396 ->
+    | 2403 ->
         "Expecting \"]\"\n"
-    | 400 ->
+    | 403 ->
         "Expecting an attributed id\n"
-    | 2503 ->
+    | 2510 ->
         "Expecting \"]\"\n"
-    | 171 ->
+    | 161 ->
         "Expecting an attribute id\n"
-    | 1184 ->
+    | 1185 ->
         "Expecting an expression\n"
-    | 1201 ->
+    | 1202 ->
         "Expecting an expression\n"
-    | 1215 ->
+    | 1216 ->
         "Expecting an expression\n"
-    | 1217 ->
+    | 1218 ->
         "Expecting an expression\n"
-    | 1223 ->
+    | 1224 ->
         "Expecting an expression\n"
-    | 1225 ->
+    | 1226 ->
         "Expecting an expression\n"
-    | 848 ->
-        "<SYNTAX ERROR>\n"
     | 849 ->
-        "<SYNTAX ERROR>\n"
-    | 2187 ->
         "<SYNTAX ERROR>\n"
     | 850 ->
         "<SYNTAX ERROR>\n"
-    | 852 ->
+    | 2194 ->
         "<SYNTAX ERROR>\n"
-    | 2183 ->
+    | 851 ->
         "<SYNTAX ERROR>\n"
-    | 2185 ->
+    | 853 ->
         "<SYNTAX ERROR>\n"
     | 2190 ->
         "<SYNTAX ERROR>\n"
-    | 2191 ->
+    | 2192 ->
         "<SYNTAX ERROR>\n"
-    | 2195 ->
+    | 2197 ->
         "<SYNTAX ERROR>\n"
-    | 2205 ->
+    | 2198 ->
         "<SYNTAX ERROR>\n"
-    | 2210 ->
+    | 2202 ->
+        "<SYNTAX ERROR>\n"
+    | 2212 ->
+        "<SYNTAX ERROR>\n"
+    | 2217 ->
         "<SYNTAX ERROR>\n"
     | 1842 ->
         "<SYNTAX ERROR>\n"
-    | 1233 ->
+    | 1234 ->
         "<SYNTAX ERROR>\n"
-    | 1227 ->
+    | 1228 ->
         "<SYNTAX ERROR>\n"
-    | 1229 ->
+    | 1230 ->
         "<SYNTAX ERROR>\n"
-    | 1231 ->
+    | 1232 ->
         "<SYNTAX ERROR>\n"
-    | 76 ->
-        "<SYNTAX ERROR>\n"
-    | 948 ->
+    | 75 ->
         "<SYNTAX ERROR>\n"
     | 949 ->
         "<SYNTAX ERROR>\n"
-    | 93 ->
+    | 950 ->
+        "<SYNTAX ERROR>\n"
+    | 104 ->
         "Expecting one of the following:\n  - \"=\" to start the body of the type declaration\n  - \"constraint\" to add constraints to the type declaration\n  - \";\" to finish type declaratoin\n  - \"+=\" to form a string type extension\n  - \"and\" to declare another type\n"
-    | 80 ->
+    | 91 ->
         "<SYNTAX ERROR>\n"
-    | 2575 ->
+    | 2583 ->
         "<SYNTAX ERROR>\n"
-    | 2579 ->
+    | 2587 ->
+        "<SYNTAX ERROR>\n"
+    | 2584 ->
+        "<SYNTAX ERROR>\n"
+    | 2585 ->
+        "<SYNTAX ERROR>\n"
+    | 95 ->
+        "<SYNTAX ERROR>\n"
+    | 97 ->
+        "<SYNTAX ERROR>\n"
+    | 99 ->
+        "<SYNTAX ERROR>\n"
+    | 101 ->
+        "<SYNTAX ERROR>\n"
+    | 1126 ->
+        "<SYNTAX ERROR>\n"
+    | 105 ->
+        "<SYNTAX ERROR>\n"
+    | 2569 ->
+        "<SYNTAX ERROR>\n"
+    | 2570 ->
+        "<SYNTAX ERROR>\n"
+    | 2560 ->
+        "<SYNTAX ERROR>\n"
+    | 2572 ->
         "<SYNTAX ERROR>\n"
     | 2576 ->
         "<SYNTAX ERROR>\n"
     | 2577 ->
         "<SYNTAX ERROR>\n"
-    | 84 ->
+    | 2552 ->
         "<SYNTAX ERROR>\n"
-    | 86 ->
+    | 107 ->
         "<SYNTAX ERROR>\n"
-    | 88 ->
+    | 2551 ->
         "<SYNTAX ERROR>\n"
-    | 90 ->
+    | 115 ->
         "<SYNTAX ERROR>\n"
-    | 1125 ->
-        "<SYNTAX ERROR>\n"
-    | 94 ->
-        "<SYNTAX ERROR>\n"
-    | 2562 ->
-        "<SYNTAX ERROR>\n"
-    | 2563 ->
-        "<SYNTAX ERROR>\n"
-    | 2550 ->
-        "<SYNTAX ERROR>\n"
-    | 2564 ->
-        "<SYNTAX ERROR>\n"
-    | 2568 ->
-        "<SYNTAX ERROR>\n"
-    | 2569 ->
-        "<SYNTAX ERROR>\n"
-    | 2542 ->
-        "<SYNTAX ERROR>\n"
-    | 96 ->
-        "<SYNTAX ERROR>\n"
-    | 2553 ->
-        "<SYNTAX ERROR>\n"
-    | 2540 ->
-        "<SYNTAX ERROR>\n"
-    | 2541 ->
-        "<SYNTAX ERROR>\n"
-    | 2558 ->
+    | 2565 ->
         "Expecting at least one type field definition in the form of:\n  <field name> : <type>\n"
-    | 483 ->
-        "Expecting a type field definition in the form of:\n  <field name> : <type>\n"
     | 484 ->
-        "Expecting \":\"\n"
+        "Expecting a type field definition in the form of:\n  <field name> : <type>\n"
     | 485 ->
+        "Expecting \":\"\n"
+    | 486 ->
         "Expecting a type name describing this field\n"
-    | 2559 ->
+    | 2566 ->
         "Expecting one of the following:\n  - \",\" to finish current type field\n  - \"}\" to finish type definition\n"
-    | 499 ->
+    | 500 ->
         "Expecting one of the following:\n  - another type field definition\n  - \"}\" to finish entire type definition\n"
-    | 1130 ->
+    | 1131 ->
         "<SYNTAX ERROR>\n"
-    | 2547 ->
-        "<SYNTAX ERROR>\n"
-    | 970 ->
+    | 2557 ->
         "<SYNTAX ERROR>\n"
     | 971 ->
         "<SYNTAX ERROR>\n"
     | 972 ->
         "<SYNTAX ERROR>\n"
-    | 1126 ->
+    | 973 ->
         "<SYNTAX ERROR>\n"
-    | 1128 ->
+    | 1127 ->
         "<SYNTAX ERROR>\n"
-    | 173 ->
+    | 1129 ->
         "<SYNTAX ERROR>\n"
-    | 2498 ->
+    | 163 ->
         "<SYNTAX ERROR>\n"
-    | 2497 ->
+    | 2505 ->
         "<SYNTAX ERROR>\n"
-    | 2500 ->
+    | 2504 ->
         "<SYNTAX ERROR>\n"
-    | 2439 ->
-        "<SYNTAX ERROR>\n"
-    | 2440 ->
-        "<SYNTAX ERROR>\n"
-    | 2441 ->
-        "Expecting a sequence item\n"
-    | 1872 ->
-        "Expecting one of the following:\n  - \"|\" to open the next pattern\n  - \"=>\" to start the body of the matched pattern\n  - \"when\" to start a contitional guard for the previous pattern\n"
-    | 2472 ->
-        "Expecting the body of the matched pattern\n"
-    | 2501 ->
-        "Expecting one of the following:\n  - \"}\" to finish the block\n  - \"|\" to start another pattern matching case\n"
-    | 2455 ->
-        "<SYNTAX ERROR>\n"
-    | 2442 ->
-        "<SYNTAX ERROR>\n"
-    | 2443 ->
+    | 2507 ->
         "<SYNTAX ERROR>\n"
     | 2446 ->
         "<SYNTAX ERROR>\n"
     | 2447 ->
         "<SYNTAX ERROR>\n"
-    | 2444 ->
+    | 2448 ->
+        "Expecting a sequence item\n"
+    | 1872 ->
+        "Expecting one of the following:\n  - \"|\" to open the next pattern\n  - \"=>\" to start the body of the matched pattern\n  - \"when\" to start a contitional guard for the previous pattern\n"
+    | 2479 ->
+        "Expecting the body of the matched pattern\n"
+    | 2508 ->
+        "Expecting one of the following:\n  - \"}\" to finish the block\n  - \"|\" to start another pattern matching case\n"
+    | 2462 ->
         "<SYNTAX ERROR>\n"
-    | 2465 ->
+    | 2449 ->
         "<SYNTAX ERROR>\n"
-    | 2466 ->
+    | 2450 ->
         "<SYNTAX ERROR>\n"
-    | 2469 ->
+    | 2453 ->
         "<SYNTAX ERROR>\n"
-    | 2468 ->
+    | 2454 ->
+        "<SYNTAX ERROR>\n"
+    | 2451 ->
+        "<SYNTAX ERROR>\n"
+    | 2472 ->
+        "<SYNTAX ERROR>\n"
+    | 2473 ->
+        "<SYNTAX ERROR>\n"
+    | 2476 ->
+        "<SYNTAX ERROR>\n"
+    | 2475 ->
         "<SYNTAX ERROR>\n"
     | 1871 ->
         "Expecting a match case\n"
-    | 887 ->
-        "<SYNTAX ERROR>\n"
-    | 113 ->
-        "<SYNTAX ERROR>\n"
-    | 114 ->
-        "<SYNTAX ERROR>\n"
     | 888 ->
+        "<SYNTAX ERROR>\n"
+    | 124 ->
+        "<SYNTAX ERROR>\n"
+    | 125 ->
+        "<SYNTAX ERROR>\n"
+    | 889 ->
         "<SYNTAX ERROR>\n"
     | 1846 ->
         "<SYNTAX ERROR>\n"
@@ -262,65 +260,65 @@ let message =
         "<SYNTAX ERROR>\n"
     | 1860 ->
         "<SYNTAX ERROR>\n"
-    | 178 ->
+    | 168 ->
         "<SYNTAX ERROR>\n"
-    | 2481 ->
+    | 2488 ->
         "<SYNTAX ERROR>\n"
-    | 2482 ->
+    | 2489 ->
         "<SYNTAX ERROR>\n"
-    | 1114 ->
+    | 1115 ->
         "Incomplete module item, forgetting a \";\"?\n"
-    | 1169 ->
+    | 1170 ->
         "<SYNTAX ERROR>\n"
-    | 1172 ->
+    | 1173 ->
         "<SYNTAX ERROR>\n"
     | 6 ->
         "<SYNTAX ERROR>\n"
-    | 1194 ->
+    | 1195 ->
         "<SYNTAX ERROR>\n"
-    | 392 ->
-        "<SYNTAX ERROR>\n"
-    | 393 ->
-        "<SYNTAX ERROR>\n"
-    | 340 ->
+    | 395 ->
         "<SYNTAX ERROR>\n"
     | 396 ->
         "<SYNTAX ERROR>\n"
-    | 398 ->
+    | 344 ->
+        "<SYNTAX ERROR>\n"
+    | 399 ->
+        "<SYNTAX ERROR>\n"
+    | 401 ->
         "<SYNTAX ERROR>\n"
     | 7 ->
         "<SYNTAX ERROR>\n"
-    | 402 ->
-        "<SYNTAX ERROR>\n"
-    | 403 ->
-        "<SYNTAX ERROR>\n"
     | 405 ->
         "<SYNTAX ERROR>\n"
-    | 885 ->
+    | 406 ->
         "<SYNTAX ERROR>\n"
-    | 534 ->
+    | 408 ->
+        "<SYNTAX ERROR>\n"
+    | 886 ->
+        "<SYNTAX ERROR>\n"
+    | 536 ->
         "<SYNTAX ERROR>\n"
     | 16 ->
         "<SYNTAX ERROR>\n"
-    | 2587 ->
-        "<SYNTAX ERROR>\n"
-    | 605 ->
+    | 2595 ->
         "<SYNTAX ERROR>\n"
     | 606 ->
         "<SYNTAX ERROR>\n"
-    | 2234 ->
+    | 607 ->
         "<SYNTAX ERROR>\n"
-    | 2236 ->
+    | 2241 ->
         "<SYNTAX ERROR>\n"
-    | 2237 ->
+    | 2243 ->
         "<SYNTAX ERROR>\n"
-    | 2239 ->
+    | 2244 ->
         "<SYNTAX ERROR>\n"
-    | 2240 ->
+    | 2246 ->
+        "<SYNTAX ERROR>\n"
+    | 2247 ->
         "<SYNTAX ERROR>\n"
     | 1373 ->
         "<SYNTAX ERROR>\n"
-    | 602 ->
+    | 603 ->
         "<SYNTAX ERROR>\n"
     | 1431 ->
         "<SYNTAX ERROR>\n"
@@ -342,7 +340,7 @@ let message =
         "<SYNTAX ERROR>\n"
     | 1402 ->
         "<SYNTAX ERROR>\n"
-    | 194 ->
+    | 184 ->
         "<SYNTAX ERROR>\n"
     | 1404 ->
         "<SYNTAX ERROR>\n"
@@ -350,9 +348,9 @@ let message =
         "<SYNTAX ERROR>\n"
     | 1412 ->
         "<SYNTAX ERROR>\n"
-    | 2399 ->
+    | 2406 ->
         "<SYNTAX ERROR>\n"
-    | 336 ->
+    | 340 ->
         "<SYNTAX ERROR>\n"
     | 1375 ->
         "<SYNTAX ERROR>\n"
@@ -366,15 +364,15 @@ let message =
         "<SYNTAX ERROR>\n"
     | 1416 ->
         "<SYNTAX ERROR>\n"
-    | 898 ->
-        "<SYNTAX ERROR>\n"
     | 899 ->
-        "<SYNTAX ERROR>\n"
-    | 1786 ->
         "<SYNTAX ERROR>\n"
     | 900 ->
         "<SYNTAX ERROR>\n"
+    | 1786 ->
+        "<SYNTAX ERROR>\n"
     | 901 ->
+        "<SYNTAX ERROR>\n"
+    | 902 ->
         "<SYNTAX ERROR>\n"
     | 1779 ->
         "<SYNTAX ERROR>\n"
@@ -390,15 +388,15 @@ let message =
         "<SYNTAX ERROR>\n"
     | 1823 ->
         "<SYNTAX ERROR>\n"
-    | 2332 ->
+    | 2339 ->
         "<SYNTAX ERROR>\n"
-    | 2337 ->
+    | 2344 ->
         "<SYNTAX ERROR>\n"
-    | 2334 ->
+    | 2341 ->
         "<SYNTAX ERROR>\n"
     | 1253 ->
         "<SYNTAX ERROR>\n"
-    | 2331 ->
+    | 2338 ->
         "<SYNTAX ERROR>\n"
     | 1424 ->
         "<SYNTAX ERROR>\n"
@@ -412,13 +410,13 @@ let message =
         "<SYNTAX ERROR>\n"
     | 1422 ->
         "<SYNTAX ERROR>\n"
-    | 176 ->
+    | 166 ->
         "<SYNTAX ERROR>\n"
-    | 2487 ->
+    | 2494 ->
         "<SYNTAX ERROR>\n"
-    | 2486 ->
+    | 2493 ->
         "<SYNTAX ERROR>\n"
-    | 2489 ->
+    | 2496 ->
         "<SYNTAX ERROR>\n"
     | 1363 ->
         "<SYNTAX ERROR>\n"
@@ -442,79 +440,79 @@ let message =
         "<SYNTAX ERROR>\n"
     | 1444 ->
         "<SYNTAX ERROR>\n"
-    | 183 ->
+    | 173 ->
         "<SYNTAX ERROR>\n"
-    | 2433 ->
+    | 2440 ->
         "<SYNTAX ERROR>\n"
-    | 2434 ->
+    | 2441 ->
         "<SYNTAX ERROR>\n"
     | 1304 ->
         "<SYNTAX ERROR>\n"
     | 1312 ->
         "<SYNTAX ERROR>\n"
-    | 788 ->
-        "<SYNTAX ERROR>\n"
-    | 197 ->
-        "<SYNTAX ERROR>\n"
-    | 414 ->
-        "<SYNTAX ERROR>\n"
-    | 415 ->
+    | 789 ->
         "<SYNTAX ERROR>\n"
     | 187 ->
         "<SYNTAX ERROR>\n"
-    | 189 ->
+    | 416 ->
         "<SYNTAX ERROR>\n"
-    | 190 ->
+    | 417 ->
         "<SYNTAX ERROR>\n"
-    | 535 ->
+    | 177 ->
         "<SYNTAX ERROR>\n"
-    | 2318 ->
+    | 179 ->
         "<SYNTAX ERROR>\n"
-    | 2320 ->
+    | 180 ->
         "<SYNTAX ERROR>\n"
-    | 2322 ->
+    | 537 ->
+        "<SYNTAX ERROR>\n"
+    | 2325 ->
+        "<SYNTAX ERROR>\n"
+    | 2327 ->
+        "<SYNTAX ERROR>\n"
+    | 2329 ->
         "<SYNTAX ERROR>\n"
     | 1783 ->
         "<SYNTAX ERROR>\n"
     | 1784 ->
         "<SYNTAX ERROR>\n"
-    | 413 ->
+    | 415 ->
         "Expecting one of the following:\n  - \")\" to form a unit value \"()\"\n  - \"module\" to start a module expression\n  - an expression\n  - an operator to denote the prefix form of an operator\n"
-    | 2376 ->
+    | 2383 ->
         "<SYNTAX ERROR>\n"
-    | 716 ->
+    | 717 ->
         "<SYNTAX ERROR>\n"
-    | 416 ->
+    | 418 ->
         "Expecting a module expression\n"
-    | 2363 ->
-        "<SYNTAX ERROR>\n"
-    | 2365 ->
-        "<SYNTAX ERROR>\n"
-    | 2367 ->
-        "<SYNTAX ERROR>\n"
-    | 2369 ->
-        "<SYNTAX ERROR>\n"
     | 2370 ->
-        "<SYNTAX ERROR>\n"
-    | 2371 ->
         "<SYNTAX ERROR>\n"
     | 2372 ->
         "<SYNTAX ERROR>\n"
-    | 2373 ->
-        "<SYNTAX ERROR>\n"
     | 2374 ->
+        "<SYNTAX ERROR>\n"
+    | 2376 ->
+        "<SYNTAX ERROR>\n"
+    | 2377 ->
+        "<SYNTAX ERROR>\n"
+    | 2378 ->
+        "<SYNTAX ERROR>\n"
+    | 2379 ->
+        "<SYNTAX ERROR>\n"
+    | 2380 ->
+        "<SYNTAX ERROR>\n"
+    | 2381 ->
         "<SYNTAX ERROR>\n"
     | 1371 ->
         "<SYNTAX ERROR>\n"
-    | 2421 ->
+    | 2428 ->
         "<SYNTAX ERROR>\n"
-    | 199 ->
-        "<SYNTAX ERROR>\n"
-    | 551 ->
-        "<SYNTAX ERROR>\n"
-    | 2291 ->
+    | 189 ->
         "<SYNTAX ERROR>\n"
     | 552 ->
+        "<SYNTAX ERROR>\n"
+    | 2298 ->
+        "<SYNTAX ERROR>\n"
+    | 553 ->
         "<SYNTAX ERROR>\n"
     | 1813 ->
         "<SYNTAX ERROR>\n"
@@ -524,25 +522,23 @@ let message =
         "<SYNTAX ERROR>\n"
     | 1808 ->
         "<SYNTAX ERROR>\n"
-    | 570 ->
+    | 571 ->
         "<SYNTAX ERROR>\n"
-    | 579 ->
+    | 580 ->
         "<SYNTAX ERROR>\n"
-    | 589 ->
-        "<SYNTAX ERROR>\n"
-    | 607 ->
+    | 590 ->
         "<SYNTAX ERROR>\n"
     | 608 ->
         "<SYNTAX ERROR>\n"
-    | 610 ->
+    | 609 ->
         "<SYNTAX ERROR>\n"
     | 611 ->
         "<SYNTAX ERROR>\n"
-    | 2231 ->
+    | 612 ->
         "<SYNTAX ERROR>\n"
-    | 2217 ->
+    | 2238 ->
         "<SYNTAX ERROR>\n"
-    | 616 ->
+    | 2224 ->
         "<SYNTAX ERROR>\n"
     | 617 ->
         "<SYNTAX ERROR>\n"
@@ -550,11 +546,11 @@ let message =
         "<SYNTAX ERROR>\n"
     | 619 ->
         "<SYNTAX ERROR>\n"
-    | 2215 ->
+    | 620 ->
         "<SYNTAX ERROR>\n"
-    | 2216 ->
+    | 2222 ->
         "<SYNTAX ERROR>\n"
-    | 612 ->
+    | 2223 ->
         "<SYNTAX ERROR>\n"
     | 613 ->
         "<SYNTAX ERROR>\n"
@@ -562,19 +558,19 @@ let message =
         "<SYNTAX ERROR>\n"
     | 615 ->
         "<SYNTAX ERROR>\n"
-    | 2224 ->
+    | 616 ->
         "<SYNTAX ERROR>\n"
-    | 2225 ->
+    | 2231 ->
         "<SYNTAX ERROR>\n"
-    | 2226 ->
+    | 2232 ->
         "<SYNTAX ERROR>\n"
-    | 2227 ->
+    | 2233 ->
         "<SYNTAX ERROR>\n"
-    | 2228 ->
+    | 2234 ->
         "<SYNTAX ERROR>\n"
-    | 2229 ->
+    | 2235 ->
         "<SYNTAX ERROR>\n"
-    | 889 ->
+    | 2236 ->
         "<SYNTAX ERROR>\n"
     | 890 ->
         "<SYNTAX ERROR>\n"
@@ -586,27 +582,29 @@ let message =
         "<SYNTAX ERROR>\n"
     | 894 ->
         "<SYNTAX ERROR>\n"
-    | 2324 ->
+    | 895 ->
         "<SYNTAX ERROR>\n"
-    | 2325 ->
+    | 2331 ->
         "<SYNTAX ERROR>\n"
-    | 2326 ->
+    | 2332 ->
         "<SYNTAX ERROR>\n"
-    | 2327 ->
+    | 2333 ->
         "<SYNTAX ERROR>\n"
-    | 2328 ->
+    | 2334 ->
         "<SYNTAX ERROR>\n"
-    | 2329 ->
+    | 2335 ->
+        "<SYNTAX ERROR>\n"
+    | 2336 ->
         "<SYNTAX ERROR>\n"
     | 1785 ->
         "<SYNTAX ERROR>\n"
-    | 597 ->
+    | 598 ->
         "<SYNTAX ERROR>\n"
     | 1359 ->
         "<SYNTAX ERROR>\n"
-    | 1180 ->
+    | 1181 ->
         "<SYNTAX ERROR>\n"
-    | 903 ->
+    | 904 ->
         "Incomplete let binding\n"
     | 1282 ->
         "<SYNTAX ERROR>\n"
@@ -620,11 +618,11 @@ let message =
         "<SYNTAX ERROR>\n"
     | 1287 ->
         "<SYNTAX ERROR>\n"
-    | 1156 ->
-        "<SYNTAX ERROR>\n"
-    | 904 ->
+    | 1157 ->
         "<SYNTAX ERROR>\n"
     | 905 ->
+        "<SYNTAX ERROR>\n"
+    | 906 ->
         "<SYNTAX ERROR>\n"
     | 1761 ->
         "<SYNTAX ERROR>\n"
@@ -642,11 +640,11 @@ let message =
         "<SYNTAX ERROR>\n"
     | 1767 ->
         "<SYNTAX ERROR>\n"
-    | 906 ->
-        "<SYNTAX ERROR>\n"
     | 907 ->
         "<SYNTAX ERROR>\n"
-    | 916 ->
+    | 908 ->
+        "<SYNTAX ERROR>\n"
+    | 917 ->
         "<SYNTAX ERROR>\n"
     | 1754 ->
         "<SYNTAX ERROR>\n"
@@ -656,17 +654,15 @@ let message =
         "<SYNTAX ERROR>\n"
     | 1772 ->
         "<SYNTAX ERROR>\n"
-    | 1134 ->
-        "<SYNTAX ERROR>\n"
     | 1135 ->
         "<SYNTAX ERROR>\n"
-    | 1157 ->
+    | 1136 ->
+        "<SYNTAX ERROR>\n"
+    | 1158 ->
         "<SYNTAX ERROR>\n"
     | 1278 ->
         "Defining a function?\nExpecting one of the following:\n  - \"=>\" to start the function body\n  - an identifier to add a function parameter\n  - \":\" to specify the return type\n"
     | 1246 ->
-        "<SYNTAX ERROR>\n"
-    | 1162 ->
         "<SYNTAX ERROR>\n"
     | 1163 ->
         "<SYNTAX ERROR>\n"
@@ -675,22 +671,24 @@ let message =
     | 1165 ->
         "<SYNTAX ERROR>\n"
     | 1166 ->
+        "<SYNTAX ERROR>\n"
+    | 1167 ->
         "Expecting an expression as function body\n"
-    | 1240 ->
-        "<SYNTAX ERROR>\n"
     | 1241 ->
-        "Defining a function?\nExpecting \"=>\" to start the function body\n"
-    | 1242 ->
         "<SYNTAX ERROR>\n"
+    | 1242 ->
+        "Defining a function?\nExpecting \"=>\" to start the function body\n"
     | 1243 ->
         "<SYNTAX ERROR>\n"
-    | 1158 ->
+    | 1244 ->
         "<SYNTAX ERROR>\n"
     | 1159 ->
         "<SYNTAX ERROR>\n"
     | 1160 ->
         "<SYNTAX ERROR>\n"
     | 1161 ->
+        "<SYNTAX ERROR>\n"
+    | 1162 ->
         "<SYNTAX ERROR>\n"
     | 1251 ->
         "<SYNTAX ERROR>\n"
@@ -722,31 +720,31 @@ let message =
         "<SYNTAX ERROR>\n"
     | 1504 ->
         "<SYNTAX ERROR>\n"
-    | 70 ->
+    | 69 ->
         "<SYNTAX ERROR>\n"
     | 1705 ->
         "<SYNTAX ERROR>\n"
-    | 201 ->
+    | 191 ->
         "<SYNTAX ERROR>\n"
-    | 2419 ->
+    | 2426 ->
         "<SYNTAX ERROR>\n"
-    | 2420 ->
+    | 2427 ->
         "<SYNTAX ERROR>\n"
-    | 2418 ->
+    | 2425 ->
         "<SYNTAX ERROR>\n"
-    | 71 ->
+    | 70 ->
         "<SYNTAX ERROR>\n"
-    | 1055 ->
+    | 1056 ->
         "<SYNTAX ERROR>\n"
-    | 1028 ->
+    | 1029 ->
         "<SYNTAX ERROR>\n"
-    | 2585 ->
+    | 2593 ->
         "<SYNTAX ERROR>\n"
     | 18 ->
         "<SYNTAX ERROR>\n"
-    | 174 ->
+    | 164 ->
         "<SYNTAX ERROR>\n"
-    | 2493 ->
+    | 2500 ->
         "<SYNTAX ERROR>\n"
     | 1792 ->
         "<SYNTAX ERROR>\n"
@@ -756,39 +754,39 @@ let message =
         "<SYNTAX ERROR>\n"
     | 1800 ->
         "Expecting a type name\n"
-    | 186 ->
+    | 176 ->
         "Expecting an expression\n"
     | 1385 ->
         "Expecting an expression\n"
     | 1361 ->
         "Expecting an expression\n"
-    | 596 ->
+    | 597 ->
         "<SYNTAX ERROR>\n"
     | 1703 ->
         "Expecting \"]\" to finish current floating attribute\n"
-    | 1030 ->
+    | 1031 ->
         "<SYNTAX ERROR>\n"
-    | 177 ->
+    | 167 ->
         "Expecting one of the following:\n  - an list item\n  - \"]\" to finish this list\n"
-    | 2199 ->
+    | 2206 ->
         "Expecting one of the following:\n  - \",\" to separate two items in a list\n  - \"]\" to finish this list\n"
-    | 2200 ->
+    | 2207 ->
         "<SYNTAX ERROR>\n"
-    | 2196 ->
+    | 2203 ->
         "<SYNTAX ERROR>\n"
-    | 2197 ->
+    | 2204 ->
         "<SYNTAX ERROR>\n"
-    | 179 ->
+    | 169 ->
         "<SYNTAX ERROR>\n"
-    | 180 ->
+    | 170 ->
         "<SYNTAX ERROR>\n"
-    | 573 ->
+    | 574 ->
         "<SYNTAX ERROR>\n"
-    | 181 ->
+    | 171 ->
         "<SYNTAX ERROR>\n"
-    | 2475 ->
+    | 2482 ->
         "<SYNTAX ERROR>\n"
-    | 184 ->
+    | 174 ->
         "<SYNTAX ERROR>\n"
     | 1340 ->
         "<SYNTAX ERROR>\n"
@@ -826,13 +824,13 @@ let message =
         "<SYNTAX ERROR>\n"
     | 1349 ->
         "<SYNTAX ERROR>\n"
-    | 2344 ->
+    | 2351 ->
         "<SYNTAX ERROR>\n"
-    | 532 ->
+    | 534 ->
         "<SYNTAX ERROR>\n"
-    | 2274 ->
+    | 2281 ->
         "<SYNTAX ERROR>\n"
-    | 2251 ->
+    | 2258 ->
         "<SYNTAX ERROR>\n"
     | 1455 ->
         "<SYNTAX ERROR>\n"
@@ -844,11 +842,11 @@ let message =
         "<SYNTAX ERROR>\n"
     | 1460 ->
         "<SYNTAX ERROR>\n"
-    | 1101 ->
-        "<SYNTAX ERROR>\n"
-    | 1103 ->
+    | 1102 ->
         "<SYNTAX ERROR>\n"
     | 1104 ->
+        "<SYNTAX ERROR>\n"
+    | 1105 ->
         "<SYNTAX ERROR>\n"
     | 1462 ->
         "<SYNTAX ERROR>\n"
@@ -912,41 +910,41 @@ let message =
         "<SYNTAX ERROR>\n"
     | 1844 ->
         "<SYNTAX ERROR>\n"
-    | 581 ->
+    | 582 ->
         "<SYNTAX ERROR>\n"
-    | 2056 ->
+    | 2063 ->
         "<SYNTAX ERROR>\n"
-    | 2062 ->
+    | 2069 ->
         "<SYNTAX ERROR>\n"
-    | 2057 ->
+    | 2064 ->
         "<SYNTAX ERROR>\n"
-    | 2058 ->
+    | 2065 ->
         "<SYNTAX ERROR>\n"
-    | 2059 ->
+    | 2066 ->
         "<SYNTAX ERROR>\n"
-    | 2061 ->
+    | 2068 ->
         "<SYNTAX ERROR>\n"
-    | 2026 ->
-        "<SYNTAX ERROR>\n"
-    | 583 ->
-        "<SYNTAX ERROR>\n"
-    | 587 ->
-        "<SYNTAX ERROR>\n"
-    | 588 ->
+    | 2033 ->
         "<SYNTAX ERROR>\n"
     | 584 ->
         "<SYNTAX ERROR>\n"
-    | 2261 ->
+    | 588 ->
         "<SYNTAX ERROR>\n"
-    | 2262 ->
+    | 589 ->
         "<SYNTAX ERROR>\n"
-    | 2265 ->
+    | 585 ->
         "<SYNTAX ERROR>\n"
-    | 2264 ->
+    | 2268 ->
         "<SYNTAX ERROR>\n"
-    | 2027 ->
+    | 2269 ->
         "<SYNTAX ERROR>\n"
-    | 2052 ->
+    | 2272 ->
+        "<SYNTAX ERROR>\n"
+    | 2271 ->
+        "<SYNTAX ERROR>\n"
+    | 2034 ->
+        "<SYNTAX ERROR>\n"
+    | 2059 ->
         "<SYNTAX ERROR>\n"
     | 1475 ->
         "<SYNTAX ERROR>\n"
@@ -956,47 +954,47 @@ let message =
         "<SYNTAX ERROR>\n"
     | 1478 ->
         "<SYNTAX ERROR>\n"
-    | 2028 ->
-        "<SYNTAX ERROR>\n"
-    | 2029 ->
-        "<SYNTAX ERROR>\n"
-    | 2030 ->
-        "<SYNTAX ERROR>\n"
-    | 2031 ->
-        "<SYNTAX ERROR>\n"
-    | 2033 ->
-        "<SYNTAX ERROR>\n"
-    | 2048 ->
-        "<SYNTAX ERROR>\n"
-    | 2049 ->
-        "<SYNTAX ERROR>\n"
     | 2035 ->
         "<SYNTAX ERROR>\n"
     | 2036 ->
         "<SYNTAX ERROR>\n"
-    | 2038 ->
+    | 2037 ->
         "<SYNTAX ERROR>\n"
-    | 2039 ->
+    | 2038 ->
         "<SYNTAX ERROR>\n"
     | 2040 ->
         "<SYNTAX ERROR>\n"
-    | 2043 ->
+    | 2055 ->
         "<SYNTAX ERROR>\n"
-    | 2044 ->
+    | 2056 ->
+        "<SYNTAX ERROR>\n"
+    | 2042 ->
+        "<SYNTAX ERROR>\n"
+    | 2043 ->
         "<SYNTAX ERROR>\n"
     | 2045 ->
         "<SYNTAX ERROR>\n"
     | 2046 ->
         "<SYNTAX ERROR>\n"
-    | 2042 ->
+    | 2047 ->
         "<SYNTAX ERROR>\n"
-    | 2424 ->
+    | 2050 ->
+        "<SYNTAX ERROR>\n"
+    | 2051 ->
+        "<SYNTAX ERROR>\n"
+    | 2052 ->
+        "<SYNTAX ERROR>\n"
+    | 2053 ->
+        "<SYNTAX ERROR>\n"
+    | 2049 ->
+        "<SYNTAX ERROR>\n"
+    | 2431 ->
         "Expecting \"}\" to finish the block\n"
-    | 2158 ->
+    | 2165 ->
         "<SYNTAX ERROR>\n"
     | 1679 ->
         "<SYNTAX ERROR>\n"
-    | 1111 ->
+    | 1112 ->
         "<SYNTAX ERROR>\n"
     | 1501 ->
         "<SYNTAX ERROR>\n"
@@ -1008,7 +1006,7 @@ let message =
         "<SYNTAX ERROR>\n"
     | 1521 ->
         "<SYNTAX ERROR>\n"
-    | 1153 ->
+    | 1154 ->
         "<SYNTAX ERROR>\n"
     | 1550 ->
         "<SYNTAX ERROR>\n"
@@ -1054,13 +1052,13 @@ let message =
         "<SYNTAX ERROR>\n"
     | 1524 ->
         "<SYNTAX ERROR>\n"
-    | 1154 ->
+    | 1155 ->
         "<SYNTAX ERROR>\n"
     | 1336 ->
         "<SYNTAX ERROR>\n"
     | 1544 ->
         "<SYNTAX ERROR>\n"
-    | 1155 ->
+    | 1156 ->
         "<SYNTAX ERROR>\n"
     | 1332 ->
         "<SYNTAX ERROR>\n"
@@ -1100,15 +1098,15 @@ let message =
         "<SYNTAX ERROR>\n"
     | 1339 ->
         "<SYNTAX ERROR>\n"
-    | 555 ->
+    | 556 ->
         "<SYNTAX ERROR>\n"
-    | 1032 ->
+    | 1033 ->
         "<SYNTAX ERROR>\n"
-    | 909 ->
-        "<SYNTAX ERROR>\n"
-    | 853 ->
+    | 910 ->
         "<SYNTAX ERROR>\n"
     | 854 ->
+        "<SYNTAX ERROR>\n"
+    | 855 ->
         "<SYNTAX ERROR>\n"
     | 1886 ->
         "<SYNTAX ERROR>\n"
@@ -1116,103 +1114,101 @@ let message =
         "<SYNTAX ERROR>\n"
     | 1891 ->
         "<SYNTAX ERROR>\n"
-    | 2176 ->
+    | 2183 ->
         "<SYNTAX ERROR>\n"
-    | 902 ->
+    | 903 ->
         "<SYNTAX ERROR>\n"
     | 1777 ->
         "<SYNTAX ERROR>\n"
-    | 409 ->
+    | 411 ->
         "<SYNTAX ERROR>\n"
-    | 410 ->
+    | 412 ->
         "<SYNTAX ERROR>\n"
-    | 2384 ->
+    | 2391 ->
         "<SYNTAX ERROR>\n"
-    | 2386 ->
+    | 2393 ->
         "<SYNTAX ERROR>\n"
     | 1889 ->
         "<SYNTAX ERROR>\n"
-    | 2388 ->
+    | 2395 ->
         "<SYNTAX ERROR>\n"
     | 1894 ->
         "<SYNTAX ERROR>\n"
     | 1895 ->
         "<SYNTAX ERROR>\n"
-    | 2390 ->
+    | 2397 ->
         "<SYNTAX ERROR>\n"
-    | 1997 ->
-        "<SYNTAX ERROR>\n"
-    | 1972 ->
-        "<SYNTAX ERROR>\n"
-    | 1973 ->
-        "<SYNTAX ERROR>\n"
-    | 1974 ->
-        "<SYNTAX ERROR>\n"
-    | 1976 ->
+    | 2004 ->
         "<SYNTAX ERROR>\n"
     | 1979 ->
         "<SYNTAX ERROR>\n"
+    | 1980 ->
+        "<SYNTAX ERROR>\n"
+    | 1981 ->
+        "<SYNTAX ERROR>\n"
+    | 1983 ->
+        "<SYNTAX ERROR>\n"
     | 1986 ->
+        "<SYNTAX ERROR>\n"
+    | 1993 ->
+        "<SYNTAX ERROR>\n"
+    | 1996 ->
+        "<SYNTAX ERROR>\n"
+    | 1997 ->
+        "<SYNTAX ERROR>\n"
+    | 2186 ->
+        "<SYNTAX ERROR>\n"
+    | 2187 ->
+        "<SYNTAX ERROR>\n"
+    | 549 ->
+        "<SYNTAX ERROR>\n"
+    | 550 ->
+        "<SYNTAX ERROR>\n"
+    | 2302 ->
+        "<SYNTAX ERROR>\n"
+    | 2304 ->
+        "<SYNTAX ERROR>\n"
+    | 1984 ->
+        "<SYNTAX ERROR>\n"
+    | 2306 ->
         "<SYNTAX ERROR>\n"
     | 1989 ->
         "<SYNTAX ERROR>\n"
     | 1990 ->
         "<SYNTAX ERROR>\n"
-    | 2179 ->
+    | 2308 ->
         "<SYNTAX ERROR>\n"
-    | 2180 ->
+    | 1999 ->
         "<SYNTAX ERROR>\n"
-    | 548 ->
-        "<SYNTAX ERROR>\n"
-    | 549 ->
-        "<SYNTAX ERROR>\n"
-    | 2295 ->
-        "<SYNTAX ERROR>\n"
-    | 2297 ->
-        "<SYNTAX ERROR>\n"
-    | 1977 ->
-        "<SYNTAX ERROR>\n"
-    | 2299 ->
-        "<SYNTAX ERROR>\n"
-    | 1982 ->
-        "<SYNTAX ERROR>\n"
-    | 1983 ->
-        "<SYNTAX ERROR>\n"
-    | 2301 ->
-        "<SYNTAX ERROR>\n"
-    | 1992 ->
-        "<SYNTAX ERROR>\n"
-    | 1993 ->
+    | 2000 ->
         "<SYNTAX ERROR>\n"
     | 1898 ->
         "<SYNTAX ERROR>\n"
-    | 1967 ->
+    | 1974 ->
         "<SYNTAX ERROR>\n"
-    | 1968 ->
+    | 1975 ->
         "<SYNTAX ERROR>\n"
-    | 1969 ->
+    | 1976 ->
         "<SYNTAX ERROR>\n"
-    | 1971 ->
+    | 1978 ->
         "<SYNTAX ERROR>\n"
-    | 417 ->
+    | 419 ->
         "<SYNTAX ERROR>\n"
-    | 2128 ->
+    | 2135 ->
         "<SYNTAX ERROR>\n"
-    | 420 ->
+    | 422 ->
         "<SYNTAX ERROR>\n"
-    | 434 ->
-        "<SYNTAX ERROR>\n"
-    | 423 ->
-        "<SYNTAX ERROR>\n"
-    | 2348 ->
-        "<SYNTAX ERROR>\n"
-    | 2352 ->
-        "<SYNTAX ERROR>\n"
-    | 2349 ->
-        "<SYNTAX ERROR>\n"
-    | 2350 ->
+    | 436 ->
         "<SYNTAX ERROR>\n"
     | 425 ->
+        "<SYNTAX ERROR>\n"
+    | 2355 ->
+        "<SYNTAX ERROR>\n"
+    | 2359 ->
+        "<SYNTAX ERROR>\n"
+    | 2356 ->
+        "<SYNTAX ERROR>\n"
+    | 2357 ->
         "<SYNTAX ERROR>\n"
     | 427 ->
         "<SYNTAX ERROR>\n"
@@ -1220,49 +1216,49 @@ let message =
         "<SYNTAX ERROR>\n"
     | 431 ->
         "<SYNTAX ERROR>\n"
-    | 2135 ->
+    | 433 ->
         "<SYNTAX ERROR>\n"
-    | 435 ->
+    | 2142 ->
         "<SYNTAX ERROR>\n"
-    | 504 ->
+    | 437 ->
         "<SYNTAX ERROR>\n"
     | 505 ->
         "<SYNTAX ERROR>\n"
     | 506 ->
         "<SYNTAX ERROR>\n"
-    | 510 ->
+    | 508 ->
         "<SYNTAX ERROR>\n"
-    | 511 ->
+    | 512 ->
         "<SYNTAX ERROR>\n"
-    | 436 ->
-        "<SYNTAX ERROR>\n"
-    | 473 ->
-        "<SYNTAX ERROR>\n"
-    | 443 ->
-        "<SYNTAX ERROR>\n"
-    | 476 ->
+    | 513 ->
         "<SYNTAX ERROR>\n"
     | 438 ->
         "<SYNTAX ERROR>\n"
-    | 439 ->
+    | 477 ->
         "<SYNTAX ERROR>\n"
-    | 481 ->
+    | 463 ->
         "<SYNTAX ERROR>\n"
-    | 498 ->
+    | 462 ->
         "<SYNTAX ERROR>\n"
-    | 517 ->
+    | 252 ->
         "<SYNTAX ERROR>\n"
-    | 518 ->
+    | 482 ->
+        "<SYNTAX ERROR>\n"
+    | 499 ->
         "<SYNTAX ERROR>\n"
     | 519 ->
         "<SYNTAX ERROR>\n"
     | 520 ->
         "<SYNTAX ERROR>\n"
-    | 2136 ->
+    | 521 ->
         "<SYNTAX ERROR>\n"
-    | 2138 ->
+    | 522 ->
         "<SYNTAX ERROR>\n"
-    | 2127 ->
+    | 2143 ->
+        "<SYNTAX ERROR>\n"
+    | 2145 ->
+        "<SYNTAX ERROR>\n"
+    | 2134 ->
         "<SYNTAX ERROR>\n"
     | 1899 ->
         "<SYNTAX ERROR>\n"
@@ -1274,11 +1270,31 @@ let message =
         "<SYNTAX ERROR>\n"
     | 1906 ->
         "<SYNTAX ERROR>\n"
-    | 1963 ->
+    | 1970 ->
         "<SYNTAX ERROR>\n"
-    | 1964 ->
+    | 1971 ->
         "<SYNTAX ERROR>\n"
-    | 1965 ->
+    | 1972 ->
+        "<SYNTAX ERROR>\n"
+    | 2020 ->
+        "<SYNTAX ERROR>\n"
+    | 2021 ->
+        "<SYNTAX ERROR>\n"
+    | 2022 ->
+        "<SYNTAX ERROR>\n"
+    | 2023 ->
+        "<SYNTAX ERROR>\n"
+    | 2024 ->
+        "<SYNTAX ERROR>\n"
+    | 2025 ->
+        "<SYNTAX ERROR>\n"
+    | 2026 ->
+        "<SYNTAX ERROR>\n"
+    | 1973 ->
+        "<SYNTAX ERROR>\n"
+    | 2011 ->
+        "<SYNTAX ERROR>\n"
+    | 2012 ->
         "<SYNTAX ERROR>\n"
     | 2013 ->
         "<SYNTAX ERROR>\n"
@@ -1286,87 +1302,85 @@ let message =
         "<SYNTAX ERROR>\n"
     | 2015 ->
         "<SYNTAX ERROR>\n"
-    | 2016 ->
+    | 2028 ->
         "<SYNTAX ERROR>\n"
-    | 2017 ->
+    | 2149 ->
         "<SYNTAX ERROR>\n"
-    | 2018 ->
-        "<SYNTAX ERROR>\n"
-    | 2019 ->
-        "<SYNTAX ERROR>\n"
-    | 1966 ->
-        "<SYNTAX ERROR>\n"
-    | 2004 ->
-        "<SYNTAX ERROR>\n"
-    | 2005 ->
-        "<SYNTAX ERROR>\n"
-    | 2006 ->
-        "<SYNTAX ERROR>\n"
-    | 2007 ->
-        "<SYNTAX ERROR>\n"
-    | 2008 ->
-        "<SYNTAX ERROR>\n"
-    | 2021 ->
-        "<SYNTAX ERROR>\n"
-    | 2142 ->
-        "<SYNTAX ERROR>\n"
-    | 2143 ->
-        "<SYNTAX ERROR>\n"
-    | 2066 ->
-        "<SYNTAX ERROR>\n"
-    | 2069 ->
-        "<SYNTAX ERROR>\n"
-    | 2070 ->
-        "<SYNTAX ERROR>\n"
-    | 2071 ->
-        "<SYNTAX ERROR>\n"
-    | 2072 ->
+    | 2150 ->
         "<SYNTAX ERROR>\n"
     | 2073 ->
         "<SYNTAX ERROR>\n"
-    | 2074 ->
+    | 2076 ->
+        "<SYNTAX ERROR>\n"
+    | 2077 ->
         "<SYNTAX ERROR>\n"
     | 2078 ->
         "<SYNTAX ERROR>\n"
-    | 2083 ->
+    | 2079 ->
         "<SYNTAX ERROR>\n"
-    | 447 ->
+    | 2080 ->
         "<SYNTAX ERROR>\n"
-    | 448 ->
-        "<SYNTAX ERROR>\n"
-    | 449 ->
-        "<SYNTAX ERROR>\n"
-    | 2084 ->
+    | 2081 ->
         "<SYNTAX ERROR>\n"
     | 2085 ->
         "<SYNTAX ERROR>\n"
-    | 2086 ->
+    | 2090 ->
         "<SYNTAX ERROR>\n"
-    | 463 ->
+    | 455 ->
         "<SYNTAX ERROR>\n"
-    | 445 ->
+    | 456 ->
         "<SYNTAX ERROR>\n"
     | 2091 ->
-        "<SYNTAX ERROR>\n"
-    | 2100 ->
         "<SYNTAX ERROR>\n"
     | 2092 ->
         "<SYNTAX ERROR>\n"
     | 2093 ->
         "<SYNTAX ERROR>\n"
-    | 2095 ->
+    | 441 ->
         "<SYNTAX ERROR>\n"
-    | 2096 ->
+    | 466 ->
         "<SYNTAX ERROR>\n"
-    | 2097 ->
+    | 2098 ->
         "<SYNTAX ERROR>\n"
-    | 2147 ->
+    | 2107 ->
         "<SYNTAX ERROR>\n"
-    | 2148 ->
+    | 2099 ->
+        "<SYNTAX ERROR>\n"
+    | 2100 ->
         "<SYNTAX ERROR>\n"
     | 2102 ->
         "<SYNTAX ERROR>\n"
+    | 2103 ->
+        "<SYNTAX ERROR>\n"
+    | 2104 ->
+        "<SYNTAX ERROR>\n"
+    | 2154 ->
+        "<SYNTAX ERROR>\n"
+    | 2155 ->
+        "<SYNTAX ERROR>\n"
+    | 2109 ->
+        "<SYNTAX ERROR>\n"
+    | 2118 ->
+        "<SYNTAX ERROR>\n"
+    | 2119 ->
+        "<SYNTAX ERROR>\n"
+    | 2120 ->
+        "<SYNTAX ERROR>\n"
+    | 2121 ->
+        "<SYNTAX ERROR>\n"
+    | 2122 ->
+        "<SYNTAX ERROR>\n"
+    | 2123 ->
+        "<SYNTAX ERROR>\n"
+    | 2124 ->
+        "<SYNTAX ERROR>\n"
+    | 2110 ->
+        "<SYNTAX ERROR>\n"
     | 2111 ->
+        "<SYNTAX ERROR>\n"
+    | 2159 ->
+        "<SYNTAX ERROR>\n"
+    | 2160 ->
         "<SYNTAX ERROR>\n"
     | 2112 ->
         "<SYNTAX ERROR>\n"
@@ -1376,53 +1390,31 @@ let message =
         "<SYNTAX ERROR>\n"
     | 2115 ->
         "<SYNTAX ERROR>\n"
-    | 2116 ->
+    | 538 ->
         "<SYNTAX ERROR>\n"
-    | 2117 ->
+    | 539 ->
         "<SYNTAX ERROR>\n"
-    | 2103 ->
+    | 543 ->
         "<SYNTAX ERROR>\n"
-    | 2104 ->
+    | 544 ->
         "<SYNTAX ERROR>\n"
-    | 2152 ->
+    | 2320 ->
         "<SYNTAX ERROR>\n"
-    | 2153 ->
+    | 2322 ->
         "<SYNTAX ERROR>\n"
-    | 2105 ->
+    | 2323 ->
         "<SYNTAX ERROR>\n"
-    | 2106 ->
-        "<SYNTAX ERROR>\n"
-    | 2107 ->
-        "<SYNTAX ERROR>\n"
-    | 2108 ->
-        "<SYNTAX ERROR>\n"
-    | 536 ->
-        "<SYNTAX ERROR>\n"
-    | 537 ->
-        "<SYNTAX ERROR>\n"
-    | 541 ->
-        "<SYNTAX ERROR>\n"
-    | 542 ->
-        "<SYNTAX ERROR>\n"
-    | 2313 ->
-        "<SYNTAX ERROR>\n"
-    | 2315 ->
-        "<SYNTAX ERROR>\n"
-    | 2316 ->
-        "<SYNTAX ERROR>\n"
-    | 2317 ->
-        "<SYNTAX ERROR>\n"
-    | 855 ->
+    | 2324 ->
         "<SYNTAX ERROR>\n"
     | 856 ->
         "<SYNTAX ERROR>\n"
-    | 858 ->
+    | 857 ->
         "<SYNTAX ERROR>\n"
     | 859 ->
         "<SYNTAX ERROR>\n"
-    | 1867 ->
+    | 860 ->
         "<SYNTAX ERROR>\n"
-    | 864 ->
+    | 1867 ->
         "<SYNTAX ERROR>\n"
     | 865 ->
         "<SYNTAX ERROR>\n"
@@ -1432,9 +1424,9 @@ let message =
         "<SYNTAX ERROR>\n"
     | 868 ->
         "<SYNTAX ERROR>\n"
-    | 1866 ->
+    | 869 ->
         "<SYNTAX ERROR>\n"
-    | 860 ->
+    | 1866 ->
         "<SYNTAX ERROR>\n"
     | 861 ->
         "<SYNTAX ERROR>\n"
@@ -1442,15 +1434,17 @@ let message =
         "<SYNTAX ERROR>\n"
     | 863 ->
         "<SYNTAX ERROR>\n"
+    | 864 ->
+        "<SYNTAX ERROR>\n"
     | 1883 ->
         "<SYNTAX ERROR>\n"
-    | 621 ->
+    | 622 ->
         "<SYNTAX ERROR>\n"
-    | 842 ->
-        "<SYNTAX ERROR>\n"
-    | 844 ->
+    | 843 ->
         "<SYNTAX ERROR>\n"
     | 845 ->
+        "<SYNTAX ERROR>\n"
+    | 846 ->
         "<SYNTAX ERROR>\n"
     | 1876 ->
         "<SYNTAX ERROR>\n"
@@ -1464,19 +1458,17 @@ let message =
         "<SYNTAX ERROR>\n"
     | 1881 ->
         "<SYNTAX ERROR>\n"
-    | 869 ->
-        "<SYNTAX ERROR>\n"
     | 870 ->
         "<SYNTAX ERROR>\n"
     | 871 ->
         "<SYNTAX ERROR>\n"
     | 872 ->
         "<SYNTAX ERROR>\n"
-    | 875 ->
+    | 873 ->
         "<SYNTAX ERROR>\n"
     | 876 ->
         "<SYNTAX ERROR>\n"
-    | 1035 ->
+    | 877 ->
         "<SYNTAX ERROR>\n"
     | 1036 ->
         "<SYNTAX ERROR>\n"
@@ -1488,45 +1480,45 @@ let message =
         "<SYNTAX ERROR>\n"
     | 1040 ->
         "<SYNTAX ERROR>\n"
-    | 1044 ->
+    | 1041 ->
         "<SYNTAX ERROR>\n"
-    | 1049 ->
-        "<SYNTAX ERROR>\n"
-    | 938 ->
-        "<SYNTAX ERROR>\n"
-    | 939 ->
-        "<SYNTAX ERROR>\n"
-    | 940 ->
+    | 1045 ->
         "<SYNTAX ERROR>\n"
     | 1050 ->
+        "<SYNTAX ERROR>\n"
+    | 942 ->
+        "<SYNTAX ERROR>\n"
+    | 943 ->
         "<SYNTAX ERROR>\n"
     | 1051 ->
         "<SYNTAX ERROR>\n"
     | 1052 ->
         "<SYNTAX ERROR>\n"
-    | 942 ->
+    | 1053 ->
         "<SYNTAX ERROR>\n"
-    | 930 ->
+    | 940 ->
         "<SYNTAX ERROR>\n"
-    | 1057 ->
+    | 932 ->
         "<SYNTAX ERROR>\n"
-    | 1146 ->
+    | 1058 ->
         "<SYNTAX ERROR>\n"
-    | 1059 ->
+    | 1147 ->
         "<SYNTAX ERROR>\n"
     | 1060 ->
         "<SYNTAX ERROR>\n"
-    | 1062 ->
+    | 1061 ->
         "<SYNTAX ERROR>\n"
-    | 1065 ->
+    | 1063 ->
+        "<SYNTAX ERROR>\n"
+    | 1066 ->
         "<SYNTAX ERROR>\n"
     | 1698 ->
         "<SYNTAX ERROR>\n"
-    | 1139 ->
-        "<SYNTAX ERROR>\n"
     | 1140 ->
         "<SYNTAX ERROR>\n"
-    | 1148 ->
+    | 1141 ->
+        "<SYNTAX ERROR>\n"
+    | 1149 ->
         "<SYNTAX ERROR>\n"
     | 1657 ->
         "<SYNTAX ERROR>\n"
@@ -1556,9 +1548,7 @@ let message =
         "<SYNTAX ERROR>\n"
     | 1666 ->
         "<SYNTAX ERROR>\n"
-    | 1067 ->
-        "<SYNTAX ERROR>\n"
-    | 1075 ->
+    | 1068 ->
         "<SYNTAX ERROR>\n"
     | 1076 ->
         "<SYNTAX ERROR>\n"
@@ -1568,7 +1558,7 @@ let message =
         "<SYNTAX ERROR>\n"
     | 1079 ->
         "<SYNTAX ERROR>\n"
-    | 1081 ->
+    | 1080 ->
         "<SYNTAX ERROR>\n"
     | 1082 ->
         "<SYNTAX ERROR>\n"
@@ -1576,23 +1566,25 @@ let message =
         "<SYNTAX ERROR>\n"
     | 1084 ->
         "<SYNTAX ERROR>\n"
-    | 1090 ->
+    | 1085 ->
         "<SYNTAX ERROR>\n"
     | 1091 ->
         "<SYNTAX ERROR>\n"
-    | 1093 ->
+    | 1092 ->
         "<SYNTAX ERROR>\n"
     | 1094 ->
         "<SYNTAX ERROR>\n"
-    | 1098 ->
-        "<SYNTAX ERROR>\n"
-    | 1096 ->
+    | 1095 ->
         "<SYNTAX ERROR>\n"
     | 1099 ->
         "<SYNTAX ERROR>\n"
+    | 1097 ->
+        "<SYNTAX ERROR>\n"
     | 1100 ->
         "<SYNTAX ERROR>\n"
-    | 1071 ->
+    | 1101 ->
+        "<SYNTAX ERROR>\n"
+    | 1072 ->
         "<SYNTAX ERROR>\n"
     | 1681 ->
         "<SYNTAX ERROR>\n"
@@ -1600,21 +1592,21 @@ let message =
         "<SYNTAX ERROR>\n"
     | 1685 ->
         "<SYNTAX ERROR>\n"
-    | 1068 ->
-        "<SYNTAX ERROR>\n"
     | 1069 ->
         "<SYNTAX ERROR>\n"
-    | 1074 ->
+    | 1070 ->
+        "<SYNTAX ERROR>\n"
+    | 1075 ->
         "<SYNTAX ERROR>\n"
     | 1649 ->
-        "<SYNTAX ERROR>\n"
-    | 1149 ->
         "<SYNTAX ERROR>\n"
     | 1150 ->
         "<SYNTAX ERROR>\n"
     | 1151 ->
         "<SYNTAX ERROR>\n"
     | 1152 ->
+        "<SYNTAX ERROR>\n"
+    | 1153 ->
         "<SYNTAX ERROR>\n"
     | 1587 ->
         "<SYNTAX ERROR>\n"
@@ -1624,9 +1616,9 @@ let message =
         "<SYNTAX ERROR>\n"
     | 1609 ->
         "<SYNTAX ERROR>\n"
-    | 1144 ->
-        "<SYNTAX ERROR>\n"
     | 1145 ->
+        "<SYNTAX ERROR>\n"
+    | 1146 ->
         "<SYNTAX ERROR>\n"
     | 1618 ->
         "<SYNTAX ERROR>\n"
@@ -1674,39 +1666,37 @@ let message =
         "<SYNTAX ERROR>\n"
     | 1643 ->
         "<SYNTAX ERROR>\n"
-    | 562 ->
+    | 563 ->
         "<SYNTAX ERROR>\n"
-    | 140 ->
+    | 151 ->
         "<SYNTAX ERROR>\n"
-    | 883 ->
+    | 884 ->
         "<SYNTAX ERROR>\n"
-    | 2598 ->
-        "<SYNTAX ERROR>\n"
-    | 924 ->
-        "<SYNTAX ERROR>\n"
-    | 919 ->
-        "<SYNTAX ERROR>\n"
-    | 2600 ->
-        "<SYNTAX ERROR>\n"
-    | 1735 ->
+    | 2606 ->
         "<SYNTAX ERROR>\n"
     | 925 ->
         "<SYNTAX ERROR>\n"
-    | 935 ->
+    | 920 ->
         "<SYNTAX ERROR>\n"
-    | 927 ->
+    | 2608 ->
+        "<SYNTAX ERROR>\n"
+    | 1735 ->
+        "<SYNTAX ERROR>\n"
+    | 926 ->
+        "<SYNTAX ERROR>\n"
+    | 937 ->
         "<SYNTAX ERROR>\n"
     | 928 ->
         "<SYNTAX ERROR>\n"
-    | 2599 ->
+    | 929 ->
         "<SYNTAX ERROR>\n"
-    | 951 ->
+    | 2607 ->
         "<SYNTAX ERROR>\n"
     | 952 ->
         "<SYNTAX ERROR>\n"
-    | 954 ->
+    | 953 ->
         "<SYNTAX ERROR>\n"
-    | 998 ->
+    | 955 ->
         "<SYNTAX ERROR>\n"
     | 999 ->
         "<SYNTAX ERROR>\n"
@@ -1722,15 +1712,15 @@ let message =
         "<SYNTAX ERROR>\n"
     | 1005 ->
         "<SYNTAX ERROR>\n"
-    | 1011 ->
-        "<SYNTAX ERROR>\n"
-    | 1013 ->
-        "<SYNTAX ERROR>\n"
     | 1006 ->
+        "<SYNTAX ERROR>\n"
+    | 1012 ->
+        "<SYNTAX ERROR>\n"
+    | 1014 ->
         "<SYNTAX ERROR>\n"
     | 1007 ->
         "<SYNTAX ERROR>\n"
-    | 1018 ->
+    | 1008 ->
         "<SYNTAX ERROR>\n"
     | 1019 ->
         "<SYNTAX ERROR>\n"
@@ -1738,83 +1728,81 @@ let message =
         "<SYNTAX ERROR>\n"
     | 1021 ->
         "<SYNTAX ERROR>\n"
+    | 1022 ->
+        "<SYNTAX ERROR>\n"
     | 1736 ->
         "<SYNTAX ERROR>\n"
     | 1737 ->
         "<SYNTAX ERROR>\n"
-    | 787 ->
-        "<SYNTAX ERROR>\n"
-    | 1024 ->
+    | 788 ->
         "<SYNTAX ERROR>\n"
     | 1025 ->
         "<SYNTAX ERROR>\n"
-    | 1707 ->
+    | 1026 ->
         "<SYNTAX ERROR>\n"
-    | 959 ->
+    | 1707 ->
         "<SYNTAX ERROR>\n"
     | 960 ->
         "<SYNTAX ERROR>\n"
-    | 962 ->
+    | 961 ->
         "<SYNTAX ERROR>\n"
     | 963 ->
         "<SYNTAX ERROR>\n"
-    | 969 ->
+    | 964 ->
         "<SYNTAX ERROR>\n"
-    | 967 ->
+    | 970 ->
         "<SYNTAX ERROR>\n"
-    | 965 ->
+    | 968 ->
         "<SYNTAX ERROR>\n"
-    | 982 ->
+    | 966 ->
         "<SYNTAX ERROR>\n"
     | 983 ->
         "<SYNTAX ERROR>\n"
-    | 975 ->
+    | 984 ->
         "<SYNTAX ERROR>\n"
     | 976 ->
         "<SYNTAX ERROR>\n"
-    | 980 ->
+    | 977 ->
         "<SYNTAX ERROR>\n"
     | 981 ->
         "<SYNTAX ERROR>\n"
-    | 979 ->
+    | 76 ->
         "<SYNTAX ERROR>\n"
-    | 977 ->
+    | 980 ->
         "<SYNTAX ERROR>\n"
     | 978 ->
         "<SYNTAX ERROR>\n"
-    | 106 ->
+    | 117 ->
         "<SYNTAX ERROR>\n"
-    | 263 ->
-        "<SYNTAX ERROR>\n"
-    | 986 ->
+    | 256 ->
         "<SYNTAX ERROR>\n"
     | 987 ->
         "<SYNTAX ERROR>\n"
-    | 264 ->
+    | 988 ->
         "<SYNTAX ERROR>\n"
-    | 265 ->
+    | 257 ->
         "<SYNTAX ERROR>\n"
-    | 406 ->
+    | 258 ->
         "<SYNTAX ERROR>\n"
-    | 407 ->
+    | 409 ->
         "<SYNTAX ERROR>\n"
-    | 408 ->
+    | 410 ->
         "<SYNTAX ERROR>\n"
-    | 2392 ->
+    | 2399 ->
         "<SYNTAX ERROR>\n"
-    | 543 ->
+    | 545 ->
         "<SYNTAX ERROR>\n"
-    | 2307 ->
+    | 2314 ->
         "<SYNTAX ERROR>\n"
-    | 2308 ->
+    | 2315 ->
         "<SYNTAX ERROR>\n"
-    | 2309 ->
+    | 2316 ->
         "<SYNTAX ERROR>\n"
-    | 2310 ->
+    | 2317 ->
         "<SYNTAX ERROR>\n"
-    | 2311 ->
+    | 2318 ->
         "<SYNTAX ERROR>\n"
-    | 2312 ->
+    | 2319 ->
         "<SYNTAX ERROR>\n"
     | 1917 ->
         "<SYNTAX ERROR>\n"
@@ -1828,19 +1816,19 @@ let message =
         "<SYNTAX ERROR>\n"
     | 1921 ->
         "<SYNTAX ERROR>\n"
-    | 1939 ->
+    | 1946 ->
         "<SYNTAX ERROR>\n"
-    | 1940 ->
+    | 1947 ->
         "<SYNTAX ERROR>\n"
     | 1926 ->
         "<SYNTAX ERROR>\n"
     | 1927 ->
         "<SYNTAX ERROR>\n"
-    | 1937 ->
+    | 1944 ->
         "<SYNTAX ERROR>\n"
-    | 1938 ->
+    | 1929 ->
         "<SYNTAX ERROR>\n"
-    | 1936 ->
+    | 1943 ->
         "<SYNTAX ERROR>\n"
     | 1928 ->
         "<SYNTAX ERROR>\n"
@@ -1848,51 +1836,47 @@ let message =
         "<SYNTAX ERROR>\n"
     | 1931 ->
         "<SYNTAX ERROR>\n"
-    | 1932 ->
-        "<SYNTAX ERROR>\n"
     | 1934 ->
-        "<SYNTAX ERROR>\n"
-    | 544 ->
-        "<SYNTAX ERROR>\n"
-    | 638 ->
-        "<SYNTAX ERROR>\n"
-    | 1944 ->
-        "<SYNTAX ERROR>\n"
-    | 1945 ->
-        "<SYNTAX ERROR>\n"
-    | 639 ->
-        "<SYNTAX ERROR>\n"
-    | 640 ->
-        "<SYNTAX ERROR>\n"
-    | 545 ->
         "<SYNTAX ERROR>\n"
     | 546 ->
         "<SYNTAX ERROR>\n"
+    | 639 ->
+        "<SYNTAX ERROR>\n"
+    | 1951 ->
+        "<SYNTAX ERROR>\n"
+    | 1952 ->
+        "<SYNTAX ERROR>\n"
+    | 640 ->
+        "<SYNTAX ERROR>\n"
+    | 641 ->
+        "<SYNTAX ERROR>\n"
     | 547 ->
         "<SYNTAX ERROR>\n"
-    | 2303 ->
+    | 548 ->
+        "<SYNTAX ERROR>\n"
+    | 2310 ->
         "<SYNTAX ERROR>\n"
     | 1907 ->
         "<SYNTAX ERROR>\n"
-    | 1954 ->
+    | 1961 ->
         "<SYNTAX ERROR>\n"
-    | 1955 ->
+    | 1962 ->
         "<SYNTAX ERROR>\n"
-    | 1956 ->
+    | 1963 ->
         "<SYNTAX ERROR>\n"
-    | 1957 ->
+    | 1964 ->
         "<SYNTAX ERROR>\n"
-    | 1958 ->
+    | 1965 ->
         "<SYNTAX ERROR>\n"
-    | 1959 ->
+    | 1966 ->
         "<SYNTAX ERROR>\n"
     | 1915 ->
         "<SYNTAX ERROR>\n"
-    | 2304 ->
+    | 2311 ->
         "<SYNTAX ERROR>\n"
     | 1908 ->
         "<SYNTAX ERROR>\n"
-    | 917 ->
+    | 918 ->
         "<SYNTAX ERROR>\n"
     | 1729 ->
         "<SYNTAX ERROR>\n"
@@ -1910,7 +1894,7 @@ let message =
         "<SYNTAX ERROR>\n"
     | 1717 ->
         "<SYNTAX ERROR>\n"
-    | 937 ->
+    | 939 ->
         "<SYNTAX ERROR>\n"
     | 1720 ->
         "<SYNTAX ERROR>\n"
@@ -1928,307 +1912,299 @@ let message =
         "<SYNTAX ERROR>\n"
     | 1743 ->
         "<SYNTAX ERROR>\n"
-    | 2605 ->
+    | 2613 ->
         "<SYNTAX ERROR>\n"
-    | 2607 ->
-        "<SYNTAX ERROR>\n"
-    | 275 ->
+    | 2615 ->
         "<SYNTAX ERROR>\n"
     | 279 ->
         "<SYNTAX ERROR>\n"
-    | 280 ->
+    | 283 ->
         "<SYNTAX ERROR>\n"
-    | 156 ->
+    | 284 ->
         "<SYNTAX ERROR>\n"
-    | 157 ->
+    | 195 ->
         "<SYNTAX ERROR>\n"
-    | 158 ->
+    | 77 ->
         "<SYNTAX ERROR>\n"
-    | 160 ->
+    | 78 ->
         "<SYNTAX ERROR>\n"
-    | 162 ->
+    | 80 ->
         "<SYNTAX ERROR>\n"
-    | 98 ->
+    | 196 ->
+        "<SYNTAX ERROR>\n"
+    | 113 ->
         "<SYNTAX ERROR>\n"
     | 9 ->
         "<SYNTAX ERROR>\n"
     | 10 ->
         "<SYNTAX ERROR>\n"
-    | 2539 ->
-        "<SYNTAX ERROR>\n"
-    | 102 ->
-        "<SYNTAX ERROR>\n"
-    | 104 ->
-        "<SYNTAX ERROR>\n"
-    | 2537 ->
-        "Expecting one of the following:\n  - \",\" to start the type in the tuple\n  - \")\" to finish the tuple type definition\n"
-    | 273 ->
-        "<SYNTAX ERROR>\n"
-    | 105 ->
+    | 2548 ->
         "<SYNTAX ERROR>\n"
     | 110 ->
         "<SYNTAX ERROR>\n"
-    | 111 ->
+    | 2546 ->
+        "Expecting one of the following:\n  - \",\" to start the type in the tuple\n  - \")\" to finish the tuple type definition\n"
+    | 277 ->
         "<SYNTAX ERROR>\n"
     | 116 ->
         "<SYNTAX ERROR>\n"
-    | 117 ->
+    | 121 ->
         "<SYNTAX ERROR>\n"
-    | 2534 ->
+    | 122 ->
+        "<SYNTAX ERROR>\n"
+    | 127 ->
+        "<SYNTAX ERROR>\n"
+    | 128 ->
+        "<SYNTAX ERROR>\n"
+    | 2543 ->
+        "<SYNTAX ERROR>\n"
+    | 2544 ->
+        "<SYNTAX ERROR>\n"
+    | 120 ->
+        "<SYNTAX ERROR>\n"
+    | 118 ->
+        "<SYNTAX ERROR>\n"
+    | 262 ->
+        "<SYNTAX ERROR>\n"
+    | 108 ->
+        "<SYNTAX ERROR>\n"
+    | 130 ->
         "<SYNTAX ERROR>\n"
     | 2535 ->
         "<SYNTAX ERROR>\n"
-    | 109 ->
+    | 2536 ->
         "<SYNTAX ERROR>\n"
-    | 107 ->
+    | 2537 ->
         "<SYNTAX ERROR>\n"
-    | 154 ->
+    | 2539 ->
         "<SYNTAX ERROR>\n"
-    | 100 ->
+    | 134 ->
         "<SYNTAX ERROR>\n"
-    | 119 ->
+    | 139 ->
         "<SYNTAX ERROR>\n"
-    | 2526 ->
+    | 140 ->
         "<SYNTAX ERROR>\n"
-    | 2527 ->
+    | 294 ->
+        "<SYNTAX ERROR>\n"
+    | 141 ->
+        "<SYNTAX ERROR>\n"
+    | 488 ->
+        "<SYNTAX ERROR>\n"
+    | 487 ->
+        "<SYNTAX ERROR>\n"
+    | 490 ->
+        "<SYNTAX ERROR>\n"
+    | 295 ->
+        "<SYNTAX ERROR>\n"
+    | 137 ->
+        "<SYNTAX ERROR>\n"
+    | 143 ->
         "<SYNTAX ERROR>\n"
     | 2528 ->
         "<SYNTAX ERROR>\n"
     | 2530 ->
         "<SYNTAX ERROR>\n"
-    | 123 ->
+    | 2531 ->
         "<SYNTAX ERROR>\n"
-    | 128 ->
+    | 157 ->
         "<SYNTAX ERROR>\n"
-    | 129 ->
-        "<SYNTAX ERROR>\n"
-    | 290 ->
-        "<SYNTAX ERROR>\n"
-    | 130 ->
-        "<SYNTAX ERROR>\n"
-    | 487 ->
-        "<SYNTAX ERROR>\n"
-    | 486 ->
-        "<SYNTAX ERROR>\n"
-    | 489 ->
-        "<SYNTAX ERROR>\n"
-    | 291 ->
-        "<SYNTAX ERROR>\n"
-    | 126 ->
-        "<SYNTAX ERROR>\n"
-    | 132 ->
-        "<SYNTAX ERROR>\n"
-    | 2519 ->
-        "<SYNTAX ERROR>\n"
-    | 2521 ->
-        "<SYNTAX ERROR>\n"
-    | 2522 ->
+    | 145 ->
         "<SYNTAX ERROR>\n"
     | 146 ->
         "<SYNTAX ERROR>\n"
-    | 134 ->
+    | 2526 ->
         "<SYNTAX ERROR>\n"
-    | 135 ->
+    | 148 ->
         "<SYNTAX ERROR>\n"
-    | 2517 ->
+    | 149 ->
         "<SYNTAX ERROR>\n"
-    | 137 ->
+    | 2522 ->
         "<SYNTAX ERROR>\n"
-    | 138 ->
+    | 2523 ->
         "<SYNTAX ERROR>\n"
-    | 2513 ->
-        "<SYNTAX ERROR>\n"
-    | 2514 ->
-        "<SYNTAX ERROR>\n"
-    | 2515 ->
-        "<SYNTAX ERROR>\n"
-    | 139 ->
-        "<SYNTAX ERROR>\n"
-    | 144 ->
+    | 2524 ->
         "<SYNTAX ERROR>\n"
     | 150 ->
         "<SYNTAX ERROR>\n"
-    | 2511 ->
+    | 155 ->
         "<SYNTAX ERROR>\n"
-    | 2507 ->
+    | 2520 ->
         "<SYNTAX ERROR>\n"
-    | 152 ->
+    | 2516 ->
         "<SYNTAX ERROR>\n"
-    | 2609 ->
+    | 2513 ->
         "<SYNTAX ERROR>\n"
-    | 2611 ->
+    | 2617 ->
         "<SYNTAX ERROR>\n"
-    | 2613 ->
+    | 2619 ->
         "<SYNTAX ERROR>\n"
-    | 2614 ->
+    | 2621 ->
         "<SYNTAX ERROR>\n"
-    | 782 ->
+    | 2622 ->
         "<SYNTAX ERROR>\n"
-    | 784 ->
-        "<SYNTAX ERROR>\n"
-    | 795 ->
+    | 783 ->
         "<SYNTAX ERROR>\n"
     | 785 ->
         "<SYNTAX ERROR>\n"
-    | 777 ->
+    | 796 ->
         "<SYNTAX ERROR>\n"
-    | 622 ->
+    | 786 ->
         "<SYNTAX ERROR>\n"
-    | 586 ->
+    | 778 ->
         "<SYNTAX ERROR>\n"
-    | 758 ->
+    | 623 ->
         "<SYNTAX ERROR>\n"
-    | 203 ->
+    | 587 ->
         "<SYNTAX ERROR>\n"
-    | 205 ->
+    | 759 ->
         "<SYNTAX ERROR>\n"
-    | 211 ->
+    | 193 ->
         "<SYNTAX ERROR>\n"
-    | 217 ->
+    | 198 ->
         "<SYNTAX ERROR>\n"
-    | 802 ->
+    | 204 ->
+        "<SYNTAX ERROR>\n"
+    | 210 ->
         "<SYNTAX ERROR>\n"
     | 803 ->
         "<SYNTAX ERROR>\n"
-    | 832 ->
+    | 804 ->
         "<SYNTAX ERROR>\n"
-    | 793 ->
+    | 833 ->
         "<SYNTAX ERROR>\n"
-    | 721 ->
+    | 794 ->
         "<SYNTAX ERROR>\n"
-    | 708 ->
+    | 722 ->
         "<SYNTAX ERROR>\n"
-    | 710 ->
-        "<SYNTAX ERROR>\n"
-    | 837 ->
-        "<SYNTAX ERROR>\n"
-    | 454 ->
-        "<SYNTAX ERROR>\n"
-    | 458 ->
-        "<SYNTAX ERROR>\n"
-    | 459 ->
-        "<SYNTAX ERROR>\n"
-    | 252 ->
-        "<SYNTAX ERROR>\n"
-    | 320 ->
-        "<SYNTAX ERROR>\n"
-    | 256 ->
-        "<SYNTAX ERROR>\n"
-    | 259 ->
-        "<SYNTAX ERROR>\n"
-    | 271 ->
-        "<SYNTAX ERROR>\n"
-    | 260 ->
-        "<SYNTAX ERROR>\n"
-    | 261 ->
-        "<SYNTAX ERROR>\n"
-    | 332 ->
-        "<SYNTAX ERROR>\n"
-    | 254 ->
-        "<SYNTAX ERROR>\n"
-    | 327 ->
-        "<SYNTAX ERROR>\n"
-    | 328 ->
-        "<SYNTAX ERROR>\n"
-    | 329 ->
-        "<SYNTAX ERROR>\n"
-    | 330 ->
-        "<SYNTAX ERROR>\n"
-    | 2403 ->
-        "<SYNTAX ERROR>\n"
-    | 287 ->
-        "<SYNTAX ERROR>\n"
-    | 288 ->
-        "<SYNTAX ERROR>\n"
-    | 294 ->
-        "<SYNTAX ERROR>\n"
-    | 296 ->
-        "<SYNTAX ERROR>\n"
-    | 298 ->
-        "<SYNTAX ERROR>\n"
-    | 299 ->
-        "<SYNTAX ERROR>\n"
-    | 295 ->
-        "<SYNTAX ERROR>\n"
-    | 304 ->
-        "<SYNTAX ERROR>\n"
-    | 307 ->
-        "<SYNTAX ERROR>\n"
-    | 306 ->
-        "<SYNTAX ERROR>\n"
-    | 309 ->
-        "<SYNTAX ERROR>\n"
-    | 315 ->
-        "<SYNTAX ERROR>\n"
-    | 316 ->
-        "<SYNTAX ERROR>\n"
-    | 317 ->
-        "<SYNTAX ERROR>\n"
-    | 310 ->
-        "<SYNTAX ERROR>\n"
-    | 311 ->
-        "<SYNTAX ERROR>\n"
-    | 313 ->
-        "<SYNTAX ERROR>\n"
-    | 728 ->
+    | 709 ->
         "<SYNTAX ERROR>\n"
     | 711 ->
         "<SYNTAX ERROR>\n"
-    | 713 ->
+    | 838 ->
         "<SYNTAX ERROR>\n"
-    | 698 ->
+    | 446 ->
         "<SYNTAX ERROR>\n"
-    | 667 ->
+    | 450 ->
         "<SYNTAX ERROR>\n"
-    | 688 ->
+    | 451 ->
         "<SYNTAX ERROR>\n"
-    | 679 ->
+    | 245 ->
         "<SYNTAX ERROR>\n"
-    | 219 ->
-        "<SYNTAX ERROR>\n"
-    | 222 ->
-        "<SYNTAX ERROR>\n"
-    | 223 ->
-        "<SYNTAX ERROR>\n"
-    | 229 ->
-        "<SYNTAX ERROR>\n"
-    | 237 ->
-        "<SYNTAX ERROR>\n"
-    | 238 ->
-        "<SYNTAX ERROR>\n"
-    | 240 ->
-        "<SYNTAX ERROR>\n"
-    | 247 ->
-        "<SYNTAX ERROR>\n"
-    | 248 ->
+    | 324 ->
         "<SYNTAX ERROR>\n"
     | 249 ->
         "<SYNTAX ERROR>\n"
-    | 250 ->
+    | 275 ->
         "<SYNTAX ERROR>\n"
-    | 2407 ->
+    | 253 ->
         "<SYNTAX ERROR>\n"
-    | 2408 ->
+    | 254 ->
+        "<SYNTAX ERROR>\n"
+    | 336 ->
+        "<SYNTAX ERROR>\n"
+    | 247 ->
+        "<SYNTAX ERROR>\n"
+    | 331 ->
+        "<SYNTAX ERROR>\n"
+    | 332 ->
+        "<SYNTAX ERROR>\n"
+    | 333 ->
+        "<SYNTAX ERROR>\n"
+    | 334 ->
+        "<SYNTAX ERROR>\n"
+    | 2410 ->
+        "<SYNTAX ERROR>\n"
+    | 291 ->
+        "<SYNTAX ERROR>\n"
+    | 292 ->
+        "<SYNTAX ERROR>\n"
+    | 298 ->
+        "<SYNTAX ERROR>\n"
+    | 300 ->
+        "<SYNTAX ERROR>\n"
+    | 302 ->
+        "<SYNTAX ERROR>\n"
+    | 303 ->
+        "<SYNTAX ERROR>\n"
+    | 299 ->
+        "<SYNTAX ERROR>\n"
+    | 308 ->
+        "<SYNTAX ERROR>\n"
+    | 311 ->
+        "<SYNTAX ERROR>\n"
+    | 310 ->
+        "<SYNTAX ERROR>\n"
+    | 313 ->
+        "<SYNTAX ERROR>\n"
+    | 319 ->
+        "<SYNTAX ERROR>\n"
+    | 320 ->
+        "<SYNTAX ERROR>\n"
+    | 321 ->
+        "<SYNTAX ERROR>\n"
+    | 314 ->
+        "<SYNTAX ERROR>\n"
+    | 315 ->
+        "<SYNTAX ERROR>\n"
+    | 317 ->
+        "<SYNTAX ERROR>\n"
+    | 729 ->
+        "<SYNTAX ERROR>\n"
+    | 712 ->
+        "<SYNTAX ERROR>\n"
+    | 714 ->
+        "<SYNTAX ERROR>\n"
+    | 699 ->
+        "<SYNTAX ERROR>\n"
+    | 668 ->
+        "<SYNTAX ERROR>\n"
+    | 689 ->
+        "<SYNTAX ERROR>\n"
+    | 680 ->
+        "<SYNTAX ERROR>\n"
+    | 212 ->
+        "<SYNTAX ERROR>\n"
+    | 215 ->
+        "<SYNTAX ERROR>\n"
+    | 216 ->
+        "<SYNTAX ERROR>\n"
+    | 222 ->
+        "<SYNTAX ERROR>\n"
+    | 230 ->
+        "<SYNTAX ERROR>\n"
+    | 231 ->
+        "<SYNTAX ERROR>\n"
+    | 233 ->
+        "<SYNTAX ERROR>\n"
+    | 240 ->
         "<SYNTAX ERROR>\n"
     | 241 ->
         "<SYNTAX ERROR>\n"
-    | 246 ->
+    | 242 ->
         "<SYNTAX ERROR>\n"
-    | 624 ->
+    | 243 ->
         "<SYNTAX ERROR>\n"
-    | 630 ->
+    | 2414 ->
         "<SYNTAX ERROR>\n"
-    | 719 ->
+    | 2415 ->
         "<SYNTAX ERROR>\n"
-    | 808 ->
+    | 234 ->
+        "<SYNTAX ERROR>\n"
+    | 239 ->
+        "<SYNTAX ERROR>\n"
+    | 625 ->
         "<SYNTAX ERROR>\n"
     | 631 ->
         "<SYNTAX ERROR>\n"
+    | 720 ->
+        "<SYNTAX ERROR>\n"
+    | 809 ->
+        "<SYNTAX ERROR>\n"
     | 632 ->
         "<SYNTAX ERROR>\n"
-    | 634 ->
+    | 633 ->
         "<SYNTAX ERROR>\n"
-    | 824 ->
+    | 635 ->
         "<SYNTAX ERROR>\n"
     | 825 ->
         "<SYNTAX ERROR>\n"
@@ -2240,111 +2216,113 @@ let message =
         "<SYNTAX ERROR>\n"
     | 829 ->
         "<SYNTAX ERROR>\n"
-    | 646 ->
-        "<SYNTAX ERROR>\n"
-    | 821 ->
-        "<SYNTAX ERROR>\n"
-    | 649 ->
-        "<SYNTAX ERROR>\n"
-    | 816 ->
-        "<SYNTAX ERROR>\n"
-    | 650 ->
-        "<SYNTAX ERROR>\n"
-    | 655 ->
-        "<SYNTAX ERROR>\n"
-    | 666 ->
-        "<SYNTAX ERROR>\n"
-    | 674 ->
-        "<SYNTAX ERROR>\n"
-    | 682 ->
-        "<SYNTAX ERROR>\n"
-    | 2410 ->
-        "<SYNTAX ERROR>\n"
-    | 2411 ->
-        "<SYNTAX ERROR>\n"
-    | 2412 ->
-        "<SYNTAX ERROR>\n"
-    | 2413 ->
-        "<SYNTAX ERROR>\n"
-    | 2414 ->
-        "<SYNTAX ERROR>\n"
-    | 2415 ->
-        "<SYNTAX ERROR>\n"
-    | 722 ->
-        "<SYNTAX ERROR>\n"
-    | 733 ->
-        "<SYNTAX ERROR>\n"
-    | 736 ->
-        "<SYNTAX ERROR>\n"
-    | 726 ->
-        "<SYNTAX ERROR>\n"
-    | 727 ->
+    | 830 ->
         "<SYNTAX ERROR>\n"
     | 647 ->
         "<SYNTAX ERROR>\n"
-    | 648 ->
+    | 822 ->
+        "<SYNTAX ERROR>\n"
+    | 650 ->
+        "<SYNTAX ERROR>\n"
+    | 817 ->
+        "<SYNTAX ERROR>\n"
+    | 651 ->
+        "<SYNTAX ERROR>\n"
+    | 656 ->
+        "<SYNTAX ERROR>\n"
+    | 667 ->
+        "<SYNTAX ERROR>\n"
+    | 675 ->
+        "<SYNTAX ERROR>\n"
+    | 683 ->
+        "<SYNTAX ERROR>\n"
+    | 2417 ->
+        "<SYNTAX ERROR>\n"
+    | 2418 ->
+        "<SYNTAX ERROR>\n"
+    | 2419 ->
+        "<SYNTAX ERROR>\n"
+    | 2420 ->
+        "<SYNTAX ERROR>\n"
+    | 2421 ->
+        "<SYNTAX ERROR>\n"
+    | 2422 ->
+        "<SYNTAX ERROR>\n"
+    | 723 ->
+        "<SYNTAX ERROR>\n"
+    | 734 ->
         "<SYNTAX ERROR>\n"
     | 737 ->
         "<SYNTAX ERROR>\n"
-    | 740 ->
+    | 727 ->
         "<SYNTAX ERROR>\n"
-    | 748 ->
+    | 728 ->
         "<SYNTAX ERROR>\n"
-    | 744 ->
+    | 648 ->
         "<SYNTAX ERROR>\n"
-    | 747 ->
+    | 649 ->
         "<SYNTAX ERROR>\n"
-    | 745 ->
-        "Expecting a valid list identifier\n"
-    | 746 ->
+    | 738 ->
+        "<SYNTAX ERROR>\n"
+    | 741 ->
         "<SYNTAX ERROR>\n"
     | 749 ->
         "<SYNTAX ERROR>\n"
-    | 652 ->
+    | 745 ->
         "<SYNTAX ERROR>\n"
-    | 653 ->
+    | 748 ->
         "<SYNTAX ERROR>\n"
-    | 664 ->
-        "<SYNTAX ERROR>\n"
-    | 659 ->
-        "<SYNTAX ERROR>\n"
-    | 660 ->
+    | 746 ->
+        "Expecting a valid list identifier\n"
+    | 747 ->
         "<SYNTAX ERROR>\n"
     | 750 ->
         "<SYNTAX ERROR>\n"
+    | 653 ->
+        "<SYNTAX ERROR>\n"
+    | 654 ->
+        "<SYNTAX ERROR>\n"
     | 665 ->
         "<SYNTAX ERROR>\n"
-    | 814 ->
+    | 660 ->
         "<SYNTAX ERROR>\n"
-    | 753 ->
+    | 661 ->
         "<SYNTAX ERROR>\n"
-    | 769 ->
+    | 751 ->
         "<SYNTAX ERROR>\n"
-    | 771 ->
+    | 666 ->
         "<SYNTAX ERROR>\n"
-    | 2617 ->
+    | 815 ->
         "<SYNTAX ERROR>\n"
-    | 2631 ->
+    | 754 ->
         "<SYNTAX ERROR>\n"
-    | 2618 ->
+    | 770 ->
         "<SYNTAX ERROR>\n"
-    | 2619 ->
+    | 772 ->
         "<SYNTAX ERROR>\n"
     | 2625 ->
         "<SYNTAX ERROR>\n"
+    | 2639 ->
+        "<SYNTAX ERROR>\n"
     | 2626 ->
         "<SYNTAX ERROR>\n"
-    | 2629 ->
+    | 2627 ->
+        "<SYNTAX ERROR>\n"
+    | 2633 ->
         "<SYNTAX ERROR>\n"
     | 2634 ->
         "<SYNTAX ERROR>\n"
-    | 2641 ->
-        "<SYNTAX ERROR>\n"
-    | 2640 ->
-        "<SYNTAX ERROR>\n"
     | 2637 ->
         "<SYNTAX ERROR>\n"
-    | 2638 ->
+    | 2642 ->
+        "<SYNTAX ERROR>\n"
+    | 2649 ->
+        "<SYNTAX ERROR>\n"
+    | 2648 ->
+        "<SYNTAX ERROR>\n"
+    | 2645 ->
+        "<SYNTAX ERROR>\n"
+    | 2646 ->
         "<SYNTAX ERROR>\n"
     | _ ->
         raise Not_found

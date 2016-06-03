@@ -319,10 +319,10 @@ let module ReturnsAFunctor2 (A:ASig) (B:BSig): (ASig => BSig => SigResult) =>
  * TODO: Test [Psig_recmodule]
  */
 let module rec A : {
-  type t = Leaf of string | Node of ASet.t;
+  type t = Leaf string | Node ASet.t;
   let compare: t => t => int;
 } = {
-  type t = Leaf of string | Node of ASet.t;
+  type t = Leaf string | Node ASet.t;
   let compare t1 t2 => switch (t1, t2) {
     | (Leaf s1, Leaf s2) => Pervasives.compare s1 s2
     | (Leaf _, Node _) => 1
@@ -338,7 +338,7 @@ and ASet: Set.S with type elt = A.t = Set.Make A;
  */
 module type HasRecursiveModules = {
   let module rec A: {
-    type t = | Leaf of string | Node of ASet.t;
+    type t = | Leaf string | Node ASet.t;
     let compare: t => t => int;
   }
   and ASet: Set.S with type elt = A.t;

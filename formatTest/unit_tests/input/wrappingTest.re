@@ -1427,14 +1427,14 @@ type x = private int;
 type myType 'a 'b 'c = private ('a, 'b, 'c);
 
 type privateVariant = private
-  | BigSize of int
-  | SmallSize of int;
+  | BigSize int
+  | SmallSize int;
 
 type doubleEqualsDoublePrivateVariant =
   privateVariant =
   private
-    | BigSize of int
-    | SmallSize of int;
+    | BigSize int
+    | SmallSize int;
 
 type myRecordWithReallyLongName = {xx:int, yy:int};
 type doubleEqualsRecord = myRecordWithReallyLongName = {xx:int, yy:int};
@@ -1442,7 +1442,7 @@ type doubleEqualsDoublePrivateRecord = myRecordWithReallyLongName = private {xx:
 
 
 
-type someConstructor = SomeConstructorHi of int int;
+type someConstructor = SomeConstructorHi int int;
 type someRecord = {firstFieldInRecord: int, secondField: int};
 
 /*
@@ -1495,7 +1495,7 @@ let funcOnSomeRecord
 
 
 type simpleTupleVariant =
-  SimpleActuallyATuple of (int, int);
+  SimpleActuallyATuple (int, int);
 
 let returnTheSimpleTupleVariant i =>
   SimpleActuallyATuple (i, i);
@@ -1517,7 +1517,7 @@ type recursiveType =
   /* First variant of first mutually recursive */
   | Blah
   /* Second variant of first mutually recursive */
-  | Another of (option anotherRecursiveType)
+  | Another (option anotherRecursiveType)
 
 /*
  * Commenting second of two mutually recursive types.
@@ -1526,18 +1526,18 @@ and anotherRecursiveType =
   /* Second variant of second mutually recursive */
   | Baz
   /* Second variant of second mutually recursive */
-  | Recursive of (option recursiveType);
+  | Recursive (option recursiveType);
 
 /**
  * Commented GADT definition.
  */
 type term _ =
   /* First variant leaf of GADT */
-  | Int of /*first var arg */ int : /* First GADT res */ term int
+  | Int /*first var arg */ int : /* First GADT res */ term int
   /* Second variant leaf of GADT */
-  | Float of /*second var arg */ int : /* Second GADT res */ term int
+  | Float /*second var arg */ int : /* Second GADT res */ term int
   /* Third variant leaf of GADT */
-  | Bool of /*third var arg */ int : /* Third GADT res */ term int;
+  | Bool /*third var arg */ int : /* Third GADT res */ term int;
 
 
 /* Commented colors */
@@ -1545,7 +1545,7 @@ type commentedTypeDef =
   /*
    * Commenting first variant member.
    */
-  | First of (
+  | First (
     /* First field of tuple in first variant member */
     int,
     /* Second field of tuple in first variant member */
@@ -1554,20 +1554,20 @@ type commentedTypeDef =
   /*
    * Commenting second variant member.
    */
-  | Second of int
+  | Second int
   /*
    * Commenting third variant member.
    */
-  | Third of (
+  | Third (
       list
         /* Commenting deep in type def */
         (list int)
     );
 
 type colors =
-  | Red of int
-  | Black of int
-  | Green of int;
+  | Red int
+  | Black int
+  | Green int;
 
 let blah = fun arg => switch arg {
   /* Comment before Bar */
@@ -1599,9 +1599,9 @@ let blahCurriedX x => fun
 
 
 type reallyLongVariantNames =
-  | ReallyLongVariantName of recordWithLong
-  | AnotherReallyLongVariantName of int int int
-  | AnotherReallyLongVariantName2 of int int int;
+  | ReallyLongVariantName recordWithLong
+  | AnotherReallyLongVariantName int int int
+  | AnotherReallyLongVariantName2 int int int;
 
 let howDoLongMultiBarPatternsWrap = fun x => switch x {
   | AnotherReallyLongVariantName _ _ _ => 0
@@ -1633,10 +1633,10 @@ let letsPutAWhereClauseOnTheLast x =>
 
 
 type wrappingGadt _ =
-  | ThisIsLongSoTypeWillWrap of int
+  | ThisIsLongSoTypeWillWrap int
     :wrappingGadt int
   | Add :wrappingGadt (int => int => int)
-  | App of
+  | App
       (wrappingGadt ('b => 'a)) (wrappingGadt 'b)
       :wrappingGadt 'a;
 

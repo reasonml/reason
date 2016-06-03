@@ -61,9 +61,9 @@ type t22 =
 
 type variant =
   /* Comment above X */
-  | X of int /* End of line on X */
+  | X int /* End of line on X */
   /* Comment above Y */
-  | Y of int /* End of line on Y */;
+  | Y int /* End of line on Y */;
 
 /* Comment on entire type def for variant */
 type x = {

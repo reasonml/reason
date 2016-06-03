@@ -1,8 +1,8 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 
 type polyVariantsInMl = [
-  | `IntTuple of (int, int)
-  | `StillAnIntTuple of (int, int)
+  | `IntTuple (int, int)
+  | `StillAnIntTuple (int, int)
 ];
 
 let intTuple = `IntTuple (1, 2);
@@ -14,4 +14,4 @@ let sumThem =
   | `IntTuple (x, y) => x + y
   | `StillAnIntTuple (a, b) => a + b;
 
-type nonrec t = | A of int | B of bool;
+type nonrec t = | A int | B bool;

@@ -301,7 +301,7 @@ let nestedMatchWithWhen lstLst => switch lstLst {
 /**
  * Aliasing with "as" during matches.
  */
-type mine = MyThing of int | YourThing of int;
+type mine = MyThing int | YourThing int;
 /*
  * Reason parses "as" aliases differently than OCaml.
  */

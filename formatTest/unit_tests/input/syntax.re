@@ -133,15 +133,15 @@ type semiLongWrappingTypeWithConstraint =
 type onelineConstrain = 'a constraint 'a = int;
 
 /* This must be in trunk but not in this branch of OCaml */
-/* type withNestedRecords = MyConstructor of {myField: int} */
+/* type withNestedRecords = MyConstructor {myField: int} */
 
 type colors =
-  | Red of int
-  | Black of int
-  | Green of int;
+  | Red int
+  | Black int
+  | Green int;
 
 /* Another approach is to require declared variants to wrap any record */
-/* type myRecord = MyRecord of {name: int}; */
+/* type myRecord = MyRecord {name: int}; */
 /* let myValue = MyRecord {name: int}; */
 /* This would force importing of the module */
 /* This would also lend itself naturally to pattern matching - and avoid having
@@ -592,9 +592,9 @@ type stillARecord = {name: string, age: int};
 
 /* Rebase latest OCaml to get the following: And fixup
   `generalized_constructor_arguments` according to master. */
-/* type ('a, 'b) myOtherThing = Leaf of {first:'a, second: 'b} | Null; */
+/* type ('a, 'b) myOtherThing = Leaf {first:'a, second: 'b} | Null; */
 type branch 'a 'b = {first: 'a, second: 'b};
-type myOtherThing 'a 'b = Leaf of (branch 'a 'b) | Null;
+type myOtherThing 'a 'b = Leaf (branch 'a 'b) | Null;
 
 type yourThing = myOtherThing int int;
 

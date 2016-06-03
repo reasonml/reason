@@ -4,7 +4,7 @@
  */
 
 type xyz =
-  | X | Y of int int int | Z of int int | Q | R;
+  | X | Y int int int | Z int int | Q | R;
 
 let doubleBar =
   fun
@@ -41,7 +41,7 @@ let doubleBarNestedAnyPatterns =
 
 type bcd = | B | C | D | E;
 
-type a = | A of bcd;
+type a = | A bcd;
 
 let result =
   switch B {
@@ -85,7 +85,7 @@ let nestedSomeSimple = Some (Some (1, 2, 3));
 
 let module EM = {
   /** Exception */
-  exception E of int int;
+  exception E int int;
 };
 
 exception Ealias = EM.E;
