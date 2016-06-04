@@ -477,8 +477,9 @@ let myTuple: myTupleType = (one: int, two: int);
 /* Now functions that accept a single argument being a tuple look familiar */
 let addValues (a: int, b: int) => a + b;
 
-/* Impossible to annotate return values of fun lambdas - just like in OCaml */
 let addValues (a: int, b: int) => a + b;
+
+let myFunction (a: int) (b: int) :int => a + b;
 
 let functionReturnValueType
     (i: int, s: string)
