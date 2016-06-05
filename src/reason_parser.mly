@@ -3558,7 +3558,14 @@ constructor_declaration_no_leading_bar:
        let loc = mklocation $symbolstartpos $endpos in
        Type.constructor $1 ~args ?res ~loc ~attrs:$3
       }
+  | as_loc(constr_ident2) generalized_constructor_arguments attributes
+     {
+        let args,res = $2 in
+        let loc = mklocation $symbolstartpos $endpos in
+        Type.constructor $1 ~args ?res ~loc ~attrs:$3
+     }
 ;
+
 constructor_declaration_leading_bar:
   | BAR as_loc(constr_ident) generalized_constructor_arguments attributes
       {
@@ -4092,6 +4099,15 @@ constr_ident:
   | FALSE                                       { "false" }
   | TRUE                                        { "true" }
 ;
+constr_ident2:
+/*  | LBRACKET RBRACKET                           { "[]" } */
+  | LPAREN RPAREN                               { "()" }
+  | COLONCOLON                                  { "::" }
+/*  | LPAREN COLONCOLON RPAREN                    { "::" } */
+  | FALSE                                       { "false" }
+  | TRUE                                        { "true" }
+;
+
 
 val_longident:
     val_ident                                   { Lident $1 }
