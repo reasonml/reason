@@ -4092,12 +4092,7 @@ operator:
 ;
 constr_ident:
     UIDENT                                      { $1 }
-/*  | LBRACKET RBRACKET                           { "[]" } */
-  | LPAREN RPAREN                               { "()" }
-  | COLONCOLON                                  { "::" }
-/*  | LPAREN COLONCOLON RPAREN                    { "::" } */
-  | FALSE                                       { "false" }
-  | TRUE                                        { "true" }
+    | constr_ident2                               { $1 }
 ;
 constr_ident2:
 /*  | LBRACKET RBRACKET                           { "[]" } */
