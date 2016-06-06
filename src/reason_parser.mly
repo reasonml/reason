@@ -3097,6 +3097,11 @@ leading_bar_match_case_to_sequence_body:
 
 fun_def:
     EQUALGREATER expr { $2 }
+  | COLON non_arrowed_core_type EQUALGREATER expr
+      {
+        let loc = mklocation $symbolstartpos $endpos in
+        mkexp ~loc (Pexp_constraint($4, $2))
+      }
   | labeled_simple_pattern fun_def
       {
        let (l,o,p) = $1 in

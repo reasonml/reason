@@ -396,10 +396,11 @@ let addValues = fun (a:int, b:int) => {
   a + b;
 };
 
-/* Impossible to annotate return values of fun lambdas - just like in OCaml */
 let addValues = fun (a:int, b:int) => {
   a + b;
 };
+
+let myFunction = fun (a : int) (b : int) : int => a + b;
 
 let functionReturnValueType (i:int, s:string): (int => int) => fun x => x + 1;
 
