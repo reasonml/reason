@@ -3552,13 +3552,7 @@ constructor_declarations:
 ;
 
 constructor_declaration_no_leading_bar:
-  | as_loc(UIDENT) generalized_constructor_arguments attributes
-      {
-       let args,res = $2 in
-       let loc = mklocation $symbolstartpos $endpos in
-       Type.constructor $1 ~args ?res ~loc ~attrs:$3
-      }
-  | as_loc(constr_ident2) generalized_constructor_arguments attributes
+  | as_loc(constr_ident) generalized_constructor_arguments attributes
      {
         let args,res = $2 in
         let loc = mklocation $symbolstartpos $endpos in
@@ -4090,11 +4084,8 @@ operator:
   | BANG                                        { "!" }
   | infix_operator                              { $1 }
 ;
-constr_ident:
+%inline constr_ident:
     UIDENT                                      { $1 }
-    | constr_ident2                               { $1 }
-;
-constr_ident2:
 /*  | LBRACKET RBRACKET                           { "[]" } */
   | LPAREN RPAREN                               { "()" }
   | COLONCOLON                                  { "::" }
