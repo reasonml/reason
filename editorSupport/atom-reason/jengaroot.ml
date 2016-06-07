@@ -323,7 +323,7 @@ B %s
 # the location of third-party dependencies. For us, all third-party deps reside
 # in `node_modules/`. One of the exceptions being js_of_ocaml. So we pass it to
 # PKG here and let ocamlfind find its source instead.
-PKG js_of_ocaml
+PKG js_of_ocaml core async jenga
 
 # FLG is the set of flags to pass to Merlin, as if it used ocamlc to compile and
 # understand our sources. You don't have to understand what these flags are for
