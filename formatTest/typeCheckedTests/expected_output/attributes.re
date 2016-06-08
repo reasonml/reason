@@ -36,7 +36,7 @@ type attributedIntsInTuple = (
 )
 [@@onTopLevelTypeDef];
 
-type myDataType 'x 'y = | MyDataType of 'x 'y;
+type myDataType 'x 'y = | MyDataType 'x 'y;
 
 type myType =
   (
@@ -190,14 +190,12 @@ let result =
     () [@onSecondSend];
 
 type variantType =
-  | Foo of int [@onInt]
-  | Bar of (int [@onInt])
-  | Baz
+  | Foo int [@onInt] | Bar (int [@onInt]) | Baz
 [@@onVariantType];
 
 type gadtType 'x =
-  | Foo of int :(gadtType int) [@onFirstRow]
-  | Bar of
+  | Foo int :(gadtType int) [@onFirstRow]
+  | Bar
       (int [@onInt])
       :(gadtType unit) [@onSecondRow]
   | Baz
@@ -303,14 +301,14 @@ module type HasAttrs = {
   class fooBar : int => new foo [@@sigItem];
 };
 
-type s = | S of string;
+type s = | S string;
 
 let S (str [@onStr]) = S ("hello" [@onHello]);
 
 let S str [@onConstruction] =
   S "hello" [@onConstruction];
 
-type xy = | X of string | Y of string;
+type xy = | X string | Y string;
 
 let myFun
     (

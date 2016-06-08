@@ -3,16 +3,16 @@
 let module LocalModule = {
   type accessedThroughModule = | AccessedThroughModule;
   type accessedThroughModuleWithArg =
-    | AccessedThroughModuleWith of int | AccessedThroughModuleWithTwo of int int;
+    | AccessedThroughModuleWith int | AccessedThroughModuleWithTwo int int;
 };
 
-type notTupleVariant = | NotActuallyATuple of int int;
+type notTupleVariant = | NotActuallyATuple int int;
 
-type notTupleVariantExtraParens = | NotActuallyATuple2 of int int;
+type notTupleVariantExtraParens = | NotActuallyATuple2 int int;
 
-type simpleTupleVariant = | SimpleActuallyATuple of (int, int);
+type simpleTupleVariant = | SimpleActuallyATuple (int, int);
 
-type tupleVariant = | ActuallyATuple of (int, int);
+type tupleVariant = | ActuallyATuple (int, int);
 
 let intTuple = (20, 20);
 
@@ -41,7 +41,7 @@ let yesTupled: tupleVariant = ActuallyATuple (10, 10);
 
 let yesTupled: tupleVariant = ActuallyATuple intTuple;
 
-type threeForms = | FormOne of int | FormTwo of int | FormThree;
+type threeForms = | FormOne int | FormTwo int | FormThree;
 
 let doesntCareWhichForm x => switch x {
   | FormOne q
@@ -62,8 +62,8 @@ type colorList1 = [
 ];
 
 type colorList = [<
-  | `Red of (int, int) &int
-  | `Black of &(int, int) &int
+  | `Red (int, int) &int
+  | `Black &(int, int) &int
   | `Blue
   > `Red `Black
 ];
@@ -125,7 +125,7 @@ let run () => {
   Printf.printf "%d %d \n" x y;
 };
 
-type combination 'a = | HeresTwoConstructorArguments of int int;
+type combination 'a = | HeresTwoConstructorArguments int int;
 
 /** But then how do we parse matches in function arguments? */
 /* We must require parenthesis around construction matching in function args only*/
@@ -138,18 +138,18 @@ let matchingTwoCurriedConstructorsInTuple x => switch x {
   | (HeresTwoConstructorArguments x y, HeresTwoConstructorArguments a b) => x + y + a + b
 };
 
-type twoCurriedConstructors = | TwoCombos of (combination int) (combination int);
+type twoCurriedConstructors = | TwoCombos (combination int) (combination int);
 
 let matchingTwoCurriedConstructorInConstructor x => switch x {
   | TwoCombos (HeresTwoConstructorArguments x y) (HeresTwoConstructorArguments a b) => a + b + x + y
 };
 
-type twoCurriedConstructorsPolyMorphic 'a = | TwoCombos of (combination 'a) (combination 'a);
+type twoCurriedConstructorsPolyMorphic 'a = | TwoCombos (combination 'a) (combination 'a);
 
 /* Matching records */
 type pointRecord = {x: int, y: int};
 
-type alsoHasARecord = | Blah | AlsoHasARecord of int int pointRecord;
+type alsoHasARecord = | Blah | AlsoHasARecord int int pointRecord;
 
 let result = switch (AlsoHasARecord 10 10 {x: 10, y: 20}) {
   | Blah => 1000
@@ -174,7 +174,7 @@ let thisWontCompileButLetsSeeHowItFormats = fun | Zero
  * GADTs.
  */
 type term _ =
-  | Int of int : term int | Add : term (int => int => int) | App of (term ('b => 'a)) (term 'b) : term 'a;
+  | Int int : term int | Add : term (int => int => int) | App (term ('b => 'a)) (term 'b) : term 'a;
 
 let rec eval: type a. (term a) => a =
   fun | Int n => n
@@ -197,7 +197,7 @@ let evalArg = App (App Add (Int 1)) (Int 1);
 
 let two = eval (App (App Add (Int 1)) (Int 1));
 
-type someVariant = | Purple of int | Yellow of int;
+type someVariant = | Purple int | Yellow int;
 
 let Purple x | Yellow x = switch (Yellow 100, Purple 101) {
   | (Yellow y, Purple p) => Yellow (p + y)
@@ -206,7 +206,7 @@ let Purple x | Yellow x = switch (Yellow 100, Purple 101) {
   | (Yellow p, Yellow y) => Purple (y + p)
 };
 
-type tuples = | Zero | One of int | Two of int int | OneTuple of (int, int);
+type tuples = | Zero | One int | Two int int | OneTuple (int, int);
 
 let myTuple = OneTuple (20, 30);
 
@@ -221,7 +221,7 @@ let res = switch myTuple {
            }
 };
 
-/* FIXME type somePolyVariant = [ `Purple of int | `Yellow of int]; */
+/* FIXME type somePolyVariant = [ `Purple int | `Yellow int]; */
 
 let ylw = `Yellow (100, 100);
 

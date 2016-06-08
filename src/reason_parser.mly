@@ -877,7 +877,6 @@ let built_in_explicit_arity_constructors = ["Some"; "Assert_failure"; "Match_fai
 %token NEW
 %token NONREC
 %token OBJECT
-%token OF
 %token OPEN
 %token OR
 /* %token PARSER */
@@ -1537,8 +1536,8 @@ nonlocal_module_binding_details:
 non_arrowed_module_type: mark_position_mty(_non_arrowed_module_type) {$1}
 _non_arrowed_module_type:
   | simple_module_type {$1}
-  | MODULE TYPE OF module_expr %prec below_LBRACKETAT
-      { mkmty(Pmty_typeof $4) }
+  | MODULE TYPE module_expr %prec below_LBRACKETAT
+      { mkmty(Pmty_typeof $3) }
   | module_type attribute
       { Mty.attr $1 $2 }
 
@@ -3559,12 +3558,13 @@ constructor_declarations:
 
 constructor_declaration_no_leading_bar:
   | as_loc(constr_ident) generalized_constructor_arguments attributes
-      {
-       let args,res = $2 in
-       let loc = mklocation $symbolstartpos $endpos in
-       Type.constructor $1 ~args ?res ~loc ~attrs:$3
-      }
+     {
+        let args,res = $2 in
+        let loc = mklocation $symbolstartpos $endpos in
+        Type.constructor $1 ~args ?res ~loc ~attrs:$3
+     }
 ;
+
 constructor_declaration_leading_bar:
   | BAR as_loc(constr_ident) generalized_constructor_arguments attributes
       {
@@ -3595,9 +3595,9 @@ sig_exception_declaration:
 ;
 generalized_constructor_arguments:
     /*empty*/                                   { ([],None) }
-  | OF non_arrowed_simple_core_type_list                    { (List.rev $2, None) }
-  | OF non_arrowed_simple_core_type_list COLON core_type
-                                                { (List.rev $2,Some $4) }
+  | non_arrowed_simple_core_type_list                    { (List.rev $1, None) }
+  | non_arrowed_simple_core_type_list COLON core_type
+                                                { (List.rev $1,Some $3) }
   | COLON core_type
                                                 { ([],Some $2) }
 ;
@@ -3983,8 +3983,8 @@ row_field:
   | non_arrowed_simple_core_type                            { Rinherit $1 }
 ;
 tag_field:
-    name_tag OF opt_ampersand amper_type_list attributes
-      { Rtag ($1, $5, $3, List.rev $4) }
+    name_tag opt_ampersand amper_type_list attributes
+      { Rtag ($1, $4, $2, List.rev $3) }
   | name_tag attributes
       { Rtag ($1, $2, true, []) }
 ;
@@ -4089,7 +4089,7 @@ operator:
   | BANG                                        { "!" }
   | infix_operator                              { $1 }
 ;
-constr_ident:
+%inline constr_ident:
     UIDENT                                      { $1 }
 /*  | LBRACKET RBRACKET                           { "[]" } */
   | LPAREN RPAREN                               { "()" }
@@ -4098,6 +4098,7 @@ constr_ident:
   | FALSE                                       { "false" }
   | TRUE                                        { "true" }
 ;
+
 
 val_longident:
     val_ident                                   { Lident $1 }
@@ -4135,8 +4136,15 @@ mod_longident:
 mod_ext_longident:
     UIDENT                                      { Lident $1 }
   | mod_ext_longident DOT UIDENT                { Ldot($1, $3) }
-  | mod_ext_longident LPAREN mod_ext_longident RPAREN { lapply $1 $3 }
+  | mod_ext2 { $1 }
 ;
+
+mod_ext2:
+   | mod_ext_longident DOT UIDENT LPAREN mod_ext_longident RPAREN { lapply ( Ldot($1, $3)) $5 }
+   | mod_ext2 LPAREN mod_ext_longident RPAREN { lapply $1 $3 }
+   | UIDENT LPAREN mod_ext_longident RPAREN { lapply (Lident($1)) $3 }
+;
+
 mty_longident:
     ident                                       { Lident $1 }
   | mod_ext_longident DOT ident                 { Ldot($1, $3) }
@@ -4260,7 +4268,6 @@ single_attr_id:
   | NEW { "new" }
   | NONREC { "nonrec" }
   | OBJECT { "object" }
-  | OF { "of" }
   | OPEN { "open" }
   | OR { "or" }
   | PRIVATE { "private" }

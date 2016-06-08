@@ -2,8 +2,8 @@
 
 type reasonXyz =
   | X
-  | Y of int int int
-  | Z of int int
+  | Y int int int
+  | Z int int
   | Q
   | R;
 

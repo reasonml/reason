@@ -34,7 +34,7 @@ type x = int [@@itemAttributeOnTypeDef];
 type attributedInt = int [@onTopLevelTypeDef];
 type attributedIntsInTuple = (int [@onInt], float [@onFloat]) [@@onTopLevelTypeDef];
 
-type myDataType 'x 'y = | MyDataType of 'x 'y;
+type myDataType 'x 'y = | MyDataType 'x 'y;
 
 type myType =
   myDataType
@@ -133,13 +133,13 @@ and unused = () [@@onUnused];
 let result = (myRecord.p() [@attOnFirstSend]).q() [@onSecondSend];
 
 type variantType =
-   | Foo of int [@onInt]
-   | Bar of (int [@onInt])
+   | Foo int [@onInt]
+   | Bar (int [@onInt])
    | Baz [@@onVariantType];
 
 type gadtType 'x =
-   | Foo of int : gadtType int [@onFirstRow]
-   | Bar of (int [@onInt]) : gadtType unit [@onSecondRow]
+   | Foo int : gadtType int [@onFirstRow]
+   | Bar (int [@onInt]) : gadtType unit [@onSecondRow]
    | Baz: gadtType (unit [@onUnit]) [@onThirdRow] [@@onVariantType];
 
 [@@@floatingTopLevelStructureItem hello];
@@ -231,13 +231,13 @@ module type HasAttrs = {
 }
 [@@structureItem];
 
-type s = S of string;
+type s = S string;
 
 let S (str [@onStr]) = S ("hello" [@onHello]);
 let (S str) [@onConstruction] = (S "hello") [@onConstruction];
 
-type xy = | X of string
-          | Y of string;
+type xy = | X string
+          | Y string;
 
 let myFun = fun (X hello [@onConstruction] | Y hello [@onConstruction]) => hello;
 let myFun = fun (X (hello [@onHello]) | Y (hello [@onHello])) => hello;

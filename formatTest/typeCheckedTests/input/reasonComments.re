@@ -156,8 +156,8 @@ type t3 =
 
 
 type variant =
-  | X of (int, int) /* End of line on X */
-  | Y of (int, int) /* End of line on Y */
+  | X (int, int) /* End of line on X */
+  | Y (int, int) /* End of line on Y */
 ; /* Comment on entire type def for variant */
 
 /* Before let */
@@ -186,15 +186,15 @@ let res =
 
 type variant2 =
   /* Comment above X */
-  | X of (int, int) /* End of line on X */
+  | X (int, int) /* End of line on X */
   /* Comment above Y */
-  | Y of (int, int);
+  | Y (int, int);
 
 type variant3 =
   /* Comment above X */
-  | X of (int, int) /* End of line on X */
+  | X (int, int) /* End of line on X */
   /* Comment above Y */
-  | Y of (int, int) /* End of line on Y  */
+  | Y (int, int) /* End of line on Y  */
 ;
 
 
@@ -279,7 +279,7 @@ let res =
 
 
 type optionalTuple =
-  | OptTup of (
+  | OptTup (
       option (
         int, /* First int */
         int /* Second int */
@@ -326,9 +326,9 @@ if true {
 };
 
 type color =
-  | Red of int /* After red end of line */
-  | Black of int /* After black end of line */
-  | Green of int /* After green end of line */
+  | Red int /* After red end of line */
+  | Black int /* After black end of line */
+  | Green int /* After green end of line */
 ; /* On next line after color type def */
 
 let blahCurriedX x =>
