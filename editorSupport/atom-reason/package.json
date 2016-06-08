@@ -11,12 +11,13 @@
     "language-reason:grammar-used"
   ],
   "devDependencies": {
+    "jengaboot": "0.0.11"
   },
   "messagesToInstaller": {
-    "0.0.0":
-      "These messages will be given to the respective version of the auto-installer. They're a nice way to message the user when the one thing that can't be updated, needs to be updated"
+    "0.0.0": "These messages will be given to the respective version of the auto-installer. They're a nice way to message the user when the one thing that can't be updated, needs to be updated"
   },
   "dependencies": {
+    "js_of_ocaml": "*"
   },
   "providedServices": {
     "autocomplete.provider": {
@@ -58,6 +59,6 @@
     }
   },
   "scripts": {
-    "start": "rm -rf ./node_modules && refmt -parse re -print ml jengarootReal.re | sed 's/\\[@explicit_arity \\]//g' > jengaroot.ml && time jenga && cp _build/top/app.{js,map} ./output_byte_debug_js"
+    "start": "compile && cp _build/top/app.{js,map} ./output_byte_debug_js"
   }
 }

@@ -19,6 +19,7 @@ Open the Atom settings for `atom-reason-loader` by using the menu (`Packages > S
 opam update
 opam pin add -y js_of_ocaml https://github.com/ocsigen/js_of_ocaml.git
 opam install jenga.113.33.03
+opam install yojson
 cd editorSupport/atom-reason
 # Build the changes (npm install/apm link are only needed the first time)
 npm install
