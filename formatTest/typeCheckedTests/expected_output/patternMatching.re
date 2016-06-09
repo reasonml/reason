@@ -8,7 +8,8 @@ type myVariant =
   | Short
   | AlsoHasARecord int int point
 and inner =
-  | Unused | HeresTwoConstructorArguments int int;
+  | Unused
+  | HeresTwoConstructorArguments int int;
 
 let computeTuple a b c d e f g h => (
   a + b,

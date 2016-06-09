@@ -4,7 +4,11 @@
  */
 
 type xyz =
-  | X | Y int int int | Z int int | Q | R;
+  | X
+  | Y int int int
+  | Z int int
+  | Q
+  | R;
 
 let doubleBar =
   fun
@@ -39,9 +43,14 @@ let doubleBarNestedAnyPatterns =
   | Q => true
   | _ => false;
 
-type bcd = | B | C | D | E;
+type bcd =
+  | B
+  | C
+  | D
+  | E;
 
-type a = | A bcd;
+type a =
+  | A bcd;
 
 let result =
   switch B {

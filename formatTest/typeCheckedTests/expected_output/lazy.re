@@ -17,7 +17,8 @@ let result = operateOnLazyValue (
   lazy {myRecordField: 100}
 );
 
-type box 'a = | Box 'a;
+type box 'a =
+  | Box 'a;
 
 let lazy thisIsActuallyAPatternMatch = lazy 200;
 

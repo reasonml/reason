@@ -165,7 +165,10 @@ type onelineConstrain = 'a constraint 'a = int;
 
 /* This must be in trunk but not in this branch of OCaml */
 /* type withNestedRecords = MyConstructor {myField: int} */
-type colors = | Red int | Black int | Green int;
+type colors =
+  | Red int
+  | Black int
+  | Green int;
 
 /* Another approach is to require declared variants to wrap any record */
 /* type myRecord = MyRecord {name: int}; */
@@ -663,7 +666,8 @@ type stillARecord = {name: string, age: int};
 type branch 'a 'b = {first: 'a, second: 'b};
 
 type myOtherThing 'a 'b =
-  | Leaf (branch 'a 'b) | Null;
+  | Leaf (branch 'a 'b)
+  | Null;
 
 type yourThing = myOtherThing int int;
 

@@ -11,7 +11,9 @@ let b =
   MultiArgumentsConstructor 1 2 [@implicit_arity];
 
 let module Test = {
-  type a = | And (int, int) | Or (int, int);
+  type a =
+    | And (int, int)
+    | Or (int, int);
 };
 
 Test.And (1, 2);

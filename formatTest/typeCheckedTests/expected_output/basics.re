@@ -1,7 +1,11 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 
 type reasonXyz =
-  | X | Y int int int | Z int int | Q | R;
+  | X
+  | Y int int int
+  | Z int int
+  | Q
+  | R;
 
 let reasonBarAs =
   fun

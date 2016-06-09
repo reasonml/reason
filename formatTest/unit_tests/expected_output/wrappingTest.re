@@ -2189,7 +2189,10 @@ type commentedTypeDef =
         (list int)
     );
 
-type colors = | Red int | Black int | Green int;
+type colors =
+  | Red int
+  | Black int
+  | Green int;
 
 let blah arg =>
   switch arg {

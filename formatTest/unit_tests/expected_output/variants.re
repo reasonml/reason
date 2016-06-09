@@ -17,7 +17,8 @@ type notTupleVariantExtraParens =
 type simpleTupleVariant =
   | SimpleActuallyATuple (int, int);
 
-type tupleVariant = | ActuallyATuple (int, int);
+type tupleVariant =
+  | ActuallyATuple (int, int);
 
 let intTuple = (20, 20);
 
@@ -55,7 +56,9 @@ let yesTupled: tupleVariant =
   ActuallyATuple intTuple;
 
 type threeForms =
-  | FormOne int | FormTwo int | FormThree;
+  | FormOne int
+  | FormTwo int
+  | FormThree;
 
 let doesntCareWhichForm x =>
   switch x {
@@ -210,7 +213,8 @@ type twoCurriedConstructorsPolyMorphic 'a =
 type pointRecord = {x: int, y: int};
 
 type alsoHasARecord =
-  | Blah | AlsoHasARecord int int pointRecord;
+  | Blah
+  | AlsoHasARecord int int pointRecord;
 
 let result =
   switch (AlsoHasARecord 10 10 {x: 10, y: 20}) {
@@ -271,7 +275,9 @@ let evalArg = App (App Add (Int 1)) (Int 1);
 
 let two = eval (App (App Add (Int 1)) (Int 1));
 
-type someVariant = | Purple int | Yellow int;
+type someVariant =
+  | Purple int
+  | Yellow int;
 
 let Purple x | Yellow x =
   switch (Yellow 100, Purple 101) {

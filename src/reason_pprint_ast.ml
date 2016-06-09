@@ -2152,7 +2152,7 @@ class printer  ()= object(self:'self)
         ]
       (* EQUAL private_flag BAR constructor_declarations {(Ptype_variant _, $2, None)} *)
       | (Ptype_variant lst, scope, None) ->  [
-          privatize scope [makeList ~break:IfNeed ~postSpace:true ~inline:(true, true) (List.map self#type_variant_leaf lst)]
+          privatize scope [makeList ~break:Always_rec ~postSpace:true ~inline:(true, true) (List.map self#type_variant_leaf lst)]
         ]
       (* EQUAL DOTDOT {(Ptype_open, Public, None)} *)
       | (Ptype_open, Public, None) -> [
