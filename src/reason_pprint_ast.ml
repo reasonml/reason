@@ -1117,23 +1117,6 @@ let label ?(space=false) ?(indent=settings.indentAfterLabels) (labelTerm:layoutN
     term
   )
 
-let easyLabel2 ?(space=false) ?(indent=settings.indentAfterLabels) labelTerm term =
-  let settings = {
-    label_break = `Never;
-    space_after_label = space;
-    indent_after_label = indent;
-    label_style = Some "label";
-  } in
-  Easy_format.Label ((labelTerm, settings), term)
-
-
-let label2 ?(space=false) ?(indent=settings.indentAfterLabels) (labelTerm:layoutNode) (term:layoutNode) =
-  Label (
-    (fun x y -> easyLabel2 ~indent ~space x y),
-    labelTerm,
-    term
-  )
-
 let labelSpace l r = label ~space:true l r
 
 let atom str = Easy (Easy_format.Atom(str, labelStringStyle))
