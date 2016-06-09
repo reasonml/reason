@@ -22,13 +22,7 @@ let logTSuccess self =>
     ()
   };
 
-if (
-  if x {
-    true
-  } else {
-    false
-  }
-) {
+if (if x {true} else {false}) {
   true
 } else {
   false
@@ -36,13 +30,7 @@ if (
 
 /* Parens are required around if if it's an argument - this is the same as before. */
 if (
-  callSomeFunction (
-    if true {
-      true
-    } else {
-      false
-    }
-  )
+  callSomeFunction (if true {true} else {false})
 ) {
   true
 } else {
@@ -52,9 +40,7 @@ if (
 /* Notice that to do something strange, your code must *look* strange. */
 /* That's generally a good thing */
 if callSomeFunction {
-  if true {
-    true
-  }
+  if true {true}
 } else {
   false
 };
@@ -84,13 +70,7 @@ if printIfFirstArgGreater {
   thisDoesnt even have2 be simple
 };
 
-if (
-  if x {
-    true
-  } else {
-    false
-  }
-) {
+if (if x {true} else {false}) {
   ()
 } else {
   ()

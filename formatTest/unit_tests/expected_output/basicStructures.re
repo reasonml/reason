@@ -112,20 +112,12 @@ let loop appTime frameTime => {
 
 /* These parens should be kept around the entire last if/then/else */
 if something {
-  if somethingElse {
-    ()
-  } else {
-    "blah"
-  }
+  if somethingElse {()} else {"blah"}
 };
 
 /* These parens should be kept around just the last if/then*/
 if something {
-  if somethingElse {
-    ()
-  } else {
-    "blah"
-  }
+  if somethingElse {()} else {"blah"}
 };
 
 /* Parens should be generated to wrap the entire final if then else.

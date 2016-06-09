@@ -1117,6 +1117,23 @@ let label ?(space=false) ?(indent=settings.indentAfterLabels) (labelTerm:layoutN
     term
   )
 
+let easyLabel2 ?(space=false) ?(indent=settings.indentAfterLabels) labelTerm term =
+  let settings = {
+    label_break = `Never;
+    space_after_label = space;
+    indent_after_label = indent;
+    label_style = Some "label";
+  } in
+  Easy_format.Label ((labelTerm, settings), term)
+
+
+let label2 ?(space=false) ?(indent=settings.indentAfterLabels) (labelTerm:layoutNode) (term:layoutNode) =
+  Label (
+    (fun x y -> easyLabel2 ~indent ~space x y),
+    labelTerm,
+    term
+  )
+
 let labelSpace l r = label ~space:true l r
 
 let atom str = Easy (Easy_format.Atom(str, labelStringStyle))
@@ -1618,6 +1635,20 @@ let makeLetSequence letItems =
     ~newlinesAboveItems:0
     ~newlinesAboveDocComments:1
     ~renderFinalSep:false
+    ~postSpace:true
+    ~sep:";"
+    letItems
+
+let makeLetSequenceSingleLine letItems =
+  makeList
+    ~break:Never
+    ~inline:(true, true)
+    ~wrap:("{", "}")
+    ~newlinesAboveComments:0
+    ~newlinesAboveItems:0
+    ~newlinesAboveDocComments:1
+    ~renderFinalSep:false
+    ~preSpace:true
     ~postSpace:true
     ~sep:";"
     letItems
@@ -3852,6 +3883,30 @@ class printer  ()= object(self:'self)
 
               | Pexp_ifthenelse (e1, e2, eo) ->
                 let (blocks, finalExpression) = sequentialIfBlocks eo in
+                let rec singleExpression exp = 
+                  match exp.pexp_desc with
+                  | Pexp_ident _ -> true 
+                  | Pexp_constant _ -> true
+                  | Pexp_construct (_, arg) ->                  
+                    (match arg with 
+                    | None -> true
+                    | Some x -> singleExpression x)
+                  | _ -> false
+                in
+                let singleLineIf = 
+                  (singleExpression e1) && 
+                  (singleExpression e2) && 
+                  (match eo with 
+                   | Some expr -> singleExpression expr
+                   | None -> true
+                  )       
+                in
+                let makeLetSequence = 
+                  if singleLineIf then 
+                    makeLetSequenceSingleLine
+                  else 
+                    makeLetSequence 
+                in
                 let rec sequence soFar remaining = (
                   match (remaining, finalExpression) with
                     | ([], None) -> soFar
