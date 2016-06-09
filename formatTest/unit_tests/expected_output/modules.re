@@ -393,10 +393,14 @@ let module ReturnsAFunctor2
  * TODO: Test [Psig_recmodule]
  */
 let module rec A: {
-  type t = | Leaf string | Node ASet.t;
+  type t =
+    | Leaf string
+    | Node ASet.t;
   let compare: t => t => int;
 } = {
-  type t = | Leaf string | Node ASet.t;
+  type t =
+    | Leaf string
+    | Node ASet.t;
   let compare t1 t2 =>
     switch (t1, t2) {
     | (Leaf s1, Leaf s2) =>
@@ -413,7 +417,9 @@ and ASet: Set.S with type elt = A.t = Set.Make A;
  */
 module type HasRecursiveModules = {
   let module rec A: {
-    type t = | Leaf string | Node ASet.t;
+    type t =
+      | Leaf string
+      | Node ASet.t;
     let compare: t => t => int;
   }
   and ASet: Set.S with type elt = A.t;

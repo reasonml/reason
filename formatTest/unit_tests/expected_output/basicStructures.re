@@ -405,7 +405,9 @@ let nestedMatchWithWhen lstLst =>
 /**
  * Aliasing with "as" during matches.
  */
-type mine = | MyThing int | YourThing int;
+type mine =
+  | MyThing int
+  | YourThing int;
 
 /*
  * Reason parses "as" aliases differently than OCaml.
