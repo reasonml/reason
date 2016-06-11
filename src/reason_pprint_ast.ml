@@ -3829,7 +3829,7 @@ class printer  ()= object(self:'self)
                     (* TODO: Explicit arity *)
                     | `normal ->
                         let arityIsClear = isArityClear arityAttrs in
-                        self#constructor_expression ~arityIsClear stdAttrs (self#longident_loc li) eo
+                        self#constructor_expression ~arityIsClear stdAttrs (SourceMap (li.loc, self#longident_loc li)) eo
                     | _ -> assert false)
               | Pexp_setfield (e1, li, e2) ->
                 label ~space:true

@@ -348,3 +348,11 @@ let equal i1 i2 =>
 
 let equal i1 i2 =>
   compare (compare 0 0) (compare 1 1); /* END OF LINE HERE */
+
+fun () =>
+  if true {
+    /* retain this */
+    Some 1
+  } else {
+    None
+  };

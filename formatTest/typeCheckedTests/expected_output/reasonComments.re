@@ -279,9 +279,8 @@ let result =
  */
 let res =
   switch (
-    X
-      /* Retain this */
-      (2, 3)
+    /* Retain this */
+    X (2, 3)
   ) {
   /* Above X line */
   | X (
@@ -365,3 +364,11 @@ let equal i1 i2 =>
 
 let equal i1 i2 =>
   compare (compare 0 0) (compare 1 1) /* END OF LINE HERE */;
+
+fun () =>
+  if true {
+    /* retain this */
+    Some 1
+  } else {
+    None
+  };
