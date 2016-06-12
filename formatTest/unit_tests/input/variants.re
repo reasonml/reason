@@ -339,3 +339,11 @@ let listPatternMayEvenIncludeAliases x => switch x {
   | [Blah x y as head, Foo a b as head2, ...Something x as tail] => ()
   | _ => ()
 };
+
+type t = [ | `a | `b];
+type u = [ t | `c];
+
+let listPatternWithHash =
+  fun
+  | #t => 1
+  | `c => 2;

@@ -473,3 +473,12 @@ let listPatternMayEvenIncludeAliases x =>
     ()
   | _ => ()
   };
+
+type t = [ | `a | `b];
+
+type u = [ t | `c];
+
+let listPatternWithHash =
+  fun
+  | #t => 1
+  | `c => 2;
