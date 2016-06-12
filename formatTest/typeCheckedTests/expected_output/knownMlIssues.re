@@ -12,8 +12,7 @@ let blahCurriedX x =>
   fun
   | Red 10
   | Black 20
-  | Green 10 => 1
-  /* After or pattern green */
+  | Green 10 => 1 /* After or pattern green */
   | Red x => 0 /* After red */
   | Black x => 0 /* After black */
   | Green x => 0 /* After second green */;

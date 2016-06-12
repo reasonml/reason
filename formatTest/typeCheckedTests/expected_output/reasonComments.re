@@ -351,8 +351,7 @@ let blahCurriedX x =>
   fun
   | Red 10
   | Black 20
-  | Green 10 => 1
-  /* After or pattern green */
+  | Green 10 => 1 /* After or pattern green */
   | Red x => 0 /* After red */
   | Black x => 0 /* After black */
   | Green x => 0 /* After second green */;
@@ -365,3 +364,8 @@ let equal i1 i2 =>
 
 let equal i1 i2 =>
   compare (compare 0 0) (compare 1 1) /* END OF LINE HERE */;
+
+fun
+| None
+/* between */
+| Some _ => ();

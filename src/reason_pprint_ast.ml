@@ -5170,13 +5170,6 @@ class printer  ()= object(self:'self)
   (* [allowUnguardedSequenceBodies] allows sequence expressions {} to the right of `=>` to not
      be guarded in `{}` braces. *)
   method case_list ?(allowUnguardedSequenceBodies=false) l =
-    let rec appendLabelToLast items rhs =
-      match items with
-        | hd::[] -> (label ~indent:0 ~space:true hd rhs)::[]
-        | hd::tl -> hd::(appendLabelToLast tl rhs)
-        | [] -> raise (NotPossible "Cannot append to last of nothing")
-    in
-
     let case_row {pc_lhs; pc_guard; pc_rhs} =
       let theOrs = orList pc_lhs in
 
@@ -5234,26 +5227,37 @@ class printer  ()= object(self:'self)
                          [row]
 
       *)
-      let bar xx = makeList ~postSpace:true [atom "|"; xx] in
       let appendWhereAndArrow p = match pc_guard with
-          | None -> makeList ~interleaveComments:false ~postSpace:true [p; atom "=>"]
+          | None -> makeList ~interleaveComments:false ~inline:(true, true) ~postSpace:true [p; atom "=>"]
           | Some g ->
             (* when x should break as a whole - extra list added around it to make it break as one *)
-            let withWhen = label ~space:true p (makeList ~break:Never ~inline:(true, true) ~postSpace:true [label ~space:true (atom "when") (self#expression g)]) in
+            let whn = label ~space:true (atom "when") (self#expression g) in
+            let withWhen = label ~space:true p (makeList ~inline:(true, true) ~postSpace:true [whn]) in
             makeList ~interleaveComments:false ~inline:(true, true) ~postSpace:true [withWhen; atom "=>"]
       in
 
-      let rec appendWhereAndArrowToLastOr = function
-        | [] -> []
-        | hd::tl -> (
-          let formattedHd = match tl with
-            | [] -> appendWhereAndArrow (self#pattern hd)
-            | tl::tlTl -> (self#pattern hd)
-          in
-          formattedHd::(appendWhereAndArrowToLastOr tl)
-        )
+      let bar loc pat =
+        let bar =
+          makeList
+            ~interleaveComments:false
+            ~inline:(true, false)
+            ~postSpace:true
+            [atom "|"; pat]
+        in
+        SourceMap(loc, bar)
       in
-      let orsWithWhereAndArrowOnLast = appendWhereAndArrowToLastOr theOrs in
+
+      let rec appendLabelToLast items rhs =
+        match items with
+          | hd::[] ->
+              let loc = {loc_start=hd.ppat_loc.loc_start; loc_end=pc_rhs.pexp_loc.loc_end; loc_ghost=false} in
+              let lhs = appendWhereAndArrow (self#pattern hd) in
+              let withBar = bar loc (label ~indent:0 ~space:true lhs rhs) in
+              withBar::[]
+          | hd::tl -> (bar hd.ppat_loc (self#pattern hd))::(appendLabelToLast tl rhs)
+          | [] -> raise (NotPossible "Cannot append to last of nothing")
+      in
+
       let rhs =
         if allowUnguardedSequenceBodies then
           match (self#under_pipe#letList pc_rhs) with
@@ -5264,10 +5268,8 @@ class printer  ()= object(self:'self)
                wrapping {} which would cause zero indentation to look strange. *)
             | lst -> makeUngaurdedLetSequence lst
         else self#under_pipe#expression pc_rhs in
-      let row =
-        let withoutBars = appendLabelToLast orsWithWhereAndArrowOnLast rhs in
-        makeList ~break:Always_rec ~inline:(true, true) (List.map bar withoutBars)
-      in
+      let orsWithBars = appendLabelToLast theOrs rhs in
+      let row = makeList ~break:Always_rec ~inline:(true, true) ~postSpace:true orsWithBars in
         SourceMap (
           (* Fake shift the location to accomodate for the bar, to make sure
            * the wrong comments don't make their way past the next bar. *)
@@ -5278,7 +5280,6 @@ class printer  ()= object(self:'self)
           },
           row
         )
-
     in
     (List.map case_row l)
 
