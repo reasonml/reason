@@ -4256,7 +4256,7 @@ class printer  ()= object(self:'self)
 
 
   method attributes l =
-	    makeList ~break:IfNeed ~postSpace:true (List.map self#attribute l)
+    makeList ~break:IfNeed ~postSpace:true (List.map self#attribute l)
 
   method attach_std_attrs l toThis =
     let l = extractStdAttrs l in
@@ -5236,25 +5236,30 @@ class printer  ()= object(self:'self)
             makeList ~interleaveComments:false ~inline:(true, true) ~postSpace:true [withWhen; atom "=>"]
       in
 
-      let bar loc pat =
-        let bar =
-          makeList
-            ~interleaveComments:false
-            ~inline:(true, false)
-            ~postSpace:true
-            [atom "|"; pat]
-        in
-        SourceMap(loc, bar)
+      let bar left pat =
+        let loc = {
+          loc_start={
+            left.ppat_loc.loc_start with
+              Lexing.pos_cnum=left.ppat_loc.loc_start.Lexing.pos_cnum-2
+          };
+          loc_end=left.ppat_loc.loc_start;
+          loc_ghost=false
+        } in
+        let bar = SourceMap(loc, atom "|") in
+        makeList ~interleaveComments:false ~inline:(true, false) ~postSpace:true [bar; pat]
       in
 
-      let rec appendLabelToLast items rhs =
+      let rec appendLabelToLast first items rhs =
         match items with
           | hd::[] ->
-              let loc = {loc_start=hd.ppat_loc.loc_start; loc_end=pc_rhs.pexp_loc.loc_end; loc_ghost=false} in
               let lhs = appendWhereAndArrow (self#pattern hd) in
-              let withBar = bar loc (label ~indent:0 ~space:true lhs rhs) in
+              let left = if first then pc_lhs else hd in
+              let withBar = bar left (label ~indent:0 ~space:true lhs rhs) in
               withBar::[]
-          | hd::tl -> (bar hd.ppat_loc (self#pattern hd))::(appendLabelToLast tl rhs)
+          | hd::tl ->
+              let left = if first then pc_lhs else hd in
+              let withBar = bar left (self#pattern hd) in
+              withBar::(appendLabelToLast false tl rhs)
           | [] -> raise (NotPossible "Cannot append to last of nothing")
       in
 
@@ -5268,7 +5273,7 @@ class printer  ()= object(self:'self)
                wrapping {} which would cause zero indentation to look strange. *)
             | lst -> makeUngaurdedLetSequence lst
         else self#under_pipe#expression pc_rhs in
-      let orsWithBars = appendLabelToLast theOrs rhs in
+      let orsWithBars = appendLabelToLast true theOrs rhs in
       let row = makeList ~break:Always_rec ~inline:(true, true) ~postSpace:true orsWithBars in
         SourceMap (
           (* Fake shift the location to accomodate for the bar, to make sure

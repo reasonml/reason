@@ -447,7 +447,8 @@ let blahCurriedX x =>
   fun
   | Red x
   | Black x
-  | Green x => 1 /* With some effort, we can ammend the sugar rule that would */
+  | Green x => 1
+  /* With some effort, we can ammend the sugar rule that would */
   | Black x => 0 /* Allow us to drop any => fun.. Just need to make pattern matching */
   | Green x => 0 /* Support that */;
 
@@ -456,7 +457,8 @@ let sameThingInLocal = {
     fun
     | Red x
     | Black x
-    | Green x => 1 /* With some effort, we can ammend the sugar rule that would */
+    | Green x => 1
+    /* With some effort, we can ammend the sugar rule that would */
     | Black x => 0 /* Allow us to drop any => fun.. Just need to make pattern matching */
     | Green x => 0 /* Support that */;
   blahCurriedX

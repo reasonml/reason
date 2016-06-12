@@ -2216,8 +2216,8 @@ let blah =
 let blahCurriedX x =>
   fun
   /* Comment before first bar */
-  /* Comment between first bar and OR pattern */
-  | Red x
+  | /* Comment between first bar and OR pattern */
+    Red x
   | Black x
   | Green x => 1
   /* Comment before second bar */
