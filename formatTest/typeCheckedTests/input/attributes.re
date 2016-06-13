@@ -118,7 +118,7 @@ let myObj = {
   };
 };
 
-let result = (myObj#p () [@attOnFirstSend])#z () [@onSecondSend];
+let result = (myObj..p () [@attOnFirstSend])..z () [@onSecondSend];
 
 type recordFunctions = {
   p: unit => recordFunctions [@onUnit],

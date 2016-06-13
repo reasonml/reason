@@ -169,7 +169,7 @@ add 2 4 [@appliesToEntireFunctionApplication];
 let myObj = {method p () => {method z () => 10}};
 
 let result =
-  (myObj#p () [@attOnFirstSend])#z
+  (myObj..p () [@attOnFirstSend])..z
     () [@onSecondSend];
 
 type recordFunctions = {

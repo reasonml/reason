@@ -1043,9 +1043,9 @@ conflicts.
 * longer needs to be above COMMA, but it doesn't hurt */
 %nonassoc prec_constr_appl              /* above AS BAR COLONCOLON COMMA */
 %nonassoc below_DOT_AND_SHARP           /* practically same as below_SHARP but we convey purpose */
-%nonassoc SHARP                         /* simple_expr/toplevel_directive */
 %nonassoc below_DOT
 %nonassoc DOT
+%nonassoc DOTDOT
 
 %nonassoc below_LBRACKETAT
 %nonassoc LBRACKETAT
@@ -2771,7 +2771,7 @@ _simple_expr:
       }
   | mod_longident DOT as_loc(LBRACELESS) field_expr_list opt_comma as_loc(error)
       { unclosed_exp (with_txt $3 "{<") (with_txt $6 ">}") }
-  | simple_expr SHARP label
+  | simple_expr DOTDOT label
       { mkexp(Pexp_send($1, $3)) }
   | LPAREN MODULE module_expr RPAREN
       { mkexp (Pexp_pack $3) }
