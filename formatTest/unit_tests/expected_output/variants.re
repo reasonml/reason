@@ -480,5 +480,5 @@ type u = [ t | `c];
 
 let listPatternWithHash =
   fun
-  | #t => 1
+  | *t => 1
   | `c => 2;

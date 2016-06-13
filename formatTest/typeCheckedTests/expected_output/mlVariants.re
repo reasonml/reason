@@ -22,5 +22,5 @@ type u2 = [ t2 | `c];
 
 let listPatternWithHash =
   fun
-  | #t2 => 1
+  | *t2 => 1
   | `c => 2;
