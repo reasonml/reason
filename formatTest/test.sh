@@ -321,34 +321,34 @@ function error_test() {
 cd $UNIT_TEST_INPUT && find . -type f \( -name "*.re*" -or -name "*.ml*" \) | while read file; do
         unit_test $file $UNIT_TEST_INPUT $UNIT_TEST_OUTPUT $UNIT_TEST_EXPECTED_OUTPUT
         if ! [[ $? -eq 0 ]]; then
-            echo "$file -- unit_test" >> $FAILED_TESTS
+            echo "$file -- failed unit_test" >> $FAILED_TESTS
         fi
 
         idempotent_test $file $UNIT_TEST_INPUT $UNIT_TEST_OUTPUT $UNIT_TEST_EXPECTED_OUTPUT
         if ! [[ $? -eq 0 ]]; then
-            echo "$file -- idempotent_test" >> $FAILED_TESTS
+            echo "$file -- failed idempotent_test" >> $FAILED_TESTS
         fi
 done
 
 cd $TYPE_TEST_INPUT && find . -type f \( -name "*.re*" -or -name "*.ml*" \) | sort | while read file; do
         typecheck_test $file $TYPE_TEST_INPUT $TYPE_TEST_OUTPUT
         if ! [[ $? -eq 0 ]]; then
-            echo "$file -- typecheck_test" >> $FAILED_TESTS
+            echo "$file -- failed typecheck_test" >> $FAILED_TESTS
         fi
         unit_test $file $TYPE_TEST_INPUT $TYPE_TEST_OUTPUT $TYPE_TEST_EXPECTED_OUTPUT
         if ! [[ $? -eq 0 ]]; then
-            echo "$file -- unit_test" >> $FAILED_TESTS
+            echo "$file -- failed unit_test" >> $FAILED_TESTS
         fi
         idempotent_test $file $TYPE_TEST_INPUT $TYPE_TEST_OUTPUT $TYPE_TEST_EXPECTED_OUTPUT
         if ! [[ $? -eq 0 ]]; then
-            echo "$file -- idempotent_test" >> $FAILED_TESTS
+            echo "$file -- failed idempotent_test" >> $FAILED_TESTS
         fi
 done
 
 cd $ERROR_TEST_INPUT && find . -type f \( -name "*.re*" -or -name "*.ml*" \) | while read file; do
         error_test $file $ERROR_TEST_INPUT $ERROR_TEST_OUTPUT $ERROR_TEST_EXPECTED_OUTPUT
         if ! [[ $? -eq 0 ]]; then
-            echo "$file -- error_test" >> $FAILED_TESTS
+            echo "$file -- failed error_test" >> $FAILED_TESTS
         fi
 done
 
