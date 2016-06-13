@@ -1176,8 +1176,8 @@ let easyFormatToFormatter f x =
   if debugWithHtml.contents then
     Easy_format.Pretty.define_styles fauxmatter html_escape html_style;
   let _ = Easy_format.Pretty.to_formatter fauxmatter x in
-  let trimmed = strip_trailing_whitespace (Buffer.contents buf) in
-  Format.fprintf f "%s" trimmed;
+  let trimmed = strip_trailing_whitespace (Buffer.contents buf) |> String.trim in
+  Format.fprintf f "%s\n" trimmed;
   pp_print_flush f ()
 
 
