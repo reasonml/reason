@@ -3,8 +3,6 @@ open Asttypes
 open Parsetree
 open Longident
 
-external unsafe_get : string -> int -> char = "%string_unsafe_get"
-
 (** [is_prefixed prefix i str] checks if prefix is the prefix of str
   * starting from position i
   *)
@@ -12,8 +10,8 @@ let is_prefixed prefix str i =
   let len = String.length prefix in
   if i + len > String.length str then false else
   let rec loop j =
-    if j > len then true else
-      if unsafe_get prefix j <> unsafe_get str (i + j) then false else loop (j + 1)
+    if j >= len then true else
+      if String.unsafe_get prefix j <> String.unsafe_get str (i + j) then false else loop (j + 1)
     in
   loop 0
 
