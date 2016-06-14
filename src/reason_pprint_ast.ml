@@ -4256,7 +4256,7 @@ class printer  ()= object(self:'self)
 
 
   method attributes l =
-	    makeList ~break:IfNeed ~postSpace:true (List.map self#attribute l)
+    makeList ~break:IfNeed ~postSpace:true (List.map self#attribute l)
 
   method attach_std_attrs l toThis =
     let l = extractStdAttrs l in
@@ -5170,13 +5170,6 @@ class printer  ()= object(self:'self)
   (* [allowUnguardedSequenceBodies] allows sequence expressions {} to the right of `=>` to not
      be guarded in `{}` braces. *)
   method case_list ?(allowUnguardedSequenceBodies=false) l =
-    let rec appendLabelToLast items rhs =
-      match items with
-        | hd::[] -> (label ~indent:0 ~space:true hd rhs)::[]
-        | hd::tl -> hd::(appendLabelToLast tl rhs)
-        | [] -> raise (NotPossible "Cannot append to last of nothing")
-    in
-
     let case_row {pc_lhs; pc_guard; pc_rhs} =
       let theOrs = orList pc_lhs in
 
@@ -5234,26 +5227,42 @@ class printer  ()= object(self:'self)
                          [row]
 
       *)
-      let bar xx = makeList ~postSpace:true [atom "|"; xx] in
       let appendWhereAndArrow p = match pc_guard with
-          | None -> makeList ~interleaveComments:false ~postSpace:true [p; atom "=>"]
+          | None -> makeList ~interleaveComments:false ~inline:(true, true) ~postSpace:true [p; atom "=>"]
           | Some g ->
             (* when x should break as a whole - extra list added around it to make it break as one *)
-            let withWhen = label ~space:true p (makeList ~break:Never ~inline:(true, true) ~postSpace:true [label ~space:true (atom "when") (self#expression g)]) in
+            let whn = label ~space:true (atom "when") (self#expression g) in
+            let withWhen = label ~space:true p (makeList ~inline:(true, true) ~postSpace:true [whn]) in
             makeList ~interleaveComments:false ~inline:(true, true) ~postSpace:true [withWhen; atom "=>"]
       in
 
-      let rec appendWhereAndArrowToLastOr = function
-        | [] -> []
-        | hd::tl -> (
-          let formattedHd = match tl with
-            | [] -> appendWhereAndArrow (self#pattern hd)
-            | tl::tlTl -> (self#pattern hd)
-          in
-          formattedHd::(appendWhereAndArrowToLastOr tl)
-        )
+      let bar left pat =
+        let loc = {
+          loc_start={
+            left.ppat_loc.loc_start with
+              Lexing.pos_cnum=left.ppat_loc.loc_start.Lexing.pos_cnum-2
+          };
+          loc_end=left.ppat_loc.loc_start;
+          loc_ghost=false
+        } in
+        let bar = SourceMap(loc, atom "|") in
+        makeList ~interleaveComments:false ~inline:(true, false) ~postSpace:true [bar; pat]
       in
-      let orsWithWhereAndArrowOnLast = appendWhereAndArrowToLastOr theOrs in
+
+      let rec appendLabelToLast first items rhs =
+        match items with
+          | hd::[] ->
+              let lhs = appendWhereAndArrow (self#pattern hd) in
+              let left = if first then pc_lhs else hd in
+              let withBar = bar left (label ~indent:0 ~space:true lhs rhs) in
+              withBar::[]
+          | hd::tl ->
+              let left = if first then pc_lhs else hd in
+              let withBar = bar left (self#pattern hd) in
+              withBar::(appendLabelToLast false tl rhs)
+          | [] -> raise (NotPossible "Cannot append to last of nothing")
+      in
+
       let rhs =
         if allowUnguardedSequenceBodies then
           match (self#under_pipe#letList pc_rhs) with
@@ -5264,10 +5273,8 @@ class printer  ()= object(self:'self)
                wrapping {} which would cause zero indentation to look strange. *)
             | lst -> makeUngaurdedLetSequence lst
         else self#under_pipe#expression pc_rhs in
-      let row =
-        let withoutBars = appendLabelToLast orsWithWhereAndArrowOnLast rhs in
-        makeList ~break:Always_rec ~inline:(true, true) (List.map bar withoutBars)
-      in
+      let orsWithBars = appendLabelToLast true theOrs rhs in
+      let row = makeList ~break:Always_rec ~inline:(true, true) ~postSpace:true orsWithBars in
         SourceMap (
           (* Fake shift the location to accomodate for the bar, to make sure
            * the wrong comments don't make their way past the next bar. *)
@@ -5278,7 +5285,6 @@ class printer  ()= object(self:'self)
           },
           row
         )
-
     in
     (List.map case_row l)
 
