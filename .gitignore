@@ -16,4 +16,5 @@ formatTest/customMLFiles/*.ml
 formatTest/customMLFormatOutput.re
 .jenga
 src/reason_parser.messages.bak
+src/reason_parser_message.ml
 *~
