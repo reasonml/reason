@@ -2516,7 +2516,7 @@ class printer  ()= object(self:'self)
           | Ppat_unpack (s) ->
               makeList ~wrap:("(", ")") ~break:IfNeed ~postSpace:true [atom "module"; atom s.txt]
           | Ppat_type li ->
-              makeList [atom "#"; self#longident_loc li]
+              makeList [atom "*"; self#longident_loc li]
           | Ppat_record (l, closed) ->
               let longident_x_pattern (li, p) =
                 match (li, p.ppat_desc) with

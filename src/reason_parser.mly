@@ -3339,7 +3339,7 @@ _simple_pattern_not_ident:
       { mkpat(Ppat_construct($1, None)) }
   | name_tag
       { mkpat(Ppat_variant($1, None)) }
-  | SHARP as_loc(type_longident)
+  | STAR as_loc(type_longident)
       { mkpat(Ppat_type ($2)) }
   | LBRACE lbl_pattern_list RBRACE
       { let (fields, closed) = $2 in mkpat(Ppat_record(fields, closed)) }
