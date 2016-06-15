@@ -13,4 +13,5 @@ install:
 before_script:
   - opam pin add -y reason .
 script: make test
+after_script: git diff-index --quiet HEAD
 
