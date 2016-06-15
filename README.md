@@ -1,6 +1,9 @@
 
-Reason: Build Systems Rapidly
+
+
+Reason: Build Systems Rapidly [![Build Status](https://travis-ci.org/facebook/reason.png?branch=master)](https://travis-ci.org/facebook/reason)
 =========================================
+
 
 - Approachable syntax.
 - Powerful, automatic source code formatting.
