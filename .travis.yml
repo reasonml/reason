@@ -12,5 +12,6 @@ install:
   - opam pin add -y merlin_extend 'https://github.com/let-def/merlin-extend.git#reason-0.0.1'
 before_script:
   - opam pin add -y reason .
-script: make test
-
+script: 
+  - make test
+  - git diff --exit-code
