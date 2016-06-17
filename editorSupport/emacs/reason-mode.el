@@ -286,6 +286,23 @@ function or trait.  When nil, where will be aligned with fn or trait."
                  (or (rust-align-to-expr-after-brace)
                      (+ baseline reason-indent-offset))))
 
+              ((reason-in-str-or-cmnt)
+               (cond
+                ;; In the end of the block -- align with star
+                ((looking-at "*/") (+ baseline 1))
+                ;; Indent to the following shape:
+                ;; /* abcd
+                ;;  * asdf
+                ;;  */
+                ;;
+                ((looking-at "*") (+ baseline 1))
+                ;; Indent to the following shape:
+                ;; /* abcd
+                ;;    asdf
+                ;;  */
+                ;;
+                (t (+ baseline (+ reason-indent-offset 1)))))
+
               ;; A closing brace is 1 level unindented
               ((looking-at "}\\|)\\|\\]") (- baseline reason-indent-offset))
 
@@ -363,7 +380,7 @@ function or trait.  When nil, where will be aligned with fn or trait."
                            )
                          (+ baseline reason-indent-offset))
                         ((looking-at "|\\|/[/*]")
-                         (- baseline reason-indent-offset))
+                         baseline)
                         ((save-excursion
                          (reason-rewind-irrelevant)
                          (looking-back "[{;,\\[(]" (- (point) 2)))
