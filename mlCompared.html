@@ -738,11 +738,11 @@ let res = match x with
       <pre>
 type myVariant =
    | HasNothing
-   | HasSingleInt of int
-   | HasSingleTuple of (int, int)
-   | HasMultipleInts of int int
+   | HasSingleInt int
+   | HasSingleTuple int, int)
+   | HasMultipleInts int int
    | HasMultipleTuples
-      of (int, int) (int, int);
+      (int, int) (int, int);
 
 let a = HasSingleInt 10;
 let a = HasSingleTuple (10, 10);

@@ -618,13 +618,13 @@ enumerating the cases. See more below.
 
 Reason constructors are not your OO constructors. They're more like functions
 for variants. They may contain one or more pieces of data by declaring those
-contained types in a space-separated list after an `of` keyword.
+contained types in a space-separated list after the constructor.
 
 ```reason
 type account =
   | None
-  | Facebook of string int
-  | Instagram of string;
+  | Facebook string int
+  | Instagram string;
 ```
 
 > Instantiating a constructor that carries data is exactly the same as
@@ -642,7 +642,7 @@ with tuples. In this example, a local variable `x` is bound to `42`.
 `getTheInt` extracts a `Leaf`'s contained integer "on the way into" the function.
 
 ```reason
-type intLeaf = | Leaf of int;
+type intLeaf = | Leaf int;
 let myIntLeaf = Leaf 42;
 
 let Leaf x = myIntLeaf;
@@ -659,7 +659,7 @@ Fortunately, the compiler forbids this.
 ```reason
 type possibleNum =
   | NotDefined
-  | Defined of integer;
+  | Defined integer;
 
 let myNumber = NotDefined;
 let Defined x = myNumber;   /* Type error! */
@@ -689,8 +689,8 @@ additional abstraction cost (they are "inlined" into the variant data).
 
 ```reason
 type toTupleOrNotToTuple =
-   | HasTuple of (int, int, int)
-   | NoTuple of int int int;
+   | HasTuple (int, int, int)
+   | NoTuple int int int;
 
 let aTuple = HasTuple (1, 2, 3);
 let notTuple = NoTuple 1 2 3;
@@ -888,8 +888,8 @@ type containerOf 'a = {containedThing: 'a};
 let c : containerOf int = {containedThing: 10};
 
 type result 'a 'b =
-  | Ok of 'a
-  | Error of 'b
+  | Ok 'a
+  | Error 'b
 let r : result string int = Ok "here is the result";
 ```
 
@@ -976,7 +976,7 @@ type car = {model: string, make: string};
 let toyota = {make: "Toyota", model: "Tacoma"};
 
 type carOwner =
-  | CarOwner of string car; /* May as well be a tuple */
+  | CarOwner string car; /* May as well be a tuple */
 
 let CarOwner name {model: model, make: make} = CarOwner "Jo" toyota;
 ```
@@ -995,7 +995,7 @@ it compiles, it works!".
 
 ```reason
 type carList =
-  | List of car carList
+  | List car carList
   | NoMore;
 
 let chevy = {make: "Chevy", model: "Suburban"};
