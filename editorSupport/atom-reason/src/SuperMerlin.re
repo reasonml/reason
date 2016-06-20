@@ -230,7 +230,9 @@ let getAutoCompleteSuggestions
         Js.Unsafe.inject (Js.string "prefix"),
         Js.Unsafe.inject (Js.string prefix),
         Js.Unsafe.inject (Js.string "at"),
-        Js.Unsafe.inject (positionToJsMerlinPosition position)
+        Js.Unsafe.inject (positionToJsMerlinPosition position),
+        Js.Unsafe.inject (Js.string "with"),
+        Js.Unsafe.inject (Js.string "doc")
       |]
     )
     resolve
