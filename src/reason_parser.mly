@@ -276,9 +276,9 @@ let is_pattern_list_single_any = function
 
 let set_structure_item_location x loc = {x with pstr_loc = loc};;
 
-let mkoperator name =
-  let loc = name.loc in
-  Exp.mk ~loc (Pexp_ident(mkloc (Lident name.txt) loc))
+let mkoperator name pos =
+  let loc = rhs_loc pos in
+  Exp.mk ~loc (Pexp_ident(mkloc (Lident name) loc))
 
 
 (*
@@ -308,29 +308,22 @@ let mkoperator name =
 let ghunit ?(loc=dummy_loc ()) () =
   mkexp ~ghost:true ~loc (Pexp_construct (mknoloc (Lident "()"), None))
 
-let mkinfix arg1 name_operator arg2 =
-  mkexp (Pexp_apply(mkoperator name_operator, ["", arg1; "", arg2]))
+let mkinfix arg1 name arg2 =
+  mkexp(Pexp_apply(mkoperator name 2, [Nolabel, arg1; Nolabel, arg2]))
 
-let neg_float_string f =
+let neg_string f =
   if String.length f > 0 && f.[0] = '-'
   then String.sub f 1 (String.length f - 1)
   else "-" ^ f
 
 let mkuminus name arg =
-  match name.txt, arg.pexp_desc with
-  | "-", Pexp_constant(Const_int n) ->
-      mkexp(Pexp_constant(Const_int(-n)))
-  | "-", Pexp_constant(Const_int32 n) ->
-      mkexp(Pexp_constant(Const_int32(Int32.neg n)))
-  | "-", Pexp_constant(Const_int64 n) ->
-      mkexp(Pexp_constant(Const_int64(Int64.neg n)))
-  | "-", Pexp_constant(Const_nativeint n) ->
-      mkexp(Pexp_constant(Const_nativeint(Nativeint.neg n)))
-  | ("-" | "-."), Pexp_constant(Const_float f) ->
-      mkexp(Pexp_constant(Const_float(neg_float_string f)))
+  match name, arg.pexp_desc with
+  | "-", Pexp_constant(Pconst_integer (n,m)) ->
+      mkexp(Pexp_constant(Pconst_integer(neg_string n,m)))
+  | ("-" | "-."), Pexp_constant(Pconst_float (f, m)) ->
+      mkexp(Pexp_constant(Pconst_float(neg_string f, m)))
   | _ ->
-      let name = {name with txt=("~" ^ name.txt)} in
-      mkexp(Pexp_apply(mkoperator name, ["", arg]))
+      mkexp(Pexp_apply(mkoperator ("~" ^ name) 1, [Nolabel, arg]))
 
 let mkFunctorThatReturns functorArgs returns =
   List.fold_left (
@@ -339,15 +332,11 @@ let mkFunctorThatReturns functorArgs returns =
 
 let mkuplus name arg =
   let desc = arg.pexp_desc in
-  match name.txt, desc with
-  | "+", Pexp_constant(Const_int _)
-  | "+", Pexp_constant(Const_int32 _)
-  | "+", Pexp_constant(Const_int64 _)
-  | "+", Pexp_constant(Const_nativeint _)
-  | ("+" | "+."), Pexp_constant(Const_float _) -> mkexp desc
+  match name, desc with
+  | "+", Pexp_constant(Pconst_integer _)
+  | ("+" | "+."), Pexp_constant(Pconst_float _) -> mkexp desc
   | _ ->
-      let name = {name with txt=("~" ^ name.txt)} in
-      mkexp(Pexp_apply(mkoperator name, ["", arg]))
+      mkexp(Pexp_apply(mkoperator ("~" ^ name) 1, [Nolabel, arg]))
 
 let mkexp_cons consloc args loc =
   mkexp ~loc (Pexp_construct(mkloc (Lident "::") consloc, Some args))
@@ -498,34 +487,34 @@ let bigarray_get ?(loc=dummy_loc()) arr arg =
   match bigarray_untuplify arg with
     [c1] ->
       mkexp(Pexp_apply(mkexp ~ghost:true ~loc (Pexp_ident(bigarray_function ~loc "Array1" get)),
-                       ["", arr; "", c1]))
+                       [Nolabel, arr; Nolabel, c1]))
   | [c1;c2] ->
       mkexp(Pexp_apply(mkexp ~ghost:true ~loc (Pexp_ident(bigarray_function ~loc "Array2" get)),
-                       ["", arr; "", c1; "", c2]))
+                       [Nolabel, arr; Nolabel, c1; Nolabel, c2]))
   | [c1;c2;c3] ->
       mkexp(Pexp_apply(mkexp ~ghost:true ~loc (Pexp_ident(bigarray_function ~loc "Array3" get)),
-                       ["", arr; "", c1; "", c2; "", c3]))
+                       [Nolabel, arr; Nolabel, c1; Nolabel, c2; Nolabel, c3]))
   | coords ->
       mkexp(Pexp_apply(mkexp ~ghost:true ~loc (Pexp_ident(bigarray_function ~loc "Genarray" "get")),
-                       ["", arr; "", mkexp ~ghost:true ~loc (Pexp_array coords)]))
+                       [Nolabel, arr; Nolabel, mkexp ~ghost:true ~loc (Pexp_array coords)]))
 
 let bigarray_set ?(loc=dummy_loc()) arr arg newval =
   let set = if !Clflags.fast then "unsafe_set" else "set" in
   match bigarray_untuplify arg with
     [c1] ->
       mkexp(Pexp_apply(mkexp ~ghost:true ~loc (Pexp_ident(bigarray_function ~loc "Array1" set)),
-                       ["", arr; "", c1; "", newval]))
+                       [Nolabel, arr; Nolabel, c1; Nolabel, newval]))
   | [c1;c2] ->
       mkexp(Pexp_apply(mkexp ~ghost:true ~loc (Pexp_ident(bigarray_function ~loc "Array2" set)),
-                       ["", arr; "", c1; "", c2; "", newval]))
+                       [Nolabel, arr; Nolabel, c1; Nolabel, c2; Nolabel, newval]))
   | [c1;c2;c3] ->
       mkexp(Pexp_apply(mkexp ~ghost:true ~loc (Pexp_ident(bigarray_function ~loc "Array3" set)),
-                       ["", arr; "", c1; "", c2; "", c3; "", newval]))
+                       [Nolabel, arr; Nolabel, c1; Nolabel, c2; Nolabel, c3; Nolabel, newval]))
   | coords ->
       mkexp(Pexp_apply(mkexp ~ghost:true ~loc (Pexp_ident(bigarray_function ~loc "Genarray" "set")),
-                       ["", arr;
-                        "", mkexp ~ghost:true ~loc (Pexp_array coords);
-                        "", newval]))
+                       [Nolabel, arr;
+                        Nolabel, mkexp ~ghost:true ~loc (Pexp_array coords);
+                        Nolabel, newval]))
 
 let lapply p1 p2 =
   if !Clflags.applicative_functors
@@ -4163,7 +4152,8 @@ class_longident:
 toplevel_directive:
     SHARP ident                 { Ptop_dir($2, Pdir_none) }
   | SHARP ident STRING          { Ptop_dir($2, Pdir_string (fst $3)) }
-  | SHARP ident INT             { Ptop_dir($2, Pdir_int $3) }
+  | SHARP ident INT             { let (n, m) = $3 in
+                                  Ptop_dir($2, Pdir_int (n, m)) }
   | SHARP ident val_longident   { Ptop_dir($2, Pdir_ident $3) }
   | SHARP ident mod_longident   { Ptop_dir($2, Pdir_ident $3) }
   | SHARP ident FALSE           { Ptop_dir($2, Pdir_bool false) }
