@@ -270,8 +270,8 @@ let mkExplicitArityTupleExp ?(loc=dummy_loc ()) exp =
     ~attrs:(simple_ghost_text_attr ~loc "explicit_arity")
     exp
 
-let is_pattern_list_single_any = function
-  | [{ppat_desc=Ppat_any; ppat_attributes=[]} as onlyItem] -> Some onlyItem
+let is_pattern_list_single = function
+  | [{ppat_desc=_; ppat_attributes=[]} as onlyItem] -> Some onlyItem
   | _ -> None
 
 let set_structure_item_location x loc = {x with pstr_loc = loc};;
@@ -813,7 +813,7 @@ let built_in_explicit_arity_constructors = ["Some"; "Assert_failure"; "Match_fai
 %token EXCEPTION
 %token EXTERNAL
 %token FALSE
-%token <string> FLOAT
+%token <string * char option> FLOAT
 %token FOR
 %token FUN
 %token FUNCTION
@@ -831,9 +831,7 @@ let built_in_explicit_arity_constructors = ["Some"; "Assert_failure"; "Match_fai
 %token <string> INFIXOP4
 %token INHERIT
 %token INITIALIZER
-%token <int> INT
-%token <int32> INT32
-%token <int64> INT64
+%token <string * char option> INT
 %token LAZY
 %token LBRACE
 %token LBRACELESS
@@ -862,7 +860,6 @@ let built_in_explicit_arity_constructors = ["Some"; "Assert_failure"; "Match_fai
 %token MINUSGREATER
 %token MODULE
 %token MUTABLE
-%token <nativeint> NATIVEINT
 %token NEW
 %token NONREC
 %token OBJECT
@@ -1040,9 +1037,9 @@ conflicts.
 %nonassoc LBRACKETAT
 
 /* Finally, the first tokens of simple_expr are above everything else. */
-%nonassoc BACKQUOTE BANG CHAR FALSE FLOAT INT INT32 INT64
+%nonassoc BACKQUOTE BANG CHAR FALSE FLOAT INT
           LBRACE LBRACELESS LBRACKET LBRACKETBAR LIDENT LPAREN
-          NEW NATIVEINT PREFIXOP STRING TRUE UIDENT
+          NEW PREFIXOP STRING TRUE UIDENT
           LBRACKETPERCENT
 
 /* Fail fast on errors */
@@ -1404,7 +1401,8 @@ _structure_item_without_item_extension_sugar:
         (Pstr_primitive (Val.mk $2 $4 ~prim:$6 ~attrs:$7 ~loc))
     }
   | many_type_declarations {
-      mkstr(Pstr_type (List.rev $1))
+      let (nonrec_flag, tyl) = $1 in
+      mkstr(Pstr_type (nonrec_flag, List.rev tyl))
     }
   | str_type_extension {
       mkstr(Pstr_typext $1)
@@ -1671,7 +1669,8 @@ _signature_item:
       mksig(Psig_value (Val.mk $2 $4 ~prim:$6 ~attrs:$7 ~loc))
     }
   | many_type_declarations {
-      mksig(Psig_type (List.rev $1))
+        let (nonrec_flag, tyl) = $1 in
+        mksig(Psig_type (nonrec_flag, List.rev tyl))
     }
   | sig_type_extension {
       mksig(Psig_typext $1)
@@ -2188,11 +2187,11 @@ _class_constructor_type:
   | NEW class_instance_type
       { $2 }
   | LIDENT EXPLICITLY_PASSED_OPTIONAL non_arrowed_core_type EQUALGREATER class_constructor_type
-      { mkcty(Pcty_arrow("?" ^ $1, mkoption $3, $5)) }
+      { mkcty(Pcty_arrow(Optional $1, $3, $5)) }
   | LIDENT COLONCOLON non_arrowed_core_type EQUALGREATER class_constructor_type
-      { mkcty(Pcty_arrow($1, $3, $5)) }
+      { mkcty(Pcty_arrow(Labelled $1, $3, $5)) }
   | non_arrowed_core_type EQUALGREATER class_constructor_type
-      { mkcty(Pcty_arrow("", $1, $3)) }
+      { mkcty(Pcty_arrow(Nolabel, $1, $3)) }
 ;
 
 non_arrowed_class_constructor_type: mark_position_cty(_non_arrowed_class_constructor_type) {$1}
@@ -2471,15 +2470,15 @@ let explictlyPassedAnnotated = (myOptional a::?a b::?None :int);
 labeled_simple_pattern:
    /* Case A, B, C, D */
   | LIDENT COLONCOLON simple_pattern
-      { ($1, None, $3) }
+      { (Labelled $1, None, $3) }
    /* Case E, F, G, H */
   | LIDENT COLONCOLON simple_pattern OPTIONAL_NO_DEFAULT
-      { ("?" ^ $1, None, $3) }
+      { (Optional $1, None, $3) }
    /* Case I, J, K, L */
   | LIDENT COLONCOLON simple_pattern EQUAL simple_expr
-      { ("?" ^ $1, Some $5, $3) }
+      { (Optional $1, Some $5, $3) }
   | simple_pattern
-      { ("", None, $1) }
+      { (Nolabel, None, $1) }
 ;
 
 /*
@@ -2548,13 +2547,13 @@ _expr:
         let loc = mklocation $symbolstartpos $endpos in
         mkexp_cons loc_colon (mkexp ~ghost:true ~loc (Pexp_tuple[$5;$7])) loc
       }
-  | expr as_loc(infix_operator) expr
+  | expr infix_operator expr
       { mkinfix $1 $2 $3 }
-  | as_loc(subtractive) expr %prec prec_unary_minus
+  | subtractive expr %prec prec_unary_minus
       {
         mkuminus $1 $2
       }
-  | as_loc(additive) expr %prec prec_unary_plus
+  | additive expr %prec prec_unary_plus
       {
         mkuplus $1 $2
       }
@@ -2564,12 +2563,12 @@ _expr:
       {
         let loc = mklocation $symbolstartpos $endpos in
         mkexp(Pexp_apply(mkexp ~ghost:true ~loc (Pexp_ident(array_function ~loc "Array" "set")),
-                         ["",$1; "",$4; "",$7])) }
+                         [Nolabel,$1; Nolabel,$4; Nolabel,$7])) }
   | simple_expr DOT LBRACKET expr RBRACKET EQUAL expr
       {
         let loc = mklocation $symbolstartpos $endpos in
         mkexp(Pexp_apply(mkexp ~ghost:true ~loc (Pexp_ident(array_function ~loc "String" "set")),
-                         ["",$1; "",$4; "",$7])) }
+                         [Nolabel,$1; Nolabel,$4; Nolabel,$7])) }
   | simple_expr DOT LBRACE expr RBRACE EQUAL expr
       {
         let loc = mklocation $symbolstartpos $endpos in
@@ -2666,14 +2665,14 @@ _simple_expr:
       {
         let loc = mklocation $symbolstartpos $endpos in
         mkexp(Pexp_apply(mkexp ~ghost:true ~loc (Pexp_ident(array_function ~loc "Array" "get")),
-                         ["",$1; "",$4])) }
+                         [Nolabel,$1; Nolabel,$4])) }
   | simple_expr DOT as_loc(LPAREN) expr as_loc(error)
       { unclosed_exp (with_txt $3 "(") (with_txt $5 ")") }
   | simple_expr DOT LBRACKET expr RBRACKET
       {
         let loc = mklocation $symbolstartpos $endpos in
         mkexp(Pexp_apply(mkexp ~ghost:true ~loc (Pexp_ident(array_function ~loc "String" "get")),
-                         ["",$1; "",$4])) }
+                         [Nolabel,$1; Nolabel,$4])) }
   | simple_expr DOT as_loc(LBRACKET) expr as_loc(error)
       { unclosed_exp (with_txt $3 "[") (with_txt $5 "]") }
   | simple_expr DOT LBRACE expr RBRACE
@@ -2729,9 +2728,9 @@ _simple_expr:
         let list_exp = make_real_exp (mktailexp_extension loc seq ext_opt) in
         let list_exp = { list_exp with pexp_loc = loc } in
         mkexp (Pexp_open (Fresh, $1, list_exp)) }
-  | as_loc(PREFIXOP) simple_expr %prec below_DOT_AND_SHARP
+  | PREFIXOP simple_expr %prec below_DOT_AND_SHARP
       {
-        mkexp(Pexp_apply(mkoperator $1, ["",$2]))
+        mkexp(Pexp_apply(mkoperator $1 1, [Nolabel,$2]))
       }
   /**
    * Must be below_DOT_AND_SHARP so that the parser waits for several dots for
@@ -2741,8 +2740,7 @@ _simple_expr:
    */
   | as_loc(BANG) simple_expr %prec below_DOT_AND_SHARP
       {
-        let bang = {$1 with txt="!"} in
-        mkexp(Pexp_apply(mkoperator bang, ["",$2]))
+        mkexp(Pexp_apply(mkoperator "!" 1, [Nolabel,$2]))
       }
   | NEW as_loc(class_longident)
       { mkexp (Pexp_new $2) }
@@ -2815,7 +2813,7 @@ simple_labeled_expr_list:
 
 labeled_simple_expr:
     less_aggressive_simple_expression
-      { ("", $1) }
+      { (Nolabel, $1) }
   | label_expr
       { $1 }
 ;
@@ -2823,12 +2821,12 @@ labeled_simple_expr:
 /* No punning! */
 label_expr:
     LIDENT COLONCOLON less_aggressive_simple_expression
-      { ($1, $3) }
+      { (Labelled $1, $3) }
   /* Expliclitly provided default optional:
    * let res = someFunc optionalArg:?None;
    */
   | LIDENT EXPLICITLY_PASSED_OPTIONAL less_aggressive_simple_expression
-      { ("?" ^ $1, $3) }
+      { (Optional $1, $3) }
 ;
 
 and_let_binding:
@@ -2984,7 +2982,7 @@ _curried_binding_return_typed:
       {
           let loc = mklocation $symbolstartpos $endpos in
           let nil = { txt = Lident "()"; loc = make_ghost_loc loc } in
-          mkexp ~ghost:true ~loc (Pexp_fun("", None, mkpat ~ghost:true ~loc (Ppat_construct (nil, None)), $2))
+          mkexp ~ghost:true ~loc (Pexp_fun(Nolabel, None, mkpat ~ghost:true ~loc (Ppat_construct (nil, None)), $2))
       }
   | labeled_simple_pattern curried_binding_return_typed_
       {
@@ -3257,10 +3255,10 @@ _pattern_without_or:
     */
   | as_loc(constr_longident) simple_pattern_list
     {
-      match is_pattern_list_single_any $2 with
-        | Some singleAnyPat ->
+      match is_pattern_list_single $2 with
+        | Some singlePat ->
             mkpat
-              (Ppat_construct($1, Some singleAnyPat))
+              (Ppat_construct($1, Some singlePat))
         | None ->
           let loc = mklocation $symbolstartpos $endpos in
           let argPattern = simple_pattern_list_to_tuple ~loc $2 in
@@ -3439,14 +3437,17 @@ primitive_declaration:
 /* Type declarations */
 
 many_type_declarations:
-  | TYPE nonrec_flag type_declaration_details post_item_attributes {
-      let (ident, params, constraints, kind, priv, manifest) = $3 in
-      let loc = mklocation $symbolstartpos $endpos in
-      [Type.mk ident
-       ~params:params ~cstrs:constraints
-       ~kind ~priv ?manifest ~attrs:(add_nonrec $2 $4 2) ~loc]
-  }
-  | many_type_declarations and_type_declaration { $2 :: $1 }
+ | TYPE nonrec_flag type_declaration_details post_item_attributes {
+   let (ident, params, constraints, kind, priv, manifest) = $3 in
+   let ty = Type.mk ident ~params:params ~cstrs:constraints
+            ~kind ~priv ?manifest ~attrs:$4 ~loc:(symbol_rloc())
+   in
+   ($2, [ty])
+   }
+ | many_type_declarations and_type_declaration {
+   let (nonrec_flag, tyl) = $1 in
+   (nonrec_flag, $2 :: tyl)
+   }
 ;
 
 and_type_declaration:
@@ -3583,19 +3584,22 @@ sig_exception_declaration:
       }
 ;
 generalized_constructor_arguments:
-    /*empty*/                                   { ([],None) }
-  | non_arrowed_simple_core_type_list                    { (List.rev $1, None) }
-  | non_arrowed_simple_core_type_list COLON core_type
-                                                { (List.rev $1,Some $3) }
+    /*empty*/                                   { (Pcstr_tuple [],None) }
+  | constructor_arguments                       { ($1, None) }
+  | constructor_arguments COLON core_type
+                                                { ($1,Some $3) }
   | COLON core_type
-                                                { ([],Some $2) }
+                                                { (Pcstr_tuple [],Some $2) }
 ;
 
-
+constructor_arguments:
+  | non_arrowed_simple_core_type_list           { Pcstr_tuple (List.rev $1) }
+  | LBRACE label_declarations RBRACE            { Pcstr_record (List.rev $2) }
+;
 
 label_declarations:
     label_declaration                           { [$1] }
-  | label_declarations COMMA label_declaration   { $3 :: $1 }
+  | label_declarations COMMA label_declaration  { $3 :: $1 }
 ;
 
 label_declaration:
@@ -3858,11 +3862,11 @@ _core_type2:
     non_arrowed_core_type %prec below_LBRACKETAT
       { $1 }
   | LIDENT COLONCOLON non_arrowed_core_type QUESTION EQUALGREATER core_type2
-      { mktyp(Ptyp_arrow("?" ^ $1 , mkoption $3, $6)) }
+      { mktyp(Ptyp_arrow(Optional $1 , mkoption $3, $6)) }
   | LIDENT COLONCOLON non_arrowed_core_type EQUALGREATER core_type2
-      { mktyp(Ptyp_arrow($1, $3, $5)) }
+      { mktyp(Ptyp_arrow(Labelled $1, $3, $5)) }
   | core_type2 EQUALGREATER core_type2
-      { mktyp(Ptyp_arrow("", $1, $3)) }
+      { mktyp(Ptyp_arrow(Nolabel, $1, $3)) }
 ;
 
 
@@ -3969,7 +3973,7 @@ row_field_list:
 ;
 row_field:
     tag_field                                   { $1 }
-  | non_arrowed_simple_core_type                            { Rinherit $1 }
+  | non_arrowed_simple_core_type                { Rinherit $1 }
 ;
 tag_field:
     name_tag opt_ampersand amper_type_list attributes
@@ -4001,13 +4005,13 @@ non_arrowed_simple_core_type_list:
 ;
 
 meth_list:
-    field COMMA meth_list                     { let (f, c) = $3 in ($1 :: f, c) }
-  | field opt_comma                              { [$1], Closed }
+    field COMMA meth_list                       { let (f, c) = $3 in ($1 :: f, c) }
+  | field opt_comma                             { [$1], Closed }
   | DOTDOT                                      { [], Open }
 ;
 
 field:
-    label COLON poly_type attributes           { ($1, $4, $3) }
+    label COLON poly_type attributes            { ($1, $4, $3) }
 ;
 label:
     LIDENT                                      { $1 }
@@ -4016,26 +4020,17 @@ label:
 /* Constants */
 
 constant:
-    INT                               { Const_int $1 }
-  | CHAR                              { Const_char $1 }
-  | STRING                            { let (s, d) = $1 in Const_string (s, d) }
-  | FLOAT                             { Const_float $1 }
-  | INT32                             { Const_int32 $1 }
-  | INT64                             { Const_int64 $1 }
-  | NATIVEINT                         { Const_nativeint $1 }
+  | INT          { let (n, m) = $1 in Pconst_integer (n, m) }
+  | CHAR         { Pconst_char $1 }
+  | STRING       { let (s, d) = $1 in Pconst_string (s, d) }
+  | FLOAT        { let (f, m) = $1 in Pconst_float (f, m) }
 ;
 signed_constant:
-    constant                               { $1 }
-  | MINUS INT                              { Const_int(- $2) }
-  | MINUS FLOAT                            { Const_float("-" ^ $2) }
-  | MINUS INT32                            { Const_int32(Int32.neg $2) }
-  | MINUS INT64                            { Const_int64(Int64.neg $2) }
-  | MINUS NATIVEINT                        { Const_nativeint(Nativeint.neg $2) }
-  | PLUS INT                               { Const_int $2 }
-  | PLUS FLOAT                             { Const_float $2 }
-  | PLUS INT32                             { Const_int32 $2 }
-  | PLUS INT64                             { Const_int64 $2 }
-  | PLUS NATIVEINT                         { Const_nativeint $2 }
+    constant     { $1 }
+  | MINUS INT    { let (n, m) = $2 in Pconst_integer("-" ^ n, m) }
+  | MINUS FLOAT  { let (f, m) = $2 in Pconst_float("-" ^ f, m) }
+  | PLUS INT     { let (n, m) = $2 in Pconst_integer (n, m) }
+  | PLUS FLOAT   { let (f, m) = $2 in Pconst_float(f, m) }
 ;
 
 /* Identifiers and long identifiers */
