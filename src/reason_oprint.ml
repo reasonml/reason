@@ -146,7 +146,7 @@ let print_out_value ppf tree =
     | Oval_char c -> fprintf ppf "%C" c
     | Oval_string s ->
         begin try fprintf ppf "%S" s with
-          Invalid_argument "String.create" -> fprintf ppf "<huge string>"
+          Invalid_argument _ (* "String.create" *)-> fprintf ppf "<huge string>"
         end
     | Oval_list tl ->
         fprintf ppf "@[<1>[%a]@]" (print_tree_list (print_tree_1 false) ",") tl
@@ -307,6 +307,8 @@ and print_simple_out_type ppf =
         )
         n tyl;
       fprintf ppf ")@]"
+   | Otyp_attribute (t, attr) ->
+         fprintf ppf "@[<1>(%a [@@%s])@]" print_out_type t attr.oattr_name
 and print_fields rest ppf =
   function
     [] ->
@@ -354,6 +356,8 @@ and print_typargs ppf =
       pp_open_box ppf 1;
       print_typlist print_out_wrap_type "" ppf tyl;
       pp_close_box ppf ()
+
+let out_type = ref print_out_type
 
 (* Class types *)
 
@@ -500,8 +504,8 @@ and print_out_sig_item ppf =
            | Orec_first -> "type"
            | Orec_next  -> "and")
           ppf td
-  | Osig_value (name, ty, prims) ->
-      let kwd = if prims = [] then "let" else "external" in
+  | Osig_value vd ->
+      let kwd = if vd.oval_prims = [] then "val" else "external" in
       let pr_prims ppf =
         function
           [] -> ()
@@ -509,8 +513,12 @@ and print_out_sig_item ppf =
             fprintf ppf "@ = \"%s\"" s;
             List.iter (fun s -> fprintf ppf "@ \"%s\"" s) sl
       in
-      fprintf ppf "@[<2>%s %a :@ %a%a@]" kwd value_ident name print_out_type
-        ty pr_prims prims
+        fprintf ppf "@[<2>%s %a :@ %a%a%a@]" kwd value_ident vd.oval_name
+            !out_type vd.oval_type pr_prims vd.oval_prims
+            (fun ppf -> List.iter (fun a -> fprintf ppf "@ [@@@@%s]" a.oattr_name))
+            vd.oval_attributes
+  | Osig_ellipsis ->
+      fprintf ppf "..."
 
 and print_out_type_decl kwd ppf td =
   let print_constraints ppf =
