@@ -2028,7 +2028,7 @@ class printer  ()= object(self:'self)
            {pcd_name; pcd_args; pcd_res; pcd_loc; pcd_attributes} =
     let prefix = if polymorphic then "`" else "" in
     let sourceMappedName = SourceMap (pcd_name.loc, atom (prefix ^ pcd_name.txt)) in
-    let nameOf = makeList ~postSpace:true [sourceMappedName; atom "of"] in
+    let nameOf = makeList ~postSpace:true [sourceMappedName] in
     let barName =
       let lst = if print_bar then [atom "|"; sourceMappedName] else [sourceMappedName] in
       makeList ~postSpace:true lst in
