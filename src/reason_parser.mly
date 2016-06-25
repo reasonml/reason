@@ -270,8 +270,8 @@ let mkExplicitArityTupleExp ?(loc=dummy_loc ()) exp =
     ~attrs:(simple_ghost_text_attr ~loc "explicit_arity")
     exp
 
-let is_pattern_list_single = function
-  | [{ppat_desc=_; ppat_attributes=[]} as onlyItem] -> Some onlyItem
+let is_pattern_list_single_any = function
+  | [{ppat_desc=Ppat_any; ppat_attributes=[]} as onlyItem] -> Some onlyItem
   | _ -> None
 
 let set_structure_item_location x loc = {x with pstr_loc = loc};;
@@ -3255,7 +3255,7 @@ _pattern_without_or:
     */
   | as_loc(constr_longident) simple_pattern_list
     {
-      match is_pattern_list_single $2 with
+      match is_pattern_list_single_any $2 with
         | Some singlePat ->
             mkpat
               (Ppat_construct($1, Some singlePat))
@@ -3439,8 +3439,9 @@ primitive_declaration:
 many_type_declarations:
  | TYPE nonrec_flag type_declaration_details post_item_attributes {
    let (ident, params, constraints, kind, priv, manifest) = $3 in
+   let loc = mklocation $symbolstartpos $endpos in
    let ty = Type.mk ident ~params:params ~cstrs:constraints
-            ~kind ~priv ?manifest ~attrs:$4 ~loc:(symbol_rloc())
+            ~kind ~priv ?manifest ~attrs:(add_nonrec $2 $4 2) ~loc
    in
    ($2, [ty])
    }

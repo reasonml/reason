@@ -505,7 +505,7 @@ and print_out_sig_item ppf =
            | Orec_next  -> "and")
           ppf td
   | Osig_value vd ->
-      let kwd = if vd.oval_prims = [] then "val" else "external" in
+      let kwd = if vd.oval_prims = [] then "let" else "external" in
       let pr_prims ppf =
         function
           [] -> ()

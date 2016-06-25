@@ -1914,12 +1914,26 @@ class printer  ()= object(self:'self)
 
   method type_with_label (label, ({ptyp_desc} as c)) =
     match label with
-    | Nolabel->  self#non_arrowed_non_simple_core_type c (* otherwise parenthesize *)
+    | Nolabel ->  self#non_arrowed_non_simple_core_type c (* otherwise parenthesize *)
     | Labelled s -> formatLabeledArgument (atom s) "" (self#non_arrowed_non_simple_core_type c)
-    | Optional s ->
-      let everythingButQuestion =
-        formatLabeledArgument (atom s) "" (self#non_arrowed_non_simple_core_type c)
+    | Optional lbl ->
+      match ptyp_desc with
+        | Ptyp_constr ({txt}, l) ->
+            assert (is_predef_option txt);
+            let everythingButQuestion =
+              formatLabeledArgument
+                (atom lbl)
+                ""
+                (makeList
+                   ~postSpace:true
+                   ~break:IfNeed
+                   ~inline:(true, true)
+                   (* Why not support aliasing here? *)
+                   (* I don't think you'll have more than one l here. *)
+                   (List.map (self#non_arrowed_non_simple_core_type) l)
+                )
       in makeList [everythingButQuestion; atom "?"]
+    | _ -> failwith "invalid input in print_type_with_label"
 
   method type_param (ct, a) =
     makeList [atom (type_variance a); self#core_type ct]
@@ -1967,7 +1981,7 @@ class printer  ()= object(self:'self)
     in
     (SourceMap (ptype_loc, everything))
 
-  method record_declaration lbls =
+  method record_declaration ?assumeRecordLoc lbls =
     let recordRow pld =
       let nameColon =
         SourceMap (
@@ -1985,7 +1999,10 @@ class printer  ()= object(self:'self)
       )
     in
     let rows = List.map recordRow lbls in
-    makeList ~wrap:("{", "}") ~sep:"," ~postSpace:true ~break:IfNeed rows
+    let rowList = makeList ~wrap:("{", "}") ~sep:"," ~postSpace:true ~break:IfNeed rows in
+    match assumeRecordLoc with
+    | None -> rowList
+    | Some loc -> SourceMap(loc, rowList)
 
   (* shared by [Pstr_type,Psig_type]*)
   method type_def_list (rf, l) =
@@ -2114,6 +2131,13 @@ class printer  ()= object(self:'self)
       | Public -> lst
       | Private -> privateAtom::lst in
 
+    let estimateRecordOpenBracePoint () =
+      match x.ptype_params with
+        | [] -> x.ptype_name.loc.loc_end
+        | hd::tl ->
+          (fst (List.nth x.ptype_params (List.length x.ptype_params - 1))).ptyp_loc.loc_end
+    in
+
     let equalInitiatedSegments = match (x.ptype_kind, x.ptype_private, x.ptype_manifest) with
       (* /*empty*/ {(Ptype_abstract, Public, None)} *)
       | (Ptype_abstract, Public, None) -> [
@@ -2150,7 +2174,8 @@ class printer  ()= object(self:'self)
 
       (* EQUAL private_flag LBRACE label_declarations opt_comma RBRACE {(Ptype_record _, $2, None)} *)
       | (Ptype_record lst, scope, None) ->
-          [privatize scope [self#record_declaration lst]] (* ~assumeRecordLoc *)
+          let assumeRecordLoc = {loc_start = estimateRecordOpenBracePoint(); loc_end = x.ptype_loc.loc_end; loc_ghost = false} in
+          [privatize scope [self#record_declaration ~assumeRecordLoc lst]]
       (* And now all of the forms involving *TWO* equals *)
       (* Again, super confusing how manifests of variants/records represent the
          structure after the second equals. *)
