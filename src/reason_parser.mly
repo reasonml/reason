@@ -3441,7 +3441,7 @@ many_type_declarations:
    let (ident, params, constraints, kind, priv, manifest) = $3 in
    let loc = mklocation $symbolstartpos $endpos in
    let ty = Type.mk ident ~params:params ~cstrs:constraints
-            ~kind ~priv ?manifest ~attrs:(add_nonrec $2 $4 2) ~loc
+            ~kind ~priv ?manifest ~attrs:$4 ~loc
    in
    ($2, [ty])
    }

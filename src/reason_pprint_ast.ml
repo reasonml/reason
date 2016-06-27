@@ -2022,11 +2022,10 @@ class printer  ()= object(self:'self)
       | [] -> raise (NotPossible "asking for type list of nothing")
       | hd::tl ->
           let first =
-            match partitionNonrecAttr hd.ptype_attributes with
-            | ([], _) -> formatOneTypeDefStandard (atom "type") hd
-            | (_, attrs) ->
-                let newHd = { hd with ptype_attributes = attrs } in
-                formatOneTypeDefStandard (atom "type nonrec") newHd
+            match rf with
+            | Recursive -> formatOneTypeDefStandard (atom "type") hd
+            | Nonrecursive ->
+                formatOneTypeDefStandard (atom "type nonrec") hd
           in
           match tl with
             (* Exactly one type *)
