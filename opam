@@ -24,7 +24,7 @@ depends: [
   "ocamlfind"    {build}
   "ounit"        {test}
   "utop"         {>= "1.17"}
-  "BetterErrors" {>= "1.2"}
+  "BetterErrors" {>= "0.0.1"}
   "menhir"       {>= "20160526"}
 ]
 depopts: [
