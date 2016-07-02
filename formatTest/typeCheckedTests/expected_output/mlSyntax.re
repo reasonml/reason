@@ -60,7 +60,7 @@ let some = Some (1, 2, 3);
 let (\===) = (==);
 
 /* Test regression for https://github.com/facebook/Reason/issues/222 */
-Pervasives.(==);
+let _ = Pervasives.(==);
 
 let physicalEquality = 1 == 1;
 
