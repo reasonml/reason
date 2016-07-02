@@ -1,13 +1,13 @@
 opam-version: "1.2"
 name: "reason"
-version: "0.0.5"
+version: "0.0.6"
 maintainer: "Jordan Walke <jordojw@gmail.com>"
 authors: [ "Jordan Walke <jordojw@gmail.com>" ]
-license: "MIT"
-homepage: "https://github.com/jordwalke/reason"
-doc: "http://jordwalke.github.io/jordwalke"
-bug-reports: "https://github.com/jordwalke/reason/issues"
-dev-repo: "git://github.com/jordwalke/reason.git"
+license: "BSD"
+homepage: "https://github.com/facebook/reason"
+doc: "http://facebook.github.io/reason"
+bug-reports: "https://github.com/facebook/reason/issues"
+dev-repo: "git://github.com/facebook/reason.git"
 tags: [ "syntax" ]
 substs: [ "pkg/META" ]
 build: [
