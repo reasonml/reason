@@ -24,9 +24,9 @@ opam init
 # Add this to your ~/.bashrc (or ~/.zshrc):
 #   eval `opam config env`
 
+opam update
 opam switch 4.03.0
 eval `opam config env`
-opam update
 opam pin add -y merlin 'https://github.com/the-lambda-church/merlin.git'
 opam pin add -y merlin_extend 'https://github.com/let-def/merlin-extend.git'
 opam pin add -y reason 'https://github.com/facebook/reason.git#0.0.6'

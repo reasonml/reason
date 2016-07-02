@@ -44,8 +44,8 @@ let module Diagnostic = {
       trace: option (array Trace.t)
     };
     type t =
-      | FileDiagnosticMessage of fileDiagnosticMessage
-      | ProjectDiagnosticMessage of projectDiagnosticMessage;
+      | FileDiagnosticMessage fileDiagnosticMessage
+      | ProjectDiagnosticMessage projectDiagnosticMessage;
   };
 };
 

@@ -39,10 +39,10 @@ let trimTrailingWhiteSpace (s: string) => Js.to_string (
 
 let module JsonType = {
   type t =
-    | JsonString of string
-    | JsonNum of float
-    | JsonBool of bool
-    | JsonArray of (array t)
+    | JsonString string
+    | JsonNum float
+    | JsonBool bool
+    | JsonArray (array t)
     | JsonNull
     | Empty;
 };
