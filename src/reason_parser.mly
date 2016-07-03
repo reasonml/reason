@@ -1056,9 +1056,6 @@ conflicts.
           NEW NATIVEINT PREFIXOP STRING TRUE UIDENT
           LBRACKETPERCENT
 
-/* Fail fast on errors */
-%nonassoc error
-
 /* Entry points */
 
 %start implementation                   /* for implementation files */
@@ -1278,8 +1275,6 @@ module_expr: mark_position_mod(_module_expr) {$1}
 _module_expr:
     simple_module_expr
       { $1 }
-  | as_loc(LBRACE) structure as_loc(error)
-      { unclosed_mod (with_txt $1 "{") (with_txt $3 "}")}
   /**
    * Although it would be nice (and possible) to support annotated return value
    * here, that wouldn't be consistent with what is possible for functions.
@@ -1378,10 +1373,13 @@ _module_expr:
  */
 
 structure:
-  | /* Empty */ %prec below_SEMI { [] }
-  | as_loc(error) structure { syntax_error_str $1.loc "Invalid module item" :: $2 }
-  | as_loc(error) SEMI structure { syntax_error_str $1.loc "Invalid module item" :: $3 }
+  | /* Empty */ { [] }
+  | as_loc(error) structure { syntax_error_str $1.loc "Invalid statement" :: $2 }
+  | as_loc(error) SEMI structure { syntax_error_str $1.loc "Invalid statement" :: $3 }
   | structure_item { [$1] }
+  | as_loc(structure_item) error structure {
+    syntax_error_str $1.loc "Statement has to end with a semicolon" :: $3
+  }
   | structure_item SEMI structure {
       let effective_loc = mklocation $startpos($1) $endpos($2) in
       set_structure_item_location $1 effective_loc :: $3
