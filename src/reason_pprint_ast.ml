@@ -3969,7 +3969,7 @@ class printer  ()= object(self:'self)
       | Pexp_field (e, li) ->
           makeList ~interleaveComments:false [self#simple_enough_to_be_lhs_dot_send e; atom "."; self#longident_loc li]
       | Pexp_send (e, s) ->
-          makeList ~interleaveComments:false [self#simple_enough_to_be_lhs_dot_send e; atom "#";  atom s]
+          makeList ~interleaveComments:false [self#simple_enough_to_be_lhs_dot_send e; atom "..";  atom s]
       | _ -> self#simple_expression x
 
   (*
@@ -4202,7 +4202,7 @@ class printer  ()= object(self:'self)
         | Pexp_sequence _ ->
             makeLetSequence (self#letList x)
         | Pexp_field (e, li) -> makeList [self#simple_enough_to_be_lhs_dot_send e; atom "."; self#longident_loc li]
-        | Pexp_send (e, s) ->  makeList [self#simple_enough_to_be_lhs_dot_send e; atom "#";  atom s]
+        | Pexp_send (e, s) ->  makeList [self#simple_enough_to_be_lhs_dot_send e; atom "..";  atom s]
         | Pexp_extension e -> self#extension e
         | _ ->  makeList ~break:IfNeed ~wrap:("(", ")") [self#expression x]
       in

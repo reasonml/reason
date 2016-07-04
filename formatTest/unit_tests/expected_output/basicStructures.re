@@ -31,20 +31,20 @@ for i in
 
 let x = !foo.bar;
 
-let x = !foo#bar;
+let x = !foo..bar;
 
 let x = !(!foo).bar;
 
-let x = !(!foo)#bar;
+let x = !(!foo)..bar;
 
 /* Prefix operator */
 let x = !!foo.bar;
 
-let x = !!foo#bar;
+let x = !!foo..bar;
 
 let x = !~foo.bar;
 
-let x = !~foo#bar;
+let x = !~foo..bar;
 
 let noParensNeeded = !blah.foo.bar;
 
@@ -52,18 +52,18 @@ let parensNeededAroundFirst = (!blah).foo.bar;
 
 let parensNeededAroundSecond = (!blah.foo).bar;
 
-let noParensNeeded = !blah#foo#bar;
+let noParensNeeded = !blah..foo..bar;
 
-let parensNeededAroundFirst = (!blah)#foo#bar;
+let parensNeededAroundFirst = (!blah)..foo..bar;
 
-let parensNeededAroundSecond = (!blah#foo)#bar;
+let parensNeededAroundSecond = (!blah..foo)..bar;
 
 /* The following two have an error in formatting! We must check for
  * *consecutive* prefix operators and either space separate or guard in
  * parens. */
 let x = !!foo.bar;
 
-let x = !!foo#bar;
+let x = !!foo..bar;
 
 /* Comments */
 /*Below is an empty comment*/

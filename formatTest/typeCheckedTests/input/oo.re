@@ -143,8 +143,8 @@ let coercedReturn = {
   (tmp :> <x: int>)
 };
 
-let acceptsOpenAnonObjAsArg (o: <x: int, y:int, ..>) => o#x + o#y;
-let acceptsClosedAnonObjAsArg (o: <x: int, y:int>) => o#x + o#y;
+let acceptsOpenAnonObjAsArg (o: <x: int, y:int, ..>) => o..x + o..y;
+let acceptsClosedAnonObjAsArg (o: <x: int, y:int>) => o..x + o..y;
 let res = acceptsOpenAnonObjAsArg {
   method x => 0;
   method y => 10;
@@ -252,7 +252,7 @@ let x: #tupleClass int int = x;
 
 let incrementMyClassInstance: int => #tupleClass int int => #tupleClass int int =
   fun i inst => {
-    let (x, y) = inst#pr;
+    let (x, y) = inst..pr;
     {method pr => (x + i, y + i);};
   };
 
@@ -288,7 +288,7 @@ class type addablePointClassType = {
 class addablePoint: int => new addablePointClassType = fun init => {
   as self;
   method add (one: addablePointClassType) (two:addablePointClassType) =>
-    one#x + two#x + one#y + two#x;
+    one..x + two..x + one..y + two..x;
   method x => (init : int);
   method y => init;
 };
@@ -296,7 +296,7 @@ class addablePoint: int => new addablePointClassType = fun init => {
 class addablePoint2 = (fun init => {
   as self;
   method add (one: addablePointClassType) (two:addablePointClassType) =>
-    one#x + two#x + one#y + two#x;
+    one..x + two..x + one..y + two..x;
   method x => (init : int);
   method y => init;
 } : int => new addablePointClassType);
