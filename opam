@@ -25,11 +25,11 @@ depends: [
   "ounit"        {test}
   "utop"         {>= "1.17"}
   "BetterErrors" {>= "0.0.1"}
-  "menhir"       {>= "20160303"}
+  "menhir"       {>= "20160526"}
 ]
 depopts: [
 ]
 conflicts: [
   "utop" {< "1.17"}
 ]
-available: [ ocaml-version = "4.02.3" ]
+available: [ ocaml-version = "4.03.0" ]

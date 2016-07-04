@@ -14,8 +14,8 @@ let module Test = {
   type a = | And (int, int) | Or (int, int);
 };
 
-Test.And (1, 2);
+let _ = Test.And (1, 2);
 
-Test.Or (1, 2);
+let _ = Test.Or (1, 2);
 
-Some 1;
+let _ = Some 1;

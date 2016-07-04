@@ -36,6 +36,10 @@ module Reason_reader = struct
     | Out_signature      x -> print_out_signature      ppf x
     | Out_type_extension x -> print_out_type_extension ppf x
     | Out_phrase         x -> print_out_phrase         ppf x
+
+  (* SSPI - properly fix this *)
+  let pretty_print f p =
+    ()
 end
 
 let () =
