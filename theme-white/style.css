@@ -225,7 +225,6 @@ a:hover {
   display: block;
   background: transparent;
   font-size: 0.85em;
-  letter-spacing: -1px;
 }
 .content blockquote:first-child {
   padding-top: 0;
@@ -478,7 +477,6 @@ body.no-literate .content pre > code:hover::-webkit-scrollbar-thumb {
   -ms-transition: border-color 0.2s ease;
   transition: border-color 0.2s ease;
   font-family: montserrat, sans-serif;
-  letter-spacing: -1px;
   font-weight: bold;
   display: inline-block;
   padding: 3px 25px;
