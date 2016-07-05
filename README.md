@@ -7,8 +7,8 @@ Reason: Build Systems Rapidly [![Build Status](https://travis-ci.org/facebook/re
 
 - Approachable syntax.
 - Powerful, automatic source code formatting.
-- Adopt Incrementally with `JavaScript/C` interop.
-- Ahead of time compilation to assembly - without a language level VM.
+- Adopt incrementally with `JavaScript/C` interop.
+- Ahead-of-time compilation to assembly - without a language level VM.
 - Rapidly develop and share projects.
 
 Install Stable
@@ -50,7 +50,7 @@ rebuild Hello.native # Automatically generates Hello.native from Hello.re
 
 Get Started Now
 ---------------
-Checkout the [docs](http://facebook.github.io/reason) which guide you through the basic syntax and toolchain features.
+Check out the [docs](http://facebook.github.io/reason) which guide you through the basic syntax and toolchain features.
 
 Contribute back to that documentation in the [documentation branch](https://github.com/facebook/reason/tree/gh-pages).
 
