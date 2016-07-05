@@ -5311,6 +5311,9 @@ let toplevel_phrase f x =
 let expression f x =
   easyFormatToFormatter f (layoutToEasyFormatNoComments (easy#expression x))
 
+let case_list f x =
+  let l = easy#case_list x in
+  (List.map (fun x -> easyFormatToFormatter f (layoutToEasyFormatNoComments x)) l)
 
 let top_phrase f x =
   pp_print_newline f () ;
