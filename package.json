@@ -1,0 +1,29 @@
+{
+  "name": "reason",
+  "version": "1.2.0",
+  "description": "Reason Meta Language Toolchain",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/facebook/reason.git"
+  },
+  "config": {},
+  "keywords": [
+    "reason"
+  ],
+  "author": "",
+  "license": "BSD",
+  "homepage": "https://github.com/facebook/reason",
+  "dependencies": {
+    "BetterErrors": "https://github.com/npm-ml/BetterErrors.git#npm-1.2.0",
+    "ocaml-findlib": "https://github.com/npm-ml/ocaml-findlib.git#npm-1.6.1",
+    "menhir": "https://github.com/npm-ml/menhir.git#20160303",
+    "ocaml": "https://github.com/npm-ml/ocaml.git#npm-4.02.3",
+    "easy-format": "https://github.com/npm-ml/easy-format.git#npm-1.2.0",
+    "merlin-extend": "https://github.com/npm-ml/merlin-extend.git#npm-0.0.1"
+  },
+  "scripts": {
+    "clean": ". dependencyEnv && make clean",
+    "postinstall": ". dependencyEnv && make build_without_utop",
+    "ocamlbuildhelp": ". dependencyEnv && ocamlbuild --help"
+  }
+}
