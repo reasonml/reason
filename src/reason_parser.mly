@@ -2671,6 +2671,12 @@ _simple_expr:
       { mkexp(Pexp_open(Fresh, $1, $4)) }
   | mod_longident DOT as_loc(LPAREN) expr as_loc(error)
       { unclosed_exp (with_txt $3 "(") (with_txt $5 ")") }
+  | as_loc(mod_longident) DOT LBRACE RBRACE
+      {
+        let loc = mklocation $symbolstartpos $endpos in
+        let pat = mkpat (Ppat_var (mkloc "this" loc)) in
+        mkexp(Pexp_open (Fresh, $1,
+                         mkexp(Pexp_object(Cstr.mk pat [])))) }
   | simple_expr DOT LPAREN expr RPAREN
       {
         let loc = mklocation $symbolstartpos $endpos in

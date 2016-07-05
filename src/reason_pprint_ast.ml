@@ -3610,6 +3610,8 @@ class printer  ()= object(self:'self)
             let expression = match e.pexp_desc with
                 (* syntax sugar for M.{x:1} *)
                 | Pexp_record _
+                (* syntax sugar for M.{} *)
+                | Pexp_object {pcstr_fields = []}
                 (* syntax sugar for M.[x,y] *)
                 | Pexp_construct ( {txt= Lident"::"},Some _) ->
                     (self#simple_expression e)
