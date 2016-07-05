@@ -4,6 +4,12 @@ SHELL=bash -o pipefail
 
 default: build test
 
+build_without_utop: compile_error
+	cp pkg/META.in pkg/META
+	ocaml pkg/build.ml native=true native-dynlink=true utop=false
+	chmod +x $(shell pwd)/_build/src/refmt_merlin_impl.sh
+	ln -fs $(shell pwd)/_build/src/refmt_merlin_impl.sh refmt_merlin_impl.sh
+
 build: compile_error
 	cp pkg/META.in pkg/META
 	ocaml pkg/build.ml native=true native-dynlink=true utop=true
