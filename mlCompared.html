@@ -364,8 +364,8 @@ there are separate syntaxes for tuple types `(x * y)` and tuple values
 >     <td>
 >       <pre>
 > type r =
->   {x: int, y: int};
-> let myRec: r = {x = 0, y = 10};</pre>
+>   {x: int; y: int};
+> let myRec: r = {x = 0; y = 10};</pre>
 >
 >     </td>
 >     <td>
@@ -628,7 +628,7 @@ type and returns a new type.
 let x: int list = [2]
 type listOfListOfInts =
   int list list
-type ('a, 'b) tup = ('a, 'b)
+type ('a, 'b) tup = ('a \* 'b)
 type pairs = (int, int) tup list
 let tuples: pairs = [(2, 3)]</pre>
     </td>
@@ -655,18 +655,18 @@ type constructor accepting multiple arguments and a type constructor accepting
 a single argument which happens to be a tuple.
 
 The following examples shows the difference between passing *two* type
-parameters to `list`, and a *single* type parameter that happens to be a tuple.
+parameters to `pair`, and a *single* type parameter that happens to be a tuple.
 <table>
   <thead><tr> <th scope="col"><p>OCaml</p></th><th scope="col"><p>Reason</p></th></tr></thead>
   <tr>
     <td>
       <pre>
-type pairList = (int, int) list
+type intPair = (int, int) pair
 type pairList = (int \* int) list</pre>
     </td>
     <td>
       <pre>
-type pairList = list int int;
+type intPair = pair int int;
 type pairList = list (int, int);</pre>
     </td>
   </tr>
