@@ -1,4 +1,3 @@
-
 type point = {x: int, y: int};
 
 let id x => x;

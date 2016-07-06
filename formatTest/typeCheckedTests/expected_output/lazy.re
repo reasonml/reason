@@ -1,4 +1,3 @@
-
 let myComputation =
   lazy {
     let tmp = 10;
