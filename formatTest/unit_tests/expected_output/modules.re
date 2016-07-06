@@ -504,6 +504,9 @@ let module N = {
     34;
     35
   };
+  let z = M.(34, 35);
+  let z = M.(34, 35);
+  let z = M.(34, 35);
   let z = M.{};
   let z = M.{};
   let z = M.{};

@@ -420,6 +420,9 @@ let module N = {
 open M;
 let z = { let open M; 34; };
 let z = { let open M; 34; 35; };
+let z = { let open M; (34, 35) };
+let z = M.(34, 35);
+let z = M.((34, 35));
 let z = { let open M; {} };
 let z = M.{};
 let z = M.({});

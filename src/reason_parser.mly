@@ -2669,6 +2669,14 @@ _simple_expr:
       { mkexp(Pexp_field($1, $3)) }
   | as_loc(mod_longident) DOT LPAREN expr RPAREN
       { mkexp(Pexp_open(Fresh, $1, $4)) }
+  /**
+   * This is a syntax sugar.
+   * Instead of writing `let (a, b) = MyModule.((a, b));`
+   * we can write `let (a, b) = MyModule.(a, b);`
+   *
+   */
+  | as_loc(mod_longident) DOT LPAREN expr_comma_list RPAREN
+      { mkexp(Pexp_open(Fresh, $1, mkexp(Pexp_tuple(List.rev $4)))) }
   | mod_longident DOT as_loc(LPAREN) expr as_loc(error)
       { unclosed_exp (with_txt $3 "(") (with_txt $5 ")") }
   | as_loc(mod_longident) DOT LBRACE RBRACE
