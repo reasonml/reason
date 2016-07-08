@@ -1622,6 +1622,20 @@ let makeLetSequence letItems =
     ~sep:";"
     letItems
 
+let makeLetSequenceSingleLine letItems =
+  makeList
+    ~break:Never
+    ~inline:(true, true)
+    ~wrap:("{", "}")
+    ~newlinesAboveComments:0
+    ~newlinesAboveItems:0
+    ~newlinesAboveDocComments:1
+    ~renderFinalSep:false
+    ~preSpace:true
+    ~postSpace:true
+    ~sep:";"
+    letItems
+
 (* postSpace is so that when comments are interleaved, we still use spacing rules. *)
 let makeUngaurdedLetSequence letItems =
   makeList
@@ -3856,6 +3870,30 @@ class printer  ()= object(self:'self)
 
               | Pexp_ifthenelse (e1, e2, eo) ->
                 let (blocks, finalExpression) = sequentialIfBlocks eo in
+                let rec singleExpression exp =
+                  match exp.pexp_desc with
+                  | Pexp_ident _ -> true
+                  | Pexp_constant _ -> true
+                  | Pexp_construct (_, arg) ->
+                    (match arg with
+                    | None -> true
+                    | Some x -> singleExpression x)
+                  | _ -> false
+                in
+                let singleLineIf =
+                  (singleExpression e1) &&
+                  (singleExpression e2) &&
+                  (match eo with
+                   | Some expr -> singleExpression expr
+                   | None -> true
+                  )
+                in
+                let makeLetSequence =
+                  if singleLineIf then
+                    makeLetSequenceSingleLine
+                  else
+                    makeLetSequence
+                in
                 let rec sequence soFar remaining = (
                   match (remaining, finalExpression) with
                     | ([], None) -> soFar

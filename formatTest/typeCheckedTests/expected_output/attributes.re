@@ -109,22 +109,10 @@ let add a => a [@onRet];
 
 let add = (fun a => a) [@onEntireFunction];
 
-let res =
-  if true {
-    false
-  } else {
-    false [@onFalse]
-  };
+let res = if true {false} else {false [@onFalse]};
 
 let res =
-  (
-    if true {
-      false
-    } else {
-      false
-    }
-  )
-  [@onEntireIf];
+  (if true {false} else {false}) [@onEntireIf];
 
 let add a b => ((a [@onA]) + b) [@onEverything];
 
