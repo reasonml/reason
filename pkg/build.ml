@@ -9,11 +9,18 @@ let menhir_command = "-menhir " ^ menhir_options
 
 (* ; "-menhir 'menhir --trace'" *)
 let () =
+
   Pkg.describe "reason" ~builder:(`OCamlbuild ["-use-menhir"; menhir_command; "-cflags -I,+ocamldoc"]) [
     Pkg.lib "pkg/META";
     (* The .mllib *)
-    (* So much redundancy - this should be implicit in the mllib! *)
-    Pkg.lib ~exts:Exts.library "src/reason";
+    (* Our job is to generate reason.cma, but depending on whether or not
+     * `utop` is available, we'll select an `.mllib` to compile as
+     * `reason.cma`.
+     *)
+    Pkg.lib ~cond:(Env.bool "utop") ~exts:Exts.library "src/reason" ~dst:"reason";
+    Pkg.lib ~cond:(not (Env.bool "utop")) ~exts:Exts.library "src/reason_without_utop" ~dst:"reason";
+    (* But then regardless of if we have `utop` installed - still compile a
+       library when the use case demands that there be no `utop` *)
     Pkg.lib ~exts:[`Ext ".cmo"; `Ext ".cmx";`Ext ".cmi"; `Ext ".cmt";`Ext ".mli"] "src/reason_parser";
     Pkg.lib ~exts:[`Ext ".cmo"; `Ext ".cmx";`Ext ".cmi";] "src/reason_lexer";
     Pkg.lib ~exts:[`Ext ".cmo"; `Ext ".cmx";`Ext ".cmi"; `Ext ".cmt"] "src/reason_pprint_ast";

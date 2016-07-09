@@ -25,3 +25,13 @@ package "lib" (
   archive(native) = "reason.cmxa"
   archive(native, plugin) = "reason.cmxs"
 )
+
+package "lib_without_utop" (
+  version = "%{version}%"
+  description = "Library version of reason without utop - suitable for compilation to JS"
+  requires = "compiler-libs.common easy-format BetterErrors menhirLib"
+
+  archive(byte) = "reason_without_utop.cma"
+  archive(native) = "reason_without_utop.cmxa"
+  archive(native, plugin) = "reason_without_utop.cmxs"
+)
