@@ -12,3 +12,20 @@ end;;
 let _ = Test.And (1, 2)
 let _ = Test.Or (1, 2)
 let _ = Some 1
+
+module M = struct
+  type t = TupleConstructorInModule of (int * int)
+  type t2 = TupleConstructor2 of (int * int)
+  type t3 = TupleConstructor3 of (int * int)
+end
+
+type t2 = TupleConstructor2 of (int * int)
+type t3 = TupleConstructor3 of (int * int)
+
+let _ = M.TupleConstructorInModule (1,2)
+
+let _ = M.TupleConstructor2 (1,2)
+let _ = TupleConstructor2 (1,2)
+
+let _ = M.TupleConstructor3 (1,2)
+let _ = TupleConstructor3 (1,2)
