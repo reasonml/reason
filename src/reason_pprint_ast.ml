@@ -5363,11 +5363,24 @@ let top_phrase f x =
   pp f ";;" ;
   pp_print_newline f ();;
 
-let rec longident = function
-    | Lident s -> s
-    | Ldot(longPrefix, s) ->
-        s
-    | Lapply (y,s) -> longident s
+(* Convert a Longident to a list of strings.
+   E.g. M.Constructor will be ["Constructor"; "M.Constructor"]
+   Also support ".Constructor" to specify access without a path.
+ *)
+let longident_for_arity lid =
+  let rec toplevel = function
+    | Lident s ->
+        [s]
+    | Ldot (lid, s) ->
+        let append_s x = x ^ "." ^ s in
+        s :: (List.map append_s (toplevel lid))
+    | Lapply (y,s) ->
+        toplevel s in
+   match lid with
+    | Lident s ->
+        ("." ^ s) :: toplevel lid
+    | _ ->
+        toplevel lid
 
 (* add expilcit_arity to a list of attributes
  *)
@@ -5413,7 +5426,9 @@ let add_explicit_arity_mapper =
         | {pexp_desc=Pexp_construct(lid, Some sp);
            pexp_loc;
            pexp_attributes} when
-             StringSet.mem (longident lid.txt) explicit_arity_constructors  &&
+             List.exists
+                (fun c -> StringSet.mem c explicit_arity_constructors)
+                (longident_for_arity lid.txt) &&
              explicit_arity_not_exists pexp_attributes ->
            {pexp_desc=Pexp_construct(lid, Some (wrap_expr_with_tuple sp));
             pexp_loc;
@@ -5428,8 +5443,10 @@ let add_explicit_arity_mapper =
         | {ppat_desc=Ppat_construct(lid, Some sp);
            ppat_loc;
            ppat_attributes} when
-             StringSet.mem (longident lid.txt) explicit_arity_constructors &&
-             explicit_arity_not_exists ppat_attributes ->
+              List.exists
+                  (fun c -> StringSet.mem c explicit_arity_constructors)
+                  (longident_for_arity lid.txt) &&
+              explicit_arity_not_exists ppat_attributes ->
            {ppat_desc=Ppat_construct(lid, Some (wrap_pat_with_tuple sp));
             ppat_loc;
             ppat_attributes=add_explicit_arity ppat_loc ppat_attributes}
