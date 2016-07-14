@@ -739,7 +739,7 @@ let res = match x with
 type myVariant =
    | HasNothing
    | HasSingleInt int
-   | HasSingleTuple int, int)
+   | HasSingleTuple (int, int)
    | HasMultipleInts int int
    | HasMultipleTuples
       (int, int) (int, int);
