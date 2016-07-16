@@ -456,6 +456,7 @@ rule token = parse
   | "&&" { AMPERAMPER }
   | "`"  { BACKQUOTE }
   | "'"  { QUOTE }
+  | "</" { LESSSLASH }
   | "("  { LPAREN }
   | ")"  { RPAREN }
   | "*"  { STAR }
@@ -469,6 +470,7 @@ rule token = parse
   | ":"  { COLON }
   | "::" { COLONCOLON }
   | ":=" { COLONEQUAL }
+  | "/>" { SLASHGREATER }
   | ":>" { COLONGREATER }
   | ";"  { SEMI }
   | ";;" { SEMISEMI }
