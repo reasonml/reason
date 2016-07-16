@@ -865,6 +865,7 @@ let built_in_explicit_arity_constructors = ["Some"; "Assert_failure"; "Match_fai
 %token LBRACKETAT
 %token LBRACKETATAT
 %token LBRACKETATATAT
+%token LESSSLASH
 %token SWITCH
 %token MATCH
 %token METHOD
@@ -898,6 +899,7 @@ let built_in_explicit_arity_constructors = ["Some"; "Assert_failure"; "Match_fai
 %token SEMISEMI
 %token SHARP
 %token SIG
+%token SLASHGREATER
 %token STAR
 %token <string * string option> STRING
 %token STRUCT
@@ -2491,6 +2493,21 @@ labeled_simple_pattern:
       { ("", None, $1) }
 ;
 
+jsx_arguments:
+    /* empty */ { [] }
+    | LIDENT EQUAL LBRACE expr RBRACE jsx_arguments { [1] }
+;
+
+jsx:
+  | LESS UIDENT jsx_arguments SLASHGREATER {
+     mkexp(Pexp_variant($2, None))
+  }
+  | LESS UIDENT jsx_arguments GREATER LESSSLASH UIDENT GREATER {
+       mkexp(Pexp_variant($2, None))
+    }
+  | LESS UIDENT jsx_arguments GREATER jsx LESSSLASH UIDENT GREATER {
+     mkexp(Pexp_variant($2, None))
+  }
 /*
  * Much like how patterns are partitioned into pattern/simple_pattern,
  * expressions are divided into expr/simple_expr.
@@ -2514,6 +2531,7 @@ _expr:
       let (l,o,p) = $2 in
       mkexp (Pexp_fun(l, o, p, $3))
     }
+  | jsx { $1 }
   | FUN LPAREN TYPE LIDENT RPAREN fun_def
       { mkexp (Pexp_newtype($4, $6)) }
   /* List style rules like this often need a special precendence
