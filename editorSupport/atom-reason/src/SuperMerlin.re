@@ -284,6 +284,22 @@ let getOccurrences path::path text::text position::position resolve reject =>
     resolve
     reject;
 
+let destruct path::path text::text startPosition::startPosition endPosition::endPosition resolve reject =>
+  prepareCommand
+    text::text
+    path::path
+    query::(
+      Js.array [|
+        Js.Unsafe.inject (Js.string "case"),
+        Js.Unsafe.inject (Js.string "analysis"),
+        Js.Unsafe.inject (Js.string "from"),
+        Js.Unsafe.inject (positionToJsMerlinPosition startPosition),
+        Js.Unsafe.inject (Js.string "to"),
+        Js.Unsafe.inject (positionToJsMerlinPosition endPosition)
+      |]
+    )
+    resolve
+    reject;
 let getOutline path::path text::text resolve reject =>
   prepareCommand
     text::text

@@ -103,6 +103,15 @@ let jsMerlinTypeHintEntryToNuclide arr => {
 
 let jsMerlinOccurrencesToAtom arr => Js.to_array arr |> Array.map jsMerlinPositionToAtomRange;
 
+let jsMerlinDestructToNuclide arr => {
+    let position = Js.Unsafe.get arr "0";
+    let replace = Js.to_string (Js.Unsafe.get arr "1");
+    Js.Unsafe.obj [|
+      ("replace", Js.Unsafe.inject (Js.string replace)),
+      ("range", Js.Unsafe.inject (Atom.Range.toJs (jsMerlinPositionToAtomRange position)))
+    |]
+}
+
 let jsMerlinLocateToEntry jsResult =>
   switch (Js.to_string (Js.typeof jsResult)) {
   | "string" =>

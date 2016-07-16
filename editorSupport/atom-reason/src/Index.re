@@ -226,6 +226,36 @@ export
   );
 
 export
+  "destruct"
+  (
+    Js.wrap_callback (
+      fun jsEditor startPosition endPosition => Atom.Promise.createFakePromise (
+        fun resolve reject => {
+            let editor = Atom.Editor.fromJs jsEditor;
+            let position1 = Atom.Point.fromJs startPosition;
+            let position2 = Atom.Point.fromJs endPosition;
+            let text = Atom.Buffer.getText (Atom.Editor.getBuffer jsEditor);
+
+            SuperMerlin.destruct
+              path::(path jsEditor)
+              text::text
+              startPosition::position1
+              endPosition::position2
+              (
+                fun result => {
+                   let _ = AtomReasonDestruct.destruct editor (MerlinServiceConvert.jsMerlinDestructToNuclide result);
+                   resolve ()
+                }
+              )
+              /* merlin complains when it can't perform case analysis, ignoring that here */
+              (fun rejectedMsg => resolve ())
+
+        }
+      )
+    )
+  );
+
+export
   "getOutline"
   (
     Js.wrap_callback (

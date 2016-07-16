@@ -162,6 +162,11 @@ let module Range = {
     };
 };
 
+let module Selection = {
+  let insertText selection text =>
+    Js.Unsafe.meth_call selection "insertText" [|Js.Unsafe.inject (Js.string text)|];
+};
+
 let module Buffer = {
   type t = Js.Unsafe.any;
   let fromJs jsBuffer :t => jsBuffer;
@@ -217,6 +222,12 @@ let module Editor = {
     let arr = Array.map Range.toJs bufferRanges |> Js.array;
     Js.Unsafe.meth_call editor "setSelectedBufferRanges" [|Js.Unsafe.inject arr|]
   };
+  let setSelectedBufferRange editor bufferRange => {
+      Js.Unsafe.meth_call editor "setSelectedBufferRange" [|bufferRange|]
+    };
+  let getSelections editor =>
+    Js.Unsafe.meth_call editor "getSelections" emptyArgs
+  ;
 };
 
 /**

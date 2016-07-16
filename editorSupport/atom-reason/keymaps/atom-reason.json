@@ -1,5 +1,6 @@
 {
   "atom-text-editor": {
-    "alt-d": "atom-reason:select-in-scope"
+    "alt-d": "atom-reason:select-in-scope",
+    "alt-p": "atom-reason:destruct"
   }
 }
