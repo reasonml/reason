@@ -541,6 +541,13 @@ let rec neverTerminate = fun () => neverTerminate ();
 
 #### Mutually Recursive Functions
 
+Mutually recursive functions start like a single recursive function using the
+`rec` keyword, and then are chained together with `and`:
+
+```reason
+let rec callSecond = fun () => callFirst ()
+and callFirst = fun () => callSecond ();
+```
 
 #### Functions Returning Functions
 
@@ -1189,7 +1196,7 @@ What's Next + FAQ
 #### FAQ
 
 - **Q**: Is `ppx` supported?
-- **A**: Support for `ppx` (light weight macros for `ocaml`) is a goal which
+- **A**: Support for `ppx` (lightweight macros for `ocaml`) is a goal which
 we've made good progress towards. You should be able to use all of your
 existing `ppx` plugins with `Reason`.
 
