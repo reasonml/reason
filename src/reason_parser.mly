@@ -2502,12 +2502,17 @@ jsx:
   | LESS UIDENT jsx_arguments SLASHGREATER {
      mkexp(Pexp_variant($2, None))
   }
-  | LESS UIDENT jsx_arguments GREATER LESSSLASH UIDENT GREATER {
-       mkexp(Pexp_variant($2, None))
-    }
-  | LESS UIDENT jsx_arguments GREATER jsx LESSSLASH UIDENT GREATER {
+  | LESS UIDENT jsx_arguments GREATER jsx_siblings LESSSLASH UIDENT GREATER {
      mkexp(Pexp_variant($2, None))
   }
+;
+
+jsx_siblings:
+    /* empty */ { [] }
+    | STRING jsx_siblings { [] }
+    | jsx jsx_siblings { [] }
+;
+
 /*
  * Much like how patterns are partitioned into pattern/simple_pattern,
  * expressions are divided into expr/simple_expr.
