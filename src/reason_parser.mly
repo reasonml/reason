@@ -2511,6 +2511,7 @@ jsx_siblings:
     /* empty */ { [] }
     | STRING jsx_siblings { [] }
     | jsx jsx_siblings { [] }
+    | LBRACE expr RBRACE jsx_siblings { [] }
 ;
 
 /*
