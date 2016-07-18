@@ -788,6 +788,9 @@ let rec string_of_longident = function
 
 let built_in_explicit_arity_constructors = ["Some"; "Assert_failure"; "Match_failure"]
 
+let jsx_component module_name attrs children ~loc =
+    let ident = ghloc ~loc (Ldot(Lident module_name, "createElement")) in
+    mkexp(Pexp_apply(mkexp(Pexp_ident ident), attrs @ children))
 %}
 
 /* Tokens */
@@ -2495,23 +2498,35 @@ labeled_simple_pattern:
 
 jsx_arguments:
     /* empty */ { [] }
-    | LIDENT EQUAL LBRACE expr RBRACE jsx_arguments { [1] }
+    | LIDENT EQUAL LBRACE expr RBRACE jsx_arguments { [($1, $4)] @ $6 }
 ;
 
 jsx:
   | LESS UIDENT jsx_arguments SLASHGREATER {
-     mkexp(Pexp_variant($2, None))
+     let loc = mklocation $symbolstartpos $endpos in
+     jsx_component $2 $3 [("", mktailexp_extension loc [] None)]  ~loc
   }
   | LESS UIDENT jsx_arguments GREATER jsx_siblings LESSSLASH UIDENT GREATER {
-     mkexp(Pexp_variant($2, None))
-  }
+     let loc = mklocation $symbolstartpos $endpos in
+     if List.length $5 > 0 then
+        jsx_component $2 $3  [("", mktailexp_extension loc $5 None)] ~loc
+     else
+        jsx_component $2 $3 [("", mktailexp_extension loc [] None)] ~loc
+   }
 ;
 
 jsx_siblings:
     /* empty */ { [] }
-    | STRING jsx_siblings { [] }
-    | jsx jsx_siblings { [] }
-    | LBRACE expr RBRACE jsx_siblings { [] }
+    | STRING jsx_siblings {
+        let (s, d) = $1 in
+        [mkexp (Pexp_constant (Const_string (s, d)))] @ $2
+      }
+    | jsx jsx_siblings {
+        [$1] @ $2
+    }
+    | LBRACE expr RBRACE jsx_siblings {
+        [$2] @ $4
+    }
 ;
 
 /*
