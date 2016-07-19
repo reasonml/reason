@@ -50,6 +50,10 @@ let module Exp = {
     let createElement children => {displayName: "test"};
 };
 
+let module Pun = {
+    let createElement intended::intended=? children => {displayName: "test"};
+};
+
 let b = 2;
 let selfClosing = <Foo />;
 let selfClosing2 = <Foo a={1} b={true} />;
@@ -58,3 +62,5 @@ let a3 = <So> <Much> <Nesting> </Nesting> </Much> </So>;
 let a4 = <Sibling> <One test={true}/> <Two foo={b}> </Two> </Sibling>;
 let a5 = <Foo>"testing a string here"</Foo>;
 let a6 = <Foo2> <Text>"testing a string here"</Text> <Test yo={1} /> <Text>"another string"</Text> <Bar> </Bar> <Exp>{ 2 + 4 }</Exp> </Foo2>;
+let intended = true;
+let punning = <Pun intended />;

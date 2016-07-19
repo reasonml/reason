@@ -74,6 +74,12 @@ let module Exp = {
   };
 };
 
+let module Pun = {
+  let createElement intended::intended=? children => {
+    displayName: "test"
+  };
+};
+
 let b = 2;
 
 let selfClosing = Foo.createElement [];
@@ -105,3 +111,8 @@ let a6 = Foo2.createElement [
   Bar.createElement [],
   Exp.createElement [2 + 4]
 ];
+
+let intended = true;
+
+let punning =
+  Pun.createElement intended::intended [];

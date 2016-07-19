@@ -2499,6 +2499,10 @@ labeled_simple_pattern:
 jsx_arguments:
     /* empty */ { [] }
     | LIDENT EQUAL LBRACE expr RBRACE jsx_arguments { [($1, $4)] @ $6 }
+    | LIDENT jsx_arguments {
+        let loc_lident = mklocation $startpos($1) $endpos($1) in
+        [($1, mkexp (Pexp_ident {txt = Lident $1; loc = loc_lident}))] @ $2
+     }
 ;
 
 jsx:
