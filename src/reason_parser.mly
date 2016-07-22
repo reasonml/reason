@@ -791,7 +791,13 @@ let built_in_explicit_arity_constructors = ["Some"; "Assert_failure"; "Match_fai
 let jsx_component module_name attrs children ~loc =
     let ident = ghloc ~loc (Ldot(module_name, "createElement")) in
     mkexp(Pexp_apply(mkexp(Pexp_ident ident), attrs @ children))
+
+let ensureTagsAreEqual startTag endTag =
+  if startTag <> endTag then
+    syntax_error ()
 %}
+
+
 
 /* Tokens */
 
@@ -2517,44 +2523,53 @@ jsx_arguments:
 
 jsx_start_tag_body:
   | mod_longident jsx_arguments {
-     jsx_component $1 $2
+     (jsx_component $1 $2, $1)
   }
 ;
 
 jsx_separate_open_close:
   | jsx_start_tag_body GREATERLESSSLASH mod_longident {
     (* Foo></Foo *)
+      let (component, start) = $1 in
       let loc = mklocation $symbolstartpos $endpos in
-      $1 [("", mktailexp_extension loc [] None)] ~loc
+      let _ = ensureTagsAreEqual start $3 in
+      component [("", mktailexp_extension loc [] None)] ~loc
   }
   | jsx_start_tag_body GREATERLESS jsx_tag_siblings mod_longident {
+      let (component, start) = $1 in
       let loc = mklocation $symbolstartpos $endpos in
-      $1 [("", mktailexp_extension loc $3 None)] ~loc
+      let _ = ensureTagsAreEqual start $4 in
+      component [("", mktailexp_extension loc $3 None)] ~loc
   }
   | jsx_start_tag_body GREATER LESS jsx_tag_siblings mod_longident {
+      let (component, start) = $1 in
       let loc = mklocation $symbolstartpos $endpos in
-      $1 [("", mktailexp_extension loc $4 None)] ~loc
+      let _ = ensureTagsAreEqual start $5 in
+      component [("", mktailexp_extension loc $4 None)] ~loc
     }
   | jsx_start_tag_body GREATERLESS jsx_tag_siblings LESSSLASH mod_longident
     (* Foo><Tags /> </Foo *)
   | jsx_start_tag_body GREATER jsx_siblings LESSSLASH mod_longident {
     (* Foo> <Tags /> </Foo *)
+     let (component, start) = $1 in
      let loc = mklocation $symbolstartpos $endpos in
+     let _ = ensureTagsAreEqual start $5 in
      let siblings =
        if List.length $3 > 0 then
          $3
        else
          []
      in
-        $1 [("", mktailexp_extension loc siblings None)] ~loc
+        component [("", mktailexp_extension loc siblings None)] ~loc
    }
 ;
 
 jsx_tag:
     | jsx_start_tag_body SLASHGREATER {
       (* Foo /> *)
+        let (component, _) = $1 in
         let loc = mklocation $symbolstartpos $endpos in
-        $1 [("", mktailexp_extension loc [] None)] ~loc
+        component [("", mktailexp_extension loc [] None)] ~loc
       }
 
     | jsx_separate_open_close GREATER {
@@ -2565,18 +2580,21 @@ jsx_tag:
 
 jsx_tag_siblings:
     | jsx_start_tag_body SLASHGREATERLESSSLASH {
+        let (component, _) = $1 in
         let loc = mklocation $symbolstartpos $endpos in
-        [$1 [("", mktailexp_extension loc [] None)] ~loc]
+        [component [("", mktailexp_extension loc [] None)] ~loc]
     }
     | jsx_start_tag_body SLASHGREATERLESS jsx_tag_siblings {
         (* Tag /><Tag *)
+        let (component, _) = $1 in
         let loc = mklocation $symbolstartpos $endpos in
-        [$1 [("", mktailexp_extension loc [] None)] ~loc] @ $3
+        [component [("", mktailexp_extension loc [] None)] ~loc] @ $3
     }
     | jsx_start_tag_body SLASHGREATER jsx_siblings {
         (* Tag /> <Tags *)
+        let (component, _) = $1 in
         let loc = mklocation $symbolstartpos $endpos in
-        [$1 [("", mktailexp_extension loc [] None)] ~loc] @ $3
+        [component [("", mktailexp_extension loc [] None)] ~loc] @ $3
     }
     | jsx_separate_open_close GREATERLESSSLASH {
         [$1]

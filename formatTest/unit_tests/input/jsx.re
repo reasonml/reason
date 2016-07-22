@@ -85,5 +85,3 @@ let d = <Foo></Foo>;
 let spaceBefore = <So> <Much> <Nesting></Nesting></Much></So>;
 let spaceBefore2 = <So> <Much/></So>;
 let siblingNotSpaced = <So>   <Much></Much><Much></Much> </So>;
-
-
