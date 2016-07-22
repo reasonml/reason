@@ -471,6 +471,8 @@ rule token = parse
   | "::" { COLONCOLON }
   | ":=" { COLONEQUAL }
   | "/>" { SLASHGREATER }
+  | "/><" { SLASHGREATERLESS }
+  | "/></" { SLASHGREATERLESSSLASH }
   | ":>" { COLONGREATER }
   | ";"  { SEMI }
   | ";;" { SEMISEMI }
@@ -493,6 +495,8 @@ rule token = parse
      maintained when printing etc. >] isn't even needed!
   | ">]" { GREATERRBRACKET }
   *)
+  | "><"  { GREATERLESS }
+  | "></" { GREATERLESSSLASH }
   | "}"  { RBRACE }
   | ">}" { GREATERRBRACE }
   | "[@" { LBRACKETAT }

@@ -83,6 +83,7 @@ let reason_to_ml_swapping_alist = [
   "\\===", "===";
   "!=", "<>";
   "!==", "!=";
+  "\\/><", "/><";
 ]
 
 let swap_txt map txt =

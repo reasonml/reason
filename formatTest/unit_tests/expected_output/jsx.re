@@ -1,5 +1,13 @@
 type component = {displayName: string};
 
+let (\/><) a b => a + b;
+
+let (><) a b => a + b;
+
+let tag1 = 5 \/>< 6;
+
+let tag2 = 5 >< 7;
+
 let module Bar = {
   let createElement c::c=? children => {
     displayName: "test"
@@ -80,6 +88,16 @@ let module Pun = {
   };
 };
 
+let module Namespace = {
+  let module Foo = {
+    let createElement
+        intended::intended=?
+        children => {
+      displayName: "test"
+    };
+  };
+};
+
 let b = 2;
 
 let selfClosing = Foo.createElement [];
@@ -116,3 +134,22 @@ let intended = true;
 
 let punning =
   Pun.createElement intended::intended [];
+
+let namespace = Namespace.Foo.createElement [];
+
+let c = Foo.createElement [];
+
+let d = Foo.createElement [];
+
+let spaceBefore = So.createElement [
+  Much.createElement [Nesting.createElement []]
+];
+
+let spaceBefore2 = So.createElement [
+  Much.createElement []
+];
+
+let siblingNotSpaced = So.createElement [
+  Much.createElement [],
+  Much.createElement []
+];

@@ -789,7 +789,7 @@ let rec string_of_longident = function
 let built_in_explicit_arity_constructors = ["Some"; "Assert_failure"; "Match_failure"]
 
 let jsx_component module_name attrs children ~loc =
-    let ident = ghloc ~loc (Ldot(Lident module_name, "createElement")) in
+    let ident = ghloc ~loc (Ldot(module_name, "createElement")) in
     mkexp(Pexp_apply(mkexp(Pexp_ident ident), attrs @ children))
 %}
 
@@ -833,6 +833,8 @@ let jsx_component module_name attrs children ~loc =
 %token FUNCTION
 %token FUNCTOR
 %token GREATER
+%token GREATERLESS
+%token GREATERLESSSLASH
 %token GREATERRBRACE
 %token GREATERRBRACKET
 %token IF
@@ -903,6 +905,8 @@ let jsx_component module_name attrs children ~loc =
 %token SHARP
 %token SIG
 %token SLASHGREATER
+%token SLASHGREATERLESS
+%token SLASHGREATERLESSSLASH
 %token STAR
 %token <string * string option> STRING
 %token STRUCT
@@ -1054,6 +1058,8 @@ conflicts.
 
 %nonassoc below_LBRACKETAT
 %nonassoc LBRACKETAT
+%nonassoc SLASHGREATERLESS
+%nonassoc GREATERLESS
 
 /* Finally, the first tokens of simple_expr are above everything else. */
 %nonassoc BACKQUOTE BANG CHAR FALSE FLOAT INT INT32 INT64
@@ -2498,25 +2504,91 @@ labeled_simple_pattern:
 
 jsx_arguments:
     /* empty */ { [] }
-    | LIDENT EQUAL simple_expr jsx_arguments { [($1, $3)] @ $4 }
+    | LIDENT EQUAL simple_expr jsx_arguments {
+        (* a=b *)
+        [($1, $3)] @ $4
+     }
     | LIDENT jsx_arguments {
+        (* a (punning) *)
         let loc_lident = mklocation $startpos($1) $endpos($1) in
         [($1, mkexp (Pexp_ident {txt = Lident $1; loc = loc_lident}))] @ $2
      }
 ;
 
-jsx:
-  | LESS UIDENT jsx_arguments SLASHGREATER {
-     let loc = mklocation $symbolstartpos $endpos in
-     jsx_component $2 $3 [("", mktailexp_extension loc [] None)]  ~loc
+jsx_start_tag_body:
+  | mod_longident jsx_arguments {
+     jsx_component $1 $2
   }
-  | LESS UIDENT jsx_arguments GREATER jsx_siblings LESSSLASH UIDENT GREATER {
+;
+
+jsx_separate_open_close:
+  | jsx_start_tag_body GREATERLESSSLASH mod_longident {
+    (* Foo></Foo *)
+      let loc = mklocation $symbolstartpos $endpos in
+      $1 [("", mktailexp_extension loc [] None)] ~loc
+  }
+  | jsx_start_tag_body GREATERLESS jsx_tag_siblings mod_longident {
+      let loc = mklocation $symbolstartpos $endpos in
+      $1 [("", mktailexp_extension loc $3 None)] ~loc
+  }
+  | jsx_start_tag_body GREATER LESS jsx_tag_siblings mod_longident {
+      let loc = mklocation $symbolstartpos $endpos in
+      $1 [("", mktailexp_extension loc $4 None)] ~loc
+    }
+  | jsx_start_tag_body GREATERLESS jsx_tag_siblings LESSSLASH mod_longident
+    (* Foo><Tags /> </Foo *)
+  | jsx_start_tag_body GREATER jsx_siblings LESSSLASH mod_longident {
+    (* Foo> <Tags /> </Foo *)
      let loc = mklocation $symbolstartpos $endpos in
-     if List.length $5 > 0 then
-        jsx_component $2 $3  [("", mktailexp_extension loc $5 None)] ~loc
-     else
-        jsx_component $2 $3 [("", mktailexp_extension loc [] None)] ~loc
+     let siblings =
+       if List.length $3 > 0 then
+         $3
+       else
+         []
+     in
+        $1 [("", mktailexp_extension loc siblings None)] ~loc
    }
+;
+
+jsx_tag:
+    | jsx_start_tag_body SLASHGREATER {
+      (* Foo /> *)
+        let loc = mklocation $symbolstartpos $endpos in
+        $1 [("", mktailexp_extension loc [] None)] ~loc
+      }
+
+    | jsx_separate_open_close GREATER {
+        (* /Foo> *)
+        $1
+     }
+;
+
+jsx_tag_siblings:
+    | jsx_start_tag_body SLASHGREATERLESSSLASH {
+        let loc = mklocation $symbolstartpos $endpos in
+        [$1 [("", mktailexp_extension loc [] None)] ~loc]
+    }
+    | jsx_start_tag_body SLASHGREATERLESS jsx_tag_siblings {
+        (* Tag /><Tag *)
+        let loc = mklocation $symbolstartpos $endpos in
+        [$1 [("", mktailexp_extension loc [] None)] ~loc] @ $3
+    }
+    | jsx_start_tag_body SLASHGREATER jsx_siblings {
+        (* Tag /> <Tags *)
+        let loc = mklocation $symbolstartpos $endpos in
+        [$1 [("", mktailexp_extension loc [] None)] ~loc] @ $3
+    }
+    | jsx_separate_open_close GREATERLESSSLASH {
+        [$1]
+    }
+    | jsx_separate_open_close GREATER jsx_siblings {
+        (* Tag> <Tags *)
+        [$1] @ $3
+    }
+    | jsx_separate_open_close GREATERLESS jsx_tag_siblings {
+        (* Tag><Tags *)
+        [$1] @ $3
+     }
 ;
 
 jsx_siblings:
@@ -2525,8 +2597,8 @@ jsx_siblings:
         let (s, d) = $1 in
         [mkexp (Pexp_constant (Const_string (s, d)))] @ $2
       }
-    | jsx jsx_siblings {
-        [$1] @ $2
+    | LESS jsx_tag_siblings {
+        $2
     }
     | LBRACE expr RBRACE jsx_siblings {
         [$2] @ $4
@@ -2556,7 +2628,7 @@ _expr:
       let (l,o,p) = $2 in
       mkexp (Pexp_fun(l, o, p, $3))
     }
-  | jsx { $1 }
+  | LESS jsx_tag { $2 }
   | FUN LPAREN TYPE LIDENT RPAREN fun_def
       { mkexp (Pexp_newtype($4, $6)) }
   /* List style rules like this often need a special precendence
@@ -4129,12 +4201,16 @@ val_ident:
   | PERCENT                                     { "%" }
   | LESSGREATER                                 { "<>" }
   | LESSDOTDOTGREATER                           { "<..>" }
+  | SLASHGREATERLESS                            { "/><" }
+  | GREATERLESS                                 { "><" }
+;
 
 operator:
     PREFIXOP                                    { $1 }
   | BANG                                        { "!" }
   | infix_operator                              { $1 }
 ;
+
 %inline constr_ident:
     UIDENT                                      { $1 }
 /*  | LBRACKET RBRACKET                           { "[]" } */

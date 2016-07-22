@@ -2,6 +2,13 @@ type component = {
     displayName: string
 };
 
+
+let (/><) a b => a + b;
+let (><) a b => a + b;
+
+let tag1 = 5 />< 6;
+let tag2 = 5 >< 7;
+
 let module Bar = {
   let createElement c::c=? children => {displayName: "test"};
 };
@@ -54,13 +61,29 @@ let module Pun = {
     let createElement intended::intended=? children => {displayName: "test"};
 };
 
+let module Namespace = {
+    let module Foo = {
+        let createElement intended::intended=? children => {displayName: "test"};
+    };
+};
+
 let b = 2;
 let selfClosing = <Foo />;
 let selfClosing2 = <Foo a=1 b=true />;
-let a = <Foo> <Bar c=(fun a => a + 2) /> </Foo>;
-let a3 = <So> <Much> <Nesting> </Nesting> </Much> </So>;
-let a4 = <Sibling> <One test=true/> <Two foo=b> </Two> </Sibling>;
+let a = <Foo><Bar c=(fun a => a + 2) /></Foo>;
+let a3 = <So> <Much><Nesting> </Nesting></Much></So>;
+let a4 = <Sibling><One test=true/> <Two foo=b> </Two></Sibling>;
 let a5 = <Foo>"testing a string here"</Foo>;
-let a6 = <Foo2> <Text>"testing a string here"</Text> <Test yo=1 /> <Text>"another string"</Text> <Bar> </Bar> <Exp>{ 2 + 4 }</Exp> </Foo2>;
+let a6 = <Foo2>
+    <Text>
+        "testing a string here"</Text> <Test yo=1 /> <Text>"another string"</Text> <Bar></Bar> <Exp>{ 2 + 4 }</Exp></Foo2>;
 let intended = true;
 let punning = <Pun intended />;
+let namespace = <Namespace.Foo />;
+let c = <Foo> </Foo>;
+let d = <Foo></Foo>;
+let spaceBefore = <So> <Much> <Nesting></Nesting></Much></So>;
+let spaceBefore2 = <So> <Much/></So>;
+let siblingNotSpaced = <So>   <Much></Much><Much></Much> </So>;
+
+
