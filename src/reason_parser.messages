@@ -13792,3 +13792,30 @@ implementation: LESS SLASHGREATER
 ##
 
 <SYNTAX ERROR>
+
+implementation: LESS UIDENT LIDENT EQUAL GREATER
+##
+## Ends in an error in state: 419.
+##
+## jsx_arguments -> LIDENT EQUAL . simple_expr jsx_arguments [ SLASHGREATERLESSSLASH SLASHGREATERLESS SLASHGREATER GREATERLESSSLASH GREATERLESS GREATER ]
+##
+## The known suffix of the stack is as follows:
+## LIDENT EQUAL
+##
+
+<SYNTAX ERROR>
+
+implementation: LESS UIDENT EQUAL
+##
+## Ends in an error in state: 417.
+##
+## jsx_start_tag_body -> mod_longident . jsx_arguments [ SLASHGREATERLESSSLASH SLASHGREATERLESS SLASHGREATER GREATERLESSSLASH GREATERLESS GREATER ]
+## mod_longident -> mod_longident . DOT UIDENT [ SLASHGREATERLESSSLASH SLASHGREATERLESS SLASHGREATER LIDENT GREATERLESSSLASH GREATERLESS GREATER DOT ]
+##
+## The known suffix of the stack is as follows:
+## mod_longident
+##
+
+<SYNTAX ERROR>
+
+
