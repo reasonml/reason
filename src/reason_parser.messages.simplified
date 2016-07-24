@@ -3384,3 +3384,27 @@ Expecting one of the following:
 implementation: WITH
 
 <SYNTAX ERROR>
+
+implementation: LESS UIDENT LIDENT EQUAL LIDENT LESS
+
+<SYNTAX ERROR>
+
+implementation: LESS UIDENT GREATER LIDENT
+
+<SYNTAX ERROR>
+
+implementation: LESS UIDENT GREATER LESS LESS
+
+<SYNTAX ERROR>
+
+implementation: LESS UIDENT GREATER STRING LESS GREATER
+
+<SYNTAX ERROR>
+
+implementation: LESS UIDENT GREATERLESS GREATER
+
+<SYNTAX ERROR>
+
+implementation: LESS SLASHGREATER
+
+<SYNTAX ERROR>

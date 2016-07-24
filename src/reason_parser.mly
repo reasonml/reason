@@ -792,9 +792,12 @@ let jsx_component module_name attrs children ~loc =
     let ident = ghloc ~loc (Ldot(module_name, "createElement")) in
     mkexp(Pexp_apply(mkexp(Pexp_ident ident), attrs @ children))
 
-let ensureTagsAreEqual startTag endTag =
+let ensureTagsAreEqual startTag endTag loc =
   if startTag <> endTag then
-    syntax_error ()
+     let startTag = (String.concat "" (Longident.flatten startTag)) in
+     let endTag = (String.concat "" (Longident.flatten endTag)) in
+     let _ = Location.raise_errorf ~loc "Syntax error: Start tag <%s> does not match end tag </%s>" startTag endTag in
+     ()
 %}
 
 
@@ -1064,8 +1067,10 @@ conflicts.
 
 %nonassoc below_LBRACKETAT
 %nonassoc LBRACKETAT
+%nonassoc SLASHGREATER
 %nonassoc SLASHGREATERLESS
 %nonassoc GREATERLESS
+
 
 /* Finally, the first tokens of simple_expr are above everything else. */
 %nonassoc BACKQUOTE BANG CHAR FALSE FLOAT INT INT32 INT64
@@ -2532,19 +2537,19 @@ jsx_separate_open_close:
     (* Foo></Foo *)
       let (component, start) = $1 in
       let loc = mklocation $symbolstartpos $endpos in
-      let _ = ensureTagsAreEqual start $3 in
+      let _ = ensureTagsAreEqual start $3 loc in
       component [("", mktailexp_extension loc [] None)] ~loc
   }
   | jsx_start_tag_body GREATERLESS jsx_tag_siblings mod_longident {
       let (component, start) = $1 in
       let loc = mklocation $symbolstartpos $endpos in
-      let _ = ensureTagsAreEqual start $4 in
+      let _ = ensureTagsAreEqual start $4 loc in
       component [("", mktailexp_extension loc $3 None)] ~loc
   }
   | jsx_start_tag_body GREATER LESS jsx_tag_siblings mod_longident {
       let (component, start) = $1 in
       let loc = mklocation $symbolstartpos $endpos in
-      let _ = ensureTagsAreEqual start $5 in
+      let _ = ensureTagsAreEqual start $5 loc in
       component [("", mktailexp_extension loc $4 None)] ~loc
     }
   | jsx_start_tag_body GREATERLESS jsx_tag_siblings LESSSLASH mod_longident
@@ -2553,7 +2558,7 @@ jsx_separate_open_close:
     (* Foo> <Tags /> </Foo *)
      let (component, start) = $1 in
      let loc = mklocation $symbolstartpos $endpos in
-     let _ = ensureTagsAreEqual start $5 in
+     let _ = ensureTagsAreEqual start $5 loc in
      let siblings =
        if List.length $3 > 0 then
          $3
@@ -4219,8 +4224,12 @@ val_ident:
   | PERCENT                                     { "%" }
   | LESSGREATER                                 { "<>" }
   | LESSDOTDOTGREATER                           { "<..>" }
+
+/* We require these tokens to remove spaces between JSX tags,
+   however they are not existent in OCaml and could be used as operators */
   | SLASHGREATERLESS                            { "/><" }
   | GREATERLESS                                 { "><" }
+  | SLASHGREATER                                 { "/>" }
 ;
 
 operator:
