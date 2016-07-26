@@ -496,10 +496,12 @@ let myFirstClassWillBeFormattedAs: (module HasInt) =
   (module MyModule);
 
 let acceptsAndUnpacksFirstClass
-    ((module M): (module HasInt)) => M.x + M.x;
+    ((module M): (module HasInt)) =>
+  M.x + M.x;
 
 let acceptsAndUnpacksFirstClass
-    ((module M): (module HasInt)) => M.x + M.x;
+    ((module M): (module HasInt)) =>
+  M.x + M.x;
 
 let module SecondClass = (val myFirstClass);
 

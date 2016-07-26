@@ -150,10 +150,12 @@ let coercedReturn = {
 };
 
 let acceptsOpenAnonObjAsArg
-    (o: <x : int, y : int, ..>) => o#x + o#y;
+    (o: <x : int, y : int, ..>) =>
+  o#x + o#y;
 
 let acceptsClosedAnonObjAsArg
-    (o: <x : int, y : int>) => o#x + o#y;
+    (o: <x : int, y : int>) =>
+  o#x + o#y;
 
 let res = acceptsOpenAnonObjAsArg {
   method x = 0;

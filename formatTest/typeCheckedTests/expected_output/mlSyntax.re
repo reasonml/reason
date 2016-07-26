@@ -77,7 +77,8 @@ let equalityInIf =
     false
   };
 
-let equalityWithIdentifiers = physicalEquality == referentialEquality;
+let equalityWithIdentifiers =
+  physicalEquality == referentialEquality;
 
 let nestedSome = Some (1, 2, Some (1, 2, 3));
 

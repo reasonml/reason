@@ -863,3 +863,7 @@ let A | B | C = X;
  *
  */
 external f : int => int = "foo";
+
+let x = {contents: 0};
+
+let unitVal = x.contents = 210;

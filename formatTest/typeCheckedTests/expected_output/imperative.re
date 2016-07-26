@@ -55,12 +55,10 @@ try (
 };
 
 let result =
-  (
-    while false {
-      ()
-    }
-  ) ==
-    () ?
+  while false {
+    ()
+  } ==
+  () ?
     false : true;
 
 switch (

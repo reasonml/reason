@@ -546,7 +546,8 @@ dummy res2;
 dummy res3;
 
 /* Some edge cases */
-let myFun firstArg (Red x | Black x | Green x) => firstArg + x;
+let myFun firstArg (Red x | Black x | Green x) =>
+  firstArg + x;
 
 let matchesWithWhen a =>
   switch a {
@@ -586,7 +587,8 @@ let myRecordWithFunctions = {
 let result =
   myRecordWithFunctions.addThreeNumbers 10 20 30;
 
-let result = myRecordWithFunctions.addThreeNumbersTupled (
+let result =
+  myRecordWithFunctions.addThreeNumbersTupled (
   10,
   20,
   30
@@ -978,3 +980,7 @@ let A | B | C = X;
  *
  */
 external f : int => int = "foo";
+
+let x = {contents: 0};
+
+let unitVal = x.contents = 210;

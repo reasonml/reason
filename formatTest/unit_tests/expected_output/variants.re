@@ -26,7 +26,8 @@ let notTupled: notTupleVariant =
 /* Doesn't work because we've correctly annotated parse tree nodes with explicit_arity! */
 /* let notTupled: notTupleVariant = NotActuallyATuple (10, 10); */
 let funcOnNotActuallyATuple
-    (NotActuallyATuple x y) => x + y;
+    (NotActuallyATuple x y) =>
+  x + y;
 
 /* let funcOnNotActuallyATuple (NotActuallyATuple (x, y)) => x + y; */
 /* let notTupled: notTupleVariant = NotActuallyATuple intTuple; /*Doesn't work! */ */
@@ -173,14 +174,16 @@ type combination 'a =
 /** But then how do we parse matches in function arguments? */
 /* We must require parenthesis around construction matching in function args only*/
 let howWouldWeMatchFunctionArgs
-    (HeresTwoConstructorArguments x y) => x + y;
+    (HeresTwoConstructorArguments x y) =>
+  x + y;
 
 /* How would we annotate said arg? */
 let howWouldWeMatchFunctionArgs
     (
       HeresTwoConstructorArguments x y:
         combination 'wat
-    ) => x + y;
+    ) =>
+  x + y;
 
 let matchingTwoCurriedConstructorsInTuple x =>
   switch x {
@@ -403,7 +406,7 @@ let rec atLeastOneFlushableChildAndNoWipNoPending
     | SuperLongNameThatWontBreakByItselfSoWhenWillHaveToBreak
         when
           priority ==
-            AtPrasldkfjalsdfjasdlfalsdkf =>
+          AtPrasldkfjalsdfjasdlfalsdkf =>
       noWipNoPending tl atPriority
     | _ => false
     }
