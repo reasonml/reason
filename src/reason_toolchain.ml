@@ -169,11 +169,11 @@ module type Toolchain_spec = sig
   val format_implementation_with_comments: (Parsetree.structure * attached_comments) -> Format.formatter -> unit
 end
 
-let line_content = Str.regexp "[^ \t]+"
+let line_content = Re_str.regexp "[^ \t]+"
 (* We allow semicolons to be considered white space for sake of determining if
    an item is the last thing on the line. *)
-let space_before_newline = Str.regexp "[,; \t]*$"
-let new_line = Str.regexp "^"
+let space_before_newline = Re_str.regexp "[,; \t]*$"
+let new_line = Re_str.regexp "^"
 
 module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = struct
   let wrap_with_comments parsing_fun lexbuf =
@@ -189,20 +189,20 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
           let modified_and_attached_comments =
             List.map (fun (str, physical_loc) ->
               (* When searching for "^" regexp, returns location of newline + 1 *)
-              let first_char_of_line = Str.search_backward new_line !chan_input physical_loc.loc_start.pos_cnum in
+              let first_char_of_line = Re_str.search_backward new_line !chan_input physical_loc.loc_start.pos_cnum in
               let end_pos_plus_one = physical_loc.loc_end.pos_cnum in
               let comment_length = (end_pos_plus_one - physical_loc.loc_start.pos_cnum - 4) in
               (* Also, the string contents originally reported are incorrect! *)
               let original_comment_contents = String.sub !chan_input (physical_loc.loc_start.pos_cnum + 2) comment_length in
               let (com, attachment_location) =
-                match Str.search_forward line_content !chan_input first_char_of_line
+                match Re_str.search_forward line_content !chan_input first_char_of_line
                 with
                   | n ->
                     (* Recall that all end positions are actually the position of end + 1. *)
                     let one_greater_than_comment_end = end_pos_plus_one in
-                    (* Str.string_match lets you specify a position one greater than last position *)
+                    (* Re_str.string_match lets you specify a position one greater than last position *)
                     let comment_is_last_thing_on_line =
-                      Str.string_match space_before_newline !chan_input one_greater_than_comment_end in
+                      Re_str.string_match space_before_newline !chan_input one_greater_than_comment_end in
                     if n < physical_loc.loc_start.pos_cnum && comment_is_last_thing_on_line then (
                       original_comment_contents,
                       {physical_loc with loc_start = {physical_loc.loc_start with pos_cnum = n}}

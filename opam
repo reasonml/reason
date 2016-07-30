@@ -26,6 +26,7 @@ depends: [
   "utop"         {>= "1.17"}
   "BetterErrors" {>= "0.0.1"}
   "menhir"       {>= "20160303"}
+  "re"           {>= "1.5.0"}
 ]
 depopts: [
 ]

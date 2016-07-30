@@ -1,3 +1,3 @@
-PKG utop str merlin_extend compiler-libs easy-format
+PKG utop str merlin_extend compiler-libs easy-format re.str
 B _build/src
 S src
