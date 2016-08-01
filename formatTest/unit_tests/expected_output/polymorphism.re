@@ -1,5 +1,4 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
-
 let run () => TestUtils.printSection "Polymorphism";
 
 type myType 'a = list 'a;
@@ -39,12 +38,13 @@ let myFunc
 
 let certainlyRequiresWrapping:
   option (Mod.handler p re, Mod.Types.handler) =>
-  option
-    (
-      Mod.touch props (props, state) resource,
-      (list Mod.t, list Mod.t)
-    ) =>
-  list (Mod.update props (props, state) resource) =>
+  option (
+    Mod.touch props (props, state) resource,
+    (list Mod.t, list Mod.t)
+  ) =>
+  list (
+    Mod.update props (props, state) resource
+  ) =>
   list (Mod.update props (props, state) resource) =
   ();
 

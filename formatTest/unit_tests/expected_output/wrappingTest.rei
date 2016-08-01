@@ -1,5 +1,4 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
-
 let named: a::int => b::int => int;
 
 let namedAlias: a::int => b::int => int;

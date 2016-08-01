@@ -1,9 +1,5 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
-
-[@@@autoFormat
-  let wrap = 80;
-  let shift = 2
-];
+[@@@autoFormat let wrap = 80; let shift = 2];
 
 Modules.run ();
 
@@ -54,7 +50,8 @@ type firstTwoShouldBeGroupedAndFirstThree =
 type myRecordType = {
   firstTwoShouldBeGroupedInParens:
     (int => int) => int => int,
-  allParensCanBeRemoved: int => int => int => int,
+  allParensCanBeRemoved:
+    int => int => int => int,
   firstTwoShouldBeGroupedAndFirstThree:
     ((int => int) => int) => int
 };
@@ -369,8 +366,7 @@ let module TryToExportTwice = {
    Wait, where would this ever be valid, even if we continued to support
    `let..in`?
  */
-let
-  onlyDoingThisTopLevelLetToBypassTopLevelSequence = {
+let onlyDoingThisTopLevelLetToBypassTopLevelSequence = {
   let x = {
     print_int 1;
     print_int 20 /* Missing trailing SEMI */
@@ -385,8 +381,7 @@ let
     print_int 20;
     10
     /* Comment in final position */
-  };
-  /* Missing final SEMI */
+  }; /* Missing final SEMI */
   x + x
 };
 
@@ -415,11 +410,9 @@ Printf.printf
 let blah arg =>
   switch arg {
   /* Comment before Bar */
-  | /* Comment between bar/pattern */
-    Red _ => 1
+  | /* Comment between bar/pattern */ Red _ => 1
   /* Comment Before non-first bar */
-  | /* Comment betwen bar/pattern */
-    Black _ => 0
+  | /* Comment betwen bar/pattern */ Black _ => 0
   | Green _ => 0
   };
 
@@ -447,20 +440,20 @@ let blahCurriedX x =>
   fun
   | Red x
   | Black x
-  | Green x => 1
-  /* With some effort, we can ammend the sugar rule that would */
+  | Green x =>
+    1 /* With some effort, we can ammend the sugar rule that would */
   | Black x => 0 /* Allow us to drop any => fun.. Just need to make pattern matching */
-  | Green x => 0 /* Support that */;
+  | Green x => 0; /* Support that */
 
 let sameThingInLocal = {
   let blahCurriedX x =>
     fun
     | Red x
     | Black x
-    | Green x => 1
-    /* With some effort, we can ammend the sugar rule that would */
+    | Green x =>
+      1 /* With some effort, we can ammend the sugar rule that would */
     | Black x => 0 /* Allow us to drop any => fun.. Just need to make pattern matching */
-    | Green x => 0 /* Support that */;
+    | Green x => 0; /* Support that */
   blahCurriedX
 };
 
@@ -698,6 +691,7 @@ type yourThing = myOtherThing int int;
      | `Black x => x;
 
  */
+
 /** Current OCaml Named Arguments. Any aliasing is more than just aliasing!
     OCaml allows full on pattern matching of named args. */
 /*
@@ -724,6 +718,7 @@ type yourThing = myOtherThing int int;
                                \        \
                                 \let_pattern: still a useful syntactic building block in SugarML
  */
+
 /**
  * In Reason, the syntax for named args uses double semicolon, since
  * the syntax for lists uses ES6 style [], freeing up the ::.

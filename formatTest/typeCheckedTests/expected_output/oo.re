@@ -1,5 +1,4 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
-
 class virtual stack 'a init => {
   /*
    * The "as this" is implicit and will be formatted away.
@@ -30,28 +29,27 @@ let tmp = {
 /**
  * Comment on stackWithAttributes.
  */
-class virtual stackWithAttributes 'a init =>
+class virtual stackWithAttributes 'a init => {
   /* Before class */
-  {
-    /* The "as this" should not be formatted away because attributes. */
-    as this [@thisShouldntBeFormattedAway];
-    /* Before floatting attribute */
-    [@@@floatingAttribute];
-    /* Virtual member */
-    val virtual dummy: unit;
-    val mutable v: list 'a = init;
-    method virtual implementMe: int => int;
-    method pop =
-      switch v {
-      | [hd, ...tl] =>
-        v = tl;
-        Some hd
-      | [] => None
-      };
-    method push hd => v = [hd, ...v];
-    initializer =>
-      print_string "initializing object";
-  }
+  /* The "as this" should not be formatted away because attributes. */
+  as this [@thisShouldntBeFormattedAway];
+  /* Before floatting attribute */
+  [@@@floatingAttribute];
+  /* Virtual member */
+  val virtual dummy: unit;
+  val mutable v: list 'a = init;
+  method virtual implementMe: int => int;
+  method pop =
+    switch v {
+    | [hd, ...tl] =>
+      v = tl;
+      Some hd
+    | [] => None
+    };
+  method push hd => v = [hd, ...v];
+  initializer =>
+    print_string "initializing object";
+}
 [@@x];
 
 class extendedStack 'a init => {
@@ -98,6 +96,7 @@ and secondRecursiveClass init => {
  * optimized in the same way that records are, records could just be replaced
  * with closed object types.
  */
+
 /**
  * Anonymous objects.
  */
@@ -225,8 +224,7 @@ class myClassWithAnnotatedReturnType3
  * deferring whether or not that becomes a Pcty_constr or a Ptyp_constr. (The
  * same for type identifiers and extensions.)
  */
-class
-  myClassWithAnnotatedReturnType3_annotated_constructor:
+class myClassWithAnnotatedReturnType3_annotated_constructor:
   int =>
   new {
     method x: int;
@@ -242,6 +240,7 @@ class tupleClass 'a 'b (init: ('a, 'b)) => {
 };
 
 let module HasTupleClasses: {
+
   /**
    * exportedClass.
    */
@@ -261,6 +260,7 @@ let module HasTupleClasses: {
       method pr: ('a, 'b)
     };
 } = {
+
   /**
    * exportedClass.
    */

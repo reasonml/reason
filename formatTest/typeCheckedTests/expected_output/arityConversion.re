@@ -7,7 +7,8 @@ type bcd =
 let a = TupleConstructor (1, 2);
 
 let b =
-  MultiArgumentsConstructor 1 2 [@implicit_arity];
+  MultiArgumentsConstructor 1 2
+  [@implicit_arity];
 
 let module Test = {
   type a = | And (int, int) | Or (int, int);

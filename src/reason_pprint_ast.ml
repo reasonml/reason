@@ -52,6 +52,7 @@
 open Asttypes
 open Format
 open Location
+open Lexing
 open Longident
 open Parsetree
 open Easy_format
@@ -59,6 +60,20 @@ open Syntax_util
 open Ast_mapper
 
 
+type commentCategory =
+  | EndOfLine
+  | SingleLine
+  | Regular
+
+(* (comment text, attachment_location, physical location) *)
+type commentWithCategory = (String.t * commentCategory * Location.t) list
+
+let print_easy easyFormatted =
+  match easyFormatted with
+  | Atom (s,_) -> s
+  | List (_,_) -> "list"
+  | Label (_,_) -> "label"
+  | Custom _ -> "custom"
 
 let (|>) = fun x f -> f x
 let (<|) = fun f x -> f x
@@ -142,11 +157,97 @@ type listConfig = {
  * The final representation is rendered using Easy_format.
  *)
 type layoutNode =
-  | SourceMap of Location.t * layoutNode
+  | SourceMap of Location.t * layoutNode (* a layout with location info *)
+  | WithComment of string * layoutNode (* a layout with comment attached *)
   | Sequence of listConfig * (layoutNode list)
   | Label of easyFormatLabelFormatter * layoutNode * layoutNode
   | Easy of Easy_format.t
 
+let print_comment_type = function
+  | Regular -> "Regular"
+  | EndOfLine -> "End of Line"
+  | SingleLine -> "SingleLine"
+
+let rec print_comments = function
+  | [] -> ()
+  | ((s, t, loc)::tl) ->
+       printf "%d (%d:%d)-%d (%d:%d) -- %s:||%s||\n"
+              loc.loc_start.Lexing.pos_cnum
+              loc.loc_start.Lexing.pos_lnum
+              (loc.loc_start.Lexing.pos_cnum - loc.loc_start.Lexing.pos_bol)
+              loc.loc_end.Lexing.pos_cnum
+              loc.loc_end.Lexing.pos_lnum
+              (loc.loc_end.Lexing.pos_cnum - loc.loc_end.Lexing.pos_bol)
+              (print_comment_type t)
+              s;
+       print_comments tl;
+       ()
+
+let rec print_easy_rec ?(indent=0) easyFormatted =
+  let space = Array.fold_left (^) "" (Array.make indent " ") in
+  match easyFormatted with
+  | Atom (s,_) ->
+     printf "%s Atom:'%s'\n" space s
+  | List ((opening, sep, closing, config), items) ->
+     let break = (match config.wrap_body with
+                  | `No_breaks -> "No_breaks"
+                  | `Wrap_atoms -> "Wrap_atoms"
+                  | `Never_wrap -> "Never_wrap"
+                  | `Force_breaks -> "Force_breaks"
+                  | `Force_breaks_rec -> "Force_breaks_rec"
+                  | `Always_wrap -> "Always_wrap") in
+     printf "%s List: open %s close %s sep %s break %s \n" space opening closing sep break;
+     let _ = List.map (print_easy_rec ~indent:(indent+2)) items in
+     ()
+  | Label ((left, config), right) ->
+     let break = match config.label_break with
+     | `Never -> "Never"
+     | `Always_rec -> "Always_rec"
+     | `Auto -> "Auto"
+     | `Always -> "Always" in
+     printf "%s Label (break = %s): \n" space break;
+     printf "  %s left \n" space;
+     print_easy_rec ~indent:(indent+2) left;
+     printf "  %s right \n" space;
+     print_easy_rec ~indent:(indent+2) right;
+  | Custom _ -> printf "custom \n"
+
+let rec print_layout ?(indent=0) layout =
+  let space = Array.fold_left (^) "" (Array.make indent " ") in
+  match layout with
+  | SourceMap (loc, layout) ->
+     printf "%s [%d (%d:%d)-%d (%d:%d)]\n" space
+            loc.loc_start.Lexing.pos_cnum
+            loc.loc_start.Lexing.pos_lnum
+            (loc.loc_start.Lexing.pos_cnum - loc.loc_start.Lexing.pos_bol)
+            loc.loc_end.Lexing.pos_cnum
+            loc.loc_end.Lexing.pos_lnum
+            (loc.loc_end.Lexing.pos_cnum - loc.loc_end.Lexing.pos_bol);
+     print_layout ~indent:(indent+2) layout
+  | Sequence (config, layout_list) ->
+     let break = match config.break with
+       | Never  -> "Never"
+       | IfNeed  -> "if need"
+       | Always  -> "Always"
+       | Always_rec  -> "Always_rec" in
+     printf "%s Sequence of %d, sep: %s stick_to_left: %s break: %s\n" space (List.length layout_list) config.sep (string_of_bool config.sepLeft) break;
+     let _ = List.map (print_layout ~indent:(indent+2)) layout_list in
+     ()
+  | WithComment (comment, layout) ->
+     printf "%s WithComment: \n" space;
+     printf "  %s node \n" space;
+     print_layout ~indent:(indent+2) layout;
+     printf "  %s comments : \n" space;
+     printf "  %s %s\n" space comment;
+     printf "\n";
+  | Label (_, left, right) ->
+     printf "%s Label: \n" space;
+     printf "  %s left \n" space;
+     print_layout ~indent:(indent+2) left;
+     printf "  %s right \n" space;
+     print_layout ~indent:(indent+2) right;
+  | Easy e ->
+     printf "%s Easy: %s \n" space (print_easy e)
 
 let rec longIdentSame = function
   | (Lident l1, Lident l2) -> String.compare l1 l2 == 0
@@ -234,6 +335,11 @@ let same_ast_modulo_varification_and_extensions t1 t2 =
     | _ -> false
   in
   loop t1 t2
+
+let wrapLayoutWithLoc loc layout =
+  match loc with
+  | None -> layout
+  | Some loc -> SourceMap (loc, layout)
 
 let expandLocation pos ~expand:(startPos, endPos) =
   { pos with
@@ -1043,7 +1149,7 @@ let makeList
 let makeAppList delimiter l =
   let (preSpace, sep) = match delimiter with
     | None -> (false, "")
-    | Some s -> (true, (s))
+    | Some (s, loc) -> (true, (s))
   in
   match l with
   | hd::[] ->  hd
@@ -1057,12 +1163,31 @@ let ensureSingleTokenSticksToLabel x =
     )
     [x]
 
+let unbreakLabelFormatter formatter =
+  let newFormatter labelTerm term =
+    match formatter labelTerm term with
+    | Easy_format.Label ((labelTerm, settings), term) ->
+       Easy_format.Label ((labelTerm,
+                           {settings with label_break = `Never}),
+                          term)
+    | _ -> failwith "not a label"
+  in newFormatter
+
 let easyLabelForEolComment labelTerm term =
   let settings = {
     label_break = `Never;
     space_after_label = false;
     indent_after_label = 0;
     label_style = Some "commentAttachment";
+  } in
+  Easy_format.Label ((labelTerm, settings), term)
+
+let autoBreakLabel labelTerm term =
+  let settings = {
+    label_break = `Never;
+    space_after_label = true;
+    indent_after_label = 0;
+    label_style = Some "autoBreakLabel";
   } in
   Easy_format.Label ((labelTerm, settings), term)
 
@@ -1101,25 +1226,28 @@ let html_style = [
 ]
 
 
-let easyLabel ?(space=false) ?(indent=settings.indentAfterLabels) labelTerm term =
+let easyLabel ?(break=`Auto) ?(space=false) ?(indent=settings.indentAfterLabels) labelTerm term =
   let settings = {
-    label_break = `Auto;
+    label_break = break;
     space_after_label = space;
     indent_after_label = indent;
     label_style = Some "label";
   } in
   Easy_format.Label ((labelTerm, settings), term)
 
-let label ?(space=false) ?(indent=settings.indentAfterLabels) (labelTerm:layoutNode) (term:layoutNode) =
+let label ?(break=`Auto) ?(space=false) ?(indent=settings.indentAfterLabels) (labelTerm:layoutNode) (term:layoutNode) =
   Label (
-    (fun x y -> easyLabel ~indent ~space x y),
+    (fun x y -> easyLabel ~break ~indent ~space x y),
     labelTerm,
     term
   )
 
 let labelSpace l r = label ~space:true l r
 
-let atom str = Easy (Easy_format.Atom(str, labelStringStyle))
+let atom ?loc str =
+  let layout = Easy (Easy_format.Atom(str, labelStringStyle)) in
+  wrapLayoutWithLoc loc layout
+
 let easyAtom str = Easy_format.Atom(str, labelStringStyle)
 
 (** Take x,y,z and n and generate [x, y, z, ...n] *)
@@ -1180,12 +1308,6 @@ let easyFormatToFormatter f x =
   Format.fprintf f "%s\n" trimmed;
   pp_print_flush f ()
 
-
-let wrapToStr fn = fun term ->
-  ignore (flush_str_formatter ());
-  let f = str_formatter in
-  (fn f term; (flush_str_formatter ()))
-
 let wrap fn = fun term ->
   ignore (flush_str_formatter ());
   let f = str_formatter in
@@ -1228,8 +1350,6 @@ let rec extractComments comments tester =
     let physLastChar = oneGreaterThanPhysLocEnd - 1 in
     tester attLoc.loc_start.pos_cnum attachmentLocLastChar physLoc.loc_start.pos_cnum physLastChar
   )
-
-
 
 let space = " "
 (* Can't you tell the difference? *)
@@ -1296,6 +1416,7 @@ let convertIsListyToIsSequencey isListyImpl =
   let rec isSequencey layoutNode = match layoutNode with
     | SourceMap (_, subLayoutNode) -> isSequencey subLayoutNode
     | Sequence _ -> true
+    | WithComment (_, sub) -> isSequencey sub
     | Label (_, _, _) -> false
     | Easy easy -> isListyImpl easy
   in
@@ -1303,296 +1424,485 @@ let convertIsListyToIsSequencey isListyImpl =
 
 let isSequencey = convertIsListyToIsSequencey isListy
 
+let inline ?(preSpace=false) ?(postSpace=false) labelTerm term =
+  makeList ~inline:(true, true) ~postSpace ~preSpace ~indent:0 ~break:Never [labelTerm; term]
 
-let removeSepFromListConfig listSettings =
-  {listSettings with sep=""; preSpace=false; postSpace=false;}
+let breakline labelTerm term =
+  makeList ~inline:(true, true) ~indent:0 ~break:Always_rec [labelTerm; term]
 
-(** Interleaves both preceeding comments as well as "end of line" comments.
-   This logic is best done here so that:
-   1. Before-line items break in unison with list items.
-   2. End of line comments are placed *after* separators.  *)
-let rec interleaveComments ?endMaxChar listConfig layoutListItems comments =
-  let isDocComment (c, _, _) = String.length c > 0 && c.[0] == '*' in
-  match (layoutListItems, endMaxChar) with
-    | ([], None)-> ([], comments)
-    | ([], Some endMax)->
-      if not listConfig.interleaveComments then
-        ([], comments)
-      else
-        let (commentsInSequence, unconsumed) =
-          extractComments
-            comments
-            (fun comAttachFirst comAttachLast comPhysFirst comPhysLast -> comAttachLast <= endMax)
-        in
-        ((List.map (fun c -> ItemComment (formatItemComment c, isDocComment c)) commentsInSequence), unconsumed)
-    | (hd::tl, _) ->
-      (* TODO: properly implement "stick to left", or expand the ~sep:"" API to
-       * include, left sticking items: Which would involve sticking spaces like:
-       * A<space>[sep<space>B]
-       * And then trimming the trailing white space as usual.
-       **)
-      let (onItem, endOfLineComments, unconsumed) = match (listConfig.interleaveComments, hd) with
-        | (true, SourceMap (loc, sourceMappedLayout)) ->
-          partitionItemComments loc comments
-        | _ -> ([], [], comments)
-      in
-      let (easyItem, itemUnconsumed) = layoutToEasyFormatAndSurplus hd unconsumed in
-      let eolEasyComments = List.map formatItemComment endOfLineComments in
-      let item = Item (easyItem, eolEasyComments) in
-      let (rest, recUnconsumedComms) = interleaveComments ?endMaxChar listConfig tl itemUnconsumed in
-      let easyComments = List.map (fun c -> ItemComment (formatItemComment c, (isDocComment c))) onItem in
-      (List.concat [easyComments; [item]; rest], recUnconsumedComms)
+let insertBlankLines n term =
+  if n = 0 then
+    term
+  else
+    makeList ~inline:(true, true) ~indent:0 ~break:Always_rec (Array.to_list (Array.make n (atom "")) @ [term])
 
-(*
- * Covers the case where the trailing end of line comment is relocated to the }
- * brace.
- *
- *   let x = {
- *      item: blah
- *   };  /* Trailing end of line comment */
- *
- * Should be treated as:
- *
- *  /* Trailing end of line comment */
- *   let x = {
- *      item: blah
- *   };
- *
- *
- * Also,
- *
- *   let x = {  /* On the entire let binding */
- *      item: blah
- *   };
- *
- * Should be treated as:
- *
- *   /* On the entire let binding */
- *   let x = {
- *      item: blah
- *   };
+let wrapComment txt =
+  ("/*" ^ txt ^ "*/")
+
+let formatComment_ txt =
+  let commLines = Re_str.split_delim (Re_str.regexp "\n") (wrapComment txt) in
+  match commLines with
+  | [] -> atom ""
+  | [hd] ->
+    makeList ~inline:(true, true) ~postSpace:true ~preSpace:true ~indent:0 ~break:IfNeed [atom hd]
+  | zero::one::tl ->
+     let hasMeaningfulContentOnLineZero = lineZeroHasMeaningfulContent zero in
+     let attemptRemoveCount = (smallestLeadingSpaces (one::tl)) in
+     let leftPad =
+       if beginsWithStar one then 1
+       else (if hasMeaningfulContentOnLineZero then spaceBeforeMeaningfulContent zero else 1)
+     in
+     let padNonOpeningLine s =
+       let numLeadingSpaceForThisLine = numLeadingSpace s in
+       if String.length s == 0 then ""
+       else (String.make leftPad ' ') ^
+              (Str.string_after s (min attemptRemoveCount numLeadingSpaceForThisLine)) in
+     let lines = zero :: List.map padNonOpeningLine (one::tl) in
+     makeList ~inline:(true, true) ~indent:0 ~break:Always_rec (List.map atom lines)
+
+let formatComment ?locOpt txt =
+  let list = formatComment_ txt in
+  match locOpt with
+  | None ->
+     list
+  | Some loc ->
+     SourceMap (loc, list)
+
+(** [hasComment layout] checks if a layout has comment attached to it *)
+let rec hasComment = function
+  | WithComment (_, _) -> true
+  | SourceMap (_, sub) -> hasComment sub
+  | _ -> false
+
+let rec append ?(space=false) txt = function
+  | SourceMap (loc, sub) -> SourceMap (loc, append ~space txt sub)
+  | Sequence (config, l) when snd config.wrap <> "" ->
+     let sep = if space then " " else "" in
+     Sequence ({config with wrap=(fst config.wrap, snd config.wrap ^ sep ^ txt)}, l)
+  | Sequence (config, l) when config.sep = "" ->
+     let sub = List.mapi (fun i layout ->
+                   if i + 1 = List.length l then
+                     append ~space txt layout
+                   else
+                     layout
+                 ) l in
+     Sequence (config,  sub)
+  | Label (formatter, left, right) ->
+     Label (formatter, left, append ~space txt right)
+  | layout ->
+     inline ~postSpace:space layout (atom txt)
+
+let appendSep spaceBeforeSep sep layout =
+  let sep = if spaceBeforeSep then
+              " " ^ sep
+            else
+              sep in
+  append sep layout
+
+let rec flattenCommentAndSep ?spaceBeforeSep:(spaceBeforeSep=false) ?sep = function
+  | WithComment (txt, sub) ->
+     begin
+       match sep with
+       | None -> append ~space:true (wrapComment txt) sub
+       | Some sep -> append ~space:true (wrapComment txt)
+                                   (appendSep spaceBeforeSep sep sub)
+     end
+  | Sequence (listConfig, [hd]) when hasComment hd ->
+    Sequence (listConfig, [flattenCommentAndSep ~spaceBeforeSep ?sep hd])
+  | SourceMap (loc, sub) ->
+     SourceMap (loc, flattenCommentAndSep ~spaceBeforeSep ?sep sub)
+  | layout ->
+     begin
+       match sep with
+       | None -> layout
+       | Some sep -> appendSep spaceBeforeSep sep layout
+     end
+
+let rec preOrderWalk f layout =
+  match f layout with
+  | Sequence (listConfig, sublayouts) ->
+     let newSublayouts = List.map (preOrderWalk f) sublayouts in
+     (Sequence (listConfig, newSublayouts))
+  | Label (formatter, left, right) ->
+     let newLeftLayout = preOrderWalk f left in
+     let newRightLayout = preOrderWalk f right in
+     Label (formatter, newLeftLayout, newRightLayout)
+  | SourceMap (loc, sub) ->
+     let newSub = preOrderWalk f sub in
+     SourceMap (loc, newSub)
+  | WithComment (c, sub) ->
+     let newSub = preOrderWalk f sub in
+     WithComment (c, newSub)
+  | _ -> layout
+
+(** Recursively unbreaks a layout to make sure they stay within the same line *)
+let unbreaklayout = preOrderWalk (function
+  | Sequence (listConfig, sublayouts) ->
+    Sequence ({listConfig with break=Never}, sublayouts)
+  | Label (formatter, left, right) ->
+    Label (unbreakLabelFormatter formatter, left, right)
+  | layout -> layout
+)
+
+(** [consolidateSeparator layout] walks the [layout], extract separators out of each
+ *  list and insert them into PrintTree as separated items
  *)
+let consolidateSeparator = preOrderWalk (function
+  | Sequence (listConfig, sublayouts)
+       when listConfig.sep <> ""
+         && listConfig.sepLeft
+    ->
+     let layoutsWithSepAndComment =
+       List.mapi (fun i layout ->
+           (* Do not render the final separator *)
+           if not listConfig.renderFinalSep && i + 1 = List.length sublayouts then
+             flattenCommentAndSep ~spaceBeforeSep:listConfig.preSpace layout
+           else
+             flattenCommentAndSep ~spaceBeforeSep:listConfig.preSpace ~sep:listConfig.sep layout) sublayouts in
+     let break = if List.exists hasComment sublayouts then
+                   Always_rec
+                 else
+                   listConfig.break in
+     let sep = "" in
+     let preSpace = false in
+     Sequence ({listConfig with sep; break; preSpace}, layoutsWithSepAndComment)
+  | WithComment _ as layout ->
+     makeList ~inline:(true, true) ~postSpace:false ~preSpace:true ~indent:0
+              ~break:Always_rec [flattenCommentAndSep layout]
+  | layout -> layout
+)
 
-and partitionItemComments loc comments =
-  let firstChar = loc.loc_start.Lexing.pos_cnum in
-  let oneGreaterThanLocEnd = loc.loc_end in
-  let lastChar = oneGreaterThanLocEnd.Lexing.pos_cnum - 1 in
-  let (onItem, afterStart) = extractComments comments (
-    fun comAttachFirst comAttachLast comPhysFirst comPhysLast ->
-      let entirelyPhysicallyAbove = comPhysFirst < firstChar && comPhysLast < firstChar in
-      entirelyPhysicallyAbove
-  ) in
-  (* We currently support the following as an "end of line" comment:
-
-       let x = {
-         item:blah
-       }  /* On the entire value binding only */
-       and y = {
-
-       };
-
-     This doesn't work well because we don't have special interaction with
-     lists, that ensure those kinds of end-of-line comments cause that list to
-     *always* breaks. Currently, the item compressing onto one line
-     changes the meaning entirely. In the following case, the comment becomes
-     attached to the entire let binding. That is a source of non-idempotent
-     formatting.
-
-       let x = {item:blah}  /* On the entire let binding */
-       and y = {
-       };
-
-   *)
-  let (endOfLineComments, unconsumed) = extractComments afterStart (
-    fun comAttachFirst comAttachLast comPhysFirst comPhysLast ->
-      let entirelyPhysicallyAfter = comPhysFirst >= lastChar && comPhysLast >= lastChar in
-      (* In case we're converting from OCaml, OCaml's parser parses | X with
-         the location of X but only sometimes. Reason's parser always parses
-         the X pattern as having the location start of |.
-         However, in either case the attachment location is always at the
-         location of the bar.
-         This - 2 subtraction hack is only to pretend that OCaml had located
-         the X pattern consistent with Reason.
-      *)
-      let firstCharPossiblyBar = (comAttachFirst == firstChar - 2) in
-      let attachmentEnclosesEntireThing = comAttachFirst == firstChar || firstCharPossiblyBar in
-      attachmentEnclosesEntireThing && entirelyPhysicallyAfter
-  ) in
-  (onItem, endOfLineComments, unconsumed)
-
-(** Only finds the comments that occurred before the location.  When you don't
-    have a wrapping list to interleave comments in, this is the least error
-    prone function to use.
+(** [insertLinesAboveItems layout] walkts the [layout] and insert empty lines
+ *  based on the configuration of newlinesAboveItems
  *)
-and partitionPreviousItemComments loc comments =
-  let firstChar = loc.loc_start.Lexing.pos_cnum in
-  extractComments comments (
-    fun comAttachFirst comAttachLast comPhysFirst comPhysLast ->
-      let entirelyPhysicallyAbove = comPhysFirst < firstChar && comPhysLast < firstChar in
-      entirelyPhysicallyAbove
-  )
+let insertLinesAboveItems = preOrderWalk (function
+  | Sequence (listConfig, sublayouts)
+       when listConfig.newlinesAboveItems <> 0
+    ->
+     let layoutsWithLinesInjected =
+       List.map (insertBlankLines listConfig.newlinesAboveItems) sublayouts in
+     Sequence ({listConfig with newlinesAboveItems=0}, layoutsWithLinesInjected)
+  | layout -> layout
+)
 
+(** Union of two locations *)
+let unionLoc loc1 loc2 =
+  match (loc1, loc2) with
+  | None, _ -> loc2
+  | _, None -> loc1
+  | Some loc1, Some loc2  -> Some {loc1 with loc_end = loc2.loc_end}
 
-(* Even if we don't "renderSepChar" we still, need the spaces as if there was a
-   sep.  When interleaving comments, we don't render `;` separators, but we
-   still need spaces around those interleaved comments. *)
-and attach listConfig ~renderSepChar ~renderSepSpace easyItem =
-  match (listConfig.sep, listConfig.preSpace, listConfig.postSpace, renderSepChar, renderSepSpace) with
-  | ("", false, false, _, _) -> easyItem
-  | (_, _, _, false, false) -> easyItem
-  | (sep, preSpace, postSpace, _, _) -> makeEasyList (
-      easyItem::
-      List.concat [
-        (if renderSepSpace && preSpace then [easyAtom " "] else []);
-        (if renderSepChar && sep != "" && renderSepChar then [easyAtom sep] else []);
-        (if renderSepSpace && postSpace then [easyAtom " "] else []);
-      ]
-    )
-
-
-(* Catches up comments to a node which has already been converted to an
-   `Easy_format` node. Use this on nodes not in a list whose location is known.  *)
-and catchUpPreviousComments loc comments continue =
-  let (onItem, unconsumed) = partitionPreviousItemComments loc comments in
-  let (easyFormat, unconsumed) = continue unconsumed in
-  match (onItem) with
-  | ([]) -> (easyFormat, unconsumed)
-  | (_::_) -> (
-      (easyListWithConfig fallbackCommentListConfig (List.concat [formatComments onItem; [easyFormat]])),
-      unconsumed
-    )
-
-
-and prependEasyAtomSpaces n toThis =
-  if n == 0 then toThis else (easyAtom "")::(prependEasyAtomSpaces (n - 1) toThis)
-
-and processListsWithComments listConfig revPreviousRows remaining =
-  match (revPreviousRows, remaining) with
-  | (_, []) -> (false, false, [])
-  (* No need to inject any space at all for the first comment, or consecutive comments *)
-  | ((ItemComment _)::_, ((ItemComment (x, isDoc)) as hd) :: tl)
-  | ([], ((ItemComment (x, isDoc)) as hd) :: tl) ->
-    let (hadMoreItems, hadEolComment, rest) = (processListsWithComments listConfig (hd::revPreviousRows) tl) in
-    let withSep = attach listConfig ~renderSepSpace:(tl != []) ~renderSepChar:false x in
-    (hadMoreItems, hadEolComment, withSep::rest)
-
-  (* Inject comment for first comment after an item. *)
-  | ((Item _)::_, ((ItemComment (x, isDoc)) as hd) :: tl) ->
-    let (hadMoreItems, hadEolComment, rest) = processListsWithComments listConfig (hd::revPreviousRows) tl in
-    let injectLineCount = if isDoc then listConfig.newlinesAboveDocComments else listConfig.newlinesAboveComments in
-    let withSep = attach listConfig ~renderSepSpace:(tl != []) ~renderSepChar:false x in
-    let next = prependEasyAtomSpaces injectLineCount (withSep::rest) in
-    (hadMoreItems, hadEolComment, next)
-  | (_, (Item (i, eolEasyComments) as hd) :: tl) ->
-    let (recHadMoreItems, recHadEolComment, rest) = (processListsWithComments listConfig (hd::revPreviousRows) tl) in
-    let (renderSepChar, renderSepSpace) =
-      match (tl, recHadMoreItems, listConfig.renderFinalSep, eolEasyComments) with
-      | ([]  , false, true , []  ) -> (true, false)
-      | (_   , _    , true , _   ) -> (true, true)
-      | (_   , true , _    , _   ) -> (true, true)
-      | ([]  , false, false, []) -> (false, false)
-      | (_::_, false, false, _) -> (false, true)
-      | (_   , false, false, _::_) -> (false, true)
-    in
-    let withSep = attach listConfig ~renderSepChar ~renderSepSpace i in
-    let prependNewlinesTo = match eolEasyComments with
-      | [] ->
-        withSep::rest
-      | _::_ ->
-        let withEolAndSep = easyLabelForEolComment withSep (easyListWithConfig eolCommentListConfig eolEasyComments) in
-        withEolAndSep::rest
-    in
-    let spaceCount = match revPreviousRows with
-      | (ItemComment _)::_
-      | [] -> 0
-      | _ -> listConfig.newlinesAboveItems
-    in
-    (true, recHadEolComment || eolEasyComments != [], prependEasyAtomSpaces spaceCount prependNewlinesTo)
-
-and layoutSequenceToEasyFormatAndSurplus ?endMaxChar listConfig subLayouts comments =
-  let listConfigNoSep = removeSepFromListConfig listConfig in
-  let (distribution, hadEolComment, unconsumedComms) =
-    let (interleaved, unconsumed) = interleaveComments ?endMaxChar listConfig subLayouts comments in
-    match interleaved with
-    | [] -> ([], false, unconsumed)
-    | hd::tl ->
-      let (_, hadEolComment, withSeparators) = (processListsWithComments listConfig [] interleaved) in
-      (withSeparators, hadEolComment, unconsumed)
-  in
-  let wereCommentsInterleaved = List.length subLayouts != List.length distribution in
-  let adjustedListConfig =
-    if wereCommentsInterleaved then
-      match listConfigNoSep.listConfigIfCommentsInterleaved with
-      | None -> listConfigNoSep
-      | Some f -> f listConfigNoSep
-    else
-      listConfigNoSep
-  in
-  let adjustedListConfig =
-    if hadEolComment then
-      match adjustedListConfig.listConfigIfEolCommentsInterleaved with
-      (* By default, we need to break if an EOL comment exists to preserve
-         its end of line-ness. *)
-      | None -> {adjustedListConfig with break=Always_rec}
-      | Some f -> f adjustedListConfig
-    else
-      adjustedListConfig
-  in
-  (easyListWithConfig adjustedListConfig distribution, unconsumedComms)
-(*
- * All comments are interleaved into lists when list items are [SourceMap]s. If
- * the [SourceMap] is not embedded in a [Sequence], we'll implement some basic
- * fallback behavior.
- * Returns unconsumed comments and the [Easy_format] structure.
+(** [getLocFromLayout] recursively takes the unioned location of its children,
+ *  and returns the max one
  *)
-and layoutToEasyFormatAndSurplus layoutNode comments = match layoutNode with
-  | Easy easyFormatted -> (easyFormatted, comments)
-  | Sequence (listConfig, subLayouts) -> layoutSequenceToEasyFormatAndSurplus listConfig subLayouts comments
-  | SourceMap (loc, subLayout) -> (
-    match subLayout with
+let rec getLocFromLayout = function
+  | Sequence (listConfig, subLayouts) ->
+     let locs = List.map getLocFromLayout subLayouts in
+     List.fold_left unionLoc None locs
+  | Label (formatter, left, right) ->
+     let leftLoc = getLocFromLayout left in
+     let rightLoc = getLocFromLayout right in
+     unionLoc leftLoc rightLoc
+  | SourceMap (loc, _) ->
+     Some loc
+  | WithComment (_, sub) ->
+     getLocFromLayout sub
+  | _ -> None
+
+(**
+ * Returns true if loc1 contains loc2
+ *)
+let containLoc loc1 loc2 =
+  loc1.loc_start.Lexing.pos_cnum <= loc2.loc_start.Lexing.pos_cnum &&
+  loc1.loc_end.Lexing.pos_cnum >= loc2.loc_end.Lexing.pos_cnum
+
+(**
+ * Returns true if loc1 is before loc2
+ *)
+let beforeLoc loc1 loc2 =
+  loc1.loc_end.Lexing.pos_cnum <= loc2.loc_start.Lexing.pos_cnum
+
+let rec attachEOLComment layout txt =
+  WithComment (txt, layout)
+
+
+(**
+ * Returns true if the layout's location contains loc
+ *)
+let layoutContainsLoc loc layout =
+  match getLocFromLayout layout with
+  | None -> false
+  | Some subLoc -> containLoc subLoc loc
+
+
+(**
+ * Returns true if any of the subLayout's location contains loc
+ *)
+let anySublayoutContainLocation loc =
+  List.exists (layoutContainsLoc loc)
+
+let isDocComment (c, _, _) = String.length c > 0 && c.[0] == '*'
+
+(**
+ * prependSingleLineComment inserts a single line comment right above layout
+ *)
+let rec prependSingleLineComment ?newlinesAboveDocComments:(newlinesAboveDocComments=0) comment layout =
+  let (txt, _, loc) = comment in
+  match layout with
+  | WithComment (c, sub) ->
+     WithComment (c, prependSingleLineComment ~newlinesAboveDocComments comment sub)
+  | SourceMap (loc, sub) ->
+     SourceMap (loc, prependSingleLineComment ~newlinesAboveDocComments comment sub)
+  | Sequence (config, hd::tl) when config.break = Always_rec->
+     Sequence(config, (prependSingleLineComment ~newlinesAboveDocComments comment hd)::tl)
+  | layout ->
+     let withComment = breakline (formatComment ~locOpt:loc txt) layout in
+     if isDocComment comment then
+       insertBlankLines newlinesAboveDocComments withComment
+     else
+       withComment
+
+(**
+ * [looselyAttachComment layout comment] preorderly walks the layout and
+ * find a place where the comment can be loosely attached to
+ *)
+let rec looselyAttachComment layout ((txt, _, commentLoc) as comment) =
+  match layout with
+  | SourceMap (loc, sub) ->
+     SourceMap (loc, looselyAttachComment sub comment)
+  | WithComment (c, sub) ->
+     WithComment (c, looselyAttachComment sub comment)
+  | Easy e ->
+     attachEOLComment layout txt
+  | Sequence (listConfig, subLayouts) when anySublayoutContainLocation commentLoc subLayouts ->
+     (* If any of the subLayout strictly contains this comment, recurse into to it *)
+     let subLayouts = List.map (fun layout ->
+                          if layoutContainsLoc commentLoc layout then
+                            looselyAttachComment layout comment
+                          else
+                            layout
+                        ) subLayouts in
+     Sequence (listConfig, subLayouts)
+  | Sequence (listConfig, subLayouts) ->
+     let (beforeComment, afterComment) = Syntax_util.pick_while (fun layout ->
+                                             match getLocFromLayout layout with
+                                             | None -> true
+                                             | Some loc -> beforeLoc loc commentLoc
+                                           ) subLayouts in
+     let newSubLayout = match List.rev beforeComment with
+       | [] ->
+          prependSingleLineComment comment (List.hd afterComment) :: (List.tl afterComment)
+       | hd::tl -> (attachEOLComment hd txt :: tl |> List.rev) @ afterComment
+     in
+     Sequence (listConfig, newSubLayout)
+  | Label (formatter, left, right) ->
+     let leftLoc = getLocFromLayout left in
+     let rightLoc = getLocFromLayout right in
+     let newLeft, newRight = match (leftLoc, rightLoc) with
+       | (None, None) ->
+          (left, looselyAttachComment right comment)
+       | (_, Some loc2) when containLoc loc2 commentLoc ->
+          (left, looselyAttachComment right comment)
+       | (Some loc1, _) when containLoc loc1 commentLoc ->
+          (looselyAttachComment left comment, right)
+       | (Some loc1, Some loc2) when beforeLoc commentLoc loc1 ->
+          (prependSingleLineComment comment left, right)
+       | (Some loc1, Some loc2) when beforeLoc commentLoc loc2 ->
+          (left, prependSingleLineComment comment right)
+       | _ -> (left, attachEOLComment right txt)
+     in
+     Label (formatter, newLeft, newRight)
+
+(**
+ * [insertSingleLineComment layout comment] preorderly walks the layout and
+ * find a place where the SingleLineComment can be fit into
+ *)
+let rec insertSingleLineComment layout comment =
+  let (txt, _, commentLoc) = comment in
+      match layout with
+      | SourceMap (loc, sub) ->
+         SourceMap (loc, insertSingleLineComment sub comment)
+      | WithComment (c, sub) ->
+         WithComment (c, insertSingleLineComment sub comment)
+      | Easy e ->
+         prependSingleLineComment comment layout
       | Sequence (listConfig, subLayouts) ->
-        let oneGreaterThanLocEnd = loc.loc_end in
-        let lastChar = oneGreaterThanLocEnd.Lexing.pos_cnum - 1 in
-        (* But the last char isn't sufficient! We need to interleave comments that are entirely
-           contained within the sequence! So subtract one more *)
-        let maxChar = lastChar - 1 in
-        let continue = (layoutSequenceToEasyFormatAndSurplus ~endMaxChar:maxChar listConfig subLayouts) in
-        (* catchUpPreviousComments loc comments continue *)
-        let (recurse, unconsumed) = catchUpPreviousComments loc comments continue in
-        (recurse, unconsumed)
-      | _ -> catchUpPreviousComments loc comments (layoutToEasyFormatAndSurplus subLayout)
-    )
-  (* We attempt to allow the rhs of a label include eol comments *)
-  | Label (labelFormatter, left, (SourceMap (rLoc, rSubLayout) as right)) ->
-    let (easyLeft, unconsumed) = layoutToEasyFormatAndSurplus left comments in
-    let (aboveRight, endOfLineCommentsRight, unconsumed) = partitionItemComments rLoc unconsumed in
-    let (easyRight, unconsumed) = layoutToEasyFormatAndSurplus right unconsumed in
-    let rightWithOnComments =
-      match aboveRight with
-      | [] -> easyRight
-      | _::_ ->
-        easyListWithConfig fallbackCommentListConfig (List.concat [List.map formatItemComment aboveRight; [easyRight]]) in
-    let easyRightWithEolComms =
-      match endOfLineCommentsRight with
-      | [] -> rightWithOnComments
-      | _::_ ->
-        let eolEasyComments = List.map formatItemComment endOfLineCommentsRight in
-        easyLabelForEolCommentOnLabelRight rightWithOnComments (easyListWithConfig eolCommentListConfig eolEasyComments)
-    in
-    (labelFormatter easyLeft easyRightWithEolComms, unconsumed)
+         let newlinesAboveDocComments = listConfig.newlinesAboveDocComments in
+         let (beforeComment, afterComment) = Syntax_util.pick_while (fun layout ->
+                                                 match getLocFromLayout layout with
+                                                 | None -> true
+                                                 | Some loc -> beforeLoc loc commentLoc
+                                               ) subLayouts in
+         begin
+           match afterComment with
+           | (* Nothing in the list is after comment, attach comment to the statement before the comment *)
+           [] -> let revBeforeComment = List.rev beforeComment in
+                 let lastItemBeforeComment = List.hd revBeforeComment in
+                 Sequence (listConfig,  (List.rev
+                                           (breakline lastItemBeforeComment (formatComment ~locOpt:commentLoc txt) :: (List.tl revBeforeComment))))
+           | hd::tl ->
+              let afterComment =
+                match getLocFromLayout hd with
+                | Some loc when containLoc loc commentLoc ->
+                   insertSingleLineComment hd comment :: tl
+                | Some loc ->
+                   SourceMap (loc, (prependSingleLineComment ~newlinesAboveDocComments comment hd)) :: tl
+                | _ ->
+                   prependSingleLineComment ~newlinesAboveDocComments comment hd :: tl
+              in
+              Sequence (listConfig, beforeComment @ afterComment)
+         end
+      | Label (formatter, left, right) ->
+         let leftLoc = getLocFromLayout left in
+         let rightLoc = getLocFromLayout right in
+         let newLeft, newRight = match (leftLoc, rightLoc) with
+           | (None, None) ->
+              (left, insertSingleLineComment right comment)
+           | (_, Some loc2) when containLoc loc2 commentLoc ->
+              (left, insertSingleLineComment right comment)
+           | (Some loc1, _) when containLoc loc1 commentLoc ->
+              (insertSingleLineComment left comment, right)
+           | (Some loc1, Some loc2) when beforeLoc commentLoc loc1 ->
+              (prependSingleLineComment comment left, right)
+           | (Some loc1, Some loc2) when beforeLoc commentLoc loc2 ->
+              (left, prependSingleLineComment comment right)
+           | _ -> (left, breakline right (formatComment ~locOpt:commentLoc txt))
+         in
+         Label (formatter, newLeft, newRight)
+
+let rec attachCommentToNodeRight layout ((txt, t, loc) as comment) =
+  match layout with
+  | Sequence (config, sub) when snd config.wrap <> "" ->
+     Sequence ({config with wrap=(fst config.wrap, snd config.wrap ^ " " ^ (wrapComment txt))}, sub)
+  | SourceMap (loc, sub) ->
+     SourceMap (loc, attachCommentToNodeRight sub comment)
+  | layout ->
+     begin
+       match t with
+       | EndOfLine ->
+          WithComment (txt, layout)
+       | _ ->
+          inline ~postSpace:true layout (formatComment txt)
+     end
+
+let rec attachCommentToNodeLeft ((txt, _, loc) as comment) layout =
+  match layout with
+  | Sequence (config, sub) when snd config.wrap <> "" ->
+     Sequence ({config with wrap=(wrapComment txt ^ " " ^ (fst config.wrap), snd config.wrap)}, sub)
+  | SourceMap (loc, sub) ->
+     SourceMap (loc, attachCommentToNodeLeft comment sub )
+  | layout ->
+     Label (autoBreakLabel, (formatComment txt), layout)
+
+let isNone opt =
+  match opt with
+  | None -> true | _ -> false
+
+
+(** [tryPerfectlyAttachComment layout comment] postorderly walk the [layout] and tries
+ *  to perfectly attach a comment with a layout node.
+ *
+ *  Perfectly attach here means a comment's start location is equal to the node's end location
+ *  and vice versa.
+ *
+ *  If the comment can be perfectly attached to any layout node, returns (newLayout, None),
+ *  meaning the comment is consumed. Otherwise returns the (unchangedLayout, Some comment),
+ *  meaning the comment is not consumed.
+ *)
+let rec tryPerfectlyAttachComment layout comment =
+  match comment with
+  | None -> layout, comment
+  | Some ((s, t, commLoc) as c)  -> begin
+     match layout with
+     | Sequence (listConfig, subLayouts) ->
+        let distributeCommentIntoSubLayouts (i, processed, newComment) layout =
+          let (layout, newComment) = tryPerfectlyAttachComment layout newComment in
+          i + 1, layout::processed, newComment
+        in
+        let (_, processed, consumed) = List.fold_left distributeCommentIntoSubLayouts
+                                                      (0, [], comment) (List.rev subLayouts) in
+        Sequence (listConfig, processed), consumed
+     | Label (labelFormatter, left, right) ->
+        let (newRight, comment) = tryPerfectlyAttachComment right comment in
+        let (newLeft, comment) = tryPerfectlyAttachComment left comment in
+        Label (labelFormatter, newLeft, newRight), comment
+     | SourceMap (loc, subLayout) ->
+        if loc.loc_end.Lexing.pos_lnum = loc.loc_start.Lexing.pos_lnum &&
+             commLoc.loc_start.Lexing.pos_cnum = loc.loc_end.Lexing.pos_cnum then
+          SourceMap (loc, makeList ~inline:(true, true) ~break:Always
+                                   [unbreaklayout (attachCommentToNodeRight subLayout c)]), None
+        else
+          let (layout, comment) = tryPerfectlyAttachComment subLayout comment in
+          begin
+            match comment with
+            | None -> (SourceMap (loc, layout), None)
+            | Some ((s, t, commLoc) as comment)->
+               if commLoc.loc_end.Lexing.pos_cnum = loc.loc_start.Lexing.pos_cnum  then
+                 SourceMap (loc, attachCommentToNodeLeft comment layout), None
+               else if commLoc.loc_start.Lexing.pos_cnum = loc.loc_end.Lexing.pos_cnum then
+                 SourceMap (loc, attachCommentToNodeRight layout comment), None
+               else
+                 SourceMap (loc, layout), Some comment
+          end
+     | WithComment (c, sub) ->
+        let (processed, consumed) = tryPerfectlyAttachComment sub comment in
+        WithComment (c, processed), consumed
+     | _ -> layout, comment
+     end
+
+(** [insertComments layout comment] inserts comment into layout*)
+let insertComment layout comment =
+  (* print_layout layout; *)
+  let (txt, t, loc) = comment in
+  let layout = match t with
+  | Regular
+  | EndOfLine ->
+     let (layout, c) = tryPerfectlyAttachComment layout (Some comment) in
+     begin
+     match c with
+     | None -> layout
+     | Some _ -> looselyAttachComment layout comment
+     end
+  | SingleLine -> insertSingleLineComment layout comment
+  in
+  (* print_comments [comment]; *)
+  (* print_layout layout; *)
+  layout
+
+(** [insertComments layout comments] inserts comments into layout*)
+let insertComments = List.fold_left insertComment
+
+(** [isSingleLineComment comment] checks if a comment is singleline comment*)
+let isSingleLineComment (_, t, _) =
+  match t with
+  | SingleLine -> true | _ -> false
+
+let rec layoutToEasyFormat_ = function
+  | Sequence (listConfig, subLayouts) ->
+     easyListWithConfig listConfig (List.map layoutToEasyFormat_ subLayouts)
   | Label (labelFormatter, left, right) ->
-    let (easyLeft, unconsumedComms) = layoutToEasyFormatAndSurplus left comments in
-    let (easyRight, unconsumedComms) = layoutToEasyFormatAndSurplus right unconsumedComms in
-    (labelFormatter easyLeft easyRight, unconsumedComms)
+     labelFormatter (layoutToEasyFormat_ left) (layoutToEasyFormat_ right)
+  | SourceMap (_, subLayout) ->
+     layoutToEasyFormat_ subLayout
+  | WithComment (_, sub) ->
+     layoutToEasyFormat_ sub
+  | Easy e -> e
 
 let layoutToEasyFormatNoComments layoutNode =
-  let (easyFormat, surplus) = layoutToEasyFormatAndSurplus layoutNode [] in
-  easyFormat
+  layoutToEasyFormat_ layoutNode
 
 let layoutToEasyFormat layoutNode comments =
-  let (easyFormat, surplus) = layoutToEasyFormatAndSurplus layoutNode comments in
-  makeEasyList ~break:Always_rec ~indent:0 ~inline:(true, true) (easyFormat :: formatComments surplus)
-
+  let layout = layoutNode in
+  let revComments = List.rev comments in
+  let (singleLineComments, nonSingleLineComments) = (List.partition isSingleLineComment revComments) in
+  let layout = insertComments layout nonSingleLineComments in
+  let layout = consolidateSeparator layout in
+  let layout = insertComments layout singleLineComments in
+  let layout = insertLinesAboveItems layout in
+  (* print_layout layout; *)
+  let easyFormat= layoutToEasyFormat_ layout in
+  (* print_easy_rec easyFormat; *)
+  makeEasyList ~break:Always_rec ~indent:0 ~inline:(true, true) [easyFormat]
 
 let partitionFinalWrapping listTester wrapFinalItemSetting x =
   let rev = List.rev x in
@@ -1624,8 +1934,8 @@ let makeLetSequence letItems =
 
 let makeLetSequenceSingleLine letItems =
   makeList
-    ~break:Never
-    ~inline:(true, true)
+    ~break:IfNeed
+    ~inline:(true, false)
     ~wrap:("{", "}")
     ~newlinesAboveComments:0
     ~newlinesAboveItems:0
@@ -1729,7 +2039,7 @@ let formatIndentedApplication delimiter headApplicationItem argApplicationItems 
     ~space:true
     (match delimiter with
       | None -> headApplicationItem
-      | Some s ->
+      | Some (s, loc) ->
         makeList ~postSpace:true ~interleaveComments:false [headApplicationItem; atom (s)]
     )
     (makeAppList delimiter argApplicationItems)
@@ -1770,7 +2080,7 @@ let formatAttachmentApplication finalWrapping (attachTo: (bool * layoutNode) opt
               ~space:true
               (
                 match delimiter with
-                  | Some s ->
+                  | Some (s, loc) ->
                     makeList ~postSpace:true  [
                       (label ~space:useSpace toThis attachedArgs);
                       (atom s);
@@ -1785,7 +2095,7 @@ let formatAttachmentApplication finalWrapping (attachTo: (bool * layoutNode) opt
             let attachedArgs =
               match delimiter with
                 | None -> appList
-                | Some s -> (label ~space:true appList (atom s))
+                | Some (s, loc) -> label ~space:true appList (atom s)
             in
             maybeSourceMap loc (label ~space:true attachedArgs wrappedListy)
       )
@@ -1856,7 +2166,7 @@ class printer  ()= object(self:'self)
   (* This form allows applicative functors. *)
   method longident_class_or_type_loc x = self#longident x.txt
   (* TODO: Fail if observing applicative functors for this form. *)
-  method longident_loc x = self#longident x.txt
+  method longident_loc (x:Longident.t Location.loc) = SourceMap (x.loc, self#longident (x.txt))
   method constant = wrap default#constant
 
   method constant_string = wrap default#constant_string
@@ -2246,8 +2556,14 @@ class printer  ()= object(self:'self)
         | [] -> SourceMap (li.loc, ensureSingleTokenSticksToLabel (self#longident_loc li))
         | hd::tl ->
             let sourceMappedIdent = SourceMap (li.loc, self#longident_loc li) in
-            let simpleTypeList = (List.map (self#non_arrowed_simple_core_type) (hd::tl)) in
-            (label ~space:true sourceMappedIdent (makeList ~inline:(true, true) ~postSpace:true ~break:IfNeed simpleTypeList))
+
+            let typeList = match tl with
+              | [] -> self#non_arrowed_simple_core_type hd
+              | _ ->
+                 let simpleTypeList = (List.map (self#non_arrowed_simple_core_type) (hd::tl)) in
+                 (makeList ~inline:(true, true) ~postSpace:true ~break:IfNeed simpleTypeList)
+            in
+            (label ~space:true sourceMappedIdent typeList)
       in
       (* It's actually better without this source mapped *)
       constr
@@ -2760,7 +3076,7 @@ class printer  ()= object(self:'self)
             | ((`Infix infixStr), [("", leftExpr); ("", rightExpr)]) -> (
                 match self#consecutiveInfixApplicationItemsRecurse x with
                   | (None, _) -> None
-                  | (Some infixStr, lst) -> Some(infixStr, lst)
+                  | (Some infix, lst) -> Some(infix, lst)
               )
             | _ -> None
         )
@@ -2774,7 +3090,7 @@ class printer  ()= object(self:'self)
   method consecutiveInfixApplicationItemsRecurse x =
     let rightSideContribution infixStr origRight (rightRecurseOp, rightRecurseList) =
       match rightRecurseOp with
-        | (Some s) ->
+        | (Some (s, _)) ->
           if not (s = infixStr) then
             (if (higherPrecedenceThan s infixStr) then [self#expression origRight] else [self#simple_expression origRight])
           else
@@ -2783,7 +3099,7 @@ class printer  ()= object(self:'self)
     in
     let leftSideContribution infixStr origLeft (leftRecurseOp, leftRecurseList) =
       match leftRecurseOp with
-        | (Some s) ->
+        | (Some (s, _)) ->
           if not (s = infixStr) then
             (if (higherPrecedenceThan s infixStr) then [self#expression origLeft] else [self#simple_expression origLeft])
           else
@@ -2798,7 +3114,7 @@ class printer  ()= object(self:'self)
             let leftRecurse = self#consecutiveInfixApplicationItemsRecurse leftExpr in
             let rightItms = rightSideContribution infixStr rightExpr rightRecurse in
             let leftItms = leftSideContribution infixStr leftExpr leftRecurse in
-            ((Some infixStr), List.concat [leftItms; rightItms])
+            ((Some (infixStr, e.pexp_loc)), List.concat [leftItms; rightItms])
           (* Again, it's reall good that this only ever is caught at the
              recursive step - otherwise we'd loop infinitely. *)
           | (`Infix infixStr, lbls) -> (None, [self#expression x])
@@ -2977,16 +3293,18 @@ class printer  ()= object(self:'self)
         let exprWithoutAttrs = {x with pexp_attributes = []} in
         match self#arraySugarApplicationItems x with
           | Some fmt -> ([], [fmt], None, Some x.pexp_loc)
-          | None  -> (
+          | None -> (
             match self#consecutiveInfixApplicationItems x with
-              | Some (operator, items) ->
+              | Some ((operator, loc), items) ->
                 if x.pexp_attributes <> [] then
                   (* We actually have to back out of this computation.  We know
                      that unguarded infix/prefix are not compatible with
                      attributes. Render it as simple. *)
                   ((self#simple_expression exprWithoutAttrs :: attributesAsList), [], None, Some x.pexp_loc)
                 else
-                  (items, [], Some operator, Some x.pexp_loc)
+                  begin
+                  (items, [], Some (operator, loc), Some x.pexp_loc)
+                  end
               | None -> (
                 match self#prefixApplication (e, l) with
                   | Some item ->
@@ -3053,7 +3371,7 @@ class printer  ()= object(self:'self)
             (functorApplicationList me1)
       | _ -> SourceMap (xx.pmod_loc, (self#module_expr xx))::[]
     in
-    (List.rev (functorApplicationList x), None, None)
+    (List.rev (functorApplicationList x), None, Some x.pmod_loc)
 
 
   (*
@@ -3074,7 +3392,7 @@ class printer  ()= object(self:'self)
   *)
 
   method formatSimplePatternBinding labelOpener layoutPattern typeConstraint appTerms =
-    let letPattern = label ~space:true (atom labelOpener) layoutPattern in
+    let letPattern = label ~break:`Never ~space:true (atom labelOpener) layoutPattern in
     let upUntilEqual =
       match typeConstraint with
         | None -> letPattern
@@ -3264,17 +3582,9 @@ class printer  ()= object(self:'self)
               let args = SourceMap (p.ppat_loc, (self#label_exp (label, eo, p)))::nextArgs in
               (args, return)
         | Pexp_newtype (str,e) ->
-            let typeParamLayout = SourceMap (
-              { (* We have to *infer* the location of (type x) *)
-                loc_start = xx.pexp_loc.loc_start;
-                (* We suppose the (type x) ends at the start of expression *)
-                loc_end = e.pexp_loc.loc_start;
-                loc_ghost = false
-              },
-              (atom ("(type " ^ str ^ ")"))
-            ) in
-            let (nextArgs, return) = argsAndReturn e in
-            ((typeParamLayout)::nextArgs, return)
+           let typeParamLayout = atom ("(type " ^ str ^ ")") in
+           let (nextArgs, return) = argsAndReturn e in
+           ((typeParamLayout)::nextArgs, return)
         | _ -> ([], xx)
     in argsAndReturn x
 
@@ -3584,8 +3894,12 @@ class printer  ()= object(self:'self)
         | x::[] -> []
         | x::x2::xtl -> List.map forEachRemaining (x2::xtl)
     ) in
+    match remainingBindings with
+    | [] -> firstLine
+    | _ ->
     makeList
-      ~break:Always_rec
+      ~postSpace:true
+      ~break:Always
       ~indent:0
       ~inline:(true, true)
       (firstLine::remainingBindings)
@@ -3654,7 +3968,7 @@ class printer  ()= object(self:'self)
             openSourceMapped::listItems
       | ([], Pexp_letmodule (s, me, e)) ->
           let prefixText = "let module" in
-          let bindingName = atom s.txt in
+          let bindingName = atom ~loc:s.loc s.txt in
           let moduleExpr = me in
           let letModuleLayout =
             (self#let_module_binding prefixText bindingName moduleExpr) in
@@ -3765,12 +4079,17 @@ class printer  ()= object(self:'self)
             (* Anything that doesn't have wrappers (parens/braces) should be inline
                so that when appearing in other inline contexts, semicolons bind to
                the end etc.  *)
-            makeList
-              ~postSpace:true
-              ~break:IfNeed
-              ~inline:(true, true)
-              ~pad:(false, false)
-              ((atom "fun")::(self#case_list l))
+           let estimatedFunLocation = {
+               loc_start = x.pexp_loc.loc_start;
+               loc_end = {x.pexp_loc.loc_start with pos_cnum = x.pexp_loc.loc_start.Lexing.pos_cnum + 3};
+               loc_ghost = false;
+           } in
+           makeList
+             ~postSpace:true
+             ~break:IfNeed
+             ~inline:(true, true)
+             ~pad:(false, false)
+             ((atom ~loc:estimatedFunLocation "fun") :: (self#case_list l))
           | _ ->
             (* The Pexp_function cases above don't use location because comment printing
               breaks for them. *)
@@ -3800,20 +4119,32 @@ class printer  ()= object(self:'self)
               | Pexp_try (e, l) ->
                 let cases = (self#case_list ~allowUnguardedSequenceBodies:true l) in
                 let switchWith = label ~space:true (atom "try") (self#reset#simple_expression e) in
+                let estimatedBracePoint = {
+                    loc_start = e.pexp_loc.loc_end;
+                    loc_end = x.pexp_loc.loc_end;
+                    loc_ghost = false;
+                  }
+                in
                 label
                   ~space:true
                   switchWith
-                  (makeList ~indent:settings.trySwitchIndent ~wrap:("{", "}") ~break:Always_rec ~postSpace:true cases)
+                  (SourceMap (estimatedBracePoint, (makeList ~indent:settings.trySwitchIndent ~wrap:("{", "}") ~break:Always_rec ~postSpace:true cases)))
               | Pexp_match (e, l) -> (
                   match detectTernary l with
                   | Some (ifTrue, ifFalse) -> self#formatTernary x e ifTrue ifFalse
                   | None ->
                     let cases = (self#case_list ~allowUnguardedSequenceBodies:true l) in
                     let switchWith = label ~space:true (atom "switch") (self#reset#simple_expression e) in
+                    let estimatedBracePoint = {
+                        loc_start = e.pexp_loc.loc_end;
+                        loc_end = x.pexp_loc.loc_end;
+                        loc_ghost = false;
+                      }
+                    in
                     label
                       ~space:true
                       switchWith
-                      (makeList ~indent:settings.trySwitchIndent ~wrap:("{", "}") ~break:Always_rec ~postSpace:true cases)
+                      (SourceMap (estimatedBracePoint, (makeList ~indent:settings.trySwitchIndent ~wrap:("{", "}") ~break:Always_rec ~postSpace:true cases)))
                 )
 
               | Pexp_apply (e, l) -> (
@@ -3831,7 +4162,7 @@ class printer  ()= object(self:'self)
                       formatAttachmentApplication
                         applicationFinalWrapping
                         None
-                        (combinedAppItems appTerms)
+                         (combinedAppItems appTerms)
                 )
               | Pexp_construct (li, Some eo) when not (is_simple_construct (view_expr x)) -> (* Not efficient FIXME*)
                   (match view_expr x with
@@ -3915,7 +4246,7 @@ class printer  ()= object(self:'self)
                 let init =
                   label
                     ~space:true
-                    (label ~space:true (atom "if") (self#simple_expression e1))
+                    (SourceMap (e1.pexp_loc, (label ~space:true (atom "if") (self#simple_expression e1))))
                     (makeLetSequence (self#letList e2)) in
                 sequence init blocks
 
@@ -4104,11 +4435,11 @@ class printer  ()= object(self:'self)
               | ([], sugarExpr::[], _, _) ->
                   (* This can happen in the case of [sugar_expr] [arrayWithTwo.(1) <- 300] *)
                   sugarExpr
-              | appTerms -> makeList ~break:IfNeed ~postSpace:true ~wrap:("(", ")") [
+              | (regularItems, sugaredItems, delimiter, _) -> makeList ~break:IfNeed ~postSpace:true ~wrap:("(", ")") [
                 formatAttachmentApplication
                   applicationFinalWrapping
                   None
-                  (combinedAppItems appTerms)
+                  (combinedAppItems (regularItems, sugaredItems, delimiter, None))
               ]
           )
         | Pexp_pack me ->
@@ -4779,7 +5110,7 @@ class printer  ()= object(self:'self)
         makeList
           ~newlinesAboveComments:1
           ~newlinesAboveItems:1
-          ~newlinesAboveDocComments:2
+          ~newlinesAboveDocComments:1
           ~renderFinalSep:true
           ~postSpace:true
           ~break:Always_rec
@@ -4788,8 +5119,6 @@ class printer  ()= object(self:'self)
           ~sep:";"
           (List.map self#signature_item signatureItems)
       )
-
-
 
   method value_description x =
     if x.pval_prim<>[] then
@@ -4809,7 +5138,7 @@ class printer  ()= object(self:'self)
         | Psig_value vd ->
             let intro = if vd.pval_prim = [] then atom "let" else atom "external" in
             (formatTypeConstraint
-               (label ~space:true intro (protectIdentifier vd.pval_name.txt))
+               (label ~space:true intro (wrapLayoutWithLoc (Some (vd.pval_name.loc)) (protectIdentifier vd.pval_name.txt)))
                (self#value_description vd)
             )
 
@@ -4943,7 +5272,7 @@ class printer  ()= object(self:'self)
       | _ -> [self#module_type xx]
     in
 
-    match x.pmty_desc with
+    let pmty = match x.pmty_desc with
       | Pmty_functor _ ->
           let functorArgs = functorTypeArgs x in
           makeList ~break:IfNeed ~sep:"=>" ~preSpace:true ~postSpace:true ~inline:(true, true) functorArgs
@@ -4992,6 +5321,8 @@ class printer  ()= object(self:'self)
           )
         (* Seems like an infinite loop just waiting to happen. *)
         | _ -> self#non_arrowed_module_type x
+    in
+    SourceMap (x.pmty_loc, pmty)
 
   method simple_module_expr x = match x.pmod_desc with
     | Pmod_unpack e ->
@@ -5059,7 +5390,7 @@ class printer  ()= object(self:'self)
         makeList
           ~newlinesAboveComments:1
           ~newlinesAboveItems:1
-          ~newlinesAboveDocComments:2
+          ~newlinesAboveDocComments:1
           ~renderFinalSep:true
           ~postSpace:true
           ~break:Always_rec
@@ -5151,7 +5482,7 @@ class printer  ()= object(self:'self)
         | Pstr_exception ed -> (self#exception_declaration ed)
         | Pstr_module x ->
             let prefixText = "let module" in
-            let bindingName = atom x.pmb_name.txt in
+            let bindingName = atom ~loc:x.pmb_name.loc x.pmb_name.txt in
             let moduleExpr = x.pmb_expr in
             self#let_module_binding prefixText bindingName moduleExpr
         | Pstr_open od -> (
@@ -5462,9 +5793,9 @@ let core_type f x =
   easyFormatToFormatter f (layoutToEasyFormatNoComments (easy#core_type (apply_mapper_chain_to_type x preprocessing_chain)))
 let pattern f x =
   easyFormatToFormatter f (layoutToEasyFormatNoComments (easy#pattern (apply_mapper_chain_to_pattern x preprocessing_chain)))
-let signature comments f x =
+let signature (comments : commentWithCategory) f x =
   easyFormatToFormatter f (layoutToEasyFormat (easy#signature (apply_mapper_chain_to_signature x preprocessing_chain)) comments)
-let structure comments f x =
+let structure (comments : commentWithCategory) f x =
   easyFormatToFormatter f (layoutToEasyFormat (easy#structure (apply_mapper_chain_to_structure x preprocessing_chain)) comments)
 end
 in
@@ -5474,6 +5805,5 @@ object
   method signature = Formatter.signature
   method structure = Formatter.structure
 end
-
 
 let defaultSettings = defaultSettings

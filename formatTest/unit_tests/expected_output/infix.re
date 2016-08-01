@@ -9,7 +9,6 @@
    infix applications ungrouped in parenthesis (which is what the above test
    verifies), but the additional parenthesis is nice.  */
 /* < > = all have same precedence level/direction(left) */
-
 let parseTree = ((x > y > z) < a < b) == c == d;
 
 let minParens = ((x > y > z) < a < b) == c == d;
@@ -17,11 +16,14 @@ let minParens = ((x > y > z) < a < b) == c == d;
 let formatted = ((x > y > z) < a < b) == c == d;
 
 /* Case with === */
-let parseTree = ((x > y > z) < a < b) === c === d;
+let parseTree =
+  ((x > y > z) < a < b) === c === d;
 
-let minParens = ((x > y > z) < a < b) === c === d;
+let minParens =
+  ((x > y > z) < a < b) === c === d;
 
-let formatted = ((x > y > z) < a < b) === c === d;
+let formatted =
+  ((x > y > z) < a < b) === c === d;
 
 /* < > = all have same precedence level and direction (left) */
 let parseTree =
@@ -168,11 +170,13 @@ let curriedComparison = (==) 10;
 
 let resultOfAdd = 10 + 20 + 40;
 
-let resultOfAddAndMult = 10 * 1 + 20 * 1 + 40 * 1;
+let resultOfAddAndMult =
+  10 * 1 + 20 * 1 + 40 * 1;
 
 let greaterThanAndSubtract = 1 - 2 > 4 + 3;
 
-let greaterThanAndFunctionCalls = pred 1 > pred 2;
+let greaterThanAndFunctionCalls =
+  pred 1 > pred 2;
 
 let lessThanAndFunctionCalls = pred 1 < pred 2;
 
@@ -233,7 +237,8 @@ first |> second third::third;
 
 let leftAssocGrouping = first |> second |> third;
 
-let rightAssocGrouping = first ^> second ^> third;
+let rightAssocGrouping =
+  first ^> second ^> third;
 
 /* It's definitely the caret. */
 let seeWhichCharacterHasHigherPrecedence =
@@ -287,8 +292,7 @@ let includesACommentCloseInIdentifier = ( *\*\/ );
 
 let includesACommentCloseInIdentifier = ( *\*\/ );
 
-let
-  shouldSimplifyAnythingExceptApplicationAndConstruction =
+let shouldSimplifyAnythingExceptApplicationAndConstruction =
   call "hi" ^
     (
       switch x {
@@ -298,6 +302,7 @@ let
     "yo";
 
 /* Add tests with IF/then mixed with infix/constructor application on left and right sides */
+
 /**
  * Every star or forward slash after the character of an infix operator must be
  * escaped.

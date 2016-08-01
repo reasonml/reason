@@ -124,14 +124,12 @@ let setup_lexbuf use_stdin filename =
   Location.init lexbuf filename;
   lexbuf
 
-(* (comment text, attachment_location, physical location) *)
-type attached_comments = (String.t * Location.t * Location.t) list
 
 module type Toolchain = sig
   (* Parsing *)
-  val canonical_core_type_with_comments: Lexing.lexbuf -> (Parsetree.core_type * attached_comments)
-  val canonical_implementation_with_comments: Lexing.lexbuf -> (Parsetree.structure * attached_comments)
-  val canonical_interface_with_comments: Lexing.lexbuf -> (Parsetree.signature * attached_comments)
+  val canonical_core_type_with_comments: Lexing.lexbuf -> (Parsetree.core_type * Reason_pprint_ast.commentWithCategory)
+  val canonical_implementation_with_comments: Lexing.lexbuf -> (Parsetree.structure * Reason_pprint_ast.commentWithCategory)
+  val canonical_interface_with_comments: Lexing.lexbuf -> (Parsetree.signature * Reason_pprint_ast.commentWithCategory)
 
   val canonical_core_type: Lexing.lexbuf -> Parsetree.core_type
   val canonical_implementation: Lexing.lexbuf -> Parsetree.structure
@@ -140,14 +138,14 @@ module type Toolchain = sig
   val canonical_use_file: Lexing.lexbuf -> Parsetree.toplevel_phrase list
 
   (* Printing *)
-  val print_canonical_interface_with_comments: (Parsetree.signature * attached_comments) -> unit
-  val print_canonical_implementation_with_comments: (Parsetree.structure * attached_comments) -> unit
+  val print_canonical_interface_with_comments: (Parsetree.signature * Reason_pprint_ast.commentWithCategory) -> unit
+  val print_canonical_implementation_with_comments: (Parsetree.structure * Reason_pprint_ast.commentWithCategory) -> unit
 
 end
 
 module type Toolchain_spec = sig
   val safeguard_parsing: Lexing.lexbuf ->
-    (unit -> ('a * attached_comments)) -> ('a * attached_comments)
+    (unit -> ('a * Reason_pprint_ast.commentWithCategory)) -> ('a * Reason_pprint_ast.commentWithCategory)
 
   module rec Lexer_impl: sig
     val init: unit -> unit
@@ -165,8 +163,8 @@ module type Toolchain_spec = sig
   val toplevel_phrase: Lexing.lexbuf -> Parsetree.toplevel_phrase
   val use_file: Lexing.lexbuf -> Parsetree.toplevel_phrase list
 
-  val format_interface_with_comments: (Parsetree.signature * attached_comments) -> Format.formatter -> unit
-  val format_implementation_with_comments: (Parsetree.structure * attached_comments) -> Format.formatter -> unit
+  val format_interface_with_comments: (Parsetree.signature * Reason_pprint_ast.commentWithCategory) -> Format.formatter -> unit
+  val format_implementation_with_comments: (Parsetree.structure * Reason_pprint_ast.commentWithCategory) -> Format.formatter -> unit
 end
 
 let line_content = Re_str.regexp "[^ \t]+"
@@ -174,6 +172,29 @@ let line_content = Re_str.regexp "[^ \t]+"
    an item is the last thing on the line. *)
 let space_before_newline = Re_str.regexp "[,; \t]*$"
 let new_line = Re_str.regexp "^"
+
+let rec left_expand_comment should_scan_prev_line source loc_start =
+  if loc_start = 0 then
+    (String.unsafe_get source 0, true, 0)
+  else
+    let c = String.unsafe_get source (loc_start - 1) in
+    match c with
+    | '\t' | ' ' -> left_expand_comment should_scan_prev_line source (loc_start - 1)
+    | '\n' when should_scan_prev_line -> left_expand_comment should_scan_prev_line source (loc_start - 1)
+    | '\n' -> (c, true, loc_start)
+    | _ -> (c, false, loc_start)
+
+let rec right_expand_comment should_scan_next_line source loc_start =
+  if loc_start = String.length source then
+    (String.unsafe_get source (String.length source - 1), true, String.length source)
+  else
+    let c = String.unsafe_get source loc_start in
+    match c with
+    | '\t' | ' ' -> right_expand_comment should_scan_next_line source (loc_start + 1)
+    | '\n' when should_scan_next_line -> right_expand_comment should_scan_next_line source (loc_start + 1)
+    | '\n' -> (c, true, loc_start)
+    | _ -> (c, false, loc_start)
+
 
 module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = struct
   let wrap_with_comments parsing_fun lexbuf =
@@ -184,39 +205,54 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
       match !chan_input with
         | "" ->
           let _  = Parsing.clear_parser() in
-          (ast, unmodified_comments |> List.map (fun (txt, phys_loc) -> (txt, phys_loc, phys_loc)))
+          (ast, unmodified_comments |> List.map (fun (txt, phys_loc) -> (txt, Reason_pprint_ast.Regular, phys_loc)))
         | _ ->
-          let modified_and_attached_comments =
+          let modified_and_comment_with_category =
             List.map (fun (str, physical_loc) ->
               (* When searching for "^" regexp, returns location of newline + 1 *)
-              let first_char_of_line = Re_str.search_backward new_line !chan_input physical_loc.loc_start.pos_cnum in
+              let (stop_char, eol_start, virtual_start_pos) = left_expand_comment false !chan_input physical_loc.loc_start.pos_cnum in
+              let one_char_before_stop_char =
+                if virtual_start_pos <= 1 then
+                  ' '
+                else
+                  String.unsafe_get !chan_input (virtual_start_pos - 2)
+              in
+              (*
+               *
+               * The following logic are designed for cases like:
+               * | (* comment *)
+               *   X => 1
+               * we want to extend the comment to the next line so it can be
+               * correctly attached to X
+               *
+               * But we don't want it to extend to next line in this case:
+               *
+               * true || (* comment *)
+               *   fasle
+               *
+               *)
+              let should_scan_next_line = stop_char = '|' &&
+                                          (one_char_before_stop_char = ' ' ||
+                                          one_char_before_stop_char = '\n' ||
+                                          one_char_before_stop_char = '\t' ) in
+              let (stop_char, eol_end, virtual_end_pos) = right_expand_comment should_scan_next_line !chan_input physical_loc.loc_end.pos_cnum in
               let end_pos_plus_one = physical_loc.loc_end.pos_cnum in
               let comment_length = (end_pos_plus_one - physical_loc.loc_start.pos_cnum - 4) in
-              (* Also, the string contents originally reported are incorrect! *)
               let original_comment_contents = String.sub !chan_input (physical_loc.loc_start.pos_cnum + 2) comment_length in
-              let (com, attachment_location) =
-                match Re_str.search_forward line_content !chan_input first_char_of_line
-                with
-                  | n ->
-                    (* Recall that all end positions are actually the position of end + 1. *)
-                    let one_greater_than_comment_end = end_pos_plus_one in
-                    (* Re_str.string_match lets you specify a position one greater than last position *)
-                    let comment_is_last_thing_on_line =
-                      Re_str.string_match space_before_newline !chan_input one_greater_than_comment_end in
-                    if n < physical_loc.loc_start.pos_cnum && comment_is_last_thing_on_line then (
-                      original_comment_contents,
-                      {physical_loc with loc_start = {physical_loc.loc_start with pos_cnum = n}}
-                    )
-                    else
-                      (original_comment_contents, physical_loc)
-                  | exception Not_found -> (original_comment_contents, physical_loc)
+              let t = match (eol_start, eol_end) with
+              | (true, true) -> Reason_pprint_ast.SingleLine
+              | (false, true) -> Reason_pprint_ast.EndOfLine
+              | _ -> Reason_pprint_ast.Regular
               in
-              (com, attachment_location, physical_loc)
+              let start_pos = virtual_start_pos in
+              (original_comment_contents, t,
+               {physical_loc with loc_start = {physical_loc.loc_start with pos_cnum = start_pos};
+                                  loc_end = {physical_loc.loc_end with pos_cnum = virtual_end_pos}})
             )
             unmodified_comments
           in
           let _  = Parsing.clear_parser() in
-          (ast, modified_and_attached_comments)
+          (ast, modified_and_comment_with_category)
     )
 
   (*
@@ -329,7 +365,6 @@ module JS_syntax = struct
   module I = Reason_parser.MenhirInterpreter
   module Lexer_impl = Reason_lexer
   module Parser_impl = Reason_parser
-
 
   let initial_checkpoint constructor lexbuf =
     (constructor lexbuf.lex_curr_p)
@@ -557,7 +592,6 @@ module JS_syntax = struct
   let format_implementation_with_comments (implementation, comments) formatter =
     let reason_formatter = Reason_pprint_ast.createFormatter () in
     reason_formatter#structure comments formatter implementation
-
 end
 
 module ML = Create_parse_entrypoint (OCaml_syntax)

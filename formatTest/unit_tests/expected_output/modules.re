@@ -1,5 +1,4 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
-
 let run () => TestUtils.printSection "Modules";
 
 
@@ -39,6 +38,7 @@ let result = MyFirstModule.x + MyFirstModule.y;
  * - The exported fields of a module must be listed within `{}` braces and each
  * exported value binding is specified via a `let` keyword.
  */
+
 /**
  * Another way that modules are more powerful than records, is that they may
  * also export types.
@@ -82,6 +82,7 @@ module type MySecondModuleType = {
  let y = x + x;
  };
  */
+
 /**
  * - Modules may be artificially "constrained" so that users of a module see
  * fewer details than are actually present.
@@ -141,8 +142,7 @@ let module EmbedsSubPolyModule: HasSubPolyModule = {
   let module X = {type t 'a = list 'a;};
 };
 
-let module
-  EmbedsDestructivelySubstitutedPolyModule:
+let module EmbedsDestructivelySubstitutedPolyModule:
   HasDestructivelySubstitutedSubPolyModule = {
   let module X = {type t = list (int, int);};
 };
@@ -154,7 +154,8 @@ module type HasMultiPolyType = {
 
 module type HasDestructivelySubstitutedMultiPolyType =
   HasMultiPolyType with
-    type substituteThis 'a 'b := Hashtbl.t 'a 'b and
+    type substituteThis 'a 'b :=
+      Hashtbl.t 'a 'b and
     type substituteThat 'a 'b := Hashtbl.t 'a 'b;
 
 let module InliningSig: {let x: int; let y: int;} = {
@@ -169,6 +170,7 @@ let module InliningSig: {let x: int; let y: int;} = {
 let module MyFunctor (M: HasTT) => {
   type reexportedTT = M.tt;
   /* Inline comment inside module. */
+
   /** Following special comment inside module. */
   let someValue = 1000;
 };
@@ -194,13 +196,9 @@ module type ASig = {let a: int;};
 
 module type BSig = {let b: int;};
 
-let module AMod = {
-  let a = 10;
-};
+let module AMod = {let a = 10;};
 
-let module BMod = {
-  let b = 10;
-};
+let module BMod = {let b = 10;};
 
 let module CurriedSugar (A: ASig) (B: BSig) => {
   let result = A.a + B.b;
@@ -285,25 +283,13 @@ let module CurriedSugarFunctorResult =
   CurriedSugar AMod BMod;
 
 let module CurriedSugarFunctorResultInline =
-  CurriedSugar
-    {
-      let a = 10;
-    }
-    {
-      let b = 10;
-    };
+  CurriedSugar {let a = 10;} {let b = 10;};
 
 let module CurriedNoSugarFunctorResult =
   CurriedNoSugar AMod BMod;
 
 let module CurriedNoSugarFunctorResultInline =
-  CurriedNoSugar
-    {
-      let a = 10;
-    }
-    {
-      let b = 10;
-    };
+  CurriedNoSugar {let a = 10;} {let b = 10;};
 
 let module ResultFromNonSimpleFunctorArg =
   CurriedNoSugar (MakeAModule {}) BMod;
@@ -344,23 +330,17 @@ let module CurriedSugarWithAnnotation:
 
 /* "functors" that are not in sugar curried form cannot annotate a return type
  * for now, so we settle for: */
-let module
-  CurriedSugarWithAnnotationAndReturnAnnotated:
+let module CurriedSugarWithAnnotationAndReturnAnnotated:
   ASig => BSig => SigResult =
   fun (A: ASig) (B: BSig) => (
-    {
-      let result = A.a + B.b;
-    }:
-      SigResult
+    {let result = A.a + B.b;}: SigResult
   );
 
 let module ReturnsAFunctor
            (A: ASig)
            (B: BSig)
            :(ASig => BSig => SigResult) =>
-  fun (A: ASig) (B: BSig) => {
-    let result = 10;
-  };
+  fun (A: ASig) (B: BSig) => {let result = 10;};
 
 let module ReturnsSigResult
            (A: ASig)
@@ -373,9 +353,7 @@ let module ReturnsAFunctor2
            (A: ASig)
            (B: BSig)
            :(ASig => BSig => SigResult) =>
-  fun (A: ASig) (B: BSig) => {
-    let result = 10;
-  };
+  fun (A: ASig) (B: BSig) => {let result = 10;};
 
 /*
  * Recursive modules.
@@ -413,7 +391,9 @@ module type Type = {type t;};
 
 let module Char = {type t = char;};
 
-let module List (X: Type) => {type t = list X.t;};
+let module List (X: Type) => {
+  type t = list X.t;
+};
 
 let module Maybe (X: Type) => {
   type t = option X.t;
@@ -431,6 +411,7 @@ let module Compose
 let l: Compose(List)(Maybe)(Char).t = [Some 'a'];
 
 let module Example2 (F: Type => Type) (X: Type) => {
+
   /**
    * Note: This is the one remaining syntactic issue where
    * modules/functions do not have syntax unified with values.
@@ -469,9 +450,7 @@ include YourLib.CreateComponent {
 
 module type HasInt = {let x: int;};
 
-let module MyModule = {
-  let x = 10;
-};
+let module MyModule = {let x = 10;};
 
 let myFirstClass: (module HasInt) =
   (module MyModule);

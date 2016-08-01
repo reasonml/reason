@@ -1575,11 +1575,6 @@ let blah = fun arg => switch arg {
     Red _ => 1
   /* Comment Before non-first bar */
   | /* Comment betwen bar/pattern */
-    /* (In OCaml but not Reason) These will be formatted into the wrong place
-     * and there's nothing you can do about it because the bar essentially
-     * doesn't exist once parsed - its location is lost - "case"s don't have
-     * locs.
-     */
     Black _ => 0
   | Green _ => 0
 };
@@ -1782,7 +1777,7 @@ let /*beforePattern*/ /*beforePattern2 */ commentingBeforePattern2 : withThreeFi
   occupation: "programmer"
 };
 
-let /**beforePattern*/ /*beforePattern2 */ commentingBeforePatternSpecial : withThreeFields = {
+let /*beforePattern*/ /*beforePattern2 */ commentingBeforePatternSpecial : withThreeFields = {
   name: "hello",
   age: 20,
   occupation: "programmer"
