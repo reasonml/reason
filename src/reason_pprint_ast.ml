@@ -379,7 +379,7 @@ let rec sequentialIfBlocks x =
 
 let prefix_symbols  = [ '!'; '?'; '~' ] ;;
 let infix_symbols = [ '='; '<'; '>'; '@'; '^'; '|'; '&'; '+'; '-'; '*'; '/';
-                      '$'; '%'; '\\' ]
+                      '$'; '%'; '\\'; '#' ]
 let operator_chars = [ '!'; '$'; '%'; '&'; '*'; '+'; '-'; '.'; '/';
                        ':'; '<'; '='; '>'; '?'; '@'; '^'; '|'; '~' ]
 let numeric_chars  = [ '0'; '1'; '2'; '3'; '4'; '5'; '6'; '7'; '8'; '9' ]
@@ -403,6 +403,9 @@ let rules = [
       (fun s -> (`Right, s = "lsl"));
       (fun s -> (`Right, s = "lsr"));
       (fun s -> (`Right, s = "asr"));
+    ];
+    [
+      (fun s -> (`Left, s.[0] == '#'));
     ];
     [
       (fun s -> (`Left, s.[0] == '*' && (String.length s == 1 || s != "*\\*")));
