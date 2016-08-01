@@ -158,7 +158,7 @@ type listConfig = {
  *)
 type layoutNode =
   | SourceMap of Location.t * layoutNode (* a layout with location info *)
-  | WithComment of string * layoutNode (* a layout with comment attached *)
+  | WithEOLComment of string * layoutNode (* a layout with comment attached *)
   | Sequence of listConfig * (layoutNode list)
   | Label of easyFormatLabelFormatter * layoutNode * layoutNode
   | Easy of Easy_format.t
@@ -233,8 +233,8 @@ let rec print_layout ?(indent=0) layout =
      printf "%s Sequence of %d, sep: %s stick_to_left: %s break: %s\n" space (List.length layout_list) config.sep (string_of_bool config.sepLeft) break;
      let _ = List.map (print_layout ~indent:(indent+2)) layout_list in
      ()
-  | WithComment (comment, layout) ->
-     printf "%s WithComment: \n" space;
+  | WithEOLComment (comment, layout) ->
+     printf "%s WithEOLComment: \n" space;
      printf "  %s node \n" space;
      print_layout ~indent:(indent+2) layout;
      printf "  %s comments : \n" space;
@@ -1173,30 +1173,12 @@ let unbreakLabelFormatter formatter =
     | _ -> failwith "not a label"
   in newFormatter
 
-let easyLabelForEolComment labelTerm term =
-  let settings = {
-    label_break = `Never;
-    space_after_label = false;
-    indent_after_label = 0;
-    label_style = Some "commentAttachment";
-  } in
-  Easy_format.Label ((labelTerm, settings), term)
-
-let autoBreakLabel labelTerm term =
+let inlineLabel labelTerm term =
   let settings = {
     label_break = `Never;
     space_after_label = true;
     indent_after_label = 0;
-    label_style = Some "autoBreakLabel";
-  } in
-  Easy_format.Label ((labelTerm, settings), term)
-
-let easyLabelForEolCommentOnLabelRight labelTerm term =
-  let settings = {
-    label_break = `Never;
-    space_after_label = true;
-    indent_after_label = 0;
-    label_style = Some "labelCommentAttachment";
+    label_style = Some "inlineLabel";
   } in
   Easy_format.Label ((labelTerm, settings), term)
 
@@ -1416,7 +1398,7 @@ let convertIsListyToIsSequencey isListyImpl =
   let rec isSequencey layoutNode = match layoutNode with
     | SourceMap (_, subLayoutNode) -> isSequencey subLayoutNode
     | Sequence _ -> true
-    | WithComment (_, sub) -> isSequencey sub
+    | WithEOLComment (_, sub) -> isSequencey sub
     | Label (_, _, _) -> false
     | Easy easy -> isListyImpl easy
   in
@@ -1470,7 +1452,7 @@ let formatComment ?locOpt txt =
 
 (** [hasComment layout] checks if a layout has comment attached to it *)
 let rec hasComment = function
-  | WithComment (_, _) -> true
+  | WithEOLComment (_, _) -> true
   | SourceMap (_, sub) -> hasComment sub
   | _ -> false
 
@@ -1500,7 +1482,7 @@ let appendSep spaceBeforeSep sep layout =
   append sep layout
 
 let rec flattenCommentAndSep ?spaceBeforeSep:(spaceBeforeSep=false) ?sep = function
-  | WithComment (txt, sub) ->
+  | WithEOLComment (txt, sub) ->
      begin
        match sep with
        | None -> append ~space:true (wrapComment txt) sub
@@ -1530,9 +1512,9 @@ let rec preOrderWalk f layout =
   | SourceMap (loc, sub) ->
      let newSub = preOrderWalk f sub in
      SourceMap (loc, newSub)
-  | WithComment (c, sub) ->
+  | WithEOLComment (c, sub) ->
      let newSub = preOrderWalk f sub in
-     WithComment (c, newSub)
+     WithEOLComment (c, newSub)
   | _ -> layout
 
 (** Recursively unbreaks a layout to make sure they stay within the same line *)
@@ -1566,7 +1548,7 @@ let consolidateSeparator = preOrderWalk (function
      let sep = "" in
      let preSpace = false in
      Sequence ({listConfig with sep; break; preSpace}, layoutsWithSepAndComment)
-  | WithComment _ as layout ->
+  | WithEOLComment _ as layout ->
      makeList ~inline:(true, true) ~postSpace:false ~preSpace:true ~indent:0
               ~break:Always_rec [flattenCommentAndSep layout]
   | layout -> layout
@@ -1605,7 +1587,7 @@ let rec getLocFromLayout = function
      unionLoc leftLoc rightLoc
   | SourceMap (loc, _) ->
      Some loc
-  | WithComment (_, sub) ->
+  | WithEOLComment (_, sub) ->
      getLocFromLayout sub
   | _ -> None
 
@@ -1622,8 +1604,8 @@ let containLoc loc1 loc2 =
 let beforeLoc loc1 loc2 =
   loc1.loc_end.Lexing.pos_cnum <= loc2.loc_start.Lexing.pos_cnum
 
-let rec attachEOLComment layout txt =
-  WithComment (txt, layout)
+let attachEOLComment layout txt =
+  WithEOLComment (txt, layout)
 
 
 (**
@@ -1649,8 +1631,8 @@ let isDocComment (c, _, _) = String.length c > 0 && c.[0] == '*'
 let rec prependSingleLineComment ?newlinesAboveDocComments:(newlinesAboveDocComments=0) comment layout =
   let (txt, _, loc) = comment in
   match layout with
-  | WithComment (c, sub) ->
-     WithComment (c, prependSingleLineComment ~newlinesAboveDocComments comment sub)
+  | WithEOLComment (c, sub) ->
+     WithEOLComment (c, prependSingleLineComment ~newlinesAboveDocComments comment sub)
   | SourceMap (loc, sub) ->
      SourceMap (loc, prependSingleLineComment ~newlinesAboveDocComments comment sub)
   | Sequence (config, hd::tl) when config.break = Always_rec->
@@ -1670,10 +1652,10 @@ let rec looselyAttachComment layout ((txt, _, commentLoc) as comment) =
   match layout with
   | SourceMap (loc, sub) ->
      SourceMap (loc, looselyAttachComment sub comment)
-  | WithComment (c, sub) ->
-     WithComment (c, looselyAttachComment sub comment)
+  | WithEOLComment (c, sub) ->
+     WithEOLComment (c, looselyAttachComment sub comment)
   | Easy e ->
-     attachEOLComment layout txt
+     inline ~postSpace:true layout (formatComment txt)
   | Sequence (listConfig, subLayouts) when anySublayoutContainLocation commentLoc subLayouts ->
      (* If any of the subLayout strictly contains this comment, recurse into to it *)
      let subLayouts = List.map (fun layout ->
@@ -1722,8 +1704,8 @@ let rec insertSingleLineComment layout comment =
       match layout with
       | SourceMap (loc, sub) ->
          SourceMap (loc, insertSingleLineComment sub comment)
-      | WithComment (c, sub) ->
-         WithComment (c, insertSingleLineComment sub comment)
+      | WithEOLComment (c, sub) ->
+         WithEOLComment (c, insertSingleLineComment sub comment)
       | Easy e ->
          prependSingleLineComment comment layout
       | Sequence (listConfig, subLayouts) ->
@@ -1780,7 +1762,7 @@ let rec attachCommentToNodeRight layout ((txt, t, loc) as comment) =
      begin
        match t with
        | EndOfLine ->
-          WithComment (txt, layout)
+          WithEOLComment (txt, layout)
        | _ ->
           inline ~postSpace:true layout (formatComment txt)
      end
@@ -1792,7 +1774,7 @@ let rec attachCommentToNodeLeft ((txt, _, loc) as comment) layout =
   | SourceMap (loc, sub) ->
      SourceMap (loc, attachCommentToNodeLeft comment sub )
   | layout ->
-     Label (autoBreakLabel, (formatComment txt), layout)
+     Label (inlineLabel, (formatComment txt), layout)
 
 let isNone opt =
   match opt with
@@ -1844,13 +1826,13 @@ let rec tryPerfectlyAttachComment layout comment =
                else
                  SourceMap (loc, layout), Some comment
           end
-     | WithComment (c, sub) ->
+     | WithEOLComment (c, sub) ->
         let (processed, consumed) = tryPerfectlyAttachComment sub comment in
-        WithComment (c, processed), consumed
+        WithEOLComment (c, processed), consumed
      | _ -> layout, comment
      end
 
-(** [insertComments layout comment] inserts comment into layout*)
+(** [insertComment layout comment] inserts comment into layout*)
 let insertComment layout comment =
   (* print_layout layout; *)
   let (txt, t, loc) = comment in
@@ -1884,14 +1866,16 @@ let rec layoutToEasyFormat_ = function
      labelFormatter (layoutToEasyFormat_ left) (layoutToEasyFormat_ right)
   | SourceMap (_, subLayout) ->
      layoutToEasyFormat_ subLayout
-  | WithComment (_, sub) ->
+  | WithEOLComment (_, sub) ->
      layoutToEasyFormat_ sub
   | Easy e -> e
 
 let layoutToEasyFormatNoComments layoutNode =
   layoutToEasyFormat_ layoutNode
 
+
 let layoutToEasyFormat layoutNode comments =
+  (* print_layout layoutNode; *)
   let layout = layoutNode in
   let revComments = List.rev comments in
   let (singleLineComments, nonSingleLineComments) = (List.partition isSingleLineComment revComments) in
@@ -1899,7 +1883,6 @@ let layoutToEasyFormat layoutNode comments =
   let layout = consolidateSeparator layout in
   let layout = insertComments layout singleLineComments in
   let layout = insertLinesAboveItems layout in
-  (* print_layout layout; *)
   let easyFormat= layoutToEasyFormat_ layout in
   (* print_easy_rec easyFormat; *)
   makeEasyList ~break:Always_rec ~indent:0 ~inline:(true, true) [easyFormat]
