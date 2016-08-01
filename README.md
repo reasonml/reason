@@ -55,6 +55,10 @@ Check out the [docs](http://facebook.github.io/reason) which guide you through t
 Contribute back to that documentation in the [documentation branch](https://github.com/facebook/reason/tree/gh-pages).
 
 
+Community
+---------------
+Get in touch! We're on IRC freenode #reasonml, and [Gitter](https://gitter.im/facebook/reason).
+
 
 License
 -------
