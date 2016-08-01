@@ -20,7 +20,8 @@
     "ocaml": "https://github.com/npm-ml/ocaml.git#npm-4.02.3",
     "easy-format": "https://github.com/npm-ml/easy-format.git#npm-1.2.0",
     "merlin-extend": "https://github.com/npm-ml/merlin-extend.git#npm-0.0.1",
-    "dependency-env": "https://github.com/npm-ml/dependency-env.git"
+    "dependency-env": "https://github.com/npm-ml/dependency-env.git",
+    "re": "https://github.com/npm-ml/re.git#npm-1.6.0"
   },
   "exportedEnvVars": {
     "PATH": {

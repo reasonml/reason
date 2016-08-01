@@ -452,7 +452,7 @@ let rules = [
 ]
 (* without_prefixed_backslashes removes any prefixing backslashes *)
 let without_prefixed_backslashes str =
-  Str.replace_first (Str.regexp "\\\\*\\(.*\\)") ("\\1") str
+  Re_str.replace_first (Re_str.regexp "\\\\*\\(.*\\)") ("\\1") str
 
 (* Assuming it's an infix function application. *)
 let associatedInfixFunctionPrecedence s =
@@ -1167,7 +1167,7 @@ let isListy = function
 
 
 let strip_trailing_whitespace str =
-   Str.global_replace (Str.regexp " +$") "" str
+   Re_str.global_replace (Re_str.regexp " +$") "" str
 
 let easyFormatToFormatter f x =
   let buf = Buffer.create 1000 in
@@ -1235,20 +1235,20 @@ let space = " "
 (* Can't you tell the difference? *)
 let tab = "	"
 let lineZeroHasMeaningfulContent str =
-  not (Str.string_match (Str.regexp ("^/[\\*" ^ space ^ tab ^ "]*$")) str 0)
+  not (Re_str.string_match (Re_str.regexp ("^/[\\*" ^ space ^ tab ^ "]*$")) str 0)
 
 let beginsWithStar str =
-  Str.string_match (Str.regexp ("^[" ^ space ^ tab ^ "]*\\*")) str 0
+  Re_str.string_match (Re_str.regexp ("^[" ^ space ^ tab ^ "]*\\*")) str 0
 
 let numLeadingSpace str =
   (* Actually, always true *)
-  if Str.string_match (Str.regexp ("^[" ^ space ^ tab ^ "]*")) str 0 then
-    String.length (Str.matched_string str)
+  if Re_str.string_match (Re_str.regexp ("^[" ^ space ^ tab ^ "]*")) str 0 then
+    String.length (Re_str.matched_string str)
   else 0
 
 let spaceBeforeMeaningfulContent str =
-  if Str.string_match (Str.regexp ("^/[\\*" ^ space ^ tab ^ "]*")) str 0 then
-    String.length (Str.matched_string str)
+  if Re_str.string_match (Re_str.regexp ("^/[\\*" ^ space ^ tab ^ "]*")) str 0 then
+    String.length (Re_str.matched_string str)
   else 0
 
 (* Computes the smallest leading spaces for non-empty lines *)
@@ -1266,7 +1266,7 @@ let smallestLeadingSpaces strs =
   smallestLeadingSpaces 99999 strs
 
 let formatItemComment (str, commLoc, physCommLoc) =
-  let commLines = Str.split_delim (Str.regexp "\n") ("/*" ^ str ^ "*/") in
+  let commLines = Re_str.split_delim (Re_str.regexp "\n") ("/*" ^ str ^ "*/") in
   match commLines with
   | [] -> easyAtom ""
   | [hd] ->
