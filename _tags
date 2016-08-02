@@ -4,9 +4,9 @@ true: warn(@5@8@10@11@12@14@23-24@26@29@40), bin_annot, safe_string, debug
 <node_modules/**>: -traverse
 "formatTest": -traverse
 "src": include
-<src/*>: package(menhirLib unix compiler-libs.common ocamlbuild findlib easy-format str BetterErrors merlin_extend re.str)
-<src/reason_utop.*>: package(menhirLib utop str re.str)
+<src/*>: package(menhirLib unix compiler-libs.common ocamlbuild findlib easy-format BetterErrors merlin_extend re.str)
+<src/reason_utop.*>: package(menhirLib utop)
 
-<src_gen/*>: package(sedlex str)
+<src_gen/*>: package(sedlex)
 
 <src_test/*>|<src_test/**/*>: debug, reason, package(oUnit)
