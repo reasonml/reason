@@ -114,7 +114,9 @@ let opensAModuleLocally = {
 
 module type HasTT = {type tt;};
 
-let module SubModule: HasTT = {type tt = int;};
+let module SubModule: HasTT = {
+  type tt = int;
+};
 
 module type HasEmbeddedHasTT = {
   let module SubModuleThatHasTT = SubModule;
@@ -139,12 +141,16 @@ module type HasSubPolyModule = {
 };
 
 let module EmbedsSubPolyModule: HasSubPolyModule = {
-  let module X = {type t 'a = list 'a;};
+  let module X = {
+    type t 'a = list 'a;
+  };
 };
 
 let module EmbedsDestructivelySubstitutedPolyModule:
   HasDestructivelySubstitutedSubPolyModule = {
-  let module X = {type t = list (int, int);};
+  let module X = {
+    type t = list (int, int);
+  };
 };
 
 module type HasMultiPolyType = {
@@ -196,9 +202,13 @@ module type ASig = {let a: int;};
 
 module type BSig = {let b: int;};
 
-let module AMod = {let a = 10;};
+let module AMod = {
+  let a = 10;
+};
 
-let module BMod = {let b = 10;};
+let module BMod = {
+  let b = 10;
+};
 
 let module CurriedSugar (A: ASig) (B: BSig) => {
   let result = A.a + B.b;
@@ -283,16 +293,32 @@ let module CurriedSugarFunctorResult =
   CurriedSugar AMod BMod;
 
 let module CurriedSugarFunctorResultInline =
-  CurriedSugar {let a = 10;} {let b = 10;};
+  CurriedSugar
+    {
+      let a = 10;
+    }
+    {
+      let b = 10;
+    };
 
 let module CurriedNoSugarFunctorResult =
   CurriedNoSugar AMod BMod;
 
 let module CurriedNoSugarFunctorResultInline =
-  CurriedNoSugar {let a = 10;} {let b = 10;};
+  CurriedNoSugar
+    {
+      let a = 10;
+    }
+    {
+      let b = 10;
+    };
 
 let module ResultFromNonSimpleFunctorArg =
-  CurriedNoSugar (MakeAModule {}) BMod;
+  CurriedNoSugar
+    (
+      MakeAModule {}
+    )
+    BMod;
 
 /* TODO: Functor type signatures should more resemble value signatures */
 let curriedFunc: int => int => int =
@@ -333,14 +359,19 @@ let module CurriedSugarWithAnnotation:
 let module CurriedSugarWithAnnotationAndReturnAnnotated:
   ASig => BSig => SigResult =
   fun (A: ASig) (B: BSig) => (
-    {let result = A.a + B.b;}: SigResult
+    {
+      let result = A.a + B.b;
+    }:
+      SigResult
   );
 
 let module ReturnsAFunctor
            (A: ASig)
            (B: BSig)
            :(ASig => BSig => SigResult) =>
-  fun (A: ASig) (B: BSig) => {let result = 10;};
+  fun (A: ASig) (B: BSig) => {
+    let result = 10;
+  };
 
 let module ReturnsSigResult
            (A: ASig)
@@ -353,7 +384,9 @@ let module ReturnsAFunctor2
            (A: ASig)
            (B: BSig)
            :(ASig => BSig => SigResult) =>
-  fun (A: ASig) (B: BSig) => {let result = 10;};
+  fun (A: ASig) (B: BSig) => {
+    let result = 10;
+  };
 
 /*
  * Recursive modules.
@@ -389,7 +422,9 @@ module type HasRecursiveModules = {
 /* From http://stackoverflow.com/questions/1986374/higher-order-type-constructors-and-functors-in-ocaml */
 module type Type = {type t;};
 
-let module Char = {type t = char;};
+let module Char = {
+  type t = char;
+};
 
 let module List (X: Type) => {
   type t = list X.t;
@@ -450,7 +485,9 @@ include YourLib.CreateComponent {
 
 module type HasInt = {let x: int;};
 
-let module MyModule = {let x = 10;};
+let module MyModule = {
+  let x = 10;
+};
 
 let myFirstClass: (module HasInt) =
   (module MyModule);
@@ -473,7 +510,9 @@ let module SecondClass2 = (
 let p = SecondClass.x;
 
 /* Opening Modules */
-let module M = {let module Inner = {};};
+let module M = {
+  let module Inner = {};
+};
 
 let module N = {
   open M;

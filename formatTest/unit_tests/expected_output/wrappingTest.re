@@ -2351,9 +2351,13 @@ module type ASig = {let a: int;};
 
 module type BSig = {let b: int;};
 
-let module AMod = {let a = 10;};
+let module AMod = {
+  let a = 10;
+};
 
-let module BMod = {let b = 10;};
+let module BMod = {
+  let b = 10;
+};
 
 let module CurriedSugar
            /* Commenting before First curried functor arg */
@@ -2380,9 +2384,13 @@ let module CurriedSugarFunctorResultInline =
   /* Commenting before functor name*/
   CurriedSugar
     /* Commenting before functor arg 1 in app */
-    {let a = 10;}
-    /* Commenting before functor arg 2 in app */
-    {let b = 10;};
+    {
+      let a = 10;
+    }
+    {
+      /* Commenting before functor arg 2 in app */
+      let b = 10;
+    };
 
 /*
  * Commenting locations

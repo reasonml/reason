@@ -5320,7 +5320,7 @@ class printer  ()= object(self:'self)
         )
     | Pmod_structure (s) ->
       makeList
-        ~break:IfNeed
+        ~break:Always_rec
         ~inline:(true, false)
         ~wrap:("{", "}")
         ~newlinesAboveComments:0
