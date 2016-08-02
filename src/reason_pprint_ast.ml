@@ -1265,6 +1265,8 @@ let smallestLeadingSpaces strs =
   in
   smallestLeadingSpaces 99999 strs
 
+let string_after s n = String.sub s n (String.length s - n)
+
 let formatItemComment (str, commLoc, physCommLoc) =
   let commLines = Re_str.split_delim (Re_str.regexp "\n") ("/*" ^ str ^ "*/") in
   match commLines with
@@ -1285,7 +1287,7 @@ let formatItemComment (str, commLoc, physCommLoc) =
       let numLeadingSpaceForThisLine = numLeadingSpace s in
       if String.length s == 0 then ""
       else (String.make leftPad ' ') ^
-        (Str.string_after s (min attemptRemoveCount numLeadingSpaceForThisLine)) in
+        (string_after s (min attemptRemoveCount numLeadingSpaceForThisLine)) in
     let lines = zero :: List.map padNonOpeningLine (one::tl) in
     (* Use the Str module for regex splitting *)
     makeEasyList ~inline:(true, true) ~indent:0 ~break:Always_rec (List.map easyAtom lines)
