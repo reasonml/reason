@@ -1,8 +1,8 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
+
 /**
  * Testing mutations.
  */
-
 let holdsAUnit = ref ();
 
 let holdsABool = ref false;

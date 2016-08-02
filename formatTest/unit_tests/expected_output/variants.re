@@ -1,5 +1,4 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
-
 let module LocalModule = {
   type accessedThroughModule =
     | AccessedThroughModule;
@@ -193,7 +192,8 @@ let matchingTwoCurriedConstructorsInTuple x =>
   };
 
 type twoCurriedConstructors =
-  | TwoCombos (combination int) (combination int);
+  | TwoCombos
+      (combination int) (combination int);
 
 let matchingTwoCurriedConstructorInConstructor x =>
   switch x {
@@ -240,6 +240,7 @@ let thisWontCompileButLetsSeeHowItFormats =
   | Two => 20;
 
 /* Comment on two */
+
 /**
  * GADTs.
  */

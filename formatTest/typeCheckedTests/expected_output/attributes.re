@@ -1,4 +1,5 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
+
 /**
  * Generally, dangling attributes [@..] apply to everything to the left of it,
  * up until a comma, equals asignment, arrow, bar, or infix symbol (+/-) or
@@ -7,11 +8,11 @@
  * This has a nice side effect when printing the terms:
  * If a node has attributes attached to it,
  */
+
 /**
  * Core language features:
  * ----------------------
  */
-
 type itemText = int [@@itemAttributeOnTypeDef];
 
 type nodeText = int;
@@ -100,6 +101,7 @@ let x = (true [@onTrue]) && false;
 let x = (true && false) [@attrEverything];
 
 /* now make sure to try with variants (tagged and `) */
+
 /**
  * How attribute parsings respond to other syntactic constructs.
  */
@@ -109,7 +111,8 @@ let add a => a [@onRet];
 
 let add = (fun a => a) [@onEntireFunction];
 
-let res = if true {false} else {false [@onFalse]};
+let res =
+  if true {false} else {false [@onFalse]};
 
 let res =
   (if true {false} else {false}) [@onEntireIf];
@@ -123,7 +126,8 @@ let add a b => a + (b [@onB]);
 
 let both = (fun a => a) [@onEntireFunction];
 
-let both a b => ((a [@onA]) && b) [@onEverything];
+let both a b =>
+  ((a [@onA]) && b) [@onEverything];
 
 let both a b => (a [@onA]) && (b [@onB] [@onB]);
 
@@ -139,9 +143,13 @@ let x =
   (20 + (- (add thisVal thisVal)))
     [@onEverything];
 
-let x = - (add thisVal thisVal [@onFunctionCall]);
+let x =
+  -
+  (add thisVal thisVal [@onFunctionCall]);
 
-let x = (- (add thisVal thisVal)) [@onEverything];
+
+let x =
+  (- (add thisVal thisVal)) [@onEverything];
 
 let bothTrue x y => {contents: x && y};
 
@@ -218,6 +226,7 @@ let showLets () =>
  * Classes:
  * ------------
  */
+
 /**
  * In curried sugar, the class_expr attribute will apply to the return.
  */
@@ -306,7 +315,6 @@ let myFun
 
 let myFun
     (X (hello [@onHello]) | Y (hello [@onHello])) => hello;
-
 /* Another bug: Cannot have an attribute on or pattern
    let myFun = fun ((X hello | Y hello) [@onOrPattern]) => hello;
    */

@@ -1,5 +1,4 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
-
 let run () => TestUtils.printSection "Modules";
 
 
@@ -39,6 +38,7 @@ let result = MyFirstModule.x + MyFirstModule.y;
  * - The exported fields of a module must be listed within `{}` braces and each
  * exported value binding is specified via a `let` keyword.
  */
+
 /**
  * Another way that modules are more powerful than records, is that they may
  * also export types.
@@ -82,6 +82,7 @@ module type MySecondModuleType = {
  let y = x + x;
  };
  */
+
 /**
  * - Modules may be artificially "constrained" so that users of a module see
  * fewer details than are actually present.
@@ -113,7 +114,9 @@ let opensAModuleLocally = {
 
 module type HasTT = {type tt;};
 
-let module SubModule: HasTT = {type tt = int;};
+let module SubModule: HasTT = {
+  type tt = int;
+};
 
 module type HasEmbeddedHasTT = {
   let module SubModuleThatHasTT = SubModule;
@@ -138,13 +141,16 @@ module type HasSubPolyModule = {
 };
 
 let module EmbedsSubPolyModule: HasSubPolyModule = {
-  let module X = {type t 'a = list 'a;};
+  let module X = {
+    type t 'a = list 'a;
+  };
 };
 
-let module
-  EmbedsDestructivelySubstitutedPolyModule:
+let module EmbedsDestructivelySubstitutedPolyModule:
   HasDestructivelySubstitutedSubPolyModule = {
-  let module X = {type t = list (int, int);};
+  let module X = {
+    type t = list (int, int);
+  };
 };
 
 module type HasMultiPolyType = {
@@ -154,7 +160,8 @@ module type HasMultiPolyType = {
 
 module type HasDestructivelySubstitutedMultiPolyType =
   HasMultiPolyType with
-    type substituteThis 'a 'b := Hashtbl.t 'a 'b and
+    type substituteThis 'a 'b :=
+      Hashtbl.t 'a 'b and
     type substituteThat 'a 'b := Hashtbl.t 'a 'b;
 
 let module InliningSig: {let x: int; let y: int;} = {
@@ -169,6 +176,7 @@ let module InliningSig: {let x: int; let y: int;} = {
 let module MyFunctor (M: HasTT) => {
   type reexportedTT = M.tt;
   /* Inline comment inside module. */
+
   /** Following special comment inside module. */
   let someValue = 1000;
 };
@@ -306,7 +314,11 @@ let module CurriedNoSugarFunctorResultInline =
     };
 
 let module ResultFromNonSimpleFunctorArg =
-  CurriedNoSugar (MakeAModule {}) BMod;
+  CurriedNoSugar
+    (
+      MakeAModule {}
+    )
+    BMod;
 
 /* TODO: Functor type signatures should more resemble value signatures */
 let curriedFunc: int => int => int =
@@ -344,8 +356,7 @@ let module CurriedSugarWithAnnotation:
 
 /* "functors" that are not in sugar curried form cannot annotate a return type
  * for now, so we settle for: */
-let module
-  CurriedSugarWithAnnotationAndReturnAnnotated:
+let module CurriedSugarWithAnnotationAndReturnAnnotated:
   ASig => BSig => SigResult =
   fun (A: ASig) (B: BSig) => (
     {
@@ -411,9 +422,13 @@ module type HasRecursiveModules = {
 /* From http://stackoverflow.com/questions/1986374/higher-order-type-constructors-and-functors-in-ocaml */
 module type Type = {type t;};
 
-let module Char = {type t = char;};
+let module Char = {
+  type t = char;
+};
 
-let module List (X: Type) => {type t = list X.t;};
+let module List (X: Type) => {
+  type t = list X.t;
+};
 
 let module Maybe (X: Type) => {
   type t = option X.t;
@@ -431,6 +446,7 @@ let module Compose
 let l: Compose(List)(Maybe)(Char).t = [Some 'a'];
 
 let module Example2 (F: Type => Type) (X: Type) => {
+
   /**
    * Note: This is the one remaining syntactic issue where
    * modules/functions do not have syntax unified with values.
@@ -494,7 +510,9 @@ let module SecondClass2 = (
 let p = SecondClass.x;
 
 /* Opening Modules */
-let module M = {let module Inner = {};};
+let module M = {
+  let module Inner = {};
+};
 
 let module N = {
   open M;

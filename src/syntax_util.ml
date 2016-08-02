@@ -15,6 +15,17 @@ let is_prefixed prefix str i =
     in
   loop 0
 
+(**
+ * pick_while returns a tuple where first element is longest prefix (possibly empty) of the list of elements that satisfy p
+ * and second element is the remainder of the list
+ *)
+let rec pick_while p = function
+  | [] -> [], []
+  | hd::tl when p hd ->
+                  let (satisfied, not_satisfied) = pick_while p tl in
+                  hd :: satisfied, not_satisfied
+  | l -> ([], l)
+
 
 let rec replace_string_ old_str new_str i str buffer =
   if i >= String.length str then

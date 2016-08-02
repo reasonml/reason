@@ -1,18 +1,31 @@
 /* **** comment */
+
 /*** comment */
+
 /** docstring */
 /* comment */
+
 /** docstring */
+
 /*** comment */
+
 /**** comment */
+
 /***** comment */
+
 /** */
+
 /*** */
+
 /**** */
 /**/
+
 /***/
+
 /****/
+
 /** (** comment *) */
+
 /** (*** comment *) */
 /* (** comment *) */
 /* (*** comment *) */
@@ -21,38 +34,38 @@
 /* comment ***/
 /* comment ****/
 /* comment *****/
+
 /**
  * Multiline
  */
+
 /** Multiline
  *
  */
+
 /**
  **
  */
-
 let testingNotQuiteEndOfLineComments = [
-  "Item 1", /* Comment For First Item */
-  "Item 2", /* Comment For Second Item */
-  "Item 3", /* Comment For Third Item */
+  "Item 1" /* Comment For First Item */,
+  "Item 2" /* Comment For Second Item */,
+  "Item 3" /* Comment For Third Item */,
   "Item 4" /* Comment For Fourth Item - but no semi */
   /* Comment after last item in list. */
-];
+] /* Comment after list bracket */;
 
-/* Comment after list bracket */
 let testingEndOfLineComments = [
   "Item 1", /* Comment For First Item */
   "Item 2", /* Comment For Second Item */
   "Item 3", /* Comment For Third Item */
   "Item 4" /* Comment For Fourth Item - but before semi */
   /* Comment after last item in list. */
-];
+] /* Comment after list bracket */;
 
-/* Comment after list bracket */
 /* This time no space between bracket and comment */
-let testingEndOfLineComments = [];
+let testingEndOfLineComments =
+  [] /* Comment after list bracket */;
 
-/* Comment after list bracket */
 type t = (int, int); /* End of line on t */
 
 type t22 =
@@ -69,14 +82,12 @@ type variant =
 type x = {
   /* not attached *above* x */
   fieldOne: int
-}
-/* Attached end of line after x */
+} /* Attached end of line after x */
 and y = {
   /* not attached *above* y */
   fieldTwo: int
-};
+} /* Attached end of line after y */;
 
-/* Attached end of line after y */
 let result =
   switch (X 3) {
   | X x =>

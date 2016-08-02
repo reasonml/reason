@@ -3079,31 +3079,22 @@ _or_pattern:
   | pattern BAR pattern
     { mkpat(Ppat_or($1, $3)) }
 
-
-/**
- * Makes the bar part of the pattern location. This makes it much easier to
- * interleave comments. Normally in switch/fun| each case doesn't have a
- * position, but the left end of the pattern and right end of the expression is
- * used as the location. We need to make the left location of the pattern match
- * what end of line comments appear to be attaching to.
- */
-bar_located_pattern: BAR pattern  {
-  let relocPattern = {$2 with ppat_loc = {$2.ppat_loc with loc_start = $symbolstartpos; loc_end = $endpos}} in
-  relocPattern
+pattern_with_bar: BAR pattern  {
+  $2
 }
 
 leading_bar_match_case:
-  | bar_located_pattern EQUALGREATER expr {
+  | pattern_with_bar EQUALGREATER expr {
       Exp.case $1 $3
     }
-  | bar_located_pattern WHEN expr EQUALGREATER expr
+  | pattern_with_bar WHEN expr EQUALGREATER expr
       { Exp.case $1 ~guard:$3 $5 }
 ;
 
 leading_bar_match_case_to_sequence_body:
-  | bar_located_pattern EQUALGREATER semi_terminated_seq_expr
+  | pattern_with_bar EQUALGREATER semi_terminated_seq_expr
       { Exp.case $1 $3 }
-  | bar_located_pattern WHEN expr EQUALGREATER semi_terminated_seq_expr
+  | pattern_with_bar WHEN expr EQUALGREATER semi_terminated_seq_expr
       { Exp.case $1 ~guard:$3 $5 }
 ;
 

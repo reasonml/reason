@@ -1,5 +1,4 @@
 /* [x] fixed */
-
 type t2 =
   (int, int) /* attributed to entire type not binding */;
 
@@ -12,12 +11,11 @@ let blahCurriedX x =>
   fun
   | Red 10
   | Black 20
-  | Green 10 => 1
-  /* After or pattern green */
+  | Green 10 =>
+    1 /* After or pattern green */
   | Red x => 0 /* After red */
   | Black x => 0 /* After black */
   | Green x => 0 /* After second green */;
-
 /* On next line after blahCurriedX def */
 /* EOL comments wrap because other elements break first (in this example
       "mutable" causes breaks. We either need:

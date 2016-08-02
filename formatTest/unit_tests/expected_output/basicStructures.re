@@ -1,5 +1,4 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
-
 let run () => TestUtils.printSection "Basic Structures";
 
 while something {
@@ -68,6 +67,7 @@ let x = !!foo#bar;
 /* Comments */
 /*Below is an empty comment*/
 /**/
+
 /**                            IF
  *============================================================================
  */
@@ -262,6 +262,7 @@ let x: int = (10: int);
 
 /* let (x:int) = (10:string); */
 /* let (x:string) = ("hello":int); */
+
 /**                            TUPLES
  *============================================================================
  */
@@ -415,6 +416,7 @@ let MyThing _ as ppp | YourThing _ as ppp = ppp;
 /*   []: 0 */
 /* }; */
 /*  */
+
 /**                               ARRAYS
  * ============================================================================
  * Arrays are weird looking. Usually you want lists because they support pattern
@@ -496,6 +498,7 @@ let curriedFormThree
 );
 
 /* let nonCurriedFormThree = fun (i:int, (a:int, b:int):(int, int)) (:(int, int, int)) => (i, a, b);  */
+
 /** TODO: But this, however doesn't work.
  *  let (myCurriedFunc: int => int) a => a;
  *  Note: This is likely because only "simple patterns" are accepted as constraints

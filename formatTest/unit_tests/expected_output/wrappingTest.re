@@ -3,7 +3,6 @@
 /*
  * Testing infix wrapping
  */
-
 let reallyLongIdent = 100;
 
 let andYetAnotherReallyLongIdent = 30;
@@ -101,7 +100,11 @@ let a = 10;
 let b = 20;
 
 /*A*/
-let named /* a::a */ a::a /* b::b */ b::b =>
+let named
+    /* a::a */
+    a::a
+    /* b::b */
+    b::b =>
   /* a + b */
   a + b;
 
@@ -221,13 +224,29 @@ let defOptionalAliasAnnot
   10;
 
 /* Invoking them */
-named /* a::a */ a::a /* b::b; */ b::b;
+named
+  /* a::a */
+  a::a
+  /* b::b; */
+  b::b;
 
-named /* a::a */ a::a /* b::b; */ b::b;
+named
+  /* a::a */
+  a::a
+  /* b::b; */
+  b::b;
 
-optional /* a::a */ a::a /* b::b; */ b::b;
+optional
+  /* a::a */
+  a::a
+  /* b::b; */
+  b::b;
 
-optional /* a::a */ a::a /* b::b; */ b::b;
+optional
+  /* a::a */
+  a::a
+  /* b::b; */
+  b::b;
 
 let explictlyPassed =
   /* optional */
@@ -254,64 +273,58 @@ let complex_default
     callback::callback=(fun k d => 4)
     x => 3;
 
-let myList =
-  /*CommentAfterEqualBeforeList */
-  [1, 2, 3];
-
-let myList = [
-  /*CommentAfterEqualBefore1 */
+let myList = /*CommentAfterEqualBeforeList */ [
   1,
   2,
   3
 ];
 
 let myList = [
-  1,
-  /*CommentAfterOneBeforeCons */
+  /*CommentAfterEqualBefore1 */ 1,
+  2,
+  3
+];
+
+let myList = [
+  1 /*CommentAfterOneBeforeCons */,
   2,
   3
 ];
 
 let myList = [
   1,
-  2,
-  /*CommentAfterTwoBeforeCons */
+  2 /*CommentAfterTwoBeforeCons */,
   3
 ];
 
 let myList = [
   1,
   2,
-  /*CommentAfterConsBeforeThree */
-  3
+  /*CommentAfterConsBeforeThree */ 3
 ];
 
 let myList = [
   1,
   2,
-  3
-  /*CommentAfterThreeBeforeCons*/
+  3 /*CommentAfterThreeBeforeCons*/
 ];
 
 let myList = [
   1,
   2,
-  3
-  /*same w space after three    */
+  3 /*same w space after three    */
 ];
 
 let myList = [
   1,
   2,
-  3
-  /*same w space before rbracket*/
+  3 /*same w space before rbracket*/
 ];
 
 let myList = [
   1,
   2,
-  3
-  /*same w both                 */
+  3 /*same w both                 */
 ];
 
 /* End of line comments */
@@ -365,11 +378,7 @@ let myRec = {
 };
 
 /* Ensure end of line comments force breaks */
-let myList = [
-  1,
-  2,
-  3 /* */
-];
+let myList = [1, 2, 3 /* */];
 
 let myList = [
   1,
@@ -380,8 +389,8 @@ let myList = [
 let myList = [
   1,
   2,
-  3,
-  .../*CommentAfterConsBeforeAppendedTo */myList
+  3, /*CommentAfterConsBeforeAppendedTo */
+  ...myList
 ];
 
 let myList = [3, 4, 5];
@@ -449,8 +458,8 @@ type threeArgFunctionsInARecord = {
 let myFunctionsInARecordThatMustWrap = {
   /* Desired wrapping */
   adder:
-    fun /* Even if you have a comment before fun */
-        reallyLongArgument
+    /* Even if you have a comment before fun */
+    fun reallyLongArgument
         /* Or before the first arg */
         anotherReallyLongArgument
         yetAnotherReallyLongArgument => reallyLongArgument,
@@ -1832,8 +1841,7 @@ let (only, the, type_, should, have, to_, wrap): sevenStrings = (
   "wrap"
 );
 
-let
-  ifTheNameIsReallyLongTheTypeAndValueShouldBothWrap: (
+let ifTheNameIsReallyLongTheTypeAndValueShouldBothWrap: (
   string,
   string,
   string,
@@ -1906,9 +1914,8 @@ let df_locallyAbstractFunc
     (type b)
     (input: a) => {
   inputIs: input
-};
+}; /* With setting ReturnValOnSameLine */
 
-/* With setting ReturnValOnSameLine */
 let df_locallyAbstractFuncNotSugared
     (type a)
     (type b)
@@ -1962,6 +1969,7 @@ let df_locallyAbstractFuncAnnotatedRef:
  *      inputIs: input
  *    };
  */
+
 /**
  * The following is automatically expanded at the parser level into:
  *
@@ -2051,7 +2059,8 @@ type myRecordWithReallyLongName = {
 };
 
 type doubleEqualsRecord =
-  myRecordWithReallyLongName = {xx: int, yy: int};
+  myRecordWithReallyLongName =
+    {xx: int, yy: int};
 
 type doubleEqualsDoublePrivateRecord =
   myRecordWithReallyLongName =
@@ -2114,7 +2123,10 @@ let returnTheSimpleTupleVariant i =>
   SimpleActuallyATuple (i, i);
 
 let shouldWrapLike whenLongArg =>
-  SimpleActuallyATuple (whenLongArg, whenLongArg);
+  SimpleActuallyATuple (
+    whenLongArg,
+    whenLongArg
+  );
 
 type recordWithLong = {
   someField: int,
@@ -2145,25 +2157,16 @@ and anotherRecursiveType =
 type term _ =
   /* First variant leaf of GADT */
   | Int
-      /*first var arg */
-      int
-      :/* First GADT res */
-       term
-         int
+      /*first var arg */ int
+      :/* First GADT res */ term int
   /* Second variant leaf of GADT */
   | Float
-      /*second var arg */
-      int
-      :/* Second GADT res */
-       term
-         int
+      /*second var arg */ int
+      :/* Second GADT res */ term int
   /* Third variant leaf of GADT */
   | Bool
-      /*third var arg */
-      int
-      :/* Third GADT res */
-       term
-         int;
+      /*third var arg */ int
+      :/* Third GADT res */ term int;
 
 /* Commented colors */
 type commentedTypeDef =
@@ -2194,16 +2197,9 @@ type colors = | Red int | Black int | Green int;
 let blah arg =>
   switch arg {
   /* Comment before Bar */
-  | /* Comment between bar/pattern */
-    Red _ => 1
+  | /* Comment between bar/pattern */ Red _ => 1
   /* Comment Before non-first bar */
-  | /* Comment betwen bar/pattern */
-    /* (In OCaml but not Reason) These will be formatted into the wrong place
-     * and there's nothing you can do about it because the bar essentially
-     * doesn't exist once parsed - its location is lost - "case"s don't have
-     * locs.
-     */
-    Black _ => 0
+  | /* Comment betwen bar/pattern */ Black _ => 0
   | Green _ => 0
   };
 
@@ -2216,7 +2212,8 @@ let blah =
 let blahCurriedX x =>
   fun
   /* Comment before first bar */
-  | /* Comment between first bar and OR pattern */ Red x
+  /* Comment between first bar and OR pattern */
+  | Red x
   | Black x
   | Green x => 1
   /* Comment before second bar */
@@ -2297,8 +2294,10 @@ let anotherRecord = {
 };
 
 type polymorphicCommentedType
-  /* Commenting the first type variable */'a
-  /* Commenting the second type variable */'b =
+  /* Commenting the first type variable */
+  'a
+  /* Commenting the second type variable */
+  'b =
   list ('a, 'b);
 
 
@@ -2335,7 +2334,8 @@ let callMeWithComments
     (a: int)
     /* Comment before second arg "b" */
     (b: int)
-    :/* Comment before return type annotation "int" */int =>
+    /* Comment before return type annotation "int" */
+    :int =>
   /* Comment above return value a + b + c */
   a + b + c;
 
@@ -2359,17 +2359,18 @@ let module BMod = {
   let b = 10;
 };
 
-let module CurriedSugar (A: ASig) (B: BSig) =>
-  /* Commenting before First curried functor arg */
-  /* If these comments aren't formatted correctly
-   * see how functor args' locations aren't set
-   * correclty due to the fold_left.
-   */
-  /* Commenting before Second curried functor arg */
-  {
-    let result = A.a + B.b;
-    /* Comment at bottom of module expression */
-  };
+let module CurriedSugar
+           /* Commenting before First curried functor arg */
+           /* If these comments aren't formatted correctly
+            * see how functor args' locations aren't set
+            * correclty due to the fold_left.
+            */
+           (A: ASig)
+           /* Commenting before Second curried functor arg */
+           (B: BSig) => {
+  let result = A.a + B.b;
+  /* Comment at bottom of module expression */
+};
 
 let module CurriedSugarFunctorResult =
   /* Commenting before functor name*/
@@ -2386,75 +2387,60 @@ let module CurriedSugarFunctorResultInline =
     {
       let a = 10;
     }
-    /* Commenting before functor arg 2 in app */
     {
+      /* Commenting before functor arg 2 in app */
       let b = 10;
     };
 
 /*
  * Commenting locations
  */
-let commentingBeforeEqual =
-  /*beforeEqual*/
-  {
-    name: "hello",
-    age: 20,
-    occupation: "programmer"
-  };
-
-let commentingAfterEqual =
-  /*afterEqual*/
-  {
-    name: "hello",
-    age: 20,
-    occupation: "programmer"
-  };
-
-let commentingBeforeEqualBeforeType:
-  /*beforeEqualBeforeType*/
-  withThreeFields = {
+let commentingBeforeEqual /*beforeEqual*/ = {
   name: "hello",
   age: 20,
   occupation: "programmer"
 };
 
-let commentingBeforeEqualAfterType: withThreeFields =
-  /*beforeEqualAfterType*/
-  {
-    name: "hello",
-    age: 20,
-    occupation: "programmer"
-  };
-
-let commentingAfterEqualAfterType: withThreeFields =
-  /*afterEqual*/
-  {
-    name: "hello",
-    age: 20,
-    occupation: "programmer"
-  };
-
-let
-  /*beforePattern*/
-  commentingBeforePattern: withThreeFields = {
+let commentingAfterEqual = /*afterEqual*/ {
   name: "hello",
   age: 20,
   occupation: "programmer"
 };
 
-let
-  /*beforePattern*/
-  /*beforePattern2 */
-  commentingBeforePattern2: withThreeFields = {
+let commentingBeforeEqualBeforeType /*beforeEqualBeforeType*/: withThreeFields = {
   name: "hello",
   age: 20,
   occupation: "programmer"
 };
 
-let
-  /**beforePattern*/
-  /*beforePattern2 */
-  commentingBeforePatternSpecial: withThreeFields = {
+let commentingBeforeEqualAfterType:
+  withThreeFields /*beforeEqualAfterType*/ = {
+  name: "hello",
+  age: 20,
+  occupation: "programmer"
+};
+
+let commentingAfterEqualAfterType: withThreeFields = /*afterEqual*/ {
+  name: "hello",
+  age: 20,
+  occupation: "programmer"
+};
+
+let /*beforePattern*/ commentingBeforePattern: withThreeFields = {
+  name: "hello",
+  age: 20,
+  occupation: "programmer"
+};
+
+/*beforePattern*/
+let /*beforePattern2 */ commentingBeforePattern2: withThreeFields = {
+  name: "hello",
+  age: 20,
+  occupation: "programmer"
+};
+
+/*beforePattern*/
+let /*beforePattern2 */ commentingBeforePatternSpecial: withThreeFields = {
   name: "hello",
   age: 20,
   occupation: "programmer"
@@ -2466,169 +2452,136 @@ let produceRecord /*commentBeforeArg*/ x => {
   occupation: "programmer"
 };
 
-let produceRecord x =>
-  /*commentAfterArg*/
-  {
-    name: "hello",
-    age: 20,
-    occupation: "programmer"
-  };
+let produceRecord x /*commentAfterArg*/ => {
+  name: "hello",
+  age: 20,
+  occupation: "programmer"
+};
 
-let myPolyFuncCommentBeforeColon:
+let myPolyFuncCommentBeforeColon /*beforeColon */:
   'a .
-  /*beforeColon */
   'a => 'a
  =
   fun o => o;
 
-let myPolyFuncCommentAfterColon:
-  'a .
+let myPolyFuncCommentAfterColon: 'a .'a => 'a =
   /*afterColon */
-  'a => 'a
- =
   fun o => o;
 
 let myPolyFuncCommentBeforeArrow:
   'a .
-  'a => /*beforeArrow */  'a
+  'a /*beforeArrow */ => 'a
  =
   fun o => o;
 
 let myPolyFuncCommentAfterArrow:
   'a .
-  'a => /*afterArrow */  'a
+  'a => /*afterArrow */ 'a
  =
   fun o => o;
 
-let myPolyFuncCommentBeforeEqual: 'a .'a => 'a =
-  /*beforeEqual */
+let myPolyFuncCommentBeforeEqual:
+  'a .
+  'a => 'a /*beforeEqual */
+ =
   fun o => o;
 
 let myPolyFuncCommentAfterEqual: 'a .'a => 'a =
-  /*afterEqual */
-  fun o => o;
+  /*afterEqual */ fun o => o;
 
-let myNonPolyFuncCommentBeforeColon:
-  /*BeforeColon */
+let myNonPolyFuncCommentBeforeColon /*BeforeColon */:
   'a => 'a =
   fun o => o;
 
 let myNonPolyFuncCommentAfterColon:
-  /*AfterColon */
-  'a => 'a =
+  /*AfterColon */ 'a => 'a =
   fun o => o;
 
 let myNonPolyFuncCommentBeforeArrow:
-  'a => /*BeforeArrow */  'a =
+  'a /*BeforeArrow */ => 'a =
   fun o => o;
 
 let myNonPolyFuncCommentAfterArrow:
-  'a => /*AfterArrow */  'a =
+  'a => /*AfterArrow */ 'a =
   fun o => o;
 
-let myNonPolyFuncCommentBeforeEqual: 'a => 'a =
-  /*BeforeEqual */
+let myNonPolyFuncCommentBeforeEqual:
+  'a => 'a /*BeforeEqual */ =
   fun o => o;
 
 let myNonPolyFuncCommentAfterEqual: 'a => 'a =
-  /*AfterEqual */
-  fun o => o;
+  /*AfterEqual */ fun o => o;
 
-let lATCurrySugarCommentBeforeType
-    /*BeforeType */
+let lATCurrySugarCommentBeforeType /*BeforeType */
     (type a)
     (input: a) => input;
 
-let lATCurrySugarCommentAfterType
-    /*AfterType */
+let lATCurrySugarCommentAfterType /*AfterType */
     (type a)
     (input: a) => input;
 
 let lATCurrySugarCommentBeforeArg
     (type a)
-    /*BeforeArg */
-    (input: a) => input;
+    /*BeforeArg */ (input: a) => input;
 
 let lATCurrySugarCommentAfterArg
     (type a)
-    (input: a) =>
-  /*AfterArg */
-  input;
+    (input: a) /*AfterArg */ => input;
 
 let lATCurrySugarCommentAfterArrow
     (type a)
-    (input: a) =>
-  /*AfterArrow */
-  input;
+    (input: a) => /*AfterArrow */ input;
 
-let lATNotSugaredCommentBeforeEqual
-    /*BeforeEqual*/
+let lATNotSugaredCommentBeforeEqual /*BeforeEqual*/
     (type a)
     (input: a) => input;
 
 let lATNotSugaredCommentAfterEqual
-    /*AfterEqual*/
-    (type a)
+    (type a) /*AfterEqual*/
     (input: a) => input;
 
 let lATNotSugaredCommentBeforeType
-    (type a)
-    /*BeforeType*/
+    (type a) /*BeforeType*/
     (input: a) => input;
 
 let lATNotSugaredCommentAfterType
     (type a)
-    /*AfterType*/
-    (input: a) => input;
+    /*AfterType*/ (input: a) => input;
 
 let lATNotSugaredCommentBeforeArg
     (type a)
-    /*BeforeArg*/
-    (input: a) => input;
+    /*BeforeArg*/ (input: a) => input;
 
 let lATNotSugaredCommentAfterArg
     (type a)
-    (input: a) =>
-  /*AfterArg*/
-  input;
+    (input: a) /*AfterArg*/ => input;
 
 let lATNotSugaredCommentAfterArrow
     (type a)
-    (input: a) =>
-  /*AfterArrow*/
-  input;
+    (input: a) => /*AfterArrow*/ input;
 
-let lAtFuncAnnotatedCommentBeforeColon:
-  type a.
-    /*BeforeColon*/
-    a => a =
+let lAtFuncAnnotatedCommentBeforeColon /*BeforeColon*/:
+  type a. a => a =
   fun (type a) (input: a) => input;
 
-let lAtFuncAnnotatedCommentAfterColon:
-  type a.
-    /*AfterColon*/
-    a => a =
+let lAtFuncAnnotatedCommentAfterColon /*AfterColon*/:
+  type a. a => a =
   fun (type a) (input: a) => input;
 
-let lAtFuncAnnotatedCommentBeforeTypeVar:
-  type a.
-    /*BeforeTypeVar*/
-    a => a =
+let lAtFuncAnnotatedCommentBeforeTypeVar /*BeforeTypeVar*/:
+  type a. a => a =
   fun (type a) (input: a) => input;
 
-let lAtFuncAnnotatedCommentAfterTypeVar:
-  type a.
-    /*AfterTypeVar*/
-    a => a =
+let lAtFuncAnnotatedCommentAfterTypeVar /*AfterTypeVar*/:
+  type a. a => a =
   fun (type a) (input: a) => input;
 
-let lAtFuncAnnotatedBeforeEqual: type a. a => a =
-  /*BeforeEqual*/
+let lAtFuncAnnotatedBeforeEqual:
+  type a. a => a /*BeforeEqual*/ =
   fun (type a) (input: a) => input;
 
 let lAtFuncAnnotatedAfterEqual: type a. a => a =
-  /*AfterEqual*/
-  fun (type a) (input: a) => input;
+  /*AfterEqual*/ fun (type a) (input: a) => input;
 
 /* Ternary wrapping comments */
 let ternaryResult =
@@ -2646,10 +2599,8 @@ let ternaryResult =
     callThisFunction withThisArg :
     /* Before ifFalse */
     trailingTest ?
-      /* before nested ifTrue */
-      true :
-      /* before nested ifFalse */
-      false;
+      /* before nested ifTrue */ true :
+      /* before nested ifFalse */ false;
 
 let returningATernary x y => x > y ? "hi" : "by";
 
@@ -2705,8 +2656,7 @@ let x =
     a
     alskdjfalskdjfalsdf + reallyReallyLongName;
 
-let
-  onlyDoingThisTopLevelLetToBypassTopLevelSequence = {
+let onlyDoingThisTopLevelLetToBypassTopLevelSequence = {
   let x = {
     print_int 1;
     print_int 20 /* Missing trailing SEMI */
@@ -2720,8 +2670,7 @@ let
     print_int 1;
     print_int 20;
     10
-  };
-  /* Missing final SEMI */
+  }; /* Missing final SEMI */
   let x = {
     print_int 1;
     print_int 20;
@@ -2743,6 +2692,6 @@ let tryingTheSameInLocalScope = {
   let blah a => a; /* Done */
   let blah a => a; /* Done (almost) */
   let blah a b => a; /* Done */
-  let blah a b => a; /* Done (almost) */
-  ()
+  let blah a b => a;
+  () /* Done (almost) */
 };
