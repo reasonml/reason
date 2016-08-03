@@ -37,7 +37,10 @@ let module Foo = {
 };
 
 let module One = {
-  let createElement test::test=? children => {
+  let createElement
+      test::test=?
+      foo::foo=?
+      children => {
     displayName: "test"
   };
 };
@@ -102,58 +105,76 @@ let module Namespace = {
   };
 };
 
+let module LotsOfArguments = {
+  let createElement
+      argument1::argument1=?
+      argument2::argument2=?
+      argument3::argument3=?
+      argument4::argument4=?
+      argument5::argument5=?
+      argument6::argument6=?
+      children => {
+    displayName: "test"
+  };
+};
+
 let b = 2;
 
-let selfClosing = Foo.createElement [];
+let selfClosing = <Foo />;
 
-let selfClosing2 =
-  Foo.createElement a::1 b::true [];
+let selfClosing2 = <Foo a=1 b=true />;
 
-let a = Foo.createElement [
-  Bar.createElement c::(fun a => a + 2) []
-];
+let a = <Foo><Bar c=(fun a => a + 2) /></Foo>;
 
-let a3 = So.createElement [
-  Much.createElement [Nesting.createElement []]
-];
+let a3 = <So><Much><Nesting /></Much></So>;
 
-let a4 = Sibling.createElement [
-  One.createElement test::true [],
-  Two.createElement foo::b []
-];
+let a4 =
+  <Sibling>
+    <One test=true foo=b />
+    <Two foo=b />
+  </Sibling>;
 
-let a5 = Foo.createElement [
-  "testing a string here"
-];
+let a5 = <Foo>"testing a string here"</Foo>;
 
-let a6 = Foo2.createElement [
-  Text.createElement ["testing a string here"],
-  Test.createElement yo::1 [],
-  Text.createElement ["another string"],
-  Bar.createElement [],
-  Exp.createElement [2 + 4]
-];
+let a6 =
+  <Foo2>
+    <Text>"testing a string here"</Text>
+    <Test yo=1 />
+    <Text>"another string"</Text>
+    <Bar />
+    <Exp>{2 + 4}</Exp>
+  </Foo2>;
 
 let intended = true;
 
-let punning =
-  Pun.createElement intended::intended [];
+let punning = <Pun intended />;
 
-let namespace = Namespace.Foo.createElement [];
+let namespace = <Namespace.Foo />;
 
-let c = Foo.createElement [];
+let c = <Foo />;
 
-let d = Foo.createElement [];
+let d = <Foo />;
 
-let spaceBefore = So.createElement [
-  Much.createElement [Nesting.createElement []]
-];
+let spaceBefore =
+  <So><Much><Nesting /></Much></So>;
 
-let spaceBefore2 = So.createElement [
-  Much.createElement []
-];
+let spaceBefore2 = <So><Much /></So>;
 
-let siblingNotSpaced = So.createElement [
-  Much.createElement [],
-  Much.createElement []
-];
+let siblingNotSpaced = <So><Much /><Much /></So>;
+
+/* doesn't work (pretty print messes it up): let jsxInArray = [(<Foo />)]; */
+let testFunc b => b;
+
+let jsxInFnCall = testFunc (<Foo />);
+
+let lotsOfArguments =
+  <LotsOfArguments
+     argument1=1
+     argument2=2
+     argument3=3
+     argument4=4
+     argument5=5
+     argument6="test"
+    >
+    <Namespace.Foo />
+  </LotsOfArguments>;

@@ -28,7 +28,7 @@ let module Foo = {
 };
 
 let module One = {
-    let createElement test::test=? children => {displayName: "test"};
+    let createElement test::test=? foo::foo=? children => {displayName: "test"};
 };
 
 let module Two = {
@@ -69,12 +69,16 @@ let module Namespace = {
     };
 };
 
+let module LotsOfArguments = {
+    let createElement argument1::argument1=? argument2::argument2=? argument3::argument3=? argument4::argument4=? argument5::argument5=? argument6::argument6=? children => {displayName: "test"};
+};
+
 let b = 2;
 let selfClosing = <Foo />;
 let selfClosing2 = <Foo a=1 b=true />;
 let a = <Foo><Bar c=(fun a => a + 2) /></Foo>;
 let a3 = <So> <Much><Nesting> </Nesting></Much></So>;
-let a4 = <Sibling><One test=true/> <Two foo=b> </Two></Sibling>;
+let a4 = <Sibling><One test=true foo=b /> <Two foo=b> </Two></Sibling>;
 let a5 = <Foo>"testing a string here"</Foo>;
 let a6 = <Foo2>
     <Text>
@@ -87,3 +91,7 @@ let d = <Foo></Foo>;
 let spaceBefore = <So> <Much> <Nesting></Nesting></Much></So>;
 let spaceBefore2 = <So> <Much/></So>;
 let siblingNotSpaced = <So>   <Much></Much><Much></Much> </So>;
+/* doesn't work (pretty print messes it up): let jsxInArray = [(<Foo />)]; */
+let testFunc b => b;
+let jsxInFnCall = testFunc (<Foo />);
+let lotsOfArguments = <LotsOfArguments argument1=1 argument2=2 argument3=3 argument4=4 argument5=5 argument6="test"><Namespace.Foo /></LotsOfArguments>;

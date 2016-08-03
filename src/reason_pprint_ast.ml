@@ -691,6 +691,15 @@ let default = new Pprintast.printer ()
 type funcReturnStyle =
   | ReturnValOnSameLine
 
+let detectJSXComponent e =
+  match e with
+    | Pexp_ident loc ->
+      if Longident.last loc.txt = "createElement" then
+        let moduleNameList = List.rev (List.tl (List.rev (Longident.flatten loc.txt))) in
+        Some (String.concat "." moduleNameList)
+      else
+        None
+    | _ -> None
 
 let detectTernary l = match l with
   | [{
@@ -3303,11 +3312,19 @@ class printer  ()= object(self:'self)
                   | None -> (
                     (* Standard application *)
                     (*reset here only because [function,match,try,sequence] are lower priority*)
-                    List.concat [
-                      [SourceMap (e.pexp_loc, (self#expression2 e))];
-                      List.map self#reset#label_x_expression_param l;
-                      attributesAsList;
-                    ],
+                    let exp = match detectJSXComponent e.pexp_desc with
+                      | Some componentName -> [
+                        [self#formatJSXComponent componentName l];
+                        attributesAsList;
+                       ]
+                      | None ->
+                      [
+                        [SourceMap (e.pexp_loc, self#expression2 e)];
+                        List.map self#reset#label_x_expression_param l;
+                        attributesAsList;
+                      ]
+                    in
+                    List.concat exp,
                     [],
                     None,
                     Some x.pexp_loc
@@ -3326,6 +3343,50 @@ class printer  ()= object(self:'self)
         | _ -> [self#class_expr x]
     in
     (itms, None, None)
+
+  method formatJSXComponent componentName args =
+
+    let rec processChildren components result =
+        match components with
+        | {pexp_desc = Pexp_constant (constant)} :: remainingComponents ->
+          processChildren remainingComponents (result @ [self#constant constant])
+        | {pexp_desc = Pexp_construct ({txt = Lident "::"}, Some {pexp_desc = Pexp_tuple(components)} )} :: remainingComponents ->
+          processChildren (remainingComponents @ components) result
+        | {pexp_desc = Pexp_apply(expr, l)} :: remainingComponents ->
+          (match detectJSXComponent expr.pexp_desc with
+          | Some componentName -> processChildren remainingComponents (result @ [self#formatJSXComponent componentName l])
+          | None -> processChildren remainingComponents (result @ [atom "{"; self#expression (List.hd components); atom "}"]))
+        | _ -> result
+
+    and processAttributes attributes processedAttrs children =
+      match attributes with
+      | ("", {pexp_desc = Pexp_construct (_, None)}) :: tail ->
+        processAttributes tail processedAttrs []
+      | ("", {pexp_desc = Pexp_construct ({txt = Lident"::"}, Some {pexp_desc = Pexp_tuple(components)} )}) :: tail ->
+        processAttributes tail processedAttrs (processChildren components [])
+      | (label, expression) :: tail ->
+         let value = match expression.pexp_desc with
+         | Pexp_ident (ident) ->
+            if (Longident.last ident.txt) = label then
+              []
+            else
+              [atom "="; self#simple_expression expression]
+         | _ -> [atom "="; self#simple_expression expression] in
+         processAttributes tail (processedAttrs @ [makeList ([atom " "; atom label; ] @ value)]) children
+      | [] -> (processedAttrs, children)
+    in
+    let (attributes, children) = processAttributes args [] []
+    in
+    if List.length children = 0 then
+        makeList ([atom "<"; atom componentName] @ attributes @ [atom " />"])
+    else
+        let (openingTag, attributes) =
+            if List.length attributes = 0 then
+                (componentName ^ ">", [])
+            else
+                (componentName, attributes @ [atom ">"])
+        in
+        makeList ~inline:(false, false) ~break:IfNeed ~wrap:("<" ^ openingTag, "</" ^ componentName ^ ">") (attributes @ children)
 
   method formatTernary x test ifTrue ifFalse =
     if inTernary then
@@ -4132,22 +4193,25 @@ class printer  ()= object(self:'self)
                       (SourceMap (estimatedBracePoint, (makeList ~indent:settings.trySwitchIndent ~wrap:("{", "}") ~break:Always_rec ~postSpace:true cases)))
                 )
 
-              | Pexp_apply (e, l) -> (
-                  match self#expressionToFormattedApplicationItems x with
-                    | ([], [], _, _) ->
-                        raise (
-                          NotPossible (
-                            "no application items extracted " ^ (exprDescrString x)
-                          )
-                        )
-                    | ([], sugarExpr::[], _, _) ->
-                        (* This can happen in the case of [sugar_expr] [arrayWithTwo.(1) <- 300] *)
-                        sugarExpr
-                    | appTerms ->
-                      formatAttachmentApplication
-                        applicationFinalWrapping
-                        None
-                         (combinedAppItems appTerms)
+              | Pexp_apply (expr, l) -> (
+                 match detectJSXComponent expr.pexp_desc with
+                  | Some componentName -> self#formatJSXComponent componentName l
+                  | None ->
+                      match self#expressionToFormattedApplicationItems x with
+                        | ([], [], _, _) ->
+                            raise (
+                              NotPossible (
+                                "no application items extracted " ^ (exprDescrString x)
+                              )
+                            )
+                        | ([], sugarExpr::[], _, _) ->
+                          (* This can happen in the case of [sugar_expr] [arrayWithTwo.(1) <- 300] *)
+                          sugarExpr
+                        | appTerms ->
+                          formatAttachmentApplication
+                            applicationFinalWrapping
+                            None
+                            (combinedAppItems appTerms)
                 )
               | Pexp_construct (li, Some eo) when not (is_simple_construct (view_expr x)) -> (* Not efficient FIXME*)
                   (match view_expr x with
