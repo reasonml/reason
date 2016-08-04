@@ -691,14 +691,15 @@ let default = new Pprintast.printer ()
 type funcReturnStyle =
   | ReturnValOnSameLine
 
-let detectJSXComponent e =
-  match e with
-    | Pexp_ident loc ->
-      if Longident.last loc.txt = "createElement" then
+let rec detectJSXComponent e attributes =
+  match (e, attributes) with
+    | (Pexp_ident loc, ({txt = "JSX"; loc = _}, PStr []) :: tail) ->
         let moduleNameList = List.rev (List.tl (List.rev (Longident.flatten loc.txt))) in
-        Some (String.concat "." moduleNameList)
-      else
-        None
+        if List.length moduleNameList > 0 then
+            Some (String.concat "." moduleNameList)
+        else
+            Some (Longident.last loc.txt)
+    | (Pexp_ident loc,  hd :: tail) -> detectJSXComponent e tail
     | _ -> None
 
 let detectTernary l = match l with
@@ -3312,10 +3313,9 @@ class printer  ()= object(self:'self)
                   | None -> (
                     (* Standard application *)
                     (*reset here only because [function,match,try,sequence] are lower priority*)
-                    let exp = match detectJSXComponent e.pexp_desc with
+                    let exp = match detectJSXComponent e.pexp_desc x.pexp_attributes with
                       | Some componentName -> [
                         [self#formatJSXComponent componentName l];
-                        attributesAsList;
                        ]
                       | None ->
                       [
@@ -3352,8 +3352,8 @@ class printer  ()= object(self:'self)
           processChildren remainingComponents (result @ [self#constant constant])
         | {pexp_desc = Pexp_construct ({txt = Lident "::"}, Some {pexp_desc = Pexp_tuple(components)} )} :: remainingComponents ->
           processChildren (remainingComponents @ components) result
-        | {pexp_desc = Pexp_apply(expr, l)} :: remainingComponents ->
-          (match detectJSXComponent expr.pexp_desc with
+        | {pexp_desc = Pexp_apply(expr, l); pexp_attributes} :: remainingComponents ->
+          (match detectJSXComponent expr.pexp_desc pexp_attributes with
           | Some componentName -> processChildren remainingComponents (result @ [self#formatJSXComponent componentName l])
           | None -> processChildren remainingComponents (result @ [atom "{"; self#expression (List.hd components); atom "}"]))
         | _ -> result
@@ -3384,7 +3384,8 @@ class printer  ()= object(self:'self)
             if List.length attributes = 0 then
                 (componentName ^ ">", [])
             else
-                (componentName, attributes @ [atom ">"])
+                let reversedAttributes = List.rev attributes in
+                (componentName, (List.rev (List.tl reversedAttributes)) @ [(makeList ~break:Never ([List.hd reversedAttributes] @ [atom ">"]))])
         in
         makeList ~inline:(false, false) ~break:IfNeed ~wrap:("<" ^ openingTag, "</" ^ componentName ^ ">") (attributes @ children)
 
@@ -4194,7 +4195,7 @@ class printer  ()= object(self:'self)
                 )
 
               | Pexp_apply (expr, l) -> (
-                 match detectJSXComponent expr.pexp_desc with
+                 match detectJSXComponent expr.pexp_desc x.pexp_attributes with
                   | Some componentName -> self#formatJSXComponent componentName l
                   | None ->
                       match self#expressionToFormattedApplicationItems x with

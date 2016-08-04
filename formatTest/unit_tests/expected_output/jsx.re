@@ -118,6 +118,10 @@ let module LotsOfArguments = {
   };
 };
 
+let div argument1::argument1=? children => {
+  displayName: "test"
+};
+
 let b = 2;
 
 let selfClosing = <Foo />;
@@ -174,7 +178,8 @@ let lotsOfArguments =
      argument3=3
      argument4=4
      argument5=5
-     argument6="test"
-    >
+     argument6="test">
     <Namespace.Foo />
   </LotsOfArguments>;
+
+let lowerCaseYo = <div argument1=1 />;

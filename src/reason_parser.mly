@@ -789,8 +789,16 @@ let rec string_of_longident = function
 let built_in_explicit_arity_constructors = ["Some"; "Assert_failure"; "Match_failure"]
 
 let jsx_component module_name attrs children ~loc =
-    let ident = ghloc ~loc (Ldot(module_name, "createElement")) in
-    mkexp(Pexp_apply(mkexp(Pexp_ident ident), attrs @ children))
+  let firstPart = (List.hd (Longident.flatten module_name)) in
+  let lident = if firstPart = String.capitalize firstPart then
+    Ldot(module_name, "createElement")
+  else
+    Lident firstPart
+  in
+  let ident = ghloc ~loc lident in
+  let body = mkexp(Pexp_apply(mkexp(Pexp_ident ident), attrs @ children)) in
+  let attribute = ({txt = "JSX"; loc = loc}, PStr []) in
+  { body with pexp_attributes = [attribute] @ body.pexp_attributes }
 
 let ensureTagsAreEqual startTag endTag loc =
   if startTag <> endTag then
@@ -2512,7 +2520,6 @@ labeled_simple_pattern:
   | simple_pattern
       { ("", None, $1) }
 ;
-
 jsx_arguments:
     /* empty */ { [] }
     | LIDENT EQUAL simple_expr jsx_arguments {
@@ -2526,35 +2533,41 @@ jsx_arguments:
      }
 ;
 
+jsx_name:
+| mod_longident { $1 }
+| LIDENT { Lident $1 }
+;
+
+
 jsx_start_tag_body:
-  | mod_longident jsx_arguments {
+  | jsx_name jsx_arguments {
      (jsx_component $1 $2, $1)
   }
 ;
 
 jsx_separate_open_close:
-  | jsx_start_tag_body GREATERLESSSLASH mod_longident {
+  | jsx_start_tag_body GREATERLESSSLASH jsx_name {
     (* Foo></Foo *)
       let (component, start) = $1 in
       let loc = mklocation $symbolstartpos $endpos in
       let _ = ensureTagsAreEqual start $3 loc in
       component [("", mktailexp_extension loc [] None)] ~loc
   }
-  | jsx_start_tag_body GREATERLESS jsx_tag_siblings mod_longident {
+  | jsx_start_tag_body GREATERLESS jsx_tag_siblings jsx_name {
       let (component, start) = $1 in
       let loc = mklocation $symbolstartpos $endpos in
       let _ = ensureTagsAreEqual start $4 loc in
       component [("", mktailexp_extension loc $3 None)] ~loc
   }
-  | jsx_start_tag_body GREATER LESS jsx_tag_siblings mod_longident {
+  | jsx_start_tag_body GREATER LESS jsx_tag_siblings jsx_name {
       let (component, start) = $1 in
       let loc = mklocation $symbolstartpos $endpos in
       let _ = ensureTagsAreEqual start $5 loc in
       component [("", mktailexp_extension loc $4 None)] ~loc
     }
-  | jsx_start_tag_body GREATERLESS jsx_tag_siblings LESSSLASH mod_longident
+  | jsx_start_tag_body GREATERLESS jsx_tag_siblings LESSSLASH jsx_name
     (* Foo><Tags /> </Foo *)
-  | jsx_start_tag_body GREATER jsx_siblings LESSSLASH mod_longident {
+  | jsx_start_tag_body GREATER jsx_siblings LESSSLASH jsx_name {
     (* Foo> <Tags /> </Foo *)
      let (component, start) = $1 in
      let loc = mklocation $symbolstartpos $endpos in

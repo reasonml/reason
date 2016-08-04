@@ -73,6 +73,10 @@ let module LotsOfArguments = {
     let createElement argument1::argument1=? argument2::argument2=? argument3::argument3=? argument4::argument4=? argument5::argument5=? argument6::argument6=? children => {displayName: "test"};
 };
 
+let div argument1::argument1=? children => {
+    displayName: "test"
+};
+
 let b = 2;
 let selfClosing = <Foo />;
 let selfClosing2 = <Foo a=1 b=true />;
@@ -95,3 +99,4 @@ let siblingNotSpaced = <So>   <Much></Much><Much></Much> </So>;
 let testFunc b => b;
 let jsxInFnCall = testFunc (<Foo />);
 let lotsOfArguments = <LotsOfArguments argument1=1 argument2=2 argument3=3 argument4=4 argument5=5 argument6="test"><Namespace.Foo /></LotsOfArguments>;
+let lowerCaseYo = <div argument1=1 />;
