@@ -1449,7 +1449,7 @@ let formatComment_ txt =
        let numLeadingSpaceForThisLine = numLeadingSpace s in
        if String.length s == 0 then ""
        else (String.make leftPad ' ') ^
-              (Str.string_after s (min attemptRemoveCount numLeadingSpaceForThisLine)) in
+              (string_after s (min attemptRemoveCount numLeadingSpaceForThisLine)) in
      let lines = zero :: List.map padNonOpeningLine (one::tl) in
      makeList ~inline:(true, true) ~indent:0 ~break:Always_rec (List.map atom lines)
 
