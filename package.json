@@ -32,10 +32,10 @@
     }
   },
   "scripts": {
-    "whereisocamlc": ". dependencyEnv && which ocamlc",
-    "whereisreason": ". dependencyEnv && which refmt",
-    "clean": ". dependencyEnv && make clean",
-    "postinstall": ". dependencyEnv && make build_without_utop",
-    "ocamlbuildhelp": ". dependencyEnv && ocamlbuild --help"
+    "whereisocamlc": "eval $(dependencyEnv) && which ocamlc",
+    "whereisreason": "eval $(dependencyEnv) && which refmt",
+    "clean": "eval $(dependencyEnv) && make clean",
+    "postinstall": "eval $(dependencyEnv) && make build_without_utop",
+    "ocamlbuildhelp": "eval $(dependencyEnv) && ocamlbuild --help"
   }
 }
