@@ -29,6 +29,12 @@
       "resolveAsRelativePath": true,
       "global": true,
       "globalCollisionBehavior": "joinPath"
+    },
+    "REASON_BUILD_DIR": {
+      "val": "./_build",
+      "resolveAsRelativePath": true,
+      "global": true,
+      "globalCollisionBehavior": "joinPath"
     }
   },
   "scripts": {
