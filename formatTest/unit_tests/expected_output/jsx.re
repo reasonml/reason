@@ -166,7 +166,30 @@ let spaceBefore2 = <So><Much /></So>;
 
 let siblingNotSpaced = <So><Much /><Much /></So>;
 
-/* doesn't work (pretty print messes it up): let jsxInArray = [(<Foo />)]; */
+let jsxInList = [<Foo />];
+
+let jsxInList2 = [<Foo />];
+
+let jsxInListA = [<Foo />];
+
+let jsxInListB = [<Foo />];
+
+let jsxInListC = [<Foo />];
+
+let jsxInListD = [<Foo />];
+
+let jsxInList3 = [<Foo />, <Foo />, <Foo />];
+
+let jsxInList4 = [<Foo />, <Foo />, <Foo />];
+
+let jsxInList5 = [<Foo />, <Foo />];
+
+let jsxInList6 = [<Foo />, <Foo />];
+
+let jsxInList7 = [<Foo />, <Foo />];
+
+let jsxInList8 = [<Foo />, <Foo />];
+
 let testFunc b => b;
 
 let jsxInFnCall = testFunc (<Foo />);
@@ -182,4 +205,4 @@ let lotsOfArguments =
     <Namespace.Foo />
   </LotsOfArguments>;
 
-let lowerCaseYo = <div argument1=1 />;
+let lowerCase = <div argument1=1 />;

@@ -853,7 +853,7 @@ let ensureTagsAreEqual startTag endTag loc =
 %token GREATERLESS
 %token GREATERLESSSLASH
 %token GREATERRBRACE
-%token GREATERRBRACKET
+%token SLASHGREATERRBRACKET
 %token IF
 %token IN
 %token INCLUDE
@@ -1084,7 +1084,7 @@ conflicts.
 %nonassoc BACKQUOTE BANG CHAR FALSE FLOAT INT INT32 INT64
           LBRACE LBRACELESS LBRACKET LBRACKETBAR LIDENT LPAREN
           NEW NATIVEINT PREFIXOP STRING TRUE UIDENT
-          LBRACKETPERCENT
+          LBRACKETPERCENT LBRACKETLESS
 
 /* Entry points */
 
@@ -2583,16 +2583,15 @@ jsx_separate_open_close:
 ;
 
 jsx_tag:
-    | jsx_start_tag_body SLASHGREATER {
+    | LESS jsx_start_tag_body SLASHGREATER {
       (* Foo /> *)
-        let (component, _) = $1 in
+        let (component, _) = $2 in
         let loc = mklocation $symbolstartpos $endpos in
         component [("", mktailexp_extension loc [] None)] ~loc
       }
-
-    | jsx_separate_open_close GREATER {
+    | LESS jsx_separate_open_close GREATER {
         (* /Foo> *)
-        $1
+        $2
      }
 ;
 
@@ -2664,7 +2663,7 @@ _expr:
       let (l,o,p) = $2 in
       mkexp (Pexp_fun(l, o, p, $3))
     }
-  | LESS jsx_tag { $2 }
+  | jsx_tag { $1 }
   | FUN LPAREN TYPE LIDENT RPAREN fun_def
       { mkexp (Pexp_newtype($4, $6)) }
   /* List style rules like this often need a special precendence
@@ -2893,6 +2892,33 @@ _simple_expr:
       }
   | mod_longident DOT as_loc(LBRACKETBAR) expr_comma_seq opt_comma as_loc(error)
       { unclosed_exp (with_txt $3 "[|") (with_txt $6 "|]") }
+  | LBRACKETLESS jsx_separate_open_close GREATER RBRACKET
+    {
+      let loc = mklocation $symbolstartpos $endpos in
+      make_real_exp (mktailexp_extension loc [$2] None)
+    }
+  | LBRACKETLESS jsx_start_tag_body SLASHGREATER RBRACKET
+  | LBRACKETLESS jsx_start_tag_body SLASHGREATERRBRACKET
+    {
+      let (component, _) = $2 in
+      let loc = mklocation $symbolstartpos $endpos in
+      let c = component [("", mktailexp_extension loc [] None)] ~loc in
+      make_real_exp (mktailexp_extension loc [c] None)
+    }
+  | LBRACKETLESS jsx_separate_open_close GREATER COMMA expr_comma_seq_extension
+    {
+      let seq, ext_opt = $5 in
+      let loc = mklocation $symbolstartpos $endpos in
+      make_real_exp (mktailexp_extension loc ([$2] @ seq) ext_opt)
+    }
+  | LBRACKETLESS jsx_start_tag_body SLASHGREATER COMMA expr_comma_seq_extension
+    {
+      let seq, ext_opt = $5 in
+      let (component, _) = $2 in
+      let loc = mklocation $symbolstartpos $endpos in
+      let c = component [("", mktailexp_extension loc [] None)] ~loc in
+      make_real_exp (mktailexp_extension loc ([c] @ seq) ext_opt)
+    }
   | LBRACKET expr_comma_seq_extension
       { let seq, ext_opt = $2 in
         let loc = mklocation $startpos($2) $endpos($2) in
@@ -3291,6 +3317,13 @@ expr_comma_seq:
 
 /* [x, y, z, ...n] --> ([x,y,z], Some n) */
 expr_comma_seq_extension:
+  | LESS jsx_start_tag_body SLASHGREATERRBRACKET
+    {
+      let (component, _) = $2 in
+      let loc = mklocation $symbolstartpos $endpos in
+      let c = component [("", mktailexp_extension loc [] None)] ~loc in
+      ([c], None)
+    }
   | DOTDOTDOT expr_optional_constraint RBRACKET
     { ([], Some $2) }
   | expr_optional_constraint opt_comma RBRACKET
