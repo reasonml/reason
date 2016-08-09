@@ -3317,12 +3317,11 @@ class printer  ()= object(self:'self)
                       | Some componentName -> [
                         [self#formatJSXComponent componentName l];
                        ]
-                      | None ->
-                      [
+                      | None -> [
                         [SourceMap (e.pexp_loc, self#expression2 e)];
                         List.map self#reset#label_x_expression_param l;
                         attributesAsList;
-                      ]
+                       ]
                     in
                     List.concat exp,
                     [],

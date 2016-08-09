@@ -2521,123 +2521,138 @@ labeled_simple_pattern:
       { ("", None, $1) }
 ;
 jsx_arguments:
-    /* empty */ { [] }
-    | LIDENT EQUAL simple_expr jsx_arguments {
+  /* empty */ { [] }
+  | LIDENT EQUAL simple_expr jsx_arguments
+      {
         (* a=b *)
         [($1, $3)] @ $4
-     }
-    | LIDENT jsx_arguments {
+      }
+  | LIDENT jsx_arguments
+      {
         (* a (punning) *)
         let loc_lident = mklocation $startpos($1) $endpos($1) in
         [($1, mkexp (Pexp_ident {txt = Lident $1; loc = loc_lident}))] @ $2
-     }
+      }
 ;
 
 jsx_name:
-| mod_longident { $1 }
-| LIDENT { Lident $1 }
+  | mod_longident { $1 }
+  | LIDENT { Lident $1 }
 ;
 
 
 jsx_start_tag_body:
   | jsx_name jsx_arguments {
-     (jsx_component $1 $2, $1)
+      (jsx_component $1 $2, $1)
   }
 ;
 
 jsx_separate_open_close:
-  | jsx_start_tag_body GREATERLESSSLASH jsx_name {
-    (* Foo></Foo *)
-      let (component, start) = $1 in
-      let loc = mklocation $symbolstartpos $endpos in
-      let _ = ensureTagsAreEqual start $3 loc in
-      component [("", mktailexp_extension loc [] None)] ~loc
-  }
-  | jsx_start_tag_body GREATERLESS jsx_tag_siblings jsx_name {
-      let (component, start) = $1 in
-      let loc = mklocation $symbolstartpos $endpos in
-      let _ = ensureTagsAreEqual start $4 loc in
-      component [("", mktailexp_extension loc $3 None)] ~loc
-  }
-  | jsx_start_tag_body GREATER LESS jsx_tag_siblings jsx_name {
-      let (component, start) = $1 in
-      let loc = mklocation $symbolstartpos $endpos in
-      let _ = ensureTagsAreEqual start $5 loc in
-      component [("", mktailexp_extension loc $4 None)] ~loc
-    }
-  | jsx_start_tag_body GREATERLESS jsx_tag_siblings LESSSLASH jsx_name
-    (* Foo><Tags /> </Foo *)
-  | jsx_start_tag_body GREATER jsx_siblings LESSSLASH jsx_name {
-    (* Foo> <Tags /> </Foo *)
-     let (component, start) = $1 in
-     let loc = mklocation $symbolstartpos $endpos in
-     let _ = ensureTagsAreEqual start $5 loc in
-     let siblings =
-       if List.length $3 > 0 then
-         $3
-       else
-         []
-     in
+  | jsx_start_tag_body GREATERLESSSLASH jsx_name
+      {
+        (* Foo></Foo *)
+        let (component, start) = $1 in
+        let loc = mklocation $symbolstartpos $endpos in
+        let _ = ensureTagsAreEqual start $3 loc in
+        component [("", mktailexp_extension loc [] None)] ~loc
+      }
+  | jsx_start_tag_body GREATERLESS jsx_tag_siblings jsx_name
+      {
+        let (component, start) = $1 in
+        let loc = mklocation $symbolstartpos $endpos in
+        let _ = ensureTagsAreEqual start $4 loc in
+        component [("", mktailexp_extension loc $3 None)] ~loc
+      }
+  | jsx_start_tag_body GREATER LESS jsx_tag_siblings jsx_name
+      {
+        let (component, start) = $1 in
+        let loc = mklocation $symbolstartpos $endpos in
+        let _ = ensureTagsAreEqual start $5 loc in
+        component [("", mktailexp_extension loc $4 None)] ~loc
+      }
+  | jsx_start_tag_body GREATER jsx_siblings jsx_name
+      {
+        (* Foo> <Tags /> </Foo *)
+        let (component, start) = $1 in
+        let loc = mklocation $symbolstartpos $endpos in
+        let _ = ensureTagsAreEqual start $4 loc in
+        let siblings =
+          if List.length $3 > 0 then
+            $3
+          else
+            []
+        in
         component [("", mktailexp_extension loc siblings None)] ~loc
-   }
+      }
 ;
 
 jsx_tag:
-    | LESS jsx_start_tag_body SLASHGREATER {
-      (* Foo /> *)
+  | LESS jsx_start_tag_body SLASHGREATER
+      {
+        (* Foo /> *)
         let (component, _) = $2 in
         let loc = mklocation $symbolstartpos $endpos in
         component [("", mktailexp_extension loc [] None)] ~loc
       }
-    | LESS jsx_separate_open_close GREATER {
+  | LESS jsx_separate_open_close GREATER
+      {
         (* /Foo> *)
         $2
-     }
+      }
 ;
 
 jsx_tag_siblings:
-    | jsx_start_tag_body SLASHGREATERLESSSLASH {
+  | jsx_start_tag_body SLASHGREATERLESSSLASH
+      {
         let (component, _) = $1 in
         let loc = mklocation $symbolstartpos $endpos in
         [component [("", mktailexp_extension loc [] None)] ~loc]
-    }
-    | jsx_start_tag_body SLASHGREATERLESS jsx_tag_siblings {
+      }
+  | jsx_start_tag_body SLASHGREATERLESS jsx_tag_siblings
+      {
         (* Tag /><Tag *)
         let (component, _) = $1 in
         let loc = mklocation $symbolstartpos $endpos in
         [component [("", mktailexp_extension loc [] None)] ~loc] @ $3
-    }
-    | jsx_start_tag_body SLASHGREATER jsx_siblings {
+      }
+  | jsx_start_tag_body SLASHGREATER jsx_siblings
+      {
         (* Tag /> <Tags *)
         let (component, _) = $1 in
         let loc = mklocation $symbolstartpos $endpos in
         [component [("", mktailexp_extension loc [] None)] ~loc] @ $3
-    }
-    | jsx_separate_open_close GREATERLESSSLASH {
+      }
+  | jsx_separate_open_close GREATERLESSSLASH
+      {
         [$1]
-    }
-    | jsx_separate_open_close GREATER jsx_siblings {
+      }
+  | jsx_separate_open_close GREATER jsx_siblings
+      {
         (* Tag> <Tags *)
         [$1] @ $3
-    }
-    | jsx_separate_open_close GREATERLESS jsx_tag_siblings {
+      }
+  | jsx_separate_open_close GREATERLESS jsx_tag_siblings
+      {
         (* Tag><Tags *)
         [$1] @ $3
      }
 ;
 
 jsx_siblings:
-    /* empty */ { [] }
-    | STRING jsx_siblings {
+    LESSSLASH { [] }
+  | STRING jsx_siblings
+      {
         let (s, d) = $1 in
         [mkexp (Pexp_constant (Const_string (s, d)))] @ $2
       }
-    | LESS jsx_tag_siblings {
+  | LESS jsx_tag_siblings
+      {
         $2
-    }
-    | LBRACE expr RBRACE jsx_siblings {
+      }
+  | LBRACE expr RBRACE jsx_siblings
+      {
         [$2] @ $4
-    }
+      }
 ;
 
 /*
@@ -2893,32 +2908,32 @@ _simple_expr:
   | mod_longident DOT as_loc(LBRACKETBAR) expr_comma_seq opt_comma as_loc(error)
       { unclosed_exp (with_txt $3 "[|") (with_txt $6 "|]") }
   | LBRACKETLESS jsx_separate_open_close GREATER RBRACKET
-    {
-      let loc = mklocation $symbolstartpos $endpos in
-      make_real_exp (mktailexp_extension loc [$2] None)
-    }
+      {
+        let loc = mklocation $symbolstartpos $endpos in
+        make_real_exp (mktailexp_extension loc [$2] None)
+      }
   | LBRACKETLESS jsx_start_tag_body SLASHGREATER RBRACKET
   | LBRACKETLESS jsx_start_tag_body SLASHGREATERRBRACKET
-    {
-      let (component, _) = $2 in
-      let loc = mklocation $symbolstartpos $endpos in
-      let c = component [("", mktailexp_extension loc [] None)] ~loc in
-      make_real_exp (mktailexp_extension loc [c] None)
-    }
+      {
+        let (component, _) = $2 in
+        let loc = mklocation $symbolstartpos $endpos in
+        let c = component [("", mktailexp_extension loc [] None)] ~loc in
+        make_real_exp (mktailexp_extension loc [c] None)
+      }
   | LBRACKETLESS jsx_separate_open_close GREATER COMMA expr_comma_seq_extension
-    {
-      let seq, ext_opt = $5 in
-      let loc = mklocation $symbolstartpos $endpos in
-      make_real_exp (mktailexp_extension loc ([$2] @ seq) ext_opt)
-    }
+      {
+        let seq, ext_opt = $5 in
+        let loc = mklocation $symbolstartpos $endpos in
+        make_real_exp (mktailexp_extension loc ([$2] @ seq) ext_opt)
+      }
   | LBRACKETLESS jsx_start_tag_body SLASHGREATER COMMA expr_comma_seq_extension
-    {
-      let seq, ext_opt = $5 in
-      let (component, _) = $2 in
-      let loc = mklocation $symbolstartpos $endpos in
-      let c = component [("", mktailexp_extension loc [] None)] ~loc in
-      make_real_exp (mktailexp_extension loc ([c] @ seq) ext_opt)
-    }
+      {
+        let seq, ext_opt = $5 in
+        let (component, _) = $2 in
+        let loc = mklocation $symbolstartpos $endpos in
+        let c = component [("", mktailexp_extension loc [] None)] ~loc in
+        make_real_exp (mktailexp_extension loc ([c] @ seq) ext_opt)
+      }
   | LBRACKET expr_comma_seq_extension
       { let seq, ext_opt = $2 in
         let loc = mklocation $startpos($2) $endpos($2) in
@@ -3318,12 +3333,12 @@ expr_comma_seq:
 /* [x, y, z, ...n] --> ([x,y,z], Some n) */
 expr_comma_seq_extension:
   | LESS jsx_start_tag_body SLASHGREATERRBRACKET
-    {
-      let (component, _) = $2 in
-      let loc = mklocation $symbolstartpos $endpos in
-      let c = component [("", mktailexp_extension loc [] None)] ~loc in
-      ([c], None)
-    }
+      {
+        let (component, _) = $2 in
+        let loc = mklocation $symbolstartpos $endpos in
+        let c = component [("", mktailexp_extension loc [] None)] ~loc in
+        ([c], None)
+      }
   | DOTDOTDOT expr_optional_constraint RBRACKET
     { ([], Some $2) }
   | expr_optional_constraint opt_comma RBRACKET
