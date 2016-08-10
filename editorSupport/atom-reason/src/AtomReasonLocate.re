@@ -5,6 +5,8 @@
  * vim: set ft=rust:
  * vim: set ft=reason:
  */
+let notiflyer = Js.Unsafe.js_expr "require('../lib/Notiflyer')";
+
 /* This is lifted from nuclide source, from the helper function of the same name. */
 let goToLocation' = Js.Unsafe.js_expr {|
   function() {
@@ -24,29 +26,44 @@ let goToLocation' = Js.Unsafe.js_expr {|
     }
 
     return function(res) {
-      // TODO: rewrite this in reason.
-      if (typeof res === "string") {
-        console.error(res);
-        return;
-      }
       goToLocation(res.file, res.pos.line - 1, res.pos.col);
     }
   }()
 |};
 
-let goToLocation result => Js.Unsafe.fun_call goToLocation' [|result|];
+let goToLocation result => Js.Unsafe.fun_call goToLocation' [|Js.Unsafe.inject result|];
 
-let getMerlinLocation editor::editor range::range => {
-  let path = AtomReasonCommon.path editor;
-  let extension = AtomReasonCommon.isInterface (Some path) ? "mli" : "ml";
-  let text = Atom.Buffer.getText editor;
-  let (startPosition, _) = range;
-  SuperMerlin.locate
-    path::path
-    text::text
-    extension::extension
-    position::startPosition
-    (fun successResult => goToLocation successResult)
-    /* TODO: use this */
-    (fun _ => ())
+let locateAndGoToLocation path::path text::text extension::extension range::range resolve reject => {
+  let (startPosition, endPosition) = range;
+  if (startPosition == endPosition) {
+    /* Sometimes we're hovering over an empty line. */
+    resolve Js.null
+  } else {
+    SuperMerlin.locate
+      path::path
+      text::text
+      extension::extension
+      position::startPosition
+      (
+        fun result =>
+          switch (MerlinServiceConvert.jsMerlinLocateToEntry result) {
+          | Merlin.InvalidIdentifier =>
+            /* Invalid identifier... let's not show that in the Notiflyer. */
+            resolve Js.null
+          | Merlin.OtherError err =>
+            Js.Unsafe.meth_call notiflyer "showInfoBar" [|Js.Unsafe.inject @@ Js.string err|];
+            resolve Js.null
+          | a =>
+            Js.Unsafe.meth_call notiflyer "clearFeedbackBar" [||];
+            let successJumpToLocationCallback = Js.wrap_callback (fun () => goToLocation result);
+            resolve (
+              Js.Unsafe.obj [|
+                ("range", Atom.Range.toJs range),
+                ("callback", Js.Unsafe.inject successJumpToLocationCallback)
+              |]
+            )
+          }
+      )
+      reject
+  }
 };
