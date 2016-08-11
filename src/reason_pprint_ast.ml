@@ -693,12 +693,15 @@ type funcReturnStyle =
 
 let rec detectJSXComponent e attributes =
   match (e, attributes) with
-    | (Pexp_ident loc, ({txt = "JSX"; loc = _}, PStr []) :: tail) ->
-        let moduleNameList = List.rev (List.tl (List.rev (Longident.flatten loc.txt))) in
-        if List.length moduleNameList > 0 then
-            Some (String.concat "." moduleNameList)
+    | (Pexp_ident loc, ({txt = "JSX"; _}, PStr []) :: tail) ->
+      let moduleNameList = List.rev (List.tl (List.rev (Longident.flatten loc.txt))) in
+      if List.length moduleNameList > 0 then
+        if Longident.last loc.txt = "createElement" then
+          Some (String.concat "." moduleNameList)
         else
-            Some (Longident.last loc.txt)
+          detectJSXComponent e tail
+      else
+        Some (Longident.last loc.txt)
     | (Pexp_ident loc,  hd :: tail) -> detectJSXComponent e tail
     | _ -> None
 
@@ -3312,16 +3315,16 @@ class printer  ()= object(self:'self)
                       ([item], [], None, Some x.pexp_loc)
                   | None -> (
                     (* Standard application *)
-                    (*reset here only because [function,match,try,sequence] are lower priority*)
+                    (* reset here only because [function,match,try,sequence] are lower priority *)
                     let exp = match detectJSXComponent e.pexp_desc x.pexp_attributes with
                       | Some componentName -> [
-                        [self#formatJSXComponent componentName l];
-                       ]
+                          [self#formatJSXComponent componentName l];
+                        ]
                       | None -> [
-                        [SourceMap (e.pexp_loc, self#expression2 e)];
-                        List.map self#reset#label_x_expression_param l;
-                        attributesAsList;
-                       ]
+                          [SourceMap (e.pexp_loc, self#expression2 e)];
+                          List.map self#reset#label_x_expression_param l;
+                          attributesAsList;
+                      ]
                     in
                     List.concat exp,
                     [],
@@ -3348,7 +3351,11 @@ class printer  ()= object(self:'self)
     let rec processChildren components result =
         match components with
         | {pexp_desc = Pexp_constant (constant)} :: remainingComponents ->
-          processChildren remainingComponents (result @ [self#constant constant])
+          (let constant = match constant with
+          | Const_float _ | Const_int _ | Const_int32 _ | Const_int64 _ ->  [atom "{"; self#constant constant; atom "}"]
+          | _ -> [self#constant constant]
+          in
+          processChildren remainingComponents (result @ constant))
         | {pexp_desc = Pexp_construct ({txt = Lident "::"}, Some {pexp_desc = Pexp_tuple(components)} )} :: remainingComponents ->
           processChildren (remainingComponents @ components) result
         | {pexp_desc = Pexp_apply(expr, l); pexp_attributes} :: remainingComponents ->

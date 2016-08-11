@@ -206,3 +206,7 @@ let lotsOfArguments =
   </LotsOfArguments>;
 
 let lowerCase = <div argument1=1 />;
+
+let a = <Foo a>{5}</Foo>;
+
+let a = <Foo a>{0.55}</Foo>;

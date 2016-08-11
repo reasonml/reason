@@ -111,3 +111,5 @@ let testFunc b => b;
 let jsxInFnCall = testFunc (<Foo />);
 let lotsOfArguments = <LotsOfArguments argument1=1 argument2=2 argument3=3 argument4=4 argument5=5 argument6="test"><Namespace.Foo /></LotsOfArguments>;
 let lowerCase = <div argument1=1 />;
+let a = <Foo a>{5}</Foo>;
+let a = <Foo a>{0.55}</Foo>;

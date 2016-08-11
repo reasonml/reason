@@ -796,7 +796,7 @@ let jsx_component module_name attrs children ~loc =
     Lident firstPart
   in
   let ident = ghloc ~loc lident in
-  let body = mkexp(Pexp_apply(mkexp(Pexp_ident ident), attrs @ children)) in
+  let body = mkexp(Pexp_apply(mkexp(Pexp_ident ident), attrs @ children)) ~loc in
   let attribute = ({txt = "JSX"; loc = loc}, PStr []) in
   { body with pexp_attributes = [attribute] @ body.pexp_attributes }
 
@@ -2643,7 +2643,8 @@ jsx_siblings:
   | STRING jsx_siblings
       {
         let (s, d) = $1 in
-        [mkexp (Pexp_constant (Const_string (s, d)))] @ $2
+        let loc = mklocation $symbolstartpos $endpos in
+        [mkexp (Pexp_constant (Const_string (s, d))) ~loc] @ $2
       }
   | LESS jsx_tag_siblings
       {
