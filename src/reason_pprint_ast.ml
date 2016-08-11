@@ -891,10 +891,8 @@ let configure ~width ~assumeExplicitArity ~constructorLists = (
   configuredSettings := {defaultSettings with width; assumeExplicitArity; constructorLists}
 )
 
-let string_of_formatter (f: (Format.formatter -> 'a -> 'b)) x =
-  ignore (flush_str_formatter ());
-  f str_formatter x;
-  flush_str_formatter ()
+let string_of_formatter f x =
+  Format.asprintf "%a" f x
 
 let createFormatter () =
 let module Formatter = struct
