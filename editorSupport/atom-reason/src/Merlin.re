@@ -14,3 +14,13 @@ type merlinCompletionEntry = {
   kind: merlinCompletionEntryKind,
   name: string
 };
+
+type merlinLocateEntryCurrentFile = {position: Atom.Range.t};
+
+type merlinLocateEntryAnotherFile = {position: Atom.Range.t, file: string};
+
+type merlinLocateEntry =
+  | InvalidIdentifier
+  | OtherError string
+  | CurrentFile merlinLocateEntryCurrentFile
+  | AnotherFile merlinLocateEntryAnotherFile;

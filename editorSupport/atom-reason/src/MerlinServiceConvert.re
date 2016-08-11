@@ -100,3 +100,27 @@ let jsMerlinTypeHintEntryToNuclide arr => {
 };
 
 let jsMerlinOccurrencesToAtom arr => Js.to_array arr |> Array.map jsMerlinPositionToAtomRange;
+
+let jsMerlinLocateToEntry jsResult =>
+  switch (Js.to_string (Js.typeof jsResult)) {
+  | "string" =>
+    /* merlin error message */
+    let result = Js.to_string jsResult;
+    switch result {
+    | "Not a valid identifier" => Merlin.InvalidIdentifier
+    | _ => Merlin.OtherError result
+    }
+  | "object" =>
+    let fileValue = Js.Unsafe.get jsResult "file";
+    if (fileValue == Js.null) {
+      Merlin.CurrentFile {
+        position: Js.Unsafe.get jsResult "pos" |> Js.to_string |> jsMerlinPositionToAtomRange
+      }
+    } else {
+      Merlin.AnotherFile {
+        file: fileValue,
+        position: Js.Unsafe.get jsResult "pos" |> Js.to_string |> jsMerlinPositionToAtomRange
+      }
+    }
+  | _ => raise Not_found
+  };
