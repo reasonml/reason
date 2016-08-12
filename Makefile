@@ -46,6 +46,7 @@ run_utop: build
 		_build/src/reason.cma _build/src/reason_utop.cmo
 
 test: build
+	./miscTests/rtopIntegrationTest.sh
 	cd formatTest; ./test.sh
 
 clean:
