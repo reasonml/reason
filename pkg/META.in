@@ -10,7 +10,6 @@ archive(syntax, preprocessor, utf8) = "-ignore"
 preprocessor = "ocamlreason_preprocessor_where_does_this_end_up"
 
 # Toplevel
-archive(byte, toploop) = "@compiler-libs/ocamlcommon.cma @re/re_str.cma"
 archive(byte, toploop) += "@easy-format/easy_format.cmo reason.cma"
 archive(byte, toploop) += "@menhirLib/menhirLib.cmo"
 archive(byte, toploop, -pkg_utop) += "reason_toploop.cmo"
