@@ -13,6 +13,7 @@ open Atom;
 
 let fixedEnv = Js.Unsafe.js_expr "require('../lib/fixedEnv')";
 
+
 /**
  * @param (Array.t string) standard output formatting of file.
  * @param int curCursorRow Current cursor row before formatting.
@@ -56,7 +57,12 @@ let characterIndexForPositionInString stdOutLines (curCursorRow, curCursorColumn
   }
 };
 
-let formatImpl editor subText isInterface onComplete onFailure => {
+let formatImpl
+    editor::editor
+    subText::subText
+    isInterface::isInterface
+    onComplete::onComplete
+    onFailure::onFailure => {
   let open Atom.JsonType;
   let stdOutLines = {contents: [||]};
   let stdErrLines = {contents: [||]};
@@ -126,6 +132,7 @@ let formatImpl editor subText isInterface onComplete onFailure => {
   ChildProcess.endStdin process
 };
 
+
 /**
  * A better way to restore the cursor position is:
  * - If only white space change occured before where the cursor was, place
@@ -135,16 +142,25 @@ let formatImpl editor subText isInterface onComplete onFailure => {
  * (extra/removed parens, or even "= fun").
  * - If text before cursor changed in ways beyond "whitespace" changes, fall
  * back to current behavior.
+ *
+ * TODO: this doesn't solve multicursor.
  */
-let getEntireFormatting editor range notifySuccess notifyInvalid notifyInfo resolve reject => {
+let getEntireFormatting
+    editor::editor
+    range::range
+    notifySuccess::notifySuccess
+    notifyInvalid::notifyInvalid
+    notifyInfo::notifyInfo
+    resolve
+    reject => {
   let buffer = Editor.getBuffer editor;
   let text = Buffer.getText buffer;
   let subText = Buffer.getTextInRange buffer range;
   formatImpl
-    editor
-    subText
-    (isInterface (Editor.getPath editor))
-    (
+    editor::editor
+    subText::subText
+    isInterface::(isInterface (Editor.getPath editor))
+    onComplete::(
       fun code (formatResult: Nuclide.FileFormat.result) stdErr => {
         if (not (code == 0.0)) {
           notifyInvalid "Syntax Error"
@@ -158,17 +174,24 @@ let getEntireFormatting editor range notifySuccess notifyInvalid notifyInfo reso
         code == 0.0 ? resolve formatResult : reject stdErr
       }
     )
-    reject
+    onFailure::reject
 };
 
-let getPartialFormatting editor range notifySuccess notifyInvalid notifyInfo resolve reject => {
+let getPartialFormatting
+    editor::editor
+    range::range
+    notifySuccess::notifySuccess
+    notifyInvalid::notifyInvalid
+    notifyInfo::notifyInfo
+    resolve
+    reject => {
   let buffer = Editor.getBuffer editor;
   let subText = Buffer.getTextInRange buffer range;
   formatImpl
-    editor
-    subText
-    (isInterface (Editor.getPath editor))
-    (
+    editor::editor
+    subText::subText
+    isInterface::(isInterface (Editor.getPath editor))
+    onComplete::(
       fun code (formatResult: Nuclide.FileFormat.result) stdErr => {
         if (not (code == 0.0)) {
           notifyInvalid "Syntax Error"
@@ -183,5 +206,5 @@ let getPartialFormatting editor range notifySuccess notifyInvalid notifyInfo res
         code == 0.0 ? resolve formatResult.formatted : reject stdErr
       }
     )
-    reject
+    onFailure::reject
 };

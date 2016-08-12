@@ -12,16 +12,26 @@ let export s itm => Js.Unsafe.set (Js.Unsafe.js_expr "exports") s itm;
 
 let dotCall x y z => Js.Unsafe.meth_call x y z;
 
-/* Including dot */
+/* TODO: some files are temporary and/or don't have the right extension but the right syntax selected (e.g.
+   source.reason). We should use that to detect syntax rather than a file extension. */
+let extensionWithoutDot filePath => {
+  let indexAfterlastDot =
+    try (String.rindex filePath '.' + 1) {
+    | Not_found =>
+      raise (
+        Invalid_argument "AtomReasonCommon.extensionWithoutDot: file path doesn't contain an extension."
+      )
+    };
+  String.sub filePath indexAfterlastDot (String.length filePath - indexAfterlastDot)
+};
+
 let isInterface maybeFilePath => {
   let ext =
     switch maybeFilePath {
-    | Some filePath =>
-      let lastExtensionIndex = String.rindex filePath '.';
-      String.sub filePath lastExtensionIndex (String.length filePath - lastExtensionIndex)
-    | None => ".re"
+    | Some filePath => extensionWithoutDot filePath
+    | None => "re"
     };
-  String.compare ".rei" ext === 0
+  String.compare "rei" ext === 0
 };
 
 /*

@@ -47,11 +47,11 @@ export
         Atom.Promise.createFakePromise (
           fun resolve reject =>
             AtomReasonFormat.getEntireFormatting
-              editor
-              range
-              notifySuccess
-              notifyInvalid
-              notifyInfo
+              editor::editor
+              range::range
+              notifySuccess::notifySuccess
+              notifyInvalid::notifyInvalid
+              notifyInfo::notifyInfo
               (fun successResult => resolve (NuclideJs.FileFormat.toJs successResult))
               (fun rejectedMsg => reject (Js.string rejectedMsg))
         )
@@ -74,11 +74,11 @@ export
         Atom.Promise.createFakePromise (
           fun resolve reject =>
             AtomReasonFormat.getPartialFormatting
-              editor
-              range
-              notifySuccess
-              notifyInvalid
-              notifyInfo
+              editor::editor
+              range::range
+              notifySuccess::notifySuccess
+              notifyInvalid::notifyInvalid
+              notifyInfo::notifyInfo
               (fun successResult => resolve (Js.string successResult))
               (fun rejectedMsg => reject (Js.string rejectedMsg))
         )

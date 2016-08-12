@@ -99,7 +99,7 @@ module.exports = {
 
   createTypeHintProvider() {
     return {
-      selector: 'source.reason',
+      selector: GRAMMARS_STRING,
       providerName: PACKAGE_NAME,
       inclusionPriority: 1,
       typeHint: AtomReason.getNuclideJsTypeHint,
