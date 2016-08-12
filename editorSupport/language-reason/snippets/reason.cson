@@ -20,20 +20,20 @@
   "Reason: Type alias":
     prefix: "lt"
     body: """
-       type ${1:t} = ${2:typ};
+      type ${1:t} = ${2:typ};
     """
 
   "Reason: Let Binding":
     prefix: "lt"
     body: """
-       let ${1:name} = ${2:value};
+      let ${1:name} = ${2:value};
     """
   "Reason: Let Function":
     prefix: "lf"
     body: """
-       let ${1:funcName} ${2:args} => {
-         $0
-       };
+      let ${1:funcName} ${2:args} => {
+        $0
+      };
     """
 
   "Reason: Let Module":
@@ -47,7 +47,15 @@
   "Reason: Switch Pattern Match":
     prefix: "sw"
     body: """
-       switch ${1:expression} {
-         | ${2:firstCase} => ${3:result}
-       }
+      switch ${1:expression} {
+      | ${2:firstCase} => ${3:result}
+      }
+    """
+
+  "Reason: Try-catch":
+    prefix: "try"
+    body: """
+      try (${1:expression}) {
+      | ${2:firstException} => ${3:firstHandler}
+      };
     """
