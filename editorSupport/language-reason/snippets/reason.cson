@@ -47,8 +47,7 @@
   "Reason: Switch Pattern Match":
     prefix: "sw"
     body: """
-       switch expr {
+       switch ${1:expression} {
          | ${2:firstCase} => ${3:result}
        }
     """
-
