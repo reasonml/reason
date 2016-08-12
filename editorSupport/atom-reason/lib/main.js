@@ -43,9 +43,9 @@ module.exports = {
   /** Provider for autocomplete service. */
   createAutocompleteProvider(): atom$AutocompleteProvider {
     return {
-      selector: '.source.reason',
+      selector: RE_GRAMMARS.map(g => '.' + g).join(', '),
       inclusionPriority: 1,
-      disableForSelector: '.source.reason .comment',
+      disableForSelector: RE_GRAMMARS.map(g => '.' + g + ' .comment').join(', '),
       getSuggestions: AtomReason.getNuclideJsAutocompleteSuggestions,
       // We want to get ranked higher than the snippets provider.
       suggestionPriority: 5,
