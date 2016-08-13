@@ -96,13 +96,14 @@ let formatImpl
       | Some printWidth => ["-print-width", string_of_int printWidth]
       | None => []
       };
+    let syntaxArg = extensionWithoutDot (path editor);
     printWidthArgs @ [
       "-use-stdin",
       "true",
       "-parse",
-      "re",
+      syntaxArg,
       "-print",
-      "re",
+      syntaxArg,
       "-is-interface-pp",
       isInterface ? "true" : "false"
     ]
