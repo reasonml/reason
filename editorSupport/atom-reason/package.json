@@ -8,7 +8,8 @@
     "Reason"
   ],
   "activationHooks": [
-    "language-reason:grammar-used"
+    "language-reason:grammar-used",
+    "language-ocaml:grammar-used"
   ],
   "devDependencies": {
     "jengaboot": "0.0.22"
