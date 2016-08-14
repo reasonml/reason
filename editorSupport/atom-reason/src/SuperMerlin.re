@@ -281,3 +281,11 @@ let getOccurrences path::path text::text position::position resolve reject =>
     )
     resolve
     reject;
+
+let getOutline path::path text::text resolve reject =>
+  prepareCommand
+    text::text
+    path::path
+    query::(Js.array [|Js.Unsafe.inject (Js.string "outline")|])
+    resolve
+    reject;

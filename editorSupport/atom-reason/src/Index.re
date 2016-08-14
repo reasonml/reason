@@ -224,3 +224,22 @@ export
       }
     )
   );
+
+export
+  "getOutline"
+  (
+    Js.wrap_callback (
+      fun jsEditor =>
+        Atom.Promise.createFakePromise (
+        fun resolve reject => {
+          let path' = path jsEditor;
+          let text = Atom.Buffer.getText (Atom.Editor.getBuffer jsEditor);
+          AtomReasonOutline.getOutline
+            path::path'
+            text::text
+            resolve
+            reject
+        }
+      )
+    )
+  );

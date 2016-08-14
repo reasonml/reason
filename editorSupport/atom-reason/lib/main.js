@@ -106,6 +106,15 @@ module.exports = {
     };
   },
 
+  provideOutline() {
+    return {
+      grammarScopes: RE_GRAMMARS,
+      priority: 1,
+      name: 'Reason',
+      getOutline: AtomReason.getOutline,
+    };
+  },
+
   deactivate() {
     statusBarTile && statusBarTile.destroy();
     statusBarTile = null;
