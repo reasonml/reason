@@ -113,3 +113,4 @@ let lotsOfArguments = <LotsOfArguments argument1=1 argument2=2 argument3=3 argum
 let lowerCase = <div argument1=1 />;
 let a = <Foo a>{5}</Foo>;
 let a = <Foo a>{0.55}</Foo>;
+let a = Foo.createElement "" [@JSX];
