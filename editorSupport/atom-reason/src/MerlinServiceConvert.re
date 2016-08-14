@@ -82,7 +82,7 @@ let merlinCompletionEntryToNuclide replacementPrefix e => {
   typee: merlinCompletionEntryKindToNuclide e.kind,
   /* Include the full type in the description just in case it gets truncated in */
   /* the center column, you'll be able to see it in the description bar. */
-  description: e.desc,
+  description: e.info ^ "Full description: " ^ e.desc,
   replacementPrefix
 };
 
