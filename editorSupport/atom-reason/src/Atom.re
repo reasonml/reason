@@ -10,6 +10,8 @@ let jsTrimTrailing = Js.Unsafe.js_expr "function(s) {return s.split('\\n').map(f
 
 let atomGlobal = Js.Unsafe.js_expr "atom";
 
+let atomPoint = Js.Unsafe.js_expr "require('atom').Point";
+
 let atomRange = Js.Unsafe.js_expr "require('atom').Range";
 
 let bufferedProcess = Js.Unsafe.js_expr "require('atom').BufferedProcess";
@@ -126,9 +128,8 @@ let module Config = {
 
 let module Point = {
   type t = (int, int);
-  let toJs (row, column) => Js.Unsafe.inject (
-    Js.array [|Js.Unsafe.inject row, Js.Unsafe.inject column|]
-  );
+  let toJs (row, column) =>
+    Js.Unsafe.new_obj atomPoint [|Js.Unsafe.inject row, Js.Unsafe.inject column|];
   let fromJs jsP =>
     if (Js.Unsafe.fun_call _arrayIsArray [|Js.Unsafe.inject jsP|]) {
       let arr = Js.to_array jsP;

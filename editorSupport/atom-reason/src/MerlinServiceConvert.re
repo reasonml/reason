@@ -5,17 +5,19 @@
  * vim: set ft=rust:
  * vim: set ft=reason:
  */
+let jsMerlinPointToAtomPoint point => (
+  /* lines (rows) are 1-based for merlin, not 0-based, like for Atom */
+  Js.Unsafe.get point "line" - 1,
+  Js.Unsafe.get point "col"
+);
+
 let jsMerlinPositionToAtomRange position => {
   let merlinStart = Js.Unsafe.get position "start";
   let merlinEnd = Js.Unsafe.get position "end";
   let range =
     Js.undefined === merlinStart || Js.undefined === merlinEnd ?
       Atom.Range.emptyRange :
-      (
-        /* lines (rows) are 1-based for merlin, not 0-based, like for Atom */
-        (Js.Unsafe.get merlinStart "line" - 1, Js.Unsafe.get merlinStart "col"),
-        (Js.Unsafe.get merlinEnd "line" - 1, Js.Unsafe.get merlinEnd "col")
-      );
+      (jsMerlinPointToAtomPoint merlinStart, jsMerlinPointToAtomPoint merlinEnd);
   range
 };
 
