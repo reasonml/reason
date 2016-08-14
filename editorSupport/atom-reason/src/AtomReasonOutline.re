@@ -40,26 +40,29 @@ let makeTokens data => {
   )
 };
 
-let rec convertOutlines arr =>
-  Js.array_map
-    (
-      fun data => {
-        let start = MerlinServiceConvert.jsMerlinPointToAtomPoint (
-          Js.Unsafe.get data "start"
-        );
-        let endd = MerlinServiceConvert.jsMerlinPointToAtomPoint (
-          Js.Unsafe.get data "end"
-        );
-        let children = Js.Unsafe.get data "children";
-        Js.Unsafe.obj [|
-          ("tokenizedText", makeTokens data),
-          ("startPosition", Atom.Point.toJs start),
-          ("endPosition", Atom.Point.toJs endd),
-          ("children", Js.Unsafe.inject (convertOutlines children))
-        |]
-      }
-    )
-    arr;
+let rec convertOutlines entries => {
+  let entries =
+    List.rev_map
+      (
+        fun data => {
+          let start = MerlinServiceConvert.jsMerlinPointToAtomPoint (
+            Js.Unsafe.get data "start"
+          );
+          let endd = MerlinServiceConvert.jsMerlinPointToAtomPoint (
+            Js.Unsafe.get data "end"
+          );
+          let children = Js.Unsafe.get data "children";
+          Js.Unsafe.obj [|
+            ("tokenizedText", makeTokens data),
+            ("startPosition", Atom.Point.toJs start),
+            ("endPosition", Atom.Point.toJs endd),
+            ("children", Js.Unsafe.inject (convertOutlines children))
+          |]
+        }
+      )
+      (Array.to_list (Js.to_array entries));
+  Js.array (Array.of_list entries)
+};
 
 let getOutline path::path text::text resolve reject =>
   SuperMerlin.getOutline
