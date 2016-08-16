@@ -54,7 +54,6 @@ let () =
     Pkg.share "editorSupport/atom-reason/package.json" ~dst:"editorSupport/atom-reason/package.json";
     Pkg.share "editorSupport/atom-reason/README.md" ~dst:"editorSupport/atom-reason/README.md";
     Pkg.share "editorSupport/atom-reason/output_byte_debug_js/app.js" ~dst:"editorSupport/atom-reason/output_byte_debug_js/app.js";
-    Pkg.share "editorSupport/atom-reason/output_byte_debug_js/app.map" ~dst:"editorSupport/atom-reason/output_byte_debug_js/app.map";
 
     Pkg.share "editorSupport/atom-reason/lib/main.js" ~dst:"editorSupport/atom-reason/lib/main.js";
     Pkg.share "editorSupport/atom-reason/lib/ReasonDiagnosticsProvider.js" ~dst:"editorSupport/atom-reason/lib/ReasonDiagnosticsProvider.js";
