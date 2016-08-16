@@ -190,6 +190,11 @@ let module Cursor = {
   let fromJs jsCursor => jsCursor;
 };
 
+let module Grammar = {
+  type t;
+  let name grammar => Js.to_string (Js.Unsafe.get grammar "name");
+};
+
 let module Editor = {
   type t = Js.Unsafe.any;
   let fromJs jsEditor :t => jsEditor;
@@ -207,6 +212,7 @@ let module Editor = {
       Array.map Cursor.fromJs (Js.to_array (Js.Unsafe.meth_call editor "getCursors" emptyArgs));
     Array.to_list arr
   };
+  let getGrammar editor :Grammar.t => Js.Unsafe.meth_call editor "getGrammar" emptyArgs;
   let setSelectedBufferRanges editor bufferRanges => {
     let arr = Array.map Range.toJs bufferRanges |> Js.array;
     Js.Unsafe.meth_call editor "setSelectedBufferRanges" [|Js.Unsafe.inject arr|]
