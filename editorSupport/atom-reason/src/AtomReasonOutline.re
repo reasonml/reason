@@ -21,6 +21,7 @@ let makeTokens grammar data => {
       | `OCaml => "val"
       }
     | "Constructor" => "ctor"
+    | "Signature" => "module type"
     | kind => String.lowercase kind
     };
   let nameToken =
@@ -29,7 +30,8 @@ let makeTokens grammar data => {
     | "Class"
     | "Constructor"
     | "Exn"
-    | "Module" => buildToken "class-name" name
+    | "Module"
+    | "Signature" => buildToken "class-name" name
     | "Type" => buildToken "type" name
     | kind => buildToken "plain" name
     };
