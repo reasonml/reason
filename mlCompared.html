@@ -1057,14 +1057,15 @@ for entire rows in pattern matching.
       <pre>
 let ppp = match MyThing 20 with
   | (MyThing x as ppp)
-  | (YourThing x as ppp) => ppp;
+  | (YourThing x as ppp) -> ppp;
       </pre>
     </td>
     <td>
       <pre>
-let ppp = match MyThing 20 with
-  | MyThing x as ppp
-  | YourThing x as ppp => ppp;
+let ppp = switch (MyThing 20) {
+| MyThing x as ppp
+| YourThing x as ppp => ppp;
+};
       </pre>
     </td>
   </tr>
