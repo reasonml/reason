@@ -1,4 +1,5 @@
 npm-debug.log
 lib/.DS_Store
 src/.DS_Store
+output_byte_debug_js/app.map
 node_modules
