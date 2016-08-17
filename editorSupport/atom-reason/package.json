@@ -66,6 +66,9 @@
       }
     }
   },
+  "engines": {
+    "atom": ">=1.7.0 <2.0.0"
+  },
   "scripts": {
     "start": "compile && cp _build/top/app.{js,map} ./output_byte_debug_js"
   }

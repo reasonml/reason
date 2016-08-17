@@ -59,8 +59,6 @@ let () =
     Pkg.share "editorSupport/atom-reason/lib/ReasonDiagnosticsProvider.js" ~dst:"editorSupport/atom-reason/lib/ReasonDiagnosticsProvider.js";
     Pkg.share "editorSupport/atom-reason/lib/constants.js" ~dst:"editorSupport/atom-reason/lib/constants.js";
     Pkg.share "editorSupport/atom-reason/lib/Notiflyer.js" ~dst:"editorSupport/atom-reason/lib/Notiflyer.js";
-    Pkg.share "editorSupport/atom-reason/lib/fixedEnv.js" ~dst:"editorSupport/atom-reason/lib/fixedEnv.js";
-    Pkg.share "editorSupport/atom-reason/lib/environment-helpers.js" ~dst:"editorSupport/atom-reason/lib/environment-helpers.js";
 
     Pkg.share "editorSupport/atom-reason/Reasonify/formatErrorMessages.js" ~dst:"editorSupport/atom-reason/Reasonify/formatErrorMessages.js";
     Pkg.share "editorSupport/atom-reason/Reasonify/index.js" ~dst:"editorSupport/atom-reason/Reasonify/index.js";

@@ -11,9 +11,6 @@ open StringUtils;
 
 open Atom;
 
-let fixedEnv = Js.Unsafe.js_expr "require('../lib/fixedEnv')";
-
-
 /**
  * @param (Array.t string) standard output formatting of file.
  * @param int curCursorRow Current cursor row before formatting.
@@ -110,7 +107,7 @@ let formatImpl
   };
   let proc =
     Atom.BufferedProcess.create
-      options::{...Atom.Process.defaultOptions, env: fixedEnv}
+      options::Atom.Process.defaultOptions
       stdout::onStdOut
       stderr::onStdErr
       exit::onExit
