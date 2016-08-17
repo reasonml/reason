@@ -245,3 +245,7 @@ let myFun = fun (X (hello [@onHello]) | Y (hello [@onHello])) => hello;
 /* Another bug: Cannot have an attribute on or pattern
 let myFun = fun ((X hello | Y hello) [@onOrPattern]) => hello;
 */
+
+/* Bucklescript FFI item attributes */
+
+external imul : int => int => int = "Math.imul" [@@bs.val];

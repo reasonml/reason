@@ -5460,12 +5460,14 @@ class printer  ()= object(self:'self)
         | Pstr_class l -> self#class_declaration_list l
         | Pstr_class_type (l) -> self#class_type_declaration_list l
         | Pstr_primitive vd ->
-            makeList ~postSpace:true [
+            let attrs =  List.map (fun x -> self#item_attribute x) vd.pval_attributes in 
+            let lst = List.append [
               atom ("external");
               protectIdentifier vd.pval_name.txt;
               atom (":");
               self#value_description vd;
-            ]
+            ] attrs in
+            makeList ~postSpace:true lst
         | Pstr_include incl ->
             (* Kind of a hack *)
             let moduleExpr = incl.pincl_mod in
