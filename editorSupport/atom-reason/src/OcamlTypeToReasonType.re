@@ -9,8 +9,6 @@
    utility we assume is installed. */
 let childProcess = Js.Unsafe.js_expr "require('child_process')";
 
-let fixedEnv = Js.Unsafe.js_expr "require('../lib/fixedEnv')";
-
 /* Shelling out each type to pretty-print is expensive. We'll cache each result to avoid shelling out so much.
    We'll also batch all the (uncached) types we need to shell out into a list and make the terminal command
    take them and print them all at once. */
@@ -51,13 +49,7 @@ let refmttype ocamlTypes =>
       childProcess
       "execSync"
       [|
-        Js.Unsafe.inject (Js.string cmd),
-        Js.Unsafe.inject (
-          Js.Unsafe.obj [|
-            ("env", Js.Unsafe.inject fixedEnv),
-            ("encoding", Js.Unsafe.inject (Js.string "utf-8"))
-          |]
-        )
+        Js.Unsafe.inject (Js.string cmd)
       |] |>
       Js.to_string |>
       /* Output printed types are one type per line. */
