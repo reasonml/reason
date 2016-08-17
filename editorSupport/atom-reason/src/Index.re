@@ -234,9 +234,11 @@ export
         fun resolve reject => {
           let path' = path jsEditor;
           let text = Atom.Buffer.getText (Atom.Editor.getBuffer jsEditor);
+          let grammar = Atom.Grammar.name (Atom.Editor.getGrammar jsEditor);
           AtomReasonOutline.getOutline
             path::path'
             text::text
+            grammar::grammar
             resolve
             reject
         }

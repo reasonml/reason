@@ -10,14 +10,18 @@ let buildToken kind value => Js.Unsafe.obj [|
   ("value", Js.Unsafe.inject (Js.string value))
 |];
 
-let makeTokens data => {
+let makeTokens grammar data => {
   let merlinKind = Js.to_string (Js.Unsafe.get data "kind");
   let name = Js.to_string (Js.Unsafe.get data "name");
   let kind =
     switch merlinKind {
-    | "Value" => "val"
+    | "Value" =>
+      switch grammar {
+      | `Reason => "let"
+      | `OCaml => "val"
+      }
     | "Constructor" => "ctor"
-    | "Signature" => "sig"
+    | "Signature" => "module type"
     | kind => String.lowercase kind
     };
   let nameToken =
@@ -40,7 +44,7 @@ let makeTokens data => {
   )
 };
 
-let rec convertOutlines entries => {
+let rec convertOutlines grammar entries => {
   let entries =
     List.rev_map
       (
@@ -53,10 +57,10 @@ let rec convertOutlines entries => {
           );
           let children = Js.Unsafe.get data "children";
           Js.Unsafe.obj [|
-            ("tokenizedText", makeTokens data),
+            ("tokenizedText", makeTokens grammar data),
             ("startPosition", Atom.Point.toJs start),
             ("endPosition", Atom.Point.toJs endd),
-            ("children", Js.Unsafe.inject (convertOutlines children))
+            ("children", Js.Unsafe.inject (convertOutlines grammar children))
           |]
         }
       )
@@ -64,15 +68,21 @@ let rec convertOutlines entries => {
   Js.array (Array.of_list entries)
 };
 
-let getOutline path::path text::text resolve reject =>
+let getOutline path::path text::text grammar::grammar resolve reject => {
+  let grammar =
+    switch grammar {
+    | "Reason" => `Reason
+    | _ => `OCaml
+    };
   SuperMerlin.getOutline
     path::path
     text::text
     (
       fun result => resolve (
         Js.Unsafe.obj [|
-          ("outlineTrees", Js.Unsafe.inject (convertOutlines result))
+          ("outlineTrees", Js.Unsafe.inject (convertOutlines grammar result))
         |]
       )
     )
-    reject;
+    reject
+};

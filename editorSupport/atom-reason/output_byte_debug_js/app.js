@@ -5782,7 +5782,7 @@
      Assert_failure=[248,caml_new_string("Assert_failure"),-11],
      Undefined_recursive_module=
       [248,caml_new_string("Undefined_recursive_module"),-12],
-     _aV_=[0,caml_new_string("MessageNotProvided"),0,caml_new_string("flame")];
+     _aX_=[0,caml_new_string("MessageNotProvided"),0,caml_new_string("flame")];
     caml_register_global
      (11,Undefined_recursive_module,"Undefined_recursive_module");
     caml_register_global(10,Assert_failure,"Assert_failure");
@@ -5811,141 +5811,143 @@
      _$_=caml_new_string("CamlinternalLazy.Undefined"),
      _ae_=caml_new_string("CamlinternalFormat.Type_mismatch"),
      _ag_=caml_new_string("x"),
-     _dP_=caml_new_string("OCAMLRUNPARAM"),
-     _dN_=caml_new_string("CAMLRUNPARAM"),
+     _dT_=caml_new_string("OCAMLRUNPARAM"),
+     _dR_=caml_new_string("CAMLRUNPARAM"),
      _ah_=caml_new_string(""),
      _ao_=caml_new_string("-"),
      _aq_=caml_new_string("Scanf.Scan_failure"),
      _at_=caml_new_string("Js.Error"),
      _aw_=caml_new_string("jsError"),
-     _a3_=caml_new_string("args"),
-     _a4_=caml_new_string("command"),
-     _a5_=caml_new_string("options"),
-     _a6_=caml_new_string("stdout"),
-     _a7_=caml_new_string("stdin"),
-     _a8_=caml_new_string("exit"),
-     _aX_=caml_new_string("flame"),
+     _a5_=caml_new_string("args"),
+     _a6_=caml_new_string("command"),
+     _a7_=caml_new_string("options"),
+     _a8_=caml_new_string("stdout"),
+     _a9_=caml_new_string("stdin"),
+     _a__=caml_new_string("exit"),
+     _aZ_=caml_new_string("flame"),
      _aB_=caml_new_string("unsafeExtractString: not a string"),
      _aG_=[0,[0,0,0],[0,0,0]],
-     _aZ_=caml_new_string("."),
-     _bg_=caml_new_string("tmp.re"),
-     _be_=caml_new_string("re"),
-     _bd_=caml_new_string("rei"),
-     _bb_=
+     _a1_=caml_new_string("."),
+     _bi_=caml_new_string("tmp.re"),
+     _bg_=caml_new_string("re"),
+     _bf_=caml_new_string("rei"),
+     _bd_=
       caml_new_string
        ("AtomReasonCommon.extensionWithoutDot: file path doesn't contain an extension."),
-     _bC_=caml_new_string("object"),
-     _bD_=caml_new_string("string"),
-     _bE_=caml_new_string("Not a valid identifier"),
-     _by_=caml_new_string("Full description: "),
-     _bn_=caml_new_string("Constructor"),
-     _bo_=caml_new_string("Module"),
-     _bp_=caml_new_string("Type"),
-     _bq_=caml_new_string("Value"),
-     _br_=caml_new_string("constructor"),
-     _bs_=caml_new_string("module"),
-     _bt_=caml_new_string("type"),
-     _bu_=caml_new_string("value"),
-     _bk_=caml_new_string("Merlin"),
-     _bI_=caml_new_string("atom-reason.pathToMerlin"),
-     _bJ_=caml_new_string("atom-reason.merlinFlags"),
-     _bK_=caml_new_string("atom-reason.merlinLogFile"),
-     _bL_=caml_new_string(""),
-     _bM_=caml_new_string("MERLIN_LOG"),
-     _co_=caml_new_string("Syntax Error"),
-     _cm_=caml_new_string("Already Formatted"),
-     _cn_=caml_new_string("Format: Success"),
-     _ck_=caml_new_string("Syntax Error"),
-     _ci_=caml_new_string("Already Formatted"),
-     _cj_=caml_new_string("Format: Success"),
-     _ce_=caml_new_string("Failure!"),
-     _b7_=caml_new_string("\n"),
-     _b4_=caml_new_string("atom-reason.pathToRefmt"),
-     _b5_=
+     _bE_=caml_new_string("object"),
+     _bF_=caml_new_string("string"),
+     _bG_=caml_new_string("Not a valid identifier"),
+     _bA_=caml_new_string("Full description: "),
+     _bp_=caml_new_string("Constructor"),
+     _bq_=caml_new_string("Module"),
+     _br_=caml_new_string("Type"),
+     _bs_=caml_new_string("Value"),
+     _bt_=caml_new_string("constructor"),
+     _bu_=caml_new_string("module"),
+     _bv_=caml_new_string("type"),
+     _bw_=caml_new_string("value"),
+     _bm_=caml_new_string("Merlin"),
+     _bK_=caml_new_string("atom-reason.pathToMerlin"),
+     _bL_=caml_new_string("atom-reason.merlinFlags"),
+     _bM_=caml_new_string("atom-reason.merlinLogFile"),
+     _bN_=caml_new_string(""),
+     _bO_=caml_new_string("MERLIN_LOG"),
+     _cq_=caml_new_string("Syntax Error"),
+     _co_=caml_new_string("Already Formatted"),
+     _cp_=caml_new_string("Format: Success"),
+     _cm_=caml_new_string("Syntax Error"),
+     _ck_=caml_new_string("Already Formatted"),
+     _cl_=caml_new_string("Format: Success"),
+     _cg_=caml_new_string("Failure!"),
+     _b9_=caml_new_string("\n"),
+     _b6_=caml_new_string("atom-reason.pathToRefmt"),
+     _b7_=
       caml_new_string
        ("You must setup atom-reason.pathToRefmt in your Atom config"),
-     _b6_=caml_new_string("atom-reason.printWidth"),
-     _cg_=[0,0,0],
-     _b8_=caml_new_string("-print-width"),
-     _cf_=caml_new_string("true"),
-     _b9_=caml_new_string("false"),
-     _b__=caml_new_string("-is-interface-pp"),
-     _b$_=caml_new_string("-print"),
-     _ca_=caml_new_string("-parse"),
-     _cb_=caml_new_string("true"),
-     _cc_=caml_new_string("-use-stdin"),
-     _cd_=caml_new_string("atom-reason could not spawn "),
-     _b2_=caml_new_string(""),
-     _cv_=caml_new_string("Constructor"),
-     _cw_=caml_new_string("Signature"),
-     _cx_=caml_new_string("Value"),
-     _cM_=caml_new_string("val"),
-     _cN_=caml_new_string("sig"),
-     _cO_=caml_new_string("ctor"),
-     _cy_=caml_new_string("Class"),
-     _cz_=caml_new_string("Constructor"),
-     _cA_=caml_new_string("Exn"),
-     _cB_=caml_new_string("Module"),
-     _cC_=caml_new_string("Signature"),
-     _cD_=caml_new_string("Type"),
-     _cE_=caml_new_string("Value"),
-     _cJ_=caml_new_string("method"),
-     _cK_=caml_new_string("type"),
-     _cF_=caml_new_string("plain"),
-     _cL_=caml_new_string("class-name"),
-     _cG_=caml_new_string(" "),
-     _cH_=caml_new_string("whitespace"),
-     _cI_=caml_new_string("keyword"),
-     _c1_=caml_new_string(""),
-     _c2_=caml_new_string("text"),
-     _c3_=caml_new_string("filePath"),
-     _c4_=caml_new_string("type"),
-     _c5_=caml_new_string("providerName"),
-     _c6_=caml_new_string("scope"),
-     _c7_=caml_new_string("html"),
-     _c8_=caml_new_string("range"),
-     _c9_=caml_new_string("trace"),
-     _c__=caml_new_string(""),
-     _c$_=caml_new_string("text"),
-     _da_=caml_new_string("type"),
-     _db_=caml_new_string("providerName"),
-     _dc_=caml_new_string("scope"),
-     _dd_=caml_new_string("html"),
-     _de_=caml_new_string("range"),
-     _df_=caml_new_string("trace"),
-     _cU_=caml_new_string("filePath"),
-     _cV_=caml_new_string(""),
-     _cW_=caml_new_string("text"),
-     _cX_=caml_new_string("type"),
-     _cY_=caml_new_string("html"),
-     _cZ_=caml_new_string("range"),
-     _dB_=caml_new_string("mli"),
-     _dA_=caml_new_string("ml"),
-     _dm_=caml_new_string("getDiagnostics"),
-     _dp_=caml_new_string("getEntireFormatting"),
-     _ds_=caml_new_string("getPartialFormatting"),
-     _dv_=caml_new_string("getNuclideJsAutocompleteSuggestions"),
-     _dy_=caml_new_string("getNuclideJsTypeHint"),
-     _dD_=caml_new_string("getLocation"),
-     _dG_=caml_new_string("selectOccurrences"),
-     _dJ_=caml_new_string("getOutline");
+     _b8_=caml_new_string("atom-reason.printWidth"),
+     _ci_=[0,0,0],
+     _b__=caml_new_string("-print-width"),
+     _ch_=caml_new_string("true"),
+     _b$_=caml_new_string("false"),
+     _ca_=caml_new_string("-is-interface-pp"),
+     _cb_=caml_new_string("-print"),
+     _cc_=caml_new_string("-parse"),
+     _cd_=caml_new_string("true"),
+     _ce_=caml_new_string("-use-stdin"),
+     _cf_=caml_new_string("atom-reason could not spawn "),
+     _b4_=caml_new_string(""),
+     _cU_=caml_new_string("Reason"),
+     _cx_=caml_new_string("Constructor"),
+     _cy_=caml_new_string("Signature"),
+     _cz_=caml_new_string("Value"),
+     _cO_=caml_new_string("let"),
+     _cP_=caml_new_string("val"),
+     _cQ_=caml_new_string("module type"),
+     _cR_=caml_new_string("ctor"),
+     _cA_=caml_new_string("Class"),
+     _cB_=caml_new_string("Constructor"),
+     _cC_=caml_new_string("Exn"),
+     _cD_=caml_new_string("Module"),
+     _cE_=caml_new_string("Signature"),
+     _cF_=caml_new_string("Type"),
+     _cG_=caml_new_string("Value"),
+     _cL_=caml_new_string("method"),
+     _cM_=caml_new_string("type"),
+     _cH_=caml_new_string("plain"),
+     _cN_=caml_new_string("class-name"),
+     _cI_=caml_new_string(" "),
+     _cJ_=caml_new_string("whitespace"),
+     _cK_=caml_new_string("keyword"),
+     _c5_=caml_new_string(""),
+     _c6_=caml_new_string("text"),
+     _c7_=caml_new_string("filePath"),
+     _c8_=caml_new_string("type"),
+     _c9_=caml_new_string("providerName"),
+     _c__=caml_new_string("scope"),
+     _c$_=caml_new_string("html"),
+     _da_=caml_new_string("range"),
+     _db_=caml_new_string("trace"),
+     _dc_=caml_new_string(""),
+     _dd_=caml_new_string("text"),
+     _de_=caml_new_string("type"),
+     _df_=caml_new_string("providerName"),
+     _dg_=caml_new_string("scope"),
+     _dh_=caml_new_string("html"),
+     _di_=caml_new_string("range"),
+     _dj_=caml_new_string("trace"),
+     _cY_=caml_new_string("filePath"),
+     _cZ_=caml_new_string(""),
+     _c0_=caml_new_string("text"),
+     _c1_=caml_new_string("type"),
+     _c2_=caml_new_string("html"),
+     _c3_=caml_new_string("range"),
+     _dF_=caml_new_string("mli"),
+     _dE_=caml_new_string("ml"),
+     _dq_=caml_new_string("getDiagnostics"),
+     _dt_=caml_new_string("getEntireFormatting"),
+     _dw_=caml_new_string("getPartialFormatting"),
+     _dz_=caml_new_string("getNuclideJsAutocompleteSuggestions"),
+     _dC_=caml_new_string("getNuclideJsTypeHint"),
+     _dH_=caml_new_string("getLocation"),
+     _dK_=caml_new_string("selectOccurrences"),
+     _dN_=caml_new_string("getOutline");
      /*<<pervasives.ml 24 44>>*/ function failwith(s)
      { /*<<pervasives.ml 30 17>>*/  /*<<pervasives.ml 30 17>>*/ var
-       _lW_=
+       _l2_=
         [0,Failure,s];
-       /*<<pervasives.ml 30 33>>*/ throw _lW_ /*<<pervasives.ml 30 33>>*/ }
+       /*<<pervasives.ml 30 33>>*/ throw _l2_ /*<<pervasives.ml 30 33>>*/ }
      /*<<pervasives.ml 24 44>>*/ function invalid_arg(s)
      { /*<<pervasives.ml 31 20>>*/  /*<<pervasives.ml 31 20>>*/ var
-       _lV_=
+       _l1_=
         [0,Invalid_argument,s];
-       /*<<pervasives.ml 31 45>>*/ throw _lV_ /*<<pervasives.ml 31 45>>*/ }
+       /*<<pervasives.ml 31 45>>*/ throw _l1_ /*<<pervasives.ml 31 45>>*/ }
      /*<<pervasives.ml 24 44>>*/  /*<<pervasives.ml 24 44>>*/ caml_set_oo_id
      ([248,_a_,0]);
      /*<<pervasives.ml 24 44>>*/ function max(x,y)
      { /*<<pervasives.ml 63 17>>*/  /*<<pervasives.ml 63 17>>*/ var
-       _lU_=
+       _l0_=
          /*<<pervasives.ml 63 17>>*/ caml_greaterequal(x,y);
-       /*<<pervasives.ml 63 23>>*/ return _lU_?x:y /*<<pervasives.ml 63 37>>*/ }
+       /*<<pervasives.ml 63 23>>*/ return _l0_?x:y /*<<pervasives.ml 63 37>>*/ }
      /*<<pervasives.ml 155 42>>*/ function _b_(s1,s2)
      { /*<<pervasives.ml 178 2>>*/ var
         /*<<pervasives.ml 178 2>>*/ l1=
@@ -5967,9 +5969,9 @@
        { /*<<pervasives.ml 247 22>>*/ var
          tl=l1[2],
          hd=l1[1],
-          /*<<pervasives.ml 247 22>>*/ _lT_=
+          /*<<pervasives.ml 247 22>>*/ _lZ_=
            /*<<pervasives.ml 247 22>>*/ _c_(tl,l2);
-         /*<<pervasives.ml 247 31>>*/ return [0,hd,_lT_]}
+         /*<<pervasives.ml 247 31>>*/ return [0,hd,_lZ_]}
        /*<<pervasives.ml 246 10>>*/ return l2 /*<<pervasives.ml 247 31>>*/ }
      /*<<pervasives.ml 258 12>>*/  /*<<pervasives.ml 258 12>>*/ var
      stdin=
@@ -5987,15 +5989,15 @@
              /*<<pervasives.ml 288 16>>*/ try
              { /*<<pervasives.ml 288 21>>*/  /*<<pervasives.ml 288 21>>*/ caml_ml_flush
                (a)}
-            catch(_lS_){}
+            catch(_lY_){}
             var param$0=l;
             continue}
            /*<<pervasives.ml 287 12>>*/ return 0} /*<<pervasives.ml 288 50>>*/ }
        /*<<pervasives.ml 289 10>>*/  /*<<pervasives.ml 289 10>>*/ var
-       _lR_=
+       _lX_=
          /*<<pervasives.ml 289 10>>*/ caml_ml_out_channels_list(0);
        /*<<pervasives.ml 289 32>>*/ return  /*<<pervasives.ml 289 32>>*/ iter
-              (_lR_) /*<<pervasives.ml 289 32>>*/ }
+              (_lX_) /*<<pervasives.ml 289 32>>*/ }
      /*<<pervasives.ml 260 34>>*/ function input(ic,s,ofs,len)
      { /*<<pervasives.ml 349 2>>*/ if(0 <= ofs)
        if(0 <= len)
@@ -6022,22 +6024,22 @@
      { /*<<array.ml 80 2>>*/  /*<<array.ml 80 2>>*/ var l=a.length - 1;
        /*<<array.ml 81 2>>*/ if(0 === l)return [0];
        /*<<array.ml 80 2>>*/ var
-        /*<<array.ml 81 26>>*/ _lK_=a[1],
-        /*<<array.ml 82 21>>*/ _lL_= /*<<array.ml 82 21>>*/ caml_call1(f,_lK_),
+        /*<<array.ml 81 26>>*/ _lQ_=a[1],
+        /*<<array.ml 82 21>>*/ _lR_= /*<<array.ml 82 21>>*/ caml_call1(f,_lQ_),
         /*<<array.ml 82 40>>*/ r=
-         /*<<array.ml 82 40>>*/ caml_make_vect(l,_lL_),
-        /*<<array.ml 82 40>>*/ _lM_=1,
-        /*<<array.ml 83 4>>*/ _lN_=l - 1 | 0;
-       /*<<array.ml 83 4>>*/ if(!(_lN_ < 1))
-       {var i=_lM_;
+         /*<<array.ml 82 40>>*/ caml_make_vect(l,_lR_),
+        /*<<array.ml 82 40>>*/ _lS_=1,
+        /*<<array.ml 83 4>>*/ _lT_=l - 1 | 0;
+       /*<<array.ml 83 4>>*/ if(!(_lT_ < 1))
+       {var i=_lS_;
          /*<<array.ml 84 6>>*/ for(;;)
          { /*<<array.ml 84 6>>*/ var
-            /*<<array.ml 84 6>>*/ _lO_=a[i + 1],
-            /*<<array.ml 84 21>>*/ _lP_=
-             /*<<array.ml 84 21>>*/ caml_call1(f,_lO_);
-           /*<<array.ml 84 40>>*/ r[i + 1] = _lP_;
-           /*<<array.ml 84 6>>*/  /*<<array.ml 84 40>>*/ var _lQ_=i + 1 | 0;
-          if(_lN_ !== i){var i=_lQ_;continue}
+            /*<<array.ml 84 6>>*/ _lU_=a[i + 1],
+            /*<<array.ml 84 21>>*/ _lV_=
+             /*<<array.ml 84 21>>*/ caml_call1(f,_lU_);
+           /*<<array.ml 84 40>>*/ r[i + 1] = _lV_;
+           /*<<array.ml 84 6>>*/  /*<<array.ml 84 40>>*/ var _lW_=i + 1 | 0;
+          if(_lT_ !== i){var i=_lW_;continue}
           break}}
        /*<<array.ml 86 4>>*/ return r /*<<array.ml 87 5>>*/ }
     function _h_(a)
@@ -6070,10 +6072,10 @@
        { /*<<array.ml 116 6>>*/ var
          tl=l[2],
          hd=l[1],
-          /*<<array.ml 116 6>>*/ _lI_=0,
-          /*<<array.ml 116 21>>*/ _lJ_= /*<<array.ml 116 21>>*/ _i_(_lI_,l),
+          /*<<array.ml 116 6>>*/ _lO_=0,
+          /*<<array.ml 116 21>>*/ _lP_= /*<<array.ml 116 21>>*/ _i_(_lO_,l),
           /*<<array.ml 116 38>>*/ a=
-           /*<<array.ml 116 38>>*/ caml_make_vect(_lJ_,hd),
+           /*<<array.ml 116 38>>*/ caml_make_vect(_lP_,hd),
           /*<<array.ml 117 6>>*/ fill=
           function(i,param)
            {var i$0=i,param$0=param;
@@ -6147,8 +6149,8 @@
          l=param[2],
          a=param[1],
           /*<<list.ml 55 20>>*/ r= /*<<list.ml 55 20>>*/ caml_call1(f,a),
-          /*<<list.ml 55 32>>*/ _lH_= /*<<list.ml 55 32>>*/ _u_(f,l);
-         /*<<list.ml 55 39>>*/ return [0,r,_lH_]}
+          /*<<list.ml 55 32>>*/ _lN_= /*<<list.ml 55 32>>*/ _u_(f,l);
+         /*<<list.ml 55 39>>*/ return [0,r,_lN_]}
        /*<<list.ml 54 10>>*/ return 0}
     function _v_(f,l)
      { /*<<list.ml 64 2>>*/ function rmap_f(accu,param)
@@ -6158,9 +6160,9 @@
            { /*<<list.ml 66 22>>*/ var
              l=param$0[2],
              a=param$0[1],
-              /*<<list.ml 66 22>>*/ _lG_=
+              /*<<list.ml 66 22>>*/ _lM_=
                /*<<list.ml 66 22>>*/ caml_call1(f,a),
-              /*<<list.ml 66 25>>*/ accu$1=[0,_lG_,accu$0],
+              /*<<list.ml 66 25>>*/ accu$1=[0,_lM_,accu$0],
              accu$0=accu$1,
              param$0=l;
             continue}
@@ -6200,30 +6202,30 @@
        /*<<bytes.ml 58 7>>*/ return  /*<<bytes.ml 58 7>>*/ invalid_arg(_A_) /*<<bytes.ml 63 5>>*/ }
      /*<<bytes.ml 45 20>>*/ function _B_(param)
      { /*<<bytes.ml 129 15>>*/ var
-        /*<<bytes.ml 129 15>>*/ _lF_=param - 9 | 0,
+        /*<<bytes.ml 129 15>>*/ _lL_=param - 9 | 0,
         /*<<bytes.ml 129 15>>*/ switch$0=
-        4 < _lF_ >>> 0?23 === _lF_?1:0:2 === _lF_?0:1;
+        4 < _lL_ >>> 0?23 === _lL_?1:0:2 === _lL_?0:1;
        /*<<camlinternalFormatBasics.ml 502 8>>*/ return switch$0?1:0 /*<<bytes.ml 131 14>>*/ }
      /*<<bytes.ml 45 20>>*/ function _C_(s)
      { /*<<bytes.ml 134 2>>*/ var
         /*<<bytes.ml 134 2>>*/ len=
          /*<<bytes.ml 134 2>>*/ caml_ml_string_length(s),
-        /*<<bytes.ml 134 2>>*/ _lA_=0,
-        /*<<bytes.ml 135 2>>*/ i=[0,_lA_];
+        /*<<bytes.ml 134 2>>*/ _lG_=0,
+        /*<<bytes.ml 135 2>>*/ i=[0,_lG_];
       for(;;)
        {if(i[1] < len)
          { /*<<bytes.ml 136 20>>*/ var
-           _lB_=caml_string_unsafe_get(s,i[1]),
-            /*<<bytes.ml 136 20>>*/ _lC_= /*<<bytes.ml 136 20>>*/ _B_(_lB_);
-           /*<<bytes.ml 136 46>>*/ if(_lC_)
+           _lH_=caml_string_unsafe_get(s,i[1]),
+            /*<<bytes.ml 136 20>>*/ _lI_= /*<<bytes.ml 136 20>>*/ _B_(_lH_);
+           /*<<bytes.ml 136 46>>*/ if(_lI_)
            { /*<<bytes.ml 137 4>>*/ i[1]++;continue}}
          /*<<bytes.ml 139 2>>*/  /*<<bytes.ml 139 2>>*/ var j=[0,len - 1 | 0];
         for(;;)
          {if(i[1] <= j[1])
            { /*<<bytes.ml 140 20>>*/ var
-             _lD_=caml_string_unsafe_get(s,j[1]),
-              /*<<bytes.ml 140 20>>*/ _lE_= /*<<bytes.ml 140 20>>*/ _B_(_lD_);
-             /*<<bytes.ml 140 46>>*/ if(_lE_)
+             _lJ_=caml_string_unsafe_get(s,j[1]),
+              /*<<bytes.ml 140 20>>*/ _lK_= /*<<bytes.ml 140 20>>*/ _B_(_lJ_);
+             /*<<bytes.ml 140 46>>*/ if(_lK_)
              { /*<<bytes.ml 141 4>>*/ j[1] += -1;continue}}
            /*<<bytes.ml 143 2>>*/ return i[1] <= j[1]
                   ? /*<<bytes.ml 144 4>>*/ _z_
@@ -6237,22 +6239,22 @@
        /*<<bytes.ml 191 2>>*/ var
         /*<<bytes.ml 192 23>>*/ r=
          /*<<bytes.ml 192 23>>*/ caml_create_string(l),
-        /*<<bytes.ml 192 23>>*/ _lv_=0,
-        /*<<bytes.ml 194 4>>*/ _lw_=l - 1 | 0;
-       /*<<bytes.ml 194 4>>*/ if(!(_lw_ < 0))
-       {var i=_lv_;
+        /*<<bytes.ml 192 23>>*/ _lB_=0,
+        /*<<bytes.ml 194 4>>*/ _lC_=l - 1 | 0;
+       /*<<bytes.ml 194 4>>*/ if(!(_lC_ < 0))
+       {var i=_lB_;
          /*<<bytes.ml 194 26>>*/ for(;;)
          { /*<<bytes.ml 194 26>>*/ var
-            /*<<bytes.ml 194 26>>*/ _lx_=
+            /*<<bytes.ml 194 26>>*/ _lD_=
              /*<<bytes.ml 194 26>>*/ caml_string_unsafe_get(s,i),
-            /*<<bytes.ml 194 41>>*/ _ly_=
-             /*<<bytes.ml 194 41>>*/ caml_call1(f,_lx_);
+            /*<<bytes.ml 194 41>>*/ _lE_=
+             /*<<bytes.ml 194 41>>*/ caml_call1(f,_lD_);
            /*<<bytes.ml 194 61>>*/  /*<<bytes.ml 194 61>>*/ caml_string_unsafe_set
-           (r,i,_ly_);
+           (r,i,_lE_);
            /*<<bytes.ml 194 26>>*/  /*<<bytes.ml 194 61>>*/ var
-           _lz_=
+           _lF_=
             i + 1 | 0;
-          if(_lw_ !== i){var i=_lz_;continue}
+          if(_lC_ !== i){var i=_lF_;continue}
           break}}
        /*<<bytes.ml 195 4>>*/ return r /*<<bytes.ml 196 5>>*/ }
      /*<<bytes.ml 45 20>>*/ function _E_(s)
@@ -6294,31 +6296,31 @@
        if(!(l < i))
          /*<<bytes.ml 248 4>>*/ try
          { /*<<bytes.ml 248 15>>*/  /*<<bytes.ml 248 15>>*/ _F_(s,l,i,c);
-           /*<<bytes.ml 248 36>>*/  /*<<bytes.ml 248 36>>*/ var _lt_=1;
-          return _lt_}
-        catch(_lu_)
-         {_lu_ = caml_wrap_exception(_lu_);
-          if(_lu_ === Not_found)return 0;
-          throw _lu_}
+           /*<<bytes.ml 248 36>>*/  /*<<bytes.ml 248 36>>*/ var _lz_=1;
+          return _lz_}
+        catch(_lA_)
+         {_lA_ = caml_wrap_exception(_lA_);
+          if(_lA_ === Not_found)return 0;
+          throw _lA_}
        /*<<bytes.ml 246 4>>*/ return  /*<<bytes.ml 246 4>>*/ invalid_arg(_K_) /*<<bytes.ml 248 64>>*/ }
      /*<<bytes.ml 45 20>>*/ function _L_(s,c)
      { /*<<bytes.ml 251 19>>*/ return  /*<<bytes.ml 251 19>>*/ _J_(s,0,c) /*<<bytes.ml 251 38>>*/ }
-     /*<<bytes.ml 45 20>>*/ function _M_(_ls_){ /*<<?>>*/ return _ls_}
-     /*<<bytes.ml 45 20>>*/ function _N_(_lr_){ /*<<?>>*/ return _lr_}
+     /*<<bytes.ml 45 20>>*/ function _M_(_ly_){ /*<<?>>*/ return _ly_}
+     /*<<bytes.ml 45 20>>*/ function _N_(_lx_){ /*<<?>>*/ return _lx_}
     function _O_(s,ofs,len)
      { /*<<string.ml 39 8>>*/ var
-        /*<<string.ml 39 8>>*/ _lp_= /*<<string.ml 39 8>>*/ _M_(s),
-        /*<<string.ml 39 2>>*/ _lq_= /*<<string.ml 39 2>>*/ _z_(_lp_,ofs,len);
-       /*<<string.ml 39 23>>*/ return  /*<<string.ml 39 23>>*/ _N_(_lq_) /*<<string.ml 39 30>>*/ }
+        /*<<string.ml 39 8>>*/ _lv_= /*<<string.ml 39 8>>*/ _M_(s),
+        /*<<string.ml 39 2>>*/ _lw_= /*<<string.ml 39 2>>*/ _z_(_lv_,ofs,len);
+       /*<<string.ml 39 23>>*/ return  /*<<string.ml 39 23>>*/ _N_(_lw_) /*<<string.ml 39 30>>*/ }
     function _P_(sep,l)
      { /*<<string.ml 46 2>>*/ if(l)
        { /*<<string.ml 49 6>>*/ var
          tl=l[2],
          hd=l[1],
-         _lh_=0,
-          /*<<string.ml 49 6>>*/ num=[0,_lh_],
+         _ln_=0,
+          /*<<string.ml 49 6>>*/ num=[0,_ln_],
           /*<<string.ml 49 6>>*/ len=[0,0],
-          /*<<string.ml 50 6>>*/ _li_=
+          /*<<string.ml 50 6>>*/ _lo_=
           function(s)
            { /*<<string.ml 50 26>>*/ num[1]++;
              /*<<string.ml 50 36>>*/ len[1]
@@ -6329,7 +6331,7 @@
             |
             0;
              /*<<string.ml 50 36>>*/ return 0 /*<<string.ml 50 58>>*/ };
-         /*<<string.ml 50 6>>*/  /*<<string.ml 50 6>>*/ _w_(_li_,l);
+         /*<<string.ml 50 6>>*/  /*<<string.ml 50 6>>*/ _w_(_lo_,l);
          /*<<string.ml 49 6>>*/ var
           /*<<string.ml 50 61>>*/ r=
            /*<<string.ml 50 61>>*/ caml_create_string
@@ -6340,21 +6342,21 @@
               num[1] - 1 | 0)
             |
             0),
-          /*<<string.ml 52 6>>*/ _lj_=
+          /*<<string.ml 52 6>>*/ _lp_=
            /*<<string.ml 52 6>>*/ caml_ml_string_length(hd);
          /*<<string.ml 52 6>>*/  /*<<string.ml 52 6>>*/ caml_blit_string
-         (hd,0,r,0,_lj_);
+         (hd,0,r,0,_lp_);
          /*<<string.ml 49 6>>*/ var
           /*<<string.ml 52 38>>*/ pos=
           [0, /*<<string.ml 52 38>>*/ caml_ml_string_length(hd)],
-          /*<<string.ml 54 6>>*/ _lk_=
+          /*<<string.ml 54 6>>*/ _lq_=
           function(s)
            { /*<<string.ml 56 10>>*/ var
-              /*<<string.ml 56 10>>*/ _ll_=
+              /*<<string.ml 56 10>>*/ _lr_=
                /*<<string.ml 56 10>>*/ caml_ml_string_length(sep),
-              /*<<string.ml 56 10>>*/ _lm_=pos[1];
+              /*<<string.ml 56 10>>*/ _ls_=pos[1];
              /*<<string.ml 56 10>>*/  /*<<string.ml 56 10>>*/ caml_blit_string
-             (sep,0,r,_lm_,_ll_);
+             (sep,0,r,_ls_,_lr_);
              /*<<string.ml 56 47>>*/ pos[1]
             =
             pos[1]
@@ -6363,11 +6365,11 @@
             |
             0;
              /*<<string.ml 56 10>>*/ var
-              /*<<string.ml 58 10>>*/ _ln_=
+              /*<<string.ml 58 10>>*/ _lt_=
                /*<<string.ml 58 10>>*/ caml_ml_string_length(s),
-              /*<<string.ml 58 10>>*/ _lo_=pos[1];
+              /*<<string.ml 58 10>>*/ _lu_=pos[1];
              /*<<string.ml 58 10>>*/  /*<<string.ml 58 10>>*/ caml_blit_string
-             (s,0,r,_lo_,_ln_);
+             (s,0,r,_lu_,_lt_);
              /*<<string.ml 58 43>>*/ pos[1]
             =
             pos[1]
@@ -6376,53 +6378,53 @@
             |
             0;
              /*<<string.ml 58 43>>*/ return 0 /*<<string.ml 59 32>>*/ };
-         /*<<string.ml 54 6>>*/  /*<<string.ml 54 6>>*/ _w_(_lk_,tl);
+         /*<<string.ml 54 6>>*/  /*<<string.ml 54 6>>*/ _w_(_lq_,tl);
          /*<<string.ml 60 10>>*/ return  /*<<string.ml 60 10>>*/ _N_(r)}
        /*<<string.ml 47 10>>*/ return _Q_ /*<<string.ml 61 30>>*/ }
     function _R_(param)
      { /*<<string.ml 78 15>>*/ var
-        /*<<string.ml 78 15>>*/ _lg_=param - 9 | 0,
+        /*<<string.ml 78 15>>*/ _lm_=param - 9 | 0,
         /*<<string.ml 78 15>>*/ switch$0=
-        4 < _lg_ >>> 0?23 === _lg_?1:0:2 === _lg_?0:1;
+        4 < _lm_ >>> 0?23 === _lm_?1:0:2 === _lm_?0:1;
        /*<<camlinternalFormatBasics.ml 502 8>>*/ return switch$0?1:0 /*<<string.ml 80 14>>*/ }
     function _S_(s)
      { /*<<string.ml 83 5>>*/  /*<<string.ml 83 5>>*/ var
-       _k$_=
+       _lf_=
          /*<<string.ml 83 5>>*/ caml_string_equal(s,_T_);
-       /*<<string.ml 83 11>>*/ if(_k$_)return s;
+       /*<<string.ml 83 11>>*/ if(_lf_)return s;
        /*<<string.ml 83 5>>*/ var
-        /*<<string.ml 84 7>>*/ _la_=
+        /*<<string.ml 84 7>>*/ _lg_=
          /*<<string.ml 84 7>>*/ caml_string_unsafe_get(s,0),
-        /*<<string.ml 84 10>>*/ _lb_= /*<<string.ml 84 10>>*/ _R_(_la_);
-       /*<<string.ml 84 35>>*/ if(!_lb_)
+        /*<<string.ml 84 10>>*/ _lh_= /*<<string.ml 84 10>>*/ _R_(_lg_);
+       /*<<string.ml 84 35>>*/ if(!_lh_)
        { /*<<string.ml 84 39>>*/ var
-         _le_=caml_string_unsafe_get(s,caml_ml_string_length(s) - 1 | 0),
-          /*<<string.ml 84 39>>*/ _lf_= /*<<string.ml 84 39>>*/ _R_(_le_);
-         /*<<string.ml 84 77>>*/ if(!_lf_)return s}
+         _lk_=caml_string_unsafe_get(s,caml_ml_string_length(s) - 1 | 0),
+          /*<<string.ml 84 39>>*/ _ll_= /*<<string.ml 84 39>>*/ _R_(_lk_);
+         /*<<string.ml 84 77>>*/ if(!_ll_)return s}
        /*<<string.ml 83 5>>*/ var
-        /*<<string.ml 85 21>>*/ _lc_= /*<<string.ml 85 21>>*/ _M_(s),
-        /*<<string.ml 85 13>>*/ _ld_= /*<<string.ml 85 13>>*/ _C_(_lc_);
-       /*<<string.ml 85 29>>*/ return  /*<<string.ml 85 29>>*/ _N_(_ld_) /*<<string.ml 86 8>>*/ }
+        /*<<string.ml 85 21>>*/ _li_= /*<<string.ml 85 21>>*/ _M_(s),
+        /*<<string.ml 85 13>>*/ _lj_= /*<<string.ml 85 13>>*/ _C_(_li_);
+       /*<<string.ml 85 29>>*/ return  /*<<string.ml 85 29>>*/ _N_(_lj_) /*<<string.ml 86 8>>*/ }
     function _U_(s,c)
      { /*<<string.ml 102 10>>*/  /*<<string.ml 102 10>>*/ var
-       _k__=
+       _le_=
          /*<<string.ml 102 10>>*/ _M_(s);
-       /*<<string.ml 102 17>>*/ return  /*<<string.ml 102 17>>*/ _G_(_k__,c) /*<<string.ml 102 19>>*/ }
+       /*<<string.ml 102 17>>*/ return  /*<<string.ml 102 17>>*/ _G_(_le_,c) /*<<string.ml 102 19>>*/ }
     function _V_(s,c)
      { /*<<string.ml 104 11>>*/  /*<<string.ml 104 11>>*/ var
-       _k9_=
+       _ld_=
          /*<<string.ml 104 11>>*/ _M_(s);
-       /*<<string.ml 104 18>>*/ return  /*<<string.ml 104 18>>*/ _I_(_k9_,c) /*<<string.ml 104 20>>*/ }
+       /*<<string.ml 104 18>>*/ return  /*<<string.ml 104 18>>*/ _I_(_ld_,c) /*<<string.ml 104 20>>*/ }
     function _W_(s,c)
      { /*<<string.ml 110 13>>*/  /*<<string.ml 110 13>>*/ var
-       _k8_=
+       _lc_=
          /*<<string.ml 110 13>>*/ _M_(s);
-       /*<<string.ml 110 20>>*/ return  /*<<string.ml 110 20>>*/ _L_(_k8_,c) /*<<string.ml 110 22>>*/ }
+       /*<<string.ml 110 20>>*/ return  /*<<string.ml 110 20>>*/ _L_(_lc_,c) /*<<string.ml 110 22>>*/ }
     function _X_(s)
      { /*<<string.ml 118 14>>*/ var
-        /*<<string.ml 118 14>>*/ _k6_= /*<<string.ml 118 14>>*/ _M_(s),
-        /*<<string.ml 118 2>>*/ _k7_= /*<<string.ml 118 2>>*/ _E_(_k6_);
-       /*<<string.ml 118 21>>*/ return  /*<<string.ml 118 21>>*/ _N_(_k7_) /*<<string.ml 118 28>>*/ }
+        /*<<string.ml 118 14>>*/ _la_= /*<<string.ml 118 14>>*/ _M_(s),
+        /*<<string.ml 118 2>>*/ _lb_= /*<<string.ml 118 2>>*/ _E_(_la_);
+       /*<<string.ml 118 21>>*/ return  /*<<string.ml 118 21>>*/ _N_(_lb_) /*<<string.ml 118 28>>*/ }
     function _Y_(x,y)
      { /*<<string.ml 126 28>>*/ return  /*<<string.ml 126 28>>*/ caml_string_compare
               (x,y) /*<<string.ml 126 50>>*/ }
@@ -6435,26 +6437,26 @@
     function _ac_(blk)
      { /*<<camlinternalLazy.ml 22 2>>*/ var
         /*<<camlinternalLazy.ml 22 2>>*/ closure=blk[1],
-        /*<<camlinternalLazy.ml 23 2>>*/ _k1_=0;
-       /*<<camlinternalLazy.ml 24 2>>*/ blk[_k1_ + 1] = _ab_;
+        /*<<camlinternalLazy.ml 23 2>>*/ _k7_=0;
+       /*<<camlinternalLazy.ml 24 2>>*/ blk[_k7_ + 1] = _ab_;
        /*<<camlinternalLazy.ml 24 2>>*/ try
        { /*<<camlinternalLazy.ml 25 17>>*/ var
-          /*<<camlinternalLazy.ml 25 17>>*/ _k4_=0,
+          /*<<camlinternalLazy.ml 25 17>>*/ _k__=0,
           /*<<camlinternalLazy.ml 25 17>>*/ result=
-           /*<<camlinternalLazy.ml 25 17>>*/ caml_call1(closure,_k4_),
-          /*<<camlinternalLazy.ml 27 4>>*/ _k5_=0;
-         /*<<camlinternalLazy.ml 28 4>>*/ blk[_k5_ + 1] = result;
+           /*<<camlinternalLazy.ml 25 17>>*/ caml_call1(closure,_k__),
+          /*<<camlinternalLazy.ml 27 4>>*/ _k$_=0;
+         /*<<camlinternalLazy.ml 28 4>>*/ blk[_k$_ + 1] = result;
          /*<<camlinternalLazy.ml 28 4>>*/  /*<<camlinternalLazy.ml 28 4>>*/ caml_obj_set_tag
          (blk,250);
          /*<<camlinternalLazy.ml 31 4>>*/ return result}
       catch(e)
        {e = caml_wrap_exception(e);
          /*<<camlinternalLazy.ml 31 4>>*/ var
-          /*<<camlinternalLazy.ml 31 4>>*/ _k2_=
+          /*<<camlinternalLazy.ml 31 4>>*/ _k8_=
           function(param)
            { /*<<camlinternalLazy.ml 31 63>>*/ throw e /*<<camlinternalLazy.ml 31 63>>*/ },
-          /*<<camlinternalLazy.ml 31 4>>*/ _k3_=0;
-         /*<<camlinternalLazy.ml 32 4>>*/ blk[_k3_ + 1] = _k2_;
+          /*<<camlinternalLazy.ml 31 4>>*/ _k9_=0;
+         /*<<camlinternalLazy.ml 32 4>>*/ blk[_k9_ + 1] = _k8_;
          /*<<camlinternalLazy.ml 32 11>>*/ throw e} /*<<camlinternalLazy.ml 32 11>>*/ }
     function _ad_(n)
      { /*<<buffer.ml 23 1>>*/ var
@@ -6473,144 +6475,144 @@
               (str,0, /*<<digest.ml 24 2>>*/ caml_ml_string_length(str)) /*<<digest.ml 24 41>>*/ }
     function new_state(param)
      { /*<<random.ml 32 21>>*/ var
-        /*<<random.ml 32 21>>*/ _kZ_=0,
-        /*<<random.ml 32 28>>*/ _k0_=
+        /*<<random.ml 32 21>>*/ _k5_=0,
+        /*<<random.ml 32 28>>*/ _k6_=
          /*<<random.ml 32 28>>*/ caml_make_vect(55,0);
-       /*<<random.ml 32 43>>*/ return [0,_k0_,_kZ_] /*<<random.ml 32 54>>*/ }
+       /*<<random.ml 32 43>>*/ return [0,_k6_,_k5_] /*<<random.ml 32 54>>*/ }
     function full_init(s,seed)
      { /*<<random.ml 39 4>>*/ function combine(accu,x)
        { /*<<random.ml 39 47>>*/ var
-          /*<<random.ml 39 47>>*/ _kX_=
+          /*<<random.ml 39 47>>*/ _k3_=
            /*<<random.ml 39 47>>*/ string_of_int(x),
-          /*<<random.ml 39 39>>*/ _kY_= /*<<random.ml 39 39>>*/ _b_(accu,_kX_);
-         /*<<random.ml 39 63>>*/ return  /*<<random.ml 39 63>>*/ _af_(_kY_) /*<<random.ml 39 63>>*/ }
+          /*<<random.ml 39 39>>*/ _k4_= /*<<random.ml 39 39>>*/ _b_(accu,_k3_);
+         /*<<random.ml 39 63>>*/ return  /*<<random.ml 39 63>>*/ _af_(_k4_) /*<<random.ml 39 63>>*/ }
        /*<<random.ml 40 4>>*/ function extract(d)
        { /*<<random.ml 42 19>>*/ var
-          /*<<random.ml 42 19>>*/ _kQ_=
+          /*<<random.ml 42 19>>*/ _kW_=
            /*<<random.ml 42 19>>*/ caml_string_get(d,3),
-          /*<<random.ml 42 24>>*/ _kR_=_kQ_ << 24,
-          /*<<random.ml 41 61>>*/ _kS_=
+          /*<<random.ml 42 24>>*/ _kX_=_kW_ << 24,
+          /*<<random.ml 41 61>>*/ _kY_=
            /*<<random.ml 41 61>>*/ caml_string_get(d,2),
-          /*<<random.ml 41 66>>*/ _kT_=_kS_ << 16,
-          /*<<random.ml 41 35>>*/ _kU_=
+          /*<<random.ml 41 66>>*/ _kZ_=_kY_ << 16,
+          /*<<random.ml 41 35>>*/ _k0_=
            /*<<random.ml 41 35>>*/ caml_string_get(d,1),
-          /*<<random.ml 41 40>>*/ _kV_=_kU_ << 8,
-          /*<<random.ml 41 16>>*/ _kW_=
+          /*<<random.ml 41 40>>*/ _k1_=_k0_ << 8,
+          /*<<random.ml 41 16>>*/ _k2_=
            /*<<random.ml 41 16>>*/ caml_string_get(d,0);
-         /*<<random.ml 41 21>>*/ return ((_kW_ + _kV_ | 0) + _kT_ | 0)
+         /*<<random.ml 41 21>>*/ return ((_k2_ + _k1_ | 0) + _kZ_ | 0)
                +
-               _kR_
+               _kX_
                |
                0 /*<<random.ml 42 32>>*/ }
        /*<<random.ml 44 4>>*/ var
         /*<<random.ml 44 4>>*/ seed$0=0 === seed.length - 1?[0,0]:seed,
         /*<<random.ml 45 4>>*/ l=seed$0.length - 1,
-        /*<<random.ml 45 4>>*/ _kz_=0,
-       i$0=_kz_;
+        /*<<random.ml 45 4>>*/ _kF_=0,
+       i$0=_kF_;
        /*<<random.ml 47 6>>*/ for(;;)
-       { /*<<random.ml 47 6>>*/  /*<<random.ml 47 6>>*/ var _kO_=s[1];
+       { /*<<random.ml 47 6>>*/  /*<<random.ml 47 6>>*/ var _kU_=s[1];
          /*<<random.ml 47 6>>*/  /*<<random.ml 47 6>>*/ caml_check_bound
-          (_kO_,i$0)
+          (_kU_,i$0)
          [i$0 + 1]
         =
         i$0;
-         /*<<random.ml 47 6>>*/  /*<<random.ml 47 20>>*/ var _kP_=i$0 + 1 | 0;
-        if(54 !== i$0){var i$0=_kP_;continue}
+         /*<<random.ml 47 6>>*/  /*<<random.ml 47 20>>*/ var _kV_=i$0 + 1 | 0;
+        if(54 !== i$0){var i$0=_kV_;continue}
          /*<<random.ml 47 6>>*/ var
           /*<<random.ml 49 4>>*/ accu=[0,_ag_],
-          /*<<random.ml 49 4>>*/ _kA_=0,
-          /*<<random.ml 50 4>>*/ _kB_=55,
-          /*<<random.ml 50 22>>*/ _kC_= /*<<random.ml 50 22>>*/ max(_kB_,l),
-          /*<<random.ml 50 30>>*/ _kD_=54 + _kC_ | 0;
-         /*<<random.ml 50 30>>*/ if(!(_kD_ < 0))
-         {var i=_kA_;
+          /*<<random.ml 49 4>>*/ _kG_=0,
+          /*<<random.ml 50 4>>*/ _kH_=55,
+          /*<<random.ml 50 22>>*/ _kI_= /*<<random.ml 50 22>>*/ max(_kH_,l),
+          /*<<random.ml 50 30>>*/ _kJ_=54 + _kI_ | 0;
+         /*<<random.ml 50 30>>*/ if(!(_kJ_ < 0))
+         {var i=_kG_;
            /*<<random.ml 51 6>>*/ for(;;)
            { /*<<random.ml 51 6>>*/ var
               /*<<random.ml 51 6>>*/ j=i % 55 | 0,
               /*<<random.ml 52 6>>*/ k= /*<<random.ml 52 6>>*/ caml_mod(i,l),
-              /*<<random.ml 53 28>>*/ _kE_=
+              /*<<random.ml 53 28>>*/ _kK_=
                /*<<random.ml 53 28>>*/ caml_check_bound(seed$0,k)[k + 1],
-              /*<<random.ml 53 36>>*/ _kF_=accu[1],
-              /*<<random.ml 53 14>>*/ _kG_=
-               /*<<random.ml 53 14>>*/ combine(_kF_,_kE_);
-             /*<<random.ml 53 36>>*/ accu[1] = _kG_;
+              /*<<random.ml 53 36>>*/ _kL_=accu[1],
+              /*<<random.ml 53 14>>*/ _kM_=
+               /*<<random.ml 53 14>>*/ combine(_kL_,_kK_);
+             /*<<random.ml 53 36>>*/ accu[1] = _kM_;
              /*<<random.ml 51 6>>*/ var
-              /*<<random.ml 54 6>>*/ _kH_=accu[1],
-              /*<<random.ml 54 33>>*/ _kI_=
-               /*<<random.ml 54 33>>*/ extract(_kH_),
-              /*<<random.ml 54 46>>*/ _kJ_=s[1],
-              /*<<random.ml 54 19>>*/ _kK_=
-               /*<<random.ml 54 19>>*/ caml_check_bound(_kJ_,j)[j + 1],
-              /*<<random.ml 54 27>>*/ _kL_=(_kK_ ^ _kI_) & 1073741823,
-              /*<<random.ml 54 27>>*/ _kM_=s[1];
+              /*<<random.ml 54 6>>*/ _kN_=accu[1],
+              /*<<random.ml 54 33>>*/ _kO_=
+               /*<<random.ml 54 33>>*/ extract(_kN_),
+              /*<<random.ml 54 46>>*/ _kP_=s[1],
+              /*<<random.ml 54 19>>*/ _kQ_=
+               /*<<random.ml 54 19>>*/ caml_check_bound(_kP_,j)[j + 1],
+              /*<<random.ml 54 27>>*/ _kR_=(_kQ_ ^ _kO_) & 1073741823,
+              /*<<random.ml 54 27>>*/ _kS_=s[1];
              /*<<random.ml 54 6>>*/  /*<<random.ml 54 6>>*/ caml_check_bound
-              (_kM_,j)
+              (_kS_,j)
              [j + 1]
             =
-            _kL_;
+            _kR_;
              /*<<random.ml 51 6>>*/  /*<<random.ml 54 64>>*/ var
-             _kN_=
+             _kT_=
               i + 1 | 0;
-            if(_kD_ !== i){var i=_kN_;continue}
+            if(_kJ_ !== i){var i=_kT_;continue}
             break}}
          /*<<random.ml 56 4>>*/ s[2] = 0;
          /*<<random.ml 56 4>>*/ return 0} /*<<random.ml 56 15>>*/ }
     function make(seed)
      { /*<<random.ml 60 4>>*/ var
-        /*<<random.ml 60 4>>*/ _ky_=0,
+        /*<<random.ml 60 4>>*/ _kE_=0,
         /*<<random.ml 60 17>>*/ result=
-         /*<<random.ml 60 17>>*/ new_state(_ky_);
+         /*<<random.ml 60 17>>*/ new_state(_kE_);
        /*<<random.ml 61 4>>*/  /*<<random.ml 61 4>>*/ full_init(result,seed);
        /*<<random.ml 61 25>>*/ return result /*<<random.ml 62 10>>*/ }
     function make_self_init(param)
      { /*<<random.ml 65 31>>*/  /*<<random.ml 65 31>>*/ var
-       _kx_=
+       _kD_=
          /*<<random.ml 65 31>>*/ caml_sys_random_seed(0);
-       /*<<random.ml 65 47>>*/ return  /*<<random.ml 65 47>>*/ make(_kx_) /*<<random.ml 65 47>>*/ }
+       /*<<random.ml 65 47>>*/ return  /*<<random.ml 65 47>>*/ make(_kD_) /*<<random.ml 65 47>>*/ }
     function bits(s)
      { /*<<random.ml 75 4>>*/ s[2] = (s[2] + 1 | 0) % 55 | 0;
        /*<<random.ml 76 4>>*/ var
-        /*<<random.ml 76 4>>*/ _kq_=s[2],
+        /*<<random.ml 76 4>>*/ _kw_=s[2],
         /*<<random.ml 76 4>>*/ curval=
-         /*<<random.ml 76 4>>*/ caml_check_bound(s[1],_kq_)[_kq_ + 1],
-        /*<<random.ml 77 4>>*/ _ks_=(s[2] + 24 | 0) % 55 | 0,
-        /*<<random.ml 77 4>>*/ _kr_=curval ^ (curval >>> 25 | 0) & 31,
-        /*<<random.ml 77 4>>*/ _kt_=s[1],
-        /*<<random.ml 77 17>>*/ _ku_=
-         /*<<random.ml 77 17>>*/ caml_check_bound(_kt_,_ks_)[_ks_ + 1],
-        /*<<random.ml 77 43>>*/ newval=_ku_ + _kr_ | 0,
+         /*<<random.ml 76 4>>*/ caml_check_bound(s[1],_kw_)[_kw_ + 1],
+        /*<<random.ml 77 4>>*/ _ky_=(s[2] + 24 | 0) % 55 | 0,
+        /*<<random.ml 77 4>>*/ _kx_=curval ^ (curval >>> 25 | 0) & 31,
+        /*<<random.ml 77 4>>*/ _kz_=s[1],
+        /*<<random.ml 77 17>>*/ _kA_=
+         /*<<random.ml 77 17>>*/ caml_check_bound(_kz_,_ky_)[_ky_ + 1],
+        /*<<random.ml 77 43>>*/ newval=_kA_ + _kx_ | 0,
         /*<<random.ml 79 4>>*/ newval30=newval & 1073741823,
-        /*<<random.ml 80 4>>*/ _kv_=s[2],
-        /*<<random.ml 80 4>>*/ _kw_=s[1];
+        /*<<random.ml 80 4>>*/ _kB_=s[2],
+        /*<<random.ml 80 4>>*/ _kC_=s[1];
        /*<<random.ml 80 4>>*/  /*<<random.ml 80 4>>*/ caml_check_bound
-        (_kw_,_kv_)
-       [_kv_ + 1]
+        (_kC_,_kB_)
+       [_kB_ + 1]
       =
       newval30;
        /*<<random.ml 80 28>>*/ return newval30 /*<<random.ml 81 12>>*/ }
     try
      { /*<<hashtbl.ml 43 8>>*/ var
-        /*<<hashtbl.ml 43 8>>*/ _dQ_=
-         /*<<hashtbl.ml 43 8>>*/ caml_sys_getenv(_dP_),
-       params=_dQ_}
-    catch(_ko_)
-     {_ko_ = caml_wrap_exception(_ko_);
-      if(_ko_ !== Not_found)throw _ko_;
+        /*<<hashtbl.ml 43 8>>*/ _dU_=
+         /*<<hashtbl.ml 43 8>>*/ caml_sys_getenv(_dT_),
+       params=_dU_}
+    catch(_ku_)
+     {_ku_ = caml_wrap_exception(_ku_);
+      if(_ku_ !== Not_found)throw _ku_;
        /*<<hashtbl.ml 44 4>>*/ try
        { /*<<hashtbl.ml 44 8>>*/ var
-          /*<<hashtbl.ml 44 8>>*/ _dO_=
-           /*<<hashtbl.ml 44 8>>*/ caml_sys_getenv(_dN_),
-         _ai_=_dO_}
-      catch(_kp_)
-       {_kp_ = caml_wrap_exception(_kp_);
-        if(_kp_ !== Not_found)throw _kp_;
+          /*<<hashtbl.ml 44 8>>*/ _dS_=
+           /*<<hashtbl.ml 44 8>>*/ caml_sys_getenv(_dR_),
+         _ai_=_dS_}
+      catch(_kv_)
+       {_kv_ = caml_wrap_exception(_kv_);
+        if(_kv_ !== Not_found)throw _kv_;
         var _ai_=_ah_}
       var params=_ai_}
      /*<<hashtbl.ml 45 2>>*/ var
       /*<<hashtbl.ml 45 2>>*/ _aj_=82,
       /*<<hashtbl.ml 45 2>>*/ _ak_= /*<<hashtbl.ml 45 2>>*/ _W_(params,_aj_),
       /*<<hashtbl.ml 45 28>>*/ _al_=
-      [246,function(_kn_){ /*<<?>>*/ return make_self_init(0)}];
+      [246,function(_kt_){ /*<<?>>*/ return make_self_init(0)}];
      /*<<hashtbl.ml 45 28>>*/ function _am_(x,n)
      { /*<<?>>*/ var x$0=x;
        /*<<hashtbl.ml 56 2>>*/ for(;;)
@@ -6628,29 +6630,29 @@
       else
        var random=_ak_;
        /*<<hashtbl.ml 61 2>>*/ var
-        /*<<hashtbl.ml 61 2>>*/ _ki_=16,
+        /*<<hashtbl.ml 61 2>>*/ _ko_=16,
         /*<<hashtbl.ml 61 10>>*/ s=
-         /*<<hashtbl.ml 61 10>>*/ _am_(_ki_,initial_size);
+         /*<<hashtbl.ml 61 10>>*/ _am_(_ko_,initial_size);
        /*<<hashtbl.ml 62 2>>*/ if(random)
         /*<<hashtbl.ml 62 28>>*/ var
-         /*<<hashtbl.ml 62 28>>*/ _kj_=
+         /*<<hashtbl.ml 62 28>>*/ _kp_=
           /*<<hashtbl.ml 62 28>>*/ caml_obj_tag(_al_),
-         /*<<hashtbl.ml 62 28>>*/ _kk_=
-         250 === _kj_?_al_[1]:246 === _kj_?_ac_(_al_):_al_,
-         /*<<hashtbl.ml 62 28>>*/ _kl_= /*<<hashtbl.ml 62 28>>*/ bits(_kk_),
-        seed=_kl_;
+         /*<<hashtbl.ml 62 28>>*/ _kq_=
+         250 === _kp_?_al_[1]:246 === _kp_?_ac_(_al_):_al_,
+         /*<<hashtbl.ml 62 28>>*/ _kr_= /*<<hashtbl.ml 62 28>>*/ bits(_kq_),
+        seed=_kr_;
       else
        var seed=0;
        /*<<hashtbl.ml 61 2>>*/  /*<<hashtbl.ml 63 52>>*/ var
-       _km_=
+       _ks_=
          /*<<hashtbl.ml 63 52>>*/ caml_make_vect(s,0);
-       /*<<hashtbl.ml 63 70>>*/ return [0,0,_km_,seed,s] /*<<hashtbl.ml 63 72>>*/ }
+       /*<<hashtbl.ml 63 70>>*/ return [0,0,_ks_,seed,s] /*<<hashtbl.ml 63 72>>*/ }
     var null_char=0,default_token_buffer_size=1024;
     function create(iname,next)
      { /*<<scanf.ml 250 13>>*/  /*<<scanf.ml 250 13>>*/ var
-       _kh_=
+       _kn_=
          /*<<scanf.ml 250 13>>*/ _ad_(default_token_buffer_size);
-       /*<<scanf.ml 250 52>>*/ return [0,0,null_char,0,0,0,0,next,_kh_,iname] /*<<scanf.ml 252 3>>*/ }
+       /*<<scanf.ml 250 52>>*/ return [0,0,null_char,0,0,0,0,next,_kn_,iname] /*<<scanf.ml 252 3>>*/ }
      /*<<scanf.ml 266 42>>*/  /*<<scanf.ml 266 42>>*/ var len=1024;
      /*<<scanf.ml 266 42>>*/ function scan_raise_at_end(ic)
      { /*<<scanf.ml 330 47>>*/ throw End_of_file /*<<scanf.ml 330 47>>*/ }
@@ -6658,12 +6660,12 @@
      { /*<<scanf.ml 334 4>>*/ var
         /*<<scanf.ml 334 4>>*/ buf=
          /*<<scanf.ml 334 4>>*/ caml_create_string(1024),
-        /*<<scanf.ml 334 4>>*/ _kc_=0,
-        /*<<scanf.ml 335 4>>*/ i=[0,_kc_],
-        /*<<scanf.ml 335 4>>*/ _kd_=0,
-        /*<<scanf.ml 336 4>>*/ lim=[0,_kd_],
-        /*<<scanf.ml 336 4>>*/ _ke_=0,
-        /*<<scanf.ml 337 4>>*/ eof=[0,_ke_];
+        /*<<scanf.ml 334 4>>*/ _ki_=0,
+        /*<<scanf.ml 335 4>>*/ i=[0,_ki_],
+        /*<<scanf.ml 335 4>>*/ _kj_=0,
+        /*<<scanf.ml 336 4>>*/ lim=[0,_kj_],
+        /*<<scanf.ml 336 4>>*/ _kk_=0,
+        /*<<scanf.ml 337 4>>*/ eof=[0,_kk_];
        /*<<scanf.ml 338 4>>*/ function next(param)
        { /*<<scanf.ml 339 6>>*/ if(i[1] < lim[1])
          { /*<<scanf.ml 339 24>>*/  /*<<scanf.ml 339 24>>*/ var
@@ -6673,10 +6675,10 @@
            /*<<scanf.ml 339 66>>*/ return c}
          /*<<scanf.ml 340 6>>*/ if(eof[1])throw End_of_file;
          /*<<scanf.ml 340 42>>*/ var
-          /*<<scanf.ml 340 42>>*/ _kf_=0,
-          /*<<scanf.ml 341 15>>*/ _kg_=
-           /*<<scanf.ml 341 15>>*/ input(ic,buf,_kf_,len);
-         /*<<scanf.ml 341 33>>*/ lim[1] = _kg_;
+          /*<<scanf.ml 340 42>>*/ _kl_=0,
+          /*<<scanf.ml 341 15>>*/ _km_=
+           /*<<scanf.ml 341 15>>*/ input(ic,buf,_kl_,len);
+         /*<<scanf.ml 341 33>>*/ lim[1] = _km_;
          /*<<scanf.ml 342 8>>*/ return 0 === lim[1]
                 ?(eof[1]
                   =
@@ -6692,9 +6694,9 @@
      ([248,_aq_,0]);
     function _ar_(name,exn)
      { /*<<callback.ml 24 16>>*/ var
-        /*<<callback.ml 24 16>>*/ _kb_=
+        /*<<callback.ml 24 16>>*/ _kh_=
          /*<<callback.ml 24 16>>*/ caml_obj_tag(exn),
-        /*<<callback.ml 24 27>>*/ slot=_kb_ === 248?exn:exn[1];
+        /*<<callback.ml 24 27>>*/ slot=_kh_ === 248?exn:exn[1];
        /*<<callback.ml 25 2>>*/ return  /*<<callback.ml 25 2>>*/ caml_register_named_value
               (name,slot) /*<<callback.ml 25 32>>*/ }
      /*<<js.ml 50 15>>*/ var
@@ -6702,8 +6704,8 @@
       /*<<js.ml 66 20>>*/ null$0=null,
       /*<<js.ml 69 28>>*/ undefined$0=undefined;
      /*<<js.ml 69 59>>*/ function _as_(x)
-     { /*<<js.ml 92 20>>*/  /*<<js.ml 92 20>>*/ var _ka_=x == null$0?1:0;
-       /*<<js.ml 92 40>>*/ return 1 - _ka_ /*<<js.ml 92 41>>*/ }
+     { /*<<js.ml 92 20>>*/  /*<<js.ml 92 20>>*/ var _kg_=x == null$0?1:0;
+       /*<<js.ml 92 40>>*/ return 1 - _kg_ /*<<js.ml 92 41>>*/ }
      /*<<js.ml 245 24>>*/ var
       /*<<js.ml 245 24>>*/ array_length=jsoo_obj.Array,
       /*<<js.ml 392 11>>*/ Error$0=
@@ -6718,22 +6720,22 @@
        { /*<<js.ml 458 25>>*/ var
           /*<<js.ml 458 25>>*/ e=param[2],
           /*<<js.ml 458 42>>*/ jsoo_res= /*<<js.ml 458 42>>*/ e.toString(),
-          /*<<js.ml 458 31>>*/ _j$_=
+          /*<<js.ml 458 31>>*/ _kf_=
            /*<<js.ml 458 31>>*/ caml_js_to_string(jsoo_res);
-         /*<<js.ml 458 57>>*/ return [0,_j$_]}
+         /*<<js.ml 458 57>>*/ return [0,_kf_]}
        /*<<js.ml 458 66>>*/ return 0 /*<<js.ml 458 70>>*/ }
      /*<<js.ml 457 2>>*/  /*<<js.ml 457 2>>*/ register_printer(_ax_);
      /*<<js.ml 458 71>>*/ function _ay_(jsoo_self)
      { /*<<js.ml 463 10>>*/  /*<<js.ml 463 10>>*/ var
-       _j9_=
+       _kd_=
         jsoo_self instanceof array_length?1:0;
-       /*<<js.ml 463 40>>*/ if(_j9_)return 0;
+       /*<<js.ml 463 40>>*/ if(_kd_)return 0;
        /*<<js.ml 463 10>>*/ var
         /*<<js.ml 464 29>>*/ jsoo_res=
          /*<<js.ml 464 29>>*/ jsoo_self.toString(),
-        /*<<js.ml 464 18>>*/ _j__=
+        /*<<js.ml 464 18>>*/ _ke_=
          /*<<js.ml 464 18>>*/ caml_js_to_string(jsoo_res);
-       /*<<js.ml 464 43>>*/ return [0,_j__] /*<<js.ml 464 44>>*/ }
+       /*<<js.ml 464 43>>*/ return [0,_ke_] /*<<js.ml 464 44>>*/ }
      /*<<js.ml 460 2>>*/  /*<<js.ml 460 2>>*/ register_printer(_ay_);
      /*<<src/Atom.re 9 21>>*/ (function(s)
       { /*<<src/Atom.re 9 34>>*/ return  /*<<src/Atom.re 9 41>>*/  /*<<src/Atom.re 9 41>>*/  /*<<src/Atom.re 9 41>>*/ s.split
@@ -6771,85 +6773,85 @@
        /*<<src/Atom.re 34 15>>*/ require("../lib/fixedEnv");
      /*<<src/Atom.re 34 61>>*/ function _az_(fieldVal)
      { /*<<src/Atom.re 71 7>>*/  /*<<src/Atom.re 71 7>>*/ var
-       _j1_=
+       _j7_=
          /*<<src/Atom.re 71 7>>*/ arrayIsArray(fieldVal);
-       /*<<src/Atom.re 71 71>>*/ if(_j1_)
+       /*<<src/Atom.re 71 71>>*/ if(_j7_)
        { /*<<src/Atom.re 72 37>>*/ var
-          /*<<src/Atom.re 72 37>>*/ _j2_=
+          /*<<src/Atom.re 72 37>>*/ _j8_=
            /*<<src/Atom.re 72 37>>*/ caml_js_to_array(fieldVal),
           /*<<src/Atom.re 72 20>>*/ jsArray=
-           /*<<src/Atom.re 72 20>>*/ _g_(_az_,_j2_);
+           /*<<src/Atom.re 72 20>>*/ _g_(_az_,_j8_);
          /*<<src/Atom.re 73 6>>*/ return [3,jsArray]}
        /*<<src/Atom.re 71 7>>*/  /*<<src/Atom.re 74 14>>*/ var
-       _j3_=
+       _j9_=
          /*<<src/Atom.re 74 14>>*/ isString(fieldVal);
-       /*<<src/Atom.re 76 5>>*/ if(_j3_)
+       /*<<src/Atom.re 76 5>>*/ if(_j9_)
        { /*<<src/Atom.re 77 17>>*/  /*<<src/Atom.re 77 17>>*/ var
-         _j4_=
+         _j__=
            /*<<src/Atom.re 77 17>>*/ caml_js_to_string(fieldVal);
-         /*<<src/Atom.re 77 40>>*/ return [0,_j4_]}
+         /*<<src/Atom.re 77 40>>*/ return [0,_j__]}
        /*<<src/Atom.re 71 7>>*/  /*<<src/Atom.re 78 14>>*/ var
-       _j5_=
+       _j$_=
          /*<<src/Atom.re 78 14>>*/ isBool(fieldVal);
-       /*<<src/Atom.re 80 5>>*/ if(_j5_)
+       /*<<src/Atom.re 80 5>>*/ if(_j$_)
        { /*<<src/Atom.re 81 15>>*/  /*<<src/Atom.re 81 15>>*/ var
-         _j6_=
+         _ka_=
           fieldVal | 0;
-         /*<<src/Atom.re 81 55>>*/ return [2,_j6_]}
+         /*<<src/Atom.re 81 55>>*/ return [2,_ka_]}
        /*<<src/Atom.re 71 7>>*/  /*<<src/Atom.re 82 14>>*/ var
-       _j7_=
+       _kb_=
          /*<<src/Atom.re 82 14>>*/ isNumber(fieldVal);
-       /*<<src/Atom.re 84 5>>*/ if(_j7_)return [1,fieldVal];
+       /*<<src/Atom.re 84 5>>*/ if(_kb_)return [1,fieldVal];
        /*<<src/Atom.re 71 7>>*/  /*<<src/Atom.re 86 14>>*/ var
-       _j8_=
+       _kc_=
          /*<<src/Atom.re 86 14>>*/ isNull(fieldVal);
-       /*<<src/Atom.re 88 5>>*/ return _j8_?0:1 /*<<src/Atom.re 92 5>>*/ }
+       /*<<src/Atom.re 88 5>>*/ return _kc_?0:1 /*<<src/Atom.re 92 5>>*/ }
      /*<<src/Atom.re 34 61>>*/ function _aA_(o)
      { /*<<src/Atom.re 102 4>>*/ if(typeof o !== "number" && 0 === o[0])
        { /*<<src/Atom.re 103 31>>*/  /*<<src/Atom.re 103 31>>*/ var s=o[1];
          /*<<src/Atom.re 103 31>>*/ return s}
        /*<<src/Atom.re 104 11>>*/  /*<<src/Atom.re 104 11>>*/ var
-       _j0_=
+       _j6_=
         [0,Invalid_argument,_aB_];
-       /*<<src/Atom.re 104 71>>*/ throw _j0_ /*<<src/Atom.re 105 5>>*/ }
+       /*<<src/Atom.re 104 71>>*/ throw _j6_ /*<<src/Atom.re 105 5>>*/ }
      /*<<src/Atom.re 34 61>>*/ function _aC_(envVar,strVal)
      { /*<<src/Atom.re 111 78>>*/ var
-        /*<<src/Atom.re 111 78>>*/ _jW_=
+        /*<<src/Atom.re 111 78>>*/ _j2_=
          /*<<src/Atom.re 111 78>>*/ strVal.toString(),
-        /*<<src/Atom.re 111 21>>*/ _jX_=jsoo_obj.process,
-        /*<<src/Atom.re 111 63>>*/ _jY_=_jX_.env;
-       /*<<src/Atom.re 111 70>>*/ _jY_[envVar] = _jW_;
+        /*<<src/Atom.re 111 21>>*/ _j3_=jsoo_obj.process,
+        /*<<src/Atom.re 111 63>>*/ _j4_=_j3_.env;
+       /*<<src/Atom.re 111 70>>*/ _j4_[envVar] = _j2_;
        /*<<src/Atom.re 111 78>>*/  /*<<src/Atom.re 112 34>>*/ var
-       _jZ_=
+       _j5_=
          /*<<src/Atom.re 112 34>>*/ strVal.toString();
-       /*<<src/Atom.re 112 52>>*/ return fixedEnv[envVar] = _jZ_ /*<<src/Atom.re 113 3>>*/ }
+       /*<<src/Atom.re 112 52>>*/ return fixedEnv[envVar] = _j5_ /*<<src/Atom.re 113 3>>*/ }
      /*<<src/Atom.re 34 61>>*/ function _aD_(configKey)
      { /*<<src/Atom.re 117 35>>*/ var
         /*<<src/Atom.re 117 35>>*/ config=atomGlobal.config,
-        /*<<src/Atom.re 119 4>>*/ _jU_=
+        /*<<src/Atom.re 119 4>>*/ _j0_=
          /*<<src/Atom.re 119 4>>*/ configKey.toString(),
-        /*<<src/Atom.re 119 21>>*/ _jV_=
-         /*<<src/Atom.re 119 21>>*/ config.get(_jU_);
+        /*<<src/Atom.re 119 21>>*/ _j1_=
+         /*<<src/Atom.re 119 21>>*/ config.get(_j0_);
        /*<<src/Atom.re 119 98>>*/ return  /*<<src/Atom.re 119 98>>*/ _az_
-              (_jV_) /*<<src/Atom.re 120 3>>*/ }
+              (_j1_) /*<<src/Atom.re 120 3>>*/ }
      /*<<src/Atom.re 34 61>>*/ function _aE_(param)
      {var column=param[2],row=param[1];
        /*<<src/Atom.re 132 4>>*/ return new atomPoint(row,column)}
      /*<<src/Atom.re 34 61>>*/ function _aF_(jsP)
      { /*<<src/Atom.re 134 7>>*/  /*<<src/Atom.re 134 7>>*/ var
-       _jP_=
+       _jV_=
          /*<<src/Atom.re 134 7>>*/ arrayIsArray(jsP);
-       /*<<src/Atom.re 134 66>>*/ if(_jP_)
+       /*<<src/Atom.re 134 66>>*/ if(_jV_)
        { /*<<src/Atom.re 134 67>>*/ var
           /*<<src/Atom.re 134 67>>*/ arr=
            /*<<src/Atom.re 134 67>>*/ caml_js_to_array(jsP),
-          /*<<src/Atom.re 134 67>>*/ _jQ_=1,
-          /*<<src/Atom.re 136 16>>*/ _jR_=
-           /*<<src/Atom.re 136 16>>*/ caml_check_bound(arr,1)[_jQ_ + 1],
-          /*<<src/Atom.re 136 23>>*/ _jS_=0,
-          /*<<src/Atom.re 136 7>>*/ _jT_=
-           /*<<src/Atom.re 136 7>>*/ caml_check_bound(arr,0)[_jS_ + 1];
-         /*<<src/Atom.re 136 14>>*/ return [0,_jT_,_jR_]}
+          /*<<src/Atom.re 134 67>>*/ _jW_=1,
+          /*<<src/Atom.re 136 16>>*/ _jX_=
+           /*<<src/Atom.re 136 16>>*/ caml_check_bound(arr,1)[_jW_ + 1],
+          /*<<src/Atom.re 136 23>>*/ _jY_=0,
+          /*<<src/Atom.re 136 7>>*/ _jZ_=
+           /*<<src/Atom.re 136 7>>*/ caml_check_bound(arr,0)[_jY_ + 1];
+         /*<<src/Atom.re 136 14>>*/ return [0,_jZ_,_jX_]}
        /*<<src/Atom.re 134 7>>*/ var
         /*<<src/Atom.re 137 11>>*/ row=jsP.row,
         /*<<src/Atom.re 139 6>>*/ col=jsP.column;
@@ -6858,277 +6860,286 @@
      { /*<<src/Atom.re 151 61>>*/ var
        endRowColumn=param[2],
        startRowColumn=param[1],
-        /*<<src/Atom.re 151 61>>*/ _jN_=
+        /*<<src/Atom.re 151 61>>*/ _jT_=
          /*<<src/Atom.re 151 61>>*/ _aE_(endRowColumn),
-        /*<<src/Atom.re 151 34>>*/ _jO_=
+        /*<<src/Atom.re 151 34>>*/ _jU_=
          /*<<src/Atom.re 151 34>>*/ _aE_(startRowColumn);
-       /*<<src/Atom.re 151 59>>*/ return new atomRange(_jO_,_jN_)}
+       /*<<src/Atom.re 151 59>>*/ return new atomRange(_jU_,_jT_)}
      /*<<src/Atom.re 34 61>>*/ function _aI_(jsRange)
      { /*<<src/Atom.re 153 7>>*/  /*<<src/Atom.re 153 7>>*/ var
-       _jx_=
+       _jD_=
          /*<<src/Atom.re 153 7>>*/ arrayIsArray(jsRange);
-       /*<<src/Atom.re 153 70>>*/ if(_jx_)
+       /*<<src/Atom.re 153 70>>*/ if(_jD_)
        { /*<<src/Atom.re 153 71>>*/ var
           /*<<src/Atom.re 153 71>>*/ arr=
            /*<<src/Atom.re 153 71>>*/ caml_js_to_array(jsRange),
-          /*<<src/Atom.re 153 71>>*/ _jy_=0,
-          /*<<src/Atom.re 155 35>>*/ _jz_=
-           /*<<src/Atom.re 155 35>>*/ caml_check_bound(arr,0)[_jy_ + 1],
+          /*<<src/Atom.re 153 71>>*/ _jE_=0,
+          /*<<src/Atom.re 155 35>>*/ _jF_=
+           /*<<src/Atom.re 155 35>>*/ caml_check_bound(arr,0)[_jE_ + 1],
           /*<<src/Atom.re 155 42>>*/ startPoint=
-           /*<<src/Atom.re 155 42>>*/ caml_js_to_array(_jz_),
-          /*<<src/Atom.re 155 42>>*/ _jA_=1,
-          /*<<src/Atom.re 156 33>>*/ _jB_=
-           /*<<src/Atom.re 156 33>>*/ caml_check_bound(arr,1)[_jA_ + 1],
+           /*<<src/Atom.re 155 42>>*/ caml_js_to_array(_jF_),
+          /*<<src/Atom.re 155 42>>*/ _jG_=1,
+          /*<<src/Atom.re 156 33>>*/ _jH_=
+           /*<<src/Atom.re 156 33>>*/ caml_check_bound(arr,1)[_jG_ + 1],
           /*<<src/Atom.re 156 40>>*/ endPoint=
-           /*<<src/Atom.re 156 40>>*/ caml_js_to_array(_jB_),
-          /*<<src/Atom.re 156 40>>*/ _jC_=1,
-          /*<<src/Atom.re 157 56>>*/ _jD_=
-           /*<<src/Atom.re 157 56>>*/ caml_check_bound(endPoint,1)[_jC_ + 1],
-          /*<<src/Atom.re 157 68>>*/ _jE_=0,
-          /*<<src/Atom.re 157 42>>*/ _jF_=
-           /*<<src/Atom.re 157 42>>*/ caml_check_bound(endPoint,0)[_jE_ + 1],
-          /*<<src/Atom.re 157 54>>*/ _jG_=[0,_jF_,_jD_],
-          /*<<src/Atom.re 157 54>>*/ _jH_=1,
-          /*<<src/Atom.re 157 24>>*/ _jI_=
-           /*<<src/Atom.re 157 24>>*/ caml_check_bound(startPoint,1)[_jH_ + 1],
-          /*<<src/Atom.re 157 38>>*/ _jJ_=0,
-          /*<<src/Atom.re 157 8>>*/ _jK_=
-           /*<<src/Atom.re 157 8>>*/ caml_check_bound(startPoint,0)[_jJ_ + 1];
-         /*<<src/Atom.re 157 22>>*/ return [0,[0,_jK_,_jI_],_jG_]}
+           /*<<src/Atom.re 156 40>>*/ caml_js_to_array(_jH_),
+          /*<<src/Atom.re 156 40>>*/ _jI_=1,
+          /*<<src/Atom.re 157 56>>*/ _jJ_=
+           /*<<src/Atom.re 157 56>>*/ caml_check_bound(endPoint,1)[_jI_ + 1],
+          /*<<src/Atom.re 157 68>>*/ _jK_=0,
+          /*<<src/Atom.re 157 42>>*/ _jL_=
+           /*<<src/Atom.re 157 42>>*/ caml_check_bound(endPoint,0)[_jK_ + 1],
+          /*<<src/Atom.re 157 54>>*/ _jM_=[0,_jL_,_jJ_],
+          /*<<src/Atom.re 157 54>>*/ _jN_=1,
+          /*<<src/Atom.re 157 24>>*/ _jO_=
+           /*<<src/Atom.re 157 24>>*/ caml_check_bound(startPoint,1)[_jN_ + 1],
+          /*<<src/Atom.re 157 38>>*/ _jP_=0,
+          /*<<src/Atom.re 157 8>>*/ _jQ_=
+           /*<<src/Atom.re 157 8>>*/ caml_check_bound(startPoint,0)[_jP_ + 1];
+         /*<<src/Atom.re 157 22>>*/ return [0,[0,_jQ_,_jO_],_jM_]}
        /*<<src/Atom.re 153 7>>*/ var
         /*<<src/Atom.re 158 11>>*/ startPoint$0=jsRange.start,
         /*<<src/Atom.re 160 6>>*/ endPoint$0=jsRange.end,
-        /*<<src/Atom.re 161 32>>*/ _jL_=
+        /*<<src/Atom.re 161 32>>*/ _jR_=
          /*<<src/Atom.re 161 32>>*/ _aF_(endPoint$0),
-        /*<<src/Atom.re 161 7>>*/ _jM_=
+        /*<<src/Atom.re 161 7>>*/ _jS_=
          /*<<src/Atom.re 161 7>>*/ _aF_(startPoint$0);
-       /*<<src/Atom.re 161 30>>*/ return [0,_jM_,_jL_] /*<<src/Atom.re 162 5>>*/ }
+       /*<<src/Atom.re 161 30>>*/ return [0,_jS_,_jR_] /*<<src/Atom.re 162 5>>*/ }
      /*<<src/Atom.re 34 61>>*/ function _aJ_(buffer)
      { /*<<src/Atom.re 172 50>>*/  /*<<src/Atom.re 172 50>>*/ var
-       _jw_=
+       _jC_=
          /*<<src/Atom.re 172 50>>*/ buffer.getText();
        /*<<src/Atom.re 172 98>>*/ return  /*<<src/Atom.re 172 98>>*/ caml_js_to_string
-              (_jw_) /*<<src/Atom.re 172 98>>*/ }
+              (_jC_) /*<<src/Atom.re 172 98>>*/ }
      /*<<src/Atom.re 34 61>>*/ function _aK_(buffer,range)
      { /*<<src/Atom.re 174 50>>*/ var
-        /*<<src/Atom.re 174 50>>*/ _ju_=
+        /*<<src/Atom.re 174 50>>*/ _jA_=
          /*<<src/Atom.re 174 50>>*/ _aH_(range),
-        /*<<src/Atom.re 173 74>>*/ _jv_=
-         /*<<src/Atom.re 173 74>>*/ buffer.getTextInRange(_ju_);
+        /*<<src/Atom.re 173 74>>*/ _jB_=
+         /*<<src/Atom.re 173 74>>*/ buffer.getTextInRange(_jA_);
        /*<<src/Atom.re 175 3>>*/ return  /*<<src/Atom.re 175 3>>*/ caml_js_to_string
-              (_jv_) /*<<src/Atom.re 175 3>>*/ }
+              (_jB_) /*<<src/Atom.re 175 3>>*/ }
      /*<<src/Atom.re 34 61>>*/ function _aL_(cursor)
      { /*<<src/Atom.re 182 52>>*/  /*<<src/Atom.re 182 52>>*/ var
-       _jt_=
+       _jz_=
          /*<<src/Atom.re 182 52>>*/ cursor.getBufferPosition();
-       /*<<src/Atom.re 184 3>>*/ return  /*<<src/Atom.re 184 3>>*/ _aF_(_jt_) /*<<src/Atom.re 184 3>>*/ }
+       /*<<src/Atom.re 184 3>>*/ return  /*<<src/Atom.re 184 3>>*/ _aF_(_jz_) /*<<src/Atom.re 184 3>>*/ }
      /*<<src/Atom.re 34 61>>*/ function _aM_(jsCursor)
      { /*<<src/Atom.re 190 25>>*/ return jsCursor /*<<src/Atom.re 190 33>>*/ }
-     /*<<src/Atom.re 34 61>>*/ function _aN_(jsEditor)
-     { /*<<src/Atom.re 195 28>>*/ return jsEditor /*<<src/Atom.re 195 36>>*/ }
-     /*<<src/Atom.re 34 61>>*/ function _aO_(editor,bufferRow)
-     { /*<<src/Atom.re 197 65>>*/  /*<<src/Atom.re 197 65>>*/ var
-       _js_=
-         /*<<src/Atom.re 197 65>>*/ editor.lineTextForBufferRow(bufferRow);
-       /*<<src/Atom.re 199 3>>*/ return  /*<<src/Atom.re 199 3>>*/ caml_js_to_string
-              (_js_) /*<<src/Atom.re 199 3>>*/ }
-     /*<<src/Atom.re 34 61>>*/ function _aP_(editor)
-     { /*<<src/Atom.re 200 36>>*/ return  /*<<src/Atom.re 200 36>>*/ editor.getBuffer
-              () /*<<src/Atom.re 200 84>>*/ }
+     /*<<src/Atom.re 34 61>>*/ function _aN_(grammar)
+     { /*<<src/Atom.re 195 35>>*/  /*<<src/Atom.re 195 35>>*/ var
+       _jy_=
+        grammar.name;
+       /*<<src/Atom.re 195 65>>*/ return  /*<<src/Atom.re 195 65>>*/ caml_js_to_string
+              (_jy_) /*<<src/Atom.re 195 65>>*/ }
+     /*<<src/Atom.re 34 61>>*/ function _aO_(jsEditor)
+     { /*<<src/Atom.re 200 28>>*/ return jsEditor /*<<src/Atom.re 200 36>>*/ }
+     /*<<src/Atom.re 34 61>>*/ function _aP_(editor,bufferRow)
+     { /*<<src/Atom.re 202 65>>*/  /*<<src/Atom.re 202 65>>*/ var
+       _jx_=
+         /*<<src/Atom.re 202 65>>*/ editor.lineTextForBufferRow(bufferRow);
+       /*<<src/Atom.re 204 3>>*/ return  /*<<src/Atom.re 204 3>>*/ caml_js_to_string
+              (_jx_) /*<<src/Atom.re 204 3>>*/ }
      /*<<src/Atom.re 34 61>>*/ function _aQ_(editor)
-     { /*<<src/Atom.re 201 24>>*/ var
-        /*<<src/Atom.re 201 24>>*/ path=
-         /*<<src/Atom.re 201 24>>*/ editor.getPath(),
-        /*<<src/Atom.re 203 4>>*/ match= /*<<src/Atom.re 203 4>>*/ _as_(path);
-       /*<<src/Atom.re 203 20>>*/ if(0 === match)return 0;
-       /*<<src/Atom.re 201 24>>*/  /*<<src/Atom.re 203 28>>*/ var
-       _jr_=
-         /*<<src/Atom.re 203 28>>*/ caml_js_to_string(path);
-       /*<<src/Atom.re 203 47>>*/ return [0,_jr_] /*<<src/Atom.re 204 3>>*/ }
+     { /*<<src/Atom.re 205 36>>*/ return  /*<<src/Atom.re 205 36>>*/ editor.getBuffer
+              () /*<<src/Atom.re 205 84>>*/ }
      /*<<src/Atom.re 34 61>>*/ function _aR_(editor)
-     { /*<<src/Atom.re 207 43>>*/ var
-        /*<<src/Atom.re 207 43>>*/ _jp_=
-         /*<<src/Atom.re 207 43>>*/ editor.getCursors(),
-        /*<<src/Atom.re 207 94>>*/ _jq_=
-         /*<<src/Atom.re 207 94>>*/ caml_js_to_array(_jp_),
-        /*<<src/Atom.re 207 6>>*/ arr=
-         /*<<src/Atom.re 207 6>>*/ _g_(_aM_,_jq_);
-       /*<<src/Atom.re 208 4>>*/ return  /*<<src/Atom.re 208 4>>*/ _h_(arr) /*<<src/Atom.re 209 3>>*/ }
-     /*<<src/Atom.re 34 61>>*/ function _aS_(editor,bufferRanges)
-     { /*<<src/Atom.re 211 14>>*/ var
-        /*<<src/Atom.re 211 14>>*/ _jn_=
-         /*<<src/Atom.re 211 14>>*/ _g_(_aH_,bufferRanges),
-        /*<<src/Atom.re 211 47>>*/ arr=
-         /*<<src/Atom.re 211 47>>*/ function(_jo_)
-          { /*<<?>>*/ return caml_js_from_array(_jo_)}
-         (_jn_);
-       /*<<src/Atom.re 212 4>>*/ return  /*<<src/Atom.re 212 4>>*/ editor.setSelectedBufferRanges
-              (arr) /*<<src/Atom.re 213 3>>*/ }
-     /*<<src/Atom.re 34 61>>*/ function _aT_(executor)
-     { /*<<src/Atom.re 243 49>>*/  /*<<src/Atom.re 243 49>>*/ var
-       _jm_=
-         /*<<src/Atom.re 243 49>>*/ caml_js_wrap_callback(executor);
-       /*<<src/Atom.re 243 76>>*/ return new promise(_jm_) /*<<src/Atom.re 243 78>>*/ }
-     /*<<src/Atom.re 34 61>>*/ function _aU_(opts)
-     { /*<<src/Atom.re 255 26>>*/ var
-        /*<<src/Atom.re 255 26>>*/ _jg_=opts[3],
-        /*<<src/Atom.re 258 30>>*/ _jh_=
-         /*<<src/Atom.re 258 30>>*/ _jg_.toString(),
-        /*<<src/Atom.re 258 51>>*/ _ji_=opts[2],
-        /*<<src/Atom.re 257 37>>*/ _jj_=!!_ji_,
-        /*<<src/Atom.re 257 63>>*/ _jk_=opts[1],
-        /*<<src/Atom.re 256 32>>*/ _jl_=
-         /*<<src/Atom.re 256 32>>*/ _jk_.toString();
-       /*<<src/Atom.re 256 55>>*/ return {"detail":_jl_,
-              "dismissable":_jj_,
-              "icon":_jh_} /*<<src/Atom.re 259 4>>*/ }
-     /*<<src/Atom.re 34 61>>*/ function _aW_(opt,title)
-     { /*<<src/Atom.re 262 4>>*/ if(opt)
-        /*<<src/Atom.re 261 29>>*/ var
-         /*<<src/Atom.re 261 29>>*/ sth=opt[1],
+     { /*<<src/Atom.re 206 24>>*/ var
+        /*<<src/Atom.re 206 24>>*/ path=
+         /*<<src/Atom.re 206 24>>*/ editor.getPath(),
+        /*<<src/Atom.re 208 4>>*/ match= /*<<src/Atom.re 208 4>>*/ _as_(path);
+       /*<<src/Atom.re 208 20>>*/ if(0 === match)return 0;
+       /*<<src/Atom.re 206 24>>*/  /*<<src/Atom.re 208 28>>*/ var
+       _jw_=
+         /*<<src/Atom.re 208 28>>*/ caml_js_to_string(path);
+       /*<<src/Atom.re 208 47>>*/ return [0,_jw_] /*<<src/Atom.re 209 3>>*/ }
+     /*<<src/Atom.re 34 61>>*/ function _aS_(editor)
+     { /*<<src/Atom.re 212 43>>*/ var
+        /*<<src/Atom.re 212 43>>*/ _ju_=
+         /*<<src/Atom.re 212 43>>*/ editor.getCursors(),
+        /*<<src/Atom.re 212 94>>*/ _jv_=
+         /*<<src/Atom.re 212 94>>*/ caml_js_to_array(_ju_),
+        /*<<src/Atom.re 212 6>>*/ arr=
+         /*<<src/Atom.re 212 6>>*/ _g_(_aM_,_jv_);
+       /*<<src/Atom.re 213 4>>*/ return  /*<<src/Atom.re 213 4>>*/ _h_(arr) /*<<src/Atom.re 214 3>>*/ }
+     /*<<src/Atom.re 34 61>>*/ function _aT_(editor)
+     { /*<<src/Atom.re 215 38>>*/ return  /*<<src/Atom.re 215 38>>*/ editor.getGrammar
+              () /*<<src/Atom.re 215 87>>*/ }
+     /*<<src/Atom.re 34 61>>*/ function _aU_(editor,bufferRanges)
+     { /*<<src/Atom.re 217 14>>*/ var
+        /*<<src/Atom.re 217 14>>*/ _js_=
+         /*<<src/Atom.re 217 14>>*/ _g_(_aH_,bufferRanges),
+        /*<<src/Atom.re 217 47>>*/ arr=
+         /*<<src/Atom.re 217 47>>*/ function(_jt_)
+          { /*<<?>>*/ return caml_js_from_array(_jt_)}
+         (_js_);
+       /*<<src/Atom.re 218 4>>*/ return  /*<<src/Atom.re 218 4>>*/ editor.setSelectedBufferRanges
+              (arr) /*<<src/Atom.re 219 3>>*/ }
+     /*<<src/Atom.re 34 61>>*/ function _aV_(executor)
+     { /*<<src/Atom.re 249 49>>*/  /*<<src/Atom.re 249 49>>*/ var
+       _jr_=
+         /*<<src/Atom.re 249 49>>*/ caml_js_wrap_callback(executor);
+       /*<<src/Atom.re 249 76>>*/ return new promise(_jr_) /*<<src/Atom.re 249 78>>*/ }
+     /*<<src/Atom.re 34 61>>*/ function _aW_(opts)
+     { /*<<src/Atom.re 261 26>>*/ var
+        /*<<src/Atom.re 261 26>>*/ _jl_=opts[3],
+        /*<<src/Atom.re 264 30>>*/ _jm_=
+         /*<<src/Atom.re 264 30>>*/ _jl_.toString(),
+        /*<<src/Atom.re 264 51>>*/ _jn_=opts[2],
+        /*<<src/Atom.re 263 37>>*/ _jo_=!!_jn_,
+        /*<<src/Atom.re 263 63>>*/ _jp_=opts[1],
+        /*<<src/Atom.re 262 32>>*/ _jq_=
+         /*<<src/Atom.re 262 32>>*/ _jp_.toString();
+       /*<<src/Atom.re 262 55>>*/ return {"detail":_jq_,
+              "dismissable":_jo_,
+              "icon":_jm_} /*<<src/Atom.re 265 4>>*/ }
+     /*<<src/Atom.re 34 61>>*/ function _aY_(opt,title)
+     { /*<<src/Atom.re 268 4>>*/ if(opt)
+        /*<<src/Atom.re 267 29>>*/ var
+         /*<<src/Atom.re 267 29>>*/ sth=opt[1],
         opts=sth;
       else
-       var opts=[0,_aV_[1],_aV_[2],_aX_];
-       /*<<src/Atom.re 265 44>>*/ var
-        /*<<src/Atom.re 265 44>>*/ _jd_= /*<<src/Atom.re 265 44>>*/ _aU_(opts),
-        /*<<src/Atom.re 265 25>>*/ _je_=
-         /*<<src/Atom.re 265 25>>*/ title.toString(),
-        /*<<src/Atom.re 263 6>>*/ _jf_=atomGlobal.notifications;
-       /*<<src/Atom.re 263 48>>*/ return  /*<<src/Atom.re 263 48>>*/ _jf_.addError
-              (_je_,_jd_) /*<<src/Atom.re 265 62>>*/ }
-     /*<<src/Atom.re 34 61>>*/  /*<<src/Atom.re 34 61>>*/ var _aY_=0;
-     /*<<src/Atom.re 290 39>>*/ ({});
-     /*<<src/Atom.re 290 57>>*/ function _a0_(process,str)
-     { /*<<src/Atom.re 297 65>>*/ var
-        /*<<src/Atom.re 297 65>>*/ _jb_=
-         /*<<src/Atom.re 297 65>>*/ str.toString(),
-        /*<<src/Atom.re 297 6>>*/ _jc_=process.stdin;
-       /*<<src/Atom.re 297 37>>*/ return  /*<<src/Atom.re 297 37>>*/ _jc_.write
-              (_jb_) /*<<src/Atom.re 297 82>>*/ }
-     /*<<src/Atom.re 290 57>>*/ function _a1_(process)
-     { /*<<src/Atom.re 298 51>>*/  /*<<src/Atom.re 298 51>>*/ var
-       _ja_=
+       var opts=[0,_aX_[1],_aX_[2],_aZ_];
+       /*<<src/Atom.re 271 44>>*/ var
+        /*<<src/Atom.re 271 44>>*/ _ji_= /*<<src/Atom.re 271 44>>*/ _aW_(opts),
+        /*<<src/Atom.re 271 25>>*/ _jj_=
+         /*<<src/Atom.re 271 25>>*/ title.toString(),
+        /*<<src/Atom.re 269 6>>*/ _jk_=atomGlobal.notifications;
+       /*<<src/Atom.re 269 48>>*/ return  /*<<src/Atom.re 269 48>>*/ _jk_.addError
+              (_jj_,_ji_) /*<<src/Atom.re 271 62>>*/ }
+     /*<<src/Atom.re 34 61>>*/  /*<<src/Atom.re 34 61>>*/ var _a0_=0;
+     /*<<src/Atom.re 296 39>>*/ ({});
+     /*<<src/Atom.re 296 57>>*/ function _a2_(process,str)
+     { /*<<src/Atom.re 303 65>>*/ var
+        /*<<src/Atom.re 303 65>>*/ _jg_=
+         /*<<src/Atom.re 303 65>>*/ str.toString(),
+        /*<<src/Atom.re 303 6>>*/ _jh_=process.stdin;
+       /*<<src/Atom.re 303 37>>*/ return  /*<<src/Atom.re 303 37>>*/ _jh_.write
+              (_jg_) /*<<src/Atom.re 303 82>>*/ }
+     /*<<src/Atom.re 296 57>>*/ function _a3_(process)
+     { /*<<src/Atom.re 304 51>>*/  /*<<src/Atom.re 304 51>>*/ var
+       _jf_=
         process.stdin;
-       /*<<src/Atom.re 298 82>>*/ return  /*<<src/Atom.re 298 82>>*/ _ja_.end
-              () /*<<src/Atom.re 298 98>>*/ }
-     /*<<src/Atom.re 290 57>>*/ function _a2_
+       /*<<src/Atom.re 304 82>>*/ return  /*<<src/Atom.re 304 82>>*/ _jf_.end
+              () /*<<src/Atom.re 304 98>>*/ }
+     /*<<src/Atom.re 296 57>>*/ function _a4_
      (opts,stdOut,stdErr,exit,cmd,args)
-     { /*<<src/Atom.re 319 63>>*/  /*<<src/Atom.re 319 63>>*/ var
-       _iP_=
-         /*<<src/Atom.re 319 63>>*/ _j_(args);
-       /*<<src/Atom.re 319 83>>*/ function _iQ_(_i$_)
-       { /*<<?>>*/ return _i$_.toString()}
-       /*<<src/Atom.re 319 42>>*/ var
-        /*<<src/Atom.re 319 42>>*/ _iR_=
-         /*<<src/Atom.re 319 42>>*/ _g_(_iQ_,_iP_),
-        /*<<src/Atom.re 319 84>>*/ _iS_=
-         /*<<src/Atom.re 319 84>>*/ caml_js_from_array(_iR_),
-        /*<<src/Atom.re 319 85>>*/ _iT_=[0,_a3_,_iS_],
-        /*<<src/Atom.re 318 35>>*/ _iU_=
-         /*<<src/Atom.re 318 35>>*/ cmd.toString(),
-        /*<<src/Atom.re 318 50>>*/ fields=[0,[0,_a4_,_iU_],_iT_];
-       /*<<src/Atom.re 321 4>>*/ if(opts)
-        /*<<src/Atom.re 325 8>>*/ var
-         /*<<src/Atom.re 325 8>>*/ opts$0=opts[1],
-         /*<<src/Atom.re 325 8>>*/ _iV_=opts$0[3],
-         /*<<src/Atom.re 328 40>>*/ _iW_=!!_iV_,
-         /*<<src/Atom.re 328 63>>*/ jsOptions=
-         {"cwd":opts$0[1],"env":opts$0[2],"detached":_iW_},
-         /*<<src/Atom.re 330 8>>*/ _iX_=[0,[0,_a5_,jsOptions]],
-         /*<<src/Atom.re 330 8>>*/ _iY_=
-          /*<<src/Atom.re 330 8>>*/ _f_(fields,_iX_),
-        fields$0=_iY_;
+     { /*<<src/Atom.re 325 63>>*/  /*<<src/Atom.re 325 63>>*/ var
+       _iU_=
+         /*<<src/Atom.re 325 63>>*/ _j_(args);
+       /*<<src/Atom.re 325 83>>*/ function _iV_(_je_)
+       { /*<<?>>*/ return _je_.toString()}
+       /*<<src/Atom.re 325 42>>*/ var
+        /*<<src/Atom.re 325 42>>*/ _iW_=
+         /*<<src/Atom.re 325 42>>*/ _g_(_iV_,_iU_),
+        /*<<src/Atom.re 325 84>>*/ _iX_=
+         /*<<src/Atom.re 325 84>>*/ caml_js_from_array(_iW_),
+        /*<<src/Atom.re 325 85>>*/ _iY_=[0,_a5_,_iX_],
+        /*<<src/Atom.re 324 35>>*/ _iZ_=
+         /*<<src/Atom.re 324 35>>*/ cmd.toString(),
+        /*<<src/Atom.re 324 50>>*/ fields=[0,[0,_a6_,_iZ_],_iY_];
+       /*<<src/Atom.re 327 4>>*/ if(opts)
+        /*<<src/Atom.re 331 8>>*/ var
+         /*<<src/Atom.re 331 8>>*/ opts$0=opts[1],
+         /*<<src/Atom.re 331 8>>*/ _i0_=opts$0[3],
+         /*<<src/Atom.re 334 40>>*/ _i1_=!!_i0_,
+         /*<<src/Atom.re 334 63>>*/ jsOptions=
+         {"cwd":opts$0[1],"env":opts$0[2],"detached":_i1_},
+         /*<<src/Atom.re 336 8>>*/ _i2_=[0,[0,_a7_,jsOptions]],
+         /*<<src/Atom.re 336 8>>*/ _i3_=
+          /*<<src/Atom.re 336 8>>*/ _f_(fields,_i2_),
+        fields$0=_i3_;
       else
        var fields$0=fields;
-       /*<<src/Atom.re 332 4>>*/ if(stdOut)
-        /*<<src/Atom.re 336 8>>*/ var
-         /*<<src/Atom.re 336 8>>*/ so=stdOut[1],
-         /*<<src/Atom.re 336 8>>*/ cb=
+       /*<<src/Atom.re 338 4>>*/ if(stdOut)
+        /*<<src/Atom.re 342 8>>*/ var
+         /*<<src/Atom.re 342 8>>*/ so=stdOut[1],
+         /*<<src/Atom.re 342 8>>*/ cb=
          function(jsStr)
-          { /*<<src/Atom.re 336 27>>*/  /*<<src/Atom.re 336 27>>*/ var
-            _i__=
-              /*<<src/Atom.re 336 27>>*/ caml_js_to_string(jsStr);
-            /*<<src/Atom.re 336 47>>*/ return  /*<<src/Atom.re 336 47>>*/ caml_call1
-                   (so,_i__) /*<<src/Atom.re 336 47>>*/ },
-         /*<<src/Atom.re 337 8>>*/ _iZ_=
-          /*<<src/Atom.re 337 8>>*/ caml_js_wrap_callback(cb),
-         /*<<src/Atom.re 337 79>>*/ _i0_=[0,[0,_a6_,_iZ_]],
-         /*<<src/Atom.re 337 8>>*/ _i1_=
-          /*<<src/Atom.re 337 8>>*/ _f_(fields$0,_i0_),
-        fields$1=_i1_;
+          { /*<<src/Atom.re 342 27>>*/  /*<<src/Atom.re 342 27>>*/ var
+            _jd_=
+              /*<<src/Atom.re 342 27>>*/ caml_js_to_string(jsStr);
+            /*<<src/Atom.re 342 47>>*/ return  /*<<src/Atom.re 342 47>>*/ caml_call1
+                   (so,_jd_) /*<<src/Atom.re 342 47>>*/ },
+         /*<<src/Atom.re 343 8>>*/ _i4_=
+          /*<<src/Atom.re 343 8>>*/ caml_js_wrap_callback(cb),
+         /*<<src/Atom.re 343 79>>*/ _i5_=[0,[0,_a8_,_i4_]],
+         /*<<src/Atom.re 343 8>>*/ _i6_=
+          /*<<src/Atom.re 343 8>>*/ _f_(fields$0,_i5_),
+        fields$1=_i6_;
       else
        var fields$1=fields$0;
-       /*<<src/Atom.re 339 4>>*/ if(stdErr)
-        /*<<src/Atom.re 343 8>>*/ var
-         /*<<src/Atom.re 343 8>>*/ si=stdErr[1],
-         /*<<src/Atom.re 343 8>>*/ cb$0=
+       /*<<src/Atom.re 345 4>>*/ if(stdErr)
+        /*<<src/Atom.re 349 8>>*/ var
+         /*<<src/Atom.re 349 8>>*/ si=stdErr[1],
+         /*<<src/Atom.re 349 8>>*/ cb$0=
          function(jsStr)
-          { /*<<src/Atom.re 343 27>>*/  /*<<src/Atom.re 343 27>>*/ var
-            _i9_=
-              /*<<src/Atom.re 343 27>>*/ caml_js_to_string(jsStr);
-            /*<<src/Atom.re 343 47>>*/ return  /*<<src/Atom.re 343 47>>*/ caml_call1
-                   (si,_i9_) /*<<src/Atom.re 343 47>>*/ },
-         /*<<src/Atom.re 344 8>>*/ _i2_=
-          /*<<src/Atom.re 344 8>>*/ caml_js_wrap_callback(cb$0),
-         /*<<src/Atom.re 344 78>>*/ _i3_=[0,[0,_a7_,_i2_]],
-         /*<<src/Atom.re 344 8>>*/ _i4_=
-          /*<<src/Atom.re 344 8>>*/ _f_(fields$1,_i3_),
-        fields$2=_i4_;
+          { /*<<src/Atom.re 349 27>>*/  /*<<src/Atom.re 349 27>>*/ var
+            _jc_=
+              /*<<src/Atom.re 349 27>>*/ caml_js_to_string(jsStr);
+            /*<<src/Atom.re 349 47>>*/ return  /*<<src/Atom.re 349 47>>*/ caml_call1
+                   (si,_jc_) /*<<src/Atom.re 349 47>>*/ },
+         /*<<src/Atom.re 350 8>>*/ _i7_=
+          /*<<src/Atom.re 350 8>>*/ caml_js_wrap_callback(cb$0),
+         /*<<src/Atom.re 350 78>>*/ _i8_=[0,[0,_a9_,_i7_]],
+         /*<<src/Atom.re 350 8>>*/ _i9_=
+          /*<<src/Atom.re 350 8>>*/ _f_(fields$1,_i8_),
+        fields$2=_i9_;
       else
        var fields$2=fields$1;
-       /*<<src/Atom.re 346 4>>*/ if(exit)
-        /*<<src/Atom.re 350 8>>*/ var
-         /*<<src/Atom.re 350 8>>*/ e=exit[1],
-         /*<<src/Atom.re 350 8>>*/ cb$1=
+       /*<<src/Atom.re 352 4>>*/ if(exit)
+        /*<<src/Atom.re 356 8>>*/ var
+         /*<<src/Atom.re 356 8>>*/ e=exit[1],
+         /*<<src/Atom.re 356 8>>*/ cb$1=
          function(eCode)
-          { /*<<src/Atom.re 350 24>>*/ return  /*<<src/Atom.re 350 24>>*/ caml_call1
-                   (e,eCode) /*<<src/Atom.re 350 45>>*/ },
-         /*<<src/Atom.re 351 8>>*/ _i5_=
-          /*<<src/Atom.re 351 8>>*/ caml_js_wrap_callback(cb$1),
-         /*<<src/Atom.re 351 77>>*/ _i6_=[0,[0,_a8_,_i5_]],
-         /*<<src/Atom.re 351 8>>*/ _i7_=
-          /*<<src/Atom.re 351 8>>*/ _f_(fields$2,_i6_),
-        fields$3=_i7_;
+          { /*<<src/Atom.re 356 24>>*/ return  /*<<src/Atom.re 356 24>>*/ caml_call1
+                   (e,eCode) /*<<src/Atom.re 356 45>>*/ },
+         /*<<src/Atom.re 357 8>>*/ _i__=
+          /*<<src/Atom.re 357 8>>*/ caml_js_wrap_callback(cb$1),
+         /*<<src/Atom.re 357 77>>*/ _i$_=[0,[0,_a__,_i__]],
+         /*<<src/Atom.re 357 8>>*/ _ja_=
+          /*<<src/Atom.re 357 8>>*/ _f_(fields$2,_i$_),
+        fields$3=_ja_;
       else
        var fields$3=fields$2;
-       /*<<src/Atom.re 319 42>>*/  /*<<src/Atom.re 353 4>>*/ var
-       _i8_=
-         /*<<src/Atom.re 353 4>>*/ caml_js_object(fields$3);
-       /*<<src/Atom.re 353 60>>*/ return new bufferedProcess(_i8_) /*<<src/Atom.re 354 3>>*/ }
-     /*<<src/Atom.re 290 57>>*/ function _a9_(buffProcess,fn)
-     { /*<<src/Atom.re 355 47>>*/  /*<<src/Atom.re 355 47>>*/ var
+       /*<<src/Atom.re 325 42>>*/  /*<<src/Atom.re 359 4>>*/ var
+       _jb_=
+         /*<<src/Atom.re 359 4>>*/ caml_js_object(fields$3);
+       /*<<src/Atom.re 359 60>>*/ return new bufferedProcess(_jb_) /*<<src/Atom.re 360 3>>*/ }
+     /*<<src/Atom.re 296 57>>*/ function _a$_(buffProcess,fn)
+     { /*<<src/Atom.re 361 47>>*/  /*<<src/Atom.re 361 47>>*/ var
        wrappedCb=
-         /*<<src/Atom.re 355 47>>*/ caml_js_wrap_callback
+         /*<<src/Atom.re 361 47>>*/ caml_js_wrap_callback
          (function(jsErrHandle)
-           { /*<<src/Atom.re 358 47>>*/ var
-              /*<<src/Atom.re 358 47>>*/ _iN_=jsErrHandle.handle,
-              /*<<src/Atom.re 358 11>>*/ _iO_=jsErrHandle.error;
-             /*<<src/Atom.re 358 46>>*/ return  /*<<src/Atom.re 358 46>>*/ caml_call2
-                    (fn,_iO_,_iN_) /*<<src/Atom.re 358 83>>*/ });
-       /*<<src/Atom.re 360 4>>*/ return  /*<<src/Atom.re 360 4>>*/ buffProcess.onWillThrowError
-              (wrappedCb) /*<<src/Atom.re 361 3>>*/ }
-     /*<<src/Atom.re 290 57>>*/ function _a__(bufferedProcess)
-     { /*<<src/Atom.re 362 38>>*/ return bufferedProcess.process /*<<src/Atom.re 362 77>>*/ }
-    function _a$_(s,itm)
+           { /*<<src/Atom.re 364 47>>*/ var
+              /*<<src/Atom.re 364 47>>*/ _iS_=jsErrHandle.handle,
+              /*<<src/Atom.re 364 11>>*/ _iT_=jsErrHandle.error;
+             /*<<src/Atom.re 364 46>>*/ return  /*<<src/Atom.re 364 46>>*/ caml_call2
+                    (fn,_iT_,_iS_) /*<<src/Atom.re 364 83>>*/ });
+       /*<<src/Atom.re 366 4>>*/ return  /*<<src/Atom.re 366 4>>*/ buffProcess.onWillThrowError
+              (wrappedCb) /*<<src/Atom.re 367 3>>*/ }
+     /*<<src/Atom.re 296 57>>*/ function _ba_(bufferedProcess)
+     { /*<<src/Atom.re 368 38>>*/ return bufferedProcess.process /*<<src/Atom.re 368 77>>*/ }
+    function _bb_(s,itm)
      { /*<<src/AtomReasonCommon.re 11 34>>*/  /*<<src/AtomReasonCommon.re 11 34>>*/ var
-       _iM_=
+       _iR_=
         exports;
-       /*<<src/AtomReasonCommon.re 11 63>>*/ return _iM_[s] = itm /*<<src/AtomReasonCommon.re 11 69>>*/ }
-    function _ba_(filePath)
+       /*<<src/AtomReasonCommon.re 11 63>>*/ return _iR_[s] = itm /*<<src/AtomReasonCommon.re 11 69>>*/ }
+    function _bc_(filePath)
      { /*<<src/AtomReasonCommon.re 17 36>>*/ try
        { /*<<src/AtomReasonCommon.re 19 9>>*/ var
-         _iJ_=46,
-          /*<<src/AtomReasonCommon.re 19 9>>*/ _iK_=
-           /*<<src/AtomReasonCommon.re 19 9>>*/ _V_(filePath,_iJ_),
-          /*<<src/AtomReasonCommon.re 19 35>>*/ indexAfterlastDot=_iK_ + 1 | 0}
-      catch(_iL_)
-       {_iL_ = caml_wrap_exception(_iL_);
-        if(_iL_ === Not_found)
+         _iO_=46,
+          /*<<src/AtomReasonCommon.re 19 9>>*/ _iP_=
+           /*<<src/AtomReasonCommon.re 19 9>>*/ _V_(filePath,_iO_),
+          /*<<src/AtomReasonCommon.re 19 35>>*/ indexAfterlastDot=_iP_ + 1 | 0}
+      catch(_iQ_)
+       {_iQ_ = caml_wrap_exception(_iQ_);
+        if(_iQ_ === Not_found)
          { /*<<src/AtomReasonCommon.re 21 6>>*/  /*<<src/AtomReasonCommon.re 21 6>>*/ var
-           _iI_=
-            [0,Invalid_argument,_bb_];
-           /*<<src/AtomReasonCommon.re 23 7>>*/ throw _iI_}
-        throw _iL_}
+           _iN_=
+            [0,Invalid_argument,_bd_];
+           /*<<src/AtomReasonCommon.re 23 7>>*/ throw _iN_}
+        throw _iQ_}
        /*<<src/AtomReasonCommon.re 25 2>>*/ return  /*<<src/AtomReasonCommon.re 25 2>>*/ _O_
               (filePath,
                indexAfterlastDot,
@@ -7138,95 +7149,95 @@
                indexAfterlastDot
                |
                0) /*<<src/AtomReasonCommon.re 26 1>>*/ }
-    function _bc_(maybeFilePath)
+    function _be_(maybeFilePath)
      { /*<<src/AtomReasonCommon.re 28 33>>*/ if(maybeFilePath)
         /*<<src/AtomReasonCommon.re 31 23>>*/ var
          /*<<src/AtomReasonCommon.re 31 23>>*/ filePath=maybeFilePath[1],
-         /*<<src/AtomReasonCommon.re 31 23>>*/ _iG_=
-          /*<<src/AtomReasonCommon.re 31 23>>*/ _ba_(filePath),
-        ext=_iG_;
+         /*<<src/AtomReasonCommon.re 31 23>>*/ _iL_=
+          /*<<src/AtomReasonCommon.re 31 23>>*/ _bc_(filePath),
+        ext=_iL_;
       else
-       var ext=_be_;
+       var ext=_bg_;
        /*<<src/AtomReasonCommon.re 34 2>>*/  /*<<src/AtomReasonCommon.re 34 2>>*/ var
-       _iH_=
-         /*<<src/AtomReasonCommon.re 34 2>>*/ _Y_(_bd_,ext);
-       /*<<src/AtomReasonCommon.re 34 26>>*/ return 0 === _iH_?1:0 /*<<src/AtomReasonCommon.re 35 1>>*/ }
-    function _bf_(editor)
+       _iM_=
+         /*<<src/AtomReasonCommon.re 34 2>>*/ _Y_(_bf_,ext);
+       /*<<src/AtomReasonCommon.re 34 26>>*/ return 0 === _iM_?1:0 /*<<src/AtomReasonCommon.re 35 1>>*/ }
+    function _bh_(editor)
      { /*<<src/AtomReasonCommon.re 43 9>>*/  /*<<src/AtomReasonCommon.re 43 9>>*/ var
        match=
-         /*<<src/AtomReasonCommon.re 43 9>>*/ _aQ_(editor);
+         /*<<src/AtomReasonCommon.re 43 9>>*/ _aR_(editor);
        /*<<src/AtomReasonCommon.re 43 37>>*/ if(match)
        { /*<<src/AtomReasonCommon.re 45 17>>*/  /*<<src/AtomReasonCommon.re 45 17>>*/ var
          path=
           match[1];
          /*<<src/AtomReasonCommon.re 45 17>>*/ return path}
-       /*<<src/AtomReasonCommon.re 44 12>>*/ return _bg_ /*<<src/AtomReasonCommon.re 46 3>>*/ }
-    function _bh_(point)
+       /*<<src/AtomReasonCommon.re 44 12>>*/ return _bi_ /*<<src/AtomReasonCommon.re 46 3>>*/ }
+    function _bj_(point)
      { /*<<src/MerlinServiceConvert.re 11 2>>*/ var
-        /*<<src/MerlinServiceConvert.re 11 2>>*/ _iE_=point.col,
-        /*<<src/MerlinServiceConvert.re 10 2>>*/ _iF_=point.line;
-       /*<<src/MerlinServiceConvert.re 10 28>>*/ return [0,_iF_ - 1 | 0,_iE_] /*<<src/MerlinServiceConvert.re 12 1>>*/ }
-    function _bi_(position)
+        /*<<src/MerlinServiceConvert.re 11 2>>*/ _iJ_=point.col,
+        /*<<src/MerlinServiceConvert.re 10 2>>*/ _iK_=point.line;
+       /*<<src/MerlinServiceConvert.re 10 28>>*/ return [0,_iK_ - 1 | 0,_iJ_] /*<<src/MerlinServiceConvert.re 12 1>>*/ }
+    function _bk_(position)
      { /*<<src/MerlinServiceConvert.re 14 44>>*/ var
         /*<<src/MerlinServiceConvert.re 14 44>>*/ merlinStart=position.start,
         /*<<src/MerlinServiceConvert.re 16 2>>*/ merlinEnd=position.end,
-        /*<<src/MerlinServiceConvert.re 17 2>>*/ _iA_=
+        /*<<src/MerlinServiceConvert.re 17 2>>*/ _iF_=
         undefined$0 === merlinStart?1:0,
-        /*<<src/MerlinServiceConvert.re 17 2>>*/ _iB_=
-        _iA_
+        /*<<src/MerlinServiceConvert.re 17 2>>*/ _iG_=
+        _iF_
         ||
         (undefined$0 === merlinEnd?1:0);
-      if(0 === _iB_)
+      if(0 === _iG_)
         /*<<src/MerlinServiceConvert.re 20 45>>*/ var
-         /*<<src/MerlinServiceConvert.re 20 45>>*/ _iC_=
-          /*<<src/MerlinServiceConvert.re 20 45>>*/ _bh_(merlinEnd),
-         /*<<src/MerlinServiceConvert.re 20 7>>*/ _iD_=
-          /*<<src/MerlinServiceConvert.re 20 7>>*/ _bh_(merlinStart),
-        range=[0,_iD_,_iC_];
+         /*<<src/MerlinServiceConvert.re 20 45>>*/ _iH_=
+          /*<<src/MerlinServiceConvert.re 20 45>>*/ _bj_(merlinEnd),
+         /*<<src/MerlinServiceConvert.re 20 7>>*/ _iI_=
+          /*<<src/MerlinServiceConvert.re 20 7>>*/ _bj_(merlinStart),
+        range=[0,_iI_,_iH_];
       else
        var range=_aG_;
        /*<<src/MerlinServiceConvert.re 21 2>>*/ return range /*<<src/MerlinServiceConvert.re 22 1>>*/ }
-    function _bj_(filePath,jsMerlinError)
+    function _bl_(filePath,jsMerlinError)
      { /*<<src/MerlinServiceConvert.re 24 63>>*/ var
         /*<<src/MerlinServiceConvert.re 24 63>>*/ message=
         jsMerlinError.message,
         /*<<src/MerlinServiceConvert.re 27 2>>*/ merlinType=jsMerlinError.type,
-        /*<<src/MerlinServiceConvert.re 29 4>>*/ _ix_="warning",
+        /*<<src/MerlinServiceConvert.re 29 4>>*/ _iC_="warning",
         /*<<src/MerlinServiceConvert.re 29 23>>*/ match=
-        _ix_ === merlinType?1:0,
+        _iC_ === merlinType?1:0,
         /*<<src/MerlinServiceConvert.re 29 23>>*/ diagnosticType=
         0 === match?0:1,
-        /*<<src/MerlinServiceConvert.re 30 2>>*/ _iy_=0,
-        /*<<src/MerlinServiceConvert.re 37 16>>*/ _iz_=
-         /*<<src/MerlinServiceConvert.re 37 16>>*/ _bi_(jsMerlinError);
+        /*<<src/MerlinServiceConvert.re 30 2>>*/ _iD_=0,
+        /*<<src/MerlinServiceConvert.re 37 16>>*/ _iE_=
+         /*<<src/MerlinServiceConvert.re 37 16>>*/ _bk_(jsMerlinError);
        /*<<src/MerlinServiceConvert.re 37 59>>*/ return [0,
               [0,
                -1011102084,
-               _bk_,
+               _bm_,
                diagnosticType,
                filePath,
                [0,message],
                0,
-               [0,_iz_],
-               _iy_]] /*<<src/MerlinServiceConvert.re 40 1>>*/ }
-    function _bl_(filePath,errors)
+               [0,_iE_],
+               _iD_]] /*<<src/MerlinServiceConvert.re 40 1>>*/ }
+    function _bn_(filePath,errors)
      { /*<<src/MerlinServiceConvert.re 43 56>>*/  /*<<src/MerlinServiceConvert.re 43 56>>*/ var
-       _iu_=
+       _iz_=
          /*<<src/MerlinServiceConvert.re 43 56>>*/ caml_js_to_array(errors);
-       /*<<src/MerlinServiceConvert.re 43 12>>*/ function _iv_(_iw_)
-       { /*<<?>>*/ return _bj_(filePath,_iw_)}
+       /*<<src/MerlinServiceConvert.re 43 12>>*/ function _iA_(_iB_)
+       { /*<<?>>*/ return _bl_(filePath,_iB_)}
        /*<<src/MerlinServiceConvert.re 43 55>>*/ return  /*<<src/MerlinServiceConvert.re 43 55>>*/ _g_
-              (_iv_,_iu_) /*<<src/MerlinServiceConvert.re 43 76>>*/ }
-    function _bm_(s)
+              (_iA_,_iz_) /*<<src/MerlinServiceConvert.re 43 76>>*/ }
+    function _bo_(s)
      { /*<<src/MerlinServiceConvert.re 46 2>>*/ return  /*<<src/MerlinServiceConvert.re 46 2>>*/ caml_string_notequal
-               (s,_bn_)
-              ?caml_string_notequal(s,_bo_)
-                ?caml_string_notequal(s,_bp_)
-                  ?caml_string_notequal(s,_bq_)
-                    ?caml_string_notequal(s,_br_)
-                      ?caml_string_notequal(s,_bs_)
-                        ?caml_string_notequal(s,_bt_)
-                          ?caml_string_notequal(s,_bu_)?0:0
+               (s,_bp_)
+              ?caml_string_notequal(s,_bq_)
+                ?caml_string_notequal(s,_br_)
+                  ?caml_string_notequal(s,_bs_)
+                    ?caml_string_notequal(s,_bt_)
+                      ?caml_string_notequal(s,_bu_)
+                        ?caml_string_notequal(s,_bv_)
+                          ?caml_string_notequal(s,_bw_)?0:0
                           :6
                         :4
                       :2
@@ -7234,53 +7245,53 @@
                   :6
                 :4
               :2 /*<<src/MerlinServiceConvert.re 56 3>>*/ }
-    function _bv_(k)
+    function _bx_(k)
      { /*<<src/MerlinServiceConvert.re 59 2>>*/ switch(k)
        {case 0: /*<<src/MerlinServiceConvert.re 61 20>>*/ return 3;
         case 2: /*<<src/MerlinServiceConvert.re 63 26>>*/ return 6;
         case 4: /*<<src/MerlinServiceConvert.re 62 21>>*/ return 7;
         case 6: /*<<src/MerlinServiceConvert.re 60 19>>*/ return 8;
         default: /*<<src/MerlinServiceConvert.re 64 9>>*/ return 3} /*<<src/MerlinServiceConvert.re 65 3>>*/ }
-    function _bw_(o)
+    function _by_(o)
      { /*<<src/MerlinServiceConvert.re 71 21>>*/ var
-        /*<<src/MerlinServiceConvert.re 71 21>>*/ _il_=o.name,
-        /*<<src/MerlinServiceConvert.re 71 45>>*/ _im_=
-         /*<<src/MerlinServiceConvert.re 71 45>>*/ caml_js_to_string(_il_),
-        /*<<src/MerlinServiceConvert.re 70 56>>*/ _in_=o.kind,
-        /*<<src/MerlinServiceConvert.re 70 80>>*/ _io_=
-         /*<<src/MerlinServiceConvert.re 70 80>>*/ caml_js_to_string(_in_),
-        /*<<src/MerlinServiceConvert.re 70 8>>*/ _ip_=
-         /*<<src/MerlinServiceConvert.re 70 8>>*/ _bm_(_io_),
-        /*<<src/MerlinServiceConvert.re 69 21>>*/ _iq_=o.info,
-        /*<<src/MerlinServiceConvert.re 69 45>>*/ _ir_=
-         /*<<src/MerlinServiceConvert.re 69 45>>*/ caml_js_to_string(_iq_),
-        /*<<src/MerlinServiceConvert.re 68 28>>*/ _is_=o.desc,
-        /*<<src/MerlinServiceConvert.re 68 52>>*/ _it_=
-         /*<<src/MerlinServiceConvert.re 68 52>>*/ caml_js_to_string(_is_);
+        /*<<src/MerlinServiceConvert.re 71 21>>*/ _iq_=o.name,
+        /*<<src/MerlinServiceConvert.re 71 45>>*/ _ir_=
+         /*<<src/MerlinServiceConvert.re 71 45>>*/ caml_js_to_string(_iq_),
+        /*<<src/MerlinServiceConvert.re 70 56>>*/ _is_=o.kind,
+        /*<<src/MerlinServiceConvert.re 70 80>>*/ _it_=
+         /*<<src/MerlinServiceConvert.re 70 80>>*/ caml_js_to_string(_is_),
+        /*<<src/MerlinServiceConvert.re 70 8>>*/ _iu_=
+         /*<<src/MerlinServiceConvert.re 70 8>>*/ _bo_(_it_),
+        /*<<src/MerlinServiceConvert.re 69 21>>*/ _iv_=o.info,
+        /*<<src/MerlinServiceConvert.re 69 45>>*/ _iw_=
+         /*<<src/MerlinServiceConvert.re 69 45>>*/ caml_js_to_string(_iv_),
+        /*<<src/MerlinServiceConvert.re 68 28>>*/ _ix_=o.desc,
+        /*<<src/MerlinServiceConvert.re 68 52>>*/ _iy_=
+         /*<<src/MerlinServiceConvert.re 68 52>>*/ caml_js_to_string(_ix_);
        /*<<src/MerlinServiceConvert.re 68 52>>*/ return [0,
-              _it_,
-              _ir_,
-              _ip_,
-              _im_] /*<<src/MerlinServiceConvert.re 72 1>>*/ }
-    function _bx_(replacementPrefix,e)
+              _iy_,
+              _iw_,
+              _iu_,
+              _ir_] /*<<src/MerlinServiceConvert.re 72 1>>*/ }
+    function _bz_(replacementPrefix,e)
      { /*<<src/MerlinServiceConvert.re 74 58>>*/ var
-        /*<<src/MerlinServiceConvert.re 74 58>>*/ _if_=e[1],
-        /*<<src/MerlinServiceConvert.re 85 24>>*/ _ig_=
-         /*<<src/MerlinServiceConvert.re 85 24>>*/ _b_(_by_,_if_),
-        /*<<src/MerlinServiceConvert.re 85 53>>*/ _ih_=e[2],
-        /*<<src/MerlinServiceConvert.re 85 15>>*/ _ii_=
-         /*<<src/MerlinServiceConvert.re 85 15>>*/ _b_(_ih_,_ig_),
-        /*<<src/MerlinServiceConvert.re 85 53>>*/ _ij_=e[3],
-        /*<<src/MerlinServiceConvert.re 82 9>>*/ _ik_=
-         /*<<src/MerlinServiceConvert.re 82 9>>*/ _bv_(_ij_);
+        /*<<src/MerlinServiceConvert.re 74 58>>*/ _ik_=e[1],
+        /*<<src/MerlinServiceConvert.re 85 24>>*/ _il_=
+         /*<<src/MerlinServiceConvert.re 85 24>>*/ _b_(_bA_,_ik_),
+        /*<<src/MerlinServiceConvert.re 85 53>>*/ _im_=e[2],
+        /*<<src/MerlinServiceConvert.re 85 15>>*/ _in_=
+         /*<<src/MerlinServiceConvert.re 85 15>>*/ _b_(_im_,_il_),
+        /*<<src/MerlinServiceConvert.re 85 53>>*/ _io_=e[3],
+        /*<<src/MerlinServiceConvert.re 82 9>>*/ _ip_=
+         /*<<src/MerlinServiceConvert.re 82 9>>*/ _bx_(_io_);
        /*<<src/MerlinServiceConvert.re 82 50>>*/ return [0,
               e[1],
               e[4],
               e[4],
-              _ik_,
-              _ii_,
+              _ip_,
+              _in_,
               replacementPrefix] /*<<src/MerlinServiceConvert.re 87 1>>*/ }
-    function _bz_(arr)
+    function _bB_(arr)
      { /*<<src/MerlinServiceConvert.re 89 42>>*/  /*<<src/MerlinServiceConvert.re 89 42>>*/ var
        length=
         arr.length;
@@ -7289,64 +7300,64 @@
        /*<<src/MerlinServiceConvert.re 89 42>>*/ var
         /*<<src/MerlinServiceConvert.re 93 9>>*/ firstType=
         arr[caml_new_string("0")],
-        /*<<src/MerlinServiceConvert.re 96 34>>*/ _ib_=firstType.type,
+        /*<<src/MerlinServiceConvert.re 96 34>>*/ _ig_=firstType.type,
         /*<<src/MerlinServiceConvert.re 96 66>>*/ reasonHint=
-         /*<<src/MerlinServiceConvert.re 96 66>>*/ caml_js_to_string(_ib_),
-        /*<<src/MerlinServiceConvert.re 99 50>>*/ _ic_=
-         /*<<src/MerlinServiceConvert.re 99 50>>*/ _bi_(firstType),
-        /*<<src/MerlinServiceConvert.re 99 33>>*/ _id_=
-         /*<<src/MerlinServiceConvert.re 99 33>>*/ _aH_(_ic_),
-        /*<<src/MerlinServiceConvert.re 98 32>>*/ _ie_=
+         /*<<src/MerlinServiceConvert.re 96 66>>*/ caml_js_to_string(_ig_),
+        /*<<src/MerlinServiceConvert.re 99 50>>*/ _ih_=
+         /*<<src/MerlinServiceConvert.re 99 50>>*/ _bk_(firstType),
+        /*<<src/MerlinServiceConvert.re 99 33>>*/ _ii_=
+         /*<<src/MerlinServiceConvert.re 99 33>>*/ _aH_(_ih_),
+        /*<<src/MerlinServiceConvert.re 98 32>>*/ _ij_=
          /*<<src/MerlinServiceConvert.re 98 32>>*/ reasonHint.toString();
-       /*<<src/MerlinServiceConvert.re 98 54>>*/ return {"hint":_ie_,
-              "range":_id_} /*<<src/MerlinServiceConvert.re 102 1>>*/ }
-    function _bA_(arr)
+       /*<<src/MerlinServiceConvert.re 98 54>>*/ return {"hint":_ij_,
+              "range":_ii_} /*<<src/MerlinServiceConvert.re 102 1>>*/ }
+    function _bC_(arr)
      { /*<<src/MerlinServiceConvert.re 104 37>>*/  /*<<src/MerlinServiceConvert.re 104 37>>*/ var
-       _ia_=
+       _if_=
          /*<<src/MerlinServiceConvert.re 104 37>>*/ caml_js_to_array(arr);
        /*<<src/MerlinServiceConvert.re 104 52>>*/ return  /*<<src/MerlinServiceConvert.re 104 52>>*/ _g_
-              (_bi_,_ia_) /*<<src/MerlinServiceConvert.re 104 93>>*/ }
-    function _bB_(jsResult)
+              (_bk_,_if_) /*<<src/MerlinServiceConvert.re 104 93>>*/ }
+    function _bD_(jsResult)
      { /*<<src/MerlinServiceConvert.re 107 23>>*/ var
-        /*<<src/MerlinServiceConvert.re 107 23>>*/ _h6_=typeof jsResult,
+        /*<<src/MerlinServiceConvert.re 107 23>>*/ _h$_=typeof jsResult,
         /*<<src/MerlinServiceConvert.re 107 43>>*/ match=
-         /*<<src/MerlinServiceConvert.re 107 43>>*/ caml_js_to_string(_h6_);
+         /*<<src/MerlinServiceConvert.re 107 43>>*/ caml_js_to_string(_h$_);
        /*<<src/MerlinServiceConvert.re 107 44>>*/ if
        ( /*<<src/MerlinServiceConvert.re 107 44>>*/ caml_string_notequal
-         (match,_bC_))
-       {if(caml_string_notequal(match,_bD_))throw Not_found;
+         (match,_bE_))
+       {if(caml_string_notequal(match,_bF_))throw Not_found;
          /*<<src/MerlinServiceConvert.re 110 4>>*/  /*<<src/MerlinServiceConvert.re 110 4>>*/ var
          result=
            /*<<src/MerlinServiceConvert.re 110 4>>*/ caml_js_to_string
            (jsResult);
          /*<<src/MerlinServiceConvert.re 111 4>>*/ return  /*<<src/MerlinServiceConvert.re 111 4>>*/ caml_string_notequal
-                 (result,_bE_)
+                 (result,_bG_)
                 ?[0,result]
                 :0}
        /*<<src/MerlinServiceConvert.re 107 23>>*/ var
         /*<<src/MerlinServiceConvert.re 116 4>>*/ fileValue=jsResult.file,
-        /*<<src/MerlinServiceConvert.re 117 7>>*/ _h7_=
+        /*<<src/MerlinServiceConvert.re 117 7>>*/ _ia_=
          /*<<src/MerlinServiceConvert.re 117 7>>*/ caml_equal
          (fileValue,null$0);
-       /*<<src/MerlinServiceConvert.re 117 29>>*/ if(_h7_)
+       /*<<src/MerlinServiceConvert.re 117 29>>*/ if(_ia_)
        { /*<<src/MerlinServiceConvert.re 119 18>>*/  /*<<src/MerlinServiceConvert.re 119 18>>*/ var
-         _h8_=
+         _ib_=
           jsResult.pos;
          /*<<src/MerlinServiceConvert.re 119 46>>*/ return [1,
                 [0,
-                  /*<<src/MerlinServiceConvert.re 119 46>>*/ _bi_
-                  ( /*<<src/MerlinServiceConvert.re 119 46>>*/ function(_h$_)
-                     { /*<<?>>*/ return caml_js_to_string(_h$_)}
-                    (_h8_))]]}
+                  /*<<src/MerlinServiceConvert.re 119 46>>*/ _bk_
+                  ( /*<<src/MerlinServiceConvert.re 119 46>>*/ function(_ie_)
+                     { /*<<?>>*/ return caml_js_to_string(_ie_)}
+                    (_ib_))]]}
        /*<<src/MerlinServiceConvert.re 107 23>>*/  /*<<src/MerlinServiceConvert.re 124 18>>*/ var
-       _h9_=
+       _ic_=
         jsResult.pos;
        /*<<src/MerlinServiceConvert.re 124 46>>*/ return [2,
               [0,
-                /*<<src/MerlinServiceConvert.re 124 46>>*/ _bi_
-                ( /*<<src/MerlinServiceConvert.re 124 46>>*/ function(_h__)
-                   { /*<<?>>*/ return caml_js_to_string(_h__)}
-                  (_h9_)),
+                /*<<src/MerlinServiceConvert.re 124 46>>*/ _bk_
+                ( /*<<src/MerlinServiceConvert.re 124 46>>*/ function(_id_)
+                   { /*<<?>>*/ return caml_js_to_string(_id_)}
+                  (_ic_)),
                fileValue]] /*<<src/MerlinServiceConvert.re 128 3>>*/ }
      /*<<src/SuperMerlin.re 10 15>>*/ var
      startedMerlin=[0,0],
@@ -7384,13 +7395,13 @@
        (true) /*<<src/SuperMerlin.re 14 31>>*/ }
      /*<<src/SuperMerlin.re 33 2>>*/ function findNearestMerlinFile$0(path)
      { /*<<src/SuperMerlin.re 36 76>>*/ var
-        /*<<src/SuperMerlin.re 36 76>>*/ _h5_=
+        /*<<src/SuperMerlin.re 36 76>>*/ _h__=
          /*<<src/SuperMerlin.re 36 76>>*/ path.toString(),
         /*<<src/SuperMerlin.re 36 92>>*/ result=
-         /*<<src/SuperMerlin.re 36 92>>*/ findNearestMerlinFile(_h5_);
+         /*<<src/SuperMerlin.re 36 92>>*/ findNearestMerlinFile(_h__);
        /*<<src/SuperMerlin.re 37 2>>*/ return  /*<<src/SuperMerlin.re 37 2>>*/ caml_js_to_string
               (result) /*<<src/SuperMerlin.re 38 1>>*/ }
-     /*<<src/SuperMerlin.re 40 32>>*/ function _bF_
+     /*<<src/SuperMerlin.re 40 32>>*/ function _bH_
      (ocamlMerlinPath,ocamlMerlinFlags,dotMerlinDir,fixedEnv)
      { /*<<src/SuperMerlin.re 42 36>>*/ var
         /*<<src/SuperMerlin.re 42 46>>*/ spawn=
@@ -7461,248 +7472,248 @@
                /*<<src/SuperMerlin.re 100 42>>*/ resolve(content) /*<<src/SuperMerlin.re 70 58>>*/ })}
          /*<<src/SuperMerlin.re 104 38>>*/ merlinProcess.stdin.write
          ( /*<<src/SuperMerlin.re 104 64>>*/ JSON.stringify(cmd)) /*<<src/SuperMerlin.re 65 43>>*/ } /*<<src/SuperMerlin.re 41 34>>*/ }
-     /*<<src/SuperMerlin.re 107 2>>*/ function _bG_
+     /*<<src/SuperMerlin.re 107 2>>*/ function _bI_
      (pathToMerlin,merlinFlags,dotMerlinPath)
      { /*<<src/SuperMerlin.re 118 23>>*/ var
-        /*<<src/SuperMerlin.re 118 23>>*/ _h2_=
+        /*<<src/SuperMerlin.re 118 23>>*/ _h7_=
          /*<<src/SuperMerlin.re 118 23>>*/ dotMerlinPath.toString(),
-        /*<<src/SuperMerlin.re 117 23>>*/ _h3_=
+        /*<<src/SuperMerlin.re 117 23>>*/ _h8_=
          /*<<src/SuperMerlin.re 117 23>>*/ merlinFlags.toString(),
-        /*<<src/SuperMerlin.re 116 23>>*/ _h4_=
+        /*<<src/SuperMerlin.re 116 23>>*/ _h9_=
          /*<<src/SuperMerlin.re 116 23>>*/ pathToMerlin.toString();
-       /*<<src/SuperMerlin.re 116 47>>*/ return  /*<<src/SuperMerlin.re 116 47>>*/ _bF_
-              (_h4_,_h3_,_h2_,fixedEnv$0) /*<<src/SuperMerlin.re 120 6>>*/ }
-     /*<<src/SuperMerlin.re 107 2>>*/ function _bH_(path)
+       /*<<src/SuperMerlin.re 116 47>>*/ return  /*<<src/SuperMerlin.re 116 47>>*/ _bH_
+              (_h9_,_h8_,_h7_,fixedEnv$0) /*<<src/SuperMerlin.re 120 6>>*/ }
+     /*<<src/SuperMerlin.re 107 2>>*/ function _bJ_(path)
      { /*<<src/SuperMerlin.re 123 2>>*/ if(startedMerlin[1])return 0;
        /*<<src/SuperMerlin.re 126 33>>*/ var
         /*<<src/SuperMerlin.re 126 33>>*/ atomReasonPathToMerlin=
-         /*<<src/SuperMerlin.re 126 33>>*/ _aD_(_bI_),
+         /*<<src/SuperMerlin.re 126 33>>*/ _aD_(_bK_),
         /*<<src/SuperMerlin.re 127 32>>*/ atomReasonMerlinFlags=
-         /*<<src/SuperMerlin.re 127 32>>*/ _aD_(_bJ_),
+         /*<<src/SuperMerlin.re 127 32>>*/ _aD_(_bL_),
         /*<<src/SuperMerlin.re 128 34>>*/ atomReasonMerlinLogFile=
-         /*<<src/SuperMerlin.re 128 34>>*/ _aD_(_bK_);
+         /*<<src/SuperMerlin.re 128 34>>*/ _aD_(_bM_);
        /*<<src/SuperMerlin.re 129 4>>*/ if
        (typeof atomReasonMerlinLogFile === "number")
        var switch$0=0;
       else
         /*<<src/SuperMerlin.re 129 4>>*/ if(0 === atomReasonMerlinLogFile[0])
-        {var _h1_=atomReasonMerlinLogFile[1];
-         if(caml_string_notequal(_h1_,_bL_))
-           /*<<src/SuperMerlin.re 131 22>>*/ _aC_(_bM_,_h1_);
+        {var _h6_=atomReasonMerlinLogFile[1];
+         if(caml_string_notequal(_h6_,_bN_))
+           /*<<src/SuperMerlin.re 131 22>>*/ _aC_(_bO_,_h6_);
          var switch$0=1}
        else
         var switch$0=0;
        /*<<src/SuperMerlin.re 126 33>>*/ var
-        /*<<src/SuperMerlin.re 138 23>>*/ _hY_=
+        /*<<src/SuperMerlin.re 138 23>>*/ _h3_=
          /*<<src/SuperMerlin.re 138 23>>*/ findNearestMerlinFile$0(path),
-        /*<<src/SuperMerlin.re 137 21>>*/ _hZ_=
+        /*<<src/SuperMerlin.re 137 21>>*/ _h4_=
          /*<<src/SuperMerlin.re 137 21>>*/ _aA_(atomReasonMerlinFlags),
-        /*<<src/SuperMerlin.re 136 22>>*/ _h0_=
+        /*<<src/SuperMerlin.re 136 22>>*/ _h5_=
          /*<<src/SuperMerlin.re 136 22>>*/ _aA_(atomReasonPathToMerlin),
         /*<<src/SuperMerlin.re 135 6>>*/ readerFn=
-         /*<<src/SuperMerlin.re 135 6>>*/ _bG_(_h0_,_hZ_,_hY_);
+         /*<<src/SuperMerlin.re 135 6>>*/ _bI_(_h5_,_h4_,_h3_);
        /*<<src/SuperMerlin.re 139 4>>*/ startedMerlin[1] = [0,readerFn];
        /*<<src/SuperMerlin.re 139 4>>*/ return 0 /*<<src/SuperMerlin.re 140 3>>*/ }
-     /*<<src/SuperMerlin.re 107 2>>*/ function _bN_(cmd,resolve,reject)
+     /*<<src/SuperMerlin.re 107 2>>*/ function _bP_(cmd,resolve,reject)
      { /*<<src/SuperMerlin.re 143 2>>*/  /*<<src/SuperMerlin.re 143 2>>*/ var
-       _hV_=
+       _h0_=
         startedMerlin[1];
-       /*<<src/SuperMerlin.re 143 2>>*/ if(_hV_)
+       /*<<src/SuperMerlin.re 143 2>>*/ if(_h0_)
        { /*<<src/SuperMerlin.re 146 4>>*/ var
-          /*<<src/SuperMerlin.re 146 4>>*/ readerFn=_hV_[1],
-          /*<<src/SuperMerlin.re 146 4>>*/ _hW_=
+          /*<<src/SuperMerlin.re 146 4>>*/ readerFn=_h0_[1],
+          /*<<src/SuperMerlin.re 146 4>>*/ _h1_=
            /*<<src/SuperMerlin.re 146 4>>*/ caml_js_wrap_callback(reject),
-          /*<<src/SuperMerlin.re 150 25>>*/ _hX_=
+          /*<<src/SuperMerlin.re 150 25>>*/ _h2_=
            /*<<src/SuperMerlin.re 150 25>>*/ caml_js_wrap_callback(resolve);
          /*<<src/SuperMerlin.re 150 51>>*/ return  /*<<src/SuperMerlin.re 150 51>>*/ readerFn
-                (cmd,_hX_,_hW_)}
+                (cmd,_h2_,_h1_)}
        /*<<src/SuperMerlin.re 144 27>>*/ throw Not_found /*<<src/SuperMerlin.re 153 3>>*/ }
-     /*<<src/SuperMerlin.re 107 2>>*/ function _bO_(query,path)
+     /*<<src/SuperMerlin.re 107 2>>*/ function _bQ_(query,path)
      { /*<<src/SuperMerlin.re 159 61>>*/ var
-        /*<<src/SuperMerlin.re 159 61>>*/ _hR_=
+        /*<<src/SuperMerlin.re 159 61>>*/ _hW_=
          /*<<src/SuperMerlin.re 159 61>>*/ path.toString(),
-        /*<<src/SuperMerlin.re 159 43>>*/ _hS_="auto",
-        /*<<src/SuperMerlin.re 159 59>>*/ _hT_=[0,_hS_,_hR_],
-        /*<<src/SuperMerlin.re 159 31>>*/ _hU_=
-         /*<<src/SuperMerlin.re 159 31>>*/ caml_js_from_array(_hT_);
-       /*<<src/SuperMerlin.re 159 78>>*/ return {"query":query,"context":_hU_} /*<<src/SuperMerlin.re 160 2>>*/ }
-     /*<<src/SuperMerlin.re 107 2>>*/ function _bP_
+        /*<<src/SuperMerlin.re 159 43>>*/ _hX_="auto",
+        /*<<src/SuperMerlin.re 159 59>>*/ _hY_=[0,_hX_,_hW_],
+        /*<<src/SuperMerlin.re 159 31>>*/ _hZ_=
+         /*<<src/SuperMerlin.re 159 31>>*/ caml_js_from_array(_hY_);
+       /*<<src/SuperMerlin.re 159 78>>*/ return {"query":query,"context":_hZ_} /*<<src/SuperMerlin.re 160 2>>*/ }
+     /*<<src/SuperMerlin.re 107 2>>*/ function _bR_
      (text,path,query,resolve,reject)
-     { /*<<src/SuperMerlin.re 163 2>>*/  /*<<src/SuperMerlin.re 163 2>>*/ _bH_
+     { /*<<src/SuperMerlin.re 163 2>>*/  /*<<src/SuperMerlin.re 163 2>>*/ _bJ_
        (path);
-       /*<<src/SuperMerlin.re 163 25>>*/ function _hB_(param)
-       { /*<<src/SuperMerlin.re 180 8>>*/ function _hI_(param)
+       /*<<src/SuperMerlin.re 163 25>>*/ function _hG_(param)
+       { /*<<src/SuperMerlin.re 180 8>>*/ function _hN_(param)
          { /*<<src/SuperMerlin.re 189 37>>*/  /*<<src/SuperMerlin.re 189 37>>*/ var
-           _hQ_=
-             /*<<src/SuperMerlin.re 189 37>>*/ _bO_(query,path);
-           /*<<src/SuperMerlin.re 189 73>>*/ return  /*<<src/SuperMerlin.re 189 73>>*/ _bN_
-                  (_hQ_,resolve,reject) /*<<src/SuperMerlin.re 189 88>>*/ }
+           _hV_=
+             /*<<src/SuperMerlin.re 189 37>>*/ _bQ_(query,path);
+           /*<<src/SuperMerlin.re 189 73>>*/ return  /*<<src/SuperMerlin.re 189 73>>*/ _bP_
+                  (_hV_,resolve,reject) /*<<src/SuperMerlin.re 189 88>>*/ }
          /*<<src/SuperMerlin.re 185 81>>*/ var
-          /*<<src/SuperMerlin.re 185 81>>*/ _hJ_=
+          /*<<src/SuperMerlin.re 185 81>>*/ _hO_=
            /*<<src/SuperMerlin.re 185 81>>*/ text.toString(),
-          /*<<src/SuperMerlin.re 185 64>>*/ _hK_="end",
-          /*<<src/SuperMerlin.re 185 45>>*/ _hL_="start",
-          /*<<src/SuperMerlin.re 185 27>>*/ _hM_="tell",
-          /*<<src/SuperMerlin.re 185 43>>*/ _hN_=[0,_hM_,_hL_,_hK_,_hJ_],
-          /*<<src/SuperMerlin.re 184 21>>*/ _hO_=
-           /*<<src/SuperMerlin.re 184 21>>*/ caml_js_from_array(_hN_),
-          /*<<src/SuperMerlin.re 181 15>>*/ _hP_=
-           /*<<src/SuperMerlin.re 181 15>>*/ _bO_(_hO_,path);
-         /*<<src/SuperMerlin.re 188 11>>*/ return  /*<<src/SuperMerlin.re 188 11>>*/ _bN_
-                (_hP_,_hI_,reject) /*<<src/SuperMerlin.re 190 16>>*/ }
+          /*<<src/SuperMerlin.re 185 64>>*/ _hP_="end",
+          /*<<src/SuperMerlin.re 185 45>>*/ _hQ_="start",
+          /*<<src/SuperMerlin.re 185 27>>*/ _hR_="tell",
+          /*<<src/SuperMerlin.re 185 43>>*/ _hS_=[0,_hR_,_hQ_,_hP_,_hO_],
+          /*<<src/SuperMerlin.re 184 21>>*/ _hT_=
+           /*<<src/SuperMerlin.re 184 21>>*/ caml_js_from_array(_hS_),
+          /*<<src/SuperMerlin.re 181 15>>*/ _hU_=
+           /*<<src/SuperMerlin.re 181 15>>*/ _bQ_(_hT_,path);
+         /*<<src/SuperMerlin.re 188 11>>*/ return  /*<<src/SuperMerlin.re 188 11>>*/ _bP_
+                (_hU_,_hN_,reject) /*<<src/SuperMerlin.re 190 16>>*/ }
        /*<<src/SuperMerlin.re 163 25>>*/ var
-        /*<<src/SuperMerlin.re 163 25>>*/ _hC_=2,
-        /*<<src/SuperMerlin.re 172 29>>*/ _hD_="version",
-        /*<<src/SuperMerlin.re 171 29>>*/ _hE_="protocol",
-        /*<<src/SuperMerlin.re 171 51>>*/ _hF_=[0,_hE_,_hD_,_hC_],
-        /*<<src/SuperMerlin.re 169 15>>*/ _hG_=
-         /*<<src/SuperMerlin.re 169 15>>*/ caml_js_from_array(_hF_),
-        /*<<src/SuperMerlin.re 166 9>>*/ _hH_=
-         /*<<src/SuperMerlin.re 166 9>>*/ _bO_(_hG_,path);
-       /*<<src/SuperMerlin.re 177 5>>*/ return  /*<<src/SuperMerlin.re 177 5>>*/ _bN_
-              (_hH_,_hB_,reject) /*<<src/SuperMerlin.re 193 1>>*/ }
-     /*<<src/SuperMerlin.re 107 2>>*/ function _bQ_(param)
+        /*<<src/SuperMerlin.re 163 25>>*/ _hH_=2,
+        /*<<src/SuperMerlin.re 172 29>>*/ _hI_="version",
+        /*<<src/SuperMerlin.re 171 29>>*/ _hJ_="protocol",
+        /*<<src/SuperMerlin.re 171 51>>*/ _hK_=[0,_hJ_,_hI_,_hH_],
+        /*<<src/SuperMerlin.re 169 15>>*/ _hL_=
+         /*<<src/SuperMerlin.re 169 15>>*/ caml_js_from_array(_hK_),
+        /*<<src/SuperMerlin.re 166 9>>*/ _hM_=
+         /*<<src/SuperMerlin.re 166 9>>*/ _bQ_(_hL_,path);
+       /*<<src/SuperMerlin.re 177 5>>*/ return  /*<<src/SuperMerlin.re 177 5>>*/ _bP_
+              (_hM_,_hG_,reject) /*<<src/SuperMerlin.re 193 1>>*/ }
+     /*<<src/SuperMerlin.re 107 2>>*/ function _bS_(param)
      { /*<<src/SuperMerlin.re 198 66>>*/ var
        col=param[2],
        line=param[1],
-        /*<<src/SuperMerlin.re 198 66>>*/ _hA_=line + 1 | 0;
-       /*<<src/SuperMerlin.re 197 74>>*/ return {"line":_hA_,"col":col}}
-     /*<<src/SuperMerlin.re 107 2>>*/ function _bR_
+        /*<<src/SuperMerlin.re 198 66>>*/ _hF_=line + 1 | 0;
+       /*<<src/SuperMerlin.re 197 74>>*/ return {"line":_hF_,"col":col}}
+     /*<<src/SuperMerlin.re 107 2>>*/ function _bT_
      (path,text,position,resolve,reject)
      { /*<<src/SuperMerlin.re 211 25>>*/ var
-        /*<<src/SuperMerlin.re 211 25>>*/ _hu_=
-         /*<<src/SuperMerlin.re 211 25>>*/ _bQ_(position),
-        /*<<src/SuperMerlin.re 210 25>>*/ _hv_="at",
-        /*<<src/SuperMerlin.re 209 25>>*/ _hw_="enclosing",
-        /*<<src/SuperMerlin.re 208 25>>*/ _hx_="type",
-        /*<<src/SuperMerlin.re 208 43>>*/ _hy_=[0,_hx_,_hw_,_hv_,_hu_],
-        /*<<src/SuperMerlin.re 206 11>>*/ _hz_=
-         /*<<src/SuperMerlin.re 206 11>>*/ caml_js_from_array(_hy_);
-       /*<<src/SuperMerlin.re 213 5>>*/ return  /*<<src/SuperMerlin.re 213 5>>*/ _bP_
-              (text,path,_hz_,resolve,reject) /*<<src/SuperMerlin.re 215 10>>*/ }
-     /*<<src/SuperMerlin.re 107 2>>*/ function _bS_
+        /*<<src/SuperMerlin.re 211 25>>*/ _hz_=
+         /*<<src/SuperMerlin.re 211 25>>*/ _bS_(position),
+        /*<<src/SuperMerlin.re 210 25>>*/ _hA_="at",
+        /*<<src/SuperMerlin.re 209 25>>*/ _hB_="enclosing",
+        /*<<src/SuperMerlin.re 208 25>>*/ _hC_="type",
+        /*<<src/SuperMerlin.re 208 43>>*/ _hD_=[0,_hC_,_hB_,_hA_,_hz_],
+        /*<<src/SuperMerlin.re 206 11>>*/ _hE_=
+         /*<<src/SuperMerlin.re 206 11>>*/ caml_js_from_array(_hD_);
+       /*<<src/SuperMerlin.re 213 5>>*/ return  /*<<src/SuperMerlin.re 213 5>>*/ _bR_
+              (text,path,_hE_,resolve,reject) /*<<src/SuperMerlin.re 215 10>>*/ }
+     /*<<src/SuperMerlin.re 107 2>>*/ function _bU_
      (path,text,position,prefix,resolve,reject)
      { /*<<src/SuperMerlin.re 235 25>>*/ var
-        /*<<src/SuperMerlin.re 235 25>>*/ _hl_="doc",
-        /*<<src/SuperMerlin.re 234 25>>*/ _hm_="with",
-        /*<<src/SuperMerlin.re 233 25>>*/ _hn_=
-         /*<<src/SuperMerlin.re 233 25>>*/ _bQ_(position),
-        /*<<src/SuperMerlin.re 232 25>>*/ _ho_="at",
-        /*<<src/SuperMerlin.re 231 25>>*/ _hp_=
+        /*<<src/SuperMerlin.re 235 25>>*/ _hq_="doc",
+        /*<<src/SuperMerlin.re 234 25>>*/ _hr_="with",
+        /*<<src/SuperMerlin.re 233 25>>*/ _hs_=
+         /*<<src/SuperMerlin.re 233 25>>*/ _bS_(position),
+        /*<<src/SuperMerlin.re 232 25>>*/ _ht_="at",
+        /*<<src/SuperMerlin.re 231 25>>*/ _hu_=
          /*<<src/SuperMerlin.re 231 25>>*/ prefix.toString(),
-        /*<<src/SuperMerlin.re 230 25>>*/ _hq_="prefix",
-        /*<<src/SuperMerlin.re 229 25>>*/ _hr_="complete",
-        /*<<src/SuperMerlin.re 229 47>>*/ _hs_=
-        [0,_hr_,_hq_,_hp_,_ho_,_hn_,_hm_,_hl_],
-        /*<<src/SuperMerlin.re 227 11>>*/ _ht_=
-         /*<<src/SuperMerlin.re 227 11>>*/ caml_js_from_array(_hs_);
-       /*<<src/SuperMerlin.re 237 5>>*/ return  /*<<src/SuperMerlin.re 237 5>>*/ _bP_
-              (text,path,_ht_,resolve,reject) /*<<src/SuperMerlin.re 239 10>>*/ }
-     /*<<src/SuperMerlin.re 107 2>>*/ function _bT_(path,text,resolve,reject)
+        /*<<src/SuperMerlin.re 230 25>>*/ _hv_="prefix",
+        /*<<src/SuperMerlin.re 229 25>>*/ _hw_="complete",
+        /*<<src/SuperMerlin.re 229 47>>*/ _hx_=
+        [0,_hw_,_hv_,_hu_,_ht_,_hs_,_hr_,_hq_],
+        /*<<src/SuperMerlin.re 227 11>>*/ _hy_=
+         /*<<src/SuperMerlin.re 227 11>>*/ caml_js_from_array(_hx_);
+       /*<<src/SuperMerlin.re 237 5>>*/ return  /*<<src/SuperMerlin.re 237 5>>*/ _bR_
+              (text,path,_hy_,resolve,reject) /*<<src/SuperMerlin.re 239 10>>*/ }
+     /*<<src/SuperMerlin.re 107 2>>*/ function _bV_(path,text,resolve,reject)
      { /*<<src/SuperMerlin.re 245 40>>*/ var
-        /*<<src/SuperMerlin.re 245 40>>*/ _hi_="errors",
-        /*<<src/SuperMerlin.re 245 60>>*/ _hj_=[0,_hi_],
-        /*<<src/SuperMerlin.re 245 11>>*/ _hk_=
-         /*<<src/SuperMerlin.re 245 11>>*/ caml_js_from_array(_hj_);
-       /*<<src/SuperMerlin.re 245 63>>*/ return  /*<<src/SuperMerlin.re 245 63>>*/ _bP_
-              (text,path,_hk_,resolve,reject) /*<<src/SuperMerlin.re 247 10>>*/ }
-     /*<<src/SuperMerlin.re 107 2>>*/ function _bU_
+        /*<<src/SuperMerlin.re 245 40>>*/ _hn_="errors",
+        /*<<src/SuperMerlin.re 245 60>>*/ _ho_=[0,_hn_],
+        /*<<src/SuperMerlin.re 245 11>>*/ _hp_=
+         /*<<src/SuperMerlin.re 245 11>>*/ caml_js_from_array(_ho_);
+       /*<<src/SuperMerlin.re 245 63>>*/ return  /*<<src/SuperMerlin.re 245 63>>*/ _bR_
+              (text,path,_hp_,resolve,reject) /*<<src/SuperMerlin.re 247 10>>*/ }
+     /*<<src/SuperMerlin.re 107 2>>*/ function _bW_
      (path,text,extension,position,resolve,reject)
      { /*<<src/SuperMerlin.re 265 25>>*/ var
-        /*<<src/SuperMerlin.re 265 25>>*/ _hb_=
-         /*<<src/SuperMerlin.re 265 25>>*/ _bQ_(position),
-        /*<<src/SuperMerlin.re 264 25>>*/ _hc_="at",
-        /*<<src/SuperMerlin.re 263 25>>*/ _hd_=
+        /*<<src/SuperMerlin.re 265 25>>*/ _hg_=
+         /*<<src/SuperMerlin.re 265 25>>*/ _bS_(position),
+        /*<<src/SuperMerlin.re 264 25>>*/ _hh_="at",
+        /*<<src/SuperMerlin.re 263 25>>*/ _hi_=
          /*<<src/SuperMerlin.re 263 25>>*/ extension.toString(),
-        /*<<src/SuperMerlin.re 262 25>>*/ _he_="",
-        /*<<src/SuperMerlin.re 261 25>>*/ _hf_="locate",
-        /*<<src/SuperMerlin.re 261 45>>*/ _hg_=[0,_hf_,_he_,_hd_,_hc_,_hb_],
-        /*<<src/SuperMerlin.re 259 11>>*/ _hh_=
-         /*<<src/SuperMerlin.re 259 11>>*/ caml_js_from_array(_hg_);
-       /*<<src/SuperMerlin.re 267 5>>*/ return  /*<<src/SuperMerlin.re 267 5>>*/ _bP_
-              (text,path,_hh_,resolve,reject) /*<<src/SuperMerlin.re 269 10>>*/ }
-     /*<<src/SuperMerlin.re 107 2>>*/ function _bV_
+        /*<<src/SuperMerlin.re 262 25>>*/ _hj_="",
+        /*<<src/SuperMerlin.re 261 25>>*/ _hk_="locate",
+        /*<<src/SuperMerlin.re 261 45>>*/ _hl_=[0,_hk_,_hj_,_hi_,_hh_,_hg_],
+        /*<<src/SuperMerlin.re 259 11>>*/ _hm_=
+         /*<<src/SuperMerlin.re 259 11>>*/ caml_js_from_array(_hl_);
+       /*<<src/SuperMerlin.re 267 5>>*/ return  /*<<src/SuperMerlin.re 267 5>>*/ _bR_
+              (text,path,_hm_,resolve,reject) /*<<src/SuperMerlin.re 269 10>>*/ }
+     /*<<src/SuperMerlin.re 107 2>>*/ function _bX_
      (path,text,position,resolve,reject)
      { /*<<src/SuperMerlin.re 281 25>>*/ var
-        /*<<src/SuperMerlin.re 281 25>>*/ _g7_=
-         /*<<src/SuperMerlin.re 281 25>>*/ _bQ_(position),
-        /*<<src/SuperMerlin.re 280 25>>*/ _g8_="at",
-        /*<<src/SuperMerlin.re 279 25>>*/ _g9_="ident",
-        /*<<src/SuperMerlin.re 278 25>>*/ _g__="occurrences",
-        /*<<src/SuperMerlin.re 278 50>>*/ _g$_=[0,_g__,_g9_,_g8_,_g7_],
-        /*<<src/SuperMerlin.re 276 11>>*/ _ha_=
-         /*<<src/SuperMerlin.re 276 11>>*/ caml_js_from_array(_g$_);
-       /*<<src/SuperMerlin.re 283 5>>*/ return  /*<<src/SuperMerlin.re 283 5>>*/ _bP_
-              (text,path,_ha_,resolve,reject) /*<<src/SuperMerlin.re 285 10>>*/ }
-     /*<<src/SuperMerlin.re 107 2>>*/ function _bW_(path,text,resolve,reject)
+        /*<<src/SuperMerlin.re 281 25>>*/ _ha_=
+         /*<<src/SuperMerlin.re 281 25>>*/ _bS_(position),
+        /*<<src/SuperMerlin.re 280 25>>*/ _hb_="at",
+        /*<<src/SuperMerlin.re 279 25>>*/ _hc_="ident",
+        /*<<src/SuperMerlin.re 278 25>>*/ _hd_="occurrences",
+        /*<<src/SuperMerlin.re 278 50>>*/ _he_=[0,_hd_,_hc_,_hb_,_ha_],
+        /*<<src/SuperMerlin.re 276 11>>*/ _hf_=
+         /*<<src/SuperMerlin.re 276 11>>*/ caml_js_from_array(_he_);
+       /*<<src/SuperMerlin.re 283 5>>*/ return  /*<<src/SuperMerlin.re 283 5>>*/ _bR_
+              (text,path,_hf_,resolve,reject) /*<<src/SuperMerlin.re 285 10>>*/ }
+     /*<<src/SuperMerlin.re 107 2>>*/ function _bY_(path,text,resolve,reject)
      { /*<<src/SuperMerlin.re 291 40>>*/ var
-        /*<<src/SuperMerlin.re 291 40>>*/ _g4_="outline",
-        /*<<src/SuperMerlin.re 291 61>>*/ _g5_=[0,_g4_],
-        /*<<src/SuperMerlin.re 291 11>>*/ _g6_=
-         /*<<src/SuperMerlin.re 291 11>>*/ caml_js_from_array(_g5_);
-       /*<<src/SuperMerlin.re 291 64>>*/ return  /*<<src/SuperMerlin.re 291 64>>*/ _bP_
-              (text,path,_g6_,resolve,reject) /*<<src/SuperMerlin.re 293 10>>*/ }
-    function _bX_(editor,resolve,reject)
+        /*<<src/SuperMerlin.re 291 40>>*/ _g9_="outline",
+        /*<<src/SuperMerlin.re 291 61>>*/ _g__=[0,_g9_],
+        /*<<src/SuperMerlin.re 291 11>>*/ _g$_=
+         /*<<src/SuperMerlin.re 291 11>>*/ caml_js_from_array(_g__);
+       /*<<src/SuperMerlin.re 291 64>>*/ return  /*<<src/SuperMerlin.re 291 64>>*/ _bR_
+              (text,path,_g$_,resolve,reject) /*<<src/SuperMerlin.re 293 10>>*/ }
+    function _bZ_(editor,resolve,reject)
      { /*<<src/AtomReasonDiagnostics.re 52 33>>*/ var
-        /*<<src/AtomReasonDiagnostics.re 52 33>>*/ _g2_=
-         /*<<src/AtomReasonDiagnostics.re 52 33>>*/ _aP_(editor),
+        /*<<src/AtomReasonDiagnostics.re 52 33>>*/ _g7_=
+         /*<<src/AtomReasonDiagnostics.re 52 33>>*/ _aQ_(editor),
         /*<<src/AtomReasonDiagnostics.re 52 13>>*/ text=
-         /*<<src/AtomReasonDiagnostics.re 52 13>>*/ _aJ_(_g2_),
+         /*<<src/AtomReasonDiagnostics.re 52 13>>*/ _aJ_(_g7_),
         /*<<src/AtomReasonDiagnostics.re 53 13>>*/ path=
-         /*<<src/AtomReasonDiagnostics.re 53 13>>*/ _bf_(editor);
-       /*<<src/AtomReasonDiagnostics.re 54 2>>*/ return  /*<<src/AtomReasonDiagnostics.re 54 2>>*/ _bT_
+         /*<<src/AtomReasonDiagnostics.re 53 13>>*/ _bh_(editor);
+       /*<<src/AtomReasonDiagnostics.re 54 2>>*/ return  /*<<src/AtomReasonDiagnostics.re 54 2>>*/ _bV_
               (path,
                text,
                function(successResult)
                 { /*<<src/AtomReasonDiagnostics.re 58 35>>*/  /*<<src/AtomReasonDiagnostics.re 58 35>>*/ var
-                  _g3_=
-                    /*<<src/AtomReasonDiagnostics.re 58 35>>*/ _bl_
+                  _g8_=
+                    /*<<src/AtomReasonDiagnostics.re 58 35>>*/ _bn_
                     (path,successResult);
                   /*<<src/AtomReasonDiagnostics.re 60 7>>*/ return  /*<<src/AtomReasonDiagnostics.re 60 7>>*/ caml_call1
-                         (resolve,_g3_) /*<<src/AtomReasonDiagnostics.re 60 7>>*/ },
+                         (resolve,_g8_) /*<<src/AtomReasonDiagnostics.re 60 7>>*/ },
                reject) /*<<src/AtomReasonDiagnostics.re 63 1>>*/ }
-    function _bY_(a,b)
+    function _b0_(a,b)
      { /*<<src/StringUtils.re 8 18>>*/  /*<<src/StringUtils.re 8 18>>*/ var
-       _g1_=
+       _g6_=
          /*<<src/StringUtils.re 8 18>>*/ _Y_(a,b);
-       /*<<src/StringUtils.re 8 36>>*/ return 0 === _g1_?1:0 /*<<src/StringUtils.re 8 42>>*/ }
-    function _bZ_(r,s)
+       /*<<src/StringUtils.re 8 36>>*/ return 0 === _g6_?1:0 /*<<src/StringUtils.re 8 42>>*/ }
+    function _b1_(r,s)
      { /*<<src/StringUtils.re 26 42>>*/ var
         /*<<src/StringUtils.re 26 42>>*/ s$0=
          /*<<src/StringUtils.re 26 42>>*/ s.toString(),
         /*<<src/StringUtils.re 28 2>>*/ jsArr=
          /*<<src/StringUtils.re 28 2>>*/ s$0.split(r),
-        /*<<src/StringUtils.re 29 2>>*/ _g0_=
+        /*<<src/StringUtils.re 29 2>>*/ _g5_=
          /*<<src/StringUtils.re 29 2>>*/ caml_js_to_array(jsArr),
         /*<<src/StringUtils.re 29 12>>*/ lst=
-         /*<<src/StringUtils.re 29 12>>*/ _h_(_g0_);
+         /*<<src/StringUtils.re 29 12>>*/ _h_(_g5_);
        /*<<src/StringUtils.re 30 2>>*/ return  /*<<src/StringUtils.re 30 2>>*/ _u_
               (function(itm)
                 { /*<<src/StringUtils.re 30 23>>*/ return  /*<<src/StringUtils.re 30 23>>*/ caml_js_to_string
                          (itm) /*<<src/StringUtils.re 30 39>>*/ },
                lst) /*<<src/StringUtils.re 31 1>>*/ }
      /*<<src/AtomReasonFormat.re 14 15>>*/  /*<<src/AtomReasonFormat.re 14 15>>*/ var
-     _b0_=
+     _b2_=
        /*<<src/AtomReasonFormat.re 14 15>>*/ require("../lib/fixedEnv");
-     /*<<src/AtomReasonFormat.re 14 61>>*/ function _b1_(stdOutLines,param)
+     /*<<src/AtomReasonFormat.re 14 61>>*/ function _b3_(stdOutLines,param)
      { /*<<src/AtomReasonFormat.re 23 85>>*/ var
        curCursorColumn=param[2],
        curCursorRow=param[1],
-       _gL_=0,
-        /*<<src/AtomReasonFormat.re 23 85>>*/ result=[0,_gL_],
+       _gQ_=0,
+        /*<<src/AtomReasonFormat.re 23 85>>*/ result=[0,_gQ_],
         /*<<src/AtomReasonFormat.re 25 2>>*/ arrLen=stdOutLines.length - 1,
-        /*<<src/AtomReasonFormat.re 25 2>>*/ _gM_=0,
-        /*<<src/AtomReasonFormat.re 26 2>>*/ charCount=[0,_gM_],
-        /*<<src/AtomReasonFormat.re 26 2>>*/ _gN_=0,
-        /*<<src/AtomReasonFormat.re 27 2>>*/ colCount=[0,_gN_],
-        /*<<src/AtomReasonFormat.re 27 2>>*/ _gO_=0,
-        /*<<src/AtomReasonFormat.re 28 2>>*/ rowCount=[0,_gO_],
-        /*<<src/AtomReasonFormat.re 28 2>>*/ _gP_=0,
-        /*<<src/AtomReasonFormat.re 29 2>>*/ finalCharCount=[0,_gP_],
-        /*<<src/AtomReasonFormat.re 29 2>>*/ _gQ_=0,
-        /*<<src/AtomReasonFormat.re 30 2>>*/ _gR_=arrLen - 1 | 0;
-       /*<<src/AtomReasonFormat.re 30 2>>*/ if(!(_gR_ < 0))
-       {var iArr=_gQ_;
+        /*<<src/AtomReasonFormat.re 25 2>>*/ _gR_=0,
+        /*<<src/AtomReasonFormat.re 26 2>>*/ charCount=[0,_gR_],
+        /*<<src/AtomReasonFormat.re 26 2>>*/ _gS_=0,
+        /*<<src/AtomReasonFormat.re 27 2>>*/ colCount=[0,_gS_],
+        /*<<src/AtomReasonFormat.re 27 2>>*/ _gT_=0,
+        /*<<src/AtomReasonFormat.re 28 2>>*/ rowCount=[0,_gT_],
+        /*<<src/AtomReasonFormat.re 28 2>>*/ _gU_=0,
+        /*<<src/AtomReasonFormat.re 29 2>>*/ finalCharCount=[0,_gU_],
+        /*<<src/AtomReasonFormat.re 29 2>>*/ _gV_=0,
+        /*<<src/AtomReasonFormat.re 30 2>>*/ _gW_=arrLen - 1 | 0;
+       /*<<src/AtomReasonFormat.re 30 2>>*/ if(!(_gW_ < 0))
+       {var iArr=_gV_;
          /*<<src/AtomReasonFormat.re 30 32>>*/ for(;;)
          { /*<<src/AtomReasonFormat.re 30 32>>*/ var
             /*<<src/AtomReasonFormat.re 30 32>>*/ line=
@@ -7711,13 +7722,13 @@
              [iArr + 1],
             /*<<src/AtomReasonFormat.re 32 4>>*/ lineLen=
              /*<<src/AtomReasonFormat.re 32 4>>*/ caml_ml_string_length(line),
-            /*<<src/AtomReasonFormat.re 32 4>>*/ _gV_=0,
+            /*<<src/AtomReasonFormat.re 32 4>>*/ _g0_=0,
             /*<<src/AtomReasonFormat.re 34 4>>*/ lenNotEndingInWhiteSpace=
-            [0,_gV_],
-            /*<<src/AtomReasonFormat.re 34 4>>*/ _gW_=0,
-            /*<<src/AtomReasonFormat.re 36 4>>*/ _gX_=lineLen - 1 | 0;
-           /*<<src/AtomReasonFormat.re 36 4>>*/ if(!(_gX_ < 0))
-           {var chPos=_gW_;
+            [0,_g0_],
+            /*<<src/AtomReasonFormat.re 34 4>>*/ _g1_=0,
+            /*<<src/AtomReasonFormat.re 36 4>>*/ _g2_=lineLen - 1 | 0;
+           /*<<src/AtomReasonFormat.re 36 4>>*/ if(!(_g2_ < 0))
+           {var chPos=_g1_;
              /*<<src/AtomReasonFormat.re 36 36>>*/ for(;;)
              { /*<<src/AtomReasonFormat.re 36 36>>*/ var
                 /*<<src/AtomReasonFormat.re 36 36>>*/ ch=
@@ -7763,37 +7774,37 @@
                (rowCount[1] <= curCursorRow)
                if(colCount[1] <= curCursorColumn)
                 finalCharCount[1] = charCount[1];
-               /*<<src/AtomReasonFormat.re 36 36>>*/ var _gZ_=chPos + 1 | 0;
-              if(_gX_ !== chPos){var chPos=_gZ_;continue}
+               /*<<src/AtomReasonFormat.re 36 36>>*/ var _g4_=chPos + 1 | 0;
+              if(_g2_ !== chPos){var chPos=_g4_;continue}
               break}}
            /*<<src/AtomReasonFormat.re 52 4>>*/ result[1]
           =
           [0,line,result[1]];
            /*<<src/AtomReasonFormat.re 30 32>>*/  /*<<src/AtomReasonFormat.re 52 4>>*/ var
-           _gY_=
+           _g3_=
             iArr + 1 | 0;
-          if(_gR_ !== iArr){var iArr=_gY_;continue}
+          if(_gW_ !== iArr){var iArr=_g3_;continue}
           break}}
        /*<<src/AtomReasonFormat.re 23 85>>*/ var
-        /*<<src/AtomReasonFormat.re 54 2>>*/ _gS_=result[1],
-        /*<<src/AtomReasonFormat.re 56 51>>*/ _gT_=
-         /*<<src/AtomReasonFormat.re 56 51>>*/ _t_(_gS_),
-        /*<<src/AtomReasonFormat.re 56 34>>*/ _gU_=
-         /*<<src/AtomReasonFormat.re 56 34>>*/ _P_(_b2_,_gT_);
-       /*<<src/AtomReasonFormat.re 56 77>>*/ return [0,finalCharCount[1],_gU_]}
-     /*<<src/AtomReasonFormat.re 14 61>>*/ function _b3_
+        /*<<src/AtomReasonFormat.re 54 2>>*/ _gX_=result[1],
+        /*<<src/AtomReasonFormat.re 56 51>>*/ _gY_=
+         /*<<src/AtomReasonFormat.re 56 51>>*/ _t_(_gX_),
+        /*<<src/AtomReasonFormat.re 56 34>>*/ _gZ_=
+         /*<<src/AtomReasonFormat.re 56 34>>*/ _P_(_b4_,_gY_);
+       /*<<src/AtomReasonFormat.re 56 77>>*/ return [0,finalCharCount[1],_gZ_]}
+     /*<<src/AtomReasonFormat.re 14 61>>*/ function _b5_
      (editor,subText,isInterface,onComplete,onFailure)
      { /*<<src/AtomReasonFormat.re 67 2>>*/ var
         /*<<src/AtomReasonFormat.re 67 2>>*/ stdOutLines=[0,[0]],
         /*<<src/AtomReasonFormat.re 68 2>>*/ stdErrLines=[0,[0]],
         /*<<src/AtomReasonFormat.re 70 11>>*/ match=
-         /*<<src/AtomReasonFormat.re 70 11>>*/ _aD_(_b4_);
+         /*<<src/AtomReasonFormat.re 70 11>>*/ _aD_(_b6_);
        /*<<src/AtomReasonFormat.re 70 54>>*/ if
        (typeof match !== "number" && 0 === match[0])
        { /*<<src/AtomReasonFormat.re 71 24>>*/ var
           /*<<src/AtomReasonFormat.re 71 24>>*/ pth=match[1],
           /*<<src/AtomReasonFormat.re 75 11>>*/ match$0=
-           /*<<src/AtomReasonFormat.re 75 11>>*/ _aD_(_b6_);
+           /*<<src/AtomReasonFormat.re 75 11>>*/ _aD_(_b8_);
          /*<<src/AtomReasonFormat.re 75 53>>*/ if(typeof match$0 === "number")
          var switch$0=0;
         else
@@ -7803,8 +7814,8 @@
              match$0[1];
             /*<<src/AtomReasonFormat.re 76 21>>*/ if(0 < (n | 0))
              /*<<src/AtomReasonFormat.re 76 43>>*/ var
-              /*<<src/AtomReasonFormat.re 76 43>>*/ _gz_=[0,n | 0],
-             printWidth=_gz_,
+              /*<<src/AtomReasonFormat.re 76 43>>*/ _gE_=[0,n | 0],
+             printWidth=_gE_,
              switch$0=1;
            else
             var switch$0=0}
@@ -7816,133 +7827,133 @@
           /*<<src/AtomReasonFormat.re 79 2>>*/ onStdOut=
           function(line)
            { /*<<src/AtomReasonFormat.re 79 23>>*/ var
-              /*<<src/AtomReasonFormat.re 79 23>>*/ _gI_=[0,line],
-              /*<<src/AtomReasonFormat.re 79 23>>*/ _gJ_=stdOutLines[1],
-              /*<<src/AtomReasonFormat.re 79 46>>*/ _gK_=
-               /*<<src/AtomReasonFormat.re 79 46>>*/ _f_(_gJ_,_gI_);
-             /*<<src/AtomReasonFormat.re 79 88>>*/ stdOutLines[1] = _gK_;
+              /*<<src/AtomReasonFormat.re 79 23>>*/ _gN_=[0,line],
+              /*<<src/AtomReasonFormat.re 79 23>>*/ _gO_=stdOutLines[1],
+              /*<<src/AtomReasonFormat.re 79 46>>*/ _gP_=
+               /*<<src/AtomReasonFormat.re 79 46>>*/ _f_(_gO_,_gN_);
+             /*<<src/AtomReasonFormat.re 79 88>>*/ stdOutLines[1] = _gP_;
              /*<<src/AtomReasonFormat.re 79 88>>*/ return 0 /*<<src/AtomReasonFormat.re 79 88>>*/ },
           /*<<src/AtomReasonFormat.re 80 2>>*/ onStdErr=
           function(line)
            { /*<<src/AtomReasonFormat.re 80 23>>*/ var
-              /*<<src/AtomReasonFormat.re 80 23>>*/ _gF_=[0,line],
-              /*<<src/AtomReasonFormat.re 80 23>>*/ _gG_=stdErrLines[1],
-              /*<<src/AtomReasonFormat.re 80 46>>*/ _gH_=
-               /*<<src/AtomReasonFormat.re 80 46>>*/ _f_(_gG_,_gF_);
-             /*<<src/AtomReasonFormat.re 80 88>>*/ stdErrLines[1] = _gH_;
+              /*<<src/AtomReasonFormat.re 80 23>>*/ _gK_=[0,line],
+              /*<<src/AtomReasonFormat.re 80 23>>*/ _gL_=stdErrLines[1],
+              /*<<src/AtomReasonFormat.re 80 46>>*/ _gM_=
+               /*<<src/AtomReasonFormat.re 80 46>>*/ _f_(_gL_,_gK_);
+             /*<<src/AtomReasonFormat.re 80 88>>*/ stdErrLines[1] = _gM_;
              /*<<src/AtomReasonFormat.re 80 88>>*/ return 0 /*<<src/AtomReasonFormat.re 80 88>>*/ },
           /*<<src/AtomReasonFormat.re 81 16>>*/ cursors=
-           /*<<src/AtomReasonFormat.re 81 16>>*/ _aR_(editor);
+           /*<<src/AtomReasonFormat.re 81 16>>*/ _aS_(editor);
          /*<<src/AtomReasonFormat.re 82 2>>*/ if(cursors)
           /*<<src/AtomReasonFormat.re 85 30>>*/ var
            /*<<src/AtomReasonFormat.re 85 30>>*/ firstCursor=cursors[1],
-           /*<<src/AtomReasonFormat.re 85 30>>*/ _go_=
+           /*<<src/AtomReasonFormat.re 85 30>>*/ _gt_=
             /*<<src/AtomReasonFormat.re 85 30>>*/ _aL_(firstCursor),
-          match$1=_go_;
+          match$1=_gt_;
         else
-         var match$1=_cg_;
+         var match$1=_ci_;
          /*<<src/AtomReasonFormat.re 71 24>>*/ var
          origCursorCol=match$1[2],
          origCursorRow=match$1[1],
           /*<<src/AtomReasonFormat.re 87 2>>*/ onExit=
           function(code)
            { /*<<src/AtomReasonFormat.re 87 21>>*/ var
-              /*<<src/AtomReasonFormat.re 87 21>>*/ _gB_=
+              /*<<src/AtomReasonFormat.re 87 21>>*/ _gG_=
               [0,origCursorRow,origCursorCol],
-              /*<<src/AtomReasonFormat.re 87 21>>*/ _gC_=stdOutLines[1],
+              /*<<src/AtomReasonFormat.re 87 21>>*/ _gH_=stdOutLines[1],
               /*<<src/AtomReasonFormat.re 89 6>>*/ formatResult=
-               /*<<src/AtomReasonFormat.re 89 6>>*/ _b1_(_gC_,_gB_),
-              /*<<src/AtomReasonFormat.re 90 4>>*/ _gD_=stdErrLines[1],
-              /*<<src/AtomReasonFormat.re 90 36>>*/ _gE_=
-               /*<<src/AtomReasonFormat.re 90 36>>*/ _h_(_gD_),
+               /*<<src/AtomReasonFormat.re 89 6>>*/ _b3_(_gH_,_gG_),
+              /*<<src/AtomReasonFormat.re 90 4>>*/ _gI_=stdErrLines[1],
+              /*<<src/AtomReasonFormat.re 90 36>>*/ _gJ_=
+               /*<<src/AtomReasonFormat.re 90 36>>*/ _h_(_gI_),
               /*<<src/AtomReasonFormat.re 90 17>>*/ stdErr=
-               /*<<src/AtomReasonFormat.re 90 17>>*/ _P_(_b7_,_gE_);
+               /*<<src/AtomReasonFormat.re 90 17>>*/ _P_(_b9_,_gJ_);
              /*<<src/AtomReasonFormat.re 91 4>>*/ return  /*<<src/AtomReasonFormat.re 91 4>>*/ caml_call3
                     (onComplete,code,formatResult,stdErr) /*<<src/AtomReasonFormat.re 92 3>>*/ };
          /*<<src/AtomReasonFormat.re 93 2>>*/ if(printWidth)
           /*<<src/AtomReasonFormat.re 96 27>>*/ var
            /*<<src/AtomReasonFormat.re 96 27>>*/ printWidth$0=printWidth[1],
-           /*<<src/AtomReasonFormat.re 96 27>>*/ _gp_=0,
-           /*<<src/AtomReasonFormat.re 96 44>>*/ _gq_=
+           /*<<src/AtomReasonFormat.re 96 27>>*/ _gu_=0,
+           /*<<src/AtomReasonFormat.re 96 44>>*/ _gv_=
             /*<<src/AtomReasonFormat.re 96 44>>*/ string_of_int(printWidth$0),
-          printWidthArgs=[0,_b8_,[0,_gq_,_gp_]];
+          printWidthArgs=[0,_b__,[0,_gv_,_gu_]];
         else
          var printWidthArgs=0;
          /*<<src/AtomReasonFormat.re 71 24>>*/ var
-          /*<<src/AtomReasonFormat.re 99 40>>*/ _gr_=
-           /*<<src/AtomReasonFormat.re 99 40>>*/ _bf_(editor),
+          /*<<src/AtomReasonFormat.re 99 40>>*/ _gw_=
+           /*<<src/AtomReasonFormat.re 99 40>>*/ _bh_(editor),
           /*<<src/AtomReasonFormat.re 99 20>>*/ syntaxArg=
-           /*<<src/AtomReasonFormat.re 99 20>>*/ _ba_(_gr_),
-          /*<<src/AtomReasonFormat.re 99 20>>*/ _gs_=0,
-          /*<<src/AtomReasonFormat.re 100 4>>*/ _gt_=
-          0 === isInterface?_b9_:_cf_,
-         _gu_=
+           /*<<src/AtomReasonFormat.re 99 20>>*/ _bc_(_gw_),
+          /*<<src/AtomReasonFormat.re 99 20>>*/ _gx_=0,
+          /*<<src/AtomReasonFormat.re 100 4>>*/ _gy_=
+          0 === isInterface?_b$_:_ch_,
+         _gz_=
           [0,
-           _cc_,
+           _ce_,
            [0,
-            _cb_,
+            _cd_,
             [0,
-             _ca_,
-             [0,syntaxArg,[0,_b$_,[0,syntaxArg,[0,_b__,[0,_gt_,_gs_]]]]]]]],
+             _cc_,
+             [0,syntaxArg,[0,_cb_,[0,syntaxArg,[0,_ca_,[0,_gy_,_gx_]]]]]]]],
           /*<<src/AtomReasonFormat.re 100 4>>*/ args=
-           /*<<src/AtomReasonFormat.re 100 4>>*/ _c_(printWidthArgs,_gu_),
-          /*<<src/AtomReasonFormat.re 111 2>>*/ _gv_=[0,onExit],
-          /*<<src/AtomReasonFormat.re 111 2>>*/ _gw_=[0,onStdErr],
-          /*<<src/AtomReasonFormat.re 111 2>>*/ _gx_=[0,onStdOut],
-          /*<<src/AtomReasonFormat.re 111 2>>*/ _gy_=[0,[0,_aZ_,_b0_,_aY_]],
+           /*<<src/AtomReasonFormat.re 100 4>>*/ _c_(printWidthArgs,_gz_),
+          /*<<src/AtomReasonFormat.re 111 2>>*/ _gA_=[0,onExit],
+          /*<<src/AtomReasonFormat.re 111 2>>*/ _gB_=[0,onStdErr],
+          /*<<src/AtomReasonFormat.re 111 2>>*/ _gC_=[0,onStdOut],
+          /*<<src/AtomReasonFormat.re 111 2>>*/ _gD_=[0,[0,_a1_,_b2_,_a0_]],
           /*<<src/AtomReasonFormat.re 112 4>>*/ proc=
-           /*<<src/AtomReasonFormat.re 112 4>>*/ _a2_
-           (_gy_,_gx_,_gw_,_gv_,pth,args),
+           /*<<src/AtomReasonFormat.re 112 4>>*/ _a4_
+           (_gD_,_gC_,_gB_,_gA_,pth,args),
           /*<<src/AtomReasonFormat.re 119 19>>*/ errorTitle=
-           /*<<src/AtomReasonFormat.re 119 19>>*/ _b_(_cd_,pth),
+           /*<<src/AtomReasonFormat.re 119 19>>*/ _b_(_cf_,pth),
           /*<<src/AtomReasonFormat.re 120 2>>*/ handleError=
           function(error,handle)
            { /*<<src/AtomReasonFormat.re 120 34>>*/  /*<<src/AtomReasonFormat.re 120 34>>*/ var
-             _gA_=
-              [0,[0,error,_aV_[2],_aV_[3]]];
-             /*<<src/AtomReasonFormat.re 121 4>>*/  /*<<src/AtomReasonFormat.re 121 4>>*/ _aW_
-             (_gA_,errorTitle);
+             _gF_=
+              [0,[0,error,_aX_[2],_aX_[3]]];
+             /*<<src/AtomReasonFormat.re 121 4>>*/  /*<<src/AtomReasonFormat.re 121 4>>*/ _aY_
+             (_gF_,errorTitle);
              /*<<src/AtomReasonFormat.re 126 4>>*/  /*<<src/AtomReasonFormat.re 126 4>>*/ caml_call1
-             (onFailure,_ce_);
+             (onFailure,_cg_);
              /*<<src/AtomReasonFormat.re 126 24>>*/ return  /*<<src/AtomReasonFormat.re 126 24>>*/ caml_call1
                     (handle,0) /*<<src/AtomReasonFormat.re 128 3>>*/ };
-         /*<<src/AtomReasonFormat.re 129 2>>*/  /*<<src/AtomReasonFormat.re 129 2>>*/ _a9_
+         /*<<src/AtomReasonFormat.re 129 2>>*/  /*<<src/AtomReasonFormat.re 129 2>>*/ _a$_
          (proc,handleError);
          /*<<src/AtomReasonFormat.re 71 24>>*/  /*<<src/AtomReasonFormat.re 131 16>>*/ var
          process=
-           /*<<src/AtomReasonFormat.re 131 16>>*/ _a__(proc);
-         /*<<src/AtomReasonFormat.re 132 2>>*/  /*<<src/AtomReasonFormat.re 132 2>>*/ _a0_
+           /*<<src/AtomReasonFormat.re 131 16>>*/ _ba_(proc);
+         /*<<src/AtomReasonFormat.re 132 2>>*/  /*<<src/AtomReasonFormat.re 132 2>>*/ _a2_
          (process,subText);
-         /*<<src/AtomReasonFormat.re 132 41>>*/ return  /*<<src/AtomReasonFormat.re 132 41>>*/ _a1_
+         /*<<src/AtomReasonFormat.re 132 41>>*/ return  /*<<src/AtomReasonFormat.re 132 41>>*/ _a3_
                 (process)}
        /*<<src/AtomReasonFormat.re 67 2>>*/  /*<<src/AtomReasonFormat.re 72 11>>*/ var
-       _gn_=
-        [0,Invalid_argument,_b5_];
-       /*<<src/AtomReasonFormat.re 72 96>>*/ throw _gn_ /*<<src/AtomReasonFormat.re 133 31>>*/ }
-     /*<<src/AtomReasonFormat.re 14 61>>*/ function _ch_
+       _gs_=
+        [0,Invalid_argument,_b7_];
+       /*<<src/AtomReasonFormat.re 72 96>>*/ throw _gs_ /*<<src/AtomReasonFormat.re 133 31>>*/ }
+     /*<<src/AtomReasonFormat.re 14 61>>*/ function _cj_
      (editor,range,notifySuccess,notifyInvalid,notifyInfo,resolve,reject)
      { /*<<src/AtomReasonFormat.re 157 15>>*/ var
         /*<<src/AtomReasonFormat.re 157 15>>*/ buffer=
-         /*<<src/AtomReasonFormat.re 157 15>>*/ _aP_(editor),
+         /*<<src/AtomReasonFormat.re 157 15>>*/ _aQ_(editor),
         /*<<src/AtomReasonFormat.re 158 13>>*/ text=
          /*<<src/AtomReasonFormat.re 158 13>>*/ _aJ_(buffer),
         /*<<src/AtomReasonFormat.re 159 16>>*/ subText=
          /*<<src/AtomReasonFormat.re 159 16>>*/ _aK_(buffer,range);
-       /*<<src/AtomReasonFormat.re 160 2>>*/ function _gi_
+       /*<<src/AtomReasonFormat.re 160 2>>*/ function _gn_
        (code,formatResult,stdErr)
        { /*<<src/AtomReasonFormat.re 165 67>>*/ if(code == 0)
          { /*<<src/AtomReasonFormat.re 168 15>>*/ var
-            /*<<src/AtomReasonFormat.re 168 15>>*/ _gl_=formatResult[2],
-            /*<<src/AtomReasonFormat.re 168 18>>*/ _gm_=
-             /*<<src/AtomReasonFormat.re 168 18>>*/ _bY_(_gl_,text);
-           /*<<src/AtomReasonFormat.re 170 9>>*/ if(_gm_)
-            /*<<src/AtomReasonFormat.re 170 10>>*/ caml_call1(notifyInfo,_ci_);
+            /*<<src/AtomReasonFormat.re 168 15>>*/ _gq_=formatResult[2],
+            /*<<src/AtomReasonFormat.re 168 18>>*/ _gr_=
+             /*<<src/AtomReasonFormat.re 168 18>>*/ _b0_(_gq_,text);
+           /*<<src/AtomReasonFormat.re 170 9>>*/ if(_gr_)
+            /*<<src/AtomReasonFormat.re 170 10>>*/ caml_call1(notifyInfo,_ck_);
           else
             /*<<src/AtomReasonFormat.re 172 15>>*/ caml_call1
-            (notifySuccess,_cj_)}
+            (notifySuccess,_cl_)}
         else
           /*<<src/AtomReasonFormat.re 166 31>>*/ caml_call1
-          (notifyInvalid,_ck_);
+          (notifyInvalid,_cm_);
          /*<<src/AtomReasonFormat.re 174 9>>*/  /*<<src/AtomReasonFormat.re 174 9>>*/ var
          match=
           code == 0?1:0;
@@ -7952,34 +7963,34 @@
                 : /*<<src/AtomReasonFormat.re 175 22>>*/ caml_call1
                   (resolve,formatResult) /*<<src/AtomReasonFormat.re 176 7>>*/ }
        /*<<src/AtomReasonFormat.re 163 30>>*/ var
-        /*<<src/AtomReasonFormat.re 163 30>>*/ _gj_=
-         /*<<src/AtomReasonFormat.re 163 30>>*/ _aQ_(editor),
-        /*<<src/AtomReasonFormat.re 163 17>>*/ _gk_=
-         /*<<src/AtomReasonFormat.re 163 17>>*/ _bc_(_gj_);
-       /*<<src/AtomReasonFormat.re 163 54>>*/ return  /*<<src/AtomReasonFormat.re 163 54>>*/ _b3_
-              (editor,subText,_gk_,_gi_,reject) /*<<src/AtomReasonFormat.re 179 1>>*/ }
-     /*<<src/AtomReasonFormat.re 14 61>>*/ function _cl_
+        /*<<src/AtomReasonFormat.re 163 30>>*/ _go_=
+         /*<<src/AtomReasonFormat.re 163 30>>*/ _aR_(editor),
+        /*<<src/AtomReasonFormat.re 163 17>>*/ _gp_=
+         /*<<src/AtomReasonFormat.re 163 17>>*/ _be_(_go_);
+       /*<<src/AtomReasonFormat.re 163 54>>*/ return  /*<<src/AtomReasonFormat.re 163 54>>*/ _b5_
+              (editor,subText,_gp_,_gn_,reject) /*<<src/AtomReasonFormat.re 179 1>>*/ }
+     /*<<src/AtomReasonFormat.re 14 61>>*/ function _cn_
      (editor,range,notifySuccess,notifyInvalid,notifyInfo,resolve,reject)
      { /*<<src/AtomReasonFormat.re 189 15>>*/ var
         /*<<src/AtomReasonFormat.re 189 15>>*/ buffer=
-         /*<<src/AtomReasonFormat.re 189 15>>*/ _aP_(editor),
+         /*<<src/AtomReasonFormat.re 189 15>>*/ _aQ_(editor),
         /*<<src/AtomReasonFormat.re 190 16>>*/ subText=
          /*<<src/AtomReasonFormat.re 190 16>>*/ _aK_(buffer,range);
-       /*<<src/AtomReasonFormat.re 191 2>>*/ function _gd_
+       /*<<src/AtomReasonFormat.re 191 2>>*/ function _gi_
        (code,formatResult,stdErr)
        { /*<<src/AtomReasonFormat.re 196 67>>*/ if(code == 0)
          { /*<<src/AtomReasonFormat.re 199 15>>*/ var
-            /*<<src/AtomReasonFormat.re 199 15>>*/ _gg_=formatResult[2],
-            /*<<src/AtomReasonFormat.re 199 18>>*/ _gh_=
-             /*<<src/AtomReasonFormat.re 199 18>>*/ _bY_(_gg_,subText);
-           /*<<src/AtomReasonFormat.re 201 9>>*/ if(_gh_)
-            /*<<src/AtomReasonFormat.re 201 10>>*/ caml_call1(notifyInfo,_cm_);
+            /*<<src/AtomReasonFormat.re 199 15>>*/ _gl_=formatResult[2],
+            /*<<src/AtomReasonFormat.re 199 18>>*/ _gm_=
+             /*<<src/AtomReasonFormat.re 199 18>>*/ _b0_(_gl_,subText);
+           /*<<src/AtomReasonFormat.re 201 9>>*/ if(_gm_)
+            /*<<src/AtomReasonFormat.re 201 10>>*/ caml_call1(notifyInfo,_co_);
           else
             /*<<src/AtomReasonFormat.re 203 15>>*/ caml_call1
-            (notifySuccess,_cn_)}
+            (notifySuccess,_cp_)}
         else
           /*<<src/AtomReasonFormat.re 197 31>>*/ caml_call1
-          (notifyInvalid,_co_);
+          (notifyInvalid,_cq_);
          /*<<src/AtomReasonFormat.re 205 9>>*/  /*<<src/AtomReasonFormat.re 205 9>>*/ var
          match=
           code == 0?1:0;
@@ -7989,16 +8000,16 @@
                 : /*<<src/AtomReasonFormat.re 207 22>>*/ caml_call1
                   (resolve,formatResult[2]) /*<<src/AtomReasonFormat.re 208 7>>*/ }
        /*<<src/AtomReasonFormat.re 194 30>>*/ var
-        /*<<src/AtomReasonFormat.re 194 30>>*/ _ge_=
-         /*<<src/AtomReasonFormat.re 194 30>>*/ _aQ_(editor),
-        /*<<src/AtomReasonFormat.re 194 17>>*/ _gf_=
-         /*<<src/AtomReasonFormat.re 194 17>>*/ _bc_(_ge_);
-       /*<<src/AtomReasonFormat.re 194 54>>*/ return  /*<<src/AtomReasonFormat.re 194 54>>*/ _b3_
-              (editor,subText,_gf_,_gd_,reject) /*<<src/AtomReasonFormat.re 211 1>>*/ }
+        /*<<src/AtomReasonFormat.re 194 30>>*/ _gj_=
+         /*<<src/AtomReasonFormat.re 194 30>>*/ _aR_(editor),
+        /*<<src/AtomReasonFormat.re 194 17>>*/ _gk_=
+         /*<<src/AtomReasonFormat.re 194 17>>*/ _be_(_gj_);
+       /*<<src/AtomReasonFormat.re 194 54>>*/ return  /*<<src/AtomReasonFormat.re 194 54>>*/ _b5_
+              (editor,subText,_gk_,_gi_,reject) /*<<src/AtomReasonFormat.re 211 1>>*/ }
      /*<<src/AtomReasonLocate.re 8 16>>*/ var
       /*<<src/AtomReasonLocate.re 8 16>>*/ notiflyer=
        /*<<src/AtomReasonLocate.re 8 16>>*/ require("../lib/Notiflyer"),
-      /*<<src/AtomReasonLocate.re 11 20>>*/ _cp_=
+      /*<<src/AtomReasonLocate.re 11 20>>*/ _cr_=
        /*<<src/AtomReasonLocate.re 12 22>>*/ function()
         { /*<<src/AtomReasonLocate.re 13 24>>*/ function goToLocation
           (file,line,column,center)
@@ -8015,21 +8026,21 @@
           { /*<<src/AtomReasonLocate.re 29 26>>*/ goToLocation
             (res.file,res.pos.line - 1,res.pos.col) /*<<src/AtomReasonLocate.re 28 31>>*/ } /*<<src/AtomReasonLocate.re 12 22>>*/ }
        ();
-     /*<<src/AtomReasonLocate.re 32 2>>*/ function _cq_(result)
-     { /*<<src/AtomReasonLocate.re 34 27>>*/ return  /*<<src/AtomReasonLocate.re 34 27>>*/ _cp_
+     /*<<src/AtomReasonLocate.re 32 2>>*/ function _cs_(result)
+     { /*<<src/AtomReasonLocate.re 34 27>>*/ return  /*<<src/AtomReasonLocate.re 34 27>>*/ _cr_
               (result) /*<<src/AtomReasonLocate.re 34 87>>*/ }
-     /*<<src/AtomReasonLocate.re 32 2>>*/ function _cr_
+     /*<<src/AtomReasonLocate.re 32 2>>*/ function _ct_
      (path,text,extension,range,resolve,reject)
      { /*<<src/AtomReasonLocate.re 36 100>>*/ var
         /*<<src/AtomReasonLocate.re 36 100>>*/ endPosition=range[2],
         /*<<src/AtomReasonLocate.re 36 100>>*/ startPosition=range[1],
-        /*<<src/AtomReasonLocate.re 38 5>>*/ _f9_=
+        /*<<src/AtomReasonLocate.re 38 5>>*/ _gc_=
          /*<<src/AtomReasonLocate.re 38 5>>*/ caml_equal
          (startPosition,endPosition);
-       /*<<src/AtomReasonLocate.re 38 35>>*/ return _f9_
+       /*<<src/AtomReasonLocate.re 38 35>>*/ return _gc_
               ? /*<<src/AtomReasonLocate.re 38 36>>*/ caml_call1
                 (resolve,null$0)
-              : /*<<src/AtomReasonLocate.re 41 9>>*/ _bU_
+              : /*<<src/AtomReasonLocate.re 41 9>>*/ _bW_
                 (path,
                  text,
                  extension,
@@ -8037,7 +8048,7 @@
                  function(result)
                   { /*<<src/AtomReasonLocate.re 49 17>>*/  /*<<src/AtomReasonLocate.re 49 17>>*/ var
                     a=
-                      /*<<src/AtomReasonLocate.re 49 17>>*/ _bB_(result);
+                      /*<<src/AtomReasonLocate.re 49 17>>*/ _bD_(result);
                     /*<<src/AtomReasonLocate.re 49 68>>*/ if
                     (typeof a === "number")
                      /*<<src/AtomReasonLocate.re 52 12>>*/ return  /*<<src/AtomReasonLocate.re 52 12>>*/ caml_call1
@@ -8046,14 +8057,14 @@
                     { /*<<src/AtomReasonLocate.re 49 68>>*/ if(0 === a[0])
                       { /*<<src/AtomReasonLocate.re 54 12>>*/ var
                          /*<<src/AtomReasonLocate.re 54 12>>*/ err=a[1],
-                         /*<<src/AtomReasonLocate.re 54 12>>*/ _f__=
+                         /*<<src/AtomReasonLocate.re 54 12>>*/ _gd_=
                           /*<<src/AtomReasonLocate.re 54 12>>*/ err.toString(),
-                         /*<<src/AtomReasonLocate.re 54 91>>*/ _f$_=
-                          /*<<src/AtomReasonLocate.re 54 91>>*/ function(_gc_)
-                           { /*<<src/AtomReasonLocate.re 49 10>>*/ return _gc_ /*<<src/AtomReasonLocate.re 65 11>>*/ }
-                          (_f__);
+                         /*<<src/AtomReasonLocate.re 54 91>>*/ _ge_=
+                          /*<<src/AtomReasonLocate.re 54 91>>*/ function(_gh_)
+                           { /*<<src/AtomReasonLocate.re 49 10>>*/ return _gh_ /*<<src/AtomReasonLocate.re 65 11>>*/ }
+                          (_gd_);
                         /*<<src/AtomReasonLocate.re 54 12>>*/  /*<<src/AtomReasonLocate.re 54 12>>*/ notiflyer.showInfoBar
-                        (_f$_);
+                        (_ge_);
                         /*<<src/AtomReasonLocate.re 54 93>>*/ return  /*<<src/AtomReasonLocate.re 54 93>>*/ caml_call1
                                (resolve,null$0)}
                       /*<<src/AtomReasonLocate.re 57 12>>*/  /*<<src/AtomReasonLocate.re 57 12>>*/ notiflyer.clearFeedbackBar
@@ -8062,77 +8073,79 @@
                        /*<<src/AtomReasonLocate.re 57 65>>*/ successJumpToLocationCallback=
                         /*<<src/AtomReasonLocate.re 57 65>>*/ caml_js_wrap_callback
                         (function(param)
-                          { /*<<src/AtomReasonLocate.re 58 76>>*/ return  /*<<src/AtomReasonLocate.re 58 76>>*/ _cq_
+                          { /*<<src/AtomReasonLocate.re 58 76>>*/ return  /*<<src/AtomReasonLocate.re 58 76>>*/ _cs_
                                    (result) /*<<src/AtomReasonLocate.re 58 95>>*/ }),
-                       /*<<src/AtomReasonLocate.re 61 26>>*/ _ga_=
+                       /*<<src/AtomReasonLocate.re 61 26>>*/ _gf_=
                         /*<<src/AtomReasonLocate.re 61 26>>*/ _aH_(range),
-                       /*<<src/AtomReasonLocate.re 59 20>>*/ _gb_=
-                       {"range":_ga_,"callback":successJumpToLocationCallback};
+                       /*<<src/AtomReasonLocate.re 59 20>>*/ _gg_=
+                       {"range":_gf_,"callback":successJumpToLocationCallback};
                       /*<<src/AtomReasonLocate.re 64 13>>*/ return  /*<<src/AtomReasonLocate.re 64 13>>*/ caml_call1
-                             (resolve,_gb_)} /*<<src/AtomReasonLocate.re 65 11>>*/ },
+                             (resolve,_gg_)} /*<<src/AtomReasonLocate.re 65 11>>*/ },
                  reject) /*<<src/AtomReasonLocate.re 69 1>>*/ }
-    function _cs_(editor,ranges)
+    function _cu_(editor,ranges)
      { /*<<src/AtomReasonOccurrences.re 9 2>>*/  /*<<src/AtomReasonOccurrences.re 9 2>>*/ var
-       _f8_=
+       _gb_=
         0 < ranges.length - 1?1:0;
-       /*<<src/AtomReasonOccurrences.re 9 2>>*/ return _f8_
-              ? /*<<src/AtomReasonOccurrences.re 9 31>>*/ _aS_(editor,ranges)
-              :_f8_ /*<<src/AtomReasonOccurrences.re 11 3>>*/ }
-    function _ct_(kind,value)
+       /*<<src/AtomReasonOccurrences.re 9 2>>*/ return _gb_
+              ? /*<<src/AtomReasonOccurrences.re 9 31>>*/ _aU_(editor,ranges)
+              :_gb_ /*<<src/AtomReasonOccurrences.re 11 3>>*/ }
+    function _cv_(kind,value)
      { /*<<src/AtomReasonOutline.re 10 29>>*/ var
-        /*<<src/AtomReasonOutline.re 10 29>>*/ _f6_=
+        /*<<src/AtomReasonOutline.re 10 29>>*/ _f$_=
          /*<<src/AtomReasonOutline.re 10 29>>*/ value.toString(),
-        /*<<src/AtomReasonOutline.re 9 28>>*/ _f7_=
+        /*<<src/AtomReasonOutline.re 9 28>>*/ _ga_=
          /*<<src/AtomReasonOutline.re 9 28>>*/ kind.toString();
-       /*<<src/AtomReasonOutline.re 9 44>>*/ return {"kind":_f7_,"value":_f6_} /*<<src/AtomReasonOutline.re 11 2>>*/ }
-    function _cu_(data)
+       /*<<src/AtomReasonOutline.re 9 44>>*/ return {"kind":_ga_,"value":_f$_} /*<<src/AtomReasonOutline.re 11 2>>*/ }
+    function _cw_(grammar,data)
      { /*<<src/AtomReasonOutline.re 14 32>>*/ var
-        /*<<src/AtomReasonOutline.re 14 32>>*/ _fY_=data.kind,
+        /*<<src/AtomReasonOutline.re 14 32>>*/ _f3_=data.kind,
         /*<<src/AtomReasonOutline.re 14 59>>*/ merlinKind=
-         /*<<src/AtomReasonOutline.re 14 59>>*/ caml_js_to_string(_fY_),
-        /*<<src/AtomReasonOutline.re 15 26>>*/ _fZ_=data.name,
+         /*<<src/AtomReasonOutline.re 14 59>>*/ caml_js_to_string(_f3_),
+        /*<<src/AtomReasonOutline.re 15 26>>*/ _f4_=data.name,
         /*<<src/AtomReasonOutline.re 15 53>>*/ name=
-         /*<<src/AtomReasonOutline.re 15 53>>*/ caml_js_to_string(_fZ_);
+         /*<<src/AtomReasonOutline.re 15 53>>*/ caml_js_to_string(_f4_);
        /*<<src/AtomReasonOutline.re 16 2>>*/ if
        ( /*<<src/AtomReasonOutline.re 16 2>>*/ caml_string_notequal
-         (merlinKind,_cv_))
-       if(caml_string_notequal(merlinKind,_cw_))
-        if(caml_string_notequal(merlinKind,_cx_))
-          /*<<src/AtomReasonOutline.re 21 14>>*/ var
-           /*<<src/AtomReasonOutline.re 21 14>>*/ _f0_=
-            /*<<src/AtomReasonOutline.re 21 14>>*/ _X_(merlinKind),
-          kind=_f0_;
+         (merlinKind,_cx_))
+       if(caml_string_notequal(merlinKind,_cy_))
+        if(caml_string_notequal(merlinKind,_cz_))
+          /*<<src/AtomReasonOutline.re 25 14>>*/ var
+           /*<<src/AtomReasonOutline.re 25 14>>*/ _f5_=
+            /*<<src/AtomReasonOutline.re 25 14>>*/ _X_(merlinKind),
+          kind=_f5_;
         else
-         var kind=_cM_;
+          /*<<src/AtomReasonOutline.re 19 6>>*/ var
+          kind=
+           825328612 <= grammar?_cO_:_cP_;
        else
-        var kind=_cN_;
+        var kind=_cQ_;
       else
-       var kind=_cO_;
-       /*<<src/AtomReasonOutline.re 23 2>>*/ if
-       ( /*<<src/AtomReasonOutline.re 23 2>>*/ caml_string_notequal
-         (merlinKind,_cy_))
-       if(caml_string_notequal(merlinKind,_cz_))
-        if(caml_string_notequal(merlinKind,_cA_))
-         if(caml_string_notequal(merlinKind,_cB_))
-          if(caml_string_notequal(merlinKind,_cC_))
-           if(caml_string_notequal(merlinKind,_cD_))
-            if(caml_string_notequal(merlinKind,_cE_))
-              /*<<src/AtomReasonOutline.re 32 14>>*/ var
-               /*<<src/AtomReasonOutline.re 32 14>>*/ _f1_=
-                /*<<src/AtomReasonOutline.re 32 14>>*/ _ct_(_cF_,name),
-              nameToken=_f1_,
+       var kind=_cR_;
+       /*<<src/AtomReasonOutline.re 27 2>>*/ if
+       ( /*<<src/AtomReasonOutline.re 27 2>>*/ caml_string_notequal
+         (merlinKind,_cA_))
+       if(caml_string_notequal(merlinKind,_cB_))
+        if(caml_string_notequal(merlinKind,_cC_))
+         if(caml_string_notequal(merlinKind,_cD_))
+          if(caml_string_notequal(merlinKind,_cE_))
+           if(caml_string_notequal(merlinKind,_cF_))
+            if(caml_string_notequal(merlinKind,_cG_))
+              /*<<src/AtomReasonOutline.re 36 14>>*/ var
+               /*<<src/AtomReasonOutline.re 36 14>>*/ _f6_=
+                /*<<src/AtomReasonOutline.re 36 14>>*/ _cv_(_cH_,name),
+              nameToken=_f6_,
               switch$0=1;
             else
-              /*<<src/AtomReasonOutline.re 25 17>>*/ var
-               /*<<src/AtomReasonOutline.re 25 17>>*/ _f4_=
-                /*<<src/AtomReasonOutline.re 25 17>>*/ _ct_(_cJ_,name),
-              nameToken=_f4_,
+              /*<<src/AtomReasonOutline.re 29 17>>*/ var
+               /*<<src/AtomReasonOutline.re 29 17>>*/ _f9_=
+                /*<<src/AtomReasonOutline.re 29 17>>*/ _cv_(_cL_,name),
+              nameToken=_f9_,
               switch$0=1;
            else
-             /*<<src/AtomReasonOutline.re 31 16>>*/ var
-              /*<<src/AtomReasonOutline.re 31 16>>*/ _f5_=
-               /*<<src/AtomReasonOutline.re 31 16>>*/ _ct_(_cK_,name),
-             nameToken=_f5_,
+             /*<<src/AtomReasonOutline.re 35 16>>*/ var
+              /*<<src/AtomReasonOutline.re 35 16>>*/ _f__=
+               /*<<src/AtomReasonOutline.re 35 16>>*/ _cv_(_cM_,name),
+             nameToken=_f__,
              switch$0=1;
           else
            var switch$0=0;
@@ -8145,109 +8158,116 @@
       else
        var switch$0=0;
        /*<<camlinternalFormatBasics.ml 502 8>>*/ if(!switch$0)
-       var nameToken= /*<<src/AtomReasonOutline.re 30 21>>*/ _ct_(_cL_,name);
+       var nameToken= /*<<src/AtomReasonOutline.re 34 21>>*/ _cv_(_cN_,name);
        /*<<src/AtomReasonOutline.re 14 32>>*/ var
-        /*<<src/AtomReasonOutline.re 37 6>>*/ _f2_=
-         /*<<src/AtomReasonOutline.re 37 6>>*/ _ct_(_cH_,_cG_),
-        /*<<src/AtomReasonOutline.re 36 6>>*/ _f3_=
-         /*<<src/AtomReasonOutline.re 36 6>>*/ _ct_(_cI_,kind);
-       /*<<src/AtomReasonOutline.re 36 31>>*/ return  /*<<src/AtomReasonOutline.re 36 31>>*/ caml_js_from_array
-              ([0,_f3_,_f2_,nameToken]) /*<<src/AtomReasonOutline.re 41 1>>*/ }
-    function _cP_(entries)
-     { /*<<src/AtomReasonOutline.re 63 21>>*/ var
-        /*<<src/AtomReasonOutline.re 63 21>>*/ _fO_=
-         /*<<src/AtomReasonOutline.re 63 21>>*/ caml_js_to_array(entries),
-        /*<<src/AtomReasonOutline.re 63 6>>*/ _fP_=
-         /*<<src/AtomReasonOutline.re 63 6>>*/ _h_(_fO_);
-       /*<<src/AtomReasonOutline.re 63 43>>*/ function _fQ_(data)
-       { /*<<src/AtomReasonOutline.re 48 68>>*/ var
-          /*<<src/AtomReasonOutline.re 48 68>>*/ _fS_=data.start,
-          /*<<src/AtomReasonOutline.re 48 22>>*/ start=
-           /*<<src/AtomReasonOutline.re 48 22>>*/ _bh_(_fS_),
-          /*<<src/AtomReasonOutline.re 51 67>>*/ _fT_=data.end,
-          /*<<src/AtomReasonOutline.re 51 21>>*/ endd=
-           /*<<src/AtomReasonOutline.re 51 21>>*/ _bh_(_fT_),
-          /*<<src/AtomReasonOutline.re 54 10>>*/ children=data.children,
-          /*<<src/AtomReasonOutline.re 59 42>>*/ _fU_=
-           /*<<src/AtomReasonOutline.re 59 42>>*/ _cP_(children),
-          /*<<src/AtomReasonOutline.re 58 28>>*/ _fV_=
-           /*<<src/AtomReasonOutline.re 58 28>>*/ _aE_(endd),
-          /*<<src/AtomReasonOutline.re 57 30>>*/ _fW_=
-           /*<<src/AtomReasonOutline.re 57 30>>*/ _aE_(start),
-          /*<<src/AtomReasonOutline.re 56 30>>*/ _fX_=
-           /*<<src/AtomReasonOutline.re 56 30>>*/ _cu_(data);
-         /*<<src/AtomReasonOutline.re 56 45>>*/ return {"tokenizedText":_fX_,
-                "startPosition":_fW_,
-                "endPosition":_fV_,
-                "children":_fU_} /*<<src/AtomReasonOutline.re 61 9>>*/ }
-       /*<<src/AtomReasonOutline.re 45 4>>*/ var
-        /*<<src/AtomReasonOutline.re 45 4>>*/ entries$0=
-         /*<<src/AtomReasonOutline.re 45 4>>*/ _v_(_fQ_,_fP_),
-        /*<<src/AtomReasonOutline.re 64 11>>*/ _fR_=
-         /*<<src/AtomReasonOutline.re 64 11>>*/ _j_(entries$0);
-       /*<<src/AtomReasonOutline.re 64 34>>*/ return  /*<<src/AtomReasonOutline.re 64 34>>*/ caml_js_from_array
-              (_fR_) /*<<src/AtomReasonOutline.re 65 1>>*/ }
-    function _cQ_(path,text,resolve,reject)
-     { /*<<src/AtomReasonOutline.re 68 2>>*/ return  /*<<src/AtomReasonOutline.re 68 2>>*/ _bW_
+        /*<<src/AtomReasonOutline.re 41 6>>*/ _f7_=
+         /*<<src/AtomReasonOutline.re 41 6>>*/ _cv_(_cJ_,_cI_),
+        /*<<src/AtomReasonOutline.re 40 6>>*/ _f8_=
+         /*<<src/AtomReasonOutline.re 40 6>>*/ _cv_(_cK_,kind);
+       /*<<src/AtomReasonOutline.re 40 31>>*/ return  /*<<src/AtomReasonOutline.re 40 31>>*/ caml_js_from_array
+              ([0,_f8_,_f7_,nameToken]) /*<<src/AtomReasonOutline.re 45 1>>*/ }
+    function _cS_(grammar,entries)
+     { /*<<src/AtomReasonOutline.re 67 21>>*/ var
+        /*<<src/AtomReasonOutline.re 67 21>>*/ _fT_=
+         /*<<src/AtomReasonOutline.re 67 21>>*/ caml_js_to_array(entries),
+        /*<<src/AtomReasonOutline.re 67 6>>*/ _fU_=
+         /*<<src/AtomReasonOutline.re 67 6>>*/ _h_(_fT_);
+       /*<<src/AtomReasonOutline.re 67 43>>*/ function _fV_(data)
+       { /*<<src/AtomReasonOutline.re 52 68>>*/ var
+          /*<<src/AtomReasonOutline.re 52 68>>*/ _fX_=data.start,
+          /*<<src/AtomReasonOutline.re 52 22>>*/ start=
+           /*<<src/AtomReasonOutline.re 52 22>>*/ _bj_(_fX_),
+          /*<<src/AtomReasonOutline.re 55 67>>*/ _fY_=data.end,
+          /*<<src/AtomReasonOutline.re 55 21>>*/ endd=
+           /*<<src/AtomReasonOutline.re 55 21>>*/ _bj_(_fY_),
+          /*<<src/AtomReasonOutline.re 58 10>>*/ children=data.children,
+          /*<<src/AtomReasonOutline.re 63 42>>*/ _fZ_=
+           /*<<src/AtomReasonOutline.re 63 42>>*/ _cS_(grammar,children),
+          /*<<src/AtomReasonOutline.re 62 28>>*/ _f0_=
+           /*<<src/AtomReasonOutline.re 62 28>>*/ _aE_(endd),
+          /*<<src/AtomReasonOutline.re 61 30>>*/ _f1_=
+           /*<<src/AtomReasonOutline.re 61 30>>*/ _aE_(start),
+          /*<<src/AtomReasonOutline.re 60 30>>*/ _f2_=
+           /*<<src/AtomReasonOutline.re 60 30>>*/ _cw_(grammar,data);
+         /*<<src/AtomReasonOutline.re 60 53>>*/ return {"tokenizedText":_f2_,
+                "startPosition":_f1_,
+                "endPosition":_f0_,
+                "children":_fZ_} /*<<src/AtomReasonOutline.re 65 9>>*/ }
+       /*<<src/AtomReasonOutline.re 49 4>>*/ var
+        /*<<src/AtomReasonOutline.re 49 4>>*/ entries$0=
+         /*<<src/AtomReasonOutline.re 49 4>>*/ _v_(_fV_,_fU_),
+        /*<<src/AtomReasonOutline.re 68 11>>*/ _fW_=
+         /*<<src/AtomReasonOutline.re 68 11>>*/ _j_(entries$0);
+       /*<<src/AtomReasonOutline.re 68 34>>*/ return  /*<<src/AtomReasonOutline.re 68 34>>*/ caml_js_from_array
+              (_fW_) /*<<src/AtomReasonOutline.re 69 1>>*/ }
+    function _cT_(path,text,grammar,resolve,reject)
+     { /*<<src/AtomReasonOutline.re 71 72>>*/  /*<<src/AtomReasonOutline.re 71 72>>*/ var
+       grammar$0=
+         /*<<src/AtomReasonOutline.re 71 72>>*/ caml_string_notequal
+          (grammar,_cU_)
+         ?691738988
+         :825328612;
+       /*<<src/AtomReasonOutline.re 77 2>>*/ return  /*<<src/AtomReasonOutline.re 77 2>>*/ _bY_
               (path,
                text,
                function(result)
-                { /*<<src/AtomReasonOutline.re 74 44>>*/ var
-                   /*<<src/AtomReasonOutline.re 74 44>>*/ _fM_=
-                    /*<<src/AtomReasonOutline.re 74 44>>*/ _cP_(result),
-                   /*<<src/AtomReasonOutline.re 72 28>>*/ _fN_=
-                   {"outlineTrees":_fM_};
-                  /*<<src/AtomReasonOutline.re 76 7>>*/ return  /*<<src/AtomReasonOutline.re 76 7>>*/ caml_call1
-                         (resolve,_fN_) /*<<src/AtomReasonOutline.re 76 7>>*/ },
-               reject) /*<<src/AtomReasonOutline.re 78 10>>*/ }
-    function _cR_(x,d)
+                { /*<<src/AtomReasonOutline.re 83 44>>*/ var
+                   /*<<src/AtomReasonOutline.re 83 44>>*/ _fR_=
+                    /*<<src/AtomReasonOutline.re 83 44>>*/ _cS_
+                    (grammar$0,result),
+                   /*<<src/AtomReasonOutline.re 81 28>>*/ _fS_=
+                   {"outlineTrees":_fR_};
+                  /*<<src/AtomReasonOutline.re 85 7>>*/ return  /*<<src/AtomReasonOutline.re 85 7>>*/ caml_call1
+                         (resolve,_fS_) /*<<src/AtomReasonOutline.re 85 7>>*/ },
+               reject) /*<<src/AtomReasonOutline.re 88 1>>*/ }
+    function _cV_(x,d)
      { /*<<src/NuclideJs.re 11 2>>*/ if(x)
        { /*<<src/NuclideJs.re 13 14>>*/  /*<<src/NuclideJs.re 13 14>>*/ var
          s=
           x[1];
          /*<<src/NuclideJs.re 13 14>>*/ return s}
        /*<<src/NuclideJs.re 12 12>>*/ return d /*<<src/NuclideJs.re 14 3>>*/ }
-    function _cS_(param)
+    function _cW_(param)
      { /*<<src/NuclideJs.re 19 4>>*/ return 0 === param?"Error":"Warning" /*<<src/NuclideJs.re 21 36>>*/ }
-    function _cT_(trace)
+    function _cX_(trace)
      { /*<<src/NuclideJs.re 30 27>>*/ var
         /*<<src/NuclideJs.re 30 27>>*/ range=trace[5],
         /*<<src/NuclideJs.re 30 27>>*/ filePath=trace[4],
         /*<<src/NuclideJs.re 30 27>>*/ html=trace[3],
         /*<<src/NuclideJs.re 30 27>>*/ text=trace[2],
-        /*<<src/NuclideJs.re 32 6>>*/ _fB_=
+        /*<<src/NuclideJs.re 32 6>>*/ _fG_=
          /*<<src/NuclideJs.re 32 6>>*/ filePath.toString(),
-        /*<<src/NuclideJs.re 35 58>>*/ _fC_=[0,_cU_,_fB_],
-        /*<<src/NuclideJs.re 34 45>>*/ _fD_=
-         /*<<src/NuclideJs.re 34 45>>*/ _cR_(text,_cV_),
-        /*<<src/NuclideJs.re 34 58>>*/ _fE_=
-         /*<<src/NuclideJs.re 34 58>>*/ _fD_.toString(),
-        /*<<src/NuclideJs.re 34 59>>*/ _fF_=[0,_cW_,_fE_],
-        /*<<src/NuclideJs.re 33 34>>*/ _fG_="trace",
-        /*<<src/NuclideJs.re 33 53>>*/ fields=[0,[0,_cX_,_fG_],_fF_,_fC_];
+        /*<<src/NuclideJs.re 35 58>>*/ _fH_=[0,_cY_,_fG_],
+        /*<<src/NuclideJs.re 34 45>>*/ _fI_=
+         /*<<src/NuclideJs.re 34 45>>*/ _cV_(text,_cZ_),
+        /*<<src/NuclideJs.re 34 58>>*/ _fJ_=
+         /*<<src/NuclideJs.re 34 58>>*/ _fI_.toString(),
+        /*<<src/NuclideJs.re 34 59>>*/ _fK_=[0,_c0_,_fJ_],
+        /*<<src/NuclideJs.re 33 34>>*/ _fL_="trace",
+        /*<<src/NuclideJs.re 33 53>>*/ fields=[0,[0,_c1_,_fL_],_fK_,_fH_];
        /*<<src/NuclideJs.re 37 6>>*/ if(html)
         /*<<src/NuclideJs.re 40 20>>*/ var
          /*<<src/NuclideJs.re 40 20>>*/ h=html[1],
-         /*<<src/NuclideJs.re 40 20>>*/ _fH_=[0,[0,_cY_,h]],
-         /*<<src/NuclideJs.re 40 20>>*/ _fI_=
-          /*<<src/NuclideJs.re 40 20>>*/ _f_(fields,_fH_),
-        fields$0=_fI_;
+         /*<<src/NuclideJs.re 40 20>>*/ _fM_=[0,[0,_c2_,h]],
+         /*<<src/NuclideJs.re 40 20>>*/ _fN_=
+          /*<<src/NuclideJs.re 40 20>>*/ _f_(fields,_fM_),
+        fields$0=_fN_;
       else
        var fields$0=fields;
        /*<<src/NuclideJs.re 42 6>>*/ if(range)
         /*<<src/NuclideJs.re 45 20>>*/ var
          /*<<src/NuclideJs.re 45 20>>*/ r=range[1],
-         /*<<src/NuclideJs.re 45 69>>*/ _fJ_=
+         /*<<src/NuclideJs.re 45 69>>*/ _fO_=
           /*<<src/NuclideJs.re 45 69>>*/ _aH_(r),
-         /*<<src/NuclideJs.re 45 88>>*/ _fK_=[0,[0,_cZ_,_fJ_]],
-         /*<<src/NuclideJs.re 45 20>>*/ _fL_=
-          /*<<src/NuclideJs.re 45 20>>*/ _f_(fields$0,_fK_),
-        fields$1=_fL_;
+         /*<<src/NuclideJs.re 45 88>>*/ _fP_=[0,[0,_c3_,_fO_]],
+         /*<<src/NuclideJs.re 45 20>>*/ _fQ_=
+          /*<<src/NuclideJs.re 45 20>>*/ _f_(fields$0,_fP_),
+        fields$1=_fQ_;
       else
        var fields$1=fields$0;
        /*<<src/NuclideJs.re 47 6>>*/ return  /*<<src/NuclideJs.re 47 6>>*/ caml_js_object
               (fields$1) /*<<src/NuclideJs.re 48 5>>*/ }
-    function _c0_(diagnosticMessage)
+    function _c4_(diagnosticMessage)
      { /*<<src/NuclideJs.re 53 6>>*/ if(0 === diagnosticMessage[0])
        { /*<<src/NuclideJs.re 60 47>>*/ var
          match=diagnosticMessage[1],
@@ -8258,54 +8278,54 @@
          filePath=match[4],
          typee=match[3],
          providerName=match[2],
-          /*<<src/NuclideJs.re 60 47>>*/ _e5_=
-           /*<<src/NuclideJs.re 60 47>>*/ _cR_(text,_c1_),
-          /*<<src/NuclideJs.re 60 60>>*/ _e6_=
-           /*<<src/NuclideJs.re 60 60>>*/ _e5_.toString(),
-          /*<<src/NuclideJs.re 60 61>>*/ _e7_=[0,_c2_,_e6_],
-          /*<<src/NuclideJs.re 59 40>>*/ _e8_=
+          /*<<src/NuclideJs.re 60 47>>*/ _e__=
+           /*<<src/NuclideJs.re 60 47>>*/ _cV_(text,_c5_),
+          /*<<src/NuclideJs.re 60 60>>*/ _e$_=
+           /*<<src/NuclideJs.re 60 60>>*/ _e__.toString(),
+          /*<<src/NuclideJs.re 60 61>>*/ _fa_=[0,_c6_,_e$_],
+          /*<<src/NuclideJs.re 59 40>>*/ _fb_=
            /*<<src/NuclideJs.re 59 40>>*/ filePath.toString(),
-          /*<<src/NuclideJs.re 59 60>>*/ _e9_=[0,_c3_,_e8_],
-          /*<<src/NuclideJs.re 58 36>>*/ _e__=
-           /*<<src/NuclideJs.re 58 36>>*/ _cS_(typee),
-          /*<<src/NuclideJs.re 58 62>>*/ _e$_=[0,_c4_,_e__],
-          /*<<src/NuclideJs.re 57 44>>*/ _fa_=
+          /*<<src/NuclideJs.re 59 60>>*/ _fc_=[0,_c7_,_fb_],
+          /*<<src/NuclideJs.re 58 36>>*/ _fd_=
+           /*<<src/NuclideJs.re 58 36>>*/ _cW_(typee),
+          /*<<src/NuclideJs.re 58 62>>*/ _fe_=[0,_c8_,_fd_],
+          /*<<src/NuclideJs.re 57 44>>*/ _ff_=
            /*<<src/NuclideJs.re 57 44>>*/ providerName.toString(),
-          /*<<src/NuclideJs.re 57 68>>*/ _fb_=[0,_c5_,_fa_],
-          /*<<src/NuclideJs.re 56 37>>*/ _fc_="file",
+          /*<<src/NuclideJs.re 57 68>>*/ _fg_=[0,_c9_,_ff_],
+          /*<<src/NuclideJs.re 56 37>>*/ _fh_="file",
           /*<<src/NuclideJs.re 56 55>>*/ fields=
-          [0,[0,_c6_,_fc_],_fb_,_e$_,_e9_,_e7_];
+          [0,[0,_c__,_fh_],_fg_,_fe_,_fc_,_fa_];
          /*<<src/NuclideJs.re 62 8>>*/ if(html)
           /*<<src/NuclideJs.re 65 22>>*/ var
            /*<<src/NuclideJs.re 65 22>>*/ h=html[1],
-           /*<<src/NuclideJs.re 65 22>>*/ _fd_=[0,[0,_c7_,h]],
-           /*<<src/NuclideJs.re 65 22>>*/ _fe_=
-            /*<<src/NuclideJs.re 65 22>>*/ _f_(fields,_fd_),
-          fields$0=_fe_;
+           /*<<src/NuclideJs.re 65 22>>*/ _fi_=[0,[0,_c$_,h]],
+           /*<<src/NuclideJs.re 65 22>>*/ _fj_=
+            /*<<src/NuclideJs.re 65 22>>*/ _f_(fields,_fi_),
+          fields$0=_fj_;
         else
          var fields$0=fields;
          /*<<src/NuclideJs.re 67 8>>*/ if(range)
           /*<<src/NuclideJs.re 70 22>>*/ var
            /*<<src/NuclideJs.re 70 22>>*/ r=range[1],
-           /*<<src/NuclideJs.re 70 71>>*/ _ff_=
+           /*<<src/NuclideJs.re 70 71>>*/ _fk_=
             /*<<src/NuclideJs.re 70 71>>*/ _aH_(r),
-           /*<<src/NuclideJs.re 70 90>>*/ _fg_=[0,[0,_c8_,_ff_]],
-           /*<<src/NuclideJs.re 70 22>>*/ _fh_=
-            /*<<src/NuclideJs.re 70 22>>*/ _f_(fields$0,_fg_),
-          fields$1=_fh_;
+           /*<<src/NuclideJs.re 70 90>>*/ _fl_=[0,[0,_da_,_fk_]],
+           /*<<src/NuclideJs.re 70 22>>*/ _fm_=
+            /*<<src/NuclideJs.re 70 22>>*/ _f_(fields$0,_fl_),
+          fields$1=_fm_;
         else
          var fields$1=fields$0;
          /*<<src/NuclideJs.re 72 8>>*/ if(trace)
           /*<<src/NuclideJs.re 76 54>>*/ var
           ts=trace[1],
-           /*<<src/NuclideJs.re 76 54>>*/ _fi_=
-            /*<<src/NuclideJs.re 76 54>>*/ _g_(_cT_,ts),
+           /*<<src/NuclideJs.re 76 54>>*/ _fn_=
+            /*<<src/NuclideJs.re 76 54>>*/ _g_(_cX_,ts),
            /*<<src/NuclideJs.re 76 79>>*/ jsTraces=
-            /*<<src/NuclideJs.re 76 79>>*/ caml_js_from_array(_fi_),
-           /*<<src/NuclideJs.re 77 12>>*/ _fj_=[0,[0,_c9_,jsTraces]],
-           /*<<src/NuclideJs.re 77 12>>*/ _fk_=
-            /*<<src/NuclideJs.re 77 12>>*/ _f_(fields$1,_fj_),
-          fields$2=_fk_;
+            /*<<src/NuclideJs.re 76 79>>*/ caml_js_from_array(_fn_),
+           /*<<src/NuclideJs.re 77 12>>*/ _fo_=[0,[0,_db_,jsTraces]],
+           /*<<src/NuclideJs.re 77 12>>*/ _fp_=
+            /*<<src/NuclideJs.re 77 12>>*/ _f_(fields$1,_fo_),
+          fields$2=_fp_;
         else
          var fields$2=fields$1;
          /*<<src/NuclideJs.re 79 8>>*/ return  /*<<src/NuclideJs.re 79 8>>*/ caml_js_object
@@ -8318,73 +8338,73 @@
        text$0=match$0[4],
        typee$0=match$0[3],
        providerName$0=match$0[2],
-        /*<<src/NuclideJs.re 85 47>>*/ _fl_=
-         /*<<src/NuclideJs.re 85 47>>*/ _cR_(text$0,_c__),
-        /*<<src/NuclideJs.re 85 60>>*/ _fm_=
-         /*<<src/NuclideJs.re 85 60>>*/ _fl_.toString(),
-        /*<<src/NuclideJs.re 85 61>>*/ _fn_=[0,_c$_,_fm_],
-        /*<<src/NuclideJs.re 84 36>>*/ _fo_=
-         /*<<src/NuclideJs.re 84 36>>*/ _cS_(typee$0),
-        /*<<src/NuclideJs.re 84 62>>*/ _fp_=[0,_da_,_fo_],
-        /*<<src/NuclideJs.re 83 44>>*/ _fq_=
+        /*<<src/NuclideJs.re 85 47>>*/ _fq_=
+         /*<<src/NuclideJs.re 85 47>>*/ _cV_(text$0,_dc_),
+        /*<<src/NuclideJs.re 85 60>>*/ _fr_=
+         /*<<src/NuclideJs.re 85 60>>*/ _fq_.toString(),
+        /*<<src/NuclideJs.re 85 61>>*/ _fs_=[0,_dd_,_fr_],
+        /*<<src/NuclideJs.re 84 36>>*/ _ft_=
+         /*<<src/NuclideJs.re 84 36>>*/ _cW_(typee$0),
+        /*<<src/NuclideJs.re 84 62>>*/ _fu_=[0,_de_,_ft_],
+        /*<<src/NuclideJs.re 83 44>>*/ _fv_=
          /*<<src/NuclideJs.re 83 44>>*/ providerName$0.toString(),
-        /*<<src/NuclideJs.re 83 68>>*/ _fr_=[0,_db_,_fq_],
-        /*<<src/NuclideJs.re 82 37>>*/ _fs_="project",
+        /*<<src/NuclideJs.re 83 68>>*/ _fw_=[0,_df_,_fv_],
+        /*<<src/NuclideJs.re 82 37>>*/ _fx_="project",
         /*<<src/NuclideJs.re 82 58>>*/ fields$3=
-        [0,[0,_dc_,_fs_],_fr_,_fp_,_fn_];
+        [0,[0,_dg_,_fx_],_fw_,_fu_,_fs_];
        /*<<src/NuclideJs.re 87 8>>*/ if(html$0)
         /*<<src/NuclideJs.re 90 22>>*/ var
          /*<<src/NuclideJs.re 90 22>>*/ h$0=html$0[1],
-         /*<<src/NuclideJs.re 90 22>>*/ _ft_=[0,[0,_dd_,h$0]],
-         /*<<src/NuclideJs.re 90 22>>*/ _fu_=
-          /*<<src/NuclideJs.re 90 22>>*/ _f_(fields$3,_ft_),
-        fields$4=_fu_;
+         /*<<src/NuclideJs.re 90 22>>*/ _fy_=[0,[0,_dh_,h$0]],
+         /*<<src/NuclideJs.re 90 22>>*/ _fz_=
+          /*<<src/NuclideJs.re 90 22>>*/ _f_(fields$3,_fy_),
+        fields$4=_fz_;
       else
        var fields$4=fields$3;
        /*<<src/NuclideJs.re 92 8>>*/ if(range$0)
         /*<<src/NuclideJs.re 95 22>>*/ var
          /*<<src/NuclideJs.re 95 22>>*/ r$0=range$0[1],
-         /*<<src/NuclideJs.re 95 71>>*/ _fv_=
+         /*<<src/NuclideJs.re 95 71>>*/ _fA_=
           /*<<src/NuclideJs.re 95 71>>*/ _aH_(r$0),
-         /*<<src/NuclideJs.re 95 90>>*/ _fw_=[0,[0,_de_,_fv_]],
-         /*<<src/NuclideJs.re 95 22>>*/ _fx_=
-          /*<<src/NuclideJs.re 95 22>>*/ _f_(fields$4,_fw_),
-        fields$5=_fx_;
+         /*<<src/NuclideJs.re 95 90>>*/ _fB_=[0,[0,_di_,_fA_]],
+         /*<<src/NuclideJs.re 95 22>>*/ _fC_=
+          /*<<src/NuclideJs.re 95 22>>*/ _f_(fields$4,_fB_),
+        fields$5=_fC_;
       else
        var fields$5=fields$4;
        /*<<src/NuclideJs.re 97 8>>*/ if(trace$0)
         /*<<src/NuclideJs.re 101 54>>*/ var
         ts$0=trace$0[1],
-         /*<<src/NuclideJs.re 101 54>>*/ _fy_=
-          /*<<src/NuclideJs.re 101 54>>*/ _g_(_cT_,ts$0),
+         /*<<src/NuclideJs.re 101 54>>*/ _fD_=
+          /*<<src/NuclideJs.re 101 54>>*/ _g_(_cX_,ts$0),
          /*<<src/NuclideJs.re 101 79>>*/ jsTraces$0=
-          /*<<src/NuclideJs.re 101 79>>*/ caml_js_from_array(_fy_),
-         /*<<src/NuclideJs.re 102 12>>*/ _fz_=[0,[0,_df_,jsTraces$0]],
-         /*<<src/NuclideJs.re 102 12>>*/ _fA_=
-          /*<<src/NuclideJs.re 102 12>>*/ _f_(fields$5,_fz_),
-        fields$6=_fA_;
+          /*<<src/NuclideJs.re 101 79>>*/ caml_js_from_array(_fD_),
+         /*<<src/NuclideJs.re 102 12>>*/ _fE_=[0,[0,_dj_,jsTraces$0]],
+         /*<<src/NuclideJs.re 102 12>>*/ _fF_=
+          /*<<src/NuclideJs.re 102 12>>*/ _f_(fields$5,_fE_),
+        fields$6=_fF_;
       else
        var fields$6=fields$5;
        /*<<src/NuclideJs.re 104 8>>*/ return  /*<<src/NuclideJs.re 104 8>>*/ caml_js_object
               (fields$6) /*<<src/NuclideJs.re 105 7>>*/ }
-    function _dg_(result)
+    function _dk_(result)
      { /*<<src/NuclideJs.re 110 50>>*/ var
-        /*<<src/NuclideJs.re 110 50>>*/ _e2_=result[2],
-        /*<<src/NuclideJs.re 112 35>>*/ _e3_=
-         /*<<src/NuclideJs.re 112 35>>*/ _e2_.toString(),
-        /*<<src/NuclideJs.re 112 63>>*/ _e4_=result[1];
-       /*<<src/NuclideJs.re 111 87>>*/ return {"newCursor":_e4_,
-              "formatted":_e3_} /*<<src/NuclideJs.re 113 4>>*/ }
-    function _dh_(o)
+        /*<<src/NuclideJs.re 110 50>>*/ _e7_=result[2],
+        /*<<src/NuclideJs.re 112 35>>*/ _e8_=
+         /*<<src/NuclideJs.re 112 35>>*/ _e7_.toString(),
+        /*<<src/NuclideJs.re 112 63>>*/ _e9_=result[1];
+       /*<<src/NuclideJs.re 111 87>>*/ return {"newCursor":_e9_,
+              "formatted":_e8_} /*<<src/NuclideJs.re 113 4>>*/ }
+    function _dl_(o)
      { /*<<src/NuclideJs.re 120 25>>*/ var
-        /*<<src/NuclideJs.re 120 25>>*/ _eY_=o.prefix,
-        /*<<src/NuclideJs.re 120 51>>*/ _eZ_=
-         /*<<src/NuclideJs.re 120 51>>*/ caml_js_to_string(_eY_),
-        /*<<src/NuclideJs.re 119 31>>*/ _e0_=o.editor,
-        /*<<src/NuclideJs.re 119 12>>*/ _e1_=
-         /*<<src/NuclideJs.re 119 12>>*/ _aN_(_e0_);
-       /*<<src/NuclideJs.re 119 57>>*/ return [0,_e1_,_eZ_] /*<<src/NuclideJs.re 121 3>>*/ }
-    function _di_(param)
+        /*<<src/NuclideJs.re 120 25>>*/ _e3_=o.prefix,
+        /*<<src/NuclideJs.re 120 51>>*/ _e4_=
+         /*<<src/NuclideJs.re 120 51>>*/ caml_js_to_string(_e3_),
+        /*<<src/NuclideJs.re 119 31>>*/ _e5_=o.editor,
+        /*<<src/NuclideJs.re 119 12>>*/ _e6_=
+         /*<<src/NuclideJs.re 119 12>>*/ _aO_(_e5_);
+       /*<<src/NuclideJs.re 119 57>>*/ return [0,_e6_,_e4_] /*<<src/NuclideJs.re 121 3>>*/ }
+    function _dm_(param)
      { /*<<src/NuclideJs.re 127 4>>*/ switch(param)
        {case 0: /*<<src/NuclideJs.re 132 18>>*/ return "variable";
         case 1: /*<<src/NuclideJs.re 133 18>>*/ return "constant";
@@ -8399,86 +8419,86 @@
         case 10: /*<<src/NuclideJs.re 138 13>>*/ return "tag";
         case 11: /*<<src/NuclideJs.re 139 17>>*/ return "snippet";
         default: /*<<src/NuclideJs.re 140 16>>*/ return "import"} /*<<src/NuclideJs.re 140 34>>*/ }
-    function _dj_(e)
+    function _dn_(e)
      { /*<<src/NuclideJs.re 141 21>>*/ var
-        /*<<src/NuclideJs.re 141 21>>*/ _eM_=e[6],
-        /*<<src/NuclideJs.re 147 43>>*/ _eN_=
-         /*<<src/NuclideJs.re 147 43>>*/ _eM_.toString(),
-        /*<<src/NuclideJs.re 147 74>>*/ _eO_=e[5],
-        /*<<src/NuclideJs.re 146 37>>*/ _eP_=
-         /*<<src/NuclideJs.re 146 37>>*/ _eO_.toString(),
-        /*<<src/NuclideJs.re 146 62>>*/ _eQ_=e[4],
-        /*<<src/NuclideJs.re 145 30>>*/ _eR_=
-         /*<<src/NuclideJs.re 145 30>>*/ _di_(_eQ_),
-        /*<<src/NuclideJs.re 145 48>>*/ _eS_=e[3],
-        /*<<src/NuclideJs.re 144 37>>*/ _eT_=
-         /*<<src/NuclideJs.re 144 37>>*/ _eS_.toString(),
-        /*<<src/NuclideJs.re 144 62>>*/ _eU_=e[2],
-        /*<<src/NuclideJs.re 143 30>>*/ _eV_=
-         /*<<src/NuclideJs.re 143 30>>*/ _eU_.toString(),
-        /*<<src/NuclideJs.re 143 48>>*/ _eW_=e[1],
-        /*<<src/NuclideJs.re 142 35>>*/ _eX_=
-         /*<<src/NuclideJs.re 142 35>>*/ _eW_.toString();
-       /*<<src/NuclideJs.re 142 58>>*/ return {"leftLabel":_eX_,
-              "text":_eV_,
-              "displayText":_eT_,
-              "type":_eR_,
-              "description":_eP_,
-              "replacementPrefix":_eN_} /*<<src/NuclideJs.re 148 4>>*/ }
-    function _dk_(jsEditor)
-     { /*<<src/Index.re 19 22>>*/ return  /*<<src/Index.re 19 22>>*/ _aT_
+        /*<<src/NuclideJs.re 141 21>>*/ _eR_=e[6],
+        /*<<src/NuclideJs.re 147 43>>*/ _eS_=
+         /*<<src/NuclideJs.re 147 43>>*/ _eR_.toString(),
+        /*<<src/NuclideJs.re 147 74>>*/ _eT_=e[5],
+        /*<<src/NuclideJs.re 146 37>>*/ _eU_=
+         /*<<src/NuclideJs.re 146 37>>*/ _eT_.toString(),
+        /*<<src/NuclideJs.re 146 62>>*/ _eV_=e[4],
+        /*<<src/NuclideJs.re 145 30>>*/ _eW_=
+         /*<<src/NuclideJs.re 145 30>>*/ _dm_(_eV_),
+        /*<<src/NuclideJs.re 145 48>>*/ _eX_=e[3],
+        /*<<src/NuclideJs.re 144 37>>*/ _eY_=
+         /*<<src/NuclideJs.re 144 37>>*/ _eX_.toString(),
+        /*<<src/NuclideJs.re 144 62>>*/ _eZ_=e[2],
+        /*<<src/NuclideJs.re 143 30>>*/ _e0_=
+         /*<<src/NuclideJs.re 143 30>>*/ _eZ_.toString(),
+        /*<<src/NuclideJs.re 143 48>>*/ _e1_=e[1],
+        /*<<src/NuclideJs.re 142 35>>*/ _e2_=
+         /*<<src/NuclideJs.re 142 35>>*/ _e1_.toString();
+       /*<<src/NuclideJs.re 142 58>>*/ return {"leftLabel":_e2_,
+              "text":_e0_,
+              "displayText":_eY_,
+              "type":_eW_,
+              "description":_eU_,
+              "replacementPrefix":_eS_} /*<<src/NuclideJs.re 148 4>>*/ }
+    function _do_(jsEditor)
+     { /*<<src/Index.re 19 22>>*/ return  /*<<src/Index.re 19 22>>*/ _aV_
               (function(resolve,reject)
-                { /*<<src/Index.re 21 10>>*/ function _eI_(successResult)
+                { /*<<src/Index.re 21 10>>*/ function _eN_(successResult)
                   { /*<<src/Index.re 26 25>>*/ var
-                     /*<<src/Index.re 26 25>>*/ _eK_=
-                      /*<<src/Index.re 26 25>>*/ _g_(_c0_,successResult),
-                     /*<<src/Index.re 26 84>>*/ _eL_=
-                      /*<<src/Index.re 26 84>>*/ caml_js_from_array(_eK_);
+                     /*<<src/Index.re 26 25>>*/ _eP_=
+                      /*<<src/Index.re 26 25>>*/ _g_(_c4_,successResult),
+                     /*<<src/Index.re 26 84>>*/ _eQ_=
+                      /*<<src/Index.re 26 84>>*/ caml_js_from_array(_eP_);
                     /*<<src/Index.re 27 15>>*/ return  /*<<src/Index.re 27 15>>*/ caml_call1
-                           (resolve,_eL_) /*<<src/Index.re 27 15>>*/ }
+                           (resolve,_eQ_) /*<<src/Index.re 27 15>>*/ }
                   /*<<src/Index.re 23 20>>*/  /*<<src/Index.re 23 20>>*/ var
-                  _eJ_=
-                    /*<<src/Index.re 23 20>>*/ _aN_(jsEditor);
-                  /*<<src/Index.re 23 49>>*/ return  /*<<src/Index.re 23 49>>*/ _bX_
-                         (_eJ_,_eI_,reject) /*<<src/Index.re 30 18>>*/ }) /*<<src/Index.re 31 7>>*/ }
+                  _eO_=
+                    /*<<src/Index.re 23 20>>*/ _aO_(jsEditor);
+                  /*<<src/Index.re 23 49>>*/ return  /*<<src/Index.re 23 49>>*/ _bZ_
+                         (_eO_,_eN_,reject) /*<<src/Index.re 30 18>>*/ }) /*<<src/Index.re 31 7>>*/ }
      /*<<src/Index.re 17 2>>*/  /*<<src/Index.re 17 2>>*/ var
-     _dl_=
-       /*<<src/Index.re 17 2>>*/ caml_js_wrap_callback(_dk_);
-     /*<<src/Index.re 15 0>>*/  /*<<src/Index.re 15 0>>*/ _a$_(_dm_,_dl_);
-     /*<<src/Index.re 33 3>>*/ function _dn_
+     _dp_=
+       /*<<src/Index.re 17 2>>*/ caml_js_wrap_callback(_do_);
+     /*<<src/Index.re 15 0>>*/  /*<<src/Index.re 15 0>>*/ _bb_(_dq_,_dp_);
+     /*<<src/Index.re 33 3>>*/ function _dr_
      (jsEditor,jsRange,jsNotifySuccess,jsNotifyInvalid,jsNotifyInfo)
      { /*<<src/Index.re 40 21>>*/ var
         /*<<src/Index.re 40 21>>*/ editor=
-         /*<<src/Index.re 40 21>>*/ _aN_(jsEditor),
+         /*<<src/Index.re 40 21>>*/ _aO_(jsEditor),
         /*<<src/Index.re 41 20>>*/ range=
          /*<<src/Index.re 41 20>>*/ _aI_(jsRange);
        /*<<src/Index.re 42 8>>*/ function notifySuccess(msg)
        { /*<<src/Index.re 43 64>>*/  /*<<src/Index.re 43 64>>*/ var
-         _eH_=
+         _eM_=
            /*<<src/Index.re 43 64>>*/ msg.toString();
          /*<<src/Index.re 43 79>>*/ return  /*<<src/Index.re 43 79>>*/ jsNotifySuccess
-                (_eH_) /*<<src/Index.re 43 81>>*/ }
+                (_eM_) /*<<src/Index.re 43 81>>*/ }
        /*<<src/Index.re 44 8>>*/ function notifyInvalid(msg)
        { /*<<src/Index.re 45 64>>*/  /*<<src/Index.re 45 64>>*/ var
-         _eG_=
+         _eL_=
            /*<<src/Index.re 45 64>>*/ msg.toString();
          /*<<src/Index.re 45 79>>*/ return  /*<<src/Index.re 45 79>>*/ jsNotifyInvalid
-                (_eG_) /*<<src/Index.re 45 81>>*/ }
+                (_eL_) /*<<src/Index.re 45 81>>*/ }
        /*<<src/Index.re 46 8>>*/ function notifyInfo(msg)
        { /*<<src/Index.re 46 81>>*/  /*<<src/Index.re 46 81>>*/ var
-         _eF_=
+         _eK_=
            /*<<src/Index.re 46 81>>*/ msg.toString();
          /*<<src/Index.re 46 96>>*/ return  /*<<src/Index.re 46 96>>*/ jsNotifyInfo
-                (_eF_) /*<<src/Index.re 46 98>>*/ }
-       /*<<src/Index.re 47 8>>*/ return  /*<<src/Index.re 47 8>>*/ _aT_
+                (_eK_) /*<<src/Index.re 46 98>>*/ }
+       /*<<src/Index.re 47 8>>*/ return  /*<<src/Index.re 47 8>>*/ _aV_
               (function(resolve,reject)
-                { /*<<src/Index.re 49 12>>*/ function _eC_(rejectedMsg)
+                { /*<<src/Index.re 49 12>>*/ function _eH_(rejectedMsg)
                   { /*<<src/Index.re 56 41>>*/  /*<<src/Index.re 56 41>>*/ var
-                    _eE_=
+                    _eJ_=
                       /*<<src/Index.re 56 41>>*/ rejectedMsg.toString();
                     /*<<src/Index.re 56 64>>*/ return  /*<<src/Index.re 56 64>>*/ caml_call1
-                           (reject,_eE_) /*<<src/Index.re 56 64>>*/ }
-                  /*<<src/Index.re 49 12>>*/ return  /*<<src/Index.re 49 12>>*/ _ch_
+                           (reject,_eJ_) /*<<src/Index.re 56 64>>*/ }
+                  /*<<src/Index.re 49 12>>*/ return  /*<<src/Index.re 49 12>>*/ _cj_
                          (editor,
                           range,
                           notifySuccess,
@@ -8486,49 +8506,49 @@
                           notifyInfo,
                           function(successResult)
                            { /*<<src/Index.re 55 44>>*/  /*<<src/Index.re 55 44>>*/ var
-                             _eD_=
-                               /*<<src/Index.re 55 44>>*/ _dg_(successResult);
+                             _eI_=
+                               /*<<src/Index.re 55 44>>*/ _dk_(successResult);
                              /*<<src/Index.re 55 85>>*/ return  /*<<src/Index.re 55 85>>*/ caml_call1
-                                    (resolve,_eD_) /*<<src/Index.re 55 85>>*/ },
-                          _eC_) /*<<src/Index.re 56 65>>*/ }) /*<<src/Index.re 58 7>>*/ }
+                                    (resolve,_eI_) /*<<src/Index.re 55 85>>*/ },
+                          _eH_) /*<<src/Index.re 56 65>>*/ }) /*<<src/Index.re 58 7>>*/ }
      /*<<src/Index.re 37 2>>*/  /*<<src/Index.re 37 2>>*/ var
-     _do_=
-       /*<<src/Index.re 37 2>>*/ caml_js_wrap_callback(_dn_);
-     /*<<src/Index.re 35 0>>*/  /*<<src/Index.re 35 0>>*/ _a$_(_dp_,_do_);
-     /*<<src/Index.re 60 3>>*/ function _dq_
+     _ds_=
+       /*<<src/Index.re 37 2>>*/ caml_js_wrap_callback(_dr_);
+     /*<<src/Index.re 35 0>>*/  /*<<src/Index.re 35 0>>*/ _bb_(_dt_,_ds_);
+     /*<<src/Index.re 60 3>>*/ function _du_
      (jsEditor,jsRange,jsNotifySuccess,jsNotifyInvalid,jsNotifyInfo)
      { /*<<src/Index.re 67 21>>*/ var
         /*<<src/Index.re 67 21>>*/ editor=
-         /*<<src/Index.re 67 21>>*/ _aN_(jsEditor),
+         /*<<src/Index.re 67 21>>*/ _aO_(jsEditor),
         /*<<src/Index.re 68 20>>*/ range=
          /*<<src/Index.re 68 20>>*/ _aI_(jsRange);
        /*<<src/Index.re 69 8>>*/ function notifySuccess(msg)
        { /*<<src/Index.re 70 64>>*/  /*<<src/Index.re 70 64>>*/ var
-         _eB_=
+         _eG_=
            /*<<src/Index.re 70 64>>*/ msg.toString();
          /*<<src/Index.re 70 79>>*/ return  /*<<src/Index.re 70 79>>*/ jsNotifySuccess
-                (_eB_) /*<<src/Index.re 70 81>>*/ }
+                (_eG_) /*<<src/Index.re 70 81>>*/ }
        /*<<src/Index.re 71 8>>*/ function notifyInvalid(msg)
        { /*<<src/Index.re 72 64>>*/  /*<<src/Index.re 72 64>>*/ var
-         _eA_=
+         _eF_=
            /*<<src/Index.re 72 64>>*/ msg.toString();
          /*<<src/Index.re 72 79>>*/ return  /*<<src/Index.re 72 79>>*/ jsNotifyInvalid
-                (_eA_) /*<<src/Index.re 72 81>>*/ }
+                (_eF_) /*<<src/Index.re 72 81>>*/ }
        /*<<src/Index.re 73 8>>*/ function notifyInfo(msg)
        { /*<<src/Index.re 73 81>>*/  /*<<src/Index.re 73 81>>*/ var
-         _ez_=
+         _eE_=
            /*<<src/Index.re 73 81>>*/ msg.toString();
          /*<<src/Index.re 73 96>>*/ return  /*<<src/Index.re 73 96>>*/ jsNotifyInfo
-                (_ez_) /*<<src/Index.re 73 98>>*/ }
-       /*<<src/Index.re 74 8>>*/ return  /*<<src/Index.re 74 8>>*/ _aT_
+                (_eE_) /*<<src/Index.re 73 98>>*/ }
+       /*<<src/Index.re 74 8>>*/ return  /*<<src/Index.re 74 8>>*/ _aV_
               (function(resolve,reject)
-                { /*<<src/Index.re 76 12>>*/ function _ew_(rejectedMsg)
+                { /*<<src/Index.re 76 12>>*/ function _eB_(rejectedMsg)
                   { /*<<src/Index.re 83 41>>*/  /*<<src/Index.re 83 41>>*/ var
-                    _ey_=
+                    _eD_=
                       /*<<src/Index.re 83 41>>*/ rejectedMsg.toString();
                     /*<<src/Index.re 83 64>>*/ return  /*<<src/Index.re 83 64>>*/ caml_call1
-                           (reject,_ey_) /*<<src/Index.re 83 64>>*/ }
-                  /*<<src/Index.re 76 12>>*/ return  /*<<src/Index.re 76 12>>*/ _cl_
+                           (reject,_eD_) /*<<src/Index.re 83 64>>*/ }
+                  /*<<src/Index.re 76 12>>*/ return  /*<<src/Index.re 76 12>>*/ _cn_
                          (editor,
                           range,
                           notifySuccess,
@@ -8536,36 +8556,36 @@
                           notifyInfo,
                           function(successResult)
                            { /*<<src/Index.re 82 44>>*/  /*<<src/Index.re 82 44>>*/ var
-                             _ex_=
+                             _eC_=
                                /*<<src/Index.re 82 44>>*/ successResult.toString();
                              /*<<src/Index.re 82 69>>*/ return  /*<<src/Index.re 82 69>>*/ caml_call1
-                                    (resolve,_ex_) /*<<src/Index.re 82 69>>*/ },
-                          _ew_) /*<<src/Index.re 83 65>>*/ }) /*<<src/Index.re 85 7>>*/ }
+                                    (resolve,_eC_) /*<<src/Index.re 82 69>>*/ },
+                          _eB_) /*<<src/Index.re 83 65>>*/ }) /*<<src/Index.re 85 7>>*/ }
      /*<<src/Index.re 64 2>>*/  /*<<src/Index.re 64 2>>*/ var
-     _dr_=
-       /*<<src/Index.re 64 2>>*/ caml_js_wrap_callback(_dq_);
-     /*<<src/Index.re 62 0>>*/  /*<<src/Index.re 62 0>>*/ _a$_(_ds_,_dr_);
-     /*<<src/Index.re 87 3>>*/ function _dt_(request)
+     _dv_=
+       /*<<src/Index.re 64 2>>*/ caml_js_wrap_callback(_du_);
+     /*<<src/Index.re 62 0>>*/  /*<<src/Index.re 62 0>>*/ _bb_(_dw_,_dv_);
+     /*<<src/Index.re 87 3>>*/ function _dx_(request)
      { /*<<src/Index.re 94 22>>*/ var
         /*<<src/Index.re 94 22>>*/ request$0=
-         /*<<src/Index.re 94 22>>*/ _dh_(request),
+         /*<<src/Index.re 94 22>>*/ _dl_(request),
         /*<<src/Index.re 95 8>>*/ editor=request$0[1],
         /*<<src/Index.re 96 8>>*/ prefix=request$0[2],
-        /*<<src/Index.re 97 39>>*/ _d8_=
-         /*<<src/Index.re 97 39>>*/ _aP_(editor),
-        /*<<src/Index.re 97 19>>*/ text= /*<<src/Index.re 97 19>>*/ _aJ_(_d8_),
-        /*<<src/Index.re 99 18>>*/ _d9_=
-         /*<<src/Index.re 99 18>>*/ _aR_(editor),
-        /*<<src/Index.re 98 68>>*/ _d__= /*<<src/Index.re 98 68>>*/ _n_(_d9_),
+        /*<<src/Index.re 97 39>>*/ _eb_=
+         /*<<src/Index.re 97 39>>*/ _aQ_(editor),
+        /*<<src/Index.re 97 19>>*/ text= /*<<src/Index.re 97 19>>*/ _aJ_(_eb_),
+        /*<<src/Index.re 99 18>>*/ _ec_=
+         /*<<src/Index.re 99 18>>*/ _aS_(editor),
+        /*<<src/Index.re 98 68>>*/ _ed_= /*<<src/Index.re 98 68>>*/ _n_(_ec_),
         /*<<src/Index.re 98 38>>*/ position=
-         /*<<src/Index.re 98 38>>*/ _aL_(_d__),
+         /*<<src/Index.re 98 38>>*/ _aL_(_ed_),
         /*<<src/Index.re 100 9>>*/ col=position[2],
         /*<<src/Index.re 100 9>>*/ line=position[1],
-        /*<<src/Index.re 107 8>>*/ _d$_=0,
-        /*<<src/Index.re 107 36>>*/ _ea_=
-         /*<<src/Index.re 107 36>>*/ _aO_(editor,line),
+        /*<<src/Index.re 107 8>>*/ _ee_=0,
+        /*<<src/Index.re 107 36>>*/ _ef_=
+         /*<<src/Index.re 107 36>>*/ _aP_(editor,line),
         /*<<src/Index.re 107 25>>*/ linePrefix=
-         /*<<src/Index.re 107 25>>*/ _O_(_ea_,_d$_,col),
+         /*<<src/Index.re 107 25>>*/ _O_(_ef_,_ee_,col),
         /*<<src/Index.re 108 8>>*/ match=
         0 ===  /*<<src/Index.re 108 8>>*/ caml_ml_string_length(linePrefix)
          ?1
@@ -8574,7 +8594,7 @@
        { /*<<src/Index.re 111 12>>*/ var
           /*<<src/Index.re 111 12>>*/ regex=/([ |\t\[\](){}<>,+*\/-])/,
           /*<<src/Index.re 113 24>>*/ lst=
-           /*<<src/Index.re 113 24>>*/ _bZ_(regex,linePrefix),
+           /*<<src/Index.re 113 24>>*/ _b1_(regex,linePrefix),
           /*<<src/Index.re 114 24>>*/ len=
            /*<<src/Index.re 114 24>>*/ _m_(lst),
           /*<<src/Index.re 115 14>>*/ match$0=0 < len?1:0;
@@ -8582,44 +8602,44 @@
          var linePrefix$0=linePrefix;
         else
           /*<<src/Index.re 115 24>>*/ var
-           /*<<src/Index.re 115 24>>*/ _ek_=len - 1 | 0,
-           /*<<src/Index.re 115 24>>*/ _el_=
-            /*<<src/Index.re 115 24>>*/ _p_(lst,_ek_),
-          linePrefix$0=_el_;
+           /*<<src/Index.re 115 24>>*/ _ep_=len - 1 | 0,
+           /*<<src/Index.re 115 24>>*/ _eq_=
+            /*<<src/Index.re 115 24>>*/ _p_(lst,_ep_),
+          linePrefix$0=_eq_;
          /*<<src/Index.re 111 12>>*/ var linePrefix$1=linePrefix$0}
       else
        var linePrefix$1=linePrefix;
        /*<<src/Index.re 94 22>>*/  /*<<src/Index.re 118 24>>*/ var
-       _eb_=
+       _eg_=
          /*<<src/Index.re 118 24>>*/ _S_(linePrefix$1);
        /*<<src/Index.re 118 48>>*/ if
-       (0 !==  /*<<src/Index.re 118 48>>*/ caml_ml_string_length(_eb_))
+       (0 !==  /*<<src/Index.re 118 48>>*/ caml_ml_string_length(_eg_))
        { /*<<src/Index.re 118 72>>*/  /*<<src/Index.re 118 72>>*/ var
-         _ec_=
+         _eh_=
            /*<<src/Index.re 118 72>>*/ _S_(prefix);
          /*<<src/Index.re 118 92>>*/ if
-         (0 !==  /*<<src/Index.re 118 92>>*/ caml_ml_string_length(_ec_))
+         (0 !==  /*<<src/Index.re 118 92>>*/ caml_ml_string_length(_eh_))
          { /*<<src/Index.re 121 15>>*/ var
-            /*<<src/Index.re 121 15>>*/ _ed_=46,
-            /*<<src/Index.re 123 16>>*/ _ee_=
-             /*<<src/Index.re 123 16>>*/ _W_(prefix,_ed_);
-           /*<<src/Index.re 123 42>>*/ if(_ee_)
+            /*<<src/Index.re 121 15>>*/ _ei_=46,
+            /*<<src/Index.re 123 16>>*/ _ej_=
+             /*<<src/Index.re 123 16>>*/ _W_(prefix,_ei_);
+           /*<<src/Index.re 123 42>>*/ if(_ej_)
            { /*<<src/Index.re 123 46>>*/ var
-             _ef_=46,
-              /*<<src/Index.re 123 46>>*/ _eg_=
-               /*<<src/Index.re 123 46>>*/ _U_(prefix,_ef_);
-             /*<<src/Index.re 123 69>>*/ if(0 === _eg_)
+             _ek_=46,
+              /*<<src/Index.re 123 46>>*/ _el_=
+               /*<<src/Index.re 123 46>>*/ _U_(prefix,_ek_);
+             /*<<src/Index.re 123 69>>*/ if(0 === _el_)
               /*<<src/Index.re 123 77>>*/ var
-               /*<<src/Index.re 123 77>>*/ _eh_=
+               /*<<src/Index.re 123 77>>*/ _em_=
                 /*<<src/Index.re 123 77>>*/ caml_ml_string_length(prefix)
                -
                1
                |
                0,
-               /*<<src/Index.re 123 77>>*/ _ei_=1,
-               /*<<src/Index.re 123 77>>*/ _ej_=
-                /*<<src/Index.re 123 77>>*/ _O_(prefix,_ei_,_eh_),
-              replacementPrefix=_ej_,
+               /*<<src/Index.re 123 77>>*/ _en_=1,
+               /*<<src/Index.re 123 77>>*/ _eo_=
+                /*<<src/Index.re 123 77>>*/ _O_(prefix,_en_,_em_),
+              replacementPrefix=_eo_,
               switch$0=1;
             else
              var switch$0=0}
@@ -8627,147 +8647,151 @@
            var switch$0=0;
            /*<<camlinternalFormatBasics.ml 502 8>>*/ if(!switch$0)
            var replacementPrefix=prefix;
-           /*<<src/Index.re 128 10>>*/ return  /*<<src/Index.re 128 10>>*/ _aT_
+           /*<<src/Index.re 128 10>>*/ return  /*<<src/Index.re 128 10>>*/ _aV_
                   (function(resolve,reject)
-                    { /*<<src/Index.re 130 14>>*/ function _eo_(result)
+                    { /*<<src/Index.re 130 14>>*/ function _et_(result)
                       { /*<<src/Index.re 138 22>>*/ var
-                         /*<<src/Index.re 138 22>>*/ _eq_=result.entries,
+                         /*<<src/Index.re 138 22>>*/ _ev_=result.entries,
                          /*<<src/Index.re 138 52>>*/ resultRe=
                           /*<<src/Index.re 138 52>>*/ _u_
-                          (_bw_,
+                          (_by_,
                             /*<<src/Index.re 138 52>>*/ _h_
-                            ( /*<<src/Index.re 138 52>>*/ function(_ev_)
-                               { /*<<?>>*/ return caml_js_to_array(_ev_)}
-                              (_eq_)));
-                        /*<<src/Index.re 143 31>>*/ function _er_(_eu_)
-                        { /*<<?>>*/ return _bx_(replacementPrefix,_eu_)}
+                            ( /*<<src/Index.re 138 52>>*/ function(_eA_)
+                               { /*<<?>>*/ return caml_js_to_array(_eA_)}
+                              (_ev_)));
+                        /*<<src/Index.re 143 31>>*/ function _ew_(_ez_)
+                        { /*<<?>>*/ return _bz_(replacementPrefix,_ez_)}
                         /*<<src/Index.re 145 23>>*/  /*<<src/Index.re 145 23>>*/ var
-                        _es_=
+                        _ex_=
                           /*<<src/Index.re 145 23>>*/ _j_
                           ( /*<<src/Index.re 145 23>>*/ _u_
-                            (_dj_, /*<<src/Index.re 145 23>>*/ _u_(_er_,resultRe)));
+                            (_dn_, /*<<src/Index.re 145 23>>*/ _u_(_ew_,resultRe)));
                         /*<<src/Index.re 145 23>>*/ return  /*<<src/Index.re 145 23>>*/ caml_call1
                                (resolve,
-                                 /*<<src/Index.re 145 23>>*/ function(_et_)
-                                  { /*<<?>>*/ return caml_js_from_array(_et_)}
-                                 (_es_)) /*<<src/Index.re 150 19>>*/ }
+                                 /*<<src/Index.re 145 23>>*/ function(_ey_)
+                                  { /*<<?>>*/ return caml_js_from_array(_ey_)}
+                                 (_ex_)) /*<<src/Index.re 150 19>>*/ }
                       /*<<src/Index.re 131 22>>*/  /*<<src/Index.re 131 22>>*/ var
-                      _ep_=
-                        /*<<src/Index.re 131 22>>*/ _bf_(editor);
-                      /*<<src/Index.re 131 35>>*/ return  /*<<src/Index.re 131 35>>*/ _bS_
-                             (_ep_,text,position,linePrefix$1,_eo_,reject) /*<<src/Index.re 153 22>>*/ })}}
-       /*<<src/Index.re 119 10>>*/ return  /*<<src/Index.re 119 10>>*/ _aT_
+                      _eu_=
+                        /*<<src/Index.re 131 22>>*/ _bh_(editor);
+                      /*<<src/Index.re 131 35>>*/ return  /*<<src/Index.re 131 35>>*/ _bU_
+                             (_eu_,text,position,linePrefix$1,_et_,reject) /*<<src/Index.re 153 22>>*/ })}}
+       /*<<src/Index.re 119 10>>*/ return  /*<<src/Index.re 119 10>>*/ _aV_
               (function(resolve,reject)
                 { /*<<src/Index.re 120 64>>*/ var
-                   /*<<src/Index.re 120 64>>*/ _em_=[0],
-                   /*<<src/Index.re 120 72>>*/ _en_=
-                    /*<<src/Index.re 120 72>>*/ caml_js_from_array(_em_);
+                   /*<<src/Index.re 120 64>>*/ _er_=[0],
+                   /*<<src/Index.re 120 72>>*/ _es_=
+                    /*<<src/Index.re 120 72>>*/ caml_js_from_array(_er_);
                   /*<<src/Index.re 120 87>>*/ return  /*<<src/Index.re 120 87>>*/ caml_call1
-                         (resolve,_en_) /*<<src/Index.re 120 87>>*/ }) /*<<src/Index.re 156 7>>*/ }
+                         (resolve,_es_) /*<<src/Index.re 120 87>>*/ }) /*<<src/Index.re 156 7>>*/ }
      /*<<src/Index.re 91 2>>*/  /*<<src/Index.re 91 2>>*/ var
-     _du_=
-       /*<<src/Index.re 91 2>>*/ caml_js_wrap_callback(_dt_);
-     /*<<src/Index.re 89 0>>*/  /*<<src/Index.re 89 0>>*/ _a$_(_dv_,_du_);
-     /*<<src/Index.re 158 3>>*/ function _dw_(jsEditor,position)
+     _dy_=
+       /*<<src/Index.re 91 2>>*/ caml_js_wrap_callback(_dx_);
+     /*<<src/Index.re 89 0>>*/  /*<<src/Index.re 89 0>>*/ _bb_(_dz_,_dy_);
+     /*<<src/Index.re 158 3>>*/ function _dA_(jsEditor,position)
      { /*<<src/Index.re 168 23>>*/ var
         /*<<src/Index.re 168 23>>*/ position$0=
          /*<<src/Index.re 168 23>>*/ _aF_(position),
-        /*<<src/Index.re 169 39>>*/ _d2_=
-         /*<<src/Index.re 169 39>>*/ _aP_(jsEditor),
+        /*<<src/Index.re 169 39>>*/ _d7_=
+         /*<<src/Index.re 169 39>>*/ _aQ_(jsEditor),
         /*<<src/Index.re 169 19>>*/ text=
-         /*<<src/Index.re 169 19>>*/ _aJ_(_d2_);
-       /*<<src/Index.re 170 8>>*/ return  /*<<src/Index.re 170 8>>*/ _aT_
+         /*<<src/Index.re 169 19>>*/ _aJ_(_d7_);
+       /*<<src/Index.re 170 8>>*/ return  /*<<src/Index.re 170 8>>*/ _aV_
               (function(resolve,reject)
-                { /*<<src/Index.re 172 12>>*/ function _d3_(rejectedMsg)
+                { /*<<src/Index.re 172 12>>*/ function _d8_(rejectedMsg)
                   { /*<<src/Index.re 177 41>>*/  /*<<src/Index.re 177 41>>*/ var
-                    _d7_=
+                    _ea_=
                       /*<<src/Index.re 177 41>>*/ rejectedMsg.toString();
                     /*<<src/Index.re 177 64>>*/ return  /*<<src/Index.re 177 64>>*/ caml_call1
-                           (reject,_d7_) /*<<src/Index.re 177 64>>*/ }
-                  /*<<src/Index.re 172 12>>*/ function _d4_(result)
+                           (reject,_ea_) /*<<src/Index.re 177 64>>*/ }
+                  /*<<src/Index.re 172 12>>*/ function _d9_(result)
                   { /*<<src/Index.re 176 37>>*/  /*<<src/Index.re 176 37>>*/ var
-                    _d6_=
-                      /*<<src/Index.re 176 37>>*/ _bz_(result);
+                    _d$_=
+                      /*<<src/Index.re 176 37>>*/ _bB_(result);
                     /*<<src/Index.re 176 97>>*/ return  /*<<src/Index.re 176 97>>*/ caml_call1
-                           (resolve,_d6_) /*<<src/Index.re 176 97>>*/ }
+                           (resolve,_d$_) /*<<src/Index.re 176 97>>*/ }
                   /*<<src/Index.re 173 20>>*/  /*<<src/Index.re 173 20>>*/ var
-                  _d5_=
-                    /*<<src/Index.re 173 20>>*/ _bf_(jsEditor);
-                  /*<<src/Index.re 173 35>>*/ return  /*<<src/Index.re 173 35>>*/ _bR_
-                         (_d5_,text,position$0,_d4_,_d3_) /*<<src/Index.re 177 65>>*/ }) /*<<src/Index.re 179 7>>*/ }
+                  _d__=
+                    /*<<src/Index.re 173 20>>*/ _bh_(jsEditor);
+                  /*<<src/Index.re 173 35>>*/ return  /*<<src/Index.re 173 35>>*/ _bT_
+                         (_d__,text,position$0,_d9_,_d8_) /*<<src/Index.re 177 65>>*/ }) /*<<src/Index.re 179 7>>*/ }
      /*<<src/Index.re 162 2>>*/  /*<<src/Index.re 162 2>>*/ var
-     _dx_=
-       /*<<src/Index.re 162 2>>*/ caml_js_wrap_callback(_dw_);
-     /*<<src/Index.re 160 0>>*/  /*<<src/Index.re 160 0>>*/ _a$_(_dy_,_dx_);
-     /*<<src/Index.re 181 3>>*/ function _dz_(jsEditor,param,range)
-     { /*<<src/Index.re 188 8>>*/ return  /*<<src/Index.re 188 8>>*/ _aT_
+     _dB_=
+       /*<<src/Index.re 162 2>>*/ caml_js_wrap_callback(_dA_);
+     /*<<src/Index.re 160 0>>*/  /*<<src/Index.re 160 0>>*/ _bb_(_dC_,_dB_);
+     /*<<src/Index.re 181 3>>*/ function _dD_(jsEditor,param,range)
+     { /*<<src/Index.re 188 8>>*/ return  /*<<src/Index.re 188 8>>*/ _aV_
               (function(resolve,reject)
                 { /*<<src/Index.re 190 22>>*/ var
                    /*<<src/Index.re 190 22>>*/ path=
-                    /*<<src/Index.re 190 22>>*/ _bf_(jsEditor),
-                   /*<<src/Index.re 191 41>>*/ _dZ_=
-                    /*<<src/Index.re 191 41>>*/ _aP_(jsEditor),
+                    /*<<src/Index.re 190 22>>*/ _bh_(jsEditor),
+                   /*<<src/Index.re 191 41>>*/ _d4_=
+                    /*<<src/Index.re 191 41>>*/ _aQ_(jsEditor),
                    /*<<src/Index.re 191 21>>*/ text=
-                    /*<<src/Index.re 191 21>>*/ _aJ_(_dZ_),
-                   /*<<src/Index.re 192 10>>*/ _d0_=[0,path],
+                    /*<<src/Index.re 191 21>>*/ _aJ_(_d4_),
+                   /*<<src/Index.re 192 10>>*/ _d5_=[0,path],
                    /*<<src/Index.re 192 26>>*/ match=
-                    /*<<src/Index.re 192 26>>*/ _bc_(_d0_),
-                   /*<<src/Index.re 192 50>>*/ extension=0 === match?_dA_:_dB_,
-                   /*<<src/Index.re 197 19>>*/ _d1_=
+                    /*<<src/Index.re 192 26>>*/ _be_(_d5_),
+                   /*<<src/Index.re 192 50>>*/ extension=0 === match?_dE_:_dF_,
+                   /*<<src/Index.re 197 19>>*/ _d6_=
                     /*<<src/Index.re 197 19>>*/ _aI_(range);
-                  /*<<src/Index.re 197 44>>*/ return  /*<<src/Index.re 197 44>>*/ _cr_
-                         (path,text,extension,_d1_,resolve,reject) /*<<src/Index.re 200 9>>*/ }) /*<<src/Index.re 201 7>>*/ }
+                  /*<<src/Index.re 197 44>>*/ return  /*<<src/Index.re 197 44>>*/ _ct_
+                         (path,text,extension,_d6_,resolve,reject) /*<<src/Index.re 200 9>>*/ }) /*<<src/Index.re 201 7>>*/ }
      /*<<src/Index.re 185 2>>*/  /*<<src/Index.re 185 2>>*/ var
-     _dC_=
-       /*<<src/Index.re 185 2>>*/ caml_js_wrap_callback(_dz_);
-     /*<<src/Index.re 183 0>>*/  /*<<src/Index.re 183 0>>*/ _a$_(_dD_,_dC_);
-     /*<<src/Index.re 203 3>>*/ function _dE_(jsEditor)
+     _dG_=
+       /*<<src/Index.re 185 2>>*/ caml_js_wrap_callback(_dD_);
+     /*<<src/Index.re 183 0>>*/  /*<<src/Index.re 183 0>>*/ _bb_(_dH_,_dG_);
+     /*<<src/Index.re 203 3>>*/ function _dI_(jsEditor)
      { /*<<src/Index.re 210 21>>*/ var
         /*<<src/Index.re 210 21>>*/ editor=
-         /*<<src/Index.re 210 21>>*/ _aN_(jsEditor),
-        /*<<src/Index.re 211 62>>*/ _dS_=
-         /*<<src/Index.re 211 62>>*/ _aR_(editor),
-        /*<<src/Index.re 211 53>>*/ _dT_=
-         /*<<src/Index.re 211 53>>*/ _n_(_dS_),
+         /*<<src/Index.re 210 21>>*/ _aO_(jsEditor),
+        /*<<src/Index.re 211 62>>*/ _dX_=
+         /*<<src/Index.re 211 62>>*/ _aS_(editor),
+        /*<<src/Index.re 211 53>>*/ _dY_=
+         /*<<src/Index.re 211 53>>*/ _n_(_dX_),
         /*<<src/Index.re 211 23>>*/ position=
-         /*<<src/Index.re 211 23>>*/ _aL_(_dT_),
-        /*<<src/Index.re 212 39>>*/ _dU_=
-         /*<<src/Index.re 212 39>>*/ _aP_(jsEditor),
+         /*<<src/Index.re 211 23>>*/ _aL_(_dY_),
+        /*<<src/Index.re 212 39>>*/ _dZ_=
+         /*<<src/Index.re 212 39>>*/ _aQ_(jsEditor),
         /*<<src/Index.re 212 19>>*/ text=
-         /*<<src/Index.re 212 19>>*/ _aJ_(_dU_);
-       /*<<src/Index.re 213 8>>*/ function _dV_(rejectedMsg)
+         /*<<src/Index.re 212 19>>*/ _aJ_(_dZ_);
+       /*<<src/Index.re 213 8>>*/ function _d0_(rejectedMsg)
        { /*<<src/Index.re 223 30>>*/ return 0 /*<<src/Index.re 223 32>>*/ }
-       /*<<src/Index.re 213 8>>*/ function _dW_(result)
+       /*<<src/Index.re 213 8>>*/ function _d1_(result)
        { /*<<src/Index.re 219 14>>*/  /*<<src/Index.re 219 14>>*/ var
-         _dY_=
-           /*<<src/Index.re 219 14>>*/ _bA_(result);
-         /*<<src/Index.re 219 67>>*/ return  /*<<src/Index.re 219 67>>*/ _cs_
-                (editor,_dY_) /*<<src/Index.re 220 70>>*/ }
+         _d3_=
+           /*<<src/Index.re 219 14>>*/ _bC_(result);
+         /*<<src/Index.re 219 67>>*/ return  /*<<src/Index.re 219 67>>*/ _cu_
+                (editor,_d3_) /*<<src/Index.re 220 70>>*/ }
        /*<<src/Index.re 214 16>>*/  /*<<src/Index.re 214 16>>*/ var
-       _dX_=
-         /*<<src/Index.re 214 16>>*/ _bf_(jsEditor);
-       /*<<src/Index.re 214 31>>*/ return  /*<<src/Index.re 214 31>>*/ _bV_
-              (_dX_,text,position,_dW_,_dV_) /*<<src/Index.re 224 7>>*/ }
+       _d2_=
+         /*<<src/Index.re 214 16>>*/ _bh_(jsEditor);
+       /*<<src/Index.re 214 31>>*/ return  /*<<src/Index.re 214 31>>*/ _bX_
+              (_d2_,text,position,_d1_,_d0_) /*<<src/Index.re 224 7>>*/ }
      /*<<src/Index.re 207 2>>*/  /*<<src/Index.re 207 2>>*/ var
-     _dF_=
-       /*<<src/Index.re 207 2>>*/ caml_js_wrap_callback(_dE_);
-     /*<<src/Index.re 205 0>>*/  /*<<src/Index.re 205 0>>*/ _a$_(_dG_,_dF_);
-     /*<<src/Index.re 226 3>>*/ function _dH_(jsEditor)
-     { /*<<src/Index.re 233 8>>*/ return  /*<<src/Index.re 233 8>>*/ _aT_
+     _dJ_=
+       /*<<src/Index.re 207 2>>*/ caml_js_wrap_callback(_dI_);
+     /*<<src/Index.re 205 0>>*/  /*<<src/Index.re 205 0>>*/ _bb_(_dK_,_dJ_);
+     /*<<src/Index.re 226 3>>*/ function _dL_(jsEditor)
+     { /*<<src/Index.re 233 8>>*/ return  /*<<src/Index.re 233 8>>*/ _aV_
               (function(resolve,reject)
                 { /*<<src/Index.re 235 22>>*/ var
                    /*<<src/Index.re 235 22>>*/ path=
-                    /*<<src/Index.re 235 22>>*/ _bf_(jsEditor),
-                   /*<<src/Index.re 236 41>>*/ _dR_=
-                    /*<<src/Index.re 236 41>>*/ _aP_(jsEditor),
+                    /*<<src/Index.re 235 22>>*/ _bh_(jsEditor),
+                   /*<<src/Index.re 236 41>>*/ _dV_=
+                    /*<<src/Index.re 236 41>>*/ _aQ_(jsEditor),
                    /*<<src/Index.re 236 21>>*/ text=
-                    /*<<src/Index.re 236 21>>*/ _aJ_(_dR_);
-                  /*<<src/Index.re 237 10>>*/ return  /*<<src/Index.re 237 10>>*/ _cQ_
-                         (path,text,resolve,reject) /*<<src/Index.re 242 9>>*/ }) /*<<src/Index.re 243 7>>*/ }
+                    /*<<src/Index.re 236 21>>*/ _aJ_(_dV_),
+                   /*<<src/Index.re 237 42>>*/ _dW_=
+                    /*<<src/Index.re 237 42>>*/ _aT_(jsEditor),
+                   /*<<src/Index.re 237 24>>*/ grammar=
+                    /*<<src/Index.re 237 24>>*/ _aN_(_dW_);
+                  /*<<src/Index.re 238 10>>*/ return  /*<<src/Index.re 238 10>>*/ _cT_
+                         (path,text,grammar,resolve,reject) /*<<src/Index.re 244 9>>*/ }) /*<<src/Index.re 245 7>>*/ }
      /*<<src/Index.re 230 2>>*/  /*<<src/Index.re 230 2>>*/ var
-     _dI_=
-       /*<<src/Index.re 230 2>>*/ caml_js_wrap_callback(_dH_);
-     /*<<src/Index.re 228 0>>*/  /*<<src/Index.re 228 0>>*/ _a$_(_dJ_,_dI_);
+     _dM_=
+       /*<<src/Index.re 230 2>>*/ caml_js_wrap_callback(_dL_);
+     /*<<src/Index.re 228 0>>*/  /*<<src/Index.re 228 0>>*/ _bb_(_dN_,_dM_);
      /*<<src/JsUtils.re 8 16>>*/ (function(a)
       { /*<<src/JsUtils.re 9 31>>*/ return !!a /*<<src/JsUtils.re 9 18>>*/ });
      /*<<src/OcamlTypeToReasonType.re 10 19>>*/  /*<<src/OcamlTypeToReasonType.re 10 19>>*/ require
@@ -8775,14 +8799,14 @@
      /*<<src/OcamlTypeToReasonType.re 12 15>>*/  /*<<src/OcamlTypeToReasonType.re 12 15>>*/ require
      ("../lib/fixedEnv");
      /*<<src/Index.re 230 2>>*/ var
-      /*<<src/OcamlTypeToReasonType.re 12 61>>*/ _dK_=20,
-      /*<<src/OcamlTypeToReasonType.re 12 61>>*/ _dL_=0;
+      /*<<src/OcamlTypeToReasonType.re 12 61>>*/ _dO_=20,
+      /*<<src/OcamlTypeToReasonType.re 12 61>>*/ _dP_=0;
      /*<<src/OcamlTypeToReasonType.re 17 18>>*/  /*<<src/OcamlTypeToReasonType.re 17 18>>*/ _an_
-     (_dL_,_dK_);
+     (_dP_,_dO_);
      /*<<src/Index.re 230 2>>*/  /*<<src/OcamlTypeToReasonType.re 17 35>>*/ var
-     _dM_=
+     _dQ_=
       0;
-     /*<<std_exit.ml 16 8>>*/  /*<<std_exit.ml 16 8>>*/ do_at_exit(_dM_);
+     /*<<std_exit.ml 16 8>>*/  /*<<std_exit.ml 16 8>>*/ do_at_exit(_dQ_);
      /*<<std_exit.ml 16 20>>*/ return /*<<?>>*/ }
   (function(){return this}()));
 
