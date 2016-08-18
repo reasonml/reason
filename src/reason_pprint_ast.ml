@@ -4125,11 +4125,21 @@ class printer  ()= object(self:'self)
   method expression x =
     let (arityAttrs, docAtrs, stdAttrs) = partitionAttributes x.pexp_attributes in
     if stdAttrs <> []  && (not (self#expr_can_render_own_attributes x)) then
+      let rec findJSXAttribute attrs =
+        match attrs with
+          | ({txt = "JSX"; _}, _) :: tail -> true
+          | _ :: tail -> findJSXAttribute tail
+          | [] -> false
+      in
+      let hasJSXAttribute = findJSXAttribute x.pexp_attributes in
       let withoutVisibleAttrs = {x with pexp_attributes=arityAttrs} in
         let itm =
-          formatAttributed
-            (self#simple_expression withoutVisibleAttrs)
-            (self#attributes stdAttrs)
+          if hasJSXAttribute then
+            self#simple_expression ~hasJSXAttribute:hasJSXAttribute withoutVisibleAttrs
+          else
+            formatAttributed
+              (self#simple_expression ~hasJSXAttribute:hasJSXAttribute withoutVisibleAttrs)
+              (self#attributes stdAttrs)
       in
       SourceMap (x.pexp_loc, itm)
     else
@@ -4452,7 +4462,7 @@ class printer  ()= object(self:'self)
       | Pexp_apply _ -> true
       | _ -> false
 
-  method simple_expression x =
+  method simple_expression ?(hasJSXAttribute = false) x  =
     let (arityAttrs, docAtrs, stdAttrs) = partitionAttributes x.pexp_attributes in
     (* If the expr can render its own attributes, it will know better if
        guarding the expression in parens is needed. *)
@@ -4473,10 +4483,13 @@ class printer  ()= object(self:'self)
             (self#class_self_pattern_and_structure cs)
         | Pexp_construct _  when is_simple_construct (view_expr x) ->
             (match view_expr x with
-              | `nil -> atom "[]"
+              | `nil -> if hasJSXAttribute then atom "<></>" else atom "[]"
               | `tuple -> atom "()"
               | `list xs -> (* LIST EXPRESSION *)
-                makeList ~break:IfNeed ~wrap:("[", "]") ~sep:"," ~postSpace:true (List.map self#expression xs)
+                if hasJSXAttribute then
+                    makeList ~break:IfNeed ~wrap:("<>", "</>") (List.map self#expression xs)
+                else
+                    makeList ~break:IfNeed ~wrap:("[", "]") ~sep:"," ~postSpace:true (List.map self#expression xs)
               | `cons xs ->
                 let seq, ext = match List.rev xs with
                   | ext :: seq_rev -> (List.rev seq_rev, ext)

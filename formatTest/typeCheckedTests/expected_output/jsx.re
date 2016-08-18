@@ -214,3 +214,19 @@ let a = <Foo a>{0.55}</Foo>;
 let a = Foo.createElement "" [@JSX];
 
 let ident = <Foo>{a}</Foo>;
+
+let fragment1 = <><Foo /><Foo /></>;
+
+let fragment2 = <><Foo /><Foo /></>;
+
+let fragment3 = <><Foo /><Foo /></>;
+
+let fragment4 = <><Foo /><Foo /></>;
+
+let fragment5 = <><Foo /><Foo /></>;
+
+let fragment6 = <><Foo /><Foo /></>;
+
+let fragment7 = <><Foo /><Foo /></>;
+
+let fragment8 = <><Foo /><Foo /></>;

@@ -516,6 +516,7 @@ rule token = parse
   | "-"  { MINUS }
   | "-." { MINUSDOT }
   | "<>" { LESSGREATER }
+  | "<><" { LESSGREATERLESS }
   | "<..>" { LESSDOTDOTGREATER }
   | "\\"? "!" appropriate_operator_suffix_chars +
             { PREFIXOP(Lexing.lexeme lexbuf) }

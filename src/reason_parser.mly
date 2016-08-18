@@ -878,6 +878,7 @@ let ensureTagsAreEqual startTag endTag loc =
 %token LBRACKETPERCENTPERCENT
 %token LESS
 %token LESSGREATER
+%token LESSGREATERLESS
 %token LESSDOTDOTGREATER
 %token LESSMINUS
 %token EQUALGREATER
@@ -2587,6 +2588,14 @@ jsx_separate_open_close:
 ;
 
 jsx_tag:
+  | LESSGREATERLESS jsx_tag_siblings GREATER
+  | LESSGREATER jsx_siblings GREATER
+      {
+        let loc = mklocation $symbolstartpos $endpos in
+        let body = mktailexp_extension loc $2 None in
+        let attribute = ({txt = "JSX"; loc = loc}, PStr []) in
+        { body with pexp_attributes = [attribute] @ body.pexp_attributes }
+      }
   | LESS jsx_start_tag_body SLASHGREATER
       {
         (* Foo /> *)
