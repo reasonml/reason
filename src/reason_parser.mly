@@ -3604,7 +3604,7 @@ sig_exception_declaration:
 generalized_constructor_arguments:
     /*empty*/                                   { ([],None) }
   | as_loc(OF)
-      { Location.raise_errorf ~loc:$1.loc "The of keyword is not used in Reason" }
+      { Location.raise_errorf ~loc:$1.loc "\"of\" is not needed in reason, use `type a = Foo a` instead" }
   | non_arrowed_simple_core_type_list                    { (List.rev $1, None) }
   | non_arrowed_simple_core_type_list COLON core_type
                                                 { (List.rev $1,Some $3) }
