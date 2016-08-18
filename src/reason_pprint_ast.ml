@@ -3373,6 +3373,8 @@ class printer  ()= object(self:'self)
           (match detectJSXComponent expr.pexp_desc pexp_attributes l with
           | Some componentName -> processChildren remainingComponents (result @ [self#formatJSXComponent componentName l])
           | None -> processChildren remainingComponents (result @ [atom "{"; self#expression (List.hd components); atom "}"]))
+        | {pexp_desc = Pexp_ident li} :: remainingComponents ->
+            processChildren remainingComponents (result @ [atom "{"; self#longident_loc li; atom "}"])
         | _ -> result
 
     and processAttributes attributes processedAttrs children =

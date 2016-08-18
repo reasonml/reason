@@ -212,3 +212,5 @@ let a = <Foo a>{5}</Foo>;
 let a = <Foo a>{0.55}</Foo>;
 
 let a = Foo.createElement "" [@JSX];
+
+let ident = <Foo>{a}</Foo>;
