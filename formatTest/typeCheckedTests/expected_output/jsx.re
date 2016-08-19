@@ -230,3 +230,11 @@ let fragment6 = <><Foo /><Foo /></>;
 let fragment7 = <><Foo /><Foo /></>;
 
 let fragment8 = <><Foo /><Foo /></>;
+
+let fragment9 = <>{2}</>;
+
+let fragment10 = <>{2.2}</>;
+
+let fragment11 = <>"str"</>;
+
+let fragment12 = <>{6 + 2}</>;

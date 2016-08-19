@@ -3358,25 +3358,23 @@ class printer  ()= object(self:'self)
     (itms, None, None)
 
   method formatJSXComponent componentName args =
-
     let rec processChildren components result =
-        match components with
-        | {pexp_desc = Pexp_constant (constant)} :: remainingComponents ->
-          (let constant = match constant with
+      match components with
+      | {pexp_desc = Pexp_constant (constant)} :: remainingComponents ->
+        (let constant = match constant with
           | Const_float _ | Const_int _ | Const_int32 _ | Const_int64 _ ->  [atom "{"; self#constant constant; atom "}"]
           | _ -> [self#constant constant]
           in
           processChildren remainingComponents (result @ constant))
-        | {pexp_desc = Pexp_construct ({txt = Lident "::"}, Some {pexp_desc = Pexp_tuple(components)} )} :: remainingComponents ->
-          processChildren (remainingComponents @ components) result
-        | {pexp_desc = Pexp_apply(expr, l); pexp_attributes} :: remainingComponents ->
-          (match detectJSXComponent expr.pexp_desc pexp_attributes l with
+      | {pexp_desc = Pexp_construct ({txt = Lident "::"}, Some {pexp_desc = Pexp_tuple(components)} )} :: remainingComponents ->
+        processChildren (remainingComponents @ components) result
+      | {pexp_desc = Pexp_apply(expr, l); pexp_attributes} :: remainingComponents ->
+        (match detectJSXComponent expr.pexp_desc pexp_attributes l with
           | Some componentName -> processChildren remainingComponents (result @ [self#formatJSXComponent componentName l])
           | None -> processChildren remainingComponents (result @ [atom "{"; self#expression (List.hd components); atom "}"]))
-        | {pexp_desc = Pexp_ident li} :: remainingComponents ->
-            processChildren remainingComponents (result @ [atom "{"; self#longident_loc li; atom "}"])
-        | _ -> result
-
+      | {pexp_desc = Pexp_ident li} :: remainingComponents ->
+        processChildren remainingComponents (result @ [atom "{"; self#longident_loc li; atom "}"])
+      | _ -> result
     and processAttributes attributes processedAttrs children =
       match attributes with
       | ("", {pexp_desc = Pexp_construct (_, None)}) :: tail ->
@@ -4487,7 +4485,21 @@ class printer  ()= object(self:'self)
               | `tuple -> atom "()"
               | `list xs -> (* LIST EXPRESSION *)
                 if hasJSXAttribute then
-                    makeList ~break:IfNeed ~wrap:("<>", "</>") (List.map self#expression xs)
+                    let rec formatChildren children formatted =
+                      match children with
+                        | {pexp_desc = Pexp_constant (constant)} :: tail ->
+                          (match constant with
+                            | Const_float _ | Const_int _ | Const_int32 _ | Const_int64 _ ->  formatChildren tail (formatted @ [atom "{"; self#constant constant; atom "}"])
+                            | _ -> formatChildren tail (formatted @ [self#constant constant]))
+                        | {pexp_desc = Pexp_apply(expr, l); pexp_attributes} :: tail ->
+                           (match detectJSXComponent expr.pexp_desc pexp_attributes l with
+                            | Some componentName -> formatChildren tail (formatted @ [self#formatJSXComponent componentName l])
+                            | None -> formatChildren tail (formatted @ [atom "{"; self#expression (List.hd children); atom "}"]))
+                        | {pexp_desc = Pexp_ident li} :: tail -> formatChildren tail (formatted @ [atom "{"; self#longident_loc li; atom "}"])
+                        | head :: tail -> formatChildren tail (formatted @ [self#expression head])
+                        | [] -> formatted
+                    in
+                    makeList ~break:IfNeed ~wrap:("<>", "</>") (formatChildren xs [])
                 else
                     makeList ~break:IfNeed ~wrap:("[", "]") ~sep:"," ~postSpace:true (List.map self#expression xs)
               | `cons xs ->
