@@ -51,8 +51,16 @@ let locateAndGoToLocation path::path text::text extension::extension range::rang
             /* Invalid identifier... let's not show that in the Notiflyer. */
             resolve Js.null
           | Merlin.OtherError err =>
-            Js.Unsafe.meth_call notiflyer "showInfoBar" [|Js.Unsafe.inject @@ Js.string err|];
-            resolve Js.null
+            let failCallback = Js.wrap_callback (
+              fun () =>
+                Js.Unsafe.meth_call notiflyer "showInfoBar" [|Js.Unsafe.inject @@ Js.string err|]
+            );
+            resolve (
+              Js.Unsafe.obj [|
+                ("range", Atom.Range.toJs range),
+                ("callback", Js.Unsafe.inject failCallback)
+              |]
+            )
           | a =>
             Js.Unsafe.meth_call notiflyer "clearFeedbackBar" [||];
             let successJumpToLocationCallback = Js.wrap_callback (fun () => goToLocation result);
