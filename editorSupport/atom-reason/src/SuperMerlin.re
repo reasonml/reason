@@ -230,7 +230,9 @@ let getAutoCompleteSuggestions
         Js.Unsafe.inject (Js.string "prefix"),
         Js.Unsafe.inject (Js.string prefix),
         Js.Unsafe.inject (Js.string "at"),
-        Js.Unsafe.inject (positionToJsMerlinPosition position)
+        Js.Unsafe.inject (positionToJsMerlinPosition position),
+        Js.Unsafe.inject (Js.string "with"),
+        Js.Unsafe.inject (Js.string "doc")
       |]
     )
     resolve
@@ -244,27 +246,13 @@ let getDiagnostics path::path text::text resolve reject =>
     resolve
     reject;
 
-/* TODO: put this logic into reason and somewhere else. */
-let normalizeLocateCommandResult' = Js.Unsafe.js_expr {|
-  function(o, path) {
-    if (typeof o === "string") {
-      return o
-    }
-    if (o.file == null) {
-      return {
-        file: path,
-
-        pos: o.pos,
-      };
-    }
-    return o;
-  }
-|};
-
-let normalizeLocateCommandResult o path =>
-  Js.Unsafe.fun_call normalizeLocateCommandResult' [|o, Js.Unsafe.inject (Js.string path)|];
-
-let locate path::path text::text extension::extension position::position resolve reject =>
+let locate
+    path::path
+    text::text
+    extension::extension
+    position::position
+    resolve
+    reject =>
   prepareCommand
     text::text
     path::path
@@ -277,9 +265,10 @@ let locate path::path text::text extension::extension position::position resolve
         Js.Unsafe.inject (positionToJsMerlinPosition position)
       |]
     )
-    (fun successResult => resolve (normalizeLocateCommandResult successResult path))
+    resolve
     reject;
 
+/* reject */
 let getOccurrences path::path text::text position::position resolve reject =>
   prepareCommand
     text::text
@@ -292,5 +281,13 @@ let getOccurrences path::path text::text position::position resolve reject =>
         Js.Unsafe.inject (positionToJsMerlinPosition position)
       |]
     )
+    resolve
+    reject;
+
+let getOutline path::path text::text resolve reject =>
+  prepareCommand
+    text::text
+    path::path
+    query::(Js.array [|Js.Unsafe.inject (Js.string "outline")|])
     resolve
     reject;

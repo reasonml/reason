@@ -47,11 +47,11 @@ export
         Atom.Promise.createFakePromise (
           fun resolve reject =>
             AtomReasonFormat.getEntireFormatting
-              editor
-              range
-              notifySuccess
-              notifyInvalid
-              notifyInfo
+              editor::editor
+              range::range
+              notifySuccess::notifySuccess
+              notifyInvalid::notifyInvalid
+              notifyInfo::notifyInfo
               (fun successResult => resolve (NuclideJs.FileFormat.toJs successResult))
               (fun rejectedMsg => reject (Js.string rejectedMsg))
         )
@@ -74,11 +74,11 @@ export
         Atom.Promise.createFakePromise (
           fun resolve reject =>
             AtomReasonFormat.getPartialFormatting
-              editor
-              range
-              notifySuccess
-              notifyInvalid
-              notifyInfo
+              editor::editor
+              range::range
+              notifySuccess::notifySuccess
+              notifyInvalid::notifyInvalid
+              notifyInfo::notifyInfo
               (fun successResult => resolve (Js.string successResult))
               (fun rejectedMsg => reject (Js.string rejectedMsg))
         )
@@ -98,6 +98,7 @@ export
         let (line, col) as position = Atom.Cursor.getBufferPosition (
           List.hd (Atom.Editor.getCursors editor)
         );
+
         /**
          * The default prefix at something like `Printf.[cursor]` is just the dot. Compute
          * `linePrefix` so that ocamlmerlin gets more context. Compute `replacementPrefix`
@@ -183,17 +184,21 @@ export
   "getLocation"
   (
     Js.wrap_callback (
-      fun jsEditor _ range => {
-        let callback = Js.wrap_callback (
-          fun () =>
-            AtomReasonLocate.getMerlinLocation
-              editor::(Atom.Editor.fromJs jsEditor) range::(Atom.Range.fromJs range)
-        );
-        Js.Unsafe.obj [|
-          ("range", Js.Unsafe.inject range),
-          ("callback", Js.Unsafe.inject callback)
-        |]
-      }
+      fun jsEditor _ range =>
+        Atom.Promise.createFakePromise (
+        fun resolve reject => {
+          let path' = path jsEditor;
+          let text = Atom.Buffer.getText (Atom.Editor.getBuffer jsEditor);
+          let extension = isInterface (Some path') ? "mli" : "ml";
+          AtomReasonLocate.locateAndGoToLocation
+            path::path'
+            text::text
+            extension::extension
+            range::(Atom.Range.fromJs range)
+            resolve
+            reject
+        }
+      )
     )
   );
 
@@ -217,5 +222,26 @@ export
           /* TODO: do something here. */
           (fun rejectedMsg => ())
       }
+    )
+  );
+
+export
+  "getOutline"
+  (
+    Js.wrap_callback (
+      fun jsEditor =>
+        Atom.Promise.createFakePromise (
+        fun resolve reject => {
+          let path' = path jsEditor;
+          let text = Atom.Buffer.getText (Atom.Editor.getBuffer jsEditor);
+          let grammar = Atom.Grammar.name (Atom.Editor.getGrammar jsEditor);
+          AtomReasonOutline.getOutline
+            path::path'
+            text::text
+            grammar::grammar
+            resolve
+            reject
+        }
+      )
     )
   );

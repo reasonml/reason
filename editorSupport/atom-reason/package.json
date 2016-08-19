@@ -8,16 +8,19 @@
     "Reason"
   ],
   "activationHooks": [
-    "language-reason:grammar-used"
+    "language-reason:grammar-used",
+    "language-ocaml:grammar-used"
   ],
   "devDependencies": {
-    "jengaboot": "0.0.11"
+    "jengaboot": "0.0.22"
+  },
+  "jengaboot": {
+    "ocamlfindDependencies": {
+      "js_of_ocaml": "*"
+    }
   },
   "messagesToInstaller": {
     "0.0.0": "These messages will be given to the respective version of the auto-installer. They're a nice way to message the user when the one thing that can't be updated, needs to be updated"
-  },
-  "dependencies": {
-    "js_of_ocaml": "*"
   },
   "providedServices": {
     "autocomplete.provider": {
@@ -48,6 +51,11 @@
     "nuclide-type-hint.provider": {
       "versions": {
         "0.0.0": "createTypeHintProvider"
+      }
+    },
+    "nuclide-outline-view": {
+      "versions": {
+        "0.0.0": "provideOutline"
       }
     }
   },

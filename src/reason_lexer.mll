@@ -103,6 +103,7 @@ let keyword_table =
     "new", NEW;
     "nonrec", NONREC;
     "object", OBJECT;
+    "of", OF;
     "open", OPEN;
     "or", OR;
 (*  "parser", PARSER; *)

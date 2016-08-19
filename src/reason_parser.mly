@@ -889,6 +889,7 @@ let ensureTagsAreEqual startTag endTag loc =
 %token LBRACKETATAT
 %token LBRACKETATATAT
 %token LESSSLASH
+%token OF
 %token SWITCH
 %token MATCH
 %token METHOD
@@ -3807,6 +3808,8 @@ sig_exception_declaration:
 ;
 generalized_constructor_arguments:
     /*empty*/                                   { ([],None) }
+  | as_loc(OF)
+      { Location.raise_errorf ~loc:$1.loc "The of keyword is not used in Reason" }
   | non_arrowed_simple_core_type_list                    { (List.rev $1, None) }
   | non_arrowed_simple_core_type_list COLON core_type
                                                 { (List.rev $1,Some $3) }

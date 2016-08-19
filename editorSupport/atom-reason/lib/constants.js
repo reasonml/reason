@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-export const RE_GRAMMARS = Object.freeze(['source.reason']);
+export const RE_GRAMMARS = Object.freeze(['source.reason', 'source.ocaml']);
 
 const identifierOrNumber = '[a-zA-Z0-9_$]+';
 

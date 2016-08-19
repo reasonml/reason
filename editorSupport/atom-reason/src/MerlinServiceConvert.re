@@ -5,17 +5,19 @@
  * vim: set ft=rust:
  * vim: set ft=reason:
  */
+let jsMerlinPointToAtomPoint point => (
+  /* lines (rows) are 1-based for merlin, not 0-based, like for Atom */
+  Js.Unsafe.get point "line" - 1,
+  Js.Unsafe.get point "col"
+);
+
 let jsMerlinPositionToAtomRange position => {
   let merlinStart = Js.Unsafe.get position "start";
   let merlinEnd = Js.Unsafe.get position "end";
   let range =
     Js.undefined === merlinStart || Js.undefined === merlinEnd ?
       Atom.Range.emptyRange :
-      (
-        /* lines (rows) are 1-based for merlin, not 0-based, like for Atom */
-        (Js.Unsafe.get merlinStart "line" - 1, Js.Unsafe.get merlinStart "col"),
-        (Js.Unsafe.get merlinEnd "line" - 1, Js.Unsafe.get merlinEnd "col")
-      );
+      (jsMerlinPointToAtomPoint merlinStart, jsMerlinPointToAtomPoint merlinEnd);
   range
 };
 
@@ -80,7 +82,7 @@ let merlinCompletionEntryToNuclide replacementPrefix e => {
   typee: merlinCompletionEntryKindToNuclide e.kind,
   /* Include the full type in the description just in case it gets truncated in */
   /* the center column, you'll be able to see it in the description bar. */
-  description: e.desc,
+  description: e.info ^ "Full description: " ^ e.desc,
   replacementPrefix
 };
 
@@ -100,3 +102,27 @@ let jsMerlinTypeHintEntryToNuclide arr => {
 };
 
 let jsMerlinOccurrencesToAtom arr => Js.to_array arr |> Array.map jsMerlinPositionToAtomRange;
+
+let jsMerlinLocateToEntry jsResult =>
+  switch (Js.to_string (Js.typeof jsResult)) {
+  | "string" =>
+    /* merlin error message */
+    let result = Js.to_string jsResult;
+    switch result {
+    | "Not a valid identifier" => Merlin.InvalidIdentifier
+    | _ => Merlin.OtherError result
+    }
+  | "object" =>
+    let fileValue = Js.Unsafe.get jsResult "file";
+    if (fileValue == Js.null) {
+      Merlin.CurrentFile {
+        position: Js.Unsafe.get jsResult "pos" |> Js.to_string |> jsMerlinPositionToAtomRange
+      }
+    } else {
+      Merlin.AnotherFile {
+        file: fileValue,
+        position: Js.Unsafe.get jsResult "pos" |> Js.to_string |> jsMerlinPositionToAtomRange
+      }
+    }
+  | _ => raise Not_found
+  };

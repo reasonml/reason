@@ -1391,35 +1391,6 @@ let smallestLeadingSpaces strs =
   in
   smallestLeadingSpaces 99999 strs
 
-let string_after s n = String.sub s n (String.length s - n)
-
-let formatItemComment (str, commLoc, physCommLoc) =
-  let commLines = Re_str.split_delim (Re_str.regexp "\n") ("/*" ^ str ^ "*/") in
-  match commLines with
-  | [] -> easyAtom ""
-  | [hd] ->
-    makeEasyList ~inline:(true, true) ~postSpace:true ~preSpace:true ~indent:0 ~break:IfNeed [easyAtom hd]
-  | zero::one::tl ->
-    let lineZero = List.nth commLines 0 in
-    let lineOne = List.nth commLines 1 in
-    let hasMeaningfulContentOnLineZero = lineZeroHasMeaningfulContent lineZero in
-    let attemptRemoveCount = (smallestLeadingSpaces (one::tl)) in
-    (* If only OCaml, had a left-pad module. *)
-    let leftPad =
-      if beginsWithStar lineOne then 1
-      else (if hasMeaningfulContentOnLineZero then spaceBeforeMeaningfulContent lineZero else 1)
-    in
-    let padNonOpeningLine s =
-      let numLeadingSpaceForThisLine = numLeadingSpace s in
-      if String.length s == 0 then ""
-      else (String.make leftPad ' ') ^
-        (string_after s (min attemptRemoveCount numLeadingSpaceForThisLine)) in
-    let lines = zero :: List.map padNonOpeningLine (one::tl) in
-    (* Use the Str module for regex splitting *)
-    makeEasyList ~inline:(true, true) ~indent:0 ~break:Always_rec (List.map easyAtom lines)
-
-let formatComments comms = List.map formatItemComment comms
-
 let convertIsListyToIsSequencey isListyImpl =
   let rec isSequencey layoutNode = match layoutNode with
     | SourceMap (_, subLayoutNode) -> isSequencey subLayoutNode
@@ -1443,6 +1414,8 @@ let insertBlankLines n term =
     term
   else
     makeList ~inline:(true, true) ~indent:0 ~break:Always_rec (Array.to_list (Array.make n (atom "")) @ [term])
+
+let string_after s n = String.sub s n (String.length s - n)
 
 let wrapComment txt =
   ("/*" ^ txt ^ "*/")
@@ -5596,12 +5569,14 @@ class printer  ()= object(self:'self)
         | Pstr_class l -> self#class_declaration_list l
         | Pstr_class_type (l) -> self#class_type_declaration_list l
         | Pstr_primitive vd ->
-            makeList ~postSpace:true [
+            let attrs =  List.map (fun x -> self#item_attribute x) vd.pval_attributes in 
+            let lst = List.append [
               atom ("external");
               protectIdentifier vd.pval_name.txt;
               atom (":");
               self#value_description vd;
-            ]
+            ] attrs in
+            makeList ~postSpace:true lst
         | Pstr_include incl ->
             (* Kind of a hack *)
             let moduleExpr = incl.pincl_mod in
