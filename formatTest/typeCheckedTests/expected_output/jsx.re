@@ -6,11 +6,15 @@ let (><) a b => a + b;
 
 let (\/>) a b => a + b;
 
+let (><\/) a b => a + b;
+
 let tag1 = 5 \/>< 6;
 
 let tag2 = 5 >< 7;
 
 let tag3 = 5 \/> 7;
+
+let tag4 = 5 ><\/ 7;
 
 let module Bar = {
   let createElement c::c=? children => {
