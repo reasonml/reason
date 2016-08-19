@@ -1079,7 +1079,7 @@ conflicts.
 %nonassoc SLASHGREATER
 %nonassoc SLASHGREATERLESS
 %nonassoc GREATERLESS
-
+%nonassoc GREATERLESSSLASH
 
 /* Finally, the first tokens of simple_expr are above everything else. */
 %nonassoc BACKQUOTE BANG CHAR FALSE FLOAT INT INT32 INT64
@@ -4300,7 +4300,8 @@ val_ident:
    however they are not existent in OCaml and could be used as operators */
   | SLASHGREATERLESS                            { "/><" }
   | GREATERLESS                                 { "><" }
-  | SLASHGREATER                                 { "/>" }
+  | SLASHGREATER                                { "/>" }
+  | GREATERLESSSLASH                            { "></" }
 ;
 
 operator:
