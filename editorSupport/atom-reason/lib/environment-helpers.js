@@ -32,7 +32,13 @@ function getRawShellEnv () {
   // The `-ilc` set of options was tested to work with the OS X v10.11
   // default-installed versions of bash, zsh, sh, and ksh. It *does not*
   // work with csh or tcsh.
-  let results = spawnSync(shell, ['-ilc', 'env'], {encoding: 'utf8'});
+
+  let results = spawnSync(shell, ['-ilc', 'env'], {
+    encoding: 'utf8',
+    // github.com/ioquatix/script-runner/blob/6eb2d23af099a6daeacc7361248c43bce233dff1/lib/script-runner.coffee#L49
+    detached: true,
+    stdio: ['ignore', 'pipe', process.stderr],
+  });
   if (results.error || !results.stdout || results.stdout.length <= 0) {
     return;
   }
