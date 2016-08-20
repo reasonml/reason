@@ -2565,13 +2565,6 @@ jsx_separate_open_close:
         let _ = ensureTagsAreEqual start $4 loc in
         component [("", mktailexp_extension loc $3 None)] ~loc
       }
-  | jsx_start_tag_body GREATER LESS jsx_tag_siblings jsx_name
-      {
-        let (component, start) = $1 in
-        let loc = mklocation $symbolstartpos $endpos in
-        let _ = ensureTagsAreEqual start $5 loc in
-        component [("", mktailexp_extension loc $4 None)] ~loc
-      }
   | jsx_start_tag_body GREATER jsx_siblings jsx_name
       {
         (* Foo> <Tags /> </Foo *)
@@ -2650,19 +2643,13 @@ jsx_tag_siblings:
 
 jsx_siblings:
     LESSSLASH { [] }
-  | STRING jsx_siblings
-      {
-        let (s, d) = $1 in
-        let loc = mklocation $symbolstartpos $endpos in
-        [mkexp (Pexp_constant (Const_string (s, d))) ~loc] @ $2
-      }
   | LESS jsx_tag_siblings
       {
         $2
       }
-  | LBRACE expr RBRACE jsx_siblings
+  | simple_expr jsx_siblings
       {
-        [$2] @ $4
+        [$1] @ $2
       }
 ;
 
@@ -2818,7 +2805,6 @@ _simple_expr:
     {
       mkexp (Pexp_construct ($1, None))
     }
-
   | name_tag %prec prec_constant_constructor
       { mkexp (Pexp_variant ($1, None)) }
   | LPAREN expr RPAREN
