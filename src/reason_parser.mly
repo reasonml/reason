@@ -788,7 +788,27 @@ let rec string_of_longident = function
 
 let built_in_explicit_arity_constructors = ["Some"; "Assert_failure"; "Match_failure"]
 
+let jsx_component module_name attrs children ~loc =
+  let firstPart = (List.hd (Longident.flatten module_name)) in
+  let lident = if firstPart = String.capitalize firstPart then
+    Ldot(module_name, "createElement")
+  else
+    Lident firstPart
+  in
+  let ident = ghloc ~loc lident in
+  let body = mkexp(Pexp_apply(mkexp(Pexp_ident ident), attrs @ children)) ~loc in
+  let attribute = ({txt = "JSX"; loc = loc}, PStr []) in
+  { body with pexp_attributes = [attribute] @ body.pexp_attributes }
+
+let ensureTagsAreEqual startTag endTag loc =
+  if startTag <> endTag then
+     let startTag = (String.concat "" (Longident.flatten startTag)) in
+     let endTag = (String.concat "" (Longident.flatten endTag)) in
+     let _ = Location.raise_errorf ~loc "Syntax error: Start tag <%s> does not match end tag </%s>" startTag endTag in
+     ()
 %}
+
+
 
 /* Tokens */
 
@@ -830,8 +850,10 @@ let built_in_explicit_arity_constructors = ["Some"; "Assert_failure"; "Match_fai
 %token FUNCTION
 %token FUNCTOR
 %token GREATER
+%token GREATERLESS
+%token GREATERLESSSLASH
 %token GREATERRBRACE
-%token GREATERRBRACKET
+%token SLASHGREATERRBRACKET
 %token IF
 %token IN
 %token INCLUDE
@@ -856,6 +878,7 @@ let built_in_explicit_arity_constructors = ["Some"; "Assert_failure"; "Match_fai
 %token LBRACKETPERCENTPERCENT
 %token LESS
 %token LESSGREATER
+%token LESSGREATERLESS
 %token LESSDOTDOTGREATER
 %token LESSMINUS
 %token EQUALGREATER
@@ -865,6 +888,7 @@ let built_in_explicit_arity_constructors = ["Some"; "Assert_failure"; "Match_fai
 %token LBRACKETAT
 %token LBRACKETATAT
 %token LBRACKETATATAT
+%token LESSSLASH
 %token OF
 %token SWITCH
 %token MATCH
@@ -899,6 +923,9 @@ let built_in_explicit_arity_constructors = ["Some"; "Assert_failure"; "Match_fai
 %token SEMISEMI
 %token SHARP
 %token SIG
+%token SLASHGREATER
+%token SLASHGREATERLESS
+%token SLASHGREATERLESSSLASH
 %token STAR
 %token <string * string option> STRING
 %token STRUCT
@@ -1050,12 +1077,16 @@ conflicts.
 
 %nonassoc below_LBRACKETAT
 %nonassoc LBRACKETAT
+%nonassoc SLASHGREATER
+%nonassoc SLASHGREATERLESS
+%nonassoc GREATERLESS
+%nonassoc GREATERLESSSLASH
 
 /* Finally, the first tokens of simple_expr are above everything else. */
 %nonassoc BACKQUOTE BANG CHAR FALSE FLOAT INT INT32 INT64
           LBRACE LBRACELESS LBRACKET LBRACKETBAR LIDENT LPAREN
           NEW NATIVEINT PREFIXOP STRING TRUE UIDENT
-          LBRACKETPERCENT
+          LBRACKETPERCENT LBRACKETLESS
 
 /* Entry points */
 
@@ -2491,6 +2522,136 @@ labeled_simple_pattern:
   | simple_pattern
       { ("", None, $1) }
 ;
+jsx_arguments:
+  /* empty */ { [] }
+  | LIDENT EQUAL simple_expr jsx_arguments
+      {
+        (* a=b *)
+        [($1, $3)] @ $4
+      }
+  | LIDENT jsx_arguments
+      {
+        (* a (punning) *)
+        let loc_lident = mklocation $startpos($1) $endpos($1) in
+        [($1, mkexp (Pexp_ident {txt = Lident $1; loc = loc_lident}))] @ $2
+      }
+;
+
+jsx_name:
+  | mod_longident { $1 }
+  | LIDENT { Lident $1 }
+;
+
+
+jsx_start_tag_body:
+  | jsx_name jsx_arguments {
+      (jsx_component $1 $2, $1)
+  }
+;
+
+jsx_separate_open_close:
+  | jsx_start_tag_body GREATERLESSSLASH jsx_name
+      {
+        (* Foo></Foo *)
+        let (component, start) = $1 in
+        let loc = mklocation $symbolstartpos $endpos in
+        let _ = ensureTagsAreEqual start $3 loc in
+        component [("", mktailexp_extension loc [] None)] ~loc
+      }
+  | jsx_start_tag_body GREATERLESS jsx_tag_siblings jsx_name
+      {
+        let (component, start) = $1 in
+        let loc = mklocation $symbolstartpos $endpos in
+        let _ = ensureTagsAreEqual start $4 loc in
+        component [("", mktailexp_extension loc $3 None)] ~loc
+      }
+  | jsx_start_tag_body GREATER jsx_siblings jsx_name
+      {
+        (* Foo> <Tags /> </Foo *)
+        let (component, start) = $1 in
+        let loc = mklocation $symbolstartpos $endpos in
+        let _ = ensureTagsAreEqual start $4 loc in
+        let siblings =
+          if List.length $3 > 0 then
+            $3
+          else
+            []
+        in
+        component [("", mktailexp_extension loc siblings None)] ~loc
+      }
+;
+
+jsx_tag:
+  | LESSGREATERLESS jsx_tag_siblings GREATER
+  | LESSGREATER jsx_siblings GREATER
+      {
+        let loc = mklocation $symbolstartpos $endpos in
+        let body = mktailexp_extension loc $2 None in
+        let attribute = ({txt = "JSX"; loc = loc}, PStr []) in
+        { body with pexp_attributes = [attribute] @ body.pexp_attributes }
+      }
+  | LESS jsx_start_tag_body SLASHGREATER
+      {
+        (* Foo /> *)
+        let (component, _) = $2 in
+        let loc = mklocation $symbolstartpos $endpos in
+        component [("", mktailexp_extension loc [] None)] ~loc
+      }
+  | LESS jsx_separate_open_close GREATER
+      {
+        (* /Foo> *)
+        $2
+      }
+;
+
+jsx_tag_siblings:
+  | jsx_start_tag_body SLASHGREATERLESSSLASH
+      {
+        let (component, _) = $1 in
+        let loc = mklocation $symbolstartpos $endpos in
+        [component [("", mktailexp_extension loc [] None)] ~loc]
+      }
+  | jsx_start_tag_body SLASHGREATERLESS jsx_tag_siblings
+      {
+        (* Tag /><Tag *)
+        let (component, _) = $1 in
+        let loc = mklocation $symbolstartpos $endpos in
+        [component [("", mktailexp_extension loc [] None)] ~loc] @ $3
+      }
+  | jsx_start_tag_body SLASHGREATER jsx_siblings
+      {
+        (* Tag /> <Tags *)
+        let (component, _) = $1 in
+        let loc = mklocation $symbolstartpos $endpos in
+        [component [("", mktailexp_extension loc [] None)] ~loc] @ $3
+      }
+  | jsx_separate_open_close GREATERLESSSLASH
+      {
+        [$1]
+      }
+  | jsx_separate_open_close GREATER jsx_siblings
+      {
+        (* Tag> <Tags *)
+        [$1] @ $3
+      }
+  | jsx_separate_open_close GREATERLESS jsx_tag_siblings
+      {
+        (* Tag><Tags *)
+        [$1] @ $3
+     }
+;
+
+jsx_siblings:
+    LESSSLASH { [] }
+  | LESS jsx_tag_siblings
+      {
+        $2
+      }
+  | simple_expr jsx_siblings
+      {
+        [$1] @ $2
+      }
+;
 
 /*
  * Much like how patterns are partitioned into pattern/simple_pattern,
@@ -2515,6 +2676,7 @@ _expr:
       let (l,o,p) = $2 in
       mkexp (Pexp_fun(l, o, p, $3))
     }
+  | jsx_tag { $1 }
   | FUN LPAREN TYPE LIDENT RPAREN fun_def
       { mkexp (Pexp_newtype($4, $6)) }
   /* List style rules like this often need a special precendence
@@ -2643,7 +2805,6 @@ _simple_expr:
     {
       mkexp (Pexp_construct ($1, None))
     }
-
   | name_tag %prec prec_constant_constructor
       { mkexp (Pexp_variant ($1, None)) }
   | LPAREN expr RPAREN
@@ -2743,6 +2904,33 @@ _simple_expr:
       }
   | mod_longident DOT as_loc(LBRACKETBAR) expr_comma_seq opt_comma as_loc(error)
       { unclosed_exp (with_txt $3 "[|") (with_txt $6 "|]") }
+  | LBRACKETLESS jsx_separate_open_close GREATER RBRACKET
+      {
+        let loc = mklocation $symbolstartpos $endpos in
+        make_real_exp (mktailexp_extension loc [$2] None)
+      }
+  | LBRACKETLESS jsx_start_tag_body SLASHGREATER RBRACKET
+  | LBRACKETLESS jsx_start_tag_body SLASHGREATERRBRACKET
+      {
+        let (component, _) = $2 in
+        let loc = mklocation $symbolstartpos $endpos in
+        let c = component [("", mktailexp_extension loc [] None)] ~loc in
+        make_real_exp (mktailexp_extension loc [c] None)
+      }
+  | LBRACKETLESS jsx_separate_open_close GREATER COMMA expr_comma_seq_extension
+      {
+        let seq, ext_opt = $5 in
+        let loc = mklocation $symbolstartpos $endpos in
+        make_real_exp (mktailexp_extension loc ([$2] @ seq) ext_opt)
+      }
+  | LBRACKETLESS jsx_start_tag_body SLASHGREATER COMMA expr_comma_seq_extension
+      {
+        let seq, ext_opt = $5 in
+        let (component, _) = $2 in
+        let loc = mklocation $symbolstartpos $endpos in
+        let c = component [("", mktailexp_extension loc [] None)] ~loc in
+        make_real_exp (mktailexp_extension loc ([c] @ seq) ext_opt)
+      }
   | LBRACKET expr_comma_seq_extension
       { let seq, ext_opt = $2 in
         let loc = mklocation $startpos($2) $endpos($2) in
@@ -3141,6 +3329,13 @@ expr_comma_seq:
 
 /* [x, y, z, ...n] --> ([x,y,z], Some n) */
 expr_comma_seq_extension:
+  | LESS jsx_start_tag_body SLASHGREATERRBRACKET
+      {
+        let (component, _) = $2 in
+        let loc = mklocation $symbolstartpos $endpos in
+        let c = component [("", mktailexp_extension loc [] None)] ~loc in
+        ([c], None)
+      }
   | DOTDOTDOT expr_optional_constraint RBRACKET
     { ([], Some $2) }
   | expr_optional_constraint opt_comma RBRACKET
@@ -4090,11 +4285,20 @@ val_ident:
   | LESSGREATER                                 { "<>" }
   | LESSDOTDOTGREATER                           { "<..>" }
 
+/* We require these tokens to remove spaces between JSX tags,
+   however they are not existent in OCaml and could be used as operators */
+  | SLASHGREATERLESS                            { "/><" }
+  | GREATERLESS                                 { "><" }
+  | SLASHGREATER                                { "/>" }
+  | GREATERLESSSLASH                            { "></" }
+;
+
 operator:
     PREFIXOP                                    { $1 }
   | BANG                                        { "!" }
   | infix_operator                              { $1 }
 ;
+
 %inline constr_ident:
     UIDENT                                      { $1 }
 /*  | LBRACKET RBRACKET                           { "[]" } */

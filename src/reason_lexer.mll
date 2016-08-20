@@ -457,6 +457,7 @@ rule token = parse
   | "&&" { AMPERAMPER }
   | "`"  { BACKQUOTE }
   | "'"  { QUOTE }
+  | "</" { LESSSLASH }
   | "("  { LPAREN }
   | ")"  { RPAREN }
   | "*"  { STAR }
@@ -470,6 +471,9 @@ rule token = parse
   | ":"  { COLON }
   | "::" { COLONCOLON }
   | ":=" { COLONEQUAL }
+  | "/>" { SLASHGREATER }
+  | "/><" { SLASHGREATERLESS }
+  | "/></" { SLASHGREATERLESSSLASH }
   | ":>" { COLONGREATER }
   | ";"  { SEMI }
   | ";;" { SEMISEMI }
@@ -492,6 +496,9 @@ rule token = parse
      maintained when printing etc. >] isn't even needed!
   | ">]" { GREATERRBRACKET }
   *)
+  | "/>]" { SLASHGREATERRBRACKET }
+  | "><"  { GREATERLESS }
+  | "></" { GREATERLESSSLASH }
   | "}"  { RBRACE }
   | ">}" { GREATERRBRACE }
   | "[@" { LBRACKETAT }
@@ -510,6 +517,7 @@ rule token = parse
   | "-"  { MINUS }
   | "-." { MINUSDOT }
   | "<>" { LESSGREATER }
+  | "<><" { LESSGREATERLESS }
   | "<..>" { LESSDOTDOTGREATER }
   | "\\"? "!" appropriate_operator_suffix_chars +
             { PREFIXOP(Lexing.lexeme lexbuf) }

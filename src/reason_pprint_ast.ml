@@ -691,6 +691,30 @@ let default = new Pprintast.printer ()
 type funcReturnStyle =
   | ReturnValOnSameLine
 
+let rec detectJSXComponent e attributes l =
+  match (e, attributes) with
+    | (Pexp_ident loc, ({txt = "JSX"; _}, PStr []) :: tail) ->
+      let rec checkChildren arguments nrOfChildren =
+        match arguments with
+        | ("", {pexp_desc = Pexp_construct ({txt = Lident "::"}, _)}) :: tail
+        | ("", {pexp_desc = Pexp_construct ({txt = Lident "[]"}, _)}) :: tail ->
+            checkChildren tail (nrOfChildren + 1)
+        | ("", _) :: tail -> false
+        | (lbl, _)::tail -> checkChildren tail nrOfChildren
+        | [] -> nrOfChildren = 1
+      in
+      let moduleNameList = List.rev (List.tl (List.rev (Longident.flatten loc.txt))) in
+      if List.length moduleNameList > 0 then
+        if Longident.last loc.txt = "createElement" && checkChildren l 0 then
+          Some (String.concat "." moduleNameList)
+        else
+          None
+      else if checkChildren l 0 then
+        Some (Longident.last loc.txt)
+      else
+        None
+    | (Pexp_ident loc,  hd :: tail) -> detectJSXComponent e tail l
+    | _ -> None
 
 let detectTernary l = match l with
   | [{
@@ -3275,12 +3299,18 @@ class printer  ()= object(self:'self)
                       ([item], [], None, Some x.pexp_loc)
                   | None -> (
                     (* Standard application *)
-                    (*reset here only because [function,match,try,sequence] are lower priority*)
-                    List.concat [
-                      [SourceMap (e.pexp_loc, (self#expression2 e))];
-                      List.map self#reset#label_x_expression_param l;
-                      attributesAsList;
-                    ],
+                    (* reset here only because [function,match,try,sequence] are lower priority *)
+                    let exp = match detectJSXComponent e.pexp_desc x.pexp_attributes l with
+                      | Some componentName -> [
+                          [self#formatJSXComponent componentName l];
+                        ]
+                      | None -> [
+                          [SourceMap (e.pexp_loc, self#expression2 e)];
+                          List.map self#reset#label_x_expression_param l;
+                          attributesAsList;
+                      ]
+                    in
+                    List.concat exp,
                     [],
                     None,
                     Some x.pexp_loc
@@ -3299,6 +3329,53 @@ class printer  ()= object(self:'self)
         | _ -> [self#class_expr x]
     in
     (itms, None, None)
+
+  method formatJSXComponent componentName args =
+    let rec processChildren children result =
+      match children with
+      | {pexp_desc = Pexp_constant (constant)} :: remainingChildren ->
+        processChildren remainingChildren (result @ [self#constant constant])
+      | {pexp_desc = Pexp_construct ({txt = Lident "::"}, Some {pexp_desc = Pexp_tuple(children)} )} :: remainingChildren ->
+        processChildren (remainingChildren @ children) result
+      | {pexp_desc = Pexp_apply(expr, l); pexp_attributes} :: remainingChildren ->
+        (match detectJSXComponent expr.pexp_desc pexp_attributes l with
+          | Some componentName -> processChildren remainingChildren (result @ [self#formatJSXComponent componentName l])
+          | None -> processChildren remainingChildren (result @ [self#simple_expression (List.hd children)]))
+      | {pexp_desc = Pexp_ident li} :: remainingChildren ->
+        processChildren remainingChildren (result @ [self#longident_loc li])
+      | {pexp_desc = Pexp_construct ({txt = Lident "[]"}, None)} :: remainingChildren -> processChildren remainingChildren result
+      | head :: remainingChildren -> processChildren remainingChildren (result @ [self#simple_expression head])
+      | [] -> [makeList ~break:IfNeed ~sep:" " ~inline:(true, true) result]
+    and processAttributes attributes processedAttrs children =
+      match attributes with
+      | ("", {pexp_desc = Pexp_construct (_, None)}) :: tail ->
+        processAttributes tail processedAttrs []
+      | ("", {pexp_desc = Pexp_construct ({txt = Lident"::"}, Some {pexp_desc = Pexp_tuple(components)} )}) :: tail ->
+        processAttributes tail processedAttrs (processChildren components [])
+      | (label, expression) :: tail ->
+         let value = match expression.pexp_desc with
+         | Pexp_ident (ident) ->
+            if (Longident.last ident.txt) = label then
+              []
+            else
+              [atom "="; self#simple_expression expression]
+         | _ -> [atom "="; self#simple_expression expression] in
+         processAttributes tail (processedAttrs @ [makeList ([atom " "; atom label; ] @ value)]) children
+      | [] -> (processedAttrs, children)
+    in
+    let (attributes, children) = processAttributes args [] []
+    in
+    if List.length children = 0 then
+        makeList ([atom "<"; atom componentName] @ attributes @ [atom " />"])
+    else
+        let (openingTag, attributes) =
+            if List.length attributes = 0 then
+                (componentName ^ ">", [])
+            else
+                let reversedAttributes = List.rev attributes in
+                (componentName, (List.rev (List.tl reversedAttributes)) @ [(makeList ~break:Never ([List.hd reversedAttributes] @ [atom ">"]))])
+        in
+        makeList ~inline:(false, false) ~break:IfNeed ~wrap:("<" ^ openingTag, "</" ^ componentName ^ ">") (attributes @ children)
 
   method formatTernary x test ifTrue ifFalse =
     if inTernary then
@@ -4017,11 +4094,21 @@ class printer  ()= object(self:'self)
   method expression x =
     let (arityAttrs, docAtrs, stdAttrs) = partitionAttributes x.pexp_attributes in
     if stdAttrs <> []  && (not (self#expr_can_render_own_attributes x)) then
+      let rec findJSXAttribute attrs =
+        match attrs with
+          | ({txt = "JSX"; _}, _) :: tail -> true
+          | _ :: tail -> findJSXAttribute tail
+          | [] -> false
+      in
+      let hasJSXAttribute = findJSXAttribute x.pexp_attributes in
       let withoutVisibleAttrs = {x with pexp_attributes=arityAttrs} in
         let itm =
-          formatAttributed
-            (self#simple_expression withoutVisibleAttrs)
-            (self#attributes stdAttrs)
+          if hasJSXAttribute then
+            self#simple_expression ~hasJSXAttribute:hasJSXAttribute withoutVisibleAttrs
+          else
+            formatAttributed
+              (self#simple_expression ~hasJSXAttribute:hasJSXAttribute withoutVisibleAttrs)
+              (self#attributes stdAttrs)
       in
       SourceMap (x.pexp_loc, itm)
     else
@@ -4105,22 +4192,25 @@ class printer  ()= object(self:'self)
                       (SourceMap (estimatedBracePoint, (makeList ~indent:settings.trySwitchIndent ~wrap:("{", "}") ~break:Always_rec ~postSpace:true cases)))
                 )
 
-              | Pexp_apply (e, l) -> (
-                  match self#expressionToFormattedApplicationItems x with
-                    | ([], [], _, _) ->
-                        raise (
-                          NotPossible (
-                            "no application items extracted " ^ (exprDescrString x)
-                          )
-                        )
-                    | ([], sugarExpr::[], _, _) ->
-                        (* This can happen in the case of [sugar_expr] [arrayWithTwo.(1) <- 300] *)
-                        sugarExpr
-                    | appTerms ->
-                      formatAttachmentApplication
-                        applicationFinalWrapping
-                        None
-                         (combinedAppItems appTerms)
+              | Pexp_apply (expr, l) -> (
+                 match detectJSXComponent expr.pexp_desc x.pexp_attributes l with
+                  | Some componentName -> self#formatJSXComponent componentName l
+                  | None ->
+                      match self#expressionToFormattedApplicationItems x with
+                        | ([], [], _, _) ->
+                            raise (
+                              NotPossible (
+                                "no application items extracted " ^ (exprDescrString x)
+                              )
+                            )
+                        | ([], sugarExpr::[], _, _) ->
+                          (* This can happen in the case of [sugar_expr] [arrayWithTwo.(1) <- 300] *)
+                          sugarExpr
+                        | appTerms ->
+                          formatAttachmentApplication
+                            applicationFinalWrapping
+                            None
+                            (combinedAppItems appTerms)
                 )
               | Pexp_construct (li, Some eo) when not (is_simple_construct (view_expr x)) -> (* Not efficient FIXME*)
                   (match view_expr x with
@@ -4341,7 +4431,7 @@ class printer  ()= object(self:'self)
       | Pexp_apply _ -> true
       | _ -> false
 
-  method simple_expression x =
+  method simple_expression ?(hasJSXAttribute = false) x  =
     let (arityAttrs, docAtrs, stdAttrs) = partitionAttributes x.pexp_attributes in
     (* If the expr can render its own attributes, it will know better if
        guarding the expression in parens is needed. *)
@@ -4362,10 +4452,24 @@ class printer  ()= object(self:'self)
             (self#class_self_pattern_and_structure cs)
         | Pexp_construct _  when is_simple_construct (view_expr x) ->
             (match view_expr x with
-              | `nil -> atom "[]"
+              | `nil -> if hasJSXAttribute then atom "<></>" else atom "[]"
               | `tuple -> atom "()"
               | `list xs -> (* LIST EXPRESSION *)
-                makeList ~break:IfNeed ~wrap:("[", "]") ~sep:"," ~postSpace:true (List.map self#expression xs)
+                if hasJSXAttribute then
+                    let rec formatChildren children formatted =
+                      match children with
+                        | {pexp_desc = Pexp_constant (constant)} :: tail ->
+                          formatChildren tail (formatted @ [self#constant constant])
+                        | {pexp_desc = Pexp_apply(expr, l); pexp_attributes} :: tail ->
+                           (match detectJSXComponent expr.pexp_desc pexp_attributes l with
+                            | Some componentName -> formatChildren tail (formatted @ [self#formatJSXComponent componentName l])
+                            | None -> formatChildren tail (formatted @ [self#simple_expression (List.hd children)]))
+                        | head :: tail -> formatChildren tail (formatted @ [self#expression head])
+                        | [] -> [makeList ~sep:" " formatted]
+                    in
+                    makeList ~break:IfNeed ~wrap:("<>", "</>") (formatChildren xs [])
+                else
+                    makeList ~break:IfNeed ~wrap:("[", "]") ~sep:"," ~postSpace:true (List.map self#expression xs)
               | `cons xs ->
                 let seq, ext = match List.rev xs with
                   | ext :: seq_rev -> (List.rev seq_rev, ext)
