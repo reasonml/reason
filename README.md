@@ -52,7 +52,7 @@ Get Started Now
 ---------------
 Check out the [docs](http://facebook.github.io/reason) which guide you through the basic syntax and toolchain features.
 
-Contribute back to that documentation in the [documentation branch](https://github.com/facebook/reason/tree/gh-pages).
+Contribute back to that documentation in the [docs folder](https://github.com/facebook/reason/tree/master/docs).
 
 
 Community
