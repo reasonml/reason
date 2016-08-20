@@ -3331,19 +3331,20 @@ class printer  ()= object(self:'self)
     (itms, None, None)
 
   method formatJSXComponent componentName args =
-    let rec processChildren components result =
-      match components with
-      | {pexp_desc = Pexp_constant (constant)} :: remainingComponents ->
-        processChildren remainingComponents (result @ [self#constant constant])
-      | {pexp_desc = Pexp_construct ({txt = Lident "::"}, Some {pexp_desc = Pexp_tuple(components)} )} :: remainingComponents ->
-        processChildren (remainingComponents @ components) result
-      | {pexp_desc = Pexp_apply(expr, l); pexp_attributes} :: remainingComponents ->
+    let rec processChildren children result =
+      match children with
+      | {pexp_desc = Pexp_constant (constant)} :: remainingChildren ->
+        processChildren remainingChildren (result @ [self#constant constant])
+      | {pexp_desc = Pexp_construct ({txt = Lident "::"}, Some {pexp_desc = Pexp_tuple(children)} )} :: remainingChildren ->
+        processChildren (remainingChildren @ children) result
+      | {pexp_desc = Pexp_apply(expr, l); pexp_attributes} :: remainingChildren ->
         (match detectJSXComponent expr.pexp_desc pexp_attributes l with
-          | Some componentName -> processChildren remainingComponents (result @ [self#formatJSXComponent componentName l])
-          | None -> processChildren remainingComponents (result @ [self#simple_expression (List.hd components)]))
-      | {pexp_desc = Pexp_ident li} :: remainingComponents ->
-        processChildren remainingComponents (result @ [self#longident_loc li])
-      | head :: remainingComponents -> processChildren remainingComponents result
+          | Some componentName -> processChildren remainingChildren (result @ [self#formatJSXComponent componentName l])
+          | None -> processChildren remainingChildren (result @ [self#simple_expression (List.hd children)]))
+      | {pexp_desc = Pexp_ident li} :: remainingChildren ->
+        processChildren remainingChildren (result @ [self#longident_loc li])
+      | {pexp_desc = Pexp_construct ({txt = Lident "[]"}, None)} :: remainingChildren -> processChildren remainingChildren result
+      | head :: remainingChildren -> processChildren remainingChildren (result @ [self#simple_expression head])
       | [] -> [makeList ~break:IfNeed ~sep:" " ~inline:(true, true) result]
     and processAttributes attributes processedAttrs children =
       match attributes with
