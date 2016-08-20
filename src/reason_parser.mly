@@ -90,12 +90,6 @@ open Syntax_util
      loc_ghost = true;
    }
 
-   let rhs_loc n = {
-     loc_start = Parsing.rhs_start_pos n;
-     loc_end = Parsing.rhs_end_pos n;
-     loc_ghost = false;
-   }
-
    ast_helper.ml:
    ------------
    module Typ = struct
@@ -483,8 +477,8 @@ let expecting_pat nonterm =
   else
     expecting nonterm
 
-let not_expecting pos nonterm =
-    raise Syntaxerr.(Error(Not_expecting(rhs_loc pos, nonterm)))
+let not_expecting start_pos end_pos nonterm =
+    raise Syntaxerr.(Error(Not_expecting(mklocation start_pos end_pos, nonterm)))
 
 let bigarray_function ?(loc=dummy_loc()) str name =
   ghloc ~loc (Ldot(Ldot(Lident "Bigarray", str), name))
@@ -527,10 +521,10 @@ let bigarray_set ?(loc=dummy_loc()) arr arg newval =
                         "", mkexp ~ghost:true ~loc (Pexp_array coords);
                         "", newval]))
 
-let lapply p1 p2 =
+let lapply p1 p2 start_pos end_pos =
   if !Clflags.applicative_functors
   then Lapply(p1, p2)
-  else raise (Syntaxerr.Error(Syntaxerr.Applicative_path (symbol_rloc())))
+  else raise (Syntaxerr.Error(Syntaxerr.Applicative_path (mklocation start_pos end_pos)))
 
 let exp_of_label label =
   mkexp ~loc:label.loc (Pexp_ident {label with txt=Lident(Longident.last label.txt)})
@@ -637,11 +631,11 @@ let mkcf_attrs ?(loc=dummy_loc()) d attrs =
 let mkctf_attrs d attrs =
   Ctf.mk ~attrs d
 
-let add_nonrec rf attrs pos =
-  match rf with
+let add_nonrec rf attrs =
+  match rf.txt with
   | Recursive -> attrs
   | Nonrecursive ->
-      let name = { txt = "nonrec"; loc = rhs_loc pos } in
+      let name = { txt = "nonrec"; loc = rf.loc } in
         (name, PStr []) :: attrs
 
 type let_binding =
@@ -2014,15 +2008,16 @@ parent_binder:
 value:
 /* TODO: factorize these rules (also with method): */
     override_flag MUTABLE VIRTUAL as_loc(label) COLON core_type {
-      if $1 = Override then not_expecting 7 "not expecting equal - cannot specify value for virtual val"
+      if $1 = Override
+      then not_expecting $symbolstartpos $endpos "members marked virtual may not also be marked overridden"
       else $4, Mutable, Cfk_virtual $6
     }
   | override_flag MUTABLE VIRTUAL label COLON core_type EQUAL
-      { not_expecting 7 "not expecting equal - cannot specify value for virtual val" }
+      { not_expecting $startpos($7) $endpos($7) "not expecting equal - cannot specify value for virtual val" }
   | VIRTUAL mutable_flag as_loc(label) COLON core_type
       { $3, $2, Cfk_virtual $5 }
   | VIRTUAL mutable_flag label COLON core_type EQUAL
-      { not_expecting 6 "not expecting equal - cannot specify value for virtual val" }
+      { not_expecting $startpos($6) $endpos($6) "not expecting equal - cannot specify value for virtual val" }
   | override_flag mutable_flag as_loc(label) EQUAL expr
       { $3, $2, Cfk_concrete ($1, $5) }
   | override_flag mutable_flag as_loc(label) type_constraint EQUAL expr
@@ -2283,7 +2278,10 @@ value_type:
       { $1, Immutable, Concrete, $3 }
 ;
 constrain:
-        core_type EQUAL core_type          { $1, $3, symbol_rloc() }
+  | core_type EQUAL core_type {
+    let loc = mklocation $symbolstartpos $endpos in
+    ($1, $3, loc)
+  }
 ;
 constrain_field:
         core_type EQUAL core_type          { $1, $3 }
@@ -2527,7 +2525,7 @@ _expr:
   | TRY simple_expr LBRACE leading_bar_match_cases_to_sequence_body RBRACE
       { mkexp (Pexp_try($2, List.rev $4)) }
   | TRY simple_expr WITH error
-      { syntax_error_exp (rhs_loc 4) "Invalid try with"}
+      { syntax_error_exp (mklocation $startpos($4) $endpos($4)) "Invalid try with"}
   | as_loc(constr_longident) simple_non_labeled_expr_list_as_tuple
     {
       if List.mem (string_of_longident $1.txt)
@@ -3455,12 +3453,12 @@ primitive_declaration:
 /* Type declarations */
 
 many_type_declarations:
-  | TYPE nonrec_flag type_declaration_details post_item_attributes {
+  | TYPE as_loc(nonrec_flag) type_declaration_details post_item_attributes {
       let (ident, params, constraints, kind, priv, manifest) = $3 in
       let loc = mklocation $symbolstartpos $endpos in
       [Type.mk ident
        ~params:params ~cstrs:constraints
-       ~kind ~priv ?manifest ~attrs:(add_nonrec $2 $4 2) ~loc]
+       ~kind ~priv ?manifest ~attrs:(add_nonrec $2 $4) ~loc]
   }
   | many_type_declarations and_type_declaration { $2 :: $1 }
 ;
@@ -3640,7 +3638,7 @@ str_type_extension:
   PLUSEQ private_flag opt_bar str_extension_constructors
   post_item_attributes
   {
-    if $2 <> Recursive then not_expecting 2 "nonrec flag";
+    if $2 <> Recursive then not_expecting $startpos($2) $endpos($2) "nonrec flag";
     let (potentially_long_ident, optional_type_parameters) = $3 in
     Te.mk potentially_long_ident (List.rev $7)
           ~params:optional_type_parameters ~priv:$5 ~attrs:$8
@@ -3651,7 +3649,7 @@ sig_type_extension:
   PLUSEQ private_flag opt_bar sig_extension_constructors
   post_item_attributes
   {
-    if $2 <> Recursive then not_expecting 2 "nonrec flag";
+    if $2 <> Recursive then not_expecting $startpos($2) $endpos($2) "nonrec flag";
     let (potentially_long_ident, optional_type_parameters) = $3 in
     Te.mk potentially_long_ident (List.rev $7)
           ~params:optional_type_parameters ~priv:$5 ~attrs:$8
@@ -3710,7 +3708,7 @@ with_constraint:
       let last = (
         match $2.txt with
             | Lident s -> s
-            | _ -> not_expecting 2 "Long type identifier"
+            | _ -> not_expecting $startpos($2) $endpos($2) "Long type identifier"
       ) in
      let loc = mklocation $symbolstartpos $endpos in
       Pwith_typesubst
@@ -4147,9 +4145,11 @@ mod_ext_longident:
 ;
 
 mod_ext2:
-   | mod_ext_longident DOT UIDENT LPAREN mod_ext_longident RPAREN { lapply ( Ldot($1, $3)) $5 }
-   | mod_ext2 LPAREN mod_ext_longident RPAREN { lapply $1 $3 }
-   | UIDENT LPAREN mod_ext_longident RPAREN { lapply (Lident($1)) $3 }
+   | mod_ext_longident DOT UIDENT LPAREN mod_ext_longident RPAREN {
+     lapply ( Ldot($1, $3)) $5 $symbolstartpos $endpos
+   }
+   | mod_ext2 LPAREN mod_ext_longident RPAREN { lapply $1 $3 $symbolstartpos $endpos }
+   | UIDENT LPAREN mod_ext_longident RPAREN { lapply (Lident($1)) $3 $symbolstartpos $endpos }
 ;
 
 mty_longident:
