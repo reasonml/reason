@@ -3163,8 +3163,9 @@ expr_optional_constraint:
 ;
 
 record_expr:
-    DOTDOTDOT expr_optional_constraint COMMA lbl_expr_list   { (Some $2, $4) }
-  | lbl_expr_list_that_is_not_a_single_punned_field         { (None, $1) }
+    DOTDOTDOT expr_optional_constraint                     { (Some $2, [])}
+  | DOTDOTDOT expr_optional_constraint COMMA lbl_expr_list { (Some $2, $4) }
+  | lbl_expr_list_that_is_not_a_single_punned_field        { (None, $1) }
 ;
 lbl_expr_list:
      lbl_expr { [$1] }

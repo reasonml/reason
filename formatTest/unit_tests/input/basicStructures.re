@@ -448,6 +448,9 @@ let anotherRecord = {
   name: "joe++",
   age: testRecord.age + 10
 };
+let copiedRecord = {
+  ...testRecord
+};
 
 let makeRecordBase () => {name: "Joe", age: 30, occupation: "Engineer"};
 let anotherRecord = {
