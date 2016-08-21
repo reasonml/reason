@@ -6723,6 +6723,7 @@ implementation: LBRACE DOTDOTDOT UIDENT RBRACKET
 ##
 ## Ends in an error in state: 1112.
 ##
+## record_expr -> DOTDOTDOT expr_optional_constraint . [ error RBRACE ]
 ## record_expr -> DOTDOTDOT expr_optional_constraint . COMMA lbl_expr_list [ error RBRACE ]
 ##
 ## The known suffix of the stack is as follows:
@@ -6732,15 +6733,15 @@ implementation: LBRACE DOTDOTDOT UIDENT RBRACKET
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 792, spurious reduction of production constr_longident -> mod_longident
-## In state 949, spurious reduction of production _simple_expr -> constr_longident
-## In state 915, spurious reduction of production mark_position_exp(_simple_expr) -> _simple_expr
-## In state 911, spurious reduction of production simple_expr -> mark_position_exp(_simple_expr)
-## In state 919, spurious reduction of production less_aggressive_simple_expression -> simple_expr
-## In state 929, spurious reduction of production _expr -> less_aggressive_simple_expression
-## In state 958, spurious reduction of production mark_position_exp(_expr) -> _expr
-## In state 928, spurious reduction of production expr -> mark_position_exp(_expr)
-## In state 1061, spurious reduction of production expr_optional_constraint -> expr
+## In state 749, spurious reduction of production constr_longident -> mod_longident
+## In state 836, spurious reduction of production _simple_expr -> constr_longident
+## In state 806, spurious reduction of production mark_position_exp(_simple_expr) -> _simple_expr
+## In state 802, spurious reduction of production simple_expr -> mark_position_exp(_simple_expr)
+## In state 810, spurious reduction of production less_aggressive_simple_expression -> simple_expr
+## In state 816, spurious reduction of production _expr -> less_aggressive_simple_expression
+## In state 845, spurious reduction of production mark_position_exp(_expr) -> _expr
+## In state 815, spurious reduction of production expr -> mark_position_exp(_expr)
+## In state 1082, spurious reduction of production expr_optional_constraint -> expr
 ##
 
 <SYNTAX ERROR>
@@ -6749,6 +6750,7 @@ implementation: LBRACE DOTDOTDOT WITH
 ##
 ## Ends in an error in state: 1111.
 ##
+## record_expr -> DOTDOTDOT . expr_optional_constraint [ error RBRACE ]
 ## record_expr -> DOTDOTDOT . expr_optional_constraint COMMA lbl_expr_list [ error RBRACE ]
 ##
 ## The known suffix of the stack is as follows:
@@ -8721,7 +8723,7 @@ implementation: LBRACKETBAR UIDENT COLON UNDERSCORE COLONGREATER WITH
 ##
 ## Ends in an error in state: 1088.
 ##
-## type_constraint_right_of_colon -> core_type COLONGREATER . core_type [ error RPAREN COMMA BARRBRACKET ]
+## type_constraint_right_of_colon -> core_type COLONGREATER . core_type [ error RPAREN RBRACE COMMA BARRBRACKET ]
 ##
 ## The known suffix of the stack is as follows:
 ## core_type COLONGREATER
@@ -8733,7 +8735,7 @@ implementation: LBRACKETBAR UIDENT COLON WITH
 ##
 ## Ends in an error in state: 1085.
 ##
-## type_constraint -> COLON . type_constraint_right_of_colon [ error RPAREN COMMA BARRBRACKET ]
+## type_constraint -> COLON . type_constraint_right_of_colon [ error RPAREN RBRACE COMMA BARRBRACKET ]
 ##
 ## The known suffix of the stack is as follows:
 ## COLON
@@ -8745,7 +8747,7 @@ implementation: LBRACKETBAR UIDENT COLONGREATER WITH
 ##
 ## Ends in an error in state: 1083.
 ##
-## type_constraint -> COLONGREATER . core_type [ error RPAREN COMMA BARRBRACKET ]
+## type_constraint -> COLONGREATER . core_type [ error RPAREN RBRACE COMMA BARRBRACKET ]
 ##
 ## The known suffix of the stack is as follows:
 ## COLONGREATER

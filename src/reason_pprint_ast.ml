@@ -4486,18 +4486,19 @@ class printer  ()= object(self:'self)
                 )
               | Some withRecord ->
                 let firstRow = (
-                  match self#expressionToFormattedApplicationItems withRecord with
+                  let nodes =
+                    match self#expressionToFormattedApplicationItems withRecord with
                     | ([], [], _, _) -> raise (NotPossible ("no application items extracted " ^ (exprDescrString x)))
-                    | ([], sugarExpr::[], _, _) ->
-                        (makeList [atom "..."; sugarExpr; atom ","])
+                    | ([], sugarExpr::[], _, _) -> [atom "..."; sugarExpr]
                     | appTerms ->
-                       makeList [
+                       [
                          formatAttachmentApplication
                             applicationFinalWrapping
                             (Some (false, (atom "...")))
                            (combinedAppItems appTerms);
-                         atom ",";
                        ]
+                  in
+                  makeList (if l = [] then nodes else nodes @ [atom ","])
                 ) in
                 SourceMap (withRecord.pexp_loc, firstRow)::(getRows l)
             in
@@ -5460,7 +5461,7 @@ class printer  ()= object(self:'self)
         | Pstr_class l -> self#class_declaration_list l
         | Pstr_class_type (l) -> self#class_type_declaration_list l
         | Pstr_primitive vd ->
-            let attrs =  List.map (fun x -> self#item_attribute x) vd.pval_attributes in 
+            let attrs =  List.map (fun x -> self#item_attribute x) vd.pval_attributes in
             let lst = List.append [
               atom ("external");
               protectIdentifier vd.pval_name.txt;
