@@ -10,6 +10,9 @@ type myTwoParamType 'a 'b = ('a, 'b);
 type myTupleType = (int, int);
 type myPolymorphicTupleType 'a = ('a, 'a);
 
+type extensible 'a = 'a
+constraint 'a = [ | `Base int];
+
 type intListTranformer = list int => list int;
 
 type x = list (int, string);
