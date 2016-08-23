@@ -68,7 +68,7 @@ let x = "hello" [@onHello] ^ "goodbye";
 
 let x = "hello" ^ "goodbye" [@onGoodbye];
 
-let x = (^) "hello" "goodbye" [@onEverything];
+let x = ("hello" ^ "goodbye") [@onEverything];
 
 let x = 10 + 20 [@on20];
 
@@ -78,7 +78,7 @@ let x = 10 [@on10] + 20;
 
 let x = 10 [@on10] + 20;
 
-let x = (+) 10 20 [@attrEverything];
+let x = (10 + 20) [@attrEverything];
 
 let x = 10 - 20 [@on20];
 
@@ -88,7 +88,7 @@ let x = 10 [@on10] - 20;
 
 let x = 10 [@on10] - 20;
 
-let x = (-) 10 20 [@attrEntireEverything];
+let x = (10 - 20) [@attrEntireEverything];
 
 let x = true && false [@onFalse];
 
@@ -98,7 +98,7 @@ let x = true [@onTrue] && false;
 
 let x = true [@onTrue] && false;
 
-let x = (&&) true false [@attrEverything];
+let x = (true && false) [@attrEverything];
 
 /* now make sure to try with variants (tagged and `) */
 
@@ -117,21 +117,20 @@ let res =
 let res =
   (if true {false} else {false}) [@onEntireIf];
 
-let add a b => (+) (a [@onA]) b [@onEverything];
+let add a b => (a [@onA] + b) [@onEverything];
 
 let add a b =>
-  (+) (a [@onA]) (b [@onB]) [@onEverything];
+  (a [@onA] + b [@onB]) [@onEverything];
 
 let add a b => a + b [@onB];
 
 let both = (fun a => a) [@onEntireFunction];
 
-let both a b =>
-  (&&) (a [@onA]) b [@onEverything];
+let both a b => (a [@onA] && b) [@onEverything];
 
 let both a b => a [@onA] && b [@onB] [@onB];
 
-let both a b => (&&) a b [@onEverything];
+let both a b => (a && b) [@onEverything];
 
 let thisVal = 10;
 
@@ -139,19 +138,17 @@ let x =
   20 + (- add thisVal thisVal [@onFunctionCall]);
 
 let x =
-  (+) 20 (- add thisVal thisVal) [@onEverything];
+  (20 + (- add thisVal thisVal)) [@onEverything];
 
 let x = - add thisVal thisVal [@onFunctionCall];
 
-let x =
-  (~-) (add thisVal thisVal) [@onEverything];
+let x = (- add thisVal thisVal) [@onEverything];
 
 let bothTrue x y => {contents: x && y};
 
 let something =
-  (!)
-    (bothTrue true true)
-    [@onEverythingToRightOfEquals];
+  !(bothTrue true true)
+  [@onEverythingToRightOfEquals];
 
 let res =
   add 2 4 [@appliesToEntireFunctionApplication];
@@ -162,7 +159,8 @@ let myObj = {method p () => {method z () => 10}};
 
 let result =
   (myObj#p () [@attOnFirstSend])#z
-    () [@onSecondSend];
+  ()
+  [@onSecondSend];
 
 type recordFunctions = {
   p: unit => recordFunctions [@onUnit],
@@ -179,7 +177,8 @@ and unused = ();
 
 let result =
   (myRecord.p () [@attOnFirstSend]).q
-    () [@onSecondSend];
+  ()
+  [@onSecondSend];
 
 type variantType =
   | Foo int [@onInt] | Bar (int [@onInt]) | Baz

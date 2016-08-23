@@ -307,9 +307,11 @@ let includesACommentCloseInIdentifier = ( *\*\/ );
 
 let shouldSimplifyAnythingExceptApplicationAndConstruction =
   call "hi" ^
-  switch x {
-  | _ => "hi"
-  } ^ "yo";
+  (
+    switch x {
+    | _ => "hi"
+    }
+  ) ^ "yo";
 
 /* Add tests with IF/then mixed with infix/constructor application on left and right sides */
 
@@ -440,14 +442,16 @@ let containingObject = {
      * #NotActuallyAConflict
      * Note that there's a difference with how = and := behave.
      * We only *simulate* = being an infix identifier for the sake of printing,
-     * but for parsing it's a little more nuanced. There *isn't* technically
-     * a conflict in:
+     * but for parsing it's a little more nuanced. There *isn't* technically a
+     * shift/reduce conflict in the following that must be resolved via
+     * precedence ranking:
      *
      *     a + b.c = d
      *
-     * Between reducing a + b.c, and shifting =, like there would be if it was
-     * := instead of =. That's because the rule for = isn't the infix rule with
-     * an arbitrary expression on its left - it's something much more specific.
+     * No conflict between reducing a + b.c, and shifting =, like there would
+     * be if it was := instead of =. That's because the rule for = isn't the
+     * infix rule with an arbitrary expression on its left - it's something
+     * much more specific.
      *
      * (simple_expr) DOT LIDENT EQUAL expression.
      *
@@ -470,6 +474,22 @@ let containingObject = {
      * Even though they're not needed, because it doesn't know details about
      * which rules are valid, we just told it to print = as if it were a valid
      * infix identifier.
+     *
+     * Another case:
+     *
+     *    something >>= fun x => x + 1;
+     *
+     * Will be printed as:
+     *
+     *    something >>= (fun x => x + 1);
+     *
+     * Because the arrow has lower precedence than >>=, but it wasn't needed because
+     *
+     *    (something >>= fun x) => x + 1;
+     *
+     * Is not a valid parse. Parens around the `=>` weren't needed to prevent
+     * reducing instead of shifting. To optimize this part, we need a much
+     * deeper encoding of the parse rules to print parens only when needed.
      *
      */
     /* The following */
@@ -883,14 +903,13 @@ let containingObject = {
      * TODO: Move all of these test cases to attributes.re.
      */
     /* Attribute on the prefix application */
-    let res = (~-) (something blah blah) [@attr];
+    let res = (- something blah blah) [@attr];
     /* Attribute on the regular function application, not prefix */
     let res = - something blah blah [@attr];
     let attrOnPrefix = (-1) [@ppxOnPrefixApp];
     let attrOnPrefix = 5 + (-1);
     let result =
-      String.get
-        arr 0 [@ppxAttributeOnSugarGetter];
+      arr.[0] [@ppxAttributeOnSugarGetter];
 
     /**
      * Unary plus/minus has lower precedence than prefix operators:
@@ -915,10 +934,11 @@ let containingObject = {
     let res = !(- callThisFunc ());
     /* Should be parsed (and should remain printed as: */
     let res = !(- callThisFunc ());
-    let res = (!) x [@onApplication];
+    let res = !x [@onApplication];
     let res = !(x [@onX]);
     let res = !(x [@onX]);
-    something.contents = "newvalue";
+    (something.contents = "newvalue")
+    [@shouldBeRenderedOnEntireSetField];
     something.contents =
       "newvalue" [@shouldBeRenderedOnString]
   }

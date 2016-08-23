@@ -386,14 +386,16 @@ let containingObject = {
      * #NotActuallyAConflict
      * Note that there's a difference with how = and := behave.
      * We only *simulate* = being an infix identifier for the sake of printing,
-     * but for parsing it's a little more nuanced. There *isn't* technically
-     * a conflict in:
+     * but for parsing it's a little more nuanced. There *isn't* technically a
+     * shift/reduce conflict in the following that must be resolved via
+     * precedence ranking:
      *
      *     a + b.c = d
      *
-     * Between reducing a + b.c, and shifting =, like there would be if it was
-     * := instead of =. That's because the rule for = isn't the infix rule with
-     * an arbitrary expression on its left - it's something much more specific.
+     * No conflict between reducing a + b.c, and shifting =, like there would
+     * be if it was := instead of =. That's because the rule for = isn't the
+     * infix rule with an arbitrary expression on its left - it's something
+     * much more specific.
      *
      * (simple_expr) DOT LIDENT EQUAL expression.
      *
@@ -416,6 +418,22 @@ let containingObject = {
      * Even though they're not needed, because it doesn't know details about
      * which rules are valid, we just told it to print = as if it were a valid
      * infix identifier.
+     *
+     * Another case:
+     *
+     *    something >>= fun x => x + 1;
+     *
+     * Will be printed as:
+     *
+     *    something >>= (fun x => x + 1);
+     *
+     * Because the arrow has lower precedence than >>=, but it wasn't needed because
+     *
+     *    (something >>= fun x) => x + 1;
+     *
+     * Is not a valid parse. Parens around the `=>` weren't needed to prevent
+     * reducing instead of shifting. To optimize this part, we need a much
+     * deeper encoding of the parse rules to print parens only when needed.
      *
      */
 
