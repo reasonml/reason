@@ -35,21 +35,21 @@ let reasonBinaryParser use_stdin filename =
   let (magic_number, filename, ast, comments, parsedAsML, parsedAsInterface) = input_value chan in
   ((ast, comments), parsedAsML, parsedAsInterface)
 
-let usage =
-"Reason: Meta Language Utility\n\
-\n\
-[Usage]: refmt [options] some-file.[re|ml]\
-\n\
-\n   // translate ocaml to reason on stdin\
-\n   echo 'let _ = ()' | refmt -print re -parse ml -use-stdin true -is-interface-pp false\
-\n\
-\n   // print the AST of a file\
-\n   refmt -parse re -print ast some-file.re\
-\n\
-\n   // reformat a file\
-\n   refmt -parse re -print re some-file.re\
-\n\
-\n[Options]:\n"
+let usage = {|Reason: Meta Language Utility
+
+[Usage]: refmt [options] some-file.[re|ml]
+
+   // translate ocaml to reason on stdin
+   echo 'let _ = ()' | refmt -print re -parse ml -use-stdin true -is-interface-pp false
+
+   // print the AST of a file
+   refmt -parse re -print ast some-file.re
+
+   // reformat a file
+   refmt -parse re -print re some-file.re
+
+[Options]:
+|}
 
 (*
  * As soon as m17n vends comments, this should be replaced with what is
