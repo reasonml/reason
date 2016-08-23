@@ -35,6 +35,22 @@ let reasonBinaryParser use_stdin filename =
   let (magic_number, filename, ast, comments, parsedAsML, parsedAsInterface) = input_value chan in
   ((ast, comments), parsedAsML, parsedAsInterface)
 
+let usage =
+"Reason: Meta Language Utility\n\
+\n\
+[Usage]: refmt [options] some-file.[re|ml]\
+\n\
+\n   // translate ocaml to reason on stdin\
+\n   echo 'let _ = ()' | refmt -print re -parse ml -use-stdin true -is-interface-pp false\
+\n\
+\n   // print the AST of a file\
+\n   refmt -parse re -print ast some-file.re\
+\n\
+\n   // reformat a file\
+\n   refmt -parse re -print re some-file.re\
+\n\
+\n[Options]:\n"
+
 (*
  * As soon as m17n vends comments, this should be replaced with what is
  * effectively m17n's parser.
@@ -49,7 +65,8 @@ let () =
   let assumeExplicitArity = ref false in
   let heuristics_file = ref None in
   let print_width = ref None in
-  let () = Arg.parse [
+  let print_help = ref false in
+  let options = [
     "-ignore", Arg.Unit ignore, "ignored";
     "-is-interface-pp", Arg.Bool (fun x -> intf := Some x), "<interface>, parse AST as <interface> (either true or false)";
     "-use-stdin", Arg.Bool (fun x -> use_stdin := x), "<use_stdin>, parse AST from <use_stdin> (either true, false). You still must provide a file name even if using stdin for errors to be reported";
@@ -62,11 +79,16 @@ let () =
     "-print-width", Arg.Int (fun x -> print_width := Some x), "<print-width>, wrapping width for printing the AST";
     "-heuristics-file", Arg.String (fun x -> heuristics_file := Some x),
     "<path>, load path as a heuristics file to specify which constructors are defined with multi-arguments. Mostly used in removing [@implicit_arity] introduced from OCaml conversion.\n\t\texample.txt:\n\t\tConstructor1\n\t\tConstructor2";
-  ]
-  (fun arg -> filename := arg)
-  "Reason: Meta Language Utility"
-  in
+    "-h", Arg.Unit (fun () -> print_help := true), " Display this list of options";
+  ] in
+  let () = Arg.parse options (fun arg -> filename := arg) usage in
+  let print_help = !print_help in
   let filename = !filename in
+  let _ =
+    if filename = "" || print_help then
+      let () = Arg.usage options usage in
+        exit 1;
+  in
   let use_stdin = !use_stdin in
   let print_width = match !print_width with
     | None -> default_print_width
