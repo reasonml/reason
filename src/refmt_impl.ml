@@ -93,10 +93,10 @@ let () =
     "-print-width", Arg.Int (fun x -> print_width := Some x), "<print-width>, wrapping width for printing the AST";
     "-heuristics-file", Arg.String (fun x -> heuristics_file := Some x),
     "<path>, load path as a heuristics file to specify which constructors are defined with multi-arguments. Mostly used in removing [@implicit_arity] introduced from OCaml conversion.\n\t\texample.txt:\n\t\tConstructor1\n\t\tConstructor2";
-    "-h", Arg.Unit (fun () -> print_help := true), " Display this list of options";
-  ] in
-  let () = Arg.parse options (fun arg -> filename := arg) usage in
-  let print_help = !print_help in
+  ]
+  (fun arg -> filename := arg)
+  "Reason: Meta Language Utility"
+  in
   let filename = !filename in
   let use_stdin = !use_stdin in
   let _ =
