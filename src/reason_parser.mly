@@ -892,6 +892,7 @@ let built_in_explicit_arity_constructors = ["Some"; "Assert_failure"; "Match_fai
 %token SEMI
 %token SEMISEMI
 %token SHARP
+%token <string> SHARPOP
 %token SIG
 %token STAR
 %token <string * string option> STRING
@@ -1039,6 +1040,7 @@ conflicts.
 %nonassoc prec_constr_appl              /* above AS BAR COLONCOLON COMMA */
 %nonassoc below_DOT_AND_SHARP           /* practically same as below_SHARP but we convey purpose */
 %nonassoc SHARP                         /* simple_expr/toplevel_directive */
+%left     SHARPOP
 %nonassoc below_DOT
 %nonassoc DOT
 
@@ -2784,6 +2786,8 @@ _simple_expr:
       { unclosed_exp (with_txt $3 "{<") (with_txt $6 ">}") }
   | simple_expr SHARP label
       { mkexp(Pexp_send($1, $3)) }
+  | simple_expr as_loc(SHARPOP) simple_expr
+      { mkinfix $1 $2 $3 }
   | LPAREN MODULE module_expr RPAREN
       { mkexp (Pexp_pack $3) }
   | LPAREN MODULE module_expr COLON package_type RPAREN
