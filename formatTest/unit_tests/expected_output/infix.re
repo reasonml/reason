@@ -345,6 +345,14 @@ let res = - (- x);
 
 let res = f (- x);
 
+
+/**
+ * Test using almost simple prefix as regular function.
+ */
+let (!!) a b => a + b;
+
+let res = (!!) 20 40;
+
 /* The semicolon should be attached to someType */
 let myFunc
     aaaa

@@ -560,9 +560,6 @@ let unary_minus_prefix_symbols  = [ "~-"; "~-."] ;;
 let unary_plus_prefix_symbols  = ["~+"; "~+." ] ;;
 let infix_symbols = [ '='; '<'; '>'; '@'; '^'; '|'; '&'; '+'; '-'; '*'; '/';
                       '$'; '%'; '\\'; '#' ]
-(* There are just a couple of infix operators that start with `!`. All others that
-   start with ! would be prefix, so we keep a list of exceptions here. *)
-let infix_starting_with_bang = ["!="; "!=="]
 let operator_chars = [ '!'; '$'; '%'; '&'; '*'; '+'; '-'; '.'; '/';
                        ':'; '<'; '='; '>'; '?'; '@'; '^'; '|'; '~' ]
 let numeric_chars  = [ '0'; '1'; '2'; '3'; '4'; '5'; '6'; '7'; '8'; '9' ]
@@ -589,11 +586,11 @@ let getPrintableUnaryIdent s =
    characters. *)
 let printedStringAndFixity  = function
   | s when List.mem s special_infix_strings -> Infix s
-  | s when List.mem s.[0] infix_symbols || List.mem s infix_starting_with_bang -> Infix s
+  | s when List.mem s.[0] infix_symbols -> Infix s
   (* Correctness under assumption that unary operators are stored in AST with
      leading "~" *)
   | s when List.mem s.[0] almost_simple_prefix_symbols &&
-           not (List.mem s infix_starting_with_bang) &&
+           not (List.mem s special_infix_strings) &&
            not (s = "?")-> (
       (* What *kind* of prefix fixity? *)
       if List.mem s unary_plus_prefix_symbols then
@@ -2204,8 +2201,7 @@ let formatAttachmentApplication finalWrapping (attachTo: (bool * layoutNode) opt
           | (hd::tl, None) ->
             (* Args that are "attached to nothing" *)
             let appList = makeAppList attachedList in
-            let attachedArgs = appList in
-            maybeSourceMap loc (label ~space:true attachedArgs wrappedListy)
+            maybeSourceMap loc (label ~space:true appList wrappedListy)
       )
 
 (*
@@ -3314,7 +3310,7 @@ class printer  ()= object(self:'self)
 
      -Add parens around infix binary function application
        Exception 1: Unless we are a left-assoc operator of precedence X in the left branch of an operator w/ precedence X.
-       Exception 1: Unless we are a right-assoc operator of precedence X in the right branch of an operator w/ precedence X.
+       Exception 2: Unless we are a right-assoc operator of precedence X in the right branch of an operator w/ precedence X.
        Exception 3: Unless we are a _any_-assoc X operator in the _any_ branch of an Y operator where X has greater precedence than Y.
 
      Note that the exceptions do not specify any special cases for mixing
