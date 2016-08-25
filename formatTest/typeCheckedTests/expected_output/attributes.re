@@ -150,6 +150,9 @@ let something =
   !(bothTrue true true)
   [@onEverythingToRightOfEquals];
 
+let something =
+  !(bothTrue true true [@onlyOnArgumentToBang]);
+
 let res =
   add 2 4 [@appliesToEntireFunctionApplication];
 
