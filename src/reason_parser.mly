@@ -2401,7 +2401,7 @@ _semi_terminated_seq_expr_row:
       let item_attrs = $5 in
       mkexp ~attrs:item_attrs (Pexp_letmodule($3, $4, $7))
     }
-  | LET OPEN override_flag as_loc(mod_longident) post_item_attributes SEMI semi_terminated_seq_expr {
+  | LET? OPEN override_flag as_loc(mod_longident) post_item_attributes SEMI semi_terminated_seq_expr {
       let item_attrs = $5 in
       mkexp ~attrs:item_attrs (Pexp_open($3, $4, $7))
     }

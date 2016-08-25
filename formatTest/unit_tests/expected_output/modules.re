@@ -518,7 +518,7 @@ let module N = {
   open M;
   let z = M.(34);
   let z = {
-    let open M;
+    open M;
     34;
     35
   };
@@ -535,41 +535,41 @@ let module N = {
   let z = M.(M2.(value));
   let z = M.(M2.value);
   let z = {
-    let open! M;
+    open! M;
     34
   };
   let z = {
-    let open! M;
+    open! M;
     34;
     35
   };
   let z = {
-    let open! M;
+    open! M;
     {}
   };
   let z = {
-    let open! M;
+    open! M;
     {x: 10}
   };
   let z = {
-    let open! M;
+    open! M;
     [foo, bar]
   };
   let z = {
-    let open! M;
+    open! M;
     [foo, bar]
   };
   let z = {
-    let open! M;
+    open! M;
     {x: 10, y: 20}
   };
   let z = {
-    let open! M;
-    let open! M2;
+    open! M;
+    open! M2;
     value
   };
   let z = {
-    let open! M;
+    open! M;
     M2.value
   };
   let y = 44;
