@@ -118,6 +118,12 @@ type closedObj = <>;
 let (<..>) a b => a + b;
 let five = 2 <..> 3;
 
+type nestedObj = < bar : <a: int>>;
+
+let (>>) a b => a > b;
+
+let bigger = 3 >> 2;
+
 type typeDefForClosedObj = <x: int, y:int>;
 type typeDefForOpenObj 'a = <x:int, y:int, ..> as 'a;
 let anonClosedObject: <x:int, y:int> = {

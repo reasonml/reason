@@ -824,6 +824,7 @@ let built_in_explicit_arity_constructors = ["Some"; "Assert_failure"; "Match_fai
 %token FUNCTION
 %token FUNCTOR
 %token GREATER
+%token GREATERGREATER
 %token GREATERRBRACE
 %token GREATERRBRACKET
 %token IF
@@ -4092,6 +4093,7 @@ val_ident:
   | PERCENT                                     { "%" }
   | LESSGREATER                                 { "<>" }
   | LESSDOTDOTGREATER                           { "<..>" }
+  | GREATER GREATER                             { ">>" }
 
 operator:
     PREFIXOP                                    { $1 }
