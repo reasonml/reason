@@ -84,12 +84,12 @@ let () =
   let () = Arg.parse options (fun arg -> filename := arg) usage in
   let print_help = !print_help in
   let filename = !filename in
+  let use_stdin = !use_stdin in
   let _ =
-    if filename = "" || print_help then
+    if (filename = "" && not use_stdin) || print_help then
       let () = Arg.usage options usage in
         exit 1;
   in
-  let use_stdin = !use_stdin in
   let print_width = match !print_width with
     | None -> default_print_width
     | Some x -> x
