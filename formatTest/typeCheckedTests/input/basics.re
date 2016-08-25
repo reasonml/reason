@@ -37,3 +37,10 @@ let (\===) = (===);
 let expectedPrecendence = 1 + 1 \=== 1 + 1 && 1 + 1 \!== 1 + 1;
 
 let expectedPrecendence = 1 \+ 1 \=== 1 \+ 1 && 1 \+ 1 \!== 1 \+ 1;
+
+type person = {mutable age: int, name: string};
+let bob = {age: 30, name: "Bob"};
+let isZero x => x == 0;
+
+let x : unit = bob.age = isZero 5 ? 10 : 15;
+bob.age = isZero 5 ? 10 : 15;

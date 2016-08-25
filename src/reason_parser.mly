@@ -957,13 +957,13 @@ conflicts.
 %nonassoc below_SEMI
 %nonassoc below_EQUALGREATER
 %right    EQUALGREATER                  /* core_type2 (t => t => t) */
-%nonassoc below_QUESTION
-%nonassoc QUESTION
 %nonassoc WITH             /* below BAR  (match ... with ...) */
 %nonassoc AND             /* above WITH (module rec A: SIG with ... and ...) */
 %nonassoc ELSE                          /* (if ... then ... else ...) */
 %nonassoc EQUAL                         /* below COLONEQUAL (lbl = x := e) */
 %right    COLONEQUAL                    /* expr (e := e := e) */
+%nonassoc below_QUESTION
+%nonassoc QUESTION
 %nonassoc AS
 %nonassoc below_BAR                     /* Allows "building up" of many bars */
 %left     BAR                           /* pattern (p|p|p) */
@@ -2612,7 +2612,7 @@ _expr:
    *    z) ? q : r
    *
    * When a question mark is seen, *this* parsing rule has lower priority so
-   * that we, instead, shift the qusetion mark so that the *latter* ternary is
+   * that we, instead, shift the question mark so that the *latter* ternary is
    * recognized first on the top of the stack. (z ? q : r).
    */
   | expr QUESTION expr COLON expr %prec below_QUESTION {
