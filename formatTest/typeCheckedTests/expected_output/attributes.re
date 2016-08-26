@@ -319,3 +319,28 @@ let myFun
    */
 /* Bucklescript FFI item attributes */
 external imul : int => int => int = "Math.imul" [@@bs.val];
+
+class type _x = {
+                  method height: int
+                } [@bs];
+
+class type _y = {
+                  method height: int [@@bs.set]
+                } [@bs];
+
+class type _z = {
+                  method height: int
+                  [@@bs.set] [@@bs.get]
+                } [@bs];
+
+class type _A = {
+                  method height: int
+
+                    [@@bs.set
+                      {
+                        no_get;
+                        null
+                      }
+                    ]
+
+                } [@bs];
