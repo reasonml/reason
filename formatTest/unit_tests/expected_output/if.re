@@ -83,13 +83,13 @@ let ternaryResult =
   something ?
     callThisFunction withThisArg : thatResult;
 
-let annotatedTernary = true && (
-  something ? true : false: bool
-);
+let annotatedTernary =
+  true && (something ? true : false: bool);
 
-let annotatedBranch = true && (
-  something ? (true: bool) : false: bool
-);
+let annotatedBranch =
+  true && (
+    something ? (true: bool) : false: bool
+  );
 
 /* The following should be... */
 let whatShouldThisBeParsedAs =

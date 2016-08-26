@@ -28,6 +28,8 @@ for i in
   }
 };
 
+let x = !(! !foo).bar;
+
 let x = !foo.bar;
 
 let x = !foo#bar;
@@ -36,7 +38,23 @@ let x = !(!foo).bar;
 
 let x = !(!foo)#bar;
 
-/* Prefix operator */
+/* Prefix operators:
+ * ! followed by zero or more appropriate_operator_suffix_chars (see the
+ * lexer).
+ * ? or ~ followed by at least one appropriate_operator_suffix_chars.
+ */
+let x = ! !foo.bar;
+
+let x = ?! !foo.bar;
+
+let x = ! ?!foo.bar;
+
+let x = ~! !foo.bar;
+
+let x = ! ~!foo.bar;
+
+let x = ~! ~!foo.bar;
+
 let x = !!foo.bar;
 
 let x = !!foo#bar;
@@ -57,12 +75,21 @@ let parensNeededAroundFirst = (!blah)#foo#bar;
 
 let parensNeededAroundSecond = (!blah#foo)#bar;
 
-/* The following two have an error in formatting! We must check for
- * *consecutive* prefix operators and either space separate or guard in
- * parens. */
-let x = !!foo.bar;
+let parensWithSpaceNeededAroundFirst =
+  (! !blah)#foo#bar;
 
-let x = !!foo#bar;
+let parensWithSpaceNeededAroundSecond =
+  (! !blah#foo)#bar;
+
+let parensWithSpaceNeededAroundFirst =
+  (?!(+ blah))#foo#bar;
+
+let parensWithSpaceNeededAroundSecond =
+  (?!(+ blah#foo))#bar;
+
+let x = ! !foo.bar;
+
+let x = ! !foo#bar;
 
 /* Comments */
 /*Below is an empty comment*/

@@ -107,6 +107,7 @@ let x = (- add thisVal thisVal) [@onEverything];
 
 let bothTrue x y => {contents: x && y};
 let something = !(bothTrue true true) [@onEverythingToRightOfEquals];
+let something = !(bothTrue true true [@onlyOnArgumentToBang]);
 
 let res = add 2 4 [@appliesToEntireFunctionApplication];
 add 2 4 [@appliesToEntireFunctionApplication];

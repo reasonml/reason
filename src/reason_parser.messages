@@ -38,13 +38,13 @@ use_file: UIDENT RPAREN
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 797, spurious reduction of production constr_longident -> mod_longident
-## In state 956, spurious reduction of production _simple_expr -> constr_longident
-## In state 922, spurious reduction of production mark_position_exp(_simple_expr) -> _simple_expr
-## In state 918, spurious reduction of production simple_expr -> mark_position_exp(_simple_expr)
-## In state 926, spurious reduction of production less_aggressive_simple_expression -> simple_expr
-## In state 936, spurious reduction of production _expr -> less_aggressive_simple_expression
-## In state 965, spurious reduction of production mark_position_exp(_expr) -> _expr
-## In state 935, spurious reduction of production expr -> mark_position_exp(_expr)
+## In state 911, spurious reduction of production _simple_expr -> constr_longident
+## In state 877, spurious reduction of production mark_position_exp(_simple_expr) -> _simple_expr
+## In state 873, spurious reduction of production simple_expr -> mark_position_exp(_simple_expr)
+## In state 881, spurious reduction of production less_aggressive_simple_expression -> simple_expr
+## In state 891, spurious reduction of production _expr -> less_aggressive_simple_expression
+## In state 920, spurious reduction of production mark_position_exp(_expr) -> _expr
+## In state 890, spurious reduction of production expr -> mark_position_exp(_expr)
 ## In state 2753, spurious reduction of production post_item_attributes ->
 ## In state 2754, spurious reduction of production _structure_item_without_item_extension_sugar -> expr post_item_attributes
 ## In state 2755, spurious reduction of production mark_position_str(_structure_item_without_item_extension_sugar) -> _structure_item_without_item_extension_sugar
@@ -175,13 +175,13 @@ toplevel_phrase: UIDENT RPAREN
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 797, spurious reduction of production constr_longident -> mod_longident
-## In state 956, spurious reduction of production _simple_expr -> constr_longident
-## In state 922, spurious reduction of production mark_position_exp(_simple_expr) -> _simple_expr
-## In state 918, spurious reduction of production simple_expr -> mark_position_exp(_simple_expr)
-## In state 926, spurious reduction of production less_aggressive_simple_expression -> simple_expr
-## In state 936, spurious reduction of production _expr -> less_aggressive_simple_expression
-## In state 965, spurious reduction of production mark_position_exp(_expr) -> _expr
-## In state 935, spurious reduction of production expr -> mark_position_exp(_expr)
+## In state 911, spurious reduction of production _simple_expr -> constr_longident
+## In state 877, spurious reduction of production mark_position_exp(_simple_expr) -> _simple_expr
+## In state 873, spurious reduction of production simple_expr -> mark_position_exp(_simple_expr)
+## In state 881, spurious reduction of production less_aggressive_simple_expression -> simple_expr
+## In state 891, spurious reduction of production _expr -> less_aggressive_simple_expression
+## In state 920, spurious reduction of production mark_position_exp(_expr) -> _expr
+## In state 890, spurious reduction of production expr -> mark_position_exp(_expr)
 ## In state 2753, spurious reduction of production post_item_attributes ->
 ## In state 2754, spurious reduction of production _structure_item_without_item_extension_sugar -> expr post_item_attributes
 ## In state 2755, spurious reduction of production mark_position_str(_structure_item_without_item_extension_sugar) -> _structure_item_without_item_extension_sugar
@@ -1990,13 +1990,13 @@ parse_expression: UIDENT SEMI
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 797, spurious reduction of production constr_longident -> mod_longident
-## In state 956, spurious reduction of production _simple_expr -> constr_longident
-## In state 922, spurious reduction of production mark_position_exp(_simple_expr) -> _simple_expr
-## In state 918, spurious reduction of production simple_expr -> mark_position_exp(_simple_expr)
-## In state 926, spurious reduction of production less_aggressive_simple_expression -> simple_expr
-## In state 936, spurious reduction of production _expr -> less_aggressive_simple_expression
-## In state 965, spurious reduction of production mark_position_exp(_expr) -> _expr
-## In state 935, spurious reduction of production expr -> mark_position_exp(_expr)
+## In state 911, spurious reduction of production _simple_expr -> constr_longident
+## In state 877, spurious reduction of production mark_position_exp(_simple_expr) -> _simple_expr
+## In state 873, spurious reduction of production simple_expr -> mark_position_exp(_simple_expr)
+## In state 881, spurious reduction of production less_aggressive_simple_expression -> simple_expr
+## In state 891, spurious reduction of production _expr -> less_aggressive_simple_expression
+## In state 920, spurious reduction of production mark_position_exp(_expr) -> _expr
+## In state 890, spurious reduction of production expr -> mark_position_exp(_expr)
 ##
 
 <SYNTAX ERROR>
@@ -5330,9 +5330,9 @@ implementation: FOR UNDERSCORE IN UIDENT TO UIDENT WITH
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 797, spurious reduction of production constr_longident -> mod_longident
-## In state 920, spurious reduction of production _simple_expr -> constr_longident
-## In state 922, spurious reduction of production mark_position_exp(_simple_expr) -> _simple_expr
-## In state 918, spurious reduction of production simple_expr -> mark_position_exp(_simple_expr)
+## In state 875, spurious reduction of production _simple_expr -> constr_longident
+## In state 877, spurious reduction of production mark_position_exp(_simple_expr) -> _simple_expr
+## In state 873, spurious reduction of production simple_expr -> mark_position_exp(_simple_expr)
 ##
 
 <SYNTAX ERROR>
@@ -5378,9 +5378,9 @@ implementation: FUN LIDENT COLONCOLON UNDERSCORE EQUAL UIDENT WITH
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 797, spurious reduction of production constr_longident -> mod_longident
-## In state 920, spurious reduction of production _simple_expr -> constr_longident
-## In state 922, spurious reduction of production mark_position_exp(_simple_expr) -> _simple_expr
-## In state 918, spurious reduction of production simple_expr -> mark_position_exp(_simple_expr)
+## In state 875, spurious reduction of production _simple_expr -> constr_longident
+## In state 877, spurious reduction of production mark_position_exp(_simple_expr) -> _simple_expr
+## In state 873, spurious reduction of production simple_expr -> mark_position_exp(_simple_expr)
 ##
 
 <SYNTAX ERROR>
@@ -6551,13 +6551,13 @@ implementation: INCLUDE UIDENT LPAREN VAL UIDENT SEMI
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 797, spurious reduction of production constr_longident -> mod_longident
-## In state 956, spurious reduction of production _simple_expr -> constr_longident
-## In state 922, spurious reduction of production mark_position_exp(_simple_expr) -> _simple_expr
-## In state 918, spurious reduction of production simple_expr -> mark_position_exp(_simple_expr)
-## In state 926, spurious reduction of production less_aggressive_simple_expression -> simple_expr
-## In state 936, spurious reduction of production _expr -> less_aggressive_simple_expression
-## In state 965, spurious reduction of production mark_position_exp(_expr) -> _expr
-## In state 935, spurious reduction of production expr -> mark_position_exp(_expr)
+## In state 911, spurious reduction of production _simple_expr -> constr_longident
+## In state 877, spurious reduction of production mark_position_exp(_simple_expr) -> _simple_expr
+## In state 873, spurious reduction of production simple_expr -> mark_position_exp(_simple_expr)
+## In state 881, spurious reduction of production less_aggressive_simple_expression -> simple_expr
+## In state 891, spurious reduction of production _expr -> less_aggressive_simple_expression
+## In state 920, spurious reduction of production mark_position_exp(_expr) -> _expr
+## In state 890, spurious reduction of production expr -> mark_position_exp(_expr)
 ##
 
 <SYNTAX ERROR>
@@ -6891,10 +6891,10 @@ implementation: LBRACE INHERIT LBRACE LET CHAR EQUAL CHAR WITH
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 926, spurious reduction of production less_aggressive_simple_expression -> simple_expr
-## In state 936, spurious reduction of production _expr -> less_aggressive_simple_expression
-## In state 965, spurious reduction of production mark_position_exp(_expr) -> _expr
-## In state 935, spurious reduction of production expr -> mark_position_exp(_expr)
+## In state 881, spurious reduction of production less_aggressive_simple_expression -> simple_expr
+## In state 891, spurious reduction of production _expr -> less_aggressive_simple_expression
+## In state 920, spurious reduction of production mark_position_exp(_expr) -> _expr
+## In state 890, spurious reduction of production expr -> mark_position_exp(_expr)
 ## In state 1243, spurious reduction of production let_binding_body -> pattern EQUAL expr
 ## In state 1640, spurious reduction of production post_item_attributes ->
 ## In state 1641, spurious reduction of production let_binding_impl -> LET rec_flag let_binding_body post_item_attributes
@@ -8608,13 +8608,13 @@ implementation: LBRACKET UIDENT SEMI
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 797, spurious reduction of production constr_longident -> mod_longident
-## In state 956, spurious reduction of production _simple_expr -> constr_longident
-## In state 922, spurious reduction of production mark_position_exp(_simple_expr) -> _simple_expr
-## In state 918, spurious reduction of production simple_expr -> mark_position_exp(_simple_expr)
-## In state 926, spurious reduction of production less_aggressive_simple_expression -> simple_expr
-## In state 936, spurious reduction of production _expr -> less_aggressive_simple_expression
-## In state 965, spurious reduction of production mark_position_exp(_expr) -> _expr
-## In state 935, spurious reduction of production expr -> mark_position_exp(_expr)
+## In state 911, spurious reduction of production _simple_expr -> constr_longident
+## In state 877, spurious reduction of production mark_position_exp(_simple_expr) -> _simple_expr
+## In state 873, spurious reduction of production simple_expr -> mark_position_exp(_simple_expr)
+## In state 881, spurious reduction of production less_aggressive_simple_expression -> simple_expr
+## In state 891, spurious reduction of production _expr -> less_aggressive_simple_expression
+## In state 920, spurious reduction of production mark_position_exp(_expr) -> _expr
+## In state 890, spurious reduction of production expr -> mark_position_exp(_expr)
 ## In state 1070, spurious reduction of production expr_optional_constraint -> expr
 ##
 
@@ -8875,13 +8875,13 @@ implementation: LBRACKETPERCENTPERCENT WITH QUESTION UNDERSCORE WHEN UIDENT SEMI
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 797, spurious reduction of production constr_longident -> mod_longident
-## In state 956, spurious reduction of production _simple_expr -> constr_longident
-## In state 922, spurious reduction of production mark_position_exp(_simple_expr) -> _simple_expr
-## In state 918, spurious reduction of production simple_expr -> mark_position_exp(_simple_expr)
-## In state 926, spurious reduction of production less_aggressive_simple_expression -> simple_expr
-## In state 936, spurious reduction of production _expr -> less_aggressive_simple_expression
-## In state 965, spurious reduction of production mark_position_exp(_expr) -> _expr
-## In state 935, spurious reduction of production expr -> mark_position_exp(_expr)
+## In state 911, spurious reduction of production _simple_expr -> constr_longident
+## In state 877, spurious reduction of production mark_position_exp(_simple_expr) -> _simple_expr
+## In state 873, spurious reduction of production simple_expr -> mark_position_exp(_simple_expr)
+## In state 881, spurious reduction of production less_aggressive_simple_expression -> simple_expr
+## In state 891, spurious reduction of production _expr -> less_aggressive_simple_expression
+## In state 920, spurious reduction of production mark_position_exp(_expr) -> _expr
+## In state 890, spurious reduction of production expr -> mark_position_exp(_expr)
 ##
 
 <SYNTAX ERROR>
@@ -10012,9 +10012,9 @@ implementation: LPAREN FOR UNDERSCORE IN UIDENT WITH
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 797, spurious reduction of production constr_longident -> mod_longident
-## In state 920, spurious reduction of production _simple_expr -> constr_longident
-## In state 922, spurious reduction of production mark_position_exp(_simple_expr) -> _simple_expr
-## In state 918, spurious reduction of production simple_expr -> mark_position_exp(_simple_expr)
+## In state 875, spurious reduction of production _simple_expr -> constr_longident
+## In state 877, spurious reduction of production mark_position_exp(_simple_expr) -> _simple_expr
+## In state 873, spurious reduction of production simple_expr -> mark_position_exp(_simple_expr)
 ##
 
 <SYNTAX ERROR>
@@ -10195,13 +10195,13 @@ implementation: LPAREN FUN BAR UNDERSCORE WHEN UIDENT SEMI
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 797, spurious reduction of production constr_longident -> mod_longident
-## In state 956, spurious reduction of production _simple_expr -> constr_longident
-## In state 922, spurious reduction of production mark_position_exp(_simple_expr) -> _simple_expr
-## In state 918, spurious reduction of production simple_expr -> mark_position_exp(_simple_expr)
-## In state 926, spurious reduction of production less_aggressive_simple_expression -> simple_expr
-## In state 936, spurious reduction of production _expr -> less_aggressive_simple_expression
-## In state 965, spurious reduction of production mark_position_exp(_expr) -> _expr
-## In state 935, spurious reduction of production expr -> mark_position_exp(_expr)
+## In state 911, spurious reduction of production _simple_expr -> constr_longident
+## In state 877, spurious reduction of production mark_position_exp(_simple_expr) -> _simple_expr
+## In state 873, spurious reduction of production simple_expr -> mark_position_exp(_simple_expr)
+## In state 881, spurious reduction of production less_aggressive_simple_expression -> simple_expr
+## In state 891, spurious reduction of production _expr -> less_aggressive_simple_expression
+## In state 920, spurious reduction of production mark_position_exp(_expr) -> _expr
+## In state 890, spurious reduction of production expr -> mark_position_exp(_expr)
 ##
 
 <SYNTAX ERROR>
@@ -10466,9 +10466,9 @@ implementation: LPAREN IF UIDENT WITH
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 797, spurious reduction of production constr_longident -> mod_longident
-## In state 920, spurious reduction of production _simple_expr -> constr_longident
-## In state 922, spurious reduction of production mark_position_exp(_simple_expr) -> _simple_expr
-## In state 918, spurious reduction of production simple_expr -> mark_position_exp(_simple_expr)
+## In state 875, spurious reduction of production _simple_expr -> constr_longident
+## In state 877, spurious reduction of production mark_position_exp(_simple_expr) -> _simple_expr
+## In state 873, spurious reduction of production simple_expr -> mark_position_exp(_simple_expr)
 ##
 
 <SYNTAX ERROR>
@@ -10543,13 +10543,13 @@ implementation: LPAREN LBRACKET DOTDOTDOT UIDENT COMMA
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 797, spurious reduction of production constr_longident -> mod_longident
-## In state 956, spurious reduction of production _simple_expr -> constr_longident
-## In state 922, spurious reduction of production mark_position_exp(_simple_expr) -> _simple_expr
-## In state 918, spurious reduction of production simple_expr -> mark_position_exp(_simple_expr)
-## In state 926, spurious reduction of production less_aggressive_simple_expression -> simple_expr
-## In state 936, spurious reduction of production _expr -> less_aggressive_simple_expression
-## In state 965, spurious reduction of production mark_position_exp(_expr) -> _expr
-## In state 935, spurious reduction of production expr -> mark_position_exp(_expr)
+## In state 911, spurious reduction of production _simple_expr -> constr_longident
+## In state 877, spurious reduction of production mark_position_exp(_simple_expr) -> _simple_expr
+## In state 873, spurious reduction of production simple_expr -> mark_position_exp(_simple_expr)
+## In state 881, spurious reduction of production less_aggressive_simple_expression -> simple_expr
+## In state 891, spurious reduction of production _expr -> less_aggressive_simple_expression
+## In state 920, spurious reduction of production mark_position_exp(_expr) -> _expr
+## In state 890, spurious reduction of production expr -> mark_position_exp(_expr)
 ## In state 1070, spurious reduction of production expr_optional_constraint -> expr
 ##
 
@@ -10707,13 +10707,13 @@ implementation: LPAREN LPAREN COLONCOLON RPAREN LPAREN UIDENT COMMA UIDENT SEMI
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 797, spurious reduction of production constr_longident -> mod_longident
-## In state 956, spurious reduction of production _simple_expr -> constr_longident
-## In state 922, spurious reduction of production mark_position_exp(_simple_expr) -> _simple_expr
-## In state 918, spurious reduction of production simple_expr -> mark_position_exp(_simple_expr)
-## In state 926, spurious reduction of production less_aggressive_simple_expression -> simple_expr
-## In state 936, spurious reduction of production _expr -> less_aggressive_simple_expression
-## In state 965, spurious reduction of production mark_position_exp(_expr) -> _expr
-## In state 935, spurious reduction of production expr -> mark_position_exp(_expr)
+## In state 911, spurious reduction of production _simple_expr -> constr_longident
+## In state 877, spurious reduction of production mark_position_exp(_simple_expr) -> _simple_expr
+## In state 873, spurious reduction of production simple_expr -> mark_position_exp(_simple_expr)
+## In state 881, spurious reduction of production less_aggressive_simple_expression -> simple_expr
+## In state 891, spurious reduction of production _expr -> less_aggressive_simple_expression
+## In state 920, spurious reduction of production mark_position_exp(_expr) -> _expr
+## In state 890, spurious reduction of production expr -> mark_position_exp(_expr)
 ##
 
 <SYNTAX ERROR>
@@ -10768,13 +10768,13 @@ implementation: LPAREN LPAREN COLONCOLON RPAREN LPAREN UIDENT SEMI
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 797, spurious reduction of production constr_longident -> mod_longident
-## In state 956, spurious reduction of production _simple_expr -> constr_longident
-## In state 922, spurious reduction of production mark_position_exp(_simple_expr) -> _simple_expr
-## In state 918, spurious reduction of production simple_expr -> mark_position_exp(_simple_expr)
-## In state 926, spurious reduction of production less_aggressive_simple_expression -> simple_expr
-## In state 936, spurious reduction of production _expr -> less_aggressive_simple_expression
-## In state 965, spurious reduction of production mark_position_exp(_expr) -> _expr
-## In state 935, spurious reduction of production expr -> mark_position_exp(_expr)
+## In state 911, spurious reduction of production _simple_expr -> constr_longident
+## In state 877, spurious reduction of production mark_position_exp(_simple_expr) -> _simple_expr
+## In state 873, spurious reduction of production simple_expr -> mark_position_exp(_simple_expr)
+## In state 881, spurious reduction of production less_aggressive_simple_expression -> simple_expr
+## In state 891, spurious reduction of production _expr -> less_aggressive_simple_expression
+## In state 920, spurious reduction of production mark_position_exp(_expr) -> _expr
+## In state 890, spurious reduction of production expr -> mark_position_exp(_expr)
 ##
 
 <SYNTAX ERROR>
@@ -11291,9 +11291,9 @@ implementation: SWITCH UIDENT WITH
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 797, spurious reduction of production constr_longident -> mod_longident
-## In state 920, spurious reduction of production _simple_expr -> constr_longident
-## In state 922, spurious reduction of production mark_position_exp(_simple_expr) -> _simple_expr
-## In state 918, spurious reduction of production simple_expr -> mark_position_exp(_simple_expr)
+## In state 875, spurious reduction of production _simple_expr -> constr_longident
+## In state 877, spurious reduction of production mark_position_exp(_simple_expr) -> _simple_expr
+## In state 873, spurious reduction of production simple_expr -> mark_position_exp(_simple_expr)
 ##
 
 <SYNTAX ERROR>
@@ -11361,13 +11361,13 @@ implementation: TRUE DOT LBRACE UIDENT SEMI
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 797, spurious reduction of production constr_longident -> mod_longident
-## In state 956, spurious reduction of production _simple_expr -> constr_longident
-## In state 922, spurious reduction of production mark_position_exp(_simple_expr) -> _simple_expr
-## In state 918, spurious reduction of production simple_expr -> mark_position_exp(_simple_expr)
-## In state 926, spurious reduction of production less_aggressive_simple_expression -> simple_expr
-## In state 936, spurious reduction of production _expr -> less_aggressive_simple_expression
-## In state 965, spurious reduction of production mark_position_exp(_expr) -> _expr
-## In state 935, spurious reduction of production expr -> mark_position_exp(_expr)
+## In state 911, spurious reduction of production _simple_expr -> constr_longident
+## In state 877, spurious reduction of production mark_position_exp(_simple_expr) -> _simple_expr
+## In state 873, spurious reduction of production simple_expr -> mark_position_exp(_simple_expr)
+## In state 881, spurious reduction of production less_aggressive_simple_expression -> simple_expr
+## In state 891, spurious reduction of production _expr -> less_aggressive_simple_expression
+## In state 920, spurious reduction of production mark_position_exp(_expr) -> _expr
+## In state 890, spurious reduction of production expr -> mark_position_exp(_expr)
 ##
 
 <SYNTAX ERROR>
@@ -11476,7 +11476,7 @@ implementation: TRUE DOT LIDENT EQUAL WITH
 
 implementation: TRUE DOT LPAREN UIDENT RPAREN EQUAL WITH
 ##
-## Ends in an error in state: 894.
+## Ends in an error in state: 1050.
 ##
 ## _expr -> simple_expr DOT LPAREN expr RPAREN EQUAL . expr [ error STAR SEMI RPAREN RBRACKET RBRACE QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETATAT LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER EOF COMMA COLONGREATER COLONEQUAL COLON BARRBRACKET BARBAR BAR AND AMPERSAND AMPERAMPER ]
 ##
@@ -11488,7 +11488,7 @@ implementation: TRUE DOT LPAREN UIDENT RPAREN EQUAL WITH
 
 implementation: TRUE DOT LPAREN UIDENT SEMI
 ##
-## Ends in an error in state: 891.
+## Ends in an error in state: 1047.
 ##
 ## _expr -> expr . INFIXOP0 expr [ error STAR RPAREN QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATER COLONEQUAL BARBAR AMPERSAND AMPERAMPER ]
 ## _expr -> expr . INFIXOP1 expr [ error STAR RPAREN QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATER COLONEQUAL BARBAR AMPERSAND AMPERAMPER ]
@@ -11762,13 +11762,13 @@ implementation: TRY UIDENT LBRACE BAR UNDERSCORE EQUALGREATER UIDENT RPAREN
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 797, spurious reduction of production constr_longident -> mod_longident
-## In state 956, spurious reduction of production _simple_expr -> constr_longident
-## In state 922, spurious reduction of production mark_position_exp(_simple_expr) -> _simple_expr
-## In state 918, spurious reduction of production simple_expr -> mark_position_exp(_simple_expr)
-## In state 926, spurious reduction of production less_aggressive_simple_expression -> simple_expr
-## In state 936, spurious reduction of production _expr -> less_aggressive_simple_expression
-## In state 965, spurious reduction of production mark_position_exp(_expr) -> _expr
-## In state 935, spurious reduction of production expr -> mark_position_exp(_expr)
+## In state 911, spurious reduction of production _simple_expr -> constr_longident
+## In state 877, spurious reduction of production mark_position_exp(_simple_expr) -> _simple_expr
+## In state 873, spurious reduction of production simple_expr -> mark_position_exp(_simple_expr)
+## In state 881, spurious reduction of production less_aggressive_simple_expression -> simple_expr
+## In state 891, spurious reduction of production _expr -> less_aggressive_simple_expression
+## In state 920, spurious reduction of production mark_position_exp(_expr) -> _expr
+## In state 890, spurious reduction of production expr -> mark_position_exp(_expr)
 ## In state 1179, spurious reduction of production post_item_attributes ->
 ## In state 1180, spurious reduction of production opt_semi ->
 ## In state 1185, spurious reduction of production _semi_terminated_seq_expr_row -> expr post_item_attributes opt_semi
@@ -11869,13 +11869,13 @@ implementation: TRY UIDENT LBRACE BAR UNDERSCORE WHEN UIDENT SEMI
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 797, spurious reduction of production constr_longident -> mod_longident
-## In state 956, spurious reduction of production _simple_expr -> constr_longident
-## In state 922, spurious reduction of production mark_position_exp(_simple_expr) -> _simple_expr
-## In state 918, spurious reduction of production simple_expr -> mark_position_exp(_simple_expr)
-## In state 926, spurious reduction of production less_aggressive_simple_expression -> simple_expr
-## In state 936, spurious reduction of production _expr -> less_aggressive_simple_expression
-## In state 965, spurious reduction of production mark_position_exp(_expr) -> _expr
-## In state 935, spurious reduction of production expr -> mark_position_exp(_expr)
+## In state 911, spurious reduction of production _simple_expr -> constr_longident
+## In state 877, spurious reduction of production mark_position_exp(_simple_expr) -> _simple_expr
+## In state 873, spurious reduction of production simple_expr -> mark_position_exp(_simple_expr)
+## In state 881, spurious reduction of production less_aggressive_simple_expression -> simple_expr
+## In state 891, spurious reduction of production _expr -> less_aggressive_simple_expression
+## In state 920, spurious reduction of production mark_position_exp(_expr) -> _expr
+## In state 890, spurious reduction of production expr -> mark_position_exp(_expr)
 ##
 
 <SYNTAX ERROR>
@@ -11927,9 +11927,9 @@ implementation: TRY UIDENT UNDERSCORE
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 797, spurious reduction of production constr_longident -> mod_longident
-## In state 920, spurious reduction of production _simple_expr -> constr_longident
-## In state 922, spurious reduction of production mark_position_exp(_simple_expr) -> _simple_expr
-## In state 918, spurious reduction of production simple_expr -> mark_position_exp(_simple_expr)
+## In state 875, spurious reduction of production _simple_expr -> constr_longident
+## In state 877, spurious reduction of production mark_position_exp(_simple_expr) -> _simple_expr
+## In state 873, spurious reduction of production simple_expr -> mark_position_exp(_simple_expr)
 ##
 
 <SYNTAX ERROR>
@@ -12569,7 +12569,7 @@ implementation: TYPE WITH
 
 implementation: UIDENT AMPERAMPER WITH
 ##
-## Ends in an error in state: 887.
+## Ends in an error in state: 1002.
 ##
 ## _expr -> expr AMPERAMPER . expr [ error STAR SEMI RPAREN RBRACKET RBRACE QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETATAT LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER EOF COMMA COLONGREATER COLONEQUAL COLON BARRBRACKET BARBAR BAR AND AMPERSAND AMPERAMPER ]
 ##
@@ -12581,7 +12581,7 @@ implementation: UIDENT AMPERAMPER WITH
 
 implementation: UIDENT AMPERSAND WITH
 ##
-## Ends in an error in state: 885.
+## Ends in an error in state: 1000.
 ##
 ## _expr -> expr AMPERSAND . expr [ error STAR SEMI RPAREN RBRACKET RBRACE QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETATAT LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER EOF COMMA COLONGREATER COLONEQUAL COLON BARRBRACKET BARBAR BAR AND AMPERSAND AMPERAMPER ]
 ##
@@ -12593,7 +12593,7 @@ implementation: UIDENT AMPERSAND WITH
 
 implementation: UIDENT BARBAR WITH
 ##
-## Ends in an error in state: 883.
+## Ends in an error in state: 998.
 ##
 ## _expr -> expr BARBAR . expr [ error STAR SEMI RPAREN RBRACKET RBRACE QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETATAT LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER EOF COMMA COLONGREATER COLONEQUAL COLON BARRBRACKET BARBAR BAR AND AMPERSAND AMPERAMPER ]
 ##
@@ -12605,7 +12605,7 @@ implementation: UIDENT BARBAR WITH
 
 implementation: UIDENT COLONEQUAL WITH
 ##
-## Ends in an error in state: 889.
+## Ends in an error in state: 1004.
 ##
 ## _expr -> expr COLONEQUAL . expr [ error STAR SEMI RPAREN RBRACKET RBRACE QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETATAT LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER EOF COMMA COLONGREATER COLONEQUAL COLON BARRBRACKET BARBAR BAR AND AMPERSAND AMPERAMPER ]
 ##
@@ -12854,7 +12854,7 @@ implementation: UIDENT DOT WITH
 
 implementation: UIDENT GREATER WITH
 ##
-## Ends in an error in state: 879.
+## Ends in an error in state: 994.
 ##
 ## _expr -> expr GREATER . expr [ error STAR SEMI RPAREN RBRACKET RBRACE QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETATAT LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER EOF COMMA COLONGREATER COLONEQUAL COLON BARRBRACKET BARBAR BAR AND AMPERSAND AMPERAMPER ]
 ## _expr -> expr GREATER . GREATER expr [ error STAR SEMI RPAREN RBRACKET RBRACE QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETATAT LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER EOF COMMA COLONGREATER COLONEQUAL COLON BARRBRACKET BARBAR BAR AND AMPERSAND AMPERAMPER ]
@@ -12867,7 +12867,7 @@ Expecting an expression
 
 implementation: UIDENT INFIXOP0 WITH
 ##
-## Ends in an error in state: 877.
+## Ends in an error in state: 992.
 ##
 ## _expr -> expr INFIXOP0 . expr [ error STAR SEMI RPAREN RBRACKET RBRACE QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETATAT LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER EOF COMMA COLONGREATER COLONEQUAL COLON BARRBRACKET BARBAR BAR AND AMPERSAND AMPERAMPER ]
 ##
@@ -12879,7 +12879,7 @@ Expecting an expression
 
 implementation: UIDENT INFIXOP1 WITH
 ##
-## Ends in an error in state: 871.
+## Ends in an error in state: 986.
 ##
 ## _expr -> expr INFIXOP1 . expr [ error STAR SEMI RPAREN RBRACKET RBRACE QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETATAT LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER EOF COMMA COLONGREATER COLONEQUAL COLON BARRBRACKET BARBAR BAR AND AMPERSAND AMPERAMPER ]
 ##
@@ -12891,7 +12891,7 @@ Expecting an expression
 
 implementation: UIDENT INFIXOP2 WITH
 ##
-## Ends in an error in state: 869.
+## Ends in an error in state: 984.
 ##
 ## _expr -> expr INFIXOP2 . expr [ error STAR SEMI RPAREN RBRACKET RBRACE QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETATAT LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER EOF COMMA COLONGREATER COLONEQUAL COLON BARRBRACKET BARBAR BAR AND AMPERSAND AMPERAMPER ]
 ##
@@ -12903,7 +12903,7 @@ Expecting an expression
 
 implementation: UIDENT INFIXOP3 WITH
 ##
-## Ends in an error in state: 855.
+## Ends in an error in state: 970.
 ##
 ## _expr -> expr INFIXOP3 . expr [ error STAR SEMI RPAREN RBRACKET RBRACE QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETATAT LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER EOF COMMA COLONGREATER COLONEQUAL COLON BARRBRACKET BARBAR BAR AND AMPERSAND AMPERAMPER ]
 ##
@@ -13019,7 +13019,7 @@ Expecting "]"
 
 implementation: UIDENT LESS WITH
 ##
-## Ends in an error in state: 875.
+## Ends in an error in state: 990.
 ##
 ## _expr -> expr LESS . expr [ error STAR SEMI RPAREN RBRACKET RBRACE QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETATAT LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER EOF COMMA COLONGREATER COLONEQUAL COLON BARRBRACKET BARBAR BAR AND AMPERSAND AMPERAMPER ]
 ##
@@ -13031,7 +13031,7 @@ Expecting an expression
 
 implementation: UIDENT LESSDOTDOTGREATER WITH
 ##
-## Ends in an error in state: 873.
+## Ends in an error in state: 988.
 ##
 ## _expr -> expr LESSDOTDOTGREATER . expr [ error STAR SEMI RPAREN RBRACKET RBRACE QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETATAT LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER EOF COMMA COLONGREATER COLONEQUAL COLON BARRBRACKET BARBAR BAR AND AMPERSAND AMPERAMPER ]
 ##
@@ -13043,7 +13043,7 @@ Expecting an expression
 
 implementation: UIDENT LESSGREATER WITH
 ##
-## Ends in an error in state: 867.
+## Ends in an error in state: 982.
 ##
 ## _expr -> expr LESSGREATER . expr [ error STAR SEMI RPAREN RBRACKET RBRACE QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETATAT LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER EOF COMMA COLONGREATER COLONEQUAL COLON BARRBRACKET BARBAR BAR AND AMPERSAND AMPERAMPER ]
 ##
@@ -13080,7 +13080,7 @@ Expecting one of the following:
 
 implementation: UIDENT MINUS WITH
 ##
-## Ends in an error in state: 865.
+## Ends in an error in state: 980.
 ##
 ## _expr -> expr MINUS . expr [ error STAR SEMI RPAREN RBRACKET RBRACE QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETATAT LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER EOF COMMA COLONGREATER COLONEQUAL COLON BARRBRACKET BARBAR BAR AND AMPERSAND AMPERAMPER ]
 ##
@@ -13092,7 +13092,7 @@ Expecting an expression
 
 implementation: UIDENT MINUSDOT WITH
 ##
-## Ends in an error in state: 863.
+## Ends in an error in state: 978.
 ##
 ## _expr -> expr MINUSDOT . expr [ error STAR SEMI RPAREN RBRACKET RBRACE QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETATAT LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER EOF COMMA COLONGREATER COLONEQUAL COLON BARRBRACKET BARBAR BAR AND AMPERSAND AMPERAMPER ]
 ##
@@ -13104,7 +13104,7 @@ Expecting an expression
 
 implementation: UIDENT OR WITH
 ##
-## Ends in an error in state: 861.
+## Ends in an error in state: 976.
 ##
 ## _expr -> expr OR . expr [ error STAR SEMI RPAREN RBRACKET RBRACE QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETATAT LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER EOF COMMA COLONGREATER COLONEQUAL COLON BARRBRACKET BARBAR BAR AND AMPERSAND AMPERAMPER ]
 ##
@@ -13116,7 +13116,7 @@ Expecting an expression
 
 implementation: UIDENT PERCENT WITH
 ##
-## Ends in an error in state: 853.
+## Ends in an error in state: 968.
 ##
 ## _expr -> expr PERCENT . expr [ error STAR SEMI RPAREN RBRACKET RBRACE QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETATAT LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER EOF COMMA COLONGREATER COLONEQUAL COLON BARRBRACKET BARBAR BAR AND AMPERSAND AMPERAMPER ]
 ##
@@ -13128,7 +13128,7 @@ Expecting an expression
 
 implementation: UIDENT PLUS WITH
 ##
-## Ends in an error in state: 859.
+## Ends in an error in state: 974.
 ##
 ## _expr -> expr PLUS . expr [ error STAR SEMI RPAREN RBRACKET RBRACE QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETATAT LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER EOF COMMA COLONGREATER COLONEQUAL COLON BARRBRACKET BARBAR BAR AND AMPERSAND AMPERAMPER ]
 ##
@@ -13140,7 +13140,7 @@ Expecting an expression
 
 implementation: UIDENT PLUSDOT WITH
 ##
-## Ends in an error in state: 857.
+## Ends in an error in state: 972.
 ##
 ## _expr -> expr PLUSDOT . expr [ error STAR SEMI RPAREN RBRACKET RBRACE QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETATAT LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER EOF COMMA COLONGREATER COLONEQUAL COLON BARRBRACKET BARBAR BAR AND AMPERSAND AMPERAMPER ]
 ##
@@ -13152,7 +13152,7 @@ Expecting an expression
 
 implementation: UIDENT PLUSEQ WITH
 ##
-## Ends in an error in state: 851.
+## Ends in an error in state: 966.
 ##
 ## _expr -> expr PLUSEQ . expr [ error STAR SEMI RPAREN RBRACKET RBRACE QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETATAT LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER EOF COMMA COLONGREATER COLONEQUAL COLON BARRBRACKET BARBAR BAR AND AMPERSAND AMPERAMPER ]
 ##
@@ -13164,7 +13164,7 @@ Expecting an expression
 
 implementation: UIDENT QUESTION UIDENT COLON WITH
 ##
-## Ends in an error in state: 1050.
+## Ends in an error in state: 1045.
 ##
 ## _expr -> expr QUESTION expr COLON . expr [ error STAR SEMI RPAREN RBRACKET RBRACE QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETATAT LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER EOF COMMA COLONGREATER COLONEQUAL COLON BARRBRACKET BARBAR BAR AND AMPERSAND AMPERAMPER ]
 ##
@@ -13176,7 +13176,7 @@ Expecting an expression
 
 implementation: UIDENT QUESTION UIDENT SEMI
 ##
-## Ends in an error in state: 1049.
+## Ends in an error in state: 1044.
 ##
 ## _expr -> expr . INFIXOP0 expr [ STAR QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATER COLONEQUAL COLON BARBAR AMPERSAND AMPERAMPER ]
 ## _expr -> expr . INFIXOP1 expr [ STAR QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATER COLONEQUAL COLON BARBAR AMPERSAND AMPERAMPER ]
@@ -13212,13 +13212,13 @@ implementation: UIDENT QUESTION UIDENT SEMI
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 797, spurious reduction of production constr_longident -> mod_longident
-## In state 956, spurious reduction of production _simple_expr -> constr_longident
-## In state 922, spurious reduction of production mark_position_exp(_simple_expr) -> _simple_expr
-## In state 918, spurious reduction of production simple_expr -> mark_position_exp(_simple_expr)
-## In state 926, spurious reduction of production less_aggressive_simple_expression -> simple_expr
-## In state 936, spurious reduction of production _expr -> less_aggressive_simple_expression
-## In state 965, spurious reduction of production mark_position_exp(_expr) -> _expr
-## In state 935, spurious reduction of production expr -> mark_position_exp(_expr)
+## In state 911, spurious reduction of production _simple_expr -> constr_longident
+## In state 877, spurious reduction of production mark_position_exp(_simple_expr) -> _simple_expr
+## In state 873, spurious reduction of production simple_expr -> mark_position_exp(_simple_expr)
+## In state 881, spurious reduction of production less_aggressive_simple_expression -> simple_expr
+## In state 891, spurious reduction of production _expr -> less_aggressive_simple_expression
+## In state 920, spurious reduction of production mark_position_exp(_expr) -> _expr
+## In state 890, spurious reduction of production expr -> mark_position_exp(_expr)
 ##
 
 Expecting one of the following:
@@ -13227,7 +13227,7 @@ Expecting one of the following:
 
 implementation: UIDENT QUESTION WITH
 ##
-## Ends in an error in state: 896.
+## Ends in an error in state: 851.
 ##
 ## _expr -> expr QUESTION . expr COLON expr [ error STAR SEMI RPAREN RBRACKET RBRACE QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETATAT LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER EOF COMMA COLONGREATER COLONEQUAL COLON BARRBRACKET BARBAR BAR AND AMPERSAND AMPERAMPER ]
 ##
@@ -13344,13 +13344,13 @@ implementation: UIDENT TRUE DOT LBRACE UIDENT SEMI
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 797, spurious reduction of production constr_longident -> mod_longident
-## In state 956, spurious reduction of production _simple_expr -> constr_longident
-## In state 922, spurious reduction of production mark_position_exp(_simple_expr) -> _simple_expr
-## In state 918, spurious reduction of production simple_expr -> mark_position_exp(_simple_expr)
-## In state 926, spurious reduction of production less_aggressive_simple_expression -> simple_expr
-## In state 936, spurious reduction of production _expr -> less_aggressive_simple_expression
-## In state 965, spurious reduction of production mark_position_exp(_expr) -> _expr
-## In state 935, spurious reduction of production expr -> mark_position_exp(_expr)
+## In state 911, spurious reduction of production _simple_expr -> constr_longident
+## In state 877, spurious reduction of production mark_position_exp(_simple_expr) -> _simple_expr
+## In state 873, spurious reduction of production simple_expr -> mark_position_exp(_simple_expr)
+## In state 881, spurious reduction of production less_aggressive_simple_expression -> simple_expr
+## In state 891, spurious reduction of production _expr -> less_aggressive_simple_expression
+## In state 920, spurious reduction of production mark_position_exp(_expr) -> _expr
+## In state 890, spurious reduction of production expr -> mark_position_exp(_expr)
 ##
 
 Expecting one of the following:

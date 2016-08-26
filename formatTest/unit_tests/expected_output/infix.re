@@ -9,21 +9,18 @@
    infix applications ungrouped in parenthesis (which is what the above test
    verifies), but the additional parenthesis is nice.  */
 /* < > = all have same precedence level/direction(left) */
-let parseTree = ((x > y > z) < a < b) == c == d;
+let parseTree = x > y > z < a < b == c == d;
 
-let minParens = ((x > y > z) < a < b) == c == d;
+let minParens = x > y > z < a < b == c == d;
 
-let formatted = ((x > y > z) < a < b) == c == d;
+let formatted = x > y > z < a < b == c == d;
 
 /* Case with === */
-let parseTree =
-  ((x > y > z) < a < b) === c === d;
+let parseTree = x > y > z < a < b === c === d;
 
-let minParens =
-  ((x > y > z) < a < b) === c === d;
+let minParens = x > y > z < a < b === c === d;
 
-let formatted =
-  ((x > y > z) < a < b) === c === d;
+let formatted = x > y > z < a < b === c === d;
 
 /* < > = all have same precedence level and direction (left) */
 let parseTree =
@@ -67,33 +64,48 @@ let formatted =
 
 /* !=...(left) same level =(left) is higher than :=(right) */
 let parseTree =
-  a1 := a2 := b1 == ((b2 == y) != x != z);
+  a1 := a2 := b1 == (b2 == y != x != z);
 
 let minParens =
-  a1 := a2 := b1 == ((b2 == y) != x != z);
+  a1 := a2 := b1 == (b2 == y != x != z);
 
 let formatted =
-  a1 := a2 := b1 == ((b2 == y) != x != z);
+  a1 := a2 := b1 == (b2 == y != x != z);
 
 /* Case with === */
 let parseTree =
-  a1 := a2 := b1 === ((b2 === y) !== x !== z);
+  a1 := a2 := b1 === (b2 === y !== x !== z);
 
 let minParens =
-  a1 := a2 := b1 === ((b2 === y) !== x !== z);
+  a1 := a2 := b1 === (b2 === y !== x !== z);
 
 let formatted =
-  a1 := a2 := b1 === ((b2 === y) !== x !== z);
+  a1 := a2 := b1 === (b2 === y !== x !== z);
 
 /* &...(left) is higher than &(right). &(right) is equal to &&(right) */
 let parseTree =
-  a1 && a2 && (b1 & b2 & y &|| x &|| z);
+  a1 && a2 && b1 & b2 & y &|| x &|| z;
 
 let minParens =
-  a1 && a2 && (b1 & b2 & y &|| x &|| z);
+  a1 && a2 && b1 & b2 & y &|| x &|| z;
 
 let formatted =
-  a1 && a2 && (b1 & b2 & y &|| x &|| z);
+  a1 && a2 && b1 & b2 & y &|| x &|| z;
+
+
+/**
+ * Now, let's try an example that resembles the above, yet would require
+ * parenthesis everywhere.
+ */
+/* &...(left) is higher than &(right). &(right) is equal to &&(right) */
+let parseTree =
+  ((((a1 && a2) && b1) & b2) & y) &|| (x &|| z);
+
+let minParens =
+  ((((a1 && a2) && b1) & b2) & y) &|| (x &|| z);
+
+let formatted =
+  ((((a1 && a2) && b1) & b2) & y) &|| (x &|| z);
 
 /* **...(right) is higher than *...(left) */
 let parseTree = b1 *| b2 *| y *\*| x *\*| z;
@@ -142,9 +154,8 @@ first || second || third;
 (first || second) || third;
 
 /* No parens should be added/removed from the following when formatting */
-let seeWhichCharacterHasHigherPrecedence = (
-  first |> second |> third
-) ^> fourth;
+let seeWhichCharacterHasHigherPrecedence =
+  (first |> second |> third) ^> fourth;
 
 let seeWhichCharacterHasHigherPrecedence =
   first |> second |> third;
@@ -157,12 +168,11 @@ let comparison = (==);
 /* Why would the following two cases have different grouping? */
 let res =
   blah ||
-    DataConstructor 10 ||
-    DataConstructor 10 && 10;
+  DataConstructor 10 || DataConstructor 10 && 10;
 
 let res =
   blah &&
-    DataConstructor 10 && DataConstructor 10 + 10;
+  DataConstructor 10 && DataConstructor 10 + 10;
 
 /* This demonstrates how broken infix pretty printing is:
  */
@@ -199,7 +209,8 @@ let res = first |> second;
 let res = (|>) first;
 
 /* Custom infix with labeled args */
-let (|>) first::first second::second => first + second;
+let (|>) first::first second::second =>
+  first + second;
 
 /* Should NOT reformat named args to actually be placed infix */
 let res = (|>) first::first second::second;
@@ -252,16 +263,18 @@ let seeWhichCharacterHasHigherPrecedence =
 
 let res =
   blah &&
-    DataConstructor 10 && DataConstructor 10 + 10;
+  DataConstructor 10 && DataConstructor 10 + 10;
 
 /* Should be parsed as */
 let res =
   blah &&
-    DataConstructor 10 && DataConstructor 10 + 10;
+  DataConstructor 10 && DataConstructor 10 + 10;
 
-let (++) label::label label2::label2 => label + label2;
+let (++) label::label label2::label2 =>
+  label + label2;
 
-let (++) label::label label2::label2 => label + label2;
+let (++) label::label label2::label2 =>
+  label + label2;
 
 let (++) = (++);
 
@@ -294,12 +307,11 @@ let includesACommentCloseInIdentifier = ( *\*\/ );
 
 let shouldSimplifyAnythingExceptApplicationAndConstruction =
   call "hi" ^
-    (
-      switch x {
-      | _ => "hi"
-      }
-    ) ^
-    "yo";
+  (
+    switch x {
+    | _ => "hi"
+    }
+  ) ^ "yo";
 
 /* Add tests with IF/then mixed with infix/constructor application on left and right sides */
 
@@ -333,6 +345,14 @@ let res = - (- x);
 
 let res = f (- x);
 
+
+/**
+ * Test using almost simple prefix as regular function.
+ */
+let (!!) a b => a + b;
+
+let res = (!!) 20 40;
+
 /* The semicolon should be attached to someType */
 let myFunc
     aaaa
@@ -348,3 +368,586 @@ let myFunc
     aaaa bbbb cccc dddd aaaa bbbb cccc dddd aaaa,
   ...someType
 ];
+
+
+/**
+ * Testing various fixity.
+ */
+
+/**
+ * For each of these test cases for imperative updates, we'll test both record
+ * update, object member update and array update.
+ */
+let containingObject = {
+  val mutable y = 0;
+  val arr = [|true, false, false|];
+  val bigArr = "goodThingThisIsntTypeChecked";
+  val str = "string";
+  method testCases () => {
+
+    /**
+     * The lowest precedence token is =, followed by :=, and then ?, then :.
+     *
+     * The following text
+     *
+     *     x.contents = tenaryTest ? ifTrue : ifFalse
+     *
+     * Generates the following parse tree:
+     *
+     *                =
+     *              /   \
+     *             /     \
+     *         record   ternary
+     *
+     * Because when encountering the ? the parser will shift on the ? instead of
+     * reducing  expr = expr
+     */
+
+    /**
+     * Without a + 1
+     */
+    x.contents = something ? hello : goodbye;
+    y = something ? hello : goodbye;
+    arr.(0) = something ? hello : goodbye;
+    bigArr.{0} = something ? hello : goodbye;
+    str.[0] = something ? hello : goodbye;
+    (x.contents = something) ? hello : goodbye;
+    (y = something) ? hello : goodbye;
+    (arr.(0) = something) ? hello : goodbye;
+    (bigArr.{0} = something) ? hello : goodbye;
+    (str.[0] = something) ? hello : goodbye;
+    x.contents = something ? hello : goodbye;
+    y = something ? hello : goodbye;
+    arr.(0) = something ? hello : goodbye;
+    bigArr.{0} = something ? hello : goodbye;
+    str.[0] = something ? hello : goodbye;
+
+    /**
+     * With a + 1
+     */
+    x.contents = something + 1 ? hello : goodbye;
+    x := something + 1 ? hello : goodbye;
+    y = something + 1 ? hello : goodbye;
+    arr.(0) = something + 1 ? hello : goodbye;
+    bigArr.{0} = something + 1 ? hello : goodbye;
+    str.[0] = something + 1 ? hello : goodbye;
+    (x.contents = something + 1) ?
+      hello : goodbye;
+    (x := something + 1) ? hello : goodbye;
+    (y = something + 1) ? hello : goodbye;
+    (arr.(0) = something + 1) ? hello : goodbye;
+    (bigArr.{0} = something + 1) ?
+      hello : goodbye;
+    (str.[0] = something + 1) ? hello : goodbye;
+    x.contents = something + 1 ? hello : goodbye;
+    x := something + 1 ? hello : goodbye;
+    y = something + 1 ? hello : goodbye;
+    arr.(0) = something + 1 ? hello : goodbye;
+    bigArr.{0} = something + 1 ? hello : goodbye;
+    str.[0] = something + 1 ? hello : goodbye;
+
+    /**
+     * #NotActuallyAConflict
+     * Note that there's a difference with how = and := behave.
+     * We only *simulate* = being an infix identifier for the sake of printing,
+     * but for parsing it's a little more nuanced. There *isn't* technically a
+     * shift/reduce conflict in the following that must be resolved via
+     * precedence ranking:
+     *
+     *     a + b.c = d
+     *
+     * No conflict between reducing a + b.c, and shifting =, like there would
+     * be if it was := instead of =. That's because the rule for = isn't the
+     * infix rule with an arbitrary expression on its left - it's something
+     * much more specific.
+     *
+     * (simple_expr) DOT LIDENT EQUAL expression.
+     *
+     * So with the way yacc/menhir works, when it sees an equal sign, it knows
+     * that there is no valid parse where a + b.c is reduced to an expression
+     * with an = immediately appearing after, so it shifts the equals.
+     *
+     * If you replace = with :=, you'd see different behavior.
+     *
+     *     a + b.c := d
+     *
+     *  Since := has lower precedence than +, it would be parsed as:
+     *
+     *     (a + b.c) := d
+     *
+     * However, our printing logic will print = assignment with parenthesis:
+     *
+     *     a + (b.c = d)
+     *
+     * Even though they're not needed, because it doesn't know details about
+     * which rules are valid, we just told it to print = as if it were a valid
+     * infix identifier.
+     *
+     * Another case:
+     *
+     *    something >>= fun x => x + 1;
+     *
+     * Will be printed as:
+     *
+     *    something >>= (fun x => x + 1);
+     *
+     * Because the arrow has lower precedence than >>=, but it wasn't needed because
+     *
+     *    (something >>= fun x) => x + 1;
+     *
+     * Is not a valid parse. Parens around the `=>` weren't needed to prevent
+     * reducing instead of shifting. To optimize this part, we need a much
+     * deeper encoding of the parse rules to print parens only when needed.
+     *
+     */
+    /* The following */
+    x + (something.contents = y);
+    x + (something = y);
+    x + something.contents := y;
+    x + something := y;
+    /* Should be parsed as: */
+    x + (
+      something.contents = y
+    ); /* Because of the #NotActuallyAConflict above */
+    x + (something = y); /* Same */
+    x + something.contents := y;
+    x + something := y;
+    /* To make the := parse differently, we must use parens */
+    x + (something.contents := y);
+    x + (something := y);
+
+    /**
+     * Try with ||
+     */
+    x.contents || something + 1 ?
+      hello : goodbye;
+    y || something + 1 ? hello : goodbye;
+    arr.(0) || something + 1 ? hello : goodbye;
+    bigArr.{0} || something + 1 ?
+      hello : goodbye;
+    str.[0] || something + 1 ? hello : goodbye;
+    x.contents || something + 1 ?
+      hello : goodbye;
+    y || something + 1 ? hello : goodbye;
+    arr.(0) || something + 1 ? hello : goodbye;
+    bigArr.{0} || something + 1 ?
+      hello : goodbye;
+    str.[0] || something + 1 ? hello : goodbye;
+    x.contents || (
+      something + 1 ? hello : goodbye
+    );
+    y || (something + 1 ? hello : goodbye);
+    arr.(0) || (something + 1 ? hello : goodbye);
+    bigArr.{0} || (
+      something + 1 ? hello : goodbye
+    );
+    str.[0] || (something + 1 ? hello : goodbye);
+
+    /**
+     * Try with &&
+     */
+    x.contents && something + 1 ?
+      hello : goodbye;
+    y && something + 1 ? hello : goodbye;
+    arr.(0) && something + 1 ? hello : goodbye;
+    bigArr.{0} && something + 1 ?
+      hello : goodbye;
+    str.[0] && something + 1 ? hello : goodbye;
+    x.contents && something + 1 ?
+      hello : goodbye;
+    y && something + 1 ? hello : goodbye;
+    arr.(0) && something + 1 ? hello : goodbye;
+    bigArr.{0} && something + 1 ?
+      hello : goodbye;
+    str.[0] && something + 1 ? hello : goodbye;
+    x.contents && (
+      something + 1 ? hello : goodbye
+    );
+    y && (something + 1 ? hello : goodbye);
+    arr.(0) && (something + 1 ? hello : goodbye);
+    bigArr.{0} && (
+      something + 1 ? hello : goodbye
+    );
+    str.[0] && (something + 1 ? hello : goodbye);
+
+    /**
+     * See how regular infix operators work correctly.
+     */
+    x.contents = 2 + 4;
+    y = 2 + 4;
+    arr.(0) = 2 + 4;
+    bigArr.{0} = 2 + 4;
+    str.[0] = 2 + 4;
+    (x.contents = 2) + 4;
+    (y = 2) + 4;
+    (arr.(0) = 2) + 4;
+    (bigArr.{0} = 2) + 4;
+    (str.[0] = 2) + 4;
+
+    /**
+     * Ensures that record update, object field update, and := are all right
+     * associative.
+     */
+    x.contents = y.contents = 10;
+    y = x.contents = 10;
+    arr.(0) = x.contents = 10;
+    bigArr.{0} = x.contents = 10;
+    str.[0] = x.contents = 10;
+    /* Should be the same as */
+    x.contents = x.contents = 10;
+    y = x.contents = 10;
+    arr.(0) = x.contents = 10;
+    bigArr.{0} = x.contents = 10;
+    str.[0] = x.contents = 10;
+
+    /**
+     * Ensures that record update, object field update, and := are all right
+     * associative.
+     */
+    x := x := 10;
+    /* Should be the same as */
+    x := x := 10;
+    /* By default, without parens*/
+    x ? y : z ? a : b;
+    /* It is parsed as the following: */
+    x ? y : z ? a : b;
+    /* Not this: */
+    (x ? y : z) ? a : b;
+
+    /**
+     *          ^
+     * When rendering the content to the left of the ? we know that we want the
+     * parser to reduce the thing to the left of the ? when the ? is seen.  So we
+     * look at the expression to the left of ? and discover what precedence level
+     * it is (token of its rightmost terminal). We then compare it with ? to see
+     * who would win a shift reduce conflict. We want the term to the left of the ?
+     * to be reduced. So if it's rightmost terminal isn't higher precedence than ?,
+     * we wrap it in parens.
+     */
+
+    /***
+     * The following
+     */
+    x.contents =
+      something ?
+        x.contents = somethingElse : goodbye;
+    y = something ? y = somethingElse : goodbye;
+    arr.(0) =
+      something ?
+        arr.(0) = somethingElse : goodbye;
+    bigArr.{0} =
+      something ?
+        bigArr.{0} = somethingElse : goodbye;
+    str.[0] =
+      something ?
+        str.[0] = somethingElse : goodbye;
+    /*
+     * Should be parsed as
+     */
+    x.contents =
+      something ?
+        x.contents = somethingElse : goodbye;
+    y = something ? y = somethingElse : goodbye;
+    arr.(0) =
+      something ?
+        arr.(0) = somethingElse : goodbye;
+    bigArr.{0} =
+      something ?
+        bigArr.{0} = somethingElse : goodbye;
+    str.[0] =
+      something ?
+        str.[0] = somethingElse : goodbye;
+
+    /** And this */
+    y :=
+      something ? y := somethingElse : goodbye;
+    arr.(0) :=
+      something ?
+        arr.(0) := somethingElse : goodbye;
+    bigArr.{0} :=
+      something ?
+        bigArr.{0} := somethingElse : goodbye;
+    str.[0] :=
+      something ?
+        str.[0] := somethingElse : goodbye;
+    /* Should be parsed as */
+    y :=
+      something ? y := somethingElse : goodbye;
+    arr.(0) :=
+      something ?
+        arr.(0) := somethingElse : goodbye;
+    bigArr.{0} :=
+      something ?
+        bigArr.{0} := somethingElse : goodbye;
+    str.[0] :=
+      something ?
+        str.[0] := somethingElse : goodbye;
+    /* The following */
+    x :=
+      something ?
+        x.contents =
+          somethingElse ? goodbye : goodbye :
+        goodbye;
+    x :=
+      something ?
+        arr.(0) =
+          somethingElse ? goodbye : goodbye :
+        goodbye;
+    x :=
+      something ?
+        bigArr.{0} =
+          somethingElse ? goodbye : goodbye :
+        goodbye;
+    x :=
+      something ?
+        str.[0] =
+          somethingElse ? goodbye : goodbye :
+        goodbye;
+    /* Is parsed as */
+    x :=
+      something ?
+        x.contents =
+          somethingElse ? goodbye : goodbye :
+        goodbye;
+    x :=
+      something ?
+        arr.(0) =
+          somethingElse ? goodbye : goodbye :
+        goodbye;
+    x :=
+      something ?
+        bigArr.{0} =
+          somethingElse ? goodbye : goodbye :
+        goodbye;
+    x :=
+      something ?
+        str.[0] =
+          somethingElse ? goodbye : goodbye :
+        goodbye;
+    /* is not the same as */
+    x :=
+      something ?
+        (x.contents = somethingElse) ?
+          goodbye : goodbye :
+        goodbye;
+    x :=
+      something ?
+        (arr.(0) = somethingElse) ?
+          goodbye : goodbye :
+        goodbye;
+    x :=
+      something ?
+        (bigArr.{0} = somethingElse) ?
+          goodbye : goodbye :
+        goodbye;
+    x :=
+      something ?
+        (str.[0] = somethingElse) ?
+          goodbye : goodbye :
+        goodbye;
+
+    /**
+     * And
+     */
+
+    /** These should be parsed the same */
+    something ?
+      somethingElse :
+      x.contents = somethingElse ? x : z;
+    something ?
+      somethingElse :
+      x.contents = somethingElse ? x : z;
+    /* Not: */
+    something ?
+      somethingElse :
+      (x.contents = somethingElse) ? x : z;
+    (
+      something ?
+        somethingElse :
+        x.contents = somethingElse
+    ) ?
+      x : z;
+    /* These should be parsed the same */
+    something ?
+      somethingElse : x := somethingElse ? x : z;
+    something ?
+      somethingElse : x := somethingElse ? x : z;
+    /* Not: */
+    something ?
+      somethingElse :
+      (x := somethingElse) ? x : z;
+    (
+      something ?
+        somethingElse : x := somethingElse
+    ) ?
+      x : z;
+
+    /** These should be parsed the same */
+    something ?
+      somethingElse : y = somethingElse ? x : z;
+    something ?
+      somethingElse : y = somethingElse ? x : z;
+    /* Not: */
+    something ?
+      somethingElse : (y = somethingElse) ? x : z;
+    (
+      something ?
+        somethingElse : y = somethingElse
+    ) ?
+      x : z;
+
+    /** These should be parsed the same */
+    something ?
+      somethingElse :
+      arr.(0) = somethingElse ? x : arr.(0);
+    something ?
+      somethingElse :
+      arr.(0) = somethingElse ? x : arr.(0);
+    /* Not: */
+    something ?
+      somethingElse :
+      (arr.(0) = somethingElse) ? x : z;
+    (
+      something ?
+        somethingElse : arr.(0) = somethingElse
+    ) ?
+      x : z;
+
+    /** These should be parsed the same */
+    something ?
+      somethingElse :
+      bigArr.{0} = somethingElse ? x : bigArr.{0};
+    something ?
+      somethingElse :
+      bigArr.{0} = somethingElse ? x : bigArr.{0};
+    /* Not: */
+    something ?
+      somethingElse :
+      (bigArr.{0} = somethingElse) ? x : z;
+    (
+      something ?
+        somethingElse :
+        bigArr.{0} = somethingElse
+    ) ?
+      x : z;
+
+    /** These should be parsed the same */
+    something ?
+      somethingElse :
+      arr.[0] = somethingElse ? x : arr.[0];
+    something ?
+      somethingElse :
+      arr.[0] = somethingElse ? x : arr.[0];
+    /* Not: */
+    something ?
+      somethingElse :
+      (str.[0] = somethingElse) ? x : z;
+    (
+      something ?
+        somethingElse : str.[0] = somethingElse
+    ) ?
+      x : z;
+
+    /**
+     * It creates a totally different meaning when parens group the :
+     */
+    x.contents =
+      something ?
+        (x.contents = somethingElse: x) : z;
+    y = something ? (y = somethingElse: x) : z;
+    arr.(0) =
+      something ?
+        (arr.(0) = somethingElse: x) : z;
+    bigArr.{0} =
+      something ?
+        (bigArr.{0} = somethingElse: x) : z;
+    str.[0] =
+      something ?
+        (str.[0] = somethingElse: x) : z;
+
+    /**
+     * Various precedence groupings.
+     */
+    true ? true ? false : false : false;
+    /* Is the same as */
+    true ? true ? false : false : false;
+    /*
+     * Just some examples of how prefix will be printed.
+     */
+    - x + (something.contents = y);
+    - x + (something = y);
+    - x + something.contents := y;
+    - x + something := y;
+    x + (- (something.contents = y));
+    x + (- (something = y));
+    x + (- something.contents) := y;
+    x + (- something) := y;
+    x.contents || something + 1 ?
+      - hello : goodbye;
+    bigArr.{0} || - something + 1 ?
+      hello : goodbye;
+    let result = - x + (something.contents = y);
+    /* Prefix minus is actually sugar for regular function identifier ~-*/
+    let result = 2 + (- add 4 0);
+    /* Same as */
+    let result = 2 + (- add) 4 0;
+    /* Same as */
+    let result = 2 + (- add 4 0);
+    /* That same example but with ppx attributes on the add application */
+    let result = 2 + (- add 4 0 [@ppx]);
+    /* Same as */
+    let result = 2 + (- add) 4 0 [@ppx];
+    /* Same as */
+    let result = 2 + (- add 4 0 [@ppx]);
+    /* Multiple nested prefixes */
+    let result = 2 + (- (- (- add 4 0)));
+    /* And with attributes */
+    let result =
+      2 + (
+        - (- (- add 4 0 [@onAddApplication]))
+      );
+
+    /**
+     * TODO: Move all of these test cases to attributes.re.
+     */
+    /* Attribute on the prefix application */
+    let res = (- something blah blah) [@attr];
+    /* Attribute on the regular function application, not prefix */
+    let res = - something blah blah [@attr];
+    let attrOnPrefix = (-1) [@ppxOnPrefixApp];
+    let attrOnPrefix = 5 + (-1);
+    let result =
+      arr.[0] [@ppxAttributeOnSugarGetter];
+
+    /**
+     * Unary plus/minus has lower precedence than prefix operators:
+     * And unary plus has same precedence as unary minus.
+     */
+    let res = - !record;
+    /* Should be parsed as: */
+    let res = - !record;
+    /* Although that precedence ranking doesn't likely have any effect in that
+     * case. */
+
+    /**
+     * And this
+     */
+    let res = - (+ callThisFunc ());
+    /* should be parsed as: */
+    let res = - (+ callThisFunc ());
+
+    /**
+     * And this
+     */
+    let res = !(- callThisFunc ());
+    /* Should be parsed (and should remain printed as: */
+    let res = !(- callThisFunc ());
+    let res = !x [@onApplication];
+    let res = !(x [@onX]);
+    let res = !(x [@onX]);
+    (something.contents = "newvalue")
+    [@shouldBeRenderedOnEntireSetField];
+    something.contents =
+      "newvalue" [@shouldBeRenderedOnString]
+  }
+};
