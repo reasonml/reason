@@ -63,7 +63,7 @@ let formatImpl
     isInterface::isInterface
     onComplete::onComplete
     onFailure::onFailure => {
-  let open Atom.JsonType;
+  open Atom.JsonType;
   let stdOutLines = {contents: [||]};
   let stdErrLines = {contents: [||]};
   let fmtPath =

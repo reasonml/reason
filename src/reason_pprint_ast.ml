@@ -3976,7 +3976,7 @@ class printer  ()= object(self:'self)
              *
              * Instead of printing:
              * let result =  {
-             *   let open Fmt;
+             *   open Fmt;
              *   strf
              *     "-pkgs %a"
              *     (list sep::(unit ",") string)
@@ -4011,7 +4011,7 @@ class printer  ()= object(self:'self)
          else
             let overrideStr = match ovf with | Override -> "!" | Fresh -> "" in
             let openLayout = label ~space:true
-              (atom ("let open" ^ overrideStr))
+              (atom ("open" ^ overrideStr))
               (self#longident_loc lid)
             in
             (* Just like the bindings, have to synthesize a location since the
