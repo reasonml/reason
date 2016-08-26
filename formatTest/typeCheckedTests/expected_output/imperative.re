@@ -60,7 +60,7 @@ let result =
       ()
     }
   ) ==
-    () ?
+  () ?
     false : true;
 
 switch (

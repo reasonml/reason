@@ -920,34 +920,10 @@ let built_in_explicit_arity_constructors = ["Some"; "Assert_failure"; "Match_fai
 Tokens and rules have precedences and those precedences are used to
 resolve what would otherwise be a conflict in the grammar.
 
-Precedence and associativity:
+Precedence and associativity/Resolving conflicts:
 ----------------------------
-- The list that follows this docblock determines precedence in order
-  form low to high along with an optional associativity.
-- Within each row in the list, the precedences are equivalent.
-- Each entry's position in the list either determines the relative precedence of the
-  mentioned token, or it creates a new "name" for a reusable precednece/associativity
-  (such as below_SEMI).
-  - By default, a rule has the precedence of its rightmost terminal (if any).
-  - But a rule can use one of the reusable "names" for precedence/associativity
-    from the list below.
-
-Resolving conflicts in grammar:
--------------------------------
-Different types of conflicts are resolved in different ways.
-- Reduce/reduce conflict:
-  - (Are not resolved using precedence?)
-  - (Instead?) Resolved in favor of the first rule (in source file order).
-- Shift/reduce conflict between rule and token being shifted:
-  - Resolved by comparing the "precedence" and "associativity" of the
-    token to be shifted with those of the rule to be reduced.
-  - When the rule and the token have the same precedence, it is resolved
-    using the associativity:
-    - If the token is left-associative, the parser will reduce.
-    - If the token is right-associative, the parser will shift.
-    - If non-associative, the parser will declare a syntax error.
-  - Question: What about when the rule to reduce has no precedence because it
-  has no rightmost terminal?
+See [http://caml.inria.fr/pub/docs/manual-ocaml-4.00/manual026.html] section
+about conflicts.
 
 We will only use associativities with operators of the kind  x * x -> x
 for example, in the rules of the form    expr: expr BINOP expr
@@ -955,16 +931,17 @@ in all other cases, we define two precedences if needed to resolve
 conflicts.
 
 */
+/* Question: Where is the SEMI explicit precedence? */
 %nonassoc below_SEMI
 %nonassoc below_EQUALGREATER
 %right    EQUALGREATER                  /* core_type2 (t => t => t) */
-%nonassoc below_QUESTION
+%right COLON
+%right    EQUAL                         /* below COLONEQUAL (lbl = x := e) */
+%right    COLONEQUAL                    /* expr (e := e := e) */
 %nonassoc QUESTION
 %nonassoc WITH             /* below BAR  (match ... with ...) */
 %nonassoc AND             /* above WITH (module rec A: SIG with ... and ...) */
 %nonassoc ELSE                          /* (if ... then ... else ...) */
-%nonassoc EQUAL                         /* below COLONEQUAL (lbl = x := e) */
-%right    COLONEQUAL                    /* expr (e := e := e) */
 %nonassoc AS
 %nonassoc below_BAR                     /* Allows "building up" of many bars */
 %left     BAR                           /* pattern (p|p|p) */
@@ -1017,8 +994,8 @@ conflicts.
  * attributes. In expressions, they have the same precedence as function
  * arguments, as if they are additional arguments to a function application.
  *
- * Note that prefix unary subtractive/plus parses with lower precedence than
- * function application (and attributes) This means that:
+ * Note that unary subtractive/plus parses with lower precedence than function
+ * application (and attributes) This means that:
  *
  *   let = - something blah blah [@attr];
  *
@@ -1026,12 +1003,32 @@ conflicts.
  * unary minus, as if the attribute was merely another argument to the function
  * application.
  *
+ *
+ * To make the attribute apply to the unary -, wrap in parens.
+ *
+ *   let = (- something blah blah) [@attr];
+ *
  * Where arrows occur, it will (as always) obey the rules of function/type
  * application.
  *
  *   type x = int => int [@onlyAppliedToTheInt];
  *   type x = (int => int) [@appliedToTheArrow];
  *
+ * However, unary subtractive/plus parses with *higher* precedence than infix
+ * application, so that
+ *
+ *   3 + - funcCall arg arg + 3;
+ *
+ * Is parsed as:
+ *
+ *   3 + (- (funcCall arg arg)) + 3;
+ *
+ * TODO:
+ *
+ * We would also like to bring this behavior to `!` as well, when ! becomes
+ * "not". This is so that you may do !someFunction(arg, arg) and have the
+ * entire function application negated. In fact, we may as well just have all
+ * of PREFIXOP have the unary precedence parsing behavior for consistency.
  */
 
 %nonassoc prec_unary_minus prec_unary_plus /* unary - */
@@ -1039,6 +1036,8 @@ conflicts.
 /* Now that commas require wrapping parens (for tuples), prec_constr_appl no
 * longer needs to be above COMMA, but it doesn't hurt */
 %nonassoc prec_constr_appl              /* above AS BAR COLONCOLON COMMA */
+
+/* PREFIXOP and BANG precedence */
 %nonassoc below_DOT_AND_SHARP           /* practically same as below_SHARP but we convey purpose */
 %nonassoc SHARP                         /* simple_expr/toplevel_directive */
 %left     SHARPOP
@@ -2597,7 +2596,7 @@ _expr:
    *
    *     switch expression { | true => expr1 | false => expr2 }
    *
-   * The prec below_QUESTION is so that the following parses:
+   * The COLON token priority is below QUESTION so that the following parses:
    *
    *    x ? y :
    *    z ? q : r
@@ -2616,7 +2615,7 @@ _expr:
    * that we, instead, shift the qusetion mark so that the *latter* ternary is
    * recognized first on the top of the stack. (z ? q : r).
    */
-  | expr QUESTION expr COLON expr %prec below_QUESTION {
+  | expr QUESTION expr COLON expr {
       (* Should use ghost expressions, but not sure how that would work with source maps *)
       (* So ? will become true and : becomes false for now*)
       let loc_question = mklocation $startpos($2) $endpos($2) in
@@ -2813,7 +2812,9 @@ _simple_expr:
 
 /**
  * Nice reusable version of simple_expr that waits to be reduced until enough
- * of the input has been observed, in order to consider Module.X.Y a single simple_expr
+ * of the input has been observed, in order to consider Module.X.Y a single
+ * simple_expr. It's terribly nuanced that this would make a difference. (No
+ * longer necessary)?
  */
 less_aggressive_simple_expression:
   simple_expr {$1}
@@ -3604,7 +3605,7 @@ sig_exception_declaration:
 generalized_constructor_arguments:
     /*empty*/                                   { ([],None) }
   | as_loc(OF)
-      { Location.raise_errorf ~loc:$1.loc "The of keyword is not used in Reason" }
+      { Location.raise_errorf ~loc:$1.loc "\"of\" is not needed in reason, use `type a = Foo a` instead" }
   | non_arrowed_simple_core_type_list                    { (List.rev $1, None) }
   | non_arrowed_simple_core_type_list COLON core_type
                                                 { (List.rev $1,Some $3) }

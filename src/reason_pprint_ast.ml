@@ -99,16 +99,71 @@ let exprDescrString x =
     (string_of_int x.pexp_loc.loc_end.Lexing.pos_lnum) ^
     "]"
 
+type ruleInfoData = {
+  reducePrecedence: precedence;
+  shiftPrecedence: precedence;
+}
+
+and ruleCategory =
+  (* Printing will be parsed with very high precedence, so not much need to
+     worry about ensuring it will reduce correctly. In short, you can put
+     `FunctionApplication` content anywhere around an infix identifier without
+     wrapping in parens. For example `myFunc x y z` or `if x {y} else {z}`
+     The layout is kept in list form only to allow for elegant wrapping rules
+     to take into consideration the *number* of high precedence parsed items. *)
+  | FunctionApplication of layoutNode list
+  (* Care should be taken to ensure the rule that caused it to be parsed will
+     reduce again on the printed output - context should carefully consider
+     wrapping in parens according to the ruleInfoData. *)
+  | SpecificInfixPrecedence of ruleInfoData * layoutNode
+  (* Not safe to include anywhere between infix operators without wrapping in
+     parens. This describes expressions like `fun x => x` which doesn't fit into
+     our simplistic algorithm for printing function applications separated by infix.
+
+     It might be possible to include these in between infix, but there are
+     tricky rules to determining when these must be guarded by parens (it
+     depends highly on context that is hard to reason about). It's so nuanced
+     that it's easier just to always wrap them in parens.  *)
+  | PotentiallyLowPrecedence of layoutNode
+  | Simple of layoutNode
+
+and associativity =
+  | Right
+  | Nonassoc
+  | Left
+
+and precedenceEntryType =
+  | TokenPrecedence
+  | CustomPrecedence
+
+and precedence =
+  | Token of string
+  | Custom of string
+
 (* Make a standard list *)
-type whenToDoSomething =
+and whenToDoSomething =
   | Never
   | IfNeed
   | Always
   (* Always_rec not only will break, it will break recursively up to the root *)
   | Always_rec
 
-type easyFormatLabelFormatter = Easy_format.t -> Easy_format.t -> Easy_format.t
-type listConfig = {
+(* Describes the "fixity" of a token, and stores its *printed* representation
+   should it be rendered as infix/prefix (This rendering may be different than
+   how it is stored in the AST). *)
+and tokenFixity =
+  (* Such as !simple_expr and ~!simple_expr. These function applications are
+     considered *almost* "simple" because they may be allowed anywhere a simple
+     expression is accepted, except for when on the left hand side of a
+     dot/send. *)
+  | AlmostSimplePrefix of string
+  | UnaryPlusPrefix of string
+  | UnaryMinusPrefix of string
+  | Infix of string
+  | Normal
+
+and easyFormatLabelFormatter = Easy_format.t -> Easy_format.t -> Easy_format.t
+and listConfig = {
   (* Newlines above items that do not have any comments immediately above it.
      Only really useful when used with break:Always/Always_rec *)
   newlinesAboveItems: int;
@@ -156,7 +211,7 @@ type listConfig = {
  *
  * The final representation is rendered using Easy_format.
  *)
-type layoutNode =
+and layoutNode =
   | SourceMap of Location.t * layoutNode (* a layout with location info *)
   | WithEOLComment of string * layoutNode (* a layout with comment attached *)
   | Sequence of listConfig * (layoutNode list)
@@ -465,7 +520,7 @@ let rec sequentialIfBlocks x =
     &, &&                                           Right associative
     or, ||                                          Right associative
     ,                                               -
-    <-, :=                                         	Right associative
+    :=, =                                         	Right associative
     if                                              -
     ;                                               Right associative
 
@@ -482,127 +537,229 @@ let rec sequentialIfBlocks x =
    let x = tail & head;
  *)
 
+(* "Almost Simple Prefix" function applications parse with the rule:
 
-let prefix_symbols  = [ '!'; '?'; '~' ] ;;
+   `PREFIXOP simple_expr %prec below_DOT_AND_SHARP`, which in turn is almost
+   considered a "simple expression" (it's acceptable anywhere a simple
+   expression is except in a couple of edge cases.
+
+   "Unary Prefix" function applications parse with the rule:
+
+   `MINUS epxr %prec prec_unary_minus`, which in turn is considered an
+   "expression" (not simple). All unary operators are mapped into an identifier
+   beginning with "~".
+
+   TODO: Migrate all "almost simple prefix" to "unsary prefix". When `!`
+   becomes "not", then it will make more sense that !myFunc (arg) is parsed as
+   !(myFunc arg) instead of (!myFunc) arg.
+
+ *)
+let almost_simple_prefix_symbols  = [ '!'; '?'; '~'] ;;
+(* Subset of prefix symbols that have special "unary precedence" *)
+let unary_minus_prefix_symbols  = [ "~-"; "~-."] ;;
+let unary_plus_prefix_symbols  = ["~+"; "~+." ] ;;
 let infix_symbols = [ '='; '<'; '>'; '@'; '^'; '|'; '&'; '+'; '-'; '*'; '/';
                       '$'; '%'; '\\'; '#' ]
 let operator_chars = [ '!'; '$'; '%'; '&'; '*'; '+'; '-'; '.'; '/';
                        ':'; '<'; '='; '>'; '?'; '@'; '^'; '|'; '~' ]
 let numeric_chars  = [ '0'; '1'; '2'; '3'; '4'; '5'; '6'; '7'; '8'; '9' ]
 
-let indexOfFirstMatch s lst =
-  let rec indexOfFirstMatchN s lst n = match lst with
-    | [] -> None
-    | []::tl -> indexOfFirstMatchN s tl (n + 1)
-    | (hdHd::hdTl)::tl -> (
-        match hdHd s with
-          | (prec, true) -> Some (prec, n)
-          | (_, false) -> indexOfFirstMatchN s (hdTl::tl) (n)
-    )
-  in
-  indexOfFirstMatchN s lst 0
-
-let rules = [
-    (* Note the special case for "*\*", BARBAR, and LESSMINUS, AMPERSAND(s) *)
-    [
-      (fun s -> (`Right, String.length s > 1 && s.[0] == '*' && s.[1] == '\\' && s.[2] == '*'));
-      (fun s -> (`Right, s = "lsl"));
-      (fun s -> (`Right, s = "lsr"));
-      (fun s -> (`Right, s = "asr"));
-    ];
-    [
-      (fun s -> (`Left, s.[0] == '#'));
-    ];
-    [
-      (fun s -> (`Left, s.[0] == '*' && (String.length s == 1 || s != "*\\*")));
-      (fun s -> (`Left, s.[0] == '/'));
-      (fun s -> (`Left, s.[0] == '%' ));
-      (fun s -> (`Left, s = "mod" ));
-      (fun s -> (`Left, s = "land" ));
-      (fun s -> (`Left, s = "lor" ));
-      (fun s -> (`Left, s = "lxor" ));
-    ];
-    [
-      (fun s -> (`Left, s.[0] == '+' ));
-      (fun s -> (`Left, s.[0] == '-' ));
-    ];
-    [
-      (fun s -> (`Right, s = "::"));
-    ];
-    [
-      (fun s -> (`Right, s.[0] == '@'));
-      (fun s -> (`Right, s.[0] == '^'));
-    ];
-    [
-      (fun s -> (`Left, s.[0] == '=' && not (s = "=")));
-      (fun s -> (`Left, s.[0] == '<' && not (s = "<")));
-      (fun s -> (`Left, s.[0] == '>' && not (s = ">")));
-      (fun s -> (`Left, s = "!="));  (* Not preset in the RWO table! *)
-      (fun s -> (`Left, s = "!=="));  (* Not preset in the RWO table! *)
-      (fun s -> (`Left, s = "=="));
-      (fun s -> (`Left, s = "==="));
-      (fun s -> (`Left, s = "<"));
-      (fun s -> (`Left, s = ">"));
-      (fun s -> (`Left, s.[0] == '|' && not (s = "||")));
-      (fun s -> (`Left, s.[0] == '&' && not (s = "&") && not (s = "&&")));
-      (fun s -> (`Left, s.[0] == '$'));
-    ];
-    [
-      (fun s -> (`Right, s = "&"));
-      (fun s -> (`Right, s = "&&"));
-    ];
-    [
-      (fun s -> (`Right, s = "or"));
-      (fun s -> (`Right, s = "||"));
-    ];
-    [
-      (fun s -> (`Right, s = ":="))
-    ]
-]
-(* without_prefixed_backslashes removes any prefixing backslashes *)
-let without_prefixed_backslashes str =
-  Re_str.replace_first (Re_str.regexp "\\\\*\\(.*\\)") ("\\1") str
-
-(* Assuming it's an infix function application. *)
-let associatedInfixFunctionPrecedence s =
-  (* Removes prefixed backslashes in order to do proper conversion *)
-  let s = without_prefixed_backslashes s in
-  if String.length s == 0 then
-    raise (NotPossible "Passed zero length string")
-  else indexOfFirstMatch s rules
-
-let isLeftAssociative s = match associatedInfixFunctionPrecedence s with
-  | None -> false
-  | Some (`Left, _) -> true
-  | Some (`Right, _) -> false
-let isRightAssociative s = match associatedInfixFunctionPrecedence s with
-  | None -> false
-  | Some (`Right, _) -> true
-  | Some (`Left, _) -> false
-let higherPrecedenceThan s1 s2 = match ((associatedInfixFunctionPrecedence s1), (associatedInfixFunctionPrecedence s2)) with
-  | (_, None)
-  | (None, _) -> raise (NotPossible ("Cannot determine precedence of " ^ s1 ^ " and " ^ s2))
-  | (Some (_, p1), Some (_, p2)) -> p1 < p2
-
 let special_infix_strings =
   ["asr"; "land"; "lor"; "lsl"; "lsr"; "lxor"; "mod"; "or"; ":="; "!="; "!=="]
+
+let updateToken = "="
+let requireIndentFor = [updateToken; ":="]
+
+let infixTokenRequiresIndent printedIdent =
+  if List.exists (fun i -> i = printedIdent) requireIndentFor then None else Some 0
+
+let getPrintableUnaryIdent s =
+  if List.mem s unary_minus_prefix_symbols || List.mem s unary_plus_prefix_symbols then
+    String.sub s 1 (String.length s -1)
+  else s
+
 
 (* determines if the string is an infix string.
    checks backwards, first allowing a renaming postfix ("_102") which
    may have resulted from Pexp -> Texp -> Pexp translation, then checking
    if all the characters in the beginning of the string are valid infix
    characters. *)
-let fixity_of_string  = function
-  | s when List.mem s special_infix_strings -> `Infix s
-  | s when List.mem s.[0] infix_symbols -> `Infix s
-  | s when List.mem s.[0] prefix_symbols -> `Prefix s
-  | _ -> `Normal
+let printedStringAndFixity  = function
+  | s when List.mem s special_infix_strings -> Infix s
+  | s when List.mem s.[0] infix_symbols -> Infix s
+  (* Correctness under assumption that unary operators are stored in AST with
+     leading "~" *)
+  | s when List.mem s.[0] almost_simple_prefix_symbols &&
+           not (List.mem s special_infix_strings) &&
+           not (s = "?")-> (
+      (* What *kind* of prefix fixity? *)
+      if List.mem s unary_plus_prefix_symbols then
+        UnaryPlusPrefix (getPrintableUnaryIdent s)
+      else if List.mem s unary_minus_prefix_symbols then
+        UnaryMinusPrefix (getPrintableUnaryIdent s)
+      else
+        AlmostSimplePrefix s
+  )
+  | _ -> Normal
 
-let view_fixity_of_exp = function
-  | {pexp_desc = Pexp_ident {txt=Lident l}} -> fixity_of_string l
-  | _ -> `Normal  ;;
 
-let is_infix  = function  | `Infix _ -> true | _  -> false
+(* Also, this doesn't account for != and !== being infixop!!! *)
+let isSimplePrefixToken s = match printedStringAndFixity s with
+  | AlmostSimplePrefix _ -> true
+  | _ -> false
+
+
+(* Convenient bank of information that represents the parser's precedence
+   rankings.  Each instance describes a precedence table entry. The function
+   tests either a token string encountered by the parser, or (in the case of
+   `CustomPrecedence`) the string name of a custom rule precedence declared
+   using %prec *)
+let rules = [
+  [
+    (TokenPrecedence, (fun s -> (Nonassoc, isSimplePrefixToken s)));
+  ];
+  [
+    (CustomPrecedence, (fun s -> (Nonassoc, s = "prec_unary_minus")));
+    (CustomPrecedence, (fun s -> (Nonassoc, s = "prec_unary_plus")));
+  ];
+  (* Note the special case for "*\*", BARBAR, and LESSMINUS, AMPERSAND(s) *)
+  [
+    (TokenPrecedence, (fun s -> (Right, String.length s > 1 && s.[0] == '*' && s.[1] == '\\' && s.[2] == '*')));
+    (TokenPrecedence, (fun s -> (Right, s = "lsl")));
+    (TokenPrecedence, (fun s -> (Right, s = "lsr")));
+    (TokenPrecedence, (fun s -> (Right, s = "asr")));
+  ];
+  [
+    (TokenPrecedence, (fun s -> (Left, s.[0] == '#')));
+  ];
+  [
+    (TokenPrecedence, (fun s -> (Left, s.[0] == '*' && (String.length s == 1 || s != "*\\*"))));
+    (TokenPrecedence, (fun s -> (Left, s.[0] == '/')));
+    (TokenPrecedence, (fun s -> (Left, s.[0] == '%' )));
+    (TokenPrecedence, (fun s -> (Left, s = "mod" )));
+    (TokenPrecedence, (fun s -> (Left, s = "land" )));
+    (TokenPrecedence, (fun s -> (Left, s = "lor" )));
+    (TokenPrecedence, (fun s -> (Left, s = "lxor" )));
+  ];
+  [
+    (* Even though these use the same *tokens* as unary plus/minus at parse
+       time, when unparsing infix -/+, the CustomPrecedence rule would be
+       incorrect to use, and instead we need a rule that models what infix
+       parsing would use - just the regular token precedence without a custom
+       precedence. *)
+    (TokenPrecedence, (fun s -> (Left, s.[0] == '+' )));
+    (TokenPrecedence ,(fun s -> (Left, s.[0] == '-' )));
+  ];
+  [
+    (TokenPrecedence, (fun s -> (Right, s = "::")));
+  ];
+  [
+    (TokenPrecedence, (fun s -> (Right, s.[0] == '@')));
+    (TokenPrecedence, (fun s -> (Right, s.[0] == '^')));
+  ];
+  [
+    (TokenPrecedence, (fun s -> (Left, s.[0] == '=' && not (s = "=") && not (s = "=>"))));
+    (TokenPrecedence, (fun s -> (Left, s.[0] == '<' && not (s = "<"))));
+    (TokenPrecedence, (fun s -> (Left, s.[0] == '>' && not (s = ">"))));
+    (TokenPrecedence, (fun s -> (Left, s = "!=")));  (* Not preset in the RWO table! *)
+    (TokenPrecedence, (fun s -> (Left, s = "!==")));  (* Not preset in the RWO table! *)
+    (TokenPrecedence, (fun s -> (Left, s = "==")));
+    (TokenPrecedence, (fun s -> (Left, s = "===")));
+    (TokenPrecedence, (fun s -> (Left, s = "<")));
+    (TokenPrecedence, (fun s -> (Left, s = ">")));
+    (TokenPrecedence, (fun s -> (Left, s.[0] == '|' && not (s = "||"))));
+    (TokenPrecedence, (fun s -> (Left, s.[0] == '&' && not (s = "&") && not (s = "&&"))));
+    (TokenPrecedence, (fun s -> (Left, s.[0] == '$')));
+  ];
+  [
+    (TokenPrecedence, (fun s -> (Right, s = "&")));
+    (TokenPrecedence, (fun s -> (Right, s = "&&")));
+  ];
+  [
+    (TokenPrecedence, (fun s -> (Right, s = "or")));
+    (TokenPrecedence, (fun s -> (Right, s = "||")));
+  ];
+  [
+    (* The Left shouldn't ever matter in practice. Should never get in a
+       situation with two consecutive infix ? - the colon saves us. *)
+    (TokenPrecedence, (fun s -> (Left, s = "?")));
+  ];
+  [
+    (TokenPrecedence, (fun s -> (Right, s = ":=")));
+  ];
+  [
+    (TokenPrecedence, (fun s -> (Right, s = updateToken)));
+  ];
+  (* It's important to account for ternary ":" being lower precedence than "?" *)
+  [
+    (TokenPrecedence, (fun s -> (Right, s = ":")))
+  ];
+  [
+    (TokenPrecedence, (fun s -> (Nonassoc, s = "=>")));
+  ];
+]
+
+(* without_prefixed_backslashes removes any prefixing backslashes *)
+let without_prefixed_backslashes str =
+  Re_str.replace_first (Re_str.regexp "\\\\*\\(.*\\)") ("\\1") str
+
+let indexOfFirstMatch ~prec lst =
+  let rec indexOfFirstMatchN ~prec lst n = match lst with
+    | [] -> None
+    | []::tl -> indexOfFirstMatchN ~prec tl (n + 1)
+    | (hdHd::hdTl)::tl -> (
+      let (kind, tester) = hdHd in
+      match (prec, kind) with
+      | (Token str, TokenPrecedence)
+      | (Custom str, CustomPrecedence) ->
+        let (associativity, foundMatch) = tester str in
+        if foundMatch then
+          Some (associativity, n)
+        else
+          indexOfFirstMatchN ~prec (hdTl::tl) (n)
+      | _ -> indexOfFirstMatchN ~prec (hdTl::tl) (n)
+    )
+  in
+  indexOfFirstMatchN ~prec lst 0
+
+(* Assuming it's an infix function application. *)
+let precedenceInfo ~prec =
+  (* Removes prefixed backslashes in order to do proper conversion *)
+  let normalizedCheck =
+    match prec with
+      | Token str -> Token (without_prefixed_backslashes str)
+      | Custom str -> prec
+  in
+  indexOfFirstMatch ~prec:normalizedCheck rules
+
+let isLeftAssociative ~prec = match precedenceInfo ~prec with
+  | None -> false
+  | Some (Left, _) -> true
+  | Some (Right, _) -> false
+  | Some (Nonassoc, _) -> false
+
+let isRightAssociative ~prec = match precedenceInfo ~prec with
+  | None -> false
+  | Some (Right, _) -> true
+  | Some (Left, _) -> false
+  | Some (Nonassoc, _) -> false
+
+let higherPrecedenceThan c1 c2 = match ((precedenceInfo c1), (precedenceInfo c2)) with
+  | (_, None)
+  | (None, _) ->
+    let (str1, str2) = match (c1, c2) with
+      | (Token s1, Token s2) -> ("Token " ^ s1, "Token " ^ s2)
+      | (Token s1, Custom s2) -> ("Token " ^ s1, "Custom " ^ s2)
+      | (Custom s1, Token s2) -> ("Custom " ^ s1, "Token " ^ s2)
+      | (Custom s1, Custom s2) -> ("Custom " ^ s1, "Custom " ^ s2)
+    in
+    raise (NotPossible ("Cannot determine precedence of two checks " ^ str1 ^ " vs. " ^ str2))
+  | (Some (_, p1), Some (_, p2)) -> p1 < p2
+
+
+let printedStringAndFixityExpr = function
+  | {pexp_desc = Pexp_ident {txt=Lident l}} -> printedStringAndFixity l
+  | _ -> Normal
 
 let is_predef_option = function
   | (Ldot (Lident "*predef*","option")) -> true
@@ -610,8 +767,12 @@ let is_predef_option = function
 
 (* which identifiers are in fact operators needing parentheses *)
 let needs_parens txt =
-  is_infix (fixity_of_string txt)
-  || List.mem txt.[0] prefix_symbols
+  match printedStringAndFixity txt with
+    | Infix _ -> true
+    | UnaryPlusPrefix _ -> true
+    | UnaryMinusPrefix _ -> true
+    | AlmostSimplePrefix _ -> true
+    | Normal -> false
 
 (* some infixes need spaces around parens to avoid clashes with comment
    syntax. This isn't needed for comment syntax /* */ *)
@@ -894,6 +1055,9 @@ let configure ~width ~assumeExplicitArity ~constructorLists = (
   configuredSettings := {defaultSettings with width; assumeExplicitArity; constructorLists}
 )
 
+let string_of_formatter f x =
+  Format.asprintf "%a" f x
+
 let createFormatter () =
 let module Formatter = struct
 
@@ -1149,14 +1313,10 @@ let makeList
   in
   Sequence (config, lst)
 
-let makeAppList delimiter l =
-  let (preSpace, sep) = match delimiter with
-    | None -> (false, "")
-    | Some (s, loc) -> (true, (s))
-  in
+let makeAppList l =
   match l with
-  | hd::[] ->  hd
-  | _ -> makeList ~inline:(true, true) ~preSpace ~sep ~postSpace:true ~break:IfNeed l
+  | hd::[] -> hd
+  | _ -> makeList ~inline:(true, true) ~postSpace:true ~break:IfNeed l
 
 let ensureSingleTokenSticksToLabel x =
   makeList
@@ -1263,10 +1423,11 @@ let makeCommaBreakableListSurround opn cls lst =
 
 (* TODO: Allow configuration of spacing around colon symbol *)
 
-(* Formats parentheses grouping precedence - only wrapping in an additional
-   array when necessary *)
-let formatPrecedence formattedTerm =
-  makeList ~wrap:("(", ")") ~break:IfNeed [formattedTerm]
+let formatPrecedence ?loc formattedTerm =
+  let withParens = makeList ~wrap:("(", ")") ~break:IfNeed [formattedTerm] in
+  match loc with
+    | None -> withParens
+    | Some l -> SourceMap (l, withParens)
 
 (* What to do when a comment wasn't interleaved in a list - default is to attach and break. *)
 let fallbackCommentListConfig = break
@@ -1995,19 +2156,15 @@ let formatCoerce expr optType coerced =
  *     );
  *
  *)
-let formatIndentedApplication delimiter headApplicationItem argApplicationItems =
+let formatIndentedApplication headApplicationItem argApplicationItems =
   label
     ~space:true
-    (match delimiter with
-      | None -> headApplicationItem
-      | Some (s, loc) ->
-        makeList ~postSpace:true ~interleaveComments:false [headApplicationItem; atom (s)]
-    )
-    (makeAppList delimiter argApplicationItems)
+    headApplicationItem
+    (makeAppList argApplicationItems)
 
 
 (* The loc, is an optional location or the returned app terms *)
-let formatAttachmentApplication finalWrapping (attachTo: (bool * layoutNode) option) (appTermItems, delimiter, loc) =
+let formatAttachmentApplication finalWrapping (attachTo: (bool * layoutNode) option) (appTermItems, loc) =
   let partitioning = finalWrapping appTermItems in
   let maybeSourceMap maybeLoc x =
     match maybeLoc with
@@ -2021,12 +2178,12 @@ let formatAttachmentApplication finalWrapping (attachTo: (bool * layoutNode) opt
           | ([hd], None) -> maybeSourceMap loc hd
           | ([hd], (Some (useSpace, toThis))) -> label ~space:useSpace toThis (maybeSourceMap loc hd)
           | (hd::tl, None) ->
-            maybeSourceMap loc (formatIndentedApplication delimiter hd tl)
+            maybeSourceMap loc (formatIndentedApplication hd tl)
           | (hd::tl, (Some (useSpace, toThis))) ->
             label
               ~space:useSpace
               toThis
-              (maybeSourceMap loc (formatIndentedApplication delimiter hd tl))
+              (maybeSourceMap loc (formatIndentedApplication hd tl))
       )
     | Some (attachedList, wrappedListy) -> (
         match (attachedList, attachTo) with
@@ -2036,29 +2193,15 @@ let formatAttachmentApplication finalWrapping (attachTo: (bool * layoutNode) opt
             maybeSourceMap loc wrappedListy
           | (hd::tl, Some (useSpace, toThis)) ->
             (* TODO: Can't attach location to this - maybe rewrite anyways *)
-            let attachedArgs = makeAppList delimiter attachedList in
+            let attachedArgs = makeAppList attachedList in
             label
               ~space:true
-              (
-                match delimiter with
-                  | Some (s, loc) ->
-                    makeList ~postSpace:true  [
-                      (label ~space:useSpace toThis attachedArgs);
-                      (atom s);
-                    ]
-                  | None ->
-                    (label ~space:useSpace toThis attachedArgs)
-              )
+              (label ~space:useSpace toThis attachedArgs)
               wrappedListy
           | (hd::tl, None) ->
             (* Args that are "attached to nothing" *)
-            let appList = makeAppList delimiter attachedList in
-            let attachedArgs =
-              match delimiter with
-                | None -> appList
-                | Some (s, loc) -> label ~space:true appList (atom s)
-            in
-            maybeSourceMap loc (label ~space:true attachedArgs wrappedListy)
+            let appList = makeAppList attachedList in
+            maybeSourceMap loc (label ~space:true appList wrappedListy)
       )
 
 (*
@@ -2087,16 +2230,10 @@ let protectIdentifier txt =
 let protectLongIdentifier longPrefix txt =
   makeList ~interleaveComments:false [longPrefix; atom "."; protectIdentifier txt]
 
-let combinedAppItems (regularItems, sugaredItems, delimiter, loc) =
-    (regularItems @ sugaredItems, delimiter, loc)
-
 class printer  ()= object(self:'self)
   val pipe = false
   val semi = false
   (* The test and first branch of ternaries must be guarded *)
-  val inTernary = false
-  method underTernary = {<inTernary=true>}
-  method resetInTernary = {<inTernary=false>}
   method under_pipe = {<pipe=true>}
   method under_semi = {<semi=true>}
   method reset_semi = {<semi=false>}
@@ -2109,14 +2246,6 @@ class printer  ()= object(self:'self)
   method option : 'a. ?first:space_formatter -> ?last:space_formatter ->
     (Format.formatter -> 'a -> unit) -> Format.formatter -> 'a option -> unit =
     default#option
-
-  (* TODO: Get rid of this completely: was merely left over from old printer. *)
-  (* Rename this method simple_enough_to_appear_inside_if (actually, that might
-     not be good enough and this more "global" context tracking whether or not
-     you're "under an if" is likely better. *)
-  method paren ?(first="") ?(last="") shouldWrap fmtFunc term =
-    if shouldWrap then makeList ~wrap:(first, last) ~break:IfNeed [fmtFunc term]
-    else fmtFunc term
 
   method longident = function
     | Lident s -> (protectIdentifier s)
@@ -2246,7 +2375,7 @@ class printer  ()= object(self:'self)
             formatAttachmentApplication
               typeApplicationFinalWrapping
               (Some (true, nameParamsEquals))
-              (hd, None, None)
+              (hd, None)
         | hd::hd2::[] ->
             let first = makeList ~postSpace:true ~break:IfNeed ~inline:(true, true) hd in
             let second = makeList ~postSpace:true ~break:IfNeed ~inline:(true, true) hd2 in
@@ -2849,7 +2978,7 @@ class printer  ()= object(self:'self)
            ""
            (label
              (makeList [(self#simple_pattern p); atom "="])
-             (match opt with None -> (atom "?") | Some o -> (self#simple_expression o))))
+             (match opt with None -> (atom "?") | Some o -> (self#simplifyUnparseExpr o))))
     else
       match p.ppat_desc with
         | _ ->
@@ -2858,118 +2987,89 @@ class printer  ()= object(self:'self)
             ""
             (self#simple_pattern p)
 
-  (**
-   * TODO: Remove all this special syntax for mutatively setting things.
-   * Save the "monadic" arrow for some other more valuable pattner and
-   * remove a ton of complexity from the parser/printer.
-   *)
-  method sugar_expr e =
-    let access op cls e1 e2 = makeList ~interleaveComments:false [
-      (* Important that this be not breaking - at least to preserve same
-         behavior as stock desugarer. It might even be required (double check
-         in parser.mly) *)
-      e1;
-      atom ".";
-      atom op;
-      e2;
-      atom cls;
-    ] in
+  method access op cls e1 e2 = makeList ~interleaveComments:false [
+    (* Important that this be not breaking - at least to preserve same
+       behavior as stock desugarer. It might even be required (double check
+       in parser.mly) *)
+    e1;
+    atom ".";
+    atom op;
+    e2;
+    atom cls;
+  ]
+
+  method simple_get_application e =
+    match (e.pexp_desc, e.pexp_attributes) with
+    | (_, attrHd::attrTl) -> None (* Has some attributes - not simple *)
+    | (Pexp_apply (eFun, ls), []) -> (
+      match (printedStringAndFixityExpr eFun, ls) with
+      (* We must take care not to print two subsequent prefix operators without
+         spaces between them (`! !` could become `!!` which is totally
+         different).  *)
+      | (AlmostSimplePrefix prefixStr, [("", rightExpr)]) ->
+        let forceSpace = match rightExpr.pexp_desc with
+          | Pexp_apply (ee, lsls) ->
+            (match printedStringAndFixityExpr ee with | AlmostSimplePrefix _ -> true | _ -> false)
+          | _ -> false
+        in
+        let rightItm = self#simplifyUnparseExpr rightExpr in
+        Some (label ~space:forceSpace (atom prefixStr) rightItm)
+      | (_, _) -> (
+        match (eFun, ls) with
+        | ({pexp_desc = Pexp_ident {txt = Ldot (Lident ("String"),"get")}}, [(_,e1);(_,e2)]) ->
+          Some (self#access "[" "]" (self#simplifyUnparseExpr e1) (self#unparseExpr e2))
+        | ({pexp_desc = Pexp_ident {txt = Ldot (Lident ("Array"),"get")}}, [(_,e1);(_,e2)]) ->
+          Some (self#access "(" ")" (self#simplifyUnparseExpr e1) (self#unparseExpr e2))
+        | (
+            {pexp_desc= Pexp_ident {txt=Ldot (Ldot (Lident "Bigarray", "Genarray" ), "get")}},
+            [(_,a); (_,{pexp_desc=Pexp_array ls})]
+          ) ->
+          let formattedList = List.map self#simplifyUnparseExpr ls in
+          Some (self#access "{" "}" (self#simplifyUnparseExpr a) (makeCommaBreakableList formattedList))
+        | ({pexp_desc= Pexp_ident {txt=Ldot (Ldot (Lident "Bigarray", ("Array1"|"Array2"|"Array3")), "get")}}, (_,a)::rest) ->
+          let formattedList = List.map self#simplifyUnparseExpr (List.map snd rest) in
+          Some (self#access "{" "}" (self#simplifyUnparseExpr a) (makeCommaBreakableList formattedList))
+        | _ -> None
+      )
+    )
+    | (_, []) ->  None
+
+  (** Detects "sugar expressions" (sugar for array/string setters) and returns their separate
+      parts.  *)
+  method sugar_set_expr_parts e =
     if e.pexp_attributes <> [] then None
     (* should also check attributes underneath *)
     else match e.pexp_desc with
+      | Pexp_apply ({pexp_desc=Pexp_ident{txt=Ldot (Lident ("Array"), "set")}}, [(_,e1);(_,e2);(_,e3)]) ->
+        Some (self#access "(" ")" (self#simplifyUnparseExpr e1) (self#unparseExpr e2), e3)
+      | Pexp_apply ({pexp_desc=Pexp_ident {txt=Ldot (Lident "String", "set")}}, [(_,e1);(_,e2);(_,e3)]) ->
+        Some ((self#access "[" "]" (self#simplifyUnparseExpr e1) (self#unparseExpr e2)), e3)
       | Pexp_apply (
-        {pexp_desc = Pexp_ident {txt = Ldot (Lident ("String"),"get")}},
-        [(_,e1);(_,e2)]
-      ) -> Some (access "[" "]" (self#simple_expression e1) (self#expression e2))
-      | Pexp_apply (
-        {pexp_desc = Pexp_ident {txt = Ldot (Lident ("Array"),"get")}},
-        [(_,e1);(_,e2)]
-      ) -> Some (access "(" ")" (self#simple_expression e1) (self#expression e2))
-      | Pexp_apply (
-        {pexp_desc= Pexp_ident {txt= Ldot (Lident ("Array"), "set")}},
-        [(_,e1);(_,e2);(_,e3)]
-      ) -> Some (
-        makeList ~postSpace:true [
-          access "(" ")" (self#simple_expression e1) (self#expression e2);
-          atom "="; self#expression e3
-        ])
-      | Pexp_apply (
-        {pexp_desc= Pexp_ident {txt= Ldot (Lident "String", "set")}},
-        [(_,e1);(_,e2);(_,e3)]
-      ) -> Some (
-        makeList ~postSpace:true [
-          (access "[" "]" (self#simple_expression e1) (self#expression e2));
-          atom "="; self#expression e3
-        ])
-      | Pexp_apply ({pexp_desc=Pexp_ident {txt=Lident "!"}}, [(_,e)]) ->
-          Some (makeList [atom "!"; self#simple_expression e])
-      | Pexp_apply (
-        {
-          pexp_desc= Pexp_ident {
-            txt = Ldot (Ldot (Lident "Bigarray", array), ("get"|"set" as gs));
-          };
-        },
+        {pexp_desc=Pexp_ident {txt = Ldot (Ldot (Lident "Bigarray", array), "set")}},
         label_exprs
       ) -> (
-          (* All of the output for terms below use simple_expression to match the
-             previous version of the pretty printer. I'm not certain that is
-             correct. *)
-          match array,gs with
-            | "Genarray","get" -> (
-                match label_exprs with
-                  | [(_,a); (_,{pexp_desc=Pexp_array ls})] ->
-                      let formattedList = List.map self#simple_expression ls in
-                      Some (
-                        access "{" "}" (self#simple_expression a) (makeCommaBreakableList formattedList)
-                      )
-                  | _ -> None
-              )
-            | "Genarray","set" -> (
-                match label_exprs with
-                  | [(_,a);(_,{pexp_desc=Pexp_array ls});(_,c)]  ->
-                      let formattedList = List.map self#simple_expression ls in
-                      Some (
-                        (* TODO: Does the final portion have to be a simple
-                           expression? I don't see why. I believe it does - see the
-                           next section. *)
-                        makeList ~postSpace:true [
-                          access "{" "}" (self#simple_expression a) (makeCommaBreakableList formattedList);
-                          atom "=";
-                          self#simple_expression c;
-                        ]
-                      )
-                  | _ -> None
-              )
-            | ("Array1"|"Array2"|"Array3"),"set" -> (
-                match label_exprs with
-                  | (_,a)::rest -> (
-                      match List.rev rest with
-                        | (_,v)::rest ->
-                            let args = List.map snd (List.rev rest) in
-                            let formattedList = List.map self#simple_expression args in
-                            Some (
-                              makeList ~postSpace:true [
-                                access "{" "}" (self#simple_expression a) (makeCommaBreakableList formattedList);
-                                atom "=";
-                                self#simple_expression v;
-                              ]
-                            )
-                        | _ -> assert false
-                    )
-                  | _ -> assert false
-              )
-            | ("Array1"|"Array2"|"Array3"),"get" -> (
-                match label_exprs with
-                  |(_,a)::rest ->
-                      let formattedList = List.map self#simple_expression (List.map snd rest) in
-                      Some (
-                        access "{" "}" (self#simple_expression a) (makeCommaBreakableList formattedList)
-                      )
-                  | _ -> assert false
-              )
+        match array with
+          | "Genarray" -> (
+            match label_exprs with
+            | [(_,a);(_,{pexp_desc=Pexp_array ls});(_,c)] ->
+              let formattedList = List.map self#simplifyUnparseExpr ls in
+              Some (self#access "{" "}" (self#simplifyUnparseExpr a) (makeCommaBreakableList formattedList), c)
             | _ -> None
+          )
+          | ("Array1"|"Array2"|"Array3") -> (
+            match label_exprs with
+            | (_,a)::rest -> (
+              match List.rev rest with
+              | (_,v)::rest ->
+                let args = List.map snd (List.rev rest) in
+                let formattedList = List.map self#simplifyUnparseExpr args in
+                Some (self#access "{" "}" (self#simplifyUnparseExpr a) (makeCommaBreakableList formattedList), v)
+              | _ -> assert false
+            )
+            | _ -> assert false
+          )
+          | _ -> None
         )
-
       | _ -> None
 
   (*
@@ -2999,94 +3099,195 @@ class printer  ()= object(self:'self)
      ******************************************************************
   *)
 
-
-
-  (*
-    Returns the breakable list of terms for function or (todo) constructor
-    application:
-
-    Should essentially return the list of formatted items that can be treated
-     "simply" (not necessarily "simple" expressions).
-
-     Two items:
-
-       let x = myFun (Red 10);
-
-     Still two items:
-
-       let x = Red 10;
-
-     Three items
-
-       let x = Red 10 20;
-  *)
-
-  method arraySugarApplicationItems x =
-    match x.pexp_desc with
-      | Pexp_apply (e, l) -> (
-          match self#sugar_expr x with
-            | Some s -> Some s
-            | None -> None
-      )
-      | _ -> None
-
-  method consecutiveInfixApplicationItems x =
-    match x.pexp_desc with
-      | Pexp_apply (e, ls) -> (
-          match (view_fixity_of_exp e, ls) with
-            | ((`Infix infixStr), [("", leftExpr); ("", rightExpr)]) -> (
-                match self#consecutiveInfixApplicationItemsRecurse x with
-                  | (None, _) -> None
-                  | (Some infix, lst) -> Some(infix, lst)
-              )
-            | _ -> None
-        )
-      | _  -> None
-
   (**
      TODO: Configure the optional ability to print the *minimum* number of
      parens. It's simply a matter of changing [higherPrecedenceThan] to
      [higherOrEqualPrecedenceThan].
    *)
-  method consecutiveInfixApplicationItemsRecurse x =
-    let rightSideContribution infixStr origRight (rightRecurseOp, rightRecurseList) =
-      match rightRecurseOp with
-        | (Some (s, _)) ->
-          if not (s = infixStr) then
-            (if (higherPrecedenceThan s infixStr) then [self#expression origRight] else [self#simple_expression origRight])
-          else
-            (if isRightAssociative infixStr then rightRecurseList else [self#simple_expression origRight])
-        | None -> rightRecurseList (* Will only ever be len 1 *)
-    in
-    let leftSideContribution infixStr origLeft (leftRecurseOp, leftRecurseList) =
-      match leftRecurseOp with
-        | (Some (s, _)) ->
-          if not (s = infixStr) then
-            (if (higherPrecedenceThan s infixStr) then [self#expression origLeft] else [self#simple_expression origLeft])
-          else
-            (if isLeftAssociative infixStr then leftRecurseList else [self#simple_expression origLeft])
-        | None -> leftRecurseList (* Will only ever be len 1 *)
-    in
+
+  (* Ensures a rule doesn't reduce until *after* `reducesAfterRight` gets a chance
+     to reduce. Example: The addtion rule which has precedence of rightmost
+     token "+", in `x + a * b` should not reduce until after the a * b gets
+     a chance to reduce. This function would determine the minimum parens to
+     ensure that. *)
+  method ensureContainingRule ~withPrecedence ~reducesAfterRight =
+    match self#unparseExprRecurse reducesAfterRight with
+    | (SpecificInfixPrecedence ({reducePrecedence; shiftPrecedence}, rightRecurse)) ->
+      if higherPrecedenceThan shiftPrecedence withPrecedence then rightRecurse
+      else if (higherPrecedenceThan withPrecedence shiftPrecedence) then
+        formatPrecedence ~loc:reducesAfterRight.pexp_loc rightRecurse
+      else (
+        if isRightAssociative withPrecedence then
+          rightRecurse
+        else
+          formatPrecedence ~loc:reducesAfterRight.pexp_loc rightRecurse
+      )
+    | FunctionApplication itms ->
+      formatAttachmentApplication applicationFinalWrapping None (itms, Some reducesAfterRight.pexp_loc)
+    | PotentiallyLowPrecedence itm -> formatPrecedence ~loc:reducesAfterRight.pexp_loc itm
+    | Simple itm -> itm
+
+  method ensureExpression expr ~reducesOnToken =
+    match self#unparseExprRecurse expr with
+    | SpecificInfixPrecedence ({reducePrecedence; shiftPrecedence}, leftRecurse) ->
+      if higherPrecedenceThan reducePrecedence reducesOnToken then leftRecurse
+      else if higherPrecedenceThan reducesOnToken reducePrecedence then
+        formatPrecedence ~loc:expr.pexp_loc leftRecurse
+      else (
+        if isLeftAssociative reducesOnToken then
+          leftRecurse
+        else
+          formatPrecedence ~loc:expr.pexp_loc leftRecurse
+      )
+    | FunctionApplication itms -> formatAttachmentApplication applicationFinalWrapping None (itms, Some expr.pexp_loc)
+    | PotentiallyLowPrecedence itm -> formatPrecedence ~loc:expr.pexp_loc itm
+    | Simple itm -> itm
+
+
+  (** Attempts to unparse: The beginning of a more general printing algorithm,
+      that determines how to print based on precedence of tokens and rules.
+      The end goal is that this should be completely auto-generated from the
+      Menhir parsing tables. We could move more and more into this function.
+
+      You could always just call self#expression, but `unparseExpr` will render
+      infix/prefix/unary/terary fixities in their beautiful forms while
+      minimizing parenthesis.
+  *)
+  method unparseExpr x =
+    match self#unparseExprRecurse x with
+    | SpecificInfixPrecedence ({reducePrecedence; shiftPrecedence}, itm) -> itm
+    | FunctionApplication itms -> formatAttachmentApplication applicationFinalWrapping None (itms, Some x.pexp_loc)
+    | PotentiallyLowPrecedence itm -> itm
+    | Simple itm -> itm
+
+  method simplifyUnparseExpr x =
+    match self#unparseExprRecurse x with
+    | SpecificInfixPrecedence ({reducePrecedence; shiftPrecedence}, itm) -> formatPrecedence ~loc:x.pexp_loc itm
+    | FunctionApplication itms ->
+      formatPrecedence ~loc:x.pexp_loc (formatAttachmentApplication applicationFinalWrapping None (itms, Some x.pexp_loc))
+    | PotentiallyLowPrecedence itm -> formatPrecedence ~loc:x.pexp_loc itm
+    | Simple itm -> itm
+
+  method unparseExprApplicationItems x =
+    match self#unparseExprRecurse x with
+    | SpecificInfixPrecedence ({reducePrecedence; shiftPrecedence}, itm) -> ([itm], Some x.pexp_loc)
+    | FunctionApplication itms -> (itms, Some x.pexp_loc)
+    | PotentiallyLowPrecedence itm -> ([itm], Some x.pexp_loc)
+    | Simple itm -> ([itm], Some x.pexp_loc)
+
+  method unparseExprRecurse x =
+    (* If there are any attributes, render unary like `(~-) x [@ppx]`, and infix like `(+) x y [@attr]` *)
+    let (arityAttrs, docAtrs, stdAttrs) = partitionAttributes x.pexp_attributes in
+    let withoutVisibleAttrs = {x with pexp_attributes=arityAttrs} in
+    (* If there's any attributes, recurse without them, then apply them to
+       the ends of functions, or simplify infix printings then append. *)
+    if stdAttrs <> [] then
+      let attributesAsList = (List.map self#attribute stdAttrs) in
+      let itms = match self#unparseExprRecurse withoutVisibleAttrs with
+        | SpecificInfixPrecedence ({reducePrecedence; shiftPrecedence}, itm) -> [formatPrecedence ~loc:x.pexp_loc itm]
+        | FunctionApplication itms -> itms
+        | PotentiallyLowPrecedence itm -> [formatPrecedence ~loc:x.pexp_loc itm]
+        | Simple itm -> [itm]
+      in
+      FunctionApplication [
+        makeList
+          ~break:IfNeed
+          ~inline:(true, true)
+          ~indent:0
+          ~postSpace:true
+          (List.concat [itms; attributesAsList])
+      ]
+    else
+    match self#simplest_expression x with
+    | Some se -> Simple se
+    | None ->
     match x.pexp_desc with
-      | Pexp_apply (e, ls) -> (
-        match (view_fixity_of_exp e, ls) with
-          | (`Infix infixStr, [("", leftExpr); ("", rightExpr)]) ->
-            let rightRecurse = self#consecutiveInfixApplicationItemsRecurse rightExpr in
-            let leftRecurse = self#consecutiveInfixApplicationItemsRecurse leftExpr in
-            let rightItms = rightSideContribution infixStr rightExpr rightRecurse in
-            let leftItms = leftSideContribution infixStr leftExpr leftRecurse in
-            ((Some (infixStr, e.pexp_loc)), List.concat [leftItms; rightItms])
-          (* Again, it's reall good that this only ever is caught at the
-             recursive step - otherwise we'd loop infinitely. *)
-          | (`Infix infixStr, lbls) -> (None, [self#expression x])
-          | (`Prefix s, _) -> (None, [self#simple_expression x])
-          (* We know that this can only ever occur at a recursive call - the
-             first call into this would have been infix. There is overlap with
-             this and the simple_enough_to_be_separated_by_infix case. Either
-             path would work. *)
-          | (`Normal, _) -> (None, [self#expression x])
-        )
-      | _ -> (None, [self#simple_enough_to_be_separated_by_infix x])
+    | Pexp_apply (e, ls) -> (
+      match (self#sugar_set_expr_parts x) with
+      (* Returns None if there's attributes - would render as regular function *)
+      (* Format as if it were an infix function application with identifier "=" *)
+      | Some (simplyFormatedLeftItm, rightExpr) -> (
+        let tokenPrec = Token updateToken in
+        let rightItm = self#ensureContainingRule ~withPrecedence:tokenPrec ~reducesAfterRight:rightExpr in
+        let leftWithOp = makeList ~postSpace:true [simplyFormatedLeftItm; atom updateToken] in
+        let expr = label ~space:true leftWithOp rightItm in
+        SpecificInfixPrecedence ({reducePrecedence=tokenPrec; shiftPrecedence=tokenPrec}, expr)
+      )
+      | None -> (
+        match (printedStringAndFixityExpr e, ls) with
+        | (Infix printedIdent, [("", leftExpr); ("", rightExpr)]) ->
+          let infixToken = Token printedIdent in
+          let rightItm = self#ensureContainingRule ~withPrecedence:infixToken ~reducesAfterRight:rightExpr in
+          let leftItm = self#ensureExpression leftExpr ~reducesOnToken:infixToken in
+          let leftWithOp = makeList ~postSpace:true [leftItm; atom printedIdent] in
+          let indent = infixTokenRequiresIndent printedIdent in
+          let expr = label ~space:true ?indent leftWithOp rightItm in
+          SpecificInfixPrecedence ({reducePrecedence=infixToken; shiftPrecedence=infixToken}, expr)
+        (* Will be rendered as `(+) a b c` which is parsed with higher precedence than all
+           the other forms unparsed here.*)
+        | (UnaryPlusPrefix printedIdent, [("", rightExpr)]) ->
+          let prec = Custom "prec_unary_plus" in
+          let rightItm = self#ensureContainingRule ~withPrecedence:prec ~reducesAfterRight:rightExpr in
+          let expr = label ~space:true (atom printedIdent) rightItm in
+          SpecificInfixPrecedence ({reducePrecedence=prec; shiftPrecedence=Token printedIdent}, expr)
+        | (UnaryMinusPrefix printedIdent, [("", rightExpr)]) ->
+          let prec = Custom "prec_unary_minus" in
+          let rightItm = self#ensureContainingRule ~withPrecedence:prec ~reducesAfterRight:rightExpr in
+          let expr = label ~space:true (atom printedIdent) rightItm in
+          SpecificInfixPrecedence ({reducePrecedence=prec; shiftPrecedence=Token printedIdent}, expr)
+        (* Will need to be rendered in self#expression as (~-) x y z. *)
+        | (_, _) ->
+          let theFunc = SourceMap (e.pexp_loc, (self#simplifyUnparseExpr e)) in
+          (*reset here only because [function,match,try,sequence] are lower priority*)
+          let theArgs = List.map self#reset#label_x_expression_param ls in
+          FunctionApplication (theFunc::theArgs)
+      )
+    )
+    | Pexp_construct (li, Some eo) when not (is_simple_construct (view_expr x)) -> (
+        match view_expr x with
+        (* TODO: Explicit arity *)
+        | `normal ->
+            let arityIsClear = isArityClear arityAttrs in
+            FunctionApplication [self#constructor_expression ~arityIsClear stdAttrs (self#longident_loc li) eo]
+        | _ -> assert false
+      )
+    | Pexp_variant (l, Some eo) ->
+        if arityAttrs != [] then
+          raise (NotPossible "Should never see embedded attributes on poly variant")
+        else
+          FunctionApplication [self#constructor_expression ~polyVariant:true ~arityIsClear:true stdAttrs (atom ("`" ^ l)) eo]
+    (* TODO: Should protect this identifier *)
+    | Pexp_setinstvar (s, rightExpr) ->
+      let rightItm = self#ensureContainingRule ~withPrecedence:(Token updateToken) ~reducesAfterRight:rightExpr in
+      let expr = label ~space:true (makeList ~postSpace:true [(protectIdentifier s.txt); atom updateToken]) rightItm in
+      SpecificInfixPrecedence ({reducePrecedence=(Token updateToken); shiftPrecedence=(Token updateToken)}, expr)
+    | Pexp_setfield (leftExpr, li, rightExpr) ->
+      let rightItm = self#ensureContainingRule ~withPrecedence:(Token updateToken) ~reducesAfterRight:rightExpr in
+      let leftItm =
+        label
+          (makeList ~interleaveComments:false [self#simple_enough_to_be_lhs_dot_send leftExpr; atom "."])
+          (self#longident_loc li) in
+      let expr = label ~space:true (makeList ~postSpace:true [leftItm; atom updateToken]) rightItm in
+      SpecificInfixPrecedence ({reducePrecedence=(Token updateToken); shiftPrecedence=(Token updateToken)}, expr)
+    | Pexp_match (e, l) when detectTernary l != None -> (
+      match detectTernary l with
+      | None -> raise (Invalid_argument "Impossible")
+      | Some (tt, ff) ->
+        let ifTrue = self#unparseExpr tt in
+        let testItm = self#ensureExpression e ~reducesOnToken:(Token "?") in
+        let ifFalse = self#ensureContainingRule ~withPrecedence:(Token ":") ~reducesAfterRight:ff in
+        let withQuestion = SourceMap (e.pexp_loc, makeList ~postSpace:true [testItm; atom "?"]) in
+        let trueFalseBranches =
+          makeList ~inline:(true, true) ~break:IfNeed ~sep:":" ~postSpace:true ~preSpace:true [ifTrue; ifFalse]
+        in
+        let expr = label ~space:true withQuestion trueFalseBranches in
+        SpecificInfixPrecedence ({reducePrecedence=Token ":"; shiftPrecedence=Token "?"}, expr)
+    )
+    | _ -> (
+      match self#expression_requiring_parens_in_infix x with
+      | Some e -> PotentiallyLowPrecedence e
+      | None -> raise (Invalid_argument "No match for unparsing expression")
+    )
 
   (*
      It's not enough to only check if precedence of an infix left/right is
@@ -3102,18 +3303,19 @@ class printer  ()= object(self:'self)
 
      Sequential identical infix operators:
      ------------------------------------
-     So if we see a nested infix Y operator inside of a Y application that is X
-     associative on the X side of the function application, we don't need to
+     So if we see a nested infix operator of precedence Y, as one side of
+     another infix operator that has the same precedence (Y), that is S
+     associative on the S side of the function application, we don't need to
      wrap in parens. In more detail:
 
-     -Add parens
-       Exception 1:Unless we are a left-assoc X operator in the left branch of an X operator.
-       Exception 2:Unless we are a right-assoc X operator in the right branch of an X operator.
-       Exception 3:Unless we are a _any_-assoc X operator in the _any_ branch of an Y operator where X has greater precedence than Y.
+     -Add parens around infix binary function application
+       Exception 1: Unless we are a left-assoc operator of precedence X in the left branch of an operator w/ precedence X.
+       Exception 2: Unless we are a right-assoc operator of precedence X in the right branch of an operator w/ precedence X.
+       Exception 3: Unless we are a _any_-assoc X operator in the _any_ branch of an Y operator where X has greater precedence than Y.
 
      Note that the exceptions do not specify any special cases for mixing
      left/right associativity. Precedence is what determines necessity of
-     parens for non operators with non-identical precedences. Associativity
+     parens for operators with non-identical precedences. Associativity
      only determines necessity of parens for identically precedented operators.
 
      PLUS is left assoc:
@@ -3202,97 +3404,6 @@ class printer  ()= object(self:'self)
 
   *)
 
-  (* This likely needs to be rewritten and all the edge cases tested. *)
-  method prefixApplication (e, l) =
-    match view_fixity_of_exp e with
-      | `Prefix s ->
-        let is_unary_plus_minus = List.mem s ["~+";"~-";"~+.";"~-."] in
-        let s =
-          if is_unary_plus_minus
-          then String.sub s 1 (String.length s -1)
-          else s in
-        (
-          match l with
-            (* Intentionally not spaced *)
-            | [v] ->
-              Some (makeList ~break:IfNeed ~postSpace:is_unary_plus_minus
-                [atom s;
-                 self#label_x_expression_param v])
-            | _ -> Some (
-                makeList ~break:IfNeed [
-                  atom s;
-                  makeList
-                    ~break:IfNeed
-                    ~postSpace:true
-                    ~inline:(true, true)
-                    (List.map self#label_x_expression_param l)
-                ]
-              )
-        )
-    |  _ -> None
-
-
-
-
-  (**
-   * Returns the list of items to be formatted as a function application, in
-   * addition to an optional sequencer token that should separate them.  The
-   * returned list is only valid if in a context where prefix operators don't
-   * need to be guarded by parens. For example, this is valid on the RHS of
-   * bindings, record fields etc. Prefix operators that are identical to infix
-   * ones (I'm looking at you, "minus") are an abomination.
-   *
-   * Because (currently) ppx attributes are parsed as bing on the function
-   * application, as if it were an argument, this is the best place to extract
-   * those. It also means that infix applications must be wrapped in parens,
-   * and thus be wrapped in parens in their own "application item".
-   *)
-  method expressionToFormattedApplicationItems x =
-    match x.pexp_desc with
-      | Pexp_apply (e, l) -> (
-        let attributesAsList = (List.map self#attribute x.pexp_attributes) in
-        let exprWithoutAttrs = {x with pexp_attributes = []} in
-        match self#arraySugarApplicationItems x with
-          | Some fmt -> ([], [fmt], None, Some x.pexp_loc)
-          | None -> (
-            match self#consecutiveInfixApplicationItems x with
-              | Some ((operator, loc), items) ->
-                if x.pexp_attributes <> [] then
-                  (* We actually have to back out of this computation.  We know
-                     that unguarded infix/prefix are not compatible with
-                     attributes. Render it as simple. *)
-                  ((self#simple_expression exprWithoutAttrs :: attributesAsList), [], None, Some x.pexp_loc)
-                else
-                  begin
-                  (items, [], Some (operator, loc), Some x.pexp_loc)
-                  end
-              | None -> (
-                match self#prefixApplication (e, l) with
-                  | Some item ->
-                    (* We actually have to back out of this computation.  We know
-                       that unguarded infix/prefix are not compatible with
-                       attributes. Render it as simple. *)
-                    if x.pexp_attributes <> [] then
-                      ((self#simple_expression exprWithoutAttrs  :: attributesAsList), [], None, Some x.pexp_loc)
-                    else
-                      ([item], [], None, Some x.pexp_loc)
-                  | None -> (
-                    (* Standard application *)
-                    (*reset here only because [function,match,try,sequence] are lower priority*)
-                    List.concat [
-                      [SourceMap (e.pexp_loc, (self#expression2 e))];
-                      List.map self#reset#label_x_expression_param l;
-                      attributesAsList;
-                    ],
-                    [],
-                    None,
-                    Some x.pexp_loc
-                  )
-              )
-          )
-      )
-      | _ -> ([self#expression x], [], None, Some x.pexp_loc)
-
   method classExpressionToFormattedApplicationItems x =
     let itms =
       match x.pcl_desc with
@@ -3301,27 +3412,8 @@ class printer  ()= object(self:'self)
           (List.map self#label_x_expression_param l)
         | _ -> [self#class_expr x]
     in
-    (itms, None, None)
+    (itms, None)
 
-  method formatTernary x test ifTrue ifFalse =
-    if inTernary then
-      self#resetInTernary#simple_expression x
-    else
-      let withQuestion =
-        makeList ~postSpace:true [self#underTernary#expression test; atom "?"]
-      in
-      let trueFalseBranches =
-        makeList
-          ~inline:(true, true)
-          ~break:IfNeed
-          ~sep:":"
-          ~postSpace:true
-          ~preSpace:true [
-            self#underTernary#expression ifTrue;
-            self#resetInTernary#expression ifFalse
-          ]
-      in
-      label ~space:true withQuestion trueFalseBranches
 
   (* Creates a list of simple module expressions corresponding to module
      expression or functor application. *)
@@ -3332,7 +3424,7 @@ class printer  ()= object(self:'self)
             (functorApplicationList me1)
       | _ -> SourceMap (xx.pmod_loc, (self#module_expr xx))::[]
     in
-    (List.rev (functorApplicationList x), None, Some x.pmod_loc)
+    (List.rev (functorApplicationList x), None)
 
 
   (*
@@ -3617,7 +3709,7 @@ class printer  ()= object(self:'self)
   *)
 
   method locallyAbstractPolymorphicFunctionBinding prefixText layoutPattern funWithNewTypes absVars bodyType =
-    let appTerms = combinedAppItems (self#expressionToFormattedApplicationItems funWithNewTypes) in
+    let appTerms = self#unparseExprApplicationItems funWithNewTypes in
     let locallyAbstractTypes = (List.map atom absVars) in
     let typeLayout =
       SourceMap (bodyType.ptyp_loc, (self#core_type bodyType)) in
@@ -3662,16 +3754,16 @@ class printer  ()= object(self:'self)
     match (argsList, return.pexp_desc) with
       | ([], Pexp_constraint (e, ct)) ->
           let typeLayout = SourceMap (ct.ptyp_loc, (self#core_type ct)) in
-          let appTerms = combinedAppItems (self#expressionToFormattedApplicationItems e) in
+          let appTerms = self#unparseExprApplicationItems e in
           self#formatSimplePatternBinding prefixText patternList (Some typeLayout) appTerms
       | ([], _) ->
-          let appTerms = combinedAppItems (self#expressionToFormattedApplicationItems expr) in
+          let appTerms = self#unparseExprApplicationItems expr  in
           self#formatSimplePatternBinding prefixText patternList None appTerms
       | (_::_, _) ->
           let (argsWithConstraint, actualReturn) = self#normalizeFunctionArgsConstraint argsList return in
           let fauxArgs =
             List.concat [patternAux; argsWithConstraint] in
-          let returnedAppTerms = combinedAppItems (self#expressionToFormattedApplicationItems actualReturn) in
+          let returnedAppTerms = self#unparseExprApplicationItems actualReturn in
           self#wrapCurriedFunctionBinding prefixText pattern fauxArgs returnedAppTerms
 
   (* Similar to the above method. *)
@@ -3794,7 +3886,7 @@ class printer  ()= object(self:'self)
                 nonVarifiedExprType
             | _ ->
               let typeLayout = SourceMap (ty.ptyp_loc, (self#core_type ty)) in
-              let appTerms = combinedAppItems (self#expressionToFormattedApplicationItems x) in
+              let appTerms = self#unparseExprApplicationItems x in
               self#formatSimplePatternBinding
                 prefixText
                 layoutPattern
@@ -3804,7 +3896,7 @@ class printer  ()= object(self:'self)
       | (_) ->
           let layoutPattern =
             SourceMap (pvb_pat.ppat_loc, (self#pattern pvb_pat)) in
-          let appTerms = combinedAppItems (self#expressionToFormattedApplicationItems x) in
+          let appTerms = self#unparseExprApplicationItems x in
           self#formatSimplePatternBinding prefixText layoutPattern None appTerms
 
 
@@ -3905,7 +3997,7 @@ class printer  ()= object(self:'self)
                 | Pexp_object {pcstr_fields = []}
                 (* syntax sugar for M.[x,y] *)
                 | Pexp_construct ( {txt= Lident"::"},Some _) ->
-                    (self#simple_expression e)
+                    (self#simplifyUnparseExpr e)
                 (* syntax sugar for the rest, wrap with parens to avoid ambiguity.
                  * E.g., avoid M.(M2.v) being printed as M.M2.v
                  *)
@@ -3948,18 +4040,18 @@ class printer  ()= object(self:'self)
       | ([], Pexp_sequence (({pexp_desc=Pexp_open _     }) as e1, e2))
       | ([], Pexp_sequence (({pexp_desc=Pexp_letmodule _}) as e1, e2))
       | ([], Pexp_sequence (e1, e2)) ->
-          let e1Layout = (self#expression e1) in
+          let e1Layout = (self#unparseExpr e1) in
           (* It's kind of difficult to synthesize a location here in the case
            * where this is the first expression in the braces. We could consider
            * deeply inspecting the leftmost token/term in the expression. *)
           let e1SourceMapped = SourceMap (e1.pexp_loc, e1Layout) in
           e1SourceMapped::(self#letList e2)
       | _ ->
-          let exprTermLayout = (self#expression exprTerm) in
+          let exprTermLayout = (self#unparseExpr exprTerm) in
           let exprTermSourceMapped = SourceMap (exprTerm.pexp_loc, exprTermLayout) in
           (* Should really do something to prevent infinite loops here. Never
              allowing a top level call into letList to recurse back to
-             self#expression- top level calls into letList *must* be one of the
+             self#unparseExpr- top level calls into letList *must* be one of the
              special forms above whereas lower level recursive calls may be of
              any form. *)
           [exprTermSourceMapped]
@@ -3968,7 +4060,7 @@ class printer  ()= object(self:'self)
     let (implicit_arity, arguments) =
       match eo.pexp_desc with
         | Pexp_tuple l when not polyVariant -> (
-            let exprs = match (List.map self#simple_expression l) with
+            let exprs = match (List.map self#simplifyUnparseExpr l) with
               | [] -> raise (NotPossible "no tuple items")
               | hd::[] -> hd
               | hd::tl as all -> makeSpacedBreakableInlineList all
@@ -3977,7 +4069,7 @@ class printer  ()= object(self:'self)
                We don't need put implicit_arity in that case *)
             (List.length l > 1 && not arityIsClear, exprs)
           )
-        | _ -> (false, self#simple_expression eo)
+        | _ -> (false, self#simplifyUnparseExpr eo)
     in
     let construction =
       label ~space:true
@@ -4017,424 +4109,353 @@ class printer  ()= object(self:'self)
     else
       construction
 
-  method expression x =
+  method patternFunction loc l =
+    let estimatedFunLocation = {
+        loc_start = loc.loc_start;
+        loc_end = {loc.loc_start with pos_cnum = loc.loc_start.Lexing.pos_cnum + 3};
+        loc_ghost = false;
+    } in
+    makeList
+      ~postSpace:true
+      ~break:IfNeed
+      ~inline:(true, true)
+      ~pad:(false, false)
+      ((atom ~loc:estimatedFunLocation "fun") :: (self#case_list l))
+
+  (* Expressions requiring parens, in most contexts such as separated by infix *)
+  method expression_requiring_parens_in_infix x =
     let (arityAttrs, docAtrs, stdAttrs) = partitionAttributes x.pexp_attributes in
-    if stdAttrs <> []  && (not (self#expr_can_render_own_attributes x)) then
-      let withoutVisibleAttrs = {x with pexp_attributes=arityAttrs} in
-        let itm =
-          formatAttributed
-            (self#simple_expression withoutVisibleAttrs)
-            (self#attributes stdAttrs)
-      in
-      SourceMap (x.pexp_loc, itm)
-    else
-      match x.pexp_desc with
-        (* Sequences don't require parens when under pipe in Reason. *)
-        (* The only reason Pexp_fun must also be wrapped in parens is that its =>
-           token will be confused with the match token. *)
-        (* In Reason, we do not need to wrap matches in parens when we are under
-         * a pipe because we don't have the usual ambiguity that arises in OCaml.*)
-        | Pexp_function _
-           when pipe || semi -> self#paren ~first:"(" ~last:")" true self#reset#expression x
-        | Pexp_function l ->
-            (* Anything that doesn't have wrappers (parens/braces) should be inline
-               so that when appearing in other inline contexts, semicolons bind to
-               the end etc.  *)
-           let estimatedFunLocation = {
-               loc_start = x.pexp_loc.loc_start;
-               loc_end = {x.pexp_loc.loc_start with pos_cnum = x.pexp_loc.loc_start.Lexing.pos_cnum + 3};
+    assert (stdAttrs == []);
+    match x.pexp_desc with
+      (* The only reason Pexp_fun must also be wrapped in parens when under
+         pipe, is that its => token will be confused with the match token.
+         Simple expression will also invoke `#reset`. *)
+      | Pexp_function _ when pipe || semi -> None (* Would be rendered as simplest_expression  *)
+      | Pexp_function l -> Some (self#patternFunction x.pexp_loc l)
+      | _ ->
+        (* The Pexp_function cases above don't use location because comment printing
+          breaks for them. *)
+        let itm = match x.pexp_desc with
+          | Pexp_fun _
+          | Pexp_newtype _ ->
+            let (args, ret) = self#curriedPatternsAndReturnVal x in
+            (match args with
+            | [] -> raise (NotPossible ("no arrow args in unparse "))
+            | firstArg::tl ->
+              (* Suboptimal printing of parens:
+
+                    something >>= fun x => x + 1;
+
+                 Will be printed as:
+
+                    something >>= (fun x => x + 1);
+
+                 Because the arrow has lower precedence than >>=, but it wasn't
+                 needed because
+
+                    (something >>= fun x) => x + 1;
+
+                 Is not a valid parse. Parens around the `=>` weren't needed to
+                 prevent reducing instead of shifting. To optimize this part, we need
+                 a much deeper encoding of the parse rules to print parens only when
+                 needed, testing which rules will be reduced. It really should be
+                 integrated deeply with Menhir.
+
+                 One question is, if it's this difficult to describe when parens are
+                 needed, should we even print them with the minimum amount?  We can
+                 instead model everything as "infix" with ranked precedences.  *)
+              let retValUnparsed = self#unparseExprApplicationItems ret in
+              Some (self#wrapCurriedFunctionBinding "fun" firstArg tl retValUnparsed)
+            )
+          | Pexp_try (e, l) ->
+            let estimatedBracePoint = {
+              loc_start = e.pexp_loc.loc_end;
+              loc_end = x.pexp_loc.loc_end;
+              loc_ghost = false;
+            }
+            in
+            let cases = (self#case_list ~allowUnguardedSequenceBodies:true l) in
+            let switchWith = label ~space:true (atom "try") (self#reset#simplifyUnparseExpr e) in
+            Some (
+              label
+                ~space:true
+                switchWith
+                (SourceMap (estimatedBracePoint, (makeList ~indent:settings.trySwitchIndent ~wrap:("{", "}") ~break:Always_rec ~postSpace:true cases)))
+            )
+          (* These should have already been handled and we should never havgotten this far. *)
+          | Pexp_setinstvar (s, e) -> raise (Invalid_argument "Cannot handle setinstvar here - call unparseExpr")
+          | Pexp_setfield (_, _, _) -> raise (Invalid_argument "Cannot handle setfield here - call unparseExpr")
+          | Pexp_apply (e, l) -> raise (Invalid_argument "Cannot handle apply here - call unparseExpr")
+          | Pexp_match (e, l) ->
+             let estimatedBracePoint = {
+               loc_start = e.pexp_loc.loc_end;
+               loc_end = x.pexp_loc.loc_end;
                loc_ghost = false;
-           } in
-           makeList
-             ~postSpace:true
-             ~break:IfNeed
-             ~inline:(true, true)
-             ~pad:(false, false)
-             ((atom ~loc:estimatedFunLocation "fun") :: (self#case_list l))
-          | _ ->
-            (* The Pexp_function cases above don't use location because comment printing
-              breaks for them. *)
-            let itm = match x.pexp_desc with
-              (* Sequences don't require parens when under pipe in Reason. *)
-              (* The only reason Pexp_fun must also be wrapped in parens is that its =>
-                 token will be confused with the match token. *)
-              (* In Reason, we do not need to wrap matches in parens when we are under
-               * a pipe because we don't have the usual ambiguity that arises in OCaml.*)
-              | Pexp_fun _
-                when pipe || semi ->
-                  self#paren ~first:"(" ~last:")" true self#reset#expression x
-              (* | Pexp_let _ | Pexp_letmodule _ when semi -> *)
-              (*     self#paren true self#reset#expression x *)
-              | Pexp_fun _
-              | Pexp_newtype _ ->  (* Moved this from simple_expression - is that correct to do so? *)
-                  (* label * expression option * pattern * expression *)
-                  let (args, ret) = self#curriedPatternsAndReturnVal x in
-                  (match args with
-                    | [] -> raise (NotPossible "no arrow args")
-                    | firstArg::tl ->
-                        (* For lambdas, "fun" plays the role that the binding name does in
-                           bindings *)
-                        let returnedAppTerms = combinedAppItems (self#expressionToFormattedApplicationItems ret) in
-                        self#wrapCurriedFunctionBinding "fun" firstArg tl returnedAppTerms
-                  )
-              | Pexp_try (e, l) ->
-                let cases = (self#case_list ~allowUnguardedSequenceBodies:true l) in
-                let switchWith = label ~space:true (atom "try") (self#reset#simple_expression e) in
-                let estimatedBracePoint = {
-                    loc_start = e.pexp_loc.loc_end;
-                    loc_end = x.pexp_loc.loc_end;
-                    loc_ghost = false;
-                  }
-                in
-                label
-                  ~space:true
-                  switchWith
-                  (SourceMap (estimatedBracePoint, (makeList ~indent:settings.trySwitchIndent ~wrap:("{", "}") ~break:Always_rec ~postSpace:true cases)))
-              | Pexp_match (e, l) -> (
-                  match detectTernary l with
-                  | Some (ifTrue, ifFalse) -> self#formatTernary x e ifTrue ifFalse
-                  | None ->
-                    let cases = (self#case_list ~allowUnguardedSequenceBodies:true l) in
-                    let switchWith = label ~space:true (atom "switch") (self#reset#simple_expression e) in
-                    let estimatedBracePoint = {
-                        loc_start = e.pexp_loc.loc_end;
-                        loc_end = x.pexp_loc.loc_end;
-                        loc_ghost = false;
-                      }
-                    in
+             }
+             in
+             let cases = (self#case_list ~allowUnguardedSequenceBodies:true l) in
+             let switchWith = label ~space:true (atom "switch") (self#reset#simplifyUnparseExpr e) in
+             let lbl =
+               label
+                 ~space:true
+                 switchWith
+                 (SourceMap (estimatedBracePoint, (makeList ~indent:settings.trySwitchIndent ~wrap:("{", "}") ~break:Always_rec ~postSpace:true cases)))
+             in
+             Some lbl
+          | Pexp_ifthenelse (e1, e2, eo) ->
+            let (blocks, finalExpression) = sequentialIfBlocks eo in
+            let rec singleExpression exp =
+              match exp.pexp_desc with
+              | Pexp_ident _ -> true
+              | Pexp_constant _ -> true
+              | Pexp_construct (_, arg) ->
+                (match arg with
+                | None -> true
+                | Some x -> singleExpression x)
+              | _ -> false
+            in
+            let singleLineIf =
+              (singleExpression e1) &&
+              (singleExpression e2) &&
+              (match eo with
+               | Some expr -> singleExpression expr
+               | None -> true
+              )
+            in
+            let makeLetSequence =
+              if singleLineIf then
+                makeLetSequenceSingleLine
+              else
+                makeLetSequence
+            in
+            let rec sequence soFar remaining = (
+              match (remaining, finalExpression) with
+                | ([], None) -> soFar
+                | ([], Some e) ->
+                  let soFarWithElseAppended = makeList ~postSpace:true [soFar; atom "else"] in
+                  label ~space:true soFarWithElseAppended (makeLetSequence (self#letList e))
+                | (hd::tl, _) ->
+                  let (e1, e2) = hd in
+                  let soFarWithElseIfAppended =
                     label
                       ~space:true
-                      switchWith
-                      (SourceMap (estimatedBracePoint, (makeList ~indent:settings.trySwitchIndent ~wrap:("{", "}") ~break:Always_rec ~postSpace:true cases)))
-                )
-
-              | Pexp_apply (e, l) -> (
-                  match self#expressionToFormattedApplicationItems x with
-                    | ([], [], _, _) ->
-                        raise (
-                          NotPossible (
-                            "no application items extracted " ^ (exprDescrString x)
-                          )
-                        )
-                    | ([], sugarExpr::[], _, _) ->
-                        (* This can happen in the case of [sugar_expr] [arrayWithTwo.(1) <- 300] *)
-                        sugarExpr
-                    | appTerms ->
-                      formatAttachmentApplication
-                        applicationFinalWrapping
-                        None
-                         (combinedAppItems appTerms)
-                )
-              | Pexp_construct (li, Some eo) when not (is_simple_construct (view_expr x)) -> (* Not efficient FIXME*)
-                  (match view_expr x with
-                    | `cons ls -> (* LIST EXPRESSION *)
-                        begin
-                          match List.rev (List.map self#simple_expression ls) with
-                          | last :: lst_rev ->
-                            let lst = List.rev lst_rev in
-                            makeES6List lst last
-                          | [] ->
-                            assert false
-                        end
-                    (* TODO: Explicit arity *)
-                    | `normal ->
-                        let arityIsClear = isArityClear arityAttrs in
-                        self#constructor_expression ~arityIsClear stdAttrs (self#longident_loc li) eo
-                    | _ -> assert false)
-              | Pexp_setfield (e1, li, e2) ->
-                label ~space:true
-                  ( makeList ~postSpace:true [
-                    label
-                      (makeList ~interleaveComments:false [self#simple_enough_to_be_lhs_dot_send e1; atom "."])
-                      (self#longident_loc li);
-                    (atom "=")
-                  ])
-                  (self#expression e2)
-              | Pexp_override l -> (* FIXME *)
-                let string_x_expression (s, e) =
-                  label ~space:true (atom (s.txt ^ ":")) (self#expression e)
-                in
-                makeList
+                      (makeList ~postSpace:true [soFar; atom "else if"])
+                      (self#simplifyUnparseExpr e1)
+                  in
+                  let nextSoFar =
+                    label ~space:true soFarWithElseIfAppended (makeLetSequence (self#letList e2)) in
+                  sequence nextSoFar tl
+            ) in
+            let init =
+              label
+                ~space:true
+                (SourceMap (e1.pexp_loc, (label ~space:true (atom "if") (self#simplifyUnparseExpr e1))))
+                (makeLetSequence (self#letList e2)) in
+            Some (sequence init blocks) 
+          | Pexp_while (e1, e2) ->
+            let lbl =
+              label
+                ~space:true
+                (label ~space:true (atom "while") (self#simplifyUnparseExpr e1))
+                (makeLetSequence (self#letList e2)) in
+            Some lbl
+          | Pexp_for (s, e1, e2, df, e3) ->
+            (*
+             *  for longIdentifier in
+             *      (longInit expr) to
+             *      (longEnd expr) {
+             *    print_int longIdentifier;
+             *  };
+             *)
+            let identifierIn = (makeList ~postSpace:true [self#pattern s; atom "in";]) in
+            let dockedToFor =
+                (makeList
+                  ~break:IfNeed
                   ~postSpace:true
-                  ~wrap:("{<", ">}")
-                  ~sep:","
-                  (List.map string_x_expression l)
-
-              | Pexp_ifthenelse (e1, e2, eo) ->
-                let (blocks, finalExpression) = sequentialIfBlocks eo in
-                let rec singleExpression exp =
-                  match exp.pexp_desc with
-                  | Pexp_ident _ -> true
-                  | Pexp_constant _ -> true
-                  | Pexp_construct (_, arg) ->
-                    (match arg with
-                    | None -> true
-                    | Some x -> singleExpression x)
-                  | _ -> false
-                in
-                let singleLineIf =
-                  (singleExpression e1) &&
-                  (singleExpression e2) &&
-                  (match eo with
-                   | Some expr -> singleExpression expr
-                   | None -> true
-                  )
-                in
-                let makeLetSequence =
-                  if singleLineIf then
-                    makeLetSequenceSingleLine
-                  else
-                    makeLetSequence
-                in
-                let rec sequence soFar remaining = (
-                  match (remaining, finalExpression) with
-                    | ([], None) -> soFar
-                    | ([], Some e) ->
-                      let soFarWithElseAppended = makeList ~postSpace:true [soFar; atom "else"] in
-                      label ~space:true soFarWithElseAppended (makeLetSequence (self#letList e))
-                    | (hd::tl, _) ->
-                      let (e1, e2) = hd in
-                      let soFarWithElseIfAppended =
-                        label
-                          ~space:true
-                          (makeList ~postSpace:true [soFar; atom "else if"])
-                          (self#simple_expression e1)
-                      in
-                      let nextSoFar =
-                        label ~space:true soFarWithElseIfAppended (makeLetSequence (self#letList e2)) in
-                      sequence nextSoFar tl
-                ) in
-                let init =
-                  label
-                    ~space:true
-                    (SourceMap (e1.pexp_loc, (label ~space:true (atom "if") (self#simple_expression e1))))
-                    (makeLetSequence (self#letList e2)) in
-                sequence init blocks
-
-              | Pexp_while (e1, e2) ->
-                label
-                  ~space:true
-                  (label ~space:true (atom "while") (self#simple_expression e1))
-                  (makeLetSequence (self#letList e2))
-              | Pexp_for (s, e1, e2, df, e3) ->
-                (*
-                 *  for longIdentifier in
-                 *      (longInit expr) to
-                 *      (longEnd expr) {
-                 *    print_int longIdentifier;
-                 *  };
-                 *)
-                let identifierIn = (makeList ~postSpace:true [self#pattern s; atom "in";]) in
-                let dockedToFor =
-                    (makeList
-                      ~break:IfNeed
-                      ~postSpace:true
-                      ~inline:(true, true)
-                      [
-                        identifierIn;
-                        makeList ~postSpace:true [self#simple_expression e1; self#direction_flag df];
-                        (self#simple_expression e2);
-                      ]
-                    )
-                in
-                let upToBody = makeList ~inline:(true, true) ~postSpace:true [atom "for"; dockedToFor] in
-                label ~space:true upToBody (makeLetSequence (self#letList e3))
-              | Pexp_new (li) ->
-                label ~space:true (atom "new") (self#longident_class_or_type_loc li);
-              | Pexp_setinstvar (s, e) ->
-                label
-                  ~space:true
-                  (makeList ~postSpace:true [(atom s.txt); (atom "=")])
-                  (self#expression e)
-              | Pexp_assert e ->
-                  label ~space:true
-                    (atom "assert")
-                    (self#reset#simple_expression e);
-              | Pexp_lazy (e) ->
-                  label ~space:true (atom "lazy") (self#simple_expression e)
-              | Pexp_poly _ ->
-                failwith (
-                  "This version of the pretty printer assumes it is impossible to " ^
-                  "construct a Pexp_poly outside of a method definition - yet it sees one."
+                  ~inline:(true, true)
+                  [
+                    identifierIn;
+                    makeList ~postSpace:true [self#simplifyUnparseExpr e1; self#direction_flag df];
+                    (self#simplifyUnparseExpr e2);
+                  ]
                 )
-              | Pexp_variant (l, Some eo) ->
-                  if arityAttrs != [] then
-                    raise (NotPossible "Should never see embedded attributes on poly variant")
-                  else
-                    self#constructor_expression ~polyVariant:true ~arityIsClear:true stdAttrs (atom ("`" ^ l)) eo
-              | _ -> self#simple_expression x
             in
-            SourceMap (x.pexp_loc, itm)
-
+            let upToBody = makeList ~inline:(true, true) ~postSpace:true [atom "for"; dockedToFor] in
+            Some (label ~space:true upToBody (makeLetSequence (self#letList e3)))
+          | Pexp_new (li) ->
+            Some (label ~space:true (atom "new") (self#longident_class_or_type_loc li))
+          | Pexp_assert e ->
+            Some (
+              label ~space:true
+                (atom "assert")
+                (self#reset#simplifyUnparseExpr e);
+            )
+          | Pexp_lazy (e) ->
+              Some (label ~space:true (atom "lazy") (self#simplifyUnparseExpr e))
+          | Pexp_poly _ ->
+            failwith (
+              "This version of the pretty printer assumes it is impossible to " ^
+              "construct a Pexp_poly outside of a method definition - yet it sees one."
+            )
+          | _ -> None
+        in
+        match itm with
+          | None -> None
+          | Some i -> Some (SourceMap (x.pexp_loc, i))
 
   method potentiallyConstrainedExpr x =
     match x.pexp_desc with
       | Pexp_constraint (e, ct) ->
-          formatTypeConstraint (self#expression e) (self#core_type ct)
-      | _ -> self#expression x
+          formatTypeConstraint (self#unparseExpr e) (self#core_type ct)
+      | _ -> self#unparseExpr x
 
-  (* Used in consecutiveInfixApplicationItems. For the most part, infix
-     operations have lower priority over everything else - infix operators
-     break apart other expressions (including function application) whether or
-     not they are simple. However, there are some special cases that *must* be
-     made simple when separated by infix operators.
-
-     This approach of breaking up levels of "simple"ness, is probably better
-     than the prior approach of tracking [when ifthenelse] etc.
-  *)
-
-  method simple_enough_to_be_separated_by_infix x =
-    let (arityAttrs, docAtrs, stdAttrs) = partitionAttributes x.pexp_attributes in
-    (* Don't want to go down the simple path when the only attributes are to
-       instruct about tuple constructors! *)
-    if stdAttrs <> [] then self#simple_expression x
-    else match x.pexp_desc with
-      (* Perhaps this simplifying of "match" is too aggressive *)
-      | Pexp_apply _ -> self#expression x
-      | Pexp_construct _ -> self#expression x
-      | _ -> self#expression2 x (* Which is pretty much what I consider to be *simple* *)
-
-  (* used in [Pexp_apply] *)
-  (* Not sure why this needs to exist - why not just use simple_expression ?*)
-  method expression2 x =
-    (* I don't think this pexp_attributes logic is correct *)
-    if x.pexp_attributes <> [] then self#simple_expression x
-    else match x.pexp_desc with
-      | Pexp_field (e, li) ->
-          makeList ~interleaveComments:false [self#simple_enough_to_be_lhs_dot_send e; atom "."; self#longident_loc li]
-      | Pexp_send (e, s) ->
-          makeList ~interleaveComments:false [self#simple_enough_to_be_lhs_dot_send e; atom "#";  atom s]
-      | _ -> self#simple_expression x
 
   (*
-   * Prefix application needs to apply to an entire sequence of dots/sends.
+   * Because the rule BANG simple_expr was given %prec below_DOT_AND_SHARP,
+   * !x.y.z will parse as !(x.y.z) and not (!x).y.z.
    *
    *     !x.y.z == !((x.y).z)
    *     !x#y#z == !((x#y)#z)
    *
+   * So the intuition is: In general, any simple expression can exist to the
+   * left of a `.`, except `BANG simple_expr`, which has special precedence,
+   * and must be guarded in this one case.
+   *
+   * TODO: Instead of special casing this here, we should continue to extend
+   * unparseExpr to also unparse simple expressions, (by encoding the
+   * rules precedence below_DOT_AND_SHARP).
+   *
+   * TODO:
    *  Some would even have the prefix application be parsed with lower
    *  precedence function *application*. In the case of !, where ! means not,
    *  it makes a lot of sense because (!identifier)(arg) would be meaningless.
    *
    *  !callTheFunction(1, 2, 3)(andEvenCurriedArgs)
    *
+   * Only problem is that it could then not appear anywhere simple expressions
+   * would appear.
+   *
+   * We could make a special case for ! followed by one simple expression, and
+   * consider the result simple.
+   *
+   * Alternatively, we can figure out a way to not require simple expressions
+   * in the most common locations such as if/while tests. This is really hard
+   * (impossible w/ grammars Menhir supports?)
+   *
+   * if ! myFunc argOne argTwo {
+   *
+   * } else {
+   *
+   * };
+   *
    *)
-  method simple_enough_to_be_lhs_dot_send x =
-    match x.pexp_desc with
-      | Pexp_apply (e, l) -> (
-        match self#prefixApplication (e, l) with
-          | Some item -> formatPrecedence item
-          | None -> self#simple_expression x
-      )
-      | _ -> self#simple_expression x
+  method simple_enough_to_be_lhs_dot_send x = match x.pexp_desc with
+    | (Pexp_apply (eFun, _)) -> (
+      match printedStringAndFixityExpr eFun with
+        | AlmostSimplePrefix _ ->
+          SourceMap (x.pexp_loc, formatPrecedence (self#simplifyUnparseExpr x))
+        | UnaryPlusPrefix _
+        | UnaryMinusPrefix _
+        | Infix _
+        | Normal -> self#simplifyUnparseExpr x
+    )
+    | _ -> self#simplifyUnparseExpr x
 
-  (* The parsing precedence for dangling attributes is the same as function
-     application - or any other syntactic construct that has space separated
-     list of tokens. So if the following is parsed
-
-       x y [@attr]
-
-     Then we can omit parens around (x y).
-   *)
-  method expr_can_render_own_attributes x =
-    match x.pexp_desc with
-      | Pexp_construct _ when not (is_simple_construct (view_expr x)) -> true
-      | Pexp_variant _
-      (* Function application handles its own printing of attributes. *)
-      | Pexp_apply _ -> true
-      | _ -> false
-
-  method simple_expression x =
+  method simplest_expression x =
     let (arityAttrs, docAtrs, stdAttrs) = partitionAttributes x.pexp_attributes in
-    (* If the expr can render its own attributes, it will know better if
-       guarding the expression in parens is needed. *)
-    if stdAttrs <> [] && (not (self#expr_can_render_own_attributes x)) then
-      let withoutVisibleAttrs = {x with pexp_attributes=arityAttrs} in
-      formatSimpleAttributed
-        (self#simple_expression withoutVisibleAttrs)
-        (self#attributes stdAttrs)
+    if stdAttrs <> [] then
+      None
     else
       let item = match x.pexp_desc with
+        (* The only reason Pexp_fun must also be wrapped in parens is that its =>
+           token will be confused with the match token. *)
+        | Pexp_fun _ when pipe || semi -> Some (self#reset#simplifyUnparseExpr x)
+        | Pexp_function l when pipe || semi -> Some (formatPrecedence ~loc:x.pexp_loc (self#reset#patternFunction x.pexp_loc l))
+        | Pexp_apply (e, l) -> (
+          match self#simple_get_application x with
+          (* If it's the simple form of application. *)
+          | Some simpleGet -> Some simpleGet
+          | None -> None
+        )
         | Pexp_object cs ->
-          makeList
-            ~sep:";"
-            ~wrap:("{", "}")
-            ~break:IfNeed
-            ~postSpace:true
-            ~inline:(true, false)
-            (self#class_self_pattern_and_structure cs)
+          let obj =
+            makeList
+              ~sep:";"
+              ~wrap:("{", "}")
+              ~break:IfNeed
+              ~postSpace:true
+              ~inline:(true, false)
+              (self#class_self_pattern_and_structure cs) in
+          Some obj
+        | Pexp_override l -> (* FIXME *)
+          let string_x_expression (s, e) =
+            label ~space:true (atom (s.txt ^ ":")) (self#unparseExpr e)
+          in
+          Some (
+            makeList
+              ~postSpace:true
+              ~wrap:("{<", ">}")
+              ~sep:","
+              (List.map string_x_expression l)
+          )
         | Pexp_construct _  when is_simple_construct (view_expr x) ->
-            (match view_expr x with
+            Some (match view_expr x with
               | `nil -> atom "[]"
               | `tuple -> atom "()"
               | `list xs -> (* LIST EXPRESSION *)
-                makeList ~break:IfNeed ~wrap:("[", "]") ~sep:"," ~postSpace:true (List.map self#expression xs)
+                makeList ~break:IfNeed ~wrap:("[", "]") ~sep:"," ~postSpace:true (List.map self#unparseExpr xs)
               | `cons xs ->
                 let seq, ext = match List.rev xs with
                   | ext :: seq_rev -> (List.rev seq_rev, ext)
                   | [] -> assert false in
-                 makeES6List (List.map self#expression seq) (self#expression ext)
+                 makeES6List (List.map self#unparseExpr seq) (self#unparseExpr ext)
               | `simple x -> self#longident x
               | _ -> assert false)
         | Pexp_ident li ->
             (* Lone identifiers shouldn't break when to the right of a label *)
-            ensureSingleTokenSticksToLabel (self#longident_loc li)
-        (* (match view_fixity_of_exp x with *)
-        (* |`Normal -> self#longident_loc f li *)
-        (* | `Prefix _ | `Infix _ -> pp f "( %a )" self#longident_loc li) *)
+            Some (ensureSingleTokenSticksToLabel (self#longident_loc li))
         | Pexp_constant c ->
             (* Constants shouldn't break when to the right of a label *)
-            ensureSingleTokenSticksToLabel (self#constant c)
-        | Pexp_apply (e, l) -> (
-            match self#expressionToFormattedApplicationItems x with
-              | ([], [], _, _) ->
-                  raise (
-                    NotPossible (
-                      "no application items extracted " ^ (exprDescrString x)
-                    )
-                  )
-              | ([], sugarExpr::[], _, _) ->
-                  (* This can happen in the case of [sugar_expr] [arrayWithTwo.(1) <- 300] *)
-                  sugarExpr
-              | (regularItems, sugaredItems, delimiter, _) -> makeList ~break:IfNeed ~postSpace:true ~wrap:("(", ")") [
-                formatAttachmentApplication
-                  applicationFinalWrapping
-                  None
-                  (combinedAppItems (regularItems, sugaredItems, delimiter, None))
-              ]
-          )
+            Some (ensureSingleTokenSticksToLabel (self#constant c))
         | Pexp_pack me ->
+          Some (
             makeList
               ~break:IfNeed
               ~postSpace:true
               ~wrap:("(", ")")
               ~inline:(true, true)
               [atom "module"; self#module_expr me;]
-
+          )
         | Pexp_tuple l ->
             (* TODO: These may be simple, non-simple, or type constrained
                non-simple expressions *)
+          Some (
             makeList
               ~wrap:("(", ")")
               ~sep:","
               ~break:IfNeed
               ~postSpace:true
               (List.map self#potentiallyConstrainedExpr l)
+          )
         | Pexp_constraint (e, ct) ->
+          Some (
             makeList
               ~break:IfNeed
               ~wrap:("(", ")")
-              [formatTypeConstraint (self#expression e) (self#core_type ct)]
+              [formatTypeConstraint (self#unparseExpr e) (self#core_type ct)]
+          )
         | Pexp_coerce (e, cto1, ct) ->
             let optFormattedType = match cto1 with
               | None -> None
               | Some typ -> Some (self#core_type typ) in
-            makeList
-              ~break:IfNeed
-              ~wrap:("(", ")")
-              [formatCoerce (self#expression e) optFormattedType (self#core_type ct)]
+            Some (
+              makeList
+                ~break:IfNeed
+                ~wrap:("(", ")")
+                [formatCoerce (self#unparseExpr e) optFormattedType (self#core_type ct)]
+            )
         | Pexp_variant (l, None) ->
-            ensureSingleTokenSticksToLabel (atom ("`" ^ l))
+            Some (ensureSingleTokenSticksToLabel (atom ("`" ^ l)))
         | Pexp_record (l, eo) ->
             let makeRow (li, e) appendComma shouldPun =
               let comma = atom "," in
@@ -4452,7 +4473,7 @@ class printer  ()= object(self:'self)
                      let (argsList, return) = self#curriedPatternsAndReturnVal e in (
                        match (argsList, return.pexp_desc) with
                          | ([], _) ->
-                           let appTerms = combinedAppItems (self#expressionToFormattedApplicationItems e) in
+                           let appTerms = self#unparseExprApplicationItems e in
                            let upToColon = makeList [self#longident_loc li; atom ":"] in
                            let labelExpr =
                              formatAttachmentApplication
@@ -4465,7 +4486,7 @@ class printer  ()= object(self:'self)
                              labelExpr
                          | (firstArg::tl, _) ->
                            let upToColon = makeList [self#longident_loc li; atom ":"] in
-                           let returnedAppTerms = combinedAppItems (self#expressionToFormattedApplicationItems return) in
+                           let returnedAppTerms = self#unparseExprApplicationItems return in
                            let labelExpr =
                                (self#wrapCurriedFunctionBinding ~attachTo:upToColon "fun" firstArg tl returnedAppTerms) in
                            if appendComma then makeList [labelExpr; comma;] else labelExpr
@@ -4489,34 +4510,28 @@ class printer  ()= object(self:'self)
                 )
               | Some withRecord ->
                 let firstRow = (
-                  let nodes =
-                    match self#expressionToFormattedApplicationItems withRecord with
-                    | ([], [], _, _) -> raise (NotPossible ("no application items extracted " ^ (exprDescrString x)))
-                    | ([], sugarExpr::[], _, _) -> [atom "..."; sugarExpr]
-                    | appTerms ->
-                       [
-                         formatAttachmentApplication
-                            applicationFinalWrapping
-                            (Some (false, (atom "...")))
-                           (combinedAppItems appTerms);
-                       ]
-                  in
-                  makeList (if l = [] then nodes else nodes @ [atom ","])
+                  (* Unclear why "sugar_expr" was special cased here. *)
+                  let appTerms = self#unparseExprApplicationItems withRecord in
+                  let firstRowContents =
+                    formatAttachmentApplication applicationFinalWrapping (Some (false, (atom "..."))) appTerms in
+                  if l == [] then firstRowContents else makeList [firstRowContents; atom ","]
                 ) in
                 SourceMap (withRecord.pexp_loc, firstRow)::(getRows l)
             in
-            makeList ~wrap:("{", "}") ~break:IfNeed ~preSpace:true allRows
+            Some (makeList ~wrap:("{", "}") ~break:IfNeed ~preSpace:true allRows)
         | Pexp_array (l) ->
-          makeList
-            ~break:IfNeed
-            ~sep:","
-            ~postSpace:true
-            ~wrap:("[|", "|]")
-            (List.map self#expression l)
+          Some (
+            makeList
+              ~break:IfNeed
+              ~sep:","
+              ~postSpace:true
+              ~wrap:("[|", "|]")
+              (List.map self#unparseExpr l)
+          )
         | Pexp_let (rf, l, e) ->
-            makeLetSequence (self#letList x)
+            Some (makeLetSequence (self#letList x))
         | Pexp_letmodule (s, me, e) ->
-            makeLetSequence (self#letList x)
+            Some (makeLetSequence (self#letList x))
         | Pexp_open (ovf, lid, e) ->
             let letItems = (self#letList x) in
             (match letItems with
@@ -4531,17 +4546,21 @@ class printer  ()= object(self:'self)
                  *   Fmt.(strf "-pkgs %a" (list sep::(unit ",") string))
                  * }
                  *)
-                | [item] -> item
-                | _ -> makeLetSequence letItems
+                | [item] -> Some item
+                | _ -> Some (makeLetSequence letItems)
              )
         | Pexp_sequence _ ->
-            makeLetSequence (self#letList x)
-        | Pexp_field (e, li) -> makeList [self#simple_enough_to_be_lhs_dot_send e; atom "."; self#longident_loc li]
-        | Pexp_send (e, s) ->  makeList [self#simple_enough_to_be_lhs_dot_send e; atom "#";  atom s]
-        | Pexp_extension e -> self#extension e
-        | _ ->  makeList ~break:IfNeed ~wrap:("(", ")") [self#expression x]
+            Some (makeLetSequence (self#letList x))
+        | Pexp_field (e, li) ->
+          Some (label (makeList [self#simple_enough_to_be_lhs_dot_send e; atom "."]) (self#longident_loc li))
+        | Pexp_send (e, s) ->
+          Some (label (makeList [self#simple_enough_to_be_lhs_dot_send e; atom "#";]) (atom s))
+        | Pexp_extension e -> Some (self#extension e)
+        | _ -> None
       in
-      SourceMap (x.pexp_loc, item)
+      match item with
+        | None -> None
+        | Some i -> Some (SourceMap (x.pexp_loc, i))
 
   method direction_flag = function
     | Upto -> atom "to"
@@ -4569,7 +4588,7 @@ class printer  ()= object(self:'self)
       | PPat (x, Some e) ->
         makeList ~wrap ~break ~pad ~postSpace [
           label ~space:true (atom "?") (self#pattern x);
-          label ~space:true (atom "when") (self#expression e)
+          label ~space:true (atom "when") (self#unparseExpr e)
         ]
 
   method extension (s, e) = (self#payload "%" s e)
@@ -4850,9 +4869,9 @@ class printer  ()= object(self:'self)
             label
               ~space:true
               (makeList ~postSpace:true [openingWithTypeConstraint; atom "="])
-              (self#expression ex)
+              (self#unparseExpr ex)
           | _ ->
-            label ~space:true (makeList ~postSpace:true [opening; atom "="]) (self#expression e)
+            label ~space:true (makeList ~postSpace:true [opening; atom "="]) (self#unparseExpr e)
         in
         valExprAndConstraint
       | Pcf_val (s, mf, Cfk_virtual ct) ->
@@ -4923,7 +4942,7 @@ class printer  ()= object(self:'self)
               nonVarifiedExprType
           | Pexp_poly (e, Some ct) ->
             let typeLayout = SourceMap (ct.ptyp_loc, (self#core_type ct)) in
-            let appTerms = combinedAppItems (self#expressionToFormattedApplicationItems e) in
+            let appTerms = self#unparseExprApplicationItems e in
             let fauxBindingPattern = match pf with
               | Private -> (makeList ~postSpace:true ~break:IfNeed [atom "private"; atom s.txt])
               | Public -> atom s.txt
@@ -4952,7 +4971,7 @@ class printer  ()= object(self:'self)
         label
           ~space:true
           (atom "initializer =>")
-          (self#expression e)
+          (self#unparseExpr e)
       | Pcf_attribute a -> self#floating_attribute a
       | Pcf_extension e ->
         (* And don't forget, we still need to print post_item_attributes even for
@@ -5118,7 +5137,7 @@ class printer  ()= object(self:'self)
                 firstToken
                 pattern
                 patternAux
-                ([(self#class_constructor_type x.pci_expr)], None, None)
+                ([(self#class_constructor_type x.pci_expr)], None)
               in
               let itm = self#attach_std_item_attrs x.pci_attributes withColon in
               SourceMap (pci_loc, itm)
@@ -5288,7 +5307,7 @@ class printer  ()= object(self:'self)
 
   method simple_module_expr x = match x.pmod_desc with
     | Pmod_unpack e ->
-        formatPrecedence (makeList ~postSpace:true [atom "val"; self#expression e])
+        formatPrecedence (makeList ~postSpace:true [atom "val"; self#unparseExpr e])
     | Pmod_ident (li) ->
         ensureSingleTokenSticksToLabel (self#longident_loc li)
     | Pmod_constraint (unconstrainedRet, mt) ->
@@ -5329,9 +5348,9 @@ class printer  ()= object(self:'self)
       | Pmod_apply (me1, me2) ->
           let appTerms = self#moduleExpressionToFormattedApplicationItems x in
           (match appTerms with
-            | ([], _, _) -> raise (NotPossible "no functor application terms")
-            | ([hd], _, _) -> raise (NotPossible "one functor application terms")
-            | (hd::tl, d, _) -> formatIndentedApplication d hd tl
+            | ([], _) -> raise (NotPossible "no functor application terms")
+            | ([hd], _) -> raise (NotPossible "one functor application terms")
+            | (hd::tl, _) -> formatIndentedApplication hd tl
           )
       | Pmod_extension _ -> assert false
       | Pmod_unpack _
@@ -5436,7 +5455,7 @@ class printer  ()= object(self:'self)
   method structure_item term =
     let item = (
       match term.pstr_desc with
-        | Pstr_eval (e, _attrs) -> self#expression e
+        | Pstr_eval (e, _attrs) -> self#unparseExpr e
         | Pstr_type [] -> assert false
         | Pstr_type l  -> (self#type_def_list l)
         | Pstr_value (rf, l) -> (self#bindings (rf, l))
@@ -5576,7 +5595,7 @@ class printer  ()= object(self:'self)
           | None -> makeList ~interleaveComments:false ~postSpace:true [p; atom "=>"]
           | Some g ->
             (* when x should break as a whole - extra list added around it to make it break as one *)
-            let withWhen = label ~space:true p (makeList ~break:Never ~inline:(true, true) ~postSpace:true [label ~space:true (atom "when") (self#expression g)]) in
+            let withWhen = label ~space:true p (makeList ~break:Never ~inline:(true, true) ~postSpace:true [label ~space:true (atom "when") (self#unparseExpr g)]) in
             makeList ~interleaveComments:false ~inline:(true, true) ~postSpace:true [withWhen; atom "=>"]
       in
 
@@ -5600,7 +5619,7 @@ class printer  ()= object(self:'self)
             (* In this case, we don't need any additional indentation, because there aren't
                wrapping {} which would cause zero indentation to look strange. *)
             | lst -> makeUngaurdedLetSequence lst
-        else self#under_pipe#expression pc_rhs in
+        else self#under_pipe#unparseExpr pc_rhs in
       let row =
         let withoutBars = appendLabelToLast orsWithWhereAndArrowOnLast rhs in
         makeList ~break:Always_rec ~inline:(true, true) (List.map bar withoutBars)
@@ -5622,13 +5641,13 @@ class printer  ()= object(self:'self)
   method label_x_expression_param (l, e) =
     let param =
       match l with
-        | ""  -> self#expression2 e; (* level 2*)
+        | ""  -> self#simplifyUnparseExpr e; (* level 2*)
         | lbl ->
             if lbl.[0] = '?' then
               let str = String.sub lbl 1 (String.length lbl-1) in
-              formatLabeledArgument (atom str) "?" (self#simple_expression e)
+              formatLabeledArgument (atom str) "?" (self#simplifyUnparseExpr e)
             else
-              formatLabeledArgument (atom lbl) "" (self#simple_expression e)
+              formatLabeledArgument (atom lbl) "" (self#simplifyUnparseExpr e)
     in
     SourceMap (e.pexp_loc, param)
 
@@ -5644,9 +5663,6 @@ let toplevel_phrase f x =
     | Ptop_def (s) ->
       easyFormatToFormatter f (layoutToEasyFormatNoComments (easy#structure s))
     | Ptop_dir (s, da) -> print_string "(* top directives not supported *)"
-
-let expression f x =
-  easyFormatToFormatter f (layoutToEasyFormatNoComments (easy#expression x))
 
 let case_list f x =
   let l = easy#case_list x in
