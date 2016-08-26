@@ -575,24 +575,6 @@ and comment = parse
                   store_lexeme lexbuf;
                   comment lexbuf;
        }
-  | "\""
-      {
-        string_start_loc := Location.curr lexbuf;
-        store_string_char '"';
-        is_in_string := true;
-        begin try string lexbuf
-        with Error (Unterminated_string, str_start) ->
-          match !comment_start_loc with
-          | [] -> assert false
-          | loc :: _ ->
-            let start = List.hd (List.rev !comment_start_loc) in
-            comment_start_loc := [];
-            raise (Error (Unterminated_string_in_comment (start, str_start),
-                          loc))
-        end;
-        is_in_string := false;
-        store_string_char '"';
-        comment lexbuf }
   | "{" lowercase* "|"
       {
         let delim = Lexing.lexeme lexbuf in
@@ -615,22 +597,6 @@ and comment = parse
         store_string delim;
         store_string_char '}';
         comment lexbuf }
-
-  | "''"
-      { store_lexeme lexbuf; comment lexbuf }
-  | "'" newline "'"
-      { update_loc lexbuf None 1 false 1;
-        store_lexeme lexbuf;
-        comment lexbuf
-      }
-  | "'" [^ '\\' '\'' '\010' '\013' ] "'"
-      { store_lexeme lexbuf; comment lexbuf }
-  | "'\\" ['\\' '"' '\'' 'n' 't' 'b' 'r' ' '] "'"
-      { store_lexeme lexbuf; comment lexbuf }
-  | "'\\" ['0'-'9'] ['0'-'9'] ['0'-'9'] "'"
-      { store_lexeme lexbuf; comment lexbuf }
-  | "'\\" 'x' ['0'-'9' 'a'-'f' 'A'-'F'] ['0'-'9' 'a'-'f' 'A'-'F'] "'"
-      { store_lexeme lexbuf; comment lexbuf }
   | eof
       { match !comment_start_loc with
         | [] -> assert false

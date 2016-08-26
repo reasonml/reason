@@ -36,6 +36,7 @@
 /**
  **
  */
+/* let a = [%bs.obj {hi: a" [@bs]}]; */
 
 let module JustString = {
   include Map.Make Int32; /* Comment eol include */
