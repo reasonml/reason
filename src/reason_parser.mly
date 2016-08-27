@@ -782,6 +782,21 @@ let rec string_of_longident = function
 
 let built_in_explicit_arity_constructors = ["Some"; "Assert_failure"; "Match_failure"]
 
+(* Replace dot with bangdot
+   e.g.: "Int32.rem" ~> "Int32!.rem" *)
+let prepare_name_for_call name =
+  if String.contains name '.' then
+    let rec replace str n = match str with
+        | "" -> ""
+        | str ->
+          let ch = (String.get str 0) in
+          let new_str = if Char.compare ch '.' == 0 then "!." else String.make 1 ch in
+            new_str ^ (replace (String.sub str 1 n) (n - 1)) in
+    let _ = replace name (String.length name - 1) in
+      name
+  else
+    name
+
 %}
 
 /* Tokens */
@@ -830,6 +845,7 @@ let built_in_explicit_arity_constructors = ["Some"; "Assert_failure"; "Match_fai
 %token IF
 %token IN
 %token INCLUDE
+%token <string> VARIABLEINFIXOP
 %token <string> INFIXOP0
 %token <string> INFIXOP1
 %token <string> INFIXOP2
@@ -932,6 +948,7 @@ conflicts.
 
 */
 /* Question: Where is the SEMI explicit precedence? */
+%left VARIABLEINFIXOP
 %nonassoc below_SEMI
 %nonassoc below_EQUALGREATER
 %right    EQUALGREATER                  /* core_type2 (t => t => t) */
@@ -2704,6 +2721,13 @@ _simple_expr:
       {
         let loc = mklocation $symbolstartpos $endpos in
         bigarray_get ~loc $1 $4
+      }
+  | simple_expr VARIABLEINFIXOP simple_expr
+      {
+        let n = prepare_name_for_call $2 in
+        let loc = mklocation $startpos($1) $endpos($3) in
+        let name = mkexp ~ghost:true ~loc (Pexp_ident(ghloc ~loc (Longident.parse n))) in
+        mkexp (Pexp_apply (name, ["", $1; "", $3]))
       }
 
   /* This might not be needed anymore
