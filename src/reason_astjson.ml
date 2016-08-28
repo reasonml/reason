@@ -939,5 +939,5 @@ let print_ast (ast:Parsetree.structure) comments =
 let parse_ast (filename:string) =
 match (full_of_yojson (Yojson.Safe.from_file filename)) with
 | Result.Ok data -> (data, false, false)
-| Result.Error wat -> failwith "FAIL"
+| Result.Error message -> failwith ("Provided JSON doesn't match reason AST format: " ^ message)
   ;;
