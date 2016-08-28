@@ -175,6 +175,9 @@ let () =
         | Some "ast" -> fun (ast, comments) -> (
           Printast.interface Format.std_formatter ast
         )
+        | Some "json" -> fun (ast, comments) -> (
+          Reason_astjson.print_intf ast
+          )
         (* If you don't wrap the function in parens, it's a totally different
          * meaning #thanksOCaml *)
         | Some "none" -> (fun (ast, comments) -> ())
@@ -224,6 +227,9 @@ let () =
         | Some "ast" -> fun (ast, comments) -> (
           Printast.implementation Format.std_formatter ast
         )
+        | Some "json" -> fun (ast, comments) -> (
+          Reason_astjson.print_ast ast
+          )
         (* If you don't wrap the function in parens, it's a totally different
          * meaning #thanksOCaml *)
         | Some "none" -> (fun (ast, comments) -> ())
