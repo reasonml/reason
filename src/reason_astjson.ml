@@ -936,8 +936,11 @@ type full = structure * commentWithCategory [@@deriving yojson]
 let print_ast (ast:Parsetree.structure) comments =
   print_endline (Yojson.Safe.to_string (full_to_yojson (ast, comments)));;
 
-let parse_ast (filename:string) =
-match (full_of_yojson (Yojson.Safe.from_file filename)) with
-| Result.Ok data -> (data, false, false)
-| Result.Error message -> failwith ("Provided JSON doesn't match reason AST format: " ^ message)
-  ;;
+let parse_ast use_stdin (filename:string) =
+  let json = if use_stdin then
+  Yojson.Safe.from_channel Pervasives.stdin
+  else (Yojson.Safe.from_file filename) in
+  match (full_of_yojson json) with
+  | Result.Ok data -> (data, false, false)
+  | Result.Error message -> failwith ("Provided JSON doesn't match reason AST format: " ^ message)
+    ;;
