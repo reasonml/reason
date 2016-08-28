@@ -11,7 +11,7 @@ let default_print_width = 100
 let defaultImplementationParserFor use_stdin filename =
   if Filename.check_suffix filename ".re" then (Reason_toolchain.JS.canonical_implementation_with_comments (Reason_toolchain.setup_lexbuf use_stdin filename), false, false)
   else if Filename.check_suffix filename ".ml" then (Reason_toolchain.ML.canonical_implementation_with_comments (Reason_toolchain.setup_lexbuf use_stdin filename), true, false)
-  else if Filename.check_suffix filename ".json" then Reason_astjson.parse_ast filename
+  else if Filename.check_suffix filename ".json" then Reason_astjson.parse_ast use_stdin filename
   else (
     raise (Invalid_config ("Cannot determine default implementation parser for filename '" ^ filename ^ "'."))
   )
@@ -193,7 +193,7 @@ let () =
         | Some "binary" -> ocamlBinaryParser use_stdin filename false
         | Some "ml" -> (Reason_toolchain.ML.canonical_implementation_with_comments (Reason_toolchain.setup_lexbuf use_stdin filename), true, false)
         | Some "re" -> (Reason_toolchain.JS.canonical_implementation_with_comments (Reason_toolchain.setup_lexbuf use_stdin filename), false, false)
-        | Some "json" -> Reason_astjson.parse_ast filename
+        | Some "json" -> Reason_astjson.parse_ast use_stdin filename
         | Some s -> (
           raise (Invalid_config ("Invalid -parse setting for interface '" ^ s ^ "'."))
         )
