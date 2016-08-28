@@ -87,10 +87,10 @@ let () =
     "-use-stdin", Arg.Bool (fun x -> use_stdin := x), "<use_stdin>, parse AST from <use_stdin> (either true, false). You still must provide a file name even if using stdin for errors to be reported";
     "-recoverable", Arg.Bool (fun x -> recoverable := x), "Enable recoverable parser";
     "-assume-explicit-arity", Arg.Unit (fun () -> assumeExplicitArity := true), "If a constructor's argument is a tuple, always interpret it as multiple arguments";
-    "-parse", Arg.String (fun x -> prse := Some x), "<parse>, parse AST as <parse> (either 'ml', 're', 'binary_reason(for interchange between Reason versions)', 'binary (from the ocaml compiler)')";
+    "-parse", Arg.String (fun x -> prse := Some x), "<parse>, parse AST as <parse> (either 'ml', 're', 'binary_reason(for interchange between Reason versions)', 'binary (from the ocaml compiler)', 'json')";
     (* Use a print option of "none" to simply perform a parsing validation -
      * useful for IDE error messages etc.*)
-    "-print", Arg.String (fun x -> prnt := Some x), "<print>, print AST in <print> (either 'ml', 're', 'binary(default - for compiler input)', 'binary_reason(for interchange between Reason versions)', 'ast (print human readable directly)', 'none')";
+    "-print", Arg.String (fun x -> prnt := Some x), "<print>, print AST in <print> (either 'ml', 're', 'binary(default - for compiler input)', 'binary_reason(for interchange between Reason versions)', 'ast (print human readable directly)', 'json', 'none')";
     "-print-width", Arg.Int (fun x -> print_width := Some x), "<print-width>, wrapping width for printing the AST";
     "-heuristics-file", Arg.String (fun x -> heuristics_file := Some x),
     "<path>, load path as a heuristics file to specify which constructors are defined with multi-arguments. Mostly used in removing [@implicit_arity] introduced from OCaml conversion.\n\t\texample.txt:\n\t\tConstructor1\n\t\tConstructor2";
@@ -226,9 +226,7 @@ let () =
         | Some "ast" -> fun (ast, comments) -> (
           Printast.implementation Format.std_formatter ast
         )
-        | Some "json" -> fun (ast, comments) -> (
-          Reason_astjson.print_ast ast comments
-          )
+        | Some "json" -> fun (ast, comments) -> Reason_astjson.print_ast ast comments
         (* If you don't wrap the function in parens, it's a totally different
          * meaning #thanksOCaml *)
         | Some "none" -> (fun (ast, comments) -> ())
