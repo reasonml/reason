@@ -52,7 +52,6 @@ let () =
     Pkg.bin  ~auto:true "src/reactjs_jsx_ppx" ~dst:"reactjs_jsx_ppx";
     Pkg.share "editorSupport/emacs/refmt.el" ~dst:"../emacs/site-lisp/refmt.el";
     Pkg.share "editorSupport/emacs/reason-mode.el" ~dst:"../emacs/site-lisp/reason-mode.el";
-
     (* atom-reason *)
     (* Unfortunately we have to specificy each individual file *)
     Pkg.share "editorSupport/atom-reason/package.json" ~dst:"editorSupport/atom-reason/package.json";
