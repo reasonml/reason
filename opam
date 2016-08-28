@@ -26,6 +26,9 @@ depends: [
   "BetterErrors" {>= "0.0.1"}
   "menhir"       {>= "20160303"}
   "re"           {>= "1.5.0"}
+  "ppx_deriving" {>= "4.0"}
+  "ppx_deriving_yojson" {>= "3.0"}
+  "yojson"       {>= "1.3.2"}
 ]
 depopts: [
 ]
