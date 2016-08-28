@@ -11,6 +11,7 @@ let default_print_width = 100
 let defaultImplementationParserFor use_stdin filename =
   if Filename.check_suffix filename ".re" then (Reason_toolchain.JS.canonical_implementation_with_comments (Reason_toolchain.setup_lexbuf use_stdin filename), false, false)
   else if Filename.check_suffix filename ".ml" then (Reason_toolchain.ML.canonical_implementation_with_comments (Reason_toolchain.setup_lexbuf use_stdin filename), true, false)
+  else if Filename.check_suffix filename ".json" then Reason_astjson.parse_ast filename
   else (
     raise (Invalid_config ("Cannot determine default implementation parser for filename '" ^ filename ^ "'."))
   )
@@ -175,9 +176,6 @@ let () =
         | Some "ast" -> fun (ast, comments) -> (
           Printast.interface Format.std_formatter ast
         )
-        | Some "json" -> fun (ast, comments) -> (
-          Reason_astjson.print_intf ast
-          )
         (* If you don't wrap the function in parens, it's a totally different
          * meaning #thanksOCaml *)
         | Some "none" -> (fun (ast, comments) -> ())
@@ -195,6 +193,7 @@ let () =
         | Some "binary" -> ocamlBinaryParser use_stdin filename false
         | Some "ml" -> (Reason_toolchain.ML.canonical_implementation_with_comments (Reason_toolchain.setup_lexbuf use_stdin filename), true, false)
         | Some "re" -> (Reason_toolchain.JS.canonical_implementation_with_comments (Reason_toolchain.setup_lexbuf use_stdin filename), false, false)
+        | Some "json" -> Reason_astjson.parse_ast filename
         | Some s -> (
           raise (Invalid_config ("Invalid -parse setting for interface '" ^ s ^ "'."))
         )
@@ -228,7 +227,7 @@ let () =
           Printast.implementation Format.std_formatter ast
         )
         | Some "json" -> fun (ast, comments) -> (
-          Reason_astjson.print_ast ast
+          Reason_astjson.print_ast ast comments
           )
         (* If you don't wrap the function in parens, it's a totally different
          * meaning #thanksOCaml *)

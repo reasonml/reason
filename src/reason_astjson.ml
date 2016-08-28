@@ -1,4 +1,24 @@
+(* Portions Copyright (c) 2015-present, Facebook, Inc. All rights reserved. *)
 
+(**
+  This file is the result of copying parsetree.mli from https://github.com/ocaml/ocaml/blob/4.02/parsing/parsetree.mli,
+  annotating all types with `[@@deriving yojson]`, and then bringing in all
+  types that are depended upon. Currently that includes types from
+  - Longident
+  - Lexing
+  - Location
+  - Asttypes
+**)
+
+(* Longident *)
+type longidentt = Longident.t =
+    Lident of string
+  | Ldot of longidentt * string
+  | Lapply of longidentt * longidentt
+[@@deriving yojson]
+
+
+(* Lexing *)
 type position = Lexing.position = {
   pos_fname : string;
   pos_lnum : int;
@@ -7,6 +27,8 @@ type position = Lexing.position = {
 }
 [@@deriving yojson]
 
+
+(* Location *)
 type locationt = Location.t = {
   loc_start: position;
   loc_end: position;
@@ -14,8 +36,8 @@ type locationt = Location.t = {
 }
 [@@deriving yojson]
 
-(* asttypes *)
 
+(* Asttypes *)
 type constant = Asttypes.constant =
     Const_int of int
   | Const_char of char
@@ -56,7 +78,6 @@ type 'a loc = 'a Location.loc = {
 }
 [@@deriving yojson]
 
-
 type variance = Asttypes.variance =
   | Covariant
   | Contravariant
@@ -64,37 +85,30 @@ type variance = Asttypes.variance =
 [@@deriving yojson]
 
 
-
-
-
-
-
-
-
-
-
-
-
-
+(* Parsetree *)
 type attribute = string loc * payload
        (* [@id ARG]
           [@@id ARG]
           Metadata containers passed around within the AST.
           The compiler ignores unknown attributes.
        *)
+[@@deriving yojson]
 
 and extension = string loc * payload
       (* [%id ARG]
          [%%id ARG]
          Sub-language placeholder -- rejected by the typechecker.
       *)
+[@@deriving yojson]
 
 and attributes =  attribute list
+[@@deriving yojson]
 
 and payload = Parsetree.payload =
   | PStr of structure
   | PTyp of core_type  (* : T *)
   | PPat of pattern * expression option  (* ? P  or  ? P when E *)
+[@@deriving yojson]
 
 (** {2 Core language} *)
 
@@ -106,6 +120,7 @@ and core_type = Parsetree.core_type =
      ptyp_loc: locationt;
      ptyp_attributes: attributes; (* ... [@id1] [@id2] *)
     }
+[@@deriving yojson]
 
 and core_type_desc = Parsetree.core_type_desc =
   | Ptyp_any
@@ -121,7 +136,7 @@ and core_type_desc = Parsetree.core_type_desc =
         (* T1 * ... * Tn
            Invariant: n >= 2
         *)
-  | Ptyp_constr of Longident.t loc * core_type list
+  | Ptyp_constr of longidentt loc * core_type list
         (* tconstr
            T tconstr
            (T1, ..., Tn) tconstr
@@ -130,7 +145,7 @@ and core_type_desc = Parsetree.core_type_desc =
         (* < l1:T1; ...; ln:Tn >     (flag = Closed)
            < l1:T1; ...; ln:Tn; .. > (flag = Open)
          *)
-  | Ptyp_class of Longident.t loc * core_type list
+  | Ptyp_class of longidentt loc * core_type list
         (* #tconstr
            T #tconstr
            (T1, ..., Tn) #tconstr
@@ -160,12 +175,14 @@ and core_type_desc = Parsetree.core_type_desc =
         (* (module S) *)
   | Ptyp_extension of extension
         (* [%id] *)
+[@@deriving yojson]
 
-and package_type = Longident.t loc * (Longident.t loc * core_type) list
+and package_type = longidentt loc * (longidentt loc * core_type) list
       (*
         (module S)
         (module S with type t1 = T1 and ... and tn = Tn)
        *)
+[@@deriving yojson]
 
 and row_field = Parsetree.row_field =
   | Rtag of label * attributes * bool * core_type list
@@ -181,6 +198,7 @@ and row_field = Parsetree.row_field =
         *)
   | Rinherit of core_type
         (* [ T ] *)
+[@@deriving yojson]
 
 (* Patterns *)
 
@@ -190,6 +208,7 @@ and pattern = Parsetree.pattern =
      ppat_loc: locationt;
      ppat_attributes: attributes; (* ... [@id1] [@id2] *)
     }
+[@@deriving yojson]
 
 and pattern_desc = Parsetree.pattern_desc =
   | Ppat_any
@@ -208,7 +227,7 @@ and pattern_desc = Parsetree.pattern_desc =
         (* (P1, ..., Pn)
            Invariant: n >= 2
         *)
-  | Ppat_construct of Longident.t loc * pattern option
+  | Ppat_construct of longidentt loc * pattern option
         (* C                None
            C P              Some P
            C (P1, ..., Pn)  Some (Ppat_tuple [P1; ...; Pn])
@@ -217,7 +236,7 @@ and pattern_desc = Parsetree.pattern_desc =
         (* `A             (None)
            `A P           (Some P)
          *)
-  | Ppat_record of (Longident.t loc * pattern) list * closed_flag
+  | Ppat_record of (longidentt loc * pattern) list * closed_flag
         (* { l1=P1; ...; ln=Pn }     (flag = Closed)
            { l1=P1; ...; ln=Pn; _}   (flag = Open)
            Invariant: n > 0
@@ -228,7 +247,7 @@ and pattern_desc = Parsetree.pattern_desc =
         (* P1 | P2 *)
   | Ppat_constraint of pattern * core_type
         (* (P : T) *)
-  | Ppat_type of Longident.t loc
+  | Ppat_type of longidentt loc
         (* #tconst *)
   | Ppat_lazy of pattern
         (* lazy P *)
@@ -241,6 +260,7 @@ and pattern_desc = Parsetree.pattern_desc =
         (* exception P *)
   | Ppat_extension of extension
         (* [%id] *)
+[@@deriving yojson]
 
 (* Value expressions *)
 
@@ -250,9 +270,10 @@ and expression = Parsetree.expression =
      pexp_loc: locationt;
      pexp_attributes: attributes; (* ... [@id1] [@id2] *)
     }
+[@@deriving yojson]
 
 and expression_desc = Parsetree.expression_desc =
-  | Pexp_ident of Longident.t loc
+  | Pexp_ident of longidentt loc
         (* x
            M.x
          *)
@@ -288,7 +309,7 @@ and expression_desc = Parsetree.expression_desc =
         (* (E1, ..., En)
            Invariant: n >= 2
         *)
-  | Pexp_construct of Longident.t loc * expression option
+  | Pexp_construct of longidentt loc * expression option
         (* C                None
            C E              Some E
            C (E1, ..., En)  Some (Pexp_tuple[E1;...;En])
@@ -297,14 +318,14 @@ and expression_desc = Parsetree.expression_desc =
         (* `A             (None)
            `A E           (Some E)
          *)
-  | Pexp_record of (Longident.t loc * expression) list * expression option
+  | Pexp_record of (longidentt loc * expression) list * expression option
         (* { l1=P1; ...; ln=Pn }     (None)
            { E0 with l1=P1; ...; ln=Pn }   (Some E0)
            Invariant: n > 0
          *)
-  | Pexp_field of expression * Longident.t loc
+  | Pexp_field of expression * longidentt loc
         (* E.l *)
-  | Pexp_setfield of expression * Longident.t loc * expression
+  | Pexp_setfield of expression * longidentt loc * expression
         (* E1.l <- E2 *)
   | Pexp_array of expression list
         (* [| E1; ...; En |] *)
@@ -327,7 +348,7 @@ and expression_desc = Parsetree.expression_desc =
          *)
   | Pexp_send of expression * string
         (*  E # m *)
-  | Pexp_new of Longident.t loc
+  | Pexp_new of longidentt loc
         (* new M.c *)
   | Pexp_setinstvar of string loc * expression
         (* x <- 2 *)
@@ -353,12 +374,13 @@ and expression_desc = Parsetree.expression_desc =
         (* (module ME)
            (module ME : S) is represented as
            Pexp_constraint(Pexp_pack, Ptyp_package S) *)
-  | Pexp_open of override_flag * Longident.t loc * expression
+  | Pexp_open of override_flag * longidentt loc * expression
         (* let open M in E
            let! open M in E
         *)
   | Pexp_extension of extension
         (* [%id] *)
+[@@deriving yojson]
 
 and case = Parsetree.case =   (* (P -> E) or (P when E0 -> E) *)
     {
@@ -366,6 +388,7 @@ and case = Parsetree.case =   (* (P -> E) or (P when E0 -> E) *)
      pc_guard: expression option;
      pc_rhs: expression;
     }
+[@@deriving yojson]
 
 (* Value descriptions *)
 
@@ -377,6 +400,7 @@ and value_description = Parsetree.value_description =
      pval_attributes: attributes;  (* ... [@@id1] [@@id2] *)
      pval_loc: locationt;
     }
+[@@deriving yojson]
 
 (*
   val x: T                            (prim = [])
@@ -399,6 +423,7 @@ and type_declaration = Parsetree.type_declaration =
      ptype_attributes: attributes;   (* ... [@@id1] [@@id2] *)
      ptype_loc: locationt;
     }
+[@@deriving yojson]
 
 (*
   type t                     (abstract, no manifest)
@@ -417,6 +442,7 @@ and type_kind = Parsetree.type_kind =
   | Ptype_record of label_declaration list
         (* Invariant: non-empty list *)
   | Ptype_open
+[@@deriving yojson]
 
 and label_declaration = Parsetree.label_declaration =
     {
@@ -426,6 +452,7 @@ and label_declaration = Parsetree.label_declaration =
      pld_loc: locationt;
      pld_attributes: attributes; (* l [@id1] [@id2] : T *)
     }
+[@@deriving yojson]
 
 (*  { ...; l: T; ... }            (mutable=Immutable)
     { ...; mutable l: T; ... }    (mutable=Mutable)
@@ -445,10 +472,11 @@ and constructor_declaration = Parsetree.constructor_declaration =
   | C: T0                  (args = [], res = Some T0)
   | C: T1 * ... * Tn -> T0 (res = Some T0)
 *)
+[@@deriving yojson]
 
 and type_extension = Parsetree.type_extension =
     {
-     ptyext_path: Longident.t loc;
+     ptyext_path: longidentt loc;
      ptyext_params: (core_type * variance) list;
      ptyext_constructors: extension_constructor list;
      ptyext_private: private_flag;
@@ -457,6 +485,7 @@ and type_extension = Parsetree.type_extension =
 (*
   type t += ...
 *)
+[@@deriving yojson]
 
 and extension_constructor = Parsetree.extension_constructor =
     {
@@ -465,6 +494,7 @@ and extension_constructor = Parsetree.extension_constructor =
      pext_loc : locationt;
      pext_attributes: attributes; (* C [@id1] [@id2] of ... *)
     }
+[@@deriving yojson]
 
 and extension_constructor_kind = Parsetree.extension_constructor_kind =
     Pext_decl of core_type list * core_type option
@@ -473,10 +503,11 @@ and extension_constructor_kind = Parsetree.extension_constructor_kind =
          | C: T0                  ([], Some T0)
          | C: T1 * ... * Tn -> T0 ([T1; ...; Tn], Some T0)
        *)
-  | Pext_rebind of Longident.t loc
+  | Pext_rebind of longidentt loc
       (*
          | C = D
        *)
+[@@deriving yojson]
 
 (** {2 Class language} *)
 
@@ -488,9 +519,10 @@ and class_type = Parsetree.class_type =
      pcty_loc: locationt;
      pcty_attributes: attributes; (* ... [@id1] [@id2] *)
     }
+[@@deriving yojson]
 
 and class_type_desc = Parsetree.class_type_desc =
-  | Pcty_constr of Longident.t loc * core_type list
+  | Pcty_constr of longidentt loc * core_type list
         (* c
            ['a1, ..., 'an] c *)
   | Pcty_signature of class_signature
@@ -502,6 +534,7 @@ and class_type_desc = Parsetree.class_type_desc =
          *)
   | Pcty_extension of extension
         (* [%id] *)
+[@@deriving yojson]
 
 and class_signature = Parsetree.class_signature =
     {
@@ -511,6 +544,7 @@ and class_signature = Parsetree.class_signature =
 (* object('selfpat) ... end
    object ... end             (self = Ptyp_any)
  *)
+[@@deriving yojson]
 
 and class_type_field = Parsetree.class_type_field =
     {
@@ -518,6 +552,7 @@ and class_type_field = Parsetree.class_type_field =
      pctf_loc: locationt;
      pctf_attributes: attributes; (* ... [@@id1] [@@id2] *)
     }
+[@@deriving yojson]
 
 and class_type_field_desc = Parsetree.class_type_field_desc =
   | Pctf_inherit of class_type
@@ -534,6 +569,7 @@ and class_type_field_desc = Parsetree.class_type_field_desc =
         (* [@@@id] *)
   | Pctf_extension of extension
         (* [%%id] *)
+[@@deriving yojson]
 
 and 'a class_infos = 'a Parsetree.class_infos =
     {
@@ -549,10 +585,13 @@ and 'a class_infos = 'a Parsetree.class_infos =
    class virtual c = ...
    Also used for "class type" declaration.
 *)
+[@@deriving yojson]
 
 and class_description = class_type class_infos
+[@@deriving yojson]
 
 and class_type_declaration = class_type class_infos
+[@@deriving yojson]
 
 (* Value expressions for the class language *)
 
@@ -562,9 +601,10 @@ and class_expr = Parsetree.class_expr =
      pcl_loc: locationt;
      pcl_attributes: attributes; (* ... [@id1] [@id2] *)
     }
+[@@deriving yojson]
 
 and class_expr_desc = Parsetree.class_expr_desc =
-  | Pcl_constr of Longident.t loc * core_type list
+  | Pcl_constr of longidentt loc * core_type list
         (* c
            ['a1, ..., 'an] c *)
   | Pcl_structure of class_structure
@@ -589,6 +629,7 @@ and class_expr_desc = Parsetree.class_expr_desc =
         (* (CE : CT) *)
   | Pcl_extension of extension
         (* [%id] *)
+[@@deriving yojson]
 
 and class_structure = Parsetree.class_structure =
     {
@@ -598,6 +639,7 @@ and class_structure = Parsetree.class_structure =
 (* object(selfpat) ... end
    object ... end           (self = Ppat_any)
  *)
+[@@deriving yojson]
 
 and class_field = Parsetree.class_field =
     {
@@ -605,6 +647,7 @@ and class_field = Parsetree.class_field =
      pcf_loc: locationt;
      pcf_attributes: attributes; (* ... [@@id1] [@@id2] *)
     }
+[@@deriving yojson]
 
 and class_field_desc = Parsetree.class_field_desc =
   | Pcf_inherit of override_flag * class_expr * string option
@@ -629,12 +672,15 @@ and class_field_desc = Parsetree.class_field_desc =
         (* [@@@id] *)
   | Pcf_extension of extension
         (* [%%id] *)
+[@@deriving yojson]
 
 and class_field_kind = Parsetree.class_field_kind =
   | Cfk_virtual of core_type
   | Cfk_concrete of override_flag * expression
+[@@deriving yojson]
 
 and class_declaration = class_expr class_infos
+[@@deriving yojson]
 
 (** {2 Module language} *)
 
@@ -646,9 +692,10 @@ and module_type = Parsetree.module_type =
      pmty_loc: locationt;
      pmty_attributes: attributes; (* ... [@id1] [@id2] *)
     }
+[@@deriving yojson]
 
 and module_type_desc = Parsetree.module_type_desc =
-  | Pmty_ident of Longident.t loc
+  | Pmty_ident of longidentt loc
         (* S *)
   | Pmty_signature of signature
         (* sig ... end *)
@@ -660,16 +707,19 @@ and module_type_desc = Parsetree.module_type_desc =
         (* module type of ME *)
   | Pmty_extension of extension
         (* [%id] *)
-  | Pmty_alias of Longident.t loc
+  | Pmty_alias of longidentt loc
         (* (module M) *)
+[@@deriving yojson]
 
 and signature = signature_item list
+[@@deriving yojson]
 
 and signature_item = Parsetree.signature_item =
     {
      psig_desc: signature_item_desc;
      psig_loc: locationt;
     }
+[@@deriving yojson]
 
 and signature_item_desc = Parsetree.signature_item_desc =
   | Psig_value of value_description
@@ -702,6 +752,7 @@ and signature_item_desc = Parsetree.signature_item_desc =
         (* [@@@id] *)
   | Psig_extension of extension * attributes
         (* [%%id] *)
+[@@deriving yojson]
 
 and module_declaration = Parsetree.module_declaration =
     {
@@ -711,6 +762,7 @@ and module_declaration = Parsetree.module_declaration =
      pmd_loc: locationt;
     }
 (* S : MT *)
+[@@deriving yojson]
 
 and module_type_declaration = Parsetree.module_type_declaration =
     {
@@ -722,10 +774,11 @@ and module_type_declaration = Parsetree.module_type_declaration =
 (* S = MT
    S       (abstract module type declaration, pmtd_type = None)
 *)
+[@@deriving yojson]
 
 and open_description = Parsetree.open_description =
     {
-     popen_lid: Longident.t loc;
+     popen_lid: longidentt loc;
      popen_override: override_flag;
      popen_loc: locationt;
      popen_attributes: attributes;
@@ -734,6 +787,7 @@ and open_description = Parsetree.open_description =
                               shadowing' warning)
    open  X - popen_override = Fresh
  *)
+[@@deriving yojson]
 
 and 'a include_infos = 'a Parsetree.include_infos =
     {
@@ -741,24 +795,28 @@ and 'a include_infos = 'a Parsetree.include_infos =
      pincl_loc: locationt;
      pincl_attributes: attributes;
     }
+[@@deriving yojson]
 
 and include_description = module_type include_infos
 (* include MT *)
+[@@deriving yojson]
 
 and include_declaration = module_expr include_infos
 (* include ME *)
+[@@deriving yojson]
 
 and with_constraint = Parsetree.with_constraint =
-  | Pwith_type of Longident.t loc * type_declaration
+  | Pwith_type of longidentt loc * type_declaration
         (* with type X.t = ...
            Note: the last component of the longident must match
            the name of the type_declaration. *)
-  | Pwith_module of Longident.t loc * Longident.t loc
+  | Pwith_module of longidentt loc * longidentt loc
         (* with module X.Y = Z *)
   | Pwith_typesubst of type_declaration
         (* with type t := ... *)
-  | Pwith_modsubst of string loc * Longident.t loc
+  | Pwith_modsubst of string loc * longidentt loc
         (* with module X := Z *)
+[@@deriving yojson]
 
 (* Value expressions for the module language *)
 
@@ -768,9 +826,10 @@ and module_expr = Parsetree.module_expr =
      pmod_loc: locationt;
      pmod_attributes: attributes; (* ... [@id1] [@id2] *)
     }
+[@@deriving yojson]
 
 and module_expr_desc = Parsetree.module_expr_desc =
-  | Pmod_ident of Longident.t loc
+  | Pmod_ident of longidentt loc
         (* X *)
   | Pmod_structure of structure
         (* struct ... end *)
@@ -784,14 +843,17 @@ and module_expr_desc = Parsetree.module_expr_desc =
         (* (val E) *)
   | Pmod_extension of extension
         (* [%id] *)
+[@@deriving yojson]
 
 and structure = structure_item list
+[@@deriving yojson]
 
 and structure_item = Parsetree.structure_item =
     {
      pstr_desc: structure_item_desc;
      pstr_loc: locationt;
     }
+[@@deriving yojson]
 
 and structure_item_desc = Parsetree.structure_item_desc =
   | Pstr_eval of expression * attributes
@@ -827,6 +889,7 @@ and structure_item_desc = Parsetree.structure_item_desc =
         (* [@@@id] *)
   | Pstr_extension of extension * attributes
         (* [%%id] *)
+[@@deriving yojson]
 
 and value_binding = Parsetree.value_binding =
   {
@@ -835,6 +898,7 @@ and value_binding = Parsetree.value_binding =
     pvb_attributes: attributes;
     pvb_loc: locationt;
   }
+[@@deriving yojson]
 
 and module_binding = Parsetree.module_binding =
     {
@@ -844,6 +908,7 @@ and module_binding = Parsetree.module_binding =
      pmb_loc: locationt;
     }
 (* X = ME *)
+[@@deriving yojson]
 
 (** {2 Toplevel} *)
 
@@ -853,30 +918,26 @@ type toplevel_phrase = Parsetree.toplevel_phrase =
   | Ptop_def of structure
   | Ptop_dir of string * directive_argument
      (* #use, #load ... *)
+[@@deriving yojson]
 
 and directive_argument = Parsetree.directive_argument =
   | Pdir_none
   | Pdir_string of string
   | Pdir_int of int
-  | Pdir_ident of Longident.t
+  | Pdir_ident of longidentt
   | Pdir_bool of bool
+[@@deriving yojson]
 
+type commentWithCategory = (string * Reason_pprint_ast.commentCategory * locationt) list
+[@@deriving yojson]
 
+type full = structure * commentWithCategory [@@deriving yojson]
 
-let checkconv (ast:structure) =
-();;
+let print_ast (ast:Parsetree.structure) comments =
+  print_endline (Yojson.Safe.to_string (full_to_yojson (ast, comments)));;
 
-
-let print_intf (ast:Parsetree.signature) =
-  print_endline "interface";;
-
-type a = {hi: string; ho: int} [@@deriving yojson];;
-
-type x = | A of a | B of int [@@deriving yojson];;
-
-let print_ast (ast:Parsetree.structure) =
-  let () = checkconv ast in
-  print_endline (Yojson.Safe.to_string
-(* (structure_to_yojson ast) *)
-(x_to_yojson (A {hi="ho"; ho=10}))
-);;
+let parse_ast (filename:string) =
+match (full_of_yojson (Yojson.Safe.from_file filename)) with
+| Result.Ok data -> (data, false, false)
+| Result.Error wat -> failwith "FAIL"
+  ;;
