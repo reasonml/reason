@@ -933,7 +933,6 @@ conflicts.
 
 */
 /* Question: Where is the SEMI explicit precedence? */
-%left VARIABLEINFIXOP
 %nonassoc below_SEMI
 %nonassoc below_EQUALGREATER
 %right    EQUALGREATER                  /* core_type2 (t => t => t) */
@@ -1054,6 +1053,8 @@ conflicts.
           LBRACE LBRACELESS LBRACKET LBRACKETBAR LIDENT LPAREN
           NEW NATIVEINT PREFIXOP STRING TRUE UIDENT
           LBRACKETPERCENT
+
+%left VARIABLEINFIXOP
 
 /* Entry points */
 
