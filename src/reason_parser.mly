@@ -2563,6 +2563,12 @@ _expr:
       }
   | expr as_loc(infix_operator) expr
       { mkinfix $1 $2 $3 }
+  | expr VARIABLEINFIXOP expr
+      {
+        let attribute = simple_ghost_text_attr "infix" in
+        let name = mkexp ~ghost:true ~attrs:(attribute) (Pexp_ident(ghloc (Longident.parse $2))) in
+        mkexp (Pexp_apply (name, ["", $1; "", $3]))
+      }
   | as_loc(subtractive) expr %prec prec_unary_minus
       {
         mkuminus $1 $2
@@ -2707,13 +2713,6 @@ _simple_expr:
       {
         let loc = mklocation $symbolstartpos $endpos in
         bigarray_get ~loc $1 $4
-      }
-  | simple_expr VARIABLEINFIXOP simple_expr
-      {
-        let loc = mklocation $startpos($1) $endpos($3) in
-        let attribute = simple_ghost_text_attr "infix" in
-        let name = mkexp ~ghost:true ~attrs:(attribute) (Pexp_ident(ghloc (Longident.parse $2))) in
-        mkexp ~loc (Pexp_apply (name, ["", $1; "", $3]))
       }
 
   /* This might not be needed anymore
