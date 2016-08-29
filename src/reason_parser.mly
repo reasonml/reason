@@ -782,21 +782,6 @@ let rec string_of_longident = function
 
 let built_in_explicit_arity_constructors = ["Some"; "Assert_failure"; "Match_failure"]
 
-(* Replace dot with bangdot
-   e.g.: "Int32.rem" ~> "Int32!.rem" *)
-let prepare_name_for_call name =
-  if String.contains name '.' then
-    let rec replace str n = match str with
-        | "" -> ""
-        | str ->
-          let ch = (String.get str 0) in
-          let new_str = if Char.compare ch '.' == 0 then "!." else String.make 1 ch in
-            new_str ^ (replace (String.sub str 1 n) (n - 1)) in
-    let _ = replace name (String.length name - 1) in
-      name
-  else
-    name
-
 %}
 
 /* Tokens */
@@ -2724,10 +2709,9 @@ _simple_expr:
       }
   | simple_expr VARIABLEINFIXOP simple_expr
       {
-        let n = prepare_name_for_call $2 in
         let loc = mklocation $startpos($1) $endpos($3) in
         let attribute = simple_ghost_text_attr "infix" in
-        let name = mkexp ~ghost:true ~attrs:(attribute) (Pexp_ident(ghloc (Longident.parse n))) in
+        let name = mkexp ~ghost:true ~attrs:(attribute) (Pexp_ident(ghloc (Longident.parse $2))) in
         mkexp ~loc (Pexp_apply (name, ["", $1; "", $3]))
       }
 
