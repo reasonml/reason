@@ -635,9 +635,3 @@ let anotherRecord = {
   name: "joe++",
   age: testRecord.age + 10
 };
-
-let add a b => a + b;
-
-(15 ~add 4) ~add 5;
-
-10l ~Int32.rem 4l;
