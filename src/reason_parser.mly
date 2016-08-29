@@ -2738,6 +2738,12 @@ _simple_expr:
 
   /* TODO: Let Sequence? */
 
+  | LBRACE DOTDOTDOT expr_optional_constraint opt_comma RBRACE
+      {
+        let loc = mklocation $symbolstartpos $endpos in
+        let msg = "Record construction must have at least one field explicitly set" in
+        syntax_error_exp loc msg
+      }
   | LBRACE record_expr RBRACE
       { let (exten, fields) = $2 in mkexp (Pexp_record(fields, exten)) }
   | as_loc(LBRACE) record_expr as_loc(error)
@@ -3192,8 +3198,7 @@ expr_optional_constraint:
 ;
 
 record_expr:
-    DOTDOTDOT expr_optional_constraint                     { (Some $2, [])}
-  | DOTDOTDOT expr_optional_constraint COMMA lbl_expr_list { (Some $2, $4) }
+    DOTDOTDOT expr_optional_constraint COMMA lbl_expr_list { (Some $2, $4) }
   | lbl_expr_list_that_is_not_a_single_punned_field        { (None, $1) }
 ;
 lbl_expr_list:

@@ -1,6 +1,6 @@
 use_file: SHARP LIDENT SEMI WITH
 ##
-## Ends in an error in state: 2768.
+## Ends in an error in state: 2777.
 ##
 ## _use_file -> toplevel_directive SEMI . use_file [ # ]
 ##
@@ -12,7 +12,7 @@ use_file: SHARP LIDENT SEMI WITH
 
 use_file: SHARP LIDENT TRUE WITH
 ##
-## Ends in an error in state: 2767.
+## Ends in an error in state: 2776.
 ##
 ## _use_file -> toplevel_directive . SEMI use_file [ # ]
 ## _use_file -> toplevel_directive . EOF [ # ]
@@ -25,7 +25,7 @@ use_file: SHARP LIDENT TRUE WITH
 
 use_file: UIDENT RPAREN
 ##
-## Ends in an error in state: 2770.
+## Ends in an error in state: 2779.
 ##
 ## _use_file -> structure_item . SEMI use_file [ # ]
 ## _use_file -> structure_item . EOF [ # ]
@@ -45,20 +45,20 @@ use_file: UIDENT RPAREN
 ## In state 887, spurious reduction of production _expr -> less_aggressive_simple_expression
 ## In state 916, spurious reduction of production mark_position_exp(_expr) -> _expr
 ## In state 886, spurious reduction of production expr -> mark_position_exp(_expr)
-## In state 2759, spurious reduction of production post_item_attributes ->
-## In state 2760, spurious reduction of production _structure_item_without_item_extension_sugar -> expr post_item_attributes
-## In state 2761, spurious reduction of production mark_position_str(_structure_item_without_item_extension_sugar) -> _structure_item_without_item_extension_sugar
-## In state 2739, spurious reduction of production structure_item_without_item_extension_sugar -> mark_position_str(_structure_item_without_item_extension_sugar)
-## In state 2733, spurious reduction of production _structure_item -> structure_item_without_item_extension_sugar
-## In state 2763, spurious reduction of production mark_position_str(_structure_item) -> _structure_item
-## In state 2740, spurious reduction of production structure_item -> mark_position_str(_structure_item)
+## In state 2768, spurious reduction of production post_item_attributes ->
+## In state 2769, spurious reduction of production _structure_item_without_item_extension_sugar -> expr post_item_attributes
+## In state 2770, spurious reduction of production mark_position_str(_structure_item_without_item_extension_sugar) -> _structure_item_without_item_extension_sugar
+## In state 2748, spurious reduction of production structure_item_without_item_extension_sugar -> mark_position_str(_structure_item_without_item_extension_sugar)
+## In state 2742, spurious reduction of production _structure_item -> structure_item_without_item_extension_sugar
+## In state 2772, spurious reduction of production mark_position_str(_structure_item) -> _structure_item
+## In state 2749, spurious reduction of production structure_item -> mark_position_str(_structure_item)
 ##
 
 <SYNTAX ERROR>
 
 use_file: UIDENT SEMI WITH
 ##
-## Ends in an error in state: 2771.
+## Ends in an error in state: 2780.
 ##
 ## _use_file -> structure_item SEMI . use_file [ # ]
 ##
@@ -70,7 +70,7 @@ use_file: UIDENT SEMI WITH
 
 use_file: WITH
 ##
-## Ends in an error in state: 2764.
+## Ends in an error in state: 2773.
 ##
 ## use_file' -> . use_file [ # ]
 ##
@@ -82,7 +82,7 @@ use_file: WITH
 
 toplevel_phrase: SHARP UIDENT EOF
 ##
-## Ends in an error in state: 2731.
+## Ends in an error in state: 2740.
 ##
 ## _toplevel_phrase -> toplevel_directive . SEMI [ # ]
 ##
@@ -93,14 +93,14 @@ toplevel_phrase: SHARP UIDENT EOF
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 2631, spurious reduction of production toplevel_directive -> SHARP ident
+## In state 2640, spurious reduction of production toplevel_directive -> SHARP ident
 ##
 
 <SYNTAX ERROR>
 
 toplevel_phrase: SHARP UIDENT UIDENT DOT WITH
 ##
-## Ends in an error in state: 2638.
+## Ends in an error in state: 2647.
 ##
 ## mod_longident -> mod_longident DOT . UIDENT [ SEMI EOF DOT ]
 ## val_longident -> mod_longident DOT . val_ident [ SEMI EOF ]
@@ -113,7 +113,7 @@ toplevel_phrase: SHARP UIDENT UIDENT DOT WITH
 
 toplevel_phrase: SHARP UIDENT UIDENT WITH
 ##
-## Ends in an error in state: 2637.
+## Ends in an error in state: 2646.
 ##
 ## mod_longident -> mod_longident . DOT UIDENT [ SEMI EOF DOT ]
 ## toplevel_directive -> SHARP ident mod_longident . [ SEMI EOF ]
@@ -127,7 +127,7 @@ toplevel_phrase: SHARP UIDENT UIDENT WITH
 
 toplevel_phrase: SHARP UIDENT WITH
 ##
-## Ends in an error in state: 2631.
+## Ends in an error in state: 2640.
 ##
 ## toplevel_directive -> SHARP ident . [ SEMI EOF ]
 ## toplevel_directive -> SHARP ident . STRING [ SEMI EOF ]
@@ -145,7 +145,7 @@ toplevel_phrase: SHARP UIDENT WITH
 
 toplevel_phrase: SHARP WITH
 ##
-## Ends in an error in state: 2630.
+## Ends in an error in state: 2639.
 ##
 ## toplevel_directive -> SHARP . ident [ SEMI EOF ]
 ## toplevel_directive -> SHARP . ident STRING [ SEMI EOF ]
@@ -163,7 +163,7 @@ toplevel_phrase: SHARP WITH
 
 toplevel_phrase: UIDENT RPAREN
 ##
-## Ends in an error in state: 2734.
+## Ends in an error in state: 2743.
 ##
 ## _toplevel_phrase -> structure_item . SEMI [ # ]
 ##
@@ -182,20 +182,20 @@ toplevel_phrase: UIDENT RPAREN
 ## In state 887, spurious reduction of production _expr -> less_aggressive_simple_expression
 ## In state 916, spurious reduction of production mark_position_exp(_expr) -> _expr
 ## In state 886, spurious reduction of production expr -> mark_position_exp(_expr)
-## In state 2759, spurious reduction of production post_item_attributes ->
-## In state 2760, spurious reduction of production _structure_item_without_item_extension_sugar -> expr post_item_attributes
-## In state 2761, spurious reduction of production mark_position_str(_structure_item_without_item_extension_sugar) -> _structure_item_without_item_extension_sugar
-## In state 2739, spurious reduction of production structure_item_without_item_extension_sugar -> mark_position_str(_structure_item_without_item_extension_sugar)
-## In state 2733, spurious reduction of production _structure_item -> structure_item_without_item_extension_sugar
-## In state 2763, spurious reduction of production mark_position_str(_structure_item) -> _structure_item
-## In state 2740, spurious reduction of production structure_item -> mark_position_str(_structure_item)
+## In state 2768, spurious reduction of production post_item_attributes ->
+## In state 2769, spurious reduction of production _structure_item_without_item_extension_sugar -> expr post_item_attributes
+## In state 2770, spurious reduction of production mark_position_str(_structure_item_without_item_extension_sugar) -> _structure_item_without_item_extension_sugar
+## In state 2748, spurious reduction of production structure_item_without_item_extension_sugar -> mark_position_str(_structure_item_without_item_extension_sugar)
+## In state 2742, spurious reduction of production _structure_item -> structure_item_without_item_extension_sugar
+## In state 2772, spurious reduction of production mark_position_str(_structure_item) -> _structure_item
+## In state 2749, spurious reduction of production structure_item -> mark_position_str(_structure_item)
 ##
 
 <SYNTAX ERROR>
 
 toplevel_phrase: WITH
 ##
-## Ends in an error in state: 2593.
+## Ends in an error in state: 2602.
 ##
 ## toplevel_phrase' -> . toplevel_phrase [ # ]
 ##
@@ -548,7 +548,7 @@ parse_pattern: LBRACKETBAR WITH
 
 parse_pattern: LPAREN COLONCOLON RPAREN LPAREN UNDERSCORE COMMA UNDERSCORE WITH
 ##
-## Ends in an error in state: 2429.
+## Ends in an error in state: 2438.
 ##
 ## _pattern_without_or -> pattern_without_or . AS val_ident [ error RPAREN LBRACKETAT COLONCOLON AS ]
 ## _pattern_without_or -> pattern_without_or . AS error [ error RPAREN LBRACKETAT COLONCOLON AS ]
@@ -566,7 +566,7 @@ parse_pattern: LPAREN COLONCOLON RPAREN LPAREN UNDERSCORE COMMA UNDERSCORE WITH
 
 parse_pattern: LPAREN COLONCOLON RPAREN LPAREN UNDERSCORE COMMA WITH
 ##
-## Ends in an error in state: 2428.
+## Ends in an error in state: 2437.
 ##
 ## _pattern_without_or -> LPAREN COLONCOLON RPAREN LPAREN pattern_without_or COMMA . pattern_without_or RPAREN [ WHEN SEMI RPAREN RBRACKET LBRACKETAT IN EQUALGREATER EQUAL EOF COMMA COLONCOLON COLON BAR AS ]
 ## _pattern_without_or -> LPAREN COLONCOLON RPAREN LPAREN pattern_without_or COMMA . pattern_without_or error [ WHEN SEMI RPAREN RBRACKET LBRACKETAT IN EQUALGREATER EQUAL EOF COMMA COLONCOLON COLON BAR AS ]
@@ -579,7 +579,7 @@ parse_pattern: LPAREN COLONCOLON RPAREN LPAREN UNDERSCORE COMMA WITH
 
 parse_pattern: LPAREN COLONCOLON RPAREN LPAREN UNDERSCORE WITH
 ##
-## Ends in an error in state: 2427.
+## Ends in an error in state: 2436.
 ##
 ## _pattern_without_or -> pattern_without_or . AS val_ident [ LBRACKETAT COMMA COLONCOLON AS ]
 ## _pattern_without_or -> pattern_without_or . AS error [ LBRACKETAT COMMA COLONCOLON AS ]
@@ -597,7 +597,7 @@ parse_pattern: LPAREN COLONCOLON RPAREN LPAREN UNDERSCORE WITH
 
 parse_pattern: LPAREN COLONCOLON RPAREN LPAREN WITH
 ##
-## Ends in an error in state: 2426.
+## Ends in an error in state: 2435.
 ##
 ## _pattern_without_or -> LPAREN COLONCOLON RPAREN LPAREN . pattern_without_or COMMA pattern_without_or RPAREN [ WHEN SEMI RPAREN RBRACKET LBRACKETAT IN EQUALGREATER EQUAL EOF COMMA COLONCOLON COLON BAR AS ]
 ## _pattern_without_or -> LPAREN COLONCOLON RPAREN LPAREN . pattern_without_or COMMA pattern_without_or error [ WHEN SEMI RPAREN RBRACKET LBRACKETAT IN EQUALGREATER EQUAL EOF COMMA COLONCOLON COLON BAR AS ]
@@ -610,7 +610,7 @@ parse_pattern: LPAREN COLONCOLON RPAREN LPAREN WITH
 
 parse_pattern: LPAREN COLONCOLON RPAREN WITH
 ##
-## Ends in an error in state: 2425.
+## Ends in an error in state: 2434.
 ##
 ## _pattern_without_or -> LPAREN COLONCOLON RPAREN . LPAREN pattern_without_or COMMA pattern_without_or RPAREN [ WHEN SEMI RPAREN RBRACKET LBRACKETAT IN EQUALGREATER EQUAL EOF COMMA COLONCOLON COLON BAR AS ]
 ## _pattern_without_or -> LPAREN COLONCOLON RPAREN . LPAREN pattern_without_or COMMA pattern_without_or error [ WHEN SEMI RPAREN RBRACKET LBRACKETAT IN EQUALGREATER EQUAL EOF COMMA COLONCOLON COLON BAR AS ]
@@ -623,7 +623,7 @@ parse_pattern: LPAREN COLONCOLON RPAREN WITH
 
 parse_pattern: LPAREN COLONCOLON WITH
 ##
-## Ends in an error in state: 2424.
+## Ends in an error in state: 2433.
 ##
 ## _pattern_without_or -> LPAREN COLONCOLON . RPAREN LPAREN pattern_without_or COMMA pattern_without_or RPAREN [ WHEN SEMI RPAREN RBRACKET LBRACKETAT IN EQUALGREATER EQUAL EOF COMMA COLONCOLON COLON BAR AS ]
 ## _pattern_without_or -> LPAREN COLONCOLON . RPAREN LPAREN pattern_without_or COMMA pattern_without_or error [ WHEN SEMI RPAREN RBRACKET LBRACKETAT IN EQUALGREATER EQUAL EOF COMMA COLONCOLON COLON BAR AS ]
@@ -987,7 +987,7 @@ parse_pattern: LPAREN MODULE UIDENT COLON UIDENT WHILE
 
 parse_pattern: LPAREN MODULE UIDENT COLON UIDENT WITH TYPE LIDENT EQUAL LESSDOTDOTGREATER AND WITH
 ##
-## Ends in an error in state: 2422.
+## Ends in an error in state: 2431.
 ##
 ## package_type_cstrs -> package_type_cstr AND . package_type_cstrs [ error RPAREN ]
 ##
@@ -999,7 +999,7 @@ parse_pattern: LPAREN MODULE UIDENT COLON UIDENT WITH TYPE LIDENT EQUAL LESSDOTD
 
 parse_pattern: LPAREN MODULE UIDENT COLON UIDENT WITH TYPE LIDENT EQUAL LESSDOTDOTGREATER WITH
 ##
-## Ends in an error in state: 2421.
+## Ends in an error in state: 2430.
 ##
 ## package_type_cstrs -> package_type_cstr . [ error RPAREN ]
 ## package_type_cstrs -> package_type_cstr . AND package_type_cstrs [ error RPAREN ]
@@ -1017,7 +1017,7 @@ parse_pattern: LPAREN MODULE UIDENT COLON UIDENT WITH TYPE LIDENT EQUAL LESSDOTD
 ## In state 686, spurious reduction of production _core_type -> core_type2
 ## In state 697, spurious reduction of production mark_position_typ(_core_type) -> _core_type
 ## In state 685, spurious reduction of production core_type -> mark_position_typ(_core_type)
-## In state 2419, spurious reduction of production package_type_cstr -> TYPE label_longident EQUAL core_type
+## In state 2428, spurious reduction of production package_type_cstr -> TYPE label_longident EQUAL core_type
 ##
 
 <SYNTAX ERROR>
@@ -1260,7 +1260,7 @@ parse_pattern: LPAREN UNDERSCORE COLON LBRACKET BACKQUOTE LIDENT GREATER
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 173, spurious reduction of production attributes ->
-## In state 2456, spurious reduction of production tag_field -> name_tag attributes
+## In state 2465, spurious reduction of production tag_field -> name_tag attributes
 ##
 
 <SYNTAX ERROR>
@@ -1470,7 +1470,7 @@ parse_pattern: LPAREN UNDERSCORE COLON LESS WITH
 
 parse_pattern: LPAREN UNDERSCORE COLON LIDENT COLONCOLON UNDERSCORE EQUALGREATER WITH
 ##
-## Ends in an error in state: 2417.
+## Ends in an error in state: 2426.
 ##
 ## _core_type2 -> LIDENT COLONCOLON non_arrowed_core_type EQUALGREATER . core_type2 [ error WITH SEMI RPAREN RBRACKET RBRACE LBRACKETATAT LBRACKETAT EQUALGREATER EQUAL EOF CONSTRAINT COMMA COLONGREATER BARRBRACKET BAR AS AND ]
 ##
@@ -1923,7 +1923,7 @@ parse_pattern: UNDERSCORE BAR WITH
 
 parse_pattern: UNDERSCORE WITH
 ##
-## Ends in an error in state: 2590.
+## Ends in an error in state: 2599.
 ##
 ## _or_pattern -> pattern . BAR pattern [ EOF BAR ]
 ## parse_pattern -> pattern . EOF [ # ]
@@ -1942,7 +1942,7 @@ parse_pattern: UNDERSCORE WITH
 
 parse_pattern: WITH
 ##
-## Ends in an error in state: 2589.
+## Ends in an error in state: 2598.
 ##
 ## parse_pattern' -> . parse_pattern [ # ]
 ##
@@ -1954,7 +1954,7 @@ parse_pattern: WITH
 
 parse_expression: UIDENT SEMI
 ##
-## Ends in an error in state: 2587.
+## Ends in an error in state: 2596.
 ##
 ## _expr -> expr . INFIXOP0 expr [ STAR QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATER EOF COLONEQUAL BARBAR AMPERSAND AMPERAMPER ]
 ## _expr -> expr . INFIXOP1 expr [ STAR QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATER EOF COLONEQUAL BARBAR AMPERSAND AMPERAMPER ]
@@ -2003,7 +2003,7 @@ parse_expression: UIDENT SEMI
 
 parse_expression: WITH
 ##
-## Ends in an error in state: 2585.
+## Ends in an error in state: 2594.
 ##
 ## parse_expression' -> . parse_expression [ # ]
 ##
@@ -2015,7 +2015,7 @@ parse_expression: WITH
 
 parse_core_type: LBRACKET BACKQUOTE UIDENT AMPERSAND WITH
 ##
-## Ends in an error in state: 2450.
+## Ends in an error in state: 2459.
 ##
 ## tag_field -> name_tag opt_ampersand . amper_type_list attributes [ RBRACKET GREATER BAR ]
 ##
@@ -2027,7 +2027,7 @@ parse_core_type: LBRACKET BACKQUOTE UIDENT AMPERSAND WITH
 
 parse_core_type: LBRACKET BACKQUOTE UIDENT UNDERSCORE AMPERSAND WITH
 ##
-## Ends in an error in state: 2453.
+## Ends in an error in state: 2462.
 ##
 ## amper_type_list -> amper_type_list AMPERSAND . core_type [ RBRACKET LBRACKETAT GREATER BAR AMPERSAND ]
 ##
@@ -2039,7 +2039,7 @@ parse_core_type: LBRACKET BACKQUOTE UIDENT UNDERSCORE AMPERSAND WITH
 
 parse_core_type: LBRACKET BACKQUOTE UIDENT WITH
 ##
-## Ends in an error in state: 2457.
+## Ends in an error in state: 2466.
 ##
 ## _non_arrowed_simple_core_type -> LBRACKET tag_field . RBRACKET [ WITH UNDERSCORE UIDENT SHARP SEMI RPAREN RBRACKET RBRACE QUOTE QUESTION LPAREN LIDENT LESSGREATER LESSDOTDOTGREATER LESS LBRACKETPERCENT LBRACKETLESS LBRACKETGREATER LBRACKETATAT LBRACKETAT LBRACKET GREATER EQUALGREATER EQUAL EOF CONSTRAINT COMMA COLONGREATER COLON BAR AS AND AMPERSAND ]
 ## row_field -> tag_field . [ BAR ]
@@ -2052,7 +2052,7 @@ parse_core_type: LBRACKET BACKQUOTE UIDENT WITH
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 173, spurious reduction of production attributes ->
-## In state 2456, spurious reduction of production tag_field -> name_tag attributes
+## In state 2465, spurious reduction of production tag_field -> name_tag attributes
 ##
 
 <SYNTAX ERROR>
@@ -2084,7 +2084,7 @@ parse_core_type: LBRACKET BAR WITH
 
 parse_core_type: LBRACKET UNDERSCORE BAR UNDERSCORE WITH
 ##
-## Ends in an error in state: 2461.
+## Ends in an error in state: 2470.
 ##
 ## _non_arrowed_simple_core_type -> LBRACKET row_field BAR row_field_list . RBRACKET [ WITH UNDERSCORE UIDENT SHARP SEMI RPAREN RBRACKET RBRACE QUOTE QUESTION LPAREN LIDENT LESSGREATER LESSDOTDOTGREATER LESS LBRACKETPERCENT LBRACKETLESS LBRACKETGREATER LBRACKETATAT LBRACKETAT LBRACKET GREATER EQUALGREATER EQUAL EOF CONSTRAINT COMMA COLONGREATER COLON BAR AS AND AMPERSAND ]
 ## row_field_list -> row_field_list . BAR row_field [ RBRACKET BAR ]
@@ -2097,7 +2097,7 @@ parse_core_type: LBRACKET UNDERSCORE BAR UNDERSCORE WITH
 
 parse_core_type: LBRACKET UNDERSCORE BAR WITH
 ##
-## Ends in an error in state: 2460.
+## Ends in an error in state: 2469.
 ##
 ## _non_arrowed_simple_core_type -> LBRACKET row_field BAR . row_field_list RBRACKET [ WITH UNDERSCORE UIDENT SHARP SEMI RPAREN RBRACKET RBRACE QUOTE QUESTION LPAREN LIDENT LESSGREATER LESSDOTDOTGREATER LESS LBRACKETPERCENT LBRACKETLESS LBRACKETGREATER LBRACKETATAT LBRACKETAT LBRACKET GREATER EQUALGREATER EQUAL EOF CONSTRAINT COMMA COLONGREATER COLON BAR AS AND AMPERSAND ]
 ##
@@ -2109,7 +2109,7 @@ parse_core_type: LBRACKET UNDERSCORE BAR WITH
 
 parse_core_type: LBRACKET UNDERSCORE WITH
 ##
-## Ends in an error in state: 2459.
+## Ends in an error in state: 2468.
 ##
 ## _non_arrowed_simple_core_type -> LBRACKET row_field . BAR row_field_list RBRACKET [ WITH UNDERSCORE UIDENT SHARP SEMI RPAREN RBRACKET RBRACE QUOTE QUESTION LPAREN LIDENT LESSGREATER LESSDOTDOTGREATER LESS LBRACKETPERCENT LBRACKETLESS LBRACKETGREATER LBRACKETATAT LBRACKETAT LBRACKET GREATER EQUALGREATER EQUAL EOF CONSTRAINT COMMA COLONGREATER COLON BAR AS AND AMPERSAND ]
 ##
@@ -2147,7 +2147,7 @@ parse_core_type: LBRACKETGREATER BAR ASSERT
 
 parse_core_type: LBRACKETGREATER UNDERSCORE WITH
 ##
-## Ends in an error in state: 2463.
+## Ends in an error in state: 2472.
 ##
 ## _non_arrowed_simple_core_type -> LBRACKETGREATER opt_bar row_field_list . RBRACKET [ WITH UNDERSCORE UIDENT SHARP SEMI RPAREN RBRACKET RBRACE QUOTE QUESTION LPAREN LIDENT LESSGREATER LESSDOTDOTGREATER LESS LBRACKETPERCENT LBRACKETLESS LBRACKETGREATER LBRACKETATAT LBRACKETAT LBRACKET GREATER EQUALGREATER EQUAL EOF CONSTRAINT COMMA COLONGREATER COLON BAR AS AND AMPERSAND ]
 ## row_field_list -> row_field_list . BAR row_field [ RBRACKET BAR ]
@@ -2198,7 +2198,7 @@ parse_core_type: LBRACKETLESS UNDERSCORE BAR WITH
 
 parse_core_type: LBRACKETLESS UNDERSCORE GREATER BACKQUOTE LIDENT WITH
 ##
-## Ends in an error in state: 2468.
+## Ends in an error in state: 2477.
 ##
 ## _non_arrowed_simple_core_type -> LBRACKETLESS opt_bar row_field_list GREATER name_tag_list . RBRACKET [ WITH UNDERSCORE UIDENT SHARP SEMI RPAREN RBRACKET RBRACE QUOTE QUESTION LPAREN LIDENT LESSGREATER LESSDOTDOTGREATER LESS LBRACKETPERCENT LBRACKETLESS LBRACKETGREATER LBRACKETATAT LBRACKETAT LBRACKET GREATER EQUALGREATER EQUAL EOF CONSTRAINT COMMA COLONGREATER COLON BAR AS AND AMPERSAND ]
 ## name_tag_list -> name_tag_list . name_tag [ RBRACKET BACKQUOTE ]
@@ -2211,7 +2211,7 @@ parse_core_type: LBRACKETLESS UNDERSCORE GREATER BACKQUOTE LIDENT WITH
 
 parse_core_type: LBRACKETLESS UNDERSCORE GREATER WITH
 ##
-## Ends in an error in state: 2467.
+## Ends in an error in state: 2476.
 ##
 ## _non_arrowed_simple_core_type -> LBRACKETLESS opt_bar row_field_list GREATER . name_tag_list RBRACKET [ WITH UNDERSCORE UIDENT SHARP SEMI RPAREN RBRACKET RBRACE QUOTE QUESTION LPAREN LIDENT LESSGREATER LESSDOTDOTGREATER LESS LBRACKETPERCENT LBRACKETLESS LBRACKETGREATER LBRACKETATAT LBRACKETAT LBRACKET GREATER EQUALGREATER EQUAL EOF CONSTRAINT COMMA COLONGREATER COLON BAR AS AND AMPERSAND ]
 ##
@@ -2223,7 +2223,7 @@ parse_core_type: LBRACKETLESS UNDERSCORE GREATER WITH
 
 parse_core_type: LBRACKETLESS UNDERSCORE WITH
 ##
-## Ends in an error in state: 2465.
+## Ends in an error in state: 2474.
 ##
 ## _non_arrowed_simple_core_type -> LBRACKETLESS opt_bar row_field_list . RBRACKET [ WITH UNDERSCORE UIDENT SHARP SEMI RPAREN RBRACKET RBRACE QUOTE QUESTION LPAREN LIDENT LESSGREATER LESSDOTDOTGREATER LESS LBRACKETPERCENT LBRACKETLESS LBRACKETGREATER LBRACKETATAT LBRACKETAT LBRACKET GREATER EQUALGREATER EQUAL EOF CONSTRAINT COMMA COLONGREATER COLON BAR AS AND AMPERSAND ]
 ## _non_arrowed_simple_core_type -> LBRACKETLESS opt_bar row_field_list . GREATER name_tag_list RBRACKET [ WITH UNDERSCORE UIDENT SHARP SEMI RPAREN RBRACKET RBRACE QUOTE QUESTION LPAREN LIDENT LESSGREATER LESSDOTDOTGREATER LESS LBRACKETPERCENT LBRACKETLESS LBRACKETGREATER LBRACKETATAT LBRACKETAT LBRACKET GREATER EQUALGREATER EQUAL EOF CONSTRAINT COMMA COLONGREATER COLON BAR AS AND AMPERSAND ]
@@ -2346,8 +2346,8 @@ parse_core_type: LESS LIDENT COLON UNDERSCORE WITH
 ## In state 1256, spurious reduction of production _poly_type -> core_type
 ## In state 1257, spurious reduction of production mark_position_typ(_poly_type) -> _poly_type
 ## In state 1255, spurious reduction of production poly_type -> mark_position_typ(_poly_type)
-## In state 2470, spurious reduction of production attributes ->
-## In state 2471, spurious reduction of production field -> label COLON poly_type attributes
+## In state 2479, spurious reduction of production attributes ->
+## In state 2480, spurious reduction of production field -> label COLON poly_type attributes
 ##
 
 <SYNTAX ERROR>
@@ -2390,7 +2390,7 @@ parse_core_type: LESS WITH
 
 parse_core_type: LIDENT COLONCOLON UNDERSCORE EQUALGREATER WITH
 ##
-## Ends in an error in state: 2476.
+## Ends in an error in state: 2485.
 ##
 ## _core_type2 -> LIDENT COLONCOLON non_arrowed_core_type EQUALGREATER . core_type2 [ WITH SEMI RPAREN RBRACKET RBRACE LBRACKETATAT LBRACKETAT GREATER EQUALGREATER EQUAL EOF CONSTRAINT COMMA COLONGREATER BAR AS AND AMPERSAND ]
 ##
@@ -2402,7 +2402,7 @@ parse_core_type: LIDENT COLONCOLON UNDERSCORE EQUALGREATER WITH
 
 parse_core_type: LIDENT COLONCOLON UNDERSCORE QUESTION EQUALGREATER WITH
 ##
-## Ends in an error in state: 2474.
+## Ends in an error in state: 2483.
 ##
 ## _core_type2 -> LIDENT COLONCOLON non_arrowed_core_type QUESTION EQUALGREATER . core_type2 [ WITH SEMI RPAREN RBRACKET RBRACE LBRACKETATAT LBRACKETAT GREATER EQUALGREATER EQUAL EOF CONSTRAINT COMMA COLONGREATER BAR AS AND AMPERSAND ]
 ##
@@ -2414,7 +2414,7 @@ parse_core_type: LIDENT COLONCOLON UNDERSCORE QUESTION EQUALGREATER WITH
 
 parse_core_type: LIDENT COLONCOLON UNDERSCORE QUESTION WITH
 ##
-## Ends in an error in state: 2473.
+## Ends in an error in state: 2482.
 ##
 ## _core_type2 -> LIDENT COLONCOLON non_arrowed_core_type QUESTION . EQUALGREATER core_type2 [ WITH SEMI RPAREN RBRACKET RBRACE LBRACKETATAT LBRACKETAT GREATER EQUALGREATER EQUAL EOF CONSTRAINT COMMA COLONGREATER BAR AS AND AMPERSAND ]
 ##
@@ -2426,7 +2426,7 @@ parse_core_type: LIDENT COLONCOLON UNDERSCORE QUESTION WITH
 
 parse_core_type: LIDENT COLONCOLON UNDERSCORE WITH
 ##
-## Ends in an error in state: 2472.
+## Ends in an error in state: 2481.
 ##
 ## _core_type2 -> LIDENT COLONCOLON non_arrowed_core_type . QUESTION EQUALGREATER core_type2 [ WITH SEMI RPAREN RBRACKET RBRACE LBRACKETATAT LBRACKETAT GREATER EQUALGREATER EQUAL EOF CONSTRAINT COMMA COLONGREATER BAR AS AND AMPERSAND ]
 ## _core_type2 -> LIDENT COLONCOLON non_arrowed_core_type . EQUALGREATER core_type2 [ WITH SEMI RPAREN RBRACKET RBRACE LBRACKETATAT LBRACKETAT GREATER EQUALGREATER EQUAL EOF CONSTRAINT COMMA COLONGREATER BAR AS AND AMPERSAND ]
@@ -2518,7 +2518,7 @@ parse_core_type: LPAREN MODULE UIDENT SEMI
 
 parse_core_type: LPAREN MODULE UIDENT WITH TYPE LIDENT EQUAL LESSDOTDOTGREATER AND WITH
 ##
-## Ends in an error in state: 2481.
+## Ends in an error in state: 2490.
 ##
 ## package_type_cstrs -> package_type_cstr AND . package_type_cstrs [ RPAREN COLONGREATER ]
 ##
@@ -2530,7 +2530,7 @@ parse_core_type: LPAREN MODULE UIDENT WITH TYPE LIDENT EQUAL LESSDOTDOTGREATER A
 
 parse_core_type: LPAREN MODULE UIDENT WITH TYPE LIDENT EQUAL LESSDOTDOTGREATER WITH
 ##
-## Ends in an error in state: 2480.
+## Ends in an error in state: 2489.
 ##
 ## package_type_cstrs -> package_type_cstr . [ RPAREN COLONGREATER ]
 ## package_type_cstrs -> package_type_cstr . AND package_type_cstrs [ RPAREN COLONGREATER ]
@@ -2548,7 +2548,7 @@ parse_core_type: LPAREN MODULE UIDENT WITH TYPE LIDENT EQUAL LESSDOTDOTGREATER W
 ## In state 271, spurious reduction of production _core_type -> core_type2
 ## In state 280, spurious reduction of production mark_position_typ(_core_type) -> _core_type
 ## In state 267, spurious reduction of production core_type -> mark_position_typ(_core_type)
-## In state 2478, spurious reduction of production package_type_cstr -> TYPE label_longident EQUAL core_type
+## In state 2487, spurious reduction of production package_type_cstr -> TYPE label_longident EQUAL core_type
 ##
 
 <SYNTAX ERROR>
@@ -2666,7 +2666,7 @@ parse_core_type: QUOTE WITH
 
 parse_core_type: SHARP LIDENT UNDERSCORE WHILE
 ##
-## Ends in an error in state: 2483.
+## Ends in an error in state: 2492.
 ##
 ## _non_arrowed_non_simple_core_type -> SHARP class_longident non_arrowed_simple_core_type_list . [ WITH SEMI RPAREN RBRACKET RBRACE QUESTION LBRACKETATAT LBRACKETAT GREATER EQUALGREATER EQUAL EOF CONSTRAINT COMMA COLONGREATER BAR AS AND AMPERSAND ]
 ## non_arrowed_simple_core_type_list -> non_arrowed_simple_core_type_list . non_arrowed_simple_core_type [ WITH UNDERSCORE UIDENT SHARP SEMI RPAREN RBRACKET RBRACE QUOTE QUESTION LPAREN LIDENT LESSGREATER LESSDOTDOTGREATER LESS LBRACKETPERCENT LBRACKETLESS LBRACKETGREATER LBRACKETATAT LBRACKETAT LBRACKET GREATER EQUALGREATER EQUAL EOF CONSTRAINT COMMA COLONGREATER BAR AS AND AMPERSAND ]
@@ -2833,7 +2833,7 @@ parse_core_type: UNDERSCORE EQUALGREATER WITH
 
 parse_core_type: UNDERSCORE WITH
 ##
-## Ends in an error in state: 2583.
+## Ends in an error in state: 2592.
 ##
 ## parse_core_type -> core_type . EOF [ # ]
 ##
@@ -2856,7 +2856,7 @@ parse_core_type: UNDERSCORE WITH
 
 parse_core_type: WITH
 ##
-## Ends in an error in state: 2581.
+## Ends in an error in state: 2590.
 ##
 ## parse_core_type' -> . parse_core_type [ # ]
 ##
@@ -3264,7 +3264,7 @@ interface: INCLUDE LPAREN LPAREN WITH
 
 interface: INCLUDE LPAREN MODULE TYPE UIDENT COLON
 ##
-## Ends in an error in state: 2406.
+## Ends in an error in state: 2415.
 ##
 ## _module_expr -> module_expr . simple_module_expr [ error WITH UIDENT SEMI RPAREN RBRACKET RBRACE LPAREN LBRACKETPERCENT LBRACKETATAT LBRACKETAT LBRACE EQUALGREATER EOF ]
 ## _module_expr -> module_expr . LPAREN module_expr error [ error WITH UIDENT SEMI RPAREN RBRACKET RBRACE LPAREN LBRACKETPERCENT LBRACKETATAT LBRACKETAT LBRACE EQUALGREATER EOF ]
@@ -3793,7 +3793,7 @@ interface: INCLUDE LPAREN WITH
 
 interface: INCLUDE MODULE TYPE UIDENT COLON
 ##
-## Ends in an error in state: 2332.
+## Ends in an error in state: 2337.
 ##
 ## _module_expr -> module_expr . simple_module_expr [ WITH UIDENT SEMI RPAREN LPAREN LBRACKETPERCENT LBRACKETATAT LBRACKETAT LBRACE EQUALGREATER EQUAL EOF AND ]
 ## _module_expr -> module_expr . LPAREN module_expr error [ WITH UIDENT SEMI RPAREN LPAREN LBRACKETPERCENT LBRACKETATAT LBRACKETAT LBRACE EQUALGREATER EQUAL EOF AND ]
@@ -4557,7 +4557,7 @@ interface: MODULE WITH
 
 interface: OPEN UIDENT WITH
 ##
-## Ends in an error in state: 2575.
+## Ends in an error in state: 2584.
 ##
 ## signature -> signature_item . SEMI signature [ EOF ]
 ##
@@ -4646,7 +4646,7 @@ interface: TYPE LIDENT RBRACKET
 
 interface: TYPE LIDENT SEMI WITH
 ##
-## Ends in an error in state: 2576.
+## Ends in an error in state: 2585.
 ##
 ## signature -> signature_item SEMI . signature [ EOF ]
 ##
@@ -4690,7 +4690,7 @@ interface: TYPE UIDENT DOT LIDENT UNDERSCORE SEMI
 
 interface: WITH
 ##
-## Ends in an error in state: 2574.
+## Ends in an error in state: 2583.
 ##
 ## interface' -> . interface [ # ]
 ##
@@ -5429,7 +5429,7 @@ implementation: FUN LIDENT COLONCOLON WITH
 
 implementation: INCLUDE FUN LPAREN UNDERSCORE COLON UIDENT SEMI
 ##
-## Ends in an error in state: 2333.
+## Ends in an error in state: 2338.
 ##
 ## _module_type -> module_type . WITH with_constraints [ WITH RPAREN LBRACKETAT EQUALGREATER ]
 ## _module_type -> module_type . EQUALGREATER module_type [ WITH RPAREN LBRACKETAT EQUALGREATER ]
@@ -6211,7 +6211,7 @@ implementation: INCLUDE LPAREN UIDENT COLON WITH
 
 implementation: INCLUDE LPAREN UIDENT WITH
 ##
-## Ends in an error in state: 2404.
+## Ends in an error in state: 2413.
 ##
 ## _module_expr -> module_expr . simple_module_expr [ error UIDENT RPAREN LPAREN LBRACKETPERCENT LBRACKETAT LBRACE COLON ]
 ## _module_expr -> module_expr . LPAREN module_expr error [ error UIDENT RPAREN LPAREN LBRACKETPERCENT LBRACKETAT LBRACE COLON ]
@@ -6272,7 +6272,7 @@ implementation: INCLUDE LPAREN VAL UIDENT COLON UIDENT COLONGREATER WITH
 
 implementation: INCLUDE LPAREN VAL UIDENT COLON WITH
 ##
-## Ends in an error in state: 2402.
+## Ends in an error in state: 2411.
 ##
 ## _module_expr -> LPAREN VAL expr COLON . error [ error WITH UIDENT SEMI RPAREN RBRACKET RBRACE LPAREN LBRACKETPERCENT LBRACKETATAT LBRACKETAT LBRACE EQUALGREATER EOF COLON AND ]
 ## _simple_module_expr -> LPAREN VAL expr COLON . package_type RPAREN [ error WITH UIDENT SEMI RPAREN RBRACKET RBRACE LPAREN LBRACKETPERCENT LBRACKETATAT LBRACKETAT LBRACE EQUALGREATER EOF COLON AND ]
@@ -6306,7 +6306,7 @@ implementation: INCLUDE LPAREN VAL UIDENT COLONGREATER UIDENT COLONGREATER
 
 implementation: INCLUDE LPAREN VAL UIDENT COLONGREATER WITH
 ##
-## Ends in an error in state: 2400.
+## Ends in an error in state: 2409.
 ##
 ## _module_expr -> LPAREN VAL expr COLONGREATER . error [ error WITH UIDENT SEMI RPAREN RBRACKET RBRACE LPAREN LBRACKETPERCENT LBRACKETATAT LBRACKETAT LBRACE EQUALGREATER EOF COLON AND ]
 ## _simple_module_expr -> LPAREN VAL expr COLONGREATER . package_type RPAREN [ error WITH UIDENT SEMI RPAREN RBRACKET RBRACE LPAREN LBRACKETPERCENT LBRACKETATAT LBRACKETAT LBRACE EQUALGREATER EOF COLON AND ]
@@ -6319,7 +6319,7 @@ implementation: INCLUDE LPAREN VAL UIDENT COLONGREATER WITH
 
 implementation: INCLUDE LPAREN VAL UIDENT SEMI
 ##
-## Ends in an error in state: 2398.
+## Ends in an error in state: 2407.
 ##
 ## _expr -> expr . INFIXOP0 expr [ error STAR RPAREN QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATER COLONGREATER COLONEQUAL COLON BARBAR AMPERSAND AMPERAMPER ]
 ## _expr -> expr . INFIXOP1 expr [ error STAR RPAREN QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATER COLONGREATER COLONEQUAL COLON BARBAR AMPERSAND AMPERAMPER ]
@@ -6415,7 +6415,7 @@ implementation: INCLUDE LPAREN WITH
 
 implementation: INCLUDE UIDENT LBRACE UIDENT EOF
 ##
-## Ends in an error in state: 2303.
+## Ends in an error in state: 2308.
 ##
 ## _simple_module_expr -> LBRACE structure . RBRACE [ error WITH UIDENT SEMI RPAREN RBRACKET RBRACE LPAREN LBRACKETPERCENT LBRACKETATAT LBRACKETAT LBRACE EQUALGREATER EOF COLON AND ]
 ##
@@ -6716,8 +6716,9 @@ implementation: LBRACE CONSTRAINT WITH
 
 implementation: LBRACE DOTDOTDOT UIDENT COMMA WITH
 ##
-## Ends in an error in state: 1079.
+## Ends in an error in state: 2252.
 ##
+## opt_comma -> COMMA . [ RBRACE ]
 ## record_expr -> DOTDOTDOT expr_optional_constraint COMMA . lbl_expr_list [ error RBRACE ]
 ##
 ## The known suffix of the stack is as follows:
@@ -6728,40 +6729,40 @@ implementation: LBRACE DOTDOTDOT UIDENT COMMA WITH
 
 implementation: LBRACE DOTDOTDOT UIDENT RBRACKET
 ##
-## Ends in an error in state: 1078.
+## Ends in an error in state: 2345.
 ##
-## record_expr -> DOTDOTDOT expr_optional_constraint . [ error RBRACE ]
+## _simple_expr -> LBRACE DOTDOTDOT expr_optional_constraint . opt_comma RBRACE [ error VARIABLEINFIXOP UIDENT TRUE STRING STAR SHARPOP SHARP SEMI RPAREN RBRACKET RBRACE QUESTION PREFIXOP PLUSEQ PLUSDOT PLUS PERCENT OR NEW NATIVEINT MINUSDOT MINUS LPAREN LIDENT LESSGREATER LESSDOTDOTGREATER LESS LBRACKETPERCENT LBRACKETBAR LBRACKETATAT LBRACKETAT LBRACKET LBRACELESS LBRACE INT64 INT32 INT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER FLOAT FALSE EOF ELSE DOT COMMA COLONGREATER COLONEQUAL COLON CHAR BARRBRACKET BARBAR BAR BANG BACKQUOTE AS AND AMPERSAND AMPERAMPER ]
 ## record_expr -> DOTDOTDOT expr_optional_constraint . COMMA lbl_expr_list [ error RBRACE ]
 ##
 ## The known suffix of the stack is as follows:
-## DOTDOTDOT expr_optional_constraint
+## LBRACE DOTDOTDOT expr_optional_constraint
 ##
 ## WARNING: This example involves spurious reductions.
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 831, spurious reduction of production constr_longident -> mod_longident
-## In state 873, spurious reduction of production _simple_expr -> constr_longident
-## In state 845, spurious reduction of production mark_position_exp(_simple_expr) -> _simple_expr
-## In state 841, spurious reduction of production simple_expr -> mark_position_exp(_simple_expr)
-## In state 847, spurious reduction of production less_aggressive_simple_expression -> simple_expr
-## In state 853, spurious reduction of production _expr -> less_aggressive_simple_expression
-## In state 882, spurious reduction of production mark_position_exp(_expr) -> _expr
-## In state 852, spurious reduction of production expr -> mark_position_exp(_expr)
-## In state 1048, spurious reduction of production expr_optional_constraint -> expr
+## In state 747, spurious reduction of production constr_longident -> mod_longident
+## In state 907, spurious reduction of production _simple_expr -> constr_longident
+## In state 793, spurious reduction of production mark_position_exp(_simple_expr) -> _simple_expr
+## In state 789, spurious reduction of production simple_expr -> mark_position_exp(_simple_expr)
+## In state 820, spurious reduction of production less_aggressive_simple_expression -> simple_expr
+## In state 887, spurious reduction of production _expr -> less_aggressive_simple_expression
+## In state 916, spurious reduction of production mark_position_exp(_expr) -> _expr
+## In state 886, spurious reduction of production expr -> mark_position_exp(_expr)
+## In state 1027, spurious reduction of production expr_optional_constraint -> expr
 ##
 
 <SYNTAX ERROR>
 
 implementation: LBRACE DOTDOTDOT WITH
 ##
-## Ends in an error in state: 1077.
+## Ends in an error in state: 2344.
 ##
-## record_expr -> DOTDOTDOT . expr_optional_constraint [ error RBRACE ]
+## _simple_expr -> LBRACE DOTDOTDOT . expr_optional_constraint opt_comma RBRACE [ error VARIABLEINFIXOP UIDENT TRUE STRING STAR SHARPOP SHARP SEMI RPAREN RBRACKET RBRACE QUESTION PREFIXOP PLUSEQ PLUSDOT PLUS PERCENT OR NEW NATIVEINT MINUSDOT MINUS LPAREN LIDENT LESSGREATER LESSDOTDOTGREATER LESS LBRACKETPERCENT LBRACKETBAR LBRACKETATAT LBRACKETAT LBRACKET LBRACELESS LBRACE INT64 INT32 INT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER FLOAT FALSE EOF ELSE DOT COMMA COLONGREATER COLONEQUAL COLON CHAR BARRBRACKET BARBAR BAR BANG BACKQUOTE AS AND AMPERSAND AMPERAMPER ]
 ## record_expr -> DOTDOTDOT . expr_optional_constraint COMMA lbl_expr_list [ error RBRACE ]
 ##
 ## The known suffix of the stack is as follows:
-## DOTDOTDOT
+## LBRACE DOTDOTDOT
 ##
 
 <SYNTAX ERROR>
@@ -7359,7 +7360,7 @@ implementation: LBRACE INITIALIZER WITH
 
 implementation: LBRACE LET CHAR EQUAL CHAR SEMI WITH
 ##
-## Ends in an error in state: 2339.
+## Ends in an error in state: 2348.
 ##
 ## _simple_expr -> LBRACE semi_terminated_seq_expr . RBRACE [ error VARIABLEINFIXOP UIDENT TRUE STRING STAR SHARPOP SHARP SEMI RPAREN RBRACKET RBRACE QUESTION PREFIXOP PLUSEQ PLUSDOT PLUS PERCENT OR NEW NATIVEINT MINUSDOT MINUS LPAREN LIDENT LESSGREATER LESSDOTDOTGREATER LESS LBRACKETPERCENT LBRACKETBAR LBRACKETATAT LBRACKETAT LBRACKET LBRACELESS LBRACE INT64 INT32 INT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER FLOAT FALSE EOF ELSE DOT COMMA COLONGREATER COLONEQUAL COLON CHAR BARRBRACKET BARBAR BAR BANG BACKQUOTE AS AND AMPERSAND AMPERAMPER ]
 ## _simple_expr -> LBRACE semi_terminated_seq_expr . error [ error VARIABLEINFIXOP UIDENT TRUE STRING STAR SHARPOP SHARP SEMI RPAREN RBRACKET RBRACE QUESTION PREFIXOP PLUSEQ PLUSDOT PLUS PERCENT OR NEW NATIVEINT MINUSDOT MINUS LPAREN LIDENT LESSGREATER LESSDOTDOTGREATER LESS LBRACKETPERCENT LBRACKETBAR LBRACKETATAT LBRACKETAT LBRACKET LBRACELESS LBRACE INT64 INT32 INT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER FLOAT FALSE EOF ELSE DOT COMMA COLONGREATER COLONEQUAL COLON CHAR BARRBRACKET BARBAR BAR BANG BACKQUOTE AS AND AMPERSAND AMPERAMPER ]
@@ -7371,17 +7372,17 @@ implementation: LBRACE LET CHAR EQUAL CHAR SEMI WITH
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 2267, spurious reduction of production opt_semi -> SEMI
-## In state 2278, spurious reduction of production _semi_terminated_seq_expr -> let_bindings opt_semi
-## In state 2276, spurious reduction of production mark_position_exp(_semi_terminated_seq_expr) -> _semi_terminated_seq_expr
-## In state 2265, spurious reduction of production semi_terminated_seq_expr -> mark_position_exp(_semi_terminated_seq_expr)
+## In state 2272, spurious reduction of production opt_semi -> SEMI
+## In state 2283, spurious reduction of production _semi_terminated_seq_expr -> let_bindings opt_semi
+## In state 2281, spurious reduction of production mark_position_exp(_semi_terminated_seq_expr) -> _semi_terminated_seq_expr
+## In state 2270, spurious reduction of production semi_terminated_seq_expr -> mark_position_exp(_semi_terminated_seq_expr)
 ##
 
 Expecting "}" to finish the block
 
 implementation: LBRACE LET MODULE UIDENT EQUAL UIDENT SEMI WITH
 ##
-## Ends in an error in state: 2337.
+## Ends in an error in state: 2342.
 ##
 ## _semi_terminated_seq_expr_row -> LET MODULE UIDENT module_binding_body post_item_attributes SEMI . semi_terminated_seq_expr [ error RBRACE ]
 ##
@@ -7417,7 +7418,7 @@ implementation: LBRACE LET MODULE WITH
 
 implementation: LBRACE LET OPEN BANG WITH
 ##
-## Ends in an error in state: 2259.
+## Ends in an error in state: 2264.
 ##
 ## _semi_terminated_seq_expr_row -> option(LET) OPEN override_flag . mod_longident post_item_attributes SEMI semi_terminated_seq_expr [ error RBRACE ]
 ##
@@ -7429,7 +7430,7 @@ implementation: LBRACE LET OPEN BANG WITH
 
 implementation: LBRACE LET OPEN UIDENT SEMI WITH
 ##
-## Ends in an error in state: 2262.
+## Ends in an error in state: 2267.
 ##
 ## _semi_terminated_seq_expr_row -> option(LET) OPEN override_flag mod_longident post_item_attributes SEMI . semi_terminated_seq_expr [ error RBRACE ]
 ##
@@ -7441,7 +7442,7 @@ implementation: LBRACE LET OPEN UIDENT SEMI WITH
 
 implementation: LBRACE LET OPEN UIDENT WITH
 ##
-## Ends in an error in state: 2261.
+## Ends in an error in state: 2266.
 ##
 ## _semi_terminated_seq_expr_row -> option(LET) OPEN override_flag mod_longident post_item_attributes . SEMI semi_terminated_seq_expr [ error RBRACE ]
 ##
@@ -7452,14 +7453,14 @@ implementation: LBRACE LET OPEN UIDENT WITH
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 2260, spurious reduction of production post_item_attributes ->
+## In state 2265, spurious reduction of production post_item_attributes ->
 ##
 
 <SYNTAX ERROR>
 
 implementation: LBRACE LET OPEN WITH
 ##
-## Ends in an error in state: 2258.
+## Ends in an error in state: 2263.
 ##
 ## _semi_terminated_seq_expr_row -> option(LET) OPEN . override_flag mod_longident post_item_attributes SEMI semi_terminated_seq_expr [ error RBRACE ]
 ##
@@ -8112,7 +8113,7 @@ implementation: LBRACE METHOD WITH
 
 implementation: LBRACE PERCENT WITH TYPE
 ##
-## Ends in an error in state: 2269.
+## Ends in an error in state: 2274.
 ##
 ## _semi_terminated_seq_expr -> item_extension_sugar . semi_terminated_seq_expr_row [ error RBRACE ]
 ## let_binding -> item_extension_sugar . let_binding_impl [ error SEMI RBRACE AND ]
@@ -8132,7 +8133,7 @@ implementation: LBRACE PERCENT WITH TYPE
 
 implementation: LBRACE UIDENT DOT WITH
 ##
-## Ends in an error in state: 2280.
+## Ends in an error in state: 2285.
 ##
 ## _simple_expr -> mod_longident DOT . LPAREN expr RPAREN [ error VARIABLEINFIXOP UIDENT TRUE STRING STAR SHARPOP SHARP SEMI RBRACE QUESTION PREFIXOP PLUSEQ PLUSDOT PLUS PERCENT OR NEW NATIVEINT MINUSDOT MINUS LPAREN LIDENT LESSGREATER LESSDOTDOTGREATER LESS LBRACKETPERCENT LBRACKETBAR LBRACKETATAT LBRACKETAT LBRACKET LBRACELESS LBRACE INT64 INT32 INT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATER FLOAT FALSE DOT COLONEQUAL CHAR BARBAR BANG BACKQUOTE AMPERSAND AMPERAMPER ]
 ## _simple_expr -> mod_longident DOT . LPAREN expr_comma_list RPAREN [ error VARIABLEINFIXOP UIDENT TRUE STRING STAR SHARPOP SHARP SEMI RBRACE QUESTION PREFIXOP PLUSEQ PLUSDOT PLUS PERCENT OR NEW NATIVEINT MINUSDOT MINUS LPAREN LIDENT LESSGREATER LESSDOTDOTGREATER LESS LBRACKETPERCENT LBRACKETBAR LBRACKETATAT LBRACKETAT LBRACKET LBRACELESS LBRACE INT64 INT32 INT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATER FLOAT FALSE DOT COLONEQUAL CHAR BARBAR BANG BACKQUOTE AMPERSAND AMPERAMPER ]
@@ -8498,7 +8499,7 @@ implementation: LBRACE VAL WITH
 
 implementation: LBRACELESS LIDENT COLON UIDENT SEMI
 ##
-## Ends in an error in state: 2348.
+## Ends in an error in state: 2357.
 ##
 ## _expr -> expr . INFIXOP0 expr [ error STAR QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER COMMA COLONEQUAL BARBAR AMPERSAND AMPERAMPER ]
 ## _expr -> expr . INFIXOP1 expr [ error STAR QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER COMMA COLONEQUAL BARBAR AMPERSAND AMPERAMPER ]
@@ -8654,7 +8655,7 @@ implementation: LBRACKETATATAT UNDERSCORE
 
 implementation: LBRACKETATATAT WITH UIDENT RBRACE
 ##
-## Ends in an error in state: 2299.
+## Ends in an error in state: 2304.
 ##
 ## floating_attribute -> LBRACKETATATAT attr_id payload . RBRACKET [ error SEMI RBRACKET RBRACE EOF ]
 ##
@@ -8738,7 +8739,7 @@ implementation: LBRACKETBAR UIDENT COLON UNDERSCORE COLONGREATER WITH
 ##
 ## Ends in an error in state: 1054.
 ##
-## type_constraint_right_of_colon -> core_type COLONGREATER . core_type [ error RPAREN RBRACE COMMA BARRBRACKET ]
+## type_constraint_right_of_colon -> core_type COLONGREATER . core_type [ error RPAREN COMMA BARRBRACKET ]
 ##
 ## The known suffix of the stack is as follows:
 ## core_type COLONGREATER
@@ -8750,7 +8751,7 @@ implementation: LBRACKETBAR UIDENT COLON WITH
 ##
 ## Ends in an error in state: 1051.
 ##
-## type_constraint -> COLON . type_constraint_right_of_colon [ error RPAREN RBRACE COMMA BARRBRACKET ]
+## type_constraint -> COLON . type_constraint_right_of_colon [ error RPAREN COMMA BARRBRACKET ]
 ##
 ## The known suffix of the stack is as follows:
 ## COLON
@@ -8762,7 +8763,7 @@ implementation: LBRACKETBAR UIDENT COLONGREATER WITH
 ##
 ## Ends in an error in state: 1049.
 ##
-## type_constraint -> COLONGREATER . core_type [ error RPAREN RBRACE COMMA BARRBRACKET ]
+## type_constraint -> COLONGREATER . core_type [ error RPAREN COMMA BARRBRACKET ]
 ##
 ## The known suffix of the stack is as follows:
 ## COLONGREATER
@@ -8821,7 +8822,7 @@ implementation: LBRACKETPERCENTPERCENT WITH DOT UNDERSCORE
 
 implementation: LBRACKETPERCENTPERCENT WITH QUESTION UNDERSCORE SEMI
 ##
-## Ends in an error in state: 2432.
+## Ends in an error in state: 2441.
 ##
 ## _or_pattern -> pattern . BAR pattern [ WHEN RBRACKET BAR ]
 ## payload -> QUESTION pattern . [ RBRACKET ]
@@ -8841,7 +8842,7 @@ implementation: LBRACKETPERCENTPERCENT WITH QUESTION UNDERSCORE SEMI
 
 implementation: LBRACKETPERCENTPERCENT WITH QUESTION UNDERSCORE WHEN UIDENT SEMI
 ##
-## Ends in an error in state: 2434.
+## Ends in an error in state: 2443.
 ##
 ## _expr -> expr . INFIXOP0 expr [ STAR RBRACKET QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATER COLONEQUAL BARBAR AMPERSAND AMPERAMPER ]
 ## _expr -> expr . INFIXOP1 expr [ STAR RBRACKET QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATER COLONEQUAL BARBAR AMPERSAND AMPERAMPER ]
@@ -8890,7 +8891,7 @@ implementation: LBRACKETPERCENTPERCENT WITH QUESTION UNDERSCORE WHEN UIDENT SEMI
 
 implementation: LBRACKETPERCENTPERCENT WITH QUESTION UNDERSCORE WHEN WITH
 ##
-## Ends in an error in state: 2433.
+## Ends in an error in state: 2442.
 ##
 ## payload -> QUESTION pattern WHEN . expr [ RBRACKET ]
 ##
@@ -8915,7 +8916,7 @@ implementation: LBRACKETPERCENTPERCENT WITH QUESTION WITH
 
 implementation: LBRACKETPERCENTPERCENT WITH UIDENT RBRACE
 ##
-## Ends in an error in state: 2301.
+## Ends in an error in state: 2306.
 ##
 ## item_extension -> LBRACKETPERCENTPERCENT attr_id payload . RBRACKET [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF ]
 ##
@@ -9504,14 +9505,14 @@ implementation: LET MODULE REC UIDENT EQUAL UIDENT LBRACKETATAT AND RBRACKET WIT
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 1385, spurious reduction of production post_item_attributes ->
 ## In state 1386, spurious reduction of production post_item_attributes -> item_attribute post_item_attributes
-## In state 2324, spurious reduction of production many_nonlocal_module_bindings -> LET MODULE REC nonlocal_module_binding_details post_item_attributes
+## In state 2329, spurious reduction of production many_nonlocal_module_bindings -> LET MODULE REC nonlocal_module_binding_details post_item_attributes
 ##
 
 <SYNTAX ERROR>
 
 implementation: LET MODULE REC WITH
 ##
-## Ends in an error in state: 2322.
+## Ends in an error in state: 2327.
 ##
 ## many_nonlocal_module_bindings -> LET MODULE REC . nonlocal_module_binding_details post_item_attributes [ error SEMI RBRACKET RBRACE EOF AND ]
 ##
@@ -9523,7 +9524,7 @@ implementation: LET MODULE REC WITH
 
 implementation: LET MODULE UIDENT COLON UIDENT EQUAL UIDENT WITH
 ##
-## Ends in an error in state: 2309.
+## Ends in an error in state: 2314.
 ##
 ## _module_expr -> module_expr . simple_module_expr [ error UIDENT SEMI RBRACKET RBRACE LPAREN LBRACKETPERCENT LBRACKETATAT LBRACKETAT LBRACE EOF AND ]
 ## _module_expr -> module_expr . LPAREN module_expr error [ error UIDENT SEMI RBRACKET RBRACE LPAREN LBRACKETPERCENT LBRACKETATAT LBRACKETAT LBRACE EOF AND ]
@@ -9549,7 +9550,7 @@ implementation: LET MODULE UIDENT COLON UIDENT EQUAL UIDENT WITH
 
 implementation: LET MODULE UIDENT COLON UIDENT EQUAL WITH
 ##
-## Ends in an error in state: 2308.
+## Ends in an error in state: 2313.
 ##
 ## module_binding_body_expr -> COLON module_type EQUAL . module_expr [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF AND ]
 ##
@@ -9561,7 +9562,7 @@ implementation: LET MODULE UIDENT COLON UIDENT EQUAL WITH
 
 implementation: LET MODULE UIDENT COLON UIDENT SEMI
 ##
-## Ends in an error in state: 2307.
+## Ends in an error in state: 2312.
 ##
 ## _module_type -> module_type . WITH with_constraints [ WITH LBRACKETAT EQUALGREATER EQUAL ]
 ## _module_type -> module_type . EQUALGREATER module_type [ WITH LBRACKETAT EQUALGREATER EQUAL ]
@@ -9592,7 +9593,7 @@ implementation: LET MODULE UIDENT COLON UIDENT SEMI
 
 implementation: LET MODULE UIDENT COLON WITH
 ##
-## Ends in an error in state: 2306.
+## Ends in an error in state: 2311.
 ##
 ## module_binding_body_expr -> COLON . module_type EQUAL module_expr [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF AND ]
 ##
@@ -9604,7 +9605,7 @@ implementation: LET MODULE UIDENT COLON WITH
 
 implementation: LET MODULE UIDENT EQUAL UIDENT WITH
 ##
-## Ends in an error in state: 2305.
+## Ends in an error in state: 2310.
 ##
 ## _module_expr -> module_expr . simple_module_expr [ error UIDENT SEMI RBRACKET RBRACE LPAREN LBRACKETPERCENT LBRACKETATAT LBRACKETAT LBRACE EOF AND ]
 ## _module_expr -> module_expr . LPAREN module_expr error [ error UIDENT SEMI RBRACKET RBRACE LPAREN LBRACKETPERCENT LBRACKETATAT LBRACKETAT LBRACE EOF AND ]
@@ -9642,7 +9643,7 @@ implementation: LET MODULE UIDENT EQUAL WITH
 
 implementation: LET MODULE UIDENT LPAREN RPAREN COLON UIDENT EQUALGREATER UIDENT WITH
 ##
-## Ends in an error in state: 2320.
+## Ends in an error in state: 2325.
 ##
 ## _module_binding_body_functor -> functor_args COLON non_arrowed_module_type EQUALGREATER module_expr . [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF AND ]
 ## _module_expr -> module_expr . simple_module_expr [ error UIDENT SEMI RBRACKET RBRACE LPAREN LBRACKETPERCENT LBRACKETATAT LBRACKETAT LBRACE EOF AND ]
@@ -9668,7 +9669,7 @@ implementation: LET MODULE UIDENT LPAREN RPAREN COLON UIDENT EQUALGREATER UIDENT
 
 implementation: LET MODULE UIDENT LPAREN RPAREN COLON UIDENT EQUALGREATER WITH
 ##
-## Ends in an error in state: 2319.
+## Ends in an error in state: 2324.
 ##
 ## _module_binding_body_functor -> functor_args COLON non_arrowed_module_type EQUALGREATER . module_expr [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF AND ]
 ##
@@ -9680,7 +9681,7 @@ implementation: LET MODULE UIDENT LPAREN RPAREN COLON UIDENT EQUALGREATER WITH
 
 implementation: LET MODULE UIDENT LPAREN RPAREN COLON UIDENT SEMI
 ##
-## Ends in an error in state: 2318.
+## Ends in an error in state: 2323.
 ##
 ## _module_binding_body_functor -> functor_args COLON non_arrowed_module_type . EQUALGREATER module_expr [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF AND ]
 ## _module_type -> non_arrowed_module_type . [ WITH LBRACKETAT EQUALGREATER ]
@@ -9736,7 +9737,7 @@ implementation: LET MODULE UIDENT LPAREN RPAREN COLON UIDENT WITH TYPE LIDENT CO
 
 implementation: LET MODULE UIDENT LPAREN RPAREN COLON WITH
 ##
-## Ends in an error in state: 2317.
+## Ends in an error in state: 2322.
 ##
 ## _module_binding_body_functor -> functor_args COLON . non_arrowed_module_type EQUALGREATER module_expr [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF AND ]
 ##
@@ -9748,7 +9749,7 @@ implementation: LET MODULE UIDENT LPAREN RPAREN COLON WITH
 
 implementation: LET MODULE UIDENT LPAREN RPAREN EQUALGREATER UIDENT WITH
 ##
-## Ends in an error in state: 2316.
+## Ends in an error in state: 2321.
 ##
 ## _module_binding_body_functor -> functor_args EQUALGREATER module_expr . [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF AND ]
 ## _module_expr -> module_expr . simple_module_expr [ error UIDENT SEMI RBRACKET RBRACE LPAREN LBRACKETPERCENT LBRACKETATAT LBRACKETAT LBRACE EOF AND ]
@@ -9774,7 +9775,7 @@ implementation: LET MODULE UIDENT LPAREN RPAREN EQUALGREATER UIDENT WITH
 
 implementation: LET MODULE UIDENT LPAREN RPAREN EQUALGREATER WITH
 ##
-## Ends in an error in state: 2315.
+## Ends in an error in state: 2320.
 ##
 ## _module_binding_body_functor -> functor_args EQUALGREATER . module_expr [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF AND ]
 ##
@@ -9786,7 +9787,7 @@ implementation: LET MODULE UIDENT LPAREN RPAREN EQUALGREATER WITH
 
 implementation: LET MODULE UIDENT LPAREN RPAREN WITH
 ##
-## Ends in an error in state: 2314.
+## Ends in an error in state: 2319.
 ##
 ## _module_binding_body_functor -> functor_args . EQUALGREATER module_expr [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF AND ]
 ## _module_binding_body_functor -> functor_args . COLON non_arrowed_module_type EQUALGREATER module_expr [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF AND ]
@@ -9825,7 +9826,7 @@ implementation: LET MODULE WITH
 
 implementation: LET REC ASSERT
 ##
-## Ends in an error in state: 2327.
+## Ends in an error in state: 2332.
 ##
 ## let_binding_impl -> LET rec_flag . let_binding_body post_item_attributes [ error SEMI RBRACKET RBRACE EOF AND ]
 ##
@@ -10436,7 +10437,7 @@ implementation: LPAREN FUN WITH
 
 implementation: LPAREN IF UIDENT UIDENT ELSE WITH
 ##
-## Ends in an error in state: 2287.
+## Ends in an error in state: 2292.
 ##
 ## _expr -> IF simple_expr simple_expr ELSE . expr [ error STAR SEMI RPAREN RBRACKET RBRACE QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETATAT LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER EOF COMMA COLONGREATER COLONEQUAL COLON BARRBRACKET BARBAR BAR AND AMPERSAND AMPERAMPER ]
 ##
@@ -10448,7 +10449,7 @@ implementation: LPAREN IF UIDENT UIDENT ELSE WITH
 
 implementation: LPAREN IF UIDENT WITH
 ##
-## Ends in an error in state: 2285.
+## Ends in an error in state: 2290.
 ##
 ## _expr -> IF simple_expr . simple_expr ELSE expr [ error STAR SEMI RPAREN RBRACKET RBRACE QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETATAT LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER EOF COMMA COLONGREATER COLONEQUAL COLON BARRBRACKET BARBAR BAR AND AMPERSAND AMPERAMPER ]
 ## _expr -> IF simple_expr . simple_expr [ error STAR SEMI RPAREN RBRACKET RBRACE QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETATAT LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER EOF COMMA COLONGREATER COLONEQUAL COLON BARRBRACKET BARBAR BAR AND AMPERSAND AMPERAMPER ]
@@ -10508,6 +10509,7 @@ implementation: LPAREN LBRACE WITH
 ##
 ## _simple_expr -> LBRACE . semi_terminated_seq_expr RBRACE [ error VARIABLEINFIXOP UIDENT TRUE STRING STAR SHARPOP SHARP SEMI RPAREN RBRACKET RBRACE QUESTION PREFIXOP PLUSEQ PLUSDOT PLUS PERCENT OR NEW NATIVEINT MINUSDOT MINUS LPAREN LIDENT LESSGREATER LESSDOTDOTGREATER LESS LBRACKETPERCENT LBRACKETBAR LBRACKETATAT LBRACKETAT LBRACKET LBRACELESS LBRACE INT64 INT32 INT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER FLOAT FALSE EOF ELSE DOT COMMA COLONGREATER COLONEQUAL COLON CHAR BARRBRACKET BARBAR BAR BANG BACKQUOTE AS AND AMPERSAND AMPERAMPER ]
 ## _simple_expr -> LBRACE . semi_terminated_seq_expr error [ error VARIABLEINFIXOP UIDENT TRUE STRING STAR SHARPOP SHARP SEMI RPAREN RBRACKET RBRACE QUESTION PREFIXOP PLUSEQ PLUSDOT PLUS PERCENT OR NEW NATIVEINT MINUSDOT MINUS LPAREN LIDENT LESSGREATER LESSDOTDOTGREATER LESS LBRACKETPERCENT LBRACKETBAR LBRACKETATAT LBRACKETAT LBRACKET LBRACELESS LBRACE INT64 INT32 INT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER FLOAT FALSE EOF ELSE DOT COMMA COLONGREATER COLONEQUAL COLON CHAR BARRBRACKET BARBAR BAR BANG BACKQUOTE AS AND AMPERSAND AMPERAMPER ]
+## _simple_expr -> LBRACE . DOTDOTDOT expr_optional_constraint opt_comma RBRACE [ error VARIABLEINFIXOP UIDENT TRUE STRING STAR SHARPOP SHARP SEMI RPAREN RBRACKET RBRACE QUESTION PREFIXOP PLUSEQ PLUSDOT PLUS PERCENT OR NEW NATIVEINT MINUSDOT MINUS LPAREN LIDENT LESSGREATER LESSDOTDOTGREATER LESS LBRACKETPERCENT LBRACKETBAR LBRACKETATAT LBRACKETAT LBRACKET LBRACELESS LBRACE INT64 INT32 INT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER FLOAT FALSE EOF ELSE DOT COMMA COLONGREATER COLONEQUAL COLON CHAR BARRBRACKET BARBAR BAR BANG BACKQUOTE AS AND AMPERSAND AMPERAMPER ]
 ## _simple_expr -> LBRACE . record_expr RBRACE [ error VARIABLEINFIXOP UIDENT TRUE STRING STAR SHARPOP SHARP SEMI RPAREN RBRACKET RBRACE QUESTION PREFIXOP PLUSEQ PLUSDOT PLUS PERCENT OR NEW NATIVEINT MINUSDOT MINUS LPAREN LIDENT LESSGREATER LESSDOTDOTGREATER LESS LBRACKETPERCENT LBRACKETBAR LBRACKETATAT LBRACKETAT LBRACKET LBRACELESS LBRACE INT64 INT32 INT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER FLOAT FALSE EOF ELSE DOT COMMA COLONGREATER COLONEQUAL COLON CHAR BARRBRACKET BARBAR BAR BANG BACKQUOTE AS AND AMPERSAND AMPERAMPER ]
 ## _simple_expr -> LBRACE . record_expr error [ error VARIABLEINFIXOP UIDENT TRUE STRING STAR SHARPOP SHARP SEMI RPAREN RBRACKET RBRACE QUESTION PREFIXOP PLUSEQ PLUSDOT PLUS PERCENT OR NEW NATIVEINT MINUSDOT MINUS LPAREN LIDENT LESSGREATER LESSDOTDOTGREATER LESS LBRACKETPERCENT LBRACKETBAR LBRACKETATAT LBRACKETAT LBRACKET LBRACELESS LBRACE INT64 INT32 INT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER FLOAT FALSE EOF ELSE DOT COMMA COLONGREATER COLONEQUAL COLON CHAR BARRBRACKET BARBAR BAR BANG BACKQUOTE AS AND AMPERSAND AMPERAMPER ]
 ## _simple_expr -> LBRACE . class_self_pattern_and_structure RBRACE [ error VARIABLEINFIXOP UIDENT TRUE STRING STAR SHARPOP SHARP SEMI RPAREN RBRACKET RBRACE QUESTION PREFIXOP PLUSEQ PLUSDOT PLUS PERCENT OR NEW NATIVEINT MINUSDOT MINUS LPAREN LIDENT LESSGREATER LESSDOTDOTGREATER LESS LBRACKETPERCENT LBRACKETBAR LBRACKETATAT LBRACKETAT LBRACKET LBRACELESS LBRACE INT64 INT32 INT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER FLOAT FALSE EOF ELSE DOT COMMA COLONGREATER COLONEQUAL COLON CHAR BARRBRACKET BARBAR BAR BANG BACKQUOTE AS AND AMPERSAND AMPERAMPER ]
@@ -10574,7 +10576,7 @@ implementation: LPAREN LBRACKET UIDENT COMMA WITH
 
 implementation: LPAREN LBRACKETBAR UIDENT RPAREN
 ##
-## Ends in an error in state: 2365.
+## Ends in an error in state: 2374.
 ##
 ## _simple_expr -> LBRACKETBAR expr_comma_seq . opt_comma BARRBRACKET [ error VARIABLEINFIXOP UIDENT TRUE STRING STAR SHARPOP SHARP SEMI RPAREN RBRACKET RBRACE QUESTION PREFIXOP PLUSEQ PLUSDOT PLUS PERCENT OR NEW NATIVEINT MINUSDOT MINUS LPAREN LIDENT LESSGREATER LESSDOTDOTGREATER LESS LBRACKETPERCENT LBRACKETBAR LBRACKETATAT LBRACKETAT LBRACKET LBRACELESS LBRACE INT64 INT32 INT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER FLOAT FALSE EOF ELSE DOT COMMA COLONGREATER COLONEQUAL COLON CHAR BARRBRACKET BARBAR BAR BANG BACKQUOTE AS AND AMPERSAND AMPERAMPER ]
 ## _simple_expr -> LBRACKETBAR expr_comma_seq . opt_comma error [ error VARIABLEINFIXOP UIDENT TRUE STRING STAR SHARPOP SHARP SEMI RPAREN RBRACKET RBRACE QUESTION PREFIXOP PLUSEQ PLUSDOT PLUS PERCENT OR NEW NATIVEINT MINUSDOT MINUS LPAREN LIDENT LESSGREATER LESSDOTDOTGREATER LESS LBRACKETPERCENT LBRACKETBAR LBRACKETATAT LBRACKETAT LBRACKET LBRACELESS LBRACE INT64 INT32 INT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER FLOAT FALSE EOF ELSE DOT COMMA COLONGREATER COLONEQUAL COLON CHAR BARRBRACKET BARBAR BAR BANG BACKQUOTE AS AND AMPERSAND AMPERAMPER ]
@@ -10629,7 +10631,7 @@ implementation: LPAREN LBRACKETPERCENT UNDERSCORE
 
 implementation: LPAREN LBRACKETPERCENT WITH UIDENT RBRACE
 ##
-## Ends in an error in state: 2435.
+## Ends in an error in state: 2444.
 ##
 ## extension -> LBRACKETPERCENT attr_id payload . RBRACKET [ error WITH VARIABLEINFIXOP UNDERSCORE UIDENT TRUE STRING STAR SHARPOP SHARP SEMI RPAREN RBRACKET RBRACE QUOTE QUESTION PREFIXOP PLUSEQ PLUSDOT PLUS PERCENT OR NEW NATIVEINT MINUSDOT MINUS LPAREN LIDENT LESSGREATER LESSDOTDOTGREATER LESS LBRACKETPERCENT LBRACKETLESS LBRACKETGREATER LBRACKETBAR LBRACKETATAT LBRACKETAT LBRACKET LBRACELESS LBRACE INT64 INT32 INT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER FLOAT FALSE EQUALGREATER EQUAL EOF ELSE DOT CONSTRAINT COMMA COLONGREATER COLONEQUAL COLONCOLON COLON CHAR BARRBRACKET BARBAR BAR BANG BACKQUOTE AS AND AMPERSAND AMPERAMPER ]
 ##
@@ -10675,7 +10677,7 @@ implementation: LPAREN LIDENT EQUAL WITH
 
 implementation: LPAREN LPAREN COLONCOLON RPAREN LPAREN UIDENT COMMA UIDENT SEMI
 ##
-## Ends in an error in state: 2388.
+## Ends in an error in state: 2397.
 ##
 ## _expr -> LPAREN COLONCOLON RPAREN LPAREN expr COMMA expr . RPAREN [ error STAR SEMI RPAREN RBRACKET RBRACE QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETATAT LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER EOF COMMA COLONGREATER COLONEQUAL COLON BARRBRACKET BARBAR BAR AND AMPERSAND AMPERAMPER ]
 ## _expr -> expr . INFIXOP0 expr [ STAR RPAREN QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATER COLONEQUAL BARBAR AMPERSAND AMPERAMPER ]
@@ -10724,7 +10726,7 @@ implementation: LPAREN LPAREN COLONCOLON RPAREN LPAREN UIDENT COMMA UIDENT SEMI
 
 implementation: LPAREN LPAREN COLONCOLON RPAREN LPAREN UIDENT COMMA WITH
 ##
-## Ends in an error in state: 2387.
+## Ends in an error in state: 2396.
 ##
 ## _expr -> LPAREN COLONCOLON RPAREN LPAREN expr COMMA . expr RPAREN [ error STAR SEMI RPAREN RBRACKET RBRACE QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETATAT LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER EOF COMMA COLONGREATER COLONEQUAL COLON BARRBRACKET BARBAR BAR AND AMPERSAND AMPERAMPER ]
 ##
@@ -10736,7 +10738,7 @@ implementation: LPAREN LPAREN COLONCOLON RPAREN LPAREN UIDENT COMMA WITH
 
 implementation: LPAREN LPAREN COLONCOLON RPAREN LPAREN UIDENT SEMI
 ##
-## Ends in an error in state: 2386.
+## Ends in an error in state: 2395.
 ##
 ## _expr -> LPAREN COLONCOLON RPAREN LPAREN expr . COMMA expr RPAREN [ error STAR SEMI RPAREN RBRACKET RBRACE QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETATAT LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER EOF COMMA COLONGREATER COLONEQUAL COLON BARRBRACKET BARBAR BAR AND AMPERSAND AMPERAMPER ]
 ## _expr -> expr . INFIXOP0 expr [ STAR QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATER COMMA COLONEQUAL BARBAR AMPERSAND AMPERAMPER ]
@@ -10785,7 +10787,7 @@ implementation: LPAREN LPAREN COLONCOLON RPAREN LPAREN UIDENT SEMI
 
 implementation: LPAREN LPAREN COLONCOLON RPAREN LPAREN WITH
 ##
-## Ends in an error in state: 2385.
+## Ends in an error in state: 2394.
 ##
 ## _expr -> LPAREN COLONCOLON RPAREN LPAREN . expr COMMA expr RPAREN [ error STAR SEMI RPAREN RBRACKET RBRACE QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETATAT LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER EOF COMMA COLONGREATER COLONEQUAL COLON BARRBRACKET BARBAR BAR AND AMPERSAND AMPERAMPER ]
 ##
@@ -10797,7 +10799,7 @@ implementation: LPAREN LPAREN COLONCOLON RPAREN LPAREN WITH
 
 implementation: LPAREN LPAREN COLONCOLON RPAREN WITH
 ##
-## Ends in an error in state: 2384.
+## Ends in an error in state: 2393.
 ##
 ## _expr -> LPAREN COLONCOLON RPAREN . LPAREN expr COMMA expr RPAREN [ error STAR SEMI RPAREN RBRACKET RBRACE QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETATAT LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER EOF COMMA COLONGREATER COLONEQUAL COLON BARRBRACKET BARBAR BAR AND AMPERSAND AMPERAMPER ]
 ##
@@ -10809,7 +10811,7 @@ implementation: LPAREN LPAREN COLONCOLON RPAREN WITH
 
 implementation: LPAREN LPAREN COLONCOLON WITH
 ##
-## Ends in an error in state: 2383.
+## Ends in an error in state: 2392.
 ##
 ## _expr -> LPAREN COLONCOLON . RPAREN LPAREN expr COMMA expr RPAREN [ error STAR SEMI RPAREN RBRACKET RBRACE QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETATAT LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER EOF COMMA COLONGREATER COLONEQUAL COLON BARRBRACKET BARBAR BAR AND AMPERSAND AMPERAMPER ]
 ##
@@ -10821,7 +10823,7 @@ implementation: LPAREN LPAREN COLONCOLON WITH
 
 implementation: LPAREN LPAREN MODULE UIDENT WITH
 ##
-## Ends in an error in state: 2377.
+## Ends in an error in state: 2386.
 ##
 ## _module_expr -> module_expr . simple_module_expr [ UIDENT RPAREN LPAREN LBRACKETPERCENT LBRACKETAT LBRACE COLON ]
 ## _module_expr -> module_expr . LPAREN module_expr error [ UIDENT RPAREN LPAREN LBRACKETPERCENT LBRACKETAT LBRACE COLON ]
@@ -10863,7 +10865,7 @@ Expecting a module expression
 
 implementation: LPAREN LPAREN UIDENT COMMA CHAR BARRBRACKET
 ##
-## Ends in an error in state: 2390.
+## Ends in an error in state: 2399.
 ##
 ## _simple_expr -> LPAREN expr_comma_list . RPAREN [ error VARIABLEINFIXOP UIDENT TRUE STRING STAR SHARPOP SHARP SEMI RPAREN RBRACKET RBRACE QUESTION PREFIXOP PLUSEQ PLUSDOT PLUS PERCENT OR NEW NATIVEINT MINUSDOT MINUS LPAREN LIDENT LESSGREATER LESSDOTDOTGREATER LESS LBRACKETPERCENT LBRACKETBAR LBRACKETATAT LBRACKETAT LBRACKET LBRACELESS LBRACE INT64 INT32 INT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER FLOAT FALSE EOF ELSE DOT COMMA COLONGREATER COLONEQUAL COLON CHAR BARRBRACKET BARBAR BAR BANG BACKQUOTE AS AND AMPERSAND AMPERAMPER ]
 ## _simple_expr -> LPAREN expr_comma_list . error [ error VARIABLEINFIXOP UIDENT TRUE STRING STAR SHARPOP SHARP SEMI RPAREN RBRACKET RBRACE QUESTION PREFIXOP PLUSEQ PLUSDOT PLUS PERCENT OR NEW NATIVEINT MINUSDOT MINUS LPAREN LIDENT LESSGREATER LESSDOTDOTGREATER LESS LBRACKETPERCENT LBRACKETBAR LBRACKETATAT LBRACKETAT LBRACKET LBRACELESS LBRACE INT64 INT32 INT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER FLOAT FALSE EOF ELSE DOT COMMA COLONGREATER COLONEQUAL COLON CHAR BARRBRACKET BARBAR BAR BANG BACKQUOTE AS AND AMPERSAND AMPERAMPER ]
@@ -10941,7 +10943,7 @@ implementation: LPAREN MINUSDOT WITH
 
 implementation: LPAREN MODULE UIDENT COLON UIDENT COLONGREATER
 ##
-## Ends in an error in state: 2381.
+## Ends in an error in state: 2390.
 ##
 ## _simple_expr -> LPAREN MODULE module_expr COLON package_type . RPAREN [ error VARIABLEINFIXOP UIDENT TRUE STRING STAR SHARPOP SHARP SEMI RPAREN RBRACKET RBRACE QUESTION PREFIXOP PLUSEQ PLUSDOT PLUS PERCENT OR NEW NATIVEINT MINUSDOT MINUS LPAREN LIDENT LESSGREATER LESSDOTDOTGREATER LESS LBRACKETPERCENT LBRACKETBAR LBRACKETATAT LBRACKETAT LBRACKET LBRACELESS LBRACE INT64 INT32 INT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER FLOAT FALSE EOF ELSE DOT COMMA COLONGREATER COLONEQUAL COLON CHAR BARRBRACKET BARBAR BAR BANG BACKQUOTE AS AND AMPERSAND AMPERAMPER ]
 ##
@@ -10961,7 +10963,7 @@ implementation: LPAREN MODULE UIDENT COLON UIDENT COLONGREATER
 
 implementation: LPAREN MODULE UIDENT COLON WITH
 ##
-## Ends in an error in state: 2379.
+## Ends in an error in state: 2388.
 ##
 ## _simple_expr -> LPAREN MODULE module_expr COLON . package_type RPAREN [ error VARIABLEINFIXOP UIDENT TRUE STRING STAR SHARPOP SHARP SEMI RPAREN RBRACKET RBRACE QUESTION PREFIXOP PLUSEQ PLUSDOT PLUS PERCENT OR NEW NATIVEINT MINUSDOT MINUS LPAREN LIDENT LESSGREATER LESSDOTDOTGREATER LESS LBRACKETPERCENT LBRACKETBAR LBRACKETATAT LBRACKETAT LBRACKET LBRACELESS LBRACE INT64 INT32 INT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER FLOAT FALSE EOF ELSE DOT COMMA COLONGREATER COLONEQUAL COLON CHAR BARRBRACKET BARBAR BAR BANG BACKQUOTE AS AND AMPERSAND AMPERAMPER ]
 ## _simple_expr -> LPAREN MODULE module_expr COLON . error [ error VARIABLEINFIXOP UIDENT TRUE STRING STAR SHARPOP SHARP SEMI RPAREN RBRACKET RBRACE QUESTION PREFIXOP PLUSEQ PLUSDOT PLUS PERCENT OR NEW NATIVEINT MINUSDOT MINUS LPAREN LIDENT LESSGREATER LESSDOTDOTGREATER LESS LBRACKETPERCENT LBRACKETBAR LBRACKETATAT LBRACKETAT LBRACKET LBRACELESS LBRACE INT64 INT32 INT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER FLOAT FALSE EOF ELSE DOT COMMA COLONGREATER COLONEQUAL COLON CHAR BARRBRACKET BARBAR BAR BANG BACKQUOTE AS AND AMPERSAND AMPERAMPER ]
@@ -11065,7 +11067,7 @@ implementation: LPAREN UIDENT COLON UNDERSCORE COLONGREATER WITH
 ##
 ## Ends in an error in state: 1033.
 ##
-## type_constraint_right_of_colon -> core_type COLONGREATER . core_type [ RPAREN RBRACKET EQUAL COMMA ]
+## type_constraint_right_of_colon -> core_type COLONGREATER . core_type [ RPAREN RBRACKET RBRACE EQUAL COMMA ]
 ##
 ## The known suffix of the stack is as follows:
 ## core_type COLONGREATER
@@ -11077,7 +11079,7 @@ implementation: LPAREN UIDENT COLON WITH
 ##
 ## Ends in an error in state: 1030.
 ##
-## type_constraint -> COLON . type_constraint_right_of_colon [ RPAREN RBRACKET EQUAL COMMA ]
+## type_constraint -> COLON . type_constraint_right_of_colon [ RPAREN RBRACKET RBRACE EQUAL COMMA ]
 ##
 ## The known suffix of the stack is as follows:
 ## COLON
@@ -11105,7 +11107,7 @@ implementation: LPAREN UIDENT COLONGREATER LESSDOTDOTGREATER WITH
 ## In state 280, spurious reduction of production mark_position_typ(_core_type) -> _core_type
 ## In state 267, spurious reduction of production core_type -> mark_position_typ(_core_type)
 ## In state 1029, spurious reduction of production type_constraint -> COLONGREATER core_type
-## In state 2396, spurious reduction of production expr_optional_constraint -> expr type_constraint
+## In state 2405, spurious reduction of production expr_optional_constraint -> expr type_constraint
 ##
 
 <SYNTAX ERROR>
@@ -11114,7 +11116,7 @@ implementation: LPAREN UIDENT COLONGREATER WITH
 ##
 ## Ends in an error in state: 1028.
 ##
-## type_constraint -> COLONGREATER . core_type [ RPAREN RBRACKET EQUAL COMMA ]
+## type_constraint -> COLONGREATER . core_type [ RPAREN RBRACKET RBRACE EQUAL COMMA ]
 ##
 ## The known suffix of the stack is as follows:
 ## COLONGREATER
@@ -11263,7 +11265,7 @@ Incomplete statement. Did you forget a ";"?
 
 implementation: SWITCH UIDENT LBRACE WITH
 ##
-## Ends in an error in state: 2444.
+## Ends in an error in state: 2453.
 ##
 ## _expr -> SWITCH simple_expr LBRACE . leading_bar_match_cases_to_sequence_body RBRACE [ error STAR SEMI RPAREN RBRACKET RBRACE QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETATAT LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER EOF COMMA COLONGREATER COLONEQUAL COLON BARRBRACKET BARBAR BAR AND AMPERSAND AMPERAMPER ]
 ##
@@ -11275,7 +11277,7 @@ implementation: SWITCH UIDENT LBRACE WITH
 
 implementation: SWITCH UIDENT WITH
 ##
-## Ends in an error in state: 2443.
+## Ends in an error in state: 2452.
 ##
 ## _expr -> SWITCH simple_expr . LBRACE leading_bar_match_cases_to_sequence_body RBRACE [ error STAR SEMI RPAREN RBRACKET RBRACE QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETATAT LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER EOF COMMA COLONGREATER COLONEQUAL COLON BARRBRACKET BARBAR BAR AND AMPERSAND AMPERAMPER ]
 ## _simple_expr -> simple_expr . DOT label_longident [ VARIABLEINFIXOP SHARPOP SHARP LBRACE DOT ]
@@ -11754,7 +11756,7 @@ implementation: TRY UIDENT LBRACE BAR UNDERSCORE EQUALGREATER PERCENT AND TYPE
 
 implementation: TRY UIDENT LBRACE BAR UNDERSCORE EQUALGREATER UIDENT RPAREN
 ##
-## Ends in an error in state: 2563.
+## Ends in an error in state: 2572.
 ##
 ## _expr -> TRY simple_expr LBRACE leading_bar_match_cases_to_sequence_body . RBRACE [ error STAR SEMI RPAREN RBRACKET RBRACE QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETATAT LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER EOF COMMA COLONGREATER COLONEQUAL COLON BARRBRACKET BARBAR BAR AND AMPERSAND AMPERAMPER ]
 ## leading_bar_match_cases_to_sequence_body -> leading_bar_match_cases_to_sequence_body . leading_bar_match_case_to_sequence_body [ RBRACE BAR ]
@@ -11899,7 +11901,7 @@ implementation: TRY UIDENT LBRACE BAR UNDERSCORE WHEN WITH
 
 implementation: TRY UIDENT LBRACE WITH
 ##
-## Ends in an error in state: 2562.
+## Ends in an error in state: 2571.
 ##
 ## _expr -> TRY simple_expr LBRACE . leading_bar_match_cases_to_sequence_body RBRACE [ error STAR SEMI RPAREN RBRACKET RBRACE QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETATAT LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER EOF COMMA COLONGREATER COLONEQUAL COLON BARRBRACKET BARBAR BAR AND AMPERSAND AMPERAMPER ]
 ##
@@ -11911,7 +11913,7 @@ implementation: TRY UIDENT LBRACE WITH
 
 implementation: TRY UIDENT UNDERSCORE
 ##
-## Ends in an error in state: 2559.
+## Ends in an error in state: 2568.
 ##
 ## _expr -> TRY simple_expr . LBRACE leading_bar_match_cases_to_sequence_body RBRACE [ error STAR SEMI RPAREN RBRACKET RBRACE QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETATAT LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER EOF COMMA COLONGREATER COLONEQUAL COLON BARRBRACKET BARBAR BAR AND AMPERSAND AMPERAMPER ]
 ## _expr -> TRY simple_expr . WITH error [ error STAR SEMI RPAREN RBRACKET RBRACE QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETATAT LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER EOF COMMA COLONGREATER COLONEQUAL COLON BARRBRACKET BARBAR BAR AND AMPERSAND AMPERAMPER ]
@@ -11942,7 +11944,7 @@ implementation: TRY UIDENT UNDERSCORE
 
 implementation: TRY UIDENT WITH WITH
 ##
-## Ends in an error in state: 2560.
+## Ends in an error in state: 2569.
 ##
 ## _expr -> TRY simple_expr WITH . error [ error STAR SEMI RPAREN RBRACKET RBRACE QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETATAT LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER EOF COMMA COLONGREATER COLONEQUAL COLON BARRBRACKET BARBAR BAR AND AMPERSAND AMPERAMPER ]
 ##
@@ -12044,7 +12046,7 @@ implementation: TYPE LIDENT CONSTRAINT WITH
 
 implementation: TYPE LIDENT EQUAL BAR UIDENT LBRACKETAT AND RBRACKET GREATER
 ##
-## Ends in an error in state: 2518.
+## Ends in an error in state: 2527.
 ##
 ## constructor_declarations -> constructor_declarations_leading_bar . [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF CONSTRAINT AND ]
 ## constructor_declarations_leading_bar -> constructor_declarations_leading_bar . constructor_declaration_leading_bar [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF CONSTRAINT BAR AND ]
@@ -12058,8 +12060,8 @@ implementation: TYPE LIDENT EQUAL BAR UIDENT LBRACKETAT AND RBRACKET GREATER
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 1403, spurious reduction of production attributes ->
 ## In state 1404, spurious reduction of production attributes -> attribute attributes
-## In state 2503, spurious reduction of production constructor_declaration_leading_bar -> BAR UIDENT generalized_constructor_arguments attributes
-## In state 2523, spurious reduction of production constructor_declarations_leading_bar -> constructor_declaration_leading_bar
+## In state 2512, spurious reduction of production constructor_declaration_leading_bar -> BAR UIDENT generalized_constructor_arguments attributes
+## In state 2532, spurious reduction of production constructor_declarations_leading_bar -> constructor_declaration_leading_bar
 ##
 
 <SYNTAX ERROR>
@@ -12094,7 +12096,7 @@ Expecting one of the following:
 
 implementation: TYPE LIDENT EQUAL LBRACE LIDENT COLON UNDERSCORE WITH
 ##
-## Ends in an error in state: 2527.
+## Ends in an error in state: 2536.
 ##
 ## label_declarations -> label_declarations . COMMA label_declaration [ RBRACE COMMA ]
 ## type_kind -> EQUAL private_flag LBRACE label_declarations . opt_comma RBRACE [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF CONSTRAINT AND ]
@@ -12164,7 +12166,7 @@ Expecting a type field definition in the form of:
 
 implementation: TYPE LIDENT EQUAL LBRACE WITH
 ##
-## Ends in an error in state: 2526.
+## Ends in an error in state: 2535.
 ##
 ## type_kind -> EQUAL private_flag LBRACE . label_declarations opt_comma RBRACE [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF CONSTRAINT AND ]
 ##
@@ -12177,7 +12179,7 @@ Expecting at least one type field definition in the form of:
 
     implementation: TYPE LIDENT EQUAL LPAREN WITH
 ##
-## Ends in an error in state: 2490.
+## Ends in an error in state: 2499.
 ##
 ## _non_arrowed_simple_core_type -> LPAREN . core_type_comma_list RPAREN [ error SEMI RBRACKET RBRACE LBRACKETATAT LBRACKETAT EQUALGREATER EQUAL EOF CONSTRAINT AS AND ]
 ## _non_arrowed_simple_core_type -> LPAREN . MODULE package_type RPAREN [ error SEMI RBRACKET RBRACE LBRACKETATAT LBRACKETAT EQUALGREATER EQUAL EOF CONSTRAINT AS AND ]
@@ -12191,7 +12193,7 @@ Expecting at least one type field definition in the form of:
 
 implementation: TYPE LIDENT EQUAL PRIVATE WITH
 ##
-## Ends in an error in state: 2489.
+## Ends in an error in state: 2498.
 ##
 ## private_flag -> PRIVATE . [ LBRACE ]
 ## type_kind -> EQUAL PRIVATE . core_type [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF CONSTRAINT AND ]
@@ -12219,7 +12221,7 @@ implementation: TYPE LIDENT EQUAL UIDENT WITH
 
 implementation: TYPE LIDENT EQUAL UNDERSCORE EQUAL BAR WITH
 ##
-## Ends in an error in state: 2500.
+## Ends in an error in state: 2509.
 ##
 ## constructor_declaration_leading_bar -> BAR . UIDENT generalized_constructor_arguments attributes [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF CONSTRAINT BAR AND ]
 ## constructor_declaration_leading_bar -> BAR . LPAREN RPAREN generalized_constructor_arguments attributes [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF CONSTRAINT BAR AND ]
@@ -12235,7 +12237,7 @@ implementation: TYPE LIDENT EQUAL UNDERSCORE EQUAL BAR WITH
 
 implementation: TYPE LIDENT EQUAL UNDERSCORE EQUAL LBRACE LIDENT COLON LESSDOTDOTGREATER AS QUOTE LIDENT LBRACKETAT AND RBRACKET SEMI
 ##
-## Ends in an error in state: 2539.
+## Ends in an error in state: 2548.
 ##
 ## label_declarations -> label_declarations . COMMA label_declaration [ RBRACE COMMA ]
 ## type_kind -> EQUAL core_type EQUAL private_flag LBRACE label_declarations . opt_comma RBRACE [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF CONSTRAINT AND ]
@@ -12257,7 +12259,7 @@ implementation: TYPE LIDENT EQUAL UNDERSCORE EQUAL LBRACE LIDENT COLON LESSDOTDO
 
 implementation: TYPE LIDENT EQUAL UNDERSCORE EQUAL LBRACE WITH
 ##
-## Ends in an error in state: 2538.
+## Ends in an error in state: 2547.
 ##
 ## type_kind -> EQUAL core_type EQUAL private_flag LBRACE . label_declarations opt_comma RBRACE [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF CONSTRAINT AND ]
 ##
@@ -12269,7 +12271,7 @@ implementation: TYPE LIDENT EQUAL UNDERSCORE EQUAL LBRACE WITH
 
 implementation: TYPE LIDENT EQUAL UNDERSCORE EQUAL PRIVATE BANG
 ##
-## Ends in an error in state: 2533.
+## Ends in an error in state: 2542.
 ##
 ## private_flag -> PRIVATE . [ LBRACE ]
 ## type_kind -> EQUAL core_type EQUAL PRIVATE . constructor_declarations [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF CONSTRAINT AND ]
@@ -12282,7 +12284,7 @@ implementation: TYPE LIDENT EQUAL UNDERSCORE EQUAL PRIVATE BANG
 
 implementation: TYPE LIDENT EQUAL UNDERSCORE EQUAL UIDENT LBRACKETAT AND RBRACKET GREATER
 ##
-## Ends in an error in state: 2521.
+## Ends in an error in state: 2530.
 ##
 ## constructor_declarations -> constructor_declaration_no_leading_bar . [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF CONSTRAINT AND ]
 ## constructor_declarations -> constructor_declaration_no_leading_bar . constructor_declarations_leading_bar [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF CONSTRAINT AND ]
@@ -12296,14 +12298,14 @@ implementation: TYPE LIDENT EQUAL UNDERSCORE EQUAL UIDENT LBRACKETAT AND RBRACKE
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 1403, spurious reduction of production attributes ->
 ## In state 1404, spurious reduction of production attributes -> attribute attributes
-## In state 2485, spurious reduction of production constructor_declaration_no_leading_bar -> UIDENT generalized_constructor_arguments attributes
+## In state 2494, spurious reduction of production constructor_declaration_no_leading_bar -> UIDENT generalized_constructor_arguments attributes
 ##
 
 <SYNTAX ERROR>
 
 implementation: TYPE LIDENT EQUAL UNDERSCORE EQUAL WITH
 ##
-## Ends in an error in state: 2531.
+## Ends in an error in state: 2540.
 ##
 ## type_kind -> EQUAL core_type EQUAL . constructor_declarations [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF CONSTRAINT AND ]
 ## type_kind -> EQUAL core_type EQUAL . PRIVATE constructor_declarations [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF CONSTRAINT AND ]
@@ -12318,7 +12320,7 @@ implementation: TYPE LIDENT EQUAL UNDERSCORE EQUAL WITH
 
 implementation: TYPE LIDENT EQUAL UNDERSCORE WITH
 ##
-## Ends in an error in state: 2530.
+## Ends in an error in state: 2539.
 ##
 ## type_kind -> EQUAL core_type . [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF CONSTRAINT AND ]
 ## type_kind -> EQUAL core_type . EQUAL constructor_declarations [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF CONSTRAINT AND ]
@@ -12380,7 +12382,7 @@ implementation: TYPE LIDENT LBRACKETATAT AND RBRACKET WITH
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 1385, spurious reduction of production post_item_attributes ->
 ## In state 1386, spurious reduction of production post_item_attributes -> item_attribute post_item_attributes
-## In state 2545, spurious reduction of production many_type_declarations -> TYPE nonrec_flag type_declaration_details post_item_attributes
+## In state 2554, spurious reduction of production many_type_declarations -> TYPE nonrec_flag type_declaration_details post_item_attributes
 ##
 
 <SYNTAX ERROR>
@@ -12437,7 +12439,7 @@ implementation: TYPE LIDENT PLUS WITH
 
 implementation: TYPE LIDENT PLUSEQ BAR WITH
 ##
-## Ends in an error in state: 2549.
+## Ends in an error in state: 2558.
 ##
 ## str_type_extension -> TYPE nonrec_flag potentially_long_ident_and_optional_type_parameters PLUSEQ private_flag opt_bar . str_extension_constructors post_item_attributes [ error SEMI RBRACKET RBRACE EOF ]
 ##
@@ -12449,7 +12451,7 @@ implementation: TYPE LIDENT PLUSEQ BAR WITH
 
 implementation: TYPE LIDENT PLUSEQ PRIVATE BANG
 ##
-## Ends in an error in state: 2548.
+## Ends in an error in state: 2557.
 ##
 ## str_type_extension -> TYPE nonrec_flag potentially_long_ident_and_optional_type_parameters PLUSEQ private_flag . opt_bar str_extension_constructors post_item_attributes [ error SEMI RBRACKET RBRACE EOF ]
 ##
@@ -12461,7 +12463,7 @@ implementation: TYPE LIDENT PLUSEQ PRIVATE BANG
 
 implementation: TYPE LIDENT PLUSEQ UIDENT BAR WITH
 ##
-## Ends in an error in state: 2551.
+## Ends in an error in state: 2560.
 ##
 ## str_extension_constructors -> str_extension_constructors BAR . extension_constructor_declaration [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF BAR ]
 ## str_extension_constructors -> str_extension_constructors BAR . extension_constructor_rebind [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF BAR ]
@@ -12474,7 +12476,7 @@ implementation: TYPE LIDENT PLUSEQ UIDENT BAR WITH
 
 implementation: TYPE LIDENT PLUSEQ WITH
 ##
-## Ends in an error in state: 2547.
+## Ends in an error in state: 2556.
 ##
 ## str_type_extension -> TYPE nonrec_flag potentially_long_ident_and_optional_type_parameters PLUSEQ . private_flag opt_bar str_extension_constructors post_item_attributes [ error SEMI RBRACKET RBRACE EOF ]
 ##
@@ -12945,7 +12947,7 @@ Expecting an attribute id
 
 implementation: UIDENT LBRACKETAT WITH UIDENT RBRACE
 ##
-## Ends in an error in state: 2413.
+## Ends in an error in state: 2422.
 ##
 ## attribute -> LBRACKETAT attr_id payload . RBRACKET [ error WITH UIDENT STAR SEMI RPAREN RBRACKET RBRACE QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LPAREN LESSGREATER LESSDOTDOTGREATER LESS LBRACKETPERCENT LBRACKETATAT LBRACKETAT LBRACE INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER EQUALGREATER EQUAL EOF CONSTRAINT COMMA COLONGREATER COLONEQUAL COLONCOLON COLON BARRBRACKET BARBAR BAR AS AND AMPERSAND AMPERAMPER ]
 ##
@@ -12991,7 +12993,7 @@ Expecting an attributed id
 
 implementation: UIDENT LBRACKETATAT WITH UIDENT RBRACE
 ##
-## Ends in an error in state: 2410.
+## Ends in an error in state: 2419.
 ##
 ## item_attribute -> LBRACKETATAT attr_id payload . RBRACKET [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF AND ]
 ##
@@ -13245,7 +13247,7 @@ Expecting an expression
 
 implementation: UIDENT RBRACKET
 ##
-## Ends in an error in state: 2571.
+## Ends in an error in state: 2580.
 ##
 ## implementation -> structure . EOF [ # ]
 ##
@@ -13314,7 +13316,7 @@ Expecting an expression
 
 implementation: UIDENT TRUE DOT LBRACE UIDENT SEMI
 ##
-## Ends in an error in state: 2295.
+## Ends in an error in state: 2300.
 ##
 ## _expr -> expr . INFIXOP0 expr [ STAR RBRACE QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATER COLONEQUAL BARBAR AMPERSAND AMPERAMPER ]
 ## _expr -> expr . INFIXOP1 expr [ STAR RBRACE QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATER COLONEQUAL BARBAR AMPERSAND AMPERAMPER ]
@@ -13365,7 +13367,7 @@ Expecting one of the following:
 
 implementation: UIDENT TRUE DOT LBRACE WITH
 ##
-## Ends in an error in state: 2294.
+## Ends in an error in state: 2299.
 ##
 ## _simple_expr -> simple_expr DOT LBRACE . expr RBRACE [ error VARIABLEINFIXOP UIDENT TRUE STRING STAR SHARPOP SHARP SEMI RPAREN RBRACKET RBRACE QUESTION PREFIXOP PLUSEQ PLUSDOT PLUS PERCENT OR NEW NATIVEINT MINUSDOT MINUS LPAREN LIDENT LESSGREATER LESSDOTDOTGREATER LESS LBRACKETPERCENT LBRACKETBAR LBRACKETATAT LBRACKETAT LBRACKET LBRACELESS LBRACE INT64 INT32 INT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER FLOAT FALSE EOF ELSE DOT COMMA COLONGREATER COLONEQUAL COLON CHAR BARRBRACKET BARBAR BAR BANG BACKQUOTE AS AND AMPERSAND AMPERAMPER ]
 ##
@@ -13377,7 +13379,7 @@ Expecting an expression
 
 implementation: UIDENT TRUE DOT LBRACKET UIDENT SEMI
 ##
-## Ends in an error in state: 2292.
+## Ends in an error in state: 2297.
 ##
 ## _expr -> expr . INFIXOP0 expr [ error STAR RBRACKET QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATER COLONEQUAL BARBAR AMPERSAND AMPERAMPER ]
 ## _expr -> expr . INFIXOP1 expr [ error STAR RBRACKET QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATER COLONEQUAL BARBAR AMPERSAND AMPERAMPER ]
@@ -13429,7 +13431,7 @@ Expecting one of the following:
 
 implementation: UIDENT TRUE DOT LBRACKET WITH
 ##
-## Ends in an error in state: 2291.
+## Ends in an error in state: 2296.
 ##
 ## _simple_expr -> simple_expr DOT LBRACKET . expr RBRACKET [ error VARIABLEINFIXOP UIDENT TRUE STRING STAR SHARPOP SHARP SEMI RPAREN RBRACKET RBRACE QUESTION PREFIXOP PLUSEQ PLUSDOT PLUS PERCENT OR NEW NATIVEINT MINUSDOT MINUS LPAREN LIDENT LESSGREATER LESSDOTDOTGREATER LESS LBRACKETPERCENT LBRACKETBAR LBRACKETATAT LBRACKETAT LBRACKET LBRACELESS LBRACE INT64 INT32 INT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER FLOAT FALSE EOF ELSE DOT COMMA COLONGREATER COLONEQUAL COLON CHAR BARRBRACKET BARBAR BAR BANG BACKQUOTE AS AND AMPERSAND AMPERAMPER ]
 ## _simple_expr -> simple_expr DOT LBRACKET . expr error [ error VARIABLEINFIXOP UIDENT TRUE STRING STAR SHARPOP SHARP SEMI RPAREN RBRACKET RBRACE QUESTION PREFIXOP PLUSEQ PLUSDOT PLUS PERCENT OR NEW NATIVEINT MINUSDOT MINUS LPAREN LIDENT LESSGREATER LESSDOTDOTGREATER LESS LBRACKETPERCENT LBRACKETBAR LBRACKETATAT LBRACKETAT LBRACKET LBRACELESS LBRACE INT64 INT32 INT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER FLOAT FALSE EOF ELSE DOT COMMA COLONGREATER COLONEQUAL COLON CHAR BARRBRACKET BARBAR BAR BANG BACKQUOTE AS AND AMPERSAND AMPERAMPER ]
@@ -13442,7 +13444,7 @@ Expecting an expression
 
 implementation: UIDENT TRUE DOT LPAREN UIDENT SEMI
 ##
-## Ends in an error in state: 2289.
+## Ends in an error in state: 2294.
 ##
 ## _expr -> expr . INFIXOP0 expr [ error STAR RPAREN QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATER COLONEQUAL BARBAR AMPERSAND AMPERAMPER ]
 ## _expr -> expr . INFIXOP1 expr [ error STAR RPAREN QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSGREATER LESSDOTDOTGREATER LESS LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATER COLONEQUAL BARBAR AMPERSAND AMPERAMPER ]
