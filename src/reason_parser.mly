@@ -956,6 +956,7 @@ conflicts.
 %left     INFIXOP2 PLUS PLUSDOT MINUS MINUSDOT PLUSEQ /* expr (e OP e OP e) */
 %left     PERCENT INFIXOP3 STAR                 /* expr (e OP e OP e) */
 %right    INFIXOP4                      /* expr (e OP e OP e) */
+%left     VARIABLEINFIXOP
 
 /**
  * With the way attributes are currently parsed, if we want consistent precedence for
@@ -1054,7 +1055,6 @@ conflicts.
           NEW NATIVEINT PREFIXOP STRING TRUE UIDENT
           LBRACKETPERCENT
 
-%left VARIABLEINFIXOP
 
 /* Entry points */
 
@@ -2563,10 +2563,11 @@ _expr:
       }
   | expr as_loc(infix_operator) expr
       { mkinfix $1 $2 $3 }
-  | expr VARIABLEINFIXOP expr
+  | expr as_loc(VARIABLEINFIXOP) expr
       {
         let attribute = simple_ghost_text_attr "infix" in
-        let name = mkexp ~ghost:true ~attrs:(attribute) (Pexp_ident(ghloc (Longident.parse $2))) in
+        let name = mkexp ~ghost:true ~attrs:(attribute) ~loc:($2.loc)
+          (Pexp_ident(ghloc ~loc:($2.loc) (Longident.parse $2.txt))) in
         mkexp (Pexp_apply (name, ["", $1; "", $3]))
       }
   | as_loc(subtractive) expr %prec prec_unary_minus

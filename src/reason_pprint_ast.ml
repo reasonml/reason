@@ -622,6 +622,9 @@ let rules = [
     (CustomPrecedence, (fun s -> (Nonassoc, s = "prec_unary_minus")));
     (CustomPrecedence, (fun s -> (Nonassoc, s = "prec_unary_plus")));
   ];
+  [
+    (TokenPrecedence, (fun s -> (Left, s.[0] == '~')));
+  ];
   (* Note the special case for "*\*", BARBAR, and LESSMINUS, AMPERSAND(s) *)
   [
     (TokenPrecedence, (fun s -> (Right, String.length s > 1 && s.[0] == '*' && s.[1] == '\\' && s.[2] == '*')));
@@ -696,9 +699,6 @@ let rules = [
   ];
   [
     (TokenPrecedence, (fun s -> (Nonassoc, s = "=>")));
-  ];
-  [
-    (TokenPrecedence, (fun s -> (Left, s.[0] == '~')));
   ];
 ]
 
