@@ -534,6 +534,6 @@ let anotherRecord = {
 
 let add a b => a + b;
 
-15 `add` 4;
+15 ~add 4 ~add 5;
 
-15l `Int32.rem` 4l;
+15l ~Int32.rem 4l;

@@ -508,7 +508,7 @@ rule token = parse
      maintained when printing etc. >] isn't even needed!
   | ">]" { GREATERRBRACKET }
   *)
-  | "`" ((identchar_latin1 | '.') * as lxm) "`" { VARIABLEINFIXOP lxm }
+  | "~" ((identchar_latin1 | '.') * as lxm) { VARIABLEINFIXOP lxm }
   | "}"  { RBRACE }
   | ">}" { GREATERRBRACE }
   | "[@" { LBRACKETAT }

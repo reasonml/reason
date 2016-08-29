@@ -638,6 +638,6 @@ let anotherRecord = {
 
 let add a b => a + b;
 
-add 15 4;
+add (add 15 4) 5;
 
 Int32.rem 15l 4l;
