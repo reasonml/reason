@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Copyright (c) 2015-present, Facebook, Inc. All rights reserved.
 
-# reopt is a decorator for ocamlopt that passes arguments through to ocamlopt directly
+# rec is a decorator for ocamlc that passes arguments through to ocamlc directly
 # If it detects the invocation is to build myocamlbuild, it modifies the commandline arguments
 # by adding reasonbuild.cmx
 
@@ -17,10 +17,10 @@ then
     . "$DIR/share"
 fi
 
-if [ -z "$OCAMLOPT" ];
+if [ -z "$OCAMLC" ];
 then
-    OCAMLOPT="ocamlopt.opt"
+    OCAMLC="ocamlc"
 fi
 
-# use OCAMLOPT that's passed in by rebuild
-$OCAMLOPT "$@"
+# use OCAMLC that's passed in by rebuild
+$OCAMLC "$@"
