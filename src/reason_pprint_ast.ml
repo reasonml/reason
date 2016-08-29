@@ -770,15 +770,15 @@ let higherPrecedenceThan c1 c2 = match ((precedenceInfo c1), (precedenceInfo c2)
 
 
 let printedStringAndFixityExpr = function
-  | {pexp_desc = Pexp_ident {txt=Lident l};
+  | {pexp_desc = Pexp_ident {txt=txt};
      pexp_attributes = [({txt="infix"}, _)]} ->
-      (* Check if function in infix_operators
+      (* Check if function name is in infix_operators
          If not, add as left associative
-         And return Infix l
-      *)
-      (if not (Hashtbl.mem infix_operators l) then
-        Hashtbl.add infix_operators l Left);
-      Infix ("~" ^ l)
+         And return as Infix *)
+      let name = String.concat "." (Longident.flatten txt) in
+      (if not (Hashtbl.mem infix_operators name) then
+        Hashtbl.add infix_operators name Left);
+      Infix ("~" ^ name)
   | {pexp_desc = Pexp_ident {txt=Lident l}} -> printedStringAndFixity l
   | _ -> Normal
 
