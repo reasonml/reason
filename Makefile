@@ -16,6 +16,8 @@ setup_convenient_bin_links:
 	ln -fs $(shell pwd)/_build/src/refmt_impl.native $(shell pwd)/_build/bin/refmt
 	ln -fs $(shell pwd)/_build/src/refmt_merlin_impl.sh $(shell pwd)/_build/bin/refmt_merlin
 	ln -fs $(shell pwd)/_build/src/reopt.sh $(shell pwd)/_build/bin/reopt
+	ln -fs $(shell pwd)/_build/src/rec.sh $(shell pwd)/_build/bin/rec
+	ln -fs $(shell pwd)/_build/src/share.sh $(shell pwd)/_build/bin/share
 	ln -fs $(shell pwd)/_build/src/reup.sh $(shell pwd)/_build/bin/reup
 
 build_without_utop: compile_error setup_convenient_bin_links

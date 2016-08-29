@@ -39,6 +39,8 @@ let () =
     Pkg.bin ~auto:true "src/ocamlmerlin_reason" ~dst:"ocamlmerlin-reason";
     Pkg.bin  "src/refmt_merlin_impl.sh" ~dst:"refmt_merlin";
     Pkg.bin  "src/reopt.sh" ~dst:"reopt";
+    Pkg.bin  "src/rec.sh" ~dst:"rec";
+    Pkg.bin  "src/share.sh" ~dst:"share";
     Pkg.bin  "src/rebuild.sh" ~dst:"rebuild";
     Pkg.bin  "src/rtop.sh" ~dst:"rtop";
     Pkg.bin  "src/redoc.sh" ~dst:"redoc";
