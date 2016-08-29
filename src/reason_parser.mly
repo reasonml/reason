@@ -2726,8 +2726,9 @@ _simple_expr:
       {
         let n = prepare_name_for_call $2 in
         let loc = mklocation $startpos($1) $endpos($3) in
-        let name = mkexp ~ghost:true ~loc (Pexp_ident(ghloc ~loc (Longident.parse n))) in
-        mkexp (Pexp_apply (name, ["", $1; "", $3]))
+        let attribute = simple_ghost_text_attr "infix" in
+        let name = mkexp ~ghost:true ~attrs:(attribute) (Pexp_ident(ghloc (Longident.parse n))) in
+        mkexp ~loc (Pexp_apply (name, ["", $1; "", $3]))
       }
 
   /* This might not be needed anymore

@@ -636,8 +636,8 @@ let anotherRecord = {
   age: testRecord.age + 10
 };
 
-let add a b => a + b;
+let addItLol a b => a + b;
 
-add (add 15 4) 5;
+(15 ~addItLol 4) ~addItLol 5;
 
-Int32.rem 15l 4l;
+15l ~Int32.rem 4l;
