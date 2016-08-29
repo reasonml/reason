@@ -570,8 +570,6 @@ let special_infix_strings =
 let updateToken = "="
 let requireIndentFor = [updateToken; ":="]
 
-let infix_operators:(string, associativity) Hashtbl.t = Hashtbl.create 10
-
 let infixTokenRequiresIndent printedIdent =
   if List.exists (fun i -> i = printedIdent) requireIndentFor then None else Some 0
 
@@ -700,14 +698,7 @@ let rules = [
     (TokenPrecedence, (fun s -> (Nonassoc, s = "=>")));
   ];
   [
-    (TokenPrecedence, (fun s ->
-      let is_infix_op = Hashtbl.mem infix_operators s in
-      if is_infix_op then
-        let assoc = Hashtbl.find infix_operators s in
-          (assoc, true)
-      else
-          (Left, false)
-      ));
+    (TokenPrecedence, (fun s -> (Left, s.[0] == '~')));
   ];
 ]
 
@@ -772,12 +763,7 @@ let higherPrecedenceThan c1 c2 = match ((precedenceInfo c1), (precedenceInfo c2)
 let printedStringAndFixityExpr = function
   | {pexp_desc = Pexp_ident {txt=txt};
      pexp_attributes = [({txt="infix"}, _)]} ->
-      (* Check if function name is in infix_operators
-         If not, add as left associative
-         And return as Infix *)
       let name = String.concat "." (Longident.flatten txt) in
-      (if not (Hashtbl.mem infix_operators name) then
-        Hashtbl.add infix_operators name Left);
       Infix ("~" ^ name)
   | {pexp_desc = Pexp_ident {txt=Lident l}} -> printedStringAndFixity l
   | _ -> Normal
