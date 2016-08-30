@@ -955,6 +955,6 @@ let containingObject = {
 /* Check infix syntax */
 let add a b => a + b;
 
-(15 ~add 4) ~add 5;
+15 ~add 4 ~add 5;
 
 10l ~Int32.rem 4l;

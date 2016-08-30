@@ -570,6 +570,9 @@ let special_infix_strings =
 let updateToken = "="
 let requireIndentFor = [updateToken; ":="]
 
+module StringSet = Set.Make(String);;
+let infix_operators = ref StringSet.empty;;
+
 let infixTokenRequiresIndent printedIdent =
   if List.exists (fun i -> i = printedIdent) requireIndentFor then None else Some 0
 
@@ -584,9 +587,10 @@ let getPrintableUnaryIdent s =
    may have resulted from Pexp -> Texp -> Pexp translation, then checking
    if all the characters in the beginning of the string are valid infix
    characters. *)
-let printedStringAndFixity  = function
+let printedStringAndFixity = function
   | s when List.mem s special_infix_strings -> Infix s
   | s when List.mem s.[0] infix_symbols -> Infix s
+  | s when StringSet.mem s !infix_operators -> Infix s
   (* Correctness under assumption that unary operators are stored in AST with
      leading "~" *)
   | s when List.mem s.[0] almost_simple_prefix_symbols &&
@@ -763,8 +767,10 @@ let higherPrecedenceThan c1 c2 = match ((precedenceInfo c1), (precedenceInfo c2)
 let printedStringAndFixityExpr = function
   | {pexp_desc = Pexp_ident {txt=txt};
      pexp_attributes = [({txt="infix"}, _)]} ->
-      let name = String.concat "." (Longident.flatten txt) in
-      Infix ("~" ^ name)
+      let name = "~" ^ String.concat "." (Longident.flatten txt) in
+      let s = StringSet.add name !infix_operators in
+      infix_operators := s;
+      Infix name
   | {pexp_desc = Pexp_ident {txt=Lident l}} -> printedStringAndFixity l
   | _ -> Normal
 
@@ -5729,8 +5735,6 @@ let wrap_pat_with_tuple pat =
  * multiple arguments
  *
  *)
-
-module StringSet = Set.Make(String);;
 
 let built_in_explicit_arity_constructors = ["Some"; "Assert_failure"; "Match_failure"]
 
