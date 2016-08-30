@@ -51,12 +51,12 @@
 
 %{
 open Location
-open Asttypes
 open Longident
-open Parsetree
-open Ast_helper
-open Ast_mapper
+open Ast_helper_plus
+open Ast_mapper_plus
 open Syntax_util
+open Asttypes_plus
+open Parsetree_plus
 
 (*
    TODO:
@@ -303,28 +303,22 @@ let ghunit ?(loc=dummy_loc ()) () =
   mkexp ~ghost:true ~loc (Pexp_construct (mknoloc (Lident "()"), None))
 
 let mkinfix arg1 name_operator arg2 =
-  mkexp (Pexp_apply(mkoperator name_operator, ["", arg1; "", arg2]))
+  mkexp (Pexp_apply(mkoperator name_operator, [Nolabel, arg1; Nolabel, arg2]))
 
-let neg_float_string f =
+let neg_string f =
   if String.length f > 0 && f.[0] = '-'
   then String.sub f 1 (String.length f - 1)
   else "-" ^ f
 
 let mkuminus name arg =
   match name.txt, arg.pexp_desc with
-  | "-", Pexp_constant(Const_int n) ->
-      mkexp(Pexp_constant(Const_int(-n)))
-  | "-", Pexp_constant(Const_int32 n) ->
-      mkexp(Pexp_constant(Const_int32(Int32.neg n)))
-  | "-", Pexp_constant(Const_int64 n) ->
-      mkexp(Pexp_constant(Const_int64(Int64.neg n)))
-  | "-", Pexp_constant(Const_nativeint n) ->
-      mkexp(Pexp_constant(Const_nativeint(Nativeint.neg n)))
-  | ("-" | "-."), Pexp_constant(Const_float f) ->
-      mkexp(Pexp_constant(Const_float(neg_float_string f)))
+  | "-", Pexp_constant(Pconst_integer (n,m)) ->
+      mkexp(Pexp_constant(Pconst_integer(neg_string n,m)))
+  | ("-" | "-."), Pexp_constant(Pconst_float (f, m)) ->
+      mkexp(Pexp_constant(Pconst_float(neg_string f, m)))
   | _ ->
       let name = {name with txt=("~" ^ name.txt)} in
-      mkexp(Pexp_apply(mkoperator name, ["", arg]))
+      mkexp(Pexp_apply(mkoperator name, [Nolabel, arg]))
 
 let mkFunctorThatReturns functorArgs returns =
   List.fold_left (
@@ -334,14 +328,11 @@ let mkFunctorThatReturns functorArgs returns =
 let mkuplus name arg =
   let desc = arg.pexp_desc in
   match name.txt, desc with
-  | "+", Pexp_constant(Const_int _)
-  | "+", Pexp_constant(Const_int32 _)
-  | "+", Pexp_constant(Const_int64 _)
-  | "+", Pexp_constant(Const_nativeint _)
-  | ("+" | "+."), Pexp_constant(Const_float _) -> mkexp desc
+  | "+", Pexp_constant(Pconst_integer _)
+  | ("+" | "+."), Pexp_constant(Pconst_float _) -> mkexp desc
   | _ ->
       let name = {name with txt=("~" ^ name.txt)} in
-      mkexp(Pexp_apply(mkoperator name, ["", arg]))
+      mkexp(Pexp_apply(mkoperator name, [Nolabel, arg]))
 
 let mkexp_cons consloc args loc =
   mkexp ~loc (Pexp_construct(mkloc (Lident "::") consloc, Some args))
@@ -399,8 +390,8 @@ let mktailpat_extension loc seq ext_opt =
 let makeFrag loc body =
   let attribute = ({txt = "JSX"; loc = loc}, PStr []) in
   { body with pexp_attributes = [attribute] @ body.pexp_attributes }
-      
-      
+
+
 (* Applies attributes to the structure item, not the expression itself. Makes
  * structure item have same location as expression. *)
 let mkstrexp e attrs =
@@ -497,34 +488,34 @@ let bigarray_get ?(loc=dummy_loc()) arr arg =
   match bigarray_untuplify arg with
     [c1] ->
       mkexp(Pexp_apply(mkexp ~ghost:true ~loc (Pexp_ident(bigarray_function ~loc "Array1" get)),
-                       ["", arr; "", c1]))
+                       [Nolabel, arr; Nolabel, c1]))
   | [c1;c2] ->
       mkexp(Pexp_apply(mkexp ~ghost:true ~loc (Pexp_ident(bigarray_function ~loc "Array2" get)),
-                       ["", arr; "", c1; "", c2]))
+                       [Nolabel, arr; Nolabel, c1; Nolabel, c2]))
   | [c1;c2;c3] ->
       mkexp(Pexp_apply(mkexp ~ghost:true ~loc (Pexp_ident(bigarray_function ~loc "Array3" get)),
-                       ["", arr; "", c1; "", c2; "", c3]))
+                       [Nolabel, arr; Nolabel, c1; Nolabel, c2; Nolabel, c3]))
   | coords ->
       mkexp(Pexp_apply(mkexp ~ghost:true ~loc (Pexp_ident(bigarray_function ~loc "Genarray" "get")),
-                       ["", arr; "", mkexp ~ghost:true ~loc (Pexp_array coords)]))
+                       [Nolabel, arr; Nolabel, mkexp ~ghost:true ~loc (Pexp_array coords)]))
 
 let bigarray_set ?(loc=dummy_loc()) arr arg newval =
   let set = if !Clflags.fast then "unsafe_set" else "set" in
   match bigarray_untuplify arg with
     [c1] ->
       mkexp(Pexp_apply(mkexp ~ghost:true ~loc (Pexp_ident(bigarray_function ~loc "Array1" set)),
-                       ["", arr; "", c1; "", newval]))
+                       [Nolabel, arr; Nolabel, c1; Nolabel, newval]))
   | [c1;c2] ->
       mkexp(Pexp_apply(mkexp ~ghost:true ~loc (Pexp_ident(bigarray_function ~loc "Array2" set)),
-                       ["", arr; "", c1; "", c2; "", newval]))
+                       [Nolabel, arr; Nolabel, c1; Nolabel, c2; Nolabel, newval]))
   | [c1;c2;c3] ->
       mkexp(Pexp_apply(mkexp ~ghost:true ~loc (Pexp_ident(bigarray_function ~loc "Array3" set)),
-                       ["", arr; "", c1; "", c2; "", c3; "", newval]))
+                       [Nolabel, arr; Nolabel, c1; Nolabel, c2; Nolabel, c3; Nolabel, newval]))
   | coords ->
       mkexp(Pexp_apply(mkexp ~ghost:true ~loc (Pexp_ident(bigarray_function ~loc "Genarray" "set")),
-                       ["", arr;
-                        "", mkexp ~ghost:true ~loc (Pexp_array coords);
-                        "", newval]))
+                       [Nolabel, arr;
+                        Nolabel, mkexp ~ghost:true ~loc (Pexp_array coords);
+                        Nolabel, newval]))
 
 let lapply p1 p2 start_pos end_pos =
   if !Clflags.applicative_functors
@@ -542,6 +533,7 @@ let check_variable vl loc v =
     raise Syntaxerr.(Error(Variable_in_scope(loc,v)))
 
 let varify_constructors var_names t =
+  let var_names = List.map (fun v -> v.txt) var_names in
   let rec loop t =
     let desc =
       match t.ptyp_desc with
@@ -568,7 +560,8 @@ let varify_constructors var_names t =
           Ptyp_variant(List.map loop_row_field row_field_list,
                        flag, lbl_lst_option)
       | Ptyp_poly(string_lst, core_type) ->
-          List.iter (check_variable var_names t.ptyp_loc) string_lst;
+          List.iter (fun v ->
+          check_variable var_names t.ptyp_loc v.txt) string_lst;
           Ptyp_poly(string_lst, loop core_type)
       | Ptyp_package(longident,lst) ->
           Ptyp_package(longident,List.map (fun (n,typ) -> (n,loop typ) ) lst)
@@ -635,13 +628,6 @@ let mkcf_attrs ?(loc=dummy_loc()) d attrs =
 
 let mkctf_attrs d attrs =
   Ctf.mk ~attrs d
-
-let add_nonrec rf attrs =
-  match rf.txt with
-  | Recursive -> attrs
-  | Nonrecursive ->
-      let name = { txt = "nonrec"; loc = rf.loc } in
-        (name, PStr []) :: attrs
 
 type let_binding =
   { lb_pattern: pattern;
@@ -843,7 +829,7 @@ let ensureTagsAreEqual startTag endTag loc =
 %token EXCEPTION
 %token EXTERNAL
 %token FALSE
-%token <string> FLOAT
+%token <string * char option> FLOAT
 %token FOR
 %token FUN
 %token FUNCTION
@@ -863,7 +849,7 @@ let ensureTagsAreEqual startTag endTag loc =
 %token <string> INFIXOP4
 %token INHERIT
 %token INITIALIZER
-%token <int> INT
+%token <string * char option> INT
 %token <int32> INT32
 %token <int64> INT64
 %token LAZY
@@ -1078,27 +1064,27 @@ conflicts.
 %nonassoc LBRACKETAT
 
 /* Finally, the first tokens of simple_expr are above everything else. */
-%nonassoc BACKQUOTE BANG CHAR FALSE FLOAT INT INT32 INT64
+%nonassoc BACKQUOTE BANG CHAR FALSE FLOAT INT
           LBRACE LBRACELESS LBRACKET LBRACKETBAR LIDENT LPAREN
-          NEW NATIVEINT PREFIXOP STRING TRUE UIDENT
+          NEW PREFIXOP STRING TRUE UIDENT
           LBRACKETPERCENT LESSIDENT LBRACKETLESS
 
 /* Entry points */
 
 %start implementation                   /* for implementation files */
-%type <Parsetree.structure> implementation
+%type <Parsetree_plus.structure> implementation
 %start interface                        /* for interface files */
-%type <Parsetree.signature> interface
+%type <Parsetree_plus.signature> interface
 %start toplevel_phrase                  /* for interactive use */
-%type <Parsetree.toplevel_phrase> toplevel_phrase
+%type <Parsetree_plus.toplevel_phrase> toplevel_phrase
 %start use_file                         /* for the #use directive */
-%type <Parsetree.toplevel_phrase list> use_file
+%type <Parsetree_plus.toplevel_phrase list> use_file
 %start parse_core_type
-%type <Parsetree.core_type> parse_core_type
+%type <Parsetree_plus.core_type> parse_core_type
 %start parse_expression
-%type <Parsetree.expression> parse_expression
+%type <Parsetree_plus.expression> parse_expression
 %start parse_pattern
-%type <Parsetree.pattern> parse_pattern
+%type <Parsetree_plus.pattern> parse_pattern
 
 
 /* Instead of reporting an error directly, productions specified
@@ -1440,7 +1426,8 @@ _structure_item_without_item_extension_sugar:
         (Pstr_primitive (Val.mk $2 $4 ~prim:$6 ~attrs:$7 ~loc))
     }
   | many_type_declarations {
-      mkstr(Pstr_type (List.rev $1))
+      let (nr, typs) = $1 in
+      mkstr(Pstr_type (nr, List.rev typs))
     }
   | str_type_extension {
       mkstr(Pstr_typext $1)
@@ -1707,7 +1694,8 @@ _signature_item:
       mksig(Psig_value (Val.mk $2 $4 ~prim:$6 ~attrs:$7 ~loc))
     }
   | many_type_declarations {
-      mksig(Psig_type (List.rev $1))
+      let (nr, typs) = $1 in
+      mksig(Psig_type (nr, List.rev typs))
     }
   | sig_type_extension {
       mksig(Psig_typext $1)
@@ -2031,7 +2019,7 @@ semi_terminated_class_fields:
 ;
 
 parent_binder:
-    AS LIDENT
+    AS as_loc(LIDENT)
           { Some $2 }
   | /* empty */
           { None }
@@ -2225,11 +2213,11 @@ _class_constructor_type:
   | NEW class_instance_type
       { $2 }
   | LIDENT EXPLICITLY_PASSED_OPTIONAL non_arrowed_core_type EQUALGREATER class_constructor_type
-      { mkcty(Pcty_arrow("?" ^ $1, mkoption $3, $5)) }
+      { mkcty(Pcty_arrow(Optional $1, mkoption $3, $5)) }
   | LIDENT COLONCOLON non_arrowed_core_type EQUALGREATER class_constructor_type
-      { mkcty(Pcty_arrow($1, $3, $5)) }
+      { mkcty(Pcty_arrow(Labelled $1, $3, $5)) }
   | non_arrowed_core_type EQUALGREATER class_constructor_type
-      { mkcty(Pcty_arrow("", $1, $3)) }
+      { mkcty(Pcty_arrow(Nolabel, $1, $3)) }
 ;
 
 non_arrowed_class_constructor_type: mark_position_cty(_non_arrowed_class_constructor_type) {$1}
@@ -2289,7 +2277,7 @@ _class_sig_field:
   | VAL value_type post_item_attributes {
       mkctf_attrs (Pctf_val $2) $3
     }
-  | METHOD private_virtual_flags label COLON poly_type post_item_attributes
+  | METHOD private_virtual_flags as_loc(label) COLON poly_type post_item_attributes
        {
         let (p, v) = $2 in
         mkctf_attrs (Pctf_method ($3, p, v, $5)) $6
@@ -2302,11 +2290,11 @@ _class_sig_field:
       { mkctf(Pctf_attribute $1) }
 ;
 value_type:
-    VIRTUAL mutable_flag label COLON core_type
+    VIRTUAL mutable_flag as_loc(label) COLON core_type
       { $3, $2, Virtual, $5 }
-  | MUTABLE virtual_flag label COLON core_type
+  | MUTABLE virtual_flag as_loc(label) COLON core_type
       { $3, Mutable, $2, $5 }
-  | label COLON core_type
+  | as_loc(label) COLON core_type
       { $1, Immutable, Concrete, $3 }
 ;
 constrain:
@@ -2511,28 +2499,28 @@ let explictlyPassedAnnotated = (myOptional a::?a b::?None :int);
 labeled_simple_pattern:
    /* Case A, B, C, D */
   | LIDENT COLONCOLON simple_pattern
-      { ($1, None, $3) }
+      { (Labelled $1, None, $3) }
    /* Case E, F, G, H */
   | LIDENT COLONCOLON simple_pattern OPTIONAL_NO_DEFAULT
-      { ("?" ^ $1, None, $3) }
+      { (Optional $1, None, $3) }
    /* Case I, J, K, L */
   | LIDENT COLONCOLON simple_pattern EQUAL simple_expr
-      { ("?" ^ $1, Some $5, $3) }
+      { (Optional $1, Some $5, $3) }
   | simple_pattern
-      { ("", None, $1) }
+      { (Nolabel, None, $1) }
 ;
 jsx_arguments:
   /* empty */ { [] }
   | LIDENT EQUAL simple_expr jsx_arguments
       {
         (* a=b *)
-        [($1, $3)] @ $4
+        [(Labelled $1, $3)] @ $4
       }
   | LIDENT jsx_arguments
       {
         (* a (punning) *)
         let loc_lident = mklocation $startpos($1) $endpos($1) in
-        [($1, mkexp (Pexp_ident {txt = Lident $1; loc = loc_lident}))] @ $2
+        [(Labelled $1, mkexp (Pexp_ident {txt = Lident $1; loc = loc_lident}))] @ $2
       }
 ;
 
@@ -2564,7 +2552,7 @@ jsx:
   | jsx_start_tag_and_args SLASHGREATER {
     let (component, _) = $1 in
     let loc = mklocation $symbolstartpos $endpos in
-    component [("", mktailexp_extension loc [] None)] ~loc
+    component [(Nolabel, mktailexp_extension loc [] None)] ~loc
   }
   | jsx_start_tag_and_args GREATER simple_expr_list LESSSLASHIDENTGREATER {
     let (component, start) = $1 in
@@ -2573,7 +2561,7 @@ jsx:
     let endName = Longident.parse $4 in
     let _ = ensureTagsAreEqual start endName loc in
     let siblings = if List.length $3 > 0 then $3 else [] in
-    component [("", mktailexp_extension loc siblings None)] ~loc
+    component [(Nolabel, mktailexp_extension loc siblings None)] ~loc
   }
 ;
 
@@ -2586,7 +2574,7 @@ jsx_without_leading_less:
   | jsx_start_tag_and_args_without_leading_less SLASHGREATER {
     let (component, _) = $1 in
     let loc = mklocation $symbolstartpos $endpos in
-    component [("", mktailexp_extension loc [] None)] ~loc
+    component [(Nolabel, mktailexp_extension loc [] None)] ~loc
   }
   | jsx_start_tag_and_args_without_leading_less GREATER simple_expr_list LESSSLASHIDENTGREATER {
     let (component, start) = $1 in
@@ -2595,7 +2583,7 @@ jsx_without_leading_less:
     let endName = Longident.parse $4 in
     let _ = ensureTagsAreEqual start endName loc in
     let siblings = if List.length $3 > 0 then $3 else [] in
-    component [("", mktailexp_extension loc siblings None)] ~loc
+    component [(Nolabel, mktailexp_extension loc siblings None)] ~loc
   }
 ;
 
@@ -2622,7 +2610,7 @@ _expr:
       let (l,o,p) = $2 in
       mkexp (Pexp_fun(l, o, p, $3))
     }
-  | FUN LPAREN TYPE LIDENT RPAREN fun_def
+  | FUN LPAREN TYPE as_loc(LIDENT) RPAREN fun_def
       { mkexp (Pexp_newtype($4, $6)) }
   /* List style rules like this often need a special precendence
      such as below_BAR in order to let the entire list "build up"
@@ -2681,12 +2669,12 @@ _expr:
       {
         let loc = mklocation $symbolstartpos $endpos in
         mkexp(Pexp_apply(mkexp ~ghost:true ~loc (Pexp_ident(array_function ~loc "Array" "set")),
-                         ["",$1; "",$4; "",$7])) }
+                         [Nolabel,$1; Nolabel,$4; Nolabel,$7])) }
   | simple_expr DOT LBRACKET expr RBRACKET EQUAL expr
       {
         let loc = mklocation $symbolstartpos $endpos in
         mkexp(Pexp_apply(mkexp ~ghost:true ~loc (Pexp_ident(array_function ~loc "String" "set")),
-                         ["",$1; "",$4; "",$7])) }
+                         [Nolabel,$1; Nolabel,$4; Nolabel,$7])) }
   | simple_expr DOT LBRACE expr RBRACE EQUAL expr
       {
         let loc = mklocation $symbolstartpos $endpos in
@@ -2758,7 +2746,7 @@ _simple_expr:
      tokens, when a list begins witha JSX tag. So we special case it.
      (todo: pick totally different syntax for polymorphic variance types to avoid
      the issue alltogether.
-     
+
      first token
      /\
      [<ident    args />  , remainingitems ]
@@ -2817,14 +2805,14 @@ _simple_expr:
       {
         let loc = mklocation $symbolstartpos $endpos in
         mkexp(Pexp_apply(mkexp ~ghost:true ~loc (Pexp_ident(array_function ~loc "Array" "get")),
-                         ["",$1; "",$4])) }
+                         [Nolabel, $1; Nolabel, $4])) }
   | simple_expr DOT as_loc(LPAREN) expr as_loc(error)
       { unclosed_exp (with_txt $3 "(") (with_txt $5 ")") }
   | simple_expr DOT LBRACKET expr RBRACKET
       {
         let loc = mklocation $symbolstartpos $endpos in
         mkexp(Pexp_apply(mkexp ~ghost:true ~loc (Pexp_ident(array_function ~loc "String" "get")),
-                         ["",$1; "",$4])) }
+                         [Nolabel, $1; Nolabel,$4])) }
   | simple_expr DOT as_loc(LBRACKET) expr as_loc(error)
       { unclosed_exp (with_txt $3 "[") (with_txt $5 "]") }
   | simple_expr DOT LBRACE expr RBRACE
@@ -2896,7 +2884,7 @@ _simple_expr:
         mkexp (Pexp_open (Fresh, $1, list_exp)) }
   | as_loc(PREFIXOP) simple_expr %prec below_DOT_AND_SHARP
       {
-        mkexp(Pexp_apply(mkoperator $1, ["",$2]))
+        mkexp(Pexp_apply(mkoperator $1, [Nolabel,$2]))
       }
   /**
    * Must be below_DOT_AND_SHARP so that the parser waits for several dots for
@@ -2907,7 +2895,7 @@ _simple_expr:
   | as_loc(BANG) simple_expr %prec below_DOT_AND_SHARP
       {
         let bang = {$1 with txt="!"} in
-        mkexp(Pexp_apply(mkoperator bang, ["",$2]))
+        mkexp(Pexp_apply(mkoperator bang, [Nolabel,$2]))
       }
   | NEW as_loc(class_longident)
       { mkexp (Pexp_new $2) }
@@ -2925,7 +2913,7 @@ _simple_expr:
       }
   | mod_longident DOT as_loc(LBRACELESS) field_expr_list opt_comma as_loc(error)
       { unclosed_exp (with_txt $3 "{<") (with_txt $6 ">}") }
-  | simple_expr SHARP label
+  | simple_expr SHARP as_loc(label)
       { mkexp(Pexp_send($1, $3)) }
   | simple_expr as_loc(SHARPOP) simple_expr
       { mkinfix $1 $2 $3 }
@@ -2984,7 +2972,7 @@ simple_labeled_expr_list:
 
 labeled_simple_expr:
     less_aggressive_simple_expression
-      { ("", $1) }
+      { (Nolabel, $1) }
   | label_expr
       { $1 }
 ;
@@ -2992,12 +2980,12 @@ labeled_simple_expr:
 /* No punning! */
 label_expr:
     LIDENT COLONCOLON less_aggressive_simple_expression
-      { ($1, $3) }
+      { (Labelled $1, $3) }
   /* Expliclitly provided default optional:
    * let res = someFunc optionalArg:?None;
    */
   | LIDENT EXPLICITLY_PASSED_OPTIONAL less_aggressive_simple_expression
-      { ("?" ^ $1, $3) }
+      { (Optional $1, $3) }
 ;
 
 and_let_binding:
@@ -3017,8 +3005,8 @@ let_bindings:
   | let_bindings and_let_binding                { addlb $1 $2 }
 ;
 lident_list:
-    LIDENT                            { [$1] }
-  | LIDENT lident_list                { $1 :: $2 }
+    as_loc(LIDENT)                            { [$1] }
+  | as_loc(LIDENT) lident_list                { $1 :: $2 }
 ;
 let_binding_impl:
   /* Form with item extension sugar */
@@ -3153,14 +3141,14 @@ _curried_binding_return_typed:
       {
           let loc = mklocation $symbolstartpos $endpos in
           let nil = { txt = Lident "()"; loc = make_ghost_loc loc } in
-          mkexp ~ghost:true ~loc (Pexp_fun("", None, mkpat ~ghost:true ~loc (Ppat_construct (nil, None)), $2))
+          mkexp ~ghost:true ~loc (Pexp_fun(Nolabel, None, mkpat ~ghost:true ~loc (Ppat_construct (nil, None)), $2))
       }
   | labeled_simple_pattern curried_binding_return_typed_
       {
          let loc = mklocation $symbolstartpos $endpos in
          let (l, o, p) = $1 in mkexp ~ghost:true ~loc (Pexp_fun(l, o, p, $2))
       }
-  | LPAREN TYPE LIDENT RPAREN curried_binding_return_typed_
+  | LPAREN TYPE as_loc(LIDENT) RPAREN curried_binding_return_typed_
       { mkexp(Pexp_newtype($3, $5)) }
 ;
 
@@ -3203,7 +3191,7 @@ curried_binding:
         let (l, o, p) = $1 in
         mkexp ~ghost:true ~loc (Pexp_fun(l, o, p, $2))
       }
-  | LPAREN TYPE LIDENT RPAREN curried_binding_return_typed_
+  | LPAREN TYPE as_loc(LIDENT) RPAREN curried_binding_return_typed_
       {
         let loc = mklocation $symbolstartpos $endpos in
         mkexp ~loc (Pexp_newtype($3, $5))
@@ -3257,7 +3245,7 @@ fun_def:
        let loc = mklocation $symbolstartpos $endpos in
        mkexp ~ghost:true ~loc (Pexp_fun(l, o, p, $2))
       }
-  | LPAREN TYPE LIDENT RPAREN fun_def
+  | LPAREN TYPE as_loc(LIDENT) RPAREN fun_def
       {
         let loc = mklocation $symbolstartpos $endpos in
         mkexp ~loc (Pexp_newtype($3, $5))
@@ -3298,7 +3286,7 @@ expr_comma_seq_extension:
 
   Used when parsing `[<> </>, remaining]`. We know that there is at
   least one item, so we either should have a comma + more, or nothing.
-  
+
 expr_comma_seq_extension_second_item:
   | DOTDOTDOT expr_optional_constraint RBRACKET
     { ([], Some $2) }
@@ -3656,14 +3644,17 @@ primitive_declaration:
 /* Type declarations */
 
 many_type_declarations:
-  | TYPE as_loc(nonrec_flag) type_declaration_details post_item_attributes {
+  | TYPE nonrec_flag type_declaration_details post_item_attributes {
       let (ident, params, constraints, kind, priv, manifest) = $3 in
       let loc = mklocation $symbolstartpos $endpos in
-      [Type.mk ident
-       ~params:params ~cstrs:constraints
-       ~kind ~priv ?manifest ~attrs:(add_nonrec $2 $4) ~loc]
+      ($2, [Type.mk ident
+            ~params:params ~cstrs:constraints
+            ~kind ~priv ?manifest ~attrs:$4 ~loc])
   }
-  | many_type_declarations and_type_declaration { $2 :: $1 }
+  | many_type_declarations and_type_declaration {
+      let (nr, typs) = $1 in
+        (nr, $2 :: typs)
+  }
 ;
 
 and_type_declaration:
@@ -3800,14 +3791,14 @@ sig_exception_declaration:
       }
 ;
 generalized_constructor_arguments:
-    /*empty*/                                   { ([],None) }
+    /*empty*/                                   { (Pcstr_tuple [],None) }
   | as_loc(OF)
       { Location.raise_errorf ~loc:$1.loc "\"of\" is not needed in reason, use `type a = Foo a` instead" }
-  | non_arrowed_simple_core_type_list                    { (List.rev $1, None) }
+  | non_arrowed_simple_core_type_list                    { (Pcstr_tuple (List.rev $1), None) }
   | non_arrowed_simple_core_type_list COLON core_type
-                                                { (List.rev $1,Some $3) }
+                                                { (Pcstr_tuple (List.rev $1), Some $3) }
   | COLON core_type
-                                                { ([],Some $2) }
+                                                { (Pcstr_tuple [],Some $2) }
 ;
 
 
@@ -3933,8 +3924,8 @@ with_type_binder:
 /* Polymorphic types */
 
 typevar_list:
-        QUOTE ident                             { [$2] }
-      | typevar_list QUOTE ident                { $3 :: $1 }
+        QUOTE as_loc(ident)                             { [$2] }
+      | typevar_list QUOTE as_loc(ident)                { $3 :: $1 }
 ;
 
 poly_type: mark_position_typ(_poly_type) {$1}
@@ -4077,11 +4068,11 @@ _core_type2:
     non_arrowed_core_type %prec below_LBRACKETAT
       { $1 }
   | LIDENT COLONCOLON non_arrowed_core_type QUESTION EQUALGREATER core_type2
-      { mktyp(Ptyp_arrow("?" ^ $1 , mkoption $3, $6)) }
+      { mktyp(Ptyp_arrow(Optional $1 , mkoption $3, $6)) }
   | LIDENT COLONCOLON non_arrowed_core_type EQUALGREATER core_type2
-      { mktyp(Ptyp_arrow($1, $3, $5)) }
+      { mktyp(Ptyp_arrow(Labelled $1, $3, $5)) }
   | core_type2 EQUALGREATER core_type2
-      { mktyp(Ptyp_arrow("", $1, $3)) }
+      { mktyp(Ptyp_arrow(Nolabel, $1, $3)) }
 ;
 
 
@@ -4238,7 +4229,7 @@ meth_list_with_leading_lesslident:
 ;
 
 field:
-    label COLON poly_type attributes           { ($1, $4, $3) }
+    as_loc(label) COLON poly_type attributes           { ($1, $4, $3) }
 ;
 label:
     LIDENT                                      { $1 }
@@ -4247,26 +4238,17 @@ label:
 /* Constants */
 
 constant:
-    INT                               { Const_int $1 }
-  | CHAR                              { Const_char $1 }
-  | STRING                            { let (s, d) = $1 in Const_string (s, d) }
-  | FLOAT                             { Const_float $1 }
-  | INT32                             { Const_int32 $1 }
-  | INT64                             { Const_int64 $1 }
-  | NATIVEINT                         { Const_nativeint $1 }
+  | INT          { let (n, m) = $1 in Pconst_integer (n, m) }
+  | CHAR         { Pconst_char $1 }
+  | STRING       { let (s, d) = $1 in Pconst_string (s, d) }
+  | FLOAT        { let (f, m) = $1 in Pconst_float (f, m) }
 ;
 signed_constant:
-    constant                               { $1 }
-  | MINUS INT                              { Const_int(- $2) }
-  | MINUS FLOAT                            { Const_float("-" ^ $2) }
-  | MINUS INT32                            { Const_int32(Int32.neg $2) }
-  | MINUS INT64                            { Const_int64(Int64.neg $2) }
-  | MINUS NATIVEINT                        { Const_nativeint(Nativeint.neg $2) }
-  | PLUS INT                               { Const_int $2 }
-  | PLUS FLOAT                             { Const_float $2 }
-  | PLUS INT32                             { Const_int32 $2 }
-  | PLUS INT64                             { Const_int64 $2 }
-  | PLUS NATIVEINT                         { Const_nativeint $2 }
+    constant     { $1 }
+  | MINUS INT    { let (n, m) = $2 in Pconst_integer("-" ^ n, m) }
+  | MINUS FLOAT  { let (f, m) = $2 in Pconst_float("-" ^ f, m) }
+  | PLUS INT     { let (n, m) = $2 in Pconst_integer (n, m) }
+  | PLUS FLOAT   { let (f, m) = $2 in Pconst_float(f, m) }
 ;
 
 /* Identifiers and long identifiers */
@@ -4394,7 +4376,10 @@ class_longident:
 toplevel_directive:
     SHARP ident                 { Ptop_dir($2, Pdir_none) }
   | SHARP ident STRING          { Ptop_dir($2, Pdir_string (fst $3)) }
-  | SHARP ident INT             { Ptop_dir($2, Pdir_int $3) }
+  | SHARP ident INT             {
+                                  let (n, m) = $3 in
+                                  Ptop_dir($2, Pdir_int (n, m))
+                                }
   | SHARP ident val_longident   { Ptop_dir($2, Pdir_ident $3) }
   | SHARP ident mod_longident   { Ptop_dir($2, Pdir_ident $3) }
   | SHARP ident FALSE           { Ptop_dir($2, Pdir_bool false) }
