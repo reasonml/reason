@@ -72,8 +72,22 @@
  *   let lst = [ ];
  *)
 
-open Location
-open Lexing
+[%%import ( * ) from Location]
+[%%import ( * ) from Lexing]
+
+[%%import MenhirLib]
+[%%import Ast_helper]
+[%%import Parsetree]
+[%%import Lexer]
+[%%import Parser]
+[%%import Syntaxerr]
+
+[%%import (Reason_parser_message) from Self]
+[%%import (Reason_pprint_ast) from Self]
+[%%import (Reason_parser) from Self]
+[%%import (Reason_config) from Self]
+[%%import (Syntax_util) from Self]
+[%%import (Reason_lexer) from Self]
 
 module S = MenhirLib.General (* Streams *)
 

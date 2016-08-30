@@ -1,7 +1,8 @@
-open Ast_mapper
-open Asttypes
-open Parsetree
-open Longident
+[%%import ( * ) from Ast_mapper]
+[%%import ( * ) from Asttypes]
+[%%import ( * ) from Parsetree]
+[%%import ( * ) from Longident]
+[%%import Location]
 
 (** [is_prefixed prefix i str] checks if prefix is the prefix of str
   * starting from position i

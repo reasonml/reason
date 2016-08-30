@@ -43,5 +43,26 @@
     "clean": "eval $(dependencyEnv) && make clean",
     "postinstall": "eval $(dependencyEnv) && make build_without_utop",
     "ocamlbuildhelp": "eval $(dependencyEnv) && ocamlbuild --help"
+  },
+  "ocaml": {
+    "bin": {
+      "refmt": "./src/refmt_impl.ml"
+    },
+    "menhir": {
+      "./src/reason_parser.mly": {
+        "flags": "--strict --unused-tokens --fixed-exception --table"
+      }
+    },
+    "opam": {
+      "MenhirLib": "menhirLib",
+      "Unix": "unix",
+      "Compilerlibs": "compiler-libs.common",
+      "Ocamlbuild": "ocamlbuild",
+      "Findlib": "findlib",
+      "Easy_format": "easy-format",
+      "BetterErrors": "BetterErrors",
+      "merlin_extend": "merlin_extend",
+      "Re_str": "re.str"
+    }
   }
 }

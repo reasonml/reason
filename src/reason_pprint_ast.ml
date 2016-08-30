@@ -49,15 +49,19 @@
 
 (* TODO more fine-grained precedence pretty-printing *)
 
-open Asttypes
-open Format
-open Location
-open Lexing
-open Longident
-open Parsetree
-open Easy_format
-open Syntax_util
-open Ast_mapper
+[%%import ( * ) from Asttypes]
+[%%import ( * ) from Format]
+[%%import ( * ) from Location]
+[%%import ( * ) from Lexing]
+[%%import ( * ) from Longident]
+[%%import ( * ) from Parsetree]
+[%%import ( * ) from Easy_format]
+[%%import ( * ) from Ast_mapper]
+[%%import Re_str]
+[%%import Pprintast]
+
+[%%import ( * ) from Self.Syntax_util]
+[%%import (Syntax_util) from Self]
 
 
 type commentCategory =
@@ -4251,7 +4255,7 @@ class printer  ()= object(self:'self)
                 ~space:true
                 (SourceMap (e1.pexp_loc, (label ~space:true (atom "if") (self#simplifyUnparseExpr e1))))
                 (makeLetSequence (self#letList e2)) in
-            Some (sequence init blocks) 
+            Some (sequence init blocks)
           | Pexp_while (e1, e2) ->
             let lbl =
               label

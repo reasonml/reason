@@ -50,9 +50,10 @@
 (* The lexer definition *)
 
 {
-open Lexing
-open Misc
-open Reason_parser
+[%%import ( * ) from Lexing]
+[%%import ( * ) from Misc]
+[%%import ( * ) from Self.Reason_parser]
+[%%import Warnings]
 
 type error =
   | Illegal_character of char

@@ -1,6 +1,11 @@
 (* Portions Copyright (c) 2015-present, Facebook, Inc. All rights reserved. *)
-
-open Lexing
+[%%import (Reason_toolchain) from Self]
+[%%import (Reason_config) from Self]
+[%%import (Reason_pprint_ast) from Self]
+[%%import Config]
+[%%import Printast]
+[%%import Location]
+[%%import ( * ) from Lexing]
 
 exception Invalid_config of string
 

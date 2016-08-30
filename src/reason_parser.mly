@@ -50,13 +50,20 @@
 /* The parser definition */
 
 %{
-open Location
-open Asttypes
-open Longident
-open Parsetree
-open Ast_helper
-open Ast_mapper
-open Syntax_util
+
+[%%import Clflags]
+[%%import Syntaxerr]
+[%%import MenhirLib]
+[%%import ( * ) from Location]
+[%%import ( * ) from Asttypes]
+[%%import ( * ) from Longident]
+[%%import ( * ) from Parsetree]
+[%%import ( * ) from Ast_helper]
+[%%import ( * ) from Ast_mapper]
+
+[%%import (Reason_config) from Self]
+[%%import ( * ) from Self.Syntax_util]
+[%%import (Syntax_util) from Self]
 
 (*
    TODO:
