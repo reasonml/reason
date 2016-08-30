@@ -450,6 +450,45 @@ let performsSideEffects = fun arg => {
 };
 ```
 
+#### Functions Returning Functions
+
+Functions can return other functions. Here's a function `createAdder` that
+creates an adder function. We call `createAdder` first with `4`, and then call
+the result of that with `1`.
+
+```reason
+let createAdder = fun addAmount => (
+  fun x => addAmount + x
+);
+let five = createAdder(4)(1);
+```
+
+`createAdder` has the following type. This type tells us that it is a function
+that when called with an `int`, will return *another* function. That returned
+function itself expects an `int` and returns an `int`. The parenthesis may be
+omitted.
+
+```reason
+int => (int => int)
+```
+
+This pattern is called "currying", and because it is so common, `Reason`
+includes some syntactic sugar for it. Here is the previous example, but written
+using the syntactic sugar. Many people use this pattern because it simulates
+multiple arguments.
+
+
+```reason
+let createAdder = fun addAmount x => addAmount + x;
+let five = createAdder 4 1;
+```
+> Note: Curried functions don't typically incur performance hit when all the
+arguments are supplied at once because intermediate function allocations are
+optimized away!
+
+[Learn more about currying](#diving-deeper-curried-functions)
+
+
 #### Tuple and Record Argument
 
 You can pass multiple pieces of data at once to the function, by passing a
@@ -548,45 +587,6 @@ Mutually recursive functions start like a single recursive function using the
 let rec callSecond = fun () => callFirst ()
 and callFirst = fun () => callSecond ();
 ```
-
-#### Functions Returning Functions
-
-Functions can return other functions. Here's a function `createAdder` that
-creates an adder function. We call `createAdder` first with `4`, and then call
-the result of that with `1`.
-
-```reason
-let createAdder = fun addAmount => (
-  fun x => addAmount + x
-);
-let five = createAdder(4)(1);
-```
-
-`createAdder` has the following type. This type tells us that it is a function
-that when called with an `int`, will return *another* function. That returned
-function itself expects an `int` and returns an `int`. The parenthesis may be
-omitted.
-
-```reason
-int => (int => int)
-```
-
-This pattern is called "currying", and because it is so common, `Reason`
-includes some syntactic sugar for it. Here is the previous example, but written
-using the syntactic sugar. Many people use this pattern because it simulates
-multiple arguments.
-
-
-```reason
-let createAdder = fun addAmount x => addAmount + x;
-let five = createAdder 4 1;
-```
-> Note: Curried functions don't typically incur performance hit when all the
-arguments are supplied at once because intermediate function allocations are
-optimized away!
-
-[Learn more about currying](#diving-deeper-curried-functions)
-
 
 Variants
 --------
