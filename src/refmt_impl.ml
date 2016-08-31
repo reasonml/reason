@@ -35,6 +35,20 @@ let reasonBinaryParser use_stdin filename =
   let (magic_number, filename, ast, comments, parsedAsML, parsedAsInterface) = input_value chan in
   ((ast, comments), parsedAsML, parsedAsInterface)
 
+let ocamlBinaryParser use_stdin filename =
+  let chan =
+    match use_stdin with
+      | true -> stdin
+      | false ->
+          let file_chan = open_in filename in
+          seek_in file_chan 0;
+          file_chan
+  in
+  let _ = really_input_string chan (String.length Config.ast_impl_magic_number) in
+  let _ = input_value chan in
+  let ast = input_value chan in
+  ((ast, []), true, false)
+
 let usage = {|Reason: Meta Language Utility
 
 [Usage]: refmt [options] some-file.[re|ml]
@@ -174,6 +188,7 @@ let () =
       let ((ast, comments), parsedAsML, parsedAsInterface) = match !prse with
         | None -> (defaultImplementationParserFor use_stdin filename)
         | Some "binary_reason" -> reasonBinaryParser use_stdin filename
+        | Some "binary" -> ocamlBinaryParser use_stdin filename
         | Some "ml" -> (Reason_toolchain.ML.canonical_implementation_with_comments (Reason_toolchain.setup_lexbuf use_stdin filename), true, false)
         | Some "re" -> (Reason_toolchain.JS.canonical_implementation_with_comments (Reason_toolchain.setup_lexbuf use_stdin filename), false, false)
         | Some s -> (
