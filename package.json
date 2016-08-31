@@ -1,47 +1,65 @@
 {
-  "name": "reason",
-  "version": "1.2.1",
-  "description": "Reason Meta Language Toolchain",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/facebook/reason.git"
-  },
-  "config": {},
-  "keywords": [
-    "reason"
-  ],
-  "author": "",
-  "license": "BSD",
-  "homepage": "https://github.com/facebook/reason",
-  "dependencies": {
-    "BetterErrors": "https://github.com/npm-ml/BetterErrors.git#npm-1.2.0",
-    "ocaml-findlib": "https://github.com/npm-ml/ocaml-findlib.git#npm-1.6.1",
-    "menhir": "https://github.com/npm-ml/menhir.git#20160303",
-    "ocaml": "https://github.com/npm-ml/ocaml.git#npm-4.02.3",
-    "easy-format": "https://github.com/npm-ml/easy-format.git#npm-1.2.0",
-    "merlin-extend": "https://github.com/npm-ml/merlin-extend.git#npm-0.0.1",
-    "dependency-env": "https://github.com/npm-ml/dependency-env.git",
-    "re": "https://github.com/npm-ml/re.git#npm-1.6.0"
-  },
-  "exportedEnvVars": {
-    "PATH": {
-      "val": "./_build/bin/",
-      "resolveAsRelativePath": true,
-      "global": true,
-      "globalCollisionBehavior": "joinPath"
+    "version": "1.2.1",
+    "description": "Reason Meta Language Toolchain",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/facebook/reason.git"
     },
-    "REASON_BUILD_DIR": {
-      "val": "./_build",
-      "resolveAsRelativePath": true,
-      "global": true,
-      "globalCollisionBehavior": "joinPath"
+    "keywords": [
+      "reason"
+    ],
+    "license": "BSD",
+    "homepage": "https://github.com/facebook/reason",
+    "exportedEnvVars": {
+        "reason_installed": {
+            "global": true,
+            "globalCollisionBehavior": "clobber",
+            "val": "true"
+        },
+        "FINDLIB": {
+            "global": true,
+            "resolveAsRelativePath": true,
+            "globalCollisionBehavior": "joinPath",
+            "val": "./_build/ocamlfind/lib"
+        },
+        "version": {
+            "val": "0.0.6",
+            "global": true,
+            "globalCollisionBehavior": "clobber"
+        },
+        "PATH": {
+            "global": true,
+            "resolveAsRelativePath": true,
+            "globalCollisionBehavior": "joinPath",
+            "val": "./_build/ocamlfind/bin"
+        },
+        "reason_enable": {
+            "global": true,
+            "globalCollisionBehavior": "clobber",
+            "val": "enable"
+        },
+        "reason_version": {
+            "global": true,
+            "globalCollisionBehavior": "clobber",
+            "val": "0.0.6"
+        }
+    },
+    "name": "reason",
+    "dependencies": {
+        "merlin": "https://github.com/npm-opam/merlin",
+        "re": "https://github.com/npm-opam/re",
+        "ocamlfind": "https://github.com/npm-opam/ocamlfind",
+        "BetterErrors": "https://github.com/npm-opam/BetterErrors",
+        "ocaml": "https://github.com/npm-opam/ocaml.git#npm-4.02.3",
+        "dependency-env": "https://github.com/npm-ml/dependency-env.git",
+        "substs": "https://github.com/yunxing/substs.git",
+        "easy-format": "https://github.com/npm-opam/easy-format",
+        "merlin-extend": "https://github.com/npm-opam/merlin-extend",
+        "nopam": "https://github.com/yunxing/nopam.git",
+        "utop": "https://github.com/npm-opam/utop",
+        "menhir": "https://github.com/npm-opam/menhir"
+    },
+    "scripts": {
+        "postinstall": "eval $(dependencyEnv) && nopam && substs pkg/META.in && make compile_error && ocaml pkg/build.ml native=true native-dynlink=true utop=${utop_installed:-false} && (opam-installer --prefix=$opam_prefix || true)"
     }
-  },
-  "scripts": {
-    "whereisocamlc": "eval $(dependencyEnv) && which ocamlc",
-    "whereisreason": "eval $(dependencyEnv) && which refmt",
-    "clean": "eval $(dependencyEnv) && make clean",
-    "postinstall": "eval $(dependencyEnv) && make build_without_utop",
-    "ocamlbuildhelp": "eval $(dependencyEnv) && ocamlbuild --help"
-  }
 }
