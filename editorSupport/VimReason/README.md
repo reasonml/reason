@@ -21,7 +21,7 @@ Currently, only works with bleeding edge pins of these packages:
    packages.
 
 ```vim
-if !empty(system('which opam'))
+if executable('opam')
   " Merlin plugin
   let s:ocamlmerlin=substitute(system('opam config var share'),'\n$','','') . "/merlin"
   execute "set rtp+=".s:ocamlmerlin."/vim"
