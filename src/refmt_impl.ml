@@ -35,6 +35,20 @@ let reasonBinaryParser use_stdin filename =
   let (magic_number, filename, ast, comments, parsedAsML, parsedAsInterface) = input_value chan in
   ((ast, comments), parsedAsML, parsedAsInterface)
 
+let ocamlBinaryParser use_stdin filename parsedAsInterface =
+  let chan =
+    match use_stdin with
+      | true -> stdin
+      | false ->
+          let file_chan = open_in filename in
+          seek_in file_chan 0;
+          file_chan
+  in
+  let _ = really_input_string chan (String.length Config.ast_impl_magic_number) in
+  let _ = input_value chan in
+  let ast = input_value chan in
+  ((ast, []), true, parsedAsInterface)
+
 let usage = {|Reason: Meta Language Utility
 
 [Usage]: refmt [options] some-file.[re|ml]
@@ -72,7 +86,7 @@ let () =
     "-use-stdin", Arg.Bool (fun x -> use_stdin := x), "<use_stdin>, parse AST from <use_stdin> (either true, false). You still must provide a file name even if using stdin for errors to be reported";
     "-recoverable", Arg.Bool (fun x -> recoverable := x), "Enable recoverable parser";
     "-assume-explicit-arity", Arg.Unit (fun () -> assumeExplicitArity := true), "If a constructor's argument is a tuple, always interpret it as multiple arguments";
-    "-parse", Arg.String (fun x -> prse := Some x), "<parse>, parse AST as <parse> (either 'ml', 're', 'binary_reason(for interchange between Reason versions')";
+    "-parse", Arg.String (fun x -> prse := Some x), "<parse>, parse AST as <parse> (either 'ml', 're', 'binary_reason(for interchange between Reason versions)', 'binary (from the ocaml compiler)')";
     (* Use a print option of "none" to simply perform a parsing validation -
      * useful for IDE error messages etc.*)
     "-print", Arg.String (fun x -> prnt := Some x), "<print>, print AST in <print> (either 'ml', 're', 'binary(default - for compiler input)', 'binary_reason(for interchange between Reason versions)', 'ast (print human readable directly)', 'none')";
@@ -125,6 +139,7 @@ let () =
       let ((ast, comments), parsedAsML, parsedAsInterface) = match !prse with
         | None -> (defaultInterfaceParserFor use_stdin filename)
         | Some "binary_reason" -> reasonBinaryParser use_stdin filename
+        | Some "binary" -> ocamlBinaryParser use_stdin filename true
         | Some "ml" -> ((Reason_toolchain.ML.canonical_interface_with_comments (Reason_toolchain.setup_lexbuf use_stdin filename)), true, true)
         | Some "re" -> ((Reason_toolchain.JS.canonical_interface_with_comments (Reason_toolchain.setup_lexbuf use_stdin filename)), false, true)
         | Some s -> (
@@ -174,6 +189,7 @@ let () =
       let ((ast, comments), parsedAsML, parsedAsInterface) = match !prse with
         | None -> (defaultImplementationParserFor use_stdin filename)
         | Some "binary_reason" -> reasonBinaryParser use_stdin filename
+        | Some "binary" -> ocamlBinaryParser use_stdin filename false
         | Some "ml" -> (Reason_toolchain.ML.canonical_implementation_with_comments (Reason_toolchain.setup_lexbuf use_stdin filename), true, false)
         | Some "re" -> (Reason_toolchain.JS.canonical_implementation_with_comments (Reason_toolchain.setup_lexbuf use_stdin filename), false, false)
         | Some s -> (
