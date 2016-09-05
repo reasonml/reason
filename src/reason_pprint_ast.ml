@@ -5666,7 +5666,7 @@ let toplevel_phrase f x =
 
 let case_list f x =
   let l = easy#case_list x in
-  (List.map (fun x -> easyFormatToFormatter f (layoutToEasyFormatNoComments x)) l)
+  (List.iter (fun x -> easyFormatToFormatter f (layoutToEasyFormatNoComments x)) l)
 
 let top_phrase f x =
   pp_print_newline f () ;
@@ -5777,6 +5777,9 @@ let signature (comments : commentWithCategory) f x =
   easyFormatToFormatter f (layoutToEasyFormat (easy#signature (apply_mapper_chain_to_signature x preprocessing_chain)) comments)
 let structure (comments : commentWithCategory) f x =
   easyFormatToFormatter f (layoutToEasyFormat (easy#structure (apply_mapper_chain_to_structure x preprocessing_chain)) comments)
+let expression f x =
+  easyFormatToFormatter f (layoutToEasyFormatNoComments (easy#unparseExpr (apply_mapper_chain_to_expr x preprocessing_chain)))
+let case_list = case_list
 end
 in
 object
@@ -5784,6 +5787,10 @@ object
   method pattern = Formatter.pattern
   method signature = Formatter.signature
   method structure = Formatter.structure
+  (* For merlin-destruct *)
+  method toplevel_phrase = Formatter.toplevel_phrase
+  method expression = Formatter.expression
+  method case_list = Formatter.case_list
 end
 
 let defaultSettings = defaultSettings

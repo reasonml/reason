@@ -26,6 +26,20 @@ module Reason_reader = struct
 
   let ident_at t _ = []
 
+  let formatter =
+     let fmt = lazy (Reason_pprint_ast.createFormatter ()) in
+     fun () -> Lazy.force fmt
+
+  let pretty_print ppf =
+    let open Reason_pprint_ast in function
+    | Pretty_core_type       x -> (formatter ())#core_type       ppf x
+    | Pretty_case_list       x -> (formatter ())#case_list       ppf x
+    | Pretty_expression      x -> (formatter ())#expression      ppf x
+    | Pretty_pattern         x -> (formatter ())#pattern         ppf x
+    | Pretty_signature       x -> (formatter ())#signature    [] ppf x
+    | Pretty_structure       x -> (formatter ())#structure    [] ppf x
+    | Pretty_toplevel_phrase x -> (formatter ())#toplevel_phrase ppf x
+
   let print_outcome ppf =
     let open Reason_oprint in function
     | Out_value          x -> print_out_value          ppf x
@@ -37,6 +51,8 @@ module Reason_reader = struct
     | Out_type_extension x -> print_out_type_extension ppf x
     | Out_phrase         x -> print_out_phrase         ppf x
 end
+
+
 
 let () =
   let open Extend_main in
