@@ -110,7 +110,7 @@ let jsMerlinDestructToNuclide arr => {
       ("replace", Js.Unsafe.inject (Js.string replace)),
       ("range", Js.Unsafe.inject (Atom.Range.toJs (jsMerlinPositionToAtomRange position)))
     |]
-}
+};
 
 let jsMerlinLocateToEntry jsResult =>
   switch (Js.to_string (Js.typeof jsResult)) {
