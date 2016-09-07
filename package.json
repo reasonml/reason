@@ -55,9 +55,9 @@
         "substs": "https://github.com/yunxing/substs.git",
         "easy-format": "https://github.com/npm-opam/easy-format",
         "merlin-extend": "https://github.com/npm-opam/merlin-extend",
-        "opam-installer-bin": "https://github.com/yunxing/opam-installer-bin.git",
+        "opam-installer-bin": "https://github.com/yunxing/opam-installer-bin.git",        
         "nopam": "https://github.com/yunxing/nopam.git",
-        "utop-bin": "https://github.com/reasonml/utop-bin",
+        "utop": "https://github.com/npm-opam/utop",
         "menhir": "https://github.com/npm-opam/menhir"
     },
     "scripts": {
