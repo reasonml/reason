@@ -630,9 +630,6 @@ let rules = [
     (TokenPrecedence, (fun s -> (Right, s = "asr")));
   ];
   [
-    (TokenPrecedence, (fun s -> (Left, s.[0] == '#')));
-  ];
-  [
     (TokenPrecedence, (fun s -> (Left, s.[0] == '*' && (String.length s == 1 || s != "*\\*"))));
     (TokenPrecedence, (fun s -> (Left, s.[0] == '/')));
     (TokenPrecedence, (fun s -> (Left, s.[0] == '%' )));
@@ -3014,6 +3011,30 @@ class printer  ()= object(self:'self)
         in
         let rightItm = self#simplifyUnparseExpr rightExpr in
         Some (label ~space:forceSpace (atom prefixStr) rightItm)
+      | (Infix infixStr, [(_, leftExpr); (_, rightExpr)]) when infixStr.[0] = '#' ->
+        (* Little hack. We check the right expression to see if it's also a SHARPOP, if it is
+           we call `formatPrecedence` on the result of `simplifyUnparseExpr` to add the appropriate
+           parens. This is done because `unparseExpr` doesn't seem to be able to handle
+           high enough precedence things. Using the normal precedence handling, something like
+
+              ret #= (Some 10)
+
+            gets pretty printed to
+
+              ret #= Some 10
+
+            Which seems to indicate that the pretty printer doesn't think `#=` is of
+            high enough precedence for the parens to be worth adding back. *)
+        let rightItm = (
+          match rightExpr.pexp_desc with
+          | Pexp_apply (eFun, ls) -> (
+            match (printedStringAndFixityExpr eFun, ls) with
+              | (Infix infixStr, [(_, _); (_, _)]) when infixStr.[0] = '#' -> formatPrecedence (self#simplifyUnparseExpr rightExpr)
+              | _ -> self#simplifyUnparseExpr rightExpr
+          )
+          | _ -> self#simplifyUnparseExpr rightExpr
+        ) in
+        Some (makeList [self#simple_enough_to_be_lhs_dot_send leftExpr; atom infixStr; rightItm])
       | (_, _) -> (
         match (eFun, ls) with
         | ({pexp_desc = Pexp_ident {txt = Ldot (Lident ("String"),"get")}}, [(_,e1);(_,e2)]) ->
@@ -4251,7 +4272,7 @@ class printer  ()= object(self:'self)
                 ~space:true
                 (SourceMap (e1.pexp_loc, (label ~space:true (atom "if") (self#simplifyUnparseExpr e1))))
                 (makeLetSequence (self#letList e2)) in
-            Some (sequence init blocks) 
+            Some (sequence init blocks)
           | Pexp_while (e1, e2) ->
             let lbl =
               label
