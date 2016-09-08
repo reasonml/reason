@@ -195,14 +195,14 @@ let three = {
 
 `let` bindings are immutable. Once a binding refers to a value, it cannot
 refer to anything else. However, you may create a new binding of the same
-name which will *shadow* the previous binding.
+name which will *shadow* the previous binding; aka, from that point onward,
+the binding will refer to the newly assigned value.
 
 ```reason
-/* Prints "hello bye" */
-let msg = "hello ";
-print_string msg;
+let msg = "hello";
+print_endline msg; /* Prints "hello" */
 let msg = "bye";
-print_string msg;
+print_endline msg; /* Prints "bye" */
 ```
 
 
