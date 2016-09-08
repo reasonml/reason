@@ -56,4 +56,6 @@ let res = ?!!z##(q##a);   /* Min parens */
 res #= ?!!z ## q;
 res #= ?!!z##(q##a);
 
-let result = myFunction (x y #= z) (a b #= c)
+let result = myFunction (x y #= z) (a b #= c);
+
+(!x)##y##(b##c);
