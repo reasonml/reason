@@ -1,9 +1,8 @@
 *.messages binary
 
-docs/highlightJs/* binary
-docs/highlightJs/build/demo/* binary
-docs/highlightJs/demo/* binary
-docs/support/* binary
-docs/support/vendor/* binary
-docs/theme-white/* binary
+docs/highlightJs/** binary
+docs/support/** binary
+docs/templates/** binary
+docs/theme-white/** binary
+docs/test/** binary
 docs/flatdoc.js binary
