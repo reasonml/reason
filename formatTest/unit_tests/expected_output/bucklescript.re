@@ -10,13 +10,16 @@ obj##.prop;
 
 obj##.prod := exp;
 
-preview##style##border#=(Js.string "1px black dashed");
+preview##style##border#=(
+                          Js.string "1px black dashed"
+                        );
 
 preview##(style##border)#=args somenum;
 
 x##y##z#=(xxxx##yyyy##zzzz);
 
-let result = js_method_run1 (!react)#createElement foo;
+let result =
+  js_method_run1 (!react)#createElement foo;
 
 add zz##yy xx##ww;
 
