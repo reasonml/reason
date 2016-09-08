@@ -1,26 +1,22 @@
-bla #= 10;
+bla#=10;
 
-bla #= (Some 10);
+bla#=(Some 10);
 
-bla #= (someFunc (Some 10));
+bla#=(someFunc (Some 10));
 
-bla #= ((someFunc someFunc2) 10);
-
-test##var #= (Some (-10));
+test##var#=(Some (-10));
 
 obj##.prop;
 
 obj##.prod := exp;
 
-preview##style##border #= Js.string "1px black dashed";
+preview##style##border#=(Js.string "1px black dashed");
 
-(x##y)##z #= ((xxxx##yyyy)##zzzz);
+(preview##(style##border)#=args) somenum;
+
+(x##y)##z#=((xxxx##yyyy)##zzzz);
 
 let result = js_method_run1 (!react)#createElement foo;
-
-let foo a => a;
-
-id #= (foo 2);
 
 add zz##yy xx##ww;
 
@@ -56,6 +52,6 @@ let res = ?!!z##(q##a);   /* Min parens */
 res #= ?!!z ## q;
 res #= ?!!z##(q##a);
 
-let result = myFunction (x y #= z) (a b #= c);
+let result = myFunction (x y ## z) (a b #= c);
 
 (!x)##y##(b##c);
