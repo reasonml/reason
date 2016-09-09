@@ -2723,6 +2723,14 @@ _simple_expr:
       { let (exten, fields) = $2 in mkexp (Pexp_record(fields, exten)) }
   | as_loc(LBRACE) record_expr as_loc(error)
       { unclosed_exp (with_txt $1 "{") (with_txt $3 "}")}
+  | LBRACE record_expr2 RBRACE
+      {
+        let (exten, fields) = $2 in
+        mkexp (Pexp_extension (mkloc ("bs.obj") (mklocation $symbolstartpos $endpos),
+               PStr [mkstrexp (mkexp (Pexp_record(fields, exten))) []]))
+      }
+  | as_loc(LBRACE) record_expr2 as_loc(error)
+      { unclosed_exp (with_txt $1 "{") (with_txt $3 "}")}
   /* Todo: Why is this not a simple_expr? */
   | LBRACE class_self_pattern_and_structure RBRACE
       { mkexp (Pexp_object $2) }
@@ -3190,9 +3198,45 @@ lbl_expr:
       }
 ;
 
+record_expr2:
+    DOTDOTDOT expr_optional_constraint COMMA lbl_expr_list2 { (Some $2, $4) }
+  | lbl_expr_list_that_is_not_a_single_punned_field2        { (None, $1) }
+;
+lbl_expr_list2:
+     lbl_expr2 { [$1] }
+  |  lbl_expr2 COMMA lbl_expr_list2 { $1 :: $3 }
+  |  lbl_expr2 COMMA { [$1] }
+;
+lbl_expr2:
+  STRING COLON expr
+      {
+        let loc = mklocation $symbolstartpos $endpos in
+        let (s, d) = $1 in
+        let lident_lident_loc = mkloc (Lident s) loc in
+        (lident_lident_loc, $3)
+      }
+  | STRING
+      {
+        let loc = mklocation $symbolstartpos $endpos in
+        let (s, d) = $1 in
+        let lident_lident_loc = mkloc (Lident s) loc in
+        (lident_lident_loc, mkexp (Pexp_ident lident_lident_loc))
+      }
+;
+
 non_punned_lbl_expression:
   as_loc(label_longident) COLON expr
       { ($1, $3) }
+;
+
+non_punned_lbl_expression2:
+  STRING COLON expr
+      {
+        let loc = mklocation $symbolstartpos $endpos in
+        let (s, d) = $1 in
+        let lident_lident_loc = mkloc (Lident s) loc in
+        (lident_lident_loc, $3) 
+      }
 ;
 
 /**
@@ -3214,6 +3258,13 @@ lbl_expr_list_that_is_not_a_single_punned_field:
   | non_punned_lbl_expression
      { [$1] }
   | lbl_expr COMMA lbl_expr_list
+      { $1::$3 }
+;
+
+lbl_expr_list_that_is_not_a_single_punned_field2:
+  | non_punned_lbl_expression2
+     { [$1] }
+  | lbl_expr2 COMMA lbl_expr_list2
       { $1::$3 }
 ;
 
