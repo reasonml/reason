@@ -64,6 +64,7 @@ type commentCategory =
   | EndOfLine
   | SingleLine
   | Regular
+[@@deriving yojson]
 
 (* (comment text, attachment_location, physical location) *)
 type commentWithCategory = (String.t * commentCategory * Location.t) list
