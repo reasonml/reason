@@ -428,7 +428,7 @@ let six = increment 5;
 let thirteen = increment (double 6);
 ```
 
-#### 
+####
 
 Functions can return any expression, but "block expressions" are often chosen
 because they allow declaring temporary, block-scoped variables, and allow
@@ -483,7 +483,7 @@ logToUser ();
 ```
 
 
-#### 
+####
 You can pass/destructure records too. (If record type
 definitions are in scope).
 
@@ -988,7 +988,7 @@ type carOwner =
 let CarOwner name {model: model, make: make} = CarOwner "Jo" toyota;
 ```
 
-##### 
+#####
 This deep pattern matching is especially expressive when used in `switch`
 expressions. In this example, the function `hasExactlyTwoCars` has specified
 what to return in four cases in very little code. Even more helpful, is the
@@ -1001,24 +1001,24 @@ development. This `ML` pattern matching is famous for coining the phrase: "If
 it compiles, it works!".
 
 ```reason
+type car = {maker: string, model: string};
 type carList =
   | List car carList
   | NoMore;
 
-let chevy = {make: "Chevy", model: "Suburban"};
-let toyota = {make: "Toyota", model: "Tacoma"};
+let chevy = {maker: "Chevy", model: "Suburban"};
+let toyota = {maker: "Toyota", model: "Tacoma"};
 let myCarList = List chevy (List toyota NoMore);
 
 let hasExactlyTwoCars = fun lst =>
   switch lst {
-    | NoMore => false                         /* 0 */
-    | List p NoMore => false                  /* 1 */
-    | List p (List p2 NoMore) => true         /* 2 */
+    | NoMore => false                              /* 0 */
+    | List p NoMore => false                       /* 1 */
+    | List p (List p2 NoMore) => true              /* 2 */
     | List p (List p2 (List p3 theRest)) => false  /* 3+ */
   };
 
 let justTwo = hasExactlyTwoCars myCarList;  /* true! */
-
 ```
 
 Syntactic Sugar (Abbreviations)
