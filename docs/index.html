@@ -520,7 +520,7 @@ Here, we create a type alias for the types of functions in the previous
 examples and then we assert that they are compatible with those functions.
 
 ```reason
-type intTupleToInt = (int, int) => int
+type intTupleToInt = (int, int) => int;
 type intToInt = int => int;
 let a = (increment : intToInt);
 let b = (addTupleFields : intTupleToInt);
@@ -896,7 +896,7 @@ let c : containerOf int = {containedThing: 10};
 
 type result 'a 'b =
   | Ok 'a
-  | Error 'b
+  | Error 'b;
 let r : result string int = Ok "here is the result";
 ```
 
