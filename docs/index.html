@@ -139,7 +139,7 @@ Primitives
 > Float Division/Multiplication         |  <pre>2.0 /. 23.0 \*. 1.0</pre>
 > String Concatenation                  |  <pre>"Hello" ^ " " ^ "World"</pre>
 > Immutable Lists                       |  <pre>[1, 2, 3]</pre>
-> Immutable Lists Append                |  <pre>[item1, item2, ...rest]</pre>
+> Immutable Lists Append                |  <pre>[item1, item2, ...theRest]</pre>
 > Reference Equality Comparison         |  <pre>thisThing === thatThing</pre>
 > Records                               |  <pre>{contents: 100}</pre>
 > Record Field Update (if mutable field)|  <pre>myRecord.contents = 200</pre>
@@ -1014,7 +1014,7 @@ let hasExactlyTwoCars = fun lst =>
     | NoMore => false                         /* 0 */
     | List p NoMore => false                  /* 1 */
     | List p (List p2 NoMore) => true         /* 2 */
-    | List p (List p2 (List p3 rest)) => false  /* 3+ */
+    | List p (List p2 (List p3 theRest)) => false  /* 3+ */
   };
 
 let justTwo = hasExactlyTwoCars myCarList;  /* true! */
