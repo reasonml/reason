@@ -3200,7 +3200,7 @@ lbl_expr:
 
 record_expr_with_string_keys:
     DOTDOTDOT expr_optional_constraint COMMA string_literal_expr_list { (Some $2, $4) }
-  | string_literal_expr_list_that_is_not_a_single_punned_field2        { (None, $1)}
+  | string_literal_expr_list_that_is_not_a_single_punned_field        { (None, $1)}
 ;
 string_literal_expr_list:
      string_literal_expr { [$1] }
