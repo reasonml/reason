@@ -501,7 +501,7 @@ into the function.
 let addTupleFields = fun (first:int, second:int) => {
   first + second
 };
-let isOverThirty = fun {name: (n:int), age: (a:int)} => {
+let isOverThirty = fun {name: (n:string), age: (a:int)} => {
   let ret = a > 30;
   ret
 };
