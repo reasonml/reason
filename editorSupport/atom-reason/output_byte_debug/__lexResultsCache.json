@@ -1,0 +1,1 @@
+{"currentBuildId":23,"alreadyBeingBuiltWithWaiters":{},"buildConfig":{"minVersion":11,"opt":1,"yacc":false,"compiler":"byte","concurrency":3,"buildDir":"output","doc":false,"forDebug":true,"jsCompile":true,"rebuggerPath":null,"errorFormatter":"./Reasonify/formatErrorMessages.js","logUnextractedErrors":true},"versionedResultsByPackageName":{}}

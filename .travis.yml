@@ -8,8 +8,8 @@ before_install:
   - eval `opam config env`
   - opam update
 install:
-  - opam pin add -y merlin 'https://github.com/the-lambda-church/merlin.git#reason-0.0.1'
-  - opam pin add -y merlin_extend 'https://github.com/let-def/merlin-extend.git#reason-0.0.1'
+  - opam pin add -y merlin 'https://github.com/the-lambda-church/merlin.git'
+  - opam pin add -y merlin_extend 'https://github.com/let-def/merlin-extend.git'
 before_script:
   - opam pin add -y reason .
 script: 

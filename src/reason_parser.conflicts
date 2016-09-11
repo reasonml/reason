@@ -1,0 +1,40 @@
+
+** Conflict (reduce/reduce) in state 2293.
+** Tokens involved: error RBRACE
+** The following explanations concentrate on token error.
+** This state is reached from implementation after reading:
+
+LBRACE lbl_expr_list_that_is_not_a_single_punned_field 
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+implementation 
+structure EOF 
+structure_item 
+mark_position_str(_structure_item) 
+_structure_item 
+structure_item_without_item_extension_sugar 
+mark_position_str(_structure_item_without_item_extension_sugar) 
+_structure_item_without_item_extension_sugar 
+expr post_item_attributes 
+mark_position_exp(_expr) 
+_expr 
+simple_expr DOT label_longident EQUAL expr 
+mark_position_exp(_simple_expr) 
+_simple_expr 
+(?)
+
+** In state 2293, looking ahead at error, reducing production
+** record_expr -> lbl_expr_list_that_is_not_a_single_punned_field 
+** is permitted because of the following sub-derivation:
+
+LBRACE record_expr error // lookahead token appears
+       lbl_expr_list_that_is_not_a_single_punned_field . 
+
+** In state 2293, looking ahead at error, reducing production
+** record_expr2 -> lbl_expr_list_that_is_not_a_single_punned_field 
+** is permitted because of the following sub-derivation:
+
+LBRACE record_expr2 error // lookahead token appears
+       lbl_expr_list_that_is_not_a_single_punned_field . 
