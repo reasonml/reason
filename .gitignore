@@ -18,3 +18,4 @@ formatTest/customMLFormatOutput.re
 src/reason_parser.messages.bak
 src/reason_parser_message.ml
 *~
+node_modules
