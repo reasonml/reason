@@ -4382,7 +4382,7 @@ class printer  ()= object(self:'self)
     )
     | _ -> self#simplifyUnparseExpr x
 
-  method unparseRecord ?withStringKeys:(withStringKeys=false) l eo =
+  method unparseRecord ?withStringKeys:(withStringKeys=false) ?allowPunning:(allowPunning=true) l eo =
     let quote = (atom "\"") in
     let maybeQuoteFirstElem l =
       if withStringKeys then
@@ -4628,7 +4628,7 @@ class printer  ()= object(self:'self)
     (* We special case "bs.obj" for now to allow for a nicer interop with
      * BuckleScript. We might be able to generalize to any kind of record
      * looking thing with struct keys. *)
-    | "bs.obj" -> (
+    (* | "bs.obj" -> (
       match e with
       | PStr [itm] -> (
         match itm with
@@ -4637,7 +4637,7 @@ class printer  ()= object(self:'self)
         | _ -> assert false
       )
       | _ -> assert false
-    )
+    ) *)
     | _ -> (self#payload "%" s e)
 
   method item_extension (s, e) = (self#payload "%%" s e)
