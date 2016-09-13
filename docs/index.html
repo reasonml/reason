@@ -796,7 +796,7 @@ iteration, and a range `startVal` to `endVal`.
 ```reason
 for identifier in (startVal) to (endVal) {
   statements
-}
+};
 ```
 
 The parenthesis around the `startVal` and `endVal` may be omitted if they are
@@ -809,7 +809,7 @@ let xEnd = 3;
 for x in xStart to xEnd {
   print_int x;
   print_string " ";
-}
+};
 ```
 
 You can make the `for` loop count in the opposite direction by using the `downto`
@@ -818,7 +818,7 @@ keyword.
 ```reason
 for identifier in (startVal) downto (endVal) {
   statements
-}
+};
 ```
 
 ```reason
@@ -828,7 +828,7 @@ let xEnd = 1;
 for x in xStart downto xEnd {
   print_int x;
   print_string " ";
-}
+};
 ```
 
 #### While Loops
