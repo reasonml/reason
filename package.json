@@ -46,6 +46,7 @@
     },
     "name": "reason",
     "dependencies": {
+        "ppx_deriving": "https://github.com/npm-opam/ppx_deriving.git",
         "merlin": "https://github.com/npm-opam/merlin",
         "re": "https://github.com/npm-opam/re",
         "ocamlfind": "https://github.com/npm-opam/ocamlfind",
