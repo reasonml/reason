@@ -74,14 +74,14 @@ let b = {
 };
 
 let c = {
-  "a",
-  "b",
+  "a": a,
+  "b": b,
   "func": fun a => a##c#=(func 10)
 };
 
 let d = {
   "a": a2,
-  "b", /* punned */
+  "b": b,
   "func": fun a => {
     "a": fun arg1 arg2 => arg1 + arg2
   }

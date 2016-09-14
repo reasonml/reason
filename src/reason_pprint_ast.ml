@@ -4402,7 +4402,7 @@ class printer  ()= object(self:'self)
       let theRow =
         match e.pexp_desc with
           (* Punning *)
-          |  Pexp_ident {txt} when li.txt = txt && shouldPun ->
+          |  Pexp_ident {txt} when li.txt = txt && shouldPun && allowPunning ->
               makeList (maybeQuoteFirstElem ((self#longident_loc li)::(if appendComma then [comma] else [])))
           | _ ->
              let (argsList, return) = self#curriedPatternsAndReturnVal e in (
@@ -4628,16 +4628,16 @@ class printer  ()= object(self:'self)
     (* We special case "bs.obj" for now to allow for a nicer interop with
      * BuckleScript. We might be able to generalize to any kind of record
      * looking thing with struct keys. *)
-    (* | "bs.obj" -> (
+    | "bs.obj" -> (
       match e with
       | PStr [itm] -> (
         match itm with
         | {pstr_desc = Pstr_eval ({ pexp_desc = Pexp_record (l, eo) }, []) } ->
-          self#unparseRecord ~withStringKeys:true l eo
+          self#unparseRecord ~withStringKeys:true ~allowPunning:false l eo
         | _ -> assert false
       )
       | _ -> assert false
-    ) *)
+    )
     | _ -> (self#payload "%" s e)
 
   method item_extension (s, e) = (self#payload "%%" s e)
