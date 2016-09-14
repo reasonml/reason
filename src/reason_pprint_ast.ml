@@ -4382,6 +4382,79 @@ class printer  ()= object(self:'self)
     )
     | _ -> self#simplifyUnparseExpr x
 
+  method unparseRecord ?withStringKeys:(withStringKeys=false) ?allowPunning:(allowPunning=true) l eo =
+    let quote = (atom "\"") in
+    let maybeQuoteFirstElem l =
+      if withStringKeys then
+      (match l with
+      | fst::rest -> quote::fst::quote::rest
+      | _ -> l
+      )
+      else l
+    in
+    let makeRow (li, e) appendComma shouldPun =
+      let comma = atom "," in
+      let totalRowLoc = {
+        loc_start = li.Asttypes.loc.loc_start;
+        loc_end = e.pexp_loc.loc_end;
+        loc_ghost = false;
+      } in
+      let theRow =
+        match e.pexp_desc with
+          (* Punning *)
+          |  Pexp_ident {txt} when li.txt = txt && shouldPun && allowPunning ->
+              makeList (maybeQuoteFirstElem ((self#longident_loc li)::(if appendComma then [comma] else [])))
+          | _ ->
+             let (argsList, return) = self#curriedPatternsAndReturnVal e in (
+               match (argsList, return.pexp_desc) with
+                 | ([], _) ->
+                   let appTerms = self#unparseExprApplicationItems e in
+                   let upToColon = makeList (maybeQuoteFirstElem [self#longident_loc li; atom ":"]) in
+                   let labelExpr =
+                     formatAttachmentApplication
+                       applicationFinalWrapping
+                       (Some (true, upToColon))
+                       appTerms in
+                   if appendComma then
+                     makeList [labelExpr; comma;]
+                   else
+                     labelExpr
+                 | (firstArg::tl, _) ->
+                   let upToColon = makeList (maybeQuoteFirstElem [self#longident_loc li; atom ":"]) in
+                   let returnedAppTerms = self#unparseExprApplicationItems return in
+                   let labelExpr =
+                       (self#wrapCurriedFunctionBinding ~attachTo:upToColon "fun" firstArg tl returnedAppTerms) in
+                   if appendComma then makeList [labelExpr; comma;] else labelExpr
+             )
+      in SourceMap (totalRowLoc, theRow)
+    in
+    let rec getRows l =
+      match l with
+        | [] -> []
+        | hd::[] -> [makeRow hd false true]
+        | hd::hd2::tl -> (makeRow hd true true)::(getRows (hd2::tl))
+    in
+
+    let allRows = match eo with
+      | None -> (
+        match l with
+          (* No punning (or comma) for records with only a single field. *)
+          (* See comment in parser.mly for lbl_expr_list_with_at_least_one_non_punned_field *)
+          | [hd] -> [makeRow hd false false]
+          | _ -> getRows l
+        )
+      | Some withRecord ->
+        let firstRow = (
+          (* Unclear why "sugar_expr" was special cased here. *)
+          let appTerms = self#unparseExprApplicationItems withRecord in
+          let firstRowContents =
+            formatAttachmentApplication applicationFinalWrapping (Some (false, (atom "..."))) appTerms in
+          if l == [] then firstRowContents else makeList [firstRowContents; atom ","]
+        ) in
+        SourceMap (withRecord.pexp_loc, firstRow)::(getRows l)
+    in
+    makeList ~wrap:("{", "}") ~break:IfNeed ~preSpace:true allRows
+
   method simplest_expression x =
     let (arityAttrs, docAtrs, stdAttrs) = partitionAttributes x.pexp_attributes in
     if stdAttrs <> [] then
@@ -4477,69 +4550,7 @@ class printer  ()= object(self:'self)
             )
         | Pexp_variant (l, None) ->
             Some (ensureSingleTokenSticksToLabel (atom ("`" ^ l)))
-        | Pexp_record (l, eo) ->
-            let makeRow (li, e) appendComma shouldPun =
-              let comma = atom "," in
-              let totalRowLoc = {
-                loc_start = li.Asttypes.loc.loc_start;
-                loc_end = e.pexp_loc.loc_end;
-                loc_ghost = false;
-              } in
-              let theRow =
-                match e.pexp_desc with
-                  (* Punning *)
-                  |  Pexp_ident {txt} when li.txt = txt && shouldPun ->
-                      makeList ((self#longident_loc li)::(if appendComma then [comma] else []))
-                  | _ ->
-                     let (argsList, return) = self#curriedPatternsAndReturnVal e in (
-                       match (argsList, return.pexp_desc) with
-                         | ([], _) ->
-                           let appTerms = self#unparseExprApplicationItems e in
-                           let upToColon = makeList [self#longident_loc li; atom ":"] in
-                           let labelExpr =
-                             formatAttachmentApplication
-                               applicationFinalWrapping
-                               (Some (true, upToColon))
-                               appTerms in
-                           if appendComma then
-                             makeList [labelExpr; comma;]
-                           else
-                             labelExpr
-                         | (firstArg::tl, _) ->
-                           let upToColon = makeList [self#longident_loc li; atom ":"] in
-                           let returnedAppTerms = self#unparseExprApplicationItems return in
-                           let labelExpr =
-                               (self#wrapCurriedFunctionBinding ~attachTo:upToColon "fun" firstArg tl returnedAppTerms) in
-                           if appendComma then makeList [labelExpr; comma;] else labelExpr
-                     )
-              in SourceMap (totalRowLoc, theRow)
-            in
-            let rec getRows l =
-              match l with
-                | [] -> []
-                | hd::[] -> [makeRow hd false true]
-                | hd::hd2::tl -> (makeRow hd true true)::(getRows (hd2::tl))
-            in
-
-            let allRows = match eo with
-              | None -> (
-                match l with
-                  (* No punning (or comma) for records with only a single field. *)
-                  (* See comment in parser.mly for lbl_expr_list_with_at_least_one_non_punned_field *)
-                  | [hd] -> [makeRow hd false false]
-                  | _ -> getRows l
-                )
-              | Some withRecord ->
-                let firstRow = (
-                  (* Unclear why "sugar_expr" was special cased here. *)
-                  let appTerms = self#unparseExprApplicationItems withRecord in
-                  let firstRowContents =
-                    formatAttachmentApplication applicationFinalWrapping (Some (false, (atom "..."))) appTerms in
-                  if l == [] then firstRowContents else makeList [firstRowContents; atom ","]
-                ) in
-                SourceMap (withRecord.pexp_loc, firstRow)::(getRows l)
-            in
-            Some (makeList ~wrap:("{", "}") ~break:IfNeed ~preSpace:true allRows)
+        | Pexp_record (l, eo) -> Some (self#unparseRecord l eo)
         | Pexp_array (l) ->
           Some (
             makeList
@@ -4612,7 +4623,22 @@ class printer  ()= object(self:'self)
           label ~space:true (atom "when") (self#unparseExpr e)
         ]
 
-  method extension (s, e) = (self#payload "%" s e)
+  method extension (s, e) =
+    match (s.txt) with
+    (* We special case "bs.obj" for now to allow for a nicer interop with
+     * BuckleScript. We might be able to generalize to any kind of record
+     * looking thing with struct keys. *)
+    | "bs.obj" -> (
+      match e with
+      | PStr [itm] -> (
+        match itm with
+        | {pstr_desc = Pstr_eval ({ pexp_desc = Pexp_record (l, eo) }, []) } ->
+          self#unparseRecord ~withStringKeys:true ~allowPunning:false l eo
+        | _ -> assert false
+      )
+      | _ -> assert false
+    )
+    | _ -> (self#payload "%" s e)
 
   method item_extension (s, e) = (self#payload "%%" s e)
 
