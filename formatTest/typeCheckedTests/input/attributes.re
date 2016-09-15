@@ -114,8 +114,8 @@ add 2 4 [@appliesToEntireFunctionApplication];
 
 
 let myObj = {
-  method p () => {
-    method z () => 10
+  pub p () => {
+    pub z () => 10
   };
 };
 
@@ -172,7 +172,7 @@ let showLets () => {
 class boxA 'a (init: 'a) => {
   [@@@ocaml.text "Floating comment text should be removed"];
   [@@@ocaml.doc "Floating comment text should be removed"];
-  method pr => init + init + init;
+  pub pr => init + init + init;
 } [@onReturnClassExpr] [@@moduleItemAttribute];
 
 /**
@@ -180,7 +180,7 @@ class boxA 'a (init: 'a) => {
  */
 class boxB 'a =
   fun (init: 'a) => {
-    method pr => init + init + init;
+    pub pr => init + init + init;
   } [@stillOnTheReturnBecauseItsSimple];
 
 /* To be able to put an attribute on just the return in that case, use
@@ -188,7 +188,7 @@ class boxB 'a =
 class boxC 'a = (
   fun (init: 'a) => (
     {
-      method pr => init + init + init;
+      pub pr => init + init + init;
     } [@onReturnClassExpr]
   )
 ) [@onEntireFunction]
@@ -199,20 +199,20 @@ class tupleClass 'a 'b (init: ('a, 'b)) => {
   let one = 10   [@exprAttr ten;];
   let two = 20   [@exprAttr twenty;]
   and three = 30 [@exprAttr twenty;];
-  method pr => one + two + three [@@pr prMember;];
+  pub pr => one + two + three [@@pr prMember;];
 } [@@moduleItemAttribute onTheTupleClassItem;];
 
 class type addablePointClassType = {
   [@@@ocaml.text "Floating comment text should be removed"];
   [@@@ocaml.doc "Floating comment text should be removed"];
-  method x: int;
-  method y: int;
-  method add: addablePointClassType => addablePointClassType => int;
+  pub x: int;
+  pub y: int;
+  pub add: addablePointClassType => addablePointClassType => int;
 }
 [@@structureItem]
 and anotherClassType = {
-  method foo: int;
-  method bar: int;
+  pub foo: int;
+  pub bar: int;
 }
 [@@structureItem];
 
@@ -223,7 +223,7 @@ module NestedModule = {
 module type HasAttrs = {
   type t = int [@@onTypeDef];
   [@@@floatingNestedSigItem hello];
-  class type foo = {method foo: int; method bar: int;}
+  class type foo = {pub foo: int; pub bar: int;}
   [@@sigItem];
   class fooBar: int => new foo
   [@@sigItem];
@@ -255,12 +255,13 @@ let module Js = {
   type t 'a;
 };
 
-type classAttributesOnKeys = <
+type classAttributesOnKeys = {
   key1 [@bs.set] : string,
 
   /* The follow two are the same */
   key2 [@bs.get {null}] : Js.t int [@onType2],
   key3 [@bs.get {null}] : ((Js.t int) [@onType2]),
 
-  key4 : Js.t (int [@justOnInt])
->;
+  key4 : Js.t (int [@justOnInt]),
+  .
+};

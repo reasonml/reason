@@ -66,19 +66,6 @@ type error =
 
 exception Error of error * Location.t;;
 
-
-(* [splitToken s] looks at the token split table, and split a token into multiple tokens.
- * This is needed to deal with ambiguity of tokens in the lexer. i.e., in "< ... < ... >>",
- * is the ">>" an operator or two GREATERs?
- * See issue#177 for more context
- *)
-let splitToken (token, s, e) =
-  match token with
-  | GREATERGREATER ->
-    [(GREATER, s, e); (GREATER, s, e)]
-  | _ ->
-    [(token, s, e)]
-
 (* The table of keywords *)
 
 let keyword_table =
@@ -112,6 +99,7 @@ let keyword_table =
     "match", MATCH; (* Including MATCH for source transforming compat *)
     "method", METHOD;
     "module", MODULE;
+    "pub", PUB;
     "mutable", MUTABLE;
     "new", NEW;
     "nonrec", NONREC;
@@ -120,6 +108,7 @@ let keyword_table =
     "open", OPEN;
     "or", OR;
 (*  "parser", PARSER; *)
+    "pri", PRI;
     "private", PRIVATE;
     "rec", REC;
     "sig", SIG;
@@ -511,7 +500,6 @@ rule token = parse
   | "||" { BARBAR }
   | "|]" { BARRBRACKET }
   | ">"  { GREATER }
-  | ">>" { GREATERGREATER }
   (* Having a GREATERRBRACKET makes it difficult to parse patterns such
      as > ]. The space in between then becomes significant and must be
      maintained when printing etc. >] isn't even needed!

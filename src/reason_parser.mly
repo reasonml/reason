@@ -805,6 +805,34 @@ let ensureTagsAreEqual startTag endTag loc =
      let endTag = (String.concat "" (Longident.flatten endTag)) in
      let _ = Location.raise_errorf ~loc "Syntax error: Start tag <%s> does not match end tag </%s>" startTag endTag in
      ()
+
+type object_record =
+  | Object_open
+  | Object_closed
+  | Record
+
+type core_type_object =
+  | Core_type of core_type
+  | Record_type of label_declaration list
+
+let only_core_type t loc =
+  match t with
+  | Core_type ct -> ct
+  | Record_type _ -> Location.raise_errorf ~loc "Record type is not allowed"
+
+let only_labels l =
+  let rec loop label_declarations result =
+    match label_declarations with
+    | hd :: tail ->
+      let (l, a) = hd in
+      if (List.length a > 0) then
+        syntax_error ()
+      else
+        loop tail (result @ [l] )
+    | [] -> result
+  in
+  loop l []
+
 %}
 
 
@@ -849,7 +877,6 @@ let ensureTagsAreEqual startTag endTag loc =
 %token FUNCTION
 %token FUNCTOR
 %token GREATER
-%token GREATERGREATER
 %token GREATERRBRACE
 %token IF
 %token IN
@@ -889,6 +916,8 @@ let ensureTagsAreEqual startTag endTag loc =
 %token LBRACKETATAT
 %token LBRACKETATATAT
 %token LESSSLASH
+%token OF
+%token PRI
 %token SWITCH
 %token MATCH
 %token METHOD
@@ -901,7 +930,6 @@ let ensureTagsAreEqual startTag endTag loc =
 %token NEW
 %token NONREC
 %token OBJECT
-%token OF
 %token OPEN
 %token OR
 /* %token PARSER */
@@ -911,6 +939,7 @@ let ensureTagsAreEqual startTag endTag loc =
 %token PLUSEQ
 %token <string> PREFIXOP
 %token PRIVATE
+%token PUB
 %token QUESTION
 %token OPTIONAL_NO_DEFAULT
 %token EXPLICITLY_PASSED_OPTIONAL
@@ -1166,7 +1195,11 @@ _use_file:
 ;
 
 parse_core_type:
-    core_type EOF { apply_mapper_chain_to_type $1 default_mapper_chain }
+    core_type EOF
+      {
+        let core_loc = mklocation $startpos($1) $endpos($1) in
+        apply_mapper_chain_to_type (only_core_type $1 core_loc) default_mapper_chain
+      }
 ;
 parse_expression:
     expr EOF { apply_mapper_chain_to_expr $1 default_mapper_chain}
@@ -1201,6 +1234,14 @@ mark_position_exp(X):
 mark_position_typ(X):
 	x = X
 	{ {x with ptyp_loc = {x.ptyp_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
+;
+mark_position_typ2(X):
+	x = X
+	{
+	match x with
+	| Core_type ct -> Core_type ({ct with ptyp_loc = {ct.ptyp_loc with loc_start = $symbolstartpos; loc_end = $endpos}})
+	| Record_type _ -> x
+	}
 ;
 
 mark_position_mty(X):
@@ -1436,8 +1477,9 @@ _structure_item_without_item_extension_sugar:
     }
   | EXTERNAL as_loc(val_ident) COLON core_type EQUAL primitive_declaration post_item_attributes {
       let loc = mklocation $symbolstartpos $endpos in
+      let core_loc = mklocation $startpos($4) $endpos($4) in
       mkstr
-        (Pstr_primitive (Val.mk $2 $4 ~prim:$6 ~attrs:$7 ~loc))
+        (Pstr_primitive (Val.mk $2 (only_core_type $4 core_loc) ~prim:$6 ~attrs:$7 ~loc))
     }
   | many_type_declarations {
       mkstr(Pstr_type (List.rev $1))
@@ -1700,11 +1742,13 @@ signature_item: mark_position_sig(_signature_item) { $1 }
 _signature_item:
     LET as_loc(val_ident) COLON core_type post_item_attributes {
         let loc = mklocation $symbolstartpos $endpos in
-        mksig(Psig_value (Val.mk $2 $4 ~attrs:$5 ~loc))
+        let core_type_loc = mklocation $startpos($4) $endpos($4) in
+        mksig(Psig_value (Val.mk $2 (only_core_type $4 core_type_loc) ~attrs:$5 ~loc))
     }
   | EXTERNAL as_loc(val_ident) COLON core_type EQUAL primitive_declaration post_item_attributes {
       let loc = mklocation $symbolstartpos $endpos in
-      mksig(Psig_value (Val.mk $2 $4 ~prim:$6 ~attrs:$7 ~loc))
+      let core_type_loc = mklocation $startpos($4) $endpos($4) in
+      mksig(Psig_value (Val.mk $2 (only_core_type $4 core_type_loc) ~prim:$6 ~attrs:$7 ~loc))
     }
   | many_type_declarations {
       mksig(Psig_type (List.rev $1))
@@ -2010,8 +2054,10 @@ _class_field:
       { mkcf_attrs (Pcf_inherit ($2, $3, $4)) $5 }
   | VAL value post_item_attributes
       { mkcf_attrs (Pcf_val $2) $3 }
-  | METHOD method_ post_item_attributes
-      { mkcf_attrs (Pcf_method $2) $3 }
+  | PUB method_ post_item_attributes
+      { let (a, b) = $2 in mkcf_attrs (Pcf_method (a, Public, b)) $3 }
+  | PRI method_ post_item_attributes
+        { let (a, b) = $2 in mkcf_attrs (Pcf_method (a, Private, b)) $3 }
   | CONSTRAINT constrain_field post_item_attributes
       { mkcf_attrs (Pcf_constraint $2) $3 }
   | INITIALIZER EQUALGREATER expr post_item_attributes
@@ -2040,14 +2086,18 @@ parent_binder:
 value:
 /* TODO: factorize these rules (also with method): */
     override_flag MUTABLE VIRTUAL as_loc(label) COLON core_type {
+      let core_type_loc = mklocation $startpos($4) $endpos($4) in
       if $1 = Override
       then not_expecting $symbolstartpos $endpos "members marked virtual may not also be marked overridden"
-      else $4, Mutable, Cfk_virtual $6
+      else $4, Mutable, Cfk_virtual (only_core_type $6 core_type_loc)
     }
   | override_flag MUTABLE VIRTUAL label COLON core_type EQUAL
       { not_expecting $startpos($7) $endpos($7) "not expecting equal - cannot specify value for virtual val" }
   | VIRTUAL mutable_flag as_loc(label) COLON core_type
-      { $3, $2, Cfk_virtual $5 }
+      {
+        let core_type_loc = mklocation $startpos($5) $endpos($5) in
+        $3, $2, Cfk_virtual (only_core_type $5 core_type_loc)
+      }
   | VIRTUAL mutable_flag label COLON core_type EQUAL
       { not_expecting $startpos($6) $endpos($6) "not expecting equal - cannot specify value for virtual val" }
   | override_flag mutable_flag as_loc(label) EQUAL expr
@@ -2061,28 +2111,25 @@ value:
 ;
 method_:
 /* TODO: factorize those rules... */
-    override_flag PRIVATE VIRTUAL as_loc(label) COLON poly_type
+  | override_flag VIRTUAL as_loc(label) COLON poly_type
       { if $1 = Override then syntax_error ();
-        $4, Private, Cfk_virtual $6 }
-  | override_flag VIRTUAL private_flag as_loc(label) COLON poly_type
-      { if $1 = Override then syntax_error ();
-        $4, $3, Cfk_virtual $6 }
-  | override_flag private_flag as_loc(label) curried_binding
-      { $3, $2,
-        Cfk_concrete ($1, let loc = mklocation $symbolstartpos $endpos in mkexp ~ghost:true ~loc (Pexp_poly ($4, None))) }
-  | override_flag private_flag as_loc(label) COLON poly_type EQUAL expr
+        $3, Cfk_virtual $5 }
+  | override_flag as_loc(label) curried_binding
+      { $2,
+        Cfk_concrete ($1, let loc = mklocation $symbolstartpos $endpos in mkexp ~ghost:true ~loc (Pexp_poly ($3, None))) }
+  | override_flag as_loc(label) COLON poly_type EQUAL expr
       /* Without locally abstract types, you'll see a Ptyp_poly in the Pexp_poly */
-      { $3, $2,
-        Cfk_concrete ($1, let loc = mklocation $symbolstartpos $endpos in mkexp ~ghost:true ~loc (Pexp_poly($7, Some $5))) }
-  | override_flag private_flag as_loc(label) EQUAL expr
-      { $3, $2,
-        Cfk_concrete ($1, let loc = mklocation $symbolstartpos $endpos in mkexp ~ghost:true ~loc (Pexp_poly($5, None))) }
-  | override_flag private_flag as_loc(label) COLON TYPE lident_list DOT core_type EQUAL expr
+      { $2,
+        Cfk_concrete ($1, let loc = mklocation $symbolstartpos $endpos in mkexp ~ghost:true ~loc (Pexp_poly($6, Some $4))) }
+  | override_flag as_loc(label) EQUAL expr
+      { $2,
+        Cfk_concrete ($1, let loc = mklocation $symbolstartpos $endpos in mkexp ~ghost:true ~loc (Pexp_poly($4, None))) }
+  | override_flag as_loc(label) COLON TYPE lident_list DOT core_type EQUAL expr
       /* WITH locally abstract types, you'll see a Ptyp_poly in the Pexp_poly,
          but the expression will be a Pexp_newtype and type vars will be
          "varified". */
       {
-
+        let core_type_loc = mklocation $startpos($7) $endpos($7) in
         (* For non, methods we'd create a pattern binding:
            ((Ppat_constraint(mkpatvar ..., Ptyp_poly (typeVars, poly_type_varified))),
             exp_with_newtypes_constrained_by_non_varified)
@@ -2091,9 +2138,9 @@ method_:
            Pexp_poly (Pexp_constraint (methodFunWithNewtypes, non_varified), Some (Ptyp_poly newTypes varified))
          *)
         let (exp_with_newtypes_constrained_by_non_varified, poly_type_varified) =
-          wrap_type_annotation $6 $8 $10 in
+          wrap_type_annotation $5 (only_core_type $7 core_type_loc) $9 in
         (
-          $3, $2,
+          $2,
           Cfk_concrete (
             $1,
             let loc = mklocation $symbolstartpos $endpos in
@@ -2225,11 +2272,23 @@ _class_constructor_type:
   | NEW class_instance_type
       { $2 }
   | LIDENT EXPLICITLY_PASSED_OPTIONAL non_arrowed_core_type EQUALGREATER class_constructor_type
-      { mkcty(Pcty_arrow("?" ^ $1, mkoption $3, $5)) }
+      {
+        let core_type_loc = mklocation $startpos($3) $endpos($3) in
+        let ct = only_core_type $3 core_type_loc in
+        mkcty(Pcty_arrow("?" ^ $1, mkoption ct, $5))
+       }
   | LIDENT COLONCOLON non_arrowed_core_type EQUALGREATER class_constructor_type
-      { mkcty(Pcty_arrow($1, $3, $5)) }
+      {
+        let core_type_loc = mklocation $startpos($3) $endpos($3) in
+        let ct = only_core_type $3 core_type_loc in
+        mkcty(Pcty_arrow($1, ct, $5))
+      }
   | non_arrowed_core_type EQUALGREATER class_constructor_type
-      { mkcty(Pcty_arrow("", $1, $3)) }
+      {
+        let core_type_loc = mklocation $startpos($1) $endpos($1) in
+        let ct = only_core_type $1 core_type_loc in
+        mkcty(Pcty_arrow("", ct, $3))
+      }
 ;
 
 non_arrowed_class_constructor_type: mark_position_cty(_non_arrowed_class_constructor_type) {$1}
@@ -2265,7 +2324,10 @@ class_sig_body:
 
 class_self_type:
     AS core_type SEMI
-      { $2 }
+      {
+        let core_type_loc = mklocation $startpos($2) $endpos($2) in
+        only_core_type $2 core_type_loc
+      }
   | /* empty */
       {
         let loc = mklocation $symbolstartpos $endpos in
@@ -2289,10 +2351,13 @@ _class_sig_field:
   | VAL value_type post_item_attributes {
       mkctf_attrs (Pctf_val $2) $3
     }
-  | METHOD private_virtual_flags label COLON poly_type post_item_attributes
+  | PRI private_virtual_flags label COLON poly_type post_item_attributes
+         {
+          mkctf_attrs (Pctf_method ($3, Private, $2, $5)) $6
+         }
+  | PUB private_virtual_flags label COLON poly_type post_item_attributes
        {
-        let (p, v) = $2 in
-        mkctf_attrs (Pctf_method ($3, p, v, $5)) $6
+        mkctf_attrs (Pctf_method ($3, Public, $2, $5)) $6
        }
   | CONSTRAINT constrain_field post_item_attributes
        { mkctf_attrs (Pctf_constraint $2) $3 }
@@ -2303,20 +2368,20 @@ _class_sig_field:
 ;
 value_type:
     VIRTUAL mutable_flag label COLON core_type
-      { $3, $2, Virtual, $5 }
+      { $3, $2, Virtual, only_core_type $5 (mklocation $startpos($5) $endpos($5))}
   | MUTABLE virtual_flag label COLON core_type
-      { $3, Mutable, $2, $5 }
+      { $3, Mutable, $2, only_core_type $5 (mklocation $startpos($5) $endpos($5))}
   | label COLON core_type
-      { $1, Immutable, Concrete, $3 }
+      { $1, Immutable, Concrete, only_core_type $3 (mklocation $startpos($3) $endpos($3))}
 ;
 constrain:
   | core_type EQUAL core_type {
     let loc = mklocation $symbolstartpos $endpos in
-    ($1, $3, loc)
+    (only_core_type $1 (mklocation $startpos($1) $endpos($1)), only_core_type $3 (mklocation $startpos($3) $endpos($3)), loc)
   }
 ;
 constrain_field:
-        core_type EQUAL core_type          { $1, $3 }
+        core_type EQUAL core_type          { only_core_type $1 (mklocation $startpos($1) $endpos($1)), only_core_type $3 (mklocation $startpos($3) $endpos($3))}
 ;
 many_class_descriptions:
   | CLASS class_description_details post_item_attributes {
@@ -3060,7 +3125,8 @@ let_binding_body:
   | with_patvar(val_ident) COLON typevar_list DOT core_type EQUAL mark_position_exp(expr)
       {
         let loc = mklocation $symbolstartpos $endpos in
-        (mkpat ~ghost:true ~loc (Ppat_constraint($1, mktyp ~ghost:true (Ptyp_poly(List.rev $3,$5)))), $7)
+        let core_loc = mklocation $startpos($5) $endpos($5) in
+        (mkpat ~ghost:true ~loc (Ppat_constraint($1, mktyp ~ghost:true (Ptyp_poly(List.rev $3, only_core_type $5 core_loc)))), $7)
       }
   | with_patvar(val_ident) COLON TYPE lident_list DOT core_type EQUAL mark_position_exp(expr)
   /* Because core_type will appear to contain "type constructors" since the
@@ -3111,7 +3177,8 @@ let_binding_body:
    *
    */
      {
-       let exp, poly = wrap_type_annotation $4 $6 $8 in
+       let core_loc = mklocation $startpos($6) $endpos($6) in
+       let exp, poly = wrap_type_annotation $4 (only_core_type $6 core_loc) $8 in
        let loc = mklocation $symbolstartpos $endpos in
        (mkpat ~ghost:true ~loc (Ppat_constraint($1, poly)), exp)
      }
@@ -3131,7 +3198,8 @@ let_binding_body:
   | simple_pattern_not_ident COLON core_type EQUAL expr
       {
         let loc = mklocation $symbolstartpos $endpos in
-        (mkpat ~loc (Ppat_constraint($1, $3)), $5)
+        let core_loc = mklocation $startpos($3) $endpos($3) in
+        (mkpat ~loc (Ppat_constraint($1, only_core_type $3 core_loc)), $5)
       }
 ;
 
@@ -3187,7 +3255,9 @@ curried_binding_return_typed_:
   | COLON non_arrowed_core_type EQUALGREATER expr
       {
         let loc = mklocation $symbolstartpos $endpos in
-        ghexp_constraint loc $4 (Some $2, None)
+        let core_loc = mklocation $startpos($2) $endpos($2) in
+        let ct = only_core_type $2 core_loc in
+        ghexp_constraint loc $4 (Some ct, None)
       }
 ;
 
@@ -3249,7 +3319,9 @@ fun_def:
   | COLON non_arrowed_core_type EQUALGREATER expr
       {
         let loc = mklocation $symbolstartpos $endpos in
-        mkexp ~loc (Pexp_constraint($4, $2))
+        let core_loc = mklocation $startpos($2) $endpos($2) in
+        let ct = only_core_type $2 core_loc in
+        mkexp ~loc (Pexp_constraint($4, ct))
       }
   | labeled_simple_pattern fun_def
       {
@@ -3441,13 +3513,13 @@ field_expr_list:
 
 
 type_constraint_right_of_colon:
-    core_type                             { (Some $1, None) }
-  | core_type COLONGREATER core_type      { (Some $1, Some $3) }
+    core_type                             { (Some (only_core_type $1 (mklocation $startpos($1) $endpos($1))), None) }
+  | core_type COLONGREATER core_type      { (Some (only_core_type $1 (mklocation $startpos($1) $endpos($1))), Some (only_core_type $3 (mklocation $startpos($3) $endpos($3)))) }
 ;
 
 type_constraint:
     COLON type_constraint_right_of_colon        { $2 }
-  | COLONGREATER core_type                      { (None, Some $2) }
+  | COLONGREATER core_type                      { (None, Some (only_core_type $2 (mklocation $startpos($2) $endpos($2)))) }
 ;
 
 /* Patterns */
@@ -3573,7 +3645,7 @@ _simple_pattern_not_ident:
       { unclosed_pat (with_txt $1 "(") (with_txt $3 ")") }
 
   | LPAREN pattern COLON core_type RPAREN
-      { mkpat(Ppat_constraint($2, $4)) }
+      { mkpat(Ppat_constraint($2, only_core_type $4 (mklocation $startpos($4) $endpos($4)))) }
   | as_loc(LPAREN) pattern COLON core_type as_loc(error)
       { unclosed_pat (with_txt $1 "(") (with_txt $5 ")") }
   | LPAREN pattern COLON as_loc(error)
@@ -3614,7 +3686,11 @@ simple_pattern_list:
 pattern_optional_constraint: mark_position_pat(_pattern_optional_constraint) {$1}
 _pattern_optional_constraint:
     pattern                     { $1 }
-  | pattern COLON core_type     { mkpat(Ppat_constraint($1, $3)) }
+  | pattern COLON core_type     {
+    let core_loc = mklocation $startpos($3) $endpos($3) in
+    let ct = only_core_type $3 core_loc in
+    mkpat(Ppat_constraint($1, ct))
+    }
 ;
 
 
@@ -3690,25 +3766,42 @@ type_kind:
     /*empty*/
       { (Ptype_abstract, Public, None) }
   | EQUAL core_type
-      { (Ptype_abstract, Public, Some $2) }
-  | EQUAL PRIVATE core_type
-      { (Ptype_abstract, Private, Some $3) }
+      {
+      match $2 with
+      | Core_type ct -> (Ptype_abstract, Public, Some ct)
+      | Record_type rt -> (Ptype_record rt, Public, None)
+      }
+  | EQUAL PRIVATE core_type {
+      match $3 with
+      | Core_type ct -> (Ptype_abstract, Private, Some ct)
+      | Record_type rt -> (Ptype_record rt, Private, None)
+    }
   | EQUAL constructor_declarations
       { (Ptype_variant($2),  Public, None) }
   | EQUAL PRIVATE constructor_declarations
       { (Ptype_variant($3), Private, None) }
   | EQUAL DOTDOT
       { (Ptype_open, Public, None) }
-  | EQUAL private_flag LBRACE label_declarations opt_comma RBRACE
-      { (Ptype_record(List.rev $4), $2, None) }
   | EQUAL core_type EQUAL constructor_declarations
-      { (Ptype_variant($4), Public,  Some $2) }
+      {
+        let core_type_loc = mklocation $startpos($2) $endpos($2) in
+        (Ptype_variant($4), Public,  Some (only_core_type $2 core_type_loc))
+      }
   | EQUAL core_type EQUAL PRIVATE constructor_declarations
-      { (Ptype_variant($5), Private, Some $2) }
+      {
+        let core_type_loc = mklocation $startpos($2) $endpos($2) in
+        (Ptype_variant($5), Private, Some (only_core_type $2 core_type_loc))
+      }
   | EQUAL core_type EQUAL DOTDOT
-      { (Ptype_open, Public, Some $2) }
+      {
+        let core_type_loc = mklocation $startpos($2) $endpos($2) in
+        (Ptype_open, Public, Some (only_core_type $2 core_type_loc))
+      }
   | EQUAL core_type EQUAL private_flag LBRACE label_declarations opt_comma RBRACE
-      { (Ptype_record(List.rev $6), $4, Some $2) }
+      {
+        let core_type_loc = mklocation $startpos($2) $endpos($2) in
+        (Ptype_record(List.rev (only_labels $6)), $4, Some (only_core_type $2 core_type_loc))
+      }
 ;
 optional_type_parameters:
     /*empty*/                      { [] }
@@ -3808,9 +3901,9 @@ generalized_constructor_arguments:
     /*empty*/                                   { ([],None) }
   | maybe_of non_arrowed_simple_core_type_list        { (List.rev $2, None) }
   | maybe_of non_arrowed_simple_core_type_list COLON core_type
-                                                { (List.rev $2,Some $4) }
+                                                { (List.rev $2,Some (only_core_type $4 (mklocation $startpos($4) $endpos($4)))) }
   | COLON core_type
-                                                { ([],Some $2) }
+                                                { ([],Some (only_core_type $2 (mklocation $startpos($2) $endpos($2)))) }
 ;
 
 
@@ -3821,10 +3914,10 @@ label_declarations:
 ;
 
 label_declaration:
-    mutable_flag as_loc(LIDENT) COLON poly_type attributes
+    mutable_flag as_loc(LIDENT) attributes COLON poly_type attributes
       {
        let loc = mklocation $symbolstartpos $endpos in
-       Type.field $2 $4 ~mut:$1 ~attrs:$5 ~loc
+       (Type.field $2 $5 ~mut:$1 ~attrs:$6 ~loc, $3)
       }
 ;
 
@@ -3898,13 +3991,13 @@ with_constraint:
     TYPE as_loc(label_longident) optional_type_parameters with_type_binder core_type constraints
       {
          let loc = mklocation $symbolstartpos $endpos in
-
+         let core_type_loc = mklocation $startpos($5) $endpos($5) in
          Pwith_type
           ($2,
            (Type.mk {$2 with txt=Longident.last $2.txt}
               ~params:$3
               ~cstrs:(List.rev $6)
-              ~manifest:$5
+              ~manifest:(only_core_type $5 core_type_loc)
               ~priv:$4
               ~loc)) }
     /* used label_longident instead of type_longident to disallow
@@ -3917,10 +4010,11 @@ with_constraint:
             | _ -> not_expecting $startpos($2) $endpos($2) "Long type identifier"
       ) in
      let loc = mklocation $symbolstartpos $endpos in
+     let core_type_loc = mklocation $startpos($5) $endpos($5) in
       Pwith_typesubst
           (Type.mk {$2 with txt=last}
              ~params:$3
-             ~manifest:$5
+             ~manifest:(only_core_type $5 core_type_loc)
              ~loc)
     }
   | MODULE as_loc(mod_longident) EQUAL as_loc(mod_ext_longident)
@@ -3943,9 +4037,9 @@ typevar_list:
 poly_type: mark_position_typ(_poly_type) {$1}
 _poly_type:
         core_type
-          { $1 }
+          { only_core_type $1 (mklocation $startpos($1) $endpos($1))}
       | typevar_list DOT core_type
-          { mktyp(Ptyp_poly(List.rev $1, $3)) }
+          { mktyp(Ptyp_poly(List.rev $1, only_core_type $3 (mklocation $startpos($3) $endpos($3)))) }
 ;
 
 /**
@@ -4046,7 +4140,7 @@ _poly_type:
  * - space separated type applications
  * - "as" aliases
  */
-core_type: mark_position_typ(_core_type) {$1}
+core_type: mark_position_typ2(_core_type) {$1}
 _core_type:
   /* For some reason, when unifying Functor type syntax (using EQUALGREATER),
   * there was a shift reduce conflict likely caused by
@@ -4061,7 +4155,11 @@ _core_type:
     core_type2 %prec below_EQUALGREATER
       { $1 }
   | core_type2 AS QUOTE ident
-      { mktyp(Ptyp_alias($1, $4)) }
+      {
+        let core_type_loc = mklocation $startpos($1) $endpos($1) in
+        let ct = only_core_type $1 core_type_loc in
+        Core_type (mktyp(Ptyp_alias(ct, $4)))
+      }
 ;
 
 /**
@@ -4073,18 +4171,31 @@ _core_type:
  * - space separated type applications
  * - Polymorphic type variable application
  */
-core_type2: mark_position_typ(_core_type2) {$1}
+core_type2: mark_position_typ2(_core_type2) {$1}
 _core_type2:
   /* The %prec below_LBRACKETAT was inherited from the previous rule
    * simple_core_type_or_tuple */
     non_arrowed_core_type %prec below_LBRACKETAT
       { $1 }
   | LIDENT COLONCOLON non_arrowed_core_type QUESTION EQUALGREATER core_type2
-      { mktyp(Ptyp_arrow("?" ^ $1 , mkoption $3, $6)) }
+      {
+      match $3, $6 with
+      | Core_type ct, Core_type ct2 -> Core_type (mktyp(Ptyp_arrow("?" ^ $1 , mkoption ct, ct2)))
+      | _ -> syntax_error()
+      }
   | LIDENT COLONCOLON non_arrowed_core_type EQUALGREATER core_type2
-      { mktyp(Ptyp_arrow($1, $3, $5)) }
+      {
+      match $3, $5 with
+      | Core_type ct, Core_type ct2 -> Core_type (mktyp(Ptyp_arrow($1, ct, ct2)))
+      | _ -> syntax_error()
+      }
   | core_type2 EQUALGREATER core_type2
-      { mktyp(Ptyp_arrow("", $1, $3)) }
+      {
+      match $1, $3 with
+            | Core_type ct, Core_type ct2 ->
+                Core_type (mktyp(Ptyp_arrow("", ct, ct2)))
+            | _ -> syntax_error()
+      }
 ;
 
 
@@ -4118,70 +4229,96 @@ non_arrowed_core_type:
     { $1 }
 ;
 
-non_arrowed_non_simple_core_type: mark_position_typ(_non_arrowed_non_simple_core_type) {$1}
+non_arrowed_non_simple_core_type: mark_position_typ2(_non_arrowed_non_simple_core_type) {$1}
 _non_arrowed_non_simple_core_type:
   | as_loc(type_longident) non_arrowed_simple_core_type_list
-      { mktyp(Ptyp_constr($1, List.rev $2)) }
+      { Core_type (mktyp(Ptyp_constr($1, List.rev $2))) }
   | SHARP as_loc(class_longident) non_arrowed_simple_core_type_list
-      { mktyp(Ptyp_class($2, List.rev $3)) }
+      { Core_type (mktyp(Ptyp_class($2, List.rev $3))) }
   | non_arrowed_core_type attribute
-      { Typ.attr $1 $2 }
+      {
+        let core_type_loc = mklocation $startpos($1) $endpos($1) in
+        let ct = only_core_type $1 core_type_loc in
+        Core_type (Typ.attr ct $2)
+      }
 ;
 
-non_arrowed_simple_core_type: mark_position_typ(_non_arrowed_simple_core_type) {$1}
+non_arrowed_simple_core_type: mark_position_typ2(_non_arrowed_simple_core_type) {$1}
 _non_arrowed_simple_core_type:
   | LPAREN core_type_comma_list RPAREN
       {
         let loc = mklocation $symbolstartpos $endpos in
         match $2 with
         | [] -> raise (Syntaxerr.Error(Syntaxerr.Applicative_path loc))
-        | one::[] -> one
-        | moreThanOne -> mktyp(Ptyp_tuple(List.rev moreThanOne)) }
+        | one::[] -> Core_type one
+        | moreThanOne -> Core_type (mktyp(Ptyp_tuple(List.rev moreThanOne))) }
   | QUOTE ident
-      { mktyp(Ptyp_var $2) }
+      { Core_type (mktyp(Ptyp_var $2)) }
   | SHARP as_loc(class_longident)
-      { mktyp(Ptyp_class($2, [])) }
+      { Core_type (mktyp(Ptyp_class($2, []))) }
   | UNDERSCORE
-      { mktyp(Ptyp_any) }
+      { Core_type (mktyp(Ptyp_any)) }
   | as_loc(type_longident)
-      { mktyp(Ptyp_constr($1, [])) }
-  | LESS meth_list GREATER
-      { let (f, c) = $2 in mktyp(Ptyp_object (f, c)) }
-  | meth_list_with_leading_lesslident GREATER
-      { let (f, c) = $1 in mktyp(Ptyp_object (f, c)) }
-  | LESSDOTDOTGREATER
-      { mktyp(Ptyp_object ([], Open)) }
-  | LESSGREATER
-      { mktyp(Ptyp_object ([], Closed)) }
+      { Core_type (mktyp(Ptyp_constr($1, []))) }
+  | object_record_type
+      {
+        let (labels, object_record) = $1 in
+        match object_record with
+        | Record -> Record_type(only_labels labels)
+        | Object_open -> (
+          Core_type(mktyp(Ptyp_object (List.map (fun l -> let (label, attr) = l in if label.pld_mutable == Mutable then syntax_error(); label.pld_name.txt, attr, label.pld_type ) labels, Open)))
+        )
+        | Object_closed -> Core_type(mktyp(Ptyp_object (List.map (fun l -> let (label, attr) = l in if label.pld_mutable == Mutable then syntax_error(); label.pld_name.txt, attr, label.pld_type ) labels, Closed)))
+      }
   | LBRACKET tag_field RBRACKET
-      { mktyp(Ptyp_variant([$2], Closed, None)) }
+      { Core_type(mktyp(Ptyp_variant([$2], Closed, None))) }
 /* PR#3835: this is not LR(1), would need lookahead=2
   | LBRACKET non_arrowed_simple_core_type RBRACKET
       { mktyp(Ptyp_variant([$2], Closed, None)) }
 */
   | LBRACKET BAR row_field_list RBRACKET
-      { mktyp(Ptyp_variant(List.rev $3, Closed, None)) }
+      { Core_type(mktyp(Ptyp_variant(List.rev $3, Closed, None))) }
   | LBRACKET row_field BAR row_field_list RBRACKET
-      { mktyp(Ptyp_variant($2 :: List.rev $4, Closed, None)) }
+      { Core_type(mktyp(Ptyp_variant($2 :: List.rev $4, Closed, None))) }
   | LBRACKETGREATER opt_bar row_field_list RBRACKET
-      { mktyp(Ptyp_variant(List.rev $3, Open, None)) }
+      { Core_type(mktyp(Ptyp_variant(List.rev $3, Open, None))) }
   | LBRACKETGREATER RBRACKET
-      { mktyp(Ptyp_variant([], Open, None)) }
+      { Core_type(mktyp(Ptyp_variant([], Open, None))) }
   | LBRACKETLESS opt_bar row_field_list RBRACKET
-      { mktyp(Ptyp_variant(List.rev $3, Closed, Some [])) }
+      { Core_type(mktyp(Ptyp_variant(List.rev $3, Closed, Some []))) }
   | LBRACKETLESS opt_bar row_field_list GREATER name_tag_list RBRACKET
-      { mktyp(Ptyp_variant(List.rev $3, Closed, Some (List.rev $5))) }
+      { Core_type(mktyp(Ptyp_variant(List.rev $3, Closed, Some (List.rev $5)))) }
   | LPAREN MODULE package_type RPAREN
-      { mktyp(Ptyp_package $3) }
+      { Core_type(mktyp(Ptyp_package $3)) }
   | extension
-      { mktyp(Ptyp_extension $1) }
+      { Core_type(mktyp(Ptyp_extension $1)) }
 ;
+object_record_type:
+| LBRACE RBRACE
+      { syntax_error () }
+| LBRACE DOT RBRACE
+      { [], Object_closed }
+| LBRACE DOTDOT RBRACE
+      { [], Object_open }
+| LBRACE label_declarations opt_comma RBRACE
+      { List.rev $2, Record }
+| LBRACE label_declarations COMMA DOT RBRACE
+      { List.rev $2, Object_closed }
+| LBRACE label_declarations COMMA DOTDOT RBRACE
+      { List.rev $2, Object_open }
+;
+
 package_type:
     as_loc(mty_longident) { ($1, []) }
   | as_loc(mty_longident) WITH package_type_cstrs { ($1, $3) }
 ;
 package_type_cstr:
-    TYPE as_loc(label_longident) EQUAL core_type { ($2, $4) }
+    TYPE as_loc(label_longident) EQUAL core_type
+      {
+        let core_type_loc = mklocation $startpos($4) $endpos($4) in
+        let ct = only_core_type $4 core_type_loc in
+        ($2, ct)
+      }
 ;
 package_type_cstrs:
     package_type_cstr { [$1] }
@@ -4193,7 +4330,12 @@ row_field_list:
 ;
 row_field:
     tag_field                                   { $1 }
-  | non_arrowed_simple_core_type                            { Rinherit $1 }
+  | non_arrowed_simple_core_type
+      {
+        let core_type_loc = mklocation $startpos($1) $endpos($1) in
+        let ct = only_core_type $1 core_type_loc in
+        Rinherit ct
+      }
 ;
 tag_field:
     name_tag OF? opt_ampersand amper_type_list attributes
@@ -4206,8 +4348,18 @@ opt_ampersand:
   | /* empty */                                 { false }
 ;
 amper_type_list:
-    core_type                                   { [$1] }
-  | amper_type_list AMPERSAND core_type         { $3 :: $1 }
+    core_type
+      {
+        let core_type_loc = mklocation $startpos($1) $endpos($1) in
+        let ct = only_core_type $1 core_type_loc in
+        [ct]
+      }
+  | amper_type_list AMPERSAND core_type
+      {
+        let core_type_loc = mklocation $startpos($3) $endpos($3) in
+        let ct = only_core_type $3 core_type_loc in
+        ct :: $1
+      }
 ;
 name_tag_list:
     name_tag                                    { [$1] }
@@ -4215,34 +4367,35 @@ name_tag_list:
 ;
 
 core_type_comma_list:
-    core_type                                   { [$1] }
-  | core_type_comma_list COMMA core_type        { $3 :: $1 }
+    core_type
+      {
+        let core_type_loc = mklocation $startpos($1) $endpos($1) in
+        let ct = only_core_type $1 core_type_loc in
+        [ct]
+      }
+  | core_type_comma_list COMMA core_type
+      {
+        let core_type_loc = mklocation $startpos($3) $endpos($3) in
+        let ct = only_core_type $3 core_type_loc in
+        ct :: $1
+      }
 ;
 
 non_arrowed_simple_core_type_list:
-    non_arrowed_simple_core_type     { [$1] }
-  | non_arrowed_simple_core_type_list non_arrowed_simple_core_type   { $2 :: $1 }
+    non_arrowed_simple_core_type
+      {
+        let core_type_loc = mklocation $startpos($1) $endpos($1) in
+        let ct = only_core_type $1 core_type_loc in
+        [ct]
+      }
+  | non_arrowed_simple_core_type_list non_arrowed_simple_core_type
+      {
+        let core_type_loc = mklocation $startpos($2) $endpos($2) in
+        let ct = only_core_type $2 core_type_loc in
+        ct :: $1
+      }
 ;
 
-meth_list:
-    field COMMA meth_list                     { let (f, c) = $3 in ($1 :: f, c) }
-  | field opt_comma                              { [$1], Closed }
-  | DOTDOT                                      { [], Open }
-;
-
-meth_list_with_leading_lesslident:
-  | LESSIDENT COLON poly_type attributes {
-      [($1, $4, $3)], Closed
-    }
-  | LESSIDENT COLON poly_type attributes COMMA meth_list {
-    let (f, c) = $6 in
-    (($1, $4, $3) :: f, c)
-  }
-;
-
-field:
-    label attributes COLON poly_type           { ($1, $2, $4) }
-;
 label:
     LIDENT                                      { $1 }
 ;
@@ -4440,11 +4593,8 @@ virtual_flag:
 ;
 
 private_virtual_flags:
-    /* empty */  { Public, Concrete }
-  | PRIVATE { Private, Concrete }
-  | VIRTUAL { Public, Virtual }
-  | PRIVATE VIRTUAL { Private, Virtual }
-  | VIRTUAL PRIVATE { Private, Virtual }
+    /* empty */  { Concrete }
+  | VIRTUAL { Virtual }
 ;
 override_flag:
     /* empty */                                 { Fresh }
@@ -4580,7 +4730,12 @@ item_extension:
 ;
 payload:
     structure { PStr $1 }
-  | COLON core_type { PTyp $2 }
+  | COLON core_type
+      {
+        let core_type_loc = mklocation $startpos($2) $endpos($2) in
+        let ct = only_core_type $2 core_type_loc in
+        PTyp ct
+      }
   | QUESTION pattern { PPat ($2, None) }
   | QUESTION pattern WHEN expr { PPat ($2, Some $4) }
 ;
