@@ -2244,8 +2244,19 @@ let typeApplicationFinalWrapping typeApplicationItems =
   partitionFinalWrapping isSequencey settings.funcApplicationLabelStyle typeApplicationItems
 
 
-(* add parentheses to binders when they are in fact infix or prefix operators *)
+let reasonKeywords = [
+  "pri";
+  "pub";
+  "switch";
+]
+
+(* escapes Reason keywords and add parentheses to binders when they are in fact infix or prefix operators *)
 let protectIdentifier txt =
+  let txt = if (List.length (List.filter (fun keyword -> txt = keyword) reasonKeywords) > 0) then
+    txt ^ "_"
+  else
+    txt
+  in
   if not (needs_parens txt) then atom txt
   else if needs_spaces txt then makeList ~interleaveComments:false ~wrap:("(", ")") ~pad:(true, true) [atom txt]
   else atom ("(" ^ txt ^ ")")
@@ -2713,14 +2724,11 @@ class printer  ()= object(self:'self)
             )
           in
           let openness = match o with
-            | Closed -> []
+            | Closed -> [atom "."]
             | Open -> [atom ".."]
           in
           let rows = List.concat [(List.map core_field_type l); openness] in
-          if List.length rows = 0 then
-            atom "<>"
-          else
-            makeList ~break:IfNeed ~postSpace:true ~wrap:("< ", " >") ~sep:"," rows
+          makeList ~break:IfNeed ~postSpace:true ~wrap:("{", "}") ~sep:"," rows
         | Ptyp_package (lid, cstrs) ->
           let typeConstraint (s, ct) =
             label
@@ -4885,16 +4893,8 @@ class printer  ()= object(self:'self)
     TODO: TODOATTRIBUTES
    *)
   method method_sig_flags_for s = function
-    | (Private, Virtual) -> [atom "private"; atom "virtual"; atom s]
-    | (Private, Concrete) -> [atom "private"; atom s]
-    | (Public, Virtual) -> [atom "virtual"; atom s]
-    | (Public, Concrete) ->  [atom s]
-
-  method method_flags_for s = function
-    | (Private, Virtual) -> [atom "private"; atom "virtual"; atom s]
-    | (Private, Concrete) -> [atom "private"; atom s]
-    | (Public, Virtual) -> [atom "virtual"; atom s]
-    | (Public, Concrete) ->  [atom s]
+    | Virtual -> [atom "virtual"; atom s]
+    | Concrete ->  [atom s]
 
   method value_type_flags_for s = function
     | (Virtual, Mutable) -> [atom "virtual"; atom "mutable"; atom s]
@@ -4917,11 +4917,17 @@ class printer  ()= object(self:'self)
         )
         (self#core_type ct)
     | Pctf_method (s, pf, vf, ct) ->
-      let methodFlags = self#method_sig_flags_for (s ^ ":") (pf, vf) in
+      let methodFlags = self#method_sig_flags_for (s ^ ":") vf
+      in
+      let pubOrPrivate =
+        match pf with
+        | Private -> "pri"
+        | Public -> "pub"
+      in
       label
         ~space:true
         (label ~space:true
-            (atom "method")
+            (atom pubOrPrivate)
             (makeList ~postSpace:true ~inline:(false, true) ~break:IfNeed methodFlags)
         )
         (self#core_type ct)
@@ -5130,19 +5136,24 @@ class printer  ()= object(self:'self)
       | Pcf_method (s, pf, Cfk_virtual ct) ->
         let opening = match pf with
           | Private ->
-            let privateVirtualName = [atom "private"; atom "virtual"; atom s.txt] in
+            let privateVirtualName = [atom "virtual"; atom s.txt] in
             let openingTokens =
               (makeList ~postSpace:true ~inline:(false, true) ~break:IfNeed privateVirtualName) in
-            label ~space:true (atom "method") openingTokens
+            label ~space:true (atom "pri") openingTokens
           | Public ->
             let virtualName = [atom "virtual"; atom s.txt] in
             let openingTokens =
               (makeList ~postSpace:true ~inline:(false, true) ~break:IfNeed virtualName) in
-            label ~space:true (atom "method") openingTokens
+            label ~space:true (atom "pub") openingTokens
         in
         formatTypeConstraint opening (self#core_type ct)
       | Pcf_method (s, pf, Cfk_concrete (ovf, e)) ->
-        let methodText = if ovf == Override then "method!" else "method" in
+        let methodText = if ovf == Override then "method!" else
+           (
+           match pf with
+           | Private -> "pri"
+           | Public -> "pub"
+           ) in
         (* Should refactor the binding logic so faking out the AST isn't needed,
            currently, it includes a ton of nuanced logic around recovering explicitly
            polymorphic type definitions, and that furthermore, that representation...
@@ -5169,31 +5180,19 @@ class printer  ()= object(self:'self)
           ) ->
             let (leadingAbstractVars, nonVarified) =
               self#leadingCurriedAbstractTypes methodFunWithNewtypes in
-            let fauxBindingPattern = match pf with
-              | Private -> (makeList ~postSpace:true ~break:IfNeed [atom "private"; atom s.txt])
-              | Public -> atom s.txt
-            in
             self#locallyAbstractPolymorphicFunctionBinding
               methodText
-              fauxBindingPattern
+              (atom s.txt)
               methodFunWithNewtypes
               leadingAbstractVars
               nonVarifiedExprType
           | Pexp_poly (e, Some ct) ->
             let typeLayout = SourceMap (ct.ptyp_loc, (self#core_type ct)) in
             let appTerms = self#unparseExprApplicationItems e in
-            let fauxBindingPattern = match pf with
-              | Private -> (makeList ~postSpace:true ~break:IfNeed [atom "private"; atom s.txt])
-              | Public -> atom s.txt
-            in
-            self#formatSimplePatternBinding methodText fauxBindingPattern (Some typeLayout) appTerms
+            self#formatSimplePatternBinding methodText (atom s.txt) (Some typeLayout) appTerms
           (* This form means that there is no type constraint - it's a strange node name.*)
           | Pexp_poly (e, None) ->
-            let (pattern, patternAux) = match pf with
-              | Private -> (atom "private", [atom s.txt])
-              | Public -> (atom s.txt, [])
-            in
-            self#wrappedBinding methodText pattern patternAux e
+            self#wrappedBinding methodText (atom s.txt) [] e
           | _ -> failwith "Concrete methods should only ever have Pexp_poly."
         )
       | Pcf_constraint (ct1, ct2) ->

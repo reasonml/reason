@@ -100,3 +100,9 @@ module EM = {
 };
 
 exception Ealias = EM.E;
+
+let switch_ = "switch";
+
+let pub_ = "public";
+
+let pri_ = "private";

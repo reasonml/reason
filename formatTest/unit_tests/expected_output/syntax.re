@@ -623,14 +623,14 @@ let myAnnotatedValBinding: int = 10;
 
 /* Class functions (constructors) and methods are unified in the same way */
 class classWithNoArg = {
-  method x = 0;
-  method y = 0;
+  pub x = 0;
+  pub y = 0;
 };
 
 /* This parses but doesn't type check
      class myClass init => object
-       method x => init
-       method y => init
+       pub x => init
+       pub y => init
      end;
    */
 let myFunc (a: int) (b: int) :(int, int) => (

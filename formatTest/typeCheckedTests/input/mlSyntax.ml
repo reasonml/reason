@@ -69,3 +69,9 @@ module EM = struct
 end
 
 exception Ealias = EM.E
+
+let switch = "switch"
+
+let pub = "public"
+
+let pri = "private"

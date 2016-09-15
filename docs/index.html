@@ -1021,6 +1021,81 @@ let hasExactlyTwoCars = fun lst =>
 let justTwo = hasExactlyTwoCars myCarList;  /* true! */
 ```
 
+Objects
+----------------------------------
+Although functions are the preferred way of working within Reason, it's also possible to use
+objects.
+
+An object encapsulates data that it stores within fields, and has methods that can be invoked
+against the data it has.
+
+##### Declaring an object type
+An object can have an object type to define its structure.
+
+```
+type tesla = {
+  color: string,
+  .
+};
+```
+The extra dot at the end is to indicate that this is a closed object type, which means that
+an object based on this type must have exactly this public structure.
+
+```
+type car 'a = {
+  color: string,
+  ..
+} as 'a;
+```
+Two dots, also called an elision, indicate that this is an open object type, and therefore
+can also contain other values and methods. An open object is also polymorphic and therefore
+requires a parameter.
+
+An object type is not required to create an object.
+
+##### Creating an object
+```
+type tesla = {
+  drive: int => int,
+  .
+};
+
+let obj:tesla = {
+  val hasEnvy = ref false;
+  pub drive speed => {
+    this#enableEnvy true;
+    speed
+  };
+  pri enableEnvy envy => {
+    hasEnvy.contents = envy
+  };
+};
+```
+This object is of object type tesla and has a public method `drive`. It also contains a
+private method `enableEnvy` that is only accesible from within the object.
+
+The following example shows an open object type which uses a type as parameter. The
+closed object type parameter is required to implement all the methods of the open object
+type.
+
+```
+type tesla 'a = {
+  drive: int => int,
+  ..
+} as 'a;
+
+let obj: tesla {drive: int => int, x: int => int, .} = {
+  val hasEnvy = ref false;
+  pub drive speed => {
+    this#enableEnvy true;
+    speed
+  };
+  pri enableEnvy envy => {
+    hasEnvy.contents = envy
+  };
+};
+```
+
 Syntactic Sugar (Abbreviations)
 ----------------------------------
 

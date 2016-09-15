@@ -5,15 +5,15 @@ class virtual stack 'a init => {
    */
   val virtual dummy: unit;
   val mutable v: list 'a = init;
-  method virtual implementMe: int => int;
-  method pop =
+  pub virtual implementMe: int => int;
+  pub pop =
     switch v {
     | [hd, ...tl] =>
       v = tl;
       Some hd
     | [] => None
     };
-  method push hd => v = [hd, ...v];
+  pub push hd => v = [hd, ...v];
   initializer =>
     print_string "initializing object";
 };
@@ -38,15 +38,15 @@ class virtual stackWithAttributes 'a init => {
   /* Virtual member */
   val virtual dummy: unit;
   val mutable v: list 'a = init;
-  method virtual implementMe: int => int;
-  method pop =
+  pub virtual implementMe: int => int;
+  pub pop =
     switch v {
     | [hd, ...tl] =>
       v = tl;
       Some hd
     | [] => None
     };
-  method push hd => v = [hd, ...v];
+  pub push hd => v = [hd, ...v];
   initializer =>
     print_string "initializing object";
 }
@@ -55,13 +55,13 @@ class virtual stackWithAttributes 'a init => {
 class extendedStack 'a init => {
   inherit (class stack 'a) init;
   val dummy = ();
-  method implementMe i => i;
+  pub implementMe i => i;
 };
 
 class extendedStackAcknowledgeOverride 'a init => {
   inherit (class stack 'a) init;
   val dummy = ();
-  method implementMe i => i + 1;
+  pub implementMe i => i + 1;
 };
 
 let inst = (new extendedStack) [1, 2];
@@ -100,39 +100,39 @@ and secondRecursiveClass init => {
 /**
  * Anonymous objects.
  */
-type closedObj = <>;
+type closedObj = {.};
 
 let (<..>) a b => a + b;
 
 let five = 2 <..> 3;
 
-type nestedObj = < bar : < a : int > >;
+type nestedObj = {bar : {a : int, .}, .};
 
 let (>>) a b => a > b;
 
 let bigger = 3 >> 2;
 
-type typeDefForClosedObj = < x : int, y : int >;
+type typeDefForClosedObj = {x : int, y : int, .};
 
 type typeDefForOpenObj 'a =
-  < x : int, y : int, .. > as 'a;
+  {x : int, y : int, ..} as 'a;
 
-let anonClosedObject: < x : int, y : int > = {
-  method x = 0;
-  method y = 0
+let anonClosedObject: {x : int, y : int, .} = {
+  pub x = 0;
+  pub y = 0
 };
 
-let onlyHasX = {method x = 0};
+let onlyHasX = {pub x = 0};
 
-let xs: list < x : int > = [
+let xs: list {x : int, .} = [
   onlyHasX,
-  (anonClosedObject :> < x : int >)
+  (anonClosedObject :> {x : int, .})
 ];
 
 let constrainedAndCoerced = (
   [anonClosedObject, anonClosedObject]:
-    list < x : int, y : int > :>
-    list < x : int >
+    list {x : int, y : int, .} :>
+    list {x : int, .}
 );
 
 /* If one day, unparenthesized type constraints are allowed on the RHS of a
@@ -140,51 +140,51 @@ let constrainedAndCoerced = (
  * a separate kind of token (for now). Any issues would likely be caught in the
  * idempotent test case.
  */
-let xs: ref < x : int > = {
-  contents: (anonClosedObject :> < x : int >)
+let xs: ref {x : int, .} = {
+  contents: (anonClosedObject :> {x : int, .})
 };
 
 let coercedReturn = {
   let tmp = anonClosedObject;
-  (tmp :> < x : int >)
+  (tmp :> {x : int, .})
 };
 
 let acceptsOpenAnonObjAsArg
-    (o: < x : int, y : int, .. >) =>
+    (o: {x : int, y : int, ..}) =>
   o#x + o#y;
 
 let acceptsClosedAnonObjAsArg
-    (o: < x : int, y : int >) =>
+    (o: {x : int, y : int, .}) =>
   o#x + o#y;
 
 let res =
   acceptsOpenAnonObjAsArg {
-    method x = 0;
-    method y = 10
+    pub x = 0;
+    pub y = 10
   };
 
 let res =
   acceptsOpenAnonObjAsArg {
-    method x = 0;
-    method y = 10;
-    method z = 10
+    pub x = 0;
+    pub y = 10;
+    pub z = 10
   };
 
 let res =
   acceptsClosedAnonObjAsArg {
-    method x = 0;
-    method y = 10
+    pub x = 0;
+    pub y = 10
   };
 
 /* TODO: Unify class constructor return values with function return values */
 class myClassWithAnnotatedReturnType
       init
       :{
-         method x: int;
-         method y: int
+         pub x: int;
+         pub y: int
        } => {
-  method x: int = init;
-  method y = init;
+  pub x: int = init;
+  pub y = init;
 };
 
 
@@ -194,11 +194,11 @@ class myClassWithAnnotatedReturnType
 class myClassWithAnnotatedReturnType2
       init
       :{
-         method x: int;
-         method y: int
+         pub x: int;
+         pub y: int
        } => {
-  method x: int = init;
-  method y = init;
+  pub x: int = init;
+  pub y = init;
 };
 
 
@@ -208,11 +208,11 @@ class myClassWithAnnotatedReturnType2
 class myClassWithAnnotatedReturnType3
       init
       :{
-         method x: int;
-         method y: int
+         pub x: int;
+         pub y: int
        } => {
-  method x: int = init;
-  method y: int = init;
+  pub x: int = init;
+  pub y: int = init;
 };
 
 
@@ -238,16 +238,16 @@ class myClassWithAnnotatedReturnType3
 class myClassWithAnnotatedReturnType3_annotated_constructor:
   int =>
   new {
-    method x: int;
-    method y: int
+    pub x: int;
+    pub y: int
   } =
   fun init => {
-    method x: int = init;
-    method y: int = init;
+    pub x: int = init;
+    pub y: int = init;
   };
 
 class tupleClass 'a 'b (init: ('a, 'b)) => {
-  method pr = init;
+  pub pr = init;
 };
 
 module HasTupleClasses: {
@@ -258,8 +258,8 @@ module HasTupleClasses: {
   class exportedClass :
     int =>
     new {
-      method x: int;
-      method y: int
+      pub x: int;
+      pub y: int
     };
 
   /**
@@ -268,7 +268,7 @@ module HasTupleClasses: {
   class anotherExportedClass 'a 'b :
     ('a, 'b) =>
     new {
-      method pr: ('a, 'b)
+      pub pr: ('a, 'b)
     };
 } = {
 
@@ -300,9 +300,7 @@ class intTuplesTuples =
   class tupleClass
     (tupleClass int int) (tupleClass int int);
 
-let x: tupleClass int int = {
-  method pr = (10, 10)
-};
+let x: tupleClass int int = {pub pr = (10, 10)};
 
 let x: #tupleClass int int = x;
 
@@ -312,7 +310,7 @@ let incrementMyClassInstance:
   #tupleClass int int =
   fun i inst => {
     let (x, y) = inst#pr;
-    {method pr = (x + i, y + i)}
+    {pub pr = (x + i, y + i)}
   };
 
 class myClassWithNoTypeParams = {};
@@ -338,9 +336,9 @@ type optionalMyClassSubtype 'a =
  *   adheres to the "interface.")
  */
 class type addablePointClassType = {
-  method x: int;
-  method y: int;
-  method add:
+  pub x: int;
+  pub y: int;
+  pub add:
     addablePointClassType =>
     addablePointClassType =>
     int
@@ -354,24 +352,24 @@ class addablePoint:
   int => new addablePointClassType =
   fun init => {
     as self;
-    method add
-           (one: addablePointClassType)
-           (two: addablePointClassType) =>
+    pub add
+        (one: addablePointClassType)
+        (two: addablePointClassType) =>
       one#x + two#x + one#y + two#x;
-    method x: int = init;
-    method y = init;
+    pub x: int = init;
+    pub y = init;
   };
 
 class addablePoint2:
   int => new addablePointClassType =
   fun init => {
     as self;
-    method add
-           (one: addablePointClassType)
-           (two: addablePointClassType) =>
+    pub add
+        (one: addablePointClassType)
+        (two: addablePointClassType) =>
       one#x + two#x + one#y + two#x;
-    method x: int = init;
-    method y = init;
+    pub x: int = init;
+    pub y = init;
   };
 
 module type T = {
@@ -380,3 +378,5 @@ module type T = {
   and cl2 :
     new {};
 };
+
+let privacy = {pri x c => 5 + c};
