@@ -52,10 +52,7 @@
 %{
 open Location
 open Longident
-open Ast_helper_plus
-open Ast_mapper_plus
 open Syntax_util
-open Asttypes_plus
 open Parsetree_plus
 
 (*
