@@ -91,6 +91,11 @@ let tag4 = 5 ><\/ 7;
 let b = 2;
 let selfClosing = <Foo />;
 let selfClosing2 = <Foo a=1 b=true />;
+let selfClosing3 =
+  <Foo
+    a="really long values that should"
+    b="cause the entire thing to wrap"
+  />;
 let a = <Foo> <Bar c=(fun a => a + 2) /> </Foo>;
 let a3 = <So> <Much> <Nesting> </Nesting> </Much> </So>;
 let a4 = <Sibling> <One test=true foo=b /> <Two foo=b> </Two> </Sibling>;
@@ -126,7 +131,15 @@ let testFunc b => b;
 let jsxInFnCall = testFunc (<Foo />);
 let lotsOfArguments = <LotsOfArguments argument1=1 argument2=2 argument3=3 argument4=4 argument5=5 argument6="test"> <Namespace.Foo /> </LotsOfArguments>;
 let lowerCase = <div argument1=1 />;
-let a = <Foo a>5</Foo>;
+
+let b = 0;
+let d = 0;
+/*
+ * Should pun the first example:
+ */
+let a = <Foo a=a>5</Foo>;
+let a = <Foo a=b>5</Foo>;
+let a = <Foo a=b b=d>5</Foo>;
 let a = <Foo a>0.55</Foo>;
 let a = Foo.createElement "" [@JSX];
 let ident = <Foo>{a}</Foo>;

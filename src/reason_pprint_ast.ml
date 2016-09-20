@@ -3506,41 +3506,47 @@ class printer  ()= object(self:'self)
       | {pexp_desc = Pexp_construct ({txt = Lident "[]"}, None)} :: remainingChildren -> processChildren remainingChildren result
       | head :: remainingChildren -> processChildren remainingChildren (result @ [self#simplifyUnparseExpr head])
       | [] -> [makeList ~break:IfNeed ~sep:" " ~inline:(true, true) result]
-    and processAttributes attributes processedAttrs children =
-      match attributes with
+
+    and processAttributes arguments processedAttrs children =
+      match arguments with
       | ("", {pexp_desc = Pexp_construct (_, None)}) :: tail ->
         processAttributes tail processedAttrs []
       | ("", {pexp_desc = Pexp_construct ({txt = Lident"::"}, Some {pexp_desc = Pexp_tuple(components)} )}) :: tail ->
         processAttributes tail processedAttrs (processChildren components [])
-      | (label, expression) :: tail ->
-         let value = match expression.pexp_desc with
-         | Pexp_ident (ident) ->
-            if (Longident.last ident.txt) = label then
-              []
-            else
-              [atom "="; self#simplifyUnparseExpr expression]
-         | _ -> [atom "="; self#simplifyUnparseExpr expression] in
-         processAttributes tail (processedAttrs @ [makeList   ([atom " "; atom label; ] @ value)]) children
+      | (lbl, expression) :: tail ->
+         let nextAttr =
+           match expression.pexp_desc with
+           | Pexp_ident (ident) when (Longident.last ident.txt) = lbl -> atom lbl
+           | _ -> makeList ([atom lbl; atom "="; self#simplifyUnparseExpr expression])
+         in
+         processAttributes tail (nextAttr :: processedAttrs) children
       | [] -> (processedAttrs, children)
     in
-    let (attributes, children) = processAttributes args [] []
-    in
+    let (reversedAttributes, children) = processAttributes args [] [] in
     if List.length children = 0 then
-        makeList ([atom "<"; atom componentName] @ attributes @ [atom " />"])
+      makeList
+        ~break:IfNeed
+        ~wrap:("<" ^ componentName, "/>")
+        ~pad:(true, true)
+        ~inline:(false, false)
+        ~postSpace:true
+        (List.rev reversedAttributes)
     else
-        let (openingTag, attributes) =
-            if List.length attributes = 0 then
-                (componentName ^ ">", [])
-            else
-                let reversedAttributes = List.rev attributes in
-                (componentName, (List.rev (List.tl reversedAttributes)) @ [(makeList ~break:Never ([List.hd reversedAttributes] @ [atom ">"]))])
-        in
-        makeList
-          ~inline:(false, false)
-          ~break:IfNeed
-          ~pad:(true, true)
-          ~wrap:("<" ^ openingTag, "</" ^ componentName ^ ">")
-          (attributes @ children)
+      let (openingTag, attributes) =
+        match reversedAttributes with
+        | [] -> (componentName ^ ">", [])
+        | revAttrHd::revAttrTl -> (
+          componentName,
+          List.rev (makeList ~break:Never [revAttrHd; atom ">"] :: revAttrTl)
+        )
+      in
+      makeList
+        ~inline:(false, false)
+        ~break:IfNeed
+        ~pad:(true, true)
+        ~postSpace:true
+        ~wrap:("<" ^ openingTag, "</" ^ componentName ^ ">")
+        (attributes @ children)
 
 
   (* Creates a list of simple module expressions corresponding to module

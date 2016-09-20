@@ -2760,7 +2760,7 @@ _simple_expr:
      the issue alltogether.
      
      first token
-     /     \
+     /\
      [<ident    args />  , remainingitems ]
      [<>                 , remainingitems ]
    */
