@@ -66,6 +66,19 @@ type error =
 
 exception Error of error * Location.t;;
 
+
+(* [splitToken s] looks at the token split table, and split a token into multiple tokens.
+ * This is needed to deal with ambiguity of tokens in the lexer. i.e., in "< ... < ... >>",
+ * is the ">>" an operator or two GREATERs?
+ * See issue#177 for more context
+ *)
+let splitToken (token, s, e) =
+  match token with
+  | GREATERGREATER ->
+    [(GREATER, s, e); (GREATER, s, e)]
+  | _ ->
+    [(token, s, e)]
+
 (* The table of keywords *)
 
 let keyword_table =
@@ -292,6 +305,7 @@ let newline = ('\013'* '\010')
 let blank = [' ' '\009' '\012']
 let lowercase = ['a'-'z' '_']
 let uppercase = ['A'-'Z']
+let uppercase_or_lowercase = lowercase | uppercase
 let identchar = ['A'-'Z' 'a'-'z' '_' '\'' '0'-'9']
 let lowercase_latin1 = ['a'-'z' '\223'-'\246' '\248'-'\255' '_']
 let uppercase_latin1 = ['A'-'Z' '\192'-'\214' '\216'-'\222']
@@ -447,6 +461,8 @@ rule token = parse
         lexbuf.lex_curr_p <- { curpos with pos_cnum = curpos.pos_cnum - 1 };
         STAR
       }
+  | "#" (appropriate_operator_suffix_chars | "#")+
+      { SHARPOP(Lexing.lexeme lexbuf) }
   | "#" [' ' '\t']* (['0'-'9']+ as num) [' ' '\t']*
         ("\"" ([^ '\010' '\013' '"' ] * as name) "\"")?
         [^ '\010' '\013'] * newline
@@ -457,7 +473,6 @@ rule token = parse
   | "&&" { AMPERAMPER }
   | "`"  { BACKQUOTE }
   | "'"  { QUOTE }
-  | "</" { LESSSLASH }
   | "("  { LPAREN }
   | ")"  { RPAREN }
   | "*"  { STAR }
@@ -471,9 +486,6 @@ rule token = parse
   | ":"  { COLON }
   | "::" { COLONCOLON }
   | ":=" { COLONEQUAL }
-  | "/>" { SLASHGREATER }
-  | "/><" { SLASHGREATERLESS }
-  | "/></" { SLASHGREATERLESSSLASH }
   | ":>" { COLONGREATER }
   | ";"  { SEMI }
   | ";;" { SEMISEMI }
@@ -484,6 +496,14 @@ rule token = parse
   | "[|" { LBRACKETBAR }
   | "[<" { LBRACKETLESS }
   | "[>" { LBRACKETGREATER }
+  | "<" uppercase_or_lowercase (identchar | '.') * {
+    let buf = Lexing.lexeme lexbuf in
+    LESSIDENT (String.sub buf 1 (String.length buf - 1))
+  }
+  | "</" uppercase_or_lowercase (identchar | '.') * ">" {
+    let buf = Lexing.lexeme lexbuf in
+    LESSSLASHIDENTGREATER (String.sub buf 2 (String.length buf - 2 - 1))
+  }
   | "]"  { RBRACKET }
   | "{"  { LBRACE }
   | "{<" { LBRACELESS }
@@ -491,14 +511,12 @@ rule token = parse
   | "||" { BARBAR }
   | "|]" { BARRBRACKET }
   | ">"  { GREATER }
+  | ">>" { GREATERGREATER }
   (* Having a GREATERRBRACKET makes it difficult to parse patterns such
      as > ]. The space in between then becomes significant and must be
      maintained when printing etc. >] isn't even needed!
   | ">]" { GREATERRBRACKET }
   *)
-  | "/>]" { SLASHGREATERRBRACKET }
-  | "><"  { GREATERLESS }
-  | "></" { GREATERLESSSLASH }
   | "}"  { RBRACE }
   | ">}" { GREATERRBRACE }
   | "[@" { LBRACKETAT }
@@ -517,7 +535,7 @@ rule token = parse
   | "-"  { MINUS }
   | "-." { MINUSDOT }
   | "<>" { LESSGREATER }
-  | "<><" { LESSGREATERLESS }
+  | "</>" { LESSSLASHGREATER }
   | "<..>" { LESSDOTDOTGREATER }
   | "\\"? "!" appropriate_operator_suffix_chars +
             { PREFIXOP(Lexing.lexeme lexbuf) }
@@ -529,6 +547,8 @@ rule token = parse
             { INFIXOP1(Lexing.lexeme lexbuf) }
   | "\\"? ['+' '-'] appropriate_operator_suffix_chars *
             { INFIXOP2(Lexing.lexeme lexbuf) }
+  (* SLASHGREATER is an INFIXOP3 that is handled specially *)
+  | "/>" { SLASHGREATER }
   (* The second star must be escaped so that the precedence assumptions for
    * printing match those of parsing. (Imagine what could happen if the other
    * rule beginning with * picked up */*, and we internally escaped it to **.

@@ -90,12 +90,6 @@ open Syntax_util
      loc_ghost = true;
    }
 
-   let rhs_loc n = {
-     loc_start = Parsing.rhs_start_pos n;
-     loc_end = Parsing.rhs_end_pos n;
-     loc_ghost = false;
-   }
-
    ast_helper.ml:
    ------------
    module Typ = struct
@@ -402,6 +396,11 @@ let mktailpat_extension loc seq ext_opt =
       ghpat_cons loc arg loc in
   handle_seq seq
 
+let makeFrag loc body =
+  let attribute = ({txt = "JSX"; loc = loc}, PStr []) in
+  { body with pexp_attributes = [attribute] @ body.pexp_attributes }
+
+
 (* Applies attributes to the structure item, not the expression itself. Makes
  * structure item have same location as expression. *)
 let mkstrexp e attrs =
@@ -483,8 +482,8 @@ let expecting_pat nonterm =
   else
     expecting nonterm
 
-let not_expecting pos nonterm =
-    raise Syntaxerr.(Error(Not_expecting(rhs_loc pos, nonterm)))
+let not_expecting start_pos end_pos nonterm =
+    raise Syntaxerr.(Error(Not_expecting(mklocation start_pos end_pos, nonterm)))
 
 let bigarray_function ?(loc=dummy_loc()) str name =
   ghloc ~loc (Ldot(Ldot(Lident "Bigarray", str), name))
@@ -527,10 +526,10 @@ let bigarray_set ?(loc=dummy_loc()) arr arg newval =
                         "", mkexp ~ghost:true ~loc (Pexp_array coords);
                         "", newval]))
 
-let lapply p1 p2 =
+let lapply p1 p2 start_pos end_pos =
   if !Clflags.applicative_functors
   then Lapply(p1, p2)
-  else raise (Syntaxerr.Error(Syntaxerr.Applicative_path (symbol_rloc())))
+  else raise (Syntaxerr.Error(Syntaxerr.Applicative_path (mklocation start_pos end_pos)))
 
 let exp_of_label label =
   mkexp ~loc:label.loc (Pexp_ident {label with txt=Lident(Longident.last label.txt)})
@@ -637,11 +636,11 @@ let mkcf_attrs ?(loc=dummy_loc()) d attrs =
 let mkctf_attrs d attrs =
   Ctf.mk ~attrs d
 
-let add_nonrec rf attrs pos =
-  match rf with
+let add_nonrec rf attrs =
+  match rf.txt with
   | Recursive -> attrs
   | Nonrecursive ->
-      let name = { txt = "nonrec"; loc = rhs_loc pos } in
+      let name = { txt = "nonrec"; loc = rf.loc } in
         (name, PStr []) :: attrs
 
 type let_binding =
@@ -850,10 +849,8 @@ let ensureTagsAreEqual startTag endTag loc =
 %token FUNCTION
 %token FUNCTOR
 %token GREATER
-%token GREATERLESS
-%token GREATERLESSSLASH
+%token GREATERGREATER
 %token GREATERRBRACE
-%token SLASHGREATERRBRACKET
 %token IF
 %token IN
 %token INCLUDE
@@ -861,6 +858,8 @@ let ensureTagsAreEqual startTag endTag loc =
 %token <string> INFIXOP1
 %token <string> INFIXOP2
 %token <string> INFIXOP3
+/* SLASHGREATER is an INFIXOP3 that is handled specially */
+%token SLASHGREATER
 %token <string> INFIXOP4
 %token INHERIT
 %token INITIALIZER
@@ -877,8 +876,9 @@ let ensureTagsAreEqual startTag endTag loc =
 %token LBRACKETPERCENT
 %token LBRACKETPERCENTPERCENT
 %token LESS
+%token <string> LESSIDENT
 %token LESSGREATER
-%token LESSGREATERLESS
+%token LESSSLASHGREATER
 %token LESSDOTDOTGREATER
 %token LESSMINUS
 %token EQUALGREATER
@@ -919,13 +919,12 @@ let ensureTagsAreEqual startTag endTag loc =
 %token RBRACKET
 %token REC
 %token RPAREN
+%token <string> LESSSLASHIDENTGREATER
 %token SEMI
 %token SEMISEMI
 %token SHARP
+%token <string> SHARPOP
 %token SIG
-%token SLASHGREATER
-%token SLASHGREATERLESS
-%token SLASHGREATERLESSSLASH
 %token STAR
 %token <string * string option> STRING
 %token STRUCT
@@ -951,34 +950,10 @@ let ensureTagsAreEqual startTag endTag loc =
 Tokens and rules have precedences and those precedences are used to
 resolve what would otherwise be a conflict in the grammar.
 
-Precedence and associativity:
+Precedence and associativity/Resolving conflicts:
 ----------------------------
-- The list that follows this docblock determines precedence in order
-  form low to high along with an optional associativity.
-- Within each row in the list, the precedences are equivalent.
-- Each entry's position in the list either determines the relative precedence of the
-  mentioned token, or it creates a new "name" for a reusable precednece/associativity
-  (such as below_SEMI).
-  - By default, a rule has the precedence of its rightmost terminal (if any).
-  - But a rule can use one of the reusable "names" for precedence/associativity
-    from the list below.
-
-Resolving conflicts in grammar:
--------------------------------
-Different types of conflicts are resolved in different ways.
-- Reduce/reduce conflict:
-  - (Are not resolved using precedence?)
-  - (Instead?) Resolved in favor of the first rule (in source file order).
-- Shift/reduce conflict between rule and token being shifted:
-  - Resolved by comparing the "precedence" and "associativity" of the
-    token to be shifted with those of the rule to be reduced.
-  - When the rule and the token have the same precedence, it is resolved
-    using the associativity:
-    - If the token is left-associative, the parser will reduce.
-    - If the token is right-associative, the parser will shift.
-    - If non-associative, the parser will declare a syntax error.
-  - Question: What about when the rule to reduce has no precedence because it
-  has no rightmost terminal?
+See [http://caml.inria.fr/pub/docs/manual-ocaml-4.00/manual026.html] section
+about conflicts.
 
 We will only use associativities with operators of the kind  x * x -> x
 for example, in the rules of the form    expr: expr BINOP expr
@@ -986,16 +961,17 @@ in all other cases, we define two precedences if needed to resolve
 conflicts.
 
 */
+/* Question: Where is the SEMI explicit precedence? */
 %nonassoc below_SEMI
 %nonassoc below_EQUALGREATER
 %right    EQUALGREATER                  /* core_type2 (t => t => t) */
-%nonassoc below_QUESTION
+%right COLON
+%right    EQUAL                         /* below COLONEQUAL (lbl = x := e) */
+%right    COLONEQUAL                    /* expr (e := e := e) */
 %nonassoc QUESTION
 %nonassoc WITH             /* below BAR  (match ... with ...) */
 %nonassoc AND             /* above WITH (module rec A: SIG with ... and ...) */
 %nonassoc ELSE                          /* (if ... then ... else ...) */
-%nonassoc EQUAL                         /* below COLONEQUAL (lbl = x := e) */
-%right    COLONEQUAL                    /* expr (e := e := e) */
 %nonassoc AS
 %nonassoc below_BAR                     /* Allows "building up" of many bars */
 %left     BAR                           /* pattern (p|p|p) */
@@ -1007,7 +983,7 @@ conflicts.
 %right    INFIXOP1                      /* expr (e OP e OP e) */
 %right    COLONCOLON                    /* expr (e :: e :: e) */
 %left     INFIXOP2 PLUS PLUSDOT MINUS MINUSDOT PLUSEQ /* expr (e OP e OP e) */
-%left     PERCENT INFIXOP3 STAR                 /* expr (e OP e OP e) */
+%left     PERCENT INFIXOP3 SLASHGREATER STAR          /* expr (e OP e OP e) */
 %right    INFIXOP4                      /* expr (e OP e OP e) */
 
 /**
@@ -1041,15 +1017,15 @@ conflicts.
  *    %nonassoc LBRACKETATAT
  *    %right    COLONCOLON
  *    %left     INFIXOP2 PLUS PLUSDOT MINUS MINUSDOT PLUSEQ
- *    %left     PERCENT INFIXOP3 STAR
+ *    %left     PERCENT INFIXOP3 SLASHGREATER STAR
  *    %right    INFIXOP4
  *
  * So instead, with Reason, we treat all infix operators identically w.r.t.
  * attributes. In expressions, they have the same precedence as function
  * arguments, as if they are additional arguments to a function application.
  *
- * Note that prefix unary subtractive/plus parses with lower precedence than
- * function application (and attributes) This means that:
+ * Note that unary subtractive/plus parses with lower precedence than function
+ * application (and attributes) This means that:
  *
  *   let = - something blah blah [@attr];
  *
@@ -1057,12 +1033,32 @@ conflicts.
  * unary minus, as if the attribute was merely another argument to the function
  * application.
  *
+ *
+ * To make the attribute apply to the unary -, wrap in parens.
+ *
+ *   let = (- something blah blah) [@attr];
+ *
  * Where arrows occur, it will (as always) obey the rules of function/type
  * application.
  *
  *   type x = int => int [@onlyAppliedToTheInt];
  *   type x = (int => int) [@appliedToTheArrow];
  *
+ * However, unary subtractive/plus parses with *higher* precedence than infix
+ * application, so that
+ *
+ *   3 + - funcCall arg arg + 3;
+ *
+ * Is parsed as:
+ *
+ *   3 + (- (funcCall arg arg)) + 3;
+ *
+ * TODO:
+ *
+ * We would also like to bring this behavior to `!` as well, when ! becomes
+ * "not". This is so that you may do !someFunction(arg, arg) and have the
+ * entire function application negated. In fact, we may as well just have all
+ * of PREFIXOP have the unary precedence parsing behavior for consistency.
  */
 
 %nonassoc prec_unary_minus prec_unary_plus /* unary - */
@@ -1070,23 +1066,22 @@ conflicts.
 /* Now that commas require wrapping parens (for tuples), prec_constr_appl no
 * longer needs to be above COMMA, but it doesn't hurt */
 %nonassoc prec_constr_appl              /* above AS BAR COLONCOLON COMMA */
+
+/* PREFIXOP and BANG precedence */
 %nonassoc below_DOT_AND_SHARP           /* practically same as below_SHARP but we convey purpose */
 %nonassoc SHARP                         /* simple_expr/toplevel_directive */
+%left     SHARPOP
 %nonassoc below_DOT
 %nonassoc DOT
 
 %nonassoc below_LBRACKETAT
 %nonassoc LBRACKETAT
-%nonassoc SLASHGREATER
-%nonassoc SLASHGREATERLESS
-%nonassoc GREATERLESS
-%nonassoc GREATERLESSSLASH
 
 /* Finally, the first tokens of simple_expr are above everything else. */
 %nonassoc BACKQUOTE BANG CHAR FALSE FLOAT INT INT32 INT64
           LBRACE LBRACELESS LBRACKET LBRACKETBAR LIDENT LPAREN
           NEW NATIVEINT PREFIXOP STRING TRUE UIDENT
-          LBRACKETPERCENT LBRACKETLESS
+          LBRACKETPERCENT LESSIDENT LBRACKETLESS
 
 /* Entry points */
 
@@ -2045,15 +2040,16 @@ parent_binder:
 value:
 /* TODO: factorize these rules (also with method): */
     override_flag MUTABLE VIRTUAL as_loc(label) COLON core_type {
-      if $1 = Override then not_expecting 7 "not expecting equal - cannot specify value for virtual val"
+      if $1 = Override
+      then not_expecting $symbolstartpos $endpos "members marked virtual may not also be marked overridden"
       else $4, Mutable, Cfk_virtual $6
     }
   | override_flag MUTABLE VIRTUAL label COLON core_type EQUAL
-      { not_expecting 7 "not expecting equal - cannot specify value for virtual val" }
+      { not_expecting $startpos($7) $endpos($7) "not expecting equal - cannot specify value for virtual val" }
   | VIRTUAL mutable_flag as_loc(label) COLON core_type
       { $3, $2, Cfk_virtual $5 }
   | VIRTUAL mutable_flag label COLON core_type EQUAL
-      { not_expecting 6 "not expecting equal - cannot specify value for virtual val" }
+      { not_expecting $startpos($6) $endpos($6) "not expecting equal - cannot specify value for virtual val" }
   | override_flag mutable_flag as_loc(label) EQUAL expr
       { $3, $2, Cfk_concrete ($1, $5) }
   | override_flag mutable_flag as_loc(label) type_constraint EQUAL expr
@@ -2314,7 +2310,10 @@ value_type:
       { $1, Immutable, Concrete, $3 }
 ;
 constrain:
-        core_type EQUAL core_type          { $1, $3, symbol_rloc() }
+  | core_type EQUAL core_type {
+    let loc = mklocation $symbolstartpos $endpos in
+    ($1, $3, loc)
+  }
 ;
 constrain_field:
         core_type EQUAL core_type          { $1, $3 }
@@ -2431,7 +2430,7 @@ _semi_terminated_seq_expr_row:
       let item_attrs = $5 in
       mkexp ~attrs:item_attrs (Pexp_letmodule($3, $4, $7))
     }
-  | LET OPEN override_flag as_loc(mod_longident) post_item_attributes SEMI semi_terminated_seq_expr {
+  | LET? OPEN override_flag as_loc(mod_longident) post_item_attributes SEMI semi_terminated_seq_expr {
       let item_attrs = $5 in
       mkexp ~attrs:item_attrs (Pexp_open($3, $4, $7))
     }
@@ -2537,120 +2536,67 @@ jsx_arguments:
       }
 ;
 
-jsx_name:
-  | mod_longident { $1 }
-  | LIDENT { Lident $1 }
-;
-
-
-jsx_start_tag_body:
-  | jsx_name jsx_arguments {
-      (jsx_component $1 $2, $1)
+jsx_start_tag_and_args:
+  | LESSIDENT jsx_arguments {
+    let name = Longident.parse $1 in
+    (jsx_component name $2, name)
   }
 ;
 
-jsx_separate_open_close:
-  | jsx_start_tag_body GREATERLESSSLASH jsx_name
-      {
-        (* Foo></Foo *)
-        let (component, start) = $1 in
-        let loc = mklocation $symbolstartpos $endpos in
-        let _ = ensureTagsAreEqual start $3 loc in
-        component [("", mktailexp_extension loc [] None)] ~loc
-      }
-  | jsx_start_tag_body GREATERLESS jsx_tag_siblings jsx_name
-      {
-        let (component, start) = $1 in
-        let loc = mklocation $symbolstartpos $endpos in
-        let _ = ensureTagsAreEqual start $4 loc in
-        component [("", mktailexp_extension loc $3 None)] ~loc
-      }
-  | jsx_start_tag_body GREATER jsx_siblings jsx_name
-      {
-        (* Foo> <Tags /> </Foo *)
-        let (component, start) = $1 in
-        let loc = mklocation $symbolstartpos $endpos in
-        let _ = ensureTagsAreEqual start $4 loc in
-        let siblings =
-          if List.length $3 > 0 then
-            $3
-          else
-            []
-        in
-        component [("", mktailexp_extension loc siblings None)] ~loc
-      }
+jsx_start_tag_and_args_without_leading_less:
+  | mod_longident jsx_arguments {
+    (jsx_component $1 $2, $1)
+  }
 ;
 
-jsx_tag:
-  | LESSGREATERLESS jsx_tag_siblings GREATER
-  | LESSGREATER jsx_siblings GREATER
-      {
-        let loc = mklocation $symbolstartpos $endpos in
-        let body = mktailexp_extension loc $2 None in
-        let attribute = ({txt = "JSX"; loc = loc}, PStr []) in
-        { body with pexp_attributes = [attribute] @ body.pexp_attributes }
-      }
-  | LESS jsx_start_tag_body SLASHGREATER
-      {
-        (* Foo /> *)
-        let (component, _) = $2 in
-        let loc = mklocation $symbolstartpos $endpos in
-        component [("", mktailexp_extension loc [] None)] ~loc
-      }
-  | LESS jsx_separate_open_close GREATER
-      {
-        (* /Foo> *)
-        $2
-      }
+simple_expr_list:
+ /* none */ { [] }
+ | simple_expr simple_expr_list { [$1] @ $2 }
 ;
 
-jsx_tag_siblings:
-  | jsx_start_tag_body SLASHGREATERLESSSLASH
-      {
-        let (component, _) = $1 in
-        let loc = mklocation $symbolstartpos $endpos in
-        [component [("", mktailexp_extension loc [] None)] ~loc]
-      }
-  | jsx_start_tag_body SLASHGREATERLESS jsx_tag_siblings
-      {
-        (* Tag /><Tag *)
-        let (component, _) = $1 in
-        let loc = mklocation $symbolstartpos $endpos in
-        [component [("", mktailexp_extension loc [] None)] ~loc] @ $3
-      }
-  | jsx_start_tag_body SLASHGREATER jsx_siblings
-      {
-        (* Tag /> <Tags *)
-        let (component, _) = $1 in
-        let loc = mklocation $symbolstartpos $endpos in
-        [component [("", mktailexp_extension loc [] None)] ~loc] @ $3
-      }
-  | jsx_separate_open_close GREATERLESSSLASH
-      {
-        [$1]
-      }
-  | jsx_separate_open_close GREATER jsx_siblings
-      {
-        (* Tag> <Tags *)
-        [$1] @ $3
-      }
-  | jsx_separate_open_close GREATERLESS jsx_tag_siblings
-      {
-        (* Tag><Tags *)
-        [$1] @ $3
-     }
+
+jsx:
+  | LESSGREATER simple_expr_list LESSSLASHGREATER {
+    let loc = mklocation $symbolstartpos $endpos in
+    let body = mktailexp_extension loc $2 None in
+    makeFrag loc body
+  }
+  | jsx_start_tag_and_args SLASHGREATER {
+    let (component, _) = $1 in
+    let loc = mklocation $symbolstartpos $endpos in
+    component [("", mktailexp_extension loc [] None)] ~loc
+  }
+  | jsx_start_tag_and_args GREATER simple_expr_list LESSSLASHIDENTGREATER {
+    let (component, start) = $1 in
+    let loc = mklocation $symbolstartpos $endpos in
+    (* TODO: Make this tag check simply a warning *)
+    let endName = Longident.parse $4 in
+    let _ = ensureTagsAreEqual start endName loc in
+    let siblings = if List.length $3 > 0 then $3 else [] in
+    component [("", mktailexp_extension loc siblings None)] ~loc
+  }
 ;
 
-jsx_siblings:
-    LESSSLASH { [] }
-  | LESS jsx_tag_siblings
-      {
-        $2
-      }
-  | simple_expr jsx_siblings
-      {
-        [$1] @ $2
-      }
+jsx_without_leading_less:
+  | GREATER simple_expr_list LESSSLASHGREATER {
+    let loc = mklocation $symbolstartpos $endpos in
+    let body = mktailexp_extension loc $2 None in
+    makeFrag loc body
+  }
+  | jsx_start_tag_and_args_without_leading_less SLASHGREATER {
+    let (component, _) = $1 in
+    let loc = mklocation $symbolstartpos $endpos in
+    component [("", mktailexp_extension loc [] None)] ~loc
+  }
+  | jsx_start_tag_and_args_without_leading_less GREATER simple_expr_list LESSSLASHIDENTGREATER {
+    let (component, start) = $1 in
+    let loc = mklocation $symbolstartpos $endpos in
+    (* TODO: Make this tag check simply a warning *)
+    let endName = Longident.parse $4 in
+    let _ = ensureTagsAreEqual start endName loc in
+    let siblings = if List.length $3 > 0 then $3 else [] in
+    component [("", mktailexp_extension loc siblings None)] ~loc
+  }
 ;
 
 /*
@@ -2676,7 +2622,6 @@ _expr:
       let (l,o,p) = $2 in
       mkexp (Pexp_fun(l, o, p, $3))
     }
-  | jsx_tag { $1 }
   | FUN LPAREN TYPE LIDENT RPAREN fun_def
       { mkexp (Pexp_newtype($4, $6)) }
   /* List style rules like this often need a special precendence
@@ -2689,7 +2634,7 @@ _expr:
   | TRY simple_expr LBRACE leading_bar_match_cases_to_sequence_body RBRACE
       { mkexp (Pexp_try($2, List.rev $4)) }
   | TRY simple_expr WITH error
-      { syntax_error_exp (rhs_loc 4) "Invalid try with"}
+      { syntax_error_exp (mklocation $startpos($4) $endpos($4)) "Invalid try with"}
   | as_loc(constr_longident) simple_non_labeled_expr_list_as_tuple
     {
       if List.mem (string_of_longident $1.txt)
@@ -2758,7 +2703,7 @@ _expr:
    *
    *     switch expression { | true => expr1 | false => expr2 }
    *
-   * The prec below_QUESTION is so that the following parses:
+   * The COLON token priority is below QUESTION so that the following parses:
    *
    *    x ? y :
    *    z ? q : r
@@ -2777,7 +2722,7 @@ _expr:
    * that we, instead, shift the qusetion mark so that the *latter* ternary is
    * recognized first on the top of the stack. (z ? q : r).
    */
-  | expr QUESTION expr COLON expr %prec below_QUESTION {
+  | expr QUESTION expr COLON expr {
       (* Should use ghost expressions, but not sure how that would work with source maps *)
       (* So ? will become true and : becomes false for now*)
       let loc_question = mklocation $startpos($2) $endpos($2) in
@@ -2807,6 +2752,27 @@ _simple_expr:
     }
   | name_tag %prec prec_constant_constructor
       { mkexp (Pexp_variant ($1, None)) }
+  | jsx { $1 }
+  /*
+     Because [< is a special token, the <ident and <> won't be picked up as separate
+     tokens, when a list begins witha JSX tag. So we special case it.
+     (todo: pick totally different syntax for polymorphic variance types to avoid
+     the issue alltogether.
+
+     first token
+     /     \
+     [<ident    args />  , remainingitems ]
+     [<>                 , remainingitems ]
+   */
+  | LBRACKETLESS jsx_without_leading_less COMMA expr_comma_seq_extension {
+      let entireLoc = mklocation $startpos($1) $endpos($4) in
+      let (seq, ext_opt) = $4 in
+      mktailexp_extension entireLoc ($2::seq) ext_opt
+  }
+  | LBRACKETLESS jsx_without_leading_less RBRACKET {
+      let entireLoc = mklocation $startpos($1) $endpos($3) in
+      mktailexp_extension entireLoc ($2::[]) None
+  }
   | LPAREN expr RPAREN
       { $2 }
   | as_loc(LPAREN) expr as_loc(error)
@@ -2874,9 +2840,23 @@ _simple_expr:
 
   /* TODO: Let Sequence? */
 
+  | LBRACE DOTDOTDOT expr_optional_constraint opt_comma RBRACE
+      {
+        let loc = mklocation $symbolstartpos $endpos in
+        let msg = "Record construction must have at least one field explicitly set" in
+        syntax_error_exp loc msg
+      }
   | LBRACE record_expr RBRACE
       { let (exten, fields) = $2 in mkexp (Pexp_record(fields, exten)) }
   | as_loc(LBRACE) record_expr as_loc(error)
+      { unclosed_exp (with_txt $1 "{") (with_txt $3 "}")}
+  | LBRACE record_expr_with_string_keys RBRACE
+      {
+        let (exten, fields) = $2 in
+        mkexp (Pexp_extension (mkloc ("bs.obj") (mklocation $symbolstartpos $endpos),
+               PStr [mkstrexp (mkexp (Pexp_record(fields, exten))) []]))
+      }
+  | as_loc(LBRACE) record_expr_with_string_keys as_loc(error)
       { unclosed_exp (with_txt $1 "{") (with_txt $3 "}")}
   /* Todo: Why is this not a simple_expr? */
   | LBRACE class_self_pattern_and_structure RBRACE
@@ -2904,33 +2884,6 @@ _simple_expr:
       }
   | mod_longident DOT as_loc(LBRACKETBAR) expr_comma_seq opt_comma as_loc(error)
       { unclosed_exp (with_txt $3 "[|") (with_txt $6 "|]") }
-  | LBRACKETLESS jsx_separate_open_close GREATER RBRACKET
-      {
-        let loc = mklocation $symbolstartpos $endpos in
-        make_real_exp (mktailexp_extension loc [$2] None)
-      }
-  | LBRACKETLESS jsx_start_tag_body SLASHGREATER RBRACKET
-  | LBRACKETLESS jsx_start_tag_body SLASHGREATERRBRACKET
-      {
-        let (component, _) = $2 in
-        let loc = mklocation $symbolstartpos $endpos in
-        let c = component [("", mktailexp_extension loc [] None)] ~loc in
-        make_real_exp (mktailexp_extension loc [c] None)
-      }
-  | LBRACKETLESS jsx_separate_open_close GREATER COMMA expr_comma_seq_extension
-      {
-        let seq, ext_opt = $5 in
-        let loc = mklocation $symbolstartpos $endpos in
-        make_real_exp (mktailexp_extension loc ([$2] @ seq) ext_opt)
-      }
-  | LBRACKETLESS jsx_start_tag_body SLASHGREATER COMMA expr_comma_seq_extension
-      {
-        let seq, ext_opt = $5 in
-        let (component, _) = $2 in
-        let loc = mklocation $symbolstartpos $endpos in
-        let c = component [("", mktailexp_extension loc [] None)] ~loc in
-        make_real_exp (mktailexp_extension loc ([c] @ seq) ext_opt)
-      }
   | LBRACKET expr_comma_seq_extension
       { let seq, ext_opt = $2 in
         let loc = mklocation $startpos($2) $endpos($2) in
@@ -2974,6 +2927,8 @@ _simple_expr:
       { unclosed_exp (with_txt $3 "{<") (with_txt $6 ">}") }
   | simple_expr SHARP label
       { mkexp(Pexp_send($1, $3)) }
+  | simple_expr as_loc(SHARPOP) simple_expr
+      { mkinfix $1 $2 $3 }
   | LPAREN MODULE module_expr RPAREN
       { mkexp (Pexp_pack $3) }
   | LPAREN MODULE module_expr COLON package_type RPAREN
@@ -2998,7 +2953,9 @@ _simple_expr:
 
 /**
  * Nice reusable version of simple_expr that waits to be reduced until enough
- * of the input has been observed, in order to consider Module.X.Y a single simple_expr
+ * of the input has been observed, in order to consider Module.X.Y a single
+ * simple_expr. It's terribly nuanced that this would make a difference. (No
+ * longer necessary)?
  */
 less_aggressive_simple_expression:
   simple_expr {$1}
@@ -3329,13 +3286,20 @@ expr_comma_seq:
 
 /* [x, y, z, ...n] --> ([x,y,z], Some n) */
 expr_comma_seq_extension:
-  | LESS jsx_start_tag_body SLASHGREATERRBRACKET
-      {
-        let (component, _) = $2 in
-        let loc = mklocation $symbolstartpos $endpos in
-        let c = component [("", mktailexp_extension loc [] None)] ~loc in
-        ([c], None)
-      }
+  | DOTDOTDOT expr_optional_constraint RBRACKET
+    { ([], Some $2) }
+  | expr_optional_constraint opt_comma RBRACKET
+    { ([$1], None) }
+  | expr_optional_constraint COMMA expr_comma_seq_extension
+    { let seq, ext = $3 in ($1::seq, ext) }
+;
+
+/* Same as expr_comma_seq_extension but occuring after an item.
+
+  Used when parsing `[<> </>, remaining]`. We know that there is at
+  least one item, so we either should have a comma + more, or nothing.
+
+expr_comma_seq_extension_second_item:
   | DOTDOTDOT expr_optional_constraint RBRACKET
     { ([], Some $2) }
   | expr_optional_constraint opt_comma RBRACKET
@@ -3358,8 +3322,8 @@ expr_optional_constraint:
 ;
 
 record_expr:
-    DOTDOTDOT expr_optional_constraint COMMA lbl_expr_list   { (Some $2, $4) }
-  | lbl_expr_list_that_is_not_a_single_punned_field         { (None, $1) }
+    DOTDOTDOT expr_optional_constraint COMMA lbl_expr_list { (Some $2, $4) }
+  | lbl_expr_list_that_is_not_a_single_punned_field        { (None, $1) }
 ;
 lbl_expr_list:
      lbl_expr { [$1] }
@@ -3375,9 +3339,45 @@ lbl_expr:
       }
 ;
 
+record_expr_with_string_keys:
+    DOTDOTDOT expr_optional_constraint COMMA string_literal_expr_list { (Some $2, $4) }
+  | string_literal_expr_list_that_is_not_a_single_punned_field        { (None, $1)}
+;
+string_literal_expr_list:
+     string_literal_expr { [$1] }
+  |  string_literal_expr COMMA string_literal_expr_list { $1 :: $3 }
+  |  string_literal_expr COMMA { [$1] }
+;
+string_literal_expr:
+  STRING COLON expr
+      {
+        let loc = mklocation $symbolstartpos $endpos in
+        let (s, d) = $1 in
+        let lident_lident_loc = mkloc (Lident s) loc in
+        (lident_lident_loc, $3)
+      }
+  | STRING
+      {
+        let loc = mklocation $symbolstartpos $endpos in
+        let (s, d) = $1 in
+        let lident_lident_loc = mkloc (Lident s) loc in
+        (lident_lident_loc, mkexp (Pexp_ident lident_lident_loc))
+      }
+;
+
 non_punned_lbl_expression:
   as_loc(label_longident) COLON expr
       { ($1, $3) }
+;
+
+non_punned_string_literal_expression:
+  STRING COLON expr
+      {
+        let loc = mklocation $symbolstartpos $endpos in
+        let (s, d) = $1 in
+        let lident_lident_loc = mkloc (Lident s) loc in
+        (lident_lident_loc, $3)
+      }
 ;
 
 /**
@@ -3400,6 +3400,13 @@ lbl_expr_list_that_is_not_a_single_punned_field:
      { [$1] }
   | lbl_expr COMMA lbl_expr_list
       { $1::$3 }
+;
+
+string_literal_expr_list_that_is_not_a_single_punned_field:
+  | non_punned_string_literal_expression
+    { [$1] }
+  | string_literal_expr COMMA string_literal_expr_list
+    { $1::$3 }
 ;
 
 /**
@@ -3649,12 +3656,12 @@ primitive_declaration:
 /* Type declarations */
 
 many_type_declarations:
-  | TYPE nonrec_flag type_declaration_details post_item_attributes {
+  | TYPE as_loc(nonrec_flag) type_declaration_details post_item_attributes {
       let (ident, params, constraints, kind, priv, manifest) = $3 in
       let loc = mklocation $symbolstartpos $endpos in
       [Type.mk ident
        ~params:params ~cstrs:constraints
-       ~kind ~priv ?manifest ~attrs:(add_nonrec $2 $4 2) ~loc]
+       ~kind ~priv ?manifest ~attrs:(add_nonrec $2 $4) ~loc]
   }
   | many_type_declarations and_type_declaration { $2 :: $1 }
 ;
@@ -3795,7 +3802,7 @@ sig_exception_declaration:
 generalized_constructor_arguments:
     /*empty*/                                   { ([],None) }
   | as_loc(OF)
-      { Location.raise_errorf ~loc:$1.loc "The of keyword is not used in Reason" }
+      { Location.raise_errorf ~loc:$1.loc "\"of\" is not needed in reason, use `type a = Foo a` instead" }
   | non_arrowed_simple_core_type_list                    { (List.rev $1, None) }
   | non_arrowed_simple_core_type_list COLON core_type
                                                 { (List.rev $1,Some $3) }
@@ -3834,7 +3841,7 @@ str_type_extension:
   PLUSEQ private_flag opt_bar str_extension_constructors
   post_item_attributes
   {
-    if $2 <> Recursive then not_expecting 2 "nonrec flag";
+    if $2 <> Recursive then not_expecting $startpos($2) $endpos($2) "nonrec flag";
     let (potentially_long_ident, optional_type_parameters) = $3 in
     Te.mk potentially_long_ident (List.rev $7)
           ~params:optional_type_parameters ~priv:$5 ~attrs:$8
@@ -3845,7 +3852,7 @@ sig_type_extension:
   PLUSEQ private_flag opt_bar sig_extension_constructors
   post_item_attributes
   {
-    if $2 <> Recursive then not_expecting 2 "nonrec flag";
+    if $2 <> Recursive then not_expecting $startpos($2) $endpos($2) "nonrec flag";
     let (potentially_long_ident, optional_type_parameters) = $3 in
     Te.mk potentially_long_ident (List.rev $7)
           ~params:optional_type_parameters ~priv:$5 ~attrs:$8
@@ -3904,7 +3911,7 @@ with_constraint:
       let last = (
         match $2.txt with
             | Lident s -> s
-            | _ -> not_expecting 2 "Long type identifier"
+            | _ -> not_expecting $startpos($2) $endpos($2) "Long type identifier"
       ) in
      let loc = mklocation $symbolstartpos $endpos in
       Pwith_typesubst
@@ -4137,6 +4144,8 @@ _non_arrowed_simple_core_type:
       { mktyp(Ptyp_constr($1, [])) }
   | LESS meth_list GREATER
       { let (f, c) = $2 in mktyp(Ptyp_object (f, c)) }
+  | meth_list_with_leading_lesslident GREATER
+      { let (f, c) = $1 in mktyp(Ptyp_object (f, c)) }
   | LESSDOTDOTGREATER
       { mktyp(Ptyp_object ([], Open)) }
   | LESSGREATER
@@ -4218,6 +4227,16 @@ meth_list:
   | DOTDOT                                      { [], Open }
 ;
 
+meth_list_with_leading_lesslident:
+  | LESSIDENT COLON poly_type attributes {
+      [($1, $4, $3)], Closed
+    }
+  | LESSIDENT COLON poly_type attributes COMMA meth_list {
+    let (f, c) = $6 in
+    (($1, $4, $3) :: f, c)
+  }
+;
+
 field:
     label COLON poly_type attributes           { ($1, $4, $3) }
 ;
@@ -4267,6 +4286,8 @@ val_ident:
   | INFIXOP1                                    { $1 }
   | INFIXOP2                                    { $1 }
   | INFIXOP3                                    { $1 }
+  /* SLASHGREATER is INFIXOP3 but we needed to call it out specially */
+  | SLASHGREATER                                { "/>" }
   | INFIXOP4                                    { $1 }
   | PLUS                                        { "+" }
   | PLUSDOT                                     { "+." }
@@ -4282,15 +4303,14 @@ val_ident:
   | COLONEQUAL                                  { ":=" }
   | PLUSEQ                                      { "+=" }
   | PERCENT                                     { "%" }
-  | LESSGREATER                                 { "<>" }
+  /* We don't need to (and don't want to) consider </> an infix operator for now
+     because our lexer requires that "</>" be expressed as "<\/>" because
+     every star and slash after the first character must be escaped.
+  */
+  /* Also, we don't want to consider <> an infix operator because the Reason
+     operator swapping requires that we express that as != */
   | LESSDOTDOTGREATER                           { "<..>" }
-
-/* We require these tokens to remove spaces between JSX tags,
-   however they are not existent in OCaml and could be used as operators */
-  | SLASHGREATERLESS                            { "/><" }
-  | GREATERLESS                                 { "><" }
-  | SLASHGREATER                                { "/>" }
-  | GREATERLESSSLASH                            { "></" }
+  | GREATER GREATER                             { ">>" }
 ;
 
 operator:
@@ -4298,7 +4318,6 @@ operator:
   | BANG                                        { "!" }
   | infix_operator                              { $1 }
 ;
-
 %inline constr_ident:
     UIDENT                                      { $1 }
 /*  | LBRACKET RBRACKET                           { "[]" } */
@@ -4350,9 +4369,11 @@ mod_ext_longident:
 ;
 
 mod_ext2:
-   | mod_ext_longident DOT UIDENT LPAREN mod_ext_longident RPAREN { lapply ( Ldot($1, $3)) $5 }
-   | mod_ext2 LPAREN mod_ext_longident RPAREN { lapply $1 $3 }
-   | UIDENT LPAREN mod_ext_longident RPAREN { lapply (Lident($1)) $3 }
+   | mod_ext_longident DOT UIDENT LPAREN mod_ext_longident RPAREN {
+     lapply ( Ldot($1, $3)) $5 $symbolstartpos $endpos
+   }
+   | mod_ext2 LPAREN mod_ext_longident RPAREN { lapply $1 $3 $symbolstartpos $endpos }
+   | UIDENT LPAREN mod_ext_longident RPAREN { lapply (Lident($1)) $3 $symbolstartpos $endpos }
 ;
 
 mty_longident:
