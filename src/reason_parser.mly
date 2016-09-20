@@ -396,6 +396,11 @@ let mktailpat_extension loc seq ext_opt =
       ghpat_cons loc arg loc in
   handle_seq seq
 
+let makeFrag loc body =
+  let attribute = ({txt = "JSX"; loc = loc}, PStr []) in
+  { body with pexp_attributes = [attribute] @ body.pexp_attributes }
+      
+      
 (* Applies attributes to the structure item, not the expression itself. Makes
  * structure item have same location as expression. *)
 let mkstrexp e attrs =
@@ -782,7 +787,27 @@ let rec string_of_longident = function
 
 let built_in_explicit_arity_constructors = ["Some"; "Assert_failure"; "Match_failure"]
 
+let jsx_component module_name attrs children ~loc =
+  let firstPart = (List.hd (Longident.flatten module_name)) in
+  let lident = if firstPart = String.capitalize firstPart then
+    Ldot(module_name, "createElement")
+  else
+    Lident firstPart
+  in
+  let ident = ghloc ~loc lident in
+  let body = mkexp(Pexp_apply(mkexp(Pexp_ident ident), attrs @ children)) ~loc in
+  let attribute = ({txt = "JSX"; loc = loc}, PStr []) in
+  { body with pexp_attributes = [attribute] @ body.pexp_attributes }
+
+let ensureTagsAreEqual startTag endTag loc =
+  if startTag <> endTag then
+     let startTag = (String.concat "" (Longident.flatten startTag)) in
+     let endTag = (String.concat "" (Longident.flatten endTag)) in
+     let _ = Location.raise_errorf ~loc "Syntax error: Start tag <%s> does not match end tag </%s>" startTag endTag in
+     ()
 %}
+
+
 
 /* Tokens */
 
@@ -826,7 +851,6 @@ let built_in_explicit_arity_constructors = ["Some"; "Assert_failure"; "Match_fai
 %token GREATER
 %token GREATERGREATER
 %token GREATERRBRACE
-%token GREATERRBRACKET
 %token IF
 %token IN
 %token INCLUDE
@@ -834,6 +858,8 @@ let built_in_explicit_arity_constructors = ["Some"; "Assert_failure"; "Match_fai
 %token <string> INFIXOP1
 %token <string> INFIXOP2
 %token <string> INFIXOP3
+/* SLASHGREATER is an INFIXOP3 that is handled specially */
+%token SLASHGREATER
 %token <string> INFIXOP4
 %token INHERIT
 %token INITIALIZER
@@ -850,7 +876,9 @@ let built_in_explicit_arity_constructors = ["Some"; "Assert_failure"; "Match_fai
 %token LBRACKETPERCENT
 %token LBRACKETPERCENTPERCENT
 %token LESS
+%token <string> LESSIDENT
 %token LESSGREATER
+%token LESSSLASHGREATER
 %token LESSDOTDOTGREATER
 %token LESSMINUS
 %token EQUALGREATER
@@ -860,6 +888,7 @@ let built_in_explicit_arity_constructors = ["Some"; "Assert_failure"; "Match_fai
 %token LBRACKETAT
 %token LBRACKETATAT
 %token LBRACKETATATAT
+%token LESSSLASH
 %token OF
 %token SWITCH
 %token MATCH
@@ -890,6 +919,7 @@ let built_in_explicit_arity_constructors = ["Some"; "Assert_failure"; "Match_fai
 %token RBRACKET
 %token REC
 %token RPAREN
+%token <string> LESSSLASHIDENTGREATER
 %token SEMI
 %token SEMISEMI
 %token SHARP
@@ -953,7 +983,7 @@ conflicts.
 %right    INFIXOP1                      /* expr (e OP e OP e) */
 %right    COLONCOLON                    /* expr (e :: e :: e) */
 %left     INFIXOP2 PLUS PLUSDOT MINUS MINUSDOT PLUSEQ /* expr (e OP e OP e) */
-%left     PERCENT INFIXOP3 STAR                 /* expr (e OP e OP e) */
+%left     PERCENT INFIXOP3 SLASHGREATER STAR          /* expr (e OP e OP e) */
 %right    INFIXOP4                      /* expr (e OP e OP e) */
 
 /**
@@ -987,7 +1017,7 @@ conflicts.
  *    %nonassoc LBRACKETATAT
  *    %right    COLONCOLON
  *    %left     INFIXOP2 PLUS PLUSDOT MINUS MINUSDOT PLUSEQ
- *    %left     PERCENT INFIXOP3 STAR
+ *    %left     PERCENT INFIXOP3 SLASHGREATER STAR
  *    %right    INFIXOP4
  *
  * So instead, with Reason, we treat all infix operators identically w.r.t.
@@ -1051,7 +1081,7 @@ conflicts.
 %nonassoc BACKQUOTE BANG CHAR FALSE FLOAT INT INT32 INT64
           LBRACE LBRACELESS LBRACKET LBRACKETBAR LIDENT LPAREN
           NEW NATIVEINT PREFIXOP STRING TRUE UIDENT
-          LBRACKETPERCENT
+          LBRACKETPERCENT LESSIDENT LBRACKETLESS
 
 /* Entry points */
 
@@ -2491,6 +2521,83 @@ labeled_simple_pattern:
   | simple_pattern
       { ("", None, $1) }
 ;
+jsx_arguments:
+  /* empty */ { [] }
+  | LIDENT EQUAL simple_expr jsx_arguments
+      {
+        (* a=b *)
+        [($1, $3)] @ $4
+      }
+  | LIDENT jsx_arguments
+      {
+        (* a (punning) *)
+        let loc_lident = mklocation $startpos($1) $endpos($1) in
+        [($1, mkexp (Pexp_ident {txt = Lident $1; loc = loc_lident}))] @ $2
+      }
+;
+
+jsx_start_tag_and_args:
+  | LESSIDENT jsx_arguments {
+    let name = Longident.parse $1 in
+    (jsx_component name $2, name)
+  }
+;
+
+jsx_start_tag_and_args_without_leading_less:
+  | mod_longident jsx_arguments {
+    (jsx_component $1 $2, $1)
+  }
+;
+
+simple_expr_list:
+ /* none */ { [] }
+ | simple_expr simple_expr_list { [$1] @ $2 }
+;
+
+
+jsx:
+  | LESSGREATER simple_expr_list LESSSLASHGREATER {
+    let loc = mklocation $symbolstartpos $endpos in
+    let body = mktailexp_extension loc $2 None in
+    makeFrag loc body
+  }
+  | jsx_start_tag_and_args SLASHGREATER {
+    let (component, _) = $1 in
+    let loc = mklocation $symbolstartpos $endpos in
+    component [("", mktailexp_extension loc [] None)] ~loc
+  }
+  | jsx_start_tag_and_args GREATER simple_expr_list LESSSLASHIDENTGREATER {
+    let (component, start) = $1 in
+    let loc = mklocation $symbolstartpos $endpos in
+    (* TODO: Make this tag check simply a warning *)
+    let endName = Longident.parse $4 in
+    let _ = ensureTagsAreEqual start endName loc in
+    let siblings = if List.length $3 > 0 then $3 else [] in
+    component [("", mktailexp_extension loc siblings None)] ~loc
+  }
+;
+
+jsx_without_leading_less:
+  | GREATER simple_expr_list LESSSLASHGREATER {
+    let loc = mklocation $symbolstartpos $endpos in
+    let body = mktailexp_extension loc $2 None in
+    makeFrag loc body
+  }
+  | jsx_start_tag_and_args_without_leading_less SLASHGREATER {
+    let (component, _) = $1 in
+    let loc = mklocation $symbolstartpos $endpos in
+    component [("", mktailexp_extension loc [] None)] ~loc
+  }
+  | jsx_start_tag_and_args_without_leading_less GREATER simple_expr_list LESSSLASHIDENTGREATER {
+    let (component, start) = $1 in
+    let loc = mklocation $symbolstartpos $endpos in
+    (* TODO: Make this tag check simply a warning *)
+    let endName = Longident.parse $4 in
+    let _ = ensureTagsAreEqual start endName loc in
+    let siblings = if List.length $3 > 0 then $3 else [] in
+    component [("", mktailexp_extension loc siblings None)] ~loc
+  }
+;
 
 /*
  * Much like how patterns are partitioned into pattern/simple_pattern,
@@ -2643,9 +2750,29 @@ _simple_expr:
     {
       mkexp (Pexp_construct ($1, None))
     }
-
   | name_tag %prec prec_constant_constructor
       { mkexp (Pexp_variant ($1, None)) }
+  | jsx { $1 }
+  /*
+     Because [< is a special token, the <ident and <> won't be picked up as separate
+     tokens, when a list begins witha JSX tag. So we special case it.
+     (todo: pick totally different syntax for polymorphic variance types to avoid
+     the issue alltogether.
+     
+     first token
+     /     \
+     [<ident    args />  , remainingitems ]
+     [<>                 , remainingitems ]
+   */
+  | LBRACKETLESS jsx_without_leading_less COMMA expr_comma_seq_extension {
+      let entireLoc = mklocation $startpos($1) $endpos($4) in
+      let (seq, ext_opt) = $4 in
+      mktailexp_extension entireLoc ($2::seq) ext_opt
+  }
+  | LBRACKETLESS jsx_without_leading_less RBRACKET {
+      let entireLoc = mklocation $startpos($1) $endpos($3) in
+      mktailexp_extension entireLoc ($2::[]) None
+  }
   | LPAREN expr RPAREN
       { $2 }
   | as_loc(LPAREN) expr as_loc(error)
@@ -3159,6 +3286,20 @@ expr_comma_seq:
 
 /* [x, y, z, ...n] --> ([x,y,z], Some n) */
 expr_comma_seq_extension:
+  | DOTDOTDOT expr_optional_constraint RBRACKET
+    { ([], Some $2) }
+  | expr_optional_constraint opt_comma RBRACKET
+    { ([$1], None) }
+  | expr_optional_constraint COMMA expr_comma_seq_extension
+    { let seq, ext = $3 in ($1::seq, ext) }
+;
+
+/* Same as expr_comma_seq_extension but occuring after an item.
+
+  Used when parsing `[<> </>, remaining]`. We know that there is at
+  least one item, so we either should have a comma + more, or nothing.
+  
+expr_comma_seq_extension_second_item:
   | DOTDOTDOT expr_optional_constraint RBRACKET
     { ([], Some $2) }
   | expr_optional_constraint opt_comma RBRACKET
@@ -4003,6 +4144,8 @@ _non_arrowed_simple_core_type:
       { mktyp(Ptyp_constr($1, [])) }
   | LESS meth_list GREATER
       { let (f, c) = $2 in mktyp(Ptyp_object (f, c)) }
+  | meth_list_with_leading_lesslident GREATER
+      { let (f, c) = $1 in mktyp(Ptyp_object (f, c)) }
   | LESSDOTDOTGREATER
       { mktyp(Ptyp_object ([], Open)) }
   | LESSGREATER
@@ -4084,6 +4227,16 @@ meth_list:
   | DOTDOT                                      { [], Open }
 ;
 
+meth_list_with_leading_lesslident:
+  | LESSIDENT COLON poly_type attributes {
+      [($1, $4, $3)], Closed
+    }
+  | LESSIDENT COLON poly_type attributes COMMA meth_list {
+    let (f, c) = $6 in
+    (($1, $4, $3) :: f, c)
+  }
+;
+
 field:
     label COLON poly_type attributes           { ($1, $4, $3) }
 ;
@@ -4133,6 +4286,8 @@ val_ident:
   | INFIXOP1                                    { $1 }
   | INFIXOP2                                    { $1 }
   | INFIXOP3                                    { $1 }
+  /* SLASHGREATER is INFIXOP3 but we needed to call it out specially */
+  | SLASHGREATER                                { "/>" }
   | INFIXOP4                                    { $1 }
   | PLUS                                        { "+" }
   | PLUSDOT                                     { "+." }
@@ -4148,9 +4303,15 @@ val_ident:
   | COLONEQUAL                                  { ":=" }
   | PLUSEQ                                      { "+=" }
   | PERCENT                                     { "%" }
-  | LESSGREATER                                 { "<>" }
+  /* We don't need to (and don't want to) consider </> an infix operator for now
+     because our lexer requires that "</>" be expressed as "<\/>" because
+     every star and slash after the first character must be escaped.
+  */
+  /* Also, we don't want to consider <> an infix operator because the Reason
+     operator swapping requires that we express that as != */
   | LESSDOTDOTGREATER                           { "<..>" }
   | GREATER GREATER                             { ">>" }
+;
 
 operator:
     PREFIXOP                                    { $1 }

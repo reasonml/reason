@@ -305,6 +305,7 @@ let newline = ('\013'* '\010')
 let blank = [' ' '\009' '\012']
 let lowercase = ['a'-'z' '_']
 let uppercase = ['A'-'Z']
+let uppercase_or_lowercase = lowercase | uppercase
 let identchar = ['A'-'Z' 'a'-'z' '_' '\'' '0'-'9']
 let lowercase_latin1 = ['a'-'z' '\223'-'\246' '\248'-'\255' '_']
 let uppercase_latin1 = ['A'-'Z' '\192'-'\214' '\216'-'\222']
@@ -495,6 +496,14 @@ rule token = parse
   | "[|" { LBRACKETBAR }
   | "[<" { LBRACKETLESS }
   | "[>" { LBRACKETGREATER }
+  | "<" uppercase_or_lowercase (identchar | '.') * {
+    let buf = Lexing.lexeme lexbuf in
+    LESSIDENT (String.sub buf 1 (String.length buf - 1))
+  }
+  | "</" uppercase_or_lowercase (identchar | '.') * ">" {
+    let buf = Lexing.lexeme lexbuf in
+    LESSSLASHIDENTGREATER (String.sub buf 2 (String.length buf - 2 - 1))
+  }
   | "]"  { RBRACKET }
   | "{"  { LBRACE }
   | "{<" { LBRACELESS }
@@ -526,6 +535,7 @@ rule token = parse
   | "-"  { MINUS }
   | "-." { MINUSDOT }
   | "<>" { LESSGREATER }
+  | "</>" { LESSSLASHGREATER }
   | "<..>" { LESSDOTDOTGREATER }
   | "\\"? "!" appropriate_operator_suffix_chars +
             { PREFIXOP(Lexing.lexeme lexbuf) }
@@ -537,6 +547,8 @@ rule token = parse
             { INFIXOP1(Lexing.lexeme lexbuf) }
   | "\\"? ['+' '-'] appropriate_operator_suffix_chars *
             { INFIXOP2(Lexing.lexeme lexbuf) }
+  (* SLASHGREATER is an INFIXOP3 that is handled specially *)
+  | "/>" { SLASHGREATER }
   (* The second star must be escaped so that the precedence assumptions for
    * printing match those of parsing. (Imagine what could happen if the other
    * rule beginning with * picked up */*, and we internally escaped it to **.
