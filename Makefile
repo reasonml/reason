@@ -70,15 +70,18 @@ update_error:
 
 .PHONY: build clean update_error compile_error
 
-VERSION      := $$(opam query --version)
-NAME_VERSION := $$(opam query --name-version)
-ARCHIVE      := $$(opam query --archive)
+ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
+SUBSTS:=$(ROOT_DIR)/pkg/substs
 
 release:
-	git tag -a v$(VERSION) -m "Version $(VERSION)."
-	git push origin v$(VERSION)
-	opam publish prepare $(NAME_VERSION) $(ARCHIVE)
-	opam publish submit $(NAME_VERSION)
-	rm -rf $(NAME_VERSION)
+ifndef version
+	$(error enviorment variable 'version' is undefined)
+endif
+	$(SUBSTS) $(ROOT_DIR)/package.json.in
+	$(SUBSTS) $(ROOT_DIR)/opam.in
+	git add package.json opam
+	git commit -m "Version $(version)"
+	git tag -a $(version) -m "Version $(version)."
+	git push "git@github.com:facebook/Reason.git" $(version)
 
 .PHONY: release
