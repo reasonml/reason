@@ -594,10 +594,10 @@ module JS_syntax = struct
 
   let format_interface_with_comments (signature, comments) formatter =
     let reason_formatter = Reason_pprint_ast.createFormatter () in
-    reason_formatter#signature comments formatter signature
+    reason_formatter#signature comments formatter (AST_plus.of_parsetree_signature signature)
   let format_implementation_with_comments (implementation, comments) formatter =
     let reason_formatter = Reason_pprint_ast.createFormatter () in
-    reason_formatter#structure comments formatter implementation
+    reason_formatter#structure comments formatter (AST_plus.of_parsetree_structure implementation)
 end
 
 module ML = Create_parse_entrypoint (OCaml_syntax)
