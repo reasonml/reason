@@ -851,11 +851,11 @@ let rec detectJSXComponent e attributes l =
     | (Pexp_ident loc, ({txt = "JSX"; _}, PStr []) :: tail) ->
       let rec checkChildren arguments nrOfChildren =
         match arguments with
-        | ("", {pexp_desc = Pexp_construct ({txt = Lident "::"}, _)}) :: tail
-        | ("", {pexp_desc = Pexp_construct ({txt = Lident "[]"}, _)}) :: tail ->
+        | (Nolabel, {pexp_desc = Pexp_construct ({txt = Lident "::"}, _)}) :: tail
+        | (Nolabel, {pexp_desc = Pexp_construct ({txt = Lident "[]"}, _)}) :: tail ->
             checkChildren tail (nrOfChildren + 1)
-        | ("", _) :: tail -> false
-        | (lbl, _)::tail -> checkChildren tail nrOfChildren
+        | (Nolabel, _) :: tail -> false
+        | (_, _)::tail -> checkChildren tail nrOfChildren
         | [] -> nrOfChildren = 1
       in
       let moduleNameList = List.rev (List.tl (List.rev (Longident.flatten loc.txt))) in
@@ -3048,11 +3048,11 @@ class printer  ()= object(self:'self)
       *)
       let rec isLabeledArgsAndFinalList arguments =
         match arguments with
-        | ("", {pexp_desc = Pexp_construct ({txt = Lident "::"}, _)}) :: []
-        | ("", {pexp_desc = Pexp_construct ({txt = Lident "[]"}, _)}) :: [] -> true
+        | (Nolabel, {pexp_desc = Pexp_construct ({txt = Lident "::"}, _)}) :: []
+        | (Nolabel, {pexp_desc = Pexp_construct ({txt = Lident "[]"}, _)}) :: [] -> true
         (* Any other kind of non-named argument besides the above disqualifies *)
-        | ("", _) :: _ -> false
-        | (lbl, _)::tail -> isLabeledArgsAndFinalList tail
+        | (Nolabel, _) :: _ -> false
+        | (_, _)::tail -> isLabeledArgsAndFinalList tail
         | [] -> false
       in
       let moduleNameList = List.rev (List.tl (List.rev (Longident.flatten loc.txt))) in
@@ -3522,11 +3522,16 @@ class printer  ()= object(self:'self)
 
     and processAttributes arguments processedAttrs children =
       match arguments with
-      | ("", {pexp_desc = Pexp_construct (_, None)}) :: tail ->
+      | (Nolabel, {pexp_desc = Pexp_construct (_, None)}) :: tail ->
         processAttributes tail processedAttrs []
-      | ("", {pexp_desc = Pexp_construct ({txt = Lident"::"}, Some {pexp_desc = Pexp_tuple(components)} )}) :: tail ->
+      | (Nolabel, {pexp_desc = Pexp_construct ({txt = Lident"::"}, Some {pexp_desc = Pexp_tuple(components)} )}) :: tail ->
         processAttributes tail processedAttrs (processChildren components [])
       | (lbl, expression) :: tail ->
+         let lbl = match lbl with
+           | Nolabel -> ""
+           | Labelled s -> s
+           | Optional s -> "?" ^ s
+         in
          let nextAttr =
            match expression.pexp_desc with
            | Pexp_ident (ident) when (Longident.last ident.txt) = lbl -> atom lbl

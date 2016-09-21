@@ -4216,10 +4216,10 @@ meth_list:
 ;
 
 meth_list_with_leading_lesslident:
-  | LESSIDENT COLON poly_type attributes {
+  | as_loc(LESSIDENT) COLON poly_type attributes {
       [($1, $4, $3)], Closed
     }
-  | LESSIDENT COLON poly_type attributes COMMA meth_list {
+  | as_loc(LESSIDENT) COLON poly_type attributes COMMA meth_list {
     let (f, c) = $6 in
     (($1, $4, $3) :: f, c)
   }
