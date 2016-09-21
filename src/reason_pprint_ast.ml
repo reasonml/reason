@@ -3582,56 +3582,56 @@ class printer  ()= object(self:'self)
     (itms, None)
 
   method formatJSXComponent componentName args =
-   let rec processChildren children result =
-     match children with
-     | {pexp_desc = Pexp_constant (constant)} :: remainingChildren ->
+    let rec processChildren children result =
+      match children with
+      | {pexp_desc = Pexp_constant (constant)} :: remainingChildren ->
        processChildren remainingChildren (result @ [self#constant constant])
-     | {pexp_desc = Pexp_construct ({txt = Lident "::"}, Some {pexp_desc = Pexp_tuple(children)} )} :: remainingChildren ->
+      | {pexp_desc = Pexp_construct ({txt = Lident "::"}, Some {pexp_desc = Pexp_tuple(children)} )} :: remainingChildren ->
        processChildren (remainingChildren @ children) result
-     | {pexp_desc = Pexp_apply(expr, l); pexp_attributes} :: remainingChildren ->
+      | {pexp_desc = Pexp_apply(expr, l); pexp_attributes} :: remainingChildren ->
        (match detectJSXComponent expr.pexp_desc pexp_attributes l with
          | Some (componentName, args) -> processChildren remainingChildren (result @ [self#formatJSXComponent componentName args])
          | None -> processChildren remainingChildren (result @ [self#simplifyUnparseExpr (List.hd children)]))
-     | {pexp_desc = Pexp_ident li} :: remainingChildren ->
+      | {pexp_desc = Pexp_ident li} :: remainingChildren ->
        processChildren remainingChildren (result @ [self#longident_loc li])
-     | {pexp_desc = Pexp_construct ({txt = Lident "[]"}, None)} :: remainingChildren -> processChildren remainingChildren result
-     | head :: remainingChildren -> processChildren remainingChildren (result @ [self#simplifyUnparseExpr head])
-     | [] -> [makeList ~break:IfNeed ~sep:" " ~inline:(true, true) result]
-   and processAttributes attributes processedAttrs children =
-     match attributes with
-     | ("", {pexp_desc = Pexp_construct (_, None)}) :: tail ->
+      | {pexp_desc = Pexp_construct ({txt = Lident "[]"}, None)} :: remainingChildren -> processChildren remainingChildren result
+      | head :: remainingChildren -> processChildren remainingChildren (result @ [self#simplifyUnparseExpr head])
+      | [] -> [makeList ~break:IfNeed ~sep:" " ~inline:(true, true) result]
+    and processAttributes attributes processedAttrs children =
+      match attributes with
+      | ("", {pexp_desc = Pexp_construct (_, None)}) :: tail ->
        processAttributes tail processedAttrs []
-     | ("", {pexp_desc = Pexp_construct ({txt = Lident"::"}, Some {pexp_desc = Pexp_tuple(components)} )}) :: tail ->
+      | ("", {pexp_desc = Pexp_construct ({txt = Lident"::"}, Some {pexp_desc = Pexp_tuple(components)} )}) :: tail ->
        processAttributes tail processedAttrs (processChildren components [])
-     | (lbl, expression) :: tail ->
+      | (lbl, expression) :: tail ->
         let nextAttr =
           match expression.pexp_desc with
           | Pexp_ident (ident) when (Longident.last ident.txt) = lbl -> atom lbl
           | _ -> makeList ([atom lbl; atom "="; self#simplifyUnparseExpr expression])
         in
         processAttributes tail (nextAttr :: processedAttrs) children
-     | [] -> (processedAttrs, children)
-   in
-   let (reversedAttributes, children) = processAttributes args [] []
-   in
-   if List.length children = 0 then
-     makeList
+      | [] -> (processedAttrs, children)
+    in
+    let (reversedAttributes, children) = processAttributes args [] []
+    in
+    if List.length children = 0 then
+      makeList
        ~break:IfNeed
        ~wrap:("<" ^ componentName, "/>")
        ~pad:(true, true)
        ~inline:(false, false)
        ~postSpace:true
        (List.rev reversedAttributes)
-   else
-     let (openingTag, attributes) =
+    else
+    let (openingTag, attributes) =
        match reversedAttributes with
        | [] -> (componentName ^ ">", [])
        | revAttrHd::revAttrTl -> (
          componentName,
          List.rev (makeList ~break:Never [revAttrHd; atom ">"] :: revAttrTl)
        )
-     in
-     makeList
+    in
+      makeList
        ~inline:(false, false)
        ~break:IfNeed
        ~pad:(true, true)
