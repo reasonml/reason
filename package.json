@@ -46,19 +46,20 @@
     },
     "name": "reason",
     "dependencies": {
-        "merlin": "https://github.com/npm-opam/merlin",
-        "re": "https://github.com/npm-opam/re",
-        "ocamlfind": "https://github.com/npm-opam/ocamlfind",
-        "BetterErrors": "https://github.com/npm-opam/BetterErrors",
-        "ocaml": "https://github.com/npm-opam/ocaml.git#npm-4.02.3",
+        "@opam-alpha/merlin": "^ 2.5.0",
+        "@opam-alpha/re": "^ 1.5.0",
+        "@opam-alpha/ocamlfind": "*",
+        "@opam-alpha/BetterErrors": ">= 0.0.1",
+        "@opam-alpha/easy-format": "^ 1.2.0",
+        "@opam-alpha/merlin-extend": "^ 0.3.0",
+        "@opam-alpha/menhir": ">= 20160303.0.0",
+        "@opam-alpha/ocaml": "= 4.02.3",
         "dependency-env": "https://github.com/npm-ml/dependency-env.git",
         "substs": "https://github.com/yunxing/substs.git",
-        "easy-format": "https://github.com/npm-opam/easy-format",
-        "merlin-extend": "https://github.com/npm-opam/merlin-extend",
         "opam-installer-bin": "https://github.com/yunxing/opam-installer-bin.git",
         "nopam": "https://github.com/yunxing/nopam.git",
-        "utop-bin": "https://github.com/reasonml/utop-bin",
-        "menhir": "https://github.com/npm-opam/menhir"
+        "utop-bin": "https://github.com/reasonml/utop-bin"
+
     },
     "scripts": {
         "editor": "eval $(dependencyEnv) && eval $EDITOR",
