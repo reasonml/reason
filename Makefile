@@ -16,6 +16,8 @@ setup_convenient_bin_links:
 	ln -fs $(shell pwd)/_build/src/refmt_impl.native $(shell pwd)/_build/bin/refmt
 	ln -fs $(shell pwd)/_build/src/refmt_merlin_impl.sh $(shell pwd)/_build/bin/refmt_merlin
 	ln -fs $(shell pwd)/_build/src/reopt.sh $(shell pwd)/_build/bin/reopt
+	ln -fs $(shell pwd)/_build/src/rec.sh $(shell pwd)/_build/bin/rec
+	ln -fs $(shell pwd)/_build/src/share.sh $(shell pwd)/_build/bin/share
 	ln -fs $(shell pwd)/_build/src/reup.sh $(shell pwd)/_build/bin/reup
 
 build_without_utop: compile_error setup_convenient_bin_links
@@ -52,18 +54,8 @@ test: build
 clean:
 	ocamlbuild -clean
 
-
-# Generate a simplified version of error messages for the ease of code review
-# See github issue 611 for the reasoning behind it
-simplify_error: update_error
-	echo "" > src/reason_parser.messages.simplified
-	echo "## DO NOT MODIFY -- auto generated error message from reason_parser.messages" >> src/reason_parser.messages.simplified
-	echo "## See https://github.com/facebook/reason/issues/611" >> src/reason_parser.messages.simplified
-	echo "" >> src/reason_parser.messages.simplified
-	cat src/reason_parser.messages | grep -v "##" >> src/reason_parser.messages.simplified
-
 # Compile error messages into ml file, checks if the error messages are complete and not redundent
-compile_error: update_error simplify_error
+compile_error: update_error
 	menhir --explain --strict --unused-tokens src/reason_parser.mly --compile-errors src/reason_parser.messages > src/reason_parser_message.ml
 
 # Update error messages based on new grammar

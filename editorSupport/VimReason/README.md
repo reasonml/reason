@@ -21,19 +21,16 @@ Currently, only works with bleeding edge pins of these packages:
    packages.
 
 ```vim
-if !empty(system('which opam'))
-  " Merlin plugin
-  let s:ocamlmerlin=substitute(system('opam config var share'),'\n$','','') . "/merlin"
-  execute "set rtp+=".s:ocamlmerlin."/vim"
-  execute "set rtp+=".s:ocamlmerlin."/vimbufsync"
+if executable('ocamlmerlin')
+  " To set the log file and restart:
+  let s:ocamlmerlin=substitute(system('which ocamlmerlin'),'ocamlmerlin\n$','','') . "../share/merlin/vim/"
+  execute "set rtp+=".s:ocamlmerlin
   let g:syntastic_ocaml_checkers=['merlin']
-  
-  " Reason plugin which uses Merlin
-  let s:reasondir=substitute(system('opam config var share'),'\n$','','') . "/reason"
-  execute "set rtp+=".s:reasondir."/editorSupport/VimReason"
+endif
+if executable('refmt')
+  let s:reason=substitute(system('which refmt'),'refmt\n$','','') . "../share/reason/editorSupport/VimReason"
+  execute "set rtp+=".s:reason
   let g:syntastic_reason_checkers=['merlin']
-else
-  
 endif
 ```
 

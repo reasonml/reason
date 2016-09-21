@@ -378,7 +378,10 @@ module JS_syntax = struct
       mutable last_token: (Reason_parser.token * Lexing.position * Lexing.position) option;
 
       (* A supplier function that returns one token at a time*)
-      get_token: unit -> (Reason_parser.token * Lexing.position * Lexing.position)
+      get_token: unit -> (Reason_parser.token * Lexing.position * Lexing.position);
+
+      (* Some token can be split into multiple tokens, use this container to hold those tokens *)
+      mutable unconsumed_tokens: (Reason_parser.token * Lexing.position * Lexing.position) Queue.t ;
     }
 
   (* [lexbuf_to_supplier] returns a supplier to be feed into Menhir's incremental API.
@@ -403,10 +406,13 @@ module JS_syntax = struct
         (token, s, e)
     in
     let last_token = None in
-    {last_token; get_token}
+    let unconsumed_tokens = Queue.create() in
+    {last_token; get_token; unconsumed_tokens}
 
   let read supplier =
-    let t = supplier.get_token () in
+    if Queue.length supplier.unconsumed_tokens = 0 then
+      ignore(List.map (fun x -> Queue.push x supplier.unconsumed_tokens) (Reason_lexer.splitToken (supplier.get_token ())));
+    let t = Queue.pop supplier.unconsumed_tokens in
     supplier.last_token <- Some t;
     t
 
@@ -469,7 +475,7 @@ module JS_syntax = struct
          begin
            match supplier.last_token with
            | Some triple ->
-              (* We just recovered from the error state, try the original token again*)
+              (* We just recovered from the error state, try the original token again *)
               let checkpoint_with_previous_token = I.offer checkpoint triple in
               let accept_new = I.loop_test
                                  (fun _ _ -> true)

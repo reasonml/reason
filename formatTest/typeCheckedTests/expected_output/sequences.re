@@ -65,7 +65,8 @@ let cannotPunASingleFieldRecord = {
   number: number
 };
 
-let fourty = 20 + cannotPunASingleFieldRecord.number;
+let fourty =
+  20 + cannotPunASingleFieldRecord.number;
 
 let thisIsASequenceNotPunedRecord = number;
 

@@ -35,6 +35,36 @@ let reasonBinaryParser use_stdin filename =
   let (magic_number, filename, ast, comments, parsedAsML, parsedAsInterface) = input_value chan in
   ((ast, comments), parsedAsML, parsedAsInterface)
 
+let ocamlBinaryParser use_stdin filename parsedAsInterface =
+  let chan =
+    match use_stdin with
+      | true -> stdin
+      | false ->
+          let file_chan = open_in filename in
+          seek_in file_chan 0;
+          file_chan
+  in
+  let _ = really_input_string chan (String.length Config.ast_impl_magic_number) in
+  let _ = input_value chan in
+  let ast = input_value chan in
+  ((ast, []), true, parsedAsInterface)
+
+let usage = {|Reason: Meta Language Utility
+
+[Usage]: refmt [options] some-file.[re|ml]
+
+   // translate ocaml to reason on stdin
+   echo 'let _ = ()' | refmt -print re -parse ml -use-stdin true -is-interface-pp false
+
+   // print the AST of a file
+   refmt -parse re -print ast some-file.re
+
+   // reformat a file
+   refmt -parse re -print re some-file.re
+
+[Options]:
+|}
+
 (*
  * As soon as m17n vends comments, this should be replaced with what is
  * effectively m17n's parser.
@@ -49,25 +79,31 @@ let () =
   let assumeExplicitArity = ref false in
   let heuristics_file = ref None in
   let print_width = ref None in
-  let () = Arg.parse [
+  let print_help = ref false in
+  let options = [
     "-ignore", Arg.Unit ignore, "ignored";
     "-is-interface-pp", Arg.Bool (fun x -> intf := Some x), "<interface>, parse AST as <interface> (either true or false)";
     "-use-stdin", Arg.Bool (fun x -> use_stdin := x), "<use_stdin>, parse AST from <use_stdin> (either true, false). You still must provide a file name even if using stdin for errors to be reported";
     "-recoverable", Arg.Bool (fun x -> recoverable := x), "Enable recoverable parser";
     "-assume-explicit-arity", Arg.Unit (fun () -> assumeExplicitArity := true), "If a constructor's argument is a tuple, always interpret it as multiple arguments";
-    "-parse", Arg.String (fun x -> prse := Some x), "<parse>, parse AST as <parse> (either 'ml', 're', 'binary_reason(for interchange between Reason versions')";
+    "-parse", Arg.String (fun x -> prse := Some x), "<parse>, parse AST as <parse> (either 'ml', 're', 'binary_reason(for interchange between Reason versions)', 'binary (from the ocaml compiler)')";
     (* Use a print option of "none" to simply perform a parsing validation -
      * useful for IDE error messages etc.*)
     "-print", Arg.String (fun x -> prnt := Some x), "<print>, print AST in <print> (either 'ml', 're', 'binary(default - for compiler input)', 'binary_reason(for interchange between Reason versions)', 'ast (print human readable directly)', 'none')";
     "-print-width", Arg.Int (fun x -> print_width := Some x), "<print-width>, wrapping width for printing the AST";
     "-heuristics-file", Arg.String (fun x -> heuristics_file := Some x),
     "<path>, load path as a heuristics file to specify which constructors are defined with multi-arguments. Mostly used in removing [@implicit_arity] introduced from OCaml conversion.\n\t\texample.txt:\n\t\tConstructor1\n\t\tConstructor2";
-  ]
-  (fun arg -> filename := arg)
-  "Reason: Meta Language Utility"
-  in
+    "-h", Arg.Unit (fun () -> print_help := true), " Display this list of options";
+  ] in
+  let () = Arg.parse options (fun arg -> filename := arg) usage in
+  let print_help = !print_help in
   let filename = !filename in
   let use_stdin = !use_stdin in
+  let _ =
+    if (filename = "" && not use_stdin) || print_help then
+      let () = Arg.usage options usage in
+        exit 1;
+  in
   let print_width = match !print_width with
     | None -> default_print_width
     | Some x -> x
@@ -103,6 +139,7 @@ let () =
       let ((ast, comments), parsedAsML, parsedAsInterface) = match !prse with
         | None -> (defaultInterfaceParserFor use_stdin filename)
         | Some "binary_reason" -> reasonBinaryParser use_stdin filename
+        | Some "binary" -> ocamlBinaryParser use_stdin filename true
         | Some "ml" -> ((Reason_toolchain.ML.canonical_interface_with_comments (Reason_toolchain.setup_lexbuf use_stdin filename)), true, true)
         | Some "re" -> ((Reason_toolchain.JS.canonical_interface_with_comments (Reason_toolchain.setup_lexbuf use_stdin filename)), false, true)
         | Some s -> (
@@ -152,6 +189,7 @@ let () =
       let ((ast, comments), parsedAsML, parsedAsInterface) = match !prse with
         | None -> (defaultImplementationParserFor use_stdin filename)
         | Some "binary_reason" -> reasonBinaryParser use_stdin filename
+        | Some "binary" -> ocamlBinaryParser use_stdin filename false
         | Some "ml" -> (Reason_toolchain.ML.canonical_implementation_with_comments (Reason_toolchain.setup_lexbuf use_stdin filename), true, false)
         | Some "re" -> (Reason_toolchain.JS.canonical_implementation_with_comments (Reason_toolchain.setup_lexbuf use_stdin filename), false, false)
         | Some s -> (

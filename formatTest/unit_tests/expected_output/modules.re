@@ -393,10 +393,14 @@ let module ReturnsAFunctor2
  * TODO: Test [Psig_recmodule]
  */
 let module rec A: {
-  type t = | Leaf string | Node ASet.t;
+  type t =
+    | Leaf string
+    | Node ASet.t;
   let compare: t => t => int;
 } = {
-  type t = | Leaf string | Node ASet.t;
+  type t =
+    | Leaf string
+    | Node ASet.t;
   let compare t1 t2 =>
     switch (t1, t2) {
     | (Leaf s1, Leaf s2) =>
@@ -413,7 +417,9 @@ and ASet: Set.S with type elt = A.t = Set.Make A;
  */
 module type HasRecursiveModules = {
   let module rec A: {
-    type t = | Leaf string | Node ASet.t;
+    type t =
+      | Leaf string
+      | Node ASet.t;
     let compare: t => t => int;
   }
   and ASet: Set.S with type elt = A.t;
@@ -496,10 +502,12 @@ let myFirstClassWillBeFormattedAs: (module HasInt) =
   (module MyModule);
 
 let acceptsAndUnpacksFirstClass
-    ((module M): (module HasInt)) => M.x + M.x;
+    ((module M): (module HasInt)) =>
+  M.x + M.x;
 
 let acceptsAndUnpacksFirstClass
-    ((module M): (module HasInt)) => M.x + M.x;
+    ((module M): (module HasInt)) =>
+  M.x + M.x;
 
 let module SecondClass = (val myFirstClass);
 
@@ -518,7 +526,7 @@ let module N = {
   open M;
   let z = M.(34);
   let z = {
-    let open M;
+    open M;
     34;
     35
   };
@@ -535,41 +543,41 @@ let module N = {
   let z = M.(M2.(value));
   let z = M.(M2.value);
   let z = {
-    let open! M;
+    open! M;
     34
   };
   let z = {
-    let open! M;
+    open! M;
     34;
     35
   };
   let z = {
-    let open! M;
+    open! M;
     {}
   };
   let z = {
-    let open! M;
+    open! M;
     {x: 10}
   };
   let z = {
-    let open! M;
+    open! M;
     [foo, bar]
   };
   let z = {
-    let open! M;
+    open! M;
     [foo, bar]
   };
   let z = {
-    let open! M;
+    open! M;
     {x: 10, y: 20}
   };
   let z = {
-    let open! M;
-    let open! M2;
+    open! M;
+    open! M2;
     value
   };
   let z = {
-    let open! M;
+    open! M;
     M2.value
   };
   let y = 44;

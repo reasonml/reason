@@ -106,6 +106,12 @@ let (<..>) a b => a + b;
 
 let five = 2 <..> 3;
 
+type nestedObj = <bar : <a : int>>;
+
+let (>>) a b => a > b;
+
+let bigger = 3 >> 2;
+
 type typeDefForClosedObj = <x : int, y : int>;
 
 type typeDefForOpenObj 'a =
@@ -144,10 +150,12 @@ let coercedReturn = {
 };
 
 let acceptsOpenAnonObjAsArg
-    (o: <x : int, y : int, ..>) => o#x + o#y;
+    (o: <x : int, y : int, ..>) =>
+  o#x + o#y;
 
 let acceptsClosedAnonObjAsArg
-    (o: <x : int, y : int>) => o#x + o#y;
+    (o: <x : int, y : int>) =>
+  o#x + o#y;
 
 let res = acceptsOpenAnonObjAsArg {
   method x = 0;

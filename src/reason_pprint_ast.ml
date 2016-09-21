@@ -581,7 +581,6 @@ let getPrintableUnaryIdent s =
     String.sub s 1 (String.length s -1)
   else s
 
-
 (* determines if the string is an infix string.
    checks backwards, first allowing a renaming postfix ("_102") which
    may have resulted from Pexp -> Texp -> Pexp translation, then checking
@@ -855,6 +854,7 @@ let default = new Pprintast.printer ()
 type funcReturnStyle =
   | ReturnValOnSameLine
 
+(* TODO(ben): Comment this out. It's a bit complicated. *)
 let rec temporaryJSXHack loc l attributes =
   let rec isLabeledArgsAndFinalUnit numOfArgs arguments =
     match arguments with
@@ -888,8 +888,9 @@ let rec temporaryJSXHack loc l attributes =
   | "React" :: "createElement" :: [] -> (
     match l with
     | ("", {pexp_desc = Pexp_ident comp}) :: args -> (
-      match (Longident.flatten comp.txt) with
-      | componentName :: "comp" :: [] ->
+      match (Longident.last comp.txt) with
+      | "comp" ->
+        let componentName = String.concat "." (List.rev (List.tl (List.rev (Longident.flatten comp.txt)))) in
         let propsTree = List.hd args in
         let convertedArguments = (
           (* either it's Js.null or it's (componentName.props arg1::1 ()) *)
@@ -900,10 +901,14 @@ let rec temporaryJSXHack loc l attributes =
             | _ -> None
           )
           | ("", {pexp_desc = Pexp_apply ({pexp_desc = Pexp_ident propsName}, l)}) -> (
-            match (Longident.flatten propsName.txt) with
+            match (Longident.last propsName.txt) with
             (* Could add a "hint" here. *)
-            | otherComponentName :: "props" :: [] when otherComponentName = componentName ->
-              Some l
+            | "props" ->
+              let otherComponentName = String.concat "." (List.rev (List.tl (List.rev (Longident.flatten comp.txt)))) in
+              if otherComponentName = componentName then
+                Some l
+              else (* "did you mean X" ? *)
+                None
             | _ -> None
           )
           | _ -> None
@@ -989,104 +994,6 @@ let rec detectJSXComponent e attributes l =
         None
     | (Pexp_ident loc,  hd :: tail, _) -> detectJSXComponent e tail l
     | _ -> None
-
-(* TODO(ben): tons of "did you mean" possibilities here *)
-(* let rec detectJSXComponent e attributes l =
-  let findProps componentName args = (
-    match args with
-    | (_, {pexp_desc = Pexp_ident nullProp}) :: rest -> (
-      match (Longident.flatten nullProp.txt) with
-      | "Js" :: "null" :: [] -> (
-        match rest with
-        | (_, {pexp_desc = Pexp_array ls}) :: [] ->
-          Some (componentName, [], ls)
-        | _ -> None
-      )
-      | _ -> None
-    )
-    | (_, {pexp_desc = Pexp_apply ({pexp_desc=Pexp_ident loc}, props)}) :: rest -> (
-      match (Longident.flatten loc.txt) with
-      | componentName :: "props" :: [] -> (
-        match rest with
-        | (_, {pexp_desc = Pexp_array ls}) :: [] ->
-          let lastShouldBeUnit = List.hd (List.rev props) in
-          (match lastShouldBeUnit with
-          | ("", {pexp_desc = Pexp_construct ({txt = Lident "()"}, None)}) ->
-          Some (componentName, (List.rev (List.tl (List.rev props))), ls)
-          | _ -> None (* Hint: you probably forgot () at the end of Component.props *) )
-        | _ -> None
-      )
-      | _ -> None (* Did you mean... *)
-    )
-    | _ -> None
-  ) in
-  let maybeMakeComponentPrintable args = (
-    match args with
-    | ("", {pexp_desc = Pexp_constant (Const_string (s, _))}) :: rest -> findProps s rest
-    | ("", {pexp_desc = Pexp_ident loc}) :: rest ->
-      let revIdent = List.rev (Longident.flatten loc.txt) in
-      if (List.hd revIdent <> "comp") then
-        None
-      else
-        findProps (String.concat "." (List.rev (List.tl revIdent))) rest
-    | _ -> None
-  )
-  in
-  let rec processAttributes ~lookingForList attributes processedAttributes children = (
-    match attributes with
-    | ("", {pexp_desc = Pexp_construct ({txt = Lident "::"}, Some {pexp_desc = Pexp_tuple (otherArgs)})}) :: rest ->
-      processAttributes ~lookingForList rest processedAttributes otherArgs
-    | ("", {pexp_desc = Pexp_array newChildren}) :: rest ->
-      processAttributes ~lookingForList rest processedAttributes (children @ newChildren)
-    | ("", {pexp_desc = Pexp_construct (_, None)}) :: rest ->
-      processAttributes ~lookingForList rest processedAttributes children
-    | (label, expr) :: rest ->
-      processAttributes ~lookingForList rest (processedAttributes @ [(label, expr)]) children
-    | [] -> (processedAttributes, children)
-  ) in
-  match (e, attributes) with
-  | (Pexp_apply ({pexp_desc=Pexp_ident loc}, l), _) ->
-    (* TODO: Soon, we will allow the final argument to be an identifier which
-       represents the entire list. This would be written as
-       `<tag>...list</tag>`. If you imagine there being an implicit [] inside
-       the tag, then it would be consistent with array spread:
-       [...list] evaluates to the thing as list.
-    *)
-    (
-      match (Longident.flatten loc.txt) with
-      | "React" :: "createElement" :: [] -> maybeMakeComponentPrintable l
-      | _ ->
-      let rec isLabeledArgsAndFinalList arguments = (
-        match arguments with
-        | ("", {pexp_desc = Pexp_construct ({txt = Lident "::"}, _)}) :: []
-        | ("", {pexp_desc = Pexp_construct ({txt = Lident "[]"}, _)}) :: [] -> true
-        (* Any other kind of non-named argument besides the above disqualifies *)
-        | ("", _) :: _ -> false
-        | (lbl, _)::tail -> isLabeledArgsAndFinalList tail
-        | [] -> false
-      ) in
-      let moduleNameList = List.rev (List.tl (List.rev (Longident.flatten loc.txt))) in
-      let (props, children) = processAttributes ~lookingForList:true l [] [] in
-      if List.length moduleNameList > 0 then
-        if Longident.last loc.txt = "createElement" && isLabeledArgsAndFinalList l then
-          Some ((String.concat "." moduleNameList), props, children)
-        else
-          None
-      else if isLabeledArgsAndFinalList l then
-        Some ((Longident.last loc.txt), props, children)
-      else
-        None
-      )
-    | (Pexp_ident loc, ({txt = "JSX"; _}, PStr []) :: tail) ->
-      let (props, children) = processAttributes ~lookingForList:false l [] [] in
-      let moduleNameList = List.rev (List.tl (List.rev (Longident.flatten loc.txt))) in
-      Some (String.concat "." moduleNameList, props, children)
-    | (Pexp_ident loc,  _) -> (
-      match (Longident.flatten loc.txt) with
-      | "React" :: "createElement" :: [] -> maybeMakeComponentPrintable l
-      | _ -> None
-      )
-    | _ -> None *)
 
 let detectTernary l = match l with
   | [{
@@ -3696,87 +3603,41 @@ class printer  ()= object(self:'self)
        processAttributes tail processedAttrs []
      | ("", {pexp_desc = Pexp_construct ({txt = Lident"::"}, Some {pexp_desc = Pexp_tuple(components)} )}) :: tail ->
        processAttributes tail processedAttrs (processChildren components [])
-     | (label, expression) :: tail ->
-        let value = match expression.pexp_desc with
-        | Pexp_ident (ident) ->
-           if (Longident.last ident.txt) = label then
-             []
-           else
-             [atom "="; self#simplifyUnparseExpr expression]
-        | _ -> [atom "="; self#simplifyUnparseExpr expression] in
-        processAttributes tail (processedAttrs @ [makeList   ([atom " "; atom label; ] @ value)]) children
+     | (lbl, expression) :: tail ->
+        let nextAttr =
+          match expression.pexp_desc with
+          | Pexp_ident (ident) when (Longident.last ident.txt) = lbl -> atom lbl
+          | _ -> makeList ([atom lbl; atom "="; self#simplifyUnparseExpr expression])
+        in
+        processAttributes tail (nextAttr :: processedAttrs) children
      | [] -> (processedAttrs, children)
    in
-   let (attributes, children) = processAttributes args [] []
+   let (reversedAttributes, children) = processAttributes args [] []
    in
    if List.length children = 0 then
-       makeList ([atom "<"; atom componentName] @ attributes @ [atom " />"])
+     makeList
+       ~break:IfNeed
+       ~wrap:("<" ^ componentName, "/>")
+       ~pad:(true, true)
+       ~inline:(false, false)
+       ~postSpace:true
+       (List.rev reversedAttributes)
    else
-       let (openingTag, attributes) =
-           if List.length attributes = 0 then
-               (componentName ^ ">", [])
-           else
-               let reversedAttributes = List.rev attributes in
-               (componentName, (List.rev (List.tl reversedAttributes)) @ [(makeList ~break:Never ([List.hd reversedAttributes] @ [atom ">"]))])
-       in
-       makeList
-         ~inline:(false, false)
-         ~break:IfNeed
-         ~pad:(true, true)
-         ~wrap:("<" ^ openingTag, "</" ^ componentName ^ ">")
-         (attributes @ children)
-
-  (* method formatJSXComponent componentName props children =
-    let rec makePropsPrintable props processedAttributes =
-    match props with
-    | (label, expr) :: rest ->
-      let value = (match expr.pexp_desc with
-        | Pexp_ident (ident) ->
-          if (Longident.last ident.txt) = label then
-            []
-          else
-            [atom "={"; self#simplifyUnparseExpr expr; atom "}"]
-        | _ -> [atom "={"; self#simplifyUnparseExpr expr; atom "}"]
-      ) in
-      makePropsPrintable rest (processedAttributes @ [makeList ([atom " "; atom label] @ value)])
-    | [] -> processedAttributes
-    in
-    let rec makeChildrenPrintable children result =
-      match children with
-      | {pexp_desc = Pexp_constant (constant)} :: remainingChildren ->
-        makeChildrenPrintable remainingChildren (result @ [self#constant constant])
-      | {pexp_desc = Pexp_construct ({txt = Lident "::"}, Some {pexp_desc = Pexp_tuple(children)} )} :: remainingChildren ->
-        makeChildrenPrintable (children @ remainingChildren) result
-      | {pexp_desc = Pexp_apply(expr, l); pexp_attributes} :: remainingChildren ->
-        (match detectJSXComponent expr.pexp_desc pexp_attributes l with
-          | Some (componentName, props, children) -> makeChildrenPrintable remainingChildren (result @ [self#formatJSXComponent componentName props children])
-          | None -> makeChildrenPrintable remainingChildren (result @ [self#simplifyUnparseExpr (List.hd children)]))
-      | {pexp_desc = Pexp_ident li} :: remainingChildren ->
-        makeChildrenPrintable remainingChildren (result @ [self#longident_loc li])
-      | {pexp_desc = Pexp_construct ({txt = Lident "[]"}, None)} :: remainingChildren ->
-        makeChildrenPrintable remainingChildren result
-      | head :: remainingChildren -> makeChildrenPrintable remainingChildren (result @ [self#simplifyUnparseExpr head])
-      | [] ->
-        if (List.length result) > 0 then
-          [makeList ~break:IfNeed ~sep:" " ~inline:(true, true) result]
-        else
-          []
-    in
-    let attributes = makePropsPrintable props [] in
-    let children = makeChildrenPrintable children [] in
-    print_endline (string_of_int (List.length children));
-    if List.length children = 0 then
-        makeList ([atom "<"; atom componentName] @ attributes @ [atom " />"])
-    else
-        let (openingTag, attributes) =
-            if List.length attributes = 0 then
-                (componentName ^ ">", [])
-            else
-                let reversedAttributes = List.rev attributes in
-                (componentName, (List.rev (List.tl reversedAttributes)) @ [(makeList ~break:Never ([List.hd reversedAttributes] @ [atom ">"]))])
-        in
-        makeList ~inline:(false, false) ~break:IfNeed ~wrap:("<" ^ openingTag, "</" ^ componentName ^ ">" ) (attributes @ children) *)
-
+     let (openingTag, attributes) =
+       match reversedAttributes with
+       | [] -> (componentName ^ ">", [])
+       | revAttrHd::revAttrTl -> (
+         componentName,
+         List.rev (makeList ~break:Never [revAttrHd; atom ">"] :: revAttrTl)
+       )
+     in
+     makeList
+       ~inline:(false, false)
+       ~break:IfNeed
+       ~pad:(true, true)
+       ~postSpace:true
+       ~wrap:("<" ^ openingTag, "</" ^ componentName ^ ">")
+       (attributes @ children)
 
   (* Creates a list of simple module expressions corresponding to module
      expression or functor application. *)

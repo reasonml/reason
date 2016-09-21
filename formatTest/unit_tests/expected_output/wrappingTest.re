@@ -8,17 +8,15 @@ let reallyLongIdent = 100;
 let andYetAnotherReallyLongIdent = 30;
 
 let something =
-  reallyLongIdent +
-    andYetAnotherReallyLongIdent +
-    reallyLongIdent;
+  reallyLongIdent + andYetAnotherReallyLongIdent + reallyLongIdent;
 
 let something =
   /* Hopefully */
   reallyLongIdent +
-    /* It will indent like this */
-    andYetAnotherReallyLongIdent +
-    /* And no further */
-    reallyLongIdent;
+  /* It will indent like this */
+  andYetAnotherReallyLongIdent +
+  /* And no further */
+  reallyLongIdent;
 
 /* Comments can be written like this.
    No leading star is required on each line.
@@ -52,44 +50,40 @@ let test = 10;
  */
 let testPrintingPrecedence =
   reallyLongIdent +
-    reallyLongIdent * andYetAnotherReallyLongIdent +
-    reallyLongIdent;
+  reallyLongIdent * andYetAnotherReallyLongIdent + reallyLongIdent;
 
 let testPrintingPrecedence =
   reallyLongIdent +
-    /*
-     * In this case, grouping of the right expression is needed because the
-     * right side of the infix operator is of *lower* precedence than STAR.
-     */
-    reallyLongIdent * (
-      reallyLongIdent + andYetAnotherReallyLongIdent
-    ) +
-    reallyLongIdent * 10;
+  /*
+   * In this case, grouping of the right expression is needed because the
+   * right side of the infix operator is of *lower* precedence than STAR.
+   */
+  reallyLongIdent * (
+    reallyLongIdent + andYetAnotherReallyLongIdent
+  ) +
+  reallyLongIdent * 10;
 
 let testPrintingPrecedence =
   reallyLongIdent +
-    /*
-     * In this case, grouping of the right expression is needed because the
-     * right side of the infix operator is of *lower* precedence than STAR.
-     */
-    reallyLongIdent * (
-      reallyLongIdent + andYetAnotherReallyLongIdent
-    ) +
-    reallyLongIdent;
+  /*
+   * In this case, grouping of the right expression is needed because the
+   * right side of the infix operator is of *lower* precedence than STAR.
+   */
+  reallyLongIdent * (
+    reallyLongIdent + andYetAnotherReallyLongIdent
+  ) + reallyLongIdent;
 
 let add x y => x + y;
 
 let testPrintingPrecedence =
   reallyLongIdent +
-    /*
-     * In this case, grouping of the right expression is needed because the
-     * right side isn't even infix at all.
-     */
-    reallyLongIdent *
-      add
-        reallyLongIdent
-        andYetAnotherReallyLongIdent +
-    reallyLongIdent;
+  /*
+   * In this case, grouping of the right expression is needed because the
+   * right side isn't even infix at all.
+   */
+  reallyLongIdent *
+  add
+    reallyLongIdent andYetAnotherReallyLongIdent + reallyLongIdent;
 
 /*
  * Test wrapping every form of named arguments where various parts are
@@ -447,7 +441,8 @@ let myFunctionsInARecordThatMustWrap = {
         anotherReallyLongArgument => reallyLongArgument,
   minuser:
     fun reallyLongArgument
-        anotherReallyLongArgument => reallyLongArgument + anotherReallyLongArgument
+        anotherReallyLongArgument =>
+    reallyLongArgument + anotherReallyLongArgument
 };
 
 type threeArgFunctionsInARecord = {
@@ -466,7 +461,8 @@ let myFunctionsInARecordThatMustWrap = {
   minuser:
     fun reallyLongArgument
         anotherReallyLongArgument
-        anotherReallyLongArgument => reallyLongArgument + anotherReallyLongArgument
+        anotherReallyLongArgument =>
+    reallyLongArgument + anotherReallyLongArgument
 };
 
 let oneArgShouldWrapToAlignWith
@@ -531,7 +527,8 @@ let howDoesInfixOperatorsWrapWhenYouMustWrapQuestionMark
 
 let howDoesInfixOperatorsWrapWhenYouMustWrapQuestionMark
     x
-    y => x + y;
+    y =>
+  x + y;
 
 let reallyHowDoesInfixOperatorsWrapWhenYouMustWrapQuestionMark
     x
@@ -541,7 +538,8 @@ let reallyHowDoesInfixOperatorsWrapWhenYouMustWrapQuestionMark
 
 let reallyHowDoesInfixOperatorsWrapWhenYouMustWrapQuestionMark
     x
-    y => x + y;
+    y =>
+  x + y;
 
 let reallyLongFunctionNameThatJustConcats a =>
   String.concat "-" a;
@@ -2081,19 +2079,23 @@ type someRecord = {
    pattern).
  */
 let funcOnSomeConstructorHi
-    (SomeConstructorHi x y) => x + y;
+    (SomeConstructorHi x y) =>
+  x + y;
 
 let funcOnSomeConstructorHi
     (SomeConstructorHi x y)
-    secondArg => x + y;
+    secondArg =>
+  x + y;
 
 /* With two args */
 let funcOnSomeRecord
-    {firstFieldInRecord, secondField} => firstFieldInRecord + secondField;
+    {firstFieldInRecord, secondField} =>
+  firstFieldInRecord + secondField;
 
 let funcOnSomeRecord
     {firstFieldInRecord, secondField}
-    secondArg => firstFieldInRecord + secondField;
+    secondArg =>
+  firstFieldInRecord + secondField;
 
 /*
    With settings.functionBindingStyle = DontAttachFirstTermToLabel,
@@ -2102,19 +2104,23 @@ let funcOnSomeRecord
    pattern).
  */
 let funcOnSomeConstructorHi
-    (SomeConstructorHi x y) => x + y;
+    (SomeConstructorHi x y) =>
+  x + y;
 
 let funcOnSomeRecord
-    {firstFieldInRecord, secondField} => firstFieldInRecord + secondField;
+    {firstFieldInRecord, secondField} =>
+  firstFieldInRecord + secondField;
 
 /* With two args */
 let funcOnSomeConstructorHi
     (SomeConstructorHi x y)
-    secondArg => x + y;
+    secondArg =>
+  x + y;
 
 let funcOnSomeRecord
     {firstFieldInRecord, secondField}
-    secondArg => firstFieldInRecord + secondField;
+    secondArg =>
+  firstFieldInRecord + secondField;
 
 type simpleTupleVariant =
   | SimpleActuallyATuple (int, int);
@@ -2192,7 +2198,10 @@ type commentedTypeDef =
         (list int)
     );
 
-type colors = | Red int | Black int | Green int;
+type colors =
+  | Red int
+  | Black int
+  | Green int;
 
 let blah arg =>
   switch arg {

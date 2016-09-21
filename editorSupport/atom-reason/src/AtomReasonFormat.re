@@ -63,7 +63,7 @@ let formatImpl
     isInterface::isInterface
     onComplete::onComplete
     onFailure::onFailure => {
-  let open Atom.JsonType;
+  open Atom.JsonType;
   let stdOutLines = {contents: [||]};
   let stdErrLines = {contents: [||]};
   let fmtPath =
@@ -96,7 +96,11 @@ let formatImpl
       | Some printWidth => ["-print-width", string_of_int printWidth]
       | None => []
       };
-    let syntaxArg = extensionWithoutDot (path editor);
+    let syntaxArg =
+      switch (Atom.Grammar.name (Atom.Editor.getGrammar editor)) {
+      | "Reason" => "re"
+      | _ => "ml"
+      };
     printWidthArgs @ [
       "-use-stdin",
       "true",

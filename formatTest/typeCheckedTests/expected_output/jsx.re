@@ -1,60 +1,95 @@
 type component = {displayName: string};
 
 let module Bar = {
-  let createElement c::c=? children => {displayName: "test"};
+  let createElement c::c=? children => {
+    displayName: "test"
+  };
 };
 
 let module Nesting = {
-  let createElement children => {displayName: "test"};
+  let createElement children => {
+    displayName: "test"
+  };
 };
 
 let module Much = {
-  let createElement children => {displayName: "test"};
+  let createElement children => {
+    displayName: "test"
+  };
 };
 
 let module Foo = {
-  let createElement a::a=? b::b=? children => {displayName: "test"};
+  let createElement a::a=? b::b=? children => {
+    displayName: "test"
+  };
 };
 
 let module One = {
-  let createElement test::test=? foo::foo=? children => {displayName: "test"};
+  let createElement
+      test::test=?
+      foo::foo=?
+      children => {
+    displayName: "test"
+  };
 };
 
 let module Two = {
-  let createElement foo::foo=? children => {displayName: "test"};
+  let createElement foo::foo=? children => {
+    displayName: "test"
+  };
 };
 
 let module Sibling = {
-  let createElement foo::foo=? (children: list component) => {displayName: "test"};
+  let createElement
+      foo::foo=?
+      (children: list component) => {
+    displayName: "test"
+  };
 };
 
 let module Test = {
-  let createElement yo::yo=? children => {displayName: "test"};
+  let createElement yo::yo=? children => {
+    displayName: "test"
+  };
 };
 
 let module So = {
-  let createElement children => {displayName: "test"};
+  let createElement children => {
+    displayName: "test"
+  };
 };
 
 let module Foo2 = {
-  let createElement children => {displayName: "test"};
+  let createElement children => {
+    displayName: "test"
+  };
 };
 
 let module Text = {
-  let createElement children => {displayName: "test"};
+  let createElement children => {
+    displayName: "test"
+  };
 };
 
 let module Exp = {
-  let createElement children => {displayName: "test"};
+  let createElement children => {
+    displayName: "test"
+  };
 };
 
 let module Pun = {
-  let createElement intended::intended=? children => {displayName: "test"};
+  let createElement intended::intended=? children => {
+    displayName: "test"
+  };
 };
 
 let module Namespace = {
   let module Foo = {
-    let createElement intended::intended=? children => {displayName: "test"};
+    let createElement
+        intended::intended=?
+        children => {
+      displayName: "test"
+    };
   };
 };
 
@@ -71,18 +106,26 @@ let module LotsOfArguments = {
   };
 };
 
-let div argument1::argument1=? children => {displayName: "test"};
+let div argument1::argument1=? children => {
+  displayName: "test"
+};
 
 let module List1 = {
-  let createElement children => {displayName: "test"};
+  let createElement children => {
+    displayName: "test"
+  };
 };
 
 let module List2 = {
-  let createElement children => {displayName: "test"};
+  let createElement children => {
+    displayName: "test"
+  };
 };
 
 let module List3 = {
-  let createElement children => {displayName: "test"};
+  let createElement children => {
+    displayName: "test"
+  };
 };
 
 let (\/><) a b => a + b;
@@ -115,6 +158,12 @@ let selfClosing2 = <Foo a=1 b=true />;
 
 let selfClosing2 = <Foo a=1 b=true />;
 
+let selfClosing3 =
+  <Foo
+    a="really long values that should"
+    b="cause the entire thing to wrap"
+  />;
+
 let a = <Foo> <Bar c=(fun a => a + 2) /> </Foo>;
 
 let a = <Foo> <Bar c=(fun a => a + 2) /> </Foo>;
@@ -127,15 +176,37 @@ let a3 = <So> <Much> <Nesting /> </Much> </So>;
 
 let a3 = <So> <Much> <Nesting /> </Much> </So>;
 
-let a4 = <Sibling> <One test=true foo=b /> <Two foo=b /> </Sibling>;
+let a4 =
+  <Sibling>
+    <One test=true foo=b /> <Two foo=b />
+  </Sibling>;
 
-let a4 = <Sibling> <One test=true foo=b /> <Two foo=b /> </Sibling>;
+let a4 =
+  <Sibling>
+    <One test=true foo=b /> <Two foo=b />
+  </Sibling>;
 
-let a4 = <Sibling> <One test=true foo=b /> <Two foo=b /> </Sibling>;
+let a4 =
+  <Sibling>
+    <One test=true foo=b /> <Two foo=b />
+  </Sibling>;
 
 let a5 = <Foo> "testing a string here" </Foo>;
 
 let a5 = <Foo> "testing a string here" </Foo>;
+
+let a5 = <Foo> "testing a string here" </Foo>;
+
+let selfClosing2 = <Foo a=1 b=true />;
+
+let a = <Foo> <Bar c=(fun a => a + 2) /> </Foo>;
+
+let a3 = <So> <Much> <Nesting /> </Much> </So>;
+
+let a4 =
+  <Sibling>
+    <One test=true foo=b /> <Two foo=b />
+  </Sibling>;
 
 let a5 = <Foo> "testing a string here" </Foo>;
 
@@ -158,11 +229,13 @@ let c = <Foo />;
 
 let d = <Foo />;
 
-let spaceBefore = <So> <Much> <Nesting /> </Much> </So>;
+let spaceBefore =
+  <So> <Much> <Nesting /> </Much> </So>;
 
 let spaceBefore2 = <So> <Much /> </So>;
 
-let siblingNotSpaced = <So> <Much /> <Much /> </So>;
+let siblingNotSpaced =
+  <So> <Much /> <Much /> </So>;
 
 let jsxInList = [<Foo />];
 
@@ -194,20 +267,37 @@ let jsxInFnCall = testFunc <Foo />;
 
 let lotsOfArguments =
   <LotsOfArguments
-     argument1=1
-     argument2=2
-     argument3=3
-     argument4=4
-     argument5=5
-     argument6="test">
+    argument1=1
+    argument2=2
+    argument3=3
+    argument4=4
+    argument5=5
+    argument6="test">
     <Namespace.Foo />
   </LotsOfArguments>;
 
 let lowerCase = <div argument1=1 />;
 
-let a = <Foo  a>5 </Foo>;
+let a = <Foo a> 5 </Foo>;
 
-let a = <Foo  a>0.55 </Foo>;
+let b = 0;
+
+let d = 0;
+
+/*
+ * Should pun the first example:
+ */
+let a = <Foo a> 5 </Foo>;
+
+let a = <Foo a=b> 5 </Foo>;
+
+let a = <Foo a=b b=d> 5 </Foo>;
+
+let a = <Foo a=b b=d> 5 </Foo>;
+
+let a = <Foo a=b b=d> 5 </Foo>;
+
+let a = <Foo a> 0.55 </Foo>;
 
 let a = Foo.createElement "";
 
@@ -215,11 +305,7 @@ let ident = <Foo> a </Foo>;
 
 let fragment1 = <> <Foo /> <Foo /> </>;
 
-/* let fragment1 = [Foo.createElement [], Foo.createElement []]; */
-/* let fragment1 = [React.createElement Foo.comp Js.null [||], React.createElement Foo.comp Js.null [||]]; */
 let fragment2 = <> <Foo /> <Foo /> </>;
-
-let fragment2 = <> (<Foo /> <Foo />) </>;
 
 let fragment2 = <> <Foo /> <Foo /> </>;
 
@@ -237,8 +323,6 @@ let fragment8 = <> <Foo /> <Foo /> </>;
 
 let fragment9 = <> 2 2 2 2 </>;
 
-let fragment9 = <> (2 2 2 2) </>;
-
 let fragment10 = <> 2.2 3.2 4.6 1.2 </>;
 
 let fragment11 = <> "str" </>;
@@ -249,9 +333,11 @@ let fragment13 = <> fragment11 fragment11 </>;
 
 let listOfItems1 = <List1> 1 2 3 4 5 </List1>;
 
-let listOfItems2 = <List2> 1.0 2.8 3.8 4.0 5.1 </List2>;
+let listOfItems2 =
+  <List2> 1.0 2.8 3.8 4.0 5.1 </List2>;
 
-let listOfItems3 = <List3> fragment11 fragment11 </List3>;
+let listOfItems3 =
+  <List3> fragment11 fragment11 </List3>;
 
 /*
  * Several sequential simple jsx expressions must be separated with a space.
@@ -272,9 +358,11 @@ let a children => ();
 
 let b children => ();
 
-let thisIsOkay = <List1> <a /> <b /> <a /> <b /> </List1>;
+let thisIsOkay =
+  <List1> <a /> <b /> <a /> <b /> </List1>;
 
-let thisIsAlsoOkay = <List1> <a /> <b /> </List1>;
+let thisIsAlsoOkay =
+  <List1> <a /> <b /> </List1>;
 
 /* Doesn't make any sense, but suppose you defined an
    infix operator to compare jsx */
@@ -290,17 +378,31 @@ let listOfListOfJsx = [<> </>];
 
 let listOfListOfJsx = [<> <Foo /> </>];
 
-let listOfListOfJsx = [<> <Foo /> </>, <> <Bar /> </>];
+let listOfListOfJsx = [
+  <> <Foo /> </>,
+  <> <Bar /> </>
+];
 
-let listOfListOfJsx = [<> <Foo /> </>, <> <Bar /> </>, ...listOfListOfJsx];
+let listOfListOfJsx = [
+  <> <Foo /> </>,
+  <> <Bar /> </>,
+  ...listOfListOfJsx
+];
 
 let sameButWithSpaces = [<> </>];
 
 let sameButWithSpaces = [<> <Foo /> </>];
 
-let sameButWithSpaces = [<> <Foo /> </>, <> <Bar /> </>];
+let sameButWithSpaces = [
+  <> <Foo /> </>,
+  <> <Bar /> </>
+];
 
-let sameButWithSpaces = [<> <Foo /> </>, <> <Bar /> </>, ...sameButWithSpaces];
+let sameButWithSpaces = [
+  <> <Foo /> </>,
+  <> <Bar /> </>,
+  ...sameButWithSpaces
+];
 
 /*
  * Test named tag right next to an open bracket.
@@ -319,7 +421,11 @@ let sameButWithSpaces = [<Foo />];
 
 let sameButWithSpaces = [<Foo />, <Bar />];
 
-let sameButWithSpaces = [<Foo />, <Bar />, ...sameButWithSpaces];
+let sameButWithSpaces = [
+  <Foo />,
+  <Bar />,
+  ...sameButWithSpaces
+];
 
 
 /**

@@ -4,7 +4,11 @@
  * Testing pattern matching using ml syntax to exercise nesting of cases.
  */
 type xyz =
-  | X | Y int int int | Z int int | Q | R;
+  | X
+  | Y int int int
+  | Z int int
+  | Q
+  | R;
 
 let doubleBar =
   fun
@@ -39,9 +43,14 @@ let doubleBarNestedAnyPatterns =
   | Q => true
   | _ => false;
 
-type bcd = | B | C | D | E;
+type bcd =
+  | B
+  | C
+  | D
+  | E;
 
-type a = | A bcd;
+type a =
+  | A bcd;
 
 let result =
   switch B {
@@ -77,7 +86,8 @@ let equalityInIf =
     false
   };
 
-let equalityWithIdentifiers = physicalEquality == referentialEquality;
+let equalityWithIdentifiers =
+  physicalEquality == referentialEquality;
 
 let nestedSome = Some (1, 2, Some (1, 2, 3));
 
