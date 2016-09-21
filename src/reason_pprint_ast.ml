@@ -413,18 +413,21 @@ let expandLocation pos ~expand:(startPos, endPos) =
  *)
 let rec partitionAttributes attrs =
   match attrs with
-    | [] -> ([], [], [])
+    | [] -> ([], [], [], [])
+    | (({txt="JSX"; loc}, _) as jsx)::atTl ->
+        let (tlArity, tlDoc, tlStandard, tlJsx) = partitionAttributes atTl in
+        (tlArity, tlDoc, tlStandard, jsx :: tlJsx)
     | (({txt="explicit_arity"; loc}, _) as arity_attr)::atTl
     | (({txt="implicit_arity"; loc}, _) as arity_attr)::atTl ->
-        let (tlArity, tlDoc, tlStandard) = partitionAttributes atTl in
-        (arity_attr::tlArity, tlDoc, tlStandard)
+        let (tlArity, tlDoc, tlStandard, tlJsx) = partitionAttributes atTl in
+        (arity_attr::tlArity, tlDoc, tlStandard, tlJsx)
     | (({txt="ocaml.text"; loc}, _) as doc)::atTl
     | (({txt="ocaml.doc"; loc}, _) as doc)::atTl ->
-        let (tlArity, tlDoc, tlStandard) = partitionAttributes atTl in
-        (tlArity, doc::tlDoc, tlStandard)
+        let (tlArity, tlDoc, tlStandard, tlJsx) = partitionAttributes atTl in
+        (tlArity, doc::tlDoc, tlStandard, tlJsx)
     | atHd::atTl ->
-        let (tlArity, tlDoc, tlStandard) = partitionAttributes atTl in
-        (tlArity, tlDoc, atHd::tlStandard)
+        let (tlArity, tlDoc, tlStandard, tlJsx) = partitionAttributes atTl in
+        (tlArity, tlDoc, atHd::tlStandard, tlJsx)
 
 let partitionNonrecAttr attrs = List.partition (fun attr ->
     match attr with
@@ -432,7 +435,7 @@ let partitionNonrecAttr attrs = List.partition (fun attr ->
     | _ -> false) attrs
 
 let extractStdAttrs attrs =
-  let (arityAttrs, docAttrs, standard_attrs) = partitionAttributes attrs in
+  let (arityAttrs, docAttrs, standard_attrs, jsxAttrs) = partitionAttributes attrs in
   standard_attrs
 
 let rec sequentialIfBlocks x =
@@ -852,6 +855,30 @@ let default = new Pprintast.printer ()
 type funcReturnStyle =
   | ReturnValOnSameLine
 
+let rec detectJSXComponent e attributes l =
+  match (e, attributes) with
+    | (Pexp_ident loc, ({txt = "JSX"; _}, PStr []) :: tail) ->
+      let rec checkChildren arguments nrOfChildren =
+        match arguments with
+        | ("", {pexp_desc = Pexp_construct ({txt = Lident "::"}, _)}) :: tail
+        | ("", {pexp_desc = Pexp_construct ({txt = Lident "[]"}, _)}) :: tail ->
+            checkChildren tail (nrOfChildren + 1)
+        | ("", _) :: tail -> false
+        | (lbl, _)::tail -> checkChildren tail nrOfChildren
+        | [] -> nrOfChildren = 1
+      in
+      let moduleNameList = List.rev (List.tl (List.rev (Longident.flatten loc.txt))) in
+      if List.length moduleNameList > 0 then
+        if Longident.last loc.txt = "createElement" && checkChildren l 0 then
+          Some (String.concat "." moduleNameList)
+        else
+          None
+      else if checkChildren l 0 then
+        Some (Longident.last loc.txt)
+      else
+        None
+    | (Pexp_ident loc,  hd :: tail) -> detectJSXComponent e tail l
+    | _ -> None
 
 let detectTernary l = match l with
   | [{
@@ -2269,7 +2296,7 @@ class printer  ()= object(self:'self)
   method non_arrowed_core_type x = self#non_arrowed_non_simple_core_type x
 
   method core_type2 x =
-    let (arityAttrs, docAtrs, stdAttrs) = partitionAttributes x.ptyp_attributes in
+    let (arityAttrs, docAtrs, stdAttrs, jsxAttrs) = partitionAttributes x.ptyp_attributes in
     if stdAttrs <> [] then
       formatAttributed
         (self#non_arrowed_simple_core_type {x with ptyp_attributes=[]})
@@ -2300,7 +2327,7 @@ class printer  ()= object(self:'self)
 
   (* Same as core_type2 but can be aliased *)
   method core_type x =
-    let (arityAttrs, docAtrs, stdAttrs) = partitionAttributes x.ptyp_attributes in
+    let (arityAttrs, docAtrs, stdAttrs, jsxAttrss) = partitionAttributes x.ptyp_attributes in
     if stdAttrs <> [] then
       formatAttributed
         (self#non_arrowed_simple_core_type {x with ptyp_attributes=[]})
@@ -2427,7 +2454,7 @@ class printer  ()= object(self:'self)
    * not parsed or printed correctly. *)
   method type_variant_leaf1 opt_ampersand polymorphic print_bar x =
     let {pcd_name; pcd_args; pcd_res; pcd_loc; pcd_attributes} = x in
-    let (arityAttrs, docAtrs, stdAttrs) = partitionAttributes pcd_attributes in
+    let (arityAttrs, docAtrs, stdAttrs, jsxAttrs) = partitionAttributes pcd_attributes in
     let prefix = if polymorphic then "`" else "" in
     let sourceMappedName = SourceMap (pcd_name.loc, atom (prefix ^ pcd_name.txt)) in
     let nameOf = makeList ~postSpace:true [sourceMappedName] in
@@ -2620,7 +2647,7 @@ class printer  ()= object(self:'self)
     (equalInitiatedSegments, constraints)
 
   method non_arrowed_non_simple_core_type x =
-    let (arityAttrs, docAtrs, stdAttrs) = partitionAttributes x.ptyp_attributes in
+    let (arityAttrs, docAtrs, stdAttrs, jsxAttrs) = partitionAttributes x.ptyp_attributes in
     if stdAttrs <> [] then
       formatAttributed
         (self#non_arrowed_simple_core_type {x with ptyp_attributes=[]})
@@ -2657,7 +2684,7 @@ class printer  ()= object(self:'self)
     | _ -> self#non_arrowed_simple_core_type x
 
   method non_arrowed_simple_core_type x =
-    let (arityAttrs, docAttrs, stdAttrs) = partitionAttributes x.ptyp_attributes in
+    let (arityAttrs, docAttrs, stdAttrs, jsxAttrs) = partitionAttributes x.ptyp_attributes in
     if stdAttrs <> [] then
       formatSimpleAttributed
         (self#non_arrowed_simple_core_type {x with ptyp_attributes=[]})
@@ -2816,7 +2843,7 @@ class printer  ()= object(self:'self)
   method pattern_without_or x =
     let patternSourceMap pt layout = (SourceMap (pt.ppat_loc, layout)) in
     (* TODOATTRIBUTES: Handle the stdAttrs here *)
-    let (arityAttrs, docAtrs, _) = partitionAttributes x.ppat_attributes in
+    let (arityAttrs, docAtrs, _, jsxAttrs) = partitionAttributes x.ppat_attributes in
     match x.ppat_desc with
       | Ppat_alias (p, s) ->
           let raw_pattern = (self#pattern p) in
@@ -2858,7 +2885,7 @@ class printer  ()= object(self:'self)
       | _ -> self#simple_pattern x
 
   method pattern x=
-    let (arityAttrs, docAtrs, stdAttrs) = partitionAttributes x.ppat_attributes in
+    let (arityAttrs, docAtrs, stdAttrs, jsxAttrs) = partitionAttributes x.ppat_attributes in
     if stdAttrs <> [] then
       formatAttributed
         (* Doesn't need to be simple_pattern because attributes are parse as
@@ -2884,7 +2911,7 @@ class printer  ()= object(self:'self)
     | _  -> self#pattern x
 
   method simple_pattern x =
-    let (arityAttrs, docAtrs, stdAttrs) = partitionAttributes x.ppat_attributes in
+    let (arityAttrs, docAtrs, stdAttrs, jsxAttrs) = partitionAttributes x.ppat_attributes in
     if stdAttrs <> [] then
       formatSimpleAttributed
         (self#simple_pattern {x with ppat_attributes=arityAttrs})
@@ -2995,10 +3022,38 @@ class printer  ()= object(self:'self)
     atom cls;
   ]
 
-  method simple_get_application e =
-    match (e.pexp_desc, e.pexp_attributes) with
-    | (_, attrHd::attrTl) -> None (* Has some attributes - not simple *)
-    | (Pexp_apply (eFun, ls), []) -> (
+  method simple_get_application x =
+    let (arityAttrs, docAtrs, stdAttrs, jsxAttrs) = partitionAttributes x.pexp_attributes in
+    match (x.pexp_desc, stdAttrs, jsxAttrs) with
+    | (_, attrHd::attrTl, []) -> None (* Has some printed attributes - not simple *)
+    | (Pexp_apply ({pexp_desc=Pexp_ident loc}, l), [], jsx::_) -> (
+      (* TODO: Soon, we will allow the final argument to be an identifier which
+         represents the entire list. This would be written as
+         `<tag>...list</tag>`. If you imagine there being an implicit [] inside
+         the tag, then it would be consistent with array spread:
+         [...list] evaluates to the thing as list.
+      *)
+      let rec isLabeledArgsAndFinalList arguments =
+        match arguments with
+        | ("", {pexp_desc = Pexp_construct ({txt = Lident "::"}, _)}) :: []
+        | ("", {pexp_desc = Pexp_construct ({txt = Lident "[]"}, _)}) :: [] -> true
+        (* Any other kind of non-named argument besides the above disqualifies *)
+        | ("", _) :: _ -> false
+        | (lbl, _)::tail -> isLabeledArgsAndFinalList tail
+        | [] -> false
+      in
+      let moduleNameList = List.rev (List.tl (List.rev (Longident.flatten loc.txt))) in
+      if List.length moduleNameList > 0 then
+        if Longident.last loc.txt = "createElement" && isLabeledArgsAndFinalList l then
+          Some (self#formatJSXComponent (String.concat "." moduleNameList) l)
+        else
+          None
+      else if isLabeledArgsAndFinalList l then
+        Some (self#formatJSXComponent (Longident.last loc.txt) l)
+      else
+        None
+    )
+    | (Pexp_apply (eFun, ls), [], []) -> (
       match (printedStringAndFixityExpr eFun, ls) with
       (* We must take care not to print two subsequent prefix operators without
          spaces between them (`! !` could become `!!` which is totally
@@ -3053,7 +3108,7 @@ class printer  ()= object(self:'self)
         | _ -> None
       )
     )
-    | (_, []) ->  None
+    | _ ->  None
 
   (** Detects "sugar expressions" (sugar for array/string setters) and returns their separate
       parts.  *)
@@ -3198,7 +3253,7 @@ class printer  ()= object(self:'self)
 
   method unparseExprRecurse x =
     (* If there are any attributes, render unary like `(~-) x [@ppx]`, and infix like `(+) x y [@attr]` *)
-    let (arityAttrs, docAtrs, stdAttrs) = partitionAttributes x.pexp_attributes in
+    let (arityAttrs, docAtrs, stdAttrs, jsxAttrs) = partitionAttributes x.pexp_attributes in
     let withoutVisibleAttrs = {x with pexp_attributes=arityAttrs} in
     (* If there's any attributes, recurse without them, then apply them to
        the ends of functions, or simplify infix printings then append. *)
@@ -3434,6 +3489,64 @@ class printer  ()= object(self:'self)
         | _ -> [self#class_expr x]
     in
     (itms, None)
+
+  method formatJSXComponent componentName args =
+    let rec processChildren children result =
+      match children with
+      | {pexp_desc = Pexp_constant (constant)} :: remainingChildren ->
+        processChildren remainingChildren (result @ [self#constant constant])
+      | {pexp_desc = Pexp_construct ({txt = Lident "::"}, Some {pexp_desc = Pexp_tuple(children)} )} :: remainingChildren ->
+        processChildren (remainingChildren @ children) result
+      | {pexp_desc = Pexp_apply(expr, l); pexp_attributes} :: remainingChildren ->
+        (match detectJSXComponent expr.pexp_desc pexp_attributes l with
+          | Some componentName -> processChildren remainingChildren (result @ [self#formatJSXComponent componentName l])
+          | None -> processChildren remainingChildren (result @ [self#simplifyUnparseExpr (List.hd children)]))
+      | {pexp_desc = Pexp_ident li} :: remainingChildren ->
+        processChildren remainingChildren (result @ [self#longident_loc li])
+      | {pexp_desc = Pexp_construct ({txt = Lident "[]"}, None)} :: remainingChildren -> processChildren remainingChildren result
+      | head :: remainingChildren -> processChildren remainingChildren (result @ [self#simplifyUnparseExpr head])
+      | [] -> [makeList ~break:IfNeed ~sep:" " ~inline:(true, true) result]
+
+    and processAttributes arguments processedAttrs children =
+      match arguments with
+      | ("", {pexp_desc = Pexp_construct (_, None)}) :: tail ->
+        processAttributes tail processedAttrs []
+      | ("", {pexp_desc = Pexp_construct ({txt = Lident"::"}, Some {pexp_desc = Pexp_tuple(components)} )}) :: tail ->
+        processAttributes tail processedAttrs (processChildren components [])
+      | (lbl, expression) :: tail ->
+         let nextAttr =
+           match expression.pexp_desc with
+           | Pexp_ident (ident) when (Longident.last ident.txt) = lbl -> atom lbl
+           | _ -> makeList ([atom lbl; atom "="; self#simplifyUnparseExpr expression])
+         in
+         processAttributes tail (nextAttr :: processedAttrs) children
+      | [] -> (processedAttrs, children)
+    in
+    let (reversedAttributes, children) = processAttributes args [] [] in
+    if List.length children = 0 then
+      makeList
+        ~break:IfNeed
+        ~wrap:("<" ^ componentName, "/>")
+        ~pad:(true, true)
+        ~inline:(false, false)
+        ~postSpace:true
+        (List.rev reversedAttributes)
+    else
+      let (openingTag, attributes) =
+        match reversedAttributes with
+        | [] -> (componentName ^ ">", [])
+        | revAttrHd::revAttrTl -> (
+          componentName,
+          List.rev (makeList ~break:Never [revAttrHd; atom ">"] :: revAttrTl)
+        )
+      in
+      makeList
+        ~inline:(false, false)
+        ~break:IfNeed
+        ~pad:(true, true)
+        ~postSpace:true
+        ~wrap:("<" ^ openingTag, "</" ^ componentName ^ ">")
+        (attributes @ children)
 
 
   (* Creates a list of simple module expressions corresponding to module
@@ -4145,7 +4258,7 @@ class printer  ()= object(self:'self)
 
   (* Expressions requiring parens, in most contexts such as separated by infix *)
   method expression_requiring_parens_in_infix x =
-    let (arityAttrs, docAtrs, stdAttrs) = partitionAttributes x.pexp_attributes in
+    let (arityAttrs, docAtrs, stdAttrs, jsxAttrs) = partitionAttributes x.pexp_attributes in
     assert (stdAttrs == []);
     match x.pexp_desc with
       (* The only reason Pexp_fun must also be wrapped in parens when under
@@ -4456,7 +4569,7 @@ class printer  ()= object(self:'self)
     makeList ~wrap:("{", "}") ~break:IfNeed ~preSpace:true allRows
 
   method simplest_expression x =
-    let (arityAttrs, docAtrs, stdAttrs) = partitionAttributes x.pexp_attributes in
+    let (arityAttrs, docAtrs, stdAttrs, jsxAttrs) = partitionAttributes x.pexp_attributes in
     if stdAttrs <> [] then
       None
     else
@@ -4493,18 +4606,35 @@ class printer  ()= object(self:'self)
               (List.map string_x_expression l)
           )
         | Pexp_construct _  when is_simple_construct (view_expr x) ->
-            Some (match view_expr x with
-              | `nil -> atom "[]"
+            let hasJsxAttribute = jsxAttrs != [] in
+            Some (
+              match view_expr x with
+              | `nil -> if hasJsxAttribute then atom "<> </>" else atom "[]"
               | `tuple -> atom "()"
               | `list xs -> (* LIST EXPRESSION *)
-                makeList ~break:IfNeed ~wrap:("[", "]") ~sep:"," ~postSpace:true (List.map self#unparseExpr xs)
+                if hasJsxAttribute then
+                  let rec formatChildren children formatted =
+                    match children with
+                      | {pexp_desc = Pexp_constant (constant)} :: tail ->
+                        formatChildren tail (formatted @ [self#constant constant])
+                      | {pexp_desc = Pexp_apply(expr, l); pexp_attributes} :: tail ->
+                         (match detectJSXComponent expr.pexp_desc pexp_attributes l with
+                          | Some componentName -> formatChildren tail (formatted @ [self#formatJSXComponent componentName l])
+                          | None -> formatChildren tail (formatted @ [self#simplifyUnparseExpr (List.hd children)]))
+                      | head :: tail -> formatChildren tail (formatted @ [self#unparseExpr head])
+                      | [] -> [makeList ~sep:" " formatted]
+                  in
+                  makeList ~break:IfNeed ~wrap:("<>", "</>") ~pad:(true, true) (formatChildren xs [])
+                else
+                  makeList ~break:IfNeed ~wrap:("[", "]") ~sep:"," ~postSpace:true (List.map self#unparseExpr xs)
               | `cons xs ->
                 let seq, ext = match List.rev xs with
                   | ext :: seq_rev -> (List.rev seq_rev, ext)
                   | [] -> assert false in
                  makeES6List (List.map self#unparseExpr seq) (self#unparseExpr ext)
               | `simple x -> self#longident x
-              | _ -> assert false)
+              | _ -> assert false
+            )
         | Pexp_ident li ->
             (* Lone identifiers shouldn't break when to the right of a label *)
             Some (ensureSingleTokenSticksToLabel (self#longident_loc li))
@@ -5038,7 +5168,7 @@ class printer  ()= object(self:'self)
         ::fields
 
   method simple_class_expr x =
-    let (arityAttrs, docAtrs, stdAttrs) = partitionAttributes x.pcl_attributes in
+    let (arityAttrs, docAtrs, stdAttrs, jsxAttrs) = partitionAttributes x.pcl_attributes in
     if stdAttrs <> [] then
       formatSimpleAttributed
         (self#simple_class_expr {x with pcl_attributes=[]})
@@ -5082,7 +5212,7 @@ class printer  ()= object(self:'self)
       | _ -> [self#class_expr x]
 
   method class_expr x =
-    let (arityAttrs, docAtrs, stdAttrs) = partitionAttributes x.pcl_attributes in
+    let (arityAttrs, docAtrs, stdAttrs, jsxAttrs) = partitionAttributes x.pcl_attributes in
     (* We cannot handle the attributes here. Must handle them in each item *)
     if stdAttrs <> [] then
       (* Do not need a "simple" attributes precedence wrapper. *)

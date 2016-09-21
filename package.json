@@ -61,6 +61,10 @@
         "menhir": "https://github.com/npm-opam/menhir"
     },
     "scripts": {
-        "postinstall": "eval $(dependencyEnv) && nopam && substs pkg/META.in && make compile_error && ocaml pkg/build.ml native=true native-dynlink=true utop=${utop_installed:-false} && (opam-installer --prefix=$opam_prefix || true)"
+        "editor": "eval $(dependencyEnv) && eval $EDITOR",
+        "postinstall": "eval $(dependencyEnv) && nopam && substs pkg/META.in && make compile_error && ocaml pkg/build.ml native=true native-dynlink=true utop=${utop_installed:-false} && (opam-installer --prefix=$opam_prefix || true)",
+        "env": "eval $(dependencyEnv) && env",
+        "formatTest": "eval $(dependencyEnv) && cd formatTest; ./test.sh",
+        "whereisrefmt": "eval $(dependencyEnv) && which refmt"
     }
 }
