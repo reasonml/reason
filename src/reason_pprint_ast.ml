@@ -2701,13 +2701,13 @@ class printer  ()= object(self:'self)
             makeList ~wrap:("(",")") ~sep:"," ~postSpace:true ~break:IfNeed (List.map (self#core_type) l)
         | Ptyp_object (l, o) ->
           let core_field_type (s, attrs, ct) =
-            self#attach_std_attrs
-              attrs
-              (
-                label ~space:true
-                  (label ~space:true (atom s) (atom ":"))
-                  (self#core_type ct)
-              )
+            let l = extractStdAttrs attrs in
+            (match l with
+              | [] -> label ~space:true
+                      (label ~space:true (atom s) (atom ":"))
+                      (self#core_type ct)
+              | _::_ -> makeList ~postSpace:true [atom s; (self#attributes attrs); atom ":"; self#core_type ct]
+            )
           in
           let openness = match o with
             | Closed -> []

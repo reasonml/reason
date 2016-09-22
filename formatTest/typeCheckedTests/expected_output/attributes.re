@@ -325,3 +325,12 @@ let myFun
    */
 /* Bucklescript FFI item attributes */
 external imul : int => int => int = "Math.imul" [@@bs.val];
+
+let module Js = {
+  type t 'a;
+};
+
+type classAttributesOnKeys = <
+  key1 [@bs.set] : string,
+  key2 [@bs.get null] : (Js.t int) [@onType2]
+>;
