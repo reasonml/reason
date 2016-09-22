@@ -253,7 +253,7 @@
   {
     'comment': 'Operator'
     'name': 'keyword.operator.reason'
-    'match': '(\\+|-|\\|>|>>=|!==|!=|/|\\*|=|<=|>=|\\^|&|\\||!|%|<<|>>|>|<)'
+    'match': '(\\+|-|\\|>|>>=|!==|===|!=|:=|==|/|\\*|=|<=|>=|\\^|&|\\||!|%|<<|>>|>|<)'
   }
   # Standard types and traits
   { 'include': '#core_types' }
