@@ -4238,7 +4238,7 @@ meth_list_with_leading_lesslident:
 ;
 
 field:
-    label COLON poly_type attributes           { ($1, $4, $3) }
+    label attributes COLON poly_type           { ($1, $2, $4) }
 ;
 label:
     LIDENT                                      { $1 }
