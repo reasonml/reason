@@ -3254,10 +3254,10 @@ class printer  ()= object(self:'self)
   method unparseExprRecurse x =
     (* If there are any attributes, render unary like `(~-) x [@ppx]`, and infix like `(+) x y [@attr]` *)
     let (arityAttrs, docAtrs, stdAttrs, jsxAttrs) = partitionAttributes x.pexp_attributes in
-    let withoutVisibleAttrs = {x with pexp_attributes=arityAttrs} in
     (* If there's any attributes, recurse without them, then apply them to
        the ends of functions, or simplify infix printings then append. *)
     if stdAttrs <> [] then
+      let withoutVisibleAttrs = {x with pexp_attributes=(arityAttrs @ jsxAttrs)} in
       let attributesAsList = (List.map self#attribute stdAttrs) in
       let itms = match self#unparseExprRecurse withoutVisibleAttrs with
         | SpecificInfixPrecedence ({reducePrecedence; shiftPrecedence}, itm) -> [formatPrecedence ~loc:x.pexp_loc itm]
@@ -3313,10 +3313,29 @@ class printer  ()= object(self:'self)
           SpecificInfixPrecedence ({reducePrecedence=prec; shiftPrecedence=Token printedIdent}, expr)
         (* Will need to be rendered in self#expression as (~-) x y z. *)
         | (_, _) ->
+        (* This case will happen when there is something like
+
+             Bar.createElement a::1 b::2 [] [@bla] [@JSX]
+
+           At this point the bla will be stripped (because it's a visible
+           attribute) but the JSX will still be there.
+         *)
+        (match detectJSXComponent e.pexp_desc x.pexp_attributes ls with
+          | Some componentName -> FunctionApplication [self#formatJSXComponent componentName ls]
+          | None ->
+          (* If there was a JSX attribute BUT JSX component wasn't detected,
+             that JSX attribute needs to be pretty printed so it doesn't get
+             lost
+           *)
+          let maybeJSXAttr = (match jsxAttrs with
+            | [] -> []
+            | jsx -> (List.map self#attribute jsx)
+          ) in
           let theFunc = SourceMap (e.pexp_loc, (self#simplifyUnparseExpr e)) in
           (*reset here only because [function,match,try,sequence] are lower priority*)
           let theArgs = List.map self#reset#label_x_expression_param ls in
-          FunctionApplication (theFunc::theArgs)
+          FunctionApplication (theFunc::theArgs @ maybeJSXAttr)
+        )
       )
     )
     | Pexp_construct (li, Some eo) when not (is_simple_construct (view_expr x)) -> (
