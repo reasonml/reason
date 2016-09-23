@@ -31,6 +31,11 @@ let module One = {
       children => {
     displayName: "test"
   };
+  let createElementobvioustypo
+      test::test
+      children => {
+    displayName: "test"
+  };
 };
 
 let module Two = {
@@ -250,7 +255,7 @@ let a = <Foo a=b b=d> 5 </Foo>;
 
 let a = <Foo a> 0.55 </Foo>;
 
-let a = Foo.createElement "";
+let a = Foo.createElement "" [@JSX];
 
 let ident = <Foo> a </Foo>;
 
@@ -383,3 +388,30 @@ let sameButWithSpaces = [
 type thisType = [ | `Foo | `Bar];
 
 type t 'a = [< thisType] as 'a;
+
+let asd =
+  <One test=true foo=2> "a" "b" </One> [@foo];
+
+let asd2 =
+  One.createElementobvioustypo
+  test::false
+  ["a", "b"]
+  [@JSX]
+  [@foo];
+
+let span
+    test::(test: bool)
+    foo::(foo: int)
+    children => 1;
+
+let asd =
+  <span test=true foo=2> "a" "b" </span> [@foo];
+
+/* "video" call doesn't end with a list, so the expression isn't converted to JSX */
+let video test::(test: bool) children => children;
+
+let asd2 = video test::false 10 [@JSX] [@foo];
+
+let div children => 1;
+
+((fun () => div) ()) [] [@JSX];

@@ -18,6 +18,7 @@ let module Foo = {
 
 let module One = {
     let createElement test::test=? foo::foo=? children => {displayName: "test"};
+    let createElementobvioustypo test::test children => {displayName: "test"};
 };
 
 let module Two = {
@@ -212,7 +213,7 @@ let sameButWithSpaces = [ <> <Foo /> </>, <> <Bar /> </>, ...sameButWithSpaces];
 /*
  * Test named tag right next to an open bracket.
  */
- 
+
 let listOfJsx = [];
 let listOfJsx = [<Foo> </Foo>];
 let listOfJsx = [<Foo />, <Bar /> ];
@@ -229,3 +230,16 @@ let sameButWithSpaces = [<Foo />, <Bar />, ...sameButWithSpaces];
  */
 type thisType = [`Foo  | `Bar];
 type t 'a = [< thisType ] as 'a;
+
+let asd = (One.createElement test::true foo::2 ["a", "b"]) [@JSX] [@foo];
+let asd2 = (One.createElementobvioustypo test::false ["a", "b"]) [@JSX] [@foo];
+
+let span test::(test : bool) foo::(foo : int) children => 1;
+let asd = span test::true foo::2 ["a", "b"] [@JSX] [@foo];
+/* "video" call doesn't end with a list, so the expression isn't converted to JSX */
+let video test::(test : bool) children => children;
+let asd2 = video test::false 10 [@JSX] [@foo];
+
+
+let div children => 1;
+(((fun () => div) ()) [])[@JSX];
