@@ -399,8 +399,7 @@ let mktailpat_extension loc seq ext_opt =
 let makeFrag loc body =
   let attribute = ({txt = "JSX"; loc = loc}, PStr []) in
   { body with pexp_attributes = [attribute] @ body.pexp_attributes }
-      
-      
+
 (* Applies attributes to the structure item, not the expression itself. Makes
  * structure item have same location as expression. *)
 let mkstrexp e attrs =
@@ -2758,9 +2757,9 @@ _simple_expr:
      tokens, when a list begins witha JSX tag. So we special case it.
      (todo: pick totally different syntax for polymorphic variance types to avoid
      the issue alltogether.
-     
+
      first token
-     /\
+     /     \
      [<ident    args />  , remainingitems ]
      [<>                 , remainingitems ]
    */
@@ -3298,7 +3297,6 @@ expr_comma_seq_extension:
 
   Used when parsing `[<> </>, remaining]`. We know that there is at
   least one item, so we either should have a comma + more, or nothing.
-  
 expr_comma_seq_extension_second_item:
   | DOTDOTDOT expr_optional_constraint RBRACKET
     { ([], Some $2) }

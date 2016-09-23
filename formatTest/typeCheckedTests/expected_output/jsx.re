@@ -128,25 +128,33 @@ let module List3 = {
   };
 };
 
-let (/><) a b => a + b;
+let (\/><) a b => a + b;
 
 let (><) a b => a + b;
 
-let (/>) a b => a + b;
+let (\/>) a b => a + b;
 
 let (><\/) a b => a + b;
 
-let tag1 = 5 />< 6;
+let tag1 = 5 \/>< 6;
 
 let tag2 = 5 >< 7;
 
-let tag3 = 5 /> 7;
+let tag3 = 5 \/> 7;
 
 let tag4 = 5 ><\/ 7;
 
 let b = 2;
 
 let selfClosing = <Foo />;
+
+let selfClosing = <Foo />;
+
+let selfClosing = <Foo />;
+
+let selfClosing2 = <Foo a=1 b=true />;
+
+let selfClosing2 = <Foo a=1 b=true />;
 
 let selfClosing2 = <Foo a=1 b=true />;
 
@@ -155,6 +163,41 @@ let selfClosing3 =
     a="really long values that should"
     b="cause the entire thing to wrap"
   />;
+
+let a = <Foo> <Bar c=(fun a => a + 2) /> </Foo>;
+
+let a = <Foo> <Bar c=(fun a => a + 2) /> </Foo>;
+
+let a = <Foo> <Bar c=(fun a => a + 2) /> </Foo>;
+
+let a3 = <So> <Much> <Nesting /> </Much> </So>;
+
+let a3 = <So> <Much> <Nesting /> </Much> </So>;
+
+let a3 = <So> <Much> <Nesting /> </Much> </So>;
+
+let a4 =
+  <Sibling>
+    <One test=true foo=b /> <Two foo=b />
+  </Sibling>;
+
+let a4 =
+  <Sibling>
+    <One test=true foo=b /> <Two foo=b />
+  </Sibling>;
+
+let a4 =
+  <Sibling>
+    <One test=true foo=b /> <Two foo=b />
+  </Sibling>;
+
+let a5 = <Foo> "testing a string here" </Foo>;
+
+let a5 = <Foo> "testing a string here" </Foo>;
+
+let a5 = <Foo> "testing a string here" </Foo>;
+
+let selfClosing2 = <Foo a=1 b=true />;
 
 let a = <Foo> <Bar c=(fun a => a + 2) /> </Foo>;
 
@@ -235,6 +278,8 @@ let lotsOfArguments =
 
 let lowerCase = <div argument1=1 />;
 
+let a = <Foo a> 5 </Foo>;
+
 let b = 0;
 
 let d = 0;
@@ -248,6 +293,10 @@ let a = <Foo a=b> 5 </Foo>;
 
 let a = <Foo a=b b=d> 5 </Foo>;
 
+let a = <Foo a=b b=d> 5 </Foo>;
+
+let a = <Foo a=b b=d> 5 </Foo>;
+
 let a = <Foo a> 0.55 </Foo>;
 
 let a = Foo.createElement "";
@@ -255,6 +304,8 @@ let a = Foo.createElement "";
 let ident = <Foo> a </Foo>;
 
 let fragment1 = <> <Foo /> <Foo /> </>;
+
+let fragment2 = <> <Foo /> <Foo /> </>;
 
 let fragment2 = <> <Foo /> <Foo /> </>;
 

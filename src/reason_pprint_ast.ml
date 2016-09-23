@@ -581,7 +581,6 @@ let getPrintableUnaryIdent s =
     String.sub s 1 (String.length s -1)
   else s
 
-
 (* determines if the string is an infix string.
    checks backwards, first allowing a renaming postfix ("_102") which
    may have resulted from Pexp -> Texp -> Pexp translation, then checking
@@ -855,9 +854,125 @@ let default = new Pprintast.printer ()
 type funcReturnStyle =
   | ReturnValOnSameLine
 
+(* TODO(ben): Comment this out. It's a bit complicated. *)
+let rec temporaryJSXHack loc l attributes =
+  let rec isLabeledArgsAndFinalUnit numOfArgs arguments =
+    match arguments with
+      | ("", {pexp_desc = Pexp_construct ({txt = Lident "()"}, _)}) :: [] when numOfArgs > 0 -> true
+      (* Any other kind of non-named argument besides the above disqualifies *)
+      | ("", _) :: _ -> false
+      | (lbl, _) :: tail -> isLabeledArgsAndFinalUnit (numOfArgs + 1) tail
+      | [] -> numOfArgs = 0 (* If there are no arguments, it's Js.null so it's ok. *)
+  in
+  let arrayToList arr loc attrbutes =
+    let ghostLoc = {loc with loc_ghost = true} in
+    let endArg = {
+      pexp_desc = Pexp_construct ({txt = Lident "[]"; loc = ghostLoc}, None);
+      pexp_loc = ghostLoc;
+      pexp_attributes = attrbutes;
+    } in
+    match arr with
+    | [] -> endArg
+    | _ -> List.fold_right (
+      fun v acc -> begin
+        let loc = {v.pexp_loc with loc_ghost = true} in
+        {
+          v with
+          pexp_desc = Pexp_construct ({txt = Lident "::"; loc}, Some ({v with pexp_desc = Pexp_tuple [v; acc]; pexp_loc = loc;}));
+          pexp_loc = loc;}
+      end)
+    arr
+    endArg
+   in
+  match (Longident.flatten loc.txt) with
+  | "React" :: "createElement" :: [] -> (
+    match l with
+    | ("", {pexp_desc = Pexp_ident comp}) :: args -> (
+      match (Longident.last comp.txt) with
+      | "comp" ->
+        let componentName = String.concat "." (List.rev (List.tl (List.rev (Longident.flatten comp.txt)))) in
+        let propsTree = List.hd args in
+        let convertedArguments = (
+          (* either it's Js.null or it's (componentName.props arg1::1 ()) *)
+          match propsTree with
+          | ("", {pexp_desc = Pexp_ident loc}) -> (
+            match (Longident.flatten loc.txt) with
+            | "Js" :: "null" :: [] -> Some []
+            | _ -> None
+          )
+          | ("", {pexp_desc = Pexp_apply ({pexp_desc = Pexp_ident propsName}, l)}) -> (
+            match (Longident.last propsName.txt) with
+            (* Could add a "hint" here. *)
+            | "props" ->
+              let otherComponentName = String.concat "." (List.rev (List.tl (List.rev (Longident.flatten comp.txt)))) in
+              if otherComponentName = componentName then
+                Some l
+              else (* "did you mean X" ? *)
+                None
+            | _ -> None
+          )
+          | _ -> None
+        ) in
+        (match convertedArguments with
+          | None -> None
+          | Some unwrappedArguments ->
+            if (isLabeledArgsAndFinalUnit 0 unwrappedArguments) then
+              let children = (match (List.tl args) with
+              | ("", {pexp_desc = Pexp_array children; pexp_loc; pexp_attributes}) :: rest ->
+                Some (children, pexp_loc, pexp_attributes)
+              | _ -> None
+              ) in
+              (match children with
+                | None -> None
+                | Some (unwrappedChildren, loc, attributes) ->
+                (* Final return here *)
+                Some (componentName, unwrappedArguments @ [("", arrayToList unwrappedChildren loc attributes)])
+              )
+            else
+              None
+        )
+      | _ -> None (* Opportunity for "Did you mean ..." *)
+    )
+    (* Unnamed argument that is an array, should be last *)
+    | _ -> None
+  )
+  | _ -> None (* Opportunity for "Did you mean ..." *)
+
 let rec detectJSXComponent e attributes l =
-  match (e, attributes) with
-    | (Pexp_ident loc, ({txt = "JSX"; _}, PStr []) :: tail) ->
+  let (arityAttrs, docAtrs, stdAttrs, jsxAttrs) = partitionAttributes attributes in
+  match (e, stdAttrs, jsxAttrs) with
+    (* matches: Foo.createElement ... [@JSX]*)
+    | (Pexp_apply ({pexp_desc = Pexp_ident loc}, l), _, jsx::_) -> (
+      (* TODO: Soon, we will allow the final argument to be an identifier which
+         represents the entire list. This would be written as
+         `<tag>...list</tag>`. If you imagine there being an implicit [] inside
+         the tag, then it would be consistent with array spread:
+         [...list] evaluates to the thing as list.
+      *)
+      let rec isLabeledArgsAndFinalList arguments =
+        match arguments with
+        | ("", {pexp_desc = Pexp_construct ({txt = Lident "::"}, _)}) :: []
+        | ("", {pexp_desc = Pexp_construct ({txt = Lident "[]"}, _)}) :: [] -> true
+        (* Any other kind of non-named argument besides the above disqualifies *)
+        | ("", _) :: _ -> false
+        | (lbl, _)::tail -> isLabeledArgsAndFinalList tail
+        | [] -> false
+      in
+      let moduleNameList = List.rev (List.tl (List.rev (Longident.flatten loc.txt))) in
+      if List.length moduleNameList > 0 then
+        if Longident.last loc.txt = "createElement" && isLabeledArgsAndFinalList l then
+          Some (String.concat "." moduleNameList, l)
+        else
+          None
+      else if isLabeledArgsAndFinalList l then
+        Some (Longident.last loc.txt, l)
+      else
+        None
+    )
+    (* match React.createElement Foo.comp  *)
+    | (Pexp_apply ({pexp_desc = Pexp_ident loc}, l), _, _) ->
+      temporaryJSXHack loc l attributes
+    | (Pexp_ident loc, _, jsx::_) ->
       let rec checkChildren arguments nrOfChildren =
         match arguments with
         | ("", {pexp_desc = Pexp_construct ({txt = Lident "::"}, _)}) :: tail
@@ -870,14 +985,14 @@ let rec detectJSXComponent e attributes l =
       let moduleNameList = List.rev (List.tl (List.rev (Longident.flatten loc.txt))) in
       if List.length moduleNameList > 0 then
         if Longident.last loc.txt = "createElement" && checkChildren l 0 then
-          Some (String.concat "." moduleNameList)
+          Some (String.concat "." moduleNameList, l)
         else
           None
       else if checkChildren l 0 then
-        Some (Longident.last loc.txt)
+        Some (Longident.last loc.txt, l)
       else
         None
-    | (Pexp_ident loc,  hd :: tail) -> detectJSXComponent e tail l
+    | (Pexp_ident loc,  hd :: tail, _) -> detectJSXComponent e tail l
     | _ -> None
 
 let detectTernary l = match l with
@@ -3026,86 +3141,62 @@ class printer  ()= object(self:'self)
     let (arityAttrs, docAtrs, stdAttrs, jsxAttrs) = partitionAttributes x.pexp_attributes in
     match (x.pexp_desc, stdAttrs, jsxAttrs) with
     | (_, attrHd::attrTl, []) -> None (* Has some printed attributes - not simple *)
-    | (Pexp_apply ({pexp_desc=Pexp_ident loc}, l), [], jsx::_) -> (
-      (* TODO: Soon, we will allow the final argument to be an identifier which
-         represents the entire list. This would be written as
-         `<tag>...list</tag>`. If you imagine there being an implicit [] inside
-         the tag, then it would be consistent with array spread:
-         [...list] evaluates to the thing as list.
-      *)
-      let rec isLabeledArgsAndFinalList arguments =
-        match arguments with
-        | ("", {pexp_desc = Pexp_construct ({txt = Lident "::"}, _)}) :: []
-        | ("", {pexp_desc = Pexp_construct ({txt = Lident "[]"}, _)}) :: [] -> true
-        (* Any other kind of non-named argument besides the above disqualifies *)
-        | ("", _) :: _ -> false
-        | (lbl, _)::tail -> isLabeledArgsAndFinalList tail
-        | [] -> false
-      in
-      let moduleNameList = List.rev (List.tl (List.rev (Longident.flatten loc.txt))) in
-      if List.length moduleNameList > 0 then
-        if Longident.last loc.txt = "createElement" && isLabeledArgsAndFinalList l then
-          Some (self#formatJSXComponent (String.concat "." moduleNameList) l)
-        else
-          None
-      else if isLabeledArgsAndFinalList l then
-        Some (self#formatJSXComponent (Longident.last loc.txt) l)
-      else
-        None
-    )
-    | (Pexp_apply (eFun, ls), [], []) -> (
-      match (printedStringAndFixityExpr eFun, ls) with
-      (* We must take care not to print two subsequent prefix operators without
-         spaces between them (`! !` could become `!!` which is totally
-         different).  *)
-      | (AlmostSimplePrefix prefixStr, [("", rightExpr)]) ->
-        let forceSpace = match rightExpr.pexp_desc with
-          | Pexp_apply (ee, lsls) ->
-            (match printedStringAndFixityExpr ee with | AlmostSimplePrefix _ -> true | _ -> false)
-          | _ -> false
-        in
-        let rightItm = self#simplifyUnparseExpr rightExpr in
-        Some (label ~space:forceSpace (atom prefixStr) rightItm)
-      | (Infix infixStr, [(_, leftExpr); (_, rightExpr)]) when infixStr.[0] = '#' ->
-        (* Little hack. We check the right expression to see if it's also a SHARPOP, if it is
-           we call `formatPrecedence` on the result of `simplifyUnparseExpr` to add the appropriate
-           parens. This is done because `unparseExpr` doesn't seem to be able to handle
-           high enough precedence things. Using the normal precedence handling, something like
+    | (Pexp_apply (eFun, ls), [], _) -> (
+      match detectJSXComponent x.pexp_desc x.pexp_attributes ls with
+        | Some (componentName, args) -> Some (self#formatJSXComponent componentName args)
+        | None -> (match (printedStringAndFixityExpr eFun, ls) with
+        (* We must take care not to print two subsequent prefix operators without
+           spaces between them (`! !` could become `!!` which is totally
+           different).  *)
+        | (AlmostSimplePrefix prefixStr, [("", rightExpr)]) ->
+          let forceSpace = match rightExpr.pexp_desc with
+            | Pexp_apply (ee, lsls) ->
+              (match printedStringAndFixityExpr ee with | AlmostSimplePrefix _ -> true | _ -> false)
+            | _ -> false
+          in
+          let rightItm = self#simplifyUnparseExpr rightExpr in
+          Some (label ~space:forceSpace (atom prefixStr) rightItm)
+        | (Infix infixStr, [(_, leftExpr); (_, rightExpr)]) when infixStr.[0] = '#' ->
+          (* Little hack. We check the right expression to see if it's also a SHARPOP, if it is
+             we call `formatPrecedence` on the result of `simplifyUnparseExpr` to add the appropriate
+             parens. This is done because `unparseExpr` doesn't seem to be able to handle
+             high enough precedence things. Using the normal precedence handling, something like
 
-              ret #= (Some 10)
+                ret #= (Some 10)
 
-            gets pretty printed to
+              gets pretty printed to
 
-              ret #= Some 10
+                ret #= Some 10
 
-            Which seems to indicate that the pretty printer doesn't think `#=` is of
-            high enough precedence for the parens to be worth adding back. *)
-        let rightItm = (
-          match rightExpr.pexp_desc with
-          | Pexp_apply (eFun, ls) -> (
-            match (printedStringAndFixityExpr eFun, ls) with
-              | (Infix infixStr, [(_, _); (_, _)]) when infixStr.[0] = '#' -> formatPrecedence (self#simplifyUnparseExpr rightExpr)
-              | _ -> self#simplifyUnparseExpr rightExpr
-          )
-          | _ -> self#simplifyUnparseExpr rightExpr
-        ) in
-        Some (makeList [self#simple_enough_to_be_lhs_dot_send leftExpr; atom infixStr; rightItm])
-      | (_, _) -> (
-        match (eFun, ls) with
-        | ({pexp_desc = Pexp_ident {txt = Ldot (Lident ("String"),"get")}}, [(_,e1);(_,e2)]) ->
-          Some (self#access "[" "]" (self#simplifyUnparseExpr e1) (self#unparseExpr e2))
-        | ({pexp_desc = Pexp_ident {txt = Ldot (Lident ("Array"),"get")}}, [(_,e1);(_,e2)]) ->
-          Some (self#access "(" ")" (self#simplifyUnparseExpr e1) (self#unparseExpr e2))
-        | (
-            {pexp_desc= Pexp_ident {txt=Ldot (Ldot (Lident "Bigarray", "Genarray" ), "get")}},
-            [(_,a); (_,{pexp_desc=Pexp_array ls})]
-          ) ->
-          let formattedList = List.map self#simplifyUnparseExpr ls in
-          Some (self#access "{" "}" (self#simplifyUnparseExpr a) (makeCommaBreakableList formattedList))
-        | ({pexp_desc= Pexp_ident {txt=Ldot (Ldot (Lident "Bigarray", ("Array1"|"Array2"|"Array3")), "get")}}, (_,a)::rest) ->
-          let formattedList = List.map self#simplifyUnparseExpr (List.map snd rest) in
-          Some (self#access "{" "}" (self#simplifyUnparseExpr a) (makeCommaBreakableList formattedList))
-        | _ -> None
+              Which seems to indicate that the pretty printer doesn't think `#=` is of
+              high enough precedence for the parens to be worth adding back. *)
+          let rightItm = (
+            match rightExpr.pexp_desc with
+            | Pexp_apply (eFun, ls) -> (
+              match (printedStringAndFixityExpr eFun, ls) with
+                | (Infix infixStr, [(_, _); (_, _)]) when infixStr.[0] = '#' -> formatPrecedence (self#simplifyUnparseExpr rightExpr)
+                | _ -> self#simplifyUnparseExpr rightExpr
+            )
+            | _ -> self#simplifyUnparseExpr rightExpr
+          ) in
+          Some (makeList [self#simple_enough_to_be_lhs_dot_send leftExpr; atom infixStr; rightItm])
+        | (_, _) -> (
+          match (eFun, ls) with
+          | ({pexp_desc = Pexp_ident {txt = Ldot (Lident ("String"),"get")}}, [(_,e1);(_,e2)]) ->
+            Some (self#access "[" "]" (self#simplifyUnparseExpr e1) (self#unparseExpr e2))
+          | ({pexp_desc = Pexp_ident {txt = Ldot (Lident ("Array"),"get")}}, [(_,e1);(_,e2)]) ->
+            Some (self#access "(" ")" (self#simplifyUnparseExpr e1) (self#unparseExpr e2))
+          | (
+              {pexp_desc= Pexp_ident {txt=Ldot (Ldot (Lident "Bigarray", "Genarray" ), "get")}},
+              [(_,a); (_,{pexp_desc=Pexp_array ls})]
+            ) ->
+            let formattedList = List.map self#simplifyUnparseExpr ls in
+            Some (self#access "{" "}" (self#simplifyUnparseExpr a) (makeCommaBreakableList formattedList))
+          | ({pexp_desc= Pexp_ident {txt=Ldot (Ldot (Lident "Bigarray", ("Array1"|"Array2"|"Array3")), "get")}}, (_,a)::rest) ->
+            let formattedList = List.map self#simplifyUnparseExpr (List.map snd rest) in
+            Some (self#access "{" "}" (self#simplifyUnparseExpr a) (makeCommaBreakableList formattedList))
+          | _ -> None
+        )
       )
     )
     | _ ->  None
@@ -3494,60 +3585,59 @@ class printer  ()= object(self:'self)
     let rec processChildren children result =
       match children with
       | {pexp_desc = Pexp_constant (constant)} :: remainingChildren ->
-        processChildren remainingChildren (result @ [self#constant constant])
+       processChildren remainingChildren (result @ [self#constant constant])
       | {pexp_desc = Pexp_construct ({txt = Lident "::"}, Some {pexp_desc = Pexp_tuple(children)} )} :: remainingChildren ->
-        processChildren (remainingChildren @ children) result
+       processChildren (remainingChildren @ children) result
       | {pexp_desc = Pexp_apply(expr, l); pexp_attributes} :: remainingChildren ->
-        (match detectJSXComponent expr.pexp_desc pexp_attributes l with
-          | Some componentName -> processChildren remainingChildren (result @ [self#formatJSXComponent componentName l])
-          | None -> processChildren remainingChildren (result @ [self#simplifyUnparseExpr (List.hd children)]))
+       (match detectJSXComponent expr.pexp_desc pexp_attributes l with
+         | Some (componentName, args) -> processChildren remainingChildren (result @ [self#formatJSXComponent componentName args])
+         | None -> processChildren remainingChildren (result @ [self#simplifyUnparseExpr (List.hd children)]))
       | {pexp_desc = Pexp_ident li} :: remainingChildren ->
-        processChildren remainingChildren (result @ [self#longident_loc li])
+       processChildren remainingChildren (result @ [self#longident_loc li])
       | {pexp_desc = Pexp_construct ({txt = Lident "[]"}, None)} :: remainingChildren -> processChildren remainingChildren result
       | head :: remainingChildren -> processChildren remainingChildren (result @ [self#simplifyUnparseExpr head])
       | [] -> [makeList ~break:IfNeed ~sep:" " ~inline:(true, true) result]
-
-    and processAttributes arguments processedAttrs children =
-      match arguments with
+    and processAttributes attributes processedAttrs children =
+      match attributes with
       | ("", {pexp_desc = Pexp_construct (_, None)}) :: tail ->
-        processAttributes tail processedAttrs []
+       processAttributes tail processedAttrs []
       | ("", {pexp_desc = Pexp_construct ({txt = Lident"::"}, Some {pexp_desc = Pexp_tuple(components)} )}) :: tail ->
-        processAttributes tail processedAttrs (processChildren components [])
+       processAttributes tail processedAttrs (processChildren components [])
       | (lbl, expression) :: tail ->
-         let nextAttr =
-           match expression.pexp_desc with
-           | Pexp_ident (ident) when (Longident.last ident.txt) = lbl -> atom lbl
-           | _ -> makeList ([atom lbl; atom "="; self#simplifyUnparseExpr expression])
-         in
-         processAttributes tail (nextAttr :: processedAttrs) children
+        let nextAttr =
+          match expression.pexp_desc with
+          | Pexp_ident (ident) when (Longident.last ident.txt) = lbl -> atom lbl
+          | _ -> makeList ([atom lbl; atom "="; self#simplifyUnparseExpr expression])
+        in
+        processAttributes tail (nextAttr :: processedAttrs) children
       | [] -> (processedAttrs, children)
     in
-    let (reversedAttributes, children) = processAttributes args [] [] in
+    let (reversedAttributes, children) = processAttributes args [] []
+    in
     if List.length children = 0 then
       makeList
-        ~break:IfNeed
-        ~wrap:("<" ^ componentName, "/>")
-        ~pad:(true, true)
-        ~inline:(false, false)
-        ~postSpace:true
-        (List.rev reversedAttributes)
+       ~break:IfNeed
+       ~wrap:("<" ^ componentName, "/>")
+       ~pad:(true, true)
+       ~inline:(false, false)
+       ~postSpace:true
+       (List.rev reversedAttributes)
     else
-      let (openingTag, attributes) =
-        match reversedAttributes with
-        | [] -> (componentName ^ ">", [])
-        | revAttrHd::revAttrTl -> (
-          componentName,
-          List.rev (makeList ~break:Never [revAttrHd; atom ">"] :: revAttrTl)
-        )
-      in
+    let (openingTag, attributes) =
+       match reversedAttributes with
+       | [] -> (componentName ^ ">", [])
+       | revAttrHd::revAttrTl -> (
+         componentName,
+         List.rev (makeList ~break:Never [revAttrHd; atom ">"] :: revAttrTl)
+       )
+    in
       makeList
-        ~inline:(false, false)
-        ~break:IfNeed
-        ~pad:(true, true)
-        ~postSpace:true
-        ~wrap:("<" ^ openingTag, "</" ^ componentName ^ ">")
-        (attributes @ children)
-
+       ~inline:(false, false)
+       ~break:IfNeed
+       ~pad:(true, true)
+       ~postSpace:true
+       ~wrap:("<" ^ openingTag, "</" ^ componentName ^ ">")
+       (attributes @ children)
 
   (* Creates a list of simple module expressions corresponding to module
      expression or functor application. *)
@@ -4619,7 +4709,7 @@ class printer  ()= object(self:'self)
                         formatChildren tail (formatted @ [self#constant constant])
                       | {pexp_desc = Pexp_apply(expr, l); pexp_attributes} :: tail ->
                          (match detectJSXComponent expr.pexp_desc pexp_attributes l with
-                          | Some componentName -> formatChildren tail (formatted @ [self#formatJSXComponent componentName l])
+                          | Some (componentName, args) -> formatChildren tail (formatted @ [self#formatJSXComponent componentName args])
                           | None -> formatChildren tail (formatted @ [self#simplifyUnparseExpr (List.hd children)]))
                       | head :: tail -> formatChildren tail (formatted @ [self#unparseExpr head])
                       | [] -> [makeList ~sep:" " formatted]

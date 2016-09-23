@@ -90,16 +90,45 @@ let tag4 = 5 ><\/ 7;
 
 let b = 2;
 let selfClosing = <Foo />;
+let selfClosing = Foo.createElement [] [@JSX];
+let selfClosing = React.createElement Foo.comp Js.null [||];
+
 let selfClosing2 = <Foo a=1 b=true />;
+let selfClosing2 = Foo.createElement a::1 b::true [] [@JSX];
+let selfClosing2 = React.createElement Foo.comp (Foo.props a::1 b::true ()) [||];
+
 let selfClosing3 =
   <Foo
     a="really long values that should"
     b="cause the entire thing to wrap"
   />;
+
+let a = <Foo> <Bar c=(fun a => a + 2) /> </Foo>;
+let a = Foo.createElement [Bar.createElement c::(fun a => a + 2) [] [@JSX] ] [@JSX];
+let a = React.createElement Foo.comp Js.null [|React.createElement Bar.comp (Bar.props c::(fun a => a + 2) ()) [||] |];
+
+let a3 = <So> <Much> <Nesting> </Nesting> </Much> </So>;
+let a3 = So.createElement [Much.createElement [Nesting.createElement [][@JSX]][@JSX]] [@JSX];
+let a3 = React.createElement So.comp Js.null [|
+  React.createElement Much.comp Js.null [|
+    React.createElement Nesting.comp Js.null [||]|]|];
+
+let a4 = <Sibling> <One test=true foo=b /> <Two foo=b> </Two> </Sibling>;
+let a4 = Sibling.createElement [One.createElement test::true foo::b [][@JSX], Two.createElement foo::b [][@JSX]][@JSX];
+let a4 = React.createElement Sibling.comp Js.null [|
+  React.createElement One.comp (One.props test::true foo::b ()) [||],
+  React.createElement Two.comp (Two.props foo::b ()) [||]|];
+
+let a5 = <Foo>"testing a string here"</Foo>;
+let a5 = Foo.createElement ["testing a string here"] [@JSX];
+let a5 = React.createElement Foo.comp Js.null [|"testing a string here"|];
+
+let selfClosing2 = <Foo a=1 b=true />;
 let a = <Foo> <Bar c=(fun a => a + 2) /> </Foo>;
 let a3 = <So> <Much> <Nesting> </Nesting> </Much> </So>;
 let a4 = <Sibling> <One test=true foo=b /> <Two foo=b> </Two> </Sibling>;
 let a5 = <Foo>"testing a string here"</Foo>;
+
 let a6 =
   <Foo2>
     <Text>
@@ -131,6 +160,7 @@ let testFunc b => b;
 let jsxInFnCall = testFunc (<Foo />);
 let lotsOfArguments = <LotsOfArguments argument1=1 argument2=2 argument3=3 argument4=4 argument5=5 argument6="test"> <Namespace.Foo /> </LotsOfArguments>;
 let lowerCase = <div argument1=1 />;
+let a = <Foo a>5</Foo>;
 
 let b = 0;
 let d = 0;
@@ -140,11 +170,16 @@ let d = 0;
 let a = <Foo a=a>5</Foo>;
 let a = <Foo a=b>5</Foo>;
 let a = <Foo a=b b=d>5</Foo>;
+let a = Foo.createElement a::b b::d [5][@JSX];
+let a = React.createElement Foo.comp (Foo.props a::b b::d ()) [|5|];
 let a = <Foo a>0.55</Foo>;
 let a = Foo.createElement "" [@JSX];
 let ident = <Foo>{a}</Foo>;
 let fragment1 = <> <Foo /> <Foo /> </>;
+
 let fragment2 = <> <Foo /> <Foo /> </>;
+let fragment2 = [React.createElement Foo.comp Js.null [||], React.createElement Foo.comp Js.null [||]][@JSX];
+
 let fragment3 = <> <Foo /> <Foo /> </>;
 let fragment4 = <> <Foo /> <Foo /> </>;
 let fragment5 = <> <Foo> </Foo> <Foo> </Foo> </>;
@@ -212,7 +247,6 @@ let sameButWithSpaces = [ <> <Foo /> </>, <> <Bar /> </>, ...sameButWithSpaces];
 /*
  * Test named tag right next to an open bracket.
  */
- 
 let listOfJsx = [];
 let listOfJsx = [<Foo> </Foo>];
 let listOfJsx = [<Foo />, <Bar /> ];
