@@ -399,6 +399,19 @@ let asd2 =
   [@JSX]
   [@foo];
 
+let span
+    test::(test: bool)
+    foo::(foo: int)
+    children => 1;
+
+let asd =
+  <span test=true foo=2> "a" "b" </span> [@foo];
+
+/* "video" call doesn't end with a list, so the expression isn't converted to JSX */
+let video test::(test: bool) children => children;
+
+let asd2 = video test::false 10 [@JSX] [@foo];
+
 let div children => 1;
 
 ((fun () => div) ()) [] [@JSX];

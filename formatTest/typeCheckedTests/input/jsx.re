@@ -234,5 +234,12 @@ type t 'a = [< thisType ] as 'a;
 let asd = (One.createElement test::true foo::2 ["a", "b"]) [@JSX] [@foo];
 let asd2 = (One.createElementobvioustypo test::false ["a", "b"]) [@JSX] [@foo];
 
+let span test::(test : bool) foo::(foo : int) children => 1;
+let asd = span test::true foo::2 ["a", "b"] [@JSX] [@foo];
+/* "video" call doesn't end with a list, so the expression isn't converted to JSX */
+let video test::(test : bool) children => children;
+let asd2 = video test::false 10 [@JSX] [@foo];
+
+
 let div children => 1;
 (((fun () => div) ()) [])[@JSX];
