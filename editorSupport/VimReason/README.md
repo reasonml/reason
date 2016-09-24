@@ -87,15 +87,16 @@ passed to `refmt` (such as `-print-width`). The contents of
 expression. This allows you do dynamically determine the formatting arguments
 based on things like your window width.
 
-  " Always wrap at 90 columns
-  let g:vimreason_extra_args_expr_reason = '"-print-width 90"'
+```vim
+" Always wrap at 90 columns
+let g:vimreason_extra_args_expr_reason = '"-print-width 90"'
 
-  " Wrap at the window width
-  let g:vimreason_extra_args_expr_reason = '"-print-width " . ' .  "winwidth('.')"
+" Wrap at the window width
+let g:vimreason_extra_args_expr_reason = '"-print-width " . ' .  "winwidth('.')"
 
-  " Wrap at the window width but not if it exceeds 120 characters.
-  let g:vimreason_extra_args_expr_reason = '"-print-width " . ' .  "min([120, winwidth('.')])"
-
+" Wrap at the window width but not if it exceeds 120 characters.
+let g:vimreason_extra_args_expr_reason = '"-print-width " . ' .  "min([120, winwidth('.')])"
+```
 
 Key Mappings:
 =============
@@ -108,7 +109,9 @@ keymappings *only* for `reason` files, your vim must have been compiled with
 For example, the following maps `cmd + shift + m` to reformat only when editing
 a `reason` file.
 
-  autocmd FileType reason map <buffer> <D-M> :ReasonPrettyPrint<Cr>
+```vim
+autocmd FileType reason map <buffer> <D-M> :ReasonPrettyPrint<Cr>
+```
 
 
 Merlin:
@@ -133,22 +136,22 @@ Seriously - you should install `PairTools`. It is perhaps the best brace complet
 Once you have `PairTools`, add this configuration in your `.vimrc`:
 
 ```vim
-    autocmd FileType reason let g:pairtools_reason_pairclamp = 1
-    autocmd FileType reason let g:pairtools_reason_tagwrench = 0
-    autocmd FileType reason let g:pairtools_reason_jigsaw    = 1
-    autocmd FileType reason let g:pairtools_reason_autoclose  = 1
-    autocmd FileType reason let g:pairtools_reason_forcepairs = 0
-    autocmd FileType reason let g:pairtools_reason_closepairs = "(:),[:],{:}" . ',":"'
-    autocmd FileType reason let g:pairtools_reason_smartclose = 1
-    autocmd FileType reason let g:pairtools_reason_smartcloserules = '\w,(,&,\*'
-    autocmd FileType reason let g:pairtools_reason_antimagic  = 1
-    autocmd FileType reason let g:pairtools_reason_antimagicfield  = "Comment,String,Special"
-    autocmd FileType reason let g:pairtools_reason_pcexpander = 1
-    autocmd FileType reason let g:pairtools_reason_pceraser   = 1
-    autocmd FileType reason let g:pairtools_reason_tagwrenchhook = 'tagwrench#BuiltinNoHook'
-    autocmd FileType reason let g:pairtools_reason_twexpander = 0
-    autocmd FileType reason let g:pairtools_reason_tweraser   = 0
-    autocmd FileType reason let g:pairtools_reason_apostrophe = 0
+autocmd FileType reason let g:pairtools_reason_pairclamp = 1
+autocmd FileType reason let g:pairtools_reason_tagwrench = 0
+autocmd FileType reason let g:pairtools_reason_jigsaw    = 1
+autocmd FileType reason let g:pairtools_reason_autoclose  = 1
+autocmd FileType reason let g:pairtools_reason_forcepairs = 0
+autocmd FileType reason let g:pairtools_reason_closepairs = "(:),[:],{:}" . ',":"'
+autocmd FileType reason let g:pairtools_reason_smartclose = 1
+autocmd FileType reason let g:pairtools_reason_smartcloserules = '\w,(,&,\*'
+autocmd FileType reason let g:pairtools_reason_antimagic  = 1
+autocmd FileType reason let g:pairtools_reason_antimagicfield  = "Comment,String,Special"
+autocmd FileType reason let g:pairtools_reason_pcexpander = 1
+autocmd FileType reason let g:pairtools_reason_pceraser   = 1
+autocmd FileType reason let g:pairtools_reason_tagwrenchhook = 'tagwrench#BuiltinNoHook'
+autocmd FileType reason let g:pairtools_reason_twexpander = 0
+autocmd FileType reason let g:pairtools_reason_tweraser   = 0
+autocmd FileType reason let g:pairtools_reason_apostrophe = 0
 ```
 
 LICENSE
