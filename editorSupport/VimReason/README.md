@@ -87,6 +87,7 @@ passed to `refmt` (such as `-print-width`). The contents of
 expression. This allows you do dynamically determine the formatting arguments
 based on things like your window width.
 
+```vim
   " Always wrap at 90 columns
   let g:vimreason_extra_args_expr_reason = '"-print-width 90"'
 
@@ -95,7 +96,7 @@ based on things like your window width.
 
   " Wrap at the window width but not if it exceeds 120 characters.
   let g:vimreason_extra_args_expr_reason = '"-print-width " . ' .  "min([120, winwidth('.')])"
-
+```
 
 Key Mappings:
 =============
@@ -108,7 +109,9 @@ keymappings *only* for `reason` files, your vim must have been compiled with
 For example, the following maps `cmd + shift + m` to reformat only when editing
 a `reason` file.
 
+```vim
   autocmd FileType reason map <buffer> <D-M> :ReasonPrettyPrint<Cr>
+```
 
 
 Merlin:
