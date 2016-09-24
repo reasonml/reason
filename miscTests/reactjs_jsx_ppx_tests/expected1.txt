@@ -1,0 +1,40 @@
+type dom = {
+  createElement: unit -> unit;}
+let div = { createElement = (fun ()  -> ()) }
+let _ = div.createElement ()
+module Gah = struct let createElement () = () end
+let _ = Gah.createElement ()
+let asd = ((Bar.createElement ~foo:1 ~bar:2 ["a"; "b"])[@jsxa ][@foo ])
+let asd =
+  ((ReactRe.createElement Bar.comp (Bar.props ~foo:1 ~bar:2 ())
+      [|(Obj.magic "a");(Obj.magic "b")|])[@foo ])
+let _ =
+  ReactRe.createElement Baz.Beee.comp (Baz.Beee.props ~baz:2 ())
+    [|(Obj.magic "a");(Obj.magic "b")|]
+let _ = ReactRe.createElement Bar.comp Js.null [|(Obj.magic foo)|]
+let _ = ReactRe.createElement Bar.comp (Bar.props ~foo:1 ~bar:2 ()) [||]
+let _ =
+  ReactRe.createElement Bar.comp
+    (Bar.props
+       ~foo:(ReactRe.createElement Baz.comp
+               (Baz.props ~baz:(ReactRe.createElement Baaz.comp Js.null [||])
+                  ()) [||]) ()) [||]
+let _ = ReactRe.createElement Div.comp (Div.props ~foo:1 ~bar:2 ()) [||]
+let _ =
+  ReactRe.createElement Bar.comp Js.null
+    [|(Obj.magic
+         (ReactRe.createElement Baz.Beee.comp
+            (Baz.Beee.props ~baz:2
+               ~kek:(ReactRe.createElement Foo.comp Js.null [||]) ())
+            [|(Obj.magic "a");(Obj.magic "b")|]));(Obj.magic
+                                                     (ReactRe.createElement
+                                                        Bar.comp Js.null 
+                                                        [||]))|]
+let _ =
+  ReactRe.createElement "bar"
+    ([%bs.obj
+       {
+         foo = 1;
+         children =
+           (ReactRe.createElement "baz" ([%bs.obj { qux = 2 }]) [||])
+       }]) [||]

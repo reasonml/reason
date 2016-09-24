@@ -1,0 +1,3 @@
+Invalid_argument("JSX: the JSX attribute should be attached to a `YourModuleName.createElement` call. We saw `createElementLol` instead")
+File "miscTests/reactjs_jsx_ppx_tests/test4.re", line 1:
+Error: Error while running external preprocessor
