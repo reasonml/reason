@@ -49,6 +49,7 @@ run_utop: build
 
 test: build
 	./miscTests/rtopIntegrationTest.sh
+	./miscTests/jsxPpxTest.sh
 	cd formatTest; ./test.sh
 
 clean:
