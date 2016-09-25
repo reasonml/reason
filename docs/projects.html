@@ -6,7 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
   <meta name="viewport" content="width=device-width">
 
-  <title>Reason - compare to JavaScript</title>
+  <title>Reason - projects</title>
 
   <!-- Flatdoc -->
   <script src='support/vendor/jquery.js'></script>
@@ -27,135 +27,26 @@
 
 Reason Projects
 ==============
-Reason works with the build system that you use right now, but also paves the way
-for rapidly developing and sharing large projects.
 
-> Note: This Document Is Heavily Under Revision. Consider it a placeholder.
->
+Reason works with some existing build systems, and we're also developing
+new opinionated build/pacakge workflows.
 
-Reason currently integrates well into existing toolchains such as `ocamlbuild`,
-but `Reason` also provides a specification called `Reason Project` which
-specifies a workflow for how packages should connect together, and how they can be
-developed/built locally inside of directory based sandboxes. We will link to a
-reference implementation of this spec intended to demonstrate the workflow, but
-are looking forward to scalable implementations that integrate with various
-build tooling.
+Reason currently integrates well into existing toolchains such as `ocamlbuild`, and ships with a binary called `rebuild`
+which is a thin wrapper around `ocamlbuild`, but that ensures the right flags will be passed to the compiler for
+any files ending in `.re`.
 
-CommonML
------------
+We are also developing [`rebel`](https://github.com/reasonml/rebel), a new build workflow based on
+[`jenga`](https://github.com/janestreet/jenga). `Rebel` unifies a package and build workflow by applying
+some very simple/intuitive conventions.
 
-CommonML is a completely standalone project builder built on top of `npm` and
-`package.json` that acts as a reference implemention for the `Reason Project`
-specification. It's really easy to get started with, and makes it very easy to
-create/share several interconnected/namespaced packages.
+#### NPM Workflow
 
-`CommonML` is just a temporary example that should be replaced with something
-more scalable and that integrates well with `OPAM`. For now, it's a fun way to
-get started.
-
-
-
-Once you've
-[installed](https://github.com/facebook/reason/blob/master/README.md#install-stable)
-`Reason`, you can clone the example CommonML playground.
-
-###Example Project
-
-#### Clone the Sample Project
-
-Clone the example `Reason` project and use `npm` to install its dependencies.
-Several compilation modes are supported such as bytecode, native binary, and
-even debuggable `JavaScript`.
-
-```sh
-git clone git+ssh://git@github.com/jordwalke/ReasonExampleProject.git
-cd ReasonExampleProject
-npm install
-```
-
-###### Build Interpreted Mode
-
-The default compilation mode compiles very quickly, and is ideal for rapid
-development.
-
-```sh
-node ./node_modules/CommonML/build.js     # Build
-_build_byte/ReasonExampleProject/reasonExampleProject.out  # Run
-```
-
-
-###### Build for Native
-
-Passing `--compiler=native` will generate fast bare metal binaries.
-
-
-```sh
-node ./node_modules/CommonML/build.js --compiler=native
-_build_native/ReasonExampleProject/reasonExampleProject.out
-```
-
-###### Compile to `JavaScript`
-
-Passing `--forDebug=true --jSCompile=true` will compile debuggable `JavaScript`
-builds of your native application, with source maps support.
-
-```sh
-node ./node_modules/CommonML/build.js --forDebug=true --jsCompile=true
-node _build_byte/ReasonExampleProject/reasonExampleProject.out
-```
-
-###Modules and Package Visibility
-
-The `Reason Project` spec (which `CommonML` adheres to) creates opinionated
-conventions for defining namespaces for the code you write in `.re` files.
-
-**Who can access my modules?**:
-Suppose two packages exist as shown in the diagram. `MyModule.re` can access
-the module `Utils`, and `Utils.re` can access the module `MyModule`. If
-`YourProject` depends on `MyProject`, then `YourModule.re` can access
-`MyProject.MyModule` and `MyProject.Utils`. The build system does not support
-circular dependencies.
-
-    └── MyProject/
-        ├── package.json
-        └── src/
-            ├── MyModule.re
-            └── MyUtils/
-                └── Utils.re
-
-    └── YourProject/
-        ├── package.json   #depends on MyProject
-        └── src/
-            └── YourModule.re
-
-** Adding new privately visible modules **
-
-To add a new privately visible module, just add a new `YourModule.re` file
-anywhere in your project. Other internal modules will instantly be able to see
-it as `YourModule`. Adding a corresponding `YourModule.rei` in the same
-directory will ensure that compilation times remain fast, and allow you to
-constrain the type of `YourModule`.
-
-** Adding new publicly visible modules **
-
-The process for adding new publicly visible modules is the same as private
-modules, but they must be added to the `CommonML.exports` field of the
-`package.json`
-
-###Incremental Compilation
-
-Module signatures can greatly reduce compilation time by providing separate
-compilation boundaries. They can play the role of "header files" in some sense.
-If a module `X`'s, implementation changes we must recompile `X`.  If `X` had
-been explicitly constrained to have a signature `XSig` which has *not* changed,
-then other modules `Y`, `Z`, that depend on `X`, don't need to be recompiled
-against the new build for `X`. We merely need to *relink* the previous build
-artifacts for `Y` and `Z` against the new `X` artifact (which is much quicker).
-However, if `X` did *not* constrain its signature to `XSig`, `Y` and `Z` *must*
-be recompiled against the new artifact for `X`, and *then* relinked with `X`'s
-new artifact.
-
-> Note: Build system support for this optimization is not yet implemented.
+`Reason` also supports installation, and development via `npm` (v3).
+The [ExampleProject](https://github.com/reasonml/ExampleProject) demonstrates
+how to clone the example project and then use `npm install` to install everything
+needed (including `Reason`, editor support, and dependencies) into a `node_modules`
+sandbox. This example project specifies `Reason` as a dependency, so it can use the `rebuild`
+binary that comes with `Reason`. It doesn't yet demonstrate how to depend on/use `rebel`.
 
 
 </script>
