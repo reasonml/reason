@@ -1,5 +1,5 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
-let module LocalModule = {
+module LocalModule = {
   type accessedThroughModule =
     | AccessedThroughModule;
   type accessedThroughModuleWithArg =

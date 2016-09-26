@@ -2360,28 +2360,28 @@ module type ASig = {let a: int;};
 
 module type BSig = {let b: int;};
 
-let module AMod = {
+module AMod = {
   let a = 10;
 };
 
-let module BMod = {
+module BMod = {
   let b = 10;
 };
 
-let module CurriedSugar
-           /* Commenting before First curried functor arg */
-           /* If these comments aren't formatted correctly
-            * see how functor args' locations aren't set
-            * correclty due to the fold_left.
-            */
-           (A: ASig)
-           /* Commenting before Second curried functor arg */
-           (B: BSig) => {
+module CurriedSugar
+       /* Commenting before First curried functor arg */
+       /* If these comments aren't formatted correctly
+        * see how functor args' locations aren't set
+        * correclty due to the fold_left.
+        */
+       (A: ASig)
+       /* Commenting before Second curried functor arg */
+       (B: BSig) => {
   let result = A.a + B.b;
   /* Comment at bottom of module expression */
 };
 
-let module CurriedSugarFunctorResult =
+module CurriedSugarFunctorResult =
   /* Commenting before functor name*/
   CurriedSugar
     /* Commenting before functor arg 1 in app */
@@ -2389,7 +2389,7 @@ let module CurriedSugarFunctorResult =
     /* Commenting before functor arg 2 in app */
     BMod;
 
-let module CurriedSugarFunctorResultInline =
+module CurriedSugarFunctorResultInline =
   /* Commenting before functor name*/
   CurriedSugar
     /* Commenting before functor arg 1 in app */

@@ -1078,9 +1078,9 @@ definitions which are all equivalent.
 
 ```reason
 /* All of the following are equivalent. */
-let module ModuleFunc (A:ASig) (B:BSig) => {};
-let module ModuleFunc = fun (A:ASig) (B:BSig) => {};
-let module ModuleFunc = fun (A:ASig) => fun (B:BSig) => {};
+module ModuleFunc (A:ASig) (B:BSig) => {};
+module ModuleFunc = fun (A:ASig) (B:BSig) => {};
+module ModuleFunc = fun (A:ASig) => fun (B:BSig) => {};
 ```
 
 ##### Record *Value* "Punning"

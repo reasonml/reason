@@ -284,7 +284,7 @@ and anotherClassType = {
 }
 [@@structureItem];
 
-let module NestedModule = {
+module NestedModule = {
   [@@@floatingNestedStructureItem hello];
 };
 

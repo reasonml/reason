@@ -16,7 +16,7 @@ type intListTranformer = list int => list int;
 
 type x = list (int, string);
 
-let module HoldsAType = {
+module HoldsAType = {
   type hasPrime 'a 'b 'c =
     Hashtbl.t (list 'a) (list 'b);
 };
@@ -85,7 +85,7 @@ let certainlyRequiresWrapping:
 /* Fringe features */
 /*
   /* This parses, but doesn't type check */
-  let module TryExtendingType = {type t = Hello of string;};
+  module TryExtendingType = {type t = Hello of string;};
   type TryExtendingType.t += LookANewExtension of string;
  */
 "end";

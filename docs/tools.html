@@ -253,7 +253,7 @@ Then only the constructor identifiers that were listed will be assumed to accept
 
 let x = TupleConstructor (1, 2);
 let y = MultiArgumentsConstructor 1 2;
-let module Test = {
+module Test = {
   type a = | And of (int, int) | Or of (int, int);
 };
 let a = Test.And (1, 2);

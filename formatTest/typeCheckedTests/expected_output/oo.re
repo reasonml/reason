@@ -247,7 +247,7 @@ class tupleClass 'a 'b (init: ('a, 'b)) => {
   method pr = init;
 };
 
-let module HasTupleClasses: {
+module HasTupleClasses: {
 
   /**
    * exportedClass.

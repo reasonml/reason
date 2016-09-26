@@ -4173,7 +4173,7 @@ class printer  ()= object(self:'self)
             let openSourceMapped = SourceMap (lid.loc, openLayout) in
             openSourceMapped::listItems
       | ([], Pexp_letmodule (s, me, e)) ->
-          let prefixText = "let module" in
+          let prefixText = "module" in
           let bindingName = atom ~loc:s.loc s.txt in
           let moduleExpr = me in
           let letModuleLayout =
@@ -5349,14 +5349,14 @@ class printer  ()= object(self:'self)
         | Psig_module {pmd_name; pmd_type={pmty_desc=Pmty_alias alias}} ->
             label ~space:true
               (makeList ~postSpace:true [
-                 atom "let module";
+                 atom "module";
                  atom pmd_name.txt;
                  atom "="
                ])
               (self#longident_loc alias)
         | Psig_module pmd ->
             self#formatSimpleSignatureBinding
-              "let module"
+              "module"
               (atom pmd.pmd_name.txt)
               (self#module_type pmd.pmd_type);
         | Psig_open od ->
@@ -5379,7 +5379,7 @@ class printer  ()= object(self:'self)
         | Psig_recmodule decls ->
             let first xx =
               self#formatSimpleSignatureBinding
-                "let module rec"
+                "module rec"
                 (atom xx.pmd_name.txt)
                 (self#module_type xx.pmd_type)
             in
@@ -5658,7 +5658,7 @@ class printer  ()= object(self:'self)
         | Pstr_typext te -> (self#type_extension te)
         | Pstr_exception ed -> (self#exception_declaration ed)
         | Pstr_module x ->
-            let prefixText = "let module" in
+            let prefixText = "module" in
             let bindingName = atom ~loc:x.pmb_name.loc x.pmb_name.txt in
             let moduleExpr = x.pmb_expr in
             self#let_module_binding prefixText bindingName moduleExpr
@@ -5698,7 +5698,7 @@ class printer  ()= object(self:'self)
 
         | Pstr_recmodule decls -> (* 3.07 *)
             let first xx =
-              let prefixText = "let module rec" in
+              let prefixText = "module rec" in
               self#let_module_binding prefixText (atom xx.pmb_name.txt) xx.pmb_expr in
             let notFirst xx =
               let prefixText = "and" in

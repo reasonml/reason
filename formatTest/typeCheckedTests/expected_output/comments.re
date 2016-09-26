@@ -137,7 +137,7 @@ let equal i1 i2 =>
 let equal i1 i2 =>
   compare (compare 0 0) (compare 1 1) /* END OF LINE HERE */;
 
-let module Temp = {
+module Temp = {
   let v = true;
   let logIt str () => print_string str;
 };
