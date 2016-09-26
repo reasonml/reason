@@ -3510,39 +3510,42 @@ class printer  ()= object(self:'self)
     (itms, None)
 
   method formatJSXComponent componentName args =
-    let rec processChildren children result =
+    let rec processChildren children processedRev =
       match children with
       | {pexp_desc = Pexp_constant (constant)} :: remainingChildren ->
-        processChildren remainingChildren (result @ [self#constant constant])
+        processChildren remainingChildren (self#constant constant :: processedRev)
       | {pexp_desc = Pexp_construct ({txt = Lident "::"}, Some {pexp_desc = Pexp_tuple(children)} )} :: remainingChildren ->
-        processChildren (remainingChildren @ children) result
+        processChildren (remainingChildren @ children) processedRev
       | {pexp_desc = Pexp_apply(expr, l); pexp_attributes} :: remainingChildren ->
         (match detectJSXComponent expr.pexp_desc pexp_attributes l with
-          | Some componentName -> processChildren remainingChildren (result @ [self#formatJSXComponent componentName l])
-          | None -> processChildren remainingChildren (result @ [self#simplifyUnparseExpr (List.hd children)]))
+          | Some componentName -> processChildren remainingChildren (self#formatJSXComponent componentName l :: processedRev)
+          | None -> processChildren remainingChildren (self#simplifyUnparseExpr (List.hd children) :: processedRev))
       | {pexp_desc = Pexp_ident li} :: remainingChildren ->
-        processChildren remainingChildren (result @ [self#longident_loc li])
-      | {pexp_desc = Pexp_construct ({txt = Lident "[]"}, None)} :: remainingChildren -> processChildren remainingChildren result
-      | head :: remainingChildren -> processChildren remainingChildren (result @ [self#simplifyUnparseExpr head])
-      | [] -> [makeList ~break:IfNeed ~sep:" " ~inline:(true, true) result]
+        processChildren remainingChildren (self#longident_loc li :: processedRev)
+      | {pexp_desc = Pexp_construct ({txt = Lident "[]"}, None)} :: remainingChildren -> processChildren remainingChildren processedRev
+      | head :: remainingChildren -> processChildren remainingChildren (self#simplifyUnparseExpr head :: processedRev)
+      | [] -> match processedRev with
+          | [] -> None
+          | _::_ -> Some (makeList ~break:IfNeed ~sep:" " ~inline:(false, true) (List.rev processedRev))
 
-    and processAttributes arguments processedAttrs children =
+    and processArguments arguments processedAttrs children =
       match arguments with
       | ("", {pexp_desc = Pexp_construct (_, None)}) :: tail ->
-        processAttributes tail processedAttrs []
+        processArguments tail processedAttrs None
       | ("", {pexp_desc = Pexp_construct ({txt = Lident"::"}, Some {pexp_desc = Pexp_tuple(components)} )}) :: tail ->
-        processAttributes tail processedAttrs (processChildren components [])
+        processArguments tail processedAttrs (processChildren components [])
       | (lbl, expression) :: tail ->
          let nextAttr =
            match expression.pexp_desc with
            | Pexp_ident (ident) when (Longident.last ident.txt) = lbl -> atom lbl
            | _ -> makeList ([atom lbl; atom "="; self#simplifyUnparseExpr expression])
          in
-         processAttributes tail (nextAttr :: processedAttrs) children
+         processArguments tail (nextAttr :: processedAttrs) children
       | [] -> (processedAttrs, children)
     in
-    let (reversedAttributes, children) = processAttributes args [] [] in
-    if List.length children = 0 then
+    let (reversedAttributes, children) = processArguments args [] None in
+    match children with
+    | None ->
       makeList
         ~break:IfNeed
         ~wrap:("<" ^ componentName, "/>")
@@ -3550,7 +3553,7 @@ class printer  ()= object(self:'self)
         ~inline:(false, false)
         ~postSpace:true
         (List.rev reversedAttributes)
-    else
+    | Some renderedChildren ->
       let (openingTag, attributes) =
         match reversedAttributes with
         | [] -> (componentName ^ ">", [])
@@ -3565,7 +3568,7 @@ class printer  ()= object(self:'self)
         ~pad:(true, true)
         ~postSpace:true
         ~wrap:("<" ^ openingTag, "</" ^ componentName ^ ">")
-        (attributes @ children)
+        (attributes @ [renderedChildren])
 
 
   (* Creates a list of simple module expressions corresponding to module
@@ -4641,7 +4644,7 @@ class printer  ()= object(self:'self)
                           | Some componentName -> formatChildren tail (formatted @ [self#formatJSXComponent componentName l])
                           | None -> formatChildren tail (formatted @ [self#simplifyUnparseExpr (List.hd children)]))
                       | head :: tail -> formatChildren tail (formatted @ [self#unparseExpr head])
-                      | [] -> [makeList ~sep:" " formatted]
+                      | [] -> [makeList ~break:IfNeed ~sep:" " formatted]
                   in
                   makeList ~break:IfNeed ~wrap:("<>", "</>") ~pad:(true, true) (formatChildren xs [])
                 else
