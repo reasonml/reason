@@ -33,6 +33,17 @@ module.exports = {
           AtomReason.selectOccurrences(editor);
         }
       }));
+
+      disposables.add(atom.commands.add('atom-workspace', 'atom-reason:destruct', function() {
+        var editor = atom.workspace.getActiveTextEditor();
+        if (editor) {
+          AtomReason.getNuclideJsTypeHint(editor, editor.getCursorScreenPosition()).then(function(result) {
+            if (result) {
+              AtomReason.destruct(editor, result.range.start, result.range.end);
+            }
+          })
+        }
+      }));
     }
   },
 
