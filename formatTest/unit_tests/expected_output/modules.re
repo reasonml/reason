@@ -586,3 +586,7 @@ open M;
 open M.Inner;
 
 open M;
+
+module OldModuleSyntax = {
+  module InnerOldModule = {};
+};

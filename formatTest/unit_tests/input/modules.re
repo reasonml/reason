@@ -447,3 +447,8 @@ let y = 44;
 open M;
 open M.Inner;
 open M;
+
+let module OldModuleSyntax = {
+    let module InnerOldModule = {
+    };
+};
