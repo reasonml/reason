@@ -35,13 +35,7 @@ let makeTokens grammar data => {
     | "Type" => buildToken "type" name
     | kind => buildToken "plain" name
     };
-  Js.Unsafe.inject (
-    Js.array [|
-      buildToken "keyword" kind,
-      buildToken "whitespace" " ",
-      nameToken
-    |]
-  )
+  Js.Unsafe.inject (Js.array [|buildToken "keyword" kind, buildToken "whitespace" " ", nameToken|])
 };
 
 let rec convertOutlines grammar entries => {
@@ -49,12 +43,8 @@ let rec convertOutlines grammar entries => {
     List.rev_map
       (
         fun data => {
-          let start = MerlinServiceConvert.jsMerlinPointToAtomPoint (
-            Js.Unsafe.get data "start"
-          );
-          let endd = MerlinServiceConvert.jsMerlinPointToAtomPoint (
-            Js.Unsafe.get data "end"
-          );
+          let start = MerlinServiceConvert.jsMerlinPointToAtomPoint (Js.Unsafe.get data "start");
+          let endd = MerlinServiceConvert.jsMerlinPointToAtomPoint (Js.Unsafe.get data "end");
           let children = Js.Unsafe.get data "children";
           Js.Unsafe.obj [|
             ("tokenizedText", makeTokens grammar data),
@@ -79,9 +69,7 @@ let getOutline path::path text::text grammar::grammar resolve reject => {
     text::text
     (
       fun result => resolve (
-        Js.Unsafe.obj [|
-          ("outlineTrees", Js.Unsafe.inject (convertOutlines grammar result))
-        |]
+        Js.Unsafe.obj [|("outlineTrees", Js.Unsafe.inject (convertOutlines grammar result))|]
       )
     )
     reject

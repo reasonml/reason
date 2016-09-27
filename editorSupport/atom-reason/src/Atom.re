@@ -51,6 +51,7 @@ let module JsonType = {
 
 type completionEntry = {desc: string, info: string, kind: string, name: string};
 
+
 /**
  * Api over Js values that are known to adhere to "Json" style constraints (no
  * functions), untyped, but predictable.
@@ -222,13 +223,11 @@ let module Editor = {
     let arr = Array.map Range.toJs bufferRanges |> Js.array;
     Js.Unsafe.meth_call editor "setSelectedBufferRanges" [|Js.Unsafe.inject arr|]
   };
-  let setSelectedBufferRange editor bufferRange => {
-      Js.Unsafe.meth_call editor "setSelectedBufferRange" [|bufferRange|]
-    };
-  let getSelections editor =>
-    Js.Unsafe.meth_call editor "getSelections" emptyArgs
-  ;
+  let setSelectedBufferRange editor bufferRange =>
+    Js.Unsafe.meth_call editor "setSelectedBufferRange" [|bufferRange|];
+  let getSelections editor => Js.Unsafe.meth_call editor "getSelections" emptyArgs;
 };
+
 
 /**
  * Dirt simple promise wrapper, not implementing advanced features yet.

@@ -58,12 +58,11 @@ let refmttype ocamlTypes =>
             ("encoding", Js.Unsafe.inject (Js.string "utf-8"))
           |]
         )
-      |] |>
-      Js.to_string |>
-      /* Output printed types are one type per line. */
-      StringUtils.split by::(Js.Unsafe.js_expr {|/\n/|}) |>
-      /* Restore the escaped line breaks. */
-      List.map Scanf.unescaped
+      |] |> Js.to_string |>
+    /* Output printed types are one type per line. */
+    StringUtils.split by::(Js.Unsafe.js_expr {|/\n/|}) |>
+    /* Restore the escaped line breaks. */
+    List.map Scanf.unescaped
   };
 
 let formatOne ocamlType =>

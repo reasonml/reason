@@ -9,6 +9,7 @@ open AtomReasonCommon;
 
 type t;
 
+
 /**
  * You can test source maps with:
  * -----------------------------
@@ -17,6 +18,7 @@ type t;
  *    (new require('source-map').SourceMapConsumer(JSON.parse(require('fs').readFileSync('./app.map')))).originalPositionFor({line:5524, column:10})
  *  )"
  */
+
 /**
    A typical Merlin payload might look something like:
 
@@ -43,6 +45,7 @@ type t;
     }
   ]
  */
+
 /**
  * This looks strange that we are converting to ML data but then quickly
  * converting back to JS types, but it will make more sense when everything

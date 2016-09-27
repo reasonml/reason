@@ -135,18 +135,13 @@ export
                 (
                   fun result => {
                     let resultRe =
-                      Js.Unsafe.get result "entries" |>
-                        Js.to_array |>
-                        Array.to_list |>
-                        List.map MerlinServiceConvert.jsMerlinCompletionEntryToMerlinEntry;
+                      Js.Unsafe.get result "entries" |> Js.to_array |> Array.to_list |>
+                      List.map MerlinServiceConvert.jsMerlinCompletionEntryToMerlinEntry;
                     resultRe |>
-                      List.map (
-                        MerlinServiceConvert.merlinCompletionEntryToNuclide replacementPrefix
-                      ) |>
-                      List.map NuclideJs.Autocomplete.entryToJs |>
-                      Array.of_list |>
-                      Js.array |>
-                      resolve
+                    List.map (
+                      MerlinServiceConvert.merlinCompletionEntryToNuclide replacementPrefix
+                    ) |>
+                    List.map NuclideJs.Autocomplete.entryToJs |> Array.of_list |> Js.array |> resolve
                   }
                 )
                 /* TODO: NOT ALWAYS STRING MIGHT BE ERROR FRMATTER */
@@ -184,8 +179,7 @@ export
   "getLocation"
   (
     Js.wrap_callback (
-      fun jsEditor _ range =>
-        Atom.Promise.createFakePromise (
+      fun jsEditor _ range => Atom.Promise.createFakePromise (
         fun resolve reject => {
           let path' = path jsEditor;
           let text = Atom.Buffer.getText (Atom.Editor.getBuffer jsEditor);
@@ -217,7 +211,7 @@ export
           (
             fun result =>
               MerlinServiceConvert.jsMerlinOccurrencesToAtom result |>
-                AtomReasonOccurrences.selectOccurrences editor::editor
+              AtomReasonOccurrences.selectOccurrences editor::editor
           )
           /* TODO: do something here. */
           (fun rejectedMsg => ())
@@ -231,25 +225,25 @@ export
     Js.wrap_callback (
       fun jsEditor startPosition endPosition => Atom.Promise.createFakePromise (
         fun resolve reject => {
-            let editor = Atom.Editor.fromJs jsEditor;
-            let position1 = Atom.Point.fromJs startPosition;
-            let position2 = Atom.Point.fromJs endPosition;
-            let text = Atom.Buffer.getText (Atom.Editor.getBuffer jsEditor);
-
-            SuperMerlin.destruct
-              path::(path jsEditor)
-              text::text
-              startPosition::position1
-              endPosition::position2
-              (
-                fun result => {
-                   let _ = AtomReasonDestruct.destruct editor (MerlinServiceConvert.jsMerlinDestructToNuclide result);
-                   resolve ()
-                }
-              )
-              /* merlin complains when it can't perform case analysis, ignoring that here */
-              (fun rejectedMsg => resolve ())
-
+          let editor = Atom.Editor.fromJs jsEditor;
+          let position1 = Atom.Point.fromJs startPosition;
+          let position2 = Atom.Point.fromJs endPosition;
+          let text = Atom.Buffer.getText (Atom.Editor.getBuffer jsEditor);
+          SuperMerlin.destruct
+            path::(path jsEditor)
+            text::text
+            startPosition::position1
+            endPosition::position2
+            (
+              fun result => {
+                let _ =
+                  AtomReasonDestruct.destruct
+                    editor (MerlinServiceConvert.jsMerlinDestructToNuclide result);
+                resolve ()
+              }
+            )
+            /* merlin complains when it can't perform case analysis, ignoring that here */
+            (fun rejectedMsg => resolve ())
         }
       )
     )
@@ -259,18 +253,12 @@ export
   "getOutline"
   (
     Js.wrap_callback (
-      fun jsEditor =>
-        Atom.Promise.createFakePromise (
+      fun jsEditor => Atom.Promise.createFakePromise (
         fun resolve reject => {
           let path' = path jsEditor;
           let text = Atom.Buffer.getText (Atom.Editor.getBuffer jsEditor);
           let grammar = Atom.Grammar.name (Atom.Editor.getGrammar jsEditor);
-          AtomReasonOutline.getOutline
-            path::path'
-            text::text
-            grammar::grammar
-            resolve
-            reject
+          AtomReasonOutline.getOutline path::path' text::text grammar::grammar resolve reject
         }
       )
     )

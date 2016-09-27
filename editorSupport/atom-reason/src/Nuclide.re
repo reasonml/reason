@@ -10,7 +10,10 @@ type range = ((int, int), (int, int));
 
 let module Diagnostic = {
   type filePath = string;
-  type diagnosticType = | Error | Warning;
+  type diagnosticType =
+    | Error
+    | Warning;
+
   /**
    * A trace is a reference to another file/location related to an error.
    */

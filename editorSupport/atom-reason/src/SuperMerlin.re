@@ -246,13 +246,7 @@ let getDiagnostics path::path text::text resolve reject =>
     resolve
     reject;
 
-let locate
-    path::path
-    text::text
-    extension::extension
-    position::position
-    resolve
-    reject =>
+let locate path::path text::text extension::extension position::position resolve reject =>
   prepareCommand
     text::text
     path::path
@@ -284,7 +278,13 @@ let getOccurrences path::path text::text position::position resolve reject =>
     resolve
     reject;
 
-let destruct path::path text::text startPosition::startPosition endPosition::endPosition resolve reject =>
+let destruct
+    path::path
+    text::text
+    startPosition::startPosition
+    endPosition::endPosition
+    resolve
+    reject =>
   prepareCommand
     text::text
     path::path
@@ -300,6 +300,7 @@ let destruct path::path text::text startPosition::startPosition endPosition::end
     )
     resolve
     reject;
+
 let getOutline path::path text::text resolve reject =>
   prepareCommand
     text::text

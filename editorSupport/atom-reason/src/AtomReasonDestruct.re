@@ -11,5 +11,5 @@ let destruct editor obj => {
   let _ = Atom.Editor.setSelectedBufferRange editor range;
   let selections = Atom.Editor.getSelections editor;
   let firstSelection = Js.Unsafe.get selections "0";
-  Atom.Selection.insertText firstSelection replace;
-}
+  Atom.Selection.insertText firstSelection replace
+};
