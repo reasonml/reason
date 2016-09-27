@@ -1,8 +1,0 @@
-{
-  "name": "reason",
-  "dependencies": {
-    "@opam-alpha/camlp4": {
-      "version": "4.4.27"
-    }
-  }
-}
