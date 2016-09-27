@@ -81,20 +81,20 @@ let invalidLex = "invalidCharacter.orComment.orString"
 let syntax_error_str err loc =
   if !Reason_config.recoverable then
     [
-      Ast_helper.Str.mk ~loc:loc (Parsetree.Pstr_extension (Syntax_util.syntax_error_extension_node loc invalidLex, []))
+      Ast_helper.Str.mk ~loc:loc (Parsetree.Pstr_extension (AST_plus.to_parsetree_extension (Syntax_util.syntax_error_extension_node loc invalidLex), []))
     ]
   else
     raise err
 
 let syntax_error_core_type err loc =
   if !Reason_config.recoverable then
-    Ast_helper.Typ.mk ~loc:loc (Parsetree.Ptyp_extension (Syntax_util.syntax_error_extension_node loc invalidLex))
+    Ast_helper.Typ.mk ~loc:loc (Parsetree.Ptyp_extension (AST_plus.to_parsetree_extension (Syntax_util.syntax_error_extension_node loc invalidLex)))
   else
     raise err
 
 let syntax_error_sig err loc =
   if !Reason_config.recoverable then
-    [Ast_helper.Sig.mk ~loc:loc (Parsetree.Psig_extension (Syntax_util.syntax_error_extension_node loc invalidLex, []))]
+    [Ast_helper.Sig.mk ~loc:loc (Parsetree.Psig_extension (AST_plus.to_parsetree_extension (Syntax_util.syntax_error_extension_node loc invalidLex), []))]
   else
     raise err
 
@@ -530,23 +530,23 @@ module JS_syntax = struct
 
   let implementation lexbuf =
     let cp = initial_checkpoint Reason_parser.Incremental.implementation lexbuf in
-    loop_handle_yacc (lexbuf_to_supplier lexbuf) false cp
+    loop_handle_yacc (lexbuf_to_supplier lexbuf) false cp |> AST_plus.to_parsetree_structure
 
   let interface lexbuf =
     let cp = initial_checkpoint Reason_parser.Incremental.interface lexbuf in
-    loop_handle_yacc (lexbuf_to_supplier lexbuf) false cp
+    loop_handle_yacc (lexbuf_to_supplier lexbuf) false cp |> AST_plus.to_parsetree_signature
 
   let core_type lexbuf =
     let cp = initial_checkpoint Reason_parser.Incremental.parse_core_type lexbuf in
-    loop_handle_yacc (lexbuf_to_supplier lexbuf) false cp
+    loop_handle_yacc (lexbuf_to_supplier lexbuf) false cp |> AST_plus.to_parsetree_core_type
 
   let toplevel_phrase lexbuf =
     let cp = initial_checkpoint Reason_parser.Incremental.toplevel_phrase lexbuf in
-    loop_handle_yacc (lexbuf_to_supplier lexbuf) false cp
+    loop_handle_yacc (lexbuf_to_supplier lexbuf) false cp |> AST_plus.to_parsetree_toplevel_phrase
 
   let use_file lexbuf =
     let cp = initial_checkpoint Reason_parser.Incremental.use_file lexbuf in
-    loop_handle_yacc (lexbuf_to_supplier lexbuf) false cp
+    loop_handle_yacc (lexbuf_to_supplier lexbuf) false cp |> List.map AST_plus.to_parsetree_toplevel_phrase
 
   (* Skip tokens to the end of the phrase *)
   let rec skip_phrase lexbuf =
@@ -594,10 +594,10 @@ module JS_syntax = struct
 
   let format_interface_with_comments (signature, comments) formatter =
     let reason_formatter = Reason_pprint_ast.createFormatter () in
-    reason_formatter#signature comments formatter signature
+    reason_formatter#signature comments formatter (AST_plus.of_parsetree_signature signature)
   let format_implementation_with_comments (implementation, comments) formatter =
     let reason_formatter = Reason_pprint_ast.createFormatter () in
-    reason_formatter#structure comments formatter implementation
+    reason_formatter#structure comments formatter (AST_plus.of_parsetree_structure implementation)
 end
 
 module ML = Create_parse_entrypoint (OCaml_syntax)

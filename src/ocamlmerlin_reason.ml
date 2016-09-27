@@ -1,4 +1,5 @@
 open Extend_protocol.Reader
+open AST_plus
 
 let () =
   Reason_config.recoverable := true
@@ -32,13 +33,13 @@ module Reason_reader = struct
 
   let pretty_print ppf =
     let open Reason_pprint_ast in function
-    | Pretty_core_type       x -> (formatter ())#core_type       ppf x
-    | Pretty_case_list       x -> (formatter ())#case_list       ppf x
-    | Pretty_expression      x -> (formatter ())#expression      ppf x
-    | Pretty_pattern         x -> (formatter ())#pattern         ppf x
-    | Pretty_signature       x -> (formatter ())#signature    [] ppf x
-    | Pretty_structure       x -> (formatter ())#structure    [] ppf x
-    | Pretty_toplevel_phrase x -> (formatter ())#toplevel_phrase ppf x
+    | Pretty_core_type       x -> (formatter ())#core_type       ppf (of_parsetree_core_type x)
+    | Pretty_case_list       x -> (formatter ())#case_list       ppf (List.map of_parsetree_case x)
+    | Pretty_expression      x -> (formatter ())#expression      ppf (of_parsetree_expression x)
+    | Pretty_pattern         x -> (formatter ())#pattern         ppf (of_parsetree_pattern x)
+    | Pretty_signature       x -> (formatter ())#signature    [] ppf (of_parsetree_signature x)
+    | Pretty_structure       x -> (formatter ())#structure    [] ppf (of_parsetree_structure x)
+    | Pretty_toplevel_phrase x -> (formatter ())#toplevel_phrase ppf (of_parsetree_toplevel_phrase x)
 
   let print_outcome ppf =
     let open Reason_oprint in function

@@ -1,5 +1,7 @@
 (* Portions Copyright (c) 2015-present, Facebook, Inc. All rights reserved. *)
 
+open AST_plus
+
 let () = Reason_pprint_ast.configure
   (* This can be made pluggable in the future. *)
   ~width:80
@@ -15,18 +17,21 @@ let reasonFormatter = Reason_pprint_ast.createFormatter ()
 let parseAsCoreType str formatter =
   Lexing.from_string str
   |> Reason_toolchain.ML.canonical_core_type
+  |> of_parsetree_core_type
   |> reasonFormatter#core_type formatter
 
 (* type a = int list *)
 let parseAsImplementation str formatter =
   Lexing.from_string str
   |> Reason_toolchain.ML.canonical_implementation
+  |> of_parsetree_structure
   |> reasonFormatter#structure [] formatter
 
 (* val a: int list *)
 let parseAsInterface str formatter =
   Lexing.from_string str
   |> Reason_toolchain.ML.canonical_interface
+  |> of_parsetree_signature
   |> reasonFormatter#signature [] formatter
 
 (* sig val a: int list end *)
@@ -35,7 +40,9 @@ But that'd require modifying compiler-libs, which we'll refrain from doing. *)
 let parseAsCoreModuleType str formatter =
   Lexing.from_string ("module X: " ^ str)
   |> Reason_toolchain.ML.canonical_interface
+  |> of_parsetree_signature
   |> reasonFormatter#signature [] formatter
+
 
 (* Quirky merlin/ocaml output that doesn't really parse. *)
 let parseAsWeirdListSyntax str a =

@@ -8,3 +8,5 @@ Reason_util
 Reason_toolchain
 Reason_utop
 Reason_parser_message
+Parsetree_plus
+AST_plus

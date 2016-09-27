@@ -1,6 +1,4 @@
-open Ast_mapper
-open Asttypes
-open Parsetree
+open Parsetree_plus
 open Longident
 
 (** [is_prefixed prefix i str] checks if prefix is the prefix of str
@@ -22,10 +20,9 @@ let is_prefixed prefix str i =
 let rec pick_while p = function
   | [] -> [], []
   | hd::tl when p hd ->
-                  let (satisfied, not_satisfied) = pick_while p tl in
-                  hd :: satisfied, not_satisfied
+     let (satisfied, not_satisfied) = pick_while p tl in
+     hd :: satisfied, not_satisfied
   | l -> ([], l)
-
 
 let rec replace_string_ old_str new_str i str buffer =
   if i >= String.length str then
@@ -59,12 +56,13 @@ module StringMap = Map.Make (String)
  *)
 let syntax_error_extension_node loc message =
   let str = Location.mkloc "merlin.syntax-error" loc in
+  let open Parsetree_plus in
   let payload = PStr [{
     pstr_loc = Location.none;
     pstr_desc = Pstr_eval (
       {
         pexp_loc = Location.none;
-        pexp_desc = Pexp_constant (Asttypes.Const_string (message, None));
+        pexp_desc = Pexp_constant (Pconst_string (message, None));
         pexp_attributes = [];
       },
       []
