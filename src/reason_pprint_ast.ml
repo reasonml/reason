@@ -3509,31 +3509,43 @@ class printer  ()= object(self:'self)
     in
     (itms, None)
 
-  method formatJSXComponent componentName args =
-    let rec processChildren children processedRev =
-      match children with
-      | {pexp_desc = Pexp_constant (constant)} :: remainingChildren ->
-        processChildren remainingChildren (self#constant constant :: processedRev)
-      | {pexp_desc = Pexp_construct ({txt = Lident "::"}, Some {pexp_desc = Pexp_tuple(children)} )} :: remainingChildren ->
-        processChildren (remainingChildren @ children) processedRev
-      | {pexp_desc = Pexp_apply(expr, l); pexp_attributes} :: remainingChildren ->
-        (match detectJSXComponent expr.pexp_desc pexp_attributes l with
-          | Some componentName -> processChildren remainingChildren (self#formatJSXComponent componentName l :: processedRev)
-          | None -> processChildren remainingChildren (self#simplifyUnparseExpr (List.hd children) :: processedRev))
-      | {pexp_desc = Pexp_ident li} :: remainingChildren ->
-        processChildren remainingChildren (self#longident_loc li :: processedRev)
-      | {pexp_desc = Pexp_construct ({txt = Lident "[]"}, None)} :: remainingChildren -> processChildren remainingChildren processedRev
-      | head :: remainingChildren -> processChildren remainingChildren (self#simplifyUnparseExpr head :: processedRev)
-      | [] -> match processedRev with
-          | [] -> None
-          | _::_ -> Some (makeList ~break:IfNeed ~sep:" " ~inline:(false, true) (List.rev processedRev))
 
-    and processArguments arguments processedAttrs children =
+  (**
+        How JSX is formatted/wrapped. We want the attributes to wrap independently
+        of children.
+
+        <xxx
+          attr1=blah
+          attr2=foo>
+          child
+          child
+          child
+        </x>
+
+      +-------------------------------+
+      |  left   right (list of attrs) |
+      |   / \   /   \                 |
+      |   <tag                        |
+      |     attr1=blah                |
+      |     attr2=foo                 |
+      +-------------------------------+
+       |
+       |
+       |
+       |      left       right  list of children with
+       |   /       \    /  \     open,close = > </tag>
+       |  +---------+
+       +--|         |    >
+          +---------+
+
+          </tag>           *)
+  method formatJSXComponent componentName args =
+    let rec processArguments arguments processedAttrs children =
       match arguments with
       | ("", {pexp_desc = Pexp_construct (_, None)}) :: tail ->
         processArguments tail processedAttrs None
       | ("", {pexp_desc = Pexp_construct ({txt = Lident"::"}, Some {pexp_desc = Pexp_tuple(components)} )}) :: tail ->
-        processArguments tail processedAttrs (processChildren components [])
+        processArguments tail processedAttrs (self#formatChildren components [])
       | (lbl, expression) :: tail ->
          let nextAttr =
            match expression.pexp_desc with
@@ -3554,21 +3566,26 @@ class printer  ()= object(self:'self)
         ~postSpace:true
         (List.rev reversedAttributes)
     | Some renderedChildren ->
-      let (openingTag, attributes) =
+      let openTagAndAttrs =
         match reversedAttributes with
-        | [] -> (componentName ^ ">", [])
-        | revAttrHd::revAttrTl -> (
-          componentName,
-          List.rev (makeList ~break:Never [revAttrHd; atom ">"] :: revAttrTl)
-        )
+        | [] -> (atom ("<" ^ componentName ^ ">"))
+        | revAttrHd::revAttrTl ->
+          let finalAttrList = (List.rev (makeList ~break:Never [revAttrHd; atom ">"] :: revAttrTl)) in
+          let renderedAttrList = (makeList ~inline:(true, true) ~break:IfNeed ~pad:(false, false) ~preSpace:true finalAttrList) in
+          label
+            ~space:true
+            (atom ("<" ^ componentName))
+            renderedAttrList
       in
-      makeList
-        ~inline:(false, false)
-        ~break:IfNeed
-        ~pad:(true, true)
-        ~postSpace:true
-        ~wrap:("<" ^ openingTag, "</" ^ componentName ^ ">")
-        (attributes @ [renderedChildren])
+      label
+        openTagAndAttrs
+        (makeList
+          ~wrap:("", "</" ^ componentName ^ ">")
+          ~inline:(true, false)
+          ~break:IfNeed
+          ~pad:(true, true)
+          ~postSpace:true
+          renderedChildren)
 
 
   (* Creates a list of simple module expressions corresponding to module
@@ -4635,18 +4652,18 @@ class printer  ()= object(self:'self)
               | `tuple -> atom "()"
               | `list xs -> (* LIST EXPRESSION *)
                 if hasJsxAttribute then
-                  let rec formatChildren children formatted =
-                    match children with
-                      | {pexp_desc = Pexp_constant (constant)} :: tail ->
-                        formatChildren tail (formatted @ [self#constant constant])
-                      | {pexp_desc = Pexp_apply(expr, l); pexp_attributes} :: tail ->
-                         (match detectJSXComponent expr.pexp_desc pexp_attributes l with
-                          | Some componentName -> formatChildren tail (formatted @ [self#formatJSXComponent componentName l])
-                          | None -> formatChildren tail (formatted @ [self#simplifyUnparseExpr (List.hd children)]))
-                      | head :: tail -> formatChildren tail (formatted @ [self#unparseExpr head])
-                      | [] -> [makeList ~break:IfNeed ~sep:" " formatted]
+                  let actualChildren =
+                    match self#formatChildren xs [] with
+                    | None -> []
+                    | Some ch -> ch
                   in
-                  makeList ~break:IfNeed ~wrap:("<>", "</>") ~pad:(true, true) (formatChildren xs [])
+                    makeList
+                      ~break:IfNeed
+                      ~inline:(false, false)
+                      ~postSpace:true
+                      ~wrap:("<>", "</>")
+                      ~pad:(true, true)
+                      actualChildren
                 else
                   makeList ~break:IfNeed ~wrap:("[", "]") ~sep:"," ~postSpace:true (List.map self#unparseExpr xs)
               | `cons xs ->
@@ -4746,6 +4763,23 @@ class printer  ()= object(self:'self)
         | None -> None
         | Some i -> Some (SourceMap (x.pexp_loc, i))
 
+  method formatChildren children processedRev =
+    match children with
+    | {pexp_desc = Pexp_constant (constant)} :: remaining ->
+      self#formatChildren remaining (self#constant constant :: processedRev)
+    | {pexp_desc = Pexp_construct ({txt = Lident "::"}, Some {pexp_desc = Pexp_tuple(children)} )} :: remaining ->
+      self#formatChildren (remaining @ children) processedRev
+    | {pexp_desc = Pexp_apply(expr, l); pexp_attributes} :: remaining ->
+      (match detectJSXComponent expr.pexp_desc pexp_attributes l with
+        | Some componentName -> self#formatChildren remaining (self#formatJSXComponent componentName l :: processedRev)
+        | None -> self#formatChildren remaining (self#simplifyUnparseExpr (List.hd children) :: processedRev))
+    | {pexp_desc = Pexp_ident li} :: remaining ->
+      self#formatChildren remaining (self#longident_loc li :: processedRev)
+    | {pexp_desc = Pexp_construct ({txt = Lident "[]"}, None)} :: remaining -> self#formatChildren remaining processedRev
+    | head :: remaining -> self#formatChildren remaining (self#simplifyUnparseExpr head :: processedRev)
+    | [] -> match processedRev with
+        | [] -> None
+        | _::_ -> Some (List.rev processedRev)
   method direction_flag = function
     | Upto -> atom "to"
     | Downto -> atom "downto"
