@@ -92,6 +92,7 @@ let module Namespace = {
   let module Foo = {
     let createElement
         intended::intended=?
+        anotherOptional::x=100
         children => {
       displayName: "test"
     };
@@ -167,7 +168,8 @@ let a3 = <So> <Much> <Nesting /> </Much> </So>;
 
 let a4 =
   <Sibling>
-    <One test=true foo=b /> <Two foo=b />
+    <One test=true foo=b />
+    <Two foo=b />
   </Sibling>;
 
 let a5 = <Foo> "testing a string here" </Foo>;
@@ -415,3 +417,67 @@ let asd2 = video test::false 10 [@JSX] [@foo];
 let div children => 1;
 
 ((fun () => div) ()) [] [@JSX];
+
+let myFun () =>
+  <>
+    <Namespace.Foo
+      intended=true
+      anotherOptional=200
+    />
+    <Namespace.Foo
+      intended=true
+      anotherOptional=200
+    />
+    <Namespace.Foo
+      intended=true anotherOptional=200>
+      <Foo />
+      <Foo />
+      <Foo />
+      <Foo />
+      <Foo />
+      <Foo />
+      <Foo />
+    </Namespace.Foo>
+  </>;
+
+let myFun () => <> </>;
+
+let myFun () =>
+  <>
+    <Namespace.Foo
+      intended=true
+      anotherOptional=200
+    />
+    <Namespace.Foo
+      intended=true
+      anotherOptional=200
+    />
+    <Namespace.Foo
+      intended=true anotherOptional=200>
+      <Foo />
+      <Foo />
+      <Foo />
+      <Foo />
+      <Foo />
+      <Foo />
+      <Foo />
+    </Namespace.Foo>
+  </>;
+
+
+/**
+ * Children should wrap without forcing attributes to.
+ */
+<Foo a=10 b=0>
+  <Bar />
+  <Bar />
+  <Bar />
+  <Bar />
+</Foo>;
+/**
+ * Failing test cases:
+ */
+/* let res = <Foo a=10 b=(<Foo a=200 />) > */
+/*   <Bar /> */
+/* </Foo>; */
+/* let res = <Foo a=10 b=(<Foo a=200 />) />; */

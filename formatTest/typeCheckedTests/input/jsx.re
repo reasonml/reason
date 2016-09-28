@@ -16,6 +16,7 @@ let module Foo = {
     let createElement a::a=? b::b=? children => {displayName: "test"};
 };
 
+
 let module One = {
     let createElement test::test=? foo::foo=? children => {displayName: "test"};
     let createElementobvioustypo test::test children => {displayName: "test"};
@@ -55,7 +56,7 @@ let module Pun = {
 
 let module Namespace = {
     let module Foo = {
-        let createElement intended::intended=? children => {displayName: "test"};
+        let createElement intended::intended=? anotherOptional::x=100 children => {displayName: "test"};
     };
 };
 
@@ -243,3 +244,61 @@ let asd2 = video test::false 10 [@JSX] [@foo];
 
 let div children => 1;
 (((fun () => div) ()) [])[@JSX];
+
+let myFun () => {
+  <>
+        <Namespace.Foo intended=(true) anotherOptional=200 />
+        <Namespace.Foo intended=(true) anotherOptional=200 />
+        <Namespace.Foo intended=(true) anotherOptional=200>
+          <Foo />
+          <Foo />
+          <Foo />
+          <Foo />
+          <Foo />
+          <Foo />
+          <Foo />
+        </Namespace.Foo>
+  </>;
+
+};
+
+let myFun () => {
+<>
+</>;
+};
+
+let myFun () => {
+  <>
+        <Namespace.Foo intended=(true) anotherOptional=200 />
+        <Namespace.Foo intended=(true) anotherOptional=200 />
+        <Namespace.Foo intended=(true) anotherOptional=200>
+          <Foo />
+          <Foo />
+          <Foo />
+          <Foo />
+          <Foo />
+          <Foo />
+          <Foo />
+        </Namespace.Foo>
+  </>;
+};
+
+/**
+ * Children should wrap without forcing attributes to.
+ */
+<Foo a=10 b=0>
+  <Bar />
+  <Bar />
+  <Bar />
+  <Bar />
+</Foo>;
+
+/**
+ * Failing test cases:
+ */
+/* let res = <Foo a=10 b=(<Foo a=200 />) > */
+/*   <Bar /> */
+/* </Foo>; */
+
+/* let res = <Foo a=10 b=(<Foo a=200 />) />; */
+
