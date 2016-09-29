@@ -6,6 +6,13 @@ type reasonXyz =
   | Q
   | R;
 
+type reasonXyzWithOf =
+  | X
+  | Y int int int
+  | Z int int
+  | Q
+  | R;
+
 let reasonBarAs =
   fun
   | ((Y _ | Z _) as t, _) => {
