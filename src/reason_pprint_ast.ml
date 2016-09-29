@@ -2706,7 +2706,11 @@ class printer  ()= object(self:'self)
               | [] -> label ~space:true
                       (label ~space:true (atom s) (atom ":"))
                       (self#core_type ct)
-              | _::_ -> makeList ~postSpace:true [atom s; (self#attributes attrs); atom ":"; self#core_type ct]
+              | _::_ ->
+                makeList
+                  ~postSpace:true
+                  ~break:IfNeed
+                  [atom s; (self#attributes attrs); atom ":"; self#core_type ct]
             )
           in
           let openness = match o with
