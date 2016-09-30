@@ -83,5 +83,6 @@ endif
 	git commit -m "Version $(version)"
 	git tag -a $(version) -m "Version $(version)."
 	git push "git@github.com:facebook/Reason.git" $(version)
+	npm publish --access public
 
 .PHONY: release
