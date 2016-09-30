@@ -73,7 +73,7 @@ update_error:
 ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 SUBSTS:=$(ROOT_DIR)/pkg/substs
 
-release:
+release: test
 ifndef version
 	$(error enviorment variable 'version' is undefined)
 endif
