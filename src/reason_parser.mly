@@ -399,8 +399,8 @@ let mktailpat_extension loc seq ext_opt =
 let makeFrag loc body =
   let attribute = ({txt = "JSX"; loc = loc}, PStr []) in
   { body with pexp_attributes = [attribute] @ body.pexp_attributes }
-      
-      
+
+
 (* Applies attributes to the structure item, not the expression itself. Makes
  * structure item have same location as expression. *)
 let mkstrexp e attrs =
@@ -889,7 +889,6 @@ let ensureTagsAreEqual startTag endTag loc =
 %token LBRACKETATAT
 %token LBRACKETATATAT
 %token LESSSLASH
-%token OF
 %token SWITCH
 %token MATCH
 %token METHOD
@@ -902,6 +901,7 @@ let ensureTagsAreEqual startTag endTag loc =
 %token NEW
 %token NONREC
 %token OBJECT
+%token OF
 %token OPEN
 %token OR
 /* %token PARSER */
@@ -1456,16 +1456,16 @@ _structure_item_without_item_extension_sugar:
   | many_nonlocal_module_bindings {
       mkstr(Pstr_recmodule(List.rev $1))
     }
-  | MODULE TYPE as_loc(ident) post_item_attributes {
-      let item_attrs = $4 in
-      let ident = $3 in
+  | MODULE TYPE OF? as_loc(ident) post_item_attributes {
+      let item_attrs = $5 in
+      let ident = $4 in
       let loc = mklocation $symbolstartpos $endpos in
       mkstr(Pstr_modtype (Mtd.mk ident ~attrs:item_attrs ~loc))
     }
-  | MODULE TYPE as_loc(ident) EQUAL module_type post_item_attributes {
-      let ident = $3 in
+  | MODULE TYPE OF? as_loc(ident) EQUAL module_type post_item_attributes {
+      let ident = $4 in
       let loc = mklocation $symbolstartpos $endpos in
-      mkstr(Pstr_modtype (Mtd.mk ident ~typ:$5 ~attrs:$6 ~loc))
+      mkstr(Pstr_modtype (Mtd.mk ident ~typ:$6 ~attrs:$7 ~loc))
     }
   | open_statement {
       mkstr(Pstr_open $1)
@@ -2758,7 +2758,7 @@ _simple_expr:
      tokens, when a list begins witha JSX tag. So we special case it.
      (todo: pick totally different syntax for polymorphic variance types to avoid
      the issue alltogether.
-     
+
      first token
      /\
      [<ident    args />  , remainingitems ]
@@ -3298,7 +3298,7 @@ expr_comma_seq_extension:
 
   Used when parsing `[<> </>, remaining]`. We know that there is at
   least one item, so we either should have a comma + more, or nothing.
-  
+
 expr_comma_seq_extension_second_item:
   | DOTDOTDOT expr_optional_constraint RBRACKET
     { ([], Some $2) }
@@ -3799,13 +3799,16 @@ sig_exception_declaration:
         {ext with pext_attributes = ext.pext_attributes @ $3}
       }
 ;
+
+%inline maybe_of:
+    /* empty */                                {  }
+  | OF                                         {  }
+
 generalized_constructor_arguments:
     /*empty*/                                   { ([],None) }
-  | as_loc(OF)
-      { Location.raise_errorf ~loc:$1.loc "\"of\" is not needed in reason, use `type a = Foo a` instead" }
-  | non_arrowed_simple_core_type_list                    { (List.rev $1, None) }
-  | non_arrowed_simple_core_type_list COLON core_type
-                                                { (List.rev $1,Some $3) }
+  | maybe_of non_arrowed_simple_core_type_list        { (List.rev $2, None) }
+  | maybe_of non_arrowed_simple_core_type_list COLON core_type
+                                                { (List.rev $2,Some $4) }
   | COLON core_type
                                                 { ([],Some $2) }
 ;
@@ -4193,8 +4196,8 @@ row_field:
   | non_arrowed_simple_core_type                            { Rinherit $1 }
 ;
 tag_field:
-    name_tag opt_ampersand amper_type_list attributes
-      { Rtag ($1, $4, $2, List.rev $3) }
+    name_tag OF? opt_ampersand amper_type_list attributes
+      { Rtag ($1, $5, $3, List.rev $4) }
   | name_tag attributes
       { Rtag ($1, $2, true, []) }
 ;
@@ -4499,6 +4502,7 @@ single_attr_id:
   | NEW { "new" }
   | NONREC { "nonrec" }
   | OBJECT { "object" }
+  | OF { "of" }
   | OPEN { "open" }
   | OR { "or" }
   | PRIVATE { "private" }
