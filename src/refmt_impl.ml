@@ -51,7 +51,7 @@ let ocamlBinaryParser use_stdin filename parsedAsInterface =
 
 let usage = {|Reason: Meta Language Utility
 
-[Usage]: refmt [options] some-file.[re|ml]
+[Usage]: refmt [options] some-file.[re|ml|rei|mli]
 
    // translate ocaml to reason on stdin
    echo 'let _ = ()' | refmt -print re -parse ml -use-stdin true -is-interface-pp false
@@ -81,7 +81,6 @@ let () =
   let print_width = ref None in
   let print_help = ref false in
   let options = [
-    "-ignore", Arg.Unit ignore, "ignored";
     "-is-interface-pp", Arg.Bool (fun x -> intf := Some x), "<interface>, parse AST as <interface> (either true or false)";
     "-use-stdin", Arg.Bool (fun x -> use_stdin := x), "<use_stdin>, parse AST from <use_stdin> (either true, false). You still must provide a file name even if using stdin for errors to be reported";
     "-recoverable", Arg.Bool (fun x -> recoverable := x), "Enable recoverable parser";
