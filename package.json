@@ -67,7 +67,7 @@
         "postinstall": "eval $(dependencyEnv) && nopam && substs pkg/META.in && make compile_error && ocaml pkg/build.ml native=true native-dynlink=true utop=${utop_installed:-false} && (opam-installer --prefix=$opam_prefix || true)",
         "clean": "eval $(dependencyEnv) && nopam && make clean",
         "env": "eval $(dependencyEnv) && env",
-        "formatTest": "eval $(dependencyEnv) && cd formatTest; ./test.sh",
+        "test": "eval $(dependencyEnv) && ./miscTests/rtopIntegrationTest.sh && ./miscTests/jsxPpxTest.sh && ./formatTest/test.sh",
         "whereisrefmt": "eval $(dependencyEnv) && which refmt"
     },
     "engines" : {
