@@ -109,13 +109,6 @@ cd reason
 opam pin add -y reason .
 ```
 
-If the compilation of `Reason` does not succeed *after* pinning
-`merlin/merlin-extend` as described above, then a change to `merlin` or
-`merlin-extend` may have broken `Reason` (please file a Github Issue).  We
-should try to keep all three projects' master branches compatible with each
-other.
-
-
 License
 -------
 
