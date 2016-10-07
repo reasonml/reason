@@ -12,3 +12,7 @@ before_script:
 script: 
   - make test
   - git diff --exit-code
+notifications:
+  email:
+    - yunxing@fb.com
+    - reason@cloudwalk.me
