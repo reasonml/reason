@@ -32,7 +32,7 @@ function install_refmt {
     then
         exit 1
     fi
-    BUILD_DIR=$(mktemp -d -t reason_upgrade)
+    BUILD_DIR=$(mktemp -d -t reason_upgrade.XXXXXXXX)
     OPAM_DIR="$BUILD_DIR/opam"
     REASON_DIR="$BUILD_DIR/reason"
     BETTERERRORS_DIR="$BUILD_DIR/BetterErrors"
