@@ -2718,7 +2718,10 @@ class printer  ()= object(self:'self)
             | Open -> [atom ".."]
           in
           let rows = List.concat [(List.map core_field_type l); openness] in
-          makeList ~break:IfNeed ~postSpace:true ~wrap:("<", ">") ~sep:"," rows
+          if List.length rows = 0 then
+            atom "<>"
+          else
+            makeList ~break:IfNeed ~postSpace:true ~wrap:("< ", " >") ~sep:"," rows
         | Ptyp_package (lid, cstrs) ->
           let typeConstraint (s, ct) =
             label
