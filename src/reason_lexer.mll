@@ -121,6 +121,7 @@ let keyword_table =
     "or", OR;
 (*  "parser", PARSER; *)
     "private", PRIVATE;
+    "query", QUERY;
     "rec", REC;
     "sig", SIG;
     "struct", STRUCT;

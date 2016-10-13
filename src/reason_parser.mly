@@ -881,6 +881,7 @@ let ensureTagsAreEqual startTag endTag loc =
 %token LESSSLASHGREATER
 %token LESSDOTDOTGREATER
 %token LESSMINUS
+%token QUERY
 %token EQUALGREATER
 %token LET
 %token <string> LIDENT
@@ -3015,7 +3016,72 @@ and_let_binding:
 let_bindings:
     let_binding                                 { $1 }
   | let_bindings and_let_binding                { addlb $1 $2 }
+  | graphql_query { $1 }
 ;
+
+graphql_blocks:
+  | /* empty */ { () }
+  | LIDENT graphql_opt_alias graphql_opt_arguments LBRACE graphql_blocks RBRACE more_graphql_blocks { () }
+  | LIDENT COLON graphql_type more_graphql_blocks { () }
+;
+
+graphql_type:
+    | type_longident { () }
+    | LIDENT type_longident { () }
+;
+
+graphql_value:
+  | INT { () }
+  | STRING { () }
+  | FLOAT { () }
+  | TRUE { () }
+  | FALSE { () }
+  | LIDENT { () }
+;
+
+graphql_opt_alias:
+    | /**/ { () }
+    | COLON LIDENT { () }
+;
+
+graphql_opt_arguments:
+    | /**/ { () }
+    | LPAREN graphql_arguments RPAREN { () }
+;
+
+graphql_arguments:
+    | LIDENT more_graphql_arguments {}
+    | LIDENT COLON graphql_value more_graphql_arguments {}
+;
+
+more_graphql_arguments:
+    | COMMA graphql_arguments { () }
+    | { () }
+
+more_graphql_blocks:
+  | COMMA graphql_blocks { () }
+  | /* */ { () }
+;
+
+opt_lident_list:
+    | /*  */ { () }
+    | lident_list { () }
+;
+
+graphql_query:
+  | QUERY LIDENT opt_lident_list EQUALGREATER LBRACE graphql_blocks RBRACE
+      {
+        let loc = mklocation $symbolstartpos $endpos in
+        {
+            lbs_bindings = [];
+            lbs_rec= Nonrecursive;
+            lbs_extension= None;
+            lbs_attributes= [];
+            lbs_loc= loc;
+         }
+      }
+;
+
 lident_list:
     LIDENT                            { [$1] }
   | LIDENT lident_list                { $1 :: $2 }
