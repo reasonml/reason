@@ -87,7 +87,7 @@ Contribute back to that documentation in the [docs folder](https://github.com/fa
 
 Community
 ---------------
-Get in touch! We're on IRC freenode #reasonml, and [Gitter](https://gitter.im/facebook/reason).
+Get in touch! We're on IRC freenode #reasonml, and [Discord](https://discord.gg/reasonml).
 
 Contributing To Development
 ----------
