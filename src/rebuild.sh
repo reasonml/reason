@@ -85,7 +85,7 @@ then
 fi
 
 # found ocamlc, parsing
-OCAMLC="ocamlc"
+OCAMLC="ocamlc.opt"
 if [[ $OCAMLCIDX -ne -1 ]];
 then
     # The argument after "-ocamlc" will be parsed into rec as ocamlc to be used
