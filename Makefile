@@ -73,7 +73,7 @@ update_error:
 ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 SUBSTS:=$(ROOT_DIR)/pkg/substs
 
-release: test
+release:
 ifndef version
 	$(error enviorment variable 'version' is undefined)
 endif
@@ -83,6 +83,7 @@ endif
 	git commit -m "Version $(version)"
 	git tag -a $(version) -m "Version $(version)."
 	git push "git@github.com:facebook/Reason.git" $(version)
+	git clean -fdx
 	npm publish --access public
 
 .PHONY: release
