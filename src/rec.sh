@@ -19,7 +19,7 @@ fi
 
 if [ -z "$OCAMLC" ];
 then
-    OCAMLC="ocamlc"
+    OCAMLC="ocamlc.opt"
 fi
 
 # use OCAMLC that's passed in by rebuild
