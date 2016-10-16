@@ -325,8 +325,8 @@ and print_fields rest ppf =
       fprintf ppf "%s : %a,@ %a" s print_out_type t (print_fields rest) l
 and print_row_field ppf (l, opt_amp, tyl) =
   let pr_of ppf =
-    if opt_amp then fprintf ppf " of@ &@ "
-    else if tyl <> [] then fprintf ppf " of@ "
+    if opt_amp then fprintf ppf " &@ "
+    else if tyl <> [] then fprintf ppf " "
     else fprintf ppf ""
   in
   fprintf ppf "@[<hv 2>`%s%t%a@]" l pr_of (print_typlist print_out_type " &")
