@@ -47,7 +47,7 @@
     "name": "reason",
     "dependencies": {
         "@opam-alpha/merlin": "^ 2.5.0",
-        "@opam-alpha/re": "^ 1.5.0",
+        "@opam-alpha/re": ">= 1.5.0",
         "@opam-alpha/ocamlfind": "*",
         "@opam-alpha/BetterErrors": ">= 0.0.1",
         "@opam-alpha/easy-format": "^ 1.2.0",
