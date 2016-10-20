@@ -2320,10 +2320,10 @@ class printer  ()= object(self:'self)
       in
       match (x.ptyp_desc) with
         | (Ptyp_arrow (l, ct1, ct2)) ->
-          let normalized =
-            makeList ~break:IfNeed ~sep:"=>" ~preSpace:true ~postSpace:true ~inline:(true, true) (allArrowSegments x)
-          in
-          SourceMap (x.ptyp_loc, normalized)
+            let normalized =
+              makeList ~break:IfNeed ~sep:"=>" ~preSpace:true ~postSpace:true ~inline:(true, true) (allArrowSegments x)
+            in
+            SourceMap (x.ptyp_loc, normalized)
         | Ptyp_poly (sl, ct) ->
             let poly =
               makeList ~break:IfNeed [
