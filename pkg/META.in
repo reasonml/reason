@@ -16,6 +16,9 @@ archive(byte, toploop) += "@menhirLib/menhirLib.cmo"
 archive(byte, toploop, -pkg_utop) += "reason_toploop.cmo"
 archive(byte, toploop, pkg_utop) += "reason_utop.cmo"
 
+archive(byte) = "reason.cma"
+archive(native) = "reason.cmxa"
+
 package "lib" (
   version = "%{version}%"
   description = "Library version of reason"
