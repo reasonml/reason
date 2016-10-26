@@ -11,13 +11,21 @@
     "language-reason:grammar-used",
     "language-ocaml:grammar-used"
   ],
-  "devDependencies": {
-    "jengaboot": "0.0.22"
+  "dependencies": {
+    "@opam-alpha/merlin": "^ 2.5.0",
+    "@opam-alpha/ocaml": "4.2.3",
+    "js_of_ocaml-bin": "https://github.com/reasonml/js_of_ocaml-bin.git",
+    "nopam": "https://github.com/reasonml/nopam.git",
+    "dependency-env": "https://github.com/reasonml/dependency-env.git",
+    "reason": "https://github.com/facebook/reason.git",
+    "rebel": "https://github.com/reasonml/rebel.git",
+    "ocamlBetterErrors": "0.0.10",
+    "realpath": "*"
   },
-  "jengaboot": {
-    "ocamlfindDependencies": {
-      "js_of_ocaml": "*"
-    }
+  "rebel": {
+    "ocamlfindDependencies": [
+      "js_of_ocaml"
+    ]
   },
   "messagesToInstaller": {
     "0.0.0": "These messages will be given to the respective version of the auto-installer. They're a nice way to message the user when the one thing that can't be updated, needs to be updated"
@@ -67,6 +75,6 @@
     }
   },
   "scripts": {
-    "start": "compile && cp _build/top/app.{js,map} ./output_byte_debug_js"
+    "start": "eval $(dependencyEnv) && rebel && cp _build/default/src/app.{js,map} ./output_byte_debug_js"
   }
 }
