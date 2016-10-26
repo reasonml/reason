@@ -1,4 +1,5 @@
 {
+  "name": "Reason",
   "scopeName": "source.reason",
   "fileTypes": [
     "re",
