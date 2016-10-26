@@ -75,15 +75,14 @@ let () =
 
     (* language-reason *)
     Pkg.share "editorSupport/language-reason/package.json" ~dst:"editorSupport/language-reason/package.json";
-    Pkg.share "editorSupport/language-reason/grammars/reason.cson" ~dst:"editorSupport/language-reason/grammars/reason.cson";
+    Pkg.share "editorSupport/language-reason/grammars/reason.json" ~dst:"editorSupport/language-reason/grammars/reason.json";
+    Pkg.share "editorSupport/language-reason/grammars/reason-hover-type.json" ~dst:"editorSupport/language-reason/grammars/reason-hover-type.json";
     Pkg.share "editorSupport/language-reason/settings/reason.cson" ~dst:"editorSupport/language-reason/settings/reason.cson";
     Pkg.share "editorSupport/language-reason/snippets/reason.cson" ~dst:"editorSupport/language-reason/snippets/reason.cson";
     Pkg.share "editorSupport/language-reason/lib/language-reason-view.coffee" ~dst:"editorSupport/language-reason/lib/language-reason-view.coffee";
     Pkg.share "editorSupport/language-reason/lib/language-reason.coffee" ~dst:"editorSupport/language-reason/lib/language-reason.coffee";
     Pkg.share "editorSupport/language-reason/README.md" ~dst:"editorSupport/language-reason/README.md";
     Pkg.share "editorSupport/language-reason/LICENSE.md" ~dst:"editorSupport/language-reason/LICENSE.md";
-    Pkg.share "editorSupport/language-reason/LICENSE.grammar" ~dst:"editorSupport/language-reason/LICENSE.grammar";
-    Pkg.share "editorSupport/language-reason/LICENSE.grammar" ~dst:"editorSupport/language-reason/LICENSE.grammar";
 
     (* VimReason *)
     Pkg.share "editorSupport/VimReason/after/syntax/reason.vim" ~dst:"editorSupport/VimReason/after/syntax/reason.vim";
