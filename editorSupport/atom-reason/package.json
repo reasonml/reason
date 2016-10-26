@@ -75,6 +75,6 @@
     }
   },
   "scripts": {
-    "start": "eval $(dependencyEnv) && rebel && cp _build/default/src/app.{js,map} ./output_byte_debug_js"
+    "start": "eval $(dependencyEnv) && nopam && rebel && cp _build/default/src/app.{js,map} ./output_byte_debug_js"
   }
 }
