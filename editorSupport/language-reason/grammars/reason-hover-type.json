@@ -1,0 +1,8 @@
+{
+  "scopeName": "source.reason.hover.type",
+  "patterns": [
+    { "include": "source.reason#signature-expression" },
+    { "include": "source.reason#module-item-type" },
+    { "include": "source.reason#type-expression" }
+  ]
+}
