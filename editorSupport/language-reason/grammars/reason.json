@@ -5,7 +5,8 @@
     "rei"
   ],
   "patterns": [
-    { "include": "#module-expression-block-item" }
+    { "include": "#module-expression-block-item" },
+    { "include": "#value-expression" }
   ],
   "repository": {
     "attribute": {
@@ -566,7 +567,7 @@
     },
     "module-item-let-module-bind-type": {
       "begin": "(:)",
-      "end": "(?=[;\\}=]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val)\\b)",
+      "end": "(?=[;\\}=]|\\b(and|class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|rec|type|val)\\b)",
       "beginCaptures": {
         "1": { "name": "keyword.operator.reason" }
       },
@@ -1409,7 +1410,11 @@
         { "include": "#value-expression-if-then-else" },
         { "include": "#value-expression-atomic" },
         { "include": "#module-prefix-simple" },
-        { "include": "#value-expression-record-path" }
+        { "include": "#value-expression-record-path" },
+        {
+          "match": "[:?]",
+          "name": "keyword.operator"
+        }
       ]
     },
     "value-expression-atomic": {
@@ -1556,6 +1561,7 @@
         "1": { "name": "keyword.control" }
       },
       "patterns": [
+        { "include": "#comment" },
         {
           "begin": "\\b(else)\\b",
           "end": "(?=[;\\)\\]\\}])",
@@ -1794,34 +1800,30 @@
     },
     "value-expression-record-item": {
       "patterns": [
+        { "include": "#comment" },
         { "include": "#module-prefix-simple" },
         { "include": "#value-expression-record-field" }
       ]
     },
     "value-expression-record-path": {
       "begin": "\\b[[:lower:]][[:word:]]*\\b",
-      "end": "(?!\\.)",
+      "end": "(?=[^[:space:]/\\.])",
       "patterns": [
+        { "include": "#comment" },
         {
-          "match": "(\\.)[[:space:]]*\\(([[:lower:]][[:word:]]*)\\)",
-          "captures": {
-            "1": { "name": "keyword.operator" },
-            "2": { "name": "variable.parameter" }
-          }
-        },
-        {
-          "match": "(\\.)[[:space:]]*\\b([[:upper:]][[:word:]]*)\\b",
-          "captures": {
-            "1": { "name": "keyword.operator" },
-            "2": { "name": "entity.name.class" }
-          }
-        },
-        {
-          "match": "(\\.)[[:space:]]*\\b([[:lower:]][[:word:]]*)\\b",
-          "captures": {
-            "1": { "name": "keyword.operator" },
-            "2": { "name": "constant.language" }
-          }
+          "begin": "(\\.)",
+          "end": "\\(([[:lower:]][[:word:]]*)\\)|\\b([[:upper:]][[:word:]]*)\\b|\\b([[:lower:]][[:word:]]*)\\b",
+          "beginCaptures": {
+            "1": { "name": "keyword.operator" }
+          },
+          "endCaptures": {
+            "1": { "name": "variable.parameter" },
+            "2": { "name": "entity.name.class" },
+            "3": { "name": "constant.language" }
+          },
+          "patterns": [
+            { "include": "#comment" }
+          ]
         }
       ]
     },
