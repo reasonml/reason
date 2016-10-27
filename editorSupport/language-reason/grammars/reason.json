@@ -431,7 +431,7 @@
       ]
     },
     "module-prefix-extended": {
-      "begin": "(?=[[:upper:]])",
+      "begin": "(?=\\b[[:upper:]])",
       "end": "([\\.])|(?=[;\\)\\}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
       "endCaptures": {
         "1": { "name": "keyword.other" }
@@ -441,7 +441,7 @@
       ]
     },
     "module-prefix-simple": {
-      "begin": "(?=[[:upper:]])",
+      "begin": "(?=\\b[[:upper:]])",
       "end": "([\\.])|(?=[;\\)\\}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
       "endCaptures": {
         "1": { "name": "keyword.other" }
@@ -693,7 +693,7 @@
     },
     "module-item-let-value-bind-pattern": {
       "begin": "(?<=and|external|let|method|rec)",
-      "end": "(?=[;}=]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
+      "end": "(?=[;:}=]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
       "patterns": [
         { "include": "#comment" },
         { "include": "#module-item-let-value-bind-parens-params" },
@@ -702,7 +702,7 @@
     },
     "module-item-let-value-bind-type": {
       "comment": "FIXME: lookahead",
-      "begin": "(:)",
+      "begin": "(:)(?![[:space:]]*[\\)])",
       "end": "(?==(?!>)|[;\\}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
       "beginCaptures": {
         "1": { "name": "keyword.operator.reason" }
@@ -722,7 +722,7 @@
     "module-item-let-value-param-label": {
       "patterns": [
         {
-          "begin": "\\b([[:lower:]][[:word:]]*)\\b(::)",
+          "begin": "\\b([[:lower:]][[:word:]]*)\\b[[:space:]]*(::)",
           "end": "(?<=[[:space:]])",
           "beginCaptures": {
             "1": { "name": "constant.language" },
@@ -732,7 +732,7 @@
             { "include": "#pattern" },
             {
               "begin": "(=)",
-              "end": "(\\?)|(?=[[:space:]])",
+              "end": "(\\?)|(?<=[^[:space:]=][[:space:]])(?=[[:space:]]*+[^\\.])",
               "beginCaptures": {
                 "1": { "name": "keyword.other" }
               },
@@ -740,7 +740,8 @@
                 "1": { "name": "storage.type" }
               },
               "patterns": [
-                { "include": "#value-expression" }
+                { "include": "#value-expression-atomic" },
+                { "include": "#value-expression-record-suffix" }
               ]
             }
           ]
@@ -1229,7 +1230,7 @@
     },
     "type-annotation-rhs": {
       "begin": "(?<![#\\-:!?.@*/&%^+<=>|~$\\\\])([:])(?![#\\-:!?.@*/&%^+<=>|~$\\\\])",
-      "end": "(?=\\))|(?=[;\\}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
+      "end": "(?=\\))|(?=[,;}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
       "beginCaptures": {
         "1": { "name": "keyword.operator" }
       },
@@ -1430,7 +1431,8 @@
         {
           "match": "[:?]",
           "name": "keyword.operator"
-        }
+        },
+        { "include": "#value-expression-record-path" }
       ]
     },
     "value-expression-atomic": {
@@ -1444,8 +1446,7 @@
         { "include": "#value-expression-parens" },
         { "include": "#value-expression-switch" },
         { "include": "#value-expression-try" },
-        { "include": "#value-expression-while" },
-        { "include": "#value-expression-record-path" }
+        { "include": "#value-expression-while" }
       ]
     },
     "value-expression-block": {
@@ -1486,7 +1487,7 @@
     },
     "value-expression-for": {
       "begin": "(?=\\b(for)\\b)",
-      "end": "(?<=\\})",
+      "end": "(?<=[\\}])",
       "patterns": [
         { "include": "#value-expression-for-head" },
         { "include": "#value-expression-block" }
@@ -1494,7 +1495,7 @@
     },
     "value-expression-for-head": {
       "begin": "(?=\\b(for)\\b)",
-      "end": "(?=\\{)",
+      "end": "(?=[\\{])",
       "beginCaptures": {
         "1": { "name": "keyword.control.reason" }
       },
@@ -1589,7 +1590,8 @@
             { "include": "#value-expression" }
           ]
         },
-        { "include": "#value-expression-atomic" }
+        { "include": "#value-expression-atomic" },
+        { "include": "#value-expression-record-path" }
       ]
     },
     "value-expression-lazy": {
@@ -1882,45 +1884,46 @@
       "end": "(?=[^[:space:]\\.])(?!/\\*)",
       "patterns": [
         { "include": "#comment" },
+        { "include": "#value-expression-record-suffix" }
+      ]
+    },
+    "value-expression-record-suffix": {
+      "begin": "(\\.)",
+      "end": "(\\))|\\b([[:upper:]][[:word:]]*)\\b|\\b([[:lower:]][[:word:]]*)\\b|(?=[;\\)\\}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|with)\\b)",
+      "beginCaptures": {
+        "1": { "name": "keyword.operator" }
+      },
+      "endCaptures": {
+        "1": { "name": "entity.name.function" },
+        "2": { "name": "entity.name.class" },
+        "3": { "name": "constant.language" }
+      },
+      "patterns": [
+        { "include": "#comment" },
         {
-          "begin": "(\\.)",
-          "end": "(\\))|\\b([[:upper:]][[:word:]]*)\\b|\\b([[:lower:]][[:word:]]*)\\b",
+          "begin": "([\\(])",
+          "end": "(?=[\\)])",
           "beginCaptures": {
-            "1": { "name": "keyword.operator" }
-          },
-          "endCaptures": {
-            "1": { "name": "entity.name.function" },
-            "2": { "name": "entity.name.class" },
-            "3": { "name": "constant.language" }
+            "1": { "name": "entity.name.function" }
           },
           "patterns": [
             { "include": "#comment" },
             {
-              "begin": "([\\(])",
-              "end": "(?=[\\)])",
-              "beginCaptures": {
-                "1": { "name": "entity.name.function" }
-              },
-              "patterns": [
-                { "include": "#comment" },
-                {
-                  "match": "\\b([[:lower:]][[:word:]]*)\\b(?=.*([\\.]))",
-                  "captures": {
-                    "1": { "name": "constant.language" },
-                    "2": { "name": "keyword.other" }
-                  }
-                },
-                {
-                  "match": "([\\.])",
-                  "name": "keyword.other"
-                },
-                {
-                  "match": "\\b([[:lower:]][[:word:]]*)\\b[[:space:]]*",
-                  "captures": {
-                    "1": { "name": "variable.parameter" }
-                  }
-                }
-              ]
+              "match": "\\b([[:lower:]][[:word:]]*)\\b(?=[^\\)]*([\\.]))",
+              "captures": {
+                "1": { "name": "constant.language" },
+                "2": { "name": "keyword.other" }
+              }
+            },
+            {
+              "match": "([\\.])",
+              "name": "keyword.other"
+            },
+            {
+              "match": "\\b([[:lower:]][[:word:]]*)\\b[[:space:]]*",
+              "captures": {
+                "1": { "name": "variable.parameter" }
+              }
             }
           ]
         }
@@ -1928,7 +1931,7 @@
     },
     "value-expression-switch": {
       "begin": "\\b(switch)\\b",
-      "end": "(?<=\\})",
+      "end": "(?<=[\\}])",
       "beginCaptures": {
         "1": { "name": "keyword.other" }
       },
@@ -1940,13 +1943,13 @@
     },
     "value-expression-switch-head": {
       "begin": "(?<=switch)[[:space:]]*+",
-      "end": "(?<=[[:space:]\\)\\}])",
-      "applyEndPatternLast": true,
+      "end": "(?=[\\{])",
       "beginCaptures": {
         "1": { "name": "keyword.control.reason" }
       },
       "patterns": [
-        { "include": "#value-expression-atomic" }
+        { "include": "#value-expression-atomic" },
+        { "include": "#value-expression-record-path" }
       ]
     },
     "value-expression-switch-body": {
@@ -1986,7 +1989,7 @@
     },
     "value-expression-try": {
       "begin": "\\b(try)\\b",
-      "end": "(?<=\\})",
+      "end": "(?<=[\\}])",
       "beginCaptures": {
         "1": { "name": "keyword.other" }
       },
@@ -1998,18 +2001,18 @@
     },
     "value-expression-try-head": {
       "begin": "(?<=try)[[:space:]]*+",
-      "end": "(?<=[[:space:]\\)\\}])",
-      "applyEndPatternLast": true,
+      "end": "(?=[\\{])",
       "beginCaptures": {
         "1": { "name": "keyword.control.reason" }
       },
       "patterns": [
-        { "include": "#value-expression-atomic" }
+        { "include": "#value-expression-atomic" },
+        { "include": "#value-expression-record-path" }
       ]
     },
     "value-expression-while": {
       "begin": "\\b(while)\\b",
-      "end": "(?<=\\})",
+      "end": "(?<=[\\}])",
       "beginCaptures": {
         "1": { "name": "keyword.other" }
       },
@@ -2020,8 +2023,7 @@
     },
     "value-expression-while-head": {
       "begin": "(?<=while)[[:space:]]*+",
-      "end": "(?<=[[:space:]\\)\\}])",
-      "applyEndPatternLast": true,
+      "end": "(?=[\\{])",
       "beginCaptures": {
         "1": { "name": "keyword.control.reason" }
       },
@@ -2032,7 +2034,7 @@
     },
     "value-expression-record-look": {
       "begin": "(?=\\.\\.\\.|([[:upper:]][[:word:]]*\\.)*([[:lower:]][[:word:]]*)[[:space:]]*[,:\\}])",
-      "end": "(?=\\})",
+      "end": "(?=[\\}])",
       "patterns": [
         { "include": "#value-expression-record-item" }
       ]
