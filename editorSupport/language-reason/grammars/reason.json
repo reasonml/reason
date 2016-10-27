@@ -33,7 +33,7 @@
           "match": "\\b([[:alpha:]][[:word:]]*)\\b[[:space:]]*(?:(\\.))",
           "captures": {
             "1": { "name": "entity.name.class" },
-            "2": { "name": "keyword.operator" }
+            "2": { "name": "keyword.other" }
           }
         },
         {
@@ -48,7 +48,7 @@
           "begin": "(:)",
           "end": "(?=\\])",
           "beginCaptures": {
-            "1": { "name": "keyword.operator" }
+            "1": { "name": "keyword.other" }
           },
           "patterns": [
             { "include": "#module-expression" },
@@ -60,7 +60,7 @@
           "begin": "([\\?])",
           "end": "(?=\\])",
           "beginCaptures": {
-            "1": { "name": "keyword.operator" }
+            "1": { "name": "keyword.other" }
           },
           "patterns": [
             { "include": "#pattern-guard" },
@@ -91,7 +91,7 @@
         "1": { "name": "storage.type.reason" }
       },
       "endCaptures": {
-        "1": { "name": "keyword.operator" }
+        "1": { "name": "keyword.other" }
       },
       "patterns": [
         { "include": "#module-item-let-value-bind-name-params-type-body" }
@@ -180,7 +180,7 @@
       "begin": "(>)",
       "end": "(?=</)",
       "beginCaptures": {
-        "1": { "name": "keyword.operator" }
+        "1": { "name": "keyword.other" }
       },
       "patterns": [
         {
@@ -195,7 +195,7 @@
       "end": "(?=(/>)|(</))",
       "applyEndPatternLast": true,
       "beginCaptures": {
-        "1": { "name": "keyword.operator" },
+        "1": { "name": "keyword.other" },
         "2": { "name": "entity.name.function" }
       },
       "patterns": [
@@ -219,11 +219,11 @@
       "end": "(>)",
       "applyEndPatternLast": true,
       "beginCaptures": {
-        "1": { "name": "keyword.operator" },
-        "2": { "name": "keyword.operator" }
+        "1": { "name": "keyword.other" },
+        "2": { "name": "keyword.other" }
       },
       "endCaptures": {
-        "1": { "name": "keyword.operator" }
+        "1": { "name": "keyword.other" }
       },
       "patterns": [
         { "include": "#module-path-simple" },
@@ -520,7 +520,7 @@
         "1": { "name": "storage.type.reason" }
       },
       "endCaptures": {
-        "1": { "name": "keyword.operator" }
+        "1": { "name": "keyword.other" }
       },
       "patterns": [
         { "include": "#module-item-let-module" },
@@ -554,7 +554,7 @@
       "begin": "(=>?)",
       "end": "(?=[;\\}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
       "beginCaptures": {
-        "1": { "name": "keyword.operator.reason" }
+        "1": { "name": "keyword.other" }
       },
       "patterns": [
         { "include": "#module-expression" }
@@ -585,7 +585,7 @@
       "begin": "(:)",
       "end": "(?=[;\\}=]|\\b(and|class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|rec|type|val)\\b)",
       "beginCaptures": {
-        "1": { "name": "keyword.operator.reason" }
+        "1": { "name": "keyword.other" }
       },
       "patterns": [
         { "include": "#signature-expression" }
@@ -646,7 +646,7 @@
       "begin": "(=>?)",
       "end": "(?=[;\\)\\}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
       "beginCaptures": {
-        "1": { "name": "keyword.operator.reason" }
+        "1": { "name": "keyword.other" }
       },
       "patterns": [
         { "include": "#value-expression" }
@@ -705,7 +705,7 @@
       "begin": "(:)(?![[:space:]]*[\\)])",
       "end": "(?==(?!>)|[;\\}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
       "beginCaptures": {
-        "1": { "name": "keyword.operator.reason" }
+        "1": { "name": "keyword.other" }
       },
       "patterns": [
         { "include": "#type-expression" }
@@ -806,7 +806,7 @@
         "1": { "name": "storage.type.reason" }
       },
       "endCaptures": {
-        "1": { "name": "keyword.operator" }
+        "1": { "name": "keyword.other" }
       },
       "patterns": [
         { "include": "#module-item-let-module-and" },
@@ -907,7 +907,7 @@
       "begin": "(\\+?=)",
       "end": "(?=[;\\)\\}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
       "beginCaptures": {
-        "1": { "name": "keyword.operator.reason" }
+        "1": { "name": "keyword.other" }
       },
       "patterns": [
         { "include": "#module-item-type-bind-body-item" }
@@ -1092,7 +1092,7 @@
       "begin": "(?:\\(|(,))",
       "end": "(?=(?:[,:\\)]))|(?=[;\\}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
       "beginCaptures": {
-        "1": { "name": "keyword.operator" }
+        "1": { "name": "keyword.other" }
       },
       "patterns": [
         { "include": "#pattern" }
@@ -1114,7 +1114,7 @@
         "2": { "name": "constant.language.field.reason" }
       },
       "endCaptures": {
-        "1": { "name": "keyword.operator.reason" }
+        "1": { "name": "keyword.other" }
       },
       "patterns": [
         { "include": "#comment" },
@@ -1122,7 +1122,7 @@
           "begin": "\\G(:)",
           "end": "(?=[,\\}])",
           "beginCaptures": {
-            "1": { "name": "keyword.operator.reason" }
+            "1": { "name": "keyword.other" }
           },
           "patterns": [
             { "include": "#pattern" }
@@ -1156,7 +1156,7 @@
       "begin": "(?:\\G|(;))",
       "end": "(?=[;\\}]|\\b(class|constraint|exception|external|include|let|module|nonrec|open|private|type|val|with)\\b)",
       "beginCaptures": {
-        "1": { "name": "keyword.operator" }
+        "1": { "name": "keyword.other" }
       },
       "patterns": [
         { "include": "#class-item-method" }
@@ -1169,7 +1169,7 @@
       ]
     },
     "operator-infix-builtin": {
-      "name": "keyword.operator",
+      "name": "keyword.other",
       "match": ":="
     },
     "operator-infix": {
@@ -1184,11 +1184,11 @@
       ]
     },
     "operator-infix-custom": {
-      "name": "keyword.operator",
+      "name": "keyword.other",
       "match": "[#\\-@*/&%^+<=>|$][#\\-:!?.@*/&%^+<=>|~$\\\\]*"
     },
     "operator-infix-custom-hash": {
-      "name": "keyword.operator",
+      "name": "keyword.other",
       "match": "#[\\-:!?.@*/&%^+<=>|~$]+"
     },
     "operator-prefix": {
@@ -1198,11 +1198,11 @@
       ]
     },
     "operator-prefix-bang": {
-      "name": "keyword.operator",
+      "name": "keyword.other",
       "match": "![\\-:!?.@*/&%^+<=>|~$]*"
     },
     "operator-prefix-label-token": {
-      "name": "keyword.operator",
+      "name": "keyword.other",
       "match": "[?~][\\-:!?.@*/&%^+<=>|~$]+"
     },
     "signature-expression": {
@@ -1232,7 +1232,7 @@
       "begin": "(?<![#\\-:!?.@*/&%^+<=>|~$\\\\])([:])(?![#\\-:!?.@*/&%^+<=>|~$\\\\])",
       "end": "(?=\\))|(?=[,;}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
       "beginCaptures": {
-        "1": { "name": "keyword.operator" }
+        "1": { "name": "keyword.other" }
       },
       "patterns": [
         { "include": "#type-expression" }
@@ -1255,7 +1255,7 @@
       ]
     },
     "type-expression-arrow": {
-      "name": "keyword.operator",
+      "name": "keyword.other",
       "match": "=>"
     },
     "type-expression-constructor": {
@@ -1388,7 +1388,7 @@
         "2": { "name": "constant.language.field.reason" }
       },
       "endCaptures": {
-        "1": { "name": "keyword.operator.reason" }
+        "1": { "name": "keyword.other" }
       },
       "patterns": [
         { "include": "#comment" },
@@ -1396,7 +1396,7 @@
           "begin": "(:)",
           "end": "(?=[,\\}])",
           "beginCaptures": {
-            "1": { "name": "keyword.operator.reason" }
+            "1": { "name": "keyword.other" }
           },
           "patterns": [
             { "include": "#type-expression" }
@@ -1430,7 +1430,7 @@
         { "include": "#module-prefix-simple" },
         {
           "match": "[:?]",
-          "name": "keyword.operator"
+          "name": "keyword.other"
         },
         { "include": "#value-expression-record-path" }
       ]
@@ -1482,7 +1482,7 @@
       ]
     },
     "value-expression-builtin": {
-      "name": "keyword.operator",
+      "name": "keyword.other",
       "match": "\\b(assert|decr|failwith|fprintf|incr|lazy|lor|lsl|lsr|lxor|mod|new|not|printf|raise|ref)\\b"
     },
     "value-expression-for": {
@@ -1537,7 +1537,7 @@
       "begin": "\\b(fun)\\b",
       "end": "(?=[;\\)\\}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
       "beginCaptures": {
-        "1": { "name": "keyword.operator.reason" }
+        "1": { "name": "keyword.other" }
       },
       "patterns": [
         { "include": "#value-expression-fun-pattern-match-rule" }
@@ -1547,7 +1547,7 @@
       "begin": "(\\|(?!\\|))?",
       "end": "(?=[;\\)\\}]|\\|(?!\\|)|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
       "beginCaptures": {
-        "1": { "name": "keyword.operator.reason" }
+        "1": { "name": "keyword.other" }
       },
       "patterns": [
         { "include": "#value-expression-fun-pattern-match-rule-lhs" },
@@ -1565,7 +1565,7 @@
       "begin": "(=>)",
       "end": "(?=[;\\)\\}]|\\|(?!\\|)|\\b(and)\\b)",
       "beginCaptures": {
-        "1": { "name": "keyword.operator.reason" }
+        "1": { "name": "keyword.other" }
       },
       "patterns": [
         { "include": "#value-expression" }
@@ -1664,7 +1664,7 @@
     "value-expression-literal-list-separator": {
       "match": "(,)|(\\.\\.\\.)",
       "captures": {
-        "1": { "name": "keyword.operator" },
+        "1": { "name": "keyword.other" },
         "2": { "name": "constant.language" }
       }
     },
@@ -1726,14 +1726,14 @@
         {
           "match": "(@)([ \\[\\],.]|\\\\n)",
           "captures": {
-            "1": { "name": "keyword.operator" },
+            "1": { "name": "keyword.other" },
             "2": { "name": "constant.language" }
           }
         },
         {
           "match": "(%)\\b(identity)\\b",
           "captures": {
-            "1": { "name": "keyword.operator" },
+            "1": { "name": "keyword.other" },
             "2": { "name": "constant.language" }
           }
         },
@@ -1741,7 +1741,7 @@
           "comment": "FIXME: don't highlight in external strings",
           "match": "(%)([ads])?",
           "captures": {
-            "1": { "name": "keyword.operator" },
+            "1": { "name": "keyword.other" },
             "2": { "name": "variable.parameter" }
           }
         }
@@ -1772,7 +1772,7 @@
       "begin": "(?:\\(|(,))",
       "end": "(?=(?:[?,:\\)]|\\b(and|as|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b))",
       "beginCaptures": {
-        "1": { "name": "keyword.operator" }
+        "1": { "name": "keyword.other" }
       },
       "patterns": [
         {
@@ -1804,7 +1804,7 @@
             "1": { "name": "keyword.other" }
           },
           "endCaptures": {
-            "1": { "name": "keyword.operator.reason" }
+            "1": { "name": "keyword.other" }
           },
           "patterns": [
             { "include": "#comment" },
@@ -1817,7 +1817,7 @@
               "begin": "(:)",
               "end": "(?=[,\\}])",
               "beginCaptures": {
-                "1": { "name": "keyword.operator.reason" }
+                "1": { "name": "keyword.other" }
               },
               "patterns": [
                 { "include": "#value-expression" }
@@ -1832,7 +1832,7 @@
             "1": { "name": "entity.name.class" }
           },
           "endCaptures": {
-            "1": { "name": "keyword.operator.reason" }
+            "1": { "name": "keyword.other" }
           },
           "patterns": [
             { "include": "#module-prefix-simple" },
@@ -1840,7 +1840,7 @@
               "begin": "(:)",
               "end": "(?=[,\\}])",
               "beginCaptures": {
-                "1": { "name": "keyword.operator.reason" }
+                "1": { "name": "keyword.other" }
               },
               "patterns": [
                 { "include": "#value-expression" }
@@ -1855,14 +1855,14 @@
             "1": { "name": "constant.language" }
           },
           "endCaptures": {
-            "1": { "name": "keyword.operator.reason" }
+            "1": { "name": "keyword.other" }
           },
           "patterns": [
             {
               "begin": "(:)",
               "end": "(?=[,\\}])",
               "beginCaptures": {
-                "1": { "name": "keyword.operator.reason" }
+                "1": { "name": "keyword.other" }
               },
               "patterns": [
                 { "include": "#value-expression" }
@@ -1891,7 +1891,7 @@
       "begin": "(\\.)",
       "end": "(\\))|\\b([[:upper:]][[:word:]]*)\\b|\\b([[:lower:]][[:word:]]*)\\b|(?=[;\\)\\}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|with)\\b)",
       "beginCaptures": {
-        "1": { "name": "keyword.operator" }
+        "1": { "name": "keyword.other" }
       },
       "endCaptures": {
         "1": { "name": "entity.name.function" },
@@ -1970,7 +1970,7 @@
       "begin": "(\\|)(?!\\|)",
       "end": "(?==>|[;\\)\\}])",
       "beginCaptures": {
-        "1": { "name": "keyword.operator.reason" }
+        "1": { "name": "keyword.other" }
       },
       "patterns": [
         { "include": "#pattern-guard" },
@@ -1981,7 +1981,7 @@
       "begin": "(=>)",
       "end": "(?=[\\}]|\\|(?!\\|))",
       "beginCaptures": {
-        "1": { "name": "keyword.operator.reason" }
+        "1": { "name": "keyword.other" }
       },
       "patterns": [
         { "include": "#value-expression-block-item" }
