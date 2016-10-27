@@ -284,10 +284,8 @@ let addPoints (p1: point, p2: point) => {
 
 let res1 = printPoint point2D;
 
-let res2 = printPoint {
-  x: point3D.x,
-  y: point3D.y
-};
+let res2 =
+  printPoint {x: point3D.x, y: point3D.y};
 
 /*
     When () were used to indicate sequences, the parser used seq_expr not only
@@ -311,12 +309,13 @@ let res2 = printPoint {
         let x = {a};    /* Record {a:a} */
         let x = {a;};   /* Single item sequence returning identifier {a} */
  */
-let res3 = printPoint (
-  addPoints (
-    point2D,
-    {x: point3D.x, y: point3D.y}
-  )
-);
+let res3 =
+  printPoint (
+    addPoints (
+      point2D,
+      {x: point3D.x, y: point3D.y}
+    )
+  );
 
 type person = {age: int, name: string};
 
@@ -592,10 +591,10 @@ let result =
 
 let result =
   myRecordWithFunctions.addThreeNumbersTupled (
-  10,
-  20,
-  30
-);
+    10,
+    20,
+    30
+  );
 
 let lookTuplesRequireParens = (1, 2);
 

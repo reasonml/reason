@@ -1,5 +1,6 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
-let run () => TestUtils.printSection "Polymorphism";
+let run () =>
+  TestUtils.printSection "Polymorphism";
 
 type myType 'a = list 'a;
 

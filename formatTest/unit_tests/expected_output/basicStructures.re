@@ -1,5 +1,6 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
-let run () => TestUtils.printSection "Basic Structures";
+let run () =>
+  TestUtils.printSection "Basic Structures";
 
 while something {
   print_string "You're in a while loop";
@@ -312,7 +313,8 @@ let annotatingFuncApplication = (
 );
 
 /* Pretty printer might stick the [int] at the label. */
-let annotatingSingleFuncApplication: int = _dummyFunc "a";
+let annotatingSingleFuncApplication: int =
+  _dummyFunc "a";
 
 /* So lets try a place where it won't */
 let annotatingSingleFuncApplication = {
@@ -604,10 +606,11 @@ let anotherRecord = {
 };
 
 let anotherRecord = {
-  ...SomeReally.longFunctionCall {
-    passingRecordField: 0,
-    andThisOtherRecordField: 10
-  },
+  ...
+    SomeReally.longFunctionCall {
+      passingRecordField: 0,
+      andThisOtherRecordField: 10
+    },
   name: "joe++",
   age: testRecord.age + 10
 };

@@ -364,3 +364,9 @@ let equal i1 i2 =>
   compare
     (compare 0 0)
     (compare 1 1); /* END OF LINE HERE */
+
+let tuple_equal (i1, i2) => i1 == i2;
+
+let tuple_equal (csu, mgd) =>
+  /* Some really long comments, see https://github.com/facebook/reason/issues/811 */
+  tuple_equal (csu, mgd);

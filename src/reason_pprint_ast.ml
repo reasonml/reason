@@ -2218,10 +2218,9 @@ let formatAttachmentApplication finalWrapping (attachTo: (bool * layoutNode) opt
           | (hd::tl, Some (useSpace, toThis)) ->
             (* TODO: Can't attach location to this - maybe rewrite anyways *)
             let attachedArgs = makeAppList attachedList in
-            label
-              ~space:true
-              (label ~space:useSpace toThis attachedArgs)
-              wrappedListy
+              (label ~space:useSpace toThis (label
+              ~space:true attachedArgs wrappedListy))
+
           | (hd::tl, None) ->
             (* Args that are "attached to nothing" *)
             let appList = makeAppList attachedList in

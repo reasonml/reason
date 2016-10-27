@@ -157,21 +157,24 @@ let acceptsClosedAnonObjAsArg
     (o: < x : int, y : int >) =>
   o#x + o#y;
 
-let res = acceptsOpenAnonObjAsArg {
-  method x = 0;
-  method y = 10
-};
+let res =
+  acceptsOpenAnonObjAsArg {
+    method x = 0;
+    method y = 10
+  };
 
-let res = acceptsOpenAnonObjAsArg {
-  method x = 0;
-  method y = 10;
-  method z = 10
-};
+let res =
+  acceptsOpenAnonObjAsArg {
+    method x = 0;
+    method y = 10;
+    method z = 10
+  };
 
-let res = acceptsClosedAnonObjAsArg {
-  method x = 0;
-  method y = 10
-};
+let res =
+  acceptsClosedAnonObjAsArg {
+    method x = 0;
+    method y = 10
+  };
 
 /* TODO: Unify class constructor return values with function return values */
 class myClassWithAnnotatedReturnType
@@ -284,12 +287,8 @@ let module HasTupleClasses: {
 
 class intTuples = class tupleClass int int;
 
-class intTuplesHardcoded = (
-  class tupleClass int int
-) (
-  8,
-  8
-);
+class intTuplesHardcoded =
+  (class tupleClass int int) (8, 8);
 
 
 /**

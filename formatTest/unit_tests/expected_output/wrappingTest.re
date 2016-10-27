@@ -487,7 +487,8 @@ let secondArgShouldWrap
 /* Now check that one and two args both indent the same when applying */
 let reallyReallyLongVarName = "hello";
 
-let result = oneArgShouldWrapToAlignWith reallyReallyLongVarName;
+let result =
+  oneArgShouldWrapToAlignWith reallyReallyLongVarName;
 
 let result =
   twoArgsShouldWrapToAlignWith
@@ -500,7 +501,8 @@ let justReturn x => x;
    function application "justReturn hasABunch" */
 let acceptsTwoThings
     (nameAge: nameAge)
-    (hasABunch: hasABunch) => justReturn hasABunch;
+    (hasABunch: hasABunch) =>
+  justReturn hasABunch;
 
 /*
   Ideally, we'd allow "acceptsTwoThings {age, name}" on the first line, then
@@ -546,15 +548,16 @@ let reallyLongFunctionNameThatJustConcats a =>
 
 let seeHowLongValuesWrap = {
   age: 30,
-  name: reallyLongFunctionNameThatJustConcats [
-    "one",
-    "two",
-    "two",
-    "two",
-    "two",
-    "two",
-    "two"
-  ]
+  name:
+    reallyLongFunctionNameThatJustConcats [
+      "one",
+      "two",
+      "two",
+      "two",
+      "two",
+      "two",
+      "two"
+    ]
 };
 
 /*
@@ -581,14 +584,8 @@ let bothArgsWrapAndIndent
   f
 );
 
-let result = onlyReturnWraps (
-  10,
-  11,
-  12,
-  13,
-  14,
-  15
-);
+let result =
+  onlyReturnWraps (10, 11, 12, 13, 14, 15);
 
 let result =
   bothArgsWrapAndIndent
@@ -954,24 +951,25 @@ let (
   n,
   o,
   p
-) = echoTuple (
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0
-);
+) =
+  echoTuple (
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  );
 
 /* Annotated version */
 let (
@@ -991,24 +989,25 @@ let (
   n,
   o,
   p
-): sixteenTuple = echoTuple (
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0
-);
+): sixteenTuple =
+  echoTuple (
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  );
 
 /* Annotated inline */
 let x: (
@@ -1028,24 +1027,25 @@ let x: (
   int,
   int,
   int
-) = echoTuple (
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0
-);
+) =
+  echoTuple (
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  );
 
 /* Desired formatting if pattern does not fit, arguments do (margin 70) */
 /* Destructured */
@@ -1181,24 +1181,25 @@ let (
   nxx,
   oxx,
   pxx
-) = echoTuple (
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0
-);
+) =
+  echoTuple (
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  );
 
 /* Annotated */
 let (
@@ -1218,24 +1219,25 @@ let (
   nxx,
   oxx,
   pxx
-): sixteenTuple = echoTuple (
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0
-);
+): sixteenTuple =
+  echoTuple (
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  );
 
 /* Annotated Inline */
 let (
@@ -1272,65 +1274,68 @@ let (
   int,
   int,
   int
-) = echoTuple (
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0
-);
+) =
+  echoTuple (
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  );
 
 /* Not-Destructured */
-let someResult = echoTuple (
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0
-);
+let someResult =
+  echoTuple (
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  );
 
 /* Annotated */
 /* Not-Destructured */
-let someResult: sixteenTuple = echoTuple (
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0
-);
+let someResult: sixteenTuple =
+  echoTuple (
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  );
 
 /* Annotated Inline */
 /* Not-Destructured */
@@ -1351,24 +1356,25 @@ let someResult: (
   int,
   int,
   int
-) = echoTuple (
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0
-);
+) =
+  echoTuple (
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  );
 
 /* Desired formatting if neither fit on one line (margin 70) */
 /* Destructured */
@@ -1597,24 +1603,25 @@ let (
   nxx,
   oxx,
   pxx
-) = echoTuple (
-  1000,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10
-);
+) =
+  echoTuple (
+    1000,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10
+  );
 
 /* Annoted */
 /* Destructured */
@@ -1635,24 +1642,25 @@ let (
   nxx,
   oxx,
   pxx
-): sixteenTuple = echoTuple (
-  1000,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10
-);
+): sixteenTuple =
+  echoTuple (
+    1000,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10
+  );
 
 /* Annoted Inline */
 /* Destructured */
@@ -1690,66 +1698,69 @@ let (
   int,
   int,
   int
-) = echoTuple (
-  1000,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10
-);
+) =
+  echoTuple (
+    1000,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10
+  );
 
 /* Desired formatting if neither fit on one line (margin 70) */
 /* Not-Destructured */
-let someResult = echoTuple (
-  1000,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10
-);
+let someResult =
+  echoTuple (
+    1000,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10
+  );
 
 /* Annoted */
 /* Not-Destructured */
-let someResult: sixteenTuple = echoTuple (
-  1000,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10
-);
+let someResult: sixteenTuple =
+  echoTuple (
+    1000,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10
+  );
 
 /* Annoted Inline */
 /* Not-Destructured */
@@ -1770,24 +1781,25 @@ let someResult: (
   int,
   int,
   int
-) = echoTuple (
-  1000,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10,
-  10
-);
+) =
+  echoTuple (
+    1000,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10
+  );
 
 /* The rhs of = shouldn't be broken onto its own newline: @see ensureSingleTokenSticksToLabel */
 let someResult: (
@@ -2031,9 +2043,8 @@ let theTupleTypeAnnotationShouldWrap: (
   "now these tuple values should wrap"
 );
 
-let rec mutuallyRecursiveOne x => mutuallyRecursiveTwo (
-  x + x
-)
+let rec mutuallyRecursiveOne x =>
+  mutuallyRecursiveTwo (x + x)
 and mutuallyRecursiveTwo y => print_int y;
 
 /* The only downside to this is that now you can't redeclare a binding. */
@@ -2044,8 +2055,8 @@ type x = private int;
 
 type myType 'a 'b 'c = private ('a, 'b, 'c);
 
-type privateVariant = private
-  | BigSize int | SmallSize int;
+type privateVariant =
+  private | BigSize int | SmallSize int;
 
 type doubleEqualsDoublePrivateVariant =
   privateVariant =

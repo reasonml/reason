@@ -188,13 +188,15 @@ let module MyFunctor (M: HasTT) => {
    bottom of this file. [Actually, forgiving the trailing SEMI might not be
    such a great idea].
    */
-let module MyFunctorResult = MyFunctor {
-  type tt = string;
-};
+let module MyFunctorResult =
+  MyFunctor {
+    type tt = string;
+  };
 
-let module LookNoParensNeeded = MyFunctor {
-  type tt = string;
-};
+let module LookNoParensNeeded =
+  MyFunctor {
+    type tt = string;
+  };
 
 module type SigResult = {let result: int;};
 
@@ -445,9 +447,8 @@ let module Id (X: Type) => X;
 let module Compose
            (F: Type => Type)
            (G: Type => Type)
-           (X: Type) => F (
-  G X
-);
+           (X: Type) =>
+  F (G X);
 
 let l: Compose(List)(Maybe)(Char).t = [Some 'a'];
 
@@ -482,12 +483,13 @@ Printf.printf
  </div>;
  };
  */
-include YourLib.CreateComponent {
-  type thing = blahblahblah;
-  type state = unit;
-  let getInitialState _ => ();
-  let myValue = {recordField: "hello"};
-};
+include
+  YourLib.CreateComponent {
+    type thing = blahblahblah;
+    type state = unit;
+    let getInitialState _ => ();
+    let myValue = {recordField: "hello"};
+  };
 
 module type HasInt = {let x: int;};
 
