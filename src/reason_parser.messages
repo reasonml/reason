@@ -9523,7 +9523,7 @@ implementation: LET LIDENT WITH
 ## val_ident
 ##
 
-<SYNTAX ERROR>
+You cannot use a reserved keyword as an identifier.
 
 implementation: LET MODULE REC UIDENT EQUAL UIDENT AND WITH
 ##
