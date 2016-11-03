@@ -73,7 +73,7 @@
     },
     "class-item-inherit": {
       "begin": "\\b(inherit)\\b",
-      "end": "(;)|(?=[\\}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
+      "end": "(;)|(?=}|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
       "beginCaptures": {
         "1": { "name": "keyword.other" }
       },
@@ -86,7 +86,7 @@
     },
     "class-item-method": {
       "begin": "\\b(method)\\b",
-      "end": "(;)|(?=[\\}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|type|val|with)\\b)",
+      "end": "(;)|(?=}|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|type|val|with)\\b)",
       "beginCaptures": {
         "1": { "name": "storage.type" }
       },
@@ -124,12 +124,12 @@
       "begin": "(?<![#\\-:!?.@*/&%^+<=>|~$\\\\])([\\?])(?![#\\-:!?.@*/&%^+<=>|~$\\\\])",
       "end": "(?=[\\)])",
       "beginCaptures": {
-        "1": { "name": "markup.raw keyword.control.less message.error" }
+        "1": { "name": "markup.raw keyword.control message.error" }
       },
       "patterns": [
         {
           "match": "(?:\\b|[[:space:]]+)([?])(?:\\b|[[:space:]]+)",
-          "name": "markup.raw keyword.control.less message.error"
+          "name": "markup.raw keyword.control message.error"
         },
         { "include": "#value-expression" }
       ]
@@ -278,7 +278,7 @@
     },
     "module-path-extended-prefix": {
       "begin": "(?=\\b[[:upper:]])",
-      "end": "([\\.])|(?=[;\\)\\}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
+      "end": "([\\.])|(?=[;\\)}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
       "endCaptures": {
         "1": { "name": "keyword.control.less message.error" }
       },
@@ -312,7 +312,7 @@
     },
     "module-path-simple-prefix": {
       "begin": "(?=\\b[[:upper:]])",
-      "end": "([\\.])|(?=[;\\)\\}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
+      "end": "([\\.])|(?=[;\\)}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
       "endCaptures": {
         "1": { "name": "keyword.control.less message.error" }
       },
@@ -323,7 +323,7 @@
     "module-item-class-type": {
       "comment": "FIXME: proper parsing",
       "begin": "\\b(class)\\b",
-      "end": "(;)|(?=[\\}]|\\b(and|class|constraint|exception|external|include|module|nonrec|open|private|rec|type|val|with)\\b)",
+      "end": "(;)|(?=}|\\b(and|class|constraint|exception|external|include|module|nonrec|open|private|rec|type|val|with)\\b)",
       "beginCaptures": {
         "1": { "name": "keyword.other" }
       },
@@ -358,7 +358,7 @@
     },
     "module-item-exception": {
       "begin": "\\b(exception)\\b",
-      "end": "(;)|(?=[\\}]|\\b(class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|type|val|with)\\b)",
+      "end": "(;)|(?=}|\\b(class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|type|val|with)\\b)",
       "beginCaptures": {
         "1": { "name": "keyword.other" }
       },
@@ -371,7 +371,7 @@
     },
     "module-item-external": {
       "begin": "\\b(external)\\b",
-      "end": "(;)|(?=[\\}]|\\b(class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|type|val|with)\\b)",
+      "end": "(;)|(?=}|\\b(class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|type|val|with)\\b)",
       "beginCaptures": {
         "1": { "name": "storage.type" }
       },
@@ -383,7 +383,7 @@
         { "include": "#module-item-let-value-bind-type" },
         {
           "begin": "(=)",
-          "end": "(?=[;\\)\\}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
+          "end": "(?=[;\\)}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
           "beginCaptures": {
             "1": { "name": "keyword.control.less" }
           },
@@ -410,9 +410,9 @@
     },
     "module-item-include": {
       "begin": "\\b(include)\\b",
-      "end": "(;)|(?=[\\}]|\\b(class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|type|val)\\b)",
+      "end": "(;)|(?=}|\\b(class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|type|val)\\b)",
       "beginCaptures": {
-        "1": { "name": "keyword.other" }
+        "1": { "name": "keyword.control.include" }
       },
       "endCaptures": {
         "1": { "name": "comment" }
@@ -423,7 +423,7 @@
     },
     "module-item-let": {
       "begin": "\\b(let)\\b",
-      "end": "(;)|(?=[\\}]|\\b(class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|type|val|with)\\b)",
+      "end": "(;)|(?=}|\\b(class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|type|val|with)\\b)",
       "beginCaptures": {
         "1": { "name": "storage.type" }
       },
@@ -437,9 +437,9 @@
     },
     "module-item-let-module": {
       "begin": "(?:\\G|^)[[:space:]]*\\b(module)\\b",
-      "end": "(?=[;\\}]|\\b(class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|type|val|with)\\b)",
+      "end": "(?=[;}]|\\b(class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|type|val|with)\\b)",
       "beginCaptures": {
-        "1": { "name": "storage.type message.error" }
+        "1": { "name": "keyword.control storage.type message.error" }
       },
       "patterns": [
         { "include": "#comment" },
@@ -450,7 +450,7 @@
     },
     "module-item-let-module-and": {
       "begin": "\\b(and)\\b",
-      "end": "(?=[;\\}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
+      "end": "(?=[;}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
       "beginCaptures": {
         "1": { "name": "storage.type" }
       },
@@ -460,7 +460,7 @@
     },
     "module-item-let-module-bind-body": {
       "begin": "(=>?)",
-      "end": "(?=[;\\}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
+      "end": "(?=[;}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
       "beginCaptures": {
         "1": { "name": "keyword.control.less" }
       },
@@ -470,7 +470,7 @@
     },
     "module-item-let-module-bind-name-params": {
       "begin": "\\b([[:upper:]][[:word:]]*)\\b",
-      "end": "(?=[;:\\}=]|\\b(class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
+      "end": "(?=[;:}=]|\\b(class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
       "beginCaptures": {
         "1": { "name": "support.class entity.name.class" }
       },
@@ -481,7 +481,7 @@
     },
     "module-item-let-module-bind-name-params-type-body": {
       "begin": "(?:\\G|^)",
-      "end": "(?=[;\\}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
+      "end": "(?=[;}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
       "patterns": [
         { "include": "#comment" },
         { "include": "#module-item-let-module-bind-name-params" },
@@ -491,7 +491,7 @@
     },
     "module-item-let-module-bind-type": {
       "begin": "(:)",
-      "end": "(?=[;\\}=]|\\b(and|class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|rec|type|val)\\b)",
+      "end": "(?=[;}=]|\\b(and|class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|rec|type|val)\\b)",
       "beginCaptures": {
         "1": { "name": "markup.raw keyword.control.less message.error" }
       },
@@ -525,9 +525,9 @@
     },
     "module-item-let-module-rec": {
       "begin": "(?:\\G|^)[[:space:]]*\\b(rec)\\b",
-      "end": "(?=[;\\}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
+      "end": "(?=[;}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
       "beginCaptures": {
-        "1": { "name": "storage.modifier.rec" }
+        "1": { "name": "keyword.control storage.modifier.rec" }
       },
       "patterns": [
         { "include": "#module-item-let-module-bind-name-params-type-body" }
@@ -542,7 +542,7 @@
     },
     "module-item-let-value-and": {
       "begin": "\\b(and)\\b",
-      "end": "(?=[;\\}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
+      "end": "(?=[;}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
       "beginCaptures": {
         "1": { "name": "storage.type" }
       },
@@ -552,7 +552,7 @@
     },
     "module-item-let-value-bind-body": {
       "begin": "(=>?)",
-      "end": "(?=[;\\)\\}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
+      "end": "(?=[;\\)}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
       "beginCaptures": {
         "1": { "name": "keyword.control.less" }
       },
@@ -561,7 +561,7 @@
       ]
     },
     "module-item-let-value-bind-name-or-pattern": {
-      "begin": "(?<=and|external|let|method|rec)[[:space:]]*",
+      "begin": "(?<=[^[:word:]]and|^and|[^[:word]]external|^external|[^[:word]]let|^let|[^[:word]]method|^method|[^[:word]]rec|^rec)[[:space:]]*",
       "end": "(?<=[^[:space:]])|(?=[[:space:]]|[;:}=]|\\b(and|as|class|constraint|exception|external|for|include|inherit|let|method|module|nonrec|open|private|rec|switch|try|type|val|while|with)\\b)",
       "patterns": [
         { "include": "#comment" },
@@ -577,8 +577,8 @@
       ]
     },
     "module-item-let-value-bind-name-params-type-body": {
-      "begin": "(?<=and|external|let|method|rec)",
-      "end": "(?=[;\\}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
+      "begin": "(?<=[^[:word:]]and|^and|[^[:word]]external|^external|[^[:word]]let|^let|[^[:word]]method|^method|[^[:word]]rec|^rec)",
+      "end": "(?=[;}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
       "patterns": [
         { "include": "#module-item-let-value-bind-name-or-pattern" },
         { "include": "#module-item-let-value-bind-params-type" },
@@ -588,13 +588,13 @@
     },
     "module-item-let-value-bind-params-type": {
       "begin": "(?=[^[:space:]:=])",
-      "end": "(?=[;\\}=]|\\b(class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
+      "end": "(?=[;}=]|\\b(class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
       "patterns": [
         { "include": "#comment" },
         { "include": "#module-item-let-value-param" },
         {
           "begin": "(:)[[:space:]]*(?![[:space:]]*[\\)])",
-          "end": "(?=[;\\}=]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|val|with)\\b)",
+          "end": "(?=[;}=]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|val|with)\\b)",
           "beginCaptures": {
             "1": { "name": "markup.raw keyword.control.less message.error" }
           },
@@ -615,7 +615,7 @@
       ]
     },
     "module-item-let-value-bind-pattern": {
-      "begin": "(?<=and|external|let|method|rec)",
+      "begin": "(?<=[^[:word:]]and|^and|[^[:word]]external|^external|[^[:word]]let|^let|[^[:word]]method|^method|[^[:word]]rec|^rec)",
       "end": "(?=[;:}=]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
       "patterns": [
         { "include": "#comment" },
@@ -626,7 +626,7 @@
     "module-item-let-value-bind-type": {
       "comment": "FIXME: lookahead",
       "begin": "(:)(?![[:space:]]*[\\)])",
-      "end": "(?==[^>]|[;\\}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|val|with)\\b)",
+      "end": "(?==[^>]|[;}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|val|with)\\b)",
       "beginCaptures": {
         "1": { "name": "markup.raw keyword.control.less message.error" }
       },
@@ -722,9 +722,9 @@
     },
     "module-item-let-value-rec": {
       "begin": "(?:\\G|^)[[:space:]]*\\b(rec)\\b",
-      "end": "(?=[;\\}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
+      "end": "(?=[;}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
       "beginCaptures": {
-        "1": { "name": "storage.modifier message.error" }
+        "1": { "name": "keyword.control storage.modifier message.error" }
       },
       "patterns": [
         { "include": "#module-item-let-value-bind-name-params-type-body" }
@@ -733,7 +733,7 @@
     "module-item-module": {
       "comment": "NOTE: this is to support the let-module case without the let prefix",
       "begin": "\\b(module)\\b[[:space:]]*(?!\\b(type)\\b|$)",
-      "end": "(;)|(?=[\\}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
+      "end": "(;)|(?=}|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
       "beginCaptures": {
         "1": { "name": "storage.type message.error" }
       },
@@ -748,9 +748,9 @@
     },
     "module-item-module-type": {
       "begin": "\\b(module)\\b[[:space:]]*(?=\\b(type)\\b|$)",
-      "end": "(;)|(?=[\\}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|val|with)\\b)",
+      "end": "(;)|(?=}|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|val|with)\\b)",
       "beginCaptures": {
-        "1": { "name": "keyword.other message.error" }
+        "1": { "name": "keyword.control message.error" }
       },
       "endCaptures": {
         "1": { "name": "comment" }
@@ -787,9 +787,9 @@
     },
     "module-item-open": {
       "begin": "\\b(open)\\b",
-      "end": "(;)|(?=[\\}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
+      "end": "(;)|(?=}|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
       "beginCaptures": {
-        "1": { "name": "keyword.other" }
+        "1": { "name": "keyword.control.open" }
       },
       "endCaptures": {
         "1": { "name": "comment" }
@@ -802,9 +802,9 @@
     "module-item-type": {
       "comment": "FIXME: the semi-colon is optional so we can re-use this for hover, which does not print the trailing ;",
       "begin": "\\b(type)\\b",
-      "end": "(;)|(?=[\\)\\}]|\\b(class|exception|external|include|inherit|let|method|nonrec|open|private|type|val|with)\\b)",
+      "end": "(;)|(?=[\\)}]|\\b(class|exception|external|include|inherit|let|method|nonrec|open|private|type|val|with)\\b)",
       "beginCaptures": {
-        "1": { "name": "constant.language" }
+        "1": { "name": "keyword.other" }
       },
       "endCaptures": {
         "1": { "name": "comment" }
@@ -818,7 +818,7 @@
     "module-item-type-and": {
       "comment": "FIXME: the optional `type` is for module constraints",
       "begin": "\\b(and)\\b([[:space:]]*type)?",
-      "end": "(?=[;\\)\\}]|\\b(class|exception|external|include|inherit|let|method|nonrec|open|private|type|val|with)\\b)",
+      "end": "(?=[;\\)}]|\\b(class|exception|external|include|inherit|let|method|nonrec|open|private|type|val|with)\\b)",
       "beginCaptures": {
         "1": { "name": "keyword.other" },
         "2": { "name": "constant.language" }
@@ -837,7 +837,7 @@
     "module-item-type-bind-body": {
       "comment": "FIXME: parsing",
       "begin": "(\\+?=)",
-      "end": "(?=[;\\)\\}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|rec|type|val|with)\\b)",
+      "end": "(?=[;\\)}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|rec|type|val|with)\\b)",
       "beginCaptures": {
         "1": { "name": "keyword.control.less" }
       },
@@ -863,14 +863,14 @@
         },
         {
           "begin": "(\\.\\.)",
-          "end": "(?=[;\\}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
+          "end": "(?=[;}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
           "beginCaptures": {
             "1": { "name": "keyword.control.less" }
           }
         },
         {
           "begin": "(\\|)(?!\\|)[[:space:]]*",
-          "end": "(?=[;\\)\\}]|\\|(?!\\|)|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
+          "end": "(?=[;\\)}]|\\|(?!\\|)|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
           "beginCaptures": {
             "1": { "name": "comment" }
           },
@@ -900,7 +900,7 @@
     },
     "module-item-type-bind-name-tyvars": {
       "begin": "(?<=\\G|^|\\.)[[:space:]]*\\b([[:lower:]][[:word:]]*)\\b",
-      "end": "(?=\\+?=|[;\\)\\}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
+      "end": "(?=\\+?=|[;\\)}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
       "beginCaptures": {
         "1": { "name": "entity.name.function" }
       },
@@ -925,7 +925,7 @@
     },
     "module-item-type-bind-name-tyvars-body": {
       "begin": "(?=(\\G|^)[[:space:]]*\\b[[:alpha:]])",
-      "end": "(?=[;\\)\\}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
+      "end": "(?=[;\\)}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
       "patterns": [
         { "include": "#module-path-simple-prefix" },
         { "include": "#module-item-type-bind-name-tyvars" },
@@ -934,9 +934,9 @@
     },
     "module-item-type-bind-nonrec": {
       "begin": "(?:\\G|^)[[:space:]]*\\b(nonrec)\\b",
-      "end": "(?=[;\\)\\}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
+      "end": "(?=[;\\)}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
       "beginCaptures": {
-        "1": { "name": "storage.modifier message.error" }
+        "1": { "name": "keyword.control storage.modifier message.error" }
       },
       "patterns": [
         { "include": "#module-item-type-bind-name-tyvars-body" }
@@ -945,7 +945,7 @@
     "module-item-type-constraint": {
       "comment": "FIXME: proper parsing",
       "begin": "\\b(constraint)\\b",
-      "end": "(?=[;\\)\\}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
+      "end": "(?=[;\\)}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
       "beginCaptures": {
         "1": { "name": "storage.modifier message.error" }
       },
@@ -968,7 +968,7 @@
     },
     "object-item": {
       "begin": "\\G|(;)",
-      "end": "(?=[;\\}]|\\b(class|constraint|exception|external|include|let|module|nonrec|open|private|type|val|with)\\b)",
+      "end": "(?=[;}]|\\b(class|constraint|exception|external|include|let|module|nonrec|open|private|type|val|with)\\b)",
       "beginCaptures": {
         "1": { "name": "comment" }
       },
@@ -1006,12 +1006,12 @@
       "match": "(?:(?<![#\\-:!?.@*/&%^+<=>|~$\\\\])([</]>)(?![#\\-:!?.@*/&%^+<=>|~$\\\\]))|([#\\-@*/&%^+<=>|$][#\\-:!?.@*/&%^+<=>|~$\\\\]*)",
       "captures": {
         "1": { "name": "keyword.control" },
-        "2": { "name": "markup.raw keyword.control.less message.error" }
+        "2": { "name": "markup.raw keyword.control message.error" }
       }
     },
     "operator-infix-custom-hash": {
       "match": "#[\\-:!?.@*/&%^+<=>|~$]+",
-      "name": "markup.raw keyword.control.less message.error"
+      "name": "markup.raw keyword.control message.error"
     },
     "operator-prefix": {
       "patterns": [
@@ -1021,11 +1021,11 @@
     },
     "operator-prefix-bang": {
       "match": "![\\-:!?.@*/&%^+<=>|~$]*",
-      "name": "markup.raw keyword.control.less message.error"
+      "name": "markup.raw keyword.control message.error"
     },
     "operator-prefix-label-token": {
       "match": "[?~][\\-:!?.@*/&%^+<=>|~$]+",
-      "name": "markup.raw keyword.control.less message.error"
+      "name": "markup.raw keyword.control message.error"
     },
     "pattern": {
       "patterns": [
@@ -1044,6 +1044,10 @@
     },
     "pattern-atomic": {
       "patterns": [
+        {
+          "match": "exception",
+          "name": "keyword.other"
+        },
         { "include": "#value-expression-literal" },
         { "include": "#module-path-simple-prefix" },
         { "include": "#pattern-list" },
@@ -1078,7 +1082,7 @@
     },
     "pattern-parens": {
       "begin": "(?=\\()",
-      "end": "\\)|(?=[;\\}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
+      "end": "\\)|(?=[;}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
       "patterns": [
         { "include": "#pattern-parens-lhs" },
         { "include": "#type-annotation-rhs" }
@@ -1086,7 +1090,7 @@
     },
     "pattern-parens-lhs": {
       "begin": "\\(|(,)",
-      "end": "(?=(?:[,:\\)]))|(?=[;\\}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
+      "end": "(?=(?:[,:\\)]))|(?=[;}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
       "beginCaptures": {
         "1": { "name": "keyword.control.less message.error" }
       },
@@ -1104,12 +1108,12 @@
     },
     "record-path-suffix": {
       "begin": "(\\.)",
-      "end": "(\\))|\\b([[:upper:]][[:word:]]*)\\b|\\b([[:lower:]][[:word:]]*)\\b|(?=[;\\)\\}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|with)\\b)",
+      "end": "(\\))|\\b([[:upper:]][[:word:]]*)\\b|\\b([[:lower:]][[:word:]]*)\\b|(?=[;\\)}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|with)\\b)",
       "beginCaptures": {
         "1": { "name": "keyword.control.less message.error" }
       },
       "endCaptures": {
-        "1": { "name": "entity.name.function" },
+        "1": { "name": "keyword.control" },
         "2": { "name": "support.class entity.name.class" },
         "3": { "name": "constant.language support.property-value entity.name.filename variable.interpolation" }
       },
@@ -1119,7 +1123,7 @@
           "begin": "([\\(])",
           "end": "(?=[\\)])",
           "beginCaptures": {
-            "1": { "name": "entity.name.function" }
+            "1": { "name": "keyword.control" }
           },
           "patterns": [
             { "include": "#comment" },
@@ -1145,8 +1149,8 @@
       ]
     },
     "pattern-record": {
-      "begin": "\\{",
-      "end": "\\}",
+      "begin": "{",
+      "end": "}",
       "patterns": [
         { "include": "#comment" },
         { "include": "#pattern-record-item" }
@@ -1154,7 +1158,7 @@
     },
     "pattern-record-field": {
       "begin": "\\b([_][[:word:]]*)\\b|\\b([[:lower:]][[:word:]]*)\\b",
-      "end": "(,)|(?=\\})",
+      "end": "(,)|(?=})",
       "beginCaptures": {
         "1": { "name": "comment" },
         "2": { "name": "constant.language support.property-value entity.name.filename variable.interpolation" }
@@ -1166,7 +1170,7 @@
         { "include": "#comment" },
         {
           "begin": "\\G(:)",
-          "end": "(?=[,\\}])",
+          "end": "(?=[,}])",
           "beginCaptures": {
             "1": { "name": "markup.raw keyword.control.less message.error" }
           },
@@ -1226,7 +1230,7 @@
         },
         {
           "begin": "\\b(module)\\b[[:space:]]*\\b(type)\\b([[:space:]]*\\b(of)\\b)?",
-          "end": "(?=[;\\)\\}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
+          "end": "(?=[;\\)}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
           "beginCaptures": {
             "1": { "name": "keyword.other variable.other.readwrite.instance" },
             "2": { "name": "constant.language" },
@@ -1247,11 +1251,11 @@
     },
     "signature-expression-constraints": {
       "begin": "(?=\\b(with))",
-      "end": "(?=[;\\)\\}]|\\b(class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|val)\\b)",
+      "end": "(?=[;\\)}]|\\b(class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|val)\\b)",
       "patterns": [
         {
           "begin": "\\b(and|with)\\b",
-          "end": "(?=[;\\)\\}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|val|with)\\b)",
+          "end": "(?=[;\\)}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|val|with)\\b)",
           "beginCaptures": {
             "1": { "name": "storage.modifier message.error" }
           },
@@ -1260,7 +1264,7 @@
             {
               "comment": "FIXME: special version of #module-item-type with non-consuming `;`. Atom seems to need this to work.",
               "begin": "\\b(type)\\b",
-              "end": "(?=[;\\)\\}]|\\b(class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|val|with)\\b)",
+              "end": "(?=[;\\)}]|\\b(class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|val|with)\\b)",
               "beginCaptures": {
                 "1": { "name": "constant.language" }
               },
@@ -1272,13 +1276,13 @@
             },
             {
               "begin": "(?=\\b(module)\\b)",
-              "end": "(?=[;\\)\\}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|val|with)\\b)",
+              "end": "(?=[;\\)}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|val|with)\\b)",
               "patterns": [
                 {
                   "begin": "\\b(module)\\b",
-                  "end": "(?=:?=|[;\\)\\}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|type|val|with)\\b)",
+                  "end": "(?=:?=|[;\\)}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|type|val|with)\\b)",
                   "beginCaptures": {
-                    "1": { "name": "storage.type variable.other.readwrite.instance" }
+                    "1": { "name": "keyword.control storage.type variable.other.readwrite.instance" }
                   },
                   "patterns": [
                     { "include": "#comment" },
@@ -1291,7 +1295,7 @@
                 },
                 {
                   "begin": "(:=)|(=)",
-                  "end": "(?=[;\\)\\}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|type|val|with)\\b)",
+                  "end": "(?=[;\\)}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|type|val|with)\\b)",
                   "beginCaptures": {
                     "1": { "name": "markup.raw keyword.control.less message.error" },
                     "2": { "name": "markup.raw keyword.control.less" }
@@ -1312,7 +1316,7 @@
         {
           "comment": "FIXME: scan for :upper: or `val` to disambiguate types from signatures for hover",
           "begin": "\\((?=[[:space:]]*(\\b(val)\\b|[^'\\[<[:lower:]]))",
-          "end": "\\)|(?=[;\\)\\}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|with)\\b)",
+          "end": "\\)|(?=[;\\)}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|with)\\b)",
           "patterns": [
             { "include": "#comment" },
             {
@@ -1321,7 +1325,7 @@
             },
             {
               "begin": "\\b(val)\\b",
-              "end": "(?=\\))|(?=[;\\)\\}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
+              "end": "(?=\\))|(?=[;\\)}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
               "beginCaptures": {
                 "1": { "name": "keyword.other" }
               },
@@ -1336,7 +1340,7 @@
             { "include": "#module-path-simple" },
             {
               "begin": "(:)",
-              "end": "(?=[\\)])|(?=[;\\)\\}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val)\\b)",
+              "end": "(?=[\\)])|(?=[;\\)}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val)\\b)",
               "beginCaptures": {
                 "1": { "name": "markup.raw keyword.control.less message.error" }
               },
@@ -1351,8 +1355,8 @@
       ]
     },
     "structure-expression-block": {
-      "begin": "\\{",
-      "end": "\\}",
+      "begin": "{",
+      "end": "}",
       "patterns": [
         { "include": "#structure-expression-block-item" }
       ]
@@ -1529,15 +1533,15 @@
       ]
     },
     "type-expression-record": {
-      "begin": "\\{",
-      "end": "\\}",
+      "begin": "{",
+      "end": "}",
       "patterns": [
         { "include": "#type-expression-record-item" }
       ]
     },
     "type-expression-record-field-sans-modifier": {
       "begin": "\\b([_[:lower:]][[:word:]]*)\\b",
-      "end": "(,)|(?=[,\\}])",
+      "end": "(,)|(?=[,}])",
       "beginCaptures": {
         "1": { "name": "constant.language support.property-value entity.name.filename variable.interpolation" }
       },
@@ -1548,7 +1552,7 @@
         { "include": "#comment" },
         {
           "begin": "(:)",
-          "end": "(?=[,\\}])",
+          "end": "(?=[,}])",
           "beginCaptures": {
             "1": { "name": "markup.raw keyword.control.less message.error" }
           },
@@ -1562,7 +1566,7 @@
       "patterns": [
         {
           "begin": "\\b(mutable)\\b",
-          "end": "(?<=[,])|(?=\\})",
+          "end": "(?<=[,])|(?=})",
           "beginCaptures": {
             "1": { "name": "storage.modifier message.error" }
           },
@@ -1600,7 +1604,7 @@
         { "include": "#module-path-simple-prefix" },
         {
           "match": "[:?]",
-          "name": "markup.raw keyword.control.less message.error"
+          "name": "markup.raw keyword.control message.error"
         },
         { "include": "#record-path" }
       ]
@@ -1627,8 +1631,8 @@
       ]
     },
     "value-expression-block": {
-      "begin": "\\{",
-      "end": "\\}",
+      "begin": "{",
+      "end": "}",
       "patterns": [
         { "include": "#value-expression-block-item" }
       ]
@@ -1642,14 +1646,14 @@
     },
     "value-expression-block-look": {
       "begin": "(?![[:space:]]*($|\\.\\.\\.|([[:upper:]][[:word:]]*\\.)*([[:lower:]][[:word:]]*)[[:space:]]*(?:,|:(?![=]))))",
-      "end": "(?=\\})",
+      "end": "(?=})",
       "patterns": [
         { "include": "#value-expression-block-item" }
       ]
     },
     "value-expression-block-or-record-or-object": {
-      "begin": "\\{",
-      "end": "\\}",
+      "begin": "{",
+      "end": "}",
       "patterns": [
         { "include": "#comment" },
         { "include": "#module-path-simple-prefix" },
@@ -1659,12 +1663,15 @@
       ]
     },
     "value-expression-builtin": {
-      "match": "\\b(assert|decr|failwith|fprintf|incr|lazy|lor|lsl|lsr|lxor|mod|new|not|printf|raise|ref)\\b",
-      "name": "keyword.other message.error"
+      "match": "\\b(assert|decr|failwith|fprintf|incr|lazy|lor|lsl|lsr|lxor|mod|new|not|printf|ref)\\b|\\b(raise)\\b",
+      "captures": {
+        "1": { "name": "keyword.control message.error" },
+        "2": { "name": "keyword.control.trycatch" }
+      }
     },
     "value-expression-for": {
       "begin": "(?=\\b(for)\\b)",
-      "end": "(?<=[\\}])|(?=[;]|\\b(and|as|class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|rec|type|val|with)\\b)",
+      "end": "(?<=})|(?=[;]|\\b(and|as|class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|rec|type|val|with)\\b)",
       "patterns": [
         { "include": "#value-expression-for-head" },
         { "include": "#value-expression-block" }
@@ -1672,16 +1679,13 @@
     },
     "value-expression-for-head": {
       "begin": "(?=\\b(for)\\b)",
-      "end": "(?=[\\{])|(?=[;]|\\b(and|as|class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|rec|type|val|with)\\b)",
-      "beginCaptures": {
-        "1": { "name": "keyword.control" }
-      },
+      "end": "(?={)|(?=[;]|\\b(and|as|class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|rec|type|val|with)\\b)",
       "patterns": [
         {
           "begin": "\\b(for)\\b",
           "end": "(?=\\b(in)\\b)|(?=[;]|\\b(and|as|class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|rec|type|val|with)\\b)",
           "beginCaptures": {
-            "1": { "name": "keyword.control" }
+            "1": { "name": "keyword.control.loop" }
           },
           "patterns": [
             { "include": "#comment" },
@@ -1692,7 +1696,7 @@
           "begin": "\\b(in)\\b",
           "end": "(?=\\b(to)\\b)|(?=[;]|\\b(and|as|class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|rec|type|val|with)\\b)",
           "beginCaptures": {
-            "1": { "name": "keyword.control" }
+            "1": { "name": "keyword.control.loop" }
           },
           "patterns": [
             { "include": "#comment" },
@@ -1701,9 +1705,9 @@
         },
         {
           "begin": "\\b(to)\\b",
-          "end": "(?=[\\{])|(?=[;]|\\b(and|as|class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|rec|type|val|with)\\b)",
+          "end": "(?={)|(?=[;]|\\b(and|as|class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|rec|type|val|with)\\b)",
           "beginCaptures": {
-            "1": { "name": "keyword.control" }
+            "1": { "name": "keyword.control.loop" }
           },
           "patterns": [
             { "include": "#comment" },
@@ -1715,9 +1719,9 @@
     },
     "value-expression-fun": {
       "begin": "\\b(fun)\\b",
-      "end": "(?=[;\\)\\}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
+      "end": "(?=[;\\)}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
       "beginCaptures": {
-        "1": { "name": "keyword.other" }
+        "1": { "name": "keyword.control" }
       },
       "patterns": [
         { "include": "#value-expression-fun-pattern-match-rule-lhs" },
@@ -1726,7 +1730,7 @@
     },
     "value-expression-fun-pattern-match-rule-lhs": {
       "begin": "(?=\\|(?!\\|))|(?<=fun)",
-      "end": "(\\|)|(?==>)|(?=[;\\)\\}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
+      "end": "(\\|)|(?==>)|(?=[;\\)}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
       "applyEndPatternLast": true,
       "beginCaptures": {
         "1": { "name": "comment" }
@@ -1740,7 +1744,7 @@
     },
     "value-expression-fun-pattern-match-rule-rhs": {
       "begin": "(=>)",
-      "end": "(?=[;\\)\\}]|\\|(?!\\|)|\\b(and)\\b)",
+      "end": "(?=[;\\)}]|\\|(?!\\|)|\\b(and)\\b)",
       "beginCaptures": {
         "1": { "name": "keyword.control.less" }
       },
@@ -1750,18 +1754,18 @@
     },
     "value-expression-if-then-else": {
       "begin": "\\b(if)\\b",
-      "end": "(?=[;\\)\\]\\}])",
+      "end": "(?=[;\\)\\]}])",
       "applyEndPatternLast": true,
       "beginCaptures": {
-        "1": { "name": "keyword.control" }
+        "1": { "name": "keyword.control.conditional" }
       },
       "patterns": [
         { "include": "#comment" },
         {
           "begin": "\\b(else)\\b",
-          "end": "(?=[;\\)\\]\\}])",
+          "end": "(?=[;\\)\\]}])",
           "beginCaptures": {
-            "1": { "name": "keyword.control" }
+            "1": { "name": "keyword.control.conditional" }
           },
           "patterns": [
             { "include": "#value-expression" }
@@ -1892,29 +1896,78 @@
       ]
     },
     "value-expression-literal-string": {
-      "begin": "\"",
-      "end": "\"|(?:[^\\\\\\n]$)",
-      "contentName": "string.double",
       "patterns": [
         {
-          "comment": "FIXME: make escapes into separate rule",
-          "match": "\\\\[\\\\\"'ntbr ]|\\\\[0-9][0-9][0-9]|\\\\x[0-9A-Fa-f][0-9A-Fa-f]|\\\\o[0-3][0-7][0-7]",
-          "name": "constant.character"
+          "begin": "(?<![[:alpha:]])js_expr(?!=[[:word:]])",
+          "end": "(?<=\")|([|])([_[:lower:]]*)?(})|(?=[^[:space:]\"{])",
+          "endCaptures": {
+            "1": { "name": "keyword.control.flow message.error" },
+            "2": { "name": "constant.language" },
+            "3": { "name": "keyword.control.flow message.error" }
+          },
+          "patterns": [
+            {
+              "begin": "({)([_[:lower:]]*)?([|])",
+              "end": "(?=[|]\\2})",
+              "beginCaptures": {
+                "1": { "name": "keyword.control.flow message.error" },
+                "2": { "name": "constant.language" },
+                "3": { "name": "keyword.control.flow message.error" }
+              },
+              "patterns": [
+                { "include": "source.js" }
+              ]
+            },
+            {
+              "begin": "\"",
+              "end": "\"",
+              "patterns": [
+                { "include": "source.js" }
+              ]
+            }
+          ]
         },
         {
-          "match": "(@)([ \\[\\],.]|\\\\n)",
-          "captures": {
-            "1": { "name": "keyword.control.less" },
-            "2": { "name": "constant.language" }
-          }
+          "begin": "({)([_[:lower:]]*)?([|])",
+          "end": "([|])(\\2)(})",
+          "beginCaptures": {
+            "1": { "name": "keyword.control.flow message.error" },
+            "2": { "name": "constant.language" },
+            "3": { "name": "keyword.control.flow message.error" }
+          },
+          "endCaptures": {
+            "1": { "name": "keyword.control.flow message.error" },
+            "2": { "name": "constant.language" },
+            "3": { "name": "keyword.control.flow message.error" }
+          },
+          "contentName": "string.double"
         },
         {
-          "comment": "FIXME: don't highlight in external strings",
-          "match": "(%)([ads])?",
-          "captures": {
-            "1": { "name": "constant.language" },
-            "2": { "name": "variable.other.readwrite.instance string.other.link" }
-          }
+          "begin": "\"",
+          "end": "\"|(?:[^\\\\\\n]$)",
+          "contentName": "string.double",
+          "patterns": [
+            {
+              "comment": "FIXME: make escapes into separate rule",
+              "match": "\\\\[\\\\\"'ntbr ]|\\\\[0-9][0-9][0-9]|\\\\x[0-9A-Fa-f][0-9A-Fa-f]|\\\\o[0-3][0-7][0-7]",
+              "name": "constant.character"
+            },
+            {
+              "match": "(@)([ \\[\\],.]|\\\\n)",
+              "captures": {
+                "1": { "name": "keyword.control.less" },
+                "2": { "name": "constant.language" }
+              }
+            },
+            {
+              "comment": "FIXME: don't highlight in external strings",
+              "match": "(%)([ads])?",
+              "captures": {
+                "1": { "name": "constant.language" },
+                "2": { "name": "variable.other.readwrite.instance string.other.link" }
+              }
+            }
+          ]
         }
       ]
     },
@@ -1925,14 +1978,14 @@
     "value-expression-object-look": {
       "comment": "FIXME: is there a better way than listing all the keywords?",
       "begin": "(?:\\G|^)[[:space:]]*(?=method)",
-      "end": "(?=\\})",
+      "end": "(?=})",
       "patterns": [
         { "include": "#object-item" }
       ]
     },
     "value-expression-parens": {
       "begin": "(?=\\()",
-      "end": "(\\))|(?=[;\\}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
+      "end": "(\\))|(?=[;}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
       "endCaptures": {
       },
       "patterns": [
@@ -1965,7 +2018,7 @@
       "patterns": [
         {
           "begin": "(\\.\\.\\.)",
-          "end": "(,)|(?=\\})",
+          "end": "(,)|(?=})",
           "beginCaptures": {
             "1": { "name": "keyword.control.less message.error" }
           },
@@ -1987,7 +2040,7 @@
             },
             {
               "begin": "(:)",
-              "end": "(?=[,\\}])",
+              "end": "(?=[,}])",
               "beginCaptures": {
                 "1": { "name": "markup.raw keyword.control.less message.error" }
               },
@@ -1999,7 +2052,7 @@
         },
         {
           "begin": "\\b[[:upper:]][[:word:]]*\\b",
-          "end": "(,)|(?=\\})",
+          "end": "(,)|(?=})",
           "beginCaptures": {
             "1": { "name": "support.class entity.name.class" }
           },
@@ -2010,7 +2063,7 @@
             { "include": "#module-path-simple-prefix" },
             {
               "begin": "(:)",
-              "end": "(?=[,\\}])",
+              "end": "(?=[,}])",
               "beginCaptures": {
                 "1": { "name": "markup.raw keyword.control.less message.error" }
               },
@@ -2022,7 +2075,7 @@
         },
         {
           "begin": "\\b([[:lower:]][[:word:]]*)\\b",
-          "end": "(,)|(?=\\})",
+          "end": "(,)|(?=})",
           "beginCaptures": {
             "1": { "name": "constant.language support.property-value entity.name.filename variable.interpolation" }
           },
@@ -2032,7 +2085,7 @@
           "patterns": [
             {
               "begin": "(:)",
-              "end": "(?=[,\\}])",
+              "end": "(?=[,}])",
               "beginCaptures": {
                 "1": { "name": "markup.raw keyword.control.less message.error" }
               },
@@ -2053,9 +2106,9 @@
     },
     "value-expression-switch": {
       "begin": "\\b(switch)\\b",
-      "end": "(?<=[\\}])",
+      "end": "(?<=})",
       "beginCaptures": {
-        "1": { "name": "keyword.other" }
+        "1": { "name": "keyword.control.switch" }
       },
       "patterns": [
         { "include": "#value-expression-switch-head" },
@@ -2063,8 +2116,8 @@
       ]
     },
     "value-expression-switch-body": {
-      "begin": "\\{",
-      "end": "\\}",
+      "begin": "{",
+      "end": "}",
       "patterns": [
         { "include": "#comment" },
         { "include": "#value-expression-switch-pattern-match-rule" }
@@ -2072,15 +2125,12 @@
     },
     "value-expression-switch-head": {
       "begin": "(?<=switch)",
-      "end": "(?<!switch)(?=[\\{])|(?=[;\\)]|\\b(and|as|class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|rec|type|val|with)\\b)",
-      "beginCaptures": {
-        "1": { "name": "keyword.control" }
-      },
+      "end": "(?<!switch)(?={)|(?=[;\\)]|\\b(and|as|class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|rec|type|val|with)\\b)",
       "patterns": [
         { "include": "#comment" },
         {
-          "begin": "\\G[[:space:]]*+\\{",
-          "end": "\\}[[:space:]]*+",
+          "begin": "\\G[[:space:]]*+{",
+          "end": "}[[:space:]]*+",
           "patterns": [
             { "include": "#value-expression-block-item" }
           ]
@@ -2096,7 +2146,7 @@
     },
     "value-expression-switch-pattern-match-rule-lhs": {
       "begin": "(?=\\|(?!\\|))",
-      "end": "(?==>|[;\\)\\}])",
+      "end": "(?==>|[;\\)}])",
       "patterns": [
         { "include": "#pattern-guard" },
         { "include": "#pattern" }
@@ -2104,7 +2154,7 @@
     },
     "value-expression-switch-pattern-match-rule-rhs": {
       "begin": "(=>)",
-      "end": "(?=[\\}]|\\|(?!\\|))",
+      "end": "(?=}|\\|(?!\\|))",
       "beginCaptures": {
         "1": { "name": "keyword.control.less" }
       },
@@ -2114,9 +2164,9 @@
     },
     "value-expression-try": {
       "begin": "\\b(try)\\b",
-      "end": "(?<=[\\}])|(?=[;\\)]|\\b(and|as|class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|rec|type|val|with)\\b)",
+      "end": "(?<=})|(?=[;\\)]|\\b(and|as|class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|rec|type|val|with)\\b)",
       "beginCaptures": {
-        "1": { "name": "keyword.other" }
+        "1": { "name": "keyword.control.trycatch" }
       },
       "patterns": [
         { "include": "#value-expression-try-head" },
@@ -2125,15 +2175,15 @@
     },
     "value-expression-try-head": {
       "begin": "(?<=try)",
-      "end": "(?<!try)(?=[\\{])|(?=[;\\)]|\\b(and|as|class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|rec|type|val|with)\\b)",
+      "end": "(?<!try)(?={)|(?=[;\\)]|\\b(and|as|class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|rec|type|val|with)\\b)",
       "beginCaptures": {
         "1": { "name": "keyword.control" }
       },
       "patterns": [
         { "include": "#comment" },
         {
-          "begin": "\\G[[:space:]]*+\\{",
-          "end": "\\}[[:space:]]*+",
+          "begin": "\\G[[:space:]]*+{",
+          "end": "}[[:space:]]*+",
           "patterns": [
             { "include": "#value-expression-block-item" }
           ]
@@ -2143,9 +2193,9 @@
     },
     "value-expression-while": {
       "begin": "\\b(while)\\b",
-      "end": "(?<=[\\}])|(?=[;\\)]|\\b(and|as|class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|rec|type|val|with)\\b)",
+      "end": "(?<=})|(?=[;\\)]|\\b(and|as|class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|rec|type|val|with)\\b)",
       "beginCaptures": {
-        "1": { "name": "keyword.other" }
+        "1": { "name": "keyword.control.loop" }
       },
       "patterns": [
         { "include": "#value-expression-while-head" },
@@ -2154,18 +2204,15 @@
     },
     "value-expression-while-head": {
       "begin": "(?<=while)[[:space:]]*+",
-      "end": "(?=[\\{])|(?=[;\\)]|\\b(and|as|class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|rec|type|val|with)\\b)",
-      "beginCaptures": {
-        "1": { "name": "keyword.control" }
-      },
+      "end": "(?={)|(?=[;\\)]|\\b(and|as|class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|rec|type|val|with)\\b)",
       "patterns": [
         { "include": "#comment" },
         { "include": "#value-expression-atomic-with-paths" }
       ]
     },
     "value-expression-record-look": {
-      "begin": "(?=\\.\\.\\.|([[:upper:]][[:word:]]*\\.)*([[:lower:]][[:word:]]*)[[:space:]]*[,:\\}])",
-      "end": "(?=[\\}])",
+      "begin": "(?=\\.\\.\\.|([[:upper:]][[:word:]]*\\.)*([[:lower:]][[:word:]]*)[[:space:]]*[,:}])",
+      "end": "(?=})",
       "patterns": [
         { "include": "#value-expression-record-item" }
       ]
