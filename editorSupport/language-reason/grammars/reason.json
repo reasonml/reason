@@ -566,10 +566,9 @@
       "patterns": [
         { "include": "#comment" },
         {
-          "match": "\\b(?:([_][[:word:]]+)|([[:lower:]][[:word:]]*))\\b",
+          "match": "\\b([_[:lower:]][[:word:]]*)\\b",
           "captures": {
-            "1": { "name": "comment" },
-            "2": { "name": "entity.name.function" }
+            "1": { "name": "entity.name.function" }
           }
         },
         { "include": "#module-item-let-value-bind-parens-params" },
