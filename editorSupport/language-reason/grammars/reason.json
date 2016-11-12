@@ -165,7 +165,7 @@
           "comment": "meta.separator",
           "beginCaptures": {
             "1": { "name": "constant.language support.property-value entity.name.filename markup.inserted" },
-            "2": { "name": "variable.other.class.js variable.interpolation keyword.operator keyword.control message.error" }
+            "2": { "name": "keyword.control.less" }
           },
           "patterns": [
             { "include": "#value-expression-atomic-with-paths" }
