@@ -162,25 +162,30 @@
         {
           "begin": "\\b([[:lower:]][[:word:]]*)\\b[[:space:]]*(=)",
           "end": "(?<![=])(?=[/>[:lower:]])",
+          "comment": "meta.separator",
           "beginCaptures": {
-            "1": { "name": "constant.language support.property-value entity.name.filename variable.interpolation" },
-            "2": { "name": "markup.inserted keyword.control.less message.error" }
+            "1": { "name": "constant.language support.property-value entity.name.filename markup.inserted" },
+            "2": { "name": "variable.other.class.js variable.interpolation keyword.operator keyword.control message.error" }
           },
           "patterns": [
             { "include": "#value-expression-atomic-with-paths" }
           ]
         },
         {
-          "match": "\\b([[:lower:]][[:word:]]*)\\b",
-          "name": "constant.language support.property-value entity.name.filename variable.interpolation"
+          "match": "(\\b([[:lower:]][[:word:]]*)\\b[[:space:]]*+)",
+          "captures": {
+            "1": { "comment": "meta.separator" },
+            "2": { "name": "constant.language support.property-value entity.name.filename markup.inserted" }
+          }
         }
       ]
     },
     "jsx-body": {
-      "begin": "(>)",
+      "begin": "((>))",
       "end": "(?=</)",
       "beginCaptures": {
-        "1": { "name": "keyword.other" }
+        "1": { "comment": "meta.separator" },
+        "2": { "name": "punctuation.definition.tag.end.js" }
       },
       "patterns": [
         {
@@ -191,22 +196,27 @@
       ]
     },
     "jsx-head": {
-      "begin": "(<)(?=[_[:alpha:]])",
-      "end": "(?=(/>)|(</))",
+      "begin": "((<))(?=[_[:alpha:]])",
+      "end": "((/>))|(?=</)",
       "applyEndPatternLast": true,
       "beginCaptures": {
-        "1": { "name": "keyword.other" },
-        "2": { "name": "entity.name.function" }
+        "1": { "comment": "meta.separator" },
+        "2": { "name": "punctuation.definition.tag.begin.js" }
+      },
+      "endCaptures": {
+        "1": { "comment": "meta.separator" },
+        "2": { "name": "punctuation.definition.tag.end.js" }
       },
       "patterns": [
         {
           "begin": "\\G",
-          "end": "(?=[[:space:]/>])",
+          "end": "(?=[[:space:]/>])[[:space:]]*+",
+          "comment": "meta.separator",
           "patterns": [
             { "include": "#module-path-simple" },
             {
               "match": "\\b[[:lower:]][[:word:]]*\\b",
-              "name": "entity.name.function"
+              "name": "entity.name.tag.inline.any.html"
             }
           ]
         },
@@ -218,18 +228,19 @@
       "begin": "\\G(/>)|(</)",
       "end": "(>)",
       "applyEndPatternLast": true,
+      "comment": "meta.separator",
       "beginCaptures": {
-        "1": { "name": "keyword.other" },
-        "2": { "name": "keyword.other" }
+        "1": { "name": "punctuation.definition.tag.end.js" },
+        "2": { "name": "punctuation.definition.tag.begin.js" }
       },
       "endCaptures": {
-        "1": { "name": "keyword.other" }
+        "1": { "name": "punctuation.definition.tag.end.js" }
       },
       "patterns": [
         { "include": "#module-path-simple" },
         {
           "match": "\\b[[:lower:]][[:word:]]*\\b",
-          "name": "entity.name.function"
+          "name": "entity.name.tag.inline.any.html"
         }
       ]
     },
@@ -1002,10 +1013,11 @@
       "name": "variable.other.class.js variable.interpolation keyword.operator keyword.control.less message.error"
     },
     "operator-infix-custom": {
-      "match": "(?:(?<![#\\-:!?.@*/&%^+<=>|~$\\\\])([</]>)(?![#\\-:!?.@*/&%^+<=>|~$\\\\]))|([#\\-@*/&%^+<=>|$\\\\][#\\-:!?.@*/&%^+<=>|~$\\\\]*)",
+      "match": "(?:(?<![#\\-:!?.@*/&%^+<=>|~$\\\\])((<>))(?![#\\-:!?.@*/&%^+<=>|~$\\\\]))|([#\\-@*/&%^+<=>|$\\\\][#\\-:!?.@*/&%^+<=>|~$\\\\]*)",
       "captures": {
-        "1": { "name": "keyword.control" },
-        "2": { "name": "variable.other.class.js variable.interpolation keyword.operator keyword.control message.error" }
+        "1": { "comment": "meta.separator" },
+        "2": { "name": "punctuation.definition.tag.begin.js" },
+        "3": { "name": "variable.other.class.js variable.interpolation keyword.operator keyword.control message.error" }
       }
     },
     "operator-infix-custom-hash": {
@@ -1402,6 +1414,10 @@
         { "include": "#comment" },
         { "include": "#module-path-extended-prefix" },
         { "include": "#type-expression-label" },
+        {
+          "match": "\\b(as)\\b",
+          "name": "variable.other.class.js variable.interpolation storage.modifier message.error"
+        },
         { "include": "#type-expression-constructor" },
         { "include": "#type-expression-object" },
         { "include": "#type-expression-parens" },
@@ -1920,7 +1936,7 @@
             {
               "begin": "({)([_[:lower:]]*)?(\\|)",
               "end": "(?=\\|\\2})",
-              "contentName": "meta.separator",
+              "comment": "meta.separator",
               "beginCaptures": {
                 "1": { "name": "keyword.control.flow message.error" },
                 "2": { "name": "constant.language" },
@@ -1933,7 +1949,7 @@
             {
               "begin": "\"",
               "end": "\"",
-              "contentName": "meta.separator",
+              "comment": "meta.separator",
               "patterns": [
                 { "include": "source.js" }
               ]
