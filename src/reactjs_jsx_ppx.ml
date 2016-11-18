@@ -33,16 +33,16 @@ let rec listToArray' lst accum =
 let listToArray lst = listToArray' lst [] |> List.rev
 
 (* turn bla::1 blaa::2 into [%bs.obj {bla: 1, blaa: 2}] *)
-let functionCallWithLabelsToBSObj callWithLabels =
+let functionCallWithLabelsToBSObj ~loc callWithLabels =
   (* structure *)
   let record = callWithLabels
     |> List.map (fun (label, expression) ->
-      ({loc = default_loc.contents; txt = Lident label}, expression)
+      ({loc; txt = Lident label}, expression)
     )
   in
-  Exp.extension (
-    {loc = default_loc.contents; txt = "bs.obj"},
-    PStr [Str.eval (Exp.record record None)]
+  Exp.extension ~loc (
+    {loc; txt = "bs.obj"},
+    PStr [Str.eval ~loc (Exp.record ~loc record None)]
   )
 
 (* props might contain `createElement` calls too; parse them recursively *)
@@ -51,22 +51,24 @@ let recursivelyMapPropsCall ~props ~mapper =
   |> List.map (fun (label, expression) -> (label, mapper.expr mapper expression))
 
 (* construct Obj.magic, for children array usage below *)
-let objMagicNode a =
+let objMagicNode ~loc a =
   Exp.apply
-    (Exp.ident {
-      loc = default_loc.contents;
+    ~loc
+    (Exp.ident ~loc {
+      loc;
       txt = Ldot (Lident "Obj", "magic");
     })
     [("", a)]
 
 (* given that we're gathered all we have, construct the AST for `ReactRe.createElement ?? ?? [|childrenHere|]` *)
-let constructReactReCall ~attributes ~callNode ~props ~children ~mapper =
+let constructReactReCall ~loc ~attributes ~callNode ~props ~children ~mapper =
   Exp.apply
+    ~loc
     (* throw away the [@JSX] attribute and keep the others, if any *)
     ~attrs:(attributes |> List.filter (fun (attribute, _) -> attribute.txt <> "JSX"))
     (* ReactRe.createElement *)
-    (Exp.ident {
-      loc = default_loc.contents;
+    (Exp.ident ~loc {
+      loc;
       txt = Ldot (Lident "ReactRe", "createElement");
     })
     (* Foo.comp or "div" *)
@@ -80,7 +82,7 @@ let constructReactReCall ~attributes ~callNode ~props ~children ~mapper =
           not (supports string, number, react elements, recursive react children
           array, etc.). There's no good way of typing them while preserving
           interop right now, so we'll cast them to Obj.magic for now. *)
-          listToArray children |> List.map (fun a -> mapper.expr mapper a |> objMagicNode)
+          listToArray children |> List.map (fun a -> mapper.expr mapper a |> objMagicNode ~loc)
         )
       )
     ]
@@ -129,19 +131,20 @@ let jsxMapper argv = {
           | {txt = Lident "createElement"} ->
             raise (Invalid_argument "JSX: `createElement` should be preceeded by a module name.")
           (* Foo.createElement prop1::foo prop2:bar [] *)
-          | {txt = Ldot (moduleNames, "createElement")} ->
+          | {loc; txt = Ldot (moduleNames, "createElement")} ->
             let (propsWithLabels, children) =
               splitPropsCallLabelsFromChildren propsAndChildren
             in
             let propsOrNull = match propsWithLabels with
             | Some props ->
-              let unit = Exp.construct
-                {loc = default_loc.contents; txt = Lident "()"} None
+              let unit = Exp.construct ~loc
+                {loc; txt = Lident "()"} None
               in
-              Exp.apply
+              Exp.apply ~loc
                 (* Foo.props *)
-                (Exp.ident {
-                  loc = default_loc.contents;
+                (* This is the loc that'll point to the right location in case the component's not found. *)
+                (Exp.ident ~loc {
+                  loc;
                   txt = Ldot (moduleNames, "props")
                 })
                 (* see comment at the top of file. We need a () at the end to
@@ -151,40 +154,43 @@ let jsxMapper argv = {
                 ((recursivelyMapPropsCall ~props ~mapper) @ [("", unit)])
             | None ->
               (* if there's no prop, transform to `Js.null` *)
-              Exp.ident {
-                loc = default_loc.contents;
+              Exp.ident ~loc {
+                loc;
                 txt = Ldot (Lident "Js", "null")
               }
             in
-              constructReactReCall ~attributes:pexp_attributes
-              ~callNode:(Exp.ident {
-                  loc = default_loc.contents;
-                  txt = Ldot (moduleNames, "comp")
-                })
-              ~props:propsOrNull
-              ~children
-              ~mapper
+              constructReactReCall
+                ~loc
+                ~attributes:pexp_attributes
+                ~callNode:(Exp.ident ~loc {
+                    loc;
+                    txt = Ldot (moduleNames, "comp")
+                  })
+                ~props:propsOrNull
+                ~children
+                ~mapper
           (* div prop1::foo prop2:bar [] *)
           (* the div is Pexp_ident "div" *)
           (* similar code to the above case, with a few exceptions *)
-          | {txt = Lident lowercaseIdentifier} ->
-            let (propsWithLabels,children) =
+          | {loc; txt = Lident lowercaseIdentifier} ->
+            let (propsWithLabels, children) =
               splitPropsCallLabelsFromChildren propsAndChildren
             in
             let propsOrNull = match propsWithLabels with
               | Some props ->
                 (* [bs.obj {foo: bar, baz: qux}] *)
-                functionCallWithLabelsToBSObj (recursivelyMapPropsCall ~props ~mapper)
+                functionCallWithLabelsToBSObj ~loc (recursivelyMapPropsCall ~props ~mapper)
               | None ->
                 (* if there's no prop, transform to `Js.null` *)
-                Exp.ident {
-                  loc = default_loc.contents;
+                Exp.ident ~loc {
+                  loc;
                   txt = Ldot (Lident "Js", "null")
                 }
               in
               constructReactReCall
+                ~loc
                 ~attributes:pexp_attributes
-                ~callNode:(Exp.constant (Const_string (lowercaseIdentifier, None)))
+                ~callNode:(Exp.constant ~loc (Const_string (lowercaseIdentifier, None)))
                 ~props:propsOrNull ~children ~mapper
           | {txt = Ldot (_, anythingNotCreateElement)} ->
             raise (
