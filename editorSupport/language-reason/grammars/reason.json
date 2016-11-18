@@ -577,9 +577,10 @@
       "patterns": [
         { "include": "#comment" },
         {
-          "match": "\\b([_[:lower:]][[:word:]]*)\\b",
+          "match": "\\b(?:(_)|([[:lower:]][[:word:]]*|_[[:word:]]+))\\b",
           "captures": {
-            "1": { "name": "entity.name.function" }
+            "1": { "name": "comment" },
+            "2": { "name": "entity.name.function" }
           }
         },
         { "include": "#module-item-let-value-bind-parens-params" },
@@ -1948,7 +1949,7 @@
             },
             {
               "begin": "\"",
-              "end": "\"",
+              "end": "(?<!\\\\)\"",
               "comment": "meta.separator",
               "patterns": [
                 { "include": "source.js" }
@@ -1973,30 +1974,35 @@
         },
         {
           "begin": "\"",
-          "end": "\"|(?:[^\\\\\\n]$)",
+          "end": "(?<!\\\\)\"",
           "name": "string.double string.regexp",
           "patterns": [
-            {
-              "comment": "FIXME: make escapes into separate rule",
-              "match": "\\\\[\\\\\"'ntbr ]|\\\\[[:digit:]][[:digit:]][[:digit:]]|\\\\x[[:xdigit:]][[:xdigit:]]|\\\\o[0-3][0-7][0-7]",
-              "name": "constant.character"
-            },
-            {
-              "match": "(@)([ \\[\\],.]|\\\\n)",
-              "captures": {
-                "1": { "name": "keyword.control.less" },
-                "2": { "name": "constant.language" }
-              }
-            },
-            {
-              "comment": "FIXME: don't highlight in external strings",
-              "match": "(%)([ads])?",
-              "captures": {
-                "1": { "name": "constant.language" },
-                "2": { "name": "variable.other.readwrite.instance string.other.link variable.language" }
-              }
-            }
+            { "include": "#value-expression-literal-string-escape" }
           ]
+        }
+      ]
+    },
+    "value-expression-literal-string-escape": {
+      "patterns": [
+        {
+          "comment": "FIXME: make escapes into separate rule",
+          "match": "\\\\[\\\\\"'ntbr ]|\\\\[[:digit:]][[:digit:]][[:digit:]]|\\\\x[[:xdigit:]][[:xdigit:]]|\\\\o[0-3][0-7][0-7]",
+          "name": "constant.character"
+        },
+        {
+          "match": "(@)([ \\[\\],.]|\\\\n)",
+          "captures": {
+            "1": { "name": "keyword.control.less" },
+            "2": { "name": "constant.language" }
+          }
+        },
+        {
+          "comment": "FIXME: don't highlight in external strings",
+          "match": "(%)([ads])?",
+          "captures": {
+            "1": { "name": "constant.language" },
+            "2": { "name": "variable.other.readwrite.instance string.other.link variable.language" }
+          }
         }
       ]
     },
