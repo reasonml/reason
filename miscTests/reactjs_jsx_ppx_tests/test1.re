@@ -5,7 +5,7 @@ let div = {createElement: fun () => ()};
 
 div.createElement ();
 
-let module Gah = {
+module Gah = {
   let createElement () => ();
 };
 

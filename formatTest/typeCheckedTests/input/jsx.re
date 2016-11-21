@@ -1,66 +1,65 @@
 type component = {displayName: string};
 
-let module Bar = {
+module Bar = {
   let createElement c::c=? children => {displayName: "test"};
 };
 
-let module Nesting = {
+module Nesting = {
   let createElement children => {displayName: "test"};
 };
 
-let module Much = {
+module Much = {
   let createElement children => {displayName: "test"};
 };
 
-let module Foo = {
+module Foo = {
     let createElement a::a=? b::b=? children => {displayName: "test"};
 };
 
-
-let module One = {
+module One = {
     let createElement test::test=? foo::foo=? children => {displayName: "test"};
     let createElementobvioustypo test::test children => {displayName: "test"};
 };
 
-let module Two = {
+module Two = {
     let createElement foo::foo=? children => {displayName: "test"};
 };
 
-let module Sibling = {
+module Sibling = {
     let createElement foo::foo=? (children: list component) => {displayName: "test"};
 };
 
-let module Test = {
+module Test = {
     let createElement yo::yo=? children => {displayName: "test"};
 };
 
-let module So = {
+module So = {
     let createElement children => {displayName: "test"};
 };
 
-let module Foo2 = {
+module Foo2 = {
     let createElement children => {displayName: "test"};
 };
 
-let module Text = {
+module Text = {
     let createElement children => {displayName: "test"};
 };
 
-let module Exp = {
+module Exp = {
     let createElement children => {displayName: "test"};
 };
 
-let module Pun = {
+module Pun = {
     let createElement intended::intended=? children => {displayName: "test"};
 };
 
-let module Namespace = {
-    let module Foo = {
+module Namespace = {
+    module Foo = {
         let createElement intended::intended=? anotherOptional::x=100 children => {displayName: "test"};
     };
 };
 
-let module LotsOfArguments = {
+module LotsOfArguments = {
     let createElement argument1::argument1=? argument2::argument2=? argument3::argument3=? argument4::argument4=? argument5::argument5=? argument6::argument6=? children => {displayName: "test"};
 };
 
@@ -68,15 +67,15 @@ let div argument1::argument1=? children => {
     displayName: "test"
 };
 
-let module List1 = {
+module List1 = {
     let createElement children => {displayName: "test"};
 };
 
-let module List2 = {
+module List2 = {
     let createElement children => {displayName: "test"};
 };
 
-let module List3 = {
+module List3 = {
     let createElement children => {displayName: "test"};
 };
 
@@ -301,4 +300,3 @@ let myFun () => {
 /* </Foo>; */
 
 /* let res = <Foo a=10 b=(<Foo a=200 />) />; */
-

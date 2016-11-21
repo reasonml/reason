@@ -1448,10 +1448,10 @@ _structure_item_without_item_extension_sugar:
   | str_exception_declaration {
       mkstr(Pstr_exception $1)
     }
-  | LET MODULE nonlocal_module_binding_details post_item_attributes {
-      let (ident, body) = $3 in
+  | opt_let_module nonlocal_module_binding_details post_item_attributes {
+      let (ident, body) = $2 in
       let loc = mklocation $symbolstartpos $endpos in
-      mkstr(Pstr_module (Mb.mk ident body ~attrs:$4 ~loc))
+      mkstr(Pstr_module (Mb.mk ident body ~attrs:$3 ~loc))
     }
   | many_nonlocal_module_bindings {
       mkstr(Pstr_recmodule(List.rev $1))
@@ -1517,10 +1517,10 @@ module_binding_body:
   | module_binding_body_functor { $1 }
 
 many_nonlocal_module_bindings:
-  | LET MODULE REC nonlocal_module_binding_details post_item_attributes {
-    let (ident, body) = $4 in
+  | opt_let_module REC nonlocal_module_binding_details post_item_attributes {
+    let (ident, body) = $3 in
     let loc = mklocation $symbolstartpos $endpos in
-    [Mb.mk ident body ~attrs:$5 ~loc]
+    [Mb.mk ident body ~attrs:$4 ~loc]
   }
   | many_nonlocal_module_bindings and_nonlocal_module_bindings {
     $2::$1
@@ -1715,19 +1715,19 @@ _signature_item:
   | sig_exception_declaration {
       mksig(Psig_exception $1)
     }
-  | LET MODULE as_loc(UIDENT) module_declaration post_item_attributes {
+  | opt_let_module as_loc(UIDENT) module_declaration post_item_attributes {
       let loc = mklocation $symbolstartpos $endpos in
-      mksig(Psig_module (Md.mk $3 $4 ~attrs:$5 ~loc))
+      mksig(Psig_module (Md.mk $2 $3 ~attrs:$4 ~loc))
     }
-  | LET MODULE as_loc(UIDENT) EQUAL as_loc(mod_longident) post_item_attributes {
+  | opt_let_module as_loc(UIDENT) EQUAL as_loc(mod_longident) post_item_attributes {
       let loc = mklocation $symbolstartpos $endpos in
-      let loc_mod = mklocation $startpos($5) $endpos($5) in
+      let loc_mod = mklocation $startpos($4) $endpos($4) in
       mksig(
         Psig_module (
           Md.mk
-            $3
-            (Mty.alias ~loc:loc_mod $5)
-            ~attrs:$6
+            $2
+            (Mty.alias ~loc:loc_mod $4)
+            ~attrs:$5
             ~loc
         )
       )
@@ -1787,10 +1787,10 @@ module_rec_declaration_details:
 ;
 
 many_module_rec_declarations:
-  | LET MODULE REC module_rec_declaration_details post_item_attributes {
-      let (ident, body) = $4 in
+  | opt_let_module REC module_rec_declaration_details post_item_attributes {
+      let (ident, body) = $3 in
       let loc = mklocation $symbolstartpos $endpos in
-      [Md.mk ident body ~attrs:$5 ~loc]
+      [Md.mk ident body ~attrs:$4 ~loc]
     }
   | many_module_rec_declarations and_module_rec_declaration  {
       $2::$1
@@ -2426,9 +2426,9 @@ _semi_terminated_seq_expr_row:
        * expression attributes *)
       {expr with pexp_attributes = item_attrs @ expr.pexp_attributes}
     }
-  | LET MODULE as_loc(UIDENT) module_binding_body post_item_attributes SEMI semi_terminated_seq_expr {
-      let item_attrs = $5 in
-      mkexp ~attrs:item_attrs (Pexp_letmodule($3, $4, $7))
+  | opt_let_module as_loc(UIDENT) module_binding_body post_item_attributes SEMI semi_terminated_seq_expr {
+      let item_attrs = $4 in
+      mkexp ~attrs:item_attrs (Pexp_letmodule($2, $3, $6))
     }
   | LET? OPEN override_flag as_loc(mod_longident) post_item_attributes SEMI semi_terminated_seq_expr {
       let item_attrs = $5 in
@@ -4405,6 +4405,11 @@ toplevel_directive:
 ;
 
 /* Miscellaneous */
+
+opt_let_module:
+    | LET MODULE { () }
+    | MODULE { () }
+;
 
 name_tag:
     BACKQUOTE ident                             { $2 }

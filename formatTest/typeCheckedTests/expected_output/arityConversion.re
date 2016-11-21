@@ -10,7 +10,7 @@ let b =
   MultiArgumentsConstructor 1 2
   [@implicit_arity];
 
-let module Test = {
+module Test = {
   type a =
     | And (int, int)
     | Or (int, int);
@@ -22,7 +22,7 @@ Test.Or (1, 2);
 
 Some 1;
 
-let module M = {
+module M = {
   type t =
     | TupleConstructorInModule (int, int);
   type t2 =

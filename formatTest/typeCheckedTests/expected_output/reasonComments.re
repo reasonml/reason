@@ -54,7 +54,7 @@
 /**
  **
  */
-let module JustString = {
+module JustString = {
   include Map.Make Int32; /* Comment eol include */
 };
 
