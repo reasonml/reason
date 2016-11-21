@@ -545,15 +545,15 @@ module definition is local/top level.
 (\*Top level \*)
 module X = ..
 (\*Local \*)
-let module X = ..
+module X = ..
 module type Y = ...</pre>
     </td>
     <td>
       <pre>
 /\* Top level \*/
-let module X = ..
+module X = ..
 /\* Local \*/
-let module X = ..
+module X = ..
 module type Y = ..</pre>
     </td>
   </tr>
@@ -830,12 +830,12 @@ module type MySig = {
   type t = int;
   let x: int;
 };
-let module MyModule: MySig = {
+module MyModule: MySig = {
   type t = int;
   let x = 10;
 };
-let module MyModule = {
-  let module NestedModule = {
+module MyModule = {
+  module NestedModule = {
      let msg = "hello";
   };
 };
@@ -892,7 +892,7 @@ module F =
     </td>
     <td>
       <pre>
-let module F =
+module F =
   fun (A:ASig) =>
   fun (B:BSig) =>
     {};</pre>
@@ -908,7 +908,7 @@ module F =
     </td>
     <td>
       <pre>
-let module F =
+module F =
   fun (A:ASig)
       (B:BSig) => {};</pre>
     </td>
@@ -923,7 +923,7 @@ module F
     </td>
     <td>
       <pre>
-let module F
+module F
            (A:ASig)
            (B:BSig) =>
              {};</pre>
@@ -932,11 +932,11 @@ let module F
   <tr>
     <td>
       <pre>
-let module Res = F(A)(B)</pre>
+module Res = F(A)(B)</pre>
     </td>
     <td>
       <pre>
-let module Res = F A B;</pre>
+module Res = F A B;</pre>
     </td>
   </tr>
 </table>

@@ -284,7 +284,7 @@ and anotherClassType = {
 }
 [@@structureItem];
 
-let module NestedModule = {
+module NestedModule = {
   [@@@floatingNestedStructureItem hello];
 };
 
@@ -326,7 +326,7 @@ let myFun
 /* Bucklescript FFI item attributes */
 external imul : int => int => int = "Math.imul" [@@bs.val];
 
-let module Js = {
+module Js = {
   type t 'a;
 };
 

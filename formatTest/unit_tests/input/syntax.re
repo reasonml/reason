@@ -313,7 +313,7 @@ type blah = {blahBlah: int};
 let blah = fun (a) {blahBlah} => a;
 let blah a {blahBlah} => a;
 
-let module TryToExportTwice = {
+module TryToExportTwice = {
   let myVal = "hello";
 };
 

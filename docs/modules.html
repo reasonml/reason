@@ -45,11 +45,11 @@ Modules are like records, but with the following differences.
 
 
 ###### Creating Modules
-To create a module, use the `let module` keywords instead of `let`, and ensure
+To create a module, use the `module` keyword instead of `let`, and ensure
 that the variable name given to the module begins with a capital letter.
 
 ```reason
-let module MyModule = {
+module MyModule = {
   /* Module contents here */
 };
 ```
@@ -60,7 +60,7 @@ place in a `.re` file, you may place inside a module definition's `{}` block.
 That means that you can include `let` bindings, and even `type` definitions.
 
 ```reason
-let module MyModule = {
+module MyModule = {
   type twoStrings = (string, string);
   let makePair = fun s => {
     let returnVal = (s, s): twoString;
@@ -79,8 +79,8 @@ let twoStrings: MyModule.twoString = MyModule.makePair "hello modules";
 ```
 
 ```reason
-let module MyModule = {
-  let module NestedModule = {
+module MyModule = {
+  module NestedModule = {
      let msg = "hello";
   };
 };
@@ -95,10 +95,10 @@ content. This can often fulfill the role of "inheritance".
 
 
 ```reason
-let module Login = {
+module Login = {
    let login = fun auth => 0;
 };
-let module RepeatedLogin = {
+module RepeatedLogin = {
   include Login;
   let loginTwice = fun auth => {
     (login auth, login auth)
@@ -184,11 +184,11 @@ because `XTInt.x` is in fact of type `XTint.t`. `XTint.t` also happens to be an
 it only required that `x` be of type `t`.
 
 ```reason
-let module XTInt: HasXAndTInt = {
+module XTInt: HasXAndTInt = {
    type t = int;
    let x = 20;
 };
-let module XTInt: HasXAndTAbstract = {
+module XTInt: HasXAndTAbstract = {
    type t = int;
    let x = 20;
 };
@@ -210,12 +210,12 @@ lost track of the type itself, but not lost track of the fact that the type of
 `Constrained.x` is identical to the type of `Constrained.t`.
 
 ```reason
-let module XYAndT = {
+module XYAndT = {
    type t = int;
    let x = 20;
    let y = "you'll never see me!";
 };
-let module Constrained: HasXAndTAbstract = XYAndT;
+module Constrained: HasXAndTAbstract = XYAndT;
 ```
 > This kind of "constraining" allows *hiding* of information that should be
 > considered implementation details.
@@ -267,7 +267,7 @@ The syntax for defining and using module functions is very much like the syntax 
 defining and using regular functions. The primary differences are:
 
 
-- Module functions use the `let module` keywords instead of `let` and the `fun` 
+- Module functions use the `module` keyword instead of `let` and the `fun`
 keyword designates functor in this case.
 - Module functions accept modules as arguments and return a module.
 - Module functions *require* annotating arguments.
@@ -277,7 +277,7 @@ keyword designates functor in this case.
 module type HasT = {
   type t;
 };
-let module Pairify = fun (X: HasT) => {
+module Pairify = fun (X: HasT) => {
    type p = (X.t, X.t);
    let create = fun (x: X.t) => (x, x);
 };
@@ -288,7 +288,7 @@ In this case, a module *literal* is passed as the module functions argument, but
 could have passed the name of a module instead.
 
 ```reason
-let module IntPair = Pairify {
+module IntPair = Pairify {
   type t = int;
 };
 
@@ -321,7 +321,7 @@ module type ParifyT = (HasTInstance: HasT) => {
   let create: HasTInstance.t => p;
 };
 
-let module Pairify: ParifyT = fun (X:HasT) => {
+module Pairify: ParifyT = fun (X:HasT) => {
   type p = (X.t, X.t);
   let create = fun (x: X.t) => (x, x);
 };

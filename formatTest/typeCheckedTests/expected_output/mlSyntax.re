@@ -93,7 +93,7 @@ let nestedSome = Some (1, 2, Some (1, 2, 3));
 
 let nestedSomeSimple = Some (Some (1, 2, 3));
 
-let module EM = {
+module EM = {
 
   /** Exception */
   exception E int int;
