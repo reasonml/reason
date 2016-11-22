@@ -164,7 +164,7 @@
           "end": "(?<![=])(?=[/>[:lower:]])",
           "comment": "meta.separator",
           "beginCaptures": {
-            "1": { "name": "constant.language support.property-value entity.name.filename markup.inserted" },
+            "1": { "name": "markup.inserted constant.language support.property-value entity.name.filename" },
             "2": { "name": "keyword.control.less" }
           },
           "patterns": [
@@ -175,7 +175,7 @@
           "match": "(\\b([[:lower:]][[:word:]]*)\\b[[:space:]]*+)",
           "captures": {
             "1": { "comment": "meta.separator" },
-            "2": { "name": "constant.language support.property-value entity.name.filename markup.inserted" }
+            "2": { "name": "markup.inserted constant.language support.property-value entity.name.filename" }
           }
         }
       ]
@@ -402,9 +402,10 @@
             { "include": "#attribute" },
             {
               "begin": "\"",
-              "end": "\"|(?:[^\\\\\\n]$)",
+              "end": "\"",
               "name": "string.double string.regexp",
               "patterns": [
+                { "include": "#value-literal-string-escape" },
                 {
                   "match": "(?:(%)(.*?)|(caml.*?))(?=\"|(?:[^\\\\\\n]$))",
                   "captures": {
@@ -572,12 +573,12 @@
       ]
     },
     "module-item-let-value-bind-name-or-pattern": {
-      "begin": "(?<=[^[:word:]]and|^and|[^[:word]]external|^external|[^[:word]]let|^let|[^[:word]]method|^method|[^[:word]]rec|^rec)[[:space:]]*",
+      "begin": "(?<=[^[:word:]]and|^and|[^[:word:]]external|^external|[^[:word:]]let|^let|[^[:word:]]method|^method|[^[:word:]]rec|^rec)[[:space:]]*",
       "end": "(?<=[^[:space:]])|(?=[[:space:]]|[;:}=]|\\b(and|as|class|constraint|exception|external|for|include|inherit|let|method|module|nonrec|open|private|rec|switch|try|type|val|while|with)\\b)",
       "patterns": [
         { "include": "#comment" },
         {
-          "match": "\\b(?:(_)|([[:lower:]][[:word:]]*|_[[:word:]]+))\\b",
+          "match": "\\b(?:([_][[:word:]]+)|([[:lower:]][[:word:]]*))\\b",
           "captures": {
             "1": { "name": "comment" },
             "2": { "name": "entity.name.function" }
@@ -588,7 +589,7 @@
       ]
     },
     "module-item-let-value-bind-name-params-type-body": {
-      "begin": "(?<=[^[:word:]]and|^and|[^[:word]]external|^external|[^[:word]]let|^let|[^[:word]]method|^method|[^[:word]]rec|^rec)",
+      "begin": "(?<=[^[:word:]]and|^and|[^[:word:]]external|^external|[^[:word:]]let|^let|[^[:word:]]method|^method|[^[:word:]]rec|^rec)",
       "end": "(?=[;}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
       "patterns": [
         { "include": "#module-item-let-value-bind-name-or-pattern" },
@@ -626,7 +627,7 @@
       ]
     },
     "module-item-let-value-bind-pattern": {
-      "begin": "(?<=[^[:word:]]and|^and|[^[:word]]external|^external|[^[:word]]let|^let|[^[:word]]method|^method|[^[:word]]rec|^rec)",
+      "begin": "(?<=[^[:word:]]and|^and|[^[:word:]]external|^external|[^[:word:]]let|^let|[^[:word:]]method|^method|[^[:word:]]rec|^rec)",
       "end": "(?=[;:}=]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
       "patterns": [
         { "include": "#comment" },
@@ -672,7 +673,7 @@
           "begin": "\\b([[:lower:]][[:word:]]*)\\b[[:space:]]*(::)",
           "end": "(?<=[[:space:]])",
           "beginCaptures": {
-            "1": { "name": "constant.language support.property-value entity.name.filename markup.inserted" },
+            "1": { "name": "markup.inserted constant.language support.property-value entity.name.filename" },
             "2": { "name": "keyword.control" }
           },
           "patterns": [
@@ -1014,7 +1015,7 @@
       "name": "variable.other.class.js variable.interpolation keyword.operator keyword.control.less message.error"
     },
     "operator-infix-custom": {
-      "match": "(?:(?<![#\\-:!?.@*/&%^+<=>|~$\\\\])((<>))(?![#\\-:!?.@*/&%^+<=>|~$\\\\]))|([#\\-@*/&%^+<=>|$\\\\][#\\-:!?.@*/&%^+<=>|~$\\\\]*)",
+      "match": "(?:(?<![#\\-:!?.@*/&%^+<=>|~$\\\\])((<>))(?![#\\-:!?.@*/&%^+<=>|~$\\\\]))|([#\\-@*/&%^+<=>$\\\\][#\\-:!?.@*/&%^+<=>|~$\\\\]*|[|][#\\-:!?.@*/&%^+<=>|~$\\\\]+)",
       "captures": {
         "1": { "comment": "meta.separator" },
         "2": { "name": "punctuation.definition.tag.begin.js" },
@@ -1057,7 +1058,7 @@
     "pattern-atomic": {
       "patterns": [
         {
-          "match": "exception",
+          "match": "\\b(exception)\\b",
           "name": "keyword.other"
         },
         { "include": "#value-expression-literal" },
@@ -1127,7 +1128,7 @@
       "endCaptures": {
         "1": { "name": "keyword.control" },
         "2": { "name": "support.class entity.name.class" },
-        "3": { "name": "constant.language support.property-value entity.name.filename markup.inserted" }
+        "3": { "name": "markup.inserted constant.language support.property-value entity.name.filename" }
       },
       "patterns": [
         { "include": "#comment" },
@@ -1142,7 +1143,7 @@
             {
               "match": "\\b([[:lower:]][[:word:]]*)\\b(?=[^\\)]*([\\.]))",
               "captures": {
-                "1": { "name": "constant.language support.property-value entity.name.filename markup.inserted" },
+                "1": { "name": "markup.inserted constant.language support.property-value entity.name.filename" },
                 "2": { "name": "keyword.other" }
               }
             },
@@ -1174,7 +1175,7 @@
       "end": "(,)|(?=})",
       "beginCaptures": {
         "1": { "name": "comment" },
-        "2": { "name": "constant.language support.property-value entity.name.filename markup.inserted" }
+        "2": { "name": "markup.inserted constant.language support.property-value entity.name.filename" }
       },
       "endCaptures": {
         "1": { "name": "variable.other.class.js variable.interpolation keyword.operator keyword.control message.error" }
@@ -1210,7 +1211,7 @@
         {
           "match": "\\b([[:lower:]][[:word:]]*)\\b(?!\\.[[:upper:]])",
           "captures": {
-            "1": { "name": "variable.parameter string.other.link variable.language" }
+            "1": { "name": "variable.language string.other.link" }
           }
         }
       ]
@@ -1245,9 +1246,9 @@
           "begin": "\\b(module)\\b[[:space:]]*\\b(type)\\b([[:space:]]*\\b(of)\\b)?",
           "end": "(?=[;\\)}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\\b)",
           "beginCaptures": {
-            "1": { "name": "keyword.other variable.other.readwrite.instance markup.inserted" },
+            "1": { "name": "markup.inserted keyword.other variable.other.readwrite.instance" },
             "2": { "name": "constant.language" },
-            "3": { "name": "keyword.other variable.other.readwrite.instance markup.inserted" }
+            "3": { "name": "markup.inserted keyword.other variable.other.readwrite.instance" }
           },
           "patterns": [
             { "include": "#comment" },
@@ -1295,7 +1296,7 @@
                   "begin": "\\b(module)\\b",
                   "end": "(?=:?=|[;\\)}]|\\b(and|class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|type|val|with)\\b)",
                   "beginCaptures": {
-                    "1": { "name": "keyword.control storage.type variable.other.readwrite.instance markup.inserted" }
+                    "1": { "name": "markup.inserted keyword.control storage.type variable.other.readwrite.instance" }
                   },
                   "patterns": [
                     { "include": "#comment" },
@@ -1442,7 +1443,7 @@
       "begin": "\\b([_[:lower:]][[:word:]]*)\\b(::)",
       "end": "(?<==>)",
       "beginCaptures": {
-        "1": { "name": "constant.language support.property-value entity.name.filename markup.inserted" },
+        "1": { "name": "markup.inserted constant.language support.property-value entity.name.filename" },
         "2": { "name": "keyword.control" }
       },
       "patterns": [
@@ -1486,7 +1487,7 @@
                 {
                   "match": "\\b([_[:lower:]][[:word:]]*)\\b",
                   "captures": {
-                    "1": { "name": "constant.language support.property-value entity.name.filename markup.inserted" }
+                    "1": { "name": "markup.inserted constant.language support.property-value entity.name.filename" }
                   }
                 }
               ]
@@ -1571,7 +1572,7 @@
       "begin": "\\b([_[:lower:]][[:word:]]*)\\b",
       "end": "(,)|(?=[,}])",
       "beginCaptures": {
-        "1": { "name": "constant.language support.property-value entity.name.filename markup.inserted" }
+        "1": { "name": "markup.inserted constant.language support.property-value entity.name.filename" }
       },
       "endCaptures": {
         "1": { "name": "variable.other.class.js variable.interpolation keyword.operator keyword.control message.error" }
@@ -1691,7 +1692,7 @@
       ]
     },
     "value-expression-builtin": {
-      "match": "\\b(assert|decr|failwith|fprintf|incr|lazy|lor|lsl|lsr|lxor|mod|new|not|printf|ref)\\b|\\b(raise)\\b",
+      "match": "\\b(assert|decr|failwith|fprintf|ignore|incr|land|lazy|lor|lsl|lsr|lxor|mod|new|not|printf|ref)\\b|\\b(raise)\\b",
       "captures": {
         "1": { "name": "keyword.control message.error" },
         "2": { "name": "keyword.control.trycatch" }
@@ -1826,7 +1827,7 @@
       "begin": "\\b([_[:lower:]][[:word:]]*)\\b[[:space:]]*(::)(\\?)?",
       "end": "(?![[:space:]])",
       "beginCaptures": {
-        "1": { "name": "constant.language support.property-value entity.name.filename markup.inserted" },
+        "1": { "name": "markup.inserted constant.language support.property-value entity.name.filename" },
         "2": { "name": "keyword.control" },
         "3": { "name": "storage.type" }
       },
@@ -1852,9 +1853,7 @@
     },
     "value-expression-literal-character": {
       "match": "(')([[:space:]]|[[:graph:]]|\\\\[\\\\\"'ntbr]|\\\\[[:digit:]][[:digit:]][[:digit:]]|\\\\x[[:xdigit:]][[:xdigit:]]|\\\\o[0-3][0-7][0-7])(')",
-      "captures": {
-        "2": { "name": "constant.character" }
-      }
+      "name": "constant.character"
     },
     "value-expression-literal-list-or-array": {
       "begin": "(\\[\\|?)(?![@%])",
@@ -1881,7 +1880,7 @@
     "value-expression-literal-numeric": {
       "patterns": [
         {
-          "match": "([-])?([[:digit:]][_[:digit:]]*)(?:(\\.)([_[:digit:]]*))?(?:([eE])([\\-\\+])?([[:digit:]][_[:digit:]]*))?(?![xX])",
+          "match": "([-])?([[:digit:]][_[:digit:]]*)(?:(\\.)([_[:digit:]]*))?(?:([eE])([\\-\\+])?([[:digit:]][_[:digit:]]*))?(?![bBoOxX])",
           "captures": {
             "1": { "name": "keyword.control.less" },
             "2": { "name": "constant.numeric" },
@@ -1949,7 +1948,7 @@
             },
             {
               "begin": "\"",
-              "end": "(?<!\\\\)\"",
+              "end": "\"",
               "comment": "meta.separator",
               "patterns": [
                 { "include": "source.js" }
@@ -1974,7 +1973,7 @@
         },
         {
           "begin": "\"",
-          "end": "(?<!\\\\)\"",
+          "end": "\"",
           "name": "string.double string.regexp",
           "patterns": [
             { "include": "#value-expression-literal-string-escape" }
@@ -2069,7 +2068,7 @@
               "patterns": [
                 {
                   "match": "\\b[[:lower:]][[:word:]]*\\b",
-                  "name": "constant.language support.property-value entity.name.filename markup.inserted"
+                  "name": "markup.inserted constant.language support.property-value entity.name.filename"
                 }
               ]
             },
@@ -2112,7 +2111,7 @@
           "begin": "\\b([[:lower:]][[:word:]]*)\\b",
           "end": "(,)|(?=})",
           "beginCaptures": {
-            "1": { "name": "constant.language support.property-value entity.name.filename markup.inserted" }
+            "1": { "name": "markup.inserted constant.language support.property-value entity.name.filename" }
           },
           "endCaptures": {
             "1": { "name": "variable.other.class.js variable.interpolation keyword.operator keyword.control message.error" }
