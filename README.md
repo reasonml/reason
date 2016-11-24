@@ -1,7 +1,7 @@
 
 
 
-Reason: Build Systems Rapidly [![Build Status](https://travis-ci.org/facebook/reason.png?branch=master)](https://travis-ci.org/facebook/reason)
+Reason: Build Systems Rapidly [![Build Status](https://travis-ci.org/facebook/reason.svg?branch=master)](https://travis-ci.org/facebook/reason)
 =========================================
 
 
