@@ -49,7 +49,7 @@
     body: """
       switch ${1:expression} {
       | ${2:firstCase} => ${3:result}
-      }
+      };
     """
 
   "Reason: Try-catch":
