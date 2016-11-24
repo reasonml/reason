@@ -325,6 +325,24 @@ let myFuncs = {
     </td>
 </table>
 
+### Lists
+
+Lists in `Reason` are delimited with commas rather than semi-colons as they are in JavaScript. `Reason` also uses JavaScript's spread syntax for list concatenation instead of the `::` operator.
+
+> <table>
+> <thead><tr> <th scope="col"><p>OCaml Lists</p></th><th scope="col"><p>Reason Lists</p></th></tr></thead>
+>   <tr>
+>     <td>
+>       <pre>let list = [1; 2; 3]</pre>
+>       <pre>let list = hd :: tl</pre>
+>     </td>
+>     <td>
+>       <pre>let list = [1, 2, 3];</pre>
+>       <pre>let list = [hd, ...tl];</pre>
+>     </td>
+>   </tr>
+> </table>
+
 ### Type Definitions
 
 With `Reason`, types generally look like the values they represent.  There is
