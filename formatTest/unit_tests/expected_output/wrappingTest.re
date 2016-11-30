@@ -2051,16 +2051,16 @@ and mutuallyRecursiveTwo y => print_int y;
 /* let newMutualRecursionSyntax x => newMutuallyRecursiveTwo (x + x); */
 /* let newMutuallyRecursiveTwo y => print_int y; */
 /*  */
-type x = private int;
+type x = pri int;
 
-type myType 'a 'b 'c = private ('a, 'b, 'c);
+type myType 'a 'b 'c = pri ('a, 'b, 'c);
 
 type privateVariant =
-  private | BigSize int | SmallSize int;
+  pri | BigSize int | SmallSize int;
 
 type doubleEqualsDoublePrivateVariant =
   privateVariant =
-    private | BigSize int | SmallSize int;
+    pri | BigSize int | SmallSize int;
 
 type myRecordWithReallyLongName = {
   xx: int,
@@ -2073,7 +2073,7 @@ type doubleEqualsRecord =
 
 type doubleEqualsDoublePrivateRecord =
   myRecordWithReallyLongName =
-    private {xx: int, yy: int};
+    pri {xx: int, yy: int};
 
 type someConstructor =
   | SomeConstructorHi int int;

@@ -85,6 +85,7 @@ let reason_to_ml_swapping_alist = [
   "!==", "!=";
   "match", "switch";
   "method", "pub";
+  "private", "pri";
 ]
 
 let swap_txt map txt =
