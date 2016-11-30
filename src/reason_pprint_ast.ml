@@ -2630,8 +2630,8 @@ class printer  ()= object(self:'self)
 
       (* EQUAL core_type EQUAL DOTDOT {(Ptype_open, Public, Some $2)} *)
       | (Ptype_open, Public, Some mani) -> [
-          [self#core_type mani];
           [atom ".."];
+          [self#core_type mani];
         ]
       (* EQUAL core_type EQUAL private_flag LBRACE label_declarations opt_comma RBRACE
            {(Ptype_record _, $4, Some $2)} *)
@@ -2727,8 +2727,8 @@ class printer  ()= object(self:'self)
             | Closed -> [atom "."]
             | Open -> [atom ".."]
           in
-          let rows = List.concat [(List.map core_field_type l); openness] in
-          makeList ~break:IfNeed ~postSpace:true ~wrap:("{", "}") ~sep:"," rows
+          let rows = List.map core_field_type l in
+          makeList ~break:IfNeed ~preSpace:(List.length rows > 0) ~wrap:("{", "}") (openness @ [makeList ~break:IfNeed ~inline:(true, (List.length rows > 0)) ~postSpace:true ~sep:"," rows])
         | Ptyp_package (lid, cstrs) ->
           let typeConstraint (s, ct) =
             label

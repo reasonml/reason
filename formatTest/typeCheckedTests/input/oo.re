@@ -103,9 +103,9 @@ and secondRecursiveClass init => {
  * "class_instance_type". That needn't be the case. The only challenge is that
  * whatever we do, there is a slight challenge in avoiding conflicts with
  * records. Clearly {x:int, y:int} will conflict. However, open object types in
- * the form of {x:int, y:int, ..} do not conflict. The only thing that must be
+ * the form of {.. x:int, y:int} do not conflict. The only thing that must be
  * resolved is closed object types and records. you could have a special token
- * that means "closed". {x: int, y:int .}. If only closed object types would be
+ * that means "closed". {. x: int, y:int}. If only closed object types would be
  * optimized in the same way that records are, records could just be replaced
  * with closed object types.
  */
@@ -118,39 +118,39 @@ type closedObj = {.};
 let (<..>) a b => a + b;
 let five = 2 <..> 3;
 
-type nestedObj = { bar : {a: int, .}, .};
+type nestedObj = {. bar : {. a: int}};
 
 let (>>) a b => a > b;
 
 let bigger = 3 >> 2;
 
-type typeDefForClosedObj = {x: int, y:int, .};
-type typeDefForOpenObj 'a = {x:int, y:int, ..} as 'a;
-let anonClosedObject: {x:int, y:int, .} = {
+type typeDefForClosedObj = {. x: int, y:int};
+type typeDefForOpenObj 'a = {.. x:int, y:int} as 'a;
+let anonClosedObject: {. x:int, y:int} = {
   pub x => 0;
   pub y => 0;
 };
 
 let onlyHasX = {pub x => 0};
-let xs: list {x:int, .} = [onlyHasX, anonClosedObject :> {x: int, .}];
+let xs: list {. x:int} = [onlyHasX, anonClosedObject :> {. x: int}];
 
 let constrainedAndCoerced =
-  ([anonClosedObject, anonClosedObject] : list {x:int, y:int, .} :> list {x:int, .} );
+  ([anonClosedObject, anonClosedObject] : list {. x:int, y:int} :> list {. x:int} );
 
 /* If one day, unparenthesized type constraints are allowed on the RHS of a
  * record value, we're going to have to be careful here because >} is parsed as
  * a separate kind of token (for now). Any issues would likely be caught in the
  * idempotent test case.
  */
-let xs: ref {x:int, .} = {contents: (anonClosedObject :> {x: int, .})};
+let xs: ref {. x:int} = {contents: (anonClosedObject :> {. x: int})};
 
 let coercedReturn = {
   let tmp = anonClosedObject;
-  (tmp :> {x: int, .})
+  (tmp :> {. x: int})
 };
 
-let acceptsOpenAnonObjAsArg (o: {x: int, y:int, ..}) => o#x + o#y;
-let acceptsClosedAnonObjAsArg (o: {x: int, y:int, .}) => o#x + o#y;
+let acceptsOpenAnonObjAsArg (o: {.. x: int, y:int}) => o#x + o#y;
+let acceptsClosedAnonObjAsArg (o: {. x: int, y:int}) => o#x + o#y;
 let res = acceptsOpenAnonObjAsArg {
   pub x => 0;
   pub y => 10;

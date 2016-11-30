@@ -331,10 +331,10 @@ module Js = {
 };
 
 type classAttributesOnKeys = {
+  .
   key1 [@bs.set] : string,
   /* The follow two are the same */
   key2 [@bs.get null] : (Js.t int) [@onType2],
   key3 [@bs.get null] : (Js.t int) [@onType2],
-  key4 : Js.t (int [@justOnInt]),
-  .
+  key4 : Js.t (int [@justOnInt])
 };

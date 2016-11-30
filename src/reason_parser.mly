@@ -4302,10 +4302,10 @@ object_record_type:
       { [], Object_open }
 | LBRACE label_declarations opt_comma RBRACE
       { List.rev $2, Record }
-| LBRACE label_declarations COMMA DOT RBRACE
-      { List.rev $2, Object_closed }
-| LBRACE label_declarations COMMA DOTDOT RBRACE
-      { List.rev $2, Object_open }
+| LBRACE DOT label_declarations RBRACE
+      { List.rev $3, Object_closed }
+| LBRACE DOTDOT label_declarations RBRACE
+      { List.rev $3, Object_open }
 ;
 
 package_type:
