@@ -83,9 +83,7 @@ let reason_to_ml_swapping_alist = [
   "\\===", "===";
   "!=", "<>";
   "!==", "!=";
-  "switch", "match";
   "match", "switch";
-  "pub", "method";
   "method", "pub";
 ]
 
