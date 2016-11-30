@@ -3,14 +3,14 @@
 type t = {.};
 
 type t = {
+  .
   u: int,
-  v: int, .
+  v: int
 };
 
-type t = {u: int, ..};
+type t = {.. u: int};
 
-type t = {u: int
-, ..};
+type t = {.. u: int};
 
 type t = {
   ..
