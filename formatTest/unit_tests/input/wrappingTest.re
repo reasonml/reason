@@ -1422,23 +1422,23 @@ and mutuallyRecursiveTwo y => print_int y;
 
 
 
-type x = private int;
+type x = pri int;
 
-type myType 'a 'b 'c = private ('a, 'b, 'c);
+type myType 'a 'b 'c = pri ('a, 'b, 'c);
 
-type privateVariant = private
+type privateVariant = pri
   | BigSize int
   | SmallSize int;
 
 type doubleEqualsDoublePrivateVariant =
   privateVariant =
-  private
+  pri
     | BigSize int
     | SmallSize int;
 
 type myRecordWithReallyLongName = {xx:int, yy:int};
 type doubleEqualsRecord = myRecordWithReallyLongName = {xx:int, yy:int};
-type doubleEqualsDoublePrivateRecord = myRecordWithReallyLongName = private {xx:int, yy:int};
+type doubleEqualsDoublePrivateRecord = myRecordWithReallyLongName = pri {xx:int, yy:int};
 
 
 

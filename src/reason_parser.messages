@@ -3600,7 +3600,7 @@ interface: INCLUDE LPAREN UIDENT WITH TYPE LIDENT COLONEQUAL WITH
 
 <SYNTAX ERROR>
 
-interface: INCLUDE LPAREN UIDENT WITH TYPE LIDENT EQUAL PRIVATE WITH
+interface: INCLUDE LPAREN UIDENT WITH TYPE LIDENT EQUAL PRI WITH
 ##
 ## Ends in an error in state: 1747.
 ##
@@ -4100,7 +4100,7 @@ interface: INCLUDE UIDENT WITH TYPE LIDENT COLONEQUAL WITH
 
 <SYNTAX ERROR>
 
-interface: INCLUDE UIDENT WITH TYPE LIDENT EQUAL PRIVATE WITH
+interface: INCLUDE UIDENT WITH TYPE LIDENT EQUAL PRI WITH
 ##
 ## Ends in an error in state: 1811.
 ##
@@ -4142,7 +4142,7 @@ interface: INCLUDE UIDENT WITH TYPE LIDENT EQUAL WITH
 ## Ends in an error in state: 1743.
 ##
 ## with_type_binder -> EQUAL . [ UNDERSCORE UIDENT SHARP QUOTE LPAREN LIDENT LBRACKETPERCENT LBRACKETLESS LBRACKETGREATER LBRACKET LBRACE ]
-## with_type_binder -> EQUAL . PRIVATE [ UNDERSCORE UIDENT SHARP QUOTE LPAREN LIDENT LBRACKETPERCENT LBRACKETLESS LBRACKETGREATER LBRACKET LBRACE ]
+## with_type_binder -> EQUAL . PRI [ UNDERSCORE UIDENT SHARP QUOTE LPAREN LIDENT LBRACKETPERCENT LBRACKETLESS LBRACKETGREATER LBRACKET LBRACE ]
 ##
 ## The known suffix of the stack is as follows:
 ## EQUAL
@@ -4602,7 +4602,7 @@ interface: TYPE LIDENT PLUSEQ BAR WITH
 
 <SYNTAX ERROR>
 
-interface: TYPE LIDENT PLUSEQ PRIVATE BANG
+interface: TYPE LIDENT PLUSEQ PRI BANG
 ##
 ## Ends in an error in state: 2049.
 ##
@@ -12147,15 +12147,15 @@ Expecting at least one type field definition in the form of:
 
 <SYNTAX ERROR>
 
-implementation: TYPE LIDENT EQUAL PRIVATE WITH
+implementation: TYPE LIDENT EQUAL PRI WITH
 ##
 ## Ends in an error in state: 2572.
 ##
-## type_kind -> EQUAL PRIVATE . core_type [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF CONSTRAINT AND ]
-## type_kind -> EQUAL PRIVATE . constructor_declarations [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF CONSTRAINT AND ]
+## type_kind -> EQUAL PRI . core_type [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF CONSTRAINT AND ]
+## type_kind -> EQUAL PRI . constructor_declarations [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF CONSTRAINT AND ]
 ##
 ## The known suffix of the stack is as follows:
-## EQUAL PRIVATE
+## EQUAL PRI
 ##
 
 <SYNTAX ERROR>
@@ -12224,15 +12224,15 @@ implementation: TYPE LIDENT EQUAL UNDERSCORE EQUAL LBRACE WITH
 
 <SYNTAX ERROR>
 
-implementation: TYPE LIDENT EQUAL UNDERSCORE EQUAL PRIVATE BANG
+implementation: TYPE LIDENT EQUAL UNDERSCORE EQUAL PRI BANG
 ##
 ## Ends in an error in state: 2611.
 ##
-## private_flag -> PRIVATE . [ LBRACE ]
-## type_kind -> EQUAL core_type EQUAL PRIVATE . constructor_declarations [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF CONSTRAINT AND ]
+## private_flag -> PRI . [ LBRACE ]
+## type_kind -> EQUAL core_type EQUAL PRI . constructor_declarations [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF CONSTRAINT AND ]
 ##
 ## The known suffix of the stack is as follows:
-## EQUAL core_type EQUAL PRIVATE
+## EQUAL core_type EQUAL PRI
 ##
 
 <SYNTAX ERROR>
@@ -12263,7 +12263,7 @@ implementation: TYPE LIDENT EQUAL UNDERSCORE EQUAL WITH
 ## Ends in an error in state: 2609.
 ##
 ## type_kind -> EQUAL core_type EQUAL . constructor_declarations [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF CONSTRAINT AND ]
-## type_kind -> EQUAL core_type EQUAL . PRIVATE constructor_declarations [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF CONSTRAINT AND ]
+## type_kind -> EQUAL core_type EQUAL . PRI constructor_declarations [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF CONSTRAINT AND ]
 ## type_kind -> EQUAL core_type EQUAL . DOTDOT [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF CONSTRAINT AND ]
 ## type_kind -> EQUAL core_type EQUAL . private_flag LBRACE label_declarations opt_comma RBRACE [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF CONSTRAINT AND ]
 ##
@@ -12279,7 +12279,7 @@ implementation: TYPE LIDENT EQUAL UNDERSCORE WITH
 ##
 ## type_kind -> EQUAL core_type . [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF CONSTRAINT AND ]
 ## type_kind -> EQUAL core_type . EQUAL constructor_declarations [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF CONSTRAINT AND ]
-## type_kind -> EQUAL core_type . EQUAL PRIVATE constructor_declarations [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF CONSTRAINT AND ]
+## type_kind -> EQUAL core_type . EQUAL PRI constructor_declarations [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF CONSTRAINT AND ]
 ## type_kind -> EQUAL core_type . EQUAL DOTDOT [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF CONSTRAINT AND ]
 ## type_kind -> EQUAL core_type . EQUAL private_flag LBRACE label_declarations opt_comma RBRACE [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF CONSTRAINT AND ]
 ##
@@ -12305,12 +12305,12 @@ implementation: TYPE LIDENT EQUAL WITH
 ## Ends in an error in state: 110.
 ##
 ## type_kind -> EQUAL . core_type [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF CONSTRAINT AND ]
-## type_kind -> EQUAL . PRIVATE core_type [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF CONSTRAINT AND ]
+## type_kind -> EQUAL . PRI core_type [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF CONSTRAINT AND ]
 ## type_kind -> EQUAL . constructor_declarations [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF CONSTRAINT AND ]
-## type_kind -> EQUAL . PRIVATE constructor_declarations [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF CONSTRAINT AND ]
+## type_kind -> EQUAL . PRI constructor_declarations [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF CONSTRAINT AND ]
 ## type_kind -> EQUAL . DOTDOT [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF CONSTRAINT AND ]
 ## type_kind -> EQUAL . core_type EQUAL constructor_declarations [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF CONSTRAINT AND ]
-## type_kind -> EQUAL . core_type EQUAL PRIVATE constructor_declarations [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF CONSTRAINT AND ]
+## type_kind -> EQUAL . core_type EQUAL PRI constructor_declarations [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF CONSTRAINT AND ]
 ## type_kind -> EQUAL . core_type EQUAL DOTDOT [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF CONSTRAINT AND ]
 ## type_kind -> EQUAL . core_type EQUAL private_flag LBRACE label_declarations opt_comma RBRACE [ error SEMI RBRACKET RBRACE LBRACKETATAT EOF CONSTRAINT AND ]
 ##
@@ -12403,7 +12403,7 @@ implementation: TYPE LIDENT PLUSEQ BAR WITH
 
 <SYNTAX ERROR>
 
-implementation: TYPE LIDENT PLUSEQ PRIVATE BANG
+implementation: TYPE LIDENT PLUSEQ PRI BANG
 ##
 ## Ends in an error in state: 2626.
 ##

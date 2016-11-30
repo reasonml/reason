@@ -2533,7 +2533,7 @@ class printer  ()= object(self:'self)
           | EQUAL core_type EQUAL private_flag LBRACE label_declarations opt_comma RBRACE
               { (Ptype_record(List.rev $6), $4, Some $2) }
     *)
-    let privateAtom = (atom "private") in
+    let privateAtom = (atom "pri") in
     let privatize scope lst = match scope with
       | Public -> lst
       | Private -> privateAtom::lst in

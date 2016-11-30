@@ -73,3 +73,5 @@ exception Ealias = EM.E
 let switch = "match"
 
 let pub = "method"
+
+let pri = "private"

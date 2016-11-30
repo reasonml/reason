@@ -936,7 +936,6 @@ let only_labels l =
 %token PLUSDOT
 %token PLUSEQ
 %token <string> PREFIXOP
-%token PRIVATE
 %token PUB
 %token QUESTION
 %token OPTIONAL_NO_DEFAULT
@@ -3769,14 +3768,14 @@ type_kind:
       | Core_type ct -> (Ptype_abstract, Public, Some ct)
       | Record_type rt -> (Ptype_record rt, Public, None)
       }
-  | EQUAL PRIVATE core_type {
+  | EQUAL PRI core_type {
       match $3 with
       | Core_type ct -> (Ptype_abstract, Private, Some ct)
       | Record_type rt -> (Ptype_record rt, Private, None)
     }
   | EQUAL constructor_declarations
       { (Ptype_variant($2),  Public, None) }
-  | EQUAL PRIVATE constructor_declarations
+  | EQUAL PRI constructor_declarations
       { (Ptype_variant($3), Private, None) }
   | EQUAL DOTDOT
       { (Ptype_open, Public, None) }
@@ -3785,7 +3784,7 @@ type_kind:
         let core_type_loc = mklocation $startpos($2) $endpos($2) in
         (Ptype_variant($4), Public,  Some (only_core_type $2 core_type_loc))
       }
-  | EQUAL core_type EQUAL PRIVATE constructor_declarations
+  | EQUAL core_type EQUAL PRI constructor_declarations
       {
         let core_type_loc = mklocation $startpos($2) $endpos($2) in
         (Ptype_variant($5), Private, Some (only_core_type $2 core_type_loc))
@@ -4022,7 +4021,7 @@ with_constraint:
 ;
 with_type_binder:
     EQUAL          { Public }
-  | EQUAL PRIVATE  { Private }
+  | EQUAL PRI  { Private }
 ;
 
 /* Polymorphic types */
@@ -4579,7 +4578,7 @@ direction_flag:
 ;
 private_flag:
     /* empty */                                 { Public }
-  | PRIVATE                                     { Private }
+  | PRI                                     { Private }
 ;
 mutable_flag:
     /* empty */                                 { Immutable }
@@ -4657,7 +4656,7 @@ single_attr_id:
   | OF { "of" }
   | OPEN { "open" }
   | OR { "or" }
-  | PRIVATE { "private" }
+  | PRI { "private" }
   | REC { "rec" }
   | SIG { "sig" }
   | STRUCT { "struct" }

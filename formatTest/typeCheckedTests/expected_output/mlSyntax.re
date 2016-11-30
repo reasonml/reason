@@ -104,3 +104,5 @@ exception Ealias = EM.E;
 let match = "match";
 
 let method = "method";
+
+let private = "private";
