@@ -987,3 +987,7 @@ external f : int => int = "foo";
 let x = {contents: 0};
 
 let unitVal = x.contents = 210;
+
+let match = "match";
+
+let method = "method";

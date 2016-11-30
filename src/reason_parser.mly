@@ -919,8 +919,6 @@ let only_labels l =
 %token OF
 %token PRI
 %token SWITCH
-%token MATCH
-%token METHOD
 %token MINUS
 %token MINUSDOT
 %token MINUSGREATER
@@ -4650,8 +4648,7 @@ single_attr_id:
   | INITIALIZER { "initializer" }
   | LAZY { "lazy" }
   | LET { "let" }
-  | SWITCH { "match" }
-  | METHOD { "method" }
+  | SWITCH { "switch" }
   | MODULE { "module" }
   | MUTABLE { "mutable" }
   | NEW { "new" }

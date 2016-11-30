@@ -1034,8 +1034,8 @@ An object can have an object type to define its structure.
 
 ```
 type tesla = {
-  color: string,
   .
+  color: string
 };
 ```
 The extra dot at the end is to indicate that this is a closed object type, which means that
@@ -1043,8 +1043,8 @@ an object based on this type must have exactly this public structure.
 
 ```
 type car 'a = {
-  color: string,
   ..
+  color: string
 } as 'a;
 ```
 Two dots, also called an elision, indicate that this is an open object type, and therefore
@@ -1056,8 +1056,8 @@ An object type is not required to create an object.
 ##### Creating an object
 ```
 type tesla = {
-  drive: int => int,
   .
+  drive: int => int
 };
 
 let obj:tesla = {
@@ -1080,11 +1080,11 @@ type.
 
 ```
 type tesla 'a = {
-  drive: int => int,
   ..
+  drive: int => int
 } as 'a;
 
-let obj: tesla {drive: int => int, x: int => int, .} = {
+let obj: tesla {. drive: int => int, x: int => int} = {
   val hasEnvy = ref false;
   pub drive speed => {
     this#enableEnvy true;

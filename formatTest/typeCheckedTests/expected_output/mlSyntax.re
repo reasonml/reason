@@ -101,8 +101,6 @@ module EM = {
 
 exception Ealias = EM.E;
 
-let switch_ = "switch";
+let match = "match";
 
-let pub_ = "public";
-
-let pri_ = "private";
+let method = "method";
