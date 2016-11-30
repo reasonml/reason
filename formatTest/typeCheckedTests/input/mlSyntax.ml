@@ -70,8 +70,6 @@ end
 
 exception Ealias = EM.E
 
-let switch = "switch"
+let switch = "match"
 
-let pub = "public"
-
-let pri = "private"
+let pub = "method"

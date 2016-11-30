@@ -2244,19 +2244,8 @@ let typeApplicationFinalWrapping typeApplicationItems =
   partitionFinalWrapping isSequencey settings.funcApplicationLabelStyle typeApplicationItems
 
 
-let reasonKeywords = [
-  "pri";
-  "pub";
-  "switch";
-]
-
-(* escapes Reason keywords and add parentheses to binders when they are in fact infix or prefix operators *)
+(* add parentheses to binders when they are in fact infix or prefix operators *)
 let protectIdentifier txt =
-  let txt = if (List.length (List.filter (fun keyword -> txt = keyword) reasonKeywords) > 0) then
-    txt ^ "_"
-  else
-    txt
-  in
   if not (needs_parens txt) then atom txt
   else if needs_spaces txt then makeList ~interleaveComments:false ~wrap:("(", ")") ~pad:(true, true) [atom txt]
   else atom ("(" ^ txt ^ ")")

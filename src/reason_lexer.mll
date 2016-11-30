@@ -96,8 +96,6 @@ let keyword_table =
     "lazy", LAZY;
     "let", LET;
     "switch", SWITCH;
-    "match", MATCH; (* Including MATCH for source transforming compat *)
-    "method", METHOD;
     "module", MODULE;
     "pub", PUB;
     "mutable", MUTABLE;
