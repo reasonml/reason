@@ -17,6 +17,7 @@ class virtual stack 'a init => {
   initializer =>
     print_string "initializing object";
   pub explicitOverrideTest a => a + 1;
+  pri explicitOverrideTest2 a => a + 1;
 };
 
 let tmp = {
@@ -64,6 +65,7 @@ class extendedStackAcknowledgeOverride 'a init => {
   val dummy = ();
   pub implementMe i => i + 1;
   pub! explicitOverrideTest a => a + 2;
+  pri! explicitOverrideTest2 a => a + 2;
 };
 
 let inst = (new extendedStack) [1, 2];
