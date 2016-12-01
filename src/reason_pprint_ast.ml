@@ -5137,11 +5137,12 @@ class printer  ()= object(self:'self)
         in
         formatTypeConstraint opening (self#core_type ct)
       | Pcf_method (s, pf, Cfk_concrete (ovf, e)) ->
-        let methodText = if ovf == Override then "pub!" else
+        let methodText =
+           let postFix = if ovf == Override then "!" else "" in
            (
            match pf with
-           | Private -> "pri"
-           | Public -> "pub"
+           | Private -> "pri" ^ postFix
+           | Public -> "pub" ^ postFix
            ) in
         (* Should refactor the binding logic so faking out the AST isn't needed,
            currently, it includes a ton of nuanced logic around recovering explicitly
