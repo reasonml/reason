@@ -5137,7 +5137,7 @@ class printer  ()= object(self:'self)
         in
         formatTypeConstraint opening (self#core_type ct)
       | Pcf_method (s, pf, Cfk_concrete (ovf, e)) ->
-        let methodText = if ovf == Override then "method!" else
+        let methodText = if ovf == Override then "pub!" else
            (
            match pf with
            | Private -> "pri"
