@@ -324,7 +324,7 @@ values they describe.
 
 ```reason
 type person = {age: int, name: string};
-let me = {age: 30, name: "Jordan"};
+let me: person = {age: 30, name: "Jordan"};
 print_string me.name;
 ```
 
@@ -353,7 +353,7 @@ type person = {
   name: string,
   mutable age: int
 };
-let me = {name: "Jordan", age: 30};
+let me: person = {name: "Jordan", age: 30};
 me.age = me.age + 1;
 ```
 
@@ -378,7 +378,7 @@ let (ten, twenty) = someInts;
 
 ```reason
 type person = {name: string, age: int};
-let somePerson = {name: "Guy", age: 30};
+let somePerson: person = {name: "Guy", age: 30};
 let {name: n, age: a} = somePerson;
 ```
 
