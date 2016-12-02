@@ -23,7 +23,7 @@ syn keyword   rustKeyword     box nextgroup=rustBoxPlacement skipwhite skipempty
 syn keyword   rustKeyword     extern nextgroup=rustExternCrate,rustObsoleteExternMod skipwhite skipempty
 " syn keyword   rustKeyword     fun nextgroup=rustFuncName skipwhite skipempty
 syn keyword   rustKeyword     unsafe where while
-syn keyword   rustStorage     fun mutable let rec nonrec and module type exception open include
+syn keyword   rustStorage     fun mutable class pub pri val inherit let rec nonrec and module type exception open include
 " FIXME: Scoped impl's name is also fallen in this category
 " syn keyword   rustStorageIdent   let and module type nextgroup=rustIdentifier skipwhite skipempty
 
