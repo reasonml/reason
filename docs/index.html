@@ -1032,7 +1032,7 @@ against the data it has.
 ##### Declaring an object type
 An object can have an object type to define its structure.
 
-```
+```reason
 type tesla = {
   .
   color: string
@@ -1041,7 +1041,7 @@ type tesla = {
 The extra dot at the beginning is to indicate that this is a closed object type, which means that
 an object based on this type must have exactly this public structure.
 
-```
+```reason
 type car 'a = {
   ..
   color: string
@@ -1054,7 +1054,7 @@ requires a parameter.
 An object type is not required to create an object.
 
 ##### Creating an object
-```
+```reason
 type tesla = {
   .
   drive: int => int
@@ -1078,7 +1078,7 @@ The following example shows an open object type which uses a type as parameter. 
 object type parameter is required to implement all the methods of the open object
 type.
 
-```
+```reason
 type tesla 'a = {
   ..
   drive: int => int
