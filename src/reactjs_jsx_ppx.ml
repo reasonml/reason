@@ -1,9 +1,12 @@
 (* transform `div props1::a props2::b [foo, bar][@JSX]` into
-  `ReactRe.createElement div [%bs.obj {props1: 1, props2: b}] [|foo, bar|]`
+  `ReactRe.createDOMElement "div" [%bs.obj {props1: 1, props2: b}] [|foo, bar|]`.
+  If the function call ends with an underscore, e.g. foo_, turn it into
+  `ReactRe.createCompositeElement foo_ [%bs.obj {props1: 1, props2: b}] [|foo, bar|]`.
   We don't transform the upper-cased case: `Foo.createElement foo::bar [][@JSX]`
   because our current API works as-is without macro modification. The lower-case
   case is really just as an escape hatch, e.g. for creating DOM components
 *)
+
 (* Why do we need a transform, instead of just using the previous
   Foo.createElement format? Because that one currently doesn't type check well for
   the existing React.js, and doesn't produce great output from BuckleScript. *)
@@ -49,18 +52,18 @@ let recursivelyMapPropsCall ~props ~mapper =
   props
   |> List.map (fun (label, expression) -> (label, mapper.expr mapper expression))
 
-(* given that we're gathered all we have, construct the AST for `ReactRe.createElement ?? ?? [|childrenHere|]` *)
-let constructReactReCall ~loc ~attributes ~callNode ~props ~children ~mapper =
+(* given that we're gathered all we have, construct the AST for `ReactRe.create(DOM|Composite)Element ?? ?? [|childrenHere|]` *)
+let constructReactReCall ~isComposite ~loc ~attributes ~callNode ~props ~children ~mapper =
   Exp.apply
     ~loc
     (* throw away the [@JSX] attribute and keep the others, if any *)
     ~attrs:(attributes |> List.filter (fun (attribute, _) -> attribute.txt <> "JSX"))
-    (* ReactRe.createElement *)
+    (* ReactRe.create(DOM|Composite)Element *)
     (Exp.ident ~loc {
       loc;
-      txt = Ldot (Lident "ReactRe", "createElement");
+      txt = Ldot (Lident "ReactRe", if isComposite then "createCompositeElement" else "createDOMElement");
     })
-    (* "div" or fooComponentEscapeHatch *)
+    (* "div" or fooComponentEscapeHatch_ *)
     [
       ("", callNode);
       (* [%bs.obj {props1: bla, props2: blabla}] *)
@@ -134,12 +137,19 @@ let jsxMapper argv = {
                   ~loc
                   (Exp.ident ~loc {loc; txt = Ldot (Ldot (Lident "Js", "Null"), "return")})
                   [("", functionCallWithLabelsToBSObj ~loc (recursivelyMapPropsCall ~props ~mapper))]
-              in
-              constructReactReCall
-                ~loc
-                ~attributes:pexp_attributes
-                ~callNode:(Exp.constant ~loc (Const_string (lowercaseIdentifier, None)))
-                ~props:propsOrNull ~children ~mapper
+            in
+            (* turn `div` into `"div"` and `foo_` into `foo_` (notice no quotes) *)
+            let isComposite = (String.get lowercaseIdentifier (String.length lowercaseIdentifier - 1)) = '_' in
+            let callNode = if isComposite
+              then Exp.ident ~loc {loc; txt = Lident lowercaseIdentifier}
+              else Exp.constant ~loc (Const_string (lowercaseIdentifier, None))
+            in
+            constructReactReCall
+              ~isComposite
+              ~loc
+              ~attributes:pexp_attributes
+              ~callNode
+              ~props:propsOrNull ~children ~mapper
           | {txt = Ldot (_, anythingNotCreateElement)} ->
             raise (
               Invalid_argument

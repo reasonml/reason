@@ -42,3 +42,4 @@ Bar.createElement
 [@JSX];
 
 (bar foo::1 children::((baz qux::2 [])[@JSX]) [])[@JSX ];
+(bar_ foo::1 children::((baz_ qux::2 [])[@JSX]) [])[@JSX ];

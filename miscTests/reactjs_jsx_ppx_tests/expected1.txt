@@ -18,12 +18,22 @@ let _ =
     [Baz.Beee.createElement ~baz:2 ~kek:(Foo.createElement []) ["a"; "b"];
     Bar.createElement []]
 let _ =
-  ReactRe.createElement "bar"
+  ReactRe.createDOMElement "bar"
     (Js.Null.return
        ([%bs.obj
           {
             foo = 1;
             children =
-              (ReactRe.createElement "baz"
+              (ReactRe.createDOMElement "baz"
+                 (Js.Null.return ([%bs.obj { qux = 2 }])) [||])
+          }])) [||]
+let _ =
+  ReactRe.createCompositeElement bar_
+    (Js.Null.return
+       ([%bs.obj
+          {
+            foo = 1;
+            children =
+              (ReactRe.createCompositeElement baz_
                  (Js.Null.return ([%bs.obj { qux = 2 }])) [||])
           }])) [||]
