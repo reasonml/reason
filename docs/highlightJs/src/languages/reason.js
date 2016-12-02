@@ -9,7 +9,7 @@ Category: system
 function(hljs) {
   var SWIFT_KEYWORDS = {
       forDocGrammarHighlighting: 'ifTrue ifFalse expression testCondition startVal endVal typeConstraint typeName typeFactoryName argOneType argTwoType finalArgType typeStructure typeParam typeArg1 typeArg2 typeParam1 typeParam2 argOne argTwo finalArg argument argumentType expressionType identifier',
-      keyword: 'class deinit enum extension func import init rec let ref mutable protocol static ' +
+      keyword: 'class deinit enum extension func import init rec class let pub pri val inherit ref mutable protocol static ' +
         'module include struct subscript type typealias var break case continue default do ' +
         'else fallthrough if in of for to downto return switch where while as dynamicType ' +
         'is new super self Self Type __COLUMN__ __FILE__ __FUNCTION__ ' +
