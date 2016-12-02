@@ -1061,7 +1061,7 @@ type tesla = {
 };
 
 let obj:tesla = {
-  val hasEnvy = ref false;
+  val hasEnvy = {contents: false};
   pub drive speed => {
     this#enableEnvy true;
     speed
@@ -1085,7 +1085,7 @@ type tesla 'a = {
 } as 'a;
 
 let obj: tesla {. drive: int => int, x: int => int} = {
-  val hasEnvy = ref false;
+  val hasEnvy = {contents: false};
   pub drive speed => {
     this#enableEnvy true;
     speed
