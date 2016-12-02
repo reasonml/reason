@@ -1,9 +1,8 @@
-(* transform `Foo.createElement props1::a props2::b [foo, bar]`
-  into
-  `ReactRe.createElement Foo.comp (Foo.props props1::a, props2::b ()) [|foo, bar|]`
-  and `div props1::a props2::b [foo, bar]`
-  into
+(* transform `div props1::a props2::b [foo, bar][@JSX]` into
   `ReactRe.createElement div [%bs.obj {props1: 1, props2: b}] [|foo, bar|]`
+  We don't transform the upper-cased case: `Foo.createElement foo::bar [][@JSX]`
+  because our current API works as-is without macro modification. The lower-case
+  case is really just as an escape hatch, e.g. for creating DOM components
 *)
 (* Why do we need a transform, instead of just using the previous
   Foo.createElement format? Because that one currently doesn't type check well for
@@ -50,16 +49,6 @@ let recursivelyMapPropsCall ~props ~mapper =
   props
   |> List.map (fun (label, expression) -> (label, mapper.expr mapper expression))
 
-(* construct Obj.magic, for children array usage below *)
-let objMagicNode ~loc a =
-  Exp.apply
-    ~loc
-    (Exp.ident ~loc {
-      loc;
-      txt = Ldot (Lident "Obj", "magic");
-    })
-    [("", a)]
-
 (* given that we're gathered all we have, construct the AST for `ReactRe.createElement ?? ?? [|childrenHere|]` *)
 let constructReactReCall ~loc ~attributes ~callNode ~props ~children ~mapper =
   Exp.apply
@@ -71,18 +60,14 @@ let constructReactReCall ~loc ~attributes ~callNode ~props ~children ~mapper =
       loc;
       txt = Ldot (Lident "ReactRe", "createElement");
     })
-    (* Foo.comp or "div" *)
+    (* "div" or fooComponentEscapeHatch *)
     [
       ("", callNode);
-      (* prop1::bla, prop2::blabla or [%bs.obj {props1: bla, props2: blabla}] *)
+      (* [%bs.obj {props1: bla, props2: blabla}] *)
       ("", props);
       (* [|moreCreateElementCallsHere|] *)
       ("", Exp.array (
-        (* children array needs to be homogenous. Reactjs' children clearly are
-          not (supports string, number, react elements, recursive react children
-          array, etc.). There's no good way of typing them while preserving
-          interop right now, so we'll cast them to Obj.magic for now. *)
-          listToArray children |> List.map (fun a -> mapper.expr mapper a |> objMagicNode ~loc)
+          listToArray children |> List.map (fun a -> mapper.expr mapper a)
         )
       )
     ]
@@ -98,11 +83,6 @@ let splitPropsCallLabelsFromChildren propsAndChildren =
     label *)
   | children::[] -> (None, snd children)
   | propsAndChildren ->
-    (* composite components: *)
-    (*                   V---actualProps--V   *)
-    (* Foo.createElement prop1::a props2::b [...] *)
-    (*                                      ^ reactChildren  *)
-    (* dom components: *)
     (*     V---actualProps--V   *)
     (* div prop1::a props2::b [...] *)
     (*                        ^ reactChildren  *)
@@ -112,19 +92,15 @@ let splitPropsCallLabelsFromChildren propsAndChildren =
     let reactChildren = snd (last propsAndChildren) in
     (Some actualProps, reactChildren)
 
-(* TODO: line number are all wrong *)
+(* TODO: some line number might still be wrong *)
 let jsxMapper argv = {
   default_mapper with
   expr = (fun mapper expression -> match expression with
     (* spotted a function application! Does it have the @JSX attribute *)
     | {
-        pexp_desc = Pexp_apply ({pexp_desc = createElementWrap}, propsAndChildren);
+        pexp_desc = Pexp_apply ({pexp_desc = createElementWrap} as wrap, propsAndChildren);
         pexp_attributes
       } when Syntax_util.attribute_exists "JSX" pexp_attributes ->
-      (* usually, when a pattern also has a `when` clause, we lose the ability
-        for the compiler to warn that we didn't cover all the cases; it's fine
-        here since we have a catch-all below that maps over the rest using
-        `identity` *)
         (match createElementWrap with
         | Pexp_ident fooCreateElement ->
           (match fooCreateElement with
@@ -132,43 +108,12 @@ let jsxMapper argv = {
             raise (Invalid_argument "JSX: `createElement` should be preceeded by a module name.")
           (* Foo.createElement prop1::foo prop2:bar [] *)
           | {loc; txt = Ldot (moduleNames, "createElement")} ->
-            let (propsWithLabels, children) =
-              splitPropsCallLabelsFromChildren propsAndChildren
-            in
-            let propsOrNull = match propsWithLabels with
-            | Some props ->
-              let unit = Exp.construct ~loc
-                {loc; txt = Lident "()"} None
-              in
-              Exp.apply ~loc
-                (* Foo.props *)
-                (* This is the loc that'll point to the right location in case the component's not found. *)
-                (Exp.ident ~loc {
-                  loc;
-                  txt = Ldot (moduleNames, "props")
-                })
-                (* see comment at the top of file. We need a () at the end to
-                  signify "finished applying the function!". The ideal API
-                  Foo.createElement circumvents this because the non-labelled
-                  children _is_ the last argument *)
-                ((recursivelyMapPropsCall ~props ~mapper) @ [("", unit)])
-            | None ->
-              (* if there's no prop, transform to `Js.null` *)
-              Exp.ident ~loc {
-                loc;
-                txt = Ldot (Lident "Js", "null")
-              }
-            in
-              constructReactReCall
-                ~loc
-                ~attributes:pexp_attributes
-                ~callNode:(Exp.ident ~loc {
-                    loc;
-                    txt = Ldot (moduleNames, "comp")
-                  })
-                ~props:propsOrNull
-                ~children
-                ~mapper
+            let attrs = pexp_attributes |> List.filter (fun (attribute, _) -> attribute.txt <> "JSX") in
+            Exp.apply
+              ~loc
+              ~attrs
+              wrap
+              (propsAndChildren |> List.map (fun (label, expr) -> (label, mapper.expr mapper expr)))
           (* div prop1::foo prop2:bar [] *)
           (* the div is Pexp_ident "div" *)
           (* similar code to the above case, with a few exceptions *)
@@ -177,15 +122,18 @@ let jsxMapper argv = {
               splitPropsCallLabelsFromChildren propsAndChildren
             in
             let propsOrNull = match propsWithLabels with
-              | Some props ->
-                (* [bs.obj {foo: bar, baz: qux}] *)
-                functionCallWithLabelsToBSObj ~loc (recursivelyMapPropsCall ~props ~mapper)
               | None ->
                 (* if there's no prop, transform to `Js.null` *)
                 Exp.ident ~loc {
                   loc;
                   txt = Ldot (Lident "Js", "null")
                 }
+              | Some props ->
+                (* Js.Null.return [bs.obj {foo: bar, baz: qux}] *)
+                Exp.apply
+                  ~loc
+                  (Exp.ident ~loc {loc; txt = Ldot (Ldot (Lident "Js", "Null"), "return")})
+                  [("", functionCallWithLabelsToBSObj ~loc (recursivelyMapPropsCall ~props ~mapper))]
               in
               constructReactReCall
                 ~loc
@@ -207,10 +155,9 @@ let jsxMapper argv = {
             )
           )
         | anythingElseThanIdent ->
-            raise (
-              Invalid_argument "JSX: `createElement` should be preceeded by a simple, direct module name."
-            )
-
+          raise (
+            Invalid_argument "JSX: `createElement` should be preceeded by a simple, direct module name."
+          )
         )
     (* Delegate to the default mapper, a deep identity traversal *)
     | x -> default_mapper.expr mapper x)
