@@ -1307,7 +1307,38 @@ the word `in`, or the monkey emoji `🐒`. It should also be possible to remove
 the need for these delimiters in all but a few cases.
 
 
-####Contribute
+####Contribute via `npm`
+
+**1. Clone `Reason`** and run `npm` install to build everything.
+
+```sh
+git clone git+ssh://git@github.com/facebook/Reason.git
+cd Reason
+npm install
+```
+
+**2. Make changes to code and rebuild.** Run `npm run test` to make sure the test
+cases still pass, and clean if necessary.
+
+```sh
+npm run clean
+npm run build
+npm run test
+```
+
+> Note: A few of `Reason`'s dependencies don't like to be moved around once
+> they've been built, so don't `mv` the `Reason` root directory after
+> it has been built.
+
+###### Testing another project against your `Reason` changes.
+
+If you use a project like
+[`ExampleProject`](https://github.com/reasonml/exampleproject) that depends on
+`Reason`, symlink from `YourProject/node_modules/reason` to your local build of
+`Reason`, then rebuild your project.  (Note: `npm link` may not work).
+
+
+####Contribute via `opam`
 
 *After* setting up `OPAM` and your `switch` in the general [installation
 instructions](./index.html#reason-install), do the following to live on the

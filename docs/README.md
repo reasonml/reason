@@ -19,6 +19,7 @@ These docs were forked from the `Flatdoc` project, which uses build
 systems to generate styles, but these docs merely edited those generated
 `.css` builds manually instead of changing the original `.styl` files.
 
+- From the root of the `docs` directory run `npm install`.
 - To make changes to the core styles, edit `theme-white/style.styl` and then run `make`.
 - To edit the additional page styles, change `support/theme.css`.
 Then reload the page.
