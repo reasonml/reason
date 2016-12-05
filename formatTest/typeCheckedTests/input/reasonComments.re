@@ -354,3 +354,9 @@ let tuple_equal (i1, i2) => i1 == i2;
 let tuple_equal (csu, mgd) =>
   /* Some really long comments, see https://github.com/facebook/reason/issues/811 */
   tuple_equal (csu, mgd);
+
+let fun_def_comment_inline = fun () => { /**/ };
+
+let fun_def_comment_newline = fun () => {
+  /**/
+};
