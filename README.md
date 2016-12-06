@@ -61,7 +61,7 @@ opam init
 opam update
 opam switch 4.02.3
 eval $(opam config env)
-opam pin add -y reason 'https://github.com/facebook/reason.git#1.3.0'
+opam install reason
 ```
 
 #### Testing OPAM installation.
