@@ -370,3 +370,15 @@ let tuple_equal (i1, i2) => i1 == i2;
 let tuple_equal (csu, mgd) =>
   /* Some really long comments, see https://github.com/facebook/reason/issues/811 */
   tuple_equal (csu, mgd);
+
+
+/** Comments inside empty function bodies
+ * See https://github.com/facebook/reason/issues/860
+ */
+let fun_def_comment_inline () => {/* */};
+
+let fun_def_comment_newline () => {/* */};
+
+let fun_def_comment_long () => {
+  /* longer comment inside empty function body */
+};

@@ -1828,6 +1828,9 @@ let rec looselyAttachComment layout ((txt, _, commentLoc) as comment) =
                             layout
                         ) subLayouts in
      Sequence (listConfig, subLayouts)
+  | Sequence (listConfig, subLayouts) when subLayouts == [] ->
+    (* If there are no subLayouts (empty body), create a Sequence of just the comment *)
+    Sequence (listConfig, [formatComment txt])
   | Sequence (listConfig, subLayouts) ->
      let (beforeComment, afterComment) = Syntax_util.pick_while (fun layout ->
                                              match getLocFromLayout layout with
@@ -1871,6 +1874,9 @@ let rec insertSingleLineComment layout comment =
          WithEOLComment (c, insertSingleLineComment sub comment)
       | Easy e ->
          prependSingleLineComment comment layout
+      | Sequence (listConfig, subLayouts) when subLayouts == [] ->
+        (* If there are no subLayouts (empty body), create a Sequence of just the comment *)
+        Sequence (listConfig, [formatComment txt])
       | Sequence (listConfig, subLayouts) ->
          let newlinesAboveDocComments = listConfig.newlinesAboveDocComments in
          let (beforeComment, afterComment) = Syntax_util.pick_while (fun layout ->
