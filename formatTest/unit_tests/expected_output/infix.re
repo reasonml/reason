@@ -209,14 +209,13 @@ let res = first |> second;
 let res = (|>) first;
 
 /* Custom infix with labeled args */
-let (|>) first::first second::second =>
-  first + second;
+let (|>) ::first ::second => first + second;
 
 /* Should NOT reformat named args to actually be placed infix */
-let res = (|>) first::first second::second;
+let res = (|>) ::first ::second;
 
 /* Curried shouldn't place infix */
-let res = (|>) first::first;
+let res = (|>) ::first;
 
 /* Custom infix accepting *three* without labeled args */
 let (|>) firsfirst second third =>
@@ -235,16 +234,16 @@ let res = (|>) first;
 
 /* In fact, if even just one of the arguments are named, it shouldn't
  * be formatted or parsed as infix! */
-(|>) first second::second;
+(|>) first ::second;
 
-(|>) first::first second;
+(|>) ::first second;
 
-(|>) first second third::third;
+(|>) first second ::third;
 
-(first |> second) third::third;
+(first |> second) ::third;
 
 /* Infix has lower precedence than function application */
-first |> second third::third;
+first |> second ::third;
 
 let leftAssocGrouping = first |> second |> third;
 
@@ -270,11 +269,9 @@ let res =
   blah &&
   DataConstructor 10 && DataConstructor 10 + 10;
 
-let (++) label::label label2::label2 =>
-  label + label2;
+let (++) ::label ::label2 => label + label2;
 
-let (++) label::label label2::label2 =>
-  label + label2;
+let (++) ::label ::label2 => label + label2;
 
 let (++) = (++);
 

@@ -871,3 +871,7 @@ let unitVal = x.contents = 210;
 let match = "match";
 
 let method = "method";
+
+let foo x x::bar ::z foo::bar foo::z => {
+  bar + 2
+};

@@ -96,9 +96,9 @@ let b = 20;
 /*A*/
 let named
     /* a::a */
-    a::a
+    ::a
     /* b::b */
-    b::b =>
+    ::b =>
   /* a + b */
   a + b;
 
@@ -132,9 +132,9 @@ let namedAliasAnnot
 /*E*/
 let optional
     /* a::a=? */
-    a::a=?
+    ::a=?
     /* b::b=? */
-    b::b=?
+    ::b=?
     /* () */
     () =>
   /* 10 */
@@ -176,9 +176,9 @@ let optionalAliasAnnot
 /*I: This one is really annoying? Where's the visual label?*/
 let defOptional
     /* a::a=10 */
-    a::a=10
+    ::a=10
     /* b::b=10 */
-    b::b=10
+    ::b=10
     /* () => */
     () =>
   /* 10 */
@@ -220,27 +220,27 @@ let defOptionalAliasAnnot
 /* Invoking them */
 named
   /* a::a */
-  a::a
+  ::a
   /* b::b; */
-  b::b;
+  ::b;
 
 named
   /* a::a */
-  a::a
+  ::a
   /* b::b; */
-  b::b;
+  ::b;
 
 optional
   /* a::a */
-  a::a
+  ::a
   /* b::b; */
-  b::b;
+  ::b;
 
 optional
   /* a::a */
-  a::a
+  ::a
   /* b::b; */
-  b::b;
+  ::b;
 
 let explictlyPassed =
   /* optional */
@@ -258,14 +258,12 @@ let explictlyPassed =
   /* optional */
   optional
     /* a::? */
-    a::?a
+    ::?a
     /* b::? */
     /* None; */
     b::?None;
 
-let complex_default
-    callback::callback=(fun k d => 4)
-    x => 3;
+let complex_default ::callback=(fun k d => 4) x => 3;
 
 let myList = /*CommentAfterEqualBeforeList */ [
   1,
@@ -1910,10 +1908,7 @@ let df_myNonPolyFunc: 'a => 'a = fun o => o;
 
 type nameBlahType = {nameBlah: int};
 
-let myFunc
-    firstArg::firstArg
-    another::another
-    fl::fl => {
+let myFunc ::firstArg ::another ::fl => {
   nameBlah: 10
 };
 

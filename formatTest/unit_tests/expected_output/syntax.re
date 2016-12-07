@@ -733,7 +733,7 @@ let a = 10;
 let b = 20;
 
 /*A*/
-let named a::a b::b => a + b;
+let named ::a ::b => a + b;
 
 type named = a::int => b::int => int;
 
@@ -751,7 +751,7 @@ let namedAnnot a::(a: int) b::(b: int) => 20;
 let namedAliasAnnot a::(aa: int) b::(bb: int) => 20;
 
 /*E*/
-let myOptional a::a=? b::b=? () => 10;
+let myOptional ::a=? ::b=? () => 10;
 
 type named = a::int? => b::int? => unit => int;
 
@@ -768,7 +768,7 @@ let optionalAliasAnnot
     () => 10;
 
 /*I: */
-let defOptional a::a=10 b::b=10 () => 10;
+let defOptional ::a=10 ::b=10 () => 10;
 
 type named = a::int? => b::int? => unit => int;
 
@@ -788,25 +788,25 @@ let defOptionalAliasAnnot
     () => 10;
 
 /*M: Invoking them - Punned */
-let resNotAnnotated = named a::a b::b;
+let resNotAnnotated = named ::a ::b;
 
 /*N:*/
-let resAnnotated: int = named a::a b::b;
+let resAnnotated: int = named ::a ::b;
 
 /*O: Invoking them */
-let resNotAnnotated = named a::a b::b;
+let resNotAnnotated = named ::a ::b;
 
 /*P: Invoking them */
-let resAnnotated: int = named a::a b::b;
+let resAnnotated: int = named ::a ::b;
 
 /*Q: Here's why "punning" doesn't work!  */
 /* Is b:: punned with a final non-named arg, or is b:: supplied b as one named arg? */
 let b = 20;
 
-let resAnnotated = named a::a b::b;
+let resAnnotated = named ::a ::b;
 
 /*R: Proof that there are no ambiguities with return values being annotated */
-let resAnnotated: ty = named a::a b;
+let resAnnotated: ty = named ::a b;
 
 /*S: Explicitly passed optionals are a nice way to say "use the default value"*/
 let explictlyPassed =
@@ -819,10 +819,10 @@ let explictlyPassedAnnotated: int =
 /*U: Explicitly passing optional with identifier expression */
 let a = None;
 
-let explictlyPassed = myOptional a::?a b::?None;
+let explictlyPassed = myOptional ::?a b::?None;
 
 let explictlyPassedAnnotated: int =
-  myOptional a::?a b::?None;
+  myOptional ::?a b::?None;
 
 let nestedLet = {
   let _ = 1;
@@ -991,3 +991,5 @@ let unitVal = x.contents = 210;
 let match = "match";
 
 let method = "method";
+
+let foo x x::bar ::z foo::bar foo::z => bar + 2;
