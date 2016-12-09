@@ -2148,15 +2148,10 @@ let formatTypeConstraint =
 let formatLabeledArgument =
   if useSingleColonForNamedArgs then
     (fun lbl lblSuffix term ->
-      label ~space:false (makeList [atom lbl; atom (":" ^ lblSuffix)]) term)
+      label ~space:false (makeList [lbl; atom (":" ^ lblSuffix)]) term)
   else
     (fun lbl lblSuffix term ->
-        if lbl = "" then (
-          label ~space:false (makeList [atom ("::" ^ lblSuffix)]) term
-          )
-        else
-          label ~space:false (makeList [atom lbl; atom ("::" ^ lblSuffix)]) term)
-
+      label ~space:false (makeList [lbl; atom ("::" ^ lblSuffix)]) term)
 
 let formatCoerce expr optType coerced =
   match optType with
@@ -2370,7 +2365,7 @@ class printer  ()= object(self:'self)
                   assert (is_predef_option txt);
                   let everythingButQuestion =
                     formatLabeledArgument
-                      lbl
+                      (atom lbl)
                       ""
                       (makeList
                          ~postSpace:true
@@ -2382,7 +2377,7 @@ class printer  ()= object(self:'self)
                       ) in
                     makeList [everythingButQuestion; atom "?"]
               | _ -> failwith "invalid input in print_type_with_label"
-          else formatLabeledArgument s "" (self#non_arrowed_non_simple_core_type c)
+          else formatLabeledArgument (atom s) "" (self#non_arrowed_non_simple_core_type c)
 
   method type_param (ct, a) =
     makeList [atom (type_variance a); self#core_type ct]
@@ -3017,7 +3012,7 @@ class printer  ()= object(self:'self)
       let lbl = String.sub l 1 len in
         let lbl = pun_labelled_pattern p lbl in
         (formatLabeledArgument
-           lbl
+           (atom lbl)
            ""
            (label
              (makeList [(self#simple_pattern p); atom "="])
@@ -3027,7 +3022,7 @@ class printer  ()= object(self:'self)
         | _ ->
           let lbl = pun_labelled_pattern p l in
           formatLabeledArgument
-            lbl
+            (atom lbl)
             ""
             (self#simple_pattern p)
 
@@ -5891,10 +5886,10 @@ class printer  ()= object(self:'self)
             if lbl.[0] = '?' then
               let str = String.sub lbl 1 (String.length lbl-1) in
               let lbl = pun_labelled_expression e str in
-              formatLabeledArgument lbl "?" (self#simplifyUnparseExpr e)
+              formatLabeledArgument (atom lbl) "?" (self#simplifyUnparseExpr e)
             else
               let lbl = pun_labelled_expression e lbl in
-              formatLabeledArgument lbl "" (self#simplifyUnparseExpr e)
+              formatLabeledArgument (atom lbl) "" (self#simplifyUnparseExpr e)
     in
     SourceMap (e.pexp_loc, param)
 
