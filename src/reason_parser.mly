@@ -2574,18 +2574,18 @@ let explictlyPassedAnnotated = (myOptional a::?a b::?None :int);
 labeled_simple_pattern:
   | COLONCOLONLIDENT
       {
-        let loc = mklocation $symbolstartpos $endpos in
-        ($1, None, mkpat(Ppat_var (mkloc $1 loc)))
+        let loc = mklocation $startpos($1) $endpos($1) in
+        ($1, None, mkpat(Ppat_var (mkloc $1 loc)) ~loc)
       }
   | COLONCOLONLIDENT OPTIONAL_NO_DEFAULT
       {
         let loc = mklocation $symbolstartpos $endpos in
-        ("?" ^ $1, None, mkpat(Ppat_var (mkloc $1 loc)))
+        ("?" ^ $1, None, mkpat(Ppat_var (mkloc $1 loc)) ~loc)
       }
   | COLONCOLONLIDENT EQUAL simple_expr
       {
         let loc = mklocation $symbolstartpos $endpos in
-        ("?" ^ $1, Some $3, mkpat(Ppat_var (mkloc $1 loc)))
+        ("?" ^ $1, Some $3, mkpat(Ppat_var (mkloc $1 loc)) ~loc)
       }
    /* Case A, B, C, D */
   | LIDENTCOLONCOLON simple_pattern
@@ -3071,7 +3071,7 @@ label_expr:
     COLONCOLONLIDENT
       {
         let loc = mklocation $symbolstartpos $endpos in
-        ($1, mkexp (Pexp_ident(mkloc (Lident $1) loc)))
+        ($1, mkexp (Pexp_ident(mkloc (Lident $1) loc)) ~loc)
       }
    | LIDENTCOLONCOLON less_aggressive_simple_expression
       { ($1, $2) }
@@ -3081,7 +3081,7 @@ label_expr:
   | COLONCOLON QUESTION val_longident
      {
        let loc = mklocation $symbolstartpos $endpos in
-       ("?" ^ (String.concat "" (Longident.flatten $3)), mkexp (Pexp_ident(mkloc $3 loc)))
+       ("?" ^ (String.concat "" (Longident.flatten $3)), mkexp (Pexp_ident(mkloc $3 loc)) ~loc)
      }
   | LIDENTCOLONCOLON QUESTION less_aggressive_simple_expression
       { ("?" ^ $1, $3) }
@@ -3248,7 +3248,7 @@ _curried_binding_return_typed:
   | labeled_simple_pattern curried_binding_return_typed_
       {
          let loc = mklocation $symbolstartpos $endpos in
-         let (l, o, p) = $1 in mkexp ~ghost:true ~loc (Pexp_fun(l, o, p, $2))
+         let (l, o, p) = $1 in mkexp ~loc (Pexp_fun(l, o, p, $2))
       }
   | LPAREN TYPE LIDENT RPAREN curried_binding_return_typed_
       { mkexp(Pexp_newtype($3, $5)) }
@@ -3293,7 +3293,7 @@ curried_binding:
       {
         let loc = mklocation $symbolstartpos $endpos in
         let (l, o, p) = $1 in
-        mkexp ~ghost:true ~loc (Pexp_fun(l, o, p, $2))
+        mkexp ~loc (Pexp_fun(l, o, p, $2))
       }
   | LPAREN TYPE LIDENT RPAREN curried_binding_return_typed_
       {
