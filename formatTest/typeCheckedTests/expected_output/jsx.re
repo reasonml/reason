@@ -1,7 +1,7 @@
 type component = {displayName: string};
 
 module Bar = {
-  let createElement c::c=? children => {
+  let createElement ::c=? children => {
     displayName: "test"
   };
 };
@@ -19,41 +19,36 @@ module Much = {
 };
 
 module Foo = {
-  let createElement a::a=? b::b=? children => {
+  let createElement ::a=? ::b=? children => {
     displayName: "test"
   };
 };
 
 module One = {
-  let createElement
-      test::test=?
-      foo::foo=?
-      children => {
+  let createElement ::test=? ::foo=? children => {
     displayName: "test"
   };
-  let createElementobvioustypo
-      test::test
-      children => {
+  let createElementobvioustypo ::test children => {
     displayName: "test"
   };
 };
 
 module Two = {
-  let createElement foo::foo=? children => {
+  let createElement ::foo=? children => {
     displayName: "test"
   };
 };
 
 module Sibling = {
   let createElement
-      foo::foo=?
+      ::foo=?
       (children: list component) => {
     displayName: "test"
   };
 };
 
 module Test = {
-  let createElement yo::yo=? children => {
+  let createElement ::yo=? children => {
     displayName: "test"
   };
 };
@@ -83,7 +78,7 @@ module Exp = {
 };
 
 module Pun = {
-  let createElement intended::intended=? children => {
+  let createElement ::intended=? children => {
     displayName: "test"
   };
 };
@@ -91,7 +86,7 @@ module Pun = {
 module Namespace = {
   module Foo = {
     let createElement
-        intended::intended=?
+        ::intended=?
         anotherOptional::x=100
         children => {
       displayName: "test"
@@ -101,18 +96,18 @@ module Namespace = {
 
 module LotsOfArguments = {
   let createElement
-      argument1::argument1=?
-      argument2::argument2=?
-      argument3::argument3=?
-      argument4::argument4=?
-      argument5::argument5=?
-      argument6::argument6=?
+      ::argument1=?
+      ::argument2=?
+      ::argument3=?
+      ::argument4=?
+      ::argument5=?
+      ::argument6=?
       children => {
     displayName: "test"
   };
 };
 
-let div argument1::argument1=? children => {
+let div ::argument1=? children => {
   displayName: "test"
 };
 

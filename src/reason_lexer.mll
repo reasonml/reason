@@ -338,6 +338,18 @@ rule token = parse
       }
   | blank +
       { token lexbuf }
+  | "::" lowercase identchar *
+      {
+        let delim = Lexing.lexeme lexbuf in
+        let delim = String.sub delim 2 (String.length delim - 2) in
+        COLONCOLONLIDENT delim
+      }
+  | lowercase identchar * "::"
+      {
+        let delim = Lexing.lexeme lexbuf in
+        let delim = String.sub delim 0 (String.length delim - 2) in
+        LIDENTCOLONCOLON delim
+      }
   | "_"
       { UNDERSCORE }
   | "~"
@@ -347,8 +359,6 @@ rule token = parse
   | "=?"
       (* Need special label extractor? *)
       { OPTIONAL_NO_DEFAULT }
-  | "::?"
-      { EXPLICITLY_PASSED_OPTIONAL }
   | lowercase identchar *
       { let s = Lexing.lexeme lexbuf in
         try Hashtbl.find keyword_table s

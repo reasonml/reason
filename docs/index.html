@@ -969,6 +969,20 @@ let four = increment 4;
 
 ```
 
+It's also possible to use punning for labelled curried arguments.
+
+```reason
+
+let increase amount::amount => amount + 1;
+
+```
+
+is the same as
+
+```reason
+let increase ::amount => amount + 2;
+```
+
 
 Expressive Pattern Matching
 ---------------------------

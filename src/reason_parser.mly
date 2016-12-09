@@ -839,6 +839,7 @@ let only_labels l =
 
 /* Tokens */
 
+%token <string> LIDENTCOLONCOLON
 %token AMPERAMPER
 %token AMPERSAND
 %token AND
@@ -872,6 +873,7 @@ let only_labels l =
 %token EXTERNAL
 %token FALSE
 %token <string> FLOAT
+%token <string> COLONCOLONLIDENT
 %token FOR
 %token FUN
 %token FUNCTION
@@ -939,7 +941,6 @@ let only_labels l =
 %token PUB
 %token QUESTION
 %token OPTIONAL_NO_DEFAULT
-%token EXPLICITLY_PASSED_OPTIONAL
 %token QUOTE
 %token RBRACE
 %token RBRACKET
@@ -2268,17 +2269,17 @@ class_constructor_type: mark_position_cty(_class_constructor_type) {$1}
 _class_constructor_type:
   | NEW class_instance_type
       { $2 }
-  | LIDENT EXPLICITLY_PASSED_OPTIONAL non_arrowed_core_type EQUALGREATER class_constructor_type
+  | LIDENTCOLONCOLON QUESTION non_arrowed_core_type EQUALGREATER class_constructor_type
       {
         let core_type_loc = mklocation $startpos($3) $endpos($3) in
         let ct = only_core_type $3 core_type_loc in
         mkcty(Pcty_arrow("?" ^ $1, mkoption ct, $5))
        }
-  | LIDENT COLONCOLON non_arrowed_core_type EQUALGREATER class_constructor_type
+  | LIDENTCOLONCOLON non_arrowed_core_type EQUALGREATER class_constructor_type
       {
-        let core_type_loc = mklocation $startpos($3) $endpos($3) in
-        let ct = only_core_type $3 core_type_loc in
-        mkcty(Pcty_arrow($1, ct, $5))
+        let core_type_loc = mklocation $startpos($2) $endpos($2) in
+        let ct = only_core_type $2 core_type_loc in
+        mkcty(Pcty_arrow($1, ct, $4))
       }
   | non_arrowed_core_type EQUALGREATER class_constructor_type
       {
@@ -2571,15 +2572,30 @@ let explictlyPassedAnnotated = (myOptional a::?a b::?None :int);
 */
 
 labeled_simple_pattern:
+  | COLONCOLONLIDENT
+      {
+        let loc = mklocation $startpos($1) $endpos($1) in
+        ($1, None, mkpat(Ppat_var (mkloc $1 loc)) ~loc)
+      }
+  | COLONCOLONLIDENT OPTIONAL_NO_DEFAULT
+      {
+        let loc = mklocation $symbolstartpos $endpos in
+        ("?" ^ $1, None, mkpat(Ppat_var (mkloc $1 loc)) ~loc)
+      }
+  | COLONCOLONLIDENT EQUAL simple_expr
+      {
+        let loc = mklocation $symbolstartpos $endpos in
+        ("?" ^ $1, Some $3, mkpat(Ppat_var (mkloc $1 loc)) ~loc)
+      }
    /* Case A, B, C, D */
-  | LIDENT COLONCOLON simple_pattern
-      { ($1, None, $3) }
+  | LIDENTCOLONCOLON simple_pattern
+      { ($1, None, $2) }
    /* Case E, F, G, H */
-  | LIDENT COLONCOLON simple_pattern OPTIONAL_NO_DEFAULT
-      { ("?" ^ $1, None, $3) }
+  | LIDENTCOLONCOLON simple_pattern OPTIONAL_NO_DEFAULT
+      { ("?" ^ $1, None, $2) }
    /* Case I, J, K, L */
-  | LIDENT COLONCOLON simple_pattern EQUAL simple_expr
-      { ("?" ^ $1, Some $5, $3) }
+  | LIDENTCOLONCOLON simple_pattern EQUAL simple_expr
+      { ("?" ^ $1, Some $4, $2) }
   | simple_pattern
       { ("", None, $1) }
 ;
@@ -3051,14 +3067,23 @@ labeled_simple_expr:
       { $1 }
 ;
 
-/* No punning! */
 label_expr:
-    LIDENT COLONCOLON less_aggressive_simple_expression
-      { ($1, $3) }
+    COLONCOLONLIDENT
+      {
+        let loc = mklocation $symbolstartpos $endpos in
+        ($1, mkexp (Pexp_ident(mkloc (Lident $1) loc)) ~loc)
+      }
+   | LIDENTCOLONCOLON less_aggressive_simple_expression
+      { ($1, $2) }
   /* Expliclitly provided default optional:
    * let res = someFunc optionalArg:?None;
    */
-  | LIDENT EXPLICITLY_PASSED_OPTIONAL less_aggressive_simple_expression
+  | COLONCOLON QUESTION val_longident
+     {
+       let loc = mklocation $symbolstartpos $endpos in
+       ("?" ^ (String.concat "" (Longident.flatten $3)), mkexp (Pexp_ident(mkloc $3 loc)) ~loc)
+     }
+  | LIDENTCOLONCOLON QUESTION less_aggressive_simple_expression
       { ("?" ^ $1, $3) }
 ;
 
@@ -3223,7 +3248,7 @@ _curried_binding_return_typed:
   | labeled_simple_pattern curried_binding_return_typed_
       {
          let loc = mklocation $symbolstartpos $endpos in
-         let (l, o, p) = $1 in mkexp ~ghost:true ~loc (Pexp_fun(l, o, p, $2))
+         let (l, o, p) = $1 in mkexp ~loc (Pexp_fun(l, o, p, $2))
       }
   | LPAREN TYPE LIDENT RPAREN curried_binding_return_typed_
       { mkexp(Pexp_newtype($3, $5)) }
@@ -3268,7 +3293,7 @@ curried_binding:
       {
         let loc = mklocation $symbolstartpos $endpos in
         let (l, o, p) = $1 in
-        mkexp ~ghost:true ~loc (Pexp_fun(l, o, p, $2))
+        mkexp ~loc (Pexp_fun(l, o, p, $2))
       }
   | LPAREN TYPE LIDENT RPAREN curried_binding_return_typed_
       {
@@ -4174,15 +4199,15 @@ _core_type2:
    * simple_core_type_or_tuple */
     non_arrowed_core_type %prec below_LBRACKETAT
       { $1 }
-  | LIDENT COLONCOLON non_arrowed_core_type QUESTION EQUALGREATER core_type2
+  | LIDENTCOLONCOLON non_arrowed_core_type QUESTION EQUALGREATER core_type2
       {
-      match $3, $6 with
+      match $2, $5 with
       | Core_type ct, Core_type ct2 -> Core_type (mktyp(Ptyp_arrow("?" ^ $1 , mkoption ct, ct2)))
       | _ -> syntax_error()
       }
-  | LIDENT COLONCOLON non_arrowed_core_type EQUALGREATER core_type2
+  | LIDENTCOLONCOLON non_arrowed_core_type EQUALGREATER core_type2
       {
-      match $3, $5 with
+      match $2, $4 with
       | Core_type ct, Core_type ct2 -> Core_type (mktyp(Ptyp_arrow($1, ct, ct2)))
       | _ -> syntax_error()
       }

@@ -2259,6 +2259,16 @@ let protectIdentifier txt =
 let protectLongIdentifier longPrefix txt =
   makeList ~interleaveComments:false [longPrefix; atom "."; protectIdentifier txt]
 
+let pun_labelled_expression e lbl =
+  (match e with
+    | { pexp_desc = (Pexp_ident { txt; _ }); _ } when txt = (Longident.parse lbl) -> ""
+    | _ -> lbl )
+
+let pun_labelled_pattern e lbl =
+  (match e with
+    | { ppat_desc = (Ppat_var { txt; _ }) } when txt = lbl -> ""
+    | _ -> lbl )
+
 class printer  ()= object(self:'self)
   val pipe = false
   val semi = false
@@ -3006,6 +3016,7 @@ class printer  ()= object(self:'self)
     if l.[0] = '?' then
       let len = String.length l - 1 in
       let lbl = String.sub l 1 len in
+        let lbl = pun_labelled_pattern p lbl in
         (formatLabeledArgument
            (atom lbl)
            ""
@@ -3015,8 +3026,9 @@ class printer  ()= object(self:'self)
     else
       match p.ppat_desc with
         | _ ->
+          let lbl = pun_labelled_pattern p l in
           formatLabeledArgument
-            (atom l)
+            (atom lbl)
             ""
             (self#simple_pattern p)
 
@@ -5879,8 +5891,10 @@ class printer  ()= object(self:'self)
         | lbl ->
             if lbl.[0] = '?' then
               let str = String.sub lbl 1 (String.length lbl-1) in
-              formatLabeledArgument (atom str) "?" (self#simplifyUnparseExpr e)
+              let lbl = pun_labelled_expression e str in
+              formatLabeledArgument (atom lbl) "?" (self#simplifyUnparseExpr e)
             else
+              let lbl = pun_labelled_expression e lbl in
               formatLabeledArgument (atom lbl) "" (self#simplifyUnparseExpr e)
     in
     SourceMap (e.pexp_loc, param)
