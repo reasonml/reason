@@ -477,6 +477,8 @@ let myFun () =>
   <Bar />
   <Bar />
 </Foo>;
+
+
 /**
  * Failing test cases:
  */
