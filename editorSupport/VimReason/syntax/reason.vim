@@ -35,7 +35,8 @@ syn keyword   rustObsoleteExternMod mod contained nextgroup=rustIdentifier skipw
 syn match     rustIdentifier  contains=rustIdentifierPrime "\%([^[:cntrl:][:space:][:punct:][:digit:]]\|_\)\%([^[:cntrl:][:punct:][:space:]]\|_\)*" display contained
 syn match     rustFuncName    "\%([^[:cntrl:][:space:][:punct:][:digit:]]\|_\)\%([^[:cntrl:][:punct:][:space:]]\|_\)*" display contained
 "
-syn match labelArgument "\(\l\|_\)\(\w\|'\)*\s*::"lc=0   "Allows any space between label name and ::
+syn match labelArgument "\(\l\|_\)\(\w\|'\)*::\(?\)\?"lc=0   "Allows any space between label name and ::
+syn match labelArgumentPunned "::\(?\)\?\(\l\|_\)\(\w\|'\)*"lc=0   "Allows any space between label name and ::
 
 syn match    rustEnumVariant  "\<\u\(\w\|'\)*\>[^\.]"me=e-1
 " Polymorphic variants
@@ -181,6 +182,7 @@ syn region rustFoldBraces start="{" end="}" transparent fold
 
 " Default highlighting {{{1
 hi def link labelArgument       Special
+hi def link labelArgumentPunned Special
 hi def link rustDecNumber       rustNumber
 hi def link rustHexNumber       rustNumber
 hi def link rustOctNumber       rustNumber
