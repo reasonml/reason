@@ -59,6 +59,15 @@ module Namespace = {
     };
 };
 
+module Optional = {
+    let createElement ::optional children => {
+        switch optional {
+            | Some a => {displayName: a}
+            | None => {displayName: "nope"}
+        };
+     };
+};
+
 module LotsOfArguments = {
     let createElement argument1::argument1=? argument2::argument2=? argument3::argument3=? argument4::argument4=? argument5::argument5=? argument6::argument6=? children => {displayName: "test"};
 };
@@ -300,3 +309,5 @@ let myFun () => {
 /* </Foo>; */
 
 /* let res = <Foo a=10 b=(<Foo a=200 />) />; */
+let zzz = "oh hai";
+let optional = <Optional optional=?zzz />;

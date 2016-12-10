@@ -94,6 +94,14 @@ module Namespace = {
   };
 };
 
+module Optional = {
+  let createElement ::optional children =>
+    switch optional {
+    | Some a => {displayName: a}
+    | None => {displayName: "nope"}
+    };
+};
+
 module LotsOfArguments = {
   let createElement
       ::argument1=?
@@ -476,3 +484,6 @@ let myFun () =>
 /*   <Bar /> */
 /* </Foo>; */
 /* let res = <Foo a=10 b=(<Foo a=200 />) />; */
+let zzz = "oh hai";
+
+let optional = <Optional optional=?zzz />;

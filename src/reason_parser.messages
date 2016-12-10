@@ -42,7 +42,7 @@
 
 use_file: SHARP LIDENT SEMI WITH
 ##
-## Ends in an error in state: 2861.
+## Ends in an error in state: 2864.
 ##
 ## _use_file -> toplevel_directive SEMI . use_file [ # ]
 ##
@@ -54,7 +54,7 @@ use_file: SHARP LIDENT SEMI WITH
 
 use_file: SHARP LIDENT TRUE WITH
 ##
-## Ends in an error in state: 2860.
+## Ends in an error in state: 2863.
 ##
 ## _use_file -> toplevel_directive . SEMI use_file [ # ]
 ## _use_file -> toplevel_directive . EOF [ # ]
@@ -67,7 +67,7 @@ use_file: SHARP LIDENT TRUE WITH
 
 use_file: UIDENT RPAREN
 ##
-## Ends in an error in state: 2863.
+## Ends in an error in state: 2866.
 ##
 ## _use_file -> structure_item . SEMI use_file [ # ]
 ## _use_file -> structure_item . EOF [ # ]
@@ -87,20 +87,20 @@ use_file: UIDENT RPAREN
 ## In state 925, spurious reduction of production _expr -> less_aggressive_simple_expression
 ## In state 960, spurious reduction of production mark_position_exp(_expr) -> _expr
 ## In state 924, spurious reduction of production expr -> mark_position_exp(_expr)
-## In state 2852, spurious reduction of production post_item_attributes ->
-## In state 2853, spurious reduction of production _structure_item_without_item_extension_sugar -> expr post_item_attributes
-## In state 2854, spurious reduction of production mark_position_str(_structure_item_without_item_extension_sugar) -> _structure_item_without_item_extension_sugar
-## In state 2832, spurious reduction of production structure_item_without_item_extension_sugar -> mark_position_str(_structure_item_without_item_extension_sugar)
-## In state 2818, spurious reduction of production _structure_item -> structure_item_without_item_extension_sugar
-## In state 2856, spurious reduction of production mark_position_str(_structure_item) -> _structure_item
-## In state 2833, spurious reduction of production structure_item -> mark_position_str(_structure_item)
+## In state 2855, spurious reduction of production post_item_attributes ->
+## In state 2856, spurious reduction of production _structure_item_without_item_extension_sugar -> expr post_item_attributes
+## In state 2857, spurious reduction of production mark_position_str(_structure_item_without_item_extension_sugar) -> _structure_item_without_item_extension_sugar
+## In state 2835, spurious reduction of production structure_item_without_item_extension_sugar -> mark_position_str(_structure_item_without_item_extension_sugar)
+## In state 2821, spurious reduction of production _structure_item -> structure_item_without_item_extension_sugar
+## In state 2859, spurious reduction of production mark_position_str(_structure_item) -> _structure_item
+## In state 2836, spurious reduction of production structure_item -> mark_position_str(_structure_item)
 ##
 
 <SYNTAX ERROR>
 
 use_file: UIDENT SEMI WITH
 ##
-## Ends in an error in state: 2864.
+## Ends in an error in state: 2867.
 ##
 ## _use_file -> structure_item SEMI . use_file [ # ]
 ##
@@ -112,7 +112,7 @@ use_file: UIDENT SEMI WITH
 
 use_file: WITH
 ##
-## Ends in an error in state: 2857.
+## Ends in an error in state: 2860.
 ##
 ## use_file' -> . use_file [ # ]
 ##
@@ -124,7 +124,7 @@ use_file: WITH
 
 toplevel_phrase: SHARP UIDENT EOF
 ##
-## Ends in an error in state: 2816.
+## Ends in an error in state: 2819.
 ##
 ## _toplevel_phrase -> toplevel_directive . SEMI [ # ]
 ##
@@ -135,7 +135,7 @@ toplevel_phrase: SHARP UIDENT EOF
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 2724, spurious reduction of production toplevel_directive -> SHARP ident
+## In state 2727, spurious reduction of production toplevel_directive -> SHARP ident
 ##
 
 <SYNTAX ERROR>
@@ -155,7 +155,7 @@ toplevel_phrase: SHARP UIDENT UIDENT DOT WITH
 
 toplevel_phrase: SHARP UIDENT UIDENT WITH
 ##
-## Ends in an error in state: 2730.
+## Ends in an error in state: 2733.
 ##
 ## mod_longident -> mod_longident . DOT UIDENT [ SEMI EOF DOT ]
 ## toplevel_directive -> SHARP ident mod_longident . [ SEMI EOF ]
@@ -169,7 +169,7 @@ toplevel_phrase: SHARP UIDENT UIDENT WITH
 
 toplevel_phrase: SHARP UIDENT WITH
 ##
-## Ends in an error in state: 2724.
+## Ends in an error in state: 2727.
 ##
 ## toplevel_directive -> SHARP ident . [ SEMI EOF ]
 ## toplevel_directive -> SHARP ident . STRING [ SEMI EOF ]
@@ -187,7 +187,7 @@ toplevel_phrase: SHARP UIDENT WITH
 
 toplevel_phrase: SHARP WITH
 ##
-## Ends in an error in state: 2723.
+## Ends in an error in state: 2726.
 ##
 ## toplevel_directive -> SHARP . ident [ SEMI EOF ]
 ## toplevel_directive -> SHARP . ident STRING [ SEMI EOF ]
@@ -205,7 +205,7 @@ toplevel_phrase: SHARP WITH
 
 toplevel_phrase: UIDENT RPAREN
 ##
-## Ends in an error in state: 2819.
+## Ends in an error in state: 2822.
 ##
 ## _toplevel_phrase -> structure_item . SEMI [ # ]
 ##
@@ -224,20 +224,20 @@ toplevel_phrase: UIDENT RPAREN
 ## In state 925, spurious reduction of production _expr -> less_aggressive_simple_expression
 ## In state 960, spurious reduction of production mark_position_exp(_expr) -> _expr
 ## In state 924, spurious reduction of production expr -> mark_position_exp(_expr)
-## In state 2852, spurious reduction of production post_item_attributes ->
-## In state 2853, spurious reduction of production _structure_item_without_item_extension_sugar -> expr post_item_attributes
-## In state 2854, spurious reduction of production mark_position_str(_structure_item_without_item_extension_sugar) -> _structure_item_without_item_extension_sugar
-## In state 2832, spurious reduction of production structure_item_without_item_extension_sugar -> mark_position_str(_structure_item_without_item_extension_sugar)
-## In state 2818, spurious reduction of production _structure_item -> structure_item_without_item_extension_sugar
-## In state 2856, spurious reduction of production mark_position_str(_structure_item) -> _structure_item
-## In state 2833, spurious reduction of production structure_item -> mark_position_str(_structure_item)
+## In state 2855, spurious reduction of production post_item_attributes ->
+## In state 2856, spurious reduction of production _structure_item_without_item_extension_sugar -> expr post_item_attributes
+## In state 2857, spurious reduction of production mark_position_str(_structure_item_without_item_extension_sugar) -> _structure_item_without_item_extension_sugar
+## In state 2835, spurious reduction of production structure_item_without_item_extension_sugar -> mark_position_str(_structure_item_without_item_extension_sugar)
+## In state 2821, spurious reduction of production _structure_item -> structure_item_without_item_extension_sugar
+## In state 2859, spurious reduction of production mark_position_str(_structure_item) -> _structure_item
+## In state 2836, spurious reduction of production structure_item -> mark_position_str(_structure_item)
 ##
 
 <SYNTAX ERROR>
 
 toplevel_phrase: WITH
 ##
-## Ends in an error in state: 2686.
+## Ends in an error in state: 2689.
 ##
 ## toplevel_phrase' -> . toplevel_phrase [ # ]
 ##
@@ -1893,7 +1893,7 @@ parse_pattern: UNDERSCORE BAR WITH
 
 parse_pattern: UNDERSCORE WITH
 ##
-## Ends in an error in state: 2683.
+## Ends in an error in state: 2686.
 ##
 ## _or_pattern -> pattern . BAR pattern [ EOF BAR ]
 ## parse_pattern -> pattern . EOF [ # ]
@@ -1912,7 +1912,7 @@ parse_pattern: UNDERSCORE WITH
 
 parse_pattern: WITH
 ##
-## Ends in an error in state: 2682.
+## Ends in an error in state: 2685.
 ##
 ## parse_pattern' -> . parse_pattern [ # ]
 ##
@@ -1924,7 +1924,7 @@ parse_pattern: WITH
 
 parse_expression: UIDENT SEMI
 ##
-## Ends in an error in state: 2680.
+## Ends in an error in state: 2683.
 ##
 ## _expr -> expr . INFIXOP0 expr [ STAR SLASHGREATER QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSDOTDOTGREATER LESS LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATER EOF COLONEQUAL BARBAR AMPERSAND AMPERAMPER ]
 ## _expr -> expr . INFIXOP1 expr [ STAR SLASHGREATER QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSDOTDOTGREATER LESS LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATER EOF COLONEQUAL BARBAR AMPERSAND AMPERAMPER ]
@@ -1973,7 +1973,7 @@ parse_expression: UIDENT SEMI
 
 parse_expression: WITH
 ##
-## Ends in an error in state: 2678.
+## Ends in an error in state: 2681.
 ##
 ## parse_expression' -> . parse_expression [ # ]
 ##
@@ -2723,7 +2723,7 @@ parse_core_type: UNDERSCORE EQUALGREATER WITH
 
 parse_core_type: UNDERSCORE WITH
 ##
-## Ends in an error in state: 2676.
+## Ends in an error in state: 2679.
 ##
 ## parse_core_type -> core_type . EOF [ # ]
 ##
@@ -2746,7 +2746,7 @@ parse_core_type: UNDERSCORE WITH
 
 parse_core_type: WITH
 ##
-## Ends in an error in state: 2674.
+## Ends in an error in state: 2677.
 ##
 ## parse_core_type' -> . parse_core_type [ # ]
 ##
@@ -4446,7 +4446,7 @@ interface: MODULE WITH
 
 interface: OPEN UIDENT WITH
 ##
-## Ends in an error in state: 2668.
+## Ends in an error in state: 2671.
 ##
 ## signature -> signature_item . SEMI signature [ EOF ]
 ##
@@ -4535,7 +4535,7 @@ interface: TYPE LIDENT RBRACKET
 
 interface: TYPE LIDENT SEMI WITH
 ##
-## Ends in an error in state: 2669.
+## Ends in an error in state: 2672.
 ##
 ## signature -> signature_item SEMI . signature [ EOF ]
 ##
@@ -4579,7 +4579,7 @@ interface: TYPE UIDENT DOT LIDENT UNDERSCORE SEMI
 
 interface: WITH
 ##
-## Ends in an error in state: 2667.
+## Ends in an error in state: 2670.
 ##
 ## interface' -> . interface [ # ]
 ##
@@ -11594,7 +11594,7 @@ implementation: TRY UIDENT LBRACE BAR UNDERSCORE EQUALGREATER PERCENT AND TYPE
 
 implementation: TRY UIDENT LBRACE BAR UNDERSCORE EQUALGREATER UIDENT RPAREN
 ##
-## Ends in an error in state: 2656.
+## Ends in an error in state: 2659.
 ##
 ## _expr -> TRY simple_expr LBRACE leading_bar_match_cases_to_sequence_body . RBRACE [ error STAR SLASHGREATER SEMI RPAREN RBRACKET RBRACE QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSDOTDOTGREATER LESS LBRACKETATAT LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER EOF COMMA COLONGREATER COLONEQUAL COLON BARRBRACKET BARBAR BAR AND AMPERSAND AMPERAMPER ]
 ## leading_bar_match_cases_to_sequence_body -> leading_bar_match_cases_to_sequence_body . leading_bar_match_case_to_sequence_body [ RBRACE BAR ]
@@ -11739,7 +11739,7 @@ implementation: TRY UIDENT LBRACE BAR UNDERSCORE WHEN WITH
 
 implementation: TRY UIDENT LBRACE WITH
 ##
-## Ends in an error in state: 2655.
+## Ends in an error in state: 2658.
 ##
 ## _expr -> TRY simple_expr LBRACE . leading_bar_match_cases_to_sequence_body RBRACE [ error STAR SLASHGREATER SEMI RPAREN RBRACKET RBRACE QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSDOTDOTGREATER LESS LBRACKETATAT LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER EOF COMMA COLONGREATER COLONEQUAL COLON BARRBRACKET BARBAR BAR AND AMPERSAND AMPERAMPER ]
 ##
@@ -11751,7 +11751,7 @@ implementation: TRY UIDENT LBRACE WITH
 
 implementation: TRY UIDENT UNDERSCORE
 ##
-## Ends in an error in state: 2652.
+## Ends in an error in state: 2655.
 ##
 ## _expr -> TRY simple_expr . LBRACE leading_bar_match_cases_to_sequence_body RBRACE [ error STAR SLASHGREATER SEMI RPAREN RBRACKET RBRACE QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSDOTDOTGREATER LESS LBRACKETATAT LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER EOF COMMA COLONGREATER COLONEQUAL COLON BARRBRACKET BARBAR BAR AND AMPERSAND AMPERAMPER ]
 ## _expr -> TRY simple_expr . WITH error [ error STAR SLASHGREATER SEMI RPAREN RBRACKET RBRACE QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSDOTDOTGREATER LESS LBRACKETATAT LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER EOF COMMA COLONGREATER COLONEQUAL COLON BARRBRACKET BARBAR BAR AND AMPERSAND AMPERAMPER ]
@@ -11781,7 +11781,7 @@ implementation: TRY UIDENT UNDERSCORE
 
 implementation: TRY UIDENT WITH WITH
 ##
-## Ends in an error in state: 2653.
+## Ends in an error in state: 2656.
 ##
 ## _expr -> TRY simple_expr WITH . error [ error STAR SLASHGREATER SEMI RPAREN RBRACKET RBRACE QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSDOTDOTGREATER LESS LBRACKETATAT LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER EOF COMMA COLONGREATER COLONEQUAL COLON BARRBRACKET BARBAR BAR AND AMPERSAND AMPERAMPER ]
 ##
@@ -13078,7 +13078,7 @@ Expecting an expression
 
 implementation: UIDENT RBRACKET
 ##
-## Ends in an error in state: 2664.
+## Ends in an error in state: 2667.
 ##
 ## implementation -> structure . EOF [ # ]
 ##

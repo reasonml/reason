@@ -2601,6 +2601,11 @@ labeled_simple_pattern:
 ;
 jsx_arguments:
   /* empty */ { [] }
+  | LIDENT OPTIONAL_NO_DEFAULT simple_expr jsx_arguments
+      {
+        (* a=?b *)
+        [($1,  mkexp (Pexp_construct (mknoloc (Lident "Some"), Some $3)))] @ $4
+      }
   | LIDENT EQUAL simple_expr jsx_arguments
       {
         (* a=b *)
