@@ -1,26 +1,17 @@
 VimReason: Vim support for Reason
 =========================================
 
-Installation:
-============
-
-[VimBox](https://github.com/jordwalke/vimbox) is a great way to get started
-with a modern Vim configuration. For example, the plugins it uses will enable
-autocompletion when hitting the "." key after module names etc.
-
-Installing
+Configuring Vim
 ------------------
 
-Currently, only works with bleeding edge pins of these packages:
-
-0.  Install Reason following [INSTALL STABLE](https://github.com/facebook/Reason/blob/master/README.md#install-stable).
-
-1. Add the following to your "vim rc" folder (usually `~/.vimrc`). This will
-   load the `Reason` and `merlin` Vim plugins from your installed opam packages.
-   This causes them to always be kept in sync with your installed opam
-   packages.
+Add the following to your "vim rc" folder (usually `~/.vimrc`). This will load
+the `Reason` and `merlin` Vim plugins from `Reason` itself, wherever it is
+installed. Normally, you'd load Vim plugins through some kind of a plugin manager,
+but this approach below allows the plugins to always be in sync with whatever version of
+`Reason` your project (or `PATH`) uses.
 
 ```vim
+" In your ~/.vimrc
 if executable('ocamlmerlin')
   " To set the log file and restart:
   let s:ocamlmerlin=substitute(system('which ocamlmerlin'),'ocamlmerlin\n$','','') . "../share/merlin/vim/"
@@ -35,14 +26,29 @@ endif
 ```
 
 
-2. While step one causes the `merlin`/`Reason` plugins to be loaded from your
-installed opam packages, normally you install plugins using a plugin manager
-such as [`NeoBundle`](https://github.com/Shougo/neobundle.vim) or `Vundle`.
+Install a `Reason` Toolchain.
+------------------
+If you haven't already begain the process of installing `Reason`, follow the
+[latest
+instructions](https://github.com/facebook/Reason/blob/master/README.md#install-via-npm).
 
-[VimBox](https://github.com/jordwalke/vimbox) includes `NeoBundle`, but you
-can just install `NeoBundle` by itself. The rest of this document describes the
-plugins that you probably want to install alongside `VimReason` and `merlin`.
 
+Make Vim Awesome:
+============
+
+The rest of this document suggests some ways to configure Vim to make the most
+of `Reason`, `merlin`, and other editor features.
+
+[VimBox](https://github.com/jordwalke/vimbox) is one great way to get started
+with a modern Vim configuration. For example, the plugins it uses will enable
+autocompletion when hitting the "." key after module names etc. If building up
+your own Vim configuration, you will likely want a good Vim plugin manager such
+as [`NeoBundle`](https://github.com/Shougo/neobundle.vim) or `Vundle`, to
+install various plugins. The rest of the docs will assume we're using
+`NeoBundle`.
+
+Autocomplete
+==========
 
 If you installed `VimBox`, autocomplete is already set up to work like a modern
 IDE. Inside of a `.re` file, type `String` followed by a `.` and you will see
@@ -157,3 +163,4 @@ autocmd FileType reason let g:pairtools_reason_apostrophe = 0
 LICENSE
 -------
 Some files from VimReason are based on the Rust vim plugin and so we are including that license.
+
