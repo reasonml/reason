@@ -59,6 +59,34 @@ module Namespace = {
     };
 };
 
+module Optional1 = {
+    let createElement ::optional children => {
+        switch optional {
+            | Some a => {displayName: a}
+            | None => {displayName: "nope"}
+        };
+     };
+};
+
+module Optional2 = {
+    let createElement ::optional=? children => {
+        switch optional {
+            | Some a => {displayName: a}
+            | None => {displayName: "nope"}
+        };
+     };
+};
+
+module DefaultArg = {
+    let createElement ::optional=(Some "foo") children => {
+        switch optional {
+            | Some a => {displayName: a}
+            | None => {displayName: "nope"}
+        };
+     };
+};
+
+
 module LotsOfArguments = {
     let createElement argument1::argument1=? argument2::argument2=? argument3::argument3=? argument4::argument4=? argument5::argument5=? argument6::argument6=? children => {displayName: "test"};
 };
@@ -77,6 +105,10 @@ module List2 = {
 
 module List3 = {
     let createElement children => {displayName: "test"};
+};
+
+let fakeRender (el:component) => {
+    el.displayName
 };
 
 let (/><) a b => a + b;
@@ -300,3 +332,10 @@ let myFun () => {
 /* </Foo>; */
 
 /* let res = <Foo a=10 b=(<Foo a=200 />) />; */
+let zzz = "oh hai";
+let optionalCallSite = <Optional1 optional=?zzz />;
+fakeRender optionalCallSite;
+let optionalArgument = <Optional2 />;
+fakeRender optionalArgument;
+let defaultArg = <DefaultArg />;
+fakeRender defaultArg;

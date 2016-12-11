@@ -3571,6 +3571,8 @@ class printer  ()= object(self:'self)
          let nextAttr =
            match expression.pexp_desc with
            | Pexp_ident (ident) when (Longident.last ident.txt) = lbl -> atom lbl
+           | Pexp_construct ({txt = Lident "Some"},  Some {pexp_desc = Pexp_tuple (child::[]); _} ) ->
+            makeList ([atom lbl; atom "=?"; self#simplifyUnparseExpr child ] )
            | _ -> makeList ([atom lbl; atom "="; self#simplifyUnparseExpr expression])
          in
          processArguments tail (nextAttr :: processedAttrs) children
