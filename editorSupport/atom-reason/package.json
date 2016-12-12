@@ -16,7 +16,7 @@
     "@opam-alpha/ocaml": "4.2.3",
     "js_of_ocaml-bin": "https://github.com/reasonml/js_of_ocaml-bin.git",
     "nopam": "https://github.com/reasonml/nopam.git",
-    "dependency-env": "https://github.com/reasonml/dependency-env.git",
+    "dependency-env": "^0.0.1",
     "reason": "https://github.com/facebook/reason.git",
     "rebel": "https://github.com/reasonml/rebel.git",
     "ocamlBetterErrors": "0.0.10",

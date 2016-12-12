@@ -54,10 +54,10 @@
         "@opam-alpha/merlin-extend": "^ 0.3.0",
         "@opam-alpha/menhir": ">= 20160303.0.0",
         "@opam-alpha/ocaml": "4.2.3",
-        "dependency-env": "https://github.com/reasonml/dependency-env.git",
+        "dependency-env": "^0.0.1",
         "substs": "https://github.com/yunxing/substs.git",
         "opam-installer-bin": "https://github.com/yunxing/opam-installer-bin.git",
-        "nopam": "https://github.com/reasonml/nopam.git",
+        "nopam": "^0.1.0",
         "utop-bin": "https://github.com/reasonml/utop-bin"
 
     },
