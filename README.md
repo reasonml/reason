@@ -15,22 +15,22 @@ Install Via `npm`
 ----------------
 Installing `Reason` via `npm` is the easiest way to get started. (`npm` version > 3.0 is required - [install here](https://nodejs.org/en/download/current/)).
 
-#### Example Project
+#### Reason Project
 
-Installing the [`ExampleProject`](https://github.com/reasonml/ExampleProject) using `npm` is the easiest way to get started with `Reason`. It will install the `master` `Reason` branch and all of the dependencies for you into a local directory based sandbox. It even includes the compiler, IDE support, and REPL. Simply delete the directory when you're done and it's gone from your computer.
+Installing the [`ReasonProject`](https://github.com/reasonml/ReasonProject) starter kit using `npm` is the easiest way to get started with `Reason`. It will install the `master` `Reason` branch and all of the dependencies for you into a local directory based sandbox. It even includes the compiler, IDE support, and REPL. Simply delete the directory when you're done and it's gone from your computer.
 
 ```
-git clone https://github.com/reasonml/ExampleProject.git
-cd ExampleProject
+git clone https://github.com/reasonml/ReasonProject.git
+cd ReasonProject
 npm install
 npm start
 ```
 
-While it's installing, read about [how to use ExampleProject](https://github.com/reasonml/ExampleProject) to compile your simple project and use its built-in editor support and top level.
+While it's installing, read about [how to use ReasonProject](https://reasonml.github.io/ReasonProject/) to compile your simple project and use its built-in editor support and top level.
 
 Rebel
 -----
-The `ExampleProject` uses a very simple build system called `rebuild` that comes with `Reason`, and is enough to start a small project. For large-scale development, we are currently developing a build and namespacing workflow called [`rebel`](https://github.com/reasonml/rebel), which is built on [`jenga`](https://github.com/janestreet/jenga). It is an early work in progress, but you can also try it out via [`RebelExampleProject`](https://github.com/reasonml/RebelExampleProject). `rebel`  currently takes a long time to compile the first time it's used, so for getting started quickly, use [`ExampleProject`](https://github.com/reasonml/ExampleProject) instead.
+The `ReasonProject` uses a very simple build system called `rebuild` that comes with `Reason`, and is enough to start a small project. For large-scale development, we are currently developing a build and namespacing workflow called [`rebel`](https://github.com/reasonml/rebel), which is built on [`jenga`](https://github.com/janestreet/jenga). It is an early work in progress, but you can also try it out via [`RebelExampleProject`](https://github.com/reasonml/RebelExampleProject). `rebel`  currently takes a long time to compile the first time it's used, so for getting started quickly, use [`ReasonProject`](https://github.com/reasonml/ReasoneProject) instead.
 
 `rebel` features:
 
