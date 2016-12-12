@@ -47,7 +47,6 @@ let () =
     Pkg.bin  "src/reup.sh" ~dst:"reup";
     Pkg.bin  "src/rtop_init.ml" ~dst:"rtop_init.ml";
     Pkg.bin "_reasonbuild/_build/myocamlbuild" ~dst:"reasonbuild";
-    Pkg.bin  ~auto:true "src/reason_error_reporter" ~dst:"refmterr";
     Pkg.bin  ~auto:true "src/reason_format_type" ~dst:"refmttype";
     Pkg.bin  ~auto:true "src/reactjs_jsx_ppx" ~dst:"reactjs_jsx_ppx";
     Pkg.share "editorSupport/emacs/refmt.el" ~dst:"../emacs/site-lisp/refmt.el";

@@ -9,7 +9,6 @@ setup_convenient_bin_links:
 	ln -fs $(shell pwd)/_build/src/refmt_impl.native $(shell pwd)/_build/bin/refmt
 	ln -fs $(shell pwd)/_build/_reasonbuild/_build/myocamlbuild $(shell pwd)/_build/bin/reasonbuild
 	ln -fs $(shell pwd)/_build/src/ocamlmerlin_reason.native $(shell pwd)/_build/bin/ocamlmerlin-reason
-	ln -fs $(shell pwd)/_build/src/reason_error_reporter.native $(shell pwd)/_build/bin/refmterr
 	ln -fs $(shell pwd)/_build/src/reason_format_type.native $(shell pwd)/_build/bin/refmttype
 	ln -fs $(shell pwd)/_build/src/rebuild.sh $(shell pwd)/_build/bin/rebuild
 	ln -fs $(shell pwd)/_build/src/redoc.sh $(shell pwd)/_build/bin/redoc
