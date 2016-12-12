@@ -47,7 +47,6 @@
     },
     "name": "reason",
     "dependencies": {
-        "@opam-alpha/merlin": "^ 2.5.0",
         "@opam-alpha/re": "^ 1.5.0",
         "@opam-alpha/ocamlfind": "*",
         "@opam-alpha/easy-format": "^ 1.2.0",
@@ -59,7 +58,6 @@
         "opam-installer-bin": "https://github.com/yunxing/opam-installer-bin.git",
         "nopam": "^0.1.0",
         "utop-bin": "https://github.com/reasonml/utop-bin"
-
     },
     "scripts": {
         "editor": "eval $(dependencyEnv) && eval $EDITOR",
