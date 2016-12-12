@@ -1,2 +1,4 @@
-docs/
+/docs/
 _build/
+formatTest
+miscTests
