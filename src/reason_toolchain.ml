@@ -167,12 +167,6 @@ module type Toolchain_spec = sig
   val format_implementation_with_comments: (Parsetree.structure * Reason_pprint_ast.commentWithCategory) -> Format.formatter -> unit
 end
 
-let line_content = Re_str.regexp "[^ \t]+"
-(* We allow semicolons to be considered white space for sake of determining if
-   an item is the last thing on the line. *)
-let space_before_newline = Re_str.regexp "[,; \t]*$"
-let new_line = Re_str.regexp "^"
-
 let rec left_expand_comment should_scan_prev_line source loc_start =
   if loc_start = 0 then
     (String.unsafe_get source 0, true, 0)
