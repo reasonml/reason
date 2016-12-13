@@ -348,7 +348,13 @@ let same_ast_modulo_varification_and_extensions t1 t2 =
     | (Ptyp_any, Ptyp_any) -> true
     | (Ptyp_var x1, Ptyp_var x2) -> String.compare x1 x2 == 0
     | (Ptyp_arrow (label1, core_type1, core_type1'), Ptyp_arrow (label2, core_type2, core_type2')) ->
-      String.compare label1 label2 == 0 &&
+      begin
+         match label1, label2 with
+         | Nolabel, Nolabel -> true
+         | Labelled s1, Labelled s2 -> String.compare s1 s2 == 0
+         | Optional s1, Optional s2 -> String.compare s1 s2 == 0
+         | _ -> false
+      end &&
       loop core_type1 core_type2 &&
       loop core_type1' core_type2'
     | (Ptyp_tuple lst1, Ptyp_tuple lst2) -> trueForEachPair lst1 lst2 loop
@@ -851,8 +857,6 @@ let is_simple_construct :construct -> bool = function
   | `normal -> false
 
 let pp = fprintf
-
-let default = new Pprintast.printer ()
 
 type funcReturnStyle =
   | ReturnValOnSameLine
@@ -2087,6 +2091,8 @@ let makeLetSequenceSingleLine letItems =
     ~sep:";"
     letItems
 
+let f = Format.std_formatter
+
 (* postSpace is so that when comments are interleaved, we still use spacing rules. *)
 let makeUngaurdedLetSequence letItems =
   makeList
@@ -2252,6 +2258,25 @@ let protectIdentifier txt =
 let protectLongIdentifier longPrefix txt =
   makeList ~interleaveComments:false [longPrefix; atom "."; protectIdentifier txt]
 
+let paren: 'a . ?first:space_formatter -> ?last:space_formatter ->
+  bool -> (Format.formatter -> 'a -> unit) -> Format.formatter -> 'a -> unit
+  = fun  ?(first=("": _ format6)) ?(last=("": _ format6)) b fu f x ->
+    if b then (pp f "("; pp f first; fu f x; pp f last; pp f ")")
+    else fu f x
+let constant_string f s = pp f "%S" s
+let tyvar f str = pp f "'%s" str
+let constant f = function
+  | Pconst_char i -> pp f "%C"  i
+  | Pconst_string (i, None) -> pp f "%S" i
+  | Pconst_string (i, Some delim) -> pp f "{%s|%s|%s}" delim i delim
+  | Pconst_integer (i, None) -> paren (i.[0]='-') (fun f -> pp f "%s") f i
+  | Pconst_integer (i, Some m) ->
+    paren (i.[0]='-') (fun f (i, m) -> pp f "%s%c" i m) f (i,m)
+  | Pconst_float (i, None) -> paren (i.[0]='-') (fun f -> pp f "%s") f i
+  | Pconst_float (i, Some m) -> paren (i.[0]='-') (fun f (i,m) ->
+      pp f "%s%c" i m) f (i,m)
+
+
 let pun_labelled_expression e lbl =
   (match e with
     | { pexp_desc = (Pexp_ident { txt; _ }); _ } when txt = (Longident.parse lbl) -> ""
@@ -2287,13 +2312,7 @@ class printer  ()= object(self:'self)
   method reset_semi = {<semi=false>}
   method reset_pipe = {<pipe=false>}
   method reset = {<pipe=false;semi=false>}
-  method list : 'a . ?sep:space_formatter -> ?first:space_formatter ->
-    ?last:space_formatter -> (Format.formatter -> 'a -> unit) ->
-    Format.formatter -> 'a list -> unit
-    = default#list
-  method option : 'a. ?first:space_formatter -> ?last:space_formatter ->
-    (Format.formatter -> 'a -> unit) -> Format.formatter -> 'a option -> unit =
-    default#option
+
 
   method longident = function
     | Lident s -> (protectIdentifier s)
@@ -2304,11 +2323,12 @@ class printer  ()= object(self:'self)
   (* This form allows applicative functors. *)
   method longident_class_or_type_loc x = self#longident x.txt
   (* TODO: Fail if observing applicative functors for this form. *)
-  method longident_loc (x:Longident.t Location.loc) = SourceMap (x.loc, self#longident (x.txt))
-  method constant = wrap default#constant
+  method longident_loc x = self#longident x.txt
 
-  method constant_string = wrap default#constant_string
-  method tyvar = wrap default#tyvar
+  method constant = wrap constant
+  method constant_string = wrap constant_string
+  method tyvar = wrap tyvar
+
 
   (* c ['a,'b] *)
   method class_params_def = function
@@ -2370,29 +2390,26 @@ class printer  ()= object(self:'self)
 
   method type_with_label (label, ({ptyp_desc} as c)) =
     match label with
-      | "" ->  self#non_arrowed_non_simple_core_type c (* otherwise parenthesize *)
-      | s  ->
-          if s.[0]='?' then
-            let len = String.length s - 1 in
-            let lbl = String.sub s 1 len in
-            match ptyp_desc with
-              | Ptyp_constr ({txt}, l) ->
-                  assert (is_predef_option txt);
-                  let everythingButQuestion =
-                    formatLabeledArgument
-                      (atom lbl)
-                      ""
-                      (makeList
-                         ~postSpace:true
-                         ~break:IfNeed
-                         ~inline:(true, true)
-                         (* Why not support aliasing here? *)
-                         (* I don't think you'll have more than one l here. *)
-                         (List.map (self#non_arrowed_non_simple_core_type) l)
-                      ) in
-                    makeList [everythingButQuestion; atom "?"]
-              | _ -> failwith "invalid input in print_type_with_label"
-          else formatLabeledArgument (atom s) "" (self#non_arrowed_non_simple_core_type c)
+    | Nolabel ->  self#non_arrowed_non_simple_core_type c (* otherwise parenthesize *)
+    | Labelled s -> formatLabeledArgument (atom s) "" (self#non_arrowed_non_simple_core_type c)
+    | Optional lbl ->
+      match ptyp_desc with
+        | Ptyp_constr ({txt}, l) ->
+            assert (is_predef_option txt);
+            let everythingButQuestion =
+              formatLabeledArgument
+                (atom lbl)
+                ""
+                (makeList
+                   ~postSpace:true
+                   ~break:IfNeed
+                   ~inline:(true, true)
+                   (* Why not support aliasing here? *)
+                   (* I don't think you'll have more than one l here. *)
+                   (List.map (self#non_arrowed_non_simple_core_type) l)
+                )
+      in makeList [everythingButQuestion; atom "?"]
+    | _ -> failwith "invalid input in print_type_with_label"
 
   method type_param (ct, a) =
     makeList [atom (type_variance a); self#core_type ct]
@@ -2473,7 +2490,10 @@ class printer  ()= object(self:'self)
     let barName = makeList ~postSpace:true [atom "|"; sourceMappedName] in
     let resolved = match pext_kind with
       | Pext_decl (ctor_args, gadt) ->
-        let formattedArgs = (List.map self#non_arrowed_simple_core_type ctor_args) in
+        let formattedArgs = match ctor_args with
+          | Pcstr_tuple args -> List.map self#non_arrowed_simple_core_type args
+          | Pcstr_record r -> [self#record_declaration r]
+        in
         let formattedGadt = match gadt with
         | None -> None
         | Some x -> Some (
@@ -2519,7 +2539,7 @@ class printer  ()= object(self:'self)
     (SourceMap (pext_loc, self#attach_std_attrs pext_attributes everything))
 
   (* shared by [Pstr_type,Psig_type]*)
-  method type_def_list l =
+  method type_def_list (rf, l) =
     (* As oposed to used in type substitution. *)
     let formatOneTypeDefStandard prepend td =
       let itm =
@@ -2536,11 +2556,10 @@ class printer  ()= object(self:'self)
       | [] -> raise (NotPossible "asking for type list of nothing")
       | hd::tl ->
           let first =
-            match partitionNonrecAttr hd.ptype_attributes with
-            | ([], _) -> formatOneTypeDefStandard (atom "type") hd
-            | (_, attrs) ->
-                let newHd = { hd with ptype_attributes = attrs } in
-                formatOneTypeDefStandard (atom "type nonrec") newHd
+            match rf with
+            | Recursive -> formatOneTypeDefStandard (atom "type") hd
+            | Nonrecursive ->
+                formatOneTypeDefStandard (atom "type nonrec") hd
           in
           match tl with
             (* Exactly one type *)
@@ -2556,7 +2575,6 @@ class printer  ()= object(self:'self)
    * not parsed or printed correctly. *)
   method type_variant_leaf1 opt_ampersand polymorphic print_bar x =
     let {pcd_name; pcd_args; pcd_res; pcd_loc; pcd_attributes} = x in
-    let (arityAttrs, docAtrs, stdAttrs, jsxAttrs) = partitionAttributes pcd_attributes in
     let prefix = if polymorphic then "`" else "" in
     let sourceMappedName = SourceMap (pcd_name.loc, atom (prefix ^ pcd_name.txt)) in
     let nameOf = makeList ~postSpace:true [sourceMappedName] in
@@ -2574,36 +2592,66 @@ class printer  ()= object(self:'self)
       else
         ct
     in
-    let args = List.mapi ampersand_helper pcd_args in
     let gadtRes = match pcd_res with
       | None -> None
       | Some x -> Some (
           makeList ~inline:(true, true) ~break:IfNeed [ (* Single row just so the entire return type breaks onto its own line *)
             formatJustTheTypeConstraint (self#core_type x)
           ]
-      ) in
-      let normalize lst = match lst with
-        | [] -> raise (NotPossible "should not be called")
-        | [hd] -> hd
-        | _::_ -> makeList ~inline:(true, true) ~break:IfNeed ~postSpace:true lst
-      in
-      let add_bar name args =
-        let lbl = label ~space:true name args in
-        makeList ~postSpace:true (if print_bar then [atom "|"; lbl] else [lbl])
-      in
-      let everything = match (args, gadtRes) with
-        | ([], None) -> barName
-        | ([], Some res) -> add_bar sourceMappedName res
-        | (_::_, None) -> add_bar nameOf (normalize args)
-        | (_::_, Some res) -> add_bar nameOf (normalize (args@[res]))
-      in
-      let everythingWithAttrs =
-        if stdAttrs <> [] then
-          formatAttributed everything (self#attributes stdAttrs)
+      )
+    in
+    let normalize lst = match lst with
+      | [] -> raise (NotPossible "should not be called")
+      | [hd] -> hd
+      | _::_ -> makeList ~inline:(true, true) ~break:IfNeed ~postSpace:true lst
+    in
+    let add_bar name args =
+      let lbl = label ~space:true name args in
+      makeList ~postSpace:true (if print_bar then [atom "|"; lbl] else [lbl])
+    in
+    let args = match pcd_args with
+      | Pcstr_record r -> [self#record_declaration r]
+      | Pcstr_tuple l -> List.mapi ampersand_helper l
+    in
+    let everything = match (args, gadtRes) with
+      | ([], None) -> barName
+      | ([], Some res) -> add_bar sourceMappedName res
+      | (_::_, None) -> add_bar nameOf (normalize args)
+      | (_::_, Some res) -> add_bar nameOf (normalize (args@[res]))
+    in
+    let everythingWithAttrs =
+      if pcd_attributes <> [] then
+        formatAttributed everything (self#attributes pcd_attributes)
+      else
+        everything
+    in
+    (SourceMap (pcd_loc, everythingWithAttrs))
+
+  method record_declaration ?assumeRecordLoc lbls =
+    let recordRow pld =
+      let hasPunning = recordRowIsPunned pld in
+      let name = if hasPunning then
+          SourceMap (pld.pld_name.loc, makeList [atom pld.pld_name.txt;])
         else
-          everything
+          SourceMap (pld.pld_name.loc, makeList [atom pld.pld_name.txt; atom ":"])
       in
-      (SourceMap (pcd_loc, everythingWithAttrs))
+      let withMutable =
+        match pld.pld_mutable with
+        | Immutable -> name
+        | Mutable -> makeList ~postSpace:true [atom "mutable"; name]
+      in
+      let recordRow = if hasPunning then
+          label withMutable (atom "")
+        else
+          label ~space:true withMutable (self#core_type pld.pld_type)
+      in
+      SourceMap (pld.pld_loc, recordRow)
+    in
+    let rows = List.map recordRow lbls in
+    let rowList = makeList ~wrap:("{", "}") ~sep:"," ~postSpace:true ~break:IfNeed rows in
+    match assumeRecordLoc with
+    | None -> rowList
+    | Some loc -> SourceMap(loc, rowList)
 
   (* Returns the type declaration partitioned into three segments - one
      suitable for appending to a label, the actual type manifest
@@ -2640,33 +2688,6 @@ class printer  ()= object(self:'self)
     let privatize scope lst = match scope with
       | Public -> lst
       | Private -> privateAtom::lst in
-
-    let recordRow pld =
-      let hasPunning = recordRowIsPunned pld in
-      let name = if hasPunning then
-        SourceMap (pld.pld_name.loc, makeList [atom pld.pld_name.txt;])
-      else
-        SourceMap (pld.pld_name.loc, makeList [atom pld.pld_name.txt; atom ":"])
-      in
-      let withMutable =
-        match pld.pld_mutable with
-          | Immutable -> name
-          | Mutable -> makeList ~postSpace:true [atom "mutable"; name]
-      in
-      let recordRow = if hasPunning then
-        label withMutable (atom "")
-      else
-         label ~space:true withMutable (self#core_type pld.pld_type)
-      in
-        SourceMap (pld.pld_loc, recordRow)
-    in
-    let recordize ?assumeRecordLoc lst =
-      let rows = List.map recordRow lst in
-      let rowList = makeList ~wrap:("{", "}") ~sep:"," ~postSpace:true ~break:IfNeed rows in
-      match assumeRecordLoc with
-        | None -> rowList
-        | Some loc -> SourceMap(loc, rowList)
-    in
 
     let estimateRecordOpenBracePoint () =
       match x.ptype_params with
@@ -2712,7 +2733,7 @@ class printer  ()= object(self:'self)
       (* EQUAL private_flag LBRACE label_declarations opt_comma RBRACE {(Ptype_record _, $2, None)} *)
       | (Ptype_record lst, scope, None) ->
           let assumeRecordLoc = {loc_start = estimateRecordOpenBracePoint(); loc_end = x.ptype_loc.loc_end; loc_ghost = false} in
-          [privatize scope [recordize ~assumeRecordLoc lst]]
+          [privatize scope [self#record_declaration ~assumeRecordLoc lst]]
       (* And now all of the forms involving *TWO* equals *)
       (* Again, super confusing how manifests of variants/records represent the
          structure after the second equals. *)
@@ -2736,7 +2757,7 @@ class printer  ()= object(self:'self)
            {(Ptype_record _, $4, Some $2)} *)
       | (Ptype_record lst, scope, Some mani) -> [
           [self#core_type mani];
-          privatize scope [recordize lst];
+          privatize scope [self#record_declaration lst];
         ]
 
       (* Everything else is impossible *)
@@ -2869,11 +2890,12 @@ class printer  ()= object(self:'self)
           let pcd_res = None in
           let variant_helper rf =
             match rf with
-              | Rtag (label, _, opt_ampersand, pcd_args) ->
+              | Rtag (label, _, opt_ampersand, ctl) ->
                 let pcd_name = {
                   txt = label;
                   loc = pcd_loc;
                 } in
+                let pcd_args = Pcstr_tuple ctl in
                 self#type_variant_leaf ~opt_ampersand ~polymorphic:true {pcd_name; pcd_args; pcd_res; pcd_loc; pcd_attributes}
               | Rinherit ct -> self#core_type ct in
           let (designator, tl) =
@@ -3115,12 +3137,12 @@ class printer  ()= object(self:'self)
         SourceMap (x.ppat_loc, itm)
 
   method label_exp (l,opt,p) =
-    if l = "" then
-      self#simple_pattern p (*single case pattern parens needed here *)
-    else
-    if l.[0] = '?' then
-      let len = String.length l - 1 in
-      let lbl = String.sub l 1 len in
+    match l with
+    | Nolabel -> self#simple_pattern p (*single case pattern parens needed here *)
+    | Labelled l ->
+        let lbl = pun_labelled_pattern p l in
+        formatLabeledArgument (atom lbl) "" (self#simple_pattern p)
+    | Optional lbl ->
         let lbl = pun_labelled_pattern p lbl in
         (formatLabeledArgument
            (atom lbl)
@@ -3128,14 +3150,6 @@ class printer  ()= object(self:'self)
            (label
              (makeList [(self#simple_pattern p); atom "="])
              (match opt with None -> (atom "?") | Some o -> (self#simplifyUnparseExpr o))))
-    else
-      match p.ppat_desc with
-        | _ ->
-          let lbl = pun_labelled_pattern p l in
-          formatLabeledArgument
-            (atom lbl)
-            ""
-            (self#simple_pattern p)
 
   method access op cls e1 e2 = makeList ~interleaveComments:false [
     (* Important that this be not breaking - at least to preserve same
@@ -3160,13 +3174,13 @@ class printer  ()= object(self:'self)
          [...list] evaluates to the thing as list.
       *)
       let hasLabelledChildrenListLiteral = List.exists (function
-        | ("children", {pexp_desc = Pexp_construct ({txt = Lident "::" | Lident "[]"}, _)}) -> true
+        | (Labelled "children", {pexp_desc = Pexp_construct ({txt = Lident "::" | Lident "[]"}, _)}) -> true
         | _ -> false
       ) l in
       let rec hasSingleNonLabelledUnitAndIsAtTheEnd l = match l with
       | [] -> false
-      | ("", {pexp_desc = Pexp_construct ({txt = Lident "()"}, _)}) :: [] -> true
-      | ("", _) :: rest -> false
+      | (Nolabel, {pexp_desc = Pexp_construct ({txt = Lident "()"}, _)}) :: [] -> true
+      | (Nolabel, _) :: rest -> false
       | _ :: rest -> hasSingleNonLabelledUnitAndIsAtTheEnd rest
       in
       if hasLabelledChildrenListLiteral && hasSingleNonLabelledUnitAndIsAtTheEnd l then
@@ -3183,7 +3197,7 @@ class printer  ()= object(self:'self)
       (* We must take care not to print two subsequent prefix operators without
          spaces between them (`! !` could become `!!` which is totally
          different).  *)
-      | (AlmostSimplePrefix prefixStr, [("", rightExpr)]) ->
+      | (AlmostSimplePrefix prefixStr, [(Nolabel, rightExpr)]) ->
         let forceSpace = match rightExpr.pexp_desc with
           | Pexp_apply (ee, lsls) ->
             (match printedStringAndFixityExpr ee with | AlmostSimplePrefix _ -> true | _ -> false)
@@ -3416,7 +3430,7 @@ class printer  ()= object(self:'self)
       )
       | None -> (
         match (printedStringAndFixityExpr e, ls) with
-        | (Infix printedIdent, [("", leftExpr); ("", rightExpr)]) ->
+        | (Infix printedIdent, [(Nolabel, leftExpr); (Nolabel, rightExpr)]) ->
           let infixToken = Token printedIdent in
           let rightItm = self#ensureContainingRule ~withPrecedence:infixToken ~reducesAfterRight:rightExpr in
           let leftItm = self#ensureExpression leftExpr ~reducesOnToken:infixToken in
@@ -3426,12 +3440,12 @@ class printer  ()= object(self:'self)
           SpecificInfixPrecedence ({reducePrecedence=infixToken; shiftPrecedence=infixToken}, expr)
         (* Will be rendered as `(+) a b c` which is parsed with higher precedence than all
            the other forms unparsed here.*)
-        | (UnaryPlusPrefix printedIdent, [("", rightExpr)]) ->
+        | (UnaryPlusPrefix printedIdent, [(Nolabel, rightExpr)]) ->
           let prec = Custom "prec_unary_plus" in
           let rightItm = self#ensureContainingRule ~withPrecedence:prec ~reducesAfterRight:rightExpr in
           let expr = label ~space:true (atom printedIdent) rightItm in
           SpecificInfixPrecedence ({reducePrecedence=prec; shiftPrecedence=Token printedIdent}, expr)
-        | (UnaryMinusPrefix printedIdent, [("", rightExpr)]) ->
+        | (UnaryMinusPrefix printedIdent, [(Nolabel, rightExpr)]) ->
           let prec = Custom "prec_unary_minus" in
           let rightItm = self#ensureContainingRule ~withPrecedence:prec ~reducesAfterRight:rightExpr in
           let expr = label ~space:true (atom printedIdent) rightItm in
@@ -3663,27 +3677,24 @@ class printer  ()= object(self:'self)
   method formatJSXComponent componentName args =
     let rec processArguments arguments processedAttrs children =
       match arguments with
-      | ("children", {pexp_desc = Pexp_construct (_, None)}) :: tail ->
+      | (Labelled "children", {pexp_desc = Pexp_construct (_, None)}) :: tail ->
         processArguments tail processedAttrs None
-      | ("children", {pexp_desc = Pexp_construct ({txt = Lident"::"}, Some {pexp_desc = Pexp_tuple(components)} )}) :: tail ->
+      | (Labelled "children", {pexp_desc = Pexp_construct ({txt = Lident"::"}, Some {pexp_desc = Pexp_tuple(components)} )}) :: tail ->
         processArguments tail processedAttrs (self#formatChildren components [])
-      | [] -> (processedAttrs, children)
-      | ("", expression) :: [] -> (processedAttrs, children)
-      | (lbl, expression) :: tail ->
+      | (Optional lbl, expression) :: tail ->
+        let nextAttr = makeList ([atom lbl; atom "=?"; self#simplifyUnparseExpr expression]) in
+        processArguments tail (nextAttr :: processedAttrs) children
+
+      | (Labelled lbl, expression) :: tail ->
          let nextAttr =
            match expression.pexp_desc with
            | Pexp_ident (ident) when ((isLongIdentWithDot ident.txt) == false 
                                         && (Longident.last ident.txt) = lbl) -> atom lbl
-           | _ -> (
-             let firstChar = String.get lbl 0 in
-             if firstChar == '?' then
-                let lbl = String.sub lbl 1 ((String.length lbl) - 1) in
-                makeList ([atom lbl; atom "=?"; self#simplifyUnparseExpr expression])
-             else
-                makeList ([atom lbl; atom "="; self#simplifyUnparseExpr expression])
-                )
+           | _ -> makeList ([atom lbl; atom "="; self#simplifyUnparseExpr expression])
          in
          processArguments tail (nextAttr :: processedAttrs) children
+      | [] -> (processedAttrs, children)
+      | _ :: tail -> processArguments tail processedAttrs None
     in
     let (reversedAttributes, children) = processArguments args [] None in
     match children with
@@ -3908,7 +3919,7 @@ class printer  ()= object(self:'self)
       else match xx.pcl_desc with
       | Pcl_fun (label, eo, p, e) ->
         let (nextArgs, return) = argsAndReturn e in
-        if label="" then
+        if label=Nolabel then
           let args = SourceMap (p.ppat_loc, (self#simple_pattern p))::nextArgs in
           (args, return)
         else
@@ -3931,7 +3942,7 @@ class printer  ()= object(self:'self)
         (* label * expression option * pattern * expression *)
         | Pexp_fun (label, eo, p, e) ->
             let (nextArgs, return) = argsAndReturn e in
-            if label="" then
+            if label=Nolabel then
               let args = SourceMap (p.ppat_loc, (self#simple_pattern p))::nextArgs in
               (args, return)
             else
@@ -4613,6 +4624,16 @@ class printer  ()= object(self:'self)
       | _ -> self#unparseExpr x
 
 
+  method expression2 x =
+    (* I don't think this pexp_attributes logic is correct *)
+    if x.pexp_attributes <> [] then self#simplifyUnparseExpr x
+    else match x.pexp_desc with
+      | Pexp_field (e, li) ->
+          makeList ~interleaveComments:false [self#simple_enough_to_be_lhs_dot_send e; atom "."; self#longident_loc li]
+      | Pexp_send (e, s) ->
+          makeList ~interleaveComments:false [self#simple_enough_to_be_lhs_dot_send e; atom "#";  atom s]
+      | _ -> self#simplifyUnparseExpr x
+
   (*
    * Because the rule BANG simple_expr was given %prec below_DOT_AND_SHARP,
    * !x.y.z will parse as !(x.y.z) and not (!x).y.z.
@@ -4927,7 +4948,7 @@ class printer  ()= object(self:'self)
       | PTyp x ->
         makeList ~wrap ~break ~pad [label ~space:true (atom ":") (self#core_type x)]
       (* Signatures in attributes were added recently *)
-      (* | PSig x -> makeList [atom ":"; self#signature x] *)
+      | PSig x -> makeList [atom ":"; self#signature x]
       | PPat (x, None) ->
         makeList ~wrap ~break ~pad [label ~space:true (atom "?") (self#pattern x)]
       | PPat (x, Some e) ->
@@ -4991,7 +5012,7 @@ class printer  ()= object(self:'self)
   method exception_declaration ed =
     let pcd_name = ed.pext_name in
     let pcd_loc = ed.pext_loc in
-    let pcd_attributes = ed.pext_attributes in
+    let pcd_attributes = List.filter (fun (loc, _) -> loc.txt <> "ocaml.doc") ed.pext_attributes in
     let exn_arg = match ed.pext_kind with
       | Pext_decl (args, type_opt) ->
           let pcd_args, pcd_res = args, type_opt in
@@ -5493,8 +5514,8 @@ class printer  ()= object(self:'self)
   method signature_item x :layoutNode =
     let item: layoutNode =
       match x.psig_desc with
-        | Psig_type l ->
-            self#type_def_list l
+        | Psig_type (rf, l) ->
+            self#type_def_list (rf, l)
         | Psig_value vd ->
             if vd.pval_prim <> [] then
               self#primitive_declaration vd
@@ -5837,8 +5858,8 @@ class printer  ()= object(self:'self)
     let item = (
       match term.pstr_desc with
         | Pstr_eval (e, _attrs) -> self#unparseExpr e
-        | Pstr_type [] -> assert false
-        | Pstr_type l  -> (self#type_def_list l)
+        | Pstr_type (_, []) -> assert false
+        | Pstr_type (rf, l)  -> (self#type_def_list (rf, l))
         | Pstr_value (rf, l) -> (self#bindings (rf, l))
         | Pstr_typext te -> (self#type_extension te)
         | Pstr_exception ed -> (self#exception_declaration ed)
@@ -5902,7 +5923,8 @@ class printer  ()= object(self:'self)
     in
     formatOneTypeExtStandard (atom "type") te
 
-  method extension_constructor = wrap default#extension_constructor
+  (*method extension_constructor = wrap default#extension_constructor*)
+
   (* [allowUnguardedSequenceBodies] allows sequence expressions {} to the right of `=>` to not
      be guarded in `{}` braces. *)
   method case_list ?(allowUnguardedSequenceBodies=false) l =
@@ -6021,20 +6043,17 @@ class printer  ()= object(self:'self)
   method label_x_expression_param (l, e) =
     let param =
       match l with
-        | ""  -> self#simplifyUnparseExpr e; (* level 2*)
-        | lbl ->
-            if lbl.[0] = '?' then
-              let str = String.sub lbl 1 (String.length lbl-1) in
-              let lbl = pun_labelled_expression e str in
-              formatLabeledArgument (atom lbl) "?" (self#simplifyUnparseExpr e)
-            else
-              let lbl = pun_labelled_expression e lbl in
-              formatLabeledArgument (atom lbl) "" (self#simplifyUnparseExpr e)
+      | Nolabel -> self#expression2 e; (* level 2*)
+      | Labelled lbl ->
+        let lbl = pun_labelled_expression e lbl in
+        formatLabeledArgument (atom lbl) "" (self#simplifyUnparseExpr e)
+      | Optional str ->
+        let lbl = pun_labelled_expression e str in
+        formatLabeledArgument (atom lbl) "?" (self#simplifyUnparseExpr e)
     in
     SourceMap (e.pexp_loc, param)
 
-  method directive_argument = wrap default#directive_argument
-  method toplevel_phrase = wrap default#toplevel_phrase
+
 end;;
 
 
