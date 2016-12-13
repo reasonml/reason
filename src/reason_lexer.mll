@@ -62,6 +62,7 @@ type error =
   | Unterminated_string_in_comment of Location.t * Location.t
   | Keyword_as_label of string
   | Literal_overflow of string
+  | Invalid_literal of string
 ;;
 
 exception Error of error * Location.t;;
@@ -275,6 +276,8 @@ let report_error ppf = function
   | Literal_overflow ty ->
       fprintf ppf "Integer literal exceeds the range of representable \
                    integers of type %s" ty
+  | Invalid_literal s ->
+      fprintf ppf "Invalid literal %s" s
 
 let () =
   Location.register_error_of_exn
@@ -320,6 +323,14 @@ let float_literal =
   ['0'-'9'] ['0'-'9' '_']*
   ('.' ['0'-'9' '_']* )?
   (['e' 'E'] ['+' '-']? ['0'-'9'] ['0'-'9' '_']*)?
+
+let hex_float_literal =
+  '0' ['x' 'X']
+  ['0'-'9' 'A'-'F' 'a'-'f'] ['0'-'9' 'A'-'F' 'a'-'f' '_']*
+  ('.' ['0'-'9' 'A'-'F' 'a'-'f' '_']* )?
+  (['p' 'P'] ['+' '-']? ['0'-'9'] ['0'-'9' '_']* )?
+
+let literal_modifier = ['G'-'Z' 'g'-'z']
 
 rule token = parse
   | "\\" newline {
@@ -369,29 +380,16 @@ rule token = parse
       { UIDENT(Lexing.lexeme lexbuf) }       (* No capitalized keywords *)
   | uppercase_latin1 identchar_latin1 *
       { warn_latin1 lexbuf; UIDENT(Lexing.lexeme lexbuf) }
-  | int_literal
-      { try
-          INT (cvt_int_literal (Lexing.lexeme lexbuf))
-        with Failure _ ->
-          raise (Error(Literal_overflow "int", Location.curr lexbuf))
-      }
-  | float_literal
-      { FLOAT (remove_underscores(Lexing.lexeme lexbuf)) }
-  | int_literal "l"
-      { try
-          INT32 (cvt_int32_literal (Lexing.lexeme lexbuf))
-        with Failure _ ->
-          raise (Error(Literal_overflow "int32", Location.curr lexbuf)) }
-  | int_literal "L"
-      { try
-          INT64 (cvt_int64_literal (Lexing.lexeme lexbuf))
-        with Failure _ ->
-          raise (Error(Literal_overflow "int64", Location.curr lexbuf)) }
-  | int_literal "n"
-      { try
-          NATIVEINT (cvt_nativeint_literal (Lexing.lexeme lexbuf))
-        with Failure _ ->
-          raise (Error(Literal_overflow "nativeint", Location.curr lexbuf)) }
+  | int_literal { INT (Lexing.lexeme lexbuf, None) }
+  | (int_literal as lit) (literal_modifier as modif)
+      { INT (lit, Some modif) }
+  | float_literal | hex_float_literal
+      { FLOAT (Lexing.lexeme lexbuf, None) }
+  | ((float_literal | hex_float_literal) as lit) (literal_modifier as modif)
+      { FLOAT (lit, Some modif) }
+  | (float_literal | hex_float_literal | int_literal) identchar+
+      { raise (Error(Invalid_literal (Lexing.lexeme lexbuf),
+                     Location.curr lexbuf)) }
   | "\""
       { reset_string_buffer();
         is_in_string := true;

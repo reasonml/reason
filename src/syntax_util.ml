@@ -111,7 +111,7 @@ let syntax_error_extension_node loc message =
     pstr_desc = Pstr_eval (
       {
         pexp_loc = Location.none;
-        pexp_desc = Pexp_constant (Asttypes.Const_string (message, None));
+        pexp_desc = Pexp_constant (Parsetree.Pconst_string (message, None));
         pexp_attributes = [];
       },
       []
