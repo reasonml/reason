@@ -46,12 +46,16 @@ run_utop: build
 		                        compiler-libs.common) \
 		_build/src/reason.cma _build/src/reason_utop.cmo
 
-test: build
+test: build clean-tests
 	./miscTests/rtopIntegrationTest.sh
 	./miscTests/jsxPpxTest.sh
 	cd formatTest; ./test.sh
 
-clean:
+clean-tests:
+	rm -rf ./formatTest/**/actual_output
+	rm -f ./formatTest/failed_tests
+
+clean: clean-tests
 	ocamlbuild -clean
 
 # Compile error messages into ml file, checks if the error messages are complete and not redundent

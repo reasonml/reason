@@ -9,13 +9,10 @@ INFO=''
 DEBUG=''
 RESET='\033[0m'
 VERBOSE=${VERBOSE:-}
-KEEP=${KEEP:-}
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 REFMT="$DIR/../refmt_impl.native"
-
-TEST_DIR=$(mktemp -d -t reason_test.XXXXXXXX)
 
 if [[ -f REFMT ]];
 then
@@ -25,26 +22,26 @@ fi
 
 UNIT_TEST_INPUT=$DIR/unit_tests/input
 
-UNIT_TEST_OUTPUT=$TEST_DIR/unit_tests/output
+UNIT_TEST_OUTPUT=$DIR/unit_tests/actual_output
 
 UNIT_TEST_EXPECTED_OUTPUT=$DIR/unit_tests/expected_output
 
 
 TYPE_TEST_INPUT=$DIR/typeCheckedTests/input
 
-TYPE_TEST_OUTPUT=$TEST_DIR/typeCheckedTests/output
+TYPE_TEST_OUTPUT=$DIR/typeCheckedTests/actual_output
 
 TYPE_TEST_EXPECTED_OUTPUT=$DIR/typeCheckedTests/expected_output
 
 
 ERROR_TEST_INPUT=$DIR/errorTests/input
 
-ERROR_TEST_OUTPUT=$TEST_DIR/errorTests/output
+ERROR_TEST_OUTPUT=$DIR/errorTests/actual_output
 
 ERROR_TEST_EXPECTED_OUTPUT=$DIR/errorTests/expected_output
 
 
-FAILED_TESTS=$TEST_DIR/failed_tests
+FAILED_TESTS=$DIR/failed_tests
 
 function info() {
     printf "${INFO}$1${RESET}\n"
@@ -69,10 +66,8 @@ function warning() {
 }
 
 function setup_test_dir() {
-    echo "Setting up test dir at $UNIT_TEST_EXPECTED_OUTPUT"
-    mkdir -p $UNIT_TEST_OUTPUT
-    mkdir -p $TYPE_TEST_OUTPUT
-    mkdir -p $ERROR_TEST_OUTPUT
+    echo "Setting up test dirs actual_output alongside the tests' expected_output"
+    mkdir -p $UNIT_TEST_OUTPUT $TYPE_TEST_OUTPUT $ERROR_TEST_OUTPUT
     touch $FAILED_TESTS
 }
 
@@ -356,11 +351,6 @@ if [[ -s $FAILED_TESTS ]]; then
   warning "Failed tests:"
   cat $FAILED_TESTS
   exit 1
-fi
-
-if [ -z "$KEEP" ]; then
-    info "Removing $TEST_DIR (set env KEEP=1 to keep build directory)"
-    rm -rf $TEST_DIR
 fi
 
 exit 0

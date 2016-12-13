@@ -14,6 +14,8 @@ src_test/_tags
 .DS_Store
 formatTest/customMLFiles/*.ml
 formatTest/customMLFormatOutput.re
+formatTest/failed_tests
+formatTest/**/actual_output/
 miscTests/reactjs_jsx_ppx_tests/actual*.txt
 .jenga
 src/reason_parser.messages.bak
