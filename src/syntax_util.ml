@@ -49,6 +49,37 @@ let replace_string old_str new_str str =
   replace_string_ old_str new_str 0 str buffer;
   Buffer.contents buffer
 
+let split str ~by =
+  let str = ref str in
+  let accum = ref [] in
+  try
+    while true do
+      let strVal = !str in
+      let foundIdx = String.index_from strVal 0 by in
+      let subStr = String.sub strVal 0 foundIdx in
+      str := String.sub strVal (foundIdx + 1) (String.length strVal - foundIdx - 1);
+      accum := (subStr :: !accum);
+    done;
+    assert false
+  with Not_found ->
+    List.rev (!str :: !accum)
+
+let rec trim_right_idx str idx =
+  if idx = -1 then 0
+  else
+    let ch = String.get str idx in
+    if ch = '\t' || ch = ' ' || ch == '\n' || ch == '\r' then trim_right_idx str (idx - 1)
+    else idx + 1
+
+let trim_right str =
+  let length = String.length str in
+  if length = 0 then "" else String.sub str 0 (trim_right_idx str (length - 1))
+
+let strip_trailing_whitespace str =
+  split str ~by:'\n'
+  |> List.map trim_right
+  |> String.concat "\n"
+  |> String.trim
 
 module StringMap = Map.Make (String)
 
