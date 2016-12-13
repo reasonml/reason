@@ -56,7 +56,7 @@
         "dependency-env": "*",
         "substs": "https://github.com/yunxing/substs.git",
         "opam-installer-bin": "https://github.com/yunxing/opam-installer-bin.git",
-        "nopam": *",
+        "nopam": "*",
         "utop-bin": "https://github.com/reasonml/utop-bin"
     },
     "scripts": {
