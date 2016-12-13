@@ -29,9 +29,10 @@ let expandReactMacro argv =
                         Str.value Nonrecursive
                           [Vb.mk (Pat.var (str "name"))
                              (Exp.constant
-                                (Const_string (module_name, None)))
+                                (Pconst_string (module_name, None)))
                           ];
                         Str.type_
+                          Recursive
                           [{
                              ptype_name = (str "props");
                              ptype_params = [];
@@ -53,14 +54,14 @@ let expandReactMacro argv =
                            }];
                         Str.value Nonrecursive
                           [Vb.mk (Pat.var (str "render"))
-                             (Exp.fun_ "" None (Pat.mk Ppat_any)
+                             (Exp.fun_ Nolabel None (Pat.mk Ppat_any)
                                 (Exp.apply (Exp.ident (lid "div"))
-                                   [("children",
-                                      (Exp.construct (lid "[]") None));
-                                   ("",
+                                   [(Labelled "children",
+                                     (Exp.construct (lid "[]") None));
+                                    (Nolabel,
                                      (Exp.construct (lid "()") None))]
                                    ~attrs:[((str "JSX"),
-                                             PStr ([]))]))]]))
+                                            PStr ([]))]))]]))
                    ;
               pmb_attributes = [];
               pmb_loc = pstr_loc
@@ -76,14 +77,14 @@ let expandReactMacro argv =
            };
          Str.value Nonrecursive
            [Vb.mk (Pat.var (str "createElement"))
-              (Exp.fun_ "message" None (Pat.var (str "message"))
-                 (Exp.fun_ "children" None (Pat.var (str "children"))
+              (Exp.fun_ (Labelled "message") None (Pat.var (str "message"))
+                 (Exp.fun_ (Labelled "children") None (Pat.var (str "children"))
                     (Exp.apply (Exp.ident (lid "wrapProps"))
-                       [("",
-                          (Exp.record
-                             [((lid "message"),
-                                (Exp.ident (lid "message")))] None));
-                       ("children", (Exp.ident (lid "children")))])))]]
+                       [(Nolabel,
+                         (Exp.record
+                            [((lid "message"),
+                              (Exp.ident (lid "message")))] None));
+                        (Labelled "children", (Exp.ident (lid "children")))])))]]
      | _ -> structure)
   }
 let _ = Ast_mapper.register "editor.rehydrate" expandReactMacro

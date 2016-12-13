@@ -31,12 +31,12 @@ let listToArray lst = listToArray' lst [] |> List.rev
 let extractChildrenForDOMElements ?(removeLastPositionUnit=false) ~loc propsAndChildren =
   let rec allButLast_ lst acc = match lst with
     | [] -> []
-    | ("", {pexp_desc = Pexp_construct ({txt = Lident "()"}, None)})::[] -> acc
-    | ("", _)::rest -> raise (Invalid_argument "JSX: found non-labelled argument before the last position")
+    | (Nolabel, {pexp_desc = Pexp_construct ({txt = Lident "()"}, None)})::[] -> acc
+    | (Nolabel, _)::rest -> raise (Invalid_argument "JSX: found non-labelled argument before the last position")
     | arg::rest -> allButLast_ rest (arg::acc)
   in
   let allButLast lst = allButLast_ lst [] |> List.rev in
-  match (List.partition (fun (label, expr) -> label = "children") propsAndChildren) with
+  match (List.partition (fun (label, expr) -> label = Labelled "children") propsAndChildren) with
   | ((label, childrenExpr)::[], props) ->
     (childrenExpr, if removeLastPositionUnit then allButLast props else props)
   | ([], props) ->
@@ -76,7 +76,7 @@ let jsxMapper argv = {
               extractChildrenForDOMElements ~loc propsAndChildren
             in
             let componentNameExpr =
-              Exp.constant ~loc (Const_string (lowercaseIdentifier, None))
+              Exp.constant ~loc (Pconst_string (lowercaseIdentifier, None))
             in
             let childrenExpr =
               Exp.array (
@@ -87,9 +87,9 @@ let jsxMapper argv = {
             | [theUnitArgumentAtEnd] ->
               [
                 (* "div" *)
-                ("", componentNameExpr);
+                (Nolabel, componentNameExpr);
                 (* [|moreCreateElementCallsHere|] *)
-                ("", childrenExpr)
+                (Nolabel, childrenExpr)
               ]
             | nonEmptyProps ->
               let propsCall =
@@ -100,11 +100,11 @@ let jsxMapper argv = {
               in
               [
                 (* "div" *)
-                ("", componentNameExpr);
+                (Nolabel, componentNameExpr);
                 (* ReactDOMRe.props className:blabla foo::bar () *)
-                ("props", propsCall);
+                (Labelled "props", propsCall);
                 (* [|moreCreateElementCallsHere|] *)
-                ("", childrenExpr)
+                (Nolabel, childrenExpr)
               ]
             in
             Exp.apply
