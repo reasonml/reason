@@ -2604,9 +2604,7 @@ jsx_arguments:
   | LIDENT OPTIONAL_NO_DEFAULT simple_expr jsx_arguments
       {
         (* a=?b *)
-        let lident_loc = mklocation $startpos($1) $endpos($1) in
-        let loc = mklocation $startpos($1) $endpos($3) in
-        [($1,  mkexp (Pexp_construct (mkloc (Lident "Some") lident_loc, Some $3)) ~loc)] @ $4
+        [("?" ^ $1, $3)] @ $4
       }
   | LIDENT EQUAL simple_expr jsx_arguments
       {

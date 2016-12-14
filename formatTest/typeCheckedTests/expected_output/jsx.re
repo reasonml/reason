@@ -95,8 +95,8 @@ module Namespace = {
 };
 
 module Optional1 = {
-  let createElement ::optional children =>
-    switch optional {
+  let createElement ::requiredOpt children =>
+    switch requiredOpt {
     | Some a => {displayName: a}
     | None => {displayName: "nope"}
     };
@@ -506,10 +506,10 @@ let myFun () =>
 /*   <Bar /> */
 /* </Foo>; */
 /* let res = <Foo a=10 b=(<Foo a=200 />) />; */
-let zzz = "oh hai";
+let zzz = Some "oh hai";
 
 let optionalCallSite =
-  <Optional1 optional=?zzz />;
+  <Optional1 requiredOpt=?zzz />;
 
 fakeRender optionalCallSite;
 
