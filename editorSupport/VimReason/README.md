@@ -19,6 +19,7 @@ if executable('ocamlmerlin')
   let g:syntastic_ocaml_checkers=['merlin']
 endif
 if executable('refmt')
+  au BufNewFile,BufRead *.re set filetype=reason
   let s:reason=substitute(system('which refmt'),'refmt\n$','','') . "../share/reason/editorSupport/VimReason"
   execute "set rtp+=".s:reason
   let g:syntastic_reason_checkers=['merlin']
