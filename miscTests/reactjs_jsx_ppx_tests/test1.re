@@ -1,3 +1,8 @@
+/*
+ * vim: set ft=rust:
+ * vim: set ft=reason:
+ */
+
 /* dont touch these; no annotation */
 type dom = {createElement: unit => unit};
 

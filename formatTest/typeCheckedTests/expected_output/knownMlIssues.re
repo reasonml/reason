@@ -1,3 +1,8 @@
+/*
+ * vim: set ft=rust:
+ * vim: set ft=reason:
+ */
+
 /* [x] fixed */
 type t2 =
   (int, int) /* attributed to entire type not binding */;

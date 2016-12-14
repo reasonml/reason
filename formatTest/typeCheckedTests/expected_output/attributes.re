@@ -1,5 +1,10 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 
+/*
+ * vim: set ft=rust:
+ * vim: set ft=reason:
+ */
+
 /**
  * Generally, dangling attributes [@..] apply to everything to the left of it,
  * up until a comma, equals asignment, arrow, bar, or infix symbol (+/-) or
