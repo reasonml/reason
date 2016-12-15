@@ -1,36 +1,40 @@
 VimReason: Vim support for Reason
 =========================================
 
-Configuring Vim
+Configuring Vim Via a Plugin Manager
 ------------------
 
-Add the following to your "vim rc" folder (usually `~/.vimrc`). This will load
-the `Reason` and `merlin` Vim plugins from `Reason` itself, wherever it is
-installed. Normally, you'd load Vim plugins through some kind of a plugin manager,
-but this approach below allows the plugins to always be in sync with whatever version of
-`Reason` your project (or `PATH`) uses.
+If you are using a plugin manager, add a line such as the following
+to your `.vimrc` file (or wherever you load bundles). This will
+install [vim-reason-loader](https://github.com/reasonml/vim-reason-loader)
+which is a tiny plugin that will automatically load the
+*real* `VimReason` plugin for you.
 
-```vim
-" In your ~/.vimrc
-if executable('ocamlmerlin')
-  " To set the log file and restart:
-  let s:ocamlmerlin=substitute(system('which ocamlmerlin'),'ocamlmerlin\n$','','') . "../share/merlin/vim/"
-  execute "set rtp+=".s:ocamlmerlin
-  let g:syntastic_ocaml_checkers=['merlin']
-endif
-if executable('refmt')
-  let s:reason=substitute(system('which refmt'),'refmt\n$','','') . "../share/reason/editorSupport/VimReason"
-  execute "set rtp+=".s:reason
-  let g:syntastic_reason_checkers=['merlin']
-endif
 ```
+" If using NeoBundle(recommended)
+NeoBundle 'jordwalke/vim-reason-loader'
 
-
+" Or, if using Vundle
+Bundle 'jordwalke/vim-reason-loader'
+```
 Install a `Reason` Toolchain.
 ------------------
-If you haven't already begain the process of installing `Reason`, follow the
+If you haven't already began the process of installing `Reason`, follow the
 [latest
 instructions](https://github.com/facebook/Reason/blob/master/README.md#install-via-npm).
+
+
+More Details about `vim-reason-loader`
+---------------------
+`vim-reason-loader` is great because it will always load the editor plugin itself
+from wherever `ocamlmerlin` and `refmt` are installed in your `PATH`. That means
+that you always have your plugin in sync with your project's dependencies
+on Merlin/Reason. If you have to projects that have two different versions of Reason,
+then the editing experience will be in sync with the version of Reason you are using
+(assuming you ensure your `PATH` contains your project's version of `Reason`).
+
+You should be using a Vim plugin manager like `Vundle`, `NeoBundle` or something else.
+If not, skip to the bottom of this doc to configure Vim manually.
 
 
 Make Vim Awesome:
@@ -163,4 +167,33 @@ autocmd FileType reason let g:pairtools_reason_apostrophe = 0
 LICENSE
 -------
 Some files from VimReason are based on the Rust vim plugin and so we are including that license.
+
+
+
+
+
+Configuring Vim Manually.
+------------------
+If you don't use a Vim plugin manager, you can add the following to your
+"vim rc" folder (usually `~/.vimrc`). This will load
+the `Reason` and `merlin` Vim plugins from `Reason` itself, wherever it is
+installed. Normally, you'd load Vim plugins through some kind of a plugin manager,
+but this approach below allows the plugins to always be in sync with whatever version of
+`Reason` your project (or `PATH`) uses.
+
+```vim
+" In your ~/.vimrc
+if executable('ocamlmerlin')
+  " To set the log file and restart:
+  let s:ocamlmerlin=substitute(system('which ocamlmerlin'),'ocamlmerlin\n$','','') . "../share/merlin/vim/"
+  execute "set rtp+=".s:ocamlmerlin
+  let g:syntastic_ocaml_checkers=['merlin']
+endif
+if executable('refmt')
+  let s:reason=substitute(system('which refmt'),'refmt\n$','','') . "../share/reason/editorSupport/VimReason"
+  execute "set rtp+=".s:reason
+  let g:syntastic_reason_checkers=['merlin']
+endif
+```
+
 
