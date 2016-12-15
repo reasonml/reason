@@ -5,18 +5,19 @@ let _ = div.createElement ()
 module Gah = struct let createElement () = () end
 let _ = Gah.createElement ()
 let asd = ((Bar.createElement ~foo:1 ~bar:2 ["a"; "b"])[@jsxa ][@foo ])
-let asd = ((Bar.createElement ~foo:1 ~bar:2 ["a"; "b"])[@foo ])
-let _ = Baz.Beee.createElement ~baz:2 ["a"; "b"]
-let _ = Bar.createElement [foo]
-let _ = Bar.createElement ~foo:1 ~bar:2 []
-let _ =
-  Bar.createElement ~foo:(Baz.createElement ~baz:(Baaz.createElement []) [])
-    []
-let _ = Div.createElement ~foo:1 ~bar:2 []
+let asd = ((Bar.createElement ~foo:1 ~bar:2 ["a"; "b"] ())[@foo ])
+let _ = Baz.Beee.createElement ~baz:2 ["a"; "b"] ()
+let _ = Bar.createElement [foo] ()
+let _ = Bar.createElement ~foo:1 ~bar:2 [] ()
 let _ =
   Bar.createElement
-    [Baz.Beee.createElement ~baz:2 ~kek:(Foo.createElement []) ["a"; "b"];
-    Bar.createElement []]
+    ~foo:(Baz.createElement ~baz:(Baaz.createElement [] ()) [] ()) [] ()
+let _ = Div.createElement ~foo:1 ~bar:2 [] ()
+let _ =
+  Bar.createElement
+    [Baz.Beee.createElement ~baz:2 ~kek:(Foo.createElement [] ()) ["a"; "b"]
+       ();
+    Bar.createElement [] ()] ()
 let _ =
   ReactRe.createDOMElement "bar"
     (Js.Null.return

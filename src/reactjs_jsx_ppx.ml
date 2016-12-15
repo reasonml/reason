@@ -2,21 +2,19 @@
   `ReactRe.createDOMElement "div" [%bs.obj {props1: 1, props2: b}] [|foo, bar|]`.
   If the function call ends with an underscore, e.g. foo_, turn it into
   `ReactRe.createCompositeElement foo_ [%bs.obj {props1: 1, props2: b}] [|foo, bar|]`.
-  We don't transform the upper-cased case: `Foo.createElement foo::bar [][@JSX]`
-  because our current API works as-is without macro modification. The lower-case
-  case is really just as an escape hatch, e.g. for creating DOM components
+  Transform the upper-cased case: `Foo.createElement foo::bar [][@JSX]` into
+  `Foo.createElement foo::bar [] ()`
 *)
 
 (* Why do we need a transform, instead of just using the previous
-  Foo.createElement format? Because that one currently doesn't type check well for
-  the existing React.js, and doesn't produce great output from BuckleScript. *)
+  Foo.createElement format? Because that one currently doesn't work well for
+  the existing React.js *)
 open Ast_mapper
 open Ast_helper
 open Asttypes
 open Parsetree
 open Longident
 
-(* actual ppx logic *)
 let rec listToArray' lst accum =
   (* not in the sense of converting a list to an array; convert the AST
     reprensentation of a list to the AST reprensentation of an array *)
@@ -99,7 +97,7 @@ let splitPropsCallLabelsFromChildren propsAndChildren =
 let jsxMapper argv = {
   default_mapper with
   expr = (fun mapper expression -> match expression with
-    (* spotted a function application! Does it have the @JSX attribute *)
+    (* spotted a function application! Does it have the @JSX attribute? *)
     | {
         pexp_desc = Pexp_apply ({pexp_desc = createElementWrap} as wrap, propsAndChildren);
         pexp_attributes
@@ -116,7 +114,10 @@ let jsxMapper argv = {
               ~loc
               ~attrs
               wrap
-              (propsAndChildren |> List.map (fun (label, expr) -> (label, mapper.expr mapper expr)))
+              (
+                (propsAndChildren |> List.map (fun (label, expr) -> (label, mapper.expr mapper expr)))
+                  @ [(""), Exp.construct ~loc {loc; txt = Lident "()"} None]
+              )
           (* div prop1::foo prop2:bar [] *)
           (* the div is Pexp_ident "div" *)
           (* similar code to the above case, with a few exceptions *)
