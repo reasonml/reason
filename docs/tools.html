@@ -159,8 +159,18 @@ B relative/path/to/your/build/artifacts/dir/
 
 ### Vim
 
-The [VimReason Plugin](https://github.com/facebook/reason/tree/master/editorSupport/VimReason) plugin
-implements all the features that the Atom plugin implements.
+The [vim-reason-loader](https://github.com/reasonml/vim-reason-loader) plugin will load the editor support
+from wherever `refmt` / `ocamlmerlin` live on the `PATH`. Install it like you would any Vim plugin.
+(You may be using a different plugin manager than `NeoBundle`).
+
+```
+" If using NeoBundle(recommended)
+NeoBundle 'jordwalke/vim-reason-loader'
+```
+
+`vim-reason-loader` loads the *real*
+[editor support](https://github.com/facebook/reason/tree/master/editorSupport/VimReason)
+from wherever `Reason` is installed. The Vim plugin supports:
 
  * **Syntax Highlighting **
  * **Error Reporting **
@@ -168,6 +178,10 @@ implements all the features that the Atom plugin implements.
 
 
 <img src="images/VimReason.png" style="width:100%; max-width:470px; max-height:440px" />
+
+In order for the plugin to work, `refmt` and all of the other compiler tooling must be
+in your `PATH`. Follow the instructions for managing your environment
+[here](https://reasonml.github.io/ReasonProject/#reasonproject-editor-support).
 
 ### Emacs
 
