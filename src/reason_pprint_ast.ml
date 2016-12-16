@@ -1595,7 +1595,7 @@ let rec lineZeroMeaningfulContent_ line length idx accum =
 let lineZeroMeaningfulContent line = lineZeroMeaningfulContent_ line (String.length line) 1 0
 
 let formatComment_ txt =
-  let commLines = Syntax_util.split ~by:'\n' (wrapComment txt) in
+  let commLines = Syntax_util.split_by ~keep_empty:true (fun x -> x = '\n') (wrapComment txt) in
   match commLines with
   | [] -> atom ""
   | [hd] ->
