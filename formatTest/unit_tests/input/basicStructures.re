@@ -528,3 +528,6 @@ let anotherRecord = {
   name: "joe++",
   age: testRecord.age + 10
 };
+
+/* Requested in #566 */
+let break_after_equal = no_break_from_here (some_call to_here);
