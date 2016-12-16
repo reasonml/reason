@@ -2185,12 +2185,16 @@ let formatCoerce expr optType coerced =
  *       20
  *     );
  *
+ * The outer list wrapping fixes #566: format should break the whole
+ * application before breaking arguments.
  *)
 let formatIndentedApplication headApplicationItem argApplicationItems =
-  label
-    ~space:true
-    headApplicationItem
-    (makeAppList argApplicationItems)
+  makeList ~inline:(true, true) ~postSpace:true ~break:IfNeed [
+    label
+      ~space:true
+      headApplicationItem
+      (makeAppList argApplicationItems)
+  ]
 
 
 (* The loc, is an optional location or the returned app terms *)
