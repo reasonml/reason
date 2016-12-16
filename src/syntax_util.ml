@@ -142,29 +142,25 @@ let identifier_mapper f =
 
 (** unescape_stars_slashes_mapper unescapes all stars and slashes in an AST *)
 let unescape_stars_slashes_mapper =
-  let unescape_stars_slashes str =
-    let len = String.length str in
-    if len < 2 then
-      str
-    else
-      let ending = String.sub str 1 (len - 1) in
-    String.sub str 0 1 ^
+  let unescape_stars_slashes = function
+    | str when String.length str <= 1 -> str
+    | "/\\*" -> "/*"
+    | "*\\/" -> "*/"
+    | str ->
       replace_string "\\*" "*"
-        (replace_string ("\\/") "/" ending)
+        (replace_string "\\/" "/" str)
   in
   identifier_mapper unescape_stars_slashes
 
 (** escape_stars_slashes_mapper escapes all stars and slashes in an AST *)
 let escape_stars_slashes_mapper =
-  let escape_stars_slashes str =
-    let len = String.length str in
-    if len < 2 then
-      str
-    else
-      let ending = String.sub str 1 (len -1) in
-      String.sub str 0 1 ^
-        replace_string "*" "\\*"
-          (replace_string "/" "\\/" ending)
+  let escape_stars_slashes = function
+    | str when String.length str <= 1 -> str
+    | "/*" -> "/\\*"
+    | "*/" -> "*\\/"
+    | str ->
+      replace_string "/*" "/\\*"
+        (replace_string "*/" "*\\/" str)
   in
   identifier_mapper escape_stars_slashes
 
