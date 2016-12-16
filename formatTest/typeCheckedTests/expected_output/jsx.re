@@ -95,8 +95,8 @@ module Namespace = {
 };
 
 module Optional1 = {
-  let createElement ::requiredOpt children =>
-    switch requiredOpt {
+  let createElement ::required children =>
+    switch required {
     | Some a => {displayName: a}
     | None => {displayName: "nope"}
     };
@@ -112,9 +112,9 @@ module Optional2 = {
 
 module DefaultArg = {
   let createElement
-      ::optional=(Some "foo")
+      ::default=(Some "foo")
       children =>
-    switch optional {
+    switch default {
     | Some a => {displayName: a}
     | None => {displayName: "nope"}
     };
@@ -509,7 +509,7 @@ let myFun () =>
 let zzz = Some "oh hai";
 
 let optionalCallSite =
-  <Optional1 requiredOpt=?zzz />;
+  <Optional1 required=?zzz />;
 
 fakeRender optionalCallSite;
 
@@ -517,6 +517,15 @@ let optionalArgument = <Optional2 />;
 
 fakeRender optionalArgument;
 
+let optionalArgument =
+  <Optional2 optional=?zzz />;
+
+fakeRender optionalArgument;
+
 let defaultArg = <DefaultArg />;
+
+fakeRender defaultArg;
+
+let defaultArg = <DefaultArg default=zzz />;
 
 fakeRender defaultArg;
