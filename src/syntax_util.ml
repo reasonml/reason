@@ -140,27 +140,25 @@ let identifier_mapper f =
   end;
 }
 
-(** unescape_stars_slashes_mapper unescapes all stars and slashes in an AST *)
+(** escape special characters that conflicts with lexer tokens *)
+
+let mappings = [("/*", "/\\*"); ("*/", "*\\/")]
+
 let unescape_stars_slashes_mapper =
-  let unescape_stars_slashes = function
-    | str when String.length str <= 1 -> str
-    | "/\\*" -> "/*"
-    | "*\\/" -> "*/"
-    | str ->
-      replace_string "\\*" "*"
-        (replace_string "\\/" "/" str)
+  let unescape_stars_slashes str =
+    if String.length str < 2 then str else
+    List.fold_left
+      (fun str (unescaped, escaped) -> replace_string escaped unescaped str)
+      str mappings
   in
   identifier_mapper unescape_stars_slashes
 
-(** escape_stars_slashes_mapper escapes all stars and slashes in an AST *)
 let escape_stars_slashes_mapper =
-  let escape_stars_slashes = function
-    | str when String.length str <= 1 -> str
-    | "/*" -> "/\\*"
-    | "*/" -> "*\\/"
-    | str ->
-      replace_string "/*" "/\\*"
-        (replace_string "*/" "*\\/" str)
+  let escape_stars_slashes str =
+    if String.length str < 2 then str else
+    List.fold_left
+      (fun str (unescaped, escaped) -> replace_string unescaped escaped str)
+      str mappings
   in
   identifier_mapper escape_stars_slashes
 
