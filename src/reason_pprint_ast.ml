@@ -699,9 +699,11 @@ let rules = [
   ];
 ]
 
-(* without_prefixed_backslashes removes any prefixing backslashes *)
-let without_prefixed_backslashes str =
-  Re_str.replace_first (Re_str.regexp "\\\\*\\(.*\\)") ("\\1") str
+(* remove all prefixing backslashes, e.g. \=== becomes === *)
+let rec without_prefixed_backslashes str =
+  if str = "" then str
+  else if String.get str 0 = '\\' then String.sub str 1 (String.length str - 1)
+  else str
 
 let indexOfFirstMatch ~prec lst =
   let rec indexOfFirstMatchN ~prec lst n = match lst with
@@ -1463,10 +1465,6 @@ let isListy = function
   | Easy_format.List _ -> true
   | _ -> false
 
-
-let strip_trailing_whitespace str =
-   Re_str.global_replace (Re_str.regexp " +$") "" str
-
 let easyFormatToFormatter f x =
   let buf = Buffer.create 1000 in
   let fauxmatter = Format.formatter_of_buffer buf in
@@ -1474,7 +1472,7 @@ let easyFormatToFormatter f x =
   if debugWithHtml.contents then
     Easy_format.Pretty.define_styles fauxmatter html_escape html_style;
   let _ = Easy_format.Pretty.to_formatter fauxmatter x in
-  let trimmed = strip_trailing_whitespace (Buffer.contents buf) |> String.trim in
+  let trimmed = Syntax_util.strip_trailing_whitespace (Buffer.contents buf) in
   Format.fprintf f "%s\n" trimmed;
   pp_print_flush f ()
 
@@ -1521,25 +1519,25 @@ let rec extractComments comments tester =
     tester attLoc.loc_start.pos_cnum attachmentLocLastChar physLoc.loc_start.pos_cnum physLastChar
   )
 
-let space = " "
-(* Can't you tell the difference? *)
-let tab = "	"
-let lineZeroHasMeaningfulContent str =
-  not (Re_str.string_match (Re_str.regexp ("^/[\\*" ^ space ^ tab ^ "]*$")) str 0)
+(* Don't use `trim` since it kills line return too? *)
+let rec beginsWithStar_ line length idx =
+  if idx = length then false
+  else
+    let ch = String.get line idx in
+    if ch = '*' then true
+    else if ch = '\t' || ch = ' ' then beginsWithStar_ line length (idx + 1)
+    else false
 
-let beginsWithStar str =
-  Re_str.string_match (Re_str.regexp ("^[" ^ space ^ tab ^ "]*\\*")) str 0
+let beginsWithStar line = beginsWithStar_ line (String.length line) 0
 
-let numLeadingSpace str =
-  (* Actually, always true *)
-  if Re_str.string_match (Re_str.regexp ("^[" ^ space ^ tab ^ "]*")) str 0 then
-    String.length (Re_str.matched_string str)
-  else 0
+let rec numLeadingSpace_ line length idx accum =
+  if idx = length then accum
+  else
+    let ch = String.get line idx in
+    if ch = '\t' || ch = ' ' then numLeadingSpace_ line length (idx + 1) (accum + 1)
+    else accum
 
-let spaceBeforeMeaningfulContent str =
-  if Re_str.string_match (Re_str.regexp ("^/[\\*" ^ space ^ tab ^ "]*")) str 0 then
-    String.length (Re_str.matched_string str)
-  else 0
+let numLeadingSpace line = numLeadingSpace_ line (String.length line) 0 0
 
 (* Computes the smallest leading spaces for non-empty lines *)
 let smallestLeadingSpaces strs =
@@ -1584,26 +1582,39 @@ let string_after s n = String.sub s n (String.length s - n)
 let wrapComment txt =
   ("/*" ^ txt ^ "*/")
 
+(* This is a special-purpose functions only used by `formatComment_`. Notice we
+skip a char below during usage because we know the comment starts with `/*` *)
+let rec lineZeroMeaningfulContent_ line length idx accum =
+  if idx = length then None
+  else
+    let ch = String.get line idx in
+    if ch = '\t' || ch = ' ' || ch = '*' then
+      lineZeroMeaningfulContent_ line length (idx + 1) (accum + 1)
+    else Some accum
+
+let lineZeroMeaningfulContent line = lineZeroMeaningfulContent_ line (String.length line) 1 0
+
 let formatComment_ txt =
-  let commLines = Re_str.split_delim (Re_str.regexp "\n") (wrapComment txt) in
+  let commLines = Syntax_util.split_by ~keep_empty:true (fun x -> x = '\n') (wrapComment txt) in
   match commLines with
   | [] -> atom ""
   | [hd] ->
     makeList ~inline:(true, true) ~postSpace:true ~preSpace:true ~indent:0 ~break:IfNeed [atom hd]
   | zero::one::tl ->
-     let hasMeaningfulContentOnLineZero = lineZeroHasMeaningfulContent zero in
-     let attemptRemoveCount = (smallestLeadingSpaces (one::tl)) in
-     let leftPad =
-       if beginsWithStar one then 1
-       else (if hasMeaningfulContentOnLineZero then spaceBeforeMeaningfulContent zero else 1)
-     in
-     let padNonOpeningLine s =
-       let numLeadingSpaceForThisLine = numLeadingSpace s in
-       if String.length s == 0 then ""
-       else (String.make leftPad ' ') ^
-              (string_after s (min attemptRemoveCount numLeadingSpaceForThisLine)) in
-     let lines = zero :: List.map padNonOpeningLine (one::tl) in
-     makeList ~inline:(true, true) ~indent:0 ~break:Always_rec (List.map atom lines)
+    let attemptRemoveCount = (smallestLeadingSpaces (one::tl)) in
+    let leftPad =
+      if beginsWithStar one then 1
+      else match lineZeroMeaningfulContent zero with
+      | None -> 1
+      | Some num -> num + 1
+    in
+    let padNonOpeningLine s =
+      let numLeadingSpaceForThisLine = numLeadingSpace s in
+      if String.length s == 0 then ""
+      else (String.make leftPad ' ') ^
+            (string_after s (min attemptRemoveCount numLeadingSpaceForThisLine)) in
+    let lines = zero :: List.map padNonOpeningLine (one::tl) in
+    makeList ~inline:(true, true) ~indent:0 ~break:Always_rec (List.map atom lines)
 
 let formatComment ?locOpt txt =
   let list = formatComment_ txt in

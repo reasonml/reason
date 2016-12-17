@@ -26,7 +26,6 @@ depends: [
   "menhir"       {>= "20160303"}
   "merlin"       {>= "2.5.0"}
   "merlin-extend"{>= "0.3"}
-  "re"           {>= "1.5.0"}
 ]
 depopts: [
 ]

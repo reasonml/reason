@@ -62,6 +62,52 @@ let replace_string old_str new_str str =
     loop 0 occurrence;
     Buffer.contents buffer
 
+(* This is lifted from https://github.com/bloomberg/bucklescript/blob/14d94bb9c7536b4c5f1208c8e8cc715ca002853d/jscomp/ext/ext_string.ml#L32
+  Thanks @bobzhang and @hhugo! *)
+let split_by ?(keep_empty=false) is_delim str =
+  let len = String.length str in
+  let rec loop acc last_pos pos =
+    if pos = -1 then
+      if last_pos = 0 && not keep_empty then
+        (*
+           {[ split " test_unsafe_obj_ffi_ppx.cmi" ~keep_empty:false ' ']}
+        *)
+        acc
+      else
+        String.sub str 0 last_pos :: acc
+    else
+      if is_delim str.[pos] then
+        let new_len = (last_pos - pos - 1) in
+        if new_len <> 0 || keep_empty then
+          let v = String.sub str (pos + 1) new_len in
+          loop ( v :: acc)
+            pos (pos - 1)
+        else loop acc pos (pos - 1)
+    else loop acc last_pos (pos - 1)
+  in
+  loop [] len (len - 1)
+
+let rec trim_right_idx str idx =
+  if idx = -1 then 0
+  else
+    match String.get str idx with
+    | '\t' | ' ' | '\n' | '\r' -> trim_right_idx str (idx - 1)
+    | _ -> idx + 1
+
+let trim_right str =
+  let length = String.length str in
+  if length = 0 then ""
+  else
+    let index = trim_right_idx str (length - 1) in
+    if index = 0 then ""
+    else if index = length then str
+    else String.sub str 0 index
+
+let strip_trailing_whitespace str =
+  split_by ~keep_empty:true (fun x -> x = '\n') str
+  |> List.map trim_right
+  |> String.concat "\n"
+  |> String.trim
 
 module StringMap = Map.Make (String)
 
