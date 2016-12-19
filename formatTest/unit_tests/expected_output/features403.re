@@ -1,11 +1,14 @@
-type t = | A {a: int} | B;
+type t =
+  | A {a: int}
+  | B;
 
 let f =
   fun
   | B => 0
   | A {a} => a;
 
-type nonrec u 'a = | Box 'a;
+type nonrec u 'a =
+  | Box 'a;
 
 type expr 'a =
   | Val {value: 'a} :expr 'a
@@ -34,6 +37,7 @@ let rec eval: type a. expr a => a =
       }
     };
 
-type hlist = | [] :hlist;
+type hlist =
+  | [] :hlist;
 
-let foo (type a) (type b) => 5;
+let foo (type a b) => 5;
