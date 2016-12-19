@@ -3977,7 +3977,18 @@ label_declarations:
 ;
 
 constructor_arguments:
-  | non_arrowed_simple_core_type_list           { Pcstr_tuple (List.rev $1) }
+  | non_arrowed_simple_core_type
+      {
+        match $1 with
+        | Core_type ct -> Pcstr_tuple [ct]
+        | Record_type rt -> Pcstr_record rt
+      }
+  | non_arrowed_simple_core_type non_arrowed_simple_core_type_list
+      {
+        let core_type_loc = mklocation $startpos($1) $endpos($1) in
+        let ct = only_core_type $1 core_type_loc in
+        Pcstr_tuple (ct :: List.rev $2)
+      }
 ;
 
 
