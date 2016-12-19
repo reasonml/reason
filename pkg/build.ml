@@ -51,37 +51,6 @@ let () =
     Pkg.bin  ~auto:true "src/reactjs_jsx_ppx" ~dst:"reactjs_jsx_ppx";
     Pkg.share "editorSupport/emacs/refmt.el" ~dst:"../emacs/site-lisp/refmt.el";
     Pkg.share "editorSupport/emacs/reason-mode.el" ~dst:"../emacs/site-lisp/reason-mode.el";
-    (* atom-reason *)
-    (* Unfortunately we have to specificy each individual file *)
-    Pkg.share "editorSupport/atom-reason/package.json" ~dst:"editorSupport/atom-reason/package.json";
-    Pkg.share "editorSupport/atom-reason/README.md" ~dst:"editorSupport/atom-reason/README.md";
-    Pkg.share "editorSupport/atom-reason/output_byte_debug_js/app.js" ~dst:"editorSupport/atom-reason/output_byte_debug_js/app.js";
-
-    Pkg.share "editorSupport/atom-reason/lib/main.js" ~dst:"editorSupport/atom-reason/lib/main.js";
-    Pkg.share "editorSupport/atom-reason/lib/ReasonDiagnosticsProvider.js" ~dst:"editorSupport/atom-reason/lib/ReasonDiagnosticsProvider.js";
-    Pkg.share "editorSupport/atom-reason/lib/constants.js" ~dst:"editorSupport/atom-reason/lib/constants.js";
-    Pkg.share "editorSupport/atom-reason/lib/Notiflyer.js" ~dst:"editorSupport/atom-reason/lib/Notiflyer.js";
-    Pkg.share "editorSupport/atom-reason/lib/fixedEnv.js" ~dst:"editorSupport/atom-reason/lib/fixedEnv.js";
-    Pkg.share "editorSupport/atom-reason/lib/environment-helpers.js" ~dst:"editorSupport/atom-reason/lib/environment-helpers.js";
-
-    Pkg.share "editorSupport/atom-reason/Reasonify/formatErrorMessages.js" ~dst:"editorSupport/atom-reason/Reasonify/formatErrorMessages.js";
-    Pkg.share "editorSupport/atom-reason/Reasonify/index.js" ~dst:"editorSupport/atom-reason/Reasonify/index.js";
-
-    Pkg.share "editorSupport/atom-reason/styles/status-bar.less" ~dst:"editorSupport/atom-reason/styles/status-bar.less";
-    Pkg.share "editorSupport/atom-reason/styles/type-hint.less" ~dst:"editorSupport/atom-reason/styles/type-hint.less";
-
-    Pkg.share "editorSupport/atom-reason/keymaps/atom-reason.json" ~dst:"editorSupport/atom-reason/keymaps/atom-reason.json";
-
-    (* language-reason *)
-    Pkg.share "editorSupport/language-reason/package.json" ~dst:"editorSupport/language-reason/package.json";
-    Pkg.share "editorSupport/language-reason/grammars/reason.json" ~dst:"editorSupport/language-reason/grammars/reason.json";
-    Pkg.share "editorSupport/language-reason/grammars/reason-hover-type.json" ~dst:"editorSupport/language-reason/grammars/reason-hover-type.json";
-    Pkg.share "editorSupport/language-reason/settings/reason.cson" ~dst:"editorSupport/language-reason/settings/reason.cson";
-    Pkg.share "editorSupport/language-reason/snippets/reason.cson" ~dst:"editorSupport/language-reason/snippets/reason.cson";
-    Pkg.share "editorSupport/language-reason/lib/language-reason-view.coffee" ~dst:"editorSupport/language-reason/lib/language-reason-view.coffee";
-    Pkg.share "editorSupport/language-reason/lib/language-reason.coffee" ~dst:"editorSupport/language-reason/lib/language-reason.coffee";
-    Pkg.share "editorSupport/language-reason/README.md" ~dst:"editorSupport/language-reason/README.md";
-    Pkg.share "editorSupport/language-reason/LICENSE.md" ~dst:"editorSupport/language-reason/LICENSE.md";
 
     (* VimReason *)
     Pkg.share "editorSupport/VimReason/after/syntax/reason.vim" ~dst:"editorSupport/VimReason/after/syntax/reason.vim";

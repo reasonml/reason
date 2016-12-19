@@ -95,21 +95,17 @@ them use `Merlin` to power their type driven interactive editing experience.
 ### Atom
 
 ##### Install
-`Reason` works best in Atom when the `nuclide` plugin is installed. There is _one_ plugin called `atom-reason-loader` that must be installed using the instructions here.
-`atom-reason-loader` has one job - to dynamically install any other necessary `Reason` plugins. Your
-OPAM installation of `Reason` provides the _real_ IDE plugins, that `atom-reason-loader` will install.
-Those plugins include `atom-reason` (IDE features), and `language-reason` (syntax highlighting).
+Install the `nuclide` plugin.
 
 > **Installation Instructions**
 >
 > - Install [Atom](https://atom.io/) editor.
 > - Open the package installer from the menu `Packages > Settings View > Install Packages/Themes`.
 > - Search for and install `nuclide` if not already installed.
-> - Then install `atom-reason-loader`.
-> - `atom-reason-loader` will automatically install/load two plugins (`atom-reason` and
-> `language-reason`) and will walk you through removing any existing conflicting versions.
-> - When installation is complete, open a `.re` file and make sure the `Reason` syntax is selected
-> (lower right corner of Atom). Restarting Atom after installation is not a bad idea but should not be necessary.
+> - If you don't want to turn on all of Nuclide's features, you can disable most of it except for
+    nuclide-ocaml and its dependencies (hyperclick, autocomplete, linter,
+    nuclide-code-format, nuclide-outline-view and nuclide-type-hint).
+
 
 #### Features/Configuration
 The `Reason` IDE experience is powered by `refmt`, the `Reason` AST formatting tool, and
@@ -151,7 +147,8 @@ B relative/path/to/your/build/artifacts/dir/
 > - As always, `refmt` will remove superfluous parenthesis, or precedence tokens.
 > - `refmt` will wrap your lines at the width you have configured in your
 > plugin settings. To change these, open the Package Settings (`Packages > Settings View > Manage Packages`)
-> and click on `atom-reason` in order to customize the "Default Print Width of Refmt" configuration.
+> and click on `nuclide`; scroll to the `Nuclide-ocaml` section add add
+> "-print-width yourWidthNumber" to "Additional flags to pass to refmt".
 
 
 <img style="width:100%; max-width:470px; max-height:440px" src="images/Autocomplete.png" />
