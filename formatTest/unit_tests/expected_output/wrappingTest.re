@@ -1915,15 +1915,13 @@ let myFunc ::firstArg ::another ::fl => {
 type inputEchoRecord 'a = {inputIs: 'a};
 
 let df_locallyAbstractFunc
-    (type a)
-    (type b)
+    (type a b)
     (input: a) => {
   inputIs: input
 }; /* With setting ReturnValOnSameLine */
 
 let df_locallyAbstractFuncNotSugared
-    (type a)
-    (type b)
+    (type a b)
     (input: a) => {
   inputIs: input
 };
