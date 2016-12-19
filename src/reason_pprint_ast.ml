@@ -5012,7 +5012,7 @@ class printer  ()= object(self:'self)
   method exception_declaration ed =
     let pcd_name = ed.pext_name in
     let pcd_loc = ed.pext_loc in
-    let pcd_attributes = List.filter (fun (loc, _) -> loc.txt <> "ocaml.doc") ed.pext_attributes in
+    let pcd_attributes = ed.pext_attributes in
     let exn_arg = match ed.pext_kind with
       | Pext_decl (args, type_opt) ->
           let pcd_args, pcd_res = args, type_opt in
@@ -5922,8 +5922,6 @@ class printer  ()= object(self:'self)
       self#attach_std_item_attrs te.ptyext_attributes item
     in
     formatOneTypeExtStandard (atom "type") te
-
-  (*method extension_constructor = wrap default#extension_constructor*)
 
   (* [allowUnguardedSequenceBodies] allows sequence expressions {} to the right of `=>` to not
      be guarded in `{}` braces. *)
