@@ -3947,11 +3947,17 @@ class printer  ()= object(self:'self)
             else
               let args = SourceMap (p.ppat_loc, (self#label_exp (label, eo, p)))::nextArgs in
               (args, return)
-        | Pexp_newtype (str,e) ->
-           let typeParamLayout = atom ("(type " ^ str ^ ")") in
-           let (nextArgs, return) = argsAndReturn e in
-           ((typeParamLayout)::nextArgs, return)
+        | Pexp_newtype (newtype,e) -> newtypesAndReturn [newtype] e
         | _ -> ([], xx)
+    and newtypesAndReturn newtypes xx =
+      match xx.pexp_desc with
+        | Pexp_newtype (newtype,e) when xx.pexp_attributes = [] ->
+          newtypesAndReturn (newtype :: newtypes) e
+        | _ ->
+          let typeParamLayout =
+            atom ("(type " ^ String.concat " " (List.rev newtypes) ^ ")") in
+          let (nextArgs, return) = argsAndReturn xx in
+          (typeParamLayout::nextArgs, return)
     in argsAndReturn x
 
   (* Returns the (curriedModule, returnStructure) for a functor *)
