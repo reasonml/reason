@@ -12,10 +12,10 @@ which is a tiny plugin that will automatically load the
 
 ```
 " If using NeoBundle(recommended)
-NeoBundle 'jordwalke/vim-reason-loader'
+NeoBundle 'reasonml/vim-reason-loader'
 
 " Or, if using Vundle
-Bundle 'jordwalke/vim-reason-loader'
+Bundle 'reasonml/vim-reason-loader'
 ```
 Install a `Reason` Toolchain.
 ------------------
