@@ -2610,7 +2610,7 @@ class printer  ()= object(self:'self)
       makeList ~postSpace:true (if print_bar then [atom "|"; lbl] else [lbl])
     in
     let args = match pcd_args with
-      | Pcstr_record r -> [self#record_declaration r]
+      | Pcstr_record r -> [makeList [self#record_declaration r]]
       | Pcstr_tuple l -> List.mapi ampersand_helper l
     in
     let everything = match (args, gadtRes) with
