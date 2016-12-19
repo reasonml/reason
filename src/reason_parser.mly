@@ -282,10 +282,11 @@ let is_pattern_list_single_any = function
 
 let set_structure_item_location x loc = {x with pstr_loc = loc};;
 
-let mkoperator name pos =
-  let loc = rhs_loc pos in
+let mkoperator_loc name loc =
   Exp.mk ~loc (Pexp_ident(mkloc (Lident name) loc))
 
+let mkoperator name pos =
+  mkoperator_loc name (rhs_loc pos)
 
 (*
   Ghost expressions and patterns:
@@ -314,8 +315,11 @@ let mkoperator name pos =
 let ghunit ?(loc=dummy_loc ()) () =
   mkexp ~ghost:true ~loc (Pexp_construct (mknoloc (Lident "()"), None))
 
+let mkinfixop arg1 op arg2 =
+  mkexp(Pexp_apply(op, [Nolabel, arg1; Nolabel, arg2]))
+
 let mkinfix arg1 name arg2 =
-  mkexp(Pexp_apply(mkoperator name 2, [Nolabel, arg1; Nolabel, arg2]))
+  mkinfixop arg1 (mkoperator name 2) arg2
 
 let neg_string f =
   if String.length f > 0 && f.[0] = '-'
@@ -3050,7 +3054,7 @@ _simple_expr:
   | simple_expr SHARP label
       { mkexp(Pexp_send($1, $3)) }
   | simple_expr as_loc(SHARPOP) simple_expr
-      { mkinfix $1 "#" $3 }
+      { mkinfixop $1 (mkoperator_loc $2.txt $2.loc) $3 }
   | LPAREN MODULE module_expr RPAREN
       { mkexp (Pexp_pack $3) }
   | LPAREN MODULE module_expr COLON package_type RPAREN
