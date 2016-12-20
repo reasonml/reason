@@ -805,7 +805,7 @@ let built_in_explicit_arity_constructors = ["Some"; "Assert_failure"; "Match_fai
 
 let jsx_component module_name attrs children loc =
   let firstPart = (List.hd (Longident.flatten module_name)) in
-  let lident = if String.get firstPart 0 != '_' && firstPart = String.capitalize firstPart then
+  let lident = if String.get firstPart 0 != '_' && firstPart = String.capitalize_ascii firstPart then
     (* firstPart will be non-empty so the 0th access is fine. Modules can't start with underscore *)
     Ldot(module_name, "createElement")
   else
