@@ -2094,7 +2094,7 @@ let makeLetSequenceSingleLine letItems =
 let f = Format.std_formatter
 
 (* postSpace is so that when comments are interleaved, we still use spacing rules. *)
-let makeUngaurdedLetSequence letItems =
+let makeUnguardedLetSequence letItems =
   makeList
     ~break:Always_rec
     ~inline:(true, true)
@@ -4222,7 +4222,7 @@ class printer  ()= object(self:'self)
 
   (* Ensures that the constraint is formatted properly for sake of function
      binding (formatted without arrows)
-     let x y z : no_unguareded_arrows_allowed_here => ret;
+     let x y z : no_unguarded_arrows_allowed_here => ret;
    *)
   method normalizeFunctionArgsConstraint argsList return =
     match return.pexp_desc with
@@ -6024,7 +6024,7 @@ class printer  ()= object(self:'self)
             | [hd] -> hd
             (* In this case, we don't need any additional indentation, because there aren't
                wrapping {} which would cause zero indentation to look strange. *)
-            | lst -> makeUngaurdedLetSequence lst
+            | lst -> makeUnguardedLetSequence lst
         else self#under_pipe#unparseExpr pc_rhs in
       let row =
         let withoutBars = appendLabelToLast orsWithWhereAndArrowOnLast rhs in
