@@ -107,6 +107,14 @@ module List3 = {
     let createElement children => {displayName: "test"};
 };
 
+module NotReallyJSX = {
+    let createElement ::foo ::bar children => {displayName: "test"};
+};
+
+let notReallyJSX ::foo ::bar children => {
+    displayName: "test"
+};
+
 let fakeRender (el:component) => {
     el.displayName
 };
@@ -343,3 +351,8 @@ let defaultArg = <DefaultArg />;
 fakeRender defaultArg;
 let defaultArg = <DefaultArg default=zzz />;
 fakeRender defaultArg;
+
+NotReallyJSX.createElement [] foo::1 bar::2 [@JSX];
+NotReallyJSX.createElement foo::1 [] bar::2 [@JSX];
+notReallyJSX [] foo::1 [@JSX];
+notReallyJSX foo::1 [] bar::2 [@JSX];

@@ -860,22 +860,22 @@ type funcReturnStyle =
 let rec detectJSXComponent e attributes l =
   match (e, attributes) with
     | (Pexp_ident loc, ({txt = "JSX"; _}, PStr []) :: tail) ->
-      let rec checkChildren arguments nrOfChildren =
+      let rec checkChildren arguments =
         match arguments with
-        | ("", {pexp_desc = Pexp_construct ({txt = Lident "::"}, _)}) :: tail
-        | ("", {pexp_desc = Pexp_construct ({txt = Lident "[]"}, _)}) :: tail ->
-            checkChildren tail (nrOfChildren + 1)
-        | ("", _) :: tail -> false
-        | (lbl, _)::tail -> checkChildren tail nrOfChildren
-        | [] -> nrOfChildren = 1
+        | ("", {pexp_desc = Pexp_construct ({txt = Lident "::"}, _)}) :: []
+        | ("", {pexp_desc = Pexp_construct ({txt = Lident "[]"}, _)}) :: [] ->
+          true
+        | ("", _) :: [] -> false
+        | (label, _) :: tail -> checkChildren tail
+        | [] -> false
       in
       let moduleNameList = List.rev (List.tl (List.rev (Longident.flatten loc.txt))) in
       if List.length moduleNameList > 0 then
-        if Longident.last loc.txt = "createElement" && checkChildren l 0 then
+        if Longident.last loc.txt = "createElement" && checkChildren l then
           Some (String.concat "." moduleNameList)
         else
           None
-      else if checkChildren l 0 then
+      else if checkChildren l then
         Some (Longident.last loc.txt)
       else
         None
