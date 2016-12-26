@@ -4,7 +4,7 @@ before_install:
   - brew update
   - brew install opam
   - opam init
-  - opam switch 4.02.3
+  - opam switch 4.04.0
   - eval `opam config env`
   - opam update
 before_script:
