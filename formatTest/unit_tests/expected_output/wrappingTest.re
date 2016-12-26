@@ -1914,9 +1914,7 @@ let myFunc ::firstArg ::another ::fl => {
 
 type inputEchoRecord 'a = {inputIs: 'a};
 
-let df_locallyAbstractFunc
-    (type a b)
-    (input: a) => {
+let df_locallyAbstractFunc (type a b) (input: a) => {
   inputIs: input
 }; /* With setting ReturnValOnSameLine */
 
@@ -2004,7 +2002,7 @@ let df_locallyAbstractFuncAnnotated:
  * Ppat_constraint. In this case, they're not equal!
  */
 let df_locallyAbstractFuncAnnotated: 'figureMeOut =
-  fun (type a) (type b) => (
+  fun (type a b) => (
     fun (input: a) (input2: b) => (
       {inputIs: input},
       {inputIs: input2}
