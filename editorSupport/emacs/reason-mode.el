@@ -1141,8 +1141,7 @@ This is written mainly to be used as `end-of-defun-function' for Reason."
   )
 
 ;;;###autoload
-(add-to-list 'auto-mode-alist '("\\.re\\'" . reason-mode))
-(add-to-list 'auto-mode-alist '("\\.rei\\'" . reason-mode))
+(add-to-list 'auto-mode-alist '("\\.rei?\\'" . reason-mode))
 
 
 (defun reason-mode-reload ()
