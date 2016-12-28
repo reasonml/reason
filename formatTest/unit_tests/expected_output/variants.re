@@ -483,3 +483,34 @@ let listPatternMayEvenIncludeAliases x =>
     ()
   | _ => ()
   };
+
+/*
+ * Testing extensible variants
+ */
+type attr = ..;
+
+/* `of` is optional */
+type attr +=
+  | Str string;
+
+type attr +=
+  | Point int int;
+
+type attr +=
+  | Float float
+  | Char char;
+
+type tag 'props = ..;
+
+type titleProps = {title: string};
+
+type tag 'props +=
+  | Title :tag titleProps
+  | Count int :tag int;
+
+module Graph = {
+  type node = ..;
+};
+
+type Graph.node +=
+  | Str = Graph.Str;
