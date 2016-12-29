@@ -358,3 +358,8 @@ NotReallyJSX.createElement [] foo::1 bar::2 [@JSX];
 NotReallyJSX.createElement foo::1 [] bar::2 [@JSX];
 notReallyJSX [] foo::1 [@JSX];
 notReallyJSX foo::1 [] bar::2 [@JSX];
+
+/* children can be at any position */
+span children::[] test::true foo::2 () [@JSX];
+
+Optional1.createElement children::[] required::(Some "hi") () [@JSX];
