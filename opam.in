@@ -24,7 +24,6 @@ depends: [
   "ocamlfind"    {build}
   "utop"         {>= "1.17"}
   "menhir"       {>= "20160303"}
-  "merlin"       {>= "2.5.0"}
   "merlin-extend"{>= "0.3"}
 ]
 depopts: [

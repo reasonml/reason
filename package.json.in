@@ -46,7 +46,6 @@
     },
     "name": "reason",
     "dependencies": {
-        "@opam-alpha/merlin": "^ 2.5.0",
         "@opam-alpha/ocamlfind": "*",
         "@opam-alpha/easy-format": "^ 1.2.0",
         "@opam-alpha/merlin-extend": "^ 0.3.0",
