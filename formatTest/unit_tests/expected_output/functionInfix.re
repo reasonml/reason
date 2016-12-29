@@ -1,3 +1,8 @@
+/*
+ * vim: set ft=rust:
+ * vim: set ft=reason:
+ */
+
 let entries = ref [];
 
 let all = ref 0;

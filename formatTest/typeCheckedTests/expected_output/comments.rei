@@ -1,3 +1,8 @@
+/*
+ * vim: set ft=rust:
+ * vim: set ft=reason:
+ */
+
 /* **** comment */
 /*** comment */
 /** docstring */

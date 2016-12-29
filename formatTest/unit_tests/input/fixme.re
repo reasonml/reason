@@ -1,3 +1,8 @@
+/*
+ * vim: set ft=rust:
+ * vim: set ft=reason:
+ */
+
 /**
  * Problem: In thise example, the comment should have a space after it.
  */

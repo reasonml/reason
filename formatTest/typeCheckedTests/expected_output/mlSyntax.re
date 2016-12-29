@@ -1,5 +1,10 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 
+/*
+ * vim: set ft=rust:
+ * vim: set ft=reason:
+ */
+
 /**
  * Testing pattern matching using ml syntax to exercise nesting of cases.
  */

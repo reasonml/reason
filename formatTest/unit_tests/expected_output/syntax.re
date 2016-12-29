@@ -1,4 +1,10 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
+
+/*
+ * vim: set ft=rust:
+ * vim: set ft=reason:
+ */
+
 [@@@autoFormat let wrap = 80; let shift = 2];
 
 Modules.run ();

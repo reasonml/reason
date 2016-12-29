@@ -1,4 +1,10 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
+
+/*
+ * vim: set ft=rust:
+ * vim: set ft=reason:
+ */
+
 /* - A good way to test if formatting of infix operators groups precedences
    correctly, is to write an expression twice. Once in a form where parenthesis
    explicitly group according to the parse tree and write it another time

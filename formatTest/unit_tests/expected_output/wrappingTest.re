@@ -1,4 +1,10 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
+
+/*
+ * vim: set ft=rust:
+ * vim: set ft=reason:
+ */
+
 /* Run the formatting pretty printer with width 50 */
 /*
  * Testing infix wrapping

@@ -1,3 +1,8 @@
+/*
+ * vim: set ft=rust:
+ * vim: set ft=reason:
+ */
+
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 
 let logTSuccess = fun self => if (self > other) {
@@ -181,4 +186,3 @@ let pngSuffix =
   pixRation > 1 ?
     "@" ^ string_of_int pixRation ^ "x.png"
     : ".png";
-

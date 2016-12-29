@@ -1,5 +1,15 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 
+/*
+ * vim: set ft=rust:
+ * vim: set ft=reason:
+ */
+
+/*
+ * vim: set ft=rust:
+ * vim: set ft=reason:
+ */
+
 /**
  * Typically the "interface file" is where you would write a ton of
  * comments/documentation.
