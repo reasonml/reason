@@ -857,17 +857,18 @@ let default = new Pprintast.printer ()
 type funcReturnStyle =
   | ReturnValOnSameLine
 
-let rec detectJSXComponent e attributes l =
-  match (e, attributes) with
+let rec detectJSXComponent e attributes l = None
+  (* match (e, attributes) with
     | (Pexp_ident loc, ({txt = "JSX"; _}, PStr []) :: tail) ->
       let rec checkChildren arguments =
         match arguments with
-        | ("", {pexp_desc = Pexp_construct ({txt = Lident "::"}, _)}) :: []
-        | ("", {pexp_desc = Pexp_construct ({txt = Lident "[]"}, _)}) :: [] ->
-          true
-        | ("", _) :: [] -> false
-        | (label, _) :: tail -> checkChildren tail
         | [] -> false
+        | ("", _) :: rest -> false
+        | ("children", {pexp_desc = Pexp_construct ({txt = Lident "::"}, _)}) :: rest
+        | ("children", {pexp_desc = Pexp_construct ({txt = Lident "[]"}, _)}) :: rest ->
+          (* true *)
+          false
+        | (label, _) :: tail -> checkChildren tail
       in
       let moduleNameList = List.rev (List.tl (List.rev (Longident.flatten loc.txt))) in
       if List.length moduleNameList > 0 then
@@ -880,7 +881,7 @@ let rec detectJSXComponent e attributes l =
       else
         None
     | (Pexp_ident loc,  hd :: tail) -> detectJSXComponent e tail l
-    | _ -> None
+    | _ -> None *)
 
 let detectTernary l = match l with
   | [{
@@ -3069,25 +3070,24 @@ class printer  ()= object(self:'self)
          the tag, then it would be consistent with array spread:
          [...list] evaluates to the thing as list.
       *)
-      let rec isLabeledArgsAndFinalList arguments =
-        match arguments with
-        | ("", {pexp_desc = Pexp_construct ({txt = Lident "::"}, _)}) :: []
-        | ("", {pexp_desc = Pexp_construct ({txt = Lident "[]"}, _)}) :: [] -> true
-        (* Any other kind of non-named argument besides the above disqualifies *)
-        | ("", _) :: _ -> false
-        | (lbl, _)::tail -> isLabeledArgsAndFinalList tail
-        | [] -> false
+      let hasLabelledChildrenListLiteral = List.exists (function
+        | ("children", {pexp_desc = Pexp_construct ({txt = Lident "::" | Lident "[]"}, _)}) -> true
+        | _ -> false
+      ) l in
+      let rec hasSingleNonLabelledUnitAndIsAtTheEnd l = match l with
+      | [] -> false
+      | ("", {pexp_desc = Pexp_construct ({txt = Lident "()"}, _)}) :: [] -> true
+      | ("", _) :: rest -> false
+      | _ :: rest -> hasSingleNonLabelledUnitAndIsAtTheEnd rest
       in
-      let moduleNameList = List.rev (List.tl (List.rev (Longident.flatten loc.txt))) in
-      if List.length moduleNameList > 0 then
-        if Longident.last loc.txt = "createElement" && isLabeledArgsAndFinalList l then
-          Some (self#formatJSXComponent (String.concat "." moduleNameList) l)
-        else
-          None
-      else if isLabeledArgsAndFinalList l then
-        Some (self#formatJSXComponent (Longident.last loc.txt) l)
-      else
-        None
+      if hasLabelledChildrenListLiteral && hasSingleNonLabelledUnitAndIsAtTheEnd l then
+        let moduleNameList = List.rev (List.tl (List.rev (Longident.flatten loc.txt))) in
+        if List.length moduleNameList > 0 then
+          if Longident.last loc.txt = "createElement" then
+            Some (self#formatJSXComponent (String.concat "." moduleNameList) l)
+          else None
+        else Some (self#formatJSXComponent (Longident.last loc.txt) l)
+      else None
     )
     | (Pexp_apply (eFun, ls), [], []) -> (
       match (printedStringAndFixityExpr eFun, ls) with
@@ -3578,10 +3578,12 @@ class printer  ()= object(self:'self)
   method formatJSXComponent componentName args =
     let rec processArguments arguments processedAttrs children =
       match arguments with
-      | ("", {pexp_desc = Pexp_construct (_, None)}) :: tail ->
+      | ("children", {pexp_desc = Pexp_construct (_, None)}) :: tail ->
         processArguments tail processedAttrs None
-      | ("", {pexp_desc = Pexp_construct ({txt = Lident"::"}, Some {pexp_desc = Pexp_tuple(components)} )}) :: tail ->
+      | ("children", {pexp_desc = Pexp_construct ({txt = Lident"::"}, Some {pexp_desc = Pexp_tuple(components)} )}) :: tail ->
         processArguments tail processedAttrs (self#formatChildren components [])
+      | [] -> (processedAttrs, children)
+      | ("", expression) :: [] -> (processedAttrs, children)
       | (lbl, expression) :: tail ->
          let nextAttr =
            match expression.pexp_desc with
@@ -3596,7 +3598,6 @@ class printer  ()= object(self:'self)
                 )
          in
          processArguments tail (nextAttr :: processedAttrs) children
-      | [] -> (processedAttrs, children)
     in
     let (reversedAttributes, children) = processArguments args [] None in
     match children with
