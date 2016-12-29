@@ -2468,7 +2468,7 @@ class printer  ()= object(self:'self)
     let normalize lst = match lst with
         | [] -> raise (NotPossible "should not be called")
         | [hd] -> hd
-        | _::_ -> makeList ~break:Never ~postSpace:true lst (* ~inline:(true, true) *)
+        | _::_ -> makeList ~break:Never ~postSpace:true lst
       in
       let add_bar name args =
         let lbl = label ~space:true name args in
@@ -2479,26 +2479,48 @@ class printer  ()= object(self:'self)
     let barName = makeList ~postSpace:true [atom "|"; sourceMappedName] in
     let resolved = match pext_kind with
       | Pext_decl (ctor_args, gadt) ->
-        let args = (List.map self#non_arrowed_simple_core_type ctor_args) in
-        let gadtRes = match gadt with
+        let formattedArgs = (List.map self#non_arrowed_simple_core_type ctor_args) in
+        let formattedGadt = match gadt with
         | None -> None
         | Some x -> Some (
             makeList [
               formatJustTheTypeConstraint (self#core_type x)
             ]
-          ) in
-        (args, gadtRes)
+          )
+        in
+        (formattedArgs, formattedGadt)
       (* type bar += Foo = Attr.Foo *)
       | Pext_rebind rebind ->
         let r = self#longident_loc rebind in
         let prepend = (atom "=") in
         ([makeList ~postSpace:true [prepend; r]], None)
     in
+      (**
+        The first element of the tuple represents constructor arguments,
+        the second an optional formatted gadt.
+
+        Case 1: No constructor arguments, neither a gadt
+          type attr = ..;
+          type attr += | Str
+
+        Case 2: No constructor arguments, is a gadt
+          type attr = ..;
+          type attr += | Str :attr
+
+        Case 3: Has Constructor args, not a gadt
+          type attr  = ..;
+          type attr += | Str string;
+          type attr += | Point int int;
+
+        Case 4: Has Constructor args & is a gadt
+          type attr  = ..;
+          type attr += | Point int int :attr;
+      *)
     let everything = match resolved with
       | ([], None) -> barName
-      | ([], Some res) -> add_bar sourceMappedName res
-      | (_::_ as args, None) -> add_bar nameOf (normalize args)
-      | (_::_ as args, Some res) -> add_bar nameOf (normalize (args@[res]))
+      | ([], Some gadt) -> add_bar sourceMappedName gadt
+      | (ctorArgs, None) -> add_bar nameOf (normalize ctorArgs)
+      | (ctorArgs, Some gadt) -> add_bar nameOf (normalize (ctorArgs@[gadt]))
     in
     (SourceMap (pext_loc, self#attach_std_attrs pext_attributes everything))
 
