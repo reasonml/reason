@@ -3,7 +3,7 @@
   If the function call ends with an underscore, e.g. foo_, turn it into
   `ReactRe.createCompositeElement foo_ [%bs.obj {props1: 1, props2: b}] [|foo, bar|]`.
   Transform the upper-cased case: `Foo.createElement foo::bar [][@JSX]` into
-  `Foo.createElement foo::bar [] ()`
+  `Foo.createElement foo::bar children::[] ()`
 *)
 
 (* Why do we need a transform, instead of just using the previous
@@ -110,14 +110,14 @@ let jsxMapper argv = {
           (* Foo.createElement prop1::foo prop2:bar [] *)
           | {loc; txt = Ldot (moduleNames, "createElement")} ->
             let attrs = pexp_attributes |> List.filter (fun (attribute, _) -> attribute.txt <> "JSX") in
-            Exp.apply
-              ~loc
-              ~attrs
-              wrap
-              (
-                (propsAndChildren |> List.map (fun (label, expr) -> (label, mapper.expr mapper expr)))
-                  @ [(""), Exp.construct ~loc {loc; txt = Lident "()"} None]
-              )
+            (* turn foo::bar [] into foo::bar children::[] () *)
+            let args = match List.rev propsAndChildren with
+              | [] -> []
+              | (label, expr) :: rest -> ("children", expr) :: rest
+            in
+            let args = args |> List.map (fun (label, expr) -> (label, mapper.expr mapper expr)) in
+            let args = ("", Exp.construct ~loc {loc; txt = Lident "()"} None) :: args in
+            Exp.apply ~loc ~attrs wrap (List.rev args)
           (* div prop1::foo prop2:bar [] *)
           (* the div is Pexp_ident "div" *)
           (* similar code to the above case, with a few exceptions *)
