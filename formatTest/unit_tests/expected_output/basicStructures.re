@@ -345,6 +345,11 @@ let (tupleItem, withOutsideTypeConstraint): (
   20
 );
 
+/* Trailing commas */
+let trailingCommaAccepted = (1, 2);
+
+let moreTrailing = (1, 2, 3, 4, 5, 7);
+
 
 /**                        Immutable Lists
  * ============================================================================

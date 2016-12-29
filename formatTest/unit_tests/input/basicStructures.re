@@ -276,6 +276,10 @@ let annotatingSingleFuncApplication = {
 let (tupleItem:int, constrainedWithoutGrouping:int) = (10, 20);
 let (tupleItem, withOutsideTypeConstraint):(int,int) = (10, 20);
 
+/* Trailing commas */
+let trailingCommaAccepted = (1, 2,);
+let moreTrailing = (1, 2, 3, 4, 5, 7, );
+
 /**                        Immutable Lists
  * ============================================================================
  */

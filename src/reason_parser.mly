@@ -2873,7 +2873,7 @@ _simple_expr:
       { $2 }
   | LBRACE as_loc(semi_terminated_seq_expr) error
       { syntax_error_exp $2.loc "SyntaxError in block" }
-  | LPAREN expr_comma_list RPAREN
+  | LPAREN expr_comma_list opt_comma RPAREN
       { mkexp(Pexp_tuple(List.rev $2)) }
   | as_loc(LPAREN) expr_comma_list as_loc(error)
       { unclosed_exp (with_txt $1 "(") (with_txt $3 ")") }
