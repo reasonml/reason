@@ -233,6 +233,18 @@ let mkctf ?(loc=dummy_loc()) ?(ghost=false) d =
     let loc = set_loc_state ghost loc in
     Ctf.mk ~loc d
 
+(**
+  Make a core_type from a as_loc(LIDENT).
+  Useful for record type punning.
+  type props = {width: int, height: int};
+  type state = {nbrOfClicks: int};
+  type component = {props, state};
+*)
+let mkct lbl =
+  let lident = Lident lbl.txt in
+  let ttype = Ptyp_constr({txt = lident; loc = lbl.loc}, []) in
+  {ptyp_desc = ttype; ptyp_loc = lbl.loc; ptyp_attributes = []}
+
 let mkcf ?(loc=dummy_loc()) ?(ghost=false) d =
     let loc = set_loc_state ghost loc in
     Cf.mk ~loc d
@@ -3942,7 +3954,13 @@ label_declarations:
 ;
 
 label_declaration:
-    mutable_flag as_loc(LIDENT) attributes COLON poly_type attributes
+    mutable_flag as_loc(LIDENT) attributes
+      {
+       let loc = mklocation $symbolstartpos $endpos in
+       let ct = mkct $2 in
+       (Type.field $2 ct ~mut:$1 ~loc, $3)
+      }
+  |  mutable_flag as_loc(LIDENT) attributes COLON poly_type attributes
       {
        let loc = mklocation $symbolstartpos $endpos in
        (Type.field $2 $5 ~mut:$1 ~attrs:$6 ~loc, $3)

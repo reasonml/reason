@@ -11965,6 +11965,7 @@ implementation: TYPE LIDENT EQUAL LBRACE LIDENT WITH
 ##
 ## Ends in an error in state: 2528.
 ##
+## label_declaration -> mutable_flag LIDENT attributes . [ RBRACE COMMA ]
 ## label_declaration -> mutable_flag LIDENT attributes . COLON poly_type attributes [ RBRACE COMMA ]
 ##
 ## The known suffix of the stack is as follows:
@@ -11984,6 +11985,7 @@ implementation: TYPE LIDENT EQUAL LBRACE MUTABLE LET
 ##
 ## Ends in an error in state: 160.
 ##
+## label_declaration -> mutable_flag . LIDENT attributes [ RBRACE COMMA ]
 ## label_declaration -> mutable_flag . LIDENT attributes COLON poly_type attributes [ RBRACE COMMA ]
 ##
 ## The known suffix of the stack is as follows:

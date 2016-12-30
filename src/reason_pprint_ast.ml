@@ -2284,6 +2284,13 @@ let pun_labelled_pattern e lbl =
     | { ppat_desc = (Ppat_var { txt; _ }) } when txt = lbl -> ""
     | _ -> lbl )
 
+let recordRowIsPunned pld =
+      let name = pld.pld_name.txt in
+      (match pld.pld_type with
+        | { ptyp_desc = (Ptyp_constr ({ txt; _ }, _)); _}
+            when (Longident.last txt = name) -> true
+        | _ -> false)
+
 class printer  ()= object(self:'self)
   val pipe = false
   val semi = false
@@ -2570,16 +2577,23 @@ class printer  ()= object(self:'self)
       | Private -> privateAtom::lst in
 
     let recordRow pld =
-      let nameColon = SourceMap (pld.pld_name.loc, makeList [atom pld.pld_name.txt; atom ":"]) in
+      let hasPunning = recordRowIsPunned pld in
+      let name = if hasPunning then
+        SourceMap (pld.pld_name.loc, makeList [atom pld.pld_name.txt;])
+      else
+        SourceMap (pld.pld_name.loc, makeList [atom pld.pld_name.txt; atom ":"])
+      in
       let withMutable =
         match pld.pld_mutable with
-          | Immutable -> nameColon
-          | Mutable -> makeList ~postSpace:true [atom "mutable"; nameColon]
+          | Immutable -> name
+          | Mutable -> makeList ~postSpace:true [atom "mutable"; name]
       in
-      SourceMap (
-        pld.pld_loc,
-        label ~space:true withMutable (self#core_type pld.pld_type)
-      )
+      let recordRow = if hasPunning then
+        label withMutable (atom "")
+      else
+         label ~space:true withMutable (self#core_type pld.pld_type)
+      in
+        SourceMap (pld.pld_loc, recordRow)
     in
     let recordize ?assumeRecordLoc lst =
       let rows = List.map recordRow lst in
