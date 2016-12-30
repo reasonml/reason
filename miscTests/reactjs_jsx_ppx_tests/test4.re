@@ -1,3 +1,4 @@
 /* hello comments */
 
-       (Foo.createElementLol ())[@JSX]
+        let div children => 1;
+        (((fun () => div) ()) [])[@JSX];

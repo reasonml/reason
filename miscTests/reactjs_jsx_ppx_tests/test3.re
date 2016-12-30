@@ -1,3 +1,3 @@
 /* hello comments */
 
-       (Foo.createElement ())[@JSX]
+       (Foo.createElementLol ())[@JSX]

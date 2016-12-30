@@ -2,7 +2,7 @@ echo "Testing reactjs @JSX ppx..."
 
 testPath="miscTests/reactjs_jsx_ppx_tests"
 
-for i in 1 2 3 4 5 6
+for i in 1 2 3 4 5
 do
   test="$testPath/test$i.re"
 

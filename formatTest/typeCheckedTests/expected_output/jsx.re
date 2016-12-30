@@ -1,40 +1,47 @@
 type component = {displayName: string};
 
 module Bar = {
-  let createElement ::c=? children => {
+  let createElement ::c=? ::children () => {
     displayName: "test"
   };
 };
 
 module Nesting = {
-  let createElement children => {
+  let createElement ::children () => {
     displayName: "test"
   };
 };
 
 module Much = {
-  let createElement children => {
+  let createElement ::children () => {
     displayName: "test"
   };
 };
 
 module Foo = {
-  let createElement ::a=? ::b=? children => {
+  let createElement ::a=? ::b=? ::children () => {
     displayName: "test"
   };
 };
 
 module One = {
-  let createElement ::test=? ::foo=? children => {
+  let createElement
+      ::test=?
+      ::foo=?
+      ::children
+      () => {
     displayName: "test"
   };
-  let createElementobvioustypo ::test children => {
+  let createElementobvioustypo
+      ::test
+      ::children
+      () => {
     displayName: "test"
   };
 };
 
 module Two = {
-  let createElement ::foo=? children => {
+  let createElement ::foo=? ::children () => {
     displayName: "test"
   };
 };
@@ -42,43 +49,44 @@ module Two = {
 module Sibling = {
   let createElement
       ::foo=?
-      (children: list component) => {
+      children::(children: list component)
+      () => {
     displayName: "test"
   };
 };
 
 module Test = {
-  let createElement ::yo=? children => {
+  let createElement ::yo=? ::children () => {
     displayName: "test"
   };
 };
 
 module So = {
-  let createElement children => {
+  let createElement ::children () => {
     displayName: "test"
   };
 };
 
 module Foo2 = {
-  let createElement children => {
+  let createElement ::children () => {
     displayName: "test"
   };
 };
 
 module Text = {
-  let createElement children => {
+  let createElement ::children () => {
     displayName: "test"
   };
 };
 
 module Exp = {
-  let createElement children => {
+  let createElement ::children () => {
     displayName: "test"
   };
 };
 
 module Pun = {
-  let createElement ::intended=? children => {
+  let createElement ::intended=? ::children () => {
     displayName: "test"
   };
 };
@@ -88,14 +96,15 @@ module Namespace = {
     let createElement
         ::intended=?
         anotherOptional::x=100
-        children => {
+        ::children
+        () => {
       displayName: "test"
     };
   };
 };
 
 module Optional1 = {
-  let createElement ::required children =>
+  let createElement ::required ::children () =>
     switch required {
     | Some a => {displayName: a}
     | None => {displayName: "nope"}
@@ -103,7 +112,7 @@ module Optional1 = {
 };
 
 module Optional2 = {
-  let createElement ::optional=? children =>
+  let createElement ::optional=? ::children () =>
     switch optional {
     | Some a => {displayName: a}
     | None => {displayName: "nope"}
@@ -113,7 +122,8 @@ module Optional2 = {
 module DefaultArg = {
   let createElement
       ::default=(Some "foo")
-      children =>
+      ::children
+      () =>
     switch default {
     | Some a => {displayName: a}
     | None => {displayName: "nope"}
@@ -128,29 +138,30 @@ module LotsOfArguments = {
       ::argument4=?
       ::argument5=?
       ::argument6=?
-      children => {
+      ::children
+      () => {
     displayName: "test"
   };
 };
 
-let div ::argument1=? children => {
+let div ::argument1=? ::children () => {
   displayName: "test"
 };
 
 module List1 = {
-  let createElement children => {
+  let createElement ::children () => {
     displayName: "test"
   };
 };
 
 module List2 = {
-  let createElement children => {
+  let createElement ::children () => {
     displayName: "test"
   };
 };
 
 module List3 = {
-  let createElement children => {
+  let createElement ::children () => {
     displayName: "test"
   };
 };
@@ -167,6 +178,7 @@ let notReallyJSX ::foo ::bar children => {
 
 let fakeRender (el: component) => el.displayName;
 
+/* end of setup */
 let (/><) a b => a + b;
 
 let (><) a b => a + b;
@@ -290,7 +302,7 @@ let a = <Foo a=b b=d> 5 </Foo>;
 
 let a = <Foo a> 0.55 </Foo>;
 
-let a = Foo.createElement "" [@JSX];
+let a = <Foo />;
 
 let ident = <Foo> a </Foo>;
 
@@ -333,9 +345,9 @@ let listOfItems3 =
  */
 let thisIsRight a b => ();
 
-let tagOne children => ();
+let tagOne ::children () => ();
 
-let tagTwo children => ();
+let tagTwo ::children () => ();
 
 /* thisIsWrong <tagOne /><tagTwo />; */
 thisIsRight <tagOne /> <tagTwo />;
@@ -343,9 +355,9 @@ thisIsRight <tagOne /> <tagTwo />;
 /* thisIsWrong <tagOne> </tagOne><tagTwo> </tagTwo>; */
 thisIsRight <tagOne /> <tagTwo />;
 
-let a children => ();
+let a ::children () => ();
 
-let b children => ();
+let b ::children () => ();
 
 let thisIsOkay =
   <List1> <a /> <b /> <a /> <b /> </List1>;
@@ -430,14 +442,16 @@ let asd =
 let asd2 =
   One.createElementobvioustypo
   test::false
-  ["a", "b"]
+  children::["a", "b"]
+  ()
   [@JSX]
   [@foo];
 
 let span
     test::(test: bool)
     foo::(foo: int)
-    children => 1;
+    ::children
+    () => 1;
 
 let asd =
   <span test=true foo=2> "a" "b" </span> [@foo];
@@ -447,9 +461,9 @@ let video test::(test: bool) children => children;
 
 let asd2 = video test::false 10 [@JSX] [@foo];
 
-let div children => 1;
+let div ::children => 1;
 
-((fun () => div) ()) [] [@JSX];
+((fun () => div) ()) children::[] [@JSX];
 
 let myFun () =>
   <>
@@ -541,11 +555,33 @@ let defaultArg = <DefaultArg default=zzz />;
 fakeRender defaultArg;
 
 NotReallyJSX.createElement
-  [] foo::1 bar::2 [@JSX];
+[]
+foo::1
+bar::2
+[@JSX]
+[@bla];
 
 NotReallyJSX.createElement
-  foo::1 [] bar::2 [@JSX];
+foo::1
+[]
+bar::2
+[@JSX]
+[@bla];
 
-notReallyJSX [] foo::1 [@JSX];
+notReallyJSX [] foo::1 [@JSX] [@bla];
 
-notReallyJSX foo::1 [] bar::2 [@JSX];
+notReallyJSX foo::1 [] bar::2 [@JSX] [@bla];
+
+/* children can be at any position */
+<span test=true foo=2 />;
+
+<Optional1 required=(Some "hi") />;
+
+/* preserve some other attributes too! */
+<span test=true foo=2 /> [@bla];
+
+<span test=true foo=2 /> [@bla];
+
+<Optional1 required=(Some "hi") /> [@bla];
+
+<Optional1 required=(Some "hi") /> [@bla];
