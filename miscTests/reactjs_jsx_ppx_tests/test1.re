@@ -12,34 +12,37 @@ module Gah = {
 Gah.createElement ();
 
 /* don't transform */
-let asd = Bar.createElement foo::1 bar::2 ["a", "b"] [@jsxa] [@foo];
+let asd = Bar.createElement foo::1 bar::2 children::["a", "b"] () [@jsxa] [@foo];
 
 /* transform, keep [@foo] */
-let asd = Bar.createElement foo::1 bar::2 ["a", "b"] [@JSX] [@foo];
+let asd = Bar.createElement foo::1 bar::2 children::["a", "b"] () [@JSX] [@foo];
 
 /* nested modules */
-Baz.Beee.createElement baz::2 ["a", "b"] [@JSX];
+Baz.Beee.createElement baz::2 children::["a", "b"] () [@JSX];
 
 /* no prop */
-Bar.createElement [foo] [@JSX];
+Bar.createElement () [@JSX];
 
 /* empty children */
-Bar.createElement foo::1 bar::2 [] [@JSX];
+Bar.createElement foo::1 bar::2 children::[] () [@JSX];
 
 /* createElement nested in props */
-Bar.createElement foo::(Baz.createElement baz::(Baaz.createElement [] [@JSX]) [] [@JSX]) [] [@JSX];
+Bar.createElement foo::(Baz.createElement baz::(Baaz.createElement children::[] () [@JSX]) children::[] () [@JSX]) children::[] () [@JSX];
 
 /* dom elements */
-Div.createElement foo::1 bar::2 [] [@JSX];
+div foo::1 bar::2 children::[] () [@JSX];
+
+div () [@JSX];
 
 /* createElement nested in children */
 Bar.createElement
-[
-  Baz.Beee.createElement baz::2
-    kek::(Foo.createElement [] [@JSX]) ["a", "b"] [@JSX],
-  Bar.createElement [] [@JSX]
-]
-[@JSX];
+  children::[
+    Baz.Beee.createElement baz::2
+      kek::(Foo.createElement children::[] () [@JSX]) children::["a", "b"] () [@JSX],
+    Bar.createElement children::[] () [@JSX]
+  ]
+  ()
+  [@JSX];
 
-(bar foo::1 children::((baz qux::2 [])[@JSX]) [])[@JSX ];
-(bar_ foo::1 children::((baz_ qux::2 [])[@JSX]) [])[@JSX ];
+(bar foo::1 children::[(baz qux::2 children::[] ())[@JSX]] ())[@JSX ];
+(bar_ foo::1 children::[(baz_ qux::2 children::[] ())[@JSX]] ())[@JSX ];

@@ -4,37 +4,32 @@ let div = { createElement = (fun ()  -> ()) }
 let _ = div.createElement ()
 module Gah = struct let createElement () = () end
 let _ = Gah.createElement ()
-let asd = ((Bar.createElement ~foo:1 ~bar:2 ["a"; "b"])[@jsxa ][@foo ])
-let asd = ((Bar.createElement ~foo:1 ~bar:2 ["a"; "b"] ())[@foo ])
-let _ = Baz.Beee.createElement ~baz:2 ["a"; "b"] ()
-let _ = Bar.createElement [foo] ()
-let _ = Bar.createElement ~foo:1 ~bar:2 [] ()
+let asd =
+  ((Bar.createElement ~foo:1 ~bar:2 ~children:["a"; "b"] ())[@jsxa ][@foo ])
+let asd = ((Bar.createElement ~foo:1 ~bar:2 ~children:["a"; "b"] ())[@foo ])
+let _ = Baz.Beee.createElement ~baz:2 ~children:["a"; "b"] ()
+let _ = Bar.createElement ()
+let _ = Bar.createElement ~foo:1 ~bar:2 ~children:[] ()
 let _ =
   Bar.createElement
-    ~foo:(Baz.createElement ~baz:(Baaz.createElement [] ()) [] ()) [] ()
-let _ = Div.createElement ~foo:1 ~bar:2 [] ()
+    ~foo:(Baz.createElement ~baz:(Baaz.createElement ~children:[] ())
+            ~children:[] ()) ~children:[] ()
+let _ =
+  ReactRe.createDOMElement "div"
+    (Js.Null.return ([%bs.obj { foo = 1; bar = 2 }])) [||]
+let _ = ReactRe.createDOMElement "div" Js.null [||]
 let _ =
   Bar.createElement
-    [Baz.Beee.createElement ~baz:2 ~kek:(Foo.createElement [] ()) ["a"; "b"]
-       ();
-    Bar.createElement [] ()] ()
+    ~children:[Baz.Beee.createElement ~baz:2
+                 ~kek:(Foo.createElement ~children:[] ())
+                 ~children:["a"; "b"] ();
+              Bar.createElement ~children:[] ()] ()
 let _ =
-  ReactRe.createDOMElement "bar"
-    (Js.Null.return
-       ([%bs.obj
-          {
-            foo = 1;
-            children =
-              (ReactRe.createDOMElement "baz"
-                 (Js.Null.return ([%bs.obj { qux = 2 }])) [||])
-          }])) [||]
+  ReactRe.createDOMElement "bar" (Js.Null.return ([%bs.obj { foo = 1 }]))
+    [|(ReactRe.createDOMElement "baz"
+         (Js.Null.return ([%bs.obj { qux = 2 }])) [||])|]
 let _ =
   ReactRe.createCompositeElement bar_
-    (Js.Null.return
-       ([%bs.obj
-          {
-            foo = 1;
-            children =
-              (ReactRe.createCompositeElement baz_
-                 (Js.Null.return ([%bs.obj { qux = 2 }])) [||])
-          }])) [||]
+    (Js.Null.return ([%bs.obj { foo = 1 }]))
+    [|(ReactRe.createCompositeElement baz_
+         (Js.Null.return ([%bs.obj { qux = 2 }])) [||])|]
