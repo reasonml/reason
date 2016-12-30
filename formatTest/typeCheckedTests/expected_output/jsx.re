@@ -555,16 +555,33 @@ let defaultArg = <DefaultArg default=zzz />;
 fakeRender defaultArg;
 
 NotReallyJSX.createElement
-  [] foo::1 bar::2 [@JSX];
+[]
+foo::1
+bar::2
+[@JSX]
+[@bla];
 
 NotReallyJSX.createElement
-  foo::1 [] bar::2 [@JSX];
+foo::1
+[]
+bar::2
+[@JSX]
+[@bla];
 
-notReallyJSX [] foo::1 [@JSX];
+notReallyJSX [] foo::1 [@JSX] [@bla];
 
-notReallyJSX foo::1 [] bar::2 [@JSX];
+notReallyJSX foo::1 [] bar::2 [@JSX] [@bla];
 
 /* children can be at any position */
 <span test=true foo=2 />;
 
 <Optional1 required=(Some "hi") />;
+
+/* preserve some other attributes too! */
+<span test=true foo=2 /> [@bla];
+
+<span test=true foo=2 /> [@bla];
+
+<Optional1 required=(Some "hi") /> [@bla];
+
+<Optional1 required=(Some "hi") /> [@bla];
