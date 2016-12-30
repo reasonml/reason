@@ -20,8 +20,7 @@ do
   else
     echo "Wrong"
     # show the error
-    # diff -u $testPath/expected$i.txt $testPath/actual$i.txt
-    icdiff $testPath/expected$i.txt $testPath/actual$i.txt
+    diff -u $testPath/expected$i.txt $testPath/actual$i.txt
     exit 1
   fi
 done
