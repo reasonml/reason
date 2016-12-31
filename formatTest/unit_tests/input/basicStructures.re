@@ -546,5 +546,11 @@ type mutableComponent = {mutable props};
 
 type mutabeleComponent2 = {mutable props, mutable state, style: int,};
 
+/* Don't pun parameterized types */
+type description 'props = {
+  element: string,
+  tag: tag 'props
+};
+
 /* Requested in #566 */
 let break_after_equal = no_break_from_here (some_call to_here);

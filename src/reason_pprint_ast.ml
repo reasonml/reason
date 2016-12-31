@@ -2287,8 +2287,11 @@ let pun_labelled_pattern e lbl =
 let recordRowIsPunned pld =
       let name = pld.pld_name.txt in
       (match pld.pld_type with
-        | { ptyp_desc = (Ptyp_constr ({ txt; _ }, _)); _}
-            when (Longident.last txt = name) -> true
+        | { ptyp_desc = (Ptyp_constr ({ txt; _ }, args)); _}
+            when 
+            (Longident.last txt = name 
+              (* don't pun parameterized types, e.g. {tag: tag 'props} *)
+              && (List.length args) == 0) -> true
         | _ -> false)
 
 class printer  ()= object(self:'self)
