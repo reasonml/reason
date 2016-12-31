@@ -1,4 +1,4 @@
-PKG utop merlin_extend compiler-libs easy-format MenhirLib cmdliner ocamlbuild
+PKG utop merlin_extend compiler-libs easy-format MenhirLib cmdliner ocaml-migrate-parsetree
 B _build/src
 B _build
 # ^ for package.ml -- avoids errors in Merlin
