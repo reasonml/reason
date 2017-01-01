@@ -2421,6 +2421,84 @@ class printer  ()= object(self:'self)
     in
     (SourceMap (ptype_loc, everything))
 
+  method formatOneTypeExt prepend name assignToken te =
+    let equalInitiatedSegments =
+      let segments = List.map self#type_extension_binding_segments te.ptyext_constructors in
+      [makeList ~break:Always_rec ~postSpace:true ~inline:(true, true) segments] in
+    let formattedTypeParams = List.map self#type_param te.ptyext_params in
+    let binding = makeList ~postSpace:true (prepend::name::[]) in
+    let labelWithParams = match formattedTypeParams with
+        [] -> binding
+      | phd::ptl -> label ~space:true binding (makeList ~postSpace:true ~break:IfNeed ~inline:(true, true) (phd::ptl)) in
+    let everything =
+      let nameParamsEquals = makeList ~postSpace:true [labelWithParams; assignToken] in
+      formatAttachmentApplication
+             typeApplicationFinalWrapping
+             (Some (true, nameParamsEquals))
+             (equalInitiatedSegments, None)
+    in
+    SourceMap (te.ptyext_path.loc, everything)
+
+  method type_extension_binding_segments {pext_kind; pext_loc; pext_attributes; pext_name} =
+    let normalize lst = match lst with
+        | [] -> raise (NotPossible "should not be called")
+        | [hd] -> hd
+        | _::_ -> makeList ~break:Never ~postSpace:true lst
+      in
+      let add_bar name args =
+        let lbl = label ~space:true name args in
+        makeList ~postSpace:true [atom "|"; lbl]
+      in
+    let sourceMappedName = SourceMap (pext_name.loc, atom pext_name.txt) in
+    let nameOf = makeList ~postSpace:true [sourceMappedName] in
+    let barName = makeList ~postSpace:true [atom "|"; sourceMappedName] in
+    let resolved = match pext_kind with
+      | Pext_decl (ctor_args, gadt) ->
+        let formattedArgs = (List.map self#non_arrowed_simple_core_type ctor_args) in
+        let formattedGadt = match gadt with
+        | None -> None
+        | Some x -> Some (
+            makeList [
+              formatJustTheTypeConstraint (self#core_type x)
+            ]
+          )
+        in
+        (formattedArgs, formattedGadt)
+      (* type bar += Foo = Attr.Foo *)
+      | Pext_rebind rebind ->
+        let r = self#longident_loc rebind in
+        let prepend = (atom "=") in
+        ([makeList ~postSpace:true [prepend; r]], None)
+    in
+      (**
+        The first element of the tuple represents constructor arguments,
+        the second an optional formatted gadt.
+
+        Case 1: No constructor arguments, neither a gadt
+          type attr = ..;
+          type attr += | Str
+
+        Case 2: No constructor arguments, is a gadt
+          type attr = ..;
+          type attr += | Str :attr
+
+        Case 3: Has Constructor args, not a gadt
+          type attr  = ..;
+          type attr += | Str string;
+          type attr += | Point int int;
+
+        Case 4: Has Constructor args & is a gadt
+          type attr  = ..;
+          type attr += | Point int int :attr;
+      *)
+    let everything = match resolved with
+      | ([], None) -> barName
+      | ([], Some gadt) -> add_bar sourceMappedName gadt
+      | (ctorArgs, None) -> add_bar nameOf (normalize ctorArgs)
+      | (ctorArgs, Some gadt) -> add_bar nameOf (normalize (ctorArgs@[gadt]))
+    in
+    (SourceMap (pext_loc, self#attach_std_attrs pext_attributes everything))
+
   (* shared by [Pstr_type,Psig_type]*)
   method type_def_list l =
     (* As oposed to used in type substitution. *)
@@ -4841,7 +4919,7 @@ class printer  ()= object(self:'self)
   method item_extension (s, e) = (self#payload "%%" s e)
 
 
-  (* @[ ...] Simple attributes *)
+  (* [@ ...] Simple attributes *)
   method attribute (s, e) = (self#payload "@" s e)
 
   (* [@@ ... ] Attributes that occur after a major item in a structure/class *)
@@ -5758,7 +5836,14 @@ class printer  ()= object(self:'self)
     ) in
     SourceMap(term.pstr_loc, item)
 
-  method type_extension = wrap default#type_extension
+  method type_extension te =
+    let formatOneTypeExtStandard prepend ({ptyext_path} as te) =
+      let name = self#longident_loc ptyext_path in
+      let item = self#formatOneTypeExt prepend name (atom "+=") te in
+      self#attach_std_item_attrs te.ptyext_attributes item
+    in
+    formatOneTypeExtStandard (atom "type") te
+
   method extension_constructor = wrap default#extension_constructor
   (* [allowUnguardedSequenceBodies] allows sequence expressions {} to the right of `=>` to not
      be guarded in `{}` braces. *)

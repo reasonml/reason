@@ -265,3 +265,17 @@ type classAttributesOnKeys = {
 
   key4 : Js.t (int [@justOnInt])
 };
+
+type attr = ..;
+
+type attr +=
+  | Str [@tag1] [@tag2]
+  | Float [@tag3]
+[@@block];
+
+type reconciler 'props = ..;
+
+type reconciler 'props +=
+ | Foo int : reconciler int [@onFirstRow]
+ | Bar (int [@onInt]) : reconciler unit [@onSecondRow]
+ | Baz: reconciler (unit [@onUnit]) [@onThirdRow] [@@onVariantType];
