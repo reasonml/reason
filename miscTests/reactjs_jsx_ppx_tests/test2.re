@@ -1,3 +1,0 @@
-/* hello comments */
-
-       (createElement [||])[@JSX]

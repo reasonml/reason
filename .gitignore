@@ -16,7 +16,7 @@ formatTest/customMLFiles/*.ml
 formatTest/customMLFormatOutput.re
 formatTest/failed_tests
 formatTest/**/actual_output/
-miscTests/reactjs_jsx_ppx_tests/actual*.txt
+miscTests/reactjs_jsx_ppx_tests/actual*.re
 .jenga
 src/reason_parser.messages.bak
 src/reason_parser_message.ml
