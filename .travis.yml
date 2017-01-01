@@ -4,10 +4,11 @@ before_install:
   - brew update
   - brew install opam
   - opam init
-  - opam switch 4.04.0
+  - opam switch 4.02.3
   - eval `opam config env`
   - opam update
 before_script:
+  - opam pin add -y migrate-parsetree git://github.com/let-def/ppx_tools.git#migrate-parsetree
   - opam pin add -y reason .
 script: 
   - make test
