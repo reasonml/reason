@@ -1,48 +1,37 @@
-/* dont touch these; no annotation */
-type dom = {createElement: unit => unit};
+/* don't auto-format this file until https://github.com/facebook/reason/issues/904 is solve */
+<div />;
 
-let div = {createElement: fun () => ()};
+<div className="hello" />;
 
-div.createElement ();
+<div className="hello" width="10" />;
 
-module Gah = {
-  let createElement () => ();
-};
+<div className="hello" width="10"> <li /> <Foo /> </div>;
 
-Gah.createElement ();
+<div className="hello" comp=(<Foo bar=1 />)> <li /> <Foo bar=2 /> </div>;
 
-/* don't transform */
-let asd = Bar.createElement foo::1 bar::2 children::["a", "b"] () [@jsxa] [@foo];
+/* ============== */
 
-/* transform, keep [@foo] */
-let asd = Bar.createElement foo::1 bar::2 children::["a", "b"] () [@JSX] [@foo];
+<compositeJSComponent_ />;
 
-/* nested modules */
-Baz.Beee.createElement baz::2 children::["a", "b"] () [@JSX];
+<compositeJSComponent_ className="hello" />;
 
-/* no prop */
-Bar.createElement () [@JSX];
+<compositeJSComponent_ className="hello" width="10" />;
 
-/* empty children */
-Bar.createElement foo::1 bar::2 children::[] () [@JSX];
+<compositeJSComponent_ className="hello" width="10"> <li /> <Foo /> </compositeJSComponent_>;
 
-/* createElement nested in props */
-Bar.createElement foo::(Baz.createElement baz::(Baaz.createElement children::[] () [@JSX]) children::[] () [@JSX]) children::[] () [@JSX];
+<compositeJSComponent_ className="hello" comp=(<Foo bar=1 />)>
+  <li />
+  <Foo bar=2 />
+</compositeJSComponent_>;
 
-/* dom elements */
-div foo::1 bar::2 children::[] () [@JSX];
+/* ============== */
 
-div () [@JSX];
+<Foo />;
 
-/* createElement nested in children */
-Bar.createElement
-  children::[
-    Baz.Beee.createElement baz::2
-      kek::(Foo.createElement children::[] () [@JSX]) children::["a", "b"] () [@JSX],
-    Bar.createElement children::[] () [@JSX]
-  ]
-  ()
-  [@JSX];
+<Foo className="hello" />;
 
-(bar foo::1 children::[(baz qux::2 children::[] ())[@JSX]] ())[@JSX ];
-(bar_ foo::1 children::[(baz_ qux::2 children::[] ())[@JSX]] ())[@JSX ];
+<Foo className="hello" width="10" />;
+
+<Foo className="hello" width="10"> <li /> <Bar /> </Foo>;
+
+<Foo className="hello" comp=(<Bar bar=1 />)> <li /> <Bar bar=2 /> </Foo>;
