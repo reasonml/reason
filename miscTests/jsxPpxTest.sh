@@ -23,8 +23,7 @@ do
   else
     echo "Wrong"
     # show the error
-    # diff -u $testPath/expected$i.re $testPath/actual$i.re
-    icdiff $testPath/expected$i.re $testPath/actual$i.re
+    diff -u $testPath/expected$i.re $testPath/actual$i.re
     exit 1
   fi
 done
