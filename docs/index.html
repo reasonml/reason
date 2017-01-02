@@ -341,6 +341,20 @@ let meNextYear =  {
 };
 ```
 
+When the name of a field coincides with the type of a record field in a record definition, Reason provides a handy syntactic shortcut. For example, the field name `horsePower` binds the `type horsePower` to its name.
+This is called field type punning.
+
+```reason
+type horsePower = {power: int, metric: bool};
+
+type car = {name: string, horsePower};
+
+/**
+  Equivalent to:
+  type car = {name: string, horsePower: horsePower};
+*/
+```
+
 ##### Mutable record fields.
 
 When defining the record type, you can mark some record fields as `mutable`.

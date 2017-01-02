@@ -533,5 +533,24 @@ let anotherRecord = {
   age: testRecord.age + 10
 };
 
+/* Record type punning */
+type props = {title: string};
+
+type state = unit;
+
+type component = {props};
+
+type component2 = {props, state, updater: unit,};
+
+type mutableComponent = {mutable props};
+
+type mutabeleComponent2 = {mutable props, mutable state, style: int,};
+
+/* Don't pun parameterized types */
+type description 'props = {
+  element: string,
+  tag: tag 'props
+};
+
 /* Requested in #566 */
 let break_after_equal = no_break_from_here (some_call to_here);
