@@ -1124,6 +1124,64 @@ let obj: tesla {. drive: int => int, x: int => int} = {
 };
 ```
 
+JSX
+----------------------------------
+Reason has support for JSX syntax with some slight differences compared to the one found
+in JavaScript.  JSX tags translate to function calls as shown in these examples:
+
+Capitalized tag:
+
+```reason
+<MyComponent foo=bar />
+```
+
+becomes
+
+```reason
+MyComponent.createElement foo::bar [][@JSX]
+```
+
+Lowercase tag:
+
+```reason
+<div foo=bar>child1 child2</div>
+```
+
+becomes
+
+```reason
+div foo::bar [child1, child2][@JSX]
+```
+
+As you might have noticed already, JSX in Reason does not require curly braces
+for attributes or children. Text however does require double quotes.
+
+```reason
+<NoCurlyBraces
+   booleanAttribute=true
+   stringAttribute="string"
+   intAttribute=1
+   floatAttribute=0.1>
+   "foo bar"
+</NoCurlyBraces>
+```
+
+There is also support for punning.
+
+```reason
+<div foo />
+```
+
+is the same as
+
+```reason
+<div foo=foo />
+```
+
+Note that this would translate to `foo=true` within JSX in JS code.
+
+There is no support for JSX spread attributes.
+
 Syntactic Sugar (Abbreviations)
 ----------------------------------
 
