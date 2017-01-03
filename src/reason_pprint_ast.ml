@@ -2263,8 +2263,8 @@ let recordRowIsPunned pld =
       let name = pld.pld_name.txt in
       (match pld.pld_type with
         | { ptyp_desc = (Ptyp_constr ({ txt; _ }, args)); _}
-            when 
-            (Longident.last txt = name 
+            when
+            (Longident.last txt = name
               (* don't pun parameterized types, e.g. {tag: tag 'props} *)
               && (List.length args) == 0) -> true
         | _ -> false)
@@ -3198,18 +3198,18 @@ class printer  ()= object(self:'self)
       | (_, _) -> (
         match (eFun, ls) with
         | ({pexp_desc = Pexp_ident {txt = Ldot (Lident ("String"),"get")}}, [(_,e1);(_,e2)]) ->
-          Some (self#access "[" "]" (self#simplifyUnparseExpr e1) (self#unparseExpr e2))
+          Some (self#access "[" "]" (self#simple_enough_to_be_lhs_dot_send e1) (self#unparseExpr e2))
         | ({pexp_desc = Pexp_ident {txt = Ldot (Lident ("Array"),"get")}}, [(_,e1);(_,e2)]) ->
-          Some (self#access "(" ")" (self#simplifyUnparseExpr e1) (self#unparseExpr e2))
+          Some (self#access "(" ")" (self#simple_enough_to_be_lhs_dot_send e1) (self#unparseExpr e2))
         | (
             {pexp_desc= Pexp_ident {txt=Ldot (Ldot (Lident "Bigarray", "Genarray" ), "get")}},
             [(_,a); (_,{pexp_desc=Pexp_array ls})]
           ) ->
           let formattedList = List.map self#simplifyUnparseExpr ls in
-          Some (self#access "{" "}" (self#simplifyUnparseExpr a) (makeCommaBreakableList formattedList))
+          Some (self#access "{" "}" (self#simple_enough_to_be_lhs_dot_send a) (makeCommaBreakableList formattedList))
         | ({pexp_desc= Pexp_ident {txt=Ldot (Ldot (Lident "Bigarray", ("Array1"|"Array2"|"Array3")), "get")}}, (_,a)::rest) ->
           let formattedList = List.map self#simplifyUnparseExpr (List.map snd rest) in
-          Some (self#access "{" "}" (self#simplifyUnparseExpr a) (makeCommaBreakableList formattedList))
+          Some (self#access "{" "}" (self#simple_enough_to_be_lhs_dot_send a) (makeCommaBreakableList formattedList))
         | _ -> None
       )
     )
@@ -3222,9 +3222,9 @@ class printer  ()= object(self:'self)
     (* should also check attributes underneath *)
     else match e.pexp_desc with
       | Pexp_apply ({pexp_desc=Pexp_ident{txt=Ldot (Lident ("Array"), "set")}}, [(_,e1);(_,e2);(_,e3)]) ->
-        Some (self#access "(" ")" (self#simplifyUnparseExpr e1) (self#unparseExpr e2), e3)
+        Some (self#access "(" ")" (self#simple_enough_to_be_lhs_dot_send e1) (self#unparseExpr e2), e3)
       | Pexp_apply ({pexp_desc=Pexp_ident {txt=Ldot (Lident "String", "set")}}, [(_,e1);(_,e2);(_,e3)]) ->
-        Some ((self#access "[" "]" (self#simplifyUnparseExpr e1) (self#unparseExpr e2)), e3)
+        Some ((self#access "[" "]" (self#simple_enough_to_be_lhs_dot_send e1) (self#unparseExpr e2)), e3)
       | Pexp_apply (
         {pexp_desc=Pexp_ident {txt = Ldot (Ldot (Lident "Bigarray", array), "set")}},
         label_exprs
@@ -3234,7 +3234,7 @@ class printer  ()= object(self:'self)
             match label_exprs with
             | [(_,a);(_,{pexp_desc=Pexp_array ls});(_,c)] ->
               let formattedList = List.map self#simplifyUnparseExpr ls in
-              Some (self#access "{" "}" (self#simplifyUnparseExpr a) (makeCommaBreakableList formattedList), c)
+              Some (self#access "{" "}" (self#simple_enough_to_be_lhs_dot_send a) (makeCommaBreakableList formattedList), c)
             | _ -> None
           )
           | ("Array1"|"Array2"|"Array3") -> (
@@ -3244,7 +3244,7 @@ class printer  ()= object(self:'self)
               | (_,v)::rest ->
                 let args = List.map snd (List.rev rest) in
                 let formattedList = List.map self#simplifyUnparseExpr args in
-                Some (self#access "{" "}" (self#simplifyUnparseExpr a) (makeCommaBreakableList formattedList), v)
+                Some (self#access "{" "}" (self#simple_enough_to_be_lhs_dot_send a) (makeCommaBreakableList formattedList), v)
               | _ -> assert false
             )
             | _ -> assert false
