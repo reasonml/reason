@@ -85,7 +85,7 @@ function(hljs) {
     variants: [
       // using more strict pattern for higher relevance to increase chances of Less detection.
       // this is *the only* Less specific statement used in most of the sources, so...
-      // (we’ll still often loose to the css-parser unless there's '//' comment,
+      // (we’ll still often lose to the css-parser unless there's '//' comment,
       // simply because 1 variable just can't beat 99 properties :)
       {begin: '@' + IDENT_RE + '\\s*:', relevance: 15},
       {begin: '@' + IDENT_RE}

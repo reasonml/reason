@@ -86,33 +86,33 @@ function stdin_test() {
     FILEEXT="${FILENAME##*.}"
 
     if [[ $FILEEXT = "re" ]]; then
-      cat $INPUT_FILE | $REFMT -is-interface-pp false -print-width 50 -parse re -print re -use-stdin true 2>&1 > $OUTPUT_FILE
+      cat $INPUT_FILE | $REFMT --interface false --print-width 50 --parse re --print re --use-stdin true 2>&1 > $OUTPUT_FILE
     elif [[ $FILEEXT = "rei" ]]; then
-      cat $INPUT_FILE | $REFMT -is-interface-pp true -print-width 50 -parse re -print re -use-stdin true 2>&1 > $OUTPUT_FILE
+      cat $INPUT_FILE | $REFMT --interface true --print-width 50 --parse re --print re --use-stdin true 2>&1 > $OUTPUT_FILE
     elif [[ $FILEEXT = "ml" ]]; then
-      cat $INPUT_FILE | $REFMT -heuristics-file $HEURISTICS_FILE -is-interface-pp false -print-width 50 -parse ml -print re -use-stdin true 2>&1 > $OUTPUT_FILE
+      cat $INPUT_FILE | $REFMT --heuristics-file $HEURISTICS_FILE --interface false --print-width 50 --parse ml --print re --use-stdin true 2>&1 > $OUTPUT_FILE
     elif [[ $FILEEXT = "mli" ]]; then
-      cat $INPUT_FILE | $REFMT -heuristics-file $HEURISTICS_FILE -is-interface-pp true -print-width 50 -parse ml -print re -use-stdin true 2>&1 > $OUTPUT_FILE
+      cat $INPUT_FILE | $REFMT --heuristics-file $HEURISTICS_FILE --interface true --print-width 50 --parse ml --print re --use-stdin true 2>&1 > $OUTPUT_FILE
     else
-      warning "  ⊘ FAILED -use-stdin \n"
+      warning "  ⊘ FAILED --use-stdin \n"
       info "  Cannot determine default implementation parser for extension ${FILEEXT}"
       return 1
     fi
 
     if ! [[ $? -eq 0 ]]; then
-        warning "  ⊘ FAILED -use-stdin \n"
-        info "  There was an error when testing -use-stdin"
+        warning "  ⊘ FAILED --use-stdin \n"
+        info "  There was an error when testing --use-stdin"
         info "  for input file $INPUT_FILE"
         info "  and output file $OUTPUT_FILE${RESET}"
         echo ""
         return 1
     fi
 
-    debug "  Comparing -use-stdin results:  diff $OUTPUT_FILE $EXPECTED_OUTPUT_FILE"
+    debug "  Comparing --use-stdin results:  diff $OUTPUT_FILE $EXPECTED_OUTPUT_FILE"
     diff --unchanged-line-format="" --new-line-format=":%dn: %L" --old-line-format=":%dn: %L" $OUTPUT_FILE $EXPECTED_OUTPUT_FILE
 
     if ! [[ $? -eq 0 ]]; then
-        warning "  ⊘ FAILED -use-stdin \n"
+        warning "  ⊘ FAILED --use-stdin \n"
         info "  ${INFO}$OUTPUT_FILE${RESET}"
         info "  doesn't match expected output"
         info "  ${INFO}$EXPECTED_OUTPUT_FILE${RESET}"
@@ -138,16 +138,16 @@ function unit_test() {
         else
           REFILE="$(basename $FILE .mli).rei"
         fi
-        debug "$REFMT -heuristics-file $INPUT/arity.txt -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
-        $REFMT -heuristics-file $INPUT/arity.txt -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE
+        debug "$REFMT --heuristics-file $INPUT/arity.txt --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
+        $REFMT --heuristics-file $INPUT/arity.txt --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE
         if ! [[ $? -eq 0 ]]; then
             warning "  ⊘ TEST FAILED CONVERTING ML TO RE\n"
             return 1
         fi
         FILE=$REFILE
     else
-      debug "  '$REFMT -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE'"
-      $REFMT -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE
+      debug "  '$REFMT --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE'"
+      $REFMT --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE
     fi
 
     debug "  Comparing results:  diff $OUTPUT/$FILE $EXPECTED_OUTPUT/$FILE"
@@ -163,7 +163,7 @@ function unit_test() {
         return 1
     fi
 
-    debug "Testing -use-stdin"
+    debug "Testing --use-stdin"
     stdin_test $INPUT/$1 $OUTPUT/$FILE $EXPECTED_OUTPUT/$FILE $INPUT/arity.txt
 
     if ! [[ $? -eq 0 ]]; then
@@ -191,21 +191,21 @@ function idempotent_test() {
         fi
         debug "  Converting $FILE to $REFILE:"
 
-        debug "  Formatting Once: $REFMT -heuristics-file $INPUT/arity.txt -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
-        $REFMT -heuristics-file $INPUT/arity.txt -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE
+        debug "  Formatting Once: $REFMT --heuristics-file $INPUT/arity.txt --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
+        $REFMT --heuristics-file $INPUT/arity.txt --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE
         if ! [[ $? -eq 0 ]]; then
             warning "⊘ FAILED\n"
             return 1
         fi
         FILE=$REFILE
-        debug "  Generating output again: $REFMT -print-width 50 -print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted"
-        $REFMT -print-width 50 -print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted
+        debug "  Generating output again: $REFMT --print-width 50 --print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted"
+        $REFMT --print-width 50 --print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted
     else
-      debug "  Formatting Once: '$REFMT -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE'"
-      $REFMT -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE
+      debug "  Formatting Once: '$REFMT --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE'"
+      $REFMT --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE
 
-      debug "  Generating output again: $REFMT -print-width 50 -print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted"
-      $REFMT -print-width 50 -print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted
+      debug "  Generating output again: $REFMT --print-width 50 --print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted"
+      $REFMT --print-width 50 --print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted
     fi
 
     diff --unchanged-line-format="" --new-line-format=":%dn: %L" --old-line-format=":%dn: %L" $OUTPUT/$FILE $OUTPUT/$FILE.formatted
@@ -217,7 +217,7 @@ function idempotent_test() {
         return 1
     fi
 
-    debug "Testing -use-stdin"
+    debug "Testing --use-stdin"
     stdin_test $INPUT/$1 $OUTPUT/$FILE $OUTPUT/$FILE $INPUT/arity.txt
 
     if ! [[ $? -eq 0 ]]; then
@@ -246,16 +246,16 @@ function typecheck_test() {
           REFILE="$(basename $FILE .mli).rei"
         fi
         debug "  Converting $FILE to $REFILE:"
-        debug "$REFMT -heuristics-file $INPUT/arity.txt -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
-        $REFMT -heuristics-file $INPUT/arity.txt -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE
+        debug "$REFMT --heuristics-file $INPUT/arity.txt --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
+        $REFMT --heuristics-file $INPUT/arity.txt --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE
         if ! [[ $? -eq 0 ]]; then
             warning "  ⊘ FAILED\n"
             return 1
         fi
         FILE=$REFILE
     else
-        debug "  Formatting: $REFMT -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE"
-        $REFMT -print-width 50 -print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE
+        debug "  Formatting: $REFMT --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE"
+        $REFMT --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE
         if ! [[ $? -eq 0 ]]; then
             warning "  ⊘ FAILED\n"
             return 1
@@ -289,10 +289,10 @@ function error_test() {
       warning "  ⊘ FAILED: .ml files should not need to be run against error tests. \n"
       return 1
     else
-      debug "  '$REFMT -print-width 50 -print re $INPUT/$FILE &> $OUTPUT/$FILE'"
+      debug "  '$REFMT --print-width 50 --print re $INPUT/$FILE &> $OUTPUT/$FILE'"
       # ensure errors are not absolute filepaths
       cd $INPUT
-      $REFMT -print-width 50 -print re $(basename $FILE) &> $OUTPUT/$FILE
+      $REFMT --print-width 50 --print re $(basename $FILE) &> $OUTPUT/$FILE
       cd - > /dev/null
     fi
 

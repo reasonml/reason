@@ -14,9 +14,9 @@ die () {
 
 find . | grep "\.re$" | xargs -0 node -e "\
 process.argv[1].split('\n').filter(function(n){return n;}).forEach(function(filePath) { \
-  var binary = require('child_process').execSync('$1 ' + filePath + ' -print binary_reason');
+  var binary = require('child_process').execSync('$1 ' + filePath + ' --print binary_reason');
   var reformatted = require('child_process').execSync(
-     '$2 -use-stdin true -is-interface-pp false -parse binary_reason -print re -print-width $3 | sed -e \'s/ *\$//g\'',
+     '$2 --use-stdin true --interface false --parse binary_reason --print re --print-width $3 | sed -e \'s/ *\$//g\'',
      {input: binary}
   );
   require('fs').writeFileSync(filePath, reformatted);
@@ -25,9 +25,9 @@ process.argv[1].split('\n').filter(function(n){return n;}).forEach(function(file
 
 find . | grep "\.rei$" | xargs -0 node -e "\
 process.argv[1].split('\n').filter(function(n){return n;}).forEach(function(filePath) { \
-  var binary = require('child_process').execSync('$1 ' + filePath + ' -print binary_reason');
+  var binary = require('child_process').execSync('$1 ' + filePath + ' --print binary_reason');
   var reformatted = require('child_process').execSync(
-    '$2 -use-stdin true -is-interface-pp true -parse binary_reason -print re -print-width $3 | sed -e \'s/ *\$//g\'',
+    '$2 --use-stdin true --interface true --parse binary_reason --print re --print-width $3 | sed -e \'s/ *\$//g\'',
     {input: binary}
   );
   require('fs').writeFileSync(filePath, reformatted);

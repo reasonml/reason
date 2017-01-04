@@ -11,7 +11,7 @@ do
 
   ocamlc -dsource -ppx ./reactjs_jsx_ppx.native -pp ./refmt_impl.native -impl $test \
     2>&1 | sed '$ d' | sed '$ d' | \
-    ./refmt_impl.native -use-stdin true -parse ml -print re -is-interface-pp false \
+    ./refmt_impl.native --use-stdin true --parse ml --print re --interface false \
     > $testPath/actual${i}.re
     # remove the last two lines. It's noise about command failure and changes at
     # every run because the temporary file name in the error message changes

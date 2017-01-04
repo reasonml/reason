@@ -92,20 +92,20 @@ are actually modified (so that undo/redo take you to the position where
 formatting actually effected the file).
 
 You can set `g:vimreason_extra_args_expr_reason` to control the arguments
-passed to `refmt` (such as `-print-width`). The contents of
+passed to `refmt` (such as `--print-width`). The contents of
 `g:vimreason_extra_args_expr_reason` is a string that contains a `VimScript`
 expression. This allows you do dynamically determine the formatting arguments
 based on things like your window width.
 
 ```vim
 " Always wrap at 90 columns
-let g:vimreason_extra_args_expr_reason = '"-print-width 90"'
+let g:vimreason_extra_args_expr_reason = '"--print-width 90"'
 
 " Wrap at the window width
-let g:vimreason_extra_args_expr_reason = '"-print-width " . ' .  "winwidth('.')"
+let g:vimreason_extra_args_expr_reason = '"--print-width " . ' .  "winwidth('.')"
 
 " Wrap at the window width but not if it exceeds 120 characters.
-let g:vimreason_extra_args_expr_reason = '"-print-width " . ' .  "min([120, winwidth('.')])"
+let g:vimreason_extra_args_expr_reason = '"--print-width " . ' .  "min([120, winwidth('.')])"
 ```
 
 Key Mappings:
@@ -195,5 +195,3 @@ if executable('refmt')
   let g:syntastic_reason_checkers=['merlin']
 endif
 ```
-
-
