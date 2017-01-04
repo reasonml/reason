@@ -1,6 +1,5 @@
 #!/usr/bin/env ocaml
 #require "menhirLib";;
-#require "re.str";;
 #require "reason";;
 #use ".reasoninit";;
 
