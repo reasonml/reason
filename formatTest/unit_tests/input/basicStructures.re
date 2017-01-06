@@ -85,6 +85,18 @@ let x = !(!foo.bar);
 
 let x = !(!foo#bar);
 
+/* Test precedence on access sugar */
+let x = (!arr).(0);
+
+let x = Array.get !arr 0;
+
+let x = (!str).[0];
+
+let x = String.get !str 0;
+
+let x = Array.set !arr 0 1;
+
+let x = (!arr).(0) = 1;
 
 /* Comments */
 /*Below is an empty comment*/
