@@ -12068,7 +12068,7 @@ implementation: TYPE LIDENT EQUAL UNDERSCORE EQUAL BAR WITH
 ## BAR
 ##
 
-<SYNTAX ERROR>
+Variant constructors begin with an uppercase character
 
 implementation: TYPE LIDENT EQUAL UNDERSCORE EQUAL LBRACE LIDENT COLON LBRACE DOTDOT RBRACE AS QUOTE LIDENT LBRACKETAT AND RBRACKET SEMI
 ##
@@ -12388,7 +12388,7 @@ implementation: TYPE UIDENT WITH
 ## In state 81, spurious reduction of production mod_ext_longident -> UIDENT
 ##
 
-<SYNTAX ERROR>
+Variant constructors begin with an uppercase character
 
 implementation: TYPE WITH
 ##
