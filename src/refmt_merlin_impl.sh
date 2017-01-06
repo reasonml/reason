@@ -20,4 +20,4 @@ then
     exit 1
 fi
 
-$REFMT $@ -recoverable true -parse re
+$REFMT $@ --recoverable true --parse re

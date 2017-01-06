@@ -175,9 +175,9 @@ function."
           (width-args
            (cond
             ((equal refmt-width-mode 'window)
-             (list "-print-width" (number-to-string (window-body-width))))
+             (list "--print-width" (number-to-string (window-body-width))))
             ((equal refmt-width-mode 'fill)
-             (list "-print-width" (number-to-string fill-column)))
+             (list "--print-width" (number-to-string fill-column)))
             (t
              '()))))
      (unwind-protect
@@ -192,7 +192,7 @@ function."
              (erase-buffer))
            (if (zerop (apply 'call-process
                              refmt-command nil (list (list :file outputfile) errorfile)
-                             nil (append width-args (list "-parse" "re" "-print" "re" bufferfile))))
+                             nil (append width-args (list "--parse" "re" "--print" "re" bufferfile))))
                (progn
                  (call-process-region (point-min) (point-max) "diff" nil patchbuf nil "-n" "-"
                                       outputfile)

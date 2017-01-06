@@ -29,7 +29,7 @@ let () =
 fi
 
 if [[ $@ =~ "stdin" ]]; then
-    refmt -parse re -print ml -use-stdin true -is-interface-pp false | utop $@
+    refmt --parse re --print ml --use-stdin true --is-interface-pp false | utop $@
 else
     utop -init $DIR/rtop_init.ml $@ -I $HOME -safe-string
 fi

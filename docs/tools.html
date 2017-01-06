@@ -65,10 +65,10 @@ when upgrading their source code to include new syntax features, and others
 will want to run it after every new line of code directly from their editor.
 
 ####Options
-You can specify which syntax to parse, and which to print via `-parse` and
-`-print` flags. For example, you can convert your `ocaml` project to `Reason`
-by processing each file with the command `refmt -parse ml -print
-re yourFile.ml`. Execute `refmt -help` for more options.
+You can specify which syntax to parse, and which to print via `--parse` and
+`--print` flags. For example, you can convert your `ocaml` project to `Reason`
+by processing each file with the command `refmt --parse ml --print
+re yourFile.ml`. Execute `refmt --help` for more options.
 
 
 
@@ -148,7 +148,7 @@ B relative/path/to/your/build/artifacts/dir/
 > - `refmt` will wrap your lines at the width you have configured in your
 > plugin settings. To change these, open the Package Settings (`Packages > Settings View > Manage Packages`)
 > and click on `nuclide`; scroll to the `Nuclide-ocaml` section add add
-> "-print-width yourWidthNumber" to "Additional flags to pass to refmt".
+> "--print-width yourWidthNumber" to "Additional flags to pass to refmt".
 
 
 <img style="width:100%; max-width:470px; max-height:440px" src="images/Autocomplete.png" />
@@ -209,7 +209,7 @@ know if `C (1, 2)` in OCaml should be translated to `C (1, 2)` or `C 1 2` in Rea
 By default, we will convert it to `C 1 2 [@implicit_arity]`, which tells the compiler
 this can be either `C 1 2` or `C (1, 2)`.
 
-To prevent `[@implicit_arity]` from being generated, one can supply `-assume-explicit-arity`
+To prevent `[@implicit_arity]` from being generated, one can supply `--assume-explicit-arity`
 to `refmt`. This forces the formatter to generate `C 1 2` instead of `C 1 2 [@implicit_arity]`.
 
 However, since `C 1 2` requires multiple arugments, it may fail the compilation if it is actually
@@ -219,7 +219,7 @@ as argument so that they will be converted correctly (e.g., `Some (1, 2)` will b
 to `Some (1, 2)` instead of `Some 1 2`, which doesn't compile).
 
 To provide your own exception list, create a line-separated file that contains all constructors (without module prefix)
-in your project that expects a single tuple as argument, and use `-heuristics-file <filename>`
+in your project that expects a single tuple as argument, and use `--heuristics-file <filename>`
 to tell `refmt` that all constructors
 listed in the file will be treated as constructor with a single tuple as argument:
 
@@ -251,9 +251,9 @@ let c = Some (1, 2)
 Then only the constructor identifiers that were listed will be assumed to accept tuples instead of multiple arguments.
 
 ```sh
-> refmt -heuristics-file \
-    ./heuristics.txt -assume-explicit-arity \
-    -parse ml -print re test.ml
+> refmt --heuristics-file \
+    ./heuristics.txt --assume-explicit-arity \
+    --parse ml --print re test.ml
 ```
 
 

@@ -54,13 +54,13 @@ let usage = {|Reason: Meta Language Utility
 [Usage]: refmt [options] some-file.[re|ml|rei|mli]
 
    // translate ocaml to reason on stdin
-   echo 'let _ = ()' | refmt -print re -parse ml -use-stdin true -is-interface-pp false
+   echo 'let _ = ()' | refmt --print re --parse ml --use-stdin true
 
    // print the AST of a file
-   refmt -parse re -print ast some-file.re
+   refmt --parse re --print ast some-file.re
 
    // reformat a file
-   refmt -parse re -print re some-file.re
+   refmt --parse re --print re some-file.re
 
 [Options]:
 |}
@@ -81,16 +81,26 @@ let () =
   let print_width = ref None in
   let print_help = ref false in
   let options = [
-    "-is-interface-pp", Arg.Bool (fun x -> intf := Some x), "<interface>, parse AST as <interface> (either true or false)";
-    "-use-stdin", Arg.Bool (fun x -> use_stdin := x), "<use_stdin>, parse AST from <use_stdin> (either true, false). You still must provide a file name even if using stdin for errors to be reported";
-    "-recoverable", Arg.Bool (fun x -> recoverable := x), "Enable recoverable parser";
-    "-assume-explicit-arity", Arg.Unit (fun () -> assumeExplicitArity := true), "If a constructor's argument is a tuple, always interpret it as multiple arguments";
-    "-parse", Arg.String (fun x -> prse := Some x), "<parse>, parse AST as <parse> (either 'ml', 're', 'binary_reason(for interchange between Reason versions)', 'binary (from the ocaml compiler)')";
+    "-is-interface-pp", Arg.Bool (fun x -> prerr_endline "-is-interface-pp is deprecated; use -i or --interface instead"; intf := Some x), "";
+    "--is-interface-pp", Arg.Bool (fun x -> prerr_endline "--is-interface-pp is deprecated; use -i or --interface instead"; intf := Some x), "";
+    "--interface", Arg.Bool (fun x -> intf := Some x), "<interface>, -i <interface>; parse AST as an interface (either true or false; default false)";
+    "-i", Arg.Bool (fun x -> intf := Some x), "<interface>, --interface <interface>; parse AST as an interface (either true or false; default false)";
+    "-use-stdin", Arg.Bool (fun x -> prerr_endline "-use-stdin is deprecated; use --use-stdin instead"; use_stdin := x), "";
+    "--use-stdin", Arg.Bool (fun x -> use_stdin := x), "<use_stdin>; parse AST from <use_stdin> (either true or false; default false). You still must provide a file name even if using stdin for errors to be reported";
+    "-recoverable", Arg.Bool (fun x -> prerr_endline "-recoverable is deprecated; use --recoverable instead"; recoverable := x), "";
+    "--recoverable", Arg.Bool (fun x -> recoverable := x), "<recoverable>; enable or disable recoverable parser (either true or false; default false)";
+    "-assume-explicit-arity", Arg.Unit (fun () -> prerr_endline "-assume-explicit-arity is deprecated; use --assume-explicit-arity instead" ; assumeExplicitArity := true), "";
+    "--assume-explicit-arity", Arg.Unit (fun () -> assumeExplicitArity := true), "If a constructor's argument is a tuple, always interpret it as multiple arguments";
+    "-parse", Arg.String (fun x -> prerr_endline "-parse is deprecated; use --parse instead"; prse := Some x), "";
+    "--parse", Arg.String (fun x -> prse := Some x), "<parse>, parse AST as <parse> (either 'ml', 're', 'binary_reason(for interchange between Reason versions)', 'binary (from the ocaml compiler)')";
     (* Use a print option of "none" to simply perform a parsing validation -
      * useful for IDE error messages etc.*)
-    "-print", Arg.String (fun x -> prnt := Some x), "<print>, print AST in <print> (either 'ml', 're', 'binary(default - for compiler input)', 'binary_reason(for interchange between Reason versions)', 'ast (print human readable directly)', 'none')";
-    "-print-width", Arg.Int (fun x -> print_width := Some x), "<print-width>, wrapping width for printing the AST";
-    "-heuristics-file", Arg.String (fun x -> heuristics_file := Some x),
+    "-print", Arg.String (fun x -> prerr_endline "-print is deprecated; use --print instead"; prnt := Some x), "";
+    "--print", Arg.String (fun x -> prnt := Some x), "<print>, print AST in <print> (either 'ml', 're', 'binary(default - for compiler input)', 'binary_reason(for interchange between Reason versions)', 'ast (print human readable directly)', 'none')";
+    "-print-width", Arg.Int (fun x -> prerr_endline "-print-width is deprecated; use --print-width instead"; print_width := Some x), "";
+    "--print-width", Arg.Int (fun x -> print_width := Some x), "<print-width>, wrapping width for printing the AST";
+    "-heuristics-file", Arg.String (fun x -> prerr_endline "-heuristics-file is deprecated; use --heuristics-file instead"; heuristics_file := Some x), "";
+    "--heuristics-file", Arg.String (fun x -> heuristics_file := Some x),
     "<path>, load path as a heuristics file to specify which constructors are defined with multi-arguments. Mostly used in removing [@implicit_arity] introduced from OCaml conversion.\n\t\texample.txt:\n\t\tConstructor1\n\t\tConstructor2";
     "-h", Arg.Unit (fun () -> print_help := true), " Display this list of options";
   ] in
@@ -126,11 +136,7 @@ let () =
   Location.input_name := filename;
   let intf = match !intf with
     | None when (Filename.check_suffix filename ".rei" || Filename.check_suffix filename ".mli") -> true
-    | None ->
-      if use_stdin then
-        raise (Invalid_config ("Unable to determine if stdin input is an interface file. Invalid -is-interface-pp setting."))
-      else
-        false
+    | None -> false
     | Some b -> b
   in
   try
@@ -142,7 +148,7 @@ let () =
         | Some "ml" -> ((Reason_toolchain.ML.canonical_interface_with_comments (Reason_toolchain.setup_lexbuf use_stdin filename)), true, true)
         | Some "re" -> ((Reason_toolchain.JS.canonical_interface_with_comments (Reason_toolchain.setup_lexbuf use_stdin filename)), false, true)
         | Some s -> (
-          raise (Invalid_config ("Invalid -parse setting for interface '" ^ s ^ "'."))
+          raise (Invalid_config ("Invalid --parse setting for interface '" ^ s ^ "'."))
         )
       in
       let _ =
@@ -180,7 +186,7 @@ let () =
         | Some "ml" -> Reason_toolchain.ML.print_canonical_interface_with_comments
         | Some "re" -> Reason_toolchain.JS.print_canonical_interface_with_comments
         | Some s -> (
-          raise (Invalid_config ("Invalid -print setting for interface '" ^ s ^ "'."))
+          raise (Invalid_config ("Invalid --print setting for interface '" ^ s ^ "'."))
         )
       in
       thePrinter (ast, comments)
@@ -192,7 +198,7 @@ let () =
         | Some "ml" -> (Reason_toolchain.ML.canonical_implementation_with_comments (Reason_toolchain.setup_lexbuf use_stdin filename), true, false)
         | Some "re" -> (Reason_toolchain.JS.canonical_implementation_with_comments (Reason_toolchain.setup_lexbuf use_stdin filename), false, false)
         | Some s -> (
-          raise (Invalid_config ("Invalid -parse setting for interface '" ^ s ^ "'."))
+          raise (Invalid_config ("Invalid --parse setting for interface '" ^ s ^ "'."))
         )
       in
       let _ = if parsedAsInterface then
@@ -229,7 +235,7 @@ let () =
         | Some "ml" -> Reason_toolchain.ML.print_canonical_implementation_with_comments
         | Some "re" -> Reason_toolchain.JS.print_canonical_implementation_with_comments
         | Some s -> (
-          raise (Invalid_config ("Invalid -print setting for implementation '" ^ s ^ "'."))
+          raise (Invalid_config ("Invalid --print setting for implementation '" ^ s ^ "'."))
         )
       in
       thePrinter (ast, comments)

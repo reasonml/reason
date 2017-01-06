@@ -130,14 +130,14 @@ cp -af $DIR $BACKUP_DIR
 
 find $DIR -type f -name "*.re" | while read file; do
     set -x
-    $OPAM_BIN/refmt-$VERSION -print binary_reason $file | $OPAM_BIN/refmt -print-width $PRINTWIDTH -use-stdin true -is-interface-pp false -parse binary_reason -print re > $file.new
+    $OPAM_BIN/refmt-$VERSION --print binary_reason $file | $OPAM_BIN/refmt --print-width $PRINTWIDTH --use-stdin true --interface false --parse binary_reason --print re > $file.new
     mv -f $file.new $file
     set +x
 done
 
 set -x
 find $DIR -type f -name "*.rei" | while read file; do
-    $OPAM_BIN/refmt-$VERSION -is-interface-pp true -print binary_reason $file | $OPAM_BIN/refmt -is-interface-pp true -print-width $PRINTWIDTH -use-stdin true -parse binary_reason -print re > $file.new
+    $OPAM_BIN/refmt-$VERSION --interface true --print binary_reason $file | $OPAM_BIN/refmt --interface true --print-width $PRINTWIDTH --use-stdin true --parse binary_reason --print re > $file.new
     mv -f $file.new $file
 done
 set +x

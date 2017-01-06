@@ -28,9 +28,9 @@ def reason_command_line(file_name):
 
     return [
         refmt,
-        '-use-stdin', 'true',
-        '-parse', 're',
-        '-is-interface-pp', is_interface(file_name),
+        '--use-stdin', 'true',
+        '--parse', 're',
+        '--interface', is_interface(file_name),
         file_name
     ]
 
@@ -42,8 +42,8 @@ class ReasonFormatCommand(sublime_plugin.TextCommand):
 
         try:
             proc = Popen(reason_command_line(file_name) + [
-                '-print', 're',
-                '-print-width', max_width,
+                '--print', 're',
+                '--print-width', max_width,
             ], stdin=PIPE, stdout=PIPE, stderr=PIPE)
         except FileNotFoundError:
             error = 'Can\'t find `%s` ($PATH=%s).\n\n' \
@@ -89,5 +89,4 @@ class Reason(Linter):
     line_col_base = (1, 0)
 
     def cmd(self):
-        return reason_command_line(self.view.file_name()) + ['-print', 'none']
-
+        return reason_command_line(self.view.file_name()) + ['--print', 'none']
