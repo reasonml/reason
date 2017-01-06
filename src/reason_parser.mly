@@ -3808,7 +3808,9 @@ and_type_declaration:
 ;
 
 type_declaration_details:
-    as_loc(LIDENT) optional_type_parameters type_kind constraints
+    | as_loc(UIDENT) optional_type_parameters type_kind constraints
+      { Location.raise_errorf ~loc:$1.loc "Types begin with a - z or _" }
+    | as_loc(LIDENT) optional_type_parameters type_kind constraints
       { let (kind, priv, manifest) = $3 in
         ($1, $2, List.rev $4, kind, priv, manifest)
        }
