@@ -1138,7 +1138,7 @@ Capitalized tag:
 becomes
 
 ```reason
-MyComponent.createElement foo::bar [][@JSX]
+MyComponent.createElement foo::bar children::[] () [@JSX]
 ```
 
 Lowercase tag:
@@ -1150,8 +1150,13 @@ Lowercase tag:
 becomes
 
 ```reason
-div foo::bar [child1, child2][@JSX]
+div foo::bar childern::[child1, child2] () [@JSX]
 ```
+
+The `[@JSX]` syntax attribute can be safely ignored; it's a hook for potential
+ppx macros to spot them and syntactically transform the preceeding expression
+into something else. This way, everyone gets to benefit the JSX syntax without
+needing to opt into a specific library using it, e.g. React.
 
 As you might have noticed already, JSX in Reason does not require curly braces
 for attributes or children. Text however does require double quotes.
@@ -1166,7 +1171,7 @@ for attributes or children. Text however does require double quotes.
 </NoCurlyBraces>
 ```
 
-There is also support for punning.
+There is also support for punning!
 
 ```reason
 <div foo />
