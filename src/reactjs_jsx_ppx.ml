@@ -1,7 +1,5 @@
 (* transform `div props1::a props2::b children::[foo, bar] () [@JSX]` into
   `ReactDOMRe.createElement "div" props::[%bs.obj {props1: 1, props2: b}] [|foo, bar|]`.
-  If the function call ends with an underscore, e.g. foo_, turn it into
-  `ReactRe.createElement foo_ props::[%bs.obj {props1: 1, props2: b}] [|foo, bar|]`.
   Don't transform the upper-cased case: `Foo.createElement foo::bar children::[] () [@JSX]`.
 *)
 
@@ -29,19 +27,6 @@ let rec listToArray' lst accum =
   )
 
 let listToArray lst = listToArray' lst [] |> List.rev
-
-(* turn bla::1 blaa::2 into [%bs.obj {bla: 1, blaa: 2}] *)
-let functionCallWithLabelsToBSObj ~loc callWithLabels =
-  (* structure *)
-  let record = callWithLabels
-    |> List.map (fun (label, expression) ->
-      ({loc; txt = Lident label}, expression)
-    )
-  in
-  Exp.extension ~loc (
-    {loc; txt = "bs.obj"},
-    PStr [Str.eval ~loc (Exp.record ~loc record None)]
-  )
 
 let extractChildrenForDOMElements ?(removeLastPositionUnit=false) ~loc propsAndChildren =
   let rec allButLast_ lst acc = match lst with
@@ -84,92 +69,51 @@ let jsxMapper argv = {
               (
                 propsAndChildren |> List.map (fun (label, expr) -> (label, mapper.expr mapper expr))
               )
+          (* div prop1::foo prop2:bar children::[bla] () *)
+          (* turn that into ReactDOMRe.createElement props::(ReactDOMRe.props props1::foo props2::bar ()) [|bla|] *)
           | {loc; txt = Lident lowercaseIdentifier} ->
-            let isComposite = (String.get lowercaseIdentifier (String.length lowercaseIdentifier - 1)) = '_' in
-            if isComposite then
-              (* foo_ prop1::foo prop2:bar children::[bla] () *)
-              (* turn that into ReactRe.createElement foo_ props::[%bs.obj {prop1: foo, prop2: bar}] [|bla|] *)
-              let (children, propsWithLabels) =
-                extractChildrenForDOMElements ~removeLastPositionUnit:true ~loc propsAndChildren
-              in
-              let componentNameExpr = Exp.ident ~loc {loc; txt = Lident lowercaseIdentifier} in
-              let childrenExpr = Exp.array (
+            let (children, propsWithLabels) =
+              extractChildrenForDOMElements ~loc propsAndChildren
+            in
+            let componentNameExpr =
+              Exp.constant ~loc (Const_string (lowercaseIdentifier, None))
+            in
+            let childrenExpr =
+              Exp.array (
                 listToArray children |> List.map (fun a -> mapper.expr mapper a)
               )
+            in
+            let args = match propsWithLabels with
+            | [theUnitArgumentAtEnd] ->
+              [
+                (* "div" *)
+                ("", componentNameExpr);
+                (* [|moreCreateElementCallsHere|] *)
+                ("", childrenExpr)
+              ]
+            | nonEmptyProps ->
+              let propsCall =
+                Exp.apply
+                  ~loc
+                  (Exp.ident ~loc {loc; txt = Ldot (Lident "ReactDOMRe", "props")})
+                  (nonEmptyProps |> List.map (fun (label, expression) -> (label, mapper.expr mapper expression)))
               in
-              let args = match propsWithLabels with
-              | [] ->
-                (* no prop (beside the unit, which got removed) *)
-                [
-                  (* fooComponentEscapeHatch_ *)
-                  ("", componentNameExpr);
-                  (* [|moreCreateElementCallsHere|] *)
-                  ("", childrenExpr)
-                ]
-              | props ->
-                [
-                  (* fooComponentEscapeHatch_ *)
-                  ("", componentNameExpr);
-                  (* props::[bs.obj {foo: bar, baz: qux}] *)
-                  ("props", functionCallWithLabelsToBSObj ~loc (
-                    props |> List.map (fun (label, expression) -> (label, mapper.expr mapper expression))
-                  ));
-                  (* [|moreCreateElementCallsHere|] *)
-                  ("", childrenExpr)
-                ]
-              in
-              Exp.apply
-                ~loc
-                (* throw away the [@JSX] attribute and keep the others, if any *)
-                ~attrs:(pexp_attributes |> List.filter (fun (attribute, _) -> attribute.txt <> "JSX"))
-                (* ReactRe.createCompositeElement *)
-                (Exp.ident ~loc {loc; txt = Ldot (Lident "ReactRe", "createElement")})
-                args
-            else
-              (* div prop1::foo prop2:bar children::[bla] () *)
-              (* turn that into ReactDOMRe.createElement props::(ReactDOMRe.props props1::foo props2::bar ()) [|bla|] *)
-              let (children, propsWithLabels) =
-                extractChildrenForDOMElements ~loc propsAndChildren
-              in
-              let componentNameExpr =
-                Exp.constant ~loc (Const_string (lowercaseIdentifier, None))
-              in
-              let childrenExpr =
-                Exp.array (
-                  listToArray children |> List.map (fun a -> mapper.expr mapper a)
-                )
-              in
-              let args = match propsWithLabels with
-              | [theUnitArgumentAtEnd] ->
-                [
-                  (* "div" *)
-                  ("", componentNameExpr);
-                  (* [|moreCreateElementCallsHere|] *)
-                  ("", childrenExpr)
-                ]
-              | nonEmptyProps ->
-                let propsCall =
-                  Exp.apply
-                    ~loc
-                    (Exp.ident ~loc {loc; txt = Ldot (Lident "ReactDOMRe", "props")})
-                    (nonEmptyProps |> List.map (fun (label, expression) -> (label, mapper.expr mapper expression)))
-                in
-                [
-                  (* "div" *)
-                  ("", componentNameExpr);
-                  (* ReactDOMRe.props className:blabla foo::bar () *)
-                  ("props", propsCall);
-                  (* [|moreCreateElementCallsHere|] *)
-                  ("", childrenExpr)
-                ]
-              in
-              Exp.apply
-                ~loc
-                (* throw away the [@JSX] attribute and keep the others, if any *)
-                ~attrs:(pexp_attributes |> List.filter (fun (attribute, _) -> attribute.txt <> "JSX"))
-                (* ReactDOMRe.createDOMElement *)
-                (Exp.ident ~loc {loc; txt = Ldot (Lident "ReactDOMRe", "createElement")})
-                args
+              [
+                (* "div" *)
+                ("", componentNameExpr);
+                (* ReactDOMRe.props className:blabla foo::bar () *)
+                ("props", propsCall);
+                (* [|moreCreateElementCallsHere|] *)
+                ("", childrenExpr)
+              ]
+            in
+            Exp.apply
+              ~loc
+              (* throw away the [@JSX] attribute and keep the others, if any *)
+              ~attrs:(pexp_attributes |> List.filter (fun (attribute, _) -> attribute.txt <> "JSX"))
+              (* ReactDOMRe.createDOMElement *)
+              (Exp.ident ~loc {loc; txt = Ldot (Lident "ReactDOMRe", "createElement")})
+              args
           | {txt = Ldot (_, anythingNotCreateElement)} ->
             raise (
               Invalid_argument

@@ -11,21 +11,6 @@
 
 /* ============== */
 
-<compositeJSComponent_ />;
-
-<compositeJSComponent_ className="hello" />;
-
-<compositeJSComponent_ className="hello" width="10" />;
-
-<compositeJSComponent_ className="hello" width="10"> <li /> <Foo /> </compositeJSComponent_>;
-
-<compositeJSComponent_ className="hello" comp=(<Foo bar=1 />)>
-  <li />
-  <Foo bar=2 />
-</compositeJSComponent_>;
-
-/* ============== */
-
 <Foo />;
 
 <Foo className="hello" />;
