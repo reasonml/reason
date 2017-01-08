@@ -878,6 +878,7 @@ let only_labels l =
 %token DO
 %token DONE
 %token DOT
+%token DOTEQUAL
 %token DOTDOT
 %token DOTDOTDOT
 %token DOWNTO
@@ -1124,7 +1125,7 @@ conflicts.
 %nonassoc BACKQUOTE BANG CHAR FALSE FLOAT INT INT32 INT64
           LBRACE LBRACELESS LBRACKET LBRACKETBAR LIDENT LPAREN
           NEW NATIVEINT PREFIXOP STRING TRUE UIDENT
-          LBRACKETPERCENT LESSIDENT LBRACKETLESS
+          LBRACKETPERCENT LESSIDENT LBRACKETLESS DOTEQUAL
 
 /* Entry points */
 
@@ -3051,6 +3052,16 @@ _simple_expr:
       { unclosed_exp (with_txt $3 "{<") (with_txt $6 ">}") }
   | simple_expr SHARP label
       { mkexp(Pexp_send($1, $3)) }
+  | simple_expr DOT STRING
+      {
+        let loc = mklocation $symbolstartpos $endpos in
+        let (s, _) = $3 in
+        mkinfix $1 (mknoloc "##") (mkexp (Pexp_ident(mkloc (Lident s) loc)))
+      }
+  | simple_expr DOTEQUAL simple_expr
+      {
+        mkinfix $1 (mknoloc "#=") $3
+      }
   | simple_expr as_loc(SHARPOP) simple_expr
       { mkinfix $1 $2 $3 }
   | LPAREN MODULE module_expr RPAREN
