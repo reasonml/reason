@@ -23,7 +23,7 @@ endif
 " From auto-format plugin:
 " https://github.com/Chiel92/vim-autoformat/blob/master/plugin/autoformat.vim
 let g:vimreason_reason = "refmt"
-let g:vimreason_args_expr_reason = '"--use-stdin true --print re --interface " .  (match(expand("%"), "\\.rei$") == -1 ? "false " : "true ")  . expand("%")'
+let g:vimreason_args_expr_reason = '"--print re --interface " .  (match(expand("%"), "\\.rei$") == -1 ? "false " : "true ") . " --parse " . expand("%:e")'
 
 function! Strip(input_string)
   return substitute(a:input_string, '\s*$', '\1', '')

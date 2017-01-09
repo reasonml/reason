@@ -86,13 +86,13 @@ function stdin_test() {
     FILEEXT="${FILENAME##*.}"
 
     if [[ $FILEEXT = "re" ]]; then
-      cat $INPUT_FILE | $REFMT --interface false --print-width 50 --parse re --print re --use-stdin true 2>&1 > $OUTPUT_FILE
+      cat $INPUT_FILE | $REFMT --interface false --print-width 50 --parse re --print re 2>&1 > $OUTPUT_FILE
     elif [[ $FILEEXT = "rei" ]]; then
-      cat $INPUT_FILE | $REFMT --interface true --print-width 50 --parse re --print re --use-stdin true 2>&1 > $OUTPUT_FILE
+      cat $INPUT_FILE | $REFMT --interface true --print-width 50 --parse re --print re 2>&1 > $OUTPUT_FILE
     elif [[ $FILEEXT = "ml" ]]; then
-      cat $INPUT_FILE | $REFMT --heuristics-file $HEURISTICS_FILE --interface false --print-width 50 --parse ml --print re --use-stdin true 2>&1 > $OUTPUT_FILE
+      cat $INPUT_FILE | $REFMT --heuristics-file $HEURISTICS_FILE --interface false --print-width 50 --parse ml --print re 2>&1 > $OUTPUT_FILE
     elif [[ $FILEEXT = "mli" ]]; then
-      cat $INPUT_FILE | $REFMT --heuristics-file $HEURISTICS_FILE --interface true --print-width 50 --parse ml --print re --use-stdin true 2>&1 > $OUTPUT_FILE
+      cat $INPUT_FILE | $REFMT --heuristics-file $HEURISTICS_FILE --interface true --print-width 50 --parse ml --print re 2>&1 > $OUTPUT_FILE
     else
       warning "  ⊘ FAILED --use-stdin \n"
       info "  Cannot determine default implementation parser for extension ${FILEEXT}"

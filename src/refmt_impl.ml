@@ -54,7 +54,7 @@ let usage = {|Reason: Meta Language Utility
 [Usage]: refmt [options] some-file.[re|ml|rei|mli]
 
    // translate ocaml to reason on stdin
-   echo 'let _ = ()' | refmt --print re --parse ml --use-stdin true
+   echo 'let _ = ()' | refmt --print re --parse ml
 
    // print the AST of a file
    refmt --parse re --print ast some-file.re
@@ -73,7 +73,6 @@ let () =
   let filename = ref "" in
   let prnt = ref None in
   let prse = ref None in
-  let use_stdin = ref false in
   let intf = ref None in
   let recoverable = ref false in
   let assumeExplicitArity = ref false in
@@ -85,8 +84,8 @@ let () =
     "--is-interface-pp", Arg.Bool (fun x -> prerr_endline "--is-interface-pp is deprecated; use -i or --interface instead"; intf := Some x), "";
     "--interface", Arg.Bool (fun x -> intf := Some x), "<interface>, -i <interface>; parse AST as an interface (either true or false; default false)";
     "-i", Arg.Bool (fun x -> intf := Some x), "<interface>, --interface <interface>; parse AST as an interface (either true or false; default false)";
-    "-use-stdin", Arg.Bool (fun x -> prerr_endline "-use-stdin is deprecated; use --use-stdin instead"; use_stdin := x), "";
-    "--use-stdin", Arg.Bool (fun x -> use_stdin := x), "<use_stdin>; parse AST from <use_stdin> (either true or false; default false). You still must provide a file name even if using stdin for errors to be reported";
+    "-use-stdin", Arg.Bool (fun x -> prerr_endline "-use-stdin is deprecated; usage is assumed if not specifying a filename"), "";
+    "--use-stdin", Arg.Bool (fun x -> prerr_endline "--use-stdin is deprecated; usage is assumed if not specifying a filename"), "";
     "-recoverable", Arg.Bool (fun x -> prerr_endline "-recoverable is deprecated; use --recoverable instead"; recoverable := x), "";
     "--recoverable", Arg.Bool (fun x -> recoverable := x), "<recoverable>; enable or disable recoverable parser (either true or false; default false)";
     "-assume-explicit-arity", Arg.Unit (fun () -> prerr_endline "-assume-explicit-arity is deprecated; use --assume-explicit-arity instead" ; assumeExplicitArity := true), "";
@@ -107,8 +106,8 @@ let () =
   let () = Arg.parse options (fun arg -> filename := arg) usage in
   let print_help = !print_help in
   let filename = !filename in
-  let use_stdin = !use_stdin in
-  let _ =
+  let use_stdin = (filename = "") in
+  let () =
     if (filename = "" && not use_stdin) || print_help then
       let () = Arg.usage options usage in
         exit 1;
