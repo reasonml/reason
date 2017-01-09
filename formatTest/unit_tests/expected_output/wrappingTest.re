@@ -2710,16 +2710,3 @@ let tryingTheSameInLocalScope = {
   let blah a b => a;
   () /* Done (almost) */
 };
-
-
-/**
-   Issue 940: https://github.com/facebook/reason/issues/940
-   The parens in the exception match case are required for correct parsing
-   i.e. (Sys_error _ as exc) instead of Sys_error _ as exc
-   The latter doesn't type-check with Error: Unbound value exc.
-   Warning 11 (unused match case) is also triggered.
- */
-switch (f ()) {
-| x => Some x
-| exception (Sys_error _ as exc) => raise exc
-};

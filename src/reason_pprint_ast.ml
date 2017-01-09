@@ -2950,7 +2950,7 @@ class printer  ()= object(self:'self)
     Example: (Sys_error _ as exc) should be wrapped,
       results in incorrect parsing with type error otherwise.
   *)
-  method pattern_without_or ?(wrap=false) x =
+  method pattern_without_or x =
     let patternSourceMap pt layout = (SourceMap (pt.ppat_loc, layout)) in
     (* TODOATTRIBUTES: Handle the stdAttrs here *)
     let (arityAttrs, docAtrs, _, jsxAttrs) = partitionAttributes x.ppat_attributes in
@@ -2959,12 +2959,11 @@ class printer  ()= object(self:'self)
           let raw_pattern = (self#pattern p) in
           let pattern_with_precedence = match p.ppat_desc with
             | Ppat_or (p1, p2) -> formatPrecedence (self#or_pattern p1 p2)
-            | _ -> if wrap == true then makeList ~wrap:("(", "") [raw_pattern] else raw_pattern
+            | _ -> raw_pattern
           in
-          let wrapping = if wrap == true then ("", ")") else ("", "") in
           label ~space:true
             (patternSourceMap p pattern_with_precedence)
-            (makeList ~wrap:wrapping ~postSpace:true [
+            (makeList ~postSpace:true [
               atom "as";
               (SourceMap (s.loc, (protectIdentifier s.txt)))
             ]) (* RA*)
@@ -2995,7 +2994,7 @@ class printer  ()= object(self:'self)
             SourceMap (x.ppat_loc, formattedConstruction)
       | _ -> self#simple_pattern x
 
-  method pattern ?(wrap=false) x =
+  method pattern x =
     let (arityAttrs, docAtrs, stdAttrs, jsxAttrs) = partitionAttributes x.ppat_attributes in
     if stdAttrs <> [] then
       formatAttributed
@@ -3006,7 +3005,7 @@ class printer  ()= object(self:'self)
     else match x.ppat_desc with
       | Ppat_or (p1, p2) ->
         self#or_pattern p1 p2
-      | _ -> self#pattern_without_or ~wrap x
+      | _ -> self#pattern_without_or x
 
   method pattern_list_helper pat =
     let pat_list, pat_last = self#pattern_list_split_cons [] pat in
@@ -3097,11 +3096,17 @@ class printer  ()= object(self:'self)
           | Ppat_extension e -> self#extension e
           | Ppat_exception p ->
               (*
-                An exception pattern should be wrapped in (...)
-                Example: (Sys_error _ as exc)
-                  results in incorrect parsing with type error otherwise.
+                An exception pattern with an alias should be wrapped in (...)
+                The rules for what goes to the right of the exception are a little (too) nuanced.
+                It accepts "non simple" parameters, except in the case of `as`.
+                Here we consistently apply "simplification" to the exception argument.
+                Example:
+                  | exception (Sys_error _ as exc) => raise exc
+                 parses correctly while
+                  | Sys_error _ as exc => raise exc
+                 results in incorrect parsing with type error otherwise.
               *)
-              makeList ~postSpace:true [atom "exception"; self#pattern ~wrap:true p]
+               makeList ~postSpace:true [atom "exception"; self#simple_pattern p]
           | _ -> formatPrecedence (self#pattern x) (* May have a redundant sourcemap *)
         in
         SourceMap (x.ppat_loc, itm)
