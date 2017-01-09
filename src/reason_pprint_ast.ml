@@ -2988,7 +2988,7 @@ class printer  ()= object(self:'self)
             SourceMap (x.ppat_loc, formattedConstruction)
       | _ -> self#simple_pattern x
 
-  method pattern x=
+  method pattern x =
     let (arityAttrs, docAtrs, stdAttrs, jsxAttrs) = partitionAttributes x.ppat_attributes in
     if stdAttrs <> [] then
       formatAttributed
@@ -3089,7 +3089,18 @@ class printer  ()= object(self:'self)
           | Ppat_lazy p ->formatPrecedence (label ~space:true (atom "lazy") (self#simple_pattern p))
           | Ppat_extension e -> self#extension e
           | Ppat_exception p ->
-              makeList ~postSpace:true [atom "exception"; self#pattern p]
+              (*
+                An exception pattern with an alias should be wrapped in (...)
+                The rules for what goes to the right of the exception are a little (too) nuanced.
+                It accepts "non simple" parameters, except in the case of `as`.
+                Here we consistently apply "simplification" to the exception argument.
+                Example:
+                  | exception (Sys_error _ as exc) => raise exc
+                 parses correctly while
+                  | Sys_error _ as exc => raise exc
+                 results in incorrect parsing with type error otherwise.
+              *)
+               makeList ~postSpace:true [atom "exception"; self#simple_pattern p]
           | _ -> formatPrecedence (self#pattern x) (* May have a redundant sourcemap *)
         in
         SourceMap (x.ppat_loc, itm)
