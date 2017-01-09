@@ -28,7 +28,6 @@ def reason_command_line(file_name):
 
     return [
         refmt,
-        '--use-stdin', 'true',
         '--parse', 're',
         '--interface', is_interface(file_name),
         file_name
