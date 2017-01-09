@@ -2944,12 +2944,6 @@ class printer  ()= object(self:'self)
       ~preSpace:true
       [left; right]
 
-  (*
-    Parameterize `pattern_without_or` with ~wrap to make sure
-    an exception pattern with alias is correctly wrapped.
-    Example: (Sys_error _ as exc) should be wrapped,
-      results in incorrect parsing with type error otherwise.
-  *)
   method pattern_without_or x =
     let patternSourceMap pt layout = (SourceMap (pt.ppat_loc, layout)) in
     (* TODOATTRIBUTES: Handle the stdAttrs here *)
