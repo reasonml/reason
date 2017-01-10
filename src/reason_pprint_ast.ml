@@ -5017,13 +5017,15 @@ class printer  ()= object(self:'self)
         | Private -> "pri"
         | Public -> "pub"
       in
-      label
+      let m = label
         ~space:true
         (label ~space:true
             (atom pubOrPrivate)
             (makeList ~postSpace:true ~inline:(false, true) ~break:IfNeed methodFlags)
         )
         (self#core_type ct)
+      in
+      (self#attach_std_item_attrs x.pctf_attributes m)
     | Pctf_constraint (ct1, ct2) ->
       label
         (atom "constraint")
