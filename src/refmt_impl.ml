@@ -108,7 +108,16 @@ let () =
   let filename = !filename in
   let use_stdin = (filename = "") in
   let () =
-    if (filename = "" && not use_stdin) || print_help then
+    let has_print = match !prnt with
+      | None -> false
+      | Some x -> true
+    in
+    let has_parse = match !prse with
+      | None -> false
+      | Some x -> true
+    in
+
+    if (filename = "" && not (has_parse && has_print)) || print_help then
       let () = Arg.usage options usage in
         exit 1;
   in
