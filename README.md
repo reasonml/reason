@@ -13,7 +13,7 @@ Reason: Build Systems Rapidly [![Build Status](https://travis-ci.org/facebook/re
 
 Install Via `npm`
 ----------------
-Installing `Reason` via `npm` is the easiest way to get started. Like so: `npm install reason`. (`npm` version > 3.0 is required - [install here](https://nodejs.org/en/download/current/)).
+`npm` version > 3.0 is required - [install here](https://nodejs.org/en/download/current/).
 
 #### Reason Project
 
