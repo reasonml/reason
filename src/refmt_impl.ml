@@ -209,8 +209,9 @@ let () =
           raise (Invalid_config ("Invalid --parse setting for interface '" ^ s ^ "'."))
         )
       in
-      let _ = if parsedAsInterface then
-          raise (Invalid_config ("The file parsed does not appear to be an implementation file.")) in
+      let _ =
+          if parsedAsInterface then
+              raise (Invalid_config ("The file parsed does not appear to be an implementation file.")) in
       let _ = Reason_pprint_ast.configure
           ~width: print_width
           ~assumeExplicitArity: !assumeExplicitArity
@@ -231,8 +232,8 @@ let () =
         | Some "binary"
         | None -> fun (ast, comments) -> (
           output_string stdout Config.ast_impl_magic_number;
-          output_value stdout filename;
-          output_value stdout ast
+          output_value  stdout filename;
+          output_value  stdout ast
         )
         | Some "ast" -> fun (ast, comments) -> (
           Printast.implementation Format.std_formatter ast
