@@ -229,6 +229,31 @@ let remove_underscores s =
       |  c  -> Bytes.set b dst c; remove (src + 1) (dst + 1)
   in remove 0 0
 
+let remove_numbers s =
+  let l = String.length s in
+  let b = Bytes.create l in
+  let rec remove src dst =
+    if src >= l then
+      if dst >= l then s else Bytes.sub_string b 0 dst
+    else
+      match s.[src] with
+      | '0' .. '9' -> remove (src + 1) dst
+      |  c  -> Bytes.set b dst c; remove (src + 1) (dst + 1)
+  in remove 0 0
+
+let remove_chars s =
+  let l = String.length s in
+  let b = Bytes.create l in
+  let rec remove src dst =
+    if src >= l then
+      if dst >= l then s else Bytes.sub_string b 0 dst
+    else
+      match s.[src] with
+      | 'A' .. 'z' -> remove (src + 1) dst
+      |  c  -> Bytes.set b dst c; remove (src + 1) (dst + 1)
+  in remove 0 0
+
+
 (* Update the current location with file name and line number. *)
 
 let update_loc lexbuf file line absolute chars =
@@ -321,6 +346,8 @@ let float_literal =
   ('.' ['0'-'9' '_']* )?
   (['e' 'E'] ['+' '-']? ['0'-'9'] ['0'-'9' '_']*)?
 
+let postfix_chars = decimal_literal uppercase identchar*
+
 rule token = parse
   | "\\" newline {
       match !preprocessor with
@@ -359,6 +386,11 @@ rule token = parse
   | "=?"
       (* Need special label extractor? *)
       { OPTIONAL_NO_DEFAULT }
+  | postfix_chars
+      {
+        let l = Lexing.lexeme lexbuf in
+        POSTFIX (remove_numbers l, int_of_string (remove_chars l))
+      }
   | lowercase identchar *
       { let s = Lexing.lexeme lexbuf in
         try Hashtbl.find keyword_table s

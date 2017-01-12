@@ -957,6 +957,7 @@ let only_labels l =
 %token PUB
 %token QUESTION
 %token OPTIONAL_NO_DEFAULT
+%token <string * int> POSTFIX
 %token QUOTE
 %token RBRACE
 %token RBRACKET
@@ -2746,6 +2747,15 @@ _expr:
       { mkexp (Pexp_try($2, List.rev $4)) }
   | TRY simple_expr WITH error
       { syntax_error_exp (mklocation $startpos($4) $endpos($4)) "Invalid try with"}
+  | POSTFIX
+      {
+          let loc = mklocation $symbolstartpos $endpos in
+          let attribute = ({txt = "postfix"; loc = loc}, PStr []) in
+          let c, v = $1 in
+          let constructor_name = mknoloc(Lident c) in
+          let value = mkexp (Pexp_constant (Const_int v)) ~loc in
+          mkexp (Pexp_construct(constructor_name, Some value)) ~attrs:[attribute] ~loc
+      }
   | as_loc(constr_longident) simple_non_labeled_expr_list_as_tuple
     {
       if List.mem (string_of_longident $1.txt)
