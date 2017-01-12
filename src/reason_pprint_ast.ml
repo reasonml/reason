@@ -409,7 +409,7 @@ let expandLocation pos ~expand:(startPos, endPos) =
   }
 
 (*
- * Returns (arityAttrs, docAttrs, standard_attrs)
+ * Returns (arityAttrs, docAttrs, standard_attrs, jsxAttrs)
  *)
 let rec partitionAttributes attrs =
   match attrs with
