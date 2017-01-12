@@ -288,6 +288,11 @@ class type _y = {
   pub height: int [@@bs.set]
 };
 
+class type _z = {
+  pub height: int
+}
+[@@bs];
+
 module NestedModule = {
   [@@@floatingNestedStructureItem hello];
 };
