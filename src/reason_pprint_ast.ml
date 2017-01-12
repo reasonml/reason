@@ -4911,7 +4911,7 @@ class printer  ()= object(self:'self)
     match e with
       | PStr [] -> atom ("[" ^ ppxToken  ^ ppxId.txt  ^ "]")
       | PStr [itm] ->
-        makeList ~wrap ~break ~pad [self#structure_item itm]
+        makeList ~wrap ~pad [self#structure_item itm]
       | PStr (_::_ as items) ->
         let rows = (List.map (self#structure_item) items) in
         makeList ~wrap ~break ~pad ~postSpace ~sep rows

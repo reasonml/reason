@@ -359,3 +359,6 @@ type reconciler 'props +=
   | Baz :(reconciler (unit [@onUnit]))
          [@onThirdRow]
 [@@onVariantType];
+
+/* "react-dom" shouldn't spread the attribute over multiple lines */
+external render : int => string => unit = "render" [@@bs.val] [@@bs.module "react-dom"];
