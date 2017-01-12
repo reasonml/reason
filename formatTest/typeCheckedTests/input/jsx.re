@@ -33,7 +33,7 @@ module Test = {
     let createElement yo::yo=? ::children () => {displayName: "test"};
 };
 
-module So = {
+module So {
     let createElement ::children () => {displayName: "test"};
 };
 
@@ -53,8 +53,8 @@ module Pun = {
     let createElement intended::intended=? ::children () => {displayName: "test"};
 };
 
-module Namespace = {
-    module Foo = {
+module Namespace {
+    module Foo {
         let createElement intended::intended=? anotherOptional::x=100 ::children () => {displayName: "test"};
     };
 };
