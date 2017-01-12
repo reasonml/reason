@@ -5996,7 +5996,7 @@ implementation: INCLUDE LBRACE MODULE WITH
 ## MODULE
 ##
 
-<SYNTAX ERROR>
+A module's name needs to begin with a upper-case letter
 
 implementation: INCLUDE LPAREN FUN LPAREN RPAREN EQUALGREATER LPAREN RPAREN WHILE
 ##
