@@ -161,7 +161,8 @@ let () =
       in
       let _ =
         if not parsedAsInterface then
-          raise (Invalid_config ("The file parsed does not appear to be an interface file.")) in
+          raise (Invalid_config ("The file parsed does not appear to be an interface file."))
+      in
       let _ = Reason_pprint_ast.configure
           ~width: print_width
           ~assumeExplicitArity: !assumeExplicitArity
