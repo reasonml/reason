@@ -2259,6 +2259,10 @@ let pun_labelled_pattern e lbl =
     | { ppat_desc = (Ppat_var { txt; _ }) } when txt = lbl -> ""
     | _ -> lbl )
 
+let isLongIdentWithDot = function
+  | Ldot _ -> true
+  | _ -> false
+
 let recordRowIsPunned pld =
       let name = pld.pld_name.txt in
       (match pld.pld_type with
@@ -2266,7 +2270,7 @@ let recordRowIsPunned pld =
             when
             (Longident.last txt = name
               (* Don't pun types from other modules, e.g. type bar = {foo: Baz.foo}; *)
-              && List.length (Longident.flatten txt) == 1
+              && isLongIdentWithDot txt == false
               (* don't pun parameterized types, e.g. {tag: tag 'props} *)
               && List.length args == 0) -> true
         | _ -> false)
