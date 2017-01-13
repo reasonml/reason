@@ -44,3 +44,17 @@ let (\===) = (===);
 let expectedPrecendence = 1 + 1 \=== 1 + 1 && 1 + 1 \!== 1 + 1;
 
 let expectedPrecendence = 1 \+ 1 \=== 1 \+ 1 && 1 \+ 1 \!== 1 \+ 1;
+
+type postfixType = Px int;
+
+let postfix = 100Px;
+
+type postfixRecord = {
+  height: postfixType,
+  width: postfixType
+};
+
+let postfix2 = {
+  height: 50Px,
+  width: 30Px
+};

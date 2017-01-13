@@ -229,30 +229,19 @@ let remove_underscores s =
       |  c  -> Bytes.set b dst c; remove (src + 1) (dst + 1)
   in remove 0 0
 
-let remove_numbers s =
+let splitCharsNumbers s =
   let l = String.length s in
-  let b = Bytes.create l in
-  let rec remove src dst =
-    if src >= l then
-      if dst >= l then s else Bytes.sub_string b 0 dst
-    else
+  let chars = Bytes.create l in
+  let numbers = Bytes.create l in
+  let rec split src nmb_dst char_dst =
+    if src >= l then (Bytes.sub_string numbers 0 nmb_dst, Bytes.sub_string chars 0 char_dst)
+  else
       match s.[src] with
-      | '0' .. '9' -> remove (src + 1) dst
-      |  c  -> Bytes.set b dst c; remove (src + 1) (dst + 1)
-  in remove 0 0
-
-let remove_chars s =
-  let l = String.length s in
-  let b = Bytes.create l in
-  let rec remove src dst =
-    if src >= l then
-      if dst >= l then s else Bytes.sub_string b 0 dst
-    else
-      match s.[src] with
-      | 'A' .. 'z' -> remove (src + 1) dst
-      |  c  -> Bytes.set b dst c; remove (src + 1) (dst + 1)
-  in remove 0 0
-
+      | '0' .. '9' -> Bytes.set numbers nmb_dst s.[src]; split (src + 1) (nmb_dst + 1) char_dst
+      | 'A' .. 'z' -> Bytes.set chars char_dst s.[src]; split (src + 1) nmb_dst (char_dst + 1)
+      | _ -> assert false
+  in
+  split 0 0 0
 
 (* Update the current location with file name and line number. *)
 
@@ -389,7 +378,8 @@ rule token = parse
   | postfix_chars
       {
         let l = Lexing.lexeme lexbuf in
-        POSTFIX (remove_numbers l, int_of_string (remove_chars l))
+        let (n, c) = splitCharsNumbers l in
+        POSTFIX (c, int_of_string n)
       }
   | lowercase identchar *
       { let s = Lexing.lexeme lexbuf in

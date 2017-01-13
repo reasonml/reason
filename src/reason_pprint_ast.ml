@@ -2269,6 +2269,27 @@ let recordRowIsPunned pld =
               && (List.length args) == 0) -> true
         | _ -> false)
 
+let hasPostfixAttribute attrs =
+  List.exists
+    (function
+      | ({txt="postfix"; loc}, _) -> true
+      | _ -> false
+  )
+  attrs
+
+let formatInfix x =
+  match x with
+  | {pexp_desc=Pexp_construct ({txt = Lident lbl}, Some {pexp_desc = Pexp_constant (Const_int b)});_} -> atom ((string_of_int b) ^ lbl);
+  | _ -> assert false
+
+let filterPostfixAttrs attrs =
+  List.filter
+   (function
+    | ({txt="postfix"; loc}, _) -> false
+    | _ -> true
+   )
+  attrs
+
 class printer  ()= object(self:'self)
   val pipe = false
   val semi = false
@@ -3374,8 +3395,11 @@ class printer  ()= object(self:'self)
        the ends of functions, or simplify infix printings then append. *)
     if stdAttrs <> [] then
       let withoutVisibleAttrs = {x with pexp_attributes=(arityAttrs @ jsxAttrs)} in
-      let attributesAsList = (List.map self#attribute stdAttrs) in
-      let itms = match self#unparseExprRecurse withoutVisibleAttrs with
+      let attributesAsList = (List.map self#attribute (filterPostfixAttrs stdAttrs)) in
+      let itms = if hasPostfixAttribute stdAttrs then
+        [formatInfix x]
+      else
+        match self#unparseExprRecurse withoutVisibleAttrs with
         | SpecificInfixPrecedence ({reducePrecedence; shiftPrecedence}, itm) -> [formatPrecedence ~loc:x.pexp_loc itm]
         | FunctionApplication itms -> itms
         | PotentiallyLowPrecedence itm -> [formatPrecedence ~loc:x.pexp_loc itm]
