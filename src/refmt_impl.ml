@@ -219,7 +219,10 @@ let () =
           raise (Invalid_config ("Invalid --print setting for interface '" ^ s ^ "'."))
         )
       in
-      thePrinter (ast, comments)
+      thePrinter (ast, comments);
+      match !output_file with
+      | Some _ -> close_out output_chan
+      | None -> ()
     ) else (
       let ((ast, comments), parsedAsML, parsedAsInterface) = match !prse with
         | None -> (defaultImplementationParserFor use_stdin filename)
