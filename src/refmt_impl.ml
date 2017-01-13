@@ -153,15 +153,15 @@ let () =
         | None -> (defaultInterfaceParserFor use_stdin filename)
         | Some "binary_reason" -> reasonBinaryParser use_stdin filename
         | Some "binary" -> ocamlBinaryParser use_stdin filename true
-        | Some "ml" -> ((Reason_toolchain.ML.canonical_interface_with_comments (Reason_toolchain.setup_lexbuf use_stdin filename)), true, true)
-        | Some "re" -> ((Reason_toolchain.JS.canonical_interface_with_comments (Reason_toolchain.setup_lexbuf use_stdin filename)), false, true)
+        | Some "ml" -> (Reason_toolchain.ML.canonical_interface_with_comments (Reason_toolchain.setup_lexbuf use_stdin filename), true, true)
+        | Some "re" -> (Reason_toolchain.JS.canonical_interface_with_comments (Reason_toolchain.setup_lexbuf use_stdin filename), false, true)
         | Some s -> (
           raise (Invalid_config ("Invalid --parse setting for interface '" ^ s ^ "'."))
         )
       in
       let _ =
-        if not parsedAsInterface then
-          raise (Invalid_config ("The file parsed does not appear to be an interface file."))
+          if not parsedAsInterface then
+              raise (Invalid_config ("The file parsed does not appear to be an interface file."))
       in
       let _ = Reason_pprint_ast.configure
           ~width: print_width
