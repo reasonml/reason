@@ -2265,8 +2265,10 @@ let recordRowIsPunned pld =
         | { ptyp_desc = (Ptyp_constr ({ txt; _ }, args)); _}
             when
             (Longident.last txt = name
+              (* Don't pun types from other modules, e.g. type bar = {foo: Baz.foo}; *)
+              && List.length (Longident.flatten txt) == 1
               (* don't pun parameterized types, e.g. {tag: tag 'props} *)
-              && (List.length args) == 0) -> true
+              && List.length args == 0) -> true
         | _ -> false)
 
 class printer  ()= object(self:'self)
