@@ -79,6 +79,8 @@ let () =
   let heuristics_file = ref None in
   let print_width = ref None in
   let print_help = ref false in
+  let in_place = ref false in
+  let output_file = ref None in
   let options = [
     "-is-interface-pp", Arg.Bool (fun x -> prerr_endline "-is-interface-pp is deprecated; use -i or --interface instead"; intf := Some x), "";
     "--is-interface-pp", Arg.Bool (fun x -> prerr_endline "--is-interface-pp is deprecated; use -i or --interface instead"; intf := Some x), "";
@@ -98,6 +100,9 @@ let () =
     "--print", Arg.String (fun x -> prnt := Some x), "<print>, print AST in <print> (either 'ml', 're', 'binary(default - for compiler input)', 'binary_reason(for interchange between Reason versions)', 'ast (print human readable directly)', 'none')";
     "-print-width", Arg.Int (fun x -> prerr_endline "-print-width is deprecated; use --print-width instead"; print_width := Some x), "";
     "--print-width", Arg.Int (fun x -> print_width := Some x), "<print-width>, wrapping width for printing the AST";
+    "--output", Arg.String (fun x -> output_file := Some x), "<output-file>, -o <output-file>, target file for output; default [stdout]";
+    "-o", Arg.String (fun x -> output_file := Some x), "<output-file>, --output <output-file>, target file for output; default [stdout]";
+    "--in-place", Arg.Unit (fun () -> in_place := true), "Reformat a file in-place (defaults to not in place).";
     "-heuristics-file", Arg.String (fun x -> prerr_endline "-heuristics-file is deprecated; use --heuristics-file instead"; heuristics_file := Some x), "";
     "--heuristics-file", Arg.String (fun x -> heuristics_file := Some x),
     "<path>, load path as a heuristics file to specify which constructors are defined with multi-arguments. Mostly used in removing [@implicit_arity] introduced from OCaml conversion.\n\t\texample.txt:\n\t\tConstructor1\n\t\tConstructor2";
@@ -138,9 +143,11 @@ let () =
         close_in chan;
         List.rev !list
   in
-  let _ = if !recoverable then
-    Reason_config.configure ~r:true
+  let () =
+      if use_stdin && !in_place then
+          raise (Invalid_config "Cannot write in place to stdin.")
   in
+  Reason_config.configure ~r:!recoverable;
   Location.input_name := filename;
   let intf = match !intf with
     | None when (Filename.check_suffix filename ".rei" || Filename.check_suffix filename ".mli") -> true
@@ -168,6 +175,18 @@ let () =
           ~assumeExplicitArity: !assumeExplicitArity
           ~constructorLists
       in
+      let output_chan = match !output_file with
+                        | Some name ->
+                                if !in_place then
+                                    raise (Invalid_config "Cannot specify --output and --in-place.")
+                                else open_out name
+                        | None ->
+                                if !in_place then
+                                    open_out filename
+                                else stdout
+      in
+      let formatter = Format.formatter_of_out_channel output_chan
+      in
       let thePrinter = match !prnt with
         | Some "binary_reason" -> fun (ast, comments) -> (
           (* Our special format for interchange between reason should keep the
@@ -176,24 +195,26 @@ let () =
            * also store whether or not the binary was originally *parsed* as an
            * interface file.
            *)
-          output_value stdout (
+          output_value output_chan (
             Config.ast_intf_magic_number, filename, ast, comments, parsedAsML, true
           );
         )
         | Some "binary"
         | None -> fun (ast, comments) -> (
-          output_string stdout Config.ast_intf_magic_number;
-          output_value  stdout filename;
-          output_value  stdout ast
+          output_string output_chan Config.ast_intf_magic_number;
+          output_value  output_chan filename;
+          output_value  output_chan ast
         )
         | Some "ast" -> fun (ast, comments) -> (
-          Printast.interface Format.std_formatter ast
+          Printast.interface formatter ast
         )
         (* If you don't wrap the function in parens, it's a totally different
          * meaning #thanksOCaml *)
         | Some "none" -> (fun (ast, comments) -> ())
-        | Some "ml" -> Reason_toolchain.ML.print_canonical_interface_with_comments
-        | Some "re" -> Reason_toolchain.JS.print_canonical_interface_with_comments
+        | Some "ml" ->
+                Reason_toolchain.ML.print_canonical_interface_with_comments formatter
+        | Some "re" ->
+                Reason_toolchain.JS.print_canonical_interface_with_comments formatter
         | Some s -> (
           raise (Invalid_config ("Invalid --print setting for interface '" ^ s ^ "'."))
         )
@@ -219,6 +240,18 @@ let () =
           ~assumeExplicitArity: !assumeExplicitArity
           ~constructorLists
       in
+      let output_chan = match !output_file with
+                        | Some name ->
+                                if !in_place then
+                                    raise (Invalid_config "Cannot specify --output and --in-place.")
+                                else open_out name
+                        | None ->
+                                if !in_place then
+                                    open_out filename
+                                else stdout
+      in
+      let formatter = Format.formatter_of_out_channel output_chan
+      in
       let thePrinter = match !prnt with
         | Some "binary_reason" -> fun (ast, comments) -> (
           (* Our special format for interchange between reason should keep the
@@ -227,29 +260,34 @@ let () =
            * also store whether or not the binary was originally *parsed* as an
            * interface file.
            *)
-          output_value stdout (
+          output_value output_chan (
             Config.ast_impl_magic_number, filename, ast, comments, parsedAsML, false
           );
         )
         | Some "binary"
         | None -> fun (ast, comments) -> (
-          output_string stdout Config.ast_impl_magic_number;
-          output_value  stdout filename;
-          output_value  stdout ast
+          output_string output_chan Config.ast_impl_magic_number;
+          output_value  output_chan filename;
+          output_value  output_chan ast
         )
         | Some "ast" -> fun (ast, comments) -> (
-          Printast.implementation Format.std_formatter ast
+          Printast.implementation formatter ast
         )
         (* If you don't wrap the function in parens, it's a totally different
          * meaning #thanksOCaml *)
         | Some "none" -> (fun (ast, comments) -> ())
-        | Some "ml" -> Reason_toolchain.ML.print_canonical_implementation_with_comments
-        | Some "re" -> Reason_toolchain.JS.print_canonical_implementation_with_comments
+        | Some "ml" ->
+                Reason_toolchain.ML.print_canonical_implementation_with_comments formatter
+        | Some "re" ->
+                Reason_toolchain.JS.print_canonical_implementation_with_comments formatter
         | Some s -> (
           raise (Invalid_config ("Invalid --print setting for implementation '" ^ s ^ "'."))
         )
       in
-      thePrinter (ast, comments)
+      thePrinter (ast, comments);
+      match !output_file with
+      | Some _ -> close_out output_chan
+      | None -> ()
     )
   with
   | exn ->
