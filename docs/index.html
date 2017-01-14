@@ -1049,6 +1049,19 @@ let hasExactlyTwoCars = fun lst =>
 let justTwo = hasExactlyTwoCars myCarList;  /* true! */
 ```
 
+You may have noticed that in the above `hasExactlyTwoCars`, `lst` is the only
+argument and is immediately used by a `switch` expression. `Reason` has a handy
+syntactic alternative for this pattern:
+
+```reason
+/* Equivalent to the above `hasExactlyTwoCars` */
+let hasExactlyTwoCars = fun
+  | NoMore => false                              /* 0 */
+  | List p NoMore => false                       /* 1 */
+  | List p (List p2 NoMore) => true              /* 2 */
+  | List p (List p2 (List p3 theRest)) => false; /* 3+ */
+```
+
 Objects
 ----------------------------------
 Although functions are the preferred way of working within Reason, it's also possible to use
