@@ -50,13 +50,13 @@
 /* The parser definition */
 
 %{
+open Syntax_util
 open Location
 open Asttypes
 open Longident
 open Parsetree
 open Ast_helper
 open Ast_mapper
-open Syntax_util
 
 (*
    TODO:
@@ -1456,11 +1456,24 @@ _module_expr:
 
 structure:
   | /* Empty */ { [] }
-  | as_loc(error) structure { syntax_error_str $1.loc "Invalid statement" :: $2 }
-  | as_loc(error) SEMI structure { syntax_error_str $1.loc "Invalid statement" :: $3 }
+  | as_loc(error) structure {
+    let menhirError = Syntax_util.findMenhirErrorMessage $1.loc in
+    match menhirError with
+      | MenhirMessagesError errMessage -> (syntax_error_str errMessage.loc errMessage.msg) :: $2
+      | _ -> (syntax_error_str $1.loc "Invalid statement") :: $2
+  }
+  | as_loc(error) SEMI structure {
+    let menhirError = Syntax_util.findMenhirErrorMessage $1.loc in
+    match menhirError with
+      | MenhirMessagesError errMessage -> (syntax_error_str errMessage.loc errMessage.msg) :: $3
+      | _ -> (syntax_error_str $1.loc "Invalid statement") :: $3
+    }
   | structure_item { [$1] }
   | as_loc(structure_item) error structure {
-    syntax_error_str $1.loc "Statement has to end with a semicolon" :: $3
+    let menhirError = Syntax_util.findMenhirErrorMessage $1.loc in
+    match menhirError with
+      | MenhirMessagesError errMessage -> (syntax_error_str errMessage.loc errMessage.msg) :: $3
+      | _ -> (syntax_error_str $1.loc "Statement has to end with a semicolon") :: $3
   }
   | structure_item SEMI structure {
       let effective_loc = mklocation $startpos($1) $endpos($2) in

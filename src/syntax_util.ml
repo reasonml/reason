@@ -292,3 +292,27 @@ let () =
      | _ ->
         None
      )
+
+
+type menhirMessagesError = {
+  msg: string;
+  loc: Location.t;
+}
+
+type menhirError =
+  | NoMenhirMessagesError
+  | MenhirMessagesError of menhirMessagesError
+
+let menhirMessagesError = ref [NoMenhirMessagesError]
+
+let findMenhirErrorMessage loc =
+    let rec find messages =
+      match messages with
+      | MenhirMessagesError err :: tail when err.loc = loc -> MenhirMessagesError err
+      | _ :: tail -> find tail
+      | [] -> NoMenhirMessagesError
+    in find !menhirMessagesError
+
+let add_error_message err =
+  if err.msg <> "<SYNTAX ERROR>\n" then
+    menhirMessagesError := !menhirMessagesError @ [MenhirMessagesError err];
