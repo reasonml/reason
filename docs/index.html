@@ -864,6 +864,8 @@ lists of strings.
 ```reason
 type listOfStrings = list string;
 let lst : listOfStrings = ["hi", "bye"];
+let lst2 : listOfStrings = ["oh", "no", "not, "you", "again"];
+
 ```
 > Notice the syntactic similarity between supplying function parameters and
 type parameters.
@@ -912,6 +914,8 @@ type result 'a 'b =
   | Ok 'a
   | Error 'b;
 let r : result string int = Ok "here is the result";
+let r2 : result string int = Error 500;
+
 ```
 
 Exceptions
