@@ -553,7 +553,9 @@ rule token = parse
    * rule beginning with *, picking it up instead of the special double ** rule
    * below.
    *)
-  | "\\"? "*\\*" appropriate_operator_suffix_chars *
+  | "\\"? "**" appropriate_operator_suffix_chars *
+            { INFIXOP4(Lexing.lexeme lexbuf)}
+  | "\\"? "*\*" appropriate_operator_suffix_chars *
             { INFIXOP4(Lexing.lexeme lexbuf)}
   | '%'     { PERCENT }
   | "\\"? ['*'] appropriate_operator_suffix_chars *
