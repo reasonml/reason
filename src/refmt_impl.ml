@@ -52,8 +52,6 @@ let () =
   let options = [
     "-is-interface-pp", Arg.Bool (fun x -> prerr_endline "-is-interface-pp is deprecated; use -i or --interface instead"; intf := Some x), "";
     "--is-interface-pp", Arg.Bool (fun x -> prerr_endline "--is-interface-pp is deprecated; use -i or --interface instead"; intf := Some x), "";
-    "--interface", Arg.Bool (fun x -> intf := Some x), "<interface>, -i <interface>; parse AST as an interface (either true or false; default false)";
-    "-i", Arg.Bool (fun x -> intf := Some x), "<interface>, --interface <interface>; parse AST as an interface (either true or false; default false)";
     "-use-stdin", Arg.Bool (fun x -> prerr_endline "-use-stdin is deprecated; usage is assumed if not specifying a filename"), "";
     "--use-stdin", Arg.Bool (fun x -> prerr_endline "--use-stdin is deprecated; usage is assumed if not specifying a filename"), "";
     "-recoverable", Arg.Bool (fun x -> prerr_endline "-recoverable is deprecated; use --recoverable instead"; recoverable := x), "";
@@ -75,7 +73,11 @@ let () =
     "--heuristics-file", Arg.String (fun x -> heuristics_file := Some x),
     "<path>, load path as a heuristics file to specify which constructors are defined with multi-arguments. Mostly used in removing [@implicit_arity] introduced from OCaml conversion.\n\t\texample.txt:\n\t\tConstructor1\n\t\tConstructor2";
     "-h", Arg.Unit (fun () -> print_help := true), " Display this list of options";
-  ] @ (alias_options ["--output"; "-o"]
+  ]
+  @ (alias_options ["--interface"; "-i"]
+                   (Arg.Bool (fun x -> intf := Some x))
+                   "<interface>, -i <interface>; parse AST as an interface (either true or false; default false)")
+  @ (alias_options ["--output"; "-o"]
                      (Arg.String (fun x -> output_file := Some x))
                      "<output-file>, target file for output; default [stdout]")
   in
