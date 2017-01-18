@@ -142,8 +142,6 @@ let () =
   in
   try
     let (ast, parsedAsML) = Printer.parse !prse use_stdin filename in
-    (* As it turns out, calling formatter_of_out_channel on stdout results in
-       missing output. So we don't do that. *)
     let output_chan = Printer_maker.prepare_output_file !output_file in
     (* If you run into trouble with this (or need to use std_formatter by
        itself at the same time for some reason), try breaking this out so that
