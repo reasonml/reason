@@ -1,16 +1,18 @@
 module type PRINTER =
     sig
         type t
+
         val parse : string option ->
-        bool ->
-        string ->
-        ((t * Reason_pprint_ast.commentWithCategory) * bool)
+                    bool ->
+                    string ->
+                    ((t * Reason_pprint_ast.commentWithCategory) * bool)
+
         val makePrinter : string option ->
-        string ->
-        bool ->
-        out_channel ->
-        Format.formatter ->
-        ((t * Reason_pprint_ast.commentWithCategory) -> unit)
+                          string ->
+                          bool ->
+                          out_channel ->
+                          Format.formatter ->
+                          ((t * Reason_pprint_ast.commentWithCategory) -> unit)
     end
 
 let prepare_output_file output_file =
