@@ -15,8 +15,7 @@ module type PRINTER =
                           ((t * Reason_pprint_ast.commentWithCategory) -> unit)
     end
 
-let prepare_output_file output_file =
-    match output_file with
+let prepare_output_file = function
     | Some name -> open_out name
     | None -> stdout
 
