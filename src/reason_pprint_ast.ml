@@ -2259,20 +2259,14 @@ let pun_labelled_pattern e lbl =
     | { ppat_desc = (Ppat_var { txt; _ }) } when txt = lbl -> ""
     | _ -> lbl )
 
-let isLongIdentWithDot = function
-  | Ldot _ -> true
-  | _ -> false
-
 let recordRowIsPunned pld =
       let name = pld.pld_name.txt in
       (match pld.pld_type with
         | { ptyp_desc = (Ptyp_constr ({ txt; _ }, args)); _}
             when
             (Longident.last txt = name
-              (* Don't pun types from other modules, e.g. type bar = {foo: Baz.foo}; *)
-              && isLongIdentWithDot txt == false
               (* don't pun parameterized types, e.g. {tag: tag 'props} *)
-              && List.length args == 0) -> true
+              && (List.length args) == 0) -> true
         | _ -> false)
 
 class printer  ()= object(self:'self)
