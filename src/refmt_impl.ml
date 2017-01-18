@@ -76,8 +76,8 @@ let () =
                    (Arg.Bool (fun x -> intf := Some x))
                    "<interface>, -i <interface>; parse AST as an interface (either true or false; default false)")
   @ (alias_options ["--output"; "-o"]
-                     (Arg.String (fun x -> output_file := Some x))
-                     "<output-file>, target file for output; default [stdout]")
+                   (Arg.String (fun x -> output_file := Some x; writing_to_file := true))
+                   "<output-file>, target file for output; default [stdout]")
   in
   let () = Arg.parse options (fun arg -> filename := arg) usage in
   let print_help = !print_help in
