@@ -39,6 +39,8 @@ let reasonDoubleBarNestedAnyPatterns = fun
 
 let (\+) = (+);
 
+let a = 2.0 ** 4.0;
+
 let (\===) = (===);
 
 let expectedPrecendence = 1 + 1 \=== 1 + 1 && 1 + 1 \!== 1 + 1;

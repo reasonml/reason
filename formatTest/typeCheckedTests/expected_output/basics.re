@@ -57,6 +57,8 @@ let reasonDoubleBarNestedAnyPatterns =
 
 let (\+) = (+);
 
+let a = 2.0 *\* 4.0;
+
 let (\===) = (===);
 
 let expectedPrecendence =
