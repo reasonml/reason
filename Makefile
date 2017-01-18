@@ -76,13 +76,20 @@ update_error:
 ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 SUBSTS:=$(ROOT_DIR)/pkg/substs
 
-release:
+gen_substs:
 ifndef version
 	$(error enviorment variable 'version' is undefined)
 endif
-	$(SUBSTS) $(ROOT_DIR)/package.json.in
+	export git_version="$(shell git rev-parse --verify HEAD)"; \
+	export git_short_version="$(shell git rev-parse --short HEAD)"; \
+	$(SUBSTS) $(ROOT_DIR)/package.json.in; \
+	$(SUBSTS) $(ROOT_DIR)/package.ml.in; \
 	$(SUBSTS) $(ROOT_DIR)/opam.in
-	git add package.json opam
+
+.PHONY: gen_substs
+
+release: gen_substs
+	git add package.json package.ml opam
 	git commit -m "Version $(version)"
 	git tag -a $(version) -m "Version $(version)."
 	git push "git@github.com:facebook/Reason.git" $(version)
