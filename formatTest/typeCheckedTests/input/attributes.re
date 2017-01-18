@@ -282,3 +282,21 @@ type reconciler 'props +=
  | Foo int : reconciler int [@onFirstRow]
  | Bar (int [@onInt]) : reconciler unit [@onSecondRow]
  | Baz: reconciler (unit [@onUnit]) [@onThirdRow] [@@onVariantType];
+
+type element;
+
+type reactElement;
+
+type reactClass;
+
+/* "react-dom" shouldn't spread the attribute over multiple lines */
+external render : reactElement => element => unit = "render" [@@bs.val] [@@bs.module "react-dom"];
+
+external f : int => int = "f" [@@bs.module "f"];
+
+external createCompositeElementInternalHack : reactClass =>
+                                              Js.t {.. reasonProps : 'props} =>
+                                              array reactElement =>
+                                              reactElement = "createElement" [@@bs.val] [@@bs.module"react"] [@@bs.splice];
+
+external add_nat: int => int => int = "add_nat_bytecode" "add_nat_native";

@@ -4917,7 +4917,7 @@ class printer  ()= object(self:'self)
     match e with
       | PStr [] -> atom ("[" ^ ppxToken  ^ ppxId.txt  ^ "]")
       | PStr [itm] ->
-        makeList ~wrap ~break ~pad [self#structure_item itm]
+        makeList ~wrap ~pad [self#structure_item itm]
       | PStr (_::_ as items) ->
         let rows = (List.map (self#structure_item) items) in
         makeList ~wrap ~break ~pad ~postSpace ~sep rows
@@ -5071,6 +5071,36 @@ class printer  ()= object(self:'self)
     | Pstr_attribute (s, _) -> (not (s.txt = "ocaml.text") && not (s.txt = "ocaml.doc"))
     | _ -> true
 
+  (*
+    external render : reactElement => element => unit =   (* frstHalf *)
+      "render" [@@bs.val] [@@bs.module "react-dom"];      (* sndHalf *)
+
+    To improve the formatting with breaking & indentation:
+      * consider the part before the '=' as a label
+      * combine that label with '=' in a list
+      * consider the part after the '=' as a list
+      * combine both parts as a label
+  *)
+  method primitive_declaration vd =
+    let attrs = List.map (fun x -> self#item_attribute x) vd.pval_attributes in
+    let lblBefore =
+      label ~space:true
+        (makeList ~postSpace:true
+          [atom "external"; protectIdentifier vd.pval_name.txt; atom ":"])
+        (self#core_type vd.pval_type)
+    in
+    let frstHalf = makeList ~postSpace:true [lblBefore; atom "="] in
+    let string_literals = makeSpacedBreakableInlineList (List.map self#constant_string vd.pval_prim) in
+    (* when there aren't any attrs, add a final semi here *)
+    let prim = if (List.length attrs) == 0
+      then appendSep false ";" string_literals
+      else string_literals
+    in
+    let sndHalf =
+      makeList ~inline:(true, true) ~postSpace:true
+        [prim; makeList ~postSpace:true attrs]
+    in
+    label ~space:true frstHalf sndHalf
 
   method class_instance_type x = match x.pcty_desc with
     | Pcty_signature cs ->
@@ -5834,15 +5864,7 @@ class printer  ()= object(self:'self)
           )
         | Pstr_class l -> self#class_declaration_list l
         | Pstr_class_type (l) -> self#class_type_declaration_list l
-        | Pstr_primitive vd ->
-            let attrs =  List.map (fun x -> self#item_attribute x) vd.pval_attributes in
-            let lst = List.append [
-              atom ("external");
-              protectIdentifier vd.pval_name.txt;
-              atom (":");
-              self#value_description vd;
-            ] attrs in
-            makeList ~postSpace:true lst
+        | Pstr_primitive vd -> self#primitive_declaration vd
         | Pstr_include incl ->
             (* Kind of a hack *)
             let moduleExpr = incl.pincl_mod in
