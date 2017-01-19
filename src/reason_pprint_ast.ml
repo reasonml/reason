@@ -285,7 +285,7 @@ let rec print_layout ?(indent=0) layout =
        | IfNeed  -> "if need"
        | Always  -> "Always"
        | Always_rec  -> "Always_rec" in
-     printf "%s Sequence of %d, sep: %s stick_to_left: %s break: %s\n" space (List.length layout_list) config.sep (string_of_bool config.sepLeft) break;
+     printf "%s Sequence of %d, sep: %s, finalSep: %s stick_to_left: %s break: %s\n" space (List.length layout_list) config.sep (string_of_bool config.renderFinalSep) (string_of_bool config.sepLeft) break;
      let _ = List.map (print_layout ~indent:(indent+2)) layout_list in
      ()
   | WithEOLComment (comment, layout) ->
@@ -1610,14 +1610,17 @@ let rec append ?(space=false) txt = function
   | Sequence (config, l) when snd config.wrap <> "" ->
      let sep = if space then " " else "" in
      Sequence ({config with wrap=(fst config.wrap, snd config.wrap ^ sep ^ txt)}, l)
+  | Sequence (config, l) when List.length l = 0 ->
+     Sequence (config, [atom txt])
   | Sequence (config, l) when config.sep = "" ->
      let sub = List.mapi (fun i layout ->
+                   (* append to the end of the list *)
                    if i + 1 = List.length l then
                      append ~space txt layout
                    else
                      layout
                  ) l in
-     Sequence (config,  sub)
+     Sequence (config, sub)
   | Label (formatter, left, right) ->
      Label (formatter, left, append ~space txt right)
   | layout ->
@@ -5085,14 +5088,12 @@ class printer  ()= object(self:'self)
     in
     let frstHalf = makeList ~postSpace:true [lblBefore; atom "="] in
     let string_literals = makeSpacedBreakableInlineList (List.map self#constant_string vd.pval_prim) in
-    (* when there aren't any attrs, add a final semi here *)
-    let prim = if (List.length attrs) == 0
-      then appendSep false ";" string_literals
-      else string_literals
-    in
     let sndHalf =
-      makeList ~inline:(true, true) ~postSpace:true
-        [prim; makeList ~postSpace:true attrs]
+      if (List.length attrs) == 0 then
+        string_literals
+      else
+        makeList ~inline:(true, true) ~postSpace:true
+          [string_literals; makeList ~postSpace:true attrs]
     in
     label ~space:true frstHalf sndHalf
 
