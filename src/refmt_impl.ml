@@ -1,53 +1,14 @@
 (* Portions Copyright (c) 2015-present, Facebook, Inc. All rights reserved. *)
 
 open Lexing
+open Reason_interface_printer
+open Reason_implementation_printer
 
 exception Invalid_config of string
 
 
 let default_print_width = 100
 
-(* Note: filename should only be used with .ml files. See reason_toolchain. *)
-let defaultImplementationParserFor use_stdin filename =
-  if Filename.check_suffix filename ".re" then (Reason_toolchain.JS.canonical_implementation_with_comments (Reason_toolchain.setup_lexbuf use_stdin filename), false, false)
-  else if Filename.check_suffix filename ".ml" then (Reason_toolchain.ML.canonical_implementation_with_comments (Reason_toolchain.setup_lexbuf use_stdin filename), true, false)
-  else (
-    raise (Invalid_config ("Cannot determine default implementation parser for filename '" ^ filename ^ "'."))
-  )
-
-(* Note: filename should only be used with .mli files. See reason_toolchain. *)
-let defaultInterfaceParserFor use_stdin filename =
-  if Filename.check_suffix filename ".rei" then (Reason_toolchain.JS.canonical_interface_with_comments (Reason_toolchain.setup_lexbuf use_stdin filename) , false, true)
-  else if Filename.check_suffix filename ".mli" then (Reason_toolchain.ML.canonical_interface_with_comments (Reason_toolchain.setup_lexbuf use_stdin filename), true, true)
-  else (
-    raise (Invalid_config ("Cannot determine default interface parser for filename '" ^ filename ^ "'."))
-  )
-
-let reasonBinaryParser use_stdin filename =
-  let chan =
-    match use_stdin with
-      | true -> stdin
-      | false ->
-          let file_chan = open_in filename in
-          seek_in file_chan 0;
-          file_chan
-  in
-  let (magic_number, filename, ast, comments, parsedAsML, parsedAsInterface) = input_value chan in
-  ((ast, comments), parsedAsML, parsedAsInterface)
-
-let ocamlBinaryParser use_stdin filename parsedAsInterface =
-  let chan =
-    match use_stdin with
-      | true -> stdin
-      | false ->
-          let file_chan = open_in filename in
-          seek_in file_chan 0;
-          file_chan
-  in
-  let _ = really_input_string chan (String.length Config.ast_impl_magic_number) in
-  let _ = input_value chan in
-  let ast = input_value chan in
-  ((ast, []), true, parsedAsInterface)
 
 let usage = {|Reason: Meta Language Utility
 
@@ -78,12 +39,19 @@ let () =
   let assumeExplicitArity = ref false in
   let heuristics_file = ref None in
   let print_width = ref None in
+  let output_file = ref None in
+  let writing_to_file = ref false in
   let print_help = ref false in
+  let in_place = ref false in
+  let alias_options opts typefun desc =
+      List.map (fun opt ->
+          let otheropts = List.filter (fun x -> x != opt) opts in
+          opt, typefun, ("(or " ^ (String.concat " or " otheropts) ^ ") " ^ desc)
+      ) opts
+  in
   let options = [
     "-is-interface-pp", Arg.Bool (fun x -> prerr_endline "-is-interface-pp is deprecated; use -i or --interface instead"; intf := Some x), "";
     "--is-interface-pp", Arg.Bool (fun x -> prerr_endline "--is-interface-pp is deprecated; use -i or --interface instead"; intf := Some x), "";
-    "--interface", Arg.Bool (fun x -> intf := Some x), "<interface>, -i <interface>; parse AST as an interface (either true or false; default false)";
-    "-i", Arg.Bool (fun x -> intf := Some x), "<interface>, --interface <interface>; parse AST as an interface (either true or false; default false)";
     "-use-stdin", Arg.Bool (fun x -> prerr_endline "-use-stdin is deprecated; usage is assumed if not specifying a filename"), "";
     "--use-stdin", Arg.Bool (fun x -> prerr_endline "--use-stdin is deprecated; usage is assumed if not specifying a filename"), "";
     "-recoverable", Arg.Bool (fun x -> prerr_endline "-recoverable is deprecated; use --recoverable instead"; recoverable := x), "";
@@ -98,11 +66,19 @@ let () =
     "--print", Arg.String (fun x -> prnt := Some x), "<print>, print AST in <print> (either 'ml', 're', 'binary(default - for compiler input)', 'binary_reason(for interchange between Reason versions)', 'ast (print human readable directly)', 'none')";
     "-print-width", Arg.Int (fun x -> prerr_endline "-print-width is deprecated; use --print-width instead"; print_width := Some x), "";
     "--print-width", Arg.Int (fun x -> print_width := Some x), "<print-width>, wrapping width for printing the AST";
+    "--in-place", Arg.Unit (fun () -> in_place := true), "Reformat a file in-place (defaults to not in place).";
     "-heuristics-file", Arg.String (fun x -> prerr_endline "-heuristics-file is deprecated; use --heuristics-file instead"; heuristics_file := Some x), "";
     "--heuristics-file", Arg.String (fun x -> heuristics_file := Some x),
     "<path>, load path as a heuristics file to specify which constructors are defined with multi-arguments. Mostly used in removing [@implicit_arity] introduced from OCaml conversion.\n\t\texample.txt:\n\t\tConstructor1\n\t\tConstructor2";
     "-h", Arg.Unit (fun () -> print_help := true), " Display this list of options";
-  ] in
+  ]
+  @ (alias_options ["--interface"; "-i"]
+                   (Arg.Bool (fun x -> intf := Some x))
+                   "<interface>, -i <interface>; parse AST as an interface (either true or false; default false)")
+  @ (alias_options ["--output"; "-o"]
+                   (Arg.String (fun x -> output_file := Some x; writing_to_file := true))
+                   "<output-file>, target file for output; default [stdout]")
+  in
   let () = Arg.parse options (fun arg -> filename := arg) usage in
   let print_help = !print_help in
   let filename = !filename in
@@ -138,118 +114,46 @@ let () =
         close_in chan;
         List.rev !list
   in
-  let _ = if !recoverable then
-    Reason_config.configure ~r:true
+  let () =
+      if !in_place then
+          if use_stdin then
+              raise (Invalid_config "Cannot write in place to stdin.")
+          else if !writing_to_file then
+              raise (Invalid_config "Cannot specify --output and --in-place.")
+          else
+              output_file := Some filename
+      else ()
   in
+  Reason_config.configure ~r:!recoverable;
   Location.input_name := filename;
   let intf = match !intf with
     | None when (Filename.check_suffix filename ".rei" || Filename.check_suffix filename ".mli") -> true
     | None -> false
     | Some b -> b
   in
+  let (module Printer : Printer_maker.PRINTER) =
+    if intf then (module Reason_interface_printer)
+    else (module Reason_implementation_printer)
+  in
+  let _ = Reason_pprint_ast.configure
+      ~width: print_width
+      ~assumeExplicitArity: !assumeExplicitArity
+      ~constructorLists
+  in
   try
-    if intf then (
-      let ((ast, comments), parsedAsML, parsedAsInterface) = match !prse with
-        | None -> (defaultInterfaceParserFor use_stdin filename)
-        | Some "binary_reason" -> reasonBinaryParser use_stdin filename
-        | Some "binary" -> ocamlBinaryParser use_stdin filename true
-        | Some "ml" -> (Reason_toolchain.ML.canonical_interface_with_comments (Reason_toolchain.setup_lexbuf use_stdin filename), true, true)
-        | Some "re" -> (Reason_toolchain.JS.canonical_interface_with_comments (Reason_toolchain.setup_lexbuf use_stdin filename), false, true)
-        | Some s -> (
-          raise (Invalid_config ("Invalid --parse setting for interface '" ^ s ^ "'."))
-        )
-      in
-      let _ =
-          if not parsedAsInterface then
-              raise (Invalid_config ("The file parsed does not appear to be an interface file."))
-      in
-      let _ = Reason_pprint_ast.configure
-          ~width: print_width
-          ~assumeExplicitArity: !assumeExplicitArity
-          ~constructorLists
-      in
-      let thePrinter = match !prnt with
-        | Some "binary_reason" -> fun (ast, comments) -> (
-          (* Our special format for interchange between reason should keep the
-           * comments separate.  This is not compatible for input into the
-           * ocaml compiler - only for input into another version of Reason. We
-           * also store whether or not the binary was originally *parsed* as an
-           * interface file.
-           *)
-          output_value stdout (
-            Config.ast_intf_magic_number, filename, ast, comments, parsedAsML, true
-          );
-        )
-        | Some "binary"
-        | None -> fun (ast, comments) -> (
-          output_string stdout Config.ast_intf_magic_number;
-          output_value  stdout filename;
-          output_value  stdout ast
-        )
-        | Some "ast" -> fun (ast, comments) -> (
-          Printast.interface Format.std_formatter ast
-        )
-        (* If you don't wrap the function in parens, it's a totally different
-         * meaning #thanksOCaml *)
-        | Some "none" -> (fun (ast, comments) -> ())
-        | Some "ml" -> Reason_toolchain.ML.print_canonical_interface_with_comments
-        | Some "re" -> Reason_toolchain.JS.print_canonical_interface_with_comments
-        | Some s -> (
-          raise (Invalid_config ("Invalid --print setting for interface '" ^ s ^ "'."))
-        )
-      in
-      thePrinter (ast, comments)
-    ) else (
-      let ((ast, comments), parsedAsML, parsedAsInterface) = match !prse with
-        | None -> (defaultImplementationParserFor use_stdin filename)
-        | Some "binary_reason" -> reasonBinaryParser use_stdin filename
-        | Some "binary" -> ocamlBinaryParser use_stdin filename false
-        | Some "ml" -> (Reason_toolchain.ML.canonical_implementation_with_comments (Reason_toolchain.setup_lexbuf use_stdin filename), true, false)
-        | Some "re" -> (Reason_toolchain.JS.canonical_implementation_with_comments (Reason_toolchain.setup_lexbuf use_stdin filename), false, false)
-        | Some s -> (
-          raise (Invalid_config ("Invalid --parse setting for interface '" ^ s ^ "'."))
-        )
-      in
-      let _ =
-          if parsedAsInterface then
-              raise (Invalid_config ("The file parsed does not appear to be an implementation file."))
-      in
-      let _ = Reason_pprint_ast.configure
-          ~width: print_width
-          ~assumeExplicitArity: !assumeExplicitArity
-          ~constructorLists
-      in
-      let thePrinter = match !prnt with
-        | Some "binary_reason" -> fun (ast, comments) -> (
-          (* Our special format for interchange between reason should keep the
-           * comments separate.  This is not compatible for input into the
-           * ocaml compiler - only for input into another version of Reason. We
-           * also store whether or not the binary was originally *parsed* as an
-           * interface file.
-           *)
-          output_value stdout (
-            Config.ast_impl_magic_number, filename, ast, comments, parsedAsML, false
-          );
-        )
-        | Some "binary"
-        | None -> fun (ast, comments) -> (
-          output_string stdout Config.ast_impl_magic_number;
-          output_value  stdout filename;
-          output_value  stdout ast
-        )
-        | Some "ast" -> fun (ast, comments) -> (
-          Printast.implementation Format.std_formatter ast
-        )
-        (* If you don't wrap the function in parens, it's a totally different
-         * meaning #thanksOCaml *)
-        | Some "none" -> (fun (ast, comments) -> ())
-        | Some "ml" -> Reason_toolchain.ML.print_canonical_implementation_with_comments
-        | Some "re" -> Reason_toolchain.JS.print_canonical_implementation_with_comments
-        | Some s -> (
-          raise (Invalid_config ("Invalid --print setting for implementation '" ^ s ^ "'."))
-        )
-      in
-      thePrinter (ast, comments)
+    let (ast, parsedAsML) = Printer.parse !prse use_stdin filename in
+    let output_chan = Printer_maker.prepare_output_file !output_file in
+    (* If you run into trouble with this (or need to use std_formatter by
+       itself at the same time for some reason), try breaking this out so that
+       it's not possible to call Format.formatter_of_out_channel on stdout. *)
+    let output_formatter = Format.formatter_of_out_channel output_chan in
+    let thePrinter = Printer.makePrinter !prnt filename parsedAsML output_chan output_formatter in
+    (
+        thePrinter ast;
+        (* Also closes all open boxes. *)
+        Format.pp_print_flush output_formatter ();
+        flush output_chan;
+        Printer_maker.close_output_file !output_file output_chan
     )
   with
   | exn ->

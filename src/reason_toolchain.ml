@@ -138,8 +138,8 @@ module type Toolchain = sig
   val canonical_use_file: Lexing.lexbuf -> Parsetree.toplevel_phrase list
 
   (* Printing *)
-  val print_canonical_interface_with_comments: (Parsetree.signature * Reason_pprint_ast.commentWithCategory) -> unit
-  val print_canonical_implementation_with_comments: (Parsetree.structure * Reason_pprint_ast.commentWithCategory) -> unit
+  val print_canonical_interface_with_comments: Format.formatter -> (Parsetree.signature * Reason_pprint_ast.commentWithCategory) -> unit
+  val print_canonical_implementation_with_comments: Format.formatter -> (Parsetree.structure * Reason_pprint_ast.commentWithCategory) -> unit
 
 end
 
@@ -292,11 +292,11 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
   let canonical_use_file = ast_only canonical_use_file_with_comments
 
   (* Printing *)
-  let print_canonical_interface_with_comments interface =
-    Toolchain_impl.format_interface_with_comments interface Format.std_formatter
+  let print_canonical_interface_with_comments formatter interface =
+    Toolchain_impl.format_interface_with_comments interface formatter
 
-  let print_canonical_implementation_with_comments implementation =
-    Toolchain_impl.format_implementation_with_comments implementation Format.std_formatter
+  let print_canonical_implementation_with_comments formatter implementation =
+    Toolchain_impl.format_implementation_with_comments implementation formatter
 end
 
 module OCaml_syntax = struct

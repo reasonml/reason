@@ -564,10 +564,5 @@ type description 'props = {
   tag: tag 'props
 };
 
-/* Don't pun types from other modules */
-module Foo = {
-  type bar = {foo: Baz.foo};
-};
-
 /* Requested in #566 */
 let break_after_equal = no_break_from_here (some_call to_here);
