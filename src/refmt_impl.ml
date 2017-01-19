@@ -10,6 +10,8 @@ exception Invalid_config of string
 let default_print_width = 100
 
 
+let version_string = "Reason " ^ Package.version ^ " @ " ^ Package.git_short_version
+
 let usage = {|Reason: Meta Language Utility
 
 [Usage]: refmt [options] some-file.[re|ml|rei|mli]
@@ -41,6 +43,7 @@ let () =
   let print_width = ref None in
   let output_file = ref None in
   let writing_to_file = ref false in
+  let show_version = ref false in
   let print_help = ref false in
   let in_place = ref false in
   let alias_options opts typefun desc =
@@ -74,12 +77,20 @@ let () =
   ]
   @ (alias_options ["--interface"; "-i"]
                    (Arg.Bool (fun x -> intf := Some x))
-                   "<interface>, -i <interface>; parse AST as an interface (either true or false; default false)")
+                   "<interface>; parse AST as an interface (either true or false; default false)")
   @ (alias_options ["--output"; "-o"]
                    (Arg.String (fun x -> output_file := Some x; writing_to_file := true))
                    "<output-file>, target file for output; default [stdout]")
+  @ (alias_options ["--version"; "-v"]
+                   (Arg.Unit (fun () -> show_version := true))
+                   "print version of Reason")
   in
   let () = Arg.parse options (fun arg -> filename := arg) usage in
+  let () =
+      if !show_version then
+          (print_endline version_string;
+          exit 0)
+  in
   let print_help = !print_help in
   let filename = !filename in
   let use_stdin = (filename = "") in
