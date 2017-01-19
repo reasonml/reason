@@ -40,13 +40,19 @@ We are also developing [`rebel`](https://github.com/reasonml/rebel), a new build
 some very simple/intuitive conventions.
 
 #### NPM Workflow
+You can install `Reason` into a local directory using `npm`, via [`ReasonProject`](https://github.com/reasonml/ReasonProject).
 
-`Reason` also supports installation, and development via `npm` (v3).
-The [ReasonProject](https://github.com/reasonml/ReasonProject) demonstrates
-how to clone an example project and then use `npm install` to install everything
-needed (including `Reason`, editor support, and dependencies) into a `node_modules`
-sandbox. This example project specifies `Reason` as a dependency, so it can use the `rebuild`
-binary that comes with `Reason`. It doesn't yet demonstrate how to depend on/use `rebel`.
+`Reason` can also be installed as an `npm` dependency of any other `npm` project.
+`ReasonProject`'s `package.json` is a good reference for how to do this, but you can
+more easily just start with `ReasonProject`, and evolve it into what you want your
+project to be.
+
+> Do not try `npm install -g reason` or `npm install reason` in a
+non-`package.json` project. The only two ways that `Reason` supports `npm` installation
+are via `ReasonProject`, or as a dependency in a `package.json`.
+
+Read the [documentation](https://github.com/reasonml/ReasonProject) for `ReasonProject` which
+explains how to make `ReasonProject` into *your* project.
 
 
 </script>
