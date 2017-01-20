@@ -452,3 +452,10 @@ let module OldModuleSyntax = {
     let module InnerOldModule = {
     };
 };
+
+module type SigWithModuleTypeOf = {
+  module type ModuleType;
+  include (module type of String);
+  include module type of Array;
+};
+
