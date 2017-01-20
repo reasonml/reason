@@ -3,6 +3,7 @@
 open Lexing
 open Reason_interface_printer
 open Reason_implementation_printer
+open Cmdliner
 
 exception Invalid_config of string
 
@@ -118,10 +119,10 @@ let top_level_info =
   let man = [`S "DESCRIPTION";
              `P "refmt is a parser and pretty-printer"]
   in
-  Cmdliner.Term.info "refmt" ~version ~doc ~man
+  Term.info "refmt" ~version ~doc ~man
 
 let refmt_t =
-    let open Cmdliner.Term in
+    let open Term in
     let open Refmt_args in
     const refmt_wrapper $ interface
                         $ recoverable
@@ -137,7 +138,6 @@ let refmt_t =
                         $ use_stdin
 
 let () =
-    let open Cmdliner.Term in
-    match eval ((ret refmt_t), top_level_info) with
+    match Term.eval ((Term.ret refmt_t), top_level_info) with
     | `Error s -> exit 1
     | _ -> exit 0
