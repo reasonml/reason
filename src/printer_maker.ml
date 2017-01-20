@@ -2,12 +2,12 @@ module type PRINTER =
     sig
         type t
 
-        val parse : string option ->
+        val parse : Refmt_util.parse_itype option ->
                     bool ->
                     string ->
                     ((t * Reason_pprint_ast.commentWithCategory) * bool)
 
-        val makePrinter : string option ->
+        val makePrinter : Refmt_util.print_itype option ->
                           string ->
                           bool ->
                           out_channel ->

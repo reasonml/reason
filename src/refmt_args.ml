@@ -1,10 +1,5 @@
 open Cmdliner
 
-(* let version =
-    let doc = "print version of Reason" in
-    Arg.(value & flag & info ["v"; "version"] ~doc)
-*)
-
 let is_interface_pp =
     let doc = "parse AST as interface" in
     Arg.(value & opt (some bool) None & info ["i"; "is-interface-pp"] ~doc)
@@ -27,20 +22,31 @@ let explicit_arity =
     Arg.(value & flag & info ["e"; "assume-explicit-arity"] ~doc)
 
 let parse_ast =
-    let doc =
-        "parse AST as 'ml', 're', 'binary_reason(for \
-     interchange between Reason versions')"
+    let docv = "FORM" in
+    let doc = {|print AST in FORM, which is one of: (ml |
+                  re |
+                  binary (default - for compiler input) |
+                  binary_reason (for interchange between Reason versions) |}
     in
-    Arg.(value & opt (some string) None & info ["parse"] ~doc)
+    let opts = Arg.enum ["ml", `ML; "re", `Reason;
+                         "binary_reason", `BinaryReason]
+    in
+    Arg.(value & opt (some opts) None & info ["parse"] ~docv ~doc)
 
 let print =
-    let docv =
-        "(ml | re | binary (default - for compiler input) | binary_reason \
-        (for interchange between Reason versions) | ast (print human readable \
-        directly) | none)"
+    let docv = "FORM" in
+    let doc = {|print AST in FORM, which is one of: (ml |
+                  re |
+                  binary (default - for compiler input) |
+                  binary_reason (for interchange between Reason versions) |
+                  ast (print human readable AST directly) |
+                  none) |}
     in
-    let doc = "print AST in given form" in
-    Arg.(value & opt (some string) None & info ["p"; "print"] ~docv ~doc)
+    let opts = Arg.enum ["ml", `ML; "re", `Reason; "binary", `Binary;
+                         "binary_reason", `BinaryReason; "ast", `AST;
+                         "none", `None]
+    in
+    Arg.(value & opt (some opts) None & info ["p"; "print"] ~docv ~doc)
 
 let print_width =
     let docv = "COLS" in

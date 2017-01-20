@@ -4,8 +4,6 @@ open Lexing
 open Reason_interface_printer
 open Reason_implementation_printer
 
-module P = Printf
-
 exception Invalid_config of string
 
 let read_lines file =
@@ -23,22 +21,6 @@ let read_lines file =
 let version_string = "Reason " ^ Package.version ^ " @ " ^ Package.git_short_version
 
 let version_string = "Reason " ^ Package.version ^ " @ " ^ Package.git_short_version
-
-let usage = {|Reason: Meta Language Utility
-
-[Usage]: refmt [options] some-file.[re|ml|rei|mli]
-
-   // translate ocaml to reason on stdin
-   echo 'let _ = ()' | refmt --print re --parse ml
-
-   // print the AST of a file
-   refmt --parse re --print ast some-file.re
-
-   // reformat a file
-   refmt --parse re --print re some-file.re
-
-[Options]:
-|}
 
 
 let refmt
@@ -61,14 +43,15 @@ let refmt
  let () =
     let has_print = match print with
       | None -> false
-      | Some x -> true
+      | Some _ -> true
     in
     let has_parse = match parse_ast with
       | None -> false
-      | Some x -> true
+      | Some _ -> true
     in
     if input_file = "" && not (has_parse && has_print) then
-        raise (Invalid_config "Need an input file, parse mode, and print mode.")
+        raise (Invalid_config "Need an input file, parse mode, and print \
+        mode. Modes can be auto-detected based on filename. Try --help.")
   in
   Reason_config.configure ~r:is_recoverable;
   Location.input_name := input_file;
