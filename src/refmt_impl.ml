@@ -18,7 +18,7 @@ let read_lines file =
     close_in chan;
     List.rev !list
 
-let version_string = "Reason " ^ Package.version ^ " @ " ^ Package.git_short_version
+let version = "Reason " ^ Package.version ^ " @ " ^ Package.git_short_version
 
 
 let refmt
@@ -35,62 +35,62 @@ let refmt
       is_interface_pp
       use_stdin
   =
-  let () =
-      if is_interface_pp then
-          raise (Invalid_config "--is-interface-pp is deprecated. See --help.")
-      else if use_stdin then
-          raise (Invalid_config "--use-stdin is deprecated. See --help.")
-  in
-  let (use_stdin, input_file) = match input_file with
-    | Some name -> (false, name)
-    | None -> (true, "")
- in
- let () =
-    let has_print = match print with
-      | Some _ -> true
-      | None -> false
-    in
-    let has_parse = match parse_ast with
-      | Some _ -> true
-      | None -> false
-    in
-    if input_file = "" && not (has_parse && has_print) then
-        raise (Invalid_config "Need an input file, parse mode, and print \
-        mode. Modes can be auto-detected based on filename. Try --help.")
-  in
-  Reason_config.configure ~r:is_recoverable;
-  Location.input_name := input_file;
-  let constructorLists = match h_file with
-    | Some f_name -> read_lines f_name
-    | None -> []
-  in
-  let interface = match interface with
-    | true -> true
-    | false -> (Filename.check_suffix input_file ".rei" || Filename.check_suffix input_file ".mli")
-  in
-  let writing_to_file = match output_file with
-    | Some _ -> true
-    | None -> false
-  in
-  let output_file =
-      if in_place then
-          if use_stdin then
-              raise (Invalid_config "Cannot write in place to stdin.")
-          else if writing_to_file then
-              raise (Invalid_config "Cannot specify --output and --in-place.")
-          else Some input_file
-      else output_file
-  in
-  let (module Printer : Printer_maker.PRINTER) =
-    if interface then (module Reason_interface_printer)
-    else (module Reason_implementation_printer)
-  in
-  let _ = Reason_pprint_ast.configure
-      ~width: print_width
-      ~assumeExplicitArity: explicit_arity
-      ~constructorLists
-  in
   try
+    let () =
+        if is_interface_pp then
+            raise (Invalid_config "--is-interface-pp is deprecated.")
+        else if use_stdin then
+            raise (Invalid_config "--use-stdin is deprecated.")
+    in
+    let (use_stdin, input_file) = match input_file with
+      | Some name -> (false, name)
+      | None -> (true, "")
+   in
+   let () =
+      let has_print = match print with
+        | Some _ -> true
+        | None -> false
+      in
+      let has_parse = match parse_ast with
+        | Some _ -> true
+        | None -> false
+      in
+      if input_file = "" && not (has_parse && has_print) then
+          raise (Invalid_config "Need an input file, parse mode, and print \
+          mode. Modes can be auto-detected based on filename.")
+    in
+    Reason_config.configure ~r:is_recoverable;
+    Location.input_name := input_file;
+    let constructorLists = match h_file with
+      | Some f_name -> read_lines f_name
+      | None -> []
+    in
+    let interface = match interface with
+      | true -> true
+      | false -> (Filename.check_suffix input_file ".rei" || Filename.check_suffix input_file ".mli")
+    in
+    let writing_to_file = match output_file with
+      | Some _ -> true
+      | None -> false
+    in
+    let output_file =
+        if in_place then
+            if use_stdin then
+                raise (Invalid_config "Cannot write in place to stdin.")
+            else if writing_to_file then
+                raise (Invalid_config "Cannot specify --output and --in-place.")
+            else Some input_file
+        else output_file
+    in
+    let (module Printer : Printer_maker.PRINTER) =
+      if interface then (module Reason_interface_printer)
+      else (module Reason_implementation_printer)
+    in
+    let _ = Reason_pprint_ast.configure
+        ~width: print_width
+        ~assumeExplicitArity: explicit_arity
+        ~constructorLists
+    in
     let (ast, parsedAsML) = Printer.parse parse_ast use_stdin input_file in
     let output_chan = Printer_maker.prepare_output_file output_file in
     (* If you run into trouble with this (or need to use std_formatter by
@@ -98,17 +98,20 @@ let refmt
        it's not possible to call Format.formatter_of_out_channel on stdout. *)
     let output_formatter = Format.formatter_of_out_channel output_chan in
     let thePrinter = Printer.makePrinter print input_file parsedAsML output_chan output_formatter in
-    (
+    let () = (
         thePrinter ast;
         (* Also closes all open boxes. *)
         Format.pp_print_flush output_formatter ();
         flush output_chan;
         Printer_maker.close_output_file output_file output_chan
     )
+    in
+    `Ok ()
   with
+  | Invalid_config msg -> `Error (true, msg)
   | exn ->
-    Location.report_exception Format.err_formatter exn;
-    exit 1
+      Location.report_exception Format.err_formatter exn;
+      exit 1
 
 
 let top_level_info =
@@ -116,25 +119,26 @@ let top_level_info =
   let man = [`S "DESCRIPTION";
              `P "refmt is a parser and pretty-printer"]
   in
-  Cmdliner.Term.info "refmt" ~version:version_string ~doc ~man
+  Cmdliner.Term.info "refmt" ~version ~doc ~man
 
 let refmt_t =
-  Refmt_args.(Cmdliner.Term.(const refmt
-                             $ interface
-                             $ recoverable
-                             $ explicit_arity
-                             $ parse_ast
-                             $ print
-                             $ print_width
-                             $ heuristics_file
-                             $ output
-                             $ in_place
-                             $ input
-                             $ is_interface_pp
-                             $ use_stdin
-                            ))
+    let open Cmdliner.Term in
+    let open Refmt_args in
+    const refmt $ interface
+                $ recoverable
+                $ explicit_arity
+                $ parse_ast
+                $ print
+                $ print_width
+                $ heuristics_file
+                $ output
+                $ in_place
+                $ input
+                $ is_interface_pp
+                $ use_stdin
 
 let () =
-    match Cmdliner.Term.eval (refmt_t, top_level_info) with
-    | `Error `Exn -> exit 1
+    let open Cmdliner.Term in
+    match eval ((ret refmt_t), top_level_info) with
+    | `Error s -> exit 1
     | _ -> exit 0
