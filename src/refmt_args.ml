@@ -1,14 +1,8 @@
 open Cmdliner
 
-let is_interface_pp =
-    let doc = "parse AST as interface" in
-    Arg.(value & opt (some bool) None & info ["i"; "is-interface-pp"] ~doc)
-
 let interface =
-    let doc =
-        "parse AST as an interface (either true or faulse; default false)"
-    in
-    Arg.(value & opt (some bool) (Some false) & info ["-i"; "interface"] ~doc)
+    let doc = "parse AST as an interface" in
+    Arg.(value & flag & info ["i"; "interface"] ~doc)
 
 let recoverable =
     let doc = "enable recoverable parser" in
@@ -16,17 +10,16 @@ let recoverable =
 
 let explicit_arity =
     let doc =
-        "If a constructor's argument is a tuple, always interpret \
-     it as multiple arguments"
+        "If a constructor's argument is a tuple, always interpret it as \
+        multiple arguments"
     in
     Arg.(value & flag & info ["e"; "assume-explicit-arity"] ~doc)
 
 let parse_ast =
     let docv = "FORM" in
-    let doc = {|print AST in FORM, which is one of: (ml |
-                  re |
-                  binary (default - for compiler input) |
-                  binary_reason (for interchange between Reason versions) |}
+    let doc = "print AST in FORM, which is one of: (ml | re | \
+                  binary (default - for compiler input) | \
+                  binary_reason (for interchange between Reason versions))"
     in
     let opts = Arg.enum ["ml", `ML; "re", `Reason;
                          "binary_reason", `BinaryReason]
@@ -35,12 +28,10 @@ let parse_ast =
 
 let print =
     let docv = "FORM" in
-    let doc = {|print AST in FORM, which is one of: (ml |
-                  re |
-                  binary (default - for compiler input) |
-                  binary_reason (for interchange between Reason versions) |
-                  ast (print human readable AST directly) |
-                  none) |}
+    let doc = "print AST in FORM, which is one of: (ml | re | \
+                  binary (default - for compiler input) | \
+                  binary_reason (for interchange between Reason versions) | \
+                  ast (print human readable AST directly) | none)"
     in
     let opts = Arg.enum ["ml", `ML; "re", `Reason; "binary", `Binary;
                          "binary_reason", `BinaryReason; "ast", `AST;
@@ -67,10 +58,22 @@ let output =
     Arg.(value & opt (some string) None & info ["o"; "output"] ~docv ~doc)
 
 let in_place =
-    let doc = "reformat a file in-place (defaults to not in place)" in
+    let doc = "reformat a file in-place" in
     Arg.(value & flag & info ["in-place"] ~doc)
 
 let input =
     let docv = "FILENAME" in
     let doc = "input file" in
     Arg.(value & pos ~rev:true 0 (some file) None & info [] ~docv ~doc)
+
+(* DEPRECATED *)
+
+let is_interface_pp =
+    let doc = "is-interface-pp is DEPRECATED; use -i or --interface instead" in
+    Arg.(value & flag & info ["is-interface-pp"] ~doc)
+
+let use_stdin =
+    let doc = "use-stdin is DEPRECATED; usage is assumed if not specifying a \
+    filename"
+    in
+    Arg.(value & flag & info ["use-stdin"] ~doc)
