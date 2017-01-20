@@ -254,11 +254,7 @@ function typecheck_test() {
         fi
         FILE=$REFILE
     else
-<<<<<<< 28c25486fb7753aae9ea606bf50acf526f95d90e
-        debug "  Formatting: $REFMT --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE"
-=======
         debug "  Formatting: $REFMT --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
->>>>>>> Update tests
         $REFMT --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE
         if ! [[ $? -eq 0 ]]; then
             warning "  ⊘ FAILED\n"
