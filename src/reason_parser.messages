@@ -38,6 +38,24 @@
 # - After all conflicts are resolved, run [make compile_error] again to check potential
 # errors.
 
+# ------------------------------------------------------------------------------
+
+# WHEN RUNNING INTO AN ERROR:
+
+# - If you get "WARNING: This sentence does NOT end with a syntax error, as it should",
+#   remove the entire entry, plus the new line after it.
+
+#   For example, if you get:
+
+#  |1. interface: INCLUDE LAPAREN COLON
+#  |2. ##
+#  |3. ## WARNING: This sentence does NOT end with a syntax error, as it should
+#  |4. ##
+#  |5.
+#  |6. <SYNTAX ERROR>
+#  |7.
+#   In this case, go to "reason_parser.messages", remove line 1 ~ 7
+
 # ------------------------- REAL CONTENT BEGINS FROM HERE------------------------
 
 use_file: SHARP LIDENT SEMI WITH
