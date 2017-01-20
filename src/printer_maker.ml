@@ -1,13 +1,16 @@
+type parse_itype = [ `ML | `Reason | `Binary | `BinaryReason]
+type print_itype = [ `ML | `Reason | `Binary | `BinaryReason | `AST | `None ]
+
 module type PRINTER =
     sig
         type t
 
-        val parse : Refmt_util.parse_itype option ->
+        val parse : parse_itype option ->
                     bool ->
                     string ->
                     ((t * Reason_pprint_ast.commentWithCategory) * bool)
 
-        val makePrinter : Refmt_util.print_itype option ->
+        val makePrinter : print_itype option ->
                           string ->
                           bool ->
                           out_channel ->
