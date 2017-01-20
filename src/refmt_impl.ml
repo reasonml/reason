@@ -8,8 +8,6 @@ module P = Printf
 
 exception Invalid_config of string
 
-let default_print_width = 100
-
 let read_lines file =
   let list = ref [] in
   let chan = open_in file in
@@ -43,7 +41,9 @@ let usage = {|Reason: Meta Language Utility
 
 
 let begin_reason
+    version
     is_interface_pp
+    interface
     use_stdin
     is_recoverable
     explicit_arity
@@ -51,28 +51,33 @@ let begin_reason
     print
     print_width
     h_file
+    output_file
+    in_place
     input_file
   =
-  Reason_config.configure ~r:!recoverable;
-  Location.input_name := filename;
+  Reason_config.configure ~r:is_recoverable;
+  Location.input_name := input_file;
   let constructorLists = match h_file with
     | None -> []
     | Some f_name -> read_lines f_name
   in
-  let intf = match !intf with
-    | None when (Filename.check_suffix filename ".rei" || Filename.check_suffix filename ".mli") -> true
+  let intf = match interface with
+    | None when (Filename.check_suffix input_file ".rei" || Filename.check_suffix input_file ".mli") -> true
     | None -> false
     | Some b -> b
   in
-  let () =
-      if !in_place then
+  let writing_to_file = match output_file with
+    | Some _ -> true
+    | None -> false
+  in
+  let (output_file : string option) =
+      if in_place then
           if use_stdin then
               raise (Invalid_config "Cannot write in place to stdin.")
-          else if !writing_to_file then
+          else if writing_to_file then
               raise (Invalid_config "Cannot specify --output and --in-place.")
-          else
-              output_file := Some filename
-      else ()
+          else Some input_file
+      else output_file
   in
   let (module Printer : Printer_maker.PRINTER) =
     if intf then (module Reason_interface_printer)
@@ -80,23 +85,23 @@ let begin_reason
   in
   let _ = Reason_pprint_ast.configure
       ~width: print_width
-      ~assumeExplicitArity: !assumeExplicitArity
+      ~assumeExplicitArity: explicit_arity
       ~constructorLists
   in
   try
-    let (ast, parsedAsML) = Printer.parse !prse use_stdin filename in
-    let output_chan = Printer_maker.prepare_output_file !output_file in
+    let (ast, parsedAsML) = Printer.parse parse_ast use_stdin input_file in
+    let output_chan = Printer_maker.prepare_output_file output_file in
     (* If you run into trouble with this (or need to use std_formatter by
        itself at the same time for some reason), try breaking this out so that
        it's not possible to call Format.formatter_of_out_channel on stdout. *)
     let output_formatter = Format.formatter_of_out_channel output_chan in
-    let thePrinter = Printer.makePrinter !prnt filename parsedAsML output_chan output_formatter in
+    let thePrinter = Printer.makePrinter print input_file parsedAsML output_chan output_formatter in
     (
         thePrinter ast;
         (* Also closes all open boxes. *)
         Format.pp_print_flush output_formatter ();
         flush output_chan;
-        Printer_maker.close_output_file !output_file output_chan
+        Printer_maker.close_output_file output_file output_chan
     )
   with
   | exn ->
@@ -107,7 +112,9 @@ let begin_reason
 let entry_point =
   Refmt_args.(Cmdliner.Term.(pure
                                begin_reason
+                             $ version
                              $ is_interface_pp
+                             $ interface
                              $ use_stdin
                              $ recoverable
                              $ explicit_arity
@@ -115,6 +122,8 @@ let entry_point =
                              $ print
                              $ print_width
                              $ heuristics_file
+                             $ output
+                             $ in_place
                              $ input
                             ))
 
