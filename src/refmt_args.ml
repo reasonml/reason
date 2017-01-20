@@ -1,8 +1,9 @@
 open Cmdliner
 
-let version =
+(* let version =
     let doc = "print version of Reason" in
     Arg.(value & flag & info ["v"; "version"] ~doc)
+*)
 
 let is_interface_pp =
     let doc = "parse AST as interface" in
@@ -13,10 +14,6 @@ let interface =
         "parse AST as an interface (either true or faulse; default false)"
     in
     Arg.(value & opt (some bool) (Some false) & info ["-i"; "interface"] ~doc)
-
-let use_stdin =
-    let doc = "parse AST from stdin" in
-    Arg.(value & flag & info ["s"; "use-stdin"] ~doc)
 
 let recoverable =
     let doc = "enable recoverable parser" in
@@ -61,7 +58,7 @@ let heuristics_file =
 let output =
     let docv = "FILENAME" in
     let doc = "target file for output; default [stdout]" in
-    Arg.(value & opt (some file) None & info ["o"; "output"] ~docv ~doc)
+    Arg.(value & opt (some string) None & info ["o"; "output"] ~docv ~doc)
 
 let in_place =
     let doc = "reformat a file in-place (defaults to not in place)" in
@@ -69,5 +66,5 @@ let in_place =
 
 let input =
     let docv = "FILENAME" in
-    let doc = "input files" in
-    Arg.(required & pos ~rev:true 0 (some file) None & info [] ~docv ~doc)
+    let doc = "input file" in
+    Arg.(value & pos ~rev:true 0 (some file) None & info [] ~docv ~doc)

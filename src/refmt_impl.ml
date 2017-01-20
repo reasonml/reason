@@ -20,6 +20,7 @@ let read_lines file =
     close_in chan;
     List.rev !list
 
+let version_string = "Reason " ^ Package.version ^ " @ " ^ Package.git_short_version
 
 let version_string = "Reason " ^ Package.version ^ " @ " ^ Package.git_short_version
 
@@ -40,21 +41,35 @@ let usage = {|Reason: Meta Language Utility
 |}
 
 
-let begin_reason
-    version
-    is_interface_pp
-    interface
-    use_stdin
-    is_recoverable
-    explicit_arity
-    parse_ast
-    print
-    print_width
-    h_file
-    output_file
-    in_place
-    input_file
+let refmt
+      is_interface_pp
+      interface
+      is_recoverable
+      explicit_arity
+      parse_ast
+      print
+      print_width
+      h_file
+      output_file
+      in_place
+      input_file
   =
+  let (use_stdin, input_file) = match input_file with
+    | Some name -> (false, name)
+    | None -> (true, "")
+ in
+ let () =
+    let has_print = match print with
+      | None -> false
+      | Some x -> true
+    in
+    let has_parse = match parse_ast with
+      | None -> false
+      | Some x -> true
+    in
+    if input_file = "" && not (has_parse && has_print) then
+        raise (Invalid_config "Need an input file, parse mode, and print mode.")
+  in
   Reason_config.configure ~r:is_recoverable;
   Location.input_name := input_file;
   let constructorLists = match h_file with
@@ -70,7 +85,7 @@ let begin_reason
     | Some _ -> true
     | None -> false
   in
-  let (output_file : string option) =
+  let output_file =
       if in_place then
           if use_stdin then
               raise (Invalid_config "Cannot write in place to stdin.")
@@ -109,13 +124,17 @@ let begin_reason
     exit 1
 
 
-let entry_point =
-  Refmt_args.(Cmdliner.Term.(pure
-                               begin_reason
-                             $ version
+let top_level_info =
+  let doc = "Meta language utility" in
+  let man = [`S "DESCRIPTION";
+             `P "Something something"]
+  in
+  Cmdliner.Term.info "refmt" ~version:version_string ~doc ~man
+
+let refmt_t =
+  Refmt_args.(Cmdliner.Term.(const refmt
                              $ is_interface_pp
                              $ interface
-                             $ use_stdin
                              $ recoverable
                              $ explicit_arity
                              $ parse_ast
@@ -127,16 +146,7 @@ let entry_point =
                              $ input
                             ))
 
-let top_level_info =
-  let doc = "Meta language utility" in
-  let man = [`S "DESCRIPTION";
-             `P "Something something"]
-  in
-  Cmdliner.Term.info "refmt" ~version:"0.0.2" ~doc ~man
-
 let () =
-  match Cmdliner.Term.eval (entry_point, top_level_info) with
-  | `Error `Exn ->
-    "This is unexpected, please report to http://github.com/facebook/Reason"
-    |> prerr_endline
-  | _ -> ()
+  match Cmdliner.Term.eval (refmt_t, top_level_info) with
+  | `Error `Exn -> exit 1
+  | _ -> exit 0
