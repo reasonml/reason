@@ -4665,13 +4665,13 @@ class printer  ()= object(self:'self)
 
   method unparseRecord ?withStringKeys:(withStringKeys=false) ?allowPunning:(allowPunning=true) l eo =
     let quote = (atom "\"") in
-    let maybeQuoteFirstElem l =
-      if withStringKeys then
-      (match l with
-      | fst::rest -> quote::fst::quote::rest
-      | _ -> l
-      )
-      else l
+    let maybeQuoteFirstElem fst rest =
+        if withStringKeys then (match fst.txt with
+          | Lident s -> quote::(atom s)::quote::rest
+          | Ldot _  | Lapply _ -> assert false
+          )
+        else
+          (self#longident_loc fst)::rest
     in
     let makeRow (li, e) appendComma shouldPun =
       let comma = atom "," in
@@ -4684,13 +4684,13 @@ class printer  ()= object(self:'self)
         match e.pexp_desc with
           (* Punning *)
           |  Pexp_ident {txt} when li.txt = txt && shouldPun && allowPunning ->
-              makeList (maybeQuoteFirstElem ((self#longident_loc li)::(if appendComma then [comma] else [])))
+              makeList (maybeQuoteFirstElem li (if appendComma then [comma] else []))
           | _ ->
              let (argsList, return) = self#curriedPatternsAndReturnVal e in (
                match (argsList, return.pexp_desc) with
                  | ([], _) ->
                    let appTerms = self#unparseExprApplicationItems e in
-                   let upToColon = makeList (maybeQuoteFirstElem [self#longident_loc li; atom ":"]) in
+                   let upToColon = makeList (maybeQuoteFirstElem li [atom ":"]) in
                    let labelExpr =
                      formatAttachmentApplication
                        applicationFinalWrapping
@@ -4701,7 +4701,7 @@ class printer  ()= object(self:'self)
                    else
                      labelExpr
                  | (firstArg::tl, _) ->
-                   let upToColon = makeList (maybeQuoteFirstElem [self#longident_loc li; atom ":"]) in
+                   let upToColon = makeList (maybeQuoteFirstElem li [atom ":"]) in
                    let returnedAppTerms = self#unparseExprApplicationItems return in
                    let labelExpr =
                        (self#wrapCurriedFunctionBinding ~attachTo:upToColon "fun" firstArg tl returnedAppTerms) in

@@ -63,3 +63,5 @@ let b = {"nested": {"objs": {"are": {"nice": "<3"}}}};
 let c = {"a": a, "b": b, "func": fun a => a##c#=(func 10)};
 
 let d = {"a": a2, "b": b , "func": fun a => {"a": (fun arg1 arg2 => arg1 + arg2)}};
+
+let a = {"/foo": 10};

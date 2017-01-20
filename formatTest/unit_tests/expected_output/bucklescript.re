@@ -86,3 +86,5 @@ let d = {
     "a": fun arg1 arg2 => arg1 + arg2
   }
 };
+
+let a = {"/foo": 10};
