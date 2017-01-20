@@ -193,11 +193,11 @@ let lessThanAndFunctionCalls = pred 1 < pred 2;
 /* This doesn't type check because it looks like pred - 1 */
 let minusAndInteger = pred - 1;
 
-let passingMinusOneToFunction = pred (-1);
+let passingMinusOneToFunction = pred -1;
 
-let leadingMinusIsCorrectlyNeg = (-1) + 20;
+let leadingMinusIsCorrectlyNeg = -1 + 20;
 
-let leadingMinusIsCorrectlyNeg = 3 > (-1);
+let leadingMinusIsCorrectlyNeg = 3 > -1;
 
 /* Custom infix without labeled args */
 let (|>) first second => first + second;
@@ -911,8 +911,8 @@ let containingObject = {
     let res = (- something blah blah) [@attr];
     /* Attribute on the regular function application, not prefix */
     let res = - something blah blah [@attr];
-    let attrOnPrefix = (-1) [@ppxOnPrefixApp];
-    let attrOnPrefix = 5 + (-1);
+    let attrOnPrefix = -1 [@ppxOnPrefixApp];
+    let attrOnPrefix = 5 + -1;
     let result =
       arr.[0] [@ppxAttributeOnSugarGetter];
 

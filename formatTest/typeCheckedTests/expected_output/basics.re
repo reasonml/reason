@@ -59,6 +59,10 @@ let (\+) = (+);
 
 let a = 2.0 *\* 4.0;
 
+let b = 2. *. -60.;
+
+let c = -2.0 *. -60.0;
+
 let (\===) = (===);
 
 let expectedPrecendence =
