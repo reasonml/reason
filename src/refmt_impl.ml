@@ -20,8 +20,6 @@ let read_lines file =
 
 let version_string = "Reason " ^ Package.version ^ " @ " ^ Package.git_short_version
 
-let version_string = "Reason " ^ Package.version ^ " @ " ^ Package.git_short_version
-
 
 let refmt
       interface
