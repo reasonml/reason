@@ -1504,6 +1504,11 @@ _structure_item_without_item_extension_sugar:
   | str_exception_declaration {
       mkstr(Pstr_exception $1)
     }
+  | opt_let_module as_loc(UIDENT) LBRACE structure RBRACE post_item_attributes {
+        let m = mkmod(Pmod_structure($4)) in
+        let loc = mklocation $symbolstartpos $endpos in
+        mkstr(Pstr_module (Mb.mk $2 m ~attrs:$6 ~loc))
+      }
   | opt_let_module nonlocal_module_binding_details post_item_attributes {
       let (ident, body) = $2 in
       let loc = mklocation $symbolstartpos $endpos in
@@ -1592,9 +1597,10 @@ and_nonlocal_module_bindings:
 ;
 
 nonlocal_module_binding_details:
-    as_loc(UIDENT) module_binding_body{
+    | as_loc(UIDENT) module_binding_body {
       ($1, $2)
     }
+
 ;
 
 /* Module types */
