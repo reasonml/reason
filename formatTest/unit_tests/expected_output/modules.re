@@ -592,3 +592,9 @@ open M;
 module OldModuleSyntax = {
   module InnerOldModule = {};
 };
+
+module type SigWithModuleTypeOf = {
+  module type ModuleType;
+  include module type of String;
+  include module type of Array;
+};

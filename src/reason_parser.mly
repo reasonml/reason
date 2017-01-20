@@ -1617,8 +1617,8 @@ nonlocal_module_binding_details:
 non_arrowed_module_type: mark_position_mty(_non_arrowed_module_type) {$1}
 _non_arrowed_module_type:
   | simple_module_type {$1}
-  | MODULE TYPE module_expr %prec below_LBRACKETAT
-      { mkmty(Pmty_typeof $3) }
+  | MODULE TYPE OF module_expr %prec below_LBRACKETAT
+      { mkmty(Pmty_typeof $4) }
   | module_type attribute
       { Mty.attr $1 $2 }
 
