@@ -4919,8 +4919,7 @@ class printer  ()= object(self:'self)
     let sep = ";" in
     match e with
       | PStr [] -> atom ("[" ^ ppxToken  ^ ppxId.txt  ^ "]")
-      | PStr [itm] ->
-        makeList ~wrap ~pad [self#structure_item itm]
+      | PStr [itm] -> makeList ~break ~wrap ~pad [self#structure_item itm]
       | PStr (_::_ as items) ->
         let rows = (List.map (self#structure_item) items) in
         makeList ~wrap ~break ~pad ~postSpace ~sep rows
@@ -5098,8 +5097,8 @@ class printer  ()= object(self:'self)
       if (List.length attrs) == 0 then
         string_literals
       else
-        makeList ~inline:(true, true) ~postSpace:true
-          [string_literals; makeList ~postSpace:true attrs]
+        makeList ~inline:(true, true) ~break:IfNeed ~postSpace:true
+          [string_literals; makeList ~break:IfNeed ~postSpace:true attrs]
     in
     label ~space:true frstHalf sndHalf
 
