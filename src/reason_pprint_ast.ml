@@ -5485,14 +5485,8 @@ class printer  ()= object(self:'self)
       )
 
   method value_description x =
-    if x.pval_prim<>[] then
-      makeList ~postSpace:true [
-        self#core_type x.pval_type;
-        atom "=";
-        makeSpacedBreakableInlineList (List.map self#constant_string x.pval_prim)
-      ]
-    else
-      self#core_type x.pval_type;
+    let vd = self#core_type x.pval_type in
+    self#attach_std_item_attrs x.pval_attributes vd
 
   method signature_item x :layoutNode =
     let item: layoutNode =
@@ -5500,11 +5494,13 @@ class printer  ()= object(self:'self)
         | Psig_type l ->
             self#type_def_list l
         | Psig_value vd ->
-            let intro = if vd.pval_prim = [] then atom "let" else atom "external" in
-            (formatTypeConstraint
-               (label ~space:true intro (wrapLayoutWithLoc (Some (vd.pval_name.loc)) (protectIdentifier vd.pval_name.txt)))
-               (self#value_description vd)
-            )
+            if vd.pval_prim <> [] then
+              self#primitive_declaration vd
+            else
+              let intro = atom "let" in
+              (formatTypeConstraint
+                 (label ~space:true intro (wrapLayoutWithLoc (Some (vd.pval_name.loc)) (protectIdentifier vd.pval_name.txt)))
+                 (self#value_description vd))
 
         | Psig_typext te ->
             self#type_extension te
