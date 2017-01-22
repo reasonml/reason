@@ -383,7 +383,8 @@ external createCompositeElementInternalHack :
   Js.t {.. reasonProps : 'props} =>
   array reactElement =>
   reactElement =
-  "createElement" [@@bs.val] [@@bs.module "react"] [@@bs.splice];
+  "createElement"
+  [@@bs.val] [@@bs.module "react"] [@@bs.splice];
 
 external add_nat : int => int => int =
   "add_nat_bytecode" "add_nat_native";

@@ -35,4 +35,5 @@ external createCompositeElementInternalHack :
   t {.. reasonProps : 'props} =>
   array reactElement =>
   reactElement =
-  "createElement" [@@bs.val] [@@bs.module "react"] [@@bs.splice];
+  "createElement"
+  [@@bs.val] [@@bs.module "react"] [@@bs.splice];
