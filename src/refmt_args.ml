@@ -2,7 +2,7 @@ open Cmdliner
 
 let interface =
     let doc = "parse AST as an interface" in
-    Arg.(value & flag & info ["i"; "interface"] ~doc)
+    Arg.(value & opt (bool) false & info ["i"; "interface"] ~doc)
 
 let recoverable =
     let doc = "enable recoverable parser" in
