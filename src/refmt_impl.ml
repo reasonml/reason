@@ -74,13 +74,12 @@ let refmt
     | None -> false
   in
   let output_file =
-    if in_place then
-      if use_stdin then
-        raise (Invalid_config "Cannot write in place to stdin.")
-      else if writing_to_file then
-        raise (Invalid_config "Cannot specify --output and --in-place.")
-      else Some input_file
-    else output_file
+    match in_place, use_stdin, writing_to_file with
+    | (true, true, _) -> raise (Invalid_config "Cannot write in place to stdin.")
+    | (true, _, true) -> raise (Invalid_config "Cannot specify --output and --in-place.")
+    | (true, _, _) -> Some input_file
+    (* Writing to a file vs stdout handled by Printer_maker below. *)
+    | (false, _, _) -> output_file
   in
   let (module Printer : Printer_maker.PRINTER) =
     if interface then (module Reason_interface_printer)
