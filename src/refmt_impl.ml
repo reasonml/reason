@@ -113,6 +113,9 @@ let refmt_wrapper a b c d e f g h i j k l =
         refmt a b c d e f g h i j k l
     with
     | Invalid_config msg -> `Error (true, msg)
+    | exn ->
+            Location.report_exception Format.err_formatter exn;
+            exit 1
 
 let top_level_info =
   let doc = "Meta language utility" in
