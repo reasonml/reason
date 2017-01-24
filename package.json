@@ -41,9 +41,6 @@
         "opam-installer-bin": "esy-ocaml/opam-installer-bin",
         "ocaml": "esy-ocaml/ocaml#esy"
     },
-    "peerDependencies": {
-        "@opam-alpha/utop": "*"
-    },
     "devDependencies": {
         "@opam-alpha/utop": "*"
     },

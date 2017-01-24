@@ -26,8 +26,6 @@ Interested in contributing to Reason? The core of it is a parser + a printer, pl
 
 - `reason_toolchain.ml`, `refmt_impl.ml`: the entry point that calls the parsing logic.
 
-- `reason_utop.ml`, `reason_toploop.ml`, `rtop_init.ml`: Reason's [Utop](https://github.com/diml/utop) integration. Utop's the terminal-based REPL you see when executing `utop` (in Reason's case, the wrapper `rtop`).
-
 - `reasonbuild.ml`: our wrapper for [OCamlbuild](https://ocaml.org/learn/tutorials/ocamlbuild/), a simple build system.
 
 - `*.sh`: some of our binaries' entries.

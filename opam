@@ -14,21 +14,18 @@ substs: [ "pkg/META" ]
 build: [
   [make "compile_error"]
   ["ocaml" "pkg/build.ml" "native=%{ocaml-native}%"
-                         "native-dynlink=%{ocaml-native-dynlink}%"
-                         "utop=%{utop:installed}%"]
+                         "native-dynlink=%{ocaml-native-dynlink}%"]
 ]
 build-test: [
   "ocamlbuild" "-classic-display" "-use-ocamlfind" "src_test/test_reason.byte" "--"
 ]
 depends: [
   "ocamlfind"    {build}
-  "utop"         {>= "1.17"}
   "menhir"       {>= "20160303"}
   "merlin-extend"{>= "0.3"}
 ]
 depopts: [
 ]
 conflicts: [
-  "utop" {< "1.17"}
 ]
 available: [ ocaml-version = "4.02.3" ]
