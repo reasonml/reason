@@ -106,15 +106,35 @@ let refmt
     `Ok ()
   )
 
-(* TODO: gross solution. fix. *)
-let refmt_wrapper a b c d e f g h i j k l =
+(*
+What follows is a gross violation of natural law.
+
+Motivation: sometimes `refmt` raises exceptions, and we want to handle those
+            before Cmdliner does. While we could either:
+              1) wrap the entirety of the body of refmt in a try/with
+                OR
+              2) write a wrapper function that takes the same # of arguments,
+            we decided to try this instead.
+
+This may end up being pulled out into a separate module or entirely ripped out
+in favor of a more readable solution.
+*)
+
+(* BEGIN NONSENSE *)
+type +'a q = Success of 'a | Exception of string
+
+let app : ('a -> 'b) q -> 'a -> 'b q = fun f a ->
   try
-    refmt a b c d e f g h i j k l
+    match f with
+    | Success f' -> Success (f' a)
+    | _ -> failwith "can't happen"
   with
-  | Invalid_config msg -> `Error (true, msg)
-  | exn ->
-    Location.report_exception Format.err_formatter exn;
-    exit 1
+  | Invalid_config m -> Exception m
+  | exn -> Location.report_exception Format.err_formatter exn;
+           exit 1
+
+let appq : (('a -> 'b) q) Term.t -> 'a Term.t -> ('b q) Term.t = fun qtF at ->
+    Term.app (Term.app (Term.const app) qtF) at
 
 let top_level_info =
   let doc = "Meta language utility" in
@@ -124,18 +144,25 @@ let top_level_info =
 let refmt_t =
   let open Term in
   let open Refmt_args in
-  const refmt_wrapper $ interface
-                      $ recoverable
-                      $ explicit_arity
-                      $ parse_ast
-                      $ print
-                      $ print_width
-                      $ heuristics_file
-                      $ output
-                      $ in_place
-                      $ input
-                      $ is_interface_pp
-                      $ use_stdin
+  let unwrap = function
+    | Success x -> x
+    | Exception m -> `Error (true, m)
+  in
+  let refmt = Success refmt in
+  let ($) = appq in
+  Term.app (const unwrap) (const refmt $ interface
+                                       $ recoverable
+                                       $ explicit_arity
+                                       $ parse_ast
+                                       $ print
+                                       $ print_width
+                                       $ heuristics_file
+                                       $ output
+                                       $ in_place
+                                       $ input
+                                       $ is_interface_pp
+                                       $ use_stdin)
+(* END NONSENSE *)
 
 let () =
   match Term.eval ((Term.ret refmt_t), top_level_info) with
