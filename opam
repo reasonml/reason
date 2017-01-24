@@ -1,7 +1,7 @@
 
 opam-version: "1.2"
 name: "reason"
-version: "1.4.0"
+version: "1.5.0"
 maintainer: "Jordan Walke <jordojw@gmail.com>"
 authors: [ "Jordan Walke <jordojw@gmail.com>" ]
 license: "BSD"
@@ -23,7 +23,6 @@ build-test: [
 depends: [
   "easy-format"  {>= "1.2.0"}
   "ocamlfind"    {build}
-  "ounit"        {test}
   "cmdliner"     {>= "0.9.8"}
   "utop"         {>= "1.17"}
   "menhir"       {>= "20160303"}
