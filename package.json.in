@@ -47,6 +47,7 @@
     "name": "reason",
     "dependencies": {
         "@opam-alpha/ocamlfind": "*",
+        "@opam-alpha/cmdliner": ">= 0.9.8",
         "@opam-alpha/easy-format": "^ 1.2.0",
         "@opam-alpha/merlin-extend": "^ 0.3.0",
         "@opam-alpha/menhir": ">= 20160303.0.0",
