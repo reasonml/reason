@@ -113,18 +113,23 @@ let refmt_t =
   let open Term in
   let open Refmt_args in
   let open Cmdliner_shim in
-  load (const (wrap refmt) $ interface
-                           $ recoverable
-                           $ explicit_arity
-                           $ parse_ast
-                           $ print
-                           $ print_width
-                           $ heuristics_file
-                           $ output
-                           $ in_place
-                           $ input
-                           $ is_interface_pp
-                           $ use_stdin)
+  let handler = function
+    | Invalid_config msg -> msg
+    | exn -> Printexc.to_string exn
+  in
+  let refmt = wrap refmt handler in
+  load (const refmt $ interface
+                    $ recoverable
+                    $ explicit_arity
+                    $ parse_ast
+                    $ print
+                    $ print_width
+                    $ heuristics_file
+                    $ output
+                    $ in_place
+                    $ input
+                    $ is_interface_pp
+                    $ use_stdin)
 
 let () =
   match Term.eval ((Term.ret refmt_t), top_level_info) with
