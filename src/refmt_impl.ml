@@ -115,7 +115,9 @@ let refmt_t =
   let open Cmdliner_shim in
   let handler = function
     | Invalid_config msg -> msg
-    | exn -> Printexc.to_string exn
+    | exn ->
+            Location.report_exception Format.err_formatter exn;
+            exit 1
   in
   let refmt = wrap refmt handler in
   load (const refmt $ interface
