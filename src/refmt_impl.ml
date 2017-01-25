@@ -112,20 +112,19 @@ let top_level_info =
 let refmt_t =
   let open Term in
   let open Refmt_args in
-  let refmt = Cmdliner_shim.wrap refmt in
-  let ($) = Cmdliner_shim.appq in
-  Cmdliner_shim.load (const refmt $ interface
-                                  $ recoverable
-                                  $ explicit_arity
-                                  $ parse_ast
-                                  $ print
-                                  $ print_width
-                                  $ heuristics_file
-                                  $ output
-                                  $ in_place
-                                  $ input
-                                  $ is_interface_pp
-                                  $ use_stdin)
+  let open Cmdliner_shim in
+  load (const (wrap refmt) $ interface
+                           $ recoverable
+                           $ explicit_arity
+                           $ parse_ast
+                           $ print
+                           $ print_width
+                           $ heuristics_file
+                           $ output
+                           $ in_place
+                           $ input
+                           $ is_interface_pp
+                           $ use_stdin)
 
 let () =
   match Term.eval ((Term.ret refmt_t), top_level_info) with

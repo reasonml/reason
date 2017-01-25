@@ -35,3 +35,5 @@ let load x =
 
 let appq : (('a -> 'b) q) Term.t -> 'a Term.t -> ('b q) Term.t = fun qtF at ->
     Term.app (Term.app (Term.const app) qtF) at
+
+let ($) = appq
