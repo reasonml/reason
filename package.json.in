@@ -57,7 +57,6 @@
         "opam-installer-bin": "https://github.com/yunxing/opam-installer-bin.git",
         "nopam": "*",
         "utop-bin": "https://github.com/reasonml/utop-bin"
-
     },
     "scripts": {
         "editor": "eval $(dependencyEnv) && eval $EDITOR",
