@@ -1,6 +1,8 @@
 type parse_itype = [ `ML | `Reason | `Binary | `BinaryReason]
 type print_itype = [ `ML | `Reason | `Binary | `BinaryReason | `AST | `None ]
 
+exception Invalid_config of string
+
 module type PRINTER =
     sig
         type t

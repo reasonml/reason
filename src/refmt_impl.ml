@@ -1,11 +1,9 @@
 (* Portions Copyright (c) 2015-present, Facebook, Inc. All rights reserved. *)
 
 open Lexing
-open Reason_interface_printer
-open Reason_implementation_printer
 open Cmdliner
 
-exception Invalid_config of string
+exception Invalid_config = Printer_maker.Invalid_config
 
 let read_lines file =
   let list = ref [] in
@@ -82,8 +80,8 @@ let refmt
     | (false, _, _) -> output_file
   in
   let (module Printer : Printer_maker.PRINTER) =
-    if interface then (module Reason_interface_printer)
-    else (module Reason_implementation_printer)
+    if interface then (module Reason_interface_printer.Reason_interface_printer)
+    else (module Reason_implementation_printer.Reason_implementation_printer)
   in
   let _ = Reason_pprint_ast.configure
       ~width: print_width
@@ -106,36 +104,6 @@ let refmt
     `Ok ()
   )
 
-(*
-What follows is a gross violation of natural law.
-
-Motivation: sometimes `refmt` raises exceptions, and we want to handle those
-            before Cmdliner does. While we could either:
-              1) wrap the entirety of the body of refmt in a try/with
-                OR
-              2) write a wrapper function that takes the same # of arguments,
-            we decided to try this instead.
-
-This may end up being pulled out into a separate module or entirely ripped out
-in favor of a more readable solution.
-*)
-
-(* BEGIN NONSENSE *)
-type +'a q = Success of 'a | Exception of string
-
-let app : ('a -> 'b) q -> 'a -> 'b q = fun f a ->
-  try
-    match f with
-    | Success f' -> Success (f' a)
-    | _ -> failwith "can't happen"
-  with
-  | Invalid_config m -> Exception m
-  | exn -> Location.report_exception Format.err_formatter exn;
-           exit 1
-
-let appq : (('a -> 'b) q) Term.t -> 'a Term.t -> ('b q) Term.t = fun qtF at ->
-    Term.app (Term.app (Term.const app) qtF) at
-
 let top_level_info =
   let doc = "Meta language utility" in
   let man = [`S "DESCRIPTION"; `P "refmt is a parser and pretty-printer"] in
@@ -144,25 +112,20 @@ let top_level_info =
 let refmt_t =
   let open Term in
   let open Refmt_args in
-  let unwrap = function
-    | Success x -> x
-    | Exception m -> `Error (true, m)
-  in
-  let refmt = Success refmt in
-  let ($) = appq in
-  Term.app (const unwrap) (const refmt $ interface
-                                       $ recoverable
-                                       $ explicit_arity
-                                       $ parse_ast
-                                       $ print
-                                       $ print_width
-                                       $ heuristics_file
-                                       $ output
-                                       $ in_place
-                                       $ input
-                                       $ is_interface_pp
-                                       $ use_stdin)
-(* END NONSENSE *)
+  let refmt = Cmdliner_shim.wrap refmt in
+  let ($) = Cmdliner_shim.appq in
+  Cmdliner_shim.load (const refmt $ interface
+                                  $ recoverable
+                                  $ explicit_arity
+                                  $ parse_ast
+                                  $ print
+                                  $ print_width
+                                  $ heuristics_file
+                                  $ output
+                                  $ in_place
+                                  $ input
+                                  $ is_interface_pp
+                                  $ use_stdin)
 
 let () =
   match Term.eval ((Term.ret refmt_t), top_level_info) with

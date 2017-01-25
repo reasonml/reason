@@ -1,7 +1,7 @@
 module Reason_interface_printer : Printer_maker.PRINTER =
     struct
         type t = Parsetree.signature
-        exception Invalid_config of string
+        exception Invalid_config = Printer_maker.Invalid_config
 
         (* Note: filename should only be used with .mli files. See reason_toolchain. *)
         let defaultInterfaceParserFor use_stdin filename =
