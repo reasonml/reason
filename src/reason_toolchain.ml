@@ -79,24 +79,41 @@ module S = MenhirLib.General (* Streams *)
 
 let invalidLex = "invalidCharacter.orComment.orString"
 let syntax_error_str err loc =
-  if !Reason_config.recoverable then
-    [
-      Ast_helper.Str.mk ~loc:loc (Parsetree.Pstr_extension (Syntax_util.syntax_error_extension_node loc invalidLex, []))
-    ]
-  else
-    raise err
+    match err with
+    | Location.Error err ->
+      [
+        Ast_helper.Str.mk ~loc:err.loc (Parsetree.Pstr_extension (Syntax_util.syntax_error_extension_node err.loc err.msg, []))
+      ]
+    | _ ->
+      let menhirError = Syntax_util.findMenhirErrorMessage loc in
+      match menhirError with
+        | Syntax_util.MenhirMessagesError errMessage ->
+            [Ast_helper.Str.mk ~loc:errMessage.Syntax_util.loc (Parsetree.Pstr_extension (Syntax_util.syntax_error_extension_node errMessage.Syntax_util.loc errMessage.Syntax_util.msg, []))]
+        | _ ->
+          if !Reason_config.recoverable then
+              [Ast_helper.Str.mk ~loc:loc (Parsetree.Pstr_extension (Syntax_util.syntax_error_extension_node loc invalidLex, []))]
+            else
+              raise err
 
 let syntax_error_core_type err loc =
-  if !Reason_config.recoverable then
-    Ast_helper.Typ.mk ~loc:loc (Parsetree.Ptyp_extension (Syntax_util.syntax_error_extension_node loc invalidLex))
-  else
-    raise err
+  match err with
+  | Location.Error err ->
+      Ast_helper.Typ.mk ~loc:err.loc (Parsetree.Ptyp_extension (Syntax_util.syntax_error_extension_node err.loc err.msg))
+  | _ ->
+    if !Reason_config.recoverable then
+      Ast_helper.Typ.mk ~loc:loc (Parsetree.Ptyp_extension (Syntax_util.syntax_error_extension_node loc invalidLex))
+    else
+      raise err
 
 let syntax_error_sig err loc =
-  if !Reason_config.recoverable then
-    [Ast_helper.Sig.mk ~loc:loc (Parsetree.Psig_extension (Syntax_util.syntax_error_extension_node loc invalidLex, []))]
-  else
-    raise err
+  match err with
+  | Location.Error err ->
+    [Ast_helper.Sig.mk ~loc:err.loc (Parsetree.Psig_extension (Syntax_util.syntax_error_extension_node err.loc err.msg, []))]
+  | _ ->
+    if !Reason_config.recoverable then
+      [Ast_helper.Sig.mk ~loc:loc (Parsetree.Psig_extension (Syntax_util.syntax_error_extension_node loc invalidLex, []))]
+    else
+      raise err
 
 let chan_input = ref ""
 
@@ -487,9 +504,22 @@ module JS_syntax = struct
        loop_handle_yacc supplier in_error checkpoint
     | I.HandlingError env ->
        if !Reason_config.recoverable then
+         (
+         let loc = last_token_loc supplier in
+         (match Syntax_util.findMenhirErrorMessage loc with
+         | Syntax_util.MenhirMessagesError err -> ()
+         | Syntax_util.NoMenhirMessagesError -> (
+           let state = state checkpoint in
+           let msg = try
+             Reason_parser_message.message state
+           with
+             | Not_found -> "<UNKNOWN SYNTAX ERROR>"
+           in
+           Syntax_util.add_error_message Syntax_util.{loc = loc; msg = msg};
+         ));
          let checkpoint = I.resume checkpoint in
          (* Enter error recovery state *)
-         loop_handle_yacc supplier true checkpoint
+         loop_handle_yacc supplier true checkpoint)
        else
          (* If not in a recoverable state, fail early by raising a
           * customized Error object
