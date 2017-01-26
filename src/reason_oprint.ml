@@ -263,7 +263,7 @@ and print_simple_out_type ppf =
       print_typargs ppf tyl;
       pp_close_box ppf ()
   | Otyp_object (fields, rest) ->
-      fprintf ppf "@[<2>< %a >@]" (print_fields rest) fields
+      fprintf ppf "@[<2>{ %a }@]" (print_fields rest) fields
   | Otyp_stuff s -> pp_print_string ppf s
   | Otyp_var (ng, s) -> fprintf ppf "'%s%s" (if ng then "_" else "") s
   | Otyp_variant (non_gen, row_fields, closed, tags) ->
@@ -395,11 +395,11 @@ let rec print_out_class_type ppf =
 and print_out_class_sig_item ppf =
   function
     Ocsg_constraint (ty1, ty2) ->
-      fprintf ppf "@[<2>constraint %a =@ %a@]" print_out_type ty1
+      fprintf ppf "@[<2>as %a =@ %a@]" print_out_type ty1
         print_out_type ty2
   | Ocsg_method (name, priv, virt, ty) ->
-      fprintf ppf "@[<2>method %s%s%s :@ %a@]"
-        (if priv then "private " else "") (if virt then "virtual " else "")
+      fprintf ppf "@[<2>%s%s%s :@ %a@]"
+        (if priv then "pri " else "pub ") (if virt then "virtual " else "")
         name print_out_type ty
   | Ocsg_value (name, mut, vr, ty) ->
       fprintf ppf "@[<2>val %s%s%s :@ %a@]"
@@ -544,7 +544,7 @@ and print_out_type_decl kwd ppf td =
     | _ -> td.otype_type
   in
   let print_private ppf = function
-    Asttypes.Private -> fprintf ppf " private"
+    Asttypes.Private -> fprintf ppf " pri"
   | Asttypes.Public -> ()
   in
   let print_out_tkind ppf = function
@@ -615,7 +615,7 @@ and print_out_extension_constructor ppf ext =
   in
   fprintf ppf "@[<hv 2>type %t +=%s@;<1 2>%a@]"
     print_extended_type
-    (if ext.oext_private = Asttypes.Private then " private" else "")
+    (if ext.oext_private = Asttypes.Private then " pri" else "")
     print_out_constr (ext.oext_name, ext.oext_args, ext.oext_ret_type)
 
 and print_out_type_extension ppf te =
@@ -638,7 +638,7 @@ and print_out_type_extension ppf te =
   in
   fprintf ppf "@[<hv 2>type %t +=%s@;<1 2>%a@]"
     print_extended_type
-    (if te.otyext_private = Asttypes.Private then " private" else "")
+    (if te.otyext_private = Asttypes.Private then " pri" else "")
     (print_list print_out_constr (fun ppf -> fprintf ppf "@ | "))
     te.otyext_constructors
 
