@@ -52,11 +52,6 @@ let heuristics_file =
   in
   Arg.(value & opt (some file) None & info ["h"; "heuristics-file"] ~doc)
 
-let output =
-  let docv = "FILENAME" in
-  let doc = "target file for output; default [stdout]" in
-  Arg.(value & opt (some string) None & info ["o"; "output"] ~docv ~doc)
-
 let in_place =
   let doc = "reformat a file in-place" in
   Arg.(value & flag & info ["in-place"] ~doc)

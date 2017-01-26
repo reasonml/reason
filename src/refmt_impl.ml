@@ -28,7 +28,6 @@ let refmt
     print
     print_width
     h_file
-    output_file
     in_place
     input_file
     is_interface_pp
@@ -67,17 +66,11 @@ let refmt
     | true -> true
     | false -> (Filename.check_suffix input_file ".rei" || Filename.check_suffix input_file ".mli")
   in
-  let writing_to_file = match output_file with
-    | Some _ -> true
-    | None -> false
-  in
   let output_file =
-    match in_place, use_stdin, writing_to_file with
-    | (true, true, _) -> raise (Invalid_config "Cannot write in place to stdin.")
-    | (true, _, true) -> raise (Invalid_config "Cannot specify --output and --in-place.")
-    | (true, _, _) -> Some input_file
-    (* Writing to a file vs stdout handled by Printer_maker below. *)
-    | (false, _, _) -> output_file
+    match in_place, use_stdin with
+    | (true, true) -> raise (Invalid_config "Cannot write in place to stdin.")
+    | (true,    _) -> Some input_file
+    | (false,   _) -> None
   in
   let (module Printer : Printer_maker.PRINTER) =
     if interface then (module Reason_interface_printer.Reason_interface_printer)
@@ -127,7 +120,6 @@ let refmt_t =
                     $ print
                     $ print_width
                     $ heuristics_file
-                    $ output
                     $ in_place
                     $ input
                     $ is_interface_pp
