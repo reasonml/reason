@@ -1,13 +1,18 @@
+type parse_itype = [ `ML | `Reason | `Binary | `BinaryReason]
+type print_itype = [ `ML | `Reason | `Binary | `BinaryReason | `AST | `None ]
+
+exception Invalid_config of string
+
 module type PRINTER =
     sig
         type t
 
-        val parse : string option ->
+        val parse : parse_itype option ->
                     bool ->
                     string ->
                     ((t * Reason_pprint_ast.commentWithCategory) * bool)
 
-        val makePrinter : string option ->
+        val makePrinter : print_itype option ->
                           string ->
                           bool ->
                           out_channel ->

@@ -33,6 +33,7 @@ build: compile_error setup_convenient_bin_links
 
 install:
 	opam pin add reason . -y
+	./refmt_impl.native --help=groff > $(shell opam config var man)/man1/refmt.1
 
 run: build
 	rlwrap ocaml \
