@@ -60,7 +60,7 @@
     },
     "scripts": {
         "editor": "eval $(dependencyEnv) && eval $EDITOR",
-        "postinstall": "eval $(dependencyEnv) && nopam && ./pkg/substs substs pkg/META.in && make compile_error && ocaml pkg/build.ml native=true native-dynlink=true utop=${utop_installed:-false} && (opam-installer --prefix=$opam_prefix || true)",
+        "postinstall": "eval $(dependencyEnv) && nopam && ./pkg/substs pkg/META.in && make compile_error && ocaml pkg/build.ml native=true native-dynlink=true utop=${utop_installed:-false} && (opam-installer --prefix=$opam_prefix || true)",
         "clean": "eval $(dependencyEnv) && nopam && make clean",
         "env": "eval $(dependencyEnv) && env",
         "formatTest": "eval $(dependencyEnv) && cd formatTest; ./test.sh",
