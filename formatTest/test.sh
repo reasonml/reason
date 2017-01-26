@@ -268,7 +268,7 @@ function typecheck_test() {
     fi
 
     debug "  Compiling: ocamlc -c -pp $REFMT $COMPILE_FLAGS $OUTPUT/$FILE"
-    ocamlc -c -pp $REFMT $COMPILE_FLAGS "$OUTPUT/$FILE"
+    ocamlc -c -pp "$REFMT --print binary" $COMPILE_FLAGS "$OUTPUT/$FILE"
     if ! [[ $? -eq 0 ]]; then
         warning "  ⊘ FAILED\n"
         return 1

@@ -24,7 +24,7 @@ let parse_ast =
   let opts = Arg.enum ["ml", `ML; "re", `Reason;
                        "binary_reason", `BinaryReason; "auto", `Auto]
   in
-  Arg.(value & opt opts `Reason & info ["parse"] ~docv ~doc)
+  Arg.(value & opt (some opts) None & info ["parse"] ~docv ~doc)
 
 let print =
   let docv = "FORM" in

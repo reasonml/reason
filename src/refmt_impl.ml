@@ -44,6 +44,11 @@ let refmt
     | Some name -> (false, name)
     | None -> (true, "")
   in
+  let parse_ast = match parse_ast, use_stdin with
+    | (Some x, _) -> x
+    | (None, false) -> `Auto
+    | (None, true) -> `Reason (* default *)
+  in
   Reason_config.configure ~r:is_recoverable;
   Location.input_name := input_file;
   let constructorLists = match h_file with
