@@ -22,9 +22,9 @@ let parse_ast =
              binary_reason (for interchange between Reason versions))"
   in
   let opts = Arg.enum ["ml", `ML; "re", `Reason;
-                       "binary_reason", `BinaryReason]
+                       "binary_reason", `BinaryReason; "auto", `Auto]
   in
-  Arg.(value & opt (some opts) None & info ["parse"] ~docv ~doc)
+  Arg.(value & opt opts `Reason & info ["parse"] ~docv ~doc)
 
 let print =
   let docv = "FORM" in
@@ -37,7 +37,7 @@ let print =
                        "binary_reason", `BinaryReason; "ast", `AST;
                        "none", `None]
   in
-  Arg.(value & opt (some opts) (Some `Reason) & info ["p"; "print"] ~docv ~doc)
+  Arg.(value & opt opts `Reason & info ["p"; "print"] ~docv ~doc)
 
 let print_width =
   let docv = "COLS" in
