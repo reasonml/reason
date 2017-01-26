@@ -17,8 +17,8 @@ let explicit_arity =
 
 let parse_ast =
   let docv = "FORM" in
-  let doc = "print AST in FORM, which is one of: (ml | re | \
-             binary (default - for compiler input) | \
+  let doc = "parse AST in FORM, which is one of: (ml | re | \
+             binary (for compiler input) | \
              binary_reason (for interchange between Reason versions))"
   in
   let opts = Arg.enum ["ml", `ML; "re", `Reason;
@@ -28,8 +28,8 @@ let parse_ast =
 
 let print =
   let docv = "FORM" in
-  let doc = "print AST in FORM, which is one of: (ml | re | \
-             binary (default - for compiler input) | \
+  let doc = "print AST in FORM, which is one of: (ml | re (default) | \
+             binary (for compiler input) | \
              binary_reason (for interchange between Reason versions) | \
              ast (print human readable AST directly) | none)"
   in
@@ -37,7 +37,7 @@ let print =
                        "binary_reason", `BinaryReason; "ast", `AST;
                        "none", `None]
   in
-  Arg.(value & opt (some opts) None & info ["p"; "print"] ~docv ~doc)
+  Arg.(value & opt (some opts) (Some `Reason) & info ["p"; "print"] ~docv ~doc)
 
 let print_width =
   let docv = "COLS" in
