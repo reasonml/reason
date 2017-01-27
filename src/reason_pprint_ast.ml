@@ -5099,7 +5099,7 @@ class printer  ()= object(self:'self)
       else
         makeSpacedBreakableInlineList [
           string_literals;
-          makeList ~break:IfNeed ~postSpace:true attrs
+          makeSpacedBreakableInlineList attrs
         ]
     in
     label ~space:true frstHalf sndHalf
