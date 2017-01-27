@@ -3056,7 +3056,11 @@ _simple_expr:
       {
         let loc = mklocation $symbolstartpos $endpos in
         let (s, _) = $3 in
-        mkinfix $1 (mknoloc "##") (mkexp (Pexp_ident(mkloc (Lident s) loc)))
+        if String.contains s '#' then (
+          Location.raise_errorf ~loc "# is not allowed in a method name"
+        )
+        else
+          mkinfix $1 (mknoloc "##") (mkexp (Pexp_ident(mkloc (Lident s) loc)))
       }
   | simple_expr DOTEQUAL simple_expr
       {
