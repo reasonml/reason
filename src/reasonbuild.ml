@@ -4,7 +4,7 @@ open Ocamlbuild_plugin
 let ext_obj = !Options.ext_obj;;
 let x_o = "%"-.-ext_obj;;
 
-let refmt = "refmt"
+let refmt = "refmt --print binary"
 
 let ocamldep_command' tags =
   let tags' = tags++"ocaml"++"ocamldep" in
