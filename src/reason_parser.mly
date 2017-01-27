@@ -792,7 +792,9 @@ let arity_conflict_resolving_mapper =
   end;
 }
 
-let default_mapper_chain = [arity_conflict_resolving_mapper; reason_to_ml_swap_operator_mapper; unescape_stars_slashes_mapper]
+let default_mapper_chain = [default_mapper; arity_conflict_resolving_mapper;
+                            reason_to_ml_swap_operator_mapper;
+                            unescape_stars_slashes_mapper; create_auto_printer]
 
 let rec string_of_longident = function
     | Lident s -> s

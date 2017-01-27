@@ -173,6 +173,18 @@ let identifier_mapper f =
   end;
 }
 
+let try_get_printer tyString =
+  List.assoc tyString [ "int", "int_of_string";
+                        "string", "(fun x -> x)" ]
+
+let create_auto_printer =
+  { default_mapper with
+    type_declaration = fun mapper decl ->
+      match decl with
+      | { ptype_name = { txt = s } } ->
+        (print_endline ("FOUND U TYPE " ^ s); decl)
+  }
+
 (** unescape_stars_slashes_mapper unescapes all stars and slases in an AST
   *)
 let unescape_stars_slashes_mapper =
