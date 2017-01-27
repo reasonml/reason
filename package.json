@@ -1,6 +1,6 @@
 
 {
-    "version": "1.5.1",
+    "version": "1.7.0",
     "description": "Reason Meta Language Toolchain",
     "repository": {
       "type": "git",
@@ -24,7 +24,7 @@
             "val": "./_build/ocamlfind/lib"
         },
         "version": {
-            "val": "1.5.1",
+            "val": "1.7.0",
             "global": true,
             "globalCollisionBehavior": "clobber"
         },
@@ -42,13 +42,12 @@
         "reason_version": {
             "global": true,
             "globalCollisionBehavior": "clobber",
-            "val": "1.5.1"
+            "val": "1.7.0"
         }
     },
     "name": "reason",
     "dependencies": {
         "@opam-alpha/ocamlfind": "*",
-        "@opam-alpha/easy-format": "^ 1.2.0",
         "@opam-alpha/merlin-extend": "^ 0.3.0",
         "@opam-alpha/menhir": ">= 20160303.0.0",
         "@opam-alpha/ocaml": "4.2.3",
