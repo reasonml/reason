@@ -388,3 +388,10 @@ external createCompositeElementInternalHack :
 
 external add_nat : int => int => int =
   "add_nat_bytecode" "add_nat_native";
+
+external foo : bool => bool =
+  ""
+  [@@bs.module "Bar"]
+  [@@ocaml.deprecated
+    "Use bar instead. It's a much cooler function. This string needs to be a little long"
+  ];
