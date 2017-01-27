@@ -17,3 +17,20 @@ Testing:
 Run the tests in the `./formatTest/` directory and observe differences in
 output. The test files contain the most obscure syntax forms intentionally.
 
+Cutting a release:
+-------------------
+- Make sure local changes are properly committed
+- Update remote:
+```
+git fetch;
+git reset --hard origin/master
+```
+- Prerelease:
+```
+env version=x.y.z make pre_release
+```
+- Check everything is ok locally
+- Release!:
+```
+env version=x.y.z make release
+```
