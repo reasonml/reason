@@ -1,5 +1,6 @@
-open Ast_mapper
+open Migrate_parsetree.OCaml_404.Ast
 open Asttypes
+open Ast_mapper
 open Parsetree
 open Longident
 open Ast_helper
@@ -108,14 +109,15 @@ let syntax_error_extension_node loc message =
   let str = Location.mkloc "merlin.syntax-error" loc in
   let payload = PStr [{
     pstr_loc = Location.none;
-    pstr_desc = Pstr_eval (
-      {
-        pexp_loc = Location.none;
-        pexp_desc = Pexp_constant (Parsetree.Pconst_string (message, None));
-        pexp_attributes = [];
-      },
-      []
-    );
+    pstr_desc =
+      Pstr_eval (
+        {
+          pexp_loc = Location.none;
+          pexp_desc = Pexp_constant (Parsetree.Pconst_string (message, None));
+          pexp_attributes = [];
+        },
+        []
+      );
   }]
  in
  (str, payload)

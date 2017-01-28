@@ -7,9 +7,11 @@ let () =
     print_endline "Reason is incompatible with camlp4!"
   else begin
     Toploop.parse_toplevel_phrase := Reason_util.correctly_catch_parse_errors
-                                       Reason_toolchain.JS.canonical_toplevel_phrase;
+        (fun x -> Reason_toolchain.To_current.copy_toplevel_phrase
+            (Reason_toolchain.JS.canonical_toplevel_phrase x));
     Toploop.parse_use_file := Reason_util.correctly_catch_parse_errors
-                                Reason_toolchain.JS.canonical_use_file;
+        (fun x -> List.map Reason_toolchain.To_current.copy_toplevel_phrase
+            (Reason_toolchain.JS.canonical_use_file x));
      (* Toploop.print_out_sig_item := M17n_util.utf8_print_out_sig_item !Toploop.print_out_sig_item; *)
     (* Toploop.install_printer Predef.path_string Predef.type_string *)
     (*   (fun fmt obj -> M17n_util.utf8_print_string fmt (Obj.magic obj)); *)

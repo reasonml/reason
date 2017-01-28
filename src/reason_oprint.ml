@@ -47,6 +47,7 @@
  *
  *)
 
+open Ast_404
 open Format
 open Outcometree
 
