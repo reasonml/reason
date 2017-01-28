@@ -5,8 +5,10 @@
 
 (* Why do we need a transform, instead of just using the original format?
 Because that one currently doesn't work well for the existing React.js *)
-open Ast_mapper
+module Main_mapper = Ast_mapper
+open Migrate_parsetree.OCaml_404.Ast
 open Ast_helper
+open Ast_mapper
 open Asttypes
 open Parsetree
 open Longident
@@ -45,7 +47,7 @@ let extractChildrenForDOMElements ?(removeLastPositionUnit=false) ~loc propsAndC
   | (moreThanOneChild, props) -> raise (Invalid_argument "JSX: somehow there's more than one `children` label")
 
 (* TODO: some line number might still be wrong *)
-let jsxMapper argv = {
+let jsxMapper = Reason_toolchain.To_current.copy_mapper {
   default_mapper with
   expr = (fun mapper expression -> match expression with
     (* spotted a function application! Does it have the @JSX attribute? *)
@@ -137,4 +139,4 @@ let jsxMapper argv = {
     | x -> default_mapper.expr mapper x)
 }
 
-let () = register "JSX" jsxMapper
+let () = Main_mapper.register "JSX" (fun _argv -> jsxMapper)

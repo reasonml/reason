@@ -32,4 +32,4 @@ depopts: [
 conflicts: [
   "utop" {< "1.17"}
 ]
-available: [ ocaml-version = "4.04.0" ]
+available: [ ocaml-version >= "4.02" & ocaml-version <= "4.04" ]
