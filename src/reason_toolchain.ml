@@ -513,7 +513,7 @@ module JS_syntax = struct
            let msg = try
              Reason_parser_message.message state
            with
-             | Not_found -> "<UNKNOWN SYNTAX ERROR>"
+             | Not_found -> "<SYNTAX ERROR>\n"
            in
            Syntax_util.add_error_message Syntax_util.{loc = loc; msg = msg};
          ));
