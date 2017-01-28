@@ -2,6 +2,7 @@
 
 open Lexing
 open Cmdliner
+open Migrate_parsetree
 
 exception Invalid_config = Printer_maker.Invalid_config
 

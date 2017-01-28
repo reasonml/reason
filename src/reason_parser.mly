@@ -50,6 +50,7 @@
 /* The parser definition */
 
 %{
+open Migrate_parsetree.OCaml_404.Ast
 open Syntax_util
 open Location
 open Asttypes
@@ -805,7 +806,7 @@ let built_in_explicit_arity_constructors = ["Some"; "Assert_failure"; "Match_fai
 
 let jsx_component module_name attrs children loc =
   let firstPart = (List.hd (Longident.flatten module_name)) in
-  let lident = if String.get firstPart 0 != '_' && firstPart = String.capitalize_ascii firstPart then
+  let lident = if String.get firstPart 0 != '_' && firstPart = String.capitalize firstPart then
     (* firstPart will be non-empty so the 0th access is fine. Modules can't start with underscore *)
     Ldot(module_name, "createElement")
   else
@@ -1128,19 +1129,19 @@ conflicts.
 /* Entry points */
 
 %start implementation                   /* for implementation files */
-%type <Parsetree.structure> implementation
+%type <Ast_404.Parsetree.structure> implementation
 %start interface                        /* for interface files */
-%type <Parsetree.signature> interface
+%type <Ast_404.Parsetree.signature> interface
 %start toplevel_phrase                  /* for interactive use */
-%type <Parsetree.toplevel_phrase> toplevel_phrase
+%type <Ast_404.Parsetree.toplevel_phrase> toplevel_phrase
 %start use_file                         /* for the #use directive */
-%type <Parsetree.toplevel_phrase list> use_file
+%type <Ast_404.Parsetree.toplevel_phrase list> use_file
 %start parse_core_type
-%type <Parsetree.core_type> parse_core_type
+%type <Ast_404.Parsetree.core_type> parse_core_type
 %start parse_expression
-%type <Parsetree.expression> parse_expression
+%type <Ast_404.Parsetree.expression> parse_expression
 %start parse_pattern
-%type <Parsetree.pattern> parse_pattern
+%type <Ast_404.Parsetree.pattern> parse_pattern
 
 
 /* Instead of reporting an error directly, productions specified

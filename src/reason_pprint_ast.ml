@@ -49,6 +49,7 @@
 
 (* TODO more fine-grained precedence pretty-printing *)
 
+open Ast_404
 open Asttypes
 open Format
 open Location

@@ -72,8 +72,13 @@
  *   let lst = [ ];
  *)
 
+open Migrate_parsetree.Versions
+open OCaml_404.Ast
 open Location
 open Lexing
+
+module From_current = Convert (OCaml_current) (OCaml_404)
+module To_current = Convert (OCaml_404) (OCaml_current)
 
 module S = MenhirLib.General (* Streams *)
 
@@ -318,14 +323,29 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
 end
 
 module OCaml_syntax = struct
+  open Migrate_parsetree
   module Lexer_impl = Lexer
   module Parser_impl = Parser
 
-  let implementation = Parser.implementation Lexer.token
-  let core_type = Parser.parse_core_type Lexer.token
-  let interface = Parser.interface Lexer.token
-  let toplevel_phrase = Parser.toplevel_phrase Lexer.token
-  let use_file = Parser.use_file Lexer.token
+  let implementation lexbuf =
+    From_current.copy_structure (Parser.implementation Lexer.token lexbuf)
+
+  let core_type lexbuf =
+    From_current.copy_core_type
+      (Parser.parse_core_type Lexer.token lexbuf)
+
+  let interface lexbuf =
+    From_current.copy_signature
+      (Parser.interface Lexer.token lexbuf)
+
+  let toplevel_phrase lexbuf =
+    From_current.copy_toplevel_phrase
+      (Parser.toplevel_phrase Lexer.token lexbuf)
+
+  let use_file lexbuf =
+    List.map
+      From_current.copy_toplevel_phrase
+      (Parser.use_file Lexer.token lexbuf)
 
   (* Skip tokens to the end of the phrase *)
   (* TODO: consolidate these copy-paste skip/trys into something that works for
@@ -368,9 +388,11 @@ module OCaml_syntax = struct
   (* Unfortunately we drop the comments because there doesn't exist an ML
    * printer that formats comments *and* line wrapping! (yet) *)
   let format_interface_with_comments (signature, _) formatter =
-    Pprintast.signature formatter signature
-  let format_implementation_with_comments (implementation, _) formatter =
-    Pprintast.structure formatter implementation
+    Pprintast.signature formatter
+      (To_current.copy_signature signature)
+  let format_implementation_with_comments (structure, _) formatter =
+    Pprintast.structure formatter
+      (To_current.copy_structure structure)
 end
 
 module JS_syntax = struct

@@ -60,14 +60,18 @@ let p = Printf.bprintf
 let bp = Printf.bprintf
 let bs = Buffer.add_string
 
-let _ = Oprint.out_value := Reason_oprint.print_out_value
-let _ = Oprint.out_type := Reason_oprint.print_out_type
-let _ = Oprint.out_class_type := Reason_oprint.print_out_class_type
-let _ = Oprint.out_module_type := Reason_oprint.print_out_module_type
-let _ = Oprint.out_sig_item := Reason_oprint.print_out_sig_item
-let _ = Oprint.out_signature := Reason_oprint.print_out_signature
-let _ = Oprint.out_type_extension := Reason_oprint.print_out_type_extension
-let _ = Oprint.out_phrase := Reason_oprint.print_out_phrase
+let wrap f g fmt x = g fmt (f x)
+
+let () =
+  let open Reason_toolchain.From_current in
+  Oprint.out_value := wrap copy_out_value Reason_oprint.print_out_value;
+  Oprint.out_type := wrap copy_out_type Reason_oprint.print_out_type;
+  Oprint.out_class_type := wrap copy_out_class_type Reason_oprint.print_out_class_type;
+  Oprint.out_module_type := wrap copy_out_module_type Reason_oprint.print_out_module_type;
+  Oprint.out_sig_item := wrap copy_out_sig_item Reason_oprint.print_out_sig_item;
+  Oprint.out_signature := wrap (List.map copy_out_sig_item) Reason_oprint.print_out_signature;
+  Oprint.out_type_extension := wrap copy_out_type_extension Reason_oprint.print_out_type_extension;
+  Oprint.out_phrase := wrap copy_out_phrase Reason_oprint.print_out_phrase;
 
 module Html =
   (val
@@ -151,7 +155,7 @@ let string_of_value v =
     None -> ""
   | Some i -> Odoc_misc.string_of_info i)
 
-module Generator =
+(*module Generator =
 struct
 class html =
   object (self)
@@ -585,4 +589,4 @@ end
 
 let _ = Odoc_args.set_generator
  (Odoc_gen.Html (module Generator : Odoc_html.Html_generator))
- ;;
+ ;;*)

@@ -8,33 +8,46 @@ let init_reason () =
      List.exists ((=) "camlp4r") !Topfind.predicates then
     print_endline "Reason is incompatible with camlp4!"
   else begin
+    let use_file x =
+      List.map Reason_toolchain.To_current.copy_toplevel_phrase
+        (Reason_toolchain.JS.canonical_use_file x)
+    in
     current_top := RTop;
     UTop.set_phrase_terminator ";";
     UTop.prompt := fst (React.S.create LTerm_text.
                      (eval [B_fg (LTerm_style.green); S "Reason # "]));
     UTop.parse_toplevel_phrase := UTop.parse_default (
       Reason_util.correctly_catch_parse_errors
-      Reason_toolchain.JS.canonical_toplevel_phrase
+        (fun x -> Reason_toolchain.To_current.copy_toplevel_phrase
+            (Reason_toolchain.JS.canonical_toplevel_phrase x))
     );
     UTop.parse_use_file := UTop.parse_default (
-      Reason_util.correctly_catch_parse_errors
-      Reason_toolchain.JS.canonical_use_file
+      Reason_util.correctly_catch_parse_errors use_file
     );
     UTop.history_file_name :=
       Some (Filename.concat LTerm_resources.home ".rtop-history");
 
-    Toploop.parse_use_file := Reason_util.correctly_catch_parse_errors
-                                Reason_toolchain.JS.canonical_use_file;
+    Toploop.parse_use_file := Reason_util.correctly_catch_parse_errors use_file;
 
     (* Printing in Reason syntax *)
-    Toploop.print_out_value := Reason_oprint.print_out_value;
-    Toploop.print_out_type := Reason_oprint.print_out_type;
-    Toploop.print_out_class_type := Reason_oprint.print_out_class_type;
-    Toploop.print_out_module_type := Reason_oprint.print_out_module_type;
-    Toploop.print_out_type_extension := Reason_oprint.print_out_type_extension;
-    Toploop.print_out_sig_item := Reason_oprint.print_out_sig_item;
-    Toploop.print_out_signature := Reason_oprint.print_out_signature;
-    Toploop.print_out_phrase := Reason_oprint.print_out_phrase;
+    let open Reason_toolchain.From_current in
+    let wrap f g fmt x = g fmt (f x) in
+    Toploop.print_out_value :=
+      wrap copy_out_value Reason_oprint.print_out_value;
+    Toploop.print_out_type :=
+      wrap copy_out_type Reason_oprint.print_out_type;
+    Toploop.print_out_class_type :=
+      wrap copy_out_class_type Reason_oprint.print_out_class_type;
+    Toploop.print_out_module_type :=
+      wrap copy_out_module_type Reason_oprint.print_out_module_type;
+    Toploop.print_out_type_extension :=
+      wrap copy_out_type_extension Reason_oprint.print_out_type_extension;
+    Toploop.print_out_sig_item :=
+      wrap copy_out_sig_item Reason_oprint.print_out_sig_item;
+    Toploop.print_out_signature :=
+      wrap (List.map copy_out_sig_item) Reason_oprint.print_out_signature;
+    Toploop.print_out_phrase :=
+      wrap copy_out_phrase Reason_oprint.print_out_phrase;
   end
 
 let init_ocaml () =
