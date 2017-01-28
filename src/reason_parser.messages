@@ -11716,6 +11716,35 @@ implementation: TRY UIDENT LBRACE WITH
 
 <SYNTAX ERROR>
 
+implementation: LESSIDENT LIDENT EQUAL UIDENT WITH
+##
+## Ends in an error in state: 2665.
+##
+## _simple_expr -> simple_expr . DOT label_longident [ SLASHGREATER SHARPOP SHARP LIDENT GREATER DOT ]
+## _simple_expr -> simple_expr . DOT LPAREN expr RPAREN [ SLASHGREATER SHARPOP SHARP LIDENT GREATER DOT ]
+## _simple_expr -> simple_expr . DOT LPAREN expr error [ SLASHGREATER SHARPOP SHARP LIDENT GREATER DOT ]
+## _simple_expr -> simple_expr . DOT LBRACKET expr RBRACKET [ SLASHGREATER SHARPOP SHARP LIDENT GREATER DOT ]
+## _simple_expr -> simple_expr . DOT LBRACKET expr error [ SLASHGREATER SHARPOP SHARP LIDENT GREATER DOT ]
+## _simple_expr -> simple_expr . DOT LBRACE expr RBRACE [ SLASHGREATER SHARPOP SHARP LIDENT GREATER DOT ]
+## _simple_expr -> simple_expr . SHARP label [ SLASHGREATER SHARPOP SHARP LIDENT GREATER DOT ]
+## _simple_expr -> simple_expr . SHARPOP simple_expr [ SLASHGREATER SHARPOP SHARP LIDENT GREATER DOT ]
+## jsx_arguments -> LIDENT EQUAL simple_expr . jsx_arguments [ SLASHGREATER GREATER ]
+##
+## The known suffix of the stack is as follows:
+## LIDENT EQUAL simple_expr
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 732, spurious reduction of production constr_longident -> mod_longident
+## In state 835, spurious reduction of production _simple_expr -> constr_longident
+## In state 837, spurious reduction of production mark_position_exp(_simple_expr) -> _simple_expr
+## In state 825, spurious reduction of production simple_expr -> mark_position_exp(_simple_expr)
+##
+
+Consider using a different identifier or adding an underscore to the end for BS support.
+
 implementation: TRY UIDENT UNDERSCORE
 ##
 ## Ends in an error in state: 2669.
