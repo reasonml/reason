@@ -4,7 +4,7 @@ before_install:
   - brew update
   - brew install opam
   - opam init
-  - opam switch 4.02.3
+  - opam switch "$OCAML_VERSION"
   - eval `opam config env`
   - opam update
 before_script:
@@ -13,6 +13,10 @@ before_script:
 script: 
   - make test
   - git diff --exit-code
+env:
+  - OCAML_VERSION=4.02.3
+  - OCAML_VERSION=4.03.0
+  - OCAML_VERSION=4.04.0
 notifications:
   email:
     - yunxing@fb.com
