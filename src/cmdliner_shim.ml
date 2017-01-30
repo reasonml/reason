@@ -20,7 +20,6 @@ let unwrap = function
   | Success (x, _) -> x
   | Exception m -> `Error (true, m)
 
-(* TODO: allow the user of this module to pass in a custom exn handler *)
 let app : ('a -> 'b) q -> 'a -> 'b q = fun f a ->
   let (f', handler) = match f with
     | Success x -> x
