@@ -314,5 +314,9 @@ let findMenhirErrorMessage loc =
     in find !menhirMessagesError
 
 let add_error_message err =
-  if err.msg <> "<SYNTAX ERROR>\n" then
-    menhirMessagesError := !menhirMessagesError @ [MenhirMessagesError err];
+  let msg = if err.msg = "<SYNTAX ERROR>\n" then
+    [MenhirMessagesError {err with msg = "A syntax error occurred. Help to improve this message: https://github.com/facebook/reason/wiki/Add-a-Menhir-error-message"}]
+  else
+    [MenhirMessagesError err]
+  in
+  menhirMessagesError := !menhirMessagesError @ msg;
