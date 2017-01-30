@@ -43,18 +43,10 @@ let refmt
     | Some name -> (false, name)
     | None -> (true, "")
   in
-  let () =
-    let has_print = match print with
-      | Some _ -> true
-      | None -> false
-    in
-    let has_parse = match parse_ast with
-      | Some _ -> true
-      | None -> false
-    in
-    if input_file = "" && not (has_parse && has_print) then
-      raise (Invalid_config "Need an input file, parse mode, and print \
-                             mode. Modes can be auto-detected based on filename.")
+  let parse_ast = match parse_ast, use_stdin with
+    | (Some x, _) -> x
+    | (None, false) -> `Auto
+    | (None, true) -> `Reason (* default *)
   in
   Reason_config.configure ~r:is_recoverable;
   Location.input_name := input_file;

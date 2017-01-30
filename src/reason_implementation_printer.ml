@@ -14,14 +14,14 @@ module Reason_implementation_printer : Printer_maker.PRINTER =
         let parse filetype use_stdin filename =
             let ((ast, comments), parsedAsML, parsedAsInterface) =
             (match filetype with
-            | None -> defaultImplementationParserFor use_stdin filename
-            | Some `BinaryReason -> Printer_maker.reasonBinaryParser use_stdin filename
-            | Some `Binary -> Printer_maker.ocamlBinaryParser use_stdin filename false
-            | Some `ML ->
+            | `Auto -> defaultImplementationParserFor use_stdin filename
+            | `BinaryReason -> Printer_maker.reasonBinaryParser use_stdin filename
+            | `Binary -> Printer_maker.ocamlBinaryParser use_stdin filename false
+            | `ML ->
                     let lexbuf = Reason_toolchain.setup_lexbuf use_stdin filename in
                     let impl = Reason_toolchain.ML.canonical_implementation_with_comments in
                     (impl lexbuf, true, false)
-            | Some `Reason ->
+            | `Reason ->
                     let lexbuf = Reason_toolchain.setup_lexbuf use_stdin filename in
                     let impl = Reason_toolchain.JS.canonical_implementation_with_comments in
                     (impl lexbuf, false, false))
@@ -32,7 +32,7 @@ module Reason_implementation_printer : Printer_maker.PRINTER =
 
         let makePrinter printtype filename parsedAsML output_chan output_formatter =
             match printtype with
-            | Some `BinaryReason -> fun (ast, comments) -> (
+            | `BinaryReason -> fun (ast, comments) -> (
               (* Our special format for interchange between reason should keep the
                * comments separate.  This is not compatible for input into the
                * ocaml compiler - only for input into another version of Reason. We
@@ -43,18 +43,17 @@ module Reason_implementation_printer : Printer_maker.PRINTER =
                 Config.ast_impl_magic_number, filename, ast, comments, parsedAsML, false
               );
             )
-            | Some `Binary
-            | None -> fun (ast, comments) -> (
+            | `Binary -> fun (ast, comments) -> (
               output_string output_chan Config.ast_impl_magic_number;
               output_value  output_chan filename;
               output_value  output_chan ast
             )
-            | Some `AST -> fun (ast, comments) -> (
+            | `AST -> fun (ast, comments) -> (
               Printast.implementation output_formatter ast
             )
             (* If you don't wrap the function in parens, it's a totally different
              * meaning #thanksOCaml *)
-            | Some `None -> (fun (ast, comments) -> ())
-            | Some `ML -> Reason_toolchain.ML.print_canonical_implementation_with_comments output_formatter
-            | Some `Reason -> Reason_toolchain.JS.print_canonical_implementation_with_comments output_formatter
+            | `None -> (fun (ast, comments) -> ())
+            | `ML -> Reason_toolchain.ML.print_canonical_implementation_with_comments output_formatter
+            | `Reason -> Reason_toolchain.JS.print_canonical_implementation_with_comments output_formatter
     end;;

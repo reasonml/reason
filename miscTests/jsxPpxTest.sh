@@ -9,7 +9,7 @@ do
 
   expected=`cat $testPath/expected$i.re`
 
-  ocamlc -dsource -ppx ./reactjs_jsx_ppx.native -pp ./refmt_impl.native -impl $test \
+  ocamlc -dsource -ppx ./reactjs_jsx_ppx.native -pp "./refmt_impl.native --print binary" -impl $test \
     2>&1 | sed '$ d' | sed '$ d' | \
     ./refmt_impl.native --parse ml --print re --interface false \
     > $testPath/actual${i}.re
