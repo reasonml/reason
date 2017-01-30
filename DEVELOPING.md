@@ -34,4 +34,4 @@ env version=x.y.z make pre_release
 ```
 env version=x.y.z make release
 ```
-- Use (opam-publish)[https://github.com/ocaml/opam-publish] to publish the latest version to opam. 
+- Use [opam-publish](https://github.com/ocaml/opam-publish) to publish the latest version to opam. 
