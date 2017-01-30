@@ -34,7 +34,7 @@ The `ReasonProject` uses a very simple build system called `rebuild` that comes 
 
 `rebel` features:
 
-- Easy to use [`bucklescript`](https://github.com/bloomberg/bucklescript) integration (currently broken)
+- Easy to use [`bucklescript`](https://github.com/bloomberg/bucklescript) integration.
 - Easy to use [`js_of_ocaml`](https://github.com/ocsigen/js_of_ocaml) integration.
 - Automatic namespacing based on your `package.json` package name.
 - Automatic generation of `.merlin` files (soon).
