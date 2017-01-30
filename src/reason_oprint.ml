@@ -576,7 +576,7 @@ and print_out_constr ppf (name, tyl,ret_type_opt) =
       | [] ->
           pp_print_string ppf name
       | _ ->
-          fprintf ppf "@[<2>%s of@ %a@]" name
+          fprintf ppf "@[<2>%s %a@]" name
             (print_typlist print_simple_out_type "") tyl
       end
   | Some ret_type ->
@@ -584,7 +584,7 @@ and print_out_constr ppf (name, tyl,ret_type_opt) =
       | [] ->
           fprintf ppf "@[<2>%s :@ %a@]" name print_simple_out_type ret_type
       | _ ->
-          fprintf ppf "@[<2>%s of@ %a :%a@]" name
+          fprintf ppf "@[<2>%s %a :%a@]" name
             (print_typlist print_simple_out_type "") tyl
             print_simple_out_type ret_type
       end
