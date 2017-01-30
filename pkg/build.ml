@@ -10,7 +10,7 @@ let menhir_command = "-menhir " ^ menhir_options
 (* ; "-menhir 'menhir --trace'" *)
 let () =
 
-  Pkg.describe "reason" ~builder:(`OCamlbuild ["-use-menhir"; menhir_command; "-cflags -I,+ocamldoc -I vendor/*"]) [
+  Pkg.describe "reason" ~builder:(`OCamlbuild ["-use-menhir"; menhir_command; "-cflags -I,+ocamldoc -I vendor/cmdliner -I vendor/easy_format"]) [
     Pkg.lib "pkg/META";
     (* The .mllib *)
     (* Our job is to generate reason.cma, but depending on whether or not
