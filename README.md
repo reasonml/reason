@@ -37,7 +37,7 @@ The `ReasonProject` uses a very simple build system called `rebuild` that comes 
 - Easy to use [`bucklescript`](https://github.com/bloomberg/bucklescript) integration.
 - Easy to use [`js_of_ocaml`](https://github.com/ocsigen/js_of_ocaml) integration.
 - Automatic namespacing based on your `package.json` package name.
-- Automatic generation of `.merlin` files (soon).
+- Automatic generation of `.merlin` files.
 - Powered by `jenga`, a fast, parallel, recoverable build system.
 - Uses modern compiler features such as "module aliases" for faster compilation of projects.
 
