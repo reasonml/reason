@@ -31,6 +31,8 @@ let () =
     Pkg.lib ~exts:[`Ext ".cmo"; `Ext ".cmx";`Ext  ".cmi"; `Ext ".cmt"] "src/reason_toolchain";
     Pkg.lib ~exts:[`Ext ".cmo"; `Ext ".cmx";`Ext  ".cmi"; `Ext ".cmt"] "src/syntax_util";
     Pkg.lib ~exts:[`Ext ".cmo"; `Ext ".cmx";`Ext  ".cmi"; `Ext ".cmt"; `Ext ".cmxs"] "src/redoc_html";
+    Pkg.lib ~exts:[`Ext ".cmo"; `Ext ".cmx";`Ext  ".cmi"; `Ext ".cmt"] "vendor/cmdliner/cmdliner";
+    Pkg.lib ~exts:[`Ext ".cmo"; `Ext ".cmx";`Ext  ".cmi"; `Ext ".cmt"] "vendor/easy_format/easy_format";
     Pkg.lib ~exts:Exts.library "src/reasondoc";
     Pkg.lib ~exts:[`Ext ".cmo"] "src/reason_toploop";
     Pkg.lib ~exts:[`Ext ".cmx"; `Ext ".o"] "src/reasonbuild";
