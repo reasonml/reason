@@ -11743,7 +11743,7 @@ implementation: LESSIDENT LIDENT EQUAL UIDENT WITH
 ## In state 825, spurious reduction of production simple_expr -> mark_position_exp(_simple_expr)
 ##
 
-Consider using a different identifier or adding an underscore to the end for BS support.
+This is a reserved keyword. Consider using a different one. For BuckleScript, add an underscore at the end (http://bloomberg.github.io/bucklescript/Manual.html#_object_label_translation_convention).
 
 implementation: TRY UIDENT UNDERSCORE
 ##
