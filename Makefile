@@ -63,6 +63,12 @@ clean: clean-tests
 compile_error: update_error
 	menhir --explain --strict --unused-tokens src/reason_parser.mly --compile-errors src/reason_parser.messages > src/reason_parser_message.ml
 
+all_errors:
+	@ echo "Regenerate all the possible error states for Menhir."
+	@ echo "Warning: This will take a while and use a lot of CPU and memory."
+	@ echo "---"
+	menhir --explain --strict --unused-tokens src/reason_parser.mly --list-errors > src/reason_parser.all.messages
+
 # Update error messages based on new grammar
 update_error:
 	@ cp -f src/reason_parser.messages src/reason_parser.messages.bak
