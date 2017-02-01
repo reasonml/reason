@@ -1,4 +1,5 @@
-type tuple = list int;
-type tuple' = (int, int);
-type tuple'' = Left | Right;
-let x = 3;
+/* type tuple = list int
+and other = list tuple;
+type tuple' = (int, int); */
+
+type tuple = (int, float, string);
