@@ -2,174 +2,8 @@ open Ast_mapper
 open Asttypes
 open Parsetree
 open Longident
-
-open Location
 open Ast_helper
 
-
-(**
-
-   location.ml:
-   ------------
-   let mkloc txt loc = { txt ; loc }
-   let rhs_loc n = {
-     loc_start = Parsing.rhs_start_pos n;
-     loc_end = Parsing.rhs_end_pos n;
-     loc_ghost = false;
-   }
-   let symbol_rloc () = {
-     loc_start = Parsing.symbol_start_pos ();
-     loc_end = Parsing.symbol_end_pos ();
-     loc_ghost = false;
-   }
-
-   let symbol_gloc () = {
-     loc_start = Parsing.symbol_start_pos ();
-     loc_end = Parsing.symbol_end_pos ();
-     loc_ghost = true;
-   }
-
-   ast_helper.ml:
-   ------------
-   module Typ = struct
-    val mk: ?loc:loc -> ?attrs:attrs -> core_type_desc -> core_type
-    let mk ?(loc = !default_loc) ?(attrs = []) d =
-       {ptyp_desc = d; ptyp_loc = loc; ptyp_attributes = attrs}
-     ..
-   end
-
-   parse_tree.mli
-   --------------
-   and core_type = {
-     ptyp_desc: core_type_desc;
-     ptyp_loc: Location.t;
-     ptyp_attributes: attributes; (* ... [@id1] [@id2] *)
-   }
-
-   and core_type_desc =
-     | Ptyp_any
-           (*  _ *)
-     | Ptyp_var of string
-           (* 'a *)
-     | Ptyp_arrow of label * core_type * core_type
-           (* T1 -> T2       (label = "")
-              ~l:T1 -> T2    (label = "l")
-              ?l:T1 -> T2    (label = "?l")
-            *)
-     | Ptyp_tuple of core_type list
-           (* T1 * ... * Tn   (n >= 2) *)
-
-   reason_parser.mly
-   ---------------
-   In general:
-
-                                          syntax variant          {pblah_desc: core_blah_desc
-                                                                   pblah_loc: {txt, loc}
-                                                                   pblah_attributes: ... }
-                                         /              \            /       \
-   val mkblah: ~loc -> ~attributes ->     core_blah_desc     ->      core_blah
-   let mkblah = Blah.mk
-
-*)
-
-let dummy_loc () = {
-  loc_start = Lexing.dummy_pos;
-  loc_end = Lexing.dummy_pos;
-  loc_ghost = false;
-}
-
-let mklocation loc_start loc_end = {
-  loc_start = loc_start;
-  loc_end = loc_end;
-  loc_ghost = false;
-}
-
-let with_txt a txt = {
-    a with txt=txt;
-}
-
-let make_real_loc loc = {
-    loc with loc_ghost = false
-}
-
-let make_ghost_loc loc = {
-    loc with loc_ghost = true
-}
-
-let ghloc ?(loc=dummy_loc ()) d = { txt = d; loc = (make_ghost_loc loc) }
-
-(**
-  * turn an object into a real
-  *)
-let make_real_exp exp = {
-    exp with pexp_loc = make_real_loc exp.pexp_loc
-}
-let make_real_pat pat = {
-    pat with ppat_loc = make_real_loc pat.ppat_loc
-}
-let make_real_cf cf = {
-    cf with pcf_loc = make_real_loc cf.pcf_loc
-}
-
-(**
-  * turn a object into ghost
-  *)
-let make_ghost_cf cf = {
-    cf with pcf_loc = make_ghost_loc cf.pcf_loc
-}
-let make_ghost_exp exp = {
-    exp with pexp_loc = make_ghost_loc exp.pexp_loc
-}
-
-let make_ghost_pat pat = {
-    pat with ppat_loc = make_ghost_loc pat.ppat_loc
-}
-
-(**
-  * change the location state to be a ghost location or real location
-  *)
-let set_loc_state is_ghost loc =
-    if is_ghost then make_ghost_loc loc else make_real_loc loc
-
-let mktyp ?(loc=dummy_loc()) ?(ghost=false) d =
-    let loc = set_loc_state ghost loc in
-    Typ.mk ~loc d
-
-let mkpat ?(attrs=[]) ?(loc=dummy_loc()) ?(ghost=false) d =
-    let loc = set_loc_state ghost loc in
-    Pat.mk ~loc ~attrs d
-
-let mkexp ?(attrs=[]) ?(loc=dummy_loc()) ?(ghost=false) d =
-    let loc = set_loc_state ghost loc in
-    Exp.mk ~loc ~attrs d
-
-let mkmty ?(loc=dummy_loc()) ?(ghost=false) d =
-    let loc = set_loc_state ghost loc in
-    Mty.mk ~loc d
-
-let mksig ?(loc=dummy_loc()) ?(ghost=false) d =
-    let loc = set_loc_state ghost loc in
-    Sig.mk ~loc d
-
-let mkmod ?(loc=dummy_loc()) ?(ghost=false) d =
-    let loc = set_loc_state ghost loc in
-    Mod.mk ~loc d
-
-let mkstr ?(loc=dummy_loc()) ?(ghost=false) d =
-    let loc = set_loc_state ghost loc in
-    Str.mk ~loc d
-
-let mkclass ?(loc=dummy_loc()) ?(ghost=false) d =
-    let loc = set_loc_state ghost loc in
-    Cl.mk ~loc d
-
-let mkcty ?(loc=dummy_loc()) ?(ghost=false) d =
-    let loc = set_loc_state ghost loc in
-    Cty.mk ~loc d
-
-let mkctf ?(loc=dummy_loc()) ?(ghost=false) d =
-    let loc = set_loc_state ghost loc in
-    Ctf.mk ~loc d
 
 (** [is_prefixed prefix i str] checks if prefix is the prefix of str
   * starting from position i
@@ -341,60 +175,20 @@ let identifier_mapper f =
   end;
 }
 
-(* let mkident s = Pexp_ident (make_ghost_exp (Longident.Lident s)) *)
-(* let mkcase left right = { pc_lhs=left; pc_guard=None; pc_rhs=right }
-let mk_construct_pat variant = 
-   *)
-
-let varid = ref 0
-let new_name () =
-  let n = !varid in
-  let () = varid := !varid + 1 in
-  "a" ^ (string_of_int n)
-
-let rec n_unique_ids = function
-  | x when x < 0 -> failwith "no negative"
-  | 0 -> []
-  | n -> new_name () :: (n_unique_ids (n-1))
-
-let mk_tuple_pattern n =
-  let ids = n_unique_ids n in
-  let o f g = (fun x -> f (g x)) in
-  let vars = List.map (o Pat.var ghloc) ids in
-  Pat.tuple vars
-
-type _ value =
-  | Int : int -> int value
-  | String : string -> string value
-  | Bool : bool -> bool value
-
-let fune = Exp.fun_ "" None (Pat.var (ghloc "x")) (Exp.ident (ghloc (Lident "x")))
-
-(* let printer_for  *)
-
-let printer_for_tuple = function
-  | Int i -> 
-
-(* let mk_tuple_printer types = *)
-
 (* TODO: come back to me *)
 
 let attach_printer = function
   (* WARN: Only handles non-mutually-recursive types as of now. *)
-  | { pstr_desc=Pstr_type [{ ptype_name = { txt = t };
-                             ptype_kind = Ptype_abstract;
-                             ptype_manifest = Some { ptyp_desc = Ptyp_tuple types } }] } as s ->
-    let getname = (function Ptyp_constr (id, []) -> Longident.last id.txt | _ -> failwith "no") in
-    let names = List.map getname (List.map (fun x -> x.ptyp_desc) types) in
-    let () = print_endline ("FOUND U AGAIN TYPE " ^ t) in
-    let () = print_endline (String.concat ", " names) in
-    (s, None)
-  | s -> (s, None)
+  | { pstr_desc=Pstr_type [decl] } as ty ->
+    let printer = Ppx_deriving_show.Ppx_deriving_show.str_of_type [] [] decl in
+    let printer_structure_item = Str.value Recursive printer in
+    (ty, Some printer_structure_item)
+  | ty -> (ty, None)
 
 let find_and_attach_printers items =
   let maybe_concat acc = function
     | (s, None) -> s::acc
-    | (s, Some x) -> s::x::acc
+    | (s, Some x) -> x::s::acc
   in
   List.rev (List.fold_left maybe_concat [] (List.map attach_printer items))
 

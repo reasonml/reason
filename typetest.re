@@ -1,5 +1,4 @@
-/* type tuple = list int
-and other = list tuple;
-type tuple' = (int, int); */
+type mytype = Int | Float | String;
 
-type tuple = (int, float, string);
+let () =
+  print_endline (show_mytype Int);

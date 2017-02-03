@@ -7,10 +7,13 @@ let trace = try let _ = Sys.getenv "trace" in true with | Not_found -> false
 let menhir_options = "'menhir --strict --unused-tokens --fixed-exception --table " ^ (if trace then "--trace" else "") ^ " '"
 let menhir_command = "-menhir " ^ menhir_options
 
+let vendored_libs = [ "cmdliner"; "easy_format"; "ppx_deriving" ]
+let vendor_options = String.concat " " (List.map ((^) "-I vendor/") vendored_libs)
+
 (* ; "-menhir 'menhir --trace'" *)
 let () =
 
-  Pkg.describe "reason" ~builder:(`OCamlbuild ["-use-menhir"; menhir_command; "-cflags -I,+ocamldoc -I vendor/cmdliner -I vendor/easy_format"]) [
+  Pkg.describe "reason" ~builder:(`OCamlbuild ["-use-menhir"; menhir_command; "-cflags -I,+ocamldoc " ^ vendor_options]) [
     Pkg.lib "pkg/META";
     (* The .mllib *)
     (* Our job is to generate reason.cma, but depending on whether or not
