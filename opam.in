@@ -20,9 +20,7 @@ build-test: [
   "ocamlbuild" "-classic-display" "-use-ocamlfind" "src_test/test_reason.byte" "--"
 ]
 depends: [
-  "easy-format"  {>= "1.2.0"}
   "ocamlfind"    {build}
-  "cmdliner"     {>= "0.9.8"}
   "utop"         {>= "1.17"}
   "menhir"       {>= "20160303"}
   "merlin-extend"{>= "0.3"}
