@@ -1131,12 +1131,13 @@ type tesla 'a = {
   drive: int => int
 } as 'a;
 
-let obj: tesla {. drive: int => int, x: int => int} = {
+let obj: tesla {. drive: int => int, doYouWant: unit => bool} = {
   val hasEnvy = {contents: false};
   pub drive speed => {
     this#enableEnvy true;
     speed
   };
+  pub doYouWant () => hasEnvy.contents;
   pri enableEnvy envy => {
     hasEnvy.contents = envy
   };
