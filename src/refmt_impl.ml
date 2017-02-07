@@ -30,6 +30,7 @@ let refmt
     h_file
     in_place
     input_file
+    show_runtime
     is_interface_pp
     use_stdin
   =
@@ -48,8 +49,6 @@ let refmt
     | (None, false) -> `Auto
     | (None, true) -> `Reason (* default *)
   in
-  Reason_config.configure ~r:is_recoverable;
-  Location.input_name := input_file;
   let constructorLists = match h_file with
     | Some f_name -> read_lines f_name
     | None -> []
@@ -57,6 +56,14 @@ let refmt
   let interface = match interface with
     | true -> true
     | false -> (Filename.check_suffix input_file ".rei" || Filename.check_suffix input_file ".mli")
+  in
+  let add_printers =
+    match show_runtime with
+    | None -> false
+    | Some _ ->
+          (if interface then
+            prerr_endline "WARNING: File is an interface. Printers not added.";
+          true)
   in
   let output_file =
     match in_place, use_stdin with
@@ -68,6 +75,8 @@ let refmt
     if interface then (module Reason_interface_printer.Reason_interface_printer)
     else (module Reason_implementation_printer.Reason_implementation_printer)
   in
+  Reason_config.configure ~r:is_recoverable ~ap:add_printers;
+  Location.input_name := input_file;
   let _ = Reason_pprint_ast.configure
       ~width: print_width
       ~assumeExplicitArity: explicit_arity
@@ -79,9 +88,8 @@ let refmt
      itself at the same time for some reason), try breaking this out so that
      it's not possible to call Format.formatter_of_out_channel on stdout. *)
   let output_formatter = Format.formatter_of_out_channel output_chan in
-  let thePrinter = Printer.makePrinter print input_file parsedAsML output_chan output_formatter in
   (
-    thePrinter ast;
+    Printer.print print input_file parsedAsML output_chan output_formatter ast;
     (* Also closes all open boxes. *)
     Format.pp_print_flush output_formatter ();
     flush output_chan;
@@ -114,6 +122,7 @@ let refmt_t =
                     $ heuristics_file
                     $ in_place
                     $ input
+                    $ show_runtime
                     $ is_interface_pp
                     $ use_stdin)
 

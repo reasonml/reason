@@ -32,7 +32,7 @@ module Reason_interface_printer : Printer_maker.PRINTER =
                 raise (Invalid_config ("The file parsed does not appear to be an interface file."))
             else ((ast, comments), parsedAsML)
 
-        let makePrinter printtype filename parsedAsML output_chan output_formatter =
+        let print printtype filename parsedAsML output_chan output_formatter =
             match printtype with
                     | `BinaryReason -> fun (ast, comments) -> (
                       (* Our special format for interchange between reason should keep the
