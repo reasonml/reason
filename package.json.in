@@ -51,6 +51,8 @@
         "@opam-alpha/menhir": ">= 20160303.0.0",
         "@opam-alpha/result": "1.2.0",
         "@opam-alpha/ocaml": "4.2.3",
+        "@opam-alpha/ocaml-migrate-parsetree": "*",
+        "@opam-alpha/result": "*",
         "dependency-env": "*",
         "opam-installer-bin": "https://github.com/yunxing/opam-installer-bin.git",
         "nopam": "*",
