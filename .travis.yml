@@ -8,7 +8,6 @@ before_install:
   - eval `opam config env`
   - opam update
 before_script:
-  - opam pin add -y migrate-parsetree git://github.com/let-def/migrate-parsetree.git
   - opam pin add -y reason .
 script: 
   - make test
