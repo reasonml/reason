@@ -102,7 +102,7 @@ opam init
 #   eval $(opam config env)
 
 opam update
-opam switch 4.04.0
+opam switch 4.03.0
 eval $(opam config env)
 git clone git@github.com:facebook/reason.git
 cd reason
