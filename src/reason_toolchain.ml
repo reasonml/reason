@@ -327,6 +327,9 @@ module OCaml_syntax = struct
   module Lexer_impl = Lexer
   module Parser_impl = Parser
 
+  (* OCaml parser parses into compiler-libs version of Ast.
+     Parsetrees are converted to Reason version on the fly. *)
+
   let implementation lexbuf =
     From_current.copy_structure (Parser.implementation Lexer.token lexbuf)
 
