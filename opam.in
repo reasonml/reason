@@ -25,10 +25,11 @@ depends: [
   "menhir"       {>= "20160303"}
   "merlin-extend"{>= "0.3"}
   "result"       {=  "1.2"}
+  "ocaml-migrate-parsetree"
 ]
 depopts: [
 ]
 conflicts: [
   "utop" {< "1.17"}
 ]
-available: [ ocaml-version = "4.04.0" ]
+available: [ ocaml-version >= "4.02" & ocaml-version < "4.05" ]
