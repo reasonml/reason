@@ -34,13 +34,13 @@
     },
     "name": "reason",
     "dependencies": {
-        "@opam/ocamlfind": "*",
-        "@opam/merlin-extend": "^ 0.3.0",
-        "@opam/menhir": ">= 20160303.0.0",
+        "@opam-alpha/ocamlfind": "*",
+        "@opam-alpha/merlin-extend": "^ 0.3.0",
+        "@opam-alpha/menhir": ">= 20160303.0.0",
         "opam-installer-bin": "esy-ocaml/opam-installer-bin"
     },
     "conditionalDependencies": {
-        "@opam/utop": "*"
+        "@opam-alpha/utop": "*"
     },
     "peerDependencies": {
         "ocaml": "esy-ocaml/ocaml#esy"
