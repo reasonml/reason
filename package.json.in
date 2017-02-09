@@ -10,54 +10,47 @@
     ],
     "license": "BSD",
     "homepage": "https://github.com/facebook/reason",
-    "exportedEnvVars": {
-        "reason_installed": {
-            "global": true,
-            "globalCollisionBehavior": "clobber",
-            "val": "true"
-        },
-        "FINDLIB": {
-            "global": true,
-            "resolveAsRelativePath": true,
-            "globalCollisionBehavior": "joinPath",
-            "val": "./_build/ocamlfind/lib"
-        },
-        "version": {
-            "val": "@version@",
-            "global": true,
-            "globalCollisionBehavior": "clobber"
-        },
-        "PATH": {
-            "global": true,
-            "resolveAsRelativePath": true,
-            "globalCollisionBehavior": "joinPath",
-            "val": "./_build/ocamlfind/bin"
-        },
-        "reason_enable": {
-            "global": true,
-            "globalCollisionBehavior": "clobber",
-            "val": "enable"
-        },
-        "reason_version": {
-            "global": true,
-            "globalCollisionBehavior": "clobber",
-            "val": "@version@"
-        }
+    "esy": {
+      "build": [
+        "./pkg/substs pkg/META.in",
+        "make compile_error",
+        "ocaml pkg/build.ml native=true native-dynlink=true utop=${utop_installed:-false}",
+        "(opam-installer --prefix=$cur__install || true)"
+      ],
+      "exportedEnv": {
+          "reason_installed": {
+              "global": true,
+              "val": "true"
+          },
+          "reason_enable": {
+              "global": true,
+              "val": "enable"
+          },
+          "reason_version": {
+              "global": true,
+              "val": "@version@"
+          }
+      }
     },
     "name": "reason",
     "dependencies": {
-        "@opam-alpha/ocamlfind": "*",
-        "@opam-alpha/merlin-extend": "^ 0.3.0",
-        "@opam-alpha/menhir": ">= 20160303.0.0",
-        "@opam-alpha/ocaml": "4.2.3",
-        "dependency-env": "*",
-        "opam-installer-bin": "https://github.com/yunxing/opam-installer-bin.git",
-        "nopam": "*",
-        "utop-bin": "https://github.com/reasonml/utop-bin"
+        "@opam/ocamlfind": "*",
+        "@opam/merlin-extend": "^ 0.3.0",
+        "@opam/menhir": ">= 20160303.0.0",
+        "opam-installer-bin": "esy-ocaml/opam-installer-bin"
+    },
+    "conditionalDependencies": {
+        "@opam/utop": "*"
+    },
+    "peerDependencies": {
+        "ocaml": "esy-ocaml/ocaml#esy"
+    },
+    "devDependencies": {
+        "ocaml": "esy-ocaml/ocaml#esy"
     },
     "scripts": {
         "editor": "eval $(dependencyEnv) && eval $EDITOR",
-        "postinstall": "eval $(dependencyEnv) && nopam && ./pkg/substs pkg/META.in && make compile_error && ocaml pkg/build.ml native=true native-dynlink=true utop=${utop_installed:-false} && (opam-installer --prefix=$opam_prefix || true)",
+        "build": "npm run postinstall",
         "clean": "eval $(dependencyEnv) && nopam && make clean",
         "env": "eval $(dependencyEnv) && env",
         "formatTest": "eval $(dependencyEnv) && cd formatTest; ./test.sh",
