@@ -3197,24 +3197,28 @@ class printer  ()= object(self:'self)
            parens. This is done because `unparseExpr` doesn't seem to be able to handle
            high enough precedence things. Using the normal precedence handling, something like
 
-              ret #= (Some 10)
+              ret .= (Some 10)
 
             gets pretty printed to
 
-              ret #= Some 10
+              ret .= Some 10
 
-            Which seems to indicate that the pretty printer doesn't think `#=` is of
+            Which seems to indicate that the pretty printer doesn't think `.=` is of
             high enough precedence for the parens to be worth adding back. *)
         let rightItm = (
           match rightExpr.pexp_desc with
           | Pexp_apply (eFun, ls) -> (
             match (printedStringAndFixityExpr eFun, ls) with
-              | (Infix infixStr, [(_, _); (_, _)]) when infixStr.[0] = '#' -> formatPrecedence (self#simplifyUnparseExpr rightExpr)
-              | _ -> self#simplifyUnparseExpr rightExpr
+              | (Infix infixStr, [(_, _); (_, _)]) when infixStr.[0] = '#' -> [atom infixStr; formatPrecedence (self#simplifyUnparseExpr rightExpr);]
+              | _ when infixStr = "#=" -> [atom ".= "; self#simplifyUnparseExpr rightExpr]
+              | _ -> [atom infixStr; self#simplifyUnparseExpr rightExpr]
           )
-          | _ -> self#simplifyUnparseExpr rightExpr
+          | _ when infixStr = "##" -> [atom ".\""; self#simplifyUnparseExpr rightExpr; atom "\""]
+          | Pexp_ident _ when infixStr = "#=" -> [atom infixStr; self#simplifyUnparseExpr rightExpr]
+          | _ when infixStr = "#=" -> [atom ".= "; self#simplifyUnparseExpr rightExpr]
+          | _ -> [atom infixStr; self#simplifyUnparseExpr rightExpr]
         ) in
-        Some (makeList [self#simple_enough_to_be_lhs_dot_send leftExpr; atom infixStr; rightItm])
+        Some (makeList ([self#simple_enough_to_be_lhs_dot_send leftExpr] @ rightItm))
       | (_, _) -> (
         match (eFun, ls) with
         | ({pexp_desc = Pexp_ident {txt = Ldot (Lident ("String"),"get")}}, [(_,e1);(_,e2)]) ->

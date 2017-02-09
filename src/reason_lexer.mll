@@ -477,6 +477,7 @@ rule token = parse
   | "=>" { EQUALGREATER }
   | "#"  { SHARP }
   | "."  { DOT }
+  | ".=" { DOTEQUAL }
   | ".." { DOTDOT }
   | "..."{ DOTDOTDOT }
   | ":"  { COLON }
