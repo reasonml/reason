@@ -6,6 +6,8 @@ Interested in contributing to Reason? The core of it is a parser + a printer, pl
 
 ## Brief Description of Files
 
+(Also, see https://github.com/facebook/reason/wiki/Improve-error-message-locations)
+
 - `ocamlmerlin_reason.ml`: produces the `ocamlmerlin-reason` binary, used in conjunction with [Merlin-extend](https://github.com/let-def/merlin-extend). This is an extension to [Merlin](https://github.com/ocaml/merlin), which picks up this binary from your environment to analyze Reason files when your editor calls Merlin (we have starter projects such as [ReasonProject](https://reasonml.github.io/ReasonProject) that takes care of putting the binary in your `PATH` correctly).
 
 - `*.mllib`: related: see the [OCaml extensions list](https://github.com/facebook/reason/wiki/OCaml-Ecosystem-Extensions-List). These are generated file from `pkg/build.ml`, which describes the package we distribute. No need to worry about them.
