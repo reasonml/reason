@@ -39,14 +39,13 @@
         "@opam-alpha/menhir": ">= 20160303.0.0",
         "opam-installer-bin": "esy-ocaml/opam-installer-bin"
     },
-    "conditionalDependencies": {
+    "peerDependencies": {
+        "ocaml": "esy-ocaml/ocaml#esy",
         "@opam-alpha/utop": "*"
     },
-    "peerDependencies": {
-        "ocaml": "esy-ocaml/ocaml#esy"
-    },
     "devDependencies": {
-        "ocaml": "esy-ocaml/ocaml#esy"
+        "ocaml": "esy-ocaml/ocaml#esy",
+        "@opam-alpha/utop": "*"
     },
     "scripts": {
         "editor": "eval $(dependencyEnv) && eval $EDITOR",
