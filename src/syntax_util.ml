@@ -177,10 +177,10 @@ let identifier_mapper f =
 (* TODO...WARN: Only handles non-mutually-recursive types as of now. *)
 let create_auto_printer_mapper =
   let attach_printer = function
-    | { pstr_desc=Pstr_type [decl] } as ty ->
-        let printer = Ppx_deriving_show.str_of_type [] [] decl in
-        let printer_structure_item = Str.value Recursive printer in
-        (ty, Some printer_structure_item)
+    | { pstr_desc=Pstr_type type_decls } as ty ->
+        let str_of_type = Ppx_deriving_show.str_of_type ~options:[] ~path:[] in
+        let printer = List.concat (List.map str_of_type type_decls) in
+        (ty, Some (Str.value Recursive printer))
     | ty -> (ty, None)
   in
   let find_and_attach_printers _ decls =
