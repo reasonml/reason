@@ -174,7 +174,6 @@ let identifier_mapper f =
   end;
 }
 
-(* TODO...WARN: Only handles non-mutually-recursive types as of now. *)
 let create_auto_printer_mapper =
   let attach_printer = function
     | { pstr_desc=Pstr_type type_decls } as ty ->
