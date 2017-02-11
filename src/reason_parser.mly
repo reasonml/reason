@@ -3285,12 +3285,6 @@ let_binding_body:
 
 curried_binding_return_typed: mark_position_exp(_curried_binding_return_typed) {$1}
 _curried_binding_return_typed:
-    EQUALGREATER expr
-      {
-          let loc = mklocation $symbolstartpos $endpos in
-          let nil = { txt = Lident "()"; loc = make_ghost_loc loc } in
-          mkexp ~ghost:true ~loc (Pexp_fun("", None, mkpat ~ghost:true ~loc (Ppat_construct (nil, None)), $2))
-      }
   | labeled_simple_pattern curried_binding_return_typed_
       {
          let loc = mklocation $symbolstartpos $endpos in
