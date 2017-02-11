@@ -175,24 +175,22 @@ let identifier_mapper f =
 }
 
 (* TODO...WARN: Only handles non-mutually-recursive types as of now. *)
-
-let attach_printer = function
-  | { pstr_desc=Pstr_type [decl] } as ty ->
-    let printer = Ppx_deriving_show.Ppx_deriving_show.str_of_type [] [] decl in
-    let printer_structure_item = Str.value Recursive printer in
-    (ty, Some printer_structure_item)
-  | ty -> (ty, None)
-
-let find_and_attach_printers items =
-  let maybe_concat acc = function
-    | (s, None) -> s::acc
-    | (s, Some x) -> x::s::acc
-  in List.rev (List.fold_left maybe_concat [] (List.map attach_printer items))
-
 let create_auto_printer_mapper =
-  { default_mapper with
-    structure = fun mapper decls -> find_and_attach_printers decls
-  }
+  let attach_printer = function
+    | { pstr_desc=Pstr_type [decl] } as ty ->
+        let printer = Ppx_deriving_show.str_of_type [] [] decl in
+        let printer_structure_item = Str.value Recursive printer in
+        (ty, Some printer_structure_item)
+    | ty -> (ty, None)
+  in
+  let find_and_attach_printers _ decls =
+    let maybe_concat acc = function
+      | (s, None) -> s::acc
+      | (s, Some x) -> x::s::acc
+  in
+    List.rev (List.fold_left maybe_concat [] (List.map attach_printer decls))
+  in
+  { default_mapper with structure = find_and_attach_printers }
 
 (** unescape_stars_slashes_mapper unescapes all stars and slases in an AST
   *)

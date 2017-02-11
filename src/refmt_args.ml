@@ -56,12 +56,9 @@ let in_place =
   let doc = "reformat a file in-place" in
   Arg.(value & flag & info ["in-place"] ~doc)
 
-let show_runtime =
-  let docv = "FILENAME" in
-  let doc = "add auto-printers to user-defined types, and put the required \
-             runtime in FILENAME"
-  in
-  Arg.(value & opt (some string) None & info ["show-runtime"] ~docv ~doc)
+let add_printers =
+  let doc = "add auto-printers to user-defined types" in
+  Arg.(value & flag & info ["a"; "add-printers"] ~doc)
 
 let input =
   let docv = "FILENAME" in

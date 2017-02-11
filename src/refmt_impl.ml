@@ -17,7 +17,9 @@ let read_lines file =
     close_in chan;
     List.rev !list
 
-let version = "Reason " ^ Package.version ^ " @ " ^ Package.git_short_version
+let warn s =
+  let red s = "\027[31m" ^ s ^ "\x1b[m" in
+  prerr_endline (red "WARNING:" ^ " " ^ s)
 
 
 let refmt
@@ -30,15 +32,14 @@ let refmt
     h_file
     in_place
     input_file
-    show_runtime
+    add_printers
     is_interface_pp
     use_stdin
   =
+  let err s = raise (Invalid_config s) in
   let () =
-    if is_interface_pp then
-      raise (Invalid_config "--is-interface-pp is deprecated.")
-    else if use_stdin then
-      raise (Invalid_config "--use-stdin is deprecated.")
+    if is_interface_pp then err "--is-interface-pp is deprecated."
+    else if use_stdin then err "--use-stdin is deprecated."
   in
   let (use_stdin, input_file) = match input_file with
     | Some name -> (false, name)
@@ -57,17 +58,13 @@ let refmt
     | true -> true
     | false -> (Filename.check_suffix input_file ".rei" || Filename.check_suffix input_file ".mli")
   in
-  let add_printers =
-    match show_runtime with
-    | None -> false
-    | Some _ ->
-          (if interface then
-            prerr_endline "WARNING: File is an interface. Printers not added.";
-          true)
+  let () =
+    if interface && add_printers then
+      warn "File is an interface. Printers not added."
   in
   let output_file =
     match in_place, use_stdin with
-    | (true, true) -> raise (Invalid_config "Cannot write in place to stdin.")
+    | (true, true) -> err "Cannot write in place to stdin."
     | (true,    _) -> Some input_file
     | (false,   _) -> None
   in
@@ -100,6 +97,8 @@ let refmt
 let top_level_info =
   let doc = "Meta language utility" in
   let man = [`S "DESCRIPTION"; `P "refmt is a parser and pretty-printer"] in
+  let version = "Reason " ^ Package.version ^ " @ " ^ Package.git_short_version
+  in
   Term.info "refmt" ~version ~doc ~man
 
 let refmt_t =
@@ -122,7 +121,7 @@ let refmt_t =
                     $ heuristics_file
                     $ in_place
                     $ input
-                    $ show_runtime
+                    $ add_printers
                     $ is_interface_pp
                     $ use_stdin)
 

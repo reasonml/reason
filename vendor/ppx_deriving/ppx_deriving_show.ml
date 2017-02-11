@@ -809,8 +809,7 @@ module Ppx_deriving =
       accu := ((!accu) land ((1 lsl 31) - 1));
       if (!accu) > 1073741823 then (!accu) - (1 lsl 31) else !accu
   end
-module Ppx_deriving_show =
-  struct
+
     open Longident
     open Location
     open Asttypes
@@ -5084,4 +5083,3 @@ module Ppx_deriving_show =
                                    List.concat
                                      (List.map (sig_of_type ~options ~path)
                                         type_decls)) ())
-  end
