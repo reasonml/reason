@@ -186,7 +186,7 @@ let create_auto_printer_mapper =
     let maybe_concat acc = function
       | (s, None) -> s::acc
       | (s, Some x) -> x::s::acc
-  in
+    in
     List.rev (List.fold_left maybe_concat [] (List.map attach_printer decls))
   in
   { default_mapper with structure = find_and_attach_printers }
