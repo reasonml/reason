@@ -12,6 +12,8 @@ To edit, just open the corresponding `.html` file (such as `index.html`)
 and make the changes to the markdown embedded in the `<head>`. Refresh the
 page and your changes are rendered.
 
+Warning about editing code example tables: ensure there are no empty lines
+inside the tables. Empty lines will cause formatting errors.
 
 Editing Style:
 --------------

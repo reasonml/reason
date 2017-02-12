@@ -322,9 +322,91 @@ functions.
 
 ### Record Fields
 
-In `Reason`, type definitions for records must be "in scope" if you want to create
-records or access record fields. This means you have to `open` the module in which
-that record's type is defined in.
+In `Reason`, you must ensure your record literal has an unambiguous type if you
+want to create records or access record fields. In the simplest case, the record
+type is already in scope and you can unambiguously create values just by using
+the standard `{ key: value }` syntax.
+
+> <table>
+  <thead>
+    <tr>
+      <th scope="col"><p>JavaScript</p></th>
+      <th scope="col"><p>Reason</p></th>
+    </tr>
+  </thead>
+  <tr>
+    <td>
+      <pre>function make(
+  id, name) {
+  return {
+    id: id,
+    name: name
+  };
+}</pre>
+    </td>
+    <td>
+      <pre>module Person = {
+  type t = {
+    id: int, name: string
+  };
+  let make id name => { id: id, name: name };
+  /&ast;
+  Alternatively, using field name punning,
+  let make id name => { id, name };
+  &ast;/
+};</pre>
+    </td>
+  </tr>
+</table>
+
+When the record type is declared in a different module, you have to give Reason
+a little guidance on which exact type you mean, because different record types
+in different modules can share field names.
+
+In order of safety, it's preferred to either (1) prefix at least one record
+field with the module name to uniquely identify the record type (safest), (2)
+prefix the record literal with a temporary module open to bring the record type
+into scope (slightly less safe--brings all names from the opened module into
+scope for the rest of the expression), or (3) open the entire module to bring
+the record type into scope (least safe--brings all names from the opened module
+into scope for the rest of the block).
+
+> <table>
+  <thead>
+    <tr>
+      <th scope="col"><p>JavaScript</p></th>
+      <th scope="col"><p>Reason</p></th>
+    </tr>
+  </thead>
+  <tr>
+    <td>
+      <pre>const bob =
+  { id: 1, name: "Bob" };</pre>
+    </td>
+    <td>
+      <pre>let bob = {
+  Person.id: 1, name: "Bob"
+};</pre>
+    </td>
+  </tr>
+  <tr>
+    <td><pre></pre></td>
+    <td>
+      <pre>let bob = Person.{
+  id: 1, name: "Bob"
+};</pre>
+    </td>
+  </tr>
+  <tr>
+    <td><pre></pre></td>
+    <td>
+      <pre>open Person;
+let bob = {
+  id: 1, name: "Bob"
+};</pre>
+    </td>
+  </tr>
+</table>
 
 ### Expressions
 
@@ -420,3 +502,4 @@ let res = switch thing {
 
 </body>
 </html>
+
