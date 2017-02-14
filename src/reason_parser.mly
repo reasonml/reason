@@ -792,6 +792,7 @@ let arity_conflict_resolving_mapper =
   end;
 }
 
+(* NB: making this a function might have parse-time performance penalties *)
 let default_mapper_chain () =
   let chain = [default_mapper; arity_conflict_resolving_mapper;
                reason_to_ml_swap_operator_mapper;
