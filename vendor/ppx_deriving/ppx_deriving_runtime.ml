@@ -1,36 +1,18 @@
-module Predef = struct
-  type _int = int
-  type _char = char
-  type _string = string
-  type _float = float
-  type _bool = bool
-  type _unit = unit
-  type _exn = exn
-  type 'a _array = 'a array
-  type 'a _list = 'a list
-  type 'a _option = 'a option = None | Some of 'a
-  type _nativeint = nativeint
-  type _int32 = int32
-  type _int64 = int64
-  type 'a _lazy_t = 'a lazy_t
-  type _bytes = bytes
-end
-
-type int = Predef._int
-type char = Predef._char
-type string = Predef._string
-type float = Predef._float
-type bool = Predef._bool
-type unit = Predef._unit
-type exn = Predef._exn
-type 'a array = 'a Predef._array
-type 'a list = 'a Predef._list
-type 'a option = 'a Predef._option = None | Some of 'a
-type nativeint = Predef._nativeint
-type int32 = Predef._int32
-type int64 = Predef._int64
-type 'a lazy_t = 'a Predef._lazy_t
-type bytes = Predef._bytes
+type nonrec int = int
+type nonrec char = char
+type nonrec string = string
+type nonrec float = float
+type nonrec bool = bool
+type nonrec unit = unit
+type nonrec exn = exn
+type nonrec 'a array = 'a array
+type nonrec 'a list = 'a list
+type nonrec 'a option = 'a option = None | Some of 'a
+type nonrec nativeint = nativeint
+type nonrec int32 = int32
+type nonrec int64 = int64
+type nonrec 'a lazy_t = 'a lazy_t
+type nonrec bytes = bytes
 
 module Pervasives = Pervasives
 module Char = Char
