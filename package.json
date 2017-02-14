@@ -38,14 +38,13 @@
         "@opam-alpha/ocamlfind": "*",
         "@opam-alpha/merlin-extend": "^ 0.3.0",
         "@opam-alpha/menhir": ">= 20160303.0.0",
-        "opam-installer-bin": "esy-ocaml/opam-installer-bin"
+        "opam-installer-bin": "esy-ocaml/opam-installer-bin",
+        "ocaml": "esy-ocaml/ocaml#esy"
     },
     "peerDependencies": {
-        "ocaml": "esy-ocaml/ocaml#esy",
         "@opam-alpha/utop": "*"
     },
     "devDependencies": {
-        "ocaml": "esy-ocaml/ocaml#esy",
         "@opam-alpha/utop": "*"
     },
     "scripts": {
