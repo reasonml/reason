@@ -11,6 +11,7 @@ module Reason_implementation_printer : Printer_maker.PRINTER =
             raise (Invalid_config ("Cannot determine default implementation parser for filename '" ^ filename ^ "'."))
           )
 
+        (* NB: Not idempotent. *)
         let ppx_show_runtime =
           let open Asttypes in
           let open Parsetree in
