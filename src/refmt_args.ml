@@ -58,7 +58,7 @@ let in_place =
 
 let add_printers =
   let doc = "add auto-printers to user-defined types" in
-  Arg.(value & flag & info ["a"; "add-printers"] ~doc)
+  Arg.(value & flag & info ["add-printers"] ~doc)
 
 let input =
   let docv = "FILENAME" in
