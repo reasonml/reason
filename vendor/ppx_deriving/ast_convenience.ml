@@ -38,3 +38,22 @@ let int32 ?loc ?attrs x = Exp.constant ?loc ?attrs (Const_int x)
 let int64 ?loc ?attrs x = Exp.constant ?loc ?attrs (Const_int x)
 let char ?loc ?attrs x = Exp.constant ?loc ?attrs (Const_char x)
 let float ?loc ?attrs x = Exp.constant ?loc ?attrs (Const_float x)
+let app ?loc ?attrs f l = if l = [] then f else Exp.apply ?loc ?attrs f (List.map (fun a -> Label.nolabel, a) l)
+
+let pconstr ?loc ?attrs s args = Pat.construct ?loc ?attrs (lid ?loc s) (may_tuple ?loc Pat.tuple args)
+let precord ?loc ?attrs ?(closed = Open) l =
+  Pat.record ?loc ?attrs (List.map (fun (s, e) -> (lid ~loc:e.ppat_loc s, e)) l) closed
+let pvar ?(loc = !default_loc) ?attrs s = Pat.var ~loc ?attrs (mkloc s loc)
+let punit ?loc ?attrs () = pconstr ?loc ?attrs "()" []
+let ptuple ?loc ?attrs = function
+  | [] -> punit ?loc ?attrs ()
+  | [x] -> x
+  | xs -> Pat.tuple ?loc ?attrs xs
+let evar ?loc ?attrs s = Exp.ident ?loc ?attrs (lid ?loc s)
+
+let find_attr s attrs =
+  try Some (snd (List.find (fun (x, _) -> x.txt = s) attrs))
+  with Not_found -> None
+
+let has_attr s attrs =
+  find_attr s attrs <> None
