@@ -20,15 +20,15 @@
       ],
       "exportedEnv": {
           "reason_installed": {
-              "global": true,
+              "scope": "global",
               "val": "true"
           },
           "reason_enable": {
-              "global": true,
+              "scope": "global",
               "val": "enable"
           },
           "reason_version": {
-              "global": true,
+              "scope": "global",
               "val": "1.7.3"
           }
       }
