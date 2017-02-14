@@ -11,7 +11,6 @@ module Reason_implementation_printer : Printer_maker.PRINTER =
             raise (Invalid_config ("Cannot determine default implementation parser for filename '" ^ filename ^ "'."))
           )
 
-
         let ppx_show_runtime =
           let open Asttypes in
           let open Parsetree in
@@ -19,8 +18,10 @@ module Reason_implementation_printer : Printer_maker.PRINTER =
           let open Ast_helper in
           let open Location in
           let mktypealias (name, params, types) =
+            (* Unsure if this is correct. *)
+            let attrs = [(mknoloc "nonrec"), PStr []] in
             let manifest = Typ.constr (mknoloc (Lident name)) types in
-            Str.type_ [Type.mk ~params ~kind:Ptype_abstract ~manifest (mknoloc name)]
+            Str.type_ [Type.mk ~params ~kind:Ptype_abstract ~manifest ~attrs (mknoloc name)]
           in
           let mkmodulealias name =
             Str.module_ (Mb.mk (mknoloc name) (Mod.ident (mknoloc (Lident name))))
