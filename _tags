@@ -4,9 +4,9 @@ true: warn(@5@8@10@11@12@14@23-24@26@29@40), bin_annot, safe_string, debug
 <node_modules/**>: -traverse
 "formatTest": -traverse
 "src": include
-<src/*>: package(menhirLib unix compiler-libs.common ocamlbuild findlib merlin_extend ppx_tools.metaquot result dynlink findlib.dynload)
+<src/*>: package(menhirLib unix compiler-libs.common ocamlbuild findlib merlin_extend result dynlink findlib.dynload)
 <src/reason_utop.*>: package(menhirLib utop)
-<vendor/ppx_deriving/*>: package(compiler-libs.common findlib result ppx_tools.metaquot)
+<vendor/ppx_deriving/*>: package(compiler-libs.common findlib result)
 
 <src_gen/*>: package(sedlex)
 
