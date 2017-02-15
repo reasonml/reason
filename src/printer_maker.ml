@@ -1,8 +1,10 @@
+open Migrate_parsetree
+open Ast_404
+
 type parse_itype = [ `ML | `Reason | `Binary | `BinaryReason | `Auto ]
 type print_itype = [ `ML | `Reason | `Binary | `BinaryReason | `AST | `None ]
 
 exception Invalid_config of string
-open Migrate_parsetree
 
 module type PRINTER =
     sig
