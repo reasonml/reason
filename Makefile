@@ -19,15 +19,9 @@ setup_convenient_bin_links:
 	ln -fs $(shell pwd)/_build/src/share.sh $(shell pwd)/_build/bin/share
 	ln -fs $(shell pwd)/_build/src/reup.sh $(shell pwd)/_build/bin/reup
 
-build_without_utop: compile_error setup_convenient_bin_links
-	cp pkg/META.in pkg/META
-	ocaml pkg/build.ml native=true native-dynlink=true utop=false
-	chmod +x $(shell pwd)/_build/src/*.sh
-	ln -fs $(shell pwd)/_build/src/refmt_merlin_impl.sh refmt_merlin_impl.sh
-
 build: compile_error setup_convenient_bin_links
 	cp pkg/META.in pkg/META
-	ocaml pkg/build.ml native=true native-dynlink=true utop=true
+	ocaml pkg/build.ml native=true native-dynlink=true
 	chmod +x $(shell pwd)/_build/src/*.sh
 	ln -fs $(shell pwd)/_build/src/refmt_merlin_impl.sh refmt_merlin_impl.sh
 
@@ -35,20 +29,7 @@ install:
 	opam pin add reason . -y
 	./refmt_impl.native --help=groff > $(shell opam config var man)/man1/refmt.1
 
-run: build
-	rlwrap ocaml \
-		$(shell ocamlfind query -predicates byte,toploop -r -a-format \
-		                        findlib compiler-libs.common unix) \
-		_build/src/reason.cma _build/src/reason_toploop.cmo
-
-run_utop: build
-	utop \
-		$(shell ocamlfind query -predicates byte,toploop -r -a-format \
-		                        compiler-libs.common) \
-		_build/src/reason.cma _build/src/reason_utop.cmo
-
 test: build clean-tests
-	./miscTests/rtopIntegrationTest.sh
 	./miscTests/jsxPpxTest.sh
 	cd formatTest; ./test.sh
 

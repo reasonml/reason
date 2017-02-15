@@ -13,14 +13,7 @@ let () =
   Pkg.describe "reason" ~builder:(`OCamlbuild ["-use-menhir"; menhir_command; "-cflags -I,+ocamldoc -I vendor/cmdliner -I vendor/easy_format"]) [
     Pkg.lib "pkg/META";
     (* The .mllib *)
-    (* Our job is to generate reason.cma, but depending on whether or not
-     * `utop` is available, we'll select an `.mllib` to compile as
-     * `reason.cma`.
-     *)
-    Pkg.lib ~cond:(Env.bool "utop") ~exts:Exts.library "src/reason" ~dst:"reason";
-    Pkg.lib ~cond:(not (Env.bool "utop")) ~exts:Exts.library "src/reason_without_utop" ~dst:"reason";
-    (* But then regardless of if we have `utop` installed - still compile a
-       library when the use case demands that there be no `utop` *)
+    Pkg.lib ~exts:Exts.library "src/reason" ~dst:"reason";
     Pkg.lib ~exts:[`Ext ".cmo"; `Ext ".cmx";`Ext ".cmi"; `Ext ".cmt";`Ext ".mli"] "src/reason_parser";
     Pkg.lib ~exts:[`Ext ".cmo"; `Ext ".cmx";`Ext ".cmi";] "src/reason_lexer";
     Pkg.lib ~exts:[`Ext ".cmo"; `Ext ".cmx";`Ext ".cmi"; `Ext ".cmt"] "src/reason_pprint_ast";
@@ -34,9 +27,7 @@ let () =
     Pkg.lib ~exts:[`Ext ".cmo"; `Ext ".cmx";`Ext  ".cmi"; `Ext ".cmt"] "vendor/cmdliner/cmdliner";
     Pkg.lib ~exts:[`Ext ".cmo"; `Ext ".cmx";`Ext  ".cmi"; `Ext ".cmt"] "vendor/easy_format/easy_format";
     Pkg.lib ~exts:Exts.library "src/reasondoc";
-    Pkg.lib ~exts:[`Ext ".cmo"] "src/reason_toploop";
     Pkg.lib ~exts:[`Ext ".cmx"; `Ext ".o"] "src/reasonbuild";
-    Pkg.lib ~cond:(Env.bool "utop") ~exts:[`Ext ".cmo"] "src/reason_utop";
     Pkg.bin ~auto:true "src/refmt_impl" ~dst:"refmt";
     Pkg.bin ~auto:true "src/ocamlmerlin_reason" ~dst:"ocamlmerlin-reason";
     Pkg.bin  "src/refmt_merlin_impl.sh" ~dst:"refmt_merlin";
@@ -44,10 +35,8 @@ let () =
     Pkg.bin  "src/rec.sh" ~dst:"rec";
     Pkg.bin  "src/share.sh" ~dst:"share";
     Pkg.bin  "src/rebuild.sh" ~dst:"rebuild";
-    Pkg.bin  "src/rtop.sh" ~dst:"rtop";
     Pkg.bin  "src/redoc.sh" ~dst:"redoc";
     Pkg.bin  "src/reup.sh" ~dst:"reup";
-    Pkg.bin  "src/rtop_init.ml" ~dst:"rtop_init.ml";
     Pkg.bin "_reasonbuild/_build/myocamlbuild" ~dst:"reasonbuild";
     Pkg.bin  ~auto:true "src/reason_format_type" ~dst:"refmttype";
     Pkg.bin  ~auto:true "src/reactjs_jsx_ppx" ~dst:"reactjs_jsx_ppx";

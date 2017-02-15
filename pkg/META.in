@@ -13,8 +13,6 @@ preprocessor = "ocamlreason_preprocessor_where_does_this_end_up"
 archive(byte, toploop) = "@compiler-libs/ocamlcommon.cma"
 archive(byte, toploop) += "easy_format.cmo reason.cma"
 archive(byte, toploop) += "@menhirLib/menhirLib.cmo"
-archive(byte, toploop, -pkg_utop) += "reason_toploop.cmo"
-archive(byte, toploop, pkg_utop) += "reason_utop.cmo"
 
 archive(byte) = "reason.cma"
 archive(native) = "reason.cmxa"
@@ -27,14 +25,4 @@ package "lib" (
   archive(byte) = "reason.cma"
   archive(native) = "reason.cmxa"
   archive(native, plugin) = "reason.cmxs"
-)
-
-package "lib_without_utop" (
-  version = "%{version}%"
-  description = "Library version of reason without utop - suitable for compilation to JS"
-  requires = "compiler-libs.common menhirLib"
-
-  archive(byte) = "reason_without_utop.cma"
-  archive(native) = "reason_without_utop.cmxa"
-  archive(native, plugin) = "reason_without_utop.cmxs"
 )
