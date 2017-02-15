@@ -72,13 +72,14 @@
  *   let lst = [ ];
  *)
 
-open Migrate_parsetree.Versions
-open OCaml_404.Ast
+open Migrate_parsetree
+open Ast_404
+
 open Location
 open Lexing
 
-module From_current = Convert (OCaml_current) (OCaml_404)
-module To_current = Convert (OCaml_404) (OCaml_current)
+module From_current = Convert(OCaml_current)(OCaml_404)
+module To_current = Convert(OCaml_404)(OCaml_current)
 
 module S = MenhirLib.General (* Streams *)
 

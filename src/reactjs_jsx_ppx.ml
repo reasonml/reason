@@ -5,8 +5,9 @@
 
 (* Why do we need a transform, instead of just using the original format?
 Because that one currently doesn't work well for the existing React.js *)
-module Main_mapper = Ast_mapper
-open Migrate_parsetree.OCaml_404.Ast
+open Migrate_parsetree
+open Ast_404
+
 open Ast_helper
 open Ast_mapper
 open Asttypes
@@ -139,4 +140,4 @@ let jsxMapper = Reason_toolchain.To_current.copy_mapper {
     | x -> default_mapper.expr mapper x)
 }
 
-let () = Main_mapper.register "JSX" (fun _argv -> jsxMapper)
+let () = Compiler_libs.Ast_mapper.register "JSX" (fun _argv -> jsxMapper)

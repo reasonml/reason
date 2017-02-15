@@ -1,3 +1,6 @@
+open Migrate_parsetree
+open Ast_404
+
 module Reason_interface_printer : Printer_maker.PRINTER =
     struct
         type t = Parsetree.signature
@@ -51,7 +54,8 @@ module Reason_interface_printer : Printer_maker.PRINTER =
                       output_value  output_chan ast
                     )
                     | `AST -> fun (ast, comments) -> (
-                      Printast.interface output_formatter ast
+                        Printast.interface output_formatter
+                          (Reason_toolchain.To_current.copy_signature ast)
                     )
                     (* If you don't wrap the function in parens, it's a totally different
                      * meaning #thanksOCaml *)
