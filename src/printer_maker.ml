@@ -2,6 +2,7 @@ type parse_itype = [ `ML | `Reason | `Binary | `BinaryReason | `Auto ]
 type print_itype = [ `ML | `Reason | `Binary | `BinaryReason | `AST | `None ]
 
 exception Invalid_config of string
+open Migrate_parsetree
 
 module type PRINTER =
     sig
@@ -29,7 +30,7 @@ let close_output_file output_file output_chan =
     | Some _ -> close_out output_chan
     | None -> ()
 
-let ocamlBinaryParser use_stdin filename parsedAsInterface =
+let ocamlBinaryParser use_stdin filename =
   let chan =
     match use_stdin with
       | true -> stdin
@@ -38,10 +39,14 @@ let ocamlBinaryParser use_stdin filename parsedAsInterface =
           seek_in file_chan 0;
           file_chan
   in
-  let _ = really_input_string chan (String.length Config.ast_impl_magic_number) in
-  let _ = input_value chan in
-  let ast = input_value chan in
-  ((ast, []), true, parsedAsInterface)
+  match Ast_io.from_channel chan with
+  | Result.Error err -> assert false
+  | Result.Ok (_, Ast_io.Impl ((module Version), ast)) ->
+    let module Convert = Convert(Version)(OCaml_404) in
+    ((Obj.magic (Convert.copy_structure ast), []), true, false)
+  | Result.Ok (_, Ast_io.Intf ((module Version), ast)) ->
+    let module Convert = Convert(Version)(OCaml_404) in
+    ((Obj.magic (Convert.copy_signature ast), []), true, true)
 
 let reasonBinaryParser use_stdin filename =
   let chan =
