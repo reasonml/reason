@@ -1,3 +1,6 @@
+open Migrate_parsetree
+open Ast_404
+
 open Parsetree
 open Asttypes
 open Ast_mapper
@@ -8,7 +11,8 @@ let lid txt =
 
 let str txt = { txt; loc = Location.none }
 
-let expandReactMacro argv =
+let expandReactMacro =
+  Reason_toolchain.To_current.copy_mapper
   {
     default_mapper with
     structure = (fun mapper structure  ->
@@ -87,4 +91,6 @@ let expandReactMacro argv =
                         (Labelled "children", (Exp.ident (lid "children")))])))]]
      | _ -> structure)
   }
-let _ = Ast_mapper.register "editor.rehydrate" expandReactMacro
+
+let _ = Compiler_libs.Ast_mapper.register "editor.rehydrate"
+    (fun _argv -> expandReactMacro)
