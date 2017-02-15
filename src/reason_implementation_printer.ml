@@ -54,7 +54,7 @@ module Reason_implementation_printer : Printer_maker.PRINTER =
             (match filetype with
             | `Auto -> defaultImplementationParserFor use_stdin filename
             | `BinaryReason -> Printer_maker.reasonBinaryParser use_stdin filename
-            | `Binary -> Printer_maker.ocamlBinaryParser use_stdin filename false
+            | `Binary -> Printer_maker.ocamlBinaryParser use_stdin filename
             | `ML ->
                     let lexbuf = Reason_toolchain.setup_lexbuf use_stdin filename in
                     let impl = Reason_toolchain.ML.canonical_implementation_with_comments in
