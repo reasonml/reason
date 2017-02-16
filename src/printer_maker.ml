@@ -12,12 +12,12 @@ module type PRINTER =
                     string ->
                     ((t * Reason_pprint_ast.commentWithCategory) * bool)
 
-        val makePrinter : print_itype ->
-                          string ->
-                          bool ->
-                          out_channel ->
-                          Format.formatter ->
-                          ((t * Reason_pprint_ast.commentWithCategory) -> unit)
+        val print : print_itype ->
+                    string ->
+                    bool ->
+                    out_channel ->
+                    Format.formatter ->
+                    ((t * Reason_pprint_ast.commentWithCategory) -> unit)
     end
 
 let prepare_output_file = function

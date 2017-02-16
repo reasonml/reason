@@ -10,7 +10,7 @@ let recoverable =
 
 let explicit_arity =
   let doc =
-    "If a constructor's argument is a tuple, always interpret it as \
+    "if a constructor's argument is a tuple, always interpret it as \
      multiple arguments"
   in
   Arg.(value & flag & info ["e"; "assume-explicit-arity"] ~doc)
@@ -55,6 +55,10 @@ let heuristics_file =
 let in_place =
   let doc = "reformat a file in-place" in
   Arg.(value & flag & info ["in-place"] ~doc)
+
+let add_printers =
+  let doc = "add auto-printers to user-defined types" in
+  Arg.(value & flag & info ["add-printers"] ~doc)
 
 let input =
   let docv = "FILENAME" in

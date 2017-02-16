@@ -17,7 +17,9 @@ let read_lines file =
     close_in chan;
     List.rev !list
 
-let version = "Reason " ^ Package.version ^ " @ " ^ Package.git_short_version
+let warn s =
+  let red s = "\027[31m" ^ s ^ "\x1b[m" in
+  prerr_endline (red "WARNING:" ^ " " ^ s)
 
 
 let refmt
@@ -30,14 +32,14 @@ let refmt
     h_file
     in_place
     input_file
+    add_printers
     is_interface_pp
     use_stdin
   =
+  let err s = raise (Invalid_config s) in
   let () =
-    if is_interface_pp then
-      raise (Invalid_config "--is-interface-pp is deprecated.")
-    else if use_stdin then
-      raise (Invalid_config "--use-stdin is deprecated.")
+    if is_interface_pp then err "--is-interface-pp is deprecated."
+    else if use_stdin then err "--use-stdin is deprecated."
   in
   let (use_stdin, input_file) = match input_file with
     | Some name -> (false, name)
@@ -48,8 +50,6 @@ let refmt
     | (None, false) -> `Auto
     | (None, true) -> `Reason (* default *)
   in
-  Reason_config.configure ~r:is_recoverable;
-  Location.input_name := input_file;
   let constructorLists = match h_file with
     | Some f_name -> read_lines f_name
     | None -> []
@@ -58,9 +58,13 @@ let refmt
     | true -> true
     | false -> (Filename.check_suffix input_file ".rei" || Filename.check_suffix input_file ".mli")
   in
+  let () =
+    if interface && add_printers then
+      warn "File is an interface. Printers not added."
+  in
   let output_file =
     match in_place, use_stdin with
-    | (true, true) -> raise (Invalid_config "Cannot write in place to stdin.")
+    | (true, true) -> err "Cannot write in place to stdin."
     | (true,    _) -> Some input_file
     | (false,   _) -> None
   in
@@ -68,6 +72,8 @@ let refmt
     if interface then (module Reason_interface_printer.Reason_interface_printer)
     else (module Reason_implementation_printer.Reason_implementation_printer)
   in
+  Reason_config.configure ~r:is_recoverable ~ap:add_printers;
+  Location.input_name := input_file;
   let _ = Reason_pprint_ast.configure
       ~width: print_width
       ~assumeExplicitArity: explicit_arity
@@ -79,9 +85,8 @@ let refmt
      itself at the same time for some reason), try breaking this out so that
      it's not possible to call Format.formatter_of_out_channel on stdout. *)
   let output_formatter = Format.formatter_of_out_channel output_chan in
-  let thePrinter = Printer.makePrinter print input_file parsedAsML output_chan output_formatter in
   (
-    thePrinter ast;
+    Printer.print print input_file parsedAsML output_chan output_formatter ast;
     (* Also closes all open boxes. *)
     Format.pp_print_flush output_formatter ();
     flush output_chan;
@@ -92,6 +97,8 @@ let refmt
 let top_level_info =
   let doc = "Meta language utility" in
   let man = [`S "DESCRIPTION"; `P "refmt is a parser and pretty-printer"] in
+  let version = "Reason " ^ Package.version ^ " @ " ^ Package.git_short_version
+  in
   Term.info "refmt" ~version ~doc ~man
 
 let refmt_t =
@@ -114,6 +121,7 @@ let refmt_t =
                     $ heuristics_file
                     $ in_place
                     $ input
+                    $ add_printers
                     $ is_interface_pp
                     $ use_stdin)
 

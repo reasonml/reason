@@ -1,7 +1,7 @@
 
 opam-version: "1.2"
 name: "reason"
-version: "1.7.4"
+version: "1.8.1"
 maintainer: "Jordan Walke <jordojw@gmail.com>"
 authors: [ "Jordan Walke <jordojw@gmail.com>" ]
 license: "BSD"
@@ -25,6 +25,7 @@ depends: [
   "utop"         {>= "1.17"}
   "menhir"       {>= "20160303"}
   "merlin-extend"{>= "0.3"}
+  "result"       {=  "1.2"}
 ]
 depopts: [
 ]

@@ -792,7 +792,14 @@ let arity_conflict_resolving_mapper =
   end;
 }
 
-let default_mapper_chain = [arity_conflict_resolving_mapper; reason_to_ml_swap_operator_mapper; unescape_stars_slashes_mapper]
+(* NB: making this a function might have parse-time performance penalties *)
+let default_mapper_chain () =
+  let chain = [default_mapper; arity_conflict_resolving_mapper;
+               reason_to_ml_swap_operator_mapper;
+               unescape_stars_slashes_mapper]
+  in
+  if !Reason_config.add_printers then chain @ [create_auto_printer_mapper]
+  else chain
 
 let rec string_of_longident = function
     | Lident s -> s
@@ -1186,20 +1193,20 @@ conflicts.
 
 
 implementation:
-    structure EOF                        { apply_mapper_chain_to_structure $1 default_mapper_chain }
+    structure EOF                        { apply_mapper_chain_to_structure $1 (default_mapper_chain ()) }
 ;
 interface:
-    signature EOF                        { apply_mapper_chain_to_signature $1 default_mapper_chain }
+    signature EOF                        { apply_mapper_chain_to_signature $1 (default_mapper_chain ()) }
 ;
 
-toplevel_phrase: _toplevel_phrase {apply_mapper_chain_to_toplevel_phrase $1 default_mapper_chain}
+toplevel_phrase: _toplevel_phrase {apply_mapper_chain_to_toplevel_phrase $1 (default_mapper_chain ()) }
 _toplevel_phrase:
     structure_item SEMI                 { Ptop_def [$1]}
   | EOF                                 { raise End_of_file}
   | toplevel_directive SEMI             { $1 }
 ;
 
-use_file: _use_file {apply_mapper_chain_to_use_file $1 default_mapper_chain}
+use_file: _use_file {apply_mapper_chain_to_use_file $1 (default_mapper_chain ())}
 _use_file:
     EOF                                            { [] }
   | structure_item SEMI use_file                   { Ptop_def[$1] :: $3 }
@@ -1212,14 +1219,14 @@ parse_core_type:
     core_type EOF
       {
         let core_loc = mklocation $startpos($1) $endpos($1) in
-        apply_mapper_chain_to_type (only_core_type $1 core_loc) default_mapper_chain
+        apply_mapper_chain_to_type (only_core_type $1 core_loc) (default_mapper_chain ())
       }
 ;
 parse_expression:
-    expr EOF { apply_mapper_chain_to_expr $1 default_mapper_chain}
+    expr EOF { apply_mapper_chain_to_expr $1 (default_mapper_chain ()) }
 ;
 parse_pattern:
-    pattern EOF { apply_mapper_chain_to_pattern $1 default_mapper_chain}
+    pattern EOF { apply_mapper_chain_to_pattern $1 (default_mapper_chain ()) }
 ;
 
 /* Module expressions */

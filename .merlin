@@ -1,3 +1,7 @@
 PKG utop merlin_extend compiler-libs easy-format MenhirLib cmdliner
 B _build/src
+B _build
+# ^ for package.ml -- avoids errors in Merlin
+B _build/vendor/ppx_deriving
+# ^ for ppx_deriving -- avoids errors in Merlin
 S src

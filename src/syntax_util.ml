@@ -2,6 +2,7 @@ open Ast_mapper
 open Asttypes
 open Parsetree
 open Longident
+open Ast_helper
 
 (** [is_prefixed prefix i str] checks if prefix is the prefix of str
   * starting from position i
@@ -172,6 +173,23 @@ let identifier_mapper f =
     default_mapper.pat mapper pat
   end;
 }
+
+let create_auto_printer_mapper =
+  let attach_printer = function
+    | { pstr_desc=Pstr_type type_decls } as ty ->
+        let str_of_type = Ppx_deriving_show.str_of_type ~options:[] ~path:[] in
+        let printer = List.concat (List.map str_of_type type_decls) in
+        (ty, Some (Str.value Recursive printer))
+    | ty -> (ty, None)
+  in
+  let find_and_attach_printers _ decls =
+    let maybe_concat acc = function
+      | (s, None) -> s::acc
+      | (s, Some x) -> x::s::acc
+    in
+    List.rev (List.fold_left maybe_concat [] (List.map attach_printer decls))
+  in
+  { default_mapper with structure = find_and_attach_printers }
 
 (** unescape_stars_slashes_mapper unescapes all stars and slases in an AST
   *)
