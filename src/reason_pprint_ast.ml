@@ -2399,7 +2399,6 @@ class printer  ()= object(self:'self)
                    ~postSpace:true
                    ~break:IfNeed
                    ~inline:(true, true)
-                   (* Why not support aliasing here? *)
                    (* I don't think you'll have more than one l here. *)
                    (List.map (self#non_arrowed_non_simple_core_type) l)
                 )
