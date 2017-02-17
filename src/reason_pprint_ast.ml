@@ -2570,6 +2570,7 @@ class printer  ()= object(self:'self)
    * not parsed or printed correctly. *)
   method type_variant_leaf1 opt_ampersand polymorphic print_bar x =
     let {pcd_name; pcd_args; pcd_res; pcd_loc; pcd_attributes} = x in
+    let (arityAttrs, docAtrs, stdAttrs, jsxAttrs) = partitionAttributes pcd_attributes in
     let prefix = if polymorphic then "`" else "" in
     let sourceMappedName = SourceMap (pcd_name.loc, atom (prefix ^ pcd_name.txt)) in
     let nameOf = makeList ~postSpace:true [sourceMappedName] in
@@ -2615,8 +2616,8 @@ class printer  ()= object(self:'self)
       | (_::_, Some res) -> add_bar nameOf (normalize (args@[res]))
     in
     let everythingWithAttrs =
-      if pcd_attributes <> [] then
-        formatAttributed everything (self#attributes pcd_attributes)
+      if stdAttrs <> [] then
+        formatAttributed everything (self#attributes stdAttrs)
       else
         everything
     in
