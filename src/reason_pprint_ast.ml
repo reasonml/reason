@@ -3689,7 +3689,7 @@ class printer  ()= object(self:'self)
          in
          processArguments tail (nextAttr :: processedAttrs) children
       | [] -> (processedAttrs, children)
-      | _ :: tail -> processArguments tail processedAttrs None
+      | _ :: tail -> processArguments tail processedAttrs children
     in
     let (reversedAttributes, children) = processArguments args [] None in
     match children with
