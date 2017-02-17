@@ -5732,7 +5732,7 @@ class printer  ()= object(self:'self)
             | ([hd], _) -> raise (NotPossible "one functor application terms")
             | (hd::tl, _) -> formatIndentedApplication hd tl
           )
-      | Pmod_extension _ -> assert false
+      | Pmod_extension (s, e) -> self#payload "%" s e
       | Pmod_unpack _
       | Pmod_ident _
       | Pmod_constraint _
