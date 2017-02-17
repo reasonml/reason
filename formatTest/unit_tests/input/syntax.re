@@ -864,6 +864,10 @@ let A | B | C = X;
  */
 external f : int => int = "foo";
 
+external foo : label::(<foo : int>)? => unit = "bla";
+
+external foo : label::(<foo : int>) => unit = "bla";
+
 let x = {contents: 0};
 
 let unitVal = x.contents = 210;

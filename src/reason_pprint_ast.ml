@@ -2328,7 +2328,18 @@ class printer  ()= object(self:'self)
     else
       let rec allArrowSegments xx = match xx.ptyp_desc with
         | Ptyp_arrow (l, ct1, ct2) ->
-            (self#type_with_label (l,ct1))::(allArrowSegments ct2)
+          (* This is to match the parser not knowing what to do of
+
+              external foo : label::<foo : int>? => unit = "bla";
+
+            We force the user to wrap the object type in parens and this special
+            case makes sure to add them back.
+          *)
+          let wrap = (match ct1 with
+            | {ptyp_desc=Ptyp_constr ({txt}, [{ptyp_desc=Ptyp_object (x,y)}])} when is_predef_option txt -> ("(", ")")
+            | _ -> ("", "")
+          ) in
+          (self#type_with_label ~wrap (l,ct1))::(allArrowSegments ct2)
         | _ -> [self#core_type2 xx]
       in
       match (x.ptyp_desc) with
@@ -2368,7 +2379,7 @@ class printer  ()= object(self:'self)
         )
       | _ -> self#core_type2 x
 
-  method type_with_label (label, ({ptyp_desc} as c)) =
+  method type_with_label ?wrap:(wrap=("", "")) (label, ({ptyp_desc} as c)) =
     match label with
       | "" ->  self#non_arrowed_non_simple_core_type c (* otherwise parenthesize *)
       | s  ->
@@ -2386,6 +2397,7 @@ class printer  ()= object(self:'self)
                          ~postSpace:true
                          ~break:IfNeed
                          ~inline:(true, true)
+                         ~wrap
                          (* Why not support aliasing here? *)
                          (* I don't think you'll have more than one l here. *)
                          (List.map (self#non_arrowed_non_simple_core_type) l)
