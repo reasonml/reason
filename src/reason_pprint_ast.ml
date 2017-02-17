@@ -436,11 +436,6 @@ let rec partitionAttributes attrs =
         let (tlArity, tlDoc, tlStandard, tlJsx) = partitionAttributes atTl in
         (tlArity, tlDoc, atHd::tlStandard, tlJsx)
 
-let partitionNonrecAttr attrs = List.partition (fun attr ->
-    match attr with
-    | ({txt="nonrec"; _}, _) -> true
-    | _ -> false) attrs
-
 let extractStdAttrs attrs =
   let (arityAttrs, docAttrs, standard_attrs, jsxAttrs) = partitionAttributes attrs in
   standard_attrs
@@ -4629,16 +4624,6 @@ class printer  ()= object(self:'self)
       | _ -> self#unparseExpr x
 
 
-  method expression2 x =
-    (* I don't think this pexp_attributes logic is correct *)
-    if x.pexp_attributes <> [] then self#simplifyUnparseExpr x
-    else match x.pexp_desc with
-      | Pexp_field (e, li) ->
-          makeList ~interleaveComments:false [self#simple_enough_to_be_lhs_dot_send e; atom "."; self#longident_loc li]
-      | Pexp_send (e, s) ->
-          makeList ~interleaveComments:false [self#simple_enough_to_be_lhs_dot_send e; atom "#";  atom s]
-      | _ -> self#simplifyUnparseExpr x
-
   (*
    * Because the rule BANG simple_expr was given %prec below_DOT_AND_SHARP,
    * !x.y.z will parse as !(x.y.z) and not (!x).y.z.
@@ -6046,7 +6031,7 @@ class printer  ()= object(self:'self)
   method label_x_expression_param (l, e) =
     let param =
       match l with
-      | Nolabel -> self#expression2 e; (* level 2*)
+      | Nolabel -> self#simplifyUnparseExpr e; (* level 2*)
       | Labelled lbl ->
         let lbl = pun_labelled_expression e lbl in
         formatLabeledArgument (atom lbl) "" (self#simplifyUnparseExpr e)
