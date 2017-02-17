@@ -87,9 +87,9 @@ module Reason_implementation_printer : Printer_maker.PRINTER =
               );
             )
             | `Binary -> fun (ast, comments) -> (
-              output_string output_chan Config.ast_impl_magic_number;
-              output_value  output_chan filename;
-              output_value  output_chan ast
+               Ast_io.to_channel output_chan filename
+                 (Ast_io.Impl ((module OCaml_current),
+                               Reason_toolchain.To_current.copy_structure ast))
             )
             | `AST -> fun (ast, comments) -> (
               Printast.implementation output_formatter
