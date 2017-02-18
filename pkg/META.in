@@ -17,7 +17,8 @@ archive(byte, toploop) += "@menhirLib/menhirLib.cmo"
 archive(byte, toploop, -pkg_utop) += "reason_toploop.cmo"
 archive(byte, toploop, pkg_utop) += "reason_utop.cmo"
 
-archive(byte) = "@compiler-libs/ocamlcommon.cma @result/result.cmo easy_format.cmo ppx_deriving_show.cmo reason.cma"
+archive(byte) = "@result/result.cmo"
+archive(byte) += "ppx_deriving_show.cmo reason.cma"
 archive(native) = "reason.cmxa"
 
 package "lib" (
