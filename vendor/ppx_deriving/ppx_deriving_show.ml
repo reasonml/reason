@@ -1,3 +1,4 @@
+open Migrate_parsetree
 open Ast_404
 
 open Longident
@@ -5,6 +6,8 @@ open Location
 open Asttypes
 open Parsetree
 open Ast_helper
+
+module To_current = Convert(OCaml_404)(OCaml_current)
 
 module Ast_convenience : sig
   (*  This file is part of the ppx_tools package.  It is released  *)
@@ -247,7 +250,8 @@ end = struct
           raise (Location.Error err)))
 
   let string_of_core_type typ =
-    Format.asprintf "%a" Pprintast.core_type { typ with ptyp_attributes = [] }
+    Format.asprintf "%a" Pprintast.core_type
+      (To_current.copy_core_type { typ with ptyp_attributes = [] })
 
   module Arg =
   struct
