@@ -1,4 +1,5 @@
-open Migrate_parsetree.OCaml_404.Ast
+open Ast_404
+
 open Asttypes
 open Ast_mapper
 open Parsetree
@@ -178,7 +179,7 @@ let identifier_mapper f =
 
 let create_auto_printer_mapper =
   let attach_printer = function
-    | { pstr_desc=Pstr_type type_decls } as ty ->
+    | { pstr_desc=Pstr_type (_,type_decls) } as ty ->
         let str_of_type = Ppx_deriving_show.str_of_type ~options:[] ~path:[] in
         let printer = List.concat (List.map str_of_type type_decls) in
         (ty, Some (Str.value Recursive printer))
