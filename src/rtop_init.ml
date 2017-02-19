@@ -14,6 +14,5 @@ print_string
 
         >   let myVar = \"Hello Reason!\";
         >   let myList: list string = [\"first\", \"second\"];
-
-
+        >   #use \"./src/myFile.re\"; /* loads the file into here */
 "
