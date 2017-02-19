@@ -25,7 +25,7 @@ module Reason_implementation_printer : Printer_maker.PRINTER =
             (* Unsure if this is correct. *)
             let attrs = [(mknoloc "nonrec"), PStr []] in
             let manifest = Typ.constr (mknoloc (Lident name)) types in
-            Str.type_ [Type.mk ~params ~kind:Ptype_abstract ~manifest ~attrs (mknoloc name)]
+            Str.type_ Nonrecursive [Type.mk ~params ~kind:Ptype_abstract ~manifest ~attrs (mknoloc name)]
           in
           let mkmodulealias name =
             Str.module_ (Mb.mk (mknoloc name) (Mod.ident (mknoloc (Lident name))))
