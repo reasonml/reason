@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 RANDSTR=`head -c2 </dev/urandom|xxd -p -u`
 echo "Do you want to release? This *WILL* publish to GitHub AND npm!!!"
