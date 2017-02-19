@@ -1,0 +1,11 @@
+Updating ppx_deriving_show:
+
+- Take ast_convenience.ml/.mli from ppx_tools
+- Take ppx_deriving.ml/.mli and ppx_deriving_show.ml/.mli from ppx_deriving:
+  - the files need to be preprocessed first so start a normal build
+  - use _build/src/ppx_deriving.ml and _build/src_plugins/ppx_deriving_show.ml
+  - expand the ppx extensions in the files, I use -dsource, for instance:
+    ocamlfind ocamlopt -c -g -bin-annot -safe-string -package compiler-libs.common -package ppx_tools.metaquot -w @5@8@10@11@12@14@23@24@26@29@40 -I src_plugins -I src -o src_plugins/ppx_deriving_show.cmx src_plugins/ppx_deriving_show.ml -dsource
+    (the commandline was taken from ppx_deriving build log, I added -dsource)
+- Pack all the definitions in a single file
+- Bonus: eliminate dead code (including side effectful one?!)
