@@ -11057,6 +11057,38 @@ implementation: STRING WITH
 
 Incomplete statement. Did you forget a ";"?
 
+implementation: SWITCH UIDENT LBRACE BAR CHAR EQUALGREATER CHAR WITH
+##
+## Ends in an error in state: 2528.
+##
+## _expr -> SWITCH simple_expr LBRACE leading_bar_match_cases_to_sequence_body . RBRACE [ error STAR SLASHGREATER SEMI RPAREN RBRACKET RBRACE QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSDOTDOTGREATER LESS LBRACKETATAT LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER EOF COMMA COLONGREATER COLONEQUAL COLON BARRBRACKET BARBAR BAR AND AMPERSAND AMPERAMPER ]
+## leading_bar_match_cases_to_sequence_body -> leading_bar_match_cases_to_sequence_body . leading_bar_match_case_to_sequence_body [ RBRACE BAR ]
+##
+## The known suffix of the stack is as follows:
+## SWITCH simple_expr LBRACE leading_bar_match_cases_to_sequence_body
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 862, spurious reduction of production less_aggressive_simple_expression -> simple_expr
+## In state 927, spurious reduction of production _expr -> less_aggressive_simple_expression
+## In state 962, spurious reduction of production mark_position_exp(_expr) -> _expr
+## In state 926, spurious reduction of production expr -> mark_position_exp(_expr)
+## In state 2385, spurious reduction of production post_item_attributes ->
+## In state 2386, spurious reduction of production opt_semi ->
+## In state 2391, spurious reduction of production _semi_terminated_seq_expr_row -> expr post_item_attributes opt_semi
+## In state 2389, spurious reduction of production mark_position_exp(_semi_terminated_seq_expr_row) -> _semi_terminated_seq_expr_row
+## In state 2378, spurious reduction of production semi_terminated_seq_expr_row -> mark_position_exp(_semi_terminated_seq_expr_row)
+## In state 2363, spurious reduction of production _semi_terminated_seq_expr -> semi_terminated_seq_expr_row
+## In state 2390, spurious reduction of production mark_position_exp(_semi_terminated_seq_expr) -> _semi_terminated_seq_expr
+## In state 2379, spurious reduction of production semi_terminated_seq_expr -> mark_position_exp(_semi_terminated_seq_expr)
+## In state 2394, spurious reduction of production leading_bar_match_case_to_sequence_body -> pattern_with_bar EQUALGREATER semi_terminated_seq_expr
+## In state 2398, spurious reduction of production leading_bar_match_cases_to_sequence_body -> leading_bar_match_case_to_sequence_body
+##
+
+The switch expression isn't closed.
+
 implementation: SWITCH UIDENT LBRACE WITH
 ##
 ## Ends in an error in state: 2527.
