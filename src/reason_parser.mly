@@ -2983,9 +2983,10 @@ _simple_expr:
       { unclosed_exp (with_txt $1 "{") (with_txt $3 "}")}
   | LBRACE record_expr_with_string_keys RBRACE
       {
+        let loc = mklocation $symbolstartpos $endpos in
         let (exten, fields) = $2 in
-        mkexp (Pexp_extension (mkloc ("bs.obj") (mklocation $symbolstartpos $endpos),
-               PStr [mkstrexp (mkexp (Pexp_record(fields, exten))) []]))
+        mkexp ~loc (Pexp_extension (mkloc ("bs.obj") loc,
+               PStr [mkstrexp (mkexp ~loc (Pexp_record(fields, exten))) []]))
       }
   | as_loc(LBRACE) record_expr_with_string_keys as_loc(error)
       { unclosed_exp (with_txt $1 "{") (with_txt $3 "}")}
