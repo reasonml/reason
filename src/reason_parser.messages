@@ -13375,6 +13375,22 @@ Expecting one of the following:
   - "(" + expression + ")"
   - "{" + expression + "}"
 
+implementation: LESSIDENT WITH
+##
+## Ends in an error in state: 19.
+##
+## jsx_start_tag_and_args -> LESSIDENT . jsx_arguments [ SLASHGREATER GREATER ]
+##
+## The known suffix of the stack is as follows:
+## LESSIDENT
+##
+
+This might be a JSX error. You might have forgotten to put a space between tags. Instead of
+  <foo><bar /></foo>
+try
+  <foo> <bar /> </foo>
+This is to avoid some syntax ambiguities.
+
 implementation: WITH
 ##
 ## Ends in an error in state: 0.
