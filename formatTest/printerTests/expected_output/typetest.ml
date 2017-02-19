@@ -37,9 +37,9 @@ module Ppx_deriving_runtime =
     include Pervasives
   end
 type mytype =
-  | Int of string
-  | Float of int list
-  | String
+  | Int of string 
+  | Float of int list 
+  | String 
 let rec (pp_mytype : Format.formatter -> mytype -> Ppx_deriving_runtime.unit)
   =
   ((let open! Ppx_deriving_runtime in
@@ -62,8 +62,10 @@ let rec (pp_mytype : Format.formatter -> mytype -> Ppx_deriving_runtime.unit)
                            true) false x);
                  Format.fprintf fmt "@,]@]")) a0;
              Format.fprintf fmt "@])")
-        | String  -> Format.pp_print_string fmt "String")[@ocaml.warning
-                                                           "-A"])
-and show_mytype : mytype -> Ppx_deriving_runtime.string=
+        | String  -> Format.pp_print_string fmt "String")
+  [@ocaml.warning "-A"])
+
+and show_mytype : mytype -> Ppx_deriving_runtime.string =
   fun x  -> Format.asprintf "%a" pp_mytype x
-let () = print_endline (show_mytype ((Int ("five"))[@explicit_arity ]))
+
+let () = print_endline (show_mytype ((Int ("five"))[@explicit_arity ])) 
