@@ -95,7 +95,10 @@ endif
 
 .PHONY: pre_release
 
-release: pre_release
+release_check:
+	./release-check.sh
+
+release: release_check pre_release
 	git add package.json package.ml opam
 	git commit -m "Version $(version)"
 	git tag -a $(version) -m "Version $(version)."
