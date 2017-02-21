@@ -4,9 +4,7 @@ open Ocamlbuild_plugin
 let ext_obj = !Options.ext_obj;;
 let x_o = "%"-.-ext_obj;;
 
-let should_add_printers =
-  if Sys.getenv "REFMT_ADD_PRINTERS" = "true" then " --add-printers" else ""
-let refmt = "refmt --print binary" ^ should_add_printers
+let refmt = "refmt --print binary --add-printers"
 
 let ocamldep_command' tags =
   let tags' = tags++"ocaml"++"ocamldep" in
