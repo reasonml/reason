@@ -9,9 +9,9 @@ dependencies:
         - opam switch 4.02.3
         - eval `opam config env`
         - opam update
+        - opam pin add -y reason .
 
 test:
     override:
-        - opam pin add -y reason .
         - make test
         - git diff --exit-code
