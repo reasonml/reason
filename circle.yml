@@ -3,11 +3,12 @@
 dependencies:
     cache_directories:
        - "~/.opam"
+       - "~/aptcache"
     override:
 # https://discuss.circleci.com/t/caching-apt-get-packages/9076 to cache apt packages
         - sudo add-apt-repository -y ppa:avsm/ppa
-        - sudo apt-get update -y
-        - sudo apt-get install -y ocaml ocaml-native-compilers opam
+        - sudo apt-get update -o dir::cache::archives="/home/ubuntu/aptcache" -y
+        - sudo apt-get install -o dir::cache::archives="/home/ubuntu/aptcache" -y ocaml ocaml-native-compilers opam
         - opam init --auto-setup --dot-profile=~/.bashrc # Modify dotfiles
         - opam switch 4.02.3
         - eval `opam config env`
