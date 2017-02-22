@@ -182,14 +182,16 @@ let create_auto_printer_mapper =
         (ty, Some (Str.value Recursive printer))
     | ty -> (ty, None)
   in
-  let find_and_attach_printers _ decls =
-    let maybe_concat acc = function
-      | (s, None) -> s::acc
-      | (s, Some x) -> x::s::acc
+  { default_mapper with structure = begin fun mapper decls ->
+    let decls =
+      let maybe_concat acc = function
+        | (s, None) -> s::acc
+        | (s, Some x) -> x::s::acc
+      in
+      List.rev (List.fold_left maybe_concat [] (List.map attach_printer decls))
     in
-    List.rev (List.fold_left maybe_concat [] (List.map attach_printer decls))
-  in
-  { default_mapper with structure = find_and_attach_printers }
+    default_mapper.structure mapper decls
+  end }
 
 (** unescape_stars_slashes_mapper unescapes all stars and slases in an AST
   *)
