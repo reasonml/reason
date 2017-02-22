@@ -1,4 +1,6 @@
 dependencies:
+    cache_directories:
+        - "~/.opam"
     override:
         - sudo add-apt-repository -y ppa:avsm/ppa
         - sudo apt-get update -y
