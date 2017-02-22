@@ -96,7 +96,7 @@ endif
 .PHONY: pre_release
 
 release_check:
-	./release-check.sh
+	./scripts/release-check.sh
 
 release: release_check pre_release
 	git add package.json package.ml opam
