@@ -7,16 +7,13 @@ dependencies:
         - sudo apt-get update -o dir::cache::archives="/home/ubuntu/aptcache" -y
         - sudo apt-get install -o dir::cache::archives="/home/ubuntu/aptcache" -y ocaml ocaml-native-compilers opam
         - opam init --auto-setup --dot-profile=~/.bashrc # Modify dotfiles
-        - opam switch 4.02.3
-        - eval `opam config env`
-        - opam update
-        - opam pin add -y reason .
-
-compile:
-    override:
-        - make build
+        - opam switch --no-switch 4.02.3 # Download and compile all the versions
+        - opam switch --no-switch 4.03.0
+        - opam switch --no-switch 4.04.0
 
 test:
     override:
-        - make test
+        - ./test-with-version.sh 4.02.3
+        - ./test-with-version.sh 4.03.0
+        - ./test-with-version.sh 4.04.0
         - git diff --exit-code
