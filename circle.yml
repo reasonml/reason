@@ -7,9 +7,9 @@ dependencies:
     override:
 # https://discuss.circleci.com/t/caching-apt-get-packages/9076 to cache apt packages
         - sudo add-apt-repository -y ppa:avsm/ppa
-        - mkdir -p ~/aptcache/partial
-        - touch ~/aptcache/lock
-        - chmod 640 ~/aptcache/lock
+        - sudo mkdir -p ~/aptcache/partial
+        - sudo touch ~/aptcache/lock
+        - sudo chmod 640 ~/aptcache/lock
         - sudo apt-get update -o dir::cache::archives="/home/ubuntu/aptcache" -y
         - sudo apt-get install -o dir::cache::archives="/home/ubuntu/aptcache" -y ocaml ocaml-native-compilers opam
         - opam init --auto-setup --dot-profile=~/.bashrc # Modify dotfiles
