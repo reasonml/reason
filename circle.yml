@@ -1,0 +1,25 @@
+dependencies:
+    cache_directories:
+       - "~/.opam"
+       - "~/aptcache"
+    override:
+        - sudo add-apt-repository -y ppa:avsm/ppa
+        # BEGIN apt cache setup. Used in case cache is wiped.
+        - sudo mkdir -p ~/aptcache/partial
+        - sudo touch ~/aptcache/lock
+        - sudo chmod 640 ~/aptcache/lock
+        # END apt cache setup.
+        - sudo apt-get update -o dir::cache::archives="/home/ubuntu/aptcache" -y
+        - sudo apt-get install -o dir::cache::archives="/home/ubuntu/aptcache" -y ocaml ocaml-native-compilers opam
+        - opam init --auto-setup --dot-profile=~/.bashrc # Modify dotfiles
+        - opam switch --no-switch 4.02.3 # Download and compile all the versions
+        - opam switch --no-switch 4.03.0
+        - opam switch --no-switch 4.04.0
+
+test:
+    override:
+        - ./test-with-version.sh 4.02.3
+        # # Add back when multi-version support lands:
+        # - ./test-with-version.sh 4.03.0
+        # - ./test-with-version.sh 4.04.0
+        - git diff --exit-code
