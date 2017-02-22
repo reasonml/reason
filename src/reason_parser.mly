@@ -646,13 +646,6 @@ let mkcf_attrs ?(loc=dummy_loc()) d attrs =
 let mkctf_attrs d attrs =
   Ctf.mk ~attrs d
 
-let add_nonrec rf attrs =
-  match rf.txt with
-  | Recursive -> attrs
-  | Nonrecursive ->
-      let name = { txt = "nonrec"; loc = rf.loc } in
-        (name, PStr []) :: attrs
-
 type let_binding =
   { lb_pattern: pattern;
     lb_expression: expression;
