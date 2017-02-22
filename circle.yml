@@ -14,6 +14,7 @@ dependencies:
 test:
     override:
         - ./test-with-version.sh 4.02.3
-        - ./test-with-version.sh 4.03.0
-        - ./test-with-version.sh 4.04.0
+        # # Add back when multi-version support lands:
+        # - ./test-with-version.sh 4.03.0
+        # - ./test-with-version.sh 4.04.0
         - git diff --exit-code
