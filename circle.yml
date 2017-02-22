@@ -1,3 +1,5 @@
+# https://discuss.circleci.com/t/add-ability-to-cache-apt-get-programs/598/4
+
 dependencies:
     cache_directories:
        - "~/.opam"
@@ -6,7 +8,7 @@ dependencies:
         - sudo add-apt-repository -y ppa:avsm/ppa
         - sudo apt-get update -y
         - sudo apt-get install -y ocaml ocaml-native-compilers opam
-        - opam init --auto-setup # Modify dotfiles
+        - opam init --auto-setup --dot-profile=~/.bashrc # Modify dotfiles
         - opam switch 4.02.3
         - eval `opam config env`
         - opam update
@@ -18,5 +20,5 @@ compile:
 
 test:
     override:
-        - PATH="~/.opam/4.02.3/bin/:$PATH" make test
+        - make test
         - git diff --exit-code
