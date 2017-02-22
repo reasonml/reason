@@ -1,7 +1,8 @@
 dependencies:
-    cache_directories:
-        - "~/.opam"
+#    cache_directories:
+#       - "~/.opam"
     override:
+# https://discuss.circleci.com/t/caching-apt-get-packages/9076 to cache apt packages
         - sudo add-apt-repository -y ppa:avsm/ppa
         - sudo apt-get update -y
         - sudo apt-get install -y ocaml ocaml-native-compilers opam
@@ -10,6 +11,10 @@ dependencies:
         - eval `opam config env`
         - opam update
         - opam pin add -y reason .
+
+compile:
+    override:
+        - make build
 
 test:
     override:
