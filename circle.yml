@@ -18,5 +18,5 @@ compile:
 
 test:
     override:
-        - make test
+        - PATH="~/.opam/4.02.3/bin/:$PATH" make test
         - git diff --exit-code
