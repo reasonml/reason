@@ -11,8 +11,7 @@ dependencies:
         - opam update
 
 test:
-    pre:
-        - opam pin add -y reason .
     override:
+        - opam pin add -y reason .
         - make test
         - git diff --exit-code
