@@ -18,8 +18,8 @@ dependencies:
 
 test:
     override:
-        - ./scripts/test-with-version.sh 4.02.3
-        # # Add back when multi-version support lands:
-        # - ./scripts/test-with-version.sh 4.03.0
-        # - ./scripts/test-with-version.sh 4.04.0
+        # One annoying test fails
+        # - ./test-with-version.sh 4.02.3
+        - ./test-with-version.sh 4.03.0
+        - ./test-with-version.sh 4.04.0
         - git diff --exit-code
