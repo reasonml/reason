@@ -327,6 +327,12 @@ function printer_test() {
     OUTPUT=$3
     EXPECTED_OUTPUT=$4
 
+    VERSION_SPECIFIC_MLFILE="${MLFILE}.${OCAML_VERSION}"
+    if [ -f "${EXPECTED_OUTPUT}/${VERSION_SPECIFIC_MLFILE}" ]; then
+        echo "Found test file specific to version ${OCAML_VERSION}..."
+        MLFILE="${VERSION_SPECIFIC_MLFILE}"
+    fi
+
     info "Printer Test: $FILE"
     if [ "$(basename $FILE)" != "$(basename $FILE .ml)" ] || [ "$(basename $FILE)" != "$(basename $FILE .mli)" ]; then
       warning "  ⊘ FAILED: .ml files should not need to be run against printer tests. \n"
