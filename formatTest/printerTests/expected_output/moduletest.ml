@@ -1,20 +1,20 @@
 module Ppx_deriving_runtime =
   struct
-    type nonrec int = int[@@nonrec ]
-    type nonrec char = char[@@nonrec ]
-    type nonrec string = string[@@nonrec ]
-    type nonrec float = float[@@nonrec ]
-    type nonrec bool = bool[@@nonrec ]
-    type nonrec unit = unit[@@nonrec ]
-    type nonrec exn = exn[@@nonrec ]
-    type nonrec 'a array = 'a array[@@nonrec ]
-    type nonrec 'a list = 'a list[@@nonrec ]
-    type nonrec 'a option = 'a option[@@nonrec ]
-    type nonrec nativeint = nativeint[@@nonrec ]
-    type nonrec int32 = int32[@@nonrec ]
-    type nonrec int64 = int64[@@nonrec ]
-    type nonrec 'a lazy_t = 'a lazy_t[@@nonrec ]
-    type nonrec bytes = bytes[@@nonrec ]
+    type nonrec int = int
+    type nonrec char = char
+    type nonrec string = string
+    type nonrec float = float
+    type nonrec bool = bool
+    type nonrec unit = unit
+    type nonrec exn = exn
+    type nonrec 'a array = 'a array
+    type nonrec 'a list = 'a list
+    type nonrec 'a option = 'a option
+    type nonrec nativeint = nativeint
+    type nonrec int32 = int32
+    type nonrec int64 = int64
+    type nonrec 'a lazy_t = 'a lazy_t
+    type nonrec bytes = bytes
     module Pervasives = Pervasives
     module Char = Char
     module String = String
@@ -38,7 +38,7 @@ module Ppx_deriving_runtime =
   end
 module TestModule =
   struct
-    type twostrings = (string* string)
+    type twostrings = (string * string)
     let rec (pp_twostrings :
               Format.formatter -> twostrings -> Ppx_deriving_runtime.unit)
       =
@@ -49,10 +49,13 @@ module TestModule =
               ((Format.fprintf fmt "%S") a0;
                Format.fprintf fmt ",@ ";
                (Format.fprintf fmt "%S") a1);
-              Format.fprintf fmt "@])")[@ocaml.warning "-A"])
-    and show_twostrings : twostrings -> Ppx_deriving_runtime.string=
+              Format.fprintf fmt "@])")
+      [@ocaml.warning "-A"])
+    
+    and show_twostrings : twostrings -> Ppx_deriving_runtime.string =
       fun x  -> Format.asprintf "%a" pp_twostrings x
-    let mkPair s = (s, s)
+    
+    let mkPair s = (s, s) 
   end
-let twoStrings = TestModule.mkPair "hello"
-let () = print_endline (TestModule.show_twostrings twoStrings)
+let twoStrings = TestModule.mkPair "hello" 
+let () = print_endline (TestModule.show_twostrings twoStrings) 
