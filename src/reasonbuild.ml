@@ -4,8 +4,9 @@ open Ocamlbuild_plugin
 let ext_obj = !Options.ext_obj;;
 let x_o = "%"-.-ext_obj;;
 
-let should_add_printers = Sys.getenv("REASON_ADD_PRINTERS") = "true"
-let refmt = "refmt --print binary" ^ (if should_add_printers then " --add-printers" else "")
+let refmt = "refmt --print binary"
+let refmt_printers = refmt ^ " --add-printers"
+let add_printers_tag = "reason_add_printers"
 
 let ocamldep_command' tags =
   let tags' = tags++"ocaml"++"ocamldep" in
@@ -32,6 +33,7 @@ let compile_c ~impl ~native tags arg out =
     "ocaml" ++
     (if native then "native" else "byte") ++
     "compile" in
+  let refmt = if (Tags.mem add_printers_tag tags) then refmt_printers else refmt in
   let specs =
     [ if native then !Options.ocamlopt else !Options.ocamlc;
       A "-c";
@@ -71,6 +73,7 @@ let ocamldep_command ~impl arg out env _build =
     | last :: rev_prefix -> [Sh "|"; P "tee"] @ List.rev_append rev_prefix [Sh ">"; last] in
   let arg = env arg in
   let tags = tags_of_pathname arg in
+  let refmt = if (Tags.mem add_printers_tag tags) then refmt_printers else refmt in
   let specs =
     [ ocamldep_command' tags;
       A "-pp"; P refmt ]
@@ -79,6 +82,9 @@ let ocamldep_command ~impl arg out env _build =
   Cmd (S specs)
 
 ;;
+
+mark_tag_used add_printers_tag;;
+
 rule "rei -> cmi"
   ~prod:"%.cmi"
   ~deps:["%.rei"; "%.rei.depends"]
