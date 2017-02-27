@@ -9,13 +9,13 @@ HEADERR="Current HEAD is not on upstream master. This is a requirement before re
 If you are sure it is, try switching branches to master and pulling changes."
 HEADOK="Current HEAD is on upstream master."
 echo "Checking HEAD against upstream master..."
-curl --silent $MASTERURL | grep "sha" | grep $HEAD > /dev/null && echo $HEADOK || die "$HEADERR"
+curl --silent "${MASTERURL}" | grep "sha" | grep "${HEAD}" > /dev/null && echo "${HEADOK}" || die "${HEADERR}"
 
 # Confirm that the user actually means to release.
 RANDSTR=`head -c2 </dev/urandom | xxd -plain -u` # -u is uppercase
 echo "Do you want to release? This *WILL* publish to GitHub AND npm!!!"
 read -p "If so, please type '${RANDSTR}' (no quotes). Otherwise, type anything else: " inp
-if [ "$inp" = "$RANDSTR" ]; then
+if [ "$inp" = "${RANDSTR}" ]; then
     echo "Preparing to release..."
     exit 0
 else
