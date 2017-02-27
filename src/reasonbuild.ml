@@ -5,7 +5,6 @@ let ext_obj = !Options.ext_obj;;
 let x_o = "%"-.-ext_obj;;
 
 let refmt = "refmt --print binary"
-let refmt_printers = refmt ^ " --add-printers"
 let add_printers_tag = "reason_add_printers"
 
 let ocamldep_command' tags =
@@ -29,7 +28,7 @@ let impl_intf ~impl ?(intf_suffix=false) arg =
 
 let choose_refmt tags =
   if Tags.mem add_printers_tag tags
-  then refmt_printers
+  then refmt ^ " --add-printers"
   else refmt
 
 let compile_c ~impl ~native tags arg out =
