@@ -27,13 +27,18 @@ let impl_intf ~impl ?(intf_suffix=false) arg =
   [ A (if impl then "-impl" else "-intf");
     P arg ]
 
+let choose_refmt tags =
+  if Tags.mem add_printers_tag tags
+  then refmt_printers
+  else refmt
+
 let compile_c ~impl ~native tags arg out =
   let tags =
     tags ++
     "ocaml" ++
     (if native then "native" else "byte") ++
     "compile" in
-  let refmt = if (Tags.mem add_printers_tag tags) then refmt_printers else refmt in
+  let refmt = choose_refmt tags in
   let specs =
     [ if native then !Options.ocamlopt else !Options.ocamlc;
       A "-c";
@@ -45,17 +50,20 @@ let compile_c ~impl ~native tags arg out =
     @ impl_intf ~impl ~intf_suffix:true arg in
   Cmd (S specs)
 
+let union_tags re cm tag =
+  Tags.union (tags_of_pathname re) (tags_of_pathname cm)++"implem"+++tag
+
 let byte_compile_re_implem ?tag re cmo env build =
   let re = env re and cmo = env cmo in
   Ocaml_compiler.prepare_compile build re;
-  compile_c ~impl:true ~native:false (Tags.union (tags_of_pathname re) (tags_of_pathname cmo)++"implem"+++tag) re cmo
+  compile_c ~impl:true ~native:false (union_tags re cmo tag) re cmo
 
 let native_compile_re_implem ?tag ?(cmx_ext="cmx") re env build =
   let re = env re in
   let cmi = Pathname.update_extensions "cmi" re in
   let cmx = Pathname.update_extensions cmx_ext re in
   Ocaml_compiler.prepare_link cmx cmi [cmx_ext; "cmi"] build;
-  compile_c ~impl:true ~native:true (Tags.union (tags_of_pathname re) (tags_of_pathname cmx)++"implem"+++tag) re cmx
+  compile_c ~impl:true ~native:true (union_tags re cmx tag) re cmx
 
 let compile_ocaml_interf rei cmi env build =
   let rei = env rei and cmi = env cmi in
@@ -73,7 +81,7 @@ let ocamldep_command ~impl arg out env _build =
     | last :: rev_prefix -> [Sh "|"; P "tee"] @ List.rev_append rev_prefix [Sh ">"; last] in
   let arg = env arg in
   let tags = tags_of_pathname arg in
-  let refmt = if (Tags.mem add_printers_tag tags) then refmt_printers else refmt in
+  let refmt = choose_refmt tags in
   let specs =
     [ ocamldep_command' tags;
       A "-pp"; P refmt ]
