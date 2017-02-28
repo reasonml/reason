@@ -1,4 +1,4 @@
-PKG utop merlin_extend compiler-libs easy-format MenhirLib cmdliner
+PKG utop merlin_extend compiler-libs easy-format MenhirLib cmdliner ocamlbuild
 B _build/src
 B _build
 # ^ for package.ml -- avoids errors in Merlin
