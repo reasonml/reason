@@ -5,7 +5,7 @@ let ext_obj = !Options.ext_obj;;
 let x_o = "%"-.-ext_obj;;
 
 let refmt = "refmt --print binary"
-let add_printers_tag = "reason_add_printers"
+let add_printers_tag = "reason.add_printers"
 
 let ocamldep_command' tags =
   let tags' = tags++"ocaml"++"ocamldep" in
