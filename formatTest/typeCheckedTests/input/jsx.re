@@ -370,3 +370,14 @@ span children::[] test::true foo::2 () [@bla][@JSX];
 
 Optional1.createElement children::[] required::(Some "hi") () [@JSX][@bla];
 Optional1.createElement children::[] required::(Some "hi") () [@bla][@JSX];
+
+/* Overeager JSX punning #1099 */
+module Metal = {
+  let fiber = "fiber";
+};
+
+module OverEager = {
+  let createElement ::fiber ::children () => {displayName: "test"};
+};
+
+let element = <OverEager fiber=Metal.fiber />;

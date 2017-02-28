@@ -585,3 +585,16 @@ notReallyJSX foo::1 [] bar::2 [@JSX] [@bla];
 <Optional1 required=(Some "hi") /> [@bla];
 
 <Optional1 required=(Some "hi") /> [@bla];
+
+/* Overeager JSX punning #1099 */
+module Metal = {
+  let fiber = "fiber";
+};
+
+module OverEager = {
+  let createElement ::fiber ::children () => {
+    displayName: "test"
+  };
+};
+
+let element = <OverEager fiber=Metal.fiber />;
