@@ -23,3 +23,7 @@ src/reason_parser.messages.bak
 src/reason_parser_message.ml
 *~
 node_modules
+/bspacks/*.ml
+/bspacks/bspack_source/*.cm*
+/bspacks/bspack_source/*.o
+/bspacks/bspack_source/*.exe
