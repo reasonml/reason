@@ -368,3 +368,13 @@ module Graph = {
 
 type Graph.node +=
   | Str = Graph.Str;
+
+type water = ..;
+
+type water += pri Ocean;
+
+type water += pri MineralWater | SpringWater | TapWater | TableWater;
+
+type Graph.node += pri Node = Expr.Node;
+
+type Graph.node += pri | Node = Expr.Node | Atom = Expr.Atom;
