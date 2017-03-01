@@ -490,11 +490,9 @@ let listPatternMayEvenIncludeAliases x =>
 type attr = ..;
 
 /* `of` is optional */
-type attr +=
-  | Str string;
+type attr += Str string;
 
-type attr +=
-  | Point int int;
+type attr += Point int int;
 
 type attr +=
   | Float float
@@ -512,5 +510,22 @@ module Graph = {
   type node = ..;
 };
 
+type Graph.node += Str = Graph.Str;
+
+type water = ..;
+
+type water += pri Ocean;
+
+type water +=
+  pri
+  | MineralWater
+  | SpringWater
+  | TapWater
+  | TableWater;
+
+type Graph.node += pri Node = Expr.Node;
+
 type Graph.node +=
-  | Str = Graph.Str;
+  pri
+  | Node = Expr.Node
+  | Atom = Expr.Atom;
