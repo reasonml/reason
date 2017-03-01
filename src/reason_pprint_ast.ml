@@ -3672,7 +3672,8 @@ class printer  ()= object(self:'self)
       | (lbl, expression) :: tail ->
          let nextAttr =
            match expression.pexp_desc with
-           | Pexp_ident (ident) when (Longident.last ident.txt) = lbl -> atom lbl
+           | Pexp_ident (ident) when ((isLongIdentWithDot ident.txt) == false 
+                                        && (Longident.last ident.txt) = lbl) -> atom lbl
            | _ -> (
              let firstChar = String.get lbl 0 in
              if firstChar == '?' then
