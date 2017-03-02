@@ -2456,13 +2456,10 @@ class printer  ()= object(self:'self)
     let privatize scope lst = match scope with
       | Public -> lst
       | Private -> privateAtom::lst in
-    let ctrsLength = List.length te.ptyext_constructors in
-    let omitBar = ctrsLength == 1 in
     let equalInitiatedSegments =
-      let segments = List.map (self#type_extension_binding_segments ~omitBar) te.ptyext_constructors in
+      let segments = List.map self#type_extension_binding_segments te.ptyext_constructors in
       let privatized_segments = privatize te.ptyext_private segments in
-      let break = if ctrsLength > 1 then Always_rec else IfNeed in
-      [makeList ~break ~postSpace:true ~inline:(true, true) privatized_segments] in
+      [makeList ~break:Always_rec ~postSpace:true ~inline:(true, true) privatized_segments] in
     let formattedTypeParams = List.map self#type_param te.ptyext_params in
     let binding = makeList ~postSpace:true (prepend::name::[]) in
     let labelWithParams = match formattedTypeParams with
@@ -2477,7 +2474,7 @@ class printer  ()= object(self:'self)
     in
     SourceMap (te.ptyext_path.loc, everything)
 
-  method type_extension_binding_segments ~omitBar {pext_kind; pext_loc; pext_attributes; pext_name} =
+  method type_extension_binding_segments {pext_kind; pext_loc; pext_attributes; pext_name} =
     let normalize lst = match lst with
         | [] -> raise (NotPossible "should not be called")
         | [hd] -> hd
@@ -2485,15 +2482,11 @@ class printer  ()= object(self:'self)
       in
       let add_bar name args =
         let lbl = label ~space:true name args in
-        if omitBar == true
-          then lbl
-          else makeList ~postSpace:true [atom "|"; lbl]
+        makeList ~postSpace:true [atom "|"; lbl]
       in
     let sourceMappedName = SourceMap (pext_name.loc, atom pext_name.txt) in
     let nameOf = makeList ~postSpace:true [sourceMappedName] in
-    let barName = if (omitBar == true)
-      then sourceMappedName
-      else makeList ~postSpace:true [atom "|"; sourceMappedName] in
+    let barName = makeList ~postSpace:true [atom "|"; sourceMappedName] in
     let resolved = match pext_kind with
       | Pext_decl (ctor_args, gadt) ->
         let formattedArgs = match ctor_args with
