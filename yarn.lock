@@ -42,12 +42,6 @@
   dependencies:
     ocamlfind-actual "git+https://github.com/npm-opam/ocamlfind.git#1.6.2"
 
-"@opam-alpha/result@1.2.0":
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/@opam-alpha/result/-/result-1.2.0.tgz#cdb0a208f6c6c0be98748eeedb63a3982ace6f71"
-  dependencies:
-    result-actual "git://github.com/npm-opam/result.git#1.2.0"
-
 "camomile-bin@https://github.com/reasonml/camomile-bin":
   version "0.8.5"
   resolved "https://github.com/reasonml/camomile-bin#08f5d6115b76d46897af47b9ee8e70a55973b40f"
@@ -169,15 +163,6 @@ nopam@*:
 resolve@^1.1.7:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/resolve/-/resolve-1.2.0.tgz#9589c3f2f6149d1417a40becc1663db6ec6bc26c"
-
-"result-actual@git://github.com/npm-opam/result.git#1.2.0":
-  version "1.2.0"
-  resolved "git://github.com/npm-opam/result.git#4d1f6b57414dd336a37b8fad935bf7a9a78c884b"
-  dependencies:
-    dependency-env "https://github.com/npm-ml/dependency-env.git"
-    nopam "https://github.com/yunxing/nopam.git"
-    opam-installer-bin "https://github.com/yunxing/opam-installer-bin.git"
-    substs "https://github.com/yunxing/substs.git"
 
 "substs@https://github.com/yunxing/substs.git":
   version "0.0.1"
