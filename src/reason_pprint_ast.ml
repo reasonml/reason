@@ -2305,7 +2305,10 @@ class printer  ()= object(self:'self)
   method longident_class_or_type_loc x = self#longident x.txt
   (* TODO: Fail if observing applicative functors for this form. *)
   method longident_loc (x:Longident.t Location.loc) = SourceMap (x.loc, self#longident (x.txt))
-  method constant = wrap default#constant
+  method constant = function
+    | Const_int i -> atom (string_of_int i)
+    | Const_float i -> atom i
+    | x -> wrap default#constant x
 
   method constant_string = wrap default#constant_string
   method tyvar = wrap default#tyvar
