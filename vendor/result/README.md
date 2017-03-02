@@ -1,0 +1,2 @@
+This is copied over from https://github.com/janestreet/result/blob/master/result-as-newtype.ml
+After the switch to OCaml 4.03, we should use https://github.com/janestreet/result/blob/master/result-as-alias.ml instead.

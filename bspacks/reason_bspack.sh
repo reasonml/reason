@@ -18,7 +18,7 @@ rm -f refmt_main.ml
 rm -f reactjs_ppx.ml
 
 echo "* Packing refmt"
-./bspack_source/bspack.exe -I `menhir --suggest-menhirLib` -bs-main Refmt_impl -I ../_build/src -I ../_build -I ../vendor/cmdliner -I ../vendor/easy_format/ -I ../vendor/ppx_deriving/ -o refmt_main.ml
+./bspack_source/bspack.exe -I `menhir --suggest-menhirLib` -bs-main Refmt_impl -I ../_build/src -I ../_build -I ../vendor/cmdliner -I ../vendor/easy_format/ -I ../vendor/ppx_deriving/ -I ../vendor/result/ -o refmt_main.ml
 
 echo "* Packing reactjs_ppx"
 ./bspack_source/bspack.exe -I `menhir --suggest-menhirLib` -bs-main Reactjs_jsx_ppx -I ../_build/src -I ../vendor/cmdliner -I ../vendor/easy_format/ -I ../vendor/ppx_deriving/ -o reactjs_ppx.ml
