@@ -1,7 +1,7 @@
 
 opam-version: "1.2"
 name: "reason"
-version: "1.8.2"
+version: "1.9.0"
 maintainer: "Jordan Walke <jordojw@gmail.com>"
 authors: [ "Jordan Walke <jordojw@gmail.com>" ]
 license: "BSD"
