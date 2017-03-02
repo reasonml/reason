@@ -24,6 +24,6 @@ src/reason_parser_message.ml
 *~
 node_modules
 /bspacks/*.ml
-/bspacks/bspack_source/*.cm*
-/bspacks/bspack_source/*.o
-/bspacks/bspack_source/*.exe
+/bspacks/**/*.cm*
+/bspacks/**/*.o
+/bspacks/**/*.exe
