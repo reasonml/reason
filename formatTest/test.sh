@@ -140,6 +140,7 @@ function unit_test() {
     FILENAME=$(basename $FILE)
     FILEEXT="${FILENAME##*.}"
 
+
     info "Unit Test: $FILE"
     if [ "$(basename $FILE)" != "$(basename $FILE .ml)" ] || [ "$(basename $FILE)" != "$(basename $FILE .mli)" ]; then
         if [ "$(basename $FILE)" != "$(basename $FILE .ml)" ]; then
@@ -159,21 +160,28 @@ function unit_test() {
       $REFMT --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE
     fi
 
-    debug "  Comparing results:  diff $OUTPUT/$FILE $EXPECTED_OUTPUT/$FILE"
+    OFILE="${FILE}"
+    VERSION_SPECIFIC_FILE="${FILE}.${OCAML_VERSION}"
+    if [ -f "${EXPECTED_OUTPUT}/${VERSION_SPECIFIC_FILE}" ]; then
+        echo "Found test file specific to version ${OCAML_VERSION}..."
+        OFILE="${VERSION_SPECIFIC_FILE}"
+    fi
 
-    diff --unchanged-line-format="" --new-line-format=":%dn: %L" --old-line-format=":%dn: %L" $OUTPUT/$FILE $EXPECTED_OUTPUT/$FILE
+    debug "  Comparing results:  diff $OUTPUT/$FILE $EXPECTED_OUTPUT/$OFILE"
+
+    diff --unchanged-line-format="" --new-line-format=":%dn: %L" --old-line-format=":%dn: %L" $OUTPUT/$FILE $EXPECTED_OUTPUT/$OFILE
 
     if ! [[ $? -eq 0 ]]; then
         warning "  ⊘ FAILED\n"
         info "  ${INFO}$OUTPUT/$FILE${RESET}"
         info "  doesn't match expected output"
-        info "  ${INFO}$EXPECTED_OUTPUT/$FILE${RESET}"
+        info "  ${INFO}$EXPECTED_OUTPUT/$OFILE${RESET}"
         echo ""
         return 1
     fi
 
     debug "Testing --use-stdin"
-    stdin_test $INPUT/$1 $OUTPUT/$FILE $EXPECTED_OUTPUT/$FILE $INPUT/arity.txt
+    stdin_test $INPUT/$1 $OUTPUT/$FILE $EXPECTED_OUTPUT/$OFILE $INPUT/arity.txt
 
     if ! [[ $? -eq 0 ]]; then
       return 1
