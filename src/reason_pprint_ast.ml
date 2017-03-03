@@ -3683,7 +3683,8 @@ class printer  ()= object(self:'self)
       | (Labelled lbl, expression) :: tail ->
          let nextAttr =
            match expression.pexp_desc with
-           | Pexp_ident (ident) when (Longident.last ident.txt) = lbl -> atom lbl
+           | Pexp_ident (ident) when ((isLongIdentWithDot ident.txt) == false
+                                        && (Longident.last ident.txt) = lbl) -> atom lbl
            | _ -> makeList ([atom lbl; atom "="; self#simplifyUnparseExpr expression])
          in
          processArguments tail (nextAttr :: processedAttrs) children

@@ -184,7 +184,7 @@ let a = <Foo a=a>5</Foo>;
 let a = <Foo a=b>5</Foo>;
 let a = <Foo a=b b=d>5</Foo>;
 let a = <Foo a>0.55</Foo>;
-let a = [@JSX] Foo.createElement children::[] ();
+let a = Foo.createElement children::[] () [@JSX];
 let ident = <Foo>{a}</Foo>;
 let fragment1 = <> <Foo /> <Foo /> </>;
 let fragment2 = <> <Foo /> <Foo /> </>;
@@ -273,18 +273,18 @@ let sameButWithSpaces = [<Foo />, <Bar />, ...sameButWithSpaces];
 type thisType = [`Foo  | `Bar];
 type t 'a = [< thisType ] as 'a;
 
-let asd = [@JSX] [@foo] (One.createElement test::true foo::2 children::["a", "b"] ());
-let asd2 = [@JSX] [@foo] (One.createElementobvioustypo test::false children::["a", "b"] ());
+let asd = (One.createElement test::true foo::2 children::["a", "b"] ()) [@JSX] [@foo];
+let asd2 = (One.createElementobvioustypo test::false children::["a", "b"] ()) [@JSX] [@foo];
 
 let span test::(test : bool) foo::(foo : int) ::children () => 1;
-let asd = [@JSX] [@foo] span test::true foo::2 children::["a", "b"] ();
+let asd = span test::true foo::2 children::["a", "b"] ()[@JSX] [@foo];
 /* "video" call doesn't end with a list, so the expression isn't converted to JSX */
 let video test::(test : bool) children => children;
-let asd2 = [@JSX] [@foo] video test::false 10;
+let asd2 = video test::false 10 [@JSX] [@foo];
 
 
 let div ::children => 1;
-[@JSX] (((fun () => div) ()) children::[]);
+(((fun () => div) ()) children::[])[@JSX];
 
 let myFun () => {
   <>
@@ -354,19 +354,30 @@ fakeRender defaultArg;
 let defaultArg = <DefaultArg default=zzz />;
 fakeRender defaultArg;
 
-[@JSX][@bla] NotReallyJSX.createElement [] foo::1 bar::2;
-[@bla][@JSX] NotReallyJSX.createElement foo::1 [] bar::2;
-[@JSX][@bla] notReallyJSX [] foo::1;
-[@bla][@JSX] notReallyJSX foo::1 [] bar::2;
+NotReallyJSX.createElement [] foo::1 bar::2 [@JSX][@bla];
+NotReallyJSX.createElement foo::1 [] bar::2 [@bla][@JSX];
+notReallyJSX [] foo::1 [@JSX][@bla];
+notReallyJSX foo::1 [] bar::2 [@bla][@JSX];
 
 /* children can be at any position */
-[@JSX] span children::[] test::true foo::2 ();
+span children::[] test::true foo::2 () [@JSX];
 
-[@JSX] Optional1.createElement children::[] required::(Some "hi") ();
+Optional1.createElement children::[] required::(Some "hi") () [@JSX];
 
 /* preserve some other attributes too! */
-[@JSX][@bla] span children::[] test::true foo::2 ();
-[@bla][@JSX] span children::[] test::true foo::2 ();
+span children::[] test::true foo::2 () [@JSX][@bla];
+span children::[] test::true foo::2 () [@bla][@JSX];
 
-[@JSX][@bla] Optional1.createElement children::[] required::(Some "hi") ();
-[@bla][@JSX] Optional1.createElement children::[] required::(Some "hi") ();
+Optional1.createElement children::[] required::(Some "hi") () [@JSX][@bla];
+Optional1.createElement children::[] required::(Some "hi") () [@bla][@JSX];
+
+/* Overeager JSX punning #1099 */
+module Metal = {
+  let fiber = "fiber";
+};
+
+module OverEager = {
+  let createElement ::fiber ::children () => {displayName: "test"};
+};
+
+let element = <OverEager fiber=Metal.fiber />;

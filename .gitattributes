@@ -6,3 +6,5 @@ docs/templates/** binary
 docs/theme-white/** binary
 docs/test/** binary
 docs/flatdoc.js binary
+
+bspacks/bspack_source/* binary

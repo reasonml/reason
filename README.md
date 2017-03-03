@@ -112,9 +112,9 @@ opam pin add -y reason .
 License
 -------
 
-New content is licensed under the MIT license, works that are forked from other
-projects are under their original licenses.
-[MIT license](LICENSE.txt)
+See Reason license in [LICENSE.txt](LICENSE.txt).
+
+Works that are forked from other projects are under their original licenses.
 
 Editor plugins (which have also been forked) in the `editorSupport/` directory
 include their own licenses.
