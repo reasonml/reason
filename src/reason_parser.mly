@@ -1097,6 +1097,8 @@ conflicts.
  * of PREFIXOP have the unary precedence parsing behavior for consistency.
  */
 
+%nonassoc attribute_precedence
+
 %nonassoc prec_unary_minus prec_unary_plus /* unary - */
 %nonassoc prec_constant_constructor     /* cf. simple_expr (C versus C x) */
 /* Now that commas require wrapping parens (for tuples), prec_constr_appl no
@@ -1109,9 +1111,6 @@ conflicts.
 %left     SHARPOP
 %nonassoc below_DOT
 %nonassoc DOT
-
-%nonassoc below_LBRACKETAT
-%nonassoc LBRACKETAT
 
 /* Finally, the first tokens of simple_expr are above everything else. */
 %nonassoc BACKQUOTE BANG CHAR FALSE FLOAT INT
@@ -1370,8 +1369,8 @@ _module_expr:
       { unclosed_mod (with_txt $1 "(") (with_txt $5 ")") }
   | as_loc(LPAREN) VAL expr as_loc(error)
       { unclosed_mod (with_txt $1 "(") (with_txt $4 ")") }
-  | module_expr attribute
-      { Mod.attr $1 $2 }
+  | attribute module_expr %prec attribute_precedence
+      { Mod.attr $2 $1 }
 ;
 
 /**
@@ -1492,14 +1491,14 @@ structure_item_without_item_extension_sugar:
 _structure_item_without_item_extension_sugar:
   /* We consider a floating expression to be equivalent to a single let binding
      to the "_" (any) pattern.  */
-  | expr post_item_attributes {
-      mkstrexp $1 $2
+  | post_item_attributes expr {
+      mkstrexp $2 $1
     }
-  | EXTERNAL as_loc(val_ident) COLON core_type EQUAL primitive_declaration post_item_attributes {
+  | post_item_attributes EXTERNAL as_loc(val_ident) COLON core_type EQUAL primitive_declaration {
       let loc = mklocation $symbolstartpos $endpos in
-      let core_loc = mklocation $startpos($4) $endpos($4) in
+      let core_loc = mklocation $startpos($5) $endpos($5) in
       mkstr
-        (Pstr_primitive (Val.mk $2 (only_core_type $4 core_loc) ~prim:$6 ~attrs:$7 ~loc))
+        (Pstr_primitive (Val.mk $3 (only_core_type $5 core_loc) ~prim:$7 ~attrs:$1 ~loc))
     }
   | many_type_declarations {
       let (nonrec_flag, tyl) = $1 in
@@ -1511,24 +1510,24 @@ _structure_item_without_item_extension_sugar:
   | str_exception_declaration {
       mkstr(Pstr_exception $1)
     }
-  | opt_let_module nonlocal_module_binding_details post_item_attributes {
-      let (ident, body) = $2 in
+  | post_item_attributes opt_let_module nonlocal_module_binding_details {
+      let (ident, body) = $3 in
       let loc = mklocation $symbolstartpos $endpos in
-      mkstr(Pstr_module (Mb.mk ident body ~attrs:$3 ~loc))
+      mkstr(Pstr_module (Mb.mk ident body ~attrs:$1 ~loc))
     }
   | many_nonlocal_module_bindings {
       mkstr(Pstr_recmodule(List.rev $1))
     }
-  | MODULE TYPE OF? as_loc(ident) post_item_attributes {
-      let item_attrs = $5 in
-      let ident = $4 in
+  | post_item_attributes MODULE TYPE OF? as_loc(ident) {
+      let item_attrs = $1 in
+      let ident = $5 in
       let loc = mklocation $symbolstartpos $endpos in
       mkstr(Pstr_modtype (Mtd.mk ident ~attrs:item_attrs ~loc))
     }
-  | MODULE TYPE OF? as_loc(ident) EQUAL module_type post_item_attributes {
-      let ident = $4 in
+  | post_item_attributes MODULE TYPE OF? as_loc(ident) EQUAL module_type {
+      let ident = $5 in
       let loc = mklocation $symbolstartpos $endpos in
-      mkstr(Pstr_modtype (Mtd.mk ident ~typ:$6 ~attrs:$7 ~loc))
+      mkstr(Pstr_modtype (Mtd.mk ident ~typ:$7 ~attrs:$1 ~loc))
     }
   | open_statement {
       mkstr(Pstr_open $1)
@@ -1541,14 +1540,14 @@ _structure_item_without_item_extension_sugar:
       (* Each declaration has their own preceeding post_item_attributes *)
       mkstr(Pstr_class_type (List.rev $1))
     }
-  | INCLUDE module_expr post_item_attributes {
+  | post_item_attributes INCLUDE module_expr {
       let loc = mklocation $symbolstartpos $endpos in
-      mkstr(Pstr_include (Incl.mk $2 ~attrs:$3 ~loc))
+      mkstr(Pstr_include (Incl.mk $3 ~attrs:$1 ~loc))
     }
-  | item_extension post_item_attributes {
+  | post_item_attributes item_extension {
     (* No sense in having item_extension_sugar for something that's already an
      * item_extension *)
-    mkstr(Pstr_extension ($1, $2))
+    mkstr(Pstr_extension ($2, $1))
   }
   | floating_attribute
       { mkstr(Pstr_attribute $1) }
@@ -1580,10 +1579,10 @@ module_binding_body:
   | module_binding_body_functor { $1 }
 
 many_nonlocal_module_bindings:
-  | opt_let_module REC nonlocal_module_binding_details post_item_attributes {
-    let (ident, body) = $3 in
+  | post_item_attributes opt_let_module REC nonlocal_module_binding_details {
+    let (ident, body) = $4 in
     let loc = mklocation $symbolstartpos $endpos in
-    [Mb.mk ident body ~attrs:$4 ~loc]
+    [Mb.mk ident body ~attrs:$1 ~loc]
   }
   | many_nonlocal_module_bindings and_nonlocal_module_bindings {
     $2::$1
@@ -1591,10 +1590,10 @@ many_nonlocal_module_bindings:
 ;
 
 and_nonlocal_module_bindings:
-  | AND nonlocal_module_binding_details post_item_attributes {
-    let (ident, body) = $2 in
+  | post_item_attributes AND nonlocal_module_binding_details {
+    let (ident, body) = $3 in
     let loc = mklocation $symbolstartpos $endpos in
-    Mb.mk ident body ~attrs:$3 ~loc
+    Mb.mk ident body ~attrs:$1 ~loc
   }
 ;
 
@@ -1624,10 +1623,10 @@ nonlocal_module_binding_details:
 non_arrowed_module_type: mark_position_mty(_non_arrowed_module_type) {$1}
 _non_arrowed_module_type:
   | simple_module_type {$1}
-  | MODULE TYPE OF module_expr %prec below_LBRACKETAT
+  | MODULE TYPE OF module_expr
       { mkmty(Pmty_typeof $4) }
-  | module_type attribute
-      { Mty.attr $1 $2 }
+  | attribute module_type %prec attribute_precedence
+      { Mty.attr $2 $1 }
 
 simple_module_type: mark_position_mty(_simple_module_type) {$1}
 _simple_module_type:
@@ -1678,7 +1677,7 @@ _module_type:
      *)
     mkmty(Pmty_with($1, List.rev $3))
   }
-  | non_arrowed_module_type %prec below_EQUALGREATER {
+  | non_arrowed_module_type {
     (* below_EQUALGREATER to prevent following shift reduce conflict:
      *  1158: shift/reduce conflict (shift 1285, reduce 75) on EQUALGREATER
      *  state 1158
@@ -1761,15 +1760,15 @@ signature:
 
 signature_item: mark_position_sig(_signature_item) { $1 }
 _signature_item:
-    LET as_loc(val_ident) COLON core_type post_item_attributes {
+    post_item_attributes LET as_loc(val_ident) COLON core_type {
         let loc = mklocation $symbolstartpos $endpos in
-        let core_type_loc = mklocation $startpos($4) $endpos($4) in
-        mksig(Psig_value (Val.mk $2 (only_core_type $4 core_type_loc) ~attrs:$5 ~loc))
+        let core_type_loc = mklocation $startpos($5) $endpos($5) in
+        mksig(Psig_value (Val.mk $3 (only_core_type $5 core_type_loc) ~attrs:$1 ~loc))
     }
-  | EXTERNAL as_loc(val_ident) COLON core_type EQUAL primitive_declaration post_item_attributes {
+  | post_item_attributes EXTERNAL as_loc(val_ident) COLON core_type EQUAL primitive_declaration {
       let loc = mklocation $symbolstartpos $endpos in
-      let core_type_loc = mklocation $startpos($4) $endpos($4) in
-      mksig(Psig_value (Val.mk $2 (only_core_type $4 core_type_loc) ~prim:$6 ~attrs:$7 ~loc))
+      let core_type_loc = mklocation $startpos($5) $endpos($5) in
+      mksig(Psig_value (Val.mk $3 (only_core_type $5 core_type_loc) ~prim:$7 ~attrs:$1 ~loc))
     }
   | many_type_declarations {
         let (nonrec_flag, tyl) = $1 in
@@ -1781,19 +1780,19 @@ _signature_item:
   | sig_exception_declaration {
       mksig(Psig_exception $1)
     }
-  | opt_let_module as_loc(UIDENT) module_declaration post_item_attributes {
+  | post_item_attributes opt_let_module as_loc(UIDENT) module_declaration {
       let loc = mklocation $symbolstartpos $endpos in
-      mksig(Psig_module (Md.mk $2 $3 ~attrs:$4 ~loc))
+      mksig(Psig_module (Md.mk $3 $4 ~attrs:$1 ~loc))
     }
-  | opt_let_module as_loc(UIDENT) EQUAL as_loc(mod_longident) post_item_attributes {
+  | post_item_attributes opt_let_module as_loc(UIDENT) EQUAL as_loc(mod_longident) {
       let loc = mklocation $symbolstartpos $endpos in
-      let loc_mod = mklocation $startpos($4) $endpos($4) in
+      let loc_mod = mklocation $startpos($5) $endpos($5) in
       mksig(
         Psig_module (
           Md.mk
-            $2
-            (Mty.alias ~loc:loc_mod $4)
-            ~attrs:$5
+            $3
+            (Mty.alias ~loc:loc_mod $5)
+            ~attrs:$1
             ~loc
         )
       )
@@ -1801,20 +1800,20 @@ _signature_item:
   | many_module_rec_declarations {
       mksig(Psig_recmodule (List.rev $1))
     }
-  | MODULE TYPE as_loc(ident) post_item_attributes {
+  | post_item_attributes MODULE TYPE as_loc(ident) {
       let loc = mklocation $symbolstartpos $endpos in
-      mksig(Psig_modtype (Mtd.mk $3 ~attrs:$4 ~loc))
+      mksig(Psig_modtype (Mtd.mk $4 ~attrs:$1 ~loc))
     }
-  | MODULE TYPE as_loc(ident) EQUAL module_type post_item_attributes {
+  | post_item_attributes MODULE TYPE as_loc(ident) EQUAL module_type {
       let loc = mklocation $symbolstartpos $endpos in
-      mksig(Psig_modtype (Mtd.mk $3 ~typ:$5 ~loc ~attrs:$6))
+      mksig(Psig_modtype (Mtd.mk $4 ~typ:$6 ~loc ~attrs:$1))
     }
   | open_statement {
       mksig(Psig_open $1)
     }
-  | INCLUDE module_type post_item_attributes {
+  | post_item_attributes INCLUDE module_type {
       let loc = mklocation $symbolstartpos $endpos in
-      mksig(Psig_include (Incl.mk $2 ~attrs:$3 ~loc))
+      mksig(Psig_include (Incl.mk $3 ~attrs:$1 ~loc))
     }
   | many_class_descriptions {
       mksig(Psig_class (List.rev $1))
@@ -1822,8 +1821,8 @@ _signature_item:
   | many_class_type_declarations {
       mksig(Psig_class_type (List.rev $1))
     }
-  | item_extension post_item_attributes {
-      mksig(Psig_extension ($1, $2))
+  | post_item_attributes item_extension {
+      mksig(Psig_extension ($2, $1))
     }
   | floating_attribute {
       mksig(Psig_attribute $1)
@@ -1831,10 +1830,10 @@ _signature_item:
 ;
 
 open_statement:
-  | OPEN override_flag as_loc(mod_longident) post_item_attributes
+  | post_item_attributes OPEN override_flag as_loc(mod_longident)
       {
         let loc = mklocation $symbolstartpos $endpos in
-        Opn.mk $3 ~override:$2 ~attrs:$4 ~loc
+        Opn.mk $4 ~override:$3 ~attrs:$1 ~loc
       }
 ;
 
@@ -1853,10 +1852,10 @@ module_rec_declaration_details:
 ;
 
 many_module_rec_declarations:
-  | opt_let_module REC module_rec_declaration_details post_item_attributes {
-      let (ident, body) = $3 in
+  | post_item_attributes opt_let_module REC module_rec_declaration_details {
+      let (ident, body) = $4 in
       let loc = mklocation $symbolstartpos $endpos in
-      [Md.mk ident body ~attrs:$4 ~loc]
+      [Md.mk ident body ~attrs:$1 ~loc]
     }
   | many_module_rec_declarations and_module_rec_declaration  {
       $2::$1
@@ -1864,10 +1863,10 @@ many_module_rec_declarations:
 ;
 
 and_module_rec_declaration:
-  | AND module_rec_declaration_details post_item_attributes {
-      let (ident, body) = $2 in
+  | post_item_attributes AND module_rec_declaration_details {
+      let (ident, body) = $3 in
       let loc = mklocation $symbolstartpos $endpos in
-      Md.mk ident body ~attrs:$3 ~loc
+      Md.mk ident body ~attrs:$1 ~loc
     }
 ;
 
@@ -1875,10 +1874,10 @@ and_module_rec_declaration:
 /* Class expressions */
 
 many_class_declarations:
-  | CLASS class_declaration_details post_item_attributes {
-    let (ident, binding, virt, params) = $2 in
+  | post_item_attributes CLASS class_declaration_details {
+    let (ident, binding, virt, params) = $3 in
     let loc = mklocation $symbolstartpos $endpos in
-    [Ci.mk ident binding ~virt ~params ~attrs:$3 ~loc]
+    [Ci.mk ident binding ~virt ~params ~attrs:$1 ~loc]
   }
   | many_class_declarations and_class_declaration {
     $2::$1
@@ -1886,10 +1885,10 @@ many_class_declarations:
 ;
 
 and_class_declaration:
-  AND class_declaration_details post_item_attributes {
-    let (ident, binding, virt, params) = $2 in
+  post_item_attributes AND class_declaration_details {
+    let (ident, binding, virt, params) = $3 in
     let loc = mklocation $symbolstartpos $endpos in
-    Ci.mk ident binding ~virt ~params ~attrs:$3 ~loc
+    Ci.mk ident binding ~virt ~params ~attrs:$1 ~loc
   }
 ;
 
@@ -1985,32 +1984,19 @@ _class_fun_def:
 
 class_expr_lets_and_rest: mark_position_cl(_class_expr_lets_and_rest) {$1}
 _class_expr_lets_and_rest:
-  | class_self_pattern_and_structure { mkclass(Pcl_structure $1)}
+  | semi_terminated_class_fields {
+    let loc = mklocation $symbolstartpos $endpos in
+    let self = mkpat (Ppat_var (mkloc "this" loc)) in
+    mkclass(Pcl_structure (Cstr.mk self $1))
+  }
+  | AS pattern SEMI semi_terminated_class_fields {
+    mkclass(Pcl_structure (Cstr.mk $2 $4))
+  }
   | class_expr {$1}
   | let_bindings SEMI class_expr_lets_and_rest {
     class_of_let_bindings $1 $3
   }
 ;
-
-class_self_pattern: mark_position_pat(_class_self_pattern) {$1}
-_class_self_pattern:
-  /* Empty is by default the pattern identifier [this] */
-  | {
-    let loc = mklocation $symbolstartpos $endpos in
-    mkpat (Ppat_var (mkloc "this" loc))
-  }
-  /* Whereas in OCaml, specifying nothing means "_", in Reason, you'd
-     have to explicity specify "_" (any) pattern. In Reason, writing nothing
-     is how you specify the "this" pattern. */
-  | AS pattern SEMI
-      { $2 }
-;
-
-class_self_pattern_and_structure:
-  | class_self_pattern semi_terminated_class_fields
-    { Cstr.mk $1 $2 }
-;
-
 class_expr: mark_position_cl(_class_expr) {$1}
 _class_expr:
     class_simple_expr
@@ -2026,8 +2012,8 @@ _class_expr:
        * let inst = new newclass;
        */
       { mkclass(Pcl_apply($1, List.rev $2)) }
-  | class_expr attribute
-      { Cl.attr $1 $2 }
+  | attribute class_expr
+      { Cl.attr $2 $1 }
 
   /*
     When referring to class expressions (not regular types that happen to be
@@ -2072,20 +2058,20 @@ _class_simple_expr:
 
 class_field: mark_position_cf(_class_field) {$1}
 _class_field:
-  | INHERIT override_flag class_expr parent_binder post_item_attributes
-      { mkcf_attrs (Pcf_inherit ($2, $3, $4)) $5 }
-  | VAL value post_item_attributes
-      { mkcf_attrs (Pcf_val $2) $3 }
-  | PUB method_ post_item_attributes
-      { let (a, b) = $2 in mkcf_attrs (Pcf_method (a, Public, b)) $3 }
-  | PRI method_ post_item_attributes
-        { let (a, b) = $2 in mkcf_attrs (Pcf_method (a, Private, b)) $3 }
-  | CONSTRAINT constrain_field post_item_attributes
-      { mkcf_attrs (Pcf_constraint $2) $3 }
-  | INITIALIZER EQUALGREATER expr post_item_attributes
-      { mkcf_attrs (Pcf_initializer $3) $4 }
-  | item_extension post_item_attributes
-      { mkcf_attrs (Pcf_extension $1) $2 }
+  | post_item_attributes INHERIT override_flag class_expr parent_binder
+      { mkcf_attrs (Pcf_inherit ($3, $4, $5)) $1 }
+  | post_item_attributes VAL value
+      { mkcf_attrs (Pcf_val $3) $1 }
+  | post_item_attributes PUB method_
+      { let (a, b) = $3 in mkcf_attrs (Pcf_method (a, Public, b)) $1 }
+  | post_item_attributes PRI method_
+        { let (a, b) = $3 in mkcf_attrs (Pcf_method (a, Private, b)) $1 }
+  | post_item_attributes CONSTRAINT constrain_field
+      { mkcf_attrs (Pcf_constraint $3) $1 }
+  | post_item_attributes INITIALIZER EQUALGREATER expr
+      { mkcf_attrs (Pcf_initializer $4) $1 }
+  | post_item_attributes item_extension
+      { mkcf_attrs (Pcf_extension $2) $1 }
   | floating_attribute
       { mkcf (Pcf_attribute $1) }
 ;
@@ -2330,10 +2316,10 @@ _class_instance_type:
       { mkcty(Pcty_signature $2) }
   | as_loc(LBRACE) class_sig_body as_loc(error)
       { unclosed_cty (with_txt $1 "{") (with_txt $3 "}") }
-  | class_instance_type attribute
+  | attribute class_instance_type
       /* Note that this will compound attributes - so they will become
          attached to whatever */
-      { Cty.attr $1 $2 }
+      { Cty.attr $2 $1 }
   | extension
       { mkcty(Pcty_extension $1) }
 ;
@@ -2368,23 +2354,23 @@ _class_sig_field:
      for some reason) */
    | INHERIT class_instance_type
       { mkctf_attrs (Pctf_inherit $2) [] }
-  | INHERIT class_instance_type item_attribute post_item_attributes
-      { mkctf_attrs (Pctf_inherit $2) ($3::$4) }
-  | VAL value_type post_item_attributes {
-      mkctf_attrs (Pctf_val $2) $3
+  | item_attribute post_item_attributes INHERIT class_instance_type
+      { mkctf_attrs (Pctf_inherit $4) ($1::$2) }
+  | post_item_attributes VAL value_type {
+      mkctf_attrs (Pctf_val $3) $1
     }
-  | PRI private_virtual_flags label COLON poly_type post_item_attributes
+  | post_item_attributes PRI private_virtual_flags label COLON poly_type
          {
-          mkctf_attrs (Pctf_method ($3, Private, $2, $5)) $6
+          mkctf_attrs (Pctf_method ($4, Private, $3, $6)) $1
          }
-  | PUB private_virtual_flags label COLON poly_type post_item_attributes
+  |  post_item_attributes PUB private_virtual_flags label COLON poly_type
        {
-        mkctf_attrs (Pctf_method ($3, Public, $2, $5)) $6
+        mkctf_attrs (Pctf_method ($4, Public, $3, $6)) $1
        }
-  | CONSTRAINT constrain_field post_item_attributes
-       { mkctf_attrs (Pctf_constraint $2) $3 }
-  | item_extension post_item_attributes
-       { mkctf_attrs (Pctf_extension $1) $2 }
+  | post_item_attributes CONSTRAINT constrain_field
+       { mkctf_attrs (Pctf_constraint $3) $1 }
+  | post_item_attributes item_extension
+       { mkctf_attrs (Pctf_extension $2) $1 }
   | floating_attribute
       { mkctf(Pctf_attribute $1) }
 ;
@@ -2406,20 +2392,20 @@ constrain_field:
         core_type EQUAL core_type          { only_core_type $1 (mklocation $startpos($1) $endpos($1)), only_core_type $3 (mklocation $startpos($3) $endpos($3))}
 ;
 many_class_descriptions:
-  | CLASS class_description_details post_item_attributes {
-    let (ident, binding, virt, params) = $2 in
+  | post_item_attributes CLASS class_description_details {
+    let (ident, binding, virt, params) = $3 in
     let loc = mklocation $symbolstartpos $endpos in
-    [Ci.mk ident binding ~virt ~params ~attrs:$3 ~loc]
+    [Ci.mk ident binding ~virt ~params ~attrs:$1 ~loc]
   }
   | many_class_descriptions and_class_description {
     $2 :: $1
   }
 ;
 and_class_description:
-  | AND class_description_details post_item_attributes {
-    let (ident, binding, virt, params) = $2 in
+  | post_item_attributes AND class_description_details {
+    let (ident, binding, virt, params) = $3 in
     let loc = mklocation $symbolstartpos $endpos in
-    Ci.mk ident binding ~virt ~params ~attrs:$3 ~loc
+    Ci.mk ident binding ~virt ~params ~attrs:$1 ~loc
   }
 ;
 class_description_details:
@@ -2429,10 +2415,10 @@ class_description_details:
 ;
 
 many_class_type_declarations:
-  | CLASS TYPE class_type_declaration_details post_item_attributes {
-    let (ident, instance_type, virt, class_type_params) = $3 in
+  | post_item_attributes CLASS TYPE class_type_declaration_details {
+    let (ident, instance_type, virt, class_type_params) = $4 in
     let loc = mklocation $symbolstartpos $endpos in
-    [Ci.mk ident instance_type ~virt:virt ~params:class_type_params ~attrs:$4 ~loc]
+    [Ci.mk ident instance_type ~virt:virt ~params:class_type_params ~attrs:$1 ~loc]
   }
   | many_class_type_declarations and_class_type_declaration {
     $2::$1
@@ -2440,10 +2426,10 @@ many_class_type_declarations:
 ;
 
 and_class_type_declaration:
-  AND class_type_declaration_details post_item_attributes {
-    let (ident, instance_type, virt, class_type_params) = $2 in
+  post_item_attributes AND class_type_declaration_details {
+    let (ident, instance_type, virt, class_type_params) = $3 in
     let loc = mklocation $symbolstartpos $endpos in
-    Ci.mk ident instance_type ~virt:virt ~params:class_type_params ~attrs:$3 ~loc
+    Ci.mk ident instance_type ~virt:virt ~params:class_type_params ~attrs:$1 ~loc
   }
 ;
 
@@ -2501,29 +2487,56 @@ _semi_terminated_seq_expr:
     }
 ;
 
+semi_terminated_seq_expr_no_attrs: mark_position_exp (_semi_terminated_seq_expr_no_attrs) {$1}
+_semi_terminated_seq_expr_no_attrs:
+  | item_extension_sugar semi_terminated_seq_expr_row_no_attrs {
+      extension_expression $1 $2
+    }
+  | semi_terminated_seq_expr_row_no_attrs {
+      $1
+    }
+  /**
+   * Let bindings already have their potential item_extension_sugar.
+   */
+  | let_bindings_no_attrs SEMI semi_terminated_seq_expr {
+      expr_of_let_bindings $1 $3
+    }
+  | let_bindings_no_attrs opt_semi {
+      let loc = mklocation $symbolstartpos $endpos in
+      expr_of_let_bindings $1 @@ ghunit ~loc ()
+    }
+;
+
 semi_terminated_seq_expr_row: mark_position_exp (_semi_terminated_seq_expr_row) {$1}
 _semi_terminated_seq_expr_row:
   /**
    * Expression SEMI
    */
-  | expr post_item_attributes opt_semi  {
-      let expr = $1 in
-      let item_attrs = $2 in
+  | post_item_attributes semi_terminated_seq_expr_row_no_attrs  {
+      let expr = $2 in
+      let item_attrs = $1 in
       (* Final item in the sequence - just append item attributes to the
        * expression attributes *)
       {expr with pexp_attributes = item_attrs @ expr.pexp_attributes}
+  }
+;
+
+semi_terminated_seq_expr_row_no_attrs: mark_position_exp (_semi_terminated_seq_expr_row_no_attrs) {$1}
+_semi_terminated_seq_expr_row_no_attrs:
+  /**
+   * Expression SEMI
+   */
+  | expr opt_semi  {
+      $1
     }
-  | opt_let_module as_loc(UIDENT) module_binding_body post_item_attributes SEMI semi_terminated_seq_expr {
-      let item_attrs = $4 in
-      mkexp ~attrs:item_attrs (Pexp_letmodule($2, $3, $6))
+  | opt_let_module as_loc(UIDENT) module_binding_body SEMI semi_terminated_seq_expr {
+      mkexp (Pexp_letmodule($2, $3, $5))
     }
-  | LET? OPEN override_flag as_loc(mod_longident) post_item_attributes SEMI semi_terminated_seq_expr {
-      let item_attrs = $5 in
-      mkexp ~attrs:item_attrs (Pexp_open($3, $4, $7))
+  | LET? OPEN override_flag as_loc(mod_longident) SEMI semi_terminated_seq_expr {
+      mkexp (Pexp_open($3, $4, $6))
     }
-  | expr post_item_attributes SEMI semi_terminated_seq_expr  {
-      let item_attrs = $2 in
-      mkexp ~attrs:item_attrs (Pexp_sequence($1, $4))
+  | expr SEMI semi_terminated_seq_expr  {
+      mkexp (Pexp_sequence($1, $3))
     }
 ;
 
@@ -2855,8 +2868,8 @@ _expr:
       let fauxMatchCaseFalse = Exp.case fauxFalsePat $5 in
       mkexp (Pexp_match ($1, [fauxMatchCaseTrue; fauxMatchCaseFalse]))
     }
-  | expr attribute
-      { Exp.attr $1 $2 }
+  | attribute expr %prec attribute_precedence
+      { Exp.attr $2 $1 }
 ;
 
 simple_expr: mark_position_exp(_simple_expr) {$1}
@@ -2905,10 +2918,7 @@ _simple_expr:
         let loc = mklocation $symbolstartpos $endpos in
         ghexp_constraint loc $2 $3
       }
-  | LBRACE semi_terminated_seq_expr RBRACE
-      { $2 }
-  | LBRACE as_loc(semi_terminated_seq_expr) error
-      { syntax_error_exp $2.loc "SyntaxError in block" }
+
   | LPAREN expr_comma_list opt_comma RPAREN
       { mkexp(Pexp_tuple(List.rev $2)) }
   | as_loc(LPAREN) expr_comma_list as_loc(error)
@@ -2966,6 +2976,14 @@ _simple_expr:
         let msg = "Record construction must have at least one field explicitly set" in
         syntax_error_exp loc msg
       }
+  | LBRACE item_attribute post_item_attributes semi_terminated_seq_expr_no_attrs RBRACE
+      { $4 }
+  | LBRACE item_attribute post_item_attributes as_loc(semi_terminated_seq_expr_no_attrs) error
+      { syntax_error_exp $4.loc "SyntaxError in block" }
+  | LBRACE  semi_terminated_seq_expr_no_attrs RBRACE
+      { $2 }
+  | LBRACE  as_loc(semi_terminated_seq_expr_no_attrs) error
+          { syntax_error_exp $2.loc "SyntaxError in block" }
   | LBRACE record_expr RBRACE
       { let (exten, fields) = $2 in mkexp (Pexp_record(fields, exten)) }
   | as_loc(LBRACE) record_expr as_loc(error)
@@ -2980,10 +2998,17 @@ _simple_expr:
   | as_loc(LBRACE) record_expr_with_string_keys as_loc(error)
       { unclosed_exp (with_txt $1 "{") (with_txt $3 "}")}
   /* Todo: Why is this not a simple_expr? */
-  | LBRACE class_self_pattern_and_structure RBRACE
-      { mkexp (Pexp_object $2) }
-  | as_loc(LBRACE) class_self_pattern_and_structure as_loc(error)
+  | LBRACE semi_terminated_class_fields RBRACE
+      {
+        let loc = mklocation $symbolstartpos $endpos in
+        let self = mkpat (Ppat_var (mkloc "this" loc)) in
+        mkexp (Pexp_object (Cstr.mk self $2)) }
+  | as_loc(LBRACE) semi_terminated_class_fields as_loc(error)
       { unclosed_exp (with_txt $1 "{") (with_txt $3 "}") }
+  | LBRACE AS pattern SEMI semi_terminated_class_fields RBRACE
+      { mkexp (Pexp_object (Cstr.mk $3 $5)) }
+  | as_loc(LBRACE) AS pattern SEMI semi_terminated_class_fields as_loc(error)
+      { unclosed_exp (with_txt $1 "{") (with_txt $6 "}") }
   | as_loc(mod_longident) DOT LBRACE record_expr RBRACE
       { let (exten, fields) = $4 in
         let loc = mklocation $symbolstartpos $endpos in
@@ -3135,27 +3160,52 @@ and_let_binding:
    * error if this is an *expression * let binding. Otherwise, they become
    * post_item_attributes on the structure item for the "and" binding.
    */
-  AND let_binding_body post_item_attributes
+   post_item_attributes AND let_binding_body
       {
          let loc = mklocation $symbolstartpos $endpos in
-         mklb $2 $3 loc
+         mklb $3 $1 loc
       }
 ;
 let_bindings:
     let_binding                                 { $1 }
   | let_bindings and_let_binding                { addlb $1 $2 }
 ;
+let_bindings_no_attrs:
+    let_binding_no_attrs                                 { $1 }
+  | let_bindings_no_attrs and_let_binding                { addlb $1 $2 }
+;
+
 lident_list:
     LIDENT                            { [$1] }
   | LIDENT lident_list                { $1 :: $2 }
 ;
 let_binding_impl:
   /* Form with item extension sugar */
-  | LET rec_flag let_binding_body post_item_attributes {
-      ($2, $3, $4)
+  | post_item_attributes LET rec_flag let_binding_body {
+      ($3, $4, $1)
+    }
+;
+let_binding_impl_no_attrs:
+  /* Form with item extension sugar */
+  | LET rec_flag let_binding_body {
+      ($2, $3, [])
     }
 ;
 
+let_binding_no_attrs:
+/* Form with item extension sugar */
+| let_binding_impl_no_attrs {
+  let (rec_flag, body, item_attrs) = $1 in
+  let loc = mklocation $symbolstartpos $endpos in
+  mklbs ([], None) rec_flag (mklb body item_attrs loc) loc
+}
+| item_extension_sugar let_binding_impl_no_attrs {
+    let (rec_flag, body, item_attrs) = $2 in
+    let (ext_attrs, ext_id) = $1 in
+    let loc = mklocation $symbolstartpos $endpos in
+    mklbs (ext_attrs, Some ext_id) rec_flag (mklb body item_attrs loc) loc
+  }
+;
 let_binding:
   /* Form with item extension sugar */
   | let_binding_impl {
@@ -3638,8 +3688,8 @@ _pattern_without_or:
    * up until the point of to the start of an expression, left paren, left
    * bracket, comma, bar - whichever comes first.
    */
-  | pattern_without_or attribute
-      { Pat.attr $1 $2 }
+  | attribute pattern_without_or %prec attribute_precedence
+      { Pat.attr $2 $1 }
 ;
 
 /* A "simple pattern" is either a value identifier, or it is a
@@ -3790,13 +3840,13 @@ primitive_declaration:
 /* Type declarations */
 
 many_type_declarations:
- | TYPE nonrec_flag type_declaration_details post_item_attributes {
-   let (ident, params, constraints, kind, priv, manifest) = $3 in
+ | post_item_attributes TYPE nonrec_flag type_declaration_details {
+   let (ident, params, constraints, kind, priv, manifest) = $4 in
    let loc = mklocation $symbolstartpos $endpos in
    let ty = Type.mk ident ~params:params ~cstrs:constraints
-            ~kind ~priv ?manifest ~attrs:$4 ~loc
+            ~kind ~priv ?manifest ~attrs:$1 ~loc
    in
-   ($2, [ty])
+   ($3, [ty])
    }
  | many_type_declarations and_type_declaration {
    let (nonrec_flag, tyl) = $1 in
@@ -3805,12 +3855,12 @@ many_type_declarations:
 ;
 
 and_type_declaration:
-  | AND type_declaration_details post_item_attributes {
-    let (ident, params, constraints, kind, priv, manifest) = $2 in
+  | post_item_attributes AND type_declaration_details {
+    let (ident, params, constraints, kind, priv, manifest) = $3 in
     let loc = mklocation $symbolstartpos $endpos in
     Type.mk ident
       ~params:params ~cstrs:constraints
-      ~kind ~priv ?manifest ~attrs:$3 ~loc
+      ~kind ~priv ?manifest ~attrs:$1 ~loc
   }
 ;
 
@@ -3920,40 +3970,46 @@ constructor_declarations:
 ;
 
 constructor_declaration_no_leading_bar:
-  | as_loc(constr_ident) generalized_constructor_arguments attributes
-     {
-        let args,res = $2 in
-        let loc = mklocation $symbolstartpos $endpos in
-        Type.constructor $1 ~args ?res ~loc ~attrs:$3
-     }
+  |  as_loc(constr_ident) generalized_constructor_arguments
+       {
+          let args,res = $2 in
+          let loc = mklocation $symbolstartpos $endpos in
+          Type.constructor $1 ~args ?res ~loc (* ~attrs:$3 *)
+       }
+  | attribute constructor_declaration_no_leading_bar {
+      let const = $2 in
+      {const with pcd_attributes = const.pcd_attributes @ [$1]}
+    }
+
 ;
 
 constructor_declaration_leading_bar:
-  | BAR as_loc(constr_ident) generalized_constructor_arguments attributes
+  | attributes BAR as_loc(constr_ident) generalized_constructor_arguments
       {
-       let args,res = $3 in
+       let args,res = $4 in
        let loc = mklocation $symbolstartpos $endpos in
-       Type.constructor $2 ~args ?res ~loc ~attrs:$4
+       Type.constructor $3 ~args ?res ~loc ~attrs:$1
       }
 ;
+
 /* Why are there already post_item_attributes on the extension_constructor_declaration? */
 str_exception_declaration:
-  | EXCEPTION extension_constructor_declaration post_item_attributes
+  |  post_item_attributes EXCEPTION extension_constructor_declaration
       {
-        let ext = $2 in
-        {ext with pext_attributes = ext.pext_attributes @ $3}
+        let ext = $3 in
+        {ext with pext_attributes = ext.pext_attributes @ $1}
       }
-  | EXCEPTION extension_constructor_rebind post_item_attributes
+  | post_item_attributes EXCEPTION extension_constructor_rebind
       {
-        let ext = $2 in
-        {ext with pext_attributes = ext.pext_attributes @ $3}
+        let ext = $3 in
+        {ext with pext_attributes = ext.pext_attributes @ $1}
       }
 ;
 sig_exception_declaration:
-  | EXCEPTION extension_constructor_declaration post_item_attributes
+  | post_item_attributes EXCEPTION extension_constructor_declaration
       {
-        let ext = $2 in
-        {ext with pext_attributes = ext.pext_attributes @ $3}
+        let ext = $3 in
+        {ext with pext_attributes = ext.pext_attributes @ $1}
       }
 ;
 
@@ -3992,16 +4048,16 @@ constructor_arguments:
 
 
 label_declaration:
-    mutable_flag as_loc(LIDENT) attributes
+    attributes mutable_flag as_loc(LIDENT)
       {
        let loc = mklocation $symbolstartpos $endpos in
-       let ct = mkct $2 in
-       (Type.field $2 ct ~mut:$1 ~loc, $3)
+       let ct = mkct $3 in
+       (Type.field $3 ct ~mut:$2 ~loc, $1)
       }
-  |  mutable_flag as_loc(LIDENT) attributes COLON poly_type attributes
+  |  attributes mutable_flag as_loc(LIDENT) COLON attributes poly_type_no_attr
       {
        let loc = mklocation $symbolstartpos $endpos in
-       (Type.field $2 $5 ~mut:$1 ~attrs:$6 ~loc, $3)
+       (Type.field $3 $6 ~mut:$2 ~attrs:$5 ~loc, $1)
       }
 ;
 
@@ -4017,51 +4073,62 @@ potentially_long_ident_and_optional_type_parameters:
 ;
 
 str_type_extension:
-  TYPE nonrec_flag potentially_long_ident_and_optional_type_parameters
-  PLUSEQ private_flag opt_bar str_extension_constructors
   post_item_attributes
+  TYPE nonrec_flag potentially_long_ident_and_optional_type_parameters
+  PLUSEQ private_flag attributes opt_bar str_extension_constructors
   {
-    if $2 <> Recursive then not_expecting $startpos($2) $endpos($2) "nonrec flag";
-    let (potentially_long_ident, optional_type_parameters) = $3 in
-    Te.mk potentially_long_ident (List.rev $7)
-          ~params:optional_type_parameters ~priv:$5 ~attrs:$8
+    if $3 <> Recursive then not_expecting $startpos($3) $endpos($3) "nonrec flag";
+    let (potentially_long_ident, optional_type_parameters) = $4 in
+    let str_extension_constructors = match $9 with
+    | [] -> $9
+    | hd :: tail -> {hd with pext_attributes = $7} :: tail
+    in
+    Te.mk potentially_long_ident (List.rev str_extension_constructors)
+          ~params:optional_type_parameters ~priv:$6 ~attrs:$1
   }
 ;
 sig_type_extension:
-  TYPE nonrec_flag potentially_long_ident_and_optional_type_parameters
-  PLUSEQ private_flag opt_bar sig_extension_constructors
   post_item_attributes
+  TYPE nonrec_flag potentially_long_ident_and_optional_type_parameters
+  PLUSEQ private_flag attributes opt_bar sig_extension_constructors
   {
-    if $2 <> Recursive then not_expecting $startpos($2) $endpos($2) "nonrec flag";
-    let (potentially_long_ident, optional_type_parameters) = $3 in
-    Te.mk potentially_long_ident (List.rev $7)
-          ~params:optional_type_parameters ~priv:$5 ~attrs:$8
+    if $3 <> Recursive then not_expecting $startpos($3) $endpos($3) "nonrec flag";
+    let (potentially_long_ident, optional_type_parameters) = $4 in
+    let sig_extension_constructors = match $9 with
+    | [] -> $9
+    | hd :: tail -> {hd with pext_attributes = $7} :: tail
+    in
+    Te.mk potentially_long_ident (List.rev sig_extension_constructors)
+          ~params:optional_type_parameters ~priv:$6 ~attrs:$1
   }
 ;
 str_extension_constructors:
     extension_constructor_declaration                     { [$1] }
   | extension_constructor_rebind                          { [$1] }
-  | str_extension_constructors BAR extension_constructor_declaration
-      { $3 :: $1 }
-  | str_extension_constructors BAR extension_constructor_rebind
-      { $3 :: $1 }
+  | str_extension_constructors attributes BAR extension_constructor_declaration
+      {
+        {$4 with pext_attributes = $2} :: $1 }
+  | str_extension_constructors attributes BAR extension_constructor_rebind
+      {
+        {$4 with pext_attributes = $2} :: $1 }
 ;
 sig_extension_constructors:
     extension_constructor_declaration                     { [$1] }
-  | sig_extension_constructors BAR extension_constructor_declaration
-      { $3 :: $1 }
+  | sig_extension_constructors attributes BAR extension_constructor_declaration
+      {
+        {$4 with pext_attributes = $2} :: $1 }
 ;
 extension_constructor_declaration:
-  | as_loc(constr_ident) generalized_constructor_arguments attributes
+  | as_loc(constr_ident) generalized_constructor_arguments
       { let args, res = $2 in
         let loc = mklocation $symbolstartpos $endpos in
-        Te.decl $1 ~args ?res ~loc ~attrs:$3 }
+        Te.decl $1 ~args ?res ~loc}
 ;
 extension_constructor_rebind:
-  | as_loc(constr_ident) EQUAL as_loc(constr_longident) attributes
+  | as_loc(constr_ident) EQUAL as_loc(constr_longident)
       {
          let loc = mklocation $symbolstartpos $endpos in
-         Te.rebind $1 $3 ~loc ~attrs:$4
+         Te.rebind $1 $3 ~loc
       }
 ;
 
@@ -4117,6 +4184,15 @@ typevar_list:
         QUOTE ident                             { [$2] }
       | typevar_list QUOTE ident                { $3 :: $1 }
 ;
+
+poly_type_no_attr: mark_position_typ(_poly_type_no_attr) {$1}
+_poly_type_no_attr:
+        core_type_no_attr
+          { only_core_type $1 (mklocation $startpos($1) $endpos($1))}
+      | typevar_list DOT core_type
+          { mktyp(Ptyp_poly(List.rev $1, only_core_type $3 (mklocation $startpos($3) $endpos($3)))) }
+;
+
 
 poly_type: mark_position_typ(_poly_type) {$1}
 _poly_type:
@@ -4246,6 +4322,16 @@ _core_type:
       }
 ;
 
+core_type_no_attr:
+  core_type2_no_attr
+    { $1 }
+  | core_type2_no_attr AS QUOTE ident
+    {
+      let core_type_loc = mklocation $startpos($1) $endpos($1) in
+      let ct = only_core_type $1 core_type_loc in
+      Core_type (mktyp(Ptyp_alias(ct, $4)))
+    }
+;
 /**
  *
  * core_type is basically just core_type2 but with a single AS x potentially
@@ -4257,10 +4343,19 @@ _core_type:
  */
 core_type2: mark_position_typ2(_core_type2) {$1}
 _core_type2:
-  /* The %prec below_LBRACKETAT was inherited from the previous rule
-   * simple_core_type_or_tuple */
-    non_arrowed_core_type %prec below_LBRACKETAT
+    non_arrowed_core_type
       { $1 }
+  | core_type2_named_labels { $1 }
+  | core_type2 EQUALGREATER core_type2
+      {
+      match $1, $3 with
+            | Core_type ct, Core_type ct2 ->
+                Core_type (mktyp(Ptyp_arrow(Nolabel, ct, ct2)))
+            | _ -> syntax_error()
+      }
+;
+
+core_type2_named_labels:
   | LIDENTCOLONCOLON non_arrowed_core_type QUESTION EQUALGREATER core_type2
       {
       match $2, $5 with
@@ -4272,8 +4367,15 @@ _core_type2:
       match $2, $4 with
       | Core_type ct, Core_type ct2 -> Core_type (mktyp(Ptyp_arrow(Labelled $1, ct, ct2)))
       | _ -> syntax_error()
-      }
-  | core_type2 EQUALGREATER core_type2
+    }
+;
+
+core_type2_no_attr: mark_position_typ2(_core_type2_no_attr) {$1}
+_core_type2_no_attr:
+    non_arrowed_core_type_no_attr
+      { $1 }
+  | core_type2_named_labels { $1 }
+  | core_type2_no_attr EQUALGREATER core_type2
       {
       match $1, $3 with
             | Core_type ct, Core_type ct2 ->
@@ -4307,6 +4409,15 @@ _core_type2:
  * type x = SomeConstructor x y;
  */
 non_arrowed_core_type:
+  | non_arrowed_core_type_no_attr { $1 }
+  | attribute non_arrowed_core_type
+     {
+       let core_type_loc = mklocation $startpos($2) $endpos($2) in
+       let ct = only_core_type $2 core_type_loc in
+       Core_type (Typ.attr ct $1)
+     }
+;
+non_arrowed_core_type_no_attr:
    non_arrowed_non_simple_core_type
     { $1 }
  | non_arrowed_simple_core_type
@@ -4319,12 +4430,7 @@ _non_arrowed_non_simple_core_type:
       { Core_type (mktyp(Ptyp_constr($1, List.rev $2))) }
   | SHARP as_loc(class_longident) non_arrowed_simple_core_type_list
       { Core_type (mktyp(Ptyp_class($2, List.rev $3))) }
-  | non_arrowed_core_type attribute
-      {
-        let core_type_loc = mklocation $startpos($1) $endpos($1) in
-        let ct = only_core_type $1 core_type_loc in
-        Core_type (Typ.attr ct $2)
-      }
+
 ;
 
 non_arrowed_simple_core_type: mark_position_typ2(_non_arrowed_simple_core_type) {$1}
@@ -4378,18 +4484,18 @@ _non_arrowed_simple_core_type:
       { Core_type(mktyp(Ptyp_extension $1)) }
 ;
 object_record_type:
-| LBRACE RBRACE
-      { syntax_error () }
-| LBRACE DOT RBRACE
-      { [], Object_closed }
-| LBRACE DOTDOT RBRACE
-      { [], Object_open }
-| LBRACE label_declarations opt_comma RBRACE
-      { List.rev $2, Record }
-| LBRACE DOT label_declarations RBRACE
-      { List.rev $3, Object_closed }
-| LBRACE DOTDOT label_declarations RBRACE
-      { List.rev $3, Object_open }
+  | LBRACE RBRACE
+        { syntax_error () }
+  | LBRACE DOT RBRACE
+        { [], Object_closed }
+  | LBRACE DOTDOT RBRACE
+        { [], Object_open }
+  | LBRACE label_declarations opt_comma RBRACE
+        { List.rev $2, Record }
+  | LBRACE DOT label_declarations RBRACE
+        { List.rev $3, Object_closed }
+  | LBRACE DOTDOT label_declarations RBRACE
+        { List.rev $3, Object_open }
 ;
 
 package_type:
@@ -4422,10 +4528,10 @@ row_field:
       }
 ;
 tag_field:
-    name_tag OF? opt_ampersand amper_type_list attributes
-      { Rtag ($1, $5, $3, List.rev $4) }
-  | name_tag attributes
-      { Rtag ($1, $2, true, []) }
+    attributes name_tag OF? opt_ampersand amper_type_list
+      { Rtag ($2, $1, $4, List.rev $5) }
+  | attributes name_tag
+      { Rtag ($2, $1, true, []) }
 ;
 opt_ampersand:
     AMPERSAND                                   { true }
