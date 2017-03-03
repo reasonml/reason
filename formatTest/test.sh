@@ -9,6 +9,7 @@ INFO=''
 DEBUG=''
 RESET='\033[0m'
 VERBOSE=${VERBOSE:-}
+OCAML_VERSION=${OCAML_VERSION:-"4.02.3"}
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
