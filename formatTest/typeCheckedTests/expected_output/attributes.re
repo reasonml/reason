@@ -395,3 +395,21 @@ external foo : bool => bool =
   [@@ocaml.deprecated
     "Use bar instead. It's a much cooler function. This string needs to be a little long"
   ];
+
+/* Attributes on an entire polymorphic variant leaf */
+external readFileSync :
+  name::string =>
+  [ | `utf8 | `my_name [@bs.as "ascii"]]
+  [@bs.string] =>
+  string =
+  "" [@@bs.module "fs"];
+
+external readFileSync2 :
+  name::string =>
+  [
+    | `utf8 [@bs.as "ascii"]
+    | `my_name [@bs.as "ascii"]
+  ]
+  [@bs.string] =>
+  string =
+  "" [@@bs.module "fs"];

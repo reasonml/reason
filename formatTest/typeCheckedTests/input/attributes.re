@@ -302,3 +302,18 @@ external createCompositeElementInternalHack : reactClass =>
 external add_nat: int => int => int = "add_nat_bytecode" "add_nat_native";
 
 external foo : bool => bool = "" [@@bs.module "Bar"] [@@ocaml.deprecated "Use bar instead. It's a much cooler function. This string needs to be a little long"];
+
+/* Attributes on an entire polymorphic variant leaf */
+external readFileSync :
+  name::string =>
+  ([ `utf8
+   | `my_name [@bs.as "ascii"]
+   ] [@bs.string]) =>
+  string = ""
+  [@@bs.module "fs"];
+
+external readFileSync2 :
+  name::string =>
+  ([ `utf8 [@bs.as "ascii"] | `my_name [@bs.as "ascii"] ] [@bs.string]) =>
+  string = ""
+  [@@bs.module "fs"];

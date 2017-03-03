@@ -2566,12 +2566,12 @@ class printer  ()= object(self:'self)
                 first::(List.map (formatOneTypeDefStandard (atom "and")) (tlhd::tltl))
               )
 
-  method type_variant_leaf ?opt_ampersand:(a=false) ?polymorphic:(p=false) = self#type_variant_leaf1 a p true
-  method type_variant_leaf_nobar ?opt_ampersand:(a=false) ?polymorphic:(p=false) = self#type_variant_leaf1 a p false
+  method type_variant_leaf ?attrs_on_leaf:(attrs=[]) ?opt_ampersand:(a=false) ?polymorphic:(p=false) = self#type_variant_leaf1 attrs a p true
+  method type_variant_leaf_nobar ?opt_ampersand:(a=false) ?polymorphic:(p=false) = self#type_variant_leaf1 [] a p false
 
   (* TODOATTRIBUTES: Attributes on the entire variant leaf are likely
    * not parsed or printed correctly. *)
-  method type_variant_leaf1 opt_ampersand polymorphic print_bar x =
+  method type_variant_leaf1 attrs_on_leaf opt_ampersand polymorphic print_bar x =
     let {pcd_name; pcd_args; pcd_res; pcd_loc; pcd_attributes} = x in
     let (arityAttrs, docAtrs, stdAttrs, jsxAttrs) = partitionAttributes pcd_attributes in
     let prefix = if polymorphic then "`" else "" in
@@ -2618,9 +2618,10 @@ class printer  ()= object(self:'self)
       | (_::_, None) -> add_bar nameOf (normalize args)
       | (_::_, Some res) -> add_bar nameOf (normalize (args@[res]))
     in
+    let allAttrs = List.concat [stdAttrs; attrs_on_leaf] in
     let everythingWithAttrs =
-      if stdAttrs <> [] then
-        formatAttributed everything (self#attributes stdAttrs)
+      if allAttrs <> [] then
+        formatAttributed everything (self#attributes allAttrs)
       else
         everything
     in
@@ -2889,13 +2890,13 @@ class printer  ()= object(self:'self)
           let pcd_res = None in
           let variant_helper rf =
             match rf with
-              | Rtag (label, _, opt_ampersand, ctl) ->
+              | Rtag (label, attrs, opt_ampersand, ctl) ->
                 let pcd_name = {
                   txt = label;
                   loc = pcd_loc;
                 } in
                 let pcd_args = Pcstr_tuple ctl in
-                self#type_variant_leaf ~opt_ampersand ~polymorphic:true {pcd_name; pcd_args; pcd_res; pcd_loc; pcd_attributes}
+                self#type_variant_leaf ~attrs_on_leaf:attrs ~opt_ampersand ~polymorphic:true {pcd_name; pcd_args; pcd_res; pcd_loc; pcd_attributes}
               | Rinherit ct -> self#core_type ct in
           let (designator, tl) =
             match (closed,low) with
