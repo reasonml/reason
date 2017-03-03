@@ -4,6 +4,7 @@ open Lexing
 open Cmdliner
 
 exception Invalid_config = Printer_maker.Invalid_config
+let err = Printer_maker.err
 
 let read_lines file =
   let list = ref [] in
@@ -36,7 +37,6 @@ let refmt
     is_interface_pp
     use_stdin
   =
-  let err s = raise (Invalid_config s) in
   let () =
     if is_interface_pp then err "--is-interface-pp is deprecated."
     else if use_stdin then err "--use-stdin is deprecated."
@@ -57,10 +57,6 @@ let refmt
   let interface = match interface with
     | true -> true
     | false -> (Filename.check_suffix input_file ".rei" || Filename.check_suffix input_file ".mli")
-  in
-  let () =
-    if interface && add_printers then
-      warn "File is an interface. Printers not added."
   in
   let output_file =
     match in_place, use_stdin with

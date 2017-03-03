@@ -4,17 +4,19 @@ open Ast_404
 module Reason_interface_printer : Printer_maker.PRINTER =
     struct
         type t = Parsetree.signature
-        exception Invalid_config = Printer_maker.Invalid_config
+        let err = Printer_maker.err
 
         (* Note: filename should only be used with .mli files. See reason_toolchain. *)
         let defaultInterfaceParserFor use_stdin filename =
+          let open Reason_toolchain in
+          let (_parser, thing) =
             if Filename.check_suffix filename ".rei"
-            then (Reason_toolchain.JS.canonical_interface_with_comments (Reason_toolchain.setup_lexbuf use_stdin filename) , false, true)
+            then (JS.canonical_interface_with_comments, false)
             else if Filename.check_suffix filename ".mli"
-            then (Reason_toolchain.ML.canonical_interface_with_comments (Reason_toolchain.setup_lexbuf use_stdin filename), true, true)
-            else (
-                raise (Invalid_config ("Cannot determine default interface parser for filename '" ^ filename ^ "'."))
-                )
+            then (ML.canonical_interface_with_comments, true)
+            else err ("Cannot determine default interface parser for filename '" ^ filename ^ "'.")
+          in
+          _parser (setup_lexbuf use_stdin filename), thing, false
 
         let parse filetype use_stdin filename =
             let ((ast, comments), parsedAsML, parsedAsInterface) =
@@ -32,7 +34,10 @@ module Reason_interface_printer : Printer_maker.PRINTER =
                     ((intf lexbuf), false, true))
             in
             if not parsedAsInterface then
-                raise (Invalid_config ("The file parsed does not appear to be an interface file."))
+              err "The file parsed does not appear to be an interface file."
+            else if !Reason_config.add_printers then
+              (* NB: Not idempotent. *)
+              ((Printer_maker.sig_ppx_show_runtime::ast, comments), parsedAsML)
             else ((ast, comments), parsedAsML)
 
         let print printtype filename parsedAsML output_chan output_formatter =
