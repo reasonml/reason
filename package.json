@@ -1,7 +1,7 @@
 
 {
     "version": "1.9.0",
-    "description": "Reason Meta Language Toolchain",
+    "description": "Friendly Syntax & Toolchain Powered by OCaml",
     "repository": {
       "type": "git",
       "url": "https://github.com/facebook/reason.git"
