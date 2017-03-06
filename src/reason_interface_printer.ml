@@ -3,6 +3,7 @@ open Ast_404
 
 module Reason_interface_printer : Printer_maker.PRINTER =
     struct
+        type q = Parsetree.signature_item
         type t = Parsetree.signature
         let err = Printer_maker.err
 
@@ -17,6 +18,39 @@ module Reason_interface_printer : Printer_maker.PRINTER =
             else err ("Cannot determine default interface parser for filename '" ^ filename ^ "'.")
           in
           _parser (setup_lexbuf use_stdin filename), thing, false
+
+        let ppx_deriving_runtime =
+          let open Asttypes in
+          let open Parsetree in
+          let open Longident in
+          let open Ast_helper in
+          let open Location in
+          let (@@) f g x = f(g(x)) in
+          let mklid = mknoloc @@ Longident.parse in
+          let mktypealias (name, params, types) =
+            (* Unsure if this is correct. *)
+            let manifest = Typ.constr (mknoloc (Longident.parse name)) types in
+            Sig.type_ Nonrecursive [Type.mk ~params ~kind:Ptype_abstract ~manifest (mknoloc name)]
+          in
+          let type_aliases =
+            let n s = (s, [], []) in
+            let a s = (s, [(Typ.var "a"), Invariant], [Typ.var "a"]) in
+            List.map mktypealias [n "int"; n "char"; n "string"; n "float"; n "bool";
+                                  n "unit"; n "exn"; a "array"; a "list"; a "option";
+                                  n "nativeint"; n "int32"; n "int64"; a "lazy_t";
+                                  n "bytes"]
+          in
+          let module_aliases =
+            let mty = (Mty.ident (mknoloc (Longident.parse "Format"))) in
+            let with_ = Mty.with_ mty [
+              Pwith_type ((mklid "formatter_out_functions"), (Type.mk (mknoloc "Format.formatter_out_functions")))
+            ] in
+            let decl = Md.mk (mknoloc "Format") with_ in
+            [Sig.module_ decl]
+          in
+          let structure_items = type_aliases @ module_aliases in
+          Sig.module_ (Md.mk (mknoloc "Ppx_deriving_runtime")
+                             (Mty.signature structure_items))
 
         let parse filetype use_stdin filename =
             let ((ast, comments), parsedAsML, parsedAsInterface) =
@@ -37,7 +71,7 @@ module Reason_interface_printer : Printer_maker.PRINTER =
               err "The file parsed does not appear to be an interface file."
             else if !Reason_config.add_printers then
               (* NB: Not idempotent. *)
-              ((Printer_maker.sig_ppx_show_runtime::ast, comments), parsedAsML)
+              ((ppx_deriving_runtime::ast, comments), parsedAsML)
             else ((ast, comments), parsedAsML)
 
         let print printtype filename parsedAsML output_chan output_formatter =

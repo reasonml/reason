@@ -782,7 +782,7 @@ let default_mapper_chain () =
                reason_to_ml_swap_operator_mapper;
                unescape_stars_slashes_mapper]
   in
-  if !Reason_config.add_printers then chain @ [create_auto_printer_mapper]
+  if !Reason_config.add_printers then chain @ [create_auto_printer_mapper; create_auto_printer_sig_mapper]
   else chain
 
 let rec string_of_longident = function

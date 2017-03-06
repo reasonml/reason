@@ -8,12 +8,15 @@ exception Invalid_config of string
 
 module type PRINTER =
     sig
-        type t
+        type q
+        type t = q list
 
         val parse : parse_itype ->
                     bool ->
                     string ->
                     ((t * Reason_pprint_ast.commentWithCategory) * bool)
+
+        val ppx_deriving_runtime : q
 
         val print : print_itype ->
                     string ->
@@ -63,62 +66,3 @@ let reasonBinaryParser use_stdin filename =
   in
   let (magic_number, filename, ast, comments, parsedAsML, parsedAsInterface) = input_value chan in
   ((ast, comments), parsedAsML, parsedAsInterface)
-
-let str_ppx_show_runtime =
-  let open Asttypes in
-  let open Parsetree in
-  let open Longident in
-  let open Ast_helper in
-  let open Location in
-  let mktypealias (name, params, types) =
-    (* Unsure if this is correct. *)
-    let manifest = Typ.constr (mknoloc (Lident name)) types in
-    Str.type_ Nonrecursive [Type.mk ~params ~kind:Ptype_abstract ~manifest (mknoloc name)]
-  in
-  let mkmodulealias name =
-    Str.module_ (Mb.mk (mknoloc name) (Mod.ident (mknoloc (Lident name))))
-  in
-  let mkmoduleinclude name =
-    Str.include_ (Incl.mk (Mod.ident (mknoloc (Lident name))))
-  in
-  let type_aliases =
-    let n s = (s, [], []) in
-    let a s = (s, [(Typ.var "a"), Invariant], [Typ.var "a"]) in
-    List.map mktypealias [n "int"; n "char"; n "string"; n "float"; n "bool";
-                          n "unit"; n "exn"; a "array"; a "list"; a "option";
-                          n "nativeint"; n "int32"; n "int64"; a "lazy_t";
-                          n "bytes"]
-  in
-  let module_aliases = List.map mkmodulealias ["Pervasives"; "Char"; "String";
-    "Printexc"; "Array"; "List"; "Nativeint"; "Int32"; "Int64"; "Lazy";
-    "Bytes"; "Hashtbl"; "Queue"; "Stack"; "Set"; "Weak"; "Printf"; "Format";
-    "Buffer"]
-  in
-  let module_includes = List.map mkmoduleinclude ["Pervasives"]
-  in
-  let structure_items = type_aliases @ module_aliases @ module_includes in
-  Str.module_ (Mb.mk (mknoloc "Ppx_deriving_runtime")
-                     (Mod.structure structure_items))
-
-let sig_ppx_show_runtime =
-  let open Asttypes in
-  let open Parsetree in
-  let open Longident in
-  let open Ast_helper in
-  let open Location in
-  let mktypealias (name, params, types) =
-    (* Unsure if this is correct. *)
-    let manifest = Typ.constr (mknoloc (Lident name)) types in
-    Sig.type_ Nonrecursive [Type.mk ~params ~kind:Ptype_abstract ~manifest (mknoloc name)]
-  in
-  let type_aliases =
-    let n s = (s, [], []) in
-    let a s = (s, [(Typ.var "a"), Invariant], [Typ.var "a"]) in
-    List.map mktypealias [n "int"; n "char"; n "string"; n "float"; n "bool";
-                          n "unit"; n "exn"; a "array"; a "list"; a "option";
-                          n "nativeint"; n "int32"; n "int64"; a "lazy_t";
-                          n "bytes"]
-  in
-  let structure_items = type_aliases in
-  Sig.module_ (Md.mk (mknoloc "Ppx_deriving_runtime")
-                     (Mty.signature structure_items))
