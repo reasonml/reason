@@ -10,14 +10,14 @@ module Reason_implementation_printer : Printer_maker.PRINTER =
         (* Note: filename should only be used with .ml files. See reason_toolchain. *)
         let defaultImplementationParserFor use_stdin filename =
           let open Reason_toolchain in
-          let (_parser, thing) =
+          let (_parser, parsedAsML) =
             if Filename.check_suffix filename ".re"
             then (JS.canonical_implementation_with_comments, false)
             else if Filename.check_suffix filename ".ml"
             then (ML.canonical_implementation_with_comments, true)
             else err ("Cannot determine default implementation parser for filename '" ^ filename ^ "'.")
           in
-          _parser (setup_lexbuf use_stdin filename), thing, false
+          _parser (setup_lexbuf use_stdin filename), parsedAsML, false
 
         let ppx_deriving_runtime =
           let open Asttypes in
