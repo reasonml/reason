@@ -17,7 +17,7 @@ module Reason_interface_printer : Printer_maker.PRINTER =
             then (ML.canonical_interface_with_comments, true)
             else err ("Cannot determine default interface parser for filename '" ^ filename ^ "'.")
           in
-          _parser (setup_lexbuf use_stdin filename), thing, false
+          _parser (setup_lexbuf use_stdin filename), thing, true
 
         let ppx_deriving_runtime =
           let open Asttypes in
