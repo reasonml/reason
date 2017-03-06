@@ -82,8 +82,12 @@ let create =
         type_decl_sig ; type_ext_sig ; module_type_decl_sig ;
       }
 
-let string_of_core_type typ =
-  Format.asprintf "%a" Pprintast.core_type { typ with ptyp_attributes = [] }
+let string_of_core_type (typ : Migrate_parsetree.OCaml_404.Ast.Parsetree.core_type) =
+  let open Migrate_parsetree in
+  let open Ast_404 in
+  let module Convert = Convert(OCaml_404)(OCaml_current) in
+  let typ = Convert.copy_core_type { typ with ptyp_attributes = [] } in
+  Format.asprintf "%a" Pprintast.core_type typ
 
 module Arg = struct
   type 'a conv = expression -> ('a, string) Result.result
@@ -450,7 +454,7 @@ let derive_module_type_decl path module_type_decl pstr_loc item fn =
 let module_from_input_name () =
   match !Location.input_name with
   | "//toplevel//" -> []
-  | filename -> [String.capitalize (Filename.(basename (chop_suffix filename ".ml")))]
+  | filename -> [String.capitalize_ascii (Filename.(basename (chop_suffix filename ".ml")))]
 
 let pstr_desc_rec_flag pstr =
   match pstr with
