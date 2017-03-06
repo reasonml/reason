@@ -47,13 +47,12 @@ module Reason_interface_printer : Printer_maker.PRINTER =
             in
             let fmt =
               let n = "Format" in
-              let mty = Mty.with_
-                          (Mty.typeof_ (Mod.ident (mklid n)))
-                          (List.map (mktysubst @@ (fun s -> n, s))
+              Md.mk (mkstr n) (Mty.with_
+                                 (Mty.typeof_ (Mod.ident (mklid n)))
+                                 (List.map (mktysubst @@ (fun s -> n, s))
                                     [ "formatter_out_functions";
                                       "formatter_tag_functions";
-                                      "formatter" ])
-              in Md.mk (mkstr n) mty
+                                      "formatter" ]))
             in
             [Sig.module_ fmt]
           in
