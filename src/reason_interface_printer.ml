@@ -25,11 +25,11 @@ module Reason_interface_printer : Printer_maker.PRINTER =
           let open Longident in
           let open Ast_helper in
           let open Location in
-          let (@@) f g x = f(g(x)) in
+          let (@@) f g x = f (g x) in
+          let mkstr = mknoloc in
           let mklid = mknoloc @@ Longident.parse in
           let mktypealias (name, params, types) =
-            (* Unsure if this is correct. *)
-            let manifest = Typ.constr (mknoloc (Longident.parse name)) types in
+            let manifest = Typ.constr (mklid name) types in
             Sig.type_ Nonrecursive [Type.mk ~params ~kind:Ptype_abstract ~manifest (mknoloc name)]
           in
           let type_aliases =
@@ -41,12 +41,25 @@ module Reason_interface_printer : Printer_maker.PRINTER =
                                   n "bytes"]
           in
           let module_aliases =
-            let mty = (Mty.ident (mknoloc (Longident.parse "Format"))) in
-            let with_ = Mty.with_ mty [
-              Pwith_type ((mklid "formatter_out_functions"), (Type.mk (mknoloc "Format.formatter_out_functions")))
-            ] in
-            let decl = Md.mk (mknoloc "Format") with_ in
-            [Sig.module_ decl]
+            let mktysubst (mod_, ty) =
+              let combined = mklid (mod_ ^ "." ^ ty) in
+              Pwith_typesubst (Type.mk (mkstr ty) ~manifest:(Typ.constr combined []))
+            in
+            let printf =
+              let n = "Printf" in
+              Md.mk (mkstr n) Mty.typeof_ (Mod.ident (mklid n))
+            in
+            let fmt =
+              let n = "Format" in
+              let mty = Mty.with_
+                          (Mty.typeof_ (Mod.ident (mklid n)))
+                          (List.map (mktysubst @@ (fun s -> n, s))
+                                    [ "formatter_out_functions";
+                                      "formatter_tag_functions";
+                                      "formatter" ])
+              in Md.mk (mkstr n) mty
+            in
+            [Sig.module_ printf; Sig.module_ fmt]
           in
           let structure_items = type_aliases @ module_aliases in
           Sig.module_ (Md.mk (mknoloc "Ppx_deriving_runtime")

@@ -26,7 +26,6 @@ module Reason_implementation_printer : Printer_maker.PRINTER =
           let open Ast_helper in
           let open Location in
           let mktypealias (name, params, types) =
-            (* Unsure if this is correct. *)
             let manifest = Typ.constr (mknoloc (Lident name)) types in
             Str.type_ Nonrecursive [Type.mk ~params ~kind:Ptype_abstract ~manifest (mknoloc name)]
           in
