@@ -2388,9 +2388,6 @@ class printer  ()= object(self:'self)
     | Nolabel ->  self#non_arrowed_non_simple_core_type c (* otherwise parenthesize *)
     | Labelled s -> formatLabeledArgument (atom s) "" (self#non_arrowed_non_simple_core_type c)
     | Optional lbl ->
-      match ptyp_desc with
-        | Ptyp_constr ({txt}, l) ->
-            assert (is_predef_option txt);
             let everythingButQuestion =
               formatLabeledArgument
                 (atom lbl)
@@ -2400,10 +2397,9 @@ class printer  ()= object(self:'self)
                    ~break:IfNeed
                    ~inline:(true, true)
                    (* I don't think you'll have more than one l here. *)
-                   (List.map (self#non_arrowed_non_simple_core_type) l)
+                   [self#non_arrowed_non_simple_core_type c]
                 )
-      in makeList [everythingButQuestion; atom "?"]
-    | _ -> failwith "invalid input in print_type_with_label"
+            in makeList [everythingButQuestion; atom "?"]
 
   method type_param (ct, a) =
     makeList [atom (type_variance a); self#core_type ct]
@@ -3688,7 +3684,7 @@ class printer  ()= object(self:'self)
       | (Labelled lbl, expression) :: tail ->
          let nextAttr =
            match expression.pexp_desc with
-           | Pexp_ident (ident) when ((isLongIdentWithDot ident.txt) == false 
+           | Pexp_ident (ident) when ((isLongIdentWithDot ident.txt) == false
                                         && (Longident.last ident.txt) = lbl) -> atom lbl
            | _ -> makeList ([atom lbl; atom "="; self#simplifyUnparseExpr expression])
          in
