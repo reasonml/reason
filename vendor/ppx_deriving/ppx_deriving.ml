@@ -454,7 +454,7 @@ let derive_module_type_decl path module_type_decl pstr_loc item fn =
 let module_from_input_name () =
   match !Location.input_name with
   | "//toplevel//" -> []
-  | filename -> [String.capitalize_ascii (Filename.(basename (chop_suffix filename ".ml")))]
+  | filename -> [String.capitalize (Filename.(basename (chop_suffix filename ".ml")))]
 
 let pstr_desc_rec_flag pstr =
   match pstr with

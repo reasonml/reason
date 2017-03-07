@@ -24,6 +24,7 @@ let () =
                                   %% (v "-I" % "vendor/cmdliner")
                                   %% (v "-I" % "vendor/easy_format")
                                   %% (v "-I" % "vendor/ppx_deriving")
+                                  %% (v "-I" % "vendor/ppx_tools_versioned")
                                   %% of_list files)
   in
   let build = Pkg.build ~cmd () in

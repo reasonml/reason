@@ -1,0 +1,33 @@
+version = "5.0"
+description = "Tools for authors of ppx rewriters and other syntactic tools (with ocaml-migrate-parsetree support)"
+archive(byte) = "ppx_tools_versioned.cma"
+archive(native) = "ppx_tools_versioned.cmxa"
+requires = "compiler-libs.common"
+
+package "metaquot_402" (
+  version = "5.0"
+  description = "Meta-quotation: 4.02 parsetree quotation"
+  requires = "ppx_tools_versioned"
+  ppx = "./ppx_metaquot_402"
+)
+
+package "metaquot_403" (
+  version = "5.0"
+  description = "Meta-quotation: 4.03 parsetree quotation"
+  requires = "ppx_tools_versioned"
+  ppx = "./ppx_metaquot_403"
+)
+
+package "metaquot_404" (
+  version = "5.0"
+  description = "Meta-quotation: 4.04 parsetree quotation"
+  requires = "ppx_tools_versioned"
+  ppx = "./ppx_metaquot_404"
+)
+
+package "metaquot_405" (
+  version = "5.0"
+  description = "Meta-quotation: 4.05 parsetree quotation"
+  requires = "ppx_tools_versioned"
+  ppx = "./ppx_metaquot_405"
+)
