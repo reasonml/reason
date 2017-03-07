@@ -82,12 +82,12 @@ let create =
         type_decl_sig ; type_ext_sig ; module_type_decl_sig ;
       }
 
-let string_of_core_type (typ : Migrate_parsetree.OCaml_404.Ast.Parsetree.core_type) =
+let string_of_core_type typ =
   let open Migrate_parsetree in
-  let open Ast_404 in
+  (* Convert from OCaml_404 to OCaml_current *)
   let module Convert = Convert(OCaml_404)(OCaml_current) in
-  let typ = Convert.copy_core_type { typ with ptyp_attributes = [] } in
-  Format.asprintf "%a" Pprintast.core_type typ
+  Format.asprintf "%a" Pprintast.core_type
+    (Convert.copy_core_type { typ with ptyp_attributes = [] })
 
 module Arg = struct
   type 'a conv = expression -> ('a, string) Result.result

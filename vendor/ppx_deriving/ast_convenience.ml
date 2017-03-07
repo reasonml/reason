@@ -27,6 +27,7 @@ module Label = struct
 end
 
 module Constant = struct 
+
   type t = Parsetree.constant =
      Pconst_integer of string * char option 
    | Pconst_char of char 
