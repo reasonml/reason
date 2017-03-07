@@ -27,7 +27,8 @@ build_without_utop: compile_error setup_convenient_bin_links
 
 build: compile_error setup_convenient_bin_links
 	cp pkg/META.in pkg/META
-	ocaml pkg/build.ml native=true native-dynlink=true utop=true
+	ocamlbuild -package topkg pkg/build.native
+	./_build/pkg/build.native native=true native-dynlink=true utop=true
 	chmod +x $(shell pwd)/_build/src/*.sh
 	ln -fs $(shell pwd)/_build/src/refmt_merlin_impl.sh refmt_merlin_impl.sh
 

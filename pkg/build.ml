@@ -1,7 +1,5 @@
-#!/usr/bin/env ocaml
 (* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. *)
-#directory "pkg"
-#use "topkg.ml"
+open Topkg
 let trace = try let _ = Sys.getenv "trace" in true with | Not_found -> false
 
 let menhir_options = "'menhir --strict --unused-tokens --fixed-exception --table " ^ (if trace then "--trace" else "") ^ " '"

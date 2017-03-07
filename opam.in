@@ -25,6 +25,7 @@ depends: [
   "menhir"       {>= "20160303"}
   "merlin-extend"{>= "0.3"}
   "result"       {=  "1.2"}
+  "topkg"        {=  "0.7.5"}
   "ocaml-migrate-parsetree"
 ]
 depopts: [
