@@ -2388,18 +2388,18 @@ class printer  ()= object(self:'self)
     | Nolabel ->  self#non_arrowed_non_simple_core_type c (* otherwise parenthesize *)
     | Labelled s -> formatLabeledArgument (atom s) "" (self#non_arrowed_non_simple_core_type c)
     | Optional lbl ->
-            let everythingButQuestion =
-              formatLabeledArgument
-                (atom lbl)
-                ""
-                (makeList
-                   ~postSpace:true
-                   ~break:IfNeed
-                   ~inline:(true, true)
-                   (* I don't think you'll have more than one l here. *)
-                   [self#non_arrowed_non_simple_core_type c]
-                )
-            in makeList [everythingButQuestion; atom "?"]
+       let everythingButQuestion =
+         formatLabeledArgument
+           (atom lbl)
+           ""
+           (makeList
+              ~postSpace:true
+              ~break:IfNeed
+              ~inline:(true, true)
+              (* I don't think you'll have more than one l here. *)
+              [self#non_arrowed_non_simple_core_type c]
+            )
+       in makeList [everythingButQuestion; atom "?"]
 
   method type_param (ct, a) =
     makeList [atom (type_variance a); self#core_type ct]
