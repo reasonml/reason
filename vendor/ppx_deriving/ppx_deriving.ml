@@ -4,7 +4,7 @@ open Location
 open Asttypes
 open Parsetree
 open Ast_helper
-open Ast_convenience
+open Ast_convenience_404
 
 type deriver = {
   name : string ;

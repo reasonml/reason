@@ -4,7 +4,7 @@ open Location
 open Asttypes
 open Parsetree
 open Ast_helper
-open Ast_convenience
+open Ast_convenience_404
 
 let deriver = "show"
 let raise_errorf = Ppx_deriving.raise_errorf
