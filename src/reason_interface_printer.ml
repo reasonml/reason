@@ -41,20 +41,19 @@ module Reason_interface_printer : Printer_maker.PRINTER =
                                   n "bytes"]
           in
           let module_aliases =
-            let mktysubst (mod_, ty) =
-              let combined = mklid (mod_ ^ "." ^ ty) in
-              Pwith_typesubst (Type.mk (mkstr ty) ~manifest:(Typ.constr combined []))
-            in
-            let fmt =
-              let n = "Format" in
-              Md.mk (mkstr n) (Mty.with_
-                                 (Mty.typeof_ (Mod.ident (mklid n)))
-                                 (List.map (mktysubst @@ (fun s -> n, s))
-                                    [ "formatter_out_functions";
-                                      "formatter_tag_functions";
-                                      "formatter" ]))
-            in
-            [Sig.module_ fmt]
+            let module_with_types n types =
+              let mktysubst ty =
+                let manifest = Typ.constr (mklid (n ^ "." ^ ty)) [] in
+                Pwith_typesubst (Type.mk (mkstr ty) ~manifest)
+              in
+              Sig.module_ (Md.mk (mkstr n)
+                                 (Mty.with_ (Mty.typeof_ (Mod.ident (mklid n)))
+                                 (List.map mktysubst types)))
+            in [
+              module_with_types "Format" ["formatter_out_functions";
+                                          "formatter_tag_functions";
+                                          "formatter"];
+              ]
           in
           let structure_items = type_aliases @ module_aliases in
           Sig.module_ (Md.mk (mknoloc "Ppx_deriving_runtime")
