@@ -10,14 +10,14 @@ module Reason_interface_printer : Printer_maker.PRINTER =
         (* Note: filename should only be used with .mli files. See reason_toolchain. *)
         let defaultInterfaceParserFor use_stdin filename =
           let open Reason_toolchain in
-          let (_parser, parsedAsML) =
+          let (theParser, parsedAsML) =
             if Filename.check_suffix filename ".rei"
             then (JS.canonical_interface_with_comments, false)
             else if Filename.check_suffix filename ".mli"
             then (ML.canonical_interface_with_comments, true)
             else err ("Cannot determine default interface parser for filename '" ^ filename ^ "'.")
           in
-          _parser (setup_lexbuf use_stdin filename), parsedAsML, true
+          theParser (setup_lexbuf use_stdin filename), parsedAsML, true
 
         let ppx_deriving_runtime =
           let open Asttypes in
