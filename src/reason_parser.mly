@@ -250,10 +250,6 @@ let mkcf ?(loc=dummy_loc()) ?(ghost=false) d =
     let loc = set_loc_state ghost loc in
     Cf.mk ~loc d
 
-let mkoption d =
-  let loc = {d.ptyp_loc with loc_ghost = true} in
-  Typ.mk ~loc (Ptyp_constr(mkloc (Ldot (Lident "*predef*", "option")) loc,[d]))
-
 let simple_ghost_text_attr ?(loc=dummy_loc ()) txt =
   let loc = set_loc_state true loc in
   [({txt; loc}, PStr [])]
@@ -2297,7 +2293,7 @@ _class_constructor_type:
       {
         let core_type_loc = mklocation $startpos($3) $endpos($3) in
         let ct = only_core_type $3 core_type_loc in
-        mkcty(Pcty_arrow(Optional $1, mkoption ct, $5))
+        mkcty(Pcty_arrow(Optional $1, ct, $5))
        }
   | LIDENTCOLONCOLON non_arrowed_core_type EQUALGREATER class_constructor_type
       {
@@ -4264,7 +4260,7 @@ _core_type2:
   | LIDENTCOLONCOLON non_arrowed_core_type QUESTION EQUALGREATER core_type2
       {
       match $2, $5 with
-      | Core_type ct, Core_type ct2 -> Core_type (mktyp(Ptyp_arrow(Optional $1 , mkoption ct, ct2)))
+      | Core_type ct, Core_type ct2 -> Core_type (mktyp(Ptyp_arrow(Optional $1, ct, ct2)))
       | _ -> syntax_error()
       }
   | LIDENTCOLONCOLON non_arrowed_core_type EQUALGREATER core_type2
