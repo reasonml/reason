@@ -25,9 +25,8 @@ module Reason_interface_printer : Printer_maker.PRINTER =
           let open Longident in
           let open Ast_helper in
           let open Location in
-          let (@@) f g x = f (g x) in
           let mkstr = mknoloc in
-          let mklid = mknoloc @@ Longident.parse in
+          let mklid x = mknoloc (Longident.parse x) in
           let mktypealias (name, params, types) =
             let manifest = Typ.constr (mklid name) types in
             Sig.type_ Nonrecursive [Type.mk ~params ~kind:Ptype_abstract ~manifest (mknoloc name)]
