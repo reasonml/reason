@@ -1,0 +1,25 @@
+module Ppx_deriving_runtime :
+sig
+  type nonrec int = int[@@nonrec ]
+  type nonrec char = char[@@nonrec ]
+  type nonrec string = string[@@nonrec ]
+  type nonrec float = float[@@nonrec ]
+  type nonrec bool = bool[@@nonrec ]
+  type nonrec unit = unit[@@nonrec ]
+  type nonrec exn = exn[@@nonrec ]
+  type nonrec 'a array = 'a array[@@nonrec ]
+  type nonrec 'a list = 'a list[@@nonrec ]
+  type nonrec 'a option = 'a option[@@nonrec ]
+  type nonrec nativeint = nativeint[@@nonrec ]
+  type nonrec int32 = int32[@@nonrec ]
+  type nonrec int64 = int64[@@nonrec ]
+  type nonrec 'a lazy_t = 'a lazy_t[@@nonrec ]
+  type nonrec bytes = bytes[@@nonrec ]
+  module Format :
+  (module type of Format with type  formatter_out_functions := 
+    Format.formatter_out_functions and type  formatter_tag_functions := 
+    Format.formatter_tag_functions and type  formatter :=  Format.formatter)
+end
+type mytype
+val show_mytype : mytype -> Ppx_deriving_runtime.string
+val pp_mytype : Format.formatter -> mytype -> Ppx_deriving_runtime.unit
