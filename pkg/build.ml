@@ -60,6 +60,8 @@ let () =
     Pkg.lib ~exts:(Exts.exts [".cmo"]) "src/reason_toploop";
     Pkg.lib ~exts:(Exts.exts [".cmx"; ".o"]) "src/reasonbuild";
     Pkg.lib ~cond:(Conf.value c utop) ~exts:(Exts.exts [".cmo"]) "src/reason_utop";
+    (* TODO: clean up all this nonsense when ppx_tools_versioned is released on
+       opam *)
     Pkg.bin ~auto:true "vendor/ppx_tools_versioned/ppx_metaquot_404.ml" ~dst:"metaquot";
     Pkg.bin ~auto:true "src/refmt_impl" ~dst:"refmt";
     Pkg.bin ~auto:true "src/ocamlmerlin_reason" ~dst:"ocamlmerlin-reason";
