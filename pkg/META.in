@@ -18,7 +18,7 @@ archive(byte, toploop, -pkg_utop) += "reason_toploop.cmo"
 archive(byte, toploop, pkg_utop) += "reason_utop.cmo"
 
 archive(byte) = "@result/result.cmo"
-archive(byte) += "ppx_deriving_show.cmo reason.cma"
+archive(byte) += "ast_convenience_404.cmo ppx_deriving.cmo ppx_deriving_show.cmo reason.cma"
 archive(native) = "reason.cmxa"
 
 package "lib" (
