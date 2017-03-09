@@ -598,3 +598,30 @@ module OverEager = {
 };
 
 let element = <OverEager fiber=Metal.fiber />;
+
+type style = {
+  width: int,
+  height: int,
+  paddingTop: int,
+  paddingLeft: int,
+  paddingRight: int,
+  paddingBottom: int
+};
+
+module Window = {
+  let createElement ::style ::children () => {
+    displayName: "window"
+  };
+};
+
+let w =
+  <Window
+    style={
+      width: 10,
+      height: 10,
+      paddingTop: 10,
+      paddingLeft: 10,
+      paddingRight: 10,
+      paddingBottom: 10
+    }
+  />;

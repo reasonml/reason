@@ -3684,8 +3684,12 @@ class printer  ()= object(self:'self)
       | (Labelled lbl, expression) :: tail ->
          let nextAttr =
            match expression.pexp_desc with
-           | Pexp_ident (ident) when ((isLongIdentWithDot ident.txt) == false
+           | Pexp_ident (ident) when (not (isLongIdentWithDot ident.txt)
                                         && (Longident.last ident.txt) = lbl) -> atom lbl
+           | Pexp_record (l, eo) ->
+              label (makeList [atom lbl; atom "="]) (self#unparseRecord l eo)
+           | Pexp_extension e ->
+              label (makeList [atom lbl; atom "="]) (self#extension e)
            | _ -> makeList ([atom lbl; atom "="; self#simplifyUnparseExpr expression])
          in
          processArguments tail (nextAttr :: processedAttrs) children
