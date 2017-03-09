@@ -177,11 +177,18 @@ let identifier_mapper f =
 }
 
 let create_auto_printer_mapper =
-  let attach_printer = function
+  let attach_str_printer = function
     | { pstr_desc=Pstr_type (_,type_decls) } as ty ->
         let str_of_type = Ppx_deriving_show.str_of_type ~options:[] ~path:[] in
         let printer = List.concat (List.map str_of_type type_decls) in
         (ty, Some (Ast_helper.Str.value Recursive printer))
+    | ty -> (ty, None)
+  in
+  let attach_sig_printer = function
+    | { psig_desc=Psig_type (_,type_decls) } as ty ->
+        let sig_of_type = Ppx_deriving_show.sig_of_type ~options:[] ~path:[] in
+        let printer = List.concat (List.map sig_of_type type_decls) in
+        (ty, Some printer)
     | ty -> (ty, None)
   in
   { default_mapper with structure = begin fun mapper decls ->
@@ -190,26 +197,17 @@ let create_auto_printer_mapper =
         | (s, None) -> s::acc
         | (s, Some x) -> x::s::acc
       in
-      List.rev (List.fold_left maybe_concat [] (List.map attach_printer decls))
+      List.rev (List.fold_left maybe_concat [] (List.map attach_str_printer decls))
     in
     default_mapper.structure mapper decls
-  end }
-
-let create_auto_printer_sig_mapper =
-  let attach_printer = function
-    | { psig_desc=Psig_type (_,type_decls) } as ty ->
-        let sig_of_type = Ppx_deriving_show.sig_of_type ~options:[] ~path:[] in
-        let printer = List.concat (List.map sig_of_type type_decls) in
-        (ty, Some printer)
-    | ty -> (ty, None)
-  in
-  { default_mapper with signature = begin fun mapper decls ->
+  end;
+  signature = begin fun mapper decls ->
     let decls =
       let maybe_concat acc = function
         | (s, None) -> s::acc
         | (s, Some x) -> x @ (s::acc)
       in
-      List.rev (List.fold_left maybe_concat [] (List.map attach_printer decls))
+      List.rev (List.fold_left maybe_concat [] (List.map attach_sig_printer decls))
     in
     default_mapper.signature mapper decls
   end }
