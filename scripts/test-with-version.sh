@@ -8,3 +8,4 @@ eval `opam config env`
 opam update
 opam pin add -y reason .
 make test
+git diff --exit-code
