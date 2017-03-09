@@ -18,7 +18,6 @@ dependencies:
 
 test:
     override:
-        # One annoying test fails
-        # - ./scripts/test-with-version.sh 4.02.3
+        - ./scripts/test-with-version.sh 4.02.3
         - ./scripts/test-with-version.sh 4.03.0
         - ./scripts/test-with-version.sh 4.04.0
