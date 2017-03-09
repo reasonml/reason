@@ -100,7 +100,7 @@ type instatiatedTypeDef = myTypeDef int => int;
  * implementations (fewer conflicts during parsing, fewer edge cases during
  * printing).
  */
-type something = (int, (int [@lookAtThisAttribute] ));
+type something = (int, ([@lookAtThisAttribute] int));
 
 type longWrappingTypeDefinitionExample =
   M_RK__G.Types.instance

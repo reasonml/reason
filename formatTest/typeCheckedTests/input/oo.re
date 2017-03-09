@@ -37,17 +37,21 @@ let tmp = {
 /**
  * Comment on stackWithAttributes.
  */
+[@@x]
 class virtual stackWithAttributes 'a init =>
 /* Before class */
 {
 
   /* The "as this" should not be formatted away because attributes. */
-  as this [@thisShouldntBeFormattedAway];
+
+  as [@thisShouldntBeFormattedAway] this;
   /* Before floatting attribute */
   [@@@floatingAttribute];
   /* Virtual member */
-  val virtual dummy : unit [@@itemAttr1 ];
-  val mutable v : list 'a = init [@@itemAttr2];
+  [@@itemAttr1]
+  val virtual dummy : unit;
+  [@@itemAttr2]
+  val mutable v : list 'a = init;
 
   pub virtual implementMe: int => int;
   pub pop =>
@@ -64,7 +68,6 @@ class virtual stackWithAttributes 'a init =>
     print_string "initializing object";
   };
 }
-[@@x  ]
 ;
 
 class extendedStack 'a init => {
