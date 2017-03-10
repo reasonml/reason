@@ -19,16 +19,16 @@ setup_convenient_bin_links:
 	ln -fs $(shell pwd)/_build/src/share.sh $(shell pwd)/_build/bin/share
 	ln -fs $(shell pwd)/_build/src/reup.sh $(shell pwd)/_build/bin/reup
 
-build_without_utop: compile_error setup_convenient_bin_links
+precompile: compile_error setup_convenient_bin_links
 	cp pkg/META.in pkg/META
 	ocamlbuild -package topkg pkg/build.native
+
+build_without_utop: precompile
 	./_build/pkg/build.native build --utop false
 	chmod +x $(shell pwd)/_build/src/*.sh
 	ln -fs $(shell pwd)/_build/src/refmt_merlin_impl.sh refmt_merlin_impl.sh
 
-build: compile_error setup_convenient_bin_links
-	cp pkg/META.in pkg/META
-	ocamlbuild -package topkg pkg/build.native
+build: precompile
 	./_build/pkg/build.native build --utop true
 	chmod +x $(shell pwd)/_build/src/*.sh
 	ln -fs $(shell pwd)/_build/src/refmt_merlin_impl.sh refmt_merlin_impl.sh
