@@ -23,8 +23,8 @@ let () =
                                   % "-I,+ocamldoc"
                                   %% (v "-I" % "vendor/cmdliner")
                                   %% (v "-I" % "vendor/easy_format")
-                                  %% (v "-I" % "vendor/ppx_deriving")
                                   %% (v "-I" % "vendor/ppx_tools_versioned")
+                                  %% (v "-I" % "vendor/ppx_deriving")
                                   %% of_list files)
   in
   let build = Pkg.build ~cmd () in
@@ -53,16 +53,16 @@ let () =
     Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"; ".cmxs"]) "src/redoc_html";
     Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"]) "vendor/cmdliner/cmdliner";
     Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"]) "vendor/easy_format/easy_format";
+    (* TODO: clean up all this nonsense when ppx_tools_versioned is released on
+       opam *)
     Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"]) "vendor/ppx_tools_versioned/ast_convenience_404";
+    Pkg.bin ~auto:true "vendor/ppx_tools_versioned/ppx_metaquot_404" ~dst:"metaquot";
     Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"]) "vendor/ppx_deriving/ppx_deriving";
     Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"]) "vendor/ppx_deriving/ppx_deriving_show";
     Pkg.lib ~exts:Exts.library "src/reasondoc";
     Pkg.lib ~exts:(Exts.exts [".cmo"]) "src/reason_toploop";
     Pkg.lib ~exts:(Exts.exts [".cmx"; ".o"]) "src/reasonbuild";
     Pkg.lib ~cond:(Conf.value c utop) ~exts:(Exts.exts [".cmo"]) "src/reason_utop";
-    (* TODO: clean up all this nonsense when ppx_tools_versioned is released on
-       opam *)
-    Pkg.bin ~auto:true "vendor/ppx_tools_versioned/ppx_metaquot_404.ml" ~dst:"metaquot";
     Pkg.bin ~auto:true "src/refmt_impl" ~dst:"refmt";
     Pkg.bin ~auto:true "src/ocamlmerlin_reason" ~dst:"ocamlmerlin-reason";
     Pkg.bin ~auto:false "src/refmt_merlin_impl.sh" ~dst:"refmt_merlin";
