@@ -21,7 +21,6 @@ let () =
                                   %% (v "-menhir" % menhir_options)
                                   % "-cflags"
                                   % "-I,+ocamldoc"
-                                  %% (v "-build-dir" % (Conf.build_dir c))
                                   %% (v "-I" % "vendor/cmdliner")
                                   %% (v "-I" % "vendor/easy_format")
                                   %% (v "-I" % "vendor/ppx_deriving")
@@ -58,8 +57,8 @@ let () =
     Pkg.lib ~exts:(Exts.exts [".cmo"]) "src/reason_toploop";
     Pkg.lib ~exts:(Exts.exts [".cmx"; ".o"]) "src/reasonbuild";
     Pkg.lib ~cond:(Conf.value c utop) ~exts:(Exts.exts [".cmo"]) "src/reason_utop";
-    Pkg.bin "src/refmt_impl" ~dst:"refmt";
-    Pkg.bin "src/ocamlmerlin_reason" ~dst:"ocamlmerlin-reason";
+    Pkg.bin ~auto:true "src/refmt_impl" ~dst:"refmt";
+    Pkg.bin ~auto:true "src/ocamlmerlin_reason" ~dst:"ocamlmerlin-reason";
     Pkg.bin ~auto:false "src/refmt_merlin_impl.sh" ~dst:"refmt_merlin";
     Pkg.bin ~auto:false "src/reopt.sh" ~dst:"reopt";
     Pkg.bin ~auto:false "src/rec.sh" ~dst:"rec";
