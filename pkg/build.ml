@@ -1,44 +1,65 @@
 (* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. *)
+
 open Topkg
-let trace = try let _ = Sys.getenv "trace" in true with | Not_found -> false
 
-let menhir_options = "'menhir --strict --unused-tokens --fixed-exception --table " ^ (if trace then "--trace" else "") ^ " '"
-let menhir_command = "-menhir " ^ menhir_options
+let menhir_options =
+  let trace = try let _ = Sys.getenv "trace" in "--trace" with | Not_found -> "" in
+  "menhir --strict --unused-tokens --fixed-exception --table " ^ trace
 
-let vendored_libs = [ "cmdliner"; "easy_format"; "ppx_deriving" ]
-let vendor_options = String.concat " " (List.map ((^) "-I vendor/") vendored_libs)
+let utop = Conf.(key "utop" bool ~absent:false)
+let native = Conf.(key "native" bool ~absent:false)
+let native_dynlink = Conf.(key "native-dynlink" bool ~absent:false)
+let _ = native
+let _ = native_dynlink
 
-(* ; "-menhir 'menhir --trace'" *)
 let () =
 
-  Pkg.describe "reason" ~builder:(`OCamlbuild ["-use-menhir"; menhir_command; "-cflags -I,+ocamldoc " ^ vendor_options]) [
+  let cmd c os _ =
+    let ocamlbuild = Conf.tool "ocamlbuild" os in
+    OS.Cmd.run(
+      Cmd.(ocamlbuild
+                      % "-use-ocamlfind"
+                      % "-use-menhir"
+                      %% (v "-menhir" % menhir_options)
+                      % "-cflags"
+                      % "-I,+ocamldoc"
+                      %% (v "-build-dir" % (Conf.build_dir c))
+                      %% (v "-I" % "vendor/cmdliner")
+                      %% (v "-I" % "vendor/easy_format")
+                      %% (v "-I" % "vendor/ppx_deriving")
+      )
+    )
+  in
+  let build = Pkg.build ~cmd () in
+  Pkg.describe "reason" ~build ~change_logs:[] ~licenses:[] ~readmes:[] @@ fun c ->
+  Ok [
     Pkg.lib "pkg/META";
     (* The .mllib *)
     (* Our job is to generate reason.cma, but depending on whether or not
      * `utop` is available, we'll select an `.mllib` to compile as
      * `reason.cma`.
      *)
-    Pkg.lib ~cond:(Env.bool "utop") ~exts:Exts.library "src/reason" ~dst:"reason";
-    Pkg.lib ~cond:(not (Env.bool "utop")) ~exts:Exts.library "src/reason_without_utop" ~dst:"reason";
+    Pkg.lib ~cond:(Conf.value c utop) ~exts:Exts.library "src/reason" ~dst:"reason";
+    Pkg.lib ~cond:(not (Conf.value c utop)) ~exts:Exts.library "src/reason_without_utop" ~dst:"reason";
     (* But then regardless of if we have `utop` installed - still compile a
        library when the use case demands that there be no `utop` *)
-    Pkg.lib ~exts:[`Ext ".cmo"; `Ext ".cmx";`Ext ".cmi"; `Ext ".cmt";`Ext ".mli"] "src/reason_parser";
-    Pkg.lib ~exts:[`Ext ".cmo"; `Ext ".cmx";`Ext ".cmi";] "src/reason_lexer";
-    Pkg.lib ~exts:[`Ext ".cmo"; `Ext ".cmx";`Ext ".cmi"; `Ext ".cmt"] "src/reason_pprint_ast";
-    Pkg.lib ~exts:[`Ext ".cmo"; `Ext ".cmx";`Ext ".cmi"; `Ext ".cmt"; `Ext ".cmxs"] "src/reason_oprint";
-    Pkg.lib ~exts:[`Ext ".cmo"; `Ext ".cmx";`Ext ".cmi"; `Ext ".cmt"] "src/reason_config";
-    Pkg.lib ~exts:[`Ext ".cmo"; `Ext ".cmx";`Ext ".cmi"; `Ext ".cmt"] "src/reason_util";
-    Pkg.lib ~exts:[`Ext ".cmo"; `Ext ".cmx";`Ext ".cmi"; `Ext ".cmt"] "src/reason_parser_message";
-    Pkg.lib ~exts:[`Ext ".cmo"; `Ext ".cmx";`Ext ".cmi"; `Ext ".cmt"] "src/reason_toolchain";
-    Pkg.lib ~exts:[`Ext ".cmo"; `Ext ".cmx";`Ext ".cmi"; `Ext ".cmt"] "src/syntax_util";
-    Pkg.lib ~exts:[`Ext ".cmo"; `Ext ".cmx";`Ext ".cmi"; `Ext ".cmt"; `Ext ".cmxs"] "src/redoc_html";
-    Pkg.lib ~exts:[`Ext ".cmo"; `Ext ".cmx";`Ext ".cmi"; `Ext ".cmt"] "vendor/cmdliner/cmdliner";
-    Pkg.lib ~exts:[`Ext ".cmo"; `Ext ".cmx";`Ext ".cmi"; `Ext ".cmt"] "vendor/easy_format/easy_format";
-    Pkg.lib ~exts:[`Ext ".cmo"; `Ext ".cmx";`Ext ".cmi"; `Ext ".cmt"] "vendor/ppx_deriving/ppx_deriving_show";
+    Pkg.lib ~exts:(Exts.exts [ ".cmo"; ".cmx";".cmi"; ".cmt";".mli"]) "src/reason_parser";
+    Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi";]) "src/reason_lexer";
+    Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"]) "src/reason_pprint_ast";
+    Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"; ".cmxs"]) "src/reason_oprint";
+    Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"]) "src/reason_config";
+    Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"]) "src/reason_util";
+    Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"]) "src/reason_parser_message";
+    Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"]) "src/reason_toolchain";
+    Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"]) "src/syntax_util";
+    Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"; ".cmxs"]) "src/redoc_html";
+    Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"]) "vendor/cmdliner/cmdliner";
+    Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"]) "vendor/easy_format/easy_format";
+    Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"]) "vendor/ppx_deriving/ppx_deriving_show";
     Pkg.lib ~exts:Exts.library "src/reasondoc";
-    Pkg.lib ~exts:[`Ext ".cmo"] "src/reason_toploop";
-    Pkg.lib ~exts:[`Ext ".cmx"; `Ext ".o"] "src/reasonbuild";
-    Pkg.lib ~cond:(Env.bool "utop") ~exts:[`Ext ".cmo"] "src/reason_utop";
+    Pkg.lib ~exts:(Exts.exts [".cmo"]) "src/reason_toploop";
+    Pkg.lib ~exts:(Exts.exts [".cmx"; ".o"]) "src/reasonbuild";
+    Pkg.lib ~cond:(Conf.value c utop) ~exts:(Exts.exts [".cmo"]) "src/reason_utop";
     Pkg.bin ~auto:true "src/refmt_impl" ~dst:"refmt";
     Pkg.bin ~auto:true "src/ocamlmerlin_reason" ~dst:"ocamlmerlin-reason";
     Pkg.bin  "src/refmt_merlin_impl.sh" ~dst:"refmt_merlin";
@@ -70,7 +91,6 @@ let () =
     Pkg.share "editorSupport/VimReason/README.md" ~dst:"editorSupport/VimReason/README.md";
     Pkg.share "editorSupport/VimReason/syntax/reason.vim" ~dst:"editorSupport/VimReason/syntax/reason.vim";
     Pkg.share "editorSupport/VimReason/syntax_checkers/reason/reasonc.vim" ~dst:"editorSupport/VimReason/syntax_checkers/reason/reasonc.vim";
-
 
     Pkg.doc "README.md";
     Pkg.doc "LICENSE.txt";

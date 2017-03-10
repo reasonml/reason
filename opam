@@ -1,7 +1,7 @@
 
 opam-version: "1.2"
 name: "reason"
-version: "1.9.0"
+version: "1.9.1"
 maintainer: "Jordan Walke <jordojw@gmail.com>"
 authors: [ "Jordan Walke <jordojw@gmail.com>" ]
 license: "BSD"
@@ -13,9 +13,12 @@ tags: [ "syntax" ]
 substs: [ "pkg/META" ]
 build: [
   [make "compile_error"]
-  ["ocaml" "pkg/build.ml" "native=%{ocaml-native}%"
-                         "native-dynlink=%{ocaml-native-dynlink}%"
-                         "utop=%{utop:installed}%"]
+  ["ocamlbuild" "-package" "topkg" "pkg/build.native"]
+  ["pwd"]
+  ["_build/pkg/build.native" "build"
+      "--native" "%{ocaml-native}%"
+      "--native-dynlink" "%{ocaml-native-dynlink}%"
+      "--utop" "%{utop:installed}%"]
 ]
 build-test: [
   "ocamlbuild" "-classic-display" "-use-ocamlfind" "src_test/test_reason.byte" "--"
@@ -26,7 +29,7 @@ depends: [
   "menhir"       {>= "20160303"}
   "merlin-extend"{>= "0.3"}
   "result"       {=  "1.2"}
-  "topkg"        {=  "0.7.5"}
+  "topkg"        {=  "0.8.1"}
   "ocaml-migrate-parsetree"
 ]
 depopts: [

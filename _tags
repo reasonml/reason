@@ -5,6 +5,7 @@ true: warn(@5@8@10@11@12@14@23-24@26@29@40), bin_annot, safe_string, debug
 <bspacks/**>: -traverse
 "formatTest": -traverse
 "src": include
+<pkg/*>: package(topkg)
 <src/*>: package(menhirLib unix compiler-libs.common ocamlbuild findlib merlin_extend result dynlink findlib.dynload ocaml-migrate-parsetree)
 <src/reason_utop.*>: package(menhirLib utop)
 <vendor/ppx_deriving/*>: package(compiler-libs.common findlib result ocaml-migrate-parsetree)

@@ -257,7 +257,9 @@ end = struct
 end
 
 module Env : sig
-  include Env
+  val bool : string -> bool
+  val native : bool
+  val native_dynlink : bool
   val get : unit -> (string * bool) list
   val error : unit -> bool
 end = struct
@@ -275,6 +277,7 @@ end = struct
 
   let native = bool "native"
   let native_dynlink = bool "native-dynlink"
+  let utop = bool "utop"
   let error () = !error
 end
 

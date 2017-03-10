@@ -1,6 +1,6 @@
 
 {
-    "version": "1.9.0",
+    "version": "1.9.1",
     "description": "Friendly Syntax & Toolchain Powered by OCaml",
     "repository": {
       "type": "git",
@@ -24,7 +24,7 @@
             "val": "./_build/ocamlfind/lib"
         },
         "version": {
-            "val": "1.9.0",
+            "val": "1.9.1",
             "global": true,
             "globalCollisionBehavior": "clobber"
         },
@@ -42,7 +42,7 @@
         "reason_version": {
             "global": true,
             "globalCollisionBehavior": "clobber",
-            "val": "1.9.0"
+            "val": "1.9.1"
         }
     },
     "name": "reason",
