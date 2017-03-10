@@ -109,6 +109,8 @@ cd reason
 opam pin add -y reason .
 ```
 
+**Note**: during the last `opam pin` step, make sure your local repo is clean. In particular, remove artifacts and `node_modules`. Otherwise the pinning might go stale or stall due to the big `node_modules`.
+
 License
 -------
 
