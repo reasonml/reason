@@ -14,23 +14,21 @@ let _ = native_dynlink
 
 let () =
 
-  let cmd c os _ =
+  let cmd c os files =
     let ocamlbuild = Conf.tool "ocamlbuild" os in
-    OS.Cmd.run(
-      Cmd.(ocamlbuild
-                      % "-use-ocamlfind"
-                      % "-use-menhir"
-                      %% (v "-menhir" % menhir_options)
-                      % "-cflags"
-                      % "-I,+ocamldoc"
-                      %% (v "-build-dir" % (Conf.build_dir c))
-                      %% (v "-I" % "vendor/cmdliner")
-                      %% (v "-I" % "vendor/easy_format")
-                      %% (v "-I" % "vendor/ppx_deriving")
-      )
-    )
+    OS.Cmd.run @@ Cmd.(ocamlbuild % "-use-ocamlfind"
+                                  % "-use-menhir"
+                                  %% (v "-menhir" % menhir_options)
+                                  % "-cflags"
+                                  % "-I,+ocamldoc"
+                                  %% (v "-build-dir" % (Conf.build_dir c))
+                                  %% (v "-I" % "vendor/cmdliner")
+                                  %% (v "-I" % "vendor/easy_format")
+                                  %% (v "-I" % "vendor/ppx_deriving")
+                                  %% of_list files)
   in
   let build = Pkg.build ~cmd () in
+  let doc = Pkg.doc ~built:false in
   Pkg.describe "reason" ~build ~change_logs:[] ~licenses:[] ~readmes:[] @@ fun c ->
   Ok [
     Pkg.lib "pkg/META";
@@ -60,21 +58,21 @@ let () =
     Pkg.lib ~exts:(Exts.exts [".cmo"]) "src/reason_toploop";
     Pkg.lib ~exts:(Exts.exts [".cmx"; ".o"]) "src/reasonbuild";
     Pkg.lib ~cond:(Conf.value c utop) ~exts:(Exts.exts [".cmo"]) "src/reason_utop";
-    Pkg.bin ~auto:true "src/refmt_impl" ~dst:"refmt";
-    Pkg.bin ~auto:true "src/ocamlmerlin_reason" ~dst:"ocamlmerlin-reason";
-    Pkg.bin  "src/refmt_merlin_impl.sh" ~dst:"refmt_merlin";
-    Pkg.bin  "src/reopt.sh" ~dst:"reopt";
-    Pkg.bin  "src/rec.sh" ~dst:"rec";
-    Pkg.bin  "src/share.sh" ~dst:"share";
-    Pkg.bin  "src/rebuild.sh" ~dst:"rebuild";
-    Pkg.bin  "src/rtop.sh" ~dst:"rtop";
-    Pkg.bin  "src/redoc.sh" ~dst:"redoc";
-    Pkg.bin  "src/reup.sh" ~dst:"reup";
-    Pkg.bin  "src/rtop_init.ml" ~dst:"rtop_init.ml";
-    Pkg.bin "_reasonbuild/_build/myocamlbuild" ~dst:"reasonbuild";
-    Pkg.bin  ~auto:true "src/reason_format_type" ~dst:"refmttype";
-    Pkg.bin  ~auto:true "src/reactjs_jsx_ppx" ~dst:"reactjs_jsx_ppx";
-    Pkg.bin  ~auto:true "src/ppx_react" ~dst:"ppx_react";
+    Pkg.bin "src/refmt_impl" ~dst:"refmt";
+    Pkg.bin "src/ocamlmerlin_reason" ~dst:"ocamlmerlin-reason";
+    Pkg.bin ~auto:false "src/refmt_merlin_impl.sh" ~dst:"refmt_merlin";
+    Pkg.bin ~auto:false "src/reopt.sh" ~dst:"reopt";
+    Pkg.bin ~auto:false "src/rec.sh" ~dst:"rec";
+    Pkg.bin ~auto:false "src/share.sh" ~dst:"share";
+    Pkg.bin ~auto:false "src/rebuild.sh" ~dst:"rebuild";
+    Pkg.bin ~auto:false "src/rtop.sh" ~dst:"rtop";
+    Pkg.bin ~auto:false "src/redoc.sh" ~dst:"redoc";
+    Pkg.bin ~auto:false "src/reup.sh" ~dst:"reup";
+    Pkg.bin ~auto:false "src/rtop_init.ml" ~dst:"rtop_init.ml";
+    Pkg.bin ~auto:false "_reasonbuild/_build/myocamlbuild" ~dst:"reasonbuild";
+    Pkg.bin "src/reason_format_type" ~dst:"refmttype";
+    Pkg.bin "src/reactjs_jsx_ppx" ~dst:"reactjs_jsx_ppx";
+    Pkg.bin "src/ppx_react" ~dst:"ppx_react";
     Pkg.share "editorSupport/emacs/refmt.el" ~dst:"../emacs/site-lisp/refmt.el";
     Pkg.share "editorSupport/emacs/reason-mode.el" ~dst:"../emacs/site-lisp/reason-mode.el";
 
@@ -92,7 +90,6 @@ let () =
     Pkg.share "editorSupport/VimReason/syntax/reason.vim" ~dst:"editorSupport/VimReason/syntax/reason.vim";
     Pkg.share "editorSupport/VimReason/syntax_checkers/reason/reasonc.vim" ~dst:"editorSupport/VimReason/syntax_checkers/reason/reasonc.vim";
 
-    Pkg.doc "README.md";
-    Pkg.doc "LICENSE.txt";
-    Pkg.doc "CHANGELOG.md";
+    doc "README.md";
+    doc "LICENSE.txt";
   ]
