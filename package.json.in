@@ -53,7 +53,7 @@
         "@opam-alpha/ocaml": "4.2.3",
         "@opam-alpha/ocaml-migrate-parsetree": "*",
         "@opam-alpha/result": "*",
-        "@opam-alpha/topkg": "0.7.5",
+        "@opam-alpha/topkg": "0.8.1",
         "dependency-env": "*",
         "opam-installer-bin": "https://github.com/yunxing/opam-installer-bin.git",
         "nopam": "*",
