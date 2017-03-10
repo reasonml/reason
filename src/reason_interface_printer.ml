@@ -3,18 +3,60 @@ open Ast_404
 
 module Reason_interface_printer : Printer_maker.PRINTER =
     struct
+        type q = Parsetree.signature_item
         type t = Parsetree.signature
-        exception Invalid_config = Printer_maker.Invalid_config
+        let err = Printer_maker.err
 
         (* Note: filename should only be used with .mli files. See reason_toolchain. *)
         let defaultInterfaceParserFor use_stdin filename =
+          let open Reason_toolchain in
+          let (theParser, parsedAsML) =
             if Filename.check_suffix filename ".rei"
-            then (Reason_toolchain.JS.canonical_interface_with_comments (Reason_toolchain.setup_lexbuf use_stdin filename) , false, true)
+            then (JS.canonical_interface_with_comments, false)
             else if Filename.check_suffix filename ".mli"
-            then (Reason_toolchain.ML.canonical_interface_with_comments (Reason_toolchain.setup_lexbuf use_stdin filename), true, true)
-            else (
-                raise (Invalid_config ("Cannot determine default interface parser for filename '" ^ filename ^ "'."))
-                )
+            then (ML.canonical_interface_with_comments, true)
+            else err ("Cannot determine default interface parser for filename '" ^ filename ^ "'.")
+          in
+          theParser (setup_lexbuf use_stdin filename), parsedAsML, true
+
+        let ppx_deriving_runtime =
+          let open Asttypes in
+          let open Parsetree in
+          let open Longident in
+          let open Ast_helper in
+          let open Location in
+          let mkstr = mknoloc in
+          let mklid x = mknoloc (Longident.parse x) in
+          let mktypealias (name, params, types) =
+            let manifest = Typ.constr (mklid name) types in
+            Sig.type_ Nonrecursive [Type.mk ~params ~kind:Ptype_abstract ~manifest (mknoloc name)]
+          in
+          let type_aliases =
+            let n s = (s, [], []) in
+            let a s = (s, [(Typ.var "a"), Invariant], [Typ.var "a"]) in
+            List.map mktypealias [n "int"; n "char"; n "string"; n "float"; n "bool";
+                                  n "unit"; n "exn"; a "array"; a "list"; a "option";
+                                  n "nativeint"; n "int32"; n "int64"; a "lazy_t";
+                                  n "bytes"]
+          in
+          let module_aliases =
+            let module_with_types n types =
+              let mktysubst ty =
+                let manifest = Typ.constr (mklid (n ^ "." ^ ty)) [] in
+                Pwith_typesubst (Type.mk (mkstr ty) ~manifest)
+              in
+              Sig.module_ (Md.mk (mkstr n)
+                                 (Mty.with_ (Mty.typeof_ (Mod.ident (mklid n)))
+                                 (List.map mktysubst types)))
+            in [
+              module_with_types "Format" ["formatter_out_functions";
+                                          "formatter_tag_functions";
+                                          "formatter"];
+              ]
+          in
+          let structure_items = type_aliases @ module_aliases in
+          Sig.module_ (Md.mk (mknoloc "Ppx_deriving_runtime")
+                             (Mty.signature structure_items))
 
         let parse filetype use_stdin filename =
             let ((ast, comments), parsedAsML, parsedAsInterface) =
@@ -32,7 +74,10 @@ module Reason_interface_printer : Printer_maker.PRINTER =
                     ((intf lexbuf), false, true))
             in
             if not parsedAsInterface then
-                raise (Invalid_config ("The file parsed does not appear to be an interface file."))
+              err "The file parsed does not appear to be an interface file."
+            else if !Reason_config.add_printers then
+              (* NB: Not idempotent. *)
+              ((ppx_deriving_runtime::ast, comments), parsedAsML)
             else ((ast, comments), parsedAsML)
 
         let print printtype filename parsedAsML output_chan output_formatter =

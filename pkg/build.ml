@@ -23,6 +23,7 @@ let () =
                                   % "-I,+ocamldoc"
                                   %% (v "-I" % "vendor/cmdliner")
                                   %% (v "-I" % "vendor/easy_format")
+                                  %% (v "-I" % "vendor/ppx_tools_versioned")
                                   %% (v "-I" % "vendor/ppx_deriving")
                                   %% of_list files)
   in
@@ -52,6 +53,11 @@ let () =
     Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"; ".cmxs"]) "src/redoc_html";
     Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"]) "vendor/cmdliner/cmdliner";
     Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"]) "vendor/easy_format/easy_format";
+    (* TODO: clean up all this nonsense when ppx_tools_versioned is released on
+       opam *)
+    Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"]) "vendor/ppx_tools_versioned/ast_convenience_404";
+    Pkg.bin ~auto:true "vendor/ppx_tools_versioned/ppx_metaquot_404" ~dst:"metaquot";
+    Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"]) "vendor/ppx_deriving/ppx_deriving";
     Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"]) "vendor/ppx_deriving/ppx_deriving_show";
     Pkg.lib ~exts:Exts.library "src/reasondoc";
     Pkg.lib ~exts:(Exts.exts [".cmo"]) "src/reason_toploop";

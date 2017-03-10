@@ -3,26 +3,29 @@ open Ast_404
 
 module Reason_implementation_printer : Printer_maker.PRINTER =
     struct
+        type q = Parsetree.structure_item
         type t = Parsetree.structure
-        exception Invalid_config = Printer_maker.Invalid_config
+        let err = Printer_maker.err
 
         (* Note: filename should only be used with .ml files. See reason_toolchain. *)
         let defaultImplementationParserFor use_stdin filename =
-          if Filename.check_suffix filename ".re" then (Reason_toolchain.JS.canonical_implementation_with_comments (Reason_toolchain.setup_lexbuf use_stdin filename), false, false)
-          else if Filename.check_suffix filename ".ml" then (Reason_toolchain.ML.canonical_implementation_with_comments (Reason_toolchain.setup_lexbuf use_stdin filename), true, false)
-          else (
-            raise (Invalid_config ("Cannot determine default implementation parser for filename '" ^ filename ^ "'."))
-          )
+          let open Reason_toolchain in
+          let (theParser, parsedAsML) =
+            if Filename.check_suffix filename ".re"
+            then (JS.canonical_implementation_with_comments, false)
+            else if Filename.check_suffix filename ".ml"
+            then (ML.canonical_implementation_with_comments, true)
+            else err ("Cannot determine default implementation parser for filename '" ^ filename ^ "'.")
+          in
+          theParser (setup_lexbuf use_stdin filename), parsedAsML, false
 
-        (* NB: Not idempotent. *)
-        let ppx_show_runtime =
+        let ppx_deriving_runtime =
           let open Asttypes in
           let open Parsetree in
           let open Longident in
           let open Ast_helper in
           let open Location in
           let mktypealias (name, params, types) =
-            (* Unsure if this is correct. *)
             let manifest = Typ.constr (mknoloc (Lident name)) types in
             Str.type_ Nonrecursive [Type.mk ~params ~kind:Ptype_abstract ~manifest (mknoloc name)]
           in
@@ -67,10 +70,12 @@ module Reason_implementation_printer : Printer_maker.PRINTER =
                     (impl lexbuf, false, false))
             in
             if parsedAsInterface then
-              raise (Invalid_config ("The file parsed does not appear to be an implementation file."))
+              err "The file parsed does not appear to be an implementation file."
             else if !Reason_config.add_printers then
-              ((ppx_show_runtime::ast, comments), parsedAsML)
-            else ((ast, comments), parsedAsML)
+              (* NB: Not idempotent. *)
+              ((ppx_deriving_runtime::ast, comments), parsedAsML)
+            else
+              ((ast, comments), parsedAsML)
 
         let print printtype filename parsedAsML output_chan output_formatter =
             match printtype with

@@ -22,6 +22,7 @@ setup_convenient_bin_links:
 precompile: compile_error setup_convenient_bin_links
 	cp pkg/META.in pkg/META
 	ocamlbuild -package topkg pkg/build.native
+	ocamlbuild -package ocaml-migrate-parsetree vendor/ppx_tools_versioned/ppx_metaquot_404.native
 
 build_without_utop: precompile
 	./build.native build --utop false

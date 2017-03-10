@@ -8,12 +8,15 @@ exception Invalid_config of string
 
 module type PRINTER =
     sig
-        type t
+        type q
+        type t = q list
 
         val parse : parse_itype ->
                     bool ->
                     string ->
                     ((t * Reason_pprint_ast.commentWithCategory) * bool)
+
+        val ppx_deriving_runtime : q
 
         val print : print_itype ->
                     string ->
@@ -22,6 +25,8 @@ module type PRINTER =
                     Format.formatter ->
                     ((t * Reason_pprint_ast.commentWithCategory) -> unit)
     end
+
+let err s = raise (Invalid_config s)
 
 let prepare_output_file = function
     | Some name -> open_out_bin name

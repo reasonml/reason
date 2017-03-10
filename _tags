@@ -7,7 +7,8 @@ true: warn(@5@8@10@11@12@14@23-24@26@29@40), bin_annot, safe_string, debug
 "src": include
 <src/*>: package(menhirLib unix compiler-libs.common ocamlbuild findlib merlin_extend result dynlink findlib.dynload ocaml-migrate-parsetree)
 <src/reason_utop.*>: package(menhirLib utop)
-<vendor/ppx_deriving/*>: package(compiler-libs.common findlib result ocaml-migrate-parsetree)
+<vendor/ppx_deriving/*>: ppx(./vendor/ppx_tools_versioned/ppx_metaquot_404.native)
+<vendor/ppx_deriving/*>|<vendor/ppx_tools_versioned/*>: package(compiler-libs.common findlib result ocaml-migrate-parsetree)
 
 <src_gen/*>: package(sedlex)
 
