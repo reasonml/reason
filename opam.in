@@ -13,10 +13,10 @@ substs: [ "pkg/META" ]
 build: [
   [make "compile_error"]
   ["ocamlbuild" "-package" "topkg" "pkg/build.native"]
-  ["_build/pkg/build.native" "build"
-      "--native" "%{ocaml-native}%"
-      "--native-dynlink" "%{ocaml-native-dynlink}%"
-      "--utop" "%{utop:installed}%"]
+  ["./build.native" "build"
+                    "--native" "%{ocaml-native}%"
+                    "--native-dynlink" "%{ocaml-native-dynlink}%"
+                    "--utop" "%{utop:installed}%"]
 ]
 build-test: [
   "ocamlbuild" "-classic-display" "-use-ocamlfind" "src_test/test_reason.byte" "--"

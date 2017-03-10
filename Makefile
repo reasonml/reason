@@ -24,12 +24,12 @@ precompile: compile_error setup_convenient_bin_links
 	ocamlbuild -package topkg pkg/build.native
 
 build_without_utop: precompile
-	./_build/pkg/build.native build --utop false
+	./build.native build --utop false
 	chmod +x $(shell pwd)/_build/src/*.sh
 	ln -fs $(shell pwd)/_build/src/refmt_merlin_impl.sh refmt_merlin_impl.sh
 
 build: precompile
-	./_build/pkg/build.native build --utop true
+	./build.native build --utop true
 	chmod +x $(shell pwd)/_build/src/*.sh
 	ln -fs $(shell pwd)/_build/src/refmt_merlin_impl.sh refmt_merlin_impl.sh
 
