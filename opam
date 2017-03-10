@@ -13,10 +13,9 @@ tags: [ "syntax" ]
 substs: [ "pkg/META" ]
 build: [
   [make "compile_error"]
-  ["ocamlbuild" "-package" "ocaml-migrate-parsetree" "vendor/ppx_tools_versioned/ppx_metaquot_404.native"]
   ["ocaml" "pkg/build.ml" "native=%{ocaml-native}%"
-                          "native-dynlink=%{ocaml-native-dynlink}%"
-                          "utop=%{utop:installed}%"]
+                         "native-dynlink=%{ocaml-native-dynlink}%"
+                         "utop=%{utop:installed}%"]
 ]
 build-test: [
   "ocamlbuild" "-classic-display" "-use-ocamlfind" "src_test/test_reason.byte" "--"
