@@ -19,17 +19,17 @@ setup_convenient_bin_links:
 	ln -fs $(shell pwd)/_build/src/share.sh $(shell pwd)/_build/bin/share
 	ln -fs $(shell pwd)/_build/src/reup.sh $(shell pwd)/_build/bin/reup
 
-precompile: compile_error setup_convenient_bin_links
+precompile:
 	cp pkg/META.in pkg/META
 	ocamlbuild -package topkg pkg/build.native
 	ocamlbuild -package ocaml-migrate-parsetree vendor/ppx_tools_versioned/ppx_metaquot_404.native
 
-build_without_utop: precompile
+build_without_utop: compile_error setup_convenient_bin_links precompile
 	./build.native build --utop false
 	chmod +x $(shell pwd)/_build/src/*.sh
 	ln -fs $(shell pwd)/_build/src/refmt_merlin_impl.sh refmt_merlin_impl.sh
 
-build: precompile
+build: compile_error setup_convenient_bin_links precompile
 	./build.native build --utop true
 	chmod +x $(shell pwd)/_build/src/*.sh
 	ln -fs $(shell pwd)/_build/src/refmt_merlin_impl.sh refmt_merlin_impl.sh
