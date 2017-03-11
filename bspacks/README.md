@@ -4,4 +4,4 @@ This makes our installation much friendlier to e.g. Windows. BuckleScript curren
 
 ## Build
 
-Make sure you did `npm install` in the root directory. Then: `./reason_bspack.sh`.
+Make sure you did `npm install` in the root directory _and_ in this directory. Then: `./reason_bspack.sh`.
