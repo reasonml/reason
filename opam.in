@@ -13,7 +13,6 @@ substs: [ "pkg/META" ]
 build: [
   [make "compile_error"]
   ["ocamlbuild" "-package" "topkg" "pkg/build.native"]
-  ["ocamlbuild" "-package" "ocaml-migrate-parsetree" "vendor/ppx_tools_versioned/ppx_metaquot_404.native"]
   ["./build.native" "build"
                     "--native" "%{ocaml-native}%"
                     "--native-dynlink" "%{ocaml-native-dynlink}%"
