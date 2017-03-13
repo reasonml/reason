@@ -54,6 +54,7 @@
         "@opam-alpha/ocaml-migrate-parsetree": "*",
         "@opam-alpha/result": "*",
         "@opam-alpha/topkg": "0.8.1",
+        "@opam-alpha/ppx_tools_versioned": "5.0alpha",
         "dependency-env": "*",
         "opam-installer-bin": "https://github.com/yunxing/opam-installer-bin.git",
         "nopam": "*",
