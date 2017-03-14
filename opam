@@ -14,7 +14,6 @@ substs: [ "pkg/META" ]
 build: [
   [make "compile_error"]
   ["ocamlbuild" "-package" "topkg" "pkg/build.native"]
-  ["ocamlbuild" "-package" "ocaml-migrate-parsetree" "vendor/ppx_tools_versioned/ppx_metaquot_404.native"]
   ["./build.native" "build"
                     "--native" "%{ocaml-native}%"
                     "--native-dynlink" "%{ocaml-native-dynlink}%"
@@ -24,13 +23,14 @@ build-test: [
   "ocamlbuild" "-classic-display" "-use-ocamlfind" "src_test/test_reason.byte" "--"
 ]
 depends: [
-  "ocamlfind"    {build}
-  "utop"         {>= "1.17"}
-  "menhir"       {>= "20160303"}
-  "merlin-extend"{>= "0.3"}
-  "result"       {=  "1.2"}
-  "topkg"        {=  "0.8.1"}
+  "ocamlfind"               {build}
+  "utop"                    {>= "1.17"}
+  "menhir"                  {>= "20160303"}
+  "merlin-extend"           {>= "0.3"}
+  "result"                  {=  "1.2"}
+  "topkg"                   {=  "0.8.1"}
   "ocaml-migrate-parsetree"
+  "ppx_tools_versioned"     {= "5.0alpha"}
 ]
 depopts: [
 ]
