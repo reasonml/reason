@@ -29,7 +29,7 @@ depends: [
   "result"                  {=  "1.2"}
   "topkg"                   {=  "0.8.1"}
   "ocaml-migrate-parsetree"
-  "ppx_tools_versioned"     {= "5.0alpha"}
+  "reason-parser"           {= "@version@"}
 ]
 depopts: [
 ]

@@ -1,7 +1,6 @@
-
 opam-version: "1.2"
-name: "reason"
-version: "1.11.0"
+name: "reason-parser"
+version: "@version@"
 maintainer: "Jordan Walke <jordojw@gmail.com>"
 authors: [ "Jordan Walke <jordojw@gmail.com>" ]
 license: "BSD"
@@ -16,8 +15,7 @@ build: [
   ["ocamlbuild" "-package" "topkg" "pkg/build.native"]
   ["./build.native" "build"
                     "--native" "%{ocaml-native}%"
-                    "--native-dynlink" "%{ocaml-native-dynlink}%"
-                    "--utop" "%{utop:installed}%"]
+                    "--native-dynlink" "%{ocaml-native-dynlink}%"]
 ]
 build-test: [
   "ocamlbuild" "-classic-display" "-use-ocamlfind" "src_test/test_reason.byte" "--"
@@ -30,7 +28,7 @@ depends: [
   "result"                  {=  "1.2"}
   "topkg"                   {=  "0.8.1"}
   "ocaml-migrate-parsetree"
-  "reason-parser"           {= "1.11.0"}
+  "ppx_tools_versioned"     {= "5.0alpha"}
 ]
 depopts: [
 ]
