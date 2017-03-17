@@ -161,6 +161,10 @@ module type Toolchain = sig
   val canonical_toplevel_phrase: Lexing.lexbuf -> Parsetree.toplevel_phrase
   val canonical_use_file: Lexing.lexbuf -> Parsetree.toplevel_phrase list
 
+  (* Printing *)
+  val print_canonical_interface_with_comments: Format.formatter -> (Parsetree.signature * Reason_pprint_ast.commentWithCategory) -> unit
+  val print_canonical_implementation_with_comments: Format.formatter -> (Parsetree.structure * Reason_pprint_ast.commentWithCategory) -> unit
+
 end
 
 module type Toolchain_spec = sig
@@ -182,6 +186,9 @@ module type Toolchain_spec = sig
   val interface: Lexing.lexbuf -> Parsetree.signature
   val toplevel_phrase: Lexing.lexbuf -> Parsetree.toplevel_phrase
   val use_file: Lexing.lexbuf -> Parsetree.toplevel_phrase list
+
+  val format_interface_with_comments: (Parsetree.signature * Reason_pprint_ast.commentWithCategory) -> Format.formatter -> unit
+  val format_implementation_with_comments: (Parsetree.structure * Reason_pprint_ast.commentWithCategory) -> Format.formatter -> unit
 end
 
 let rec left_expand_comment should_scan_prev_line source loc_start =
@@ -307,6 +314,13 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
   let canonical_toplevel_phrase = ast_only canonical_toplevel_phrase_with_comments
 
   let canonical_use_file = ast_only canonical_use_file_with_comments
+
+  (* Printing *)
+  let print_canonical_interface_with_comments formatter interface =
+    Toolchain_impl.format_interface_with_comments interface formatter
+
+  let print_canonical_implementation_with_comments formatter implementation =
+    Toolchain_impl.format_implementation_with_comments implementation formatter
 end
 
 module OCaml_syntax = struct
@@ -374,6 +388,15 @@ module OCaml_syntax = struct
         if !Location.input_name = "//toplevel//"
         then maybe_skip_phrase lexbuf;
         raise(Syntaxerr.Error(Syntaxerr.Other loc))
+
+  (* Unfortunately we drop the comments because there doesn't exist an ML
+   * printer that formats comments *and* line wrapping! (yet) *)
+  let format_interface_with_comments (signature, _) formatter =
+    Pprintast.signature formatter
+      (To_current.copy_signature signature)
+  let format_implementation_with_comments (structure, _) formatter =
+    Pprintast.structure formatter
+      (To_current.copy_structure structure)
 end
 
 module JS_syntax = struct
@@ -613,6 +636,13 @@ module JS_syntax = struct
        else
          raise x
     | x -> raise x
+
+  let format_interface_with_comments (signature, comments) formatter =
+    let reason_formatter = Reason_pprint_ast.createFormatter () in
+    reason_formatter#signature comments formatter signature
+  let format_implementation_with_comments (implementation, comments) formatter =
+    let reason_formatter = Reason_pprint_ast.createFormatter () in
+    reason_formatter#structure comments formatter implementation
 end
 
 module ML = Create_parse_entrypoint (OCaml_syntax)

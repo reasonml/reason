@@ -9,28 +9,20 @@ archive(syntax, preprocessor, utf8) = "-ignore"
 # This preprocessor doesn't seem to be installed
 preprocessor = "ocamlreason_preprocessor_where_does_this_end_up"
 
-archive(byte) = "@result/result.cmo"
-archive(byte) += "@ppx_tools_versioned/ppx_tools_versioned.cma"
-archive(byte) += "ppx_deriving.cmo ppx_deriving_show.cmo reason_parser.cma"
-archive(byte) += "reason_parser_message.cmo"
-archive(byte) += "reason_lexer.cmo"
-archive(byte) += "reason_pprint_ast.cmo"
+archive(byte) = "@ppx_tools_versioned/ppx_tools_versioned.cma"
+archive(byte) += "ppx_deriving.cmo ppx_deriving_show.cmo easy_format.cmo"
+archive(byte) += "reason_parser.cma"
 
-archive(native) = "reason_parser_message.cmx"
-archive(native) += "reason_lexer.cmx"
-archive(native) += "@ppx_tools_versioned/ppx_tools_versioned.cmxa"
-archive(native) += "ppx_deriving.cmx ppx_deriving_show.cmx"
-archive(native) += "syntax_util.cmx"
-archive(native) += "easy_format.cmx"
-archive(native) += "reason_pprint_ast.cmx"
+archive(native) = "@ppx_tools_versioned/ppx_tools_versioned.cmxa"
+archive(native) += "ppx_deriving.cmx ppx_deriving_show.cmx easy_format.cmx"
 archive(native) += "reason_parser.cmxa"
 
-package "lib" (
-  version = "%{version}%"
-  description = "Library version of reason-parser"
-  requires = "compiler-libs.common menhirLib"
+# package "lib" (
+#   version = "%{version}%"
+#   description = "Library version of reason_parser"
+#   requires = "compiler-libs.common menhirLib"
 
-  archive(byte) = "reason_parser.cma"
-  archive(native) = "reason_parser.cmxa"
-  archive(native, plugin) = "reason_parser.cmxs"
-)
+#   archive(byte) = "reason_parser.cma"
+#   archive(native) = "reason_parser.cmxa"
+#   archive(native, plugin) = "reason_parser.cmxs"
+# )

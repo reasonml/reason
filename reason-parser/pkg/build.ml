@@ -27,25 +27,22 @@ let () =
   let build = Pkg.build ~cmd () in
   Pkg.describe "reason-parser" ~build ~change_logs:[] ~licenses:[] ~readmes:[] @@ fun c ->
   Ok [
-    Pkg.lib "pkg/META";
     (* The .mllib *)
     (* Our job is to generate reason.cma, but depending on whether or not
      * `utop` is available, we'll select an `.mllib` to compile as
      * `reason.cma`.
      *)
-    Pkg.lib ~exts:Exts.library "src/reason_parser" ~dst:"reason_parser";
-    (* But then regardless of if we have `utop` installed - still compile a
-       library when the use case demands that there be no `utop` *)
+    Pkg.mllib ~api:[] "src/reason_parser.mllib";
+    Pkg.lib "pkg/META";
     Pkg.lib ~exts:(Exts.exts [ ".cmo"; ".cmx";".cmi"; ".cmt";".mli"]) "src/reason_parser";
     Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"]) "src/reason_lexer";
     Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"]) "src/reason_config";
-    Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"]) "src/reason_util";
     Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"]) "src/reason_parser_message";
     Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"]) "src/reason_pprint_ast";
     Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"]) "src/reason_toolchain";
     Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"]) "src/reason_oprint";
     Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"]) "src/syntax_util";
+    Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"]) "vendor/easy_format/easy_format";
     Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"]) "vendor/ppx_deriving/ppx_deriving";
     Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"]) "vendor/ppx_deriving/ppx_deriving_show";
-    Pkg.bin ~auto:true "src/ocamlmerlin_reason" ~dst:"ocamlmerlin-reason";
   ]

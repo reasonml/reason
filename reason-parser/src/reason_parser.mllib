@@ -4,7 +4,5 @@ Reason_pprint_ast
 Reason_oprint
 Reason_config
 Syntax_util
-Reason_util
 Reason_toolchain
-Reason_utop
 Reason_parser_message
