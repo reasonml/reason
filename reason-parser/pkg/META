@@ -1,45 +1,36 @@
 # Copyright (c) 2015-present, Facebook, Inc. All rights reserved.
 
 version = "%{version}%"
-description = "Reason: Meta Language Abstraction"
-error(pkg_camlp4) = "reason is incompatible with camlp4"
+description = "Reason Parser: Meta Language Abstraction"
+error(pkg_camlp4) = "reason-parser is incompatible with camlp4"
 
 # Batch compilation
 archive(syntax, preprocessor, utf8) = "-ignore"
 # This preprocessor doesn't seem to be installed
 preprocessor = "ocamlreason_preprocessor_where_does_this_end_up"
 
-# Toplevel
-archive(byte, toploop) = "@compiler-libs/ocamlcommon.cma"
-archive(byte, toploop) += "@result/result.cmo"
-archive(byte, toploop) += "@ppx_tools_versioned/ppx_tools_versioned.cma"
-archive(byte, toploop) += "easy_format.cmo ppx_deriving.cmo ppx_deriving_show.cmo reason.cma"
-archive(byte, toploop) += "@menhirLib/menhirLib.cmo"
-archive(byte, toploop, -pkg_utop) += "reason_toploop.cmo"
-archive(byte, toploop, pkg_utop) += "reason_utop.cmo"
-
 archive(byte) = "@result/result.cmo"
 archive(byte) += "@ppx_tools_versioned/ppx_tools_versioned.cma"
-archive(byte) += "ppx_deriving.cmo ppx_deriving_show.cmo reason.cma"
+archive(byte) += "ppx_deriving.cmo ppx_deriving_show.cmo reason_parser.cma"
+archive(byte) += "reason_parser_message.cmo"
+archive(byte) += "reason_lexer.cmo"
+archive(byte) += "reason_pprint_ast.cmo"
 
-archive(native) = "reason.cmxa"
+archive(native) = "reason_parser_message.cmx"
+archive(native) += "reason_lexer.cmx"
+archive(native) += "@ppx_tools_versioned/ppx_tools_versioned.cmxa"
+archive(native) += "ppx_deriving.cmx ppx_deriving_show.cmx"
+archive(native) += "syntax_util.cmx"
+archive(native) += "easy_format.cmx"
+archive(native) += "reason_pprint_ast.cmx"
+archive(native) += "reason_parser.cmxa"
 
 package "lib" (
   version = "%{version}%"
-  description = "Library version of reason"
+  description = "Library version of reason-parser"
   requires = "compiler-libs.common menhirLib"
 
-  archive(byte) = "reason.cma"
-  archive(native) = "reason.cmxa"
-  archive(native, plugin) = "reason.cmxs"
-)
-
-package "lib_without_utop" (
-  version = "%{version}%"
-  description = "Library version of reason without utop - suitable for compilation to JS"
-  requires = "compiler-libs.common menhirLib"
-
-  archive(byte) = "reason_without_utop.cma"
-  archive(native) = "reason_without_utop.cmxa"
-  archive(native, plugin) = "reason_without_utop.cmxs"
+  archive(byte) = "reason_parser.cma"
+  archive(native) = "reason_parser.cmxa"
+  archive(native, plugin) = "reason_parser.cmxs"
 )

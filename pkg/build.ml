@@ -2,10 +2,6 @@
 
 open Topkg
 
-let menhir_options =
-  let trace = try let _ = Sys.getenv "trace" in "--trace" with | Not_found -> "" in
-  "menhir --strict --unused-tokens --fixed-exception --table " ^ trace
-
 let utop = Conf.(key "utop" bool ~absent:false)
 let native = Conf.(key "native" bool ~absent:false)
 let native_dynlink = Conf.(key "native-dynlink" bool ~absent:false)
@@ -17,13 +13,9 @@ let () =
   let cmd c os files =
     let ocamlbuild = Conf.tool "ocamlbuild" os in
     OS.Cmd.run @@ Cmd.(ocamlbuild % "-use-ocamlfind"
-                                  % "-use-menhir"
-                                  %% (v "-menhir" % menhir_options)
                                   % "-cflags"
                                   % "-I,+ocamldoc"
                                   %% (v "-I" % "vendor/cmdliner")
-                                  %% (v "-I" % "vendor/easy_format")
-                                  %% (v "-I" % "vendor/ppx_deriving")
                                   %% of_list files)
   in
   let build = Pkg.build ~cmd () in
@@ -52,11 +44,6 @@ let () =
     *)
     Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"; ".cmxs"]) "src/redoc_html";
     Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"]) "vendor/cmdliner/cmdliner";
-    (* Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"]) "vendor/easy_format/easy_format";
-    Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"]) "vendor/ppx_deriving/ppx_deriving";
-    Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"]) "vendor/ppx_deriving/ppx_deriving_show";
-    *)
-    Pkg.lib ~exts:Exts.library "src/reasondoc";
     Pkg.lib ~exts:(Exts.exts [".cmo"]) "src/reason_toploop";
     Pkg.lib ~exts:(Exts.exts [".cmx"; ".o"]) "src/reasonbuild";
     Pkg.lib ~cond:(Conf.value c utop) ~exts:(Exts.exts [".cmo"]) "src/reason_utop";

@@ -11,7 +11,6 @@ dev-repo: "git://github.com/facebook/reason.git"
 tags: [ "syntax" ]
 substs: [ "pkg/META" ]
 build: [
-  [make "compile_error"]
   ["ocamlbuild" "-package" "topkg" "pkg/build.native"]
   ["./build.native" "build"
                     "--native" "%{ocaml-native}%"
@@ -23,7 +22,6 @@ build-test: [
 ]
 depends: [
   "ocamlfind"               {build}
-  "utop"                    {>= "1.17"}
   "menhir"                  {>= "20160303"}
   "merlin-extend"           {>= "0.3"}
   "result"                  {=  "1.2"}

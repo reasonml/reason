@@ -25,7 +25,7 @@ let () =
                                   %% of_list files)
   in
   let build = Pkg.build ~cmd () in
-  Pkg.describe "reason_parser" ~build ~change_logs:[] ~licenses:[] ~readmes:[] @@ fun c ->
+  Pkg.describe "reason-parser" ~build ~change_logs:[] ~licenses:[] ~readmes:[] @@ fun c ->
   Ok [
     Pkg.lib "pkg/META";
     (* The .mllib *)
@@ -37,11 +37,13 @@ let () =
     (* But then regardless of if we have `utop` installed - still compile a
        library when the use case demands that there be no `utop` *)
     Pkg.lib ~exts:(Exts.exts [ ".cmo"; ".cmx";".cmi"; ".cmt";".mli"]) "src/reason_parser";
-    Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi";]) "src/reason_lexer";
+    Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"]) "src/reason_lexer";
     Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"]) "src/reason_config";
     Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"]) "src/reason_util";
     Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"]) "src/reason_parser_message";
+    Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"]) "src/reason_pprint_ast";
     Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"]) "src/reason_toolchain";
+    Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"]) "src/reason_oprint";
     Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"]) "src/syntax_util";
     Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"]) "vendor/ppx_deriving/ppx_deriving";
     Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"]) "vendor/ppx_deriving/ppx_deriving_show";

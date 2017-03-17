@@ -2,7 +2,7 @@
 
 SHELL=bash -o pipefail
 
-default: build test
+default: build
 
 setup_convenient_bin_links:
 	mkdir -p $(shell pwd)/_build/bin
