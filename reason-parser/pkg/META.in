@@ -16,13 +16,3 @@ archive(byte) += "reason_parser.cma"
 archive(native) = "@ppx_tools_versioned/ppx_tools_versioned.cmxa"
 archive(native) += "ppx_deriving.cmx ppx_deriving_show.cmx easy_format.cmx"
 archive(native) += "reason_parser.cmxa"
-
-# package "lib" (
-#   version = "%{version}%"
-#   description = "Library version of reason_parser"
-#   requires = "compiler-libs.common menhirLib"
-
-#   archive(byte) = "reason_parser.cma"
-#   archive(native) = "reason_parser.cmxa"
-#   archive(native, plugin) = "reason_parser.cmxs"
-# )
