@@ -24,6 +24,7 @@ build-test: [
 depends: [
   "ocamlfind"               {build}
   "menhir"                  {>= "20160303"}
+  "merlin-extend"           {>= "0.3"}
   "result"                  {=  "1.2"}
   "topkg"                   {=  "0.8.1"}
   "ocaml-migrate-parsetree"
