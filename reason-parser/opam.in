@@ -22,8 +22,7 @@ build-test: [
 ]
 depends: [
   "ocamlfind"               {build}
-  "utop"                    {>= "1.17"}
-  "merlin-extend"           {>= "0.3"}
+  "menhir"                  {>= "20160303"}
   "result"                  {=  "1.2"}
   "topkg"                   {=  "0.8.1"}
   "ocaml-migrate-parsetree"

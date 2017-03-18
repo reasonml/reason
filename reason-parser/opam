@@ -1,7 +1,7 @@
 
 opam-version: "1.2"
 name: "reason-parser"
-version: "1.11.0"
+version: "1.12.0"
 maintainer: "Jordan Walke <jordojw@gmail.com>"
 authors: [ "Jordan Walke <jordojw@gmail.com>" ]
 license: "BSD"
@@ -23,8 +23,7 @@ build-test: [
 ]
 depends: [
   "ocamlfind"               {build}
-  "utop"                    {>= "1.17"}
-  "merlin-extend"           {>= "0.3"}
+  "menhir"                  {>= "20160303"}
   "result"                  {=  "1.2"}
   "topkg"                   {=  "0.8.1"}
   "ocaml-migrate-parsetree"
