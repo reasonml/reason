@@ -61,7 +61,7 @@ This associates `reason-mode` with `.re` and `.rei` files. To enable it explicit
 ### Spacemacs
 
 There is currently no offical reason layer available, but you can install the `reason-mode` package automatically.
-Some are working on a layer in the meantime #1149. 
+Some are working on a layer in the meantime facebook/reason#1149. 
 
 ```lisp
 dotspacemacs-additional-packages
@@ -81,7 +81,7 @@ Afterwards add the [snippet](#manual-installation) to your `dotspacemacs/user-co
 
 If you have refmt installed, you can add this to your `.emacs` file to enable
 auto-format:
-```
+``
 (add-hook 'reason-mode-hook (lambda ()
           (add-hook 'before-save-hook 'refmt-before-save)))
 ```
