@@ -229,10 +229,11 @@ let render: str => str;
 Module Functions (functors)
 ----------------------------------
 
-Modules can be passed to functions! It'd be the equivalent of passing a file as
-a first-class item. But since, as mentioned at the beginning, modules are at a
-different layer of the language than other common concepts. We can't pass them
-to *regular* functions; we pass them to special functions called "functors".
+Modules can be passed to functions! It would be the equivalent of passing a file
+as a first-class item. However, as mentioned in the beginning, modules are at a
+different layer of the language than other common concepts, so we can't pass them
+to *regular* functions. Instead, we pass them to special functions called
+"functors".
 
 The syntax for defining and using functors is very much like the syntax
 for defining and using regular functions. The primary differences are:
