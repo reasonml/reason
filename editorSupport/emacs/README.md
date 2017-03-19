@@ -61,7 +61,7 @@ This associates `reason-mode` with `.re` and `.rei` files. To enable it explicit
 ### Spacemacs
 
 There is currently no offical reason layer available, but you can install the `reason-mode` package automatically.
-Some are working on a layer in the meantime #1149. 
+Some are working on a layer in the meantime [#1149](https://github.com/facebook/reason/issues/1149). 
 
 ```lisp
 dotspacemacs-additional-packages
