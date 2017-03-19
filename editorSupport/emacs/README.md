@@ -73,7 +73,7 @@ dotspacemacs-additional-packages
 )
 ```
 
-Afterwards add the snippet of the last section to your `dotspacemacs/user-config`.
+Afterwards add the [snippet](#manual-installation) to your `dotspacemacs/user-config`.
 ### Features
 
 #### Auto-format before saving
