@@ -418,16 +418,11 @@ function or trait.  When nil, where will be aligned with fn or trait."
     "virtual"
     "where" "while"))
 
-(defconst rust-special-types
-  '("u8" "i8"
-    "u16" "i16"
-    "u32" "i32"
-    "u64" "i64"
-
-    "f32" "f64"
-    "float" "int" "uint" "isize" "usize"
-    "bool"
-    "str" "char"))
+(defconst reason-special-types
+  '("int" "float" "string" "char"
+    "bool" "unit" "list" "array" "exn"
+    "option" "ref"
+))
 
 (defconst rust-re-type-or-constructor
   (rx symbol-start
@@ -444,7 +439,7 @@ function or trait.  When nil, where will be aligned with fn or trait."
 ;; newer Emacs versions, but will work on Emacs 23.)
 (defun regexp-opt-symbols (words)
   (concat "\\_<" (regexp-opt words t) "\\_>"))
-(defconst rust-re-special-types (regexp-opt-symbols rust-special-types))
+(defconst reason-re-special-types (regexp-opt-symbols reason-special-types))
 
 (defvar reason-mode-font-lock-keywords
   (append
@@ -453,7 +448,7 @@ function or trait.  When nil, where will be aligned with fn or trait."
      (,(regexp-opt-symbols reason-mode-keywords) . font-lock-keyword-face)
 
      ;; Special types
-     (,(regexp-opt-symbols rust-special-types) . font-lock-type-face)
+     (,(regexp-opt-symbols reason-special-types) . font-lock-builtin-face)
 
      ;; The unsafe keyword
      ("\\_<unsafe\\_>" . 'rust-unsafe-face)
@@ -868,7 +863,7 @@ function or trait.  When nil, where will be aligned with fn or trait."
         (or
          ;; The special types can't take type param lists, so a < after one is
          ;; always an operator
-         (looking-at rust-re-special-types)
+         (looking-at reason-re-special-types)
 
          (rust-is-in-expression-context 'ident)))
 
