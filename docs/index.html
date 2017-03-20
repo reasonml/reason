@@ -849,6 +849,25 @@ for x in xStart downto xEnd {
 
 #### While Loops
 
+While loops are also fully imperative constructs. They execute a code block while
+some condition is true. The form of a `while` loop includes a single expression,
+the condition to test.
+
+```reason
+while testCondition {
+  statements;
+};
+```
+
+The parenthesis around `testCondition` may be omitted if they are unnecessary,
+such as in the following example.
+
+```reason
+while true {
+  print_newline ();
+};
+```
+
 Type Parameters
 ----------
 Some types are very specific, such as `int`, or `string`, but other types
