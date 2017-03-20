@@ -104,8 +104,11 @@ opam init
 opam update
 opam switch 4.03.0
 eval $(opam config env)
+opam pin add -y merlin 'https://github.com/the-lambda-church/merlin.git'
+opam pin add -y merlin_extend 'https://github.com/let-def/merlin-extend.git'
 git clone git@github.com:facebook/reason.git
 cd reason
+make
 opam pin add -y reason .
 ```
 
