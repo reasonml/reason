@@ -849,12 +849,12 @@ for x in xStart downto xEnd {
 
 #### While Loops
 
-While loops are also fully imperative constructs. They execute a code block while
-some condition is true. The form of a `while` loop includes a single expression,
-the condition to test.
+While loops are also fully imperative constructs. They execute a code block
+while some condition is true. The form of a `while` loop includes a single
+expression, the condition to test.
 
 ```reason
-while testCondition {
+while (testCondition) {
   statements;
 };
 ```
@@ -864,7 +864,21 @@ such as in the following example.
 
 ```reason
 while true {
-  print_newline ();
+  print_endline "hello";
+};
+```
+
+Example to break out of a while-true loop:
+
+```reason
+Random.self_init ();
+let break = {contents: false};
+while (not break.contents) {
+  if (Random.int 10 === 3) {
+    break.contents = true
+  } else {
+    print_endline "hello"
+  }
 };
 ```
 
