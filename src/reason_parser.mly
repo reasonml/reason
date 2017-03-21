@@ -1011,7 +1011,6 @@ conflicts.
 %right    OR BARBAR                     /* expr (e || e || e) */
 %right    AMPERSAND AMPERAMPER          /* expr (e && e && e) */
 %left     INFIXOP0 LESS GREATER         /* expr (e OP e OP e) */
-%left     LESSGREATER LESSDOTDOTGREATER /* expr (e OP e OP e) */
 %right    INFIXOP1                      /* expr (e OP e OP e) */
 %right    COLONCOLON                    /* expr (e :: e :: e) */
 %left     INFIXOP2 PLUS PLUSDOT MINUS MINUSDOT PLUSEQ /* expr (e OP e OP e) */
@@ -1113,7 +1112,7 @@ conflicts.
 %nonassoc BACKQUOTE BANG CHAR FALSE FLOAT INT
           LBRACE LBRACELESS LBRACKET LBRACKETBAR LIDENT LPAREN
           NEW PREFIXOP STRING TRUE UIDENT
-          LBRACKETPERCENT LESSIDENT LBRACKETLESS
+          LBRACKETPERCENT LESSIDENT LBRACKETLESS LESSGREATER LESSDOTDOTGREATER
 
 /* Entry points */
 
