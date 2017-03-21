@@ -5,7 +5,8 @@
 # call the makefile of the root directory
 echo "* Build Reason itself"
 cd $(dirname "$0")
-make -C .. || true
+[[ -f ../_build/sanitize.sh ]] && ../_build/sanitize.sh
+make -C ..
 
 echo "* Cleaning before packing"
 rm -f refmt_main.ml
@@ -14,6 +15,7 @@ rm -f reactjs_ppx.ml
 echo "copy over migrate-parsetree & postprocessing"
 rm -rf ./migrate_parsetree_pp_src
 mkdir -p ./migrate_parsetree_pp_src
+pushd ../node_modules/ocaml-migrate-parsetree-actual/ && make && popd
 for i in $(find ../node_modules/ocaml-migrate-parsetree-actual/_build/default/src/*.pp.ml*); do
   cp $i ./migrate_parsetree_pp_src/`basename $i`
 done
@@ -29,6 +31,13 @@ sed -i '' "s/Ok/Result.Ok/g" migrate_parsetree_pp_src/migrate_parsetree_ast_io.m
 sed -i '' "s/Error/Result.Error/g" migrate_parsetree_pp_src/migrate_parsetree_ast_io.ml
 sed -i '' "s/result/Result.result/g" migrate_parsetree_pp_src/migrate_parsetree_ast_io.mli
 
+echo "copy over ppx_deriving & preprocessing"
+rm -rf ./ppx_deriving_ppx_src
+mkdir -p ./ppx_deriving_ppx_src
+cp -r ../vendor/ppx_deriving/ ./ppx_deriving_ppx_src
+OCAMLFIND_IGNORE_DUPS_IN=$(ocamlfind query compiler-libs) ocamlfind ocamlopt -c -g -safe-string -package ppx_tools_versioned.metaquot_404 -package ocaml-migrate-parsetree -dsource ../vendor/ppx_deriving/ppx_deriving.ml 2> ./ppx_deriving_ppx_src/ppx_deriving.ml
+OCAMLFIND_IGNORE_DUPS_IN=$(ocamlfind query compiler-libs) ocamlfind ocamlopt -c -g -safe-string -package ppx_tools_versioned.metaquot_404 -package ocaml-migrate-parsetree -I ./ppx_deriving_ppx_src -dsource ../vendor/ppx_deriving/ppx_deriving_show.ml 2> ./ppx_deriving_ppx_src/ppx_deriving_show.ml
+
 echo "* Packing refmt"
 ./node_modules/bs-platform/bin/bspack.exe \
   -I `menhir --suggest-menhirLib` -bs-main Refmt_impl \
@@ -36,7 +45,7 @@ echo "* Packing refmt"
   -I ../_build \
   -I ../vendor/cmdliner \
   -I ../vendor/easy_format \
-  -I ../vendor/ppx_deriving \
+  -I ./ppx_deriving_ppx_src/ \
   -I ../node_modules/ppx_tools_versioned-actual \
   -I ../node_modules/result-actual \
   -I migrate_parsetree_pp_src \
@@ -48,7 +57,7 @@ echo "* Packing reactjs_ppx"
   -I ../_build/src \
   -I ../vendor/cmdliner \
   -I ../vendor/easy_format/ \
-  -I ../vendor/ppx_deriving/ \
+  -I ./ppx_deriving_ppx_src/ \
   -I ../node_modules/ppx_tools_versioned-actual \
   -I ../node_modules/result-actual \
   -I migrate_parsetree_pp_src \
