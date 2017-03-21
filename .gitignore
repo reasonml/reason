@@ -20,3 +20,4 @@ node_modules
 /bspacks/**/*.o
 /bspacks/**/*.exe
 /bspacks/migrate_parsetree_pp_src
+/bspacks/ppx_deriving_ppx_src
