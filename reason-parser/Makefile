@@ -48,20 +48,6 @@ endif
 	export git_version="$(shell git rev-parse --verify HEAD)"; \
 	export git_short_version="$(shell git rev-parse --short HEAD)"; \
 	$(SUBSTS) $(ROOT_DIR)/package.json.in; \
-	$(SUBSTS) $(ROOT_DIR)/package.ml.in; \
 	$(SUBSTS) $(ROOT_DIR)/opam.in
 
 .PHONY: pre_release
-
-release_check:
-	./scripts/release-check.sh
-
-release: release_check pre_release
-	git add package.json package.ml opam
-	git commit -m "Version $(version)"
-	git tag -a $(version) -m "Version $(version)."
-	git push "git@github.com:facebook/Reason.git" tag $(version)
-	git clean -fdx
-	npm publish --access public
-
-.PHONY: release

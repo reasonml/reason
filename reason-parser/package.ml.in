@@ -1,3 +1,0 @@
-let version = "@version@"
-let git_version = "@git_version@"
-let git_short_version = "@git_short_version@"
