@@ -1352,8 +1352,8 @@ Normally, you would have to write your own stringification function to print a
 /* Don't you just love writing all this boilerplate code? */
 let rec show_tree = fun
 | Leaf => "Leaf"
-| Tree t0 i t1 =>
-    "Tree (" ^ show_tree t0 ^ ", " ^ string_of_int i ^ ", " ^ show_tree t1 ^ ")";
+| Tree a i b =>
+    "Tree (" ^ show_tree a ^ ", " ^ string_of_int i ^ ", " ^ show_tree b ^ ")";
 ```
 
 With Reason, however, there is no need for that. You can just assume that
