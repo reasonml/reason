@@ -40,14 +40,17 @@ echo "copy over ppx_deriving & preprocessing"
 DERIVING_DIR=./ppx_deriving_ppx_src
 rm -rf ${DERIVING_DIR}
 mkdir -p ${DERIVING_DIR}
-OCAMLFIND_IGNORE_DUPS_IN=$(ocamlfind query compiler-libs) ocamlfind ocamlopt -c -g -safe-string -package ppx_tools_versioned.metaquot_404 -package ocaml-migrate-parsetree -dsource ../vendor/ppx_deriving/ppx_deriving.ml 2> ${DERIVING_DIR}/ppx_deriving.ml
-OCAMLFIND_IGNORE_DUPS_IN=$(ocamlfind query compiler-libs) ocamlfind ocamlopt -c -g -safe-string -package ppx_tools_versioned.metaquot_404 -package ocaml-migrate-parsetree -I ${DERIVING_DIR} -dsource ../vendor/ppx_deriving/ppx_deriving_show.ml 2> ${DERIVING_DIR}/ppx_deriving_show.ml
+
+ocamlfind ppx_tools/rewriter `ocamlfind printppx ppx_tools_versioned.metaquot_404` ../node_modules/reason-parser-actual/vendor/ppx_deriving/ppx_deriving.ml > ${DERIVING_DIR}/ppx_deriving.ml
+ocamlfind ppx_tools/rewriter `ocamlfind printppx ppx_tools_versioned.metaquot_404` ../node_modules/reason-parser-actual/vendor/ppx_deriving/ppx_deriving_show.ml > ${DERIVING_DIR}/ppx_deriving_show.ml
 
 echo "* Packing refmt"
 ./node_modules/bs-platform/bin/bspack.exe \
   -I `menhir --suggest-menhirLib` -bs-main Refmt_impl \
   -I ../_build/src \
   -I ../_build \
+  -I ../node_modules/reason-parser-actual/_build/src \
+  -I ../node_modules/reason-parser-actual/_build \
   -I ../vendor/cmdliner \
   -I ../node_modules/reason-parser-actual/vendor/easy_format \
   -I ../node_modules/result-actual \
@@ -60,6 +63,7 @@ echo "* Packing reactjs_ppx"
 ./node_modules/bs-platform/bin/bspack.exe \
   -I `menhir --suggest-menhirLib` -bs-main Reactjs_jsx_ppx \
   -I ../_build/src \
+  -I ../node_modules/reason-parser-actual/_build/src \
   -I ../vendor/cmdliner \
   -I ../node_modules/reason-parser-actual/vendor/easy_format \
   -I ../node_modules/result-actual \
