@@ -1,6 +1,6 @@
 
 {
-    "version": "1.12.0",
+    "version": "1.13.0",
     "description": "Friendly Syntax & Toolchain Powered by OCaml",
     "repository": {
       "type": "git",
@@ -24,7 +24,7 @@
             "val": "./_build/ocamlfind/lib"
         },
         "version": {
-            "val": "1.12.0",
+            "val": "1.13.0",
             "global": true,
             "globalCollisionBehavior": "clobber"
         },
@@ -42,7 +42,7 @@
         "reason_version": {
             "global": true,
             "globalCollisionBehavior": "clobber",
-            "val": "1.12.0"
+            "val": "1.13.0"
         }
     },
     "name": "reason",
@@ -55,7 +55,7 @@
         "@opam-alpha/ocaml-migrate-parsetree": "*",
         "@opam-alpha/result": "*",
         "@opam-alpha/topkg": "0.8.1",
-        "@opam-alpha/reason-parser": "1.12.0",
+        "@opam-alpha/reason-parser": "1.13.0",
         "dependency-env": "*",
         "opam-installer-bin": "https://github.com/yunxing/opam-installer-bin.git",
         "nopam": "*",
