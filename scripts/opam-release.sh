@@ -40,21 +40,16 @@ curl -H 'Accept: application/vnd.github.v3+json' \
 
 
 
-# Prepare the opam package for reason-parser
+echo "In order to publish ${SUBPKG}, execute the following two commands: \
+    1) opam-publish prepare ${ASSET_DOWNLOAD_URL} \
+    2) opam-publish submit ${SUBPKG}.${version} \
+The former will prepare a directory in your local folder and the latter will \
+submit a pull request to the opam repository."
 
-opam-publish prepare "${ASSET_DOWNLOAD_URL}"
+echo
 
-# Submit a pull request to opam-repository
-
-opam-publish submit "${SUBPKG}.${version}"
-
-
-
-
-# Prepare the opam package for Reason proper
-
-opam-publish prepare "https://github.com/facebook/reason/archive/${version}.tar.gz"
-
-# Submit a pull request to opam-repository
-
-opam-publish submit "reason.${version}"
+echo "In order to publish reason proper, execute the following two commands: \
+    1) opam-publish prepare https://github.com/facebook/reason/archive/${version}.tar.gz \
+    2) opam-publish submit reason.${version} \
+The former will prepare a directory in your local folder and the latter will \
+submit a pull request to the opam repository."
