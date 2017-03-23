@@ -15,17 +15,20 @@ rm -f reactjs_ppx.ml
 
 echo "copy over migrate-parsetree & postprocessing"
 PARSETREE_DIR=./migrate_parsetree_pp_src
-rm -rf ./${PARSETREE_DIR}
-mkdir -p ./${PARSETREE_DIR}
+rm -rf ${PARSETREE_DIR}
+mkdir -p ${PARSETREE_DIR}
 pushd ../node_modules/ocaml-migrate-parsetree-actual/ && make && popd
 for i in $(find ../node_modules/ocaml-migrate-parsetree-actual/_build/default/src/*.pp.ml*); do
-  cp $i "./${PARSETREE_DIR}/`basename $i`"
+  cp "$i" "${PARSETREE_DIR}/`basename $i`"
+  echo cp "$i" "${PARSETREE_DIR}/`basename $i`"
 done
 for i in $(find ${PARSETREE_DIR}/*.pp.ml); do
-  mv $i "${i%%.*}".ml
+  mv "$i" "${PARSETREE_DIR}/`basename $i .pp.ml`.ml"
+  echo mv "$i" "${PARSETREE_DIR}/`basename $i .pp.ml`.ml"
 done
 for i in $(find ${PARSETREE_DIR}/*.pp.mli); do
-  mv $i "${i%%.*}".mli
+  mv "$i" "${PARSETREE_DIR}/`basename $i .pp.mli`.mli"
+  echo mv "$i" "${PARSETREE_DIR}/`basename $i .pp.mli`.mli"
 done
 
 # Result isn't available in 4.02.3. We'll exposed it below, but we'll have to qualify it
@@ -35,10 +38,10 @@ sed -i '' "s/result/Result.result/g" ${PARSETREE_DIR}/migrate_parsetree_ast_io.m
 
 echo "copy over ppx_deriving & preprocessing"
 DERIVING_DIR=./ppx_deriving_ppx_src
-rm -rf ./${DERIVING_DIR}
-mkdir -p ./${DERIVING_DIR}
-OCAMLFIND_IGNORE_DUPS_IN=$(ocamlfind query compiler-libs) ocamlfind ocamlopt -c -g -safe-string -package ppx_tools_versioned.metaquot_404 -package ocaml-migrate-parsetree -dsource ../vendor/ppx_deriving/ppx_deriving.ml 2> ./${DERIVING_DIR}/ppx_deriving.ml
-OCAMLFIND_IGNORE_DUPS_IN=$(ocamlfind query compiler-libs) ocamlfind ocamlopt -c -g -safe-string -package ppx_tools_versioned.metaquot_404 -package ocaml-migrate-parsetree -I ./${DERIVING_DIR} -dsource ../vendor/ppx_deriving/ppx_deriving_show.ml 2> ./${DERIVING_DIR}/ppx_deriving_show.ml
+rm -rf ${DERIVING_DIR}
+mkdir -p ${DERIVING_DIR}
+OCAMLFIND_IGNORE_DUPS_IN=$(ocamlfind query compiler-libs) ocamlfind ocamlopt -c -g -safe-string -package ppx_tools_versioned.metaquot_404 -package ocaml-migrate-parsetree -dsource ../vendor/ppx_deriving/ppx_deriving.ml 2> ${DERIVING_DIR}/ppx_deriving.ml
+OCAMLFIND_IGNORE_DUPS_IN=$(ocamlfind query compiler-libs) ocamlfind ocamlopt -c -g -safe-string -package ppx_tools_versioned.metaquot_404 -package ocaml-migrate-parsetree -I ${DERIVING_DIR} -dsource ../vendor/ppx_deriving/ppx_deriving_show.ml 2> ${DERIVING_DIR}/ppx_deriving_show.ml
 
 echo "* Packing refmt"
 ./node_modules/bs-platform/bin/bspack.exe \
@@ -46,7 +49,7 @@ echo "* Packing refmt"
   -I ../_build/src \
   -I ../_build \
   -I ../vendor/cmdliner \
-  -I ../vendor/easy_format \
+  -I ../node_modules/reason-parser-actual/vendor/easy_format \
   -I ../node_modules/result-actual \
   -I ../node_modules/ppx_tools_versioned-actual \
   -I ${PARSETREE_DIR} \
@@ -58,7 +61,7 @@ echo "* Packing reactjs_ppx"
   -I `menhir --suggest-menhirLib` -bs-main Reactjs_jsx_ppx \
   -I ../_build/src \
   -I ../vendor/cmdliner \
-  -I ../vendor/easy_format/ \
+  -I ../node_modules/reason-parser-actual/vendor/easy_format \
   -I ../node_modules/result-actual \
   -I ../node_modules/ppx_tools_versioned-actual \
   -I ${PARSETREE_DIR} \
