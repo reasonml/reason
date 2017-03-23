@@ -874,7 +874,7 @@ Example to break out of a while-true loop:
 Random.self_init ();
 let break = {contents: false};
 while (not break.contents) {
-  if (Random.int 10 === 3) {
+  if (Random.int 10 == 3) {
     break.contents = true
   } else {
     print_endline "hello"
