@@ -25,8 +25,9 @@ TARNAME="${SUBPKG}-${version}.tar.gz"
 
 # pre_release and make tarball of subpkg
 pushd "${SUBPKG}" && version="${version}" make pre_release && popd
-tar -cvzf "${TARNAME}" "${SUBPKG}"
 
+pushd _build &&
+tar -cvzf "${TARNAME}" "${SUBPKG}" &&
 ASSET_DOWNLOAD_URL=$(\
 curl -H 'Accept: application/vnd.github.v3+json' \
     -H 'Content-Type: application/gzip' \
@@ -35,10 +36,13 @@ curl -H 'Accept: application/vnd.github.v3+json' \
     --data-binary "@${TARNAME}" \
     "https://uploads.github.com/repos/facebook/reason/releases/${RELEASE_ID}/assets?name=${TARNAME}" \
     | python -c 'import sys, json; print json.load(sys.stdin)["browser_download_url"]' \
-)
+) && popd
 
 
 
+
+echo "The build artifacts are now in _build. To continue, please cd there."
+echo
 
 echo "In order to publish ${SUBPKG}, execute the following two commands:"
 echo "    1) opam-publish prepare ${ASSET_DOWNLOAD_URL}"
