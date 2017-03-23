@@ -45,8 +45,8 @@ ocamlfind ppx_tools/rewriter `ocamlfind printppx ppx_tools_versioned.metaquot_40
 ocamlfind ppx_tools/rewriter `ocamlfind printppx ppx_tools_versioned.metaquot_404` ../node_modules/reason-parser-actual/vendor/ppx_deriving/ppx_deriving_show.ml > ${DERIVING_DIR}/ppx_deriving_show.ml
 
 echo "* Packing refmt"
-./node_modules/bs-platform/bin/bspack.exe \
-  -I `menhir --suggest-menhirLib` -bs-main Refmt_impl \
+./node_modules/bs-platform/bin/bspack.exe -bs-main Refmt_impl \
+  -I `menhir --suggest-menhirLib` \
   -I ../_build/src \
   -I ../_build \
   -I ../node_modules/reason-parser-actual/_build/src \
@@ -60,8 +60,8 @@ echo "* Packing refmt"
   -o refmt_main.ml
 
 echo "* Packing reactjs_ppx"
-./node_modules/bs-platform/bin/bspack.exe \
-  -I `menhir --suggest-menhirLib` -bs-main Reactjs_jsx_ppx \
+./node_modules/bs-platform/bin/bspack.exe -bs-main Reactjs_jsx_ppx \
+  -I `menhir --suggest-menhirLib` \
   -I ../_build/src \
   -I ../node_modules/reason-parser-actual/_build/src \
   -I ../vendor/cmdliner \
