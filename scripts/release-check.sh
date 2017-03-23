@@ -7,8 +7,8 @@ config deploy.username YOUR_GITHUB_USERNAME_HERE'."
 TOKEN_MSG="You have not set your deploy token. Please create one with at \
 least public repo read permissions at https://github.com/settings/tokens and \
 set it with 'git config deploy.token YOUR_TOKEN_HERE'."
-[[ -z "$(git config deploy.username)" ]] && die $USERNAME_MSG
-[[ -z "$(git config deploy.token)" ]] && die $TOKEN_MSG
+[[ -z "$(git config deploy.username)" ]] && die "$USERNAME_MSG"
+[[ -z "$(git config deploy.token)" ]] && die "$TOKEN_MSG"
 
 USERNAME="$(git config deploy.username)"
 TOKEN="$(git config deploy.token)"
