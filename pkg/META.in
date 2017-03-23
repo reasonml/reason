@@ -3,6 +3,7 @@
 version = "%{version}%"
 description = "Reason: Meta Language Abstraction"
 error(pkg_camlp4) = "reason is incompatible with camlp4"
+requires = "compiler-libs result menhirLib reason-parser"
 
 # Batch compilation
 archive(syntax, preprocessor, utf8) = "-ignore"
@@ -10,24 +11,17 @@ archive(syntax, preprocessor, utf8) = "-ignore"
 preprocessor = "ocamlreason_preprocessor_where_does_this_end_up"
 
 # Toplevel
-archive(byte, toploop) = "@compiler-libs/ocamlcommon.cma"
-archive(byte, toploop) += "@result/result.cmo"
-archive(byte, toploop) += "@ppx_tools_versioned/ppx_tools_versioned.cma"
-archive(byte, toploop) += "easy_format.cmo ppx_deriving.cmo ppx_deriving_show.cmo reason.cma"
-archive(byte, toploop) += "@menhirLib/menhirLib.cmo"
+archive(byte, toploop) += "reason.cma"
 archive(byte, toploop, -pkg_utop) += "reason_toploop.cmo"
 archive(byte, toploop, pkg_utop) += "reason_utop.cmo"
 
-archive(byte) = "@result/result.cmo"
-archive(byte) += "@ppx_tools_versioned/ppx_tools_versioned.cma"
-archive(byte) += "ppx_deriving.cmo ppx_deriving_show.cmo reason.cma"
-
+archive(byte) = "reason.cma"
 archive(native) = "reason.cmxa"
 
 package "lib" (
   version = "%{version}%"
   description = "Library version of reason"
-  requires = "compiler-libs.common menhirLib"
+  requires = "compiler-libs.common menhirLib reason-parser"
 
   archive(byte) = "reason.cma"
   archive(native) = "reason.cmxa"
@@ -37,7 +31,7 @@ package "lib" (
 package "lib_without_utop" (
   version = "%{version}%"
   description = "Library version of reason without utop - suitable for compilation to JS"
-  requires = "compiler-libs.common menhirLib"
+  requires = "compiler-libs.common menhirLib reason-parser"
 
   archive(byte) = "reason_without_utop.cma"
   archive(native) = "reason_without_utop.cmxa"

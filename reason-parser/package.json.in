@@ -54,7 +54,7 @@
         "@opam-alpha/ocaml-migrate-parsetree": "*",
         "@opam-alpha/result": "*",
         "@opam-alpha/topkg": "0.8.1",
-        "@opam-alpha/reason-parser": "@version@",
+        "@opam-alpha/ppx_tools_versioned": "5.0.0",
         "dependency-env": "*",
         "opam-installer-bin": "https://github.com/yunxing/opam-installer-bin.git",
         "nopam": "*",
@@ -62,7 +62,7 @@
     },
     "scripts": {
         "editor": "eval $(dependencyEnv) && eval $EDITOR",
-        "postinstall": "eval $(dependencyEnv) && nopam && ./pkg/substs pkg/META.in && make precompile && ./build.native build --native true --native-dynlink true --utop ${utop_installed:-false} && (opam-installer --prefix=$opam_prefix || true)",
+        "postinstall": "eval $(dependencyEnv) && nopam && ./pkg/substs pkg/META.in && make compile_error && make precompile && ./build.native build --native true --native-dynlink true --utop ${utop_installed:-false} && (opam-installer --prefix=$opam_prefix || true)",
         "clean": "eval $(dependencyEnv) && nopam && make clean",
         "env": "eval $(dependencyEnv) && env",
         "formatTest": "eval $(dependencyEnv) && cd formatTest; ./test.sh",

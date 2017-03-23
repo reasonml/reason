@@ -1,5 +1,5 @@
 opam-version: "1.2"
-name: "reason"
+name: "reason-parser"
 version: "@version@"
 maintainer: "Jordan Walke <jordojw@gmail.com>"
 authors: [ "Jordan Walke <jordojw@gmail.com>" ]
@@ -11,27 +11,24 @@ dev-repo: "git://github.com/facebook/reason.git"
 tags: [ "syntax" ]
 substs: [ "pkg/META" ]
 build: [
+  [make "compile_error"]
   ["ocamlbuild" "-package" "topkg" "pkg/build.native"]
   ["./build.native" "build"
                     "--native" "%{ocaml-native}%"
-                    "--native-dynlink" "%{ocaml-native-dynlink}%"
-                    "--utop" "%{utop:installed}%"]
+                    "--native-dynlink" "%{ocaml-native-dynlink}%"]
 ]
 build-test: [
   "ocamlbuild" "-classic-display" "-use-ocamlfind" "src_test/test_reason.byte" "--"
 ]
 depends: [
   "ocamlfind"               {build}
-  "utop"                    {>= "1.17"}
+  "menhir"                  {>= "20160303"}
   "merlin-extend"           {>= "0.3"}
   "result"                  {=  "1.2"}
   "topkg"                   {=  "0.8.1"}
   "ocaml-migrate-parsetree"
-  "reason-parser"           {= "@version@"}
+  "ppx_tools_versioned"     {= "5.0alpha"}
 ]
 depopts: [
-]
-conflicts: [
-  "utop" {< "1.17"}
 ]
 available: [ ocaml-version >= "4.02" & ocaml-version < "4.05" ]

@@ -19,8 +19,8 @@ formatTest/failed_tests
 formatTest/**/actual_output/
 miscTests/reactjs_jsx_ppx_tests/actual*.re
 .jenga
-src/reason_parser.messages.bak
-src/reason_parser_message.ml
+reason-parser/src/reason_parser.messages.bak
+reason-parser/src/reason_parser_message.ml
 *~
 node_modules
 /bspacks/*.ml
