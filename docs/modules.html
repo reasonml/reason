@@ -120,6 +120,8 @@ module ActualComponent = {
 };
 ```
 
+**Note**: `include` and `open` are very different! The former literally copies over definitions into the new module for it to appropriate it. The latter simply refer to stuff in the `open`ed module's scope.
+
 #### Every `.re` file is a module
 
 An OCaml/Reason file maps to a module; this unlocks some interesting
