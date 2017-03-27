@@ -28,7 +28,7 @@ let impl_intf ~impl ?(intf_suffix=false) arg =
 
 let choose_refmt tags =
   if Tags.mem add_printers_tag tags
-  then refmt ^ " --add-printers"
+  then refmt ^ " --add-printers --add-runtime"
   else refmt
 
 let compile_c ~impl ~native tags arg out =
