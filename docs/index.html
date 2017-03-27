@@ -1336,6 +1336,8 @@ let sumsToZero = fun {first, second} => first + second == 0;
 Automatic Printer Generation
 ---------------------------
 
+*IN BETA!*
+
 In JS, it's common to use `console.log` or `JSON.stringify` to print an object
 or convert it to a string. This is not possible in OCaml. Because Reason is a
 front-end to OCaml, however, we've added the functionality to convert any of
@@ -1372,9 +1374,12 @@ it will shadow the generated one.
 Currently, this is an opt-in feature. Here's how to enable it:
 
 * If you are using `refmt` manually, it requires adding the `--add-printers`
-  option.
+  flag.
+* If you would like to attach the `ppx_deriving` runtime, add the
+  `--add-runtime` option.
 * If you are using `rebuild`, add the Ocamlbuild tag `reason.add_printers` to
   your `_tags` file for the files for which you would like printers generated.
+  This implies `--add-printers --add-runtime`.
 
 
 Advanced
