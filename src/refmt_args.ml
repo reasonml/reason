@@ -60,6 +60,10 @@ let add_printers =
   let doc = "add auto-printers to user-defined types" in
   Arg.(value & flag & info ["add-printers"] ~doc)
 
+let add_runtime =
+  let doc = "add runtime for auto-printers" in
+  Arg.(value & flag & info ["add-runtime"] ~doc)
+
 let input =
   let docv = "FILENAME" in
   let doc = "input file" in

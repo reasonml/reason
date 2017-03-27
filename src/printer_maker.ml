@@ -11,8 +11,9 @@ module type PRINTER =
         type q
         type t = q list
 
-        val parse : parse_itype ->
-                    bool ->
+        val parse : add_runtime:bool ->
+                    use_stdin:bool ->
+                    parse_itype ->
                     string ->
                     ((t * Reason_pprint_ast.commentWithCategory) * bool)
 

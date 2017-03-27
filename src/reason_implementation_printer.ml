@@ -54,7 +54,7 @@ module Reason_implementation_printer : Printer_maker.PRINTER =
           Str.module_ (Mb.mk (mknoloc "Ppx_deriving_runtime")
                              (Mod.structure structure_items))
 
-        let parse filetype use_stdin filename =
+        let parse ~add_runtime ~use_stdin filetype filename =
             let ((ast, comments), parsedAsML, parsedAsInterface) =
             (match filetype with
             | `Auto -> defaultImplementationParserFor use_stdin filename
@@ -71,7 +71,7 @@ module Reason_implementation_printer : Printer_maker.PRINTER =
             in
             if parsedAsInterface then
               err "The file parsed does not appear to be an implementation file."
-            else if !Reason_config.add_printers then
+            else if add_runtime then
               (* NB: Not idempotent. *)
               ((ppx_deriving_runtime::ast, comments), parsedAsML)
             else

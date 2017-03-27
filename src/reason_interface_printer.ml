@@ -58,7 +58,7 @@ module Reason_interface_printer : Printer_maker.PRINTER =
           Sig.module_ (Md.mk (mknoloc "Ppx_deriving_runtime")
                              (Mty.signature structure_items))
 
-        let parse filetype use_stdin filename =
+        let parse ~add_runtime ~use_stdin filetype filename =
             let ((ast, comments), parsedAsML, parsedAsInterface) =
             (match filetype with
             | `Auto -> defaultInterfaceParserFor use_stdin filename
@@ -75,7 +75,7 @@ module Reason_interface_printer : Printer_maker.PRINTER =
             in
             if not parsedAsInterface then
               err "The file parsed does not appear to be an interface file."
-            else if !Reason_config.add_printers then
+            else if add_runtime then
               (* NB: Not idempotent. *)
               ((ppx_deriving_runtime::ast, comments), parsedAsML)
             else ((ast, comments), parsedAsML)

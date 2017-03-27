@@ -34,6 +34,7 @@ let refmt
     in_place
     input_file
     add_printers
+    add_runtime
     is_interface_pp
     use_stdin
   =
@@ -75,7 +76,9 @@ let refmt
       ~assumeExplicitArity: explicit_arity
       ~constructorLists
   in
-  let (ast, parsedAsML) = Printer.parse parse_ast use_stdin input_file in
+  let (ast, parsedAsML) =
+    Printer.parse ~add_runtime ~use_stdin parse_ast input_file
+  in
   let output_chan = Printer_maker.prepare_output_file output_file in
   (* If you run into trouble with this (or need to use std_formatter by
      itself at the same time for some reason), try breaking this out so that
@@ -118,6 +121,7 @@ let refmt_t =
                     $ in_place
                     $ input
                     $ add_printers
+                    $ add_runtime
                     $ is_interface_pp
                     $ use_stdin)
 
