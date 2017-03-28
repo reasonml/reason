@@ -59,3 +59,9 @@ echo "    1) opam-publish prepare https://github.com/facebook/reason/archive/${v
 echo "    2) opam-publish submit reason.${version}"
 echo "The former will prepare a directory in your local folder and the latter"
 echo "will submit a pull request to the opam repository."
+
+echo
+
+echo "In order to publish to npm, execute the following commands:"
+echo "    npm publish --access public"
+echo "This will publish a npm package with the latest version."

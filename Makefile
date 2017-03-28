@@ -86,7 +86,6 @@ release: release_check pre_release
 	git push "git@github.com:facebook/Reason.git"
 	git push "git@github.com:facebook/Reason.git" tag $(version)
 	git clean -fdx
-	npm publish --access public
 	./scripts/opam-release.sh
 
 .PHONY: release
