@@ -85,6 +85,8 @@ release: release_check pre_release
 	git add package.json package.ml opam
 	git commit -m "Version $(version)"
 	git tag -a $(version) -m "Version $(version)."
+	# Push first the objects, then the tag.
+	git push "git@github.com:facebook/Reason.git"
 	git push "git@github.com:facebook/Reason.git" tag $(version)
 	git clean -fdx
 	npm publish --access public
