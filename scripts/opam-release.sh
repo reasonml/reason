@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+set -e
 set -o pipefail
 
 USERNAME="$(git config deploy.username)"
@@ -26,6 +27,7 @@ TARNAME="${SUBPKG}-${version}.tar.gz"
 # pre_release and make tarball of subpkg
 pushd "${SUBPKG}" && version="${version}" make pre_release && popd
 
+mkdir -p _build &&
 pushd _build &&
 tar -cvzf "${TARNAME}" "${SUBPKG}" &&
 ASSET_DOWNLOAD_URL=$(\

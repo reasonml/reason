@@ -79,7 +79,7 @@ release_check:
 	./scripts/release-check.sh
 
 release: release_check pre_release
-	git add package.json package.ml opam
+	git add package.json package.ml opam package.json.in package.ml.in opam.in
 	git commit -m "Version $(version)"
 	git tag -a $(version) -m "Version $(version)."
 	# Push first the objects, then the tag.
