@@ -6,6 +6,7 @@ make clean
 opam switch "${OCAML_VERSION}"
 eval `opam config env`
 opam update
+opam pin add -y reason-parser reason-parser
 opam pin add -y reason .
 make test
 git diff --exit-code

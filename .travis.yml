@@ -8,8 +8,9 @@ before_install:
   - eval `opam config env`
   - opam update
 before_script:
+  - opam pin add -y reason-parser reason-parser
   - opam pin add -y reason .
-script: 
+script:
   - make test
   - git diff --exit-code
 env:
