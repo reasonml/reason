@@ -9,7 +9,7 @@ TOKEN="$(git config deploy.token)"
 # Make a new release on GitHub, get the ID
 
 RELEASE_ID=$(\
-curl -H 'Accept: application/vnd.github.v3+json' \
+curl --silent -H 'Accept: application/vnd.github.v3+json' \
     --user "${USERNAME}:${TOKEN}" \
     -X POST --data "{\"tag_name\": \"${version}\"}" \
     https://api.github.com/repos/facebook/reason/releases \
@@ -24,24 +24,21 @@ curl -H 'Accept: application/vnd.github.v3+json' \
 SUBPKG=reason-parser
 TARNAME="${SUBPKG}-${version}.tar.gz"
 
-# pre_release and make tarball of subpkg
-pushd "${SUBPKG}" && version="${version}" make pre_release && popd
 
 mkdir -p _build &&
-pushd _build &&
-tar -cvzf "${TARNAME}" "${SUBPKG}" &&
+tar -cvzf "_build/${TARNAME}" "${SUBPKG}" &&
 ASSET_DOWNLOAD_URL=$(\
-curl -H 'Accept: application/vnd.github.v3+json' \
+curl --silent -H 'Accept: application/vnd.github.v3+json' \
     -H 'Content-Type: application/gzip' \
     --user "${USERNAME}:${TOKEN}" \
     -X POST \
-    --data-binary "@${TARNAME}" \
+    --data-binary "@_build/${TARNAME}" \
     "https://uploads.github.com/repos/facebook/reason/releases/${RELEASE_ID}/assets?name=${TARNAME}" \
     | python -c 'import sys, json; print json.load(sys.stdin)["browser_download_url"]' \
-) && popd
+)
 
 
-
+echo
 
 echo "The build artifacts are now in _build. To continue, please cd there."
 echo
