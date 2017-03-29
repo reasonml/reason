@@ -1381,6 +1381,15 @@ Currently, this is an opt-in feature. Here's how to enable it:
   your `_tags` file for the files for which you would like printers generated.
   This implies `--add-printers --add-runtime`.
 
+Last, please note that this will not work with polymorphic types. That is, if
+you have code with a `'a` in it, Reason can't generate an automatic printer for
+the generalized type.
+
+```reason
+/* Sorry, you're out of luck. */
+type mytype 'a = SomeSadVariant 'a;
+```
+
 
 Advanced
 =======
