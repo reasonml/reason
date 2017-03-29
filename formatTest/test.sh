@@ -348,10 +348,10 @@ function printer_test() {
       warning "  ⊘ FAILED: .ml files should not need to be run against printer tests. \n"
       return 1
     else
-      debug "  '$REFMT --parse re --print ml --add-printers $INPUT/$FILE &> $OUTPUT/$MLFILE'"
+      debug "  '$REFMT --parse re --print ml --add-printers --add-runtime $INPUT/$FILE &> $OUTPUT/$MLFILE'"
       # ensure errors are not absolute filepaths
       cd $INPUT
-      $REFMT --parse re --print ml --add-printers $(basename $FILE) &> $OUTPUT/$MLFILE
+      $REFMT --parse re --print ml --add-printers --add-runtime $(basename $FILE) &> $OUTPUT/$MLFILE
       cd - > /dev/null
     fi
 
