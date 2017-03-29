@@ -91,12 +91,17 @@ let refmt
       Format.pp_print_flush output_formatter ();
       flush output_chan;
       Printer_maker.close_output_file output_file output_chan;
-      `Ok ()
     )
   in
-  match input_files with
-  | [] -> refmt_single None
-  | ls -> `Ok (List.iter (fun file -> let `Ok () = refmt_single (Some file) in ()) input_files)
+  try
+    match input_files with
+    | [] -> `Ok (refmt_single None)
+    | ls -> `Ok (List.iter (fun file -> refmt_single (Some file)) input_files)
+  with
+  | Invalid_config msg -> `Error (true, msg)
+  | exn ->
+          Location.report_exception Format.err_formatter exn;
+          exit 1
 
 let top_level_info =
   let doc = "Meta language utility" in
