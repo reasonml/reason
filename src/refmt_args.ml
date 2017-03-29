@@ -67,7 +67,7 @@ let add_runtime =
 let input =
   let docv = "FILENAME" in
   let doc = "input file" in
-  Arg.(value & pos ~rev:true 0 (some file) None & info [] ~docv ~doc)
+  Arg.(value & (pos_all non_dir_file []) & info [] ~docv ~doc)
 
 (* DEPRECATED *)
 
