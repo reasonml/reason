@@ -81,7 +81,7 @@ Afterwards add the [snippet](#manual-installation) to your `dotspacemacs/user-co
 
 If you have refmt installed, you can add this to your `.emacs` file to enable
 auto-format:
-``
+```
 (add-hook 'reason-mode-hook (lambda ()
           (add-hook 'before-save-hook 'refmt-before-save)))
 ```
