@@ -72,6 +72,8 @@ endif
 	$(SUBSTS) $(ROOT_DIR)/package.json.in; \
 	$(SUBSTS) $(ROOT_DIR)/package.ml.in; \
 	$(SUBSTS) $(ROOT_DIR)/opam.in
+	# pre_release and make tarball of subpkg
+	make -C $(ROOT_DIR)/reason-parser pre_release
 
 .PHONY: pre_release
 
@@ -79,7 +81,7 @@ release_check:
 	./scripts/release-check.sh
 
 release: release_check pre_release
-	git add package.json package.ml opam package.json.in package.ml.in opam.in
+	git add package.json package.ml opam reason-parser/package.json reason-parser/opam
 	git commit -m "Version $(version)"
 	git tag -a $(version) -m "Version $(version)."
 	# Push first the objects, then the tag.
