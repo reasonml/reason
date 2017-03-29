@@ -1,7 +1,7 @@
 
 opam-version: "1.2"
 name: "reason-parser"
-version: "1.13.0"
+version: "1.13.3"
 maintainer: "Jordan Walke <jordojw@gmail.com>"
 authors: [ "Jordan Walke <jordojw@gmail.com>" ]
 license: "BSD"
