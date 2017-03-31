@@ -65,9 +65,9 @@ let add_runtime =
   Arg.(value & flag & info ["add-runtime"] ~doc)
 
 let input =
-  let docv = "FILENAME" in
-  let doc = "input file" in
-  Arg.(value & pos ~rev:true 0 (some file) None & info [] ~docv ~doc)
+  let docv = "FILENAMES" in
+  let doc = "input files; if empty, assume stdin" in
+  Arg.(value & (pos_all non_dir_file []) & info [] ~docv ~doc)
 
 (* DEPRECATED *)
 
