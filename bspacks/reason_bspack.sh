@@ -41,8 +41,8 @@ DERIVING_DIR=./ppx_deriving_ppx_src
 rm -rf ${DERIVING_DIR}
 mkdir -p ${DERIVING_DIR}
 
-ocamlfind ppx_tools/rewriter `ocamlfind printppx ppx_tools_versioned.metaquot_404` ../node_modules/reason-parser-actual/vendor/ppx_deriving/ppx_deriving.ml > ${DERIVING_DIR}/ppx_deriving.ml
-ocamlfind ppx_tools/rewriter `ocamlfind printppx ppx_tools_versioned.metaquot_404` ../node_modules/reason-parser-actual/vendor/ppx_deriving/ppx_deriving_show.ml > ${DERIVING_DIR}/ppx_deriving_show.ml
+ocamlfind ppx_tools_versioned/ppx_metaquot_404 ../node_modules/reason-parser-actual/vendor/ppx_deriving/ppx_deriving.ml > ${DERIVING_DIR}/ppx_deriving.ml
+ocamlfind ppx_tools_versioned/ppx_metaquot_404 ../node_modules/reason-parser-actual/vendor/ppx_deriving/ppx_deriving_show.ml > ${DERIVING_DIR}/ppx_deriving_show.ml
 
 echo "* Packing refmt"
 ./node_modules/bs-platform/bin/bspack.exe -bs-main Refmt_impl \
