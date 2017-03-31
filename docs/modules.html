@@ -120,7 +120,11 @@ module ActualComponent = {
 };
 ```
 
-**Note**: `include` and `open` are very different! The former literally copies over definitions into the new module for it to appropriate it. The latter simply refer to stuff in the `open`ed module's scope.
+**Note**: `include` and `open` are very different! The former literally copies 
+over definitions into the new module for it to appropriate. The latter simply
+allows refering to items (values, types, constructors, etc.) in the `open`ed
+module's scope in an "unqualified" way (aka, `foo` instead of the qualified 
+`MyModule.foo`).
 
 #### Every `.re` file is a module
 
