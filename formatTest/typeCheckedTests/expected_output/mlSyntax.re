@@ -13,16 +13,16 @@ type xyz =
 let doubleBar =
   fun
   | X
-  | Y _ _ _ [@implicit_arity]
-  | Z _ _ [@implicit_arity]
+  | [@implicit_arity] Y _ _ _
+  | [@implicit_arity] Z _ _
   | Q => true
   | _ => false;
 
 let doubleBarNested =
   fun
   | X
-  | Y _ _ _ [@implicit_arity]
-  | Z _ _ [@implicit_arity]
+  | [@implicit_arity] Y _ _ _
+  | [@implicit_arity] Z _ _
   | Q => true
   | _ => false;
 

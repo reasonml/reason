@@ -7,8 +7,8 @@ type bcd =
 let a = TupleConstructor (1, 2);
 
 let b =
-  MultiArgumentsConstructor 1 2
-  [@implicit_arity];
+  [@implicit_arity]
+  MultiArgumentsConstructor 1 2;
 
 module Test = {
   type a =
@@ -43,6 +43,6 @@ M.TupleConstructor2 (1, 2);
 
 TupleConstructor2 (1, 2);
 
-M.TupleConstructor3 1 2 [@implicit_arity];
+[@implicit_arity] M.TupleConstructor3 1 2;
 
 TupleConstructor3 (1, 2);

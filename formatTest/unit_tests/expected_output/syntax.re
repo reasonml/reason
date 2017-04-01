@@ -138,7 +138,7 @@ type instatiatedTypeDef = myTypeDef int => int;
  */
 type something = (
   int,
-  int [@lookAtThisAttribute]
+  [@lookAtThisAttribute] int
 );
 
 type longWrappingTypeDefinitionExample =
