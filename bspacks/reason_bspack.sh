@@ -1,23 +1,30 @@
 #!/bin/zsh
 
-# Prerequisite: have `menhir` and `ocamlopt` available.
+# Prerequisite: 
+# - `menhir` 20160825
+# - `ocamlopt` 4.02.3
+# - sed, the gnu one, not the macOS one. `brew install gnu-sed --with-default-names` (assuming you've installed coreutils)
 
 # call the makefile of the root directory
 echo "* Build Reason itself"
 cd $(dirname "$0")
 echo "Now in $(pwd)"
+# our build generates a senitization script sometimes to warn us of e.g. stale
+# artifacts. Run it if it exists
 [[ -f ../_build/sanitize.sh ]] && ../_build/sanitize.sh
-make -C ..
+make build -C ..
 
 echo "* Cleaning before packing"
 rm -f refmt_main.ml
 rm -f reactjs_ppx.ml
 
-echo "copy over migrate-parsetree & postprocessing"
+echo "* Copy over migrate-parsetree & postprocessing"
 PARSETREE_DIR=./migrate_parsetree_pp_src
 rm -rf ${PARSETREE_DIR}
 mkdir -p ${PARSETREE_DIR}
 pushd ../node_modules/ocaml-migrate-parsetree-actual/ && make && popd
+# copy the processed source files *.pp.ml from that directory to our own, and
+# remove the .pp part
 for i in $(find ../node_modules/ocaml-migrate-parsetree-actual/_build/default/src/*.pp.ml*); do
   cp "$i" "${PARSETREE_DIR}/`basename $i`"
   echo cp "$i" "${PARSETREE_DIR}/`basename $i`"
@@ -36,13 +43,13 @@ sed -i "s/Ok/Result.Ok/g" ${PARSETREE_DIR}/migrate_parsetree_ast_io.ml
 sed -i "s/Error/Result.Error/g" ${PARSETREE_DIR}/migrate_parsetree_ast_io.ml
 sed -i "s/result/Result.result/g" ${PARSETREE_DIR}/migrate_parsetree_ast_io.mli
 
-echo "copy over ppx_deriving & preprocessing"
+echo "* Copy over ppx_deriving & preprocessing"
 DERIVING_DIR=./ppx_deriving_ppx_src
 rm -rf ${DERIVING_DIR}
 mkdir -p ${DERIVING_DIR}
-
-ocamlfind ppx_tools_versioned/ppx_metaquot_404 ../node_modules/reason-parser-actual/vendor/ppx_deriving/ppx_deriving.ml ${DERIVING_DIR}/ppx_deriving.ml
-ocamlfind ppx_tools_versioned/ppx_metaquot_404 ../node_modules/reason-parser-actual/vendor/ppx_deriving/ppx_deriving_show.ml ${DERIVING_DIR}/ppx_deriving_show.ml
+# pre-apply the ppx for ppx_deriving
+ocamlfind ppx_tools/rewriter `ocamlfind printppx ppx_tools_versioned.metaquot_404` ../node_modules/reason-parser-actual/vendor/ppx_deriving/ppx_deriving.ml > ${DERIVING_DIR}/ppx_deriving.ml
+ocamlfind ppx_tools/rewriter `ocamlfind printppx ppx_tools_versioned.metaquot_404` ../node_modules/reason-parser-actual/vendor/ppx_deriving/ppx_deriving_show.ml > ${DERIVING_DIR}/ppx_deriving_show.ml
 
 echo "* Packing refmt"
 ./node_modules/bs-platform/bin/bspack.exe -bs-main Refmt_impl \
