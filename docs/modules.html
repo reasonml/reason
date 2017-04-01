@@ -31,8 +31,7 @@ Basic Modules
 -------
 
 **Modules are like mini files**! They can contain type definitions, `let`
-bindings, nested modules, etc. They're a different "layer" of language than the 
-common functions, let bindings, data structures, etc. that we've seen.
+bindings, nested modules, etc.
 
 #### Creation
 
@@ -236,10 +235,9 @@ Module Functions (functors)
 ----------------------------------
 
 Modules can be passed to functions! It would be the equivalent of passing a file
-as a first-class item. However, as mentioned in the beginning, modules are at a
-different layer of the language than other common concepts, so we can't pass them
-to *regular* functions. Instead, we pass them to special functions called
-"functors".
+as a first-class item. However, modules are at a different "layer" of the
+language than other common concepts, so we can't pass them to *regular*
+functions. Instead, we pass them to special functions called "functors".
 
 The syntax for defining and using functors is very much like the syntax
 for defining and using regular functions. The primary differences are:
@@ -308,6 +306,21 @@ module type MakeSetType = (Item: Comparable) => {
 module MakeSet: MakeSetType = fun (Item: Comparable) => {
   ...
 };
+```
+
+Drawbacks
+----------------------------------
+
+Modules and functors are at a different "layer" of language than the rest (
+functions, let bindings, data structures, etc.). For example, you can't easily
+pass them into a tuple or record. Use them judiciously! Lots of times, just a
+record or a function is enough.
+
+```reason
+module School = {...};
+
+/* this will straight up give you a syntax error! */
+let schools = (School, School);
 ```
 
   </script>
