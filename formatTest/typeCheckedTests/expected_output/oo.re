@@ -31,10 +31,11 @@ let tmp = {
 /**
  * Comment on stackWithAttributes.
  */
+[@@thisShouldntBeFormattedAway]
 class virtual stackWithAttributes 'a init => {
   /* Before class */
   /* The "as this" should not be formatted away because attributes. */
-  as this [@thisShouldntBeFormattedAway];
+  as [@thisShouldntBeFormattedAway] this;
   /* Before floatting attribute */
   [@@@floatingAttribute];
   /* Virtual member */
@@ -51,8 +52,7 @@ class virtual stackWithAttributes 'a init => {
   pub push hd => v = [hd, ...v];
   initializer =>
     print_string "initializing object";
-}
-[@@x];
+};
 
 class extendedStack 'a init => {
   inherit (class stack 'a) init;
