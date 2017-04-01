@@ -32,17 +32,17 @@ for i in $(find ${PARSETREE_DIR}/*.pp.mli); do
 done
 
 # Result isn't available in 4.02.3. We'll exposed it below, but we'll have to qualify it
-sed -i '' "s/Ok/Result.Ok/g" ${PARSETREE_DIR}/migrate_parsetree_ast_io.ml
-sed -i '' "s/Error/Result.Error/g" ${PARSETREE_DIR}/migrate_parsetree_ast_io.ml
-sed -i '' "s/result/Result.result/g" ${PARSETREE_DIR}/migrate_parsetree_ast_io.mli
+sed -i "s/Ok/Result.Ok/g" ${PARSETREE_DIR}/migrate_parsetree_ast_io.ml
+sed -i "s/Error/Result.Error/g" ${PARSETREE_DIR}/migrate_parsetree_ast_io.ml
+sed -i "s/result/Result.result/g" ${PARSETREE_DIR}/migrate_parsetree_ast_io.mli
 
 echo "copy over ppx_deriving & preprocessing"
 DERIVING_DIR=./ppx_deriving_ppx_src
 rm -rf ${DERIVING_DIR}
 mkdir -p ${DERIVING_DIR}
 
-ocamlfind ppx_tools_versioned/ppx_metaquot_404 ../node_modules/reason-parser-actual/vendor/ppx_deriving/ppx_deriving.ml > ${DERIVING_DIR}/ppx_deriving.ml
-ocamlfind ppx_tools_versioned/ppx_metaquot_404 ../node_modules/reason-parser-actual/vendor/ppx_deriving/ppx_deriving_show.ml > ${DERIVING_DIR}/ppx_deriving_show.ml
+ocamlfind ppx_tools_versioned/ppx_metaquot_404 ../node_modules/reason-parser-actual/vendor/ppx_deriving/ppx_deriving.ml ${DERIVING_DIR}/ppx_deriving.ml
+ocamlfind ppx_tools_versioned/ppx_metaquot_404 ../node_modules/reason-parser-actual/vendor/ppx_deriving/ppx_deriving_show.ml ${DERIVING_DIR}/ppx_deriving_show.ml
 
 echo "* Packing refmt"
 ./node_modules/bs-platform/bin/bspack.exe -bs-main Refmt_impl \
