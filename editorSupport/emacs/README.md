@@ -8,29 +8,73 @@ https://github.com/rust-lang/rust-mode
 
 ### Manual Installation
 
-To install manually, install both reason and merlin, add this to your
+To install manually, install the reason-cli (`npm -g install git://github.com/reasonml/reason-cli.git`) and add this to your
 `.emacs` file:
 
 ```lisp
 ;;----------------------------------------------------------------------------
 ;; Reason setup
+;; Expects reason-cli to be installed:
+;; npm install -g git://github.com/reasonml/reason-cli.git
 ;;----------------------------------------------------------------------------
 
-(setq opam (substring (shell-command-to-string "opam config var prefix 2> /dev/null") 0 -1))
-(add-to-list 'load-path (concat opam "/share/emacs/site-lisp"))
-(setq refmt-command (concat opam "/bin/refmt"))
+(defun chomp-end (str)
+  "Chomp tailing whitespace from STR."
+  (replace-regexp-in-string (rx (* (any " \t\n")) eos)
+                            ""
+                            str))
+
+(defun real-path (path)
+  "Resolves the actual path for PATH."
+  (chomp-end (shell-command-to-string (concat "realpath " path))))
+
+(let ((support-base-dir (concat (replace-regexp-in-string "refmt\n" "" (shell-command-to-string (concat "realpath " (shell-command-to-string "which refmt")))) ".."))
+      (merlin-base-dir (concat (replace-regexp-in-string "ocamlmerlin\n" "" (shell-command-to-string (concat "realpath " (shell-command-to-string "which ocamlmerlin")))) "..")))
+  ;; Add npm merlin.el to the emacs load path and tell emacs where to find ocamlmerlin
+  (add-to-list 'load-path (concat merlin-base-dir "/share/emacs/site-lisp/"))
+  (setq merlin-command (concat merlin-base-dir "/bin/ocamlmerlin"))
+
+  ;; Add npm reason-mode to the emacs load path and tell emacs where to find refmt
+  (add-to-list 'load-path (concat support-base-dir "/share/emacs/site-lisp"))
+  (setq refmt-command (concat support-base-dir "/bin/refmt")))
 
 (require 'reason-mode)
 (require 'merlin)
-(setq merlin-ac-setup t)
 (add-hook 'reason-mode-hook (lambda ()
                               (add-hook 'before-save-hook 'refmt-before-save)
                               (merlin-mode)))
+
+(setq merlin-ac-setup t)
+
+(require 'merlin-iedit)
+(defun evil-custom-merlin-iedit ()
+  (interactive)
+  (if iedit-mode (iedit-mode)
+    (merlin-iedit-occurrences)))
+(define-key merlin-mode-map (kbd "C-c C-e") 'evil-custom-merlin-iedit)
 ```
+(Thanks @sgrove: [https://gist.github.com/sgrove/c9bdfed77f4da8db108dfb2c188f7baf](https://gist.github.com/sgrove/c9bdfed77f4da8db108dfb2c188f7baf))
 
 This associates `reason-mode` with `.re` and `.rei` files. To enable it explicitly, do
 <kbd>M-x reason-mode</kbd>.
 
+### Spacemacs
+
+There is currently no offical reason layer available, but you can install the `reason-mode` package automatically.
+Some are working on a layer in the meantime [#1149](https://github.com/facebook/reason/issues/1149). 
+
+```lisp
+dotspacemacs-additional-packages
+  '(
+    (reason-mode
+      :location (recipe
+        :repo "facebook/reason"
+        :fetcher github
+        :files ("editorSupport/emacs/reason-model.el" "editorSupport/emacs/refmt.el")))
+)
+```
+
+Afterwards add the [snippet](#manual-installation) to your `dotspacemacs/user-config`.
 ### Features
 
 #### Auto-format before saving
