@@ -879,6 +879,7 @@ let only_labels l =
 %token EOF
 %token EQUAL
 %token EXCEPTION
+%token EXPORT
 %token EXTERNAL
 %token FALSE
 %token <string * char option> FLOAT
@@ -1548,11 +1549,11 @@ _structure_item_without_item_extension_sugar:
   | post_item_attributes expr {
       mkstrexp $2 $1
     }
-  | post_item_attributes EXTERNAL as_loc(val_ident) COLON core_type EQUAL primitive_declaration {
+  | post_item_attributes EXPORT? EXTERNAL as_loc(val_ident) COLON core_type EQUAL primitive_declaration {
       let loc = mklocation $symbolstartpos $endpos in
-      let core_loc = mklocation $startpos($5) $endpos($5) in
+      let core_loc = mklocation $startpos($6) $endpos($6) in
       mkstr
-        (Pstr_primitive (Val.mk $3 (only_core_type $5 core_loc) ~prim:$7 ~attrs:$1 ~loc)) ~loc
+        (Pstr_primitive (Val.mk $4 (only_core_type $6 core_loc) ~prim:$8 ~attrs:$1 ~loc)) ~loc
     }
   | many_type_declarations {
       let (nonrec_flag, tyl) = $1 in
@@ -1566,8 +1567,8 @@ _structure_item_without_item_extension_sugar:
   | str_exception_declaration {
       mkstr(Pstr_exception $1) ~loc:$1.pext_loc
     }
-  | post_item_attributes opt_let_module nonlocal_module_binding_details {
-      let (ident, body) = $3 in
+  | post_item_attributes EXPORT? opt_let_module nonlocal_module_binding_details {
+      let (ident, body) = $4 in
       let loc = mklocation $symbolstartpos $endpos in
       mkstr(Pstr_module (Mb.mk ident body ~attrs:$1 ~loc)) ~loc
     }
@@ -1575,16 +1576,16 @@ _structure_item_without_item_extension_sugar:
       let loc = mklocation $symbolstartpos $endpos in
       mkstr(Pstr_recmodule(List.rev $1)) ~loc
     }
-  | post_item_attributes MODULE TYPE OF? as_loc(ident) {
+  | post_item_attributes EXPORT? MODULE TYPE OF? as_loc(ident) {
       let item_attrs = $1 in
-      let ident = $5 in
+      let ident = $6 in
       let loc = mklocation $symbolstartpos $endpos in
       mkstr(Pstr_modtype (Mtd.mk ident ~attrs:item_attrs ~loc)) ~loc
     }
-  | post_item_attributes MODULE TYPE OF? as_loc(ident) EQUAL module_type {
-      let ident = $5 in
+  | post_item_attributes EXPORT? MODULE TYPE OF? as_loc(ident) EQUAL module_type {
+      let ident = $6 in
       let loc = mklocation $symbolstartpos $endpos in
-      mkstr(Pstr_modtype (Mtd.mk ident ~typ:$7 ~attrs:$1 ~loc)) ~loc
+      mkstr(Pstr_modtype (Mtd.mk ident ~typ:$8 ~attrs:$1 ~loc)) ~loc
     }
   | open_statement {
       mkstr(Pstr_open $1)
@@ -1604,13 +1605,13 @@ _structure_item_without_item_extension_sugar:
       let loc = mklocation $symbolstartpos $endpos in
       mkstr(Pstr_include (Incl.mk $3 ~attrs:$1 ~loc)) ~loc
     }
-  | post_item_attributes item_extension {
+  | post_item_attributes EXPORT? item_extension {
     (* No sense in having item_extension_sugar for something that's already an
      * item_extension *)
-    mkstr(Pstr_extension ($2, $1))
+    mkstr(Pstr_extension ($3, $1))
   }
-  | floating_attribute
-      { mkstr(Pstr_attribute $1) }
+  | post_item_attributes EXPORT? floating_attribute (* lazy solution *)
+      { mkstr(Pstr_attribute $3) }
 ;
 
 module_binding_body_expr:
@@ -1639,8 +1640,8 @@ module_binding_body:
   | module_binding_body_functor { $1 }
 
 many_nonlocal_module_bindings:
-  | post_item_attributes opt_let_module REC nonlocal_module_binding_details {
-    let (ident, body) = $4 in
+  | post_item_attributes EXPORT? opt_let_module REC nonlocal_module_binding_details {
+    let (ident, body) = $5 in
     let loc = mklocation $symbolstartpos $endpos in
     [Mb.mk ident body ~attrs:$1 ~loc]
   }
@@ -1650,8 +1651,8 @@ many_nonlocal_module_bindings:
 ;
 
 and_nonlocal_module_bindings:
-  | post_item_attributes AND nonlocal_module_binding_details {
-    let (ident, body) = $3 in
+  | post_item_attributes AND EXPORT? nonlocal_module_binding_details {
+    let (ident, body) = $4 in
     let loc = mklocation $symbolstartpos $endpos in
     Mb.mk ident body ~attrs:$1 ~loc
   }
@@ -1832,7 +1833,7 @@ _signature_item:
       let core_type_loc = mklocation $startpos($5) $endpos($5) in
       mksig(Psig_value (Val.mk $3 (only_core_type $5 core_type_loc) ~prim:$7 ~attrs:$1 ~loc)) ~loc
     }
-  | many_type_declarations {
+  | many_type_declarations_sig {
       let (nonrec_flag, tyl) = $1 in
       let hd = List.hd (List.rev tyl) in
       mksig(Psig_type (nonrec_flag, List.rev tyl)) ~loc:hd.ptype_loc
@@ -1883,7 +1884,7 @@ _signature_item:
       let last = List.hd $1 in
       mksig(Psig_class (List.rev $1)) ~loc:{loc_start = hd.pci_loc.loc_start; loc_end = last.pci_loc.loc_end; loc_ghost = false}
     }
-  | many_class_type_declarations {
+  | many_class_type_declarations_sig {
       mksig(Psig_class_type (List.rev $1))
     }
   | post_item_attributes item_extension {
@@ -1939,8 +1940,8 @@ and_module_rec_declaration:
 /* Class expressions */
 
 many_class_declarations:
-  | post_item_attributes CLASS class_declaration_details {
-    let (ident, binding, virt, params) = $3 in
+  | post_item_attributes EXPORT? CLASS class_declaration_details {
+    let (ident, binding, virt, params) = $4 in
     let loc = mklocation $symbolstartpos $endpos in
     [Ci.mk ident binding ~virt ~params ~attrs:$1 ~loc]
   }
@@ -1950,8 +1951,8 @@ many_class_declarations:
 ;
 
 and_class_declaration:
-  post_item_attributes AND class_declaration_details {
-    let (ident, binding, virt, params) = $3 in
+  post_item_attributes AND EXPORT? class_declaration_details {
+    let (ident, binding, virt, params) = $4 in
     let loc = mklocation $symbolstartpos $endpos in
     Ci.mk ident binding ~virt ~params ~attrs:$1 ~loc
   }
@@ -2491,8 +2492,8 @@ class_description_details:
 ;
 
 many_class_type_declarations:
-  | post_item_attributes CLASS TYPE class_type_declaration_details {
-    let (ident, instance_type, virt, class_type_params) = $4 in
+  | post_item_attributes EXPORT? CLASS TYPE class_type_declaration_details {
+    let (ident, instance_type, virt, class_type_params) = $5 in
     let loc = mklocation $symbolstartpos $endpos in
     [Ci.mk ident instance_type ~virt:virt ~params:class_type_params ~attrs:$1 ~loc]
   }
@@ -2502,12 +2503,32 @@ many_class_type_declarations:
 ;
 
 and_class_type_declaration:
+  post_item_attributes AND EXPORT? class_type_declaration_details {
+    let (ident, instance_type, virt, class_type_params) = $4 in
+    let loc = mklocation $symbolstartpos $endpos in
+    Ci.mk ident instance_type ~virt:virt ~params:class_type_params ~attrs:$1 ~loc
+  }
+;
+
+many_class_type_declarations_sig:
+  | post_item_attributes CLASS TYPE class_type_declaration_details {
+    let (ident, instance_type, virt, class_type_params) = $4 in
+    let loc = mklocation $symbolstartpos $endpos in
+    [Ci.mk ident instance_type ~virt:virt ~params:class_type_params ~attrs:$1 ~loc]
+  }
+  | many_class_type_declarations_sig and_class_type_declaration_sig {
+    $2::$1
+  }
+;
+
+and_class_type_declaration_sig:
   post_item_attributes AND class_type_declaration_details {
     let (ident, instance_type, virt, class_type_params) = $3 in
     let loc = mklocation $symbolstartpos $endpos in
     Ci.mk ident instance_type ~virt:virt ~params:class_type_params ~attrs:$1 ~loc
   }
 ;
+
 
 class_type_declaration_details:
     virtual_flag as_loc(LIDENT) class_type_parameters EQUAL class_instance_type {
@@ -2606,11 +2627,11 @@ _semi_terminated_seq_expr_row_no_attrs:
   | expr opt_semi  {
       $1
     }
-  | opt_let_module as_loc(UIDENT) module_binding_body SEMI semi_terminated_seq_expr {
-      mkexp (Pexp_letmodule($2, $3, $5))
+  | EXPORT? opt_let_module as_loc(UIDENT) module_binding_body SEMI semi_terminated_seq_expr {
+      mkexp (Pexp_letmodule($3, $4, $6))
     }
-  | LET? OPEN override_flag as_loc(mod_longident) SEMI semi_terminated_seq_expr {
-      mkexp (Pexp_open($3, $4, $6))
+  | EXPORT? LET? OPEN override_flag as_loc(mod_longident) SEMI semi_terminated_seq_expr {
+      mkexp (Pexp_open($4, $5, $7))
     }
   | expr SEMI semi_terminated_seq_expr  {
       mkexp (Pexp_sequence($1, $3))
@@ -3291,16 +3312,16 @@ lident_list:
 ;
 let_binding_impl:
   /* Form with item extension sugar */
-  | post_item_attributes LET rec_flag let_binding_body {
+  | post_item_attributes EXPORT? LET rec_flag let_binding_body {
       let loc = mklocation $symbolstartpos $endpos in
-      ($3, $4, $1, loc)
+      ($4, $5, $1, loc)
     }
 ;
 let_binding_impl_no_attrs:
   /* Form with item extension sugar */
-  | LET rec_flag let_binding_body {
+  | EXPORT? LET rec_flag let_binding_body {
       let loc = mklocation $symbolstartpos $endpos in
-      ($2, $3, [], loc)
+      ($3, $4, [], loc)
     }
 ;
 
@@ -3954,6 +3975,21 @@ primitive_declaration:
 /* Type declarations */
 
 many_type_declarations:
+ | post_item_attributes EXPORT? TYPE nonrec_flag type_declaration_details {
+   let (ident, params, constraints, kind, priv, manifest) = $5 in
+   let loc = mklocation $symbolstartpos $endpos in
+   let ty = Type.mk ident ~params:params ~cstrs:constraints
+            ~kind ~priv ?manifest ~attrs:$1 ~loc
+   in
+   ($4, [ty])
+   }
+ | many_type_declarations and_type_declaration {
+   let (nonrec_flag, tyl) = $1 in
+   (nonrec_flag, $2 :: tyl)
+   }
+;
+
+many_type_declarations_sig:
  | post_item_attributes TYPE nonrec_flag type_declaration_details {
    let (ident, params, constraints, kind, priv, manifest) = $4 in
    let loc = mklocation $symbolstartpos $endpos in
@@ -3962,13 +3998,25 @@ many_type_declarations:
    in
    ($3, [ty])
    }
- | many_type_declarations and_type_declaration {
+ | many_type_declarations_sig and_type_declaration_sig {
    let (nonrec_flag, tyl) = $1 in
    (nonrec_flag, $2 :: tyl)
    }
 ;
 
+
 and_type_declaration:
+  | post_item_attributes AND EXPORT? type_declaration_details {
+    let (ident, params, constraints, kind, priv, manifest) = $4 in
+    let loc = mklocation $symbolstartpos $endpos in
+    Type.mk ident
+      ~params:params ~cstrs:constraints
+      ~kind ~priv ?manifest ~attrs:$1 ~loc
+  }
+;
+
+
+and_type_declaration_sig:
   | post_item_attributes AND type_declaration_details {
     let (ident, params, constraints, kind, priv, manifest) = $3 in
     let loc = mklocation $symbolstartpos $endpos in
@@ -4108,14 +4156,14 @@ constructor_declaration_leading_bar:
 
 /* Why are there already post_item_attributes on the extension_constructor_declaration? */
 str_exception_declaration:
-  |  post_item_attributes EXCEPTION extension_constructor_declaration
+  |  post_item_attributes EXPORT? EXCEPTION extension_constructor_declaration
       {
-        let ext = $3 in
+        let ext = $4 in
         {ext with pext_attributes = ext.pext_attributes @ $1}
       }
-  | post_item_attributes EXCEPTION extension_constructor_rebind
+  | post_item_attributes EXPORT? EXCEPTION extension_constructor_rebind
       {
-        let ext = $3 in
+        let ext = $4 in
         {ext with pext_attributes = ext.pext_attributes @ $1}
       }
 ;
@@ -4188,17 +4236,18 @@ potentially_long_ident_and_optional_type_parameters:
 
 str_type_extension:
   post_item_attributes
+  EXPORT?
   TYPE nonrec_flag potentially_long_ident_and_optional_type_parameters
   PLUSEQ private_flag attributes opt_bar str_extension_constructors
   {
-    if $3 <> Recursive then not_expecting $startpos($3) $endpos($3) "nonrec flag";
-    let (potentially_long_ident, optional_type_parameters) = $4 in
-    let str_extension_constructors = match (List.rev $9) with
-    | [] -> $9
-    | hd :: tail -> {hd with pext_attributes = $7} :: tail
+    if $4 <> Recursive then not_expecting $startpos($4) $endpos($4) "nonrec flag";
+    let (potentially_long_ident, optional_type_parameters) = $5 in
+    let str_extension_constructors = match (List.rev $10) with
+    | [] -> $10
+    | hd :: tail -> {hd with pext_attributes = $8} :: tail
     in
     Te.mk potentially_long_ident str_extension_constructors
-          ~params:optional_type_parameters ~priv:$6 ~attrs:$1
+          ~params:optional_type_parameters ~priv:$7 ~attrs:$1
   }
 ;
 sig_type_extension:

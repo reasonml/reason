@@ -83,6 +83,7 @@ let keyword_table =
     "else", ELSE;
     "end", END;
     "exception", EXCEPTION;
+    "export", EXPORT;
     "external", EXTERNAL;
     "false", FALSE;
     "for", FOR;
