@@ -24,12 +24,8 @@ To install manually, install the reason-cli (`npm -g install git://github.com/re
                             ""
                             str))
 
-(defun real-path (path)
-  "Resolves the actual path for PATH."
-  (chomp-end (shell-command-to-string (concat "realpath " path))))
-
-(let ((support-base-dir (concat (replace-regexp-in-string "refmt\n" "" (shell-command-to-string (concat "realpath " (shell-command-to-string "which refmt")))) ".."))
-      (merlin-base-dir (concat (replace-regexp-in-string "ocamlmerlin\n" "" (shell-command-to-string (concat "realpath " (shell-command-to-string "which ocamlmerlin")))) "..")))
+(let ((support-base-dir (concat (replace-regexp-in-string "refmt" "" (file-truename (chomp-end (shell-command-to-string "which refmt")))) ".."))
+      (merlin-base-dir (concat (replace-regexp-in-string "ocamlmerlin" "" (file-truename (chomp-end (shell-command-to-string "which ocamlmerlin")))) "..")))
   ;; Add npm merlin.el to the emacs load path and tell emacs where to find ocamlmerlin
   (add-to-list 'load-path (concat merlin-base-dir "/share/emacs/site-lisp/"))
   (setq merlin-command (concat merlin-base-dir "/bin/ocamlmerlin"))
