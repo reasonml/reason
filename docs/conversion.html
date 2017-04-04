@@ -1,0 +1,245 @@
+<!doctype html>
+<html>
+<head>
+  <link href='https://fonts.googleapis.com/css?family=Montserrat:400,700' rel='stylesheet' type='text/css'>
+  <meta charset='utf-8'>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width">
+
+  <title>Reason - compare to JavaScript</title>
+
+  <!-- Flatdoc -->
+  <script src='support/vendor/jquery.js'></script>
+  <script src='legacy.js'></script>
+  <script src="highlightJs/build/highlight.pack.js"></script>
+  <link  href='highlightJs/src/styles/xcode.css' rel='stylesheet'>
+  <script src='flatdoc.js'></script>
+
+  <!-- Flatdoc theme -->
+  <link  href='theme-white/style.css' rel='stylesheet'>
+  <script src='theme-white/script.js'></script>
+  <link  href='support/theme.css' rel='stylesheet'>
+  <script src='support/theme.js'></script>
+
+
+
+  <script id="markdown" type="text/markdown" src="javaScriptCompared.html">
+Converting Your JavaScript to Reason
+===========
+
+Preparation
+-------
+
+**Before you proceed**, please make sure that Reason is what your team needs! As much as we vouch for Reason and BuckleScript's popularity, please don't unnecessarily thrash your colleagues and give them a bad fist impression. That's hard to undo afterward.
+
+This guide assumes you have partial Reason/BuckleScript knowledge. It's not intended to go over basic language/FFI features (though it puts them in context). We're describing a workflow that's helped us convert things over rapidly and efficiently.
+
+Syntax
+-------
+
+**Goal**: first and foremost, **make the file syntactically valid**. Don't care about wrong types, missing modules, bad file organization, too many externals, etc. We'll come back to clean these up after setting up the regression test that is "no more syntax errors".
+
+Since the Reason syntax resembles enough to that of JavaScript, instead of starting a new Reason file, just copy over an existing js file and work on top of it.
+
+*Tip*: don't forget that you can use `refmt` in your editor/terminal! If you don't know e.g. the precedence of some operations, wrap them in as many parentheses as you wish, then `refmt` your code and see which ones remain. Likewise, no need to lose time on indentations and spacing; `refmt` takes care of them.
+
+```reason
+/* original JS file you've copied over */
+const school = require('school');
+
+const defaultId = 10;
+
+function queryResult(usePayload, payload) {
+  if (usePayload) {
+    return payload.student
+  }
+  return school.getStudentById(defaultId);
+}
+```
+
+Here are some of the things you'd do at this step:
+
+- Convert the function call syntax over.
+
+- Convert the `var`/`const` over to `let`.
+
+- Hide the `require`s.
+
+- Make other such changes. For idioms that don't have a BuckleScript equivalent, use `bs.raw` ([documentation](http://bloomberg.github.io/bucklescript/Manual.html#_embedding_arbitrary_js_code_as_an_expression)).
+
+Again, worry **only** about making the file syntactically valid. Trying to learn all three of syntax, types and other semantics while converting over a file reduces your iteration speed to less than a third.
+
+```reason
+/* syntactically valid, semantically wrong conversion */
+/* const school = require('school'); */
+
+let defaultId = 10;
+
+let queryResult usePayload payload => {
+  if (usePayload) {
+    payload.student
+  } else {
+    school.getStudentById defaultId;
+  }
+};
+```
+
+Types, Pass 1
+-------
+
+**Goal**: correct the types, but just enough to move onto the next step.
+
+You might still occasionally get syntax errors, but not as drastic as the previous step's.
+
+- Change `foo.bar` to `foo##bar`. This escape-hatch [BuckleScript feature](http://bloomberg.github.io/bucklescript/Manual.html#_how_to_consume_js_property_and_methods) will be your medium-term friend.
+
+- Convert `{foo: bar}` to `[%bs.obj {foo: bar}]` ([docs](http://bloomberg.github.io/bucklescript/Manual.html#_create_js_objects_using_bs_obj)). After `refmt`, this will sugar to `{"foo": bar}`.
+
+- To communicate with external JS files, use `external`. They're BuckleScript's [foreign function interface](http://bloomberg.github.io/bucklescript/Manual.html#_ffi).
+
+  - Inline externals. No need to create clean, well-separated files for externals for now. We'll come back to these.
+
+  - If it's too cumbersome to correctly type an `external`'s input/output, use some placeholder polymorphic types, e.g. `external getStudentById: 'whatever => 'whateverElse = ...`.
+
+  - For data types & patterns that are hard to properly convert over, you can occasionally create converters like `external unsafeCast : myPayloadType => anotherDataType = "%identity";`.
+
+This is the first pass; the final types likely look different. For now, reap the rewards! Once you're finally done fixing all the type errors, your JS file should now be generated. Keep it open side-by-side. Time to come back and fix all the hacks!
+
+```reason
+/* syntactically valid, still semantically wrong, but better */
+external getStudentById: 'whatever => 'whateverElse = "getStudentById" [@@bs.module "school"];
+
+let defaultId = 10;
+
+let queryResult usePayload payload => {
+  if (usePayload) {
+    payload##student /* this will be inferred as `Js.t 'a` */
+  } else {
+    getStudentById defaultId;
+  }
+};
+```
+
+Runtime Semantics
+-------
+
+**Goal**: fix the errors in the generated JS output.
+
+Compare it with your old JS file. The output is likely incorrect; you probably mis-converted some idioms and mistyped some externals.
+
+- Type the shape of JS objects (the things that required `##`).
+
+- Convert whichever parts to records/variants/idiomatic OCaml types.
+
+All this time, check the output for any change.
+
+```reason
+type student; /* abstract type, described later */
+external getStudentById: 'whatever => student = "getStudentById" [@@bs.module "school"];
+
+type payloadType = Js.t {. student: student};
+
+let defaultId = 10;
+
+let queryResult usePayload (payload: payloadType) => {
+  if (Js.to_bool usePayload) {
+    payload##student
+  } else {
+    getStudentById defaultId;
+  }
+};
+```
+
+Clean Up (Types, Pass 2)
+-------
+
+**Goal**: make your types legit (aka, sound).
+
+Go back fix whatever you've left during the first pass.
+
+- Make sure you don't have any `'whatever` types left in `external`s.
+
+- You can keep the `external`s inlined, or pull them out into a file.
+
+
+```reason
+/* in the current file */
+type payloadType = Js.t {. student: School.student}; /* TODO: put this somewhere else! */
+
+let defaultId = 10;
+
+let queryResult usePayload (payload: payloadType) => {
+  if (Js.to_bool usePayload) {
+    payload##student
+  } else {
+    School.getStudentById defaultId;
+  }
+};
+```
+
+```reason
+/* in a dedicated School.re file */
+type student;
+external getStudentById: int => student = "getStudentById" [@@bs.module "School"];
+external getAllStudents: unit => array student = "getAllStudents" [@@bs.module "School"];
+```
+
+Type `student` doesn't have an actual content; that's called an [abstract type](http://facebook.github.io/reason/modules.html#modules-signatures). It's a convenient way of specifying the relationship between external calls without knowing what the shape of the data is under the hood.
+
+And then you're done!
+
+Whatever nice utilities you find (e.g. convert a `Js.null_undefined Js.boolean` to a `bool`), put them in a `tempUtils.re` file or something.
+
+We **highly recommend** you to check the JS output into version control. It makes your build system integration quasi-nonexistent, and makes sure that when you're not there, your teammates can make small changes, audit the output diff, and catch any mistakes. It's also a great selling point that the checked in JS output is friendly to emergency hot patches. Even if you're upgrading BuckleScript version, you'd catch any output difference.
+
+As always, ping us on [Discord](https://discord.gg/reasonml) for more help!
+
+
+  </script>
+  <!-- Initializer -->
+  <script>
+    Flatdoc.run({
+      fetcher: function(callback) {
+        callback(null, document.getElementById('markdown').innerHTML);
+      },
+      highlight: function (code, value) {
+        return (value === 'reason') ? hljs.highlight('reason', code).value : hljs.highlight(value, code).value;
+      },
+    });
+  </script>
+
+  <!-- Meta -->
+  <meta property="og:image" content="./images/CubeRed598_614.png" />
+  <meta property="og:image:secure_url" content="./images/CubeRed598_614.png" />
+  <meta property="og:image:type" content="image/jpeg" />
+  <meta property="og:image:width" content="1196" />
+  <meta property="og:image:height" content="1228" />
+
+  <meta content="Reason: Rapid Expressive Systems Programming." name="description">
+  <meta content="Reason: Rapid Expressive Systems Programming." property="og:description">
+  <!-- <meta content="http://ricostacruz.com/flatdoc/support/preview.jpg" property="og:image"> -->
+</head>
+<body role='flatdoc' class='big-h3 large-brief'>
+
+  <!-- <div class='title&#45;area title&#45;card' style='background&#45;image: url(support/blur.jpg)'> -->
+
+  <div class='header'>
+    <div class='left'>
+      <h1><a href='index.html'>Reason</a></h1>
+      <ul>
+        <li><a href='projects.html'>Projects</a></li>
+        <li><a href='tools.html'>Tools</a></li>
+        <li><a href='https://github.com/facebook/reason'>GitHub</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class='content-root'>
+    <div class='menubar'>
+      <div class='menu section' role='flatdoc-menu'></div>
+    </div>
+    <div role='flatdoc-content' class='content'></div>
+  </div>
+
+</body>
+</html>
