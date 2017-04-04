@@ -64,13 +64,9 @@ A new developer experience for rapidly building fast, safe systems.
   </tr>
 </table>
 
-`Reason` is a new interface to OCaml - a highly expressive dialect of the ML language
-featuring type inference and static type checking.
-
-`Reason` provides a new syntax and toolchain for editing, building, and sharing code, and
-will evolve in the open as a community collaboration. `Reason` already has contributors
-across several organizations/companies.
-
+`Reason` is a new syntax & toolchain layer for [OCaml](http://ocaml.org) - a
+highly expressive dialect of the ML language featuring type inference and static
+type checking.
 
 <table style="width:100%"> <tr style="border:none"> <tr style="border:none">
       <td style="padding: 20px; border:none; text-align:center">
@@ -82,41 +78,6 @@ across several organizations/companies.
 
 
 </table>
-
-Install
----------------
-See [INSTALL](https://github.com/facebook/reason/blob/master/README.md#install-via-npm)
-in the [README](https://github.com/facebook/reason/blob/master/README.md).
-
-
-REPL
----------------
-
-`Reason` comes with a REPL called `rtop` which lets you interactively evaluate
-`Reason` syntax, and see the results printed in `Reason` syntax. It features
-intelligent, type-driven autocompletion.
-
-<img src="images/RtopOptCrop.gif" style="width:100%; max-width:466px; max-height:433px;">
-
-
-```sh
-# The rtop command begins a REPL session
-rtop
-```
-
-```sh
-let myVar = "Hello Reason!";
-# myVar: bytes = "Hello Reason!"
-
-let result = 100 + 200;
-# result : int = 300;
-```
-
-Use `#quit;` to close your REPL session.
-
-> `rtop`'s intelligent autocompletion and compiler interaction is powered by
-[`utop`](https://github.com/diml/utop). `utop` supports extension of custom
-parsers and printers.
 
 Syntax Basics
 =======
@@ -152,7 +113,7 @@ Let Bindings
 `let` bindings give names to values. Those bindings can be seen and referenced
 by code that comes after those bindings, so long as the bindings are still "in scope".
 To make `let` bindings, use the `let` keyword with an `=` symbol, and put a `;` after
-the binding. Try creating some bindings in the [`rtop REPL`](#reason-repl)
+the binding. Try creating some bindings in the [`rtop REPL`](./tools.html#repl)
 
 ```reason
 let identifier = expression;
@@ -1416,7 +1377,7 @@ The OCaml compiler is organized into several stages, which are exposed as
 libraries. `Reason` replaces part of the compiler toolchain with a completely
 new syntax parser that is more approachable, while still fully compatible with
 the rest of the compiler.  `Reason` also implements a new source printer which
-integrates into your IDE and the new custom [`REPL`](#reason-repl).
+integrates into your IDE and the new custom [`REPL`](./tools.html#repl).
 
 ###### Why OCaml?
 
@@ -1618,7 +1579,8 @@ opam upgrade reason
     <div class='left'>
       <h1><a href='index.html'>Reason</a></h1>
       <ul>
-        <li><a href='projects.html'>Projects</a></li>
+        <li><a href='nativeWorkflow.html'>Native Workflow</a></li>
+        <li><a href='jsWorkflow.html'>JS Workflow</a></li>
         <li><a href='tools.html'>Tools</a></li>
         <li><a href='https://github.com/facebook/reason'>GitHub</a></li>
       </ul>
