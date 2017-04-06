@@ -157,6 +157,8 @@ As per the instructions [here](https://atom.io/packages/ocaml-merlin), you'll al
 As noted on the page, you'll also need the linter (which itself needs Linter-ui-default,
 Intention and Busy-signal).
 
+**Note**: if you've installed the global binaries through the [JS Workflow](http://facebook.github.io/reason/jsWorkflow.html#javascript-workflow-project-setup) then you can ignore the `opam install merlin` instructions at the end.
+
 #### Nuclide
 - Open the package installer from the menu `Packages > Settings View > Install Packages and Themes`.
 - Search for and install `nuclide` if not already installed.
@@ -290,20 +292,6 @@ you should parse the code with the old version of the parser, and print it with
 the new version of the printer. The easiest way to do this is to build the new
 version of Reason locally, while the old one is pinned globally, but any way that you
 have two versions installed locally will work.
-
-The script `upgradeSyntax.sh` will execute reformattings for the entire
-subdirectory repo across two separate builds of Reason. It expects you to
-supply the path/command to the old build of Reason, the path/command for the
-new build of Reason, and the print width (use `110`).  For example, if you had
-an old version of Reason globally pinned as `refmt`, and a local build of
-Reason at `~/github/Reason/refmt_impl.native`:
-
-```sh
-# Run from whichever directory you want to search
-~/github/Reason/upgradeSyntax.sh refmt ~/github/Reason/refmt_impl.native 110
-```
-
-
 
 Current Tooling
 -----------
