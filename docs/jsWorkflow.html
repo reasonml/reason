@@ -33,7 +33,7 @@ Compiling to JavaScript.
 Context
 -------
 
-[BuckleScript](http://bloomberg.github.io/bucklescript/Manual.html) is an OCaml-to-JS compiler. Since Reason is just another syntax for OCaml, we happen to work with BuckleScript too. We use the same standard library as OCaml, documented [here](http://caml.inria.fr/pub/docs/manual-ocaml/libref/). Other JS bindings are at [BuckleTypes](https://github.com/buckletypes).
+[BuckleScript](http://bloomberg.github.io/bucklescript/Manual.html) is an OCaml-to-JS compiler. Since Reason is just another syntax for OCaml, we happen to work with BuckleScript too. We use the same standard library as OCaml, [documented here](http://caml.inria.fr/pub/docs/manual-ocaml/libref/). Other JS bindings are at [BuckleTypes](https://github.com/buckletypes).
 
 **Looking for Reason-React bindings**? [Here you go](https://github.com/reasonml/reason-react)!
 
@@ -62,7 +62,11 @@ That's all! BuckleScript has first-class support for Reason, which is why you do
 npm install -g git://github.com/reasonml/reason-cli.git
 ```
 
-This will install the binaries `refmt`, `ocamlmerlin`, `ocamlmerlin-reason` globally for your [editor](http://facebook.github.io/reason/tools.html).
+This will install the binaries `refmt`, `ocamlmerlin`, `ocamlmerlin-reason`
+globally for your [editor](http://facebook.github.io/reason/tools.html).
+
+**Note**: the global toolchain `reason-cli` currently doesn't work on Windows.
+The rest does.
 
 Convert From JS to Reason
 -------

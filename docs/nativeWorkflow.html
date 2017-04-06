@@ -40,12 +40,10 @@ Reason currently integrates well into existing toolchains such as `ocamlbuild`, 
 which is a thin wrapper around `ocamlbuild`, but that ensures the right flags will be passed to the compiler for
 any files ending in `.re`.
 
-We are also developing [`rebel`](https://github.com/reasonml/rebel), a new build workflow based on
-[`jenga`](https://github.com/janestreet/jenga). `Rebel` unifies a package and build workflow by applying
-some very simple/intuitive conventions.
-
 #### NPM Workflow
 You can install `Reason` into a local directory using `npm`, via [`ReasonProject`](https://github.com/reasonml/ReasonProject).
+
+**Note**: our native workflow currently doesn't work with Windows.
 
 `Reason` can also be installed as an `npm` dependency of any other `npm` project.
 `ReasonProject`'s `package.json` is a good reference for how to do this, but you can
