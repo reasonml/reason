@@ -1,8 +1,0 @@
-<snippet>
-  <content>
-  	<![CDATA[let ${1:name} ${2:pattern} => $0;]]>
-  </content>
-  <scope>source.reason</scope>
-  <tabTrigger>ltf</tabTrigger>
-  <description>let x arg => …;</description>
-</snippet>

@@ -1,9 +1,0 @@
-<snippet>
-  <content>
-  	<![CDATA[/* $0 */]]>
-  </content>
-  <scope>source.reason</scope>
-  <tabTrigger>ic</tabTrigger>
-  <description>/* inline Comment */</description>
-</snippet>
-

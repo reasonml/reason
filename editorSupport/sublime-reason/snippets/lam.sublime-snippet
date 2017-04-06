@@ -1,9 +1,0 @@
-
-<snippet>
-  <content>
-  	<![CDATA[fun ${1:pattern} => $0]]>
-  </content>
-  <scope>source.reason</scope>
-  <tabTrigger>lam</tabTrigger>
-  <description>fun x =>…</description>
-</snippet>
