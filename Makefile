@@ -12,7 +12,6 @@ setup_convenient_bin_links:
 	ln -fs $(shell pwd)/_build/src/reason_format_type.native $(shell pwd)/_build/bin/refmttype
 	ln -fs $(shell pwd)/_build/src/redoc.sh $(shell pwd)/_build/bin/redoc
 	ln -fs $(shell pwd)/_build/src/refmt_impl.native $(shell pwd)/_build/bin/refmt
-	ln -fs $(shell pwd)/_build/src/refmt_merlin_impl.sh $(shell pwd)/_build/bin/refmt_merlin
 	ln -fs $(shell pwd)/_build/src/share.sh $(shell pwd)/_build/bin/share
 	ln -fs $(shell pwd)/_build/src/reup.sh $(shell pwd)/_build/bin/reup
 
@@ -23,12 +22,10 @@ precompile:
 build_without_utop: setup_convenient_bin_links precompile
 	./build.native build --utop false
 	chmod +x $(shell pwd)/_build/src/*.sh
-	ln -fs $(shell pwd)/_build/src/refmt_merlin_impl.sh refmt_merlin_impl.sh
 
 build: setup_convenient_bin_links precompile
 	./build.native build --utop true
 	chmod +x $(shell pwd)/_build/src/*.sh
-	ln -fs $(shell pwd)/_build/src/refmt_merlin_impl.sh refmt_merlin_impl.sh
 
 install:
 	opam pin add reason . -y
