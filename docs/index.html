@@ -259,52 +259,52 @@ Records
 
 Records are a set of named values. They resemble "objects" but are
 - lighter
+- immutable by default
 - less flexible
 - much faster
 
-To create a record, some type definition describing its fields must be in scope.
-In `Reason`, type definitions for records resemble the shape of the records
-values they describe.
-
 ```reason
-type person = {age: int, name: string};
-let me = {age: 30, name: "Jordan"};
-print_string me.name;
+type person = {age: int, name: string}; /* type */
+let me = {age: 30, name: "Jordan"}; /* value */
+print_string me.name; /* field access */
 ```
 
-New records may be easily created from old records with the `...` spread
-operator, which changes a subset of the fields, but doesn't alter the original
-record.
+**Note**: Records must have a type definition.
 
-> Note: spread cannot add new fields.
+New records can be created from old records with the `...` spread operator. The
+original record isn't mutated.
 
 ```reason
-let meNextYear =  {
-  ...me,
-  age: me.age + 1
-};
+let meNextYear = {...me, age: me.age + 1};
 ```
 
-When the name of a field coincides with the type of a record field in a record definition, Reason provides a handy syntactic shortcut. For example, the field name `horsePower` binds the `type horsePower` to its name.
-This is called field type punning.
+**Note**: spread cannot add new fields.
+
+##### Sugar
+
+To reduce redundancy, we provide "punning" for a record's types and values.
+
+When the name of a field coincides with the type of a record field in a record
+definition, Reason provides a handy syntactic shortcut. For example, the field
+name `horsePower` binds the `type horsePower` to its name. This is called **punning**.
 
 ```reason
 type horsePower = {power: int, metric: bool};
 
-type car = {name: string, horsePower};
+let metric = true;
+let power1 = {power: 10, metric};
+/* equivalent to: {power: 10, metric: metric}; */
 
-/**
-  Equivalent to:
-  type car = {name: string, horsePower: horsePower};
-*/
+type car = {name: string, horsePower};
+/* equivalent to: {name: string, horsePower: horsePower}; */
 ```
 
-##### Mutable record fields.
+**Note**: there's no punning for a single record field! `{foo}` doesn't do what
+you expect (it's a block that returns the value `foo`).
 
-When defining the record type, you can mark some record fields as `mutable`.
-This allows you to update those fields with the `=` operator. In general,
-having language level distinction between `mutable` and immutable offers
-opportunities for compile time performance optimizations.
+##### Mutable Fields
+
+Record fields can optionally be mutable. This allows you to update those fields in-place with the `=` operator.
 
 ```reason
 type person = {
@@ -312,7 +312,7 @@ type person = {
   mutable age: int
 };
 let me = {name: "Jordan", age: 30};
-me.age = me.age + 1;
+me.age = me.age + 1; /* altered `me`. Happy birthday! */
 ```
 
 Destructuring
@@ -1059,101 +1059,6 @@ Note that this would translate to `foo=true` within JSX in JS code.
 
 There is no support for JSX spread attributes.
 
-Syntactic Sugar (Abbreviations)
-----------------------------------
-
-
-##### Function Definitions
-You have already seen one form of function syntactic sugar. Though it appears that
-functions accept multiple arguments, every function actually only accepts a
-single argument. "Multiple arguments" separated by spaces are actually defining
-a series of curried functions. The two function definitions on the right are equivalent.
-
-```reason
-let add = fun a b => a + b;
-/* Is the same as */
-let add = fun a => fun b => a + b;
-```
-
-Function application for a curried
-function can look very clean in many cases,
-because parentheses around the function argument may be omitted if the argument
-is clearly a single word or a grouping.
-
-```reason
-let five = add(4)(1);
-/* Is the same as */
-let five = add 4 1;
-```
-
-You only need to include parentheses around arguments when it otherwise
-wouldn't obviously be a single item.
-```reason
-let five = add (firstEvaluateThis 0 0) 1;
-```
-> Note: You pay no additional performance cost for curried functions
-when they are invoked with all the arguments. You may even ignore the fact that
-currying is occurring at all, if you like.
-
-##### Function Let Binding
-There is one more function binding syntax that has not yet been shown: When a function
-is defined with a `let` binding, the syntax `= fun` may be omitted.
-All the function definitions on the right are equivalent.
-
-```reason
-/* All of the following are equivalent. */
-let add a b => a + b;
-let add = fun a b => a + b;
-let add = fun a => fun b => a + b;
-```
-
-##### Module Functions Definitions
-
-[Module Functions](./modules.html#modules-module-functions) follow the same syntactic convention as regular
-functions. Space-separated arguments are actually currified *module functions*
-and the syntax `= fun` may be omitted, resulting in three forms of module function
-definitions which are all equivalent.
-
-```reason
-/* All of the following are equivalent. */
-module ModuleFunc (A:ASig) (B:BSig) => {};
-module ModuleFunc = fun (A:ASig) (B:BSig) => {};
-module ModuleFunc = fun (A:ASig) => fun (B:BSig) => {};
-```
-
-##### Record *Value* "Punning"
-
-If variables in scope have the same name as record fields, then record
-expressions can be written in a shorter form, where `name:name` can be
-abbreviated as `name`. This is called "punning" (just like JavaScript ES6).
-
-```reason
-type myRecord = {first: int, second: int};
-let first = "f";
-let second = "s";
-
-/* The following are equivalent. */
-let theRecord = {first:first, second:second};
-let theRecord = {first, second};
-
-/* Or only take the shortcut for a subset of the fields. */
-let theRecord = {first, second: 0};
-
-```
-
-##### Record *Pattern* "Punning"
-
-The same record "punning" syntax may be used with destructuring, in all of the
-places where destructuring is allowed (`let` bindings, function arguments,
-`switch` matching).
-
-```reason
-let {first:first, second:second} = theRecord;
-let {first, second} = theRecord;   /* Abbreviation */
-
-let sumsToZero = fun {first, second} => first + second == 0;
-```
-
 
 Automatic Printer Generation
 ---------------------------
@@ -1323,80 +1228,6 @@ in `Reason`, semicolons are simply used as a delimiter that assist in formatting
 and interleaving of comments. The `;` delimiter could just has easily have been
 the word `in`, or the monkey emoji `🐒`. It should also be possible to remove
 the need for these delimiters in all but a few cases.
-
-
-####Contribute via `npm`
-
-**1. Clone `Reason`** and run `npm install` to build everything.
-
-```sh
-git clone git+ssh://git@github.com/facebook/Reason.git
-cd Reason
-npm install
-```
-
-**2. Make changes to code and rebuild.** Run `npm run test` to make sure the test
-cases still pass, and clean if necessary.
-
-```sh
-npm run clean
-npm run build
-npm run test
-```
-
-> Note: A few of `Reason`'s dependencies don't like to be moved around once
-> they've been built, so don't `mv` the `Reason` root directory after
-> it has been built.
-
-###### Testing another project against your `Reason` changes.
-
-If you use a project like
-[`ExampleProject`](https://github.com/reasonml/exampleproject) that depends on
-`Reason`, symlink from `YourProject/node_modules/reason` to your local build of
-`Reason`, then rebuild your project.  (Note: `npm link` may not work).
-
-
-####Contribute via `opam`
-
-*After* setting up `OPAM` and your `switch` in the general [installation
-instructions](./index.html#reason-install), do the following to live on the
-bleeding edge and make changes to `Reason`.
-
-**1. Ensure a Clean Slate:**
-These commands remove any versions of packages you might
-have installed in the stable [installation
-instructions](./index.html#reason-install).
-```sh
-opam pin remove merlin
-opam pin remove merlin_extend
-opam pin remove reason
-```
-
-**2. `pin` the `master` versions of everything:**
-See [INSTALL STABLE](https://github.com/facebook/reason/blob/master/README.md#install-stable)
-for up to date instructions.
-
-**3. Clone `Reason` and `pin` that local clone:** Pinning your locally built
-`Reason` clone makes your local build of `Reason` visible globally.
-
-```sh
-git clone git+ssh://git@github.com/facebook/Reason.git
-cd Reason
-make
-opam pin add -y reason .
-```
-
-**4. Make Changes and `upgrade`:**
-When you make changes to `Reason`, and build successfully, those changes don't
-take effect in the globally installed version of `Reason` until you `upgrade`
-`Reason`.
-
-```sh
-# Test changes
-cd Reason
-make
-opam upgrade reason
-```
 
   </script>
 
