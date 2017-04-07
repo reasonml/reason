@@ -194,6 +194,47 @@ from wherever Reason is installed.
 
 <img src="images/VimReason.png" style="width:100%; max-width:470px; max-height:440px" />
 
+#### Merlin
+
+`merlin` has built in `Vim` support.
+
+Completion is provided using `omnifunc`. By default you can trigger it with `<C-X><C-O>` while in insert mode.
+If you use completion plugins, most of them can use `omni` as a source.
+
+```
+" deoplete
+
+let g:deoplete#omni_patterns = {}
+let g:deoplete#omni_patterns.reason = '[^. *\t]\.\w*\|\h\w*|#'
+let g:deoplete#sources = {}
+let g:deoplete#sources.reason = ['omni', 'buffer']
+
+" neocomplete and YouCompleteMe work out of the box
+```
+
+You can use syntactic checks with plugins like Syntastic, ALE, and others.
+
+```
+" Syntastic
+
+let g:syntastic_reason_checkers=['merlin']
+
+" ALE
+
+let g:ale_linter_aliases = {'reason': 'ocaml'}
+```
+
+`merlin` also provides many helpful commands.
+See [this guide](https://github.com/ocaml/merlin/wiki/vim-from-scratch#discovering-the-shiny-features) to learn more. 
+
+#### VimReason
+
+Reason ships with a [syntax plugin](https://github.com/facebook/reason/tree/master/editorSupport/VimReason).
+It provides syntax highlighting and formatting.
+
+The command `:ReasonPrettyPrint` invokes the binary `refmt` and formats text in the current buffer.
+You can set `g:vimreason_extra_args_expr_reason` variable to control the arguments passed to `refmt` (such as `--print-width`). 
+
 ### Emacs
 
 The [Emacs Plugin](https://github.com/facebook/reason/tree/master/editorSupport/emacs)
