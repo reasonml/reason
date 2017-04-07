@@ -29,62 +29,27 @@
 
 Reason
 =======
-A new developer experience for rapidly building fast, safe systems.
+Friendly Syntax & Toolchain Powered by OCaml
 
-<table style="width:100%">
+`Reason` is a new syntax & curated layer for [OCaml](http://ocaml.org), a
+battle-tested language featuring type inference, smooth interoperability and
+great speed.
+
+<table style="width:100%"> <tr style="border:none">
   <tr style="border:none">
-    <td style="border:none; padding:0px">
-      <div class="featureContainer" style="">
-        <div class="featureColumn" style="">
-          <div class="featureIcon octicon octicon-code"></div>
-          <div class="featureItemBox" style="">
-            <span class="featureHeader">
-              Syntax
-            </span>
-          </div>
-        </div>
-        <div class="featureColumn featureComingSoon" style="">
-          <div class="featureIcon octicon octicon-zap"></div>
-          <div class="featureItemBox" style="">
-            <span class="featureHeader">
-              Build
-            </span>
-          </div>
-        </div>
-        <div class="featureColumn featureComingSoon" style="">
-          <div class="featureIcon octicon octicon-package"></div>
-          <div class="featureItemBox" style="">
-            <span class="featureHeader">
-              Share
-            </span>
-          </div>
-        </div>
-      </div>
-    </td>
-  </tr>
-</table>
-
-`Reason` is a new syntax & toolchain layer for [OCaml](http://ocaml.org) - a
-highly expressive dialect of the ML language featuring type inference and static
-type checking.
-
-<table style="width:100%"> <tr style="border:none"> <tr style="border:none">
-      <td style="padding: 20px; border:none; text-align:center">
+    <td style="padding: 20px; border:none; text-align:center">
       [Compare JS >](./javaScriptCompared.html)
       [Compare ML >](./mlCompared.html)
     </td>
-
   </tr>
-
-
 </table>
 
 Syntax Basics
 =======
 
-Much of Reason's core syntax should be familiar to anyone who has ever used
-modern `JavaScript` / [Flow](http://flowtype.org/) or `Rust`. The examples in this document give an
-overview of the most important language constructs and their respective syntax.
+Reason's syntax is similar to that of modern `JavaScript` /
+[Flow](http://flowtype.org/) or `Rust`. The examples in this document give an
+overview of the most important language constructs and their syntax.
 
 Primitives / Operations
 ----------
@@ -95,71 +60,49 @@ Primitives / Operations
 > Characters                            |  <pre>'x'</pre>
 > Integers                              |  <pre>23</pre>
 > Floats                                |  <pre>23.0</pre>
-> Negative Integers                      |  <pre>-23</pre>
+> Negative Integers                     |  <pre>-23</pre>
 > Integer Addition                      |  <pre>23 + 1</pre>
 > Float Addition                        |  <pre>23.0 +. 1.0</pre>
 > Integer Division/Multiplication       |  <pre>2 / 23 * 1</pre>
 > Float Division/Multiplication         |  <pre>2.0 /. 23.0 \*. 1.0</pre>
-> String Concatenation                  |  <pre>"Hello" ^ " " ^ "World"</pre>
+> String Concatenation                  |  <pre>"Hello " ^ "World"</pre>
 > Immutable Lists                       |  <pre>[1, 2, 3]</pre>
-> Immutable Lists Append                |  <pre>[item1, item2, ...theRest]</pre>
-> Reference Equality Comparison         |  <pre>thisThing === thatThing</pre>
-> Records                               |  <pre>{contents: 100}</pre>
-> Record Field Update (if mutable field)|  <pre>myRecord.contents = 200</pre>
+> Immutable Prepend                     |  <pre>[item1, item2, ...theRest]</pre>
+> Reference Equality                    |  <pre>thisThing === thatThing</pre>
+> Records                               |  <pre>{score: 100}</pre>
 
 
 Let Bindings
 ------------
-`let` bindings give names to values. Those bindings can be seen and referenced
-by code that comes after those bindings, so long as the bindings are still "in scope".
-To make `let` bindings, use the `let` keyword with an `=` symbol, and put a `;` after
-the binding. Try creating some bindings in the [`rtop REPL`](./tools.html#repl)
+`let` bindings give names to values. They bindings can be seen and referenced
+by code that comes after those bindings.
 
 ```reason
-let identifier = expression;
-let identifier = expression;
+let greeting = "hello!";
+let score = 10;
+let newScore = 10 + score;
 ...
 ```
 
-#### Let Bindings in Source Files
+#### Scope
 
-Reason source files begin with an uppercase letter and use the `.re` file
-suffix. Among other things, each `.re` file includes a series of `let` bindings.
-In this example, a file `Hello.re` has two `let` bindings.
+Reason has block scope through `{}`.
 
 ```reason
-/*
- * Contents of Hello.re
- */
-let message = "Do you use Reason?";
-let response = "Why yes, I do indeed.";
-```
-
-#### Limiting Scope
-
-`let` bindings tie a name to a value and that name may be referenced at a later
-point in the file. To further limit scope of bindings, `Reason` provides `{}`
-block *expressions* which let you sequence `let`s together and then *evaluates*
-to the last item in the sequence. In this example, the binding `three`
-evaluates to the `integer` `3`.  The `{}` block ensures that `one` and `two`
-are not accessible after `three` is computed.
-
-```reason
-let three = {
-  let one = 1;
-  let two = 2;
-  one + two
+let message = {
+  let part1 = "hello";
+  let part2 = "world";
+  part1 ^ " " ^ part2
 };
-/* one and two not accessible here! */
+/* `part1` and `part2` not accessible here! */
 ```
-> Note that the last item may optionally include a terminating semicolon.
 
-#### Constant bindings
+#### Bindings Are Immutable
 
-`let` bindings are immutable. Once a binding refers to a value, it cannot
-refer to anything else. However, you may create a new binding of the same
-name which will *shadow* the previous binding; aka, from that point onward,
-the binding will refer to the newly assigned value.
+Once a binding refers to a value, it cannot refer to anything else (unless it
+explicitly contains a mutable value, discussed later). However, you may create a
+new binding of the same name which will *shadow* the previous binding; from that
+point onward, the binding will refer to the newly assigned value.
 
 ```reason
 let msg = "hello";
@@ -168,122 +111,160 @@ let msg = "bye";
 print_endline msg; /* Prints "bye" */
 ```
 
+Functions
+---------
 
-#### Imperative Code
-
-You may interleave imperative commands such as logging along with your let
-bindings. This works both for `let` bindings in files, and also in block
-scopes. Interleaved imperative commands don't change what block expressions
-evaluate to.
+Functions are declated with `fun` and return the expression.
 
 ```reason
-let three = {
-  let one = 1;
-  print_string "fire the missiles";
-  let two = 2;
-  one + two
+fun greet name => "Hello " ^ name;
+```
+
+For longer functions, you'd surround the body with a block:
+
+```reason
+fun greetMore name => {
+  let part1 = "Hello";
+  part1 ^ " " ^ name
 };
 ```
 
-Types Basics
+Functions are first class; you can use `let` bindings to give them names.
+
+```reason
+let increment = fun x => x + 1;
+let double = fun x => x + x;
+```
+
+To call a function, supply its argument after the name of the function.
+
+```reason
+let five = increment 4;
+let eleven = increment (double 5);
+```
+
+**Note the calling precedence**! If you forget to wrap `double 5` in parentheses,
+you'd get `increment double 5`, as if the `increment` function wrongly takes two
+arguments.
+
+#### Arguments & Sugar
+
+Functions can receive many arguments:
+
+```reason
+let add = fun x y => x + y;
+```
+
+Actually, this is actually nothing but syntactic sugar for this:
+
+```reason
+let add = fun x => fun y => x + y;
+```
+
+Naively, this would have been expensive (2 functions creations instead of 1).
+But OCaml optimizes this into a single function with two arguments under the
+hood! This way, we get
+
+- Nice syntax
+- Currying for free
+- No performance cost
+
+Cherry on top: we have a short form for `let` + `fun`:
+
+```reason
+let add = fun x y => x + y;
+let add x y => x + y; /* note the arrow */
+/* these two are equivalent */
+```
+
+To verify these sugars for yourself, write `let add = fun x => fun y => x + y`
+in your editor and use `refmt` on it; see it become `let add x y => x + y`.
+
+#### No Argument
+
+A function always takes an argument; but sometimes, we'd use it for e.g. side-
+effects, and don't really have anything to pass to it. In this case, we'd pass
+it the "special" value `()`.
+
+```reason
+let logSomething () => { /* receiving and destructuring the "unit" argument */
+  print_endline "hello";
+  print_endline "world";
+};
+
+logSomething () /* calling the function with the value of type unit */
+```
+
+`()` is actually a totally normal value, of the type "unit" (it's the single
+possible value of that type). Reason/OCaml gave it a special syntax out of convenience.
+
+Types
 --------------------------
 
 #### Type Annotations
 
-Even though types are inferred (you don't _have_ to write them out), you may
-still choose to write "type assertions" on any expression. Anywhere you would
-normally write an expression, just append `: yourType`, and then wrap the
-result in parenthesis.
-
+Types can be inferred or explicitly written down by choice.
 
 ```reason
-(expression : typeConstraint)
+let score: int = 10;
 ```
 
+You can also wrap an expression in parentheses and annotate it:
 
-These assertions are then verified by the compiler.
 ```reason
-let bindingOne = 5;
-let bindingOne = (5 : int);
-let bindingOne = (5 : int) + (4 : int);
-let bindingOne = ((5 : int) + (4 : int) : int);
-```
-The other place that type assertions are accepted is immediately following the
-`let` keyword. This is equivalent to asserting the type of the expression on
-the right hand side of the `=`.
-```reason
-let identifier : typeConstraint = expression;
-let identifier = (expression : typeConstraint);
+let myInt = 5;
+let myInt = (5 : int);
+let myInt = (5 : int) + (4 : int);
+let add (x: int) (y: int) :int => x + y;
 ```
 
 <br />
 
-```reason
-/* Equivalent type assertions. */
-let frameworkName = ("React": string);
-let frameworkName : string = "React";
-```
-
 #### Type Aliases
 
-You may refer to a type by a different name, by creating a type alias with the
-`type` keyword. The new type alias may be used in annotations as well. You can
-see there is somewhat of a "scope" for `type` aliases, similar to `let`
-bindings.
+You can refer to a type by a different name:
 
 ```reason
-type myType = int;
-let x: myType = 10;  /* Now we can "see" myType */
+type scoreType = int;
+let x: scoreType = 10; /* same scoping rules than `let` */
 ```
 
 Tuples
 --------------------------
 
-A tuple is a list of values of *known* size, such as "pair". They are written
-as comma delimited lists, always wrapped in parenthesis.
-
+Tuples are
+- immutable
+- ordered
+- fixed-sized
+- heterogenous
 
 ```reason
 let myThreeFloats = (20.0, 30.0, 100.0);
 let myIntAndString = (20, "totallyNotAnInteger");
 ```
 
-Tuples have types and those types can be used in type annotations as well.
-Tuple types resemble tuples themselves - comma delimited lists of types,
-wrapped in parenthesis.
+Tuples' types can be used in type annotations as well. Tuple types resemble
+tuples values: comma delimited lists of types, wrapped in parentheses.
 
 ```reason
 let myThreeFloats: (float, float, float)  = (20.0, 30.0, 100.0);
-let myIntAndString: (int, string) = (20, "totallyNotAnInteger");
+type myPair = (int, string); /* a tuple type alias */
+let myIntAndString: myPair = (20, "totallyNotAnInteger");
 ```
 
-Tuples represent two or more values together, but sometimes you want to
-represent *zero* values. In `Reason`, you can express this idea by writing
-`()`. We call this thing "unit", and it has type `unit`.
-
-```reason
-let nothing = ();
-```
-
-You may create type aliases for tuple types just like you can with any other
-type.
-```reason
-type threeFloats = (float, float, float);
-type intAndString = (int, string);
-
-let myThreeFloats: threeFloats = (20.0, 30.0, 100.0);
-let myIntAndString: intAndString = (20, "totallyNotAnInteger");
-```
+**Note**: there's no tuple of size 1.
 
 Records
 -------
 
-Records are a set of named values. They resemble "objects" (from OO) but they
-are simpler, less flexible, and offer extremely fast field access. To create a
-record, some type definition describing its fields must be in scope.  In
-`Reason`,  type definitions for records resemble the shape of the records
-values they describe.
+Records are a set of named values. They resemble "objects" but are
+- lighter
+- less flexible
+- much faster
 
+To create a record, some type definition describing its fields must be in scope.
+In `Reason`, type definitions for records resemble the shape of the records
+values they describe.
 
 ```reason
 type person = {age: int, name: string};
@@ -365,125 +346,8 @@ let (ten: int, twenty: int) = someInts;
 let {name: (n:string), age: (a:int)} = somePerson;
 ```
 
-
-
-Functions
----------
-
-Functions are introduced with the `fun` keyword, followed by the name of the
-arguments, an arrow `=>` then any expression as the return value. You may omit
-the parenthesis around the argument when the argument is clearly "one unit"
-(such as a simple variable name).
-
-```reason
-fun (argument) => expression
-```
-Functions are first class and you can use `let` bindings to give them names.
-
-
-```reason
-let increment = fun (x) => x + 1;
-let double = fun x => x + x;
-```
-> We've chosen to omit the parenthesis around the second function's argument.
-
-To call a function, supply its argument after the name of the function.
-
-```reason
-let six = increment(5);
-let thirteen = increment(double(6));
-```
-Just like with function definitions, you can omit the parenthesis around the
-argument when you call the function, if the argument is clearly "one unit". In
-this example, the `5` is clearly one unit so the `()` were omitted. The
-parenthesis around `double 6`, could _not_ be omitted because `double 6` is not
-"one unit".
-
-
-```reason
-let six = increment 5;
-let thirteen = increment (double 6);
-```
-
-#### 
-
-Functions can return any expression, but "block expressions" are often chosen
-because they allow declaring temporary, block-scoped variables, and allow
-performing side effects.
-
-```reason
-let doSomeMath = fun arg => {
-  let tmp = 2 * arg;
-  let next = 3 * arg;
-  tmp * next
-};
-
-let performsSideEffects = fun arg => {
-  print_string "Entering the function";
-  let tmp = 2 * arg;
-  let next = 3 * arg;
-  print_string "Returning from the function";
-  tmp * next
-};
-```
-
-#### Arguments
-
-You can pass multiple pieces of data at once to the function, by passing a
-tuple. A function argument may be [destructured](#syntax-basics-destructuring)
-"on the way into" the function which gives you convenient access to each item
-in the tuple.
-```reason
-let addTupleFields = fun (first, second) => {
-  first + second
-};
-let five = addTupleFields (4, 1);
-```
-
-The tuple is still first class, and the function still accepts a single argument, so
-you could have also called the function like this:
-```reason
-let myTuple = (4, 1);
-let five = addTupleFields myTuple;
-```
-
-
-You can pass, and destructure a tuple with zero elements as well.
-
-```reason
-let logToUser = fun () => {
-  print_string "Logging to user";
-  print_string "Okay, logging done";
-};
-/* Now call it */
-logToUser ();
-```
-
-
-#### 
-You can pass/destructure records too. (If record type
-definitions are in scope).
-
-```reason
-let isOverThirty = fun {name: n, age: a} => {
-  let ret = a > 30;
-  ret
-};
-let overThirty = isOverThirty {name: "Jay", age: 31};
-```
-
-You may annotate the types of individual parts of the destructuring on the way
-into the function.
-```reason
-let addTupleFields = fun (first:int, second:int) => {
-  first + second
-};
-let isOverThirty = fun {name: (n:string), age: (a:int)} => {
-  let ret = a > 30;
-  ret
-};
-```
-
+More on Functions
+-------------------------
 
 #### Function Types
 Function types are written by listing the argument type, an arrow, and then
@@ -502,9 +366,6 @@ type intToInt = int => int;
 let a = (increment : intToInt);
 let b = (addTupleFields : intTupleToInt);
 ```
-
-
-
 
 #### Recursive Functions
 
@@ -1355,9 +1216,6 @@ type mytype 'a = SomeSadVariant 'a;
 Advanced
 =======
 With the basic constructs covered, here are more advanced features.
-
-Bindings Revisited
----------------------------
 
 Modules
 -------
