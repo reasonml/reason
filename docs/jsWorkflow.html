@@ -58,17 +58,25 @@ echo '{"name": "test", "sources": "src"}' > bsconfig.json
 
 More info on bsb & bsconfig [here](http://bloomberg.github.io/bucklescript/Manual.html#_bucklescript_build_system_code_bsb_code).
 
-That's all! BuckleScript has first-class support for Reason, which is why you don't see any mention of "Reason" in the above step; you don't need to install anything else. However, you'd probably want editor toolings:
+That's all! BuckleScript has first-class support for Reason, which is why you don't see any mention of "Reason" in the above step.
+
+
+Global Installs (Editor Setup)
+-------
+
+Our [editor integration](file:///Users/chenglou/Github/Reason/docs/tools.html#editor-integration) need a few binaries to be found in your $PATH:
+
+- `refmt`: the Reason parser/printer (editor formatter).
+- `ocamlmerlin-reason`: Reason bridge to [Merlin](http://facebook.github.io/reason/tools.html#tools-command-line-merlin).
+- `ocamlmerlin`: the Merlin binary.
+
+They can be downloaded in one shot through:
 
 ```sh
 npm install -g git://github.com/reasonml/reason-cli.git
 ```
 
-This will install the binaries `refmt`, `ocamlmerlin`, `ocamlmerlin-reason`
-globally for your [editor](http://facebook.github.io/reason/tools.html).
-
 **Note**: the global toolchain `reason-cli` currently doesn't work on Windows.
-The rest does.
 
 Convert From JS to Reason
 -------

@@ -33,6 +33,8 @@ Compiling to bytecode/native.
 Context
 -------
 
+**Note**: the native workflow currently doesn't work with Windows.
+
 Reason currently integrates well into existing toolchains such as `ocamlbuild`, and ships with a binary called `rebuild`
 which is a thin wrapper around `ocamlbuild`, but that ensures the right flags will be passed to the compiler for
 any files ending in `.re`.
@@ -42,10 +44,57 @@ For native compilation, we support [OPAM](https://opam.ocaml.org).
 Project Setup
 -------
 
-**Note**: the native workflow currently doesn't work with Windows.
-
 See our [`ReasonNativeProject`](https://github.com/reasonml/ReasonNativeProject).
 
+Global Installs (Editor Setup)
+-------
+
+Our [editor integration](file:///Users/chenglou/Github/Reason/docs/tools.html#editor-integration) need a few binaries to be found in your $PATH:
+
+- `refmt`: the Reason parser/printer (editor formatter).
+- `ocamlmerlin-reason`: Reason bridge to [Merlin](http://facebook.github.io/reason/tools.html#tools-command-line-merlin).
+- `ocamlmerlin`: the Merlin binary.
+
+You'd get the first two through the setup below.
+
+Installing Reason and Merlin
+-------
+
+OCaml's [OPAM](https://opam.ocaml.org), for the native workflow, is different
+than JS' npm. It uses a global installation model. If you need Reason for your
+project or editor integration (Reason & Merlin), you'd install it like so:
+
+```sh
+# On OSX, install opam via Homebrew:
+brew update
+brew install opam
+# On Linux, see here (you'll need opam >= 1.2.2): http://opam.ocaml.org/doc/Install.html
+
+opam init
+# Add this to your ~/.bashrc (or ~/.zshrc):
+#   eval $(opam config env)
+
+opam update
+opam switch 4.02.3
+eval $(opam config env)
+opam install reason
+opam install merlin
+# get a list of your currently installed packages
+opam list
+```
+
+Test the installation by compiling the following program:
+
+```sh
+echo 'print_string "hello!"' > Hello.re
+
+# rebuild is another binary exposed by the Reason package
+rebuild Hello.native # Automatically generates Hello.native from Hello.re
+
+./Hello.native # Should display "hello!"
+```
+
+**Note**: the global toolchain `reason-cli` currently doesn't work on Windows.
 </script>
   <!-- Initializer -->
   <script>
