@@ -10,11 +10,21 @@ Reason: Build Systems Rapidly [![Build Status](https://travis-ci.org/facebook/re
 - Ahead-of-time compilation to assembly - without a language level VM.
 - Rapidly develop and share projects.
 
-Project Workflows
--------------------
+Getting Started
+---------------
 
-Compile to native: http://facebook.github.io/reason/nativeWorkflow.html
-Compile to JS: http://facebook.github.io/reason/jsWorkflow.html
+Check out the [docs](http://facebook.github.io/reason) which guide you through the basic syntax and toolchain features.
+
+Workflow for compiling to native: http://facebook.github.io/reason/nativeWorkflow.html
+Workflow for compiling to JS: http://facebook.github.io/reason/jsWorkflow.html
+
+Community
+---------------
+Get in touch! We're on:
+
+- IRC freenode #reasonml
+- [Discord](https://discord.gg/reasonml)
+- [Twitter](https://twitter.com/@reasonml)
 
 Installing via OPAM
 -------------------
@@ -50,20 +60,17 @@ rebuild Hello.native # Automatically generates Hello.native from Hello.re
 
 ```
 
-Get Started Now
+Contributing
 ---------------
-Check out the [docs](http://facebook.github.io/reason) which guide you through the basic syntax and toolchain features.
 
-Contribute back to that documentation in the [docs folder](https://github.com/facebook/reason/tree/master/docs).
+### Documentations
 
+The docs are in the [docs folder](https://github.com/facebook/reason/tree/master/docs) and the corresponding README there that describes the docs contribution method.
 
-Community
----------------
-Get in touch! We're on IRC freenode #reasonml, and [Discord](https://discord.gg/reasonml).
+### Codebase
 
+See the [src folder](ttps://github.com/facebook/reason/tree/master/src) and the corresponding README.
 
-Contributing To Development
-----------
 ```
 # On OSX, install opam via Homebrew:
 brew update
