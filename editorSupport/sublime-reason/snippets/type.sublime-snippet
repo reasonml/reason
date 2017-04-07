@@ -1,7 +1,0 @@
-<snippet>
-  <content><![CDATA[
-type ${1:new} = ${2:old};
-]]></content>
-  <tabTrigger>type</tabTrigger>
-  <scope>source.reason</scope>
-</snippet>
