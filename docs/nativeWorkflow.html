@@ -30,30 +30,21 @@ Native Workflow
 
 Compiling to bytecode/native.
 
-Project Setup
+Context
 -------
-
-Reason works with some existing build systems, and we're also developing
-new opinionated build/package workflows.
 
 Reason currently integrates well into existing toolchains such as `ocamlbuild`, and ships with a binary called `rebuild`
 which is a thin wrapper around `ocamlbuild`, but that ensures the right flags will be passed to the compiler for
 any files ending in `.re`.
 
-#### NPM Workflow
+For native compilation, we support [OPAM](https://opam.ocaml.org).
 
-**Note**: our native workflow currently doesn't work with Windows.
+Project Setup
+-------
 
-You can install `Reason` into a local directory using `npm`, via [`ReasonNativeProject`](https://github.com/reasonml/ReasonNativeProject).
+**Note**: the native workflow currently doesn't work with Windows.
 
-`Reason` can also be installed as an `npm` dependency of any other `npm` project.
-`ReasonNativeProject`'s `package.json` is a good reference for how to do this, but you can
-more easily just start with `ReasonNativeProject`, and evolve it into what you want your
-project to be.
-
-> Do not try `npm install -g reason` or `npm install reason` in a
-non-`package.json` project. The only two ways that `Reason` supports `npm` installation
-are via `ReasonNativeProject`, or as a dependency in a `package.json`.
+See our [`ReasonNativeProject`](https://github.com/reasonml/ReasonNativeProject).
 
 Read the [documentation](https://github.com/reasonml/ReasonNativeProject) for `ReasonNativeProject` which
 explains how to make `ReasonNativeProject` into *your* project.
