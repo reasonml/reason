@@ -41,7 +41,9 @@ To install manually, install the reason-cli (`npm -g install git://github.com/re
                               (merlin-mode)))
 
 (setq merlin-ac-setup t)
-
+```
+If you have iedit mode set up: 
+```
 (require 'merlin-iedit)
 (defun evil-custom-merlin-iedit ()
   (interactive)
