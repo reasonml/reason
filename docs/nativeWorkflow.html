@@ -39,7 +39,20 @@ Reason currently integrates well into existing toolchains such as `ocamlbuild`, 
 which is a thin wrapper around `ocamlbuild`, but that ensures the right flags will be passed to the compiler for
 any files ending in `.re`.
 
-For native compilation, we support [OPAM](https://opam.ocaml.org).
+For native compilation, we use [OPAM](https://opam.ocaml.org).
+
+```sh
+# On OSX, install opam via Homebrew:
+brew update
+brew install opam
+# On Linux, see here (you'll need opam >= 1.2.2): http://opam.ocaml.org/doc/Install.html
+
+opam init
+# **Note**: add the line below to your ~/.bashrc or ~/.zshrc too; it's needed at every shell startup
+eval $(opam config env)
+opam update
+opam switch 4.02.3
+```
 
 Project Setup
 -------
@@ -55,35 +68,16 @@ Our [editor integration](file:///Users/chenglou/Github/Reason/docs/tools.html#ed
 - `ocamlmerlin-reason`: Reason bridge to [Merlin](http://facebook.github.io/reason/tools.html#tools-command-line-merlin).
 - `ocamlmerlin`: the Merlin binary.
 
-You'd get the first two through the setup below.
-
-Installing Reason and Merlin
--------
-
-OCaml's [OPAM](https://opam.ocaml.org), for the native workflow, is different
-than JS' npm. It uses a global installation model. If you need Reason for your
-project or editor integration (Reason & Merlin), you'd install it like so:
+Install them through:
 
 ```sh
-# On OSX, install opam via Homebrew:
-brew update
-brew install opam
-# On Linux, see here (you'll need opam >= 1.2.2): http://opam.ocaml.org/doc/Install.html
-
-opam init
-# Add this to your ~/.bashrc (or ~/.zshrc):
-#   eval $(opam config env)
-
-opam update
-opam switch 4.02.3
-eval $(opam config env)
 opam install reason
 opam install merlin
 # get a list of your currently installed packages
 opam list
 ```
 
-Test the installation by compiling the following program:
+Test the installation by compiling this program:
 
 ```sh
 echo 'print_string "hello!"' > Hello.re
@@ -94,7 +88,6 @@ rebuild Hello.native # Automatically generates Hello.native from Hello.re
 ./Hello.native # Should display "hello!"
 ```
 
-**Note**: the global toolchain `reason-cli` currently doesn't work on Windows.
 </script>
   <!-- Initializer -->
   <script>
@@ -127,8 +120,8 @@ rebuild Hello.native # Automatically generates Hello.native from Hello.re
     <div class='left'>
       <h1><a href='index.html'>Reason</a></h1>
       <ul>
-        <li><a href='nativeWorkflow.html'>Native Workflow</a></li>
         <li><a href='jsWorkflow.html'>JS Workflow</a></li>
+        <li><a href='nativeWorkflow.html'>Native Workflow</a></li>
         <li><a href='tools.html'>Tools</a></li>
         <li><a href='https://github.com/facebook/reason'>GitHub</a></li>
       </ul>
