@@ -33,7 +33,7 @@ Compiling to bytecode/native.
 Context
 -------
 
-**Note**: the native workflow currently doesn't work with Windows.
+**Note**: doesn't work on Windows. The native workflow is currently work in progress.
 
 Reason currently integrates well into existing toolchains such as `ocamlbuild`, and ships with a binary called `rebuild`
 which is a thin wrapper around `ocamlbuild`, but that ensures the right flags will be passed to the compiler for
@@ -80,12 +80,12 @@ opam list
 Test the installation by compiling this program:
 
 ```sh
-echo 'print_string "hello!"' > Hello.re
+echo 'print_string "hello!"' > hello.re
 
 # rebuild is another binary exposed by the Reason package
-rebuild Hello.native # Automatically generates Hello.native from Hello.re
+rebuild hello.native # Automatically generates hello.native from hello.re
 
-./Hello.native # Should display "hello!"
+./hello.native # Should display "hello!"
 ```
 
 </script>
