@@ -504,7 +504,7 @@ Fortunately, the compiler forbids this.
 ```reason
 type possibleNum =
   | NotDefined
-  | Defined integer;
+  | Defined int;
 
 let myNumber = NotDefined;
 let Defined x = myNumber;   /* Type error! */
