@@ -81,8 +81,6 @@ let (<|) = fun f x -> f x
 
 exception NotPossible of string
 
-let useSingleColonForNamedArgs = false
-
 let case_not_implemented msg loc (file, line, column) =
   Format.fprintf Format.err_formatter
     "Not Implemented Yet %s %a (from: %s:%s:%s)@."
@@ -2127,28 +2125,33 @@ let formatAttributed x y =
        : retType => blah;
  *)
 let formatJustTheTypeConstraint =
-  if useSingleColonForNamedArgs then
-    (fun typ ->
-       (makeList ~postSpace:true [atom ":"; typ]))
-  else
-    (fun typ ->
-       (makeList ~postSpace:false [atom ":"; typ]))
+  (fun typ ->
+     (makeList ~postSpace:false [atom ":"; typ]))
 
 let formatTypeConstraint =
-  if useSingleColonForNamedArgs then
-    (fun one two ->
-      label ~space:true (makeList ~postSpace:true [one; atom ":"]) two)
-  else
-    (fun one two ->
-      label ~space:true (makeList ~postSpace:false [one; atom ":"]) two)
+  (fun one two ->
+    label ~space:true (makeList ~postSpace:false [one; atom ":"]) two)
 
 let formatLabeledArgument =
-  if useSingleColonForNamedArgs then
-    (fun lbl lblSuffix term ->
-      label ~space:false (makeList [lbl; atom (":" ^ lblSuffix)]) term)
-  else
-    (fun lbl lblSuffix term ->
-      label ~space:false (makeList [lbl; atom ("::" ^ lblSuffix)]) term)
+  (fun lbl lblSuffix term ->
+    if lbl = "" then
+      (*
+       * This logic helps avoid a line break to be added after "::"
+       * ```
+       * let f
+       *   ::
+       *     superLonglonglongnameArg => ...
+       * ```
+       * Instead, it prints it to
+       * ```
+       * let f
+       *   :: superLonglonglongnameArg => ...
+       * ```
+       *
+       *)
+      makeList [atom lbl; atom ("::" ^ lblSuffix); term]
+    else
+      label ~space:false (makeList [atom lbl; atom ("::" ^ lblSuffix)]) term)
 
 let formatCoerce expr optType coerced =
   match optType with
@@ -2386,11 +2389,11 @@ class printer  ()= object(self:'self)
   method type_with_label (label, ({ptyp_desc} as c)) =
     match label with
     | Nolabel ->  self#non_arrowed_non_simple_core_type c (* otherwise parenthesize *)
-    | Labelled s -> formatLabeledArgument (atom s) "" (self#non_arrowed_non_simple_core_type c)
+    | Labelled s -> formatLabeledArgument s "" (self#non_arrowed_non_simple_core_type c)
     | Optional lbl ->
        let everythingButQuestion =
          formatLabeledArgument
-           (atom lbl)
+           lbl
            ""
            (makeList
               ~postSpace:true
@@ -3138,14 +3141,13 @@ class printer  ()= object(self:'self)
     | Optional lbl ->
         let lbl = pun_labelled_pattern p lbl in
         (formatLabeledArgument
-           (atom lbl)
-           ""
+           lbl ""
            (label
              (makeList [(self#simple_pattern p); atom "="])
              (match opt with None -> (atom "?") | Some o -> (self#simplifyUnparseExpr o))))
     | Labelled l ->
         let lbl = pun_labelled_pattern p l in
-        formatLabeledArgument (atom lbl) "" (self#simple_pattern p)
+        formatLabeledArgument lbl "" (self#simple_pattern p)
 
   method access op cls e1 e2 = makeList ~interleaveComments:false [
     (* Important that this be not breaking - at least to preserve same
@@ -6040,10 +6042,10 @@ class printer  ()= object(self:'self)
       | Nolabel -> self#simplifyUnparseExpr e; (* level 2*)
       | Labelled lbl ->
         let lbl = pun_labelled_expression e lbl in
-        formatLabeledArgument (atom lbl) "" (self#simplifyUnparseExpr e)
+        formatLabeledArgument lbl "" (self#simplifyUnparseExpr e)
       | Optional str ->
         let lbl = pun_labelled_expression e str in
-        formatLabeledArgument (atom lbl) "?" (self#simplifyUnparseExpr e)
+        formatLabeledArgument lbl "?" (self#simplifyUnparseExpr e)
     in
     SourceMap (e.pexp_loc, param)
 

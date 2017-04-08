@@ -863,6 +863,9 @@ type typeWithNestedOptionalNamedArgs =
 type typeWithNestedOptionalNamedArgs =
   outerOne::list string? => outerTwo::int? => int;
 
+let f ::tuple="long string to trigger line break" =>
+  ();
+
 let x =
   callSomeFunction
     withArg::10 andOtherArg::wrappedArg;
