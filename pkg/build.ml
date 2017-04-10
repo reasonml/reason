@@ -44,6 +44,7 @@ let () =
     Pkg.bin "src/reason_format_type" ~dst:"refmttype";
     Pkg.bin "src/reactjs_jsx_ppx" ~dst:"reactjs_jsx_ppx";
     Pkg.bin "src/ppx_react" ~dst:"ppx_react";
+    Pkg.bin "src/ppx_export" ~dst:"ppx_export";
 
     (* VimReason *)
     Pkg.share "editorSupport/VimReason/after/syntax/reason.vim" ~dst:"editorSupport/VimReason/after/syntax/reason.vim";
