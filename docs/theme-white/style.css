@@ -888,6 +888,7 @@ code .comment {
   font-weight: 300;
 }
 .title-area {
+  height: 400px;
   min-height: 100px;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;

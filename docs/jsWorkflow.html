@@ -33,9 +33,7 @@ Compiling to JavaScript.
 Context
 -------
 
-[BuckleScript](http://bloomberg.github.io/bucklescript/Manual.html) is an OCaml-to-JS compiler. Since Reason is just another syntax for OCaml, we happen to work with BuckleScript too. We use the same standard library as OCaml, [documented here](http://caml.inria.fr/pub/docs/manual-ocaml/libref/). Other JS bindings are at [BuckleTypes](https://github.com/buckletypes).
-
-**Looking for Reason-React bindings**? [Here you go](https://github.com/reasonml/reason-react)!
+[BuckleScript](http://bloomberg.github.io/bucklescript/Manual.html) is an OCaml-to-JS compiler. Since Reason is just another syntax for OCaml, we happen to work with BuckleScript too. We use the same standard library as OCaml, [documented here](http://caml.inria.fr/pub/docs/manual-ocaml/libref/).
 
 For JS workflow, we support [npm](https://www.npmjs.com) (>=3.0) and [yarn](https://yarnpkg.com/en/).
 
@@ -83,7 +81,19 @@ which ocamlmerlin refmt ocamlmerlin-reason
 
 **Note**: the global toolchain `reason-cli` currently doesn't work on Windows.
 
-Convert From JS to Reason
+Use Existing JS Libraries
+-------
+**Looking for Reason-React bindings**? [Here you go](https://github.com/reasonml/reason-react)!
+
+We host Reason/OCaml bindings to existing JavaScript libraries at [BuckleTypes](https://github.com/buckletypes).
+
+The [BuckleScript manual](http://bloomberg.github.io/bucklescript/Manual.html) is all you need for calling JS from within BuckleScript. Here are some highlights:
+
+- [Runtime representation](http://bloomberg.github.io/bucklescript/Manual.html#_runtime_representation)
+- [Binding to simple JS functions values](http://bloomberg.github.io/bucklescript/Manual.html#_binding_to_simple_js_functions_values)
+- [Create JS objects using `bs.obj`](http://bloomberg.github.io/bucklescript/Manual.html#_create_js_objects_using_bs_obj)
+
+Convert JS to Reason
 -------
 
 See [Conversion](./jsConversion.html).
