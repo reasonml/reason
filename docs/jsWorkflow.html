@@ -79,6 +79,8 @@ npm install -g git://github.com/reasonml/reason-cli.git
 which ocamlmerlin refmt ocamlmerlin-reason
 ```
 
+**Note**: please verify that your installed OCaml version is `^4.02`: `ocamlc -version`. Please also verify that Merlin is `^2.5.1`: `ocamlmerlin -version`. The above installation does that automatically, but people sometimes install our toolchain through other ways (e.g. native workflow, with looser version constraints).
+
 **Note**: the global toolchain `reason-cli` currently doesn't work on Windows.
 
 Convert From JS to Reason
