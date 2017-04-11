@@ -1,14 +1,5 @@
-
-
-
-Reason: Build Systems Rapidly [![Build Status](https://travis-ci.org/facebook/reason.svg?branch=master)](https://travis-ci.org/facebook/reason) [![CircleCI](https://circleci.com/gh/facebook/reason/tree/master.svg?style=svg)](https://circleci.com/gh/facebook/reason/tree/master)
+Reason: Friendly Syntax & Toolchain for OCaml [![Build Status](https://travis-ci.org/facebook/reason.svg?branch=master)](https://travis-ci.org/facebook/reason) [![CircleCI](https://circleci.com/gh/facebook/reason/tree/master.svg?style=svg)](https://circleci.com/gh/facebook/reason/tree/master)
 =========================================
-
-- Approachable syntax.
-- Powerful, automatic source code formatting.
-- Adopt incrementally with `JavaScript/C` interop.
-- Ahead-of-time compilation to assembly - without a language level VM.
-- Rapidly develop and share projects.
 
 Getting Started
 ---------------
