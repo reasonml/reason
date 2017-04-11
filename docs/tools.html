@@ -38,67 +38,58 @@ prettifies the OCaml libraries documentation pages.
 [Here](https://reasonml.github.io/reason-tools/popup.html)'s the standalone
 version.
 
-Command Line
+Command Line Utilities
 -------
+
+The Reason toolchain uses a few important tools that are used in the terminal,
+and/or with your editor.
+
+**Note**: the [JavaScript](./jsWorkflow.html#javascript-workflow-editor-setup-global-utilities) 
+and [native](./nativeWorkflow.html#native-workflow-editor-setup-global-utilities) 
+workflow have different ways of installing  these tools. Please consult their
+respective sections for the installation proper. This section only describes
+what they are.
 
 ### `refmt`
 
-Comes with Reason. Line-wrapping AST based formatting is an important feature of
-Reason that integrates with your editing experience. Reason includes a
-powerful, consistent syntax formatter/converter called `refmt`, that can parse,
-and print the Reason syntax at arbitrary width wrappings, while interleaving
-comments. It can also be used to convert between multiple syntaxes.
+`refmt` takes in your code text and spits it out, nicely formatted. Developers 
+use it pervasively to prettify their code, either through invoking it in the
+terminal, or through an editor shortcut. It also serves to convert to/from
+Reason/OCaml syntax.
+
+`refmt` optionally takes in a column width, and **responsively** formats your 
+code based on it. In other words, it doesn't just naively break to the next line
+at a certain characters limit; it solves the constrains and arranges your code
+accordingly. Here's `refmt` inside Vim, called once per window resize (just to
+show the point):
 
 <img src="images/LiquidSmallOptCrop.gif" style="width:100%; max-width:466px; max-height:433px;" />
 
-> This example demonstrates running `refmt` dynamically as the window resizes
-in order to make optimal use of screen real estate while still abiding
-perfectly by the formatting rules. This is _not_ the typical naive editor
-wrapping that simply pushes text out of the way.
+The Reason community uses it to enforce a consistent style and avoid time-consuming 
+manual formatting & stylistic debates.
 
-> Note: In practice, you would not run `refmt` upon window resize. You would
-normally configure indentation/width settings at the repo/project level.
-
-#### Uses
-- Automatically format your source to arbitrary widths - configurable per project.
-- Maintain consistent style across a team, project, and new contributors.
-- Stop wasting time manually enforcing formatting rules at diff review. Let a
-computer do it instead.
-- Automatically upgrade your source when a new version of Reason includes
-a syntax feature that you want to make use of.
-
-
-`refmt` is **_optional_**. Some might only want to use `refmt` occasionally,
-when upgrading their source code to include new syntax features, and others
-will want to run it after every new line of code directly from their editor.
-
-#### Options
-We can convert from/to OCaml syntax. See `refmt --help` for more.
-
+See `refmt --help` for the options.
 
 ### Merlin
 
-[Merlin](https://github.com/ocaml/merlin) is the code intelligence facility
-(type hint, refactor, real-time errors, jump to definitions, etc.) used by our
-editors. It has first-class support for Reason.
-
-#### Features/Configuration
-The Reason IDE experience is powered by `refmt`, the Reason AST formatting tool, and
-even more so by the excellent [merlin](https://github.com/the-lambda-church/merlin) project.
-`refmt` provides source code beautifying/printing, and Merlin provides type information, autocompletion,
-and professional IDE features even in the face of partially invalid files/projects.
-
-To configure Merlin, include a `.merlin` file at the root of your project that notes the location
-of source files and build artifacts.
-See [this doc](https://github.com/the-lambda-church/merlin/wiki/project-configuration) for more
-details, and note the example here.
+[Merlin](https://github.com/ocaml/merlin) provides type hint, refactor, real-
+time errors, jump to definitions, etc. to our editors.
 
 
-> Example `.merlin` file
-```
-S relative/path/to/your/sourcefiles/dir/
-B relative/path/to/your/build/artifacts/dir/
-```
+Merlin's command line name is called `ocamlmerlin`, though you wouldn't call it
+manually (editors start it themselves and query it). To configure Merlin to
+understand your project, you'd write a `.merlin` file at the root (documentation
+[here](https://github.com/ocaml/merlin/wiki/project-configuration)).
+
+**Note**: For the JS workflow, we generate the `.merlin` file for you, so no
+need to worry about it.
+
+Merlin is for OCaml, but has first-class support for Reason. For the support to
+work, you'd need the `ocamlmerlin-reason` binary. Again, the installation of
+these utilities are described in the [JS Workflow](./jsWorkflow.html#javascript-workflow-editor-setup-global-utilities)
+and [Native Workflow](./nativeWorkflow.html#native-workflow-editor-setup-global-utilities)
+page.
+
 
 ### REPL
 
@@ -123,11 +114,6 @@ let result = 100 + 200;
 
 Use `#quit;` to close your REPL session.
 
-> `rtop`'s intelligent autocompletion and compiler interaction is powered by
-[`utop`](https://github.com/diml/utop). `utop` supports extension of custom
-parsers and printers.
-
-
 Editor Integration
 =======
 
@@ -138,7 +124,7 @@ All our editor integrations provides at minimum:
 - Showing errors
 - Syntax highlighting.
 
-They're powered by `refmt` and merlin, mentioned in the previous sections.
+They're powered by Reason's `refmt` and Merlin, mentioned in the previous sections.
 
 ### Atom
 

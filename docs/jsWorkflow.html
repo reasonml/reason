@@ -61,19 +61,22 @@ More info on bsb & bsconfig [here](http://bloomberg.github.io/bucklescript/Manua
 That's all! BuckleScript has first-class support for Reason, which is why you don't see any mention of "Reason" in the above step.
 
 
-Global Installs (Editor Setup)
+Editor Setup & Global Utilities
 -------
 
-Our [editor integration](file:///Users/chenglou/Github/Reason/docs/tools.html#editor-integration) need a few binaries to be found in your $PATH:
+Our [editor integration](https://facebook.github.io/reason/tools.html#editor-integration) need a few binaries to be found in your `$PATH`:
 
 - `refmt`: the Reason parser/printer (editor formatter).
-- `ocamlmerlin-reason`: Reason bridge to [Merlin](http://facebook.github.io/reason/tools.html#tools-command-line-merlin).
+- `ocamlmerlin-reason`: Reason bridge to [Merlin](https://facebook.github.io/reason/tools.html#tools-command-line-utilities-merlin).
 - `ocamlmerlin`: the Merlin binary.
 
-They can be downloaded in one shot through:
+Info on these binaries are [here](https://facebook.github.io/reason/tools.html#tools-command-line-utilities). 
+They can be installed globally through:
 
 ```sh
 npm install -g git://github.com/reasonml/reason-cli.git
+# test that you have them installed correctly
+which ocamlmerlin refmt ocamlmerlin-reason
 ```
 
 **Note**: the global toolchain `reason-cli` currently doesn't work on Windows.
