@@ -161,6 +161,13 @@ let make_ghost_loc loc = {
 
 let ghloc ?(loc=dummy_loc ()) d = { txt = d; loc = (make_ghost_loc loc) }
 
+let rev_list_extract_loc prj lst =
+  let last = List.hd lst in
+  let lst = List.rev lst in
+  let head = List.hd lst in
+  let loc = mklocation (prj head).loc_start (prj last).loc_end in
+  (lst, loc)
+
 (**
   * turn an object into a real
   *)
@@ -711,9 +718,8 @@ let expr_of_let_bindings lbs body =
   in
   (* The location of this expression unfortunately includes the entire rule,
    * which will include any preceeding extensions. *)
-  let hd = List.hd (List.rev bindings) in
-  let l1 =  {hd.pvb_loc with loc_start = hd.pvb_loc.loc_start; loc_end = body.pexp_loc.loc_end} in
-  let item_expr = mkexp (Pexp_let(lbs.lbs_rec, List.rev bindings, body)) ~loc:l1 in
+  let (bindings, loc) = rev_list_extract_loc (fun x -> x.pvb_loc) bindings in
+  let item_expr = mkexp (Pexp_let(lbs.lbs_rec, bindings, body)) ~loc in
   (* Note that for let expression bindings, when there's an extension, the
    * lbs_attributes are attributes on the entire [let ..in x] expression. *)
   match lbs.lbs_extension with
@@ -1556,9 +1562,8 @@ _structure_item_without_item_extension_sugar:
     }
   | many_type_declarations {
       let (nonrec_flag, tyl) = $1 in
-      let hd = List.hd (List.rev tyl) in
-      let last = List.hd tyl in
-      mkstr(Pstr_type (nonrec_flag, List.rev tyl)) ~loc:{loc_start = hd.ptype_loc.loc_start; loc_end = last.ptype_loc.loc_end; loc_ghost = false}
+      let (tyl, loc) = rev_list_extract_loc (fun x -> x.ptype_loc) tyl in
+      mkstr(Pstr_type (nonrec_flag, tyl)) ~loc
     }
   | str_type_extension {
       mkstr(Pstr_typext $1)
@@ -1591,14 +1596,13 @@ _structure_item_without_item_extension_sugar:
     }
   | many_class_declarations {
       (* Each declaration has their own preceeding post_item_attributes *)
-      let hd = List.hd (List.rev $1) in
-      let last = List.hd $1 in
-      mkstr(Pstr_class (List.rev $1)) ~loc:{loc_start = hd.pci_loc.loc_start; loc_end = last.pci_loc.loc_end; loc_ghost = false}
+      let (decls, loc) = rev_list_extract_loc (fun x -> x.pci_loc) $1 in
+      mkstr(Pstr_class decls) ~loc
     }
   | many_class_type_declarations {
       (* Each declaration has their own preceeding post_item_attributes *)
-      let hd = List.hd (List.rev $1) in
-      mkstr(Pstr_class_type (List.rev $1)) ~loc:hd.pci_loc
+      let (decls, loc) = rev_list_extract_loc (fun x -> x.pci_loc) $1 in
+      mkstr(Pstr_class_type decls) ~loc
     }
   | post_item_attributes INCLUDE module_expr {
       let loc = mklocation $symbolstartpos $endpos in
@@ -1834,8 +1838,8 @@ _signature_item:
     }
   | many_type_declarations {
       let (nonrec_flag, tyl) = $1 in
-      let hd = List.hd (List.rev tyl) in
-      mksig(Psig_type (nonrec_flag, List.rev tyl)) ~loc:hd.ptype_loc
+      let (tyl, loc) = rev_list_extract_loc (fun x -> x.ptype_loc) tyl in
+      mksig(Psig_type (nonrec_flag, tyl)) ~loc
     }
   | sig_type_extension {
       mksig(Psig_typext $1)
@@ -1879,9 +1883,8 @@ _signature_item:
       mksig(Psig_include (Incl.mk $3 ~attrs:$1 ~loc))
     }
   | many_class_descriptions {
-      let hd = List.hd (List.rev $1) in
-      let last = List.hd $1 in
-      mksig(Psig_class (List.rev $1)) ~loc:{loc_start = hd.pci_loc.loc_start; loc_end = last.pci_loc.loc_end; loc_ghost = false}
+      let (descs, loc) = rev_list_extract_loc (fun x -> x.pci_loc) $1 in
+      mksig(Psig_class descs) ~loc
     }
   | many_class_type_declarations {
       mksig(Psig_class_type (List.rev $1))
