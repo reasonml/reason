@@ -43,32 +43,32 @@ great speed.
   </tr>
 </table>
 
-Syntax Basics
+Basics
 =======
 
-Reason's syntax is similar to that of modern `JavaScript` /
-[Flow](http://flowtype.org/) or `Rust`. The examples in this document give an
-overview of the most important language constructs and their syntax.
+Reason's syntax is similar to that of modern JavaScript, Flow or Rust. The
+examples in this document give an overview of the most important language
+constructs and their syntax.
 
 Primitives / Operations
 ----------
 
-> Primitive                                  | Example
-> --------------------------------------|--------------------------------
-> Strings                               |  <pre>"Hello"</pre>
-> Characters                            |  <pre>'x'</pre>
-> Integers                              |  <pre>23</pre>
-> Floats                                |  <pre>23.0</pre>
-> Negative Integers                     |  <pre>-23</pre>
-> Integer Addition                      |  <pre>23 + 1</pre>
-> Float Addition                        |  <pre>23.0 +. 1.0</pre>
-> Integer Division/Multiplication       |  <pre>2 / 23 * 1</pre>
-> Float Division/Multiplication         |  <pre>2.0 /. 23.0 \*. 1.0</pre>
-> String Concatenation                  |  <pre>"Hello " ^ "World"</pre>
-> Immutable Lists                       |  <pre>[1, 2, 3]</pre>
-> Immutable Prepend                     |  <pre>[item1, item2, ...theRest]</pre>
-> Reference Equality                    |  <pre>thisThing === thatThing</pre>
-> Records                               |  <pre>{score: 100}</pre>
+Primitive                             | Example
+--------------------------------------|--------------------------------
+Strings                               |  <pre>"Hello"</pre>
+Characters                            |  <pre>'x'</pre>
+Integers                              |  <pre>23</pre>
+Floats                                |  <pre>23.0</pre>
+Negative Integers                     |  <pre>-23</pre>
+Integer Addition                      |  <pre>23 + 1</pre>
+Float Addition                        |  <pre>23.0 +. 1.0</pre>
+Integer Division/Multiplication       |  <pre>2 / 23 * 1</pre>
+Float Division/Multiplication         |  <pre>2.0 /. 23.0 \*. 1.0</pre>
+String Concatenation                  |  <pre>"Hello " ^ "World"</pre>
+Immutable Lists                       |  <pre>[1, 2, 3]</pre>
+Immutable Prepend                     |  <pre>[item1, item2, ...theRest]</pre>
+Reference Equality                    |  <pre>thisThing === thatThing</pre>
+Records                               |  <pre>{score: 100}</pre>
 
 
 Let Bindings
@@ -181,21 +181,20 @@ in your editor and use `refmt` on it; see it become `let add x y => x + y`.
 
 #### No Argument
 
-A function always takes an argument; but sometimes, we'd use it for e.g. side-
-effects, and don't really have anything to pass to it. In this case, we'd pass
-it the "special" value `()`.
+A function always takes an argument; but sometimes, we'd use it for e.g. side-effects, and don't really have anything to pass to it. In this case, we'd pass it the "special" value `()`.
 
 ```reason
-let logSomething () => { /* receiving and destructuring the "unit" argument */
+/* receive & destructure the unit argument */
+let logSomething () => {
   print_endline "hello";
   print_endline "world";
 };
 
-logSomething () /* calling the function with the value of type unit */
+/* call the function with the value of type unit */
+logSomething ()
 ```
 
-`()` is actually a totally normal value, of the type "unit" (it's the single
-possible value of that type). Reason/OCaml gave it a special syntax out of convenience.
+Actually, `()` is a totally normal value, of type "unit". `()` is the single possible value in `unit`. Reason/OCaml gave it a special syntax out of convenience.
 
 Types
 --------------------------
@@ -225,13 +224,17 @@ You can refer to a type by a different name:
 
 ```reason
 type scoreType = int;
-let x: scoreType = 10; /* same scoping rules than `let` */
+let x: scoreType = 10;
 ```
+
+Primitive Data Types
+=======
 
 Tuples
 --------------------------
 
 Tuples are
+
 - immutable
 - ordered
 - fixed-sized
@@ -242,13 +245,15 @@ let myThreeFloats = (20.0, 30.0, 100.0);
 let myIntAndString = (20, "totallyNotAnInteger");
 ```
 
-Tuples' types can be used in type annotations as well. Tuple types resemble
-tuples values: comma delimited lists of types, wrapped in parentheses.
+Tuples' types can be used in type annotations as well. Tuple types visually resemble tuples values.
 
 ```reason
-let myThreeFloats: (float, float, float)  = (20.0, 30.0, 100.0);
-type myPair = (int, string); /* a tuple type alias */
-let myIntAndString: myPair = (20, "totallyNotAnInteger");
+let myThreeFloats: (float, float, float) = 
+  (20.0, 30.0, 100.0);
+/* a tuple type alias */
+type myPair = (int, string);
+let myIntAndString: myPair = 
+  (20, "totallyNotAnInteger");
 ```
 
 **Note**: there's no tuple of size 1.
@@ -292,10 +297,10 @@ type horsePower = {power: int, metric: bool};
 
 let metric = true;
 let power1 = {power: 10, metric};
-/* equivalent to: {power: 10, metric: metric}; */
+/* same as: {power: 10, metric: metric}; */
 
 type car = {name: string, horsePower};
-/* equivalent to: {name: string, horsePower: horsePower}; */
+/* same as: {name: string, horsePower: horsePower}; */
 ```
 
 **Note**: there's no punning for a single record field! `{foo}` doesn't do what
@@ -311,7 +316,7 @@ type person = {
   mutable age: int
 };
 let me = {name: "Jordan", age: 30};
-me.age = me.age + 1; /* altered `me`. Happy birthday! */
+me.age = me.age + 1; /* alter `me`. Happy birthday! */
 ```
 
 Destructuring
@@ -475,8 +480,10 @@ type account =
 calling a function. Supply the data as space separated "arguments".
 
 ```reason
-let myAccount = Facebook "Kay" 1234;  /* Accepts two arguments */
-let yourAccount = None;               /* Accepts no arguments */
+/* Accepts 2 arguments */
+let myAccount = Facebook "Kay" 1234; 
+/* Accepts 0 arguments */
+let yourAccount = None;              
 ```
 
 ##### Destructuring Arguments of a Constructor
@@ -720,7 +727,8 @@ lists of strings.
 ```reason
 type listOfStrings = list string;
 let lst : listOfStrings = ["hi", "bye"];
-let lst2 : listOfStrings = ["oh", "no", "not", "you", "again"];
+let lst2 : listOfStrings = 
+  ["oh", "no", "not", "you", "again"];
 
 ```
 > Notice the syntactic similarity between supplying function parameters and
@@ -873,7 +881,8 @@ let toyota = {make: "Toyota", model: "Tacoma"};
 type carOwner =
   | CarOwner string car; /* May as well be a tuple */
 
-let CarOwner name {model: model, make: make} = CarOwner "Jo" toyota;
+let CarOwner name {model: model, make: make} = 
+  CarOwner "Jo" toyota;
 ```
 
 ##### 
@@ -985,7 +994,9 @@ type tesla 'a = {
   drive: int => int
 } as 'a;
 
-let obj: tesla {. drive: int => int, doYouWant: unit => bool} = {
+let obj: 
+  tesla {. drive: int => int, doYouWant: unit => bool} 
+  = {
   val hasEnvy = {contents: false};
   pub drive speed => {
     this#enableEnvy true;
@@ -1077,11 +1088,17 @@ Normally, you would have to write your own stringification function to print a
 `tree`, as on the right.
 
 ```reason
-/* Don't you just love writing all this boilerplate code? */
+/* Don't you just love writing boilerplate code? */
 let rec show_tree = fun
 | Leaf => "Leaf"
 | Tree a i b =>
-    "Tree (" ^ show_tree a ^ ", " ^ string_of_int i ^ ", " ^ show_tree b ^ ")";
+  "Tree (" ^ 
+  show_tree a ^ 
+  ", " ^ 
+  string_of_int i ^ 
+  ", " ^ 
+  show_tree b ^ 
+  ")";
 ```
 
 With Reason, however, there is no need for that. You can just assume that
