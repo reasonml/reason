@@ -73,8 +73,7 @@ Records                               |  <pre>{score: 100}</pre>
 
 Let Bindings
 ------------
-`let` bindings give names to values. They bindings can be seen and referenced
-by code that comes after those bindings.
+`let` bindings give names to values. They can be seen and referenced by code that comes after them.
 
 ```reason
 let greeting = "hello!";
@@ -83,9 +82,9 @@ let newScore = 10 + score;
 ...
 ```
 
-#### Scope
+#### Block Scope
 
-Reason has block scope through `{}`.
+Bindings can be scoped through `{}`.
 
 ```reason
 let message = {
@@ -100,7 +99,7 @@ let message = {
 
 Once a binding refers to a value, it cannot refer to anything else (unless it
 explicitly contains a mutable value, discussed later). However, you may create a
-new binding of the same name which will *shadow* the previous binding; from that
+new binding of the same name which *shadows* the previous binding; from that
 point onward, the binding will refer to the newly assigned value.
 
 ```reason
@@ -113,7 +112,7 @@ print_endline msg; /* Prints "bye" */
 Functions
 ---------
 
-Functions are declated with `fun` and return the expression.
+Functions are declared with `fun` and return the expression.
 
 ```reason
 fun greet name => "Hello " ^ name;
@@ -196,6 +195,47 @@ logSomething ()
 
 Actually, `()` is a totally normal value, of type "unit". `()` is the single possible value in `unit`. Reason/OCaml gave it a special syntax out of convenience.
 
+#### Labeled Arguments
+Multi-arguments functions, especially those whose arguments are of the same type, can be confusing to call.
+
+```reason
+let addCoordinates x y => ...;
+...
+addCoordinates 5 6; /* which is which? */
+```
+
+In OCaml/Reason, you can attach labels to an argument:
+
+```reason
+let addCoordinates ::x ::y => ...;
+...
+addCoordinates x::5 y::6;
+```
+
+And since we have currying, we can call the function any way we want:
+
+```reason
+addCoordinates y::6 x::5;
+```
+
+Labeled arguments can be renamed inside the function for local usage:
+
+```reason
+let drawCircle radius::r color::c => {
+  setColor c;
+  startAt r r;
+  ...
+};
+
+drawCircle radius::10 color::"red";
+```
+
+Here's the syntax for typing the arguments:
+
+```reason
+let drawCircle radius::(r: int) color::(c: string) => ...;
+```
+
 Types
 --------------------------
 
@@ -214,9 +254,8 @@ let myInt = 5;
 let myInt = (5 : int);
 let myInt = (5 : int) + (4 : int);
 let add (x: int) (y: int) :int => x + y;
+let drawCircle radius::(r: int) :unit => ...;
 ```
-
-<br />
 
 #### Type Aliases
 
@@ -238,7 +277,7 @@ Tuples are
 - immutable
 - ordered
 - fixed-sized
-- heterogenous
+- heterogeneous
 
 ```reason
 let myThreeFloats = (20.0, 30.0, 100.0);
@@ -248,12 +287,10 @@ let myIntAndString = (20, "totallyNotAnInteger");
 Tuples' types can be used in type annotations as well. Tuple types visually resemble tuples values.
 
 ```reason
-let myThreeFloats: (float, float, float) = 
-  (20.0, 30.0, 100.0);
+let myThreeFloats: (float, float, float) = (20.0, 30.0, 100.0);
 /* a tuple type alias */
 type myPair = (int, string);
-let myIntAndString: myPair = 
-  (20, "totallyNotAnInteger");
+let myIntAndString: myPair = (20, "totallyNotAnInteger");
 ```
 
 **Note**: there's no tuple of size 1.
@@ -262,6 +299,7 @@ Records
 -------
 
 Records are a set of named values. They resemble "objects" but are
+
 - lighter
 - immutable by default
 - less flexible
@@ -286,25 +324,20 @@ let meNextYear = {...me, age: me.age + 1};
 
 ##### Sugar
 
-To reduce redundancy, we provide "punning" for a record's types and values.
-
-When the name of a field coincides with the type of a record field in a record
-definition, Reason provides a handy syntactic shortcut. For example, the field
-name `horsePower` binds the `type horsePower` to its name. This is called **punning**.
+To reduce redundancy, we provide **punning** for a record's types and values. You can use it when the name of a record field matches the name of its value/type.
 
 ```reason
 type horsePower = {power: int, metric: bool};
 
 let metric = true;
-let power1 = {power: 10, metric};
-/* same as: {power: 10, metric: metric}; */
+let horsePower1 = {power: 10, metric};
+/* same as the value {power: 10, metric: metric}; */
 
 type car = {name: string, horsePower};
-/* same as: {name: string, horsePower: horsePower}; */
+/* same as the type {name: string, horsePower: horsePower}; */
 ```
 
-**Note**: there's no punning for a single record field! `{foo}` doesn't do what
-you expect (it's a block that returns the value `foo`).
+**Note**: there's no punning for a single record field! `{foo}` doesn't do what you expect (it's a block that returns the value `foo`).
 
 ##### Mutable Fields
 
@@ -318,6 +351,121 @@ type person = {
 let me = {name: "Jordan", age: 30};
 me.age = me.age + 1; /* alter `me`. Happy birthday! */
 ```
+
+Variants
+--------
+
+Most data structures are about "this **and** that". A variant allows us to express "this **or** that".
+
+```reason
+type response =
+  | Yes
+  | No
+  | PrettyMuch;
+
+let areYouCrushingIt = Yes;
+```
+
+`Yes`, `No` and `PrettyMuch` aren't strings, nor references, nor some special data type. They're called "constructors". The `|` bar separates each constructor.
+
+**Note**: variant constructors need to be capitalized.
+
+A `switch` expression is like a large `if/elseif/elseif..` allows you to check every possible case of a variant. To use it, enumerate every variant constructor, each followed by an `=>` and the expression corresponding to that case.
+
+```reason
+let message = switch (areYouCrushingIt) {
+  | No => "No worries. Keep going!"
+  | Yes => "Great!"
+  | PrettyMuch => "Nice!"
+};
+/* message is "Great!" */
+```
+
+The compiler will raise a type error if you've forgotten to cover a case of your
+variant, or if two cases are redundant!
+
+##### Constructor Arguments
+
+Constructors can carry extra data in a space-separated list.
+
+```reason
+type account =
+  | None
+  | Instagram string;
+  | Facebook string int
+```
+
+Here, `Instagram` carries a `string` and `Facebook` carries a `string` and an `int`. Usage:
+
+```reason
+let myAccount = Facebook "Josh" 26;
+let friendAccount = Instagram "Jenny";
+```
+
+**Note** how using a constructor is like calling a function! It's as if `Facebook` was a function that accepts two arguments. This isn't a coincidence; there's a reason why a constructor's data is called "argument".
+
+**Note**: careful not to confuse a constructor with e.g. 2 arguments with a constructor carrying a single tuple argument:
+
+```reason
+type account =
+  | Facebook string int /* 2 arguments */
+type account2 =
+  | Instagram (string, int) /* 1 argument, happens to be a 2-tuple */
+```
+
+##### Using Switch with Constructors Arguments
+
+The `switch` expression can also let you "open up" a variant and bind its arguments to names you can refer to.
+
+```reason
+type account =
+  | None
+  | Instagram string;
+  | Facebook string int
+let myAccount = Facebook "Josh" 26;
+...
+let greeting = switch (myAccount) {
+  | None => "Hi!"
+  | Facebook name age => "Hi " ^ name ^ ", you're " ^ (string_of_int age) ^ "-year-old."
+  | Instagram name => "Hello " ^ name ^ "!"
+}
+```
+
+This is called pattern-matching. It's a stronger version of destructuring, often found in other languages.
+
+
+List
+-------------
+
+Lists are homogeneous, immutable, and support fast `O(1)` append at the head of the list.
+
+```reason
+let myList = [1, 2, 3];
+let anotherList = [0, ...myList]; /* myList didn't mutate */
+```
+
+Under the hood, a list is just a normal variant with a neat syntax. To illustrate this, here's how you'd declare your own int list type, without the nice syntax:
+
+```reason
+type myListType = Empty | NonEmpty int myListType;
+let myList = NonEmpty 1 (NonEmpty 2 (NonEmpty 3 Empty));
+/* basically [1, 2, 3] */
+```
+
+Array
+-------------
+
+Arrays are like lists, except mutable and support fast random access, for performance-sensitive scenarios.
+
+```reason
+let myArray = [|"hello", "world", "how are you"|];
+let world = myArray.(1);
+Array.set myArray 0 "hey";
+/* now [|"hey", "world", "how are you"|] */
+```
+
+Diving Deeper
+==============
 
 Destructuring
 -------------
@@ -353,24 +501,6 @@ let {name: (n:string), age: (a:int)} = somePerson;
 More on Functions
 -------------------------
 
-#### Function Types
-Function types are written by listing the argument type, an arrow, and then
-the return type.
-
-```reason
-argumentType => expressionType
-```
-
-Here, we create a type alias for the types of functions in the previous
-examples and then we assert that they are compatible with those functions.
-
-```reason
-type intTupleToInt = (int, int) => int;
-type intToInt = int => int;
-let a = (increment : intToInt);
-let b = (addTupleFields : intTupleToInt);
-```
-
 #### Recursive Functions
 
 By default, values can't see a binding that points to it, but including the
@@ -401,7 +531,7 @@ the result of that with `1`.
 let createAdder = fun addAmount => (
   fun x => addAmount + x
 );
-let five = createAdder(4)(1);
+let five = (createAdder 4) 1;
 ```
 
 `createAdder` has the following type. This type tells us that it is a function
@@ -429,129 +559,6 @@ optimized away!
 
 [Learn more about currying](#diving-deeper-curried-functions)
 
-
-Variants
---------
-
-Variant types allows data to have either one form *or* another. In Reason, each
-form is given a capitalized name called a "constructor" (not in the OO sense).
-To declare a variant type, enumerate every constructor by the `|` token.
-
-```reason
-type response =
-  | Yes
-  | No
-  | PrettyMuch;
-let areYouCrushingIt = Yes;
-```
-
-A `switch` expression is like a large `if/elseif/elseif..`, but much more
-powerful. To use it, enumerate every variant constructor, each followed by an `=>`
-and the expression that the entire `switch` should evaluate to for that case. In
-this example, the `message` variable is assigned the string `"..."`.
-
-```reason
-let isSafeToLaunchRocket = PrettyMuch;
-let message = switch isSafeToLaunchRocket {
-  | No => "Check Integrity."
-  | Yes => "All Systems Go."
-  | PrettyMuch => "..."
-};
-```
-
-The compiler will raise a type error if you've forgotten to cover a case of your
-variant, or if two cases are redundant. You can also destructure while
-enumerating the cases. See more below.
-
-##### Constructor Arguments
-
-Reason constructors are not your OO constructors. They're more like functions
-for variants. They may contain one or more pieces of data by declaring those
-contained types in a space-separated list after the constructor.
-
-```reason
-type account =
-  | None
-  | Facebook string int
-  | Instagram string;
-```
-
-> Instantiating a constructor that carries data is exactly the same as
-calling a function. Supply the data as space separated "arguments".
-
-```reason
-/* Accepts 2 arguments */
-let myAccount = Facebook "Kay" 1234; 
-/* Accepts 0 arguments */
-let yourAccount = None;              
-```
-
-##### Destructuring Arguments of a Constructor
-
-Once created, constructor data can be extracted via destructuring, much like
-with tuples. In this example, a local variable `x` is bound to `42`.
-`getTheInt` extracts a `Leaf`'s contained integer "on the way into" the function.
-
-```reason
-type intLeaf = | Leaf int;
-let myIntLeaf = Leaf 42;
-
-let Leaf x = myIntLeaf;
-let getTheInt = fun (Leaf q) => q;
-let fourtyTwo = getTheInt myIntLeaf;
-let twentyNine = getTheInt (Leaf 29);
-```
-
-** When Simple Destructuring Isn't Enough: **
-Simple destructuring isn't sufficient for variants types with many
-constructors. The following example would clearly have to fail at runtime!
-Fortunately, the compiler forbids this.
-
-```reason
-type possibleNum =
-  | NotDefined
-  | Defined int;
-
-let myNumber = NotDefined;
-let Defined x = myNumber;   /* Type error! */
-```
-** The Solution: ** To recover data in variants with many constructors,
-`switch` allows us to enumerate each constructor *while* destructuring the
-constructor's data on the left side of the `=>`.  Unlike our previous naive
-attempt, this works because we enumerate every possible constructor name inside
-of the `switch`.
-
-> Note: We've safely unpacked the `i` from `Defined i`, because we've *also*
-> specified what to do when `myNumber` was `NotDefined`.
-
-```reason
-let x = switch myNumber {
-  | Defined i => i
-  | NotDefined => 0
-};
-```
-##### Multiple Arguments vs. Tuples (*Details*)
-
-Notice that a variant constructor that contains many fields is different than a
-variant constructor that carries a single field that happens to be a tuple.
-Among other differences, tuples are not "inlined" into the variant object's
-runtime representation, whereas, multiple constructor arguments incur no
-additional abstraction cost (they are "inlined" into the variant data).
-
-```reason
-type toTupleOrNotToTuple =
-   | HasTuple (int, int, int)
-   | NoTuple int int int;
-
-let aTuple = HasTuple (1, 2, 3);
-let notTuple = NoTuple 1 2 3;
-
-let sumsZero = switch x {
-  | HasTuple (a, b, c) => a + b + c == 0
-  | NoTuple a b c => a + b + c == 0
-};
-
-```
 
 Loops and Tests
 ---------------
@@ -791,12 +798,10 @@ the defined `type result` above. But for exceptional cases, it's great to
 have the ability to throw exceptions up the call stack and catch them at
 convenient recovery points. Thankfully, these two separate, but useful
 constructs are unified into one handler abstraction so you can `switch` on the
-result of a function call, but add cases for handling exceptions that occured.
+result of a function call, but add cases for handling exceptions that occurred.
 
 More details coming soon.
 
-Diving Deeper
-==============
 
 Curried Functions
 -----------------
@@ -1134,10 +1139,6 @@ type mytype 'a = SomeSadVariant 'a;
 ```
 
 
-Advanced
-=======
-With the basic constructs covered, here are more advanced features.
-
 Modules
 -------
 
@@ -1187,63 +1188,6 @@ You can see `Infer`'s use of `Reason`
 The `Infer` team along with other members of industry are major contributors to
 `Reason`.
 
-
-
-###### Acknowledgments
-
-`Reason` is also a curation of best-in-class tools. It already incorporates
-several technologies that make the `Reason` developer
-experience possible.
-
-- `OCaml` itself.
-- `utop` - highly customizable repl.
-- `Merlin` - assistant for editing OCaml code that has extensively refactored
-in order to support `Reason`.
-
-
-What's Next + FAQ
-=========================
-
-#### What's Next:
-- Sandboxes for locally developing large projects of interconnected smaller packages.
-- Project scaffolding / build system (or merely build rules for existing systems).
-- Library curation (precompiled, fast installed libraries)
-- Improvements to syntax, iterating based on feedback.
-- Everything installable with a single command.
-
-
-#### FAQ
-
-- **Q**: Is `ppx` supported?
-- **A**: Support for `ppx` (lightweight macros for `ocaml`) is a goal which
-we've made good progress towards. You should be able to use all of your
-existing `ppx` plugins with `Reason`.
-
-
-- **Q**: Has something like this been tried before (a different syntax for `ocaml`)?
-- **A**: We're not aware of anything that takes `Reason`'s specific approach to
-syntax, which pushes the major syntax customization closer into the IDE space
-(and with a much greater focus on source formatting)
-while relying exclusively on the new `ppx` extensions for macro-like
-extensibility. `ppx` did not exist until recently and its existence
-dramatically influences the approach/focus.
-
-
-- **Q**: I don't like one of the syntax features.
-- **A**: We are still iterating based on feedback we've received, and there's a good
-chance other people feel similarly. For now, we've focused mostly on putting
-all the right tools in place specifically so that we can easily make changes in
-response to feedback or proposals, without having to be locked into design
-decisions. Please discuss specific requests on the [Reason
-project](https://github.com/facebook/reason) page.
-
-- **Q**: I don't like semicolons, because they make code less "functional".
-- **A**: Please see the last question/answer. For the specific case of semicolons,
-it is false that semicolons make code any more or less functional, and at least
-in `Reason`, semicolons are simply used as a delimiter that assist in formatting
-and interleaving of comments. The `;` delimiter could just has easily have been
-the word `in`, or the monkey emoji `🐒`. It should also be possible to remove
-the need for these delimiters in all but a few cases.
 
   </script>
 
