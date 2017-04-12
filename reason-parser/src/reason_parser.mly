@@ -1154,7 +1154,7 @@ conflicts.
 %on_error_reduce _curried_binding_return_typed
                  _structure_item let_binding_body
                  let_binding_impl
-                 post_item_attributes
+                 pre_item_attributes
                  _expr
                  _simple_expr
                  less_aggressive_simple_expression
@@ -1542,7 +1542,7 @@ _structure_item:
   | structure_item_without_item_extension_sugar {
     $1
   }
-  /* Each let binding has its own post_item_attributes */
+  /* Each let binding has its own pre_item_attributes */
   | let_bindings { val_of_let_bindings $1 }
 ;
 
@@ -1551,10 +1551,10 @@ mark_position_str(_structure_item_without_item_extension_sugar) {$1}
 _structure_item_without_item_extension_sugar:
   /* We consider a floating expression to be equivalent to a single let binding
      to the "_" (any) pattern.  */
-  | post_item_attributes expr {
+  | pre_item_attributes expr {
       mkstrexp $2 $1
     }
-  | post_item_attributes EXTERNAL as_loc(val_ident) COLON core_type EQUAL primitive_declaration {
+  | pre_item_attributes EXTERNAL as_loc(val_ident) COLON core_type EQUAL primitive_declaration {
       let loc = mklocation $symbolstartpos $endpos in
       let core_loc = mklocation $startpos($5) $endpos($5) in
       mkstr
@@ -1571,7 +1571,7 @@ _structure_item_without_item_extension_sugar:
   | str_exception_declaration {
       mkstr(Pstr_exception $1) ~loc:$1.pext_loc
     }
-  | post_item_attributes opt_let_module nonlocal_module_binding_details {
+  | pre_item_attributes opt_let_module nonlocal_module_binding_details {
       let (ident, body) = $3 in
       let loc = mklocation $symbolstartpos $endpos in
       mkstr(Pstr_module (Mb.mk ident body ~attrs:$1 ~loc)) ~loc
@@ -1580,13 +1580,13 @@ _structure_item_without_item_extension_sugar:
       let loc = mklocation $symbolstartpos $endpos in
       mkstr(Pstr_recmodule(List.rev $1)) ~loc
     }
-  | post_item_attributes MODULE TYPE OF? as_loc(ident) {
+  | pre_item_attributes MODULE TYPE OF? as_loc(ident) {
       let item_attrs = $1 in
       let ident = $5 in
       let loc = mklocation $symbolstartpos $endpos in
       mkstr(Pstr_modtype (Mtd.mk ident ~attrs:item_attrs ~loc)) ~loc
     }
-  | post_item_attributes MODULE TYPE OF? as_loc(ident) EQUAL module_type {
+  | pre_item_attributes MODULE TYPE OF? as_loc(ident) EQUAL module_type {
       let ident = $5 in
       let loc = mklocation $symbolstartpos $endpos in
       mkstr(Pstr_modtype (Mtd.mk ident ~typ:$7 ~attrs:$1 ~loc)) ~loc
@@ -1595,20 +1595,20 @@ _structure_item_without_item_extension_sugar:
       mkstr(Pstr_open $1)
     }
   | many_class_declarations {
-      (* Each declaration has their own preceeding post_item_attributes *)
+      (* Each declaration has their own preceeding pre_item_attributes *)
       let (decls, loc) = rev_list_extract_loc (fun x -> x.pci_loc) $1 in
       mkstr(Pstr_class decls) ~loc
     }
   | many_class_type_declarations {
-      (* Each declaration has their own preceeding post_item_attributes *)
+      (* Each declaration has their own preceeding pre_item_attributes *)
       let (decls, loc) = rev_list_extract_loc (fun x -> x.pci_loc) $1 in
       mkstr(Pstr_class_type decls) ~loc
     }
-  | post_item_attributes INCLUDE module_expr {
+  | pre_item_attributes INCLUDE module_expr {
       let loc = mklocation $symbolstartpos $endpos in
       mkstr(Pstr_include (Incl.mk $3 ~attrs:$1 ~loc)) ~loc
     }
-  | post_item_attributes item_extension {
+  | pre_item_attributes item_extension {
     (* No sense in having item_extension_sugar for something that's already an
      * item_extension *)
     mkstr(Pstr_extension ($2, $1))
@@ -1643,7 +1643,7 @@ module_binding_body:
   | module_binding_body_functor { $1 }
 
 many_nonlocal_module_bindings:
-  | post_item_attributes opt_let_module REC nonlocal_module_binding_details {
+  | pre_item_attributes opt_let_module REC nonlocal_module_binding_details {
     let (ident, body) = $4 in
     let loc = mklocation $symbolstartpos $endpos in
     [Mb.mk ident body ~attrs:$1 ~loc]
@@ -1654,7 +1654,7 @@ many_nonlocal_module_bindings:
 ;
 
 and_nonlocal_module_bindings:
-  | post_item_attributes AND nonlocal_module_binding_details {
+  | pre_item_attributes AND nonlocal_module_binding_details {
     let (ident, body) = $3 in
     let loc = mklocation $symbolstartpos $endpos in
     Mb.mk ident body ~attrs:$1 ~loc
@@ -1826,12 +1826,12 @@ signature:
 
 signature_item: mark_position_sig(_signature_item) { $1 }
 _signature_item:
-    post_item_attributes LET as_loc(val_ident) COLON core_type {
+    pre_item_attributes LET as_loc(val_ident) COLON core_type {
         let loc = mklocation $symbolstartpos $endpos in
         let core_type_loc = mklocation $startpos($5) $endpos($5) in
         mksig(Psig_value (Val.mk $3 (only_core_type $5 core_type_loc) ~attrs:$1 ~loc)) ~loc
     }
-  | post_item_attributes EXTERNAL as_loc(val_ident) COLON core_type EQUAL primitive_declaration {
+  | pre_item_attributes EXTERNAL as_loc(val_ident) COLON core_type EQUAL primitive_declaration {
       let loc = mklocation $symbolstartpos $endpos in
       let core_type_loc = mklocation $startpos($5) $endpos($5) in
       mksig(Psig_value (Val.mk $3 (only_core_type $5 core_type_loc) ~prim:$7 ~attrs:$1 ~loc)) ~loc
@@ -1847,11 +1847,11 @@ _signature_item:
   | sig_exception_declaration {
       mksig(Psig_exception $1)
     }
-  | post_item_attributes opt_let_module as_loc(UIDENT) module_declaration {
+  | pre_item_attributes opt_let_module as_loc(UIDENT) module_declaration {
       let loc = mklocation $symbolstartpos $endpos in
       mksig(Psig_module (Md.mk $3 $4 ~attrs:$1 ~loc)) ~loc
     }
-  | post_item_attributes opt_let_module as_loc(UIDENT) EQUAL as_loc(mod_longident) {
+  | pre_item_attributes opt_let_module as_loc(UIDENT) EQUAL as_loc(mod_longident) {
       let loc = mklocation $symbolstartpos $endpos in
       let loc_mod = mklocation $startpos($5) $endpos($5) in
       mksig(
@@ -1867,18 +1867,18 @@ _signature_item:
   | many_module_rec_declarations {
       mksig(Psig_recmodule (List.rev $1))
     }
-  | post_item_attributes MODULE TYPE as_loc(ident) {
+  | pre_item_attributes MODULE TYPE as_loc(ident) {
       let loc = mklocation $symbolstartpos $endpos in
       mksig(Psig_modtype (Mtd.mk $4 ~attrs:$1 ~loc)) ~loc
     }
-  | post_item_attributes MODULE TYPE as_loc(ident) EQUAL module_type {
+  | pre_item_attributes MODULE TYPE as_loc(ident) EQUAL module_type {
       let loc = mklocation $symbolstartpos $endpos in
       mksig(Psig_modtype (Mtd.mk $4 ~typ:$6 ~loc ~attrs:$1))
     }
   | open_statement {
       mksig(Psig_open $1)
     }
-  | post_item_attributes INCLUDE module_type {
+  | pre_item_attributes INCLUDE module_type {
       let loc = mklocation $symbolstartpos $endpos in
       mksig(Psig_include (Incl.mk $3 ~attrs:$1 ~loc))
     }
@@ -1889,7 +1889,7 @@ _signature_item:
   | many_class_type_declarations {
       mksig(Psig_class_type (List.rev $1))
     }
-  | post_item_attributes item_extension {
+  | pre_item_attributes item_extension {
       mksig(Psig_extension ($2, $1))
     }
   | floating_attribute {
@@ -1898,7 +1898,7 @@ _signature_item:
 ;
 
 open_statement:
-  | post_item_attributes OPEN override_flag as_loc(mod_longident)
+  | pre_item_attributes OPEN override_flag as_loc(mod_longident)
       {
         let loc = mklocation $symbolstartpos $endpos in
         Opn.mk $4 ~override:$3 ~attrs:$1 ~loc
@@ -1920,7 +1920,7 @@ module_rec_declaration_details:
 ;
 
 many_module_rec_declarations:
-  | post_item_attributes opt_let_module REC module_rec_declaration_details {
+  | pre_item_attributes opt_let_module REC module_rec_declaration_details {
       let (ident, body) = $4 in
       let loc = mklocation $symbolstartpos $endpos in
       [Md.mk ident body ~attrs:$1 ~loc]
@@ -1931,7 +1931,7 @@ many_module_rec_declarations:
 ;
 
 and_module_rec_declaration:
-  | post_item_attributes AND module_rec_declaration_details {
+  | pre_item_attributes AND module_rec_declaration_details {
       let (ident, body) = $3 in
       let loc = mklocation $symbolstartpos $endpos in
       Md.mk ident body ~attrs:$1 ~loc
@@ -1942,7 +1942,7 @@ and_module_rec_declaration:
 /* Class expressions */
 
 many_class_declarations:
-  | post_item_attributes CLASS class_declaration_details {
+  | pre_item_attributes CLASS class_declaration_details {
     let (ident, binding, virt, params) = $3 in
     let loc = mklocation $symbolstartpos $endpos in
     [Ci.mk ident binding ~virt ~params ~attrs:$1 ~loc]
@@ -1953,7 +1953,7 @@ many_class_declarations:
 ;
 
 and_class_declaration:
-  post_item_attributes AND class_declaration_details {
+  pre_item_attributes AND class_declaration_details {
     let (ident, binding, virt, params) = $3 in
     let loc = mklocation $symbolstartpos $endpos in
     Ci.mk ident binding ~virt ~params ~attrs:$1 ~loc
@@ -2128,23 +2128,23 @@ _class_simple_expr:
 
 class_field: mark_position_cf(_class_field) {$1}
 _class_field:
-  | post_item_attributes INHERIT override_flag class_expr parent_binder
+  | pre_item_attributes INHERIT override_flag class_expr parent_binder
       { mkcf_attrs (Pcf_inherit ($3, $4, $5)) $1 }
-  | post_item_attributes VAL value
+  | pre_item_attributes VAL value
       {
         let loc = mklocation $symbolstartpos $endpos in
         mkcf_attrs (Pcf_val $3) $1 ~loc
       }
-  | post_item_attributes PUB method_
+  | pre_item_attributes PUB method_
       { let loc = mklocation $symbolstartpos $endpos in
         let (a, b) = $3 in mkcf_attrs (Pcf_method (a, Public, b)) $1 ~loc }
-  | post_item_attributes PRI method_
+  | pre_item_attributes PRI method_
         { let (a, b) = $3 in mkcf_attrs (Pcf_method (a, Private, b)) $1 }
-  | post_item_attributes CONSTRAINT constrain_field
+  | pre_item_attributes CONSTRAINT constrain_field
       { mkcf_attrs (Pcf_constraint $3) $1 }
-  | post_item_attributes INITIALIZER EQUALGREATER expr
+  | pre_item_attributes INITIALIZER EQUALGREATER expr
       { mkcf_attrs (Pcf_initializer $4) $1 }
-  | post_item_attributes item_extension
+  | pre_item_attributes item_extension
       { mkcf_attrs (Pcf_extension $2) $1 }
   | floating_attribute
       { mkcf (Pcf_attribute $1) }
@@ -2433,22 +2433,22 @@ _class_sig_field:
      for some reason) */
    | INHERIT class_instance_type
       { mkctf_attrs (Pctf_inherit $2) [] }
-  | item_attribute post_item_attributes INHERIT class_instance_type
+  | item_attribute pre_item_attributes INHERIT class_instance_type
       { mkctf_attrs (Pctf_inherit $4) ($1::$2) }
-  | post_item_attributes VAL value_type {
+  | pre_item_attributes VAL value_type {
       mkctf_attrs (Pctf_val $3) $1
     }
-  | post_item_attributes PRI private_virtual_flags label COLON poly_type
+  | pre_item_attributes PRI private_virtual_flags label COLON poly_type
          {
           mkctf_attrs (Pctf_method ($4, Private, $3, $6)) $1
          }
-  |  post_item_attributes PUB private_virtual_flags label COLON poly_type
+  | pre_item_attributes PUB private_virtual_flags label COLON poly_type
        {
         mkctf_attrs (Pctf_method ($4, Public, $3, $6)) $1
        }
-  | post_item_attributes CONSTRAINT constrain_field
+  | pre_item_attributes CONSTRAINT constrain_field
        { mkctf_attrs (Pctf_constraint $3) $1 }
-  | post_item_attributes item_extension
+  | pre_item_attributes item_extension
        { mkctf_attrs (Pctf_extension $2) $1 }
   | floating_attribute
       { mkctf(Pctf_attribute $1) }
@@ -2471,7 +2471,7 @@ constrain_field:
         core_type EQUAL core_type          { only_core_type $1 (mklocation $symbolstartpos $endpos($1)), only_core_type $3 (mklocation $startpos($3) $endpos($3))}
 ;
 many_class_descriptions:
-  | post_item_attributes CLASS class_description_details {
+  | pre_item_attributes CLASS class_description_details {
     let (ident, binding, virt, params) = $3 in
     let loc = mklocation $symbolstartpos $endpos in
     [Ci.mk ident binding ~virt ~params ~attrs:$1 ~loc]
@@ -2481,7 +2481,7 @@ many_class_descriptions:
   }
 ;
 and_class_description:
-  | post_item_attributes AND class_description_details {
+  | pre_item_attributes AND class_description_details {
     let (ident, binding, virt, params) = $3 in
     let loc = mklocation $symbolstartpos $endpos in
     Ci.mk ident binding ~virt ~params ~attrs:$1 ~loc
@@ -2494,7 +2494,7 @@ class_description_details:
 ;
 
 many_class_type_declarations:
-  | post_item_attributes CLASS TYPE class_type_declaration_details {
+  | pre_item_attributes CLASS TYPE class_type_declaration_details {
     let (ident, instance_type, virt, class_type_params) = $4 in
     let loc = mklocation $symbolstartpos $endpos in
     [Ci.mk ident instance_type ~virt:virt ~params:class_type_params ~attrs:$1 ~loc]
@@ -2505,7 +2505,7 @@ many_class_type_declarations:
 ;
 
 and_class_type_declaration:
-  post_item_attributes AND class_type_declaration_details {
+  pre_item_attributes AND class_type_declaration_details {
     let (ident, instance_type, virt, class_type_params) = $3 in
     let loc = mklocation $symbolstartpos $endpos in
     Ci.mk ident instance_type ~virt:virt ~params:class_type_params ~attrs:$1 ~loc
@@ -2591,7 +2591,7 @@ _semi_terminated_seq_expr_row:
   /**
    * Expression SEMI
    */
-  | post_item_attributes semi_terminated_seq_expr_row_no_attrs  {
+  | pre_item_attributes semi_terminated_seq_expr_row_no_attrs  {
       let loc = mklocation $symbolstartpos $endpos in
       let expr = $2 in
       let item_attrs = $1 in
@@ -3079,9 +3079,9 @@ _simple_expr:
         let msg = "Record construction must have at least one field explicitly set" in
         syntax_error_exp loc msg
       }
-  | LBRACE item_attribute post_item_attributes semi_terminated_seq_expr_no_attrs RBRACE
+  | LBRACE item_attribute pre_item_attributes semi_terminated_seq_expr_no_attrs RBRACE
       { $4 }
-  | LBRACE item_attribute post_item_attributes as_loc(semi_terminated_seq_expr_no_attrs) error
+  | LBRACE item_attribute pre_item_attributes as_loc(semi_terminated_seq_expr_no_attrs) error
       { syntax_error_exp $4.loc "SyntaxError in block" }
   | LBRACE  semi_terminated_seq_expr_no_attrs RBRACE
       {
@@ -3269,11 +3269,11 @@ label_expr:
 
 and_let_binding:
   /* AND bindings don't accept a preceeding extension ID, but do accept
-   * preceeding post_item_attributes. These preceeding post_item_attributes will cause an
+   * preceeding pre_item_attributes. These preceeding pre_item_attributes will cause an
    * error if this is an *expression * let binding. Otherwise, they become
-   * post_item_attributes on the structure item for the "and" binding.
+   * pre_item_attributes on the structure item for the "and" binding.
    */
-   post_item_attributes AND let_binding_body
+   pre_item_attributes AND let_binding_body
       {
          let loc = mklocation $symbolstartpos $endpos in
          mklb $3 $1 loc
@@ -3294,7 +3294,7 @@ lident_list:
 ;
 let_binding_impl:
   /* Form with item extension sugar */
-  | post_item_attributes LET rec_flag let_binding_body {
+  | pre_item_attributes LET rec_flag let_binding_body {
       let loc = mklocation $symbolstartpos $endpos in
       ($3, $4, $1, loc)
     }
@@ -3957,7 +3957,7 @@ primitive_declaration:
 /* Type declarations */
 
 many_type_declarations:
- | post_item_attributes TYPE nonrec_flag type_declaration_details {
+ | pre_item_attributes TYPE nonrec_flag type_declaration_details {
    let (ident, params, constraints, kind, priv, manifest) = $4 in
    let loc = mklocation $symbolstartpos $endpos in
    let ty = Type.mk ident ~params:params ~cstrs:constraints
@@ -3972,7 +3972,7 @@ many_type_declarations:
 ;
 
 and_type_declaration:
-  | post_item_attributes AND type_declaration_details {
+  | pre_item_attributes AND type_declaration_details {
     let (ident, params, constraints, kind, priv, manifest) = $3 in
     let loc = mklocation $symbolstartpos $endpos in
     Type.mk ident
@@ -4109,21 +4109,21 @@ constructor_declaration_leading_bar:
       }
 ;
 
-/* Why are there already post_item_attributes on the extension_constructor_declaration? */
+/* Why are there already pre_item_attributes on the extension_constructor_declaration? */
 str_exception_declaration:
-  |  post_item_attributes EXCEPTION extension_constructor_declaration
+  |  pre_item_attributes EXCEPTION extension_constructor_declaration
       {
         let ext = $3 in
         {ext with pext_attributes = ext.pext_attributes @ $1}
       }
-  | post_item_attributes EXCEPTION extension_constructor_rebind
+  | pre_item_attributes EXCEPTION extension_constructor_rebind
       {
         let ext = $3 in
         {ext with pext_attributes = ext.pext_attributes @ $1}
       }
 ;
 sig_exception_declaration:
-  | post_item_attributes EXCEPTION extension_constructor_declaration
+  | pre_item_attributes EXCEPTION extension_constructor_declaration
       {
         let ext = $3 in
         {ext with pext_attributes = ext.pext_attributes @ $1}
@@ -4190,7 +4190,7 @@ potentially_long_ident_and_optional_type_parameters:
 ;
 
 str_type_extension:
-  post_item_attributes
+  pre_item_attributes
   TYPE nonrec_flag potentially_long_ident_and_optional_type_parameters
   PLUSEQ private_flag attributes opt_bar str_extension_constructors
   {
@@ -4205,7 +4205,7 @@ str_type_extension:
   }
 ;
 sig_type_extension:
-  post_item_attributes
+  pre_item_attributes
   TYPE nonrec_flag potentially_long_ident_and_optional_type_parameters
   PLUSEQ private_flag attributes opt_bar sig_extension_constructors
   {
@@ -4971,9 +4971,9 @@ attributes:
   | attribute attributes { $1 :: $2 }
 ;
 
-post_item_attributes:
+pre_item_attributes:
     /* empty */{ [] }
-  | item_attribute post_item_attributes { $1 :: $2 }
+  | item_attribute pre_item_attributes { $1 :: $2 }
 ;
 
 item_extension_sugar:
@@ -4985,7 +4985,7 @@ item_extension_sugar:
    *   [@attrsOnExtension] %extSugarId [@attrOnLet] LET ..
    *
    * We won't document it though, and probably won't format it as such.
-   *  | PERCENT attr_id item_attribute post_item_attributes {
+   *  | PERCENT attr_id item_attribute pre_item_attributes {
    *     ($3::$4, $2)
    *    }
    */
