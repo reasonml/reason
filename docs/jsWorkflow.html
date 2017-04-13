@@ -62,13 +62,16 @@ That's all! **BuckleScript has first-class support for Reason, which is why you 
 Editor Setup & Global Utilities
 -------
 
+See our [tooling](https://facebook.github.io/reason/tools.html) section for a descriptions of what you need to install and which editors we support.
+
 Our [editor integration](https://facebook.github.io/reason/tools.html#editor-integration) need a few binaries to be found in your `$PATH`:
 
 - `refmt`: the Reason parser/printer (editor formatter).
 - `ocamlmerlin-reason`: Reason bridge to [Merlin](https://facebook.github.io/reason/tools.html#tools-command-line-utilities-merlin).
 - `ocamlmerlin`: the Merlin binary.
 
-Info on these binaries are [here](https://facebook.github.io/reason/tools.html#tools-command-line-utilities). 
+The tooling section explains what these binaries do.
+
 They can be installed globally through:
 
 ```sh
@@ -77,9 +80,14 @@ npm install -g git://github.com/reasonml/reason-cli.git
 which ocamlmerlin refmt ocamlmerlin-reason
 ```
 
-**Note**: please verify that your installed OCaml version is `^4.02`: `ocamlc -version`. Please also verify that Merlin is `^2.5.1`: `ocamlmerlin -version`. The above installation does that automatically, but people sometimes install our toolchain through other ways (e.g. native workflow, with looser version constraints).
-
 **Note**: the global toolchain `reason-cli` currently doesn't work on Windows.
+
+**Note**: please verify that your installed OCaml version is `4.02.x` and that Merlin is `>=2.5.1`. The above installation does that automatically, but people sometimes install our toolchain through other ways (e.g. native workflow, with looser version constraints).
+
+```sh
+ocamlc -version
+ocamlmerlin -version
+```
 
 Use Existing JS Libraries
 -------

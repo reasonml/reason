@@ -71,7 +71,7 @@ Reference Equality                    |  <pre>thisThing === thatThing</pre>
 Records                               |  <pre>{score: 100}</pre>
 
 
-Let Bindings
+Let Binding
 ------------
 `let` bindings give names to values. They can be seen and referenced by code that comes after them.
 
@@ -103,13 +103,38 @@ new binding of the same name which *shadows* the previous binding; from that
 point onward, the binding will refer to the newly assigned value.
 
 ```reason
-let msg = "hello";
-print_endline msg; /* Prints "hello" */
-let msg = "bye";
-print_endline msg; /* Prints "bye" */
+let message = "hello";
+print_endline message; /* Prints "hello" */
+let message = "bye";
+print_endline message; /* Prints "bye" */
 ```
 
-Functions
+Conditionals
+---------
+
+```reason
+if (showMenu) {
+  displayMenu ();
+};
+```
+
+Reason `if`s are expressions; they're evaluated to their body's content:
+
+```reason
+let message = if (isMorning) {
+  "Good morning!"
+} else {
+  "Hello!"
+};
+```
+
+We also have ternary sugar.
+
+```reason
+let message = isMorning ? "Good morning!" : "Hello!";
+```
+
+Function
 ---------
 
 Functions are declared with `fun` and return the expression.
@@ -236,7 +261,7 @@ Here's the syntax for typing the arguments:
 let drawCircle radius::(r: int) color::(c: string) => ...;
 ```
 
-Types
+Type
 --------------------------
 
 #### Type Annotations
@@ -266,10 +291,10 @@ type scoreType = int;
 let x: scoreType = 10;
 ```
 
-Primitive Data Types
+Built-in Data Types
 =======
 
-Tuples
+Tuple
 --------------------------
 
 Tuples are
@@ -295,7 +320,7 @@ let myIntAndString: myPair = (20, "totallyNotAnInteger");
 
 **Note**: there's no tuple of size 1.
 
-Records
+Record
 -------
 
 Records are a set of named values. They resemble "objects" but are
@@ -352,7 +377,7 @@ let me = {name: "Jordan", age: 30};
 me.age = me.age + 1; /* alter `me`. Happy birthday! */
 ```
 
-Variants
+Variant
 --------
 
 Most data structures are about "this **and** that". A variant allows us to express "this **or** that".
@@ -434,7 +459,7 @@ let greeting = switch (myAccount) {
 This is called pattern-matching. It's a stronger version of destructuring, often found in other languages.
 
 
-List
+(Linked) List
 -------------
 
 Lists are homogeneous, immutable, and support fast `O(1)` append at the head of the list.
@@ -560,81 +585,8 @@ optimized away!
 [Learn more about currying](#diving-deeper-curried-functions)
 
 
-Loops and Tests
+Imperative Loops
 ---------------
-
-#### If Expressions
-
-The syntax for `if` expressions should look very familiar. Just like within
-function "bodies", the `{}` braces may include a sequence of temporary `let`
-bindings or imperative commands, all separated by `;`. An `if` statement may
-include an optional `else` branch.
-
-```reason
-if (testCondition) {
-  ifTrue
-};
-
-if (testCondition) {
-  ifTrue
-} else {
-  ifFalse
-};
-```
-
-In this example, the word `"hi"` is printed if `sayHi` is `true`, and prints
-`"bye"` otherwise.
-```reason
-if (sayHi) {
-  print_string "hi";
-} else {
-  print_string "bye";
-};
-```
-
-> Note: The parenthesis around the test condition may be omitted if the test
-condition is "simple" enough (meaning it is a single, standalone word).
-
-If expressions aren't just for imperative code - they can also be used to
-compute a result. Just place an expression on the final line of the `{}`
-sequence for each branch. If your `if` expression has no `else` branch, it
-is clearly only useful for imperative programming and therefore the entire `if`
-will evaluate to the unit value `()`.
-
-
-```reason
-let valueToLog =
-  if (booleanTest) {
-    let tmp = "name";
-    String.capitalize_ascii tmp;
-  } else {
-    "default";
-  };
-```
-
-`if`/`else` expressions may be chained together in a familiar manner.
-
-```reason
-if (sayHi) {
-  print_string "hi";
-} else if (sayBye) {
-  print_string "bye";
-} else {
-  print_string "nothing to say";
-};
-```
-#### Ternaries
-
-For smaller boolean if else statements, `Reason` includes a ternary expression
-which might look more aesthetically pleasing in some cases.
-
-```reason
-testCondition ? ifTrue : ifFalse
-```
-
-```reason
-let valueToLog = shouldUseDefault ? 200 : yourNumber;
-```
 
 
 #### For Loops

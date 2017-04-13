@@ -58,3 +58,10 @@ Works that are forked from other projects are under their original licenses.
 
 Editor plugins (which have also been forked) in the `editorSupport/` directory
 include their own licenses.
+
+
+Credit
+-------
+The general structure of `refmt` repo was copied from @whitequark's m17n
+project, including parts of the `README` that instruct how to use this with the
+OPAM toolchain.
