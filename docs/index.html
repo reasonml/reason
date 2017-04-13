@@ -433,9 +433,11 @@ let friendAccount = Instagram "Jenny";
 
 ```reason
 type account =
+  /* 2 arguments */
   | Facebook string int /* 2 arguments */
 type account2 =
-  | Instagram (string, int) /* 1 argument, happens to be a 2-tuple */
+  /* 1 argument - happens to be a 2-tuple */
+  | Instagram (string, int)
 ```
 
 ##### Using Switch with Constructors Arguments
@@ -451,7 +453,8 @@ let myAccount = Facebook "Josh" 26;
 ...
 let greeting = switch (myAccount) {
   | None => "Hi!"
-  | Facebook name age => "Hi " ^ name ^ ", you're " ^ (string_of_int age) ^ "-year-old."
+  | Facebook name age =>
+    "Hi " ^ name ^ ", you're " ^ (string_of_int age) ^ "-year-old."
   | Instagram name => "Hello " ^ name ^ "!"
 }
 ```
