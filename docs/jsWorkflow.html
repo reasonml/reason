@@ -75,10 +75,12 @@ The tooling section explains what these binaries do.
 They can be installed globally through:
 
 ```sh
-npm install -g git://github.com/reasonml/reason-bin.git
+npm install -g git://github.com/reasonml/reason-cli.git
+# test that you have them installed correctly
+which ocamlmerlin refmt ocamlmerlin-reason
 ```
 
-**Note**: the global toolchain `reason-bin` currently doesn't work on Windows.
+**Note**: the global toolchain `reason-cli` currently doesn't work on Windows.
 
 **Note**: please verify that your installed OCaml version is `4.02.x` and that Merlin is `>=2.5.1`. The above installation does that automatically, but people sometimes install our toolchain through other ways (e.g. native workflow, with looser version constraints).
 
