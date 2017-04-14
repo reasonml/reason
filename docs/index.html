@@ -704,13 +704,21 @@ let payloadResults: myPayloadResults string = [
 Exceptions
 ----------
 
-Exceptions are just a special kind of [variant](#built-in-data-types-variant) "thrown" in **exceptional** cases (don't abuse them!). When you have variants, you often don't **need** exceptions, since you can just use variants types such as `type result` above.
+Exceptions are just a special kind of [variant](#built-in-data-types-variant), "thrown" in **exceptional** cases (don't abuse them!). When you have ordinary variants, you often don't **need** exceptions, since you can just use variants types such as `type result` above.
 
 ```reason
 try (somethingThatThrows ()) {
 | Not_found => print_endline "Item not found!"
 | Invalid_argument message => print_endline message
 };
+```
+
+You can make your own exceptions like you'd make a variant (exceptions need to be capitalized too).
+
+```
+exception InputClosed string;
+...
+raise (InputClosed "the stream has closed!");
 ```
 
 Pattern Matching
