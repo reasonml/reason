@@ -366,9 +366,9 @@ Most data structures are about "this **and** that". A variant allows us to expre
 
 ```reason
 type response =
-  | Yes
-  | No
-  | PrettyMuch;
+| Yes
+| No
+| PrettyMuch;
 
 let areYouCrushingIt = Yes;
 ```
@@ -381,9 +381,9 @@ A `switch` expression is like a large `if/elseif/elseif..` allows you to check e
 
 ```reason
 let message = switch (areYouCrushingIt) {
-  | No => "No worries. Keep going!"
-  | Yes => "Great!"
-  | PrettyMuch => "Nice!"
+| No => "No worries. Keep going!"
+| Yes => "Great!"
+| PrettyMuch => "Nice!"
 };
 /* message is "Great!" */
 ```
@@ -397,9 +397,9 @@ Constructors can carry extra data in a space-separated list.
 
 ```reason
 type account =
-  | None
-  | Instagram string;
-  | Facebook string int
+| None
+| Instagram string;
+| Facebook string int
 ```
 
 Here, `Instagram` carries a `string` and `Facebook` carries a `string` and an `int`. Usage:
@@ -415,11 +415,9 @@ let friendAccount = Instagram "Jenny";
 
 ```reason
 type account =
-  /* 2 arguments */
-  | Facebook string int /* 2 arguments */
+| Facebook string int /* 2 arguments */
 type account2 =
-  /* 1 argument - happens to be a 2-tuple */
-  | Instagram (string, int)
+| Instagram (string, int) /* 1 argument - happens to be a 2-tuple */
 ```
 
 ##### Using Switch with Constructors Arguments
@@ -428,16 +426,16 @@ The `switch` expression can also let you "open up" a variant and bind its argume
 
 ```reason
 type account =
-  | None
-  | Instagram string;
-  | Facebook string int
+| None
+| Instagram string;
+| Facebook string int
 let myAccount = Facebook "Josh" 26;
 ...
 let greeting = switch (myAccount) {
-  | None => "Hi!"
-  | Facebook name age =>
-    "Hi " ^ name ^ ", you're " ^ (string_of_int age) ^ "-year-old."
-  | Instagram name => "Hello " ^ name ^ "!"
+| None => "Hi!"
+| Facebook name age =>
+  "Hi " ^ name ^ ", you're " ^ (string_of_int age) ^ "-year-old."
+| Instagram name => "Hello " ^ name ^ "!"
 }
 ```
 
@@ -689,8 +687,8 @@ Types can receive more arguments, and be composable.
 
 ```reason
 type result 'a 'b =
-  | Ok 'a
-  | Error 'b;
+| Ok 'a
+| Error 'b;
 
 type myPayload = {data: string};
 
@@ -729,7 +727,7 @@ type car = {model: string, make: string};
 let toyota = {make: "Toyota", model: "Tacoma"};
 
 type carOwner =
-  | CarOwner string car; /* May as well be a tuple */
+| CarOwner string car; /* May as well be a tuple */
 
 let CarOwner name {model: model, make: make} =
   CarOwner "Jo" toyota;
@@ -749,8 +747,8 @@ it compiles, it works!".
 ```reason
 type car = {maker: string, model: string};
 type carList =
-  | List car carList
-  | NoMore;
+| List car carList
+| NoMore;
 
 let chevy = {maker: "Chevy", model: "Suburban"};
 let toyota = {maker: "Toyota", model: "Tacoma"};
@@ -758,10 +756,10 @@ let myCarList = List chevy (List toyota NoMore);
 
 let hasExactlyTwoCars = fun lst =>
   switch lst {
-    | NoMore => false                              /* 0 */
-    | List p NoMore => false                       /* 1 */
-    | List p (List p2 NoMore) => true              /* 2 */
-    | List p (List p2 (List p3 theRest)) => false  /* 3+ */
+  | NoMore => false                              /* 0 */
+  | List p NoMore => false                       /* 1 */
+  | List p (List p2 NoMore) => true              /* 2 */
+  | List p (List p2 (List p3 theRest)) => false  /* 3+ */
   };
 
 let justTwo = hasExactlyTwoCars myCarList;  /* true! */
@@ -774,10 +772,10 @@ syntactic alternative for this pattern:
 ```reason
 /* Equivalent to the above `hasExactlyTwoCars` */
 let hasExactlyTwoCars = fun
-  | NoMore => false                              /* 0 */
-  | List p NoMore => false                       /* 1 */
-  | List p (List p2 NoMore) => true              /* 2 */
-  | List p (List p2 (List p3 theRest)) => false; /* 3+ */
+| NoMore => false                              /* 0 */
+| List p NoMore => false                       /* 1 */
+| List p (List p2 NoMore) => true              /* 2 */
+| List p (List p2 (List p3 theRest)) => false; /* 3+ */
 ```
 
 Objects
