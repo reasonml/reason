@@ -170,7 +170,7 @@ let eleven = increment (double 5);
 you'd get `increment double 5`, as if the `increment` function wrongly takes two
 arguments.
 
-#### Arguments & Sugar
+#### Sugar
 
 Functions can receive many arguments:
 
@@ -178,34 +178,16 @@ Functions can receive many arguments:
 let add = fun x y => x + y;
 ```
 
-Actually, this is actually nothing but syntactic sugar for this:
+We have a short form for `let` + `fun`:
 
 ```reason
-let add = fun x => fun y => x + y;
-```
-
-Naively, this would have been expensive (2 functions creations instead of 1).
-But OCaml optimizes this into a single function with two arguments under the
-hood! This way, we get
-
-- Nice syntax
-- Currying for free
-- No performance cost
-
-Cherry on top: we have a short form for `let` + `fun`:
-
-```reason
-let add = fun x y => x + y;
+/* equivalent to the above */
 let add x y => x + y; /* note the arrow */
-/* these two are equivalent */
 ```
-
-To verify these sugars for yourself, write `let add = fun x => fun y => x + y`
-in your editor and use `refmt` on it; see it become `let add x y => x + y`.
 
 #### No Argument
 
-A function always takes an argument; but sometimes, we'd use it for e.g. side-effects, and don't really have anything to pass to it. In this case, we'd pass it the "special" value `()`.
+A function always takes an argument; but sometimes, we'd use it for e.g. side-effects, and don't really have anything to pass to it. In this case, we'd conventionally pass it the value `()`.
 
 ```reason
 /* receive & destructure the unit argument */
@@ -215,10 +197,10 @@ let logSomething () => {
 };
 
 /* call the function with the value of type unit */
-logSomething ()
+logSomething ();
 ```
 
-Actually, `()` is a totally normal value, of type "unit". `()` is the single possible value in `unit`. Reason/OCaml gave it a special syntax out of convenience.
+`()` is a totally normal value, of type "unit". `()` is the single possible value in `unit`. Reason/OCaml gave it a special syntax out of convenience.
 
 #### Labeled Arguments
 Multi-arguments functions, especially those whose arguments are of the same type, can be confusing to call.
@@ -237,7 +219,7 @@ let addCoordinates ::x ::y => ...;
 addCoordinates x::5 y::6;
 ```
 
-And since we have currying, we can call the function any way we want:
+And since we have currying (more on that [here](#diving-deeper-more-on-functions)), we can call the function any way we want:
 
 ```reason
 addCoordinates y::6 x::5;
@@ -497,6 +479,7 @@ Diving Deeper
 
 Destructuring
 -------------
+
 "Destructuring" can be used to extract one or more fields from a record or
 tuple, while automatically binding them to local variables. Any place variables
 are introduced into scope, you may use destructuring. To destructure, instead
@@ -549,43 +532,28 @@ let rec callSecond = fun () => callFirst ()
 and callFirst = fun () => callSecond ();
 ```
 
-#### Functions Returning Functions
+#### Currying
 
-Functions can return other functions. Here's a function `createAdder` that
-creates an adder function. We call `createAdder` first with `4`, and then call
-the result of that with `1`.
+Reason functions can automatically be **partially** called:
 
 ```reason
-let createAdder = fun addAmount => (
-  fun x => addAmount + x
-);
-let five = (createAdder 4) 1;
+let add = fun x y => x + y;
+let addFive = add 5;
+let eleven = addFive 6;
+let twelve = addFive 7;
 ```
 
-`createAdder` has the following type. This type tells us that it is a function
-that when called with an `int`, will return *another* function. That returned
-function itself expects an `int` and returns an `int`. The parenthesis may be
-omitted.
+Actually, the above `add` is actually nothing but syntactic sugar for this:
 
 ```reason
-int => (int => int)
+let add = fun x => fun y => x + y;
 ```
 
-This pattern is called "currying", and because it is so common, `Reason`
-includes some syntactic sugar for it. Here is the previous example, but written
-using the syntactic sugar. Many people use this pattern because it simulates
-multiple arguments.
+OCaml optimizes this to avoid the unnecessary function allocation (2 functions here, naively speaking) whenever it can! This way, we get
 
-
-```reason
-let createAdder = fun addAmount x => addAmount + x;
-let five = createAdder 4 1;
-```
-> Note: Curried functions don't typically incur performance hit when all the
-arguments are supplied at once because intermediate function allocations are
-optimized away!
-
-[Learn more about currying](#diving-deeper-curried-functions)
+- Nice syntax
+- Currying for free (every function takes a single argument, actually!)
+- No performance cost
 
 
 Imperative Loops
@@ -672,162 +640,84 @@ while (not break.contents) {
 };
 ```
 
-Type Parameters
+Type Arguments
 ----------
-Some types are very specific, such as `int`, or `string`, but other types
-are much more general. For example, knowing that a value has type `list`,
-leaves so many unanswered questions - namely, what's *in* the list?! `list`
-is clearly a more general type.
 
-Recall how functions act as factories for other _values_. Supplying a function
-with a parameter produces a new value. In the same way, some types, such
-as `list`, act as factories for other _types_ - if you supply them a **"type
-parameter"**, they generate another type.  This example shows supplying the
-`list` type factory with `string`. It results in a type describing
-lists of strings.
+Types can be "parameterized" (akin to generics in other languages). It's as if a type is a function that takes in arguments and returns a new type. The parameters need to start with `'`.
+
+Types with parameters allow us to kill duplications. Before:
 
 ```reason
-type listOfStrings = list string;
-let lst : listOfStrings = ["hi", "bye"];
-let lst2 : listOfStrings = 
-  ["oh", "no", "not", "you", "again"];
+/* this is a tuple of 3 items, explained next */
+type intCoordinates = (int, int, int);
+type floatCoordinates = (float, float, float);
 
-```
-> Notice the syntactic similarity between supplying function parameters and
-type parameters.
-
-
-You can define your own custom "type factories" by using the following syntax.
-Notice the `'` before the `typeParam`. `typeStructure` can be any form of type
-that is allowed to reference `typeParam`.
-
-```reason
-type typeFactoryName 'typeParam = typeStructure;
+let buddy: intCoordinates = (10, 20, 20);
 ```
 
-For example, you could define a family of tuple types like this:
+After:
 
 ```reason
-type tupleTypeFactory 'a = ('a, 'a);
+type coordinates 'a = ('a, 'a, 'a);
+
+/* apply the coordinates "type function" and return the type (int, int, int) */
+type intCoordinatesAlias = coordinates int;
+let buddy: intCoordinatesAlias = (10, 20, 20);
+
+/* or, more commonly, write it inline */
+let buddy: coordinates float = (10.5, 20.5, 20.5);
 ```
 
-Then you could create more specific types by "calling" the `tupleTypeFactory` type
-generating "function" as follows:
+In practice, types are inferred for you. So the more concise version of the above example would be nothing but:
 
 ```reason
-type tupleOfInts = tupleTypeFactory int;
-type tupleOfStrings = tupleTypeFactory string;
+let buddy = (10, 20, 20);
 ```
 
-To make type factories that accept multiple type parameters, list all of the
-parameters next to each other. Then to use the type factory, supply all
-of the type parameters as if you were calling a curried function.
+The type system infers that it's a `(int, int, int)`. Nothing else needed to be written down.
 
+Type arguments appear everywhere.
 
 ```reason
-type tupleOf 'left 'right = ('left, 'right);
-type tupleOfIntString = tupleOf int string;
+/* inferred as `list string` */
+let greetings = ["hello", "world", "how are you"];
 ```
 
-The type factories can define record and variant shapes that make full use of
-the type parameters.
+If types didn't accept parameters (aka, if we didn't have "type functions"), the standard library will need to define the types `listOfString`, `listOfInt`, `listOfTuplesOfInt`, etc.
+
+Types can receive more arguments, and be composable.
 
 ```reason
-type containerOf 'a = {containedThing: 'a};
-let c : containerOf int = {containedThing: 10};
-
 type result 'a 'b =
   | Ok 'a
   | Error 'b;
-let r : result string int = Ok "here is the result";
-let r2 : result string int = Error 500;
 
+type myPayload = {data: string};
+
+type myPayloadResults 'errorType = list (result myPayload 'errorType);
+
+let payloadResults: myPayloadResults string = [
+  Ok {data: "hi"},
+  Ok {data: "bye"},
+  Error "Something wrong happened!"
+];
 ```
 
 Exceptions
 ----------
-Exceptions are just a special kind of [variant](#syntax-basics-variants) that
-can be "thrown" in exceptional cases. When you have powerful variants, you
-often don't _need_ exceptions because you can just use variants types such as
-the defined `type result` above. But for exceptional cases, it's great to
-have the ability to throw exceptions up the call stack and catch them at
-convenient recovery points. Thankfully, these two separate, but useful
-constructs are unified into one handler abstraction so you can `switch` on the
-result of a function call, but add cases for handling exceptions that occurred.
 
-More details coming soon.
-
-
-Curried Functions
------------------
-
-#### Currying vs. Tuples.
-
-Instead of having a function accept a tuple as an argument, you might choose to
-make that function curried instead. Currying accomplishes the same goal, but
-allows you to supply the set of input data one at a time, potentially "pausing"
-when you've only supplied a portion of the argument data. Compare this to
-passing a tuple where you must supply all of the data at once.
-
-
-#### Named Curried Functions
-
-One downside to curried functions is that they are "biased" to arguments that
-appear first. Meaning, when you curry functions, you can "partially apply" some
-of the arguments, saving the rest for later, but you can only partially apply
-the arguments that come *first*. Labelled curried functions address this
-concern by letting you assign *labels* to arguments, and then partially apply
-arguments by their label, regardless of their *position*. Labels are created by
-simply prepending `labelName::` to the function argument.
+Exceptions are just a special kind of [variant](#built-in-data-types-variant) "thrown" in **exceptional** cases (don't abuse them!). When you have variants, you often don't **need** exceptions, since you can just use variants types such as `type result` above.
 
 ```reason
-
-let add =
-  fun first::f second::s => f + s;
-
-let result = add first::10 second::20;
-
-let addFour = add second::4;
-
-let five = addFour first::1;
-
+try (somethingThatThrows ()) {
+| Not_found => print_endline "Item not found!"
+| Invalid_argument message => print_endline message
+};
 ```
 
-Labelled curried arguments also allow setting default values using the equals
-sign. The way defaults work is a little tricky, but here's the general rule:
-When calling functions, default arguments are "filled in" as soon as you supply
-a *non-named* argument. More specifically - all of the default arguments to the
-*left* of that non-named argument are filled in, as soon as the non-named argument
-is supplied at invocation time.
-
-```reason
-
-/* Notice how `by` is to the left of `num` */
-let increment = fun by::by=0 num => num + by;
-
-let two = increment by::1 1;
-
-let four = increment 4;
-
-```
-
-It's also possible to use punning for labelled curried arguments.
-
-```reason
-
-let increase amount::amount => amount + 1;
-
-```
-
-is the same as
-
-```reason
-let increase ::amount => amount + 2;
-```
-
-
-Expressive Pattern Matching
+Pattern Matching
 ---------------------------
+
 There are several destructuring conveniences that pair well with compiler
 verified `switch` expressions.
 For example, you can express arbitrarily nested destructuring "patterns", which
@@ -841,11 +731,10 @@ let toyota = {make: "Toyota", model: "Tacoma"};
 type carOwner =
   | CarOwner string car; /* May as well be a tuple */
 
-let CarOwner name {model: model, make: make} = 
+let CarOwner name {model: model, make: make} =
   CarOwner "Jo" toyota;
 ```
 
-##### 
 This deep pattern matching is especially expressive when used in `switch`
 expressions. In this example, the function `hasExactlyTwoCars` has specified
 what to return in four cases in very little code. Even more helpful, is the
@@ -954,8 +843,8 @@ type tesla 'a = {
   drive: int => int
 } as 'a;
 
-let obj: 
-  tesla {. drive: int => int, doYouWant: unit => bool} 
+let obj:
+  tesla {. drive: int => int, doYouWant: unit => bool}
   = {
   val hasEnvy = {contents: false};
   pub drive speed => {
@@ -971,8 +860,7 @@ let obj:
 
 JSX
 ----------------------------------
-Reason has support for JSX syntax with some slight differences compared to the one found
-in JavaScript. JSX tags translate to function calls as shown in these examples:
+Reason supports the JSX syntax, with some slight differences compared to the one in [ReactJS](https://facebook.github.io/react/docs/introducing-jsx.html). JSX tags translate to function calls as shown in these examples:
 
 Capitalized tag:
 
@@ -1052,12 +940,12 @@ Normally, you would have to write your own stringification function to print a
 let rec show_tree = fun
 | Leaf => "Leaf"
 | Tree a i b =>
-  "Tree (" ^ 
-  show_tree a ^ 
-  ", " ^ 
-  string_of_int i ^ 
-  ", " ^ 
-  show_tree b ^ 
+  "Tree (" ^
+  show_tree a ^
+  ", " ^
+  string_of_int i ^
+  ", " ^
+  show_tree b ^
   ")";
 ```
 
