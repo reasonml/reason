@@ -397,7 +397,10 @@ type blahType = string;
 
 let x: blahType = "asdf";
 
-type nameAge = {age: int, name: string};
+type nameAge = {
+  age: int,
+  name: string
+};
 
 type hasABunch = {
   /*
@@ -2060,11 +2063,18 @@ type myRecordWithReallyLongName = {
 
 type doubleEqualsRecord =
   myRecordWithReallyLongName =
-    {xx: int, yy: int};
+    {
+      xx: int,
+      yy: int
+    };
 
 type doubleEqualsDoublePrivateRecord =
   myRecordWithReallyLongName =
-    pri {xx: int, yy: int};
+    pri
+    {
+      xx: int,
+      yy: int
+    };
 
 type someConstructor =
   | SomeConstructorHi int int;

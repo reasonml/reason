@@ -13,7 +13,11 @@ type nonrec u 'a =
 type expr 'a =
   | Val {value: 'a} :expr 'a
   | Add
-      {left: expr int, right: expr int} :expr int
+      {
+        left: expr int,
+        right: expr int
+      }
+      :expr int
   | Is0 {test: expr int} :expr bool
   | If
       {

@@ -260,9 +260,16 @@ let desiredFormattingForWrappedSugarReturnOnNewLine
    let rec f : 't1 't2. 't1 * 't2 list -> 't1 =
      fun (type t1) (type t2) -> (... : t1 * t2 list -> t1)
  */
-type point = {x: int, y: int};
+type point = {
+  x: int,
+  y: int
+};
 
-type point3D = {x: int, y: int, z: int};
+type point3D = {
+  x: int,
+  y: int,
+  z: int
+};
 
 let point2D = {x: 20, y: 30};
 
@@ -317,7 +324,10 @@ let res3 =
     )
   );
 
-type person = {age: int, name: string};
+type person = {
+  age: int,
+  name: string
+};
 
 type hiredPerson = {
   age: string,
@@ -652,12 +662,18 @@ let myFunc (a: int, b: int) :point => {
 
 type myThing = (int, int);
 
-type stillARecord = {name: string, age: int};
+type stillARecord = {
+  name: string,
+  age: int
+};
 
 /* Rebase latest OCaml to get the following: And fixup
    `generalized_constructor_arguments` according to master. */
 /* type ('a, 'b) myOtherThing = Leaf {first:'a, second: 'b} | Null; */
-type branch 'a 'b = {first: 'a, second: 'b};
+type branch 'a 'b = {
+  first: 'a,
+  second: 'b
+};
 
 type myOtherThing 'a 'b =
   | Leaf (branch 'a 'b)

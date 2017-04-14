@@ -663,7 +663,11 @@ type state = unit;
 
 type component = {props};
 
-type component2 = {props, state, updater: unit};
+type component2 = {
+  props,
+  state,
+  updater: unit
+};
 
 type mutableComponent = {mutable props};
 

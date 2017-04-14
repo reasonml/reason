@@ -2647,7 +2647,9 @@ class printer  ()= object(self:'self)
       SourceMap (pld.pld_loc, recordRow)
     in
     let rows = List.map recordRow lbls in
-    let rowList = makeList ~wrap:("{", "}") ~sep:"," ~postSpace:true ~break:IfNeed rows in
+    (* if a record has more than 2 rows, always break *)
+    let break = if List.length rows >= 2 then Always_rec else IfNeed in
+    let rowList = makeList ~wrap:("{", "}") ~sep:"," ~postSpace:true ~break rows in
     match assumeRecordLoc with
     | None -> rowList
     | Some loc -> SourceMap(loc, rowList)
