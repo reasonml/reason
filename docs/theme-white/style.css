@@ -4,10 +4,7 @@ Please don't edit this file directly.
 Instead, edit the stylus (.styl) files and compile it to CSS on your machine.
 
 */
-/* ----------------------------------------------------------------------------
- * Fonts
- */
-@import url("../fontSupport/montserratCSS.css");
+
 /* ----------------------------------------------------------------------------
  * Base
  */
@@ -908,4 +905,11 @@ code .comment {
   position: relative;
   z-index: 1;
 }
+
+/* ----------------------------------------------------------------------------
+ * Fonts
+ */
+/* For now, need to put font at bottom of style sheet just to get "inliner" to not crash. */
+/* https://github.com/remy/inliner/issues/142 */
+@import url("../fontSupport/montserratCSS.css");
 
