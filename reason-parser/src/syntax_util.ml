@@ -227,33 +227,16 @@ let create_auto_printer_mapper super =
     super.signature mapper decls
   end }
 
-(** unescape_stars_slashes_mapper unescapes all stars and slases in an AST
-  *)
-let unescape_stars_slashes_mapper =
-  let unescape_stars_slashes str =
-    let len = String.length str in
-    if len < 2 then
-      str
-    else
-      let ending = String.sub str 1 (len - 1) in
-    String.sub str 0 1 ^
-      replace_string "\\*" "*"
-        (replace_string ("\\/") "/" ending)
-  in
-  identifier_mapper unescape_stars_slashes
-
-(** escape_stars_slashes_mapper escapes all stars and slases in an AST
-  *)
+(** escape_stars_slashes_mapper escapes all stars and slases in an AST *)
 let escape_stars_slashes_mapper =
   let escape_stars_slashes str =
-    let len = String.length str in
-    if len < 2 then
+    if String.contains str '/' then
+      replace_string "/*" "/\\*" @@
+      replace_string "*/" "*\\/" @@
+      replace_string "//" "/\\/" @@
       str
     else
-      let ending = String.sub str 1 (len -1) in
-      String.sub str 0 1 ^
-        replace_string "*" "\\*"
-          (replace_string "/" "\\/" ending)
+      str
   in
   identifier_mapper escape_stars_slashes
 
