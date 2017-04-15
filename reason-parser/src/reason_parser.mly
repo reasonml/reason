@@ -857,7 +857,6 @@ let reason_mapper () =
     then create_auto_printer_mapper default_mapper
     else default_mapper
   end
-  |> unescape_stars_slashes_mapper
   |> reason_to_ml_swap_operator_mapper
   |> arity_conflict_resolving_mapper
 

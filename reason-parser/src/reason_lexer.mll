@@ -165,6 +165,57 @@ let is_in_string = ref false
 let in_string () = !is_in_string
 let print_warnings = ref true
 
+(* To "unlex" a few characters *)
+let set_lexeme_length buf n = (
+  let open Lexing in
+  if n < 0 then
+    invalid_arg "set_lexeme_length: offset should be positive";
+  if n > buf.lex_curr_pos - buf.lex_start_pos then
+    invalid_arg "set_lexeme_length: offset larger than lexeme";
+  buf.lex_curr_pos <- buf.lex_start_pos + n;
+  buf.lex_curr_p <- {buf.lex_start_p
+                     with pos_cnum = buf.lex_abs_pos + buf.lex_curr_pos};
+)
+
+(* This cut comment characters of the current buffer.
+ * Operators (including "/*" and "//") are lexed with the same rule, and this
+ * function cuts the lexeme at the beginning of an operator. *)
+let lexeme_without_comment buf = (
+  let lexeme = Lexing.lexeme buf in
+  let i = ref 0 and len = String.length lexeme - 1 in
+  let found = ref (-1) in
+  while !i < len && !found = -1 do
+    begin match lexeme.[!i], lexeme.[!i+1] with
+      | ('/', '*') | ('/', '/') | ('*', '/') ->
+        found := !i;
+      | _ -> ()
+    end;
+    incr i
+  done;
+  match !found with
+  | -1 -> lexeme
+  | n ->
+      set_lexeme_length buf n;
+      String.sub lexeme 0 n
+)
+
+(* Operators that could conflict with comments (those containing /*, */ and //)
+ * are escaped in the source. The lexer removes the escapes so that the
+ * identifier looks like OCaml ones. *)
+let unescape_operator str =
+  match String.index str '\\' with
+  | exception Not_found -> str
+  | _ ->
+    let b = Buffer.create (String.length str) in
+    for i = 0 to String.length str - 1 do
+      let c = str.[i] in
+      if c <> '\\' then Buffer.add_char b c
+    done;
+    Buffer.contents b
+
+let lexeme_operator lexbuf =
+  unescape_operator (lexeme_without_comment lexbuf)
+
 (* To translate escape sequences *)
 
 let char_for_backslash = function
@@ -307,12 +358,10 @@ let lowercase_latin1 = ['a'-'z' '\223'-'\246' '\248'-'\255' '_']
 let uppercase_latin1 = ['A'-'Z' '\192'-'\214' '\216'-'\222']
 let identchar_latin1 =
   ['A'-'Z' 'a'-'z' '_' '\192'-'\214' '\216'-'\246' '\248'-'\255' '\'' '0'-'9']
-let symbolchar_no_star_no_slash =
-  ['!' '$' '%' '&' '+' '-' '.' ':' '<' '=' '>' '?' '@' '^' '|' '~']
-let escaped_star_slash =
-  ('\\' '*') | ('\\' '/')
 
-let appropriate_operator_suffix_chars = symbolchar_no_star_no_slash | escaped_star_slash
+let operator_chars =
+  ['!' '$' '%' '&' '+' '-' '.' ':' '<' '=' '>' '?' '@' '^' '|' '~' '#'] |
+  ( '\\'? ['/' '*'] )
 
 let decimal_literal = ['0'-'9'] ['0'-'9' '_']*
 
@@ -432,37 +481,8 @@ rule token = parse
         let esc = String.sub l 1 (String.length l - 1) in
         raise (Error(Illegal_escape esc, Location.curr lexbuf))
       }
-  | "/*"
-      { let start_loc = Location.curr lexbuf  in
-        comment_start_loc := [start_loc];
-        reset_string_buffer ();
-        let end_loc = comment lexbuf in
-        let s = get_stored_string () in
-        reset_string_buffer ();
-        COMMENT (s, { start_loc with
-                      Location.loc_end = end_loc.Location.loc_end })
-      }
-  | "/*/"
-      { let loc = Location.curr lexbuf  in
-        if !print_warnings then
-          Location.prerr_warning loc Warnings.Comment_start;
-        comment_start_loc := [loc];
-        reset_string_buffer ();
-        let end_loc = comment lexbuf in
-        let s = get_stored_string () in
-        reset_string_buffer ();
-        COMMENT (s, { loc with Location.loc_end = end_loc.Location.loc_end })
-      }
-  | "*/"
-      { let loc = Location.curr lexbuf in
-        Location.prerr_warning loc Warnings.Comment_not_end;
-        lexbuf.Lexing.lex_curr_pos <- lexbuf.Lexing.lex_curr_pos - 1;
-        let curpos = lexbuf.lex_curr_p in
-        lexbuf.lex_curr_p <- { curpos with pos_cnum = curpos.pos_cnum - 1 };
-        STAR
-      }
-  | "#" (appropriate_operator_suffix_chars | "#")+
-      { SHARPOP(Lexing.lexeme lexbuf) }
+  | "#" operator_chars+
+      { SHARPOP(lexeme_operator lexbuf) }
   | "#" [' ' '\t']* (['0'-'9']+ as num) [' ' '\t']*
         ("\"" ([^ '\010' '\013' '"' ] * as name) "\"")?
         [^ '\010' '\013'] * newline
@@ -536,16 +556,14 @@ rule token = parse
   | "<>" { LESSGREATER }
   | "</>" { LESSSLASHGREATER }
   | "<..>" { LESSDOTDOTGREATER }
-  | "\\"? "!" appropriate_operator_suffix_chars +
-            { PREFIXOP(Lexing.lexeme lexbuf) }
-  | "\\"? ['~' '?'] appropriate_operator_suffix_chars +
-            { PREFIXOP(Lexing.lexeme lexbuf) }
-  | "\\"? ['=' '<' '>' '|' '&' '$'] appropriate_operator_suffix_chars *
-            { INFIXOP0(Lexing.lexeme lexbuf) }
-  | "\\"? ['@' '^'] appropriate_operator_suffix_chars *
-            { INFIXOP1(Lexing.lexeme lexbuf) }
-  | "\\"? ['+' '-'] appropriate_operator_suffix_chars *
-            { INFIXOP2(Lexing.lexeme lexbuf) }
+  | '\\'? ['~' '?' '!'] operator_chars+
+            { PREFIXOP(lexeme_operator lexbuf) }
+  | '\\'? ['=' '<' '>' '|' '&' '$'] operator_chars*
+            { INFIXOP0(lexeme_operator lexbuf) }
+  | '\\'? ['@' '^'] operator_chars*
+            { INFIXOP1(lexeme_operator lexbuf) }
+  | '\\'? ['+' '-'] operator_chars*
+            { INFIXOP2(lexeme_operator lexbuf) }
   (* SLASHGREATER is an INFIXOP3 that is handled specially *)
   | "/>" { SLASHGREATER }
   (* The second star must be escaped so that the precedence assumptions for
@@ -557,22 +575,54 @@ rule token = parse
    * rule beginning with *, picking it up instead of the special double ** rule
    * below.
    *)
-  | "\\"? "**" appropriate_operator_suffix_chars *
-            { INFIXOP4(Lexing.lexeme lexbuf)}
-  | "\\"? "*\*" appropriate_operator_suffix_chars *
-            { INFIXOP4(Lexing.lexeme lexbuf)}
+  | '\\'? '*' '\\'? '*' operator_chars*
+            { INFIXOP4(lexeme_operator lexbuf) }
   | '%'     { PERCENT }
-  | "\\"? ['*'] appropriate_operator_suffix_chars *
-            { INFIXOP3(Lexing.lexeme lexbuf) }
-  | "\\"? ['/'] appropriate_operator_suffix_chars *
-            { INFIXOP3(Lexing.lexeme lexbuf)}
-  | "\\"? ['%'] appropriate_operator_suffix_chars *
-            { INFIXOP3(Lexing.lexeme lexbuf) }
+  | '\\'? ['/' '*'] operator_chars*
+            { match lexeme_operator lexbuf with
+              | "" ->
+                  (* If the operator is empty, it means the lexeme is beginning
+                   * by a comment sequence: we let the comment lexer handle
+                   * the case. *)
+                  enter_comment lexbuf
+              | op -> INFIXOP3 op }
+  | '%' operator_chars*
+            { INFIXOP3(lexeme_operator lexbuf) }
   | eof { EOF }
   | _
       { raise (Error(Illegal_character (Lexing.lexeme_char lexbuf 0),
                      Location.curr lexbuf))
       }
+
+and enter_comment = parse
+  | "/*"
+      { let start_loc = Location.curr lexbuf  in
+        comment_start_loc := [start_loc];
+        reset_string_buffer ();
+        let end_loc = comment lexbuf in
+        let s = get_stored_string () in
+        reset_string_buffer ();
+        COMMENT (s, { start_loc with
+                      Location.loc_end = end_loc.Location.loc_end })
+      }
+  | "/*/"
+      { let loc = Location.curr lexbuf  in
+        if !print_warnings then
+          Location.prerr_warning loc Warnings.Comment_start;
+        comment_start_loc := [loc];
+        reset_string_buffer ();
+        let end_loc = comment lexbuf in
+        let s = get_stored_string () in
+        reset_string_buffer ();
+        COMMENT (s, { loc with Location.loc_end = end_loc.Location.loc_end })
+      }
+  | "*/"
+      { let loc = Location.curr lexbuf in
+        Location.prerr_warning loc Warnings.Comment_not_end;
+        set_lexeme_length lexbuf 1;
+        STAR
+      }
+  | _ { assert false }
 
 and comment = parse
     "/*"
