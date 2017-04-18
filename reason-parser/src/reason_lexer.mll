@@ -87,6 +87,7 @@ let keyword_table =
     "false", FALSE;
     "for", FOR;
     "fun", FUN;
+    "esfun", ES6_FUN;
     "function", FUNCTION;
     "functor", FUNCTOR;
     "if", IF;
