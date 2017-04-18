@@ -160,14 +160,12 @@ module type Toolchain_spec = sig
   val safeguard_parsing: Lexing.lexbuf ->
     (unit -> ('a * Reason_pprint_ast.commentWithCategory)) -> ('a * Reason_pprint_ast.commentWithCategory)
 
-  module rec Lexer_impl: sig
-    val init: unit -> unit
-    val token: Lexing.lexbuf -> Parser_impl.token
-    val comments: unit -> (String.t * Location.t) list
-  end
+  type token
 
-  and Parser_impl: sig
-    type token
+  module Lexer_impl: sig
+    val init: unit -> unit
+    val token: Lexing.lexbuf -> token
+    val comments: unit -> (String.t * Location.t) list
   end
 
   val core_type: Lexing.lexbuf -> Parsetree.core_type
@@ -335,8 +333,10 @@ end
 
 module OCaml_syntax = struct
   open Migrate_parsetree
+
   module Lexer_impl = Lexer
-  module Parser_impl = Parser
+  module OCaml_parser = Parser
+  type token = OCaml_parser.token
 
   (* OCaml parser parses into compiler-libs version of Ast.
      Parsetrees are converted to Reason version on the fly. *)
@@ -367,7 +367,7 @@ module OCaml_syntax = struct
   let rec skip_phrase lexbuf =
     try
       match Lexer_impl.token lexbuf with
-        Parser_impl.SEMISEMI | Parser_impl.EOF -> ()
+        OCaml_parser.SEMISEMI | OCaml_parser.EOF -> ()
       | _ -> skip_phrase lexbuf
     with
       | Lexer_impl.Error (Lexer_impl.Unterminated_comment _, _)
@@ -377,8 +377,8 @@ module OCaml_syntax = struct
           skip_phrase lexbuf
 
   let maybe_skip_phrase lexbuf =
-    if Parsing.is_current_lookahead Parser_impl.SEMISEMI
-    || Parsing.is_current_lookahead Parser_impl.EOF
+    if Parsing.is_current_lookahead OCaml_parser.SEMISEMI
+    || Parsing.is_current_lookahead OCaml_parser.EOF
     then ()
     else skip_phrase lexbuf
 
@@ -412,7 +412,7 @@ end
 module JS_syntax = struct
   module I = Reason_parser.MenhirInterpreter
   module Lexer_impl = Reason_lexer
-  module Parser_impl = Reason_parser
+  type token = Reason_parser.token
 
   let initial_checkpoint constructor lexbuf =
     (constructor lexbuf.lex_curr_p)
@@ -423,10 +423,10 @@ module JS_syntax = struct
      and end positions. Warning: before the first call to the lexer has taken
      place, a None value is stored here. *)
 
-      mutable last_token: (Reason_parser.token * Lexing.position * Lexing.position) option;
+      mutable last_token: (token * Lexing.position * Lexing.position) option;
 
       (* A supplier function that returns one token at a time*)
-      get_token: unit -> (Reason_parser.token * Lexing.position * Lexing.position)
+      get_token: unit -> (token * Lexing.position * Lexing.position)
     }
 
   (* [lexbuf_to_supplier] returns a supplier to be feed into Menhir's incremental API.
@@ -509,75 +509,85 @@ module JS_syntax = struct
      expression.
   *)
 
+  let rec normalize_checkpoint = function
+    | I.Shifting _ | I.AboutToReduce _ as checkpoint ->
+      normalize_checkpoint (I.resume checkpoint)
+    | checkpoint -> checkpoint
+
   let rec loop_handle_yacc supplier in_error checkpoint =
 
     match checkpoint with
+    | I.InputNeeded _ when in_error ->
+      begin match supplier.last_token with
+        | None -> assert false
+        | Some triple ->
+          (* We just recovered from the error state, try the original token again *)
+          let checkpoint_with_previous_token = I.offer checkpoint triple in
+          match I.shifts checkpoint_with_previous_token with
+          | None ->
+            (* The original token still fail to be parsed, discard *)
+            loop_handle_yacc supplier false checkpoint
+          | Some env ->
+            loop_handle_yacc supplier false checkpoint_with_previous_token
+      end
+
     | I.InputNeeded _ ->
-       if in_error then
-         begin
-           match supplier.last_token with
-           | None -> assert false
-           | Some triple ->
-              (* We just recovered from the error state, try the original token again *)
-              let checkpoint_with_previous_token = I.offer checkpoint triple in
-              match I.shifts checkpoint_with_previous_token with
-              | None ->
-                (* The original token still fail to be parsed, discard *)
-                loop_handle_yacc supplier false checkpoint
-              | Some env ->
-                loop_handle_yacc supplier false checkpoint_with_previous_token
-         end
-       else
-         let triple = read supplier in
-         let checkpoint = I.offer checkpoint triple in
-         loop_handle_yacc supplier false checkpoint
-    | I.Shifting _
-      | I.AboutToReduce _ ->
-       let checkpoint = I.resume checkpoint in
-       loop_handle_yacc supplier in_error checkpoint
+      let checkpoint =
+        match read supplier with
+        | (Reason_parser.ES6_FUN, _, _) as triple ->
+          let checkpoint =
+            match normalize_checkpoint (I.offer checkpoint triple) with
+            | I.HandlingError _ -> checkpoint
+            | checkpoint -> checkpoint
+          in
+          let triple = read supplier in
+          I.offer checkpoint triple
+        | triple -> I.offer checkpoint triple
+      in
+      loop_handle_yacc supplier false checkpoint
+
+    | I.HandlingError env when !Reason_config.recoverable ->
+      let loc = last_token_loc supplier in
+      begin match Syntax_util.findMenhirErrorMessage loc with
+        | Syntax_util.MenhirMessagesError err -> ()
+        | Syntax_util.NoMenhirMessagesError ->
+          let state = state checkpoint in
+          let msg =
+            try Reason_parser_message.message state
+            with Not_found -> "<SYNTAX ERROR>\n"
+          in
+          Syntax_util.add_error_message Syntax_util.{loc = loc; msg = msg};
+      end;
+      let checkpoint = I.resume checkpoint in
+      (* Enter error recovery state *)
+      loop_handle_yacc supplier true checkpoint
+
     | I.HandlingError env ->
-       if !Reason_config.recoverable then
-         (
-         let loc = last_token_loc supplier in
-         (match Syntax_util.findMenhirErrorMessage loc with
-         | Syntax_util.MenhirMessagesError err -> ()
-         | Syntax_util.NoMenhirMessagesError -> (
-           let state = state checkpoint in
-           let msg = try
-             Reason_parser_message.message state
-           with
-             | Not_found -> "<SYNTAX ERROR>\n"
-           in
-           Syntax_util.add_error_message Syntax_util.{loc = loc; msg = msg};
-         ));
-         let checkpoint = I.resume checkpoint in
-         (* Enter error recovery state *)
-         loop_handle_yacc supplier true checkpoint)
-       else
-         (* If not in a recoverable state, fail early by raising a
-          * customized Error object
-          *)
-         let loc = last_token_loc supplier in
-         let state = state checkpoint in
-         (* Check the error database to see what's the error message
-          * associated with the current parser state
-          *)
-         let msg =
-           try
-             Reason_parser_message.message state
-           with
-             | Not_found -> "<UNKNOWN SYNTAX ERROR>"
-         in
-         let msg_with_state = Printf.sprintf "%d: %s" state msg in
-         raise (Syntax_util.Error (loc, (Syntax_util.Syntax_error msg_with_state)))
+      (* If not in a recoverable state, fail early by raising a
+       * customized Error object
+       *)
+      let loc = last_token_loc supplier in
+      let state = state checkpoint in
+      (* Check the error database to see what's the error message
+       * associated with the current parser state
+       *)
+      let msg =
+        try Reason_parser_message.message state
+        with Not_found -> "<UNKNOWN SYNTAX ERROR>"
+      in
+      let msg_with_state = Printf.sprintf "%d: %s" state msg in
+      raise (Syntax_util.Error (loc, (Syntax_util.Syntax_error msg_with_state)))
+
     | I.Rejected ->
-       begin
-         let loc = last_token_loc supplier in
-         raise Syntaxerr.(Error(Syntaxerr.Other loc))
-       end
+      let loc = last_token_loc supplier in
+      raise Syntaxerr.(Error(Syntaxerr.Other loc))
+
     | I.Accepted v ->
        (* The parser has succeeded and produced a semantic value. *)
        v
+
+    | I.Shifting _ | I.AboutToReduce _ ->
+      loop_handle_yacc supplier in_error (I.resume checkpoint)
 
   let implementation lexbuf =
     let cp = initial_checkpoint Reason_parser.Incremental.implementation lexbuf in
@@ -603,7 +613,7 @@ module JS_syntax = struct
   let rec skip_phrase lexbuf =
     try
       match Lexer_impl.token lexbuf with
-        Parser_impl.SEMI | Parser_impl.EOF -> ()
+        Reason_parser.SEMI | Reason_parser.EOF -> ()
       | _ -> skip_phrase lexbuf
     with
       | Lexer_impl.Error (Lexer_impl.Unterminated_comment _, _)
@@ -612,8 +622,8 @@ module JS_syntax = struct
       | Lexer_impl.Error (Lexer_impl.Illegal_character _, _) -> skip_phrase lexbuf
 
   let maybe_skip_phrase lexbuf =
-    if Parsing.is_current_lookahead Parser_impl.SEMI
-    || Parsing.is_current_lookahead Parser_impl.EOF
+    if Parsing.is_current_lookahead Reason_parser.SEMI
+    || Parsing.is_current_lookahead Reason_parser.EOF
     then ()
     else skip_phrase lexbuf
 
