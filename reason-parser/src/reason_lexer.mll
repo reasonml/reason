@@ -739,18 +739,120 @@ and skip_sharp_bang = parse
     | Some (_init, preprocess) -> preprocess token lexbuf
 
   let last_comments = ref []
+
   let rec token lexbuf =
     match token_with_comments lexbuf with
         COMMENT (s, comment_loc) ->
           last_comments := (s, comment_loc) :: !last_comments;
           token lexbuf
       | tok -> tok
+
   let comments () = List.rev !last_comments
+
+  let save_triple lexbuf tok =
+    (tok, lexbuf.lex_start_p, lexbuf.lex_curr_p)
+
+  let load_triple lexbuf (tok, p1, p2) = (
+    lexbuf.lex_start_p <- p1;
+    lexbuf.lex_curr_p <- p2;
+    tok
+  )
+
+  let fake_triple t (_, pos, _) =
+    (t, pos, pos)
+
+  exception Lex_balanced_failed of (token * position * position) list *
+                                   (exn * position * position) option
+
+  let rec lex_balanced_step closing lexbuf acc tok =
+    let acc = save_triple lexbuf tok :: acc in
+    match tok, closing with
+    | (RPAREN, RPAREN) | (RBRACE, RBRACE) | (RBRACKET, RBRACKET) ->
+      acc
+    | ((RPAREN | RBRACE | RBRACKET | EOF), _) ->
+      raise (Lex_balanced_failed (acc, None))
+    | (LBRACE, _) ->
+      lex_balanced closing lexbuf (lex_balanced RBRACE lexbuf acc)
+    | (( LBRACKET | LBRACKETLESS | LBRACKETGREATER
+       | LBRACKETAT | LBRACKETATAT | LBRACKETATATAT
+       | LBRACKETPERCENT | LBRACKETPERCENTPERCENT ), _) ->
+      lex_balanced closing lexbuf (lex_balanced RBRACKET lexbuf acc)
+    | (LPAREN, _) ->
+      let rparen =
+        try lex_balanced RPAREN lexbuf []
+        with (Lex_balanced_failed (rparen, None)) ->
+          raise (Lex_balanced_failed (rparen @ acc, None))
+      in
+      begin match token lexbuf with
+      | exception exn ->
+        raise (Lex_balanced_failed (rparen @ acc, Some (save_triple lexbuf exn)))
+      | EQUALGREATER ->
+        let acc = match acc with
+          | lparen :: acc ->
+            lparen :: fake_triple ES6_FUN lparen :: acc
+          | [] -> assert false
+        in
+        lex_balanced_step closing lexbuf (rparen @ acc) tok
+      | tok ->
+        lex_balanced_step closing lexbuf (rparen @ acc) tok
+      end
+    | _ -> lex_balanced closing lexbuf acc
+
+  and lex_balanced closing lexbuf acc =
+    match token lexbuf with
+    | exception exn ->
+      raise (Lex_balanced_failed (acc, Some (save_triple lexbuf exn)))
+    | tok -> lex_balanced_step closing lexbuf acc tok
+
+  let queued_tokens = ref []
+  let queued_exn = ref None
+
+  let lookahead_esfun lexbuf lparen =
+    let triple =
+      match lex_balanced RPAREN lexbuf [] with
+      | exception (Lex_balanced_failed (tokens, exn)) ->
+        queued_tokens := List.rev tokens;
+        queued_exn := exn;
+        lparen
+      | tokens ->
+        begin match token lexbuf with
+          | exception exn ->
+            queued_tokens := List.rev tokens;
+            queued_exn := Some (save_triple lexbuf exn);
+            lparen
+          | token ->
+            let tokens = save_triple lexbuf token :: tokens in
+            if token == EQUALGREATER then (
+              queued_tokens := lparen :: List.rev tokens;
+              fake_triple ES6_FUN lparen
+            ) else (
+              queued_tokens := List.rev tokens;
+              lparen
+            )
+        end
+    in
+    load_triple lexbuf triple
+
+  let token lexbuf =
+    match !queued_tokens, !queued_exn with
+    | [], Some exn ->
+      queued_exn := None;
+      raise (load_triple lexbuf exn)
+    | [(LPAREN, _, _) as lparen], None ->
+      lookahead_esfun lexbuf lparen
+    | [], None ->
+      begin match token lexbuf with
+      | LPAREN -> lookahead_esfun lexbuf (save_triple lexbuf LPAREN)
+      | token -> token
+      end
+    | x :: xs, _ -> queued_tokens := xs; load_triple lexbuf x
 
   let init () =
     is_in_string := false;
     last_comments := [];
     comment_start_loc := [];
+    queued_tokens := [];
+    queued_exn := None;
     match !preprocessor with
     | None -> ()
     | Some (init, _preprocess) -> init ()
