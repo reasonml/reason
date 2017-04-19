@@ -68,7 +68,7 @@ dotspacemacs-additional-packages
       :location (recipe
         :repo "facebook/reason"
         :fetcher github
-        :files ("editorSupport/emacs/reason-model.el" "editorSupport/emacs/refmt.el")))
+        :files ("editorSupport/emacs/reason-mode.el" "editorSupport/emacs/refmt.el")))
 )
 ```
 
