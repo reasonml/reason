@@ -1,7 +1,7 @@
 
 opam-version: "1.2"
 name: "reason"
-version: "1.13.3"
+version: "1.13.4"
 maintainer: "Jordan Walke <jordojw@gmail.com>"
 authors: [ "Jordan Walke <jordojw@gmail.com>" ]
 license: "BSD"
@@ -28,7 +28,7 @@ depends: [
   "result"                  {=  "1.2"}
   "topkg"                   {>=  "0.8.1" & < "0.9"}
   "ocaml-migrate-parsetree"
-  "reason-parser"           {= "1.13.3"}
+  "reason-parser"           {= "1.13.4"}
 ]
 depopts: [
 ]
