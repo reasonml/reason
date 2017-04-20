@@ -5,17 +5,18 @@ open Ast_mapper
 open Parsetree
 open Longident
 
+
 (** [is_prefixed prefix i str] checks if prefix is the prefix of str
   * starting from position i
   *)
 let is_prefixed prefix str i =
   let len = String.length prefix in
-  if i + len > String.length str then false else
-  let rec loop j =
-    if j >= len then true else
-      if String.unsafe_get prefix j <> String.unsafe_get str (i + j) then false else loop (j + 1)
-    in
-  loop 0
+  let j = ref 0 in
+  while !j < len && String.unsafe_get prefix !j =
+                    String.unsafe_get str (i + !j) do
+    incr j
+  done;
+  (!j = len)
 
 (**
  * pick_while returns a tuple where first element is longest prefix (possibly empty) of the list of elements that satisfy p
@@ -29,27 +30,41 @@ let rec pick_while p = function
   | l -> ([], l)
 
 
-let rec replace_string_ old_str new_str i str buffer =
-  if i >= String.length str then
-    ()
-  else
-    (* found match *)
-    if is_prefixed old_str str i then
-      (* split string *)
-      let old_str_len = String.length old_str in
-      Buffer.add_string buffer new_str;
-      replace_string_ old_str new_str (i + old_str_len) str buffer
+(** [find_substring sub str i]
+    returns the smallest [j >= i] such that [sub = str.[j..length sub - 1]]
+    raises [Not_found] if there is no such j
+    behavior is not defined if [sub] is the empty string
+*)
+let find_substring sub str i =
+  let len = String.length str - String.length sub in
+  let found = ref false and i = ref i in
+  while not !found && !i <= len do
+    if is_prefixed sub str !i then
+      found := true
     else
-      let start = String.sub str i 1 in
-      Buffer.add_string buffer start;
-      replace_string_ old_str new_str (i + 1) str buffer
-
+      incr i;
+  done;
+  if not !found then
+    raise Not_found;
+  !i
 
 (** [replace_string old_str new_str str] replaces old_str to new_str in str *)
 let replace_string old_str new_str str =
-  let buffer = Buffer.create (String.length old_str * 2) in
-  replace_string_ old_str new_str 0 str buffer;
-  Buffer.contents buffer
+  match find_substring old_str str 0 with
+  | exception Not_found -> str
+  | occurrence ->
+    let buffer = Buffer.create (String.length str + 15) in
+    let rec loop i j =
+      Buffer.add_substring buffer str i (j - i);
+      Buffer.add_string buffer new_str;
+      let i = j + String.length old_str in
+      match find_substring old_str str i with
+      | j -> loop i j
+      | exception Not_found ->
+        Buffer.add_substring buffer str i (String.length str - i)
+    in
+    loop 0 occurrence;
+    Buffer.contents buffer
 
 (* This is lifted from https://github.com/bloomberg/bucklescript/blob/14d94bb9c7536b4c5f1208c8e8cc715ca002853d/jscomp/ext/ext_string.ml#L32
   Thanks @bobzhang and @hhugo! *)
