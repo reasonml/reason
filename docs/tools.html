@@ -44,20 +44,20 @@ Command Line Utilities
 The Reason toolchain uses a few important tools that are used in the terminal,
 and/or with your editor.
 
-**Note**: the [JavaScript](./jsWorkflow.html#javascript-workflow-editor-setup-global-utilities) 
-and [native](./nativeWorkflow.html#native-workflow-editor-setup-global-utilities) 
+**Note**: the [JavaScript](./jsWorkflow.html#javascript-workflow-editor-setup-global-utilities)
+and [native](./nativeWorkflow.html#native-workflow-editor-setup-global-utilities)
 workflow have different ways of installing  these tools. Please consult their
 respective sections for the installation proper. This section only describes
 what they are.
 
 ### Refmt
 
-`refmt` ("Reason format") takes in your code text and spits it out, nicely formatted. Developers 
+`refmt` ("Reason format") takes in your code text and spits it out, nicely formatted. Developers
 use it pervasively to prettify their code, either through invoking it in the
 terminal, or through an editor shortcut. It also serves to convert to/from
 Reason/OCaml syntax.
 
-`refmt` optionally takes in a column width, and **responsively** formats your 
+`refmt` optionally takes in a column width, and **responsively** formats your
 code based on it. In other words, it doesn't just naively break to the next line
 at a certain characters limit; it solves the constrains and arranges your code
 accordingly. Here's `refmt` inside Vim, called once per window resize (just to
@@ -65,7 +65,7 @@ show the point):
 
 <img src="images/LiquidSmallOptCrop.gif" style="width:100%; max-width:466px; max-height:433px;" />
 
-The Reason community uses it to enforce a consistent style and avoid time-consuming 
+The Reason community uses it to enforce a consistent style and avoid time-consuming
 manual formatting & stylistic debates.
 
 See `refmt --help` for the options.
@@ -211,7 +211,7 @@ let g:ale_linter_aliases = {'reason': 'ocaml'}
 ```
 
 `merlin` also provides many helpful commands.
-See [this guide](https://github.com/ocaml/merlin/wiki/vim-from-scratch#discovering-the-shiny-features) to learn more. 
+See [this guide](https://github.com/ocaml/merlin/wiki/vim-from-scratch#discovering-the-shiny-features) to learn more.
 
 #### VimReason
 
@@ -219,7 +219,7 @@ Reason ships with a [syntax plugin](https://github.com/facebook/reason/tree/mast
 It provides syntax highlighting and formatting.
 
 The command `:ReasonPrettyPrint` invokes the binary `refmt` and formats text in the current buffer.
-You can set `g:vimreason_extra_args_expr_reason` variable to control the arguments passed to `refmt` (such as `--print-width`). 
+You can set `g:vimreason_extra_args_expr_reason` variable to control the arguments passed to `refmt` (such as `--print-width`).
 
 ### Emacs
 
@@ -258,8 +258,8 @@ https://github.com/giraud/reasonml-idea-plugin
   <meta property="og:image:width" content="1196" />
   <meta property="og:image:height" content="1228" />
 
-  <meta content="Reason: Rapid Expressive Systems Programming." name="description">
-  <meta content="Reason: Rapid Expressive Systems Programming." property="og:description">
+  <meta content="Reason: Tools" name="description">
+  <meta content="Reason: Tools" property="og:description">
   <!-- <meta content="http://ricostacruz.com/flatdoc/support/preview.jpg" property="og:image"> -->
 </head>
 <body role='flatdoc' class='big-h3 large-brief'>

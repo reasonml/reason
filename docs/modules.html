@@ -42,7 +42,7 @@ inside a module definition's `{}` block.
 ```reason
 module School = {
   type profession = Teacher | Director;
-  
+
   let person1 = Teacher;
   let getProfession person =>
     switch person {
@@ -96,7 +96,7 @@ of reasoning**:
 ```reason
 open School;
 let anotherPerson: profession = Teacher;
-printProfession anotherPerson; 
+printProfession anotherPerson;
 ```
 
 #### Extending modules
@@ -113,16 +113,16 @@ module BaseComponent = {
 module ActualComponent = {
   /* the content is copied over */
   include BaseComponent;
-  /* overrides BaseComponent.defaultGreeting */ 
+  /* overrides BaseComponent.defaultGreeting */
   let defaultGreeting = "Hey";
   let render () => defaultGreeting ^ " " ^ getAudience excited::true;
 };
 ```
 
-**Note**: `include` and `open` are very different! The former literally copies 
+**Note**: `include` and `open` are very different! The former literally copies
 over definitions into the new module for it to appropriate. The latter simply
 allows refering to items (values, types, constructors, etc.) in the `open`ed
-module's scope in an "unqualified" way (aka, `foo` instead of the qualified 
+module's scope in an "unqualified" way (aka, `foo` instead of the qualified
 `MyModule.foo`).
 
 #### Every `.re` file is a module
@@ -169,8 +169,8 @@ for that module to match the signature. Those requirements are of the form:
 - `let x: int;` requires a `let` binding named `x`, of type `int`.
 
 - `type t = someType;` requires a type field `t` to be equal to `someType`.
-  
-- `type t;` requires a type field `t`, but without imposing any requirements on 
+
+- `type t;` requires a type field `t`, but without imposing any requirements on
   the actual, concrete type of `t`. We'd use `t` in other entries in the
   signature to describe relationships, e.g. `let makePair: t -> (t, t)` but we
   cannot, for example, assume that `t` is an `int`. This gives us great,
@@ -180,7 +180,7 @@ To illustrate the various kinds of type entries, consider the above signature
 `EstablishmentType` which requires that a module:
 
 - Declare a type named `profession`.
-- Must include a function that takes in a value of the type `profession` and 
+- Must include a function that takes in a value of the type `profession` and
   returns a string.
 
 **Note**:
@@ -196,11 +196,11 @@ The type `EstablishmentType.profession` is **abstract**: it doesn't have a
 concrete type; it's saying "I don't care what the actual type is, but it's used
 as input to `getProfession`". This is useful to fit many modules under the same
 interface:
-  
+
 ```reason
 module Company: EstablishmentType = {
   type profession = CEO | Designer | Engineer | ...;
-  
+
   let getProfession person => ...
   let person1 = ...;
   let person2 = ...;
@@ -253,7 +253,7 @@ Here's an example `MakeSet` functor, that takes in a module of the type
 
 ```reason
 module type Comparable = {
-  type t; 
+  type t;
   let equal: t => t => bool;
 };
 
@@ -343,8 +343,8 @@ let schools = (School, School);
   <meta property="og:image:width" content="1196" />
   <meta property="og:image:height" content="1228" />
 
-  <meta content="Reason: Rapid Expressive Systems Programming." name="description">
-  <meta content="Reason: Rapid Expressive Systems Programming." property="og:description">
+  <meta content="Reason: Modules" name="description">
+  <meta content="Reason: Modules" property="og:description">
   <!-- <meta content="http://ricostacruz.com/flatdoc/support/preview.jpg" property="og:image"> -->
 </head>
 <body role='flatdoc' class='big-h3 large-brief'>
