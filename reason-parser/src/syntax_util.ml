@@ -145,8 +145,8 @@ let swap_txt map txt =
 
 (** identifier_mapper maps all identifiers in an AST with a mapping function f
   *)
-let identifier_mapper f =
-{ default_mapper with
+let identifier_mapper f super =
+{ super with
   expr = begin fun mapper expr ->
     let expr =
       match expr with
@@ -161,7 +161,7 @@ let identifier_mapper f =
              {expr with pexp_desc=Pexp_ident ({id with txt=swapped})}
         | _ -> expr
     in
-    default_mapper.expr mapper expr
+    super.expr mapper expr
   end;
   pat = begin fun mapper pat ->
     let pat =
@@ -172,11 +172,11 @@ let identifier_mapper f =
              {pat with ppat_desc=Ppat_var ({id with txt=(f txt)})}
         | _ -> pat
     in
-    default_mapper.pat mapper pat
+    super.pat mapper pat
   end;
 }
 
-let create_auto_printer_mapper =
+let create_auto_printer_mapper super =
   let attach_str_printer = function
     | { pstr_desc=Pstr_type (_,type_decls) } as ty ->
         let str_of_type = Ppx_deriving_show.str_of_type ~options:[] ~path:[] in
@@ -191,7 +191,7 @@ let create_auto_printer_mapper =
         (ty, Some printer)
     | ty -> (ty, None)
   in
-  { default_mapper with structure = begin fun mapper decls ->
+  { super with structure = begin fun mapper decls ->
     let decls =
       let maybe_concat acc = function
         | (s, None) -> s::acc
@@ -199,7 +199,7 @@ let create_auto_printer_mapper =
       in
       List.rev (List.fold_left maybe_concat [] (List.map attach_str_printer decls))
     in
-    default_mapper.structure mapper decls
+    super.structure mapper decls
   end;
   signature = begin fun mapper decls ->
     let decls =
@@ -209,7 +209,7 @@ let create_auto_printer_mapper =
       in
       List.rev (List.fold_left maybe_concat [] (List.map attach_sig_printer decls))
     in
-    default_mapper.signature mapper decls
+    super.signature mapper decls
   end }
 
 (** unescape_stars_slashes_mapper unescapes all stars and slases in an AST
@@ -289,28 +289,20 @@ let attributes_conflicted attribute1 attribute2 attributes =
 let normalized_attributes attribute attributes =
   List.filter (fun x -> not (attribute_equals attribute x)) attributes
 
-(*
- * apply_mapper_chain family applies an ast_mapper_chain to an ast,
- * ordering from left to right.
- *)
-let apply_mapper_chain_to_structure =
-  List.fold_left (fun s mapper -> mapper.structure mapper s )
-let apply_mapper_chain_to_signature =
-  List.fold_left (fun s mapper -> mapper.signature mapper s )
-let apply_mapper_chain_to_type =
-  List.fold_left (fun s mapper -> mapper.typ mapper s )
-let apply_mapper_chain_to_expr =
-  List.fold_left (fun s mapper -> mapper.expr mapper s )
-let apply_mapper_chain_to_pattern =
-  List.fold_left (fun s mapper -> mapper.pat mapper s )
+(* apply_mapper family applies an ast_mapper to an ast *)
+let apply_mapper_to_structure s mapper = mapper.structure mapper s
+let apply_mapper_to_signature s mapper = mapper.signature mapper s
+let apply_mapper_to_type      s mapper = mapper.typ       mapper s
+let apply_mapper_to_expr      s mapper = mapper.expr      mapper s
+let apply_mapper_to_pattern   s mapper = mapper.pat       mapper s
 
-let apply_mapper_chain_to_toplevel_phrase toplevel_phrase chain =
+let apply_mapper_to_toplevel_phrase toplevel_phrase mapper =
   match toplevel_phrase with
-  | Ptop_def x -> Ptop_def (apply_mapper_chain_to_structure x chain)
+  | Ptop_def x -> Ptop_def (apply_mapper_to_structure x mapper)
   | x -> x
 
-let apply_mapper_chain_to_use_file use_file chain =
-  List.map (fun x -> apply_mapper_chain_to_toplevel_phrase x chain) use_file
+let apply_mapper_to_use_file use_file mapper =
+  List.map (fun x -> apply_mapper_to_toplevel_phrase x mapper) use_file
 
 (* The following logic defines our own Error object
  * and register it with ocaml so it knows how to print it
