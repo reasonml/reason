@@ -6130,8 +6130,8 @@ let built_in_explicit_arity_constructors = ["Some"; "Assert_failure"; "Match_fai
 
 let explicit_arity_constructors = StringSet.of_list(built_in_explicit_arity_constructors @ (!configuredSettings).constructorLists)
 
-let add_explicit_arity_mapper =
-{ default_mapper with
+let add_explicit_arity_mapper super =
+{ super with
   expr = begin fun mapper expr ->
     let expr =
       match expr with
@@ -6147,7 +6147,7 @@ let add_explicit_arity_mapper =
             pexp_attributes=add_explicit_arity pexp_loc pexp_attributes}
         | x -> x
     in
-    default_mapper.expr mapper expr
+    super.expr mapper expr
   end;
   pat = begin fun mapper pat ->
     let pat =
@@ -6164,22 +6164,25 @@ let add_explicit_arity_mapper =
             ppat_attributes=add_explicit_arity ppat_loc ppat_attributes}
         | x -> x
     in
-    default_mapper.pat mapper pat
+    super.pat mapper pat
   end;
 }
 
-let preprocessing_chain = [add_explicit_arity_mapper; escape_stars_slashes_mapper; ml_to_reason_swap_operator_mapper]
+let preprocessing_mapper =
+  ml_to_reason_swap_operator_mapper
+    (escape_stars_slashes_mapper
+      (add_explicit_arity_mapper default_mapper))
 
 let core_type f x =
-  easyFormatToFormatter f (layoutToEasyFormatNoComments (easy#core_type (apply_mapper_chain_to_type x preprocessing_chain)))
+  easyFormatToFormatter f (layoutToEasyFormatNoComments (easy#core_type (apply_mapper_to_type x preprocessing_mapper)))
 let pattern f x =
-  easyFormatToFormatter f (layoutToEasyFormatNoComments (easy#pattern (apply_mapper_chain_to_pattern x preprocessing_chain)))
+  easyFormatToFormatter f (layoutToEasyFormatNoComments (easy#pattern (apply_mapper_to_pattern x preprocessing_mapper)))
 let signature (comments : commentWithCategory) f x =
-  easyFormatToFormatter f (layoutToEasyFormat (easy#signature (apply_mapper_chain_to_signature x preprocessing_chain)) comments)
+  easyFormatToFormatter f (layoutToEasyFormat (easy#signature (apply_mapper_to_signature x preprocessing_mapper)) comments)
 let structure (comments : commentWithCategory) f x =
-  easyFormatToFormatter f (layoutToEasyFormat (easy#structure (apply_mapper_chain_to_structure x preprocessing_chain)) comments)
+  easyFormatToFormatter f (layoutToEasyFormat (easy#structure (apply_mapper_to_structure x preprocessing_mapper)) comments)
 let expression f x =
-  easyFormatToFormatter f (layoutToEasyFormatNoComments (easy#unparseExpr (apply_mapper_chain_to_expr x preprocessing_chain)))
+  easyFormatToFormatter f (layoutToEasyFormatNoComments (easy#unparseExpr (apply_mapper_to_expr x preprocessing_mapper)))
 let case_list = case_list
 end
 in
