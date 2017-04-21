@@ -122,28 +122,17 @@ let syntax_error_sig err loc =
       [Ast_helper.Sig.mk ~loc:loc (Parsetree.Psig_extension (Syntax_util.syntax_error_extension_node loc invalidLex, []))]
 
 
-let chan_input = ref ""
-
-(* replaces Lexing.from_channel so we can keep track of the input for comment modification *)
-let keep_from_chan chan =
-  Lexing.from_function (fun buf n -> (
-    (* keep input from chan in memory so that it can be used to reformat comment tokens *)
-    let nchar = input chan buf 0 n in
-    chan_input := !chan_input ^ Bytes.sub_string buf 0 nchar;
-    nchar
-  ))
-
 let setup_lexbuf use_stdin filename =
   (* Use custom method of lexing from the channel to keep track of the input so that we can
      reformat tokens in the toolchain*)
   let lexbuf =
     match use_stdin with
-      | true ->
-        keep_from_chan stdin
+      | true -> Lexing.from_channel
+        stdin
       | false ->
         let file_chan = open_in filename in
         seek_in file_chan 0;
-        keep_from_chan file_chan
+        Lexing.from_channel file_chan
   in
   Location.init lexbuf filename;
   lexbuf
@@ -215,25 +204,46 @@ let rec right_expand_comment should_scan_next_line source loc_start =
 
 
 module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = struct
+
+  let buffer_add_lexbuf buf skip lexbuf =
+    let bytes = lexbuf.Lexing.lex_buffer in
+    let start = lexbuf.Lexing.lex_start_pos + skip in
+    let stop = lexbuf.Lexing.lex_buffer_len in
+    Buffer.add_subbytes buf bytes start (stop - start)
+
+  let refill_buff buf refill lb =
+    let skip = lb.Lexing.lex_buffer_len - lb.Lexing.lex_start_pos in
+    let result = refill lb in
+    buffer_add_lexbuf buf skip lb;
+    result
+
+  (* replaces Lexing.from_channel so we can keep track of the input for comment modification *)
+  let keep_from_lexbuf buffer lexbuf =
+    buffer_add_lexbuf buffer 0 lexbuf;
+    let refill_buff = refill_buff buffer lexbuf.Lexing.refill_buff in
+    {lexbuf with refill_buff}
+
   let wrap_with_comments parsing_fun lexbuf =
     Toolchain_impl.safeguard_parsing lexbuf (fun () ->
       let _ = Toolchain_impl.Lexer_impl.init () in
-      let ast = parsing_fun lexbuf in
+      let input_copy = Buffer.create 0 in
+      let ast = parsing_fun (keep_from_lexbuf input_copy lexbuf) in
       let unmodified_comments = Toolchain_impl.Lexer_impl.comments() in
-      match !chan_input with
-        | "" ->
+      let contents = Buffer.contents input_copy in
+      Buffer.reset input_copy;
+      if contents = "" then
           let _  = Parsing.clear_parser() in
           (ast, unmodified_comments |> List.map (fun (txt, phys_loc) -> (txt, Reason_pprint_ast.Regular, phys_loc)))
-        | _ ->
-          let modified_and_comment_with_category =
-            List.map (fun (str, physical_loc) ->
+      else
+        let modified_and_comment_with_category =
+          List.map (fun (str, physical_loc) ->
               (* When searching for "^" regexp, returns location of newline + 1 *)
-              let (stop_char, eol_start, virtual_start_pos) = left_expand_comment false !chan_input physical_loc.loc_start.pos_cnum in
+              let (stop_char, eol_start, virtual_start_pos) = left_expand_comment false contents physical_loc.loc_start.pos_cnum in
               let one_char_before_stop_char =
                 if virtual_start_pos <= 1 then
                   ' '
                 else
-                  String.unsafe_get !chan_input (virtual_start_pos - 2)
+                  String.unsafe_get contents (virtual_start_pos - 2)
               in
               (*
                *
@@ -251,16 +261,16 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
                *)
               let should_scan_next_line = stop_char = '|' &&
                                           (one_char_before_stop_char = ' ' ||
-                                          one_char_before_stop_char = '\n' ||
-                                          one_char_before_stop_char = '\t' ) in
-              let (stop_char, eol_end, virtual_end_pos) = right_expand_comment should_scan_next_line !chan_input physical_loc.loc_end.pos_cnum in
+                                           one_char_before_stop_char = '\n' ||
+                                           one_char_before_stop_char = '\t' ) in
+              let (stop_char, eol_end, virtual_end_pos) = right_expand_comment should_scan_next_line contents physical_loc.loc_end.pos_cnum in
               let end_pos_plus_one = physical_loc.loc_end.pos_cnum in
               let comment_length = (end_pos_plus_one - physical_loc.loc_start.pos_cnum - 4) in
-              let original_comment_contents = String.sub !chan_input (physical_loc.loc_start.pos_cnum + 2) comment_length in
+              let original_comment_contents = String.sub contents (physical_loc.loc_start.pos_cnum + 2) comment_length in
               let t = match (eol_start, eol_end) with
-              | (true, true) -> Reason_pprint_ast.SingleLine
-              | (false, true) -> Reason_pprint_ast.EndOfLine
-              | _ -> Reason_pprint_ast.Regular
+                | (true, true) -> Reason_pprint_ast.SingleLine
+                | (false, true) -> Reason_pprint_ast.EndOfLine
+                | _ -> Reason_pprint_ast.Regular
               in
               let start_pos = virtual_start_pos in
               (original_comment_contents, t,
@@ -268,9 +278,9 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
                                   loc_end = {physical_loc.loc_end with pos_cnum = virtual_end_pos}})
             )
             unmodified_comments
-          in
-          let _  = Parsing.clear_parser() in
-          (ast, modified_and_comment_with_category)
+        in
+        let _  = Parsing.clear_parser() in
+        (ast, modified_and_comment_with_category)
     )
 
   (*
