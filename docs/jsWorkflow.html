@@ -137,6 +137,7 @@ The JS workflow is currently npm/yarn-centric; to use a native OCaml package fro
   <meta content="Reason: JS Workflow" name="description">
   <meta content="Reason: JS Workflow" property="og:description">
   <!-- <meta content="http://ricostacruz.com/flatdoc/support/preview.jpg" property="og:image"> -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/docsearch.js/2/docsearch.min.css" />
 </head>
 <body role='flatdoc' class='big-h3 large-brief'>
 
@@ -149,6 +150,7 @@ The JS workflow is currently npm/yarn-centric; to use a native OCaml package fro
         <li><a href='jsWorkflow.html'>JS Workflow</a></li>
         <li><a href='nativeWorkflow.html'>Native Workflow</a></li>
         <li><a href='https://github.com/facebook/reason'>GitHub</a></li>
+        <li><input type="search" id="agolia-search" placeholder="Search docs..."></li>
       </ul>
     </div>
   </div>
@@ -160,5 +162,13 @@ The JS workflow is currently npm/yarn-centric; to use a native OCaml package fro
     <div role='flatdoc-content' class='content'></div>
   </div>
 
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/docsearch.js/2/docsearch.min.js"></script>
+  <script type="text/javascript">
+    docsearch({
+      apiKey: 'c0b64d79817b714e4d7038d33cb5bb64',
+      indexName: 'reason',
+      inputSelector: '#agolia-search',
+    });
+  </script>
 </body>
 </html>

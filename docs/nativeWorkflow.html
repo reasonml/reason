@@ -33,7 +33,7 @@ Compiling to bytecode/native.
 Context
 -------
 
-**Note: doesn't work on Windows. The native workflow is currently work in
+**Note**: doesn't work on Windows. The native workflow is currently work in
 progress, as we're currently focusing on polishing the JS workflow and later
 unifying them into a single one.
 
@@ -223,6 +223,7 @@ let c = Some (1, 2);
   <meta content="Reason: Native Workflow" name="description">
   <meta content="Reason: Native Workflow" property="og:description">
   <!-- <meta content="http://ricostacruz.com/flatdoc/support/preview.jpg" property="og:image"> -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/docsearch.js/2/docsearch.min.css" />
 </head>
 <body role='flatdoc' class='big-h3 large-brief'>
 
@@ -235,6 +236,7 @@ let c = Some (1, 2);
         <li><a href='jsWorkflow.html'>JS Workflow</a></li>
         <li><a href='nativeWorkflow.html'>Native Workflow</a></li>
         <li><a href='https://github.com/facebook/reason'>GitHub</a></li>
+        <li><input type="search" id="agolia-search" placeholder="Search docs..."></li>
       </ul>
     </div>
   </div>
@@ -246,5 +248,13 @@ let c = Some (1, 2);
     <div role='flatdoc-content' class='content'></div>
   </div>
 
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/docsearch.js/2/docsearch.min.js"></script>
+  <script type="text/javascript">
+    docsearch({
+      apiKey: 'c0b64d79817b714e4d7038d33cb5bb64',
+      indexName: 'reason',
+      inputSelector: '#agolia-search',
+    });
+  </script>
 </body>
 </html>
