@@ -89,13 +89,20 @@ ocamlc -version
 ocamlmerlin -version
 ```
 
-Use Existing JS Libraries
+Use & Publish Libraries
 -------
+
+We host Reason/OCaml bindings to existing JavaScript libraries at [BuckleTypes](https://github.com/buckletypes). You can `npm install` them as you'd normally do in JavaScript. Likewise, `npm publish` to publish your Reason/BuckleScript library.
+
+**As a gesture of courtesy**, you can publish the JS artifacts in `lib/js` for the pure JS consumers. Although you don't have to, we recommend [checking them into version control](http://facebook.github.io/reason/jsConversion.html#converting-your-javascript-to-reason-tips) in the near future, for debuggability.
+
+
+Bind to Existing JS Libraries
+-------
+
 **Looking for Reason-React bindings**? [Here you go](https://github.com/reasonml/reason-react)!
 
 Redux implementation in Reason is at [Reductive](https://github.com/reasonml/reductive).
-
-We host Reason/OCaml bindings to existing JavaScript libraries at [BuckleTypes](https://github.com/buckletypes).
 
 The [BuckleScript manual](http://bloomberg.github.io/bucklescript/Manual.html) is all you need for calling JS from within BuckleScript. Here are some highlights:
 
