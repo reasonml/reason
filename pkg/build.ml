@@ -37,6 +37,7 @@ let () =
     Pkg.lib ~exts:(Exts.exts [".cmo"]) "src/reason_toploop";
     Pkg.lib ~cond:(Conf.value c utop) ~exts:(Exts.exts [".cmo"]) "src/reason_utop";
     Pkg.bin ~auto:true "src/refmt_impl" ~dst:"refmt";
+    Pkg.bin ~auto:true "src/tmfer_impl" ~dst:"tmfer";
     Pkg.bin ~auto:true "src/ocamlmerlin_reason" ~dst:"ocamlmerlin-reason";
     Pkg.bin ~auto:false "src/rtop.sh" ~dst:"rtop";
     Pkg.bin ~auto:false "src/redoc.sh" ~dst:"redoc";
