@@ -394,7 +394,7 @@ type response =
 let areYouCrushingIt = Yes;
 ```
 
-`Yes`, `No` and `PrettyMuch` aren't strings, nor references, nor some special data type. They're called "constructors". The `|` bar separates each constructor.
+`Yes`, `No` and `PrettyMuch` aren't strings, nor references, nor some special data type. They're called "constructors" (or "tag"). The `|` bar separates each constructor.
 
 **Note**: variant constructors need to be capitalized.
 
@@ -562,7 +562,7 @@ let eleven = addFive 6;
 let twelve = addFive 7;
 ```
 
-Actually, the above `add` is actually nothing but syntactic sugar for this:
+Actually, the above `add` is nothing but syntactic sugar for this:
 
 ```reason
 let add = fun x => fun y => x + y;
