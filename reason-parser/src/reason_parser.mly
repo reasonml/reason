@@ -1473,9 +1473,9 @@ structure:
 
 structure_item: mark_position_str(_structure_item) {$1}
 _structure_item:
-  | item_extension_sugar structure_item_without_item_extension_sugar {
+  (*| item_extension_sugar structure_item_without_item_extension_sugar {
     struct_item_extension $1 $2
-  }
+  }*)
   | structure_item_without_item_extension_sugar {
     $1
   }
@@ -2479,9 +2479,9 @@ class_type_declaration_details:
  */
 semi_terminated_seq_expr: mark_position_exp (_semi_terminated_seq_expr) {$1}
 _semi_terminated_seq_expr:
-  | item_extension_sugar semi_terminated_seq_expr_row {
+  (*| item_extension_sugar semi_terminated_seq_expr_row {
       extension_expression $1 $2
-    }
+    }*)
   | semi_terminated_seq_expr_row {
       $1
     }
@@ -3164,12 +3164,12 @@ let_binding:
    * avoid a parsing conflict. Why is that the case? How can we treat rules as
    * "exactly the same as being inlined?".
    */
-  | item_extension_sugar let_binding_impl {
+  (*| item_extension_sugar let_binding_impl {
       let (rec_flag, body, item_attrs) = $2 in
       let (ext_attrs, ext_id) = $1 in
       let loc = mklocation $symbolstartpos $endpos in
       mklbs (ext_attrs, Some ext_id) rec_flag (mklb body item_attrs loc) loc
-    }
+    }*)
 ;
 
 let_binding_body:
@@ -4773,7 +4773,7 @@ post_item_attributes:
   | item_attribute post_item_attributes { $1 :: $2 }
 ;
 
-item_extension_sugar:
+(* item_extension_sugar:
   /**
    * Note, this form isn't really super useful, but wouldn't cause any parser
    * conflicts. Not supporting it though just to avoid having to write the
@@ -4789,7 +4789,7 @@ item_extension_sugar:
   | PERCENT attr_id {
       ([], $2)
     }
-;
+;*)
 
 extension:
   LBRACKETPERCENT attr_id payload RBRACKET { ($2, $3) }
