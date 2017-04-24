@@ -4,18 +4,21 @@ Reason: Friendly Syntax & Toolchain for OCaml [![Build Status](https://travis-ci
 Getting Started
 ---------------
 
-Check out the [docs](http://facebook.github.io/reason) which guide you through the basic syntax and toolchain features.
-
-Workflow for compiling to native: http://facebook.github.io/reason/nativeWorkflow.html
-Workflow for compiling to JS: http://facebook.github.io/reason/jsWorkflow.html
+[JS Workflow](http://facebook.github.io/reason/jsWorkflow.html)
+[Native Workflow](http://facebook.github.io/reason/nativeWorkflow.html)
 
 Community
----------------
-Get in touch! We're on:
+=======
 
-- IRC freenode #reasonml
+Come say hi!
+
 - [Discord](https://discord.gg/reasonml)
-- [Twitter](https://twitter.com/@reasonml)
+- [Twitter](https://twitter.com/reasonml)
+- [Stack Overflow](http://stackoverflow.com/questions/tagged/reason)
+- IRC (freenode #reasonml)
+
+We also maintain [BuckleTypes](https://github.com/BuckleTypes), where community members submit Reason/OCaml JavaScript bindings.
+
 
 Contributing
 ---------------
