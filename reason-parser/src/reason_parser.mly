@@ -1754,7 +1754,7 @@ _module_type:
 ;
 signature:
     /* empty */          { [] }
-  | mark_position_sig(signature_item) SEMI? signature { $1 :: $3 }
+  | mark_position_sig(signature_item) opt_semi signature { $1 :: $3 }
 ;
 
 signature_item:
@@ -2091,11 +2091,9 @@ _class_field:
       { mkcf (Pcf_attribute $1) }
 ;
 
-/* Don't need opt_semi here because of the empty rule (which normally doesn't
-happen for things like records */
 semi_terminated_class_fields:
   | /* Empty */           {[]}
-  | class_field SEMI? semi_terminated_class_fields   { $1::$3 }
+  | class_field opt_semi semi_terminated_class_fields   { $1::$3 }
 ;
 
 parent_binder:
@@ -2357,8 +2355,8 @@ class_self_type:
        }
 ;
 class_sig_fields:
-    /* empty */                         { [] }
-| class_sig_fields SEMI? class_sig_field { $3 :: $1 }
+  | /* empty */                         { [] }
+  | class_sig_fields opt_semi class_sig_field { $3 :: $1 }
 ;
 
 class_sig_field: mark_position_ctf (_class_sig_field) {$1}
@@ -2483,7 +2481,7 @@ semi_delimited_block_sequence: mark_position_exp (_semi_delimited_block_sequence
 _semi_delimited_block_sequence:
   /*| item_extension_sugar semi_delimited_block_sequence_row
    *  { extension_expression $1 $2 } */
-  | expr post_item_attributes SEMI?  {
+  | expr post_item_attributes opt_semi  {
       let expr = $1 in
       let item_attrs = $2 in
       (* Final item in the sequence - just append item attributes to the
@@ -2494,7 +2492,7 @@ _semi_delimited_block_sequence:
       let item_attrs = $2 in
       mkexp ~attrs:item_attrs (Pexp_sequence($1, $4))
     }
-  | let_bindings SEMI? {
+  | let_bindings opt_semi {
       let loc = mklocation $symbolstartpos $endpos in
       expr_of_let_bindings $1 @@ ghunit ~loc ()
     }
