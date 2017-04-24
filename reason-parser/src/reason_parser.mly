@@ -1214,17 +1214,17 @@ parse_pattern:
 /* Module expressions */
 
 
-mark_position_mod(X):
+%inline mark_position_mod(X):
 	x = X
 	{ {x with pmod_loc = {x.pmod_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
 ;
 
-mark_position_cty(X):
+%inline mark_position_cty(X):
 	x = X
 	{ {x with pcty_loc = {x.pcty_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
 ;
 
-mark_position_ctf(X):
+%inline mark_position_ctf(X):
 	x = X
 	{ {x with pctf_loc = {x.pctf_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
 ;
@@ -1234,11 +1234,11 @@ mark_position_ctf(X):
 	{ {x with pexp_loc = {x.pexp_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
 ;
 
-mark_position_typ(X):
+%inline mark_position_typ(X):
 	x = X
 	{ {x with ptyp_loc = {x.ptyp_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
 ;
-mark_position_typ2(X):
+%inline mark_position_typ2(X):
 	x = X
 	{
 	match x with
@@ -1247,32 +1247,32 @@ mark_position_typ2(X):
 	}
 ;
 
-mark_position_mty(X):
+%inline mark_position_mty(X):
 	x = X
 	{ {x with pmty_loc = {x.pmty_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
 ;
 
-mark_position_sig(X):
+%inline mark_position_sig(X):
 	x = X
 	{ {x with psig_loc = {x.psig_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
 ;
 
-mark_position_str(X):
+%inline mark_position_str(X):
 	x = X
 	{ {x with pstr_loc = {x.pstr_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
 ;
 
-mark_position_cl(X):
+%inline mark_position_cl(X):
 	x = X
 	{ {x with pcl_loc = {x.pcl_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
 ;
 
-mark_position_cf(X):
+%inline mark_position_cf(X):
 	x = X
 	{ {x with pcf_loc = {x.pcf_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
 ;
 
-mark_position_pat(X):
+%inline mark_position_pat(X):
 	x = X
 	{ {x with ppat_loc = {x.ppat_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
 ;
@@ -1306,8 +1306,7 @@ functor_args:
       { [ $1 ] }
 ;
 
-simple_module_expr: mark_position_mod(_simple_module_expr) {$1}
-_simple_module_expr:
+simple_module_expr:
     as_loc(mod_longident)
       { mkmod(Pmod_ident $1) }
   | LBRACE structure RBRACE
@@ -1354,7 +1353,7 @@ _module_expr:
    */
   | FUN functor_args EQUALGREATER module_expr
       { mkFunctorThatReturns $2 $4 }
-  | module_expr simple_module_expr
+  | module_expr mark_position_mod(simple_module_expr)
       { mkmod (Pmod_apply($1, $2)) }
   | module_expr as_loc(LPAREN) module_expr as_loc(error)
       { unclosed_mod (with_txt $2 "(") (with_txt $4 ")") }
@@ -1558,7 +1557,7 @@ structure_item_without_item_extension_sugar:
 ;
 
 module_binding_body_expr:
-    EQUAL module_expr
+  | EQUAL module_expr
       { $2 }
   | COLON module_type EQUAL module_expr
       {
@@ -1567,8 +1566,7 @@ module_binding_body_expr:
       }
 ;
 
-module_binding_body_functor: mark_position_mod(_module_binding_body_functor) {$1}
-_module_binding_body_functor:
+module_binding_body_functor:
   | functor_args EQUALGREATER module_expr {
       mkFunctorThatReturns $1 $3
     }
@@ -1580,7 +1578,7 @@ _module_binding_body_functor:
 
 module_binding_body:
     module_binding_body_expr { $1 }
-  | module_binding_body_functor { $1 }
+  | mark_position_mod(module_binding_body_functor) { $1 }
 
 many_nonlocal_module_bindings:
   | opt_let_module REC nonlocal_module_binding_details post_item_attributes {
@@ -1593,7 +1591,7 @@ many_nonlocal_module_bindings:
   }
 ;
 
-and_nonlocal_module_bindings:
+%inline and_nonlocal_module_bindings:
   | AND nonlocal_module_binding_details post_item_attributes {
     let (ident, body) = $2 in
     let loc = mklocation $symbolstartpos $endpos in
@@ -1602,9 +1600,7 @@ and_nonlocal_module_bindings:
 ;
 
 nonlocal_module_binding_details:
-    as_loc(UIDENT) module_binding_body{
-      ($1, $2)
-    }
+  | as_loc(UIDENT) module_binding_body { ($1, $2) }
 ;
 
 /* Module types */
@@ -1632,8 +1628,7 @@ _non_arrowed_module_type:
   | module_type attribute
       { Mty.attr $1 $2 }
 
-simple_module_type: mark_position_mty(_simple_module_type) {$1}
-_simple_module_type:
+simple_module_type:
   | LPAREN module_type RPAREN
       { $2 }
   | as_loc(LPAREN) module_type as_loc(error)
@@ -1759,11 +1754,10 @@ _module_type:
 ;
 signature:
     /* empty */          { [] }
-  | signature_item SEMI? signature { $1 :: $3 }
+  | mark_position_sig(signature_item) SEMI? signature { $1 :: $3 }
 ;
 
-signature_item: mark_position_sig(_signature_item) { $1 }
-_signature_item:
+signature_item:
     LET as_loc(val_ident) COLON core_type post_item_attributes {
         let loc = mklocation $symbolstartpos $endpos in
         let core_type_loc = mklocation $startpos($4) $endpos($4) in
@@ -1833,7 +1827,7 @@ _signature_item:
     }
 ;
 
-open_statement:
+%inline open_statement:
   | OPEN override_flag as_loc(mod_longident) post_item_attributes
       {
         let loc = mklocation $symbolstartpos $endpos in
@@ -1986,22 +1980,26 @@ _class_fun_def:
       { let (l,o,p) = $1 in mkclass(Pcl_fun(l, o, p, $2)) }
 ;
 
+%inline pcl_structure: class_self_pattern_and_structure { mkclass(Pcl_structure $1) }
+
 class_expr_lets_and_rest: mark_position_cl(_class_expr_lets_and_rest) {$1}
 _class_expr_lets_and_rest:
-  | class_self_pattern_and_structure { mkclass(Pcl_structure $1)}
-  | class_expr {$1}
-  | let_bindings SEMI class_expr_lets_and_rest {
-    class_of_let_bindings $1 $3
+  | pcl_structure { $1 }
+  | class_expr { $1 }
+  | nonempty_list(let_bindings) SEMI class_expr_lets_and_rest {
+    List.fold_right class_of_let_bindings $1 $3
+  }
+  | nonempty_list(let_bindings) mark_position_cl(pcl_structure) {
+    List.fold_right class_of_let_bindings $1 $2
   }
 ;
 
 class_self_pattern: mark_position_pat(_class_self_pattern) {$1}
 _class_self_pattern:
   /* Empty is by default the pattern identifier [this] */
-  | {
-    let loc = mklocation $symbolstartpos $endpos in
-    mkpat (Ppat_var (mkloc "this" loc))
-  }
+  | { let loc = mklocation $symbolstartpos $endpos in
+      mkpat (Ppat_var (mkloc "this" loc))
+    }
   /* Whereas in OCaml, specifying nothing means "_", in Reason, you'd
      have to explicity specify "_" (any) pattern. In Reason, writing nothing
      is how you specify the "this" pattern. */
