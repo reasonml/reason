@@ -1183,18 +1183,18 @@ interface:
 
 toplevel_phrase: _toplevel_phrase {apply_mapper_chain_to_toplevel_phrase $1 (default_mapper_chain ()) }
 _toplevel_phrase:
-    structure_item SEMI                 { Ptop_def [$1]}
+    structure_items SEMI                 { Ptop_def (List.rev $1)}
   | EOF                                 { raise End_of_file}
   | toplevel_directive SEMI             { $1 }
 ;
 
 use_file: _use_file {apply_mapper_chain_to_use_file $1 (default_mapper_chain ())}
 _use_file:
-    EOF                                            { [] }
-  | structure_item SEMI use_file                   { Ptop_def[$1] :: $3 }
-  | toplevel_directive SEMI use_file               { $1 :: $3 }
-  | structure_item EOF                             { [Ptop_def[$1]] }
-  | toplevel_directive EOF                         { [$1] }
+    EOF                                 { [] }
+  | structure_items SEMI use_file       { Ptop_def (List.rev $1) :: $3 }
+  | toplevel_directive SEMI use_file    { $1 :: $3 }
+  | structure_items EOF                 { [Ptop_def (List.rev $1)] }
+  | toplevel_directive EOF              { [$1] }
 ;
 
 parse_core_type:
@@ -1229,7 +1229,7 @@ mark_position_ctf(X):
 	{ {x with pctf_loc = {x.pctf_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
 ;
 
-mark_position_exp(X):
+%inline mark_position_exp(X):
 	x = X
 	{ {x with pexp_loc = {x.pexp_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
 ;
@@ -1457,19 +1457,33 @@ structure:
       | MenhirMessagesError errMessage -> (syntax_error_str errMessage.loc errMessage.msg) :: $3
       | _ -> (syntax_error_str $1.loc "Invalid statement") :: $3
     }
-  | structure_item { [$1] }
+  | structure_items { List.rev $1 }
   | as_loc(structure_item) error structure {
     let menhirError = Syntax_util.findMenhirErrorMessage $1.loc in
     match menhirError with
       | MenhirMessagesError errMessage -> (syntax_error_str errMessage.loc errMessage.msg) :: $3
       | _ -> (syntax_error_str $1.loc "Statement has to end with a semicolon") :: $3
   }
-  | structure_item SEMI structure {
+  | structure_items SEMI structure {
       let effective_loc = mklocation $startpos($1) $endpos($2) in
-      set_structure_item_location $1 effective_loc :: $3
+      let items = match $1 with
+        | x :: xs -> set_structure_item_location x effective_loc :: xs
+        | [] -> []
+      in
+      List.rev_append items $3
   }
 ;
 
+structure_items:
+  | structure_item { [$1] }
+  | mark_position_str(structure_items_last) { [$1] }
+  | structure_items structure_item { $2 :: $1 }
+
+%inline structure_items_last:
+  (*| structure_item { $1 }
+  (* We consider a floating expression to be equivalent to a single let binding
+     to the "_" (any) pattern.  *)*)
+  | expr post_item_attributes { mkstrexp $1 $2 }
 
 structure_item: mark_position_str(_structure_item) {$1}
 _structure_item:
@@ -1484,13 +1498,6 @@ _structure_item:
 ;
 
 structure_item_without_item_extension_sugar:
-  mark_position_str(_structure_item_without_item_extension_sugar) {$1}
-_structure_item_without_item_extension_sugar:
-  /* We consider a floating expression to be equivalent to a single let binding
-     to the "_" (any) pattern.  */
-  | expr post_item_attributes {
-      mkstrexp $1 $2
-    }
   | EXTERNAL as_loc(val_ident) COLON core_type EQUAL primitive_declaration post_item_attributes {
       let loc = mklocation $symbolstartpos $endpos in
       let core_loc = mklocation $startpos($4) $endpos($4) in
@@ -1752,7 +1759,7 @@ _module_type:
 ;
 signature:
     /* empty */          { [] }
-  | signature_item SEMI signature { $1 :: $3 }
+  | signature_item SEMI? signature { $1 :: $3 }
 ;
 
 signature_item: mark_position_sig(_signature_item) { $1 }
@@ -2090,8 +2097,7 @@ _class_field:
 happen for things like records */
 semi_terminated_class_fields:
   | /* Empty */           {[]}
-  | class_field           { [$1] }
-  | class_field SEMI semi_terminated_class_fields   { $1::$3 }
+  | class_field SEMI? semi_terminated_class_fields   { $1::$3 }
 ;
 
 parent_binder:
@@ -2354,8 +2360,7 @@ class_self_type:
 ;
 class_sig_fields:
     /* empty */                         { [] }
-| class_sig_field { [$1] }
-| class_sig_fields SEMI class_sig_field { $3 :: $1 }
+| class_sig_fields SEMI? class_sig_field { $3 :: $1 }
 ;
 
 class_sig_field: mark_position_ctf (_class_sig_field) {$1}
@@ -2458,9 +2463,8 @@ class_type_declaration_details:
  *  let add a b = {
  *    a + b;
  *  };
- *  TODO: Rename to [semi_delimited_block_sequence]
  *
- * Since semi_terminated_seq_expr doesn't require a final SEMI, then without
+ * Since semi_delimited_block_sequence doesn't require a final SEMI, then without
  * a final SEMI, a braced sequence with a single identifier is
  * indistinguishable from a punned record.
  *
@@ -2477,49 +2481,44 @@ class_type_declaration_details:
  *   [nonempty_item_attributes] ITEM
  *   ITEM
  */
-semi_terminated_seq_expr: mark_position_exp (_semi_terminated_seq_expr) {$1}
-_semi_terminated_seq_expr:
-  (*| item_extension_sugar semi_terminated_seq_expr_row {
-      extension_expression $1 $2
-    }*)
-  | semi_terminated_seq_expr_row {
-      $1
-    }
-  /**
-   * Let bindings already have their potential item_extension_sugar.
-   */
-  | let_bindings SEMI semi_terminated_seq_expr {
-      expr_of_let_bindings $1 $3
-    }
-  | let_bindings opt_semi {
-      let loc = mklocation $symbolstartpos $endpos in
-      expr_of_let_bindings $1 @@ ghunit ~loc ()
-    }
-;
-
-semi_terminated_seq_expr_row: mark_position_exp (_semi_terminated_seq_expr_row) {$1}
-_semi_terminated_seq_expr_row:
-  /**
-   * Expression SEMI
-   */
-  | expr post_item_attributes opt_semi  {
+semi_delimited_block_sequence: mark_position_exp (_semi_delimited_block_sequence) {$1}
+_semi_delimited_block_sequence:
+  /*| item_extension_sugar semi_delimited_block_sequence_row
+   *  { extension_expression $1 $2 } */
+  | expr post_item_attributes SEMI?  {
       let expr = $1 in
       let item_attrs = $2 in
       (* Final item in the sequence - just append item attributes to the
        * expression attributes *)
       {expr with pexp_attributes = item_attrs @ expr.pexp_attributes}
     }
-  | opt_let_module as_loc(UIDENT) module_binding_body post_item_attributes SEMI semi_terminated_seq_expr {
-      let item_attrs = $4 in
-      mkexp ~attrs:item_attrs (Pexp_letmodule($2, $3, $6))
-    }
-  | LET? OPEN override_flag as_loc(mod_longident) post_item_attributes SEMI semi_terminated_seq_expr {
-      let item_attrs = $5 in
-      mkexp ~attrs:item_attrs (Pexp_open($3, $4, $7))
-    }
-  | expr post_item_attributes SEMI semi_terminated_seq_expr  {
+  | expr post_item_attributes SEMI semi_delimited_block_sequence  {
       let item_attrs = $2 in
       mkexp ~attrs:item_attrs (Pexp_sequence($1, $4))
+    }
+  | let_bindings SEMI? {
+      let loc = mklocation $symbolstartpos $endpos in
+      expr_of_let_bindings $1 @@ ghunit ~loc ()
+    }
+  | semi_delimited_block_sequence_no_semi { $1 }
+;
+
+semi_delimited_block_sequence_row:
+  | SEMI semi_delimited_block_sequence { $2 }
+  | mark_position_exp(semi_delimited_block_sequence_no_semi) {$1}
+;
+
+semi_delimited_block_sequence_no_semi:
+  | let_bindings semi_delimited_block_sequence_row {
+      expr_of_let_bindings $1 $2
+    }
+  | opt_let_module as_loc(UIDENT) module_binding_body post_item_attributes semi_delimited_block_sequence_row {
+      let item_attrs = $4 in
+      mkexp ~attrs:item_attrs (Pexp_letmodule($2, $3, $5))
+    }
+  | LET? OPEN override_flag as_loc(mod_longident) post_item_attributes semi_delimited_block_sequence_row {
+      let item_attrs = $5 in
+      mkexp ~attrs:item_attrs (Pexp_open($3, $4, $6))
     }
 ;
 
@@ -2901,9 +2900,9 @@ _simple_expr:
         let loc = mklocation $symbolstartpos $endpos in
         ghexp_constraint loc $2 $3
       }
-  | LBRACE semi_terminated_seq_expr RBRACE
+  | LBRACE semi_delimited_block_sequence RBRACE
       { $2 }
-  | LBRACE as_loc(semi_terminated_seq_expr) error
+  | LBRACE as_loc(semi_delimited_block_sequence) error
       { syntax_error_exp $2.loc "SyntaxError in block" }
   | LPAREN expr_comma_list opt_comma RPAREN
       { mkexp(Pexp_tuple(List.rev $2)) }
@@ -3362,9 +3361,9 @@ leading_bar_match_case:
 ;
 
 leading_bar_match_case_to_sequence_body:
-  | pattern_with_bar EQUALGREATER semi_terminated_seq_expr
+  | pattern_with_bar EQUALGREATER semi_delimited_block_sequence
       { Exp.case $1 $3 }
-  | pattern_with_bar WHEN expr EQUALGREATER semi_terminated_seq_expr
+  | pattern_with_bar WHEN expr EQUALGREATER semi_delimited_block_sequence
       { Exp.case $1 ~guard:$3 $5 }
 ;
 
