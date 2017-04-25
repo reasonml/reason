@@ -141,50 +141,48 @@ Function
 Functions are declared with `fun` and return the expression.
 
 ```reason
-fun name => "Hello " ^ name;
+let greet = fun name => "Hello " ^ name;
+```
+
+This declares a function and assigns to it the name `greet`, which you can call like so:
+
+```reason
+greet "world!"; /* "Hello world!" */
+```
+
+Multi-arguments functions have arguments separated by space:
+
+```reason
+let add = fun x y z => x + y + z;
+add 1 2 3; /* 6 */
 ```
 
 For longer functions, you'd surround the body with a block:
 
 ```reason
-fun name => {
+let greetMore = fun name => {
   let part1 = "Hello";
   part1 ^ " " ^ name
 };
 ```
 
-Functions are first class; you can use `let` bindings to give them names.
+**Since function definitions occur often**, we gave `let + fun` a shorthand:
 
 ```reason
-let increment = fun x => x + 1;
-let double = fun x => x + x;
+let add x y z => x + y + z;
+/* same as: let add = fun x y z => x + y + z; */
 ```
 
-To call a function, supply its argument after the name of the function.
+**Be mindful of function's precedence**! You need to wrap the call with parentheses in some situations:
 
 ```reason
-let five = increment 4;
+let increment x => x + 1;
+let double x => x + x;
+
 let eleven = increment (double 5);
 ```
 
-**Note the calling precedence**! If you forget to wrap `double 5` in parentheses,
-you'd get `increment double 5`, as if the `increment` function wrongly takes two
-arguments.
-
-#### Sugar
-
-Functions can receive many arguments:
-
-```reason
-let add = fun x y => x + y;
-```
-
-We have a short form for `let` + `fun`:
-
-```reason
-/* equivalent to the above */
-let add x y => x + y; /* note the arrow */
-```
+If you forget to wrap `double 5` in parentheses, you'd get `increment double 5`, as if the `increment` function wrongly takes two arguments.
 
 #### No Argument
 
