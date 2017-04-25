@@ -312,7 +312,7 @@ let incrementMyClassInstance:
   int =>
   #tupleClass int int =>
   #tupleClass int int =
-  fun i inst => {
+  (i, inst) => {
     let (x, y) = inst#pr;
     {pub pr = (x + i, y + i)}
   };

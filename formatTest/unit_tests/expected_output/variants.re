@@ -260,16 +260,16 @@ let rec eval: type a. term a => a =
   fun
   | Int n => n
   /* a = int */
-  | Add => (fun x y => x + y)
+  | Add => ((x, y) => x + y)
   /* a = int => int => int */
   | App f x => (eval f) (eval x);
 
 let rec eval: type a. term a => a =
-  fun x =>
+  (x) =>
     switch x {
     | Int n => n
     /* a = int */
-    | Add => (fun x y => x + y)
+    | Add => ((x, y) => x + y)
     /* a = int => int => int */
     | App f x => (eval f) (eval x)
     };

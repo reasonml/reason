@@ -197,7 +197,7 @@ let desiredFormattingForWrappedLambda:
    pre-   /firstarg\
    fix   /-coupled--\
     |-\ /-to-prefix--\       */
-  fun curriedArg anotherArg lastArg => {
+  (curriedArg, anotherArg, lastArg) => {
     nameBlah: 10
   };
 
@@ -214,7 +214,7 @@ let desiredFormattingForWrappedLambdaWrappedArrow:
    pre-   /firstarg\
    fix   /-coupled--\
     |-\ /-to-prefix--\       */
-  fun curriedArg anotherArg lastArg => {
+  (curriedArg, anotherArg, lastArg) => {
     nameBlah: 10
   };
 
@@ -614,7 +614,7 @@ let tupleInsideALetSequence = {
 /* We *require* that function return types be wrapped in
    parenthesis. In this example, there's no ambiguity */
 let makeIncrementer (delta: int) :(int => int) =>
-  fun a => a + delta;
+  (a) => a + delta;
 
 /* We could even force that consistency with let bindings - it's allowed
       currently but not forced.

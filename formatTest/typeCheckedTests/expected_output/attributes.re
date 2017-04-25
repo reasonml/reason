@@ -110,7 +110,7 @@ let add a => a [@onRet];
 
 let add a => a [@onRet];
 
-let add = (fun a => a) [@onEntireFunction];
+let add = ((a) => a) [@onEntireFunction];
 
 let res =
   if true {false} else {false [@onFalse]};
@@ -125,7 +125,7 @@ let add a b =>
 
 let add a b => a + b [@onB];
 
-let both = (fun a => a) [@onEntireFunction];
+let both = ((a) => a) [@onEntireFunction];
 
 let both a b => (a [@onA] && b) [@onEverything];
 
