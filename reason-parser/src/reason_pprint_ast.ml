@@ -3802,6 +3802,7 @@ class printer  ()= object(self:'self)
   method wrapCurriedFunctionBinding
          ?(attachTo)
          ?(arrow="=>")
+         ?(sweet=false)
          prefixText
          bindingLabel
          patternList
@@ -3837,6 +3838,18 @@ class printer  ()= object(self:'self)
       *)
       | ReturnValOnSameLine -> (
           match partitioning with
+            | None when sweet ->
+              makeList
+                ~pad:(false, true)
+                ~wrap:("", arrow)
+                ~indent:(settings.space * settings.indentWrappedPatternArgs)
+                ~postSpace:true
+                ~inline:(true, true)
+                ~break:IfNeed
+                [makeList ~wrap:("(", ")") ~sep:","
+                   ~postSpace:true
+                   ~break:IfNeed
+                   allPatterns]
             | None ->
                 (* We want the binding label to break *with* the arguments. Again,
                    there's no apparent way to add additional indenting for the
@@ -3943,19 +3956,21 @@ class printer  ()= object(self:'self)
   *)
   method curriedPatternsAndReturnVal x =
     let rec argsAndReturn xx =
-      if xx.pexp_attributes <> [] then ([], xx)
+      if xx.pexp_attributes <> [] then (false, [], xx)
       else match xx.pexp_desc with
         (* label * expression option * pattern * expression *)
         | Pexp_fun (label, eo, p, e) ->
-            let (nextArgs, return) = argsAndReturn e in
+            (* sweet determines whether es6 => sugar can be used or not *)
+            let (sweet, nextArgs, return) = argsAndReturn e in
             if label=Nolabel then
               let args = SourceMap (p.ppat_loc, (self#simple_pattern p))::nextArgs in
-              (args, return)
+              (sweet, args, return)
             else
               let args = SourceMap (p.ppat_loc, (self#label_exp (label, eo, p)))::nextArgs in
-              (args, return)
+              (sweet, args, return)
         | Pexp_newtype (newtype,e) -> newtypesAndReturn [newtype] e
-        | _ -> ([], xx)
+        | Pexp_constraint _ -> (false, [], xx)
+        | _ -> (true, [], xx)
     and newtypesAndReturn newtypes xx =
       match xx.pexp_desc with
         | Pexp_newtype (newtype,e) when xx.pexp_attributes = [] ->
@@ -3963,8 +3978,8 @@ class printer  ()= object(self:'self)
         | _ ->
           let typeParamLayout =
             atom ("(type " ^ String.concat " " (List.rev newtypes) ^ ")") in
-          let (nextArgs, return) = argsAndReturn xx in
-          (typeParamLayout::nextArgs, return)
+          let (_, nextArgs, return) = argsAndReturn xx in
+          (false, (typeParamLayout::nextArgs), return)
     in argsAndReturn x
 
   (* Returns the (curriedModule, returnStructure) for a functor *)
@@ -4071,7 +4086,7 @@ class printer  ()= object(self:'self)
          }
    *)
   method wrappedBinding prefixText pattern patternAux expr =
-    let (argsList, return) = self#curriedPatternsAndReturnVal expr in
+    let (_sweet, argsList, return) = self#curriedPatternsAndReturnVal expr in
     let patternList =
       match patternAux with
         | [] -> pattern
@@ -4464,34 +4479,34 @@ class printer  ()= object(self:'self)
         let itm = match x.pexp_desc with
           | Pexp_fun _
           | Pexp_newtype _ ->
-            let (args, ret) = self#curriedPatternsAndReturnVal x in
-            (match args with
-            | [] -> raise (NotPossible ("no arrow args in unparse "))
-            | firstArg::tl ->
-              (* Suboptimal printing of parens:
+            let (sweet, args, ret) = self#curriedPatternsAndReturnVal x in
+            ( match args with
+              | [] -> raise (NotPossible ("no arrow args in unparse "))
+              | firstArg::tl ->
+                (* Suboptimal printing of parens:
 
-                    something >>= fun x => x + 1;
+                      something >>= fun x => x + 1;
 
-                 Will be printed as:
+                   Will be printed as:
 
-                    something >>= (fun x => x + 1);
+                      something >>= (fun x => x + 1);
 
-                 Because the arrow has lower precedence than >>=, but it wasn't
-                 needed because
+                   Because the arrow has lower precedence than >>=, but it wasn't
+                   needed because
 
-                    (something >>= fun x) => x + 1;
+                      (something >>= fun x) => x + 1;
 
-                 Is not a valid parse. Parens around the `=>` weren't needed to
-                 prevent reducing instead of shifting. To optimize this part, we need
-                 a much deeper encoding of the parse rules to print parens only when
-                 needed, testing which rules will be reduced. It really should be
-                 integrated deeply with Menhir.
+                   Is not a valid parse. Parens around the `=>` weren't needed to
+                   prevent reducing instead of shifting. To optimize this part, we need
+                   a much deeper encoding of the parse rules to print parens only when
+                   needed, testing which rules will be reduced. It really should be
+                   integrated deeply with Menhir.
 
-                 One question is, if it's this difficult to describe when parens are
-                 needed, should we even print them with the minimum amount?  We can
-                 instead model everything as "infix" with ranked precedences.  *)
-              let retValUnparsed = self#unparseExprApplicationItems ret in
-              Some (self#wrapCurriedFunctionBinding "fun" firstArg tl retValUnparsed)
+                   One question is, if it's this difficult to describe when parens are
+                   needed, should we even print them with the minimum amount?  We can
+                   instead model everything as "infix" with ranked precedences.  *)
+                let retValUnparsed = self#unparseExprApplicationItems ret in
+                Some (self#wrapCurriedFunctionBinding ~sweet "fun" firstArg tl retValUnparsed)
             )
           | Pexp_try (e, l) ->
             let estimatedBracePoint = {
@@ -4710,7 +4725,7 @@ class printer  ()= object(self:'self)
           |  Pexp_ident {txt} when li.txt = txt && shouldPun && allowPunning ->
               makeList (maybeQuoteFirstElem li (if appendComma then [comma] else []))
           | _ ->
-             let (argsList, return) = self#curriedPatternsAndReturnVal e in (
+             let (_sweet, argsList, return) = self#curriedPatternsAndReturnVal e in (
                match (argsList, return.pexp_desc) with
                  | ([], _) ->
                    let appTerms = self#unparseExprApplicationItems e in
