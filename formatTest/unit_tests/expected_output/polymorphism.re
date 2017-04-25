@@ -38,7 +38,7 @@ let myFunc
     (a: int => int)
     (b: int => int)
     :(myType int => myType int) =>
-  fun lst => lst;
+  (lst) => lst;
 
 let certainlyRequiresWrapping:
   option (Mod.handler p re, Mod.Types.handler) =>

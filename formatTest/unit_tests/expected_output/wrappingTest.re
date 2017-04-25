@@ -263,7 +263,7 @@ let explictlyPassed =
     /* None; */
     b::?None;
 
-let complex_default ::callback=(fun k d => 4) x => 3;
+let complex_default ::callback=((k, d) => 4) x => 3;
 
 let myList = /*CommentAfterEqualBeforeList */ [
   1,
@@ -691,24 +691,26 @@ let echoTheEchoer
 
 /* Nothing annotated fun, passed to func */
 echoTheEchoer (
-  fun (
-        a,
-        b,
-        c,
-        d,
-        e,
-        f,
-        g,
-        h,
-        i,
-        j,
-        k,
-        l,
-        m,
-        n,
-        o,
-        p
-      ) => (
+  (
+    (
+      a,
+      b,
+      c,
+      d,
+      e,
+      f,
+      g,
+      h,
+      i,
+      j,
+      k,
+      l,
+      m,
+      n,
+      o,
+      p
+    )
+  ) => (
     a,
     b,
     c,
@@ -1885,9 +1887,9 @@ let (the, type_, and_, value, should, both, wrap): (
   "wrap"
 );
 
-let myPolyFunc: 'a .'a => 'a = fun o => o;
+let myPolyFunc: 'a .'a => 'a = (o) => o;
 
-let myNonPolyFunc: 'a => 'a = fun o => o;
+let myNonPolyFunc: 'a => 'a = (o) => o;
 
 let locallyAbstractFunc (type a) (input: a) => input;
 
@@ -1902,9 +1904,9 @@ let locallyAbstractFuncAnnotated: type a. a => a =
   Examples of how long versions of these should be wrapped: df stands for
   "desired formatting" when the function binding itself must wrap.
  */
-let df_myPolyFunc: 'a .'a => 'a = fun o => o;
+let df_myPolyFunc: 'a .'a => 'a = (o) => o;
 
-let df_myNonPolyFunc: 'a => 'a = fun o => o;
+let df_myNonPolyFunc: 'a => 'a = (o) => o;
 
 type nameBlahType = {nameBlah: int};
 
@@ -1940,7 +1942,7 @@ let df_locallyAbstractFuncNotSugared
  */
 let df_locallyAbstractFuncAnnotated:
   type a. a => a => inputEchoRecord a =
-  fun (input: a) (input: a) => {inputIs: input};
+  ((input: a), (input: a)) => {inputIs: input};
 
 
 /**
@@ -1989,7 +1991,7 @@ let df_locallyAbstractFuncAnnotated:
     a =>
     b =>
     (inputEchoRecord a, inputEchoRecord b) =
-  fun (input: a) (input2: b) => (
+  ((input: a), (input2: b)) => (
     {inputIs: input},
     {inputIs: input2}
   );
@@ -2003,7 +2005,7 @@ let df_locallyAbstractFuncAnnotated:
  */
 let df_locallyAbstractFuncAnnotated: 'figureMeOut =
   fun (type a b) => (
-    fun (input: a) (input2: b) => (
+    ((input: a), (input2: b)) => (
       {inputIs: input},
       {inputIs: input2}
     ):
@@ -2016,7 +2018,7 @@ let createTuple_thisFuncShouldWrapCorrectlyNow:
   'a .
   'a => 'a => 'a => ('a, 'a, 'a)
  =
-  fun someVar someVar2 someVar3 => (
+  (someVar, someVar2, someVar3) => (
     someVar,
     someVar2,
     someVar3
@@ -2473,55 +2475,55 @@ let myPolyFuncCommentBeforeColon /*beforeColon */:
   'a .
   'a => 'a
  =
-  fun o => o;
+  (o) => o;
 
 let myPolyFuncCommentAfterColon: 'a .'a => 'a =
   /*afterColon */
-  fun o => o;
+  (o) => o;
 
 let myPolyFuncCommentBeforeArrow:
   'a .
   'a /*beforeArrow */ => 'a
  =
-  fun o => o;
+  (o) => o;
 
 let myPolyFuncCommentAfterArrow:
   'a .
   'a => /*afterArrow */ 'a
  =
-  fun o => o;
+  (o) => o;
 
 let myPolyFuncCommentBeforeEqual:
   'a .
   'a => 'a /*beforeEqual */
  =
-  fun o => o;
+  (o) => o;
 
 let myPolyFuncCommentAfterEqual: 'a .'a => 'a =
-  /*afterEqual */ fun o => o;
+  /*afterEqual */ (o) => o;
 
 let myNonPolyFuncCommentBeforeColon /*BeforeColon */:
   'a => 'a =
-  fun o => o;
+  (o) => o;
 
 let myNonPolyFuncCommentAfterColon:
   /*AfterColon */ 'a => 'a =
-  fun o => o;
+  (o) => o;
 
 let myNonPolyFuncCommentBeforeArrow:
   'a /*BeforeArrow */ => 'a =
-  fun o => o;
+  (o) => o;
 
 let myNonPolyFuncCommentAfterArrow:
   'a => /*AfterArrow */ 'a =
-  fun o => o;
+  (o) => o;
 
 let myNonPolyFuncCommentBeforeEqual:
   'a => 'a /*BeforeEqual */ =
-  fun o => o;
+  (o) => o;
 
 let myNonPolyFuncCommentAfterEqual: 'a => 'a =
-  /*AfterEqual */ fun o => o;
+  /*AfterEqual */ (o) => o;
 
 let lATCurrySugarCommentBeforeType /*BeforeType */
     (type a)

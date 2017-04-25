@@ -322,7 +322,7 @@ module ResultFromNonSimpleFunctorArg =
 
 /* TODO: Functor type signatures should more resemble value signatures */
 let curriedFunc: int => int => int =
-  fun a b => a + b;
+  (a, b) => a + b;
 
 module type FunctorType =
   ASig => BSig => SigResult;
