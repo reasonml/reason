@@ -3688,10 +3688,10 @@ class printer  ()= object(self:'self)
            match expression.pexp_desc with
            | Pexp_ident (ident) when (not (isLongIdentWithDot ident.txt)
                                         && (Longident.last ident.txt) = lbl) -> atom lbl
-           | Pexp_record (l, eo) ->
-              label (makeList [atom lbl; atom "="]) (self#unparseRecord l eo)
-           | Pexp_extension e ->
-              label (makeList [atom lbl; atom "="]) (self#extension e)
+           | Pexp_record _
+           | Pexp_extension _
+           | Pexp_fun _
+           | Pexp_apply _ -> label (makeList [atom lbl; atom "="]) (self#simplifyUnparseExpr expression)
            | _ -> makeList ([atom lbl; atom "="; self#simplifyUnparseExpr expression])
          in
          processArguments tail (nextAttr :: processedAttrs) children
