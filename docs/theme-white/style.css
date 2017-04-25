@@ -1,10 +1,3 @@
-/*
-
-Please don't edit this file directly.
-Instead, edit the stylus (.styl) files and compile it to CSS on your machine.
-
-*/
-
 /* ----------------------------------------------------------------------------
  * Base
  */
@@ -879,6 +872,7 @@ code .comment {
   color: #b3b3b3;
 }
 .large-brief .content > h1:first-child + p,
+
 .content > p.brief {
   font-size: 1.3em;
   font-family: Open Sans, sans-serif;
@@ -906,13 +900,59 @@ code .comment {
   z-index: 1;
 }
 
+.hljs-forDocGrammarHighlighting {
+  border-radius: 9px;
+  background-color: rgb(246, 246, 255);
+  border: 1px solid rgb(228, 228, 236);
+  padding-top: 1px;
+  padding-bottom: 0px;
+  padding-left: 4px;
+  padding-right: 4px;
+  box-sizing: border-box;
+  color: rgb(103, 103, 120)
+}
+
+.menubar {
+  background-color: #444;
+}
+.title-card {
+  text-rendering: optimizeLegibility !important;
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale; }
+
+.title-card {
+  background: #F6F4F4;
+  background-position: center center;
+  background-size: cover;
+  color: #ccc;
+  text-align: center;
+
+  position: relative;
+  z-index: 1;
+
+  width: 100%;
+  display: table; }
+
+.title-card > .in {
+  display: table-cell;
+  vertical-align: middle; }
+
+@media (max-width: 480px) /* Mobile */ {
+  .title-card {
+    padding: 50px 0; }
+}
+
+/* ----------------------------------------------------------------------------
+ * Algolia theme
+ */
+
 #agolia-search {
   height: 20px;
 }
+
 /* ----------------------------------------------------------------------------
  * Fonts
  */
 /* For now, need to put font at bottom of style sheet just to get "inliner" to not crash. */
 /* https://github.com/remy/inliner/issues/142 */
 @import url("../fontSupport/montserratCSS.css");
-

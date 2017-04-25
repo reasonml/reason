@@ -9,8 +9,7 @@
   <title>JavaScript Workflow</title>
 
   <!-- Flatdoc -->
-  <script src='support/vendor/jquery.js'></script>
-  <script src='legacy.js'></script>
+  <script src='vendor/jquery.js'></script>
   <script src="highlightJs/build/highlight.pack.js"></script>
   <link  href='highlightJs/src/styles/xcode.css' rel='stylesheet'>
   <script src='flatdoc.js'></script>
@@ -18,22 +17,18 @@
   <!-- Flatdoc theme -->
   <link  href='theme-white/style.css' rel='stylesheet'>
   <script src='theme-white/script.js'></script>
-  <link  href='support/theme.css' rel='stylesheet'>
-  <script src='support/theme.js'></script>
 
-
-
-  <script id="markdown" type="text/markdown" src="javaScriptCompared.html">
+  <script id="markdown" type="text/markdown">
 
 JavaScript Workflow
 ===========
 
-Compiling to JavaScript.
+Using Reason as a JavaScript developer.
 
 Context
 -------
 
-Reason compiles to JS thanks to [BuckleScript](https://github.com/bloomberg/bucklescript), an optimizing compiler that has first-class support for both Reason and vanilla OCaml syntax. We use the same standard library as OCaml, [documented here](http://caml.inria.fr/pub/docs/manual-ocaml/libref/).
+Reason can talk to JS and compile to it, thanks to [BuckleScript](https://github.com/bloomberg/bucklescript), an optimizing compiler with first-class support for both Reason and vanilla OCaml syntax. We use the same standard library as OCaml, [documented here](http://caml.inria.fr/pub/docs/manual-ocaml/libref/).
 
 For the JS workflow, we support both [npm](https://www.npmjs.com) and [yarn](https://yarnpkg.com/en/). Nothing else to learn!
 
@@ -97,7 +92,7 @@ We host Reason/OCaml bindings to existing JavaScript libraries at [BuckleTypes](
 **As a gesture of courtesy**, you can publish the JS artifacts in `lib/js` for the pure JS consumers. Although you don't have to, we recommend [checking them into version control](http://facebook.github.io/reason/jsConversion.html#converting-your-javascript-to-reason-tips) in the near future, for debuggability.
 
 
-Bind to Existing JS Libraries
+Talk to Existing JS Libraries
 -------
 
 **Looking for Reason-React bindings**? [Here you go](https://github.com/reasonml/reason-react)!
