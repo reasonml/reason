@@ -1,5 +1,4 @@
 *.native
-/reasonfmt_merlin_impl.sh
 /refmt_merlin_impl.sh
 *.byte
 *.cmt
