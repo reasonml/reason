@@ -544,37 +544,6 @@ one case where we need to add extra parens around a return type that is
 itself a function type.
 
 
-
-### Exported/Local Modules
-
-With `Reason` the syntax for defining local modules (Inside of block
-scope/function bodies) is exactly the same as defining top level modules. The
-`OCaml` syntax has slightly different syntax depending on whether or not the
-module definition is local/top level.
-
-> <table>
-  <thead><tr> <th scope="col"><p>OCaml</p></th><th scope="col"><p>Reason</p></th></tr></thead>
-  <tr>
-    <td>
-      <pre>
-(\*Top level \*)
-module X = ..
-(\*Local \*)
-module X = ..
-module type Y = ...</pre>
-    </td>
-    <td>
-      <pre>
-/\* Top level \*/
-module X = ..
-/\* Local \*/
-module X = ..
-module type Y = ..</pre>
-    </td>
-  </tr>
-</table>
-
-
 ### Type Parameters
 
 ###### OCaml:
