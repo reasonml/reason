@@ -141,13 +141,13 @@ Function
 Functions are declared with `fun` and return the expression.
 
 ```reason
-fun greet name => "Hello " ^ name;
+fun name => "Hello " ^ name;
 ```
 
 For longer functions, you'd surround the body with a block:
 
 ```reason
-fun greetMore name => {
+fun name => {
   let part1 = "Hello";
   part1 ^ " " ^ name
 };
