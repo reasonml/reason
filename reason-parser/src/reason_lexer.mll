@@ -792,9 +792,9 @@ and skip_sharp_bang = parse
             lparen :: fake_triple ES6_FUN lparen :: acc
           | [] -> assert false
         in
-        lex_balanced_step closing lexbuf (rparen @ acc) tok
-      | tok ->
-        lex_balanced_step closing lexbuf (rparen @ acc) tok
+        lex_balanced_step closing lexbuf (rparen @ acc) EQUALGREATER
+      | tok' ->
+        lex_balanced_step closing lexbuf (rparen @ acc) tok'
       end
     | _ -> lex_balanced closing lexbuf acc
 
