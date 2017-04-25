@@ -2435,12 +2435,23 @@ class printer  ()= object(self:'self)
               (Some (true, nameParamsEquals))
               (hd, None)
         | hd::hd2::[] ->
-            let first = makeList ~postSpace:true ~break:IfNeed ~inline:(true, true) hd in
-            let second = makeList ~postSpace:true ~break:IfNeed ~inline:(true, true) hd2 in
+            let first = makeList ~postSpace:true ~break:IfNeed ~inline:(true, true) (hd @ [atom "="]) in
+            (*
+             * Because we want a record as a label with the opening brace on the same line
+             * and the closing brace indented at the beginning, we can't wrap it in a list here
+             * Example:
+             * type doubleEqualsRecord =
+             *  myRecordWithReallyLongName = {   <- opening brace on the same line
+             *    xx: int,
+             *    yy: int
+             *  };                               <- closing brace indentation
+             *)
+            let second = match ptype_kind with
+              | Ptype_record _ -> List.hd hd2
+              | _ -> makeList ~postSpace:true ~break:IfNeed ~inline:(true, true) hd2
+            in
             label ~space:true nameParamsEquals (
-              label ~space:true
-                (makeList ~postSpace:true [first; atom "="])
-                (second)
+              label ~space:true first second
             )
     in
     let everything =
@@ -2756,10 +2767,13 @@ class printer  ()= object(self:'self)
         ]
       (* EQUAL core_type EQUAL private_flag LBRACE label_declarations opt_comma RBRACE
            {(Ptype_record _, $4, Some $2)} *)
-      | (Ptype_record lst, scope, Some mani) -> [
-          [self#core_type mani];
-          privatize scope [self#record_declaration lst];
-        ]
+      | (Ptype_record lst, scope, Some mani) ->
+          let declaration = self#record_declaration lst in
+          let record = match scope with
+            | Public -> [declaration]
+            | Private -> [label ~space:true privateAtom declaration]
+          in
+          [ [self#core_type mani]; record ]
 
       (* Everything else is impossible *)
       (* ================================================*)

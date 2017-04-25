@@ -2062,16 +2062,14 @@ type myRecordWithReallyLongName = {
 };
 
 type doubleEqualsRecord =
-  myRecordWithReallyLongName =
-    {
-      xx: int,
-      yy: int
-    };
+  myRecordWithReallyLongName = {
+    xx: int,
+    yy: int
+  };
 
 type doubleEqualsDoublePrivateRecord =
   myRecordWithReallyLongName =
-    pri
-    {
+    pri {
       xx: int,
       yy: int
     };
