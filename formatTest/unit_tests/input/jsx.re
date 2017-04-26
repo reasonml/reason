@@ -67,3 +67,6 @@ let z =
             ]
     key=(string_of_int 1)
   />;
+
+let someArray = <div
+ anArray=[|width, height, color, backgroundColor, margin, padding, border,borderColor,someOtherAttribute|] key=(string_of_int 1) />;
