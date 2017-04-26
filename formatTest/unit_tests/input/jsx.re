@@ -51,3 +51,19 @@ let z =
           )
     key=(string_of_int 1)
   />;
+
+  let omega =
+  <div
+    aList=[
+              width,
+              height,
+              color,
+              backgroundColor,
+              margin,
+              padding,
+              border,
+              borderColor,
+              someOtherAttribute
+            ]
+    key=(string_of_int 1)
+  />;
