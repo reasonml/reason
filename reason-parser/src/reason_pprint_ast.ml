@@ -3691,6 +3691,8 @@ class printer  ()= object(self:'self)
            | Pexp_record _
            | Pexp_construct _
            | Pexp_array _
+           | Pexp_tuple _
+           | Pexp_match _
            | Pexp_extension _
            | Pexp_fun _
            | Pexp_apply _ -> label (makeList [atom lbl; atom "="]) (self#simplifyUnparseExpr expression)

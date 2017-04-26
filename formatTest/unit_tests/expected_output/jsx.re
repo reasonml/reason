@@ -90,3 +90,32 @@ let someArray =
     |]
     key=(string_of_int 1)
   />;
+
+let tuples =
+  <div
+    aTuple=(
+      width,
+      height,
+      color,
+      backgroundColor,
+      margin,
+      padding,
+      border,
+      borderColor,
+      someOtherAttribute,
+      definitelyBreakere
+    )
+    key=(string_of_int 1)
+  />;
+
+let icon =
+  <Icon
+    name=(
+      switch state.volume {
+      | v when v < 0.1 => "sound-off"
+      | v when v < 0.11 => "sound-min"
+      | v when v < 0.51 => "sound-med"
+      | _ => "sound-max"
+      }
+    )
+  />;
