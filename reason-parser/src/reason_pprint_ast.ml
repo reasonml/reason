@@ -3689,6 +3689,7 @@ class printer  ()= object(self:'self)
            | Pexp_ident (ident) when (not (isLongIdentWithDot ident.txt)
                                         && (Longident.last ident.txt) = lbl) -> atom lbl
            | Pexp_record _
+           | Pexp_construct _
            | Pexp_extension _
            | Pexp_fun _
            | Pexp_apply _ -> label (makeList [atom lbl; atom "="]) (self#simplifyUnparseExpr expression)
