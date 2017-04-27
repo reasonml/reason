@@ -382,7 +382,7 @@ let mktailexp_extension loc seq ext_opt =
       ghexp_cons loc arg loc in
   handle_seq seq
 
-let mktailpat_extension loc seq ext_opt =
+let mktailpat_extension loc (seq, ext_opt) =
   let rec handle_seq = function
     [] ->
       let base_case = match ext_opt with
@@ -1155,9 +1155,7 @@ conflicts.
                  type_constraint_right_of_colon
                  constr_longident
                  pattern
-                 optional_type_parameters
                  nonrec_flag
-                 simple_non_labeled_expr_list_as_tuple
                  val_ident
                  opt_semi
                  curried_binding
@@ -1463,9 +1461,8 @@ structure_item_without_item_extension_sugar: mark_position_str
       EQUAL primitive_declaration item_attribute*
     { let loc = mklocation $symbolstartpos $endpos in
       mkstr (Pstr_primitive (Val.mk $2 $4 ~prim:$6 ~attrs:$7 ~loc)) }
-  | many_type_declarations
-    { let (nonrec_flag, tyl) = $1 in
-      mkstr(Pstr_type (nonrec_flag, List.rev tyl)) }
+  | type_declarations
+    { let (nonrec_flag, tyl) = $1 in mkstr(Pstr_type (nonrec_flag, tyl)) }
   | str_type_extension
     { mkstr(Pstr_typext $1) }
   | str_exception_declaration
@@ -1695,10 +1692,8 @@ signature_item: mark_position_sig
     { let loc = mklocation $symbolstartpos $endpos in
       mksig(Psig_value (Val.mk $2 $4 ~prim:$6 ~attrs:$7 ~loc))
     }
-  | many_type_declarations
-    { let (nonrec_flag, tyl) = $1 in
-      mksig(Psig_type (nonrec_flag, List.rev tyl))
-    }
+  | type_declarations
+    { let (nonrec_flag, tyl) = $1 in mksig(Psig_type (nonrec_flag, tyl)) }
   | sig_type_extension
     { mksig(Psig_typext $1) }
   | sig_exception_declaration
@@ -1788,7 +1783,7 @@ class_declaration_details:
   /*
      Used in order to parse: class ['a, 'b] myClass argOne argTwo (:retType) => cl_expr
    */
-  | virtual_flag as_loc(LIDENT) class_type_parameters class_fun_binding
+  | virtual_flag as_loc(LIDENT) llist(type_parameter) class_fun_binding
       {
        ($2, $4, $1, List.rev $3)
       }
@@ -1797,7 +1792,7 @@ class_declaration_details:
      identifier - can't be a part of class_fun_binding. Used in order to parse:
      class ['a, 'b] myClass: class_constructor_type = class_expr
    */
-  | virtual_flag as_loc(LIDENT) class_type_parameters constrained_class_declaration
+  | virtual_flag as_loc(LIDENT) llist(type_parameter) constrained_class_declaration
     {
        ($2, $4, $1, List.rev $3)
     }
@@ -1805,7 +1800,7 @@ class_declaration_details:
   /*
      Used in order to parse:  class ['a, 'b] myClass = class_expr
    */
-  | virtual_flag as_loc(LIDENT) class_type_parameters EQUAL class_expr
+  | virtual_flag as_loc(LIDENT) llist(type_parameter) EQUAL class_expr
     {
        ($2, $5, $1, List.rev $3)
     }
@@ -1853,12 +1848,6 @@ class_fun_return:
       }
 ;
 
-class_type_parameters:
-  /* Empty */ { [] }
-  | class_type_parameters type_parameter {
-      $2::$1
-    }
-;
 class_fun_def:mark_position_cl
   ( labeled_simple_pattern EQUALGREATER class_expr
       { let (l,o,p) = $1 in mkclass(Pcl_fun(l, o, p, $3)) }
@@ -1894,7 +1883,7 @@ class_expr: mark_position_cl
     { $1 }
   | FUN class_fun_def
     { $2 }
-  | class_simple_expr simple_labeled_expr_list
+  | class_simple_expr labeled_simple_expr+
       /**
        * This is an interesting way to "partially apply" class construction:
        *
@@ -2011,7 +2000,7 @@ method_:
   | override_flag as_loc(label) EQUAL expr
       { $2,
         Cfk_concrete ($1, let loc = mklocation $symbolstartpos $endpos in mkexp ~ghost:true ~loc (Pexp_poly($4, None))) }
-  | override_flag as_loc(label) COLON TYPE lident_list DOT only_core_type(core_type) EQUAL expr
+  | override_flag as_loc(label) COLON TYPE LIDENT+ DOT only_core_type(core_type) EQUAL expr
     /* WITH locally abstract types, you'll see a Ptyp_poly in the Pexp_poly,
        but the expression will be a Pexp_newtype and type vars will be
        "varified". */
@@ -2125,24 +2114,24 @@ method_:
 
      Modules
        Class Definitions
-       many_class_declarations
+       class_declarations
          | class LIDENT = class_expr
          | class LIDENT = (class_expr : constructor_type)
          "Pstr_class"
 
        Class Type Definition
-       many_class_type_declarations
+       class_type_declarations
          CLASS TYPE ident = class_instance_type
          "Pstr_class_type"
 
      Signatures
        Class Descriptions (describes Class Definitions in Module)
-       many_class_descriptions
+       class_descriptions
          CLASS ident : constructor_type
          "Psig_class"
 
        Class Type Declarations (subset of Class Type Definitions in Module)
-       many_class_type_declarations
+       class_type_declarations
          CLASS TYPE ident = class_instance_type
         "Psig_class_type"
 
@@ -2265,7 +2254,7 @@ and_class_description:
 ;
 
 class_description_details:
-  virtual_flag as_loc(LIDENT) class_type_parameters COLON class_constructor_type
+  virtual_flag as_loc(LIDENT) llist(type_parameter) COLON class_constructor_type
   { ($2, $5, $1, List.rev $3) }
 ;
 
@@ -2287,7 +2276,7 @@ and_class_type_declaration:
 ;
 
 class_type_declaration_details:
-  virtual_flag as_loc(LIDENT) class_type_parameters EQUAL class_instance_type
+  virtual_flag as_loc(LIDENT) llist(type_parameter) EQUAL class_instance_type
   { ($2, $5, $1, List.rev $3) }
 ;
 
@@ -2568,13 +2557,13 @@ expr: mark_position_exp
    */
   ( less_aggressive_simple_expression
     { $1 }
-  | less_aggressive_simple_expression simple_labeled_expr_list
+  | less_aggressive_simple_expression labeled_simple_expr+
     { mkexp(Pexp_apply($1, List.rev $2)) }
   | FUN labeled_simple_pattern fun_def
     { let (l,o,p) = $2 in
       mkexp (Pexp_fun(l, o, p, $3))
     }
-  | FUN LPAREN TYPE lident_list RPAREN fun_def
+  | FUN LPAREN TYPE LIDENT+ RPAREN fun_def
     { pexp_newtypes $4 $6 }
   /* List style rules like this often need a special precendence
      such as below_BAR in order to let the entire list "build up"
@@ -2587,7 +2576,8 @@ expr: mark_position_exp
     { mkexp (Pexp_try($2, List.rev $4)) }
   | TRY simple_expr WITH error
     { syntax_error_exp (mklocation $startpos($4) $endpos($4)) "Invalid try with"}
-  | as_loc(constr_longident) simple_non_labeled_expr_list_as_tuple
+  | as_loc(constr_longident)
+    mark_position_exp(simple_non_labeled_expr_list_as_tuple)
     { if List.mem (string_of_longident $1.txt)
          built_in_explicit_arity_constructors
       then match $2 with (* unboxing the inner tupple *)
@@ -2725,7 +2715,7 @@ simple_expr: mark_position_exp
     { $2 }
   | LBRACE as_loc(semi_terminated_seq_expr) error
     { syntax_error_exp $2.loc "SyntaxError in block" }
-  | LPAREN expr_comma_list opt_comma RPAREN
+  | LPAREN expr_comma_list COMMA? RPAREN
     { mkexp(Pexp_tuple(List.rev $2)) }
   | as_loc(LPAREN) expr_comma_list as_loc(error)
     { unclosed_exp (with_txt $1 "(") (with_txt $3 ")") }
@@ -2775,7 +2765,7 @@ simple_expr: mark_position_exp
 
   /* TODO: Let Sequence? */
 
-  | LBRACE DOTDOTDOT expr_optional_constraint opt_comma RBRACE
+  | LBRACE DOTDOTDOT expr_optional_constraint COMMA? RBRACE
     { let loc = mklocation $symbolstartpos $endpos in
       let msg = "Record construction must have at least one field explicitly set" in
       syntax_error_exp loc msg
@@ -2805,18 +2795,18 @@ simple_expr: mark_position_exp
     }
   | mod_longident DOT as_loc(LBRACE) record_expr as_loc(error)
     { unclosed_exp (with_txt $3 "{") (with_txt $5 "}") }
-  | LBRACKETBAR expr_comma_seq opt_comma BARRBRACKET
+  | LBRACKETBAR expr_comma_seq COMMA? BARRBRACKET
     { mkexp (Pexp_array(List.rev $2)) }
-  | as_loc(LBRACKETBAR) expr_comma_seq opt_comma as_loc(error)
+  | as_loc(LBRACKETBAR) expr_comma_seq COMMA? as_loc(error)
     { unclosed_exp (with_txt $1 "[|") (with_txt $4 "|]") }
   | LBRACKETBAR BARRBRACKET
     { mkexp (Pexp_array []) }
-  | as_loc(mod_longident) DOT LBRACKETBAR expr_comma_seq opt_comma BARRBRACKET
+  | as_loc(mod_longident) DOT LBRACKETBAR expr_comma_seq COMMA? BARRBRACKET
     { let loc = mklocation $symbolstartpos $endpos in
       let rec_exp = Exp.mk ~loc ~attrs:[] (Pexp_array(List.rev $4)) in
       mkexp(Pexp_open(Fresh, $1, rec_exp))
     }
-  | mod_longident DOT as_loc(LBRACKETBAR) expr_comma_seq opt_comma as_loc(error)
+  | mod_longident DOT as_loc(LBRACKETBAR) expr_comma_seq COMMA? as_loc(error)
     { unclosed_exp (with_txt $3 "[|") (with_txt $6 "|]") }
   | LBRACKET expr_comma_seq_extension
     { let seq, ext_opt = $2 in
@@ -2839,24 +2829,24 @@ simple_expr: mark_position_exp
    * !x.y.z should be parsed as !(((x).y).z)
    */
   | as_loc(BANG) simple_expr %prec below_DOT_AND_SHARP
-    { mkexp(Pexp_apply(mkoperator "!" 1, [Nolabel,$2])) }
+    { mkexp (Pexp_apply(mkoperator "!" 1, [Nolabel,$2])) }
   | NEW as_loc(class_longident)
     { mkexp (Pexp_new $2) }
-  | LBRACELESS field_expr_list opt_comma GREATERRBRACE
-    { mkexp (Pexp_override(List.rev $2)) }
-  | as_loc(LBRACELESS) field_expr_list opt_comma as_loc(error)
+  | LBRACELESS field_expr_list COMMA? GREATERRBRACE
+    { mkexp (Pexp_override $2) }
+  | as_loc(LBRACELESS) field_expr_list COMMA? as_loc(error)
     { unclosed_exp (with_txt $1 "{<") (with_txt $4 ">}" ) }
   | LBRACELESS GREATERRBRACE
     { mkexp (Pexp_override [])}
-  | as_loc(mod_longident) DOT LBRACELESS field_expr_list opt_comma GREATERRBRACE
+  | as_loc(mod_longident) DOT LBRACELESS field_expr_list COMMA? GREATERRBRACE
     { let loc = mklocation $symbolstartpos $endpos in
-      let exp = Exp.mk ~loc ~attrs:[] (Pexp_override(List.rev $4)) in
-      mkexp(Pexp_open(Fresh, $1, exp))
+      let exp = Exp.mk ~loc ~attrs:[] (Pexp_override $4) in
+      mkexp (Pexp_open(Fresh, $1, exp))
     }
-  | mod_longident DOT as_loc(LBRACELESS) field_expr_list opt_comma as_loc(error)
+  | mod_longident DOT as_loc(LBRACELESS) field_expr_list COMMA? as_loc(error)
     { unclosed_exp (with_txt $3 "{<") (with_txt $6 ">}") }
   | simple_expr SHARP label
-    { mkexp(Pexp_send($1, $3)) }
+    { mkexp (Pexp_send($1, $3)) }
   | simple_expr as_loc(SHARPOP) simple_expr
     { mkinfixop $1 (mkoperator_loc $2.txt $2.loc) $3 }
   | LPAREN MODULE module_expr RPAREN
@@ -2870,7 +2860,7 @@ simple_expr: mark_position_exp
     { unclosed_exp (with_txt $1 "(") (with_txt $5 ")") }
   | as_loc(mod_longident) DOT LPAREN MODULE module_expr COLON package_type RPAREN
     { let loc = mklocation $symbolstartpos $endpos in
-      mkexp(Pexp_open(Fresh, $1,
+      mkexp (Pexp_open(Fresh, $1,
         mkexp ~loc (Pexp_constraint (mkexp ~ghost:true ~loc (Pexp_pack $5),
                                      mktyp ~ghost:true ~loc (Ptyp_package $7)))))
     }
@@ -2891,21 +2881,9 @@ less_aggressive_simple_expression:
   simple_expr {$1}
 ;
 
-simple_non_labeled_expr_list:
-  | less_aggressive_simple_expression
-    { [$1] }
-  | simple_non_labeled_expr_list less_aggressive_simple_expression
-    { $2 :: $1 }
-;
-
-simple_non_labeled_expr_list_as_tuple:
-  mark_position_exp
-    (simple_non_labeled_expr_list { mkexp (Pexp_tuple(List.rev $1)) })
-  { $1 };
-
-simple_labeled_expr_list:
-  | labeled_simple_expr                          { [$1] }
-  | simple_labeled_expr_list labeled_simple_expr { $2 :: $1 }
+%inline simple_non_labeled_expr_list_as_tuple:
+  less_aggressive_simple_expression+
+  { mkexp (Pexp_tuple($1)) }
 ;
 
 labeled_simple_expr:
@@ -2941,13 +2919,10 @@ label_expr:
   AND let_binding_body item_attribute*
   { mklb $2 $3 (mklocation $symbolstartpos $endpos) }
 ;
+
 let_bindings:
   | let_binding                  { $1 }
   | let_bindings and_let_binding { addlb $1 $2 }
-;
-lident_list:
-  | LIDENT                       { [$1] }
-  | LIDENT lident_list           { $1 :: $2 }
 ;
 
 let_binding_impl:
@@ -2987,13 +2962,13 @@ let_binding_body:
     { let typ = mktyp ~ghost:true (Ptyp_poly($3, $5)) in
       let loc = mklocation $symbolstartpos $endpos in
       (mkpat ~ghost:true ~loc (Ppat_constraint($1, typ)), $7) }
-  | with_patvar(val_ident) COLON TYPE lident_list DOT only_core_type(core_type)
+  | with_patvar(val_ident) COLON TYPE LIDENT+ DOT only_core_type(core_type)
       EQUAL mark_position_exp(expr)
   /* Because core_type will appear to contain "type constructors" since the
-   * type variables listed in lident_list don't have leading single quotes, we
+   * type variables listed in LIDENT+ don't have leading single quotes, we
    * have to call [varify_constructors] (which is what [wrap_type_annotation]
    * does among other things) to turn those "type constructors" that correspond
-   * to lident_list into regular type variables. I don't think this should be
+   * to LIDENT+ into regular type variables. I don't think this should be
    * done in the parser!
    */
   /* In general, this is a very strange transformation that occurs in the
@@ -3075,7 +3050,7 @@ curried_binding_return_typed: mark_position_exp
     { let loc = mklocation $symbolstartpos $endpos in
       let (l, o, p) = $1 in mkexp ~loc (Pexp_fun(l, o, p, $2))
     }
-  | LPAREN TYPE lident_list RPAREN curried_binding_return_typed_
+  | LPAREN TYPE LIDENT+ RPAREN curried_binding_return_typed_
     { pexp_newtypes $3 $5 }
 ) { $1 };
 
@@ -3114,7 +3089,7 @@ curried_binding:
       let (l, o, p) = $1 in
       mkexp ~loc (Pexp_fun(l, o, p, $2))
     }
-  | LPAREN TYPE lident_list RPAREN curried_binding_return_typed_
+  | LPAREN TYPE LIDENT+ RPAREN curried_binding_return_typed_
     { let loc = mklocation $symbolstartpos $endpos in
       pexp_newtypes ~loc $3 $5
     }
@@ -3160,7 +3135,7 @@ fun_def:
       let loc = mklocation $symbolstartpos $endpos in
       mkexp ~ghost:true ~loc (Pexp_fun(l, o, p, $2))
     }
-  | LPAREN TYPE lident_list RPAREN fun_def
+  | LPAREN TYPE LIDENT+ RPAREN fun_def
     { let loc = mklocation $symbolstartpos $endpos in
       pexp_newtypes ~loc $3 $5
     }
@@ -3190,7 +3165,7 @@ expr_comma_seq:
 expr_comma_seq_extension:
   | DOTDOTDOT expr_optional_constraint RBRACKET
     { ([], Some $2) }
-  | expr_optional_constraint opt_comma RBRACKET
+  | expr_optional_constraint COMMA? RBRACKET
     { ([$1], None) }
   | expr_optional_constraint COMMA expr_comma_seq_extension
     { let seq, ext = $3 in ($1::seq, ext) }
@@ -3204,7 +3179,7 @@ expr_comma_seq_extension:
 expr_comma_seq_extension_second_item:
   | DOTDOTDOT expr_optional_constraint RBRACKET
     { ([], Some $2) }
-  | expr_optional_constraint opt_comma RBRACKET
+  | expr_optional_constraint COMMA? RBRACKET
     { ([$1], None) }
   | expr_optional_constraint COMMA expr_comma_seq_extension
     { let seq, ext = $3 in ($1::seq, ext) }
@@ -3336,13 +3311,7 @@ field_expr:
    }
 ;
 
-field_expr_list:
-  | field_expr
-    { [$1] }
-  | field_expr_list COMMA field_expr
-    { $3::$1 }
-;
-
+%inline field_expr_list: lseparated_nonempty_list(COMMA, field_expr) { $1 };
 
 type_constraint_right_of_colon:
   | only_core_type(core_type)
@@ -3379,7 +3348,7 @@ pattern_without_or: mark_position_pat
     * constructors are not actually tuples either in underlying representation or
     * semantics (they are not first class).
     */
-  | as_loc(constr_longident) simple_pattern_list
+  | as_loc(constr_longident) simple_pattern+
     { match is_pattern_list_single_any $2 with
       | Some singleAnyPat ->
         mkpat (Ppat_construct($1, Some singleAnyPat))
@@ -3436,37 +3405,35 @@ simple_pattern: mark_position_pat
 
 simple_pattern_not_ident: mark_position_pat
   ( UNDERSCORE
-    { mkpat(Ppat_any) }
+    { mkpat (Ppat_any) }
   | signed_constant
-    { mkpat(Ppat_constant $1) }
+    { mkpat (Ppat_constant $1) }
   | signed_constant DOTDOT signed_constant
-    { mkpat(Ppat_interval ($1, $3)) }
+    { mkpat (Ppat_interval ($1, $3)) }
   | as_loc(constr_longident)
-    { mkpat(Ppat_construct($1, None)) }
+    { mkpat (Ppat_construct ($1, None)) }
   | name_tag
-    { mkpat(Ppat_variant($1, None)) }
+    { mkpat (Ppat_variant ($1, None)) }
   | SHARP as_loc(type_longident)
-    { mkpat(Ppat_type ($2)) }
+    { mkpat (Ppat_type ($2)) }
   | LBRACE lbl_pattern_list RBRACE
-    { let (fields, closed) = $2 in mkpat(Ppat_record(fields, closed)) }
+    { let (fields, closed) = $2 in mkpat (Ppat_record (fields, closed)) }
   | as_loc(LBRACE) lbl_pattern_list as_loc(error)
     { unclosed_pat (with_txt $1 "{") (with_txt $3 "}") }
-  | LBRACKET pattern_comma_list_extension opt_semi RBRACKET
-    { let seq, ext_opt = $2 in
-      let loc_rbracket = mklocation $startpos($2) $endpos($2) in
-      make_real_pat (mktailpat_extension loc_rbracket (List.rev seq) ext_opt) }
-  | as_loc(LBRACKET) pattern_comma_list_extension opt_semi as_loc(error)
-    { unclosed_pat (with_txt $1 "[") (with_txt $4 "]") }
+  | LBRACKET pattern_comma_list_extension RBRACKET
+    { make_real_pat (mktailpat_extension (mklocation $startpos($2) $endpos($2)) $2) }
+  | as_loc(LBRACKET) pattern_comma_list_extension as_loc(error)
+    { unclosed_pat (with_txt $1 "[") (with_txt $3 "]") }
   | LBRACKETBAR pattern_comma_list opt_semi BARRBRACKET
-    { mkpat(Ppat_array(List.rev $2)) }
+    { mkpat (Ppat_array $2) }
   | LBRACKETBAR BARRBRACKET
-    { mkpat(Ppat_array []) }
+    { mkpat (Ppat_array []) }
   | as_loc(LBRACKETBAR) pattern_comma_list opt_semi as_loc(error)
     { unclosed_pat (with_txt $1 "[|") (with_txt $4 "|]") }
   | LPAREN pattern RPAREN
     { $2 }
-  | LPAREN pattern_two_or_more_comma_list RPAREN
-    { mkpat(Ppat_tuple(List.rev $2)) }
+  | LPAREN lseparated_two_or_more(COMMA, pattern_optional_constraint) RPAREN
+    { mkpat (Ppat_tuple $2) }
   | as_loc(LPAREN) pattern as_loc(error)
     { unclosed_pat (with_txt $1 "(") (with_txt $3 ")") }
   | LPAREN pattern COLON only_core_type(core_type) RPAREN
@@ -3488,26 +3455,6 @@ simple_pattern_not_ident: mark_position_pat
     { mkpat(Ppat_extension $1) }
 ) { $1 };
 
-/**
- * Tuple patterns/expressions are one of the rare cases where type constraints
- * are accepted without having to group the constraint in parenthesis.  Notice
- * how these rules require that the `pattern_two_or_more_comma_list` include at
- * *least* two items.
- */
-pattern_two_or_more_comma_list:
-  | pattern_two_or_more_comma_list COMMA pattern_optional_constraint
-    { $3::$1 }
-  | pattern_optional_constraint COMMA pattern_optional_constraint
-    { [$3; $1] }
-;
-
-simple_pattern_list:
-  | simple_pattern_list simple_pattern
-    { $2::$1 }
-  | simple_pattern
-    { [$1] }
-;
-
 pattern_optional_constraint: mark_position_pat
   ( pattern
     { $1 }
@@ -3516,54 +3463,43 @@ pattern_optional_constraint: mark_position_pat
 ) { $1 };
 
 
-pattern_comma_list:
-  | pattern                          { [$1] }
-  | pattern_comma_list COMMA pattern { $3 :: $1 }
-;
+%inline pattern_comma_list:
+  lseparated_nonempty_list(COMMA, pattern) { $1 };
 
 /* [x, y, z, ...n] --> ([x,y,z], Some n) */
 pattern_comma_list_extension:
-  | pattern                                    { [$1], None }
   | pattern_comma_list COMMA DOTDOTDOT pattern { ($1, Some $4) }
-  | pattern_comma_list COMMA pattern           { ($3 :: $1, None) }
+  | pattern_comma_list COMMA?                  { ($1, None)    }
 ;
 
 lbl_pattern_list:
-  | lbl_pattern                            { [$1], Closed }
-  | lbl_pattern COMMA                      { [$1], Closed }
-  | lbl_pattern COMMA UNDERSCORE opt_comma { [$1], Open }
+  | lbl_pattern                            { ([$1], Closed) }
+  | lbl_pattern COMMA                      { ([$1], Closed) }
+  | lbl_pattern COMMA UNDERSCORE COMMA?    { ([$1], Open)   }
   | lbl_pattern COMMA lbl_pattern_list
     { let (fields, closed) = $3 in $1 :: fields, closed }
 ;
 
 lbl_pattern:
-  | as_loc(label_longident) COLON pattern
-    { ($1,$3) }
-  | as_loc(label_longident)
-    { ($1, pat_of_label $1) }
+  | as_loc(label_longident) COLON pattern { ($1,$3) }
+  | as_loc(label_longident)               { ($1, pat_of_label $1) }
 ;
 
 /* Primitive declarations */
 
-primitive_declaration:
-  | STRING                       { [fst $1] }
-  | STRING primitive_declaration { fst $1 :: $2 }
-;
+primitive_declaration: nonempty_list(STRING { fst $1 }) { $1 };
 
 /* Type declarations */
 
-many_type_declarations:
- | TYPE nonrec_flag type_declaration_details item_attribute*
-   { let (ident, params, constraints, kind, priv, manifest) = $3 in
-     let loc = mklocation $symbolstartpos $endpos in
-     let ty = Type.mk ident ~params:params ~cstrs:constraints
-              ~kind ~priv ?manifest ~attrs:$4 ~loc in
-     ($2, [ty])
-   }
- | many_type_declarations and_type_declaration
-   { let (nonrec_flag, tyl) = $1 in
-     (nonrec_flag, $2 :: tyl)
-   }
+type_declarations:
+  TYPE nonrec_flag type_declaration_details item_attribute*
+    and_type_declaration*
+  { let (ident, params, constraints, kind, priv, manifest) = $3 in
+    let loc = mklocation $symbolstartpos $endpos($4) in
+    let ty = Type.mk ident ~params:params ~cstrs:constraints
+             ~kind ~priv ?manifest ~attrs:$4 ~loc in
+    ($2, ty :: $5)
+  }
 ;
 
 %inline and_type_declaration:
@@ -3577,11 +3513,11 @@ many_type_declarations:
 ;
 
 type_declaration_details:
-  | as_loc(UIDENT) optional_type_parameters type_kind constraints
+  | as_loc(UIDENT) type_variable_with_variance* type_kind constraints
     { Location.raise_errorf ~loc:$1.loc
         "A type's name need to begin with a lower-case letter or _"
     }
-  | as_loc(LIDENT) optional_type_parameters type_kind constraints
+  | as_loc(LIDENT) type_variable_with_variance* type_kind constraints
     { let (kind, priv, manifest) = $3 in
       ($1, $2, $4, kind, priv, manifest)
     }
@@ -3614,27 +3550,18 @@ type_kind:
     { (Ptype_variant($5), Private, Some $2) }
   | EQUAL only_core_type(core_type) EQUAL DOTDOT
     { (Ptype_open, Public, Some $2) }
-  | EQUAL only_core_type(core_type) EQUAL private_flag LBRACE label_declarations opt_comma RBRACE
+  | EQUAL only_core_type(core_type) EQUAL private_flag LBRACE label_declarations RBRACE
     { (Ptype_record(List.rev (only_labels $6)), $4, Some $2) }
 ;
 
-optional_type_parameters:
-  | /*empty*/                      { [] }
-  | optional_type_parameter_list   { List.rev $1 }
-;
-
-optional_type_parameter_list:
-  | optional_type_variable_with_variance                              { [$1] }
-  | optional_type_parameter_list optional_type_variable_with_variance { $2 :: $1 }
-;
-optional_type_variable_with_variance:
+type_variable_with_variance:
   embedded
-  ( QUOTE ident       { mktyp (Ptyp_var $2), Invariant }
-  | UNDERSCORE        { mktyp (Ptyp_any), Invariant }
-  | PLUS QUOTE ident  { mktyp (Ptyp_var $3), Covariant}
-  | PLUS UNDERSCORE   { mktyp (Ptyp_any), Covariant }
-  | MINUS QUOTE ident { mktyp (Ptyp_var $3), Contravariant }
-  | MINUS UNDERSCORE  { mktyp Ptyp_any, Contravariant }
+  ( QUOTE ident       { (mktyp (Ptyp_var $2) , Invariant    ) }
+  | UNDERSCORE        { (mktyp (Ptyp_any)    , Invariant    ) }
+  | PLUS QUOTE ident  { (mktyp (Ptyp_var $3) , Covariant    ) }
+  | PLUS UNDERSCORE   { (mktyp (Ptyp_any)    , Covariant    ) }
+  | MINUS QUOTE ident { (mktyp (Ptyp_var $3) , Contravariant) }
+  | MINUS UNDERSCORE  { (mktyp Ptyp_any      , Contravariant) }
   )
   { let first, second = $1 in
     let ptyp_loc =
@@ -3708,10 +3635,8 @@ generalized_constructor_arguments:
     { ($2,Some $4) }
 ;
 
-label_declarations:
-  | label_declaration                          { [$1] }
-  | label_declarations COMMA label_declaration { $3 :: $1 }
-;
+%inline label_declarations:
+  lseparated_nonempty_list(COMMA, label_declaration) COMMA? { $1 };
 
 constructor_arguments:
   | non_arrowed_simple_core_type
@@ -3740,12 +3665,12 @@ label_declaration:
 /* Type Extensions */
 
 potentially_long_ident_and_optional_type_parameters:
-  | LIDENT optional_type_parameters
+  | LIDENT type_variable_with_variance*
     { let loc = mklocation $startpos($1) $endpos($1) in
       let lident_lident_loc = mkloc (Lident $1) loc in
       (lident_lident_loc, $2)
     }
-  | as_loc(type_strictly_longident) optional_type_parameters
+  | as_loc(type_strictly_longident) type_variable_with_variance*
     {($1, $2)}
 ;
 
@@ -3808,8 +3733,8 @@ with_constraints:
 ;
 
 with_constraint:
-  | TYPE as_loc(label_longident) optional_type_parameters EQUAL private_flag
-      only_core_type(core_type) constraints
+  | TYPE as_loc(label_longident) type_variable_with_variance*
+      EQUAL private_flag only_core_type(core_type) constraints
     { let loc = mklocation $symbolstartpos $endpos in
       let typ = Type.mk {$2 with txt=Longident.last $2.txt}
                   ~params:$3 ~cstrs:$7 ~manifest:$6 ~priv:$5 ~loc in
@@ -3817,7 +3742,7 @@ with_constraint:
     }
     /* used label_longident instead of type_longident to disallow
        functor applications in type path */
-  | TYPE as_loc(label_longident) optional_type_parameters
+  | TYPE as_loc(label_longident) type_variable_with_variance*
       COLONEQUAL only_core_type(core_type)
     { let last = match $2.txt with
         | Lident s -> s
@@ -4070,7 +3995,7 @@ object_record_type:
   | LBRACE RBRACE                              { syntax_error () }
   | LBRACE DOT RBRACE                          { [], Object_closed }
   | LBRACE DOTDOT RBRACE                       { [], Object_open }
-  | LBRACE label_declarations opt_comma RBRACE { List.rev $2, Record }
+  | LBRACE label_declarations RBRACE { List.rev $2, Record }
   | LBRACE DOT label_declarations RBRACE       { List.rev $3, Object_closed }
   | LBRACE DOTDOT label_declarations RBRACE    { List.rev $3, Object_open }
 ;
@@ -4311,11 +4236,6 @@ override_flag:
   | BANG          { Override }
 ;
 
-opt_comma:
-  | /* empty */   { () }
-  | COMMA         { () }
-;
-
 opt_semi:
   | /* empty */   { () }
   | SEMI          { () }
@@ -4426,5 +4346,23 @@ payload:
   | QUESTION pattern                { PPat ($2, None) }
   | QUESTION pattern WHEN expr      { PPat ($2, Some $4) }
 ;
+
+%inline llist(X): llist_aux(X) { List.rev $1 };
+
+llist_aux(X):
+  | /* empty */ { [] }
+  | llist_aux(X) X { $2 :: $1 }
+;
+
+%inline lseparated_nonempty_list(sep, X):
+  lseparated_nonempty_list_aux(sep, X) { List.rev $1 };
+
+lseparated_nonempty_list_aux(sep, X):
+  | X { [$1] }
+  | lseparated_nonempty_list_aux(sep, X) sep X { $3 :: $1 }
+;
+
+%inline lseparated_two_or_more(sep, X):
+  X sep lseparated_nonempty_list(sep, X) { $1 :: $3 };
 
 %%
