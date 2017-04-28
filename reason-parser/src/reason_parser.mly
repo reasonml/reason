@@ -2385,14 +2385,8 @@ jsx_start_tag_and_args_without_leading_less:
   }
 ;
 
-simple_expr_list:
- /* none */ { [] }
- | simple_expr simple_expr_list { [$1] @ $2 }
-;
-
-
 jsx:
-  | LESSGREATER simple_expr_list LESSSLASHGREATER {
+  | LESSGREATER simple_expr* LESSSLASHGREATER {
     let loc = mklocation $symbolstartpos $endpos in
     let body = mktailexp_extension loc $2 None in
     makeFrag loc body
@@ -2405,7 +2399,7 @@ jsx:
       (Nolabel, mkexp_constructor_unit loc loc)
     ] loc
   }
-  | jsx_start_tag_and_args GREATER simple_expr_list LESSSLASHIDENTGREATER {
+  | jsx_start_tag_and_args GREATER simple_expr* LESSSLASHIDENTGREATER {
     let (component, start) = $1 in
     let loc = mklocation $symbolstartpos $endpos in
     (* TODO: Make this tag check simply a warning *)
@@ -2420,7 +2414,7 @@ jsx:
 ;
 
 jsx_without_leading_less:
-  | GREATER simple_expr_list LESSSLASHGREATER {
+  | GREATER simple_expr* LESSSLASHGREATER {
     let loc = mklocation $symbolstartpos $endpos in
     let body = mktailexp_extension loc $2 None in
     makeFrag loc body
@@ -2433,7 +2427,7 @@ jsx_without_leading_less:
       (Nolabel, mkexp_constructor_unit loc loc)
     ] loc
   }
-  | jsx_start_tag_and_args_without_leading_less GREATER simple_expr_list LESSSLASHIDENTGREATER {
+  | jsx_start_tag_and_args_without_leading_less GREATER simple_expr* LESSSLASHIDENTGREATER {
     let (component, start) = $1 in
     let loc = mklocation $symbolstartpos $endpos in
     (* TODO: Make this tag check simply a warning *)
