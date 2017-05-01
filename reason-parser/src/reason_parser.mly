@@ -1725,16 +1725,16 @@ mark_position_cl
 
 class_declaration_details:
   /* Used in order to parse: class ['a, 'b] myClass argOne argTwo (:retType) => cl_expr */
-  | virtual_flag as_loc(LIDENT) llist(type_parameter) class_fun_binding
+  | virtual_flag as_loc(LIDENT) class_type_parameters class_fun_binding
     { ($2, $4, $1, $3) }
   /* We make a special rule here because we only accept colon after the
    * identifier - can't be a part of class_fun_binding. Used in order to parse:
    * class ['a, 'b] myClass: class_constructor_type = class_expr
    */
-  | virtual_flag as_loc(LIDENT) llist(type_parameter) constrained_class_declaration
+  | virtual_flag as_loc(LIDENT) class_type_parameters constrained_class_declaration
     { ($2, $4, $1, $3) }
   /* Used in order to parse:  class ['a, 'b] myClass = class_expr */
-  | virtual_flag as_loc(LIDENT) llist(type_parameter) EQUAL class_expr
+  | virtual_flag as_loc(LIDENT) class_type_parameters EQUAL class_expr
     { ($2, $5, $1, $3) }
 ;
 
@@ -2152,8 +2152,13 @@ and_class_description:
   }
 ;
 
+class_type_parameters:
+  delimited(LPAREN, lseparated_list(COMMA, type_parameter), RPAREN)
+  { $1 }
+;
+
 class_description_details:
-  virtual_flag as_loc(LIDENT) llist(type_parameter) COLON class_constructor_type
+  virtual_flag as_loc(LIDENT) class_type_parameters COLON class_constructor_type
   { ($2, $5, $1, $3) }
 ;
 
@@ -2175,7 +2180,7 @@ and_class_type_declaration:
 ;
 
 class_type_declaration_details:
-  virtual_flag as_loc(LIDENT) llist(type_parameter) EQUAL class_instance_type
+  virtual_flag as_loc(LIDENT) class_type_parameters EQUAL class_instance_type
   { ($2, $5, $1, $3) }
 ;
 
@@ -2764,7 +2769,7 @@ non_labeled_argument_list:
     { let loc = mklocation $startpos $endpos in
       [mkexp_constructor_unit loc loc] }
   | LPAREN separated_nonempty_list(COMMA, simple_expr) RPAREN
-    { List.rev $2 }
+    { $2 }
 ;
 
 labeled_argument_list:
@@ -2772,7 +2777,7 @@ labeled_argument_list:
     { let loc = mklocation $startpos $endpos in
       [(Nolabel, mkexp_constructor_unit loc loc)] }
   | LPAREN separated_nonempty_list(COMMA, labeled_simple_expr) RPAREN
-    { List.rev $2 }
+    { $2 }
 ;
 
 labeled_simple_expr:
@@ -3313,11 +3318,11 @@ type_declarations:
 ;
 
 type_declaration_details:
-  | as_loc(UIDENT) type_variable_with_variance* type_kind constraints
+  | as_loc(UIDENT) type_variables_with_variance type_kind constraints
     { Location.raise_errorf ~loc:$1.loc
         "A type's name need to begin with a lower-case letter or _"
     }
-  | as_loc(LIDENT) type_variable_with_variance* type_kind constraints
+  | as_loc(LIDENT) type_variables_with_variance type_kind constraints
     { let (kind, priv, manifest) = $3 in
       ($1, $2, $4, kind, priv, manifest)
     }
@@ -3343,6 +3348,11 @@ type_kind:
     { (Ptype_open, Public, Some $2) }
   | EQUAL only_core_type(core_type) EQUAL private_flag LBRACE label_declarations RBRACE
     { (Ptype_record (only_labels $6), $4, Some $2) }
+;
+
+%inline type_variables_with_variance:
+  loption(delimited(LPAREN, separated_nonempty_list(COMMA, type_variable_with_variance), RPAREN))
+  { $1 }
 ;
 
 type_variable_with_variance:
@@ -3438,12 +3448,12 @@ label_declaration:
 /* Type Extensions */
 
 potentially_long_ident_and_optional_type_parameters:
-  | LIDENT type_variable_with_variance*
+  | LIDENT type_variables_with_variance
     { let loc = mklocation $startpos($1) $endpos($1) in
       let lident_lident_loc = mkloc (Lident $1) loc in
       (lident_lident_loc, $2)
     }
-  | as_loc(type_strictly_longident) type_variable_with_variance*
+  | as_loc(type_strictly_longident) type_variables_with_variance
     {($1, $2)}
 ;
 
@@ -3498,7 +3508,7 @@ extension_constructor_rebind:
 /* "with" constraints (additional type equations over signature components) */
 
 with_constraint:
-  | TYPE as_loc(label_longident) type_variable_with_variance*
+  | TYPE as_loc(label_longident) type_variables_with_variance
       EQUAL embedded(private_flag) only_core_type(core_type) constraints
     { let loc = mklocation $symbolstartpos $endpos in
       let typ = Type.mk {$2 with txt=Longident.last $2.txt}
@@ -3507,7 +3517,7 @@ with_constraint:
     }
     /* used label_longident instead of type_longident to disallow
        functor applications in type path */
-  | TYPE as_loc(label_longident) type_variable_with_variance*
+  | TYPE as_loc(label_longident) type_variables_with_variance
       COLONEQUAL only_core_type(core_type)
     { let last = match $2.txt with
         | Lident s -> s
@@ -3700,11 +3710,19 @@ non_arrowed_core_type:
   { $1 }
 ;
 
+type_parameters:
+  delimited(
+    LPAREN,
+    separated_nonempty_list(COMMA, only_core_type(non_arrowed_simple_core_type)),
+    RPAREN
+  ) { $1 }
+;
+
 non_arrowed_non_simple_core_type:
 mark_position_typ2
-  ( as_loc(type_longident) only_core_type(non_arrowed_simple_core_type)+
+  ( as_loc(type_longident) type_parameters
     { Core_type (mktyp(Ptyp_constr($1, $2))) }
-  | SHARP as_loc(class_longident) only_core_type(non_arrowed_simple_core_type)+
+  | SHARP as_loc(class_longident) type_parameters
     { Core_type (mktyp(Ptyp_class($2, $3))) }
   | attribute only_core_type(non_arrowed_core_type)
     { Core_type {$2 with ptyp_attributes = $1 :: $2.ptyp_attributes} }
