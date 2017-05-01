@@ -196,17 +196,19 @@ let lexeme_without_comment buf = (
 
 (* Operators that could conflict with comments (those containing /*, */ and //)
  * are escaped in the source. The lexer removes the escapes so that the
- * identifier looks like OCaml ones. *)
+ * identifier looks like OCaml ones.
+ * An escape in first position is kept to distinguish "verbatim" operators
+ * (\=== for instance). *)
 let unescape_operator str =
-  match String.index str '\\' with
-  | exception Not_found -> str
-  | _ ->
+  if (str <> "" && String.contains_from str 1 '\\') then (
     let b = Buffer.create (String.length str) in
-    for i = 0 to String.length str - 1 do
+    Buffer.add_char b str.[0];
+    for i = 1 to String.length str - 1 do
       let c = str.[i] in
       if c <> '\\' then Buffer.add_char b c
     done;
     Buffer.contents b
+  ) else str
 
 let lexeme_operator lexbuf =
   unescape_operator (lexeme_without_comment lexbuf)
