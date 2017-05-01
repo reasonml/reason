@@ -1022,7 +1022,7 @@ conflicts.
 %right    OR BARBAR                     /* expr (e || e || e) */
 %right    AMPERSAND AMPERAMPER          /* expr (e && e && e) */
 %left     INFIXOP0 LESS GREATER         /* expr (e OP e OP e) */
-%left     LESSGREATER LESSDOTDOTGREATER /* expr (e OP e OP e) */
+%left     LESSDOTDOTGREATER /* expr (e OP e OP e) */
 %right    INFIXOP1                      /* expr (e OP e OP e) */
 %right    COLONCOLON                    /* expr (e :: e :: e) */
 %left     INFIXOP2 PLUS PLUSDOT MINUS MINUSDOT PLUSEQ /* expr (e OP e OP e) */
@@ -1119,10 +1119,7 @@ conflicts.
 %nonassoc DOT
 
 /* Finally, the first tokens of simple_expr are above everything else. */
-%nonassoc BACKQUOTE BANG CHAR FALSE FLOAT INT
-          LBRACE LBRACELESS LBRACKET LBRACKETBAR LIDENT LPAREN
-          NEW PREFIXOP STRING TRUE UIDENT
-          LBRACKETPERCENT LESSIDENT LBRACKETLESS
+%nonassoc LBRACE LPAREN UIDENT LBRACKETPERCENT
 
 /* Entry points */
 
@@ -1819,7 +1816,7 @@ mark_position_cl
     { $1 }
   | FUN class_fun_def
     { $2 }
-  | class_simple_expr labeled_simple_expr+
+  | class_simple_expr labeled_argument_list
       /**
        * This is an interesting way to "partially apply" class construction:
        *
@@ -2365,8 +2362,13 @@ jsx_start_tag_and_args_without_leading_less:
   { (jsx_component $1 $2, $1) }
 ;
 
+simple_expr_comma_list:
+  | /* empty */ { [] }
+  | lseparated_nonempty_list(COMMA, simple_expr) COMMA? { $1 }
+;
+
 jsx:
-  | LESSGREATER simple_expr* LESSSLASHGREATER
+  | LESSGREATER simple_expr_comma_list LESSSLASHGREATER
     { let loc = mklocation $symbolstartpos $endpos in
       let body = mktailexp_extension loc $2 None in
       makeFrag loc body
@@ -2379,7 +2381,7 @@ jsx:
         (Nolabel, mkexp_constructor_unit loc loc)
       ] loc
     }
-  | jsx_start_tag_and_args GREATER simple_expr* LESSSLASHIDENTGREATER
+  | jsx_start_tag_and_args GREATER simple_expr_comma_list LESSSLASHIDENTGREATER
     { let (component, start) = $1 in
       let loc = mklocation $symbolstartpos $endpos in
       (* TODO: Make this tag check simply a warning *)
@@ -2394,7 +2396,7 @@ jsx:
 ;
 
 jsx_without_leading_less:
-  | GREATER simple_expr* LESSSLASHGREATER {
+  | GREATER simple_expr_comma_list LESSSLASHGREATER {
     let loc = mklocation $symbolstartpos $endpos in
     let body = mktailexp_extension loc $2 None in
     makeFrag loc body
@@ -2407,7 +2409,7 @@ jsx_without_leading_less:
       (Nolabel, mkexp_constructor_unit loc loc)
     ] loc
   }
-  | jsx_start_tag_and_args_without_leading_less GREATER simple_expr* LESSSLASHIDENTGREATER {
+  | jsx_start_tag_and_args_without_leading_less GREATER simple_expr_comma_list LESSSLASHIDENTGREATER {
     let (component, start) = $1 in
     let loc = mklocation $symbolstartpos $endpos in
     (* TODO: Make this tag check simply a warning *)
@@ -2437,9 +2439,7 @@ mark_position_exp
     * has been consolidated into less_aggressive_simple_expression
    */
   ( less_aggressive_simple_expression
-    { $1 }
-  | less_aggressive_simple_expression labeled_simple_expr+
-    { mkexp(Pexp_apply($1, $2)) }
+      { $1 }
   | FUN labeled_simple_pattern fun_def
     { let (l,o,p) = $2 in
       mkexp (Pexp_fun(l, o, p, $3))
@@ -2468,23 +2468,14 @@ mark_position_exp
     { mkexp (Pexp_try ($2, $4)) }
   | TRY simple_expr WITH error
     { syntax_error_exp (mklocation $startpos($4) $endpos($4)) "Invalid try with"}
-  | as_loc(constr_longident)
-    mark_position_exp(simple_non_labeled_expr_list_as_tuple)
-    { if List.mem (string_of_longident $1.txt)
-         built_in_explicit_arity_constructors
-      then match $2 with (* unboxing the inner tupple *)
-        | {pexp_desc=Pexp_tuple [inner]; pexp_loc; pexp_attributes} -> mkexp (Pexp_construct($1, Some inner))
-        | _ -> assert false
-      else mkExplicitArityTupleExp (Pexp_construct($1, Some $2))
-    }
   | name_tag simple_expr
     { mkexp(Pexp_variant($1, Some $2)) }
-  | IF simple_expr simple_expr ioption(preceded(ELSE,expr))
-    { mkexp(Pexp_ifthenelse($2, $3, $4)) }
-  | WHILE simple_expr simple_expr
-    { mkexp (Pexp_while($2, $3)) }
-  | FOR pattern IN simple_expr direction_flag simple_expr simple_expr
-    { mkexp(Pexp_for($2, $4, $6, $5, $7)) }
+  | IF LPAREN simple_expr RPAREN simple_expr ioption(preceded(ELSE,expr))
+    { mkexp(Pexp_ifthenelse($3, $5, $6)) }
+  | WHILE LPAREN simple_expr RPAREN simple_expr
+    { mkexp (Pexp_while($3, $5)) }
+  | FOR LPAREN pattern IN simple_expr direction_flag simple_expr RPAREN simple_expr
+    { mkexp(Pexp_for($3, $5, $7, $6, $9)) }
   | LPAREN COLONCOLON RPAREN LPAREN expr COMMA expr RPAREN
     { let loc_colon = mklocation $startpos($2) $endpos($2) in
       let loc = mklocation $symbolstartpos $endpos in
@@ -2566,8 +2557,21 @@ mark_position_exp
   | jsx                   { $1 }
   /* Not sure why this couldn't have just been below_SHARP (Answer: Being
    * explicit about needing to wait for "as") */
+  | simple_expr labeled_argument_list
+      { mkexp(Pexp_apply($1, $2)) }
   | as_loc(constr_longident) %prec prec_constant_constructor
     { mkexp (Pexp_construct ($1, None)) }
+  | as_loc(constr_longident) non_labeled_argument_list
+    { if List.mem (string_of_longident $1.txt)
+         built_in_explicit_arity_constructors then
+        (* unboxing the inner tupple *)
+        match $2 with
+          | [inner] -> mkexp (Pexp_construct($1, Some inner))
+          | _ -> assert false
+      else
+        let args = mkexp (Pexp_tuple($2)) in
+        mkExplicitArityTupleExp (Pexp_construct($1, Some args))
+    }
   | name_tag %prec prec_constant_constructor
     { mkexp (Pexp_variant ($1, None)) }
   /*
@@ -2755,14 +2759,25 @@ less_aggressive_simple_expression:
   simple_expr {$1}
 ;
 
-%inline simple_non_labeled_expr_list_as_tuple:
-  less_aggressive_simple_expression+
-  { mkexp (Pexp_tuple ($1)) }
+non_labeled_argument_list:
+  | LPAREN RPAREN
+    { let loc = mklocation $startpos $endpos in
+      [mkexp_constructor_unit loc loc] }
+  | LPAREN separated_nonempty_list(COMMA, simple_expr) RPAREN
+    { List.rev $2 }
+;
+
+labeled_argument_list:
+  | LPAREN RPAREN
+    { let loc = mklocation $startpos $endpos in
+      [(Nolabel, mkexp_constructor_unit loc loc)] }
+  | LPAREN separated_nonempty_list(COMMA, labeled_simple_expr) RPAREN
+    { List.rev $2 }
 ;
 
 labeled_simple_expr:
-  | less_aggressive_simple_expression { (Nolabel, $1) }
-  | label_expr                        { $1 }
+  | simple_expr { (Nolabel, $1) }
+  | label_expr  { $1 }
 ;
 
 label_expr:
