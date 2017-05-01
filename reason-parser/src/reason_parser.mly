@@ -282,8 +282,8 @@ let set_structure_item_location x loc = {x with pstr_loc = loc};;
 let mkoperator_loc name loc =
   Exp.mk ~loc (Pexp_ident(mkloc (Lident name) loc))
 
-let mkoperator name pos =
-  mkoperator_loc name (rhs_loc pos)
+let mkoperator {Location. txt; loc} =
+  mkoperator_loc txt loc
 
 (*
   Ghost expressions and patterns:
@@ -316,7 +316,7 @@ let mkinfixop arg1 op arg2 =
   mkexp(Pexp_apply(op, [Nolabel, arg1; Nolabel, arg2]))
 
 let mkinfix arg1 name arg2 =
-  mkinfixop arg1 (mkoperator name 2) arg2
+  mkinfixop arg1 (mkoperator name) arg2
 
 let neg_string f =
   if String.length f > 0 && f.[0] = '-'
@@ -324,13 +324,13 @@ let neg_string f =
   else "-" ^ f
 
 let mkuminus name arg =
-  match name, arg.pexp_desc with
+  match name.txt, arg.pexp_desc with
   | "-", Pexp_constant(Pconst_integer (n,m)) ->
       mkexp(Pexp_constant(Pconst_integer(neg_string n,m)))
   | ("-" | "-."), Pexp_constant(Pconst_float (f, m)) ->
       mkexp(Pexp_constant(Pconst_float(neg_string f, m)))
-  | _ ->
-      mkexp(Pexp_apply(mkoperator ("~" ^ name) 1, [Nolabel, arg]))
+  | txt, _ ->
+      mkexp(Pexp_apply(mkoperator_loc ("~" ^ txt) name.loc, [Nolabel, arg]))
 
 let mkFunctorThatReturns functorArgs returns =
   List.fold_left (
@@ -339,11 +339,11 @@ let mkFunctorThatReturns functorArgs returns =
 
 let mkuplus name arg =
   let desc = arg.pexp_desc in
-  match name, desc with
+  match name.txt, desc with
   | "+", Pexp_constant(Pconst_integer _)
   | ("+" | "+."), Pexp_constant(Pconst_float _) -> mkexp desc
-  | _ ->
-      mkexp(Pexp_apply(mkoperator ("~" ^ name) 1, [Nolabel, arg]))
+  | txt, _ ->
+      mkexp(Pexp_apply(mkoperator_loc ("~" ^ txt) name.loc, [Nolabel, arg]))
 
 let mkexp_cons consloc args loc =
   mkexp ~loc (Pexp_construct(mkloc (Lident "::") consloc, Some args))
@@ -2782,13 +2782,13 @@ _expr:
         let loc = mklocation $symbolstartpos $endpos in
         mkexp_cons loc_colon (mkexp ~ghost:true ~loc (Pexp_tuple[$5;$7])) loc
       }
-  | expr infix_operator expr
+  | expr as_loc(infix_operator) expr
       { mkinfix $1 $2 $3 }
-  | subtractive expr %prec prec_unary_minus
+  | as_loc(subtractive) expr %prec prec_unary_minus
       {
         mkuminus $1 $2
       }
-  | additive expr %prec prec_unary_plus
+  | as_loc(additive) expr %prec prec_unary_plus
       {
         mkuplus $1 $2
       }
@@ -3012,9 +3012,9 @@ _simple_expr:
         let list_exp = make_real_exp (mktailexp_extension loc seq ext_opt) in
         let list_exp = { list_exp with pexp_loc = loc } in
         mkexp (Pexp_open (Fresh, $1, list_exp)) }
-  | PREFIXOP simple_expr %prec below_DOT_AND_SHARP
+  | as_loc(PREFIXOP) simple_expr %prec below_DOT_AND_SHARP
       {
-        mkexp(Pexp_apply(mkoperator $1 1, [Nolabel, $2]))
+        mkexp(Pexp_apply(mkoperator $1, [Nolabel, $2]))
       }
   /**
    * Must be below_DOT_AND_SHARP so that the parser waits for several dots for
@@ -3024,7 +3024,7 @@ _simple_expr:
    */
   | as_loc(BANG) simple_expr %prec below_DOT_AND_SHARP
       {
-        mkexp(Pexp_apply(mkoperator "!" 1, [Nolabel,$2]))
+        mkexp(Pexp_apply(mkoperator_loc "!" $1.loc, [Nolabel,$2]))
       }
   | NEW as_loc(class_longident)
       { mkexp (Pexp_new $2) }
@@ -3045,7 +3045,7 @@ _simple_expr:
   | simple_expr SHARP label
       { mkexp(Pexp_send($1, $3)) }
   | simple_expr as_loc(SHARPOP) simple_expr
-      { mkinfixop $1 (mkoperator_loc $2.txt $2.loc) $3 }
+      { mkinfixop $1 (mkoperator $2) $3 }
   | LPAREN MODULE module_expr RPAREN
       { mkexp (Pexp_pack $3) }
   | LPAREN MODULE module_expr COLON package_type RPAREN
