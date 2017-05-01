@@ -944,6 +944,7 @@ let only_labels l =
 %token PLUSDOT
 %token PLUSEQ
 %token <string> PREFIXOP
+%token <string> POSTFIXOP
 %token PUB
 %token QUESTION
 %token OPTIONAL_NO_DEFAULT
@@ -1113,7 +1114,7 @@ conflicts.
 /* Finally, the first tokens of simple_expr are above everything else. */
 %nonassoc BACKQUOTE BANG CHAR FALSE FLOAT INT
           LBRACE LBRACELESS LBRACKET LBRACKETBAR LIDENT LPAREN
-          NEW PREFIXOP STRING TRUE UIDENT
+          NEW PREFIXOP POSTFIXOP STRING TRUE UIDENT
           LBRACKETPERCENT LESSIDENT LBRACKETLESS
 
 /* Entry points */
@@ -3016,6 +3017,10 @@ _simple_expr:
       {
         mkexp(Pexp_apply(mkoperator $1, [Nolabel, $2]))
       }
+  | simple_expr as_loc(POSTFIXOP)
+      {
+        mkexp(Pexp_apply(mkoperator $2, [Nolabel, $1]))
+      }
   /**
    * Must be below_DOT_AND_SHARP so that the parser waits for several dots for
    * nested record access that the bang should apply to.
@@ -4543,6 +4548,7 @@ val_ident:
 
 operator:
     PREFIXOP                                    { $1 }
+  | POSTFIXOP                                   { $1 }
   | BANG                                        { "!" }
   | infix_operator                              { $1 }
 ;
