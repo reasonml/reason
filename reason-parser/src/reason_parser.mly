@@ -1021,6 +1021,7 @@ let only_labels l =
 %token PLUSDOT
 %token PLUSEQ
 %token <string> PREFIXOP
+%token <string> POSTFIXOP
 %token PUB
 %token QUESTION
 %token QUOTE
@@ -1170,7 +1171,7 @@ conflicts.
 
 %nonassoc attribute_precedence
 
-%nonassoc prec_unary_minus prec_unary_plus /* unary - */
+%nonassoc prec_unary /* unary - */
 %nonassoc prec_constant_constructor     /* cf. simple_expr (C versus C x) */
 /* Now that commas require wrapping parens (for tuples), prec_constr_appl no
 * longer needs to be above COMMA, but it doesn't hurt */
@@ -1181,7 +1182,7 @@ conflicts.
 %nonassoc SHARP                         /* simple_expr/toplevel_directive */
 %left     SHARPOP
 %nonassoc below_DOT
-%nonassoc DOT
+%nonassoc DOT POSTFIXOP
 
 /* Finally, the first tokens of simple_expr are above everything else. */
 %nonassoc LBRACKETLESS LBRACKETBAR LBRACKET LBRACELESS LBRACE LPAREN
@@ -2528,10 +2529,12 @@ mark_position_exp
     }
   | expr as_loc(infix_operator) expr
     { mkinfix $1 $2 $3 }
-  | as_loc(subtractive) expr %prec prec_unary_minus
+  | as_loc(subtractive) expr %prec prec_unary
     { mkuminus $1 $2 }
-  | as_loc(additive) expr %prec prec_unary_plus
+  | as_loc(additive) expr %prec prec_unary
     { mkuplus $1 $2 }
+  (*| as_loc(BANG {"!"}) expr %prec prec_unary
+    { mkexp(Pexp_apply(mkoperator $1, [Nolabel,$2])) }*)
   | simple_expr DOT as_loc(label_longident) EQUAL expr
     { mkexp(Pexp_setfield($1, $3, $5)) }
   | simple_expr DOT LPAREN expr RPAREN EQUAL expr
@@ -2644,6 +2647,8 @@ parenthesized_expr:
     { may_tuple $startpos $endpos $2 }
   | as_loc(LPAREN) expr_list as_loc(error)
     { unclosed_exp (with_txt $1 "(") (with_txt $3 ")") }
+  | E as_loc(POSTFIXOP)
+    { mkexp(Pexp_apply(mkoperator $2, [Nolabel, $1])) }
   | as_loc(mod_longident) DOT LPAREN expr_list RPAREN
     { mkexp(Pexp_open(Fresh, $1, may_tuple $startpos($3) $endpos($5) $4)) }
   | mod_longident DOT as_loc(LPAREN) expr_list as_loc(error)
@@ -3865,6 +3870,7 @@ val_ident:
 
 operator:
   | PREFIXOP          { $1 }
+  | POSTFIXOP         { $1 }
   | BANG              { "!" }
   | infix_operator    { $1 }
 ;
