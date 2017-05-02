@@ -407,7 +407,7 @@ let mktailpat_extension loc (seq, ext_opt) =
 
 let makeFrag loc body =
   let attribute = ({txt = "JSX"; loc = loc}, PStr []) in
-  { body with pexp_attributes = [attribute] @ body.pexp_attributes }
+  { body with pexp_attributes = attribute :: body.pexp_attributes }
 
 
 (* Applies attributes to the structure item, not the expression itself. Makes
@@ -2109,10 +2109,8 @@ class_sig_field:
 mark_position_ctf
   /* The below_LBRACKETAT and two forms below are needed (but not in upstream
      for some reason) */
-  ( INHERIT class_instance_type
-    { mkctf_attrs (Pctf_inherit $2) [] }
-  | INHERIT class_instance_type item_attribute item_attribute*
-    { mkctf_attrs (Pctf_inherit $2) ($3::$4) }
+  ( INHERIT class_instance_type item_attribute*
+    { mkctf_attrs (Pctf_inherit $2) $3 }
   | VAL value_type item_attribute*
     { mkctf_attrs (Pctf_val $2) $3 }
   | PRI virtual_flag label COLON poly_type item_attribute*
@@ -3388,11 +3386,11 @@ sig_exception_declaration:
 ;
 
 generalized_constructor_arguments:
-  | /*empty*/                         { (Pcstr_tuple [],None) }
-  | COLON only_core_type(core_type)   { (Pcstr_tuple [], Some $2) }
-  | ioption(OF) constructor_arguments { ($2, None) }
-  | ioption(OF) constructor_arguments COLON only_core_type(core_type)
-    { ($2,Some $4) }
+  | preceded(COLON, only_core_type(core_type))?
+    { (Pcstr_tuple [], $1) }
+  | ioption(OF) constructor_arguments
+    preceded(COLON,only_core_type(core_type))?
+    { ($2,$3) }
 ;
 
 constructor_arguments:
@@ -3412,7 +3410,7 @@ label_declaration:
       let ct = mkct $2 in
       (Type.field $2 ct ~mut:$1 ~loc, $3)
     }
-  |  mutable_flag as_loc(LIDENT) attribute* COLON poly_type attribute*
+  | mutable_flag as_loc(LIDENT) attribute* COLON poly_type attribute*
     { let loc = mklocation $symbolstartpos $endpos in
       (Type.field $2 $5 ~mut:$1 ~attrs:$6 ~loc, $3)
     }
