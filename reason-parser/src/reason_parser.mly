@@ -1716,27 +1716,31 @@ and_class_declaration:
   }
 ;
 
-/* Having a rule makes it easier to correctly apply the location */
+class_declaration_details:
+  | virtual_flag as_loc(LIDENT) class_type_parameters class_declaration_expr
+    { ($2, $4, $1, $3) }
+  | virtual_flag as_loc(LIDENT) class_declaration_expr
+    { ($2, $3, $1, []) }
+;
+
+class_declaration_expr:
+  /* Used in order to parse: class ['a, 'b] myClass argOne argTwo (:retType) => cl_expr */
+  | class_fun_binding
+  /* We make a special rule here because we only accept colon after the
+   * identifier - can't be a part of class_fun_binding. Used in order to parse:
+   * class ['a, 'b] myClass: class_constructor_type = class_expr
+   */
+  | constrained_class_declaration
+  /* Used in order to parse:  class ['a, 'b] myClass = class_expr */
+  | preceded(EQUAL, class_expr)
+    { $1 }
+;
+
 constrained_class_declaration:
 mark_position_cl
   ( COLON class_constructor_type EQUAL class_expr
     { mkclass(Pcl_constraint($4, $2)) }
   ) {$1};
-
-class_declaration_details:
-  /* Used in order to parse: class ['a, 'b] myClass argOne argTwo (:retType) => cl_expr */
-  | virtual_flag as_loc(LIDENT) class_type_parameters class_fun_binding
-    { ($2, $4, $1, $3) }
-  /* We make a special rule here because we only accept colon after the
-   * identifier - can't be a part of class_fun_binding. Used in order to parse:
-   * class ['a, 'b] myClass: class_constructor_type = class_expr
-   */
-  | virtual_flag as_loc(LIDENT) class_type_parameters constrained_class_declaration
-    { ($2, $4, $1, $3) }
-  /* Used in order to parse:  class ['a, 'b] myClass = class_expr */
-  | virtual_flag as_loc(LIDENT) class_type_parameters EQUAL class_expr
-    { ($2, $5, $1, $3) }
-;
 
 /**
  * Had to split class_fun_return rom class_fun_binding to prevent arrow from
@@ -2152,13 +2156,13 @@ and_class_description:
   }
 ;
 
-class_type_parameters:
-  delimited(LPAREN, lseparated_list(COMMA, type_parameter), RPAREN)
+%inline class_type_parameters:
+  parenthesized(lseparated_nonempty_list(COMMA, type_parameter))
   { $1 }
 ;
 
 class_description_details:
-  virtual_flag as_loc(LIDENT) class_type_parameters COLON class_constructor_type
+  virtual_flag as_loc(LIDENT) loption(class_type_parameters) COLON class_constructor_type
   { ($2, $5, $1, $3) }
 ;
 
@@ -2180,7 +2184,7 @@ and_class_type_declaration:
 ;
 
 class_type_declaration_details:
-  virtual_flag as_loc(LIDENT) class_type_parameters EQUAL class_instance_type
+  virtual_flag as_loc(LIDENT) loption(class_type_parameters) EQUAL class_instance_type
   { ($2, $5, $1, $3) }
 ;
 
@@ -3351,7 +3355,7 @@ type_kind:
 ;
 
 %inline type_variables_with_variance:
-  loption(delimited(LPAREN, separated_nonempty_list(COMMA, type_variable_with_variance), RPAREN))
+  loption(parenthesized(separated_nonempty_list(COMMA, type_variable_with_variance)))
   { $1 }
 ;
 
@@ -3711,10 +3715,8 @@ non_arrowed_core_type:
 ;
 
 type_parameters:
-  delimited(
-    LPAREN,
-    separated_nonempty_list(COMMA, only_core_type(non_arrowed_simple_core_type)),
-    RPAREN
+  parenthesized(
+    separated_nonempty_list(COMMA, only_core_type(non_arrowed_simple_core_type))
   ) { $1 }
 ;
 
@@ -4220,5 +4222,7 @@ lseparated_nonempty_list_aux(sep, X):
 
 %inline lseparated_two_or_more(sep, X):
   X sep lseparated_nonempty_list(sep, X) { $1 :: $3 };
+
+%inline parenthesized(X): delimited(LPAREN, X, RPAREN) { $1 };
 
 %%
