@@ -1,4 +1,7 @@
-type point = {x: int, y: int};
+type point = {
+  x: int,
+  y: int
+};
 
 let id x => x;
 

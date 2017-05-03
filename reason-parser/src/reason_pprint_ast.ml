@@ -2435,12 +2435,23 @@ class printer  ()= object(self:'self)
               (Some (true, nameParamsEquals))
               (hd, None)
         | hd::hd2::[] ->
-            let first = makeList ~postSpace:true ~break:IfNeed ~inline:(true, true) hd in
-            let second = makeList ~postSpace:true ~break:IfNeed ~inline:(true, true) hd2 in
+            let first = makeList ~postSpace:true ~break:IfNeed ~inline:(true, true) (hd @ [atom "="]) in
+            (*
+             * Because we want a record as a label with the opening brace on the same line
+             * and the closing brace indented at the beginning, we can't wrap it in a list here
+             * Example:
+             * type doubleEqualsRecord =
+             *  myRecordWithReallyLongName = {   <- opening brace on the same line
+             *    xx: int,
+             *    yy: int
+             *  };                               <- closing brace indentation
+             *)
+            let second = match ptype_kind with
+              | Ptype_record _ -> List.hd hd2
+              | _ -> makeList ~postSpace:true ~break:IfNeed ~inline:(true, true) hd2
+            in
             label ~space:true nameParamsEquals (
-              label ~space:true
-                (makeList ~postSpace:true [first; atom "="])
-                (second)
+              label ~space:true first second
             )
     in
     let everything =
@@ -2592,7 +2603,7 @@ class printer  ()= object(self:'self)
         ct
     in
     let args = match pcd_args with
-      | Pcstr_record r -> [makeList [self#record_declaration r]]
+      | Pcstr_record r -> [self#record_declaration r]
       | Pcstr_tuple l -> List.mapi ampersand_helper l
     in
     let gadtRes = match pcd_res with
@@ -2608,15 +2619,33 @@ class printer  ()= object(self:'self)
       | [hd] -> hd
       | _::_ -> makeList ~inline:(true, true) ~break:IfNeed ~postSpace:true lst
     in
-    let add_bar name args =
+    (* In some cases (e.g. inline records) we want the label with bar & the gadt resolution
+     * as a list.
+     *   | If {
+     *       pred: expr bool,
+     *       true_branch: expr 'a,
+     *       false_branch: expr 'a
+     *     }                           ==> end of label
+     *     :expr 'a;                   ==> gadt res
+     * The label & the gadt res form two separate units combined into a list.
+     * This is necessary to properly align the closing '}' on the same height as the 'If'.
+     *)
+    let add_bar ?gadt name args =
       let lbl = label ~space:true name args in
-      makeList ~postSpace:true (if print_bar then [atom "|"; lbl] else [lbl])
+      let fullLbl = match gadt with
+        | Some g -> makeList ~inline:(true, true) ~break:IfNeed ~postSpace:true [lbl; g]
+        | None -> lbl
+      in
+      makeList ~postSpace:true (if print_bar then [atom "|"; fullLbl] else [fullLbl])
     in
     let everything = match (args, gadtRes) with
       | ([], None) -> barName
-      | ([], Some res) -> add_bar sourceMappedName res
+      | ([], Some gadt) -> add_bar sourceMappedName gadt
       | (_::_, None) -> add_bar nameOf (normalize args)
-      | (_::_, Some res) -> add_bar nameOf (normalize (args@[res]))
+      | (_::_, Some gadt) ->
+          (match pcd_args with
+            | Pcstr_record _ -> add_bar ~gadt nameOf (normalize args)
+            | _ -> add_bar nameOf (normalize (args@[gadt])))
     in
     let everythingWithAttrs =
       if stdAttrs <> [] then
@@ -2647,7 +2676,9 @@ class printer  ()= object(self:'self)
       SourceMap (pld.pld_loc, recordRow)
     in
     let rows = List.map recordRow lbls in
-    let rowList = makeList ~wrap:("{", "}") ~sep:"," ~postSpace:true ~break:IfNeed rows in
+    (* if a record has more than 2 rows, always break *)
+    let break = if List.length rows >= 2 then Always_rec else IfNeed in
+    let rowList = makeList ~wrap:("{", "}") ~sep:"," ~postSpace:true ~break rows in
     match assumeRecordLoc with
     | None -> rowList
     | Some loc -> SourceMap(loc, rowList)
@@ -2754,10 +2785,13 @@ class printer  ()= object(self:'self)
         ]
       (* EQUAL core_type EQUAL private_flag LBRACE label_declarations opt_comma RBRACE
            {(Ptype_record _, $4, Some $2)} *)
-      | (Ptype_record lst, scope, Some mani) -> [
-          [self#core_type mani];
-          privatize scope [self#record_declaration lst];
-        ]
+      | (Ptype_record lst, scope, Some mani) ->
+          let declaration = self#record_declaration lst in
+          let record = match scope with
+            | Public -> [declaration]
+            | Private -> [label ~space:true privateAtom declaration]
+          in
+          [ [self#core_type mani]; record ]
 
       (* Everything else is impossible *)
       (* ================================================*)
