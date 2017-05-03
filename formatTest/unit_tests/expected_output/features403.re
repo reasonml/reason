@@ -12,20 +12,18 @@ type nonrec u 'a =
 
 type expr 'a =
   | Val {value: 'a} :expr 'a
-  | Add
-      {
-        left: expr int,
-        right: expr int
-      }
-      :expr int
+  | Add {
+      left: expr int,
+      right: expr int
+    }
+    :expr int
   | Is0 {test: expr int} :expr bool
-  | If
-      {
-        pred: expr bool,
-        true_branch: expr 'a,
-        false_branch: expr 'a
-      }
-      :expr 'a;
+  | If {
+      pred: expr bool,
+      true_branch: expr 'a,
+      false_branch: expr 'a
+    }
+    :expr 'a;
 
 let rec eval: type a. expr a => a =
   fun e =>

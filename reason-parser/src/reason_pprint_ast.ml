@@ -2603,7 +2603,7 @@ class printer  ()= object(self:'self)
         ct
     in
     let args = match pcd_args with
-      | Pcstr_record r -> [makeList [self#record_declaration r]]
+      | Pcstr_record r -> [self#record_declaration r]
       | Pcstr_tuple l -> List.mapi ampersand_helper l
     in
     let gadtRes = match pcd_res with
@@ -2619,15 +2619,33 @@ class printer  ()= object(self:'self)
       | [hd] -> hd
       | _::_ -> makeList ~inline:(true, true) ~break:IfNeed ~postSpace:true lst
     in
-    let add_bar name args =
+    (* In some cases (e.g. inline records) we want the label with bar & the gadt resolution
+     * as a list.
+     *   | If {
+     *       pred: expr bool,
+     *       true_branch: expr 'a,
+     *       false_branch: expr 'a
+     *     }                           ==> end of label
+     *     :expr 'a;                   ==> gadt res
+     * The label & the gadt res form two separate units combined into a list.
+     * This is necessary to properly align the closing '}' on the same height as the 'If'.
+     *)
+    let add_bar ?gadt name args =
       let lbl = label ~space:true name args in
-      makeList ~postSpace:true (if print_bar then [atom "|"; lbl] else [lbl])
+      let fullLbl = match gadt with
+        | Some g -> makeList ~inline:(true, true) ~break:IfNeed ~postSpace:true [lbl; g]
+        | None -> lbl
+      in
+      makeList ~postSpace:true (if print_bar then [atom "|"; fullLbl] else [fullLbl])
     in
     let everything = match (args, gadtRes) with
       | ([], None) -> barName
-      | ([], Some res) -> add_bar sourceMappedName res
+      | ([], Some gadt) -> add_bar sourceMappedName gadt
       | (_::_, None) -> add_bar nameOf (normalize args)
-      | (_::_, Some res) -> add_bar nameOf (normalize (args@[res]))
+      | (_::_, Some gadt) ->
+          (match pcd_args with
+            | Pcstr_record _ -> add_bar ~gadt nameOf (normalize args)
+            | _ -> add_bar nameOf (normalize (args@[gadt])))
     in
     let everythingWithAttrs =
       if stdAttrs <> [] then
