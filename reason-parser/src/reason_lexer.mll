@@ -343,11 +343,9 @@ let uppercase_latin1 = ['A'-'Z' '\192'-'\214' '\216'-'\222']
 let identchar_latin1 =
   ['A'-'Z' 'a'-'z' '_' '\192'-'\214' '\216'-'\246' '\248'-'\255' '\'' '0'-'9']
 
-let operator_chars_no_dot =
-  ['!' '$' '%' '&' '+' '-' ':' '<' '=' '>' '?' '@' '^' '|' '~' '#'] |
+let operator_chars =
+  ['!' '$' '%' '&' '+' '-' ':' '<' '=' '>' '?' '@' '^' '|' '~' '#' '.'] |
   ( '\\'? ['/' '*'] )
-
-let operator_chars = operator_chars_no_dot | '.'
 
 let decimal_literal = ['0'-'9'] ['0'-'9' '_']*
 
@@ -549,8 +547,11 @@ rule token = parse
             { INFIXOP0(lexeme_operator lexbuf) }
   | '\\'? '@' operator_chars*
             { INFIXOP1(lexeme_operator lexbuf) }
-  | '\\'? '^' (operator_chars* operator_chars_no_dot)?
-            { POSTFIXOP(lexeme_operator lexbuf) }
+  | '\\'? '^' ('\\' '.')? operator_chars*
+            { match lexeme_without_comment lexbuf with
+              | "^." -> set_lexeme_length lexbuf 1; POSTFIXOP("^")
+              | "^" -> POSTFIXOP("^")
+              | op -> INFIXOP1(unescape_operator op) }
   | '\\'? ['+' '-'] operator_chars*
             { INFIXOP2(lexeme_operator lexbuf) }
   (* SLASHGREATER is an INFIXOP3 that is handled specially *)

@@ -1106,7 +1106,7 @@ conflicts.
 %nonassoc SHARP                         /* simple_expr/toplevel_directive */
 %left     SHARPOP
 %nonassoc below_DOT
-%nonassoc DOT
+%nonassoc DOT POSTFIXOP
 
 %nonassoc below_LBRACKETAT
 %nonassoc LBRACKETAT
@@ -1114,7 +1114,7 @@ conflicts.
 /* Finally, the first tokens of simple_expr are above everything else. */
 %nonassoc BACKQUOTE CHAR FALSE FLOAT INT
           LBRACE LBRACELESS LBRACKET LBRACKETBAR LIDENT LPAREN
-          NEW PREFIXOP POSTFIXOP STRING TRUE UIDENT
+          NEW PREFIXOP STRING TRUE UIDENT
           LBRACKETPERCENT LESSIDENT LBRACKETLESS
 
 /* Entry points */
@@ -2909,6 +2909,8 @@ _simple_expr:
       { mkexp(Pexp_tuple(List.rev $2)) }
   | as_loc(LPAREN) expr_comma_list as_loc(error)
       { unclosed_exp (with_txt $1 "(") (with_txt $3 ")") }
+  | simple_expr as_loc(POSTFIXOP)
+      { mkexp(Pexp_apply(mkoperator $2, [Nolabel, $1])) }
   | simple_expr DOT as_loc(label_longident)
       { mkexp(Pexp_field($1, $3)) }
   | as_loc(mod_longident) DOT LPAREN expr RPAREN
@@ -3013,8 +3015,6 @@ _simple_expr:
         mkexp (Pexp_open (Fresh, $1, list_exp)) }
   | as_loc(PREFIXOP) simple_expr %prec below_DOT_AND_SHARP
       { mkexp(Pexp_apply(mkoperator $1, [Nolabel, $2])) }
-  | simple_expr as_loc(POSTFIXOP)
-      { mkexp(Pexp_apply(mkoperator $2, [Nolabel, $1])) }
   /**
    * Must be below_DOT_AND_SHARP so that the parser waits for several dots for
    * nested record access that the bang should apply to.
