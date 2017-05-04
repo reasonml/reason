@@ -303,12 +303,11 @@ let includesACommentCloseInIdentifier = ( **\/ );
 let includesACommentCloseInIdentifier = ( **\/ );
 
 let shouldSimplifyAnythingExceptApplicationAndConstruction =
-  call "hi" ^
-  (
+  call "hi" ++ (
     switch x {
     | _ => "hi"
     }
-  ) ^ "yo";
+  ) ++ "yo";
 
 /* Add tests with IF/then mixed with infix/constructor application on left and right sides */
 
@@ -920,9 +919,9 @@ let containingObject = {
      * Unary plus/minus has lower precedence than prefix operators:
      * And unary plus has same precedence as unary minus.
      */
-    let res = - !record;
+    let res = - record^;
     /* Should be parsed as: */
-    let res = - !record;
+    let res = - record^;
     /* Although that precedence ranking doesn't likely have any effect in that
      * case. */
 
@@ -936,12 +935,12 @@ let containingObject = {
     /**
      * And this
      */
-    let res = !(- callThisFunc ());
+    let res = (- callThisFunc ())^;
     /* Should be parsed (and should remain printed as: */
-    let res = !(- callThisFunc ());
-    let res = !x [@onApplication];
-    let res = !(x [@onX]);
-    let res = !(x [@onX]);
+    let res = (- callThisFunc ())^;
+    let res = x^ [@onApplication];
+    let res = (x [@onX])^;
+    let res = (x [@onX])^;
     (something.contents = "newvalue")
     [@shouldBeRenderedOnEntireSetField];
     something.contents =
