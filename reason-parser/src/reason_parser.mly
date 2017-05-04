@@ -1095,7 +1095,7 @@ conflicts.
  * of PREFIXOP have the unary precedence parsing behavior for consistency.
  */
 
-%nonassoc prec_unary_minus prec_unary_plus /* unary - */
+%nonassoc prec_unary /* unary - */
 %nonassoc prec_constant_constructor     /* cf. simple_expr (C versus C x) */
 /* Now that commas require wrapping parens (for tuples), prec_constr_appl no
 * longer needs to be above COMMA, but it doesn't hurt */
@@ -1112,7 +1112,7 @@ conflicts.
 %nonassoc LBRACKETAT
 
 /* Finally, the first tokens of simple_expr are above everything else. */
-%nonassoc BACKQUOTE BANG CHAR FALSE FLOAT INT
+%nonassoc BACKQUOTE CHAR FALSE FLOAT INT
           LBRACE LBRACELESS LBRACKET LBRACKETBAR LIDENT LPAREN
           NEW PREFIXOP POSTFIXOP STRING TRUE UIDENT
           LBRACKETPERCENT LESSIDENT LBRACKETLESS
@@ -2785,14 +2785,12 @@ _expr:
       }
   | expr as_loc(infix_operator) expr
       { mkinfix $1 $2 $3 }
-  | as_loc(subtractive) expr %prec prec_unary_minus
-      {
-        mkuminus $1 $2
-      }
-  | as_loc(additive) expr %prec prec_unary_plus
-      {
-        mkuplus $1 $2
-      }
+  | as_loc(subtractive) expr %prec prec_unary
+      { mkuminus $1 $2 }
+  | as_loc(additive) expr %prec prec_unary
+      { mkuplus $1 $2 }
+  | as_loc(BANG) expr %prec prec_unary
+      { mkexp(Pexp_apply(mkoperator_loc "!" $1.loc, [Nolabel,$2])) }
   | simple_expr DOT as_loc(label_longident) EQUAL expr
       { mkexp(Pexp_setfield($1, $3, $5)) }
   | simple_expr DOT LPAREN expr RPAREN EQUAL expr
@@ -3014,23 +3012,15 @@ _simple_expr:
         let list_exp = { list_exp with pexp_loc = loc } in
         mkexp (Pexp_open (Fresh, $1, list_exp)) }
   | as_loc(PREFIXOP) simple_expr %prec below_DOT_AND_SHARP
-      {
-        mkexp(Pexp_apply(mkoperator $1, [Nolabel, $2]))
-      }
+      { mkexp(Pexp_apply(mkoperator $1, [Nolabel, $2])) }
   | simple_expr as_loc(POSTFIXOP)
-      {
-        mkexp(Pexp_apply(mkoperator $2, [Nolabel, $1]))
-      }
+      { mkexp(Pexp_apply(mkoperator $2, [Nolabel, $1])) }
   /**
    * Must be below_DOT_AND_SHARP so that the parser waits for several dots for
    * nested record access that the bang should apply to.
    *
    * !x.y.z should be parsed as !(((x).y).z)
    */
-  | as_loc(BANG) simple_expr %prec below_DOT_AND_SHARP
-      {
-        mkexp(Pexp_apply(mkoperator_loc "!" $1.loc, [Nolabel,$2]))
-      }
   | NEW as_loc(class_longident)
       { mkexp (Pexp_new $2) }
   | LBRACELESS field_expr_list opt_comma GREATERRBRACE
