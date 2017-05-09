@@ -761,7 +761,7 @@ let chevy = {maker: "Chevy", model: "Suburban"};
 let toyota = {maker: "Toyota", model: "Tacoma"};
 let myCarList = List chevy (List toyota NoMore);
 
-let hasExactlyTwoCars = fun lst =>
+let hasExactlyTwoCars lst =>
   switch lst {
   | NoMore => false                              /* 0 */
   | List p NoMore => false                       /* 1 */
