@@ -44,7 +44,7 @@ opam init
 opam update
 opam switch 4.03.0
 eval $(opam config env)
-git clone git@github.com:facebook/reason.git
+git clone https://github.com/facebook/reason.git
 cd reason
 opam pin add -y reason-parser reason-parser
 opam pin add -y reason .
