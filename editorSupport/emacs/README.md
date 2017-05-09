@@ -1,6 +1,8 @@
 `reason-mode`: A major Emacs mode for Reason syntax
 ============================================================
 
+## Deprecated. Please use https://github.com/arichiardi/reason-mode
+
 This plugin is almost a drop in copy of the Rust plugin, with some
 modifications made. See original plugin here:
 https://github.com/rust-lang/rust-mode
@@ -42,7 +44,7 @@ To install manually, install the reason-cli (`npm -g install git://github.com/re
 
 (setq merlin-ac-setup t)
 ```
-If you have iedit mode set up: 
+If you have iedit mode set up:
 ```
 (require 'merlin-iedit)
 (defun evil-custom-merlin-iedit ()
@@ -59,7 +61,7 @@ This associates `reason-mode` with `.re` and `.rei` files. To enable it explicit
 ### Spacemacs
 
 There is currently no offical reason layer available, but you can install the `reason-mode` package automatically.
-Some are working on a layer in the meantime [#1149](https://github.com/facebook/reason/issues/1149). 
+Some are working on a layer in the meantime [#1149](https://github.com/facebook/reason/issues/1149).
 
 ```lisp
 dotspacemacs-additional-packages
