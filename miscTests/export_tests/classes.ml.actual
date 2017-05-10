@@ -1,5 +1,6 @@
 include
   (struct
+     class some = let a = 2  in object val x = (a : int) end
      class istack =
        object
          val mutable v = ([0; 2] : int list)
@@ -7,12 +8,56 @@ include
            match v with | hd::tl -> (v <- tl; Some hd) | [] -> None
          method push (hd : int) = (v <- hd :: v : unit)
        end
+     class ['a] stack (init : 'a list)  (binit : int) =
+       object
+         val mutable v = (init : 'a list)
+         method pop : 'a option=
+           match v with | hd::tl -> (v <- tl; Some hd) | [] -> None
+         method push (hd : 'a) = (v <- hd :: v : unit)
+       end
+     class square (w : int) =
+       object (self)
+         method width : int= w
+         method area : int= self#width * self#width
+         method larger (other : square) = (self#area > other#area : bool)
+       end
+     class asquare (w : int) = let a = 2  in
+       object (self)
+         method width : int= w + a
+         method area : int= self#width * self#width
+         method larger (other : asquare) = (self#area > other#area : bool)
+       end
+     class m : asquare = (asquare 20)
    end :
     sig
+      class some : object val  x : int end
       class istack :
         object
           val  mutable v : int list
           method  pop : int option
           method  push : int -> unit
         end
+      class ['a] stack :
+        'a list ->
+          int ->
+            object
+              val  mutable v : 'a list
+              method  pop : 'a option
+              method  push : 'a -> unit
+            end
+      class square :
+        int ->
+          object
+            method  width : int
+            method  area : int
+            method  larger : square -> bool
+          end
+      class asquare :
+        int ->
+          object
+            method  width : int
+            method  area : int
+            method  larger : asquare -> bool
+          end
+      class m : asquare
     end)

@@ -87,15 +87,10 @@ let rec fun_type label {ppat_desc} {pexp_desc; pexp_loc; pexp_attributes} = (
   Ptyp_arrow (label, pattern_type, result_type)
 )
 
+let fold_optionals items = List.fold_left (fun y x -> match x with | None -> y | Some x -> x::y) [] items
+
 let class_desc_to_type desc = (
   match desc with
-  | Pcf_inherit (override_flag, class_expr, maybe_rename) ->
-    assert false
-        (* inherit CE
-           inherit CE as x
-           inherit! CE
-           inherit! CE as x
-         *)
   | Pcf_val (name, mutable_flag, class_field_kind) -> (
     let (is_virtual, type_) = match class_field_kind with
     | Cfk_virtual t -> (Virtual, t)
@@ -107,9 +102,6 @@ let class_desc_to_type desc = (
     in
     Pctf_val (name.txt, mutable_flag, is_virtual, type_)
   )
-        (* val x = E
-           val virtual x: T
-         *)
   | Pcf_method (name, private_flag, class_field_kind) -> 
     let (is_virtual, type_) = match class_field_kind with
       | Cfk_virtual t -> (Virtual, t)
@@ -131,6 +123,15 @@ let class_desc_to_type desc = (
   | Pcf_attribute attr -> Pctf_attribute attr
         (* [@@@id] *)
   | Pcf_extension ext -> Pctf_extension ext
+
+  | Pcf_inherit (override_flag, class_expr, maybe_rename) ->
+    (*Pctf_inherit (class_expr_to_class_type class_expr) ->*)
+    assert false
+        (* inherit CE
+           inherit CE as x
+           inherit! CE
+           inherit! CE as x
+         *)
         (* [%%id] *)
 
 (*
@@ -163,145 +164,111 @@ let class_structure_to_class_signature {pcstr_self={ppat_desc; ppat_loc; ppat_at
   }
 )
 
-let class_expr_to_class_type {pcl_desc; pcl_loc; pcl_attributes}: class_type = (
-  let desc = match pcl_desc with
-  | Pcl_constr (name, types) -> Pcty_constr (name, types)
-  | Pcl_structure body -> Pcty_signature (class_structure_to_class_signature body)
-
-  | Pcl_fun (name, default_value, argument, expr) -> assert false
-  | Pcl_apply (expr, args) -> assert false
-  | Pcl_let (isrec, values, expr) -> assert false 
-  | Pcl_constraint (expr, type_) -> assert false
-  | Pcl_extension ext -> assert false
-  in {pcty_desc=desc; pcty_loc=pcl_loc; pcty_attributes=pcl_attributes}
+let rec class_fun_type label {ppat_desc} result = (
+  let argtype = match ppat_desc with
+  | Ppat_constraint (_, type_) -> type_
+  | _ -> print_string "All arguments must be constrained"; assert false
+  in
+  let result_type = class_expr_to_class_type result
+  in
+  Pcty_arrow (label, argtype, result_type)
 )
-(*
-    | Pcl_constr of Longident.t loc * core_type list
-          (* c
-            ['a1, ..., 'an] c *)
-    | Pcl_structure of class_structure
-          (* object ... end *)
-    | Pcl_fun of label * expression option * pattern * class_expr
-          (* fun P -> CE                          (lab = "", None)
-            fun ~l:P -> CE                       (lab = "l", None)
-            fun ?l:P -> CE                       (lab = "?l", None)
-            fun ?l:(P = E0) -> CE                (lab = "?l", Some E0)
-          *)
-    | Pcl_apply of class_expr * (label * expression) list
-          (* CE ~l1:E1 ... ~ln:En
-            li can be empty (non labeled argument) or start with '?'
-            (optional argument).
-            Invariant: n > 0
-          *)
-    | Pcl_let of rec_flag * value_binding list * class_expr
-          (* let P1 = E1 and ... and Pn = EN in CE      (flag = Nonrecursive)
-            let rec P1 = E1 and ... and Pn = EN in CE  (flag = Recursive)
-          *)
-    | Pcl_constraint of class_expr * class_type
-          (* (CE : CT) *)
-    | Pcl_extension of extension
-          (* [%id] *)
-*)
+
+and class_expr_to_class_type {pcl_desc; pcl_loc; pcl_attributes}: class_type = (
+  let desc = match pcl_desc with
+  | Pcl_constr (name, types) -> (Pcty_constr (name, types))
+  | Pcl_structure body -> (Pcty_signature (class_structure_to_class_signature body))
+  | Pcl_fun (name, _, argument, expr) -> (class_fun_type name argument expr)
+  | Pcl_constraint (_, {pcty_desc}) -> pcty_desc
+  | Pcl_extension ext -> Pcty_extension ext
+  | Pcl_let (_, _, expr) -> 
+    let {pcty_desc} = class_expr_to_class_type expr in pcty_desc
+
+  | Pcl_apply _ -> print_string "Class application expressions must be type annotated"; assert false
+  in 
+  {pcty_desc=desc; pcty_loc=pcl_loc; pcty_attributes=pcl_attributes}
+)
 
 let class_declaration_to_class_description {pci_virt; pci_params; pci_name; pci_expr; pci_loc; pci_attributes}: class_description =
   let description = class_expr_to_class_type pci_expr in
   {pci_virt; pci_params; pci_name; pci_expr=description; pci_loc; pci_attributes}
-  (*let rec acc2 class_declaration current_signatures =
-    match class_declaration with
-    (*| {pcl_desc = }*)
-    
-    | Pcty_constr of Longident.t loc * core_type list
-          (* c
-              ['a1, ..., 'an] c *)
-    | Pcty_signature body
-          (* object ... end *)
-    | Pcty_arrow of arg_label * core_type * class_type
-          (* T -> CT       Simple
-              ~l:T -> CT    Labelled l
-              ?l:T -> CT    Optional l
-            *)
-    | Pcty_extension of extension
-          (* [%id] *)
-    in acc2 cd []*)
+
+let get_class_descriptions declarations =
+  (List.map class_declaration_to_class_description declarations)
 
 let rec extract str : signature_item list * structure_item list = (
   let rec acc str current_signatures current_structures = (
-      match str with
-      | [] -> (current_signatures, current_structures)
-      | next :: tail ->
-        let (new_signatures, new_structures) = (
-        match next with
-          (* -- modifies structure -- *)
+    match str with
+    | [] -> (current_signatures, current_structures)
+    | next :: tail ->
+      let (new_signatures, new_structures) = (
+      match next with
+        (* -- modifies structure -- *)
 
-          (* an unconstrained module with a body *)
-          | {pstr_desc = Pstr_module {pmb_name; pmb_expr = {pmod_desc = Pmod_structure str; pmod_attributes; pmod_loc}}} ->
-            let (s, s2) = process str [] [] in
-            let module_expr = Mod.structure s2 ~loc:pmod_loc ~attrs:pmod_attributes in
-            let module_ = Str.module_ (Mb.mk pmb_name module_expr) in
-            let sigModule_ = Sig.module_ (Md.mk pmb_name (Mty.signature s)) in
-            (* let _ = {ex with pmb_expr = a} in *)
-            ([sigModule_], [module_])
+        (* an unconstrained module with a body *)
+        | {pstr_desc = Pstr_module {pmb_name; pmb_expr = {pmod_desc = Pmod_structure str; pmod_attributes; pmod_loc}}} ->
+          let (s, s2) = process str [] [] in
+          let module_expr = Mod.structure s2 ~loc:pmod_loc ~attrs:pmod_attributes in
+          let module_ = Str.module_ (Mb.mk pmb_name module_expr) in
+          let sigModule_ = Sig.module_ (Md.mk pmb_name (Mty.signature s)) in
+          (* let _ = {ex with pmb_expr = a} in *)
+          ([sigModule_], [module_])
 
-          (* a set of recursive modules *)
-          | {pstr_desc = Pstr_recmodule e} ->
-            print_string "Recursive modules not yet supported"; assert false
-            (* acc tail (current_signatures @ [Sig.mk (Psig_module e)]) *)
+        (* a set of recursive modules *)
+        | {pstr_desc = Pstr_recmodule e} ->
+          print_string "Recursive modules not yet supported"; assert false
+          (* acc tail (current_signatures @ [Sig.mk (Psig_module e)]) *)
 
-          | doesnt_modify_structure ->
-            let new_signatures = (
-              match doesnt_modify_structure with
-                (* -- multiple exports -- *)
-                | {pstr_desc = Pstr_value (rec_flag, value_bindings)} -> List.map structure_of_value_binding value_bindings
+        | doesnt_modify_structure ->
+          let new_signatures = (
+            match doesnt_modify_structure with
+              (* -- multiple exports -- *)
+              | {pstr_desc = Pstr_value (rec_flag, value_bindings)} -> List.map structure_of_value_binding value_bindings
 
-                (* -- single export -- *)
-                | has_single_signature ->
-                  let new_signature = (
-                    match has_single_signature with 
-                      | {pstr_desc = Pstr_type (r, t)} ->
-                        Sig.mk (Psig_type (r, t))
-                      | {pstr_desc = Pstr_typext te} ->
-                        Sig.mk (Psig_typext te)
-                      | {pstr_desc = Pstr_exception e} ->
-                        Sig.mk (Psig_exception e)
-                      | {pstr_desc = Pstr_module {pmb_name; pmb_loc; pmb_expr = {pmod_desc = Pmod_constraint (_, {pmty_desc = Pmty_ident loc}) }}} ->
-                        (* a constrained module `module X: Type = ...` *)
-                        Sig.module_ (Md.mk pmb_name (Mty.ident { txt = loc.txt; loc = pmb_loc }))
-                      | {pstr_desc = Pstr_modtype mt} ->
-                        (* a module type *)
-                        Sig.mk (Psig_modtype mt)
-                      | {pstr_desc = Pstr_class_type e} ->
-                        Sig.mk (Psig_class_type e)
-                      | {pstr_desc = Pstr_attribute a} ->
-                        Sig.mk (Psig_attribute a)
-                      | {pstr_desc = Pstr_extension (e, a)} ->
-                        Sig.mk (Psig_extension (e, a))
-                      | {pstr_desc = Pstr_module {pmb_name; pmb_expr = {pmod_desc = Pmod_functor (arg, type_, {pmod_desc; _}) }}} ->
-                        (* a functor! module W (X: Y) : Z = ... *)
-                        Sig.module_ (Md.mk pmb_name (Mty.functor_ arg type_ (functor_to_type pmod_desc)))
-
-
-                      | {pstr_desc = Pstr_class c} ->
-                        Sig.mk (Psig_class (List.map class_declaration_to_class_description c))
-                        (* a class *)
-
-                      (* Invalid uses of export *)
-                      | {pstr_desc = Pstr_module _} ->
-                        (* a functor! *)
-                        print_string "Invalid module export - must be constrained or literal"; assert false
-
-                      | _ -> print_string "Unhandled structure type"; assert false
-                  )
-                  in
-                  [new_signature]
-            ) in
-            (new_signatures, [next]) (* or str? *)
-        ) in
-        acc tail (current_signatures @ new_signatures) (current_structures @ new_structures)
+              (* -- single export -- *)
+              | has_single_signature ->
+                let new_signature = (
+                  match has_single_signature with 
+                    | {pstr_desc = Pstr_type (r, t)} ->
+                      Sig.mk (Psig_type (r, t))
+                    | {pstr_desc = Pstr_typext te} ->
+                      Sig.mk (Psig_typext te)
+                    | {pstr_desc = Pstr_exception e} ->
+                      Sig.mk (Psig_exception e)
+                    | {pstr_desc = Pstr_module {pmb_name; pmb_loc; pmb_expr = {pmod_desc = Pmod_constraint (_, {pmty_desc = Pmty_ident loc}) }}} ->
+                      (* a constrained module `module X: Type = ...` *)
+                      Sig.module_ (Md.mk pmb_name (Mty.ident { txt = loc.txt; loc = pmb_loc }))
+                    | {pstr_desc = Pstr_modtype mt} ->
+                      (* a module type *)
+                      Sig.mk (Psig_modtype mt)
+                    | {pstr_desc = Pstr_class_type e} ->
+                      Sig.mk (Psig_class_type e)
+                    | {pstr_desc = Pstr_attribute a} ->
+                      Sig.mk (Psig_attribute a)
+                    | {pstr_desc = Pstr_extension (e, a)} ->
+                      Sig.mk (Psig_extension (e, a))
+                    | {pstr_desc = Pstr_module {pmb_name; pmb_expr = {pmod_desc = Pmod_functor (arg, type_, {pmod_desc; _}) }}} ->
+                      (* a functor! module W (X: Y) : Z = ... *)
+                      Sig.module_ (Md.mk pmb_name (Mty.functor_ arg type_ (functor_to_type pmod_desc)))
 
 
+                    | {pstr_desc = Pstr_class c} ->
+                      Sig.mk (Psig_class (get_class_descriptions c))
+                      (* a class *)
 
+                    (* Invalid uses of export *)
+                    | {pstr_desc = Pstr_module _} ->
+                      (* a functor! *)
+                      print_string "Invalid module export - must be constrained or literal"; assert false
 
-
+                    | _ -> print_string "Unhandled structure type"; assert false
+                )
+                in
+                [new_signature]
+          ) in
+          (new_signatures, [next]) (* or str? *)
+      ) in
+      acc tail (current_signatures @ new_signatures) (current_structures @ new_structures)
     )
     in acc str [] []
 )

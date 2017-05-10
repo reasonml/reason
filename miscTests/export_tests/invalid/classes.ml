@@ -1,8 +1,8 @@
-(* methods must be typed? *)
+(* methods must be typed *)
 class%export istack = object
     val mutable v: int list = [0; 2]
 
-    method pop =
+    method pop option =
       match v with
       | hd :: tl ->
           v <- tl;
