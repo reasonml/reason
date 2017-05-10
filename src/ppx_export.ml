@@ -199,9 +199,9 @@ let class_declaration_to_class_description {pci_virt; pci_params; pci_name; pci_
 let get_class_descriptions declarations =
   (List.map class_declaration_to_class_description declarations)
 
-let rec extract str : signature_item list * structure_item list = (
-  let rec acc str current_signatures current_structures = (
-    match str with
+let rec extract structures : signature_item list * structure_item list = (
+  let rec inner structures current_signatures current_structures = (
+    match structures with
     | [] -> (current_signatures, current_structures)
     | next :: tail ->
       let (new_signatures, new_structures) = (
@@ -209,11 +209,11 @@ let rec extract str : signature_item list * structure_item list = (
         (* -- modifies structure -- *)
 
         (* an unconstrained module with a body *)
-        | {pstr_desc = Pstr_module {pmb_name; pmb_expr = {pmod_desc = Pmod_structure str; pmod_attributes; pmod_loc}}} ->
-          let (s, s2) = process str [] [] in
-          let module_expr = Mod.structure s2 ~loc:pmod_loc ~attrs:pmod_attributes in
+        | {pstr_desc = Pstr_module {pmb_name; pmb_expr = {pmod_desc = Pmod_structure inner_structures; pmod_attributes; pmod_loc}}} ->
+          let (child_signatures, child_structures) = process inner_structures [] [] in
+          let module_expr = Mod.structure child_structures ~loc:pmod_loc ~attrs:pmod_attributes in
           let module_ = Str.module_ (Mb.mk pmb_name module_expr) in
-          let sigModule_ = Sig.module_ (Md.mk pmb_name (Mty.signature s)) in
+          let sigModule_ = Sig.module_ (Md.mk pmb_name (Mty.signature child_signatures)) in
           (* let _ = {ex with pmb_expr = a} in *)
           ([sigModule_], [module_])
 
@@ -227,31 +227,14 @@ let rec extract str : signature_item list * structure_item list = (
               | has_single_signature ->
                 let new_signature = (
                   match has_single_signature with 
-                    | {pstr_desc = Pstr_type (r, t)} ->
-                      Sig.mk (Psig_type (r, t))
-                    | {pstr_desc = Pstr_typext te} ->
-                      Sig.mk (Psig_typext te)
-                    | {pstr_desc = Pstr_exception e} ->
-                      Sig.mk (Psig_exception e)
-                    | {pstr_desc = Pstr_module {pmb_name; pmb_loc; pmb_expr = {pmod_desc = Pmod_constraint (_, {pmty_desc = Pmty_ident loc}) }}} ->
-                      (* a constrained module `module X: Type = ...` *)
-                      Sig.module_ (Md.mk pmb_name (Mty.ident { txt = loc.txt; loc = pmb_loc }))
-                    | {pstr_desc = Pstr_modtype mt} ->
-                      (* a module type *)
-                      Sig.mk (Psig_modtype mt)
-                    | {pstr_desc = Pstr_class_type e} ->
-                      Sig.mk (Psig_class_type e)
-                    | {pstr_desc = Pstr_attribute a} ->
-                      Sig.mk (Psig_attribute a)
-                    | {pstr_desc = Pstr_extension (e, a)} ->
-                      Sig.mk (Psig_extension (e, a))
-                    | {pstr_desc = Pstr_module {pmb_name; pmb_expr = {pmod_desc = Pmod_functor (arg, type_, {pmod_desc; pmod_loc}) }}} ->
-                      (* a functor! module W (X: Y) : Z = ... *)
-                      Sig.module_ (Md.mk pmb_name (Mty.functor_ arg type_ (functor_to_type pmod_desc pmod_loc)))
-
-                    | {pstr_desc = Pstr_class c} ->
-                      (* class%export name ... *)
-                      Sig.mk (Psig_class (get_class_descriptions c))
+                    | {pstr_desc = Pstr_type (r, t)} -> Sig.mk (Psig_type (r, t))
+                    | {pstr_desc = Pstr_typext te} -> Sig.mk (Psig_typext te)
+                    | {pstr_desc = Pstr_exception e} -> Sig.mk (Psig_exception e)
+                    | {pstr_desc = Pstr_modtype mt} -> Sig.mk (Psig_modtype mt)
+                    | {pstr_desc = Pstr_class_type e} -> Sig.mk (Psig_class_type e)
+                    | {pstr_desc = Pstr_attribute a} -> Sig.mk (Psig_attribute a)
+                    | {pstr_desc = Pstr_extension (e, a)} -> Sig.mk (Psig_extension (e, a))
+                    | {pstr_desc = Pstr_class c} -> Sig.mk (Psig_class (get_class_descriptions c))
 
                     (* a set of recursive modules *)
                     | {pstr_desc = Pstr_recmodule bindings; pstr_loc} ->
@@ -267,21 +250,28 @@ let rec extract str : signature_item list * structure_item list = (
                         | _ -> fail pmb_expr.pmod_loc "Exported modules must have type annotations"
                       ) bindings)
 
+                    | {pstr_desc = Pstr_module {pmb_name; pmb_loc; pmb_expr = {pmod_desc = Pmod_constraint (_, {pmty_desc = Pmty_ident loc}) }}} ->
+                      (* a constrained module `module X: Type = ...` *)
+                      Sig.module_ (Md.mk pmb_name (Mty.ident { txt = loc.txt; loc = pmb_loc }))
+                    | {pstr_desc = Pstr_module {pmb_name; pmb_expr = {pmod_desc = Pmod_functor (arg, type_, {pmod_desc; pmod_loc}) }}} ->
+                      (* a functor! module W (X: Y) : Z = ... *)
+                      Sig.module_ (Md.mk pmb_name (Mty.functor_ arg type_ (functor_to_type pmod_desc pmod_loc)))
+
                     (* Invalid uses of export *)
                     | {pstr_desc = Pstr_module _; pstr_loc} ->
                       (* a functor! *)
                       fail pstr_loc "Invalid module export - must be constrained or literal"
 
-                    | {pstr_loc} -> fail pstr_loc "Unhandled structure type"
+                    | {pstr_loc} -> fail pstr_loc "Cannot export this item"
                 )
                 in
                 [new_signature]
           ) in
-          (new_signatures, [next]) (* or str? *)
+          (new_signatures, [next])
       ) in
-      acc tail (current_signatures @ new_signatures) (current_structures @ new_structures)
+      inner tail (current_signatures @ new_signatures) (current_structures @ new_structures)
     )
-    in acc str [] []
+    in inner structures [] []
 )
 
 and process_extension structure_item =
