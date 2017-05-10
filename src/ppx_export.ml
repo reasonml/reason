@@ -99,7 +99,7 @@ let rec fun_type label {ppat_desc; ppat_loc} {pexp_desc; pexp_loc; pexp_attribut
   Ptyp_arrow (label, pattern_type, result_type)
 )
 
-let fold_optionals items = List.fold_left (fun y x -> match x with | None -> y | Some x -> x::y) [] items
+let fold_optionals items = List.fold_right (fun x y -> match x with | None -> y | Some x -> x::y) items []
 
 let class_desc_to_type desc = (
   match desc with
@@ -112,8 +112,9 @@ let class_desc_to_type desc = (
       | _ -> fail pexp_loc "Exported class value must be constrained"
     )
     in
-    Pctf_val (name.txt, mutable_flag, is_virtual, type_)
+    Some (Pctf_val (name.txt, mutable_flag, is_virtual, type_))
   )
+
   | Pcf_method (name, private_flag, class_field_kind) -> 
     let (is_virtual, type_) = match class_field_kind with
       | Cfk_virtual t -> (Virtual, t)
@@ -127,11 +128,12 @@ let class_desc_to_type desc = (
           })
         | _ -> fail pexp_loc "Exported class methods must be fully annotated"
     in
-    Pctf_method (name.txt, private_flag, is_virtual, type_)
+    Some (Pctf_method (name.txt, private_flag, is_virtual, type_))
 
   | Pcf_inherit (override_flag, {pcl_desc; pcl_loc; pcl_attributes}, maybe_rename) -> (
-    match pcl_desc with
+    let res = match pcl_desc with
     | Pcl_constraint (_, type_) -> Pctf_inherit type_
+
     | Pcl_apply ({pcl_desc=Pcl_constr (name, types)}, _)
     | Pcl_constr (name, types) -> Pctf_inherit ({
       pcty_desc=Pcty_constr (name, types);
@@ -139,24 +141,29 @@ let class_desc_to_type desc = (
       pcty_attributes=pcl_attributes
     })
     | _ -> fail pcl_loc "Inheritance must be type annotated"
+    in Some res
   )
 
-  | Pcf_initializer expr -> fail expr.pexp_loc "Class initializers not yet supported"
-  | Pcf_constraint (t1, t2) -> Pctf_constraint (t1, t2)
-  | Pcf_attribute attr -> Pctf_attribute attr
-  | Pcf_extension ext -> Pctf_extension ext
+  | Pcf_constraint (t1, t2) -> Some (Pctf_constraint (t1, t2))
+  | Pcf_attribute attr -> Some (Pctf_attribute attr)
+  | Pcf_extension ext -> Some (Pctf_extension ext)
+
+  | Pcf_initializer expr -> None
 )
 
 let class_structure_to_class_signature {pcstr_self={ppat_desc; ppat_loc; ppat_attributes}; pcstr_fields} = (
   {
     pcsig_self={ptyp_desc=Ptyp_any; ptyp_loc=ppat_loc; ptyp_attributes=ppat_attributes}; (* TODO figure out when this is ever not any *)
     pcsig_fields=List.map (fun {pcf_desc; pcf_loc; pcf_attributes} ->
-      {
-        pctf_desc=class_desc_to_type pcf_desc;
+      match (class_desc_to_type pcf_desc) with
+      | None -> None
+      | Some desc ->
+      Some {
+        pctf_desc=desc;
         pctf_loc=pcf_loc;
         pctf_attributes=pcf_attributes
       }
-    ) pcstr_fields
+    ) pcstr_fields |> fold_optionals
   }
 )
 

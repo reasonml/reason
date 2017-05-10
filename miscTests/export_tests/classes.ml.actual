@@ -29,7 +29,8 @@ include
          method larger (other : asquare) = (self#area > other#area : bool)
        end
      class m : asquare = (asquare 20)
-     class bsquare = object inherit  (asquare 20) end
+     class bsquare =
+       object inherit  (asquare 20) initializer print_string "awesome" end
    end :
     sig
       class some : object val  x : int end

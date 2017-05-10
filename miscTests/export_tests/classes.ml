@@ -52,4 +52,6 @@ class%export m: asquare = asquare 20
 
 class%export bsquare = object
   inherit asquare 20
+  initializer
+    print_string "awesome"
 end
