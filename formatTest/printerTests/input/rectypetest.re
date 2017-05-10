@@ -1,4 +1,4 @@
-type mytype = Int of hello | Float of list(int) | String
+type mytype = Int(hello) | Float(list(int)) | String
 and hello = string;
 
 let () =

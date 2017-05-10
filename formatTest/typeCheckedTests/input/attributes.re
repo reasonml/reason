@@ -40,20 +40,19 @@ type attributedInt = [@onTopLevelTypeDef] int;
 [@@itemAttributeOnTypeDef]
 type attributedIntsInTuple = ([@onInt] int, [@onFloat] float);
 
-type myDataType 'x 'y = | MyDataType 'x 'y;
+type myDataType('x,'y) = | MyDataType('x,'y);
 
 type myType =
   [@onEntireType]
-  myDataType
-    ([@onOptionInt] (option int))
-    ([@onOption] option float);
+  myDataType ([@onOptionInt] option(int),
+              [@onOption] option(float));
 
 
 let thisInst : myType =
-  [@attOnEntireDatatype] MyDataType (Some 10) (Some 10.0);
+  [@attOnEntireDatatype] MyDataType(Some(10),Some(10.0));
 
 let thisInst : myType =
-  [@attOnEntireDatatype] MyDataType ([@onFirstParam] (Some 10)) (Some 10.0);
+  [@attOnEntireDatatype] MyDataType([@onFirstParam] Some(10), Some(10.0));
 
 let x = ([@onHello] "hello");
 let x = [@onHello] "hello";

@@ -2,15 +2,15 @@
 
 type reasonXyz =
   | X
-  | Y int int int
-  | Z int int
+  | Y(int,int,int)
+  | Z(int,int)
   | Q
   | R;
 
 type reasonXyzWithOf =
   | X
-  | Y of int int int
-  | Z of int int
+  | Y(int,int,int)
+  | Z(int,int)
   | Q
   | R;
 

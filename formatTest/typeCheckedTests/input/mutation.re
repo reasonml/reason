@@ -45,5 +45,5 @@ switch (numberToSwitchOn) {
   | _ => ()
 };
 
-let mutativeFunction = fun | Some x => holdsAUnit.contents = ()
+let mutativeFunction = fun | Some(x) => holdsAUnit.contents = ()
                            | None => holdsAUnit := ();

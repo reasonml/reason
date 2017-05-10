@@ -38,7 +38,7 @@
  */
 
 module JustString = {
-  include Map.Make Int32; /* Comment eol include */
+  include Map.Make(Int32); /* Comment eol include */
 };
 
 let testingEndOfLineComments =
@@ -95,10 +95,10 @@ let testingEndOfLineComments = [];/* Comment after entire let binding */
 /* }; */
 
 let myFunction
-    /* First arg */
-    withFirstArg
+   (/* First arg */
+    withFirstArg,
     /* Second Arg */
-    andSecondArg  => {
+    andSecondArg) => {
   withFirstArg + andSecondArg
 }; /* After Semi */
 
@@ -165,9 +165,9 @@ let res =
   /* Before switch */
   switch (X (2, 3)) {
     /* Above X line */
-    | X _ => "result of X"  /* End of arrow and X line */
+    | X(_) => "result of X"  /* End of arrow and X line */
     /* Above Y line */
-    | Y _ => "result of Y"  /* End of arrow and Y line */
+    | Y(_) => "result of Y"  /* End of arrow and Y line */
   }; /* After final semi in switch */
 
 let res =
@@ -176,10 +176,10 @@ let res =
       "result of X"  /* End of X body line */
     | X (1, 0) /* Before X's arrow */ =>
       "result of X"  /* End of X body line */
-    | X _ => /* After X _ arrow */
+    | X (_) => /* After X _ arrow */
       "result of X"  /* End of X body line */
     /* Above Y line */
-    | Y _ =>
+    | Y (_) =>
       /* Comment above Y body */
       "result of Y"
   };
@@ -232,9 +232,9 @@ let res =
   /* Before switch */
   switch (X (2, 3)) {
     /* Above X line */
-    | X _ => "result of X"  /* End of arrow and X line */
+    | X(_) => "result of X"  /* End of arrow and X line */
     /* Above Y line */
-    | Y _ => "result of Y"  /* End of arrow and Y line */
+    | Y(_) => "result of Y"  /* End of arrow and Y line */
   };
 
 /*
@@ -274,7 +274,7 @@ let res =
       ) => "result of X"
 
     /* Above Y line */
-    | Y _ => "result of Y"  /* End of arrow and Y line */
+    | Y(_) => "result of Y"  /* End of arrow and Y line */
   };
 
 
@@ -326,34 +326,34 @@ if true {
 };
 
 type color =
-  | Red int /* After red end of line */
-  | Black int /* After black end of line */
-  | Green int /* After green end of line */
+  | Red(int) /* After red end of line */
+  | Black(int) /* After black end of line */
+  | Green(int) /* After green end of line */
 ; /* On next line after color type def */
 
-let blahCurriedX x =>
+let blahCurriedX(x) =>
   fun
-  | Red 10
-  | Black 20
-  | Green 10 => 1 /* After or pattern green */
-  | Red x => 0 /* After red */
-  | Black x => 0 /* After black */
-  | Green x => 0 /* After second green */
+  | Red(10)
+  | Black(20)
+  | Green(10) => 1 /* After or pattern green */
+  | Red(x) => 0 /* After red */
+  | Black(x) => 0 /* After black */
+  | Green(x) => 0 /* After second green */
 ; /* On next line after blahCurriedX def */
 
-let name_equal x y => x == y;
+let name_equal(x,y) => x == y;
 
-let equal i1 i2 =>
+let equal(i1,i2) =>
   i1.contents === i2.contents && true; /* most unlikely first */
 
-let equal i1 i2 =>
+let equal(i1,i2) =>
   compare(compare(0,0),compare(1,1)); /* END OF LINE HERE */
 
-let tuple_equal (i1, i2) => i1 == i2;
+let tuple_equal((i1, i2)) => i1 == i2;
 
-let tuple_equal (csu, mgd) =>
+let tuple_equal((csu, mgd)) =>
   /* Some really long comments, see https://github.com/facebook/reason/issues/811 */
-  tuple_equal (csu, mgd);
+  tuple_equal((csu, mgd));
 
 /** Comments inside empty function bodies
  * See https://github.com/facebook/reason/issues/860

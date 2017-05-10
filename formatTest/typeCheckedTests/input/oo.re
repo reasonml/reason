@@ -1,6 +1,6 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 
-class virtual stack('a) init => {
+class virtual stack('a)(init) => {
   /*
    * The "as this" is implicit and will be formatted away.
    */
@@ -18,12 +18,12 @@ class virtual stack('a) init => {
       | [] => None
     };
 
-  pub push hd => {v = [hd, ...v]};
+  pub push(hd) => {v = [hd, ...v]};
   initializer => {
     print_string("initializing object");
   };
-  pub explicitOverrideTest a => { a + 1 };
-  pri explicitOverrideTest2 a => { a + 1 };
+  pub explicitOverrideTest(a) => { a + 1 };
+  pri explicitOverrideTest2(a) => { a + 1 };
 };
 
 let tmp = {
@@ -38,7 +38,7 @@ let tmp = {
  * Comment on stackWithAttributes.
  */
 [@@thisShouldntBeFormattedAway]
-class virtual stackWithAttributes('a) init =>
+class virtual stackWithAttributes('a)(init) =>
 /* Before class */
 {
 
@@ -63,25 +63,25 @@ class virtual stackWithAttributes('a) init =>
       | [] => None
     };
 
-  pub push hd => {v = [hd, ...v]};
+  pub push(hd)=> {v = [hd, ...v]};
   initializer => {
     print_string("initializing object");
   };
 }
 ;
 
-class extendedStack('a) init => {
+class extendedStack('a)(init) => {
   inherit (class stack('a))(init);
   val dummy = ();
-  pub implementMe i => i;
+  pub implementMe(i) => i;
 };
 
-class extendedStackAcknowledgeOverride('a) init => {
+class extendedStackAcknowledgeOverride('a)(init) => {
   inherit (class stack('a))(init);
   val dummy = ();
-  pub implementMe i => i + 1;
-  pub! explicitOverrideTest a => { a + 2 };
-  pri! explicitOverrideTest2 a => { a + 2 };
+  pub implementMe(i) => i + 1;
+  pub! explicitOverrideTest(a) => { a + 2 };
+  pri! explicitOverrideTest2(a) => { a + 2 };
 };
 
 let inst = new extendedStack([1, 2]);
@@ -92,13 +92,13 @@ let inst = new extendedStack([1, 2]);
 /*
  * First recursive class.
  */
-class firstRecursiveClass init => {
+class firstRecursiveClass(init) => {
   val v = init;
 }
 /*
  * Second recursive class.
  */
-and secondRecursiveClass init => {
+and secondRecursiveClass(init) => {
   val v = init;
 };
 
@@ -122,12 +122,12 @@ and secondRecursiveClass init => {
 
 type closedObj = {.};
 
-let (<..>) a b => a + b;
+let (<..>)(a,b) => a + b;
 let five = 2 <..> 3;
 
 type nestedObj = {. bar : {. a: int}};
 
-let (>>) a b => a > b;
+let (>>)(a,b) => a > b;
 
 let bigger = 3 >> 2;
 
@@ -173,14 +173,14 @@ let res = acceptsClosedAnonObjAsArg({
 });
 
 /* TODO: Unify class constructor return values with function return values */
-class myClassWithAnnotatedReturnType init : {pub x : int; pub y : int} => {
+class myClassWithAnnotatedReturnType(init): {pub x : int; pub y : int} => {
   pub x => ( init : int );
   pub y => init;
 };
 /**
  * May include a trailing semi after type row.
  */
-class myClassWithAnnotatedReturnType2 init :{pub x : int; pub y : int;} => {
+class myClassWithAnnotatedReturnType2(init):{pub x : int; pub y : int;} => {
   pub x => ( init : int );
   pub y => init;
 };
@@ -188,7 +188,7 @@ class myClassWithAnnotatedReturnType2 init :{pub x : int; pub y : int;} => {
 /**
  * May use equals sign, and may include colon if so.
  */
-class myClassWithAnnotatedReturnType3 init :{pub x : int; pub y : int;} => {
+class myClassWithAnnotatedReturnType3(init):{pub x : int; pub y : int;} => {
   pub x = ( init : int );
   pub y:int = init;
 };
@@ -214,7 +214,7 @@ class myClassWithAnnotatedReturnType3 init :{pub x : int; pub y : int;} => {
  */
 class myClassWithAnnotatedReturnType3_annotated_constructor :
       int => new {pub x : int; pub y : int;} =
-  fun init => {
+  fun(init) => {
     pub x = ( init : int );
     pub y:int = init;
   };
@@ -265,7 +265,7 @@ let x: tupleClass(int,int) = {pub pr => (10, 10);};
 let x: #tupleClass(int,int) = x;
 
 let incrementMyClassInstance: int => #tupleClass(int,int) => #tupleClass(int,int) =
-  fun i inst => {
+  fun(i,inst) => {
     let (x, y) = inst#pr;
     {pub pr => (x + i, y + i);};
   };
@@ -299,7 +299,7 @@ class type addablePointClassType = {
 /**
  * Class constructor types can be annotated.
  */
-class addablePoint: int => new addablePointClassType = fun init => {
+class addablePoint: int => new addablePointClassType = fun(init) => {
   as self;
   pub add (one: addablePointClassType) (two:addablePointClassType) =>
     one#x + two#x + one#y + two#x;
@@ -307,7 +307,7 @@ class addablePoint: int => new addablePointClassType = fun init => {
   pub y => init;
 };
 
-class addablePoint2 = (fun init => {
+class addablePoint2 = (fun(init) => {
   as self;
   pub add (one: addablePointClassType) (two:addablePointClassType) =>
     one#x + two#x + one#y + two#x;
@@ -321,5 +321,5 @@ module type T = {
 };
 
 let privacy = {
-    pri x c => 5 + c;
+    pri x(c) => 5 + c;
 };
