@@ -1,0 +1,18 @@
+include
+  (struct
+     class istack =
+       object
+         val mutable v = ([0; 2] : int list)
+         method pop : int option=
+           match v with | hd::tl -> (v <- tl; Some hd) | [] -> None
+         method push (hd : int) = (v <- hd :: v : unit)
+       end
+   end :
+    sig
+      class istack :
+        object
+          val  mutable v : int list
+          method  pop : int option
+          method  push : int -> unit
+        end
+    end)

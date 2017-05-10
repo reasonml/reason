@@ -28,6 +28,7 @@ do
   if [[ "$?" = "0" ]]; then
     echo "Expected failure?"
     cat ${name}.err
+    cat ${name}.actual
   else
     echo "OK"
   fi
