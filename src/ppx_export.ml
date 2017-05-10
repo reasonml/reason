@@ -6,22 +6,27 @@ open Asttypes
 open Ast_mapper
 open Ast_helper
 
-let rec process_arguments func =
+let fail loc txt = raise (Location.Error (Location.error ~loc txt))
+
+let rec process_arguments func loc =
   match func with
-  | Pexp_fun (arg_label, eo, {ppat_desc = Ppat_constraint (_, ct)}, exp) ->
-    Typ.arrow arg_label ct (process_arguments exp.pexp_desc)
+  | Pexp_fun (arg_label, eo, {ppat_desc = Ppat_constraint (_, ct); ppat_loc}, exp) ->
+    Typ.arrow arg_label ct (process_arguments exp.pexp_desc exp.pexp_loc)
   (* An unlabeled () unit argument *)
   | Pexp_fun (arg_label, eo, {ppat_desc = Ppat_construct (({txt = Longident.Lident "()"; _}), None)}, exp) ->
     let unit_type = (Typ.constr (Location.mkloc (Longident.Lident "unit") (Location.symbol_gloc ())) []) in
-    Typ.arrow arg_label unit_type (process_arguments exp.pexp_desc)
+    Typ.arrow arg_label unit_type (process_arguments exp.pexp_desc exp.pexp_loc)
+  | Pexp_fun (arg_label, eo, {ppat_loc}, exp) ->
+    fail ppat_loc "All arguments must have type annotations"
   | Pexp_constraint (_, ct) ->
     let (const_type, c) =
       match ct.ptyp_desc with
       | Ptyp_constr (loc, ct) -> (loc.txt, ct)
-      | _ -> print_string "2. Give a proper error that a constraint is expected"; assert false
+      | _ -> fail ct.ptyp_loc "Function return value must be annotated"
     in
     (Typ.constr (Location.mkloc const_type (Location.symbol_gloc ())) c)
-  | _ -> print_string "Function exports must be fully constrained"; assert false
+  | _ -> 
+    fail loc "Function return value must be annotated"
 
 let loc_of_constant const =
   let const_type =
@@ -35,45 +40,52 @@ let loc_of_constant const =
 
 let type_of_constant const = (Typ.constr (loc_of_constant const) [])
 
-let structure_of_value_binding value_binding = 
-  match value_binding with
+let structure_of_value_binding {pvb_pat; pvb_expr; pvb_attributes; pvb_loc} = 
+  match pvb_pat.ppat_desc with
+    | Ppat_var loc -> (
+      match pvb_expr.pexp_desc with
+      (* let%export a = 2 -- unannotated export of a constant *)
+      | Pexp_constant const ->
+        let value = Val.mk ~attrs:pvb_attributes loc (type_of_constant const)
+        in Sig.mk (Psig_value value)
 
-  (* let%export a = 2 -- unannotated export of a constant *)
-  | { pvb_pat = {ppat_desc = Ppat_var loc; _}; pvb_expr = {pexp_desc = Pexp_constant const; _}; pvb_attributes; pvb_loc } ->
-    let value = Val.mk ~attrs:pvb_attributes loc (type_of_constant const)
-    in Sig.mk (Psig_value value)
+      (* let%export a:int = 2 -- an annotated value export *)
+      | Pexp_constraint (_, const) -> (
+          let (const_type, c) =
+            match const.ptyp_desc with
+            | Ptyp_constr (loc, ct) -> (loc.txt, ct)
+            (* TODO(jaredly): why do we only accept one form of type? *)
+            | _ -> fail pvb_loc "Invalid constraint"
+        in
+        let value = Val.mk
+          ~attrs:pvb_attributes
+          loc
+          (Typ.constr (Location.mkloc const_type (Location.symbol_gloc ())) c)
+        in Sig.mk (Psig_value value)
+      )
 
-  (* let%export a:int = 2 -- an annotated value export *)
-  | { pvb_pat = {ppat_desc = Ppat_var loc; _}; pvb_expr = { pexp_desc = Pexp_constraint (_, const)}; pvb_attributes; pvb_loc} -> (
-      let (const_type, c) =
-        match const.ptyp_desc with
-        | Ptyp_constr (loc, ct) -> (loc.txt, ct)
-        | _ -> print_string "1. Give a proper error that a constraint is expected"; assert false
-    in
-    let value = Val.mk
-      ~attrs:pvb_attributes
-      loc
-      (Typ.constr (Location.mkloc const_type (Location.symbol_gloc ())) c)
-    in Sig.mk (Psig_value value)
+      (* let%export a (b:int) (c:char) : string = "boe" -- function export *)
+      | Pexp_fun _ as arrow ->
+        Sig.mk (Psig_value (Val.mk ~attrs:pvb_attributes loc (process_arguments arrow loc.loc)))
+
+      | _ -> fail loc.loc "Non-constant exports must be annotated"
     )
+    (* What would it mean to export complex patterns? *)
+    | _ -> fail pvb_loc "Let export only supports simple patterns"
 
-  (* let%export a (b:int) (c:char) : string = "boe" -- function export *)
-  | { pvb_pat = {ppat_desc = Ppat_var loc; _}; pvb_expr = { pexp_desc = Pexp_fun _ as arrow }; pvb_attributes; pvb_loc} ->
-    Sig.mk (Psig_value (Val.mk ~attrs:pvb_attributes loc (process_arguments arrow)))
-  | _ -> print_string "Unsupported usage of export"; assert false
 
-let rec functor_to_type expr = (
+let rec functor_to_type expr loc = (
   match expr with
-  | Pmod_functor (name, type_, {pmod_desc}) ->
-    Mty.functor_ name type_ (functor_to_type pmod_desc)
+  | Pmod_functor (name, type_, {pmod_desc; pmod_loc}) ->
+    Mty.functor_ name type_ (functor_to_type pmod_desc pmod_loc)
   | Pmod_constraint (expr, type_) -> type_
-  | _ -> print_string "Unsupported functor"; assert false
+  | _ -> fail loc "Exported functors must be annotated"
 )
 
-let rec fun_type label {ppat_desc} {pexp_desc; pexp_loc; pexp_attributes} = (
+let rec fun_type label {ppat_desc; ppat_loc} {pexp_desc; pexp_loc; pexp_attributes} = (
   let pattern_type = match ppat_desc with
   | Ppat_constraint (_, type_) -> type_
-  | _ -> print_string "All arguments must be constrained"; assert false
+  | _ -> fail ppat_loc "All arguments must be annotated"
   in
   let result_type = match pexp_desc with
   | Pexp_fun (label, _, pattern, expr) -> {
@@ -82,7 +94,7 @@ let rec fun_type label {ppat_desc} {pexp_desc; pexp_loc; pexp_attributes} = (
     ptyp_attributes=pexp_attributes
   }
   | Pexp_constraint (_, type_) -> type_
-  | _ -> print_string "Return value must be constrained"; assert false
+  | _ -> fail pexp_loc "Return value must be constrained"
   in
   Ptyp_arrow (label, pattern_type, result_type)
 )
@@ -94,10 +106,10 @@ let class_desc_to_type desc = (
   | Pcf_val (name, mutable_flag, class_field_kind) -> (
     let (is_virtual, type_) = match class_field_kind with
     | Cfk_virtual t -> (Virtual, t)
-    | Cfk_concrete (override, {pexp_desc}) -> (match pexp_desc with
+    | Cfk_concrete (override, {pexp_desc; pexp_loc}) -> (match pexp_desc with
       | Pexp_constraint (expr, type_) -> (Concrete, type_)
       | Pexp_constant const -> (Concrete, type_of_constant const)
-      | _ -> assert false
+      | _ -> fail pexp_loc "Exported class value must be constrained"
     )
     in
     Pctf_val (name.txt, mutable_flag, is_virtual, type_)
@@ -105,7 +117,7 @@ let class_desc_to_type desc = (
   | Pcf_method (name, private_flag, class_field_kind) -> 
     let (is_virtual, type_) = match class_field_kind with
       | Cfk_virtual t -> (Virtual, t)
-      | Cfk_concrete (override, {pexp_desc}) -> match pexp_desc with
+      | Cfk_concrete (override, {pexp_desc; pexp_loc}) -> match pexp_desc with
         | Pexp_poly (expr, Some type_) -> (Concrete, type_)
         | Pexp_poly ({pexp_desc=Pexp_fun (label, _, pattern, expr); pexp_loc; pexp_attributes}, None) ->
           (Concrete, {
@@ -113,7 +125,7 @@ let class_desc_to_type desc = (
             ptyp_loc=pexp_loc;
             ptyp_attributes=pexp_attributes
           })
-        | _ -> print_string "Methods must be typed"; assert false
+        | _ -> fail pexp_loc "Exported class methods must be fully annotated"
     in
     Pctf_method (name.txt, private_flag, is_virtual, type_)
 
@@ -126,10 +138,10 @@ let class_desc_to_type desc = (
       pcty_loc=pcl_loc;
       pcty_attributes=pcl_attributes
     })
-    | _ -> print_string "Anheritance must be type annotated"; assert false
+    | _ -> fail pcl_loc "Inheritance must be type annotated"
   )
 
-  | Pcf_initializer expr -> assert false
+  | Pcf_initializer expr -> fail expr.pexp_loc "Class initializers not yet supported"
   | Pcf_constraint (t1, t2) -> Pctf_constraint (t1, t2)
   | Pcf_attribute attr -> Pctf_attribute attr
   | Pcf_extension ext -> Pctf_extension ext
@@ -148,10 +160,10 @@ let class_structure_to_class_signature {pcstr_self={ppat_desc; ppat_loc; ppat_at
   }
 )
 
-let rec class_fun_type label {ppat_desc} result = (
+let rec class_fun_type label {ppat_desc; ppat_loc} result = (
   let argtype = match ppat_desc with
   | Ppat_constraint (_, type_) -> type_
-  | _ -> print_string "All arguments must be constrained"; assert false
+  | _ -> fail ppat_loc "All arguments of exported class must be constrained"
   in
   let result_type = class_expr_to_class_type result
   in
@@ -168,7 +180,7 @@ and class_expr_to_class_type {pcl_desc; pcl_loc; pcl_attributes}: class_type = (
   | Pcl_let (_, _, expr) -> 
     let {pcty_desc} = class_expr_to_class_type expr in pcty_desc
 
-  | Pcl_apply _ -> print_string "Class application expressions must be type annotated"; assert false
+  | Pcl_apply _ -> fail pcl_loc "Class application expressions must be type annotated"
   in 
   {pcty_desc=desc; pcty_loc=pcl_loc; pcty_attributes=pcl_attributes}
 )
@@ -198,11 +210,6 @@ let rec extract str : signature_item list * structure_item list = (
           (* let _ = {ex with pmb_expr = a} in *)
           ([sigModule_], [module_])
 
-        (* a set of recursive modules *)
-        | {pstr_desc = Pstr_recmodule e} ->
-          print_string "Recursive modules not yet supported"; assert false
-          (* acc tail (current_signatures @ [Sig.mk (Psig_module e)]) *)
-
         | doesnt_modify_structure ->
           let new_signatures = (
             match doesnt_modify_structure with
@@ -231,21 +238,34 @@ let rec extract str : signature_item list * structure_item list = (
                       Sig.mk (Psig_attribute a)
                     | {pstr_desc = Pstr_extension (e, a)} ->
                       Sig.mk (Psig_extension (e, a))
-                    | {pstr_desc = Pstr_module {pmb_name; pmb_expr = {pmod_desc = Pmod_functor (arg, type_, {pmod_desc; _}) }}} ->
+                    | {pstr_desc = Pstr_module {pmb_name; pmb_expr = {pmod_desc = Pmod_functor (arg, type_, {pmod_desc; pmod_loc}) }}} ->
                       (* a functor! module W (X: Y) : Z = ... *)
-                      Sig.module_ (Md.mk pmb_name (Mty.functor_ arg type_ (functor_to_type pmod_desc)))
-
+                      Sig.module_ (Md.mk pmb_name (Mty.functor_ arg type_ (functor_to_type pmod_desc pmod_loc)))
 
                     | {pstr_desc = Pstr_class c} ->
+                      (* class%export name ... *)
                       Sig.mk (Psig_class (get_class_descriptions c))
-                      (* a class *)
+
+                    (* a set of recursive modules *)
+                    | {pstr_desc = Pstr_recmodule bindings; pstr_loc} ->
+                      Sig.rec_module (List.map (fun {pmb_name; pmb_expr; pmb_attributes; pmb_loc} ->
+                        match pmb_expr.pmod_desc with
+                        | Pmod_constraint (_, type_) ->
+                          {
+                            pmd_name=pmb_name;
+                            pmd_type=type_;
+                            pmd_attributes=pmb_attributes;
+                            pmd_loc=pmb_loc
+                          }
+                        | _ -> fail pmb_expr.pmod_loc "Exported modules must have type annotations"
+                      ) bindings)
 
                     (* Invalid uses of export *)
-                    | {pstr_desc = Pstr_module _} ->
+                    | {pstr_desc = Pstr_module _; pstr_loc} ->
                       (* a functor! *)
-                      print_string "Invalid module export - must be constrained or literal"; assert false
+                      fail pstr_loc "Invalid module export - must be constrained or literal"
 
-                    | _ -> print_string "Unhandled structure type"; assert false
+                    | {pstr_loc} -> fail pstr_loc "Unhandled structure type"
                 )
                 in
                 [new_signature]
