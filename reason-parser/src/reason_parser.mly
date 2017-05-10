@@ -367,6 +367,10 @@ let ghpat_cons consloc args loc =
 let mkpat_constructor_unit consloc loc =
   mkpat ~loc (Ppat_construct(mkloc (Lident "()") consloc, None))
 
+let mkexp_fun pat body =
+  mkexp ~loc:(mklocation pat.ppat_loc.loc_start body.pexp_loc.loc_end)
+    (Pexp_fun (Nolabel, None, pat, body))
+
 let simple_pattern_list_to_tuple ?(loc=dummy_loc ()) = function
   | [] -> assert false
   | lst -> mkpat ~loc (Ppat_tuple lst)
@@ -1119,6 +1123,7 @@ conflicts.
 %nonassoc DOT
 
 /* Finally, the first tokens of simple_expr are above everything else. */
+%nonassoc below_LPAREN
 %nonassoc LBRACE LPAREN UIDENT LBRACKETPERCENT
 
 /* Entry points */
@@ -1843,9 +1848,7 @@ mark_position_cl
        let myVal: myClass int = new myClass 10;
 
    */
-  | CLASS as_loc(class_longident)
-    { mkclass(Pcl_constr($2, [])) }
-  | CLASS as_loc(class_longident) only_core_type(non_arrowed_simple_core_type)+
+  | CLASS as_loc(class_longident) loption(type_parameters)
     { mkclass(Pcl_constr($2, $3)) }
   | extension
     { mkclass(Pcl_extension $1) }
@@ -2371,13 +2374,10 @@ jsx_start_tag_and_args_without_leading_less:
   { (jsx_component $1 $2, $1) }
 ;
 
-simple_expr_comma_list:
-  | /* empty */ { [] }
-  | lseparated_nonempty_list(COMMA, simple_expr) COMMA? { $1 }
-;
+simple_expr_no_call: simple_expr %prec below_LPAREN { $1 };
 
 jsx:
-  | LESSGREATER simple_expr_comma_list LESSSLASHGREATER
+  | LESSGREATER simple_expr_no_call* LESSSLASHGREATER
     { let loc = mklocation $symbolstartpos $endpos in
       let body = mktailexp_extension loc $2 None in
       makeFrag loc body
@@ -2390,7 +2390,7 @@ jsx:
         (Nolabel, mkexp_constructor_unit loc loc)
       ] loc
     }
-  | jsx_start_tag_and_args GREATER simple_expr_comma_list LESSSLASHIDENTGREATER
+  | jsx_start_tag_and_args GREATER simple_expr_no_call* LESSSLASHIDENTGREATER
     { let (component, start) = $1 in
       let loc = mklocation $symbolstartpos $endpos in
       (* TODO: Make this tag check simply a warning *)
@@ -2405,7 +2405,7 @@ jsx:
 ;
 
 jsx_without_leading_less:
-  | GREATER simple_expr_comma_list LESSSLASHGREATER {
+  | GREATER simple_expr_no_call* LESSSLASHGREATER {
     let loc = mklocation $symbolstartpos $endpos in
     let body = mktailexp_extension loc $2 None in
     makeFrag loc body
@@ -2418,7 +2418,7 @@ jsx_without_leading_less:
       (Nolabel, mkexp_constructor_unit loc loc)
     ] loc
   }
-  | jsx_start_tag_and_args_without_leading_less GREATER simple_expr_comma_list LESSSLASHIDENTGREATER {
+  | jsx_start_tag_and_args_without_leading_less GREATER simple_expr_no_call* LESSSLASHIDENTGREATER {
     let (component, start) = $1 in
     let loc = mklocation $symbolstartpos $endpos in
     (* TODO: Make this tag check simply a warning *)
@@ -2453,16 +2453,13 @@ mark_position_exp
     { let (l,o,p) = $2 in
       mkexp (Pexp_fun(l, o, p, $3))
     }
-  | ES6_FUN _l = LPAREN _r = RPAREN EQUALGREATER body = expr
-    { let loc = mklocation $startpos(_l) $endpos(_r) in
-      mkexp (Pexp_fun (Nolabel, None, mkpat_constructor_unit loc loc, body))
-    }
-  | ES6_FUN LPAREN pats = pattern_optional_constraints RPAREN
-      EQUALGREATER body = expr
-    { List.fold_left (fun body pat ->
-        mkexp ~loc:(mklocation pat.ppat_loc.loc_start $endpos)
-          (Pexp_fun (Nolabel, None, pat, body))
-      ) body pats
+  | ES6_FUN parenthesized(separated_list(COMMA, pattern_optional_constraint))
+      EQUALGREATER simple_expr
+    { match $2 with
+      | [] ->
+        let loc = mklocation $startpos($2) $endpos($2) in
+        mkexp (Pexp_fun (Nolabel, None, mkpat_constructor_unit loc loc, $4))
+      | pats -> List.fold_left (fun body pat -> mkexp_fun pat body) $4 pats
     }
   | FUN LPAREN TYPE LIDENT+ RPAREN fun_def
     { pexp_newtypes $4 $6 }
@@ -2479,12 +2476,12 @@ mark_position_exp
     { syntax_error_exp (mklocation $startpos($4) $endpos($4)) "Invalid try with"}
   | name_tag simple_expr
     { mkexp(Pexp_variant($1, Some $2)) }
-  | IF LPAREN simple_expr RPAREN simple_expr ioption(preceded(ELSE,expr))
-    { mkexp(Pexp_ifthenelse($3, $5, $6)) }
-  | WHILE LPAREN simple_expr RPAREN simple_expr
-    { mkexp (Pexp_while($3, $5)) }
-  | FOR LPAREN pattern IN simple_expr direction_flag simple_expr RPAREN simple_expr
-    { mkexp(Pexp_for($3, $5, $7, $6, $9)) }
+  | IF simple_expr_no_call simple_expr ioption(preceded(ELSE,expr))
+    { mkexp(Pexp_ifthenelse($2, $3, $4)) }
+  | WHILE simple_expr_no_call simple_expr
+    { mkexp (Pexp_while($2, $3)) }
+  | FOR pattern IN simple_expr direction_flag simple_expr_no_call simple_expr
+    { mkexp(Pexp_for($2, $4, $6, $5, $7)) }
   | LPAREN COLONCOLON RPAREN LPAREN expr COMMA expr RPAREN
     { let loc_colon = mklocation $startpos($2) $endpos($2) in
       let loc = mklocation $symbolstartpos $endpos in
@@ -3266,12 +3263,6 @@ mark_position_pat
   ( pattern                                 { $1 }
   | pattern COLON only_core_type(core_type) { mkpat(Ppat_constraint($1, $3)) }
   ) {$1};
-
-pattern_optional_constraints:
-    pattern_optional_constraints COMMA pattern_optional_constraint
-    { $3::$1 }
-  | pattern_optional_constraint
-    { [$1] }
 ;
 
 %inline pattern_comma_list:
@@ -3715,9 +3706,8 @@ non_arrowed_core_type:
 ;
 
 type_parameters:
-  parenthesized(
-    separated_nonempty_list(COMMA, only_core_type(non_arrowed_simple_core_type))
-  ) { $1 }
+  parenthesized(separated_nonempty_list(COMMA, only_core_type(non_arrowed_simple_core_type)))
+  { $1 }
 ;
 
 non_arrowed_non_simple_core_type:

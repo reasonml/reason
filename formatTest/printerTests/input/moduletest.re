@@ -5,6 +5,6 @@ module TestModule = {
   }
 };
 
-let twoStrings = TestModule.mkPair "hello";
+let twoStrings = TestModule.mkPair("hello");
 let () =
-print_endline (TestModule.show_twostrings twoStrings);
+print_endline(TestModule.show_twostrings(twoStrings));

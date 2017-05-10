@@ -115,7 +115,7 @@ type pointWithManyKindsOfComments = {
   /* Final row of record */
 };
 
-type typeParamPointWithComments 'a = {
+type typeParamPointWithComments('a) = {
   /* Line before x */
   x: 'a, /* x field */
   /* Line before y */
@@ -126,11 +126,11 @@ type typeParamPointWithComments 'a = {
 /* Now, interleaving comments in type params */
 type
   /* Type name */
-  typeParamPointWithComments2
+  typeParamPointWithComments2(
   /* The a type param */
-  'a
+  'a,
   /* The b type apram */
-  'b = {
+  'b) = {
   /* Line before x */
   x: 'a, /* x field */
   /* Line before y */
@@ -305,7 +305,7 @@ type intPair2 = (
 
 let result = {
   /**/
-  (+) 2 3
+  (+)(2,3)
 };
 
 /* This is not yet idempotent */
@@ -347,7 +347,7 @@ let equal i1 i2 =>
   i1.contents === i2.contents && true; /* most unlikely first */
 
 let equal i1 i2 =>
-  compare (compare 0 0) (compare 1 1); /* END OF LINE HERE */
+  compare(compare(0,0),compare(1,1)); /* END OF LINE HERE */
 
 let tuple_equal (i1, i2) => i1 == i2;
 

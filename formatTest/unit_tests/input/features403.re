@@ -15,14 +15,14 @@ type expr 'a =
 let rec eval: type a. expr a => a =
   fun e =>
     switch e {
-    | Is0 {test} => eval test == 0
+    | Is0 {test} => eval(test) == 0
     | Val {value} => value
-    | Add {left, right} => eval left + eval right
+    | Add {left, right} => eval(left) + eval(right)
     | If {pred, true_branch, false_branch} =>
-        if (eval pred) {
-          eval true_branch
+        if (eval(pred)) {
+          eval(true_branch)
         } else {
-          eval false_branch
+          eval(false_branch)
         }
     };
 
