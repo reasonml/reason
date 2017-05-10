@@ -116,39 +116,23 @@ let class_desc_to_type desc = (
         | _ -> print_string "Methods must be typed"; assert false
     in
     Pctf_method (name.txt, private_flag, is_virtual, type_)
+
+  | Pcf_inherit (override_flag, {pcl_desc; pcl_loc; pcl_attributes}, maybe_rename) -> (
+    match pcl_desc with
+    | Pcl_constraint (_, type_) -> Pctf_inherit type_
+    | Pcl_apply ({pcl_desc=Pcl_constr (name, types)}, _)
+    | Pcl_constr (name, types) -> Pctf_inherit ({
+      pcty_desc=Pcty_constr (name, types);
+      pcty_loc=pcl_loc;
+      pcty_attributes=pcl_attributes
+    })
+    | _ -> print_string "Anheritance must be type annotated"; assert false
+  )
+
   | Pcf_initializer expr -> assert false
-        (* initializer E *)
   | Pcf_constraint (t1, t2) -> Pctf_constraint (t1, t2)
-        (* constraint T1 = T2 *)
   | Pcf_attribute attr -> Pctf_attribute attr
-        (* [@@@id] *)
   | Pcf_extension ext -> Pctf_extension ext
-
-  | Pcf_inherit (override_flag, class_expr, maybe_rename) ->
-    (*Pctf_inherit (class_expr_to_class_type class_expr) ->*)
-    assert false
-        (* inherit CE
-           inherit CE as x
-           inherit! CE
-           inherit! CE as x
-         *)
-        (* [%%id] *)
-
-(*
-  | Pctf_inherit of class_type
-        (* inherit CT *)
-  | Pctf_val of (string * mutable_flag * virtual_flag * core_type)
-        (* val x: T *)
-  | Pctf_method  of (string * private_flag * virtual_flag * core_type)
-        (* method x: T
-           Note: T can be a Ptyp_poly.
-         *)
-  | Pctf_constraint  of (core_type * core_type)
-        (* constraint T1 = T2 *)
-  | Pctf_attribute of attribute
-        (* [@@@id] *)
-  | Pctf_extension of extension
-  *)
 )
 
 let class_structure_to_class_signature {pcstr_self={ppat_desc; ppat_loc; ppat_attributes}; pcstr_fields} = (

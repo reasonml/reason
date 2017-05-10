@@ -23,11 +23,13 @@ include
        end
      class asquare (w : int) = let a = 2  in
        object (self)
+         inherit  some
          method width : int= w + a
          method area : int= self#width * self#width
          method larger (other : asquare) = (self#area > other#area : bool)
        end
      class m : asquare = (asquare 20)
+     class bsquare = object inherit  (asquare 20) end
    end :
     sig
       class some : object val  x : int end
@@ -55,9 +57,11 @@ include
       class asquare :
         int ->
           object
+            inherit some
             method  width : int
             method  area : int
             method  larger : asquare -> bool
           end
       class m : asquare
+      class bsquare : object inherit asquare end
     end)

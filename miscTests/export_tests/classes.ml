@@ -42,6 +42,7 @@ end
 class%export asquare (w: int) =
 let a = 2 in
 object(self)
+  inherit some
   method width: int = w + a
   method area: int = (self#width * self#width)
   method larger (other: asquare): bool = self#area > other#area
@@ -49,3 +50,6 @@ end
 
 class%export m: asquare = asquare 20
 
+class%export bsquare = object
+  inherit asquare 20
+end
