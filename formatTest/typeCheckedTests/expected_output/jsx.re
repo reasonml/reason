@@ -437,15 +437,15 @@ type thisType = [ | `Foo | `Bar];
 type t 'a = [< thisType] as 'a;
 
 let asd =
-  <One test=true foo=2> "a" "b" </One> [@foo];
+  [@foo] <One test=true foo=2> "a" "b" </One>;
 
 let asd2 =
+  [@foo]
+  [@JSX]
   One.createElementobvioustypo
   test::false
   children::["a", "b"]
-  ()
-  [@JSX]
-  [@foo];
+  ();
 
 let span
     test::(test: bool)
@@ -454,16 +454,16 @@ let span
     () => 1;
 
 let asd =
-  <span test=true foo=2> "a" "b" </span> [@foo];
+  [@foo] <span test=true foo=2> "a" "b" </span>;
 
 /* "video" call doesn't end with a list, so the expression isn't converted to JSX */
 let video test::(test: bool) children => children;
 
-let asd2 = video test::false 10 [@JSX] [@foo];
+let asd2 = [@foo] [@JSX] video test::false 10;
 
 let div ::children => 1;
 
-((fun () => div) ()) children::[] [@JSX];
+[@JSX] ((fun () => div) ()) children::[];
 
 let myFun () =>
   <>
@@ -554,23 +554,23 @@ let defaultArg = <DefaultArg default=zzz />;
 
 fakeRender defaultArg;
 
+[@bla]
+[@JSX]
 NotReallyJSX.createElement
 []
 foo::1
-bar::2
-[@JSX]
-[@bla];
+bar::2;
 
+[@bla]
+[@JSX]
 NotReallyJSX.createElement
 foo::1
 []
-bar::2
-[@JSX]
-[@bla];
+bar::2;
 
-notReallyJSX [] foo::1 [@JSX] [@bla];
+[@bla] [@JSX] notReallyJSX [] foo::1;
 
-notReallyJSX foo::1 [] bar::2 [@JSX] [@bla];
+[@bla] [@JSX] notReallyJSX foo::1 [] bar::2;
 
 /* children can be at any position */
 <span test=true foo=2 />;
@@ -578,13 +578,13 @@ notReallyJSX foo::1 [] bar::2 [@JSX] [@bla];
 <Optional1 required=(Some "hi") />;
 
 /* preserve some other attributes too! */
-<span test=true foo=2 /> [@bla];
+[@bla] <span test=true foo=2 />;
 
-<span test=true foo=2 /> [@bla];
+[@bla] <span test=true foo=2 />;
 
-<Optional1 required=(Some "hi") /> [@bla];
+[@bla] <Optional1 required=(Some "hi") />;
 
-<Optional1 required=(Some "hi") /> [@bla];
+[@bla] <Optional1 required=(Some "hi") />;
 
 /* Overeager JSX punning #1099 */
 module Metal = {

@@ -17,63 +17,70 @@
 
 [@@@ocaml.doc "Floating doc text should be removed"];
 
-type itemText = int [@@itemAttributeOnTypeDef] [@@ocaml.text "removed text on type def"];
-type nodeText = int [@ocaml.text "removed text on item"];
+[@@itemAttributeOnTypeDef] [@@ocaml.text "removed text on type def"]
+type itemText = int;
+type nodeText = [@ocaml.text "removed text on item"] int;
+[@@itemAttributeOnTypeDef]
+[@@ocaml.text "removed text on type def"]
 type nodeAndItemText =
-  int [@ocaml.text "removed text on item"]
-  [@@itemAttributeOnTypeDef]
-  [@@ocaml.text "removed text on type def"];
+  [@ocaml.text "removed text on item"] int;
 
-type itemDoc = int [@@itemAttributeOnTypeDef] [@@ocaml.doc "removed doc on type def"];
-type nodeDoc = int [@ocaml.text "removed text on item"] [@@itemAttributeOnTypeDef];
+[@@itemAttributeOnTypeDef] [@@ocaml.doc "removed doc on type def"]
+type itemDoc = int;
+[@@itemAttributeOnTypeDef]
+type nodeDoc = [@ocaml.text "removed text on item"] int;
+[@@itemAttributeOnTypeDef] [@@ocaml.doc "removed doc on type def"]
 type nodeAndItemDoc =
-  int [@ocaml.text "removed text on item"]
-  [@@itemAttributeOnTypeDef] [@@ocaml.doc "removed doc on type def"];
+  [@ocaml.text "removed text on item"] int;
 
-type x = int [@@itemAttributeOnTypeDef];
-type attributedInt = int [@onTopLevelTypeDef];
-type attributedIntsInTuple = (int [@onInt], float [@onFloat]) [@@onTopLevelTypeDef];
+[@@itemAttributeOnTypeDef]
+type x = int;
+type attributedInt = [@onTopLevelTypeDef] int;
+
+[@@itemAttributeOnTypeDef]
+type attributedIntsInTuple = ([@onInt] int, [@onFloat] float);
 
 type myDataType 'x 'y = | MyDataType 'x 'y;
 
 type myType =
+  [@onEntireType]
   myDataType
-    ((option int) [@onOptionInt])
-    (option float [@onOption]) [@onEntireType];
+    ([@onOptionInt] (option int))
+    ([@onOption] option float);
 
 
 let thisInst : myType =
-  MyDataType (Some 10) (Some 10.0) [@attOnEntireDatatype];
+  [@attOnEntireDatatype] MyDataType (Some 10) (Some 10.0);
 
 let thisInst : myType =
-  MyDataType ((Some 10) [@onFirstParam]) (Some 10.0) [@attOnEntireDatatype];
+  [@attOnEntireDatatype] MyDataType ([@onFirstParam] (Some 10)) (Some 10.0);
 
-let x = ("hello" [@onHello]);
-let x = "hello" [@onHello];
+let x = ([@onHello] "hello");
+let x = [@onHello] "hello";
 
-let x = "hello" ^ ("goodbye" [@onGoodbye]);
-let x = ("hello" [@onHello]) ^ "goodbye";
-let x = "hello" [@onHello] ^ "goodbye";
-let x = "hello" ^ "goodbye" [@onGoodbye];
-let x = ("hello" ^ "goodbye") [@onEverything];
+let x = "hello" ^ ([@onGoodbye] "goodbye");
+let x = ([@onHello] "hello") ^ "goodbye";
+let x = [@onHello] "hello" ^ "goodbye";
+let x = "hello" ^ [@onGoodbye] "goodbye";
+let x = [@onEverything] ("hello" ^ "goodbye");
 
-let x = 10 + (20 [@on20]);
-let x = 10 + 20 [@on20];
-let x = 10 [@on10] + 20;
-let x = (10 [@on10]) + 20;
-let x = (10 + 20) [@attrEverything];
+let x = 10 + ([@on20] 20);
+let x = 10 + [@on20] 20;
+let x = [@on10] 10  + 20;
+let x = ([@on10] 10) + 20;
+let x = [@attrEverything] (10 + 20);
 
-let x = 10 - (20 [@on20]);
-let x = 10 - 20 [@on20];
-let x = 10 [@on10] - 20;
-let x = (10 [@on10]) - 20;
-let x = (10 - 20) [@attrEntireEverything];
+let x = 10 - ([@on20] 20);
+let x = 10 - [@on20] 20;
+let x = [@on10] 10 - 20;
+let x = ([@on10] 10) - 20;
+let x = [@attrEntireEverything] (10 - 20);
 
-let x = true && (false [@onFalse]);
-let x = true && false [@onFalse];
-let x = true [@onTrue] && false;
-let x = (true [@onTrue]) && false;
-let x = (true && false) [@attrEverything];
+let x = true && ([@onFalse] false);
+let x = true && [@onFalse] false;
+let x = [@onTrue] true && false;
+let x = ([@onTrue] true) && false;
+let x = [@attrEverything] (true && false);
 
 
 /* now make sure to try with variants (tagged and `) */
@@ -81,36 +88,36 @@ let x = (true && false) [@attrEverything];
 /**
  * How attribute parsings respond to other syntactic constructs.
  */
-let add a => a [@onRet];
-let add = fun a => a [@onRet];
-let add = (fun a => a) [@onEntireFunction];
+let add a => [@onRet] a;
+let add = fun a => [@onRet] a;
+let add = [@onEntireFunction] (fun a => a);
 
-let res = if true false else false [@onFalse];
-let res = (if true false else false) [@onEntireIf];
+let res = if true false else [@onFalse] false;
+let res = [@onEntireIf] (if true false else false);
 
 
-let add a b => (a [@onA] + b) [@onEverything];
-let add a b => (a [@onA] + (b [@onB])) [@onEverything];
-let add = fun a b => a + b [@onB];
+let add a b => [@onEverything] ([@onA] a + b);
+let add a b => [@onEverything] ([@onA]a + ([@onB]b));
+let add = fun a b => a + [@onB]b;
 
-let both = (fun a => a) [@onEntireFunction];
-let both a b => (a [@onA] && b) [@onEverything];
-let both a b => a [@onA] && (b [@onB]) [@onB];
-let both = fun a b => (a && b) [@onEverything];
+let both = [@onEntireFunction](fun a => a);
+let both a b => [@onEverything]([@onA]a && b);
+let both a b => [@onA] a && [@onB] ([@onB] b);
+let both = fun a b => [@onEverything](a && b);
 
 let thisVal = 10;
-let x = 20 + - add thisVal thisVal [@onFunctionCall];
-let x = (20 + - add thisVal thisVal) [@onEverything];
-let x = - add thisVal thisVal [@onFunctionCall];
-let x = (- add thisVal thisVal) [@onEverything];
+let x = 20 + - [@onFunctionCall] add thisVal thisVal;
+let x = [@onEverything] (20 + - add thisVal thisVal);
+let x = - [@onFunctionCall] add thisVal thisVal;
+let x = [@onEverything] (- add thisVal thisVal);
 
 
 let bothTrue x y => {contents: x && y};
-let something = !(bothTrue true true) [@onEverythingToRightOfEquals];
-let something = !(bothTrue true true [@onlyOnArgumentToBang]);
+let something = [@onEverythingToRightOfEquals]!(bothTrue true true);
+let something = !([@onlyOnArgumentToBang]bothTrue true true);
 
-let res = add 2 4 [@appliesToEntireFunctionApplication];
-add 2 4 [@appliesToEntireFunctionApplication];
+let res = [@appliesToEntireFunctionApplication] add 2 4;
+ [@appliesToEntireFunctionApplication]add 2 4;
 
 
 let myObj = {
@@ -119,47 +126,56 @@ let myObj = {
   };
 };
 
-let result = (myObj#p () [@attOnFirstSend])#z () [@onSecondSend];
+let result = [@onSecondSend]([@attOnFirstSend]myObj#p ())#z ();
 
+[@@onRecordFunctions]
 type recordFunctions = {
-  p: unit => recordFunctions [@onUnit],
-  q: (unit => unit) [@onArrow]
-} [@@onRecordFunctions]
-and unusedType = unit [@@onUnusedType];
+  p: unit => [@onUnit] recordFunctions,
+  q: [@onArrow] (unit => unit)
+}
+[@@onUnusedType]
+and unusedType = unit;
+[@@onMyRecord]
 let rec myRecord = {
   p: fun () => myRecord,
   q: fun () => ()
-} [@@onMyRecord]
-and unused = () [@@onUnused];
-let result = (myRecord.p() [@attOnFirstSend]).q() [@onSecondSend];
+}
+[@@onUnused]
+and unused = ();
+let result = [@onSecondSend]([@attOnFirstSend]myRecord.p()).q();
 
+[@@onVariantType]
 type variantType =
-   | Foo int [@onInt]
-   | Bar (int [@onInt])
-   | Baz [@@onVariantType];
+   [@onInt] | Foo int
+   | Bar ([@onInt] int)
+   | Baz;
 
+[@@onVariantType]
 type gadtType 'x =
-   | Foo int : gadtType int [@onFirstRow]
-   | Bar (int [@onInt]) : gadtType unit [@onSecondRow]
-   | Baz: gadtType (unit [@onUnit]) [@onThirdRow] [@@onVariantType];
+   | Foo int : [@onFirstRow] gadtType int
+   | Bar ([@onInt]int) : [@onSecondRow]gadtType unit
+   | Baz: [@onThirdRow] gadtType ([@onUnit] unit);
 
 [@@@floatingTopLevelStructureItem hello];
-print_string "hello" [@@itemAttributeOnEval];
+[@@itemAttributeOnEval]
+print_string "hello";
 
-let firstBinding = "first" [@@itemAttrOnFirst]
-and secondBinding = "second" [@@itemAttrOnSecond];
+[@@itemAttrOnFirst]
+let firstBinding = "first"
+[@@itemAttrOnSecond]
+and secondBinding = "second";
 
 /**
  * Let bindings.
  * ----------------------
  */
-let showLets () => {
+let showLets () =>  [@onOuterLet] {
   let tmp = 20;
-  {
+  [@onFinalLet] {
     let tmpTmp = tmp + tmp;
     tmpTmp + tmpTmp;
-  } [@onFinalLet]
-} [@onOuterLet];
+  }
+};
 
 
 /**
@@ -169,39 +185,42 @@ let showLets () => {
 /**
  * In curried sugar, the class_expr attribute will apply to the return.
  */
-class boxA 'a (init: 'a) => {
+[@@moduleItemAttribute]
+class boxA 'a (init: 'a) => [@onReturnClassExpr] {
   [@@@ocaml.text "Floating comment text should be removed"];
   [@@@ocaml.doc "Floating comment text should be removed"];
   pub pr => init + init + init;
-} [@onReturnClassExpr] [@@moduleItemAttribute];
+};
 
 /**
  * In non-curried sugar, the class_expr still sticks to "the simple thing".
  */
 class boxB 'a =
-  fun (init: 'a) => {
+  fun (init: 'a) => [@stillOnTheReturnBecauseItsSimple] {
     pub pr => init + init + init;
-  } [@stillOnTheReturnBecauseItsSimple];
+  };
 
 /* To be able to put an attribute on just the return in that case, use
  * parens. */
-class boxC 'a = (
+[@@onBoxC x ; y]
+class boxC 'a = [@onEntireFunction] (
   fun (init: 'a) => (
-    {
+    [@onReturnClassExpr] {
       pub pr => init + init + init;
-    } [@onReturnClassExpr]
+    }
   )
-) [@onEntireFunction]
-  [@@onBoxC x ; y]
-  ;
+);
 
+[@@moduleItemAttribute onTheTupleClassItem;]
 class tupleClass 'a 'b (init: ('a, 'b)) => {
-  let one = 10   [@exprAttr ten;];
-  let two = 20   [@exprAttr twenty;]
-  and three = 30 [@exprAttr twenty;];
-  pub pr => one + two + three [@@pr prMember;];
-} [@@moduleItemAttribute onTheTupleClassItem;];
+  let one = [@exprAttr ten;] 10;
+  let two = [@exprAttr twenty;] 20
+  and three = [@exprAttr thirty;] 30;
+  [@@pr prMember;]
+  pub pr => one + two + three;
+};
 
+[@@structureItem]
 class type addablePointClassType = {
   [@@@ocaml.text "Floating comment text should be removed"];
   [@@@ocaml.doc "Floating comment text should be removed"];
@@ -213,38 +232,38 @@ class type addablePointClassType = {
 and anotherClassType = {
   pub foo: int;
   pub bar: int;
-}
-[@@structureItem];
+};
 
-class type _y = { pub height : int [@@bs.set] };
+class type _y = { [@@bs.set] pub height : int };
 
-class type _z = { pub height : int }[@@bs];
+[@@bs] class type _z = { pub height : int };
 
 module NestedModule = {
   [@@@floatingNestedStructureItem hello];
 };
+[@@structureItem]
 module type HasAttrs = {
-  type t = int [@@onTypeDef];
+  [@@onTypeDef]
+  type t = int;
   [@@@floatingNestedSigItem hello];
-  class type foo = {pub foo: int; pub bar: int;}
-  [@@sigItem];
-  class fooBar: int => new foo
-  [@@sigItem];
+  [@@sigItem]
+  class type foo = {pub foo: int; pub bar: int;};
+  [@@sigItem]
+  class fooBar: int => new foo;
   [@@@ocaml.text "Floating comment text should be removed"];
   [@@@ocaml.doc "Floating comment text should be removed"];
-}
-[@@structureItem];
+};
 
 type s = S string;
 
-let S (str [@onStr]) = S ("hello" [@onHello]);
-let (S str) [@onConstruction] = (S "hello") [@onConstruction];
+let S ([@onStr] str) = S ([@onHello]"hello");
+let [@onConstruction](S str)  = [@onConstruction](S "hello");
 
 type xy = | X string
           | Y string;
 
-let myFun = fun (X hello [@onConstruction] | Y hello [@onConstruction]) => hello;
-let myFun = fun (X (hello [@onHello]) | Y (hello [@onHello])) => hello;
+let myFun = fun ([@onConstruction]X hello  | [@onConstruction]Y hello) => hello;
+let myFun = fun (X ([@onHello] hello ) | Y ([@onHello]hello )) => hello;
 
 /* Another bug: Cannot have an attribute on or pattern
 let myFun = fun ((X hello | Y hello) [@onOrPattern]) => hello;
@@ -252,7 +271,8 @@ let myFun = fun ((X hello | Y hello) [@onOrPattern]) => hello;
 
 /* Bucklescript FFI item attributes */
 
-external imul : int => int => int = "Math.imul" [@@bs.val];
+[@@bs.val]
+external imul : int => int => int = "Math.imul";
 
 let module Js = {
   type t 'a;
@@ -260,28 +280,29 @@ let module Js = {
 
 type classAttributesOnKeys = {
   .
-  key1 [@bs.set] : string,
+  [@bs.set] key1 : string,
 
   /* The follow two are the same */
-  key2 [@bs.get {null}] : Js.t int [@onType2],
-  key3 [@bs.get {null}] : ((Js.t int) [@onType2]),
+  [@bs.get {null}] key2 : [@onType2] Js.t int,
+  [@bs.get {null}] key3 : ([@onType2] (Js.t int)),
 
-  key4 : Js.t (int [@justOnInt])
+  key4 : Js.t ([@justOnInt] int)
 };
 
 type attr = ..;
 
+[@@block]
 type attr +=
-  | Str [@tag1] [@tag2]
-  | Float [@tag3]
-[@@block];
+  [@tag1] [@tag2] | Str
+  [@tag3] | Float ;
 
 type reconciler 'props = ..;
 
+[@@onVariantType]
 type reconciler 'props +=
- | Foo int : reconciler int [@onFirstRow]
- | Bar (int [@onInt]) : reconciler unit [@onSecondRow]
- | Baz: reconciler (unit [@onUnit]) [@onThirdRow] [@@onVariantType];
+ | Foo int : [@onFirstRow] reconciler int
+ | Bar ([@onInt] int) : [@onSecondRow] reconciler unit
+ | Baz: [@onThirdRow] reconciler ([@onUnit] unit);
 
 type element;
 
@@ -290,15 +311,19 @@ type reactElement;
 type reactClass;
 
 /* "react-dom" shouldn't spread the attribute over multiple lines */
-external render : reactElement => element => unit = "render" [@@bs.val] [@@bs.module "react-dom"];
+[@@bs.val] [@@bs.module "react-dom"]
+external render : reactElement => element => unit = "render";
 
-external f : int => int = "f" [@@bs.module "f"];
+[@@bs.module "f"]
+external f : int => int = "f";
 
+[@@bs.val] [@@bs.module "react"] [@@bs.splice]
 external createCompositeElementInternalHack : reactClass =>
                                               Js.t {.. reasonProps : 'props} =>
                                               array reactElement =>
-                                              reactElement = "createElement" [@@bs.val] [@@bs.module "react"] [@@bs.splice];
+                                              reactElement = "createElement";
 
 external add_nat: int => int => int = "add_nat_bytecode" "add_nat_native";
 
-external foo : bool => bool = "" [@@bs.module "Bar"] [@@ocaml.deprecated "Use bar instead. It's a much cooler function. This string needs to be a little long"];
+[@@bs.module "Bar"] [@@ocaml.deprecated "Use bar instead. It's a much cooler function. This string needs to be a little long"]
+external foo : bool => bool = "";

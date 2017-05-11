@@ -2108,7 +2108,7 @@ let formatSimpleAttributed x y =
     ~break:IfNeed
     ~indent:0
     ~postSpace:true
-    [x; y;]
+    [y; x;]
 
 let formatAttributed x y =
   makeList
@@ -2116,7 +2116,7 @@ let formatAttributed x y =
     ~inline:(true, true)
     ~indent:0
     ~postSpace:true
-    [x; y]
+    [y; x]
 
 (* For when the type constraint should be treated as a separate breakable line item itself
    not docked to some value/pattern label.
@@ -2873,7 +2873,7 @@ class printer  ()= object(self:'self)
                 makeList
                   ~postSpace:true
                   ~break:IfNeed
-                  [atom s; (self#attributes attrs); atom ":"; self#core_type ct]
+                  [(self#attributes attrs); atom s; atom ":"; self#core_type ct]
             )
           in
           let openness = match o with
@@ -3442,7 +3442,7 @@ class printer  ()= object(self:'self)
           ~inline:(true, true)
           ~indent:0
           ~postSpace:true
-          (List.concat [itms; attributesAsList])
+          (List.concat [attributesAsList; itms])
       ]
     else
     match self#simplest_expression x with
@@ -3502,7 +3502,7 @@ class printer  ()= object(self:'self)
         let theFunc = SourceMap (e.pexp_loc, (self#simplifyUnparseExpr e)) in
         (*reset here only because [function,match,try,sequence] are lower priority*)
         let theArgs = List.map self#reset#label_x_expression_param ls in
-        FunctionApplication (theFunc::theArgs @ maybeJSXAttr)
+        FunctionApplication (maybeJSXAttr @ theFunc::theArgs)
       )
     )
     | Pexp_construct (li, Some eo) when not (is_simple_construct (view_expr x)) -> (
@@ -5033,7 +5033,7 @@ class printer  ()= object(self:'self)
     let l = extractStdAttrs l in
     match l with
       | [] -> toThis
-      | _::_ -> makeList ~postSpace:true [toThis; (self#attributes l)]
+      | _::_ -> makeList ~postSpace:true [(self#attributes l); toThis]
 
   method attach_std_item_attrs l toThis =
     let l = extractStdAttrs l in
@@ -5041,8 +5041,8 @@ class printer  ()= object(self:'self)
       | [] -> toThis
       | _::_ ->
         makeList ~postSpace:true ~indent:0 ~break:IfNeed ~inline:(true, true) [
-          toThis;
           makeList ~break:IfNeed ~postSpace:true (List.map self#item_attribute l);
+          toThis;
         ]
 
   method exception_declaration ed =
@@ -5150,15 +5150,15 @@ class printer  ()= object(self:'self)
         (self#core_type vd.pval_type)
     in
     let frstHalf = makeList ~postSpace:true [lblBefore; atom "="] in
-    let string_literals = makeSpacedBreakableInlineList (List.map self#constant_string vd.pval_prim) in
-    let sndHalf =
+    let frstHalf =
       if (List.length attrs) == 0 then
-        string_literals
+        frstHalf
       else
         makeSpacedBreakableInlineList [
-          string_literals;
-          makeSpacedBreakableInlineList attrs
-        ]
+          makeSpacedBreakableInlineList attrs;
+          frstHalf;
+        ] in
+    let sndHalf = makeSpacedBreakableInlineList (List.map self#constant_string vd.pval_prim)
     in
     label ~space:true frstHalf sndHalf
 
@@ -5543,10 +5543,6 @@ class printer  ()= object(self:'self)
           (List.map self#signature_item signatureItems)
       )
 
-  method value_description x =
-    let vd = self#core_type x.pval_type in
-    self#attach_std_item_attrs x.pval_attributes vd
-
   method signature_item x :layoutNode =
     let item: layoutNode =
       match x.psig_desc with
@@ -5557,9 +5553,10 @@ class printer  ()= object(self:'self)
               self#primitive_declaration vd
             else
               let intro = atom "let" in
+              self#attach_std_item_attrs vd.pval_attributes
               (formatTypeConstraint
-                 (label ~space:true intro (wrapLayoutWithLoc (Some (vd.pval_name.loc)) (protectIdentifier vd.pval_name.txt)))
-                 (self#value_description vd))
+                (label ~space:true intro (wrapLayoutWithLoc (Some (vd.pval_name.loc)) (protectIdentifier vd.pval_name.txt)))
+                (self#core_type vd.pval_type))
 
         | Psig_typext te ->
             self#type_extension te
