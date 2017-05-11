@@ -1133,8 +1133,7 @@ conflicts.
 %nonassoc DOT
 
 /* Finally, the first tokens of simple_expr are above everything else. */
-%nonassoc below_LPAREN
-%nonassoc LBRACE LPAREN
+%nonassoc LBRACKETLESS LBRACKETBAR LBRACKET LBRACELESS LBRACE LPAREN
 
 /* Entry points */
 
@@ -1844,7 +1843,7 @@ mark_position_cl
     { $1 }
   | FUN class_fun_def
     { $2 }
-  | class_simple_expr labeled_argument_list
+  | class_simple_expr labeled_arguments
       /**
        * This is an interesting way to "partially apply" class construction:
        *
@@ -2405,8 +2404,6 @@ jsx_start_tag_and_args_without_leading_less:
   { (jsx_component $1 $2, $1) }
 ;
 
-simple_expr_no_call: simple_expr %prec below_LPAREN { $1 };
-
 jsx:
   | LESSGREATER simple_expr_no_call* LESSSLASHGREATER
     { let loc = mklocation $symbolstartpos $endpos in
@@ -2571,14 +2568,20 @@ mark_position_exp
   ) {$1};
 
 simple_expr:
-mark_position_exp
-  ( as_loc(val_longident) { mkexp (Pexp_ident $1) }
+  | mark_position_exp(basic_expr(simple_expr)) { $1 }
+  | simple_expr labeled_arguments
+    { mkexp ~loc:(mklocation $startpos $endpos) (Pexp_apply($1, $2)) }
+;
+
+simple_expr_no_call: mark_position_exp(basic_expr(simple_expr_no_call)) { $1 };
+
+%inline basic_expr(E):
+  | as_loc(val_longident) { mkexp (Pexp_ident $1) }
   | constant              { mkexp (Pexp_constant $1) }
   | jsx                   { $1 }
+  | simple_expr_direct_argument { $1 }
   /* Not sure why this couldn't have just been below_SHARP (Answer: Being
    * explicit about needing to wait for "as") */
-  | simple_expr labeled_argument_list
-      { mkexp(Pexp_apply($1, $2)) }
   | as_loc(constr_longident) %prec prec_constant_constructor
     { mkexp (Pexp_construct ($1, None)) }
   | as_loc(constr_longident) non_labeled_argument_list
@@ -2594,6 +2597,98 @@ mark_position_exp
     }
   | name_tag %prec prec_constant_constructor
     { mkexp (Pexp_variant ($1, None)) }
+  | LPAREN expr_list RPAREN
+    { may_tuple $2 }
+  | as_loc(LPAREN) expr_list as_loc(error)
+    { unclosed_exp (with_txt $1 "(") (with_txt $3 ")") }
+  | as_loc(mod_longident) DOT LPAREN expr_list RPAREN
+    { mkexp(Pexp_open(Fresh, $1, may_tuple $4)) }
+  | mod_longident DOT as_loc(LPAREN) expr_list as_loc(error)
+    { unclosed_exp (with_txt $3 "(") (with_txt $5 ")") }
+  | E DOT as_loc(label_longident)
+    { mkexp(Pexp_field($1, $3)) }
+  | as_loc(mod_longident) DOT LBRACE RBRACE
+    { let loc = mklocation $symbolstartpos $endpos in
+      let pat = mkpat (Ppat_var (mkloc "this" loc)) in
+      mkexp(Pexp_open (Fresh, $1,
+                       mkexp(Pexp_object(Cstr.mk pat []))))
+    }
+  | E DOT LPAREN expr RPAREN
+    { let loc = mklocation $symbolstartpos $endpos in
+      mkexp(Pexp_apply(mkexp ~ghost:true ~loc (Pexp_ident(array_function ~loc "Array" "get")),
+                       [Nolabel,$1; Nolabel,$4]))
+    }
+  | E DOT as_loc(LPAREN) expr as_loc(error)
+    { unclosed_exp (with_txt $3 "(") (with_txt $5 ")") }
+  | E DOT LBRACKET expr RBRACKET
+    { let loc = mklocation $symbolstartpos $endpos in
+      mkexp(Pexp_apply(mkexp ~ghost:true ~loc (Pexp_ident(array_function ~loc "String" "get")),
+                       [Nolabel,$1; Nolabel,$4]))
+    }
+  | E DOT as_loc(LBRACKET) expr as_loc(error)
+    { unclosed_exp (with_txt $3 "[") (with_txt $5 "]") }
+  | E DOT LBRACE expr RBRACE
+    { let loc = mklocation $symbolstartpos $endpos in
+      bigarray_get ~loc $1 $4
+    }
+  | as_loc(mod_longident) DOT LBRACE record_expr RBRACE
+    { let (exten, fields) = $4 in
+      let loc = mklocation $symbolstartpos $endpos in
+      let rec_exp = mkexp ~loc (Pexp_record (fields, exten)) in
+      mkexp(Pexp_open(Fresh, $1, rec_exp))
+    }
+  | mod_longident DOT as_loc(LBRACE) record_expr as_loc(error)
+    { unclosed_exp (with_txt $3 "{") (with_txt $5 "}") }
+  | as_loc(mod_longident) DOT LBRACKETBAR expr_list BARRBRACKET
+    { let loc = mklocation $symbolstartpos $endpos in
+      let rec_exp = Exp.mk ~loc ~attrs:[] (Pexp_array $4) in
+      mkexp(Pexp_open(Fresh, $1, rec_exp))
+    }
+  | mod_longident DOT as_loc(LBRACKETBAR) expr_list as_loc(error)
+    { unclosed_exp (with_txt $3 "[|") (with_txt $5 "|]") }
+  | as_loc(mod_longident) DOT LBRACKET expr_comma_seq_extension RBRACKET
+    { let seq, ext_opt = $4 in
+      let loc = mklocation $startpos($4) $endpos($4) in
+      let list_exp = make_real_exp (mktailexp_extension loc seq ext_opt) in
+      let list_exp = { list_exp with pexp_loc = loc } in
+      mkexp (Pexp_open (Fresh, $1, list_exp))
+    }
+  | PREFIXOP E %prec below_DOT_AND_SHARP
+    { mkexp(Pexp_apply(mkoperator $1 1, [Nolabel, $2])) }
+  /**
+   * Must be below_DOT_AND_SHARP so that the parser waits for several dots for
+   * nested record access that the bang should apply to.
+   *
+   * !x.y.z should be parsed as !(((x).y).z)
+   */
+  | as_loc(BANG) E %prec below_DOT_AND_SHARP
+    { mkexp (Pexp_apply(mkoperator "!" 1, [Nolabel,$2])) }
+  | NEW as_loc(class_longident)
+    { mkexp (Pexp_new $2) }
+  | as_loc(mod_longident) DOT LBRACELESS field_expr_list COMMA? GREATERRBRACE
+    { let loc = mklocation $symbolstartpos $endpos in
+      let exp = Exp.mk ~loc ~attrs:[] (Pexp_override $4) in
+      mkexp (Pexp_open(Fresh, $1, exp))
+    }
+  | mod_longident DOT as_loc(LBRACELESS) field_expr_list COMMA? as_loc(error)
+    { unclosed_exp (with_txt $3 "{<") (with_txt $6 ">}") }
+  | E SHARP label
+    { mkexp (Pexp_send($1, $3)) }
+  | E as_loc(SHARPOP) E
+    { mkinfixop $1 (mkoperator_loc $2.txt $2.loc) $3 }
+  | as_loc(mod_longident) DOT LPAREN MODULE module_expr COLON package_type RPAREN
+    { let loc = mklocation $symbolstartpos $endpos in
+      mkexp (Pexp_open(Fresh, $1,
+        mkexp ~loc (Pexp_constraint (mkexp ~ghost:true ~loc (Pexp_pack $5),
+                                     mktyp ~ghost:true ~loc (Ptyp_package $7)))))
+    }
+  | mod_longident DOT as_loc(LPAREN) MODULE module_expr COLON as_loc(error)
+    { unclosed_exp (with_txt $3 "(") (with_txt $7 ")")}
+  | extension
+    { mkexp (Pexp_extension $1) }
+;
+
+simple_expr_direct_argument:
   /*
      Because [< is a special token, the <ident and <> won't be picked up as separate
      tokens, when a list begins witha JSX tag. So we special case it.
@@ -2614,54 +2709,10 @@ mark_position_exp
     { let entireLoc = mklocation $startpos($1) $endpos($3) in
       mktailexp_extension entireLoc ($2::[]) None
     }
-  | LPAREN expr_list RPAREN
-    { may_tuple $2 }
-  | as_loc(LPAREN) expr_list as_loc(error)
-    { unclosed_exp (with_txt $1 "(") (with_txt $3 ")") }
-  | as_loc(mod_longident) DOT LPAREN expr_list RPAREN
-    { mkexp(Pexp_open(Fresh, $1, may_tuple $4)) }
-  | mod_longident DOT as_loc(LPAREN) expr_list as_loc(error)
-    { unclosed_exp (with_txt $3 "(") (with_txt $5 ")") }
-  /**
-   * A single expression can be type constrained.
-   */
   | LBRACE semi_terminated_seq_expr RBRACE
     { $2 }
   | LBRACE as_loc(semi_terminated_seq_expr) error
     { syntax_error_exp $2.loc "SyntaxError in block" }
-  | simple_expr DOT as_loc(label_longident)
-    { mkexp(Pexp_field($1, $3)) }
-  | as_loc(mod_longident) DOT LBRACE RBRACE
-    { let loc = mklocation $symbolstartpos $endpos in
-      let pat = mkpat (Ppat_var (mkloc "this" loc)) in
-      mkexp(Pexp_open (Fresh, $1,
-                       mkexp(Pexp_object(Cstr.mk pat []))))
-    }
-  | simple_expr DOT LPAREN expr RPAREN
-    { let loc = mklocation $symbolstartpos $endpos in
-      mkexp(Pexp_apply(mkexp ~ghost:true ~loc (Pexp_ident(array_function ~loc "Array" "get")),
-                       [Nolabel,$1; Nolabel,$4]))
-    }
-  | simple_expr DOT as_loc(LPAREN) expr as_loc(error)
-    { unclosed_exp (with_txt $3 "(") (with_txt $5 ")") }
-  | simple_expr DOT LBRACKET expr RBRACKET
-    { let loc = mklocation $symbolstartpos $endpos in
-      mkexp(Pexp_apply(mkexp ~ghost:true ~loc (Pexp_ident(array_function ~loc "String" "get")),
-                       [Nolabel,$1; Nolabel,$4]))
-    }
-  | simple_expr DOT as_loc(LBRACKET) expr as_loc(error)
-    { unclosed_exp (with_txt $3 "[") (with_txt $5 "]") }
-  | simple_expr DOT LBRACE expr RBRACE
-    { let loc = mklocation $symbolstartpos $endpos in
-      bigarray_get ~loc $1 $4
-    }
-
-  /* This might not be needed anymore
-  | simple_expr DOT as_loc(LBRACE) expr_comma_list as_loc(error)
-      { unclosed_exp (with_txt $3 "[") (with_txt $5 "]") }
-  */
-
-  /* TODO: Let Sequence? */
 
   | LBRACE DOTDOTDOT expr_optional_constraint COMMA? RBRACE
     { let loc = mklocation $symbolstartpos $endpos in
@@ -2685,68 +2736,23 @@ mark_position_exp
     { mkexp (Pexp_object $2) }
   | as_loc(LBRACE) object_body as_loc(error)
     { unclosed_exp (with_txt $1 "{") (with_txt $3 "}") }
-  | as_loc(mod_longident) DOT LBRACE record_expr RBRACE
-    { let (exten, fields) = $4 in
-      let loc = mklocation $symbolstartpos $endpos in
-      let rec_exp = mkexp ~loc (Pexp_record (fields, exten)) in
-      mkexp(Pexp_open(Fresh, $1, rec_exp))
-    }
-  | mod_longident DOT as_loc(LBRACE) record_expr as_loc(error)
-    { unclosed_exp (with_txt $3 "{") (with_txt $5 "}") }
   | LBRACKETBAR expr_list BARRBRACKET
     { mkexp (Pexp_array $2) }
   | as_loc(LBRACKETBAR) expr_list as_loc(error)
     { unclosed_exp (with_txt $1 "[|") (with_txt $3 "|]") }
   | LBRACKETBAR BARRBRACKET
     { mkexp (Pexp_array []) }
-  | as_loc(mod_longident) DOT LBRACKETBAR expr_list BARRBRACKET
-    { let loc = mklocation $symbolstartpos $endpos in
-      let rec_exp = Exp.mk ~loc ~attrs:[] (Pexp_array $4) in
-      mkexp(Pexp_open(Fresh, $1, rec_exp))
-    }
-  | mod_longident DOT as_loc(LBRACKETBAR) expr_list as_loc(error)
-    { unclosed_exp (with_txt $3 "[|") (with_txt $5 "|]") }
   | LBRACKET expr_comma_seq_extension RBRACKET
     { let seq, ext_opt = $2 in
       let loc = mklocation $startpos($2) $endpos($2) in
       make_real_exp (mktailexp_extension loc seq ext_opt)
     }
-  | as_loc(mod_longident) DOT LBRACKET expr_comma_seq_extension RBRACKET
-    { let seq, ext_opt = $4 in
-      let loc = mklocation $startpos($4) $endpos($4) in
-      let list_exp = make_real_exp (mktailexp_extension loc seq ext_opt) in
-      let list_exp = { list_exp with pexp_loc = loc } in
-      mkexp (Pexp_open (Fresh, $1, list_exp))
-    }
-  | PREFIXOP simple_expr %prec below_DOT_AND_SHARP
-    { mkexp(Pexp_apply(mkoperator $1 1, [Nolabel, $2])) }
-  /**
-   * Must be below_DOT_AND_SHARP so that the parser waits for several dots for
-   * nested record access that the bang should apply to.
-   *
-   * !x.y.z should be parsed as !(((x).y).z)
-   */
-  | as_loc(BANG) simple_expr %prec below_DOT_AND_SHARP
-    { mkexp (Pexp_apply(mkoperator "!" 1, [Nolabel,$2])) }
-  | NEW as_loc(class_longident)
-    { mkexp (Pexp_new $2) }
   | LBRACELESS field_expr_list COMMA? GREATERRBRACE
     { mkexp (Pexp_override $2) }
   | as_loc(LBRACELESS) field_expr_list COMMA? as_loc(error)
     { unclosed_exp (with_txt $1 "{<") (with_txt $4 ">}" ) }
   | LBRACELESS GREATERRBRACE
     { mkexp (Pexp_override [])}
-  | as_loc(mod_longident) DOT LBRACELESS field_expr_list COMMA? GREATERRBRACE
-    { let loc = mklocation $symbolstartpos $endpos in
-      let exp = Exp.mk ~loc ~attrs:[] (Pexp_override $4) in
-      mkexp (Pexp_open(Fresh, $1, exp))
-    }
-  | mod_longident DOT as_loc(LBRACELESS) field_expr_list COMMA? as_loc(error)
-    { unclosed_exp (with_txt $3 "{<") (with_txt $6 ">}") }
-  | simple_expr SHARP label
-    { mkexp (Pexp_send($1, $3)) }
-  | simple_expr as_loc(SHARPOP) simple_expr
-    { mkinfixop $1 (mkoperator_loc $2.txt $2.loc) $3 }
   | LPAREN MODULE module_expr RPAREN
     { mkexp (Pexp_pack $3) }
   | LPAREN MODULE module_expr COLON package_type RPAREN
@@ -2756,17 +2762,7 @@ mark_position_exp
     }
   | as_loc(LPAREN) MODULE module_expr COLON as_loc(error)
     { unclosed_exp (with_txt $1 "(") (with_txt $5 ")") }
-  | as_loc(mod_longident) DOT LPAREN MODULE module_expr COLON package_type RPAREN
-    { let loc = mklocation $symbolstartpos $endpos in
-      mkexp (Pexp_open(Fresh, $1,
-        mkexp ~loc (Pexp_constraint (mkexp ~ghost:true ~loc (Pexp_pack $5),
-                                     mktyp ~ghost:true ~loc (Ptyp_package $7)))))
-    }
-  | mod_longident DOT as_loc(LPAREN) MODULE module_expr COLON as_loc(error)
-    { unclosed_exp (with_txt $3 "(") (with_txt $7 ")")}
-  | extension
-    { mkexp (Pexp_extension $1) }
-  ) {$1};
+;
 
 non_labeled_argument_list:
   parenthesized(separated_list(COMMA, expr))
@@ -2777,22 +2773,24 @@ non_labeled_argument_list:
   }
 ;
 
-labeled_argument_list:
-  parenthesized(separated_list(COMMA, labeled_expr))
-  { match $1 with
-    | [] -> let loc = mklocation $startpos $endpos in
-            [(Nolabel, mkexp_constructor_unit loc loc)]
-    | xs -> xs
-  }
+labeled_arguments:
+  | mark_position_exp(simple_expr_direct_argument)
+    { [(Nolabel, $1)] }
+  | parenthesized(separated_list(COMMA, labeled_expr))
+    { match $1 with
+      | [] -> let loc = mklocation $startpos $endpos in
+              [(Nolabel, mkexp_constructor_unit loc loc)]
+      | xs -> xs
+    }
 ;
 
 labeled_expr:
-  | expr { (Nolabel, $1) }
+  | expr_optional_constraint { (Nolabel, $1) }
   | COLONCOLONLIDENT
     { let loc = mklocation $symbolstartpos $endpos in
       (Labelled $1, mkexp (Pexp_ident(mkloc (Lident $1) loc)) ~loc)
     }
-  | LIDENTCOLONCOLON expr
+  | LIDENTCOLONCOLON expr_optional_constraint
     { (Labelled $1, $2) }
   /* Expliclitly provided default optional:
    * let res = someFunc optionalArg:?None;
@@ -2802,7 +2800,7 @@ labeled_expr:
       (Optional (String.concat "" (Longident.flatten $3)),
        mkexp (Pexp_ident(mkloc $3 loc)) ~loc)
     }
-  | LIDENTCOLONCOLON QUESTION expr
+  | LIDENTCOLONCOLON QUESTION expr_optional_constraint
     { (Optional $1, $3) }
 ;
 
@@ -3080,7 +3078,7 @@ pattern:
 ;
 
 pattern_constructor_argument:
-  | simple_pattern_bracketed { [$1] }
+  | simple_pattern_direct_argument { [$1] }
   | parenthesized(separated_nonempty_list(COMMA, pattern_optional_constraint))
     { $1 }
 ;
@@ -3204,13 +3202,13 @@ mark_position_pat
     }
   | as_loc(LPAREN) MODULE UIDENT COLON package_type as_loc(error)
     { unclosed_pat (with_txt $1 "(") (with_txt $6 ")") }
-  | simple_pattern_bracketed
+  | simple_pattern_direct_argument
     { $1 }
   | extension
     { mkpat(Ppat_extension $1) }
   ) {$1};
 
-simple_pattern_bracketed:
+simple_pattern_direct_argument:
 mark_position_pat
   ( LBRACE lbl_pattern_list RBRACE
     { let (fields, closed) = $2 in mkpat (Ppat_record (fields, closed)) }

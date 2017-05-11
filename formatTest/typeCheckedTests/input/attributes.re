@@ -87,36 +87,36 @@ let x = [@attrEverything] (true && false);
 /**
  * How attribute parsings respond to other syntactic constructs.
  */
-let add a => [@onRet] a;
-let add = fun a => [@onRet] a;
-let add = [@onEntireFunction] (fun a => a);
+let add(a) => [@onRet] a;
+let add = fun(a) => [@onRet] a;
+let add = [@onEntireFunction] (fun(a) => a);
 
 let res = if true false else [@onFalse] false;
 let res = [@onEntireIf] (if true false else false);
 
 
-let add a b => [@onEverything] ([@onA] a + b);
-let add a b => [@onEverything] ([@onA]a + ([@onB]b));
-let add = fun a b => a + [@onB]b;
+let add(a,b) => [@onEverything] ([@onA] a + b);
+let add(a,b) => [@onEverything] ([@onA]a + ([@onB]b));
+let add = fun(a,b) => a + [@onB]b;
 
-let both = [@onEntireFunction](fun a => a);
-let both a b => [@onEverything]([@onA]a && b);
-let both a b => [@onA] a && [@onB] ([@onB] b);
-let both = fun a b => [@onEverything](a && b);
+let both = [@onEntireFunction](fun(a) => a);
+let both(a,b) => [@onEverything]([@onA]a && b);
+let both(a,b) => [@onA] a && [@onB] ([@onB] b);
+let both = fun(a,b) => [@onEverything](a && b);
 
 let thisVal = 10;
-let x = 20 + - [@onFunctionCall] add thisVal thisVal;
-let x = [@onEverything] (20 + - add thisVal thisVal);
-let x = - [@onFunctionCall] add thisVal thisVal;
-let x = [@onEverything] (- add thisVal thisVal);
+let x = 20 + - [@onFunctionCall] add(thisVal,thisVal);
+let x = [@onEverything] (20 + - add(thisVal,thisVal));
+let x = - [@onFunctionCall] add(thisVal,thisVal);
+let x = [@onEverything] (- add(thisVal,thisVal));
 
 
-let bothTrue x y => {contents: x && y};
-let something = [@onEverythingToRightOfEquals]!(bothTrue true true);
-let something = !([@onlyOnArgumentToBang]bothTrue true true);
+let bothTrue(x,y) => {contents: x && y};
+let something = [@onEverythingToRightOfEquals]!(bothTrue(true,true));
+let something = !([@onlyOnArgumentToBang]bothTrue(true,true));
 
-let res = [@appliesToEntireFunctionApplication] add 2 4;
- [@appliesToEntireFunctionApplication]add 2 4;
+let res = [@appliesToEntireFunctionApplication] add(2,4);
+ [@appliesToEntireFunctionApplication]add(2,4);
 
 
 let myObj = {
@@ -145,19 +145,19 @@ let result = [@onSecondSend]([@attOnFirstSend]myRecord.p()).q();
 
 [@@onVariantType]
 type variantType =
-   [@onInt] | Foo int
+   [@onInt] | Foo(int)
    | Bar ([@onInt] int)
    | Baz;
 
 [@@onVariantType]
-type gadtType 'x =
-   | Foo int : [@onFirstRow] gadtType int
-   | Bar ([@onInt]int) : [@onSecondRow]gadtType unit
+type gadtType('x) =
+   | Foo(int) : [@onFirstRow] gadtType(int)
+   | Bar ([@onInt]int) : [@onSecondRow]gadtType(unit)
    | Baz: [@onThirdRow] gadtType ([@onUnit] unit);
 
 [@@@floatingTopLevelStructureItem hello];
 [@@itemAttributeOnEval]
-print_string "hello";
+print_string("hello");
 
 [@@itemAttrOnFirst]
 let firstBinding = "first"
@@ -185,7 +185,7 @@ let showLets () =>  [@onOuterLet] {
  * In curried sugar, the class_expr attribute will apply to the return.
  */
 [@@moduleItemAttribute]
-class boxA 'a (init: 'a) => [@onReturnClassExpr] {
+class boxA('a) (init: 'a) => [@onReturnClassExpr] {
   [@@@ocaml.text "Floating comment text should be removed"];
   [@@@ocaml.doc "Floating comment text should be removed"];
   pub pr => init + init + init;
@@ -194,7 +194,7 @@ class boxA 'a (init: 'a) => [@onReturnClassExpr] {
 /**
  * In non-curried sugar, the class_expr still sticks to "the simple thing".
  */
-class boxB 'a =
+class boxB('a) =
   fun (init: 'a) => [@stillOnTheReturnBecauseItsSimple] {
     pub pr => init + init + init;
   };
@@ -202,7 +202,7 @@ class boxB 'a =
 /* To be able to put an attribute on just the return in that case, use
  * parens. */
 [@@onBoxC x ; y]
-class boxC 'a = [@onEntireFunction] (
+class boxC('a) = [@onEntireFunction] (
   fun (init: 'a) => (
     [@onReturnClassExpr] {
       pub pr => init + init + init;
@@ -211,7 +211,7 @@ class boxC 'a = [@onEntireFunction] (
 );
 
 [@@moduleItemAttribute onTheTupleClassItem;]
-class tupleClass 'a 'b (init: ('a, 'b)) => {
+class tupleClass('a,'b)(init: ('a, 'b)) => {
   let one = [@exprAttr ten;] 10;
   let two = [@exprAttr twenty;] 20
   and three = [@exprAttr thirty;] 30;
@@ -253,19 +253,19 @@ module type HasAttrs = {
   [@@@ocaml.doc "Floating comment text should be removed"];
 };
 
-type s = S string;
+type s = S(string);
 
 let S ([@onStr] str) = S ([@onHello]"hello");
-let [@onConstruction](S str)  = [@onConstruction](S "hello");
+let [@onConstruction](S(str))  = [@onConstruction](S("hello"));
 
-type xy = | X string
-          | Y string;
+type xy = | X(string)
+          | Y(string);
 
-let myFun = fun ([@onConstruction]X hello  | [@onConstruction]Y hello) => hello;
+let myFun = fun ([@onConstruction]X(hello) | [@onConstruction]Y(hello)) => hello;
 let myFun = fun (X ([@onHello] hello ) | Y ([@onHello]hello )) => hello;
 
 /* Another bug: Cannot have an attribute on or pattern
-let myFun = fun ((X hello | Y hello) [@onOrPattern]) => hello;
+let myFun = fun ((X(hello) | Y(hello)) [@onOrPattern]) => hello;
 */
 
 /* Bucklescript FFI item attributes */
@@ -274,7 +274,7 @@ let myFun = fun ((X hello | Y hello) [@onOrPattern]) => hello;
 external imul : int => int => int = "Math.imul";
 
 let module Js = {
-  type t 'a;
+  type t('a);
 };
 
 type classAttributesOnKeys = {
@@ -282,8 +282,8 @@ type classAttributesOnKeys = {
   [@bs.set] key1 : string,
 
   /* The follow two are the same */
-  [@bs.get {null}] key2 : [@onType2] Js.t int,
-  [@bs.get {null}] key3 : ([@onType2] (Js.t int)),
+  [@bs.get {null}] key2 : [@onType2] Js.t(int),
+  [@bs.get {null}] key3 : ([@onType2] (Js.t(int))),
 
   key4 : Js.t ([@justOnInt] int)
 };
@@ -295,12 +295,12 @@ type attr +=
   [@tag1] [@tag2] | Str
   [@tag3] | Float ;
 
-type reconciler 'props = ..;
+type reconciler('props) = ..;
 
 [@@onVariantType]
-type reconciler 'props +=
- | Foo int : [@onFirstRow] reconciler int
- | Bar ([@onInt] int) : [@onSecondRow] reconciler unit
+type reconciler('props) +=
+ | Foo(int) : [@onFirstRow] reconciler(int)
+ | Bar ([@onInt] int) : [@onSecondRow] reconciler(unit)
  | Baz: [@onThirdRow] reconciler ([@onUnit] unit);
 
 type element;
@@ -318,8 +318,8 @@ external f : int => int = "f";
 
 [@@bs.val] [@@bs.module "react"] [@@bs.splice]
 external createCompositeElementInternalHack : reactClass =>
-                                              Js.t {.. reasonProps : 'props} =>
-                                              array reactElement =>
+                                              Js.t({.. reasonProps : 'props}) =>
+                                              array(reactElement) =>
                                               reactElement = "createElement";
 
 external add_nat: int => int => int = "add_nat_bytecode" "add_nat_native";

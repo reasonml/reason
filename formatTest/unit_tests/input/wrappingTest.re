@@ -75,14 +75,14 @@ let testPrintingPrecedence =
     reallyLongIdent * (reallyLongIdent + andYetAnotherReallyLongIdent) +
     reallyLongIdent;
 
-let add x y => x + y;
+let add(x,y) => x + y;
 let testPrintingPrecedence =
   reallyLongIdent +
     /*
      * In this case, grouping of the right expression is needed because the
      * right side isn't even infix at all.
      */
-    reallyLongIdent * (add reallyLongIdent andYetAnotherReallyLongIdent) +
+    reallyLongIdent * add(reallyLongIdent,andYetAnotherReallyLongIdent) +
     reallyLongIdent;
 /*
  * Test wrapping every form of named arguments where various parts are
@@ -93,174 +93,179 @@ let b = 20;
 /*A*/
 let named
     /* a::a */
-    a::a
+   (a::a,
     /* b::b */
-    b::b =>
+    b::b) =>
   /* a + b */
   a + b;
 
 /*B*/
 let namedAlias
     /* a::aa */
-    a::aa
+   (a::aa,
     /* b::bb */
-    b::bb =>
+    b::bb) =>
   /* aa + bb */
   aa + bb;
 
 /*C*/
 let namedAnnot
     /* a::(a: option int) */
-    a::(a: option int)
+   (a::(a: option(int)),
     /* b::(b: option int) */
-    b::(b: option int) =>
+    b::(b: option(int))) =>
   /* 20 */
   20;
 
 /*D*/
 let namedAliasAnnot
     /* a::(aa: option int) */
-    a::(aa: option int)
+   (a::(aa: option(int)),
     /* b::(bb: option int) */
-    b::(bb: option int) =>
+    b::(bb: option(int))) =>
   /* 20 */
   20;
 
 /*E*/
 let optional
     /* a::a=? */
-    a::a=?
+   (a::a=?,
     /* b::b=? */
-    b::b=?
+    b::b=?,
     /* () */
-    () =>
+    ()) =>
   /* 10 */
   10;
 
 /*F*/
 let optionalAlias
     /* a::aa */
-    a::aa=?
+   (a::aa=?,
     /* ?b:bb */
-    b::bb=?
+    b::bb=?,
     /* () */
-    () =>
+    ()) =>
   /* 10 */
   10;
 
 /*G*/
 let optionalAnnot
     /* a::(a: option int)=? */
-    a::(a: option int)=?
+   (a::(a: option(int))=?,
     /* ?b:(b: option int) */
-    b::(b: option int)=?
+    b::(b: option(int))=?,
     /* () */
-    () =>
+    ()) =>
   /* 10 */
   10;
 
 /*H*/
 let optionalAliasAnnot
     /* a::(aa: option int)=? */
-    a::(aa: option int)=?
+   (a::(aa: option(int))=?,
     /* b::(bb: option int)=? */
-    b::(bb: option int)=?
+    b::(bb: option(int))=?,
     /* () => */
-    () =>
+    ()) =>
   /* 10 */
   10;
 /*I: This one is really annoying? Where's the visual label?*/
 let defOptional
     /* a::a=10 */
-    a::a=10
+   (a::a=10,
     /* b::b=10 */
-    b::b=10
+    b::b=10,
     /* () => */
-    () =>
+    ()) =>
   /* 10 */
   10;
 
 /*J*/
 let defOptionalAlias
     /* a::aa=10 */
-    a::aa=10
+   (a::aa=10,
     /* b::bb=10 */
-    b::bb=10
+    b::bb=10,
     /* () => */
-    () =>
+    ()) =>
   /* 10; */
   10;
 
 /*K*/
 let defOptionalAnnot
     /* a::(a:int)=10 */
-    a::(a:int)=10
+   (a::(a:int)=10,
     /* b::(b:int)=10 */
-    b::(b:int)=10
+    b::(b:int)=10,
     /* () => */
-    () =>
+    ()) =>
   /* 10; */
   10;
 
 /*L*/
 let defOptionalAliasAnnot
     /* a::(aa:int)=10 */
-    a::(aa:int)=10
+   (a::(aa:int)=10,
     /* b::(bb:int)=10 */
-    b::(bb:int)=10
+    b::(bb:int)=10,
     /* () => */
-    () =>
+    ()) =>
   /* 10; */
   10;
 
 /* Invoking them */
-named
+named(
   /* a::a */
-  a::a
+  a::a,
   /* b::b; */
-  b::b;
+  b::b
+);
 
-named
+named(
   /* a::a */
-  a::a
+  a::a,
   /* b::b; */
-  b::b;
+  b::b
+);
 
-optional
+optional(
   /* a::a */
-  a::a
+  a::a,
   /* b::b; */
-  b::b;
-optional
+  b::b
+);
+optional(
   /* a::a */
-  a::a
+  a::a,
   /* b::b; */
-  b::b;
+  b::b
+);
 let explictlyPassed =
   /* optional */
-  optional
+  optional(
     /* a::? */
     a::?
       /* None */
-      None
+      None,
     /* b::? */
     b::?
       /* None; */
-      None;
+      None
+);
 
 let a = None;
 let explictlyPassed =
   /* optional */
-  optional
+  optional(
     /* a::? */
-    a::?a
+    a::?a,
     /* b::? */
     b::?
       /* None; */
-      None;
+      None);
 
 
-let complex_default callback::callback=(fun k d => 4) x => 3;
+let complex_default(callback::callback=(fun(k,d) => 4),x) => 3;
 
 
 let myList = /*CommentAfterEqualBeforeList */[1, 2, 3];
@@ -334,7 +339,7 @@ let myList = [
 let myList = [1, 2, 3, /*CommentAfterConsBeforeAppendedTo */...myList];
 let myList = [3, 4, 5];
 
-let simpleListPattern x => switch x {
+let simpleListPattern(x) => switch x {
 | [1, 2, 3] => 0
 | _ => 0
 };
@@ -354,8 +359,8 @@ type hasABunch = {
    * Field comment
    */
   fieldOne: int,
-  fieldtwo: list int,
-  fieldThree: list string,
+  fieldtwo: list(int),
+  fieldThree: list(string),
   fieldFour: nameAge
   /* Comment at bottom of record type def */
 };
@@ -366,16 +371,16 @@ type functionsInARecord = {
 };
 
 let myFunctionsInARecord = {
-  adder: fun x => x,
-  minuser: fun x => x
+  adder: fun(x) => x,
+  minuser: fun(x) => x
 };
 
 let myFunctionsInARecordThatMustWrap = {
   /* Desired wrapping */
   adder:
-    fun reallyLongArgument => reallyLongArgument,
+    fun(reallyLongArgument) => reallyLongArgument,
   minuser:
-    fun anotherReallyLongArgument => anotherReallyLongArgument
+    fun(anotherReallyLongArgument) => anotherReallyLongArgument
   /* Comment at bottom of record */
 };
 
@@ -387,12 +392,12 @@ type twoArgFunctionsInARecord = {
 let myFunctionsInARecordThatMustWrap = {
   /* Desired wrapping */
   adder:
-    fun reallyLongArgument
-        anotherReallyLongArgument =>
+    fun(reallyLongArgument,
+        anotherReallyLongArgument) =>
       reallyLongArgument,
   minuser:
-    fun reallyLongArgument
-        anotherReallyLongArgument =>
+    fun(reallyLongArgument,
+        anotherReallyLongArgument) =>
       reallyLongArgument + anotherReallyLongArgument,
 };
 
@@ -406,33 +411,33 @@ let myFunctionsInARecordThatMustWrap = {
   /* Desired wrapping */
   adder:
     /* Even if you have a comment before fun */
-    fun reallyLongArgument
+    fun(reallyLongArgument,
         /* Or before the first arg */
-        anotherReallyLongArgument
-        yetAnotherReallyLongArgument =>
+        anotherReallyLongArgument,
+        yetAnotherReallyLongArgument) =>
       reallyLongArgument,
   minuser:
-    fun reallyLongArgument
-        anotherReallyLongArgument
-        anotherReallyLongArgument =>
+    fun(reallyLongArgument,
+        anotherReallyLongArgument,
+        anotherReallyLongArgument) =>
       reallyLongArgument + anotherReallyLongArgument,
 };
 
 let oneArgShouldWrapToAlignWith
-    theFunctionNameBinding => theFunctionNameBinding;
+   (theFunctionNameBinding) => theFunctionNameBinding;
 
 let twoArgsShouldWrapToAlignWith
-    firstArgHere
-    secondArgThere => secondArgThere;
+   (firstArgHere,
+    secondArgThere) => secondArgThere;
 
 let rec oneArgShouldWrapToAlignWith
-        theFunctionNameBinding => theFunctionNameBinding;
+       (theFunctionNameBinding) => theFunctionNameBinding;
 
 let rec twoArgsShouldWrapToAlignWith
-        firstArgHere
-        secondArgThere => secondArgThere;
+       (firstArgHere,
+        secondArgThere) => secondArgThere;
 
-let secondArgShouldWrap pointLess (
+let secondArgShouldWrap (pointLess, (
   a,
   b,
   c,
@@ -441,7 +446,7 @@ let secondArgShouldWrap pointLess (
   f,
   g,
   h
-) => (
+)) => (
   pointLess + a + b + c + d + e
 );
 
@@ -450,20 +455,20 @@ let secondArgShouldWrap pointLess (
 let reallyReallyLongVarName = "hello";
 let result =
   oneArgShouldWrapToAlignWith
-    reallyReallyLongVarName;
+   (reallyReallyLongVarName);
 let result =
   twoArgsShouldWrapToAlignWith
-    reallyReallyLongVarName
-    reallyReallyLongVarName;
+   (reallyReallyLongVarName,
+    reallyReallyLongVarName);
 
 
-let justReturn x => x;
+let justReturn(x) => x;
 
 /* With default formatting settings: Two arguments are special cased in
    function application "justReturn hasABunch" */
 let acceptsTwoThings
-    (nameAge:nameAge)
-    (hasABunch:hasABunch) => justReturn hasABunch;
+    (nameAge:nameAge,
+     hasABunch:hasABunch) => justReturn(hasABunch);
 
 /*
   Ideally, we'd allow "acceptsTwoThings {age, name}" on the first line, then
@@ -482,12 +487,12 @@ let result =
     fieldFour: {age: 20, name: "joe"}
   };
 
-let howDoesInfixOperatorsWrapWhenYouMustWrapQuestionMark x y z => x + y + z;
-let howDoesInfixOperatorsWrapWhenYouMustWrapQuestionMark x y => x + y;
-let reallyHowDoesInfixOperatorsWrapWhenYouMustWrapQuestionMark x y z => x + y + z;
-let reallyHowDoesInfixOperatorsWrapWhenYouMustWrapQuestionMark x y => x + y;
+let howDoesInfixOperatorsWrapWhenYouMustWrapQuestionMark(x,y,z) => x + y + z;
+let howDoesInfixOperatorsWrapWhenYouMustWrapQuestionMark(x,y) => x + y;
+let reallyHowDoesInfixOperatorsWrapWhenYouMustWrapQuestionMark(x,y,z) => x + y + z;
+let reallyHowDoesInfixOperatorsWrapWhenYouMustWrapQuestionMark(x,y) => x + y;
 
-let reallyLongFunctionNameThatJustConcats a => String.concat "-" a;
+let reallyLongFunctionNameThatJustConcats(a) => String.concat("-",a);
 
 let seeHowLongValuesWrap = {
   age: 30,
@@ -506,7 +511,7 @@ let seeHowLongValuesWrap = {
 /--Everything up to the arrow is label left--\  /-The return is label right-\
                           /-append => to last-\
 /-----------------------\ /--------------------\ */
-let onlyReturnWraps (a, b, c, d, e, f) => (
+let onlyReturnWraps ((a, b, c, d, e, f)) => (
   a,
   b,
   c,
@@ -516,8 +521,8 @@ let onlyReturnWraps (a, b, c, d, e, f) => (
 );
 
 let bothArgsWrapAndIndent
-    (a, b, c, d, e, f)
-    (h, i, j, k, l, m) => (
+   ((a, b, c, d, e, f),
+    (h, i, j, k, l, m)) => (
   a,
   b,
   c,
@@ -526,24 +531,24 @@ let bothArgsWrapAndIndent
   f
 );
 
-let result = onlyReturnWraps (
+let result = onlyReturnWraps ((
   10,
   11,
   12,
   13,
   14,
   15
-);
+));
 
 let result =
   bothArgsWrapAndIndent
-    (10, 11, 12, 13, 14, 15)
-    (10, 11, 12, 13, 14, 15);
+   ((10, 11, 12, 13, 14, 15),
+    (10, 11, 12, 13, 14, 15));
 
 type sixteenTuple = (int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int);
 
 /* Nothing annotated */
-let echoTuple (
+let echoTuple ((
   a,
   b,
   c,
@@ -560,7 +565,7 @@ let echoTuple (
   n,
   o,
   p
-) => (
+)) => (
   a,
   b,
   c,
@@ -580,7 +585,7 @@ let echoTuple (
 );
 
 /* Nothing annotated fun */
-let echoTuple = fun (a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p) => (
+let echoTuple = fun((a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p)) => (
   a,
   b,
   c,
@@ -602,7 +607,7 @@ let echoTuple = fun (a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p) => (
 let echoTheEchoer (x: sixteenTuple => sixteenTuple) : (sixteenTuple => sixteenTuple) => x;
 
 /* Nothing annotated fun, passed to func */
-echoTheEchoer (fun (a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p) => (
+echoTheEchoer (fun((a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p)) => (
   a,
   b,
   c,
@@ -683,7 +688,7 @@ let echoTuple ((a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p):sixteenTuple) :s
 );
 
 /* Desired formatting if first line fits within margin */
-let makeTuple a b c d e f g h i j k l m n o p => (
+let makeTuple(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p) => (
   a,
   b,
   c,
@@ -704,22 +709,22 @@ let makeTuple a b c d e f g h i j k l m n o p => (
 
 /* Desired formatting if first line fits within margin (70) */
 let (a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p) =
-  makeTuple 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
+  makeTuple(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
 /* Annotated version */
 let (a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p): sixteenTuple =
-  makeTuple 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
+  makeTuple(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
 /* Annotated inline */
 let x: (int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int) =
-  makeTuple 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
+  makeTuple(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
 
 let (a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p) =
-  echoTuple (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+  echoTuple((0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
 /* Annotated version */
 let (a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p): sixteenTuple =
-  echoTuple (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+  echoTuple((0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
 /* Annotated inline */
 let x: (int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int) =
-  echoTuple (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+  echoTuple((0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
 
 /* Desired formatting if pattern does not fit, arguments do (margin 70) */
 
@@ -741,7 +746,7 @@ let (
   nxx,
   oxx,
   pxx
-) = makeTuple 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
+) = makeTuple(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
 /* Annotated */
 /* Destructured */
 let (
@@ -761,7 +766,7 @@ let (
   nxx,
   oxx,
   pxx
-): sixteenTuple = makeTuple 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
+): sixteenTuple = makeTuple(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
 
 /* Annotated */
 /* Destructured */
@@ -783,17 +788,17 @@ let (
   nxx,
   oxx,
   pxx
-): (int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int) = makeTuple 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
+): (int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int) = makeTuple(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
 
 /* Not-Destructured */
-let someResult = makeTuple 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
+let someResult = makeTuple(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
 /* Annotated */
 /* Not-Destructured */
-let someResult: sixteenTuple = makeTuple 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
+let someResult: sixteenTuple = makeTuple(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
 /* Annotated */
 /* Not-Destructured */
 /* Inline */
-let someResult: (int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int) = makeTuple 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
+let someResult: (int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int) = makeTuple(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
 
 
 /* Destructured */
@@ -814,7 +819,7 @@ let (
   nxx,
   oxx,
   pxx
-) = echoTuple (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+) = echoTuple((0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
 /* Annotated */
 let (
   axx,
@@ -833,7 +838,7 @@ let (
   nxx,
   oxx,
   pxx
-): sixteenTuple = echoTuple (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+): sixteenTuple = echoTuple((0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
 /* Annotated Inline */
 let (
   axx,
@@ -852,15 +857,15 @@ let (
   nxx,
   oxx,
   pxx
-): (int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int) = echoTuple (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+): (int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int) = echoTuple((0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
 /* Not-Destructured */
-let someResult = echoTuple (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+let someResult = echoTuple((0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
 /* Annotated */
 /* Not-Destructured */
-let someResult: sixteenTuple = echoTuple (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+let someResult: sixteenTuple = echoTuple((0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
 /* Annotated Inline */
 /* Not-Destructured */
-let someResult: (int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int) = echoTuple (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+let someResult: (int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int) = echoTuple((0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
 
 /* Desired formatting if neither fit on one line (margin 70) */
 /* Destructured */
@@ -883,22 +888,22 @@ let (
   pxx
 ) =
   makeTuple
-    axx
-    bxx
-    cxx
-    dxx
-    exx
-    fxx
-    gxx
-    hxx
-    ixx
-    jxx
-    kxx
-    lxx
-    mxx
-    nxx
-    oxx
-    pxx;
+   (axx,
+    bxx,
+    cxx,
+    dxx,
+    exx,
+    fxx,
+    gxx,
+    hxx,
+    ixx,
+    jxx,
+    kxx,
+    lxx,
+    mxx,
+    nxx,
+    oxx,
+    pxx);
 /* Annoted */
 let (
   axx,
@@ -919,22 +924,22 @@ let (
   pxx
 ): sixteenTuple =
   makeTuple
-    axx
-    bxx
-    cxx
-    dxx
-    exx
-    fxx
-    gxx
-    hxx
-    ixx
-    jxx
-    kxx
-    lxx
-    mxx
-    nxx
-    oxx
-    pxx;
+   (axx,
+    bxx,
+    cxx,
+    dxx,
+    exx,
+    fxx,
+    gxx,
+    hxx,
+    ixx,
+    jxx,
+    kxx,
+    lxx,
+    mxx,
+    nxx,
+    oxx,
+    pxx);
 /* Annoted inline */
 let (
   axx,
@@ -955,81 +960,81 @@ let (
   pxx
 ): (int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int) =
   makeTuple
-    axx
-    bxx
-    cxx
-    dxx
-    exx
-    fxx
-    gxx
-    hxx
-    ixx
-    jxx
-    kxx
-    lxx
-    mxx
-    nxx
-    oxx
-    pxx;
+   (axx,
+    bxx,
+    cxx,
+    dxx,
+    exx,
+    fxx,
+    gxx,
+    hxx,
+    ixx,
+    jxx,
+    kxx,
+    lxx,
+    mxx,
+    nxx,
+    oxx,
+    pxx);
 /* Not-Destructured */
 let someResult =
   makeTuple
-    axx
-    bxx
-    cxx
-    dxx
-    exx
-    fxx
-    gxx
-    hxx
-    ixx
-    jxx
-    kxx
-    lxx
-    mxx
-    nxx
-    oxx
-    pxx;
+   (axx,
+    bxx,
+    cxx,
+    dxx,
+    exx,
+    fxx,
+    gxx,
+    hxx,
+    ixx,
+    jxx,
+    kxx,
+    lxx,
+    mxx,
+    nxx,
+    oxx,
+    pxx);
 /* Not-Destructured */
 /* Annoted */
 let someResult: sixteenTuple =
   makeTuple
-    axx
-    bxx
-    cxx
-    dxx
-    exx
-    fxx
-    gxx
-    hxx
-    ixx
-    jxx
-    kxx
-    lxx
-    mxx
-    nxx
-    oxx
-    pxx;
+   (axx,
+    bxx,
+    cxx,
+    dxx,
+    exx,
+    fxx,
+    gxx,
+    hxx,
+    ixx,
+    jxx,
+    kxx,
+    lxx,
+    mxx,
+    nxx,
+    oxx,
+    pxx);
 /* Not-Destructured */
 /* Annoted inline */
 let someResult: (int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int) =
   makeTuple
-    axx
-    bxx
-    cxx
-    dxx
-    exx
-    fxx
-    gxx
-    hxx
-    ixx
-    jxx
-    kxx
-    lxx
-    mxx
-    nxx
-    oxx
-    pxx;
+   (axx,
+    bxx,
+    cxx,
+    dxx,
+    exx,
+    fxx,
+    gxx,
+    hxx,
+    ixx,
+    jxx,
+    kxx,
+    lxx,
+    mxx,
+    nxx,
+    oxx,
+    pxx);
 
 
 /* Desired formatting if neither fit on one line (margin 70) */
@@ -1051,7 +1056,7 @@ let (
   nxx,
   oxx,
   pxx
-) = echoTuple (
+) = echoTuple ((
   1000,
   10,
   10,
@@ -1068,7 +1073,7 @@ let (
   10,
   10,
   10
-);
+));
 /* Annoted */
 /* Destructured */
 let (
@@ -1088,7 +1093,7 @@ let (
   nxx,
   oxx,
   pxx
-): sixteenTuple = echoTuple (
+): sixteenTuple = echoTuple ((
   1000,
   10,
   10,
@@ -1105,7 +1110,7 @@ let (
   10,
   10,
   10
-);
+));
 /* Annoted Inline */
 /* Destructured */
 let (
@@ -1125,7 +1130,7 @@ let (
   nxx,
   oxx,
   pxx
-): (int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int) = echoTuple (
+): (int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int) = echoTuple ((
   1000,
   10,
   10,
@@ -1142,11 +1147,11 @@ let (
   10,
   10,
   10
-);
+));
 
 /* Desired formatting if neither fit on one line (margin 70) */
 /* Not-Destructured */
-let someResult = echoTuple (
+let someResult = echoTuple ((
   1000,
   10,
   10,
@@ -1163,10 +1168,10 @@ let someResult = echoTuple (
   10,
   10,
   10
-);
+));
 /* Annoted */
 /* Not-Destructured */
-let someResult: sixteenTuple = echoTuple (
+let someResult: sixteenTuple = echoTuple ((
   1000,
   10,
   10,
@@ -1183,10 +1188,10 @@ let someResult: sixteenTuple = echoTuple (
   10,
   10,
   10
-);
+));
 /* Annoted Inline */
 /* Not-Destructured */
-let someResult: (int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int) = echoTuple (
+let someResult: (int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int) = echoTuple ((
   1000,
   10,
   10,
@@ -1203,7 +1208,7 @@ let someResult: (int, int, int, int, int, int, int, int, int, int, int, int, int
   10,
   10,
   10
-);
+));
 
 /* The rhs of = shouldn't be broken onto its own newline: @see ensureSingleTokenSticksToLabel */
 let someResult: (
@@ -1267,8 +1272,8 @@ let (the, type_, and_, value, should, both, wrap): (string, string, string, stri
 
 
 
-let myPolyFunc: 'a . 'a => 'a = fun o => o;
-let myNonPolyFunc: 'a => 'a = fun o => o;
+let myPolyFunc: 'a . 'a => 'a = fun(o) => o;
+let myNonPolyFunc: 'a => 'a = fun(o) => o;
 
 let locallyAbstractFunc (type a) (input:a) => input;
 let locallyAbstractFuncNotSugared = fun (type a) (input:a) => input;
@@ -1278,19 +1283,19 @@ let locallyAbstractFuncAnnotated: type a. a => a = fun (type a) (input:a) => inp
   Examples of how long versions of these should be wrapped: df stands for
   "desired formatting" when the function binding itself must wrap.
  */
-let df_myPolyFunc: 'a . 'a => 'a = fun o => o;
-let df_myNonPolyFunc: 'a => 'a = fun o => o;
+let df_myPolyFunc: 'a . 'a => 'a = fun(o) => o;
+let df_myNonPolyFunc: 'a => 'a = fun(o) => o;
 
 type nameBlahType = {nameBlah: int};
 
 let myFunc =
-  fun firstArg::firstArg
-      another::another
-      fl::fl => {
+  fun(firstArg::firstArg,
+      another::another,
+      fl::fl) => {
     nameBlah: 10
   };
 
-type inputEchoRecord 'a = {
+type inputEchoRecord('a) = {
   inputIs: 'a
 };
 let df_locallyAbstractFunc
@@ -1306,7 +1311,7 @@ let df_locallyAbstractFuncNotSugared =
       (input:a) => {
   inputIs: input
 };
-
+>>
 /**
  * The following is automatically expanded at the parser level into:
  *
@@ -1320,7 +1325,7 @@ let df_locallyAbstractFuncNotSugared =
  *     );
  *
  */
-let df_locallyAbstractFuncAnnotated: type a. a => a => inputEchoRecord a =
+let df_locallyAbstractFuncAnnotated: type a. a => a => inputEchoRecord(a) =
   fun (input:a)
       (input:a) => {
     inputIs: input
@@ -1339,7 +1344,7 @@ let df_locallyAbstractFuncAnnotated: type a. a => a => inputEchoRecord a =
  *     );
  *
  */
-let df_locallyAbstractFuncAnnotatedRef: type a. a => a => inputEchoRecord a =
+let df_locallyAbstractFuncAnnotatedRef: type a. a => a => inputEchoRecord(a) =
   df_locallyAbstractFuncAnnotated;
 
 /**

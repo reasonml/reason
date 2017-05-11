@@ -1,18 +1,18 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 
-let logTSuccess = fun self => if (self > other) {
-                            print_string "Did T";
+let logTSuccess = fun(self) => if (self > other) {
+                            print_string("Did T");
                             print_newline ();
                           } else {
                             ();
                           };
 let something = if self.ext.logSuccess {
-                            print_string "Did T";
+                            print_string("Did T");
                             print_newline ();
                           };
 
-let logTSuccess = fun self => if self.ext.logSuccess {
-                            print_string "Did T";
+let logTSuccess = fun(self) => if self.ext.logSuccess {
+                            print_string("Did T");
                             print_newline ();
                           } else {
                             ();
@@ -56,7 +56,7 @@ if (callSomeFunction {thisIsAnArgument; notTheControlFlow;}) {
  */
 if printIfFirstArgGreater
   simpleThen
-else thisDoesnt even have2 be simple;
+else thisDoesnt(even,have2,be,simple);
 
 if (if x {true;} else {false;}) {
   ();
@@ -70,7 +70,7 @@ if (if x {true;} else {false;}) {
 
 let ternaryResult =
   something ?
-    callThisFunction withThisArg:
+    callThisFunction(withThisArg):
     thatResult;
 
 let annotatedTernary =
@@ -83,17 +83,17 @@ let annotatedBranch =
 
 /* The following should be... */
 let whatShouldThisBeParsedAs =
-  something ? callThisFunction withThisArg:
+  something ? callThisFunction(withThisArg):
   trailingTest ? true : false;
 
 /* ... it should be parsed as */
 let whatShouldThisBeParsedAs =
-  something ? callThisFunction withThisArg:
+  something ? callThisFunction(withThisArg):
   (trailingTest ? true : false);
 
 /* Should *not* be parsed as */
 let whatShouldThisBeParsedAs =
-  (something ? callThisFunction withThisArg:
+  (something ? callThisFunction(withThisArg):
   trailingTest) ? true : false;
 
 
@@ -128,15 +128,15 @@ let ternaryResult =
   eeeeeee ? fffffff : (x ? y : z);
 
 
-let addOne x => x + 1;
+let addOne(x) => x + 1;
 
 let result =
-   addOne 0 + 0 > 1 ? print_string "this wont print" : print_string "this will";
+   addOne(0) + 0 > 1 ? print_string("this wont print") : print_string("this will");
 /*
  * Should be parsed as:
  */
 let result =
-   (((addOne 0) + 0) > 1) ? (print_string "this wont print") : (print_string "this will");
+   ((addOne(0) + 0) > 1) ? (print_string("this wont print")) : (print_string("this will"));
 
 
 /*
@@ -179,6 +179,6 @@ let res =
 
 let pngSuffix =
   pixRation > 1 ?
-    "@" ^ string_of_int pixRation ^ "x.png"
+    "@" ^ string_of_int(pixRation) ^ "x.png"
     : ".png";
 

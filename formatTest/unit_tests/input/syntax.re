@@ -584,10 +584,10 @@ type stillARecord = {name: string, age: int};
 /* Rebase latest OCaml to get the following: And fixup
   `generalized_constructor_arguments` according to master. */
 /* type ('a, 'b) myOtherThing = Leaf {first:'a, second: 'b} | Null; */
-type branch 'a 'b = {first: 'a, second: 'b};
-type myOtherThing 'a 'b = Leaf (branch 'a 'b) | Null;
+type branch('a,'b) = {first: 'a, second: 'b};
+type myOtherThing('a,'b) = Leaf (branch('a,'b)) | Null;
 
-type yourThing = myOtherThing int int;
+type yourThing = myOtherThing(int,int);
 
 /* Conveniently - this parses exactly how you would intend! No *need* to wrap
 in an extra [], but it doesn't hurt */
@@ -664,61 +664,61 @@ let a = 10;
 let b = 20;
 
 /*A*/
-let named                 a::a      b::b             => a + b;
+let named                (a::a,     b::b)            => a + b;
 type named =              a::int => b::int => int;
 /*B*/
-let namedAlias            a::aa     b::bb  => aa + bb;
-let namedAlias            a::aa     b::bb  => aa + bb;
+let namedAlias           (a::aa,    b::bb) => aa + bb;
+let namedAlias           (a::aa,    b::bb) => aa + bb;
 type namedAlias =         a::int => b::int => int;
 /*C*/
-let namedAnnot            a::(a:int) b::(b:int)   => 20;
+let namedAnnot           (a::(a:int),b::(b:int))  => 20;
 /*D*/
-let namedAliasAnnot       a::(aa:int) b::(bb:int) => 20;
+let namedAliasAnnot      (a::(aa:int),b::(bb:int))=> 20;
 /*E*/
-let myOptional            a::a=?    b::b=?      ()  => 10;
+let myOptional           (a::a=?,   b::b=?,     ()) => 10;
 type named =              a::int? => b::int? => unit => int;
 /*F*/
-let optionalAlias         a::aa=?   b::bb=?   ()  => 10;
+let optionalAlias        (a::aa=?,  b::bb=?,  ()) => 10;
 /*G*/
-let optionalAnnot         a::(a:int)=? b::(b:int)=? ()  => 10;
+let optionalAnnot        (a::(a:int)=?,b::(b:int)=?,()) => 10;
 /*H*/
-let optionalAliasAnnot    a::(aa:int)=? b::(bb:int)=? ()  => 10;
+let optionalAliasAnnot   (a::(aa:int)=?,b::(bb:int)=?,()) => 10;
 /*I: */
-let defOptional           a::a=10    b::b=10  ()  => 10;
+let defOptional          (a::a=10,   b::b=10, ()) => 10;
 type named =              a::int?  => b::int? => unit => int;
 /*J*/
-let defOptionalAlias      a::aa=10      b::bb=10  ()  => 10;
+let defOptionalAlias     (a::aa=10,     b::bb=10, ()) => 10;
 /*K*/
-let defOptionalAnnot      a::(a:int)=10 b::(b:int)=10 ()  => 10;
+let defOptionalAnnot     (a::(a:int)=10,b::(b:int)=10,()) => 10;
 /*L*/
-let defOptionalAliasAnnot a::(aa:int)=10 b::(bb:int)=10 ()  => 10;
+let defOptionalAliasAnnot(a::(aa:int)=10,b::(bb:int)=10,()) => 10;
 
 /*M: Invoking them - Punned */
-let resNotAnnotated = named a::a b::b;
+let resNotAnnotated = named(a::a,b::b);
 /*N:*/
-let resAnnotated    = (named a::a b::b :int);
+let resAnnotated    = (named(a::a,b::b):int);
 /*O: Invoking them */
-let resNotAnnotated = named a::a b::b;
+let resNotAnnotated = named(a::a,b::b);
 /*P: Invoking them */
-let resAnnotated    = (named a::a b::b :int);
+let resAnnotated    = (named(a::a,b::b):int);
 
 /*Q: Here's why "punning" doesn't work!  */
 /* Is b:: punned with a final non-named arg, or is b:: supplied b as one named arg? */
 let b = 20;
-let resAnnotated    = (named a::a b:: b);
+let resAnnotated    = (named(a::a,b:: b));
 
 /*R: Proof that there are no ambiguities with return values being annotated */
-let resAnnotated    = (named a::a b :ty);
+let resAnnotated    = (named(a::a,b):ty);
 
 
 /*S: Explicitly passed optionals are a nice way to say "use the default value"*/
-let explictlyPassed =          myOptional a::?None b::?None;
+let explictlyPassed =          myOptional(a::?None,b::?None);
 /*T: Annotating the return value of the entire function call */
-let explictlyPassedAnnotated = (myOptional a::?None b::?None :int);
+let explictlyPassedAnnotated = (myOptional(a::?None,b::?None):int);
 /*U: Explicitly passing optional with identifier expression */
 let a = None;
-let explictlyPassed =           myOptional a::?a b::?None;
-let explictlyPassedAnnotated = (myOptional a::?a b::?None :int);
+let explictlyPassed =           myOptional(a::?a,b::?None);
+let explictlyPassedAnnotated = (myOptional(a::?a,b::?None):int);
 
 let nestedLet = {
   let _ = 1
@@ -749,14 +749,14 @@ type typeWithNestedOptionalNamedArgs =
     outerOne::(innerOne::int => innerTwo::int => int)? => outerTwo::int? => int;
 
 type typeWithNestedOptionalNamedArgs =
-    outerOne::(list string)? => outerTwo::int? => int;
+    outerOne::list(string)? => outerTwo::int? => int;
 
-let f ::tuple="long string to trigger line break" => ();
+let f(::tuple="long string to trigger line break") => ();
 
 let x =
   callSomeFunction
-    withArg::10
-    andOtherArg::wrappedArg;
+   (withArg::10,
+    andOtherArg::wrappedArg);
 
 
 let res = {
@@ -793,31 +793,31 @@ let newRecord = {
 };
 
 let newRecord = {
-  ...youCanEvenCallMethodsHereAndAnnotate them : someRec,
+  ...youCanEvenCallMethodsHereAndAnnotate(them): someRec,
   blah: 0,
   foo: 1
 };
 
 let newRecord = {
-  ...youCanEvenCallMethodsHereAndAnnotate them named::10 :someRec,
+  ...youCanEvenCallMethodsHereAndAnnotate(them,named::10):someRec,
   blah: 0,
   foo: 1
 };
 
 
-let something = (aTypeAnnotation : thing blah);
-let something = (thisIsANamedArg: thing blah);
+let something = (aTypeAnnotation : thing(blah));
+let something = (thisIsANamedArg: thing(blah));
 
 
-let something = (aTypeAnnotation: thing blah);
+let something = (aTypeAnnotation: thing(blah));
 
 
 
-let something = (thisIsANamedArg thing:blah);
-let something = (typeAnnotation thing : blah);
+let something = (thisIsANamedArg(thing):blah);
+let something = (typeAnnotation(thing): blah);
 
 let newRecord = {
-  ...(heresAFunctionWithNamedArgs argOne::i :annotatedResult),
+  ...(heresAFunctionWithNamedArgs(argOne::i) :annotatedResult),
   soAsToInstill: 0,
   developmentHabbits: 1
 };
@@ -831,7 +831,7 @@ let x = 10;
  */
 let something =
   fun | None => (fun | [] => "emptyList" | [_, ..._] => "nonEmptyList")
-      | Some _ => (fun | [] => "emptyList" | [_, ..._] => "nonEmptyList");
+      | Some(_)=> (fun | [] => "emptyList" | [_, ..._] => "nonEmptyList");
 
 /*  A | B = X; */
 let A | B = X;
@@ -865,6 +865,6 @@ let match = "match";
 
 let method = "method";
 
-let foo x x::bar ::z foo::bar foo::z => {
+let foo(x,x::bar,::z,foo::bar,foo::z) => {
   bar + 2
 };
