@@ -44,8 +44,6 @@ let () =
     Pkg.bin "src/reason_format_type" ~dst:"refmttype";
     Pkg.bin "src/reactjs_jsx_ppx" ~dst:"reactjs_jsx_ppx";
     Pkg.bin "src/ppx_react" ~dst:"ppx_react";
-    Pkg.share "editorSupport/emacs/refmt.el" ~dst:"../emacs/site-lisp/refmt.el";
-    Pkg.share "editorSupport/emacs/reason-mode.el" ~dst:"../emacs/site-lisp/reason-mode.el";
 
     (* VimReason *)
     Pkg.share "editorSupport/VimReason/after/syntax/reason.vim" ~dst:"editorSupport/VimReason/after/syntax/reason.vim";
