@@ -342,7 +342,7 @@ let o: person = {name: "bob", age: 10};
 
 let printPerson (p: person) => {
   let q: person = p;
-  p.name ^ p.name
+  p.name ++ p.name
 };
 
 /* let dontParseMeBro x y:int = x = y;*/

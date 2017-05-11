@@ -6,4 +6,4 @@ let printSection s => {
   print_string "\n---------------------\n";
 };
 
-let printLn s => print_string (s ^ "\n");
+let printLn s => print_string (s ++ "\n");

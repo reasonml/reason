@@ -282,8 +282,8 @@ let set_structure_item_location x loc = {x with pstr_loc = loc};;
 let mkoperator_loc name loc =
   Exp.mk ~loc (Pexp_ident(mkloc (Lident name) loc))
 
-let mkoperator name pos =
-  mkoperator_loc name (rhs_loc pos)
+let mkoperator {Location. txt; loc} =
+  mkoperator_loc txt loc
 
 (*
   Ghost expressions and patterns:
@@ -316,7 +316,7 @@ let mkinfixop arg1 op arg2 =
   mkexp(Pexp_apply(op, [Nolabel, arg1; Nolabel, arg2]))
 
 let mkinfix arg1 name arg2 =
-  mkinfixop arg1 (mkoperator name 2) arg2
+  mkinfixop arg1 (mkoperator name) arg2
 
 let neg_string f =
   if String.length f > 0 && f.[0] = '-'
@@ -324,13 +324,13 @@ let neg_string f =
   else "-" ^ f
 
 let mkuminus name arg =
-  match name, arg.pexp_desc with
+  match name.txt, arg.pexp_desc with
   | "-", Pexp_constant(Pconst_integer (n,m)) ->
       mkexp(Pexp_constant(Pconst_integer(neg_string n,m)))
   | ("-" | "-."), Pexp_constant(Pconst_float (f, m)) ->
       mkexp(Pexp_constant(Pconst_float(neg_string f, m)))
-  | _ ->
-      mkexp(Pexp_apply(mkoperator ("~" ^ name) 1, [Nolabel, arg]))
+  | txt, _ ->
+      mkexp(Pexp_apply(mkoperator_loc ("~" ^ txt) name.loc, [Nolabel, arg]))
 
 let mkFunctorThatReturns functorArgs returns =
   List.fold_left (
@@ -339,11 +339,11 @@ let mkFunctorThatReturns functorArgs returns =
 
 let mkuplus name arg =
   let desc = arg.pexp_desc in
-  match name, desc with
+  match name.txt, desc with
   | "+", Pexp_constant(Pconst_integer _)
   | ("+" | "+."), Pexp_constant(Pconst_float _) -> mkexp desc
-  | _ ->
-      mkexp(Pexp_apply(mkoperator ("~" ^ name) 1, [Nolabel, arg]))
+  | txt, _ ->
+      mkexp(Pexp_apply(mkoperator_loc ("~" ^ txt) name.loc, [Nolabel, arg]))
 
 let mkexp_cons consloc args loc =
   mkexp ~loc (Pexp_construct(mkloc (Lident "::") consloc, Some args))
@@ -744,8 +744,8 @@ let class_of_let_bindings lbs body =
  * unwrap the tuple to expose the inner tuple directly.
  *
  *)
-let arity_conflict_resolving_mapper =
-{ default_mapper with
+let arity_conflict_resolving_mapper super =
+{ super with
   expr = begin fun mapper expr ->
     match expr with
       | {pexp_desc=Pexp_construct(lid, args);
@@ -755,10 +755,10 @@ let arity_conflict_resolving_mapper =
            match args with
              | Some {pexp_desc = Pexp_tuple [sp]} -> Some sp
              | _ -> args in
-         default_mapper.expr mapper
+         super.expr mapper
          {pexp_desc=Pexp_construct(lid, new_args); pexp_loc; pexp_attributes=
           normalized_attributes "explicit_arity" pexp_attributes}
-      | x -> default_mapper.expr mapper x
+      | x -> super.expr mapper x
   end;
   pat = begin fun mapper pattern ->
     match pattern with
@@ -769,21 +769,22 @@ let arity_conflict_resolving_mapper =
            match args with
              | Some {ppat_desc = Ppat_tuple [sp]} -> Some sp
              | _ -> args in
-         default_mapper.pat mapper
+         super.pat mapper
          {ppat_desc=Ppat_construct(lid, new_args); ppat_loc; ppat_attributes=
           normalized_attributes "explicit_arity" ppat_attributes}
-      | x -> default_mapper.pat mapper x
+      | x -> super.pat mapper x
   end;
 }
 
 (* NB: making this a function might have parse-time performance penalties *)
-let default_mapper_chain () =
-  let chain = [default_mapper; arity_conflict_resolving_mapper;
-               reason_to_ml_swap_operator_mapper;
-               unescape_stars_slashes_mapper]
-  in
-  if !Reason_config.add_printers then chain @ [create_auto_printer_mapper]
-  else chain
+let reason_mapper () =
+  begin
+    if !Reason_config.add_printers
+    then create_auto_printer_mapper default_mapper
+    else default_mapper
+  end
+  |> reason_to_ml_swap_operator_mapper
+  |> arity_conflict_resolving_mapper
 
 let rec string_of_longident = function
     | Lident s -> s
@@ -943,6 +944,7 @@ let only_labels l =
 %token PLUSDOT
 %token PLUSEQ
 %token <string> PREFIXOP
+%token <string> POSTFIXOP
 %token PUB
 %token QUESTION
 %token OPTIONAL_NO_DEFAULT
@@ -1093,7 +1095,7 @@ conflicts.
  * of PREFIXOP have the unary precedence parsing behavior for consistency.
  */
 
-%nonassoc prec_unary_minus prec_unary_plus /* unary - */
+%nonassoc prec_unary /* unary - */
 %nonassoc prec_constant_constructor     /* cf. simple_expr (C versus C x) */
 /* Now that commas require wrapping parens (for tuples), prec_constr_appl no
 * longer needs to be above COMMA, but it doesn't hurt */
@@ -1104,13 +1106,13 @@ conflicts.
 %nonassoc SHARP                         /* simple_expr/toplevel_directive */
 %left     SHARPOP
 %nonassoc below_DOT
-%nonassoc DOT
+%nonassoc DOT POSTFIXOP
 
 %nonassoc below_LBRACKETAT
 %nonassoc LBRACKETAT
 
 /* Finally, the first tokens of simple_expr are above everything else. */
-%nonassoc BACKQUOTE BANG CHAR FALSE FLOAT INT
+%nonassoc BACKQUOTE CHAR FALSE FLOAT INT
           LBRACE LBRACELESS LBRACKET LBRACKETBAR LIDENT LPAREN
           NEW PREFIXOP STRING TRUE UIDENT
           LBRACKETPERCENT LESSIDENT LBRACKETLESS
@@ -1175,20 +1177,20 @@ conflicts.
 
 
 implementation:
-    structure EOF                        { apply_mapper_chain_to_structure $1 (default_mapper_chain ()) }
+    structure EOF                        { apply_mapper_to_structure $1 (reason_mapper ()) }
 ;
 interface:
-    signature EOF                        { apply_mapper_chain_to_signature $1 (default_mapper_chain ()) }
+    signature EOF                        { apply_mapper_to_signature $1 (reason_mapper ()) }
 ;
 
-toplevel_phrase: _toplevel_phrase {apply_mapper_chain_to_toplevel_phrase $1 (default_mapper_chain ()) }
+toplevel_phrase: _toplevel_phrase {apply_mapper_to_toplevel_phrase $1 (reason_mapper ()) }
 _toplevel_phrase:
     structure_item SEMI                 { Ptop_def [$1]}
   | EOF                                 { raise End_of_file}
   | toplevel_directive SEMI             { $1 }
 ;
 
-use_file: _use_file {apply_mapper_chain_to_use_file $1 (default_mapper_chain ())}
+use_file: _use_file {apply_mapper_to_use_file $1 (reason_mapper ())}
 _use_file:
     EOF                                            { [] }
   | structure_item SEMI use_file                   { Ptop_def[$1] :: $3 }
@@ -1201,14 +1203,14 @@ parse_core_type:
     core_type EOF
       {
         let core_loc = mklocation $startpos($1) $endpos($1) in
-        apply_mapper_chain_to_type (only_core_type $1 core_loc) (default_mapper_chain ())
+        apply_mapper_to_type (only_core_type $1 core_loc) (reason_mapper ())
       }
 ;
 parse_expression:
-    expr EOF { apply_mapper_chain_to_expr $1 (default_mapper_chain ()) }
+    expr EOF { apply_mapper_to_expr $1 (reason_mapper ()) }
 ;
 parse_pattern:
-    pattern EOF { apply_mapper_chain_to_pattern $1 (default_mapper_chain ()) }
+    pattern EOF { apply_mapper_to_pattern $1 (reason_mapper ()) }
 ;
 
 /* Module expressions */
@@ -2781,16 +2783,14 @@ _expr:
         let loc = mklocation $symbolstartpos $endpos in
         mkexp_cons loc_colon (mkexp ~ghost:true ~loc (Pexp_tuple[$5;$7])) loc
       }
-  | expr infix_operator expr
+  | expr as_loc(infix_operator) expr
       { mkinfix $1 $2 $3 }
-  | subtractive expr %prec prec_unary_minus
-      {
-        mkuminus $1 $2
-      }
-  | additive expr %prec prec_unary_plus
-      {
-        mkuplus $1 $2
-      }
+  | as_loc(subtractive) expr %prec prec_unary
+      { mkuminus $1 $2 }
+  | as_loc(additive) expr %prec prec_unary
+      { mkuplus $1 $2 }
+  | as_loc(BANG) expr %prec prec_unary
+      { mkexp(Pexp_apply(mkoperator_loc "!" $1.loc, [Nolabel,$2])) }
   | simple_expr DOT as_loc(label_longident) EQUAL expr
       { mkexp(Pexp_setfield($1, $3, $5)) }
   | simple_expr DOT LPAREN expr RPAREN EQUAL expr
@@ -2909,6 +2909,8 @@ _simple_expr:
       { mkexp(Pexp_tuple(List.rev $2)) }
   | as_loc(LPAREN) expr_comma_list as_loc(error)
       { unclosed_exp (with_txt $1 "(") (with_txt $3 ")") }
+  | simple_expr as_loc(POSTFIXOP)
+      { mkexp(Pexp_apply(mkoperator $2, [Nolabel, $1])) }
   | simple_expr DOT as_loc(label_longident)
       { mkexp(Pexp_field($1, $3)) }
   | as_loc(mod_longident) DOT LPAREN expr RPAREN
@@ -3011,20 +3013,14 @@ _simple_expr:
         let list_exp = make_real_exp (mktailexp_extension loc seq ext_opt) in
         let list_exp = { list_exp with pexp_loc = loc } in
         mkexp (Pexp_open (Fresh, $1, list_exp)) }
-  | PREFIXOP simple_expr %prec below_DOT_AND_SHARP
-      {
-        mkexp(Pexp_apply(mkoperator $1 1, [Nolabel, $2]))
-      }
+  | as_loc(PREFIXOP) simple_expr %prec below_DOT_AND_SHARP
+      { mkexp(Pexp_apply(mkoperator $1, [Nolabel, $2])) }
   /**
    * Must be below_DOT_AND_SHARP so that the parser waits for several dots for
    * nested record access that the bang should apply to.
    *
    * !x.y.z should be parsed as !(((x).y).z)
    */
-  | as_loc(BANG) simple_expr %prec below_DOT_AND_SHARP
-      {
-        mkexp(Pexp_apply(mkoperator "!" 1, [Nolabel,$2]))
-      }
   | NEW as_loc(class_longident)
       { mkexp (Pexp_new $2) }
   | LBRACELESS field_expr_list opt_comma GREATERRBRACE
@@ -3044,7 +3040,7 @@ _simple_expr:
   | simple_expr SHARP label
       { mkexp(Pexp_send($1, $3)) }
   | simple_expr as_loc(SHARPOP) simple_expr
-      { mkinfixop $1 (mkoperator_loc $2.txt $2.loc) $3 }
+      { mkinfixop $1 (mkoperator $2) $3 }
   | LPAREN MODULE module_expr RPAREN
       { mkexp (Pexp_pack $3) }
   | LPAREN MODULE module_expr COLON package_type RPAREN
@@ -4542,6 +4538,7 @@ val_ident:
 
 operator:
     PREFIXOP                                    { $1 }
+  | POSTFIXOP                                   { $1 }
   | BANG                                        { "!" }
   | infix_operator                              { $1 }
 ;

@@ -5,17 +5,18 @@ open Ast_mapper
 open Parsetree
 open Longident
 
+
 (** [is_prefixed prefix i str] checks if prefix is the prefix of str
   * starting from position i
   *)
 let is_prefixed prefix str i =
   let len = String.length prefix in
-  if i + len > String.length str then false else
-  let rec loop j =
-    if j >= len then true else
-      if String.unsafe_get prefix j <> String.unsafe_get str (i + j) then false else loop (j + 1)
-    in
-  loop 0
+  let j = ref 0 in
+  while !j < len && String.unsafe_get prefix !j =
+                    String.unsafe_get str (i + !j) do
+    incr j
+  done;
+  (!j = len)
 
 (**
  * pick_while returns a tuple where first element is longest prefix (possibly empty) of the list of elements that satisfy p
@@ -29,27 +30,41 @@ let rec pick_while p = function
   | l -> ([], l)
 
 
-let rec replace_string_ old_str new_str i str buffer =
-  if i >= String.length str then
-    ()
-  else
-    (* found match *)
-    if is_prefixed old_str str i then
-      (* split string *)
-      let old_str_len = String.length old_str in
-      Buffer.add_string buffer new_str;
-      replace_string_ old_str new_str (i + old_str_len) str buffer
+(** [find_substring sub str i]
+    returns the smallest [j >= i] such that [sub = str.[j..length sub - 1]]
+    raises [Not_found] if there is no such j
+    behavior is not defined if [sub] is the empty string
+*)
+let find_substring sub str i =
+  let len = String.length str - String.length sub in
+  let found = ref false and i = ref i in
+  while not !found && !i <= len do
+    if is_prefixed sub str !i then
+      found := true
     else
-      let start = String.sub str i 1 in
-      Buffer.add_string buffer start;
-      replace_string_ old_str new_str (i + 1) str buffer
-
+      incr i;
+  done;
+  if not !found then
+    raise Not_found;
+  !i
 
 (** [replace_string old_str new_str str] replaces old_str to new_str in str *)
 let replace_string old_str new_str str =
-  let buffer = Buffer.create (String.length old_str * 2) in
-  replace_string_ old_str new_str 0 str buffer;
-  Buffer.contents buffer
+  match find_substring old_str str 0 with
+  | exception Not_found -> str
+  | occurrence ->
+    let buffer = Buffer.create (String.length str + 15) in
+    let rec loop i j =
+      Buffer.add_substring buffer str i (j - i);
+      Buffer.add_string buffer new_str;
+      let i = j + String.length old_str in
+      match find_substring old_str str i with
+      | j -> loop i j
+      | exception Not_found ->
+        Buffer.add_substring buffer str i (String.length str - i)
+    in
+    loop 0 occurrence;
+    Buffer.contents buffer
 
 (* This is lifted from https://github.com/bloomberg/bucklescript/blob/14d94bb9c7536b4c5f1208c8e8cc715ca002853d/jscomp/ext/ext_string.ml#L32
   Thanks @bobzhang and @hhugo! *)
@@ -123,18 +138,21 @@ let syntax_error_extension_node loc message =
  (str, payload)
 
 let reason_to_ml_swapping_alist = [
-  "===",  "==";
-  "==",  "=";
+  "!"       , "not";
+  "^"       , "!";
+  "++"      , "^";
+  "==="     , "==";
+  "=="      , "=";
   (* ===\/ and !==\/ are not representable in OCaml but
    * representable in Reason
    *)
-  "\\!==", "!==";
-  "\\===", "===";
-  "!=", "<>";
-  "!==", "!=";
-  "match", "switch";
-  "method", "pub";
-  "private", "pri";
+  "\\!=="   , "!==";
+  "\\==="   , "===";
+  "!="      , "<>";
+  "!=="     , "!=";
+  "match"   , "switch";
+  "method"  , "pub";
+  "private" , "pri";
 ]
 
 let swap_txt map txt =
@@ -145,8 +163,8 @@ let swap_txt map txt =
 
 (** identifier_mapper maps all identifiers in an AST with a mapping function f
   *)
-let identifier_mapper f =
-{ default_mapper with
+let identifier_mapper f super =
+{ super with
   expr = begin fun mapper expr ->
     let expr =
       match expr with
@@ -161,7 +179,7 @@ let identifier_mapper f =
              {expr with pexp_desc=Pexp_ident ({id with txt=swapped})}
         | _ -> expr
     in
-    default_mapper.expr mapper expr
+    super.expr mapper expr
   end;
   pat = begin fun mapper pat ->
     let pat =
@@ -172,11 +190,11 @@ let identifier_mapper f =
              {pat with ppat_desc=Ppat_var ({id with txt=(f txt)})}
         | _ -> pat
     in
-    default_mapper.pat mapper pat
+    super.pat mapper pat
   end;
 }
 
-let create_auto_printer_mapper =
+let create_auto_printer_mapper super =
   let attach_str_printer = function
     | { pstr_desc=Pstr_type (_,type_decls) } as ty ->
         let str_of_type = Ppx_deriving_show.str_of_type ~options:[] ~path:[] in
@@ -191,7 +209,7 @@ let create_auto_printer_mapper =
         (ty, Some printer)
     | ty -> (ty, None)
   in
-  { default_mapper with structure = begin fun mapper decls ->
+  { super with structure = begin fun mapper decls ->
     let decls =
       let maybe_concat acc = function
         | (s, None) -> s::acc
@@ -199,7 +217,7 @@ let create_auto_printer_mapper =
       in
       List.rev (List.fold_left maybe_concat [] (List.map attach_str_printer decls))
     in
-    default_mapper.structure mapper decls
+    super.structure mapper decls
   end;
   signature = begin fun mapper decls ->
     let decls =
@@ -209,36 +227,19 @@ let create_auto_printer_mapper =
       in
       List.rev (List.fold_left maybe_concat [] (List.map attach_sig_printer decls))
     in
-    default_mapper.signature mapper decls
+    super.signature mapper decls
   end }
 
-(** unescape_stars_slashes_mapper unescapes all stars and slases in an AST
-  *)
-let unescape_stars_slashes_mapper =
-  let unescape_stars_slashes str =
-    let len = String.length str in
-    if len < 2 then
-      str
-    else
-      let ending = String.sub str 1 (len - 1) in
-    String.sub str 0 1 ^
-      replace_string "\\*" "*"
-        (replace_string ("\\/") "/" ending)
-  in
-  identifier_mapper unescape_stars_slashes
-
-(** escape_stars_slashes_mapper escapes all stars and slases in an AST
-  *)
+(** escape_stars_slashes_mapper escapes all stars and slases in an AST *)
 let escape_stars_slashes_mapper =
   let escape_stars_slashes str =
-    let len = String.length str in
-    if len < 2 then
+    if String.contains str '/' then
+      replace_string "/*" "/\\*" @@
+      replace_string "*/" "*\\/" @@
+      replace_string "//" "/\\/" @@
       str
     else
-      let ending = String.sub str 1 (len -1) in
-      String.sub str 0 1 ^
-        replace_string "*" "\\*"
-          (replace_string "/" "\\/" ending)
+      str
   in
   identifier_mapper escape_stars_slashes
 
@@ -289,28 +290,20 @@ let attributes_conflicted attribute1 attribute2 attributes =
 let normalized_attributes attribute attributes =
   List.filter (fun x -> not (attribute_equals attribute x)) attributes
 
-(*
- * apply_mapper_chain family applies an ast_mapper_chain to an ast,
- * ordering from left to right.
- *)
-let apply_mapper_chain_to_structure =
-  List.fold_left (fun s mapper -> mapper.structure mapper s )
-let apply_mapper_chain_to_signature =
-  List.fold_left (fun s mapper -> mapper.signature mapper s )
-let apply_mapper_chain_to_type =
-  List.fold_left (fun s mapper -> mapper.typ mapper s )
-let apply_mapper_chain_to_expr =
-  List.fold_left (fun s mapper -> mapper.expr mapper s )
-let apply_mapper_chain_to_pattern =
-  List.fold_left (fun s mapper -> mapper.pat mapper s )
+(* apply_mapper family applies an ast_mapper to an ast *)
+let apply_mapper_to_structure s mapper = mapper.structure mapper s
+let apply_mapper_to_signature s mapper = mapper.signature mapper s
+let apply_mapper_to_type      s mapper = mapper.typ       mapper s
+let apply_mapper_to_expr      s mapper = mapper.expr      mapper s
+let apply_mapper_to_pattern   s mapper = mapper.pat       mapper s
 
-let apply_mapper_chain_to_toplevel_phrase toplevel_phrase chain =
+let apply_mapper_to_toplevel_phrase toplevel_phrase mapper =
   match toplevel_phrase with
-  | Ptop_def x -> Ptop_def (apply_mapper_chain_to_structure x chain)
+  | Ptop_def x -> Ptop_def (apply_mapper_to_structure x mapper)
   | x -> x
 
-let apply_mapper_chain_to_use_file use_file chain =
-  List.map (fun x -> apply_mapper_chain_to_toplevel_phrase x chain) use_file
+let apply_mapper_to_use_file use_file mapper =
+  List.map (fun x -> apply_mapper_to_toplevel_phrase x mapper) use_file
 
 (* The following logic defines our own Error object
  * and register it with ocaml so it knows how to print it

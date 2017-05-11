@@ -194,5 +194,5 @@ let res = someExpression ? "true" : "false";
 
 let pngSuffix =
   pixRation > 1 ?
-    "@" ^ string_of_int pixRation ^ "x.png" :
+    "@" ++ string_of_int pixRation ++ "x.png" :
     ".png";

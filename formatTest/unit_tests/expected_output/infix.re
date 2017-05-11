@@ -108,29 +108,29 @@ let formatted =
   ((((a1 && a2) && b1) & b2) & y) &|| (x &|| z);
 
 /* **...(right) is higher than *...(left) */
-let parseTree = b1 *| b2 *| y *\*| x *\*| z;
+let parseTree = b1 *| b2 *| (y **| (x **| z));
 
-let minParens = b1 *| b2 *| y *\*| x *\*| z;
+let minParens = b1 *| b2 *| (y **| (x **| z));
 
-let formatted = b1 *| b2 *| y *\*| x *\*| z;
+let formatted = b1 *| b2 *| (y **| (x **| z));
 
 /* **...(right) is higher than *...(left) */
 let parseTree =
-  b1 *| b2 *| y *\*| (x *\*| z *| a);
+  b1 *| b2 *| (y **| (x **| z *| a));
 
 let minParens =
-  b1 *| b2 *| y *\*| (x *\*| z *| a);
+  b1 *| b2 *| (y **| (x **| z *| a));
 
 let formatted =
-  b1 *| b2 *| y *\*| (x *\*| z *| a);
+  b1 *| b2 *| (y **| (x **| z *| a));
 
 /* |...(left) is higher than ||(right) */
 /* All parens should be removed when formatting n > 0 times */
-let parseTree = b1 || b2 || y |\* x |\* z;
+let parseTree = b1 || b2 || y |* x |* z;
 
-let minParens = b1 || b2 || y |\* x |\* z;
+let minParens = b1 || b2 || y |* x |* z;
 
-let formatted = b1 || b2 || y |\* x |\* z;
+let formatted = b1 || b2 || y |* x |* z;
 
 /* Associativity effects how parenthesis should be dropped */
 /* This one *shouldn't* expand into two consecutive infix + */
@@ -295,20 +295,19 @@ let equal = Pervasives.(==);
 
 let starInfix_makeSureSpacesSurround = ( * );
 
-let starInfix_makeSureSpacesSurround = ( *\*\* );
+let starInfix_makeSureSpacesSurround = ( *** );
 
 /* The following two should be equivalently parsed/printed.  */
-let includesACommentCloseInIdentifier = ( *\*\/ );
+let includesACommentCloseInIdentifier = ( **\/ );
 
-let includesACommentCloseInIdentifier = ( *\*\/ );
+let includesACommentCloseInIdentifier = ( **\/ );
 
 let shouldSimplifyAnythingExceptApplicationAndConstruction =
-  call "hi" ^
-  (
+  call "hi" ++ (
     switch x {
     | _ => "hi"
     }
-  ) ^ "yo";
+  ) ++ "yo";
 
 /* Add tests with IF/then mixed with infix/constructor application on left and right sides */
 
@@ -318,21 +317,21 @@ let shouldSimplifyAnythingExceptApplicationAndConstruction =
  */
 let ( /\* ) a b => a + b;
 
-let x = 12 /-\* 23 /-\* 12;
+let x = 12 /-* 23 /-* 12;
 
 let y = a /\* b;
 
-let ( !=\* ) q r => q + r;
+let ( !=* ) q r => q + r;
 
-let res = q ( !=\* ) r;
+let res = q ( !=* ) r;
 
-let ( !=\/\* ) q r => q + r;
+let ( !=/\* ) q r => q + r;
 
-let res = q ( !=\/\* ) r;
+let res = q ( !=/\* ) r;
 
-let ( ~\* ) a => a + 1;
+let ( ~* ) a => a + 1;
 
-let res = ~\*10;
+let res = ~*10;
 
 let res = f - (- x);
 
@@ -920,9 +919,9 @@ let containingObject = {
      * Unary plus/minus has lower precedence than prefix operators:
      * And unary plus has same precedence as unary minus.
      */
-    let res = - !record;
+    let res = - record^;
     /* Should be parsed as: */
-    let res = - !record;
+    let res = - record^;
     /* Although that precedence ranking doesn't likely have any effect in that
      * case. */
 
@@ -936,12 +935,12 @@ let containingObject = {
     /**
      * And this
      */
-    let res = !(- callThisFunc ());
+    let res = (- callThisFunc ())^;
     /* Should be parsed (and should remain printed as: */
-    let res = !(- callThisFunc ());
-    let res = !x [@onApplication];
-    let res = !(x [@onX]);
-    let res = !(x [@onX]);
+    let res = (- callThisFunc ())^;
+    let res = x^ [@onApplication];
+    let res = (x [@onX])^;
+    let res = (x [@onX])^;
     (something.contents = "newvalue")
     [@shouldBeRenderedOnEntireSetField];
     something.contents =

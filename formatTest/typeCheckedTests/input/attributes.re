@@ -51,11 +51,11 @@ let thisInst : myType =
 let x = ("hello" [@onHello]);
 let x = "hello" [@onHello];
 
-let x = "hello" ^ ("goodbye" [@onGoodbye]);
-let x = ("hello" [@onHello]) ^ "goodbye";
-let x = "hello" [@onHello] ^ "goodbye";
-let x = "hello" ^ "goodbye" [@onGoodbye];
-let x = ("hello" ^ "goodbye") [@onEverything];
+let x = "hello" ++ ("goodbye" [@onGoodbye]);
+let x = ("hello" [@onHello]) ++ "goodbye";
+let x = "hello" [@onHello] ++ "goodbye";
+let x = "hello" ++ "goodbye" [@onGoodbye];
+let x = ("hello" ++ "goodbye") [@onEverything];
 
 let x = 10 + (20 [@on20]);
 let x = 10 + 20 [@on20];
@@ -106,8 +106,8 @@ let x = (- add thisVal thisVal) [@onEverything];
 
 
 let bothTrue x y => {contents: x && y};
-let something = !(bothTrue true true) [@onEverythingToRightOfEquals];
-let something = !(bothTrue true true [@onlyOnArgumentToBang]);
+let something = (bothTrue true true)^ [@onEverythingToRightOfEquals];
+let something = (bothTrue true true [@onlyOnArgumentToBang])^;
 
 let res = add 2 4 [@appliesToEntireFunctionApplication];
 add 2 4 [@appliesToEntireFunctionApplication];
