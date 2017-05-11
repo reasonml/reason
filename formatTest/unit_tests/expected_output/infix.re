@@ -891,30 +891,30 @@ let containingObject = {
     /* Same as */
     let result = 2 + (- add 4 0);
     /* That same example but with ppx attributes on the add application */
-    let result = 2 + (- add 4 0 [@ppx]);
+    let result = 2 + (- [@ppx] add 4 0);
     /* Same as */
-    let result = 2 + (- add) 4 0 [@ppx];
+    let result = [@ppx] 2 + (- add) 4 0;
     /* Same as */
-    let result = 2 + (- add 4 0 [@ppx]);
+    let result = [@ppx] 2 + (- add 4 0);
     /* Multiple nested prefixes */
     let result = 2 + (- (- (- add 4 0)));
     /* And with attributes */
     let result =
-      2 + (
-        - (- (- add 4 0 [@onAddApplication]))
+      [@onAddApplication] 2 + (
+        - (- (- add 4 0))
       );
 
     /**
      * TODO: Move all of these test cases to attributes.re.
      */
     /* Attribute on the prefix application */
-    let res = (- something blah blah) [@attr];
+    let res = [@attr] (- something blah blah);
     /* Attribute on the regular function application, not prefix */
-    let res = - something blah blah [@attr];
-    let attrOnPrefix = (-1) [@ppxOnPrefixApp];
+    let res = [@attr] (- something blah blah);
+    let attrOnPrefix = [@ppxOnPrefixApp] (-1);
     let attrOnPrefix = 5 + (-1);
     let result =
-      arr.[0] [@ppxAttributeOnSugarGetter];
+      [@ppxAttributeOnSugarGetter] arr.[0];
 
     /**
      * Unary plus/minus has lower precedence than prefix operators:
@@ -939,12 +939,12 @@ let containingObject = {
     let res = !(- callThisFunc ());
     /* Should be parsed (and should remain printed as: */
     let res = !(- callThisFunc ());
-    let res = !x [@onApplication];
-    let res = !(x [@onX]);
-    let res = !(x [@onX]);
-    (something.contents = "newvalue")
-    [@shouldBeRenderedOnEntireSetField];
+    let res = [@onApplication] !x;
+    let res = !([@onX] x);
+    let res = !([@onX] x);
+    [@shouldBeRenderedOnEntireSetField]
+    (something.contents = "newvalue");
     something.contents =
-      "newvalue" [@shouldBeRenderedOnString]
+      [@shouldBeRenderedOnString] "newvalue"
   }
 };
