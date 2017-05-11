@@ -828,6 +828,7 @@ and skip_sharp_bang = parse
       queued_exn := None;
       raise (load_triple lexbuf exn)
     | [(LPAREN, _, _) as lparen], None ->
+      let _ = load_triple lexbuf lparen in
       lookahead_esfun lexbuf lparen
     | [], None ->
       begin match token lexbuf with
