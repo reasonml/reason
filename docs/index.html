@@ -553,25 +553,59 @@ OCaml optimizes this to avoid the unnecessary function allocation (2 functions h
 - No performance cost
 
 
+Mutation
+---------------
+Reason/OCaml exposes mutable features through [array](#built-in-data-types-array) and [mutable record fields](#built-in-data-types-record). They're sometimes great for performance and expressing certain familiar programming patterns.
+
+For a single mutable reference (e.g. assigning a value to `let`), the standard library comes with syntax sugar for a [record type called `ref`](http://caml.inria.fr/pub/docs/manual-ocaml/libref/Pervasives.html#TYPEref). You'd use it like so:
+
+```reason
+let myValue = ref 10;
+if (...) {
+  myValue := 20;
+};
+print_int !myValue;
+```
+
+In reality, this is just:
+
+```reason
+let myValue = {contents: 10};
+if (...) {
+  myValue.contents = 20;
+};
+print_int myValue.contents;
+```
+
+There's nothing special about this record, beside the fact that it comes inside the standard library.
+
+You can also achieve lightweight, local "mutations" through overriding let bindings:
+
+```reason
+let foo = 10;
+let foo = someCondition ? foo + 5 : foo; /* either 15 or 10 */
+let foo = "hello";
+print_endline foo; /* "hello" */
+```
+
+Notice we've assigned a new type to `foo` in the before-last line. This is type-safe since, as documented [here](#basics-let-binding), the lines afterward can only see the last assignment of `foo`.
+
+
 Imperative Loops
 ---------------
 
-
 #### For Loops
 
-For loops are fully imperative constructs that iterate through a range of
-numbers, from a beginning value up to (and including) the ending value. The
-general form of a `for` loop includes an identifier that is incremented each
-iteration, and a range `startVal` to `endVal`.
+For loops iterate from a starting value up to (and including) the ending value.
 
 ```reason
-for identifier in (startVal) to (endVal) {
-  statements
+for myBinding in (startValue) to (endValue) {
+  /* use myBinding here */
 };
 ```
 
-The parenthesis around the `startVal` and `endVal` may be omitted if they are
-clearly unnecessary as in the following example.
+The parenthesis around `startValue` and `endValue` may be omitted if they are
+unnecessary.
 
 ```reason
 let xStart = 1;
@@ -583,11 +617,10 @@ for x in xStart to xEnd {
 };
 ```
 
-You can make the `for` loop count in the opposite direction by using the `downto`
-keyword.
+You can make the `for` loop count in the opposite direction by using `downto`.
 
 ```reason
-for identifier in (startVal) downto (endVal) {
+for myBinding in (startValue) downto (endValue) {
   statements
 };
 ```
@@ -604,9 +637,7 @@ for x in xStart downto xEnd {
 
 #### While Loops
 
-While loops are also fully imperative constructs. They execute a code block
-while some condition is true. The form of a `while` loop includes a single
-expression, the condition to test.
+While loops execute a code block while some condition is true. The form of a `while` loop includes a single expression, the condition to test.
 
 ```reason
 while (testCondition) {
@@ -614,8 +645,7 @@ while (testCondition) {
 };
 ```
 
-The parenthesis around `testCondition` may be omitted if they are unnecessary,
-such as in the following example.
+The parenthesis around `testCondition` may be omitted if they are unnecessary.
 
 ```reason
 while true {
@@ -623,7 +653,9 @@ while true {
 };
 ```
 
-Example to break out of a while-true loop:
+#### Breaking Out of Loop
+
+There's no loop-breaking `break` keyword (nor early `return` from functions, for that matter) in Reason/OCaml. In general, prefer map/filter/reduce over imperative loops. However, we can break out of a while loop easily through using a [mutable binding](#mutation). Example without the `ref` syntax sugar:
 
 ```reason
 Random.self_init ();
