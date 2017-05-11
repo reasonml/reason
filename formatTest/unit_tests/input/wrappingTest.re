@@ -1311,7 +1311,7 @@ let df_locallyAbstractFuncNotSugared =
       (input:a) => {
   inputIs: input
 };
->>
+
 /**
  * The following is automatically expanded at the parser level into:
  *
@@ -1326,8 +1326,7 @@ let df_locallyAbstractFuncNotSugared =
  *
  */
 let df_locallyAbstractFuncAnnotated: type a. a => a => inputEchoRecord(a) =
-  fun (input:a)
-      (input:a) => {
+  fun (input:a, input:a) => {
     inputIs: input
   };
 
@@ -1371,9 +1370,8 @@ let df_locallyAbstractFuncAnnotatedRef: type a. a => a => inputEchoRecord(a) =
  *     );
  *
  */
-let df_locallyAbstractFuncAnnotated: type a b. a => b => (inputEchoRecord a, inputEchoRecord b) =
-  fun (input:a)
-      (input2:b) => (
+let df_locallyAbstractFuncAnnotated: type a b. a => b => (inputEchoRecord(a), inputEchoRecord(b)) =
+  fun (input:a, input2:b) => (
     {inputIs: input},
     {inputIs: input2}
   );
@@ -1395,14 +1393,14 @@ let df_locallyAbstractFuncAnnotated:
     ):
       a =>
       b =>
-      (inputEchoRecord a, inputEchoRecord b)
+      (inputEchoRecord(a), inputEchoRecord(b))
   );
 
 
 
 let createTuple_thisFuncShouldWrapCorrectlyNow
 :'a. 'a => 'a => 'a => ('a, 'a, 'a) =
-fun someVar someVar2 someVar3 => (someVar, someVar2, someVar3);
+fun(someVar,someVar2,someVar3) => (someVar, someVar2, someVar3);
 
 let (theTupleTypeAnnotationShouldWrap: (
   string,
@@ -1417,8 +1415,8 @@ let (theTupleTypeAnnotationShouldWrap: (
 );
 
 
-let rec mutuallyRecursiveOne x => mutuallyRecursiveTwo (x + x)
-and mutuallyRecursiveTwo y => print_int y;
+let rec mutuallyRecursiveOne(x) => mutuallyRecursiveTwo (x + x)
+and mutuallyRecursiveTwo(y) => print_int(y);
 
 /* The only downside to this is that now you can't redeclare a binding. */
 /* let newMutualRecursionSyntax x => newMutuallyRecursiveTwo (x + x); */
@@ -1429,17 +1427,17 @@ and mutuallyRecursiveTwo y => print_int y;
 
 type x = pri int;
 
-type myType 'a 'b 'c = pri ('a, 'b, 'c);
+type myType('a,'b,'c) = pri ('a, 'b, 'c);
 
 type privateVariant = pri
-  | BigSize int
-  | SmallSize int;
+  | BigSize(int)
+  | SmallSize(int);
 
 type doubleEqualsDoublePrivateVariant =
   privateVariant =
   pri
-    | BigSize int
-    | SmallSize int;
+    | BigSize(int)
+    | SmallSize(int);
 
 type myRecordWithReallyLongName = {xx:int, yy:int};
 type doubleEqualsRecord = myRecordWithReallyLongName = {xx:int, yy:int};
@@ -1447,7 +1445,7 @@ type doubleEqualsDoublePrivateRecord = myRecordWithReallyLongName = pri {xx:int,
 
 
 
-type someConstructor = SomeConstructorHi int int;
+type someConstructor = SomeConstructorHi(int,int);
 type someRecord = {firstFieldInRecord: int, secondField: int};
 
 /*
@@ -1457,22 +1455,22 @@ type someRecord = {firstFieldInRecord: int, secondField: int};
   pattern).
 */
 let funcOnSomeConstructorHi (
-  SomeConstructorHi x y
+  SomeConstructorHi(x,y)
 ) => x + y;
 
 let funcOnSomeConstructorHi
-    (SomeConstructorHi x y)
-    secondArg => x + y;
+    (SomeConstructorHi(x,y),
+     secondArg) => x + y;
 
 /* With two args */
-let funcOnSomeRecord {
+let funcOnSomeRecord ({
   firstFieldInRecord,
   secondField
-} => firstFieldInRecord + secondField;
+}) => firstFieldInRecord + secondField;
 
 let funcOnSomeRecord
-    {firstFieldInRecord, secondField}
-  secondArg => firstFieldInRecord + secondField;
+    ({firstFieldInRecord, secondField}, secondArg) =>
+   firstFieldInRecord + secondField;
 
 
 /*
@@ -1482,30 +1480,29 @@ let funcOnSomeRecord
   pattern).
 */
 let funcOnSomeConstructorHi
-    (SomeConstructorHi x y) => x + y;
+    (SomeConstructorHi(x,y)) => x + y;
 
 let funcOnSomeRecord
-    {firstFieldInRecord, secondField} =>
+    ({firstFieldInRecord, secondField}) =>
  firstFieldInRecord + secondField;
 
 /* With two args */
 let funcOnSomeConstructorHi
-    (SomeConstructorHi x y)
-  secondArg => x + y;
+    (SomeConstructorHi(x,y), secondArg) => 
+  x + y;
 
 let funcOnSomeRecord
-    {firstFieldInRecord, secondField}
-    secondArg =>
+    ({firstFieldInRecord, secondField}, secondArg) =>
   firstFieldInRecord + secondField;
 
 
 type simpleTupleVariant =
-  SimpleActuallyATuple (int, int);
+  SimpleActuallyATuple((int, int));
 
-let returnTheSimpleTupleVariant i =>
+let returnTheSimpleTupleVariant(i) =>
   SimpleActuallyATuple (i, i);
 
-let shouldWrapLike whenLongArg => SimpleActuallyATuple (
+let shouldWrapLike(whenLongArg) => SimpleActuallyATuple (
   whenLongArg,
   whenLongArg
 );
@@ -1522,7 +1519,7 @@ type recursiveType =
   /* First variant of first mutually recursive */
   | Blah
   /* Second variant of first mutually recursive */
-  | Another (option anotherRecursiveType)
+  | Another (option(anotherRecursiveType))
 
 /*
  * Commenting second of two mutually recursive types.
@@ -1531,18 +1528,18 @@ and anotherRecursiveType =
   /* Second variant of second mutually recursive */
   | Baz
   /* Second variant of second mutually recursive */
-  | Recursive (option recursiveType);
+  | Recursive (option(recursiveType));
 
 /**
  * Commented GADT definition.
  */
-type term _ =
+type term(_) =
   /* First variant leaf of GADT */
-  | Int /*first var arg */ int : /* First GADT res */ term int
+  | Int /*first var arg */ (int) : /* First GADT res */ term(int)
   /* Second variant leaf of GADT */
-  | Float /*second var arg */ int : /* Second GADT res */ term int
+  | Float /*second var arg */ (int) : /* Second GADT res */ term(int)
   /* Third variant leaf of GADT */
-  | Bool /*third var arg */ int : /* Third GADT res */ term int;
+  | Bool /*third var arg */ (int) : /* Third GADT res */ term(int);
 
 
 /* Commented colors */
@@ -1550,95 +1547,95 @@ type commentedTypeDef =
   /*
    * Commenting first variant member.
    */
-  | First (
+  | First ((
     /* First field of tuple in first variant member */
     int,
     /* Second field of tuple in first variant member */
     int
-  )
+  ))
   /*
    * Commenting second variant member.
    */
-  | Second int
+  | Second(int)
   /*
    * Commenting third variant member.
    */
   | Third (
       list
         /* Commenting deep in type def */
-        (list int)
+        (list(int))
     );
 
 type colors =
-  | Red int
-  | Black int
-  | Green int;
+  | Red(int)
+  | Black(int)
+  | Green(int);
 
-let blah = fun arg => switch arg {
+let blah = fun(arg) => switch arg {
   /* Comment before Bar */
   | /* Comment between bar/pattern */
-    Red _ => 1
+    Red(_) => 1
   /* Comment Before non-first bar */
   | /* Comment betwen bar/pattern */
-    Black _ => 0
-  | Green _ => 0
+    Black(_) => 0
+  | Green(_) => 0
 };
 
 let blah = fun
-  | Red _ => 1
-  | Black _ => 0
-  | Green _ => 1;
+  | Red(_) => 1
+  | Black(_) => 0
+  | Green(_) => 1;
 
-let blahCurriedX x => fun
+let blahCurriedX(x) => fun
   /* Comment before first bar */
   | /* Comment between first bar and OR pattern */
-    (Red x | Black x | Green x) => 1
+    (Red(x) | Black(x) | Green(x)) => 1
   /* Comment before second bar */
-  | Black x => 0
-  | Green x => 0;
+  | Black(x) => 0
+  | Green(x) => 0;
 
 
 type reallyLongVariantNames =
-  | ReallyLongVariantName recordWithLong
-  | AnotherReallyLongVariantName int int int
-  | AnotherReallyLongVariantName2 int int int;
+  | ReallyLongVariantName(recordWithLong)
+  | AnotherReallyLongVariantName(int,int,int)
+  | AnotherReallyLongVariantName2(int,int,int);
 
-let howDoLongMultiBarPatternsWrap = fun x => switch x {
-  | AnotherReallyLongVariantName _ _ _ => 0
-  | AnotherReallyLongVariantName2 _ _ _ => 0
+let howDoLongMultiBarPatternsWrap = fun(x) => switch x {
+  | AnotherReallyLongVariantName(_,_,_) => 0
+  | AnotherReallyLongVariantName2(_,_,_) => 0
   | ReallyLongVariantName {someField, anotherField} => 0
 };
 
-let letsCombineTwoLongPatternsIntoOneCase x =>
+let letsCombineTwoLongPatternsIntoOneCase(x) =>
   switch x {
-    | AnotherReallyLongVariantName _ _ _
-    | AnotherReallyLongVariantName2 _ _ _ => 0
+    | AnotherReallyLongVariantName(_,_,_)
+    | AnotherReallyLongVariantName2(_,_,_) => 0
     | ReallyLongVariantName {someField, anotherField} => 0
   };
 
-let letsPutAWhereClauseOnTheFirstTwo x =>
+let letsPutAWhereClauseOnTheFirstTwo(x) =>
   switch x {
-    | AnotherReallyLongVariantName _ _ _
-    | AnotherReallyLongVariantName2 _ _ _ when true => 0
+    | AnotherReallyLongVariantName(_,_,_)
+    | AnotherReallyLongVariantName2(_,_,_) when true => 0
     | ReallyLongVariantName {someField, anotherField} => 0
   };
 
-let letsPutAWhereClauseOnTheLast x =>
+let letsPutAWhereClauseOnTheLast(x) =>
   switch x {
-    | AnotherReallyLongVariantName _ _ _
-    | AnotherReallyLongVariantName2 _ _ _ => 0
+    | AnotherReallyLongVariantName(_,_,_)
+    | AnotherReallyLongVariantName2(_,_,_) => 0
     | ReallyLongVariantName {someField, anotherField} when true => 0
   };
 
 
 
-type wrappingGadt _ =
-  | ThisIsLongSoTypeWillWrap int
-    :wrappingGadt int
+type wrappingGadt(_) =
+  | ThisIsLongSoTypeWillWrap(int)
+    :wrappingGadt(int)
   | Add :wrappingGadt (int => int => int)
   | App
-      (wrappingGadt ('b => 'a)) (wrappingGadt 'b)
-      :wrappingGadt 'a;
+      (wrappingGadt('b => 'a), wrappingGadt('b))
+      :wrappingGadt('a);
 
 
 type withThreeFields = {
@@ -1660,9 +1657,9 @@ let anotherRecord = {
 
 type polymorphicCommentedType
   /* Commenting the first type variable */
-  'a
+  ('a,
   /* Commenting the second type variable */
-  'b = list ('a, 'b);
+   'b) = list ('a, 'b);
 
 /**
  * Commenting the entire record definition.
@@ -1694,9 +1691,9 @@ let testRecordCommented = {
  */
 let callMeWithComments
     /* Comment before first arg "a" */
-    (a:int)
+    (a:int,
     /* Comment before second arg "b" */
-    (b:int)
+     b:int)
     /* Comment before return type annotation "int" */
     :int =>
   /* Comment above return value a + b + c */
@@ -1706,9 +1703,9 @@ let result =
   /* Comment before function to invoke */
   callMeWithComments
     /* Comment before first argument expression */
-    (1 + 2 + 3 + 3)
+    (1 + 2 + 3 + 3,
     /* Comment before second argument expression */
-    (1 + 2 + 3 + 3);
+     1 + 2 + 3 + 3);
 
 module type ASig = {let a:int;};
 module type BSig = {let b:int;};
@@ -1720,9 +1717,9 @@ module CurriedSugar
      * see how functor args' locations aren't set
      * correclty due to the fold_left.
      */
-    (A:ASig)
+    (A:ASig,
     /* Commenting before Second curried functor arg */
-    (B:BSig) => {
+     B:BSig) => {
   let result = A.a + B.b;
   /* Comment at bottom of module expression */
 };
@@ -1731,9 +1728,9 @@ module CurriedSugarFunctorResult =
   /* Commenting before functor name*/
   CurriedSugar
     /* Commenting before functor arg 1 in app */
-    AMod
+   (AMod,
     /* Commenting before functor arg 2 in app */
-    BMod;
+    BMod);
 
 module CurriedSugarFunctorResultInline =
   /* Commenting before functor name*/
@@ -1788,13 +1785,13 @@ let /*beforePattern*/ /*beforePattern2 */ commentingBeforePatternSpecial : withT
   occupation: "programmer"
 };
 
-let produceRecord /*commentBeforeArg*/ x => {
+let produceRecord /*commentBeforeArg*/(x) => {
   name: "hello",
   age: 20,
   occupation: "programmer"
 };
 
-let produceRecord x /*commentAfterArg*/ => {
+let produceRecord(x) /*commentAfterArg*/ => {
   name: "hello",
   age: 20,
   occupation: "programmer"
@@ -1802,19 +1799,19 @@ let produceRecord x /*commentAfterArg*/ => {
 
 
 
-let myPolyFuncCommentBeforeColon /*beforeColon */: 'a . 'a => 'a = fun o => o;
-let myPolyFuncCommentAfterColon : /*afterColon */ 'a . 'a => 'a = fun o => o;
-let myPolyFuncCommentBeforeArrow : 'a . 'a /*beforeArrow */ => 'a = fun o => o;
-let myPolyFuncCommentAfterArrow : 'a . 'a => /*afterArrow */  'a = fun o => o;
-let myPolyFuncCommentBeforeEqual : 'a . 'a => 'a /*beforeEqual */  = fun o => o;
-let myPolyFuncCommentAfterEqual : 'a . 'a => 'a = /*afterEqual */ fun o => o;
+let myPolyFuncCommentBeforeColon /*beforeColon */: 'a . 'a => 'a = fun(o) => o;
+let myPolyFuncCommentAfterColon : /*afterColon */ 'a . 'a => 'a = fun(o) => o;
+let myPolyFuncCommentBeforeArrow : 'a . 'a /*beforeArrow */ => 'a = fun(o) => o;
+let myPolyFuncCommentAfterArrow : 'a . 'a => /*afterArrow */  'a = fun(o) => o;
+let myPolyFuncCommentBeforeEqual : 'a . 'a => 'a /*beforeEqual */  = fun(o) => o;
+let myPolyFuncCommentAfterEqual : 'a . 'a => 'a = /*afterEqual */ fun(o) => o;
 
-let myNonPolyFuncCommentBeforeColon /*BeforeColon */: 'a => 'a = fun o => o;
-let myNonPolyFuncCommentAfterColon : /*AfterColon */'a => 'a = fun o => o;
-let myNonPolyFuncCommentBeforeArrow: 'a /*BeforeArrow */=> 'a = fun o => o;
-let myNonPolyFuncCommentAfterArrow: 'a => /*AfterArrow */'a = fun o => o;
-let myNonPolyFuncCommentBeforeEqual: 'a => 'a /*BeforeEqual */= fun o => o;
-let myNonPolyFuncCommentAfterEqual: 'a => 'a = /*AfterEqual */ fun o => o;
+let myNonPolyFuncCommentBeforeColon /*BeforeColon */: 'a => 'a = fun(o) => o;
+let myNonPolyFuncCommentAfterColon : /*AfterColon */'a => 'a = fun(o) => o;
+let myNonPolyFuncCommentBeforeArrow: 'a /*BeforeArrow */=> 'a = fun(o) => o;
+let myNonPolyFuncCommentAfterArrow: 'a => /*AfterArrow */'a = fun(o) => o;
+let myNonPolyFuncCommentBeforeEqual: 'a => 'a /*BeforeEqual */= fun(o) => o;
+let myNonPolyFuncCommentAfterEqual: 'a => 'a = /*AfterEqual */ fun(o) => o;
 
 let lATCurrySugarCommentBeforeType /*BeforeType */ (type a) (input:a) => input;
 let lATCurrySugarCommentAfterType /*AfterType */ (type a) (input:a) => input;
@@ -1843,7 +1840,7 @@ let ternaryResult =
   /* Before Test */
   something ?
     /* Before ifTrue */
-    callThisFunction withThisArg:
+    callThisFunction(withThisArg):
     /* Before ifFalse */
     thatResult;
 
@@ -1851,12 +1848,12 @@ let ternaryResult =
   /* Before Test */
   something ?
     /* Before ifTrue */
-    callThisFunction withThisArg:
+    callThisFunction(withThisArg):
     /* Before ifFalse */
     trailingTest ? /* before nested ifTrue */ true : /* before nested ifFalse */ false;
 
 
-let returningATernary x y => x > y ? "hi" : "by";
+let returningATernary(x,y) => x > y ? "hi" : "by";
 
 
 /** Testing some special comment alignment features */
@@ -1895,42 +1892,42 @@ let test =
     10;
 
 
-let x = calWith
-          reallyLongName
-          reallyReallyLongName
-          reallyReallyLongName
-          reallyReallyLongName
-          reallyReallyLongName
-          reallyReallyLongName
-          a
-          a
-          a
-          alskdjfalskdjfalsdf + reallyReallyLongName;
+let x = calWith(
+          reallyLongName,
+          reallyReallyLongName,
+          reallyReallyLongName,
+          reallyReallyLongName,
+          reallyReallyLongName,
+          reallyReallyLongName,
+          a,
+          a,
+          a,
+          alskdjfalskdjfalsdf) + reallyReallyLongName;
 
 
 
 
 let onlyDoingThisTopLevelLetToBypassTopLevelSequence = {
     let x = {
-      print_int 1;
-      print_int 20;  /* Missing trailing SEMI */
+      print_int(1);
+      print_int(20);  /* Missing trailing SEMI */
     };
 
     let x = {
-      print_int 1;
-      print_int 20;   /* Ensure missing middle SEMI reported well */
-      print_int 20;
+      print_int(1);
+      print_int(20);   /* Ensure missing middle SEMI reported well */
+      print_int(20);
     };
 
     let x = {
-      print_int 1;
-      print_int 20;
+      print_int(1);
+      print_int(20);
       10;
     };  /* Missing final SEMI */
 
     let x = {
-      print_int 1;
-      print_int 20;
+      print_int(1);
+      print_int(20);
       10;
     };
     x + x;  /* Final item */
@@ -1938,16 +1935,16 @@ let onlyDoingThisTopLevelLetToBypassTopLevelSequence = {
 
 
 /* With this unification, anywhere eyou see `= fun` you can just ommit it */
-let blah = fun a => a;         /* Done */
-let blah a => a;               /* Done (almost) */
+let blah = fun(a)=> a;         /* Done */
+let blah(a) => a;               /* Done (almost) */
 
-let blah = fun a b => a;       /* Done */
-let blah a b => a;             /* Done (almost) */
+let blah = fun(a,b) => a;       /* Done */
+let blah(a,b) => a;             /* Done (almost) */
 
 let tryingTheSameInLocalScope = {
-  let blah = fun a => a;         /* Done */
-  let blah a => a;               /* Done (almost) */
+  let blah = fun(a) => a;         /* Done */
+  let blah(a) => a;               /* Done (almost) */
 
-  let blah = fun a b => a;       /* Done */
-  let blah a b => a;             /* Done (almost) */
+  let blah = fun(a,b) => a;       /* Done */
+  let blah(a,b) => a;             /* Done (almost) */
 };
