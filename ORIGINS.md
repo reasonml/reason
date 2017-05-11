@@ -26,8 +26,6 @@ THE SOFTWARE.
 
 ---
 
-`./editorSupport/emacs/reason-mode` was forked from [rust-mode](https://github.com/rust-lang/rust-mode) and is dual licensed under MIT/Apache. We've only made minor changes, and we've added a file `./editorSupport/emacs/reason-mode.el` which was forked from a BSD (w/ non-attribution) licensed project.
-
 Copyright (c) 2015 The Rust Project Developers
 
 Permission is hereby granted, free of charge, to any
