@@ -17,9 +17,6 @@ build: [
                     "--native-dynlink" "%{ocaml-native-dynlink}%"
                     "--utop" "%{utop:installed}%"]
 ]
-build-test: [
-  "ocamlbuild" "-classic-display" "-use-ocamlfind" "src_test/test_reason.byte" "--"
-]
 depends: [
   "ocamlfind"               {build}
   "utop"                    {>= "1.17"}
