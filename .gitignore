@@ -1,16 +1,9 @@
 *.native
-/refmt_merlin_impl.sh
 *.byte
 *.cmt
-*.docdir
 _build
 *.install
 pkg/META
-src_gen/confusables.txt
-src_test/_tags
-.paths
-.settings
-.project
 .DS_Store
 formatTest/customMLFiles/*.ml
 formatTest/customMLFormatOutput.re

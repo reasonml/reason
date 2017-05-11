@@ -17,9 +17,6 @@ build: [
                     "--native" "%{ocaml-native}%"
                     "--native-dynlink" "%{ocaml-native-dynlink}%"]
 ]
-build-test: [
-  "ocamlbuild" "-classic-display" "-use-ocamlfind" "src_test/test_reason.byte" "--"
-]
 depends: [
   "ocamlfind"               {build}
   "menhir"                  {= "20170418"}
