@@ -2923,13 +2923,14 @@ class printer  ()= object(self:'self)
           let pcd_res = None in
           let variant_helper rf =
             match rf with
-              | Rtag (label, _, opt_ampersand, ctl) ->
+              | Rtag (label, attrs, opt_ampersand, ctl) ->
                 let pcd_name = {
                   txt = label;
                   loc = pcd_loc;
                 } in
                 let pcd_args = Pcstr_tuple ctl in
-                self#type_variant_leaf ~opt_ampersand ~polymorphic:true {pcd_name; pcd_args; pcd_res; pcd_loc; pcd_attributes}
+                let all_attrs = List.concat [pcd_attributes; attrs] in
+                self#type_variant_leaf ~opt_ampersand ~polymorphic:true {pcd_name; pcd_args; pcd_res; pcd_loc; pcd_attributes = all_attrs}
               | Rinherit ct -> self#core_type ct in
           let (designator, tl) =
             match (closed,low) with
