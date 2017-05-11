@@ -32,14 +32,12 @@ let () =
     Pkg.lib ~cond:(not (Conf.value c utop)) ~exts:Exts.library "src/reason_without_utop" ~dst:"reason";
     (* But then regardless of if we have `utop` installed - still compile a
        library when the use case demands that there be no `utop` *)
-    Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"; ".cmxs"]) "src/redoc_html";
     Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"]) "vendor/cmdliner/cmdliner";
     Pkg.lib ~exts:(Exts.exts [".cmo"]) "src/reason_toploop";
     Pkg.lib ~cond:(Conf.value c utop) ~exts:(Exts.exts [".cmo"]) "src/reason_utop";
     Pkg.bin ~auto:true "src/refmt_impl" ~dst:"refmt";
     Pkg.bin ~auto:true "src/ocamlmerlin_reason" ~dst:"ocamlmerlin-reason";
     Pkg.bin ~auto:false "src/rtop.sh" ~dst:"rtop";
-    Pkg.bin ~auto:false "src/redoc.sh" ~dst:"redoc";
     Pkg.bin ~auto:false "src/reup.sh" ~dst:"reup";
     Pkg.bin ~auto:false "src/rtop_init.ml" ~dst:"rtop_init.ml";
     Pkg.bin ~auto:false "_reasonbuild/_build/myocamlbuild" ~dst:"rebuild";
