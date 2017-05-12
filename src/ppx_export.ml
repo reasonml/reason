@@ -444,7 +444,11 @@ let process_binding binding =
   | ExportedAsSig sig_ -> [sig_]
   | Abstract -> fail binding.pvb_loc "Cannot export value as abstract"
   | ExportedAsType t ->
-    [Sig.mk (Psig_value (Val.mk ~attrs:attrs {loc=t.ptyp_loc;txt="hello"} t))]
+    let name = match binding.pvb_pat.ppat_desc with
+    | Ppat_var {txt} -> txt
+    | _ -> fail binding.pvb_loc "let pattern must be a simple name when specifying the export type"
+    in
+    [Sig.mk (Psig_value (Val.mk ~attrs:attrs {loc=t.ptyp_loc;txt=name} t))]
   in
   (sigs, [{binding with pvb_attributes=attrs}])
 
@@ -506,12 +510,6 @@ let get_signatures structure =
     let (signatures, bindings) = double_fold process_binding bindings in
     (signatures, Pstr_value (r, bindings))
 
-  | Pstr_type (r, types) ->
-    let (sigtypes, types) = double_fold process_type types in
-    (match sigtypes with 
-    | [] -> ([], Pstr_type (r, types))
-    | _ -> ([Sig.mk (Psig_type (r, sigtypes))], Pstr_type (r, types)))
-
   | Pstr_class cls -> 
     let (signatures, classes) = double_fold process_class cls in
     (signatures, Pstr_class classes)
@@ -519,6 +517,14 @@ let get_signatures structure =
   | Pstr_class_type clt -> 
     let (signatures, class_types) = double_fold process_class_type clt in
     (signatures, Pstr_class_type class_types)
+
+  | Pstr_type (r, types) ->
+    let (sigtypes, types) = double_fold process_type types in
+    (
+      match sigtypes with 
+      | [] -> ([], Pstr_type (r, types))
+      | _ -> ([Sig.mk (Psig_type (r, sigtypes))], Pstr_type (r, types))
+    )
 
   | Pstr_recmodule modules -> 
     let (signatures, modules) = double_fold (fun m ->
