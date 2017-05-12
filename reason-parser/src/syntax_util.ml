@@ -176,7 +176,7 @@ let identifier_mapper f =
   end;
 }
 
-let create_auto_printer_mapper =
+(* let create_auto_printer_mapper =
   let attach_str_printer = function
     | { pstr_desc=Pstr_type (_,type_decls) } as ty ->
         let str_of_type = Ppx_deriving_show.str_of_type ~options:[] ~path:[] in
@@ -211,7 +211,7 @@ let create_auto_printer_mapper =
     in
     default_mapper.signature mapper decls
   end }
-
+ *)
 (** unescape_stars_slashes_mapper unescapes all stars and slases in an AST
   *)
 let unescape_stars_slashes_mapper =

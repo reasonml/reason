@@ -21,3 +21,4 @@ node_modules
 /bspacks/**/*.exe
 /bspacks/migrate_parsetree_pp_src
 /bspacks/ppx_deriving_ppx_src
+/bspacks/ocaml-migrate-parsetree.1.0

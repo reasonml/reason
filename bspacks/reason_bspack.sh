@@ -1,9 +1,11 @@
 #!/bin/zsh
 
-# Prerequisite: 
+# Prerequisite:
 # - `menhir` 20160825
 # - `ocamlopt` 4.02.3
 # - sed, the gnu one, not the macOS one. `brew install gnu-sed --with-default-names` (assuming you've installed coreutils)
+# - opam
+# - whatever else
 
 # call the makefile of the root directory
 echo "* Build Reason itself"
@@ -19,64 +21,55 @@ rm -f refmt_main.ml
 rm -f reactjs_ppx.ml
 
 echo "* Copy over migrate-parsetree & postprocessing"
-PARSETREE_DIR=./migrate_parsetree_pp_src
-rm -rf ${PARSETREE_DIR}
-mkdir -p ${PARSETREE_DIR}
-pushd ../node_modules/ocaml-migrate-parsetree-actual/ && make && popd
-# copy the processed source files *.pp.ml from that directory to our own, and
-# remove the .pp part
-for i in $(find ../node_modules/ocaml-migrate-parsetree-actual/_build/default/src/*.pp.ml*); do
-  cp "$i" "${PARSETREE_DIR}/`basename $i`"
-  echo cp "$i" "${PARSETREE_DIR}/`basename $i`"
-done
-for i in $(find ${PARSETREE_DIR}/*.pp.ml); do
-  mv "$i" "${PARSETREE_DIR}/`basename $i .pp.ml`.ml"
-  echo mv "$i" "${PARSETREE_DIR}/`basename $i .pp.ml`.ml"
-done
-for i in $(find ${PARSETREE_DIR}/*.pp.mli); do
-  mv "$i" "${PARSETREE_DIR}/`basename $i .pp.mli`.mli"
-  echo mv "$i" "${PARSETREE_DIR}/`basename $i .pp.mli`.mli"
-done
+rm -rf ./ocaml-migrate-parsetree.1.0
+opam source ocaml-migrate-parsetree
+pushd ocaml-migrate-parsetree.1.0
+make
+popd
 
-# Result isn't available in 4.02.3. We'll exposed it below, but we'll have to qualify it
-sed -i "s/Ok/Result.Ok/g" ${PARSETREE_DIR}/migrate_parsetree_ast_io.ml
-sed -i "s/Error/Result.Error/g" ${PARSETREE_DIR}/migrate_parsetree_ast_io.ml
-sed -i "s/result/Result.result/g" ${PARSETREE_DIR}/migrate_parsetree_ast_io.mli
+# # copy the processed source files *.pp.ml from that directory to our own, and
+# # remove the .pp part
+# for i in $(find ../node_modules/ocaml-migrate-parsetree-actual/_build/default/src/*.pp.ml*); do
+#   cp "$i" "${PARSETREE_DIR}/`basename $i`"
+#   echo cp "$i" "${PARSETREE_DIR}/`basename $i`"
+# done
+# for i in $(find ${PARSETREE_DIR}/*.pp.ml); do
+#   mv "$i" "${PARSETREE_DIR}/`basename $i .pp.ml`.ml"
+#   echo mv "$i" "${PARSETREE_DIR}/`basename $i .pp.ml`.ml"
+# done
+# for i in $(find ${PARSETREE_DIR}/*.pp.mli); do
+#   mv "$i" "${PARSETREE_DIR}/`basename $i .pp.mli`.mli"
+#   echo mv "$i" "${PARSETREE_DIR}/`basename $i .pp.mli`.mli"
+# done
 
-echo "* Copy over ppx_deriving & preprocessing"
-DERIVING_DIR=./ppx_deriving_ppx_src
-rm -rf ${DERIVING_DIR}
-mkdir -p ${DERIVING_DIR}
-# pre-apply the ppx for ppx_deriving
-ocamlfind ppx_tools/rewriter `ocamlfind printppx ppx_tools_versioned.metaquot_404` ../node_modules/reason-parser-actual/vendor/ppx_deriving/ppx_deriving.ml > ${DERIVING_DIR}/ppx_deriving.ml
-ocamlfind ppx_tools/rewriter `ocamlfind printppx ppx_tools_versioned.metaquot_404` ../node_modules/reason-parser-actual/vendor/ppx_deriving/ppx_deriving_show.ml > ${DERIVING_DIR}/ppx_deriving_show.ml
+# # Result isn't available in 4.02.3. We'll exposed it below, but we'll have to qualify it
+# sed -i "s/Ok/Result.Ok/g" ${PARSETREE_DIR}/migrate_parsetree_ast_io.ml
+# sed -i "s/Error/Result.Error/g" ${PARSETREE_DIR}/migrate_parsetree_ast_io.ml
+# sed -i "s/result/Result.result/g" ${PARSETREE_DIR}/migrate_parsetree_ast_io.mli
+
+# echo "* Copy over ppx_deriving & preprocessing"
+# DERIVING_DIR=./ppx_deriving_ppx_src
+# rm -rf ${DERIVING_DIR}
+# mkdir -p ${DERIVING_DIR}
+# # pre-apply the ppx for ppx_deriving
+# ocamlfind ppx_tools/rewriter `ocamlfind printppx ppx_tools_versioned.metaquot_404` ../node_modules/reason-parser-actual/vendor/ppx_deriving/ppx_deriving.ml > ${DERIVING_DIR}/ppx_deriving.ml
+# ocamlfind ppx_tools/rewriter `ocamlfind printppx ppx_tools_versioned.metaquot_404` ../node_modules/reason-parser-actual/vendor/ppx_deriving/ppx_deriving_show.ml > ${DERIVING_DIR}/ppx_deriving_show.ml
 
 echo "* Packing refmt"
 ./node_modules/bs-platform/bin/bspack.exe -bs-main Refmt_impl \
   -I `menhir --suggest-menhirLib` \
+  -I ocaml-migrate-parsetree.1.0/_build/default/src \
   -I ../_build/src \
   -I ../_build \
-  -I ../node_modules/reason-parser-actual/_build/src \
-  -I ../node_modules/reason-parser-actual/_build \
   -I ../vendor/cmdliner \
-  -I ../node_modules/reason-parser-actual/vendor/easy_format \
-  -I ../node_modules/result-actual \
-  -I ../node_modules/ppx_tools_versioned-actual \
-  -I ${PARSETREE_DIR} \
-  -I ${DERIVING_DIR} \
   -o refmt_main.ml
 
 echo "* Packing reactjs_ppx"
 ./node_modules/bs-platform/bin/bspack.exe -bs-main Reactjs_jsx_ppx \
   -I `menhir --suggest-menhirLib` \
+  -I ocaml-migrate-parsetree.1.0/_build/default/src \
   -I ../_build/src \
-  -I ../node_modules/reason-parser-actual/_build/src \
   -I ../vendor/cmdliner \
-  -I ../node_modules/reason-parser-actual/vendor/easy_format \
-  -I ../node_modules/result-actual \
-  -I ../node_modules/ppx_tools_versioned-actual \
-  -I ${PARSETREE_DIR} \
-  -I ${DERIVING_DIR} \
   -o reactjs_ppx.ml
 
 # to compile into binaries: https://github.com/bloomberg/bucklescript/blob/b515a95c5a5740d59cf7eaa9c4fd46863598197f/jscomp/bin/Makefile#L29-L33
