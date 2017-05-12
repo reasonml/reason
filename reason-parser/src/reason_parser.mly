@@ -2585,15 +2585,15 @@ simple_expr_no_call: mark_position_exp(basic_expr(simple_expr_no_call)) { $1 };
   | as_loc(constr_longident) %prec prec_constant_constructor
     { mkexp (Pexp_construct ($1, None)) }
   | as_loc(constr_longident) non_labeled_argument_list
-    { if List.mem (string_of_longident $1.txt)
+    { (*if List.mem (string_of_longident $1.txt)
          built_in_explicit_arity_constructors then
         (* unboxing the inner tupple *)
         match $2 with
           | [inner] -> mkexp (Pexp_construct($1, Some inner))
           | _ -> assert false
-      else
-        let args = mkexp (Pexp_tuple($2)) in
-        mkExplicitArityTupleExp (Pexp_construct($1, Some args))
+      else*)
+      let args = mkexp (Pexp_tuple($2)) in
+      mkExplicitArityTupleExp (Pexp_construct($1, Some args))
     }
   | name_tag %prec prec_constant_constructor
     { mkexp (Pexp_variant ($1, None)) }
