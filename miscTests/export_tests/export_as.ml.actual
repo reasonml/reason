@@ -5,6 +5,7 @@ include
      type mylist = int list
      type mylist2 = int list
      type mylist3 = int list
+     type ('a,'b) ttt = ('a list* 'b)[@@export :_]
      let m : (int* int) = (2, 3)
      
      and n : int = 5

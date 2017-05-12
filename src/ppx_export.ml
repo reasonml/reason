@@ -9,6 +9,7 @@ open Ast_helper
 let fail loc txt = raise (Location.Error (Location.error ~loc txt))
 
 let rec process_arguments func loc =
+  print_string "processargs\n";
   match func with
   | Pexp_fun (arg_label, eo, {ppat_desc = Ppat_constraint (_, ct); ppat_loc}, exp) ->
     Typ.arrow arg_label ct (process_arguments exp.pexp_desc exp.pexp_loc)
@@ -41,12 +42,14 @@ let loc_of_constant const =
 let type_of_constant const = (Typ.constr (loc_of_constant const) [])
 
 let is_abstract_attr ({txt}, _) = txt = "abstract"
-let is_my_attribute ({txt; loc}, payload) = match (txt, payload) with
+let is_my_attribute ({txt}, _) = txt = "export"
+
+(*let is_my_attribute ({txt; loc}, payload) = match (txt, payload) with
   | ("as", PTyp _) -> true
   | ("as", _) -> fail loc "@as attributes must be types (put a colon after as)"
   | ("abstract", PStr []) -> true
   | ("abstract", _) -> fail loc "@abstract takes no arguments"
-  | _ -> false
+  | _ -> false*)
 
 let is_not_my_attribute a = not (is_my_attribute a)
 let as_replacement_attribute ({txt; loc}, payload) = match (txt, payload) with
@@ -56,6 +59,13 @@ let as_replacement_attribute ({txt; loc}, payload) = match (txt, payload) with
 
 let filter_attrs = List.filter is_not_my_attribute
 
+let disallow_my_attributes = List.filter (fun (loc, payload) ->
+  if (is_my_attribute (loc, payload)) then
+    fail loc.loc "Export not allowed here"
+  else 
+    false
+  )
+
 let rec find_maybe f l = match l with
   | [] -> None
   | x::rest -> (
@@ -64,34 +74,32 @@ let rec find_maybe f l = match l with
     | None -> find_maybe f rest
   )
 
-let structure_of_value_binding {pvb_pat; pvb_expr; pvb_attributes; pvb_loc} = 
+let signature_of_value_binding {pvb_pat; pvb_expr; pvb_attributes; pvb_loc} = 
+  (* TODO just pass in *)
   let other_attrs = filter_attrs pvb_attributes in
   match pvb_pat.ppat_desc with
     | Ppat_var loc -> (
-      match (find_maybe as_replacement_attribute pvb_attributes) with
-      | Some t -> Sig.mk (Psig_value (Val.mk ~attrs:other_attrs loc t))
-      | None ->
-        match pvb_expr.pexp_desc with
-        (* let%export a = 2 -- unannotated export of a constant *)
-        | Pexp_constant const ->
-          let value = Val.mk ~attrs:pvb_attributes loc (type_of_constant const)
-          in Sig.mk (Psig_value value)
+      match pvb_expr.pexp_desc with
+      (* let%export a = 2 -- unannotated export of a constant *)
+      | Pexp_constant const ->
+        let value = Val.mk ~attrs:other_attrs loc (type_of_constant const)
+        in Sig.mk (Psig_value value)
 
-        (* let%export a:int = 2 -- an annotated value export *)
-        | Pexp_constraint (_, const) -> (
-          let value = Val.mk
-            ~attrs:pvb_attributes
-            loc
-            const
-          in Sig.mk (Psig_value value)
-        )
-
-        (* let%export a (b:int) (c:char) : string = "boe" -- function export *)
-        | Pexp_fun _ as arrow ->
-          Sig.mk (Psig_value (Val.mk ~attrs:pvb_attributes loc (process_arguments arrow loc.loc)))
-
-        | _ -> fail loc.loc "Non-constant exports must be annotated"
+      (* let%export a:int = 2 -- an annotated value export *)
+      | Pexp_constraint (_, const) -> (
+        let value = Val.mk
+          ~attrs:other_attrs
+          loc
+          const
+        in Sig.mk (Psig_value value)
       )
+
+      (* let%export a (b:int) (c:char) : string = "boe" -- function export *)
+      | Pexp_fun _ as arrow ->
+        Sig.mk (Psig_value (Val.mk ~attrs:other_attrs loc (process_arguments arrow loc.loc)))
+
+      | _ -> fail loc.loc "Non-constant exports must be annotated"
+    )
     (* What would it mean to export complex patterns? *)
     | _ -> fail pvb_loc "Let export only supports simple patterns"
 
@@ -246,7 +254,7 @@ let with_attributes type_ = (
     | None -> type_
 )
 
-let strip_attributes structure =
+let _strip_attributes structure =
   let {pstr_desc} = structure in
   let new_desc = match pstr_desc with
   | Pstr_eval (e, attrs) -> Pstr_eval (e, filter_attrs attrs)
@@ -267,7 +275,7 @@ let strip_attributes structure =
   in
   {structure with pstr_desc=new_desc}
 
-let rec extract structures : signature_item list * structure_item list = (
+(*let rec extract structures : signature_item list * structure_item list = (
   let rec inner structures current_signatures current_structures = (
     match structures with
     | [] -> (current_signatures, current_structures)
@@ -278,7 +286,7 @@ let rec extract structures : signature_item list * structure_item list = (
 
         (* an unconstrained module with a body *)
         | {pstr_desc = Pstr_module {pmb_name; pmb_expr = {pmod_desc = Pmod_structure inner_structures; pmod_attributes; pmod_loc}}} ->
-          let (child_signatures, child_structures) = process inner_structures [] [] in
+          let (child_signatures, child_structures) = process_structures inner_structures [] [] in
           let module_expr = Mod.structure child_structures ~loc:pmod_loc ~attrs:pmod_attributes in
           let module_ = Str.module_ (Mb.mk pmb_name module_expr) in
           let sigModule_ = Sig.module_ (Md.mk pmb_name (Mty.signature child_signatures)) in
@@ -289,20 +297,20 @@ let rec extract structures : signature_item list * structure_item list = (
           let new_signatures = (
             match doesnt_modify_structure with
               (* -- multiple exports -- *)
-              | {pstr_desc = Pstr_value (rec_flag, value_bindings)} -> List.map structure_of_value_binding value_bindings
+              | {pstr_desc = Pstr_value (rec_flag, value_bindings)} -> List.map signature_of_value_binding value_bindings
 
               (* -- single export -- *)
               | has_single_signature ->
                 let new_signature = (
                   match has_single_signature.pstr_desc with 
-                    | Pstr_type (isrec, types) -> Sig.mk (Psig_type (isrec, List.map with_attributes types))
+                    (*| Pstr_type (isrec, types) -> Sig.mk (Psig_type (isrec, List.map with_attributes types))
                     | Pstr_typext te -> Sig.mk (Psig_typext te)
                     | Pstr_exception e -> Sig.mk (Psig_exception e)
                     | Pstr_modtype mt -> Sig.mk (Psig_modtype mt)
                     | Pstr_class_type e -> Sig.mk (Psig_class_type e)
                     | Pstr_attribute a -> Sig.mk (Psig_attribute a)
                     | Pstr_extension (e, a) -> Sig.mk (Psig_extension (e, a))
-                    | Pstr_class c -> Sig.mk (Psig_class (get_class_descriptions c))
+                    | Pstr_class c -> Sig.mk (Psig_class (get_class_descriptions c))*)
 
                     (* a set of recursive modules *)
                     | Pstr_recmodule bindings ->
@@ -335,30 +343,247 @@ let rec extract structures : signature_item list * structure_item list = (
                 in
                 [new_signature]
           ) in
-          (new_signatures, [strip_attributes next])
+          (new_signatures, [_strip_attributes next])
       ) in
       inner tail (current_signatures @ new_signatures) (current_structures @ new_structures)
     )
     in inner structures [] []
-)
+)*)
 
-and process_extension structure_item =
+(*and process_extension structure_item =
   match structure_item with
   | {pstr_desc = Pstr_extension (({txt = "export"; loc}, PStr str), _)} -> extract str
   | _ -> ([], [structure_item])
-and process structure str_ sig_ =
+and process_structures structure str_ sig_ =
   match structure with
   | hd :: tl ->
       let (sigl, strl) = process_extension hd in
-      process tl (str_ @ strl) (sig_ @ sigl)
-  | [] -> (sig_, str_)
+      process_structures tl (str_ @ strl) (sig_ @ sigl)
+  | [] -> (sig_, str_)*)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+(** The new stuff **)
+
+type exportT =
+  | NotExported
+  | Exported
+  | Abstract
+  | ExportedAsType of core_type
+  | ExportedAsSig of signature_item
+
+let attribute_to_export ({txt; loc}, str) =
+  if txt <> "export" then
+    NotExported
+  else
+    match str with
+    | PStr [] -> Exported (* [@export] *)
+    | PSig [] -> Exported (* [@export:] *)
+    (* [@export abstract] *)
+    | PStr [{pstr_desc=Pstr_eval ({
+        pexp_desc=Pexp_ident {txt=Longident.Lident "abstract"}
+      }, _)}] -> Abstract
+    | PStr _ -> fail loc "export with a value must be followed by a colon"
+    | PTyp t -> ExportedAsType t (* [@export: t] *)
+    | PSig [sig_] -> ExportedAsSig sig_ (* [@export: val m: t] *)
+    (* TODO we could relax this if it makes sense? *)
+    | PSig _ -> fail loc "can only export a single signature"
+    | PPat _ -> fail loc "cannot export patterns"
+
+let rec get_export attributes =
+  (*print_int (List.length attributes);*)
+  (*print_string " get export\n";*)
+  match attributes with
+  | [] -> (NotExported, [])
+  | hd::tail ->
+    let new_exp = attribute_to_export hd in
+    let (final, others) = get_export tail in
+    match (new_exp, final) with
+    | (NotExported, _) -> (final, hd::others)
+    | (_, NotExported) -> (new_exp, others)
+    | _ -> let ({loc}, _) = hd in fail loc "Cannot have multiple export annotations"
+
+
+
+
+let double_fold fn items =
+  let rec inner items a b = (
+    match items with
+    | [] -> (a, b)
+    | hd::tail ->
+      let (a1, b1) = fn hd in
+      inner tail (a @ a1) (b @ b1)
+  ) in
+  inner items [] []
+
+(* TODO *)
+let process_binding binding =
+  let (export, attrs) = get_export binding.pvb_attributes in
+  let sigs = match export with
+  | Exported -> [signature_of_value_binding binding]
+  | NotExported -> []
+  | ExportedAsSig sig_ -> [sig_]
+  | Abstract -> fail binding.pvb_loc "Cannot export value as abstract"
+  | ExportedAsType t ->
+    [Sig.mk (Psig_value (Val.mk ~attrs:attrs {loc=t.ptyp_loc;txt="hello"} t))]
+  in
+  (sigs, [{binding with pvb_attributes=attrs}])
+
+let process_type type_ =
+  print_string "process_type\n";
+  let (export, attrs) = get_export type_.ptype_attributes in
+  let sigtypes = match export with 
+  | Exported -> [{type_ with ptype_attributes=attrs}]
+  | NotExported -> []
+  | ExportedAsSig sig_ -> (match sig_.psig_desc with
+    | Psig_type (_, t) -> t
+    | _ -> fail sig_.psig_loc "Type exported signature must be a type"
+  )
+  | Abstract -> 
+    [{
+      (* fully abstract *)
+      type_ with
+      ptype_attributes=attrs;
+      ptype_kind=Ptype_abstract;
+      ptype_manifest=None;
+      ptype_cstrs=[];
+      ptype_params=[]
+    }]
+  | ExportedAsType t -> [{
+      type_ with
+      ptype_manifest=Some t;
+      ptype_attributes=attrs;
+      ptype_cstrs=[];
+      ptype_params=[]
+    }]
+  in
+  (sigtypes, [{type_ with ptype_attributes=attrs}])
+
+let process_typext t = ([], [t])
+
+let module_sig m = assert false
+
+let process_class cl = ([], [cl])
+
+let process_class_type clt = ([], [clt])
+
+
+
+let process_module m =
+  let (export, attrs) = get_export m.pmb_attributes in
+  let sigs = match export with
+  | Exported -> [module_sig m]
+  | NotExported -> []
+  | ExportedAsSig sig_ -> [sig_]
+  | ExportedAsType t -> fail m.pmb_loc "Module types don't work as types"
+  | Abstract -> fail m.pmb_loc "Module cannot be exported as abstract"
+  in
+  (sigs, {m with pmb_attributes=attrs})
+
+let get_signatures structure =
+  let (sigs, new_desc) = match structure.pstr_desc with
+  (* Multiple exportables *)
+  | Pstr_value (r, bindings) ->
+    let (signatures, bindings) = double_fold process_binding bindings in
+    (signatures, Pstr_value (r, bindings))
+
+  | Pstr_type (r, types) ->
+    let (sigtypes, types) = double_fold process_type types in
+    (match sigtypes with 
+    | [] -> ([], Pstr_type (r, types))
+    | _ -> ([Sig.mk (Psig_type (r, sigtypes))], Pstr_type (r, types)))
+
+  | Pstr_class cls -> 
+    let (signatures, classes) = double_fold process_class cls in
+    (signatures, Pstr_class classes)
+
+  | Pstr_class_type clt -> 
+    let (signatures, class_types) = double_fold process_class_type clt in
+    (signatures, Pstr_class_type class_types)
+
+  | Pstr_recmodule modules -> 
+    let (signatures, modules) = double_fold (fun m ->
+      let (sigs, m) = process_module m in (sigs, [m])
+     ) modules in
+    (signatures, Pstr_recmodule modules)
+
+  (* Single exportable *)
+  | Pstr_module m ->
+    let (sigs, m) = (process_module m) in
+    (sigs, Pstr_module m)
+
+  | Pstr_typext t ->
+    let (export, attrs) = (get_export t.ptyext_attributes) in
+    let sigs = match export with
+    | Exported -> [Sig.mk (Psig_typext t)]
+    | NotExported -> []
+    | ExportedAsSig sig_ -> [sig_]
+    (* TODO? *)
+    | Abstract -> fail t.ptyext_path.loc "Cannot export typext as abstract"
+    | ExportedAsType _ -> fail t.ptyext_path.loc "Cannot export typext as type"
+    in
+    (sigs, Pstr_typext {t with ptyext_attributes=attrs})
+
+  | Pstr_exception e -> 
+    let (export, attrs) = (get_export e.pext_attributes) in
+    let sigs = match export with
+    | Exported -> [Sig.mk (Psig_exception e)]
+    | NotExported -> []
+    | ExportedAsSig sig_ -> [sig_]
+    (* TODO? *)
+    | Abstract
+    | ExportedAsType _ -> fail e.pext_loc "Invalid exception export"
+    in
+    (sigs, Pstr_exception {e with pext_attributes=attrs})
+
+  | Pstr_modtype mt ->
+    let (export, attrs) = (get_export mt.pmtd_attributes) in
+    let sigs = match export with
+    | Exported -> [Sig.mk (Psig_modtype mt)]
+    | NotExported -> []
+    | ExportedAsSig sig_ -> [sig_]
+    | Abstract -> fail mt.pmtd_loc "Module type cannot be abstract" (* TODO? *)
+    | ExportedAsType _ -> fail mt.pmtd_loc "Must be a module type"
+    in
+    (sigs, Pstr_modtype {mt with pmtd_attributes=attrs})
+
+  | Pstr_open _
+  | Pstr_include _
+  | Pstr_attribute _
+  | Pstr_extension _ -> ([], structure.pstr_desc)
+  | Pstr_eval (e, attrs) -> ([], Pstr_eval (e, disallow_my_attributes attrs))
+
+  (* TODO maybe support primitives? *)
+  | Pstr_primitive desc ->
+    ([], Pstr_primitive {desc with pval_attributes=disallow_my_attributes desc.pval_attributes})
+  in
+  (sigs, [{structure with pstr_desc=new_desc}])
 
 let export =
   Reason_toolchain.To_current.copy_mapper
   {
     Ast_mapper.default_mapper with
     structure = (fun mapper structure  ->
-      let (sig_, str_) = process structure [] []
+      let (sig_, str_) = double_fold get_signatures structure
       in
         if List.length sig_ > 0 then
           let processed_structure = Str.include_  {
