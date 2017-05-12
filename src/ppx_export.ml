@@ -9,7 +9,6 @@ open Ast_helper
 let fail loc txt = raise (Location.Error (Location.error ~loc txt))
 
 let rec process_arguments func loc =
-  print_string "processargs\n";
   match func with
   | Pexp_fun (arg_label, eo, {ppat_desc = Ppat_constraint (_, ct); ppat_loc}, exp) ->
     Typ.arrow arg_label ct (process_arguments exp.pexp_desc exp.pexp_loc)
@@ -410,8 +409,6 @@ let attribute_to_export ({txt; loc}, str) =
     | PPat _ -> fail loc "cannot export patterns"
 
 let rec get_export attributes =
-  (*print_int (List.length attributes);*)
-  (*print_string " get export\n";*)
   match attributes with
   | [] -> (NotExported, [])
   | hd::tail ->
@@ -453,7 +450,6 @@ let process_binding binding =
   (sigs, [{binding with pvb_attributes=attrs}])
 
 let process_type type_ =
-  print_string "process_type\n";
   let (export, attrs) = get_export type_.ptype_attributes in
   let sigtypes = match export with 
   | Exported -> [{type_ with ptype_attributes=attrs}]
