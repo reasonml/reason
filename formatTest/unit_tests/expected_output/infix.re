@@ -155,10 +155,16 @@ first || second || third;
 
 /* No parens should be added/removed from the following when formatting */
 let seeWhichCharacterHasHigherPrecedence =
-  (first |> second |> third) ^> fourth;
+  (
+    first
+    |> second
+    |> third
+  ) ^> fourth;
 
 let seeWhichCharacterHasHigherPrecedence =
-  first |> second |> third;
+  first
+  |> second
+  |> third;
 
 let seeWhichCharacterHasHigherPrecedence =
   first + second + third;
@@ -245,7 +251,10 @@ let res = (|>) first;
 /* Infix has lower precedence than function application */
 first |> second ::third;
 
-let leftAssocGrouping = first |> second |> third;
+let leftAssocGrouping =
+  first
+  |> second
+  |> third;
 
 let rightAssocGrouping =
   first ^> second ^> third;
@@ -948,3 +957,49 @@ let containingObject = {
       "newvalue" [@shouldBeRenderedOnString]
   }
 };
+
+let x = foo |> z;
+
+let x =
+  foo
+  |> f
+  |> g;
+
+let x =
+  foo
+  |> somelongfunctionname "foo"
+  |> anotherlongfunctionname "bar" 1
+  |> somelongfunction
+  |> bazasdasdad;
+
+let code =
+  JSCodegen.Code.(
+    create
+    |> lines
+         Requires.(
+           create
+           |> import_type
+                local::"Set" source::"Set"
+           |> import_type
+                local::"Map" source::"Map"
+           |> import_type
+                local::"Immutable"
+                source::"immutable"
+           |> require
+                local::"invariant"
+                source::"invariant"
+           |> require
+                local::"Image"
+                source::"Image.react"
+           |> side_effect
+                source::"monkey_patches"
+           |> render_lines
+         )
+    |> new_line
+    |> new_line
+    |> new_line
+    |> new_line
+    |> render
+  );
+
+let code = JSCodegen.Code.(create |> render);
