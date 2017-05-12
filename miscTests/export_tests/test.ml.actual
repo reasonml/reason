@@ -1,13 +1,5 @@
 include
   (struct
-     let int_implicit = 1 
-     let string_implicit = "str" 
-     let char_implicit = 'c' 
-     let float_implicit = 1.1 
-     let int_explicit : int = 1 
-     let string_explicit : string = "str" 
-     let char_explicit : char = 'c' 
-     let float_explicit : float = 1.1 
      type foo =
        | Pleh 
        | Bleh 
@@ -19,7 +11,6 @@ include
      type extensible +=
        | SayWhat 
      exception SomeException of string 
-     [@@@foo ]
      let a (b : int) (c : char) = ("boe" : string) 
      module Bar =
        struct
@@ -42,7 +33,6 @@ include
          type extensible +=
            | SayWhat 
          exception SomeException of string 
-         [@@@foo ]
          let a (b : int) (c : char) = ("boe" : string) 
          module Deep =
            struct
@@ -67,20 +57,11 @@ include
                  type extensible +=
                    | SayWhat 
                  exception SomeException of string 
-                 [@@@foo ]
                end
            end
        end
    end :
     sig
-      val int_implicit : int
-      val string_implicit : string
-      val char_implicit : char
-      val float_implicit : float
-      val int_explicit : int
-      val string_explicit : string
-      val char_explicit : char
-      val float_explicit : float
       type foo =
         | Pleh 
         | Bleh 
@@ -92,7 +73,6 @@ include
       type extensible +=
         | SayWhat 
       exception SomeException of string 
-      [@@@foo ]
       val a : int -> char -> string
       module Bar :
       sig
@@ -115,7 +95,6 @@ include
         type extensible +=
           | SayWhat 
         exception SomeException of string 
-        [@@@foo ]
         val a : int -> char -> string
         module Deep :
         sig
@@ -140,7 +119,6 @@ include
             type extensible +=
               | SayWhat 
             exception SomeException of string 
-            [@@@foo ]
           end
         end
       end

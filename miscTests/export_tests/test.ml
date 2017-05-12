@@ -1,97 +1,80 @@
-let%export int_implicit = 1
-let%export string_implicit = "str"
-let%export char_implicit = 'c'
-let%export float_implicit = 1.1
+type[@export] foo = | Pleh | Bleh
 
-let%export int_explicit:int = 1
-let%export string_explicit:string = "str"
-let%export char_explicit:char = 'c'
-let%export float_explicit:float = 1.1
+let[@export] x:foo = Bleh
 
-type%export foo = | Pleh | Bleh
-
-let%export x:foo = Bleh
-
-type%export record = {
+type[@export] record = {
   a: string
 }
 
-let%export impl:record = { a = "2"}
+let[@export] impl:record = { a = "2"}
 
-type%export extensible = ..
+type[@export] extensible = ..
 
-type%export extensible += | SayWhat
+type[@export] extensible += | SayWhat
 
-exception%export SomeException of string
+exception[@export] SomeException of string
 
-[%%export [@@@foo]]
+let[@export] a (b:int) (c:char) : string = "boe"
 
-(* [%%export [%%export]] *)
-
-let%export a (b:int) (c:char) : string = "boe"
-
-module%export Bar =
+module[@export] Bar =
   struct
-    let%export int_implicit = 1
-    let%export string_implicit = "str"
-    let%export char_implicit = 'c'
-    let%export float_implicit = 1.1
+    let[@export] int_implicit = 1
+    let[@export] string_implicit = "str"
+    let[@export] char_implicit = 'c'
+    let[@export] float_implicit = 1.1
 
-    let%export int_explicit:int = 1
-    let%export string_explicit:string = "str"
-    let%export char_explicit:char = 'c'
-    let%export float_explicit:float = 1.1
+    let[@export] int_explicit:int = 1
+    let[@export] string_explicit:string = "str"
+    let[@export] char_explicit:char = 'c'
+    let[@export] float_explicit:float = 1.1
 
-    type%export foo = | Pleh | Bleh
+    type[@export] foo = | Pleh | Bleh
 
-    let%export x:foo = Bleh
+    let[@export] x:foo = Bleh
 
-    type%export record = {
+    type[@export] record = {
       a: string
     }
 
-    let%export impl:record = { a = "2"}
+    let[@export] impl:record = { a = "2"}
 
-    type%export extensible = ..
+    type[@export] extensible = ..
 
-    type%export extensible += | SayWhat
+    type[@export] extensible += | SayWhat
 
-    exception%export SomeException of string
+    exception[@export] SomeException of string
 
-    [%%export [@@@foo]]
-
-    let%export a (b:int) (c:char) : string = "boe"
-    module%export Deep =
+    let[@export] a (b:int) (c:char) : string = "boe"
+    module[@export] Deep =
       struct
-        module%export Dive =
+        module[@export] Dive =
           struct
-            let%export int_implicit = 1
-            let%export string_implicit = "str"
-            let%export char_implicit = 'c'
-            let%export float_implicit = 1.1
+            let[@export] int_implicit = 1
+            let[@export] string_implicit = "str"
+            let[@export] char_implicit = 'c'
+            let[@export] float_implicit = 1.1
 
-            let%export int_explicit:int = 1
-            let%export string_explicit:string = "str"
-            let%export char_explicit:char = 'c'
-            let%export float_explicit:float = 1.1
+            let[@export] int_explicit:int = 1
+            let[@export] string_explicit:string = "str"
+            let[@export] char_explicit:char = 'c'
+            let[@export] float_explicit:float = 1.1
 
-            type%export foo = | Pleh | Bleh
+            type[@export] foo = | Pleh | Bleh
 
-            let%export x:foo = Bleh
+            let[@export] x:foo = Bleh
 
-            type%export record = {
+            type[@export] record = {
               a: string
             }
 
-            let%export impl:record = { a = "2"}
+            let[@export] impl:record = { a = "2"}
 
-            type%export extensible = ..
+            type[@export] extensible = ..
 
-            type%export extensible += | SayWhat
+            type[@export] extensible += | SayWhat
 
-            exception%export SomeException of string
+            exception[@export] SomeException of string
 
-            [%%export [@@@foo]]
           end
       end
   end

@@ -4,7 +4,7 @@ let on_mousedown start stop f = ()
 
 type mev = {mouse_x: int; mouse_y: int}
 
-class%export virtual shape (x: int) (y: int) = object(self)
+class[@export] virtual shape (x: int) (y: int) = object(self)
   method virtual private contains: int -> int -> bool
 
   val mutable x: int = x
@@ -26,7 +26,7 @@ class%export virtual shape (x: int) (y: int) = object(self)
            f ev.mouse_x ev.mouse_y)
 end
 
-class%export square (w: int) (x: int) (y: int) = object
+class[@export] square (w: int) (x: int) (y: int) = object
   inherit shape x y
 
   val mutable width: int = w
@@ -39,7 +39,7 @@ class%export square (w: int) (x: int) (y: int) = object
     y <= y' && y' <= y + width
 end
 
-class%export circle (r: int) (x: int) (y: int) = object
+class[@export] circle (r: int) (x: int) (y: int) = object
   inherit shape x y
 
   val mutable radius: int = r

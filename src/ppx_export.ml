@@ -480,7 +480,18 @@ let process_type type_ =
 
 let process_typext t = ([], [t])
 
-let module_sig m = assert false
+let module_sig module_ get_signatures =
+  match module_.pmb_expr.pmod_desc with
+  | Pmod_structure inner_structures ->
+    let {pmb_name; pmb_expr={pmod_loc; pmod_attributes}} = module_ in
+    let (child_signatures, child_structures) = double_fold get_signatures inner_structures in
+
+    let module_expr = Mod.structure child_structures ~loc:pmod_loc ~attrs:pmod_attributes in
+    let module_ = (Mb.mk pmb_name module_expr) in
+    let sigModule_ = Sig.module_ (Md.mk pmb_name (Mty.signature child_signatures)) in
+    (* let _ = {ex with pmb_expr = a} in *)
+    ([sigModule_], module_)
+  | _ -> fail module_.pmb_loc "Cannot determine a type for this exported module"
 
 let process_class cl = ([], [cl])
 
@@ -488,18 +499,17 @@ let process_class_type clt = ([], [clt])
 
 
 
-let process_module m =
+let process_module m get_signatures =
   let (export, attrs) = get_export m.pmb_attributes in
-  let sigs = match export with
-  | Exported -> [module_sig m]
-  | NotExported -> []
-  | ExportedAsSig sig_ -> [sig_]
+  let newmod = {m with pmb_attributes=attrs} in
+  match export with
+  | Exported -> module_sig m get_signatures
+  | NotExported -> ([], newmod)
+  | ExportedAsSig sig_ -> ([sig_], newmod)
   | ExportedAsType t -> fail m.pmb_loc "Module types don't work as types"
   | Abstract -> fail m.pmb_loc "Module cannot be exported as abstract"
-  in
-  (sigs, {m with pmb_attributes=attrs})
 
-let get_signatures structure =
+let rec get_signatures structure =
   let (sigs, new_desc) = match structure.pstr_desc with
   (* Multiple exportables *)
   | Pstr_value (r, bindings) ->
@@ -524,19 +534,19 @@ let get_signatures structure =
 
   | Pstr_recmodule modules -> 
     let (signatures, modules) = double_fold (fun m ->
-      let (sigs, m) = process_module m in (sigs, [m])
+      let (sigs, m) = process_module m get_signatures in (sigs, [m])
      ) modules in
     (signatures, Pstr_recmodule modules)
 
   (* Single exportable *)
   | Pstr_module m ->
-    let (sigs, m) = (process_module m) in
+    let (sigs, m) = (process_module m get_signatures) in
     (sigs, Pstr_module m)
 
   | Pstr_typext t ->
     let (export, attrs) = (get_export t.ptyext_attributes) in
     let sigs = match export with
-    | Exported -> [Sig.mk (Psig_typext t)]
+    | Exported -> [Sig.mk (Psig_typext {t with ptyext_attributes=attrs})]
     | NotExported -> []
     | ExportedAsSig sig_ -> [sig_]
     (* TODO? *)
@@ -548,7 +558,7 @@ let get_signatures structure =
   | Pstr_exception e -> 
     let (export, attrs) = (get_export e.pext_attributes) in
     let sigs = match export with
-    | Exported -> [Sig.mk (Psig_exception e)]
+    | Exported -> [Sig.mk (Psig_exception {e with pext_attributes=attrs})]
     | NotExported -> []
     | ExportedAsSig sig_ -> [sig_]
     (* TODO? *)

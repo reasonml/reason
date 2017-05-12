@@ -12,11 +12,11 @@ include
      let int_full = int_explicit 
      type t = int
      let int_abstract : int = 10 
-     let rec a = 10
+     let a = 10
      
      and b : int = 10
      
-     and c () = a
+     and c = 20
      
    end :
     sig
