@@ -32,6 +32,7 @@ let () =
      * `utop` is available, we'll select an `.mllib` to compile as
      * `reason.cma`.
      *)
+    Pkg.bin "src/test";
     Pkg.mllib ~api:[] "src/reason_parser.mllib";
     Pkg.lib "pkg/META";
     Pkg.lib ~exts:(Exts.exts [ ".cmo"; ".cmx";".cmi"; ".cmt";".mli"]) "src/reason_parser";
