@@ -40,36 +40,58 @@ let loc_of_constant const =
 
 let type_of_constant const = (Typ.constr (loc_of_constant const) [])
 
+let is_abstract_attr ({txt}, _) = txt = "abstract"
+let is_my_attribute ({txt; loc}, payload) = match (txt, payload) with
+  | ("as", PTyp _) -> true
+  | ("as", _) -> fail loc "@as attributes must be types (put a colon after as)"
+  | ("abstract", PStr []) -> true
+  | ("abstract", _) -> fail loc "@abstract takes no arguments"
+  | _ -> false
+
+let is_not_my_attribute a = not (is_my_attribute a)
+let as_replacement_attribute ({txt; loc}, payload) = match (txt, payload) with
+  | ("as", PTyp t) -> Some t
+  | ("as", _) -> fail loc "@as attributes must be types (put a colon after 'as')"
+  | _ -> None
+
+let filter_attrs = List.filter is_not_my_attribute
+
+let rec find_maybe f l = match l with
+  | [] -> None
+  | x::rest -> (
+    match (f x) with
+    | Some r -> Some r
+    | None -> find_maybe f rest
+  )
+
 let structure_of_value_binding {pvb_pat; pvb_expr; pvb_attributes; pvb_loc} = 
+  let other_attrs = filter_attrs pvb_attributes in
   match pvb_pat.ppat_desc with
     | Ppat_var loc -> (
-      match pvb_expr.pexp_desc with
-      (* let%export a = 2 -- unannotated export of a constant *)
-      | Pexp_constant const ->
-        let value = Val.mk ~attrs:pvb_attributes loc (type_of_constant const)
-        in Sig.mk (Psig_value value)
+      match (find_maybe as_replacement_attribute pvb_attributes) with
+      | Some t -> Sig.mk (Psig_value (Val.mk ~attrs:other_attrs loc t))
+      | None ->
+        match pvb_expr.pexp_desc with
+        (* let%export a = 2 -- unannotated export of a constant *)
+        | Pexp_constant const ->
+          let value = Val.mk ~attrs:pvb_attributes loc (type_of_constant const)
+          in Sig.mk (Psig_value value)
 
-      (* let%export a:int = 2 -- an annotated value export *)
-      | Pexp_constraint (_, const) -> (
-          let (const_type, c) =
-            match const.ptyp_desc with
-            | Ptyp_constr (loc, ct) -> (loc.txt, ct)
-            (* TODO(jaredly): why do we only accept one form of type? *)
-            | _ -> fail pvb_loc "Invalid constraint"
-        in
-        let value = Val.mk
-          ~attrs:pvb_attributes
-          loc
-          (Typ.constr (Location.mkloc const_type (Location.symbol_gloc ())) c)
-        in Sig.mk (Psig_value value)
+        (* let%export a:int = 2 -- an annotated value export *)
+        | Pexp_constraint (_, const) -> (
+          let value = Val.mk
+            ~attrs:pvb_attributes
+            loc
+            const
+          in Sig.mk (Psig_value value)
+        )
+
+        (* let%export a (b:int) (c:char) : string = "boe" -- function export *)
+        | Pexp_fun _ as arrow ->
+          Sig.mk (Psig_value (Val.mk ~attrs:pvb_attributes loc (process_arguments arrow loc.loc)))
+
+        | _ -> fail loc.loc "Non-constant exports must be annotated"
       )
-
-      (* let%export a (b:int) (c:char) : string = "boe" -- function export *)
-      | Pexp_fun _ as arrow ->
-        Sig.mk (Psig_value (Val.mk ~attrs:pvb_attributes loc (process_arguments arrow loc.loc)))
-
-      | _ -> fail loc.loc "Non-constant exports must be annotated"
-    )
     (* What would it mean to export complex patterns? *)
     | _ -> fail pvb_loc "Let export only supports simple patterns"
 
@@ -199,6 +221,52 @@ let class_declaration_to_class_description {pci_virt; pci_params; pci_name; pci_
 let get_class_descriptions declarations =
   (List.map class_declaration_to_class_description declarations)
 
+let strip_attributes type_ = {
+  type_ with
+  ptype_attributes=List.filter is_not_my_attribute type_.ptype_attributes
+}
+
+let with_attributes type_ = (
+  let {ptype_attributes} = type_ in
+  let other_attributes = List.filter is_not_my_attribute ptype_attributes in
+  if (List.exists is_abstract_attr ptype_attributes) then
+  {
+    (* fully abstract *)
+    type_ with
+    ptype_attributes=other_attributes;
+    ptype_kind=Ptype_abstract;
+    ptype_manifest=None;
+    ptype_cstrs=[];
+    ptype_params=[]
+  }
+  else
+    let replacement = find_maybe as_replacement_attribute ptype_attributes in
+    match replacement with
+    | Some t -> {type_ with ptype_manifest=Some t;ptype_attributes=other_attributes}
+    | None -> type_
+)
+
+let strip_attributes structure =
+  let {pstr_desc} = structure in
+  let new_desc = match pstr_desc with
+  | Pstr_eval (e, attrs) -> Pstr_eval (e, filter_attrs attrs)
+  | Pstr_value (r, bindings) -> Pstr_value (r, List.map (fun b -> {b with pvb_attributes=filter_attrs b.pvb_attributes}) bindings)
+  | Pstr_primitive desc -> Pstr_primitive {desc with pval_attributes=filter_attrs desc.pval_attributes}
+  | Pstr_type (r, t) -> Pstr_type (r, List.map strip_attributes t)
+  | Pstr_typext t -> Pstr_typext {t with ptyext_attributes=filter_attrs t.ptyext_attributes}
+  | Pstr_exception e -> Pstr_exception {e with pext_attributes=filter_attrs e.pext_attributes}
+  | Pstr_module m -> Pstr_module {m with pmb_attributes=filter_attrs m.pmb_attributes}
+  | Pstr_recmodule m -> Pstr_recmodule (List.map (fun m -> {m with pmb_attributes=filter_attrs m.pmb_attributes}) m)
+  | Pstr_modtype mt -> Pstr_modtype {mt with pmtd_attributes=filter_attrs mt.pmtd_attributes}
+  | Pstr_class cls -> Pstr_class (List.map (fun cl -> {cl with pci_attributes=filter_attrs cl.pci_attributes}) cls)
+  | Pstr_class_type clt -> Pstr_class_type (List.map (fun cl -> {cl with pci_attributes=filter_attrs cl.pci_attributes}) clt)
+  | Pstr_open _
+  | Pstr_include _
+  | Pstr_attribute _
+  | Pstr_extension _ -> pstr_desc
+  in
+  {structure with pstr_desc=new_desc}
+
 let rec extract structures : signature_item list * structure_item list = (
   let rec inner structures current_signatures current_structures = (
     match structures with
@@ -226,18 +294,18 @@ let rec extract structures : signature_item list * structure_item list = (
               (* -- single export -- *)
               | has_single_signature ->
                 let new_signature = (
-                  match has_single_signature with 
-                    | {pstr_desc = Pstr_type (r, t)} -> Sig.mk (Psig_type (r, t))
-                    | {pstr_desc = Pstr_typext te} -> Sig.mk (Psig_typext te)
-                    | {pstr_desc = Pstr_exception e} -> Sig.mk (Psig_exception e)
-                    | {pstr_desc = Pstr_modtype mt} -> Sig.mk (Psig_modtype mt)
-                    | {pstr_desc = Pstr_class_type e} -> Sig.mk (Psig_class_type e)
-                    | {pstr_desc = Pstr_attribute a} -> Sig.mk (Psig_attribute a)
-                    | {pstr_desc = Pstr_extension (e, a)} -> Sig.mk (Psig_extension (e, a))
-                    | {pstr_desc = Pstr_class c} -> Sig.mk (Psig_class (get_class_descriptions c))
+                  match has_single_signature.pstr_desc with 
+                    | Pstr_type (isrec, types) -> Sig.mk (Psig_type (isrec, List.map with_attributes types))
+                    | Pstr_typext te -> Sig.mk (Psig_typext te)
+                    | Pstr_exception e -> Sig.mk (Psig_exception e)
+                    | Pstr_modtype mt -> Sig.mk (Psig_modtype mt)
+                    | Pstr_class_type e -> Sig.mk (Psig_class_type e)
+                    | Pstr_attribute a -> Sig.mk (Psig_attribute a)
+                    | Pstr_extension (e, a) -> Sig.mk (Psig_extension (e, a))
+                    | Pstr_class c -> Sig.mk (Psig_class (get_class_descriptions c))
 
                     (* a set of recursive modules *)
-                    | {pstr_desc = Pstr_recmodule bindings; pstr_loc} ->
+                    | Pstr_recmodule bindings ->
                       Sig.rec_module (List.map (fun {pmb_name; pmb_expr; pmb_attributes; pmb_loc} ->
                         match pmb_expr.pmod_desc with
                         | Pmod_constraint (_, type_) ->
@@ -250,24 +318,24 @@ let rec extract structures : signature_item list * structure_item list = (
                         | _ -> fail pmb_expr.pmod_loc "Exported modules must have type annotations"
                       ) bindings)
 
-                    | {pstr_desc = Pstr_module {pmb_name; pmb_loc; pmb_expr = {pmod_desc = Pmod_constraint (_, {pmty_desc = Pmty_ident loc}) }}} ->
+                    | Pstr_module {pmb_name; pmb_loc; pmb_expr = {pmod_desc = Pmod_constraint (_, {pmty_desc = Pmty_ident loc}) }} ->
                       (* a constrained module `module X: Type = ...` *)
                       Sig.module_ (Md.mk pmb_name (Mty.ident { txt = loc.txt; loc = pmb_loc }))
-                    | {pstr_desc = Pstr_module {pmb_name; pmb_expr = {pmod_desc = Pmod_functor (arg, type_, {pmod_desc; pmod_loc}) }}} ->
+                    | Pstr_module {pmb_name; pmb_expr = {pmod_desc = Pmod_functor (arg, type_, {pmod_desc; pmod_loc}) }} ->
                       (* a functor! module W (X: Y) : Z = ... *)
                       Sig.module_ (Md.mk pmb_name (Mty.functor_ arg type_ (functor_to_type pmod_desc pmod_loc)))
 
                     (* Invalid uses of export *)
-                    | {pstr_desc = Pstr_module _; pstr_loc} ->
+                    | Pstr_module _ ->
                       (* a functor! *)
-                      fail pstr_loc "Invalid module export - must be constrained or literal"
+                      fail has_single_signature.pstr_loc "Invalid module export - must be constrained or literal"
 
-                    | {pstr_loc} -> fail pstr_loc "Cannot export this item"
+                    | _ -> fail has_single_signature.pstr_loc "Cannot export this item"
                 )
                 in
                 [new_signature]
           ) in
-          (new_signatures, [next])
+          (new_signatures, [strip_attributes next])
       ) in
       inner tail (current_signatures @ new_signatures) (current_structures @ new_structures)
     )
