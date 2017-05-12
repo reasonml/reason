@@ -3728,9 +3728,9 @@ object_record_type:
   | LBRACE label_declarations RBRACE
     { Record_type (only_labels $2) }
   | LBRACE DOT loption(label_declarations) RBRACE
-    { Core_type (mktyp (Ptyp_object (prepare_immutable_labels $3, Open))) }
-  | LBRACE DOTDOT loption(label_declarations) RBRACE
     { Core_type (mktyp (Ptyp_object (prepare_immutable_labels $3, Closed))) }
+  | LBRACE DOTDOT loption(label_declarations) RBRACE
+    { Core_type (mktyp (Ptyp_object (prepare_immutable_labels $3, Open))) }
 ;
 
 %inline label_declarations:
