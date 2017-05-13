@@ -485,17 +485,17 @@ let module_sig module_ attrs get_signatures =
 
     let module_expr = Mod.structure child_structures ~loc:pmod_loc ~attrs:pmod_attributes in
     let module_ = (Mb.mk ~attrs:attrs pmb_name module_expr) in
-    let sigModule_ = Sig.module_ (Md.mk pmb_name (Mty.signature child_signatures)) in
+    let sigModule_ = (Md.mk pmb_name (Mty.signature child_signatures)) in
     (* let _ = {ex with pmb_expr = a} in *)
     ([sigModule_], module_)
-  | Pmod_constraint (_, {pmty_desc = Pmty_ident loc}) ->
+  | Pmod_constraint (_, module_type) ->
     (* a constrained module `module X: Type = ...` *)
     let {pmb_name; pmb_loc; pmb_expr={pmod_loc}} = module_ in
-    ([Sig.module_ (Md.mk pmb_name (Mty.ident { txt = loc.txt; loc = pmb_loc }))], {module_ with pmb_attributes=attrs})
+    ([(Md.mk pmb_name module_type)], {module_ with pmb_attributes=attrs})
   | Pmod_functor (arg, type_, {pmod_desc; pmod_loc}) ->
     (* a functor! module W (X: Y) : Z = ... *)
     let {pmb_name; pmb_loc; pmb_expr={pmod_loc}} = module_ in
-    ([Sig.module_ (Md.mk pmb_name (Mty.functor_ arg type_ (functor_to_type pmod_desc pmod_loc)))], {module_ with pmb_attributes=attrs})
+    ([(Md.mk pmb_name (Mty.functor_ arg type_ (functor_to_type pmod_desc pmod_loc)))], {module_ with pmb_attributes=attrs})
   | _ -> fail module_.pmb_loc "Cannot determine a type for this exported module"
 
 let process_class cl =
@@ -534,7 +534,10 @@ let process_module m get_signatures =
   match export with
   | Exported -> module_sig m attrs get_signatures
   | NotExported -> ([], newmod)
-  | ExportedAsSig sig_ -> ([sig_], newmod)
+  | ExportedAsSig sig_ -> (match sig_.psig_desc with
+    | Psig_module m -> ([m], newmod)
+    | _ -> fail sig_.psig_loc "Must export as module"
+  )
   | ExportedAsType t -> fail m.pmb_loc "Module types don't work as types"
   | Abstract -> fail m.pmb_loc "Module cannot be exported as abstract"
 
@@ -570,15 +573,18 @@ let rec get_signatures structure =
     )
 
   | Pstr_recmodule modules -> 
-    let (signatures, modules) = double_fold (fun m ->
+    let (declarations, modules) = double_fold (fun m ->
       let (sigs, m) = process_module m get_signatures in (sigs, [m])
-     ) modules in
-    (signatures, Pstr_recmodule modules)
+    ) modules in
+    (match declarations with
+    | [] -> ([], Pstr_recmodule modules)
+    | _ -> ([Sig.mk (Psig_recmodule declarations)], Pstr_recmodule modules)
+    )
 
   (* Single exportable *)
   | Pstr_module m ->
-    let (sigs, m) = (process_module m get_signatures) in
-    (sigs, Pstr_module m)
+    let (declarations, m) = (process_module m get_signatures) in
+    (List.map (fun d -> Sig.mk (Psig_module d)) declarations, Pstr_module m)
 
   | Pstr_typext t ->
     let (export, attrs) = (get_export t.ptyext_attributes) in
