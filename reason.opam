@@ -1,0 +1,21 @@
+opam-version: "1.2"
+maintainer: "Jordan Walke <jordojw@gmail.com>"
+authors: [ "Jordan Walke <jordojw@gmail.com>" ]
+license: "BSD"
+homepage: "https://github.com/facebook/reason"
+doc: "http://facebook.github.io/reason"
+bug-reports: "https://github.com/facebook/reason/issues"
+dev-repo: "git://github.com/facebook/reason.git"
+tags: [ "syntax" ]
+build: [
+  ["jbuilder" "build" "-p" name "-j" jobs]
+]
+depends: [
+  "jbuilder"               {build}
+  "reason-parser"
+  "ocaml-migrate-parsetree"
+  "ppx_tools_versioned"     {>= "5.0beta"}
+]
+depopts: [
+]
+available: [ ocaml-version >= "4.02" & ocaml-version < "4.05" ]
