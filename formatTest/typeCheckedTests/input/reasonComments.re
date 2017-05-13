@@ -280,17 +280,17 @@ let res =
 
 type optionalTuple =
   | OptTup (
-      option (
+      option ((
         int, /* First int */
         int /* Second int */
-      )
+      ))
     );
 
 type optionTuple =
-  option (
+  option ((
     int, /* First int */
     int /* Second int */
-  );
+  ));
 
 type intPair = (
   int, /* First int */

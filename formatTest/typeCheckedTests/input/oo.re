@@ -246,7 +246,7 @@ module HasTupleClasses : {
 
 class intTuples = (class tupleClass(int,int));
 
-class intTuplesHardcoded = (class tupleClass(int,int)) (8, 8);
+class intTuplesHardcoded = (class tupleClass(int,int))((8, 8));
 
 /**
  * Note that the inner tupleClass doesn't have the "class" prefix because
