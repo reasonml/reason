@@ -1,0 +1,7 @@
+(jbuild_version 1)
+
+(executables
+ ((names (reasonbuild))
+  (public_names (reasonbuild))
+  (package reasonbuild)
+  (libraries (ocamlbuild))))

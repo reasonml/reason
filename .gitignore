@@ -19,3 +19,4 @@ node_modules
 /bspacks/**/*.cm*
 /bspacks/**/*.o
 /bspacks/**/*.exe
+.merlin
