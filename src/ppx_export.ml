@@ -40,37 +40,15 @@ let loc_of_constant const =
 
 let type_of_constant const = (Typ.constr (loc_of_constant const) [])
 
-let is_abstract_attr ({txt}, _) = txt = "abstract"
 let is_my_attribute ({txt}, _) = txt = "export"
 
-(*let is_my_attribute ({txt; loc}, payload) = match (txt, payload) with
-  | ("as", PTyp _) -> true
-  | ("as", _) -> fail loc "@as attributes must be types (put a colon after as)"
-  | ("abstract", PStr []) -> true
-  | ("abstract", _) -> fail loc "@abstract takes no arguments"
-  | _ -> false*)
-
-let is_not_my_attribute a = not (is_my_attribute a)
-let as_replacement_attribute ({txt; loc}, payload) = match (txt, payload) with
-  | ("as", PTyp t) -> Some t
-  | ("as", _) -> fail loc "@as attributes must be types (put a colon after 'as')"
-  | _ -> None
-
-let filter_attrs = List.filter is_not_my_attribute
+let filter_attrs = List.filter (fun a -> not (is_my_attribute a))
 
 let disallow_my_attributes = List.filter (fun (loc, payload) ->
   if (is_my_attribute (loc, payload)) then
     fail loc.loc "Export not allowed here"
   else 
     false
-  )
-
-let rec find_maybe f l = match l with
-  | [] -> None
-  | x::rest -> (
-    match (f x) with
-    | Some r -> Some r
-    | None -> find_maybe f rest
   )
 
 let signature_of_value_binding {pvb_pat; pvb_expr; pvb_attributes; pvb_loc} = 
@@ -224,162 +202,6 @@ and class_expr_to_class_type {pcl_desc; pcl_loc; pcl_attributes}: class_type = (
 let class_declaration_to_class_description {pci_virt; pci_params; pci_name; pci_expr; pci_loc; pci_attributes}: class_description =
   let description = class_expr_to_class_type pci_expr in
   {pci_virt; pci_params; pci_name; pci_expr=description; pci_loc; pci_attributes}
-
-let get_class_descriptions declarations =
-  (List.map class_declaration_to_class_description declarations)
-
-let strip_attributes type_ = {
-  type_ with
-  ptype_attributes=List.filter is_not_my_attribute type_.ptype_attributes
-}
-
-let with_attributes type_ = (
-  let {ptype_attributes} = type_ in
-  let other_attributes = List.filter is_not_my_attribute ptype_attributes in
-  if (List.exists is_abstract_attr ptype_attributes) then
-  {
-    (* fully abstract *)
-    type_ with
-    ptype_attributes=other_attributes;
-    ptype_kind=Ptype_abstract;
-    ptype_manifest=None;
-    ptype_cstrs=[];
-    ptype_params=[]
-  }
-  else
-    let replacement = find_maybe as_replacement_attribute ptype_attributes in
-    match replacement with
-    | Some t -> {type_ with ptype_manifest=Some t;ptype_attributes=other_attributes}
-    | None -> type_
-)
-
-let _strip_attributes structure =
-  let {pstr_desc} = structure in
-  let new_desc = match pstr_desc with
-  | Pstr_eval (e, attrs) -> Pstr_eval (e, filter_attrs attrs)
-  | Pstr_value (r, bindings) -> Pstr_value (r, List.map (fun b -> {b with pvb_attributes=filter_attrs b.pvb_attributes}) bindings)
-  | Pstr_primitive desc -> Pstr_primitive {desc with pval_attributes=filter_attrs desc.pval_attributes}
-  | Pstr_type (r, t) -> Pstr_type (r, List.map strip_attributes t)
-  | Pstr_typext t -> Pstr_typext {t with ptyext_attributes=filter_attrs t.ptyext_attributes}
-  | Pstr_exception e -> Pstr_exception {e with pext_attributes=filter_attrs e.pext_attributes}
-  | Pstr_module m -> Pstr_module {m with pmb_attributes=filter_attrs m.pmb_attributes}
-  | Pstr_recmodule m -> Pstr_recmodule (List.map (fun m -> {m with pmb_attributes=filter_attrs m.pmb_attributes}) m)
-  | Pstr_modtype mt -> Pstr_modtype {mt with pmtd_attributes=filter_attrs mt.pmtd_attributes}
-  | Pstr_class cls -> Pstr_class (List.map (fun cl -> {cl with pci_attributes=filter_attrs cl.pci_attributes}) cls)
-  | Pstr_class_type clt -> Pstr_class_type (List.map (fun cl -> {cl with pci_attributes=filter_attrs cl.pci_attributes}) clt)
-  | Pstr_open _
-  | Pstr_include _
-  | Pstr_attribute _
-  | Pstr_extension _ -> pstr_desc
-  in
-  {structure with pstr_desc=new_desc}
-
-(*let rec extract structures : signature_item list * structure_item list = (
-  let rec inner structures current_signatures current_structures = (
-    match structures with
-    | [] -> (current_signatures, current_structures)
-    | next :: tail ->
-      let (new_signatures, new_structures) = (
-      match next with
-        (* -- modifies structure -- *)
-
-        (* an unconstrained module with a body *)
-        | {pstr_desc = Pstr_module {pmb_name; pmb_expr = {pmod_desc = Pmod_structure inner_structures; pmod_attributes; pmod_loc}}} ->
-          let (child_signatures, child_structures) = process_structures inner_structures [] [] in
-          let module_expr = Mod.structure child_structures ~loc:pmod_loc ~attrs:pmod_attributes in
-          let module_ = Str.module_ (Mb.mk pmb_name module_expr) in
-          let sigModule_ = Sig.module_ (Md.mk pmb_name (Mty.signature child_signatures)) in
-          (* let _ = {ex with pmb_expr = a} in *)
-          ([sigModule_], [module_])
-
-        | doesnt_modify_structure ->
-          let new_signatures = (
-            match doesnt_modify_structure with
-              (* -- multiple exports -- *)
-              | {pstr_desc = Pstr_value (rec_flag, value_bindings)} -> List.map signature_of_value_binding value_bindings
-
-              (* -- single export -- *)
-              | has_single_signature ->
-                let new_signature = (
-                  match has_single_signature.pstr_desc with 
-                    (*| Pstr_type (isrec, types) -> Sig.mk (Psig_type (isrec, List.map with_attributes types))
-                    | Pstr_typext te -> Sig.mk (Psig_typext te)
-                    | Pstr_exception e -> Sig.mk (Psig_exception e)
-                    | Pstr_modtype mt -> Sig.mk (Psig_modtype mt)
-                    | Pstr_class_type e -> Sig.mk (Psig_class_type e)
-                    | Pstr_attribute a -> Sig.mk (Psig_attribute a)
-                    | Pstr_extension (e, a) -> Sig.mk (Psig_extension (e, a))
-                    | Pstr_class c -> Sig.mk (Psig_class (get_class_descriptions c))*)
-
-                    (* a set of recursive modules *)
-                    | Pstr_recmodule bindings ->
-                      Sig.rec_module (List.map (fun {pmb_name; pmb_expr; pmb_attributes; pmb_loc} ->
-                        match pmb_expr.pmod_desc with
-                        | Pmod_constraint (_, type_) ->
-                          {
-                            pmd_name=pmb_name;
-                            pmd_type=type_;
-                            pmd_attributes=pmb_attributes;
-                            pmd_loc=pmb_loc
-                          }
-                        | _ -> fail pmb_expr.pmod_loc "Exported modules must have type annotations"
-                      ) bindings)
-
-                    | Pstr_module {pmb_name; pmb_loc; pmb_expr = {pmod_desc = Pmod_constraint (_, {pmty_desc = Pmty_ident loc}) }} ->
-                      (* a constrained module `module X: Type = ...` *)
-                      Sig.module_ (Md.mk pmb_name (Mty.ident { txt = loc.txt; loc = pmb_loc }))
-                    | Pstr_module {pmb_name; pmb_expr = {pmod_desc = Pmod_functor (arg, type_, {pmod_desc; pmod_loc}) }} ->
-                      (* a functor! module W (X: Y) : Z = ... *)
-                      Sig.module_ (Md.mk pmb_name (Mty.functor_ arg type_ (functor_to_type pmod_desc pmod_loc)))
-
-                    (* Invalid uses of export *)
-                    | Pstr_module _ ->
-                      (* a functor! *)
-                      fail has_single_signature.pstr_loc "Invalid module export - must be constrained or literal"
-
-                    | _ -> fail has_single_signature.pstr_loc "Cannot export this item"
-                )
-                in
-                [new_signature]
-          ) in
-          (new_signatures, [_strip_attributes next])
-      ) in
-      inner tail (current_signatures @ new_signatures) (current_structures @ new_structures)
-    )
-    in inner structures [] []
-)*)
-
-(*and process_extension structure_item =
-  match structure_item with
-  | {pstr_desc = Pstr_extension (({txt = "export"; loc}, PStr str), _)} -> extract str
-  | _ -> ([], [structure_item])
-and process_structures structure str_ sig_ =
-  match structure with
-  | hd :: tl ->
-      let (sigl, strl) = process_extension hd in
-      process_structures tl (str_ @ strl) (sig_ @ sigl)
-  | [] -> (sig_, str_)*)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 (** The new stuff **)
 
