@@ -5,24 +5,24 @@
  */
 type xyz =
   | X
-  | Y int int int
-  | Z int int
+  | Y (int, int, int)
+  | Z (int, int)
   | Q
   | R;
 
 let doubleBar =
   fun
   | X
-  | [@implicit_arity] Y _ _ _
-  | [@implicit_arity] Z _ _
+  | [@implicit_arity] Y (_, _, _)
+  | [@implicit_arity] Z (_, _)
   | Q => true
   | _ => false;
 
 let doubleBarNested =
   fun
   | X
-  | [@implicit_arity] Y _ _ _
-  | [@implicit_arity] Z _ _
+  | [@implicit_arity] Y (_, _, _)
+  | [@implicit_arity] Z (_, _)
   | Q => true
   | _ => false;
 
@@ -30,16 +30,16 @@ let doubleBarNested =
 let doubleBarAnyPatterns =
   fun
   | X
-  | Y _
-  | Z _
+  | Y (_)
+  | Z (_)
   | Q => true
   | _ => false;
 
 let doubleBarNestedAnyPatterns =
   fun
   | X
-  | Y _
-  | Z _
+  | Y (_)
+  | Z (_)
   | Q => true
   | _ => false;
 
@@ -50,7 +50,7 @@ type bcd =
   | E;
 
 type a =
-  | A bcd;
+  | A (bcd);
 
 let result =
   switch B {
@@ -62,9 +62,9 @@ let result =
 
 let nested_match =
   fun
-  | A (B | C | D | E) => 3;
+  | A ((B | C | D | E)) => 3;
 
-let some = Some (1, 2, 3);
+let some = Some ((1, 2, 3));
 
 let (\===) = (==);
 
@@ -89,14 +89,14 @@ let equalityInIf =
 let equalityWithIdentifiers =
   physicalEquality == referentialEquality;
 
-let nestedSome = Some (1, 2, Some (1, 2, 3));
+let nestedSome = Some ((1, 2, Some ((1, 2, 3))));
 
-let nestedSomeSimple = Some (Some (1, 2, 3));
+let nestedSomeSimple = Some ((Some ((1, 2, 3))));
 
 module EM = {
 
   /** Exception */
-  exception E int int;
+  exception E (int, int);
 };
 
 exception Ealias = EM.E;

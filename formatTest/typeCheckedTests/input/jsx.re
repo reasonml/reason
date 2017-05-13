@@ -277,7 +277,7 @@ let asd = [@JSX] [@foo] One.createElement(test::true,foo::2,children::["a", "b"]
 let asd2 = [@JSX] [@foo] One.createElementobvioustypo(test::false,children::["a", "b"],());
 
 let span(test::(test : bool),foo::(foo : int),::children,()) => 1;
-let asd = [@JSX] [@foo] span(test::true,foo::2,children::["a", "b"]) ();
+let asd = [@JSX] [@foo] span(test::true,foo::2,children::["a", "b"],());
 /* "video" call doesn't end with a list, so the expression isn't converted to JSX */
 let video(test::(test : bool),children) => children;
 let asd2 = [@JSX] [@foo] video(test::false,10);

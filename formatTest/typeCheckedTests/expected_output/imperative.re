@@ -38,9 +38,9 @@ try (
 
 switch (
   if true {
-    print_string "switching on true"
+    print_string ("switching on true")
   } else {
-    print_string "switching on false"
+    print_string ("switching on false")
   }
 ) {
 | _ => ()
@@ -78,17 +78,17 @@ switch (
 let shouldStillLoop = {contents: false};
 
 while shouldStillLoop.contents {
-  print_string "You're in a while loop";
-  print_newline ()
+  print_string ("You're in a while loop");
+  print_newline (())
 };
 
 while {
   shouldStillLoop.contents = false;
   shouldStillLoop.contents
 } {
-  print_string "Will never loop"
+  print_string ("Will never loop")
 };
 
 while ((shouldStillLoop := false) == ()) {
-  print_string "Forever in the loop"
+  print_string ("Forever in the loop")
 };

@@ -14,5 +14,5 @@ let sumThem =
   | `StillAnIntTuple (a, b) => a + b;
 
 type nonrec t =
-  | A int
-  | B bool;
+  | A (int)
+  | B (bool);

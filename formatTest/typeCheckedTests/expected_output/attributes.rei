@@ -13,7 +13,7 @@ let test: int;
  */
 [@@bs.val] let x: int;
 
-type t 'a;
+type t ('a);
 
 type reactClass;
 
@@ -21,22 +21,22 @@ type reactElement;
 
 [@@bs.val] [@@bs.module "React"]
 external createClassInternalHack :
-  t 'classSpec => reactClass =
+  t ('classSpec) => reactClass =
   "createClass";
 
-[@@bs.send.pipe : array 'a]
-external map : [@bs] ('a => 'b) => array 'b =
+[@@bs.send.pipe : array ('a)]
+external map : [@bs] ('a => 'b) => array ('b) =
   "";
 
 [@@bs.val] [@@bs.module "react"]
 external createClassInternalHack :
-  t 'classSpec => reactClass =
+  t ('classSpec) => reactClass =
   "createClass";
 
 [@@bs.val] [@@bs.module "react"] [@@bs.splice]
 external createCompositeElementInternalHack :
   reactClass =>
-  t {.. reasonProps : 'props} =>
-  array reactElement =>
+  t ({.. reasonProps : 'props}) =>
+  array (reactElement) =>
   reactElement =
   "createElement";

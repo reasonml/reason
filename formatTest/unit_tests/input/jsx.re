@@ -10,46 +10,39 @@ let x =
             "justifyContent": CssJustifySpaceBetween,
             "flexDirection": CssFlexDirectionRow
             }
-    onKey=(updater handleInput)
+    onKey=updater(handleInput)
   />;
 
 let y =
   <Routes
-    path=(Routes.stateToPath state)
+    path=Routes.stateToPath(state)
     isHistorical=true
-    onHashChange=(
-                   fun _oldPath _oldUrl newUrl =>
-                     updater
-                       (
-                         fun latestComponentBag _ => {
-                           let currentActualPath = Routes.hashOfUri newUrl;
-                           let pathFromState = Routes.stateToPath latestComponentBag.state;
+    onHashChange=((_oldPath,_oldUrl,newUrl) =>
+                  updater((latestComponentBag,_) => {
+                           let currentActualPath = Routes.hashOfUri(newUrl);
+                           let pathFromState = Routes.stateToPath(latestComponentBag.state);
                            currentActualPath == pathFromState ?
-                             None :
-                             dispatchEventless
-                               (State.UriNavigated currentActualPath) latestComponentBag ()
-                         }
+                             None : dispatchEventless(State.UriNavigated(currentActualPath),latestComponentBag,())
+                         },
+                         ()
                        )
-                       ()
                  )
   />;
 
 let z =
   <div
-    style=(
-            ReactDOMRe.Style.make
-              ::width
-              ::height
-              ::color
-              ::backgroundColor
-              ::margin
-              ::padding
-              ::border
-              ::borderColor
-              ::someOtherAttribute
-              ()
-          )
-    key=(string_of_int 1)
+    style=ReactDOMRe.Style.make(
+              ::width,
+              ::height,
+              ::color,
+              ::backgroundColor,
+              ::margin,
+              ::padding,
+              ::border,
+              ::borderColor,
+              ::someOtherAttribute,
+              ())
+    key=string_of_int(1)
   />;
 
   let omega =
@@ -65,32 +58,29 @@ let z =
               borderColor,
               someOtherAttribute
             ]
-    key=(string_of_int 1)
+    key=string_of_int(1)
   />;
 
 let someArray = <div
- anArray=[|width, height, color, backgroundColor, margin, padding, border,borderColor,someOtherAttribute|] key=(string_of_int 1) />;
+ anArray=[|width, height, color, backgroundColor, margin, padding, border,borderColor,someOtherAttribute|] key=string_of_int(1) />;
 
 let tuples =
   <div
-    aTuple=(
-              width,
-              height,
-              color,
-              backgroundColor,
-              margin,
-              padding,
-              border,
-              borderColor,
-              someOtherAttribute,
-              definitelyBreakere
-            )
-    key=(string_of_int 1)
+    aTuple=(width,
+            height,
+            color,
+            backgroundColor,
+            margin,
+            padding,
+            border,
+            borderColor,
+            someOtherAttribute,
+            definitelyBreakere)
+    key=string_of_int(1)
   />;
 
 let icon = <Icon
-              name=(
-                     switch state.volume {
+              name=(switch state.volume {
                      | v when v < 0.1 => "sound-off"
                      | v when v < 0.11 => "sound-min"
                      | v when v < 0.51 => "sound-med"

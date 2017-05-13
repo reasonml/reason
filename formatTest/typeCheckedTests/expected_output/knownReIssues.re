@@ -6,18 +6,18 @@
    The latter doesn't type-check with Error: Unbound value exc.
    Warning 11 (unused match case) is also triggered.
  */
-let f () => raise (Sys_error "error");
+let f (()) => raise ((Sys_error ("error")));
 
-switch (f ()) {
+switch (f (())) {
 | x => ()
-| exception (Sys_error _ as exc) => raise exc
+| exception (Sys_error (_) as exc) => raise (exc)
 };
 
-exception Foo string;
+exception Foo (string);
 
-let g () => raise (Foo "bar errors");
+let g (()) => raise ((Foo ("bar errors")));
 
-switch (g ()) {
+switch (g (())) {
 | x => ()
-| exception (Foo f) => raise (Foo f)
+| exception (Foo (f)) => raise ((Foo (f)))
 };
