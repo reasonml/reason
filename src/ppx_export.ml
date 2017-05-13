@@ -493,7 +493,19 @@ let module_sig module_ get_signatures =
 (* TODO *)
 let process_typext t = ([], [t])
 
-let process_class cl = ([], [cl])
+let process_class cl =
+  let (export, attrs) = get_export cl.pci_attributes in
+  let sigs = match export with
+  | Exported -> [class_declaration_to_class_description {cl with pci_attributes=attrs}]
+  | NotExported -> []
+  | ExportedAsSig sig_ -> (match sig_.psig_desc with
+    | Psig_class [cls] -> [cls]
+    | _ -> fail sig_.psig_loc "Invalid class export"
+  )
+  | ExportedAsType t -> fail cl.pci_loc "Class types don't work as types"
+  | Abstract -> fail cl.pci_loc "Classes cannot be abstract"
+  in
+  (sigs, [{cl with pci_attributes=attrs}])
 
 let process_class_type clt = ([], [clt])
 
@@ -518,7 +530,11 @@ let rec get_signatures structure =
 
   | Pstr_class cls -> 
     let (signatures, classes) = double_fold process_class cls in
-    (signatures, Pstr_class classes)
+    (
+      match signatures with
+      | [] -> ([], Pstr_class classes)
+      | _ -> ([Sig.mk (Psig_class signatures)], Pstr_class classes)
+    )
 
   | Pstr_class_type clt -> 
     let (signatures, class_types) = double_fold process_class_type clt in
