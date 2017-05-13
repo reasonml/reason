@@ -1,5 +1,0 @@
-PKG utop merlin_extend compiler-libs easy-format MenhirLib cmdliner ocaml-migrate-parsetree topkg reason-parser
-B _build/src
-B _build
-# ^ for package.ml -- avoids errors in Merlin
-S src
