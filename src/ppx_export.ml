@@ -490,9 +490,6 @@ let module_sig module_ get_signatures =
     ([sigModule_], module_)
   | _ -> fail module_.pmb_loc "Cannot determine a type for this exported module"
 
-(* TODO *)
-let process_typext t = ([], [t])
-
 let process_class cl =
   let (export, attrs) = get_export cl.pci_attributes in
   let sigs = match export with
@@ -507,7 +504,19 @@ let process_class cl =
   in
   (sigs, [{cl with pci_attributes=attrs}])
 
-let process_class_type clt = ([], [clt])
+(* TODO *)
+let process_class_type clt =
+  let (export, attrs) = get_export clt.pci_attributes in
+  let sigs = match export with
+  | Exported -> [clt]
+  | NotExported -> []
+  | ExportedAsSig sig_ -> (match sig_.psig_desc with
+    | Psig_class_type [clt] -> [clt]
+    | _ -> fail sig_.psig_loc "Invalid class type export")
+  | ExportedAsType t -> fail clt.pci_loc "Class types don't work as types"
+  | Abstract -> fail clt.pci_loc "Class types cannot be abstract"
+  in
+  (sigs, [{clt with pci_attributes=attrs}])
 
 
 
@@ -538,7 +547,11 @@ let rec get_signatures structure =
 
   | Pstr_class_type clt -> 
     let (signatures, class_types) = double_fold process_class_type clt in
-    (signatures, Pstr_class_type class_types)
+    (
+      match signatures with
+      | [] -> ([], Pstr_class_type class_types)
+      | _ -> ([Sig.mk (Psig_class_type signatures)], Pstr_class_type class_types)
+    )
 
   | Pstr_type (r, types) ->
     let (sigtypes, types) = double_fold process_type types in
