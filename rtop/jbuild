@@ -1,5 +1,10 @@
 (jbuild_version 1)
 
+(install
+ ((section share)
+  (package reason-rtop)
+  (files (rtop_init.ml))))
+
 (library
  ((name rtop)
   (public_name reason-rtop)
