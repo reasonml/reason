@@ -1,0 +1,10 @@
+(jbuild_version 1)
+
+(executables
+ ((names (ppx_react reactjs_jsx_ppx))
+  (public_names (ppx_react reactjs_jsx_ppx))
+  (package reason)
+  (libraries
+   (ocaml-migrate-parsetree
+    ppx_tools_versioned.metaquot_404
+    reason))))
