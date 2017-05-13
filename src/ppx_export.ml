@@ -477,17 +477,25 @@ let process_type type_ =
   in
   (sigtypes, [{type_ with ptype_attributes=attrs}])
 
-let module_sig module_ get_signatures =
+let module_sig module_ attrs get_signatures =
   match module_.pmb_expr.pmod_desc with
   | Pmod_structure inner_structures ->
     let {pmb_name; pmb_expr={pmod_loc; pmod_attributes}} = module_ in
     let (child_signatures, child_structures) = double_fold get_signatures inner_structures in
 
     let module_expr = Mod.structure child_structures ~loc:pmod_loc ~attrs:pmod_attributes in
-    let module_ = (Mb.mk pmb_name module_expr) in
+    let module_ = (Mb.mk ~attrs:attrs pmb_name module_expr) in
     let sigModule_ = Sig.module_ (Md.mk pmb_name (Mty.signature child_signatures)) in
     (* let _ = {ex with pmb_expr = a} in *)
     ([sigModule_], module_)
+  | Pmod_constraint (_, {pmty_desc = Pmty_ident loc}) ->
+    (* a constrained module `module X: Type = ...` *)
+    let {pmb_name; pmb_loc; pmb_expr={pmod_loc}} = module_ in
+    ([Sig.module_ (Md.mk pmb_name (Mty.ident { txt = loc.txt; loc = pmb_loc }))], {module_ with pmb_attributes=attrs})
+  | Pmod_functor (arg, type_, {pmod_desc; pmod_loc}) ->
+    (* a functor! module W (X: Y) : Z = ... *)
+    let {pmb_name; pmb_loc; pmb_expr={pmod_loc}} = module_ in
+    ([Sig.module_ (Md.mk pmb_name (Mty.functor_ arg type_ (functor_to_type pmod_desc pmod_loc)))], {module_ with pmb_attributes=attrs})
   | _ -> fail module_.pmb_loc "Cannot determine a type for this exported module"
 
 let process_class cl =
@@ -524,7 +532,7 @@ let process_module m get_signatures =
   let (export, attrs) = get_export m.pmb_attributes in
   let newmod = {m with pmb_attributes=attrs} in
   match export with
-  | Exported -> module_sig m get_signatures
+  | Exported -> module_sig m attrs get_signatures
   | NotExported -> ([], newmod)
   | ExportedAsSig sig_ -> ([sig_], newmod)
   | ExportedAsType t -> fail m.pmb_loc "Module types don't work as types"
