@@ -432,7 +432,6 @@ let double_fold fn items =
   ) in
   inner items [] []
 
-(* TODO *)
 let process_binding binding =
   let (export, attrs) = get_export binding.pvb_attributes in
   let sigs = match export with
@@ -478,8 +477,6 @@ let process_type type_ =
   in
   (sigtypes, [{type_ with ptype_attributes=attrs}])
 
-let process_typext t = ([], [t])
-
 let module_sig module_ get_signatures =
   match module_.pmb_expr.pmod_desc with
   | Pmod_structure inner_structures ->
@@ -492,6 +489,9 @@ let module_sig module_ get_signatures =
     (* let _ = {ex with pmb_expr = a} in *)
     ([sigModule_], module_)
   | _ -> fail module_.pmb_loc "Cannot determine a type for this exported module"
+
+(* TODO *)
+let process_typext t = ([], [t])
 
 let process_class cl = ([], [cl])
 

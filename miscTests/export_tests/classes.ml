@@ -1,10 +1,10 @@
-class%export some =
+class[@export] some =
 let a = 2 in
 object
   val x: int = a
 end
 
-class%export istack =
+class[@export] istack =
 object
     val mutable v: int list = [0; 2]
 
@@ -19,7 +19,7 @@ object
       v <- hd :: v
   end
 
-class%export ['a] stack (init: 'a list) (binit: int) = object
+class[@export] ['a] stack (init: 'a list) (binit: int) = object
     val mutable v : 'a list = init
 
     method pop: 'a option =
@@ -33,13 +33,13 @@ class%export ['a] stack (init: 'a list) (binit: int) = object
       v <- hd :: v
   end
 
-class%export square (w: int) = object(self)
+class[@export] square (w: int) = object(self)
   method width: int = w
   method area: int = (self#width * self#width)
   method larger (other: square): bool = self#area > other#area
 end
 
-class%export asquare (w: int) =
+class[@export] asquare (w: int) =
 let a = 2 in
 object(self)
   inherit some
@@ -48,9 +48,9 @@ object(self)
   method larger (other: asquare): bool = self#area > other#area
 end
 
-class%export m: asquare = asquare 20
+class[@export] m: asquare = asquare 20
 
-class%export bsquare = object
+class[@export] bsquare = object
   inherit asquare 20
   initializer
     print_string "awesome"
