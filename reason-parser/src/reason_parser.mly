@@ -2674,7 +2674,7 @@ simple_expr_no_call: mark_position_exp(basic_expr(simple_expr_no_call)) { $1 };
     { unclosed_exp (with_txt $3 "{<") (with_txt $6 ">}") }
   | E SHARP label
     { mkexp (Pexp_send($1, $3)) }
-  | E as_loc(SHARPOP) E
+  | E as_loc(SHARPOP) simple_expr_no_call
     { mkinfixop $1 (mkoperator_loc $2.txt $2.loc) $3 }
   | as_loc(mod_longident) DOT LPAREN MODULE module_expr COLON package_type RPAREN
     { let loc = mklocation $symbolstartpos $endpos in
