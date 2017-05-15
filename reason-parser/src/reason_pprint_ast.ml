@@ -4401,15 +4401,23 @@ class printer  ()= object(self:'self)
       | Ppat_tuple l ->
         (* There is no ambiguity when the number of tuple components is 1.
              We don't need put implicit_arity in that case *)
-        (List.length l > 1 && not arityIsClear,
-         makeTup (List.map self#pattern l))
-      | _ -> (false, makeTup [self#pattern po])
+        (List.length l > 1 && not arityIsClear, l)
+      | _ -> (false, [po])
     in
-    let construction = label ctor (if isSequencey arguments then arguments else
-                                     (ensureSingleTokenSticksToLabel arguments))
+    let is_direct x = x.ppat_attributes = [] && match x.ppat_desc with
+      | Ppat_array _ | Ppat_record _
+      | Ppat_construct ( {txt= Lident"()"}, None)
+      | Ppat_construct ( {txt= Lident"::"}, Some _) -> true
+      | _ -> false
     in
+    let space, arguments = match arguments with
+      | [x] when is_direct x -> true, self#simple_pattern x
+      | xs -> false, makeTup (List.map self#pattern xs)
+    in
+    let construction = label ~space ctor arguments in
     if implicit_arity && (not polyVariant) then
-      formatAttributed construction (self#attributes [({txt="implicit_arity"; loc=po.ppat_loc}, PStr [])])
+      formatAttributed construction
+        (self#attributes [({txt="implicit_arity"; loc=po.ppat_loc}, PStr [])])
     else
       construction
 
