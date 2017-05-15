@@ -447,7 +447,6 @@ let rec sequentialIfBlocks x =
     | Some e -> ([], Some e)
     | None -> ([], None)
 
-
 (*
   TODO: IDE integration beginning with Vim:
 
@@ -1411,8 +1410,6 @@ let break =
   makeListConfig ~break:Always_rec ~indent:0 ~inline:(true, true) ()
 
 let makeBreakableList lst = makeList ~break:IfNeed ~inline:(true, true) lst
-
-let makeNonIndentedBreakableEasyList lst = makeEasyList ~break:IfNeed ~inline:(true, true) ~indent:0 lst
 
 (* Like a <span> could place with other breakableInline lists without upsetting final semicolons *)
 let makeSpacedBreakableInlineList lst =
@@ -3453,7 +3450,7 @@ class printer  ()= object(self:'self)
         let maybeJSXAttr = List.map self#attribute jsxAttrs in
         let theFunc = SourceMap (e.pexp_loc, self#simplifyUnparseExpr e) in
         (*reset here only because [function,match,try,sequence] are lower priority*)
-        let theArgs = makeTup (List.map self#reset#label_x_expression_param ls) in
+        let theArgs = self#reset#label_x_expression_params ls in
         FunctionApplication (maybeJSXAttr @ [label theFunc theArgs])
       )
     )
@@ -3620,8 +3617,7 @@ class printer  ()= object(self:'self)
 
   method classExpressionToFormattedApplicationItems = function
     | { pcl_desc = Pcl_apply (ce, l) } ->
-      [label (self#simple_class_expr ce)
-         (makeTup (List.map self#label_x_expression_param l))]
+      [label (self#simple_class_expr ce) (self#label_x_expression_params l)]
     | x -> [self#class_expr x]
 
 
@@ -6000,9 +5996,8 @@ class printer  ()= object(self:'self)
     (List.map case_row l)
 
   method label_x_expression_param (l, e) =
-    let param =
-      match l with
-      | Nolabel -> self#unparseConstraintExpr e; (* level 2*)
+    let param = match l with
+      | Nolabel -> self#unparseConstraintExpr e
       | Labelled lbl ->
         let lbl = pun_labelled_expression e lbl in
         formatLabeledArgument lbl "" (self#unparseConstraintExpr e)
@@ -6012,7 +6007,31 @@ class printer  ()= object(self:'self)
     in
     SourceMap (e.pexp_loc, param)
 
-
+  method label_x_expression_params xs =
+    let is_direct x = x.pexp_attributes = [] && match x.pexp_desc with
+      | Pexp_array _
+      | Pexp_record _
+      | Pexp_object {pcstr_fields = _}
+      | Pexp_construct ( {txt= Lident"()"}, None)
+      | Pexp_construct ( {txt= Lident"::"}, Some _) -> true
+      | _ -> false
+    in
+    let head, xs = match xs with
+      | (Nolabel, x) :: xs when is_direct x ->
+        ([self#simplifyUnparseExpr x], xs)
+      | _ -> ([], xs)
+    in
+    let tail, xs = match List.rev xs with
+      | (Nolabel, x) :: xs when is_direct x ->
+        ([self#simplifyUnparseExpr x], List.rev xs)
+      | _ -> ([], xs)
+    in
+    let xs = if xs = [] then [] else
+        [makeTup (List.map self#label_x_expression_param xs)]
+    in
+    match head @ xs @ tail with
+    | [x] -> x
+    | xs -> makeBreakableList xs
 end;;
 
 

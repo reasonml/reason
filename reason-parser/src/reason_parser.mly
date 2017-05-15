@@ -375,6 +375,11 @@ let mkclass_fun {Location. txt = (label, default_expr, pat); loc} body =
   mkclass ~loc:(mklocation loc.loc_start body.pcl_loc.loc_end)
     (Pcl_fun (label, default_expr, pat, body))
 
+let mkexp_app_rev startp endp (body, args) =
+  let loc = mklocation startp endp in
+  if args = [] then { body with pexp_loc = loc } else
+    mkexp ~loc (Pexp_apply (body, List.rev args))
+
 let mkmod_app mexp marg =
   mkmod ~loc:(mklocation mexp.pmod_loc.loc_start marg.pmod_loc.loc_end)
     (Pmod_apply (mexp, marg))
@@ -2567,11 +2572,13 @@ mark_position_exp
     { {$2 with pexp_attributes = $1 :: $2.pexp_attributes} }
   ) {$1};
 
-simple_expr:
-  | mark_position_exp(basic_expr(simple_expr)) { $1 }
-  | simple_expr labeled_arguments
-    { mkexp ~loc:(mklocation $startpos $endpos) (Pexp_apply($1, $2)) }
+simple_expr_call:
+  | basic_expr(simple_expr) { $1, [] }
+  | simple_expr_call labeled_arguments
+    { let body, args = $1 in (body, List.rev_append $2 args) }
 ;
+
+%inline simple_expr: simple_expr_call { mkexp_app_rev $startpos $endpos $1 };
 
 simple_expr_no_call: mark_position_exp(basic_expr(simple_expr_no_call)) { $1 };
 
