@@ -403,36 +403,32 @@ let rec atLeastOneFlushableChildAndNoWipNoPending
   | [] => false
   | [hd, ...tl] =>
     switch hd {
-    | OpaqueGraph({lifecycle: Reconciled(_, [])}) =>
+    | OpaqueGraph {lifecycle: Reconciled(_, [])} =>
       atLeastOneFlushableChildAndNoWipNoPending(
         tl,
         atPriority
       )
-    | OpaqueGraph(
-        {
-          lifecycle:
-            ReconciledFlushable(
-              priority,
-              _,
-              _,
-              _,
-              _,
-              _
-            )
-        }
-      )
-    | OpaqueGraph(
-        {
-          lifecycle:
-            NeverReconciledFlushable(
-              priority,
-              _,
-              _,
-              _,
-              _
-            )
-        }
-      )
+    | OpaqueGraph {
+        lifecycle:
+          ReconciledFlushable(
+            priority,
+            _,
+            _,
+            _,
+            _,
+            _
+          )
+      }
+    | OpaqueGraph {
+        lifecycle:
+          NeverReconciledFlushable(
+            priority,
+            _,
+            _,
+            _,
+            _
+          )
+      }
         when priority == AtPriority =>
       noWipNoPending(tl, atPriority)
     | SuperLongNameThatWontBreakByItselfSoWhenWillHaveToBreak

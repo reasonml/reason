@@ -70,7 +70,7 @@ class extendedStackAcknowledgeOverride
   pri! explicitOverrideTest2 (a) => a + 2;
 };
 
-let inst = (new extendedStack)([1, 2]);
+let inst = (new extendedStack)[1, 2];
 
 
 /**
@@ -164,19 +164,20 @@ let acceptsClosedAnonObjAsArg
   o#x + o#y;
 
 let res =
-  acceptsOpenAnonObjAsArg(
-    {pub x = 0; pub y = 10}
-  );
+  acceptsOpenAnonObjAsArg{pub x = 0; pub y = 10};
 
 let res =
-  acceptsOpenAnonObjAsArg(
-    {pub x = 0; pub y = 10; pub z = 10}
-  );
+  acceptsOpenAnonObjAsArg{
+    pub x = 0;
+    pub y = 10;
+    pub z = 10
+  };
 
 let res =
-  acceptsClosedAnonObjAsArg(
-    {pub x = 0; pub y = 10}
-  );
+  acceptsClosedAnonObjAsArg{
+    pub x = 0;
+    pub y = 10
+  };
 
 /* TODO: Unify class constructor return values with function return values */
 class myClassWithAnnotatedReturnType

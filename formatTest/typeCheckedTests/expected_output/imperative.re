@@ -79,7 +79,7 @@ let shouldStillLoop = {contents: false};
 
 while shouldStillLoop.contents {
   print_string("You're in a while loop");
-  print_newline(())
+  print_newline()
 };
 
 while {

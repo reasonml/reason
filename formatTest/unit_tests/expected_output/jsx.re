@@ -19,44 +19,47 @@ let y =
     isHistorical=true
     onHashChange=(
       (_oldPath, _oldUrl, newUrl) =>
-        updater(
-          (latestComponentBag, _) => {
-            let currentActualPath =
-              Routes.hashOfUri(newUrl);
-            let pathFromState =
-              Routes.stateToPath(
-                latestComponentBag.state
-              );
-            currentActualPath == pathFromState ?
-              None :
-              dispatchEventless(
-                State.UriNavigated(
-                  currentActualPath
-                ),
-                latestComponentBag,
-                ()
-              )
-          },
+        updater
+          (
+            (latestComponentBag, _) => {
+              let currentActualPath =
+                Routes.hashOfUri(newUrl);
+              let pathFromState =
+                Routes.stateToPath(
+                  latestComponentBag.state
+                );
+              currentActualPath == pathFromState ?
+                None :
+                dispatchEventless
+                  (
+                    State.UriNavigated(
+                      currentActualPath
+                    ),
+                    latestComponentBag
+                  )
+                  ()
+            }
+          )
           ()
-        )
     )
   />;
 
 let z =
   <div
     style=(
-      ReactDOMRe.Style.make(
-        ::width,
-        ::height,
-        ::color,
-        ::backgroundColor,
-        ::margin,
-        ::padding,
-        ::border,
-        ::borderColor,
-        ::someOtherAttribute,
+      ReactDOMRe.Style.make
+        (
+          ::width,
+          ::height,
+          ::color,
+          ::backgroundColor,
+          ::margin,
+          ::padding,
+          ::border,
+          ::borderColor,
+          ::someOtherAttribute
+        )
         ()
-      )
     )
     key=(string_of_int(1))
   />;

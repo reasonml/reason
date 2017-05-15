@@ -2,7 +2,7 @@
 let logTSuccess (self) =>
   if (self > other) {
     print_string("Did T");
-    print_newline(())
+    print_newline()
   } else {
     ()
   };
@@ -10,13 +10,13 @@ let logTSuccess (self) =>
 let something =
   if self.ext.logSuccess {
     print_string("Did T");
-    print_newline(())
+    print_newline()
   };
 
 let logTSuccess (self) =>
   if self.ext.logSuccess {
     print_string("Did T");
-    print_newline(())
+    print_newline()
   } else {
     ()
   };

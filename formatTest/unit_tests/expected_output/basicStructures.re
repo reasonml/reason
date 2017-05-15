@@ -4,17 +4,17 @@ let run (()) =>
 
 while something {
   print_string("You're in a while loop");
-  print_newline(())
+  print_newline()
 };
 
 for i in 0 to 5 {
   print_int(i);
-  print_newline(());
+  print_newline();
   for i in 10 downto 0 {
     print_string(
       "Counting in reverse direction"
     );
-    print_newline(())
+    print_newline()
   }
 };
 
@@ -22,14 +22,14 @@ for i in
     0 to
     (endOfRangeMustBeSimple(expr, soWrap)) {
   print_int(i);
-  print_newline(());
+  print_newline();
   for i in
       (theSame(isTrue, ofThe, startOfRange)) downto
       0 {
     print_string(
       "Counting in reverse direction"
     );
-    print_newline(())
+    print_newline()
   }
 };
 
@@ -119,13 +119,13 @@ let x = (!arr).(0) = 1;
 let something =
   if self.ext.logSuccess {
     print_string("Did tap");
-    print_newline(())
+    print_newline()
   };
 
 let logTapSuccess (self) =>
   if self.ext.logSuccess {
     print_string("Did tap");
-    print_newline(())
+    print_newline()
   } else {
     ()
   };
@@ -133,7 +133,7 @@ let logTapSuccess (self) =>
 let logTapSuccess (self) =>
   if self.ext.logSuccess {
     print_string("Did tap");
-    print_newline(())
+    print_newline()
   };
 
 (!data).field = true;
@@ -148,8 +148,8 @@ let logTapSuccess (self) =>
 
 let loop (appTime, frameTime) => {
   if hasSetup.contents {
-    setupScene(());
-    renderIntoTop(());
+    setupScene();
+    renderIntoTop();
     hasSetup.contents = true
   };
   process(appTime, frameTime)
@@ -217,7 +217,7 @@ let result =
     print_string(
       "That could never possibly type check"
     );
-    print_newline(())
+    print_newline()
   };
 
 let myRecord = {
@@ -605,14 +605,14 @@ let makeRecordBase (()) => {
 
 let anotherRecord = {
   /* These parens should be evaporated. */
-  ...makeRecordBase(()),
+  ...makeRecordBase(),
   name: "joe++",
   age: testRecord.age + 10
 };
 
 let anotherRecord = {
   /* Comments should be correctly placed before ... expression */
-  ...makeRecordBase(()),
+  ...makeRecordBase(),
   /* Comment after record extension */
   name: "joe++",
   age: testRecord.age + 10
@@ -620,7 +620,7 @@ let anotherRecord = {
 
 let anotherRecord = {
   /* Currently, type annotations must be wrapped in parens - that's easy to improve */
-  ...(makeRecordBase(()): withThreeFields),
+  ...(makeRecordBase(): withThreeFields),
   name: "joe++",
   age: testRecord.age + 10
 };
@@ -634,12 +634,10 @@ let anotherRecord = {
 
 let anotherRecord = {
   ...
-    SomeReally.longFunctionCall(
-      {
-        passingRecordField: 0,
-        andThisOtherRecordField: 10
-      }
-    ),
+    SomeReally.longFunctionCall{
+      passingRecordField: 0,
+      andThisOtherRecordField: 10
+    },
   name: "joe++",
   age: testRecord.age + 10
 };
@@ -656,8 +654,8 @@ let anotherRecord = {
 
 let anotherRecord = {
   ...
-    SomeReally.longFunctionCall(
-      withArg,
+    SomeReally.longFunctionCall
+      (withArg)
       [
         "and",
         "final",
@@ -665,8 +663,7 @@ let anotherRecord = {
         "that",
         "should",
         "break"
-      ]
-    ),
+      ],
   name: "joe++",
   age: testRecord.age + 10
 };
