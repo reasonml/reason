@@ -4,18 +4,18 @@ class virtual stack ('a) (init) => {
    * The "as this" is implicit and will be formatted away.
    */
   val virtual dummy: unit;
-  val mutable v: list ('a) = init;
+  val mutable v: list('a) = init;
   pub virtual implementMe: int => int;
   pub pop =
     switch v {
     | [hd, ...tl] =>
       v = tl;
-      Some (hd)
+      Some(hd)
     | [] => None
     };
   pub push (hd) => v = [hd, ...v];
   initializer =>
-    print_string ("initializing object");
+    print_string("initializing object");
   pub explicitOverrideTest (a) => a + 1;
   pri explicitOverrideTest2 (a) => a + 1;
 };
@@ -40,22 +40,22 @@ class virtual stackWithAttributes ('a) (init) => {
   [@@@floatingAttribute];
   /* Virtual member */
   val virtual dummy: unit;
-  val mutable v: list ('a) = init;
+  val mutable v: list('a) = init;
   pub virtual implementMe: int => int;
   pub pop =
     switch v {
     | [hd, ...tl] =>
       v = tl;
-      Some (hd)
+      Some(hd)
     | [] => None
     };
   pub push (hd) => v = [hd, ...v];
   initializer =>
-    print_string ("initializing object");
+    print_string("initializing object");
 };
 
 class extendedStack ('a) (init) => {
-  inherit (class stack ('a)) (init);
+  inherit (class stack('a))(init);
   val dummy = ();
   pub implementMe (i) => i;
 };
@@ -63,14 +63,14 @@ class extendedStack ('a) (init) => {
 class extendedStackAcknowledgeOverride
       ('a)
       (init) => {
-  inherit (class stack ('a)) (init);
+  inherit (class stack('a))(init);
   val dummy = ();
   pub implementMe (i) => i + 1;
   pub! explicitOverrideTest (a) => a + 2;
   pri! explicitOverrideTest2 (a) => a + 2;
 };
 
-let inst = (new extendedStack) ([1, 2]);
+let inst = (new extendedStack)([1, 2]);
 
 
 /**
@@ -120,7 +120,7 @@ let bigger = 3 >> 2;
 
 type typeDefForClosedObj = {. x : int, y : int};
 
-type typeDefForOpenObj ('a) =
+type typeDefForOpenObj('a) =
   {.. x : int, y : int} as 'a;
 
 let anonClosedObject: {. x : int, y : int} = {
@@ -130,15 +130,15 @@ let anonClosedObject: {. x : int, y : int} = {
 
 let onlyHasX = {pub x = 0};
 
-let xs: list ({. x : int}) = [
+let xs: list({. x : int}) = [
   onlyHasX,
   (anonClosedObject :> {. x : int})
 ];
 
 let constrainedAndCoerced = (
   [anonClosedObject, anonClosedObject]:
-    list ({. x : int, y : int}) :>
-    list ({. x : int})
+    list({. x : int, y : int}) :>
+    list({. x : int})
 );
 
 /* If one day, unparenthesized type constraints are allowed on the RHS of a
@@ -146,7 +146,7 @@ let constrainedAndCoerced = (
  * a separate kind of token (for now). Any issues would likely be caught in the
  * idempotent test case.
  */
-let xs: ref ({. x : int}) = {
+let xs: ref({. x : int}) = {
   contents: (anonClosedObject :> {. x : int})
 };
 
@@ -164,17 +164,17 @@ let acceptsClosedAnonObjAsArg
   o#x + o#y;
 
 let res =
-  acceptsOpenAnonObjAsArg (
+  acceptsOpenAnonObjAsArg(
     {pub x = 0; pub y = 10}
   );
 
 let res =
-  acceptsOpenAnonObjAsArg (
+  acceptsOpenAnonObjAsArg(
     {pub x = 0; pub y = 10; pub z = 10}
   );
 
 let res =
-  acceptsClosedAnonObjAsArg (
+  acceptsClosedAnonObjAsArg(
     {pub x = 0; pub y = 10}
   );
 
@@ -284,13 +284,13 @@ module HasTupleClasses: {
    * anotherExportedClass.
    */
   class anotherExportedClass ('a, 'b) =
-    class tupleClass ('a, 'b);
+    class tupleClass('a, 'b);
 };
 
-class intTuples = class tupleClass (int, int);
+class intTuples = class tupleClass(int, int);
 
 class intTuplesHardcoded =
-  (class tupleClass (int, int)) ((8, 8));
+  (class tupleClass(int, int))((8, 8));
 
 
 /**
@@ -299,21 +299,21 @@ class intTuplesHardcoded =
  * The parens here shouldn't be required.
  */
 class intTuplesTuples =
-  class tupleClass (
-    tupleClass (int, int),
-    tupleClass (int, int)
+  class tupleClass(
+    tupleClass(int, int),
+    tupleClass(int, int)
   );
 
-let x: tupleClass (int, int) = {
+let x: tupleClass(int, int) = {
   pub pr = (10, 10)
 };
 
-let x: #tupleClass (int, int) = x;
+let x: #tupleClass(int, int) = x;
 
 let incrementMyClassInstance:
   int =>
-  #tupleClass (int, int) =>
-  #tupleClass (int, int) =
+  #tupleClass(int, int) =>
+  #tupleClass(int, int) =
   (i, inst) => {
     let (x, y) = inst#pr;
     {pub pr = (x + i, y + i)}
@@ -325,8 +325,8 @@ class myClassWithNoTypeParams = {};
 /**
  * The #myClassWithNoTypeParams should be treated as "simple"
  */
-type optionalMyClassSubtype ('a) =
-  option (#myClassWithNoTypeParams) as 'a;
+type optionalMyClassSubtype('a) =
+  option(#myClassWithNoTypeParams) as 'a;
 
 
 /**

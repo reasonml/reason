@@ -46,7 +46,7 @@ module Sibling = {
   let createElement
       (
         ::foo=?,
-        children::(children: list (component)),
+        children::(children: list(component)),
         ()
       ) => {
     displayName: "test"
@@ -107,7 +107,7 @@ module Namespace = {
 module Optional1 = {
   let createElement (::required, ::children, ()) =>
     switch required {
-    | Some (a) => {displayName: a}
+    | Some(a) => {displayName: a}
     | None => {displayName: "nope"}
     };
 };
@@ -116,16 +116,16 @@ module Optional2 = {
   let createElement
       (::optional=?, ::children, ()) =>
     switch optional {
-    | Some (a) => {displayName: a}
+    | Some(a) => {displayName: a}
     | None => {displayName: "nope"}
     };
 };
 
 module DefaultArg = {
   let createElement
-      (::default=(Some ("foo")), ::children, ()) =>
+      (::default=(Some("foo")), ::children, ()) =>
     switch default {
-    | Some (a) => {displayName: a}
+    | Some(a) => {displayName: a}
     | None => {displayName: "nope"}
     };
 };
@@ -275,7 +275,7 @@ let jsxInList8 = [<Foo />, <Foo />];
 
 let testFunc (b) => b;
 
-let jsxInFnCall = testFunc (<Foo />);
+let jsxInFnCall = testFunc(<Foo />);
 
 let lotsOfArguments =
   <LotsOfArguments
@@ -353,10 +353,10 @@ let tagOne (::children, ()) => ();
 let tagTwo (::children, ()) => ();
 
 /* thisIsWrong <tagOne /><tagTwo />; */
-thisIsRight (<tagOne />, <tagTwo />);
+thisIsRight(<tagOne />, <tagTwo />);
 
 /* thisIsWrong <tagOne> </tagOne><tagTwo> </tagTwo>; */
-thisIsRight (<tagOne />, <tagTwo />);
+thisIsRight(<tagOne />, <tagTwo />);
 
 let a (::children, ()) => ();
 
@@ -437,7 +437,7 @@ let sameButWithSpaces = [
  */
 type thisType = [ | `Foo | `Bar];
 
-type t ('a) = [< thisType] as 'a;
+type t('a) = [< thisType] as 'a;
 
 let asd =
   [@foo] <One test=true foo=2> "a" "b" </One>;
@@ -445,8 +445,11 @@ let asd =
 let asd2 =
   [@foo]
   [@JSX]
-  One.createElementobvioustypo
-  (test::false, children::["a", "b"], ());
+  One.createElementobvioustypo(
+    test::false,
+    children::["a", "b"],
+    ()
+  );
 
 let span
     (
@@ -462,11 +465,11 @@ let asd =
 /* "video" call doesn't end with a list, so the expression isn't converted to JSX */
 let video (test::(test: bool), children) => children;
 
-let asd2 = [@foo] [@JSX] video (test::false, 10);
+let asd2 = [@foo] [@JSX] video(test::false, 10);
 
 let div (::children) => 1;
 
-[@JSX] (((()) => div) (())) (children::[]);
+[@JSX] (((()) => div)(()))(children::[]);
 
 let myFun (()) =>
   <>
@@ -533,57 +536,55 @@ let myFun (()) =>
 /*   <Bar /> */
 /* </Foo>; */
 /* let res = <Foo a=10 b=(<Foo a=200 />) />; */
-let zzz = Some ("oh hai");
+let zzz = Some("oh hai");
 
 let optionalCallSite =
   <Optional1 required=?zzz />;
 
-fakeRender (optionalCallSite);
+fakeRender(optionalCallSite);
 
 let optionalArgument = <Optional2 />;
 
-fakeRender (optionalArgument);
+fakeRender(optionalArgument);
 
 let optionalArgument =
   <Optional2 optional=?zzz />;
 
-fakeRender (optionalArgument);
+fakeRender(optionalArgument);
 
 let defaultArg = <DefaultArg />;
 
-fakeRender (defaultArg);
+fakeRender(defaultArg);
 
 let defaultArg = <DefaultArg default=zzz />;
 
-fakeRender (defaultArg);
+fakeRender(defaultArg);
 
 [@bla]
 [@JSX]
-NotReallyJSX.createElement
-([], foo::1, bar::2);
+NotReallyJSX.createElement([], foo::1, bar::2);
 
 [@bla]
 [@JSX]
-NotReallyJSX.createElement
-(foo::1, [], bar::2);
+NotReallyJSX.createElement(foo::1, [], bar::2);
 
-[@bla] [@JSX] notReallyJSX ([], foo::1);
+[@bla] [@JSX] notReallyJSX([], foo::1);
 
-[@bla] [@JSX] notReallyJSX (foo::1, [], bar::2);
+[@bla] [@JSX] notReallyJSX(foo::1, [], bar::2);
 
 /* children can be at any position */
 <span test=true foo=2 />;
 
-<Optional1 required=(Some ("hi")) />;
+<Optional1 required=(Some("hi")) />;
 
 /* preserve some other attributes too! */
 [@bla] <span test=true foo=2 />;
 
 [@bla] <span test=true foo=2 />;
 
-[@bla] <Optional1 required=(Some ("hi")) />;
+[@bla] <Optional1 required=(Some("hi")) />;
 
-[@bla] <Optional1 required=(Some ("hi")) />;
+[@bla] <Optional1 required=(Some("hi")) />;
 
 /* Overeager JSX punning #1099 */
 module Metal = {

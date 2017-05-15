@@ -43,11 +43,11 @@ while false {
 };
 
 while false {
-  print_string ("test")
+  print_string("test")
 };
 
 while false {
-  print_string ("test")
+  print_string("test")
 };
 
 type myRecord = {number: int};

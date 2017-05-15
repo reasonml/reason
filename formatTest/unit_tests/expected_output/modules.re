@@ -1,6 +1,6 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 let run (()) =>
-  TestUtils.printSection ("Modules");
+  TestUtils.printSection("Modules");
 
 
 /**
@@ -123,10 +123,10 @@ module type HasEmbeddedHasTT = {
   module SubModuleThatHasTT = SubModule;
 };
 
-module type HasPolyType = {type t ('a);};
+module type HasPolyType = {type t('a);};
 
 module type HasDestructivelySubstitutedPolyType =
-  HasPolyType with type t ('a) := list ('a);
+  HasPolyType with type t('a) := list('a);
 
 module type HasDestructivelySubstitutedSubPolyModule = {
   /* Cannot perform destructive substitution on submodules! */
@@ -142,28 +142,28 @@ module type HasSubPolyModule = {
 
 module EmbedsSubPolyModule: HasSubPolyModule = {
   module X = {
-    type t ('a) = list ('a);
+    type t('a) = list('a);
   };
 };
 
 module EmbedsDestructivelySubstitutedPolyModule:
   HasDestructivelySubstitutedSubPolyModule = {
   module X = {
-    type t = list (int, int);
+    type t = list(int, int);
   };
 };
 
 module type HasMultiPolyType = {
-  type substituteThis ('a, 'b);
-  type substituteThat ('a, 'b);
+  type substituteThis('a, 'b);
+  type substituteThat('a, 'b);
 };
 
 module type HasDestructivelySubstitutedMultiPolyType =
   HasMultiPolyType with
-    type substituteThis ('a, 'b) :=
-      Hashtbl.t ('a, 'b) and
-    type substituteThat ('a, 'b) :=
-      Hashtbl.t ('a, 'b);
+    type substituteThis('a, 'b) :=
+      Hashtbl.t('a, 'b) and
+    type substituteThat('a, 'b) :=
+      Hashtbl.t('a, 'b);
 
 module InliningSig: {let x: int; let y: int;} = {
   /*
@@ -190,14 +190,14 @@ module MyFunctor (M: HasTT) => {
    such a great idea].
    */
 module MyFunctorResult =
-  MyFunctor (
+  MyFunctor(
     {
       type tt = string;
     }
   );
 
 module LookNoParensNeeded =
-  MyFunctor (
+  MyFunctor(
     {
       type tt = string;
     }
@@ -279,10 +279,9 @@ let letsTryThatSyntaxInLocalModuleBindings (()) => {
    * let res = Out.x in
    * res;;
    */
-  module TempModule =
-    CurriedNoSugar (AMod, BMod);
+  module TempModule = CurriedNoSugar(AMod, BMod);
   module TempModule2 =
-    CurriedSugarWithAnnotatedReturnVal (
+    CurriedSugarWithAnnotatedReturnVal(
       AMod,
       BMod
     );
@@ -296,10 +295,10 @@ module MakeAModule (X: EmptySig) => {
 };
 
 module CurriedSugarFunctorResult =
-  CurriedSugar (AMod, BMod);
+  CurriedSugar(AMod, BMod);
 
 module CurriedSugarFunctorResultInline =
-  CurriedSugar (
+  CurriedSugar(
     {
       let a = 10;
     },
@@ -309,10 +308,10 @@ module CurriedSugarFunctorResultInline =
   );
 
 module CurriedNoSugarFunctorResult =
-  CurriedNoSugar (AMod, BMod);
+  CurriedNoSugar(AMod, BMod);
 
 module CurriedNoSugarFunctorResultInline =
-  CurriedNoSugar (
+  CurriedNoSugar(
     {
       let a = 10;
     },
@@ -322,9 +321,9 @@ module CurriedNoSugarFunctorResultInline =
   );
 
 module ResultFromNonSimpleFunctorArg =
-  CurriedNoSugar (
+  CurriedNoSugar(
     (
-      MakeAModule (
+      MakeAModule(
         {}
       )
     ),
@@ -402,25 +401,25 @@ module ReturnsAFunctor2
  */
 module rec A: {
   type t =
-    | Leaf (string)
-    | Node (ASet.t);
+    | Leaf(string)
+    | Node(ASet.t);
   let compare: t => t => int;
 } = {
   type t =
-    | Leaf (string)
-    | Node (ASet.t);
+    | Leaf(string)
+    | Node(ASet.t);
   let compare (t1, t2) =>
     switch (t1, t2) {
-    | (Leaf (s1), Leaf (s2)) =>
-      Pervasives.compare (s1, s2)
-    | (Leaf (_), Node (_)) => 1
-    | (Node (_), Leaf (_)) => (-1)
-    | (Node (n1), Node (n2)) =>
-      ASet.compare (n1, n2)
+    | (Leaf(s1), Leaf(s2)) =>
+      Pervasives.compare(s1, s2)
+    | (Leaf(_), Node(_)) => 1
+    | (Node(_), Leaf(_)) => (-1)
+    | (Node(n1), Node(n2)) =>
+      ASet.compare(n1, n2)
     };
 }
 and ASet: Set.S with type elt = A.t =
-  Set.Make (A);
+  Set.Make(A);
 
 /*
  * How recursive modules appear in signatures.
@@ -428,8 +427,8 @@ and ASet: Set.S with type elt = A.t =
 module type HasRecursiveModules = {
   module rec A: {
     type t =
-      | Leaf (string)
-      | Node (ASet.t);
+      | Leaf(string)
+      | Node(ASet.t);
     let compare: t => t => int;
   }
   and ASet: Set.S with type elt = A.t;
@@ -443,11 +442,11 @@ module Char = {
 };
 
 module List (X: Type) => {
-  type t = list (X.t);
+  type t = list(X.t);
 };
 
 module Maybe (X: Type) => {
-  type t = option (X.t);
+  type t = option(X.t);
 };
 
 module Id (X: Type) => X;
@@ -458,10 +457,10 @@ module Compose
          G: Type => Type,
          X: Type
        ) =>
-  F ((G (X)));
+  F((G(X)));
 
 let l: Compose(List)(Maybe)(Char).t = [
-  Some ('a')
+  Some('a')
 ];
 
 module Example2 (F: Type => Type, X: Type) => {
@@ -477,7 +476,7 @@ module Example2 (F: Type => Type, X: Type) => {
   let iso ((a: Compose(Id)(F)(X).t)) :F(X).t => a;
 };
 
-Printf.printf (
+Printf.printf(
   "\nModules And Functors: %n\n",
   CurriedNoSugarFunctorResultInline.result
 );
@@ -497,7 +496,7 @@ Printf.printf (
  };
  */
 include
-  YourLib.CreateComponent (
+  YourLib.CreateComponent(
     {
       type thing = blahblahblah;
       type state = unit;

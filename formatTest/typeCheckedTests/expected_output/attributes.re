@@ -37,25 +37,25 @@ type attributedIntsInTuple = (
   [@onFloat] float
 );
 
-type myDataType ('x, 'y) =
-  | MyDataType ('x, 'y);
+type myDataType('x, 'y) =
+  | MyDataType('x, 'y);
 
 type myType =
   [@onEntireType]
-  myDataType (
-    ([@onOptionInt] option (int)),
-    ([@onOption] option (float))
+  myDataType(
+    [@onOptionInt] option(int),
+    [@onOption] option(float)
   );
 
 let thisInst: myType =
   [@attOnEntireDatatype]
-  MyDataType ((Some (10)), (Some (10.0)));
+  MyDataType(Some(10), Some(10.0));
 
 let thisInst: myType =
   [@attOnEntireDatatype]
-  MyDataType (
-    ([@onFirstParam] Some (10)),
-    (Some (10.0))
+  MyDataType(
+    [@onFirstParam] Some(10),
+    Some(10.0)
   );
 
 let x = [@onHello] "hello";
@@ -139,43 +139,41 @@ let thisVal = 10;
 
 let x =
   20 + (
-    - [@onFunctionCall] add (thisVal, thisVal)
+    - [@onFunctionCall] add(thisVal, thisVal)
   );
 
 let x =
   [@onEverything]
-  (20 + (- add (thisVal, thisVal)));
+  (20 + (- add(thisVal, thisVal)));
 
 let x =
-  - [@onFunctionCall] add (thisVal, thisVal);
+  - [@onFunctionCall] add(thisVal, thisVal);
 
 let x =
-  [@onEverything] (- add (thisVal, thisVal));
+  [@onEverything] (- add(thisVal, thisVal));
 
 let bothTrue (x, y) => {contents: x && y};
 
 let something =
   [@onEverythingToRightOfEquals]
-  !(bothTrue (true, true));
+  !(bothTrue(true, true));
 
 let something =
   !(
-    [@onlyOnArgumentToBang] bothTrue (true, true)
+    [@onlyOnArgumentToBang] bothTrue(true, true)
   );
 
 let res =
   [@appliesToEntireFunctionApplication]
-  add
-  (2, 4);
+  add(2, 4);
 
-[@appliesToEntireFunctionApplication] add (2, 4);
+[@appliesToEntireFunctionApplication] add(2, 4);
 
 let myObj = {pub p (()) => {pub z (()) => 10}};
 
 let result =
   [@onSecondSend]
-  ([@attOnFirstSend] myObj#p (()))#z
-  (());
+  ([@attOnFirstSend] myObj#p(()))#z(());
 
 [@@onRecordFunctions]
 type recordFunctions = {
@@ -192,27 +190,25 @@ and unused = ();
 
 let result =
   [@onSecondSend]
-  ([@attOnFirstSend] myRecord.p (())).q
-  (());
+  ([@attOnFirstSend] myRecord.p(())).q(());
 
 [@@onVariantType]
 type variantType =
-  [@onInt] | Foo (int)
-  | Bar (([@onInt] int))
+  [@onInt] | Foo(int)
+  | Bar([@onInt] int)
   | Baz;
 
 [@@onVariantType]
-type gadtType ('x) =
-  | Foo (int) :[@onFirstRow] gadtType (int)
+type gadtType('x) =
+  | Foo(int) :[@onFirstRow] gadtType(int)
   | Bar
-      (([@onInt] int))
-      :[@onSecondRow] gadtType (unit)
-  | Baz
-      :[@onThirdRow] gadtType (([@onUnit] unit));
+      ([@onInt] int)
+      :[@onSecondRow] gadtType(unit)
+  | Baz:[@onThirdRow] gadtType([@onUnit] unit);
 
 [@@@floatingTopLevelStructureItem hello];
 
-print_string ("hello");
+print_string("hello");
 
 let firstBinding = "first"
 and secondBinding = "second";
@@ -320,33 +316,27 @@ module type HasAttrs = {
 };
 
 type s =
-  | S (string);
+  | S(string);
 
-let S (([@onStr] str)) =
-  S (([@onHello] "hello"));
+let S([@onStr] str) = S([@onHello] "hello");
 
-let [@onConstruction] S (str) =
-  [@onConstruction] S ("hello");
+let [@onConstruction] S(str) =
+  [@onConstruction] S("hello");
 
 type xy =
-  | X (string)
-  | Y (string);
+  | X(string)
+  | Y(string);
 
 let myFun
     (
       (
-        [@onConstruction] X (hello) |
-        [@onConstruction] Y (hello)
+        [@onConstruction] X(hello) |
+        [@onConstruction] Y(hello)
       )
     ) => hello;
 
 let myFun
-    (
-      (
-        X (([@onHello] hello)) |
-        Y (([@onHello] hello))
-      )
-    ) => hello;
+    ((X([@onHello] hello) | Y([@onHello] hello))) => hello;
 
 /* Another bug: Cannot have an attribute on or pattern
    let myFun = fun ((X(hello) | Y(hello)) [@onOrPattern]) => hello;
@@ -356,16 +346,16 @@ let myFun
   "Math.imul";
 
 module Js = {
-  type t ('a);
+  type t('a);
 };
 
 type classAttributesOnKeys = {
   .
   [@bs.set] key1 : string,
   /* The follow two are the same */
-  [@bs.get null] key2 : [@onType2] Js.t (int),
-  [@bs.get null] key3 : [@onType2] Js.t (int),
-  key4 : Js.t (([@justOnInt] int))
+  [@bs.get null] key2 : [@onType2] Js.t(int),
+  [@bs.get null] key3 : [@onType2] Js.t(int),
+  key4 : Js.t([@justOnInt] int)
 };
 
 type attr = ..;
@@ -375,15 +365,15 @@ type attr +=
   [@tag1] [@tag2] | Str
   [@tag3] | Float;
 
-type reconciler ('props) = ..;
+type reconciler('props) = ..;
 
 [@@onVariantType]
-type reconciler ('props) +=
-  | Foo (int) :[@onFirstRow] reconciler (int)
-  | Bar (([@onInt] int)) :[@onSecondRow]
-                          reconciler (unit)
+type reconciler('props) +=
+  | Foo (int) :[@onFirstRow] reconciler(int)
+  | Bar ([@onInt] int) :[@onSecondRow]
+                        reconciler(unit)
   | Baz :[@onThirdRow]
-         reconciler (([@onUnit] unit));
+         reconciler([@onUnit] unit);
 
 type element;
 
@@ -401,8 +391,8 @@ external render : reactElement => element => unit =
 [@@bs.val] [@@bs.module "react"] [@@bs.splice]
 external createCompositeElementInternalHack :
   reactClass =>
-  Js.t ({.. reasonProps : 'props}) =>
-  array (reactElement) =>
+  Js.t({.. reasonProps : 'props}) =>
+  array(reactElement) =>
   reactElement =
   "createElement";
 

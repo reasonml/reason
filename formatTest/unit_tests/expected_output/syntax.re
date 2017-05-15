@@ -1,15 +1,15 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 [@@@autoFormat let wrap = 80; let shift = 2];
 
-Modules.run (());
+Modules.run(());
 
-Polymorphism.run (());
+Polymorphism.run(());
 
-Variants.run (());
+Variants.run(());
 
-BasicStructures.run (());
+BasicStructures.run(());
 
-TestUtils.printSection ("General Syntax");
+TestUtils.printSection("General Syntax");
 
 /* Won't work! */
 /* let matchingFunc a = match a with */
@@ -18,12 +18,12 @@ TestUtils.printSection ("General Syntax");
 /*  */
 let matchingFunc (a) =>
   switch a {
-  | `Thingy (x) =>
-    print_string ("matched thingy x");
+  | `Thingy(x) =>
+    print_string("matched thingy x");
     let zz = 10;
     zz
-  | `Other (x) =>
-    print_string ("matched other x");
+  | `Other(x) =>
+    print_string("matched other x");
     x
   };
 
@@ -38,19 +38,19 @@ type firstTwoShouldBeGroupedAndFirstThree =
 
 /* Same thing now but with type constructors instead of each int */
 type firstTwoShouldBeGroupedInParens =
-  (list (int) => list (int)) =>
-  list (int) =>
-  list (int);
+  (list(int) => list(int)) =>
+  list(int) =>
+  list(int);
 
 type allParensCanBeRemoved =
-  list (int) =>
-  list (int) =>
-  list (int) =>
-  list (int);
+  list(int) =>
+  list(int) =>
+  list(int) =>
+  list(int);
 
 type firstTwoShouldBeGroupedAndFirstThree =
-  ((list (int) => list (int)) => list (int)) =>
-  list (int);
+  ((list(int) => list(int)) => list(int)) =>
+  list(int);
 
 type myRecordType = {
   firstTwoShouldBeGroupedInParens:
@@ -72,25 +72,25 @@ type firstTwoShouldBeGroupedAndFirstThree =
 
 /* Same thing now, but with type constructors instead of int */
 type firstNamedArgShouldBeGroupedInParens =
-  first::(list (int) => list (int)) =>
-  second::list (int) =>
-  list (int);
+  first::(list(int) => list(int)) =>
+  second::list(int) =>
+  list(int);
 
 type allParensCanBeRemoved =
-  first::list (int) =>
-  second::list (int) =>
-  third::list (int) =>
-  list (int);
+  first::list(int) =>
+  second::list(int) =>
+  third::list(int) =>
+  list(int);
 
 type firstTwoShouldBeGroupedAndFirstThree =
   first::(
-    (list (int) => list (int)) => list (int)
+    (list(int) => list(int)) => list(int)
   ) =>
-  list (int);
+  list(int);
 
 type firstNamedArgShouldBeGroupedInParens =
   first::(int => int)? =>
-  second::list (int)? =>
+  second::list(int)? =>
   int;
 
 /* The arrow necessitates parens around the next two args. The ? isn't what
@@ -122,20 +122,20 @@ type firstNamedArgNeedsParens =
 /* Unless wrapped in parens, types between arrows may not be aliased, may not
  * themselves be arrows. */
 type parensRequiredAroundFirstArg =
-  (list (int) as 'a) => int as 'a;
+  (list(int) as 'a) => int as 'a;
 
 type parensRequiredAroundReturnType =
-  (list (int) as 'a) => (int as 'a);
+  (list(int) as 'a) => (int as 'a);
 
 type parensRequiredAroundReturnType =
-  (list (int) as 'a) => (int as 'a) as 'b;
+  (list(int) as 'a) => (int as 'a) as 'b;
 
 type noParensNeededWhenInTuple =
-  (list (int) as 'a, list (int) as 'b) as 'entireThing;
+  (list(int) as 'a, list(int) as 'b) as 'entireThing;
 
-type myTypeDef ('a) = list ('a);
+type myTypeDef('a) = list('a);
 
-type instatiatedTypeDef = myTypeDef (int) => int;
+type instatiatedTypeDef = myTypeDef(int) => int;
 
 /* Test a type attribute for good measure */
 /* We should clean up all of the attribute tagging eventually, but for now,
@@ -149,19 +149,19 @@ type something = (
 );
 
 type longWrappingTypeDefinitionExample =
-  M_RK__G.Types.instance (
-    TGRecognizer.tGFields (unit, unit),
-    TGRecognizer.tGMethods (unit, unit)
+  M_RK__G.Types.instance(
+    TGRecognizer.tGFields(unit, unit),
+    TGRecognizer.tGMethods(unit, unit)
   );
 
 type semiLongWrappingTypeDefinitionExample =
-  M_RK__Gesture.Types.instance (
+  M_RK__Gesture.Types.instance(
     TGRecognizerFinal.tGFields,
     TGRecognizerFinal.tGMethods
   );
 
 type semiLongWrappingTypeWithConstraint =
-  M_RK__Gesture.Types.instance (
+  M_RK__Gesture.Types.instance(
     'a,
     TGRecognizerFinal.tGFields,
     TGRecognizerFinal.tGMethods
@@ -173,9 +173,9 @@ type onelineConstrain = 'a constraint 'a = int;
 /* This must be in trunk but not in this branch of OCaml */
 /* type withNestedRecords = MyConstructor {myField: int} */
 type colors =
-  | Red (int)
-  | Black (int)
-  | Green (int);
+  | Red(int)
+  | Black(int)
+  | Green(int);
 
 /* Another approach is to require declared variants to wrap any record */
 /* type myRecord = MyRecord {name: int}; */
@@ -191,13 +191,13 @@ let myRecordName = myRecord.nameBlah;
 
 let {nameBlah}: nameBlahType = {nameBlah: 20};
 
-print_int (nameBlah);
+print_int(nameBlah);
 
 let {nameBlah: aliasedToThisVar}: nameBlahType = {
   nameBlah: 20
 };
 
-print_int (aliasedToThisVar);
+print_int(aliasedToThisVar);
 
 let desiredFormattingForWrappedLambda:
   int => int => int => nameBlahType =
@@ -277,8 +277,8 @@ let point3D: point3D = {
 };
 
 let printPoint ((p: point)) => {
-  print_int (p.x);
-  print_int (p.y)
+  print_int(p.x);
+  print_int(p.y)
 };
 
 let addPoints ((p1: point), (p2: point)) => {
@@ -286,10 +286,10 @@ let addPoints ((p1: point), (p2: point)) => {
   y: p1.y + p2.y
 };
 
-let res1 = printPoint (point2D);
+let res1 = printPoint(point2D);
 
 let res2 =
-  printPoint ({x: point3D.x, y: point3D.y});
+  printPoint({x: point3D.x, y: point3D.y});
 
 /*
     When () were used to indicate sequences, the parser used seq_expr not only
@@ -314,12 +314,10 @@ let res2 =
         let x = {a;};   /* Single item sequence returning identifier {a} */
  */
 let res3 =
-  printPoint (
-    (
-      addPoints (
-        point2D,
-        {x: point3D.x, y: point3D.y}
-      )
+  printPoint(
+    addPoints(
+      point2D,
+      {x: point3D.x, y: point3D.y}
     )
   );
 
@@ -376,19 +374,19 @@ module TryToExportTwice = {
  */
 let onlyDoingThisTopLevelLetToBypassTopLevelSequence = {
   let x = {
-    print_int (1);
-    print_int (20) /* Missing trailing SEMI */
+    print_int(1);
+    print_int(20) /* Missing trailing SEMI */
   };
   let x = {
-    print_int (1);
-    print_int (
+    print_int(1);
+    print_int(
       20
     ); /* Ensure missing middle SEMI reported well */
-    print_int (20)
+    print_int(20)
   };
   let x = {
-    print_int (1);
-    print_int (20);
+    print_int(1);
+    print_int(20);
     10
     /* Comment in final position */
   }; /* Missing final SEMI */
@@ -406,35 +404,35 @@ let thisReturnsA (()) => a;
 
 let thisReturnsAAsWell (()) => a;
 
-let recordVal: int = (thisReturnsARecord (())).a;
+let recordVal: int = (thisReturnsARecord(())).a;
 
-Printf.printf (
+Printf.printf(
   "\nproof that thisReturnsARecord: %n\n",
   recordVal
 );
 
-Printf.printf (
+Printf.printf(
   "\nproof that thisReturnsA: %n\n",
-  (thisReturnsA (()))
+  thisReturnsA(())
 );
 
 /* Pattern matching */
 let blah (arg) =>
   switch arg {
   /* Comment before Bar */
-  | /* Comment between bar/pattern */ Red (_) => 1
+  | /* Comment between bar/pattern */ Red(_) => 1
   /* Comment Before non-first bar */
-  | /* Comment betwen bar/pattern */ Black (_) => 0
-  | Green (_) => 0
+  | /* Comment betwen bar/pattern */ Black(_) => 0
+  | Green(_) => 0
   };
 
 /* Any function that pattern matches a multicase match is interpretted as a
  * single arg that is then matched on. Instead of the above `blah` example:*/
 let blah =
   fun
-  | Red (_) => 1
-  | Black (_) => 0
-  | Green (_) => 1;
+  | Red(_) => 1
+  | Black(_) => 0
+  | Green(_) => 1;
 
 /* `fun a => a` is read as "a function that maps a to a". Then the */
 /* above example is read: "a function that 'either maps' Red to.. or maps .." */
@@ -450,69 +448,69 @@ let blah =
 /*  */
 let blahCurriedX (x) =>
   fun
-  | Red (x)
-  | Black (x)
-  | Green (x) =>
+  | Red(x)
+  | Black(x)
+  | Green(x) =>
     1 /* With some effort, we can ammend the sugar rule that would */
-  | Black (x) => 0 /* Allow us to drop any => fun.. Just need to make pattern matching */
-  | Green (x) => 0; /* Support that */
+  | Black(x) => 0 /* Allow us to drop any => fun.. Just need to make pattern matching */
+  | Green(x) => 0; /* Support that */
 
 let sameThingInLocal = {
   let blahCurriedX (x) =>
     fun
-    | Red (x)
-    | Black (x)
-    | Green (x) =>
+    | Red(x)
+    | Black(x)
+    | Green(x) =>
       1 /* With some effort, we can ammend the sugar rule that would */
-    | Black (x) => 0 /* Allow us to drop any => fun.. Just need to make pattern matching */
-    | Green (x) => 0; /* Support that */
+    | Black(x) => 0 /* Allow us to drop any => fun.. Just need to make pattern matching */
+    | Green(x) => 0; /* Support that */
   blahCurriedX
 };
 
 /* This should be parsed/printed exactly as the previous */
 let blahCurriedX (x) =>
   fun
-  | Red (x)
-  | Black (x)
-  | Green (x) => 1
-  | Black (x) => 0
-  | Green (x) => 0;
+  | Red(x)
+  | Black(x)
+  | Green(x) => 1
+  | Black(x) => 0
+  | Green(x) => 0;
 
 /* Any time there are multiple match cases we require a leading BAR */
-let v = Red (10);
+let v = Red(10);
 
-let Black (x) | Red (x) | Green (x) = v; /* So this NON-function still parses */
+let Black(x) | Red(x) | Green(x) = v; /* So this NON-function still parses */
 
 /* This doesn't parse, however (and it doesn't in OCaml either):
      let | Black(x) | Red(x) | Green(x) = v;
    */
-print_int (x);
+print_int(x);
 
 /* Scoping: Let sequences. Familiar syntax for lexical ML style scope and
    sequences. */
 let res = {
   let a = "a starts out as";
   {
-    print_string (a);
+    print_string(a);
     let a = 20;
-    print_int (a)
+    print_int(a)
   };
-  print_string (a)
+  print_string(a)
 };
 
 let res = {
   let a = "first its a string";
   let a = 20;
-  print_int (a);
-  print_int (a);
-  print_int (a)
+  print_int(a);
+  print_int(a);
+  print_int(a)
 };
 
 let res = {
   let a = "a is always a string";
-  print_string (a);
+  print_string(a);
   let b = 30;
-  print_int (b)
+  print_int(b)
 };
 
 /* let result = LyList.map((fun | [] => true | _ => false), []); */
@@ -527,57 +525,57 @@ let blah (a, {blahBlah}) => a;
 /*     pattern EQUALGREATER  expr */
 let blah =
   fun
-  | Red (_) => 1
-  | Black (_) => 0
-  | Green (_) => 0;
+  | Red(_) => 1
+  | Black(_) => 0
+  | Green(_) => 0;
 
 /* Won't work! */
 /* let arrowFunc = fun a b => print_string "returning aplusb from arrow"; a + b;;  */
 let arrowFunc (a, b) => {
-  print_string ("returning aplusb from arrow");
+  print_string("returning aplusb from arrow");
   a + b
 };
 
 let add (a, b) => {
   let extra = {
-    print_string ("adding");
+    print_string("adding");
     0
   };
   let anotherExtra = 0;
   extra + a + b + anotherExtra
 };
 
-print_string ((string_of_int ((add (4, 34)))));
+print_string(string_of_int(add(4, 34)));
 
 let dummy (_) => 10;
 
-dummy (res1);
+dummy(res1);
 
-dummy (res2);
+dummy(res2);
 
-dummy (res3);
+dummy(res3);
 
 /* Some edge cases */
 let myFun
-    (firstArg, (Red (x) | Black (x) | Green (x))) =>
+    (firstArg, (Red(x) | Black(x) | Green(x))) =>
   firstArg + x;
 
 let matchesWithWhen (a) =>
   switch a {
-  | Red (x) when 1 > 0 => 10
-  | Red (_) => 10
-  | Black (x) => 10
-  | Green (x) => 10
+  | Red(x) when 1 > 0 => 10
+  | Red(_) => 10
+  | Black(x) => 10
+  | Green(x) => 10
   };
 
 let matchesWithWhen =
   fun
-  | Red (x) when 1 > 0 => 10
-  | Red (_) => 10
-  | Black (x) => 10
-  | Green (x) => 10;
+  | Red(x) when 1 > 0 => 10
+  | Red(_) => 10
+  | Black(x) => 10
+  | Green(x) => 10;
 
-let matchesOne ((`Red (x))) => 10;
+let matchesOne ((`Red(x))) => 10;
 
 /*
  Typical OCaml would make you *wrap the functions in parens*! This is because it
@@ -598,14 +596,14 @@ let myRecordWithFunctions = {
 };
 
 let result =
-  myRecordWithFunctions.addThreeNumbers (
+  myRecordWithFunctions.addThreeNumbers(
     10,
     20,
     30
   );
 
 let result =
-  myRecordWithFunctions.addThreeNumbersTupled (
+  myRecordWithFunctions.addThreeNumbersTupled(
     (10, 20, 30)
   );
 
@@ -613,7 +611,7 @@ let lookTuplesRequireParens = (1, 2);
 
 /* let thisDoesntParse = 1, 2;  */
 let tupleInsideAParenSequence = {
-  print_string (
+  print_string(
     "look, a tuple inside a sequence"
   );
   let x = 10;
@@ -621,7 +619,7 @@ let tupleInsideAParenSequence = {
 };
 
 let tupleInsideALetSequence = {
-  print_string (
+  print_string(
     "look, a tuple inside a sequence"
   );
   let x = 10;
@@ -655,7 +653,7 @@ let myFunc ((a: int), (b: int)) :(int, int) => (
   b
 );
 
-let myFunc ((a: int), (b: int)) :list (int) => [
+let myFunc ((a: int), (b: int)) :list(int) => [
   1
 ];
 
@@ -676,13 +674,13 @@ type stillARecord = {name: string, age: int};
 /* Rebase latest OCaml to get the following: And fixup
    `generalized_constructor_arguments` according to master. */
 /* type ('a, 'b) myOtherThing = Leaf {first:'a, second: 'b} | Null; */
-type branch ('a, 'b) = {first: 'a, second: 'b};
+type branch('a, 'b) = {first: 'a, second: 'b};
 
-type myOtherThing ('a, 'b) =
-  | Leaf (branch ('a, 'b))
+type myOtherThing('a, 'b) =
+  | Leaf(branch('a, 'b))
   | Null;
 
-type yourThing = myOtherThing (int, int);
+type yourThing = myOtherThing(int, int);
 
 /* Conveniently - this parses exactly how you would intend! No *need* to wrap
    in an extra [], but it doesn't hurt */
@@ -802,42 +800,41 @@ let defOptionalAliasAnnot
     (a::(aa: int)=10, b::(bb: int)=10, ()) => 10;
 
 /*M: Invoking them - Punned */
-let resNotAnnotated = named (::a, ::b);
+let resNotAnnotated = named(::a, ::b);
 
 /*N:*/
-let resAnnotated: int = named (::a, ::b);
+let resAnnotated: int = named(::a, ::b);
 
 /*O: Invoking them */
-let resNotAnnotated = named (::a, ::b);
+let resNotAnnotated = named(::a, ::b);
 
 /*P: Invoking them */
-let resAnnotated: int = named (::a, ::b);
+let resAnnotated: int = named(::a, ::b);
 
 /*Q: Here's why "punning" doesn't work!  */
 /* Is b:: punned with a final non-named arg, or is b:: supplied b as one named arg? */
 let b = 20;
 
-let resAnnotated = named (::a, ::b);
+let resAnnotated = named(::a, ::b);
 
 /*R: Proof that there are no ambiguities with return values being annotated */
-let resAnnotated: ty = named (::a, b);
+let resAnnotated: ty = named(::a, b);
 
 /*S: Explicitly passed optionals are a nice way to say "use the default value"*/
 let explictlyPassed =
-  myOptional (a::?None, b::?None);
+  myOptional(a::?None, b::?None);
 
 /*T: Annotating the return value of the entire function call */
 let explictlyPassedAnnotated: int =
-  myOptional (a::?None, b::?None);
+  myOptional(a::?None, b::?None);
 
 /*U: Explicitly passing optional with identifier expression */
 let a = None;
 
-let explictlyPassed =
-  myOptional (::?a, b::?None);
+let explictlyPassed = myOptional(::?a, b::?None);
 
 let explictlyPassedAnnotated: int =
-  myOptional (::?a, b::?None);
+  myOptional(::?a, b::?None);
 
 let nestedLet = {
   let _ = 1;
@@ -876,7 +873,7 @@ type typeWithNestedOptionalNamedArgs =
   int;
 
 type typeWithNestedOptionalNamedArgs =
-  outerOne::list (string)? =>
+  outerOne::list(string)? =>
   outerTwo::int? =>
   int;
 
@@ -885,7 +882,7 @@ let f
   ();
 
 let x =
-  callSomeFunction (
+  callSomeFunction(
     withArg::10,
     andOtherArg::wrappedArg
   );
@@ -930,7 +927,7 @@ let newRecord = {
 
 let newRecord = {
   ...(
-    youCanEvenCallMethodsHereAndAnnotate (them): someRec
+    youCanEvenCallMethodsHereAndAnnotate(them): someRec
   ),
   blah: 0,
   foo: 1
@@ -938,7 +935,7 @@ let newRecord = {
 
 let newRecord = {
   ...(
-    youCanEvenCallMethodsHereAndAnnotate (
+    youCanEvenCallMethodsHereAndAnnotate(
       them,
       named::10
     ): someRec
@@ -947,19 +944,19 @@ let newRecord = {
   foo: 1
 };
 
-let something: thing (blah) = aTypeAnnotation;
+let something: thing(blah) = aTypeAnnotation;
 
-let something: thing (blah) = thisIsANamedArg;
+let something: thing(blah) = thisIsANamedArg;
 
-let something: thing (blah) = aTypeAnnotation;
+let something: thing(blah) = aTypeAnnotation;
 
-let something: blah = thisIsANamedArg (thing);
+let something: blah = thisIsANamedArg(thing);
 
-let something: blah = typeAnnotation (thing);
+let something: blah = typeAnnotation(thing);
 
 let newRecord = {
   ...(
-    heresAFunctionWithNamedArgs (argOne::i): annotatedResult
+    heresAFunctionWithNamedArgs(argOne::i): annotatedResult
   ),
   soAsToInstill: 0,
   developmentHabbits: 1
@@ -979,7 +976,7 @@ let something =
       | [] => "emptyList"
       | [_, ..._] => "nonEmptyList"
     )
-  | Some (_) => (
+  | Some(_) => (
       fun
       | [] => "emptyList"
       | [_, ..._] => "nonEmptyList"

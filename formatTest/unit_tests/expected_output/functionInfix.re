@@ -1,23 +1,23 @@
-let entries = ref ([]);
+let entries = ref([]);
 
-let all = ref (0);
+let all = ref(0);
 
 /*
  * >>= is left associative, and higher precedence than =>
  */
-let (>>=) (a, b) => b (a);
+let (>>=) (a, b) => b(a);
 
 let fff = ();
 
 
 /** Parse tree */
-fff >>= (xx (yy) >>= aa (bb));
+fff >>= (xx(yy) >>= aa(bb));
 
 /* Minimum parenthesis */
-fff >>= xx (yy) >>= aa (bb);
+fff >>= xx(yy) >>= aa(bb);
 
 /* Actually printed parenthesis */
-fff >>= (xx (yy) >>= aa (bb));
+fff >>= (xx(yy) >>= aa(bb));
 
 
 /** Parse tree */

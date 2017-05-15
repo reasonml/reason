@@ -55,7 +55,7 @@
  **
  */
 module JustString = {
-  include Map.Make (Int32); /* Comment eol include */
+  include Map.Make(Int32); /* Comment eol include */
 };
 
 let testingEndOfLineComments = [
@@ -127,7 +127,7 @@ type pointWithManyKindsOfComments = {
   /* Final row of record */
 };
 
-type typeParamPointWithComments ('a) = {
+type typeParamPointWithComments('a) = {
   /* Line before x */
   x: 'a, /* x field */
   /* Line before y */
@@ -170,46 +170,46 @@ type t3 = (
 ); /* End of line on (int, int) */
 
 type variant =
-  | X (int, int) /* End of line on X */
-  | Y (int, int) /* End of line on Y */; /* Comment on entire type def for variant */
+  | X(int, int) /* End of line on X */
+  | Y(int, int) /* End of line on Y */; /* Comment on entire type def for variant */
 
 /* Before let */
 let res =
   /* Before switch */
-  switch (X (2, 3)) {
+  switch (X(2, 3)) {
   /* Above X line */
-  | X (_) => "result of X" /* End of arrow and X line */
+  | X(_) => "result of X" /* End of arrow and X line */
   /* Above Y line */
-  | Y (_) => "result of Y" /* End of arrow and Y line */
+  | Y(_) => "result of Y" /* End of arrow and Y line */
   }; /* After final semi in switch */
 
 let res =
-  switch (X (2, 3)) {
-  | X (0, 0) =>
+  switch (X(2, 3)) {
+  | X(0, 0) =>
     /* After X arrow */
     "result of X" /* End of X body line */
-  | X (1, 0) /* Before X's arrow */ =>
+  | X(1, 0) /* Before X's arrow */ =>
     "result of X" /* End of X body line */
-  | X (_) =>
+  | X(_) =>
     /* After X _ arrow */
     "result of X" /* End of X body line */
   /* Above Y line */
-  | Y (_) =>
+  | Y(_) =>
     /* Comment above Y body */
     "result of Y"
   };
 
 type variant2 =
   /* Comment above X */
-  | X (int, int) /* End of line on X */
+  | X(int, int) /* End of line on X */
   /* Comment above Y */
-  | Y (int, int);
+  | Y(int, int);
 
 type variant3 =
   /* Comment above X */
-  | X (int, int) /* End of line on X */
+  | X(int, int) /* End of line on X */
   /* Comment above Y */
-  | Y (int, int) /* End of line on Y  */;
+  | Y(int, int) /* End of line on Y  */;
 
 type x = {
   /* not attached *above* x */
@@ -233,11 +233,11 @@ and y2 = {
 
 let result =
   switch None {
-  | Some ({fieldOne: 20, fieldA: a}) =>
+  | Some({fieldOne: 20, fieldA: a}) =>
     /* Where does this comment go? */
     let tmp = 0;
     2 + tmp
-  | Some ({fieldOne: n, fieldA: a}) =>
+  | Some({fieldOne: n, fieldA: a}) =>
     /* How about this one */
     let tmp = n;
     n + tmp
@@ -246,11 +246,11 @@ let result =
 
 let res =
   /* Before switch */
-  switch (X (2, 3)) {
+  switch (X(2, 3)) {
   /* Above X line */
-  | X (_) => "result of X" /* End of arrow and X line */
+  | X(_) => "result of X" /* End of arrow and X line */
   /* Above Y line */
-  | Y (_) => "result of Y" /* End of arrow and Y line */
+  | Y(_) => "result of Y" /* End of arrow and Y line */
   };
 
 /*
@@ -258,7 +258,7 @@ let res =
  */
 let result =
   switch None {
-  | Some (
+  | Some(
       {
         fieldOne: 20, /* end of line */
         fieldA:
@@ -267,7 +267,7 @@ let result =
     ) =>
     let tmp = 0;
     2 + tmp
-  | Some (
+  | Some(
       {
         fieldOne: n, /* end of line */
         fieldA:
@@ -288,20 +288,20 @@ let result =
 let res =
   switch (
     /* Retain this */
-    X (2, 3)
+    X(2, 3)
   ) {
   /* Above X line */
-  | X (
+  | X(
       _, /* retain this */
       _ /* retain this */
     ) => "result of X"
   /* Above Y line */
-  | Y (_) => "result of Y" /* End of arrow and Y line */
+  | Y(_) => "result of Y" /* End of arrow and Y line */
   };
 
 type optionalTuple =
-  | OptTup (
-      option (
+  | OptTup(
+      option(
         (
           int, /* First int */
           int /* Second int */
@@ -310,7 +310,7 @@ type optionalTuple =
     );
 
 type optionTuple =
-  option (
+  option(
     (
       int, /* First int */
       int /* Second int */
@@ -351,19 +351,19 @@ if true {
 };
 
 type color =
-  | Red (int) /* After red end of line */
-  | Black (int) /* After black end of line */
-  | Green (int) /* After green end of line */; /* On next line after color type def */
+  | Red(int) /* After red end of line */
+  | Black(int) /* After black end of line */
+  | Green(int) /* After green end of line */; /* On next line after color type def */
 
 let blahCurriedX (x) =>
   fun
-  | Red (10)
-  | Black (20)
-  | Green (10) =>
+  | Red(10)
+  | Black(20)
+  | Green(10) =>
     1 /* After or pattern green */
-  | Red (x) => 0 /* After red */
-  | Black (x) => 0 /* After black */
-  | Green (x) => 0 /* After second green */; /* On next line after blahCurriedX def */
+  | Red(x) => 0 /* After red */
+  | Black(x) => 0 /* After black */
+  | Green(x) => 0 /* After second green */; /* On next line after blahCurriedX def */
 
 let name_equal (x, y) => x == y;
 
@@ -372,16 +372,16 @@ let equal (i1, i2) =>
   true; /* most unlikely first */
 
 let equal (i1, i2) =>
-  compare (
-    (compare (0, 0)),
-    (compare (1, 1))
+  compare(
+    compare(0, 0),
+    compare(1, 1)
   ); /* END OF LINE HERE */
 
 let tuple_equal ((i1, i2)) => i1 == i2;
 
 let tuple_equal ((csu, mgd)) =>
   /* Some really long comments, see https://github.com/facebook/reason/issues/811 */
-  tuple_equal ((csu, mgd));
+  tuple_equal((csu, mgd));
 
 
 /** Comments inside empty function bodies

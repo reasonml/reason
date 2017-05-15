@@ -1,35 +1,35 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 let run (()) =>
-  TestUtils.printSection ("Basic Structures");
+  TestUtils.printSection("Basic Structures");
 
 while something {
-  print_string ("You're in a while loop");
-  print_newline (())
+  print_string("You're in a while loop");
+  print_newline(())
 };
 
 for i in 0 to 5 {
-  print_int (i);
-  print_newline (());
+  print_int(i);
+  print_newline(());
   for i in 10 downto 0 {
-    print_string (
+    print_string(
       "Counting in reverse direction"
     );
-    print_newline (())
+    print_newline(())
   }
 };
 
 for i in
     0 to
-    (endOfRangeMustBeSimple (expr, soWrap)) {
-  print_int (i);
-  print_newline (());
+    (endOfRangeMustBeSimple(expr, soWrap)) {
+  print_int(i);
+  print_newline(());
   for i in
-      (theSame (isTrue, ofThe, startOfRange)) downto
+      (theSame(isTrue, ofThe, startOfRange)) downto
       0 {
-    print_string (
+    print_string(
       "Counting in reverse direction"
     );
-    print_newline (())
+    print_newline(())
   }
 };
 
@@ -118,22 +118,22 @@ let x = (!arr).(0) = 1;
  */
 let something =
   if self.ext.logSuccess {
-    print_string ("Did tap");
-    print_newline (())
+    print_string("Did tap");
+    print_newline(())
   };
 
 let logTapSuccess (self) =>
   if self.ext.logSuccess {
-    print_string ("Did tap");
-    print_newline (())
+    print_string("Did tap");
+    print_newline(())
   } else {
     ()
   };
 
 let logTapSuccess (self) =>
   if self.ext.logSuccess {
-    print_string ("Did tap");
-    print_newline (())
+    print_string("Did tap");
+    print_newline(())
   };
 
 (!data).field = true;
@@ -148,11 +148,11 @@ let logTapSuccess (self) =>
 
 let loop (appTime, frameTime) => {
   if hasSetup.contents {
-    setupScene (());
-    renderIntoTop (());
+    setupScene(());
+    renderIntoTop(());
     hasSetup.contents = true
   };
-  process (appTime, frameTime)
+  process(appTime, frameTime)
 };
 
 /* These parens should be kept around the entire last if/then/else */
@@ -169,27 +169,27 @@ if something {
  * To test that it's being parsed correclty, should print "one". */
 if true {
   if true {
-    print_string ("one")
+    print_string("one")
   } else {
-    print_string ("two")
+    print_string("two")
   }
 };
 
 /* Should print two */
 if true {
   if false {
-    print_string ("one")
+    print_string("one")
   } else {
-    print_string ("two")
+    print_string("two")
   }
 };
 
 /* Should not print */
 if false {
   if true {
-    print_string ("one")
+    print_string("one")
   } else {
-    print_string ("two")
+    print_string("two")
   }
 };
 
@@ -202,22 +202,22 @@ let result =
   if printIfFirstArgGreater {
     (a, b) =>
       if (a > b) {
-        print_string ("a > b")
+        print_string("a > b")
       } else {
-        print_string ("b >= a")
+        print_string("b >= a")
       }
   } else if (
     (a, b) =>
       if (a > b) {
-        print_string ("b < a")
+        print_string("b < a")
       } else {
-        print_string ("a <= b")
+        print_string("a <= b")
       }
   ) {
-    print_string (
+    print_string(
       "That could never possibly type check"
     );
-    print_newline (())
+    print_newline(())
   };
 
 let myRecord = {
@@ -225,7 +225,7 @@ let myRecord = {
     anotherNestedRecord:
       fun (instaComp, displayRect) =>
       if (
-        Graphics.cgRectIntersectsWithSlop (
+        Graphics.cgRectIntersectsWithSlop(
           defaultCompositeTimerRectSlop,
           instaComp.relativeRect,
           displayRect
@@ -241,12 +241,12 @@ let myRecord = {
 if printIfFirstArgGreater {
   (a, b) =>
     if (a > b) {
-      print_string ("a > b")
+      print_string("a > b")
     }
 } else {
   (a, b) =>
     if (a > b) {
-      print_string ("b < a")
+      print_string("b < a")
     }
 };
 
@@ -254,48 +254,48 @@ if printIfFirstArgGreater {
 if printIfFirstArgGreater {
   (a, b) =>
     if (a > b) {
-      print_string ("a > b")
+      print_string("a > b")
     } else {
       (a, b) =>
         if (a > b) {
-          print_string ("b < a")
+          print_string("b < a")
         }
     }
 };
 
 (a, b) =>
   if (a > b) {
-    print_string ("a > b")
+    print_string("a > b")
   };
 
 /* What you probably wanted was: */
 if printIfFirstArgGreater {
   (a, b) =>
     if (a > b) {
-      print_string ("a > b")
+      print_string("a > b")
     }
 } else {
   (a, b) =>
     if (a > b) {
-      print_string ("b < a")
+      print_string("b < a")
     }
 };
 
 /* Mutative if statement: Not used to evaluate to something. */
 if (10 < 100) {
   let msg = "If there was any doubt, 10 is in fact less than 100.";
-  print_string (msg)
+  print_string(msg)
 } else {
   let msg = "All bets are off.";
-  print_string (msg)
+  print_string(msg)
 };
 
 if (10 < 100) {
-  print_string (
+  print_string(
     "If there was any doubt, 10 is in fact less than 100."
   )
 } else {
-  print_string ("All bets are off.")
+  print_string("All bets are off.")
 };
 
 
@@ -330,13 +330,13 @@ let (tupleItem: int, withTypeConstraint: int) = (
 let _dummyFunc (x) => 10;
 
 let annotatingFuncApplication = (
-  _dummyFunc ("a"): int,
-  _dummyFunc ("a"): int
+  _dummyFunc("a"): int,
+  _dummyFunc("a"): int
 );
 
 /* Pretty printer might stick the [int] at the label. */
 let annotatingSingleFuncApplication: int =
-  _dummyFunc ("a");
+  _dummyFunc("a");
 
 /* So lets try a place where it won't */
 let annotatingSingleFuncApplication = {
@@ -348,7 +348,7 @@ let annotatingSingleFuncApplication = {
    * This demonstrates why named arguments cannot simply have the form (func
    * arg:val) - it is indistinguishable from a type constraint.
    */
-  2 + (_dummyFunc (a): int)
+  2 + (_dummyFunc(a): int)
 };
 
 let (
@@ -377,17 +377,17 @@ let moreTrailing = (1, 2, 3, 4, 5, 7);
  * ============================================================================
  */
 /* Anatomy:        -Head-      --------- Tail---------  nil: You can't see nil */
-let x: list (int) = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+let x: list(int) = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 let hd = "appendedToHead";
 
 let tl = ["listTo", "append", "to"];
 
 /* To push *one* and only *one* item to the front of a list - use [hd, ...tl] */
-let result: list (string) = [hd, ...tl];
+let result: list(string) = [hd, ...tl];
 
 /* Is the same as writing */
-let result: list (string) = [
+let result: list(string) = [
   "appendedToHead",
   "listTo",
   "append",
@@ -398,13 +398,13 @@ let result: list (string) = [
 let rec size =
   fun
   | [] => 0
-  | [hd, ...tl] => 1 + size (tl);
+  | [hd, ...tl] => 1 + size(tl);
 
 /* Optimize for tail recursion */
 let rec size (soFar, lst) =>
   switch lst {
   | [] => 0
-  | [hd, ...tl] => size ((soFar + 1), tl)
+  | [hd, ...tl] => size(soFar + 1, tl)
   };
 
 let nestedMatch (lstLst) =>
@@ -435,31 +435,31 @@ let nestedMatchWithWhen (lstLst) =>
  * Aliasing with "as" during matches.
  */
 type mine =
-  | MyThing (int)
-  | YourThing (int);
+  | MyThing(int)
+  | YourThing(int);
 
 /*
  * Reason parses "as" aliases differently than OCaml.
  */
 let ppp =
-  switch (MyThing (20)) {
-  | MyThing (x) as ppp
-  | YourThing (x) as ppp => ppp
+  switch (MyThing(20)) {
+  | MyThing(x) as ppp
+  | YourThing(x) as ppp => ppp
   };
 
-let MyThing (_) as ppp | YourThing (_) as ppp = ppp;
+let MyThing(_) as ppp | YourThing(_) as ppp = ppp;
 
 /*
  * in order to achieve the previous example in ocaml, you would have to group
  * as:
  */
 let ppp =
-  switch (MyThing (20)) {
-  | MyThing (x) as ppp
-  | YourThing (x) as ppp => ppp
+  switch (MyThing(20)) {
+  | MyThing(x) as ppp
+  | YourThing(x) as ppp => ppp
   };
 
-let MyThing (_) as ppp | YourThing (_) as ppp = ppp;
+let MyThing(_) as ppp | YourThing(_) as ppp = ppp;
 
 /*
  * But this isn't needed in Reason because OR patterns have much lower
@@ -540,7 +540,7 @@ let functionReturnValueType
   (x) => x + 1;
 
 let curriedFormOne ((i: int), (s: string)) =>
-  s ^ string_of_int (i);
+  s ^ string_of_int(i);
 
 let curriedFormTwo
     ((i: int), (x: int))
@@ -572,7 +572,7 @@ let myFunc: myFuncType = (a, b) => a + b;
 let funcWithTypeLocallyAbstractTypes
     (type atype btype)
     (a, b, (c: atype => btype => unit)) =>
-  c (a, b);
+  c(a, b);
 
 
 /**
@@ -605,14 +605,14 @@ let makeRecordBase (()) => {
 
 let anotherRecord = {
   /* These parens should be evaporated. */
-  ...makeRecordBase (()),
+  ...makeRecordBase(()),
   name: "joe++",
   age: testRecord.age + 10
 };
 
 let anotherRecord = {
   /* Comments should be correctly placed before ... expression */
-  ...makeRecordBase (()),
+  ...makeRecordBase(()),
   /* Comment after record extension */
   name: "joe++",
   age: testRecord.age + 10
@@ -620,7 +620,7 @@ let anotherRecord = {
 
 let anotherRecord = {
   /* Currently, type annotations must be wrapped in parens - that's easy to improve */
-  ...(makeRecordBase (()): withThreeFields),
+  ...(makeRecordBase(()): withThreeFields),
   name: "joe++",
   age: testRecord.age + 10
 };
@@ -634,7 +634,7 @@ let anotherRecord = {
 
 let anotherRecord = {
   ...
-    SomeReally.longFunctionCall (
+    SomeReally.longFunctionCall(
       {
         passingRecordField: 0,
         andThisOtherRecordField: 10
@@ -646,9 +646,9 @@ let anotherRecord = {
 
 let anotherRecord = {
   ...
-    SomeReally.longFunctionCall (
+    SomeReally.longFunctionCall(
       withArguments,
-      (thatWrap: bool)
+      thatWrap: bool
     ),
   name: "joe++",
   age: testRecord.age + 10
@@ -656,7 +656,7 @@ let anotherRecord = {
 
 let anotherRecord = {
   ...
-    SomeReally.longFunctionCall (
+    SomeReally.longFunctionCall(
       withArg,
       [
         "and",
@@ -689,9 +689,9 @@ type mutabeleComponent2 = {
 };
 
 /* Don't pun parameterized types */
-type description ('props) = {
+type description('props) = {
   element: string,
-  tag: tag ('props)
+  tag: tag('props)
 };
 
 /* Don't pun types from other modules */
@@ -701,4 +701,4 @@ module Foo = {
 
 /* Requested in #566 */
 let break_after_equal =
-  no_break_from_here ((some_call (to_here)));
+  no_break_from_here(some_call(to_here));

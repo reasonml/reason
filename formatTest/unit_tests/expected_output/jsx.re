@@ -10,37 +10,33 @@ let x =
       "justifyContent": CssJustifySpaceBetween,
       "flexDirection": CssFlexDirectionRow
     }
-    onKey=(updater (handleInput))
+    onKey=(updater(handleInput))
   />;
 
 let y =
   <Routes
-    path=(Routes.stateToPath (state))
+    path=(Routes.stateToPath(state))
     isHistorical=true
     onHashChange=(
       (_oldPath, _oldUrl, newUrl) =>
-        updater (
-          (
-            (latestComponentBag, _) => {
-              let currentActualPath =
-                Routes.hashOfUri (newUrl);
-              let pathFromState =
-                Routes.stateToPath (
-                  latestComponentBag.state
-                );
-              currentActualPath == pathFromState ?
-                None :
-                dispatchEventless (
-                  (
-                    State.UriNavigated (
-                      currentActualPath
-                    )
-                  ),
-                  latestComponentBag,
-                  ()
-                )
-            }
-          ),
+        updater(
+          (latestComponentBag, _) => {
+            let currentActualPath =
+              Routes.hashOfUri(newUrl);
+            let pathFromState =
+              Routes.stateToPath(
+                latestComponentBag.state
+              );
+            currentActualPath == pathFromState ?
+              None :
+              dispatchEventless(
+                State.UriNavigated(
+                  currentActualPath
+                ),
+                latestComponentBag,
+                ()
+              )
+          },
           ()
         )
     )
@@ -49,7 +45,7 @@ let y =
 let z =
   <div
     style=(
-      ReactDOMRe.Style.make (
+      ReactDOMRe.Style.make(
         ::width,
         ::height,
         ::color,
@@ -62,7 +58,7 @@ let z =
         ()
       )
     )
-    key=(string_of_int (1))
+    key=(string_of_int(1))
   />;
 
 let omega =
@@ -78,7 +74,7 @@ let omega =
       borderColor,
       someOtherAttribute
     ]
-    key=(string_of_int (1))
+    key=(string_of_int(1))
   />;
 
 let someArray =
@@ -94,7 +90,7 @@ let someArray =
       borderColor,
       someOtherAttribute
     |]
-    key=(string_of_int (1))
+    key=(string_of_int(1))
   />;
 
 let tuples =
@@ -111,7 +107,7 @@ let tuples =
       someOtherAttribute,
       definitelyBreakere
     )
-    key=(string_of_int (1))
+    key=(string_of_int(1))
   />;
 
 let icon =

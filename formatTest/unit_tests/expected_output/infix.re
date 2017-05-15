@@ -168,17 +168,17 @@ let comparison = (==);
 /* Why would the following two cases have different grouping? */
 let res =
   blah ||
-  DataConstructor (10) ||
-  DataConstructor (10) && 10;
+  DataConstructor(10) ||
+  DataConstructor(10) && 10;
 
 let res =
   blah &&
-  DataConstructor (10) &&
-  DataConstructor (10) + 10;
+  DataConstructor(10) &&
+  DataConstructor(10) + 10;
 
 /* This demonstrates how broken infix pretty printing is:
  */
-let curriedComparison = (==) (10);
+let curriedComparison = (==)(10);
 
 let resultOfAdd = 10 + 20 + 40;
 
@@ -188,15 +188,14 @@ let resultOfAddAndMult =
 let greaterThanAndSubtract = 1 - 2 > 4 + 3;
 
 let greaterThanAndFunctionCalls =
-  pred (1) > pred (2);
+  pred(1) > pred(2);
 
-let lessThanAndFunctionCalls =
-  pred (1) < pred (2);
+let lessThanAndFunctionCalls = pred(1) < pred(2);
 
 /* This doesn't type check because it looks like pred - 1 */
 let minusAndInteger = pred - 1;
 
-let passingMinusOneToFunction = pred ((-1));
+let passingMinusOneToFunction = pred((-1));
 
 let leadingMinusIsCorrectlyNeg = (-1) + 20;
 
@@ -209,16 +208,16 @@ let (|>) (first, second) => first + second;
 let res = first |> second;
 
 /* Curried shouldn't place infix */
-let res = (|>) (first);
+let res = (|>)(first);
 
 /* Custom infix with labeled args */
 let (|>) (::first, ::second) => first + second;
 
 /* Should NOT reformat named args to actually be placed infix */
-let res = (|>) (::first, ::second);
+let res = (|>)(::first, ::second);
 
 /* Curried shouldn't place infix */
-let res = (|>) (::first);
+let res = (|>)(::first);
 
 /* Custom infix accepting *three* without labeled args */
 let (|>) (firsfirst, second, third) =>
@@ -227,26 +226,26 @@ let (|>) (firsfirst, second, third) =>
 /* Should reformat to actually be placed infix if passed two args */
 let res = first |> second;
 
-let res = (first |> second) (third);
+let res = (first |> second)(third);
 
 /* Should NOT reformat to be placed infix if passed all three */
-let res = (|>) (first, second, third);
+let res = (|>)(first, second, third);
 
 /* Same: Curried shouldn't place infix */
-let res = (|>) (first);
+let res = (|>)(first);
 
 /* In fact, if even just one of the arguments are named, it shouldn't
  * be formatted or parsed as infix! */
-(|>) (first, ::second);
+(|>)(first, ::second);
 
-(|>) (::first, second);
+(|>)(::first, second);
 
-(|>) (first, second, ::third);
+(|>)(first, second, ::third);
 
-(first |> second) (::third);
+(first |> second)(::third);
 
 /* Infix has lower precedence than function application */
-first |> second (::third);
+first |> second(::third);
 
 let leftAssocGrouping = first |> second |> third;
 
@@ -265,14 +264,14 @@ let seeWhichCharacterHasHigherPrecedence =
 
 let res =
   blah &&
-  DataConstructor (10) &&
-  DataConstructor (10) + 10;
+  DataConstructor(10) &&
+  DataConstructor(10) + 10;
 
 /* Should be parsed as */
 let res =
   blah &&
-  DataConstructor (10) &&
-  DataConstructor (10) + 10;
+  DataConstructor(10) &&
+  DataConstructor(10) + 10;
 
 let (++) (::label, ::label2) => label + label2;
 
@@ -282,10 +281,10 @@ let (++) = (++);
 
 let (++): int => int = (++);
 
-(++) (label::20, label2::30) + 40;
+(++)(label::20, label2::30) + 40;
 
 /* Should be parsed as: */
-(++) (label::20, label2::30) + 40;
+(++)(label::20, label2::30) + 40;
 
 /* Great idea! */
 let (==) (a, b) => a < 0;
@@ -308,7 +307,7 @@ let includesACommentCloseInIdentifier = ( *\*\/ );
 let includesACommentCloseInIdentifier = ( *\*\/ );
 
 let shouldSimplifyAnythingExceptApplicationAndConstruction =
-  call ("hi") ^
+  call("hi") ^
   (
     switch x {
     | _ => "hi"
@@ -329,11 +328,11 @@ let y = a /\* b;
 
 let ( !=\* ) (q, r) => q + r;
 
-let res = q (( !=\* ), r);
+let res = q(( !=\* ), r);
 
 let ( !=\/\* ) (q, r) => q + r;
 
-let res = q (( !=\/\* ), r);
+let res = q(( !=\/\* ), r);
 
 let ( ~\* ) (a) => a + 1;
 
@@ -345,7 +344,7 @@ let res = f - (- x);
 
 let res = - (- x);
 
-let res = f ((- x));
+let res = f(- x);
 
 
 /**
@@ -353,7 +352,7 @@ let res = f ((- x));
  */
 let (!!) (a, b) => a + b;
 
-let res = (!!) (20, 40);
+let res = (!!)(20, 40);
 
 /* The semicolon should be attached to someType */
 let myFunc
@@ -368,7 +367,7 @@ let myFunc
       dddd,
       aaaa
     ) => [
-  blah (
+  blah(
     aaaa,
     bbbb,
     cccc,
@@ -901,32 +900,32 @@ let containingObject = {
       hello : goodbye;
     let result = - x + (something.contents = y);
     /* Prefix minus is actually sugar for regular function identifier ~-*/
-    let result = 2 + (- add (4, 0));
+    let result = 2 + (- add(4, 0));
     /* Same as */
-    let result = 2 + (- add (4, 0));
+    let result = 2 + (- add(4, 0));
     /* Same as */
-    let result = 2 + (- add (4, 0));
+    let result = 2 + (- add(4, 0));
     /* That same example but with ppx attributes on the add application */
-    let result = 2 + (- [@ppx] add (4, 0));
+    let result = 2 + (- [@ppx] add(4, 0));
     /* Same as */
-    let result = [@ppx] 2 + (- add (4, 0));
+    let result = [@ppx] 2 + (- add(4, 0));
     /* Same as */
-    let result = [@ppx] 2 + (- add (4, 0));
+    let result = [@ppx] 2 + (- add(4, 0));
     /* Multiple nested prefixes */
-    let result = 2 + (- (- (- add (4, 0))));
+    let result = 2 + (- (- (- add(4, 0))));
     /* And with attributes */
     let result =
       [@onAddApplication] 2 + (
-        - (- (- add (4, 0)))
+        - (- (- add(4, 0)))
       );
 
     /**
      * TODO: Move all of these test cases to attributes.re.
      */
     /* Attribute on the prefix application */
-    let res = [@attr] (- something (blah, blah));
+    let res = [@attr] (- something(blah, blah));
     /* Attribute on the regular function application, not prefix */
-    let res = [@attr] (- something (blah, blah));
+    let res = [@attr] (- something(blah, blah));
     let attrOnPrefix = [@ppxOnPrefixApp] (-1);
     let attrOnPrefix = 5 + (-1);
     let result =
@@ -945,16 +944,16 @@ let containingObject = {
     /**
      * And this
      */
-    let res = - (+ callThisFunc (()));
+    let res = - (+ callThisFunc(()));
     /* should be parsed as: */
-    let res = - (+ callThisFunc (()));
+    let res = - (+ callThisFunc(()));
 
     /**
      * And this
      */
-    let res = !(- callThisFunc (()));
+    let res = !(- callThisFunc(()));
     /* Should be parsed (and should remain printed as: */
-    let res = !(- callThisFunc (()));
+    let res = !(- callThisFunc(()));
     let res = [@onApplication] !x;
     let res = !([@onX] x);
     let res = !([@onX] x);
