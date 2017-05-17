@@ -357,8 +357,7 @@ let blahCurriedX x =>
 let name_equal x y => x == y;
 
 let equal i1 i2 =>
-  i1.contents === i2.contents &&
-  true; /* most unlikely first */
+  i1.contents === i2.contents && true; /* most unlikely first */
 
 let equal i1 i2 =>
   compare

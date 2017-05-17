@@ -783,3 +783,14 @@ let code = JSCodegen.Code.(
 );
 
 let code = JSCodegen.Code.(create |> render);
+
+let server = {
+ let callback _conn req body => {
+  let uri = req |> Request.uri |> Uri.to_string |> Code.string_of_uri |> Server.respond |> Request.uri;
+  let meth = req |> Request.meth |> Code.string_of_method;
+  let headers = req |> Request.headers |> Header.to_string;
+  body |> Cohttp_lwt_body.to_string >|= (fun body => {
+  (Printf.sprintf "okokok" uri meth headers body)}) >>= (fun body => Server.respond_string ::status ::body ());
+  };
+Server.create ::mode (Server.make ::callback());
+};

@@ -140,6 +140,10 @@ and precedence =
   | Token of string
   | Custom of string
 
+and infixChain =
+  | InfixToken of string
+  | SimpleConcrete of layoutNode
+
 (* Make a standard list *)
 and whenToDoSomething =
   | Never
@@ -590,7 +594,6 @@ let requireIndentFor = [updateToken; ":="]
  * We can't just take all infix operators with left associativity.
  * 1 + 1 + 2 doesn't need recursive printing with a label
  *)
-let leftFoldInfixOperators = ["|>"]
 
 let infixTokenRequiresIndent printedIdent =
   if List.exists (fun i -> i = printedIdent) requireIndentFor then None else Some 0
@@ -2333,12 +2336,37 @@ let recordRowIsPunned pld =
               && List.length args == 0) -> true
         | _ -> false)
 
-let rec infixify rule =
-    match rule with
-    | InfixApplicationConcrete (_, op, leftRule, rightRule) ->
-      (infixify leftRule) @ [Simple (atom op)] @ (infixify rightRule) 
-    | Simple itm -> [Simple itm]
-    | _ -> raise (Invalid_argument "printUnparsed INvalid_argument not implement") 
+(* preorderly walk a categoryRuleTree: flatten it into a list*)
+let rec computeInfixChain rule =
+  match rule with
+  | InfixApplicationConcrete (_, op, leftRule, rightRule) ->
+      (computeInfixChain rightRule) @ [InfixToken op] @ (computeInfixChain leftRule)
+  | Simple layoutNode -> [SimpleConcrete layoutNode]
+  | _ -> raise (Invalid_argument "computuInfixChain variant mismatch")
+
+
+let formatComputedInfixChain infixChainList =
+  let rec print acc group currentToken l =
+    match l with
+    | x::xs -> (match x with
+      | InfixToken t ->
+          if List.mem t requireIndentFor then
+            let groupNode = makeList ~inline:(true, true) ~sep:" " ~break:Never (group @ [atom t]) in
+            let children = makeList ~inline:(true, true) ~preSpace:true ~break:IfNeed (print [] [] t xs) in
+            print (acc @ [label ~space:true groupNode children]) [] t []
+          else
+            let groupNode = makeList ~inline:(true, true) ~sep:" " ~break:Never group in
+            print (acc @ [groupNode]) [(atom t)] t xs
+      | SimpleConcrete layoutNode -> print acc (group @ [layoutNode]) currentToken xs
+    )
+    | [] ->
+        if List.mem currentToken requireIndentFor then
+          acc @ group
+         else
+        acc @ [(makeList ~inline:(true, true) ~sep:" " ~break:Never group)]
+  in
+  print [] [] "" infixChainList
+
 
 let partition size l =
   let rec helper acc part i l =
@@ -3413,17 +3441,13 @@ class printer  ()= object(self:'self)
     match self#unparseExprRecurse reducesAfterRight with
     | (SpecificInfixPrecedence ({reducePrecedence; shiftPrecedence}, rightRecurse)) ->
       if higherPrecedenceThan shiftPrecedence withPrecedence then begin 
-        (* print_endline "higherPrecedenceThan -> rightRecurse"; *)
         Simple rightRecurse
       end
       else if (higherPrecedenceThan withPrecedence shiftPrecedence) then
         Simple (formatPrecedence ~loc:reducesAfterRight.pexp_loc rightRecurse)
       else (
         if isRightAssociative withPrecedence then
-          begin
-          (* print_endline "is right associative -> rightRecurse"; *)
           Simple rightRecurse
-          end
         else
           Simple (formatPrecedence ~loc:reducesAfterRight.pexp_loc rightRecurse)
       )
@@ -3431,24 +3455,16 @@ class printer  ()= object(self:'self)
       Simple (formatAttachmentApplication applicationFinalWrapping None (itms, Some reducesAfterRight.pexp_loc))
     | PotentiallyLowPrecedence itm -> Simple (formatPrecedence ~loc:reducesAfterRight.pexp_loc itm)
     | Simple itm -> Simple itm
-        (* print_endline "ensureContaingRule, unparsed a Simple itm"; *)
-        (* Simple itm *)
-    | s -> s
-
-    (* | ((InfixApplicationConcrete ({reducePrecedence; shiftPrecedence}, op, leftRecurse, rightRecurse)) as infixConcrete) -> *)
-      (* if higherPrecedenceThan shiftPrecedence withPrecedence then   *)
-        (* infixConcrete  *)
-      (* else if (higherPrecedenceThan withPrecedence shiftPrecedence) then *)
-        (* let right = Simple (formatPrecedence ~loc:reducesAfterRight.pexp_loc (self#printUnparsed rightRecurse)) in *)
-        (* InfixApplicationConcrete  ({reducePrecedence; shiftPrecedence}, op, leftRecurse, right) *)
-      (* else ( *)
-        (* if isRightAssociative withPrecedence then *)
-          (* infixConcrete  *)
-        (* else *)
-          (* let right = Simple (formatPrecedence ~loc:reducesAfterRight.pexp_loc (self#printUnparsed rightRecurse)) in *)
-          (* InfixApplicationConcrete  ({reducePrecedence; shiftPrecedence}, op, leftRecurse, right) *)
-      (* )  *)
-    (* | _ -> raise (Invalid_argument "not handled!") *)
+    | (InfixApplicationConcrete ({reducePrecedence; shiftPrecedence}, op, leftRecurse, rightRecurse) as chain) ->
+          if higherPrecedenceThan shiftPrecedence withPrecedence then chain
+          else if (higherPrecedenceThan withPrecedence shiftPrecedence) then
+            Simple (formatPrecedence ~loc:reducesAfterRight.pexp_loc (self#printUnparsed chain))
+          else (
+            if isRightAssociative withPrecedence then
+              chain
+            else
+              Simple (formatPrecedence ~loc:reducesAfterRight.pexp_loc (self#printUnparsed chain))
+          )
 
   method ensureExpression ~reducesOnToken expr =
     match self#unparseExprRecurse expr with
@@ -3465,7 +3481,16 @@ class printer  ()= object(self:'self)
     | FunctionApplication itms -> Simple (formatAttachmentApplication applicationFinalWrapping None (itms, Some expr.pexp_loc))
     | PotentiallyLowPrecedence itm -> Simple (formatPrecedence ~loc:expr.pexp_loc itm)
     | Simple itm -> Simple itm
-    | s -> s 
+    | (InfixApplicationConcrete ({reducePrecedence; shiftPrecedence}, op, leftRecurse, rightRecurse) as chain)->
+      if higherPrecedenceThan reducePrecedence reducesOnToken then chain 
+        else if higherPrecedenceThan reducesOnToken reducePrecedence then
+          Simple (formatPrecedence ~loc:expr.pexp_loc (self#printUnparsed  chain))
+        else (
+          if isLeftAssociative reducesOnToken then
+            chain
+          else
+            Simple (formatPrecedence ~loc:expr.pexp_loc (self#printUnparsed  chain))
+        )
 
   (** Attempts to unparse: The beginning of a more general printing algorithm,
       that determines how to print based on precedence of tokens and rules.
@@ -3494,19 +3519,15 @@ class printer  ()= object(self:'self)
     | s -> formatPrecedence ~loc:x.pexp_loc (self#printUnparsed s)
        
 
-
   method printUnparsed rule = 
     match rule with
     | SpecificInfixPrecedence (_, itm) -> itm 
     (* | FunctionApplication itms -> formatAttachmentApplication applicationFinalWrapping None (itms, Some x.pexp_loc)  *)
     | PotentiallyLowPrecedence itm -> itm
     | (InfixApplicationConcrete _ as infixTree) ->
-        let x = List.rev (infixify infixTree) in
-        let head = self#printUnparsed (List.hd x) in
-        let layoutNodes = List.map self#printUnparsed (List.tl x) in
-        let tail = List.map (fun p -> makeList ~inline:(true, true) ~sep:" " ~break:Never p) (partition 2 layoutNodes)in
-        makeList ~inline:(true, true) ~sep:" " ~break:IfNeed (head::tail)
-
+        let infixChainList = List.rev (computeInfixChain infixTree) in
+        let l = formatComputedInfixChain infixChainList in
+        makeList ~inline:(true, true) ~sep:" " ~break:IfNeed l
     | Simple itm -> itm
     | _ -> raise (Invalid_argument "we should never get here")
     (* | FunctionApplication itms -> itms *)
@@ -3562,41 +3583,24 @@ class printer  ()= object(self:'self)
         match (printedStringAndFixityExpr e, ls) with
         | (Infix printedIdent, [(Nolabel, leftExpr); (Nolabel, rightExpr)]) ->
           let infixToken = Token printedIdent in
-          (* print_endline "printedIdent: "; *)
-          (* print_endline printedIdent; *)
-          (* check if we're chaining the identifier e.g. let x = foo |> f |> g; *)
-          (* let leftFoldInfixChain = (isLeftInfixChain printedIdent ls) || infixChain in *)
           let rightItm = self#ensureContainingRule ~withPrecedence:infixToken ~reducesAfterRight:rightExpr () in
           let leftItm = self#ensureExpression ~reducesOnToken:infixToken leftExpr in
-          InfixApplicationConcrete ({reducePrecedence=infixToken; shiftPrecedence=infixToken}, printedIdent, rightItm, leftItm)
-          (* let expr = (match printedIdent with *)
-            (*
-             * if we're chaining & the ident is printed à la left-fold,
-             * print the chain recursively as labels
-             * let x =
-             *   foo
-             *   |> f
-             *   |> g;
-             *)
-            (* | ident when (List.mem ident leftFoldInfixOperators) && leftFoldInfixChain -> *)
-              (* let opWithRightItm = makeList ~sep:" " ~inline:(true, true) [atom printedIdent; rightItm] in *)
-              (* label ~space:true ~indent:0 ~break:`Always_rec leftItm opWithRightItm *)
-            (* | _ -> *)
-             (* let leftWithOp = makeList ~postSpace:true [leftItm; atom printedIdent] in *)
-             (* let indent = infixTokenRequiresIndent printedIdent in *)
-             (* label ~space:true ?indent leftWithOp rightItm) *)
-          (* in *)
+          InfixApplicationConcrete ({reducePrecedence=infixToken; shiftPrecedence=infixToken}, printedIdent, leftItm, rightItm)
           (* SpecificInfixPrecedence ({reducePrecedence=infixToken; shiftPrecedence=infixToken}, expr) *)
         (* Will be rendered as `(+) a b c` which is parsed with higher precedence than all
            the other forms unparsed here.*)
         | (UnaryPlusPrefix printedIdent, [(Nolabel, rightExpr)]) ->
           let prec = Custom "prec_unary_plus" in
-          let rightItm = self#printUnparsed @@ self#ensureContainingRule ~withPrecedence:prec ~reducesAfterRight:rightExpr () in
+          let rightItm = self#printUnparsed (
+            self#ensureContainingRule ~withPrecedence:prec ~reducesAfterRight:rightExpr ()
+          ) in
           let expr = label ~space:true (atom printedIdent) rightItm in
           SpecificInfixPrecedence ({reducePrecedence=prec; shiftPrecedence=Token printedIdent}, expr)
         | (UnaryMinusPrefix printedIdent, [(Nolabel, rightExpr)]) ->
           let prec = Custom "prec_unary_minus" in
-          let rightItm = self#printUnparsed @@ self#ensureContainingRule ~withPrecedence:prec ~reducesAfterRight:rightExpr () in
+          let rightItm = self#printUnparsed (
+            self#ensureContainingRule ~withPrecedence:prec ~reducesAfterRight:rightExpr ()
+          ) in
           let expr = label ~space:true (atom printedIdent) rightItm in
           SpecificInfixPrecedence ({reducePrecedence=prec; shiftPrecedence=Token printedIdent}, expr)
         (* Will need to be rendered in self#expression as (~-) x y z. *)
@@ -3637,11 +3641,15 @@ class printer  ()= object(self:'self)
           FunctionApplication [self#constructor_expression ~polyVariant:true ~arityIsClear:true stdAttrs (atom ("`" ^ l)) eo]
     (* (* TODO: Should protect this identifier *) *)
     | Pexp_setinstvar (s, rightExpr) ->
-      let rightItm = self#printUnparsed @@ self#ensureContainingRule ~withPrecedence:(Token updateToken) ~reducesAfterRight:rightExpr () in
+      let rightItm = self#printUnparsed (
+        self#ensureContainingRule ~withPrecedence:(Token updateToken) ~reducesAfterRight:rightExpr ()
+      ) in
       let expr = label ~space:true (makeList ~postSpace:true [(protectIdentifier s.txt); atom updateToken]) rightItm in
       SpecificInfixPrecedence ({reducePrecedence=(Token updateToken); shiftPrecedence=(Token updateToken)}, expr)
     | Pexp_setfield (leftExpr, li, rightExpr) ->
-      let rightItm = self#printUnparsed @@ self#ensureContainingRule ~withPrecedence:(Token updateToken) ~reducesAfterRight:rightExpr () in
+      let rightItm = self#printUnparsed (
+        self#ensureContainingRule ~withPrecedence:(Token updateToken) ~reducesAfterRight:rightExpr ()
+      ) in
       let leftItm =
         label
           (makeList ~interleaveComments:false [self#simple_enough_to_be_lhs_dot_send leftExpr; atom "."])
@@ -3653,8 +3661,12 @@ class printer  ()= object(self:'self)
       | None -> raise (Invalid_argument "Impossible")
       | Some (tt, ff) ->
         let ifTrue = self#unparseExpr tt in
-        let testItm = self#printUnparsed @@ self#ensureExpression e ~reducesOnToken:(Token "?") in
-        let ifFalse = self#printUnparsed @@ self#ensureContainingRule ~withPrecedence:(Token ":") ~reducesAfterRight:ff () in
+        let testItm = self#printUnparsed (
+          self#ensureExpression e ~reducesOnToken:(Token "?")
+        ) in
+        let ifFalse = self#printUnparsed (
+          self#ensureContainingRule ~withPrecedence:(Token ":") ~reducesAfterRight:ff ()
+        ) in
         let withQuestion = SourceMap (e.pexp_loc, makeList ~postSpace:true [testItm; atom "?"]) in
         let trueFalseBranches =
           makeList ~inline:(true, true) ~break:IfNeed ~sep:":" ~postSpace:true ~preSpace:true [ifTrue; ifFalse]
