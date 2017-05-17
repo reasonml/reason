@@ -2302,6 +2302,16 @@ let recordRowIsPunned pld =
               && List.length args == 0) -> true
         | _ -> false)
 
+let is_unit_pattern x = match x.ppat_desc with
+  | Ppat_construct ( {txt= Lident"()"}, None) -> true
+  | _ -> false
+
+let is_direct_pattern x = x.ppat_attributes = [] && match x.ppat_desc with
+  | Ppat_array _ | Ppat_record _
+  | Ppat_construct ( {txt= Lident"()"}, None)
+  | Ppat_construct ( {txt= Lident"::"}, Some _) -> true
+  | _ -> false
+
 class printer  ()= object(self:'self)
   val pipe = false
   val semi = false
@@ -3115,7 +3125,7 @@ class printer  ()= object(self:'self)
         in
         SourceMap (x.ppat_loc, itm)
 
-  method label_exp (l,opt,p) =
+  method label_exp l opt p  =
     match l with
     | Nolabel -> self#simple_pattern p (*single case pattern parens needed here *)
     | Optional lbl ->
@@ -3911,7 +3921,7 @@ class printer  ()= object(self:'self)
   method curriedConstructorPatternsAndReturnVal cl =
     let rec argsAndReturn args = function
       | { pcl_desc = Pcl_fun (label, eo, p, e); pcl_attributes = [] } ->
-        let arg = SourceMap (p.ppat_loc, self#label_exp (label, eo, p)) in
+        let arg = SourceMap (p.ppat_loc, self#label_exp label eo p) in
         argsAndReturn (arg :: args) e
       | xx ->
         if args = [] then (None, xx) else (Some (makeTup (List.rev args)), xx)
@@ -3926,18 +3936,34 @@ class printer  ()= object(self:'self)
     let pattern binding)).
   *)
   method curriedPatternsAndReturnVal x =
+    let prepare_arg (l,eo,p) = SourceMap (p.ppat_loc, self#label_exp l eo p) in
     let return args (sweet, acc, xx) = match args with
       | [] -> (sweet, acc, xx)
-      | args -> (sweet, makeTup (List.rev args) :: acc, xx)
+      | [Nolabel, None, p]
+        when (is_unit_pattern p) || (is_direct_pattern p && not sweet) ->
+        (sweet, self#simple_pattern p :: acc, xx)
+      | args ->
+        let params =
+          if sweet then makeTup (List.rev_map prepare_arg args) else
+            let rec loop acc = function
+              | (Nolabel, None, p) :: rest when is_unit_pattern p ->
+                makeTup acc :: self#simple_pattern p :: loop [] rest
+              | arg :: args -> loop (prepare_arg arg :: acc) args
+              | [] -> [makeTup acc]
+            in
+            match loop [] args with
+            | [x] -> x
+            | xs -> makeBreakableList xs
+        in
+        (sweet, params :: acc, xx)
     in
     let rec argsAndReturn args xx =
       if xx.pexp_attributes <> [] then return args (false, [], xx)
       else match xx.pexp_desc with
         (* label * expression option * pattern * expression *)
-        | Pexp_fun (label, eo, p, e) ->
+        | Pexp_fun (l, eo, p, e) ->
           (* sweet determines whether es6 => sugar can be used or not *)
-          let arg = SourceMap (p.ppat_loc, self#label_exp (label, eo, p)) in
-          argsAndReturn (arg :: args) e
+          argsAndReturn ((l, eo, p) :: args) e
         | Pexp_newtype (newtype,e) ->
           return args (newtypesAndReturn [newtype] e)
         | Pexp_constraint _ -> return args (false, [], xx)
@@ -4404,14 +4430,8 @@ class printer  ()= object(self:'self)
         (List.length l > 1 && not arityIsClear, l)
       | _ -> (false, [po])
     in
-    let is_direct x = x.ppat_attributes = [] && match x.ppat_desc with
-      | Ppat_array _ | Ppat_record _
-      | Ppat_construct ( {txt= Lident"()"}, None)
-      | Ppat_construct ( {txt= Lident"::"}, Some _) -> true
-      | _ -> false
-    in
     let space, arguments = match arguments with
-      | [x] when is_direct x -> true, self#simple_pattern x
+      | [x] when is_direct_pattern x -> true, self#simple_pattern x
       | xs -> false, makeTup (List.map self#pattern xs)
     in
     let construction = label ~space ctor arguments in

@@ -1,5 +1,5 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
-let run (()) =>
+let run () =>
   TestUtils.printSection("Basic Structures");
 
 while something {
@@ -597,7 +597,7 @@ let anotherRecord = {
   age: testRecord.age + 10
 };
 
-let makeRecordBase (()) => {
+let makeRecordBase () => {
   name: "Joe",
   age: 30,
   occupation: "Engineer"

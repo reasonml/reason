@@ -396,11 +396,11 @@ type hasA = {a: int};
 let a = 10;
 
 let returnsASequenceExpressionWithASingleIdentifier
-    (()) => a;
+    () => a;
 
-let thisReturnsA (()) => a;
+let thisReturnsA () => a;
 
-let thisReturnsAAsWell (()) => a;
+let thisReturnsAAsWell () => a;
 
 let recordVal: int = (thisReturnsARecord()).a;
 

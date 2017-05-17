@@ -180,7 +180,7 @@ accessDeeplyWithArgRecursive(
   10
 );
 
-let run (()) => {
+let run () => {
   TestUtils.printSection("Variants");
   Printf.printf("%d %d \n", x, y)
 };

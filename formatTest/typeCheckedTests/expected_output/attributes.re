@@ -169,7 +169,7 @@ let res =
 
 [@appliesToEntireFunctionApplication] add(2, 4);
 
-let myObj = {pub p (()) => {pub z (()) => 10}};
+let myObj = {pub p () => {pub z () => 10}};
 
 let result =
   [@onSecondSend]
@@ -183,8 +183,8 @@ type recordFunctions = {
 [@@onUnusedType] and unusedType = unit;
 
 let rec myRecord = {
-  p: fun (()) => myRecord,
-  q: fun (()) => ()
+  p: fun () => myRecord,
+  q: fun () => ()
 }
 and unused = ();
 
@@ -218,7 +218,7 @@ and secondBinding = "second";
  * Let bindings.
  * ----------------------
  */
-let showLets (()) =>
+let showLets () =>
   [@onOuterLet]
   {
     let tmp = 20;

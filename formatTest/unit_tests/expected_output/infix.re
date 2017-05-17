@@ -395,7 +395,7 @@ let containingObject = {
   val arr = [|true, false, false|];
   val bigArr = "goodThingThisIsntTypeChecked";
   val str = "string";
-  pub testCases (()) => {
+  pub testCases () => {
 
     /**
      * The lowest precedence token is =, followed by :=, and then ?, then :.

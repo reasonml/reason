@@ -1,6 +1,5 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
-let run (()) =>
-  TestUtils.printSection("Modules");
+let run () => TestUtils.printSection("Modules");
 
 
 /**
@@ -254,7 +253,7 @@ module CurriedNoSugar (A: ASig, B: BSig) => {
   let result = A.a + B.b;
 };
 
-let letsTryThatSyntaxInLocalModuleBindings (()) => {
+let letsTryThatSyntaxInLocalModuleBindings () => {
   module CurriedSugarWithReturnType
          (A: ASig, B: BSig)
          :SigResult => {

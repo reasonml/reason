@@ -466,9 +466,9 @@ let asd2 = [@foo] [@JSX] video(test::false, 10);
 
 let div (::children) => 1;
 
-[@JSX] (((()) => div)())(children::[]);
+[@JSX] ((() => div)())(children::[]);
 
-let myFun (()) =>
+let myFun () =>
   <>
     <Namespace.Foo
       intended=true
@@ -490,9 +490,9 @@ let myFun (()) =>
     </Namespace.Foo>
   </>;
 
-let myFun (()) => <> </>;
+let myFun () => <> </>;
 
-let myFun (()) =>
+let myFun () =>
   <>
     <Namespace.Foo
       intended=true
