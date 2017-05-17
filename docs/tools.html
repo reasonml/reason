@@ -159,20 +159,15 @@ We piggy back on Nuclide's facilities (formatting, diagnosis, datatip). `⌘+shi
 
 ### Vim
 
-The [vim-reason-loader](https://github.com/reasonml/vim-reason-loader) plugin will load the editor support
-from wherever `refmt` / `ocamlmerlin` live on the `PATH`. Install it like you would any Vim plugin.
+Install [vim-reason](https://github.com/reasonml/vim-reason) like you would any Vim plugin.
 
 For example, through [NeoBundle](https://github.com/Shougo/neobundle.vim):
 
 ```
-NeoBundle 'reasonml/vim-reason-loader'
+NeoBundle 'reasonml/vim-reason'
 ```
 
 Likewise for [vim-plug](https://github.com/junegunn/vim-plug) and others.
-
-`vim-reason-loader` loads the *real*
-[vim-reason plugin](https://github.com/facebook/reason/tree/master/editorSupport/VimReason)
-from wherever Reason is installed.
 
 <img src="images/VimReason.png" style="width:100%; max-width:470px; max-height:440px" />
 
@@ -194,20 +189,15 @@ let g:deoplete#sources.reason = ['omni', 'buffer']
 " neocomplete and YouCompleteMe work out of the box
 ```
 
-You can use syntactic checks with plugins like Syntastic, ALE, and others.
+You can use syntactic checks with plugins like [Syntastic](https://github.com/vim-syntastic/syntastic) (vim-reason should just work with it out of the box), ALE, and others.
 
 ```
-" Syntastic
-
-let g:syntastic_reason_checkers=['merlin']
-
-" ALE
+" For ALE
 
 let g:ale_linter_aliases = {'reason': 'ocaml'}
 ```
 
-`merlin` also provides many helpful commands.
-See [this guide](https://github.com/ocaml/merlin/wiki/vim-from-scratch#discovering-the-shiny-features) to learn more.
+See the other provided Merlin features in the [README](https://github.com/reasonml/vim-reason#merlin).
 
 #### VimReason
 
