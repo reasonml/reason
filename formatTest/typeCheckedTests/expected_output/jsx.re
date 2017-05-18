@@ -246,29 +246,29 @@ let spaceBefore2 = <So> <Much /> </So>;
 let siblingNotSpaced =
   <So> <Much /> <Much /> </So>;
 
-let jsxInList = [<Foo />];
+let jsxInList = [ <Foo /> ];
 
-let jsxInList2 = [<Foo />];
+let jsxInList2 = [ <Foo /> ];
 
-let jsxInListA = [<Foo />];
+let jsxInListA = [ <Foo /> ];
 
-let jsxInListB = [<Foo />];
+let jsxInListB = [ <Foo /> ];
 
-let jsxInListC = [<Foo />];
+let jsxInListC = [ <Foo /> ];
 
-let jsxInListD = [<Foo />];
+let jsxInListD = [ <Foo /> ];
 
-let jsxInList3 = [<Foo />, <Foo />, <Foo />];
+let jsxInList3 = [ <Foo />, <Foo />, <Foo /> ];
 
-let jsxInList4 = [<Foo />, <Foo />, <Foo />];
+let jsxInList4 = [ <Foo />, <Foo />, <Foo /> ];
 
-let jsxInList5 = [<Foo />, <Foo />];
+let jsxInList5 = [ <Foo />, <Foo /> ];
 
-let jsxInList6 = [<Foo />, <Foo />];
+let jsxInList6 = [ <Foo />, <Foo /> ];
 
-let jsxInList7 = [<Foo />, <Foo />];
+let jsxInList7 = [ <Foo />, <Foo /> ];
 
-let jsxInList8 = [<Foo />, <Foo />];
+let jsxInList8 = [ <Foo />, <Foo /> ];
 
 let testFunc b => b;
 
@@ -375,58 +375,62 @@ let thisIsAlsoOkay =
 
 <a /> > <b />;
 
-let listOfListOfJsx = [<> </>];
+let listOfListOfJsx = [ <> </> ];
 
-let listOfListOfJsx = [<> <Foo /> </>];
+let listOfListOfJsx = [ <> <Foo /> </> ];
 
 let listOfListOfJsx = [
   <> <Foo /> </>,
   <> <Bar /> </>
-];
+ ];
 
 let listOfListOfJsx = [
   <> <Foo /> </>,
   <> <Bar /> </>,
   ...listOfListOfJsx
-];
+ ];
 
-let sameButWithSpaces = [<> </>];
+let sameButWithSpaces = [ <> </> ];
 
-let sameButWithSpaces = [<> <Foo /> </>];
+let sameButWithSpaces = [ <> <Foo /> </> ];
 
 let sameButWithSpaces = [
   <> <Foo /> </>,
   <> <Bar /> </>
-];
+ ];
 
 let sameButWithSpaces = [
   <> <Foo /> </>,
   <> <Bar /> </>,
   ...sameButWithSpaces
-];
+ ];
 
 /*
  * Test named tag right next to an open bracket.
  */
 let listOfJsx = [];
 
-let listOfJsx = [<Foo />];
+let listOfJsx = [ <Foo /> ];
 
-let listOfJsx = [<Foo />, <Bar />];
+let listOfJsx = [ <Foo />, <Bar /> ];
 
-let listOfJsx = [<Foo />, <Bar />, ...listOfJsx];
+let listOfJsx = [
+  <Foo />,
+  <Bar />,
+  ...listOfJsx
+ ];
 
 let sameButWithSpaces = [];
 
-let sameButWithSpaces = [<Foo />];
+let sameButWithSpaces = [ <Foo /> ];
 
-let sameButWithSpaces = [<Foo />, <Bar />];
+let sameButWithSpaces = [ <Foo />, <Bar /> ];
 
 let sameButWithSpaces = [
   <Foo />,
   <Bar />,
   ...sameButWithSpaces
-];
+ ];
 
 
 /**

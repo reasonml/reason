@@ -98,3 +98,7 @@ let icon = <Icon
                      }
                    )
             />;
+
+let x = [| <Button />, <Button /> |];
+let y = [ <Button />, <Button /> ];
+let z = ( <Button />, <Button /> );
