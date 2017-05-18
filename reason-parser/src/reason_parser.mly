@@ -975,7 +975,6 @@ let only_labels l =
 %token <string> PREFIXOP
 %token PUB
 %token QUESTION
-%token OPTIONAL_NO_DEFAULT
 %token QUOTE
 %token RBRACE
 %token RBRACKET
@@ -2091,13 +2090,20 @@ class_constructor_type:
 mark_position_cty
   ( NEW class_instance_type
     { $2 }
+  | only_core_type(non_arrowed_core_type) EQUALGREATER class_constructor_type
+    { mkcty(Pcty_arrow(Nolabel, $1, $3)) }
+
+  | COLON LIDENT COLON only_core_type(non_arrowed_core_type) optional
+      EQUALGREATER class_constructor_type
+    { mkcty (Pcty_arrow($5 $2, $4, $7)) }
+
+    /* <REMOVE ME> */
   | LIDENTCOLONCOLON boption(QUESTION)
       only_core_type(non_arrowed_core_type) EQUALGREATER class_constructor_type
     { let label = if $2 then Optional $1 else Labelled $1 in
       mkcty (Pcty_arrow(label, $3, $5))
     }
-  | only_core_type(non_arrowed_core_type) EQUALGREATER class_constructor_type
-    { mkcty(Pcty_arrow(Nolabel, $1, $3)) }
+    /* </REMOVE ME> */
   ) {$1};
 
 non_arrowed_class_constructor_type:
@@ -2325,29 +2331,46 @@ let resAnnotated    = (named a::a b :ty);
 
 
 S: Explicitly passed optionals are a nice way to say "use the default value":
-let explictlyPassed =          myOptional a::?None b::?None;
+let explicitlyPassed =          myOptional a::?None b::?None;
 T: Annotating the return value of the entire function call :
-let explictlyPassedAnnotated = (myOptional a::?None b::?None :int);
+let explicitlyPassedAnnotated = (myOptional a::?None b::?None :int);
 U: Explicitly passing optional with identifier expression :
 let a = None;
-let explictlyPassed =           myOptional a::?a b::?None;
-let explictlyPassedAnnotated = (myOptional a::?a b::?None :int);
-
-
-
-
-
-
+let explicitlyPassed =           myOptional a::?a b::?None;
+let explicitlyPassedAnnotated = (myOptional a::?a b::?None :int);
 
 */
 
+labeled_pattern_constraint:
+  | pattern_optional_constraint { fun _punned -> $1 }
+  | preceded(COLON, only_core_type(core_type))?
+    { fun punned ->
+      let pat = mkpat (Ppat_var punned) ~loc:punned.loc in
+      match $1 with
+      | None -> pat
+      | Some typ ->
+        let loc = mklocation punned.loc.loc_start $endpos in
+        mkpat ~loc (Ppat_constraint(pat, typ))
+    }
+;
+
 labeled_pattern:
 as_loc
-  ( COLONCOLONLIDENT
+  ( COLON as_loc(LIDENT) labeled_pattern_constraint
+    { (Labelled $2.txt, None, $3 $2) }
+  | COLON as_loc(LIDENT) labeled_pattern_constraint EQUAL simple_expr
+    { (Optional $2.txt, Some $5, $3 $2) }
+  | COLON as_loc(LIDENT) labeled_pattern_constraint EQUAL QUESTION
+    { (Optional $2.txt, None, $3 $2) }
+  | pattern_optional_constraint
+    { (Nolabel, None, $1) }
+
+    /* <REMOVE ME> */
+  | COLONCOLONLIDENT
     { let loc = mklocation $startpos($1) $endpos($1) in
         (Labelled $1, None, mkpat(Ppat_var (mkloc $1 loc)) ~loc)
     }
-  | COLONCOLONLIDENT OPTIONAL_NO_DEFAULT
+  | COLONCOLONLIDENT EQUAL QUESTION
     { let loc = mklocation $symbolstartpos $endpos in
         (Optional $1, None, mkpat(Ppat_var (mkloc $1 loc)) ~loc)
     }
@@ -2359,13 +2382,12 @@ as_loc
   | LIDENTCOLONCOLON pattern_optional_constraint
     { (Labelled $1, None, $2) }
    /* Case E, F, G, H */
-  | LIDENTCOLONCOLON pattern_optional_constraint OPTIONAL_NO_DEFAULT
+  | LIDENTCOLONCOLON pattern_optional_constraint EQUAL QUESTION
     { (Optional $1, None, $2) }
    /* Case I, J, K, L */
   | LIDENTCOLONCOLON pattern_optional_constraint EQUAL simple_expr
     { (Optional $1, Some $4, $2) }
-  | pattern_optional_constraint
-    { (Nolabel, None, $1) }
+    /* </REMOVE ME> */
   ) { $1 }
 ;
 
@@ -2392,9 +2414,9 @@ es6_parameters:
 // TODO: properly fix JSX labelled/optional stuff
 jsx_arguments:
   /* empty */ { [] }
-  | LIDENT OPTIONAL_NO_DEFAULT simple_expr jsx_arguments
+  | LIDENT EQUAL QUESTION simple_expr jsx_arguments
     { (* a=?b *)
-      [(Optional $1, $3)] @ $4
+      [(Optional $1, $4)] @ $5
     }
   | LIDENT EQUAL simple_expr jsx_arguments
     { (* a=b *)
@@ -2801,8 +2823,25 @@ labeled_arguments:
     }
 ;
 
+labeled_expr_constraint:
+  | expr_optional_constraint { fun _punned -> $1 }
+  | type_constraint?
+    { fun punned ->
+      let exp = mkexp (Pexp_ident punned) ~loc:punned.loc in
+      match $1 with
+      | None -> exp
+      | Some typ ->
+        let loc = mklocation punned.loc.loc_start $endpos in
+        ghexp_constraint loc exp typ
+    }
+;
+
 labeled_expr:
   | expr_optional_constraint { (Nolabel, $1) }
+  | COLON as_loc(val_longident) optional labeled_expr_constraint
+    { ($3 (String.concat "" (Longident.flatten $2.txt)), $4 $2) }
+
+    /* <REMOVE ME> */
   | COLONCOLONLIDENT
     { let loc = mklocation $symbolstartpos $endpos in
       (Labelled $1, mkexp (Pexp_ident(mkloc (Lident $1) loc)) ~loc)
@@ -2819,6 +2858,7 @@ labeled_expr:
     }
   | LIDENTCOLONCOLON QUESTION expr_optional_constraint
     { (Optional $1, $3) }
+    /* </REMOVE ME> */
 ;
 
 %inline and_let_binding:
@@ -3643,15 +3683,21 @@ core_type2:
 mark_position_typ2
   ( non_arrowed_core_type
     { $1 }
+  | only_core_type(core_type2) EQUALGREATER only_core_type(core_type2)
+    { Core_type (mktyp(Ptyp_arrow(Nolabel, $1, $3))) }
+
+  | COLON LIDENT optional COLON only_core_type(non_arrowed_core_type)
+      EQUALGREATER only_core_type(core_type2)
+    { Core_type (mktyp(Ptyp_arrow($3 $2, $5, $7))) }
+
+    /* <REMOVE ME> */
   | LIDENTCOLONCOLON only_core_type(non_arrowed_core_type)
       QUESTION EQUALGREATER only_core_type(core_type2)
     { Core_type (mktyp(Ptyp_arrow(Optional $1, $2, $5))) }
   | LIDENTCOLONCOLON only_core_type(non_arrowed_core_type)
       EQUALGREATER only_core_type(core_type2)
     { Core_type (mktyp(Ptyp_arrow(Labelled $1, $2, $4))) }
-  | only_core_type(core_type2)
-      EQUALGREATER only_core_type(core_type2)
-    { Core_type (mktyp(Ptyp_arrow(Nolabel, $1, $3))) }
+    /* </REMOVE ME> */
   ) {$1};
 
 /* Among other distinctions, "simple" core types can be used in Variant types:
@@ -4094,6 +4140,11 @@ payload:
   | COLON only_core_type(core_type) { PTyp $2 }
   | QUESTION pattern                { PPat ($2, None) }
   | QUESTION pattern WHEN expr      { PPat ($2, Some $4) }
+;
+
+optional:
+  | { fun x -> Labelled x }
+  | QUESTION { fun x -> Optional x }
 ;
 
 %inline only_core_type(X): X { only_core_type $1 $symbolstartpos $endpos }

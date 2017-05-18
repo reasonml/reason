@@ -277,6 +277,19 @@ let () =
       | _ ->
           None
     )
+
+(* To "unlex" a few characters *)
+let set_lexeme_length buf n = (
+  let open Lexing in
+  if n < 0 then
+    invalid_arg "set_lexeme_length: offset should be positive";
+  if n > buf.lex_curr_pos - buf.lex_start_pos then
+    invalid_arg "set_lexeme_length: offset larger than lexeme";
+  buf.lex_curr_pos <- buf.lex_start_pos + n;
+  buf.lex_curr_p <- {buf.lex_start_p
+                     with pos_cnum = buf.lex_abs_pos + buf.lex_curr_pos};
+)
+
 }
 
 
@@ -358,8 +371,7 @@ rule token = parse
   | "?"
       { QUESTION }
   | "=?"
-      (* Need special label extractor? *)
-      { OPTIONAL_NO_DEFAULT }
+      { set_lexeme_length lexbuf 1; EQUAL }
   | lowercase identchar *
       { let s = Lexing.lexeme lexbuf in
         try Hashtbl.find keyword_table s
