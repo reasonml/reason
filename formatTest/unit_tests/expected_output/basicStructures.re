@@ -527,31 +527,28 @@ let myTuple: myTupleType = myTuple;
 let myTuple: myTupleType = (one: int, two: int);
 
 /* Now functions that accept a single argument being a tuple look familiar */
-let addValues ((a: int), (b: int)) => a + b;
+let addValues (a: int, b: int) => a + b;
 
-let addValues ((a: int), (b: int)) => a + b;
+let addValues (a: int, b: int) => a + b;
 
-let myFunction ((a: int), (b: int)) :int =>
-  a + b;
+let myFunction (a: int, b: int) :int => a + b;
 
 let functionReturnValueType
-    ((i: int), (s: string))
+    (i: int, s: string)
     :(int => int) =>
   (x) => x + 1;
 
-let curriedFormOne ((i: int), (s: string)) =>
+let curriedFormOne (i: int, s: string) =>
   s ^ string_of_int(i);
 
-let curriedFormTwo
-    ((i: int), (x: int))
-    :(int, int) => (
+let curriedFormTwo (i: int, x: int) :(int, int) => (
   i,
   x
 );
 
 /* let nonCurriedFormTwo = fun (i:int, x:int) (:(int, int)) => (i, x); */
 let curriedFormThree
-    ((i: int), ((a: int, b: int): (int, int)))
+    (i: int, (a: int, b: int): (int, int))
     :(int, int, int) => (
   i,
   a,
@@ -571,7 +568,7 @@ let myFunc: myFuncType = (a, b) => a + b;
 
 let funcWithTypeLocallyAbstractTypes
     (type atype btype)
-    (a, b, (c: atype => btype => unit)) =>
+    (a, b, c: atype => btype => unit) =>
   c(a, b);
 
 

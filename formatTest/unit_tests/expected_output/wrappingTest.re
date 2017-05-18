@@ -121,9 +121,9 @@ let namedAlias
 let namedAnnot
     /* a::(a: option int) */
     (
-      a::(a: option(int)),
+      a::a: option(int),
       /* b::(b: option int) */
-      b::(b: option(int))
+      b::b: option(int)
     ) =>
   /* 20 */
   20;
@@ -132,9 +132,9 @@ let namedAnnot
 let namedAliasAnnot
     /* a::(aa: option int) */
     (
-      a::(aa: option(int)),
+      a::aa: option(int),
       /* b::(bb: option int) */
-      b::(bb: option(int))
+      b::bb: option(int)
     ) =>
   /* 20 */
   20;
@@ -169,9 +169,9 @@ let optionalAlias
 let optionalAnnot
     /* a::(a: option int)=? */
     (
-      a::(a: option(int))=?,
+      a::a: option(int)=?,
       /* ?b:(b: option int) */
-      b::(b: option(int))=?,
+      b::b: option(int)=?,
       /* () */
       ()
     ) =>
@@ -182,9 +182,9 @@ let optionalAnnot
 let optionalAliasAnnot
     /* a::(aa: option int)=? */
     (
-      a::(aa: option(int))=?,
+      a::aa: option(int)=?,
       /* b::(bb: option int)=? */
-      b::(bb: option(int))=?,
+      b::bb: option(int)=?,
       /* () => */
       ()
     ) =>
@@ -221,9 +221,9 @@ let defOptionalAlias
 let defOptionalAnnot
     /* a::(a:int)=10 */
     (
-      a::(a: int)=10,
+      a::a: int=10,
       /* b::(b:int)=10 */
-      b::(b: int)=10,
+      b::b: int=10,
       /* () => */
       ()
     ) =>
@@ -234,9 +234,9 @@ let defOptionalAnnot
 let defOptionalAliasAnnot
     /* a::(aa:int)=10 */
     (
-      a::(aa: int)=10,
+      a::aa: int=10,
       /* b::(bb:int)=10 */
-      b::(bb: int)=10,
+      b::bb: int=10,
       /* () => */
       ()
     ) =>
@@ -544,7 +544,7 @@ let justReturn (x) => x;
 /* With default formatting settings: Two arguments are special cased in
    function application "justReturn hasABunch" */
 let acceptsTwoThings
-    ((nameAge: nameAge), (hasABunch: hasABunch)) =>
+    (nameAge: nameAge, hasABunch: hasABunch) =>
   justReturn(hasABunch);
 
 /*
@@ -729,7 +729,7 @@ let echoTuple
 );
 
 let echoTheEchoer
-    ((x: sixteenTuple => sixteenTuple))
+    (x: sixteenTuple => sixteenTuple)
     :(sixteenTuple => sixteenTuple) => x;
 
 /* Nothing annotated fun, passed to func */
@@ -777,25 +777,23 @@ echoTheEchoer(
 let echoTuple
     (
       (
-        (
-          a,
-          b,
-          c,
-          d,
-          e,
-          f,
-          g,
-          h,
-          i,
-          j,
-          k,
-          l,
-          m,
-          n,
-          o,
-          p
-        ): sixteenTuple
-      )
+        a,
+        b,
+        c,
+        d,
+        e,
+        f,
+        g,
+        h,
+        i,
+        j,
+        k,
+        l,
+        m,
+        n,
+        o,
+        p
+      ): sixteenTuple
     ) => (
   a,
   b,
@@ -819,25 +817,23 @@ let echoTuple
 let echoTuple
     (
       (
-        (
-          a,
-          b,
-          c,
-          d,
-          e,
-          f,
-          g,
-          h,
-          i,
-          j,
-          k,
-          l,
-          m,
-          n,
-          o,
-          p
-        ): sixteenTuple
-      )
+        a,
+        b,
+        c,
+        d,
+        e,
+        f,
+        g,
+        h,
+        i,
+        j,
+        k,
+        l,
+        m,
+        n,
+        o,
+        p
+      ): sixteenTuple
     ) => (
   a,
   b,
@@ -861,25 +857,23 @@ let echoTuple
 let echoTuple
     (
       (
-        (
-          a,
-          b,
-          c,
-          d,
-          e,
-          f,
-          g,
-          h,
-          i,
-          j,
-          k,
-          l,
-          m,
-          n,
-          o,
-          p
-        ): sixteenTuple
-      )
+        a,
+        b,
+        c,
+        d,
+        e,
+        f,
+        g,
+        h,
+        i,
+        j,
+        k,
+        l,
+        m,
+        n,
+        o,
+        p
+      ): sixteenTuple
     )
     :sixteenTuple => (
   a,
@@ -2147,14 +2141,14 @@ let myPolyFunc: 'a .'a => 'a = (o) => o;
 
 let myNonPolyFunc: 'a => 'a = (o) => o;
 
-let locallyAbstractFunc (type a) ((input: a)) => input;
+let locallyAbstractFunc (type a) (input: a) => input;
 
 let locallyAbstractFuncNotSugared
     (type a)
-    ((input: a)) => input;
+    (input: a) => input;
 
 let locallyAbstractFuncAnnotated: type a. a => a =
-  fun (type a) ((input: a)) => input;
+  fun (type a) (input: a) => input;
 
 /*
   Examples of how long versions of these should be wrapped: df stands for
@@ -2172,15 +2166,13 @@ let myFunc (::firstArg, ::another, ::fl) => {
 
 type inputEchoRecord('a) = {inputIs: 'a};
 
-let df_locallyAbstractFunc
-    (type a b)
-    ((input: a)) => {
+let df_locallyAbstractFunc (type a b) (input: a) => {
   inputIs: input
 }; /* With setting ReturnValOnSameLine */
 
 let df_locallyAbstractFuncNotSugared
     (type a b)
-    ((input: a)) => {
+    (input: a) => {
   inputIs: input
 };
 
@@ -2200,7 +2192,7 @@ let df_locallyAbstractFuncNotSugared
  */
 let df_locallyAbstractFuncAnnotated:
   type a. a => a => inputEchoRecord(a) =
-  ((input: a), (input: a)) => {inputIs: input};
+  (input: a, input: a) => {inputIs: input};
 
 
 /**
@@ -2249,7 +2241,7 @@ let df_locallyAbstractFuncAnnotated:
     a =>
     b =>
     (inputEchoRecord(a), inputEchoRecord(b)) =
-  ((input: a), (input2: b)) => (
+  (input: a, input2: b) => (
     {inputIs: input},
     {inputIs: input2}
   );
@@ -2263,7 +2255,7 @@ let df_locallyAbstractFuncAnnotated:
  */
 let df_locallyAbstractFuncAnnotated: 'figureMeOut =
   fun (type a b) => (
-    ((input: a), (input2: b)) => (
+    (input: a, input2: b) => (
       {inputIs: input},
       {inputIs: input2}
     ):
@@ -2341,11 +2333,11 @@ type someRecord = {
    pattern).
  */
 let funcOnSomeConstructorHi
-    ((SomeConstructorHi(x, y))) =>
+    (SomeConstructorHi(x, y)) =>
   x + y;
 
 let funcOnSomeConstructorHi
-    ((SomeConstructorHi(x, y)), secondArg) =>
+    (SomeConstructorHi(x, y), secondArg) =>
   x + y;
 
 /* With two args */
@@ -2367,7 +2359,7 @@ let funcOnSomeRecord
    pattern).
  */
 let funcOnSomeConstructorHi
-    ((SomeConstructorHi(x, y))) =>
+    (SomeConstructorHi(x, y)) =>
   x + y;
 
 let funcOnSomeRecord
@@ -2376,7 +2368,7 @@ let funcOnSomeRecord
 
 /* With two args */
 let funcOnSomeConstructorHi
-    ((SomeConstructorHi(x, y)), secondArg) =>
+    (SomeConstructorHi(x, y), secondArg) =>
   x + y;
 
 let funcOnSomeRecord
@@ -2606,9 +2598,9 @@ let testRecordCommented = {
 let callMeWithComments
     /* Comment before first arg "a" */
     (
-      (a: int),
+      a: int,
       /* Comment before second arg "b" */
-      (b: int)
+      b: int
     )
     /* Comment before return type annotation "int" */
     :int =>
@@ -2800,78 +2792,78 @@ let myNonPolyFuncCommentAfterEqual: 'a => 'a =
 
 let lATCurrySugarCommentBeforeType /*BeforeType */
     (type a)
-    ((input: a)) => input;
+    (input: a) => input;
 
 let lATCurrySugarCommentAfterType /*AfterType */
     (type a)
-    ((input: a)) => input;
+    (input: a) => input;
 
 let lATCurrySugarCommentBeforeArg
     (type a) /*BeforeArg */
-    ((input: a)) => input;
+    (input: a) => input;
 
 let lATCurrySugarCommentAfterArg
     (type a)
-    ((input: a)) =>
+    (input: a) =>
   /*AfterArg */
   input;
 
 let lATCurrySugarCommentAfterArrow
     (type a)
-    ((input: a)) => /*AfterArrow */ input;
+    (input: a) => /*AfterArrow */ input;
 
 let lATNotSugaredCommentBeforeEqual /*BeforeEqual*/
     (type a)
-    ((input: a)) => input;
+    (input: a) => input;
 
 let lATNotSugaredCommentAfterEqual
     (type a) /*AfterEqual*/
-    ((input: a)) => input;
+    (input: a) => input;
 
 let lATNotSugaredCommentBeforeType
     (type a) /*BeforeType*/
-    ((input: a)) => input;
+    (input: a) => input;
 
 let lATNotSugaredCommentAfterType
     (type a) /*AfterType*/
-    ((input: a)) => input;
+    (input: a) => input;
 
 let lATNotSugaredCommentBeforeArg
     (type a) /*BeforeArg*/
-    ((input: a)) => input;
+    (input: a) => input;
 
 let lATNotSugaredCommentAfterArg
     (type a)
-    ((input: a)) =>
+    (input: a) =>
   /*AfterArg*/
   input;
 
 let lATNotSugaredCommentAfterArrow
     (type a)
-    ((input: a)) => /*AfterArrow*/ input;
+    (input: a) => /*AfterArrow*/ input;
 
 let lAtFuncAnnotatedCommentBeforeColon /*BeforeColon*/:
   type a. a => a =
-  fun (type a) ((input: a)) => input;
+  fun (type a) (input: a) => input;
 
 let lAtFuncAnnotatedCommentAfterColon /*AfterColon*/:
   type a. a => a =
-  fun (type a) ((input: a)) => input;
+  fun (type a) (input: a) => input;
 
 let lAtFuncAnnotatedCommentBeforeTypeVar /*BeforeTypeVar*/:
   type a. a => a =
-  fun (type a) ((input: a)) => input;
+  fun (type a) (input: a) => input;
 
 let lAtFuncAnnotatedCommentAfterTypeVar /*AfterTypeVar*/:
   type a. a => a =
-  fun (type a) ((input: a)) => input;
+  fun (type a) (input: a) => input;
 
 let lAtFuncAnnotatedBeforeEqual:
   type a. a => a /*BeforeEqual*/ =
-  fun (type a) ((input: a)) => input;
+  fun (type a) (input: a) => input;
 
 let lAtFuncAnnotatedAfterEqual: type a. a => a =
-  /*AfterEqual*/ fun (type a) ((input: a)) => input;
+  /*AfterEqual*/ fun (type a) (input: a) => input;
 
 /* Ternary wrapping comments */
 let ternaryResult =

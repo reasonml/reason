@@ -472,7 +472,7 @@ module Example2 (F: Type => Type, X: Type) => {
    *   let iso (a:(Compose Id F X).t): (F X).t => a;
    *
    */
-  let iso ((a: Compose(Id)(F)(X).t)) :F(X).t => a;
+  let iso (a: Compose(Id)(F)(X).t) :F(X).t => a;
 };
 
 Printf.printf(
@@ -517,11 +517,11 @@ let myFirstClassWillBeFormattedAs: (module HasInt) =
   (module MyModule);
 
 let acceptsAndUnpacksFirstClass
-    (((module M): (module HasInt))) =>
+    ((module M): (module HasInt)) =>
   M.x + M.x;
 
 let acceptsAndUnpacksFirstClass
-    (((module M): (module HasInt))) =>
+    ((module M): (module HasInt)) =>
   M.x + M.x;
 
 module SecondClass = (val myFirstClass);

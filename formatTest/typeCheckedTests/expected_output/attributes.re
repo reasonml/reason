@@ -239,7 +239,7 @@ let showLets () =>
  * In curried sugar, the class_expr attribute will apply to the return.
  */
 [@@moduleItemAttribute]
-class boxA ('a) ((init: 'a)) =>
+class boxA ('a) (init: 'a) =>
   [@onReturnClassExpr]
   {
     pub pr = init + init + init;
@@ -249,7 +249,7 @@ class boxA ('a) ((init: 'a)) =>
 /**
  * In non-curried sugar, the class_expr still sticks to "the simple thing".
  */
-class boxB ('a) ((init: 'a)) =>
+class boxB ('a) (init: 'a) =>
   [@stillOnTheReturnBecauseItsSimple]
   {
     pub pr = init + init + init;
@@ -261,7 +261,7 @@ class boxB ('a) ((init: 'a)) =>
 class boxC ('a) =
   [@onEntireFunction]
   (
-    fun ((init: 'a)) =>
+    fun (init: 'a) =>
       [@onReturnClassExpr]
       {
         pub pr = init + init + init;
@@ -269,7 +269,7 @@ class boxC ('a) =
   );
 
 [@@moduleItemAttribute onTheTupleClassItem]
-class tupleClass ('a, 'b) ((init: ('a, 'b))) => {
+class tupleClass ('a, 'b) (init: ('a, 'b)) => {
   let one = [@exprAttr ten] 10;
   let two = [@exprAttr twenty] 20
   and three = [@exprAttr thirty] 30;
@@ -329,14 +329,12 @@ type xy =
 
 let myFun
     (
-      (
-        [@onConstruction] X(hello) |
-        [@onConstruction] Y(hello)
-      )
+      [@onConstruction] X(hello) |
+      [@onConstruction] Y(hello)
     ) => hello;
 
 let myFun
-    ((X([@onHello] hello) | Y([@onHello] hello))) => hello;
+    (X([@onHello] hello) | Y([@onHello] hello)) => hello;
 
 /* Another bug: Cannot have an attribute on or pattern
    let myFun = fun ((X(hello) | Y(hello)) [@onOrPattern]) => hello;

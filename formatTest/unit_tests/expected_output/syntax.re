@@ -276,12 +276,12 @@ let point3D: point3D = {
   z: 80 /* Optional Comma */
 };
 
-let printPoint ((p: point)) => {
+let printPoint (p: point) => {
   print_int(p.x);
   print_int(p.y)
 };
 
-let addPoints ((p1: point), (p2: point)) => {
+let addPoints (p1: point, p2: point) => {
   x: p1.x + p2.x,
   y: p1.y + p2.y
 };
@@ -332,7 +332,7 @@ let o: person = {name: "bob", age: 10};
 /* Parens needed? Nope! */
 let o: person = {name: "bob", age: 10};
 
-let printPerson ((p: person)) => {
+let printPerson (p: person) => {
   let q: person = p;
   p.name ^ p.name
 };
@@ -555,7 +555,7 @@ dummy(res3);
 
 /* Some edge cases */
 let myFun
-    (firstArg, (Red(x) | Black(x) | Green(x))) =>
+    (firstArg, Red(x) | Black(x) | Green(x)) =>
   firstArg + x;
 
 let matchesWithWhen (a) =>
@@ -573,7 +573,7 @@ let matchesWithWhen =
   | Black(x) => 10
   | Green(x) => 10;
 
-let matchesOne ((`Red(x))) => 10;
+let matchesOne (`Red(x)) => 10;
 
 /*
  Typical OCaml would make you *wrap the functions in parens*! This is because it
@@ -626,7 +626,7 @@ let tupleInsideALetSequence = {
 
 /* We *require* that function return types be wrapped in
    parenthesis. In this example, there's no ambiguity */
-let makeIncrementer ((delta: int)) :(int => int) =>
+let makeIncrementer (delta: int) :(int => int) =>
   (a) => a + delta;
 
 /* We could even force that consistency with let bindings - it's allowed
@@ -646,21 +646,19 @@ class classWithNoArg = {
        pub y => init
      end;
    */
-let myFunc ((a: int), (b: int)) :(int, int) => (
+let myFunc (a: int, b: int) :(int, int) => (
   a,
   b
 );
 
-let myFunc ((a: int), (b: int)) :list(int) => [
-  1
-];
+let myFunc (a: int, b: int) :list(int) => [1];
 
-let myFunc ((a: int), (b: int)) :point => {
+let myFunc (a: int, b: int) :point => {
   x: a,
   y: b
 };
 
-let myFunc ((a: int), (b: int)) :point => {
+let myFunc (a: int, b: int) :point => {
   x: a,
   y: b
 };
@@ -760,10 +758,10 @@ let namedAlias (a::aa, b::bb) => aa + bb;
 type namedAlias = a::int => b::int => int;
 
 /*C*/
-let namedAnnot (a::(a: int), b::(b: int)) => 20;
+let namedAnnot (a::a: int, b::b: int) => 20;
 
 /*D*/
-let namedAliasAnnot (a::(aa: int), b::(bb: int)) => 20;
+let namedAliasAnnot (a::aa: int, b::bb: int) => 20;
 
 /*E*/
 let myOptional (::a=?, ::b=?, ()) => 10;
@@ -774,12 +772,11 @@ type named = a::int? => b::int? => unit => int;
 let optionalAlias (a::aa=?, b::bb=?, ()) => 10;
 
 /*G*/
-let optionalAnnot
-    (a::(a: int)=?, b::(b: int)=?, ()) => 10;
+let optionalAnnot (a::a: int=?, b::b: int=?, ()) => 10;
 
 /*H*/
 let optionalAliasAnnot
-    (a::(aa: int)=?, b::(bb: int)=?, ()) => 10;
+    (a::aa: int=?, b::bb: int=?, ()) => 10;
 
 /*I: */
 let defOptional (::a=10, ::b=10, ()) => 10;
@@ -791,11 +788,11 @@ let defOptionalAlias (a::aa=10, b::bb=10, ()) => 10;
 
 /*K*/
 let defOptionalAnnot
-    (a::(a: int)=10, b::(b: int)=10, ()) => 10;
+    (a::a: int=10, b::b: int=10, ()) => 10;
 
 /*L*/
 let defOptionalAliasAnnot
-    (a::(aa: int)=10, b::(bb: int)=10, ()) => 10;
+    (a::aa: int=10, b::bb: int=10, ()) => 10;
 
 /*M: Invoking them - Punned */
 let resNotAnnotated = named(::a, ::b);

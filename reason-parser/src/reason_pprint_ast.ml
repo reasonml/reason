@@ -3029,7 +3029,7 @@ class printer  ()= object(self:'self)
     | _ -> (* x::y *)
         makeES6List (List.map self#pattern pat_list) (self#pattern pat_last)
 
-  method potentiallyConstrainedPattern1 x = match x.ppat_desc with
+  method constrained_pattern x = match x.ppat_desc with
     | Ppat_constraint (p, ct) ->
         formatTypeConstraint (self#pattern p) (self#core_type ct)
     | _  -> self#pattern x
@@ -3100,7 +3100,7 @@ class printer  ()= object(self:'self)
               ) in
               makeList ~wrap:("{", "}") ~break:IfNeed ~sep:"," ~postSpace:true rows
           | Ppat_tuple l ->
-              makeList ~wrap:("(", ")") ~sep:"," ~postSpace:true ~break:IfNeed (List.map (self#potentiallyConstrainedPattern1) l)
+              makeList ~wrap:("(", ")") ~sep:"," ~postSpace:true ~break:IfNeed (List.map self#constrained_pattern l)
           | Ppat_constant (c) -> (self#constant c)
           | Ppat_interval (c1, c2) -> makeList [self#constant c1; atom ".."; self#constant c2]
           | Ppat_variant (l, None) -> makeList[atom "`"; atom l]
@@ -3127,17 +3127,17 @@ class printer  ()= object(self:'self)
 
   method label_exp l opt p  =
     match l with
-    | Nolabel -> self#simple_pattern p (*single case pattern parens needed here *)
+    | Nolabel -> self#constrained_pattern p (*single case pattern parens needed here *)
     | Optional lbl ->
-        let lbl = pun_labelled_pattern p lbl in
-        (formatLabeledArgument
-           lbl ""
-           (label
-             (makeList [(self#simple_pattern p); atom "="])
-             (match opt with None -> (atom "?") | Some o -> (self#simplifyUnparseExpr o))))
+      let lbl = pun_labelled_pattern p lbl in
+      (formatLabeledArgument
+         lbl ""
+         (label
+            (makeList [(self#constrained_pattern p); atom "="])
+            (match opt with None -> (atom "?") | Some o -> (self#simplifyUnparseExpr o))))
     | Labelled l ->
-        let lbl = pun_labelled_pattern p l in
-        formatLabeledArgument lbl "" (self#simple_pattern p)
+      let lbl = pun_labelled_pattern p l in
+      formatLabeledArgument lbl "" (self#constrained_pattern p)
 
   method access op cls e1 e2 = makeList ~interleaveComments:false [
     (* Important that this be not breaking - at least to preserve same
@@ -4085,10 +4085,9 @@ class printer  ()= object(self:'self)
    *)
   method wrappedBinding prefixText pattern patternAux expr =
     let (_sweet, argsList, return) = self#curriedPatternsAndReturnVal expr in
-    let patternList =
-      match patternAux with
-        | [] -> pattern
-        | _::_ -> makeList ~postSpace:true ~inline:(true, true) ~break:IfNeed (pattern::patternAux)
+    let patternList = match patternAux with
+      | [] -> pattern
+      | _::_ -> makeList ~postSpace:true ~inline:(true, true) ~break:IfNeed (pattern::patternAux)
     in
     match (argsList, return.pexp_desc) with
       | ([], Pexp_constraint (e, ct)) ->

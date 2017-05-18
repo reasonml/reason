@@ -27,7 +27,7 @@ let notTupled: notTupleVariant =
 /* Doesn't work because we've correctly annotated parse tree nodes with explicit_arity! */
 /* let notTupled: notTupleVariant = NotActuallyATuple (10, 10); */
 let funcOnNotActuallyATuple
-    ((NotActuallyATuple(x, y))) =>
+    (NotActuallyATuple(x, y)) =>
   x + y;
 
 /* let funcOnNotActuallyATuple (NotActuallyATuple (x, y)) => x + y; */
@@ -99,12 +99,10 @@ let accessDeeply
 
 let accessDeeplyWithArg
     (
-      (
-        LocalModule.AccessedThroughModuleWith(x) |
-        LocalModule.AccessedThroughModuleWithTwo(
-          _,
-          x
-        )
+      LocalModule.AccessedThroughModuleWith(x) |
+      LocalModule.AccessedThroughModuleWithTwo(
+        _,
+        x
       )
     ) => x;
 
@@ -192,16 +190,14 @@ type combination('a) =
 /** But then how do we parse matches in function arguments? */
 /* We must require parenthesis around construction matching in function args only*/
 let howWouldWeMatchFunctionArgs
-    ((HeresTwoConstructorArguments(x, y))) =>
+    (HeresTwoConstructorArguments(x, y)) =>
   x + y;
 
 /* How would we annotate said arg? */
 let howWouldWeMatchFunctionArgs
     (
-      (
-        HeresTwoConstructorArguments(x, y):
-          combination('wat)
-      )
+      HeresTwoConstructorArguments(x, y):
+        combination('wat)
     ) =>
   x + y;
 

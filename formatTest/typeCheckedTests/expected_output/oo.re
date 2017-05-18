@@ -156,11 +156,11 @@ let coercedReturn = {
 };
 
 let acceptsOpenAnonObjAsArg
-    ((o: {.. x : int, y : int})) =>
+    (o: {.. x : int, y : int}) =>
   o#x + o#y;
 
 let acceptsClosedAnonObjAsArg
-    ((o: {. x : int, y : int})) =>
+    (o: {. x : int, y : int}) =>
   o#x + o#y;
 
 let res =
@@ -249,7 +249,7 @@ class myClassWithAnnotatedReturnType3_annotated_constructor:
     pub y: int = init;
   };
 
-class tupleClass ('a, 'b) ((init: ('a, 'b))) => {
+class tupleClass ('a, 'b) (init: ('a, 'b)) => {
   pub pr = init;
 };
 
@@ -361,8 +361,8 @@ class addablePoint:
     as self;
     pub add
         (
-          (one: addablePointClassType),
-          (two: addablePointClassType)
+          one: addablePointClassType,
+          two: addablePointClassType
         ) =>
       one#x + two#x + one#y + two#x;
     pub x: int = init;
@@ -375,8 +375,8 @@ class addablePoint2:
     as self;
     pub add
         (
-          (one: addablePointClassType),
-          (two: addablePointClassType)
+          one: addablePointClassType,
+          two: addablePointClassType
         ) =>
       one#x + two#x + one#y + two#x;
     pub x: int = init;

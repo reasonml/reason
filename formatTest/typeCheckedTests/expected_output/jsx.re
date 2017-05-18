@@ -46,7 +46,7 @@ module Sibling = {
   let createElement
       (
         ::foo=?,
-        children::(children: list(component)),
+        children::children: list(component),
         ()
       ) => {
     displayName: "test"
@@ -178,8 +178,7 @@ let notReallyJSX (::foo, ::bar, children) => {
   displayName: "test"
 };
 
-let fakeRender ((el: component)) =>
-  el.displayName;
+let fakeRender (el: component) => el.displayName;
 
 /* end of setup */
 let (/><) (a, b) => a + b;
@@ -450,8 +449,8 @@ let asd2 =
 
 let span
     (
-      test::(test: bool),
-      foo::(foo: int),
+      test::test: bool,
+      foo::foo: int,
       ::children,
       ()
     ) => 1;
@@ -460,7 +459,7 @@ let asd =
   [@foo] <span test=true foo=2> "a" "b" </span>;
 
 /* "video" call doesn't end with a list, so the expression isn't converted to JSX */
-let video (test::(test: bool), children) => children;
+let video (test::test: bool, children) => children;
 
 let asd2 = [@foo] [@JSX] video(test::false, 10);
 
