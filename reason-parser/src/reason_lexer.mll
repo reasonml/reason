@@ -753,6 +753,16 @@ and skip_sharp_bang = parse
   exception Lex_balanced_failed of (token * position * position) list *
                                    (exn * position * position) option
 
+  let closing_of = function
+    | LPAREN -> RPAREN
+    | LBRACE -> RBRACE
+    | _ -> assert false
+
+  let inject_es6_fun = function
+    | tok :: acc ->
+      tok :: fake_triple ES6_FUN tok :: acc
+    | _ -> assert false
+
   let rec lex_balanced_step closing lexbuf acc tok =
     let acc = save_triple lexbuf tok :: acc in
     match tok, closing with
@@ -760,15 +770,13 @@ and skip_sharp_bang = parse
       acc
     | ((RPAREN | RBRACE | RBRACKET | EOF), _) ->
       raise (Lex_balanced_failed (acc, None))
-    | (LBRACE, _) ->
-      lex_balanced closing lexbuf (lex_balanced RBRACE lexbuf acc)
     | (( LBRACKET | LBRACKETLESS | LBRACKETGREATER
        | LBRACKETAT | LBRACKETATAT | LBRACKETATATAT
        | LBRACKETPERCENT | LBRACKETPERCENTPERCENT ), _) ->
       lex_balanced closing lexbuf (lex_balanced RBRACKET lexbuf acc)
-    | (LPAREN, _) ->
+    | ((LPAREN | LBRACE), _) ->
       let rparen =
-        try lex_balanced RPAREN lexbuf []
+        try lex_balanced (closing_of tok) lexbuf []
         with (Lex_balanced_failed (rparen, None)) ->
           raise (Lex_balanced_failed (rparen @ acc, None))
       in
@@ -776,14 +784,18 @@ and skip_sharp_bang = parse
       | exception exn ->
         raise (Lex_balanced_failed (rparen @ acc, Some (save_triple lexbuf exn)))
       | EQUALGREATER ->
-        let acc = match acc with
-          | lparen :: acc ->
-            lparen :: fake_triple ES6_FUN lparen :: acc
-          | [] -> assert false
-        in
+        let acc = inject_es6_fun acc in
         lex_balanced_step closing lexbuf (rparen @ acc) EQUALGREATER
       | tok' ->
         lex_balanced_step closing lexbuf (rparen @ acc) tok'
+      end
+    | (LIDENT _, _) ->
+      begin match token lexbuf with
+      | exception exn ->
+        raise (Lex_balanced_failed (acc, Some (save_triple lexbuf exn)))
+      | EQUALGREATER ->
+        lex_balanced_step closing lexbuf (inject_es6_fun acc) EQUALGREATER
+      | tok' -> lex_balanced_step closing lexbuf acc tok'
       end
     | _ -> lex_balanced closing lexbuf acc
 
@@ -796,9 +808,9 @@ and skip_sharp_bang = parse
   let queued_tokens = ref []
   let queued_exn = ref None
 
-  let lookahead_esfun lexbuf lparen =
+  let lookahead_esfun lexbuf (tok, _, _ as lparen) =
     let triple =
-      match lex_balanced RPAREN lexbuf [] with
+      match lex_balanced (closing_of tok) lexbuf [] with
       | exception (Lex_balanced_failed (tokens, exn)) ->
         queued_tokens := List.rev tokens;
         queued_exn := exn;
@@ -830,9 +842,26 @@ and skip_sharp_bang = parse
     | [(LPAREN, _, _) as lparen], None ->
       let _ = load_triple lexbuf lparen in
       lookahead_esfun lexbuf lparen
+    | [(LBRACE, _, _) as lparen], None ->
+      let _ = load_triple lexbuf lparen in
+      lookahead_esfun lexbuf lparen
     | [], None ->
       begin match token lexbuf with
-      | LPAREN -> lookahead_esfun lexbuf (save_triple lexbuf LPAREN)
+      | LPAREN | LBRACE as tok ->
+          lookahead_esfun lexbuf (save_triple lexbuf tok)
+      | LIDENT _ as tok ->
+          let tok = save_triple lexbuf tok in
+          begin match token lexbuf with
+          | EQUALGREATER ->
+              queued_tokens := [tok; save_triple lexbuf EQUALGREATER];
+              load_triple lexbuf (fake_triple ES6_FUN tok)
+          | exception exn ->
+              queued_exn := Some (save_triple lexbuf exn);
+              load_triple lexbuf tok
+          | tok' ->
+              queued_tokens := [save_triple lexbuf tok'];
+              load_triple lexbuf tok
+          end
       | token -> token
       end
     | x :: xs, _ -> queued_tokens := xs; load_triple lexbuf x

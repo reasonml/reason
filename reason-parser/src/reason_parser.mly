@@ -2379,6 +2379,16 @@ as_loc
   }
 ;
 
+es6_parameters:
+  | labeled_pattern_list { $1 }
+  | as_loc(simple_pattern_direct_argument { (Nolabel, None, $1) })
+    { [$1] }
+  | as_loc(val_ident)
+    { [{$1 with txt = (Nolabel, None, mkpat ~loc:$1.loc (Ppat_var $1))}] }
+;
+
+
+
 // TODO: properly fix JSX labelled/optional stuff
 jsx_arguments:
   /* empty */ { [] }
@@ -2477,8 +2487,8 @@ mark_position_exp
     { $1 }
   | FUN fun_def
     { $2 }
-  | ES6_FUN labeled_pattern_list+ EQUALGREATER expr
-    { List.fold_right (List.fold_right mkexp_fun) $2 $4 }
+  | ES6_FUN es6_parameters EQUALGREATER expr
+    { List.fold_right mkexp_fun $2 $4 }
   /* List style rules like this often need a special precendence
      such as below_BAR in order to let the entire list "build up"
    */
