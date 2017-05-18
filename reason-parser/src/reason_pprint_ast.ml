@@ -2275,16 +2275,29 @@ let constant f = function
   | Pconst_float (i, Some m) -> paren (i.[0]='-') (fun f (i,m) ->
       pp f "%s%c" i m) f (i,m)
 
+let is_punned_labelled_expression e lbl = match e.pexp_desc with
+  | Pexp_ident { txt; _ }
+  | Pexp_constraint ({pexp_desc = Pexp_ident { txt; _ }; _}, _)
+  | Pexp_coerce ({pexp_desc = Pexp_ident { txt; _ }; _}, _, _)
+    -> txt = Longident.parse lbl
+  | _ -> false
 
-let pun_labelled_expression e lbl =
-  (match e with
-    | { pexp_desc = (Pexp_ident { txt; _ }); _ } when txt = (Longident.parse lbl) -> ""
-    | _ -> lbl )
+let is_punned_labelled_pattern p lbl = match p.ppat_desc with
+  | Ppat_var { txt; _ }
+  | Ppat_constraint ({ ppat_desc = Ppat_var { txt; _ }; _ }, _)
+    -> txt = lbl
+  | _ -> false
 
-let pun_labelled_pattern e lbl =
-  (match e with
-    | { ppat_desc = (Ppat_var { txt; _ }) } when txt = lbl -> ""
-    | _ -> lbl )
+let format_labeled_argument is_punned term = function
+  | Nolabel -> term
+  | Labelled lbl ->
+    if is_punned lbl
+    then label (atom ":") term
+    else label (atom (":" ^ lbl)) ~space:true term
+  | Optional lbl ->
+    if is_punned lbl
+    then label (atom ":") (label term (atom "?"))
+    else label (atom (":" ^ lbl ^ "?")) ~space:true term
 
 let isLongIdentWithDot = function
   | Ldot _ -> true
@@ -2395,23 +2408,14 @@ class printer  ()= object(self:'self)
         )
       | _ -> self#core_type2 x
 
-  method type_with_label (label, ({ptyp_desc} as c)) =
-    match label with
-    | Nolabel ->  self#non_arrowed_non_simple_core_type c (* otherwise parenthesize *)
-    | Labelled s -> formatLabeledArgument s "" (self#non_arrowed_non_simple_core_type c)
+  method type_with_label (lbl, c) =
+    let typ = self#non_arrowed_non_simple_core_type c in
+    match lbl with
+    | Nolabel -> typ
+    | Labelled lbl ->
+      makeList [atom (":" ^ lbl); atom ":"; typ]
     | Optional lbl ->
-       let everythingButQuestion =
-         formatLabeledArgument
-           lbl
-           ""
-           (makeList
-              ~postSpace:true
-              ~break:IfNeed
-              ~inline:(true, true)
-              (* I don't think you'll have more than one l here. *)
-              [self#non_arrowed_non_simple_core_type c]
-            )
-       in makeList [everythingButQuestion; atom "?"]
+      makeList [atom (":" ^ lbl); atom ":"; label typ (atom "?")]
 
   method type_param (ct, a) =
     makeList [atom (type_variance a); self#core_type ct]
@@ -3125,19 +3129,19 @@ class printer  ()= object(self:'self)
         in
         SourceMap (x.ppat_loc, itm)
 
-  method label_exp l opt p  =
-    match l with
-    | Nolabel -> self#constrained_pattern p (*single case pattern parens needed here *)
-    | Optional lbl ->
-      let lbl = pun_labelled_pattern p lbl in
-      (formatLabeledArgument
-         lbl ""
-         (label
-            (makeList [(self#constrained_pattern p); atom "="])
-            (match opt with None -> (atom "?") | Some o -> (self#simplifyUnparseExpr o))))
-    | Labelled l ->
-      let lbl = pun_labelled_pattern p l in
-      formatLabeledArgument lbl "" (self#constrained_pattern p)
+  method label_exp lbl opt pat =
+    let term = self#constrained_pattern pat in
+    let param = match lbl with
+      | Nolabel -> term
+      | Labelled lbl | Optional lbl when is_punned_labelled_pattern pat lbl ->
+        label (atom ":") term
+      | Labelled lbl | Optional lbl ->
+        label (atom (":" ^ lbl)) ~space:true term
+    in
+    match opt, lbl with
+    | None, Optional _ -> makeList [param; atom "=?"]
+    | None, _ -> param
+    | Some o, _ -> makeList [param; atom "="; (self#unparseConstraintExpr o)]
 
   method access op cls e1 e2 = makeList ~interleaveComments:false [
     (* Important that this be not breaking - at least to preserve same
@@ -6023,14 +6027,17 @@ class printer  ()= object(self:'self)
     (List.map case_row l)
 
   method label_x_expression_param (l, e) =
+    let term = self#unparseConstraintExpr e in
     let param = match l with
-      | Nolabel -> self#unparseConstraintExpr e
+      | Nolabel -> term
+      | Labelled lbl when is_punned_labelled_expression e lbl ->
+        label (atom ":") term
+      | Optional lbl when is_punned_labelled_expression e lbl ->
+        label (atom ":") (label term (atom "?"))
       | Labelled lbl ->
-        let lbl = pun_labelled_expression e lbl in
-        formatLabeledArgument lbl "" (self#unparseConstraintExpr e)
-      | Optional str ->
-        let lbl = pun_labelled_expression e str in
-        formatLabeledArgument lbl "?" (self#unparseConstraintExpr e)
+        label (atom (":" ^ lbl)) ~space:true term
+      | Optional lbl ->
+        label (atom (":" ^ lbl ^ "?")) ~space:true term
     in
     SourceMap (e.pexp_loc, param)
 

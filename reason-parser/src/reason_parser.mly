@@ -1026,7 +1026,7 @@ conflicts.
 %nonassoc below_SEMI
 %nonassoc below_EQUALGREATER
 %right    EQUALGREATER                  /* core_type2 (t => t => t) */
-%right COLON
+%right    COLON
 %right    EQUAL                         /* below COLONEQUAL (lbl = x := e) */
 %right    COLONEQUAL                    /* expr (e := e := e) */
 %nonassoc QUESTION
@@ -2358,7 +2358,7 @@ labeled_pattern:
 as_loc
   ( COLON as_loc(LIDENT) labeled_pattern_constraint
     { (Labelled $2.txt, None, $3 $2) }
-  | COLON as_loc(LIDENT) labeled_pattern_constraint EQUAL simple_expr
+  | COLON as_loc(LIDENT) labeled_pattern_constraint EQUAL expr
     { (Optional $2.txt, Some $5, $3 $2) }
   | COLON as_loc(LIDENT) labeled_pattern_constraint EQUAL QUESTION
     { (Optional $2.txt, None, $3 $2) }
@@ -3686,9 +3686,9 @@ mark_position_typ2
   | only_core_type(core_type2) EQUALGREATER only_core_type(core_type2)
     { Core_type (mktyp(Ptyp_arrow(Nolabel, $1, $3))) }
 
-  | COLON LIDENT optional COLON only_core_type(non_arrowed_core_type)
+  | COLON LIDENT COLON only_core_type(non_arrowed_core_type) optional
       EQUALGREATER only_core_type(core_type2)
-    { Core_type (mktyp(Ptyp_arrow($3 $2, $5, $7))) }
+    { Core_type (mktyp(Ptyp_arrow($5 $2, $4, $7))) }
 
     /* <REMOVE ME> */
   | LIDENTCOLONCOLON only_core_type(non_arrowed_core_type)
