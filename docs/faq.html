@@ -32,6 +32,9 @@ There's no need to pick! Reason and OCaml share the exact same semantics (i.e. h
 #### What's the relation between Reason, BuckleScript and OCaml?
 See [here](./jsWorkflow.html). Reason's a syntax for OCaml and supports all its features. BuckleScript compiles OCaml/Reason code into to JavaScript.
 
+#### What's the server-side story? Should I compile to native or to JS and use node.js?
+We do compile to native, but the native workflow is currently work-in-progress. At this time, we recommend compiling to JS through BuckleScript and use the bindings at [BuckleTypes](https://github.com/buckletypes) or somewhere else.
+
 #### What's the `.merlin` file at the root of my project?
 That's the metadata file for [Merlin](./tools.html#tools-command-line-utilities-merlin), the shared editor integration backend for autocomplete, jump-to-definition, etc. For the [JavaScript Workflow](./jsWorkflow.html#javascript-workflow), `bsb` the build system generates the `.merlin` for you; You don't need to check that into your version control and don't have to manually modify it.
 
@@ -109,6 +112,7 @@ BuckleScript is optimized for performance across the whole stack. You can try sl
         <li><a href='jsWorkflow.html'>JS Workflow</a></li>
         <li><a href='nativeWorkflow.html'>Native Workflow</a></li>
         <li><a href='faq.html'>FAQ</a></li>
+        <li><a href='blog.html'>Blog</a></li>
         <li><a href='https://github.com/facebook/reason'>GitHub</a></li>
         <li><input type="search" id="agolia-search" placeholder="Search docs..."></li>
       </ul>

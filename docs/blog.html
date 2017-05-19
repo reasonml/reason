@@ -1,0 +1,96 @@
+<!doctype html>
+<html>
+<head>
+  <link href='https://fonts.googleapis.com/css?family=Montserrat:400,700' rel='stylesheet' type='text/css'>
+  <meta charset='utf-8'>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width">
+
+  <title>Reason</title>
+
+  <!-- Flatdoc -->
+  <script src='vendor/jquery.js'></script>
+  <script src="highlightJs/build/highlight.pack.js"></script>
+  <link  href='highlightJs/src/styles/xcode.css' rel='stylesheet'>
+  <script src='flatdoc.js'></script>
+
+  <!-- Flatdoc theme -->
+  <link  href='theme-white/style.css' rel='stylesheet'>
+  <script src='theme-white/script.js'></script>
+
+  <script id="markdown" type="text/markdown">
+
+Spring Cleaning (First Blog Post!)
+-----
+May 18, 2017
+
+Now that the community is taking off, keeping folks up-to-date through [Discord](discord.gg/reasonml) and other existing channels became less ideal. We're starting a blog post section for this reason. In the spirit of the community, these posts will stay short and concise.
+
+We've moved unused first-party projects from [GitHub/reasonml](https://github.com/reasonml/) to [GitHub/reasonml-old](https://github.com/reasonml-old). Old URLs are redirected, so no breackage here.
+
+We've cleaned up the Reason codebase. Editor integrations moved out to their dedicated repos. Updated instructions are still [here](./tools.html#editor-integration). Other Reason repo cleanups are still ongoing.
+
+Some discord rooms got merged together. Fewer rooms, more focused discussions.
+
+As you can see: this documentation site got a few rearrangements too. In general, if you'd like to contribute to docs, please ping us on Discord!
+
+
+  </script>
+
+  <!-- Initializer -->
+  <script>
+    Flatdoc.run({
+      fetcher: function(callback) {
+        callback(null, document.getElementById('markdown').innerHTML);
+      },
+      highlight: function (code, value) {
+        return (value === 'reason') ? hljs.highlight('reason', code).value : hljs.highlight(value, code).value;
+      },
+    });
+  </script>
+
+  <!-- Meta -->
+  <meta content="Reason: Syntax & Toolchain for OCaml" name="description">
+  <meta content="Reason: Syntax & Toolchain for OCaml" property="og:description">
+  <meta content="https://facebook.github.io/reason/images/logoMini.png" property="og:image">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/docsearch.js/2/docsearch.min.css" />
+</head>
+<body role='flatdoc' class='big-h3 large-brief no-literate'>
+
+  <div class='title-area title-card'>
+    <div class='in'>
+      <img src="images/logo.png" style="max-width:598px; width:80%; padding-left:10%; padding-right:10%; -webkit-user-select:none; cursor:default"></img>
+    </div>
+  </div>
+
+  <div class='header'>
+    <div class='left'>
+      <h1><a href='index.html'>Reason</a></h1>
+      <ul>
+        <li><a href='jsWorkflow.html'>JS Workflow</a></li>
+        <li><a href='nativeWorkflow.html'>Native Workflow</a></li>
+        <li><a href='faq.html'>FAQ</a></li>
+        <li><a href='blog.html'>Blog</a></li>
+        <li><a href='https://github.com/facebook/reason'>GitHub</a></li>
+        <li><input type="search" id="agolia-search" placeholder="Search docs..."></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class='content-root'>
+    <div class='menubar'>
+      <div class='menu section' role='flatdoc-menu'></div>
+    </div>
+    <div role='flatdoc-content' class='content'></div>
+  </div>
+
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/docsearch.js/2/docsearch.min.js"></script>
+  <script type="text/javascript">
+    docsearch({
+      apiKey: 'c0b64d79817b714e4d7038d33cb5bb64',
+      indexName: 'reason',
+      inputSelector: '#agolia-search',
+    });
+  </script>
+</body>
+</html>
