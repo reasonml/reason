@@ -5233,7 +5233,7 @@ class printer  ()= object(self:'self)
       in
       let includingEqual = makeList ~postSpace:true [upToName; atom "="] in
       let itm = label ~space:true includingEqual (self#class_instance_type x.pci_expr) in
-      let itmWithAttrs = self#attach_std_item_attrs x.pci_expr.pcty_attributes itm in
+      let itmWithAttrs = self#attach_std_attrs x.pci_expr.pcty_attributes itm in
       self#attach_std_item_attrs pci_attributes itmWithAttrs
     in
     match l with

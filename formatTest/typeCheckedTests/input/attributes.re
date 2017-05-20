@@ -216,6 +216,8 @@ and anotherClassType = {
 }
 [@@structureItem];
 
+class type _x = { pub height : int }[@bs];
+
 class type _y = { pub height : int [@@bs.set] };
 
 class type _z = { pub height : int }[@@bs];
