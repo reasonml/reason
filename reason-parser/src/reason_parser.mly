@@ -337,9 +337,25 @@ let mkuminus name arg =
   | _ ->
       mkexp(Pexp_apply(mkoperator ("~" ^ name) 1, [Nolabel, arg]))
 
-let mkFunctorThatReturns functorArgs returns =
-  List.fold_right (fun (n, t) acc -> mkmod (Pmod_functor(n, t, acc)))
-    functorArgs returns
+let prepare_functor_arg = function
+  | Some name, mty -> (name, mty)
+  | None, (Some {pmty_loc} as mty) ->
+      (mkloc "_" (make_ghost_loc pmty_loc), mty)
+  | None, None -> assert false
+
+let mk_functor_mod args body =
+  let folder arg acc =
+    let name, mty = prepare_functor_arg arg.txt in
+    mkmod ~loc:arg.loc (Pmod_functor(name, mty, acc))
+  in
+  List.fold_right folder args body
+
+let mk_functor_mty args body =
+  let folder arg acc =
+    let name, mty = prepare_functor_arg arg.txt in
+    mkmty ~loc:arg.loc (Pmty_functor(name, mty, acc))
+  in
+  List.fold_right folder args body
 
 let mkuplus name arg =
   let desc = arg.pexp_desc in
@@ -374,6 +390,14 @@ let mkexp_fun {Location. txt = (label, default_expr, pat); loc} body =
 let mkclass_fun {Location. txt = (label, default_expr, pat); loc} body =
   mkclass ~loc:(mklocation loc.loc_start body.pcl_loc.loc_end)
     (Pcl_fun (label, default_expr, pat, body))
+
+let mktyp_arrow {Location. txt = (label, cod); loc} dom =
+  mktyp ~loc:(mklocation loc.loc_start dom.ptyp_loc.loc_end)
+    (Ptyp_arrow (label, cod, dom))
+
+let mkcty_arrow {Location. txt = (label, cod); loc} dom =
+  mkcty ~loc:(mklocation loc.loc_start dom.pcty_loc.loc_end)
+    (Pcty_arrow (label, cod, dom))
 
 let mkexp_app_rev startp endp (body, args) =
   let loc = mklocation startp endp in
@@ -456,6 +480,18 @@ let syntax_error () =
 let syntax_error_exp loc msg =
   if !Reason_config.recoverable then
     Exp.mk ~loc (Pexp_extension (Syntax_util.syntax_error_extension_node loc msg))
+  else
+    syntax_error ()
+
+let syntax_error_typ loc msg =
+  if !Reason_config.recoverable then
+    Typ.extension ~loc (Syntax_util.syntax_error_extension_node loc msg)
+  else
+    syntax_error ()
+
+let syntax_error_mod loc msg =
+  if !Reason_config.recoverable then
+    Mty.extension ~loc (Syntax_util.syntax_error_extension_node loc msg)
   else
     syntax_error ()
 
@@ -1024,7 +1060,6 @@ conflicts.
 */
 /* Question: Where is the SEMI explicit precedence? */
 %nonassoc below_SEMI
-%nonassoc below_EQUALGREATER
 %right    EQUALGREATER                  /* core_type2 (t => t => t) */
 %right    COLON
 %right    EQUAL                         /* below COLONEQUAL (lbl = x := e) */
@@ -1225,24 +1260,26 @@ parse_pattern:
 
 /* Module expressions */
 
-functor_arg_name:
-  | UIDENT     { $1 }
-  | UNDERSCORE { "_" }
-;
+module_parameter:
+as_loc
+  ( LPAREN RPAREN
+    { (Some (mkloc "*" (mklocation $startpos $endpos)), None) }
+  | as_loc(UIDENT {$1} | UNDERSCORE {"_"}) COLON module_type
+    { (Some $1, Some $3) }
+  | module_type
+    { (None, Some $1) }
+) {$1};
 
-functor_arg:
+module_parameters:
+  parenthesized(lseparated_two_or_more(COMMA, module_parameter)) { $1 };
+
+functor_parameters:
   | LPAREN RPAREN
-	  { (mkloc "*" (mklocation $startpos $endpos), None) }
-  | as_loc(functor_arg_name) COLON module_type
-    { ($1, Some $3) }
-;
-
-functor_args:
-  parenthesized(separated_list(COMMA, functor_arg))
-  { match $1 with
-    | [] -> [mkloc "*" (mklocation $startpos $endpos), None]
-    | xs -> xs
-  }
+    { let loc = mklocation $startpos $endpos in
+      [mkloc (Some (mkloc "*" loc), None) loc]
+    }
+  | module_parameters { $1 }
+  | parenthesized(module_parameter) { [$1] }
 ;
 
 module_complex_expr:
@@ -1299,8 +1336,8 @@ mark_position_mod
    * Update: In upstream, it *is* possible to annotate return values for
    * lambdas.
    */
-  | FUN functor_args+ EQUALGREATER module_expr
-    { List.fold_right mkFunctorThatReturns $2 $4 }
+  | FUN functor_parameters+ EQUALGREATER module_expr
+    { List.fold_right mk_functor_mod $2 $4 }
   | module_expr module_arguments
     { List.fold_left mkmod_app $1 $2 }
   | module_expr as_loc(LPAREN) module_expr as_loc(error)
@@ -1481,24 +1518,14 @@ mark_position_str
     { mkstr(Pstr_attribute $1) }
   ) {$1};
 
-module_binding_body_expr:
-  | EQUAL module_expr
-    { $2 }
-  | COLON module_type EQUAL module_expr
-    { mkmod ~loc:(mklocation $startpos $endpos) (Pmod_constraint($4, $2)) }
-;
-
-module_binding_body_functor:
-mark_position_mod
-  ( functor_args+ EQUALGREATER module_expr
-    { List.fold_right mkFunctorThatReturns $1 $3 }
-  | functor_args+ COLON non_arrowed_module_type EQUALGREATER module_expr
-    { let loc = mklocation $startpos($3) $endpos($5) in
-      List.fold_right mkFunctorThatReturns $1 (mkmod ~loc (Pmod_constraint($5, $3))) }
-  ) {$1};
-
 module_binding_body:
-  module_binding_body_expr | module_binding_body_functor { $1 };
+  | functor_parameters* EQUAL module_expr
+    { List.fold_right mk_functor_mod $1 $3 }
+  | functor_parameters* COLON non_arrowed_module_type EQUAL module_expr
+    { let loc = mklocation $startpos($3) $endpos($5) in
+      List.fold_right mk_functor_mod $1 (mkmod ~loc (Pmod_constraint($5, $3)))
+    }
+;
 
 and_module_bindings:
   item_attributes AND as_loc(UIDENT) module_binding_body
@@ -1534,8 +1561,11 @@ mark_position_mty
 
 simple_module_type:
 mark_position_mty
-  ( LPAREN module_type RPAREN
-    { $2 }
+  ( parenthesized(module_parameter)
+    { match $1.txt with
+      | (None, Some x) -> x
+      | _ -> syntax_error_mod $1.loc "Expecting a simple module type"
+    }
   | as_loc(LPAREN) module_type as_loc(error)
     { unclosed_mty (with_txt $1 "(") (with_txt $3 ")")}
   | as_loc(mty_longident)
@@ -1593,20 +1623,7 @@ mark_position_mty
      *    WITH  reduce 75
      *)
     { $1 }
-  | LPAREN as_loc(functor_arg_name) COLON module_type RPAREN EQUALGREATER module_type %prec below_SEMI
-    (* Why does this rule cause a conflict with core_type2? It has nothing to do
-     * with it.
-     *
-     * Update: I'm guessing it has something to do with the fact that this isn't
-     * parsed correctly because the => is considered part of "type dependenences" :
-     *
-     *    let module CreateFactory
-     *               (Spec: ContainerSpec)
-     *               :DescriptorFactoryIntf.S with
-     *                  type props = Spec.props and type dependencies = Spec.props =>
-     *)
-    { mkmty(Pmty_functor($2, Some $4, $7)) }
-  | module_type EQUALGREATER module_type %prec below_SEMI
+  | functor_parameters+ EQUALGREATER module_type %prec below_SEMI
       (**
        * In OCaml, this is invalid:
        * module MyFunctor: functor MT -> (sig end) = functor MT -> (struct end);;
@@ -1651,9 +1668,7 @@ mark_position_mty
        *
        *
        *)
-    { let loc = mklocation $symbolstartpos $endpos in
-      mkmty(Pmty_functor(ghloc ~loc "_", Some $1, $3))
-    }
+    { List.fold_right mk_functor_mty $1 $3 }
   ) {$1};
 
 signature: terminated(signature_item, SEMI)* { $1 };
@@ -1727,14 +1742,9 @@ open_statement:
 ;
 
 module_declaration:
-mark_position_mty
-  ( COLON module_type
-      { $2 }
-  | LPAREN as_loc(UIDENT) COLON module_type RPAREN module_declaration
-      { mkmty(Pmty_functor($2, Some $4, $6)) }
-  | LPAREN RPAREN module_declaration
-      { mkmty(Pmty_functor(mkloc "*" (mklocation $startpos($1) $endpos($1)), None, $3)) }
-  ) {$1};
+  functor_parameters* COLON module_type
+  { List.fold_right mk_functor_mty $1 $3 }
+;
 
 and_module_rec_declaration:
   item_attributes AND as_loc(UIDENT) COLON module_type
@@ -1808,15 +1818,10 @@ class_fun_binding:
 ;
 
 class_fun_return:
-  | EQUALGREATER class_expr { $2 }
+  | EQUAL class_expr { $2 }
   | COLON mark_position_cty(non_arrowed_class_constructor_type)
-      EQUALGREATER class_expr
+      EQUAL class_expr
     { mkclass ~loc:(mklocation $startpos $endpos) (Pcl_constraint ($4, $2)) }
-;
-
-class_fun_def:
-  labeled_pattern_list+ EQUALGREATER class_expr
-  { List.fold_right (List.fold_right mkclass_fun) $1 $3 }
 ;
 
 class_expr_lets_and_rest:
@@ -1845,8 +1850,8 @@ class_expr:
 mark_position_cl
   ( class_simple_expr
     { $1 }
-  | FUN class_fun_def
-    { $2 }
+  | FUN labeled_pattern_list+ EQUAL class_expr
+    { List.fold_right (List.fold_right mkclass_fun) $1 $3 }
   | class_simple_expr labeled_arguments
       /**
        * This is an interesting way to "partially apply" class construction:
@@ -2090,12 +2095,8 @@ class_constructor_type:
 mark_position_cty
   ( NEW class_instance_type
     { $2 }
-  | only_core_type(non_arrowed_core_type) EQUALGREATER class_constructor_type
-    { mkcty(Pcty_arrow(Nolabel, $1, $3)) }
-
-  | COLON LIDENT COLON only_core_type(non_arrowed_core_type) optional
-      EQUALGREATER class_constructor_type
-    { mkcty (Pcty_arrow($5 $2, $4, $7)) }
+  | arrow_type_parameters EQUALGREATER class_constructor_type
+    { List.fold_right mkcty_arrow $1 $3 }
 
     /* <REMOVE ME> */
   | LIDENTCOLONCOLON boption(QUESTION)
@@ -3602,7 +3603,7 @@ mark_position_typ
   * Non arrowed types may be shown in the trailing positino of the curried sugar
   * function/functor bindings, but it doesn't have to be simple.
   *
-  * let x ... :non_arrowed_type => ..
+  * let x ... :non_arrowed_core_type => ..
   *
   * - A better name for core_type2 would be arrowed_core_type
   * - A better name for core_type would be aliased_arrowed_core_type
@@ -3618,15 +3619,15 @@ mark_position_typ
   *
   * non_arrowed_core_type ::=
   *    non_arrowed_non_simple_core_type
-  *    non_arrowed_simple_core_type
+  *    simple_core_type
   *
   * non_arrowed_non_simple_core_type ::=
   *   type_longident non_arrowed_simple_core_type_list
   *   # class_longident
-  *   non_arrowed_simple_core_type # class_longident
+  *   simple_core_type # class_longident
   *   [core_type_comma_list] # class_longident
   *
-  * non_arrowed_simple_core_type ::=
+  * simple_core_type ::=
   *   <>
   *   ()
   *   {}
@@ -3634,13 +3635,13 @@ mark_position_typ
   *
   *  'ident
   *  Long.ident
-  *  non_arrowed_simple_core_type Long.ident
+  *  simple_core_type Long.ident
   *  Long.ident non_arrowed_simple_core_type_list
   *  <method1: ... method_2: ...>
   *  <>
   *  {method1: .. method2: ..}
   *  # class_longident #
-  *  non_arrowed_simple_core_type # class_longident
+  *  simple_core_type # class_longident
   *  (core_type, core_type) # class_longident
   *  (module package_type)
   *  [%]
@@ -3664,7 +3665,7 @@ mark_position_typ2
    * even though *nothing* will point towards that.
    * If switching to Menhir, this may not be needed.
    */
-  ( core_type2 %prec below_EQUALGREATER
+  ( core_type2
     { $1 }
   | only_core_type(core_type2) AS QUOTE ident
     { Core_type (mktyp(Ptyp_alias($1, $4))) }
@@ -3683,22 +3684,20 @@ core_type2:
 mark_position_typ2
   ( non_arrowed_core_type
     { $1 }
-  | only_core_type(core_type2) EQUALGREATER only_core_type(core_type2)
-    { Core_type (mktyp(Ptyp_arrow(Nolabel, $1, $3))) }
-
-  | COLON LIDENT COLON only_core_type(non_arrowed_core_type) optional
-      EQUALGREATER only_core_type(core_type2)
-    { Core_type (mktyp(Ptyp_arrow($5 $2, $4, $7))) }
-
-    /* <REMOVE ME> */
-  | LIDENTCOLONCOLON only_core_type(non_arrowed_core_type)
-      QUESTION EQUALGREATER only_core_type(core_type2)
-    { Core_type (mktyp(Ptyp_arrow(Optional $1, $2, $5))) }
-  | LIDENTCOLONCOLON only_core_type(non_arrowed_core_type)
-      EQUALGREATER only_core_type(core_type2)
-    { Core_type (mktyp(Ptyp_arrow(Labelled $1, $2, $4))) }
-    /* </REMOVE ME> */
+  | arrow_type_parameters EQUALGREATER only_core_type(core_type2)
+    { Core_type (List.fold_right mktyp_arrow $1 $3) }
   ) {$1};
+
+arrow_type_parameter:
+  | only_core_type(core_type)
+    { (Nolabel, $1) }
+  | COLON LIDENT only_core_type(non_arrowed_core_type) optional
+    { ($4 $2, $3) }
+;
+
+%inline arrow_type_parameters:
+  parenthesized(lseparated_nonempty_list(COMMA, as_loc(arrow_type_parameter)))
+  { $1 };
 
 /* Among other distinctions, "simple" core types can be used in Variant types:
  * type myType = Count of anySimpleCoreType. Core types (and simple core types)
@@ -3708,15 +3707,15 @@ mark_position_typ2
  * In general, "simple" syntax constructs, don't need to be wrapped in
  * parens/braces when embedded in lists of those very constructs.
  *
- * A [non_arrowed_simple_core_type] *can* be wrapped in parens, but
+ * A [simple_core_type] *can* be wrapped in parens, but
  * it doesn't have to be.
  */
 
 /* The name [core_type] was taken. [non_arrowed_core_type] is the same as
- * [non_arrowed_simple_core_type] but used in cases
+ * [simple_core_type] but used in cases
  * where application needn't be wrapped in additional parens */
 /* Typically, other syntax constructs choose to allow either
- * [non_arrowed_simple_core_type] or
+ * [simple_core_type] or
  * [non_arrowed_non_simple_core_type] depending on whether or not
  * they are in a context that expects space separated lists of types to carry
  * particular meaning outside of type constructor application.
@@ -3745,8 +3744,13 @@ mark_position_typ2
 
 non_arrowed_simple_core_type:
 mark_position_typ2
-  ( parenthesized(separated_nonempty_list(COMMA, only_core_type(core_type)))
-    { match $1 with
+  ( arrow_type_parameters
+    { let prepare_arg {Location. txt = (label, ct); loc} = match label with
+        | Nolabel -> ct
+        | Optional _ | Labelled _ ->
+            syntax_error_typ loc "Labels are not allowed inside a tuple"
+      in
+      match List.map prepare_arg $1 with
       | []    -> assert false
       | [one] -> Core_type one
       | many  -> Core_type (mktyp (Ptyp_tuple many))
@@ -4150,60 +4154,60 @@ optional:
 %inline only_core_type(X): X { only_core_type $1 $symbolstartpos $endpos }
 
 %inline mark_position_mod(X): x = X
-	{ {x with pmod_loc = {x.pmod_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
+  { {x with pmod_loc = {x.pmod_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
 ;
 
 %inline mark_position_cty(X): x = X
-	{ {x with pcty_loc = {x.pcty_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
+  { {x with pcty_loc = {x.pcty_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
 ;
 
 %inline mark_position_ctf(X): x = X
-	{ {x with pctf_loc = {x.pctf_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
+  { {x with pctf_loc = {x.pctf_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
 ;
 
 %inline mark_position_exp(X): x = X
-	{ {x with pexp_loc = {x.pexp_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
+  { {x with pexp_loc = {x.pexp_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
 ;
 
 %inline mark_position_typ(X): x = X
-	{ {x with ptyp_loc = {x.ptyp_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
+  { {x with ptyp_loc = {x.ptyp_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
 ;
 
 %inline mark_position_typ2(X): x = X
-	{ match x with
-	  | Core_type ct ->
+  { match x with
+    | Core_type ct ->
       let loc_start = $symbolstartpos and loc_end = $endpos in
       Core_type ({ct with ptyp_loc = {ct.ptyp_loc with loc_start; loc_end}})
-	  | Record_type _ -> x
-	}
+    | Record_type _ -> x
+  }
 ;
 
 %inline mark_position_mty(X): x = X
-	{ {x with pmty_loc = {x.pmty_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
+  { {x with pmty_loc = {x.pmty_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
 ;
 
 %inline mark_position_sig(X): x = X
-	{ {x with psig_loc = {x.psig_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
+  { {x with psig_loc = {x.psig_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
 ;
 
 %inline mark_position_str(X): x = X
-	{ {x with pstr_loc = {x.pstr_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
+  { {x with pstr_loc = {x.pstr_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
 ;
 
 %inline mark_position_cl(X): x = X
-	{ {x with pcl_loc = {x.pcl_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
+  { {x with pcl_loc = {x.pcl_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
 ;
 
 %inline mark_position_cf(X): x = X
-	{ {x with pcf_loc = {x.pcf_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
+   { {x with pcf_loc = {x.pcf_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
 ;
 
 %inline mark_position_pat(X): x = X
-	{ {x with ppat_loc = {x.ppat_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
+   { {x with ppat_loc = {x.ppat_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
 ;
 
 %inline as_loc(X): x = X
-	{ mkloc x (mklocation $symbolstartpos $endpos) }
+  { mkloc x (mklocation $symbolstartpos $endpos) }
 ;
 
 %inline with_patvar(X): x = X
