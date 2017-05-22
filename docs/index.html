@@ -186,7 +186,7 @@ If you forget to wrap `double 5` in parentheses, you'd get `increment double 5`,
 
 #### No Argument
 
-A function always takes an argument; but sometimes, we'd use it for e.g. side-effects, and don't really have anything to pass to it. In this case, we'd conventionally pass it the value `()`.
+A function always takes an argument; but sometimes, we'd use it for e.g. side-effects, and don't have anything to pass to it. In other languages, we'd conceptually pass "no argumetn". In Reason, every function takes an argument; here we'd conventionally pass it the value `()`, called "unit".
 
 ```reason
 /* receive & destructure the unit argument */
@@ -199,32 +199,36 @@ let logSomething () => {
 logSomething ();
 ```
 
-`()` is a totally normal value, of type "unit". `()` is the single possible value in `unit`. Reason/OCaml gave it a special syntax out of convenience.
+`()` is a totally normal value, the single possible value in `unit`. Reason/OCaml gave it a special syntax out of convenience.
 
 #### Labeled Arguments
 Multi-arguments functions, especially those whose arguments are of the same type, can be confusing to call.
 
 ```reason
-let addCoordinates x y => ...;
+let addCoordinates x y => {
+  /* use x and y here */
+};
 ...
-addCoordinates 5 6; /* which is which? */
+addCoordinates 5 6; /* which is x, which is y? */
 ```
 
 In OCaml/Reason, you can attach labels to an argument:
 
 ```reason
-let addCoordinates ::x ::y => ...;
+let addCoordinates x::x y::y => {
+  /* use x and y here */
+};
 ...
 addCoordinates x::5 y::6;
 ```
 
-And since we have currying (more on that [here](#diving-deeper-more-on-functions)), we can call the function any way we want:
+Since we have currying (more on that [here](#diving-deeper-more-on-functions)), we can provide the arguments in any order:
 
 ```reason
 addCoordinates y::6 x::5;
 ```
 
-Labeled arguments can be renamed inside the function for local usage:
+The `x::x` part during declaration means the function accepts an argument labeled `x` and can refer to it in the function body as the variable `x`. This is so that we can have the following pattern, where labeled arguments are renamed inside the function for conciseness:
 
 ```reason
 let drawCircle radius::r color::c => {
@@ -236,10 +240,82 @@ let drawCircle radius::r color::c => {
 drawCircle radius::10 color::"red";
 ```
 
+For the common case of `radius::radius` (where the label is the same as the local variable name), we have the syntax shorthand `::x`:
+
+```reason
+let drawCircle ::radius ::color => {
+  setColor color;
+  startAt radius radius;
+  ...
+}
+```
+
 Here's the syntax for typing the arguments:
 
 ```reason
 let drawCircle radius::(r: int) color::(c: string) => ...;
+```
+
+#### Optional Labeled Arguments
+
+Labeled function arguments can be made optional during declaration. You can then omit them when calling the function.
+
+```reason
+/* radius can be omitted */
+let drawCircle ::color ::radius=? () => {
+  setColor color;
+  switch r {
+  | None => startAt 1 1;
+  | Some r_ => startAt r_ r_;
+  }
+};
+```
+
+If omitted, `radius` is **wrapped** in the standard library's `option` type, defaulting to `None`. If provided, it'll be wrapped with a `Some`. So `radius`'s type value is either `None` or `Some int` here.
+
+**Note**: `None | Some foo` is a data structure type called variant, described [below](./#built-in-data-types-variant). This particular variant type is provided by the standard library. It's called `option`. Its definition: `type option 'a = None | Some 'a`.
+
+**Note** the unit `()` at the end of `drawCircle`. Without it, since `radius` and `color` are both labeled, can be curried, and can be applied out-of-order, it's unclear what the following mean:
+
+```reason
+let whatIsThis = drawCircle ::color;
+```
+
+Is `whatIsThis` a curried `drawCircle` function, waiting for the optional `radius` to be applied? Or did it finish applying? To address this confusion, append a positional (aka non-labeled) argument to `drawCircle` (conventionally `()`), and OCaml will, as a rule of thumb, presume the optional labeled argument is omitted when the positional argument is provided.
+
+```reason
+let curriedFunction = drawCircle ::color;
+let actualResultWithoutProvidingRadius = drawCircle ::color ();
+```
+
+##### Explicitly Passed Optional
+
+Sometimes, you might want to forward a value to a function without knowing whether the value is `None` or `Some a`. Naively, you'd do:
+
+```reason
+let result = switch payloadRadius {
+| None => drawCircle ::color ()
+| Some r => drawCircle ::color radius::r ()
+};
+```
+
+This quickly gets tedious. We provide a shortcut:
+
+```reason
+let result = drawCircle ::color radius::?payloadRadius ();
+```
+
+This means "I understand `radius` is optional, and that when I pass it a value it needs to be an `int`, but I don't know whether the value I'm passing is `None` or `Some val`, so I'll pass you the whole `option` wrapper".
+
+##### Optional with Default Value
+
+Optional labeled arguments can also be provided a default value. They aren't wrapped in an `option` type.
+
+```reason
+let drawCircle ::radius=1 ::color () => {
+  setColor color;
+  startAt r r;
+};
 ```
 
 Type
@@ -925,6 +1001,7 @@ they're formatted to parentheses).
   stringAttribute="string"
   intAttribute=1
   floatAttribute=0.1
+  forcedOptional=?(Some "hello")
   onClick={updater handleClick}
   thisWorksToo=(updater handleClick)>
   "foo bar"
@@ -941,6 +1018,7 @@ Note that this would translate to `foo=true` within JSX in JS code.
 
 There is no support for JSX spread attributes.
 
+JSX calls supports the features of [labeled functions](#basics-function): optional, explicitly passed optional and optional with default.
 
 Automatic Printer Generation
 ---------------------------
