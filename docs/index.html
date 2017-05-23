@@ -262,7 +262,7 @@ Labeled function arguments can be made optional during declaration. You can then
 
 ```reason
 /* radius can be omitted */
-let drawCircle ::color ::radius=? () => {
+let drawCircle ::color radius::r=? () => {
   setColor color;
   switch r {
   | None => startAt 1 1;
