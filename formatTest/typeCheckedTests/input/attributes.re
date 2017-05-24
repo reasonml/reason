@@ -87,7 +87,7 @@ let x = [@attrEverything] (true && false);
 /**
  * How attribute parsings respond to other syntactic constructs.
  */
-let add(a) => [@onRet] a;
+let add(a) { [@onRet] a };
 let add = fun(a) => [@onRet] a;
 let add = [@onEntireFunction] (fun(a) => a);
 
@@ -95,13 +95,13 @@ let res = if true false else [@onFalse] false;
 let res = [@onEntireIf] (if true false else false);
 
 
-let add(a,b) => [@onEverything] ([@onA] a + b);
-let add(a,b) => [@onEverything] ([@onA]a + ([@onB]b));
-let add = fun(a,b) => a + [@onB]b;
+let add(a,b) = [@onEverything] ([@onA] a + b);
+let add(a,b) = [@onEverything] ([@onA]a + ([@onB]b));
+let add = (a,b) => a + [@onB]b;
 
 let both = [@onEntireFunction](fun(a) => a);
-let both(a,b) => [@onEverything]([@onA]a && b);
-let both(a,b) => [@onA] a && [@onB] ([@onB] b);
+let both(a,b) = [@onEverything]([@onA]a && b);
+let both(a,b) = [@onA] a && [@onB] ([@onB] b);
 let both = fun(a,b) => [@onEverything](a && b);
 
 let thisVal = 10;
@@ -111,7 +111,7 @@ let x = - [@onFunctionCall] add(thisVal,thisVal);
 let x = [@onEverything] (- add(thisVal,thisVal));
 
 
-let bothTrue(x,y) => {contents: x && y};
+let bothTrue(x,y) = {contents: x && y};
 let something = [@onEverythingToRightOfEquals]!(bothTrue(true,true));
 let something = !([@onlyOnArgumentToBang]bothTrue(true,true));
 
@@ -120,8 +120,8 @@ let res = [@appliesToEntireFunctionApplication] add(2,4);
 
 
 let myObj = {
-  pub p () => {
-    pub z () => 10
+  pub p () = {
+    pub z () = 10
   };
 };
 
@@ -129,8 +129,8 @@ let result = [@onSecondSend]([@attOnFirstSend]myObj#p ())#z ();
 
 [@@onRecordFunctions]
 type recordFunctions = {
-  p: unit => [@onUnit] recordFunctions,
-  q: [@onArrow] (unit => unit)
+  p: (unit) => ([@onUnit] recordFunctions),
+  q: [@onArrow] ((unit) => unit)
 }
 [@@onUnusedType]
 and unusedType = unit;
@@ -168,7 +168,7 @@ and secondBinding = "second";
  * Let bindings.
  * ----------------------
  */
-let showLets () =>  [@onOuterLet] {
+let showLets () = [@onOuterLet] {
   let tmp = 20;
   [@onFinalLet] {
     let tmpTmp = tmp + tmp;
@@ -185,10 +185,10 @@ let showLets () =>  [@onOuterLet] {
  * In curried sugar, the class_expr attribute will apply to the return.
  */
 [@@moduleItemAttribute]
-class boxA('a) (init: 'a) => [@onReturnClassExpr] {
+class boxA('a) (init: 'a) = [@onReturnClassExpr] {
   [@@@ocaml.text "Floating comment text should be removed"];
   [@@@ocaml.doc "Floating comment text should be removed"];
-  pub pr => init + init + init;
+  pub pr = init + init + init;
 };
 
 /**
@@ -196,7 +196,7 @@ class boxA('a) (init: 'a) => [@onReturnClassExpr] {
  */
 class boxB('a) =
   fun (init: 'a) => [@stillOnTheReturnBecauseItsSimple] {
-    pub pr => init + init + init;
+    pub pr = init + init + init;
   };
 
 /* To be able to put an attribute on just the return in that case, use
@@ -205,18 +205,18 @@ class boxB('a) =
 class boxC('a) = [@onEntireFunction] (
   fun (init: 'a) => (
     [@onReturnClassExpr] {
-      pub pr => init + init + init;
+      pub pr = init + init + init;
     }
   )
 );
 
 [@@moduleItemAttribute onTheTupleClassItem;]
-class tupleClass('a,'b)(init: ('a, 'b)) => {
+class tupleClass('a,'b)(init: ('a, 'b)) {
   let one = [@exprAttr ten;] 10;
   let two = [@exprAttr twenty;] 20
   and three = [@exprAttr thirty;] 30;
   [@@pr prMember;]
-  pub pr => one + two + three;
+  pub pr = one + two + three;
 };
 
 [@@structureItem]
@@ -225,7 +225,7 @@ class type addablePointClassType = {
   [@@@ocaml.doc "Floating comment text should be removed"];
   pub x: int;
   pub y: int;
-  pub add: addablePointClassType => addablePointClassType => int;
+  pub add: (addablePointClassType, addablePointClassType) => int;
 }
 [@@structureItem]
 and anotherClassType = {
@@ -233,11 +233,11 @@ and anotherClassType = {
   pub bar: int;
 };
 
-class type _y = { [@@bs.set] pub height : int };
+class type _y { [@@bs.set] pub height : int };
 
-[@@bs] class type _z = { pub height : int };
+[@@bs] class type _z { pub height : int };
 
-module NestedModule = {
+module NestedModule {
   [@@@floatingNestedStructureItem hello];
 };
 [@@structureItem]
@@ -248,7 +248,7 @@ module type HasAttrs = {
   [@@sigItem]
   class type foo = {pub foo: int; pub bar: int;};
   [@@sigItem]
-  class fooBar: int => new foo;
+  class fooBar: (int) => foo;
   [@@@ocaml.text "Floating comment text should be removed"];
   [@@@ocaml.doc "Floating comment text should be removed"];
 };
@@ -271,9 +271,9 @@ let myFun = fun ((X(hello) | Y(hello)) [@onOrPattern]) => hello;
 /* Bucklescript FFI item attributes */
 
 [@@bs.val]
-external imul : int => int => int = "Math.imul";
+external imul : (int, int) => int = "Math.imul";
 
-let module Js = {
+let module Js {
   type t('a);
 };
 
@@ -311,18 +311,17 @@ type reactClass;
 
 /* "react-dom" shouldn't spread the attribute over multiple lines */
 [@@bs.val] [@@bs.module "react-dom"]
-external render : reactElement => element => unit = "render";
+external render : (reactElement, element) => unit = "render";
 
 [@@bs.module "f"]
-external f : int => int = "f";
+external f : (int) => int = "f";
 
 [@@bs.val] [@@bs.module "react"] [@@bs.splice]
-external createCompositeElementInternalHack : reactClass =>
-                                              Js.t({.. reasonProps : 'props}) =>
-                                              array(reactElement) =>
-                                              reactElement = "createElement";
+external createCompositeElementInternalHack 
+  : (reactClass, Js.t({.. reasonProps : 'props}), array(reactElement)) => reactElement 
+  = "createElement";
 
-external add_nat: int => int => int = "add_nat_bytecode" "add_nat_native";
+external add_nat: (int, int) => int = "add_nat_bytecode" "add_nat_native";
 
 [@@bs.module "Bar"] [@@ocaml.deprecated "Use bar instead. It's a much cooler function. This string needs to be a little long"]
-external foo : bool => bool = "";
+external foo : (bool) => bool = "";

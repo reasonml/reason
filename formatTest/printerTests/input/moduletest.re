@@ -1,6 +1,6 @@
 module TestModule = {
   type twostrings = (string, string);
-  let mkPair(s) => {
+  let mkPair(s) {
     (s, s);
   }
 };

@@ -98,7 +98,7 @@ let myFunction
    (/* First arg */
     withFirstArg,
     /* Second Arg */
-    andSecondArg) => {
+    andSecondArg) {
   withFirstArg + andSecondArg
 }; /* After Semi */
 
@@ -218,7 +218,7 @@ and y2 = { /* not attached *above* y2 */
 
 let result =
   switch None {
-  | Some {fieldOne: 20, fieldA:a} => /* Where does this comment go? */
+  | Some({fieldOne: 20, fieldA:a})=> /* Where does this comment go? */
     let tmp = 0;
     2 + tmp
   | Some {fieldOne: n, fieldA:a} =>
@@ -331,7 +331,7 @@ type color =
   | Green(int) /* After green end of line */
 ; /* On next line after color type def */
 
-let blahCurriedX(x) =>
+let blahCurriedX(x) =
   fun
   | Red(10)
   | Black(20)
@@ -341,27 +341,27 @@ let blahCurriedX(x) =>
   | Green(x) => 0 /* After second green */
 ; /* On next line after blahCurriedX def */
 
-let name_equal(x,y) => x == y;
+let name_equal(x,y) { x == y };
 
-let equal(i1,i2) =>
+let equal(i1,i2) =
   i1.contents === i2.contents && true; /* most unlikely first */
 
-let equal(i1,i2) =>
+let equal(i1,i2) =
   compare(compare(0,0),compare(1,1)); /* END OF LINE HERE */
 
-let tuple_equal((i1, i2)) => i1 == i2;
+let tuple_equal((i1, i2)) = i1 == i2;
 
-let tuple_equal((csu, mgd)) =>
+let tuple_equal((csu, mgd)) =
   /* Some really long comments, see https://github.com/facebook/reason/issues/811 */
   tuple_equal((csu, mgd));
 
 /** Comments inside empty function bodies
  * See https://github.com/facebook/reason/issues/860
  */
-let fun_def_comment_inline = fun () => { /* */ };
+let fun_def_comment_inline = () => { /* */ };
 
-let fun_def_comment_newline = fun () => {
+let fun_def_comment_newline = () => {
   /* */
 };
 
-let fun_def_comment_long = fun () => { /* longer comment inside empty function body */};
+let fun_def_comment_long = () => { /* longer comment inside empty function body */};

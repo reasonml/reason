@@ -12,7 +12,7 @@ type expr('a) =
   | Is0 {test: expr(int)} :expr(bool)
   | If {pred: expr(bool), true_branch: expr('a), false_branch: expr('a)} :expr('a);
 
-let rec eval: type a. expr(a) => a =
+let rec eval: type a. (expr(a)) => a =
   fun(e) =>
     switch e {
     | Is0 {test} => eval(test) == 0
@@ -29,4 +29,4 @@ let rec eval: type a. expr(a) => a =
 type hlist =
   | [] : hlist;
 
-let foo (type a b) => 5;
+let foo (type a, type b) = 5;

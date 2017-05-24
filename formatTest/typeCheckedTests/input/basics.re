@@ -47,6 +47,6 @@ let expectedPrecendence = 1 + 1 \=== 1 + 1 && 1 + 1 \!== 1 + 1;
 
 let expectedPrecendence = 1 \+ 1 \=== 1 \+ 1 && 1 \+ 1 \!== 1 \+ 1;
 
-module X: {let x: x::unit? => unit => unit;} = {
-  let x(::x=(),()) => ();
+module X: {let x: (:x unit?, unit) => unit;} = {
+  let x(:x=(),()) = ();
 };

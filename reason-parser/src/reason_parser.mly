@@ -383,31 +383,6 @@ let ghpat_cons consloc args loc =
 let mkpat_constructor_unit consloc loc =
   mkpat ~loc (Ppat_construct(mkloc (Lident "()") consloc, None))
 
-let mkexp_fun {Location. txt = (label, default_expr, pat); loc} body =
-  mkexp ~loc:(mklocation loc.loc_start body.pexp_loc.loc_end)
-    (Pexp_fun (label, default_expr, pat, body))
-
-let mkclass_fun {Location. txt = (label, default_expr, pat); loc} body =
-  mkclass ~loc:(mklocation loc.loc_start body.pcl_loc.loc_end)
-    (Pcl_fun (label, default_expr, pat, body))
-
-let mktyp_arrow {Location. txt = (label, cod); loc} dom =
-  mktyp ~loc:(mklocation loc.loc_start dom.ptyp_loc.loc_end)
-    (Ptyp_arrow (label, cod, dom))
-
-let mkcty_arrow {Location. txt = (label, cod); loc} dom =
-  mkcty ~loc:(mklocation loc.loc_start dom.pcty_loc.loc_end)
-    (Pcty_arrow (label, cod, dom))
-
-let mkexp_app_rev startp endp (body, args) =
-  let loc = mklocation startp endp in
-  if args = [] then { body with pexp_loc = loc } else
-    mkexp ~loc (Pexp_apply (body, List.rev args))
-
-let mkmod_app mexp marg =
-  mkmod ~loc:(mklocation mexp.pmod_loc.loc_start marg.pmod_loc.loc_end)
-    (Pmod_apply (mexp, marg))
-
 let simple_pattern_list_to_tuple ?(loc=dummy_loc ()) = function
   | [] -> assert false
   | lst -> mkpat ~loc (Ppat_tuple lst)
@@ -483,6 +458,12 @@ let syntax_error_exp loc msg =
   else
     syntax_error ()
 
+let syntax_error_pat loc msg =
+  if !Reason_config.recoverable then
+    Pat.extension ~loc (Syntax_util.syntax_error_extension_node loc msg)
+  else
+    syntax_error ()
+
 let syntax_error_typ loc msg =
   if !Reason_config.recoverable then
     Typ.extension ~loc (Syntax_util.syntax_error_extension_node loc msg)
@@ -549,6 +530,44 @@ let expecting_pat nonterm =
 
 let not_expecting start_pos end_pos nonterm =
     raise Syntaxerr.(Error(Not_expecting(mklocation start_pos end_pos, nonterm)))
+
+type labelled_parameter =
+  | Term of arg_label * expression option * pattern
+  | Type of string
+
+let mkexp_fun {Location. txt; loc} body =
+  let loc = mklocation loc.loc_start body.pexp_loc.loc_end in
+  match txt with
+  | Term (label, default_expr, pat) ->
+    Exp.fun_ ~loc label default_expr pat body
+  | Type str ->
+    Exp.newtype ~loc str body
+
+let mkclass_fun {Location. txt ; loc} body =
+  let loc = mklocation loc.loc_start body.pcl_loc.loc_end in
+  match txt with
+  | Term (label, default_expr, pat) ->
+    Cl.fun_ ~loc label default_expr pat body
+  | Type str ->
+    let pat = syntax_error_pat loc "(type) not allowed in classes" in
+    Cl.fun_ ~loc Nolabel None pat body
+
+let mktyp_arrow {Location. txt = (label, cod); loc} dom =
+  mktyp ~loc:(mklocation loc.loc_start dom.ptyp_loc.loc_end)
+    (Ptyp_arrow (label, cod, dom))
+
+let mkcty_arrow {Location. txt = (label, cod); loc} dom =
+  mkcty ~loc:(mklocation loc.loc_start dom.pcty_loc.loc_end)
+    (Pcty_arrow (label, cod, dom))
+
+let mkexp_app_rev startp endp (body, args) =
+  let loc = mklocation startp endp in
+  if args = [] then { body with pexp_loc = loc } else
+    mkexp ~loc (Pexp_apply (body, List.rev args))
+
+let mkmod_app mexp marg =
+  mkmod ~loc:(mklocation mexp.pmod_loc.loc_start marg.pmod_loc.loc_end)
+    (Pmod_apply (mexp, marg))
 
 let bigarray_function ?(loc=dummy_loc()) str name =
   ghloc ~loc (Ldot(Ldot(Lident "Bigarray", str), name))
@@ -1211,7 +1230,8 @@ conflicts.
                  nonrec_flag
                  val_ident
                  SEMI?
-                 method_body
+                 fun_def(EQUAL,core_type)
+                 fun_def(EQUALGREATER,non_arrowed_core_type)
                  expr_optional_constraint
 %%
 
@@ -1307,8 +1327,7 @@ mark_position_mod
   ) {$1};
 
 module_arguments:
-  | LBRACE structure RBRACE
-    { [mkmod ~loc:(mklocation $startpos $endpos) (Pmod_structure ($2))] }
+  | module_expr_structure { [$1] }
   | parenthesized(separated_list(COMMA, module_complex_expr))
     { match $1 with
       | [] -> [mkmod ~loc:(mklocation $startpos $endpos) (Pmod_structure [])]
@@ -1316,12 +1335,18 @@ module_arguments:
     }
 ;
 
+module_expr_body: preceded(EQUAL,module_expr) | module_expr_structure { $1 };
+
+module_expr_structure:
+  LBRACE structure RBRACE
+  { mkmod ~loc:(mklocation $startpos $endpos) (Pmod_structure($2)) }
+;
+
 module_expr:
 mark_position_mod
   ( as_loc(mod_longident)
     { mkmod(Pmod_ident $1) }
-  | LBRACE structure RBRACE
-    { mkmod(Pmod_structure($2)) }
+  | module_expr_structure { $1 }
   | as_loc(LPAREN) module_expr COLON module_type as_loc(error)
     { unclosed_mod (with_txt $1 "(") (with_txt $5 ")")}
   | LPAREN module_complex_expr RPAREN
@@ -1336,8 +1361,8 @@ mark_position_mod
    * Update: In upstream, it *is* possible to annotate return values for
    * lambdas.
    */
-  | FUN functor_parameters+ EQUALGREATER module_expr
-    { List.fold_right mk_functor_mod $2 $4 }
+  | either(ES6_FUN,FUN) functor_parameters EQUALGREATER module_expr
+    { mk_functor_mod $2 $4 }
   | module_expr module_arguments
     { List.fold_left mkmod_app $1 $2 }
   | module_expr as_loc(LPAREN) module_expr as_loc(error)
@@ -1492,9 +1517,9 @@ mark_position_str
   | item_attributes MODULE TYPE OF? as_loc(ident)
     { let loc = mklocation $symbolstartpos $endpos in
       mkstr(Pstr_modtype (Mtd.mk $5 ~attrs:$1 ~loc)) }
-  | item_attributes MODULE TYPE OF? as_loc(ident) EQUAL module_type
+  | item_attributes MODULE TYPE OF? as_loc(ident) module_type_body(EQUAL)
     { let loc = mklocation $symbolstartpos $endpos in
-      mkstr(Pstr_modtype (Mtd.mk $5 ~typ:$7 ~attrs:$1 ~loc)) }
+      mkstr(Pstr_modtype (Mtd.mk $5 ~typ:$6 ~attrs:$1 ~loc)) }
   | open_statement
     { mkstr(Pstr_open $1) }
   | item_attributes CLASS class_declaration_details and_class_declaration*
@@ -1519,12 +1544,11 @@ mark_position_str
   ) {$1};
 
 module_binding_body:
-  | functor_parameters* EQUAL module_expr
-    { List.fold_right mk_functor_mod $1 $3 }
-  | functor_parameters* COLON non_arrowed_module_type EQUAL module_expr
-    { let loc = mklocation $startpos($3) $endpos($5) in
-      List.fold_right mk_functor_mod $1 (mkmod ~loc (Pmod_constraint($5, $3)))
-    }
+  | loption(functor_parameters) module_expr_body
+    { mk_functor_mod $1 $2 }
+  | loption(functor_parameters) COLON module_type module_expr_body
+    { let loc = mklocation $startpos($3) $endpos($4) in
+      mk_functor_mod $1 (mkmod ~loc (Pmod_constraint($4, $3))) }
 ;
 
 and_module_bindings:
@@ -1549,15 +1573,6 @@ and_module_bindings:
 */
 
 /* Allowed in curried let bidings */
-non_arrowed_module_type:
-mark_position_mty
-  ( simple_module_type
-    {$1}
-  | MODULE TYPE OF module_expr
-    { mkmty (Pmty_typeof $4) }
-  | attribute module_type %prec attribute_precedence
-    { {$2 with pmty_attributes = $1 :: $2.pmty_attributes} }
-  ) {$1};
 
 simple_module_type:
 mark_position_mty
@@ -1566,17 +1581,21 @@ mark_position_mty
       | (None, Some x) -> x
       | _ -> syntax_error_mod $1.loc "Expecting a simple module type"
     }
+  | module_type_signature { $1 }
   | as_loc(LPAREN) module_type as_loc(error)
     { unclosed_mty (with_txt $1 "(") (with_txt $3 ")")}
   | as_loc(mty_longident)
     { mkmty (Pmty_ident $1) }
-  | LBRACE signature RBRACE
-    { mkmty (Pmty_signature $2) }
   | as_loc(LBRACE) signature as_loc(error)
     { unclosed_mty (with_txt $1 "{") (with_txt $3 "}")}
   | extension
     { mkmty (Pmty_extension $1) }
   ) {$1};
+
+module_type_signature:
+  LBRACE signature RBRACE
+  { mkmty ~loc:(mklocation $startpos $endpos) (Pmty_signature $2) }
+;
 
 /*
 (*
@@ -1611,19 +1630,13 @@ mark_position_mty
      *
      *)
     { mkmty (Pmty_with($1, $3)) }
-  | non_arrowed_module_type
-    (* below_EQUALGREATER to prevent following shift reduce conflict:
-     *  1158: shift/reduce conflict (shift 1285, reduce 75) on EQUALGREATER
-     *  state 1158
-     *    module_binding_body_functor : functor_arg+ COLON non_arrowed_module_type . EQUALGREATER module_expr  (59)
-     *    module_type : non_arrowed_module_type .  (75)
-     *
-     *    EQUALGREATER  shift 1285
-     *    LBRACKETAT  reduce 75
-     *    WITH  reduce 75
-     *)
-    { $1 }
-  | functor_parameters+ EQUALGREATER module_type %prec below_SEMI
+  | simple_module_type
+    {$1}
+  | LPAREN MODULE TYPE OF module_expr RPAREN
+    { mkmty (Pmty_typeof $5) }
+  | attribute module_type %prec attribute_precedence
+    { {$2 with pmty_attributes = $1 :: $2.pmty_attributes} }
+  | functor_parameters EQUALGREATER module_type %prec below_SEMI
       (**
        * In OCaml, this is invalid:
        * module MyFunctor: functor MT -> (sig end) = functor MT -> (struct end);;
@@ -1668,7 +1681,7 @@ mark_position_mty
        *
        *
        *)
-    { List.fold_right mk_functor_mty $1 $3 }
+    { mk_functor_mty $1 $3 }
   ) {$1};
 
 signature: terminated(signature_item, SEMI)* { $1 };
@@ -1708,17 +1721,17 @@ mark_position_sig
         )
       )
     }
-  | item_attributes opt_LET_MODULE REC as_loc(UIDENT) COLON module_type
-      and_module_rec_declaration*
-    { let loc = mklocation $symbolstartpos $endpos($6) in
-      mksig (Psig_recmodule (Md.mk $4 $6 ~attrs:$1 ~loc :: $7)) }
+  | item_attributes opt_LET_MODULE REC as_loc(UIDENT)
+    module_type_body(COLON) and_module_rec_declaration*
+    { let loc = mklocation $symbolstartpos $endpos($5) in
+      mksig (Psig_recmodule (Md.mk $4 $5 ~attrs:$1 ~loc :: $6)) }
   | item_attributes MODULE TYPE as_loc(ident)
     { let loc = mklocation $symbolstartpos $endpos in
       mksig(Psig_modtype (Mtd.mk $4 ~attrs:$1 ~loc))
     }
-  | item_attributes MODULE TYPE as_loc(ident) EQUAL module_type
+  | item_attributes MODULE TYPE as_loc(ident) module_type_body(EQUAL)
     { let loc = mklocation $symbolstartpos $endpos in
-      mksig(Psig_modtype (Mtd.mk $4 ~typ:$6 ~loc ~attrs:$1))
+      mksig(Psig_modtype (Mtd.mk $4 ~typ:$5 ~loc ~attrs:$1))
     }
   | open_statement
     { mksig(Psig_open $1) }
@@ -1742,13 +1755,18 @@ open_statement:
 ;
 
 module_declaration:
-  functor_parameters* COLON module_type
-  { List.fold_right mk_functor_mty $1 $3 }
+  loption(functor_parameters) module_type_body(COLON)
+  { mk_functor_mty $1 $2 }
+;
+
+module_type_body(DELIM):
+  | DELIM module_type { $2 }
+  | module_type_signature { $1 }
 ;
 
 and_module_rec_declaration:
-  item_attributes AND as_loc(UIDENT) COLON module_type
-  { Md.mk $3 $5 ~attrs:$1 ~loc:(mklocation $symbolstartpos $endpos) }
+  item_attributes AND as_loc(UIDENT) module_type_body(COLON)
+  { Md.mk $3 $4 ~attrs:$1 ~loc:(mklocation $symbolstartpos $endpos) }
 ;
 
 /* Class expressions */
@@ -1762,66 +1780,21 @@ and_class_declaration:
 ;
 
 class_declaration_details:
-  | virtual_flag as_loc(LIDENT) class_type_parameters class_declaration_expr
-    { ($2, $4, $1, $3) }
-  | virtual_flag as_loc(LIDENT) class_declaration_expr
-    { ($2, $3, $1, []) }
+  virtual_flag as_loc(LIDENT) ioption(class_type_parameters)
+  loption(labeled_pattern_list) class_declaration_body
+  { let body = List.fold_right mkclass_fun $4 $5 in
+    let params = match $3 with None -> [] | Some x -> x in
+    ($2, body, $1, params)
+  }
 ;
 
-class_declaration_expr:
-  /* Used in order to parse: class ['a, 'b] myClass argOne argTwo (:retType) => cl_expr */
-  | class_fun_binding
-  /* We make a special rule here because we only accept colon after the
-   * identifier - can't be a part of class_fun_binding. Used in order to parse:
-   * class ['a, 'b] myClass: class_constructor_type = class_expr
-   */
-  | constrained_class_declaration
-  /* Used in order to parse:  class ['a, 'b] myClass = class_expr */
-  | preceded(EQUAL, class_expr)
-    { $1 }
-;
-
-constrained_class_declaration:
-mark_position_cl
-  ( COLON class_constructor_type EQUAL class_expr
-    { mkclass(Pcl_constraint($4, $2)) }
-  ) {$1};
-
-/**
- * Had to split class_fun_return rom class_fun_binding to prevent arrow from
- * being used when no arguments.
- * Without that, there were difficult parsing conflicts between:
- *
- *   class thisDoesntParse : blah =>
- *   class thisDoesParse   : blah =
- *
- * Now, you can do:
- *
- *   class myClass arg blah : instance_type => {
- *     method blah => ..;
- *   }
- *
- * But you cannot constrain with a function Pcty_arrow
- *
- *   class myClass arg blah : (int => instance_type) =>
- *      fun i => {...};
- *
- * Instead, you must write the previous as:
- * (And the printer must ensure this)
- *
- *   class myClass arg blah =>
- *      (fun i => {...} : int => instance_type);
- */
-class_fun_binding:
-  labeled_pattern_list+ class_fun_return
-  { List.fold_right (List.fold_right mkclass_fun) $1 $2 }
-;
-
-class_fun_return:
-  | EQUAL class_expr { $2 }
-  | COLON mark_position_cty(non_arrowed_class_constructor_type)
-      EQUAL class_expr
-    { mkclass ~loc:(mklocation $startpos $endpos) (Pcl_constraint ($4, $2)) }
+class_declaration_body:
+  preceded(COLON, class_constructor_type)?
+  either(preceded(EQUAL, class_expr), class_body_expr)
+  { match $1 with
+    | None -> $2
+    | Some ct -> Cl.constraint_ ~loc:(mklocation $symbolstartpos $endpos) $2 ct
+  }
 ;
 
 class_expr_lets_and_rest:
@@ -1850,8 +1823,8 @@ class_expr:
 mark_position_cl
   ( class_simple_expr
     { $1 }
-  | FUN labeled_pattern_list+ EQUAL class_expr
-    { List.fold_right (List.fold_right mkclass_fun) $1 $3 }
+  | either(ES6_FUN,FUN) labeled_pattern_list EQUALGREATER class_expr
+    { List.fold_right mkclass_fun $2 $4 }
   | class_simple_expr labeled_arguments
       /**
        * This is an interesting way to "partially apply" class construction:
@@ -1885,8 +1858,8 @@ class_simple_expr:
 mark_position_cl
   ( as_loc(class_longident)
     { mkclass(Pcl_constr($1, [])) }
-  | LBRACE class_expr_lets_and_rest RBRACE
-    { $2 }
+  | class_body_expr
+    { $1 }
   | as_loc(LBRACE) class_expr_lets_and_rest as_loc(error)
     { unclosed_cl (with_txt $1 "{") (with_txt $3 "}") }
   | LPAREN class_expr COLON class_constructor_type RPAREN
@@ -1899,20 +1872,20 @@ mark_position_cl
     { unclosed_cl (with_txt $1 "(") (with_txt $3 ")") }
   ) {$1};
 
+%inline class_body_expr: LBRACE class_expr_lets_and_rest RBRACE { $2 };
+
 class_field:
 mark_position_cf
   ( item_attributes INHERIT override_flag class_expr preceded(AS,LIDENT)?
     { mkcf_attrs (Pcf_inherit ($3, $4, $5)) $1 }
   | item_attributes VAL value
     { mkcf_attrs (Pcf_val $3) $1 }
-  | item_attributes PUB method_
-    { let (a, b) = $3 in mkcf_attrs (Pcf_method (a, Public, b)) $1 }
-  | item_attributes PRI method_
-    { let (a, b) = $3 in mkcf_attrs (Pcf_method (a, Private, b)) $1 }
+  | item_attributes either(PUB {Public}, PRI {Private}) method_
+    { let (a, b) = $3 in mkcf_attrs (Pcf_method (a, $2, b)) $1 }
   | item_attributes CONSTRAINT constrain_field
     { mkcf_attrs (Pcf_constraint $3) $1 }
-  | item_attributes INITIALIZER EQUALGREATER expr
-    { mkcf_attrs (Pcf_initializer $4) $1 }
+  | item_attributes INITIALIZER mark_position_exp(braced_expr)
+    { mkcf_attrs (Pcf_initializer $3) $1 }
   | item_attributes item_extension
     { mkcf_attrs (Pcf_extension $2) $1 }
   | floating_attribute
@@ -1943,19 +1916,21 @@ value:
 method_:
 /* TODO: factorize those rules... */
   | override_flag VIRTUAL as_loc(label) COLON poly_type
-      { if $1 = Override then syntax_error ();
-        $3, Cfk_virtual $5 }
-  | override_flag as_loc(label) method_body
-      { $2,
-        Cfk_concrete ($1, let loc = mklocation $symbolstartpos $endpos in mkexp ~ghost:true ~loc (Pexp_poly ($3, None))) }
-  | override_flag as_loc(label) COLON poly_type EQUAL expr
+    { if $1 = Override then syntax_error ();
+      ($3, Cfk_virtual $5)
+    }
+  | override_flag as_loc(label) fun_def(EQUAL,core_type)
+    { let loc = mklocation $symbolstartpos $endpos in
+      ($2, Cfk_concrete ($1, mkexp ~ghost:true ~loc (Pexp_poly ($3, None))))
+    }
+  | override_flag as_loc(label) preceded(COLON,poly_type)?
+    either(preceded(EQUAL,expr), braced_expr)
       /* Without locally abstract types, you'll see a Ptyp_poly in the Pexp_poly */
-      { $2,
-        Cfk_concrete ($1, let loc = mklocation $symbolstartpos $endpos in mkexp ~ghost:true ~loc (Pexp_poly($6, Some $4))) }
-  | override_flag as_loc(label) EQUAL expr
-      { $2,
-        Cfk_concrete ($1, let loc = mklocation $symbolstartpos $endpos in mkexp ~ghost:true ~loc (Pexp_poly($4, None))) }
-  | override_flag as_loc(label) COLON TYPE LIDENT+ DOT only_core_type(core_type) EQUAL expr
+    { let loc = mklocation $symbolstartpos $endpos in
+      ($2, Cfk_concrete ($1, mkexp ~ghost:true ~loc (Pexp_poly($4, $3))))
+    }
+  | override_flag as_loc(label) COLON TYPE LIDENT+ DOT only_core_type(core_type)
+    either(preceded(EQUAL,expr), braced_expr)
     /* WITH locally abstract types, you'll see a Ptyp_poly in the Pexp_poly,
        but the expression will be a Pexp_newtype and type vars will be
        "varified". */
@@ -1967,7 +1942,7 @@ method_:
          For methods, we create:
          Pexp_poly (Pexp_constraint (methodFunWithNewtypes, non_varified), Some (Ptyp_poly newTypes varified))
        *)
-      let (exp_non_varified, poly_vars) = wrap_type_annotation $5 $7 $9 in
+      let (exp_non_varified, poly_vars) = wrap_type_annotation $5 $7 $8 in
       let exp = Pexp_poly(exp_non_varified, Some poly_vars) in
       let loc = mklocation $symbolstartpos $endpos in
       ($2, Cfk_concrete ($1, mkexp ~ghost:true ~loc exp))
@@ -2092,24 +2067,9 @@ method_:
 
  */
 class_constructor_type:
-mark_position_cty
-  ( NEW class_instance_type
-    { $2 }
+  | class_instance_type { $1 }
   | arrow_type_parameters EQUALGREATER class_constructor_type
     { List.fold_right mkcty_arrow $1 $3 }
-
-    /* <REMOVE ME> */
-  | LIDENTCOLONCOLON boption(QUESTION)
-      only_core_type(non_arrowed_core_type) EQUALGREATER class_constructor_type
-    { let label = if $2 then Optional $1 else Labelled $1 in
-      mkcty (Pcty_arrow(label, $3, $5))
-    }
-    /* </REMOVE ME> */
-  ) {$1};
-
-non_arrowed_class_constructor_type:
-  | class_instance_type                  { $1 }
-  | LPAREN class_constructor_type RPAREN { $2 }
 ;
 
 class_instance_type:
@@ -2117,17 +2077,22 @@ mark_position_cty
   ( as_loc(clty_longident)
     loption(parenthesized(separated_nonempty_list(COMMA,only_core_type(core_type))))
     { mkcty (Pcty_constr ($1, $2)) }
-  | LBRACE class_sig_body RBRACE
-    { mkcty (Pcty_signature $2) }
-  | as_loc(LBRACE) class_sig_body as_loc(error)
-    { unclosed_cty (with_txt $1 "{") (with_txt $3 "}") }
   | attribute class_instance_type
     /* Note that this will compound attributes - so they will become
        attached to whatever */
     { {$2 with pcty_attributes = $1 :: $2.pcty_attributes} }
+  | class_type_body
+    { $1 }
   | extension
     { mkcty (Pcty_extension $1) }
   ) {$1};
+
+class_type_body:
+  | LBRACE class_sig_body RBRACE
+    { mkcty ~loc:(mklocation $startpos $endpos) (Pcty_signature $2) }
+  | as_loc(LBRACE) class_sig_body as_loc(error)
+    { unclosed_cty (with_txt $1 "{") (with_txt $3 "}") }
+;
 
 class_sig_body:
   class_self_type lseparated_list(SEMI, class_sig_field) SEMI?
@@ -2216,8 +2181,9 @@ and_class_type_declaration:
 ;
 
 class_type_declaration_details:
-  virtual_flag as_loc(LIDENT) loption(class_type_parameters) EQUAL class_instance_type
-  { ($2, $5, $1, $3) }
+  virtual_flag as_loc(LIDENT) loption(class_type_parameters)
+  either(preceded(EQUAL,class_instance_type), class_type_body)
+  { ($2, $4, $1, $3) }
 ;
 
 /* Core expressions */
@@ -2248,6 +2214,37 @@ class_type_declaration_details:
  *   [nonempty_item_attributes] ITEM
  *   ITEM
  */
+braced_expr:
+mark_position_exp
+  ( LBRACE semi_terminated_seq_expr RBRACE
+    { $2 }
+  | LBRACE as_loc(semi_terminated_seq_expr) error
+    { syntax_error_exp $2.loc "SyntaxError in block" }
+
+  | LBRACE DOTDOTDOT expr_optional_constraint COMMA? RBRACE
+    { let loc = mklocation $symbolstartpos $endpos in
+      let msg = "Record construction must have at least one field explicitly set" in
+      syntax_error_exp loc msg
+    }
+  | LBRACE record_expr RBRACE
+    { let (exten, fields) = $2 in mkexp (Pexp_record(fields, exten)) }
+  | as_loc(LBRACE) record_expr as_loc(error)
+    { unclosed_exp (with_txt $1 "{") (with_txt $3 "}")}
+  | LBRACE record_expr_with_string_keys RBRACE
+    { let loc = mklocation $symbolstartpos $endpos in
+      let (exten, fields) = $2 in
+      mkexp ~loc (Pexp_extension (mkloc ("bs.obj") loc,
+             PStr [mkstrexp (mkexp ~loc (Pexp_record(fields, exten))) []]))
+    }
+  | as_loc(LBRACE) record_expr_with_string_keys as_loc(error)
+    { unclosed_exp (with_txt $1 "{") (with_txt $3 "}")}
+  /* Todo: Why is this not a simple_expr? */
+  | LBRACE object_body RBRACE
+    { mkexp (Pexp_object $2) }
+  | as_loc(LBRACE) object_body as_loc(error)
+    { unclosed_exp (with_txt $1 "{") (with_txt $3 "}") }
+) {$1};
+
 semi_terminated_seq_expr:
 mark_position_exp
   ( item_extension_sugar semi_terminated_seq_expr_row
@@ -2358,36 +2355,38 @@ labeled_pattern_constraint:
 labeled_pattern:
 as_loc
   ( COLON as_loc(LIDENT) labeled_pattern_constraint
-    { (Labelled $2.txt, None, $3 $2) }
+    { Term (Labelled $2.txt, None, $3 $2) }
   | COLON as_loc(LIDENT) labeled_pattern_constraint EQUAL expr
-    { (Optional $2.txt, Some $5, $3 $2) }
+    { Term (Optional $2.txt, Some $5, $3 $2) }
   | COLON as_loc(LIDENT) labeled_pattern_constraint EQUAL QUESTION
-    { (Optional $2.txt, None, $3 $2) }
+    { Term (Optional $2.txt, None, $3 $2) }
   | pattern_optional_constraint
-    { (Nolabel, None, $1) }
+    { Term (Nolabel, None, $1) }
+  | TYPE LIDENT
+    { Type $2 }
 
     /* <REMOVE ME> */
   | COLONCOLONLIDENT
     { let loc = mklocation $startpos($1) $endpos($1) in
-        (Labelled $1, None, mkpat(Ppat_var (mkloc $1 loc)) ~loc)
+      Term (Labelled $1, None, mkpat(Ppat_var (mkloc $1 loc)) ~loc)
     }
   | COLONCOLONLIDENT EQUAL QUESTION
     { let loc = mklocation $symbolstartpos $endpos in
-        (Optional $1, None, mkpat(Ppat_var (mkloc $1 loc)) ~loc)
+      Term (Optional $1, None, mkpat(Ppat_var (mkloc $1 loc)) ~loc)
     }
   | COLONCOLONLIDENT EQUAL simple_expr
     { let loc = mklocation $symbolstartpos $endpos in
-      (Optional $1, Some $3, mkpat(Ppat_var (mkloc $1 loc)) ~loc)
+      Term (Optional $1, Some $3, mkpat(Ppat_var (mkloc $1 loc)) ~loc)
     }
    /* Case A, B, C, D */
   | LIDENTCOLONCOLON pattern_optional_constraint
-    { (Labelled $1, None, $2) }
+    { Term (Labelled $1, None, $2) }
    /* Case E, F, G, H */
   | LIDENTCOLONCOLON pattern_optional_constraint EQUAL QUESTION
-    { (Optional $1, None, $2) }
+    { Term (Optional $1, None, $2) }
    /* Case I, J, K, L */
   | LIDENTCOLONCOLON pattern_optional_constraint EQUAL simple_expr
-    { (Optional $1, Some $4, $2) }
+    { Term (Optional $1, Some $4, $2) }
     /* </REMOVE ME> */
   ) { $1 }
 ;
@@ -2397,17 +2396,15 @@ as_loc
   { match $1 with
     | [] ->
       let loc = mklocation $startpos $endpos in
-      [mkloc (Nolabel, None, mkpat_constructor_unit loc loc) loc]
+      [mkloc (Term (Nolabel, None, mkpat_constructor_unit loc loc)) loc]
     | pats -> pats
   }
 ;
 
 es6_parameters:
   | labeled_pattern_list { $1 }
-  | as_loc(simple_pattern_direct_argument { (Nolabel, None, $1) })
-    { [$1] }
   | as_loc(val_ident)
-    { [{$1 with txt = (Nolabel, None, mkpat ~loc:$1.loc (Ppat_var $1))}] }
+    { [{$1 with txt = Term (Nolabel, None, mkpat ~loc:$1.loc (Ppat_var $1))}] }
 ;
 
 
@@ -2508,7 +2505,7 @@ expr:
 mark_position_exp
   ( simple_expr
     { $1 }
-  | FUN fun_def
+  | FUN fun_def(EQUALGREATER,non_arrowed_core_type)
     { $2 }
   | ES6_FUN es6_parameters EQUALGREATER expr
     { List.fold_right mkexp_fun $2 $4 }
@@ -2606,7 +2603,7 @@ mark_position_exp
   ) {$1};
 
 simple_expr_call:
-  | basic_expr(simple_expr) { $1, [] }
+  | mark_position_exp(basic_expr(simple_expr)) { $1, [] }
   | simple_expr_call labeled_arguments
     { let body, args = $1 in (body, List.rev_append $2 args) }
 ;
@@ -2740,6 +2737,7 @@ simple_expr_direct_argument:
      [<ident    args />  , remainingitems ]
      [<>                 , remainingitems ]
    */
+  | braced_expr { $1 }
   | LBRACKETLESS jsx_without_leading_less COMMA expr_comma_seq_extension RBRACKET
     { let entireLoc = mklocation $startpos($1) $endpos($4) in
       let (seq, ext_opt) = $4 in
@@ -2749,33 +2747,6 @@ simple_expr_direct_argument:
     { let entireLoc = mklocation $startpos($1) $endpos($3) in
       mktailexp_extension entireLoc ($2::[]) None
     }
-  | LBRACE semi_terminated_seq_expr RBRACE
-    { $2 }
-  | LBRACE as_loc(semi_terminated_seq_expr) error
-    { syntax_error_exp $2.loc "SyntaxError in block" }
-
-  | LBRACE DOTDOTDOT expr_optional_constraint COMMA? RBRACE
-    { let loc = mklocation $symbolstartpos $endpos in
-      let msg = "Record construction must have at least one field explicitly set" in
-      syntax_error_exp loc msg
-    }
-  | LBRACE record_expr RBRACE
-    { let (exten, fields) = $2 in mkexp (Pexp_record(fields, exten)) }
-  | as_loc(LBRACE) record_expr as_loc(error)
-    { unclosed_exp (with_txt $1 "{") (with_txt $3 "}")}
-  | LBRACE record_expr_with_string_keys RBRACE
-    { let loc = mklocation $symbolstartpos $endpos in
-      let (exten, fields) = $2 in
-      mkexp ~loc (Pexp_extension (mkloc ("bs.obj") loc,
-             PStr [mkstrexp (mkexp ~loc (Pexp_record(fields, exten))) []]))
-    }
-  | as_loc(LBRACE) record_expr_with_string_keys as_loc(error)
-    { unclosed_exp (with_txt $1 "{") (with_txt $3 "}")}
-  /* Todo: Why is this not a simple_expr? */
-  | LBRACE object_body RBRACE
-    { mkexp (Pexp_object $2) }
-  | as_loc(LBRACE) object_body as_loc(error)
-    { unclosed_exp (with_txt $1 "{") (with_txt $3 "}") }
   | LBRACKETBAR expr_list BARRBRACKET
     { mkexp (Pexp_array $2) }
   | as_loc(LBRACKETBAR) expr_list as_loc(error)
@@ -2890,7 +2861,7 @@ let_binding_body:
   | with_patvar(val_ident) type_constraint EQUAL expr
     { let loc = mklocation $symbolstartpos $endpos in
       ($1, ghexp_constraint loc $4 $2) }
-  | with_patvar(val_ident) method_body
+  | with_patvar(val_ident) fun_def(EQUAL,core_type)
     { ($1, $2) }
   | with_patvar(val_ident) COLON preceded(QUOTE,ident)+ DOT only_core_type(core_type)
       EQUAL mark_position_exp(expr)
@@ -2988,23 +2959,15 @@ match_case(EXPR):
   { Exp.case $2 ?guard:$3 $5 }
 ;
 
-fun_body:
-  | fun_def { $1 }
-  | EQUALGREATER expr { $2 }
-  | COLON only_core_type(non_arrowed_core_type) EQUALGREATER expr
-    { mkexp ~loc:(mklocation $startpos $endpos) (Pexp_constraint($4, $2)) }
-;
-
-fun_def:
-  | labeled_pattern_list fun_body
-    { List.fold_right mkexp_fun $1 $2 }
-  | parenthesized(preceded(TYPE, LIDENT+)) fun_body
-    { pexp_newtypes ~loc:(mklocation $startpos $endpos) $1 $2 }
-;
-
-method_body:
-  | fun_def { $1 }
-  | EQUALGREATER expr { $2 }
+fun_def(DELIM, typ):
+  labeled_pattern_list
+  preceded(COLON,only_core_type(typ))?
+  either(preceded(DELIM, expr), braced_expr)
+  { List.fold_right mkexp_fun $1
+      (match $2 with
+      | None -> $3
+      | Some ct -> Exp.constraint_ ~loc:(mklocation $startpos $endpos) $3 ct)
+  }
 ;
 
 /* At least one comma delimited: Each item optionally annotated. */
@@ -3136,7 +3099,8 @@ pattern:
 ;
 
 pattern_constructor_argument:
-  | simple_pattern_direct_argument { [$1] }
+  | simple_pattern_direct_argument
+    { [$1] }
   | parenthesized(separated_nonempty_list(COMMA, pattern_optional_constraint))
     { $1 }
 ;
@@ -3278,7 +3242,7 @@ mark_position_pat
     { unclosed_pat (with_txt $1 "[") (with_txt $3 "]") }
   | LBRACKETBAR loption(terminated(pattern_comma_list,SEMI?)) BARRBRACKET
     { mkpat (Ppat_array $2) }
-  ) {$1};
+) {$1};
 
 pattern_optional_constraint:
 mark_position_pat
@@ -3691,7 +3655,7 @@ mark_position_typ2
 arrow_type_parameter:
   | only_core_type(core_type)
     { (Nolabel, $1) }
-  | COLON LIDENT only_core_type(non_arrowed_core_type) optional
+  | COLON LIDENT only_core_type(core_type) optional
     { ($4 $2, $3) }
 ;
 
