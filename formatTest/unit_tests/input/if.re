@@ -128,7 +128,7 @@ let ternaryResult =
   eeeeeee ? fffffff : (x ? y : z);
 
 
-let addOne(x) => x + 1;
+let addOne(x) = x + 1;
 
 let result =
    addOne(0) + 0 > 1 ? print_string("this wont print") : print_string("this will");

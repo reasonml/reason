@@ -3915,7 +3915,7 @@ mod_ext2:
              { Lident($1) }
            )
   parenthesized(lseparated_nonempty_list(COMMA, mod_ext_longident))
-  { if !Clflags.applicative_functors then
+  { if not !Clflags.applicative_functors then
       raise Syntaxerr.(Error(Applicative_path(mklocation $startpos $endpos)));
     List.fold_left (fun p1 p2 -> Lapply (p1, p2)) $1 $2
   }

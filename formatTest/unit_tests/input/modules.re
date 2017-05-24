@@ -353,7 +353,7 @@ module Maybe (X:Type) {type t = option(X.t);};
 module Id (X:Type) = X;
 module Compose (F:(Type)=>Type, G:(Type)=>Type, X:Type) = F(G(X));
 let l : Compose(List,Maybe,Char).t = [Some('a')];
-module Example2 (F:Type=>Type) (X:Type) => {
+module Example2 (F:(Type)=>Type, X:Type) {
   /**
    * Note: This is the one remaining syntactic issue where
    * modules/functions do not have syntax unified with values.
@@ -362,7 +362,7 @@ module Example2 (F:Type=>Type) (X:Type) => {
    *   let iso (a:(Compose Id F X).t): (F X).t => a;
    *
    */
-  let iso (a:Compose(Id)(F)(X).t): F(X).t => a;
+  let iso (a:Compose(Id,F,X).t): F(X).t = a;
 };
 
 Printf.printf("\nModules And Functors: %n\n", CurriedNoSugarFunctorResultInline.result);
@@ -386,7 +386,7 @@ Printf.printf("\nModules And Functors: %n\n", CurriedNoSugarFunctorResultInline.
 include YourLib.CreateComponent {
   type thing = blahblahblah;
   type state = unit;
-  let getInitialState(_)=> ();
+  let getInitialState(_)= ();
   let myValue = {
     recordField: "hello"
   };
@@ -401,9 +401,9 @@ let myFirstClass = (module MyModule : HasInt);
 
 let myFirstClassWillBeFormattedAs: (module HasInt) = (module MyModule);
 
-let acceptsAndUnpacksFirstClass ((module M : HasInt)) => M.x + M.x;
+let acceptsAndUnpacksFirstClass ((module M : HasInt)) = M.x + M.x;
 
-let acceptsAndUnpacksFirstClass ((module M) : (module HasInt)) => M.x + M.x;
+let acceptsAndUnpacksFirstClass ((module M) : (module HasInt)) = M.x + M.x;
 
 module SecondClass = (val myFirstClass);
 
@@ -456,6 +456,6 @@ let module OldModuleSyntax = {
 module type SigWithModuleTypeOf = {
   module type ModuleType;
   include (module type of String);
-  include module type of Array;
+  include (module type of Array);
 };
 

@@ -6,7 +6,7 @@ let myComputation = lazy {
 
 type myRecord = {myRecordField: int};
 
-let operateOnLazyValue (lazy {myRecordField}) => {
+let operateOnLazyValue (lazy {myRecordField}) {
    let tmp = myRecordField;
    tmp + tmp;
 };
