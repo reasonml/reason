@@ -610,11 +610,6 @@ let bigarray_set ?(loc=dummy_loc()) arr arg newval =
                         Nolabel, mkexp ~ghost:true ~loc (Pexp_array coords);
                         Nolabel, newval]))
 
-let lapply p1 p2 start_pos end_pos =
-  if !Clflags.applicative_functors
-  then Lapply(p1, p2)
-  else raise (Syntaxerr.Error(Syntaxerr.Applicative_path (mklocation start_pos end_pos)))
-
 let exp_of_label label =
   mkexp ~loc:label.loc (Pexp_ident {label with txt=Lident(Longident.last label.txt)})
 
@@ -3912,12 +3907,18 @@ mod_ext_longident:
 ;
 
 mod_ext2:
-  | mod_ext_longident DOT UIDENT LPAREN mod_ext_longident RPAREN
-    { lapply ( Ldot($1, $3)) $5 $symbolstartpos $endpos }
-  | mod_ext2 LPAREN mod_ext_longident RPAREN
-    { lapply $1 $3 $symbolstartpos $endpos }
-  | UIDENT LPAREN mod_ext_longident RPAREN
-    { lapply (Lident($1)) $3 $symbolstartpos $endpos }
+  anonymous( mod_ext_longident DOT UIDENT
+             { Ldot($1, $3) }
+           | mod_ext2
+             { $1 }
+           | UIDENT
+             { Lident($1) }
+           )
+  parenthesized(lseparated_nonempty_list(COMMA, mod_ext_longident))
+  { if !Clflags.applicative_functors then
+      raise Syntaxerr.(Error(Applicative_path(mklocation $startpos $endpos)));
+    List.fold_left (fun p1 p2 -> Lapply (p1, p2)) $1 $2
+  }
 ;
 
 mty_longident:
