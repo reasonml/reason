@@ -413,30 +413,36 @@ let expandLocation pos ~expand:(startPos, endPos) =
     }
   }
 
-(*
- * Returns (arityAttrs, docAttrs, standard_attrs, jsxAttrs)
- *)
-let rec partitionAttributes attrs =
+(** Kinds of attributes *)
+type attributesPartition = {
+  arityAttrs : attributes;
+  docAttrs : attributes;
+  stdAttrs : attributes;
+  jsxAttrs : attributes
+}
+
+(** Partition attributes into kinds *)
+let rec partitionAttributes attrs : attributesPartition =
   match attrs with
-    | [] -> ([], [], [], [])
+    | [] ->
+        {arityAttrs=[]; docAttrs=[]; stdAttrs=[]; jsxAttrs=[]}
     | (({txt="JSX"; loc}, _) as jsx)::atTl ->
-        let (tlArity, tlDoc, tlStandard, tlJsx) = partitionAttributes atTl in
-        (tlArity, tlDoc, tlStandard, jsx :: tlJsx)
+        let partition = partitionAttributes atTl in
+        {partition with jsxAttrs=jsx::partition.jsxAttrs}
     | (({txt="explicit_arity"; loc}, _) as arity_attr)::atTl
     | (({txt="implicit_arity"; loc}, _) as arity_attr)::atTl ->
-        let (tlArity, tlDoc, tlStandard, tlJsx) = partitionAttributes atTl in
-        (arity_attr::tlArity, tlDoc, tlStandard, tlJsx)
+        let partition = partitionAttributes atTl in
+        {partition with arityAttrs=arity_attr::partition.arityAttrs}
     | (({txt="ocaml.text"; loc}, _) as doc)::atTl
     | (({txt="ocaml.doc"; loc}, _) as doc)::atTl ->
-        let (tlArity, tlDoc, tlStandard, tlJsx) = partitionAttributes atTl in
-        (tlArity, doc::tlDoc, tlStandard, tlJsx)
+        let partition = partitionAttributes atTl in
+        {partition with docAttrs=doc::partition.docAttrs}
     | atHd::atTl ->
-        let (tlArity, tlDoc, tlStandard, tlJsx) = partitionAttributes atTl in
-        (tlArity, tlDoc, atHd::tlStandard, tlJsx)
+        let partition = partitionAttributes atTl in
+        {partition with stdAttrs=atHd::partition.stdAttrs}
 
 let extractStdAttrs attrs =
-  let (arityAttrs, docAttrs, standard_attrs, jsxAttrs) = partitionAttributes attrs in
-  standard_attrs
+  (partitionAttributes attrs).stdAttrs
 
 let rec sequentialIfBlocks x =
   match x with
@@ -2338,7 +2344,7 @@ class printer  ()= object(self:'self)
   method non_arrowed_core_type x = self#non_arrowed_non_simple_core_type x
 
   method core_type2 x =
-    let (arityAttrs, docAtrs, stdAttrs, jsxAttrs) = partitionAttributes x.ptyp_attributes in
+    let {stdAttrs} = partitionAttributes x.ptyp_attributes in
     if stdAttrs <> [] then
       formatAttributed
         (self#non_arrowed_simple_core_type {x with ptyp_attributes=[]})
@@ -2369,7 +2375,7 @@ class printer  ()= object(self:'self)
 
   (* Same as core_type2 but can be aliased *)
   method core_type x =
-    let (arityAttrs, docAtrs, stdAttrs, jsxAttrss) = partitionAttributes x.ptyp_attributes in
+    let {stdAttrs} = partitionAttributes x.ptyp_attributes in
     if stdAttrs <> [] then
       formatAttributed
         (self#non_arrowed_simple_core_type {x with ptyp_attributes=[]})
@@ -2584,7 +2590,7 @@ class printer  ()= object(self:'self)
    * not parsed or printed correctly. *)
   method type_variant_leaf1 opt_ampersand polymorphic print_bar x =
     let {pcd_name; pcd_args; pcd_res; pcd_loc; pcd_attributes} = x in
-    let (arityAttrs, docAtrs, stdAttrs, jsxAttrs) = partitionAttributes pcd_attributes in
+    let {stdAttrs} = partitionAttributes pcd_attributes in
     let prefix = if polymorphic then "`" else "" in
     let sourceMappedName = SourceMap (pcd_name.loc, atom (prefix ^ pcd_name.txt)) in
     let nameOf = makeList ~postSpace:true [sourceMappedName] in
@@ -2810,7 +2816,7 @@ class printer  ()= object(self:'self)
     (equalInitiatedSegments, constraints)
 
   method non_arrowed_non_simple_core_type x =
-    let (arityAttrs, docAtrs, stdAttrs, jsxAttrs) = partitionAttributes x.ptyp_attributes in
+    let {stdAttrs} = partitionAttributes x.ptyp_attributes in
     if stdAttrs <> [] then
       formatAttributed
         (self#non_arrowed_simple_core_type {x with ptyp_attributes=[]})
@@ -2847,7 +2853,7 @@ class printer  ()= object(self:'self)
     | _ -> self#non_arrowed_simple_core_type x
 
   method non_arrowed_simple_core_type x =
-    let (arityAttrs, docAttrs, stdAttrs, jsxAttrs) = partitionAttributes x.ptyp_attributes in
+    let {stdAttrs} = partitionAttributes x.ptyp_attributes in
     if stdAttrs <> [] then
       formatSimpleAttributed
         (self#non_arrowed_simple_core_type {x with ptyp_attributes=[]})
@@ -3012,7 +3018,7 @@ class printer  ()= object(self:'self)
   method pattern_without_or x =
     let patternSourceMap pt layout = (SourceMap (pt.ppat_loc, layout)) in
     (* TODOATTRIBUTES: Handle the stdAttrs here *)
-    let (arityAttrs, docAtrs, _, jsxAttrs) = partitionAttributes x.ppat_attributes in
+    let {arityAttrs} = partitionAttributes x.ppat_attributes in
     match x.ppat_desc with
       | Ppat_alias (p, s) ->
           let raw_pattern = (self#pattern p) in
@@ -3054,7 +3060,7 @@ class printer  ()= object(self:'self)
       | _ -> self#simple_pattern x
 
   method pattern x =
-    let (arityAttrs, docAtrs, stdAttrs, jsxAttrs) = partitionAttributes x.ppat_attributes in
+    let {arityAttrs; stdAttrs} = partitionAttributes x.ppat_attributes in
     if stdAttrs <> [] then
       formatAttributed
         (* Doesn't need to be simple_pattern because attributes are parse as
@@ -3080,7 +3086,7 @@ class printer  ()= object(self:'self)
     | _  -> self#pattern x
 
   method simple_pattern x =
-    let (arityAttrs, docAtrs, stdAttrs, jsxAttrs) = partitionAttributes x.ppat_attributes in
+    let {arityAttrs; stdAttrs} = partitionAttributes x.ppat_attributes in
     if stdAttrs <> [] then
       formatSimpleAttributed
         (self#simple_pattern {x with ppat_attributes=arityAttrs})
@@ -3196,10 +3202,10 @@ class printer  ()= object(self:'self)
   ]
 
   method simple_get_application x =
-    let (arityAttrs, docAtrs, stdAttrs, jsxAttrs) = partitionAttributes x.pexp_attributes in
+    let {stdAttrs; jsxAttrs} = partitionAttributes x.pexp_attributes in
     match (x.pexp_desc, stdAttrs, jsxAttrs) with
     | (_, attrHd::attrTl, []) -> None (* Has some printed attributes - not simple *)
-    | (Pexp_apply ({pexp_desc=Pexp_ident loc}, l), [], jsx::_) -> (
+    | (Pexp_apply ({pexp_desc=Pexp_ident loc}, l), [], _jsx::_) -> (
       (* TODO: Soon, we will allow the final argument to be an identifier which
          represents the entire list. This would be written as
          `<tag>...list</tag>`. If you imagine there being an implicit [] inside
@@ -3425,7 +3431,7 @@ class printer  ()= object(self:'self)
 
   method unparseExprRecurse x =
     (* If there are any attributes, render unary like `(~-) x [@ppx]`, and infix like `(+) x y [@attr]` *)
-    let (arityAttrs, docAtrs, stdAttrs, jsxAttrs) = partitionAttributes x.pexp_attributes in
+    let {arityAttrs; stdAttrs; jsxAttrs} = partitionAttributes x.pexp_attributes in
     (* If there's any attributes, recurse without them, then apply them to
        the ends of functions, or simplify infix printings then append. *)
     if stdAttrs <> [] then
@@ -4485,7 +4491,7 @@ class printer  ()= object(self:'self)
 
   (* Expressions requiring parens, in most contexts such as separated by infix *)
   method expression_requiring_parens_in_infix x =
-    let (arityAttrs, docAtrs, stdAttrs, jsxAttrs) = partitionAttributes x.pexp_attributes in
+    let {stdAttrs} = partitionAttributes x.pexp_attributes in
     assert (stdAttrs == []);
     match x.pexp_desc with
       (* The only reason Pexp_fun must also be wrapped in parens when under
@@ -4796,7 +4802,7 @@ class printer  ()= object(self:'self)
     makeList ~wrap:("{", "}") ~break:IfNeed ~preSpace:true allRows
 
   method simplest_expression x =
-    let (arityAttrs, docAtrs, stdAttrs, jsxAttrs) = partitionAttributes x.pexp_attributes in
+    let {stdAttrs; jsxAttrs} = partitionAttributes x.pexp_attributes in
     if stdAttrs <> [] then
       None
     else
@@ -5434,7 +5440,7 @@ class printer  ()= object(self:'self)
         ::fields
 
   method simple_class_expr x =
-    let (arityAttrs, docAtrs, stdAttrs, jsxAttrs) = partitionAttributes x.pcl_attributes in
+    let {stdAttrs} = partitionAttributes x.pcl_attributes in
     if stdAttrs <> [] then
       formatSimpleAttributed
         (self#simple_class_expr {x with pcl_attributes=[]})
@@ -5478,7 +5484,7 @@ class printer  ()= object(self:'self)
       | _ -> [self#class_expr x]
 
   method class_expr x =
-    let (arityAttrs, docAtrs, stdAttrs, jsxAttrs) = partitionAttributes x.pcl_attributes in
+    let {stdAttrs} = partitionAttributes x.pcl_attributes in
     (* We cannot handle the attributes here. Must handle them in each item *)
     if stdAttrs <> [] then
       (* Do not need a "simple" attributes precedence wrapper. *)
