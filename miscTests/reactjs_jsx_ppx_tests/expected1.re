@@ -31,3 +31,7 @@ Foo.createElement
   comp::(Bar.createElement bar::1 children::[] ())
   children::[ReactDOMRe.createElement "li" [||], Bar.createElement bar::2 children::[] ()]
   ();
+
+Foo.createElement key::"someKey" className::"hello" children::[] ();
+
+Foo.createElement key::"someKey" ref::(some ref) className::"hello" children::[] ();

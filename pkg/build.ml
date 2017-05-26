@@ -43,6 +43,7 @@ let () =
     Pkg.bin ~auto:false "_reasonbuild/_build/myocamlbuild" ~dst:"rebuild";
     Pkg.bin "src/reason_format_type" ~dst:"refmttype";
     Pkg.bin "src/reactjs_jsx_ppx" ~dst:"reactjs_jsx_ppx";
+    Pkg.bin "src/reasonreact_jsx_ppx" ~dst:"reasonreact_jsx_ppx";
     Pkg.bin "src/ppx_react" ~dst:"ppx_react";
 
     (* VimReason *)
