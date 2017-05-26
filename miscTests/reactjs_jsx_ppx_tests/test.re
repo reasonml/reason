@@ -20,3 +20,9 @@
 <Foo className="hello" width="10"> <li /> <Bar /> </Foo>;
 
 <Foo className="hello" comp=(<Bar bar=1 />)> <li /> <Bar bar=2 /> </Foo>;
+
+/* ============== */
+
+<Foo key="someKey" className="hello" />;
+
+<Foo key="someKey" ref=(some ref) className="hello" />;
