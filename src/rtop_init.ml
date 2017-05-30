@@ -1,5 +1,6 @@
 #!/usr/bin/env ocaml
 #require "ocaml-migrate-parsetree";;
+#require "ocaml-migrate-parsetree";;
 #require "menhirLib";;
 #require "reason";;
 #use ".reasoninit";;
