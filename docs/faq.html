@@ -54,9 +54,9 @@ See also our [JS interop guide](./jsWorkflow.html#javascript-workflow-talk-to-ex
 Not currently. We'd like to keep the configuration minimal.
 
 #### The compiler says the module can't be found.
-Are you using a third-party module? Did you do `bsb -make-world`? `bsb` by default only build the root project itself for performance.
+Are you using a third-party module? If you're compiling to JS, did you add the dependency in your [`bsconfig.json`](http://bloomberg.github.io/bucklescript/Manual.html#_get_started)'s `bs-dependencies` field? Also, did you do `bsb -make-world`? `bsb` by default only build the root project itself for performance.
 
-Additionally, don't forget to add the source folders into your [`bsconfig.json`](http://bloomberg.github.io/bucklescript/Manual.html#_get_started)! For performance, `bsb` doesn't automatically and recursively build nested folders.
+Additionally, don't forget to add the source folders into your `bsconfig.json`! For performance, `bsb` doesn't automatically and recursively build nested folders.
 
 #### Is `Some | None`, `contents`, `Array`, `List` and all of these special? Where do they come from?
 They're ordinary variants/records/module definitions that comes with the [standard library](http://caml.inria.fr/pub/docs/manual-ocaml/libref/), `open`ed by default during compilation out of convenience.
