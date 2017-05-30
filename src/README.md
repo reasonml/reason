@@ -40,7 +40,7 @@ Interested in contributing to Reason? The core of it is a parser + a printer, pl
 
 __This documentation assumes relative familiarity with ReactJS.__
 
-[Reason has JSX](http://facebook.github.io/reason/#diving-deeper-jsx)! `reactjs_jsx_ppx.ml` is the [ppx](https://whitequark.org/blog/2014/04/16/a-guide-to-extension-points-in-ocaml/) that takes advantage of the `[@JSX]` attribute described in the docs. It transforms the agnostic function calls into something that works with the current ReactJS bindings (TODO: show. Don't tweet about this please).
+[Reason has JSX](http://facebook.github.io/reason/#diving-deeper-jsx)! `reactjs_jsx_ppx.ml` is the [ppx](https://whitequark.org/blog/2014/04/16/a-guide-to-extension-points-in-ocaml/) that takes advantage of the `[@JSX]` attribute described in the docs. It transforms the agnostic function calls into something that works with the current [ReactJS bindings](https://github.com/reasonml/reason-react).
 
 #### Uncapitalized JSX
 
