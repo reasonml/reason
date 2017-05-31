@@ -1,4 +1,5 @@
 #!/usr/bin/env ocaml
+#load "compiler-libs/ocamlcommon.cma"
 #require "ocaml-migrate-parsetree";;
 #require "menhirLib";;
 #require "reason";;
