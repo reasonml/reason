@@ -1,6 +1,9 @@
 (* transform `div props1::a props2::b children::[foo, bar] () [@JSX]` into
   `ReactDOMRe.createElement "div" props::[%bs.obj {props1: 1, props2: b}] [|foo, bar|]`.
-  Don't transform the upper-cased case: `Foo.createElement foo::bar children::[] () [@JSX]`.
+
+  For the old ppx: Don't transform the upper-cased case: `Foo.createElement foo::bar children::[] () [@JSX]`.
+  For the new ppx: transform the upper-cased case `Foo.createElement key::a ref::b foo::bar children::[] () [@JSX]` into
+  `ReasonReact.element key::a ref::b (Foo.make foo::bar [||] [@JSX])`
 *)
 
 (* Why do we need a transform, instead of just using the original format?
@@ -47,9 +50,19 @@ let extractChildrenForDOMElements ?(removeLastPositionUnit=false) ~loc propsAndC
     (Exp.construct ~loc {loc; txt = Lident "[]"} None, if removeLastPositionUnit then allButLast props else props)
   | (moreThanOneChild, props) -> raise (Invalid_argument "JSX: somehow there's more than one `children` label")
 
+let useOldJSX = ref false
+
 (* TODO: some line number might still be wrong *)
 let jsxMapper = Reason_toolchain.To_current.copy_mapper {
   default_mapper with
+  structure_item = (fun mapper structure_item -> match structure_item with
+    | {pstr_desc = Pstr_attribute ({loc; txt = "oldJSX" | "oldJsx"}, b); pstr_loc} -> begin
+      useOldJSX := true;
+      default_mapper.structure_item mapper structure_item
+      (* {pstr_loc; pstr_desc = Pstr_attribute ({loc; txt = "hello"}, b)} *)
+    end
+    | _ -> default_mapper.structure_item mapper structure_item
+  );
   expr = (fun mapper expression -> match expression with
     (* spotted a function application! Does it have the @JSX attribute? *)
     | {
@@ -64,14 +77,42 @@ let jsxMapper = Reason_toolchain.To_current.copy_mapper {
           (* Foo.createElement prop1::foo prop2:bar children::[] () *)
           (* no change *)
           | {loc; txt = Ldot (moduleNames, "createElement")} ->
+            (* throw away the [@JSX] attribute and keep the others, if any *)
             let attrs = pexp_attributes |> List.filter (fun (attribute, _) -> attribute.txt <> "JSX") in
-            Exp.apply
-              ~loc
-              ~attrs
-              wrap
-              (
-                propsAndChildren |> List.map (fun (label, expr) -> (label, mapper.expr mapper expr))
-              )
+            if !useOldJSX then
+              Exp.apply
+                ~loc
+                ~attrs
+                wrap
+                (
+                  propsAndChildren |> List.map (fun (label, expr) -> (label, mapper.expr mapper expr))
+                )
+            else begin
+              let (children, argsWithLabels) =
+                extractChildrenForDOMElements ~loc ~removeLastPositionUnit:true propsAndChildren in
+              let argIsKeyRef = function
+                | (Labelled ("key" | "ref") , _) -> true
+                | _ -> false in
+              let (argsKeyRef, argsForMake) = List.partition argIsKeyRef argsWithLabels in
+
+              let childrenExpr =
+                Exp.array (
+                  listToArray children |> List.map (fun a -> mapper.expr mapper a)
+                ) in
+              let args = argsForMake @ [ (Nolabel, childrenExpr) ] in
+              let wrapWithReasonReactElement e = (* ReasonReact.element ::key ::ref (...) *)
+                Exp.apply
+                  ~loc
+                  (Exp.ident ~loc {loc; txt = Ldot (Lident "ReasonReact", "element")})
+                  (argsKeyRef @ [(Nolabel, e)]) in
+              Exp.apply
+                ~loc
+                ~attrs:attrs
+                (* Foo.make *)
+                (Exp.ident ~loc {loc; txt = Ldot (moduleNames, "make")})
+                args
+              |> wrapWithReasonReactElement
+            end
           (* div prop1::foo prop2:bar children::[bla] () *)
           (* turn that into ReactDOMRe.createElement props::(ReactDOMRe.props props1::foo props2::bar ()) [|bla|] *)
           | {loc; txt = Lident lowercaseIdentifier} ->

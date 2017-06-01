@@ -39,3 +39,8 @@ ReasonReact.element (
 ReasonReact.element key::"someKey" (Foo.make className::"hello" [||]);
 
 ReasonReact.element key::"someKey" ref::(some ref) (Foo.make className::"hello" [||]);
+
+ReasonReact.element
+  key::"someKey"
+  ref::(some ref)
+  (Foo.Bar.make className::"hello" [|ReasonReact.element (Bar.make [||])|]);
