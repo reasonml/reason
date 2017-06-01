@@ -71,9 +71,17 @@ React.createElement('div', undefined, child1, child2)
 
 #### Capitalized JSX
 
+If you put `[@@@oldJSX]` on top of your file, the ppx will do the following:
+
 ```reason
-MyReasonComponent.createElement foo::bar [child1, child2][@JSX]
-/* with JSX: <MyReasonComponent foo=bar>child1 child2</MyReasonComponent> */
+MyReasonComponent.createElement key::a ref::b foo::bar [child1, child2][@JSX]
+/* with JSX: <MyReasonComponent key=a ref=b foo=bar>child1 child2</MyReasonComponent> */
 ```
 
-Stays the same, with the `[@JSX]` part stripped.
+Things stay the same, with the `[@JSX]` part stripped.
+
+Otherwise, we do the new transformation:
+
+```reason
+ReasonReact.element key::a ref::b (MyReasonComponent.make foo::bar [|child1, child2|])
+```

@@ -59,7 +59,6 @@ let jsxMapper = Reason_toolchain.To_current.copy_mapper {
     | {pstr_desc = Pstr_attribute ({loc; txt = "oldJSX" | "oldJsx"}, b); pstr_loc} -> begin
       useOldJSX := true;
       default_mapper.structure_item mapper structure_item
-      (* {pstr_loc; pstr_desc = Pstr_attribute ({loc; txt = "hello"}, b)} *)
     end
     | _ -> default_mapper.structure_item mapper structure_item
   );
