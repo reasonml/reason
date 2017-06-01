@@ -1,3 +1,5 @@
+[@@@oldJSX];
+
 ReactDOMRe.createElement "div" [||];
 
 ReactDOMRe.createElement "div" props::(ReactDOMRe.props className::"hello" ()) [||];
@@ -35,3 +37,10 @@ Foo.createElement
 Foo.createElement key::"someKey" className::"hello" children::[] ();
 
 Foo.createElement key::"someKey" ref::(some ref) className::"hello" children::[] ();
+
+Foo.Bar.createElement
+  key::"someKey"
+  ref::(some ref)
+  className::"hello"
+  children::[Bar.createElement children::[] ()]
+  ();

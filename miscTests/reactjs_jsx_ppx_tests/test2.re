@@ -1,4 +1,4 @@
-/* don't auto-format this file until https://github.com/facebook/reason/issues/904 is solve */
+/* don't auto-format this file until https://github.com/facebook/reason/issues/904 is resolved */
 <div />;
 
 <div className="hello" />;
@@ -26,3 +26,5 @@
 <Foo key="someKey" className="hello" />;
 
 <Foo key="someKey" ref=(some ref) className="hello" />;
+
+<Foo.Bar key="someKey" ref=(some ref) className="hello"> <Bar /> </Foo.Bar>;
