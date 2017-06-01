@@ -1,0 +1,23 @@
+(jbuild_version 1)
+
+(ocamllex (reason_lexer))
+
+(rule
+ ((targets (reason_parser_message.ml))
+  (deps (reason_parser.mly reason_parser.messages))
+  (action
+   (with-stdout-to ${@} (run menhir --explain --strict --unused-tokens reason_parser.mly --compile-errors reason_parser.messages)))))
+
+(menhir
+ ((modules (reason_parser))
+  (flags (--strict --unused-tokens --fixed-exception --table))))
+
+(library
+ ((name reason)
+  (wrapped false)
+  (libraries
+   (ocaml-migrate-parsetree
+    ppx_deriving
+    ppx_tools_versioned.metaquot_404
+    menhirLib
+    easy_format))))

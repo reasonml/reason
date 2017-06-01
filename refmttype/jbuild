@@ -1,0 +1,7 @@
+(jbuild_version 1)
+
+(executables
+ ((names (reason_format_type))
+  (public_names (refmttype))
+  (package reason)
+  (libraries (reason cmdliner))))

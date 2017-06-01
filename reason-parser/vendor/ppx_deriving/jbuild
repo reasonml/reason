@@ -1,0 +1,10 @@
+(jbuild_version 1)
+
+(library
+ ((name ppx_deriving)
+  (wrapped false)
+  (preprocess (pps (ppx_tools_versioned.metaquot_404)))
+  (libraries
+   (ocaml-migrate-parsetree
+    result
+    ppx_tools_versioned.metaquot_404))))
