@@ -1,4 +1,3 @@
-[@@@oldJSX];
 /* don't auto-format this file until https://github.com/facebook/reason/issues/904 is resolved */
 <div />;
 
