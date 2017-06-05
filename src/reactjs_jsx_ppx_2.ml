@@ -1,7 +1,8 @@
 (* transform `div props1::a props2::b children::[foo, bar] () [@JSX]` into
    `ReactDOMRe.createElement "div" props::[%bs.obj {props1: 1, props2: b}] [|foo, bar|]`.
 
-   Don't transform the upper-cased case: `Foo.createElement foo::bar children::[] () [@JSX]`.
+   transform the upper-cased case `Foo.createElement key::a ref::b foo::bar children::[] () [@JSX]` into
+   `ReasonReact.element key::a ref::b (Foo.make foo::bar [||] [@JSX])`
 *)
 
 (* Why do we need a transform, instead of just using the original format?
@@ -176,7 +177,7 @@ let jsxMapper () =
             | Some 1 -> oldJSX
             | Some 2 -> newJSX modulePath
             | Some _ -> assert false
-            | None -> oldJSX
+            | None -> newJSX modulePath
           in f mapper loc attrs callExpression callArguments
         (* div prop1::foo prop2:bar children::[bla] () *)
         (* turn that into ReactDOMRe.createElement props::(ReactDOMRe.props props1::foo props2::bar ()) [|bla|] *)
