@@ -50,9 +50,10 @@ let extractChildrenForDOMElements ?(removeLastPositionUnit=false) ~loc propsAndC
     (Exp.construct ~loc {loc; txt = Lident "[]"} None, if removeLastPositionUnit then allButLast props else props)
   | (moreThanOneChild, props) -> raise (Invalid_argument "JSX: somehow there's more than one `children` label")
 
+type jsxBehavior = NewBehavior | OldBehaviorWithProgressiveEnhancement
 
 (* TODO: some line number might still be wrong *)
-let jsxMapper () =
+let jsxMapper jsxBehavior =
 
   let oldJSX mapper loc attrs callExpression callArguments =
     Exp.apply
@@ -128,14 +129,42 @@ let jsxMapper () =
       (Exp.ident ~loc {loc; txt = Ldot (Lident "ReactDOMRe", "createElement")})
       args in
 
-  let useOldJSX = ref false in
-  let structure_item =
-    (fun mapper structure_item -> match structure_item with
-       | {pstr_desc = Pstr_attribute ({loc; txt = "oldJSX" | "oldJsx"}, b); pstr_loc} -> begin
-           useOldJSX := true;
-           default_mapper.structure_item mapper structure_item
-         end
-       | _ -> default_mapper.structure_item mapper structure_item
+  let useNewJsxBehavior = ref None in
+
+  let structure =
+    (fun mapper structure -> match structure with
+      (* match against [@@@bs.config {foo, jsx: ...}] *)
+      | {
+            pstr_loc;
+            pstr_desc = Pstr_attribute (
+              ({txt = "bs.config"} as bsConfigLabel),
+              PStr [{pstr_desc = Pstr_eval ({pexp_desc = Pexp_record (recordFields, b)} as innerConfigRecord, a)} as configRecord]
+            )
+          }::restOfStructure -> begin
+            let (jsxField, recordFieldsWithoutJsx) = recordFields |> List.partition (fun ({txt}, _) -> txt = Lident "jsx") in
+            match (jsxField, recordFieldsWithoutJsx) with
+            (* no jsx config found *)
+            | ([], _) -> default_mapper.structure mapper structure
+            (* {jsx: 1 | 2} *)
+            | ((_, {pexp_desc = Pexp_constant (Pconst_integer (version, _))})::rest, recordFieldsWithoutJsx) -> begin
+                (match version with
+                | "1" -> useNewJsxBehavior := Some 1
+                | "2" -> useNewJsxBehavior := Some 2
+                | _ -> raise (Invalid_argument "JSX: the file-level bs.config's jsx version must be either 1 or 2"));
+                match recordFieldsWithoutJsx with
+                (* record empty now, remove the whole bs.config attribute *)
+                | [] -> default_mapper.structure mapper restOfStructure
+                | fields -> default_mapper.structure mapper ({
+                  pstr_loc;
+                  pstr_desc = Pstr_attribute (
+                    bsConfigLabel,
+                    PStr [{configRecord with pstr_desc = Pstr_eval ({innerConfigRecord with pexp_desc = Pexp_record (fields, b)}, a)}]
+                  )
+                }::restOfStructure)
+              end
+          | (_, recordFieldsWithoutJsx) -> raise (Invalid_argument "JSX: the file-level bs.config's {jsx: ...} config accepts only a version number")
+        end
+      | _ -> default_mapper.structure mapper structure
     ) in
 
   let handleJsxCall mapper callExpression callArguments attrs =
@@ -147,8 +176,13 @@ let jsxMapper () =
         (* Foo.createElement prop1::foo prop2:bar children::[] () *)
         (* no change *)
         | {loc; txt = Ldot (modulePath, "createElement")} ->
-          (if !useOldJSX then oldJSX  else newJSX modulePath)
-            mapper loc attrs callExpression callArguments
+          let f = match (jsxBehavior, !useNewJsxBehavior) with
+            | (_, Some 1) -> oldJSX
+            | (_, Some 2) -> newJSX modulePath
+            | (_, Some _) -> assert false
+            | (NewBehavior, None) -> newJSX modulePath
+            | (OldBehaviorWithProgressiveEnhancement, None) -> oldJSX
+          in f mapper loc attrs callExpression callArguments
         (* div prop1::foo prop2:bar children::[bla] () *)
         (* turn that into ReactDOMRe.createElement props::(ReactDOMRe.props props1::foo props2::bar ()) [|bla|] *)
         | {loc; txt = Lident id} ->
@@ -172,9 +206,10 @@ let jsxMapper () =
          Invalid_argument "JSX: `createElement` should be preceeded by a simple, direct module name."
        )
     ) in
-  let expr = 
+
+  let expr =
     (fun mapper expression -> match expression with
-       (* Function applicationwith the @JSX attribute? *)
+       (* Function application with the @JSX attribute? *)
        |
          {
            pexp_desc = Pexp_apply (callExpression, callArguments);
@@ -182,10 +217,14 @@ let jsxMapper () =
          } when Syntax_util.attribute_exists "JSX" pexp_attributes ->
          let attributesNoJsx =
            List.filter (fun (attribute, _) -> attribute.txt <> "JSX") pexp_attributes in
-         handleJsxCall mapper callExpression callArguments attributesNoJsx 
+         handleJsxCall mapper callExpression callArguments attributesNoJsx
        (* Delegate to the default mapper, a deep identity traversal *)
        | e ->
          default_mapper.expr mapper e) in
-  Reason_toolchain.To_current.copy_mapper { default_mapper with structure_item; expr }
 
-let () = Compiler_libs.Ast_mapper.register "JSX" (fun _argv -> jsxMapper ())
+  Reason_toolchain.To_current.copy_mapper { default_mapper with structure; expr }
+
+let () = Compiler_libs.Ast_mapper.register "JSX" (fun argv -> match argv with
+  | "-version"::"2"::rest -> jsxMapper NewBehavior
+  | _ -> jsxMapper OldBehaviorWithProgressiveEnhancement
+  )

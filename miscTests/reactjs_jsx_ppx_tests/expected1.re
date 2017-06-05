@@ -1,5 +1,3 @@
-[@@@oldJSX];
-
 ReactDOMRe.createElement "div" [||];
 
 ReactDOMRe.createElement "div" props::(ReactDOMRe.props className::"hello" ()) [||];
