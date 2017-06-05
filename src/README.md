@@ -71,7 +71,7 @@ React.createElement('div', undefined, child1, child2)
 
 #### Capitalized JSX
 
-If you put `[@@@oldJSX]` on top of your file, the ppx will do the following:
+If you put `[@@@bs.config {jsx: 1}]` on top of your file (or use a global `{"reason": {"react-jsx": 1}"` in [bsconfig.json](http://bloomberg.github.io/bucklescript/Manual.html#_first_example)), the ppx will do the following:
 
 ```reason
 MyReasonComponent.createElement key::a ref::b foo::bar [child1, child2][@JSX]
@@ -80,7 +80,7 @@ MyReasonComponent.createElement key::a ref::b foo::bar [child1, child2][@JSX]
 
 Things stay the same, with the `[@JSX]` part stripped.
 
-Otherwise, we do the new transformation:
+For `[@@@bs.config {jsx: 2}]` (or use a global `{"reason": {"react-jsx": 2}"` in [bsconfig.json](http://bloomberg.github.io/bucklescript/Manual.html#_first_example)), we do the new transformation:
 
 ```reason
 ReasonReact.element key::a ref::b (MyReasonComponent.make foo::bar [|child1, child2|])
