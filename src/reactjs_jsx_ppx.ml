@@ -129,22 +129,42 @@ let jsxMapper jsxBehavior =
       (Exp.ident ~loc {loc; txt = Ldot (Lident "ReactDOMRe", "createElement")})
       args in
 
-  let useNewJsxBehavior = ref false in
+  let useNewJsxBehavior = ref None in
 
-  let structure_item =
-    (fun mapper structure_item -> match (jsxBehavior, structure_item) with
-       | (
-          OldBehaviorWithProgressiveEnhancement,
-          {pstr_desc = Pstr_attribute ({loc; txt = "bs.config"}, PStr [{pstr_desc = Pstr_eval ({pexp_desc = Pexp_record (recordExprs, _)}, _)}])}
-        ) -> begin
-          let useNewJsxBehaviorInThisFile = recordExprs |> List.exists (fun ({txt}, {pexp_desc}) -> match (txt, pexp_desc) with
-            | (Lident "jsx", Pexp_constant (Pconst_integer ("2", _))) -> true
-            | _ -> false
-          ) in
-          if useNewJsxBehaviorInThisFile then begin useNewJsxBehavior := true end;
-          default_mapper.structure_item mapper structure_item
-         end
-       | _ -> default_mapper.structure_item mapper structure_item
+  let structure =
+    (fun mapper structure -> match structure with
+      (* match against [@@@bs.config {foo, jsx: ...}] *)
+      | {
+            pstr_loc;
+            pstr_desc = Pstr_attribute (
+              ({txt = "bs.config"} as bsConfigLabel),
+              PStr [{pstr_desc = Pstr_eval ({pexp_desc = Pexp_record (recordFields, b)} as innerConfigRecord, a)} as configRecord]
+            )
+          }::restOfStructure -> begin
+            let (jsxField, recordFieldsWithoutJsx) = recordFields |> List.partition (fun ({txt}, _) -> txt = Lident "jsx") in
+            match (jsxField, recordFieldsWithoutJsx) with
+            (* no jsx config found *)
+            | ([], _) -> default_mapper.structure mapper structure
+            (* {jsx: 1 | 2} *)
+            | ((_, {pexp_desc = Pexp_constant (Pconst_integer (version, _))})::rest, recordFieldsWithoutJsx) -> begin
+                (match version with
+                | "1" -> useNewJsxBehavior := Some 1
+                | "2" -> useNewJsxBehavior := Some 2
+                | _ -> raise (Invalid_argument "JSX: the file-level bs.config's jsx version must be either 1 or 2"));
+                match recordFieldsWithoutJsx with
+                (* record empty now, remove the whole bs.config attribute *)
+                | [] -> default_mapper.structure mapper restOfStructure
+                | fields -> default_mapper.structure mapper ({
+                  pstr_loc;
+                  pstr_desc = Pstr_attribute (
+                    bsConfigLabel,
+                    PStr [{configRecord with pstr_desc = Pstr_eval ({innerConfigRecord with pexp_desc = Pexp_record (fields, b)}, a)}]
+                  )
+                }::restOfStructure)
+              end
+          | (_, recordFieldsWithoutJsx) -> raise (Invalid_argument "JSX: the file-level bs.config's {jsx: ...} config accepts only a version number")
+        end
+      | _ -> default_mapper.structure mapper structure
     ) in
 
   let handleJsxCall mapper callExpression callArguments attrs =
@@ -157,9 +177,11 @@ let jsxMapper jsxBehavior =
         (* no change *)
         | {loc; txt = Ldot (modulePath, "createElement")} ->
           let f = match (jsxBehavior, !useNewJsxBehavior) with
-            | (NewBehavior, _) -> newJSX modulePath
-            | (OldBehaviorWithProgressiveEnhancement, true) -> newJSX modulePath
-            | (OldBehaviorWithProgressiveEnhancement, false) -> oldJSX
+            | (_, Some 1) -> oldJSX
+            | (_, Some 2) -> newJSX modulePath
+            | (_, Some _) -> assert false
+            | (NewBehavior, None) -> newJSX modulePath
+            | (OldBehaviorWithProgressiveEnhancement, None) -> oldJSX
           in f mapper loc attrs callExpression callArguments
         (* div prop1::foo prop2:bar children::[bla] () *)
         (* turn that into ReactDOMRe.createElement props::(ReactDOMRe.props props1::foo props2::bar ()) [|bla|] *)
@@ -200,7 +222,7 @@ let jsxMapper jsxBehavior =
        | e ->
          default_mapper.expr mapper e) in
 
-  Reason_toolchain.To_current.copy_mapper { default_mapper with structure_item; expr }
+  Reason_toolchain.To_current.copy_mapper { default_mapper with structure; expr }
 
 let () = Compiler_libs.Ast_mapper.register "JSX" (fun argv -> match argv with
   | "-version"::"2"::rest -> jsxMapper NewBehavior

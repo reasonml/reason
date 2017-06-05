@@ -1,4 +1,4 @@
-[@@@bs.config {foo, jsx: 2}];
+[@@@bs.config {foo: foo}];
 
 ReactDOMRe.createElement "div" [||];
 
@@ -9,40 +9,38 @@ ReactDOMRe.createElement "div" props::(ReactDOMRe.props className::"hello" width
 ReactDOMRe.createElement
   "div"
   props::(ReactDOMRe.props className::"hello" width::"10" ())
-  [|ReactDOMRe.createElement "li" [||], ReasonReact.element (Foo.make [||])|];
+  [|ReactDOMRe.createElement "li" [||], Foo.createElement children::[] ()|];
 
 ReactDOMRe.createElement
   "div"
-  props::(
-    ReactDOMRe.props className::"hello" comp::(ReasonReact.element (Foo.make bar::1 [||])) ()
-  )
-  [|ReactDOMRe.createElement "li" [||], ReasonReact.element (Foo.make bar::2 [||])|];
+  props::(ReactDOMRe.props className::"hello" comp::(Foo.createElement bar::1 children::[] ()) ())
+  [|ReactDOMRe.createElement "li" [||], Foo.createElement bar::2 children::[] ()|];
 
-ReasonReact.element (Foo.make [||]);
+Foo.createElement children::[] ();
 
-ReasonReact.element (Foo.make className::"hello" [||]);
+Foo.createElement className::"hello" children::[] ();
 
-ReasonReact.element (Foo.make className::"hello" width::"10" [||]);
+Foo.createElement className::"hello" width::"10" children::[] ();
 
-ReasonReact.element (
-  Foo.make
-    className::"hello"
-    width::"10"
-    [|ReactDOMRe.createElement "li" [||], ReasonReact.element (Bar.make [||])|]
-);
+Foo.createElement
+  className::"hello"
+  width::"10"
+  children::[ReactDOMRe.createElement "li" [||], Bar.createElement children::[] ()]
+  ();
 
-ReasonReact.element (
-  Foo.make
-    className::"hello"
-    comp::<Bar bar=1 />
-    [|ReactDOMRe.createElement "li" [||], ReasonReact.element (Bar.make bar::2 [||])|]
-);
+Foo.createElement
+  className::"hello"
+  comp::(Bar.createElement bar::1 children::[] ())
+  children::[ReactDOMRe.createElement "li" [||], Bar.createElement bar::2 children::[] ()]
+  ();
 
-ReasonReact.element key::"someKey" (Foo.make className::"hello" [||]);
+Foo.createElement key::"someKey" className::"hello" children::[] ();
 
-ReasonReact.element key::"someKey" ref::(some ref) (Foo.make className::"hello" [||]);
+Foo.createElement key::"someKey" ref::(some ref) className::"hello" children::[] ();
 
-ReasonReact.element
+Foo.Bar.createElement
   key::"someKey"
   ref::(some ref)
-  (Foo.Bar.make className::"hello" [|ReasonReact.element (Bar.make [||])|]);
+  className::"hello"
+  children::[Bar.createElement children::[] ()]
+  ();

@@ -1,4 +1,4 @@
-[@@@bs.config {foo, jsx: 1}];
+[@@@bs.config {foo, jsx: 2}];
 /* don't auto-format this file until https://github.com/facebook/reason/issues/904 is resolved */
 <div />;
 
