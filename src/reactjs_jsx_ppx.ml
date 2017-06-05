@@ -217,6 +217,6 @@ let jsxMapper () =
        | e ->
          default_mapper.expr mapper e) in
 
-  Reason_toolchain.To_current.copy_mapper { default_mapper with structure; expr }
+  Jsx_ppx_to_current.To_current.copy_mapper { default_mapper with structure; expr }
 
 let () = Compiler_libs.Ast_mapper.register "JSX" (fun _argv -> jsxMapper ())
