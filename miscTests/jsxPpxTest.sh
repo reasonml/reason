@@ -34,7 +34,7 @@ do
 
   expected=`cat $testPath/expected${i}_newBehavior.re`
 
-  ocamlc -dsource -ppx "./reactjs_jsx_ppx.native -version 2" -pp "./refmt_impl.native --print binary" -impl $test \
+  ocamlc -dsource -ppx "./reactjs_jsx_ppx_2.native" -pp "./refmt_impl.native --print binary" -impl $test \
     2>&1 | sed '$ d' | sed '$ d' | \
     ./refmt_impl.native --parse ml --print re --interface false \
     > $testPath/actual${i}_newBehavior.re

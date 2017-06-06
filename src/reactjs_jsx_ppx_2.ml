@@ -180,7 +180,7 @@ let jsxMapper () =
             | Some 1 -> oldJSX
             | Some 2 -> newJSX modulePath
             | Some _ -> assert false
-            | None -> oldJSX
+            | None -> newJSX modulePath
           in f mapper loc attrs callExpression callArguments
         (* div prop1::foo prop2:bar children::[bla] () *)
         (* turn that into ReactDOMRe.createElement props::(ReactDOMRe.props props1::foo props2::bar ()) [|bla|] *)

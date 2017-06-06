@@ -1,49 +1,49 @@
-#!/bin/sh
+ppxDerivingAndResultStub="module Ppx_deriving_show = struct let sig_of_type ~options ~path decl = [] let str_of_type ~options ~path typ = [] end module Result = struct type ('a, 'b) result = Ok of 'a | Error of 'b end open Result"
+resultStub="module Result = struct type ('a, 'b) result = Ok of 'a | Error of 'b end open Result"
 
-# This is only an example packing workflow!
+menhirSuggestedLib=`menhir --suggest-menhirLib`
 
-# preludeStr="module Ppx_deriving_show = struct let sig_of_type ~options ~path decl = [] let str_of_type ~options ~path typ = [] end module Result = struct type ('a, 'b) result = Ok of 'a | Error of 'b end open Result"
-# menhirSuggestedLib=`menhir --suggest-menhirLib`
+ppxToolsVersionedTargetDir=~/.esy/store-3.x.x/_build/opam_alpha__slash__ppx___tools___versioned-5.0.0-f6cc53982be397d21440d9c55c42b0050e891de4
+# copied over from ~/.esy/store-3.x.x/_build/opam_alpha__slash__ocaml_migrate_parsetree-0.7.0-399416de9584af5975cdc304d32e2b716377916f/_build/default/src/
+# and modified according to the README
+ocamlMigrateParseTreeTargetDir=./omp
+reasonTargetDir=../
+reasonParserTargetDir=../reason-parser
 
-# reasonTargetDir=~/.esy/store-3.x.x/_build/opam_alpha__slash__reason-1.13.5-92dff378e19035480a3809f50558ac9b51778906
-# ppxToolsVersionedTargetDir=~/.esy/store-3.x.x/_build/opam_alpha__slash__ppx___tools___versioned-5.0.0-f6cc53982be397d21440d9c55c42b0050e891de4
-# reasonParserTargetDir=~/.esy/store-3.x.x/_build/opam_alpha__slash__reason_parser-1.13.5-d46d6ccdf7b2d6d5318e466d39a7adbe0ce547b2
-# resultTargetDir=~/.esy/store-3.x.x/_build/opam_alpha__slash__result-1.2.0-a35bca36a11ab96b24a91513f2667472b5141bbd
-# # Notice the _build/default/src
-# ocamlMigrateParseTreeTargetDir=./omp
+make -C ../reason-parser
+make -C ../
 
-# origDir="."
+./node_modules/bs-platform/bin/bspack.exe \
+  -bs-exclude-I ppx_deriving \
+  -bs-exclude-I ppx_deriving_show \
+  -bs-exclude-I Ppx_deriving_runtime \
+  -bs-main Refmt_impl \
+  -prelude-str "$ppxDerivingAndResultStub" \
+  -I "$menhirSuggestedLib" \
+  -I "$ppxToolsVersionedTargetDir" \
+  -I "$reasonTargetDir" \
+  -I "$reasonTargetDir/_build/src" \
+  -I "$reasonTargetDir/vendor/cmdliner" \
+  -I "$reasonParserTargetDir/_build/src" \
+  -I "$reasonParserTargetDir/vendor/easy_format" \
+  -I "$ocamlMigrateParseTreeTargetDir" \
+  -o "./refmt_main.ml"
 
-# ./node_modules/bs-platform/bin/bspack.exe \
-#   -bs-exclude-I ppx_deriving \
-#   -bs-exclude-I ppx_deriving_show \
-#   -bs-exclude-I Ppx_deriving_runtime \
-#   -prelude-str "$preludeStr" \
-#   -I "$menhirSuggestedLib" \
-#   -bs-main Refmt_impl \
-#   -I "$ppxToolsVersionedTargetDir" \
-#   -I "$reasonTargetDir" \
-#   -I "$reasonTargetDir/_build/src" \
-#   -I "$reasonTargetDir/vendor/cmdliner" \
-#   -I "$reasonParserTargetDir/_build/src" \
-#   -I "$reasonParserTargetDir/vendor/easy_format" \
-#   -I "$ocamlMigrateParseTreeTargetDir" \
-#   -o "$origDir/refmt_main.ml"
+./node_modules/bs-platform/bin/bspack.exe \
+  -bs-main Reactjs_jsx_ppx \
+  -prelude-str "$resultStub" \
+  -I "$reasonTargetDir/_build/src" \
+  -I "$ocamlMigrateParseTreeTargetDir" \
+  -o "./reactjs_ppx.ml"
 
-# ./node_modules/bs-platform/bin/bspack.exe \
-#   -bs-exclude-I ppx_deriving \
-#   -bs-exclude-I ppx_deriving_show \
-#   -bs-exclude-I Ppx_deriving_runtime \
-#   -prelude-str "$preludeStr" \
-#   -I "$menhirSuggestedLib" -bs-main Reactjs_jsx_ppx \
-#   -I "$ppxToolsVersionedTargetDir" \
-#   -I "$reasonTargetDir" \
-#   -I "$reasonTargetDir/_build/src" \
-#   -I "$reasonTargetDir/vendor/cmdliner" \
-#   -I "$reasonParserTargetDir/_build/src" \
-#   -I "$reasonParserTargetDir/vendor/easy_format" \
-#   -I "$ocamlMigrateParseTreeTargetDir" \
-#   -o "$origDir/reactjs_ppx.ml"
+./node_modules/bs-platform/bin/bspack.exe \
+  -bs-main Reactjs_jsx_ppx_2 \
+  -prelude-str "$resultStub" \
+  -I "$reasonTargetDir/_build/src" \
+  -I "$ocamlMigrateParseTreeTargetDir" \
+  -o "./reactjs_ppx_2.ml"
 
-# ocamlopt -no-alias-deps -linkall -I +compiler-libs ocamlcommon.cmxa "refmt_main.ml" -o "refmt_main.out"
-# ocamlopt -no-alias-deps -linkall -I +compiler-libs ocamlcommon.cmxa  "reactjs_ppx.ml" -o "reactjs_ppx.out"
+# finally, actually compile all 3 files
+ocamlopt -no-alias-deps -I +compiler-libs ocamlcommon.cmxa "refmt_main.ml" -o "refmt_main.out"
+ocamlopt -no-alias-deps -I +compiler-libs ocamlcommon.cmxa  "reactjs_ppx.ml" -o "reactjs_ppx.out"
+ocamlopt -no-alias-deps -I +compiler-libs ocamlcommon.cmxa  "reactjs_ppx_2.ml" -o "reactjs_ppx_2.out"
