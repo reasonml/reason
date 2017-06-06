@@ -1,6 +1,6 @@
-This subdirectory is used for packing up the entire Reason `refmt` into a single file through BuckleScript's [bspack](https://github.com/bloomberg/bucklescript/blob/master/jscomp/core/bspack_main.ml), thus discarding all intermediate steps needed to build Reason, except for the final `refmt` binary compilation. Likewise for `reactjs_jsx_ppx`.
+This subdirectory is used for packing up the entire Reason `refmt` into a single file through BuckleScript's [bspack](https://github.com/bloomberg/bucklescript/blob/master/jscomp/core/bspack_main.ml), thus discarding all intermediate steps needed to build Reason, except for the final `refmt` binary compilation. Likewise for `reactjs_jsx_ppx` and `reactjs_jsx_ppx_2`.
 
-This makes our installation much friendlier to e.g. Windows. BuckleScript currently includes the two bundles in its own repo, thus making Reason first-class.
+This makes our installation much friendlier to e.g. Windows. BuckleScript currently includes the three bundles in its own repo, thus making Reason first-class.
 
 ## Build
 
@@ -48,10 +48,11 @@ heavy dependencies that weren't yet converted to jBuilder (`Ppx_deriving_show`
 for example). If `Ppx_deriving_show` is converted to `jBuilder`, stubs will no
 longer be needed.
 
-For some reason, the `Result` module also needed stubbing out. Here is the
+Because OCaml 4.02 doesn't come with the `Result` module, it also needed stubbing out. Here is the
 bspack prelude string that creates the appropriate stubs:
 
-    preludeStr="module Ppx_deriving_show = struct let sig_of_type ~options ~path decl = [] let str_of_type ~options ~path typ = [] end module Result = struct type ('a, 'b) result = Ok of 'a | Error of 'b end open Result"
+    ppxDerivingAndResultStub="module Ppx_deriving_show = struct let sig_of_type ~options ~path decl = [] let str_of_type ~options ~path typ = [] end module Result = struct type ('a, 'b) result = Ok of 'a | Error of 'b end open Result"
+resultStub="module Result = struct type ('a, 'b) result = Ok of 'a | Error of 'b end open Result"
 
 When creating the bspack, we need to tell bspack to ignore those modules for
 which we've created and injected stubs. There's a flag for that.
@@ -62,13 +63,11 @@ here: (Find their respective locations on your machine)
 
     menhirSuggestedLib=`menhir --suggest-menhirLib'`
 
-    reasonTargetDir=~/.esy/store-3.x.x/_build/reason-blahblah
+    reasonTargetDir=../
     ppxToolsVersionedTargetDir=~/.esy/store-3.x.x/_build/ppx__tools__versioned-blahblah
-    reasonParserTargetDir=~/.esy/store-3.x.x/_build/blahblah
-    resultTargetDir=~/.esy/store-3.x.x/_build/blahblah
+    reasonParserTargetDir=../reason-parser
     # Notice the _build/default/src
     ocamlMigrateParseTreeTargetDir=~/.esy/store-3.x.x/_build/blahblah/_build/default/src/
-
 
 bspack needs the fully processed files with ppx already applied to them, and
 jBuilder keeps them around in files like `x.pp.ml`, so you would need to create
@@ -81,12 +80,43 @@ extensions fixed.
 
 You can then run:
 
-    bspack -bs-exclude-I ppx_deriving -bs-exclude-I ppx_deriving_show -bs-exclude-I Ppx_deriving_runtime -prelude-str "$preludeStr" -I "$menhirSuggestedLib" -bs-main Refmt_impl -I "$ppxToolsVersionedTargetDir" -I "$reasonTargetDir" -I "$reasonTargetDir/_build/src" -I "$reasonTargetDir/vendor/cmdliner" -I "$reasonParserTargetDir/_build/src" -I "$reasonParserTargetDir/vendor/easy_format" -I "$ocamlMigrateParseTreeTargetDir" -o "$origDir/refmt_main.ml"
-    bspack -bs-exclude-I ppx_deriving -bs-exclude-I ppx_deriving_show -bs-exclude-I Ppx_deriving_runtime -prelude-str "$preludeStr" -I "$menhirSuggestedLib" -bs-main Reactjs_jsx_ppx -I "$ppxToolsVersionedTargetDir" -I "$reasonTargetDir" -I "$reasonTargetDir/_build/src" -I "$reasonTargetDir/vendor/cmdliner" -I "$reasonParserTargetDir/_build/src" -I "$reasonParserTargetDir/vendor/easy_format" -I "$ocamlMigrateParseTreeTargetDir" -o "$origDir/reactjs_ppx.ml"
+  npm install
 
-After generating the `refmt_main` and `reactjs_ppx`, run this command: (the
+  ./node_modules/bs-platform/bin/bspack.exe \
+    -bs-exclude-I ppx_deriving \
+    -bs-exclude-I ppx_deriving_show \
+    -bs-exclude-I Ppx_deriving_runtime \
+    -bs-main Refmt_impl \
+    -prelude-str "$ppxDerivingAndResultStub" \
+    -I "$menhirSuggestedLib" \
+    -I "$ppxToolsVersionedTargetDir" \
+    -I "$reasonTargetDir" \
+    -I "$reasonTargetDir/_build/src" \
+    -I "$reasonTargetDir/vendor/cmdliner" \
+    -I "$reasonParserTargetDir/_build/src" \
+    -I "$reasonParserTargetDir/vendor/easy_format" \
+    -I "$ocamlMigrateParseTreeTargetDir" \
+    -o "./refmt_main.ml"
+
+  ./node_modules/bs-platform/bin/bspack.exe \
+    -bs-main Reactjs_jsx_ppx \
+    -prelude-str "$resultStub" \
+    -I "$reasonTargetDir/_build/src" \
+    -I "$ocamlMigrateParseTreeTargetDir" \
+    -o "./reactjs_ppx.ml"
+
+  ./node_modules/bs-platform/bin/bspack.exe \
+    -bs-main Reactjs_jsx_ppx_2 \
+    -prelude-str "$resultStub" \
+    -I "$reasonTargetDir/_build/src" \
+    -I "$ocamlMigrateParseTreeTargetDir" \
+    -o "./reactjs_ppx_2.ml"
+
+After generating the `refmt_main` and `reactjs_ppx`, run this command to compile your files to test your bundling (the
 `-no-alias-deps` flag is important).
 
+    ocamlopt -no-alias-deps -I +compiler-libs ocamlcommon.cmxa  "refmt_main.ml" -o "refmt_main.out"
+    ocamlopt -no-alias-deps -I +compiler-libs ocamlcommon.cmxa  "reactjs_ppx.ml" -o "reactjs_ppx.out"
+    ocamlopt -no-alias-deps -I +compiler-libs ocamlcommon.cmxa  "reactjs_ppx_2.ml" -o "reactjs_ppx_2.out"
 
-    ocamlopt -no-alias-deps -linkall -I . -I +compiler-libs ocamlcommon.cmxa  "refmt_main.ml" -o "refmt_main.out"
-    ocamlopt -no-alias-deps -linkall -I . -I +compiler-libs ocamlcommon.cmxa  "reactjs_ppx.ml" -o "reactjs_ppx.out"
+The above command isn't needed when we submit a bundle to BuckleScript. Its makefile will take care of compiling after bs installation. We only need to submit the 2 bundled files.

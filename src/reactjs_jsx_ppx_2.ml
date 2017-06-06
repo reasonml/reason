@@ -1,8 +1,12 @@
 (* transform `div props1::a props2::b children::[foo, bar] () [@JSX]` into
    `ReactDOMRe.createElement "div" props::[%bs.obj {props1: 1, props2: b}] [|foo, bar|]`.
 
+   For the old behavior:
+   Don't transform the upper-cased case: `Foo.createElement foo::bar children::[] () [@JSX]`.
+
+   For the new behavior:
    transform the upper-cased case `Foo.createElement key::a ref::b foo::bar children::[] () [@JSX]` into
-   `ReasonReact.element key::a ref::b (Foo.make foo::bar [||] [@JSX])`
+  `ReasonReact.element key::a ref::b (Foo.make foo::bar [||] [@JSX])`
 *)
 
 (* Why do we need a transform, instead of just using the original format?
@@ -23,7 +27,7 @@ let listToArray lst =
     match lst with
     | {pexp_desc = Pexp_construct ({txt = Lident "[]"}, None)} -> accum
     | {
-      pexp_desc = Pexp_construct (
+        pexp_desc = Pexp_construct (
           {txt = Lident "::"},
           Some {pexp_desc = Pexp_tuple (v::acc::[])}
         )
@@ -171,7 +175,6 @@ let jsxMapper () =
         | {txt = Lident "createElement"} ->
           raise (Invalid_argument "JSX: `createElement` should be preceeded by a module name.")
         (* Foo.createElement prop1::foo prop2:bar children::[] () *)
-        (* no change *)
         | {loc; txt = Ldot (modulePath, "createElement")} ->
           let f = match !useNewJsxBehavior with
             | Some 1 -> oldJSX
@@ -210,13 +213,14 @@ let jsxMapper () =
          {
            pexp_desc = Pexp_apply (callExpression, callArguments);
            pexp_attributes
-         } when Syntax_util.attribute_exists "JSX" pexp_attributes ->
-         let attributesNoJsx =
-           List.filter (fun (attribute, _) -> attribute.txt <> "JSX") pexp_attributes in
-         handleJsxCall mapper callExpression callArguments attributesNoJsx
+         } ->
+         let (jsxAttribute, attributesWithoutJSX) = List.partition (fun (attribute, _) -> attribute.txt = "JSX") pexp_attributes in
+         (match (jsxAttribute, attributesWithoutJSX) with
+         (* no JSX attribute *)
+         | ([], _) -> default_mapper.expr mapper expression
+         | (_, attributesWithoutJSX) -> handleJsxCall mapper callExpression callArguments attributesWithoutJSX)
        (* Delegate to the default mapper, a deep identity traversal *)
-       | e ->
-         default_mapper.expr mapper e) in
+       | e -> default_mapper.expr mapper e) in
 
   Jsx_ppx_to_current.To_current.copy_mapper { default_mapper with structure; expr }
 
