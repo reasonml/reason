@@ -3,7 +3,7 @@ name: "reason-parser"
 version: "@version@"
 maintainer: "Jordan Walke <jordojw@gmail.com>"
 authors: [ "Jordan Walke <jordojw@gmail.com>" ]
-license: "BSD"
+license: "BSD. Additional patent grant provided."
 homepage: "https://github.com/facebook/reason"
 doc: "http://facebook.github.io/reason"
 bug-reports: "https://github.com/facebook/reason/issues"
