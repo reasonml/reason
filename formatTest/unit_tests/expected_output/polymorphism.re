@@ -1,5 +1,5 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
-let run () =>
+let run () =
   TestUtils.printSection("Polymorphism");
 
 type myType('a) = list('a);
@@ -13,7 +13,8 @@ type myPolymorphicTupleType('a) = ('a, 'a);
 type extensible('a) = 'a
 constraint 'a = [ | `Baseint];
 
-type intListTranformer = list(int) => list(int);
+type intListTranformer =
+  (list(int)) => list(int);
 
 type x = list(int, string);
 
@@ -23,34 +24,42 @@ module HoldsAType = {
 };
 
 type myType2 =
-  myTwoParamType(myType((int => int)), int) =>
+  (
+    myTwoParamType(myType(((int) => int)), int)
+  ) =>
   int;
 
 /* Confusing because => looks like part
    of the return type signature. */
 let myFunc
-    (a: int => int, b: int => int)
-    :myType(int) => [
+    (a: (int) => int, b: (int) => int)
+    :myType(int) = [
   a(20) + b(30)
 ];
 
 let myFunc
-    (a: int => int, b: int => int)
-    :(myType(int) => myType(int)) =>
+    (a: (int) => int, b: (int) => int)
+    :((myType(int)) => myType(int)) =
   (lst) => lst;
 
 let certainlyRequiresWrapping:
-  option(
-    (Mod.handler(p, re), Mod.Types.handler)
-  ) =>
-  option(
-    (
-      Mod.touch(props, (props, state), resource),
-      (list(Mod.t), list(Mod.t))
+  (
+    option(
+      (Mod.handler(p, re), Mod.Types.handler)
+    ),
+    option(
+      (
+        Mod.touch(
+          props,
+          (props, state),
+          resource
+        ),
+        (list(Mod.t), list(Mod.t))
+      )
+    ),
+    list(
+      Mod.update(props, (props, state), resource)
     )
-  ) =>
-  list(
-    Mod.update(props, (props, state), resource)
   ) =>
   list(
     Mod.update(props, (props, state), resource)

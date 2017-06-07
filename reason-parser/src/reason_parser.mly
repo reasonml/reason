@@ -1879,7 +1879,7 @@ mark_position_cf
     { let (a, b) = $3 in mkcf_attrs (Pcf_method (a, $2, b)) $1 }
   | item_attributes CONSTRAINT constrain_field
     { mkcf_attrs (Pcf_constraint $3) $1 }
-  | item_attributes INITIALIZER mark_position_exp(braced_expr)
+  | item_attributes INITIALIZER mark_position_exp(simple_expr)
     { mkcf_attrs (Pcf_initializer $3) $1 }
   | item_attributes item_extension
     { mkcf_attrs (Pcf_extension $2) $1 }
@@ -3641,10 +3641,12 @@ mark_position_typ2
  */
 core_type2:
 mark_position_typ2
-  ( non_arrowed_core_type
+  ( non_arrowed_non_simple_core_type | non_arrowed_simple_core_type
     { $1 }
   | arrow_type_parameters EQUALGREATER only_core_type(core_type2)
     { Core_type (List.fold_right mktyp_arrow $1 $3) }
+  | attribute only_core_type(core_type2)
+    { Core_type {$2 with ptyp_attributes = $1 :: $2.ptyp_attributes} }
   ) {$1};
 
 arrow_type_parameter:
@@ -3682,8 +3684,10 @@ arrow_type_parameter:
  * type x = SomeConstructor x y;
  */
 non_arrowed_core_type:
-  non_arrowed_non_simple_core_type | non_arrowed_simple_core_type
-  { $1 }
+  | non_arrowed_non_simple_core_type | non_arrowed_simple_core_type
+    { $1 }
+  | attribute only_core_type(non_arrowed_core_type)
+    { Core_type {$2 with ptyp_attributes = $1 :: $2.ptyp_attributes} }
 ;
 
 type_parameters:
@@ -3697,8 +3701,6 @@ mark_position_typ2
     { Core_type (mktyp(Ptyp_constr($1, $2))) }
   | SHARP as_loc(class_longident) type_parameters
     { Core_type (mktyp(Ptyp_class($2, $3))) }
-  | attribute only_core_type(non_arrowed_core_type)
-    { Core_type {$2 with ptyp_attributes = $1 :: $2.ptyp_attributes} }
   ) {$1};
 
 non_arrowed_simple_core_type:

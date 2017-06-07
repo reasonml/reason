@@ -1,5 +1,5 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
-let run () => TestUtils.printSection("Modules");
+let run () = TestUtils.printSection("Modules");
 
 
 /**
@@ -173,7 +173,7 @@ module InliningSig: {let x: int; let y: int;} = {
   let y = 20;
 };
 
-module MyFunctor (M: HasTT) => {
+module MyFunctor (M: HasTT) = {
   type reexportedTT = M.tt;
   /* Inline comment inside module. */
 
@@ -216,7 +216,7 @@ module BMod = {
   let b = 10;
 };
 
-module CurriedSugar (A: ASig, B: BSig) => {
+module CurriedSugar (A: ASig, B: BSig) = {
   let result = A.a + B.b;
 };
 
@@ -238,33 +238,33 @@ module CurriedSugar (A: ASig, B: BSig) => {
    */
 module CurriedSugarWithReturnType
        (A: ASig, B: BSig)
-       :SigResult => {
+       :SigResult = {
   let result = A.a + B.b;
 };
 
 /* This is parsed as being equivalent to the above example */
 module CurriedSugarWithAnnotatedReturnVal
        (A: ASig, B: BSig)
-       :SigResult => {
+       :SigResult = {
   let result = A.a + B.b;
 };
 
-module CurriedNoSugar (A: ASig, B: BSig) => {
+module CurriedNoSugar (A: ASig, B: BSig) = {
   let result = A.a + B.b;
 };
 
-let letsTryThatSyntaxInLocalModuleBindings () => {
+let letsTryThatSyntaxInLocalModuleBindings () = {
   module CurriedSugarWithReturnType
          (A: ASig, B: BSig)
-         :SigResult => {
+         :SigResult = {
     let result = A.a + B.b;
   };
   module CurriedSugarWithAnnotatedReturnVal
          (A: ASig, B: BSig)
-         :SigResult => {
+         :SigResult = {
     let result = A.a + B.b;
   };
-  module CurriedNoSugar (A: ASig, B: BSig) => {
+  module CurriedNoSugar (A: ASig, B: BSig) = {
     let result = A.a + B.b;
   };
   /*
@@ -289,7 +289,7 @@ let letsTryThatSyntaxInLocalModuleBindings () => {
 
 module type EmptySig = {};
 
-module MakeAModule (X: EmptySig) => {
+module MakeAModule (X: EmptySig) = {
   let a = 10;
 };
 
@@ -330,35 +330,33 @@ module ResultFromNonSimpleFunctorArg =
   );
 
 /* TODO: Functor type signatures should more resemble value signatures */
-let curriedFunc: int => int => int =
+let curriedFunc: (int, int) => int =
   (a, b) => a + b;
 
 module type FunctorType =
-  ASig => BSig => SigResult;
+  (ASig, BSig) => SigResult;
 
 /* Which is sugar for:*/
 module type FunctorType2 =
-  ASig => BSig => SigResult;
+  (ASig, BSig) => SigResult;
 
 /* Just for compability with existing OCaml ASTs you can put something other
  * than an underscore */
 module type FunctorType3 =
-  (Blah: ASig) =>
-  (ThisIsIgnored: BSig) =>
-  SigResult;
+  (Blah: ASig, ThisIsIgnored: BSig) => SigResult;
 
 /* The actual functors themselves now have curried sugar (which the pretty
  * printer will enforce as well */
 /* The following: */
 module CurriedSugarWithAnnotation2:
-  ASig => BSig => SigResult =
+  (ASig, BSig) => SigResult =
   fun (A: ASig, B: BSig) => {
     let result = A.a + B.b;
   };
 
 /* Becomes: */
 module CurriedSugarWithAnnotation:
-  ASig => BSig => SigResult =
+  (ASig, BSig) => SigResult =
   fun (A: ASig, B: BSig) => {
     let result = A.a + B.b;
   };
@@ -366,7 +364,7 @@ module CurriedSugarWithAnnotation:
 /* "functors" that are not in sugar curried form cannot annotate a return type
  * for now, so we settle for: */
 module CurriedSugarWithAnnotationAndReturnAnnotated:
-  ASig => BSig => SigResult =
+  (ASig, BSig) => SigResult =
   fun (A: ASig, B: BSig) => (
     {
       let result = A.a + B.b;
@@ -376,20 +374,20 @@ module CurriedSugarWithAnnotationAndReturnAnnotated:
 
 module ReturnsAFunctor
        (A: ASig, B: BSig)
-       :(ASig => BSig => SigResult) =>
+       :((ASig, BSig) => SigResult) =
   fun (A: ASig, B: BSig) => {
     let result = 10;
   };
 
 module ReturnsSigResult
        (A: ASig, B: BSig)
-       :SigResult => {
+       :SigResult = {
   let result = 10;
 };
 
 module ReturnsAFunctor2
        (A: ASig, B: BSig)
-       :(ASig => BSig => SigResult) =>
+       :((ASig, BSig) => SigResult) =
   fun (A: ASig, B: BSig) => {
     let result = 10;
   };
@@ -402,12 +400,12 @@ module rec A: {
   type t =
     | Leaf(string)
     | Node(ASet.t);
-  let compare: t => t => int;
+  let compare: (t, t) => int;
 } = {
   type t =
     | Leaf(string)
     | Node(ASet.t);
-  let compare (t1, t2) =>
+  let compare (t1, t2) =
     switch (t1, t2) {
     | (Leaf(s1), Leaf(s2)) =>
       Pervasives.compare(s1, s2)
@@ -428,7 +426,7 @@ module type HasRecursiveModules = {
     type t =
       | Leaf(string)
       | Node(ASet.t);
-    let compare: t => t => int;
+    let compare: (t, t) => int;
   }
   and ASet: Set.S with type elt = A.t;
 };
@@ -440,29 +438,29 @@ module Char = {
   type t = char;
 };
 
-module List (X: Type) => {
+module List (X: Type) = {
   type t = list(X.t);
 };
 
-module Maybe (X: Type) => {
+module Maybe (X: Type) = {
   type t = option(X.t);
 };
 
-module Id (X: Type) => X;
+module Id (X: Type) = X;
 
 module Compose
        (
-         F: Type => Type,
-         G: Type => Type,
+         F: (Type) => Type,
+         G: (Type) => Type,
          X: Type
-       ) =>
+       ) =
   F((G(X)));
 
 let l: Compose(List)(Maybe)(Char).t = [
   Some('a')
 ];
 
-module Example2 (F: Type => Type, X: Type) => {
+module Example2 (F: (Type) => Type, X: Type) = {
 
   /**
    * Note: This is the one remaining syntactic issue where
@@ -472,7 +470,7 @@ module Example2 (F: Type => Type, X: Type) => {
    *   let iso (a:(Compose Id F X).t): (F X).t => a;
    *
    */
-  let iso (a: Compose(Id)(F)(X).t) :F(X).t => a;
+  let iso (a: Compose(Id)(F)(X).t) :F(X).t = a;
 };
 
 Printf.printf(
@@ -499,7 +497,7 @@ include
     {
       type thing = blahblahblah;
       type state = unit;
-      let getInitialState (_) => ();
+      let getInitialState (_) = ();
       let myValue = {recordField: "hello"};
     }
   );
@@ -517,11 +515,11 @@ let myFirstClassWillBeFormattedAs: (module HasInt) =
   (module MyModule);
 
 let acceptsAndUnpacksFirstClass
-    ((module M): (module HasInt)) =>
+    ((module M): (module HasInt)) =
   M.x + M.x;
 
 let acceptsAndUnpacksFirstClass
-    ((module M): (module HasInt)) =>
+    ((module M): (module HasInt)) =
   M.x + M.x;
 
 module SecondClass = (val myFirstClass);
@@ -610,6 +608,6 @@ module OldModuleSyntax = {
 
 module type SigWithModuleTypeOf = {
   module type ModuleType;
-  include module type of String;
-  include module type of Array;
+  include (module type of String);
+  include (module type of Array);
 };

@@ -107,9 +107,9 @@ let x = [@attrEverything] (true && false);
 /**
  * How attribute parsings respond to other syntactic constructs.
  */
-let add (a) => [@onRet] a;
+let add (a) = [@onRet] a;
 
-let add (a) => [@onRet] a;
+let add (a) = [@onRet] a;
 
 let add = [@onEntireFunction] ((a) => a);
 
@@ -119,21 +119,21 @@ let res =
 let res =
   [@onEntireIf] (if true {false} else {false});
 
-let add (a, b) => [@onEverything] ([@onA] a + b);
+let add (a, b) = [@onEverything] ([@onA] a + b);
 
-let add (a, b) =>
+let add (a, b) =
   [@onEverything] ([@onA] a + [@onB] b);
 
-let add (a, b) => a + [@onB] b;
+let add (a, b) = a + [@onB] b;
 
 let both = [@onEntireFunction] ((a) => a);
 
-let both (a, b) =>
+let both (a, b) =
   [@onEverything] ([@onA] a && b);
 
-let both (a, b) => [@onA] a && [@onB] [@onB] b;
+let both (a, b) = [@onA] a && [@onB] [@onB] b;
 
-let both (a, b) => [@onEverything] (a && b);
+let both (a, b) = [@onEverything] (a && b);
 
 let thisVal = 10;
 
@@ -152,7 +152,7 @@ let x =
 let x =
   [@onEverything] (- add(thisVal, thisVal));
 
-let bothTrue (x, y) => {contents: x && y};
+let bothTrue (x, y) = {contents: x && y};
 
 let something =
   [@onEverythingToRightOfEquals]
@@ -169,7 +169,7 @@ let res =
 
 [@appliesToEntireFunctionApplication] add(2, 4);
 
-let myObj = {pub p () => {pub z () => 10}};
+let myObj = {pub p () = {pub z () = 10}};
 
 let result =
   [@onSecondSend]
@@ -177,8 +177,8 @@ let result =
 
 [@@onRecordFunctions]
 type recordFunctions = {
-  p: unit => [@onUnit] recordFunctions,
-  q: [@onArrow] (unit => unit)
+  p: (unit) => [@onUnit] recordFunctions,
+  q: [@onArrow] ((unit) => unit)
 }
 [@@onUnusedType] and unusedType = unit;
 
@@ -218,7 +218,7 @@ and secondBinding = "second";
  * Let bindings.
  * ----------------------
  */
-let showLets () =>
+let showLets () =
   [@onOuterLet]
   {
     let tmp = 20;
@@ -239,7 +239,7 @@ let showLets () =>
  * In curried sugar, the class_expr attribute will apply to the return.
  */
 [@@moduleItemAttribute]
-class boxA ('a) (init: 'a) =>
+class boxA ('a) (init: 'a) =
   [@onReturnClassExpr]
   {
     pub pr = init + init + init;
@@ -249,7 +249,7 @@ class boxA ('a) (init: 'a) =>
 /**
  * In non-curried sugar, the class_expr still sticks to "the simple thing".
  */
-class boxB ('a) (init: 'a) =>
+class boxB ('a) (init: 'a) =
   [@stillOnTheReturnBecauseItsSimple]
   {
     pub pr = init + init + init;
@@ -269,7 +269,7 @@ class boxC ('a) =
   );
 
 [@@moduleItemAttribute onTheTupleClassItem]
-class tupleClass ('a, 'b) (init: ('a, 'b)) => {
+class tupleClass ('a, 'b) (init: ('a, 'b)) = {
   let one = [@exprAttr ten] 10;
   let two = [@exprAttr twenty] 20
   and three = [@exprAttr thirty] 30;
@@ -281,8 +281,10 @@ class type addablePointClassType = {
   pub x: int;
   pub y: int;
   pub add:
-    addablePointClassType =>
-    addablePointClassType =>
+    (
+      addablePointClassType,
+      addablePointClassType
+    ) =>
     int
 }
 [@@structureItem]
@@ -312,7 +314,7 @@ module type HasAttrs = {
     pub foo: int;
     pub bar: int
   };
-  [@@sigItem] class fooBar : int => new foo;
+  [@@sigItem] class fooBar : (int) => foo;
 };
 
 type s =
@@ -331,16 +333,16 @@ let myFun
     (
       [@onConstruction] X(hello) |
       [@onConstruction] Y(hello)
-    ) => hello;
+    ) = hello;
 
 let myFun
-    (X([@onHello] hello) | Y([@onHello] hello)) => hello;
+    (X([@onHello] hello) | Y([@onHello] hello)) = hello;
 
 /* Another bug: Cannot have an attribute on or pattern
    let myFun = fun ((X(hello) | Y(hello)) [@onOrPattern]) => hello;
    */
 /* Bucklescript FFI item attributes */
-[@@bs.val] external imul : int => int => int =
+[@@bs.val] external imul : (int, int) => int =
   "Math.imul";
 
 module Js = {
@@ -381,25 +383,28 @@ type reactClass;
 
 /* "react-dom" shouldn't spread the attribute over multiple lines */
 [@@bs.val] [@@bs.module "react-dom"]
-external render : reactElement => element => unit =
+external render : (reactElement, element) => unit =
   "render";
 
-[@@bs.module "f"] external f : int => int = "f";
+[@@bs.module "f"] external f : (int) => int =
+  "f";
 
 [@@bs.val] [@@bs.module "react"] [@@bs.splice]
 external createCompositeElementInternalHack :
-  reactClass =>
-  Js.t({.. reasonProps : 'props}) =>
-  array(reactElement) =>
+  (
+    reactClass,
+    Js.t({.. reasonProps : 'props}),
+    array(reactElement)
+  ) =>
   reactElement =
   "createElement";
 
-external add_nat : int => int => int =
+external add_nat : (int, int) => int =
   "add_nat_bytecode" "add_nat_native";
 
 [@@bs.module "Bar"]
 [@@ocaml.deprecated
   "Use bar instead. It's a much cooler function. This string needs to be a little long"
 ]
-external foo : bool => bool =
+external foo : (bool) => bool =
   "";

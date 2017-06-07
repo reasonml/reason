@@ -27,10 +27,10 @@ let notTupled: notTupleVariant =
 /* Doesn't work because we've correctly annotated parse tree nodes with explicit_arity! */
 /* let notTupled: notTupleVariant = NotActuallyATuple (10, 10); */
 let funcOnNotActuallyATuple
-    (NotActuallyATuple(x, y)) =>
+    (NotActuallyATuple(x, y)) =
   x + y;
 
-/* let funcOnNotActuallyATuple (NotActuallyATuple (x, y)) => x + y; */
+/* let funcOnNotActuallyATuple (NotActuallyATuple (x, y)) = x + y; */
 /* let notTupled: notTupleVariant = NotActuallyATuple intTuple; /*Doesn't work! */ */
 /* At least the above acts as proof that there *is* a distinction that is
    honored. */
@@ -60,14 +60,14 @@ type threeForms =
   | FormTwo(int)
   | FormThree;
 
-let doesntCareWhichForm (x) =>
+let doesntCareWhichForm (x) =
   switch x {
   | FormOne(q)
   | FormTwo(q) => 10
   | FormThree => 20
   };
 
-let doesntCareWhichFormAs (x) =>
+let doesntCareWhichFormAs (x) =
   switch x {
   | FormOne(q) as ppp
   | FormTwo(q) as ppp => 10
@@ -95,7 +95,7 @@ type colorList = [<
 
 /* Destructured matching at function definition */
 let accessDeeply
-    (LocalModule.AccessedThroughModule) => 10;
+    (LocalModule.AccessedThroughModule) = 10;
 
 let accessDeeplyWithArg
     (
@@ -104,16 +104,16 @@ let accessDeeplyWithArg
         _,
         x
       )
-    ) => x;
+    ) = x;
 
 /* Destructured matching *not* at function definition */
-let accessDeeply (x) =>
+let accessDeeply (x) =
   switch x {
   | LocalModule.AccessedThroughModule => 10
   | _ => 0
   };
 
-let accessDeeplyWithArg (x) =>
+let accessDeeplyWithArg (x) =
   switch x {
   | LocalModule.AccessedThroughModuleWith(x) => 10
   | _ => 0
@@ -127,12 +127,12 @@ let accessDeeplyWithArg (x) =>
  *
  *   let myFunc x = function | `Blah p as retVal -> retVal`
  */
-let accessDeeply (x) =>
+let accessDeeply (x) =
   switch x {
   | LocalModule.AccessedThroughModule as ppp => 1
   };
 
-let accessDeeplyWithArg (x) =>
+let accessDeeplyWithArg (x) =
   switch x {
   | LocalModule.AccessedThroughModuleWith(
       x as retVal
@@ -146,7 +146,7 @@ let accessDeeplyWithArg (x) =>
   };
 
 /* Just to show that by default `as` captures much less aggresively */
-let rec accessDeeplyWithArgRecursive (x, count) =>
+let rec accessDeeplyWithArgRecursive (x, count) =
   switch x {
   | LocalModule.AccessedThroughModuleWith(x) as entirePattern =>
     /* It captures the whole pattern */
@@ -178,7 +178,7 @@ accessDeeplyWithArgRecursive(
   10
 );
 
-let run () => {
+let run () = {
   TestUtils.printSection("Variants");
   Printf.printf("%d %d \n", x, y)
 };
@@ -190,7 +190,7 @@ type combination('a) =
 /** But then how do we parse matches in function arguments? */
 /* We must require parenthesis around construction matching in function args only*/
 let howWouldWeMatchFunctionArgs
-    (HeresTwoConstructorArguments(x, y)) =>
+    (HeresTwoConstructorArguments(x, y)) =
   x + y;
 
 /* How would we annotate said arg? */
@@ -198,10 +198,10 @@ let howWouldWeMatchFunctionArgs
     (
       HeresTwoConstructorArguments(x, y):
         combination('wat)
-    ) =>
+    ) =
   x + y;
 
-let matchingTwoCurriedConstructorsInTuple (x) =>
+let matchingTwoCurriedConstructorsInTuple (x) =
   switch x {
   | (
       HeresTwoConstructorArguments(x, y),
@@ -217,7 +217,7 @@ type twoCurriedConstructors =
     );
 
 let matchingTwoCurriedConstructorInConstructor
-    (x) =>
+    (x) =
   switch x {
   | TwoCombos(
       HeresTwoConstructorArguments(x, y),
@@ -244,7 +244,7 @@ let result =
 
 let rec commentPolymorphicCases:
   'a .
-  option('a) => int
+  (option('a)) => int
  =
   fun
   | Some(a) => 1
@@ -270,10 +270,10 @@ let thisWontCompileButLetsSeeHowItFormats =
  */
 type term(_) =
   | Int(int) :term(int)
-  | Add:term((int => int => int))
-  | App(term(('b => 'a)), term('b)) :term('a);
+  | Add:term(((int, int) => int))
+  | App(term((('b) => 'a)), term('b)) :term('a);
 
-let rec eval: type a. term(a) => a =
+let rec eval: type a. (term(a)) => a =
   fun
   | Int(n) => n
   /* a = int */
@@ -281,7 +281,7 @@ let rec eval: type a. term(a) => a =
   /* a = int => int => int */
   | App(f, x) => eval(f, eval(x));
 
-let rec eval: type a. term(a) => a =
+let rec eval: type a. (term(a)) => a =
   (x) =>
     switch x {
     | Int(n) => n
@@ -394,7 +394,7 @@ let res =
   };
 
 let rec atLeastOneFlushableChildAndNoWipNoPending
-        (composition, atPriority) =>
+        (composition, atPriority) =
   switch composition {
   | [] => false
   | [hd, ...tl] =>
@@ -450,7 +450,7 @@ let res =
 /*
  * Testing explicit arity.
  */
-let rec map (f) =>
+let rec map (f) =
   fun
   | Node(None, m) => Node(None, M.map(map(f), m))
   | Node(LongModule.Path.None, m) =>
@@ -458,9 +458,9 @@ let rec map (f) =>
   | Node(LongModule.Path.Some(v), m) =>
     Node(Some(f(v)), M.map(map(f), m));
 
-let myFunc (x, y, None) => "asdf";
+let myFunc (x, y, None) = "asdf";
 
-let rec map (f) =>
+let rec map (f) =
   fun
   | Node(None, m) => Node(None, M.map(map(f), m))
   | Node(LongModule.Path.None, m) =>
@@ -474,9 +474,9 @@ let rec map (f) =>
       M.map(map(f), m)
     );
 
-let myFunc (x, y, LongModule.Path.None) => "asdf";
+let myFunc (x, y, LongModule.Path.None) = "asdf";
 
-let listPatternMembersNeedntBeSimple (x) =>
+let listPatternMembersNeedntBeSimple (x) =
   switch x {
   | [] => ()
   | [Blah(x, y), Foo(a, b), ...rest] => ()
@@ -484,7 +484,7 @@ let listPatternMembersNeedntBeSimple (x) =>
   | _ => ()
   };
 
-let listTailPatternNeedntBeSimple (x) =>
+let listTailPatternNeedntBeSimple (x) =
   switch x {
   | [] => ()
   /* Although this would never typecheck! */
@@ -493,7 +493,7 @@ let listTailPatternNeedntBeSimple (x) =>
   | _ => ()
   };
 
-let listPatternMayEvenIncludeAliases (x) =>
+let listPatternMayEvenIncludeAliases (x) =
   switch x {
   | [] => ()
   /* Although this would never typecheck! */

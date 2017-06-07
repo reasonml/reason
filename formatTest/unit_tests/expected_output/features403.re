@@ -24,7 +24,7 @@ type expr('a) =
       }
       :expr('a);
 
-let rec eval: type a. expr(a) => a =
+let rec eval: type a. (expr(a)) => a =
   (e) =>
     switch e {
     | Is0 {test} => eval(test) == 0
@@ -42,4 +42,4 @@ let rec eval: type a. expr(a) => a =
 type hlist =
   | []:hlist;
 
-let foo (type a b) => 5;
+let foo (type a, type b) = 5;

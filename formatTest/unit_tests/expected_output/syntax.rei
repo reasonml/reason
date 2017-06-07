@@ -8,15 +8,15 @@ type adders = {
   /*
    * Adds two numbers together.
    */
-  addTwoNumbers: int => int => int,
+  addTwoNumbers: (int, int) => int,
   /*
    * Amazingly, adds *three* numbers together.
    */
-  addThreeNumbers: int => int => int => int,
+  addThreeNumbers: (int, int, int) => int,
   /*
    * Tuple version of previous function.
    */
-  addThreeNumbersTupled: (int, int, int) => int
+  addThreeNumbersTupled: ((int, int, int)) => int
 };
 
 

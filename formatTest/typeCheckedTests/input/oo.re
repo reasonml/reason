@@ -233,7 +233,7 @@ module HasTupleClasses : {
   /**
    * anotherExportedClass.
    */
-  class anotherExportedClass('a,'b) : ('a, 'b) => {pub pr: ('a, 'b)};
+  class anotherExportedClass('a,'b) : (('a, 'b)) => {pub pr: ('a, 'b)};
 } = {
   /**
    * exportedClass.

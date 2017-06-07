@@ -1,11 +1,11 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
-class virtual stack ('a) (init) => {
+class virtual stack ('a) (init) = {
   /*
    * The "as this" is implicit and will be formatted away.
    */
   val virtual dummy: unit;
   val mutable v: list('a) = init;
-  pub virtual implementMe: int => int;
+  pub virtual implementMe: (int) => int;
   pub pop =
     switch v {
     | [hd, ...tl] =>
@@ -13,11 +13,12 @@ class virtual stack ('a) (init) => {
       Some(hd)
     | [] => None
     };
-  pub push (hd) => v = [hd, ...v];
-  initializer =>
-    print_string("initializing object");
-  pub explicitOverrideTest (a) => a + 1;
-  pri explicitOverrideTest2 (a) => a + 1;
+  pub push (hd) = v = [hd, ...v];
+  initializer (
+    print_string("initializing object")
+  );
+  pub explicitOverrideTest (a) = a + 1;
+  pri explicitOverrideTest2 (a) = a + 1;
 };
 
 let tmp = {
@@ -32,7 +33,7 @@ let tmp = {
  * Comment on stackWithAttributes.
  */
 [@@thisShouldntBeFormattedAway]
-class virtual stackWithAttributes ('a) (init) => {
+class virtual stackWithAttributes ('a) (init) = {
   /* Before class */
   /* The "as this" should not be formatted away because attributes. */
   as [@thisShouldntBeFormattedAway] this;
@@ -41,7 +42,7 @@ class virtual stackWithAttributes ('a) (init) => {
   /* Virtual member */
   val virtual dummy: unit;
   val mutable v: list('a) = init;
-  pub virtual implementMe: int => int;
+  pub virtual implementMe: (int) => int;
   pub pop =
     switch v {
     | [hd, ...tl] =>
@@ -49,25 +50,26 @@ class virtual stackWithAttributes ('a) (init) => {
       Some(hd)
     | [] => None
     };
-  pub push (hd) => v = [hd, ...v];
-  initializer =>
-    print_string("initializing object");
+  pub push (hd) = v = [hd, ...v];
+  initializer (
+    print_string("initializing object")
+  );
 };
 
-class extendedStack ('a) (init) => {
+class extendedStack ('a) (init) = {
   inherit (class stack('a))(init);
   val dummy = ();
-  pub implementMe (i) => i;
+  pub implementMe (i) = i;
 };
 
 class extendedStackAcknowledgeOverride
       ('a)
-      (init) => {
+      (init) = {
   inherit (class stack('a))(init);
   val dummy = ();
-  pub implementMe (i) => i + 1;
-  pub! explicitOverrideTest (a) => a + 2;
-  pri! explicitOverrideTest2 (a) => a + 2;
+  pub implementMe (i) = i + 1;
+  pub! explicitOverrideTest (a) = a + 2;
+  pri! explicitOverrideTest2 (a) = a + 2;
 };
 
 let inst = (new extendedStack)[1, 2];
@@ -79,13 +81,13 @@ let inst = (new extendedStack)[1, 2];
 /*
  * First recursive class.
  */
-class firstRecursiveClass (init) => {
+class firstRecursiveClass (init) = {
   val v = init;
 }
 /*
  * Second recursive class.
  */
-and secondRecursiveClass (init) => {
+and secondRecursiveClass (init) = {
   val v = init;
 };
 
@@ -108,13 +110,13 @@ and secondRecursiveClass (init) => {
  */
 type closedObj = {.};
 
-let (<..>) (a, b) => a + b;
+let (<..>) (a, b) = a + b;
 
 let five = 2 <..> 3;
 
 type nestedObj = {. bar : {. a : int}};
 
-let (>>) (a, b) => a > b;
+let (>>) (a, b) = a > b;
 
 let bigger = 3 >> 2;
 
@@ -156,11 +158,11 @@ let coercedReturn = {
 };
 
 let acceptsOpenAnonObjAsArg
-    (o: {.. x : int, y : int}) =>
+    (o: {.. x : int, y : int}) =
   o#x + o#y;
 
 let acceptsClosedAnonObjAsArg
-    (o: {. x : int, y : int}) =>
+    (o: {. x : int, y : int}) =
   o#x + o#y;
 
 let res =
@@ -185,7 +187,7 @@ class myClassWithAnnotatedReturnType
       :{
          pub x: int;
          pub y: int
-       } => {
+       } = {
   pub x: int = init;
   pub y = init;
 };
@@ -199,7 +201,7 @@ class myClassWithAnnotatedReturnType2
       :{
          pub x: int;
          pub y: int
-       } => {
+       } = {
   pub x: int = init;
   pub y = init;
 };
@@ -213,7 +215,7 @@ class myClassWithAnnotatedReturnType3
       :{
          pub x: int;
          pub y: int
-       } => {
+       } = {
   pub x: int = init;
   pub y: int = init;
 };
@@ -239,8 +241,8 @@ class myClassWithAnnotatedReturnType3
  * same for type identifiers and extensions.)
  */
 class myClassWithAnnotatedReturnType3_annotated_constructor:
-  int =>
-  new {
+  (int) =>
+  {
     pub x: int;
     pub y: int
   } =
@@ -249,7 +251,7 @@ class myClassWithAnnotatedReturnType3_annotated_constructor:
     pub y: int = init;
   };
 
-class tupleClass ('a, 'b) (init: ('a, 'b)) => {
+class tupleClass ('a, 'b) (init: ('a, 'b)) = {
   pub pr = init;
 };
 
@@ -259,8 +261,8 @@ module HasTupleClasses: {
    * exportedClass.
    */
   class exportedClass :
-    int =>
-    new {
+    (int) =>
+    {
       pub x: int;
       pub y: int
     };
@@ -269,8 +271,8 @@ module HasTupleClasses: {
    * anotherExportedClass.
    */
   class anotherExportedClass ('a, 'b) :
-    ('a, 'b) =>
-    new {
+    (('a, 'b)) =>
+    {
       pub pr: ('a, 'b)
     };
 } = {
@@ -312,8 +314,7 @@ let x: tupleClass(int, int) = {
 let x: #tupleClass(int, int) = x;
 
 let incrementMyClassInstance:
-  int =>
-  #tupleClass(int, int) =>
+  (int, #tupleClass(int, int)) =>
   #tupleClass(int, int) =
   (i, inst) => {
     let (x, y) = inst#pr;
@@ -346,8 +347,10 @@ class type addablePointClassType = {
   pub x: int;
   pub y: int;
   pub add:
-    addablePointClassType =>
-    addablePointClassType =>
+    (
+      addablePointClassType,
+      addablePointClassType
+    ) =>
     int
 };
 
@@ -356,38 +359,36 @@ class type addablePointClassType = {
  * Class constructor types can be annotated.
  */
 class addablePoint:
-  int => new addablePointClassType =
+  (int) => addablePointClassType =
   fun (init) => {
     as self;
     pub add
         (
           one: addablePointClassType,
           two: addablePointClassType
-        ) =>
+        ) =
       one#x + two#x + one#y + two#x;
     pub x: int = init;
     pub y = init;
   };
 
 class addablePoint2:
-  int => new addablePointClassType =
+  (int) => addablePointClassType =
   fun (init) => {
     as self;
     pub add
         (
           one: addablePointClassType,
           two: addablePointClassType
-        ) =>
+        ) =
       one#x + two#x + one#y + two#x;
     pub x: int = init;
     pub y = init;
   };
 
 module type T = {
-  class virtual cl ('a) :
-    new {}
-  and cl2 :
-    new {};
+  class virtual cl ('a) : {}
+  and cl2 : {};
 };
 
-let privacy = {pri x (c) => 5 + c};
+let privacy = {pri x (c) = 5 + c};

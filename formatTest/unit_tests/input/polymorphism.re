@@ -13,7 +13,7 @@ type myPolymorphicTupleType('a) = ('a, 'a);
 type extensible('a) = 'a
 constraint 'a = [ | `Base int];
 
-type intListTranformer = list(int) => list(int);
+type intListTranformer = (list(int)) => list(int);
 
 type x = list (int, string);
 
@@ -22,23 +22,23 @@ module HoldsAType = {
   type hasPrime('a,'b,'c) = Hashtbl.t (list('a),list('b));
 };
 
-type myType2 = myTwoParamType (myType (int => int), int) => int;
+type myType2 = (myTwoParamType(myType((int) => int), int)) => int;
 
 
                                      /* Confusing because => looks like part
                                      of the return type signature. */
-let myFunc (a:int=>int) (b:int=>int) :myType(int) =>
+let myFunc (a:(int)=>int, b:(int)=>int) :myType(int) =
     [a(20) + b(30)];
 
-let myFunc (a:int=>int) (b:int=>int) :(myType(int) => myType(int)) =>
+let myFunc (a:(int)=>int, b:(int)=>int) : ((myType(int)) => myType(int)) =
     fun(lst) => lst;
 
 
 let certainlyRequiresWrapping:
-  option((Mod.handler(p,re), Mod.Types.handler)) =>
-  option((Mod.touch(props,(props, state),resource), (list(Mod.t), list(Mod.t)))) =>
-  list (Mod.update(props,(props, state),resource)) =>
-  list (Mod.update(props,(props, state),resource)) = ();
+  (option((Mod.handler(p,re), Mod.Types.handler)),
+   option((Mod.touch(props,(props, state),resource), (list(Mod.t), list(Mod.t)))),
+   list(Mod.update(props,(props, state),resource))) =>
+   list(Mod.update(props,(props, state),resource)) = ();
 
 
 /* Because of the confusion in the last two examples, I believe we should

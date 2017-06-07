@@ -2366,15 +2366,17 @@ class printer  ()= object(self:'self)
         (self#non_arrowed_simple_core_type {x with ptyp_attributes=[]})
         (self#attributes stdAttrs)
     else
-      let rec allArrowSegments xx = match xx.ptyp_desc with
-        | Ptyp_arrow (l, ct1, ct2) ->
-            (self#type_with_label (l,ct1))::(allArrowSegments ct2)
-        | _ -> [self#core_type2 xx]
+      let rec allArrowSegments acc = function
+        | { ptyp_desc = Ptyp_arrow (l, ct1, ct2); _ } ->
+          allArrowSegments (self#type_with_label (l,ct1) :: acc) ct2
+        | xx -> (List.rev acc, self#core_type2 xx)
       in
       match (x.ptyp_desc) with
         | (Ptyp_arrow (l, ct1, ct2)) ->
+            let (params, return) = allArrowSegments [] x in
             let normalized =
-              makeList ~break:IfNeed ~sep:"=>" ~preSpace:true ~postSpace:true ~inline:(true, true) (allArrowSegments x)
+              makeList ~break:IfNeed ~sep:"=>" ~preSpace:true ~postSpace:true ~inline:(true, true)
+                [makeCommaBreakableListSurround "(" ")" params; return]
             in
             SourceMap (x.ptyp_loc, normalized)
         | Ptyp_poly (sl, ct) ->
@@ -2413,9 +2415,9 @@ class printer  ()= object(self:'self)
     match lbl with
     | Nolabel -> typ
     | Labelled lbl ->
-      makeList [atom (":" ^ lbl); atom ":"; typ]
+      makeList ~sep:" " [atom (":" ^ lbl); typ]
     | Optional lbl ->
-      makeList [atom (":" ^ lbl); atom ":"; label typ (atom "?")]
+      makeList ~sep:" " [atom (":" ^ lbl); label typ (atom "?")]
 
   method type_param (ct, a) =
     makeList [atom (type_variance a); self#core_type ct]
@@ -3794,7 +3796,7 @@ class printer  ()= object(self:'self)
    *)
   method wrapCurriedFunctionBinding
          ?(attachTo)
-         ?(arrow="=>")
+         ~arrow
          ?(sweet=false)
          prefixText
          bindingLabel
@@ -3940,49 +3942,31 @@ class printer  ()= object(self:'self)
     let pattern binding)).
   *)
   method curriedPatternsAndReturnVal x =
-    let prepare_arg (l,eo,p) = SourceMap (p.ppat_loc, self#label_exp l eo p) in
-    let return args (sweet, acc, xx) = match args with
-      | [] -> (sweet, acc, xx)
-      | [Nolabel, None, p]
-        when (is_unit_pattern p) || (is_direct_pattern p && not sweet) ->
-        (sweet, self#simple_pattern p :: acc, xx)
-      | args ->
-        let params =
-          if sweet then makeTup (List.rev_map prepare_arg args) else
-            let rec loop acc = function
-              | (Nolabel, None, p) :: rest when is_unit_pattern p ->
-                makeTup acc :: self#simple_pattern p :: loop [] rest
-              | arg :: args -> loop (prepare_arg arg :: acc) args
-              | [] -> [makeTup acc]
-            in
-            match loop [] args with
-            | [x] -> x
-            | xs -> makeBreakableList xs
-        in
-        (sweet, params :: acc, xx)
-    in
-    let rec argsAndReturn args xx =
-      if xx.pexp_attributes <> [] then return args (false, [], xx)
+    let rec extract_args xx =
+      if xx.pexp_attributes <> [] then
+        (true, [], xx)
       else match xx.pexp_desc with
         (* label * expression option * pattern * expression *)
         | Pexp_fun (l, eo, p, e) ->
           (* sweet determines whether es6 => sugar can be used or not *)
-          argsAndReturn ((l, eo, p) :: args) e
+          let sweet, args, ret = extract_args e in
+          (sweet, `Value (l,eo,p) :: args, ret)
         | Pexp_newtype (newtype,e) ->
-          return args (newtypesAndReturn [newtype] e)
-        | Pexp_constraint _ -> return args (false, [], xx)
-        | _ -> return args (true, [], xx)
-    and newtypesAndReturn newtypes xx =
-      match xx.pexp_desc with
-        | Pexp_newtype (newtype,e) when xx.pexp_attributes = [] ->
-          newtypesAndReturn (newtype :: newtypes) e
-        | _ ->
-          let typeParamLayout =
-            atom ("(type " ^ String.concat " " (List.rev newtypes) ^ ")") in
-          let (_, nextArgs, return) = argsAndReturn [] xx in
-          (false, (typeParamLayout::nextArgs), return)
+          let sweet, args, ret = extract_args e in
+          (sweet, `Type newtype :: args, ret)
+        | Pexp_constraint _ -> (false, [], xx)
+        | _ -> (true, [], xx)
     in
-    argsAndReturn [] x
+    let prepare_arg = function
+      | `Value (l,eo,p) -> SourceMap (p.ppat_loc, self#label_exp l eo p)
+      | `Type nt -> atom ("type " ^ nt)
+    in
+    match extract_args x with
+    | (sweet, [], ret) -> (sweet, [], ret)
+    | (sweet, [`Value (Nolabel, None, p) as arg], ret) when is_unit_pattern p ->
+      (sweet, [prepare_arg arg], ret)
+    | (sweet, args, ret) ->
+      (sweet, [makeTup (List.map prepare_arg args)], ret)
 
   (* Returns the (curriedModule, returnStructure) for a functor *)
   method curriedFunctorPatternsAndReturnStruct = function
@@ -4087,7 +4071,7 @@ class printer  ()= object(self:'self)
            ...
          }
    *)
-  method wrappedBinding prefixText pattern patternAux expr =
+  method wrappedBinding prefixText ~arrow pattern patternAux expr =
     let (_sweet, argsList, return) = self#curriedPatternsAndReturnVal expr in
     let patternList = match patternAux with
       | [] -> pattern
@@ -4106,7 +4090,7 @@ class printer  ()= object(self:'self)
           let fauxArgs =
             List.concat [patternAux; argsWithConstraint] in
           let returnedAppTerms = self#unparseExprApplicationItems actualReturn in
-          self#wrapCurriedFunctionBinding prefixText pattern fauxArgs returnedAppTerms
+          self#wrapCurriedFunctionBinding prefixText ~arrow pattern fauxArgs returnedAppTerms
 
   (* Similar to the above method. *)
   method wrappedClassBinding prefixText pattern patternAux expr =
@@ -4129,14 +4113,14 @@ class printer  ()= object(self:'self)
             self#normalizeConstructorArgsConstraint [args] return in
           let fauxArgs =
             List.concat [patternAux; argsWithConstraint] in
-          self#wrapCurriedFunctionBinding prefixText pattern fauxArgs
+          self#wrapCurriedFunctionBinding prefixText ~arrow:"=" pattern fauxArgs
             (self#classExpressionToFormattedApplicationItems actualReturn, None)
 
   method binding {pvb_pat; pvb_expr=x} prefixText = (* TODO: print attributes *)
     match (pvb_pat.ppat_desc) with
       | (Ppat_var {txt}) ->
           let pattern = SourceMap (pvb_pat.ppat_loc, self#simple_pattern pvb_pat) in
-          self#wrappedBinding prefixText pattern [] x
+          self#wrappedBinding prefixText ~arrow:"=" pattern [] x
       (*
          Ppat_constraint is used in bindings of the form
 
@@ -4500,7 +4484,7 @@ class printer  ()= object(self:'self)
                    needed, should we even print them with the minimum amount?  We can
                    instead model everything as "infix" with ranked precedences.  *)
                 let retValUnparsed = self#unparseExprApplicationItems ret in
-                Some (self#wrapCurriedFunctionBinding ~sweet "fun" firstArg tl retValUnparsed)
+                Some (self#wrapCurriedFunctionBinding ~sweet "fun" ~arrow:"=>" firstArg tl retValUnparsed)
             )
           | Pexp_try (e, l) ->
             let estimatedBracePoint = {
@@ -4737,7 +4721,7 @@ class printer  ()= object(self:'self)
                    let upToColon = makeList (maybeQuoteFirstElem li [atom ":"]) in
                    let returnedAppTerms = self#unparseExprApplicationItems return in
                    let labelExpr =
-                       (self#wrapCurriedFunctionBinding ~attachTo:upToColon "fun" firstArg tl returnedAppTerms) in
+                       (self#wrapCurriedFunctionBinding ~attachTo:upToColon "fun" ~arrow:"=>" firstArg tl returnedAppTerms) in
                    if appendComma then makeList [labelExpr; comma;] else labelExpr
              )
       in SourceMap (totalRowLoc, theRow)
@@ -5233,26 +5217,24 @@ class printer  ()= object(self:'self)
   method class_constructor_type x =
     match x.pcty_desc with
     | Pcty_arrow (l, co, cl) ->
-      let rec allArrowSegments xx = match xx.pcty_desc with
-        | Pcty_arrow (l, ct1, ct2) ->
-            (self#type_with_label (l, ct1))::(allArrowSegments ct2)
+      let rec allArrowSegments acc = function
+        | { pcty_desc = Pcty_arrow (l, ct1, ct2); _ } ->
+          allArrowSegments (self#type_with_label (l, ct1) :: acc) ct2
         (* This "new" is unfortunate. See reason_parser.mly for details. *)
-        | _ -> [self#class_constructor_type xx]
+        | xx -> (List.rev acc, self#class_constructor_type xx)
       in
+      let (params, return) = allArrowSegments [] x in
       let normalized =
-        makeList
-          ~break:IfNeed
+        makeList ~break:IfNeed
           ~sep:"=>"
-          ~preSpace:true
-          ~postSpace:true
-          ~inline:(true, true)
-          (allArrowSegments x)
+          ~preSpace:true ~postSpace:true ~inline:(true, true)
+        [makeCommaBreakableListSurround "(" ")" params; return]
       in
       SourceMap (x.pcty_loc, normalized)
     | _ ->
       (* Unfortunately, we have to have final components of a class_constructor_type
          be prefixed with the `new` keyword.  Hopefully this is temporary. *)
-      label ~space:true (atom "new") (self#class_instance_type x)
+      self#class_instance_type x
 
   method non_arrowed_class_constructor_type x =
     match x.pcty_desc with
@@ -5371,7 +5353,7 @@ class printer  ()= object(self:'self)
             self#formatSimplePatternBinding methodText (atom s.txt) (Some typeLayout) appTerms
           (* This form means that there is no type constraint - it's a strange node name.*)
           | Pexp_poly (e, None) ->
-            self#wrappedBinding methodText (atom s.txt) [] e
+            self#wrappedBinding methodText ~arrow:"=" (atom s.txt) [] e
           | _ -> failwith "Concrete methods should only ever have Pexp_poly."
         )
       | Pcf_constraint (ct1, ct2) ->
@@ -5387,8 +5369,8 @@ class printer  ()= object(self:'self)
       | Pcf_initializer (e) ->
         label
           ~space:true
-          (atom "initializer =>")
-          (self#unparseExpr e)
+          (atom "initializer")
+          (self#simplifyUnparseExpr e)
       | Pcf_attribute a -> self#floating_attribute a
       | Pcf_extension e ->
         (* And don't forget, we still need to print post_item_attributes even for
@@ -5610,9 +5592,11 @@ class printer  ()= object(self:'self)
       | Pmty_alias li ->
           formatPrecedence (label ~space:true (atom "module") (self#longident_loc li))
       | Pmty_typeof me ->
+        makeList ~wrap:("(", ")") [
           label ~space:true
             (atom "module type of")
             (self#module_expr me)
+        ]
       | _ -> self#simple_module_type x
 
   method simple_module_type x =
@@ -5636,27 +5620,33 @@ class printer  ()= object(self:'self)
       | _ -> makeList ~break:IfNeed ~wrap:("(", ")") [self#module_type x]
 
   method module_type x =
-    (* The segments that should be separated by arrows. *)
-    let rec functorTypeArgs xx = match xx.pmty_desc with
-      | Pmty_functor (_, None, mt2) -> (atom "()")::(functorTypeArgs mt2)
-      | Pmty_functor (s, Some mt1, mt2) ->
-          if s.txt = "_" then
-            (self#module_type mt1)::(functorTypeArgs mt2)
-          else
-            let cur =
-              makeList ~wrap:("(",")") [
-                formatTypeConstraint
-                  (atom s.txt)
-                  (self#module_type mt1)
-              ] in
-            cur::(functorTypeArgs mt2)
-      | _ -> [self#module_type xx]
-    in
-
     let pmty = match x.pmty_desc with
       | Pmty_functor _ ->
-          let functorArgs = functorTypeArgs x in
-          makeList ~break:IfNeed ~sep:"=>" ~preSpace:true ~postSpace:true ~inline:(true, true) functorArgs
+        (* The segments that should be separated by arrows. *)
+        let rec extract_args args xx = match xx.pmty_desc with
+          | Pmty_functor (_, None, mt2) -> extract_args (`Unit :: args) mt2
+          | Pmty_functor (s, Some mt1, mt2) ->
+            let arg = self#module_type mt1 in
+            let arg =
+              if s.txt = "_"
+              then arg
+              else formatTypeConstraint (atom s.txt) arg
+            in
+            extract_args (`Arg arg :: args) mt2
+          | _ ->
+            let prepare_arg = function
+              | `Unit -> atom "()"
+              | `Arg x -> x
+            in
+            let args = match args with
+              | [`Unit] -> []
+              | xs -> List.rev_map prepare_arg args
+            in
+            (args, self#module_type xx)
+        in
+        let args, ret = extract_args [] x in
+        makeList ~break:IfNeed ~sep:"=>" ~preSpace:true ~postSpace:true ~inline:(true, true)
+          [makeTup args; ret]
 
       (* See comments in sugar_parser.mly about why WITH constraints aren't "non
        * arrowed" *)
@@ -5739,7 +5729,7 @@ class printer  ()= object(self:'self)
       let (argsList, return) = self#curriedFunctorPatternsAndReturnStruct x in
       (* See #19/20 in syntax.mls - cannot annotate return type at
                the moment. *)
-      self#wrapCurriedFunctionBinding "fun" (makeTup argsList) []
+      self#wrapCurriedFunctionBinding "fun" ~arrow:"=>" (makeTup argsList) []
         ([self#moduleExpressionToFormattedApplicationItems return], None)
     | Pmod_apply _ ->
       self#moduleExpressionToFormattedApplicationItems x
@@ -5822,7 +5812,7 @@ class printer  ()= object(self:'self)
                 | Pmod_constraint (me, ct) -> ([makeTup argsList; formatJustTheTypeConstraint (self#non_arrowed_module_type ct)], me)
                 | _ -> ([makeTup argsList], return)
             ) in
-            self#wrapCurriedFunctionBinding prefixText bindingName argsWithConstraint
+            self#wrapCurriedFunctionBinding prefixText ~arrow:"=" bindingName argsWithConstraint
               ([self#moduleExpressionToFormattedApplicationItems actualReturn], None)
     )
 
