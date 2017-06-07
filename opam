@@ -1,10 +1,10 @@
 
 opam-version: "1.2"
 name: "reason"
-version: "2.0.0"
+version: "1.13.6"
 maintainer: "Jordan Walke <jordojw@gmail.com>"
 authors: [ "Jordan Walke <jordojw@gmail.com>" ]
-license: "BSD"
+license: "BSD. Additional patent grant provided."
 homepage: "https://github.com/facebook/reason"
 doc: "http://facebook.github.io/reason"
 bug-reports: "https://github.com/facebook/reason/issues"
@@ -25,7 +25,7 @@ depends: [
   "result"                  {=  "1.2"}
   "topkg"                   {>=  "0.8.1" & < "0.9"}
   "ocaml-migrate-parsetree"
-  "reason-parser"           {= "2.0.0"}
+  "reason-parser"           {= "1.13.6"}
 ]
 depopts: [
 ]
