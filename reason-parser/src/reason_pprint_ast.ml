@@ -1401,9 +1401,9 @@ let atom ?loc str =
 let easyAtom str = Easy_format.Atom(str, labelStringStyle)
 
 (** Take x,y,z and n and generate [x, y, z, ...n] *)
-let makeES6List lst last =
+let makeES6List ?(wrap=("[", "]")) lst last =
   let last_dots = makeList [atom "..."; last] in
-  makeList ~wrap:("[", "]") ~break:IfNeed ~postSpace:true ~sep:"," (lst @ [last_dots])
+  makeList ~wrap ~break:IfNeed ~postSpace:true ~sep:"," (lst @ [last_dots])
 
 let makeNonIndentedBreakingList lst =
     (* No align closing: So that semis stick to the ends of every break *)
@@ -2307,6 +2307,12 @@ let recordRowIsPunned pld =
               (* don't pun parameterized types, e.g. {tag: tag 'props} *)
               && List.length args == 0) -> true
         | _ -> false)
+
+let exprListHasJsx = function
+  | x::xs ->
+    let (_, _, _, jsxAttrs) = partitionAttributes x.pexp_attributes in
+    jsxAttrs != []
+  | [] -> false
 
 class printer  ()= object(self:'self)
   val pipe = false
@@ -4859,12 +4865,21 @@ class printer  ()= object(self:'self)
                       ~pad:(true, true)
                       actualChildren
                 else
-                  makeList ~break:IfNeed ~wrap:("[", "]") ~sep:"," ~postSpace:true (List.map self#unparseExpr xs)
+                  let hasJsx = exprListHasJsx xs in
+                  let wrap = if hasJsx then ("[ ", " ]") else ("[","]") in
+                  makeList
+                    ~break:IfNeed
+                    ~wrap
+                    ~sep:","
+                    ~postSpace:true
+                   (List.map self#unparseExpr xs)
               | `cons xs ->
                 let seq, ext = match List.rev xs with
                   | ext :: seq_rev -> (List.rev seq_rev, ext)
                   | [] -> assert false in
-                 makeES6List (List.map self#unparseExpr seq) (self#unparseExpr ext)
+                let hasJsx = exprListHasJsx xs in
+                let wrap = if hasJsx then ("[ ", " ]") else ("[","]") in
+                makeES6List ~wrap (List.map self#unparseExpr seq) (self#unparseExpr ext)
               | `simple x -> self#longident x
               | _ -> assert false
             )
@@ -4886,9 +4901,11 @@ class printer  ()= object(self:'self)
         | Pexp_tuple l ->
             (* TODO: These may be simple, non-simple, or type constrained
                non-simple expressions *)
+          let hasJsx = exprListHasJsx l in
+          let wrap = if hasJsx then ("( ", " )") else ("(",")") in
           Some (
             makeList
-              ~wrap:("(", ")")
+              ~wrap
               ~sep:","
               ~break:IfNeed
               ~postSpace:true
@@ -4915,12 +4932,14 @@ class printer  ()= object(self:'self)
             Some (ensureSingleTokenSticksToLabel (atom ("`" ^ l)))
         | Pexp_record (l, eo) -> Some (self#unparseRecord l eo)
         | Pexp_array (l) ->
+          let hasJsx = exprListHasJsx l in
+          let wrap = if hasJsx then ("[| ", " |]") else ("[|","|]") in
           Some (
             makeList
               ~break:IfNeed
               ~sep:","
               ~postSpace:true
-              ~wrap:("[|", "|]")
+              ~wrap
               (List.map self#unparseExpr l)
           )
         | Pexp_let (rf, l, e) ->
