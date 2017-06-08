@@ -1183,18 +1183,18 @@ interface:
 
 toplevel_phrase: _toplevel_phrase {apply_mapper_chain_to_toplevel_phrase $1 (default_mapper_chain ()) }
 _toplevel_phrase:
-    structure_item SEMI                 { Ptop_def [$1]}
+    structure_items SEMI                 { Ptop_def (List.rev $1)}
   | EOF                                 { raise End_of_file}
   | toplevel_directive SEMI             { $1 }
 ;
 
 use_file: _use_file {apply_mapper_chain_to_use_file $1 (default_mapper_chain ())}
 _use_file:
-    EOF                                            { [] }
-  | structure_item SEMI use_file                   { Ptop_def[$1] :: $3 }
-  | toplevel_directive SEMI use_file               { $1 :: $3 }
-  | structure_item EOF                             { [Ptop_def[$1]] }
-  | toplevel_directive EOF                         { [$1] }
+    EOF                                 { [] }
+  | structure_items SEMI use_file       { Ptop_def (List.rev $1) :: $3 }
+  | toplevel_directive SEMI use_file    { $1 :: $3 }
+  | structure_items EOF                 { [Ptop_def (List.rev $1)] }
+  | toplevel_directive EOF              { [$1] }
 ;
 
 parse_core_type:
@@ -1214,31 +1214,31 @@ parse_pattern:
 /* Module expressions */
 
 
-mark_position_mod(X):
+%inline mark_position_mod(X):
 	x = X
 	{ {x with pmod_loc = {x.pmod_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
 ;
 
-mark_position_cty(X):
+%inline mark_position_cty(X):
 	x = X
 	{ {x with pcty_loc = {x.pcty_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
 ;
 
-mark_position_ctf(X):
+%inline mark_position_ctf(X):
 	x = X
 	{ {x with pctf_loc = {x.pctf_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
 ;
 
-mark_position_exp(X):
+%inline mark_position_exp(X):
 	x = X
 	{ {x with pexp_loc = {x.pexp_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
 ;
 
-mark_position_typ(X):
+%inline mark_position_typ(X):
 	x = X
 	{ {x with ptyp_loc = {x.ptyp_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
 ;
-mark_position_typ2(X):
+%inline mark_position_typ2(X):
 	x = X
 	{
 	match x with
@@ -1247,32 +1247,32 @@ mark_position_typ2(X):
 	}
 ;
 
-mark_position_mty(X):
+%inline mark_position_mty(X):
 	x = X
 	{ {x with pmty_loc = {x.pmty_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
 ;
 
-mark_position_sig(X):
+%inline mark_position_sig(X):
 	x = X
 	{ {x with psig_loc = {x.psig_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
 ;
 
-mark_position_str(X):
+%inline mark_position_str(X):
 	x = X
 	{ {x with pstr_loc = {x.pstr_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
 ;
 
-mark_position_cl(X):
+%inline mark_position_cl(X):
 	x = X
 	{ {x with pcl_loc = {x.pcl_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
 ;
 
-mark_position_cf(X):
+%inline mark_position_cf(X):
 	x = X
 	{ {x with pcf_loc = {x.pcf_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
 ;
 
-mark_position_pat(X):
+%inline mark_position_pat(X):
 	x = X
 	{ {x with ppat_loc = {x.ppat_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
 ;
@@ -1306,8 +1306,7 @@ functor_args:
       { [ $1 ] }
 ;
 
-simple_module_expr: mark_position_mod(_simple_module_expr) {$1}
-_simple_module_expr:
+simple_module_expr:
     as_loc(mod_longident)
       { mkmod(Pmod_ident $1) }
   | LBRACE structure RBRACE
@@ -1354,7 +1353,7 @@ _module_expr:
    */
   | FUN functor_args EQUALGREATER module_expr
       { mkFunctorThatReturns $2 $4 }
-  | module_expr simple_module_expr
+  | module_expr mark_position_mod(simple_module_expr)
       { mkmod (Pmod_apply($1, $2)) }
   | module_expr as_loc(LPAREN) module_expr as_loc(error)
       { unclosed_mod (with_txt $2 "(") (with_txt $4 ")") }
@@ -1457,25 +1456,39 @@ structure:
       | MenhirMessagesError errMessage -> (syntax_error_str errMessage.loc errMessage.msg) :: $3
       | _ -> (syntax_error_str $1.loc "Invalid statement") :: $3
     }
-  | structure_item { [$1] }
+  | structure_items { List.rev $1 }
   | as_loc(structure_item) error structure {
     let menhirError = Syntax_util.findMenhirErrorMessage $1.loc in
     match menhirError with
       | MenhirMessagesError errMessage -> (syntax_error_str errMessage.loc errMessage.msg) :: $3
       | _ -> (syntax_error_str $1.loc "Statement has to end with a semicolon") :: $3
   }
-  | structure_item SEMI structure {
+  | structure_items SEMI structure {
       let effective_loc = mklocation $startpos($1) $endpos($2) in
-      set_structure_item_location $1 effective_loc :: $3
+      let items = match $1 with
+        | x :: xs -> set_structure_item_location x effective_loc :: xs
+        | [] -> []
+      in
+      List.rev_append items $3
   }
 ;
 
+structure_items:
+  | structure_item { [$1] }
+  | mark_position_str(structure_items_last) { [$1] }
+  | structure_items structure_item { $2 :: $1 }
+
+%inline structure_items_last:
+  (*| structure_item { $1 }
+  (* We consider a floating expression to be equivalent to a single let binding
+     to the "_" (any) pattern.  *)*)
+  | expr post_item_attributes { mkstrexp $1 $2 }
 
 structure_item: mark_position_str(_structure_item) {$1}
 _structure_item:
-  | item_extension_sugar structure_item_without_item_extension_sugar {
+  (*| item_extension_sugar structure_item_without_item_extension_sugar {
     struct_item_extension $1 $2
-  }
+  }*)
   | structure_item_without_item_extension_sugar {
     $1
   }
@@ -1484,13 +1497,6 @@ _structure_item:
 ;
 
 structure_item_without_item_extension_sugar:
-  mark_position_str(_structure_item_without_item_extension_sugar) {$1}
-_structure_item_without_item_extension_sugar:
-  /* We consider a floating expression to be equivalent to a single let binding
-     to the "_" (any) pattern.  */
-  | expr post_item_attributes {
-      mkstrexp $1 $2
-    }
   | EXTERNAL as_loc(val_ident) COLON core_type EQUAL primitive_declaration post_item_attributes {
       let loc = mklocation $symbolstartpos $endpos in
       let core_loc = mklocation $startpos($4) $endpos($4) in
@@ -1551,7 +1557,7 @@ _structure_item_without_item_extension_sugar:
 ;
 
 module_binding_body_expr:
-    EQUAL module_expr
+  | EQUAL module_expr
       { $2 }
   | COLON module_type EQUAL module_expr
       {
@@ -1560,8 +1566,7 @@ module_binding_body_expr:
       }
 ;
 
-module_binding_body_functor: mark_position_mod(_module_binding_body_functor) {$1}
-_module_binding_body_functor:
+module_binding_body_functor:
   | functor_args EQUALGREATER module_expr {
       mkFunctorThatReturns $1 $3
     }
@@ -1573,7 +1578,7 @@ _module_binding_body_functor:
 
 module_binding_body:
     module_binding_body_expr { $1 }
-  | module_binding_body_functor { $1 }
+  | mark_position_mod(module_binding_body_functor) { $1 }
 
 many_nonlocal_module_bindings:
   | opt_let_module REC nonlocal_module_binding_details post_item_attributes {
@@ -1586,7 +1591,7 @@ many_nonlocal_module_bindings:
   }
 ;
 
-and_nonlocal_module_bindings:
+%inline and_nonlocal_module_bindings:
   | AND nonlocal_module_binding_details post_item_attributes {
     let (ident, body) = $2 in
     let loc = mklocation $symbolstartpos $endpos in
@@ -1595,9 +1600,7 @@ and_nonlocal_module_bindings:
 ;
 
 nonlocal_module_binding_details:
-    as_loc(UIDENT) module_binding_body{
-      ($1, $2)
-    }
+  | as_loc(UIDENT) module_binding_body { ($1, $2) }
 ;
 
 /* Module types */
@@ -1625,8 +1628,7 @@ _non_arrowed_module_type:
   | module_type attribute
       { Mty.attr $1 $2 }
 
-simple_module_type: mark_position_mty(_simple_module_type) {$1}
-_simple_module_type:
+simple_module_type:
   | LPAREN module_type RPAREN
       { $2 }
   | as_loc(LPAREN) module_type as_loc(error)
@@ -1752,11 +1754,10 @@ _module_type:
 ;
 signature:
     /* empty */          { [] }
-  | signature_item SEMI signature { $1 :: $3 }
+  | mark_position_sig(signature_item) opt_semi signature { $1 :: $3 }
 ;
 
-signature_item: mark_position_sig(_signature_item) { $1 }
-_signature_item:
+signature_item:
     LET as_loc(val_ident) COLON core_type post_item_attributes {
         let loc = mklocation $symbolstartpos $endpos in
         let core_type_loc = mklocation $startpos($4) $endpos($4) in
@@ -1826,7 +1827,7 @@ _signature_item:
     }
 ;
 
-open_statement:
+%inline open_statement:
   | OPEN override_flag as_loc(mod_longident) post_item_attributes
       {
         let loc = mklocation $symbolstartpos $endpos in
@@ -1979,22 +1980,26 @@ _class_fun_def:
       { let (l,o,p) = $1 in mkclass(Pcl_fun(l, o, p, $2)) }
 ;
 
+%inline pcl_structure: class_self_pattern_and_structure { mkclass(Pcl_structure $1) }
+
 class_expr_lets_and_rest: mark_position_cl(_class_expr_lets_and_rest) {$1}
 _class_expr_lets_and_rest:
-  | class_self_pattern_and_structure { mkclass(Pcl_structure $1)}
-  | class_expr {$1}
-  | let_bindings SEMI class_expr_lets_and_rest {
-    class_of_let_bindings $1 $3
+  | pcl_structure { $1 }
+  | class_expr { $1 }
+  | nonempty_list(let_bindings) SEMI class_expr_lets_and_rest {
+    List.fold_right class_of_let_bindings $1 $3
+  }
+  | nonempty_list(let_bindings) mark_position_cl(pcl_structure) {
+    List.fold_right class_of_let_bindings $1 $2
   }
 ;
 
 class_self_pattern: mark_position_pat(_class_self_pattern) {$1}
 _class_self_pattern:
   /* Empty is by default the pattern identifier [this] */
-  | {
-    let loc = mklocation $symbolstartpos $endpos in
-    mkpat (Ppat_var (mkloc "this" loc))
-  }
+  | { let loc = mklocation $symbolstartpos $endpos in
+      mkpat (Ppat_var (mkloc "this" loc))
+    }
   /* Whereas in OCaml, specifying nothing means "_", in Reason, you'd
      have to explicity specify "_" (any) pattern. In Reason, writing nothing
      is how you specify the "this" pattern. */
@@ -2086,12 +2091,9 @@ _class_field:
       { mkcf (Pcf_attribute $1) }
 ;
 
-/* Don't need opt_semi here because of the empty rule (which normally doesn't
-happen for things like records */
 semi_terminated_class_fields:
   | /* Empty */           {[]}
-  | class_field           { [$1] }
-  | class_field SEMI semi_terminated_class_fields   { $1::$3 }
+  | class_field opt_semi semi_terminated_class_fields   { $1::$3 }
 ;
 
 parent_binder:
@@ -2353,9 +2355,8 @@ class_self_type:
        }
 ;
 class_sig_fields:
-    /* empty */                         { [] }
-| class_sig_field { [$1] }
-| class_sig_fields SEMI class_sig_field { $3 :: $1 }
+  | /* empty */                         { [] }
+  | class_sig_fields opt_semi class_sig_field { $3 :: $1 }
 ;
 
 class_sig_field: mark_position_ctf (_class_sig_field) {$1}
@@ -2458,9 +2459,8 @@ class_type_declaration_details:
  *  let add a b = {
  *    a + b;
  *  };
- *  TODO: Rename to [semi_delimited_block_sequence]
  *
- * Since semi_terminated_seq_expr doesn't require a final SEMI, then without
+ * Since semi_delimited_block_sequence doesn't require a final SEMI, then without
  * a final SEMI, a braced sequence with a single identifier is
  * indistinguishable from a punned record.
  *
@@ -2477,31 +2477,10 @@ class_type_declaration_details:
  *   [nonempty_item_attributes] ITEM
  *   ITEM
  */
-semi_terminated_seq_expr: mark_position_exp (_semi_terminated_seq_expr) {$1}
-_semi_terminated_seq_expr:
-  | item_extension_sugar semi_terminated_seq_expr_row {
-      extension_expression $1 $2
-    }
-  | semi_terminated_seq_expr_row {
-      $1
-    }
-  /**
-   * Let bindings already have their potential item_extension_sugar.
-   */
-  | let_bindings SEMI semi_terminated_seq_expr {
-      expr_of_let_bindings $1 $3
-    }
-  | let_bindings opt_semi {
-      let loc = mklocation $symbolstartpos $endpos in
-      expr_of_let_bindings $1 @@ ghunit ~loc ()
-    }
-;
-
-semi_terminated_seq_expr_row: mark_position_exp (_semi_terminated_seq_expr_row) {$1}
-_semi_terminated_seq_expr_row:
-  /**
-   * Expression SEMI
-   */
+semi_delimited_block_sequence: mark_position_exp (_semi_delimited_block_sequence) {$1}
+_semi_delimited_block_sequence:
+  /*| item_extension_sugar semi_delimited_block_sequence_row
+   *  { extension_expression $1 $2 } */
   | expr post_item_attributes opt_semi  {
       let expr = $1 in
       let item_attrs = $2 in
@@ -2509,17 +2488,33 @@ _semi_terminated_seq_expr_row:
        * expression attributes *)
       {expr with pexp_attributes = item_attrs @ expr.pexp_attributes}
     }
-  | opt_let_module as_loc(UIDENT) module_binding_body post_item_attributes SEMI semi_terminated_seq_expr {
-      let item_attrs = $4 in
-      mkexp ~attrs:item_attrs (Pexp_letmodule($2, $3, $6))
-    }
-  | LET? OPEN override_flag as_loc(mod_longident) post_item_attributes SEMI semi_terminated_seq_expr {
-      let item_attrs = $5 in
-      mkexp ~attrs:item_attrs (Pexp_open($3, $4, $7))
-    }
-  | expr post_item_attributes SEMI semi_terminated_seq_expr  {
+  | expr post_item_attributes SEMI semi_delimited_block_sequence  {
       let item_attrs = $2 in
       mkexp ~attrs:item_attrs (Pexp_sequence($1, $4))
+    }
+  | let_bindings opt_semi {
+      let loc = mklocation $symbolstartpos $endpos in
+      expr_of_let_bindings $1 @@ ghunit ~loc ()
+    }
+  | semi_delimited_block_sequence_no_semi { $1 }
+;
+
+semi_delimited_block_sequence_row:
+  | SEMI semi_delimited_block_sequence { $2 }
+  | mark_position_exp(semi_delimited_block_sequence_no_semi) {$1}
+;
+
+semi_delimited_block_sequence_no_semi:
+  | let_bindings semi_delimited_block_sequence_row {
+      expr_of_let_bindings $1 $2
+    }
+  | opt_let_module as_loc(UIDENT) module_binding_body post_item_attributes semi_delimited_block_sequence_row {
+      let item_attrs = $4 in
+      mkexp ~attrs:item_attrs (Pexp_letmodule($2, $3, $5))
+    }
+  | LET? OPEN override_flag as_loc(mod_longident) post_item_attributes semi_delimited_block_sequence_row {
+      let item_attrs = $5 in
+      mkexp ~attrs:item_attrs (Pexp_open($3, $4, $6))
     }
 ;
 
@@ -2901,9 +2896,9 @@ _simple_expr:
         let loc = mklocation $symbolstartpos $endpos in
         ghexp_constraint loc $2 $3
       }
-  | LBRACE semi_terminated_seq_expr RBRACE
+  | LBRACE semi_delimited_block_sequence RBRACE
       { $2 }
-  | LBRACE as_loc(semi_terminated_seq_expr) error
+  | LBRACE as_loc(semi_delimited_block_sequence) error
       { syntax_error_exp $2.loc "SyntaxError in block" }
   | LPAREN expr_comma_list opt_comma RPAREN
       { mkexp(Pexp_tuple(List.rev $2)) }
@@ -3164,12 +3159,12 @@ let_binding:
    * avoid a parsing conflict. Why is that the case? How can we treat rules as
    * "exactly the same as being inlined?".
    */
-  | item_extension_sugar let_binding_impl {
+  (*| item_extension_sugar let_binding_impl {
       let (rec_flag, body, item_attrs) = $2 in
       let (ext_attrs, ext_id) = $1 in
       let loc = mklocation $symbolstartpos $endpos in
       mklbs (ext_attrs, Some ext_id) rec_flag (mklb body item_attrs loc) loc
-    }
+    }*)
 ;
 
 let_binding_body:
@@ -3362,9 +3357,9 @@ leading_bar_match_case:
 ;
 
 leading_bar_match_case_to_sequence_body:
-  | pattern_with_bar EQUALGREATER semi_terminated_seq_expr
+  | pattern_with_bar EQUALGREATER semi_delimited_block_sequence
       { Exp.case $1 $3 }
-  | pattern_with_bar WHEN expr EQUALGREATER semi_terminated_seq_expr
+  | pattern_with_bar WHEN expr EQUALGREATER semi_delimited_block_sequence
       { Exp.case $1 ~guard:$3 $5 }
 ;
 
@@ -4773,7 +4768,7 @@ post_item_attributes:
   | item_attribute post_item_attributes { $1 :: $2 }
 ;
 
-item_extension_sugar:
+(* item_extension_sugar:
   /**
    * Note, this form isn't really super useful, but wouldn't cause any parser
    * conflicts. Not supporting it though just to avoid having to write the
@@ -4789,7 +4784,7 @@ item_extension_sugar:
   | PERCENT attr_id {
       ([], $2)
     }
-;
+;*)
 
 extension:
   LBRACKETPERCENT attr_id payload RBRACKET { ($2, $3) }
