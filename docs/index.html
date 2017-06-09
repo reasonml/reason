@@ -20,8 +20,7 @@
 
   <script id="markdown" type="text/markdown">
 
-What Is Reason
-=======
+# What Is Reason
 
 Reason is an umbrella project that provides a curated layer for [OCaml](http://ocaml.org). It offers:
 
@@ -29,21 +28,17 @@ Reason is an umbrella project that provides a curated layer for [OCaml](http://o
 - A workflow for compiling to JavaScript and native code.
 - A set of friendly documentations, libraries and utilities.
 
-Why Reason
-=======
+# Why Reason
 
-Worry-free
-----------
+#### Worry-free
 
 Reason leverages OCaml's language design and type system to give immediate feedback in the form of compile-time errors and avoided anti-patterns.
 
-Low Overhead
-----------
+#### Low Overhead
 
 Reason keeps things simple and lean. Thanks to this, integrating Reason into your existing JavaScript/OCaml project is [hassle-free](./jsWorkflow.html#javascript-workflow-context). Do more with less; reduce your future burden!
 
-Performant & predictable
-----------
+#### Performant & predictable
 
 Let the compiler and the type system nudge you toward writing code that's fast and easy to think about.
 
@@ -547,8 +542,22 @@ Array.set myArray 0 "hey";
 /* now [|"hey", "world", "how are you"|] */
 ```
 
-Diving Deeper
-==============
+# Diving Deeper
+
+## External
+
+`external`, or "FFI" (foreign function interface), or simply "interop" is how Reason/OCaml communicates with other languages, like C or JavaScript. It's like mandatorily typing a let-binding.
+
+```reason
+external myCFunction: int -> string = "theCFunction";
+```
+
+```reason
+external getElementsByClassName : string => array Dom.element =
+  "document.getElementsByClassName" [@@bs.val];
+```
+
+You'd often see `external`s when working with BuckleScript, since we're interoping with existing JavaScript libraries a lot. More info on BS externals [here](http://bloomberg.github.io/bucklescript/Manual.html#_binding_to_simple_js_functions_values).
 
 Destructuring
 -------------
@@ -582,7 +591,7 @@ let (ten: int, twenty: int) = someInts;
 let {name: (n:string), age: (a:int)} = somePerson;
 ```
 
-More on Functions
+More on Function
 -------------------------
 
 #### Recursive Functions
