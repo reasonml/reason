@@ -126,7 +126,20 @@ module's scope in an "unqualified" way (aka, `foo` instead of the qualified
 An OCaml/Reason file maps to a module; this unlocks some interesting
 expressivity that'd previously require code generation in other languages. The
 file `react.re` implicitly forms a module `React`, which can be seen by other
-source files. This contrived snippet expresses "copying" a file:
+source files.
+
+```reason
+/* fileA.re. This typically compiles to module FileA below */
+let a = 1;
+let b = 2;
+
+/* fileB.re */
+/* Maps fileA's implementation to a new API */
+let alpha = FileA.a;
+let beta = FileA.b;
+```
+
+This contrived snippet expresses "copying" a file:
 
 ```reason
 /* fileA.re. This typically compiles to module FileA below */
