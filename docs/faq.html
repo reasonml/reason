@@ -32,6 +32,12 @@ There's no need to pick! Reason and OCaml share the exact same semantics (i.e. h
 #### What's the relation between Reason, BuckleScript and OCaml?
 See [here](./jsWorkflow.html). Reason's a syntax for OCaml and supports all its features. BuckleScript compiles OCaml/Reason code into to JavaScript.
 
+#### Where can I find documentation on the stdlib (standard library)?
+Reason uses whatever OCaml uses. For BuckleScript (JS workflow), it'd be at http://bloomberg.github.io/bucklescript/api. For native, it'd be at http://caml.inria.fr/pub/docs/manual-ocaml/libref/index.html.
+
+#### Where do all these `print_endline`, `string_of_int` functions come from?
+They're from the standard library, pre-`open`ed during the compilation of your file. This is why you see them in scope.
+
 #### What's the server-side story? Should I compile to native or to JS and use node.js?
 We do compile to native, but the native workflow is currently work-in-progress. At this time, we recommend compiling to JS through BuckleScript and use the bindings at [BuckleTypes](https://github.com/buckletypes) or somewhere else.
 
