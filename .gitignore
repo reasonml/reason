@@ -1,6 +1,7 @@
 *.native
 *.byte
 *.cmt
+a.out
 _build
 *.install
 pkg/META
