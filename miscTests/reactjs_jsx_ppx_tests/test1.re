@@ -9,6 +9,8 @@
 
 <div className="hello" comp=(<Foo bar=1 />)> <li /> <Foo bar=2 /> </div>;
 
+<div className="hello" comp=(fun () => <Foo bar=1 />)> <li /> (fun () => <Foo bar=2 />) </div>;
+
 /* ============== */
 
 <Foo />;

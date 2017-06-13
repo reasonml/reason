@@ -16,6 +16,14 @@ ReactDOMRe.createElement
   )
   [|ReactDOMRe.createElement "li" [||], ReasonReact.element (Foo.make bar::2 [||])|];
 
+ReactDOMRe.createElement
+  "div"
+  props::(
+    ReactDOMRe.props
+      className::"hello" comp::(fun () => ReasonReact.element (Foo.make bar::1 [||])) ()
+  )
+  [|ReactDOMRe.createElement "li" [||], fun () => ReasonReact.element (Foo.make bar::2 [||])|];
+
 ReasonReact.element (Foo.make [||]);
 
 ReasonReact.element (Foo.make className::"hello" [||]);
@@ -32,7 +40,7 @@ ReasonReact.element (
 ReasonReact.element (
   Foo.make
     className::"hello"
-    comp::<Bar bar=1 />
+    comp::(ReasonReact.element (Bar.make bar::1 [||]))
     [|ReactDOMRe.createElement "li" [||], ReasonReact.element (Bar.make bar::2 [||])|]
 );
 

@@ -14,6 +14,14 @@ ReactDOMRe.createElement
   props::(ReactDOMRe.props className::"hello" comp::(Foo.createElement bar::1 children::[] ()) ())
   [|ReactDOMRe.createElement "li" [||], Foo.createElement bar::2 children::[] ()|];
 
+ReactDOMRe.createElement
+  "div"
+  props::(
+    ReactDOMRe.props
+      className::"hello" comp::(fun () => Foo.createElement bar::1 children::[] ()) ()
+  )
+  [|ReactDOMRe.createElement "li" [||], fun () => Foo.createElement bar::2 children::[] ()|];
+
 Foo.createElement children::[] ();
 
 Foo.createElement className::"hello" children::[] ();

@@ -76,7 +76,8 @@ let jsxMapper () =
       Exp.array (
         listToArray children |> List.map (fun a -> mapper.expr mapper a)
       ) in
-    let args = argsForMake @ [ (Nolabel, childrenExpr) ] in
+    let recursivelyTransformedArgsForMake = argsForMake |> List.map (fun (label, expression) -> (label, mapper.expr mapper expression)) in
+    let args = recursivelyTransformedArgsForMake @ [ (Nolabel, childrenExpr) ] in
     let wrapWithReasonReactElement e = (* ReasonReact.element ::key ::ref (...) *)
       Exp.apply
         ~loc
