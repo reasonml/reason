@@ -4,8 +4,7 @@ Reason: Friendly Syntax & Toolchain for OCaml [![Build Status](https://travis-ci
 Getting Started
 ---------------
 
-- [JS Workflow](http://facebook.github.io/reason/jsWorkflow.html)
-- [Native Workflow](http://facebook.github.io/reason/nativeWorkflow.html)
+View our guide [here](http://facebook.github.io/reason/gettingStarted.html)!
 
 Community
 =======

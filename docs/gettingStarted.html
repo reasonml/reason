@@ -20,12 +20,9 @@
 
   <script id="markdown" type="text/markdown">
 
-Getting Started
-===========
+# Getting Started
 
-Choose your target!
-
-Reason compiles to JavaScript and native code. The workflow for each are currently separated and documented on their respective section. You **only** need to learn the target platform you care about (for most people, it'd be JavaScript).
+Reason compiles to JavaScript and native code. The workflow for each are **currently separated**. You **only** need to learn the target platform you care about. For most people, it'd be JavaScript. Our native workflow is currently work-in-progress.
 
 Whenever you get stuck:
 
@@ -33,15 +30,104 @@ Whenever you get stuck:
 - Peruse some [code examples](./examples.html).
 - We're helping on [Discord](https://discord.gg/reasonml)!
 
-JavaScript Workflow
+# JavaScript Workflow
+
+Context
 -------
 
-See [here](./jsWorkflow.html).
+Reason can talk to JS and compile to it, thanks to [BuckleScript](https://github.com/bloomberg/bucklescript), an optimizing compiler with first-class support for both Reason and vanilla OCaml syntax. We use the same standard library as OCaml, [documented here](http://caml.inria.fr/pub/docs/manual-ocaml/libref/).
 
-Native Workflow
+For the JS workflow, we support both [npm](https://www.npmjs.com) and [yarn](https://yarnpkg.com/en/). Nothing else to learn!
+
+**Note**: the global editor tooling (Merlin, rtop) currently doesn't work well with Windows. The project setup & building, however, works well.
+
+Project Setup
 -------
 
-See [here](./nativeWorkflow.html).
+We've strived to make our JS tooling and compilation workflow as simple as possible:
+
+```sh
+# new folder setup, add package.json, install BuckleScript
+mkdir -p test/src && cd test
+echo 'print_endline "hello!";' > src/test.re
+npm init -y
+npm install --save-dev bs-platform
+
+# basic BuckleScript build config, start it in watch mode
+echo '{"name": "test", "sources": "src"}' > bsconfig.json
+./node_modules/.bin/bsb -w
+```
+
+More info on bsb & bsconfig [here](http://bloomberg.github.io/bucklescript/Manual.html#_bucklescript_build_system_code_bsb_code).
+
+That's all! **BuckleScript has first-class support for Reason, which is why you don't see any mention of "Reason" in the above step**.
+
+
+Editor Setup & Global Utilities
+-------
+
+See our [tooling](./tools.html) section for a descriptions of what you need to install and which editors we support.
+
+Our [editor integration](./tools.html#editor-integration) need a few binaries to be found in your `$PATH`:
+
+- `refmt`: the Reason parser/printer (editor formatter).
+- `ocamlmerlin-reason`: Reason bridge to [Merlin](./tools.html#tools-command-line-utilities-merlin).
+- `ocamlmerlin`: the Merlin binary.
+
+The tooling section explains what these binaries do.
+
+They can be installed globally through:
+
+```sh
+npm install -g git://github.com/reasonml/reason-cli.git#beta-v-1.13.5
+# test that you have them installed correctly
+which ocamlmerlin refmt ocamlmerlin-reason
+```
+
+**Note**: the global toolchain `reason-cli` currently doesn't work on Windows.
+
+**Note**: please verify that your installed OCaml version is `4.02.x` and that Merlin is `>=2.5.1`. The above installation does that automatically, but people sometimes install our toolchain through other ways (e.g. native workflow, with looser version constraints).
+
+```sh
+ocamlc -version
+ocamlmerlin -version
+```
+
+Use & Publish Libraries
+-------
+
+We host Reason/OCaml bindings to existing JavaScript libraries at [BuckleTypes](https://github.com/buckletypes). You can `npm install` them as you'd normally do in JavaScript. Likewise, `npm publish` to publish your Reason/BuckleScript library.
+
+**As a gesture of courtesy**, you can publish the JS artifacts in `lib/js` for the pure JS consumers. Although you don't have to, we recommend [checking them into version control](http://facebook.github.io/reason/jsConversion.html#converting-your-javascript-to-reason-tips) in the near future, for debuggability. **Free output snapshots**!
+
+
+Talk to Existing JS Libraries
+-------
+
+**Looking for Reason-React bindings**? [Here you go](https://github.com/reasonml/reason-react)!
+
+Redux implementation in Reason is at [Reductive](https://github.com/reasonml/reductive).
+
+The [BuckleScript manual](http://bloomberg.github.io/bucklescript/Manual.html) is all you need for calling JS from within BuckleScript. Here are some highlights:
+
+- [Runtime representation](http://bloomberg.github.io/bucklescript/Manual.html#_runtime_representation)
+- [Binding to simple JS functions values](http://bloomberg.github.io/bucklescript/Manual.html#_binding_to_simple_js_functions_values)
+- [Create JS objects using `bs.obj`](http://bloomberg.github.io/bucklescript/Manual.html#_create_js_objects_using_bs_obj)
+
+Convert JS to Reason
+-------
+
+See [Conversion](./jsConversion.html).
+
+
+Use Native OCaml libraries
+-------
+
+The JS workflow is currently npm/yarn-centric; to use a native OCaml package from OPAM, you'd need to fork it and put a [bsconfig.json](http://bloomberg.github.io/bucklescript/Manual.html#_a_real_world_example_of_using_code_bsb_code) on it. Native libraries setups might be complex; it's recommended to use libs written with BuckleScript in mind instead.
+
+# Native Workflow
+
+Our native workflow is **work-in-progress**. See [here](./nativeWorkflow.html).
 
   </script>
   <!-- Initializer -->
