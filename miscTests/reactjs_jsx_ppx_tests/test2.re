@@ -1,5 +1,29 @@
-[@@@bs.config {foo, jsx: 1}];
 /* don't auto-format this file until https://github.com/facebook/reason/issues/904 is resolved */
+[@@@bs.config {foo, jsx: 1}];
+
+/* test setup dummy modules. These are here to make the transform pass the type checker. Also helps validating our transforms thanks to types */
+
+module ReactDOMRe = {
+  let createElement tag ::props=? children => 1;
+  let props ::className=? ::width=? ::comp=? ::compCallback=? () => 1;
+};
+module Foo = {
+  let createElement ::className=? ::ref=? ::key=? ::width=? ::comp=? ::bar=? ::children () => 1;
+  module Bar = {
+    let createElement ::className=? ::ref=? ::key=? ::children () => 1;
+  };
+};
+module Bar = {
+  let createElement ::bar=? ::children () => 1;
+};
+
+
+
+
+
+
+/* ================ */
+
 <div />;
 
 <div className="hello" />;
@@ -10,7 +34,7 @@
 
 <div className="hello" comp=(<Foo bar=1 />)> <li /> <Foo bar=2 /> </div>;
 
-<div className="hello" comp=(fun () => <Foo bar=1 />)> <li /> (fun () => <Foo bar=2 />) </div>;
+<div className="hello" compCallback=(fun () => <Foo bar=1 />)> <li /> ((fun () => <Foo bar=2 />) ()) </div>;
 
 /* ============== */
 
@@ -28,6 +52,6 @@
 
 <Foo key="someKey" className="hello" />;
 
-<Foo key="someKey" ref=(some ref) className="hello" />;
+<Foo key="someKey" ref=(Some ref) className="hello" />;
 
-<Foo.Bar key="someKey" ref=(some ref) className="hello"> <Bar /> </Foo.Bar>;
+<Foo.Bar key="someKey" ref=(Some ref) className="hello"> <Bar /> </Foo.Bar>;

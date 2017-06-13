@@ -10,6 +10,7 @@ formatTest/customMLFormatOutput.re
 formatTest/failed_tests
 formatTest/**/actual_output/
 miscTests/reactjs_jsx_ppx_tests/actual*.re
+miscTests/reactjs_jsx_ppx_tests/*.cm*
 npm-debug.log
 reason-parser/src/reason_parser.messages.bak
 reason-parser/src/reason_parser_message.ml

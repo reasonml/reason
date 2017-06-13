@@ -10,11 +10,8 @@ do
   expected=`cat $testPath/expected$i.re`
 
   ocamlc -dsource -ppx "./reactjs_jsx_ppx.native" -pp "./refmt_impl.native --print binary" -impl $test \
-    2>&1 | sed '$ d' | sed '$ d' | \
-    ./refmt_impl.native --parse ml --print re --interface false \
+    2>&1 | ./refmt_impl.native --parse ml --print re --interface false \
     > $testPath/actual${i}.re
-  # remove the last two lines. It's noise about command failure and changes at
-  # every run because the temporary file name in the error message changes
 
   actual=`cat $testPath/actual$i.re`
 
@@ -35,11 +32,8 @@ do
   expected=`cat $testPath/expected${i}_newBehavior.re`
 
   ocamlc -dsource -ppx "./reactjs_jsx_ppx_2.native" -pp "./refmt_impl.native --print binary" -impl $test \
-    2>&1 | sed '$ d' | sed '$ d' | \
-    ./refmt_impl.native --parse ml --print re --interface false \
+    2>&1 | ./refmt_impl.native --parse ml --print re --interface false \
     > $testPath/actual${i}_newBehavior.re
-  # remove the last two lines. It's noise about command failure and changes at
-  # every run because the temporary file name in the error message changes
 
   actual=`cat $testPath/actual${i}_newBehavior.re`
 
