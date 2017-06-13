@@ -1,10 +1,10 @@
 true: warn(@5@8@10@11@12@14@23-24@26@29@40), bin_annot, safe_string, debug
 
 <src/reason_utop.ml>: thread
-<editorSupport/**>: -traverse
 <node_modules/**>: -traverse
 <bspacks/**>: -traverse
 "formatTest": -traverse
+"miscTests": -traverse
 "reason-parser": -traverse
 "src": include
 <src/*>: package(menhirLib unix compiler-libs.common ocamlbuild findlib merlin_extend result dynlink findlib.dynload ocaml-migrate-parsetree reason-parser)
