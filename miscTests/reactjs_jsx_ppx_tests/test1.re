@@ -30,7 +30,7 @@ module ReasonReact = {
 
 <div className="hello" width="10" />;
 
-<div className="hello" width="10"> <li /> <Foo /> </div>;
+<div className="hello" width="10"> (<li> <p/> </li>) (<Foo> <Bar /> </Foo>) </div>;
 
 <div className="hello" comp=(<Foo bar=1 />)> <li /> <Foo bar=2 /> </div>;
 
@@ -44,7 +44,7 @@ module ReasonReact = {
 
 <Foo className="hello" width="10" />;
 
-<Foo className="hello" width="10"> <li /> <Bar /> </Foo>;
+<Foo className="hello" width="10"> (<li> <p/> </li>) (<Foo> <Bar /> </Foo>) </Foo>;
 
 <Foo className="hello" comp=(<Bar bar=1 />)> <li /> <Bar bar=2 /> </Foo>;
 
