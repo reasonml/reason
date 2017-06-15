@@ -5686,7 +5686,7 @@ class printer  ()= object(self:'self)
       | Pmty_functor (_, None, mt2) -> (atom "()")::(functorTypeArgs mt2)
       | Pmty_functor (s, Some mt1, mt2) ->
           if s.txt = "_" then
-            (self#module_type mt1)::(functorTypeArgs mt2)
+            (self#non_arrowed_module_type mt1)::(functorTypeArgs mt2)
           else
             let cur =
               makeList ~wrap:("(",")") [
