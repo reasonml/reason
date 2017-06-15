@@ -617,3 +617,7 @@ module type T = t with type t = a => a;
 module type T = t with type t = a => a;
 
 module type T = (t with type t = a) => a;
+
+module X = [%test extension];
+
+module type T = [%test extension];
