@@ -29,7 +29,10 @@ ReactDOMRe.createElement "div" props::(ReactDOMRe.props className::"hello" width
 ReactDOMRe.createElement
   "div"
   props::(ReactDOMRe.props className::"hello" width::"10" ())
-  [|ReactDOMRe.createElement "li" [||], ReasonReact.element (Foo.make [||])|];
+  [|
+    ReactDOMRe.createElement "li" [|ReactDOMRe.createElement "p" [||]|],
+    ReasonReact.element (Foo.make [|ReasonReact.element (Bar.make [||])|])
+  |];
 
 ReactDOMRe.createElement
   "div"
@@ -59,7 +62,10 @@ ReasonReact.element (
   Foo.make
     className::"hello"
     width::"10"
-    [|ReactDOMRe.createElement "li" [||], ReasonReact.element (Bar.make [||])|]
+    [|
+      ReactDOMRe.createElement "li" [|ReactDOMRe.createElement "p" [||]|],
+      ReasonReact.element (Foo.make [|ReasonReact.element (Bar.make [||])|])
+    |]
 );
 
 ReasonReact.element (

@@ -25,7 +25,10 @@ ReactDOMRe.createElement "div" props::(ReactDOMRe.props className::"hello" width
 ReactDOMRe.createElement
   "div"
   props::(ReactDOMRe.props className::"hello" width::"10" ())
-  [|ReactDOMRe.createElement "li" [||], Foo.createElement children::[] ()|];
+  [|
+    ReactDOMRe.createElement "li" [|ReactDOMRe.createElement "p" [||]|],
+    Foo.createElement children::[Bar.createElement children::[] ()] ()
+  |];
 
 ReactDOMRe.createElement
   "div"
@@ -49,7 +52,10 @@ Foo.createElement className::"hello" width::"10" children::[] ();
 Foo.createElement
   className::"hello"
   width::"10"
-  children::[ReactDOMRe.createElement "li" [||], Bar.createElement children::[] ()]
+  children::[
+    ReactDOMRe.createElement "li" [|ReactDOMRe.createElement "p" [||]|],
+    Foo.createElement children::[Bar.createElement children::[] ()] ()
+  ]
   ();
 
 Foo.createElement
