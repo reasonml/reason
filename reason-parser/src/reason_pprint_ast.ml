@@ -5676,8 +5676,7 @@ class printer  ()= object(self:'self)
             ~postSpace:true
             ~sep:";"
             (List.map self#signature_item (List.filter self#shouldDisplaySigItem s))
-      (* Not sure what this is about. *)
-      | Pmty_extension _ -> assert false
+      | Pmty_extension (s, e) -> self#payload "%" s e
       | _ -> makeList ~break:IfNeed ~wrap:("(", ")") [self#module_type x]
 
   method module_type x =
