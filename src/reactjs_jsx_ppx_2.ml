@@ -73,7 +73,7 @@ let jsxMapper () =
       | _ -> false in
     let (argsKeyRef, argsForMake) = List.partition argIsKeyRef argsWithLabels in
     let childrenExpr =
-      Exp.array (
+      Exp.array ~loc (
         listToArray children |> List.map (fun a -> mapper.expr mapper a)
       ) in
     let recursivelyTransformedArgsForMake = argsForMake |> List.map (fun (label, expression) -> (label, mapper.expr mapper expression)) in
