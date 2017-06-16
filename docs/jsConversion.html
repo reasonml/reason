@@ -61,7 +61,7 @@ Here are some of the things you'd do at this step:
 
 - Hide the `require`s.
 
-- Make other such changes. For idioms that don't have a BuckleScript equivalent, use `bs.raw` ([documentation](http://bloomberg.github.io/bucklescript/Manual.html#_embedding_arbitrary_js_code_as_an_expression)).
+- Make other such changes. For idioms that don't have a BuckleScript equivalent, use `bs.raw` ([documentation](http://bucklescript.github.io/bucklescript/Manual.html#_embedding_arbitrary_js_code_as_an_expression)).
 
 Again, worry **only** about making the file syntactically valid. Trying to learn all three of syntax, types and other semantics while converting over a file reduces your iteration speed to less than a third.
 
@@ -87,11 +87,11 @@ Types, Pass 1
 
 You might still occasionally get syntax errors, but not as drastic as the previous step's.
 
-- Change `foo.bar` to `foo##bar`. This escape-hatch [BuckleScript feature](http://bloomberg.github.io/bucklescript/Manual.html#_how_to_consume_js_property_and_methods) will be your medium-term friend.
+- Change `foo.bar` to `foo##bar`. This escape-hatch [BuckleScript feature](http://bucklescript.github.io/bucklescript/Manual.html#_how_to_consume_js_property_and_methods) will be your medium-term friend.
 
-- Convert `{foo: bar}` to `[%bs.obj {foo: bar}]` ([docs](http://bloomberg.github.io/bucklescript/Manual.html#_create_js_objects_using_bs_obj)). After `refmt`, this will sugar to `{"foo": bar}`.
+- Convert `{foo: bar}` to `[%bs.obj {foo: bar}]` ([docs](http://bucklescript.github.io/bucklescript/Manual.html#_create_js_objects_using_bs_obj)). After `refmt`, this will sugar to `{"foo": bar}`.
 
-- To communicate with external JS files, use `external`. They're BuckleScript's [foreign function interface](http://bloomberg.github.io/bucklescript/Manual.html#_ffi).
+- To communicate with external JS files, use `external`. They're BuckleScript's [foreign function interface](http://bucklescript.github.io/bucklescript/Manual.html#_ffi).
 
   - Inline externals. No need to create clean, well-separated files for externals for now. We'll come back to these.
 
