@@ -69,7 +69,7 @@ let jsxMapper () =
     let (children, argsWithLabels) =
       extractChildrenForDOMElements ~loc ~removeLastPositionUnit:true callArguments in
     let argIsKeyRef = function
-      | (Labelled ("key" | "ref") , _) -> true
+      | (Labelled ("key" | "ref"), _) | (Optional ("key" | "ref"), _) -> true
       | _ -> false in
     let (argsKeyRef, argsForMake) = List.partition argIsKeyRef argsWithLabels in
     let childrenExpr =

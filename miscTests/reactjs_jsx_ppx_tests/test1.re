@@ -52,6 +52,6 @@ module ReasonReact = {
 
 <Foo key="someKey" className="hello" />;
 
-<Foo key="someKey" ref=(Some ref) className="hello" />;
+<Foo key=?(Some "someKey") ref=?(Some ref) className="hello" />;
 
 <Foo.Bar key="someKey" ref=(Some ref) className="hello"> <Bar /> </Foo.Bar>;
