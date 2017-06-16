@@ -66,6 +66,8 @@ Foo.createElement
 
 Foo.createElement key::"someKey" className::"hello" children::[] ();
 
+Foo.createElement key::(Some "someKey") ref::(Some ref) className::"hello" children::[] ();
+
 Foo.createElement key::?(Some "someKey") ref::?(Some ref) className::"hello" children::[] ();
 
 Foo.Bar.createElement
