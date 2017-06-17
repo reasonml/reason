@@ -5676,8 +5676,7 @@ class printer  ()= object(self:'self)
             ~postSpace:true
             ~sep:";"
             (List.map self#signature_item (List.filter self#shouldDisplaySigItem s))
-      (* Not sure what this is about. *)
-      | Pmty_extension _ -> assert false
+      | Pmty_extension (s, e) -> self#payload "%" s e
       | _ -> makeList ~break:IfNeed ~wrap:("(", ")") [self#module_type x]
 
   method module_type x =
@@ -5686,7 +5685,7 @@ class printer  ()= object(self:'self)
       | Pmty_functor (_, None, mt2) -> (atom "()")::(functorTypeArgs mt2)
       | Pmty_functor (s, Some mt1, mt2) ->
           if s.txt = "_" then
-            (self#module_type mt1)::(functorTypeArgs mt2)
+            (self#non_arrowed_module_type mt1)::(functorTypeArgs mt2)
           else
             let cur =
               makeList ~wrap:("(",")") [
