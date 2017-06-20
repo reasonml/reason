@@ -614,6 +614,8 @@ let rec callSecond = fun () => callFirst ()
 and callFirst = fun () => callSecond ();
 ```
 
+**Note** that there's no semicolon ending the first line and no `let` on the second line.
+
 #### Currying
 
 Reason functions can automatically be **partially** called:
@@ -754,8 +756,20 @@ while (not break.contents) {
 };
 ```
 
-Type Arguments
-----------
+## More on Type
+
+#### Mutually Recursive Types
+
+Just like functions, types can be mutually recursive through `and`:
+
+```reason
+type student = {taughtBy: teacher}
+and teacher = {students: list student};
+```
+
+**Note** that there's no semicolon ending the first line and no `type` on the second line.
+
+#### Type Arguments
 
 Types can be "parameterized" (akin to generics in other languages). It's as if a type is a function that takes in arguments and returns a new type. The parameters need to start with `'`.
 
