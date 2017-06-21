@@ -3641,10 +3641,12 @@ mark_position_typ2
  */
 core_type2:
 mark_position_typ2
-  ( non_arrowed_non_simple_core_type | non_arrowed_simple_core_type
+  ( non_arrowed_simple_core_type
     { $1 }
   | arrow_type_parameters EQUALGREATER only_core_type(core_type2)
     { Core_type (List.fold_right mktyp_arrow $1 $3) }
+  | only_core_type(basic_core_type) EQUALGREATER only_core_type(core_type2)
+    { Core_type (mktyp (Ptyp_arrow (Nolabel, $1, $3))) }
   | attribute only_core_type(core_type2)
     { Core_type {$2 with ptyp_attributes = $1 :: $2.ptyp_attributes} }
   ) {$1};
@@ -3656,9 +3658,10 @@ arrow_type_parameter:
     { ($4 $2, $3) }
 ;
 
-%inline arrow_type_parameters:
-  parenthesized(lseparated_nonempty_list(COMMA, as_loc(arrow_type_parameter)))
-  { $1 };
+arrow_type_parameters:
+  | parenthesized(lseparated_nonempty_list(COMMA, as_loc(arrow_type_parameter)))
+    { $1 }
+;
 
 /* Among other distinctions, "simple" core types can be used in Variant types:
  * type myType = Count of anySimpleCoreType. Core types (and simple core types)
@@ -3684,7 +3687,7 @@ arrow_type_parameter:
  * type x = SomeConstructor x y;
  */
 non_arrowed_core_type:
-  | non_arrowed_non_simple_core_type | non_arrowed_simple_core_type
+  | non_arrowed_simple_core_type
     { $1 }
   | attribute only_core_type(non_arrowed_core_type)
     { Core_type {$2 with ptyp_attributes = $1 :: $2.ptyp_attributes} }
@@ -3694,14 +3697,6 @@ type_parameters:
   parenthesized(separated_nonempty_list(COMMA, only_core_type(core_type)))
   { $1 }
 ;
-
-non_arrowed_non_simple_core_type:
-mark_position_typ2
-  ( as_loc(type_longident) type_parameters
-    { Core_type (mktyp(Ptyp_constr($1, $2))) }
-  | SHARP as_loc(class_longident) type_parameters
-    { Core_type (mktyp(Ptyp_class($2, $3))) }
-  ) {$1};
 
 non_arrowed_simple_core_type:
 mark_position_typ2
@@ -3716,6 +3711,15 @@ mark_position_typ2
       | [one] -> Core_type one
       | many  -> Core_type (mktyp (Ptyp_tuple many))
     }
+  | basic_core_type { $1 }
+  ) {$1};
+
+basic_core_type:
+mark_position_typ2
+  ( as_loc(type_longident) type_parameters
+    { Core_type (mktyp(Ptyp_constr($1, $2))) }
+  | SHARP as_loc(class_longident) type_parameters
+    { Core_type (mktyp(Ptyp_class($2, $3))) }
   | QUOTE ident
     { Core_type (mktyp(Ptyp_var $2)) }
   | SHARP as_loc(class_longident)
