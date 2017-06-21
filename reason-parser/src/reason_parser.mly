@@ -284,11 +284,8 @@ let is_pattern_list_single_any = function
 
 let set_structure_item_location x loc = {x with pstr_loc = loc};;
 
-let mkoperator_loc name loc =
-  Exp.mk ~loc (Pexp_ident(mkloc (Lident name) loc))
-
-let mkoperator name pos =
-  mkoperator_loc name (rhs_loc pos)
+let mkoperator {Location. txt; loc} =
+  Exp.mk ~loc (Pexp_ident(mkloc (Lident txt) loc))
 
 (*
   Ghost expressions and patterns:
@@ -321,7 +318,7 @@ let mkinfixop arg1 op arg2 =
   mkexp(Pexp_apply(op, [Nolabel, arg1; Nolabel, arg2]))
 
 let mkinfix arg1 name arg2 =
-  mkinfixop arg1 (mkoperator name 2) arg2
+  mkinfixop arg1 (mkoperator name) arg2
 
 let neg_string f =
   if String.length f > 0 && f.[0] = '-'
@@ -329,13 +326,14 @@ let neg_string f =
   else "-" ^ f
 
 let mkuminus name arg =
-  match name, arg.pexp_desc with
+  match name.txt, arg.pexp_desc with
   | "-", Pexp_constant(Pconst_integer (n,m)) ->
       mkexp(Pexp_constant(Pconst_integer(neg_string n,m)))
   | ("-" | "-."), Pexp_constant(Pconst_float (f, m)) ->
       mkexp(Pexp_constant(Pconst_float(neg_string f, m)))
-  | _ ->
-      mkexp(Pexp_apply(mkoperator ("~" ^ name) 1, [Nolabel, arg]))
+  | txt, _ ->
+      let name = {name with txt = "~" ^ txt} in
+      mkexp(Pexp_apply(mkoperator name, [Nolabel, arg]))
 
 let prepare_functor_arg = function
   | Some name, mty -> (name, mty)
@@ -358,12 +356,13 @@ let mk_functor_mty args body =
   List.fold_right folder args body
 
 let mkuplus name arg =
-  let desc = arg.pexp_desc in
-  match name, desc with
+  match name.txt, arg.pexp_desc with
   | "+", Pexp_constant(Pconst_integer _)
-  | ("+" | "+."), Pexp_constant(Pconst_float _) -> mkexp desc
-  | _ ->
-      mkexp(Pexp_apply(mkoperator ("~" ^ name) 1, [Nolabel, arg]))
+  | ("+" | "+."), Pexp_constant(Pconst_float _) ->
+      mkexp arg.pexp_desc
+  | txt, _ ->
+      let name = {name with txt = "~" ^ txt} in
+      mkexp(Pexp_apply(mkoperator name, [Nolabel, arg]))
 
 let mkexp_cons consloc args loc =
   mkexp ~loc (Pexp_construct(mkloc (Lident "::") consloc, Some args))
@@ -2527,11 +2526,11 @@ mark_position_exp
       let loc = mklocation $symbolstartpos $endpos in
       mkexp_cons loc_colon (mkexp ~ghost:true ~loc (Pexp_tuple[$5;$7])) loc
     }
-  | expr infix_operator expr
+  | expr as_loc(infix_operator) expr
     { mkinfix $1 $2 $3 }
-  | subtractive expr %prec prec_unary_minus
+  | as_loc(subtractive) expr %prec prec_unary_minus
     { mkuminus $1 $2 }
-  | additive expr %prec prec_unary_plus
+  | as_loc(additive) expr %prec prec_unary_plus
     { mkuplus $1 $2 }
   | simple_expr DOT as_loc(label_longident) EQUAL expr
     { mkexp(Pexp_setfield($1, $3, $5)) }
@@ -2697,16 +2696,16 @@ parenthesized_expr:
       let list_exp = { list_exp with pexp_loc = loc } in
       mkexp (Pexp_open (Fresh, $1, list_exp))
     }
-  | PREFIXOP E %prec below_DOT_AND_SHARP
-    { mkexp(Pexp_apply(mkoperator $1 1, [Nolabel, $2])) }
+  | as_loc(PREFIXOP) E %prec below_DOT_AND_SHARP
+    { mkexp(Pexp_apply(mkoperator $1, [Nolabel, $2])) }
   /**
    * Must be below_DOT_AND_SHARP so that the parser waits for several dots for
    * nested record access that the bang should apply to.
    *
    * !x.y.z should be parsed as !(((x).y).z)
    */
-  | as_loc(BANG) E %prec below_DOT_AND_SHARP
-    { mkexp (Pexp_apply(mkoperator "!" 1, [Nolabel,$2])) }
+  | as_loc(BANG {"!"}) E %prec below_DOT_AND_SHARP
+    { mkexp (Pexp_apply(mkoperator $1, [Nolabel,$2])) }
   | NEW as_loc(class_longident)
     { mkexp (Pexp_new $2) }
   | as_loc(mod_longident) DOT LBRACELESS field_expr_list COMMA? GREATERRBRACE
@@ -2719,7 +2718,7 @@ parenthesized_expr:
   | E SHARP label
     { mkexp (Pexp_send($1, $3)) }
   | E as_loc(SHARPOP) simple_expr_no_call
-    { mkinfixop $1 (mkoperator_loc $2.txt $2.loc) $3 }
+    { mkinfixop $1 (mkoperator $2) $3 }
   | as_loc(mod_longident) DOT LPAREN MODULE module_expr COLON package_type RPAREN
     { let loc = mklocation $symbolstartpos $endpos in
       mkexp (Pexp_open(Fresh, $1,
