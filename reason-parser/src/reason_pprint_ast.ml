@@ -2124,13 +2124,11 @@ let formatAttributed x y =
        y
        : retType => blah;
  *)
-let formatJustTheTypeConstraint =
-  (fun typ ->
-     (makeList ~postSpace:false ~sep:" " [atom ":"; typ]))
+let formatJustTheTypeConstraint typ =
+  makeList ~postSpace:false ~sep:" " [atom ":"; typ]
 
-let formatTypeConstraint =
-  (fun one two ->
-    label ~space:true (makeList ~postSpace:false [one; atom ":"]) two)
+let formatTypeConstraint one two =
+  label ~space:true (makeList ~postSpace:false [one; atom ":"]) two
 
 let formatLabeledArgument =
   (fun lbl lblSuffix term ->
@@ -2617,11 +2615,9 @@ class printer  ()= object(self:'self)
     in
     let gadtRes = match pcd_res with
       | None -> None
-      | Some x -> Some (
-          makeList ~inline:(true, true) ~break:IfNeed [ (* Single row just so the entire return type breaks onto its own line *)
-            formatJustTheTypeConstraint (self#core_type x)
-          ]
-      )
+      | Some x -> Some (makeList ~inline:(true, true) ~break:IfNeed [
+          formatJustTheTypeConstraint (self#core_type x)
+        ])
     in
     let normalize lst = match lst with
       | [] -> raise (NotPossible "should not be called")
@@ -2636,7 +2632,7 @@ class printer  ()= object(self:'self)
       | ([], None) -> barName
       | ([], Some res) -> add_bar sourceMappedName res
       | (_::_, None) -> add_bar nameOf (normalize args)
-      | (_::_, Some res) -> add_bar nameOf (normalize (args@[res]))
+      | (_::_, Some res) -> add_bar nameOf (makeList [normalize args; res])
     in
     let everythingWithAttrs =
       if stdAttrs <> [] then
@@ -2827,13 +2823,13 @@ class printer  ()= object(self:'self)
             let l = extractStdAttrs attrs in
             (match l with
               | [] -> label ~space:true
-                      (label ~space:true (atom s) (atom ":"))
-                      (self#core_type ct)
+                        (label (atom s) (atom ":"))
+                        (self#core_type ct)
               | _::_ ->
                 makeList
                   ~postSpace:true
                   ~break:IfNeed
-                  [(self#attributes attrs); atom s; atom ":"; self#core_type ct]
+                  [self#attributes attrs; atom s; atom ":"; self#core_type ct]
             )
           in
           let openness = match o with

@@ -200,10 +200,9 @@ type variantType =
 
 [@@onVariantType]
 type gadtType('x) =
-  | Foo(int) : [@onFirstRow] gadtType(int)
-  | Bar
-      ([@onInt] int)
-      : [@onSecondRow] gadtType(unit)
+  | Foo(int): [@onFirstRow] gadtType(int)
+  | Bar([@onInt] int): [@onSecondRow]
+                       gadtType(unit)
   | Baz: [@onThirdRow] gadtType([@onUnit] unit);
 
 [@@@floatingTopLevelStructureItem hello];
@@ -355,7 +354,7 @@ type classAttributesOnKeys = {
   /* The follow two are the same */
   [@bs.get null] key2 : [@onType2] Js.t(int),
   [@bs.get null] key3 : [@onType2] Js.t(int),
-  key4 : Js.t([@justOnInt] int)
+  key4: Js.t([@justOnInt] int)
 };
 
 type attr = ..;
@@ -393,7 +392,7 @@ external render : (reactElement, element) => unit =
 external createCompositeElementInternalHack :
   (
     reactClass,
-    Js.t({.. reasonProps : 'props}),
+    Js.t({.. reasonProps: 'props}),
     array(reactElement)
   ) =>
   reactElement =

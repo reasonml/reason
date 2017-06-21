@@ -269,9 +269,9 @@ let thisWontCompileButLetsSeeHowItFormats =
  * GADTs.
  */
 type term(_) =
-  | Int(int) : term(int)
+  | Int(int): term(int)
   | Add: term(((int, int) => int))
-  | App(term((('b) => 'a)), term('b)) : term('a);
+  | App(term((('b) => 'a)), term('b)): term('a);
 
 let rec eval: type a. (term(a)) => a =
   fun
