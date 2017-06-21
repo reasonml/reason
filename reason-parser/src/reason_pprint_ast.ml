@@ -2126,7 +2126,7 @@ let formatAttributed x y =
  *)
 let formatJustTheTypeConstraint =
   (fun typ ->
-     (makeList ~postSpace:false [atom ":"; typ]))
+     (makeList ~postSpace:false ~sep:" " [atom ":"; typ]))
 
 let formatTypeConstraint =
   (fun one two ->
@@ -2411,7 +2411,7 @@ class printer  ()= object(self:'self)
       | _ -> self#core_type2 x
 
   method type_with_label (lbl, c) =
-    let typ = self#non_arrowed_non_simple_core_type c in
+    let typ = self#core_type c in
     match lbl with
     | Nolabel -> typ
     | Labelled lbl ->
@@ -4697,33 +4697,28 @@ class printer  ()= object(self:'self)
         loc_end = e.pexp_loc.loc_end;
         loc_ghost = false;
       } in
-      let theRow =
-        match e.pexp_desc with
-          (* Punning *)
-          |  Pexp_ident {txt} when li.txt = txt && shouldPun && allowPunning ->
-              makeList (maybeQuoteFirstElem li (if appendComma then [comma] else []))
-          | _ ->
-             let (_sweet, argsList, return) = self#curriedPatternsAndReturnVal e in (
-               match (argsList, return.pexp_desc) with
-                 | ([], _) ->
-                   let appTerms = self#unparseExprApplicationItems e in
-                   let upToColon = makeList (maybeQuoteFirstElem li [atom ":"]) in
-                   let labelExpr =
-                     formatAttachmentApplication
-                       applicationFinalWrapping
-                       (Some (true, upToColon))
-                       appTerms in
-                   if appendComma then
-                     makeList [labelExpr; comma;]
-                   else
-                     labelExpr
-                 | (firstArg::tl, _) ->
-                   let upToColon = makeList (maybeQuoteFirstElem li [atom ":"]) in
-                   let returnedAppTerms = self#unparseExprApplicationItems return in
-                   let labelExpr =
-                       (self#wrapCurriedFunctionBinding ~attachTo:upToColon "fun" ~arrow:"=>" firstArg tl returnedAppTerms) in
-                   if appendComma then makeList [labelExpr; comma;] else labelExpr
-             )
+      let theRow = match e.pexp_desc with
+        (* Punning *)
+        |  Pexp_ident {txt} when li.txt = txt && shouldPun && allowPunning ->
+          makeList (maybeQuoteFirstElem li (if appendComma then [comma] else []))
+        | _ ->
+          let (sweet, argsList, return) = self#curriedPatternsAndReturnVal e in
+          match argsList with
+          | [] ->
+            let appTerms = self#unparseExprApplicationItems e in
+            let upToColon = makeList (maybeQuoteFirstElem li [atom ":"]) in
+            let labelExpr = formatAttachmentApplication
+                applicationFinalWrapping (Some (true, upToColon)) appTerms
+            in
+            if appendComma then makeList [labelExpr; comma] else labelExpr
+          | firstArg :: tl ->
+            let upToColon = makeList (maybeQuoteFirstElem li [atom ":"]) in
+            let returnedAppTerms = self#unparseExprApplicationItems return in
+            let labelExpr = self#wrapCurriedFunctionBinding
+                ~sweet ~attachTo:upToColon "fun" ~arrow:"=>"
+                firstArg tl returnedAppTerms
+            in
+            if appendComma then makeList [labelExpr; comma] else labelExpr
       in SourceMap (totalRowLoc, theRow)
     in
     let rec getRows l =

@@ -51,7 +51,6 @@
 
 {
 open Lexing
-open Misc
 open Reason_parser
 
 type error =
@@ -70,6 +69,11 @@ exception Error of error * Location.t;;
 (* The table of keywords *)
 
 let keyword_table =
+  let create_hashtable n l =
+    let t = Hashtbl.create n in
+    List.iter (fun (k, v) -> Hashtbl.add t k v) l;
+    t
+  in
   create_hashtable 149 [
     "and", AND;
     "as", AS;

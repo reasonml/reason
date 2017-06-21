@@ -2771,12 +2771,12 @@ simple_expr_direct_argument:
 ;
 
 non_labeled_argument_list:
-  parenthesized(separated_list(COMMA, expr))
-  { match $1 with
-    | [] -> let loc = mklocation $startpos $endpos in
-            [mkexp_constructor_unit loc loc]
-    | xs -> xs
-  }
+  | parenthesized(separated_list(COMMA, expr))
+    { match $1 with
+      | [] -> let loc = mklocation $startpos $endpos in
+              [mkexp_constructor_unit loc loc]
+      | xs -> xs
+    }
 ;
 
 labeled_arguments:
