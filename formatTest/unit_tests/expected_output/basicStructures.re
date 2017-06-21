@@ -223,7 +223,7 @@ let result =
 let myRecord = {
   nestedRecord: {
     anotherNestedRecord:
-      fun (instaComp, displayRect) =>
+      (instaComp, displayRect) =>
       if (
         Graphics.cgRectIntersectsWithSlop(
           defaultCompositeTimerRectSlop,
@@ -531,17 +531,17 @@ let addValues (a: int, b: int) = a + b;
 
 let addValues (a: int, b: int) = a + b;
 
-let myFunction (a: int, b: int) :int = a + b;
+let myFunction (a: int, b: int) : int = a + b;
 
 let functionReturnValueType
     (i: int, s: string)
-    :((int) => int) =
+    : ((int) => int) =
   (x) => x + 1;
 
 let curriedFormOne (i: int, s: string) =
   s ^ string_of_int(i);
 
-let curriedFormTwo (i: int, x: int) :(int, int) = (
+let curriedFormTwo (i: int, x: int) : (int, int) = (
   i,
   x
 );
@@ -549,7 +549,7 @@ let curriedFormTwo (i: int, x: int) :(int, int) = (
 /* let nonCurriedFormTwo = fun (i:int, x:int) (:(int, int)) => (i, x); */
 let curriedFormThree
     (i: int, (a: int, b: int): (int, int))
-    :(int, int, int) = (
+    : (int, int, int) = (
   i,
   a,
   b

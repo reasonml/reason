@@ -238,14 +238,14 @@ module CurriedSugar (A: ASig, B: BSig) = {
    */
 module CurriedSugarWithReturnType
        (A: ASig, B: BSig)
-       :SigResult = {
+       : SigResult = {
   let result = A.a + B.b;
 };
 
 /* This is parsed as being equivalent to the above example */
 module CurriedSugarWithAnnotatedReturnVal
        (A: ASig, B: BSig)
-       :SigResult = {
+       : SigResult = {
   let result = A.a + B.b;
 };
 
@@ -256,12 +256,12 @@ module CurriedNoSugar (A: ASig, B: BSig) = {
 let letsTryThatSyntaxInLocalModuleBindings () = {
   module CurriedSugarWithReturnType
          (A: ASig, B: BSig)
-         :SigResult = {
+         : SigResult = {
     let result = A.a + B.b;
   };
   module CurriedSugarWithAnnotatedReturnVal
          (A: ASig, B: BSig)
-         :SigResult = {
+         : SigResult = {
     let result = A.a + B.b;
   };
   module CurriedNoSugar (A: ASig, B: BSig) = {
@@ -374,20 +374,20 @@ module CurriedSugarWithAnnotationAndReturnAnnotated:
 
 module ReturnsAFunctor
        (A: ASig, B: BSig)
-       :((ASig, BSig) => SigResult) =
+       : ((ASig, BSig) => SigResult) =
   fun (A: ASig, B: BSig) => {
     let result = 10;
   };
 
 module ReturnsSigResult
        (A: ASig, B: BSig)
-       :SigResult = {
+       : SigResult = {
   let result = 10;
 };
 
 module ReturnsAFunctor2
        (A: ASig, B: BSig)
-       :((ASig, BSig) => SigResult) =
+       : ((ASig, BSig) => SigResult) =
   fun (A: ASig, B: BSig) => {
     let result = 10;
   };
@@ -470,7 +470,7 @@ module Example2 (F: (Type) => Type, X: Type) = {
    *   let iso (a:(Compose Id F X).t): (F X).t => a;
    *
    */
-  let iso (a: Compose(Id)(F)(X).t) :F(X).t = a;
+  let iso (a: Compose(Id)(F)(X).t) : F(X).t = a;
 };
 
 Printf.printf(
@@ -616,7 +616,7 @@ module type T = t with type t = (a) => a;
 
 module type T = t with type t = (a) => a;
 
-module type T = ((t with type t = a)) => a;
+module type T = (t with type t = a) => a;
 
 module X = [%test extension];
 

@@ -183,8 +183,8 @@ type recordFunctions = {
 [@@onUnusedType] and unusedType = unit;
 
 let rec myRecord = {
-  p: fun () => myRecord,
-  q: fun () => ()
+  p: () => myRecord,
+  q: () => ()
 }
 and unused = ();
 
@@ -200,11 +200,11 @@ type variantType =
 
 [@@onVariantType]
 type gadtType('x) =
-  | Foo(int) :[@onFirstRow] gadtType(int)
+  | Foo(int) : [@onFirstRow] gadtType(int)
   | Bar
       ([@onInt] int)
-      :[@onSecondRow] gadtType(unit)
-  | Baz:[@onThirdRow] gadtType([@onUnit] unit);
+      : [@onSecondRow] gadtType(unit)
+  | Baz: [@onThirdRow] gadtType([@onUnit] unit);
 
 [@@@floatingTopLevelStructureItem hello];
 
@@ -369,11 +369,11 @@ type reconciler('props) = ..;
 
 [@@onVariantType]
 type reconciler('props) +=
-  | Foo (int) :[@onFirstRow] reconciler(int)
-  | Bar ([@onInt] int) :[@onSecondRow]
-                        reconciler(unit)
-  | Baz :[@onThirdRow]
-         reconciler([@onUnit] unit);
+  | Foo (int) : [@onFirstRow] reconciler(int)
+  | Bar ([@onInt] int) : [@onSecondRow]
+                         reconciler(unit)
+  | Baz : [@onThirdRow]
+          reconciler([@onUnit] unit);
 
 type element;
 

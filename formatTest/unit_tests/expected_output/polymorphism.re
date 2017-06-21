@@ -33,13 +33,13 @@ type myType2 =
    of the return type signature. */
 let myFunc
     (a: (int) => int, b: (int) => int)
-    :myType(int) = [
+    : myType(int) = [
   a(20) + b(30)
 ];
 
 let myFunc
     (a: (int) => int, b: (int) => int)
-    :((myType(int)) => myType(int)) =
+    : ((myType(int)) => myType(int)) =
   (lst) => lst;
 
 let certainlyRequiresWrapping:

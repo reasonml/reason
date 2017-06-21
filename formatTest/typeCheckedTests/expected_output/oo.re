@@ -184,10 +184,10 @@ let res =
 /* TODO: Unify class constructor return values with function return values */
 class myClassWithAnnotatedReturnType
       (init)
-      :{
-         pub x: int;
-         pub y: int
-       } = {
+      : {
+          pub x: int;
+          pub y: int
+        } = {
   pub x: int = init;
   pub y = init;
 };
@@ -198,10 +198,10 @@ class myClassWithAnnotatedReturnType
  */
 class myClassWithAnnotatedReturnType2
       (init)
-      :{
-         pub x: int;
-         pub y: int
-       } = {
+      : {
+          pub x: int;
+          pub y: int
+        } = {
   pub x: int = init;
   pub y = init;
 };
@@ -212,10 +212,10 @@ class myClassWithAnnotatedReturnType2
  */
 class myClassWithAnnotatedReturnType3
       (init)
-      :{
-         pub x: int;
-         pub y: int
-       } = {
+      : {
+          pub x: int;
+          pub y: int
+        } = {
   pub x: int = init;
   pub y: int = init;
 };

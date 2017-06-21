@@ -28,49 +28,47 @@ let matchingFunc (a) =
   };
 
 type firstTwoShouldBeGroupedInParens =
-  (((int) => int), int) => int;
+  ((int) => int, int) => int;
 
 type allParensCanBeRemoved =
   (int, int, int) => int;
 
 type firstTwoShouldBeGroupedAndFirstThree =
-  (((((int) => int)) => int)) => int;
+  (((int) => int) => int) => int;
 
 /* Same thing now but with type constructors instead of each int */
 type firstTwoShouldBeGroupedInParens =
-  (((list(int)) => list(int)), list(int)) =>
+  ((list(int)) => list(int), list(int)) =>
   list(int);
 
 type allParensCanBeRemoved =
   (list(int), list(int), list(int)) => list(int);
 
 type firstTwoShouldBeGroupedAndFirstThree =
-  (
-    ((((list(int)) => list(int))) => list(int))
-  ) =>
+  (((list(int)) => list(int)) => list(int)) =>
   list(int);
 
 type myRecordType = {
   firstTwoShouldBeGroupedInParens:
-    (((int) => int), int) => int,
+    ((int) => int, int) => int,
   allParensCanBeRemoved: (int, int, int) => int,
   firstTwoShouldBeGroupedAndFirstThree:
-    (((((int) => int)) => int)) => int
+    (((int) => int) => int) => int
 };
 
 type firstNamedArgShouldBeGroupedInParens =
-  (:first ((int) => int), :second int) => int;
+  (:first (int) => int, :second int) => int;
 
 type allParensCanBeRemoved =
   (:first int, :second int, :third int) => int;
 
 type firstTwoShouldBeGroupedAndFirstThree =
-  (:first ((((int) => int)) => int)) => int;
+  (:first ((int) => int) => int) => int;
 
 /* Same thing now, but with type constructors instead of int */
 type firstNamedArgShouldBeGroupedInParens =
   (
-    :first ((list(int)) => list(int)),
+    :first (list(int)) => list(int),
     :second list(int)
   ) =>
   list(int);
@@ -85,23 +83,20 @@ type allParensCanBeRemoved =
 
 type firstTwoShouldBeGroupedAndFirstThree =
   (
-    :first (
-             (((list(int)) => list(int))) =>
-             list(int)
-           )
+    :first ((list(int)) => list(int)) => list(int)
   ) =>
   list(int);
 
 type firstNamedArgShouldBeGroupedInParens =
-  (:first ((int) => int)?, :second list(int)?) =>
+  (:first (int) => int?, :second list(int)?) =>
   int;
 
 /* The arrow necessitates parens around the next two args. The ? isn't what
  * makes the parens necessary. */
 type firstNamedArgShouldBeGroupedInParensAndSecondNamedArg =
   (
-    :first ((int) => int)?,
-    :second ((int) => int)?
+    :first (int) => int?,
+    :second (int) => int?
   ) =>
   int;
 
@@ -109,7 +104,7 @@ type allParensCanBeRemoved =
   (:first int?, :second int?, :third int?) => int;
 
 type firstTwoShouldBeGroupedAndFirstThree =
-  (:first ((((int) => int)) => int)) => int;
+  (:first ((int) => int) => int) => int;
 
 type noParens =
   (:one int, int, int, :two int) => int;
@@ -118,19 +113,19 @@ type noParensNeeded =
   (:one int, int, int, :two int) => int;
 
 type firstNamedArgNeedsParens =
-  (:one ((int, int) => int), :two int) => int;
+  (:one (int, int) => int, :two int) => int;
 
 /* Now, let's try type aliasing */
 /* Unless wrapped in parens, types between arrows may not be aliased, may not
  * themselves be arrows. */
 type parensRequiredAroundFirstArg =
-  ((list(int) as 'a)) => int as 'a;
+  (list(int) as 'a) => int as 'a;
 
 type parensRequiredAroundReturnType =
-  ((list(int) as 'a)) => (int as 'a);
+  (list(int) as 'a) => (int as 'a);
 
 type parensRequiredAroundReturnType =
-  ((list(int) as 'a)) => (int as 'a) as 'b;
+  (list(int) as 'a) => (int as 'a) as 'b;
 
 type noParensNeededWhenInTuple =
   (list(int) as 'a, list(int) as 'b) as 'entireThing;
@@ -588,10 +583,9 @@ type adders = {
 };
 
 let myRecordWithFunctions = {
-  addTwoNumbers: fun (a, b) => a + b,
-  addThreeNumbers: fun (a, b, c) => a + b + c,
-  addThreeNumbersTupled: fun ((a, b, c)) =>
-    a + b + c
+  addTwoNumbers: (a, b) => a + b,
+  addThreeNumbers: (a, b, c) => a + b + c,
+  addThreeNumbersTupled: ((a, b, c)) => a + b + c
 };
 
 let result =
@@ -627,7 +621,7 @@ let tupleInsideALetSequence = {
 
 /* We *require* that function return types be wrapped in
    parenthesis. In this example, there's no ambiguity */
-let makeIncrementer (delta: int) :((int) => int) =
+let makeIncrementer (delta: int) : ((int) => int) =
   (a) => a + delta;
 
 /* We could even force that consistency with let bindings - it's allowed
@@ -647,16 +641,19 @@ class classWithNoArg = {
        pub y => init
      end;
    */
-let myFunc (a: int, b: int) :(int, int) = (a, b);
+let myFunc (a: int, b: int) : (int, int) = (
+  a,
+  b
+);
 
-let myFunc (a: int, b: int) :list(int) = [1];
+let myFunc (a: int, b: int) : list(int) = [1];
 
-let myFunc (a: int, b: int) :point = {
+let myFunc (a: int, b: int) : point = {
   x: a,
   y: b
 };
 
-let myFunc (a: int, b: int) :point = {
+let myFunc (a: int, b: int) : point = {
   x: a,
   y: b
 };
@@ -853,20 +850,16 @@ let nestedLet = {
  */
 type typeWithNestedNamedArgs =
   (
-    :outerOne (
-                (:innerOne int, :innerTwo int) =>
-                int
-              ),
+    :outerOne (:innerOne int, :innerTwo int) =>
+              int,
     :outerTwo int
   ) =>
   int;
 
 type typeWithNestedOptionalNamedArgs =
   (
-    :outerOne (
-                (:innerOne int, :innerTwo int) =>
-                int
-              )
+    :outerOne (:innerOne int, :innerTwo int) =>
+              int
                 ?,
     :outerTwo int?
   ) =>

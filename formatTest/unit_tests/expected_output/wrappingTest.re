@@ -454,14 +454,14 @@ type functionsInARecord = {
 };
 
 let myFunctionsInARecord = {
-  adder: fun (x) => x,
-  minuser: fun (x) => x
+  adder: (x) => x,
+  minuser: (x) => x
 };
 
 let myFunctionsInARecordThatMustWrap = {
   /* Desired wrapping */
-  adder: fun (reallyLongArgument) => reallyLongArgument,
-  minuser: fun (anotherReallyLongArgument) => anotherReallyLongArgument
+  adder: (reallyLongArgument) => reallyLongArgument,
+  minuser: (anotherReallyLongArgument) => anotherReallyLongArgument
   /* Comment at bottom of record */
 };
 
@@ -473,15 +473,15 @@ type twoArgFunctionsInARecord = {
 let myFunctionsInARecordThatMustWrap = {
   /* Desired wrapping */
   adder:
-    fun (
-          reallyLongArgument,
-          anotherReallyLongArgument
-        ) => reallyLongArgument,
+    (
+      reallyLongArgument,
+      anotherReallyLongArgument
+    ) => reallyLongArgument,
   minuser:
-    fun (
-          reallyLongArgument,
-          anotherReallyLongArgument
-        ) =>
+    (
+      reallyLongArgument,
+      anotherReallyLongArgument
+    ) =>
     reallyLongArgument + anotherReallyLongArgument
 };
 
@@ -494,18 +494,18 @@ let myFunctionsInARecordThatMustWrap = {
   /* Desired wrapping */
   adder:
     /* Even if you have a comment before fun */
-    fun (
-          reallyLongArgument,
-          /* Or before the first arg */
-          anotherReallyLongArgument,
-          yetAnotherReallyLongArgument
-        ) => reallyLongArgument,
+    (
+      reallyLongArgument,
+      /* Or before the first arg */
+      anotherReallyLongArgument,
+      yetAnotherReallyLongArgument
+    ) => reallyLongArgument,
   minuser:
-    fun (
-          reallyLongArgument,
-          anotherReallyLongArgument,
-          anotherReallyLongArgument
-        ) =>
+    (
+      reallyLongArgument,
+      anotherReallyLongArgument,
+      anotherReallyLongArgument
+    ) =>
     reallyLongArgument + anotherReallyLongArgument
 };
 
@@ -730,7 +730,7 @@ let echoTuple
 
 let echoTheEchoer
     (x: (sixteenTuple) => sixteenTuple)
-    :((sixteenTuple) => sixteenTuple) = x;
+    : ((sixteenTuple) => sixteenTuple) = x;
 
 /* Nothing annotated fun, passed to func */
 echoTheEchoer(
@@ -875,7 +875,7 @@ let echoTuple
         p
       ): sixteenTuple
     )
-    :sixteenTuple = (
+    : sixteenTuple = (
   a,
   b,
   c,
@@ -2414,13 +2414,13 @@ and anotherRecursiveType =
 type term(_) =
   /* First variant leaf of GADT */
   | Int /*first var arg */
-      (int) :/* First GADT res */ term(int)
+      (int) : /* First GADT res */ term(int)
   /* Second variant leaf of GADT */
   | Float /*second var arg */
-      (int) :/* Second GADT res */ term(int)
+      (int) : /* Second GADT res */ term(int)
   /* Third variant leaf of GADT */
   | Bool /*third var arg */
-      (int) :/* Third GADT res */ term(int);
+      (int) : /* Third GADT res */ term(int);
 
 /* Commented colors */
 type commentedTypeDef =
@@ -2528,14 +2528,14 @@ let letsPutAWhereClauseOnTheLast (x) =
 
 type wrappingGadt(_) =
   | ThisIsLongSoTypeWillWrap
-      (int) :wrappingGadt(int)
-  | Add:wrappingGadt(((int, int) => int))
+      (int) : wrappingGadt(int)
+  | Add: wrappingGadt(((int, int) => int))
   | App
       (
         wrappingGadt((('b) => 'a)),
         wrappingGadt('b)
       )
-      :wrappingGadt('a);
+      : wrappingGadt('a);
 
 type withThreeFields = {
   name: string,
@@ -2601,7 +2601,7 @@ let callMeWithComments
       b: int
     )
     /* Comment before return type annotation "int" */
-    :int =
+    : int =
   /* Comment above return value a + b + c */
   a + b + c;
 
