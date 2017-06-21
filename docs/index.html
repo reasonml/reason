@@ -217,7 +217,7 @@ let addCoordinates x::x y::y => {
 addCoordinates x::5 y::6;
 ```
 
-Since we have currying (more on that [here](#diving-deeper-more-on-functions)), we can provide the arguments in any order:
+Since we have currying (more on that [here](#diving-deeper-more-on-function)), we can provide the arguments in any order:
 
 ```reason
 addCoordinates y::6 x::5;
@@ -742,7 +742,7 @@ while true {
 
 #### Breaking Out of Loop
 
-There's no loop-breaking `break` keyword (nor early `return` from functions, for that matter) in Reason/OCaml. In general, prefer map/filter/reduce over imperative loops. However, we can break out of a while loop easily through using a [mutable binding](#mutation). Example without the `ref` syntax sugar:
+There's no loop-breaking `break` keyword (nor early `return` from functions, for that matter) in Reason/OCaml. In general, prefer map/filter/reduce over imperative loops. However, we can break out of a while loop easily through using a [mutable binding](#diving-deeper-mutation). Example without the `ref` syntax sugar:
 
 ```reason
 Random.self_init ();
