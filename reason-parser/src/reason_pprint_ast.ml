@@ -2364,29 +2364,39 @@ class printer  ()= object(self:'self)
         (self#non_arrowed_simple_core_type {x with ptyp_attributes=[]})
         (self#attributes stdAttrs)
     else
-      let rec allArrowSegments acc = function
-        | { ptyp_desc = Ptyp_arrow (l, ct1, ct2); _ } ->
-          allArrowSegments (self#type_with_label (l,ct1) :: acc) ct2
-        | xx -> (List.rev acc, self#core_type2 xx)
-      in
       match (x.ptyp_desc) with
         | (Ptyp_arrow (l, ct1, ct2)) ->
-            let (params, return) = allArrowSegments [] x in
-            let normalized =
-              makeList ~break:IfNeed ~sep:"=>" ~preSpace:true ~postSpace:true ~inline:(true, true)
-                [makeCommaBreakableListSurround "(" ")" params; return]
-            in
-            SourceMap (x.ptyp_loc, normalized)
+          let rec allArrowSegments acc = function
+            | { ptyp_desc = Ptyp_arrow (l, ct1, ct2); _ } ->
+              allArrowSegments ((l,ct1) :: acc) ct2
+            | rhs ->
+              let rhs = self#core_type2 rhs in
+              let is_tuple typ = match typ.ptyp_desc with
+                | Ptyp_tuple _ -> true
+                | _ -> false
+              in
+              match acc with
+              | [Nolabel, lhs] when not (is_tuple lhs) ->
+                (self#non_arrowed_simple_core_type lhs, rhs)
+              | acc ->
+                let params = List.rev_map self#type_with_label acc in
+                (makeCommaBreakableListSurround "(" ")" params, rhs)
+          in
+          let (lhs, rhs) = allArrowSegments [] x in
+          let normalized = makeList
+              ~preSpace:true ~postSpace:true ~inline:(true, true)
+              ~break:IfNeed ~sep:"=>" [lhs; rhs]
+          in SourceMap (x.ptyp_loc, normalized)
         | Ptyp_poly (sl, ct) ->
-            let poly =
-              makeList ~break:IfNeed [
-                makeList ~postSpace:true [
-                  makeList ~postSpace:true (List.map (fun x -> self#tyvar x) sl);
-                  atom ".";
-                ];
-                self#core_type ct;
-              ]
-            in SourceMap (x.ptyp_loc, poly)
+          let poly =
+            makeList ~break:IfNeed [
+              makeList ~postSpace:true [
+                makeList ~postSpace:true (List.map (fun x -> self#tyvar x) sl);
+                atom ".";
+              ];
+              self#core_type ct;
+            ]
+          in SourceMap (x.ptyp_loc, poly)
         | _ -> self#non_arrowed_core_type x
 
   (* Same as core_type2 but can be aliased *)
