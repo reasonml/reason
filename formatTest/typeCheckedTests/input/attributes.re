@@ -57,11 +57,11 @@ let thisInst : myType =
 let x = ([@onHello] "hello");
 let x = [@onHello] "hello";
 
-let x = "hello" ^ ([@onGoodbye] "goodbye");
-let x = ([@onHello] "hello") ^ "goodbye";
-let x = [@onHello] "hello" ^ "goodbye";
-let x = "hello" ^ [@onGoodbye] "goodbye";
-let x = [@onEverything] ("hello" ^ "goodbye");
+let x = "hello" ++ ([@onGoodbye] "goodbye");
+let x = ([@onHello] "hello") ++ "goodbye";
+let x = [@onHello] "hello" ++ "goodbye";
+let x = "hello" ++ [@onGoodbye] "goodbye";
+let x = [@onEverything] ("hello" ++ "goodbye");
 
 let x = 10 + ([@on20] 20);
 let x = 10 + [@on20] 20;
