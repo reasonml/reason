@@ -234,10 +234,10 @@ let mkctf ?(loc=dummy_loc()) ?(ghost=false) d =
     let loc = set_loc_state ghost loc in
     Ctf.mk ~loc d
 
-let may_tuple = function
+let may_tuple startp endp = function
   | []  -> assert false
-  | [x] -> x
-  | xs  -> mkexp (Pexp_tuple xs)
+  | [x] -> {x with pexp_loc = mklocation startp endp}
+  | xs  -> mkexp ~loc:(mklocation startp endp) (Pexp_tuple xs)
 
 (**
   Make a core_type from a as_loc(LIDENT).
@@ -2509,20 +2509,20 @@ mark_position_exp
    */
   | FUN match_cases(expr) %prec below_BAR
     { mkexp (Pexp_function $2) }
-  | SWITCH simple_expr LBRACE match_cases(semi_terminated_seq_expr) RBRACE
+  | SWITCH parenthesized_expr LBRACE match_cases(semi_terminated_seq_expr) RBRACE
     { mkexp (Pexp_match ($2, $4)) }
-  | TRY simple_expr LBRACE match_cases(semi_terminated_seq_expr) RBRACE
+  | TRY parenthesized_expr LBRACE match_cases(semi_terminated_seq_expr) RBRACE
     { mkexp (Pexp_try ($2, $4)) }
-  | TRY simple_expr WITH error
+  | TRY parenthesized_expr WITH error
     { syntax_error_exp (mklocation $startpos($4) $endpos($4)) "Invalid try with"}
   | name_tag simple_expr
     { mkexp(Pexp_variant($1, Some $2)) }
-  | IF simple_expr_no_call simple_expr ioption(preceded(ELSE,expr))
+  | IF parenthesized_expr simple_expr ioption(preceded(ELSE,expr))
     { mkexp(Pexp_ifthenelse($2, $3, $4)) }
-  | WHILE simple_expr_no_call simple_expr
+  | WHILE parenthesized_expr simple_expr
     { mkexp (Pexp_while($2, $3)) }
-  | FOR pattern IN simple_expr direction_flag simple_expr_no_call simple_expr
-    { mkexp(Pexp_for($2, $4, $6, $5, $7)) }
+  | FOR LPAREN pattern IN expr direction_flag expr RPAREN simple_expr
+    { mkexp(Pexp_for($3, $5, $7, $6, $9)) }
   | LPAREN COLONCOLON RPAREN LPAREN expr COMMA expr RPAREN
     { let loc_colon = mklocation $startpos($2) $endpos($2) in
       let loc = mklocation $symbolstartpos $endpos in
@@ -2607,6 +2607,16 @@ simple_expr_call:
 
 simple_expr_no_call: mark_position_exp(basic_expr(simple_expr_no_call)) { $1 };
 
+parenthesized_expr:
+  | braced_expr
+    { $1 }
+  | LPAREN RPAREN
+    { let loc = mklocation $startpos $endpos in
+      mkexp_constructor_unit loc loc }
+  | LPAREN expr_list RPAREN
+    { may_tuple $startpos $endpos $2 }
+;
+
 %inline basic_expr(E):
   | as_loc(val_longident) { mkexp (Pexp_ident $1) }
   | constant              { mkexp (Pexp_constant $1) }
@@ -2616,7 +2626,11 @@ simple_expr_no_call: mark_position_exp(basic_expr(simple_expr_no_call)) { $1 };
    * explicit about needing to wait for "as") */
   | as_loc(constr_longident) %prec prec_constant_constructor
     { mkexp (Pexp_construct ($1, None)) }
-  | as_loc(constr_longident) non_labeled_argument_list
+  | as_loc(constr_longident)
+    mark_position_exp
+      ( non_labeled_argument_list   { mkexp (Pexp_tuple($1)) }
+      | simple_expr_direct_argument { $1 }
+      )
     { (*if List.mem (string_of_longident $1.txt)
          built_in_explicit_arity_constructors then
         (* unboxing the inner tupple *)
@@ -2624,17 +2638,16 @@ simple_expr_no_call: mark_position_exp(basic_expr(simple_expr_no_call)) { $1 };
           | [inner] -> mkexp (Pexp_construct($1, Some inner))
           | _ -> assert false
       else*)
-      let args = mkexp (Pexp_tuple($2)) in
-      mkExplicitArityTupleExp (Pexp_construct($1, Some args))
+      mkExplicitArityTupleExp (Pexp_construct($1, Some $2))
     }
   | name_tag %prec prec_constant_constructor
     { mkexp (Pexp_variant ($1, None)) }
   | LPAREN expr_list RPAREN
-    { may_tuple $2 }
+    { may_tuple $startpos $endpos $2 }
   | as_loc(LPAREN) expr_list as_loc(error)
     { unclosed_exp (with_txt $1 "(") (with_txt $3 ")") }
   | as_loc(mod_longident) DOT LPAREN expr_list RPAREN
-    { mkexp(Pexp_open(Fresh, $1, may_tuple $4)) }
+    { mkexp(Pexp_open(Fresh, $1, may_tuple $startpos($3) $endpos($5) $4)) }
   | mod_longident DOT as_loc(LPAREN) expr_list as_loc(error)
     { unclosed_exp (with_txt $3 "(") (with_txt $5 ")") }
   | E DOT as_loc(label_longident)

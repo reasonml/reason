@@ -4500,7 +4500,8 @@ class printer  ()= object(self:'self)
             }
             in
             let cases = (self#case_list ~allowUnguardedSequenceBodies:true l) in
-            let switchWith = label ~space:true (atom "try") (self#reset#simplifyUnparseExpr e) in
+            let switchWith = label ~space:true (atom "try")
+                (makeList ~wrap:("(",")") [self#reset#unparseExpr e]) in
             Some (
               label
                 ~space:true
@@ -4519,7 +4520,7 @@ class printer  ()= object(self:'self)
              }
              in
              let cases = (self#case_list ~allowUnguardedSequenceBodies:true l) in
-             let switchWith = label ~space:true (atom "switch") (self#reset#simplifyUnparseExpr e) in
+             let switchWith = label ~space:true (atom "switch") (makeList ~wrap:("(",")") [self#reset#unparseExpr e]) in
              let lbl =
                label
                  ~space:true
@@ -4565,7 +4566,7 @@ class printer  ()= object(self:'self)
                     label
                       ~space:true
                       (makeList ~postSpace:true [soFar; atom "else if"])
-                      (self#simplifyUnparseExpr e1)
+                      (makeList ~wrap:("(",")") [self#unparseExpr e1])
                   in
                   let nextSoFar =
                     label ~space:true soFarWithElseIfAppended (makeLetSequence (self#letList e2)) in
@@ -4574,14 +4575,14 @@ class printer  ()= object(self:'self)
             let init =
               label
                 ~space:true
-                (SourceMap (e1.pexp_loc, (label ~space:true (atom "if") (self#simplifyUnparseExpr e1))))
+                (SourceMap (e1.pexp_loc, (label ~space:true (atom "if") (makeList ~wrap:("(",")") [self#unparseExpr e1]))))
                 (makeLetSequence (self#letList e2)) in
             Some (sequence init blocks)
           | Pexp_while (e1, e2) ->
             let lbl =
               label
                 ~space:true
-                (label ~space:true (atom "while") (self#simplifyUnparseExpr e1))
+                (label ~space:true (atom "while") (makeList ~wrap:("(",")") [self#unparseExpr e1]))
                 (makeLetSequence (self#letList e2)) in
             Some lbl
           | Pexp_for (s, e1, e2, df, e3) ->
@@ -4593,17 +4594,16 @@ class printer  ()= object(self:'self)
              *  };
              *)
             let identifierIn = (makeList ~postSpace:true [self#pattern s; atom "in";]) in
-            let dockedToFor =
-                (makeList
-                  ~break:IfNeed
-                  ~postSpace:true
-                  ~inline:(true, true)
-                  [
-                    identifierIn;
-                    makeList ~postSpace:true [self#simplifyUnparseExpr e1; self#direction_flag df];
-                    (self#simplifyUnparseExpr e2);
-                  ]
-                )
+            let dockedToFor = makeList
+                ~break:IfNeed
+                ~postSpace:true
+                ~inline:(true, true)
+                ~wrap:("(",")")
+                [
+                  identifierIn;
+                  makeList ~postSpace:true [self#unparseExpr e1; self#direction_flag df];
+                  (self#unparseExpr e2);
+                ]
             in
             let upToBody = makeList ~inline:(true, true) ~postSpace:true [atom "for"; dockedToFor] in
             Some (label ~space:true upToBody (makeLetSequence (self#letList e3)))
