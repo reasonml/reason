@@ -21,16 +21,16 @@ type reactElement;
 
 [@@bs.val] [@@bs.module "React"]
 external createClassInternalHack :
-  (t('classSpec)) => reactClass =
+  t('classSpec) => reactClass =
   "createClass";
 
 [@@bs.send.pipe : array('a)]
-external map : [@bs] ((('a) => 'b) => array('b)) =
+external map : [@bs] (('a => 'b) => array('b)) =
   "";
 
 [@@bs.val] [@@bs.module "react"]
 external createClassInternalHack :
-  (t('classSpec)) => reactClass =
+  t('classSpec) => reactClass =
   "createClass";
 
 [@@bs.val] [@@bs.module "react"] [@@bs.splice]

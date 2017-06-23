@@ -114,10 +114,10 @@ let add (a) = [@onRet] a;
 let add = [@onEntireFunction] ((a) => a);
 
 let res =
-  if true {false} else {[@onFalse] false};
+  if (true) {false} else {[@onFalse] false};
 
 let res =
-  [@onEntireIf] (if true {false} else {false});
+  [@onEntireIf] (if (true) {false} else {false});
 
 let add (a, b) = [@onEverything] ([@onA] a + b);
 
@@ -177,8 +177,8 @@ let result =
 
 [@@onRecordFunctions]
 type recordFunctions = {
-  p: (unit) => [@onUnit] recordFunctions,
-  q: [@onArrow] ((unit) => unit)
+  p: unit => [@onUnit] recordFunctions,
+  q: [@onArrow] (unit => unit)
 }
 [@@onUnusedType] and unusedType = unit;
 
@@ -385,8 +385,7 @@ type reactClass;
 external render : (reactElement, element) => unit =
   "render";
 
-[@@bs.module "f"] external f : (int) => int =
-  "f";
+[@@bs.module "f"] external f : int => int = "f";
 
 [@@bs.val] [@@bs.module "react"] [@@bs.splice]
 external createCompositeElementInternalHack :
@@ -405,5 +404,5 @@ external add_nat : (int, int) => int =
 [@@ocaml.deprecated
   "Use bar instead. It's a much cooler function. This string needs to be a little long"
 ]
-external foo : (bool) => bool =
+external foo : bool => bool =
   "";

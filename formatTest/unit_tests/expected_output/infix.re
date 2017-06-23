@@ -309,7 +309,7 @@ let includesACommentCloseInIdentifier = ( *\*\/ );
 let shouldSimplifyAnythingExceptApplicationAndConstruction =
   call("hi") ^
   (
-    switch x {
+    switch (x) {
     | _ => "hi"
     }
   ) ^ "yo";

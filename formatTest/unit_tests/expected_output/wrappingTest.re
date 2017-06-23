@@ -426,7 +426,7 @@ let myList = [
 let myList = [3, 4, 5];
 
 let simpleListPattern (x) =
-  switch x {
+  switch (x) {
   | [1, 2, 3] => 0
   | _ => 0
   };
@@ -449,8 +449,8 @@ type hasABunch = {
 };
 
 type functionsInARecord = {
-  adder: (int) => int,
-  minuser: (int) => int
+  adder: int => int,
+  minuser: int => int
 };
 
 let myFunctionsInARecord = {
@@ -729,8 +729,8 @@ let echoTuple
 );
 
 let echoTheEchoer
-    (x: (sixteenTuple) => sixteenTuple)
-    : ((sixteenTuple) => sixteenTuple) = x;
+    (x: sixteenTuple => sixteenTuple)
+    : (sixteenTuple => sixteenTuple) = x;
 
 /* Nothing annotated fun, passed to func */
 echoTheEchoer(
@@ -2137,26 +2137,25 @@ let (the, type_, and_, value, should, both, wrap): (
   "wrap"
 );
 
-let myPolyFunc: 'a .('a) => 'a = (o) => o;
+let myPolyFunc: 'a .'a => 'a = (o) => o;
 
-let myNonPolyFunc: ('a) => 'a = (o) => o;
+let myNonPolyFunc: 'a => 'a = (o) => o;
 
 let locallyAbstractFunc (type a, input: a) = input;
 
 let locallyAbstractFuncNotSugared
     (type a, input: a) = input;
 
-let locallyAbstractFuncAnnotated:
-  type a. (a) => a =
+let locallyAbstractFuncAnnotated: type a. a => a =
   (type a, input: a) => input;
 
 /*
   Examples of how long versions of these should be wrapped: df stands for
   "desired formatting" when the function binding itself must wrap.
  */
-let df_myPolyFunc: 'a .('a) => 'a = (o) => o;
+let df_myPolyFunc: 'a .'a => 'a = (o) => o;
 
-let df_myNonPolyFunc: ('a) => 'a = (o) => o;
+let df_myNonPolyFunc: 'a => 'a = (o) => o;
 
 type nameBlahType = {nameBlah: int};
 
@@ -2457,7 +2456,7 @@ type colors =
   | Green(int);
 
 let blah (arg) =
-  switch arg {
+  switch (arg) {
   /* Comment before Bar */
   | /* Comment between bar/pattern */ Red(_) => 1
   /* Comment Before non-first bar */
@@ -2488,7 +2487,7 @@ type reallyLongVariantNames =
   | AnotherReallyLongVariantName2(int, int, int);
 
 let howDoLongMultiBarPatternsWrap (x) =
-  switch x {
+  switch (x) {
   | AnotherReallyLongVariantName(_, _, _) => 0
   | AnotherReallyLongVariantName2(_, _, _) => 0
   | ReallyLongVariantName {
@@ -2498,7 +2497,7 @@ let howDoLongMultiBarPatternsWrap (x) =
   };
 
 let letsCombineTwoLongPatternsIntoOneCase (x) =
-  switch x {
+  switch (x) {
   | AnotherReallyLongVariantName(_, _, _)
   | AnotherReallyLongVariantName2(_, _, _) => 0
   | ReallyLongVariantName {
@@ -2508,7 +2507,7 @@ let letsCombineTwoLongPatternsIntoOneCase (x) =
   };
 
 let letsPutAWhereClauseOnTheFirstTwo (x) =
-  switch x {
+  switch (x) {
   | AnotherReallyLongVariantName(_, _, _)
   | AnotherReallyLongVariantName2(_, _, _)
       when true => 0
@@ -2519,7 +2518,7 @@ let letsPutAWhereClauseOnTheFirstTwo (x) =
   };
 
 let letsPutAWhereClauseOnTheLast (x) =
-  switch x {
+  switch (x) {
   | AnotherReallyLongVariantName(_, _, _)
   | AnotherReallyLongVariantName2(_, _, _) => 0
   | ReallyLongVariantName {
@@ -2535,7 +2534,7 @@ type wrappingGadt(_) =
                                    )
   | Add: wrappingGadt(((int, int) => int))
   | App(
-         wrappingGadt((('b) => 'a)),
+         wrappingGadt(('b => 'a)),
          wrappingGadt('b)
        ): wrappingGadt('a);
 
@@ -2736,55 +2735,55 @@ let produceRecord (x) = /*commentAfterArg*/ {
 
 let myPolyFuncCommentBeforeColon /*beforeColon */:
   'a .
-  ('a) => 'a
+  'a => 'a
  =
   (o) => o;
 
-let myPolyFuncCommentAfterColon: 'a .('a) => 'a =
+let myPolyFuncCommentAfterColon: 'a .'a => 'a =
   /*afterColon */
   (o) => o;
 
-let myPolyFuncCommentBeforeArrow: 'a .('a) => 'a =
+let myPolyFuncCommentBeforeArrow: 'a .'a => 'a =
   /*beforeArrow */
   (o) => o;
 
 let myPolyFuncCommentAfterArrow:
   'a .
-  ('a) => /*afterArrow */ 'a
+  'a => /*afterArrow */ 'a
  =
   (o) => o;
 
 let myPolyFuncCommentBeforeEqual:
   'a .
-  ('a) => 'a /*beforeEqual */
+  'a => 'a /*beforeEqual */
  =
   (o) => o;
 
-let myPolyFuncCommentAfterEqual: 'a .('a) => 'a =
+let myPolyFuncCommentAfterEqual: 'a .'a => 'a =
   /*afterEqual */ (o) => o;
 
 let myNonPolyFuncCommentBeforeColon /*BeforeColon */:
-  ('a) => 'a =
+  'a => 'a =
   (o) => o;
 
 let myNonPolyFuncCommentAfterColon:
-  /*AfterColon */ ('a) => 'a =
+  /*AfterColon */ 'a => 'a =
   (o) => o;
 
 let myNonPolyFuncCommentBeforeArrow:
-  ('a) => /*BeforeArrow */
+  'a => /*BeforeArrow */
   'a =
   (o) => o;
 
 let myNonPolyFuncCommentAfterArrow:
-  ('a) => /*AfterArrow */ 'a =
+  'a => /*AfterArrow */ 'a =
   (o) => o;
 
 let myNonPolyFuncCommentBeforeEqual:
-  ('a) => 'a /*BeforeEqual */ =
+  'a => 'a /*BeforeEqual */ =
   (o) => o;
 
-let myNonPolyFuncCommentAfterEqual: ('a) => 'a =
+let myNonPolyFuncCommentAfterEqual: 'a => 'a =
   /*AfterEqual */ (o) => o;
 
 let lATCurrySugarCommentBeforeType /*BeforeType */
@@ -2828,26 +2827,26 @@ let lATNotSugaredCommentAfterArrow
     (type a, input: a) = /*AfterArrow*/ input;
 
 let lAtFuncAnnotatedCommentBeforeColon /*BeforeColon*/:
-  type a. (a) => a =
+  type a. a => a =
   (type a, input: a) => input;
 
 let lAtFuncAnnotatedCommentAfterColon /*AfterColon*/:
-  type a. (a) => a =
+  type a. a => a =
   (type a, input: a) => input;
 
 let lAtFuncAnnotatedCommentBeforeTypeVar /*BeforeTypeVar*/:
-  type a. (a) => a =
+  type a. a => a =
   (type a, input: a) => input;
 
 let lAtFuncAnnotatedCommentAfterTypeVar /*AfterTypeVar*/:
-  type a. (a) => a =
+  type a. a => a =
   (type a, input: a) => input;
 
 let lAtFuncAnnotatedBeforeEqual:
-  type a. (a) => a /*BeforeEqual*/ =
+  type a. a => a /*BeforeEqual*/ =
   (type a, input: a) => input;
 
-let lAtFuncAnnotatedAfterEqual: type a. (a) => a =
+let lAtFuncAnnotatedAfterEqual: type a. a => a =
   /*AfterEqual*/ (type a, input: a) => input;
 
 /* Ternary wrapping comments */

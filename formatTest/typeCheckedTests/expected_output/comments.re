@@ -101,7 +101,7 @@ let result =
   };
 
 let result =
-  switch None {
+  switch (None) {
   | Some {fieldOne: 20} =>
     /* Where does this comment go? */
     let tmp = 0;
@@ -148,7 +148,7 @@ let store_attributes (arg) = {
   let should_write =
     /* only overwrite defined procedures */
     Temp.v || not(Temp.v);
-  if should_write {
+  if (should_write) {
     Temp.logIt(proc_name)()
   }
 };

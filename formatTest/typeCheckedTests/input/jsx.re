@@ -61,7 +61,7 @@ module Namespace = {
 
 module Optional1 = {
     let createElement(::required,::children,()) {
-        switch required {
+        switch (required) {
             | Some(a) => {displayName: a}
             | None => {displayName: "nope"}
         };
@@ -70,7 +70,7 @@ module Optional1 = {
 
 module Optional2 = {
     let createElement(::optional=?,::children,()) {
-        switch optional {
+        switch (optional) {
             | Some(a) => {displayName: a}
             | None => {displayName: "nope"}
         };
@@ -79,7 +79,7 @@ module Optional2 = {
 
 module DefaultArg = {
     let createElement(::default=Some("foo"),::children,()) {
-         switch default {
+         switch (default) {
             | Some(a) => {displayName: a}
             | None => {displayName: "nope"}
         };

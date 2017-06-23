@@ -91,8 +91,8 @@ let add(a) { [@onRet] a };
 let add = fun(a) => [@onRet] a;
 let add = [@onEntireFunction] (fun(a) => a);
 
-let res = if true false else [@onFalse] false;
-let res = [@onEntireIf] (if true false else false);
+let res = if (true) false else [@onFalse] false;
+let res = [@onEntireIf] (if (true) false else false);
 
 
 let add(a,b) = [@onEverything] ([@onA] a + b);

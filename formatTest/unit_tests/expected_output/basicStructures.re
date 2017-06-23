@@ -2,15 +2,15 @@
 let run () =
   TestUtils.printSection("Basic Structures");
 
-while something {
+while (something) {
   print_string("You're in a while loop");
   print_newline()
 };
 
-for i in 0 to 5 {
+for (i in 0 to 5) {
   print_int(i);
   print_newline();
-  for i in 10 downto 0 {
+  for (i in 10 downto 0) {
     print_string(
       "Counting in reverse direction"
     );
@@ -18,14 +18,14 @@ for i in 0 to 5 {
   }
 };
 
-for i in
-    0 to
-    (endOfRangeMustBeSimple(expr, soWrap)) {
+for (i in
+     0 to
+     endOfRangeMustBeSimple(expr, soWrap)) {
   print_int(i);
   print_newline();
-  for i in
-      (theSame(isTrue, ofThe, startOfRange)) downto
-      0 {
+  for (i in
+       theSame(isTrue, ofThe, startOfRange) downto
+       0) {
     print_string(
       "Counting in reverse direction"
     );
@@ -117,13 +117,13 @@ let x = (!arr).(0) = 1;
  *============================================================================
  */
 let something =
-  if self.ext.logSuccess {
+  if (self.ext.logSuccess) {
     print_string("Did tap");
     print_newline()
   };
 
 let logTapSuccess (self) =
-  if self.ext.logSuccess {
+  if (self.ext.logSuccess) {
     print_string("Did tap");
     print_newline()
   } else {
@@ -131,7 +131,7 @@ let logTapSuccess (self) =
   };
 
 let logTapSuccess (self) =
-  if self.ext.logSuccess {
+  if (self.ext.logSuccess) {
     print_string("Did tap");
     print_newline()
   };
@@ -147,7 +147,7 @@ let logTapSuccess (self) =
 (!data.field1).field2 = true;
 
 let loop (appTime, frameTime) = {
-  if hasSetup.contents {
+  if (hasSetup.contents) {
     setupScene();
     renderIntoTop();
     hasSetup.contents = true
@@ -156,19 +156,19 @@ let loop (appTime, frameTime) = {
 };
 
 /* These parens should be kept around the entire last if/then/else */
-if something {
-  if somethingElse {()} else {"blah"}
+if (something) {
+  if (somethingElse) {()} else {"blah"}
 };
 
 /* These parens should be kept around just the last if/then*/
-if something {
-  if somethingElse {()} else {"blah"}
+if (something) {
+  if (somethingElse) {()} else {"blah"}
 };
 
 /* Parens should be generated to wrap the entire final if then else.
  * To test that it's being parsed correclty, should print "one". */
-if true {
-  if true {
+if (true) {
+  if (true) {
     print_string("one")
   } else {
     print_string("two")
@@ -176,8 +176,8 @@ if true {
 };
 
 /* Should print two */
-if true {
-  if false {
+if (true) {
+  if (false) {
     print_string("one")
   } else {
     print_string("two")
@@ -185,8 +185,8 @@ if true {
 };
 
 /* Should not print */
-if false {
-  if true {
+if (false) {
+  if (true) {
     print_string("one")
   } else {
     print_string("two")
@@ -199,21 +199,19 @@ if false {
 let printIfFirstArgGreater = true;
 
 let result =
-  if printIfFirstArgGreater {
+  if (printIfFirstArgGreater) {
     (a, b) =>
       if (a > b) {
         print_string("a > b")
       } else {
         print_string("b >= a")
       }
-  } else if (
-    (a, b) =>
-      if (a > b) {
-        print_string("b < a")
-      } else {
-        print_string("a <= b")
-      }
-  ) {
+  } else if ((a, b) =>
+               if (a > b) {
+                 print_string("b < a")
+               } else {
+                 print_string("a <= b")
+               }) {
     print_string(
       "That could never possibly type check"
     );
@@ -224,13 +222,11 @@ let myRecord = {
   nestedRecord: {
     anotherNestedRecord:
       (instaComp, displayRect) =>
-      if (
-        Graphics.cgRectIntersectsWithSlop(
-          defaultCompositeTimerRectSlop,
-          instaComp.relativeRect,
-          displayRect
-        )
-      ) {
+      if (Graphics.cgRectIntersectsWithSlop(
+            defaultCompositeTimerRectSlop,
+            instaComp.relativeRect,
+            displayRect
+          )) {
         IoEligible
       } else {
         IoInelibleButTryComposition
@@ -238,7 +234,7 @@ let myRecord = {
   }
 };
 
-if printIfFirstArgGreater {
+if (printIfFirstArgGreater) {
   (a, b) =>
     if (a > b) {
       print_string("a > b")
@@ -251,7 +247,7 @@ if printIfFirstArgGreater {
 };
 
 /* Should Be Parsed As: Cleary a type error, but at least the parsing makes that clear */
-if printIfFirstArgGreater {
+if (printIfFirstArgGreater) {
   (a, b) =>
     if (a > b) {
       print_string("a > b")
@@ -269,7 +265,7 @@ if printIfFirstArgGreater {
   };
 
 /* What you probably wanted was: */
-if printIfFirstArgGreater {
+if (printIfFirstArgGreater) {
   (a, b) =>
     if (a > b) {
       print_string("a > b")
@@ -402,16 +398,16 @@ let rec size =
 
 /* Optimize for tail recursion */
 let rec size (soFar, lst) =
-  switch lst {
+  switch (lst) {
   | [] => 0
   | [hd, ...tl] => size(soFar + 1, tl)
   };
 
 let nestedMatch (lstLst) =
-  switch lstLst {
+  switch (lstLst) {
   | [hd, ...tl] when false => 10
   | [hd, ...tl] =>
-    switch tl {
+    switch (tl) {
     | [] => 0 + 0
     | [tlHd, ...tlTl] => 0 + 1
     }
@@ -419,10 +415,10 @@ let nestedMatch (lstLst) =
   };
 
 let nestedMatchWithWhen (lstLst) =
-  switch lstLst {
+  switch (lstLst) {
   | [hd, ...tl] when false => 10
   | [hd, ...tl] when true =>
-    switch tl {
+    switch (tl) {
     | [] when false => 0 + 0
     | [] when true => 0 + 0
     | [tlHd, ...tlTl] => 0 + 1
@@ -535,7 +531,7 @@ let myFunction (a: int, b: int) : int = a + b;
 
 let functionReturnValueType
     (i: int, s: string)
-    : ((int) => int) =
+    : (int => int) =
   (x) => x + 1;
 
 let curriedFormOne (i: int, s: string) =

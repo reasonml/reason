@@ -5,9 +5,9 @@ class virtual stack ('a) (init) = {
    */
   val virtual dummy: unit;
   val mutable v: list('a) = init;
-  pub virtual implementMe: (int) => int;
+  pub virtual implementMe: int => int;
   pub pop =
-    switch v {
+    switch (v) {
     | [hd, ...tl] =>
       v = tl;
       Some(hd)
@@ -42,9 +42,9 @@ class virtual stackWithAttributes ('a) (init) = {
   /* Virtual member */
   val virtual dummy: unit;
   val mutable v: list('a) = init;
-  pub virtual implementMe: (int) => int;
+  pub virtual implementMe: int => int;
   pub pop =
-    switch v {
+    switch (v) {
     | [hd, ...tl] =>
       v = tl;
       Some(hd)

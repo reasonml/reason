@@ -263,7 +263,7 @@ let includesACommentCloseInIdentifier = ( *\*\/ );
 
 let includesACommentCloseInIdentifier = ( *\*\/ );
 
-let shouldSimplifyAnythingExceptApplicationAndConstruction = call("hi") ^ (switch x {
+let shouldSimplifyAnythingExceptApplicationAndConstruction = call("hi") ^ (switch (x) {
                                                                     | _ => "hi"
                                                                     }) ^ "yo";
 

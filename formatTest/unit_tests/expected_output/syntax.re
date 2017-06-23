@@ -17,7 +17,7 @@ TestUtils.printSection("General Syntax");
 /*   | `Other x => (print_string "matched other x"); x;; */
 /*  */
 let matchingFunc (a) =
-  switch a {
+  switch (a) {
   | `Thingy(x) =>
     print_string("matched thingy x");
     let zz = 10;
@@ -28,47 +28,47 @@ let matchingFunc (a) =
   };
 
 type firstTwoShouldBeGroupedInParens =
-  ((int) => int, int) => int;
+  (int => int, int) => int;
 
 type allParensCanBeRemoved =
   (int, int, int) => int;
 
 type firstTwoShouldBeGroupedAndFirstThree =
-  (((int) => int) => int) => int;
+  ((int => int) => int) => int;
 
 /* Same thing now but with type constructors instead of each int */
 type firstTwoShouldBeGroupedInParens =
-  ((list(int)) => list(int), list(int)) =>
+  (list(int) => list(int), list(int)) =>
   list(int);
 
 type allParensCanBeRemoved =
   (list(int), list(int), list(int)) => list(int);
 
 type firstTwoShouldBeGroupedAndFirstThree =
-  (((list(int)) => list(int)) => list(int)) =>
+  ((list(int) => list(int)) => list(int)) =>
   list(int);
 
 type myRecordType = {
   firstTwoShouldBeGroupedInParens:
-    ((int) => int, int) => int,
+    (int => int, int) => int,
   allParensCanBeRemoved: (int, int, int) => int,
   firstTwoShouldBeGroupedAndFirstThree:
-    (((int) => int) => int) => int
+    ((int => int) => int) => int
 };
 
 type firstNamedArgShouldBeGroupedInParens =
-  (:first (int) => int, :second int) => int;
+  (:first int => int, :second int) => int;
 
 type allParensCanBeRemoved =
   (:first int, :second int, :third int) => int;
 
 type firstTwoShouldBeGroupedAndFirstThree =
-  (:first ((int) => int) => int) => int;
+  (:first (int => int) => int) => int;
 
 /* Same thing now, but with type constructors instead of int */
 type firstNamedArgShouldBeGroupedInParens =
   (
-    :first (list(int)) => list(int),
+    :first list(int) => list(int),
     :second list(int)
   ) =>
   list(int);
@@ -83,28 +83,24 @@ type allParensCanBeRemoved =
 
 type firstTwoShouldBeGroupedAndFirstThree =
   (
-    :first ((list(int)) => list(int)) => list(int)
+    :first (list(int) => list(int)) => list(int)
   ) =>
   list(int);
 
 type firstNamedArgShouldBeGroupedInParens =
-  (:first (int) => int?, :second list(int)?) =>
-  int;
+  (:first int => int?, :second list(int)?) => int;
 
 /* The arrow necessitates parens around the next two args. The ? isn't what
  * makes the parens necessary. */
 type firstNamedArgShouldBeGroupedInParensAndSecondNamedArg =
-  (
-    :first (int) => int?,
-    :second (int) => int?
-  ) =>
+  (:first int => int?, :second int => int?) =>
   int;
 
 type allParensCanBeRemoved =
   (:first int?, :second int?, :third int?) => int;
 
 type firstTwoShouldBeGroupedAndFirstThree =
-  (:first ((int) => int) => int) => int;
+  (:first (int => int) => int) => int;
 
 type noParens =
   (:one int, int, int, :two int) => int;
@@ -132,8 +128,7 @@ type noParensNeededWhenInTuple =
 
 type myTypeDef('a) = list('a);
 
-type instatiatedTypeDef =
-  (myTypeDef(int)) => int;
+type instatiatedTypeDef = myTypeDef(int) => int;
 
 /* Test a type attribute for good measure */
 /* We should clean up all of the attribute tagging eventually, but for now,
@@ -412,7 +407,7 @@ Printf.printf(
 
 /* Pattern matching */
 let blah (arg) =
-  switch arg {
+  switch (arg) {
   /* Comment before Bar */
   | /* Comment between bar/pattern */ Red(_) => 1
   /* Comment Before non-first bar */
@@ -555,7 +550,7 @@ let myFun
   firstArg + x;
 
 let matchesWithWhen (a) =
-  switch a {
+  switch (a) {
   | Red(x) when 1 > 0 => 10
   | Red(_) => 10
   | Black(x) => 10
@@ -621,7 +616,7 @@ let tupleInsideALetSequence = {
 
 /* We *require* that function return types be wrapped in
    parenthesis. In this example, there's no ambiguity */
-let makeIncrementer (delta: int) : ((int) => int) =
+let makeIncrementer (delta: int) : (int => int) =
   (a) => a + delta;
 
 /* We could even force that consistency with let bindings - it's allowed
@@ -996,7 +991,7 @@ let A | B | C = X;
 /** External function declaration
  *
  */
-external f : (int) => int = "foo";
+external f : int => int = "foo";
 
 let x = {contents: 0};
 

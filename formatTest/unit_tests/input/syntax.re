@@ -12,7 +12,7 @@ TestUtils.printSection("General Syntax");
 /*   `Thingy x => (print_string "matched thingy x"); x */
 /*   | `Other x => (print_string "matched other x"); x;; */
 /*  */
-let matchingFunc(a) = switch a {
+let matchingFunc(a) = switch (a) {
   | `Thingy x => {
     print_string("matched thingy x");
     let zz = 10;
@@ -353,7 +353,7 @@ Printf.printf("\nproof that thisReturnsARecord: %n\n", recordVal);
 Printf.printf("\nproof that thisReturnsA: %n\n", thisReturnsA());
 
 /* Pattern matching */
-let blah = fun(arg) => switch arg {
+let blah = fun(arg) => switch (arg) {
   /* Comment before Bar */
   | /* Comment between bar/pattern */
     Red(_) => 1
@@ -491,7 +491,7 @@ dummy(res3);
 
 /* Some edge cases */
 let myFun (firstArg, Red(x) | Black(x) | Green(x)) = firstArg + x;
-let matchesWithWhen(a) = switch a {
+let matchesWithWhen(a) = switch (a) {
   | Red(x) when 1 > 0 => 10
   | Red(_) => 10
   | Black(x) => 10

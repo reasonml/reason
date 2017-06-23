@@ -4,88 +4,72 @@
 
  * vim: set ft=reason:
  */
-switch (
-  while true {
-    ()
-  }
-) {
+switch (while (true) {
+          ()
+        }) {
 | _ => ()
 };
 
-try (
-  while true {
-    ()
-  }
-) {
+try (while (true) {
+       ()
+     }) {
 | _ => ()
 };
 
-switch (
-  for i in 0 to 10 {
-    ()
-  }
-) {
+switch (for (i in 0 to 10) {
+          ()
+        }) {
 | _ => ()
 };
 
-try (
-  for i in 0 to 10 {
-    ()
-  }
-) {
+try (for (i in 0 to 10) {
+       ()
+     }) {
 | _ => ()
 };
 
-switch (
-  if true {
-    print_string("switching on true")
-  } else {
-    print_string("switching on false")
-  }
-) {
+switch (if (true) {
+          print_string("switching on true")
+        } else {
+          print_string("switching on false")
+        }) {
 | _ => ()
 };
 
-try (
-  for i in 0 to 10 {
-    ()
-  }
-) {
+try (for (i in 0 to 10) {
+       ()
+     }) {
 | _ => ()
 };
 
 let result =
   (
-    while false {
+    while (false) {
       ()
     }
   ) ==
   () ?
     false : true;
 
-switch (
-  try (
-    try () {
-    | _ => ()
-    }
-  ) {
-  | _ => ()
-  }
-) {
+switch (try (try (()) {
+             | _ => ()
+             }) {
+        | _ => ()
+        }) {
 | () => ()
 };
 
 let shouldStillLoop = {contents: false};
 
-while shouldStillLoop.contents {
+while (shouldStillLoop.contents) {
   print_string("You're in a while loop");
   print_newline()
 };
 
-while {
-  shouldStillLoop.contents = false;
-  shouldStillLoop.contents
-} {
+while ({
+         shouldStillLoop.contents = false;
+         shouldStillLoop.contents
+       }) {
   print_string("Will never loop")
 };
 

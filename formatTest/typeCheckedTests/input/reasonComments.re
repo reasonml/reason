@@ -217,7 +217,7 @@ and y2 = { /* not attached *above* y2 */
 
 
 let result =
-  switch None {
+  switch (None) {
   | Some({fieldOne: 20, fieldA:a})=> /* Where does this comment go? */
     let tmp = 0;
     2 + tmp
@@ -240,7 +240,7 @@ let res =
 /*
  * Now these end of line comments *should* be retained.
  */
-let result = switch None {
+let result = switch (None) {
   | Some {
       fieldOne: 20, /* end of line */
       fieldA:a /* end of line */
@@ -315,12 +315,12 @@ let result = {
 /* }; */
 
 let a = ();
-for i in 0 to 10 {
+for (i in 0 to 10) {
   /* bla  */
   a
 };
 
-if true {
+if (true) {
   /* hello */
   ()
 };

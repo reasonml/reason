@@ -43,13 +43,13 @@ let yesTupled: tupleVariant = ActuallyATuple (intTuple);
 
 type threeForms = | FormOne(int) | FormTwo(int) | FormThree;
 
-let doesntCareWhichForm(x) = switch x {
+let doesntCareWhichForm(x) = switch (x) {
   | FormOne(q)
   | FormTwo(q) => 10
   | FormThree => 20
 };
 
-let doesntCareWhichFormAs(x) = switch x {
+let doesntCareWhichFormAs(x) = switch (x) {
   | FormOne(q) as ppp
   | FormTwo(q) as ppp => 10
   | FormThree => 20
@@ -81,12 +81,12 @@ let accessDeeplyWithArg
     (LocalModule.AccessedThroughModuleWith(x) | LocalModule.AccessedThroughModuleWithTwo(_,x)) = x;
 
 /* Destructured matching *not* at function definition */
-let accessDeeply(x) = switch x {
+let accessDeeply(x) = switch (x) {
   | LocalModule.AccessedThroughModule => 10
   | _ => 0
 };
 
-let accessDeeplyWithArg(x) = switch x {
+let accessDeeplyWithArg(x) = switch (x) {
   | LocalModule.AccessedThroughModuleWith(x) => 10
   | _ => 0
 };
@@ -99,17 +99,17 @@ let accessDeeplyWithArg(x) = switch x {
  *
  *   let myFunc x = function | `Blah p as retVal -> retVal`
  */
-let accessDeeply(x) = switch x {
+let accessDeeply(x) = switch (x) {
   | LocalModule.AccessedThroughModule as ppp => 1
 };
 
-let accessDeeplyWithArg(x) = switch x {
+let accessDeeplyWithArg(x) = switch (x) {
   | LocalModule.AccessedThroughModuleWith (x as retVal) => retVal + 1
   | LocalModule.AccessedThroughModuleWithTwo((x as retVal1),(y as retVal2)) => retVal1 + retVal2 + 1
 };
 
 /* Just to show that by default `as` captures much less aggresively */
-let rec accessDeeplyWithArgRecursive(x,count) = switch x {
+let rec accessDeeplyWithArgRecursive(x,count) = switch (x) {
   | LocalModule.AccessedThroughModuleWith(x) as entirePattern =>
       /* It captures the whole pattern */
       if (count > 0) {0;} else {accessDeeplyWithArgRecursive(entirePattern, count - 1);}
@@ -134,13 +134,13 @@ let howWouldWeMatchFunctionArgs (HeresTwoConstructorArguments(x,y)) = x + y;
 /* How would we annotate said arg? */
 let howWouldWeMatchFunctionArgs (HeresTwoConstructorArguments(x,y): combination('wat)) = x + y;
 
-let matchingTwoCurriedConstructorsInTuple(x) = switch x {
+let matchingTwoCurriedConstructorsInTuple(x) = switch (x) {
   | (HeresTwoConstructorArguments(x,y), HeresTwoConstructorArguments(a,b)) => x + y + a + b
 };
 
 type twoCurriedConstructors = | TwoCombos (combination(int), combination(int));
 
-let matchingTwoCurriedConstructorInConstructor(x) = switch x {
+let matchingTwoCurriedConstructorInConstructor(x) = switch (x) {
   | TwoCombos (HeresTwoConstructorArguments(x,y), HeresTwoConstructorArguments(a,b)) => a + b + x + y
 };
 
@@ -160,7 +160,7 @@ let rec commentPolymorphicCases: 'a . (option('a)) => int = fun | Some(a) => 1
                                                                 /* Comment on one */
                                                                 | None => 0;
 
-let thisWontCompileButLetsSeeHowItFormats = switch something {
+let thisWontCompileButLetsSeeHowItFormats = switch (something) {
   | Zero
   | One => 10
 };
@@ -184,7 +184,7 @@ let rec eval: type a. (term(a)) => a =
       | App(f,x) => eval(f, eval(x));
 
 let rec eval: type a. (term(a)) => a =
-  (x) => switch x {
+  (x) => switch (x) {
     | Int(n) => n
     /* a = int */
     | Add => (fun(x,y) => x + y)
@@ -210,12 +210,12 @@ type tuples = | Zero | One(int) | Two(int,int) | OneTuple (int, int);
 
 let myTuple = OneTuple (20, 30);
 
-let res = switch myTuple {
+let res = switch (myTuple) {
   | Two(x,y) => try (Two(x,y)) {
                  | One => "hi"
                  | Two => "bye"
                }
-  | One => switch One {
+  | One => switch (One) {
              | One => "hi"
              | _ => "bye"
            }
@@ -274,10 +274,10 @@ let res = switch (ylw, prp) {
   | (`Yellow (p, p2), `Yellow (y, y2)) => `Purple (y + p, 0)
 };
 
-let rec atLeastOneFlushableChildAndNoWipNoPending(composition,atPriority) = switch composition {
+let rec atLeastOneFlushableChildAndNoWipNoPending(composition,atPriority) = switch (composition) {
   | [] => false
   | [hd, ...tl] =>
-      switch hd {
+      switch (hd) {
         | OpaqueGraph {lifecycle: Reconciled (_, [])} =>
             atLeastOneFlushableChildAndNoWipNoPending(tl,atPriority)
         | OpaqueGraph {lifecycle: ReconciledFlushable (priority, _, _, _, _, _)}
@@ -296,7 +296,7 @@ let rec atLeastOneFlushableChildAndNoWipNoPending(composition,atPriority) = swit
  */
 let prp = `Purple (101, 101);
 
-let res = switch prp {
+let res = switch (prp) {
   | `Yellow (y, y2) => `Yellow (y2 + y, 0)
   | `Purple (p, p2) => `Purple (p2 + p, 0)
 };
@@ -319,21 +319,21 @@ let rec map(f) =
 
 let myFunc(x,y,LongModule.Path.None) = "asdf";
 
-let listPatternMembersNeedntBeSimple(x) = switch x {
+let listPatternMembersNeedntBeSimple(x) = switch (x) {
   | [] => ()
   | [Blah(x,y), Foo(a,b), ...rest] => ()
   | [Blah(x,y), Bar(a,b), ...rest] => ()
   | _ => ()
 };
 
-let listTailPatternNeedntBeSimple(x) = switch x {
+let listTailPatternNeedntBeSimple(x) = switch (x) {
   | [] => ()
   /* Although this would never typecheck! */
   | [Blah(x,y), Foo(a,b), ...Something(x)] => ()
   | _ => ()
 };
 
-let listPatternMayEvenIncludeAliases(x) = switch x {
+let listPatternMayEvenIncludeAliases(x) = switch (x) {
   | [] => ()
   /* Although this would never typecheck! */
   | [Blah(x,y) as head, Foo(a,b) as head2, ...Something(x) as tail] => ()

@@ -8,29 +8,29 @@ let logTSuccess (self) =
   };
 
 let something =
-  if self.ext.logSuccess {
+  if (self.ext.logSuccess) {
     print_string("Did T");
     print_newline()
   };
 
 let logTSuccess (self) =
-  if self.ext.logSuccess {
+  if (self.ext.logSuccess) {
     print_string("Did T");
     print_newline()
   } else {
     ()
   };
 
-if (if x {true} else {false}) {
+if (if (x) {true} else {false}) {
   true
 } else {
   false
 };
 
 /* Parens are required around if if it's an argument - this is the same as before. */
-if (
-  callSomeFunction(if true {true} else {false})
-) {
+if (callSomeFunction(
+      if (true) {true} else {false}
+    )) {
   true
 } else {
   false
@@ -38,20 +38,18 @@ if (
 
 /* Notice that to do something strange, your code must *look* strange. */
 /* That's generally a good thing */
-if callSomeFunction {
-  if true {true}
+if (callSomeFunction) {
+  if (true) {true}
 } else {
   false
 };
 
-if (
-  callSomeFunction(
-    {
-      thisIsAnArgument;
-      notTheControlFlow
-    }
-  )
-) {
+if (callSomeFunction(
+      {
+        thisIsAnArgument;
+        notTheControlFlow
+      }
+    )) {
   thisIsTheControlFlow
 };
 
@@ -65,13 +63,13 @@ if (
  * can make it prettier by nesting the else ifs.
  *
  */
-if printIfFirstArgGreater {
+if (printIfFirstArgGreater) {
   simpleThen
 } else {
   thisDoesnt(even, have2, be, simple)
 };
 
-if (if x {true} else {false}) {
+if (if (x) {true} else {false}) {
   ()
 } else {
   ()
@@ -167,7 +165,7 @@ let result =
  * Try shouldn't be aliased as ternary!
  */
 let res =
-  try something {
+  try (something) {
   | true => "hi"
   | false => "bye"
   };
@@ -176,11 +174,11 @@ let res =
  * Many levels of if elseif should be formatted very nicely.
  */
 let result =
-  if something {
+  if (something) {
     Console.log("First Branch")
-  } else if anotherThing {
+  } else if (anotherThing) {
     Console.log("Second Branch")
-  } else if yetAnotherThing {
+  } else if (yetAnotherThing) {
     Console.log("Third Branch")
   } else {
     Console.log("Final Case")

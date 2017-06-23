@@ -339,7 +339,7 @@ let myList = [
 let myList = [1, 2, 3, /*CommentAfterConsBeforeAppendedTo */...myList];
 let myList = [3, 4, 5];
 
-let simpleListPattern(x) = switch x {
+let simpleListPattern(x) = switch (x) {
 | [1, 2, 3] => 0
 | _ => 0
 };
@@ -1569,7 +1569,7 @@ type colors =
   | Black(int)
   | Green(int);
 
-let blah = fun(arg) => switch arg {
+let blah = fun(arg) => switch (arg) {
   /* Comment before Bar */
   | /* Comment between bar/pattern */
     Red(_) => 1
@@ -1598,28 +1598,28 @@ type reallyLongVariantNames =
   | AnotherReallyLongVariantName(int,int,int)
   | AnotherReallyLongVariantName2(int,int,int);
 
-let howDoLongMultiBarPatternsWrap = fun(x) => switch x {
+let howDoLongMultiBarPatternsWrap = fun(x) => switch (x) {
   | AnotherReallyLongVariantName(_,_,_) => 0
   | AnotherReallyLongVariantName2(_,_,_) => 0
   | ReallyLongVariantName {someField, anotherField} => 0
 };
 
 let letsCombineTwoLongPatternsIntoOneCase(x) =
-  switch x {
+  switch (x) {
     | AnotherReallyLongVariantName(_,_,_)
     | AnotherReallyLongVariantName2(_,_,_) => 0
     | ReallyLongVariantName {someField, anotherField} => 0
   };
 
 let letsPutAWhereClauseOnTheFirstTwo(x) =
-  switch x {
+  switch (x) {
     | AnotherReallyLongVariantName(_,_,_)
     | AnotherReallyLongVariantName2(_,_,_) when true => 0
     | ReallyLongVariantName {someField, anotherField} => 0
   };
 
 let letsPutAWhereClauseOnTheLast(x) =
-  switch x {
+  switch (x) {
     | AnotherReallyLongVariantName(_,_,_)
     | AnotherReallyLongVariantName2(_,_,_) => 0
     | ReallyLongVariantName {someField, anotherField} when true => 0
