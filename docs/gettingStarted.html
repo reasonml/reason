@@ -39,28 +39,28 @@ Reason can talk to JS and compile to it, thanks to [BuckleScript](https://github
 
 For the JS workflow, we support both [npm](https://www.npmjs.com) and [yarn](https://yarnpkg.com/en/). Nothing else to learn!
 
-**Note**: the global editor tooling (Merlin, rtop) currently doesn't work well with Windows. The project setup & building, however, works well.
+**Note: the global editor tooling (Merlin, rtop) currently doesn't work well with Windows. The project setup & building, however, works well on all platforms**.
 
 Project Setup
 -------
 
-We've strived to make our JS tooling and compilation workflow as simple as possible:
+```sh
+npm install -g bs-platform
+bsb -init my-first-app -theme basic-reason
+```
+
+And then run it as usual:
 
 ```sh
-# new folder setup, add package.json, install BuckleScript
-mkdir -p test/src && cd test
-echo 'print_endline "hello!";' > src/test.re
-npm init -y
-npm install --save-dev bs-platform
-
-# basic BuckleScript build config, start it in watch mode
-echo '{"name": "test", "sources": "src"}' > bsconfig.json
-./node_modules/.bin/bsb -w
+cd my-first-app
+npm run build
 ```
+
+Alternatively, **to start a [ReasonReact](https://reasonml.github.io/reason-react/gettingStarted.html) app**, try `bsb -init my-react-app -theme react`.
 
 More info on bsb & bsconfig [here](http://bucklescript.github.io/bucklescript/Manual.html#_bucklescript_build_system_code_bsb_code).
 
-That's all! **BuckleScript has first-class support for Reason, which is why you don't see any mention of "Reason" in the above step**.
+**BuckleScript has first-class support for Reason**, which is why you don't see any mention of "Reason" in the above step.
 
 
 Editor Setup & Global Utilities
