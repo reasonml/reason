@@ -1106,7 +1106,7 @@ escape backslashes are added back in automatically.
 
 > OCaml                                        | Reason
 > ---------------------------------------------|--------------------------------
-> <code>let (/*) a b => a + b;       </code>   |  <code>     let (/\*) a b => a + b;         </code>
+> <code>let (/*) a b => a + b;       </code>   |  <code>     let (/\\\*) a b => a + b;         </code>
 > <code>let x = 12 /-\* 23 /-\* 12;  </code>   |  <code>     let x = 12 /-\\\* 23 /-\\\* 12; </code>
 > <code>let y = (/*) a b;            </code>   |  <code>     let y = (/\\\*) a b;            </code>
 > <code>let (!=*) q r => q + r;      </code>   |  <code>     let (!=\\\*) q r => q + r;      </code>
