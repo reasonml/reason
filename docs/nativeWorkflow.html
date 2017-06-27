@@ -20,13 +20,11 @@
 
   <script id="markdown" type="text/markdown">
 
-Native Workflow
-===========
+# Native Workflow
 
 Compiling to bytecode/native.
 
-Context
--------
+## Context
 
 **Note**: some parts of the native workflow likely don't work on Windows. The native workflow is currently **work in progress**, as we're currently focusing on polishing the JS workflow. Contribution welcome!
 
@@ -50,13 +48,11 @@ opam update
 opam switch 4.02.3
 ```
 
-Project Setup
--------
+## Project Setup
 
 See our [`ReasonNativeProject`](https://github.com/reasonml/ReasonNativeProject).
 
-Editor Setup & Global Utilities
--------
+## Editor Setup & Global Utilities
 
 See our [tooling](./tools.html) section for a descriptions of what you need to install and which editors we support.
 
@@ -90,8 +86,7 @@ rebuild hello.native # Automatically generates hello.native from hello.re
 ./hello.native # Should display "hello!"
 ```
 
-Convert OCaml to Reason
--------
+## Convert OCaml to Reason
 
 Since Reason's just another syntax for OCaml, convert an OCaml project over is straightforward and doesn't require semantic changes. However, there are a few build setup & miscellaneous changes.
 
