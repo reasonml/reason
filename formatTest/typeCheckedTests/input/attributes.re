@@ -112,8 +112,8 @@ let x = [@onEverything] (- add(thisVal,thisVal));
 
 
 let bothTrue(x,y) = {contents: x && y};
-let something = [@onEverythingToRightOfEquals]!(bothTrue(true,true));
-let something = !([@onlyOnArgumentToBang]bothTrue(true,true));
+let something = [@onEverythingToRightOfEquals](bothTrue(true,true)^);
+let something = ([@onlyOnArgumentToBang]bothTrue(true,true))^;
 
 let res = [@appliesToEntireFunctionApplication] add(2,4);
  [@appliesToEntireFunctionApplication]add(2,4);

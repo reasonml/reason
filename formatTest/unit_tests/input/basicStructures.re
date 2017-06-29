@@ -33,7 +33,7 @@ let x = foo#bar^;
 
 let x = foo^.bar^;
 
-let x = foo^#bar^;
+let x = (foo^)#bar^;
 
 /* Prefix operators:
  * ! followed by zero or more appropriate_operator_suffix_chars (see the
@@ -52,11 +52,11 @@ let x = !(!foo)#bar;
 
 let x = ! !foo.bar;
 
-let x = ?! !foo.bar;
+let x = ?! (!foo.bar);
 
 let x = ! ?!foo.bar;
 
-let x = ~! !foo.bar;
+let x = ~! (!foo.bar);
 
 let x = ! ~!foo.bar;
 

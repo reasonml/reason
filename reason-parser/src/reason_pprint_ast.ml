@@ -612,7 +612,7 @@ let printedStringAndFixity  = function
 
 (* Also, this doesn't account for != and !== being infixop!!! *)
 let isSimplePrefixToken s = match printedStringAndFixity s with
-  | AlmostSimplePrefix _ -> true
+  | AlmostSimplePrefix _ | UnaryPostfix "^" -> true
   | _ -> false
 
 
@@ -652,6 +652,7 @@ let rules = [
        precedence. *)
     (TokenPrecedence, (fun s -> (Left, s.[0] == '+' )));
     (TokenPrecedence ,(fun s -> (Left, s.[0] == '-' )));
+    (TokenPrecedence ,(fun s -> (Left, s = "!" )));
   ];
   [
     (TokenPrecedence, (fun s -> (Right, s = "::")));
@@ -3214,7 +3215,9 @@ class printer  ()= object(self:'self)
       | (UnaryPostfix postfixStr, [(Nolabel, leftExpr)]) ->
         let forceSpace = match leftExpr.pexp_desc with
           | Pexp_apply (ee, lsls) ->
-            (match printedStringAndFixityExpr ee with | AlmostSimplePrefix _ -> true | _ -> false)
+            (match printedStringAndFixityExpr ee with
+             | UnaryPostfix "^" | AlmostSimplePrefix _ -> true
+             | _ -> false)
           | _ -> false
         in
         let leftItm = self#simplifyUnparseExpr leftExpr in
@@ -3460,21 +3463,13 @@ class printer  ()= object(self:'self)
           SpecificInfixPrecedence ({reducePrecedence=infixToken; shiftPrecedence=infixToken}, expr)
         (* Will be rendered as `(+) a b c` which is parsed with higher precedence than all
            the other forms unparsed here.*)
-        | (UnaryPlusPrefix printedIdent, [(Nolabel, rightExpr)]) ->
-          let prec = Custom "prec_unary" in
-          let rightItm = self#ensureContainingRule ~withPrecedence:prec ~reducesAfterRight:rightExpr in
-          let expr = label ~space:true (atom printedIdent) rightItm in
-          SpecificInfixPrecedence ({reducePrecedence=prec; shiftPrecedence=Token printedIdent}, expr)
-        | (UnaryMinusPrefix printedIdent, [(Nolabel, rightExpr)]) ->
-          let prec = Custom "prec_unary" in
-          let rightItm = self#ensureContainingRule ~withPrecedence:prec ~reducesAfterRight:rightExpr in
-          let expr = label ~space:true (atom printedIdent) rightItm in
-          SpecificInfixPrecedence ({reducePrecedence=prec; shiftPrecedence=Token printedIdent}, expr)
+        | (UnaryPlusPrefix printedIdent, [(Nolabel, rightExpr)])
+        | (UnaryMinusPrefix printedIdent, [(Nolabel, rightExpr)])
         | (UnaryNotPrefix printedIdent, [(Nolabel, rightExpr)]) ->
           let prec = Custom "prec_unary" in
           let rightItm = self#ensureContainingRule ~withPrecedence:prec ~reducesAfterRight:rightExpr in
-          let expr = label (atom printedIdent) rightItm in
-          SpecificInfixPrecedence ({reducePrecedence=prec; shiftPrecedence=prec}, expr)
+          let expr = label ~space:true (atom printedIdent) rightItm in
+          SpecificInfixPrecedence ({reducePrecedence=prec; shiftPrecedence=Token printedIdent}, expr)
         (* Will need to be rendered in self#expression as (~-) x y z. *)
         | (_, _) ->
         (* This case will happen when there is something like
@@ -4923,7 +4918,16 @@ class printer  ()= object(self:'self)
         | Pexp_field (e, li) ->
           Some (label (makeList [self#simple_enough_to_be_lhs_dot_send e; atom "."]) (self#longident_loc li))
         | Pexp_send (e, s) ->
-          Some (label (makeList [self#simple_enough_to_be_lhs_dot_send e; atom "#";]) (atom s))
+          let needparens = match e.pexp_desc with
+            | Pexp_apply (ee, _) ->
+              (match printedStringAndFixityExpr ee with
+               | UnaryPostfix "^" -> true
+               | _ -> false)
+            | _ -> false
+          in
+          let lhs = self#simple_enough_to_be_lhs_dot_send e in
+          let lhs = if needparens then makeList ~wrap:("(",")") [lhs] else lhs in
+          Some (label (makeList [lhs; atom "#";]) (atom s))
         | Pexp_extension e -> Some (self#extension e)
         | _ -> None
       in

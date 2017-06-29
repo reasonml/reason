@@ -156,12 +156,11 @@ let bothTrue (x, y) = {contents: x && y};
 
 let something =
   [@onEverythingToRightOfEquals]
-  !(bothTrue(true, true));
+  (bothTrue(true, true))^;
 
 let something =
-  !(
-    [@onlyOnArgumentToBang] bothTrue(true, true)
-  );
+  ([@onlyOnArgumentToBang] bothTrue(true, true))
+    ^;
 
 let res =
   [@appliesToEntireFunctionApplication]

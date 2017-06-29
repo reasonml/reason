@@ -33,7 +33,7 @@ for (i in
   }
 };
 
-let x = (foo^)^.bar^;
+let x = foo^ ^.bar^;
 
 let x = foo.bar^;
 
@@ -48,25 +48,25 @@ let x = (foo^)#bar^;
  * lexer).
  * ? or ~ followed by at least one appropriate_operator_suffix_chars.
  */
-let x = !(!(!foo)).bar;
+let x = ! (! (! foo)).bar;
 
-let x = !foo.bar;
+let x = ! foo.bar;
 
-let x = !foo#bar;
+let x = ! foo#bar;
 
-let x = !(!foo).bar;
+let x = ! (! foo).bar;
 
-let x = !(!foo)#bar;
+let x = ! (! foo)#bar;
 
-let x = !(!foo.bar);
+let x = ! (! foo.bar);
 
-let x = ?!(!foo.bar);
+let x = ?!(! foo.bar);
 
-let x = !?!foo.bar;
+let x = ! ?!foo.bar;
 
-let x = ~!(!foo.bar);
+let x = ~!(! foo.bar);
 
-let x = !~!foo.bar;
+let x = ! ~!foo.bar;
 
 let x = ~! ~!foo.bar;
 
@@ -78,23 +78,23 @@ let x = !~foo.bar;
 
 let x = !~foo#bar;
 
-let noParensNeeded = !blah.foo.bar;
+let noParensNeeded = ! blah.foo.bar;
 
-let parensNeededAroundFirst = (!blah).foo.bar;
+let parensNeededAroundFirst = (! blah).foo.bar;
 
-let parensNeededAroundSecond = (!blah.foo).bar;
+let parensNeededAroundSecond = (! blah.foo).bar;
 
-let noParensNeeded = !blah#foo#bar;
+let noParensNeeded = ! blah#foo#bar;
 
-let parensNeededAroundFirst = (!blah)#foo#bar;
+let parensNeededAroundFirst = (! blah)#foo#bar;
 
-let parensNeededAroundSecond = (!blah#foo)#bar;
+let parensNeededAroundSecond = (! blah#foo)#bar;
 
 let parensWithSpaceNeededAroundFirst =
-  (!(!blah))#foo#bar;
+  (! (! blah))#foo#bar;
 
 let parensWithSpaceNeededAroundSecond =
-  (!(!blah#foo))#bar;
+  (! (! blah#foo))#bar;
 
 let parensWithSpaceNeededAroundFirst =
   (?!(+ blah))#foo#bar;
@@ -102,9 +102,9 @@ let parensWithSpaceNeededAroundFirst =
 let parensWithSpaceNeededAroundSecond =
   (?!(+ blah#foo))#bar;
 
-let x = !(!foo.bar);
+let x = ! (! foo.bar);
 
-let x = !(!foo#bar);
+let x = ! (! foo#bar);
 
 /* Test precedence on access sugar */
 let x = arr^.(0);
@@ -146,15 +146,15 @@ let logTapSuccess (self) =
     print_newline()
   };
 
-(!data).field = true;
+(! data).field = true;
 
-(!data).field1.field2 = true;
+(! data).field1.field2 = true;
 
-(!data.field1).field2 = true;
+(! data.field1).field2 = true;
 
-(!data).field1.field2 = true;
+(! data).field1.field2 = true;
 
-(!data.field1).field2 = true;
+(! data.field1).field2 = true;
 
 let loop (appTime, frameTime) = {
   if (hasSetup.contents) {

@@ -2533,8 +2533,8 @@ mark_position_exp
     { mkuminus $1 $2 }
   | as_loc(additive) expr %prec prec_unary
     { mkuplus $1 $2 }
-  (*| as_loc(BANG {"!"}) expr %prec prec_unary
-    { mkexp(Pexp_apply(mkoperator $1, [Nolabel,$2])) }*)
+  | as_loc(BANG {"!"}) expr %prec prec_unary
+    { mkexp(Pexp_apply(mkoperator $1, [Nolabel,$2])) }
   | simple_expr DOT as_loc(label_longident) EQUAL expr
     { mkexp(Pexp_setfield($1, $3, $5)) }
   | simple_expr DOT LPAREN expr RPAREN EQUAL expr
@@ -2709,8 +2709,8 @@ parenthesized_expr:
    *
    * !x.y.z should be parsed as !(((x).y).z)
    */
-  | as_loc(BANG {"!"}) E %prec below_DOT_AND_SHARP
-    { mkexp (Pexp_apply(mkoperator $1, [Nolabel,$2])) }
+  (*| as_loc(BANG {"!"}) E %prec below_DOT_AND_SHARP
+    { mkexp (Pexp_apply(mkoperator $1, [Nolabel,$2])) }*)
   | NEW as_loc(class_longident)
     { mkexp (Pexp_new $2) }
   | as_loc(mod_longident) DOT LBRACELESS field_expr_list COMMA? GREATERRBRACE
