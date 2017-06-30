@@ -63,7 +63,7 @@ Here are some of the things you'd do at this step:
 
 - Make other such changes. For idioms that don't have a BuckleScript equivalent, use `bs.raw` ([documentation](http://bucklescript.github.io/bucklescript/Manual.html#_embedding_arbitrary_js_code_as_an_expression)).
 
-Again, worry **only** about making the file syntactically valid. Trying to learn all three of syntax, types and other semantics while converting over a file reduces your iteration speed to less than a third.
+Again, **worry only about making the file syntactically valid**. Trying to learn all three of syntax, types and other semantics while converting over a file reduces your iteration speed to less than a third.
 
 ```reason
 /* syntactically valid, semantically wrong conversion */
@@ -75,6 +75,7 @@ let queryResult usePayload payload => {
   if (usePayload) {
     payload.student
   } else {
+    /* no need for early return in Reason; if-else is an expression */
     school.getStudentById defaultId;
   }
 };
