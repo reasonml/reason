@@ -950,6 +950,17 @@ code .comment {
   height: 20px;
 }
 
+.algolia-autocomplete {
+  padding-left: 10px;
+}
+
+/**/
+
+.header-icon {
+  height: 20px;
+  width: 20px;
+}
+
 /* ----------------------------------------------------------------------------
  * Fonts
  */
