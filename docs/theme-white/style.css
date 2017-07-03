@@ -946,12 +946,9 @@ code .comment {
  * Algolia theme
  */
 
-#agolia-search {
+#algolia-search {
   height: 20px;
-}
-
-.algolia-autocomplete {
-  padding-left: 10px;
+  margin-left: 10px;
 }
 
 /**/
