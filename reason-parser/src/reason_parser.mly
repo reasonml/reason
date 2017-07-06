@@ -2493,10 +2493,15 @@ jsx_without_leading_less:
 ;
 
 /*
- * Much like how patterns are partitioned into pattern/simple_pattern,
- * expressions are divided into expr/simple_expr.
- * expr: contains function application, but simple_expr doesn't (unless it's
- * wrapped in parens).
+ * Parsing of expressions is quite involved as it depends on context.
+ * At the top-level of a structure, expressions can't have attributes
+ * (those are attached to the structure).
+ * In other places, attributes are allowed.
+ *
+ * The generic parts are represented by unattributed_expr_template(_).
+ * The parameter is to "tie" the knot: recursive cases inside unattributed_expr_template
+ * Then unattributed_expr represents the concreteunattribute
+ * ...
  */
 unattributed_expr_template(E):
 mark_position_exp
@@ -2609,18 +2614,18 @@ expr:
 ;
 
 unattributed_expr:
-  | unattributed_expr_template(unattributed_expr) { $1 }
-;
-
-simple_expr_call:
-  | mark_position_exp(basic_expr(simple_expr)) { $1, [] }
-  | simple_expr_call labeled_arguments
-    { let body, args = $1 in (body, List.rev_append $2 args) }
-;
+  unattributed_expr_template(unattributed_expr) { $1 };
 
 %inline simple_expr: simple_expr_call { mkexp_app_rev $startpos $endpos $1 };
 
-simple_expr_no_call: mark_position_exp(basic_expr(simple_expr_no_call)) { $1 };
+simple_expr_no_call:
+  mark_position_exp(simple_expr_template(simple_expr_no_call)) { $1 };
+
+simple_expr_call:
+  | mark_position_exp(simple_expr_template(simple_expr)) { $1, [] }
+  | simple_expr_call labeled_arguments
+    { let body, args = $1 in (body, List.rev_append $2 args) }
+;
 
 parenthesized_expr:
   | braced_expr
@@ -2632,7 +2637,7 @@ parenthesized_expr:
     { may_tuple $startpos $endpos $2 }
 ;
 
-%inline basic_expr(E):
+%inline simple_expr_template(E):
   | as_loc(val_longident) { mkexp (Pexp_ident $1) }
   | constant              { mkexp (Pexp_constant $1) }
   | jsx                   { $1 }
@@ -3297,7 +3302,29 @@ lbl_pattern:
 
 primitive_declaration: nonempty_list(STRING { fst $1 }) { $1 };
 
-/* Type declarations */
+/* Type declarations
+
+   The rule for declaring multiple types, 'type t = ... and u = ...', is
+   written in a "continuation-passing-style". In pseudo-code:
+
+   Rather than having rules like:
+     (1) "TYPE one_type (AND one_type)*"
+
+   It looks like:
+     (2) "TYPE types" where "types = one_type (AND types)?".
+
+   This give more context to prevent ambiguities when parsing attributes.
+   Because attributes can appear before AND (1), the parser should
+   decide very early whether to reduce "one_type", so that an attribute can
+   get attached to AND.
+
+   Previously, only [@..] could occur inside "one_type" and only [@@...] before
+   AND.  Now we only have [@..].
+
+   With style (2), we can inline the relevant part of "one_type"
+   (see type_declaration_kind) to parse attributes as needed and take a
+   decision only when arriving at AND.
+*/
 
 type_declarations:
   item_attributes TYPE nonrec_flag type_declaration_details
