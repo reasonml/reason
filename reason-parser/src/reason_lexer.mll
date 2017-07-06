@@ -543,7 +543,6 @@ rule token = parse
   | "[@" { LBRACKETAT }
   | "[%" { LBRACKETPERCENT }
   | "[%%" { LBRACKETPERCENTPERCENT }
-  | "[@@" { LBRACKETATAT }
   | "!"  { BANG }
   | "!=" { INFIXOP0 "!=" }
   | "!==" { INFIXOP0 "!==" }
@@ -843,7 +842,7 @@ and skip_sharp_bang = parse
     | ((RPAREN | RBRACE | RBRACKET | EOF), _) ->
       raise (Lex_balanced_failed (acc, None))
     | (( LBRACKET | LBRACKETLESS | LBRACKETGREATER
-       | LBRACKETAT | LBRACKETATAT
+       | LBRACKETAT
        | LBRACKETPERCENT | LBRACKETPERCENTPERCENT ), _) ->
       lex_balanced closing lexbuf (lex_balanced RBRACKET lexbuf acc)
     | ((LPAREN | LBRACE), _) ->

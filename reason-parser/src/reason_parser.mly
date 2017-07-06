@@ -998,7 +998,6 @@ let only_labels l =
 %token <string> LIDENT
 %token LPAREN
 %token LBRACKETAT
-%token LBRACKETATAT
 %token LESSSLASH
 %token OF
 %token PRI
@@ -1121,7 +1120,6 @@ conflicts.
  *    %left     INFIXOP0 EQUAL LESS GREATER
  *    %right    INFIXOP1
  *    %nonassoc LBRACKETAT
- *    %nonassoc LBRACKETATAT
  *    %right    COLONCOLON
  *    %left     INFIXOP2 PLUS PLUSDOT MINUS MINUSDOT PLUSEQ
  *    %left     PERCENT INFIXOP3 SLASHGREATER STAR
@@ -1215,7 +1213,7 @@ conflicts.
  * See Menhir's manual for more details.
  */
 %on_error_reduce structure_item let_binding_body
-                 as_loc(item_attribute)+
+                 as_loc(attribute)+
                  type_longident
                  attribute+
                  constr_longident
@@ -1436,7 +1434,7 @@ mark_position_mod
  * achieving that configuration is not easy.
  *
  *  structure:
- *      seq_expr item_attribute* structure_tail { mkstrexp $1 $2 :: $3 }
+ *      seq_expr attribute* structure_tail { mkstrexp $1 $2 :: $3 }
  *    | structure_tail { $1 }
  *  ;
  *  structure_tail:
@@ -1483,7 +1481,7 @@ structure_item:
   | mark_position_str
     ( item_extension_sugar structure_item_without_item_extension_sugar
       { struct_item_extension $1 $2 }
-      /* Each let binding has its own item_attribute* */
+      /* Each let binding has its own attribute* */
     | let_bindings
       { val_of_let_bindings $1 }
     ) { [$1] }
@@ -1495,7 +1493,7 @@ structure_item_without_item_extension_sugar:
   | mark_position_str
     /* We consider a floating expression to be equivalent to a single let binding
        to the "_" (any) pattern.  */
-    ( item_attributes expr
+    ( item_attributes unattributed_expr
       { mkstrexp $2 $1 }
     | item_attributes
       EXTERNAL as_loc(val_ident) COLON only_core_type(core_type) EQUAL primitive_declaration
@@ -1530,7 +1528,7 @@ structure_item_without_item_extension_sugar:
         mkstr (Pstr_class (first :: $4))
       }
     | class_type_declarations
-        (* Each declaration has their own preceeding item_attribute* *)
+        (* Each declaration has their own preceeding attribute* *)
       { mkstr(Pstr_class_type $1) }
     | item_attributes INCLUDE module_expr
       { let loc = mklocation $symbolstartpos $endpos in
@@ -2267,19 +2265,13 @@ mark_position_exp
 
 semi_terminated_seq_expr_row:
 mark_position_exp
-  /**
-   * Expression SEMI
-   */
-  ( item_attributes expr SEMI?  {
-      (* Final item in the sequence *)
-      {$2 with pexp_attributes = $1 @ $2.pexp_attributes}
-    }
-  | item_attributes opt_LET_MODULE as_loc(UIDENT) module_binding_body SEMI semi_terminated_seq_expr
-    { mkexp ~attrs:$1 (Pexp_letmodule($3, $4, $6)) }
-  | item_attributes LET? OPEN override_flag as_loc(mod_longident) SEMI semi_terminated_seq_expr
-    { mkexp ~attrs:$1 (Pexp_open($4, $5, $7)) }
-  | item_attributes expr SEMI semi_terminated_seq_expr
-    { mkexp ~attrs:$1 (Pexp_sequence($2, $4)) }
+  ( expr SEMI? { $1 }
+  | opt_LET_MODULE as_loc(UIDENT) module_binding_body SEMI semi_terminated_seq_expr
+    { mkexp (Pexp_letmodule($2, $3, $5)) }
+  | LET? OPEN override_flag as_loc(mod_longident) SEMI semi_terminated_seq_expr
+    { mkexp (Pexp_open($3, $4, $6)) }
+  | expr SEMI semi_terminated_seq_expr
+    { mkexp (Pexp_sequence($1, $3)) }
   ) {$1};
 
 /*
@@ -2506,7 +2498,7 @@ jsx_without_leading_less:
  * expr: contains function application, but simple_expr doesn't (unless it's
  * wrapped in parens).
  */
-expr:
+unattributed_expr_template(E):
 mark_position_exp
   ( simple_expr
     { $1 }
@@ -2538,7 +2530,7 @@ mark_position_exp
       let loc = mklocation $symbolstartpos $endpos in
       mkexp_cons loc_colon (mkexp ~ghost:true ~loc (Pexp_tuple[$5;$7])) loc
     }
-  | expr as_loc(infix_operator) expr
+  | E as_loc(infix_operator) expr
     { mkinfix $1 $2 $3 }
   | as_loc(subtractive) expr %prec prec_unary
     { mkuminus $1 $2 }
@@ -2592,7 +2584,7 @@ mark_position_exp
    * that we, instead, shift the qusetion mark so that the *latter* ternary is
    * recognized first on the top of the stack. (z ? q : r).
    */
-  | expr QUESTION expr COLON expr
+  | E QUESTION expr COLON expr
     { (* Should use ghost expressions, but not sure how that would work with source maps *)
       (* So ? will become true and : becomes false for now*)
       let loc_question = mklocation $startpos($2) $endpos($2) in
@@ -2605,9 +2597,19 @@ mark_position_exp
       let fauxMatchCaseFalse = Exp.case fauxFalsePat $5 in
       mkexp (Pexp_match ($1, [fauxMatchCaseTrue; fauxMatchCaseFalse]))
     }
-  | attribute expr %prec attribute_precedence
-    { {$2 with pexp_attributes = $1 :: $2.pexp_attributes} }
   ) {$1};
+
+expr:
+  | unattributed_expr_template(expr) { $1 }
+  | mark_position_exp(
+      attribute expr { {$2 with pexp_attributes = $1 :: $2.pexp_attributes} }
+    ) %prec attribute_precedence
+    { $1 }
+;
+
+unattributed_expr:
+  | unattributed_expr_template(unattributed_expr) { $1 }
+;
 
 simple_expr_call:
   | mark_position_exp(basic_expr(simple_expr)) { $1, [] }
@@ -2857,9 +2859,9 @@ labeled_expr:
 
 %inline and_let_binding:
   /* AND bindings don't accept a preceeding extension ID, but do accept
-   * preceeding item_attribute*. These preceeding item_attribute* will cause an
+   * preceeding attribute*. These preceeding attribute* will cause an
    * error if this is an *expression * let binding. Otherwise, they become
-   * item_attribute* on the structure item for the "and" binding.
+   * attribute* on the structure item for the "and" binding.
    */
   item_attributes AND let_binding_body
   { mklb $3 $1 (mklocation $symbolstartpos $endpos) }
@@ -3033,18 +3035,13 @@ expr_optional_constraint:
     { ghexp_constraint (mklocation $symbolstartpos $endpos) $1 $2 }
 ;
 
-%inline reject_attributes:
-  item_attributes
-  { if $1 <> [] then
-      not_expecting $symbolstartpos $endpos "attribute before record field" }
-
 record_expr:
   | DOTDOTDOT expr_optional_constraint lnonempty_list(preceded(COMMA,lbl_expr))
     { (Some $2, $3) }
-  | reject_attributes as_loc(label_longident) COLON expr
-    { (None, [($2, $4)]) }
-  | reject_attributes lseparated_two_or_more(COMMA, lbl_expr) COMMA?
-    { (None, $2) }
+  | as_loc(label_longident) COLON expr
+    { (None, [($1, $3)]) }
+  | lseparated_two_or_more(COMMA, lbl_expr) COMMA?
+    { (None, $1) }
 ;
 
 lbl_expr:
@@ -3055,14 +3052,14 @@ lbl_expr:
 record_expr_with_string_keys:
   | DOTDOTDOT expr_optional_constraint string_literal_exprs
     { (Some $2, $3) }
-  | reject_attributes STRING COLON expr
+  | STRING COLON expr
     { let loc = mklocation $symbolstartpos $endpos in
-      let (s, d) = $2 in
+      let (s, d) = $1 in
       let lident_lident_loc = mkloc (Lident s) loc in
-      (None, [(lident_lident_loc, $4)])
+      (None, [(lident_lident_loc, $3)])
     }
-  | reject_attributes string_literal_expr string_literal_exprs
-    { (None, $2 :: $3) }
+  | string_literal_expr string_literal_exprs
+    { (None, $1 :: $2) }
 ;
 
 %inline string_literal_exprs:
@@ -3416,7 +3413,7 @@ constructor_declarations_aux:
 ;
 
 attributed_constructor_declaration:
-  attributes BAR constructor_declaration
+  item_attributes BAR constructor_declaration
   { {$3 with pcd_attributes = $1 @ $3.pcd_attributes} }
 ;
 
@@ -3427,7 +3424,7 @@ constructor_declaration:
     Type.constructor $1 ~args ?res ~loc }
 ;
 
-/* Why are there already item_attribute* on the extension_constructor_declaration? */
+/* Why are there already attribute* on the extension_constructor_declaration? */
 str_exception_declaration:
   item_attributes EXCEPTION
     either(extension_constructor_declaration, extension_constructor_rebind)
@@ -3456,11 +3453,11 @@ constructor_arguments:
 ;
 
 label_declaration:
-  | attributes mutable_flag as_loc(LIDENT)
+  | item_attributes mutable_flag as_loc(LIDENT)
     { let loc = mklocation $symbolstartpos $endpos in
       (Type.field $3 (mkct $3) ~mut:$2 ~loc, $1)
     }
-  | attributes mutable_flag as_loc(LIDENT) COLON poly_type
+  | item_attributes mutable_flag as_loc(LIDENT) COLON poly_type
     { let loc = mklocation $symbolstartpos $endpos in
       (Type.field $3 $5 ~mut:$2 ~loc, $1)
     }
@@ -3503,7 +3500,7 @@ sig_type_extension:
 ;
 
 %inline attributed_ext_constructor(X):
-  attributes BAR X { {$3 with pext_attributes = $1 @ $3.pext_attributes} }
+  item_attributes BAR X { {$3 with pext_attributes = $1 @ $3.pext_attributes} }
 ;
 
 attributed_ext_constructors(X):
@@ -3836,10 +3833,10 @@ row_field:
 ;
 
 tag_field:
-  | attributes name_tag OF? boption(AMPERSAND)
+  | item_attributes name_tag OF? boption(AMPERSAND)
       separated_nonempty_list(AMPERSAND, only_core_type(core_type))
     { Rtag ($2, $1, $4, $5) }
-  |  attributes name_tag
+  | item_attributes name_tag
     { Rtag ($2, $1, true, []) }
 ;
 
@@ -4127,15 +4124,8 @@ attr_id:
 
 attribute: LBRACKETAT attr_id payload RBRACKET { ($2, $3) };
 
-item_attribute: LBRACKETATAT attr_id payload RBRACKET { ($2, $3) };
-
-located_attributes: as_loc(item_attribute)+ { $1 }
-
 (* Inlined to avoid having to deal with buggy $symbolstartpos *)
-%inline attributes:
-  | { [] }
-  | attribute+ { $1 }
-;
+%inline located_attributes: as_loc(attribute)+ { $1 }
 
 (* Inlined to avoid having to deal with buggy $symbolstartpos *)
 %inline item_attributes:
@@ -4144,18 +4134,6 @@ located_attributes: as_loc(item_attribute)+ { $1 }
 ;
 
 item_extension_sugar:
-  /**
-   * Note, this form isn't really super useful, but wouldn't cause any parser
-   * conflicts. Not supporting it though just to avoid having to write the
-   * pretty printing logic.
-   *
-   *   [@attrsOnExtension] %extSugarId [@attrOnLet] LET ..
-   *
-   * We won't document it though, and probably won't format it as such.
-   *  | PERCENT attr_id item_attribute item_attribute* {
-   *     ($3::$4, $2)
-   *    }
-   */
   PERCENT attr_id { ([], $2) }
 ;
 
