@@ -3333,13 +3333,19 @@ type_declaration_details:
 ;
 
 type_declaration_kind:
-  type_kind constraints and_type_declaration
-  { ($1, $2, $3) }
+  | EQUAL private_flag constructor_declarations
+      constraints and_type_declaration
+    { ((Ptype_variant ($3), $2, None), $4, $5) }
+  | EQUAL only_core_type(core_type) EQUAL private_flag constructor_declarations
+      constraints and_type_declaration
+    { ((Ptype_variant ($5), $4, Some $2), $6, $7) }
+  | type_other_kind constraints and_type_declaration
+    { ($1, $2, $3) }
 ;
 
 constraints: preceded(CONSTRAINT, constrain)* { $1 };
 
-type_kind:
+type_other_kind:
   | /*empty*/
     { (Ptype_abstract, Public, None) }
   | EQUAL private_flag core_type
@@ -3347,12 +3353,8 @@ type_kind:
       | Core_type ct -> (Ptype_abstract, $2, Some ct)
       | Record_type rt -> (Ptype_record rt, $2, None)
     }
-  | EQUAL private_flag constructor_declarations
-    { (Ptype_variant ($3), $2, None) }
   | EQUAL DOTDOT
     { (Ptype_open, Public, None) }
-  | EQUAL only_core_type(core_type) EQUAL private_flag constructor_declarations
-    { (Ptype_variant ($5), $4, Some $2) }
   | EQUAL only_core_type(core_type) EQUAL DOTDOT
     { (Ptype_open, Public, Some $2) }
   | EQUAL only_core_type(core_type) EQUAL private_flag LBRACE label_declarations RBRACE
