@@ -2499,11 +2499,10 @@ jsx_without_leading_less:
  * In other places, attributes are allowed.
  *
  * The generic parts are represented by unattributed_expr_template(_).
- * The parameter is to "tie" the knot: recursive cases inside unattributed_expr_template
- * Then unattributed_expr represents the concreteunattribute
- * ...
+ * Then unattributed_expr represents the concrete unattributed expr
+ * while expr adds an attribute rule to unattributed_expr_template.
  */
-unattributed_expr_template(E):
+%inline unattributed_expr_template(E):
 mark_position_exp
   ( simple_expr
     { $1 }
@@ -2604,6 +2603,12 @@ mark_position_exp
     }
   ) {$1};
 
+/*
+ * Much like how patterns are partitioned into pattern/simple_pattern,
+ * expressions are divided into expr/simple_expr.
+ * expr: contains function application, but simple_expr doesn't (unless it's
+ * wrapped in parens).
+ */
 expr:
   | unattributed_expr_template(expr) { $1 }
   | mark_position_exp(
@@ -2616,17 +2621,6 @@ expr:
 unattributed_expr:
   unattributed_expr_template(unattributed_expr) { $1 };
 
-%inline simple_expr: simple_expr_call { mkexp_app_rev $startpos $endpos $1 };
-
-simple_expr_no_call:
-  mark_position_exp(simple_expr_template(simple_expr_no_call)) { $1 };
-
-simple_expr_call:
-  | mark_position_exp(simple_expr_template(simple_expr)) { $1, [] }
-  | simple_expr_call labeled_arguments
-    { let body, args = $1 in (body, List.rev_append $2 args) }
-;
-
 parenthesized_expr:
   | braced_expr
     { $1 }
@@ -2637,6 +2631,14 @@ parenthesized_expr:
     { may_tuple $startpos $endpos $2 }
 ;
 
+/* The grammar of simple exprs changes slightly according to context:
+ * - in most cases, calls (like f(x)) are allowed
+ * - in some contexts, calls are forbidden
+ *   (most notably JSX lists and rhs of a SHARPOP extension).
+ *
+ * simple_expr_template contains the generic parts,
+ * simple_expr and simple_expr_no_call the specialized instances.
+ */
 %inline simple_expr_template(E):
   | as_loc(val_longident) { mkexp (Pexp_ident $1) }
   | constant              { mkexp (Pexp_constant $1) }
@@ -2753,6 +2755,17 @@ parenthesized_expr:
     { unclosed_exp (with_txt $3 "(") (with_txt $7 ")")}
   | extension
     { mkexp (Pexp_extension $1) }
+;
+
+%inline simple_expr: simple_expr_call { mkexp_app_rev $startpos $endpos $1 };
+
+simple_expr_no_call:
+  mark_position_exp(simple_expr_template(simple_expr_no_call)) { $1 };
+
+simple_expr_call:
+  | mark_position_exp(simple_expr_template(simple_expr)) { $1, [] }
+  | simple_expr_call labeled_arguments
+    { let body, args = $1 in (body, List.rev_append $2 args) }
 ;
 
 simple_expr_direct_argument:
