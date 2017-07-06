@@ -319,3 +319,7 @@ external readFileSync2 :
   ([ `utf8 [@bs.as "ascii"] | `my_name [@bs.as "ascii"] ] [@bs.string]) =>
   string = ""
   [@@bs.module "fs"];
+
+/* Ensure that attributes on extensions are printed */
+[@@@test
+  [%%extension] [@@attr]; ];
