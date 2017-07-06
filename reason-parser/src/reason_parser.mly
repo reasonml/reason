@@ -3300,8 +3300,8 @@ primitive_declaration: nonempty_list(STRING { fst $1 }) { $1 };
 
 type_declarations:
   item_attributes TYPE nonrec_flag type_declaration_details
-  { let (ident, params, constraints, kind, priv, manifest), and_types = $4 in
-    let loc = mklocation $symbolstartpos $endpos($4) in
+  { let (ident, params, constraints, kind, priv, manifest), endpos, and_types = $4 in
+    let loc = mklocation $symbolstartpos endpos in
     let ty = Type.mk ident ~params:params ~cstrs:constraints
              ~kind ~priv ?manifest ~attrs:$1 ~loc in
     ($3, ty :: and_types)
@@ -3311,8 +3311,8 @@ type_declarations:
 and_type_declaration:
   | { [] }
   | item_attributes AND type_declaration_details
-    { let (ident, params, cstrs, kind, priv, manifest), and_types = $3 in
-      let loc = mklocation $symbolstartpos $endpos in
+    { let (ident, params, cstrs, kind, priv, manifest), endpos, and_types = $3 in
+      let loc = mklocation $symbolstartpos endpos in
       Type.mk ident ~params ~cstrs ~kind ~priv ?manifest ~attrs:$1 ~loc
       :: and_types
     }
@@ -3324,20 +3324,20 @@ type_declaration_details:
         "A type's name need to begin with a lower-case letter or _"
     }
   | as_loc(LIDENT) type_variables_with_variance type_declaration_kind
-    { let (kind, priv, manifest), constraints, and_types = $3 in
-      (($1, $2, constraints, kind, priv, manifest), and_types)
+    { let (kind, priv, manifest), constraints, endpos, and_types = $3 in
+      (($1, $2, constraints, kind, priv, manifest), endpos, and_types)
     }
 ;
 
 type_declaration_kind:
   | EQUAL private_flag constructor_declarations
-    { let (cstrs, constraints, and_types) = $3 in
-      ((Ptype_variant (cstrs), $2, None), constraints, and_types) }
+    { let (cstrs, constraints, endpos, and_types) = $3 in
+      ((Ptype_variant (cstrs), $2, None), constraints, endpos, and_types) }
   | EQUAL only_core_type(core_type) EQUAL private_flag constructor_declarations
-    { let (cstrs, constraints, and_types) = $5 in
-      ((Ptype_variant (cstrs), $4, Some $2), constraints, and_types) }
+    { let (cstrs, constraints, endpos, and_types) = $5 in
+      ((Ptype_variant (cstrs), $4, Some $2), constraints, endpos, and_types) }
   | type_other_kind constraints and_type_declaration
-    { ($1, $2, $3) }
+    { ($1, $2, $endpos($2), $3) }
 ;
 
 %inline constraints:
@@ -3399,16 +3399,17 @@ mark_position_typ
 constructor_declarations:
   | constructor_declaration constructor_declarations_aux
   | attributed_constructor_declaration constructor_declarations_aux
-    { let (cstrs, constraints, and_types) = $2 in
-      ($1 :: cstrs, constraints, and_types)
+    { let (cstrs, constraints, endpos, and_types) = $2 in
+      ($1 :: cstrs, constraints, endpos, and_types)
     }
 ;
 
 constructor_declarations_aux:
-  | constraints and_type_declaration { ([], $1, $2) }
+  | constraints and_type_declaration
+    { ([], $1, $endpos($1), $2) }
   | attributed_constructor_declaration constructor_declarations_aux
-    { let (cstrs, constraints, and_types) = $2 in
-      ($1 :: cstrs, constraints, and_types)
+    { let (cstrs, constraints, endpos, and_types) = $2 in
+      ($1 :: cstrs, constraints, endpos, and_types)
     }
 ;
 
