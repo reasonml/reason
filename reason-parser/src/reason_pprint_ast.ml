@@ -5899,7 +5899,8 @@ class printer  ()= object(self:'self)
   method structure_item term =
     let item = (
       match term.pstr_desc with
-        | Pstr_eval (e, _attrs) -> self#unparseExpr e
+        | Pstr_eval (e, attrs) ->
+            self#attach_std_item_attrs attrs (self#unparseExpr e)
         | Pstr_type (_, []) -> assert false
         | Pstr_type (rf, l)  -> (self#type_def_list (rf, l))
         | Pstr_value (rf, l) -> (self#bindings (rf, l))
@@ -5953,7 +5954,7 @@ class printer  ()= object(self:'self)
         | Pstr_extension (e, a) ->
           (* Notice how extensions have attributes - but not every structure
              item does. *)
-          self#item_extension e
+          self#attach_std_item_attrs a (self#item_extension e)
     ) in
     SourceMap(term.pstr_loc, item)
 

@@ -201,7 +201,7 @@ type gadtType 'x =
 
 [@@@floatingTopLevelStructureItem hello];
 
-print_string "hello";
+print_string "hello" [@@itemAttributeOnEval];
 
 let firstBinding = "first"
 and secondBinding = "second";
