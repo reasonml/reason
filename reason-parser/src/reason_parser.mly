@@ -3303,31 +3303,32 @@ primitive_declaration: nonempty_list(STRING { fst $1 }) { $1 };
 
 type_declarations:
   item_attributes TYPE nonrec_flag type_declaration_details
-    and_type_declaration*
-  { let (ident, params, constraints, kind, priv, manifest) = $4 in
+  { let (ident, params, constraints, kind, priv, manifest), and_types = $4 in
     let loc = mklocation $symbolstartpos $endpos($4) in
     let ty = Type.mk ident ~params:params ~cstrs:constraints
              ~kind ~priv ?manifest ~attrs:$1 ~loc in
-    ($3, ty :: $5)
+    ($3, ty :: and_types)
   }
 ;
 
-%inline and_type_declaration:
-  item_attributes AND type_declaration_details
-  { let (ident, params, cstrs, kind, priv, manifest) = $3 in
-    let loc = mklocation $symbolstartpos $endpos in
-    Type.mk ident ~params ~cstrs ~kind ~priv ?manifest ~attrs:$1 ~loc
-  }
+and_type_declaration:
+  | { [] }
+  | item_attributes AND type_declaration_details
+    { let (ident, params, cstrs, kind, priv, manifest), and_types = $3 in
+      let loc = mklocation $symbolstartpos $endpos in
+      Type.mk ident ~params ~cstrs ~kind ~priv ?manifest ~attrs:$1 ~loc
+      :: and_types
+    }
 ;
 
 type_declaration_details:
-  | as_loc(UIDENT) type_variables_with_variance type_kind constraints
+  | as_loc(UIDENT) type_variables_with_variance type_kind constraints and_type_declaration
     { Location.raise_errorf ~loc:$1.loc
         "A type's name need to begin with a lower-case letter or _"
     }
-  | as_loc(LIDENT) type_variables_with_variance type_kind constraints
+  | as_loc(LIDENT) type_variables_with_variance type_kind constraints and_type_declaration
     { let (kind, priv, manifest) = $3 in
-      ($1, $2, $4, kind, priv, manifest)
+      (($1, $2, $4, kind, priv, manifest), $5)
     }
 ;
 
