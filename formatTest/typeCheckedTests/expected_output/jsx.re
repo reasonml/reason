@@ -543,17 +543,17 @@ let defaultArg = <DefaultArg default=zzz />;
 
 fakeRender(defaultArg);
 
-[@bla]
-[@JSX]
-NotReallyJSX.createElement([], :foo 1, :bar 2);
+([@bla]
+ [@JSX]
+ NotReallyJSX.createElement([], :foo 1, :bar 2));
 
-[@bla]
-[@JSX]
-NotReallyJSX.createElement(:foo 1, [], :bar 2);
+([@bla]
+ [@JSX]
+ NotReallyJSX.createElement(:foo 1, [], :bar 2));
 
-[@bla] [@JSX] notReallyJSX([], :foo 1);
+([@bla] [@JSX] notReallyJSX([], :foo 1));
 
-[@bla] [@JSX] notReallyJSX(:foo 1, [], :bar 2);
+([@bla] [@JSX] notReallyJSX(:foo 1, [], :bar 2));
 
 /* children can be at any position */
 <span test=true foo=2 />;
@@ -561,13 +561,13 @@ NotReallyJSX.createElement(:foo 1, [], :bar 2);
 <Optional1 required=(Some("hi")) />;
 
 /* preserve some other attributes too! */
-[@bla] <span test=true foo=2 />;
+([@bla] <span test=true foo=2 />);
 
-[@bla] <span test=true foo=2 />;
+([@bla] <span test=true foo=2 />);
 
-[@bla] <Optional1 required=(Some("hi")) />;
+([@bla] <Optional1 required=(Some("hi")) />);
 
-[@bla] <Optional1 required=(Some("hi")) />;
+([@bla] <Optional1 required=(Some("hi")) />);
 
 /* Overeager JSX punning #1099 */
 module Metal = {

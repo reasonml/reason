@@ -1,6 +1,6 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 
-[@@autoFormat let wrap=80; let shift=2;];
+[@autoFormat let wrap=80; let shift=2;];
 Modules.run ();
 Polymorphism.run ();
 Variants.run();
@@ -820,7 +820,7 @@ let newRecord = {
 };
 
 
-[@@thisIsAThing];
+[@thisIsAThing];
 let x = 10;
 
 /* Ensure that the parenthesis are preserved here because they are

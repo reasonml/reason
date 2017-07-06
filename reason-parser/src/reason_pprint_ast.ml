@@ -3392,6 +3392,15 @@ class printer  ()= object(self:'self)
     | PotentiallyLowPrecedence itm -> itm
     | Simple itm -> itm
 
+  method unparseUnattributedExpr x =
+    match partitionAttributes x.pexp_attributes with
+    | (_, [], [], _) -> self#unparseExpr x
+    | _ -> match x.pexp_desc with
+      | Pexp_open _ | Pexp_let _ | Pexp_letmodule _ | Pexp_sequence _ ->
+        makeLetSequence (self#letList x)
+      | _ ->
+        makeList ~wrap:("(",")") [self#unparseExpr x]
+
   method unparseConstraintExpr = function
     | { pexp_attributes = []; pexp_desc = Pexp_constraint (x, ct) } ->
       let x = self#unparseExpr x in
@@ -5861,7 +5870,10 @@ class printer  ()= object(self:'self)
   method structure_item term =
     let item = (
       match term.pstr_desc with
-        | Pstr_eval (e, _attrs) -> self#unparseExpr e
+        | Pstr_eval (e, []) -> self#unparseUnattributedExpr e
+        | Pstr_eval (e, attrs) ->
+          let attrs = self#attributes attrs in
+          formatAttributed (self#unparseUnattributedExpr e) attrs
         | Pstr_type (_, []) -> assert false
         | Pstr_type (rf, l)  -> (self#type_def_list (rf, l))
         | Pstr_value (rf, l) -> (self#bindings (rf, l))

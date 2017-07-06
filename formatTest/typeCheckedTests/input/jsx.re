@@ -284,7 +284,7 @@ let asd2 = [@JSX] [@foo] video(test::false,10);
 
 
 let div(::children) = 1;
-[@JSX] (((fun () => div) ())(children::[]));
+([@JSX] (((fun () => div) ())(children::[])));
 
 let myFun () {
   <>
@@ -354,22 +354,22 @@ fakeRender(defaultArg);
 let defaultArg = <DefaultArg default=zzz />;
 fakeRender(defaultArg);
 
-[@JSX][@bla] NotReallyJSX.createElement([],foo::1,bar::2);
-[@bla][@JSX] NotReallyJSX.createElement(foo::1,[],bar::2);
-[@JSX][@bla] notReallyJSX([],foo::1);
-[@bla][@JSX] notReallyJSX(foo::1,[],bar::2);
+([@JSX][@bla] NotReallyJSX.createElement([],foo::1,bar::2));
+([@bla][@JSX] NotReallyJSX.createElement(foo::1,[],bar::2));
+([@JSX][@bla] notReallyJSX([],foo::1));
+([@bla][@JSX] notReallyJSX(foo::1,[],bar::2));
 
 /* children can be at any position */
-[@JSX] span(children::[],test::true,foo::2,());
+([@JSX] span(children::[],test::true,foo::2,()));
 
-[@JSX] Optional1.createElement(children::[],required::Some("hi"),());
+([@JSX] Optional1.createElement(children::[],required::Some("hi"),()));
 
 /* preserve some other attributes too! */
-[@JSX][@bla] span(children::[],test::true,foo::2,());
-[@bla][@JSX] span(children::[],test::true,foo::2,());
+([@JSX][@bla] span(children::[],test::true,foo::2,()));
+([@bla][@JSX] span(children::[],test::true,foo::2,()));
 
-[@JSX][@bla] Optional1.createElement(children::[],required::Some("hi"),());
-[@bla][@JSX] Optional1.createElement(children::[],required::Some("hi"),());
+([@JSX][@bla] Optional1.createElement(children::[],required::Some("hi"),()));
+([@bla][@JSX] Optional1.createElement(children::[],required::Some("hi"),()));
 
 /* Overeager JSX punning #1099 */
 module Metal = {

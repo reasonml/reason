@@ -11,7 +11,7 @@ let test: int;
 /**
  * #990: don't strip attributes in interface files
  */
-[@@bs.val] let x: int;
+[@bs.val] let x: int;
 
 type t('a);
 
@@ -19,21 +19,21 @@ type reactClass;
 
 type reactElement;
 
-[@@bs.val] [@@bs.module "React"]
+[@bs.val] [@bs.module "React"]
 external createClassInternalHack :
   t('classSpec) => reactClass =
   "createClass";
 
-[@@bs.send.pipe : array('a)]
+[@bs.send.pipe : array('a)]
 external map : [@bs] (('a => 'b) => array('b)) =
   "";
 
-[@@bs.val] [@@bs.module "react"]
+[@bs.val] [@bs.module "react"]
 external createClassInternalHack :
   t('classSpec) => reactClass =
   "createClass";
 
-[@@bs.val] [@@bs.module "react"] [@@bs.splice]
+[@bs.val] [@bs.module "react"] [@bs.splice]
 external createCompositeElementInternalHack :
   (
     reactClass,

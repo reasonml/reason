@@ -2603,7 +2603,8 @@ expr:
   | unattributed_expr_template(expr) { $1 }
   | mark_position_exp(
       attribute expr { {$2 with pexp_attributes = $1 :: $2.pexp_attributes} }
-    ) %prec attribute_precedence
+      %prec attribute_precedence
+    )
     { $1 }
 ;
 
