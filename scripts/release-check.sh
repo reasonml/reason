@@ -21,8 +21,7 @@ if [ "${MASTER}" != "${HEAD}" ]; then
 the release. **"
 fi
 
-read -p "STOP! Have you made sure to release the sub packages (including \
-reason-parser)? (y/n) " yn
+read -p "STOP! Have you made sure to release the sub packages? (y/n) " yn
 if [ "${yn}" != "y" ]; then
     die "Not releasing."
 fi

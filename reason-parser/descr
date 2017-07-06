@@ -1,7 +1,0 @@
-Reason Parser: Meta Language Toolchain
-
-reason allows development of Meta Language syntax trees in non-text format. It
-allows a development model that is equivalent to collaborating on syntax trees
-that have been committed to a source code repository.
-
-This is the parser sub-package.

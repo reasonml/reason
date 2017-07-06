@@ -25,7 +25,6 @@ depends: [
   "result"                  {=  "1.2"}
   "topkg"                   {>=  "0.8.1" & < "0.9"}
   "ocaml-migrate-parsetree"
-  "reason-parser"           {= "1.13.6"}
 ]
 depopts: [
 ]

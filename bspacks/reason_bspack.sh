@@ -8,17 +8,14 @@ ppxToolsVersionedTargetDir=~/.esy/store-3.x.x/_build/opam_alpha__slash__ppx___to
 # and modified according to the README
 ocamlMigrateParseTreeTargetDir=./omp
 reasonTargetDir=../
-reasonParserTargetDir=../reason-parser
 
 # clean some artifacts
 rm -rf ./*.cm*
 rm -rf ./*.out
 rm -rf ./*.o
 rm -rf ./*.ml
-make clean -C ../reason-parser
 make clean -C ../
 
-make -C ../reason-parser
 make -C ../
 
 ./node_modules/bs-platform/bin/bspack.exe \
@@ -32,8 +29,6 @@ make -C ../
   -I "$reasonTargetDir" \
   -I "$reasonTargetDir/_build/src" \
   -I "$reasonTargetDir/vendor/cmdliner" \
-  -I "$reasonParserTargetDir/_build/src" \
-  -I "$reasonParserTargetDir/vendor/easy_format" \
   -I "$ocamlMigrateParseTreeTargetDir" \
   -o "./refmt_main.ml"
 
