@@ -10,6 +10,14 @@ ocamlMigrateParseTreeTargetDir=./omp
 reasonTargetDir=../
 reasonParserTargetDir=../reason-parser
 
+# clean some artifacts
+rm -rf ./*.cm*
+rm -rf ./*.out
+rm -rf ./*.o
+rm -rf ./*.ml
+make clean -C ../reason-parser
+make clean -C ../
+
 make -C ../reason-parser
 make -C ../
 
