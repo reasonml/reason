@@ -1217,7 +1217,7 @@ conflicts.
 %on_error_reduce structure_item let_binding_body
                  as_loc(item_attribute)+
                  type_longident
-                 attribute*
+                 attribute+
                  constr_longident
                  pattern
                  nonrec_flag
@@ -3334,16 +3334,19 @@ type_declaration_details:
 
 type_declaration_kind:
   | EQUAL private_flag constructor_declarations
-      constraints and_type_declaration
-    { ((Ptype_variant ($3), $2, None), $4, $5) }
+    { let (cstrs, constraints, and_types) = $3 in
+      ((Ptype_variant (cstrs), $2, None), constraints, and_types) }
   | EQUAL only_core_type(core_type) EQUAL private_flag constructor_declarations
-      constraints and_type_declaration
-    { ((Ptype_variant ($5), $4, Some $2), $6, $7) }
+    { let (cstrs, constraints, and_types) = $5 in
+      ((Ptype_variant (cstrs), $4, Some $2), constraints, and_types) }
   | type_other_kind constraints and_type_declaration
     { ($1, $2, $3) }
 ;
 
-constraints: preceded(CONSTRAINT, constrain)* { $1 };
+%inline constraints:
+  | { [] }
+  | preceded(CONSTRAINT, constrain)+ { $1 }
+;
 
 type_other_kind:
   | /*empty*/
@@ -3397,12 +3400,23 @@ mark_position_typ
   { $1 };
 
 constructor_declarations:
-  | constructor_declaration attributed_constructor_declaration* { $1 :: $2 }
-  | attributed_constructor_declaration+ { $1 }
+  | constructor_declaration constructor_declarations_aux
+  | attributed_constructor_declaration constructor_declarations_aux
+    { let (cstrs, constraints, and_types) = $2 in
+      ($1 :: cstrs, constraints, and_types)
+    }
 ;
 
-%inline attributed_constructor_declaration:
-  attribute* BAR constructor_declaration
+constructor_declarations_aux:
+  | constraints and_type_declaration { ([], $1, $2) }
+  | attributed_constructor_declaration constructor_declarations_aux
+    { let (cstrs, constraints, and_types) = $2 in
+      ($1 :: cstrs, constraints, and_types)
+    }
+;
+
+attributed_constructor_declaration:
+  attributes BAR constructor_declaration
   { {$3 with pcd_attributes = $1 @ $3.pcd_attributes} }
 ;
 
@@ -3442,11 +3456,11 @@ constructor_arguments:
 ;
 
 label_declaration:
-  | attribute* mutable_flag as_loc(LIDENT)
+  | attributes mutable_flag as_loc(LIDENT)
     { let loc = mklocation $symbolstartpos $endpos in
       (Type.field $3 (mkct $3) ~mut:$2 ~loc, $1)
     }
-  | attribute* mutable_flag as_loc(LIDENT) COLON poly_type
+  | attributes mutable_flag as_loc(LIDENT) COLON poly_type
     { let loc = mklocation $symbolstartpos $endpos in
       (Type.field $3 $5 ~mut:$2 ~loc, $1)
     }
@@ -3489,7 +3503,7 @@ sig_type_extension:
 ;
 
 %inline attributed_ext_constructor(X):
-  attribute* BAR X { {$3 with pext_attributes = $1 @ $3.pext_attributes} }
+  attributes BAR X { {$3 with pext_attributes = $1 @ $3.pext_attributes} }
 ;
 
 attributed_ext_constructors(X):
@@ -3822,10 +3836,10 @@ row_field:
 ;
 
 tag_field:
-  | attribute* name_tag OF? boption(AMPERSAND)
+  | attributes name_tag OF? boption(AMPERSAND)
       separated_nonempty_list(AMPERSAND, only_core_type(core_type))
     { Rtag ($2, $1, $4, $5) }
-  |  attribute* name_tag
+  |  attributes name_tag
     { Rtag ($2, $1, true, []) }
 ;
 
@@ -4115,9 +4129,15 @@ attribute: LBRACKETAT attr_id payload RBRACKET { ($2, $3) };
 
 item_attribute: LBRACKETATAT attr_id payload RBRACKET { ($2, $3) };
 
-(* Inlined to avoid having to deal with buggy $symbolstartpos *)
-%inline located_attributes: as_loc(item_attribute)+ { $1 }
+located_attributes: as_loc(item_attribute)+ { $1 }
 
+(* Inlined to avoid having to deal with buggy $symbolstartpos *)
+%inline attributes:
+  | { [] }
+  | attribute+ { $1 }
+;
+
+(* Inlined to avoid having to deal with buggy $symbolstartpos *)
 %inline item_attributes:
   | { [] }
   | located_attributes { List.map (fun x -> x.txt) $1 }
