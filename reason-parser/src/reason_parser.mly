@@ -3322,14 +3322,19 @@ and_type_declaration:
 ;
 
 type_declaration_details:
-  | as_loc(UIDENT) type_variables_with_variance type_kind constraints and_type_declaration
+  | as_loc(UIDENT) type_variables_with_variance type_declaration_kind
     { Location.raise_errorf ~loc:$1.loc
         "A type's name need to begin with a lower-case letter or _"
     }
-  | as_loc(LIDENT) type_variables_with_variance type_kind constraints and_type_declaration
-    { let (kind, priv, manifest) = $3 in
-      (($1, $2, $4, kind, priv, manifest), $5)
+  | as_loc(LIDENT) type_variables_with_variance type_declaration_kind
+    { let (kind, priv, manifest), constraints, and_types = $3 in
+      (($1, $2, constraints, kind, priv, manifest), and_types)
     }
+;
+
+type_declaration_kind:
+  type_kind constraints and_type_declaration
+  { ($1, $2, $3) }
 ;
 
 constraints: preceded(CONSTRAINT, constrain)* { $1 };
