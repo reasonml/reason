@@ -5004,11 +5004,11 @@ class printer  ()= object(self:'self)
   (* [@@ ... ] Attributes that occur after a major item in a structure/class *)
   method item_attribute (s, e) = (self#payload "@@" s e)
 
-  (* [@@@ ...] Attributes that occur not *after* an item in some structure/class/sig, but
+  (* [@@ ...] Attributes that occur not *after* an item in some structure/class/sig, but
      rather as their own standalone item. Note that syntactic distinction
      between item_attribute and floating_attribute is no longer necessary with
      Reason. Thank you semicolons. *)
-  method floating_attribute (s, e) = (self#payload "@@@" s e)
+  method floating_attribute = self#item_attribute
 
 
   method attributes l =

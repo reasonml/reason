@@ -8,14 +8,14 @@
  * If a node has attributes attached to it,
  */
 
-[@@@ocaml.text "Floating comment text should be removed"];
+[@@ocaml.text "Floating comment text should be removed"];
 
 /**
  * Core language features:
  * ----------------------
  */
 
-[@@@ocaml.doc "Floating doc text should be removed"];
+[@@ocaml.doc "Floating doc text should be removed"];
 
 [@@itemAttributeOnTypeDef] [@@ocaml.text "removed text on type def"]
 type itemText = int;
@@ -155,7 +155,7 @@ type gadtType('x) =
    | Bar ([@onInt]int) : [@onSecondRow]gadtType(unit)
    | Baz: [@onThirdRow] gadtType ([@onUnit] unit);
 
-[@@@floatingTopLevelStructureItem hello];
+[@@floatingTopLevelStructureItem hello];
 [@@itemAttributeOnEval]
 print_string("hello");
 
@@ -186,8 +186,8 @@ let showLets () = [@onOuterLet] {
  */
 [@@moduleItemAttribute]
 class boxA('a) (init: 'a) = [@onReturnClassExpr] {
-  [@@@ocaml.text "Floating comment text should be removed"];
-  [@@@ocaml.doc "Floating comment text should be removed"];
+  [@@ocaml.text "Floating comment text should be removed"];
+  [@@ocaml.doc "Floating comment text should be removed"];
   pub pr = init + init + init;
 };
 
@@ -221,8 +221,8 @@ class tupleClass('a,'b)(init: ('a, 'b)) {
 
 [@@structureItem]
 class type addablePointClassType = {
-  [@@@ocaml.text "Floating comment text should be removed"];
-  [@@@ocaml.doc "Floating comment text should be removed"];
+  [@@ocaml.text "Floating comment text should be removed"];
+  [@@ocaml.doc "Floating comment text should be removed"];
   pub x: int;
   pub y: int;
   pub add: (addablePointClassType, addablePointClassType) => int;
@@ -238,19 +238,19 @@ class type _y { [@@bs.set] pub height : int };
 [@@bs] class type _z { pub height : int };
 
 module NestedModule {
-  [@@@floatingNestedStructureItem hello];
+  [@@floatingNestedStructureItem hello];
 };
 [@@structureItem]
 module type HasAttrs = {
   [@@onTypeDef]
   type t = int;
-  [@@@floatingNestedSigItem hello];
+  [@@floatingNestedSigItem hello];
   [@@sigItem]
   class type foo = {pub foo: int; pub bar: int;};
   [@@sigItem]
   class fooBar: (int) => foo;
-  [@@@ocaml.text "Floating comment text should be removed"];
-  [@@@ocaml.doc "Floating comment text should be removed"];
+  [@@ocaml.text "Floating comment text should be removed"];
+  [@@ocaml.doc "Floating comment text should be removed"];
 };
 
 type s = S(string);

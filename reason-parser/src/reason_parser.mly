@@ -999,7 +999,6 @@ let only_labels l =
 %token LPAREN
 %token LBRACKETAT
 %token LBRACKETATAT
-%token LBRACKETATATAT
 %token LESSSLASH
 %token OF
 %token PRI

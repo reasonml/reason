@@ -1,5 +1,5 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
-[@@@autoFormat let wrap = 80; let shift = 2];
+[@@autoFormat let wrap = 80; let shift = 2];
 
 Modules.run();
 
@@ -949,7 +949,7 @@ let newRecord = {
   developmentHabbits: 1
 };
 
-[@@@thisIsAThing];
+[@@thisIsAThing];
 
 let x = 10;
 

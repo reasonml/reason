@@ -204,7 +204,7 @@ type gadtType('x) =
                        gadtType(unit)
   | Baz: [@onThirdRow] gadtType([@onUnit] unit);
 
-[@@@floatingTopLevelStructureItem hello];
+[@@floatingTopLevelStructureItem hello];
 
 print_string("hello");
 
@@ -301,12 +301,12 @@ class type _z = {
 };
 
 module NestedModule = {
-  [@@@floatingNestedStructureItem hello];
+  [@@floatingNestedStructureItem hello];
 };
 
 module type HasAttrs = {
   [@@onTypeDef] type t = int;
-  [@@@floatingNestedSigItem hello];
+  [@@floatingNestedSigItem hello];
   [@@sigItem]
   class type foo = {
     pub foo: int;

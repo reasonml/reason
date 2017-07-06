@@ -1,6 +1,6 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 
-[@@@ocaml.text "Floating comment text should be removed"];
+[@@ocaml.text "Floating comment text should be removed"];
 let test : int;
 
 /**
@@ -9,7 +9,7 @@ let test : int;
  * ----------------------
  */
 
-[@@@ocaml.doc "Floating doc text should be removed"];
+[@@ocaml.doc "Floating doc text should be removed"];
 
 
 /**

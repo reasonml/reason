@@ -46,7 +46,7 @@ class virtual stackWithAttributes('a)(init)
 
   as [@thisShouldntBeFormattedAway] this;
   /* Before floatting attribute */
-  [@@@floatingAttribute];
+  [@@floatingAttribute];
   /* Virtual member */
   [@@itemAttr1]
   val virtual dummy : unit;

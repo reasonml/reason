@@ -38,7 +38,7 @@ class virtual stackWithAttributes ('a) (init) = {
   /* The "as this" should not be formatted away because attributes. */
   as [@thisShouldntBeFormattedAway] this;
   /* Before floatting attribute */
-  [@@@floatingAttribute];
+  [@@floatingAttribute];
   /* Virtual member */
   val virtual dummy: unit;
   val mutable v: list('a) = init;
