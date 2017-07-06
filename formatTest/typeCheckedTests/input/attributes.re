@@ -8,36 +8,36 @@
  * If a node has attributes attached to it,
  */
 
-[@@ocaml.text "Floating comment text should be removed"];
+[@ocaml.text "Floating comment text should be removed"];
 
 /**
  * Core language features:
  * ----------------------
  */
 
-[@@ocaml.doc "Floating doc text should be removed"];
+[@ocaml.doc "Floating doc text should be removed"];
 
-[@@itemAttributeOnTypeDef] [@@ocaml.text "removed text on type def"]
+[@itemAttributeOnTypeDef] [@ocaml.text "removed text on type def"]
 type itemText = int;
 type nodeText = [@ocaml.text "removed text on item"] int;
-[@@itemAttributeOnTypeDef]
-[@@ocaml.text "removed text on type def"]
+[@itemAttributeOnTypeDef]
+[@ocaml.text "removed text on type def"]
 type nodeAndItemText =
   [@ocaml.text "removed text on item"] int;
 
-[@@itemAttributeOnTypeDef] [@@ocaml.doc "removed doc on type def"]
+[@itemAttributeOnTypeDef] [@ocaml.doc "removed doc on type def"]
 type itemDoc = int;
-[@@itemAttributeOnTypeDef]
+[@itemAttributeOnTypeDef]
 type nodeDoc = [@ocaml.text "removed text on item"] int;
-[@@itemAttributeOnTypeDef] [@@ocaml.doc "removed doc on type def"]
+[@itemAttributeOnTypeDef] [@ocaml.doc "removed doc on type def"]
 type nodeAndItemDoc =
   [@ocaml.text "removed text on item"] int;
 
-[@@itemAttributeOnTypeDef]
+[@itemAttributeOnTypeDef]
 type x = int;
 type attributedInt = [@onTopLevelTypeDef] int;
 
-[@@itemAttributeOnTypeDef]
+[@itemAttributeOnTypeDef]
 type attributedIntsInTuple = ([@onInt] int, [@onFloat] float);
 
 type myDataType('x,'y) = | MyDataType('x,'y);
@@ -127,41 +127,41 @@ let myObj = {
 
 let result = [@onSecondSend]([@attOnFirstSend]myObj#p ())#z ();
 
-[@@onRecordFunctions]
+[@onRecordFunctions]
 type recordFunctions = {
   p: (unit) => ([@onUnit] recordFunctions),
   q: [@onArrow] ((unit) => unit)
 }
-[@@onUnusedType]
+[@onUnusedType]
 and unusedType = unit;
-[@@onMyRecord]
+[@onMyRecord]
 let rec myRecord = {
   p: fun () => myRecord,
   q: fun () => ()
 }
-[@@onUnused]
+[@onUnused]
 and unused = ();
 let result = [@onSecondSend]([@attOnFirstSend]myRecord.p()).q();
 
-[@@onVariantType]
+[@onVariantType]
 type variantType =
    [@onInt] | Foo(int)
    | Bar ([@onInt] int)
    | Baz;
 
-[@@onVariantType]
+[@onVariantType]
 type gadtType('x) =
    | Foo(int) : [@onFirstRow] gadtType(int)
    | Bar ([@onInt]int) : [@onSecondRow]gadtType(unit)
    | Baz: [@onThirdRow] gadtType ([@onUnit] unit);
 
-[@@floatingTopLevelStructureItem hello];
-[@@itemAttributeOnEval]
+[@floatingTopLevelStructureItem hello];
+[@itemAttributeOnEval]
 print_string("hello");
 
-[@@itemAttrOnFirst]
+[@itemAttrOnFirst]
 let firstBinding = "first"
-[@@itemAttrOnSecond]
+[@itemAttrOnSecond]
 and secondBinding = "second";
 
 /**
@@ -184,10 +184,10 @@ let showLets () = [@onOuterLet] {
 /**
  * In curried sugar, the class_expr attribute will apply to the return.
  */
-[@@moduleItemAttribute]
+[@moduleItemAttribute]
 class boxA('a) (init: 'a) = [@onReturnClassExpr] {
-  [@@ocaml.text "Floating comment text should be removed"];
-  [@@ocaml.doc "Floating comment text should be removed"];
+  [@ocaml.text "Floating comment text should be removed"];
+  [@ocaml.doc "Floating comment text should be removed"];
   pub pr = init + init + init;
 };
 
@@ -201,7 +201,7 @@ class boxB('a) =
 
 /* To be able to put an attribute on just the return in that case, use
  * parens. */
-[@@onBoxC x ; y]
+[@onBoxC x ; y]
 class boxC('a) = [@onEntireFunction] (
   fun (init: 'a) => (
     [@onReturnClassExpr] {
@@ -210,47 +210,47 @@ class boxC('a) = [@onEntireFunction] (
   )
 );
 
-[@@moduleItemAttribute onTheTupleClassItem;]
+[@moduleItemAttribute onTheTupleClassItem;]
 class tupleClass('a,'b)(init: ('a, 'b)) {
   let one = [@exprAttr ten;] 10;
   let two = [@exprAttr twenty;] 20
   and three = [@exprAttr thirty;] 30;
-  [@@pr prMember;]
+  [@pr prMember;]
   pub pr = one + two + three;
 };
 
-[@@structureItem]
+[@structureItem]
 class type addablePointClassType = {
-  [@@ocaml.text "Floating comment text should be removed"];
-  [@@ocaml.doc "Floating comment text should be removed"];
+  [@ocaml.text "Floating comment text should be removed"];
+  [@ocaml.doc "Floating comment text should be removed"];
   pub x: int;
   pub y: int;
   pub add: (addablePointClassType, addablePointClassType) => int;
 }
-[@@structureItem]
+[@structureItem]
 and anotherClassType = {
   pub foo: int;
   pub bar: int;
 };
 
-class type _y { [@@bs.set] pub height : int };
+class type _y { [@bs.set] pub height : int };
 
-[@@bs] class type _z { pub height : int };
+[@bs] class type _z { pub height : int };
 
 module NestedModule {
-  [@@floatingNestedStructureItem hello];
+  [@floatingNestedStructureItem hello];
 };
-[@@structureItem]
+[@structureItem]
 module type HasAttrs = {
-  [@@onTypeDef]
+  [@onTypeDef]
   type t = int;
-  [@@floatingNestedSigItem hello];
-  [@@sigItem]
+  [@floatingNestedSigItem hello];
+  [@sigItem]
   class type foo = {pub foo: int; pub bar: int;};
-  [@@sigItem]
+  [@sigItem]
   class fooBar: (int) => foo;
-  [@@ocaml.text "Floating comment text should be removed"];
-  [@@ocaml.doc "Floating comment text should be removed"];
+  [@ocaml.text "Floating comment text should be removed"];
+  [@ocaml.doc "Floating comment text should be removed"];
 };
 
 type s = S(string);
@@ -270,7 +270,7 @@ let myFun = fun ((X(hello) | Y(hello)) [@onOrPattern]) => hello;
 
 /* Bucklescript FFI item attributes */
 
-[@@bs.val]
+[@bs.val]
 external imul : (int, int) => int = "Math.imul";
 
 let module Js {
@@ -290,14 +290,14 @@ type classAttributesOnKeys = {
 
 type attr = ..;
 
-[@@block]
+[@block]
 type attr +=
   [@tag1] [@tag2] | Str
   [@tag3] | Float ;
 
 type reconciler('props) = ..;
 
-[@@onVariantType]
+[@onVariantType]
 type reconciler('props) +=
  | Foo(int) : [@onFirstRow] reconciler(int)
  | Bar ([@onInt] int) : [@onSecondRow] reconciler(unit)
@@ -310,18 +310,18 @@ type reactElement;
 type reactClass;
 
 /* "react-dom" shouldn't spread the attribute over multiple lines */
-[@@bs.val] [@@bs.module "react-dom"]
+[@bs.val] [@bs.module "react-dom"]
 external render : (reactElement, element) => unit = "render";
 
-[@@bs.module "f"]
+[@bs.module "f"]
 external f : (int) => int = "f";
 
-[@@bs.val] [@@bs.module "react"] [@@bs.splice]
+[@bs.val] [@bs.module "react"] [@bs.splice]
 external createCompositeElementInternalHack 
   : (reactClass, Js.t({.. reasonProps : 'props}), array(reactElement)) => reactElement 
   = "createElement";
 
 external add_nat: (int, int) => int = "add_nat_bytecode" "add_nat_native";
 
-[@@bs.module "Bar"] [@@ocaml.deprecated "Use bar instead. It's a much cooler function. This string needs to be a little long"]
+[@bs.module "Bar"] [@ocaml.deprecated "Use bar instead. It's a much cooler function. This string needs to be a little long"]
 external foo : (bool) => bool = "";

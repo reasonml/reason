@@ -32,13 +32,13 @@ let tmp = {
 /**
  * Comment on stackWithAttributes.
  */
-[@@thisShouldntBeFormattedAway]
+[@thisShouldntBeFormattedAway]
 class virtual stackWithAttributes ('a) (init) = {
   /* Before class */
   /* The "as this" should not be formatted away because attributes. */
   as [@thisShouldntBeFormattedAway] this;
   /* Before floatting attribute */
-  [@@floatingAttribute];
+  [@floatingAttribute];
   /* Virtual member */
   val virtual dummy: unit;
   val mutable v: list('a) = init;

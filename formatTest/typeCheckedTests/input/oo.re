@@ -37,7 +37,7 @@ let tmp = {
 /**
  * Comment on stackWithAttributes.
  */
-[@@thisShouldntBeFormattedAway]
+[@thisShouldntBeFormattedAway]
 class virtual stackWithAttributes('a)(init)
 /* Before class */
 {
@@ -46,11 +46,11 @@ class virtual stackWithAttributes('a)(init)
 
   as [@thisShouldntBeFormattedAway] this;
   /* Before floatting attribute */
-  [@@floatingAttribute];
+  [@floatingAttribute];
   /* Virtual member */
-  [@@itemAttr1]
+  [@itemAttr1]
   val virtual dummy : unit;
-  [@@itemAttr2]
+  [@itemAttr2]
   val mutable v : list('a) = init;
 
   pub virtual implementMe: (int) => int;

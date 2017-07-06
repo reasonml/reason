@@ -5002,7 +5002,7 @@ class printer  ()= object(self:'self)
   method attribute (s, e) = (self#payload "@" s e)
 
   (* [@@ ... ] Attributes that occur after a major item in a structure/class *)
-  method item_attribute (s, e) = (self#payload "@@" s e)
+  method item_attribute = self#attribute
 
   (* [@@ ...] Attributes that occur not *after* an item in some structure/class/sig, but
      rather as their own standalone item. Note that syntactic distinction
