@@ -534,10 +534,21 @@ module JS_syntax = struct
     | I.InputNeeded _ ->
       let checkpoint =
         match read supplier with
-        | (Reason_parser.ES6_FUN, _, _) as triple ->
+        | (Reason_parser.ES6_FUN | Reason_parser.DOCSTRING _), _, _ as triple ->
           let checkpoint =
             match normalize_checkpoint (I.offer checkpoint triple) with
-            | I.HandlingError _ -> checkpoint
+            | I.HandlingError _ -> (
+              begin match triple with
+                | Reason_parser.DOCSTRING text, loc_start, loc_end  ->
+                    (* DOCSTRING at an invalid position:
+                     * add it back to comments
+                     * TODO: print warning? *)
+                  Reason_lexer.add_invalid_docstring text
+                    { Location. loc_ghost = false; loc_start; loc_end }
+                | _ -> ()
+              end;
+              checkpoint
+            )
             | checkpoint -> checkpoint
           in
           let triple = read supplier in

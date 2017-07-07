@@ -600,26 +600,39 @@ rule token = parse
       }
 
 and enter_comment = parse
-  | "/*"
-      { let start_loc = Location.curr lexbuf  in
+  | "/*" ("*" "*"+)?
+      { set_lexeme_length lexbuf 2;
+        let start_loc = Location.curr lexbuf  in
         comment_start_loc := [start_loc];
         reset_string_buffer ();
-        let end_loc = comment lexbuf in
+        let {Location. loc_end; _} = comment lexbuf in
         let s = get_stored_string () in
         reset_string_buffer ();
-        COMMENT (s, { start_loc with
-                      Location.loc_end = end_loc.Location.loc_end })
+        COMMENT (s, { start_loc with Location.loc_end })
       }
+  | "/**"
+      { let start_p = lexbuf.Lexing.lex_start_p in
+        let start_loc = Location.curr lexbuf in
+        comment_start_loc := [start_loc];
+        reset_string_buffer ();
+        let _ = comment lexbuf in
+        let s = get_stored_string () in
+        reset_string_buffer ();
+        lexbuf.Lexing.lex_start_p <- start_p;
+        DOCSTRING s
+      }
+  | "/**/"
+      { DOCSTRING "" }
   | "/*/"
       { let loc = Location.curr lexbuf  in
         if !print_warnings then
           Location.prerr_warning loc Warnings.Comment_start;
         comment_start_loc := [loc];
         reset_string_buffer ();
-        let end_loc = comment lexbuf in
+        let {Location. loc_end; _} = comment lexbuf in
         let s = get_stored_string () in
         reset_string_buffer ();
-        COMMENT (s, { loc with Location.loc_end = end_loc.Location.loc_end })
+        COMMENT (s, { loc with Location.loc_end })
       }
   | "*/"
       { let loc = Location.curr lexbuf in
@@ -793,6 +806,8 @@ and skip_sharp_bang = parse
 
 {
 
+  (* Filter commnets *)
+
   let token_with_comments lexbuf =
     match !preprocessor with
     | None -> token lexbuf
@@ -807,7 +822,19 @@ and skip_sharp_bang = parse
           token lexbuf
       | tok -> tok
 
+  let add_invalid_docstring text loc =
+    let open Location in
+    let rec aux = function
+      | ((_, loc') as x) :: xs
+        when loc'.loc_start.pos_cnum > loc.loc_start.pos_cnum ->
+        x :: aux xs
+      | xs -> (text, loc) :: xs
+    in
+    last_comments := aux !last_comments
+
   let comments () = List.rev !last_comments
+
+  (* Routines for manipulating lexer state *)
 
   let save_triple lexbuf tok =
     (tok, lexbuf.lex_start_p, lexbuf.lex_curr_p)
@@ -820,6 +847,8 @@ and skip_sharp_bang = parse
 
   let fake_triple t (_, pos, _) =
     (t, pos, pos)
+
+  (* insert ES6_FUN *)
 
   exception Lex_balanced_failed of (token * position * position) list *
                                    (exn * position * position) option

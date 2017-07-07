@@ -918,6 +918,20 @@ let only_labels l =
   in
   loop l []
 
+let doc_loc = {txt = "ocaml.doc"; loc = Location.none}
+
+let doc_attr text loc =
+  let open Parsetree in
+  let exp =
+    { pexp_desc = Pexp_constant (Pconst_string(text, None));
+      pexp_loc = loc;
+      pexp_attributes = []; }
+  in
+  let item =
+    { pstr_desc = Pstr_eval (exp, []); pstr_loc = exp.pexp_loc }
+  in
+    (doc_loc, PStr [item])
+
 %}
 
 
@@ -1050,6 +1064,7 @@ let only_labels l =
 %token WHILE
 %token WITH
 %token <string * Location.t> COMMENT
+%token <string> DOCSTRING
 
 %token EOL
 
@@ -4177,7 +4192,10 @@ attr_id:
   | single_attr_id DOT attr_id { mkloc ($1 ^ "." ^ $3.txt) (mklocation $symbolstartpos $endpos) }
 ;
 
-attribute: LBRACKETAT attr_id payload RBRACKET { ($2, $3) };
+attribute:
+  | LBRACKETAT attr_id payload RBRACKET { ($2, $3) }
+  | DOCSTRING { doc_attr $1 (mklocation $symbolstartpos $endpos) }
+;
 
 (* Inlined to avoid having to deal with buggy $symbolstartpos *)
 %inline located_attributes: as_loc(attribute)+ { $1 }
