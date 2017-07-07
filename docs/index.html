@@ -593,6 +593,20 @@ let (ten: int, twenty: int) = someInts;
 let {name: (n:string), age: (a:int)} = somePerson;
 ```
 
+Destructuring labeled arguments is also possible.
+
+```reason
+type person = {name: string, age: int};
+
+let someFunction person::{name} => {
+  /* you can use `name` here */
+}
+
+let otherFunction person::({name} as person) => {
+  /* you can use both `name` and the whole record as `thePerson` here */
+}
+```
+
 More on Function
 -------------------------
 
