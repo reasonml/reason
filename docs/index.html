@@ -599,11 +599,11 @@ Destructuring labeled arguments is also possible.
 type person = {name: string, age: int};
 
 let someFunction person::{name} => {
-  /* function body */
+  /* you can use `name` here */
 }
 
 let otherFunction person::({name} as person) => {
-  /* function body */
+  /* you can use both `name` and the whole record as `thePerson` here */
 }
 ```
 
