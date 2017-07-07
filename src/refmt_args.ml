@@ -46,8 +46,8 @@ let print_width =
 
 let heuristics_file =
   let doc =
-    "load path as a heuristics file to specify which constructors are defined with \
-     multi-arguments. Mostly used in removing [@implicit_arity] introduced from \
+    "load path as a heuristics file to specify which constructors carry a tuple \
+     rather than multiple arguments. Mostly used in removing [@implicit_arity] introduced from \
      OCaml conversion.\n\t\texample.txt:\n\t\tConstructor1\n\t\tConstructor2"
   in
   Arg.(value & opt (some file) None & info ["h"; "heuristics-file"] ~doc)
