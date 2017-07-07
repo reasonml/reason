@@ -31,5 +31,5 @@ fi
 if [[ $@ =~ "stdin" ]]; then
     refmt --parse re --print ml --interface false | utop $@
 else
-    utop -init $DIR/rtop_init.ml $@ -I $HOME -safe-string
+    utop-full -init $DIR/rtop_init.ml $@ -I $HOME -safe-string
 fi

@@ -3376,7 +3376,7 @@ type_declaration_kind:
       ((Ptype_variant (cstrs), $2, None), constraints, endpos, and_types) }
   | EQUAL only_core_type(core_type) EQUAL private_flag constructor_declarations
     { let (cstrs, constraints, endpos, and_types) = $5 in
-      ((Ptype_variant (cstrs), $4, Some $2), constraints, endpos, and_types) }
+      ((Ptype_variant cstrs, $4, Some $2), constraints, endpos, and_types) }
   | type_other_kind constraints and_type_declaration
     { ($1, $2, $endpos($2), $3) }
 ;
@@ -3437,33 +3437,33 @@ mark_position_typ
   (QUOTE ident { mktyp (Ptyp_var $2) })
   { $1 };
 
-constructor_declarations:
-  | constructor_declaration constructor_declarations_aux
-  | attributed_constructor_declaration constructor_declarations_aux
-    { let (cstrs, constraints, endpos, and_types) = $2 in
-      ($1 :: cstrs, constraints, endpos, and_types)
-    }
+%inline constructor_declarations:
+  either(constructor_declaration,bar_constructor_declaration)
+  constructor_declarations_aux
+  { let (cstrs, constraints, endpos, and_types) = $2 in
+    ($1 :: cstrs, constraints, endpos, and_types)
+  }
 ;
 
 constructor_declarations_aux:
-  | constraints and_type_declaration
-    { ([], $1, $endpos($1), $2) }
-  | attributed_constructor_declaration constructor_declarations_aux
+  | bar_constructor_declaration constructor_declarations_aux
     { let (cstrs, constraints, endpos, and_types) = $2 in
       ($1 :: cstrs, constraints, endpos, and_types)
     }
+  | constraints and_type_declaration
+    { ([], $1, $endpos($1), $2) }
 ;
 
-attributed_constructor_declaration:
+bar_constructor_declaration:
   item_attributes BAR constructor_declaration
   { {$3 with pcd_attributes = $1 @ $3.pcd_attributes} }
 ;
 
-constructor_declaration:
-  as_loc(constr_ident) generalized_constructor_arguments
-  { let args, res = $2 in
+%inline constructor_declaration:
+  item_attributes as_loc(constr_ident) generalized_constructor_arguments
+  { let args, res = $3 in
     let loc = mklocation $symbolstartpos $endpos in
-    Type.constructor $1 ~args ?res ~loc }
+    Type.constructor ~attrs:$1 $2 ~args ?res ~loc }
 ;
 
 /* Why are there already attribute* on the extension_constructor_declaration? */
@@ -3728,16 +3728,29 @@ mark_position_typ2
  * - Polymorphic type variable application
  */
 core_type2:
-mark_position_typ2
-  ( non_arrowed_simple_core_type
+  item_attributes unattributed_core_type
+  { match $1, $2 with
+    | [], result -> result
+    | attrs, Record_type [] -> assert false
+    | attrs, Core_type ct ->
+      let loc_start = $symbolstartpos and loc_end = $endpos in
+      let ptyp_loc = {ct.ptyp_loc with loc_start; loc_end} in
+      let ptyp_attributes = attrs @ ct.ptyp_attributes in
+      Core_type {ct with ptyp_attributes; ptyp_loc}
+    | attrs, Record_type (label :: labels) ->
+      let pld_attributes = attrs @ label.pld_attributes in
+      Record_type ({label with pld_attributes} :: labels)
+  }
+;
+
+unattributed_core_type:
+  | non_arrowed_simple_core_type
     { $1 }
   | arrow_type_parameters EQUALGREATER only_core_type(core_type2)
     { Core_type (List.fold_right mktyp_arrow $1 $3) }
   | only_core_type(basic_core_type) EQUALGREATER only_core_type(core_type2)
     { Core_type (mktyp (Ptyp_arrow (Nolabel, $1, $3))) }
-  | attribute only_core_type(core_type2)
-    { Core_type {$2 with ptyp_attributes = $1 :: $2.ptyp_attributes} }
-  ) {$1};
+;
 
 arrow_type_parameter:
   | only_core_type(core_type)

@@ -17,7 +17,7 @@ export TERM=
 # into it and asserting the existence of some output.
 echo "Testing rtop..."
 echo "let f(a) = a;" \
-| utop -init src/rtop_init.ml -I $HOME \
+| utop-full -init src/rtop_init.ml -I $HOME \
 | grep "let f : 'a => 'a = <fun>" > /dev/null
 if [ $? -ne 0 ]; then
   echo "rtop is failing! Failed to evaluate \`let f(a) = a;\`"
@@ -25,7 +25,7 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "let f(a) = 1 + \"hi\";" \
-| utop -init src/rtop_init.ml -I $HOME \
+| utop-full -init src/rtop_init.ml -I $HOME \
 | grep "Error: This expression has type" > /dev/null
 if [ $? -ne 0 ]; then
   echo "rtop is failing! Failed to (correctly) error on \`let f(a) = 1 + \"hi\";\`"
