@@ -92,6 +92,7 @@ You can then run:
     -I "$reasonTargetDir" \
     -I "$reasonTargetDir/_build/src" \
     -I "$reasonTargetDir/vendor/cmdliner" \
+    -I "$reasonTargetDir/vendor/easy_format" \
     -I "$ocamlMigrateParseTreeTargetDir" \
     -o "./refmt_main.ml"
 
