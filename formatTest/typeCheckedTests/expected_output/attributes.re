@@ -201,7 +201,7 @@ type gadtType 'x =
 
 [@@@floatingTopLevelStructureItem hello];
 
-print_string "hello";
+print_string "hello" [@@itemAttributeOnEval];
 
 let firstBinding = "first"
 and secondBinding = "second";
@@ -417,3 +417,6 @@ external readFileSync2 :
   [@bs.string] =>
   string =
   "" [@@bs.module "fs"];
+
+/* Ensure that attributes on extensions are printed */
+[@@@test [%%extension] [@@attr]];
