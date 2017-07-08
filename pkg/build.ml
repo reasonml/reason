@@ -36,6 +36,7 @@ let () =
      * `utop` is available, we'll select an `.mllib` to compile as
      * `reason.cma`.
      *)
+    Pkg.lib ~exts:Exts.library "src/reasonparser" ~dst:"reasonparser";
     Pkg.lib ~cond:(Conf.value c utop) ~exts:Exts.library "src/reason" ~dst:"reason";
     Pkg.lib ~cond:(not (Conf.value c utop)) ~exts:Exts.library "src/reason_without_utop" ~dst:"reason";
     (* But then regardless of if we have `utop` installed - still compile a
