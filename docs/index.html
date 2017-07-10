@@ -311,9 +311,11 @@ Optional labeled arguments can also be provided a default value. They aren't wra
 ```reason
 let drawCircle ::radius=1 ::color () => {
   setColor color;
-  startAt r r;
+  startAt radius radius;
 };
 ```
+
+Again, don't forget the `()` at the end. `radius` having a default value doesn't change the fact that it's an optional argument. See the explanation in the section right above.
 
 Type
 --------------------------
