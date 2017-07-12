@@ -207,7 +207,7 @@ let selfClosing3 =
     b="cause the entire thing to wrap"
   />;
 
-let a = <Foo> <Bar c=(fun a => a + 2) /> </Foo>;
+let a = <Foo> <Bar c=((a) => a + 2) /> </Foo>;
 
 let a3 = <So> <Much> <Nesting /> </Much> </So>;
 
@@ -463,7 +463,7 @@ let asd2 = video test::false 10 [@JSX] [@foo];
 
 let div ::children => 1;
 
-((fun () => div) ()) children::[] [@JSX];
+(((()) => div) ()) children::[] [@JSX];
 
 let myFun () =>
   <>

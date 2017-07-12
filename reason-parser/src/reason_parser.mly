@@ -360,6 +360,9 @@ let mkpat_cons consloc args loc =
 let ghpat_cons consloc args loc =
   mkpat ~ghost:true ~loc (Ppat_construct(mkloc (Lident "::") loc, Some args))
 
+let mkpat_constructor_unit consloc loc =
+  mkpat ~loc (Ppat_construct(mkloc (Lident "()") consloc, None))
+
 let simple_pattern_list_to_tuple ?(loc=dummy_loc ()) lst =
   match lst with
     | [] -> assert false
@@ -882,7 +885,7 @@ let only_labels l =
 %token <string * char option> FLOAT
 %token <string> COLONCOLONLIDENT
 %token FOR
-%token FUN
+%token FUN ES6_FUN
 %token FUNCTION
 %token FUNCTOR
 %token GREATER
@@ -2738,6 +2741,17 @@ _expr:
       let (l,o,p) = $2 in
       mkexp (Pexp_fun(l, o, p, $3))
     }
+  | ES6_FUN _l = LPAREN _r = RPAREN EQUALGREATER body = expr {
+    let loc = mklocation $startpos(_l) $endpos(_r) in
+    mkexp (Pexp_fun (Nolabel, None, mkpat_constructor_unit loc loc, body))
+  }
+  | ES6_FUN LPAREN pats = pattern_optional_constraints RPAREN
+            EQUALGREATER body = expr {
+      List.fold_left (fun body pat ->
+        mkexp ~loc:(mklocation pat.ppat_loc.loc_start $endpos)
+          (Pexp_fun (Nolabel, None, pat, body))
+      ) body pats
+    }
   | FUN LPAREN TYPE lident_list RPAREN fun_def
       { pexp_newtypes $4 $6 }
   /* List style rules like this often need a special precendence
@@ -3747,6 +3761,12 @@ _pattern_optional_constraint:
     }
 ;
 
+pattern_optional_constraints:
+    pattern_optional_constraints COMMA pattern_optional_constraint
+    { $3::$1 }
+  | pattern_optional_constraint
+    { [$1] }
+;
 
 pattern_comma_list:
     pattern                                     { [$1] }

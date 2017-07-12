@@ -26,7 +26,7 @@ type expr 'a =
     :expr 'a;
 
 let rec eval: type a. expr a => a =
-  fun e =>
+  (e) =>
     switch e {
     | Is0 {test} => eval test == 0
     | Val {value} => value

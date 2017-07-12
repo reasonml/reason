@@ -196,14 +196,14 @@ let printIfFirstArgGreater = true;
 
 let result =
   if printIfFirstArgGreater {
-    fun a b =>
+    (a, b) =>
       if (a > b) {
         print_string "a > b"
       } else {
         print_string "b >= a"
       }
   } else if (
-    fun a b =>
+    (a, b) =>
       if (a > b) {
         print_string "b < a"
       } else {
@@ -232,12 +232,12 @@ let myRecord = {
 };
 
 if printIfFirstArgGreater {
-  fun a b =>
+  (a, b) =>
     if (a > b) {
       print_string "a > b"
     }
 } else {
-  fun a b =>
+  (a, b) =>
     if (a > b) {
       print_string "b < a"
     }
@@ -245,30 +245,30 @@ if printIfFirstArgGreater {
 
 /* Should Be Parsed As: Cleary a type error, but at least the parsing makes that clear */
 if printIfFirstArgGreater {
-  fun a b =>
+  (a, b) =>
     if (a > b) {
       print_string "a > b"
     } else {
-      fun a b =>
+      (a, b) =>
         if (a > b) {
           print_string "b < a"
         }
     }
 };
 
-fun a b =>
+(a, b) =>
   if (a > b) {
     print_string "a > b"
   };
 
 /* What you probably wanted was: */
 if printIfFirstArgGreater {
-  fun a b =>
+  (a, b) =>
     if (a > b) {
       print_string "a > b"
     }
 } else {
-  fun a b =>
+  (a, b) =>
     if (a > b) {
       print_string "b < a"
     }
@@ -527,7 +527,7 @@ let myFunction (a: int) (b: int) :int => a + b;
 let functionReturnValueType
     (i: int, s: string)
     :(int => int) =>
-  fun x => x + 1;
+  (x) => x + 1;
 
 let curriedFormOne (i: int, s: string) =>
   s ^ string_of_int i;
@@ -555,7 +555,7 @@ let curriedFormThree
  */
 type myFuncType = (int, int) => int;
 
-let myFunc: myFuncType = fun (a, b) => a + b;
+let myFunc: myFuncType = ((a, b)) => a + b;
 
 let funcWithTypeLocallyAbstractTypes
     (type atype btype)
