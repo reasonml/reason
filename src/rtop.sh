@@ -29,7 +29,7 @@ let () =
 fi
 
 if [[ $@ =~ "stdin" ]]; then
-    refmt --parse re --print ml --interface false | utop $@
+    refmt --parse re --print ml --interface false | ocamlrun utop $@
 else
-    utop -init $DIR/rtop_init.ml $@ -I $HOME -safe-string
+    ocamlrun utop -init $DIR/rtop_init.ml $@ -I $HOME -safe-string
 fi
