@@ -777,9 +777,9 @@ let expr_of_let_bindings lbs body =
     List.map
       (fun lb ->
          (* Individual let bindings in an *expression* can't have item attributes. *)
-         if lb.lb_attributes <> [] then
-           raise Syntaxerr.(Error(Not_expecting(lb.lb_loc, "item attribute")));
-         Vb.mk ~loc:lb.lb_loc lb.lb_pattern lb.lb_expression)
+         (*if lb.lb_attributes <> [] then
+           raise Syntaxerr.(Error(Not_expecting(lb.lb_loc, "item attribute")));*)
+         Vb.mk ~attrs:lb.lb_attributes ~loc:lb.lb_loc lb.lb_pattern lb.lb_expression)
       lbs.lbs_bindings
   in
   (* The location of this expression unfortunately includes the entire rule,
@@ -795,9 +795,9 @@ let class_of_let_bindings lbs body =
   let bindings =
     List.map
       (fun lb ->
-         if lb.lb_attributes <> [] then
-           raise Syntaxerr.(Error(Not_expecting(lb.lb_loc, "item attribute")));
-         Vb.mk ~loc:lb.lb_loc lb.lb_pattern lb.lb_expression)
+         (*if lb.lb_attributes <> [] then
+           raise Syntaxerr.(Error(Not_expecting(lb.lb_loc, "item attribute")));*)
+         Vb.mk ~attrs:lb.lb_attributes ~loc:lb.lb_loc lb.lb_pattern lb.lb_expression)
       lbs.lbs_bindings
   in
     if lbs.lbs_extension <> None then
@@ -1822,17 +1822,14 @@ mark_position_cl
   ) {$1};
 
 object_body:
-  mark_position_pat (
-  /* Empty is by default the pattern identifier [this] */
-    { mkpat (Ppat_var (mkloc "this" (mklocation $symbolstartpos $endpos))) }
-  /* Whereas in OCaml, specifying nothing means "_", in Reason, you'd
-     have to explicity specify "_" (any) pattern. In Reason, writing nothing
-     is how you specify the "this" pattern. */
-  | AS pattern SEMI
-    { $2 }
-  )
-  lseparated_list(SEMI, class_field) SEMI?
-  { Cstr.mk $1 (List.concat $2) }
+  | loption(located_attributes)
+    mark_position_pat(delimited(AS,pattern,SEMI))
+    lseparated_list(SEMI, class_field) SEMI?
+    { let attrs = List.map (fun x -> mkcf ~loc:x.loc (Pcf_attribute x.txt)) $1 in
+      Cstr.mk $2 (attrs @ List.concat $3) }
+  | lseparated_list(SEMI, class_field) SEMI?
+    { let loc = mklocation $symbolstartpos $symbolstartpos in
+      Cstr.mk (mkpat ~loc (Ppat_var (mkloc "this" loc))) (List.concat $1) }
 ;
 
 class_expr:
