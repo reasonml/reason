@@ -4145,11 +4145,12 @@ class printer  ()= object(self:'self)
           self#wrapCurriedFunctionBinding prefixText ~arrow:"=" pattern fauxArgs
             (self#classExpressionToFormattedApplicationItems actualReturn, None)
 
-  method binding {pvb_pat; pvb_expr=x} prefixText = (* TODO: print attributes *)
-    match (pvb_pat.ppat_desc) with
+  method binding prefixText x = (* TODO: print attributes *)
+    let body = match x.pvb_pat.ppat_desc with
       | (Ppat_var {txt}) ->
-          let pattern = SourceMap (pvb_pat.ppat_loc, self#simple_pattern pvb_pat) in
-          self#wrappedBinding prefixText ~arrow:"=" pattern [] x
+        self#wrappedBinding prefixText ~arrow:"="
+          (SourceMap (x.pvb_pat.ppat_loc, self#simple_pattern x.pvb_pat))
+          [] x.pvb_expr
       (*
          Ppat_constraint is used in bindings of the form
 
@@ -4188,14 +4189,12 @@ class printer  ()= object(self:'self)
                  );
           *)
           let layoutPattern =
-            SourceMap (pvb_pat.ppat_loc, (self#simple_pattern p)) in
-          let leadingAbsTypesAndExpr = self#leadingCurriedAbstractTypes x in
+            SourceMap (x.pvb_pat.ppat_loc, (self#simple_pattern p)) in
+          let leadingAbsTypesAndExpr = self#leadingCurriedAbstractTypes x.pvb_expr in
           match (p.ppat_desc, ty.ptyp_desc, leadingAbsTypesAndExpr) with
-            | (
-                Ppat_var s,
-                Ptyp_poly (typeVars, varifiedPolyType),
-                (_::_ as absVars, Pexp_constraint(funWithNewTypes, nonVarifiedExprType))
-              )
+            | (Ppat_var s,
+               Ptyp_poly (typeVars, varifiedPolyType),
+               (_::_ as absVars, Pexp_constraint(funWithNewTypes, nonVarifiedExprType)))
               when self#isRenderableAsPolymorphicAbstractTypes
                   typeVars
                   (* If even artificially varified - don't know until returns*)
@@ -4241,7 +4240,7 @@ class printer  ()= object(self:'self)
                 nonVarifiedExprType
             | _ ->
               let typeLayout = SourceMap (ty.ptyp_loc, (self#core_type ty)) in
-              let appTerms = self#unparseExprApplicationItems x in
+              let appTerms = self#unparseExprApplicationItems x.pvb_expr in
               self#formatSimplePatternBinding
                 prefixText
                 layoutPattern
@@ -4250,10 +4249,11 @@ class printer  ()= object(self:'self)
         )
       | (_) ->
           let layoutPattern =
-            SourceMap (pvb_pat.ppat_loc, (self#pattern pvb_pat)) in
-          let appTerms = self#unparseExprApplicationItems x in
+            SourceMap (x.pvb_pat.ppat_loc, self#pattern x.pvb_pat) in
+          let appTerms = self#unparseExprApplicationItems x.pvb_expr in
           self#formatSimplePatternBinding prefixText layoutPattern None appTerms
-
+    in
+    self#attach_std_item_attrs x.pvb_attributes (SourceMap (x.pvb_loc, body))
 
   (* Ensures that the constraint is formatted properly for sake of function
      binding (formatted without arrows)
@@ -4284,33 +4284,24 @@ class printer  ()= object(self:'self)
     }
 
   method bindings (rf, l) =
-    let firstLine = (
-      match l with
-        | [] -> raise (NotPossible "no bindings supplied")
-        | x::[]
-        | x::_ ->
-          let label = match rf with
-            | Nonrecursive -> "let"
-            | Recursive -> "let rec" in
-          SourceMap (x.pvb_loc, (self#binding x label))
-
-    ) in
-    let forEachRemaining = fun t -> SourceMap (t.pvb_loc, (self#binding t "and")) in
-    let remainingBindings = (
-      match l with
-        | [] -> []
-        | x::[] -> []
-        | x::x2::xtl -> List.map forEachRemaining (x2::xtl)
-    ) in
-    match remainingBindings with
-    | [] -> firstLine
+    let first, rest = match l with
+      | [] -> raise (NotPossible "no bindings supplied")
+      | x :: xs -> x, xs
+    in
+    let label = match rf with
+      | Nonrecursive -> "let"
+      | Recursive -> "let rec"
+    in
+    let first = self#binding label first in
+    match rest with
+    | [] -> first
     | _ ->
-    makeList
-      ~postSpace:true
-      ~break:Always
-      ~indent:0
-      ~inline:(true, true)
-      (firstLine::remainingBindings)
+      makeList
+        ~postSpace:true
+        ~break:Always
+        ~indent:0
+        ~inline:(true, true)
+        (first :: List.map (self#binding "and") rest)
 
   method letList exprTerm =
     match (exprTerm.pexp_attributes, exprTerm.pexp_desc) with
@@ -5011,7 +5002,7 @@ class printer  ()= object(self:'self)
   method attribute = function
     | { Location. txt = "ocaml.doc" },
       PStr [{ pstr_desc = Pstr_eval ({ pexp_desc = Pexp_constant (Pconst_string(text, None)); _ } , _); _ }] ->
-      atom ("/*" ^ text ^ "*/")
+      atom ("/**" ^ text ^ "*/")
     | (s, e) -> self#payload "@" s e
 
   (* [@@ ... ] Attributes that occur after a major item in a structure/class *)
