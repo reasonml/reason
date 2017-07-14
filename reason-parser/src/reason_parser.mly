@@ -1699,7 +1699,11 @@ mark_position_mty
     { mk_functor_mty $1 $3 }
   ) {$1};
 
-signature: terminated(signature_item, SEMI)* { List.concat $1 };
+signature:
+  | /* Empty */ { [] }
+  | signature_item { $1 }
+  | signature_item SEMI signature { $1 @ $3 }
+;
 
 signature_item:
   | mark_position_sig

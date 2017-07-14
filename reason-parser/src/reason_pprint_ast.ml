@@ -428,10 +428,10 @@ let rec partitionAttributes attrs =
     | (({txt="implicit_arity"; loc}, _) as arity_attr)::atTl ->
         let (tlArity, tlDoc, tlStandard, tlJsx) = partitionAttributes atTl in
         (arity_attr::tlArity, tlDoc, tlStandard, tlJsx)
-    | (({txt="ocaml.text"; loc}, _) as doc)::atTl
+    (*| (({txt="ocaml.text"; loc}, _) as doc)::atTl
     | (({txt="ocaml.doc"; loc}, _) as doc)::atTl ->
         let (tlArity, tlDoc, tlStandard, tlJsx) = partitionAttributes atTl in
-        (tlArity, doc::tlDoc, tlStandard, tlJsx)
+        (tlArity, doc::tlDoc, tlStandard, tlJsx)*)
     | atHd::atTl ->
         let (tlArity, tlDoc, tlStandard, tlJsx) = partitionAttributes atTl in
         (tlArity, tlDoc, atHd::tlStandard, tlJsx)
@@ -5008,7 +5008,11 @@ class printer  ()= object(self:'self)
 
 
   (* [@ ...] Simple attributes *)
-  method attribute (s, e) = (self#payload "@" s e)
+  method attribute = function
+    | { Location. txt = "ocaml.doc" },
+      PStr [{ pstr_desc = Pstr_eval ({ pexp_desc = Pexp_constant (Pconst_string(text, None)); _ } , _); _ }] ->
+      atom ("/*" ^ text ^ "*/")
+    | (s, e) -> self#payload "@" s e
 
   (* [@@ ... ] Attributes that occur after a major item in a structure/class *)
   method item_attribute = self#attribute
