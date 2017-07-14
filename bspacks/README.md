@@ -65,7 +65,6 @@ here: (Find their respective locations on your machine)
 
     reasonTargetDir=../
     ppxToolsVersionedTargetDir=~/.esy/store-3.x.x/_build/ppx__tools__versioned-blahblah
-    reasonParserTargetDir=../reason-parser
     # Notice the _build/default/src
     ocamlMigrateParseTreeTargetDir=~/.esy/store-3.x.x/_build/blahblah/_build/default/src/
 
@@ -93,8 +92,7 @@ You can then run:
     -I "$reasonTargetDir" \
     -I "$reasonTargetDir/_build/src" \
     -I "$reasonTargetDir/vendor/cmdliner" \
-    -I "$reasonParserTargetDir/_build/src" \
-    -I "$reasonParserTargetDir/vendor/easy_format" \
+    -I "$reasonTargetDir/vendor/easy_format" \
     -I "$ocamlMigrateParseTreeTargetDir" \
     -o "./refmt_main.ml"
 

@@ -3,22 +3,21 @@ resultStub="module Result = struct type ('a, 'b) result = Ok of 'a | Error of 'b
 
 menhirSuggestedLib=`menhir --suggest-menhirLib`
 
-ppxToolsVersionedTargetDir=~/.esy/store-3.x.x/_build/opam_alpha__slash__ppx___tools___versioned-5.0.0-f6cc53982be397d21440d9c55c42b0050e891de4
+# copied over from ~/.esy/store-3.x.x/_build/opam_alpha__slash__ppx___tools___versioned-5.0.0-f6cc53982be397d21440d9c55c42b0050e891de4
+# and modified according to the README
+ppxToolsVersionedTargetDir=./ppxTools
 # copied over from ~/.esy/store-3.x.x/_build/opam_alpha__slash__ocaml_migrate_parsetree-0.7.0-399416de9584af5975cdc304d32e2b716377916f/_build/default/src/
 # and modified according to the README
 ocamlMigrateParseTreeTargetDir=./omp
 reasonTargetDir=../
-reasonParserTargetDir=../reason-parser
 
 # clean some artifacts
 rm -rf ./*.cm*
 rm -rf ./*.out
 rm -rf ./*.o
 rm -rf ./*.ml
-make clean -C ../reason-parser
 make clean -C ../
 
-make -C ../reason-parser
 make -C ../
 
 ./node_modules/bs-platform/bin/bspack.exe \
@@ -32,9 +31,9 @@ make -C ../
   -I "$reasonTargetDir" \
   -I "$reasonTargetDir/_build/src" \
   -I "$reasonTargetDir/vendor/cmdliner" \
-  -I "$reasonParserTargetDir/_build/src" \
-  -I "$reasonParserTargetDir/vendor/easy_format" \
+  -I "$reasonTargetDir/vendor/easy_format" \
   -I "$ocamlMigrateParseTreeTargetDir" \
+  -bs-MD \
   -o "./refmt_main.ml"
 
 ./node_modules/bs-platform/bin/bspack.exe \
@@ -42,6 +41,7 @@ make -C ../
   -prelude-str "$resultStub" \
   -I "$reasonTargetDir/_build/src" \
   -I "$ocamlMigrateParseTreeTargetDir" \
+  -bs-MD \
   -o "./reactjs_ppx.ml"
 
 ./node_modules/bs-platform/bin/bspack.exe \
@@ -49,6 +49,7 @@ make -C ../
   -prelude-str "$resultStub" \
   -I "$reasonTargetDir/_build/src" \
   -I "$ocamlMigrateParseTreeTargetDir" \
+  -bs-MD \
   -o "./reactjs_ppx_2.ml"
 
 # finally, actually compile all 3 files

@@ -12,19 +12,19 @@ Interested in contributing to Reason? The core of it is a parser + a printer, pl
 
 - `*.mllib`: related: see the [OCaml extensions list](https://github.com/facebook/reason/wiki/OCaml-Ecosystem-Extensions-List). These are generated file from `pkg/build.ml`, which describes the package we distribute. No need to worry about them.
 
-- `reason-parser/src/reason_config.ml`: global config that says whether our parser should run in "recoverable" mode. Merlin has a neat feature which lets it continue diagnosing e.g. type errors even when the file is syntactically invalid (at the expense of the accuracy of those type error reports' quality). Searching `reason_config` in our codebase will show you how this is used.
+- `src/reason_config.ml`: global config that says whether our parser should run in "recoverable" mode. Merlin has a neat feature which lets it continue diagnosing e.g. type errors even when the file is syntactically invalid (at the expense of the accuracy of those type error reports' quality). Searching `reason_config` in our codebase will show you how this is used.
 
 - `reason_format_type.ml`, `reason_type_of_ocaml_type.ml`: again, see `pkg/build.ml`. These produce the `refmttype` binary, used by [BetterErrors](refmttype) to output compiler errors in Reason syntax rather than the OCaml one.
 
-- `reason-parser/src/reason_lexer.mll`, `reason_parser.mly`: the tokenizer and the parser! See the first link on Real World OCaml book section. This is used by [Menhir](http://gallium.inria.fr/~fpottier/menhir/), the parser generator.
+- `src/reason_lexer.mll`, `reason_parser.mly`: the tokenizer and the parser! See the first link on Real World OCaml book section. This is used by [Menhir](http://gallium.inria.fr/~fpottier/menhir/), the parser generator.
 
-- `reason-parser/src/reason_oprint.ml`: the "outcome printer" used by Merlin. No need to worry about it for now.
+- `src/reason_oprint.ml`: the "outcome printer" used by Merlin. No need to worry about it for now.
 
-- `reason-parser/src/reason_parser.messages`: auto-generated from parser changes. Menhir generates parsing code that assigns each syntax error to a code, and lets us customize these errors. Syntax errors can be very precisely pinpointed and explained this way.
+- `src/reason_parser.messages`: auto-generated from parser changes. Menhir generates parsing code that assigns each syntax error to a code, and lets us customize these errors. Syntax errors can be very precisely pinpointed and explained this way.
 
-- `reason-parser/src/reason_pprint_ast.ml`: the pretty-printer! This takes in the AST (abstract syntax tree) and prints out the textual code. Theoretically for us, `print (parse myCode) == myCode`.
+- `src/reason_pprint_ast.ml`: the pretty-printer! This takes in the AST (abstract syntax tree) and prints out the textual code. Theoretically for us, `print (parse myCode) == myCode`.
 
-- `reason-parser/src/reason_toolchain.ml`, `refmt_impl.ml`: the entry point that calls the parsing logic.
+- `src/reason_toolchain.ml`, `refmt_impl.ml`: the entry point that calls the parsing logic.
 
 - `reason_utop.ml`, `reason_toploop.ml`, `rtop_init.ml`: Reason's [Utop](https://github.com/diml/utop) integration. Utop's the terminal-based REPL you see when executing `utop` (in Reason's case, the wrapper `rtop`).
 

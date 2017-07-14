@@ -21,12 +21,6 @@ if [ "${MASTER}" != "${HEAD}" ]; then
 the release. **"
 fi
 
-read -p "STOP! Have you made sure to release the sub packages (including \
-reason-parser)? (y/n) " yn
-if [ "${yn}" != "y" ]; then
-    die "Not releasing."
-fi
-
 MASTERURL="https://api.github.com/repos/facebook/reason/git/refs/heads/master"
 HEADERR="Current HEAD is not on upstream master. This is a requirement before releasing.
 If you are sure it is, try switching branches to master and pulling changes."
