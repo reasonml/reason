@@ -18,8 +18,10 @@ src/reason_parser_message.ml
 *~
 node_modules
 /bspacks/*.ml
+/bspacks/*.d
+/bspacks/omp/
+/bspacks/ppxTools/
 /bspacks/**/*.cm*
 /bspacks/**/*.o
 /bspacks/**/*.out
 /bspacks/**/*.exe
-/bspacks/omp/
