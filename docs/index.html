@@ -845,7 +845,7 @@ There's no loop-breaking `break` keyword (nor early `return` from functions, for
 Random.self_init ();
 let break = {contents: false};
 while (not break.contents) {
-  if (Random.int 10 === 3) {
+  if (Random.int 10 == 3) {
     break.contents = true
   } else {
     print_endline "hello"
