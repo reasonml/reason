@@ -31,6 +31,14 @@ Basic Modules
 **Modules are like mini files**! They can contain type definitions, `let`
 bindings, nested modules, etc.
 
+The two rules of OCaml/Reason modules:
+- All files are accessible as modules where the first letter of the file gets
+capitalized. For example a file called `react.re` becomes a module called
+`React`.
+- All files are globally accessible, irrespectively of the folder structure. For
+example `src/deep/lib/react.re` is accessible from `src/main/code/index.re` as
+`React`.
+
 #### Creation
 
 To create a module, use the `module` keyword. The module name must start with a
