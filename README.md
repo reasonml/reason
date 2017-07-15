@@ -24,7 +24,7 @@ Contributing
 
 ### Documentations
 
-The docs are in the [docs folder](https://github.com/facebook/reason/tree/master/docs) and the corresponding README there that describes the docs contribution method.
+The doc repo lives at https://github.com/reasonml/reasonml.github.io
 
 ### Codebase
 
