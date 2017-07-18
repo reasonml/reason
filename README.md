@@ -4,7 +4,7 @@ Reason: Friendly Syntax & Toolchain for OCaml [![Build Status](https://travis-ci
 Getting Started
 ---------------
 
-View our guide [here](http://facebook.github.io/reason/gettingStarted.html)!
+View our guide [here](https://reasonml.github.io/guide/javascript/quickstart)!
 
 Community
 =======
