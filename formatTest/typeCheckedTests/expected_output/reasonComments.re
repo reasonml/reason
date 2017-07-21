@@ -55,7 +55,7 @@
  **
  */
 module JustString = {
-  include Map.Make Int32; /* Comment eol include */
+  include Map.Make(Int32); /* Comment eol include */
 };
 
 let testingEndOfLineComments = [
@@ -106,11 +106,12 @@ let testingEndOfLineComments = []; /* Comment after entire let binding */
 /*     andSecondArg  => { /* Second Arg */ */
 /*   withFirstArg + andSecondArg /* before semi */ ; */
 /* }; */
-let myFunction
-    /* First arg */
-    withFirstArg
-    /* Second Arg */
-    andSecondArg =>
+let myFunction /* First arg */
+    (
+      withFirstArg,
+      /* Second Arg */
+      andSecondArg
+    ) =
   withFirstArg + andSecondArg; /* After Semi */
 
 type point = {
@@ -126,7 +127,7 @@ type pointWithManyKindsOfComments = {
   /* Final row of record */
 };
 
-type typeParamPointWithComments 'a = {
+type typeParamPointWithComments('a) = {
   /* Line before x */
   x: 'a, /* x field */
   /* Line before y */
@@ -138,9 +139,11 @@ type typeParamPointWithComments 'a = {
 /* Type name */
 type typeParamPointWithComments2
   /* The a type param */
-  'a
-  /* The b type apram */
-  'b = {
+  (
+    'a,
+    /* The b type apram */
+    'b
+  ) = {
   /* Line before x */
   x: 'a, /* x field */
   /* Line before y */
@@ -167,46 +170,46 @@ type t3 = (
 ); /* End of line on (int, int) */
 
 type variant =
-  | X (int, int) /* End of line on X */
-  | Y (int, int) /* End of line on Y */; /* Comment on entire type def for variant */
+  | X(int, int) /* End of line on X */
+  | Y(int, int) /* End of line on Y */; /* Comment on entire type def for variant */
 
 /* Before let */
 let res =
   /* Before switch */
-  switch (X (2, 3)) {
+  switch (X(2, 3)) {
   /* Above X line */
-  | X _ => "result of X" /* End of arrow and X line */
+  | X(_) => "result of X" /* End of arrow and X line */
   /* Above Y line */
-  | Y _ => "result of Y" /* End of arrow and Y line */
+  | Y(_) => "result of Y" /* End of arrow and Y line */
   }; /* After final semi in switch */
 
 let res =
-  switch (X (2, 3)) {
-  | X (0, 0) =>
+  switch (X(2, 3)) {
+  | X(0, 0) =>
     /* After X arrow */
     "result of X" /* End of X body line */
-  | X (1, 0) /* Before X's arrow */ =>
+  | X(1, 0) /* Before X's arrow */ =>
     "result of X" /* End of X body line */
-  | X _ =>
+  | X(_) =>
     /* After X _ arrow */
     "result of X" /* End of X body line */
   /* Above Y line */
-  | Y _ =>
+  | Y(_) =>
     /* Comment above Y body */
     "result of Y"
   };
 
 type variant2 =
   /* Comment above X */
-  | X (int, int) /* End of line on X */
+  | X(int, int) /* End of line on X */
   /* Comment above Y */
-  | Y (int, int);
+  | Y(int, int);
 
 type variant3 =
   /* Comment above X */
-  | X (int, int) /* End of line on X */
+  | X(int, int) /* End of line on X */
   /* Comment above Y */
-  | Y (int, int) /* End of line on Y  */;
+  | Y(int, int) /* End of line on Y  */;
 
 type x = {
   /* not attached *above* x */
@@ -229,7 +232,7 @@ and y2 = {
 };
 
 let result =
-  switch None {
+  switch (None) {
   | Some {fieldOne: 20, fieldA: a} =>
     /* Where does this comment go? */
     let tmp = 0;
@@ -243,18 +246,18 @@ let result =
 
 let res =
   /* Before switch */
-  switch (X (2, 3)) {
+  switch (X(2, 3)) {
   /* Above X line */
-  | X _ => "result of X" /* End of arrow and X line */
+  | X(_) => "result of X" /* End of arrow and X line */
   /* Above Y line */
-  | Y _ => "result of Y" /* End of arrow and Y line */
+  | Y(_) => "result of Y" /* End of arrow and Y line */
   };
 
 /*
  * Now these end of line comments *should* be retained.
  */
 let result =
-  switch None {
+  switch (None) {
   | Some {
       fieldOne: 20, /* end of line */
       fieldA:
@@ -279,31 +282,33 @@ let result =
  * Otherwise, right now they are not idempotent.
  */
 let res =
-  switch (
-    /* Retain this */
-    X (2, 3)
-  ) {
+  switch (/* Retain this */
+          X(2, 3)) {
   /* Above X line */
-  | X (
+  | X(
       _, /* retain this */
       _ /* retain this */
     ) => "result of X"
   /* Above Y line */
-  | Y _ => "result of Y" /* End of arrow and Y line */
+  | Y(_) => "result of Y" /* End of arrow and Y line */
   };
 
 type optionalTuple =
-  | OptTup (
-      option (
-        int, /* First int */
-        int /* Second int */
+  | OptTup(
+      option(
+        (
+          int, /* First int */
+          int /* Second int */
+        )
       )
     );
 
 type optionTuple =
-  option (
-    int, /* First int */
-    int /* Second int */
+  option(
+    (
+      int, /* First int */
+      int /* Second int */
+    )
   );
 
 type intPair = (
@@ -329,56 +334,57 @@ let result =
 /* }; */
 let a = ();
 
-for i in 0 to 10 {
+for (i in 0 to 10) {
   /* bla  */
   a
 };
 
-if true {
+if (true) {
   /* hello */
   ()
 };
 
 type color =
-  | Red int /* After red end of line */
-  | Black int /* After black end of line */
-  | Green int /* After green end of line */; /* On next line after color type def */
+  | Red(int) /* After red end of line */
+  | Black(int) /* After black end of line */
+  | Green(int) /* After green end of line */; /* On next line after color type def */
 
-let blahCurriedX x =>
+let blahCurriedX (x) =
   fun
-  | Red 10
-  | Black 20
-  | Green 10 =>
+  | Red(10)
+  | Black(20)
+  | Green(10) =>
     1 /* After or pattern green */
-  | Red x => 0 /* After red */
-  | Black x => 0 /* After black */
-  | Green x => 0 /* After second green */; /* On next line after blahCurriedX def */
+  | Red(x) => 0 /* After red */
+  | Black(x) => 0 /* After black */
+  | Green(x) => 0 /* After second green */; /* On next line after blahCurriedX def */
 
-let name_equal x y => x == y;
+let name_equal (x, y) = x == y;
 
-let equal i1 i2 =>
+let equal (i1, i2) =
   i1.contents === i2.contents &&
   true; /* most unlikely first */
 
-let equal i1 i2 =>
-  compare
-    (compare 0 0)
-    (compare 1 1); /* END OF LINE HERE */
+let equal (i1, i2) =
+  compare(
+    compare(0, 0),
+    compare(1, 1)
+  ); /* END OF LINE HERE */
 
-let tuple_equal (i1, i2) => i1 == i2;
+let tuple_equal ((i1, i2)) = i1 == i2;
 
-let tuple_equal (csu, mgd) =>
+let tuple_equal ((csu, mgd)) =
   /* Some really long comments, see https://github.com/facebook/reason/issues/811 */
-  tuple_equal (csu, mgd);
+  tuple_equal((csu, mgd));
 
 
 /** Comments inside empty function bodies
  * See https://github.com/facebook/reason/issues/860
  */
-let fun_def_comment_inline () => {/* */};
+let fun_def_comment_inline () = {/* */};
 
-let fun_def_comment_newline () => {/* */};
+let fun_def_comment_newline () = {/* */};
 
-let fun_def_comment_long () => {
+let fun_def_comment_long () = {
   /* longer comment inside empty function body */
 };

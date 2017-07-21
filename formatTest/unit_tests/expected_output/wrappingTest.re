@@ -73,7 +73,7 @@ let testPrintingPrecedence =
     reallyLongIdent + andYetAnotherReallyLongIdent
   ) + reallyLongIdent;
 
-let add x y => x + y;
+let add (x, y) = x + y;
 
 let testPrintingPrecedence =
   reallyLongIdent +
@@ -82,8 +82,10 @@ let testPrintingPrecedence =
    * right side isn't even infix at all.
    */
   reallyLongIdent *
-  add
-    reallyLongIdent andYetAnotherReallyLongIdent + reallyLongIdent;
+  add(
+    reallyLongIdent,
+    andYetAnotherReallyLongIdent
+  ) + reallyLongIdent;
 
 /*
  * Test wrapping every form of named arguments where various parts are
@@ -96,161 +98,195 @@ let b = 20;
 /*A*/
 let named
     /* a::a */
-    ::a
-    /* b::b */
-    ::b =>
+    (
+      :a,
+      /* b::b */
+      :b
+    ) =
   /* a + b */
   a + b;
 
 /*B*/
 let namedAlias
     /* a::aa */
-    a::aa
-    /* b::bb */
-    b::bb =>
+    (
+      :a aa,
+      /* b::bb */
+      :b bb
+    ) =
   /* aa + bb */
   aa + bb;
 
 /*C*/
 let namedAnnot
-    /* a::(a: option int) */
-    a::(a: option int)
-    /* b::(b: option int) */
-    b::(b: option int) =>
+    /* :a a: option(int) */
+    (
+      :a: option(int),
+      /* :b b: option(int) */
+      :b: option(int)
+    ) =
   /* 20 */
   20;
 
 /*D*/
 let namedAliasAnnot
     /* a::(aa: option int) */
-    a::(aa: option int)
-    /* b::(bb: option int) */
-    b::(bb: option int) =>
+    (
+      :a aa: option(int),
+      /* b::(bb: option int) */
+      :b bb: option(int)
+    ) =
   /* 20 */
   20;
 
 /*E*/
 let optional
     /* a::a=? */
-    ::a=?
-    /* b::b=? */
-    ::b=?
-    /* () */
-    () =>
+    (
+      :a=?,
+      /* b::b=? */
+      :b=?,
+      /* () */
+      ()
+    ) =
   /* 10 */
   10;
 
 /*F*/
 let optionalAlias
     /* a::aa */
-    a::aa=?
-    /* ?b:bb */
-    b::bb=?
-    /* () */
-    () =>
+    (
+      :a aa=?,
+      /* ?b:bb */
+      :b bb=?,
+      /* () */
+      ()
+    ) =
   /* 10 */
   10;
 
 /*G*/
 let optionalAnnot
     /* a::(a: option int)=? */
-    a::(a: option int)=?
-    /* ?b:(b: option int) */
-    b::(b: option int)=?
-    /* () */
-    () =>
+    (
+      :a: option(int)=?,
+      /* ?b:(b: option int) */
+      :b: option(int)=?,
+      /* () */
+      ()
+    ) =
   /* 10 */
   10;
 
 /*H*/
 let optionalAliasAnnot
     /* a::(aa: option int)=? */
-    a::(aa: option int)=?
-    /* b::(bb: option int)=? */
-    b::(bb: option int)=?
-    /* () => */
-    () =>
+    (
+      :a aa: option(int)=?,
+      /* b::(bb: option int)=? */
+      :b bb: option(int)=?,
+      /* () = */
+      ()
+    ) =
   /* 10 */
   10;
 
 /*I: This one is really annoying? Where's the visual label?*/
 let defOptional
     /* a::a=10 */
-    ::a=10
-    /* b::b=10 */
-    ::b=10
-    /* () => */
-    () =>
+    (
+      :a=10,
+      /* b::b=10 */
+      :b=10,
+      /* () = */
+      ()
+    ) =
   /* 10 */
   10;
 
 /*J*/
 let defOptionalAlias
     /* a::aa=10 */
-    a::aa=10
-    /* b::bb=10 */
-    b::bb=10
-    /* () => */
-    () =>
+    (
+      :a aa=10,
+      /* b::bb=10 */
+      :b bb=10,
+      /* () = */
+      ()
+    ) =
   /* 10; */
   10;
 
 /*K*/
 let defOptionalAnnot
     /* a::(a:int)=10 */
-    a::(a: int)=10
-    /* b::(b:int)=10 */
-    b::(b: int)=10
-    /* () => */
-    () =>
+    (
+      :a: int=10,
+      /* b::(b:int)=10 */
+      :b: int=10,
+      /* () = */
+      ()
+    ) =
   /* 10; */
   10;
 
 /*L*/
 let defOptionalAliasAnnot
     /* a::(aa:int)=10 */
-    a::(aa: int)=10
-    /* b::(bb:int)=10 */
-    b::(bb: int)=10
-    /* () => */
-    () =>
+    (
+      :a aa: int=10,
+      /* b::(bb:int)=10 */
+      :b bb: int=10,
+      /* () = */
+      ()
+    ) =
   /* 10; */
   10;
 
 /* Invoking them */
 named
   /* a::a */
-  ::a
-  /* b::b; */
-  ::b;
+  (
+    :a,
+    /* b::b; */
+    :b
+  );
 
 named
   /* a::a */
-  ::a
-  /* b::b; */
-  ::b;
+  (
+    :a,
+    /* b::b; */
+    :b
+  );
 
 optional
   /* a::a */
-  ::a
-  /* b::b; */
-  ::b;
+  (
+    :a,
+    /* b::b; */
+    :b
+  );
 
 optional
   /* a::a */
-  ::a
-  /* b::b; */
-  ::b;
+  (
+    :a,
+    /* b::b; */
+    :b
+  );
 
 let explictlyPassed =
   /* optional */
   optional
     /* a::? */
     /* None */
-    a::?None
-    /* b::? */
-    /* None; */
-    b::?None;
+    (
+      :a? None,
+      /* b::? */
+      /* None; */
+      :b? None
+    );
 
 let a = None;
 
@@ -258,12 +294,14 @@ let explictlyPassed =
   /* optional */
   optional
     /* a::? */
-    ::?a
-    /* b::? */
-    /* None; */
-    b::?None;
+    (
+      :a?,
+      /* b::? */
+      /* None; */
+      :b? None
+    );
 
-let complex_default ::callback=(fun k d => 4) x => 3;
+let complex_default (:callback=(k, d) => 4, x) = 3;
 
 let myList = /*CommentAfterEqualBeforeList */ [
   1,
@@ -387,8 +425,8 @@ let myList = [
 
 let myList = [3, 4, 5];
 
-let simpleListPattern x =>
-  switch x {
+let simpleListPattern (x) =
+  switch (x) {
   | [1, 2, 3] => 0
   | _ => 0
   };
@@ -407,8 +445,8 @@ type hasABunch = {
    * Field comment
    */
   fieldOne: int,
-  fieldtwo: list int,
-  fieldThree: list string,
+  fieldtwo: list(int),
+  fieldThree: list(string),
   fieldFour: nameAge
   /* Comment at bottom of record type def */
 };
@@ -419,91 +457,98 @@ type functionsInARecord = {
 };
 
 let myFunctionsInARecord = {
-  adder: fun x => x,
-  minuser: fun x => x
+  adder: (x) => x,
+  minuser: (x) => x
 };
 
 let myFunctionsInARecordThatMustWrap = {
   /* Desired wrapping */
-  adder: fun reallyLongArgument => reallyLongArgument,
-  minuser: fun anotherReallyLongArgument => anotherReallyLongArgument
+  adder: (reallyLongArgument) => reallyLongArgument,
+  minuser: (anotherReallyLongArgument) => anotherReallyLongArgument
   /* Comment at bottom of record */
 };
 
 type twoArgFunctionsInARecord = {
-  adder: int => int => int,
-  minuser: int => int => int
+  adder: (int, int) => int,
+  minuser: (int, int) => int
 };
 
 let myFunctionsInARecordThatMustWrap = {
   /* Desired wrapping */
   adder:
-    fun reallyLongArgument
-        anotherReallyLongArgument => reallyLongArgument,
+    (
+      reallyLongArgument,
+      anotherReallyLongArgument
+    ) => reallyLongArgument,
   minuser:
-    fun reallyLongArgument
-        anotherReallyLongArgument =>
+    (
+      reallyLongArgument,
+      anotherReallyLongArgument
+    ) =>
     reallyLongArgument + anotherReallyLongArgument
 };
 
 type threeArgFunctionsInARecord = {
-  adder: int => int => int => int,
-  minuser: int => int => int => int
+  adder: (int, int, int) => int,
+  minuser: (int, int, int) => int
 };
 
 let myFunctionsInARecordThatMustWrap = {
   /* Desired wrapping */
   adder:
     /* Even if you have a comment before fun */
-    fun reallyLongArgument
-        /* Or before the first arg */
-        anotherReallyLongArgument
-        yetAnotherReallyLongArgument => reallyLongArgument,
+    (
+      reallyLongArgument,
+      /* Or before the first arg */
+      anotherReallyLongArgument,
+      yetAnotherReallyLongArgument
+    ) => reallyLongArgument,
   minuser:
-    fun reallyLongArgument
-        anotherReallyLongArgument
-        anotherReallyLongArgument =>
+    (
+      reallyLongArgument,
+      anotherReallyLongArgument,
+      anotherReallyLongArgument
+    ) =>
     reallyLongArgument + anotherReallyLongArgument
 };
 
 let oneArgShouldWrapToAlignWith
-    theFunctionNameBinding => theFunctionNameBinding;
+    (theFunctionNameBinding) = theFunctionNameBinding;
 
 let twoArgsShouldWrapToAlignWith
-    firstArgHere
-    secondArgThere => secondArgThere;
+    (firstArgHere, secondArgThere) = secondArgThere;
 
 let rec oneArgShouldWrapToAlignWith
-        theFunctionNameBinding => theFunctionNameBinding;
+        (theFunctionNameBinding) = theFunctionNameBinding;
 
 let rec twoArgsShouldWrapToAlignWith
-        firstArgHere
-        secondArgThere => secondArgThere;
+        (firstArgHere, secondArgThere) = secondArgThere;
 
 let secondArgShouldWrap
-    pointLess
-    (a, b, c, d, e, f, g, h) =>
+    (pointLess, (a, b, c, d, e, f, g, h)) =
   pointLess + a + b + c + d + e;
 
 /* Now check that one and two args both indent the same when applying */
 let reallyReallyLongVarName = "hello";
 
 let result =
-  oneArgShouldWrapToAlignWith reallyReallyLongVarName;
+  oneArgShouldWrapToAlignWith(
+    reallyReallyLongVarName
+  );
 
 let result =
-  twoArgsShouldWrapToAlignWith
+  twoArgsShouldWrapToAlignWith(
+    reallyReallyLongVarName,
     reallyReallyLongVarName
-    reallyReallyLongVarName;
+  );
 
-let justReturn x => x;
+let justReturn (x) = x;
 
 /* With default formatting settings: Two arguments are special cased in
    function application "justReturn hasABunch" */
 let acceptsTwoThings
-    (nameAge: nameAge)
-    (hasABunch: hasABunch) =>
-  justReturn hasABunch;
+    (nameAge: nameAge, hasABunch: hasABunch) =
+  justReturn(hasABunch);
 
 /*
   Ideally, we'd allow "acceptsTwoThings {age, name}" on the first line, then
@@ -523,34 +568,28 @@ let result =
     };
 
 let howDoesInfixOperatorsWrapWhenYouMustWrapQuestionMark
-    x
-    y
-    z =>
+    (x, y, z) =
   x + y + z;
 
 let howDoesInfixOperatorsWrapWhenYouMustWrapQuestionMark
-    x
-    y =>
+    (x, y) =
   x + y;
 
 let reallyHowDoesInfixOperatorsWrapWhenYouMustWrapQuestionMark
-    x
-    y
-    z =>
+    (x, y, z) =
   x + y + z;
 
 let reallyHowDoesInfixOperatorsWrapWhenYouMustWrapQuestionMark
-    x
-    y =>
+    (x, y) =
   x + y;
 
-let reallyLongFunctionNameThatJustConcats a =>
-  String.concat "-" a;
+let reallyLongFunctionNameThatJustConcats (a) =
+  String.concat("-", a);
 
 let seeHowLongValuesWrap = {
   age: 30,
   name:
-    reallyLongFunctionNameThatJustConcats [
+    reallyLongFunctionNameThatJustConcats[
       "one",
       "two",
       "two",
@@ -565,7 +604,7 @@ let seeHowLongValuesWrap = {
  /--Everything up to the arrow is label left--\  /-The return is label right-\
                            /-append => to last-\
  /-----------------------\ /--------------------\ */
-let onlyReturnWraps (a, b, c, d, e, f) => (
+let onlyReturnWraps ((a, b, c, d, e, f)) = (
   a,
   b,
   c,
@@ -575,8 +614,7 @@ let onlyReturnWraps (a, b, c, d, e, f) => (
 );
 
 let bothArgsWrapAndIndent
-    (a, b, c, d, e, f)
-    (h, i, j, k, l, m) => (
+    ((a, b, c, d, e, f), (h, i, j, k, l, m)) = (
   a,
   b,
   c,
@@ -586,12 +624,13 @@ let bothArgsWrapAndIndent
 );
 
 let result =
-  onlyReturnWraps (10, 11, 12, 13, 14, 15);
+  onlyReturnWraps((10, 11, 12, 13, 14, 15));
 
 let result =
-  bothArgsWrapAndIndent
+  bothArgsWrapAndIndent(
+    (10, 11, 12, 13, 14, 15),
     (10, 11, 12, 13, 14, 15)
-    (10, 11, 12, 13, 14, 15);
+  );
 
 type sixteenTuple = (
   int,
@@ -615,23 +654,25 @@ type sixteenTuple = (
 /* Nothing annotated */
 let echoTuple
     (
-      a,
-      b,
-      c,
-      d,
-      e,
-      f,
-      g,
-      h,
-      i,
-      j,
-      k,
-      l,
-      m,
-      n,
-      o,
-      p
-    ) => (
+      (
+        a,
+        b,
+        c,
+        d,
+        e,
+        f,
+        g,
+        h,
+        i,
+        j,
+        k,
+        l,
+        m,
+        n,
+        o,
+        p
+      )
+    ) = (
   a,
   b,
   c,
@@ -653,23 +694,25 @@ let echoTuple
 /* Nothing annotated fun */
 let echoTuple
     (
-      a,
-      b,
-      c,
-      d,
-      e,
-      f,
-      g,
-      h,
-      i,
-      j,
-      k,
-      l,
-      m,
-      n,
-      o,
-      p
-    ) => (
+      (
+        a,
+        b,
+        c,
+        d,
+        e,
+        f,
+        g,
+        h,
+        i,
+        j,
+        k,
+        l,
+        m,
+        n,
+        o,
+        p
+      )
+    ) = (
   a,
   b,
   c,
@@ -690,28 +733,30 @@ let echoTuple
 
 let echoTheEchoer
     (x: sixteenTuple => sixteenTuple)
-    :(sixteenTuple => sixteenTuple) => x;
+    : (sixteenTuple => sixteenTuple) = x;
 
 /* Nothing annotated fun, passed to func */
-echoTheEchoer (
-  fun (
-        a,
-        b,
-        c,
-        d,
-        e,
-        f,
-        g,
-        h,
-        i,
-        j,
-        k,
-        l,
-        m,
-        n,
-        o,
-        p
-      ) => (
+echoTheEchoer(
+  (
+    (
+      a,
+      b,
+      c,
+      d,
+      e,
+      f,
+      g,
+      h,
+      i,
+      j,
+      k,
+      l,
+      m,
+      n,
+      o,
+      p
+    )
+  ) => (
     a,
     b,
     c,
@@ -752,7 +797,7 @@ let echoTuple
         o,
         p
       ): sixteenTuple
-    ) => (
+    ) = (
   a,
   b,
   c,
@@ -792,7 +837,7 @@ let echoTuple
         o,
         p
       ): sixteenTuple
-    ) => (
+    ) = (
   a,
   b,
   c,
@@ -833,7 +878,7 @@ let echoTuple
         p
       ): sixteenTuple
     )
-    :sixteenTuple => (
+    : sixteenTuple = (
   a,
   b,
   c,
@@ -853,7 +898,25 @@ let echoTuple
 );
 
 /* Desired formatting if first line fits within margin */
-let makeTuple a b c d e f g h i j k l m n o p => (
+let makeTuple
+    (
+      a,
+      b,
+      c,
+      d,
+      e,
+      f,
+      g,
+      h,
+      i,
+      j,
+      k,
+      l,
+      m,
+      n,
+      o,
+      p
+    ) = (
   a,
   b,
   c,
@@ -891,69 +954,7 @@ let (
   o,
   p
 ) =
-  makeTuple 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
-
-/* Annotated version */
-let (
-  a,
-  b,
-  c,
-  d,
-  e,
-  f,
-  g,
-  h,
-  i,
-  j,
-  k,
-  l,
-  m,
-  n,
-  o,
-  p
-): sixteenTuple =
-  makeTuple 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
-
-/* Annotated inline */
-let x: (
-  int,
-  int,
-  int,
-  int,
-  int,
-  int,
-  int,
-  int,
-  int,
-  int,
-  int,
-  int,
-  int,
-  int,
-  int,
-  int
-) =
-  makeTuple 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
-
-let (
-  a,
-  b,
-  c,
-  d,
-  e,
-  f,
-  g,
-  h,
-  i,
-  j,
-  k,
-  l,
-  m,
-  n,
-  o,
-  p
-) =
-  echoTuple (
+  makeTuple(
     0,
     0,
     0,
@@ -991,7 +992,7 @@ let (
   o,
   p
 ): sixteenTuple =
-  echoTuple (
+  makeTuple(
     0,
     0,
     0,
@@ -1029,7 +1030,7 @@ let x: (
   int,
   int
 ) =
-  echoTuple (
+  makeTuple(
     0,
     0,
     0,
@@ -1046,6 +1047,125 @@ let x: (
     0,
     0,
     0
+  );
+
+let (
+  a,
+  b,
+  c,
+  d,
+  e,
+  f,
+  g,
+  h,
+  i,
+  j,
+  k,
+  l,
+  m,
+  n,
+  o,
+  p
+) =
+  echoTuple(
+    (
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    )
+  );
+
+/* Annotated version */
+let (
+  a,
+  b,
+  c,
+  d,
+  e,
+  f,
+  g,
+  h,
+  i,
+  j,
+  k,
+  l,
+  m,
+  n,
+  o,
+  p
+): sixteenTuple =
+  echoTuple(
+    (
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    )
+  );
+
+/* Annotated inline */
+let x: (
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int,
+  int
+) =
+  echoTuple(
+    (
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    )
   );
 
 /* Desired formatting if pattern does not fit, arguments do (margin 70) */
@@ -1068,7 +1188,24 @@ let (
   oxx,
   pxx
 ) =
-  makeTuple 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
+  makeTuple(
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  );
 
 /* Annotated */
 /* Destructured */
@@ -1090,7 +1227,24 @@ let (
   oxx,
   pxx
 ): sixteenTuple =
-  makeTuple 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
+  makeTuple(
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  );
 
 /* Annotated */
 /* Destructured */
@@ -1130,16 +1284,67 @@ let (
   int,
   int
 ) =
-  makeTuple 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
+  makeTuple(
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  );
 
 /* Not-Destructured */
 let someResult =
-  makeTuple 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
+  makeTuple(
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  );
 
 /* Annotated */
 /* Not-Destructured */
 let someResult: sixteenTuple =
-  makeTuple 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
+  makeTuple(
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  );
 
 /* Annotated */
 /* Not-Destructured */
@@ -1162,7 +1367,24 @@ let someResult: (
   int,
   int
 ) =
-  makeTuple 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
+  makeTuple(
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  );
 
 /* Destructured */
 let (
@@ -1183,23 +1405,25 @@ let (
   oxx,
   pxx
 ) =
-  echoTuple (
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0
+  echoTuple(
+    (
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    )
   );
 
 /* Annotated */
@@ -1221,23 +1445,25 @@ let (
   oxx,
   pxx
 ): sixteenTuple =
-  echoTuple (
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0
+  echoTuple(
+    (
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    )
   );
 
 /* Annotated Inline */
@@ -1276,66 +1502,72 @@ let (
   int,
   int
 ) =
-  echoTuple (
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0
+  echoTuple(
+    (
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    )
   );
 
 /* Not-Destructured */
 let someResult =
-  echoTuple (
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0
+  echoTuple(
+    (
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    )
   );
 
 /* Annotated */
 /* Not-Destructured */
 let someResult: sixteenTuple =
-  echoTuple (
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0
+  echoTuple(
+    (
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    )
   );
 
 /* Annotated Inline */
@@ -1358,23 +1590,25 @@ let someResult: (
   int,
   int
 ) =
-  echoTuple (
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0
+  echoTuple(
+    (
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    )
   );
 
 /* Desired formatting if neither fit on one line (margin 70) */
@@ -1397,23 +1631,24 @@ let (
   oxx,
   pxx
 ) =
-  makeTuple
-    axx
-    bxx
-    cxx
-    dxx
-    exx
-    fxx
-    gxx
-    hxx
-    ixx
-    jxx
-    kxx
-    lxx
-    mxx
-    nxx
-    oxx
-    pxx;
+  makeTuple(
+    axx,
+    bxx,
+    cxx,
+    dxx,
+    exx,
+    fxx,
+    gxx,
+    hxx,
+    ixx,
+    jxx,
+    kxx,
+    lxx,
+    mxx,
+    nxx,
+    oxx,
+    pxx
+  );
 
 /* Annoted */
 let (
@@ -1434,23 +1669,24 @@ let (
   oxx,
   pxx
 ): sixteenTuple =
-  makeTuple
-    axx
-    bxx
-    cxx
-    dxx
-    exx
-    fxx
-    gxx
-    hxx
-    ixx
-    jxx
-    kxx
-    lxx
-    mxx
-    nxx
-    oxx
-    pxx;
+  makeTuple(
+    axx,
+    bxx,
+    cxx,
+    dxx,
+    exx,
+    fxx,
+    gxx,
+    hxx,
+    ixx,
+    jxx,
+    kxx,
+    lxx,
+    mxx,
+    nxx,
+    oxx,
+    pxx
+  );
 
 /* Annoted inline */
 let (
@@ -1488,64 +1724,67 @@ let (
   int,
   int
 ) =
-  makeTuple
-    axx
-    bxx
-    cxx
-    dxx
-    exx
-    fxx
-    gxx
-    hxx
-    ixx
-    jxx
-    kxx
-    lxx
-    mxx
-    nxx
-    oxx
-    pxx;
+  makeTuple(
+    axx,
+    bxx,
+    cxx,
+    dxx,
+    exx,
+    fxx,
+    gxx,
+    hxx,
+    ixx,
+    jxx,
+    kxx,
+    lxx,
+    mxx,
+    nxx,
+    oxx,
+    pxx
+  );
 
 /* Not-Destructured */
 let someResult =
-  makeTuple
-    axx
-    bxx
-    cxx
-    dxx
-    exx
-    fxx
-    gxx
-    hxx
-    ixx
-    jxx
-    kxx
-    lxx
-    mxx
-    nxx
-    oxx
-    pxx;
+  makeTuple(
+    axx,
+    bxx,
+    cxx,
+    dxx,
+    exx,
+    fxx,
+    gxx,
+    hxx,
+    ixx,
+    jxx,
+    kxx,
+    lxx,
+    mxx,
+    nxx,
+    oxx,
+    pxx
+  );
 
 /* Not-Destructured */
 /* Annoted */
 let someResult: sixteenTuple =
-  makeTuple
-    axx
-    bxx
-    cxx
-    dxx
-    exx
-    fxx
-    gxx
-    hxx
-    ixx
-    jxx
-    kxx
-    lxx
-    mxx
-    nxx
-    oxx
-    pxx;
+  makeTuple(
+    axx,
+    bxx,
+    cxx,
+    dxx,
+    exx,
+    fxx,
+    gxx,
+    hxx,
+    ixx,
+    jxx,
+    kxx,
+    lxx,
+    mxx,
+    nxx,
+    oxx,
+    pxx
+  );
 
 /* Not-Destructured */
 /* Annoted inline */
@@ -1567,23 +1806,24 @@ let someResult: (
   int,
   int
 ) =
-  makeTuple
-    axx
-    bxx
-    cxx
-    dxx
-    exx
-    fxx
-    gxx
-    hxx
-    ixx
-    jxx
-    kxx
-    lxx
-    mxx
-    nxx
-    oxx
-    pxx;
+  makeTuple(
+    axx,
+    bxx,
+    cxx,
+    dxx,
+    exx,
+    fxx,
+    gxx,
+    hxx,
+    ixx,
+    jxx,
+    kxx,
+    lxx,
+    mxx,
+    nxx,
+    oxx,
+    pxx
+  );
 
 /* Desired formatting if neither fit on one line (margin 70) */
 /* Destructured */
@@ -1605,23 +1845,25 @@ let (
   oxx,
   pxx
 ) =
-  echoTuple (
-    1000,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10
+  echoTuple(
+    (
+      1000,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10
+    )
   );
 
 /* Annoted */
@@ -1644,23 +1886,25 @@ let (
   oxx,
   pxx
 ): sixteenTuple =
-  echoTuple (
-    1000,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10
+  echoTuple(
+    (
+      1000,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10
+    )
   );
 
 /* Annoted Inline */
@@ -1700,67 +1944,73 @@ let (
   int,
   int
 ) =
-  echoTuple (
-    1000,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10
+  echoTuple(
+    (
+      1000,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10
+    )
   );
 
 /* Desired formatting if neither fit on one line (margin 70) */
 /* Not-Destructured */
 let someResult =
-  echoTuple (
-    1000,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10
+  echoTuple(
+    (
+      1000,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10
+    )
   );
 
 /* Annoted */
 /* Not-Destructured */
 let someResult: sixteenTuple =
-  echoTuple (
-    1000,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10
+  echoTuple(
+    (
+      1000,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10
+    )
   );
 
 /* Annoted Inline */
@@ -1783,23 +2033,25 @@ let someResult: (
   int,
   int
 ) =
-  echoTuple (
-    1000,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10,
-    10
+  echoTuple(
+    (
+      1000,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10
+    )
   );
 
 /* The rhs of = shouldn't be broken onto its own newline: @see ensureSingleTokenSticksToLabel */
@@ -1888,42 +2140,41 @@ let (the, type_, and_, value, should, both, wrap): (
   "wrap"
 );
 
-let myPolyFunc: 'a .'a => 'a = fun o => o;
+let myPolyFunc: 'a .'a => 'a = (o) => o;
 
-let myNonPolyFunc: 'a => 'a = fun o => o;
+let myNonPolyFunc: 'a => 'a = (o) => o;
 
-let locallyAbstractFunc (type a) (input: a) => input;
+let locallyAbstractFunc (type a, input: a) = input;
 
 let locallyAbstractFuncNotSugared
-    (type a)
-    (input: a) => input;
+    (type a, input: a) = input;
 
 let locallyAbstractFuncAnnotated: type a. a => a =
-  fun (type a) (input: a) => input;
+  (type a, input: a) => input;
 
 /*
   Examples of how long versions of these should be wrapped: df stands for
   "desired formatting" when the function binding itself must wrap.
  */
-let df_myPolyFunc: 'a .'a => 'a = fun o => o;
+let df_myPolyFunc: 'a .'a => 'a = (o) => o;
 
-let df_myNonPolyFunc: 'a => 'a = fun o => o;
+let df_myNonPolyFunc: 'a => 'a = (o) => o;
 
 type nameBlahType = {nameBlah: int};
 
-let myFunc ::firstArg ::another ::fl => {
+let myFunc (:firstArg, :another, :fl) = {
   nameBlah: 10
 };
 
-type inputEchoRecord 'a = {inputIs: 'a};
+type inputEchoRecord('a) = {inputIs: 'a};
 
-let df_locallyAbstractFunc (type a b) (input: a) => {
+let df_locallyAbstractFunc
+    (type a, type b, input: a) = {
   inputIs: input
 }; /* With setting ReturnValOnSameLine */
 
 let df_locallyAbstractFuncNotSugared
-    (type a b)
-    (input: a) => {
+    (type a, type b, input: a) = {
   inputIs: input
 };
 
@@ -1942,8 +2193,8 @@ let df_locallyAbstractFuncNotSugared
  *
  */
 let df_locallyAbstractFuncAnnotated:
-  type a. a => a => inputEchoRecord a =
-  fun (input: a) (input: a) => {inputIs: input};
+  type a. (a, a) => inputEchoRecord(a) =
+  (input: a, input: a) => {inputIs: input};
 
 
 /**
@@ -1960,7 +2211,7 @@ let df_locallyAbstractFuncAnnotated:
  *
  */
 let df_locallyAbstractFuncAnnotatedRef:
-  type a. a => a => inputEchoRecord a = df_locallyAbstractFuncAnnotated;
+  type a. (a, a) => inputEchoRecord(a) = df_locallyAbstractFuncAnnotated;
 
 
 /**
@@ -1989,10 +2240,9 @@ let df_locallyAbstractFuncAnnotatedRef:
  */
 let df_locallyAbstractFuncAnnotated:
   type a b.
-    a =>
-    b =>
-    (inputEchoRecord a, inputEchoRecord b) =
-  fun (input: a) (input2: b) => (
+    (a, b) =>
+    (inputEchoRecord(a), inputEchoRecord(b)) =
+  (input: a, input2: b) => (
     {inputIs: input},
     {inputIs: input2}
   );
@@ -2005,21 +2255,20 @@ let df_locallyAbstractFuncAnnotated:
  * Ppat_constraint. In this case, they're not equal!
  */
 let df_locallyAbstractFuncAnnotated: 'figureMeOut =
-  fun (type a b) => (
-    fun (input: a) (input2: b) => (
+  fun (type a, type b) => (
+    (input: a, input2: b) => (
       {inputIs: input},
       {inputIs: input2}
     ):
-      a =>
-      b =>
-      (inputEchoRecord a, inputEchoRecord b)
+      (a, b) =>
+      (inputEchoRecord(a), inputEchoRecord(b))
   );
 
 let createTuple_thisFuncShouldWrapCorrectlyNow:
   'a .
-  'a => 'a => 'a => ('a, 'a, 'a)
+  ('a, 'a, 'a) => ('a, 'a, 'a)
  =
-  fun someVar someVar2 someVar3 => (
+  (someVar, someVar2, someVar3) => (
     someVar,
     someVar2,
     someVar3
@@ -2037,9 +2286,9 @@ let theTupleTypeAnnotationShouldWrap: (
   "now these tuple values should wrap"
 );
 
-let rec mutuallyRecursiveOne x =>
-  mutuallyRecursiveTwo (x + x)
-and mutuallyRecursiveTwo y => print_int y;
+let rec mutuallyRecursiveOne (x) =
+  mutuallyRecursiveTwo(x + x)
+and mutuallyRecursiveTwo (y) = print_int(y);
 
 /* The only downside to this is that now you can't redeclare a binding. */
 /* let newMutualRecursionSyntax x => newMutuallyRecursiveTwo (x + x); */
@@ -2047,14 +2296,14 @@ and mutuallyRecursiveTwo y => print_int y;
 /*  */
 type x = pri int;
 
-type myType 'a 'b 'c = pri ('a, 'b, 'c);
+type myType('a, 'b, 'c) = pri ('a, 'b, 'c);
 
 type privateVariant =
-  pri | BigSize int | SmallSize int;
+  pri | BigSize(int) | SmallSize(int);
 
 type doubleEqualsDoublePrivateVariant =
   privateVariant =
-    pri | BigSize int | SmallSize int;
+    pri | BigSize(int) | SmallSize(int);
 
 type myRecordWithReallyLongName = {
   xx: int,
@@ -2075,7 +2324,7 @@ type doubleEqualsDoublePrivateRecord =
     };
 
 type someConstructor =
-  | SomeConstructorHi int int;
+  | SomeConstructorHi(int, int);
 
 type someRecord = {
   firstFieldInRecord: int,
@@ -2089,22 +2338,23 @@ type someRecord = {
    pattern).
  */
 let funcOnSomeConstructorHi
-    (SomeConstructorHi x y) =>
+    (SomeConstructorHi(x, y)) =
   x + y;
 
 let funcOnSomeConstructorHi
-    (SomeConstructorHi x y)
-    secondArg =>
+    (SomeConstructorHi(x, y), secondArg) =
   x + y;
 
 /* With two args */
 let funcOnSomeRecord
-    {firstFieldInRecord, secondField} =>
+    ({firstFieldInRecord, secondField}) =
   firstFieldInRecord + secondField;
 
 let funcOnSomeRecord
-    {firstFieldInRecord, secondField}
-    secondArg =>
+    (
+      {firstFieldInRecord, secondField},
+      secondArg
+    ) =
   firstFieldInRecord + secondField;
 
 /*
@@ -2114,35 +2364,33 @@ let funcOnSomeRecord
    pattern).
  */
 let funcOnSomeConstructorHi
-    (SomeConstructorHi x y) =>
+    (SomeConstructorHi(x, y)) =
   x + y;
 
 let funcOnSomeRecord
-    {firstFieldInRecord, secondField} =>
+    ({firstFieldInRecord, secondField}) =
   firstFieldInRecord + secondField;
 
 /* With two args */
 let funcOnSomeConstructorHi
-    (SomeConstructorHi x y)
-    secondArg =>
+    (SomeConstructorHi(x, y), secondArg) =
   x + y;
 
 let funcOnSomeRecord
-    {firstFieldInRecord, secondField}
-    secondArg =>
+    (
+      {firstFieldInRecord, secondField},
+      secondArg
+    ) =
   firstFieldInRecord + secondField;
 
 type simpleTupleVariant =
-  | SimpleActuallyATuple (int, int);
+  | SimpleActuallyATuple((int, int));
 
-let returnTheSimpleTupleVariant i =>
-  SimpleActuallyATuple (i, i);
+let returnTheSimpleTupleVariant (i) =
+  SimpleActuallyATuple(i, i);
 
-let shouldWrapLike whenLongArg =>
-  SimpleActuallyATuple (
-    whenLongArg,
-    whenLongArg
-  );
+let shouldWrapLike (whenLongArg) =
+  SimpleActuallyATuple(whenLongArg, whenLongArg);
 
 type recordWithLong = {
   someField: int,
@@ -2156,7 +2404,7 @@ type recursiveType =
   /* First variant of first mutually recursive */
   | Blah
   /* Second variant of first mutually recursive */
-  | Another (option anotherRecursiveType)
+  | Another(option(anotherRecursiveType))
 /*
  * Commenting second of two mutually recursive types.
  */
@@ -2164,120 +2412,123 @@ and anotherRecursiveType =
   /* Second variant of second mutually recursive */
   | Baz
   /* Second variant of second mutually recursive */
-  | Recursive (option recursiveType);
+  | Recursive(option(recursiveType));
 
 
 /**
  * Commented GADT definition.
  */
-type term _ =
+type term(_) =
   /* First variant leaf of GADT */
-  | Int
-      /*first var arg */ int
-      :/* First GADT res */ term int
+  | Int /*first var arg */(int): /* First GADT res */ term(
+                                   int
+                                 )
   /* Second variant leaf of GADT */
-  | Float
-      /*second var arg */ int
-      :/* Second GADT res */ term int
+  | Float /*second var arg */(int): /* Second GADT res */ term(
+                                      int
+                                    )
   /* Third variant leaf of GADT */
-  | Bool
-      /*third var arg */ int
-      :/* Third GADT res */ term int;
+  | Bool /*third var arg */(int): /* Third GADT res */ term(
+                                    int
+                                  );
 
 /* Commented colors */
 type commentedTypeDef =
   /*
    * Commenting first variant member.
    */
-  | First (
-      /* First field of tuple in first variant member */
-      int,
-      /* Second field of tuple in first variant member */
-      int
+  | First(
+      (
+        /* First field of tuple in first variant member */
+        int,
+        /* Second field of tuple in first variant member */
+        int
+      )
     )
   /*
    * Commenting second variant member.
    */
-  | Second int
+  | Second(int)
   /*
    * Commenting third variant member.
    */
-  | Third (
+  | Third(
       list
         /* Commenting deep in type def */
-        (list int)
+        (list(int))
     );
 
 type colors =
-  | Red int
-  | Black int
-  | Green int;
+  | Red(int)
+  | Black(int)
+  | Green(int);
 
-let blah arg =>
-  switch arg {
+let blah (arg) =
+  switch (arg) {
   /* Comment before Bar */
-  | /* Comment between bar/pattern */ Red _ => 1
+  | /* Comment between bar/pattern */ Red(_) => 1
   /* Comment Before non-first bar */
-  | /* Comment betwen bar/pattern */ Black _ => 0
-  | Green _ => 0
+  | /* Comment betwen bar/pattern */ Black(_) => 0
+  | Green(_) => 0
   };
 
 let blah =
   fun
-  | Red _ => 1
-  | Black _ => 0
-  | Green _ => 1;
+  | Red(_) => 1
+  | Black(_) => 0
+  | Green(_) => 1;
 
-let blahCurriedX x =>
+let blahCurriedX (x) =
   fun
   /* Comment before first bar */
   /* Comment between first bar and OR pattern */
-  | Red x
-  | Black x
-  | Green x => 1
+  | Red(x)
+  | Black(x)
+  | Green(x) => 1
   /* Comment before second bar */
-  | Black x => 0
-  | Green x => 0;
+  | Black(x) => 0
+  | Green(x) => 0;
 
 type reallyLongVariantNames =
-  | ReallyLongVariantName recordWithLong
-  | AnotherReallyLongVariantName int int int
-  | AnotherReallyLongVariantName2 int int int;
+  | ReallyLongVariantName(recordWithLong)
+  | AnotherReallyLongVariantName(int, int, int)
+  | AnotherReallyLongVariantName2(int, int, int);
 
-let howDoLongMultiBarPatternsWrap x =>
-  switch x {
-  | AnotherReallyLongVariantName _ _ _ => 0
-  | AnotherReallyLongVariantName2 _ _ _ => 0
+let howDoLongMultiBarPatternsWrap (x) =
+  switch (x) {
+  | AnotherReallyLongVariantName(_, _, _) => 0
+  | AnotherReallyLongVariantName2(_, _, _) => 0
   | ReallyLongVariantName {
       someField,
       anotherField
     } => 0
   };
 
-let letsCombineTwoLongPatternsIntoOneCase x =>
-  switch x {
-  | AnotherReallyLongVariantName _ _ _
-  | AnotherReallyLongVariantName2 _ _ _ => 0
+let letsCombineTwoLongPatternsIntoOneCase (x) =
+  switch (x) {
+  | AnotherReallyLongVariantName(_, _, _)
+  | AnotherReallyLongVariantName2(_, _, _) => 0
   | ReallyLongVariantName {
       someField,
       anotherField
     } => 0
   };
 
-let letsPutAWhereClauseOnTheFirstTwo x =>
-  switch x {
-  | AnotherReallyLongVariantName _ _ _
-  | AnotherReallyLongVariantName2 _ _ _ when true => 0
+let letsPutAWhereClauseOnTheFirstTwo (x) =
+  switch (x) {
+  | AnotherReallyLongVariantName(_, _, _)
+  | AnotherReallyLongVariantName2(_, _, _)
+      when true => 0
   | ReallyLongVariantName {
       someField,
       anotherField
     } => 0
   };
 
-let letsPutAWhereClauseOnTheLast x =>
-  switch x {
-  | AnotherReallyLongVariantName _ _ _
-  | AnotherReallyLongVariantName2 _ _ _ => 0
+let letsPutAWhereClauseOnTheLast (x) =
+  switch (x) {
+  | AnotherReallyLongVariantName(_, _, _)
+  | AnotherReallyLongVariantName2(_, _, _) => 0
   | ReallyLongVariantName {
       someField,
       anotherField
@@ -2285,14 +2536,15 @@ let letsPutAWhereClauseOnTheLast x =>
       when true => 0
   };
 
-type wrappingGadt _ =
-  | ThisIsLongSoTypeWillWrap
-      int :wrappingGadt int
-  | Add :wrappingGadt (int => int => int)
-  | App
-      (wrappingGadt ('b => 'a))
-      (wrappingGadt 'b)
-      :wrappingGadt 'a;
+type wrappingGadt(_) =
+  | ThisIsLongSoTypeWillWrap(int): wrappingGadt(
+                                     int
+                                   )
+  | Add: wrappingGadt(((int, int) => int))
+  | App(
+         wrappingGadt(('b => 'a)),
+         wrappingGadt('b)
+       ): wrappingGadt('a);
 
 type withThreeFields = {
   name: string,
@@ -2314,10 +2566,12 @@ let anotherRecord = {
 
 type polymorphicCommentedType
   /* Commenting the first type variable */
-  'a
-  /* Commenting the second type variable */
-  'b =
-  list ('a, 'b);
+  (
+    'a,
+    /* Commenting the second type variable */
+    'b
+  ) =
+  list('a, 'b);
 
 
 /**
@@ -2350,11 +2604,13 @@ let testRecordCommented = {
  */
 let callMeWithComments
     /* Comment before first arg "a" */
-    (a: int)
-    /* Comment before second arg "b" */
-    (b: int)
+    (
+      a: int,
+      /* Comment before second arg "b" */
+      b: int
+    )
     /* Comment before return type annotation "int" */
-    :int =>
+    : int =
   /* Comment above return value a + b + c */
   a + b + c;
 
@@ -2362,9 +2618,11 @@ let result =
   /* Comment before function to invoke */
   callMeWithComments
     /* Comment before first argument expression */
-    (1 + 2 + 3 + 3)
-    /* Comment before second argument expression */
-    (1 + 2 + 3 + 3);
+    (
+      1 + 2 + 3 + 3,
+      /* Comment before second argument expression */
+      1 + 2 + 3 + 3
+    );
 
 module type ASig = {let a: int;};
 
@@ -2384,9 +2642,11 @@ module CurriedSugar
         * see how functor args' locations aren't set
         * correclty due to the fold_left.
         */
-       (A: ASig)
-       /* Commenting before Second curried functor arg */
-       (B: BSig) => {
+       (
+         A: ASig,
+         /* Commenting before Second curried functor arg */
+         B: BSig
+       ) = {
   let result = A.a + B.b;
   /* Comment at bottom of module expression */
 };
@@ -2395,21 +2655,25 @@ module CurriedSugarFunctorResult =
   /* Commenting before functor name*/
   CurriedSugar
     /* Commenting before functor arg 1 in app */
-    AMod
-    /* Commenting before functor arg 2 in app */
-    BMod;
+    (
+      AMod,
+      /* Commenting before functor arg 2 in app */
+      BMod
+    );
 
 module CurriedSugarFunctorResultInline =
   /* Commenting before functor name*/
   CurriedSugar
     /* Commenting before functor arg 1 in app */
-    {
-      let a = 10;
-    }
-    {
-      /* Commenting before functor arg 2 in app */
-      let b = 10;
-    };
+    (
+      {
+        let a = 10;
+      },
+      {
+        /* Commenting before functor arg 2 in app */
+        let b = 10;
+      }
+    );
 
 /*
  * Commenting locations
@@ -2465,13 +2729,13 @@ let /*beforePattern2 */ commentingBeforePatternSpecial: withThreeFields = {
   occupation: "programmer"
 };
 
-let produceRecord /*commentBeforeArg*/ x => {
+let produceRecord /*commentBeforeArg*/ (x) = {
   name: "hello",
   age: 20,
   occupation: "programmer"
 };
 
-let produceRecord x /*commentAfterArg*/ => {
+let produceRecord (x) = /*commentAfterArg*/ {
   name: "hello",
   age: 20,
   occupation: "programmer"
@@ -2481,133 +2745,124 @@ let myPolyFuncCommentBeforeColon /*beforeColon */:
   'a .
   'a => 'a
  =
-  fun o => o;
+  (o) => o;
 
 let myPolyFuncCommentAfterColon: 'a .'a => 'a =
   /*afterColon */
-  fun o => o;
+  (o) => o;
 
-let myPolyFuncCommentBeforeArrow:
-  'a .
-  'a /*beforeArrow */ => 'a
- =
-  fun o => o;
+let myPolyFuncCommentBeforeArrow: 'a .'a => 'a =
+  /*beforeArrow */
+  (o) => o;
 
 let myPolyFuncCommentAfterArrow:
   'a .
   'a => /*afterArrow */ 'a
  =
-  fun o => o;
+  (o) => o;
 
 let myPolyFuncCommentBeforeEqual:
   'a .
   'a => 'a /*beforeEqual */
  =
-  fun o => o;
+  (o) => o;
 
 let myPolyFuncCommentAfterEqual: 'a .'a => 'a =
-  /*afterEqual */ fun o => o;
+  /*afterEqual */ (o) => o;
 
 let myNonPolyFuncCommentBeforeColon /*BeforeColon */:
   'a => 'a =
-  fun o => o;
+  (o) => o;
 
 let myNonPolyFuncCommentAfterColon:
   /*AfterColon */ 'a => 'a =
-  fun o => o;
+  (o) => o;
 
 let myNonPolyFuncCommentBeforeArrow:
-  'a /*BeforeArrow */ => 'a =
-  fun o => o;
+  'a => /*BeforeArrow */
+  'a =
+  (o) => o;
 
 let myNonPolyFuncCommentAfterArrow:
   'a => /*AfterArrow */ 'a =
-  fun o => o;
+  (o) => o;
 
 let myNonPolyFuncCommentBeforeEqual:
   'a => 'a /*BeforeEqual */ =
-  fun o => o;
+  (o) => o;
 
 let myNonPolyFuncCommentAfterEqual: 'a => 'a =
-  /*AfterEqual */ fun o => o;
+  /*AfterEqual */ (o) => o;
 
 let lATCurrySugarCommentBeforeType /*BeforeType */
-    (type a)
-    (input: a) => input;
+    (type a, input: a) = input;
 
 let lATCurrySugarCommentAfterType /*AfterType */
-    (type a)
-    (input: a) => input;
+    (type a, input: a) = input;
 
 let lATCurrySugarCommentBeforeArg
-    (type a)
-    /*BeforeArg */ (input: a) => input;
+    (type a, /*BeforeArg */ input: a) = input;
 
 let lATCurrySugarCommentAfterArg
-    (type a)
-    (input: a) /*AfterArg */ => input;
+    (type a, input: a) =
+  /*AfterArg */
+  input;
 
 let lATCurrySugarCommentAfterArrow
-    (type a)
-    (input: a) => /*AfterArrow */ input;
+    (type a, input: a) = /*AfterArrow */ input;
 
 let lATNotSugaredCommentBeforeEqual /*BeforeEqual*/
-    (type a)
-    (input: a) => input;
+    (type a, input: a) = input;
 
-let lATNotSugaredCommentAfterEqual
-    (type a) /*AfterEqual*/
-    (input: a) => input;
+let lATNotSugaredCommentAfterEqual /*AfterEqual*/
+    (type a, input: a) = input;
 
-let lATNotSugaredCommentBeforeType
-    (type a) /*BeforeType*/
-    (input: a) => input;
+let lATNotSugaredCommentBeforeType /*BeforeType*/
+    (type a, input: a) = input;
 
-let lATNotSugaredCommentAfterType
-    (type a)
-    /*AfterType*/ (input: a) => input;
+let lATNotSugaredCommentAfterType /*AfterType*/
+    (type a, input: a) = input;
 
 let lATNotSugaredCommentBeforeArg
-    (type a)
-    /*BeforeArg*/ (input: a) => input;
+    (type a, /*BeforeArg*/ input: a) = input;
 
 let lATNotSugaredCommentAfterArg
-    (type a)
-    (input: a) /*AfterArg*/ => input;
+    (type a, input: a) =
+  /*AfterArg*/
+  input;
 
 let lATNotSugaredCommentAfterArrow
-    (type a)
-    (input: a) => /*AfterArrow*/ input;
+    (type a, input: a) = /*AfterArrow*/ input;
 
 let lAtFuncAnnotatedCommentBeforeColon /*BeforeColon*/:
   type a. a => a =
-  fun (type a) (input: a) => input;
+  (type a, input: a) => input;
 
 let lAtFuncAnnotatedCommentAfterColon /*AfterColon*/:
   type a. a => a =
-  fun (type a) (input: a) => input;
+  (type a, input: a) => input;
 
 let lAtFuncAnnotatedCommentBeforeTypeVar /*BeforeTypeVar*/:
   type a. a => a =
-  fun (type a) (input: a) => input;
+  (type a, input: a) => input;
 
 let lAtFuncAnnotatedCommentAfterTypeVar /*AfterTypeVar*/:
   type a. a => a =
-  fun (type a) (input: a) => input;
+  (type a, input: a) => input;
 
 let lAtFuncAnnotatedBeforeEqual:
   type a. a => a /*BeforeEqual*/ =
-  fun (type a) (input: a) => input;
+  (type a, input: a) => input;
 
 let lAtFuncAnnotatedAfterEqual: type a. a => a =
-  /*AfterEqual*/ fun (type a) (input: a) => input;
+  /*AfterEqual*/ (type a, input: a) => input;
 
 /* Ternary wrapping comments */
 let ternaryResult =
   /* Before Test */
   something ?
     /* Before ifTrue */
-    callThisFunction withThisArg :
+    callThisFunction(withThisArg) :
     /* Before ifFalse */
     thatResult;
 
@@ -2615,13 +2870,14 @@ let ternaryResult =
   /* Before Test */
   something ?
     /* Before ifTrue */
-    callThisFunction withThisArg :
+    callThisFunction(withThisArg) :
     /* Before ifFalse */
     trailingTest ?
       /* before nested ifTrue */ true :
       /* before nested ifFalse */ false;
 
-let returningATernary x y => x > y ? "hi" : "by";
+let returningATernary (x, y) =
+  x > y ? "hi" : "by";
 
 
 /** Testing some special comment alignment features */
@@ -2663,54 +2919,57 @@ let test =
   10;
 
 let x =
-  calWith
-    reallyLongName
-    reallyReallyLongName
-    reallyReallyLongName
-    reallyReallyLongName
-    reallyReallyLongName
-    reallyReallyLongName
-    a
-    a
-    a
-    alskdjfalskdjfalsdf + reallyReallyLongName;
+  calWith(
+    reallyLongName,
+    reallyReallyLongName,
+    reallyReallyLongName,
+    reallyReallyLongName,
+    reallyReallyLongName,
+    reallyReallyLongName,
+    a,
+    a,
+    a,
+    alskdjfalskdjfalsdf
+  ) + reallyReallyLongName;
 
 let onlyDoingThisTopLevelLetToBypassTopLevelSequence = {
   let x = {
-    print_int 1;
-    print_int 20 /* Missing trailing SEMI */
+    print_int(1);
+    print_int(20) /* Missing trailing SEMI */
   };
   let x = {
-    print_int 1;
-    print_int 20; /* Ensure missing middle SEMI reported well */
-    print_int 20
+    print_int(1);
+    print_int(
+      20
+    ); /* Ensure missing middle SEMI reported well */
+    print_int(20)
   };
   let x = {
-    print_int 1;
-    print_int 20;
+    print_int(1);
+    print_int(20);
     10
   }; /* Missing final SEMI */
   let x = {
-    print_int 1;
-    print_int 20;
+    print_int(1);
+    print_int(20);
     10
   };
   x + x /* Final item */
 };
 
 /* With this unification, anywhere eyou see `= fun` you can just ommit it */
-let blah a => a; /* Done */
+let blah (a) = a; /* Done */
 
-let blah a => a; /* Done (almost) */
+let blah (a) = a; /* Done (almost) */
 
-let blah a b => a; /* Done */
+let blah (a, b) = a; /* Done */
 
-let blah a b => a; /* Done (almost) */
+let blah (a, b) = a; /* Done (almost) */
 
 let tryingTheSameInLocalScope = {
-  let blah a => a; /* Done */
-  let blah a => a; /* Done (almost) */
-  let blah a b => a; /* Done */
-  let blah a b => a;
+  let blah (a) = a; /* Done */
+  let blah (a) = a; /* Done (almost) */
+  let blah (a, b) = a; /* Done */
+  let blah (a, b) = a;
   () /* Done (almost) */
 };

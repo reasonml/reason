@@ -74,9 +74,9 @@ type t22 =
 
 type variant =
   /* Comment above X */
-  | X int /* End of line on X */
+  | X(int) /* End of line on X */
   /* Comment above Y */
-  | Y int /* End of line on Y */;
+  | Y(int) /* End of line on Y */;
 
 /* Comment on entire type def for variant */
 type x = {
@@ -89,19 +89,19 @@ and y = {
 } /* Attached end of line after y */;
 
 let result =
-  switch (X 3) {
-  | X x =>
+  switch (X(3)) {
+  | X(x) =>
     /* Where does this comment go? */
     let tmp = x;
     x + tmp
-  | Y x =>
+  | Y(x) =>
     /* How about this one */
     let tmp = x;
     x + tmp
   };
 
 let result =
-  switch None {
+  switch (None) {
   | Some {fieldOne: 20} =>
     /* Where does this comment go? */
     let tmp = 0;
@@ -121,7 +121,7 @@ type pointWithManyKindsOfComments = {
   /* Final row of record */
 };
 
-type typeParamPointWithComments 'a = {
+type typeParamPointWithComments('a) = {
   /* Line before x */
   x: 'a, /* x field */
   /* Line before y */
@@ -129,26 +129,26 @@ type typeParamPointWithComments 'a = {
   /* Final row of record */
 };
 
-let name_equal x y => x == y;
+let name_equal (x, y) = x == y;
 
-let equal i1 i2 =>
+let equal (i1, i2) =
   i1.contents === i2.contents && true /* most unlikely first */;
 
-let equal i1 i2 =>
-  compare (compare 0 0) (compare 1 1) /* END OF LINE HERE */;
+let equal (i1, i2) =
+  compare(compare(0, 0), compare(1, 1)) /* END OF LINE HERE */;
 
 module Temp = {
   let v = true;
-  let logIt str () => print_string str;
+  let logIt (str, ()) = print_string(str);
 };
 
-let store_attributes arg => {
+let store_attributes (arg) = {
   let attributes_file = "test";
-  let proc_name = attributes_file ^ ".proc";
+  let proc_name = attributes_file ++ ".proc";
   let should_write =
     /* only overwrite defined procedures */
-    Temp.v || not Temp.v;
-  if should_write {
-    Temp.logIt proc_name ()
+    Temp.v || ! Temp.v;
+  if (should_write) {
+    Temp.logIt(proc_name)()
   }
 };

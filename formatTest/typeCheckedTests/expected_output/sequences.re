@@ -38,16 +38,16 @@ let unitValue = ();
  * the formatter ensures that the bodies are printed in "sequence" form even if
  * it's not required.
  */
-while false {
+while (false) {
   unitValue
 };
 
-while false {
-  print_string "test"
+while (false) {
+  print_string("test")
 };
 
-while false {
-  print_string "test"
+while (false) {
+  print_string("test")
 };
 
 type myRecord = {number: int};

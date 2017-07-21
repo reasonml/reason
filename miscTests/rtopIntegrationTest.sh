@@ -16,18 +16,18 @@ export TERM=
 # Given the above, we're gonna test that utop integration works by piping code
 # into it and asserting the existence of some output.
 echo "Testing rtop..."
-echo "let f a => a;" \
-| utop -init src/rtop_init.ml -I $HOME \
+echo "let f(a) = a;" \
+| utop-full -init src/rtop_init.ml -I $HOME \
 | grep "let f : 'a => 'a = <fun>" > /dev/null
 if [ $? -ne 0 ]; then
-  echo "rtop is failing! Failed to evaluate \`let f a => a;\`"
+  echo "rtop is failing! Failed to evaluate \`let f(a) = a;\`"
   exit 1
 fi
 
-echo "let f a => 1 + \"hi\";" \
-| utop -init src/rtop_init.ml -I $HOME \
+echo "let f(a) = 1 + \"hi\";" \
+| utop-full -init src/rtop_init.ml -I $HOME \
 | grep "Error: This expression has type" > /dev/null
 if [ $? -ne 0 ]; then
-  echo "rtop is failing! Failed to (correctly) error on \`let f a => 1 + \"hi\";\`"
+  echo "rtop is failing! Failed to (correctly) error on \`let f(a) = 1 + \"hi\";\`"
   exit 1
 fi

@@ -1,6 +1,6 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 
-[@@@ocaml.text "Floating comment text should be removed"];
+[@ocaml.text "Floating comment text should be removed"];
 let test : int;
 
 /**
@@ -9,27 +9,31 @@ let test : int;
  * ----------------------
  */
 
-[@@@ocaml.doc "Floating doc text should be removed"];
+[@ocaml.doc "Floating doc text should be removed"];
 
 
 /**
  * #990: don't strip attributes in interface files
  */
-let x: int [@@bs.val];
+[@bs.val]
+let x: int;
 
-type t 'a;
+type t('a);
 
 type reactClass;
 
 type reactElement;
 
-external createClassInternalHack : t 'classSpec => reactClass = "createClass" [@@bs.val] [@@bs.module "React"];
+[@bs.val] [@bs.module "React"]
+external createClassInternalHack : (t('classSpec)) => reactClass = "createClass";
 
-external map : ('a => 'b) [@bs] => array 'b = "" [@@bs.send.pipe : array 'a];
+[@bs.send.pipe : array('a)] external map : [@bs] (('a) => 'b) => array('b) = "";
 
-external createClassInternalHack : t 'classSpec => reactClass =
-  "createClass" [@@bs.val] [@@bs.module "react"];
+[@bs.val] [@bs.module "react"]
+external createClassInternalHack : (t('classSpec)) => reactClass =
+  "createClass";
 
+[@bs.val] [@bs.module "react"] [@bs.splice]
 external createCompositeElementInternalHack :
-  reactClass => t {.. reasonProps : 'props} => array reactElement => reactElement =
-  "createElement" [@@bs.val] [@@bs.module "react"] [@@bs.splice];
+  (reactClass, t({.. reasonProps : 'props}), array(reactElement)) => reactElement =
+  "createElement";

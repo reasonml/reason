@@ -1,5 +1,5 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
-let run () => TestUtils.printSection "Modules";
+let run () = TestUtils.printSection("Modules");
 
 
 /**
@@ -122,10 +122,10 @@ module type HasEmbeddedHasTT = {
   module SubModuleThatHasTT = SubModule;
 };
 
-module type HasPolyType = {type t 'a;};
+module type HasPolyType = {type t('a);};
 
 module type HasDestructivelySubstitutedPolyType =
-  HasPolyType with type t 'a := list 'a;
+  HasPolyType with type t('a) := list('a);
 
 module type HasDestructivelySubstitutedSubPolyModule = {
   /* Cannot perform destructive substitution on submodules! */
@@ -141,27 +141,28 @@ module type HasSubPolyModule = {
 
 module EmbedsSubPolyModule: HasSubPolyModule = {
   module X = {
-    type t 'a = list 'a;
+    type t('a) = list('a);
   };
 };
 
 module EmbedsDestructivelySubstitutedPolyModule:
   HasDestructivelySubstitutedSubPolyModule = {
   module X = {
-    type t = list (int, int);
+    type t = list(int, int);
   };
 };
 
 module type HasMultiPolyType = {
-  type substituteThis 'a 'b;
-  type substituteThat 'a 'b;
+  type substituteThis('a, 'b);
+  type substituteThat('a, 'b);
 };
 
 module type HasDestructivelySubstitutedMultiPolyType =
   HasMultiPolyType with
-    type substituteThis 'a 'b :=
-      Hashtbl.t 'a 'b and
-    type substituteThat 'a 'b := Hashtbl.t 'a 'b;
+    type substituteThis('a, 'b) :=
+      Hashtbl.t('a, 'b) and
+    type substituteThat('a, 'b) :=
+      Hashtbl.t('a, 'b);
 
 module InliningSig: {let x: int; let y: int;} = {
   /*
@@ -172,7 +173,7 @@ module InliningSig: {let x: int; let y: int;} = {
   let y = 20;
 };
 
-module MyFunctor (M: HasTT) => {
+module MyFunctor (M: HasTT) = {
   type reexportedTT = M.tt;
   /* Inline comment inside module. */
 
@@ -188,14 +189,18 @@ module MyFunctor (M: HasTT) => {
    such a great idea].
    */
 module MyFunctorResult =
-  MyFunctor {
-    type tt = string;
-  };
+  MyFunctor(
+    {
+      type tt = string;
+    }
+  );
 
 module LookNoParensNeeded =
-  MyFunctor {
-    type tt = string;
-  };
+  MyFunctor(
+    {
+      type tt = string;
+    }
+  );
 
 module type SigResult = {let result: int;};
 
@@ -211,7 +216,7 @@ module BMod = {
   let b = 10;
 };
 
-module CurriedSugar (A: ASig) (B: BSig) => {
+module CurriedSugar (A: ASig, B: BSig) = {
   let result = A.a + B.b;
 };
 
@@ -232,38 +237,34 @@ module CurriedSugar (A: ASig) (B: BSig) => {
 
    */
 module CurriedSugarWithReturnType
-       (A: ASig)
-       (B: BSig)
-       :SigResult => {
+       (A: ASig, B: BSig)
+       : SigResult = {
   let result = A.a + B.b;
 };
 
 /* This is parsed as being equivalent to the above example */
 module CurriedSugarWithAnnotatedReturnVal
-       (A: ASig)
-       (B: BSig)
-       :SigResult => {
+       (A: ASig, B: BSig)
+       : SigResult = {
   let result = A.a + B.b;
 };
 
-module CurriedNoSugar (A: ASig) (B: BSig) => {
+module CurriedNoSugar (A: ASig, B: BSig) = {
   let result = A.a + B.b;
 };
 
-let letsTryThatSyntaxInLocalModuleBindings () => {
+let letsTryThatSyntaxInLocalModuleBindings () = {
   module CurriedSugarWithReturnType
-         (A: ASig)
-         (B: BSig)
-         :SigResult => {
+         (A: ASig, B: BSig)
+         : SigResult = {
     let result = A.a + B.b;
   };
   module CurriedSugarWithAnnotatedReturnVal
-         (A: ASig)
-         (B: BSig)
-         :SigResult => {
+         (A: ASig, B: BSig)
+         : SigResult = {
     let result = A.a + B.b;
   };
-  module CurriedNoSugar (A: ASig) (B: BSig) => {
+  module CurriedNoSugar (A: ASig, B: BSig) = {
     let result = A.a + B.b;
   };
   /*
@@ -277,88 +278,94 @@ let letsTryThatSyntaxInLocalModuleBindings () => {
    * let res = Out.x in
    * res;;
    */
-  module TempModule = CurriedNoSugar AMod BMod;
+  module TempModule = CurriedNoSugar(AMod, BMod);
   module TempModule2 =
-    CurriedSugarWithAnnotatedReturnVal AMod BMod;
+    CurriedSugarWithAnnotatedReturnVal(
+      AMod,
+      BMod
+    );
   TempModule.result + TempModule2.result
 };
 
 module type EmptySig = {};
 
-module MakeAModule (X: EmptySig) => {
+module MakeAModule (X: EmptySig) = {
   let a = 10;
 };
 
 module CurriedSugarFunctorResult =
-  CurriedSugar AMod BMod;
+  CurriedSugar(AMod, BMod);
 
 module CurriedSugarFunctorResultInline =
-  CurriedSugar
+  CurriedSugar(
     {
       let a = 10;
-    }
+    },
     {
       let b = 10;
-    };
+    }
+  );
 
 module CurriedNoSugarFunctorResult =
-  CurriedNoSugar AMod BMod;
+  CurriedNoSugar(AMod, BMod);
 
 module CurriedNoSugarFunctorResultInline =
-  CurriedNoSugar
+  CurriedNoSugar(
     {
       let a = 10;
-    }
+    },
     {
       let b = 10;
-    };
+    }
+  );
 
 module ResultFromNonSimpleFunctorArg =
-  CurriedNoSugar
+  CurriedNoSugar(
     (
-      MakeAModule {}
-    )
-    BMod;
+      MakeAModule(
+        {}
+      )
+    ),
+    BMod
+  );
 
 /* TODO: Functor type signatures should more resemble value signatures */
-let curriedFunc: int => int => int =
-  fun a b => a + b;
+let curriedFunc: (int, int) => int =
+  (a, b) => a + b;
 
 module type FunctorType =
-  ASig => BSig => SigResult;
+  (ASig, BSig) => SigResult;
 
 /* Which is sugar for:*/
 module type FunctorType2 =
-  ASig => BSig => SigResult;
+  (ASig, BSig) => SigResult;
 
 /* Just for compability with existing OCaml ASTs you can put something other
  * than an underscore */
 module type FunctorType3 =
-  (Blah: ASig) =>
-  (ThisIsIgnored: BSig) =>
-  SigResult;
+  (Blah: ASig, ThisIsIgnored: BSig) => SigResult;
 
 /* The actual functors themselves now have curried sugar (which the pretty
  * printer will enforce as well */
 /* The following: */
 module CurriedSugarWithAnnotation2:
-  ASig => BSig => SigResult =
-  fun (A: ASig) (B: BSig) => {
+  (ASig, BSig) => SigResult =
+  fun (A: ASig, B: BSig) => {
     let result = A.a + B.b;
   };
 
 /* Becomes: */
 module CurriedSugarWithAnnotation:
-  ASig => BSig => SigResult =
-  fun (A: ASig) (B: BSig) => {
+  (ASig, BSig) => SigResult =
+  fun (A: ASig, B: BSig) => {
     let result = A.a + B.b;
   };
 
 /* "functors" that are not in sugar curried form cannot annotate a return type
  * for now, so we settle for: */
 module CurriedSugarWithAnnotationAndReturnAnnotated:
-  ASig => BSig => SigResult =
-  fun (A: ASig) (B: BSig) => (
+  (ASig, BSig) => SigResult =
+  fun (A: ASig, B: BSig) => (
     {
       let result = A.a + B.b;
     }:
@@ -366,25 +373,22 @@ module CurriedSugarWithAnnotationAndReturnAnnotated:
   );
 
 module ReturnsAFunctor
-       (A: ASig)
-       (B: BSig)
-       :(ASig => BSig => SigResult) =>
-  fun (A: ASig) (B: BSig) => {
+       (A: ASig, B: BSig)
+       : ((ASig, BSig) => SigResult) =
+  fun (A: ASig, B: BSig) => {
     let result = 10;
   };
 
 module ReturnsSigResult
-       (A: ASig)
-       (B: BSig)
-       :SigResult => {
+       (A: ASig, B: BSig)
+       : SigResult = {
   let result = 10;
 };
 
 module ReturnsAFunctor2
-       (A: ASig)
-       (B: BSig)
-       :(ASig => BSig => SigResult) =>
-  fun (A: ASig) (B: BSig) => {
+       (A: ASig, B: BSig)
+       : ((ASig, BSig) => SigResult) =
+  fun (A: ASig, B: BSig) => {
     let result = 10;
   };
 
@@ -394,23 +398,25 @@ module ReturnsAFunctor2
  */
 module rec A: {
   type t =
-    | Leaf string
-    | Node ASet.t;
-  let compare: t => t => int;
+    | Leaf(string)
+    | Node(ASet.t);
+  let compare: (t, t) => int;
 } = {
   type t =
-    | Leaf string
-    | Node ASet.t;
-  let compare t1 t2 =>
-    switch (t1, t2) {
-    | (Leaf s1, Leaf s2) =>
-      Pervasives.compare s1 s2
-    | (Leaf _, Node _) => 1
-    | (Node _, Leaf _) => (-1)
-    | (Node n1, Node n2) => ASet.compare n1 n2
+    | Leaf(string)
+    | Node(ASet.t);
+  let compare (t1, t2) =
+    switch ((t1, t2)) {
+    | (Leaf(s1), Leaf(s2)) =>
+      Pervasives.compare(s1, s2)
+    | (Leaf(_), Node(_)) => 1
+    | (Node(_), Leaf(_)) => (-1)
+    | (Node(n1), Node(n2)) =>
+      ASet.compare(n1, n2)
     };
 }
-and ASet: Set.S with type elt = A.t = Set.Make A;
+and ASet: Set.S with type elt = A.t =
+  Set.Make(A);
 
 /*
  * How recursive modules appear in signatures.
@@ -418,9 +424,9 @@ and ASet: Set.S with type elt = A.t = Set.Make A;
 module type HasRecursiveModules = {
   module rec A: {
     type t =
-      | Leaf string
-      | Node ASet.t;
-    let compare: t => t => int;
+      | Leaf(string)
+      | Node(ASet.t);
+    let compare: (t, t) => int;
   }
   and ASet: Set.S with type elt = A.t;
 };
@@ -432,25 +438,29 @@ module Char = {
   type t = char;
 };
 
-module List (X: Type) => {
-  type t = list X.t;
+module List (X: Type) = {
+  type t = list(X.t);
 };
 
-module Maybe (X: Type) => {
-  type t = option X.t;
+module Maybe (X: Type) = {
+  type t = option(X.t);
 };
 
-module Id (X: Type) => X;
+module Id (X: Type) = X;
 
 module Compose
-       (F: Type => Type)
-       (G: Type => Type)
-       (X: Type) =>
-  F (G X);
+       (
+         F: (Type) => Type,
+         G: (Type) => Type,
+         X: Type
+       ) =
+  F((G(X)));
 
-let l: Compose(List)(Maybe)(Char).t = [Some 'a'];
+let l: Compose(List)(Maybe)(Char).t = [
+  Some('a')
+];
 
-module Example2 (F: Type => Type) (X: Type) => {
+module Example2 (F: (Type) => Type, X: Type) = {
 
   /**
    * Note: This is the one remaining syntactic issue where
@@ -460,12 +470,13 @@ module Example2 (F: Type => Type) (X: Type) => {
    *   let iso (a:(Compose Id F X).t): (F X).t => a;
    *
    */
-  let iso (a: Compose(Id)(F)(X).t) :F(X).t => a;
+  let iso (a: Compose(Id)(F)(X).t) : F(X).t = a;
 };
 
-Printf.printf
-  "\nModules And Functors: %n\n"
-  CurriedNoSugarFunctorResultInline.result;
+Printf.printf(
+  "\nModules And Functors: %n\n",
+  CurriedNoSugarFunctorResultInline.result
+);
 
 /* We would have: */
 /* module CurriedSugarWithAnnotation: ASig => BSig => SigResult =
@@ -482,12 +493,14 @@ Printf.printf
  };
  */
 include
-  YourLib.CreateComponent {
-    type thing = blahblahblah;
-    type state = unit;
-    let getInitialState _ => ();
-    let myValue = {recordField: "hello"};
-  };
+  YourLib.CreateComponent(
+    {
+      type thing = blahblahblah;
+      type state = unit;
+      let getInitialState (_) = ();
+      let myValue = {recordField: "hello"};
+    }
+  );
 
 module type HasInt = {let x: int;};
 
@@ -502,11 +515,11 @@ let myFirstClassWillBeFormattedAs: (module HasInt) =
   (module MyModule);
 
 let acceptsAndUnpacksFirstClass
-    ((module M): (module HasInt)) =>
+    ((module M): (module HasInt)) =
   M.x + M.x;
 
 let acceptsAndUnpacksFirstClass
-    ((module M): (module HasInt)) =>
+    ((module M): (module HasInt)) =
   M.x + M.x;
 
 module SecondClass = (val myFirstClass);
@@ -595,8 +608,8 @@ module OldModuleSyntax = {
 
 module type SigWithModuleTypeOf = {
   module type ModuleType;
-  include module type of String;
-  include module type of Array;
+  include (module type of String);
+  include (module type of Array);
 };
 
 module type T = t with type t = a => a;

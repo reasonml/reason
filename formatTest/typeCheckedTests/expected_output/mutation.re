@@ -3,13 +3,13 @@
 /**
  * Testing mutations.
  */
-let holdsAUnit = ref ();
+let holdsAUnit = ref();
 
-let holdsABool = ref false;
+let holdsABool = ref(false);
 
-let holdsAnInt = ref 0;
+let holdsAnInt = ref(0);
 
-let holdsAHoldsABool = ref (ref true);
+let holdsAHoldsABool = ref(ref(true));
 
 let () = holdsAUnit := holdsABool := false;
 
@@ -32,7 +32,7 @@ holdsABool.contents = holdsAnInt.contents == 100;
 
 let numberToSwitchOn = 100;
 
-switch numberToSwitchOn {
+switch (numberToSwitchOn) {
 | (-3)
 | (-2)
 | (-1) => ()
@@ -53,5 +53,5 @@ switch numberToSwitchOn {
 
 let mutativeFunction =
   fun
-  | Some x => holdsAUnit.contents = ()
+  | Some(x) => holdsAUnit.contents = ()
   | None => holdsAUnit := ();
