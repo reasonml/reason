@@ -2684,7 +2684,7 @@ class printer  ()= object(self:'self)
       | (_::_, Some gadt) ->
           (match pcd_args with
             | Pcstr_record _ -> add_bar ~gadt nameOf (normalize args)
-            | _ -> add_bar nameOf (makeList [normalize args; gadt])
+            | _ -> add_bar nameOf (makeList [normalize args; gadt]))
     in
     let everythingWithAttrs =
       if stdAttrs <> [] then
