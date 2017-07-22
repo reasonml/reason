@@ -1,38 +1,37 @@
 module ReactDOMRe = {
-  let createElement tag ::props=? children => 1;
-  let props ::className=? ::width=? ::comp=? ::compCallback=? () => 1;
+  let createElement (tag, :props=?, children) = 1;
+  let props (:className=?, :width=?, :comp=?, :compCallback=?, ()) = 1;
 };
 
 module Foo = {
-  let make ::className=? ::width=? ::comp=? ::bar=? children => 1;
-  let createElement ::className=? ::ref=? ::key=? ::width=? ::comp=? ::bar=? ::children () => 1;
+  let make (:className=?, :width=?, :comp=?, :bar=?, children) = 1;
+  let createElement (:className=?, :ref=?, :key=?, :width=?, :comp=?, :bar=?, :children, ()) = 1;
   module Bar = {
-    let make ::className=? children => 1;
-    let createElement ::className=? ::ref=? ::key=? ::children () => 1;
+    let make (:className=?, children) = 1;
+    let createElement (:className=?, :ref=?, :key=?, :children, ()) = 1;
   };
 };
 
 module Bar = {
-  let make ::bar=? children => 1;
-  let createElement ::bar=? ::children () => 1;
+  let make (:bar=?, children) = 1;
+  let createElement (:bar=?, :children, ()) = 1;
 };
 
 module ReasonReact = {
-  let element ::key=? ::ref=? component => 1;
+  let element (:key=?, :ref=?, component) = 1;
 };
 
-ReactDOMRe.createElement "div" [||];
+ReactDOMRe.createElement("div")[||];
 
 ReactDOMRe.createElement("div", :props ReactDOMRe.props(:className "hello")())[||];
 
 ReactDOMRe.createElement("div", :props ReactDOMRe.props(:className "hello", :width "10")())[||];
 
 ReactDOMRe.createElement
-  "div"
-  props::(ReactDOMRe.props className::"hello" width::"10" ())
+  ("div", :props ReactDOMRe.props(:className "hello", :width "10")())
   [|
-    ReactDOMRe.createElement "li" [|ReactDOMRe.createElement "p" [||]|],
-    Foo.createElement children::[Bar.createElement children::[] ()] ()
+    ReactDOMRe.createElement("li")[|ReactDOMRe.createElement("p")[||]|],
+    Foo.createElement(:children [Bar.createElement(:children [])()])()
   |];
 
 ReactDOMRe.createElement
@@ -43,26 +42,29 @@ ReactDOMRe.createElement
   [|ReactDOMRe.createElement("li")[||], Foo.createElement(:bar 2, :children [])()|];
 
 ReactDOMRe.createElement
-  "div"
-  props::(
-    ReactDOMRe.props
-      className::"hello" compCallback::(fun () => Foo.createElement bar::1 children::[] ()) ()
+  (
+    "div",
+    :props
+      ReactDOMRe.props
+        (:className "hello", :compCallback () => Foo.createElement(:bar 1, :children [])())()
   )
-  [|ReactDOMRe.createElement "li" [||], (fun () => Foo.createElement bar::2 children::[] ()) ()|];
+  [|ReactDOMRe.createElement("li")[||], (() => Foo.createElement(:bar 2, :children [])())()|];
 
-Foo.createElement children::[] ();
+Foo.createElement(:children [])();
 
 Foo.createElement(:className "hello", :children [])();
 
 Foo.createElement(:className "hello", :width "10", :children [])();
 
 Foo.createElement
-  className::"hello"
-  width::"10"
-  children::[
-    ReactDOMRe.createElement "li" [|ReactDOMRe.createElement "p" [||]|],
-    Foo.createElement children::[Bar.createElement children::[] ()] ()
-  ]
+  (
+    :className "hello",
+    :width "10",
+    :children [
+      ReactDOMRe.createElement("li")[|ReactDOMRe.createElement("p")[||]|],
+      Foo.createElement(:children [Bar.createElement(:children [])()])()
+    ]
+  )
   ();
 
 Foo.createElement
@@ -73,15 +75,17 @@ Foo.createElement
   )
   ();
 
-Foo.createElement key::"someKey" className::"hello" children::[] ();
+Foo.createElement(:key "someKey", :className "hello", :children [])();
 
-Foo.createElement key::(Some "someKey") ref::(Some ref) className::"hello" children::[] ();
+Foo.createElement(:key Some("someKey"), :ref Some(ref), :className "hello", :children [])();
 
-Foo.createElement key::?(Some "someKey") ref::?(Some ref) className::"hello" children::[] ();
+Foo.createElement(:key? Some("someKey"), :ref? Some(ref), :className "hello", :children [])();
 
 Foo.Bar.createElement
-  key::"someKey"
-  ref::(Some ref)
-  className::"hello"
-  children::[Bar.createElement children::[] ()]
+  (
+    :key "someKey",
+    :ref Some(ref),
+    :className "hello",
+    :children [Bar.createElement(:children [])()]
+  )
   ();
