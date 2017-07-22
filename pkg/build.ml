@@ -47,6 +47,8 @@ let () =
     Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"; ".o"]) "vendor/ppx_deriving/ppx_deriving_show";
     Pkg.lib ~exts:(Exts.exts [".cmo"]) "src/reason_toploop";
     Pkg.lib ~cond:(Conf.value c utop) ~exts:(Exts.exts [".cmo"]) "src/reason_utop";
+    (* TODO: @let-def what do you with this? *)
+    Pkg.bin "src/test";
     Pkg.bin ~auto:true "src/refmt_impl" ~dst:"refmt";
     Pkg.bin ~auto:true "src/ocamlmerlin_reason" ~dst:"ocamlmerlin-reason";
     Pkg.bin ~auto:false "src/rtop.sh" ~dst:"rtop";

@@ -3435,7 +3435,7 @@ class printer  ()= object(self:'self)
 
   method unparseUnattributedExpr x =
     match partitionAttributes x.pexp_attributes with
-    | (_, [], [], _) -> self#unparseExpr x
+    | {docAttrs = []; stdAttrs = []; _} -> self#unparseExpr x
     | _ -> match x.pexp_desc with
       | Pexp_open _ | Pexp_let _ | Pexp_letmodule _ | Pexp_sequence _ ->
         makeLetSequence (self#letList x)
