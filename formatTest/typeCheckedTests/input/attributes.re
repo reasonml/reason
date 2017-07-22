@@ -325,24 +325,26 @@ external createCompositeElementInternalHack
 
 external add_nat: (int, int) => int = "add_nat_bytecode" "add_nat_native";
 
-[@@bs.module "Bar"] [@@ocaml.deprecated "Use bar instead. It's a much cooler function. This string needs to be a little long"]
+[@bs.module "Bar"] [@ocaml.deprecated "Use bar instead. It's a much cooler function. This string needs to be a little long"]
 external foo : (bool) => bool = "";
 
 /* Attributes on an entire polymorphic variant leaf */
-external readFileSync :
-  name::string =>
-  ([ `utf8
-   | `my_name [@bs.as "ascii"]
-   ] [@bs.string]) =>
-  string = ""
-  [@@bs.module "fs"];
+[@bs.module "fs"]
+external readFileSync : (
+  :name string,
+  [@bs.string] [
+    | `utf8
+    [@bs.as "ascii"] | `my_name
+  ]
+) => string = "";
 
-external readFileSync2 :
-  name::string =>
-  ([ `utf8 [@bs.as "ascii"] | `my_name [@bs.as "ascii"] ] [@bs.string]) =>
-  string = ""
-  [@@bs.module "fs"];
+[@bs.module "fs"]
+external readFileSync2 : (
+  :name string,
+  [@bs.string] [
+    [@bs.as "ascii"] | `utf8
+    [@bs.as "ascii"] | `my_name
+  ]) => string = "";
 
 /* Ensure that attributes on extensions are printed */
-[@@@test
-  [%%extension] [@@attr]; ];
+[@test [@attr] [%%extension]];
