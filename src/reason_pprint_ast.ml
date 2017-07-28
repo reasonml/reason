@@ -5041,9 +5041,11 @@ class printer  ()= object(self:'self)
 
   (* [@ ...] Simple attributes *)
   method attribute = function
-    | { Location. txt = "ocaml.doc" },
-      PStr [{ pstr_desc = Pstr_eval ({ pexp_desc = Pexp_constant (Pconst_string(text, None)); _ } , _); _ }] ->
-      atom ("/**" ^ text ^ "*/")
+    | { Location. txt = ("ocaml.doc" | "ocaml.text") },
+      PStr [{ pstr_desc = Pstr_eval ({ pexp_desc = Pexp_constant (Pconst_string(text, None)); _ } , _);
+              pstr_loc; _ }] ->
+      let text = if text = "" then "/**/" else "/**" ^ text ^ "*/" in
+      makeList ~inline:(true, true) ~postSpace:true ~preSpace:true ~indent:0 ~break:IfNeed [atom ~loc:pstr_loc text]
     | (s, e) -> self#payload "@" s e
 
   (* [@@ ... ] Attributes that occur after a major item in a structure/class *)
@@ -5054,7 +5056,6 @@ class printer  ()= object(self:'self)
      between item_attribute and floating_attribute is no longer necessary with
      Reason. Thank you semicolons. *)
   method floating_attribute = self#item_attribute
-
 
   method attributes l =
 	    makeList ~break:IfNeed ~postSpace:true (List.map self#attribute l)
@@ -5070,10 +5071,8 @@ class printer  ()= object(self:'self)
     match l with
       | [] -> toThis
       | _::_ ->
-        makeList ~postSpace:true ~indent:0 ~break:IfNeed ~inline:(true, true) [
-          makeList ~break:IfNeed ~postSpace:true (List.map self#item_attribute l);
-          toThis;
-        ]
+        makeList ~postSpace:true ~indent:0 ~break:IfNeed ~inline:(true, true)
+          (List.map self#item_attribute l @ [toThis])
 
   method exception_declaration ed =
     let pcd_name = ed.pext_name in
@@ -5146,19 +5145,19 @@ class printer  ()= object(self:'self)
 
   (* The type of something returned from a constructor. Formerly [class_signature]  *)
   method shouldDisplayClassInstTypeItem x = match x.pctf_desc with
-    | Pctf_attribute (s, _) -> (not (s.txt = "ocaml.text") && not (s.txt = "ocaml.doc"))
+    (*| Pctf_attribute (s, _) -> (not (s.txt = "ocaml.text") && not (s.txt = "ocaml.doc"))*)
     | _ -> true
 
   method shouldDisplayClassField x = match x.pcf_desc with
-    | Pcf_attribute (s, _) -> (not (s.txt = "ocaml.text") && not (s.txt = "ocaml.doc"))
+    (*| Pcf_attribute (s, _) -> (not (s.txt = "ocaml.text") && not (s.txt = "ocaml.doc"))*)
     | _ -> true
 
   method shouldDisplaySigItem x = match x.psig_desc with
-    | Psig_attribute (s, _) -> (not (s.txt = "ocaml.text") && not (s.txt = "ocaml.doc"))
+    (*| Psig_attribute (s, _) -> (not (s.txt = "ocaml.text") && not (s.txt = "ocaml.doc"))*)
     | _ -> true
 
   method shouldDisplayStructureItem x = match x.pstr_desc with
-    | Pstr_attribute (s, _) -> (not (s.txt = "ocaml.text") && not (s.txt = "ocaml.doc"))
+    (*| Pstr_attribute (s, _) -> (not (s.txt = "ocaml.text") && not (s.txt = "ocaml.doc"))*)
     | _ -> true
 
   (*
@@ -5603,7 +5602,8 @@ class printer  ()= object(self:'self)
                  (class_description ~class_keyword:true x)::
                  (List.map class_description xs)
             )
-        | Psig_module {pmd_name; pmd_type={pmty_desc=Pmty_alias alias}} ->
+        | Psig_module {pmd_name; pmd_type={pmty_desc=Pmty_alias alias}; pmd_attributes} ->
+            self#attach_std_item_attrs pmd_attributes @@
             label ~space:true
               (makeList ~postSpace:true [
                  atom "module";
@@ -5612,41 +5612,47 @@ class printer  ()= object(self:'self)
                ])
               (self#longident_loc alias)
         | Psig_module pmd ->
+            self#attach_std_item_attrs pmd.pmd_attributes @@
             self#formatSimpleSignatureBinding
               "module"
               (atom pmd.pmd_name.txt)
               (self#module_type pmd.pmd_type);
         | Psig_open od ->
+            self#attach_std_item_attrs od.popen_attributes @@
             label ~space:true
               (atom ("open" ^ (override od.popen_override)))
               (self#longident_loc od.popen_lid)
         | Psig_include incl ->
+            self#attach_std_item_attrs incl.pincl_attributes @@
             label ~space:true
               (atom "include")
               (self#module_type incl.pincl_mod)
-        | Psig_modtype {pmtd_name=s; pmtd_type=md} -> (
-            match md with
-              | None -> makeList ~postSpace:true [atom "module type"; atom s.txt]
-              | Some mt ->
-                  label ~space:true
-                    (makeList ~postSpace:true [atom "module type"; atom s.txt; atom "="])
-                    (self#module_type mt)
-          )
+        | Psig_modtype x ->
+          let name = atom x.pmtd_name.txt in
+          let main = match x.pmtd_type with
+            | None -> makeList ~postSpace:true [atom "module type"; name]
+            | Some mt ->
+              label ~space:true
+                (makeList ~postSpace:true [atom "module type"; name; atom "="])
+                (self#module_type mt)
+          in
+          self#attach_std_item_attrs x.pmtd_attributes main
         | Psig_class_type l -> self#class_type_declaration_list l
         | Psig_recmodule decls ->
             let first xx =
+              self#attach_std_item_attrs xx.pmd_attributes @@
               self#formatSimpleSignatureBinding
                 "module rec"
                 (atom xx.pmd_name.txt)
                 (self#module_type xx.pmd_type)
             in
             let notFirst xx =
+              self#attach_std_item_attrs xx.pmd_attributes @@
               self#formatSimpleSignatureBinding
                 "and"
                 (atom xx.pmd_name.txt)
                 (self#module_type xx.pmd_type)
             in
-
             let moduleBindings = match decls with
               | [] -> raise (NotPossible "No recursive module bindings")
               | hd::tl -> (first hd)::(List.map notFirst tl)
@@ -5913,28 +5919,31 @@ class printer  ()= object(self:'self)
         | Pstr_typext te -> (self#type_extension te)
         | Pstr_exception ed -> (self#exception_declaration ed)
         | Pstr_module x ->
-            let prefixText = "module" in
             let bindingName = atom ~loc:x.pmb_name.loc x.pmb_name.txt in
-            let moduleExpr = x.pmb_expr in
-            self#let_module_binding prefixText bindingName moduleExpr
-        | Pstr_open od -> (
+            self#attach_std_item_attrs x.pmb_attributes @@
+            self#let_module_binding "module" bindingName x.pmb_expr
+        | Pstr_open od ->
+            self#attach_std_item_attrs od.popen_attributes @@
             makeList ~postSpace:true [
               atom ("open" ^ (override od.popen_override));
               self#longident_loc od.popen_lid;
             ]
-        )
-        | Pstr_modtype {pmtd_name=s; pmtd_type=md} -> (
-            match md with
-              | None -> makeList ~postSpace:true [atom "module type";atom s.txt]
+        | Pstr_modtype x ->
+            let name = atom x.pmtd_name.txt in
+            let main = match x.pmtd_type with
+              | None ->
+                makeList ~postSpace:true [atom "module type"; name]
               | Some mt ->
-                  label ~space:true
-                    (makeList ~postSpace:true [atom "module type";atom s.txt; atom "="])
-                    (self#module_type mt)
-          )
+                label ~space:true
+                  (makeList ~postSpace:true [atom "module type"; name; atom "="])
+                  (self#module_type mt)
+            in
+            self#attach_std_item_attrs x.pmtd_attributes main
         | Pstr_class l -> self#class_declaration_list l
         | Pstr_class_type (l) -> self#class_type_declaration_list l
         | Pstr_primitive vd -> self#primitive_declaration vd
         | Pstr_include incl ->
+            self#attach_std_item_attrs incl.pincl_attributes @@
             (* Kind of a hack *)
             let moduleExpr = incl.pincl_mod in
             formatAttachmentApplication
@@ -5944,17 +5953,18 @@ class printer  ()= object(self:'self)
 
         | Pstr_recmodule decls -> (* 3.07 *)
             let first xx =
-              let prefixText = "module rec" in
-              self#let_module_binding prefixText (atom xx.pmb_name.txt) xx.pmb_expr in
+              self#attach_std_item_attrs xx.pmb_attributes @@
+              self#let_module_binding "module rec" (atom xx.pmb_name.txt) xx.pmb_expr
+            in
             let notFirst xx =
-              let prefixText = "and" in
-              self#let_module_binding prefixText (atom xx.pmb_name.txt) xx.pmb_expr in
-
+              self#attach_std_item_attrs xx.pmb_attributes @@
+              self#let_module_binding "and" (atom xx.pmb_name.txt) xx.pmb_expr
+            in
             let moduleBindings = match decls with
               | [] -> raise (NotPossible "No recursive module bindings")
               | hd::tl -> (first hd)::(List.map notFirst tl)
             in
-            (makeNonIndentedBreakingList moduleBindings)
+            makeNonIndentedBreakingList moduleBindings
         | Pstr_attribute a -> self#floating_attribute a
         | Pstr_extension (e, a) ->
           (* Notice how extensions have attributes - but not every structure
