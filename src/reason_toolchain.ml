@@ -334,46 +334,100 @@ end
 module OCaml_syntax = struct
   open Migrate_parsetree
 
-  module Lexer_impl = Lexer
+  (* The OCaml parser keep doc strings in the comment list.
+     To avoid duplicating comments, we need to filter comments that appear
+     as doc strings is the AST out of the comment list. *)
+  let doc_comments_filter () =
+    let open Ast_iterator in
+    let open Parsetree in
+    let seen = Hashtbl.create 7 in
+    let attribute it = function
+      | { Location. txt = ("ocaml.doc" | "ocaml.text") },
+        PStr [{ pstr_desc = Pstr_eval ({ pexp_desc = Pexp_constant (Pconst_string(text, None)); _ } , _);
+                pstr_loc = loc; _ }] ->
+        Hashtbl.add seen ("*" ^ text, loc) ()
+      | attribute -> default_iterator.attribute it attribute
+    in
+    let iterator = {default_iterator with attribute} in
+    let filter comment = not (Hashtbl.mem seen comment) in
+    (iterator, filter)
+
+  module Lexer_impl = struct
+    let init = Lexer.init
+    let token = Lexer.token
+
+    let filtered_comments = ref []
+    let filter_comments filter =
+      filtered_comments := List.filter filter (Lexer.comments ())
+    let comments () = !filtered_comments
+  end
   module OCaml_parser = Parser
   type token = OCaml_parser.token
 
   (* OCaml parser parses into compiler-libs version of Ast.
      Parsetrees are converted to Reason version on the fly. *)
 
+  let parse_and_filter_doc_comments iter fn lexbuf=
+    let it, filter = doc_comments_filter () in
+    let result = fn lexbuf in
+    iter it result;
+    Lexer_impl.filter_comments filter;
+    result
+
+
   let implementation lexbuf =
-    From_current.copy_structure (Parser.implementation Lexer.token lexbuf)
+    parse_and_filter_doc_comments
+      (fun it -> it.Ast_iterator.structure it)
+      (fun lexbuf -> From_current.copy_structure
+                       (Parser.implementation Lexer.token lexbuf))
+      lexbuf
 
   let core_type lexbuf =
-    From_current.copy_core_type
-      (Parser.parse_core_type Lexer.token lexbuf)
+    parse_and_filter_doc_comments
+      (fun it -> it.Ast_iterator.typ it)
+      (fun lexbuf -> From_current.copy_core_type
+                       (Parser.parse_core_type Lexer.token lexbuf))
+      lexbuf
 
   let interface lexbuf =
-    From_current.copy_signature
-      (Parser.interface Lexer.token lexbuf)
+    parse_and_filter_doc_comments
+      (fun it -> it.Ast_iterator.signature it)
+      (fun lexbuf -> From_current.copy_signature
+                       (Parser.interface Lexer.token lexbuf))
+      lexbuf
+
+  let filter_toplevel_phrase it = function
+    | Parsetree.Ptop_def str -> it.Ast_iterator.structure it str
+    | Parsetree.Ptop_dir _ -> ()
 
   let toplevel_phrase lexbuf =
-    From_current.copy_toplevel_phrase
-      (Parser.toplevel_phrase Lexer.token lexbuf)
+    parse_and_filter_doc_comments
+      filter_toplevel_phrase
+      (Parser.toplevel_phrase Lexer.token)
+      lexbuf
 
   let use_file lexbuf =
-    List.map
-      From_current.copy_toplevel_phrase
-      (Parser.use_file Lexer.token lexbuf)
+    parse_and_filter_doc_comments
+      (fun it result -> List.map (filter_toplevel_phrase it) result)
+      (fun lexbuf ->
+        List.map
+          From_current.copy_toplevel_phrase
+          (Parser.use_file Lexer.token lexbuf))
+      lexbuf
 
   (* Skip tokens to the end of the phrase *)
   (* TODO: consolidate these copy-paste skip/trys into something that works for
    * every syntax (also see [syntax_util]). *)
   let rec skip_phrase lexbuf =
     try
-      match Lexer_impl.token lexbuf with
+      match Lexer.token lexbuf with
         OCaml_parser.SEMISEMI | OCaml_parser.EOF -> ()
       | _ -> skip_phrase lexbuf
     with
-      | Lexer_impl.Error (Lexer_impl.Unterminated_comment _, _)
-      | Lexer_impl.Error (Lexer_impl.Unterminated_string, _)
-      | Lexer_impl.Error (Lexer_impl.Unterminated_string_in_comment _, _)
-      | Lexer_impl.Error (Lexer_impl.Illegal_character _, _) ->
+      | Lexer.Error (Lexer.Unterminated_comment _, _)
+      | Lexer.Error (Lexer.Unterminated_string, _)
+      | Lexer.Error (Lexer.Unterminated_string_in_comment _, _)
+      | Lexer.Error (Lexer.Illegal_character _, _) ->
           skip_phrase lexbuf
 
   let maybe_skip_phrase lexbuf =
@@ -385,7 +439,7 @@ module OCaml_syntax = struct
   let safeguard_parsing lexbuf fn =
     try fn ()
     with
-    | Lexer_impl.Error(Lexer_impl.Illegal_character _, _) as err
+    | Lexer.Error(Lexer.Illegal_character _, _) as err
       when !Location.input_name = "//toplevel//"->
         skip_phrase lexbuf;
         raise err
