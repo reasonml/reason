@@ -186,7 +186,6 @@ let run () = {
 type combination('a) =
   | HeresTwoConstructorArguments(int, int);
 
-
 /** But then how do we parse matches in function arguments? */
 /* We must require parenthesis around construction matching in function args only*/
 let howWouldWeMatchFunctionArgs
@@ -267,7 +266,6 @@ let thisWontCompileButLetsSeeHowItFormats =
   | Two => 20;
 
 /* Comment on two */
-
 /**
  * GADTs.
  */

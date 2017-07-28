@@ -423,7 +423,6 @@ let sameButWithSpaces = [
   ...sameButWithSpaces
 ];
 
-
 /**
  * Test no conflict with polymorphic variant types.
  */
@@ -500,7 +499,6 @@ let myFun () =
     </Namespace.Foo>
   </>;
 
-
 /**
  * Children should wrap without forcing attributes to.
  */
@@ -511,7 +509,6 @@ let myFun () =
   <Bar />
 </Foo>;
 
-
 /**
  * Failing test cases:
  */
@@ -519,7 +516,8 @@ let myFun () =
 /*   <Bar /> */
 /* </Foo>; */
 /* let res = <Foo a=10 b=(<Foo a=200 />) />; */
-let zzz = Some("oh hai");
+let zzz =
+  Some("oh hai");
 
 let optionalCallSite =
   <Optional1 required=?zzz />;

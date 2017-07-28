@@ -1,5 +1,4 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
-
 /**
  * Typically the "interface file" is where you would write a ton of
  * comments/documentation.
@@ -19,12 +18,10 @@ type adders = {
   addThreeNumbersTupled: ((int, int, int)) => int
 };
 
-
 /**
  * Public function.
  */
 let myRecordWithFunctions: adders;
-
 
 /**
  * Public result.

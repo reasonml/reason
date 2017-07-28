@@ -24,10 +24,9 @@ class virtual stack ('a) (init) = {
 let tmp = {
   /**
    * comment here.
-   */
+   */;
   val x = 10
 };
-
 
 /**
  * Comment on stackWithAttributes.
@@ -74,7 +73,6 @@ class extendedStackAcknowledgeOverride
 
 let inst = (new extendedStack)[1, 2];
 
-
 /**
  * Recursive classes.
  */
@@ -91,7 +89,6 @@ and secondRecursiveClass (init) = {
   val v = init;
 };
 
-
 /**
  * For now, mostly for historic reasons, the syntax for type
  * definitions/annotations on anonymous objects are different than
@@ -104,7 +101,6 @@ and secondRecursiveClass (init) = {
  * optimized in the same way that records are, records could just be replaced
  * with closed object types.
  */
-
 /**
  * Anonymous objects.
  */
@@ -192,7 +188,6 @@ class myClassWithAnnotatedReturnType
   pub y = init;
 };
 
-
 /**
  * May include a trailing semi after type row.
  */
@@ -206,7 +201,6 @@ class myClassWithAnnotatedReturnType2
   pub y = init;
 };
 
-
 /**
  * May use equals sign, and may include colon if so.
  */
@@ -219,7 +213,6 @@ class myClassWithAnnotatedReturnType3
   pub x: int = init;
   pub y: int = init;
 };
-
 
 /**
  * The one difference between class_constructor_types and expression
@@ -256,7 +249,6 @@ class tupleClass ('a, 'b) (init: ('a, 'b)) = {
 };
 
 module HasTupleClasses: {
-
   /**
    * exportedClass.
    */
@@ -266,7 +258,6 @@ module HasTupleClasses: {
       pub x: int;
       pub y: int
     };
-
   /**
    * anotherExportedClass.
    */
@@ -276,13 +267,11 @@ module HasTupleClasses: {
       pub pr: ('a, 'b)
     };
 } = {
-
   /**
    * exportedClass.
    */
   class exportedClass =
     class myClassWithAnnotatedReturnType3;
-
   /**
    * anotherExportedClass.
    */
@@ -294,7 +283,6 @@ class intTuples = class tupleClass(int, int);
 
 class intTuplesHardcoded =
   (class tupleClass(int, int))((8, 8));
-
 
 /**
  * Note that the inner tupleClass doesn't have the "class" prefix because
@@ -323,13 +311,11 @@ let incrementMyClassInstance:
 
 class myClassWithNoTypeParams = {};
 
-
 /**
  * The #myClassWithNoTypeParams should be treated as "simple"
  */
 type optionalMyClassSubtype('a) =
   option(#myClassWithNoTypeParams) as 'a;
-
 
 /**
  * Remember, "class type" is really "class_instance_type" (which is the type of
@@ -353,7 +339,6 @@ class type addablePointClassType = {
     ) =>
     int
 };
-
 
 /**
  * Class constructor types can be annotated.

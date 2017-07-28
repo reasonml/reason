@@ -52,7 +52,6 @@ let res =
     )
   };
 
-
 /**
  * Match bodies may include sequence expressions, but without the `{}`
  * braces required.
@@ -90,7 +89,6 @@ let res =
       two
     )
   };
-
 
 /**
  * Ensure that nested Pexp_functions are correctly wrapped in parens.

@@ -1,5 +1,4 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
-
 /**
  * Testing Sequences.
  */
@@ -18,7 +17,6 @@ let result = {
 let anInt = result + 20;
 
 let twenty = 20;
-
 
 /**
  * Each of these are a sequence with a single item - they will be

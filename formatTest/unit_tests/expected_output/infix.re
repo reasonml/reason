@@ -92,7 +92,6 @@ let minParens =
 let formatted =
   a1 && a2 && b1 & b2 & y &|| x &|| z;
 
-
 /**
  * Now, let's try an example that resembles the above, yet would require
  * parenthesis everywhere.
@@ -314,7 +313,6 @@ let shouldSimplifyAnythingExceptApplicationAndConstruction =
   ) ++ "yo";
 
 /* Add tests with IF/then mixed with infix/constructor application on left and right sides */
-
 /**
  * Every star or forward slash after the character of an infix operator must be
  * escaped.
@@ -344,7 +342,6 @@ let res = f - (- x);
 let res = - (- x);
 
 let res = f(- x);
-
 
 /**
  * Test using almost simple prefix as regular function.
@@ -380,11 +377,9 @@ let myFunc
   ...someType
 ];
 
-
 /**
  * Testing various fixity.
  */
-
 /**
  * For each of these test cases for imperative updates, we'll test both record
  * update, object member update and array update.
@@ -395,7 +390,6 @@ let containingObject = {
   val bigArr = "goodThingThisIsntTypeChecked";
   val str = "string";
   pub testCases () = {
-
     /**
      * The lowest precedence token is =, followed by :=, and then ?, then :.
      *
@@ -413,7 +407,6 @@ let containingObject = {
      * Because when encountering the ? the parser will shift on the ? instead of
      * reducing  expr = expr
      */
-
     /**
      * Without a + 1
      */
@@ -432,7 +425,6 @@ let containingObject = {
     arr.(0) = something ? hello : goodbye;
     bigArr.{0} = something ? hello : goodbye;
     str.[0] = something ? hello : goodbye;
-
     /**
      * With a + 1
      */
@@ -456,7 +448,6 @@ let containingObject = {
     arr.(0) = something + 1 ? hello : goodbye;
     bigArr.{0} = something + 1 ? hello : goodbye;
     str.[0] = something + 1 ? hello : goodbye;
-
     /**
      * #NotActuallyAConflict
      * Note that there's a difference with how = and := behave.
@@ -526,7 +517,6 @@ let containingObject = {
     /* To make the := parse differently, we must use parens */
     x + (something.contents := y);
     x + (something := y);
-
     /**
      * Try with ||
      */
@@ -553,7 +543,6 @@ let containingObject = {
       something + 1 ? hello : goodbye
     );
     str.[0] || (something + 1 ? hello : goodbye);
-
     /**
      * Try with &&
      */
@@ -580,7 +569,6 @@ let containingObject = {
       something + 1 ? hello : goodbye
     );
     str.[0] && (something + 1 ? hello : goodbye);
-
     /**
      * See how regular infix operators work correctly.
      */
@@ -594,7 +582,6 @@ let containingObject = {
     (arr.(0) = 2) + 4;
     (bigArr.{0} = 2) + 4;
     (str.[0] = 2) + 4;
-
     /**
      * Ensures that record update, object field update, and := are all right
      * associative.
@@ -610,7 +597,6 @@ let containingObject = {
     arr.(0) = x.contents = 10;
     bigArr.{0} = x.contents = 10;
     str.[0] = x.contents = 10;
-
     /**
      * Ensures that record update, object field update, and := are all right
      * associative.
@@ -624,7 +610,6 @@ let containingObject = {
     x ? y : z ? a : b;
     /* Not this: */
     (x ? y : z) ? a : b;
-
     /**
      *          ^
      * When rendering the content to the left of the ? we know that we want the
@@ -756,11 +741,9 @@ let containingObject = {
         (str.[0] = somethingElse) ?
           goodbye : goodbye :
         goodbye;
-
     /**
      * And
      */
-
     /** These should be parsed the same */
     something ?
       somethingElse :
@@ -792,7 +775,6 @@ let containingObject = {
         somethingElse : x := somethingElse
     ) ?
       x : z;
-
     /** These should be parsed the same */
     something ?
       somethingElse : y = somethingElse ? x : z;
@@ -806,7 +788,6 @@ let containingObject = {
         somethingElse : y = somethingElse
     ) ?
       x : z;
-
     /** These should be parsed the same */
     something ?
       somethingElse :
@@ -823,7 +804,6 @@ let containingObject = {
         somethingElse : arr.(0) = somethingElse
     ) ?
       x : z;
-
     /** These should be parsed the same */
     something ?
       somethingElse :
@@ -841,7 +821,6 @@ let containingObject = {
         bigArr.{0} = somethingElse
     ) ?
       x : z;
-
     /** These should be parsed the same */
     something ?
       somethingElse :
@@ -858,7 +837,6 @@ let containingObject = {
         somethingElse : str.[0] = somethingElse
     ) ?
       x : z;
-
     /**
      * It creates a totally different meaning when parens group the :
      */
@@ -875,7 +853,6 @@ let containingObject = {
     str.[0] =
       something ?
         (str.[0] = somethingElse: x) : z;
-
     /**
      * Various precedence groupings.
      */
@@ -917,7 +894,6 @@ let containingObject = {
       [@onAddApplication] 2 + (
         - (- (- add(4, 0)))
       );
-
     /**
      * TODO: Move all of these test cases to attributes.re.
      */
@@ -929,7 +905,6 @@ let containingObject = {
     let attrOnPrefix = 5 + (-1);
     let result =
       [@ppxAttributeOnSugarGetter] arr.[0];
-
     /**
      * Unary plus/minus has lower precedence than prefix operators:
      * And unary plus has same precedence as unary minus.
@@ -939,14 +914,12 @@ let containingObject = {
     let res = - (! record);
     /* Although that precedence ranking doesn't likely have any effect in that
      * case. */
-
     /**
      * And this
      */
     let res = - (+ callThisFunc());
     /* should be parsed as: */
     let res = - (+ callThisFunc());
-
     /**
      * And this
      */

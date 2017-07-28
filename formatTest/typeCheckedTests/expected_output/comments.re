@@ -1,19 +1,19 @@
 /* **** comment */
 
 /*** comment */
+/** docstring */;
 
-/** docstring */
 /* comment */
+/** docstring */;
 
-/** docstring */
 
 /*** comment */
 
 /**** comment */
 
 /***** comment */
+/** */;
 
-/** */
 
 /*** */
 
@@ -23,10 +23,10 @@
 /***/
 
 /****/
+/** (** comment *) */;
 
-/** (** comment *) */
+/** (*** comment *) */;
 
-/** (*** comment *) */
 /* (** comment *) */
 /* (*** comment *) */
 /* *(*** comment *) */
@@ -34,18 +34,18 @@
 /* comment ***/
 /* comment ****/
 /* comment *****/
-
 /**
- * Multiline
- */
+  * Multiline
+  */;
 
 /** Multiline
- *
- */
+  *
+  */;
 
 /**
- **
- */
+  **
+  */;
+
 let testingNotQuiteEndOfLineComments = [
   "Item 1" /* Comment For First Item */,
   "Item 2" /* Comment For Second Item */,

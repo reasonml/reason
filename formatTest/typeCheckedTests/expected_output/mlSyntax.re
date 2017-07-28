@@ -1,8 +1,8 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
-
 /**
  * Testing pattern matching using ml syntax to exercise nesting of cases.
- */
+ */;
+
 type xyz =
   | X
   | Y(int, int, int)
@@ -94,9 +94,7 @@ let nestedSome = Some((1, 2, Some((1, 2, 3))));
 let nestedSomeSimple = Some(Some((1, 2, 3)));
 
 module EM = {
-
-  /** Exception */
-  exception E(int, int);
+  exception /** Exception */ E(int, int);
 };
 
 exception Ealias = EM.E;

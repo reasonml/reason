@@ -9,31 +9,19 @@
 /* **** comment */
 
 /*** comment */
-
 /** docstring */
 /* comment */
-
 /** docstring */
-
 /*** comment */
-
 /**** comment */
-
 /***** comment */
-
 /** */
-
 /*** */
-
 /**** */
 /**/
-
 /***/
-
 /****/
-
 /** (** comment *) */
-
 /** (*** comment *) */
 /* (** comment *) */
 /* (*** comment *) */
@@ -42,15 +30,12 @@
 /* comment ***/
 /* comment ****/
 /* comment *****/
-
 /**
  * Multiline
  */
-
 /** Multiline
  *
  */
-
 /**
  **
  */
@@ -376,7 +361,6 @@ let tuple_equal ((i1, i2)) = i1 == i2;
 let tuple_equal ((csu, mgd)) =
   /* Some really long comments, see https://github.com/facebook/reason/issues/811 */
   tuple_equal((csu, mgd));
-
 
 /** Comments inside empty function bodies
  * See https://github.com/facebook/reason/issues/860
