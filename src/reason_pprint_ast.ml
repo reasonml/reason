@@ -2631,15 +2631,15 @@ class printer  ()= object(self:'self)
       let lst = if print_bar then [atom "|"; sourceMappedName] else [sourceMappedName] in
       makeList ~postSpace:true lst in
     let ampersand_helper i arg =
-      let ct = self#non_arrowed_simple_core_type arg in
-      let add_ampersand = label (atom "&") in
-      if polymorphic then
-        if i == 0 && not opt_ampersand then
-          ct
-        else
-          add_ampersand ct
-      else
+      let ct = self#non_arrowed_non_simple_core_type arg in
+      let ct = match arg.ptyp_desc with
+        | Ptyp_tuple _ -> ct
+        | _ -> makeTup [ct]
+      in
+      if i == 0 && not opt_ampersand then
         ct
+      else
+        label (atom "&") ct
     in
     let args = match pcd_args with
       | Pcstr_record r -> [self#record_declaration r]
@@ -5704,7 +5704,7 @@ class printer  ()= object(self:'self)
           | Pmty_functor (s, Some mt1, mt2) ->
             let arg =
               if s.txt = "_"
-              then self#non_arrowed_module_type mt1
+              then self#module_type mt1
               else formatTypeConstraint (atom s.txt) (self#module_type mt1)
             in
             extract_args (`Arg arg :: args) mt2
