@@ -1566,7 +1566,12 @@ let insertBlankLines n term =
 let string_after s n = String.sub s n (String.length s - n)
 
 let wrapComment txt =
-  ("/*" ^ txt ^ "*/")
+  if txt = "" then
+    "/***/"
+  else if txt.[0] = '*' && (txt = "*" || txt.[1] <> '*') then
+    "/**" ^ txt ^ "*/"
+  else
+    "/*" ^ txt ^ "*/"
 
 (* This is a special-purpose functions only used by `formatComment_`. Notice we
 skip a char below during usage because we know the comment starts with `/*` *)
