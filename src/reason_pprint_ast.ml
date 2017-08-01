@@ -1565,13 +1565,10 @@ let insertBlankLines n term =
 
 let string_after s n = String.sub s n (String.length s - n)
 
-let wrapComment txt =
-  if txt = "" then
-    "/***/"
-  else if txt.[0] = '*' && (txt = "*" || txt.[1] <> '*') then
-    "/**" ^ txt ^ "*/"
-  else
-    "/*" ^ txt ^ "*/"
+let wrapComment = function
+  | "" | "*" -> "/***/"
+  | txt when txt.[0] = '*' && txt.[1] <> '*' -> "/**" ^ txt ^ "*/"
+  | txt -> "/*" ^ txt ^ "*/"
 
 (* This is a special-purpose functions only used by `formatComment_`. Notice we
 skip a char below during usage because we know the comment starts with `/*` *)
@@ -5076,20 +5073,21 @@ class printer  ()= object(self:'self)
     match l with
       | [] -> toThis
       | _::_ ->
-        makeList ~postSpace:true ~indent:0 ~break:IfNeed ~inline:(true, true)
+        makeList ~postSpace:true ~indent:0 ~break:Always ~inline:(true, true)
           (List.map self#item_attribute l @ [toThis])
 
   method exception_declaration ed =
     let pcd_name = ed.pext_name in
     let pcd_loc = ed.pext_loc in
-    let pcd_attributes = ed.pext_attributes in
+    let pcd_attributes = [] in
     let exn_arg = match ed.pext_kind with
       | Pext_decl (args, type_opt) ->
           let pcd_args, pcd_res = args, type_opt in
           [self#type_variant_leaf_nobar {pcd_name; pcd_args; pcd_res; pcd_loc; pcd_attributes}]
       | Pext_rebind id ->
           [atom pcd_name.txt; atom "="; (self#longident_loc id)] in
-    makeList ~postSpace:true ((atom "exception")::exn_arg)
+    self#attach_std_item_attrs ed.pext_attributes
+      (makeList ~postSpace:true ((atom "exception")::exn_arg))
 
   (*
     Note: that override doesn't appear in class_sig_field, but does occur in

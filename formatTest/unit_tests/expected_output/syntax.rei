@@ -25,4 +25,5 @@ let myRecordWithFunctions: adders;
 
 /**
  * Public result.
- */ let result: int;
+ */
+let result: int;

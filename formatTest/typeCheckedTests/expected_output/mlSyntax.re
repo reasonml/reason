@@ -94,7 +94,8 @@ let nestedSome = Some((1, 2, Some((1, 2, 3))));
 let nestedSomeSimple = Some(Some((1, 2, 3)));
 
 module EM = {
-  exception /** Exception */ E(int, int);
+  /** Exception */
+  exception E(int, int);
 };
 
 exception Ealias = EM.E;

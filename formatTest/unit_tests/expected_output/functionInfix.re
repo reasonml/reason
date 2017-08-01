@@ -9,7 +9,6 @@ let (>>=) (a, b) = b(a);
 
 let fff = ();
 
-
 /** Parse tree */
 fff >>= (xx(yy) >>= aa(bb));
 
@@ -19,7 +18,6 @@ fff >>= xx(yy) >>= aa(bb);
 /* Actually printed parenthesis */
 fff >>= (xx(yy) >>= aa(bb));
 
-
 /** Parse tree */
 fff >>= (((xx) => 0) >>= ((aa) => 10));
 
@@ -28,7 +26,6 @@ fff >>= (((xx) => 0) >>= ((aa) => 10));
 
 /* Actually printed parenthesis */
 fff >>= (((xx) => 0) >>= ((aa) => 10));
-
 
 /** Parse tree */
 fff >>= ((xx) => 0) >>= ((aa) => 10);
@@ -39,7 +36,6 @@ fff >>= ((xx) => 0) >>= ((aa) => 10);
 
 /* Actually printed. */
 fff >>= ((xx) => 0) >>= ((aa) => 10);
-
 
 /** Parse tree */
 fff >>= ((xx) => 0 >>= ((aa, cc) => 10));
@@ -53,7 +49,6 @@ fff >>= ((xx) => 0) >>= ((aa, cc) => 10);
 
 /* Another way you could also write it it */
 fff >>= ((xx) => 0) >>= ((aa, cc) => 10);
-
 
 /** Parse tree */
 fff >>= ((xx) => 0);

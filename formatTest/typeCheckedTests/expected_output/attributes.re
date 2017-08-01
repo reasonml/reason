@@ -40,7 +40,8 @@ type nodeDoc = /**removed text on item*/ int;
 type nodeAndItemDoc =
   /**removed text on item*/ int;
 
-[@itemAttributeOnTypeDef] type x = int;
+[@itemAttributeOnTypeDef]
+type x = int;
 
 type attributedInt = [@onTopLevelTypeDef] int;
 
@@ -178,7 +179,8 @@ let res =
   [@appliesToEntireFunctionApplication]
   add(2, 4);
 
-[@appliesToEntireFunctionApplication] add(2, 4);
+[@appliesToEntireFunctionApplication]
+add(2, 4);
 
 let myObj = {pub p () = {pub z () = 10}};
 
@@ -191,14 +193,16 @@ type recordFunctions = {
   p: unit => [@onUnit] recordFunctions,
   q: [@onArrow] (unit => unit)
 }
-[@onUnusedType] and unusedType = unit;
+[@onUnusedType]
+and unusedType = unit;
 
 [@onMyRecord]
 let rec myRecord = {
   p: () => myRecord,
   q: () => ()
 }
-[@onUnused] and unused = ();
+[@onUnused]
+and unused = ();
 
 let result =
   [@onSecondSend]
@@ -219,10 +223,13 @@ type gadtType('x) =
 
 [@floatingTopLevelStructureItem hello];
 
-[@itemAttributeOnEval] print_string("hello");
+[@itemAttributeOnEval]
+print_string("hello");
 
-[@itemAttrOnFirst] let firstBinding = "first"
-[@itemAttrOnSecond] and secondBinding = "second";
+[@itemAttrOnFirst]
+let firstBinding = "first"
+[@itemAttrOnSecond]
+and secondBinding = "second";
 
 /**
  * Let bindings.
@@ -309,7 +316,8 @@ and anotherClassType = {
       };
 
 class type _y = {
-  [@bs.set] pub height: int
+  [@bs.set]
+  pub height: int
 };
 
 [@bs]
@@ -323,14 +331,16 @@ module NestedModule = {
 
 [@structureItem]
 module type HasAttrs = {
-  [@onTypeDef] type t = int;
+  [@onTypeDef]
+  type t = int;
   [@floatingNestedSigItem hello];
   [@sigItem]
   class type foo = {
     pub foo: int;
     pub bar: int
   };
-  [@sigItem] class fooBar : (int) => foo;
+  [@sigItem]
+  class fooBar : (int) => foo;
   /**Floating comment text should be removed*/;
   /**Floating comment text should be removed*/;
 };
@@ -451,4 +461,5 @@ external readFileSync2 :
   "";
 
 /* Ensure that attributes on extensions are printed */
-[@test [@attr] [%%extension]];
+[@test [@attr]
+       [%%extension]];
