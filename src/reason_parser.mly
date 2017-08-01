@@ -2537,8 +2537,6 @@ mark_position_exp
     { mkexp (Pexp_try ($2, $4)) }
   | TRY parenthesized_expr WITH error
     { syntax_error_exp (mklocation $startpos($4) $endpos($4)) "Invalid try with"}
-  | name_tag simple_expr
-    { mkexp(Pexp_variant($1, Some $2)) }
   | IF parenthesized_expr simple_expr ioption(preceded(ELSE,expr))
     { mkexp(Pexp_ifthenelse($2, $3, $4)) }
   | WHILE parenthesized_expr simple_expr
@@ -2680,6 +2678,12 @@ parenthesized_expr:
     }
   | name_tag %prec prec_constant_constructor
     { mkexp (Pexp_variant ($1, None)) }
+  | name_tag
+    mark_position_exp
+      ( non_labeled_argument_list   { mkexp (Pexp_tuple($1)) }
+      | simple_expr_direct_argument { $1 }
+      )
+    { mkexp(Pexp_variant($1, Some $2)) }
   | LPAREN expr_list RPAREN
     { may_tuple $startpos $endpos $2 }
   | as_loc(LPAREN) expr_list as_loc(error)
@@ -3815,8 +3819,8 @@ type_parameters:
   { $1 }
 ;
 
-non_arrowed_simple_core_type:
-mark_position_typ2
+non_arrowed_simple_core_types:
+mark_position_typ
   ( arrow_type_parameters
     { let prepare_arg {Location. txt = (label, ct); loc} = match label with
         | Nolabel -> ct
@@ -3825,11 +3829,15 @@ mark_position_typ2
       in
       match List.map prepare_arg $1 with
       | []    -> assert false
-      | [one] -> Core_type one
-      | many  -> Core_type (mktyp (Ptyp_tuple many))
+      | [one] -> one
+      | many  -> mktyp (Ptyp_tuple many)
     }
-  | basic_core_type { $1 }
   ) {$1};
+
+non_arrowed_simple_core_type:
+  | non_arrowed_simple_core_types       { Core_type $1 }
+  | mark_position_typ2(basic_core_type) { $1 }
+;
 
 basic_core_type:
 mark_position_typ2
@@ -3847,24 +3855,12 @@ mark_position_typ2
     { Core_type (mktyp(Ptyp_constr($1, []))) }
   | object_record_type
     { $1 }
-  | LBRACKET tag_field RBRACKET
-    { Core_type(mktyp(Ptyp_variant([$2], Closed, None))) }
-/* PR#3835: this is not LR(1), would need lookahead=2
-  | LBRACKET non_arrowed_simple_core_type RBRACKET
-      { mktyp(Ptyp_variant([$2], Closed, None)) }
-*/
-  | LBRACKET BAR row_field_list RBRACKET
-    { Core_type(mktyp(Ptyp_variant ($3, Closed, None))) }
-  | LBRACKET row_field BAR row_field_list RBRACKET
-    { Core_type(mktyp(Ptyp_variant ($2 :: $4, Closed, None))) }
-  | LBRACKETGREATER BAR? row_field_list RBRACKET
-    { Core_type(mktyp(Ptyp_variant ($3, Open, None))) }
-  | LBRACKETGREATER RBRACKET
-    { Core_type(mktyp(Ptyp_variant ([], Open, None))) }
-  | LBRACKETLESS BAR? row_field_list RBRACKET
-    { Core_type(mktyp(Ptyp_variant ($3, Closed, Some []))) }
-  | LBRACKETLESS BAR? row_field_list GREATER name_tag+ RBRACKET
-    { Core_type(mktyp(Ptyp_variant ($3, Closed, Some $5))) }
+  | LBRACKET row_field_list RBRACKET
+    { Core_type(mktyp(Ptyp_variant ($2, Closed, None))) }
+  | LBRACKETGREATER loption(row_field_list) RBRACKET
+    { Core_type(mktyp(Ptyp_variant ($2, Open, None))) }
+  | LBRACKETLESS row_field_list loption(preceded(GREATER, name_tag+)) RBRACKET
+    { Core_type(mktyp(Ptyp_variant ($2, Closed, Some $3))) }
   | LPAREN MODULE package_type RPAREN
     { Core_type(mktyp(Ptyp_package $3)) }
   | extension
@@ -3896,17 +3892,31 @@ package_type_cstr:
   { ($2, $4) }
 ;
 
-row_field_list: separated_nonempty_list(BAR, row_field) { $1 };
+row_field_list:
+  | row_field bar_row_field* { $1 :: $2 }
+  | bar_row_field bar_row_field* { $1 :: $2 }
+;
 
 row_field:
-  | tag_field                                    { $1 }
-  | only_core_type(non_arrowed_simple_core_type) { Rinherit $1 }
+  | tag_field                             { $1 }
+  | only_core_type(non_arrowed_core_type) { Rinherit $1 }
+;
+
+bar_row_field:
+  item_attributes BAR row_field
+  { match $3 with
+    | Rtag (name, attrs, amp, typs) ->
+        Rtag (name, $1 @ attrs, amp, typs)
+    | Rinherit typ ->
+        Rinherit {typ with ptyp_attributes = $1 @ typ.ptyp_attributes}
+  }
 ;
 
 tag_field:
-  | item_attributes name_tag OF? boption(AMPERSAND)
-      separated_nonempty_list(AMPERSAND, only_core_type(core_type))
-    { Rtag ($2, $1, $4, $5) }
+  | item_attributes name_tag
+      boption(AMPERSAND)
+      separated_nonempty_list(AMPERSAND, non_arrowed_simple_core_types)
+    { Rtag ($2, $1, $3, $4) }
   | item_attributes name_tag
     { Rtag ($2, $1, true, []) }
 ;
