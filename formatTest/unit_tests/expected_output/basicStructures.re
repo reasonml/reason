@@ -121,11 +121,12 @@ let x = arr^.(0) = 1;
 
 /* Comments */
 /*Below is an empty comment*/
-/**/
+/**/;
 
 /**                            IF
  *============================================================================
- */
+ */;
+
 let something =
   if (self.ext.logSuccess) {
     print_string("Did tap");
@@ -304,10 +305,10 @@ if (10 < 100) {
   print_string("All bets are off.")
 };
 
-
 /**                            TYPE CONSTRAINTS
  *============================================================================
- */
+ */;
+
 let x: int = 10;
 
 let x: int = 10;
@@ -318,10 +319,10 @@ let x: int = (10: int);
 
 /* let (x:int) = (10:string); */
 /* let (x:string) = ("hello":int); */
-
 /**                            TUPLES
  *============================================================================
- */
+ */;
+
 /* In Reason, types look like the data they model! Tuples are no exception. */
 type pairOfInts = (int, int);
 
@@ -378,10 +379,10 @@ let trailingCommaAccepted = (1, 2);
 
 let moreTrailing = (1, 2, 3, 4, 5, 7);
 
-
 /**                        Immutable Lists
  * ============================================================================
- */
+ */;
+
 /* Anatomy:        -Head-      --------- Tail---------  nil: You can't see nil */
 let x: list(int) = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
@@ -436,10 +437,10 @@ let nestedMatchWithWhen (lstLst) =
   | [] => 0
   };
 
-
 /**
  * Aliasing with "as" during matches.
- */
+ */;
+
 type mine =
   | MyThing(int)
   | YourThing(int);
@@ -480,13 +481,13 @@ let MyThing(_) as ppp | YourThing(_) as ppp = ppp;
 /*   []: 0 */
 /* }; */
 /*  */
-
 /**                               ARRAYS
  * ============================================================================
  * Arrays are weird looking. Usually you want lists because they support pattern
  * matching - that's why they have nicer syntax - to entice you. But if you want
  * random access and better control over memory layout, use arrays.
- */
+ */;
+
 let emptyArray = [||];
 
 let arrayWithOne = [|10|];
@@ -502,12 +503,12 @@ let secondItem = arrayWithTwo.(1);
 /* Set an array item at index 1 */
 arrayWithTwo.(1) = 300;
 
-
 /**
  *                                STRINGS
  *  ============================================================================
  *  The language supports mutating strings, but that should not be depended upon.
- */
+ */;
+
 let myString = "asdf";
 
 myString.[2] = '9'; /* Replacing a character: I could do without this sugar */
@@ -562,12 +563,12 @@ let curriedFormThree
 );
 
 /* let nonCurriedFormThree = fun (i:int, (a:int, b:int):(int, int)) (:(int, int, int)) => (i, a, b);  */
-
 /** TODO: But this, however doesn't work.
  *  let (myCurriedFunc: int => int) a => a;
  *  Note: This is likely because only "simple patterns" are accepted as constraints
  *  in let bindings - that may be easy to change.
- */
+ */;
+
 type myFuncType = (int, int) => int;
 
 let myFunc: myFuncType = (a, b) => a + b;
@@ -582,11 +583,11 @@ let funcWithTypeLocallyAbstractTypes
     ) =
   c(a, b);
 
-
 /**
  * Records:
  *=============================================================================
- */
+ */;
+
 type withThreeFields = {
   name: string,
   age: int,

@@ -113,7 +113,7 @@ let x = arr^.(0) = 1;
 /**/
 /**                            IF
  *============================================================================
- */
+ */;
 
 
 let something = if (self.ext.logSuccess) {
@@ -258,7 +258,7 @@ if (10 < 100) {
 
 /**                            TYPE CONSTRAINTS
  *============================================================================
- */
+ */;
 let x = (10:int);
 let x:int = 10;
 let (x:int) = 10;
@@ -268,7 +268,7 @@ let (x:int) = (10:int);
 
 /**                            TUPLES
  *============================================================================
- */
+ */;
 
 /* In Reason, types look like the data they model! Tuples are no exception. */
 type pairOfInts = (int, int);
@@ -304,7 +304,7 @@ let moreTrailing = (1, 2, 3, 4, 5, 7, );
 
 /**                        Immutable Lists
  * ============================================================================
- */
+ */;
 
 /* Anatomy:        -Head-      --------- Tail---------  nil: You can't see nil */
 let x: list(int) = [    1,      2, 3, 4, 5, 6, 7, 8, 9];
@@ -350,7 +350,7 @@ let nestedMatchWithWhen(lstLst) = switch (lstLst) {
 
 /**
  * Aliasing with "as" during matches.
- */
+ */;
 type mine = MyThing(int) | YourThing(int);
 /*
  * Reason parses "as" aliases differently than OCaml.
@@ -395,7 +395,7 @@ let (MyThing(_) as ppp) |(YourThing(_) as ppp) = ppp;
  * Arrays are weird looking. Usually you want lists because they support pattern
  * matching - that's why they have nicer syntax - to entice you. But if you want
  * random access and better control over memory layout, use arrays.
- */
+ */;
 let emptyArray = [||];
 let arrayWithOne = [|10|];
 let arrayWithTwo = [|10, 10|];
@@ -412,7 +412,7 @@ arrayWithTwo.(1) = 300;
  *                                STRINGS
  *  ============================================================================
  *  The language supports mutating strings, but that should not be depended upon.
- */
+ */;
 let myString = "asdf";
 myString.[2] = '9'; /* Replacing a character: I could do without this sugar */
 
@@ -468,7 +468,7 @@ let curriedFormThree (i:int, (a:int, b:int):(int, int)) :(int, int, int) = (i, a
  *  let (myCurriedFunc: int => int) a => a;
  *  Note: This is likely because only "simple patterns" are accepted as constraints
  *  in let bindings - that may be easy to change.
- */
+ */;
 
 type myFuncType = (int, int) => int;
 
@@ -480,7 +480,7 @@ let funcWithTypeLocallyAbstractTypes (type atype, type btype, a, b, c: (atype, b
 /**
  * Records:
  *=============================================================================
- */
+ */;
 
 type withThreeFields = {
   name: string,
