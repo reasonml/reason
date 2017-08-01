@@ -62,8 +62,8 @@ type colorList1 = [
 ];
 
 type colorList = [<
-  | `Red (int, int) &int
-  | `Black &(int, int) &int
+  | `Red (int, int) &(int)
+  | `Black &(int, int) &(int)
   | `Blue
   > `Red `Black
 ];
@@ -234,9 +234,9 @@ let res = switch (ylw, prp) {
   | (`Yellow (p, p2), `Yellow (y, y2)) => `Purple (y + p, 0)
 };
 
-let ylw = `Yellow 100;
+let ylw = `Yellow(100);
 
-let prp = `Purple 101;
+let prp = `Purple(101);
 
 let res = switch (ylw, prp) {
   | (`Yellow y, `Purple p) => `Yellow (p + y)

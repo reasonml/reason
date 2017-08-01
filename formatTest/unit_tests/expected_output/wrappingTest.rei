@@ -48,16 +48,13 @@ let test:
        And it still works correctly. */
 let test: int;
 
-
 /** Include multiple opening stars if you like.
     And it will still work. */
 let test: int;
 
-
 /** This comment will be corrected.
-    when printed. */
+      when printed. */
 let test: int;
-
 
 /**  Comments with text on line zero
  *   Still work well with comments that have stars on the left side.

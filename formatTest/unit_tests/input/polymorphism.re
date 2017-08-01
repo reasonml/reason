@@ -11,7 +11,7 @@ type myTupleType = (int, int);
 type myPolymorphicTupleType('a) = ('a, 'a);
 
 type extensible('a) = 'a
-constraint 'a = [ | `Base int];
+constraint 'a = [ | `Base(int)];
 
 type intListTranformer = (list(int)) => list(int);
 

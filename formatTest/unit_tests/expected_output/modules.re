@@ -1,7 +1,6 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 let run () = TestUtils.printSection("Modules");
 
-
 /**
  * Modules:
  * ----------------------------------------------------------------------------
@@ -31,14 +30,12 @@ module MyFirstModule = {
 
 let result = MyFirstModule.x + MyFirstModule.y;
 
-
 /**
  * - A module is introduced with the `module` phrase.
  * - A module *must* have a capital letter as its first character.
  * - The exported fields of a module must be listed within `{}` braces and each
  * exported value binding is specified via a `let` keyword.
  */
-
 /**
  * Another way that modules are more powerful than records, is that they may
  * also export types.
@@ -50,7 +47,6 @@ module MySecondModule = {
 };
 
 let myInt: MySecondModule.someType = 100;
-
 
 /** Module signatures:
  * ----------------------------------------------------------------------------
@@ -64,7 +60,6 @@ module type MySecondModuleType = {
   let x: int;
   let y: int;
 };
-
 
 /**
  * Much like how you can ensure that a value is compatible with a specific
@@ -82,7 +77,6 @@ module type MySecondModuleType = {
  let y = x + x;
  };
  */
-
 /**
  * - Modules may be artificially "constrained" so that users of a module see
  * fewer details than are actually present.
@@ -176,7 +170,6 @@ module InliningSig: {let x: int; let y: int;} = {
 module MyFunctor (M: HasTT) = {
   type reexportedTT = M.tt;
   /* Inline comment inside module. */
-
   /** Following special comment inside module. */
   let someValue = 1000;
 };
@@ -461,7 +454,6 @@ let l: Compose(List)(Maybe)(Char).t = [
 ];
 
 module Example2 (F: (Type) => Type, X: Type) = {
-
   /**
    * Note: This is the one remaining syntactic issue where
    * modules/functions do not have syntax unified with values.

@@ -715,9 +715,8 @@ type yourThing = myOtherThing(int, int);
      | `Black x => x;
 
  */
-
 /** Current OCaml Named Arguments. Any aliasing is more than just aliasing!
-    OCaml allows full on pattern matching of named args. */
+OCaml allows full on pattern matching of named args. */
 /*
  A: let named              ~a    ~b                = aa + bb in
  B: let namedAlias         ~a:aa ~b:bb             = aa + bb in
@@ -742,7 +741,6 @@ type yourThing = myOtherThing(int, int);
                                \        \
                                 \let_pattern: still a useful syntactic building block in SugarML
  */
-
 /**
  * In Reason, the syntax for named args uses double semicolon, since
  * the syntax for lists uses ES6 style [], freeing up the ::.
@@ -1003,11 +1001,11 @@ let A | B | C = X;
 /*  A | B | C = X; */
 let A | B | C = X;
 
-
 /** External function declaration
  *
  */
-external f : int => int = "foo";
+external f : int => int =
+  "foo";
 
 let x = {contents: 0};
 

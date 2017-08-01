@@ -1,5 +1,4 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
-
 /**
  * Generally, dangling attributes [@..] apply to everything to the left of it,
  * up until a comma, equals asignment, arrow, bar, or infix symbol (+/-) or
@@ -7,25 +6,39 @@
  *
  * This has a nice side effect when printing the terms:
  * If a node has attributes attached to it,
- */
+ */;
+
+/**Floating comment text should be removed*/;
 
 /**
  * Core language features:
  * ----------------------
- */
-[@itemAttributeOnTypeDef] type itemText = int;
+ */;
 
-type nodeText = int;
-
-[@itemAttributeOnTypeDef]
-type nodeAndItemText = int;
-
-[@itemAttributeOnTypeDef] type itemDoc = int;
-
-[@itemAttributeOnTypeDef] type nodeDoc = int;
+/**Floating doc text should be removed*/;
 
 [@itemAttributeOnTypeDef]
-type nodeAndItemDoc = int;
+/**removed text on type def*/
+type itemText = int;
+
+type nodeText = /**removed text on item*/ int;
+
+[@itemAttributeOnTypeDef]
+/**removed text on type def*/
+type nodeAndItemText =
+  /**removed text on item*/ int;
+
+[@itemAttributeOnTypeDef]
+/**removed doc on type def*/
+type itemDoc = int;
+
+[@itemAttributeOnTypeDef]
+type nodeDoc = /**removed text on item*/ int;
+
+[@itemAttributeOnTypeDef]
+/**removed doc on type def*/
+type nodeAndItemDoc =
+  /**removed text on item*/ int;
 
 [@itemAttributeOnTypeDef] type x = int;
 
@@ -103,7 +116,6 @@ let x = [@onTrue] true && false;
 let x = [@attrEverything] (true && false);
 
 /* now make sure to try with variants (tagged and `) */
-
 /**
  * How attribute parsings respond to other syntactic constructs.
  */
@@ -181,11 +193,12 @@ type recordFunctions = {
 }
 [@onUnusedType] and unusedType = unit;
 
+[@onMyRecord]
 let rec myRecord = {
   p: () => myRecord,
   q: () => ()
 }
-and unused = ();
+[@onUnused] and unused = ();
 
 let result =
   [@onSecondSend]
@@ -206,14 +219,10 @@ type gadtType('x) =
 
 [@floatingTopLevelStructureItem hello];
 
-[@itemAttributeOnEval]
-print_string("hello");
+[@itemAttributeOnEval] print_string("hello");
 
-[@itemAttrOnFirst]
-let firstBinding = "first"
-[@itemAttrOnSecond]
-and secondBinding = "second";
-
+[@itemAttrOnFirst] let firstBinding = "first"
+[@itemAttrOnSecond] and secondBinding = "second";
 
 /**
  * Let bindings.
@@ -230,12 +239,10 @@ let showLets () =
     }
   };
 
-
 /**
  * Classes:
  * ------------
  */
-
 /**
  * In curried sugar, the class_expr attribute will apply to the return.
  */
@@ -243,9 +250,10 @@ let showLets () =
 class boxA ('a) (init: 'a) =
   [@onReturnClassExpr]
   {
+    /**Floating comment text should be removed*/;
+    /**Floating comment text should be removed*/;
     pub pr = init + init + init;
   };
-
 
 /**
  * In non-curried sugar, the class_expr still sticks to "the simple thing".
@@ -279,6 +287,8 @@ class tupleClass ('a, 'b) (init: ('a, 'b)) = {
 
 [@structureItem]
 class type addablePointClassType = {
+  /**Floating comment text should be removed*/;
+  /**Floating comment text should be removed*/;
   pub x: int;
   pub y: int;
   pub add:
@@ -294,9 +304,9 @@ and anotherClassType = {
   pub bar: int
 };
 
-class type _x = {
-  pub height: int
-} [@bs];
+[@bs] class type _x = {
+        pub height: int
+      };
 
 class type _y = {
   [@bs.set] pub height: int
@@ -311,6 +321,7 @@ module NestedModule = {
   [@floatingNestedStructureItem hello];
 };
 
+[@structureItem]
 module type HasAttrs = {
   [@onTypeDef] type t = int;
   [@floatingNestedSigItem hello];
@@ -320,6 +331,8 @@ module type HasAttrs = {
     pub bar: int
   };
   [@sigItem] class fooBar : (int) => foo;
+  /**Floating comment text should be removed*/;
+  /**Floating comment text should be removed*/;
 };
 
 type s =
@@ -410,25 +423,32 @@ external add_nat : (int, int) => int =
 [@ocaml.deprecated
   "Use bar instead. It's a much cooler function. This string needs to be a little long"
 ]
-external foo : bool => bool = "";
+external foo : bool => bool =
+  "";
 
 /* Attributes on an entire polymorphic variant leaf */
+[@bs.module "fs"]
 external readFileSync :
-  name::string =>
-  [ | `utf8 | `my_name [@bs.as "ascii"]]
-  [@bs.string] =>
+  (
+    :name string,
+    [@bs.string]
+    [ | `utf8 [@bs.as "ascii"] | `my_name]
+  ) =>
   string =
-  "" [@@bs.module "fs"];
+  "";
 
+[@bs.module "fs"]
 external readFileSync2 :
-  name::string =>
-  [
-    | `utf8 [@bs.as "ascii"]
-    | `my_name [@bs.as "ascii"]
-  ]
-  [@bs.string] =>
+  (
+    :name string,
+    [@bs.string]
+    [
+      [@bs.as "ascii"] | `utf8
+      [@bs.as "ascii"] | `my_name
+    ]
+  ) =>
   string =
-  "" [@@bs.module "fs"];
+  "";
 
 /* Ensure that attributes on extensions are printed */
-[@@@test [%%extension] [@@attr]];
+[@test [@attr] [%%extension]];

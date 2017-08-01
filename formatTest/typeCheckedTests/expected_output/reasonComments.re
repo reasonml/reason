@@ -19,7 +19,7 @@
 /*** */
 /**** */
 /**/
-/***/
+/****/
 /****/
 /** (** comment *) */
 /** (*** comment *) */
@@ -308,9 +308,7 @@ type intPair2 = (
   int
 );
 
-let result =
-  /**/
-  2 + 3;
+let result = /**/ (2 + 3);
 
 /* This is not yet idempotent */
 /* { */

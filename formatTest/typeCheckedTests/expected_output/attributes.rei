@@ -1,17 +1,21 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
-let test: int;
+/**Floating comment text should be removed*/;
 
+let test: int;
 
 /**
  * Attributes with doc/text attributes should be stripped. They're left over from a
  * conversion from ML likely.
  * ----------------------
- */
+ */;
+
+/**Floating doc text should be removed*/;
 
 /**
  * #990: don't strip attributes in interface files
  */
-[@bs.val] let x: int;
+[@bs.val]
+let x: int;
 
 type t('a);
 
