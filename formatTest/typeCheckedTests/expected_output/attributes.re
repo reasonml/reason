@@ -311,9 +311,11 @@ and anotherClassType = {
   pub bar: int
 };
 
-[@bs] class type _x = {
-        pub height: int
-      };
+class type _x =
+  [@bs]
+  {
+    pub height: int
+  };
 
 class type _y = {
   [@bs.set]

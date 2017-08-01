@@ -5194,33 +5194,38 @@ class printer  ()= object(self:'self)
     in
     label ~space:true frstHalf sndHalf
 
-  method class_instance_type x = match x.pcty_desc with
+  method class_instance_type x =
+    match x.pcty_desc with
     | Pcty_signature cs ->
-        let {pcsig_self = ct; pcsig_fields = l} = cs in
-        let instTypeFields =
-          List.map self#class_sig_field (List.filter self#shouldDisplayClassInstTypeItem l) in
-        let allItems = match ct.ptyp_desc with
-          | Ptyp_any -> instTypeFields
-          | _ ->
-            label ~space:true (atom "as") (self#core_type ct) ::
-            instTypeFields
-        in
+      let {pcsig_self = ct; pcsig_fields = l} = cs in
+      let instTypeFields =
+        List.map self#class_sig_field (List.filter self#shouldDisplayClassInstTypeItem l) in
+      let allItems = match ct.ptyp_desc with
+        | Ptyp_any -> instTypeFields
+        | _ ->
+          label ~space:true (atom "as") (self#core_type ct) ::
+          instTypeFields
+      in
+      self#attach_std_item_attrs x.pcty_attributes (
         makeList
           ~wrap:("{", "}")
           ~postSpace:true
           ~break:Always_rec
           ~sep:";"
           allItems
-    | Pcty_constr (li, l) -> (
-        match l with
-          | [] -> self#longident_loc li
-          | _::_ ->
-            label
-              ~space:true
-              (makeList ~wrap:("(", ")") ~sep:"," (List.map self#core_type l))
-              (self#longident_loc li)
       )
-    | Pcty_extension e -> self#extension e
+    | Pcty_constr (li, l) ->
+      self#attach_std_attrs x.pcty_attributes (
+        match l with
+        | [] -> self#longident_loc li
+        | _::_ ->
+          label
+            ~space:true
+            (makeList ~wrap:("(", ")") ~sep:"," (List.map self#core_type l))
+            (self#longident_loc li)
+      )
+    | Pcty_extension e ->
+      self#attach_std_item_attrs x.pcty_attributes (self#extension e)
     | Pcty_arrow _ -> failwith "class_instance_type should not be printed with Pcty_arrow"
 
   method class_declaration_list l =
@@ -5263,9 +5268,8 @@ class printer  ()= object(self:'self)
             (self#class_params_def ls)
       in
       let includingEqual = makeList ~postSpace:true [upToName; atom "="] in
-      let itm = label ~space:true includingEqual (self#class_instance_type x.pci_expr) in
-      let itmWithAttrs = self#attach_std_attrs x.pci_expr.pcty_attributes itm in
-      self#attach_std_item_attrs pci_attributes itmWithAttrs
+      self#attach_std_item_attrs pci_attributes @@
+      label ~space:true includingEqual (self#class_instance_type x.pci_expr)
     in
     match l with
     | [] -> failwith "Should not call class_type_declaration with no classes"
