@@ -338,19 +338,20 @@ module OCaml_syntax = struct
      To avoid duplicating comments, we need to filter comments that appear
      as doc strings is the AST out of the comment list. *)
   let doc_comments_filter () =
-    let open Ast_iterator in
+    let open Ast_mapper in
     let open Parsetree in
     let seen = Hashtbl.create 7 in
-    let attribute it = function
-      | { Location. txt = ("ocaml.doc" | "ocaml.text") },
+    let attribute mapper = function
+      | ({ Location. txt = ("ocaml.doc" | "ocaml.text") },
         PStr [{ pstr_desc = Pstr_eval ({ pexp_desc = Pexp_constant (Pconst_string(text, None)); _ } , _);
-                pstr_loc = loc; _ }] ->
-        Hashtbl.add seen ("*" ^ text, loc) ()
-      | attribute -> default_iterator.attribute it attribute
+                pstr_loc = loc; _ }]) as attribute ->
+        Hashtbl.add seen ("*" ^ text, loc) ();
+        default_mapper.attribute mapper attribute
+      | attribute -> default_mapper.attribute mapper attribute
     in
-    let iterator = {default_iterator with attribute} in
+    let mapper = {default_mapper with attribute} in
     let filter comment = not (Hashtbl.mem seen comment) in
-    (iterator, filter)
+    (mapper, filter)
 
   module Lexer_impl = struct
     let init = Lexer.init
@@ -370,40 +371,41 @@ module OCaml_syntax = struct
   let parse_and_filter_doc_comments iter fn lexbuf=
     let it, filter = doc_comments_filter () in
     let result = fn lexbuf in
-    iter it result;
+    ignore (iter it result);
     Lexer_impl.filter_comments filter;
     result
 
 
   let implementation lexbuf =
     parse_and_filter_doc_comments
-      (fun it -> it.Ast_iterator.structure it)
+      (fun it -> it.Ast_mapper.structure it)
       (fun lexbuf -> From_current.copy_structure
                        (Parser.implementation Lexer.token lexbuf))
       lexbuf
 
   let core_type lexbuf =
     parse_and_filter_doc_comments
-      (fun it -> it.Ast_iterator.typ it)
+      (fun it -> it.Ast_mapper.typ it)
       (fun lexbuf -> From_current.copy_core_type
                        (Parser.parse_core_type Lexer.token lexbuf))
       lexbuf
 
   let interface lexbuf =
     parse_and_filter_doc_comments
-      (fun it -> it.Ast_iterator.signature it)
+      (fun it -> it.Ast_mapper.signature it)
       (fun lexbuf -> From_current.copy_signature
                        (Parser.interface Lexer.token lexbuf))
       lexbuf
 
   let filter_toplevel_phrase it = function
-    | Parsetree.Ptop_def str -> it.Ast_iterator.structure it str
+    | Parsetree.Ptop_def str -> ignore (it.Ast_mapper.structure it str)
     | Parsetree.Ptop_dir _ -> ()
 
   let toplevel_phrase lexbuf =
     parse_and_filter_doc_comments
       filter_toplevel_phrase
-      (Parser.toplevel_phrase Lexer.token)
+      (fun lexbuf -> From_current.copy_toplevel_phrase
+          (Parser.toplevel_phrase Lexer.token lexbuf))
       lexbuf
 
   let use_file lexbuf =
