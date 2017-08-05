@@ -124,6 +124,7 @@ and ruleCategory =
      depends highly on context that is hard to reason about). It's so nuanced
      that it's easier just to always wrap them in parens.  *)
   | PotentiallyLowPrecedence of layoutNode
+  (* Simple means it is clearly one token (such as (anything) or [anything] or identifier *)
   | Simple of layoutNode
   | InfixApplicationConcrete of ruleInfoData * string * ruleCategory * ruleCategory 
 
