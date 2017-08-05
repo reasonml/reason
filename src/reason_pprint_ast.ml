@@ -635,17 +635,6 @@ let isSimplePrefixToken s = match printedStringAndFixity s with
   | AlmostSimplePrefix _ -> true
   | _ -> false
 
-(*
- * function to determine if the left child of an expression's application arguments
- * is another Pexp_apply with the given ident
- *)
-let isLeftInfixChain ident = function
-  | (_, {pexp_desc})::_ -> (match pexp_desc with
-      | Pexp_apply ({pexp_desc = Pexp_ident {txt}}, _) -> txt = Lident ident
-      | _ -> false)
-  | _ -> false
-
-
 
 (* Convenient bank of information that represents the parser's precedence
    rankings.  Each instance describes a precedence table entry. The function
