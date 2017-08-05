@@ -3422,8 +3422,11 @@ class printer  ()= object(self:'self)
      [higherOrEqualPrecedenceThan].
    *)
 
-  (* Ensures a rule doesn't reduce until *after* `reducesAfterRight` gets a chance
-     to reduce. Example: The addtion rule which has precedence of rightmost
+  (* The point of the function is to ensure that rightExpr will reduce
+     at the proper time when it is reparsed, possibly wrapping it
+     in parenthesis if needed. It ensures a rule doesn't reduce
+     until *after* `reducesAfterRight` gets a chance to reduce.
+     Example: The addtion rule which has precedence of rightmost
      token "+", in `x + a * b` should not reduce until after the a * b gets
      a chance to reduce. This function would determine the minimum parens to
      ensure that. *)
