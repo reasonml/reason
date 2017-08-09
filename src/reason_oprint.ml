@@ -264,7 +264,11 @@ and print_simple_out_type ppf =
       print_typargs ppf tyl;
       pp_close_box ppf ()
   | Otyp_object (fields, rest) ->
-      fprintf ppf "@[<2>{ %a }@]" (print_fields rest) fields
+    let dot = match rest with
+      Some non_gen -> (if non_gen then "_" else "") ^ ".."
+    | None -> "."
+    in
+    fprintf ppf "@[<2>{%s %a }@]" dot print_object_fields fields
   | Otyp_stuff s -> pp_print_string ppf s
   | Otyp_var (ng, s) -> fprintf ppf "'%s%s" (if ng then "_" else "") s
   | Otyp_variant (non_gen, row_fields, closed, tags) ->
@@ -308,24 +312,16 @@ and print_simple_out_type ppf =
         )
         n tyl;
       fprintf ppf ")@]"
-   | Otyp_attribute (t, attr) ->
-         fprintf ppf "@[<1>(%a [@@%s])@]" print_out_type t attr.oattr_name
-and print_fields rest ppf =
+  | Otyp_attribute (t, attr) ->
+        fprintf ppf "@[<1>(%a [@@%s])@]" print_out_type t attr.oattr_name
+and print_object_fields ppf =
   function
-    [] ->
-      begin match rest with
-        Some non_gen -> fprintf ppf "%s.." (if non_gen then "_" else "")
-      | None -> ()
-      end
+    [] -> ()
   | [s, t] ->
-      fprintf ppf "%s : %a" s print_out_type t;
-      begin match rest with
-        Some _ -> fprintf ppf ",@ "
-      | None -> ()
-      end;
-      print_fields rest ppf []
+    fprintf ppf "%s : %a" s print_out_type t;
+    print_object_fields ppf []
   | (s, t) :: l ->
-      fprintf ppf "%s : %a,@ %a" s print_out_type t (print_fields rest) l
+    fprintf ppf "%s : %a,@ %a" s print_out_type t print_object_fields l
 and print_row_field ppf (l, opt_amp, tyl) =
   let pr_of ppf =
     if opt_amp then fprintf ppf " &@ "
@@ -499,27 +495,27 @@ and print_out_sig_item ppf =
                     | Orec_next -> "and")
         name print_out_module_type mty
   | Osig_type(td, rs) ->
-        print_out_type_decl
-          (match rs with
-           | Orec_not   -> "type nonrec"
-           | Orec_first -> "type"
-           | Orec_next  -> "and")
-          ppf td
-  | Osig_value vd ->
-      let kwd = if vd.oval_prims = [] then "let" else "external" in
-      let pr_prims ppf =
-        function
-          [] -> ()
-        | s :: sl ->
-            fprintf ppf "@ = \"%s\"" s;
-            List.iter (fun s -> fprintf ppf "@ \"%s\"" s) sl
-      in
-        fprintf ppf "@[<2>%s %a :@ %a%a%a@]" kwd value_ident vd.oval_name
-            !out_type vd.oval_type pr_prims vd.oval_prims
-            (fun ppf -> List.iter (fun a -> fprintf ppf "@ [@@@@%s]" a.oattr_name))
-            vd.oval_attributes
+      print_out_type_decl
+        (match rs with
+          | Orec_not   -> "type nonrec"
+          | Orec_first -> "type"
+          | Orec_next  -> "and")
+        ppf td
+  | Osig_value {oval_name; oval_type; oval_prims; oval_attributes} ->
+    let kwd = if oval_prims = [] then "let" else "external" in
+    let pr_prims ppf =
+      function
+        [] -> ()
+      | s :: sl ->
+          fprintf ppf "@ = \"%s\"" s;
+          List.iter (fun s -> fprintf ppf "@ \"%s\"" s) sl
+    in
+    fprintf ppf "@[<2>%s %a :@ %a%a%a@]" kwd value_ident oval_name
+        !out_type oval_type pr_prims oval_prims
+        (fun ppf -> List.iter (fun a -> fprintf ppf "@ [@@@@%s]" a.oattr_name))
+        oval_attributes
   | Osig_ellipsis ->
-      fprintf ppf "..."
+    fprintf ppf "..."
 
 and print_out_type_decl kwd ppf td =
   let print_constraints ppf =
