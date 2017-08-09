@@ -21,7 +21,7 @@ let parse_ast =
              binary (for compiler input) | \
              binary_reason (for interchange between Reason versions))"
   in
-  let opts = Arg.enum ["ml", `ML; "re", `Reason;
+  let opts = Arg.enum ["ml", `ML; "re", `Reason; "binary", `Binary;
                        "binary_reason", `BinaryReason; "auto", `Auto]
   in
   Arg.(value & opt (some opts) None & info ["parse"] ~docv ~doc)
