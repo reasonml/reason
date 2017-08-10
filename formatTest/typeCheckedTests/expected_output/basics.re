@@ -1,21 +1,21 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 type reasonXyz =
   | X
-  | Y int int int
-  | Z int int
+  | Y(int, int, int)
+  | Z(int, int)
   | Q
   | R;
 
 type reasonXyzWithOf =
   | X
-  | Y int int int
-  | Z int int
+  | Y(int, int, int)
+  | Z(int, int)
   | Q
   | R;
 
 let reasonBarAs =
   fun
-  | ((Y _ | Z _) as t, _) => {
+  | ((Y(_) | Z(_)) as t, _) => {
       let _ = t;
       true
     }
@@ -24,16 +24,16 @@ let reasonBarAs =
 let reasonDoubleBar =
   fun
   | X
-  | Y _ _ _
-  | Z _ _
+  | Y(_, _, _)
+  | Z(_, _)
   | Q => true
   | _ => false;
 
 let reasonDoubleBarNested =
   fun
   | X
-  | Y _ _ _
-  | Z _ _
+  | Y(_, _, _)
+  | Z(_, _)
   | Q => true
   | _ => false;
 
@@ -42,22 +42,22 @@ let reasonDoubleBarNested =
 let reasonDoubleBarAnyPatterns =
   fun
   | X
-  | Y _
-  | Z _
+  | Y(_)
+  | Z(_)
   | Q => true
   | _ => false;
 
 let reasonDoubleBarNestedAnyPatterns =
   fun
   | X
-  | Y _
-  | Z _
+  | Y(_)
+  | Z(_)
   | Q => true
   | _ => false;
 
 let (\+) = (+);
 
-let a = 2.0 *\* 4.0;
+let a = 2.0 ** 4.0;
 
 let (\===) = (===);
 
@@ -67,6 +67,6 @@ let expectedPrecendence =
 let expectedPrecendence =
   1 \+ 1 \=== 1 \+ 1 && 1 \+ 1 !== 1 \+ 1;
 
-module X: {let x: x::unit? => unit => unit;} = {
-  let x ::x=() () => ();
+module X: {let x: (:x unit?, unit) => unit;} = {
+  let x (:x=(), ()) = ();
 };

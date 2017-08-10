@@ -6,18 +6,18 @@ let myComputation = lazy {
 
 type myRecord = {myRecordField: int};
 
-let operateOnLazyValue (lazy {myRecordField}) => {
+let operateOnLazyValue (lazy {myRecordField}) {
    let tmp = myRecordField;
    tmp + tmp;
 };
 
 let result = operateOnLazyValue (lazy {myRecordField: 100});
 
-type box 'a = Box 'a;
+type box('a) = Box('a);
 
 let lazy thisIsActuallyAPatternMatch = lazy (200);
 let tmp: int = thisIsActuallyAPatternMatch;
-let (lazy (Box i), x) = (lazy (Box 200), 100);
+let (lazy (Box(i)), x) = (lazy (Box(200)), 100);
 let tmp: int = i;
 
 let myComputation = lazy (200);

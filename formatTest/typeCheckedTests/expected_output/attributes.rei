@@ -1,39 +1,48 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
-let test: int;
+/**Floating comment text should be removed*/;
 
+let test: int;
 
 /**
  * Attributes with doc/text attributes should be stripped. They're left over from a
  * conversion from ML likely.
  * ----------------------
- */
+ */;
+
+/**Floating doc text should be removed*/;
 
 /**
  * #990: don't strip attributes in interface files
  */
-let x: int [@@bs.val];
+[@bs.val]
+let x: int;
 
-type t 'a;
+type t('a);
 
 type reactClass;
 
 type reactElement;
 
+[@bs.val] [@bs.module "React"]
 external createClassInternalHack :
-  t 'classSpec => reactClass =
-  "createClass" [@@bs.val] [@@bs.module "React"];
+  t('classSpec) => reactClass =
+  "createClass";
 
-external map : ('a => 'b) [@bs] => array 'b =
-  "" [@@bs.send.pipe : array 'a];
+[@bs.send.pipe : array('a)]
+external map : [@bs] (('a => 'b) => array('b)) =
+  "";
 
+[@bs.val] [@bs.module "react"]
 external createClassInternalHack :
-  t 'classSpec => reactClass =
-  "createClass" [@@bs.val] [@@bs.module "react"];
+  t('classSpec) => reactClass =
+  "createClass";
 
+[@bs.val] [@bs.module "react"] [@bs.splice]
 external createCompositeElementInternalHack :
-  reactClass =>
-  t {.. reasonProps : 'props} =>
-  array reactElement =>
+  (
+    reactClass,
+    t({.. reasonProps: 'props}),
+    array(reactElement)
+  ) =>
   reactElement =
-  "createElement"
-  [@@bs.val] [@@bs.module "react"] [@@bs.splice];
+  "createElement";

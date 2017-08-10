@@ -142,13 +142,13 @@ let seeWhichCharacterHasHigherPrecedence = first + second + third;
 let comparison = (==);
 
 /* Why would the following two cases have different grouping? */
-let res = blah || DataConstructor 10 || DataConstructor 10 && 10;
+let res = blah || DataConstructor(10) || DataConstructor(10) && 10;
 
-let res = blah && DataConstructor 10 && DataConstructor 10 + 10;
+let res = blah && DataConstructor(10) && DataConstructor(10) + 10;
 
 /* This demonstrates how broken infix pretty printing is:
  */
-let curriedComparison = (==) 10;
+let curriedComparison = (==)(10);
 
 let resultOfAdd = 10 + 20 + 40;
 
@@ -156,9 +156,9 @@ let resultOfAddAndMult = 10 * 1 + 20 * 1 + 40 * 1;
 
 let greaterThanAndSubtract = 1 - 2 > 4 + 3;
 
-let greaterThanAndFunctionCalls = pred 1 > pred 2;
+let greaterThanAndFunctionCalls = pred(1) > pred(2);
 
-let lessThanAndFunctionCalls = pred 1 < pred 2;
+let lessThanAndFunctionCalls = pred(1) < pred(2);
 
 /* This doesn't type check because it looks like pred - 1 */
 let minusAndInteger = pred - 1;
@@ -170,49 +170,49 @@ let leadingMinusIsCorrectlyNeg = (-1) + 20;
 let leadingMinusIsCorrectlyNeg = 3 > (-1);
 
 /* Custom infix without labeled args */
-let (|>) first second => first + second;
+let (|>)(first,second) = first + second;
 
 /* Should reformat to actually be placed infix */
 let res = first |> second;
 
 /* Curried shouldn't place infix */
-let res = (|>) first;
+let res = (|>)(first);
 
 /* Custom infix with labeled args */
-let (|>) first::first second::second => first + second;
+let (|>)(:first first, :second second) = first + second;
 
 /* Should NOT reformat named args to actually be placed infix */
-let res = (|>) first::first second::second;
+let res = (|>)(:first first, :second second);
 
 /* Curried shouldn't place infix */
-let res = (|>) first::first;
+let res = (|>)(:first first);
 
 /* Custom infix accepting *three* without labeled args */
-let (|>) firsfirst second third => first + second + third;
+let (|>)(firsfirst,second,third) = first + second + third;
 
 /* Should reformat to actually be placed infix if passed two args */
 let res = first |> second;
 
-let res = (first |> second) third;
+let res = (first |> second)(third);
 
 /* Should NOT reformat to be placed infix if passed all three */
-let res = (|>) first second third;
+let res = (|>)(first,second,third);
 
 /* Same: Curried shouldn't place infix */
-let res = (|>) first;
+let res = (|>)(first);
 
 /* In fact, if even just one of the arguments are named, it shouldn't
  * be formatted or parsed as infix! */
-(|>) first second::second;
+(|>)(first,:second second);
 
-(|>) first::first second;
+(|>)(:first first,second);
 
-(|>) first second third::third;
+(|>)(first,second,:third third);
 
-(first |> second) third::third;
+(first |> second)(:third third);
 
 /* Infix has lower precedence than function application */
-first |> second third::third;
+first |> second(:third third);
 
 let leftAssocGrouping = first |> second |> third;
 
@@ -225,32 +225,32 @@ let seeWhichCharacterHasHigherPrecedence = first ^> second |> third;
 
 let seeWhichCharacterHasHigherPrecedence = first ^> (second |> third) |> fourth;
 
-let res = blah && DataConstructor 10 && DataConstructor 10 + 10;
+let res = blah && DataConstructor(10) && DataConstructor(10) + 10;
 
 /* Should be parsed as */
-let res = blah && DataConstructor 10 && DataConstructor 10 + 10;
+let res = blah && DataConstructor(10) && DataConstructor(10) + 10;
 
-let (++) label::label label2::label2 => label + label2;
+let (++)(:label label,:label2 label2) = label + label2;
 
-let (++) label::label label2::label2 => label + label2;
+let (++)(:label label,:label2 label2) = label + label2;
 
 let (++) = (++);
 
-let (++): int => int = (++);
+let (++): int = int = (++);
 
-(++) label::20 label2::30 + 40;
+(++)(:label 20, :label2 30) + 40;
 
 /* Should be parsed as: */
-(++) label::20 label2::30 + 40;
+(++)(:label 20, :label2 30) + 40;
 
 /* Great idea! */
-let (==) a b => a < 0;
+let (==)(a,b) = a < 0;
 
-let (==) a b => a < 0;
+let (==)(a,b) = a < 0;
 
 let (==) = (==);
 
-let (==): int => int = (==);
+let (==): int = int = (==);
 
 let equal = Pervasives.(==);
 
@@ -263,30 +263,30 @@ let includesACommentCloseInIdentifier = ( *\*\/ );
 
 let includesACommentCloseInIdentifier = ( *\*\/ );
 
-let shouldSimplifyAnythingExceptApplicationAndConstruction = call "hi" ^ (switch x {
+let shouldSimplifyAnythingExceptApplicationAndConstruction = call("hi") ++ (switch (x) {
                                                                     | _ => "hi"
-                                                                    }) ^ "yo";
+                                                                    }) ++ "yo";
 
 /* Add tests with IF/then mixed with infix/constructor application on left and right sides */
 /**
  * Every star or forward slash after the character of an infix operator must be
  * escaped.
  */
-let ( /\* ) a b => a + b;
+let ( /\* )(a,b) = a + b;
 
 let x = 12 /-\* 23 /-\* 12;
 
 let y = a /\* b;
 
-let ( !=\* ) q r => q + r;
+let ( !=\* )(q,r) = q + r;
 
-let res = q ( !=\* ) r;
+let res = q(( !=\* ),r);
 
-let ( !=\/\* ) q r => q + r;
+let ( !=\/\* )(q,r) = q + r;
 
-let res = q ( !=\/\* ) r;
+let res = q(( !=\/\* ),r);
 
-let ( ~\* ) a => a + 1;
+let ( ~\* )(a) = a + 1;
 
 let res = ~\*10;
 
@@ -301,13 +301,13 @@ let res = f (- x);
 /**
  * Test using almost simple prefix as regular function.
  */
-let (!!) a b => a + b;
+let (!!)(a,b) = a + b;
 
-let res = (!!) 20 40;
+let res = (!!)(20,40);
 
 /* The semicolon should be attached to someType */
-let myFunc aaaa bbbb cccc dddd aaaa bbbb cccc dddd aaaa =>
-  [blah aaaa bbbb cccc dddd aaaa bbbb cccc dddd aaaa, ...someType];
+let myFunc(aaaa,bbbb,cccc,dddd,aaaa,bbbb,cccc,dddd,aaaa) =
+  [blah(aaaa,bbbb,cccc,dddd,aaaa,bbbb,cccc,dddd,aaaa), ...someType];
 
 /**
  * Testing various fixity.
@@ -322,7 +322,7 @@ let containingObject = {
   val arr = [|true, false, false|];
   val bigArr = "goodThingThisIsntTypeChecked";
   val str = "string";
-  pub testCases () => {
+  pub testCases () {
     /**
      * The lowest precedence token is =, followed by :=, and then ?, then :.
      *
@@ -690,37 +690,37 @@ let containingObject = {
     let result = - x + something.contents = y;
 
     /* Prefix minus is actually sugar for regular function identifier ~-*/
-    let result = 2 + (~-) (add 4 0);
+    let result = 2 + (~-) (add(4,0));
     /* Same as */
-    let result = 2 + ~- add 4 0;
+    let result = 2 + ~- add(4,0);
     /* Same as */
-    let result = 2 + - add 4 0;
+    let result = 2 + - add(4,0);
 
     /* That same example but with ppx attributes on the add application */
-    let result = 2 + (~-) (add 4 0 [@ppx]);
+    let result = 2 + (~-) ([@ppx] add(4,0));
     /* Same as */
-    let result = 2 + ~- add 4 0 [@ppx];
+    let result = [@ppx] 2 + ~- add(4,0);
     /* Same as */
-    let result = 2 + - add 4 0 [@ppx];
+    let result = [@ppx] 2 + - add(4,0);
 
 
     /* Multiple nested prefixes */
-    let result = 2 + - - - add 4 0;
+    let result = 2 + - - - add(4,0);
 
     /* And with attributes */
-    let result = 2 + - - - add 4 0 [@onAddApplication];
+    let result = [@onAddApplication] 2 + - - - add(4,0);
 
 
     /**
      * TODO: Move all of these test cases to attributes.re.
      */
     /* Attribute on the prefix application */
-    let res = (- something blah blah) [@attr];
+    let res = [@attr] (- something(blah,blah));
     /* Attribute on the regular function application, not prefix */
-    let res = - something blah blah [@attr];
-    let attrOnPrefix = (- 1) [@ppxOnPrefixApp];
-    let attrOnPrefix = 5 + - 1 [@ppxOnPrefixApp];
-    let result = arr.[0] [@ppxAttributeOnSugarGetter];
+    let res = [@attr] - something(blah,blah);
+    let attrOnPrefix = [@ppxOnPrefixApp] (- 1);
+    let attrOnPrefix = 5 + - 1;
+    let result = [@ppxAttributeOnSugarGetter] arr.[0];
 
 
     /**
@@ -747,11 +747,11 @@ let containingObject = {
     let res = ! (- callThisFunc ());
 
 
-    let res = !x [@onApplication];
-    let res = !(x [@onX]);
+    let res = [@onApplication] !x;
+    let res = !([@onX] x);
 
-    let res = !(x [@onX]);
-    (something.contents = "newvalue") [@shouldBeRenderedOnEntireSetField];
-    something.contents = "newvalue" [@shouldBeRenderedOnString];
+    let res = !([@onX] x);
+    [@shouldBeRenderedOnEntireSetField] (something.contents = "newvalue");
+    something.contents = [@shouldBeRenderedOnString] "newvalue";
   };
 };

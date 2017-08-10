@@ -1,36 +1,36 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
-let logTSuccess self =>
+let logTSuccess (self) =
   if (self > other) {
-    print_string "Did T";
-    print_newline ()
+    print_string("Did T");
+    print_newline()
   } else {
     ()
   };
 
 let something =
-  if self.ext.logSuccess {
-    print_string "Did T";
-    print_newline ()
+  if (self.ext.logSuccess) {
+    print_string("Did T");
+    print_newline()
   };
 
-let logTSuccess self =>
-  if self.ext.logSuccess {
-    print_string "Did T";
-    print_newline ()
+let logTSuccess (self) =
+  if (self.ext.logSuccess) {
+    print_string("Did T");
+    print_newline()
   } else {
     ()
   };
 
-if (if x {true} else {false}) {
+if (if (x) {true} else {false}) {
   true
 } else {
   false
 };
 
 /* Parens are required around if if it's an argument - this is the same as before. */
-if (
-  callSomeFunction (if true {true} else {false})
-) {
+if (callSomeFunction(
+      if (true) {true} else {false}
+    )) {
   true
 } else {
   false
@@ -38,18 +38,18 @@ if (
 
 /* Notice that to do something strange, your code must *look* strange. */
 /* That's generally a good thing */
-if callSomeFunction {
-  if true {true}
+if (callSomeFunction) {
+  if (true) {true}
 } else {
   false
 };
 
-if (
-  callSomeFunction {
-    thisIsAnArgument;
-    notTheControlFlow
-  }
-) {
+if (callSomeFunction(
+      {
+        thisIsAnArgument;
+        notTheControlFlow
+      }
+    )) {
   thisIsTheControlFlow
 };
 
@@ -63,25 +63,24 @@ if (
  * can make it prettier by nesting the else ifs.
  *
  */
-if printIfFirstArgGreater {
+if (printIfFirstArgGreater) {
   simpleThen
 } else {
-  thisDoesnt even have2 be simple
+  thisDoesnt(even, have2, be, simple)
 };
 
-if (if x {true} else {false}) {
+if (if (x) {true} else {false}) {
   ()
 } else {
   ()
 };
-
 
 /**                            TERNARY
  *============================================================================
  */
 let ternaryResult =
   something ?
-    callThisFunction withThisArg : thatResult;
+    callThisFunction(withThisArg) : thatResult;
 
 let annotatedTernary =
   true && (something ? true : false: bool);
@@ -94,20 +93,21 @@ let annotatedBranch =
 /* The following should be... */
 let whatShouldThisBeParsedAs =
   something ?
-    callThisFunction withThisArg :
+    callThisFunction(withThisArg) :
     trailingTest ? true : false;
 
 /* ... it should be parsed as */
 let whatShouldThisBeParsedAs =
   something ?
-    callThisFunction withThisArg :
+    callThisFunction(withThisArg) :
     trailingTest ? true : false;
 
 /* Should *not* be parsed as */
 let whatShouldThisBeParsedAs =
   (
     something ?
-      callThisFunction withThisArg : trailingTest
+      callThisFunction(withThisArg) :
+      trailingTest
   ) ?
     true : false;
 
@@ -145,26 +145,26 @@ let ternaryResult =
         /* The final parent don't need to be preserved */
         eeeeeee ? fffffff : x ? y : z;
 
-let addOne x => x + 1;
+let addOne (x) = x + 1;
 
 let result =
-  addOne 0 + 0 > 1 ?
-    print_string "this wont print" :
-    print_string "this will";
+  addOne(0) + 0 > 1 ?
+    print_string("this wont print") :
+    print_string("this will");
 
 /*
  * Should be parsed as:
  */
 let result =
-  addOne 0 + 0 > 1 ?
-    print_string "this wont print" :
-    print_string "this will";
+  addOne(0) + 0 > 1 ?
+    print_string("this wont print") :
+    print_string("this will");
 
 /*
  * Try shouldn't be aliased as ternary!
  */
 let res =
-  try something {
+  try (something) {
   | true => "hi"
   | false => "bye"
   };
@@ -173,14 +173,14 @@ let res =
  * Many levels of if elseif should be formatted very nicely.
  */
 let result =
-  if something {
-    Console.log "First Branch"
-  } else if anotherThing {
-    Console.log "Second Branch"
-  } else if yetAnotherThing {
-    Console.log "Third Branch"
+  if (something) {
+    Console.log("First Branch")
+  } else if (anotherThing) {
+    Console.log("Second Branch")
+  } else if (yetAnotherThing) {
+    Console.log("Third Branch")
   } else {
-    Console.log "Final Case"
+    Console.log("Final Case")
   };
 
 /*
@@ -194,5 +194,5 @@ let res = someExpression ? "true" : "false";
 
 let pngSuffix =
   pixRation > 1 ?
-    "@" ^ string_of_int pixRation ^ "x.png" :
+    "@" ++ string_of_int(pixRation) ++ "x.png" :
     ".png";

@@ -1,19 +1,32 @@
 /* **** comment */
+
 /*** comment */
-/** docstring */
+
+/*** docstring */
 /* comment */
-/** docstring */
+
+/*** docstring */
+
 /*** comment */
+
 /**** comment */
+
 /***** comment */
-/** */
+/** */;
+
+
 /*** */
+
 /**** */
-/**/
 /***/
+
+/***/
+
 /****/
-/** (** comment *) */
-/** (*** comment *) */
+/** (** comment *) */;
+
+/** (*** comment *) */;
+
 /* (** comment *) */
 /* (*** comment *) */
 /* *(*** comment *) */
@@ -22,11 +35,13 @@
 /* comment ****/
 /* comment *****/
 /**
- * Multiline
- */
+  * Multiline
+  */;
+
 /** Multiline
- *
- */
+  *
+  */;
+
 /**
- **
- */
+  **
+  */;

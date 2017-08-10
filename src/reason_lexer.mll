@@ -51,7 +51,6 @@
 
 {
 open Lexing
-open Misc
 open Reason_parser
 
 type error =
@@ -70,6 +69,11 @@ exception Error of error * Location.t;;
 (* The table of keywords *)
 
 let keyword_table =
+  let create_hashtable n l =
+    let t = Hashtbl.create n in
+    List.iter (fun (k, v) -> Hashtbl.add t k v) l;
+    t
+  in
   create_hashtable 149 [
     "and", AND;
     "as", AS;
@@ -87,6 +91,7 @@ let keyword_table =
     "false", FALSE;
     "for", FOR;
     "fun", FUN;
+    "esfun", ES6_FUN;
     "function", FUNCTION;
     "functor", FUNCTOR;
     "if", IF;
@@ -133,34 +138,23 @@ let keyword_table =
 
 (* To buffer string literals *)
 
-let initial_string_buffer = Bytes.create 256
-let string_buff = ref initial_string_buffer
-let string_index = ref 0
+let string_buffer = Buffer.create 256
 
 let reset_string_buffer () =
-  string_buff := initial_string_buffer;
-  string_index := 0
+  Buffer.reset string_buffer
 
 let store_string_char c =
-  if !string_index >= Bytes.length !string_buff then begin
-    let new_buff = Bytes.create (Bytes.length (!string_buff) * 2) in
-    Bytes.blit !string_buff 0 new_buff 0 (Bytes.length !string_buff);
-    string_buff := new_buff
-  end;
-  Bytes.unsafe_set !string_buff !string_index c;
-  incr string_index
+  Buffer.add_char string_buffer c
 
 let store_string s =
-  for i = 0 to String.length s - 1 do
-    store_string_char s.[i];
-  done
+  Buffer.add_string string_buffer s
 
 let store_lexeme lexbuf =
   store_string (Lexing.lexeme lexbuf)
 
 let get_stored_string () =
-  let s = Bytes.sub_string !string_buff 0 !string_index in
-  string_buff := initial_string_buffer;
+  let s = Buffer.contents string_buffer in
+  Buffer.reset string_buffer;
   s
 
 (* To store the position of the beginning of a string and comment *)
@@ -170,6 +164,59 @@ let in_comment () = !comment_start_loc <> [];;
 let is_in_string = ref false
 let in_string () = !is_in_string
 let print_warnings = ref true
+
+(* To "unlex" a few characters *)
+let set_lexeme_length buf n = (
+  let open Lexing in
+  if n < 0 then
+    invalid_arg "set_lexeme_length: offset should be positive";
+  if n > buf.lex_curr_pos - buf.lex_start_pos then
+    invalid_arg "set_lexeme_length: offset larger than lexeme";
+  buf.lex_curr_pos <- buf.lex_start_pos + n;
+  buf.lex_curr_p <- {buf.lex_start_p
+                     with pos_cnum = buf.lex_abs_pos + buf.lex_curr_pos};
+)
+
+(* This cut comment characters of the current buffer.
+ * Operators (including "/*" and "//") are lexed with the same rule, and this
+ * function cuts the lexeme at the beginning of an operator. *)
+let lexeme_without_comment buf = (
+  let lexeme = Lexing.lexeme buf in
+  let i = ref 0 and len = String.length lexeme - 1 in
+  let found = ref (-1) in
+  while !i < len && !found = -1 do
+    begin match lexeme.[!i], lexeme.[!i+1] with
+      | ('/', '*') | ('/', '/') | ('*', '/') ->
+        found := !i;
+      | _ -> ()
+    end;
+    incr i
+  done;
+  match !found with
+  | -1 -> lexeme
+  | n ->
+      set_lexeme_length buf n;
+      String.sub lexeme 0 n
+)
+
+(* Operators that could conflict with comments (those containing /*, */ and //)
+ * are escaped in the source. The lexer removes the escapes so that the
+ * identifier looks like OCaml ones.
+ * An escape in first position is kept to distinguish "verbatim" operators
+ * (\=== for instance). *)
+let unescape_operator str =
+  if (str <> "" && String.contains_from str 1 '\\') then (
+    let b = Buffer.create (String.length str) in
+    Buffer.add_char b str.[0];
+    for i = 1 to String.length str - 1 do
+      let c = str.[i] in
+      if c <> '\\' then Buffer.add_char b c
+    done;
+    Buffer.contents b
+  ) else str
+
+let lexeme_operator lexbuf =
+  unescape_operator (lexeme_without_comment lexbuf)
 
 (* To translate escape sequences *)
 
@@ -287,6 +334,19 @@ let () =
       | _ ->
           None
     )
+
+(* To "unlex" a few characters *)
+let set_lexeme_length buf n = (
+  let open Lexing in
+  if n < 0 then
+    invalid_arg "set_lexeme_length: offset should be positive";
+  if n > buf.lex_curr_pos - buf.lex_start_pos then
+    invalid_arg "set_lexeme_length: offset larger than lexeme";
+  buf.lex_curr_pos <- buf.lex_start_pos + n;
+  buf.lex_curr_p <- {buf.lex_start_p
+                     with pos_cnum = buf.lex_abs_pos + buf.lex_curr_pos};
+)
+
 }
 
 
@@ -300,12 +360,10 @@ let lowercase_latin1 = ['a'-'z' '\223'-'\246' '\248'-'\255' '_']
 let uppercase_latin1 = ['A'-'Z' '\192'-'\214' '\216'-'\222']
 let identchar_latin1 =
   ['A'-'Z' 'a'-'z' '_' '\192'-'\214' '\216'-'\246' '\248'-'\255' '\'' '0'-'9']
-let symbolchar_no_star_no_slash =
-  ['!' '$' '%' '&' '+' '-' '.' ':' '<' '=' '>' '?' '@' '^' '|' '~']
-let escaped_star_slash =
-  ('\\' '*') | ('\\' '/')
 
-let appropriate_operator_suffix_chars = symbolchar_no_star_no_slash | escaped_star_slash
+let operator_chars =
+  ['!' '$' '%' '&' '+' '-' ':' '<' '=' '>' '?' '@' '^' '|' '~' '#' '.'] |
+  ( '\\'? ['/' '*'] )
 
 let decimal_literal = ['0'-'9'] ['0'-'9' '_']*
 
@@ -368,8 +426,7 @@ rule token = parse
   | "?"
       { QUESTION }
   | "=?"
-      (* Need special label extractor? *)
-      { OPTIONAL_NO_DEFAULT }
+      { set_lexeme_length lexbuf 1; EQUAL }
   | lowercase identchar *
       { let s = Lexing.lexeme lexbuf in
         try Hashtbl.find keyword_table s
@@ -426,37 +483,8 @@ rule token = parse
         let esc = String.sub l 1 (String.length l - 1) in
         raise (Error(Illegal_escape esc, Location.curr lexbuf))
       }
-  | "/*"
-      { let start_loc = Location.curr lexbuf  in
-        comment_start_loc := [start_loc];
-        reset_string_buffer ();
-        let end_loc = comment lexbuf in
-        let s = get_stored_string () in
-        reset_string_buffer ();
-        COMMENT (s, { start_loc with
-                      Location.loc_end = end_loc.Location.loc_end })
-      }
-  | "/*/"
-      { let loc = Location.curr lexbuf  in
-        if !print_warnings then
-          Location.prerr_warning loc Warnings.Comment_start;
-        comment_start_loc := [loc];
-        reset_string_buffer ();
-        let end_loc = comment lexbuf in
-        let s = get_stored_string () in
-        reset_string_buffer ();
-        COMMENT (s, { loc with Location.loc_end = end_loc.Location.loc_end })
-      }
-  | "*/"
-      { let loc = Location.curr lexbuf in
-        Location.prerr_warning loc Warnings.Comment_not_end;
-        lexbuf.Lexing.lex_curr_pos <- lexbuf.Lexing.lex_curr_pos - 1;
-        let curpos = lexbuf.lex_curr_p in
-        lexbuf.lex_curr_p <- { curpos with pos_cnum = curpos.pos_cnum - 1 };
-        STAR
-      }
-  | "#" (appropriate_operator_suffix_chars | "#")+
-      { SHARPOP(Lexing.lexeme lexbuf) }
+  | "#" operator_chars+
+      { SHARPOP(lexeme_operator lexbuf) }
   | "#" [' ' '\t']* (['0'-'9']+ as num) [' ' '\t']*
         ("\"" ([^ '\010' '\013' '"' ] * as name) "\"")?
         [^ '\010' '\013'] * newline
@@ -515,8 +543,6 @@ rule token = parse
   | "[@" { LBRACKETAT }
   | "[%" { LBRACKETPERCENT }
   | "[%%" { LBRACKETPERCENTPERCENT }
-  | "[@@" { LBRACKETATAT }
-  | "[@@@" { LBRACKETATATAT }
   | "!"  { BANG }
   | "!=" { INFIXOP0 "!=" }
   | "!==" { INFIXOP0 "!==" }
@@ -530,16 +556,19 @@ rule token = parse
   | "<>" { LESSGREATER }
   | "</>" { LESSSLASHGREATER }
   | "<..>" { LESSDOTDOTGREATER }
-  | "\\"? "!" appropriate_operator_suffix_chars +
-            { PREFIXOP(Lexing.lexeme lexbuf) }
-  | "\\"? ['~' '?'] appropriate_operator_suffix_chars +
-            { PREFIXOP(Lexing.lexeme lexbuf) }
-  | "\\"? ['=' '<' '>' '|' '&' '$'] appropriate_operator_suffix_chars *
-            { INFIXOP0(Lexing.lexeme lexbuf) }
-  | "\\"? ['@' '^'] appropriate_operator_suffix_chars *
-            { INFIXOP1(Lexing.lexeme lexbuf) }
-  | "\\"? ['+' '-'] appropriate_operator_suffix_chars *
-            { INFIXOP2(Lexing.lexeme lexbuf) }
+  | '\\'? ['~' '?' '!'] operator_chars+
+            { PREFIXOP(lexeme_operator lexbuf) }
+  | '\\'? ['=' '<' '>' '|' '&' '$'] operator_chars*
+            { INFIXOP0(lexeme_operator lexbuf) }
+  | '\\'? '@' operator_chars*
+            { INFIXOP1(lexeme_operator lexbuf) }
+  | '\\'? '^' ('\\' '.')? operator_chars*
+            { match lexeme_without_comment lexbuf with
+              | "^." -> set_lexeme_length lexbuf 1; POSTFIXOP("^")
+              | "^" -> POSTFIXOP("^")
+              | op -> INFIXOP1(unescape_operator op) }
+  | '\\'? ['+' '-'] operator_chars*
+            { INFIXOP2(lexeme_operator lexbuf) }
   (* SLASHGREATER is an INFIXOP3 that is handled specially *)
   | "/>" { SLASHGREATER }
   (* The second star must be escaped so that the precedence assumptions for
@@ -551,22 +580,67 @@ rule token = parse
    * rule beginning with *, picking it up instead of the special double ** rule
    * below.
    *)
-  | "\\"? "**" appropriate_operator_suffix_chars *
-            { INFIXOP4(Lexing.lexeme lexbuf)}
-  | "\\"? "*\*" appropriate_operator_suffix_chars *
-            { INFIXOP4(Lexing.lexeme lexbuf)}
+  | '\\'? '*' '\\'? '*' operator_chars*
+            { INFIXOP4(lexeme_operator lexbuf) }
   | '%'     { PERCENT }
-  | "\\"? ['*'] appropriate_operator_suffix_chars *
-            { INFIXOP3(Lexing.lexeme lexbuf) }
-  | "\\"? ['/'] appropriate_operator_suffix_chars *
-            { INFIXOP3(Lexing.lexeme lexbuf)}
-  | "\\"? ['%'] appropriate_operator_suffix_chars *
-            { INFIXOP3(Lexing.lexeme lexbuf) }
+  | '\\'? ['/' '*'] operator_chars*
+            { match lexeme_operator lexbuf with
+              | "" ->
+                  (* If the operator is empty, it means the lexeme is beginning
+                   * by a comment sequence: we let the comment lexer handle
+                   * the case. *)
+                  enter_comment lexbuf
+              | op -> INFIXOP3 op }
+  | '%' operator_chars*
+            { INFIXOP3(lexeme_operator lexbuf) }
   | eof { EOF }
   | _
       { raise (Error(Illegal_character (Lexing.lexeme_char lexbuf 0),
                      Location.curr lexbuf))
       }
+
+and enter_comment = parse
+  | "/*" ("*" "*"+)?
+      { set_lexeme_length lexbuf 2;
+        let start_loc = Location.curr lexbuf  in
+        comment_start_loc := [start_loc];
+        reset_string_buffer ();
+        let {Location. loc_end; _} = comment lexbuf in
+        let s = get_stored_string () in
+        reset_string_buffer ();
+        COMMENT (s, { start_loc with Location.loc_end })
+      }
+  | "/**"
+      { let start_p = lexbuf.Lexing.lex_start_p in
+        let start_loc = Location.curr lexbuf in
+        comment_start_loc := [start_loc];
+        reset_string_buffer ();
+        let _ = comment lexbuf in
+        let s = get_stored_string () in
+        reset_string_buffer ();
+        lexbuf.Lexing.lex_start_p <- start_p;
+        DOCSTRING s
+      }
+  | "/**/"
+      { DOCSTRING "" }
+  | "/*/"
+      { let loc = Location.curr lexbuf  in
+        if !print_warnings then
+          Location.prerr_warning loc Warnings.Comment_start;
+        comment_start_loc := [loc];
+        reset_string_buffer ();
+        let {Location. loc_end; _} = comment lexbuf in
+        let s = get_stored_string () in
+        reset_string_buffer ();
+        COMMENT (s, { loc with Location.loc_end })
+      }
+  | "*/"
+      { let loc = Location.curr lexbuf in
+        Location.prerr_warning loc Warnings.Comment_not_end;
+        set_lexeme_length lexbuf 1;
+        STAR
+      }
+  | _ { assert false }
 
 and comment = parse
     "/*"
@@ -732,24 +806,172 @@ and skip_sharp_bang = parse
 
 {
 
+  (* Filter commnets *)
+
   let token_with_comments lexbuf =
     match !preprocessor with
     | None -> token lexbuf
     | Some (_init, preprocess) -> preprocess token lexbuf
 
   let last_comments = ref []
+
   let rec token lexbuf =
     match token_with_comments lexbuf with
         COMMENT (s, comment_loc) ->
           last_comments := (s, comment_loc) :: !last_comments;
           token lexbuf
       | tok -> tok
+
+  let add_invalid_docstring text loc =
+    let open Location in
+    let rec aux = function
+      | ((_, loc') as x) :: xs
+        when loc'.loc_start.pos_cnum > loc.loc_start.pos_cnum ->
+        x :: aux xs
+      | xs -> (text, loc) :: xs
+    in
+    last_comments := aux !last_comments
+
   let comments () = List.rev !last_comments
+
+  (* Routines for manipulating lexer state *)
+
+  let save_triple lexbuf tok =
+    (tok, lexbuf.lex_start_p, lexbuf.lex_curr_p)
+
+  let load_triple lexbuf (tok, p1, p2) = (
+    lexbuf.lex_start_p <- p1;
+    lexbuf.lex_curr_p <- p2;
+    tok
+  )
+
+  let fake_triple t (_, pos, _) =
+    (t, pos, pos)
+
+  (* insert ES6_FUN *)
+
+  exception Lex_balanced_failed of (token * position * position) list *
+                                   (exn * position * position) option
+
+  let closing_of = function
+    | LPAREN -> RPAREN
+    | LBRACE -> RBRACE
+    | _ -> assert false
+
+  let inject_es6_fun = function
+    | tok :: acc ->
+      tok :: fake_triple ES6_FUN tok :: acc
+    | _ -> assert false
+
+  let rec lex_balanced_step closing lexbuf acc tok =
+    let acc = save_triple lexbuf tok :: acc in
+    match tok, closing with
+    | (RPAREN, RPAREN) | (RBRACE, RBRACE) | (RBRACKET, RBRACKET) ->
+      acc
+    | ((RPAREN | RBRACE | RBRACKET | EOF), _) ->
+      raise (Lex_balanced_failed (acc, None))
+    | (( LBRACKET | LBRACKETLESS | LBRACKETGREATER
+       | LBRACKETAT
+       | LBRACKETPERCENT | LBRACKETPERCENTPERCENT ), _) ->
+      lex_balanced closing lexbuf (lex_balanced RBRACKET lexbuf acc)
+    | ((LPAREN | LBRACE), _) ->
+      let rparen =
+        try lex_balanced (closing_of tok) lexbuf []
+        with (Lex_balanced_failed (rparen, None)) ->
+          raise (Lex_balanced_failed (rparen @ acc, None))
+      in
+      begin match token lexbuf with
+      | exception exn ->
+        raise (Lex_balanced_failed (rparen @ acc, Some (save_triple lexbuf exn)))
+      | EQUALGREATER ->
+        let acc = inject_es6_fun acc in
+        lex_balanced_step closing lexbuf (rparen @ acc) EQUALGREATER
+      | tok' ->
+        lex_balanced_step closing lexbuf (rparen @ acc) tok'
+      end
+    | (LIDENT _, _) ->
+      begin match token lexbuf with
+      | exception exn ->
+        raise (Lex_balanced_failed (acc, Some (save_triple lexbuf exn)))
+      | EQUALGREATER ->
+        lex_balanced_step closing lexbuf (inject_es6_fun acc) EQUALGREATER
+      | tok' -> lex_balanced_step closing lexbuf acc tok'
+      end
+    | _ -> lex_balanced closing lexbuf acc
+
+  and lex_balanced closing lexbuf acc =
+    match token lexbuf with
+    | exception exn ->
+      raise (Lex_balanced_failed (acc, Some (save_triple lexbuf exn)))
+    | tok -> lex_balanced_step closing lexbuf acc tok
+
+  let queued_tokens = ref []
+  let queued_exn = ref None
+
+  let lookahead_esfun lexbuf (tok, _, _ as lparen) =
+    let triple =
+      match lex_balanced (closing_of tok) lexbuf [] with
+      | exception (Lex_balanced_failed (tokens, exn)) ->
+        queued_tokens := List.rev tokens;
+        queued_exn := exn;
+        lparen
+      | tokens ->
+        begin match token lexbuf with
+          | exception exn ->
+            queued_tokens := List.rev tokens;
+            queued_exn := Some (save_triple lexbuf exn);
+            lparen
+          | token ->
+            let tokens = save_triple lexbuf token :: tokens in
+            if token == EQUALGREATER then (
+              queued_tokens := lparen :: List.rev tokens;
+              fake_triple ES6_FUN lparen
+            ) else (
+              queued_tokens := List.rev tokens;
+              lparen
+            )
+        end
+    in
+    load_triple lexbuf triple
+
+  let token lexbuf =
+    match !queued_tokens, !queued_exn with
+    | [], Some exn ->
+      queued_exn := None;
+      raise (load_triple lexbuf exn)
+    | [(LPAREN, _, _) as lparen], None ->
+      let _ = load_triple lexbuf lparen in
+      lookahead_esfun lexbuf lparen
+    | [(LBRACE, _, _) as lparen], None ->
+      let _ = load_triple lexbuf lparen in
+      lookahead_esfun lexbuf lparen
+    | [], None ->
+      begin match token lexbuf with
+      | LPAREN | LBRACE as tok ->
+          lookahead_esfun lexbuf (save_triple lexbuf tok)
+      | LIDENT _ as tok ->
+          let tok = save_triple lexbuf tok in
+          begin match token lexbuf with
+          | EQUALGREATER ->
+              queued_tokens := [tok; save_triple lexbuf EQUALGREATER];
+              load_triple lexbuf (fake_triple ES6_FUN tok)
+          | exception exn ->
+              queued_exn := Some (save_triple lexbuf exn);
+              load_triple lexbuf tok
+          | tok' ->
+              queued_tokens := [save_triple lexbuf tok'];
+              load_triple lexbuf tok
+          end
+      | token -> token
+      end
+    | x :: xs, _ -> queued_tokens := xs; load_triple lexbuf x
 
   let init () =
     is_in_string := false;
     last_comments := [];
     comment_start_loc := [];
+    queued_tokens := [];
+    queued_exn := None;
     match !preprocessor with
     | None -> ()
     | Some (init, _preprocess) -> init ()

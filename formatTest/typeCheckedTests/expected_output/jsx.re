@@ -1,92 +1,85 @@
 type component = {displayName: string};
 
 module Bar = {
-  let createElement ::c=? ::children () => {
+  let createElement (:c=?, :children, ()) = {
     displayName: "test"
   };
 };
 
 module Nesting = {
-  let createElement ::children () => {
+  let createElement (:children, ()) = {
     displayName: "test"
   };
 };
 
 module Much = {
-  let createElement ::children () => {
+  let createElement (:children, ()) = {
     displayName: "test"
   };
 };
 
 module Foo = {
-  let createElement ::a=? ::b=? ::children () => {
+  let createElement (:a=?, :b=?, :children, ()) = {
     displayName: "test"
   };
 };
 
 module One = {
   let createElement
-      ::test=?
-      ::foo=?
-      ::children
-      () => {
+      (:test=?, :foo=?, :children, ()) = {
     displayName: "test"
   };
   let createElementobvioustypo
-      ::test
-      ::children
-      () => {
+      (:test, :children, ()) = {
     displayName: "test"
   };
 };
 
 module Two = {
-  let createElement ::foo=? ::children () => {
+  let createElement (:foo=?, :children, ()) = {
     displayName: "test"
   };
 };
 
 module Sibling = {
   let createElement
-      ::foo=?
-      children::(children: list component)
-      () => {
+      (:foo=?, :children: list(component), ()) = {
     displayName: "test"
   };
 };
 
 module Test = {
-  let createElement ::yo=? ::children () => {
+  let createElement (:yo=?, :children, ()) = {
     displayName: "test"
   };
 };
 
 module So = {
-  let createElement ::children () => {
+  let createElement (:children, ()) = {
     displayName: "test"
   };
 };
 
 module Foo2 = {
-  let createElement ::children () => {
+  let createElement (:children, ()) = {
     displayName: "test"
   };
 };
 
 module Text = {
-  let createElement ::children () => {
+  let createElement (:children, ()) = {
     displayName: "test"
   };
 };
 
 module Exp = {
-  let createElement ::children () => {
+  let createElement (:children, ()) = {
     displayName: "test"
   };
 };
 
 module Pun = {
-  let createElement ::intended=? ::children () => {
+  let createElement (:intended=?, :children, ()) = {
     displayName: "test"
   };
 };
@@ -94,98 +87,100 @@ module Pun = {
 module Namespace = {
   module Foo = {
     let createElement
-        ::intended=?
-        anotherOptional::x=100
-        ::children
-        () => {
+        (
+          :intended=?,
+          :anotherOptional x=100,
+          :children,
+          ()
+        ) = {
       displayName: "test"
     };
   };
 };
 
 module Optional1 = {
-  let createElement ::required ::children () =>
-    switch required {
-    | Some a => {displayName: a}
+  let createElement (:required, :children, ()) =
+    switch (required) {
+    | Some(a) => {displayName: a}
     | None => {displayName: "nope"}
     };
 };
 
 module Optional2 = {
-  let createElement ::optional=? ::children () =>
-    switch optional {
-    | Some a => {displayName: a}
+  let createElement (:optional=?, :children, ()) =
+    switch (optional) {
+    | Some(a) => {displayName: a}
     | None => {displayName: "nope"}
     };
 };
 
 module DefaultArg = {
   let createElement
-      ::default=(Some "foo")
-      ::children
-      () =>
-    switch default {
-    | Some a => {displayName: a}
+      (:default=Some("foo"), :children, ()) =
+    switch (default) {
+    | Some(a) => {displayName: a}
     | None => {displayName: "nope"}
     };
 };
 
 module LotsOfArguments = {
   let createElement
-      ::argument1=?
-      ::argument2=?
-      ::argument3=?
-      ::argument4=?
-      ::argument5=?
-      ::argument6=?
-      ::children
-      () => {
+      (
+        :argument1=?,
+        :argument2=?,
+        :argument3=?,
+        :argument4=?,
+        :argument5=?,
+        :argument6=?,
+        :children,
+        ()
+      ) = {
     displayName: "test"
   };
 };
 
-let div ::argument1=? ::children () => {
+let div (:argument1=?, :children, ()) = {
   displayName: "test"
 };
 
 module List1 = {
-  let createElement ::children () => {
+  let createElement (:children, ()) = {
     displayName: "test"
   };
 };
 
 module List2 = {
-  let createElement ::children () => {
+  let createElement (:children, ()) = {
     displayName: "test"
   };
 };
 
 module List3 = {
-  let createElement ::children () => {
+  let createElement (:children, ()) = {
     displayName: "test"
   };
 };
 
 module NotReallyJSX = {
-  let createElement ::foo ::bar children => {
+  let createElement (:foo, :bar, children) = {
     displayName: "test"
   };
 };
 
-let notReallyJSX ::foo ::bar children => {
+let notReallyJSX (:foo, :bar, children) = {
   displayName: "test"
 };
 
-let fakeRender (el: component) => el.displayName;
+let fakeRender (el: component) = el.displayName;
 
 /* end of setup */
-let (/><) a b => a + b;
+let (/><) (a, b) = a + b;
 
-let (><) a b => a + b;
+let (><) (a, b) = a + b;
 
-let (/>) a b => a + b;
+let (/>) (a, b) = a + b;
 
-let (><\/) a b => a + b;
+let (></) (a, b) = a + b;
 
 let tag1 = 5 />< 6;
 
@@ -193,7 +188,7 @@ let tag2 = 5 >< 7;
 
 let tag3 = 5 /> 7;
 
-let tag4 = 5 ><\/ 7;
+let tag4 = 5 ></ 7;
 
 let b = 2;
 
@@ -207,7 +202,7 @@ let selfClosing3 =
     b="cause the entire thing to wrap"
   />;
 
-let a = <Foo> <Bar c=(fun a => a + 2) /> </Foo>;
+let a = <Foo> <Bar c=((a) => a + 2) /> </Foo>;
 
 let a3 = <So> <Much> <Nesting /> </Much> </So>;
 
@@ -270,9 +265,9 @@ let jsxInList7 = [<Foo />, <Foo />];
 
 let jsxInList8 = [<Foo />, <Foo />];
 
-let testFunc b => b;
+let testFunc (b) = b;
 
-let jsxInFnCall = testFunc <Foo />;
+let jsxInFnCall = testFunc(<Foo />);
 
 let lotsOfArguments =
   <LotsOfArguments
@@ -343,21 +338,21 @@ let listOfItems3 =
 /*
  * Several sequential simple jsx expressions must be separated with a space.
  */
-let thisIsRight a b => ();
+let thisIsRight (a, b) = ();
 
-let tagOne ::children () => ();
+let tagOne (:children, ()) = ();
 
-let tagTwo ::children () => ();
+let tagTwo (:children, ()) = ();
 
 /* thisIsWrong <tagOne /><tagTwo />; */
-thisIsRight <tagOne /> <tagTwo />;
+thisIsRight(<tagOne />, <tagTwo />);
 
 /* thisIsWrong <tagOne> </tagOne><tagTwo> </tagTwo>; */
-thisIsRight <tagOne /> <tagTwo />;
+thisIsRight(<tagOne />, <tagTwo />);
 
-let a ::children () => ();
+let a (:children, ()) = ();
 
-let b ::children () => ();
+let b (:children, ()) = ();
 
 let thisIsOkay =
   <List1> <a /> <b /> <a /> <b /> </List1>;
@@ -428,44 +423,37 @@ let sameButWithSpaces = [
   ...sameButWithSpaces
 ];
 
-
 /**
  * Test no conflict with polymorphic variant types.
  */
 type thisType = [ | `Foo | `Bar];
 
-type t 'a = [< thisType] as 'a;
+type t('a) = [< thisType] as 'a;
 
 let asd =
-  <One test=true foo=2> "a" "b" </One> [@foo];
+  [@foo] <One test=true foo=2> "a" "b" </One>;
 
 let asd2 =
-  One.createElementobvioustypo
-  test::false
-  children::["a", "b"]
-  ()
+  [@foo]
   [@JSX]
-  [@foo];
+  One.createElementobvioustypo
+    (:test false, :children ["a", "b"])();
 
-let span
-    test::(test: bool)
-    foo::(foo: int)
-    ::children
-    () => 1;
+let span (:test: bool, :foo: int, :children, ()) = 1;
 
 let asd =
-  <span test=true foo=2> "a" "b" </span> [@foo];
+  [@foo] <span test=true foo=2> "a" "b" </span>;
 
 /* "video" call doesn't end with a list, so the expression isn't converted to JSX */
-let video test::(test: bool) children => children;
+let video (:test: bool, children) = children;
 
-let asd2 = video test::false 10 [@JSX] [@foo];
+let asd2 = [@foo] [@JSX] video(:test false, 10);
 
-let div ::children => 1;
+let div (:children) = 1;
 
-((fun () => div) ()) children::[] [@JSX];
+[@JSX] ((() => div)())(:children []);
 
-let myFun () =>
+let myFun () =
   <>
     <Namespace.Foo
       intended=true
@@ -487,9 +475,9 @@ let myFun () =>
     </Namespace.Foo>
   </>;
 
-let myFun () => <> </>;
+let myFun () = <> </>;
 
-let myFun () =>
+let myFun () =
   <>
     <Namespace.Foo
       intended=true
@@ -510,7 +498,6 @@ let myFun () =>
       <Foo />
     </Namespace.Foo>
   </>;
-
 
 /**
  * Children should wrap without forcing attributes to.
@@ -522,7 +509,6 @@ let myFun () =>
   <Bar />
 </Foo>;
 
-
 /**
  * Failing test cases:
  */
@@ -530,61 +516,56 @@ let myFun () =>
 /*   <Bar /> */
 /* </Foo>; */
 /* let res = <Foo a=10 b=(<Foo a=200 />) />; */
-let zzz = Some "oh hai";
+let zzz =
+  Some("oh hai");
 
 let optionalCallSite =
   <Optional1 required=?zzz />;
 
-fakeRender optionalCallSite;
+fakeRender(optionalCallSite);
 
 let optionalArgument = <Optional2 />;
 
-fakeRender optionalArgument;
+fakeRender(optionalArgument);
 
 let optionalArgument =
   <Optional2 optional=?zzz />;
 
-fakeRender optionalArgument;
+fakeRender(optionalArgument);
 
 let defaultArg = <DefaultArg />;
 
-fakeRender defaultArg;
+fakeRender(defaultArg);
 
 let defaultArg = <DefaultArg default=zzz />;
 
-fakeRender defaultArg;
+fakeRender(defaultArg);
 
-NotReallyJSX.createElement
-[]
-foo::1
-bar::2
-[@JSX]
-[@bla];
+([@bla]
+ [@JSX]
+ NotReallyJSX.createElement([], :foo 1, :bar 2));
 
-NotReallyJSX.createElement
-foo::1
-[]
-bar::2
-[@JSX]
-[@bla];
+([@bla]
+ [@JSX]
+ NotReallyJSX.createElement(:foo 1, [], :bar 2));
 
-notReallyJSX [] foo::1 [@JSX] [@bla];
+([@bla] [@JSX] notReallyJSX([], :foo 1));
 
-notReallyJSX foo::1 [] bar::2 [@JSX] [@bla];
+([@bla] [@JSX] notReallyJSX(:foo 1, [], :bar 2));
 
 /* children can be at any position */
 <span test=true foo=2 />;
 
-<Optional1 required=(Some "hi") />;
+<Optional1 required=(Some("hi")) />;
 
 /* preserve some other attributes too! */
-<span test=true foo=2 /> [@bla];
+([@bla] <span test=true foo=2 />);
 
-<span test=true foo=2 /> [@bla];
+([@bla] <span test=true foo=2 />);
 
-<Optional1 required=(Some "hi") /> [@bla];
+([@bla] <Optional1 required=(Some("hi")) />);
 
-<Optional1 required=(Some "hi") /> [@bla];
+([@bla] <Optional1 required=(Some("hi")) />);
 
 /* Overeager JSX punning #1099 */
 module Metal = {
@@ -592,7 +573,7 @@ module Metal = {
 };
 
 module OverEager = {
-  let createElement ::fiber ::children () => {
+  let createElement (:fiber, :children, ()) = {
     displayName: "test"
   };
 };
@@ -609,7 +590,7 @@ type style = {
 };
 
 module Window = {
-  let createElement ::style ::children () => {
+  let createElement (:style, :children, ()) = {
     displayName: "window"
   };
 };
