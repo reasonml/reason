@@ -127,6 +127,14 @@ and ruleCategory =
   (* Simple means it is clearly one token (such as (anything) or [anything] or identifier *)
   | Simple of layoutNode
 
+(* Represents a ruleCategory where the precedence has been resolved.
+ * The precedence of a ruleCategory gets resolved in `ensureExpression` or
+ * `ensureContainingRule`. The result is either a plain layoutNode (where
+ * parens probably have been applied) or an InfixTree containing the operator and
+ * a left & right resolvedRule. The latter indicates that the precedence has been resolved,
+ * but the actual formatting is deferred to a later stadium.
+ * Think `let x = foo |> f |> z |>`, which requires a certain formatting style when
+ * things break over multiple lines. *)
 and resolvedRule =
   | LayoutNode of layoutNode
   | InfixTree of string * resolvedRule * resolvedRule
@@ -143,10 +151,6 @@ and precedenceEntryType =
 and precedence =
   | Token of string
   | Custom of string
-
-and infixChain =
-  | InfixToken of string
-  | Layout of layoutNode
 
 (* Make a standard list *)
 and whenToDoSomething =
@@ -225,6 +229,12 @@ and layoutNode =
   | Sequence of listConfig * (layoutNode list)
   | Label of easyFormatLabelFormatter * layoutNode * layoutNode
   | Easy of Easy_format.t
+
+
+(* Type which represents a resolvedRule's InfixTree flattened *)
+type infixChain =
+  | InfixToken of string
+  | Layout of layoutNode
 
 let print_comment_type = function
   | Regular -> "Regular"
@@ -587,20 +597,6 @@ let special_infix_strings =
 
 let updateToken = "="
 let requireIndentFor = [updateToken; ":="]
-
-(*
- * list containing all infix operators which exhibit a 'left-fold' printing behaviour
- * let x =
- *   foo
- *   |> f
- *   |> g;
- *
- * We can't just take all infix operators with left associativity.
- * 1 + 1 + 2 doesn't need recursive printing with a label
- *)
-
-let infixTokenRequiresIndent printedIdent =
-  if List.exists (fun i -> i = printedIdent) requireIndentFor then None else Some 0
 
 
 let getPrintableUnaryIdent s =
@@ -2329,18 +2325,60 @@ let recordRowIsPunned pld =
               && List.length args == 0) -> true
         | _ -> false)
 
-
+(* Flattens a resolvedRule into a list of infixChain nodes.
+ * When foo |> f |> z gets parsed, we get the following tree:
+ *         |>
+ *        /  \
+ *    foo      |>
+ *            /  \
+ *          f      z
+ * To format this recursive tree in a way that allows nice breaking
+ * & respects the print-width, we need some kind of flattened
+ * version of the above tree. `computeInfixChain` transforms the tree
+ * in a flattened version which allows flexible formatting.
+ * E.g. we get
+ *  [LayoutNode foo; InfixToken |>; LayoutNode f; InfixToken |>; LayoutNode z]
+ *)
 let rec computeInfixChain = function
   | LayoutNode layoutNode -> [Layout layoutNode]
   | InfixTree (op, leftResolvedRule, rightResolvedRule) ->
       (computeInfixChain rightResolvedRule) @ [InfixToken op] @ (computeInfixChain leftResolvedRule)
 
-
+(* Formats a flattened list of infixChain nodes into a list of layoutNodes
+ * which allow smooth line-breaking
+ * e.g. [LayoutNode foo; InfixToken |>; LayoutNode f; InfixToken |>; LayoutNode z]
+ * becomes
+ * [
+ *   foo
+ * ; |> f        --> label
+ * ; |> z        --> label
+ * ]
+ * If you make a list out of this items, we get smooth line breaking
+ *  foo |> f |> z
+ * becomes
+ *  foo
+ *  |> f
+ *  |> z
+ *  when the print-width forces line breaks.
+ *)
 let formatComputedInfixChain infixChainList =
   let layout_of_group group currentToken =
+    (* Represents the `foo` in
+     * foo
+     * |> f
+     * |> z *)
     if List.length group < 2 then
       makeList ~inline:(true, true) ~sep:" " ~break:Never group
     else
+      (* Represents `|> f` in foo |> f
+       * We need a label here to indent possible closing parens
+       * on the same height as the infix operator
+       * e.g.
+       * >|= (
+       *   fun body =>
+       *     Printf.sprintf
+       *       "okokok" uri meth headers body
+       * )   <-- notice how this closing paren is on the same height as >|= *)
       label ~break:`Never ~space:true (atom currentToken) (List.nth group 1)
   in
   let rec print acc group currentToken l =
@@ -2362,18 +2400,6 @@ let formatComputedInfixChain infixChainList =
           acc @ [layout_of_group group currentToken]
   in
   print [] [] "" infixChainList
-
-let partition size l =
-  let rec helper acc part i l =
-    match l with
-    | x::xs ->
-      if i == size then
-        helper ((List.rev part)::acc) [x] 1 xs
-      else
-        helper acc (x::part) (i + 1) xs 
-    | [] -> List.rev ((List.rev part)::acc)
-  in
-  helper [] [] 0 l
 
 
 class printer  ()= object(self:'self)
@@ -3605,7 +3631,7 @@ class printer  ()= object(self:'self)
     )
     | Pexp_construct (li, Some eo) when not (is_simple_construct (view_expr x)) -> (
         match view_expr x with
-        (* (* TODO: Explicit arity *) *)
+        (* TODO: Explicit arity *)
         | `normal ->
             let arityIsClear = isArityClear arityAttrs in
             FunctionApplication [self#constructor_expression ~arityIsClear stdAttrs (self#longident_loc li) eo]
@@ -3616,7 +3642,7 @@ class printer  ()= object(self:'self)
           raise (NotPossible "Should never see embedded attributes on poly variant")
         else
           FunctionApplication [self#constructor_expression ~polyVariant:true ~arityIsClear:true stdAttrs (atom ("`" ^ l)) eo]
-    (* (* TODO: Should protect this identifier *) *)
+    (* TODO: Should protect this identifier *)
     | Pexp_setinstvar (s, rightExpr) ->
       let rightItm = self#unparseResolvedRule (
         self#ensureContainingRule ~withPrecedence:(Token updateToken) ~reducesAfterRight:rightExpr ()
