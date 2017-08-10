@@ -2342,7 +2342,7 @@ let recordRowIsPunned pld =
 let rec computeInfixChain = function
   | LayoutNode layoutNode -> [Layout layoutNode]
   | InfixTree (op, leftResolvedRule, rightResolvedRule) ->
-      (computeInfixChain rightResolvedRule) @ [InfixToken op] @ (computeInfixChain leftResolvedRule)
+      (computeInfixChain leftResolvedRule) @ [InfixToken op] @ (computeInfixChain rightResolvedRule)
 
 (* Formats a flattened list of infixChain nodes into a list of layoutNodes
  * which allow smooth line-breaking
@@ -3527,7 +3527,7 @@ class printer  ()= object(self:'self)
   method unparseResolvedRule  = function
     | LayoutNode layoutNode -> layoutNode
     | InfixTree _ as infixTree ->
-          let infixChainList = List.rev (computeInfixChain infixTree) in
+          let infixChainList = computeInfixChain infixTree in
           let l = formatComputedInfixChain infixChainList in
           makeList ~inline:(true, true) ~sep:" " ~break:IfNeed l
 
