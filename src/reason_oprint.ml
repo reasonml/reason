@@ -47,6 +47,36 @@
  *
  *)
 
+(* Hello! Welcome to the Reason "outcome printer" logic. This logic takes the
+  AST nodes and turn them into text, for Merlin, rtop and terminal errors
+  reporting to be in Reason syntax.
+
+  If you've navigated around, you have have seen the other printer called
+  reason_pprint_ast, our actual, main pretty-printer. Why is this one
+  separated from reason_pprint_ast? Because the outcome printer's use-case is
+  a bit different and needs different entry points blablabla... These are
+  mostly excuses. But for example, currently,
+  `Js.t {. foo: bar}` by itself is *invalid syntax* for a pretty printer (the
+  correct, minimal valid code would be `type myObject = Js.t {. foo: bar}`),
+  but the terminal error report do want to provide just that snippet and have
+  you print it. Hopefully OCaml can unify actual code pretty-printing and
+  terminal type info pretty-printing one day. 
+  
+  This also means the outcome printer doesn't use the normal Parsetree,
+  Ast_helper and others you might have seen in other files. It has its own
+  small AST definition here:
+  https://github.com/ocaml/ocaml/blob/4.04/typing/outcometree.mli
+
+  The rest of this file's logic is just pattern-matching on these tree node
+  variants & using Format to pretty-print them nicely.
+
+  Btw, we've also copied & tweaked this file over to BuckleScript's terminal
+  reporting:
+  https://github.com/BuckleScript/bucklescript/tree/master/jscomp/super_errors.
+  When you modify this file, please make sure it's not too crazy and makes
+  that copied version too hard to keep up to date. Thanks!
+  *)
+
 open Ast_404
 open Format
 open Outcometree

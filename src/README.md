@@ -6,7 +6,11 @@ Interested in contributing to Reason? The core of it is a parser + a printer, pl
 
 ## Brief Description of Files
 
-(Also, see https://github.com/facebook/reason/wiki/Improve-error-message-locations)
+Throughout the codebase, you might see mentions of "migrate-parsetree", `Ast_404`, etc. These refer to https://github.com/let-def/ocaml-migrate-parsetree. It's a library that allows you to convert between different versions of the OCaml AST. This way, the Reason repo can be written in OCaml 4.04's AST data structures, while being usable on OCaml 4.02's libraries (BuckleScript's on 4.02 too).
+
+`src/reason_parser.messages`: this is the huge table of mostly generated, sometimes hand-written, syntax error messages. When the parser ends up at an invalid parsing state (aka ends up with a syntax error), it'd refer to that file's content and see if that case has a specific error message assigned to it. For an example fix, see [this PR](https://github.com/facebook/reason/pull/1018) and the [follow-up](https://github.com/facebook/reason/pull/1033). To add a syntax error message see [the wiki page](https://github.com/facebook/reason/wiki/Add-a-Menhir-error-message).
+
+- `src/reason_oprint.ml`: the "outcome printer" used by Merlin, rtop and terminal, that prints the errors in Reason syntax. More info in the file itself.
 
 - `ocamlmerlin_reason.ml`: produces the `ocamlmerlin-reason` binary, used in conjunction with [Merlin-extend](https://github.com/let-def/merlin-extend). This is an extension to [Merlin](https://github.com/ocaml/merlin), which picks up this binary from your environment to analyze Reason files when your editor calls Merlin.
 
@@ -17,8 +21,6 @@ Interested in contributing to Reason? The core of it is a parser + a printer, pl
 - `reason_format_type.ml`, `reason_type_of_ocaml_type.ml`: again, see `pkg/build.ml`. These produce the `refmttype` binary, used by [BetterErrors](refmttype) to output compiler errors in Reason syntax rather than the OCaml one.
 
 - `src/reason_lexer.mll`, `reason_parser.mly`: the tokenizer and the parser! See the first link on Real World OCaml book section. This is used by [Menhir](http://gallium.inria.fr/~fpottier/menhir/), the parser generator.
-
-- `src/reason_oprint.ml`: the "outcome printer" used by Merlin. No need to worry about it for now.
 
 - `src/reason_parser.messages`: auto-generated from parser changes. Menhir generates parsing code that assigns each syntax error to a code, and lets us customize these errors. Syntax errors can be very precisely pinpointed and explained this way.
 
