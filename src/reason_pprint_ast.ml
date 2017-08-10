@@ -129,7 +129,7 @@ and ruleCategory =
 
 and resolvedRule =
   | LayoutNode of layoutNode
-  | Chain of string * resolvedRule * resolvedRule
+  | InfixTree of string * resolvedRule * resolvedRule
 
 and associativity =
   | Right
@@ -2332,11 +2332,17 @@ let recordRowIsPunned pld =
 
 let rec computeInfixChain = function
   | LayoutNode layoutNode -> [Layout layoutNode]
-  | Chain (op, leftResolvedRule, rightResolvedRule) ->
+  | InfixTree (op, leftResolvedRule, rightResolvedRule) ->
       (computeInfixChain rightResolvedRule) @ [InfixToken op] @ (computeInfixChain leftResolvedRule)
 
 
 let formatComputedInfixChain infixChainList =
+  let layout_of_group group currentToken =
+    if List.length group < 2 then
+      makeList ~inline:(true, true) ~sep:" " ~break:Never group
+    else
+      label ~break:`Never ~space:true (atom currentToken) (List.nth group 1)
+  in
   let rec print acc group currentToken l =
     match l with
     | x::xs -> (match x with
@@ -2346,30 +2352,16 @@ let formatComputedInfixChain infixChainList =
             let children = makeList ~inline:(true, true) ~preSpace:true ~break:IfNeed (print [] [] t xs) in
             print (acc @ [label ~space:true groupNode children]) [] t []
           else
-            let groupNode =
-              if List.length group < 2 then
-                makeList ~inline:(true, true) ~sep:" " ~break:Never group
-              else
-                label ~break:`Never ~space:true (atom currentToken) (List.hd (List.tl group))
-            in
-            (* let groupNode = makeList ~inline:(true, true) ~sep:" " ~break:Never group in *)
-            print (acc @ [groupNode]) [(atom t)] t xs
+            print (acc @ [layout_of_group group currentToken]) [(atom t)] t xs
       | Layout layoutNode -> print acc (group @ [layoutNode]) currentToken xs
     )
     | [] ->
         if List.mem currentToken requireIndentFor then
           acc @ group
         else
-          let groupNode =
-            if List.length group < 2 then
-              makeList ~inline:(true, true) ~sep:" " ~break:Never group
-            else
-              label ~break:`Never ~space:true (atom currentToken) (List.hd (List.tl group))
-          in
-        acc @ [groupNode]
+          acc @ [layout_of_group group currentToken]
   in
   print [] [] "" infixChainList
-
 
 let partition size l =
   let rec helper acc part i l =
@@ -3508,7 +3500,7 @@ class printer  ()= object(self:'self)
 
   method unparseResolvedRule  = function
     | LayoutNode layoutNode -> layoutNode
-    | Chain _ as infixTree ->
+    | InfixTree _ as infixTree ->
           let infixChainList = List.rev (computeInfixChain infixTree) in
           let l = formatComputedInfixChain infixChainList in
           makeList ~inline:(true, true) ~sep:" " ~break:IfNeed l
@@ -3570,7 +3562,7 @@ class printer  ()= object(self:'self)
           let infixToken = Token printedIdent in
           let rightItm = self#ensureContainingRule ~withPrecedence:infixToken ~reducesAfterRight:rightExpr () in
           let leftItm = self#ensureExpression ~reducesOnToken:infixToken leftExpr in
-          let infixTree = Chain (printedIdent, leftItm, rightItm) in
+          let infixTree = InfixTree (printedIdent, leftItm, rightItm) in
           SpecificInfixPrecedence ({reducePrecedence=infixToken; shiftPrecedence=infixToken}, infixTree)
         (* Will be rendered as `(+) a b c` which is parsed with higher precedence than all
            the other forms unparsed here.*)
