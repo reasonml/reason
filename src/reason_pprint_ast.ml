@@ -2346,7 +2346,13 @@ let formatComputedInfixChain infixChainList =
             let children = makeList ~inline:(true, true) ~preSpace:true ~break:IfNeed (print [] [] t xs) in
             print (acc @ [label ~space:true groupNode children]) [] t []
           else
-            let groupNode = makeList ~inline:(true, true) ~sep:" " ~break:Never group in
+            let groupNode =
+              if List.length group < 2 then
+                makeList ~inline:(true, true) ~sep:" " ~break:Never group
+              else
+                label ~break:`Never ~space:true (atom currentToken) (List.hd (List.tl group))
+            in
+            (* let groupNode = makeList ~inline:(true, true) ~sep:" " ~break:Never group in *)
             print (acc @ [groupNode]) [(atom t)] t xs
       | Layout layoutNode -> print acc (group @ [layoutNode]) currentToken xs
     )
@@ -2354,7 +2360,13 @@ let formatComputedInfixChain infixChainList =
         if List.mem currentToken requireIndentFor then
           acc @ group
         else
-        acc @ [(makeList ~inline:(true, true) ~sep:" " ~break:Never group)]
+          let groupNode =
+            if List.length group < 2 then
+              makeList ~inline:(true, true) ~sep:" " ~break:Never group
+            else
+              label ~break:`Never ~space:true (atom currentToken) (List.hd (List.tl group))
+          in
+        acc @ [groupNode]
   in
   print [] [] "" infixChainList
 

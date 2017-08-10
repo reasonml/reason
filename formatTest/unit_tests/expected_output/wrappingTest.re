@@ -64,9 +64,9 @@ let testPrintingPrecedence =
    */
   + reallyLongIdent
   * (
-      reallyLongIdent
-      + andYetAnotherReallyLongIdent
-    )
+    reallyLongIdent
+    + andYetAnotherReallyLongIdent
+  )
   + reallyLongIdent
   * 10;
 
@@ -78,9 +78,9 @@ let testPrintingPrecedence =
    */
   + reallyLongIdent
   * (
-      reallyLongIdent
-      + andYetAnotherReallyLongIdent
-    )
+    reallyLongIdent
+    + andYetAnotherReallyLongIdent
+  )
   + reallyLongIdent;
 
 let add x y => x + y;

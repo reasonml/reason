@@ -313,10 +313,10 @@ let includesACommentCloseInIdentifier = ( *\*\/ );
 let shouldSimplifyAnythingExceptApplicationAndConstruction =
   call "hi"
   ^ (
-      switch x {
-      | _ => "hi"
-      }
-    )
+    switch x {
+    | _ => "hi"
+    }
+  )
   ^ "yo";
 
 /* Add tests with IF/then mixed with infix/constructor application on left and right sides */
@@ -1009,15 +1009,14 @@ let server = {
     body
     |> Cohttp_lwt_body.to_string
     >|= (
-          fun body =>
-            Printf.sprintf
-              "okokok" uri meth headers body
-        )
+      fun body =>
+        Printf.sprintf
+          "okokok" uri meth headers body
+    )
     >>= (
-          fun body =>
-            Server.respond_string
-              ::status ::body ()
-        )
+      fun body =>
+        Server.respond_string ::status ::body ()
+    )
   };
   Server.create
     ::mode (Server.make ::callback ())
