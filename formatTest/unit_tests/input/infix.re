@@ -760,21 +760,21 @@ let x = foo |> z;
 
 let x = foo |> f |> g;
 
-let x = foo |> somelongfunctionname "foo" |> anotherlongfunctionname "bar" 1 |> somelongfunction |> bazasdasdad;
+let x = foo |> somelongfunctionname("foo") |> anotherlongfunctionname("bar", 1) |> somelongfunction |> bazasdasdad;
 
 
 let code = JSCodegen.Code.(
   create
-  |> lines Requires.(
+  |> lines(Requires.(
     create
-    |> import_type local::"Set" source::"Set"
-    |> import_type local::"Map" source::"Map"
-    |> import_type local::"Immutable" source::"immutable"
-    |> require local::"invariant" source::"invariant"
-    |> require local::"Image" source::"Image.react"
-    |> side_effect source::"monkey_patches"
+    |> import_type(:local "Set", :source "Set")
+    |> import_type(:local "Map", :source "Map")
+    |> import_type(:local "Immutable", :source "immutable")
+    |> require(:local "invariant", :source "invariant")
+    |> require(:local "Image", :source "Image.react")
+    |> side_effect(:source "monkey_patches")
     |> render_lines
-  )
+  ))
   |> new_line
   |> new_line
   |> new_line
@@ -785,12 +785,12 @@ let code = JSCodegen.Code.(
 let code = JSCodegen.Code.(create |> render);
 
 let server = {
- let callback _conn req body => {
+ let callback(_conn, req, body) = {
   let uri = req |> Request.uri |> Uri.to_string |> Code.string_of_uri |> Server.respond |> Request.uri;
   let meth = req |> Request.meth |> Code.string_of_method;
   let headers = req |> Request.headers |> Header.to_string;
-  body |> Cohttp_lwt_body.to_string >|= (fun body => {
-  (Printf.sprintf "okokok" uri meth headers body)}) >>= (fun body => Server.respond_string ::status ::body ());
+  body |> Cohttp_lwt_body.to_string >|= ((body) => {
+  Printf.sprintf("okokok", uri, meth, headers, body)}) >>= ((body) => Server.respond_string(:status, :body, ()));
   };
-Server.create ::mode (Server.make ::callback());
+Server.create(:mode, Server.make(:callback, ()));
 };

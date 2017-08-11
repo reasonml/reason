@@ -3627,14 +3627,14 @@ class printer  ()= object(self:'self)
         (* Will be rendered as `(+) a b c` which is parsed with higher precedence than all
            the other forms unparsed here.*)
         | (UnaryPlusPrefix printedIdent, [(Nolabel, rightExpr)]) ->
-          let prec = Custom "prec_unary_plus" in
+          let prec = Custom "prec_unary" in
           let rightItm = self#unparseResolvedRule (
             self#ensureContainingRule ~withPrecedence:prec ~reducesAfterRight:rightExpr ()
           ) in
           let expr = label ~space:true (atom printedIdent) rightItm in
           SpecificInfixPrecedence ({reducePrecedence=prec; shiftPrecedence=Token printedIdent}, LayoutNode expr)
         | (UnaryMinusPrefix printedIdent, [(Nolabel, rightExpr)]) ->
-          let prec = Custom "prec_unary_minus" in
+          let prec = Custom "prec_unary" in
           let rightItm = self#unparseResolvedRule (
             self#ensureContainingRule ~withPrecedence:prec ~reducesAfterRight:rightExpr ()
           ) in
