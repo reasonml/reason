@@ -47,8 +47,8 @@ let result =
     while (false) {
       ()
     }
-  ) ==
-  () ?
+  )
+  == () ?
     false : true;
 
 switch (try (try (()) {

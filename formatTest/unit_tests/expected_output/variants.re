@@ -430,8 +430,8 @@ let rec atLeastOneFlushableChildAndNoWipNoPending
       noWipNoPending(tl, atPriority)
     | SuperLongNameThatWontBreakByItselfSoWhenWillHaveToBreak
         when
-          priority ==
-          AtPrasldkfjalsdfjasdlfalsdkf =>
+          priority
+          == AtPrasldkfjalsdfjasdlfalsdkf =>
       noWipNoPending(tl, atPriority)
     | _ => false
     }

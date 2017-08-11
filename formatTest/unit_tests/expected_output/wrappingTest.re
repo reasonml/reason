@@ -8,15 +8,17 @@ let reallyLongIdent = 100;
 let andYetAnotherReallyLongIdent = 30;
 
 let something =
-  reallyLongIdent + andYetAnotherReallyLongIdent + reallyLongIdent;
+  reallyLongIdent
+  + andYetAnotherReallyLongIdent
+  + reallyLongIdent;
 
 let something =
   /* Hopefully */
-  reallyLongIdent +
+  reallyLongIdent
   /* It will indent like this */
-  andYetAnotherReallyLongIdent +
+  + andYetAnotherReallyLongIdent
   /* And no further */
-  reallyLongIdent;
+  + reallyLongIdent;
 
 /* Comments can be written like this.
    No leading star is required on each line.
@@ -46,43 +48,52 @@ let test = 10;
  * "simplification" grouping is needed.
  */
 let testPrintingPrecedence =
-  reallyLongIdent +
-  reallyLongIdent * andYetAnotherReallyLongIdent + reallyLongIdent;
+  reallyLongIdent
+  + reallyLongIdent
+  * andYetAnotherReallyLongIdent
+  + reallyLongIdent;
 
 let testPrintingPrecedence =
-  reallyLongIdent +
+  reallyLongIdent
   /*
    * In this case, grouping of the right expression is needed because the
    * right side of the infix operator is of *lower* precedence than STAR.
    */
-  reallyLongIdent * (
-    reallyLongIdent + andYetAnotherReallyLongIdent
-  ) +
-  reallyLongIdent * 10;
+  + reallyLongIdent
+  * (
+    reallyLongIdent
+    + andYetAnotherReallyLongIdent
+  )
+  + reallyLongIdent
+  * 10;
 
 let testPrintingPrecedence =
-  reallyLongIdent +
+  reallyLongIdent
   /*
    * In this case, grouping of the right expression is needed because the
    * right side of the infix operator is of *lower* precedence than STAR.
    */
-  reallyLongIdent * (
-    reallyLongIdent + andYetAnotherReallyLongIdent
-  ) + reallyLongIdent;
+  + reallyLongIdent
+  * (
+    reallyLongIdent
+    + andYetAnotherReallyLongIdent
+  )
+  + reallyLongIdent;
 
 let add (x, y) = x + y;
 
 let testPrintingPrecedence =
-  reallyLongIdent +
+  reallyLongIdent
   /*
    * In this case, grouping of the right expression is needed because the
    * right side isn't even infix at all.
    */
-  reallyLongIdent *
-  add(
+  + reallyLongIdent
+  * add(
     reallyLongIdent,
     andYetAnotherReallyLongIdent
-  ) + reallyLongIdent;
+  )
+  + reallyLongIdent;
 
 /*
  * Test wrapping every form of named arguments where various parts are
@@ -478,7 +489,8 @@ let myFunctionsInARecordThatMustWrap = {
       reallyLongArgument,
       anotherReallyLongArgument
     ) =>
-    reallyLongArgument + anotherReallyLongArgument
+    reallyLongArgument
+    + anotherReallyLongArgument
 };
 
 type threeArgFunctionsInARecord = {
@@ -502,7 +514,8 @@ let myFunctionsInARecordThatMustWrap = {
       anotherReallyLongArgument,
       anotherReallyLongArgument
     ) =>
-    reallyLongArgument + anotherReallyLongArgument
+    reallyLongArgument
+    + anotherReallyLongArgument
 };
 
 let oneArgShouldWrapToAlignWith
@@ -2911,7 +2924,8 @@ let x =
     a,
     a,
     alskdjfalskdjfalsdf
-  ) + reallyReallyLongName;
+  ) 
+  + reallyReallyLongName;
 
 let onlyDoingThisTopLevelLetToBypassTopLevelSequence = {
   let x = {

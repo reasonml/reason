@@ -10,7 +10,7 @@ do
   expected=`cat $testPath/expected$i.re`
 
   ocamlc -dsource -ppx "./reactjs_jsx_ppx.native" -pp "./refmt_impl.native --print binary" -impl $test \
-    2>&1 | ./refmt_impl.native --parse ml --print re --interface false \
+    2>&1 | ./refmt_impl.native --print-width 100 --parse ml --print re --interface false \
     > $testPath/actual${i}.re
 
   actual=`cat $testPath/actual$i.re`
@@ -32,7 +32,7 @@ do
   expected=`cat $testPath/expected${i}_newBehavior.re`
 
   ocamlc -dsource -ppx "./reactjs_jsx_ppx_2.native" -pp "./refmt_impl.native --print binary" -impl $test \
-    2>&1 | ./refmt_impl.native --parse ml --print re --interface false \
+    2>&1 | ./refmt_impl.native --print-width 100 --parse ml --print re --interface false \
     > $testPath/actual${i}_newBehavior.re
 
   actual=`cat $testPath/actual${i}_newBehavior.re`
