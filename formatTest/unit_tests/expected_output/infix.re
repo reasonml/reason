@@ -167,12 +167,16 @@ let comparison = (==);
 
 /* Why would the following two cases have different grouping? */
 let res =
-  blah ||
-  DataConstructor 10 || DataConstructor 10 && 10;
+  blah
+  || DataConstructor 10
+  || DataConstructor 10
+  && 10;
 
 let res =
-  blah &&
-  DataConstructor 10 && DataConstructor 10 + 10;
+  blah
+  && DataConstructor 10
+  && DataConstructor 10
+  + 10;
 
 /* This demonstrates how broken infix pretty printing is:
  */
@@ -261,13 +265,17 @@ let seeWhichCharacterHasHigherPrecedence =
   first ^> (second |> third) |> fourth;
 
 let res =
-  blah &&
-  DataConstructor 10 && DataConstructor 10 + 10;
+  blah
+  && DataConstructor 10
+  && DataConstructor 10
+  + 10;
 
 /* Should be parsed as */
 let res =
-  blah &&
-  DataConstructor 10 && DataConstructor 10 + 10;
+  blah
+  && DataConstructor 10
+  && DataConstructor 10
+  + 10;
 
 let (++) ::label ::label2 => label + label2;
 
@@ -303,12 +311,13 @@ let includesACommentCloseInIdentifier = ( *\*\/ );
 let includesACommentCloseInIdentifier = ( *\*\/ );
 
 let shouldSimplifyAnythingExceptApplicationAndConstruction =
-  call "hi" ^
-  (
+  call "hi"
+  ^ (
     switch x {
     | _ => "hi"
     }
-  ) ^ "yo";
+  )
+  ^ "yo";
 
 /* Add tests with IF/then mixed with infix/constructor application on left and right sides */
 
@@ -503,9 +512,7 @@ let containingObject = {
     x + something.contents := y;
     x + something := y;
     /* Should be parsed as: */
-    x + (
-      something.contents = y
-    ); /* Because of the #NotActuallyAConflict above */
+    x + (something.contents = y); /* Because of the #NotActuallyAConflict above */
     x + (something = y); /* Same */
     x + something.contents := y;
     x + something := y;
@@ -530,14 +537,12 @@ let containingObject = {
     bigArr.{0} || something + 1 ?
       hello : goodbye;
     str.[0] || something + 1 ? hello : goodbye;
-    x.contents || (
-      something + 1 ? hello : goodbye
-    );
+    x.contents
+    || (something + 1 ? hello : goodbye);
     y || (something + 1 ? hello : goodbye);
     arr.(0) || (something + 1 ? hello : goodbye);
-    bigArr.{0} || (
-      something + 1 ? hello : goodbye
-    );
+    bigArr.{0}
+    || (something + 1 ? hello : goodbye);
     str.[0] || (something + 1 ? hello : goodbye);
 
     /**
@@ -557,14 +562,12 @@ let containingObject = {
     bigArr.{0} && something + 1 ?
       hello : goodbye;
     str.[0] && something + 1 ? hello : goodbye;
-    x.contents && (
-      something + 1 ? hello : goodbye
-    );
+    x.contents
+    && (something + 1 ? hello : goodbye);
     y && (something + 1 ? hello : goodbye);
     arr.(0) && (something + 1 ? hello : goodbye);
-    bigArr.{0} && (
-      something + 1 ? hello : goodbye
-    );
+    bigArr.{0}
+    && (something + 1 ? hello : goodbye);
     str.[0] && (something + 1 ? hello : goodbye);
 
     /**
@@ -656,8 +659,7 @@ let containingObject = {
         str.[0] = somethingElse : goodbye;
 
     /** And this */
-    y :=
-      something ? y := somethingElse : goodbye;
+    y := something ? y := somethingElse : goodbye;
     arr.(0) :=
       something ?
         arr.(0) := somethingElse : goodbye;
@@ -668,8 +670,7 @@ let containingObject = {
       something ?
         str.[0] := somethingElse : goodbye;
     /* Should be parsed as */
-    y :=
-      something ? y := somethingElse : goodbye;
+    y := something ? y := somethingElse : goodbye;
     arr.(0) :=
       something ?
         arr.(0) := somethingElse : goodbye;
@@ -900,9 +901,7 @@ let containingObject = {
     let result = 2 + (- (- (- add 4 0)));
     /* And with attributes */
     let result =
-      2 + (
-        - (- (- add 4 0 [@onAddApplication]))
-      );
+      2 + (- (- (- add 4 0 [@onAddApplication])));
 
     /**
      * TODO: Move all of these test cases to attributes.re.
@@ -947,4 +946,78 @@ let containingObject = {
     something.contents =
       "newvalue" [@shouldBeRenderedOnString]
   }
+};
+
+let x = foo |> z;
+
+let x = foo |> f |> g;
+
+let x =
+  foo
+  |> somelongfunctionname "foo"
+  |> anotherlongfunctionname "bar" 1
+  |> somelongfunction
+  |> bazasdasdad;
+
+let code =
+  JSCodegen.Code.(
+    create
+    |> lines
+         Requires.(
+           create
+           |> import_type
+                local::"Set" source::"Set"
+           |> import_type
+                local::"Map" source::"Map"
+           |> import_type
+                local::"Immutable"
+                source::"immutable"
+           |> require
+                local::"invariant"
+                source::"invariant"
+           |> require
+                local::"Image"
+                source::"Image.react"
+           |> side_effect
+                source::"monkey_patches"
+           |> render_lines
+         )
+    |> new_line
+    |> new_line
+    |> new_line
+    |> new_line
+    |> render
+  );
+
+let code = JSCodegen.Code.(create |> render);
+
+let server = {
+  let callback _conn req body => {
+    let uri =
+      req
+      |> Request.uri
+      |> Uri.to_string
+      |> Code.string_of_uri
+      |> Server.respond
+      |> Request.uri;
+    let meth =
+      req
+      |> Request.meth
+      |> Code.string_of_method;
+    let headers =
+      req |> Request.headers |> Header.to_string;
+    body
+    |> Cohttp_lwt_body.to_string
+    >|= (
+      fun body =>
+        Printf.sprintf
+          "okokok" uri meth headers body
+    )
+    >>= (
+      fun body =>
+        Server.respond_string ::status ::body ()
+    )
+  };
+  Server.create
+    ::mode (Server.make ::callback ())
 };
