@@ -3484,7 +3484,7 @@ class printer  ()= object(self:'self)
   method ensureContainingRule ~withPrecedence ~reducesAfterRight () =
     match self#unparseExprRecurse reducesAfterRight with
     | SpecificInfixPrecedence ({reducePrecedence; shiftPrecedence}, rightRecurse)->
-      if higherPrecedenceThan shiftPrecedence withPrecedence then begin 
+      if higherPrecedenceThan shiftPrecedence withPrecedence then begin
         rightRecurse
       end
       else if (higherPrecedenceThan withPrecedence shiftPrecedence) then
@@ -3556,7 +3556,7 @@ class printer  ()= object(self:'self)
       formatPrecedence ~loc:x.pexp_loc (formatAttachmentApplication applicationFinalWrapping None (itms, Some x.pexp_loc))
     | PotentiallyLowPrecedence itm -> formatPrecedence ~loc:x.pexp_loc itm
     | Simple itm -> itm
-       
+
 
   method unparseResolvedRule  = function
     | LayoutNode layoutNode -> layoutNode
@@ -3633,7 +3633,8 @@ class printer  ()= object(self:'self)
           ) in
           let expr = label ~space:true (atom printedIdent) rightItm in
           SpecificInfixPrecedence ({reducePrecedence=prec; shiftPrecedence=Token printedIdent}, LayoutNode expr)
-        | (UnaryMinusPrefix printedIdent, [(Nolabel, rightExpr)]) ->
+        | (UnaryMinusPrefix printedIdent, [(Nolabel, rightExpr)])
+        | (UnaryNotPrefix printedIdent, [(Nolabel, rightExpr)]) ->
           let prec = Custom "prec_unary" in
           let rightItm = self#unparseResolvedRule (
             self#ensureContainingRule ~withPrecedence:prec ~reducesAfterRight:rightExpr ()
