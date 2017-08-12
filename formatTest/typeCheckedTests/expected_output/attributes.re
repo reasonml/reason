@@ -151,9 +151,8 @@ let both (a, b) = [@onEverything] (a && b);
 let thisVal = 10;
 
 let x =
-  20 + (
-    - [@onFunctionCall] add(thisVal, thisVal)
-  );
+  20
+  + (- [@onFunctionCall] add(thisVal, thisVal));
 
 let x =
   [@onEverything]
