@@ -1197,7 +1197,7 @@ conflicts.
 %nonassoc DOT POSTFIXOP
 
 /* Finally, the first tokens of simple_expr are above everything else. */
-%nonassoc LBRACKETLESS LBRACKETBAR LBRACKET LBRACELESS LBRACE LPAREN
+%nonassoc LBRACKETLESS LBRACKET LBRACELESS LBRACE LPAREN
 
 /* Entry points */
 
@@ -2558,14 +2558,16 @@ mark_position_exp
     { mkexp(Pexp_apply(mkoperator $1, [Nolabel,$2])) }
   | simple_expr DOT as_loc(label_longident) EQUAL expr
     { mkexp(Pexp_setfield($1, $3, $5)) }
-  | simple_expr DOT LPAREN expr RPAREN EQUAL expr
+  | simple_expr LBRACKET expr RBRACKET EQUAL expr
     { let loc = mklocation $symbolstartpos $endpos in
-      mkexp(Pexp_apply(mkexp ~ghost:true ~loc (Pexp_ident(array_function ~loc "Array" "set")),
-                       [Nolabel,$1; Nolabel,$4; Nolabel,$7]))
+      let exp = Pexp_ident(array_function ~loc "Array" "set") in
+      mkexp(Pexp_apply(mkexp ~ghost:true ~loc exp,
+                       [Nolabel,$1; Nolabel,$3; Nolabel,$6]))
     }
   | simple_expr DOT LBRACKET expr RBRACKET EQUAL expr
     { let loc = mklocation $symbolstartpos $endpos in
-      mkexp(Pexp_apply(mkexp ~ghost:true ~loc (Pexp_ident(array_function ~loc "String" "set")),
+      let exp = Pexp_ident(array_function ~loc "String" "set") in
+      mkexp(Pexp_apply(mkexp ~ghost:true ~loc exp,
                        [Nolabel,$1; Nolabel,$4; Nolabel,$7]))
     }
   | simple_expr DOT LBRACE expr RBRACE EQUAL expr
@@ -2658,6 +2660,12 @@ parenthesized_expr:
   | constant              { mkexp (Pexp_constant $1) }
   | jsx                   { $1 }
   | simple_expr_direct_argument { $1 }
+  | LBRACKETBAR expr_list BARRBRACKET
+    { mkexp (Pexp_array $2) }
+  | as_loc(LBRACKETBAR) expr_list as_loc(error)
+    { unclosed_exp (with_txt $1 "[|") (with_txt $3 "|]") }
+  | LBRACKETBAR BARRBRACKET
+    { mkexp (Pexp_array []) }
   /* Not sure why this couldn't have just been below_SHARP (Answer: Being
    * explicit about needing to wait for "as") */
   | as_loc(constr_longident) %prec prec_constant_constructor
@@ -2702,17 +2710,17 @@ parenthesized_expr:
       mkexp(Pexp_open (Fresh, $1,
                        mkexp(Pexp_object(Cstr.mk pat []))))
     }
-  | E DOT LPAREN expr RPAREN
+  | E LBRACKET expr RBRACKET
     { let loc = mklocation $symbolstartpos $endpos in
-      mkexp(Pexp_apply(mkexp ~ghost:true ~loc (Pexp_ident(array_function ~loc "Array" "get")),
-                       [Nolabel,$1; Nolabel,$4]))
+      let exp = Pexp_ident(array_function ~loc "Array" "get") in
+      mkexp(Pexp_apply(mkexp ~ghost:true ~loc exp, [Nolabel,$1; Nolabel,$3]))
     }
-  | E DOT as_loc(LPAREN) expr as_loc(error)
-    { unclosed_exp (with_txt $3 "(") (with_txt $5 ")") }
+  | E as_loc(LBRACKET) expr as_loc(error)
+    { unclosed_exp (with_txt $2 "(") (with_txt $4 ")") }
   | E DOT LBRACKET expr RBRACKET
     { let loc = mklocation $symbolstartpos $endpos in
-      mkexp(Pexp_apply(mkexp ~ghost:true ~loc (Pexp_ident(array_function ~loc "String" "get")),
-                       [Nolabel,$1; Nolabel,$4]))
+      let exp = Pexp_ident(array_function ~loc "String" "get") in
+      mkexp(Pexp_apply(mkexp ~ghost:true ~loc exp, [Nolabel,$1; Nolabel,$4]))
     }
   | E DOT as_loc(LBRACKET) expr as_loc(error)
     { unclosed_exp (with_txt $3 "[") (with_txt $5 "]") }
@@ -2786,6 +2794,11 @@ simple_expr_call:
   | mark_position_exp(simple_expr_template(simple_expr)) { $1, [] }
   | simple_expr_call labeled_arguments
     { let body, args = $1 in (body, List.rev_append $2 args) }
+  | LBRACKET expr_comma_seq_extension RBRACKET
+    { let seq, ext_opt = $2 in
+      let loc = mklocation $startpos($2) $endpos($2) in
+      (make_real_exp (mktailexp_extension loc seq ext_opt), [])
+    }
 ;
 
 simple_expr_direct_argument:
@@ -2809,17 +2822,6 @@ simple_expr_direct_argument:
   | LBRACKETLESS jsx_without_leading_less RBRACKET
     { let entireLoc = mklocation $startpos($1) $endpos($3) in
       mktailexp_extension entireLoc ($2::[]) None
-    }
-  | LBRACKETBAR expr_list BARRBRACKET
-    { mkexp (Pexp_array $2) }
-  | as_loc(LBRACKETBAR) expr_list as_loc(error)
-    { unclosed_exp (with_txt $1 "[|") (with_txt $3 "|]") }
-  | LBRACKETBAR BARRBRACKET
-    { mkexp (Pexp_array []) }
-  | LBRACKET expr_comma_seq_extension RBRACKET
-    { let seq, ext_opt = $2 in
-      let loc = mklocation $startpos($2) $endpos($2) in
-      make_real_exp (mktailexp_extension loc seq ext_opt)
     }
   | LBRACELESS field_expr_list COMMA? GREATERRBRACE
     { mkexp (Pexp_override $2) }
@@ -3284,6 +3286,12 @@ mark_position_pat
     { unclosed_pat (with_txt $1 "(") (with_txt $6 ")") }
   | simple_pattern_direct_argument
     { $1 }
+  | LBRACKET pattern_comma_list_extension RBRACKET
+    { make_real_pat (mktailpat_extension (mklocation $startpos($2) $endpos($2)) $2) }
+  | as_loc(LBRACKET) pattern_comma_list_extension as_loc(error)
+    { unclosed_pat (with_txt $1 "[") (with_txt $3 "]") }
+  | LBRACKETBAR loption(terminated(pattern_comma_list,SEMI?)) BARRBRACKET
+    { mkpat (Ppat_array $2) }
   | extension
     { mkpat(Ppat_extension $1) }
   ) {$1};
@@ -3294,12 +3302,6 @@ mark_position_pat
     { let (fields, closed) = $2 in mkpat (Ppat_record (fields, closed)) }
   | as_loc(LBRACE) lbl_pattern_list as_loc(error)
     { unclosed_pat (with_txt $1 "{") (with_txt $3 "}") }
-  | LBRACKET pattern_comma_list_extension RBRACKET
-    { make_real_pat (mktailpat_extension (mklocation $startpos($2) $endpos($2)) $2) }
-  | as_loc(LBRACKET) pattern_comma_list_extension as_loc(error)
-    { unclosed_pat (with_txt $1 "[") (with_txt $3 "]") }
-  | LBRACKETBAR loption(terminated(pattern_comma_list,SEMI?)) BARRBRACKET
-    { mkpat (Ppat_array $2) }
 ) {$1};
 
 pattern_optional_constraint:
