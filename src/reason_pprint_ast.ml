@@ -3299,7 +3299,6 @@ class printer  ()= object(self:'self)
        behavior as stock desugarer. It might even be required (double check
        in parser.mly) *)
     e1;
-    atom ".";
     atom op;
     e2;
     atom cls;
@@ -3384,19 +3383,19 @@ class printer  ()= object(self:'self)
         Some (makeList [self#simple_enough_to_be_lhs_dot_send leftExpr; atom infixStr; rightItm])
       | (_, _) -> (
         match (eFun, ls) with
-        | ({pexp_desc = Pexp_ident {txt = Ldot (Lident ("String"),"get")}}, [(_,e1);(_,e2)]) ->
-          Some (self#access "[" "]" (self#simple_enough_to_be_lhs_dot_send e1) (self#unparseExpr e2))
         | ({pexp_desc = Pexp_ident {txt = Ldot (Lident ("Array"),"get")}}, [(_,e1);(_,e2)]) ->
-          Some (self#access "(" ")" (self#simple_enough_to_be_lhs_dot_send e1) (self#unparseExpr e2))
+          Some (self#access "[" "]" (self#simple_enough_to_be_lhs_dot_send e1) (self#unparseExpr e2))
+        | ({pexp_desc = Pexp_ident {txt = Ldot (Lident ("String"),"get")}}, [(_,e1);(_,e2)]) ->
+          Some (self#access ".[" "]" (self#simple_enough_to_be_lhs_dot_send e1) (self#unparseExpr e2))
         | (
             {pexp_desc= Pexp_ident {txt=Ldot (Ldot (Lident "Bigarray", "Genarray" ), "get")}},
             [(_,a); (_,{pexp_desc=Pexp_array ls})]
           ) ->
           let formattedList = List.map self#simplifyUnparseExpr ls in
-          Some (self#access "{" "}" (self#simple_enough_to_be_lhs_dot_send a) (makeCommaBreakableList formattedList))
+          Some (self#access ".{" "}" (self#simple_enough_to_be_lhs_dot_send a) (makeCommaBreakableList formattedList))
         | ({pexp_desc= Pexp_ident {txt=Ldot (Ldot (Lident "Bigarray", ("Array1"|"Array2"|"Array3")), "get")}}, (_,a)::rest) ->
           let formattedList = List.map self#simplifyUnparseExpr (List.map snd rest) in
-          Some (self#access "{" "}" (self#simple_enough_to_be_lhs_dot_send a) (makeCommaBreakableList formattedList))
+          Some (self#access ".{" "}" (self#simple_enough_to_be_lhs_dot_send a) (makeCommaBreakableList formattedList))
         | _ -> None
       )
     )
@@ -3409,9 +3408,9 @@ class printer  ()= object(self:'self)
     (* should also check attributes underneath *)
     else match e.pexp_desc with
       | Pexp_apply ({pexp_desc=Pexp_ident{txt=Ldot (Lident ("Array"), "set")}}, [(_,e1);(_,e2);(_,e3)]) ->
-        Some (self#access "(" ")" (self#simple_enough_to_be_lhs_dot_send e1) (self#unparseExpr e2), e3)
+        Some (self#access "[" "]" (self#simple_enough_to_be_lhs_dot_send e1) (self#unparseExpr e2), e3)
       | Pexp_apply ({pexp_desc=Pexp_ident {txt=Ldot (Lident "String", "set")}}, [(_,e1);(_,e2);(_,e3)]) ->
-        Some ((self#access "[" "]" (self#simple_enough_to_be_lhs_dot_send e1) (self#unparseExpr e2)), e3)
+        Some ((self#access ".[" "]" (self#simple_enough_to_be_lhs_dot_send e1) (self#unparseExpr e2)), e3)
       | Pexp_apply (
         {pexp_desc=Pexp_ident {txt = Ldot (Ldot (Lident "Bigarray", array), "set")}},
         label_exprs
@@ -3421,7 +3420,7 @@ class printer  ()= object(self:'self)
             match label_exprs with
             | [(_,a);(_,{pexp_desc=Pexp_array ls});(_,c)] ->
               let formattedList = List.map self#simplifyUnparseExpr ls in
-              Some (self#access "{" "}" (self#simple_enough_to_be_lhs_dot_send a) (makeCommaBreakableList formattedList), c)
+              Some (self#access ".{" "}" (self#simple_enough_to_be_lhs_dot_send a) (makeCommaBreakableList formattedList), c)
             | _ -> None
           )
           | ("Array1"|"Array2"|"Array3") -> (
@@ -3431,7 +3430,7 @@ class printer  ()= object(self:'self)
               | (_,v)::rest ->
                 let args = List.map snd (List.rev rest) in
                 let formattedList = List.map self#simplifyUnparseExpr args in
-                Some (self#access "{" "}" (self#simple_enough_to_be_lhs_dot_send a) (makeCommaBreakableList formattedList), v)
+                Some (self#access ".{" "}" (self#simple_enough_to_be_lhs_dot_send a) (makeCommaBreakableList formattedList), v)
               | _ -> assert false
             )
             | _ -> assert false
@@ -6250,8 +6249,7 @@ class printer  ()= object(self:'self)
       | Pexp_array _
       | Pexp_record _
       | Pexp_object {pcstr_fields = _}
-      | Pexp_construct ( {txt= Lident"()"}, None)
-      | Pexp_construct ( {txt= Lident"::"}, Some _) -> true
+      | Pexp_construct ( {txt= Lident"()"}, None) -> true
       | _ -> false
     in
     let head, xs = match xs with
