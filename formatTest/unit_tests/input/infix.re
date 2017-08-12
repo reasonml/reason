@@ -346,19 +346,19 @@ let containingObject = {
      */
     x.contents = something ? hello : goodbye;
     y = something ? hello : goodbye;
-    arr.(0) = something ? hello : goodbye;
+    arr[0] = something ? hello : goodbye;
     bigArr.{0} = something ? hello : goodbye;
     str.[0] = something ? hello : goodbye;
 
     (x.contents = something) ? hello : goodbye;
     (y = something) ? hello : goodbye;
-    (arr.(0) = something) ? hello : goodbye;
+    (arr[0] = something) ? hello : goodbye;
     (bigArr.{0} = something) ? hello : goodbye;
     (str.[0] = something) ? hello : goodbye;
 
     x.contents = (something ? hello : goodbye);
     y = (something ? hello : goodbye);
-    arr.(0) = (something ? hello : goodbye);
+    arr[0] = (something ? hello : goodbye);
     bigArr.{0} = (something ? hello : goodbye);
     str.[0] = (something ? hello : goodbye);
 
@@ -369,21 +369,21 @@ let containingObject = {
     x.contents = something + 1 ? hello : goodbye;
     x := something + 1 ? hello : goodbye;
     y = something + 1 ? hello : goodbye;
-    arr.(0) = something + 1 ? hello : goodbye;
+    arr[0] = something + 1 ? hello : goodbye;
     bigArr.{0} = something + 1 ? hello : goodbye;
     str.[0] = something + 1 ? hello : goodbye;
 
     (x.contents = something + 1) ? hello : goodbye;
     (x := something + 1) ? hello : goodbye;
     (y = something + 1) ? hello : goodbye;
-    (arr.(0) = something + 1) ? hello : goodbye;
+    (arr[0] = something + 1) ? hello : goodbye;
     (bigArr.{0} = something + 1) ? hello : goodbye;
     (str.[0] = something + 1) ? hello : goodbye;
 
     x.contents = (something + 1 ? hello : goodbye);
     x := (something + 1 ? hello : goodbye);
     y = (something + 1 ? hello : goodbye);
-    arr.(0) = (something + 1 ? hello : goodbye);
+    arr[0] = (something + 1 ? hello : goodbye);
     bigArr.{0} = (something + 1 ? hello : goodbye);
     str.[0] = (something + 1 ? hello : goodbye);
 
@@ -465,19 +465,19 @@ let containingObject = {
      */
     x.contents || something + 1 ? hello : goodbye;
     y || something + 1 ? hello : goodbye;
-    arr.(0) || something + 1 ? hello : goodbye;
+    arr[0] || something + 1 ? hello : goodbye;
     bigArr.{0} || something + 1 ? hello : goodbye;
     str.[0] || something + 1 ? hello : goodbye;
 
     (x.contents || something + 1) ? hello : goodbye;
     (y || something + 1) ? hello : goodbye;
-    (arr.(0) || something + 1) ? hello : goodbye;
+    (arr[0] || something + 1) ? hello : goodbye;
     (bigArr.{0} || something + 1) ? hello : goodbye;
     (str.[0] || something + 1) ? hello : goodbye;
 
     x.contents || (something + 1 ? hello : goodbye);
     y || (something + 1 ? hello : goodbye);
-    arr.(0) || (something + 1 ? hello : goodbye);
+    arr[0] || (something + 1 ? hello : goodbye);
     bigArr.{0} || (something + 1 ? hello : goodbye);
     str.[0] || (something + 1 ? hello : goodbye);
 
@@ -487,19 +487,19 @@ let containingObject = {
      */
     x.contents && something + 1 ? hello : goodbye;
     y && something + 1 ? hello : goodbye;
-    arr.(0) && something + 1 ? hello : goodbye;
+    arr[0] && something + 1 ? hello : goodbye;
     bigArr.{0} && something + 1 ? hello : goodbye;
     str.[0] && something + 1 ? hello : goodbye;
 
     (x.contents && something + 1) ? hello : goodbye;
     (y && something + 1) ? hello : goodbye;
-    (arr.(0) && something + 1) ? hello : goodbye;
+    (arr[0] && something + 1) ? hello : goodbye;
     (bigArr.{0} && something + 1) ? hello : goodbye;
     (str.[0] && something + 1) ? hello : goodbye;
 
     x.contents && (something + 1 ? hello : goodbye);
     y && (something + 1 ? hello : goodbye);
-    arr.(0) && (something + 1 ? hello : goodbye);
+    arr[0] && (something + 1 ? hello : goodbye);
     bigArr.{0} && (something + 1 ? hello : goodbye);
     str.[0] && (something + 1 ? hello : goodbye);
 
@@ -510,13 +510,13 @@ let containingObject = {
      */
     x.contents = (2 + 4);
     y = (2 + 4);
-    arr.(0) = (2 + 4);
+    arr[0] = (2 + 4);
     bigArr.{0} = (2 + 4);
     str.[0] = (2 + 4);
 
     (x.contents = 2) + 4;
     (y = 2) + 4;
-    (arr.(0) = 2) + 4;
+    (arr[0] = 2) + 4;
     (bigArr.{0} = 2) + 4;
     (str.[0] = 2) + 4;
 
@@ -527,13 +527,13 @@ let containingObject = {
      */
     x.contents = y.contents = 10;
     y = x.contents = 10;
-    arr.(0) = x.contents = 10;
+    arr[0] = x.contents = 10;
     bigArr.{0} = x.contents = 10;
     str.[0] = x.contents = 10;
     /* Should be the same as */
     x.contents = (x.contents = 10);
     y = (x.contents = 10);
-    arr.(0) = (x.contents = 10);
+    arr[0] = (x.contents = 10);
     bigArr.{0} = (x.contents = 10);
     str.[0] = (x.contents = 10);
 
@@ -572,7 +572,7 @@ let containingObject = {
      */
     x.contents = something ? x.contents = somethingElse : goodbye;
     y = something ? y = somethingElse : goodbye;
-    arr.(0) = something ? arr.(0) = somethingElse : goodbye;
+    arr[0] = something ? arr[0] = somethingElse : goodbye;
     bigArr.{0} = something ? bigArr.{0} = somethingElse : goodbye;
     str.[0] = something ? str.[0] = somethingElse : goodbye;
     /*
@@ -580,36 +580,36 @@ let containingObject = {
      */
     x.contents = (something ? x.contents = somethingElse : goodbye);
     y = (something ? y = somethingElse : goodbye);
-    arr.(0) = (something ? arr.(0) = somethingElse : goodbye);
+    arr[0] = (something ? arr[0] = somethingElse : goodbye);
     bigArr.{0} = (something ? bigArr.{0} = somethingElse : goodbye);
     str.[0] = (something ? str.[0] = somethingElse : goodbye);
 
     /** And this */
     y := something ? y := somethingElse : goodbye;
-    arr.(0) := something ? arr.(0) := somethingElse : goodbye;
+    arr[0] := something ? arr[0] := somethingElse : goodbye;
     bigArr.{0} := something ? bigArr.{0} := somethingElse : goodbye;
     str.[0] := something ? str.[0] := somethingElse : goodbye;
 
     /* Should be parsed as */
     y := (something ? (y := somethingElse) : goodbye);
-    arr.(0) := (something ? (arr.(0) := somethingElse) : goodbye);
+    arr[0] := (something ? (arr[0] := somethingElse) : goodbye);
     bigArr.{0} := (something ? (bigArr.{0} := somethingElse) : goodbye);
     str.[0] := (something ? (str.[0] := somethingElse) : goodbye);
 
 
     /* The following */
     x := something ? x.contents = somethingElse ? goodbye : goodbye : goodbye;
-    x := something ? arr.(0) = somethingElse ? goodbye : goodbye : goodbye;
+    x := something ? arr[0] = somethingElse ? goodbye : goodbye : goodbye;
     x := something ? bigArr.{0} = somethingElse ? goodbye : goodbye : goodbye;
     x := something ? str.[0] = somethingElse ? goodbye : goodbye : goodbye;
     /* Is parsed as */
     x := (something ? x.contents = (somethingElse ? goodbye : goodbye) : goodbye);
-    x := (something ? arr.(0) = (somethingElse ? goodbye : goodbye) : goodbye);
+    x := (something ? arr[0] = (somethingElse ? goodbye : goodbye) : goodbye);
     x := (something ? bigArr.{0} = (somethingElse ? goodbye : goodbye) : goodbye);
     x := (something ? str.[0] = (somethingElse ? goodbye : goodbye) : goodbye);
     /* is not the same as */
     x := something ? (x.contents = somethingElse) ? goodbye : goodbye : goodbye;
-    x := something ? (arr.(0) = somethingElse) ? goodbye : goodbye : goodbye;
+    x := something ? (arr[0] = somethingElse) ? goodbye : goodbye : goodbye;
     x := something ? (bigArr.{0} = somethingElse) ? goodbye : goodbye : goodbye;
     x := something ? (str.[0] = somethingElse) ? goodbye : goodbye : goodbye;
 
@@ -639,11 +639,11 @@ let containingObject = {
     (something ? somethingElse : (y = somethingElse)) ? x : z;
 
     /** These should be parsed the same */
-    something ? somethingElse : arr.(0) = somethingElse ? x : arr.(0);
-    something ? somethingElse : (arr.(0) = (somethingElse ? x : arr.(0)));
+    something ? somethingElse : arr[0] = somethingElse ? x : arr[0];
+    something ? somethingElse : (arr[0] = (somethingElse ? x : arr[0]));
     /* Not: */
-    something ? somethingElse : (arr.(0) = somethingElse) ? x : z;
-    (something ? somethingElse : (arr.(0) = somethingElse)) ? x : z;
+    something ? somethingElse : (arr[0] = somethingElse) ? x : z;
+    (something ? somethingElse : (arr[0] = somethingElse)) ? x : z;
 
     /** These should be parsed the same */
     something ? somethingElse : bigArr.{0} = somethingElse ? x : bigArr.{0};
@@ -664,7 +664,7 @@ let containingObject = {
      */
     x.contents = something ? (x.contents = somethingElse : x) : z;
     y = something ? (y = somethingElse : x) : z;
-    arr.(0) = something ? (arr.(0) = somethingElse : x) : z;
+    arr[0] = something ? (arr[0] = somethingElse : x) : z;
     bigArr.{0} = something ? (bigArr.{0} = somethingElse : x) : z;
     str.[0] = something ? (str.[0] = somethingElse : x) : z;
 

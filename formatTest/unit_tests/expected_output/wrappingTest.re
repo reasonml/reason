@@ -90,9 +90,9 @@ let testPrintingPrecedence =
    */
   + reallyLongIdent
   * add(
-    reallyLongIdent,
-    andYetAnotherReallyLongIdent
-  )
+      reallyLongIdent,
+      andYetAnotherReallyLongIdent
+    )
   + reallyLongIdent;
 
 /*
@@ -595,15 +595,17 @@ let reallyLongFunctionNameThatJustConcats (a) =
 let seeHowLongValuesWrap = {
   age: 30,
   name:
-    reallyLongFunctionNameThatJustConcats[
-      "one",
-      "two",
-      "two",
-      "two",
-      "two",
-      "two",
-      "two"
-    ]
+    reallyLongFunctionNameThatJustConcats(
+      [
+        "one",
+        "two",
+        "two",
+        "two",
+        "two",
+        "two",
+        "two"
+      ]
+    )
 };
 
 /*
@@ -2924,7 +2926,7 @@ let x =
     a,
     a,
     alskdjfalskdjfalsdf
-  ) 
+  )
   + reallyReallyLongName;
 
 let onlyDoingThisTopLevelLetToBypassTopLevelSequence = {

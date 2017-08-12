@@ -71,7 +71,7 @@ class extendedStackAcknowledgeOverride
   pri! explicitOverrideTest2 (a) = a + 2;
 };
 
-let inst = (new extendedStack)[1, 2];
+let inst = (new extendedStack)([1, 2]);
 
 /**
  * Recursive classes.

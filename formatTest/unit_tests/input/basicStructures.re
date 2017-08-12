@@ -96,7 +96,7 @@ let x = !(!foo.bar);
 let x = !(!foo#bar);
 
 /* Test precedence on access sugar */
-let x = arr^.(0);
+let x = arr^[0];
 
 let x = Array.get(arr^,0);
 
@@ -106,7 +106,7 @@ let x = String.get(str^,0);
 
 let x = Array.set(arr^,0,1);
 
-let x = arr^.(0) = 1;
+let x = arr^[0] = 1;
 
 /* Comments */
 /*Below is an empty comment*/
@@ -403,9 +403,9 @@ let secondItem = Array.get(arrayWithTwo,1);
 
 /* Getting And Setting: Yeah, we should really change this */
 /* Get an array item at index 1 */
-let secondItem = arrayWithTwo.(1);
+let secondItem = arrayWithTwo[1];
 /* Set an array item at index 1 */
-arrayWithTwo.(1) = 300;
+arrayWithTwo[1] = 300;
 
 
 /**

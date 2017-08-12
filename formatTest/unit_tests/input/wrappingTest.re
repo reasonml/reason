@@ -496,7 +496,7 @@ let reallyLongFunctionNameThatJustConcats(a) = String.concat("-",a);
 
 let seeHowLongValuesWrap = {
   age: 30,
-  name: reallyLongFunctionNameThatJustConcats [
+  name: reallyLongFunctionNameThatJustConcats([
     "one",
     "two",
     "two",
@@ -504,7 +504,7 @@ let seeHowLongValuesWrap = {
     "two",
     "two",
     "two"
-  ]
+  ])
 };
 
 /*
