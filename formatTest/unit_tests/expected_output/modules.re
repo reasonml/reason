@@ -399,7 +399,7 @@ module rec A: {
     | Leaf(string)
     | Node(ASet.t);
   let compare (t1, t2) =
-    switch ((t1, t2)) {
+    switch (t1, t2) {
     | (Leaf(s1), Leaf(s2)) =>
       Pervasives.compare(s1, s2)
     | (Leaf(_), Node(_)) => 1

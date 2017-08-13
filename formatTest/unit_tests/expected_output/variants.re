@@ -302,7 +302,7 @@ type someVariant =
   | Yellow(int);
 
 let Purple(x) | Yellow(x) =
-  switch ((Yellow(100), Purple(101))) {
+  switch (Yellow(100), Purple(101)) {
   | (Yellow(y), Purple(p)) => Yellow(p + y)
   | (Purple(p), Yellow(y)) => Purple(y + p)
   | (Purple(p), Purple(y)) => Yellow(y + p)
@@ -337,7 +337,7 @@ let ylw = `Yellow(100, 100);
 let prp = `Purple(101, 100);
 
 let res =
-  switch ((ylw, prp)) {
+  switch (ylw, prp) {
   | (`Yellow(y, y2), `Purple(p, p2)) =>
     `Yellow(p + y, 0)
   | (`Purple(p, p2), `Yellow(y, y2)) =>
@@ -353,7 +353,7 @@ let ylw = `Yellow(100);
 let prp = `Purple(101);
 
 let res =
-  switch ((ylw, prp)) {
+  switch (ylw, prp) {
   | (`Yellow(y), `Purple(p)) => `Yellow(p + y)
   | (`Purple(p), `Yellow(y)) => `Purple(y + p)
   | (`Purple(p), `Purple(y)) => `Yellow(y + p)
@@ -383,7 +383,7 @@ let ylw = `Yellow(100, 100);
 let prp = `Purple(101, 101);
 
 let res =
-  switch ((ylw, prp)) {
+  switch (ylw, prp) {
   | (`Yellow(y, y2), `Purple(p, p2)) =>
     `Yellow(p + y, 0)
   | (`Purple(p, p2), `Yellow(y, y2)) =>
