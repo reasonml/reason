@@ -60,8 +60,8 @@
   correct, minimal valid code would be `type myObject = Js.t {. foo: bar}`),
   but the terminal error report do want to provide just that snippet and have
   you print it. Hopefully OCaml can unify actual code pretty-printing and
-  terminal type info pretty-printing one day. 
-  
+  terminal type info pretty-printing one day.
+
   This also means the outcome printer doesn't use the normal Parsetree,
   Ast_helper and others you might have seen in other files. It has its own
   small AST definition here:
@@ -72,7 +72,7 @@
 
   Btw, we've also copied & tweaked this file over to BuckleScript's terminal
   reporting:
-  https://github.com/BuckleScript/bucklescript/tree/master/jscomp/super_errors.
+  https://github.com/BuckleScript/bucklescript/tree/master/jscomp/reason_outcome_printer.
   When you modify this file, please make sure it's not too crazy and makes
   that copied version too hard to keep up to date. Thanks!
   *)
