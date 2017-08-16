@@ -1,7 +1,7 @@
 
 opam-version: "1.2"
 name: "reason"
-version: "1.13.6"
+version: "1.13.7"
 maintainer: "Jordan Walke <jordojw@gmail.com>"
 authors: [ "Jordan Walke <jordojw@gmail.com>" ]
 license: "BSD. Additional patent grant provided."
