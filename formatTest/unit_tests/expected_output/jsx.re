@@ -10,30 +10,33 @@ let x =
       "justifyContent": CssJustifySpaceBetween,
       "flexDirection": CssFlexDirectionRow
     }
-    onKey=(updater handleInput)
+    onKey=(updater(handleInput))
   />;
 
 let y =
   <Routes
-    path=(Routes.stateToPath state)
+    path=(Routes.stateToPath(state))
     isHistorical=true
     onHashChange=(
-      fun _oldPath _oldUrl newUrl =>
+      (_oldPath, _oldUrl, newUrl) =>
         updater
           (
-            fun latestComponentBag _ => {
+            (latestComponentBag, _) => {
               let currentActualPath =
-                Routes.hashOfUri newUrl;
+                Routes.hashOfUri(newUrl);
               let pathFromState =
-                Routes.stateToPath
-                  latestComponentBag.state;
+                Routes.stateToPath(
+                  latestComponentBag.state
+                );
               currentActualPath == pathFromState ?
                 None :
                 dispatchEventless
                   (
-                    State.UriNavigated currentActualPath
+                    State.UriNavigated(
+                      currentActualPath
+                    ),
+                    latestComponentBag
                   )
-                  latestComponentBag
                   ()
             }
           )
@@ -45,18 +48,20 @@ let z =
   <div
     style=(
       ReactDOMRe.Style.make
-        ::width
-        ::height
-        ::color
-        ::backgroundColor
-        ::margin
-        ::padding
-        ::border
-        ::borderColor
-        ::someOtherAttribute
+        (
+          :width,
+          :height,
+          :color,
+          :backgroundColor,
+          :margin,
+          :padding,
+          :border,
+          :borderColor,
+          :someOtherAttribute
+        )
         ()
     )
-    key=(string_of_int 1)
+    key=(string_of_int(1))
   />;
 
 let omega =
@@ -72,7 +77,7 @@ let omega =
       borderColor,
       someOtherAttribute
     ]
-    key=(string_of_int 1)
+    key=(string_of_int(1))
   />;
 
 let someArray =
@@ -88,7 +93,7 @@ let someArray =
       borderColor,
       someOtherAttribute
     |]
-    key=(string_of_int 1)
+    key=(string_of_int(1))
   />;
 
 let tuples =
@@ -105,13 +110,13 @@ let tuples =
       someOtherAttribute,
       definitelyBreakere
     )
-    key=(string_of_int 1)
+    key=(string_of_int(1))
   />;
 
 let icon =
   <Icon
     name=(
-      switch state.volume {
+      switch (state.volume) {
       | v when v < 0.1 => "sound-off"
       | v when v < 0.11 => "sound-min"
       | v when v < 0.51 => "sound-med"

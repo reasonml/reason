@@ -1,5 +1,4 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
-
 /**
  * Testing Sequences.
  */
@@ -19,7 +18,6 @@ let anInt = result + 20;
 
 let twenty = 20;
 
-
 /**
  * Each of these are a sequence with a single item - they will be
  * printed in reduced form because sequences are a *parse* time construct.
@@ -38,16 +36,16 @@ let unitValue = ();
  * the formatter ensures that the bodies are printed in "sequence" form even if
  * it's not required.
  */
-while false {
+while (false) {
   unitValue
 };
 
-while false {
-  print_string "test"
+while (false) {
+  print_string("test")
 };
 
-while false {
-  print_string "test"
+while (false) {
+  print_string("test")
 };
 
 type myRecord = {number: int};

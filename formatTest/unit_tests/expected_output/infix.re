@@ -92,7 +92,6 @@ let minParens =
 let formatted =
   a1 && a2 && b1 & b2 & y &|| x &|| z;
 
-
 /**
  * Now, let's try an example that resembles the above, yet would require
  * parenthesis everywhere.
@@ -108,29 +107,29 @@ let formatted =
   ((((a1 && a2) && b1) & b2) & y) &|| (x &|| z);
 
 /* **...(right) is higher than *...(left) */
-let parseTree = b1 *| b2 *| y *\*| x *\*| z;
+let parseTree = b1 *| b2 *| (y **| (x **| z));
 
-let minParens = b1 *| b2 *| y *\*| x *\*| z;
+let minParens = b1 *| b2 *| (y **| (x **| z));
 
-let formatted = b1 *| b2 *| y *\*| x *\*| z;
+let formatted = b1 *| b2 *| (y **| (x **| z));
 
 /* **...(right) is higher than *...(left) */
 let parseTree =
-  b1 *| b2 *| y *\*| (x *\*| z *| a);
+  b1 *| b2 *| (y **| (x **| z *| a));
 
 let minParens =
-  b1 *| b2 *| y *\*| (x *\*| z *| a);
+  b1 *| b2 *| (y **| (x **| z *| a));
 
 let formatted =
-  b1 *| b2 *| y *\*| (x *\*| z *| a);
+  b1 *| b2 *| (y **| (x **| z *| a));
 
 /* |...(left) is higher than ||(right) */
 /* All parens should be removed when formatting n > 0 times */
-let parseTree = b1 || b2 || y |\* x |\* z;
+let parseTree = b1 || b2 || y |* x |* z;
 
-let minParens = b1 || b2 || y |\* x |\* z;
+let minParens = b1 || b2 || y |* x |* z;
 
-let formatted = b1 || b2 || y |\* x |\* z;
+let formatted = b1 || b2 || y |* x |* z;
 
 /* Associativity effects how parenthesis should be dropped */
 /* This one *shouldn't* expand into two consecutive infix + */
@@ -168,19 +167,19 @@ let comparison = (==);
 /* Why would the following two cases have different grouping? */
 let res =
   blah
-  || DataConstructor 10
-  || DataConstructor 10
+  || DataConstructor(10)
+  || DataConstructor(10)
   && 10;
 
 let res =
   blah
-  && DataConstructor 10
-  && DataConstructor 10
+  && DataConstructor(10)
+  && DataConstructor(10)
   + 10;
 
 /* This demonstrates how broken infix pretty printing is:
  */
-let curriedComparison = (==) 10;
+let curriedComparison = (==)(10);
 
 let resultOfAdd = 10 + 20 + 40;
 
@@ -190,64 +189,64 @@ let resultOfAddAndMult =
 let greaterThanAndSubtract = 1 - 2 > 4 + 3;
 
 let greaterThanAndFunctionCalls =
-  pred 1 > pred 2;
+  pred(1) > pred(2);
 
-let lessThanAndFunctionCalls = pred 1 < pred 2;
+let lessThanAndFunctionCalls = pred(1) < pred(2);
 
 /* This doesn't type check because it looks like pred - 1 */
 let minusAndInteger = pred - 1;
 
-let passingMinusOneToFunction = pred (-1);
+let passingMinusOneToFunction = pred((-1));
 
 let leadingMinusIsCorrectlyNeg = (-1) + 20;
 
 let leadingMinusIsCorrectlyNeg = 3 > (-1);
 
 /* Custom infix without labeled args */
-let (|>) first second => first + second;
+let (|>) (first, second) = first + second;
 
 /* Should reformat to actually be placed infix */
 let res = first |> second;
 
 /* Curried shouldn't place infix */
-let res = (|>) first;
+let res = (|>)(first);
 
 /* Custom infix with labeled args */
-let (|>) ::first ::second => first + second;
+let (|>) (:first, :second) = first + second;
 
 /* Should NOT reformat named args to actually be placed infix */
-let res = (|>) ::first ::second;
+let res = (|>)(:first, :second);
 
 /* Curried shouldn't place infix */
-let res = (|>) ::first;
+let res = (|>)(:first);
 
 /* Custom infix accepting *three* without labeled args */
-let (|>) firsfirst second third =>
+let (|>) (firsfirst, second, third) =
   first + second + third;
 
 /* Should reformat to actually be placed infix if passed two args */
 let res = first |> second;
 
-let res = (first |> second) third;
+let res = (first |> second)(third);
 
 /* Should NOT reformat to be placed infix if passed all three */
-let res = (|>) first second third;
+let res = (|>)(first, second, third);
 
 /* Same: Curried shouldn't place infix */
-let res = (|>) first;
+let res = (|>)(first);
 
 /* In fact, if even just one of the arguments are named, it shouldn't
  * be formatted or parsed as infix! */
-(|>) first ::second;
+(|>)(first, :second);
 
-(|>) ::first second;
+(|>)(:first, second);
 
-(|>) first second ::third;
+(|>)(first, second, :third);
 
-(first |> second) ::third;
+(first |> second)(:third);
 
 /* Infix has lower precedence than function application */
-first |> second ::third;
+first |> second(:third);
 
 let leftAssocGrouping = first |> second |> third;
 
@@ -266,82 +265,81 @@ let seeWhichCharacterHasHigherPrecedence =
 
 let res =
   blah
-  && DataConstructor 10
-  && DataConstructor 10
+  && DataConstructor(10)
+  && DataConstructor(10)
   + 10;
 
 /* Should be parsed as */
 let res =
   blah
-  && DataConstructor 10
-  && DataConstructor 10
+  && DataConstructor(10)
+  && DataConstructor(10)
   + 10;
 
-let (++) ::label ::label2 => label + label2;
+let (++) (:label, :label2) = label + label2;
 
-let (++) ::label ::label2 => label + label2;
+let (++) (:label, :label2) = label + label2;
 
 let (++) = (++);
 
-let (++): int => int = (++);
+let (++): int = int = (++);
 
-(++) label::20 label2::30 + 40;
+(++)(:label 20, :label2 30) + 40;
 
 /* Should be parsed as: */
-(++) label::20 label2::30 + 40;
+(++)(:label 20, :label2 30) + 40;
 
 /* Great idea! */
-let (==) a b => a < 0;
+let (==) (a, b) = a < 0;
 
-let (==) a b => a < 0;
+let (==) (a, b) = a < 0;
 
 let (==) = (==);
 
-let (==): int => int = (==);
+let (==): int = int = (==);
 
 let equal = Pervasives.(==);
 
 let starInfix_makeSureSpacesSurround = ( * );
 
-let starInfix_makeSureSpacesSurround = ( *\*\* );
+let starInfix_makeSureSpacesSurround = ( *** );
 
 /* The following two should be equivalently parsed/printed.  */
-let includesACommentCloseInIdentifier = ( *\*\/ );
+let includesACommentCloseInIdentifier = ( **\/ );
 
-let includesACommentCloseInIdentifier = ( *\*\/ );
+let includesACommentCloseInIdentifier = ( **\/ );
 
 let shouldSimplifyAnythingExceptApplicationAndConstruction =
-  call "hi"
-  ^ (
-    switch x {
+  call("hi")
+  ++ (
+    switch (x) {
     | _ => "hi"
     }
   )
-  ^ "yo";
+  ++ "yo";
 
 /* Add tests with IF/then mixed with infix/constructor application on left and right sides */
-
 /**
  * Every star or forward slash after the character of an infix operator must be
  * escaped.
  */
-let ( /\* ) a b => a + b;
+let ( /\* ) (a, b) = a + b;
 
-let x = 12 /-\* 23 /-\* 12;
+let x = 12 /-* 23 /-* 12;
 
 let y = a /\* b;
 
-let ( !=\* ) q r => q + r;
+let ( !=* ) (q, r) = q + r;
 
-let res = q ( !=\* ) r;
+let res = q(( !=* ), r);
 
-let ( !=\/\* ) q r => q + r;
+let ( !=/\* ) (q, r) = q + r;
 
-let res = q ( !=\/\* ) r;
+let res = q(( !=/\* ), r);
 
-let ( ~\* ) a => a + 1;
+let ( ~* ) (a) = a + 1;
 
-let res = ~\*10;
+let res = ~*10;
 
 let res = f - (- x);
 
@@ -349,37 +347,45 @@ let res = f - (- x);
 
 let res = - (- x);
 
-let res = f (- x);
-
+let res = f(- x);
 
 /**
  * Test using almost simple prefix as regular function.
  */
-let (!!) a b => a + b;
+let (!!) (a, b) = a + b;
 
-let res = (!!) 20 40;
+let res = (!!)(20, 40);
 
 /* The semicolon should be attached to someType */
 let myFunc
+    (
+      aaaa,
+      bbbb,
+      cccc,
+      dddd,
+      aaaa,
+      bbbb,
+      cccc,
+      dddd,
+      aaaa
+    ) = [
+  blah(
+    aaaa,
+    bbbb,
+    cccc,
+    dddd,
+    aaaa,
+    bbbb,
+    cccc,
+    dddd,
     aaaa
-    bbbb
-    cccc
-    dddd
-    aaaa
-    bbbb
-    cccc
-    dddd
-    aaaa => [
-  blah
-    aaaa bbbb cccc dddd aaaa bbbb cccc dddd aaaa,
+  ),
   ...someType
 ];
-
 
 /**
  * Testing various fixity.
  */
-
 /**
  * For each of these test cases for imperative updates, we'll test both record
  * update, object member update and array update.
@@ -389,8 +395,7 @@ let containingObject = {
   val arr = [|true, false, false|];
   val bigArr = "goodThingThisIsntTypeChecked";
   val str = "string";
-  pub testCases () => {
-
+  pub testCases () = {
     /**
      * The lowest precedence token is =, followed by :=, and then ?, then :.
      *
@@ -408,50 +413,47 @@ let containingObject = {
      * Because when encountering the ? the parser will shift on the ? instead of
      * reducing  expr = expr
      */
-
     /**
      * Without a + 1
      */
     x.contents = something ? hello : goodbye;
     y = something ? hello : goodbye;
-    arr.(0) = something ? hello : goodbye;
+    arr[0] = something ? hello : goodbye;
     bigArr.{0} = something ? hello : goodbye;
     str.[0] = something ? hello : goodbye;
     (x.contents = something) ? hello : goodbye;
     (y = something) ? hello : goodbye;
-    (arr.(0) = something) ? hello : goodbye;
+    (arr[0] = something) ? hello : goodbye;
     (bigArr.{0} = something) ? hello : goodbye;
     (str.[0] = something) ? hello : goodbye;
     x.contents = something ? hello : goodbye;
     y = something ? hello : goodbye;
-    arr.(0) = something ? hello : goodbye;
+    arr[0] = something ? hello : goodbye;
     bigArr.{0} = something ? hello : goodbye;
     str.[0] = something ? hello : goodbye;
-
     /**
      * With a + 1
      */
     x.contents = something + 1 ? hello : goodbye;
     x := something + 1 ? hello : goodbye;
     y = something + 1 ? hello : goodbye;
-    arr.(0) = something + 1 ? hello : goodbye;
+    arr[0] = something + 1 ? hello : goodbye;
     bigArr.{0} = something + 1 ? hello : goodbye;
     str.[0] = something + 1 ? hello : goodbye;
     (x.contents = something + 1) ?
       hello : goodbye;
     (x := something + 1) ? hello : goodbye;
     (y = something + 1) ? hello : goodbye;
-    (arr.(0) = something + 1) ? hello : goodbye;
+    (arr[0] = something + 1) ? hello : goodbye;
     (bigArr.{0} = something + 1) ?
       hello : goodbye;
     (str.[0] = something + 1) ? hello : goodbye;
     x.contents = something + 1 ? hello : goodbye;
     x := something + 1 ? hello : goodbye;
     y = something + 1 ? hello : goodbye;
-    arr.(0) = something + 1 ? hello : goodbye;
+    arr[0] = something + 1 ? hello : goodbye;
     bigArr.{0} = something + 1 ? hello : goodbye;
     str.[0] = something + 1 ? hello : goodbye;
-
     /**
      * #NotActuallyAConflict
      * Note that there's a difference with how = and := behave.
@@ -519,87 +521,82 @@ let containingObject = {
     /* To make the := parse differently, we must use parens */
     x + (something.contents := y);
     x + (something := y);
-
     /**
      * Try with ||
      */
     x.contents || something + 1 ?
       hello : goodbye;
     y || something + 1 ? hello : goodbye;
-    arr.(0) || something + 1 ? hello : goodbye;
+    arr[0] || something + 1 ? hello : goodbye;
     bigArr.{0} || something + 1 ?
       hello : goodbye;
     str.[0] || something + 1 ? hello : goodbye;
     x.contents || something + 1 ?
       hello : goodbye;
     y || something + 1 ? hello : goodbye;
-    arr.(0) || something + 1 ? hello : goodbye;
+    arr[0] || something + 1 ? hello : goodbye;
     bigArr.{0} || something + 1 ?
       hello : goodbye;
     str.[0] || something + 1 ? hello : goodbye;
     x.contents
     || (something + 1 ? hello : goodbye);
     y || (something + 1 ? hello : goodbye);
-    arr.(0) || (something + 1 ? hello : goodbye);
+    arr[0] || (something + 1 ? hello : goodbye);
     bigArr.{0}
     || (something + 1 ? hello : goodbye);
     str.[0] || (something + 1 ? hello : goodbye);
-
     /**
      * Try with &&
      */
     x.contents && something + 1 ?
       hello : goodbye;
     y && something + 1 ? hello : goodbye;
-    arr.(0) && something + 1 ? hello : goodbye;
+    arr[0] && something + 1 ? hello : goodbye;
     bigArr.{0} && something + 1 ?
       hello : goodbye;
     str.[0] && something + 1 ? hello : goodbye;
     x.contents && something + 1 ?
       hello : goodbye;
     y && something + 1 ? hello : goodbye;
-    arr.(0) && something + 1 ? hello : goodbye;
+    arr[0] && something + 1 ? hello : goodbye;
     bigArr.{0} && something + 1 ?
       hello : goodbye;
     str.[0] && something + 1 ? hello : goodbye;
     x.contents
     && (something + 1 ? hello : goodbye);
     y && (something + 1 ? hello : goodbye);
-    arr.(0) && (something + 1 ? hello : goodbye);
+    arr[0] && (something + 1 ? hello : goodbye);
     bigArr.{0}
     && (something + 1 ? hello : goodbye);
     str.[0] && (something + 1 ? hello : goodbye);
-
     /**
      * See how regular infix operators work correctly.
      */
     x.contents = 2 + 4;
     y = 2 + 4;
-    arr.(0) = 2 + 4;
+    arr[0] = 2 + 4;
     bigArr.{0} = 2 + 4;
     str.[0] = 2 + 4;
     (x.contents = 2) + 4;
     (y = 2) + 4;
-    (arr.(0) = 2) + 4;
+    (arr[0] = 2) + 4;
     (bigArr.{0} = 2) + 4;
     (str.[0] = 2) + 4;
-
     /**
      * Ensures that record update, object field update, and := are all right
      * associative.
      */
     x.contents = y.contents = 10;
     y = x.contents = 10;
-    arr.(0) = x.contents = 10;
+    arr[0] = x.contents = 10;
     bigArr.{0} = x.contents = 10;
     str.[0] = x.contents = 10;
     /* Should be the same as */
     x.contents = x.contents = 10;
     y = x.contents = 10;
-    arr.(0) = x.contents = 10;
+    arr[0] = x.contents = 10;
     bigArr.{0} = x.contents = 10;
     str.[0] = x.contents = 10;
-
     /**
      * Ensures that record update, object field update, and := are all right
      * associative.
@@ -613,7 +610,6 @@ let containingObject = {
     x ? y : z ? a : b;
     /* Not this: */
     (x ? y : z) ? a : b;
-
     /**
      *          ^
      * When rendering the content to the left of the ? we know that we want the
@@ -632,9 +628,9 @@ let containingObject = {
       something ?
         x.contents = somethingElse : goodbye;
     y = something ? y = somethingElse : goodbye;
-    arr.(0) =
+    arr[0] =
       something ?
-        arr.(0) = somethingElse : goodbye;
+        arr[0] = somethingElse : goodbye;
     bigArr.{0} =
       something ?
         bigArr.{0} = somethingElse : goodbye;
@@ -648,9 +644,9 @@ let containingObject = {
       something ?
         x.contents = somethingElse : goodbye;
     y = something ? y = somethingElse : goodbye;
-    arr.(0) =
+    arr[0] =
       something ?
-        arr.(0) = somethingElse : goodbye;
+        arr[0] = somethingElse : goodbye;
     bigArr.{0} =
       something ?
         bigArr.{0} = somethingElse : goodbye;
@@ -660,9 +656,9 @@ let containingObject = {
 
     /** And this */
     y := something ? y := somethingElse : goodbye;
-    arr.(0) :=
+    arr[0] :=
       something ?
-        arr.(0) := somethingElse : goodbye;
+        arr[0] := somethingElse : goodbye;
     bigArr.{0} :=
       something ?
         bigArr.{0} := somethingElse : goodbye;
@@ -671,9 +667,9 @@ let containingObject = {
         str.[0] := somethingElse : goodbye;
     /* Should be parsed as */
     y := something ? y := somethingElse : goodbye;
-    arr.(0) :=
+    arr[0] :=
       something ?
-        arr.(0) := somethingElse : goodbye;
+        arr[0] := somethingElse : goodbye;
     bigArr.{0} :=
       something ?
         bigArr.{0} := somethingElse : goodbye;
@@ -688,7 +684,7 @@ let containingObject = {
         goodbye;
     x :=
       something ?
-        arr.(0) =
+        arr[0] =
           somethingElse ? goodbye : goodbye :
         goodbye;
     x :=
@@ -709,7 +705,7 @@ let containingObject = {
         goodbye;
     x :=
       something ?
-        arr.(0) =
+        arr[0] =
           somethingElse ? goodbye : goodbye :
         goodbye;
     x :=
@@ -730,7 +726,7 @@ let containingObject = {
         goodbye;
     x :=
       something ?
-        (arr.(0) = somethingElse) ?
+        (arr[0] = somethingElse) ?
           goodbye : goodbye :
         goodbye;
     x :=
@@ -743,11 +739,9 @@ let containingObject = {
         (str.[0] = somethingElse) ?
           goodbye : goodbye :
         goodbye;
-
     /**
      * And
      */
-
     /** These should be parsed the same */
     something ?
       somethingElse :
@@ -779,7 +773,6 @@ let containingObject = {
         somethingElse : x := somethingElse
     ) ?
       x : z;
-
     /** These should be parsed the same */
     something ?
       somethingElse : y = somethingElse ? x : z;
@@ -793,24 +786,22 @@ let containingObject = {
         somethingElse : y = somethingElse
     ) ?
       x : z;
-
     /** These should be parsed the same */
     something ?
       somethingElse :
-      arr.(0) = somethingElse ? x : arr.(0);
+      arr[0] = somethingElse ? x : arr[0];
     something ?
       somethingElse :
-      arr.(0) = somethingElse ? x : arr.(0);
+      arr[0] = somethingElse ? x : arr[0];
     /* Not: */
     something ?
       somethingElse :
-      (arr.(0) = somethingElse) ? x : z;
+      (arr[0] = somethingElse) ? x : z;
     (
       something ?
-        somethingElse : arr.(0) = somethingElse
+        somethingElse : arr[0] = somethingElse
     ) ?
       x : z;
-
     /** These should be parsed the same */
     something ?
       somethingElse :
@@ -828,7 +819,6 @@ let containingObject = {
         bigArr.{0} = somethingElse
     ) ?
       x : z;
-
     /** These should be parsed the same */
     something ?
       somethingElse :
@@ -845,7 +835,6 @@ let containingObject = {
         somethingElse : str.[0] = somethingElse
     ) ?
       x : z;
-
     /**
      * It creates a totally different meaning when parens group the :
      */
@@ -853,16 +842,15 @@ let containingObject = {
       something ?
         (x.contents = somethingElse: x) : z;
     y = something ? (y = somethingElse: x) : z;
-    arr.(0) =
+    arr[0] =
       something ?
-        (arr.(0) = somethingElse: x) : z;
+        (arr[0] = somethingElse: x) : z;
     bigArr.{0} =
       something ?
         (bigArr.{0} = somethingElse: x) : z;
     str.[0] =
       something ?
         (str.[0] = somethingElse: x) : z;
-
     /**
      * Various precedence groupings.
      */
@@ -886,65 +874,61 @@ let containingObject = {
       hello : goodbye;
     let result = - x + (something.contents = y);
     /* Prefix minus is actually sugar for regular function identifier ~-*/
-    let result = 2 + (- add 4 0);
+    let result = 2 + (- add(4, 0));
     /* Same as */
-    let result = 2 + (- add) 4 0;
+    let result = 2 + (- add(4, 0));
     /* Same as */
-    let result = 2 + (- add 4 0);
+    let result = 2 + (- add(4, 0));
     /* That same example but with ppx attributes on the add application */
-    let result = 2 + (- add 4 0 [@ppx]);
+    let result = 2 + (- [@ppx] add(4, 0));
     /* Same as */
-    let result = 2 + (- add) 4 0 [@ppx];
+    let result = [@ppx] 2 + (- add(4, 0));
     /* Same as */
-    let result = 2 + (- add 4 0 [@ppx]);
+    let result = [@ppx] 2 + (- add(4, 0));
     /* Multiple nested prefixes */
-    let result = 2 + (- (- (- add 4 0)));
+    let result = 2 + (- (- (- add(4, 0))));
     /* And with attributes */
     let result =
-      2 + (- (- (- add 4 0 [@onAddApplication])));
-
+      [@onAddApplication] 2 + (- (- (- add(4, 0))));
     /**
      * TODO: Move all of these test cases to attributes.re.
      */
     /* Attribute on the prefix application */
-    let res = (- something blah blah) [@attr];
+    let res = [@attr] (- something(blah, blah));
     /* Attribute on the regular function application, not prefix */
-    let res = - something blah blah [@attr];
-    let attrOnPrefix = (-1) [@ppxOnPrefixApp];
+    let res = [@attr] (- something(blah, blah));
+    let attrOnPrefix = [@ppxOnPrefixApp] (-1);
     let attrOnPrefix = 5 + (-1);
     let result =
-      arr.[0] [@ppxAttributeOnSugarGetter];
-
+      [@ppxAttributeOnSugarGetter] arr.[0];
     /**
      * Unary plus/minus has lower precedence than prefix operators:
      * And unary plus has same precedence as unary minus.
      */
-    let res = - !record;
+    let res = - (! record);
     /* Should be parsed as: */
-    let res = - !record;
+    let res = - (! record);
     /* Although that precedence ranking doesn't likely have any effect in that
      * case. */
-
     /**
      * And this
      */
-    let res = - (+ callThisFunc ());
+    let res = - (+ callThisFunc());
     /* should be parsed as: */
-    let res = - (+ callThisFunc ());
-
+    let res = - (+ callThisFunc());
     /**
      * And this
      */
-    let res = !(- callThisFunc ());
+    let res = ! (- callThisFunc());
     /* Should be parsed (and should remain printed as: */
-    let res = !(- callThisFunc ());
-    let res = !x [@onApplication];
-    let res = !(x [@onX]);
-    let res = !(x [@onX]);
-    (something.contents = "newvalue")
-    [@shouldBeRenderedOnEntireSetField];
+    let res = ! (- callThisFunc());
+    let res = [@onApplication] (! x);
+    let res = ! [@onX] x;
+    let res = ! [@onX] x;
+    [@shouldBeRenderedOnEntireSetField]
+    (something.contents = "newvalue");
     something.contents =
-      "newvalue" [@shouldBeRenderedOnString]
+      [@shouldBeRenderedOnString] "newvalue"
   }
 };
 
@@ -954,34 +938,43 @@ let x = foo |> f |> g;
 
 let x =
   foo
-  |> somelongfunctionname "foo"
-  |> anotherlongfunctionname "bar" 1
+  |> somelongfunctionname("foo")
+  |> anotherlongfunctionname("bar", 1)
   |> somelongfunction
   |> bazasdasdad;
 
 let code =
   JSCodegen.Code.(
     create
-    |> lines
+    |> lines(
          Requires.(
            create
-           |> import_type
-                local::"Set" source::"Set"
-           |> import_type
-                local::"Map" source::"Map"
-           |> import_type
-                local::"Immutable"
-                source::"immutable"
-           |> require
-                local::"invariant"
-                source::"invariant"
-           |> require
-                local::"Image"
-                source::"Image.react"
-           |> side_effect
-                source::"monkey_patches"
+           |> import_type(
+                :local "Set",
+                :source "Set"
+              )
+           |> import_type(
+                :local "Map",
+                :source "Map"
+              )
+           |> import_type(
+                :local "Immutable",
+                :source "immutable"
+              )
+           |> require(
+                :local "invariant",
+                :source "invariant"
+              )
+           |> require(
+                :local "Image",
+                :source "Image.react"
+              )
+           |> side_effect(
+                :source "monkey_patches"
+              )
            |> render_lines
          )
+       )
     |> new_line
     |> new_line
     |> new_line
@@ -992,7 +985,7 @@ let code =
 let code = JSCodegen.Code.(create |> render);
 
 let server = {
-  let callback _conn req body => {
+  let callback (_conn, req, body) = {
     let uri =
       req
       |> Request.uri
@@ -1009,15 +1002,19 @@ let server = {
     body
     |> Cohttp_lwt_body.to_string
     >|= (
-      fun body =>
-        Printf.sprintf
-          "okokok" uri meth headers body
+      (body) =>
+        Printf.sprintf(
+          "okokok",
+          uri,
+          meth,
+          headers,
+          body
+        )
     )
     >>= (
-      fun body =>
-        Server.respond_string ::status ::body ()
+      (body) =>
+        Server.respond_string(:status, :body)()
     )
   };
-  Server.create
-    ::mode (Server.make ::callback ())
+  Server.create(:mode, Server.make(:callback)())
 };
