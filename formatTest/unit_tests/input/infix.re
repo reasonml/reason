@@ -794,3 +794,28 @@ let server = {
   };
 Server.create(:mode, Server.make(:callback, ()));
 };
+
+let lijst =
+  List.length
+  @@ List.map(
+       (s) => s ++ " example",
+       [
+         "one",
+         "two",
+         "three",
+         "four",
+         "five",
+         "six",
+         "seven",
+         "eight",
+         "nine",
+         "ten"
+       ]
+     );
+
+let example =
+  true != false
+  && "a" == "b"
+  && "arbitrary" === "example"
+  && "how long" >= "can you get"
+  && "seriously" <= "what is the line length";

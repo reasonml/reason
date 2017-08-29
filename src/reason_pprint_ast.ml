@@ -2373,6 +2373,8 @@ let rec computeInfixChain = function
   | InfixTree (op, leftResolvedRule, rightResolvedRule) ->
       (computeInfixChain leftResolvedRule) @ [InfixToken op] @ (computeInfixChain rightResolvedRule)
 
+let equalityOperators = ["!="; "!=="; "==="; "=="; ">="; "<="]
+
 (* Formats a flattened list of infixChain nodes into a list of layoutNodes
  * which allow smooth line-breaking
  * e.g. [LayoutNode foo; InfixToken |>; LayoutNode f; InfixToken |>; LayoutNode z]
@@ -2398,6 +2400,18 @@ let formatComputedInfixChain infixChainList =
      * |> z *)
     if List.length group < 2 then
       makeList ~inline:(true, true) ~sep:" " ~break:Never group
+    (* Basic equality operators require special formatting, we can't give it
+     * 'classic' infix operator formatting, otherwise we would get
+     * let example =
+     *  true
+     *  != false
+     *  && "a"
+     *  == "b"
+     *  *)
+    else if List.mem currentToken equalityOperators then
+      let hd = List.hd group in
+      let tl = makeList ~inline:(true, true) ~sep:" " ~break:Never (List.tl group) in
+      makeList ~inline:(true, true) ~sep:" " ~break:IfNeed [hd; tl]
     else
       (* Represents `|> f` in foo |> f
        * We need a label here to indent possible closing parens
@@ -2418,6 +2432,18 @@ let formatComputedInfixChain infixChainList =
             let groupNode = makeList ~inline:(true, true) ~sep:" " ~break:Never (group @ [atom t]) in
             let children = makeList ~inline:(true, true) ~preSpace:true ~break:IfNeed (print [] [] t xs) in
             print (acc @ [label ~space:true groupNode children]) [] t []
+          (* Represents:
+           * List.map @@
+           * List.length
+           *
+           * Notice how we want the `@@` on the first line.
+           * Extra indent puts pressure on the subsequent line lengths
+           * *)
+          else if t = "@@" then
+            let groupNode = makeList ~inline:(true, true) ~sep:" " ~break:Never (group @ [atom t]) in
+            print (acc @ [groupNode]) [] t xs
+          else if List.mem t equalityOperators then
+            print acc (group @ [atom t]) t xs
           else
             print (acc @ [layout_of_group group currentToken]) [(atom t)] t xs
       | Layout layoutNode -> print acc (group @ [layoutNode]) currentToken xs
@@ -5921,18 +5947,17 @@ class printer  ()= object(self:'self)
             (self#module_type mt)
         )
     | Pmod_structure (s) ->
-      makeList
-        ~break:Always_rec
-        ~inline:(true, false)
-        ~wrap:("{", "}")
-        ~newlinesAboveComments:0
-        ~newlinesAboveItems:0
-        ~newlinesAboveDocComments:1
-        ~renderFinalSep:true
-        ~postSpace:true
-        ~sep:";"
-        (List.map self#structure_item (List.filter self#shouldDisplayStructureItem s))
-
+        makeList
+          ~break:Always_rec
+          ~inline:(true, false)
+          ~wrap:("{", "}")
+          ~newlinesAboveComments:0
+          ~newlinesAboveItems:0
+          ~newlinesAboveDocComments:1
+          ~renderFinalSep:true
+          ~postSpace:true
+          ~sep:";"
+          (List.map self#structure_item (List.filter self#shouldDisplayStructureItem s))
     | _ ->
         (* For example, functor application will be wrapped. *)
         formatPrecedence (self#module_expr x)
