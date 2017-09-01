@@ -3898,7 +3898,7 @@ class printer  ()= object(self:'self)
       | (Labelled "children", {pexp_desc = Pexp_construct ({txt = Lident"::"}, Some {pexp_desc = Pexp_tuple(components)} )}) :: tail ->
         processArguments tail processedAttrs (self#formatChildren components [])
       | (Optional lbl, expression) :: tail ->
-        let nextAttr = makeList ([atom lbl; atom "=?"; self#simplifyUnparseExpr expression]) in
+        let nextAttr = label (makeList ~break:Never [atom lbl; atom "=?"]) (self#simplifyUnparseExpr expression) in
         processArguments tail (nextAttr :: processedAttrs) children
 
       | (Labelled lbl, expression) :: tail ->

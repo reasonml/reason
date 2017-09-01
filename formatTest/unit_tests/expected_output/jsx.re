@@ -124,3 +124,14 @@ let icon =
       }
     )
   />;
+
+<MessengerSharedPhotosAlbumViewPhotoReact
+  ref=?(
+    foo##bar === baz ?
+      Some(
+        foooooooooooooooooooooooo(setRefChild)
+      ) :
+      None
+  )
+  key=node##legacy_attachment_id
+/>;
