@@ -23,11 +23,11 @@ brew install opam
 # On Linux, see here (you will need opam >= 1.2.2): http://opam.ocaml.org/doc/Install.html
 
 opam init
-# Add this to your ~/.bashrc (or ~/.zshrc):
+# Add this to your ~/.bashrc (or ~/.zshrc), then do `source ~/.bashrc`
 #   eval $(opam config env)
 
 opam update
-opam switch 4.03.0
+opam switch 4.04.1
 eval $(opam config env)
 git clone https://github.com/facebook/reason.git
 cd reason
@@ -35,6 +35,14 @@ opam pin add -y reason .
 ```
 
 **Note**: during the last `opam pin` step, make sure your local repo is clean. In particular, remove artifacts and `node_modules`. Otherwise the pinning might go stale or stall due to the big `node_modules`.
+
+### Build
+
+`make build`. **If this fails on your machine but master passes**, it means your setup wasn't right. Could you check if you followed the above installation steps? In particular, make sure you did `eval $(opam config env)` and sourced your shell environment (if you don't know how, just open a new shell tab and it'll be sourced usually).
+
+### Test
+
+`make test` (make sure to follow the repo pinning instructions above!)
 
 ## License
 
