@@ -16,6 +16,12 @@ module Test = {
     | Or((int, int));
 };
 
+let _ = Test.And((1, 2));
+
+let _ = Test.Or((1, 2));
+
+let _ = Some(1);
+
 Test.And((1, 2));
 
 Test.Or((1, 2));
@@ -37,12 +43,22 @@ type t2 =
 type t3 =
   | TupleConstructor3((int, int));
 
+let _ = M.TupleConstructorInModule((1, 2));
+
+let _ = M.TupleConstructor2((1, 2));
+
+let _ = TupleConstructor2((1, 2));
+
+let _ = M.TupleConstructor3((1, 2));
+
+let _ = TupleConstructor3((1, 2));
+
 M.TupleConstructorInModule((1, 2));
 
 M.TupleConstructor2((1, 2));
 
 TupleConstructor2((1, 2));
 
-M.TupleConstructor3(1, 2);
+M.TupleConstructor3((1, 2));
 
 TupleConstructor3((1, 2));
