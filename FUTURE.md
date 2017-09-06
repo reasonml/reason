@@ -1,6 +1,6 @@
 ## 1.13.8?
 
-- Even better infix operators formatting for `==`, `&&` and the rest (#1380)
+- Even better infix operators formatting for `==`, `&&`, `>` and the rest (#1380, #1386)
 
 ## 3.0.0
 
