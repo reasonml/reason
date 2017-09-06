@@ -819,3 +819,10 @@ let example =
   && "arbitrary" === "example"
   && "how long" >= "can you get"
   && "seriously" <= "what is the line length";
+
+if (List.length(files)
+    > 0
+    && List.length(otherfiles)
+    < 2) {
+  ()
+};

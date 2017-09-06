@@ -2373,7 +2373,7 @@ let rec computeInfixChain = function
   | InfixTree (op, leftResolvedRule, rightResolvedRule) ->
       (computeInfixChain leftResolvedRule) @ [InfixToken op] @ (computeInfixChain rightResolvedRule)
 
-let equalityOperators = ["!="; "!=="; "==="; "=="; ">="; "<="]
+let equalityOperators = ["!="; "!=="; "==="; "=="; ">="; "<="; "<"; ">"]
 
 (* Formats a flattened list of infixChain nodes into a list of layoutNodes
  * which allow smooth line-breaking
