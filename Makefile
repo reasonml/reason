@@ -50,6 +50,7 @@ test: build clean-tests
 clean-tests:
 	rm -rf ./formatTest/**/actual_output
 	rm -f ./formatTest/failed_tests
+	rm -f ./miscTests/reactjs_jsx_ppx_tests/*.cm*
 
 clean: clean-tests
 	ocamlbuild -clean

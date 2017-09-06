@@ -7,28 +7,6 @@ for i in {1..3}
 do
   test="$testPath/test$i.re"
 
-  expected=`cat $testPath/expected$i.re`
-
-  ocamlc -dsource -ppx "./reactjs_jsx_ppx.native" -pp "./refmt_impl.native --print binary" -impl $test \
-    2>&1 | ./refmt_impl.native --print-width 100 --parse ml --print re --interface false \
-    > $testPath/actual${i}.re
-
-  actual=`cat $testPath/actual$i.re`
-
-  if [[ "$expected" = "$actual" ]]; then
-    echo "V1 behavior $i: ok"
-  else
-    echo "V1 behavior $i: wrong"
-    # show the error
-    diff -u $testPath/expected$i.re $testPath/actual$i.re
-    exit 1
-  fi
-done
-
-for i in {1..3}
-do
-  test="$testPath/test$i.re"
-
   expected=`cat $testPath/expected${i}_newBehavior.re`
 
   ocamlc -dsource -ppx "./reactjs_jsx_ppx_2.native" -pp "./refmt_impl.native --print binary" -impl $test \

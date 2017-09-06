@@ -36,7 +36,7 @@ Throughout the codebase, you might see mentions of "migrate-parsetree", `Ast_404
 
 - `reason_util.ml`, `syntax_util.ml`: utils.
 
-- `reactjs_jsx_ppx.ml`, `reactjs_jsx_ppx_2.ml`: our ReactJS interop that translates [Reason JSX](https://reasonml.github.io/guide/language/jsx) into something that ReactJS understands. See the comments in the file and the description in [ReasonReact](https://reasonml.github.io/reason-react/#reason-react-jsx).
+- `reactjs_jsx_ppx_2.ml`: our ReactJS interop that translates [Reason JSX](https://reasonml.github.io/guide/language/jsx) into something that ReactJS understands. See the comments in the file and the description in [ReasonReact](https://reasonml.github.io/reason-react/#reason-react-jsx).
 
 ## Working with PPX
 
