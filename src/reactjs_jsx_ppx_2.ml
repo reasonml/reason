@@ -1,18 +1,44 @@
-(* transform `div props1::a props2::b children::[foo, bar] () [@JSX]` into
-   `ReactDOMRe.createElement "div" props::[%bs.obj {props1: 1, props2: b}] [|foo, bar|]`.
+(*
+  This is the file that handles turning Reason JSX' agnostic function call into
+  a ReasonReact-specific function call. Aka, this is a macro, using OCaml's ppx
+  facilities; https://whitequark.org/blog/2014/04/16/a-guide-to-extension-
+  points-in-ocaml/
 
-   For the old behavior:
-   Don't transform the upper-cased case: `Foo.createElement foo::bar children::[] () [@JSX]`.
+  You wouldn't use this file directly; it's used by BuckleScript's
+  bsconfig.json. Specifically, there's a field called `react-jsx` inside the
+  field `reason`, which enables this ppx magically
+*)
 
-   For the new behavior:
-   transform the upper-cased case `Foo.createElement key::a ref::b foo::bar children::[] () [@JSX]` into
+(*
+  The actual transform:
+
+  transform `div props1::a props2::b children::[foo, bar] () [@JSX]` into
+  `ReactDOMRe.createElement "div" props::[%bs.obj {props1: 1, props2: b}] [|foo,
+  bar|]`.
+
+  transform the upper-cased case `Foo.createElement key::a ref::b foo::bar children::[] () [@JSX]` into
   `ReasonReact.element key::a ref::b (Foo.make foo::bar [||] [@JSX])`
 *)
 
-(* Why do we need a transform, instead of just using the original format?
-   Because that one currently doesn't work well for the existing React.js *)
+(*
+  This file's shared between the Reason repo and the BuckleScript repo. In
+  Reason, it's in src. In BuckleScript, it's in vendor/reason We periodically
+  copy this file from Reason (the source of truth) to BuckleScript, then
+  uncomment the #if #else #end cppo macros you see in the file. That's because
+  BuckleScript's on OCaml 4.02 while Reason's on 4.04; so the #if macros
+  surround the pieces of code that are different between the two compilers.
+
+  When you modify this file, please make sure you're not dragging in too many
+  things. You don't necessarily have to test the file on both Reason and
+  BuckleScript; ping @chenglou and a few others and we'll keep them synced up by
+  patching the right parts, through the power of types(tm)
+*)
+
+(* #if defined BS_NO_COMPILER_PATCH then *)
 open Migrate_parsetree
 open Ast_404
+module To_current = Convert(OCaml_404)(OCaml_current)
+(* #end *)
 
 open Ast_helper
 open Ast_mapper
@@ -135,7 +161,21 @@ let jsxMapper () =
 
   let structure =
     (fun mapper structure -> match structure with
-      (* match against [@@@bs.config {foo, jsx: ...}] *)
+      (*
+        match against [@@@bs.config {foo, jsx: ...}] at the file-level. This
+        indicates which version of JSX we're using. This code stays here because
+        we used to have 2 versions of JSX PPX (and likely will again in the
+        future when JSX PPX changes). So the architecture for switching between
+        JSX behavior stayed here. To create a new JSX ppx, copy paste this
+        entire file and change the relevant parts.
+
+        Description of architecture: in bucklescript's bsconfig.json, you can
+        specify a project-wide JSX version. You can also specify a file-level
+        JSX version. This degree of freedom allows a person to convert a project
+        one file at time onto the new JSX, when it was released. It also enabled
+        a project to depend on a third-party which is still using an old version
+        of JSX
+      *)
       | {
             pstr_loc;
             pstr_desc = Pstr_attribute (
@@ -145,7 +185,7 @@ let jsxMapper () =
           }::restOfStructure -> begin
             let (jsxField, recordFieldsWithoutJsx) = recordFields |> List.partition (fun ({txt}, _) -> txt = Lident "jsx") in
             match (jsxField, recordFieldsWithoutJsx) with
-            (* no jsx config found *)
+            (* no file-level jsx config found *)
             | ([], _) -> default_mapper.structure mapper structure
             (* {jsx: 1 | 2} *)
             | ((_, {pexp_desc = Pexp_constant (Pconst_integer (version, _))})::rest, recordFieldsWithoutJsx) -> begin
@@ -223,6 +263,14 @@ let jsxMapper () =
        (* Delegate to the default mapper, a deep identity traversal *)
        | e -> default_mapper.expr mapper e) in
 
-  Jsx_ppx_to_current.To_current.copy_mapper { default_mapper with structure; expr }
+(* #if defined BS_NO_COMPILER_PATCH then *)
+  To_current.copy_mapper { default_mapper with structure; expr }
+(* #else *)
+  (* { default_mapper with structure; expr } *)
+(* #end *)
 
+(* #if defined BS_NO_COMPILER_PATCH then *)
 let () = Compiler_libs.Ast_mapper.register "JSX" (fun _argv -> jsxMapper ())
+(* #else *)
+(* let ast_mapper = jsxMapper () *)
+(* #end *)

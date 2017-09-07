@@ -1,10 +1,10 @@
-This subdirectory is used for packing up the entire Reason `refmt` into a single file through BuckleScript's [bspack](https://github.com/bloomberg/bucklescript/blob/master/jscomp/core/bspack_main.ml), thus discarding all intermediate steps needed to build Reason, except for the final `refmt` binary compilation. Likewise for `reactjs_jsx_ppx` and `reactjs_jsx_ppx_2`.
+This subdirectory is used for packing up the entire Reason `refmt` into a single file through BuckleScript's [bspack](https://github.com/bloomberg/bucklescript/blob/master/jscomp/core/bspack_main.ml), thus discarding all intermediate steps needed to build Reason, except for the final `refmt` binary compilation.
 
-This makes our installation much friendlier to e.g. Windows. BuckleScript currently includes the three bundles in its own repo, thus making Reason first-class.
+This makes our installation much friendlier to e.g. Windows. BuckleScript currently includes the three bundles in its own repo, thus making Reason first-class (Btw, BS also uses a few other pieces of code from Reason, in its vendor/reason folder and jscomp/reason_outcome_printer).
 
 ## Build
 
-Here is what we found to be required to create bspacks of reason 1.13.5. These
+Here is what we found to be required to create bspacks of reason 1.13.7. These
 instructions may or may not be applicable to the next version of Reason.
 
 - Install reason-cli globally (because reason-cli installation that
