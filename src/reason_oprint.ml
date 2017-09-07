@@ -51,16 +51,16 @@
   AST nodes and turn them into text, for Merlin, rtop and terminal errors
   reporting to be in Reason syntax.
 
-  If you've navigated around, you have have seen the other printer called
-  reason_pprint_ast, our actual, main pretty-printer. Why is this one
-  separated from reason_pprint_ast? Because the outcome printer's use-case is
-  a bit different and needs different entry points blablabla... These are
-  mostly excuses. But for example, currently,
-  `Js.t {. foo: bar}` by itself is *invalid syntax* for a pretty printer (the
-  correct, minimal valid code would be `type myObject = Js.t {. foo: bar}`),
-  but the terminal error report do want to provide just that snippet and have
-  you print it. Hopefully OCaml can unify actual code pretty-printing and
-  terminal type info pretty-printing one day.
+  If you've navigated around in the Reason codebase, you might have seen the
+  other printer called reason_pprint_ast, our actual, main pretty-printer. Why
+  is this one separated from reason_pprint_ast? Because the outcome printer's
+  use-case is a bit different and needs different entry points blablabla...
+  These are mostly excuses. But for example, currently, `Js.t {. foo: bar}` by
+  itself is *invalid syntax* for a pretty printer (the correct, minimal valid
+  code would be `type myObject = Js.t {. foo: bar}`), but the terminal error
+  report do want to provide just that snippet and have you print it. Hopefully
+  OCaml can unify actual code pretty-printing and terminal type info pretty-
+  printing one day.
 
   This also means the outcome printer doesn't use the normal Parsetree,
   Ast_helper and others you might have seen in other files. It has its own
@@ -69,15 +69,27 @@
 
   The rest of this file's logic is just pattern-matching on these tree node
   variants & using Format to pretty-print them nicely.
-
-  Btw, we've also copied & tweaked this file over to BuckleScript's terminal
-  reporting:
-  https://github.com/BuckleScript/bucklescript/tree/master/jscomp/reason_outcome_printer.
-  When you modify this file, please make sure it's not too crazy and makes
-  that copied version too hard to keep up to date. Thanks!
   *)
 
+(*
+  This file's shared between the Reason repo and the BuckleScript repo. In
+  Reason, it's in src/reason_oprint.ml. In BuckleScript, it's in
+  jscomp/reason_outcome_printer/tweaked_reason_oprint.ml. We periodically copy
+  this file from Reason (the source of truth) to BuckleScript, then uncomment
+  the #if #else #end cppo macros you see in the file. That's because
+  BuckleScript's on OCaml 4.02 while Reason's on 4.04; so the #if macros
+  surround the pieces of code that are different between the two compilers.
+
+  When you modify this file, please make sure you're not dragging in too many
+  things. You don't necessarily have to test the file on both Reason and
+  BuckleScript; ping @chenglou and a few others and we'll keep them synced up by
+  patching the right parts, through the power of types(tm)
+*)
+
+(* #if defined BS_NO_COMPILER_PATCH then *)
 open Ast_404
+(* #end *)
+
 open Format
 open Outcometree
 
@@ -342,8 +354,11 @@ and print_simple_out_type ppf =
         )
         n tyl;
       fprintf ppf ")@]"
+(* #if defined BS_NO_COMPILER_PATCH then *)
   | Otyp_attribute (t, attr) ->
         fprintf ppf "@[<1>(%a [@@%s])@]" print_out_type t attr.oattr_name
+(* #end *)
+
 and print_object_fields ppf =
   function
     [] -> ()
@@ -531,7 +546,11 @@ and print_out_sig_item ppf =
           | Orec_first -> "type"
           | Orec_next  -> "and")
         ppf td
+(* #if defined BS_NO_COMPILER_PATCH then *)
   | Osig_value {oval_name; oval_type; oval_prims; oval_attributes} ->
+(* #else *)
+  (* | Osig_value(oval_name, oval_type, oval_prims) -> *)
+(* #end *)
     let kwd = if oval_prims = [] then "let" else "external" in
     let pr_prims ppf =
       function
@@ -540,12 +559,17 @@ and print_out_sig_item ppf =
           fprintf ppf "@ = \"%s\"" s;
           List.iter (fun s -> fprintf ppf "@ \"%s\"" s) sl
     in
+(* #if defined BS_NO_COMPILER_PATCH then *)
     fprintf ppf "@[<2>%s %a :@ %a%a%a@]" kwd value_ident oval_name
         !out_type oval_type pr_prims oval_prims
         (fun ppf -> List.iter (fun a -> fprintf ppf "@ [@@@@%s]" a.oattr_name))
         oval_attributes
   | Osig_ellipsis ->
     fprintf ppf "..."
+(* #else *)
+    (* fprintf ppf "@[<2>%s %a :@ %a%a@]" kwd value_ident oval_name *)
+        (* !out_type oval_type pr_prims oval_prims *)
+(* #end *)
 
 and print_out_type_decl kwd ppf td =
   let print_constraints ppf =
