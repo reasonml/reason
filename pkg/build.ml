@@ -56,7 +56,6 @@ let () =
     Pkg.bin ~auto:false "src/rtop_init.ml" ~dst:"rtop_init.ml";
     Pkg.bin ~auto:false "_reasonbuild/_build/myocamlbuild" ~dst:"rebuild";
     Pkg.bin "src/reason_format_type" ~dst:"refmttype";
-    Pkg.bin "src/reactjs_jsx_ppx" ~dst:"reactjs_jsx_ppx";
     Pkg.bin "src/reactjs_jsx_ppx_2" ~dst:"reactjs_jsx_ppx_2";
     Pkg.bin "src/ppx_react" ~dst:"ppx_react";
     Pkg.lib ~exts:(Exts.exts [ ".cmo"; ".cmx";".cmi"; ".cmt";".mli"]) "src/reason_parser";
