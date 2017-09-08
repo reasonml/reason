@@ -1,5 +1,4 @@
 ppxDerivingAndResultStub="module Ppx_deriving_show = struct let sig_of_type ~options ~path decl = [] let str_of_type ~options ~path typ = [] end module Result = struct type ('a, 'b) result = Ok of 'a | Error of 'b end open Result"
-resultStub="module Result = struct type ('a, 'b) result = Ok of 'a | Error of 'b end open Result"
 
 menhirSuggestedLib=`menhir --suggest-menhirLib`
 
@@ -36,23 +35,5 @@ make -C ../
   -bs-MD \
   -o "./refmt_main.ml"
 
-./node_modules/bs-platform/bin/bspack.exe \
-  -bs-main Reactjs_jsx_ppx \
-  -prelude-str "$resultStub" \
-  -I "$reasonTargetDir/_build/src" \
-  -I "$ocamlMigrateParseTreeTargetDir" \
-  -bs-MD \
-  -o "./reactjs_ppx.ml"
-
-./node_modules/bs-platform/bin/bspack.exe \
-  -bs-main Reactjs_jsx_ppx_2 \
-  -prelude-str "$resultStub" \
-  -I "$reasonTargetDir/_build/src" \
-  -I "$ocamlMigrateParseTreeTargetDir" \
-  -bs-MD \
-  -o "./reactjs_ppx_2.ml"
-
 # finally, actually compile all 3 files
 ocamlopt -no-alias-deps -I +compiler-libs ocamlcommon.cmxa "refmt_main.ml" -o "refmt_main.out"
-ocamlopt -no-alias-deps -I +compiler-libs ocamlcommon.cmxa  "reactjs_ppx.ml" -o "reactjs_ppx.out"
-ocamlopt -no-alias-deps -I +compiler-libs ocamlcommon.cmxa  "reactjs_ppx_2.ml" -o "reactjs_ppx_2.out"
