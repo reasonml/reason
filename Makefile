@@ -12,7 +12,6 @@ setup_convenient_bin_links:
 	ln -fs $(shell pwd)/_build/src/reason_format_type.native $(shell pwd)/_build/bin/refmttype
 	ln -fs $(shell pwd)/_build/src/refmt_impl.native $(shell pwd)/_build/bin/refmt
 	ln -fs $(shell pwd)/_build/src/share.sh $(shell pwd)/_build/bin/share
-	ln -fs $(shell pwd)/_build/src/reup.sh $(shell pwd)/_build/bin/reup
 
 precompile:
 	cp pkg/META.in pkg/META
