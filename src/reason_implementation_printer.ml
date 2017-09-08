@@ -19,42 +19,7 @@ module Reason_implementation_printer : Printer_maker.PRINTER =
           in
           theParser (setup_lexbuf use_stdin filename), parsedAsML, false
 
-        let ppx_deriving_runtime =
-          let open Asttypes in
-          let open Parsetree in
-          let open Longident in
-          let open Ast_helper in
-          let open Location in
-          let mktypealias (name, params, types) =
-            let manifest = Typ.constr (mknoloc (Lident name)) types in
-            Str.type_ Nonrecursive [Type.mk ~params ~kind:Ptype_abstract ~manifest (mknoloc name)]
-          in
-          let mkmodulealias name =
-            Str.module_ (Mb.mk (mknoloc name) (Mod.ident (mknoloc (Lident name))))
-          in
-          let mkmoduleinclude name =
-            Str.include_ (Incl.mk (Mod.ident (mknoloc (Lident name))))
-          in
-          let type_aliases =
-            let n s = (s, [], []) in
-            let a s = (s, [(Typ.var "a"), Invariant], [Typ.var "a"]) in
-            List.map mktypealias [n "int"; n "char"; n "string"; n "float"; n "bool";
-                                  n "unit"; n "exn"; a "array"; a "list"; a "option";
-                                  n "nativeint"; n "int32"; n "int64"; a "lazy_t";
-                                  n "bytes"]
-          in
-          let module_aliases = List.map mkmodulealias ["Pervasives"; "Char"; "String";
-            "Printexc"; "Array"; "List"; "Nativeint"; "Int32"; "Int64"; "Lazy";
-            "Bytes"; "Hashtbl"; "Queue"; "Stack"; "Set"; "Weak"; "Printf"; "Format";
-            "Buffer"]
-          in
-          let module_includes = List.map mkmoduleinclude ["Pervasives"]
-          in
-          let structure_items = type_aliases @ module_aliases @ module_includes in
-          Str.module_ (Mb.mk (mknoloc "Ppx_deriving_runtime")
-                             (Mod.structure structure_items))
-
-        let parse ~add_runtime ~use_stdin filetype filename =
+        let parse ~use_stdin filetype filename =
             let ((ast, comments), parsedAsML, parsedAsInterface) =
             (match filetype with
             | `Auto -> defaultImplementationParserFor use_stdin filename
@@ -71,9 +36,6 @@ module Reason_implementation_printer : Printer_maker.PRINTER =
             in
             if parsedAsInterface then
               err "The file parsed does not appear to be an implementation file."
-            else if add_runtime then
-              (* NB: Not idempotent. *)
-              ((ppx_deriving_runtime::ast, comments), parsedAsML)
             else
               ((ast, comments), parsedAsML)
 

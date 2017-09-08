@@ -1,8 +1,6 @@
-# The bspacked version of refmt doesn't use the Ppx_deriving_show used in Reason for `--add-printers`, which generates runtime printing for data structures. The refmt used by BuckleScript doesn't need that (just use `Js.log`).
-
 # Because OCaml 4.02 doesn't come with the `Result` module, it also needed stubbing out.
 
-ppxDerivingAndResultStub="module Ppx_deriving_show = struct let sig_of_type ~options ~path decl = [] let str_of_type ~options ~path typ = [] end module Result = struct type ('a, 'b) result = Ok of 'a | Error of 'b end open Result"
+resultStub="module Result = struct type ('a, 'b) result = Ok of 'a | Error of 'b end open Result"
 
 menhirSuggestedLib=`menhir --suggest-menhirLib`
 
@@ -20,7 +18,7 @@ make -C ../
 
 ../node_modules/bs-platform/bin/bspack.exe \
   -bs-main Refmt_impl \
-  -prelude-str "$ppxDerivingAndResultStub" \
+  -prelude-str "$resultStub" \
   -I "$menhirSuggestedLib" \
   -I "$reasonTargetDir" \
   -I "$reasonTargetDir/_build/src" \

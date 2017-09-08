@@ -33,14 +33,16 @@ let refmt
     h_file
     in_place
     input_files
+    is_interface_pp
     add_printers
     add_runtime
-    is_interface_pp
     use_stdin
   =
   let refmt_single input_file =
     let () =
       if is_interface_pp then err "--is-interface-pp is deprecated."
+      else if add_printers then err "--add-printers is deprecated.\n The feature wasn't stable enough; we'll find a better way soon. Sorry about that!"
+      else if add_runtime then err "--add-runtime is deprecated.\n The feature wasn't stable enough; we'll find a better way soon. Sorry about that!"
       else if use_stdin then err "--use-stdin is deprecated."
     in
     let (use_stdin, input_file) = match input_file with
@@ -70,7 +72,7 @@ let refmt
       if interface then (module Reason_interface_printer.Reason_interface_printer)
       else (module Reason_implementation_printer.Reason_implementation_printer)
     in
-    Reason_config.configure ~r:is_recoverable ~ap:add_printers;
+    Reason_config.configure ~r:is_recoverable;
     Location.input_name := input_file;
     let _ = Reason_pprint_ast.configure
         ~width: print_width
@@ -78,7 +80,7 @@ let refmt
         ~constructorLists
     in
     let (ast, parsedAsML) =
-      Printer.parse ~add_runtime ~use_stdin parse_ast input_file
+      Printer.parse ~use_stdin parse_ast input_file
     in
     let output_chan = Printer_maker.prepare_output_file output_file in
     (* If you run into trouble with this (or need to use std_formatter by
@@ -122,9 +124,9 @@ let refmt_t =
               $ heuristics_file
               $ in_place
               $ input
-              $ add_printers
-              $ add_runtime
               $ is_interface_pp
+              $ add_runtime
+              $ add_printers
               $ use_stdin
 
 let () =
