@@ -29,18 +29,6 @@ install:
 	opam pin add reason . -y
 	./refmt_impl.native --help=groff > $(shell opam config var man)/man1/refmt.1
 
-run: build
-	rlwrap ocaml \
-		$(shell ocamlfind query -predicates byte,toploop -r -a-format \
-		                        findlib compiler-libs.common unix) \
-		_build/src/reason.cma _build/src/reason_toploop.cmo
-
-run_utop: build
-	utop \
-		$(shell ocamlfind query -predicates byte,toploop -r -a-format \
-		                        compiler-libs.common) \
-		_build/src/reason.cma _build/src/reason_utop.cmo
-
 test: build clean-tests
 	# ./miscTests/rtopIntegrationTest.sh
 	./miscTests/jsxPpxTest.sh
@@ -65,7 +53,6 @@ ifndef version
 endif
 	export git_version="$(shell git rev-parse --verify HEAD)"; \
 	export git_short_version="$(shell git rev-parse --short HEAD)"; \
-	$(SUBSTS) $(ROOT_DIR)/package.json.in; \
 	$(SUBSTS) $(ROOT_DIR)/package.ml.in; \
 	$(SUBSTS) $(ROOT_DIR)/opam.in
 
