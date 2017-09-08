@@ -40,14 +40,14 @@ Throughout the codebase, you might see mentions of "migrate-parsetree", `Ast_404
 
 ## Working with PPX
 
-reactjs_jsx_ppx uses the ppx system. It works on the AST. It helps being able to see the AST of a particular snippet. Assuming you've written some code in a file `foo.re`, run the following incantation to output the code's AST:
+reactjs_jsx_ppx_2 uses the ppx system. It works on the AST. It helps being able to see the AST of a particular snippet. Assuming you've written some code in a file `foo.re`, run the following incantation to output the code's AST:
 
 ```
-ocamlc -dparsetree -ppx ../reactjs_jsx_ppx.native -pp "../refmt_impl.native --print binary" -impl foo.re
+ocamlc -dparsetree -ppx ../reactjs_jsx_ppx_2.native -pp "../refmt_impl.native --print binary" -impl foo.re
 ```
 
 That dumps the AST after accepting the ppx and the reason syntax. You can also dump the final code in Reason syntax instead:
 
 ```
-ocamlc -dsource -ppx ../reactjs_jsx_ppx.native -pp "../refmt_impl.native --print binary" -impl foo.re | ../refmt_impl.native --parse ml --print re --interface false
+ocamlc -dsource -ppx ../reactjs_jsx_ppx_2.native -pp "../refmt_impl.native --print binary" -impl foo.re | ../refmt_impl.native --parse ml --print re --interface false
 ```
