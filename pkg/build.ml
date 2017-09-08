@@ -52,7 +52,6 @@ let () =
     Pkg.bin ~auto:true "src/refmt_impl" ~dst:"refmt";
     Pkg.bin ~auto:true "src/ocamlmerlin_reason" ~dst:"ocamlmerlin-reason";
     Pkg.bin ~auto:false "src/rtop.sh" ~dst:"rtop";
-    Pkg.bin ~auto:false "src/reup.sh" ~dst:"reup";
     Pkg.bin ~auto:false "src/rtop_init.ml" ~dst:"rtop_init.ml";
     Pkg.bin ~auto:false "_reasonbuild/_build/myocamlbuild" ~dst:"rebuild";
     Pkg.bin "src/reason_format_type" ~dst:"refmttype";
