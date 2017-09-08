@@ -1,32 +1,27 @@
+# The bspacked version of refmt doesn't use the Ppx_deriving_show used in Reason for `--add-printers`, which generates runtime printing for data structures. The refmt used by BuckleScript doesn't need that (just use `Js.log`).
+
+# Because OCaml 4.02 doesn't come with the `Result` module, it also needed stubbing out.
+
 ppxDerivingAndResultStub="module Ppx_deriving_show = struct let sig_of_type ~options ~path decl = [] let str_of_type ~options ~path typ = [] end module Result = struct type ('a, 'b) result = Ok of 'a | Error of 'b end open Result"
 
 menhirSuggestedLib=`menhir --suggest-menhirLib`
 
-# copied over from ~/.esy/store-3.x.x/_build/opam_alpha__slash__ppx___tools___versioned-5.0.0-f6cc53982be397d21440d9c55c42b0050e891de4
-# and modified according to the README
-ppxToolsVersionedTargetDir=./ppxTools
 # copied over from ~/.esy/store-3.x.x/_build/opam_alpha__slash__ocaml_migrate_parsetree-0.7.0-399416de9584af5975cdc304d32e2b716377916f/_build/default/src/
 # and modified according to the README
-ocamlMigrateParseTreeTargetDir=./omp
+ocamlMigrateParseTreeTargetDir=./omp/_build/default/src
 reasonTargetDir=../
 
 # clean some artifacts
-rm -rf ./*.cm*
-rm -rf ./*.out
-rm -rf ./*.o
-rm -rf ./*.ml
-make clean -C ../
+rm -rf ./refmt_main.*
 
+# rebuild the project in case it was stale
+make clean -C ../
 make -C ../
 
-./node_modules/bs-platform/bin/bspack.exe \
-  -bs-exclude-I ppx_deriving \
-  -bs-exclude-I ppx_deriving_show \
-  -bs-exclude-I Ppx_deriving_runtime \
+../node_modules/bs-platform/bin/bspack.exe \
   -bs-main Refmt_impl \
   -prelude-str "$ppxDerivingAndResultStub" \
   -I "$menhirSuggestedLib" \
-  -I "$ppxToolsVersionedTargetDir" \
   -I "$reasonTargetDir" \
   -I "$reasonTargetDir/_build/src" \
   -I "$reasonTargetDir/vendor/cmdliner" \
@@ -35,5 +30,6 @@ make -C ../
   -bs-MD \
   -o "./refmt_main.ml"
 
-# finally, actually compile all 3 files
+# finally, test the bundling by compiling the file and verifying everything compiles & dependencies aren't missing
+# the `-no-alias-deps` flag is important. Not sure why...
 ocamlopt -no-alias-deps -I +compiler-libs ocamlcommon.cmxa "refmt_main.ml" -o "refmt_main.out"
