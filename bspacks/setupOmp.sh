@@ -14,7 +14,6 @@ rm -rf ./*.a
 
 # bspack needs the fully processed files with ppx already applied to them, and
 # jBuilder keeps them around in files like `x.pp.ml`, so rename them to `x.ml`
-extensions fixed.
 mv ./ast_402.pp.ml ./ast_402.ml
 mv ./ast_403.pp.ml ./ast_403.ml
 mv ./ast_404.pp.ml ./ast_404.ml
