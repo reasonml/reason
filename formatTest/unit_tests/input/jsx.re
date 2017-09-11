@@ -96,3 +96,12 @@ let icon = <Icon
        )
   key=node##legacy_attachment_id
 />;
+
+/* punning */
+<Foo bar />;
+
+/* punning for explicitly passed optional */
+<Foo bar=?bar />;
+
+/* don't pun explicitly passed optional with module identifier */
+<Foo bar=?Baz.bar />;
