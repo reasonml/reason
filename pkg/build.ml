@@ -23,7 +23,6 @@ let () =
                                   % "-I,+ocamldoc"
                                   %% (v "-I" % "vendor/cmdliner")
                                   %% (v "-I" % "vendor/easy_format")
-                                  %% (v "-I" % "vendor/ppx_deriving")
                                   %% of_list files)
   in
   let build = Pkg.build ~cmd () in
@@ -43,8 +42,6 @@ let () =
        library when the use case demands that there be no `utop` *)
     Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"]) "vendor/cmdliner/cmdliner";
     Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"; ".o"]) "vendor/easy_format/easy_format";
-    Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"; ".o"]) "vendor/ppx_deriving/ppx_deriving";
-    Pkg.lib ~exts:(Exts.exts [".cmo"; ".cmx";".cmi"; ".cmt"; ".o"]) "vendor/ppx_deriving/ppx_deriving_show";
     Pkg.lib ~exts:(Exts.exts [".cmo"]) "src/reason_toploop";
     Pkg.lib ~cond:(Conf.value c utop) ~exts:(Exts.exts [".cmo"]) "src/reason_utop";
     (* TODO: @let-def what do you with this? *)

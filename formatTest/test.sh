@@ -43,13 +43,6 @@ ERROR_TEST_OUTPUT=$DIR/errorTests/actual_output
 ERROR_TEST_EXPECTED_OUTPUT=$DIR/errorTests/expected_output
 
 
-PRINTER_TEST_INPUT=$DIR/printerTests/input
-
-PRINTER_TEST_OUTPUT=$DIR/printerTests/actual_output
-
-PRINTER_TEST_EXPECTED_OUTPUT=$DIR/printerTests/expected_output
-
-
 FAILED_TESTS=$DIR/failed_tests
 
 function info() {
@@ -76,7 +69,7 @@ function warning() {
 
 function setup_test_dir() {
     echo "Setting up test dirs actual_output alongside the tests' expected_output"
-    mkdir -p $UNIT_TEST_OUTPUT $TYPE_TEST_OUTPUT $ERROR_TEST_OUTPUT $PRINTER_TEST_OUTPUT
+    mkdir -p $UNIT_TEST_OUTPUT $TYPE_TEST_OUTPUT $ERROR_TEST_OUTPUT
     touch $FAILED_TESTS
 }
 
@@ -330,48 +323,6 @@ function error_test() {
     echo
 }
 
-function printer_test() {
-    FILE=$1
-    MLFILE="$(basename $FILE .re).ml"
-    INPUT=$2
-    OUTPUT=$3
-    EXPECTED_OUTPUT=$4
-
-    VERSION_SPECIFIC_MLFILE="${MLFILE}.${OCAML_VERSION}"
-    if [ -f "${EXPECTED_OUTPUT}/${VERSION_SPECIFIC_MLFILE}" ]; then
-        echo "Found test file specific to version ${OCAML_VERSION}..."
-        MLFILE="${VERSION_SPECIFIC_MLFILE}"
-    fi
-
-    info "Printer Test: $FILE"
-    if [ "$(basename $FILE)" != "$(basename $FILE .ml)" ] || [ "$(basename $FILE)" != "$(basename $FILE .mli)" ]; then
-      warning "  ⊘ FAILED: .ml files should not need to be run against printer tests. \n"
-      return 1
-    else
-      debug "  '$REFMT --parse re --print ml --add-printers --add-runtime $INPUT/$FILE &> $OUTPUT/$MLFILE'"
-      # ensure errors are not absolute filepaths
-      cd $INPUT
-      $REFMT --parse re --print ml --add-printers --add-runtime $(basename $FILE) &> $OUTPUT/$MLFILE
-      cd - > /dev/null
-    fi
-
-    debug "  Comparing results:  diff $OUTPUT/$MLFILE $EXPECTED_OUTPUT/$MLFILE"
-
-    diff --unchanged-line-format="" --new-line-format=":%dn: %L" --old-line-format=":%dn: %L" $OUTPUT/$MLFILE $EXPECTED_OUTPUT/$MLFILE
-
-    if ! [[ $? -eq 0 ]]; then
-        warning "  ⊘ FAILED\n"
-        info "  ${INFO}$OUTPUT/$MLFILE${RESET}"
-        info "  doesn't match expected output"
-        info "  ${INFO}$EXPECTED_OUTPUT/$MLFILE${RESET}"
-        echo ""
-        return 1
-    fi
-
-    success "  ☑ PASS"
-    echo
-}
-
 
 cd $UNIT_TEST_INPUT && find . -type f \( -name "*.re*" -or -name "*.ml*" \) | while read file; do
         unit_test $file $UNIT_TEST_INPUT $UNIT_TEST_OUTPUT $UNIT_TEST_EXPECTED_OUTPUT
@@ -404,13 +355,6 @@ cd $ERROR_TEST_INPUT && find . -type f \( -name "*.re*" -or -name "*.ml*" \) | w
         error_test $file $ERROR_TEST_INPUT $ERROR_TEST_OUTPUT $ERROR_TEST_EXPECTED_OUTPUT
         if ! [[ $? -eq 0 ]]; then
             echo "$file -- failed error_test" >> $FAILED_TESTS
-        fi
-done
-
-cd $PRINTER_TEST_INPUT && find . -type f \( -name "*.re*" \) | while read file; do
-        printer_test $file $PRINTER_TEST_INPUT $PRINTER_TEST_OUTPUT $PRINTER_TEST_EXPECTED_OUTPUT
-        if ! [[ $? -eq 0 ]]; then
-            echo "$file -- failed printer_test" >> $FAILED_TESTS
         fi
 done
 

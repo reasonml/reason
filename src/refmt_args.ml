@@ -61,7 +61,7 @@ let add_printers =
   Arg.(value & flag & info ["add-printers"] ~doc)
 
 let add_runtime =
-  let doc = "add runtime for auto-printers" in
+  let doc = "add runtime for auto-printers is DEPRECATED" in
   Arg.(value & flag & info ["add-runtime"] ~doc)
 
 let input =

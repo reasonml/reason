@@ -3,9 +3,7 @@
  *)
 
 let recoverable = ref false
-let add_printers = ref false
 
-let configure ~r ~ap = (
+let configure ~r = (
   recoverable := r;
-  add_printers := ap
 )

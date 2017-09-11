@@ -8,16 +8,13 @@ exception Invalid_config of string
 
 module type PRINTER =
     sig
-        type q
-        type t = q list
+        type t
 
-        val parse : add_runtime:bool ->
-                    use_stdin:bool ->
+        val parse : use_stdin:bool ->
                     parse_itype ->
                     string ->
                     ((t * Reason_pprint_ast.commentWithCategory) * bool)
 
-        val ppx_deriving_runtime : q
 
         val print : print_itype ->
                     string ->

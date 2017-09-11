@@ -26,18 +26,12 @@ let impl_intf ~impl ?(intf_suffix=false) arg =
   [ A (if impl then "-impl" else "-intf");
     P arg ]
 
-let choose_refmt tags =
-  if Tags.mem add_printers_tag tags
-  then refmt ^ " --add-printers --add-runtime"
-  else refmt
-
 let compile_c ~impl ~native tags arg out =
   let tags =
     tags ++
     "ocaml" ++
     (if native then "native" else "byte") ++
     "compile" in
-  let refmt = choose_refmt tags in
   let specs =
     [ if native then !Options.ocamlopt else !Options.ocamlc;
       A "-c";
@@ -80,7 +74,6 @@ let ocamldep_command ~impl arg out env _build =
     | last :: rev_prefix -> [Sh "|"; P "tee"] @ List.rev_append rev_prefix [Sh ">"; last] in
   let arg = env arg in
   let tags = tags_of_pathname arg in
-  let refmt = choose_refmt tags in
   let specs =
     [ ocamldep_command' tags;
       A "-pp"; P refmt ]
@@ -89,8 +82,6 @@ let ocamldep_command ~impl arg out env _build =
   Cmd (S specs)
 
 ;;
-
-mark_tag_used add_printers_tag;;
 
 rule "rei -> cmi"
   ~prod:"%.cmi"

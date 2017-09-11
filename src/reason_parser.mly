@@ -849,13 +849,8 @@ let arity_conflict_resolving_mapper super =
   end;
 }
 
-(* NB: making this a function might have parse-time performance penalties *)
-let reason_mapper () =
-  begin
-    if !Reason_config.add_printers
-    then create_auto_printer_mapper default_mapper
-    else default_mapper
-  end
+let reason_mapper =
+  default_mapper
   |> reason_to_ml_swap_operator_mapper
   |> arity_conflict_resolving_mapper
 
@@ -1245,19 +1240,19 @@ conflicts.
 
 implementation:
   structure EOF
-  { apply_mapper_to_structure $1 (reason_mapper ()) }
+  { apply_mapper_to_structure $1 reason_mapper }
 ;
 
 interface:
   signature EOF
-  { apply_mapper_to_signature $1 (reason_mapper ()) }
+  { apply_mapper_to_signature $1 reason_mapper }
 ;
 
 toplevel_phrase: embedded
   ( EOF                              { raise End_of_file}
   | structure_item     SEMI          { Ptop_def $1 }
   | toplevel_directive SEMI          { $1 }
-  ) {apply_mapper_to_toplevel_phrase $1 (reason_mapper ()) }
+  ) {apply_mapper_to_toplevel_phrase $1 reason_mapper }
 ;
 
 use_file: embedded
@@ -1266,22 +1261,22 @@ use_file: embedded
   | toplevel_directive SEMI use_file { $1 :: $3 }
   | structure_item     EOF           { [Ptop_def $1 ] }
   | toplevel_directive EOF           { [$1] }
-  ) {apply_mapper_to_use_file $1 (reason_mapper ())}
+  ) {apply_mapper_to_use_file $1 reason_mapper }
 ;
 
 parse_core_type:
   only_core_type(core_type) EOF
-  { apply_mapper_to_type $1 (reason_mapper ()) }
+  { apply_mapper_to_type $1 reason_mapper }
 ;
 
 parse_expression:
   expr EOF
-  { apply_mapper_to_expr $1 (reason_mapper ()) }
+  { apply_mapper_to_expr $1 reason_mapper }
 ;
 
 parse_pattern:
   pattern EOF
-  { apply_mapper_to_pattern $1 (reason_mapper ()) }
+  { apply_mapper_to_pattern $1 reason_mapper }
 ;
 
 /* Module expressions */
