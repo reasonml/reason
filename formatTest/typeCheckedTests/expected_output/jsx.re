@@ -606,3 +606,7 @@ let w =
       paddingBottom: 10
     }
   />;
+
+let foo = None;
+
+let g = <Two ?foo />;
