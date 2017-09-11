@@ -2429,6 +2429,11 @@ jsx_arguments:
     { (* a=?b *)
       [(Optional $1, $4)] @ $5
     }
+  | QUESTION LIDENT jsx_arguments
+    { (* <Foo ?bar /> punning with explicitly passed optional *)
+      let loc_lident = mklocation $startpos($2) $endpos($2) in
+      [(Optional $2, mkexp (Pexp_ident {txt = Lident $2; loc = loc_lident}) ~loc:loc_lident)] @ $3
+    }
   | LIDENT EQUAL simple_expr jsx_arguments
     { (* a=b *)
       [(Labelled $1, $3)] @ $4

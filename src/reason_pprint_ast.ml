@@ -2345,6 +2345,9 @@ let recordRowIsPunned pld =
               && List.length args == 0) -> true
         | _ -> false)
 
+let isPunnedJsxArg lbl ident =
+  not (isLongIdentWithDot ident.txt) && (Longident.last ident.txt) = lbl
+
 let is_unit_pattern x = match x.ppat_desc with
   | Ppat_construct ( {txt= Lident"()"}, None) -> true
   | _ -> false
@@ -3898,14 +3901,18 @@ class printer  ()= object(self:'self)
       | (Labelled "children", {pexp_desc = Pexp_construct ({txt = Lident"::"}, Some {pexp_desc = Pexp_tuple(components)} )}) :: tail ->
         processArguments tail processedAttrs (self#formatChildren components [])
       | (Optional lbl, expression) :: tail ->
-        let nextAttr = label (makeList ~break:Never [atom lbl; atom "=?"]) (self#simplifyUnparseExpr expression) in
+        let nextAttr =
+          match expression.pexp_desc with
+          | Pexp_ident (ident) when isPunnedJsxArg lbl ident ->
+              makeList ~break:Never [atom "?"; atom lbl]
+          | _ ->
+              label (makeList ~break:Never [atom lbl; atom "=?"]) (self#simplifyUnparseExpr expression) in
         processArguments tail (nextAttr :: processedAttrs) children
 
       | (Labelled lbl, expression) :: tail ->
          let nextAttr =
            match expression.pexp_desc with
-           | Pexp_ident (ident) when (not (isLongIdentWithDot ident.txt)
-                                        && (Longident.last ident.txt) = lbl) -> atom lbl
+           | Pexp_ident (ident) when isPunnedJsxArg lbl ident -> atom lbl
            | Pexp_record _
            | Pexp_construct _
            | Pexp_array _
