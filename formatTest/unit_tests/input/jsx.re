@@ -102,3 +102,6 @@ let icon = <Icon
 
 /* punning for explicitly passed optional */
 <Foo bar=?bar />;
+
+/* don't pun explicitly passed optional with module identifier */
+<Foo bar=?Baz.bar />;
