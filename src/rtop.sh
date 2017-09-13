@@ -23,7 +23,7 @@ if [ ! -f $HOME/.reasoninit ]; then
     # .ocamlinit. But refmt doesn't support toplevel formatting yet
     echo "/* Added by rtop */
 let () =
-  try (Topdirs.dir_directory (Sys.getenv \"OCAML_TOPLEVEL_PATH\")) {
+  try (Topdirs.dir_directory(Sys.getenv(\"OCAML_TOPLEVEL_PATH\"))) {
   | Not_found => ()
   };" > $HOME/.reasoninit
 fi
