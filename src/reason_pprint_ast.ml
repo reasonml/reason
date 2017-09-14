@@ -2333,6 +2333,12 @@ let isLongIdentWithDot = function
   | Ldot _ -> true
   | _ -> false
 
+
+(* Js.t -> useful for bucklescript sugar `Js.t({. foo: bar})` -> `{. "foo": bar}` *)
+let isJsDotTLongIdent ident = match ident with
+  | Ldot (Lident "Js", "t") -> true
+  | _ -> false
+
 let recordRowIsPunned pld =
       let name = pld.pld_name.txt in
       (match pld.pld_type with
@@ -2999,26 +3005,7 @@ class printer  ()= object(self:'self)
         (*         | one::[] -> one *)
         (*         | moreThanOne -> mktyp(Ptyp_tuple(List.rev moreThanOne)) } *)
         | Ptyp_tuple l -> makeTup (List.map self#core_type l)
-        | Ptyp_object (l, o) ->
-          let core_field_type (s, attrs, ct) =
-            let l = extractStdAttrs attrs in
-            (match l with
-              | [] -> label ~space:true
-                        (label (atom s) (atom ":"))
-                        (self#core_type ct)
-              | _::_ ->
-                makeList
-                  ~postSpace:true
-                  ~break:IfNeed
-                  [self#attributes attrs; atom s; atom ":"; self#core_type ct]
-            )
-          in
-          let openness = match o with
-            | Closed -> [atom "."]
-            | Open -> [atom ".."]
-          in
-          let rows = List.map core_field_type l in
-          makeList ~break:IfNeed ~preSpace:(List.length rows > 0) ~wrap:("{", "}") (openness @ [makeList ~break:IfNeed ~inline:(true, (List.length rows > 0)) ~postSpace:true ~sep:"," rows])
+        | Ptyp_object (l, o) -> self#unparseObject l o
         | Ptyp_package (lid, cstrs) ->
           let typeConstraint (s, ct) =
             label
@@ -3057,10 +3044,14 @@ class printer  ()= object(self:'self)
                Therefore, we wrap the result in the correct [SourceMap].  *)
           SourceMap (li.loc, ensureSingleTokenSticksToLabel (self#longident_loc li))
         | Ptyp_constr (li, l) ->
-          (* The single identifier has to be wrapped in a [ensureSingleTokenSticksToLabel] to
-             avoid (@see @avoidSingleTokenWrapping): *)
-          label (SourceMap (li.loc, self#longident_loc li))
-            (makeTup (List.map self#non_arrowed_non_simple_core_type l))
+            (match l with
+            | [{ptyp_desc = Ptyp_object (l, o) }] when isJsDotTLongIdent li.txt ->
+                self#unparseObject ~withStringKeys:true l o
+            | _ ->
+              (* The single identifier has to be wrapped in a [ensureSingleTokenSticksToLabel] to
+                 avoid (@see @avoidSingleTokenWrapping): *)
+              label (SourceMap (li.loc, self#longident_loc li))
+                (makeTup (List.map self#non_arrowed_non_simple_core_type l)))
         | Ptyp_variant (l, closed, low) ->
           let pcd_loc = x.ptyp_loc in
           let pcd_attributes = x.ptyp_attributes in
@@ -4977,6 +4968,33 @@ class printer  ()= object(self:'self)
         SourceMap (withRecord.pexp_loc, firstRow)::(getRows l)
     in
     makeList ~wrap:("{", "}") ~break:IfNeed ~preSpace:true allRows
+
+  method unparseObject ?withStringKeys:(withStringKeys=false) l o =
+    let core_field_type (s, attrs, ct) =
+      let l = extractStdAttrs attrs in
+      (match l with
+       | [] ->
+           let rowKey = if withStringKeys then
+             (makeList ~wrap:("\"", "\"") [atom s])
+           else (atom s)
+           in
+           label ~space:true
+                 (label rowKey (atom ":"))
+                 (self#core_type ct)
+       | _::_ ->
+         makeList
+           ~postSpace:true
+           ~break:IfNeed
+           [self#attributes attrs; atom s; atom ":"; self#core_type ct])
+    in
+    let rows = List.map core_field_type l in
+    let openness = match o with
+      | Closed -> [atom "."]
+      | Open -> [atom ".."]
+    in
+    makeList ~break:IfNeed ~preSpace:(List.length rows > 0) ~wrap:("{", "}")
+      (openness @ [makeList ~break:IfNeed ~inline:(true, (List.length rows > 0)) ~postSpace:true ~sep:"," rows])
+
 
   method simplest_expression x =
     let {stdAttrs; jsxAttrs} = partitionAttributes x.pexp_attributes in
