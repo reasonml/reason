@@ -6,6 +6,7 @@
 
 TODO: re-enable rtop integration tests in makefile (./miscTests/rtopIntegrationTest.sh) before the release
 
+- Removed `--add-printers` option from refmt; we'll have a better strategy soon.
 - Remove unused binaries: `reup`, etc.
 - Remove the old `reactjs_jsx_ppx.ml`. You've all been on `reactjs_jsx_ppx_2.ml` for a long time now.
 - Remove `--add-printers` from `refmt`. The feature wasn't stable enough; we'll find a better way soon. Sorry about that!
