@@ -894,10 +894,10 @@ type core_type_object =
   | Record_type of label_declaration list
 
 (* `{. "foo": bar}` -> `Js.t {. foo: bar}` and {.. "foo": bar} -> `Js.t {.. foo: bar} *)
-let mkBsObjTypeSugar rows closedness =
-  let obj = mktyp (Ptyp_object (prepare_immutable_labels rows, closedness)) in
-  let jsDotTCtor = { txt = Longident.parse "Js.t"; loc = dummy_loc () } in
-  Core_type(mktyp(Ptyp_constr(jsDotTCtor , [obj])))
+let mkBsObjTypeSugar ~loc ~closed rows =
+  let obj = mktyp ~loc (Ptyp_object (prepare_immutable_labels rows, closed)) in
+  let jsDotTCtor = { txt = Longident.parse "Js.t"; loc } in
+  Core_type(mktyp(Ptyp_constr(jsDotTCtor, [obj])))
 
 let only_core_type t startp endp =
   match t with
@@ -3894,11 +3894,13 @@ object_record_type:
     { Record_type (only_labels $2) }
   | LBRACE DOT string_literal_lbls RBRACE
     { (* `{. "foo": bar}` -> `Js.t {. foo: bar}` *)
-      mkBsObjTypeSugar $3 Closed
+      let loc = mklocation $symbolstartpos $endpos in
+      mkBsObjTypeSugar ~loc ~closed:Closed $3
     }
   | LBRACE DOTDOT string_literal_lbls RBRACE
     { (* `{.. "foo": bar}` -> `Js.t {.. foo: bar}` *)
-      mkBsObjTypeSugar $3 Open
+      let loc = mklocation $symbolstartpos $endpos in
+      mkBsObjTypeSugar ~loc ~closed:Open $3
     }
   | LBRACE DOT loption(label_declarations) RBRACE
     { Core_type (mktyp (Ptyp_object (prepare_immutable_labels $3, Closed))) }
