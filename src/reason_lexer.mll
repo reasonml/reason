@@ -863,6 +863,10 @@ and skip_sharp_bang = parse
       tok :: fake_triple ES6_FUN tok :: acc
     | _ -> assert false
 
+  let is_triggering_token = function
+    | EQUALGREATER | COLON -> true
+    | _ -> false
+
   let rec lex_balanced_step closing lexbuf acc tok =
     let acc = save_triple lexbuf tok :: acc in
     match tok, closing with
@@ -883,19 +887,17 @@ and skip_sharp_bang = parse
       begin match token lexbuf with
       | exception exn ->
         raise (Lex_balanced_failed (rparen @ acc, Some (save_triple lexbuf exn)))
-      | EQUALGREATER ->
-        let acc = inject_es6_fun acc in
-        lex_balanced_step closing lexbuf (rparen @ acc) EQUALGREATER
       | tok' ->
+        let acc = if is_triggering_token tok' then inject_es6_fun acc else acc in
         lex_balanced_step closing lexbuf (rparen @ acc) tok'
       end
     | (LIDENT _, _) ->
       begin match token lexbuf with
       | exception exn ->
         raise (Lex_balanced_failed (acc, Some (save_triple lexbuf exn)))
-      | EQUALGREATER ->
-        lex_balanced_step closing lexbuf (inject_es6_fun acc) EQUALGREATER
-      | tok' -> lex_balanced_step closing lexbuf acc tok'
+      | tok' ->
+        let acc = if is_triggering_token tok' then inject_es6_fun acc else acc in
+        lex_balanced_step closing lexbuf acc tok'
       end
     | _ -> lex_balanced closing lexbuf acc
 
@@ -923,7 +925,7 @@ and skip_sharp_bang = parse
             lparen
           | token ->
             let tokens = save_triple lexbuf token :: tokens in
-            if token == EQUALGREATER then (
+            if is_triggering_token token then (
               queued_tokens := lparen :: List.rev tokens;
               fake_triple ES6_FUN lparen
             ) else (
@@ -952,15 +954,17 @@ and skip_sharp_bang = parse
       | LIDENT _ as tok ->
           let tok = save_triple lexbuf tok in
           begin match token lexbuf with
-          | EQUALGREATER ->
-              queued_tokens := [tok; save_triple lexbuf EQUALGREATER];
-              load_triple lexbuf (fake_triple ES6_FUN tok)
           | exception exn ->
               queued_exn := Some (save_triple lexbuf exn);
               load_triple lexbuf tok
           | tok' ->
+            if is_triggering_token tok' then (
+              queued_tokens := [tok; save_triple lexbuf tok'];
+              load_triple lexbuf (fake_triple ES6_FUN tok)
+            ) else (
               queued_tokens := [save_triple lexbuf tok'];
               load_triple lexbuf tok
+            )
           end
       | token -> token
       end
