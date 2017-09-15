@@ -377,3 +377,13 @@ module type T = {
 };
 
 let privacy = {pri x (c) = 5 + c};
+
+module Js = {
+  type t('a);
+};
+
+/* supports trailing comma */
+type stream('a) = {
+  .
+  "observer": ('a => unit) => unit
+};

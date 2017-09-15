@@ -3534,7 +3534,7 @@ label_declaration:
 ;
 
 %inline string_literal_lbls:
-  separated_nonempty_list(COMMA, string_literal_lbl) { $1 };
+  lseparated_nonempty_list(COMMA, string_literal_lbl) COMMA? { $1 };
 
 string_literal_lbl:
   | STRING COLON poly_type
