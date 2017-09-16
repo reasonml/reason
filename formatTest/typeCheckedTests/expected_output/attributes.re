@@ -421,7 +421,7 @@ external render : (reactElement, element) => unit =
 external createCompositeElementInternalHack :
   (
     reactClass,
-    Js.t({.. reasonProps: 'props}),
+    {.. "reasonProps": 'props},
     array(reactElement)
   ) =>
   reactElement =
