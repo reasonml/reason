@@ -470,20 +470,17 @@ module JS_syntax = struct
   module Lexer_impl = Reason_lexer
   type token = Reason_parser.token
 
-  let initial_checkpoint constructor lexbuf =
-    (constructor lexbuf.lex_curr_p)
-
   (* [tracking_supplier] is a supplier that tracks the last token read *)
   type tracking_supplier = {
-      (* The last token that was obtained from the lexer, together with its start
-     and end positions. Warning: before the first call to the lexer has taken
-     place, a None value is stored here. *)
+    (* The last token that was obtained from the lexer, together with its start
+       and end positions. Warning: before the first call to the lexer has taken
+       place, a None value is stored here. *)
 
-      mutable last_token: (token * Lexing.position * Lexing.position) option;
+    mutable last_token: (token * Lexing.position * Lexing.position) option;
 
-      (* A supplier function that returns one token at a time*)
-      get_token: unit -> (token * Lexing.position * Lexing.position)
-    }
+    (* A supplier function that returns one token at a time*)
+    get_token: unit -> (token * Lexing.position * Lexing.position)
+  }
 
   (* [lexbuf_to_supplier] returns a supplier to be feed into Menhir's incremental API.
    * Each time the supplier is called, a new token in the lexbuf is returned.
@@ -491,7 +488,7 @@ module JS_syntax = struct
    *
    * This makes sure at most one EOF token is returned by supplier, which
    * is the default behavior of ocamlyacc.
-   *)
+  *)
   let lexbuf_to_supplier lexbuf =
     let s = I.lexer_lexbuf_to_supplier Reason_lexer.token lexbuf in
     let eof_met = ref false in
@@ -518,28 +515,28 @@ module JS_syntax = struct
   let last_token_loc supplier =
     match supplier.last_token with
     | Some (_, s, e) ->
-       {
-         loc_start = s;
-         loc_end = e;
-         loc_ghost = false;
-       }
+      {
+        loc_start = s;
+        loc_end = e;
+        loc_ghost = false;
+      }
     | None -> assert false
 
   (* get the stack of a checkpoint *)
   let stack checkpoint =
     match checkpoint with
     | I.HandlingError env ->
-       I.stack env
+      I.stack env
     | _ ->
-       assert false
+      assert false
 
   (* get state number of a checkpoint *)
   let state checkpoint : int =
     match Lazy.force (stack checkpoint) with
     | S.Nil ->
-       0
+      0
     | S.Cons (I.Element (s, _, _, _), _) ->
-             I.number s
+      I.number s
 
   (* [loop_handle_yacc] mimic yacc's error handling mechanism in menhir.
      When it hits an error state, it pops up the stack until it finds a
@@ -570,10 +567,19 @@ module JS_syntax = struct
       normalize_checkpoint (I.resume checkpoint)
     | checkpoint -> checkpoint
 
-  let rec loop_handle_yacc supplier in_error checkpoint =
+  let offer_normalize checkpoint triple =
+    normalize_checkpoint (I.offer checkpoint triple)
 
+  let commit_invalid_docstrings = function
+    | [] -> ()
+    | docstrings ->
+      let process_invalid_docstring (text, loc) = Reason_lexer.add_invalid_docstring text loc in
+      List.iter process_invalid_docstring (List.rev docstrings)
+
+  let rec handle_other supplier checkpoint =
     match checkpoint with
-    | I.InputNeeded _ when in_error ->
+    | I.InputNeeded _ ->
+      (* An input needed in the "other" case means we are recovering from an error *)
       begin match supplier.last_token with
         | None -> assert false
         | Some triple ->
@@ -582,39 +588,10 @@ module JS_syntax = struct
           match I.shifts checkpoint_with_previous_token with
           | None ->
             (* The original token still fail to be parsed, discard *)
-            loop_handle_yacc supplier false checkpoint
+            handle_inputs_needed supplier [([], checkpoint)]
           | Some env ->
-            loop_handle_yacc supplier false checkpoint_with_previous_token
+            handle_inputs_needed supplier [([], checkpoint_with_previous_token)]
       end
-
-    | I.InputNeeded _ ->
-      let checkpoint =
-        match read supplier with
-        | Reason_parser.ES6_FUN, _, _ as triple ->
-          let checkpoint =
-            match normalize_checkpoint (I.offer checkpoint triple) with
-            | I.HandlingError _ -> checkpoint
-            | checkpoint' -> checkpoint'
-          in
-          let triple = read supplier in
-          I.offer checkpoint triple
-        | Reason_parser.DOCSTRING text, loc_start, loc_end as triple ->
-          let checkpoint =
-            match normalize_checkpoint (I.offer checkpoint triple) with
-            | I.HandlingError _ ->
-              (* DOCSTRING at an invalid position:
-               * add it back to comments
-               * TODO: print warning? *)
-              Reason_lexer.add_invalid_docstring text
-                { Location. loc_ghost = false; loc_start; loc_end };
-              checkpoint
-            | checkpoint' -> checkpoint'
-          in
-          let triple = read supplier in
-          I.offer checkpoint triple
-        | triple -> I.offer checkpoint triple
-      in
-      loop_handle_yacc supplier false checkpoint
 
     | I.HandlingError env when !Reason_config.recoverable ->
       let loc = last_token_loc supplier in
@@ -630,17 +607,17 @@ module JS_syntax = struct
       end;
       let checkpoint = I.resume checkpoint in
       (* Enter error recovery state *)
-      loop_handle_yacc supplier true checkpoint
+      handle_other supplier checkpoint
 
     | I.HandlingError env ->
       (* If not in a recoverable state, fail early by raising a
        * customized Error object
-       *)
+      *)
       let loc = last_token_loc supplier in
       let state = state checkpoint in
       (* Check the error database to see what's the error message
        * associated with the current parser state
-       *)
+      *)
       let msg =
         try Reason_parser_message.message state
         with Not_found -> "<UNKNOWN SYNTAX ERROR>"
@@ -653,31 +630,94 @@ module JS_syntax = struct
       raise Syntaxerr.(Error(Syntaxerr.Other loc))
 
     | I.Accepted v ->
-       (* The parser has succeeded and produced a semantic value. *)
-       v
+      (* The parser has succeeded and produced a semantic value. *)
+      v
 
     | I.Shifting _ | I.AboutToReduce _ ->
-      loop_handle_yacc supplier in_error (I.resume checkpoint)
+      handle_other supplier (normalize_checkpoint checkpoint)
+
+  and handle_inputs_needed supplier checkpoints =
+    match read supplier with
+    (* ES6_FUN token marks a possible fork point *)
+    | Reason_parser.ES6_FUN, _, _ as triple ->
+      let process_checkpoint (invalid_docstrings, checkpoint as x) tl =
+        match offer_normalize checkpoint triple with
+        | I.HandlingError _ -> x :: tl
+        | checkpoint' -> x :: (invalid_docstrings, checkpoint') :: tl
+      in
+      handle_inputs_needed supplier (List.fold_right process_checkpoint checkpoints [])
+
+    | Reason_parser.DOCSTRING text, loc_start, loc_end as triple ->
+      let process_checkpoint (invalid_docstrings, checkpoint) =
+        match offer_normalize checkpoint triple with
+        | I.HandlingError _ ->
+          (* DOCSTRING at an invalid position: store it and add it back to comments
+           * if this checkpoint is "committed"
+           * TODO: print warning? *)
+          let invalid_docstring = (text, { Location. loc_ghost = false; loc_start; loc_end }) in
+          (invalid_docstring :: invalid_docstrings, checkpoint)
+        | checkpoint' -> (invalid_docstrings, checkpoint')
+      in
+      handle_inputs_needed supplier (List.map process_checkpoint checkpoints)
+
+    | triple ->
+      begin match checkpoints with
+        | [] -> assert false
+        | [docstrings, checkpoint] ->
+          begin match offer_normalize checkpoint triple with
+            | I.InputNeeded _ as checkpoint' ->
+              handle_inputs_needed supplier [docstrings, checkpoint']
+            | checkpoint ->
+              commit_invalid_docstrings docstrings;
+              handle_other supplier checkpoint
+          end
+        | checkpoints ->
+          let rec process_checkpoints inputs_needed others = function
+            |  (docstrings, checkpoint) :: xs ->
+              begin match offer_normalize checkpoint triple with
+                | I.Accepted _ as other ->
+                  commit_invalid_docstrings docstrings;
+                  handle_other supplier other
+                | I.InputNeeded _ as checkpoint' ->
+                  process_checkpoints ((docstrings, checkpoint') :: inputs_needed) others xs
+                | other -> process_checkpoints inputs_needed ((docstrings, other) :: others) xs
+              end
+            | [] ->
+              match List.rev inputs_needed with
+              | [] ->
+                begin match List.rev others with
+                  | (docstrings, checkpoint) :: _ ->
+                    commit_invalid_docstrings docstrings;
+                    handle_other supplier checkpoint
+                  | [] -> assert false
+                end
+              | inputs_needed -> handle_inputs_needed supplier inputs_needed
+          in
+          process_checkpoints [] [] checkpoints
+      end
+
+  let initial_run constructor lexbuf =
+    let checkpoint = constructor lexbuf.lex_curr_p in
+    let supplier = lexbuf_to_supplier lexbuf in
+    match normalize_checkpoint checkpoint with
+    | I.InputNeeded _ as checkpoint ->
+      handle_inputs_needed supplier [[], checkpoint]
+    | other -> handle_other supplier other
 
   let implementation lexbuf =
-    let cp = initial_checkpoint Reason_parser.Incremental.implementation lexbuf in
-    loop_handle_yacc (lexbuf_to_supplier lexbuf) false cp
+    initial_run Reason_parser.Incremental.implementation lexbuf
 
   let interface lexbuf =
-    let cp = initial_checkpoint Reason_parser.Incremental.interface lexbuf in
-    loop_handle_yacc (lexbuf_to_supplier lexbuf) false cp
+    initial_run Reason_parser.Incremental.interface lexbuf
 
   let core_type lexbuf =
-    let cp = initial_checkpoint Reason_parser.Incremental.parse_core_type lexbuf in
-    loop_handle_yacc (lexbuf_to_supplier lexbuf) false cp
+    initial_run Reason_parser.Incremental.parse_core_type lexbuf
 
   let toplevel_phrase lexbuf =
-    let cp = initial_checkpoint Reason_parser.Incremental.toplevel_phrase lexbuf in
-    loop_handle_yacc (lexbuf_to_supplier lexbuf) false cp
+    initial_run Reason_parser.Incremental.toplevel_phrase lexbuf
 
   let use_file lexbuf =
-    let cp = initial_checkpoint Reason_parser.Incremental.use_file lexbuf in
-    loop_handle_yacc (lexbuf_to_supplier lexbuf) false cp
+    initial_run Reason_parser.Incremental.use_file lexbuf
 
   (* Skip tokens to the end of the phrase *)
   let rec skip_phrase lexbuf =
@@ -686,10 +726,10 @@ module JS_syntax = struct
         Reason_parser.SEMI | Reason_parser.EOF -> ()
       | _ -> skip_phrase lexbuf
     with
-      | Lexer_impl.Error (Lexer_impl.Unterminated_comment _, _)
-      | Lexer_impl.Error (Lexer_impl.Unterminated_string, _)
-      | Lexer_impl.Error (Lexer_impl.Unterminated_string_in_comment _, _)
-      | Lexer_impl.Error (Lexer_impl.Illegal_character _, _) -> skip_phrase lexbuf
+    | Lexer_impl.Error (Lexer_impl.Unterminated_comment _, _)
+    | Lexer_impl.Error (Lexer_impl.Unterminated_string, _)
+    | Lexer_impl.Error (Lexer_impl.Unterminated_string_in_comment _, _)
+    | Lexer_impl.Error (Lexer_impl.Illegal_character _, _) -> skip_phrase lexbuf
 
   let maybe_skip_phrase lexbuf =
     if Parsing.is_current_lookahead Reason_parser.SEMI
@@ -702,25 +742,25 @@ module JS_syntax = struct
     with
     | Lexer_impl.Error(Lexer_impl.Illegal_character _, _) as err
       when !Location.input_name = "//toplevel//"->
-        skip_phrase lexbuf;
-        raise err
+      skip_phrase lexbuf;
+      raise err
     | Syntaxerr.Error _ as err
       when !Location.input_name = "//toplevel//" ->
-        maybe_skip_phrase lexbuf;
-        raise err
+      maybe_skip_phrase lexbuf;
+      raise err
     | Parsing.Parse_error | Syntaxerr.Escape_error ->
-        let loc = Location.curr lexbuf in
-        if !Location.input_name = "//toplevel//"
-        then maybe_skip_phrase lexbuf;
-        raise(Syntaxerr.Error(Syntaxerr.Other loc))
+      let loc = Location.curr lexbuf in
+      if !Location.input_name = "//toplevel//"
+      then maybe_skip_phrase lexbuf;
+      raise(Syntaxerr.Error(Syntaxerr.Other loc))
     | Error _ as x ->
-       let loc = Location.curr lexbuf in
-       if !Location.input_name = "//toplevel//"
-       then
-         let _ = maybe_skip_phrase lexbuf in
-         raise(Syntaxerr.Error(Syntaxerr.Other loc))
-       else
-         raise x
+      let loc = Location.curr lexbuf in
+      if !Location.input_name = "//toplevel//"
+      then
+        let _ = maybe_skip_phrase lexbuf in
+        raise(Syntaxerr.Error(Syntaxerr.Other loc))
+      else
+        raise x
     | x -> raise x
 
   let format_interface_with_comments (signature, comments) formatter =

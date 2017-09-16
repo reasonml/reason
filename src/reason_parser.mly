@@ -2526,6 +2526,9 @@ mark_position_exp
     { $2 }
   | ES6_FUN es6_parameters EQUALGREATER expr
     { List.fold_right mkexp_fun $2 $4 }
+  | ES6_FUN es6_parameters COLON only_core_type(non_arrowed_core_type) EQUALGREATER expr
+    { List.fold_right mkexp_fun $2
+        (ghexp_constraint (mklocation $startpos($4) $endpos) $6 (Some $4, None)) }
   /* List style rules like this often need a special precendence
      such as below_BAR in order to let the entire list "build up"
    */
