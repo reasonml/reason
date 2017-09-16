@@ -1,13 +1,13 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 [@autoFormat let wrap = 80; let shift = 2];
 
-Modules.run();
+Modules.run(());
 
-Polymorphism.run();
+Polymorphism.run(());
 
-Variants.run();
+Variants.run(());
 
-BasicStructures.run();
+BasicStructures.run(());
 
 TestUtils.printSection("General Syntax");
 
@@ -287,7 +287,7 @@ let addPoints (p1: point, p2: point) = {
 let res1 = printPoint(point2D);
 
 let res2 =
-  printPoint{x: point3D.x, y: point3D.y};
+  printPoint({x: point3D.x, y: point3D.y});
 
 /*
     When () were used to indicate sequences, the parser used seq_expr not only
@@ -313,8 +313,10 @@ let res2 =
  */
 let res3 =
   printPoint(
-    addPoints
-      (point2D){x: point3D.x, y: point3D.y}
+    addPoints(
+      point2D,
+      {x: point3D.x, y: point3D.y}
+    )
   );
 
 type person = {
@@ -403,7 +405,7 @@ let thisReturnsA () = a;
 
 let thisReturnsAAsWell () = a;
 
-let recordVal: int = (thisReturnsARecord()).a;
+let recordVal: int = (thisReturnsARecord(())).a;
 
 Printf.printf(
   "\nproof that thisReturnsARecord: %n\n",
@@ -412,7 +414,7 @@ Printf.printf(
 
 Printf.printf(
   "\nproof that thisReturnsA: %n\n",
-  thisReturnsA()
+  thisReturnsA(())
 );
 
 /* Pattern matching */

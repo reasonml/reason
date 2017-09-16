@@ -913,15 +913,15 @@ let containingObject = {
     /**
      * And this
      */
-    let res = - (+ callThisFunc());
+    let res = - (+ callThisFunc(()));
     /* should be parsed as: */
-    let res = - (+ callThisFunc());
+    let res = - (+ callThisFunc(()));
     /**
      * And this
      */
-    let res = ! (- callThisFunc());
+    let res = ! (- callThisFunc(()));
     /* Should be parsed (and should remain printed as: */
-    let res = ! (- callThisFunc());
+    let res = ! (- callThisFunc(()));
     let res = [@onApplication] (! x);
     let res = ! [@onX] x;
     let res = ! [@onX] x;
@@ -1013,10 +1013,10 @@ let server = {
     )
     >>= (
       (body) =>
-        Server.respond_string(:status, :body)()
+        Server.respond_string(:status, :body, ())
     )
   };
-  Server.create(:mode, Server.make(:callback)())
+  Server.create(:mode, Server.make(:callback, ()))
 };
 
 let lijst =

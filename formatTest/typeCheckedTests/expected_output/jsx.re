@@ -436,8 +436,11 @@ let asd =
 let asd2 =
   [@foo]
   [@JSX]
-  One.createElementobvioustypo
-    (:test false, :children ["a", "b"])();
+  One.createElementobvioustypo(
+    :test false,
+    :children ["a", "b"],
+    ()
+  );
 
 let span (:test: bool, :foo: int, :children, ()) = 1;
 
@@ -451,7 +454,7 @@ let asd2 = [@foo] [@JSX] video(:test false, 10);
 
 let div (:children) = 1;
 
-[@JSX] ((() => div)())(:children []);
+[@JSX] ((() => div)(()))(:children []);
 
 let myFun () =
   <>

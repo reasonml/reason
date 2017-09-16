@@ -2,7 +2,7 @@
 /**
  * Testing mutations.
  */
-let holdsAUnit = ref();
+let holdsAUnit = ref(());
 
 let holdsABool = ref(false);
 
