@@ -1019,3 +1019,5 @@ let method = "method";
 
 let foo (x, :x bar, :z, :foo bar, :foo z) =
   bar + 2;
+
+let zzz = myFunc(1, 2, [||]);
