@@ -345,7 +345,10 @@ module OCaml_syntax = struct
       | ({ Location. txt = ("ocaml.doc" | "ocaml.text") },
         PStr [{ pstr_desc = Pstr_eval ({ pexp_desc = Pexp_constant (Pconst_string(text, None)); _ } , _);
                 pstr_loc = loc; _ }]) as attribute ->
-        Hashtbl.add seen ("*" ^ text, loc) ();
+        (* Workaround: OCaml 4.02.3 kept an initial '*' in docstrings.
+         * For other versions, we have to put the '*' back. *)
+        let text = if text = "" || text.[0] <> '*' then "*" ^ text else text in
+        Hashtbl.add seen (text, loc) ();
         default_mapper.attribute mapper attribute
       | attribute -> default_mapper.attribute mapper attribute
     in
