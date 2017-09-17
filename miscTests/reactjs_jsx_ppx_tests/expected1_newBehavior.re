@@ -55,7 +55,7 @@ ReactDOMRe.createElement(
       :compCallback () => ReasonReact.element(Foo.make(:bar 1, [||])),
       ()
     ),
-  [|ReactDOMRe.createElement("li", [||]), (() => ReasonReact.element(Foo.make(:bar 2, [||])))(())|]
+  [|ReactDOMRe.createElement("li", [||]), (() => ReasonReact.element(Foo.make(:bar 2, [||])))()|]
 );
 
 ReasonReact.element(Foo.make([||]));

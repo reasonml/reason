@@ -1,13 +1,13 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 [@autoFormat let wrap = 80; let shift = 2];
 
-Modules.run(());
+Modules.run();
 
-Polymorphism.run(());
+Polymorphism.run();
 
-Variants.run(());
+Variants.run();
 
-BasicStructures.run(());
+BasicStructures.run();
 
 TestUtils.printSection("General Syntax");
 
@@ -405,7 +405,7 @@ let thisReturnsA () = a;
 
 let thisReturnsAAsWell () = a;
 
-let recordVal: int = (thisReturnsARecord(())).a;
+let recordVal: int = (thisReturnsARecord()).a;
 
 Printf.printf(
   "\nproof that thisReturnsARecord: %n\n",
@@ -414,7 +414,7 @@ Printf.printf(
 
 Printf.printf(
   "\nproof that thisReturnsA: %n\n",
-  thisReturnsA(())
+  thisReturnsA()
 );
 
 /* Pattern matching */

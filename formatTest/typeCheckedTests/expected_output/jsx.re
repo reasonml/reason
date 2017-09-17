@@ -454,7 +454,7 @@ let asd2 = [@foo] [@JSX] video(:test false, 10);
 
 let div (:children) = 1;
 
-[@JSX] ((() => div)(()))(:children []);
+[@JSX] ((() => div)())(:children []);
 
 let myFun () =
   <>

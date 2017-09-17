@@ -53,7 +53,7 @@ ReactDOMRe.createElement(
       :compCallback () => Foo.createElement(:bar 1, :children [], ()),
       ()
     ),
-  [|ReactDOMRe.createElement("li", [||]), (() => Foo.createElement(:bar 2, :children [], ()))(())|]
+  [|ReactDOMRe.createElement("li", [||]), (() => Foo.createElement(:bar 2, :children [], ()))()|]
 );
 
 Foo.createElement(:children [], ());

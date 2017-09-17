@@ -6301,8 +6301,12 @@ class printer  ()= object(self:'self)
     SourceMap (e.pexp_loc, param)
 
   method label_x_expression_params xs =
-    let xs = if xs = [] then [] else
-        [makeTup (List.map self#label_x_expression_param xs)]
+    let xs = (match xs with
+      (* function applications with unit as only argument should be printed differently
+       * e.g. print_newline(()) should be printed as print_newline() *)
+      | [(_, ({pexp_attributes = []; pexp_desc = Pexp_construct ( {txt= Lident "()"}, None)} as x))]
+          -> [self#unparseExpr x]
+      | params -> [makeTup (List.map self#label_x_expression_param params)])
     in
     match  xs  with
     | [x] -> x

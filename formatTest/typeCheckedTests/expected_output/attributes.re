@@ -185,7 +185,7 @@ let myObj = {pub p () = {pub z () = 10}};
 
 let result =
   [@onSecondSend]
-  ([@attOnFirstSend] myObj#p(()))#z(());
+  ([@attOnFirstSend] myObj#p())#z();
 
 [@onRecordFunctions]
 type recordFunctions = {
@@ -205,7 +205,7 @@ and unused = ();
 
 let result =
   [@onSecondSend]
-  ([@attOnFirstSend] myRecord.p(())).q(());
+  ([@attOnFirstSend] myRecord.p()).q();
 
 [@onVariantType]
 type variantType =
