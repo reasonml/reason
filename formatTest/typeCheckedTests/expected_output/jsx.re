@@ -436,8 +436,11 @@ let asd =
 let asd2 =
   [@foo]
   [@JSX]
-  One.createElementobvioustypo
-    (:test false, :children ["a", "b"])();
+  One.createElementobvioustypo(
+    :test false,
+    :children ["a", "b"],
+    ()
+  );
 
 let span (:test: bool, :foo: int, :children, ()) = 1;
 

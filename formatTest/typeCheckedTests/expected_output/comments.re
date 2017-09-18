@@ -149,6 +149,6 @@ let store_attributes (arg) = {
     /* only overwrite defined procedures */
     Temp.v || ! Temp.v;
   if (should_write) {
-    Temp.logIt(proc_name)()
+    Temp.logIt(proc_name, ())
   }
 };

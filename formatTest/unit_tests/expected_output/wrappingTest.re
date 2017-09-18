@@ -564,14 +564,15 @@ let acceptsTwoThings
   not a v1 feature of wrapping.
  */
 let result =
-  acceptsTwoThings
-    {age: 20, name: "a"}
+  acceptsTwoThings(
+    {age: 20, name: "a"},
     {
       fieldOne: 10,
       fieldtwo: [10, 20],
       fieldThree: ["one", "two"],
       fieldFour: {age: 20, name: "joe"}
-    };
+    }
+  );
 
 let howDoesInfixOperatorsWrapWhenYouMustWrapQuestionMark
     (x, y, z) =

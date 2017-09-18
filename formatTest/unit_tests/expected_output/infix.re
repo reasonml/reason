@@ -1013,10 +1013,13 @@ let server = {
     )
     >>= (
       (body) =>
-        Server.respond_string(:status, :body)()
+        Server.respond_string(:status, :body, ())
     )
   };
-  Server.create(:mode, Server.make(:callback)())
+  Server.create(
+    :mode,
+    Server.make(:callback, ())
+  )
 };
 
 let lijst =

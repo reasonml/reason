@@ -287,7 +287,7 @@ let addPoints (p1: point, p2: point) = {
 let res1 = printPoint(point2D);
 
 let res2 =
-  printPoint{x: point3D.x, y: point3D.y};
+  printPoint({x: point3D.x, y: point3D.y});
 
 /*
     When () were used to indicate sequences, the parser used seq_expr not only
@@ -313,8 +313,10 @@ let res2 =
  */
 let res3 =
   printPoint(
-    addPoints
-      (point2D){x: point3D.x, y: point3D.y}
+    addPoints(
+      point2D,
+      {x: point3D.x, y: point3D.y}
+    )
   );
 
 type person = {
@@ -1017,3 +1019,5 @@ let method = "method";
 
 let foo (x, :x bar, :z, :foo bar, :foo z) =
   bar + 2;
+
+let zzz = myFunc(1, 2, [||]);
