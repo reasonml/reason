@@ -596,17 +596,15 @@ let reallyLongFunctionNameThatJustConcats (a) =
 let seeHowLongValuesWrap = {
   age: 30,
   name:
-    reallyLongFunctionNameThatJustConcats(
-      [
-        "one",
-        "two",
-        "two",
-        "two",
-        "two",
-        "two",
-        "two"
-      ]
-    )
+    reallyLongFunctionNameThatJustConcats([
+      "one",
+      "two",
+      "two",
+      "two",
+      "two",
+      "two",
+      "two"
+    ])
 };
 
 /*
@@ -1076,26 +1074,24 @@ let (
   o,
   p
 ) =
-  echoTuple(
-    (
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0
-    )
-  );
+  echoTuple((
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ));
 
 /* Annotated version */
 let (
@@ -1116,26 +1112,24 @@ let (
   o,
   p
 ): sixteenTuple =
-  echoTuple(
-    (
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0
-    )
-  );
+  echoTuple((
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ));
 
 /* Annotated inline */
 let x: (
@@ -1156,26 +1150,24 @@ let x: (
   int,
   int
 ) =
-  echoTuple(
-    (
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0
-    )
-  );
+  echoTuple((
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ));
 
 /* Desired formatting if pattern does not fit, arguments do (margin 70) */
 /* Destructured */
@@ -1414,26 +1406,24 @@ let (
   oxx,
   pxx
 ) =
-  echoTuple(
-    (
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0
-    )
-  );
+  echoTuple((
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ));
 
 /* Annotated */
 let (
@@ -1454,26 +1444,24 @@ let (
   oxx,
   pxx
 ): sixteenTuple =
-  echoTuple(
-    (
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0
-    )
-  );
+  echoTuple((
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ));
 
 /* Annotated Inline */
 let (
@@ -1511,73 +1499,67 @@ let (
   int,
   int
 ) =
-  echoTuple(
-    (
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0
-    )
-  );
+  echoTuple((
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ));
 
 /* Not-Destructured */
 let someResult =
-  echoTuple(
-    (
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0
-    )
-  );
+  echoTuple((
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ));
 
 /* Annotated */
 /* Not-Destructured */
 let someResult: sixteenTuple =
-  echoTuple(
-    (
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0
-    )
-  );
+  echoTuple((
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ));
 
 /* Annotated Inline */
 /* Not-Destructured */
@@ -1599,26 +1581,24 @@ let someResult: (
   int,
   int
 ) =
-  echoTuple(
-    (
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0
-    )
-  );
+  echoTuple((
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ));
 
 /* Desired formatting if neither fit on one line (margin 70) */
 /* Destructured */
@@ -1854,26 +1834,24 @@ let (
   oxx,
   pxx
 ) =
-  echoTuple(
-    (
-      1000,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10
-    )
-  );
+  echoTuple((
+    1000,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10
+  ));
 
 /* Annoted */
 /* Destructured */
@@ -1895,26 +1873,24 @@ let (
   oxx,
   pxx
 ): sixteenTuple =
-  echoTuple(
-    (
-      1000,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10
-    )
-  );
+  echoTuple((
+    1000,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10
+  ));
 
 /* Annoted Inline */
 /* Destructured */
@@ -1953,74 +1929,68 @@ let (
   int,
   int
 ) =
-  echoTuple(
-    (
-      1000,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10
-    )
-  );
+  echoTuple((
+    1000,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10
+  ));
 
 /* Desired formatting if neither fit on one line (margin 70) */
 /* Not-Destructured */
 let someResult =
-  echoTuple(
-    (
-      1000,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10
-    )
-  );
+  echoTuple((
+    1000,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10
+  ));
 
 /* Annoted */
 /* Not-Destructured */
 let someResult: sixteenTuple =
-  echoTuple(
-    (
-      1000,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10
-    )
-  );
+  echoTuple((
+    1000,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10
+  ));
 
 /* Annoted Inline */
 /* Not-Destructured */
@@ -2042,26 +2012,24 @@ let someResult: (
   int,
   int
 ) =
-  echoTuple(
-    (
-      1000,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10,
-      10
-    )
-  );
+  echoTuple((
+    1000,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10
+  ));
 
 /* The rhs of = shouldn't be broken onto its own newline: @see ensureSingleTokenSticksToLabel */
 let someResult: (
@@ -2971,3 +2939,26 @@ let tryingTheSameInLocalScope = {
   let blah (a, b) = a;
   () /* Done (almost) */
 };
+
+reallyLongFunctionNameWithArrayThatBreaks([|
+  "one",
+  "two",
+  "two",
+  "two",
+  "two",
+  "two",
+  "two"
+|]);
+
+reallyLongFunctionNameWithRecordStringKeys({
+  "one": 2345,
+  "two": 2345678,
+  "three": 45678,
+  "four": 45678
+});
+
+fooSpreadES6List([
+  "sldkjfklsjdflskjdflksjok",
+  "more tests",
+  ...x
+]);

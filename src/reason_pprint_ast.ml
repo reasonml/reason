@@ -855,6 +855,13 @@ type construct =
   | `simple of Longident.t
   | `tuple ]
 
+type sequence_kind =
+  [ `Array
+  | `List
+  | `Tuple
+  | `ES6List
+  ]
+
 let view_expr x =
   match x.pexp_desc with
     | Pexp_construct ( {txt= Lident "()"; _},_) -> `tuple
@@ -874,6 +881,11 @@ let view_expr x =
         else `cons ls
     | Pexp_construct (x,None) -> `simple (x.txt)
     | _ -> `normal
+
+let is_simple_list_expr x =
+  match view_expr x with
+  | `list _ | `cons _ -> true
+  | _ -> false
 
 let is_simple_construct :construct -> bool = function
   | `nil | `tuple | `list _ | `simple _ | `cons _  -> true
@@ -1427,9 +1439,10 @@ let atom ?loc str =
 let easyAtom str = Easy_format.Atom(str, labelStringStyle)
 
 (** Take x,y,z and n and generate [x, y, z, ...n] *)
-let makeES6List lst last =
+let makeES6List ?wrap:(wrap=("", "")) lst last =
+  let (left, right) = wrap in
   let last_dots = makeList [atom "..."; last] in
-  makeList ~wrap:("[", "]") ~break:IfNeed ~postSpace:true ~sep:"," (lst @ [last_dots])
+  makeList ~wrap:(left ^ "[", "]" ^ right) ~break:IfNeed ~postSpace:true ~sep:"," (lst @ [last_dots])
 
 let makeNonIndentedBreakingList lst =
     (* No align closing: So that semis stick to the ends of every break *)
@@ -4901,7 +4914,7 @@ class printer  ()= object(self:'self)
     )
     | _ -> self#simplifyUnparseExpr x
 
-  method unparseRecord ?withStringKeys:(withStringKeys=false) ?allowPunning:(allowPunning=true) l eo =
+  method unparseRecord ?wrap:(wrap=("", "")) ?withStringKeys:(withStringKeys=false) ?allowPunning:(allowPunning=true) l eo =
     let quote = (atom "\"") in
     let maybeQuoteFirstElem fst rest =
         if withStringKeys then (match fst.txt with
@@ -4967,7 +4980,8 @@ class printer  ()= object(self:'self)
         ) in
         SourceMap (withRecord.pexp_loc, firstRow)::(getRows l)
     in
-    makeList ~wrap:("{", "}") ~break:IfNeed ~preSpace:true allRows
+    let (left, right) = wrap in
+      makeList ~wrap:(left ^ "{" ,"}" ^ right) ~break:IfNeed ~preSpace:true allRows
 
   method unparseObject ?withStringKeys:(withStringKeys=false) l o =
     let core_field_type (s, attrs, ct) =
@@ -4995,6 +5009,38 @@ class printer  ()= object(self:'self)
     makeList ~break:IfNeed ~preSpace:(List.length rows > 0) ~wrap:("{", "}")
       (openness @ [makeList ~break:IfNeed ~inline:(true, (List.length rows > 0)) ~postSpace:true ~sep:"," rows])
 
+  method unparseSequence ?wrap:(wrap=("", "")) ~construct l =
+    match construct with
+    | `ES6List ->
+      let seq, ext = (match List.rev l with
+        | ext :: seq_rev -> (List.rev seq_rev, ext)
+        | [] -> assert false) in
+      makeES6List ~wrap (List.map self#unparseExpr seq) (self#unparseExpr ext)
+    | _ ->
+      let (left, right) = wrap in
+      let (xf, (leftDelim, rightDelim)) = (match construct with
+        | `List -> (self#unparseExpr, ("[", "]"))
+        | `Array -> (self#unparseExpr, ("[|", "|]"))
+        | `Tuple -> (self#potentiallyConstrainedExpr, ("(", ")"))
+        | `ES6List -> assert false)
+      in
+      let wrap = (left ^ leftDelim, rightDelim ^ right) in
+      makeList
+        ~wrap
+        ~sep:","
+        ~break:IfNeed
+        ~postSpace:true
+        (List.map xf l)
+
+
+  method formatBsObjExtensionSugar ?wrap:(wrap=("", "")) payload =
+    match payload with
+    | PStr [itm] -> (
+      match itm with
+      | {pstr_desc = Pstr_eval ({ pexp_desc = Pexp_record (l, eo) }, []) } ->
+        self#unparseRecord ~wrap ~withStringKeys:true ~allowPunning:false l eo
+      | _ -> assert false)
+    | _ -> assert false
 
   method simplest_expression x =
     let {stdAttrs; jsxAttrs} = partitionAttributes x.pexp_attributes in
@@ -5054,12 +5100,9 @@ class printer  ()= object(self:'self)
                       ~pad:(true, true)
                       actualChildren
                 else
-                  makeList ~break:IfNeed ~wrap:("[", "]") ~sep:"," ~postSpace:true (List.map self#unparseExpr xs)
+                  self#unparseSequence ~construct:`List xs
               | `cons xs ->
-                let seq, ext = match List.rev xs with
-                  | ext :: seq_rev -> (List.rev seq_rev, ext)
-                  | [] -> assert false in
-                 makeES6List (List.map self#unparseExpr seq) (self#unparseExpr ext)
+                  self#unparseSequence ~construct:`ES6List xs
               | `simple x -> self#longident x
               | _ -> assert false
             )
@@ -5081,14 +5124,7 @@ class printer  ()= object(self:'self)
         | Pexp_tuple l ->
             (* TODO: These may be simple, non-simple, or type constrained
                non-simple expressions *)
-          Some (
-            makeList
-              ~wrap:("(", ")")
-              ~sep:","
-              ~break:IfNeed
-              ~postSpace:true
-              (List.map self#potentiallyConstrainedExpr l)
-          )
+          Some (self#unparseSequence ~construct:`Tuple l)
         | Pexp_constraint (e, ct) ->
           Some (
             makeList
@@ -5110,14 +5146,7 @@ class printer  ()= object(self:'self)
             Some (ensureSingleTokenSticksToLabel (atom ("`" ^ l)))
         | Pexp_record (l, eo) -> Some (self#unparseRecord l eo)
         | Pexp_array (l) ->
-          Some (
-            makeList
-              ~break:IfNeed
-              ~sep:","
-              ~postSpace:true
-              ~wrap:("[|", "|]")
-              (List.map self#unparseExpr l)
-          )
+          Some (self#unparseSequence ~construct:`Array l)
         | Pexp_let (rf, l, e) ->
             Some (makeLetSequence (self#letList x))
         | Pexp_letmodule (s, me, e) ->
@@ -5204,22 +5233,13 @@ class printer  ()= object(self:'self)
           label ~space:true (atom "when") (self#unparseExpr e)
         ]
 
-  method extension (s, e) =
+  method extension (s, p) =
     match (s.txt) with
     (* We special case "bs.obj" for now to allow for a nicer interop with
      * BuckleScript. We might be able to generalize to any kind of record
      * looking thing with struct keys. *)
-    | "bs.obj" -> (
-      match e with
-      | PStr [itm] -> (
-        match itm with
-        | {pstr_desc = Pstr_eval ({ pexp_desc = Pexp_record (l, eo) }, []) } ->
-          self#unparseRecord ~withStringKeys:true ~allowPunning:false l eo
-        | _ -> assert false
-      )
-      | _ -> assert false
-    )
-    | _ -> (self#payload "%" s e)
+    | "bs.obj" -> self#formatBsObjExtensionSugar p
+    | _ -> (self#payload "%" s p)
 
   method item_extension (s, e) = (self#payload "%%" s e)
 
@@ -6306,9 +6326,36 @@ class printer  ()= object(self:'self)
        * e.g. print_newline(()) should be printed as print_newline() *)
       | [(Nolabel, ({pexp_attributes = []; pexp_desc = Pexp_construct ( {txt= Lident "()"}, None)} as x))]
           -> [self#unparseExpr x]
-      | params -> [makeTup (List.map self#label_x_expression_param params)])
+
+      (* The following cases provide special formatting when there's only one expr_param that is a tuple/array/list/record etc.
+       *  e.g. foo({a: 1, b: 2})
+       *  becomes ->
+       *  foo({
+       *    a: 1,
+       *    b: 2,
+       *  })
+       *  when the line-length indicates breaking.
+       *)
+      | [(Nolabel, ({pexp_attributes = []; pexp_desc = Pexp_record (l, eo)}))] ->
+          [self#unparseRecord ~wrap:("(", ")") l eo]
+      | [(Nolabel, ({pexp_attributes = []; pexp_desc = Pexp_extension (s, p)}))] when s.txt = "bs.obj" ->
+          [self#formatBsObjExtensionSugar ~wrap:("(", ")") p]
+      | [(Nolabel, ({pexp_attributes = []; pexp_desc = Pexp_tuple l}))] ->
+          [self#unparseSequence ~wrap:("(", ")") ~construct:`Tuple l]
+      | [(Nolabel, ({pexp_attributes = []; pexp_desc = Pexp_array l}))] ->
+          [self#unparseSequence ~wrap:("(", ")") ~construct:`Array  l]
+      | [(Nolabel, ({pexp_attributes = []; pexp_desc} as exp))] when (is_simple_list_expr exp) ->
+          (match view_expr exp with
+          | `list xs ->
+              [self#unparseSequence ~construct:`List ~wrap:("(", ")") xs]
+          | `cons xs ->
+              [self#unparseSequence ~construct:`ES6List ~wrap:("(", ")") xs]
+          | _ -> assert false)
+
+      | params ->
+          [makeTup (List.map self#label_x_expression_param params)])
     in
-    match  xs  with
+    match xs with
     | [x] -> x
     | xs -> makeBreakableList xs
 end;;

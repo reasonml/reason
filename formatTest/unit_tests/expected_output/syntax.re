@@ -603,9 +603,11 @@ let result =
   );
 
 let result =
-  myRecordWithFunctions.addThreeNumbersTupled(
-    (10, 20, 30)
-  );
+  myRecordWithFunctions.addThreeNumbersTupled((
+    10,
+    20,
+    30
+  ));
 
 let lookTuplesRequireParens = (1, 2);
 

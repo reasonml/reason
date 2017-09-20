@@ -1946,3 +1946,26 @@ let tryingTheSameInLocalScope = {
   let blah = fun(a,b) => a;       /* Done */
   let blah(a,b) = a;             /* Done (almost) */
 };
+
+reallyLongFunctionNameWithArrayThatBreaks([|
+  "one",
+  "two",
+  "two",
+  "two",
+  "two",
+  "two",
+  "two"
+|]);
+
+reallyLongFunctionNameWithRecordStringKeys({
+  "one": 2345,
+  "two": 2345678,
+  "three": 45678,
+  "four": 45678
+});
+
+fooSpreadES6List([
+  "sldkjfklsjdflskjdflksjok",
+  "more tests",
+  ...x
+]);

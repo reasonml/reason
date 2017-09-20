@@ -643,12 +643,10 @@ let anotherRecord = {
 
 let anotherRecord = {
   ...
-    SomeReally.longFunctionCall(
-      {
-        passingRecordField: 0,
-        andThisOtherRecordField: 10
-      }
-    ),
+    SomeReally.longFunctionCall({
+      passingRecordField: 0,
+      andThisOtherRecordField: 10
+    }),
   name: "joe++",
   age: testRecord.age + 10
 };
