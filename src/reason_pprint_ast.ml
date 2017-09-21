@@ -6121,7 +6121,16 @@ class printer  ()= object(self:'self)
     let item = (
       match term.pstr_desc with
         | Pstr_eval (e, attrs) ->
-            self#attach_std_item_attrs attrs (self#unparseUnattributedExpr e)
+            let {stdAttrs; jsxAttrs} = partitionAttributes attrs in
+            let layout = self#attach_std_item_attrs stdAttrs (self#unparseUnattributedExpr e) in
+            (* If there was a JSX attribute BUT JSX component wasn't detected,
+               that JSX attribute needs to be pretty printed so it doesn't get
+               lost *)
+            (match jsxAttrs with
+            | [] -> layout
+            | _::_ ->
+              let jsxAttrNodes = List.map self#attribute jsxAttrs in
+              makeList ~sep:" " (jsxAttrNodes @ [layout]))
         | Pstr_type (_, []) -> assert false
         | Pstr_type (rf, l)  -> (self#type_def_list (rf, l))
         | Pstr_value (rf, l) -> (self#bindings (rf, l))
