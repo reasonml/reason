@@ -216,7 +216,7 @@ let jsxMapper () =
         | {txt = Lident "createElement"} ->
           raise (Invalid_argument "JSX: `createElement` should be preceeded by a module name.")
         (* Foo.createElement prop1::foo prop2:bar children::[] () *)
-        | {loc; txt = Ldot (modulePath, "createElement")} ->
+        | {loc; txt = Ldot (modulePath, ("createElement" | "make"))} ->
           let f = match !useNewJsxBehavior with
             | Some 1 -> oldJSX
             | Some 2 -> newJSX modulePath
@@ -227,11 +227,11 @@ let jsxMapper () =
         (* turn that into ReactDOMRe.createElement props::(ReactDOMRe.props props1::foo props2::bar ()) [|bla|] *)
         | {loc; txt = Lident id} ->
           lowercaseCaller mapper loc attrs callArguments id
-        | {txt = Ldot (_, anythingNotCreateElement)} ->
+        | {txt = Ldot (_, anythingNotCreateElementOrMake)} ->
           raise (
             Invalid_argument
-              ("JSX: the JSX attribute should be attached to a `YourModuleName.createElement` call. We saw `"
-               ^ anythingNotCreateElement
+              ("JSX: the JSX attribute should be attached to a `YourModuleName.createElement` or `YourModuleName.make` call. We saw `"
+               ^ anythingNotCreateElementOrMake
                ^ "` instead"
               )
           )
