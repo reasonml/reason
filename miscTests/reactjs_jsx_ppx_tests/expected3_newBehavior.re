@@ -93,3 +93,5 @@ ReasonReact.element(
   :ref Some(ref),
   Foo.Bar.make(:className "hello", [|ReasonReact.element(Bar.make([||]))|])
 );
+
+ReasonReact.element(Foo.make([||]));

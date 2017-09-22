@@ -57,3 +57,11 @@ module ReasonReact = {
 <Foo key=?(Some("someKey")) ref=?(Some(ref)) className="hello" />;
 
 <Foo.Bar key="someKey" ref=(Some(ref)) className="hello"> <Bar /> </Foo.Bar>;
+
+/* ============== */
+
+/* Upcoming JSX syntax (pre-ppx) will desugar to Foo.make instad of
+  Foo.createElement. Future-proof it in the ppx by transforming both to the
+  correct ReasonReact-specific call */
+
+([@JSX] Foo.make(:children [], ()));
