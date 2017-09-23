@@ -10,3 +10,6 @@ TODO: re-enable rtop integration tests in makefile (./miscTests/rtopIntegrationT
 - New syntax based on (but not entirely) #1299
 - BuckleScript's `Js.t {. foo: bar}` now formats to `{. "foo": bar}`, just like its value counterpart (`[%bs.obj {foo: 1}]` to `{"foo": bar}`.
 - [@foo], [@@foo] and [@@@foo] are now unified into [@foo] and placed in front instead of in the back.
+- `!` is now the logical negation. It was `not` previously.
+- dereference was `!`. Now it's ...
+- string concat is now `++` instead of the old `^`
