@@ -19,6 +19,14 @@ module Bar = {
   let createElement (:bar=?, :children, ()) = 1;
 };
 
+module ReasonReact = {
+  let element (:key=?, :ref=?, component) = 1;
+};
+
+let divRef = ReactDOMRe.createElement("div", [||]);
+
+"=====================";
+
 ReactDOMRe.createElement("div", [||]);
 
 ReactDOMRe.createElement("div", :props ReactDOMRe.props(:className "hello", ()), [||]);
@@ -34,15 +42,15 @@ ReactDOMRe.createElement(
   :props ReactDOMRe.props(:className "hello", :width "10", ()),
   [|
     ReactDOMRe.createElement("li", [|ReactDOMRe.createElement("p", [||])|]),
-    Foo.createElement(:children [Bar.createElement(:children [], ())], ())
+    ReasonReact.element(Foo.make([|ReasonReact.element(Bar.make([||]))|]))
   |]
 );
 
 ReactDOMRe.createElement(
   "div",
   :props
-    ReactDOMRe.props(:className "hello", :comp Foo.createElement(:bar 1, :children [], ()), ()),
-  [|ReactDOMRe.createElement("li", [||]), Foo.createElement(:bar 2, :children [], ())|]
+    ReactDOMRe.props(:className "hello", :comp ReasonReact.element(Foo.make(:bar 1, [||])), ()),
+  [|ReactDOMRe.createElement("li", [||]), ReasonReact.element(Foo.make(:bar 2, [||]))|]
 );
 
 ReactDOMRe.createElement(
@@ -50,45 +58,115 @@ ReactDOMRe.createElement(
   :props
     ReactDOMRe.props(
       :className "hello",
-      :compCallback () => Foo.createElement(:bar 1, :children [], ()),
+      :compCallback () => ReasonReact.element(Foo.make(:bar 1, [||])),
       ()
     ),
-  [|ReactDOMRe.createElement("li", [||]), (() => Foo.createElement(:bar 2, :children [], ()))()|]
+  [|ReactDOMRe.createElement("li", [||]), (() => ReasonReact.element(Foo.make(:bar 2, [||])))()|]
 );
 
-Foo.createElement(:children [], ());
+"=====================";
 
-Foo.createElement(:className "hello", :children [], ());
+ReasonReact.element(Foo.make([||]));
 
-Foo.createElement(:className "hello", :width "10", :children [], ());
+ReasonReact.element(Foo.make([|ReactDOMRe.createElement("div", [||])|]));
 
-Foo.createElement(
-  :className "hello",
-  :width "10",
-  :children [
-    ReactDOMRe.createElement("li", [|ReactDOMRe.createElement("p", [||])|]),
-    Foo.createElement(:children [Bar.createElement(:children [], ())], ())
-  ],
-  ()
+ReasonReact.element(Foo.make([|ReasonReact.element(Bar.make([||]))|]));
+
+ReasonReact.element(
+  Foo.make([|ReactDOMRe.createElement("div", [||]), ReasonReact.element(Bar.make([||]))|])
 );
 
-Foo.createElement(
-  :className "hello",
-  :comp Bar.createElement(:bar 1, :children [], ()),
-  :children [ReactDOMRe.createElement("li", [||]), Bar.createElement(:bar 2, :children [], ())],
-  ()
+ReasonReact.element(Foo.make([|divRef, divRef|]));
+
+ReasonReact.element(Foo.make(:className "hello", [||]));
+
+ReasonReact.element(Foo.make(:className "hello", [|ReactDOMRe.createElement("div", [||])|]));
+
+ReasonReact.element(Foo.make(:className "hello", [|ReasonReact.element(Bar.make([||]))|]));
+
+ReasonReact.element(
+  Foo.make(
+    :className "hello",
+    [|ReactDOMRe.createElement("div", [||]), ReasonReact.element(Bar.make([||]))|]
+  )
 );
 
-Foo.createElement(:key "someKey", :className "hello", :children [], ());
+ReasonReact.element(Foo.make(:className "hello", [|divRef, divRef|]));
 
-Foo.createElement(:key Some("someKey"), :ref Some(ref), :className "hello", :children [], ());
+ReasonReact.element(Foo.make(:className "hello", :width "10", [||]));
 
-Foo.createElement(:key? Some("someKey"), :ref? Some(ref), :className "hello", :children [], ());
+ReasonReact.element(
+  Foo.make(
+    :className "hello",
+    :width "10",
+    [|
+      ReactDOMRe.createElement("li", [|ReactDOMRe.createElement("p", [||])|]),
+      ReasonReact.element(Foo.make([|ReasonReact.element(Bar.make([||]))|]))
+    |]
+  )
+);
 
-Foo.Bar.createElement(
+ReasonReact.element(
+  Foo.make(
+    :className "hello",
+    :comp ReasonReact.element(Bar.make(:bar 1, [||])),
+    [|ReactDOMRe.createElement("li", [||]), ReasonReact.element(Bar.make(:bar 2, [||]))|]
+  )
+);
+
+ReasonReact.element(
+  Foo.make(
+    :comp ReasonReact.element(Bar.make([|divRef, divRef|])),
+    [|ReactDOMRe.createElement("li", [||])|]
+  )
+);
+
+ReasonReact.element(
+  Foo.make(
+    :comp ReasonReact.element(Bar.make([|ReactDOMRe.createElement("div", [||])|])),
+    [|ReactDOMRe.createElement("li", [||])|]
+  )
+);
+
+"=== special-cased in V3, no wrapping for single child that's not JSX ===";
+
+ReasonReact.element(Foo.make([|() => 1|]));
+
+ReasonReact.element(Foo.make([|(1, 2)|]));
+
+ReasonReact.element(Foo.make([|[|1|]|]));
+
+ReasonReact.element(Foo.make([|divRef|]));
+
+ReasonReact.element(Foo.make([|divRef, divRef|]));
+
+ReasonReact.element(Foo.make(:className "hello", [|() => 1|]));
+
+ReasonReact.element(Foo.make(:className "hello", [|(1, 2)|]));
+
+ReasonReact.element(Foo.make(:className "hello", [|[|1, 2|]|]));
+
+ReasonReact.element(Foo.make(:className "hello", [|divRef|]));
+
+ReasonReact.element(
+  Foo.make(
+    :comp ReasonReact.element(Bar.make([|divRef|])),
+    [|ReactDOMRe.createElement("li", [||])|]
+  )
+);
+
+"=== with ref/key ===";
+
+ReasonReact.element(:key "someKey", Foo.make(:className "hello", [||]));
+
+ReasonReact.element(:key Some("someKey"), :ref Some(ref), Foo.make(:className "hello", [||]));
+
+ReasonReact.element(:key? Some("someKey"), :ref? Some(ref), Foo.make(:className "hello", [||]));
+
+ReasonReact.element(
   :key "someKey",
   :ref Some(ref),
-  :className "hello",
-  :children [Bar.createElement(:children [], ())],
-  ()
+  Foo.Bar.make(:className "hello", [|ReasonReact.element(Bar.make([||]))|])
 );
+
+ReasonReact.element(Foo.make([||]));

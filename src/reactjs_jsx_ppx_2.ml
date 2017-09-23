@@ -6,7 +6,7 @@
 
   You wouldn't use this file directly; it's used by BuckleScript's
   bsconfig.json. Specifically, there's a field called `react-jsx` inside the
-  field `reason`, which enables this ppx magically
+  field `reason`, which enables this ppx through some internal call in bsb
 *)
 
 (*
@@ -82,7 +82,7 @@ let extractChildrenForDOMElements ?(removeLastPositionUnit=false) ~loc propsAndC
 (* TODO: some line number might still be wrong *)
 let jsxMapper () =
 
-  let oldJSX mapper loc attrs callExpression callArguments =
+(*   let oldJSX mapper loc attrs callExpression callArguments =
     Exp.apply
       ~loc
       ~attrs
@@ -90,7 +90,7 @@ let jsxMapper () =
       (
         callArguments |> List.map (fun (label, expr) -> (label, mapper.expr mapper expr))
       ) in
-
+ *)
   let newJSX modulePath mapper loc attrs callExpression callArguments =
     let (children, argsWithLabels) =
       extractChildrenForDOMElements ~loc ~removeLastPositionUnit:true callArguments in
@@ -190,9 +190,9 @@ let jsxMapper () =
             (* {jsx: 1 | 2} *)
             | ((_, {pexp_desc = Pexp_constant (Pconst_integer (version, _))})::rest, recordFieldsWithoutJsx) -> begin
                 (match version with
-                | "1" -> useNewJsxBehavior := Some 1
                 | "2" -> useNewJsxBehavior := Some 2
-                | _ -> raise (Invalid_argument "JSX: the file-level bs.config's jsx version must be either 1 or 2"));
+                | "3" -> useNewJsxBehavior := Some 3
+                | _ -> raise (Invalid_argument "JSX: the file-level bs.config's jsx version must be either 2 or 3"));
                 match recordFieldsWithoutJsx with
                 (* record empty now, remove the whole bs.config attribute *)
                 | [] -> default_mapper.structure mapper restOfStructure
@@ -218,9 +218,9 @@ let jsxMapper () =
         (* Foo.createElement prop1::foo prop2:bar children::[] () *)
         | {loc; txt = Ldot (modulePath, ("createElement" | "make"))} ->
           let f = match !useNewJsxBehavior with
-            | Some 1 -> oldJSX
             | Some 2 -> newJSX modulePath
-            | Some _ -> assert false
+            | Some 3 -> newJSX modulePath
+            | Some _ -> raise (Invalid_argument "JSX: the JSX version must be either 2 or 3")
             | None -> newJSX modulePath
           in f mapper loc attrs callExpression callArguments
         (* div prop1::foo prop2:bar children::[bla] () *)

@@ -9,15 +9,15 @@ module ReactDOMRe = {
 };
 module Foo = {
   let make (:className=?, :width=?, :comp=?, :bar=?, children) = 1;
+  let createElement (:className=?, :ref=?, :key=?, :width=?, :comp=?, :bar=?, :children, ()) = 1;
   module Bar = {
     let make (:className=?, children) = 1;
+    let createElement (:className=?, :ref=?, :key=?, :children, ()) = 1;
   };
 };
 module Bar = {
   let make (:bar=?, children) = 1;
-};
-module ReasonReact = {
-  let element(:key=?, :ref=?, component) = 1
+  let createElement (:bar=?, :children, ()) = 1;
 };
 
 
