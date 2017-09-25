@@ -13,3 +13,4 @@ TODO: re-enable rtop integration tests in makefile (./miscTests/rtopIntegrationT
 - `!` is now the logical negation. It was `not` previously.
 - dereference was `!`. Now it's ...
 - string concat is now `++` instead of the old `^`
+- labeled argument with type now has punning!
