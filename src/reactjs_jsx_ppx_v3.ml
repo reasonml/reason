@@ -185,7 +185,7 @@ let jsxMapper () =
       (Exp.ident ~loc {loc; txt = Ldot (Lident "ReactDOMRe", "createElement")})
       args in
 
-  let useNewJsxBehavior = ref None in
+  let jsxVersion = ref None in
 
   let structure =
     (fun mapper structure -> match structure with
@@ -215,11 +215,11 @@ let jsxMapper () =
             match (jsxField, recordFieldsWithoutJsx) with
             (* no file-level jsx config found *)
             | ([], _) -> default_mapper.structure mapper structure
-            (* {jsx: 1 | 2} *)
+            (* {jsx: 2 | 3} *)
             | ((_, {pexp_desc = Pexp_constant (Pconst_integer (version, _))})::rest, recordFieldsWithoutJsx) -> begin
                 (match version with
-                | "2" -> useNewJsxBehavior := Some 2
-                | "3" -> useNewJsxBehavior := Some 3
+                | "2" -> jsxVersion := Some 2
+                | "3" -> jsxVersion := Some 3
                 | _ -> raise (Invalid_argument "JSX: the file-level bs.config's jsx version must be either 2 or 3"));
                 match recordFieldsWithoutJsx with
                 (* record empty now, remove the whole bs.config attribute *)
@@ -245,11 +245,11 @@ let jsxMapper () =
           raise (Invalid_argument "JSX: `createElement` should be preceeded by a module name.")
         (* Foo.createElement prop1::foo prop2:bar children::[] () *)
         | {loc; txt = Ldot (modulePath, ("createElement" | "make"))} ->
-          let f = match !useNewJsxBehavior with
+          let f = match !jsxVersion with
             | Some 2 -> jsxTransformV2 modulePath
             | Some 3 -> jsxTransformV3 modulePath
             | Some _ -> raise (Invalid_argument "JSX: the JSX version must be either 2 or 3")
-            | None -> jsxTransformV2 modulePath
+            | None -> jsxTransformV3 modulePath
           in f mapper loc attrs callExpression callArguments
         (* div prop1::foo prop2:bar children::[bla] () *)
         (* turn that into ReactDOMRe.createElement props::(ReactDOMRe.props props1::foo props2::bar ()) [|bla|] *)
