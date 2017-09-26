@@ -17,7 +17,10 @@
   bar|]`.
 
   transform the upper-cased case `Foo.createElement key::a ref::b foo::bar children::[] () [@JSX]` into
-  `ReasonReact.element key::a ref::b (Foo.make foo::bar [||] [@JSX])`
+  `ReasonReact.element key::a ref::b (Foo.make foo::bar () [@JSX])`
+
+  So empty children list becomes (). List with a single non-jsx item loses the
+  list wrapper. Otherwise, turn the list into an array.
 *)
 
 (*
@@ -46,22 +49,24 @@ open Asttypes
 open Parsetree
 open Longident
 
-let listToArray lst =
-  let rec listToArray' lst accum =
+let listToArray ~loc ~mapper theList =
+  let rec listToArray' theList accum =
     (* not in the sense of converting a list to an array; convert the AST
        reprensentation of a list to the AST reprensentation of an array *)
-    match lst with
-    | {pexp_desc = Pexp_construct ({txt = Lident "[]"}, None)} -> accum
-    | {
-        pexp_desc = Pexp_construct (
-          {txt = Lident "::"},
-          Some {pexp_desc = Pexp_tuple (v::acc::[])}
-        )
-    } -> listToArray' acc (v::accum)
+    match theList with
+    | {pexp_desc = Pexp_construct ({txt = Lident "[]"}, None)} -> 
+      accum 
+    | {pexp_desc = Pexp_construct (
+        {txt = Lident "::"},
+        Some {pexp_desc = Pexp_tuple (v::acc::[])}
+      )} ->
+      listToArray' acc (v::accum)
     | _ -> raise (
         Invalid_argument "JSX: the `children` prop must be a literal list (of react elements)."
       ) in
-  listToArray' lst [] |> List.rev
+  listToArray' theList []
+  |> List.rev_map (fun a -> mapper.expr mapper a)
+  |> Exp.array ~loc
 
 let extractChildrenForDOMElements ?(removeLastPositionUnit=false) ~loc propsAndChildren =
   let rec allButLast_ lst acc = match lst with
@@ -82,26 +87,52 @@ let extractChildrenForDOMElements ?(removeLastPositionUnit=false) ~loc propsAndC
 (* TODO: some line number might still be wrong *)
 let jsxMapper () =
 
-(*   let oldJSX mapper loc attrs callExpression callArguments =
-    Exp.apply
-      ~loc
-      ~attrs
-      callExpression
-      (
-        callArguments |> List.map (fun (label, expr) -> (label, mapper.expr mapper expr))
-      ) in
- *)
-  let newJSX modulePath mapper loc attrs callExpression callArguments =
+  let jsxTransformV3 modulePath mapper loc attrs callExpression callArguments =
     let (children, argsWithLabels) =
       extractChildrenForDOMElements ~loc ~removeLastPositionUnit:true callArguments in
     let argIsKeyRef = function
       | (Labelled ("key" | "ref"), _) | (Optional ("key" | "ref"), _) -> true
       | _ -> false in
     let (argsKeyRef, argsForMake) = List.partition argIsKeyRef argsWithLabels in
-    let childrenExpr =
-      Exp.array ~loc (
-        listToArray children |> List.map (fun a -> mapper.expr mapper a)
-      ) in
+    let childrenExpr = match children with
+    (* if it's empty, turn children into () *)
+    | {pexp_desc = Pexp_construct ({txt = Lident "[]"; loc}, None)} ->
+      Exp.construct ~loc {loc; txt = Lident "()"} None
+    (* if it's a single, non-jsx item, keep it so (remove the list wrapper) *)
+    | {pexp_desc = Pexp_construct (
+        {txt = Lident "::"; loc},
+        Some {pexp_desc = Pexp_tuple [
+          ({pexp_attributes} as singleItem);
+          {pexp_desc = Pexp_construct ({txt = Lident "[]"}, None)}
+        ]}
+      )} when List.for_all (fun (attribute, _) -> attribute.txt <> "JSX") pexp_attributes ->
+      singleItem
+    (* if it's a single jsx item, or multiple items, turn list into an array *)
+    | nonEmptyChildren -> listToArray ~loc ~mapper nonEmptyChildren
+    in
+    let recursivelyTransformedArgsForMake = argsForMake |> List.map (fun (label, expression) -> (label, mapper.expr mapper expression)) in
+    let args = recursivelyTransformedArgsForMake @ [ (Nolabel, childrenExpr) ] in
+    let wrapWithReasonReactElement e = (* ReasonReact.element ::key ::ref (...) *)
+      Exp.apply
+        ~loc
+        (Exp.ident ~loc {loc; txt = Ldot (Lident "ReasonReact", "element")})
+        (argsKeyRef @ [(Nolabel, e)]) in
+    Exp.apply
+      ~loc
+      ~attrs
+      (* Foo.make *)
+      (Exp.ident ~loc {loc; txt = Ldot (modulePath, "make")})
+      args
+    |> wrapWithReasonReactElement in
+
+  let jsxTransformV2 modulePath mapper loc attrs callExpression callArguments =
+    let (children, argsWithLabels) =
+      extractChildrenForDOMElements ~loc ~removeLastPositionUnit:true callArguments in
+    let argIsKeyRef = function
+      | (Labelled ("key" | "ref"), _) | (Optional ("key" | "ref"), _) -> true
+      | _ -> false in
+    let (argsKeyRef, argsForMake) = List.partition argIsKeyRef argsWithLabels in
+    let childrenExpr = listToArray ~loc ~mapper children in
     let recursivelyTransformedArgsForMake = argsForMake |> List.map (fun (label, expression) -> (label, mapper.expr mapper expression)) in
     let args = recursivelyTransformedArgsForMake @ [ (Nolabel, childrenExpr) ] in
     let wrapWithReasonReactElement e = (* ReasonReact.element ::key ::ref (...) *)
@@ -122,10 +153,7 @@ let jsxMapper () =
       extractChildrenForDOMElements ~loc callArguments in
     let componentNameExpr =
       Exp.constant ~loc (Pconst_string (id, None)) in
-    let childrenExpr =
-      Exp.array (
-        listToArray children |> List.map (fun a -> mapper.expr mapper a)
-      ) in
+    let childrenExpr = listToArray ~loc ~mapper children in
     let args = match propsWithLabels with
       | [theUnitArgumentAtEnd] ->
         [
@@ -209,7 +237,7 @@ let jsxMapper () =
       | _ -> default_mapper.structure mapper structure
     ) in
 
-  let handleJsxCall mapper callExpression callArguments attrs =
+  let transformJsxCall mapper callExpression callArguments attrs =
     (match callExpression.pexp_desc with
      | Pexp_ident caller ->
        (match caller with
@@ -218,10 +246,10 @@ let jsxMapper () =
         (* Foo.createElement prop1::foo prop2:bar children::[] () *)
         | {loc; txt = Ldot (modulePath, ("createElement" | "make"))} ->
           let f = match !useNewJsxBehavior with
-            | Some 2 -> newJSX modulePath
-            | Some 3 -> newJSX modulePath
+            | Some 2 -> jsxTransformV2 modulePath
+            | Some 3 -> jsxTransformV3 modulePath
             | Some _ -> raise (Invalid_argument "JSX: the JSX version must be either 2 or 3")
-            | None -> newJSX modulePath
+            | None -> jsxTransformV2 modulePath
           in f mapper loc attrs callExpression callArguments
         (* div prop1::foo prop2:bar children::[bla] () *)
         (* turn that into ReactDOMRe.createElement props::(ReactDOMRe.props props1::foo props2::bar ()) [|bla|] *)
@@ -247,24 +275,24 @@ let jsxMapper () =
        )
     ) in
 
-  let expr =
+  let mapExpr =
     (fun mapper expression -> match expression with
-       (* Function application with the @JSX attribute? *)
+       (* Does the function application have the @JSX attribute? *)
        |
          {
            pexp_desc = Pexp_apply (callExpression, callArguments);
            pexp_attributes
          } ->
-         let (jsxAttribute, attributesWithoutJSX) = List.partition (fun (attribute, _) -> attribute.txt = "JSX") pexp_attributes in
-         (match (jsxAttribute, attributesWithoutJSX) with
+         let (jsxAttribute, nonJSXAttributes) = List.partition (fun (attribute, _) -> attribute.txt = "JSX") pexp_attributes in
+         (match (jsxAttribute, nonJSXAttributes) with
          (* no JSX attribute *)
          | ([], _) -> default_mapper.expr mapper expression
-         | (_, attributesWithoutJSX) -> handleJsxCall mapper callExpression callArguments attributesWithoutJSX)
+         | (_, nonJSXAttributes) -> transformJsxCall mapper callExpression callArguments nonJSXAttributes)
        (* Delegate to the default mapper, a deep identity traversal *)
        | e -> default_mapper.expr mapper e) in
 
 (* #if defined BS_NO_COMPILER_PATCH then *)
-  To_current.copy_mapper { default_mapper with structure; expr }
+  To_current.copy_mapper { default_mapper with structure; expr = mapExpr }
 (* #else *)
   (* { default_mapper with structure; expr } *)
 (* #end *)

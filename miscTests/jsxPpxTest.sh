@@ -14,7 +14,7 @@ else
   DIFF="diff -u"
 fi
 
-for i in {1..2}
+for i in {1..3}
 do
   test="$testPath/test$i.re"
   expected="$testPath/expected${i}_newBehavior.re"

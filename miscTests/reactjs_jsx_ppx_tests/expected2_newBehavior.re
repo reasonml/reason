@@ -25,7 +25,7 @@ module ReasonReact = {
 
 let divRef = ReactDOMRe.createElement("div", [||]);
 
-"=====================";
+"=== DOM component ===";
 
 ReactDOMRe.createElement("div", [||]);
 
@@ -64,7 +64,7 @@ ReactDOMRe.createElement(
   [|ReactDOMRe.createElement("li", [||]), (() => ReasonReact.element(Foo.make(:bar 2, [||])))()|]
 );
 
-"=====================";
+"=== Custom component ===";
 
 ReasonReact.element(Foo.make([||]));
 
@@ -128,13 +128,17 @@ ReasonReact.element(
   )
 );
 
-"=== special-cased in V3, no wrapping for single child that's not JSX ===";
+"=== Special-cased in V3, no wrapping for single child that's not JSX ===";
 
 ReasonReact.element(Foo.make([|() => 1|]));
 
 ReasonReact.element(Foo.make([|(1, 2)|]));
 
 ReasonReact.element(Foo.make([|[|1|]|]));
+
+ReasonReact.element(Foo.make([|[||]|]));
+
+ReasonReact.element(Foo.make([|[]|]));
 
 ReasonReact.element(Foo.make([|divRef|]));
 
@@ -155,7 +159,7 @@ ReasonReact.element(
   )
 );
 
-"=== with ref/key ===";
+"=== With ref/key ===";
 
 ReasonReact.element(:key "someKey", Foo.make(:className "hello", [||]));
 

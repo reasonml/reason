@@ -25,7 +25,7 @@ module ReasonReact = {
 let divRef = <div />;
 
 
-"=====================";
+"=== DOM component ===";
 
 <div />;
 
@@ -39,7 +39,7 @@ let divRef = <div />;
 
 <div className="hello" compCallback=(fun () => <Foo bar=1 />)> <li /> ((fun () => <Foo bar=2 />) ()) </div>;
 
-"=====================";
+"=== Custom component ===";
 
 <Foo />;
 
@@ -71,13 +71,17 @@ let divRef = <div />;
 
 <Foo comp=(<Bar> <div /> </Bar>)> <li /> </Foo>;
 
-"=== special-cased in V3, no wrapping for single child that's not JSX ===";
+"=== Special-cased in V3, no wrapping for single child that's not JSX ===";
 
 <Foo> (() => 1) </Foo>;
 
 <Foo> (1, 2) </Foo>;
 
 <Foo> [|1|] </Foo>;
+
+<Foo> [||] </Foo>;
+
+<Foo> [] </Foo>;
 
 <Foo> divRef </Foo>;
 
@@ -93,7 +97,7 @@ let divRef = <div />;
 
 <Foo comp=(<Bar> divRef </Bar>)> <li /> </Foo>;
 
-"=== with ref/key ===";
+"=== With ref/key ===";
 
 <Foo key="someKey" className="hello" />;
 
