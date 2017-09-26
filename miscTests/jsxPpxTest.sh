@@ -29,8 +29,8 @@ do
       -pp "./refmt_impl.native --print binary" -impl $test \
       2> $tempFile
 
-    # if there's an error, bail early
-    if grep -q "Error:" $tempFile; then
+    # if there's an Error/Fatal error, bail early
+    if grep -q "rror: " $tempFile; then
       echo "\033[0;31mV2 behavior $i: error in output after the ppx ran. Here's the content:\033[m"
       cat $tempFile
       rm $tempFile
