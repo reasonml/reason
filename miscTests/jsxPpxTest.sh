@@ -25,7 +25,7 @@ do
     # for each test, we're gonna use ocamlc and the ppx to dump the post-ppx ocaml
     # file somewhere
 
-    ocamlc -dsource -ppx "./reactjs_jsx_ppx_2.native" \
+    ocamlc -dsource -ppx "./reactjs_jsx_ppx_${version}.native" \
       -pp "./refmt_impl.native --print binary" -impl $test \
       2> $tempFile
 

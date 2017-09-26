@@ -36,18 +36,20 @@ Throughout the codebase, you might see mentions of "migrate-parsetree", `Ast_404
 
 - `reason_util.ml`, `syntax_util.ml`: utils.
 
-- `reactjs_jsx_ppx_2.ml,mli`: our ReactJS interop that translates [Reason JSX](https://reasonml.github.io/guide/language/jsx) into something that ReactJS understands. See the comments in the file and the description in [ReasonReact](https://reasonml.github.io/reason-react/#reason-react-jsx).
+- `reactjs_jsx_ppx_v2.ml/v3.ml`: our ReactJS interop that translates [Reason JSX](https://reasonml.github.io/guide/language/jsx) into something that ReactJS understands. See the comments in the file and the description in [ReasonReact](https://reasonml.github.io/reason-react/#reason-react-jsx).
 
 ## Working with PPX
 
-reactjs_jsx_ppx_2 uses the ppx system. It works on the AST. It helps being able to see the AST of a particular snippet. Assuming you've written some code in a file `foo.re`, run the following incantation to output the code's AST:
+reactjs_jsx_ppx_v2/v3 uses the ppx system. It works on the AST. It helps being able to see the AST of a particular snippet. Assuming you've written some code in a file `foo.re`, run the following incantation to output the code's AST:
 
 ```
-ocamlc -dparsetree -ppx ../reactjs_jsx_ppx_2.native -pp "../refmt_impl.native --print binary" -impl foo.re
+ocamlc -dparsetree -ppx ../reactjs_jsx_ppx_v2.native -pp "../refmt_impl.native --print binary" -impl foo.re
 ```
 
 That dumps the AST after accepting the ppx and the reason syntax. You can also dump the final code in Reason syntax instead:
 
 ```
-ocamlc -dsource -ppx ../reactjs_jsx_ppx_2.native -pp "../refmt_impl.native --print binary" -impl foo.re | ../refmt_impl.native --parse ml --print re --interface false
+ocamlc -dsource -ppx ../reactjs_jsx_ppx_v2.native -pp "../refmt_impl.native --print binary" -impl foo.re | ../refmt_impl.native --parse ml --print re --interface false
 ```
+
+(Similar steps for reactjs_jsx_ppx_v3.)
