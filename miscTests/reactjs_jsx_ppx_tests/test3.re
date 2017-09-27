@@ -1,5 +1,5 @@
 /* don't auto-format this file until https://github.com/facebook/reason/issues/904 is resolved */
-[@bs.config {foo, jsx: 2}];
+[@bs.config {foo, jsx: 3}];
 
 /* test setup dummy modules. These are here to make the transform pass the type checker. Also helps validating our transforms thanks to types */
 
@@ -9,20 +9,23 @@ module ReactDOMRe = {
 };
 module Foo = {
   let make (:className=?, :width=?, :comp=?, :bar=?, children) = 1;
+  let createElement (:className=?, :ref=?, :key=?, :width=?, :comp=?, :bar=?, :children, ()) = 1;
   module Bar = {
     let make (:className=?, children) = 1;
+    let createElement (:className=?, :ref=?, :key=?, :children, ()) = 1;
   };
 };
 module Bar = {
   let make (:bar=?, children) = 1;
+  let createElement (:bar=?, :children, ()) = 1;
 };
 module ReasonReact = {
-  let element(:key=?, :ref=?, component) = 1
+  let element (:key=?, :ref=?, component) = 1;
 };
 
+let divRef = <div />;
 
-
-/* ================ */
+"=== DOM component ===";
 
 <div />;
 
@@ -36,11 +39,27 @@ module ReasonReact = {
 
 <div className="hello" compCallback=(fun () => <Foo bar=1 />)> <li /> ((fun () => <Foo bar=2 />) ()) </div>;
 
-/* ============== */
+"=== Custom component ===";
 
 <Foo />;
 
+<Foo> <div /> </Foo>;
+
+<Foo> <Bar /> </Foo>;
+
+<Foo> <div /> <Bar /> </Foo>;
+
+<Foo> divRef divRef </Foo>;
+
 <Foo className="hello" />;
+
+<Foo className="hello"> <div /> </Foo>;
+
+<Foo className="hello"> <Bar /> </Foo>;
+
+<Foo className="hello"> <div /> <Bar /> </Foo>;
+
+<Foo className="hello"> divRef divRef </Foo>;
 
 <Foo className="hello" width="10" />;
 
@@ -48,7 +67,39 @@ module ReasonReact = {
 
 <Foo className="hello" comp=(<Bar bar=1 />)> <li /> <Bar bar=2 /> </Foo>;
 
-/* ============== */
+<Foo comp=(<Bar> divRef divRef </Bar>)> <li /> </Foo>;
+
+<Foo comp=(<Bar> <div /> </Bar>)> <li /> </Foo>;
+
+"=== Special-cased in V3, no wrapping for single child that's not JSX ===";
+
+<Foo> (() => 1) </Foo>;
+
+<Foo> (() => (<Bar />)) </Foo>;
+
+<Foo> (1, 2) </Foo>;
+
+<Foo> [|1|] </Foo>;
+
+<Foo> [||] </Foo>;
+
+<Foo> [] </Foo>;
+
+<Foo> divRef </Foo>;
+
+<Foo> divRef divRef </Foo>;
+
+<Foo className="hello"> (() => 1) </Foo>;
+
+<Foo className="hello"> (1, 2) </Foo>;
+
+<Foo className="hello"> [|1, 2|] </Foo>;
+
+<Foo className="hello"> divRef </Foo>;
+
+<Foo comp=(<Bar> divRef </Bar>)> <li /> </Foo>;
+
+"=== With ref/key ===";
 
 <Foo key="someKey" className="hello" />;
 
@@ -57,8 +108,6 @@ module ReasonReact = {
 <Foo key=?(Some("someKey")) ref=?(Some(ref)) className="hello" />;
 
 <Foo.Bar key="someKey" ref=(Some(ref)) className="hello"> <Bar /> </Foo.Bar>;
-
-/* ============== */
 
 /* Upcoming JSX syntax (pre-ppx) will desugar to Foo.make instad of
   Foo.createElement. Future-proof it in the ppx by transforming both to the
