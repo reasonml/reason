@@ -130,6 +130,8 @@ ReasonReact.element(
 
 ReasonReact.element(Foo.make([|() => 1|]));
 
+ReasonReact.element(Foo.make([|() => ReasonReact.element(Bar.make([||]))|]));
+
 ReasonReact.element(Foo.make([|(1, 2)|]));
 
 ReasonReact.element(Foo.make([|[|1|]|]));

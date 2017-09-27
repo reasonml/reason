@@ -117,7 +117,7 @@ let jsxMapper () =
           {pexp_desc = Pexp_construct ({txt = Lident "[]"}, None)}
         ]}
       )} when List.for_all (fun (attribute, _) -> attribute.txt <> "JSX") pexp_attributes ->
-      singleItem
+      mapper.expr mapper singleItem
     (* if it's a single jsx item, or multiple items, turn list into an array *)
     | nonEmptyChildren -> listToArray ~loc ~mapper nonEmptyChildren
     in

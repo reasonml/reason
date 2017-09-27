@@ -75,6 +75,8 @@ let divRef = <div />;
 
 <Foo> (() => 1) </Foo>;
 
+<Foo> (() => (<Bar />)) </Foo>;
+
 <Foo> (1, 2) </Foo>;
 
 <Foo> [|1|] </Foo>;
@@ -112,4 +114,3 @@ let divRef = <div />;
   correct ReasonReact-specific call */
 
 ([@JSX] Foo.make(:children [], ()));
-
