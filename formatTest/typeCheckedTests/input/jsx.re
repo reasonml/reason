@@ -411,3 +411,8 @@ let w =
 let foo = None;
 
 let g = <Two ?foo />;
+
+/* https://github.com/facebook/reason/issues/1428 */
+<Foo> ...element </Foo>;
+
+<Foo> ...((a) => 1) </Foo>;

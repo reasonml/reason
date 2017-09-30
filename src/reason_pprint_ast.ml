@@ -3365,8 +3365,8 @@ class printer  ()= object(self:'self)
          the tag, then it would be consistent with array spread:
          [...list] evaluates to the thing as list.
       *)
-      let hasLabelledChildrenListLiteral = List.exists (function
-        | (Labelled "children", {pexp_desc = Pexp_construct ({txt = Lident "::" | Lident "[]"}, _)}) -> true
+      let hasLabelledChildrenLiteral = List.exists (function
+        | (Labelled "children", _) -> true
         | _ -> false
       ) l in
       let rec hasSingleNonLabelledUnitAndIsAtTheEnd l = match l with
@@ -3375,7 +3375,7 @@ class printer  ()= object(self:'self)
       | (Nolabel, _) :: rest -> false
       | _ :: rest -> hasSingleNonLabelledUnitAndIsAtTheEnd rest
       in
-      if hasLabelledChildrenListLiteral && hasSingleNonLabelledUnitAndIsAtTheEnd l then
+      if hasLabelledChildrenLiteral && hasSingleNonLabelledUnitAndIsAtTheEnd l then
         let moduleNameList = List.rev (List.tl (List.rev (Longident.flatten loc.txt))) in
         if List.length moduleNameList > 0 then
           if Longident.last loc.txt = "createElement" then
@@ -3932,6 +3932,10 @@ class printer  ()= object(self:'self)
         processArguments tail processedAttrs None
       | (Labelled "children", {pexp_desc = Pexp_construct ({txt = Lident"::"}, Some {pexp_desc = Pexp_tuple(components)} )}) :: tail ->
         processArguments tail processedAttrs (self#formatChildren components [])
+      | (Labelled "children", expr) :: tail ->
+          let childLayout = self#simplifyUnparseExpr expr in
+          let dotdotdotChild = makeList ~break:Never [atom "..."; childLayout] in
+          processArguments tail processedAttrs (Some [dotdotdotChild])
       | (Optional lbl, expression) :: tail ->
         let nextAttr =
           match expression.pexp_desc with
@@ -5237,6 +5241,7 @@ class printer  ()= object(self:'self)
     | [] -> match processedRev with
         | [] -> None
         | _::_ -> Some (List.rev processedRev)
+
   method direction_flag = function
     | Upto -> atom "to"
     | Downto -> atom "downto"
