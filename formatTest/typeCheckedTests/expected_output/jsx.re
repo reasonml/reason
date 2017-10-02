@@ -618,3 +618,9 @@ let g = <Two ?foo />;
 <Foo> ...element </Foo>;
 
 <Foo> ...((a) => 1) </Foo>;
+
+<Foo> ...<Foo2 /> </Foo>;
+
+<Foo> ...[|a|] </Foo>;
+
+<Foo> ...(1, 2) </Foo>;
