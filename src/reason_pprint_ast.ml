@@ -3021,7 +3021,7 @@ class printer  ()= object(self:'self)
         | Ptyp_object (l, o) -> self#unparseObject l o
         | Ptyp_package (lid, cstrs) ->
           let typeConstraint (s, ct) =
-            label
+            label ~space:true
               (makeList ~break:IfNeed ~postSpace:true [atom "type"; self#longident_loc s; atom "="])
               (self#core_type ct)
           in
