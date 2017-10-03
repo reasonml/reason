@@ -15,7 +15,7 @@ setup_convenient_bin_links:
 
 precompile:
 	cp pkg/META.in pkg/META
-	ocamlbuild -package topkg pkg/build.native
+	ocamlbuild -use-ocamlfind -package topkg pkg/build.native
 
 build_without_utop: compile_error setup_convenient_bin_links precompile
 	./build.native build --utop false

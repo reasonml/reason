@@ -12,7 +12,7 @@ tags: [ "syntax" ]
 substs: [ "pkg/META" ]
 build: [
   [make "compile_error"]
-  ["ocamlbuild" "-package" "topkg" "pkg/build.native"]
+  ["ocamlbuild" "-use-ocamlfind" "-package" "topkg" "pkg/build.native"]
   ["./build.native" "build"
                     "--native" "%{ocaml-native}%"
                     "--native-dynlink" "%{ocaml-native-dynlink}%"
@@ -20,11 +20,11 @@ build: [
 ]
 depends: [
   "ocamlfind"               {build}
-  "menhir"                  {= "20170418"}
+  "menhir"                  {>= "20170418" & <= "20170712"}
   "utop"                    {>= "1.17"}
   "merlin-extend"           {>= "0.3"}
   "result"                  {=  "1.2"}
-  "topkg"                   {>=  "0.8.1" & < "0.9"}
+  "topkg"                   {>=  "0.8.1"}
   "ocaml-migrate-parsetree"
   "ppx_tools_versioned"     {>= "5.0beta"}
 ]
@@ -33,4 +33,4 @@ depopts: [
 conflicts: [
   "utop" {< "1.17"}
 ]
-available: [ ocaml-version >= "4.02" & ocaml-version < "4.05" ]
+available: [ ocaml-version >= "4.02" & ocaml-version < "4.06" ]
