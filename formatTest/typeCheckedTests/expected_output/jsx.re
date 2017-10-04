@@ -624,3 +624,5 @@ let g = <Two ?foo />;
 <Foo> ...[|a|] </Foo>;
 
 <Foo> ...(1, 2) </Foo>;
+
+<Foo> element </Foo>;

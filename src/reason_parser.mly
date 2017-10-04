@@ -2460,7 +2460,7 @@ jsx:
         (Nolabel, mkexp_constructor_unit loc loc)
       ] loc
     }
-   | jsx_start_tag_and_args GREATER DOTDOTDOT simple_expr_no_call LESSSLASHIDENTGREATER
+   | jsx_start_tag_and_args GREATER DOTDOTDOT jsx_spread_children LESSSLASHIDENTGREATER
      (* <Foo> ...bar </Foo> or <Foo> ...((a) => 1) </Foo> *)
     { let (component, start) = $1 in
       let loc = mklocation $symbolstartpos $endpos in
@@ -2474,6 +2474,16 @@ jsx:
       ] loc
     }
 ;
+
+(* TODO: jsx without spread doesn't contain LBRACKET expr_comma_seq_extension RBRACKET *)
+jsx_spread_children:
+    | simple_expr_no_call {$1}
+    | LBRACKET expr_comma_seq_extension RBRACKET
+    { let seq, ext_opt = $2 in
+      let loc = mklocation $startpos($2) $endpos($2) in
+      (mktailexp_extension loc seq ext_opt)
+    }
+    ;
 
 jsx_without_leading_less:
   | GREATER simple_expr_no_call* LESSSLASHGREATER {
@@ -2501,6 +2511,19 @@ jsx_without_leading_less:
       (Nolabel, mkexp_constructor_unit loc loc)
     ] loc
   }
+    | jsx_start_tag_and_args_without_leading_less GREATER DOTDOTDOT jsx_spread_children LESSSLASHIDENTGREATER {
+    let (component, start) = $1 in
+    let loc = mklocation $symbolstartpos $endpos in
+    (* TODO: Make this tag check simply a warning *)
+    let endName = Longident.parse $5 in
+    let _ = ensureTagsAreEqual start endName loc in
+    let child = $4 in
+    component [
+      (Labelled "children", child);
+      (Nolabel, mkexp_constructor_unit loc loc)
+    ] loc
+  }
+
 ;
 
 /*
