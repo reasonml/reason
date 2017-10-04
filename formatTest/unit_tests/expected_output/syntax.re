@@ -759,9 +759,9 @@ let named (:a, :b) = a + b;
 type named = (:a int, :b int) => int;
 
 /*B*/
-let namedAlias (:a aa, :b bb) = aa + bb;
+let namedAlias (:a as aa, :b as bb) = aa + bb;
 
-let namedAlias (:a aa, :b bb) = aa + bb;
+let namedAlias (:a as aa, :b as bb) = aa + bb;
 
 type namedAlias = (:a int, :b int) => int;
 
@@ -769,7 +769,8 @@ type namedAlias = (:a int, :b int) => int;
 let namedAnnot (:a: int, :b: int) = 20;
 
 /*D*/
-let namedAliasAnnot (:a aa: int, :b bb: int) = 20;
+let namedAliasAnnot
+    (:a as aa: int, :b as bb: int) = 20;
 
 /*E*/
 let myOptional (:a=?, :b=?, ()) = 10;
@@ -777,14 +778,14 @@ let myOptional (:a=?, :b=?, ()) = 10;
 type named = (:a int?, :b int?, unit) => int;
 
 /*F*/
-let optionalAlias (:a aa=?, :b bb=?, ()) = 10;
+let optionalAlias (:a as aa=?, :b as bb=?, ()) = 10;
 
 /*G*/
 let optionalAnnot (:a: int=?, :b: int=?, ()) = 10;
 
 /*H*/
 let optionalAliasAnnot
-    (:a aa: int=?, :b bb: int=?, ()) = 10;
+    (:a as aa: int=?, :b as bb: int=?, ()) = 10;
 
 /*I: */
 let defOptional (:a=10, :b=10, ()) = 10;
@@ -792,14 +793,15 @@ let defOptional (:a=10, :b=10, ()) = 10;
 type named = (:a int?, :b int?, unit) => int;
 
 /*J*/
-let defOptionalAlias (:a aa=10, :b bb=10, ()) = 10;
+let defOptionalAlias
+    (:a as aa=10, :b as bb=10, ()) = 10;
 
 /*K*/
 let defOptionalAnnot (:a: int=10, :b: int=10, ()) = 10;
 
 /*L*/
 let defOptionalAliasAnnot
-    (:a aa: int=10, :b bb: int=10, ()) = 10;
+    (:a as aa: int=10, :b as bb: int=10, ()) = 10;
 
 /*M: Invoking them - Punned */
 let resNotAnnotated = named(:a, :b);
@@ -824,19 +826,19 @@ let resAnnotated: ty = named(:a, b);
 
 /*S: Explicitly passed optionals are a nice way to say "use the default value"*/
 let explictlyPassed =
-  myOptional(:a? None, :b? None);
+  myOptional(:a=?None, :b=?None);
 
 /*T: Annotating the return value of the entire function call */
 let explictlyPassedAnnotated: int =
-  myOptional(:a? None, :b? None);
+  myOptional(:a=?None, :b=?None);
 
 /*U: Explicitly passing optional with identifier expression */
 let a = None;
 
-let explictlyPassed = myOptional(:a?, :b? None);
+let explictlyPassed = myOptional(:a=?, :b=?None);
 
 let explictlyPassedAnnotated: int =
-  myOptional(:a?, :b? None);
+  myOptional(:a=?, :b=?None);
 
 let nestedLet = {
   let _ = 1;
@@ -888,8 +890,8 @@ let f
 
 let x =
   callSomeFunction(
-    :withArg 10,
-    :andOtherArg wrappedArg
+    :withArg=10,
+    :andOtherArg=wrappedArg
   );
 
 let res = {
@@ -942,7 +944,7 @@ let newRecord = {
   ...(
     youCanEvenCallMethodsHereAndAnnotate(
       them,
-      :named 10
+      :named=10
     ): someRec
   ),
   blah: 0,
@@ -961,7 +963,7 @@ let something: blah = typeAnnotation(thing);
 
 let newRecord = {
   ...(
-    heresAFunctionWithNamedArgs(:argOne i): annotatedResult
+    heresAFunctionWithNamedArgs(:argOne=i): annotatedResult
   ),
   soAsToInstill: 0,
   developmentHabbits: 1
@@ -1019,7 +1021,8 @@ let match = "match";
 
 let method = "method";
 
-let foo (x, :x bar, :z, :foo bar, :foo z) =
+let foo
+    (x, :x as bar, :z, :foo as bar, :foo as z) =
   bar + 2;
 
 let zzz = myFunc(1, 2, [||]);

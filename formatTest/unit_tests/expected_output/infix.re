@@ -284,10 +284,10 @@ let (++) = (++);
 
 let (++): int = int = (++);
 
-(++)(:label 20, :label2 30) + 40;
+(++)(:label=20, :label2=30) + 40;
 
 /* Should be parsed as: */
-(++)(:label 20, :label2 30) + 40;
+(++)(:label=20, :label2=30) + 40;
 
 /* Great idea! */
 let (==) (a, b) = a < 0;
@@ -950,27 +950,27 @@ let code =
          Requires.(
            create
            |> import_type(
-                :local "Set",
-                :source "Set"
+                :local="Set",
+                :source="Set"
               )
            |> import_type(
-                :local "Map",
-                :source "Map"
+                :local="Map",
+                :source="Map"
               )
            |> import_type(
-                :local "Immutable",
-                :source "immutable"
+                :local="Immutable",
+                :source="immutable"
               )
            |> require(
-                :local "invariant",
-                :source "invariant"
+                :local="invariant",
+                :source="invariant"
               )
            |> require(
-                :local "Image",
-                :source "Image.react"
+                :local="Image",
+                :source="Image.react"
               )
            |> side_effect(
-                :source "monkey_patches"
+                :source="monkey_patches"
               )
            |> render_lines
          )
