@@ -14,3 +14,4 @@ TODO: re-enable rtop integration tests in makefile (./miscTests/rtopIntegrationT
 - dereference was `!`. Now it's ...
 - string concat is now `++` instead of the old `^`
 - labeled argument with type now has punning!
+- Works on ocaml 4.05 and the latest topkg (#1438)
