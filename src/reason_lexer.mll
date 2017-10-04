@@ -47,7 +47,25 @@
  *
  *)
 
-(* The lexer definition *)
+(* This is the Reason lexer. As stated in src/README, there's a good section in
+  Real World OCaml that describes what a lexer is:
+
+  https://realworldocaml.org/v1/en/html/parsing-with-ocamllex-and-menhir.html
+
+  Basically, it uses regular expressions to first cut the big code string into
+  more meaningful chunks, called tokens. For example, it cuts the string
+
+    let foo = 1
+
+  into `let`, `foo`, `=` and `1`, massage them a bit into nice variants, then
+  send the data structures into the parser `reason_parser.mly`, which takes
+  care of the next step (turning the stream of tokens into an AST, abstract
+  syntax tree).
+
+  The file's syntax's a bit special. It's not the conventional OCaml syntax. An
+  ordinary language syntax isn't expressive/convenient enough for a lexer. This
+  mll ("ml lexer") syntax is a fine-tuned variation of the usual OCaml syntax.
+ *)
 
 {
 open Lexing
