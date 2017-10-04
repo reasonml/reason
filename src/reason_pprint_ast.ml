@@ -2579,9 +2579,9 @@ class printer  ()= object(self:'self)
     match lbl with
     | Nolabel -> typ
     | Labelled lbl ->
-      makeList ~sep:" " [atom (":" ^ lbl); typ]
+      makeList ~sep:" " [atom (":" ^ lbl ^ ":"); typ]
     | Optional lbl ->
-      makeList ~sep:" " [atom (":" ^ lbl); label typ (atom "?")]
+      makeList ~sep:" " [atom (":" ^ lbl ^ ":"); label typ (atom "=?")]
 
   method type_param (ct, a) =
     makeList [atom (type_variance a); self#core_type ct]

@@ -331,7 +331,7 @@ external foo : (bool) => bool = "";
 /* Attributes on an entire polymorphic variant leaf */
 [@bs.module "fs"]
 external readFileSync : (
-  :name string,
+  :name: string,
   [@bs.string] [
     | `utf8
     [@bs.as "ascii"] | `my_name
@@ -340,7 +340,7 @@ external readFileSync : (
 
 [@bs.module "fs"]
 external readFileSync2 : (
-  :name string,
+  :name: string,
   [@bs.string] [
     [@bs.as "ascii"] | `utf8
     [@bs.as "ascii"] | `my_name

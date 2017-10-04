@@ -2861,7 +2861,7 @@ labeled_expr_constraint:
 labeled_expr:
   | expr_optional_constraint { (Nolabel, $1) }
   | COLON as_loc(val_longident)
-    { 
+  { (* add(:a, :b)  -> parses :a & :b *)
       let exp = mkexp (Pexp_ident $2) ~loc:$2.loc in
       (Labelled (String.concat "" (Longident.flatten $2.txt)), exp) }
   | COLON as_loc(val_longident) EQUAL optional labeled_expr_constraint
@@ -3759,8 +3759,10 @@ unattributed_core_type:
 arrow_type_parameter:
   | only_core_type(core_type)
     { (Nolabel, $1) }
-  | COLON LIDENT only_core_type(core_type) optional
-    { ($4 $2, $3) }
+  | COLON LIDENT COLON only_core_type(core_type)
+    { ( Labelled $2, $4) }
+  | COLON LIDENT COLON only_core_type(core_type) EQUAL optional
+    {($6 $2, $4) }
 ;
 
 arrow_type_parameters:

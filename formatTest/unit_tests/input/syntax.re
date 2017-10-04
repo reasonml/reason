@@ -48,35 +48,35 @@ type myRecordType = {
 };
 
 type firstNamedArgShouldBeGroupedInParens =
-    (:first (int) => int, :second int) => int;
+    (:first: (int) => int, :second: int) => int;
 type allParensCanBeRemoved =
-    (:first int) => ((:second int) => ((:third int) => int));
+    (:first: int) => ((:second: int) => ((:third: int) => int));
 type firstTwoShouldBeGroupedAndFirstThree =
-    (:first ((int) => int) => int) => int;
+    (:first: ((int) => int) => int) => int;
 
 /* Same thing now, but with type constructors instead of int */
 type firstNamedArgShouldBeGroupedInParens =
-    (:first (list(int)) => list(int)) => (:second list(int)) => list(int);
+    (:first: (list(int)) => list(int)) => (:second: list(int)) => list(int);
 type allParensCanBeRemoved =
-    (:first list(int)) => (:second list(int)) => (:third list(int)) => list(int);
+    (:first: list(int)) => (:second: list(int)) => (:third: list(int)) => list(int);
 type firstTwoShouldBeGroupedAndFirstThree =
-    (:first ((list(int)) => list(int)) => list(int)) => list(int);
+    (:first: ((list(int)) => list(int)) => list(int)) => list(int);
 
 
 type firstNamedArgShouldBeGroupedInParens =
-    (:first ((int) => int)?, :second list(int)?) => int;
+    (:first: ((int) => int)=?, :second: list(int)=?) => int;
 /* The arrow necessitates parens around the next two args. The ? isn't what
  * makes the parens necessary. */
 type firstNamedArgShouldBeGroupedInParensAndSecondNamedArg =
-    (:first ((int) => int)?, :second ((int) => int)?) => int;
+    (:first: ((int) => int)=?, :second: ((int) => int)=?) => int;
 type allParensCanBeRemoved =
-    (:first int?, :second int?, :third int?) => int;
+    (:first: int=?, :second: int=?, :third: int=?) => int;
 type firstTwoShouldBeGroupedAndFirstThree =
-    (:first (((int) => int) => int)) => int;
+    (:first: (((int) => int) => int)) => int;
 
-type noParens = (:one int, int, int, :two int) => int;
-type noParensNeeded = (:one int) => ((int) => ((int) => ((:two int) => int)));
-type firstNamedArgNeedsParens = (:one (int, int) => int, :two int) => int;
+type noParens = (:one: int, int, int, :two: int) => int;
+type noParensNeeded = (:one: int) => ((int) => ((int) => ((:two: int) => int)));
+type firstNamedArgNeedsParens = (:one: (int, int) => int, :two: int) => int;
 
 /* Now, let's try type aliasing */
 /* Unless wrapped in parens, types between arrows may not be aliased, may not
@@ -662,18 +662,18 @@ let b = 20;
 
 /*A*/
 let named                (:a as a,   :b as b)   = a + b;
-type named =             (:a int, :b int) => int;
+type named =             (:a: int, :b: int) => int;
 /*B*/
 let namedAlias           (:a as aa,  :b as bb)  = aa + bb;
 let namedAlias           (:a as aa,  :b as bb)  = aa + bb;
-type namedAlias =        (:a int, :b int) => int;
+type namedAlias =        (:a: int, :b: int) => int;
 /*C*/
 let namedAnnot           (:a :int, :b :int)  = 20;
 /*D*/
 let namedAliasAnnot      (:a as aa:int,:b as bb:int) = 20;
 /*E*/
 let myOptional           (:a=?,    :b=?,      ()) = 10;
-type named =             (:a int?, :b int?, unit) => int;
+type named =             (:a: int=?, :b: int=?, unit) => int;
 /*F*/
 let optionalAlias        (:a as aa=?,  :b as bb=?,  ()) = 10;
 /*G*/                       
@@ -682,7 +682,7 @@ let optionalAnnot        (:a as a:int =?, :b as b:int=?, ()) = 10;
 let optionalAliasAnnot   (:a as aa:int =?, :b as bb:int=?, ()) = 10;
 /*I: */                     
 let defOptional          (:a as a=10, :b as b=10, ()) = 10;
-type named =             (:a int?, :b int?, unit) => int;
+type named =             (:a: int=?, :b: int=?, unit) => int;
 /*J*/                       
 let defOptionalAlias     (:a as aa=10, :b as bb=10, ()) = 10;
 /*K*/                       
@@ -740,13 +740,13 @@ let nestedLet = {
  */
 
 type typeWithNestedNamedArgs =
-    (:outerOne (:innerOne int, :innerTwo int) => int, :outerTwo int) => int;
+    (:outerOne: (:innerOne: int, :innerTwo: int) => int, :outerTwo: int) => int;
 
 type typeWithNestedOptionalNamedArgs =
-    (:outerOne (:innerOne int, :innerTwo int) => int?, :outerTwo int?) => int;
+    (:outerOne: (:innerOne: int, :innerTwo: int) => int=?, :outerTwo: int=?) => int;
 
 type typeWithNestedOptionalNamedArgs =
-    (:outerOne list(string)?, :outerTwo int?) => int;
+    (:outerOne: list(string)=?, :outerTwo: int=?) => int;
 
 let f(:tuple="long string to trigger line break") = ();
 
