@@ -18,5 +18,5 @@ env:
   - OCAML_VERSION=4.04.0
 notifications:
   email:
-    - yunxing@fb.com
+    - chenglou@fb.com
     - reason@cloudwalk.me
