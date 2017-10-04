@@ -64,6 +64,10 @@ Here's a recommended workflow:
 
 Lexer helpers doc: http://caml.inria.fr/pub/docs/manual-ocaml/libref/Lexing.html
 Parser helper docs: http://caml.inria.fr/pub/docs/manual-ocaml/libref/Parsetree.html
+Menhir manual: http://gallium.inria.fr/~fpottier/menhir/manual.pdf
+Small Menhir example: https://github.com/derdon/menhir-example
+Random Stack Overflow answer: https://stackoverflow.com/questions/9897358/ocaml-menhir-compiling-writing
+(Ok seriously, we need some more Menhir examples. But hey, nobody said it was easy... for now!)
 
 ## Working With PPX
 
