@@ -2354,7 +2354,7 @@ let explicitlyPassedAnnotated = (myOptional a::?a b::?None :int);
 */
 
 labeled_pattern_constraint:
-  | pattern_optional_constraint { fun _punned -> $1 }
+  | AS pattern_optional_constraint { fun _punned -> $2 }
   | preceded(COLON, only_core_type(core_type))?
     { fun punned ->
       let pat = mkpat (Ppat_var punned) ~loc:punned.loc in
@@ -2368,7 +2368,7 @@ labeled_pattern_constraint:
 
 labeled_pattern:
 as_loc
-  ( COLON as_loc(LIDENT) labeled_pattern_constraint
+   ( COLON as_loc(LIDENT) labeled_pattern_constraint
     { Term (Labelled $2.txt, None, $3 $2) }
   | COLON as_loc(LIDENT) labeled_pattern_constraint EQUAL expr
     { Term (Optional $2.txt, Some $5, $3 $2) }
@@ -2378,30 +2378,6 @@ as_loc
     { Term (Nolabel, None, $1) }
   | TYPE LIDENT
     { Type $2 }
-
-    /* <REMOVE ME> */
-  | COLONCOLONLIDENT
-    { let loc = mklocation $startpos($1) $endpos($1) in
-      Term (Labelled $1, None, mkpat(Ppat_var (mkloc $1 loc)) ~loc)
-    }
-  | COLONCOLONLIDENT EQUAL QUESTION
-    { let loc = mklocation $symbolstartpos $endpos in
-      Term (Optional $1, None, mkpat(Ppat_var (mkloc $1 loc)) ~loc)
-    }
-  | COLONCOLONLIDENT EQUAL simple_expr
-    { let loc = mklocation $symbolstartpos $endpos in
-      Term (Optional $1, Some $3, mkpat(Ppat_var (mkloc $1 loc)) ~loc)
-    }
-   /* Case A, B, C, D */
-  | LIDENTCOLONCOLON pattern_optional_constraint
-    { Term (Labelled $1, None, $2) }
-   /* Case E, F, G, H */
-  | LIDENTCOLONCOLON pattern_optional_constraint EQUAL QUESTION
-    { Term (Optional $1, None, $2) }
-   /* Case I, J, K, L */
-  | LIDENTCOLONCOLON pattern_optional_constraint EQUAL simple_expr
-    { Term (Optional $1, Some $4, $2) }
-    /* </REMOVE ME> */
   ) { $1 }
 ;
 
@@ -2884,27 +2860,20 @@ labeled_expr_constraint:
 
 labeled_expr:
   | expr_optional_constraint { (Nolabel, $1) }
-  | COLON as_loc(val_longident) optional labeled_expr_constraint
-    { ($3 (String.concat "" (Longident.flatten $2.txt)), $4 $2) }
-
-    /* <REMOVE ME> */
-  | COLONCOLONLIDENT
-    { let loc = mklocation $symbolstartpos $endpos in
-      (Labelled $1, mkexp (Pexp_ident(mkloc (Lident $1) loc)) ~loc)
+  | COLON as_loc(val_longident)
+    { (* add(:a, :b)  -> parses :a & :b *)
+      let exp = mkexp (Pexp_ident $2) ~loc:$2.loc in
+      (Labelled (String.concat "" (Longident.flatten $2.txt)), exp)
     }
-  | LIDENTCOLONCOLON expr_optional_constraint
-    { (Labelled $1, $2) }
-  /* Expliclitly provided default optional:
-   * let res = someFunc optionalArg:?None;
-   */
-  | COLONCOLON QUESTION val_longident
-    { let loc = mklocation $symbolstartpos $endpos in
-      (Optional (String.concat "" (Longident.flatten $3)),
-       mkexp (Pexp_ident(mkloc $3 loc)) ~loc)
+  | COLON as_loc(val_longident) QUESTION
+    { (* foo(:a?)  -> parses :a? *)
+      let exp = mkexp (Pexp_ident $2) ~loc:$2.loc in
+      (Optional (String.concat "" (Longident.flatten $2.txt)), exp)
     }
-  | LIDENTCOLONCOLON QUESTION expr_optional_constraint
-    { (Optional $1, $3) }
-    /* </REMOVE ME> */
+  | COLON as_loc(val_longident) EQUAL optional labeled_expr_constraint
+    { (* foo(:bar=?Some(1)) or add(:x=1, :y=2) -> parses :bar=?Some(1) & :x=1 & :y=1 *)
+      ($4 (String.concat "" (Longident.flatten $2.txt)), $5 $2)
+    }
 ;
 
 %inline and_let_binding:
@@ -3798,8 +3767,10 @@ unattributed_core_type:
 arrow_type_parameter:
   | only_core_type(core_type)
     { (Nolabel, $1) }
-  | COLON LIDENT only_core_type(core_type) optional
-    { ($4 $2, $3) }
+  | COLON LIDENT COLON only_core_type(core_type)
+    { ( Labelled $2, $4) }
+  | COLON LIDENT COLON only_core_type(core_type) EQUAL optional
+    {($6 $2, $4) }
 ;
 
 arrow_type_parameters:

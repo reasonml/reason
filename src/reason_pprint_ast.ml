@@ -2579,9 +2579,9 @@ class printer  ()= object(self:'self)
     match lbl with
     | Nolabel -> typ
     | Labelled lbl ->
-      makeList ~sep:" " [atom (":" ^ lbl); typ]
+      makeList ~sep:" " [atom (":" ^ lbl ^ ":"); typ]
     | Optional lbl ->
-      makeList ~sep:" " [atom (":" ^ lbl); label typ (atom "?")]
+      makeList ~sep:" " [atom (":" ^ lbl ^ ":"); label typ (atom "=?")]
 
   method type_param (ct, a) =
     makeList [atom (type_variance a); self#core_type ct]
@@ -3320,7 +3320,8 @@ class printer  ()= object(self:'self)
       | Labelled lbl | Optional lbl when is_punned_labelled_pattern pat lbl ->
         label (atom ":") term
       | Labelled lbl | Optional lbl ->
-        label (atom (":" ^ lbl)) ~space:true term
+          let lblLayout= makeList ~sep:" " ~break:Never [atom (":" ^ lbl); atom "as"] in
+          label lblLayout ~space:true term
     in
     match opt, lbl with
     | None, Optional _ -> makeList [param; atom "=?"]
@@ -6323,9 +6324,9 @@ class printer  ()= object(self:'self)
       | Optional lbl when is_punned_labelled_expression e lbl ->
         label (atom ":") (label term (atom "?"))
       | Labelled lbl ->
-        label (atom (":" ^ lbl)) ~space:true term
+        label (atom (":" ^ lbl ^ "=")) term
       | Optional lbl ->
-        label (atom (":" ^ lbl ^ "?")) ~space:true term
+        label (atom (":" ^ lbl ^ "=?")) term
     in
     SourceMap (e.pexp_loc, param)
 

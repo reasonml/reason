@@ -32,15 +32,15 @@ let y =
 let z =
   <div
     style=ReactDOMRe.Style.make(
-              ::width,
-              ::height,
-              ::color,
-              ::backgroundColor,
-              ::margin,
-              ::padding,
-              ::border,
-              ::borderColor,
-              ::someOtherAttribute,
+              :width,
+              :height,
+              :color,
+              :backgroundColor,
+              :margin,
+              :padding,
+              :border,
+              :borderColor,
+              :someOtherAttribute,
               ())
     key=string_of_int(1)
   />;

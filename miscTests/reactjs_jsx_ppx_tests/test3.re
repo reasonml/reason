@@ -113,4 +113,4 @@ let divRef = <div />;
   Foo.createElement. Future-proof it in the ppx by transforming both to the
   correct ReasonReact-specific call */
 
-([@JSX] Foo.make(:children [], ()));
+([@JSX] Foo.make(:children=[], ()));

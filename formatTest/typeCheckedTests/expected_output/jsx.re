@@ -89,7 +89,7 @@ module Namespace = {
     let createElement
         (
           :intended=?,
-          :anotherOptional x=100,
+          :anotherOptional as x=100,
           :children,
           ()
         ) = {
@@ -437,8 +437,8 @@ let asd2 =
   [@foo]
   [@JSX]
   One.createElementobvioustypo(
-    :test false,
-    :children ["a", "b"],
+    :test=false,
+    :children=["a", "b"],
     ()
   );
 
@@ -450,11 +450,11 @@ let asd =
 /* "video" call doesn't end with a list, so the expression isn't converted to JSX */
 let video (:test: bool, children) = children;
 
-let asd2 = [@foo] [@JSX] video(:test false, 10);
+let asd2 = [@foo] [@JSX] video(:test=false, 10);
 
 let div (:children) = 1;
 
-[@JSX] ((() => div)())(:children []);
+[@JSX] ((() => div)())(:children=[]);
 
 let myFun () =
   <>
@@ -546,15 +546,15 @@ fakeRender(defaultArg);
 
 ([@bla]
  [@JSX]
- NotReallyJSX.createElement([], :foo 1, :bar 2));
+ NotReallyJSX.createElement([], :foo=1, :bar=2));
 
 ([@bla]
  [@JSX]
- NotReallyJSX.createElement(:foo 1, [], :bar 2));
+ NotReallyJSX.createElement(:foo=1, [], :bar=2));
 
-([@bla] [@JSX] notReallyJSX([], :foo 1));
+([@bla] [@JSX] notReallyJSX([], :foo=1));
 
-([@bla] [@JSX] notReallyJSX(:foo 1, [], :bar 2));
+([@bla] [@JSX] notReallyJSX(:foo=1, [], :bar=2));
 
 /* children can be at any position */
 <span test=true foo=2 />;

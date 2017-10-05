@@ -118,9 +118,9 @@ let named
 let namedAlias
     /* a::aa */
     (
-      :a aa,
+      :a as aa,
       /* b::bb */
-      :b bb
+      :b as bb
     ) =
   /* aa + bb */
   aa + bb;
@@ -140,9 +140,9 @@ let namedAnnot
 let namedAliasAnnot
     /* a::(aa: option int) */
     (
-      :a aa: option(int),
+      :a as aa: option(int),
       /* b::(bb: option int) */
-      :b bb: option(int)
+      :b as bb: option(int)
     ) =
   /* 20 */
   20;
@@ -164,9 +164,9 @@ let optional
 let optionalAlias
     /* a::aa */
     (
-      :a aa=?,
+      :a as aa=?,
       /* ?b:bb */
-      :b bb=?,
+      :b as bb=?,
       /* () */
       ()
     ) =
@@ -190,9 +190,9 @@ let optionalAnnot
 let optionalAliasAnnot
     /* a::(aa: option int)=? */
     (
-      :a aa: option(int)=?,
+      :a as aa: option(int)=?,
       /* b::(bb: option int)=? */
-      :b bb: option(int)=?,
+      :b as bb: option(int)=?,
       /* () = */
       ()
     ) =
@@ -216,9 +216,9 @@ let defOptional
 let defOptionalAlias
     /* a::aa=10 */
     (
-      :a aa=10,
+      :a as aa=10,
       /* b::bb=10 */
-      :b bb=10,
+      :b as bb=10,
       /* () = */
       ()
     ) =
@@ -242,9 +242,9 @@ let defOptionalAnnot
 let defOptionalAliasAnnot
     /* a::(aa:int)=10 */
     (
-      :a aa: int=10,
+      :a as aa: int=10,
       /* b::(bb:int)=10 */
-      :b bb: int=10,
+      :b as bb: int=10,
       /* () = */
       ()
     ) =
@@ -290,10 +290,10 @@ let explictlyPassed =
     /* a::? */
     /* None */
     (
-      :a? None,
+      :a=?None,
       /* b::? */
       /* None; */
-      :b? None
+      :b=?None
     );
 
 let a = None;
@@ -306,7 +306,7 @@ let explictlyPassed =
       :a?,
       /* b::? */
       /* None; */
-      :b? None
+      :b=?None
     );
 
 let complex_default (:callback=(k, d) => 4, x) = 3;
