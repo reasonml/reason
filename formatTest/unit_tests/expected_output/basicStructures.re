@@ -691,6 +691,11 @@ type component2 = {
   updater: unit
 };
 
+type component3 = {
+  props: M.props,
+  state
+};
+
 type mutableComponent = {mutable props};
 
 type mutabeleComponent2 = {
@@ -708,6 +713,30 @@ type description('props) = {
 /* Don't pun types from other modules */
 module Foo = {
   type bar = {foo: Baz.foo};
+};
+
+/* record value punning */
+let props = {title: "hi"};
+
+/* no punning available for a single field. Can't tell the difference with a scope + expression */
+let componentA = {props: props};
+
+/* pun for real */
+let componentB = {props, state: ()};
+
+/* pun fields with module prefix too */
+let foo = {Foo.foo: foo};
+
+let bar = {Foo.foo, bar: 1};
+
+let bar = {bar: 1, Foo.foo};
+
+let bar = {Foo.foo, Bar.bar};
+
+({M.x, y}) => 1;
+
+switch (foo) {
+| {y: 1, M.x} => 2
 };
 
 /* Requested in #566 */

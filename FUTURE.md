@@ -15,3 +15,5 @@ TODO: re-enable rtop integration tests in makefile (./miscTests/rtopIntegrationT
 - string concat is now `++` instead of the old `^`
 - labeled argument with type now has punning!
 - Works on ocaml 4.05 and the latest topkg (#1438)
+- Record field punning for module field prefix now prints well too: `{M.x, y}` is `{M.x: x, y: y}`
+- JSX needs {} like in JS
