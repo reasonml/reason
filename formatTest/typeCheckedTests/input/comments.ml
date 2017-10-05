@@ -7,18 +7,13 @@
 (**** comment *)
 (***** comment *)
 
-(** *)
 (*** *)
 (**** *)
 
-(**)
 (***)
 (****)
 
 
-
-(** (** comment *) *)
-(** (*** comment *) *)
 
 (* (** comment *) *)
 (* (*** comment *) *)
@@ -28,18 +23,6 @@
 (* comment ***)
 (* comment ****)
 (* comment *****)
-
-(**
-  * Multiline
-  *)
-
-(** Multiline
-  *
-  *)
-
-(**
-  **
-  *)
 
 let testingNotQuiteEndOfLineComments = [
   "Item 1"(* Comment For First Item *);
