@@ -6,13 +6,13 @@
 
 Interested in contributing to Reason? The core of it is a parser + a printer, plus other miscellaneous utilities we expose.
 
-**Note** that contributing to a parser or printer is, in general, not that trivial; we'd be as glad seeing you contribute to the Reason ecosystem than Reason core! That being said, there's a [very good section](https://realworldocaml.org/v1/en/html/parsing-with-ocamllex-and-menhir.html) in Real World Ocaml on parser and printer, if you do want to check out the codebase. We're currently actively iterating on the codebase, so ping us on our [Discord channel](discord.gg/reasonml)!
+**Note** that contributing to a parser or printer is, in general, not that trivial; we'd be as glad seeing you contribute to the Reason ecosystem than Reason core! That being said, there's a [very good section](https://realworldocaml.org/v1/en/html/parsing-with-ocamllex-and-menhir.html) in Real World OCaml on parser and printer, if you do want to check out the codebase. We're currently actively iterating on the codebase, so ping us on our [Discord channel](discord.gg/reasonml)!
 
 ## Brief Description of Files
 
 Throughout the codebase, you might see mentions of "migrate-parsetree", `Ast_404`, etc. These refer to https://github.com/let-def/ocaml-migrate-parsetree. It's a library that allows you to convert between different versions of the OCaml AST. This way, the Reason repo can be written in OCaml 4.04's AST data structures, while being usable on OCaml 4.02's libraries (BuckleScript's on 4.02 too).
 
-Our lexer & parser use [Menhir](http://gallium.inria.fr/~fpottier/menhir/), the parser generator. Again, more info [here](https://realworldocaml.org/v1/en/html/parsing-with-ocamllex-and-menhir.html)
+Our lexer & parser use [Menhir](http://gallium.inria.fr/~fpottier/menhir/), a library that helps us with parsing (it's a "parser generator"). Again, more info [here](https://realworldocaml.org/v1/en/html/parsing-with-ocamllex-and-menhir.html)
 
 ### Core Files
 
@@ -32,7 +32,7 @@ Our lexer & parser use [Menhir](http://gallium.inria.fr/~fpottier/menhir/), the 
 
 - `*.mllib`: related: see the [OCaml extensions list](https://github.com/facebook/reason/wiki/OCaml-Ecosystem-Extensions-List). These are generated file from `pkg/build.ml`, which describes the package we distribute. No need to worry about them.
 
-- `src/reason_config.ml`: global config that says whether our parser should run in "recoverable" mode. Merlin has a neat feature which lets it continue diagnosing e.g. type errors even when the file is syntactically invalid (at the expense of the accuracy of those type error reports' quality). Searching `reason_config` in our codebase will show you how this is used.
+- `src/reason_config.ml`: global configuration that says whether our parser should run in "recoverable" mode. Merlin has a neat feature which lets it continue diagnosing e.g. type errors even when the file is syntactically invalid (at the expense of the accuracy of those type error reports' quality). Searching `reason_config` in our codebase will show you how this is used.
 
 - `reason_format_type.ml`, `reason_type_of_ocaml_type.ml`: again, see `pkg/build.ml`. These produce the `refmttype` binary, used by [BetterErrors](refmttype) to output compiler errors in Reason syntax rather than the OCaml one.
 
@@ -68,6 +68,89 @@ Menhir manual: http://gallium.inria.fr/~fpottier/menhir/manual.pdf
 Small Menhir example: https://github.com/derdon/menhir-example
 Random Stack Overflow answer: https://stackoverflow.com/questions/9897358/ocaml-menhir-compiling-writing
 (Ok seriously, we need some more Menhir examples. But hey, nobody said it was easy... for now!)
+
+**Want some example pull requests**? Here are a few:
+
+- [Add more spacing when printing Ptyp_package](https://github.com/facebook/reason/pull/1430)
+- [Implement spread for jsx3](https://github.com/facebook/reason/pull/1429)
+- [Make deref be a prefix operator](https://github.com/facebook/reason/pull/1463)
+- [Print MyConstructor(()) as MyConstructor()](https://github.com/facebook/reason/pull/1465)
+- [Ensure valid parsing of constraint expressions after printing](https://github.com/facebook/reason/pull/1464)
+- [Record punning for value & pattern for fields with module prefix](https://github.com/facebook/reason/pull/1456)
+- [Rage implement everything](https://github.com/facebook/reason/pull/1448)
+
+### Debugging Grammar Conflicts
+
+Run the main parser through Menhir with the `--explain` flag to have it print out details about the conflict. `menhir src/reason_parser.mly --explain`. The debug information can be found at `src/reason_parser.conflicts`.
+
+### Debugging the Parser State at Runtime
+
+If you set the environment variable as follows, the parser state will be printed out as it parses files.
+
+```sh
+export OCAMLRUNPARAM='p'
+```
+
+### Add a Menhir Error Message
+
+To add a Menhir error message, you first need to know the error code. To find the error code, you can run the following commands from the Reason project root:
+
+```
+make
+./refmt_impl.native --parse re foo.re
+```
+
+Where `foo.re` contains a syntax error. This will result in an error message like:
+
+```
+File "test2.re", line 4, characters 2-6:
+Error: 2665: <UNKNOWN SYNTAX ERROR>
+```
+
+Here, the error code is 2665. We then search for this code in `src/reason_parser.messages`.
+
+- If you find it, you can add a better error message instead of the not so descriptive `<UNKNOWN SYNTAX ERROR>`.
+
+To test the new error message you can run the following commands again:
+
+```
+make
+./refmt --parse re foo.re
+```
+
+Then submit a PR!
+
+- If you can't find the corresponding error code, `make all_errors` generates all the possible error states and corresponding code, from which you can copy the relevant one over and modify the message. More info [here](https://github.com/facebook/reason/pull/1033#issuecomment-276445792)
+
+### Improve Error Message Locations
+
+In some situations, Reason might report errors in a different place than where it occurs. This is caused by the AST not having a correct location for a node. When the error reports a location that's simply at the top of the file, that means we likely didn't attach the location in the parser correctly, altogether.
+
+Before digging into Reason parser, make sure this isn't actually caused by some PPX. Otherwise, run:
+
+```
+make
+./refmt_impl.native --parse re --print ast test.re
+```
+
+Where `test.re` has the code that produces the error message at the wrong location.
+
+In the printed AST, you can see nodes such as `Ptyp_constr "int" (test.re[1,0+15]..[1,0+18])` where the part between parentheses is the location of the node.
+
+The error message's own location will look like `([0,0+-1]..[0,0+-1])` too.
+
+To fix this, we need to find the AST node in `src/reason_parser.mly`. It's a big file, but if you search for the AST node, you should be able to find the location (if not, bug us on Discord). It will probably involve a `mkexp` or `mkpat` without a proper `~loc` attached to it.
+
+As you can see from other parts in the parser, many do have a `~loc` assigned to it. For example
+
+```
+| LIDENT jsx_arguments
+      {
+        (* a (punning) *)
+        let loc_lident = mklocation $startpos($1) $endpos($1) in
+        [($1, mkexp (Pexp_ident {txt = Lident $1; loc = loc_lident}) ~loc:loc_lident)] @ $2
+      }
+```
 
 ## Working With PPX
 
