@@ -416,7 +416,7 @@ let containingObject = {
     /**
      * Without a + 1
      */
-    x.contents = something ? hello : goodbye;
+    (x.contents = something ? hello : goodbye);
     y = something ? hello : goodbye;
     arr[0] = something ? hello : goodbye;
     bigArr.{0} = something ? hello : goodbye;
@@ -434,7 +434,9 @@ let containingObject = {
     /**
      * With a + 1
      */
-    x.contents = something + 1 ? hello : goodbye;
+    (
+      x.contents = something + 1 ? hello : goodbye
+    );
     x := something + 1 ? hello : goodbye;
     y = something + 1 ? hello : goodbye;
     arr[0] = something + 1 ? hello : goodbye;
@@ -509,7 +511,8 @@ let containingObject = {
      *
      */
     /* The following */
-    x + (something.contents = y);
+    x
+    + (something.contents = y);
     x + (something = y);
     x + something.contents := y;
     x + something := y;
@@ -523,8 +526,9 @@ let containingObject = {
     x + (something := y);
     /**
      * Try with ||
-     */
-    x.contents || something + 1 ?
+     */ x.contents
+    || something
+    + 1 ?
       hello : goodbye;
     y || something + 1 ? hello : goodbye;
     arr[0] || something + 1 ? hello : goodbye;
@@ -547,8 +551,9 @@ let containingObject = {
     str.[0] || (something + 1 ? hello : goodbye);
     /**
      * Try with &&
-     */
-    x.contents && something + 1 ?
+     */ x.contents
+    && something
+    + 1 ?
       hello : goodbye;
     y && something + 1 ? hello : goodbye;
     arr[0] && something + 1 ? hello : goodbye;
@@ -572,7 +577,7 @@ let containingObject = {
     /**
      * See how regular infix operators work correctly.
      */
-    x.contents = 2 + 4;
+    (x.contents = 2 + 4);
     y = 2 + 4;
     arr[0] = 2 + 4;
     bigArr.{0} = 2 + 4;
@@ -586,7 +591,7 @@ let containingObject = {
      * Ensures that record update, object field update, and := are all right
      * associative.
      */
-    x.contents = y.contents = 10;
+    (x.contents = y.contents = 10);
     y = x.contents = 10;
     arr[0] = x.contents = 10;
     bigArr.{0} = x.contents = 10;
@@ -601,7 +606,8 @@ let containingObject = {
      * Ensures that record update, object field update, and := are all right
      * associative.
      */
-    x := x := 10;
+    x :=
+      x := 10;
     /* Should be the same as */
     x := x := 10;
     /* By default, without parens*/
@@ -620,13 +626,14 @@ let containingObject = {
      * to be reduced. So if it's rightmost terminal isn't higher precedence than ?,
      * we wrap it in parens.
      */
-
-    /***
-     * The following
-     */
-    x.contents =
-      something ?
-        x.contents = somethingElse : goodbye;
+    (
+      /***
+       * The following
+       */
+      x.contents =
+        something ?
+          x.contents = somethingElse : goodbye
+    );
     y = something ? y = somethingElse : goodbye;
     arr[0] =
       something ?
@@ -653,9 +660,8 @@ let containingObject = {
     str.[0] =
       something ?
         str.[0] = somethingElse : goodbye;
-
-    /** And this */
-    y := something ? y := somethingElse : goodbye;
+    /** And this */ y :=
+      something ? y := somethingElse : goodbye;
     arr[0] :=
       something ?
         arr[0] := somethingElse : goodbye;
@@ -838,9 +844,11 @@ let containingObject = {
     /**
      * It creates a totally different meaning when parens group the :
      */
-    x.contents =
-      something ?
-        (x.contents = somethingElse: x) : z;
+    (
+      x.contents =
+        something ?
+          (x.contents = somethingElse: x) : z
+    );
     y = something ? (y = somethingElse: x) : z;
     arr[0] =
       something ?
@@ -854,7 +862,8 @@ let containingObject = {
     /**
      * Various precedence groupings.
      */
-    true ? true ? false : false : false;
+    true ?
+      true ? false : false : false;
     /* Is the same as */
     true ? true ? false : false : false;
     /*
@@ -889,12 +898,14 @@ let containingObject = {
     let result = 2 + (- (- (- add(4, 0))));
     /* And with attributes */
     let result =
-      [@onAddApplication] 2 + (- (- (- add(4, 0))));
+      [@onAddApplication] 2
+      + (- (- (- add(4, 0))));
     /**
      * TODO: Move all of these test cases to attributes.re.
      */
     /* Attribute on the prefix application */
-    let res = [@attr] (- something(blah, blah));
+    let res =
+      [@attr] (- something(blah, blah));
     /* Attribute on the regular function application, not prefix */
     let res = [@attr] (- something(blah, blah));
     let attrOnPrefix = [@ppxOnPrefixApp] (-1);
