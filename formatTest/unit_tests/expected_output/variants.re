@@ -559,3 +559,5 @@ type Graph.node +=
   pri
   | Node = Expr.Node
   | Atom = Expr.Atom;
+
+MyConstructorWithSingleUnitArg();
