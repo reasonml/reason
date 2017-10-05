@@ -891,6 +891,20 @@ let is_simple_construct :construct -> bool = function
   | `nil | `tuple | `list _ | `simple _ | `cons _  -> true
   | `normal -> false
 
+
+(* Determines if a list of expressions contains a single unit construct
+ * e.g. used to check: MyConstructor() -> exprList == [()]
+ * useful to determine if MyConstructor(()) should be printed as MyConstructor()
+ * *)
+let is_single_unit_construct exprList =
+  match exprList with
+  | x::[] ->
+    let view = view_expr x in
+    (match view with
+    | `tuple -> true
+    | _ -> false)
+  | _ -> false
+
 let pp = fprintf
 
 type funcReturnStyle =
@@ -4612,6 +4626,9 @@ class printer  ()= object(self:'self)
   method constructor_expression ?(polyVariant=false) ~arityIsClear stdAttrs ctor eo =
     let (implicit_arity, arguments) =
       match eo.pexp_desc with
+      (* special printing: MyConstructor(()) -> MyConstructor() *)
+      | Pexp_tuple l when is_single_unit_construct l ->
+          (false, atom "()")
       | Pexp_tuple l ->
         (* There is no ambiguity when the number of tuple components is 1.
              We don't need put implicit_arity in that case *)
