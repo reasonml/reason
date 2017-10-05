@@ -3326,7 +3326,7 @@ class printer  ()= object(self:'self)
     match opt, lbl with
     | None, Optional _ -> makeList [param; atom "=?"]
     | None, _ -> param
-    | Some o, _ -> makeList [param; atom "="; (self#unparseConstraintExpr o)]
+    | Some o, _ -> makeList  [param; atom "="; (self#unparseConstraintExpr ~ensureExpr:true o)]
 
   method access op cls e1 e2 = makeList ~interleaveComments:false [
     (* Important that this be not breaking - at least to preserve same
@@ -3575,10 +3575,21 @@ class printer  ()= object(self:'self)
       | _ ->
         makeList ~wrap:("(",")") [self#unparseExpr x]
 
-  method unparseConstraintExpr = function
+  (* ensureExpr ensures that the expression is wrapped in parens
+   * e.g. is necessary in cases like:
+   * let display = (:message=("hello": string)) => 1;
+   * but not in cases like:
+   * let f = (a: bool) => 1;
+   * TODO: in the future we should probably use the type ruleCategory
+   * to 'automatically' ensure the validity of a constraint expr with parens...
+   *)
+  method unparseConstraintExpr ?(ensureExpr=false) e = match e with
     | { pexp_attributes = []; pexp_desc = Pexp_constraint (x, ct) } ->
       let x = self#unparseExpr x in
-      makeList [x; label ~space:true (atom ":") (self#core_type ct)]
+      let children = [x; label ~space:true (atom ":") (self#core_type ct)] in
+      if ensureExpr then
+        makeList ~wrap:("(", ")") children
+      else makeList children
     | x -> self#unparseExpr x
 
   method simplifyUnparseExpr x =
