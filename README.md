@@ -14,6 +14,8 @@ The doc repo lives at https://github.com/reasonml/reasonml.github.io
 
 ### Codebase
 
+**See a list of easy tasks [here](https://github.com/facebook/reason/labels/GOOD%20FIRST%20TASK)**
+
 See the [src folder](ttps://github.com/facebook/reason/tree/master/src) and the corresponding README.
 
 ```sh
@@ -80,7 +82,7 @@ env version=x.y.z make pre_release
 env version=x.y.z make release
 ```
 
-- Use [opam-publish](https://github.com/ocaml/opam-publish) to publish the latest version to opam. 
+- Use [opam-publish](https://github.com/ocaml/opam-publish) to publish the latest version to opam.
 
 ## License
 
@@ -88,8 +90,6 @@ See Reason license in [LICENSE.txt](LICENSE.txt).
 
 Works that are forked from other projects are under their original licenses.
 
-Editor plugins (which have also been forked) in the `editorSupport/` directory include their own licenses.
-
 ## Credit
 
-The general structure of `refmt` repo was copied from @whitequark's m17n project, including parts of the `README` that instruct how to use this with the OPAM toolchain.
+The general structure of `refmt` repo was copied from @whitequark's m17n project, including parts of the `README` that instruct how to use this with the OPAM toolchain. Thank you OCaml!
