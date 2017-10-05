@@ -3290,7 +3290,9 @@ class printer  ()= object(self:'self)
           | Ppat_record (l, closed) ->
               let longident_x_pattern (li, p) =
                 match (li, p.ppat_desc) with
-                  | ({txt=Lident s}, Ppat_var {txt}) when s = txt ->
+                  | ({txt = ident}, Ppat_var {txt}) when Longident.last ident = txt ->
+                    (* record field punning when destructuring. {x: x, y: y} becomes {x, y} *)
+                    (* works with module prefix too: {MyModule.x: x, y: y} becomes {MyModule.x, y} *)
                       self#longident_loc li
                   | _ ->
                       label ~space:true (makeList [self#longident_loc li; atom ":"]) (self#pattern p)
@@ -4960,9 +4962,10 @@ class printer  ()= object(self:'self)
         loc_end = e.pexp_loc.loc_end;
         loc_ghost = false;
       } in
-      let theRow = match e.pexp_desc with
-        (* Punning *)
-        |  Pexp_ident {txt} when li.txt = txt && shouldPun && allowPunning ->
+      let theRow = match (e.pexp_desc, shouldPun, allowPunning) with
+        (* record value punning. Turns {foo: foo, bar: 1} into {foo, bar: 1} *)
+        (* also turns {Foo.bar: bar, baz: 1} into {Foo.bar, baz: 1} *)
+        | (Pexp_ident {txt = ident}, true, true) when Longident.last li.txt = Longident.last ident ->
           makeList (maybeQuoteFirstElem li (if appendComma then [comma] else []))
         | _ ->
           let (sweet, argsList, return) = self#curriedPatternsAndReturnVal e in
@@ -4994,7 +4997,7 @@ class printer  ()= object(self:'self)
     let allRows = match eo with
       | None -> (
         match l with
-          (* No punning (or comma) for records with only a single field. *)
+          (* No punning (or comma) for records with only a single field. It's ambiguous with an expression in a scope *)
           (* See comment in parser.mly for lbl_expr_list_with_at_least_one_non_punned_field *)
           | [hd] -> [makeRow hd false false]
           | _ -> getRows l
