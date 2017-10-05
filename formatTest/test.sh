@@ -22,6 +22,13 @@ then
     exit 1;
 fi
 
+# for better visual diffing in the terminal, try https://github.com/jeffkaufman/icdiff
+if hash icdiff 2>/dev/null; then
+  DIFF="icdiff"
+else
+  DIFF='diff --unchanged-line-format="" --new-line-format=":%dn: %L" --old-line-format=":%dn: %L"'
+fi
+
 UNIT_TEST_INPUT=$DIR/unit_tests/input
 
 UNIT_TEST_OUTPUT=$DIR/unit_tests/actual_output
@@ -111,7 +118,7 @@ function stdin_test() {
     fi
 
     debug "  Comparing --use-stdin results:  diff $OUTPUT_FILE $EXPECTED_OUTPUT_FILE"
-    diff --unchanged-line-format="" --new-line-format=":%dn: %L" --old-line-format=":%dn: %L" $OUTPUT_FILE $EXPECTED_OUTPUT_FILE
+    $DIFF $OUTPUT_FILE $EXPECTED_OUTPUT_FILE
 
     if ! [[ $? -eq 0 ]]; then
         warning "  ⊘ FAILED --use-stdin \n"
@@ -162,7 +169,7 @@ function unit_test() {
 
     debug "  Comparing results:  diff $OUTPUT/$FILE $EXPECTED_OUTPUT/$OFILE"
 
-    diff --unchanged-line-format="" --new-line-format=":%dn: %L" --old-line-format=":%dn: %L" $OUTPUT/$FILE $EXPECTED_OUTPUT/$OFILE
+    $DIFF $OUTPUT/$FILE $EXPECTED_OUTPUT/$OFILE
 
     if ! [[ $? -eq 0 ]]; then
         warning "  ⊘ FAILED\n"
@@ -218,7 +225,7 @@ function idempotent_test() {
       $REFMT --print-width 50 --print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted
     fi
 
-    diff --unchanged-line-format="" --new-line-format=":%dn: %L" --old-line-format=":%dn: %L" $OUTPUT/$FILE $OUTPUT/$FILE.formatted
+    $DIFF $OUTPUT/$FILE $OUTPUT/$FILE.formatted
     if ! [[ $? -eq 0 ]]; then
         warning "⊘ FAILED\n"
         info "  ${INFO}$OUTPUT/$FILE.formatted${RESET}\n"
@@ -308,7 +315,7 @@ function error_test() {
 
     debug "  Comparing results:  diff $OUTPUT/$FILE $EXPECTED_OUTPUT/$FILE"
 
-    diff --unchanged-line-format="" --new-line-format=":%dn: %L" --old-line-format=":%dn: %L" $OUTPUT/$FILE $EXPECTED_OUTPUT/$FILE
+    $DIFF $OUTPUT/$FILE $EXPECTED_OUTPUT/$FILE
 
     if ! [[ $? -eq 0 ]]; then
         warning "  ⊘ FAILED\n"
