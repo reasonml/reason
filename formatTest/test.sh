@@ -26,7 +26,7 @@ fi
 if hash icdiff 2>/dev/null; then
   DIFF="icdiff"
 else
-  DIFF='diff --unchanged-line-format="" --new-line-format=":%dn: %L" --old-line-format=":%dn: %L"'
+  DIFF="eval diff --unchanged-line-format='' --new-line-format=':%dn: %L' --old-line-format=':%dn: %L'"
 fi
 
 UNIT_TEST_INPUT=$DIR/unit_tests/input
