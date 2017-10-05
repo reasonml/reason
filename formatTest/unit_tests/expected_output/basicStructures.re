@@ -33,15 +33,15 @@ for (i in
   }
 };
 
-let x = foo^ ^.bar^;
+let x = ^(^foo).bar;
 
-let x = foo.bar^;
+let x = ^foo.bar;
 
-let x = foo#bar^;
+let x = ^foo#bar;
 
-let x = foo^.bar^;
+let x = ^(^foo).bar;
 
-let x = (foo^)#bar^;
+let x = ^(^foo)#bar;
 
 /* Prefix operators:
  * ! followed by zero or more appropriate_operator_suffix_chars (see the
@@ -107,17 +107,17 @@ let x = ! (! foo.bar);
 let x = ! (! foo#bar);
 
 /* Test precedence on access sugar */
-let x = arr^[0];
+let x = (^arr)[0];
 
-let x = arr^[0];
+let x = (^arr)[0];
 
-let x = str^.[0];
+let x = (^str).[0];
 
-let x = str^.[0];
+let x = (^str).[0];
 
-let x = arr^[0] = 1;
+let x = (^arr)[0] = 1;
 
-let x = arr^[0] = 1;
+let x = (^arr)[0] = 1;
 
 /* Comments */
 /*Below is an empty comment*/

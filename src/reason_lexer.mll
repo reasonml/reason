@@ -582,8 +582,7 @@ rule token = parse
             { INFIXOP1(lexeme_operator lexbuf) }
   | '\\'? '^' ('\\' '.')? operator_chars*
             { match lexeme_without_comment lexbuf with
-              | "^." -> set_lexeme_length lexbuf 1; POSTFIXOP("^")
-              | "^" -> POSTFIXOP("^")
+              | "^" -> PREFIXOP("^")
               | op -> INFIXOP1(unescape_operator op) }
   | '\\'? ['+' '-'] operator_chars*
             { INFIXOP2(lexeme_operator lexbuf) }
