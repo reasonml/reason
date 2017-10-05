@@ -70,3 +70,10 @@ let expectedPrecendence =
 module X: {let x: (:x: unit=?, unit) => unit;} = {
   let x (:x=(), ()) = ();
 };
+
+let display
+    (
+      :message=("hello": string),
+      :person: string="Reason",
+      time: float
+    ) = 1;
