@@ -6322,7 +6322,7 @@ class printer  ()= object(self:'self)
       | Labelled lbl when is_punned_labelled_expression e lbl ->
         label (atom ":") term
       | Optional lbl when is_punned_labelled_expression e lbl ->
-        label (atom ":") (label term (atom "=?"))
+        label (atom ":") (label term (atom "?"))
       | Labelled lbl ->
         label (atom (":" ^ lbl ^ "=")) term
       | Optional lbl ->

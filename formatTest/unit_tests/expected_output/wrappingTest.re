@@ -303,7 +303,7 @@ let explictlyPassed =
   optional
     /* a::? */
     (
-      :a=?,
+      :a?,
       /* b::? */
       /* None; */
       :b=?None

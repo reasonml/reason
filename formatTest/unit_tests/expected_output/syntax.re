@@ -844,10 +844,10 @@ let explictlyPassedAnnotated: int =
 /*U: Explicitly passing optional with identifier expression */
 let a = None;
 
-let explictlyPassed = myOptional(:a=?, :b=?None);
+let explictlyPassed = myOptional(:a?, :b=?None);
 
 let explictlyPassedAnnotated: int =
-  myOptional(:a=?, :b=?None);
+  myOptional(:a?, :b=?None);
 
 let nestedLet = {
   let _ = 1;

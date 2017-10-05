@@ -1,6 +1,6 @@
 implementation: PLUSDOT UIDENT ELSE
 ##
-## Ends in an error in state: 1211.
+## Ends in an error in state: 1212.
 ##
 ## expr -> simple_expr_call . [ error STAR SLASHGREATER SEMI RPAREN RBRACKET RBRACE QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSDOTDOTGREATER LESS LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER EOF DOCSTRING COMMA COLONGREATER COLONEQUAL COLON BARRBRACKET BARBAR BAR AND AMPERSAND AMPERAMPER ]
 ## expr -> simple_expr_call . DOT label_longident EQUAL expr [ error STAR SLASHGREATER SEMI RPAREN RBRACKET RBRACE QUESTION PLUSEQ PLUSDOT PLUS PERCENT OR MINUSDOT MINUS LESSDOTDOTGREATER LESS LBRACKETAT INFIXOP4 INFIXOP3 INFIXOP2 INFIXOP1 INFIXOP0 GREATERRBRACE GREATER EOF DOCSTRING COMMA COLONGREATER COLONEQUAL COLON BARRBRACKET BARBAR BAR AND AMPERSAND AMPERAMPER ]
@@ -25,8 +25,8 @@ implementation: PLUSDOT UIDENT ELSE
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 1213, spurious reduction of production constr_longident -> mod_longident
-## In state 1351, spurious reduction of production simple_expr_call -> constr_longident
+## In state 1214, spurious reduction of production constr_longident -> mod_longident
+## In state 1352, spurious reduction of production simple_expr_call -> constr_longident
 ##
 
 When applying a function, don't forget to wrap the arguments in parens.

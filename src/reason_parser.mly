@@ -2861,11 +2861,19 @@ labeled_expr_constraint:
 labeled_expr:
   | expr_optional_constraint { (Nolabel, $1) }
   | COLON as_loc(val_longident)
-  { (* add(:a, :b)  -> parses :a & :b *)
+    { (* add(:a, :b)  -> parses :a & :b *)
       let exp = mkexp (Pexp_ident $2) ~loc:$2.loc in
-      (Labelled (String.concat "" (Longident.flatten $2.txt)), exp) }
+      (Labelled (String.concat "" (Longident.flatten $2.txt)), exp)
+    }
+  | COLON as_loc(val_longident) QUESTION
+    { (* foo(:a?)  -> parses :a? *)
+      let exp = mkexp (Pexp_ident $2) ~loc:$2.loc in
+      (Optional (String.concat "" (Longident.flatten $2.txt)), exp)
+    }
   | COLON as_loc(val_longident) EQUAL optional labeled_expr_constraint
-    { ($4 (String.concat "" (Longident.flatten $2.txt)), $5 $2) }
+    { (* foo(:bar=?Some(1)) or add(:x=1, :y=2) -> parses :bar=?Some(1) & :x=1 & :y=1 *)
+      ($4 (String.concat "" (Longident.flatten $2.txt)), $5 $2)
+    }
 ;
 
 %inline and_let_binding:
