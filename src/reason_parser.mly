@@ -2460,6 +2460,19 @@ jsx:
         (Nolabel, mkexp_constructor_unit loc loc)
       ] loc
     }
+   | jsx_start_tag_and_args GREATER DOTDOTDOT simple_expr_no_call LESSSLASHIDENTGREATER
+     (* <Foo> ...bar </Foo> or <Foo> ...((a) => 1) </Foo> *)
+    { let (component, start) = $1 in
+      let loc = mklocation $symbolstartpos $endpos in
+      (* TODO: Make this tag check simply a warning *)
+      let endName = Longident.parse $5 in
+      let _ = ensureTagsAreEqual start endName loc in
+      let child = $4 in
+      component [
+        (Labelled "children", child);
+        (Nolabel, mkexp_constructor_unit loc loc)
+      ] loc
+    }
 ;
 
 jsx_without_leading_less:
@@ -2485,6 +2498,18 @@ jsx_without_leading_less:
     let siblings = if List.length $3 > 0 then $3 else [] in
     component [
       (Labelled "children", mktailexp_extension loc siblings None);
+      (Nolabel, mkexp_constructor_unit loc loc)
+    ] loc
+  }
+    | jsx_start_tag_and_args_without_leading_less GREATER DOTDOTDOT simple_expr_no_call LESSSLASHIDENTGREATER {
+    let (component, start) = $1 in
+    let loc = mklocation $symbolstartpos $endpos in
+    (* TODO: Make this tag check simply a warning *)
+    let endName = Longident.parse $5 in
+    let _ = ensureTagsAreEqual start endName loc in
+    let child = $4 in
+    component [
+      (Labelled "children", child);
       (Nolabel, mkexp_constructor_unit loc loc)
     ] loc
   }
