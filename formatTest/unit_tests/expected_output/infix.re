@@ -203,7 +203,7 @@ let leadingMinusIsCorrectlyNeg = (-1) + 20;
 let leadingMinusIsCorrectlyNeg = 3 > (-1);
 
 /* Custom infix without labeled args */
-let (|>) (first, second) = first + second;
+let (|>) = (first, second) => first + second;
 
 /* Should reformat to actually be placed infix */
 let res = first |> second;
@@ -212,7 +212,7 @@ let res = first |> second;
 let res = (|>)(first);
 
 /* Custom infix with labeled args */
-let (|>) (:first, :second) = first + second;
+let (|>) = (:first, :second) => first + second;
 
 /* Should NOT reformat named args to actually be placed infix */
 let res = (|>)(:first, :second);
@@ -221,7 +221,7 @@ let res = (|>)(:first, :second);
 let res = (|>)(:first);
 
 /* Custom infix accepting *three* without labeled args */
-let (|>) (firsfirst, second, third) =
+let (|>) = (firsfirst, second, third) =>
   first + second + third;
 
 /* Should reformat to actually be placed infix if passed two args */
@@ -276,9 +276,9 @@ let res =
   && DataConstructor(10)
   + 10;
 
-let (++) (:label, :label2) = label + label2;
+let (++) = (:label, :label2) => label + label2;
 
-let (++) (:label, :label2) = label + label2;
+let (++) = (:label, :label2) => label + label2;
 
 let (++) = (++);
 
@@ -290,9 +290,9 @@ let (++): int = int = (++);
 (++)(:label=20, :label2=30) + 40;
 
 /* Great idea! */
-let (==) (a, b) = a < 0;
+let (==) = (a, b) => a < 0;
 
-let (==) (a, b) = a < 0;
+let (==) = (a, b) => a < 0;
 
 let (==) = (==);
 
@@ -323,21 +323,21 @@ let shouldSimplifyAnythingExceptApplicationAndConstruction =
  * Every star or forward slash after the character of an infix operator must be
  * escaped.
  */
-let ( /\* ) (a, b) = a + b;
+let ( /\* ) = (a, b) => a + b;
 
 let x = 12 /-* 23 /-* 12;
 
 let y = a /\* b;
 
-let ( !=* ) (q, r) = q + r;
+let ( !=* ) = (q, r) => q + r;
 
 let res = q(( !=* ), r);
 
-let ( !=/\* ) (q, r) = q + r;
+let ( !=/\* ) = (q, r) => q + r;
 
 let res = q(( !=/\* ), r);
 
-let ( ~* ) (a) = a + 1;
+let ( ~* ) = (a) => a + 1;
 
 let res = ~*10;
 
@@ -352,12 +352,12 @@ let res = f(- x);
 /**
  * Test using almost simple prefix as regular function.
  */
-let (!!) (a, b) = a + b;
+let (!!) = (a, b) => a + b;
 
 let res = (!!)(20, 40);
 
 /* The semicolon should be attached to someType */
-let myFunc
+let myFunc =
     (
       aaaa,
       bbbb,
@@ -368,7 +368,7 @@ let myFunc
       cccc,
       dddd,
       aaaa
-    ) = [
+    ) => [
   blah(
     aaaa,
     bbbb,
@@ -395,7 +395,7 @@ let containingObject = {
   val arr = [|true, false, false|];
   val bigArr = "goodThingThisIsntTypeChecked";
   val str = "string";
-  pub testCases () = {
+  pub testCases = () => {
     /**
      * The lowest precedence token is =, followed by :=, and then ?, then :.
      *
@@ -996,7 +996,7 @@ let code =
 let code = JSCodegen.Code.(create |> render);
 
 let server = {
-  let callback (_conn, req, body) = {
+  let callback = (_conn, req, body) => {
     let uri =
       req
       |> Request.uri

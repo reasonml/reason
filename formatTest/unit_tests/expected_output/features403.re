@@ -43,4 +43,4 @@ let rec eval: type a. expr(a) => a =
 type hlist =
   | []: hlist;
 
-let foo (type a, type b) = 5;
+let foo = (type a, type b) => 5;

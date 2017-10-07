@@ -3,7 +3,7 @@ type point = {
   y: int
 };
 
-let id (x) = x;
+let id = (x) => x;
 
 type myVariant =
   | TwoCombos(inner, inner)
@@ -13,7 +13,7 @@ and inner =
   | Unused
   | HeresTwoConstructorArguments(int, int);
 
-let computeTuple (a, b, c, d, e, f, g, h) = (
+let computeTuple = (a, b, c, d, e, f, g, h) => (
   a + b,
   c + d,
   e + f,

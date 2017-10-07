@@ -13,12 +13,12 @@ class virtual stack ('a) (init) = {
       Some(hd)
     | [] => None
     };
-  pub push (hd) = v = [hd, ...v];
+  pub push = (hd) => v = [hd, ...v];
   initializer (
     print_string("initializing object")
   );
-  pub explicitOverrideTest (a) = a + 1;
-  pri explicitOverrideTest2 (a) = a + 1;
+  pub explicitOverrideTest = (a) => a + 1;
+  pri explicitOverrideTest2 = (a) => a + 1;
 };
 
 let tmp = {
@@ -49,7 +49,7 @@ class virtual stackWithAttributes ('a) (init) = {
       Some(hd)
     | [] => None
     };
-  pub push (hd) = v = [hd, ...v];
+  pub push = (hd) => v = [hd, ...v];
   initializer (
     print_string("initializing object")
   );
@@ -58,7 +58,7 @@ class virtual stackWithAttributes ('a) (init) = {
 class extendedStack ('a) (init) = {
   inherit (class stack('a))(init);
   val dummy = ();
-  pub implementMe (i) = i;
+  pub implementMe = (i) => i;
 };
 
 class extendedStackAcknowledgeOverride
@@ -66,9 +66,9 @@ class extendedStackAcknowledgeOverride
       (init) = {
   inherit (class stack('a))(init);
   val dummy = ();
-  pub implementMe (i) = i + 1;
-  pub! explicitOverrideTest (a) = a + 2;
-  pri! explicitOverrideTest2 (a) = a + 2;
+  pub implementMe = (i) => i + 1;
+  pub! explicitOverrideTest = (a) => a + 2;
+  pri! explicitOverrideTest2 = (a) => a + 2;
 };
 
 let inst = (new extendedStack)([1, 2]);
@@ -106,13 +106,13 @@ and secondRecursiveClass (init) = {
  */
 type closedObj = {.};
 
-let (<..>) (a, b) = a + b;
+let (<..>) = (a, b) => a + b;
 
 let five = 2 <..> 3;
 
 type nestedObj = {. bar: {. a: int}};
 
-let (>>) (a, b) = a > b;
+let (>>) = (a, b) => a > b;
 
 let bigger = 3 >> 2;
 
@@ -153,12 +153,12 @@ let coercedReturn = {
   (tmp :> {. x: int})
 };
 
-let acceptsOpenAnonObjAsArg
-    (o: {.. x: int, y: int}) =
+let acceptsOpenAnonObjAsArg =
+    (o: {.. x: int, y: int}) =>
   o#x + o#y;
 
-let acceptsClosedAnonObjAsArg
-    (o: {. x: int, y: int}) =
+let acceptsClosedAnonObjAsArg =
+    (o: {. x: int, y: int}) =>
   o#x + o#y;
 
 let res =
@@ -346,11 +346,11 @@ class addablePoint:
   (int) => addablePointClassType =
   fun (init) => {
     as self;
-    pub add
+    pub add =
         (
           one: addablePointClassType,
           two: addablePointClassType
-        ) =
+        ) =>
       one#x + two#x + one#y + two#x;
     pub x: int = init;
     pub y = init;
@@ -360,11 +360,11 @@ class addablePoint2:
   (int) => addablePointClassType =
   fun (init) => {
     as self;
-    pub add
+    pub add =
         (
           one: addablePointClassType,
           two: addablePointClassType
-        ) =
+        ) =>
       one#x + two#x + one#y + two#x;
     pub x: int = init;
     pub y = init;
@@ -375,7 +375,7 @@ module type T = {
   and cl2 : {};
 };
 
-let privacy = {pri x (c) = 5 + c};
+let privacy = {pri x = (c) => 5 + c};
 
 module Js = {
   type t('a);

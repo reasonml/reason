@@ -91,12 +91,12 @@ let testingEndOfLineComments = []; /* Comment after entire let binding */
 /*     andSecondArg  => { /* Second Arg */ */
 /*   withFirstArg + andSecondArg /* before semi */ ; */
 /* }; */
-let myFunction /* First arg */
+let myFunction = /* First arg */
     (
       withFirstArg,
       /* Second Arg */
       andSecondArg
-    ) =
+    ) =>
   withFirstArg + andSecondArg; /* After Semi */
 
 type point = {
@@ -332,7 +332,7 @@ type color =
   | Black(int) /* After black end of line */
   | Green(int) /* After green end of line */; /* On next line after color type def */
 
-let blahCurriedX (x) =
+let blahCurriedX = (x) =>
   fun
   | Red(10)
   | Black(20)
@@ -342,30 +342,30 @@ let blahCurriedX (x) =
   | Black(x) => 0 /* After black */
   | Green(x) => 0 /* After second green */; /* On next line after blahCurriedX def */
 
-let name_equal (x, y) = x == y;
+let name_equal = (x, y) => x == y;
 
-let equal (i1, i2) =
+let equal = (i1, i2) =>
   i1.contents === i2.contents && true; /* most unlikely first */
 
-let equal (i1, i2) =
+let equal = (i1, i2) =>
   compare(
     compare(0, 0),
     compare(1, 1)
   ); /* END OF LINE HERE */
 
-let tuple_equal ((i1, i2)) = i1 == i2;
+let tuple_equal = ((i1, i2)) => i1 == i2;
 
-let tuple_equal ((csu, mgd)) =
+let tuple_equal = ((csu, mgd)) =>
   /* Some really long comments, see https://github.com/facebook/reason/issues/811 */
   tuple_equal((csu, mgd));
 
 /** Comments inside empty function bodies
  * See https://github.com/facebook/reason/issues/860
  */
-let fun_def_comment_inline () = {/* */};
+let fun_def_comment_inline = () => {/* */};
 
-let fun_def_comment_newline () = {/* */};
+let fun_def_comment_newline = () => {/* */};
 
-let fun_def_comment_long () = {
+let fun_def_comment_long = () => {
   /* longer comment inside empty function body */
 };

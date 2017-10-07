@@ -68,12 +68,12 @@ let expectedPrecendence =
   1 \+ 1 \=== 1 \+ 1 && 1 \+ 1 !== 1 \+ 1;
 
 module X: {let x: (:x: unit=?, unit) => unit;} = {
-  let x (:x=(), ()) = ();
+  let x = (:x=(), ()) => ();
 };
 
-let display
+let display =
     (
       :message=("hello": string),
       :person: string="Reason",
       time: float
-    ) = 1;
+    ) => 1;

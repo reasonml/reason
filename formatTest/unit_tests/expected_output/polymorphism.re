@@ -1,5 +1,5 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
-let run () =
+let run = () =>
   TestUtils.printSection("Polymorphism");
 
 type myType('a) = list('a);
@@ -28,15 +28,15 @@ type myType2 =
 
 /* Confusing because => looks like part
    of the return type signature. */
-let myFunc
+let myFunc =
     (a: int => int, b: int => int)
-    : myType(int) = [
+    : myType(int) => [
   a(20) + b(30)
 ];
 
-let myFunc
+let myFunc =
     (a: int => int, b: int => int)
-    : (myType(int) => myType(int)) =
+    : (myType(int) => myType(int)) =>
   (lst) => lst;
 
 let certainlyRequiresWrapping:
