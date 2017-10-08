@@ -16,7 +16,7 @@ TestUtils.printSection("General Syntax");
 /*   `Thingy x => (print_string "matched thingy x"); x */
 /*   | `Other x => (print_string "matched other x"); x;; */
 /*  */
-let matchingFunc (a) =
+let matchingFunc = (a) =>
   switch (a) {
   | `Thingy(x) =>
     print_string("matched thingy x");
@@ -228,14 +228,14 @@ let desiredFormattingForWrappedLambdaWrappedArrow:
     nameBlah: 10
   };
 
-let desiredFormattingForWrappedLambdaReturnOnNewLine
+let desiredFormattingForWrappedLambdaReturnOnNewLine =
     /*
 
      fun is
      pre-   /firstarg\
      fix   /-coupled--\
       |-\ /-to-prefix--\       */
-    (curriedArg, anotherArg, lastArg) = {
+    (curriedArg, anotherArg, lastArg) => {
   nameBlah: 10
 };
 
@@ -244,8 +244,8 @@ let desiredFormattingForWrappedLambdaReturnOnNewLine
  pre-
  fix    /-function binding name---\
  |-\   / is coupled to prefix      \   */
-let desiredFormattingForWrappedSugar
-    (curriedArg, anotherArg, lastArg) = {
+let desiredFormattingForWrappedSugar =
+    (curriedArg, anotherArg, lastArg) => {
   nameBlah: 10
 };
 
@@ -254,8 +254,8 @@ let desiredFormattingForWrappedSugar
  pre-
  fix    /-function binding name---\
  |-\   / is coupled to prefix      \   */
-let desiredFormattingForWrappedSugarReturnOnNewLine
-    (curriedArg, anotherArg, lastArg) = {
+let desiredFormattingForWrappedSugarReturnOnNewLine =
+    (curriedArg, anotherArg, lastArg) => {
   nameBlah: 10
 };
 
@@ -283,12 +283,12 @@ let point3D: point3D = {
   z: 80 /* Optional Comma */
 };
 
-let printPoint (p: point) = {
+let printPoint = (p: point) => {
   print_int(p.x);
   print_int(p.y)
 };
 
-let addPoints (p1: point, p2: point) = {
+let addPoints = (p1: point, p2: point) => {
   x: p1.x + p2.x,
   y: p1.y + p2.y
 };
@@ -344,27 +344,27 @@ let o: person = {name: "bob", age: 10};
 /* Parens needed? Nope! */
 let o: person = {name: "bob", age: 10};
 
-let printPerson (p: person) = {
+let printPerson = (p: person) => {
   let q: person = p;
   p.name ++ p.name
 };
 
 /* let dontParseMeBro x y:int = x = y;*/
 /* With this unification, anywhere eyou see `= fun` you can just ommit it */
-let blah (a) = a; /* Done */
+let blah = (a) => a; /* Done */
 
-let blah (a) = a; /* Done (almost) */
+let blah = (a) => a; /* Done (almost) */
 
-let blah (a, b) = a; /* Done */
+let blah = (a, b) => a; /* Done */
 
-let blah (a, b) = a; /* Done (almost) */
+let blah = (a, b) => a; /* Done (almost) */
 
 /* More than one consecutive pattern must have a single case */
 type blah = {blahBlah: int};
 
-let blah (a, {blahBlah}) = a;
+let blah = (a, {blahBlah}) => a;
 
-let blah (a, {blahBlah}) = a;
+let blah = (a, {blahBlah}) => a;
 
 module TryToExportTwice = {
   let myVal = "hello";
@@ -407,12 +407,12 @@ type hasA = {a: int};
 
 let a = 10;
 
-let returnsASequenceExpressionWithASingleIdentifier
-    () = a;
+let returnsASequenceExpressionWithASingleIdentifier =
+    () => a;
 
-let thisReturnsA () = a;
+let thisReturnsA = () => a;
 
-let thisReturnsAAsWell () = a;
+let thisReturnsAAsWell = () => a;
 
 let recordVal: int = (thisReturnsARecord()).a;
 
@@ -427,7 +427,7 @@ Printf.printf(
 );
 
 /* Pattern matching */
-let blah (arg) =
+let blah = (arg) =>
   switch (arg) {
   /* Comment before Bar */
   | /* Comment between bar/pattern */ Red(_) => 1
@@ -456,7 +456,7 @@ let blah =
 /*   | Black x => 0                       /* Allow us to drop any => fun.. Just need to make pattern matching */ */
 /*   | Green x => 0;                      /* Support that */ */
 /*  */
-let blahCurriedX (x) =
+let blahCurriedX = (x) =>
   fun
   | Red(x)
   | Black(x)
@@ -466,7 +466,7 @@ let blahCurriedX (x) =
   | Green(x) => 0; /* Support that */
 
 let sameThingInLocal = {
-  let blahCurriedX (x) =
+  let blahCurriedX = (x) =>
     fun
     | Red(x)
     | Black(x)
@@ -478,7 +478,7 @@ let sameThingInLocal = {
 };
 
 /* This should be parsed/printed exactly as the previous */
-let blahCurriedX (x) =
+let blahCurriedX = (x) =>
   fun
   | Red(x)
   | Black(x)
@@ -529,7 +529,7 @@ let res = {
 /* let blah = fun a | patt => 0 | anotherPatt => 1; */
 /* let blah a patt => 0 | anotherPatt => 1; */
 /*simple pattern  EQUALGREATER      expr */
-let blah (a, {blahBlah}) = a;
+let blah = (a, {blahBlah}) => a;
 
 /*            match_case             */
 /*     pattern EQUALGREATER  expr */
@@ -541,12 +541,12 @@ let blah =
 
 /* Won't work! */
 /* let arrowFunc = fun a b => print_string "returning aplusb from arrow"; a + b;;  */
-let arrowFunc (a, b) = {
+let arrowFunc = (a, b) => {
   print_string("returning aplusb from arrow");
   a + b
 };
 
-let add (a, b) = {
+let add = (a, b) => {
   let extra = {
     print_string("adding");
     0
@@ -557,7 +557,7 @@ let add (a, b) = {
 
 print_string(string_of_int(add(4, 34)));
 
-let dummy (_) = 10;
+let dummy = (_) => 10;
 
 dummy(res1);
 
@@ -566,11 +566,11 @@ dummy(res2);
 dummy(res3);
 
 /* Some edge cases */
-let myFun
-    (firstArg, Red(x) | Black(x) | Green(x)) =
+let myFun =
+    (firstArg, Red(x) | Black(x) | Green(x)) =>
   firstArg + x;
 
-let matchesWithWhen (a) =
+let matchesWithWhen = (a) =>
   switch (a) {
   | Red(x) when 1 > 0 => 10
   | Red(_) => 10
@@ -585,7 +585,7 @@ let matchesWithWhen =
   | Black(x) => 10
   | Green(x) => 10;
 
-let matchesOne (`Red(x)) = 10;
+let matchesOne = (`Red(x)) => 10;
 
 /*
  Typical OCaml would make you *wrap the functions in parens*! This is because it
@@ -639,7 +639,7 @@ let tupleInsideALetSequence = {
 
 /* We *require* that function return types be wrapped in
    parenthesis. In this example, there's no ambiguity */
-let makeIncrementer (delta: int) : (int => int) =
+let makeIncrementer = (delta: int) : (int => int) =>
   (a) => a + delta;
 
 /* We could even force that consistency with let bindings - it's allowed
@@ -659,19 +659,19 @@ class classWithNoArg = {
        pub y => init
      end;
    */
-let myFunc (a: int, b: int) : (int, int) = (
+let myFunc = (a: int, b: int) : (int, int) => (
   a,
   b
 );
 
-let myFunc (a: int, b: int) : list(int) = [1];
+let myFunc = (a: int, b: int) : list(int) => [1];
 
-let myFunc (a: int, b: int) : point = {
+let myFunc = (a: int, b: int) : point => {
   x: a,
   y: b
 };
 
-let myFunc (a: int, b: int) : point = {
+let myFunc = (a: int, b: int) : point => {
   x: a,
   y: b
 };
@@ -763,54 +763,55 @@ let a = 10;
 let b = 20;
 
 /*A*/
-let named (:a, :b) = a + b;
+let named = (:a, :b) => a + b;
 
 type named = (:a: int, :b: int) => int;
 
 /*B*/
-let namedAlias (:a as aa, :b as bb) = aa + bb;
+let namedAlias = (:a as aa, :b as bb) => aa + bb;
 
-let namedAlias (:a as aa, :b as bb) = aa + bb;
+let namedAlias = (:a as aa, :b as bb) => aa + bb;
 
 type namedAlias = (:a: int, :b: int) => int;
 
 /*C*/
-let namedAnnot (:a: int, :b: int) = 20;
+let namedAnnot = (:a: int, :b: int) => 20;
 
 /*D*/
-let namedAliasAnnot
-    (:a as aa: int, :b as bb: int) = 20;
+let namedAliasAnnot =
+    (:a as aa: int, :b as bb: int) => 20;
 
 /*E*/
-let myOptional (:a=?, :b=?, ()) = 10;
+let myOptional = (:a=?, :b=?, ()) => 10;
 
 type named = (:a: int=?, :b: int=?, unit) => int;
 
 /*F*/
-let optionalAlias (:a as aa=?, :b as bb=?, ()) = 10;
+let optionalAlias = (:a as aa=?, :b as bb=?, ()) => 10;
 
 /*G*/
-let optionalAnnot (:a: int=?, :b: int=?, ()) = 10;
+let optionalAnnot = (:a: int=?, :b: int=?, ()) => 10;
 
 /*H*/
-let optionalAliasAnnot
-    (:a as aa: int=?, :b as bb: int=?, ()) = 10;
+let optionalAliasAnnot =
+    (:a as aa: int=?, :b as bb: int=?, ()) => 10;
 
 /*I: */
-let defOptional (:a=10, :b=10, ()) = 10;
+let defOptional = (:a=10, :b=10, ()) => 10;
 
 type named = (:a: int=?, :b: int=?, unit) => int;
 
 /*J*/
-let defOptionalAlias
-    (:a as aa=10, :b as bb=10, ()) = 10;
+let defOptionalAlias =
+    (:a as aa=10, :b as bb=10, ()) => 10;
 
 /*K*/
-let defOptionalAnnot (:a: int=10, :b: int=10, ()) = 10;
+let defOptionalAnnot =
+    (:a: int=10, :b: int=10, ()) => 10;
 
 /*L*/
-let defOptionalAliasAnnot
-    (:a as aa: int=10, :b as bb: int=10, ()) = 10;
+let defOptionalAliasAnnot =
+    (:a as aa: int=10, :b as bb: int=10, ()) => 10;
 
 /*M: Invoking them - Punned */
 let resNotAnnotated = named(:a, :b);
@@ -896,8 +897,8 @@ type typeWithNestedOptionalNamedArgs =
   ) =>
   int;
 
-let f
-    (:tuple="long string to trigger line break") =
+let f =
+    (:tuple="long string to trigger line break") =>
   ();
 
 let x =
@@ -1033,8 +1034,8 @@ let match = "match";
 
 let method = "method";
 
-let foo
-    (x, :x as bar, :z, :foo as bar, :foo as z) =
+let foo =
+    (x, :x as bar, :z, :foo as bar, :foo as z) =>
   bar + 2;
 
 let zzz = myFunc(1, 2, [||]);

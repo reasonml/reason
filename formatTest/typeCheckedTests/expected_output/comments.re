@@ -110,20 +110,20 @@ type typeParamPointWithComments('a) = {
   /* Final row of record */
 };
 
-let name_equal (x, y) = x == y;
+let name_equal = (x, y) => x == y;
 
-let equal (i1, i2) =
+let equal = (i1, i2) =>
   i1.contents === i2.contents && true /* most unlikely first */;
 
-let equal (i1, i2) =
+let equal = (i1, i2) =>
   compare(compare(0, 0), compare(1, 1)) /* END OF LINE HERE */;
 
 module Temp = {
   let v = true;
-  let logIt (str, ()) = print_string(str);
+  let logIt = (str, ()) => print_string(str);
 };
 
-let store_attributes (arg) = {
+let store_attributes = (arg) => {
   let attributes_file = "test";
   let proc_name = attributes_file ++ ".proc";
   let should_write =

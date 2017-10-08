@@ -120,9 +120,9 @@ let x = [@attrEverything] (true && false);
 /**
  * How attribute parsings respond to other syntactic constructs.
  */
-let add (a) = [@onRet] a;
+let add = (a) => [@onRet] a;
 
-let add (a) = [@onRet] a;
+let add = (a) => [@onRet] a;
 
 let add = [@onEntireFunction] ((a) => a);
 
@@ -132,21 +132,22 @@ let res =
 let res =
   [@onEntireIf] (if (true) {false} else {false});
 
-let add (a, b) = [@onEverything] ([@onA] a + b);
+let add = (a, b) =>
+  [@onEverything] ([@onA] a + b);
 
-let add (a, b) =
+let add = (a, b) =>
   [@onEverything] ([@onA] a + [@onB] b);
 
-let add (a, b) = a + [@onB] b;
+let add = (a, b) => a + [@onB] b;
 
 let both = [@onEntireFunction] ((a) => a);
 
-let both (a, b) =
+let both = (a, b) =>
   [@onEverything] ([@onA] a && b);
 
-let both (a, b) = [@onA] a && [@onB] [@onB] b;
+let both = (a, b) => [@onA] a && [@onB] [@onB] b;
 
-let both (a, b) = [@onEverything] (a && b);
+let both = (a, b) => [@onEverything] (a && b);
 
 let thisVal = 10;
 
@@ -164,7 +165,7 @@ let x =
 let x =
   [@onEverything] (- add(thisVal, thisVal));
 
-let bothTrue (x, y) = {contents: x && y};
+let bothTrue = (x, y) => {contents: x && y};
 
 let something =
   [@onEverythingToRightOfEquals]
@@ -181,7 +182,7 @@ let res =
 [@appliesToEntireFunctionApplication]
 add(2, 4);
 
-let myObj = {pub p () = {pub z () = 10}};
+let myObj = {pub p = () => {pub z = () => 10}};
 
 let result =
   [@onSecondSend]
@@ -234,7 +235,7 @@ and secondBinding = "second";
  * Let bindings.
  * ----------------------
  */
-let showLets () =
+let showLets = () =>
   [@onOuterLet]
   {
     let tmp = 20;
@@ -358,14 +359,14 @@ type xy =
   | X(string)
   | Y(string);
 
-let myFun
+let myFun =
     (
       [@onConstruction] X(hello) |
       [@onConstruction] Y(hello)
-    ) = hello;
+    ) => hello;
 
-let myFun
-    (X([@onHello] hello) | Y([@onHello] hello)) = hello;
+let myFun =
+    (X([@onHello] hello) | Y([@onHello] hello)) => hello;
 
 /* Another bug: Cannot have an attribute on or pattern
    let myFun = fun ((X(hello) | Y(hello)) [@onOrPattern]) => hello;

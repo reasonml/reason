@@ -1,5 +1,5 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
-let run () =
+let run = () =>
   TestUtils.printSection("Basic Structures");
 
 while (something) {
@@ -133,7 +133,7 @@ let something =
     print_newline()
   };
 
-let logTapSuccess (self) =
+let logTapSuccess = (self) =>
   if (self.ext.logSuccess) {
     print_string("Did tap");
     print_newline()
@@ -141,7 +141,7 @@ let logTapSuccess (self) =
     ()
   };
 
-let logTapSuccess (self) =
+let logTapSuccess = (self) =>
   if (self.ext.logSuccess) {
     print_string("Did tap");
     print_newline()
@@ -157,7 +157,7 @@ let logTapSuccess (self) =
 
 (! data.field1).field2 = true;
 
-let loop (appTime, frameTime) = {
+let loop = (appTime, frameTime) => {
   if (hasSetup.contents) {
     setupScene();
     renderIntoTop();
@@ -334,7 +334,7 @@ let (tupleItem: int, withTypeConstraint: int) = (
 );
 
 /* To make sure that tuple field annotations are annotating the entire field */
-let _dummyFunc (x) = 10;
+let _dummyFunc = (x) => 10;
 
 let annotatingFuncApplication = (
   _dummyFunc("a"): int,
@@ -408,13 +408,13 @@ let rec size =
   | [hd, ...tl] => 1 + size(tl);
 
 /* Optimize for tail recursion */
-let rec size (soFar, lst) =
+let rec size = (soFar, lst) =>
   switch (lst) {
   | [] => 0
   | [hd, ...tl] => size(soFar + 1, tl)
   };
 
-let nestedMatch (lstLst) =
+let nestedMatch = (lstLst) =>
   switch (lstLst) {
   | [hd, ...tl] when false => 10
   | [hd, ...tl] =>
@@ -425,7 +425,7 @@ let nestedMatch (lstLst) =
   | [] => 0
   };
 
-let nestedMatchWithWhen (lstLst) =
+let nestedMatchWithWhen = (lstLst) =>
   switch (lstLst) {
   | [hd, ...tl] when false => 10
   | [hd, ...tl] when true =>
@@ -534,29 +534,31 @@ let myTuple: myTupleType = myTuple;
 let myTuple: myTupleType = (one: int, two: int);
 
 /* Now functions that accept a single argument being a tuple look familiar */
-let addValues (a: int, b: int) = a + b;
+let addValues = (a: int, b: int) => a + b;
 
-let addValues (a: int, b: int) = a + b;
+let addValues = (a: int, b: int) => a + b;
 
-let myFunction (a: int, b: int) : int = a + b;
+let myFunction = (a: int, b: int) : int => a + b;
 
-let functionReturnValueType
+let functionReturnValueType =
     (i: int, s: string)
-    : (int => int) =
+    : (int => int) =>
   (x) => x + 1;
 
-let curriedFormOne (i: int, s: string) =
+let curriedFormOne = (i: int, s: string) =>
   s ++ string_of_int(i);
 
-let curriedFormTwo (i: int, x: int) : (int, int) = (
+let curriedFormTwo =
+    (i: int, x: int)
+    : (int, int) => (
   i,
   x
 );
 
 /* let nonCurriedFormTwo = fun (i:int, x:int) (:(int, int)) => (i, x); */
-let curriedFormThree
+let curriedFormThree =
     (i: int, (a: int, b: int): (int, int))
-    : (int, int, int) = (
+    : (int, int, int) => (
   i,
   a,
   b
@@ -573,14 +575,14 @@ type myFuncType = (int, int) => int;
 
 let myFunc: myFuncType = (a, b) => a + b;
 
-let funcWithTypeLocallyAbstractTypes
+let funcWithTypeLocallyAbstractTypes =
     (
       type atype,
       type btype,
       a,
       b,
       c: (atype, btype) => unit
-    ) =
+    ) =>
   c(a, b);
 
 /**
@@ -606,7 +608,7 @@ let anotherRecord = {
   age: testRecord.age + 10
 };
 
-let makeRecordBase () = {
+let makeRecordBase = () => {
   name: "Joe",
   age: 30,
   occupation: "Engineer"

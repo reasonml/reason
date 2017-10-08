@@ -1,5 +1,6 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
-let run () = TestUtils.printSection("Modules");
+let run = () =>
+  TestUtils.printSection("Modules");
 
 /**
  * Modules:
@@ -246,7 +247,7 @@ module CurriedNoSugar (A: ASig, B: BSig) = {
   let result = A.a + B.b;
 };
 
-let letsTryThatSyntaxInLocalModuleBindings () = {
+let letsTryThatSyntaxInLocalModuleBindings = () => {
   module CurriedSugarWithReturnType
          (A: ASig, B: BSig)
          : SigResult = {
@@ -398,7 +399,7 @@ module rec A: {
   type t =
     | Leaf(string)
     | Node(ASet.t);
-  let compare (t1, t2) =
+  let compare = (t1, t2) =>
     switch (t1, t2) {
     | (Leaf(s1), Leaf(s2)) =>
       Pervasives.compare(s1, s2)
@@ -462,7 +463,7 @@ module Example2 (F: (Type) => Type, X: Type) = {
    *   let iso (a:(Compose Id F X).t): (F X).t => a;
    *
    */
-  let iso (a: Compose(Id)(F)(X).t) : F(X).t = a;
+  let iso = (a: Compose(Id)(F)(X).t) : F(X).t => a;
 };
 
 Printf.printf(
@@ -489,7 +490,7 @@ include
     {
       type thing = blahblahblah;
       type state = unit;
-      let getInitialState (_) = ();
+      let getInitialState = (_) => ();
       let myValue = {recordField: "hello"};
     }
   );
@@ -506,12 +507,12 @@ let myFirstClass: (module HasInt) =
 let myFirstClassWillBeFormattedAs: (module HasInt) =
   (module MyModule);
 
-let acceptsAndUnpacksFirstClass
-    ((module M): (module HasInt)) =
+let acceptsAndUnpacksFirstClass =
+    ((module M): (module HasInt)) =>
   M.x + M.x;
 
-let acceptsAndUnpacksFirstClass
-    ((module M): (module HasInt)) =
+let acceptsAndUnpacksFirstClass =
+    ((module M): (module HasInt)) =>
   M.x + M.x;
 
 module SecondClass = (val myFirstClass);
@@ -614,8 +615,8 @@ module X = [%test extension];
 
 module type T = [%test extension];
 
-let foo
+let foo =
     (
       type a,
       (module X): (module X_t with type t = a)
-    ) = X.a;
+    ) => X.a;

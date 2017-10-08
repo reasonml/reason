@@ -11,7 +11,7 @@ type t = {..};
 
 type t = {..};
 
-let (<..>) (a, b) = a + b;
+let (<..>) = (a, b) => a + b;
 
 let five = 2 <..> 3;
 

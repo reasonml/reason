@@ -5,7 +5,7 @@ let all = ref(0);
 /*
  * >>= is left associative, and higher precedence than =>
  */
-let (>>=) (a, b) = b(a);
+let (>>=) = (a, b) => b(a);
 
 let fff = ();
 

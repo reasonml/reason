@@ -4350,6 +4350,7 @@ class printer  ()= object(self:'self)
           let appTerms = self#unparseExprApplicationItems e in
           self#formatSimplePatternBinding prefixText patternList (Some typeLayout) appTerms
       | ([], _) ->
+          (* simple let binding, e.g. `let number = 5` *)
           let appTerms = self#unparseExprApplicationItems expr  in
           self#formatSimplePatternBinding prefixText patternList None appTerms
       | (_::_, _) ->
@@ -4357,7 +4358,10 @@ class printer  ()= object(self:'self)
           let fauxArgs =
             List.concat [patternAux; argsWithConstraint] in
           let returnedAppTerms = self#unparseExprApplicationItems actualReturn in
-          self#wrapCurriedFunctionBinding prefixText ~arrow pattern fauxArgs returnedAppTerms
+           (* Attaches the `=` to `f` to recreate javascript function syntax in
+            * let f = (a, b) => a + b; *)
+          let lbl = makeList ~sep:" " ~break:Never [pattern; atom "="] in
+          self#wrapCurriedFunctionBinding prefixText ~arrow lbl fauxArgs returnedAppTerms
 
   (* Similar to the above method. *)
   method wrappedClassBinding prefixText pattern patternAux expr =
@@ -4386,7 +4390,7 @@ class printer  ()= object(self:'self)
   method binding prefixText x = (* TODO: print attributes *)
     let body = match x.pvb_pat.ppat_desc with
       | (Ppat_var {txt}) ->
-        self#wrappedBinding prefixText ~arrow:"="
+        self#wrappedBinding prefixText ~arrow:"=>"
           (SourceMap (x.pvb_pat.ppat_loc, self#simple_pattern x.pvb_pat))
           [] x.pvb_expr
       (*
@@ -5670,7 +5674,7 @@ class printer  ()= object(self:'self)
             self#formatSimplePatternBinding methodText (atom s.txt) (Some typeLayout) appTerms
           (* This form means that there is no type constraint - it's a strange node name.*)
           | Pexp_poly (e, None) ->
-            self#wrappedBinding methodText ~arrow:"=" (atom s.txt) [] e
+            self#wrappedBinding methodText ~arrow:"=>" (atom s.txt) [] e
           | _ -> failwith "Concrete methods should only ever have Pexp_poly."
         )
       | Pcf_constraint (ct1, ct2) ->
