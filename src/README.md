@@ -78,6 +78,7 @@ Random Stack Overflow answer: https://stackoverflow.com/questions/9897358/ocaml-
 - [Ensure valid parsing of constraint expressions after printing](https://github.com/facebook/reason/pull/1464)
 - [Record punning for value & pattern for fields with module prefix](https://github.com/facebook/reason/pull/1456)
 - [Rage implement everything](https://github.com/facebook/reason/pull/1448)
+- [Print functions as javascript](https://github.com/facebook/reason/pull/1469)
 
 ### Debugging Grammar Conflicts
 
