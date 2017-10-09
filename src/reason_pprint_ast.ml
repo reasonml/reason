@@ -2368,6 +2368,11 @@ let isJsDotTLongIdent ident = match ident with
   | Ldot (Lident "Js", "t") -> true
   | _ -> false
 
+(* Js.nullable, see #1451, used to check syntax sugar `?int` in `{. "x": int}` *)
+let isJsNullableIdent = function
+  | Ldot (Lident "Js", "nullable") -> true
+  | _ -> false
+
 let recordRowIsPunned pld =
       let name = pld.pld_name.txt in
       (match pld.pld_type with
@@ -5058,9 +5063,15 @@ class printer  ()= object(self:'self)
              (makeList ~wrap:("\"", "\"") [atom s])
            else (atom s)
            in
+           let typ =  (match ct.ptyp_desc with
+            | Ptyp_constr (li, l) when isJsNullableIdent li.txt ->
+                (* prints `Js.nullable(int)`  as `?int` *)
+               makeList [atom "?"; self#core_type (List.hd l)]
+            | _ -> (self#core_type ct))
+          in
            label ~space:true
                  (label rowKey (atom ":"))
-                 (self#core_type ct)
+                 typ
        | _::_ ->
          makeList
            ~postSpace:true

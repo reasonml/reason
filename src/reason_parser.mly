@@ -3547,7 +3547,7 @@ label_declaration:
   lseparated_nonempty_list(COMMA, string_literal_lbl) COMMA? { $1 };
 
 string_literal_lbl:
-  | STRING COLON poly_type
+  | STRING COLON nullable_poly_type
     {
       let loc = mklocation $symbolstartpos $endpos in
       let (s, _) = $1 in
@@ -3641,6 +3641,17 @@ with_constraint:
   | MODULE as_loc(UIDENT) COLONEQUAL as_loc(mod_ext_longident)
       { Pwith_modsubst ($2, $4) }
 ;
+
+(* #1451, use only with object types *)
+nullable_poly_type:
+  | poly_type
+    { $1 }
+  | QUESTION poly_type
+    (* {. "x": ?int } -> ?int, sugar for Js.nullable(int) *)
+    { let loc = mklocation $symbolstartpos $endpos in
+      let jsNullableCtr = { txt = Longident.parse "Js.nullable"; loc} in
+      mktyp ~loc (Ptyp_constr(jsNullableCtr, [$2])) }
+  ;
 
 /* Polymorphic types */
 

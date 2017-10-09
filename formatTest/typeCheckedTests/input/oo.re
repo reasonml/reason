@@ -327,7 +327,11 @@ let privacy = {
 
 module Js = {
   type t('a);
+  type nullable('a);
 };
 
 /* supports trailing comma */
 type stream('a) = {. "observer": ('a => unit) => unit,};
+
+/* #1451: Js.nullable(int) -> ?int  */
+type nullableObjSugar = Js.t({. x: Js.nullable(int)});
