@@ -414,7 +414,7 @@ let thisReturnsA = () => a;
 
 let thisReturnsAAsWell = () => a;
 
-let recordVal: int = (thisReturnsARecord()).a;
+let recordVal: int = thisReturnsARecord().a;
 
 Printf.printf(
   "\nproof that thisReturnsARecord: %n\n",
