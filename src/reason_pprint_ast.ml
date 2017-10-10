@@ -4948,8 +4948,12 @@ class printer  ()= object(self:'self)
         | UnaryMinusPrefix _
         | UnaryNotPrefix _
         | UnaryPostfix _
-        | Infix _
-        | Normal -> self#simplifyUnparseExpr x
+        | Infix _ -> self#simplifyUnparseExpr x
+        | Normal ->
+          if x.pexp_attributes = [] then
+            self#unparseExpr x
+          else
+            self#simplifyUnparseExpr x
     )
     | _ -> self#simplifyUnparseExpr x
 
