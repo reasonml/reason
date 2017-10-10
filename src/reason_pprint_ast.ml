@@ -4760,7 +4760,8 @@ class printer  ()= object(self:'self)
             in
             let cases = (self#case_list ~allowUnguardedSequenceBodies:true l) in
             let switchWith = label ~space:true (atom "try")
-                (makeList ~wrap:("(",")") [self#reset#unparseExpr e]) in
+                (self#reset#simplifyUnparseExpr e)
+            in
             Some (
               label
                 ~space:true
