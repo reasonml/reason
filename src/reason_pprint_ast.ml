@@ -613,7 +613,7 @@ let getPrintableUnaryIdent s =
    characters. *)
 let printedStringAndFixity  = function
   | s when List.mem s special_infix_strings -> Infix s
-  | "^" -> UnaryPostfix "^"
+  | "^" -> AlmostSimplePrefix "^"
   | s when List.mem s.[0] infix_symbols -> Infix s
   (* Correctness under assumption that unary operators are stored in AST with
      leading "~" *)
@@ -635,7 +635,7 @@ let printedStringAndFixity  = function
 
 (* Also, this doesn't account for != and !== being infixop!!! *)
 let isSimplePrefixToken s = match printedStringAndFixity s with
-  | AlmostSimplePrefix _ | UnaryPostfix "^" -> true
+  | AlmostSimplePrefix _ -> true
   | _ -> false
 
 
@@ -3401,7 +3401,7 @@ class printer  ()= object(self:'self)
         let forceSpace = match leftExpr.pexp_desc with
           | Pexp_apply (ee, lsls) ->
             (match printedStringAndFixityExpr ee with
-             | UnaryPostfix "^" | AlmostSimplePrefix _ -> true
+             | AlmostSimplePrefix _ -> true
              | _ -> false)
           | _ -> false
         in
@@ -5213,15 +5213,7 @@ class printer  ()= object(self:'self)
         | Pexp_field (e, li) ->
           Some (label (makeList [self#simple_enough_to_be_lhs_dot_send e; atom "."]) (self#longident_loc li))
         | Pexp_send (e, s) ->
-          let needparens = match e.pexp_desc with
-            | Pexp_apply (ee, _) ->
-              (match printedStringAndFixityExpr ee with
-               | UnaryPostfix "^" -> true
-               | _ -> false)
-            | _ -> false
-          in
           let lhs = self#simple_enough_to_be_lhs_dot_send e in
-          let lhs = if needparens then makeList ~wrap:("(",")") [lhs] else lhs in
           Some (label (makeList [lhs; atom "#";]) (atom s))
         | Pexp_extension e -> Some (self#extension e)
         | _ -> None
