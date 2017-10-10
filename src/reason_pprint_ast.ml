@@ -6054,7 +6054,7 @@ class printer  ()= object(self:'self)
       let (argsList, return) = self#curriedFunctorPatternsAndReturnStruct x in
       (* See #19/20 in syntax.mls - cannot annotate return type at
                the moment. *)
-      self#wrapCurriedFunctionBinding "fun" ~arrow:"=>" (makeTup argsList) []
+      self#wrapCurriedFunctionBinding "fun" ~sweet:true ~arrow:"=>" (makeTup argsList) []
         ([self#moduleExpressionToFormattedApplicationItems return], None)
     | Pmod_apply _ ->
       self#moduleExpressionToFormattedApplicationItems x
@@ -6137,7 +6137,8 @@ class printer  ()= object(self:'self)
                 | Pmod_constraint (me, ct) -> ([makeTup argsList; formatJustTheTypeConstraint (self#non_arrowed_module_type ct)], me)
                 | _ -> ([makeTup argsList], return)
             ) in
-            self#wrapCurriedFunctionBinding prefixText ~arrow:"=" bindingName argsWithConstraint
+            self#wrapCurriedFunctionBinding prefixText ~arrow:"=>"
+              (makeList [bindingName; atom " ="]) argsWithConstraint
               ([self#moduleExpressionToFormattedApplicationItems actualReturn], None)
     )
 
