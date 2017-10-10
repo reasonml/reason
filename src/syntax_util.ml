@@ -192,6 +192,18 @@ let identifier_mapper f super =
     in
     super.pat mapper pat
   end;
+  signature = begin fun mapper signature -> 
+    let signature = 
+      List.map (fun signatureItem ->
+        match signatureItem with
+          | {psig_desc=Psig_value ({pval_name} as name);
+             psig_loc} ->
+              {signatureItem with psig_desc=Psig_value ({name with pval_name=({pval_name with txt=(f name.pval_name.txt)})})}
+          | _ -> signatureItem
+        ) signature
+    in
+    super.signature mapper signature
+  end;
 }
 
 (** escape_stars_slashes_mapper escapes all stars and slases in an AST *)
