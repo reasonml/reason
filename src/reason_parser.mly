@@ -1297,16 +1297,13 @@ as_loc
     { (None, Some $1) }
 ) {$1};
 
-module_parameters:
-  parenthesized(lseparated_two_or_more(COMMA, module_parameter)) { $1 };
-
 functor_parameters:
   | LPAREN RPAREN
     { let loc = mklocation $startpos $endpos in
       [mkloc (Some (mkloc "*" loc), None) loc]
     }
-  | module_parameters { $1 }
   | parenthesized(module_parameter) { [$1] }
+  | parenthesized(lseparated_two_or_more(COMMA, module_parameter)) { $1 }
 ;
 
 module_complex_expr:
@@ -1368,8 +1365,15 @@ mark_position_mod
    * Update: In upstream, it *is* possible to annotate return values for
    * lambdas.
    */
-  | either(ES6_FUN,FUN) functor_parameters EQUALGREATER module_expr
-    { mk_functor_mod $2 $4 }
+  | either(ES6_FUN,FUN) functor_parameters preceded(COLON,simple_module_type)? EQUALGREATER module_expr
+    { let me = match $3 with
+        | None -> $5
+        | Some mt ->
+          let loc = mklocation $startpos($3) $endpos in
+          mkmod ~loc (Pmod_constraint($5, mt))
+      in
+      mk_functor_mod $2 me
+    }
   | module_expr module_arguments
     { List.fold_left mkmod_app $1 $2 }
   | module_expr as_loc(LPAREN) module_expr as_loc(error)
