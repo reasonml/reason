@@ -4951,6 +4951,8 @@ class printer  ()= object(self:'self)
         | Infix _ -> self#simplifyUnparseExpr x
         | Normal ->
           if x.pexp_attributes = [] then
+            (* `let a = foo().bar` instead of `let a = (foo()).bar *)
+            (* same for foo()##bar, foo()#=bar, etc. *)
             self#unparseExpr x
           else
             self#simplifyUnparseExpr x
