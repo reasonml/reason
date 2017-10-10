@@ -137,6 +137,17 @@ let syntax_error_extension_node loc message =
  in
  (str, payload)
 
+(** What does this do? Here's an example: Reason code uses `!` for logical not,
+  while ocaml uses `not`. So, for converting between reason and ocaml syntax,
+  ocaml `not` converts to `!`, reason `!` converts to `not`. This table is
+  used later on to do the actual swapping. 
+
+  The drawback of this technique is that if you're using an identifier such as
+  `pub` in the ocaml file Foo.ml (say, let pub = 5), for a piece of Reason code
+  to interop with it, said code needs to write `Foo.method` (because of the
+  method <-> pub keyword swap). This is pretty dumb...
+*)
+
 let reason_to_ml_swapping_alist = [
   "!"       , "not";
   "^"       , "!";
@@ -162,6 +173,8 @@ let swap_txt map txt =
     txt
 
 (** identifier_mapper maps all identifiers in an AST with a mapping function f
+  this is used by swap_operator_mapper right below, to traverse the whole AST
+  and swapping the symbols listed above.
   *)
 let identifier_mapper f super =
 { super with
@@ -192,17 +205,15 @@ let identifier_mapper f super =
     in
     super.pat mapper pat
   end;
-  signature = begin fun mapper signature -> 
-    let signature = 
-      List.map (fun signatureItem ->
-        match signatureItem with
-          | {psig_desc=Psig_value ({pval_name} as name);
-             psig_loc} ->
-              {signatureItem with psig_desc=Psig_value ({name with pval_name=({pval_name with txt=(f name.pval_name.txt)})})}
-          | _ -> signatureItem
-        ) signature
+  signature_item = begin fun mapper signatureItem -> 
+    let signatureItem = 
+      match signatureItem with
+        | {psig_desc=Psig_value ({pval_name} as name);
+           psig_loc} ->
+            {signatureItem with psig_desc=Psig_value ({name with pval_name=({pval_name with txt=(f name.pval_name.txt)})})}
+        | _ -> signatureItem
     in
-    super.signature mapper signature
+    super.signature_item mapper signatureItem
   end;
 }
 
