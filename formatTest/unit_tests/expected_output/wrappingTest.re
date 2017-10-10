@@ -2605,7 +2605,7 @@ module BMod = {
   let b = 10;
 };
 
-module CurriedSugar
+module CurriedSugar =
        /* Commenting before First curried functor arg */
        /* If these comments aren't formatted correctly
         * see how functor args' locations aren't set
@@ -2615,7 +2615,7 @@ module CurriedSugar
          A: ASig,
          /* Commenting before Second curried functor arg */
          B: BSig
-       ) = {
+       ) => {
   let result = A.a + B.b;
   /* Comment at bottom of module expression */
 };

@@ -168,7 +168,7 @@ module InliningSig: {let x: int; let y: int;} = {
   let y = 20;
 };
 
-module MyFunctor (M: HasTT) = {
+module MyFunctor = (M: HasTT) => {
   type reexportedTT = M.tt;
   /* Inline comment inside module. */
   /** Following special comment inside module. */
@@ -210,7 +210,7 @@ module BMod = {
   let b = 10;
 };
 
-module CurriedSugar (A: ASig, B: BSig) = {
+module CurriedSugar = (A: ASig, B: BSig) => {
   let result = A.a + B.b;
 };
 
@@ -230,35 +230,35 @@ module CurriedSugar (A: ASig, B: BSig) = {
    module x (A:Foo) :Bar => Baz;
 
    */
-module CurriedSugarWithReturnType
+module CurriedSugarWithReturnType =
        (A: ASig, B: BSig)
-       : SigResult = {
+       : SigResult => {
   let result = A.a + B.b;
 };
 
 /* This is parsed as being equivalent to the above example */
-module CurriedSugarWithAnnotatedReturnVal
+module CurriedSugarWithAnnotatedReturnVal =
        (A: ASig, B: BSig)
-       : SigResult = {
+       : SigResult => {
   let result = A.a + B.b;
 };
 
-module CurriedNoSugar (A: ASig, B: BSig) = {
+module CurriedNoSugar = (A: ASig, B: BSig) => {
   let result = A.a + B.b;
 };
 
 let letsTryThatSyntaxInLocalModuleBindings = () => {
-  module CurriedSugarWithReturnType
+  module CurriedSugarWithReturnType =
          (A: ASig, B: BSig)
-         : SigResult = {
+         : SigResult => {
     let result = A.a + B.b;
   };
-  module CurriedSugarWithAnnotatedReturnVal
+  module CurriedSugarWithAnnotatedReturnVal =
          (A: ASig, B: BSig)
-         : SigResult = {
+         : SigResult => {
     let result = A.a + B.b;
   };
-  module CurriedNoSugar (A: ASig, B: BSig) = {
+  module CurriedNoSugar = (A: ASig, B: BSig) => {
     let result = A.a + B.b;
   };
   /*
@@ -283,7 +283,7 @@ let letsTryThatSyntaxInLocalModuleBindings = () => {
 
 module type EmptySig = {};
 
-module MakeAModule (X: EmptySig) = {
+module MakeAModule = (X: EmptySig) => {
   let a = 10;
 };
 
@@ -344,14 +344,14 @@ module type FunctorType3 =
 /* The following: */
 module CurriedSugarWithAnnotation2:
   (ASig, BSig) => SigResult =
-  fun (A: ASig, B: BSig) => {
+  (A: ASig, B: BSig) => {
     let result = A.a + B.b;
   };
 
 /* Becomes: */
 module CurriedSugarWithAnnotation:
   (ASig, BSig) => SigResult =
-  fun (A: ASig, B: BSig) => {
+  (A: ASig, B: BSig) => {
     let result = A.a + B.b;
   };
 
@@ -359,30 +359,30 @@ module CurriedSugarWithAnnotation:
  * for now, so we settle for: */
 module CurriedSugarWithAnnotationAndReturnAnnotated:
   (ASig, BSig) => SigResult =
-  fun (A: ASig, B: BSig) => (
+  (A: ASig, B: BSig) => (
     {
       let result = A.a + B.b;
     }:
       SigResult
   );
 
-module ReturnsAFunctor
+module ReturnsAFunctor =
        (A: ASig, B: BSig)
-       : ((ASig, BSig) => SigResult) =
-  fun (A: ASig, B: BSig) => {
+       : ((ASig, BSig) => SigResult) =>
+  (A: ASig, B: BSig) => {
     let result = 10;
   };
 
-module ReturnsSigResult
+module ReturnsSigResult =
        (A: ASig, B: BSig)
-       : SigResult = {
+       : SigResult => {
   let result = 10;
 };
 
-module ReturnsAFunctor2
+module ReturnsAFunctor2 =
        (A: ASig, B: BSig)
-       : ((ASig, BSig) => SigResult) =
-  fun (A: ASig, B: BSig) => {
+       : ((ASig, BSig) => SigResult) =>
+  (A: ASig, B: BSig) => {
     let result = 10;
   };
 
@@ -432,29 +432,29 @@ module Char = {
   type t = char;
 };
 
-module List (X: Type) = {
+module List = (X: Type) => {
   type t = list(X.t);
 };
 
-module Maybe (X: Type) = {
+module Maybe = (X: Type) => {
   type t = option(X.t);
 };
 
-module Id (X: Type) = X;
+module Id = (X: Type) => X;
 
-module Compose
+module Compose =
        (
          F: (Type) => Type,
          G: (Type) => Type,
          X: Type
-       ) =
+       ) =>
   F((G(X)));
 
 let l: Compose(List)(Maybe)(Char).t = [
   Some('a')
 ];
 
-module Example2 (F: (Type) => Type, X: Type) = {
+module Example2 = (F: (Type) => Type, X: Type) => {
   /**
    * Note: This is the one remaining syntactic issue where
    * modules/functions do not have syntax unified with values.
