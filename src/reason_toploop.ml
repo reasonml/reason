@@ -1,6 +1,6 @@
 (* Portions Copyright (c) 2015-present, Facebook, Inc. All rights reserved. *)
 
-
+(* this file's triggered by utop/rtop *)
 let () =
   if List.exists ((=) "camlp4o") !Topfind.predicates ||
      List.exists ((=) "camlp4r") !Topfind.predicates then
@@ -15,5 +15,4 @@ let () =
      (* Toploop.print_out_sig_item := M17n_util.utf8_print_out_sig_item !Toploop.print_out_sig_item; *)
     (* Toploop.install_printer Predef.path_string Predef.type_string *)
     (*   (fun fmt obj -> M17n_util.utf8_print_string fmt (Obj.magic obj)); *)
-    prerr_endline "Reason: Meta Language Utility";
   end
