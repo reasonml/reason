@@ -3,23 +3,23 @@
 /* test setup dummy modules. These are here to make the transform pass the type checker. Also helps validating our transforms thanks to types */
 
 module ReactDOMRe = {
-  let createElement (tag, :props=?, children) = 1;
-  let props (:className=?, :width=?, :comp=?, :compCallback=?, ()) = 1;
+  let createElement (tag, ~props=?, children) = 1;
+  let props (~className=?, ~width=?, ~comp=?, ~compCallback=?, ()) = 1;
 };
 module Foo = {
-  let make (:className=?, :width=?, :comp=?, :bar=?, children) = 1;
-  let createElement (:className=?, :ref=?, :key=?, :width=?, :comp=?, :bar=?, :children, ()) = 1;
+  let make (~className=?, ~width=?, ~comp=?, ~bar=?, children) = 1;
+  let createElement (~className=?, ~ref=?, ~key=?, ~width=?, ~comp=?, ~bar=?, ~children, ()) = 1;
   module Bar = {
-    let make (:className=?, children) = 1;
-    let createElement (:className=?, :ref=?, :key=?, :children, ()) = 1;
+    let make (~className=?, children) = 1;
+    let createElement (~className=?, ~ref=?, ~key=?, ~children, ()) = 1;
   };
 };
 module Bar = {
-  let make (:bar=?, children) = 1;
-  let createElement (:bar=?, :children, ()) = 1;
+  let make (~bar=?, children) = 1;
+  let createElement (~bar=?, ~children, ()) = 1;
 };
 module ReasonReact = {
-  let element (:key=?, :ref=?, component) = 1;
+  let element (~key=?, ~ref=?, component) = 1;
 };
 
 let divRef = <div />;
@@ -113,4 +113,4 @@ let divRef = <div />;
   Foo.createElement. Future-proof it in the ppx by transforming both to the
   correct ReasonReact-specific call */
 
-([@JSX] Foo.make(:children=[], ()));
+([@JSX] Foo.make(~children=[], ()));

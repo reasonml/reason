@@ -93,45 +93,45 @@ let b = 20;
 /*A*/
 let named
     /* a::a */
-   (:a as a,
+   (~a as a,
     /* b::b */
-    :b as b) =
+    ~b as b) =
   /* a + b */
   a + b;
 
 /*B*/
 let namedAlias
     /* a::aa */
-   (:a as aa,
+   (~a as aa,
     /* b::bb */
-    :b as bb) =
+    ~b as bb) =
   /* aa + bb */
   aa + bb;
 
 /*C*/
 let namedAnnot
-    /* :a a: option(int) */
-   (:a as a: option(int),
-    /* :b b: option(int) */
-    :b as b: option(int)) =
+    /* ~a a: option(int) */
+   (~a as a: option(int),
+    /* ~b b: option(int) */
+    ~b as b: option(int)) =
   /* 20 */
   20;
 
 /*D*/
 let namedAliasAnnot
     /* a::(aa: option int) */
-   (:a as aa: option(int),
+   (~a as aa: option(int),
     /* b::(bb: option int) */
-    :b as bb: option(int)) =
+    ~b as bb: option(int)) =
   /* 20 */
   20;
 
 /*E*/
 let optional
     /* a::a=? */
-   (:a as a=?,
+   (~a as a=?,
     /* b::b=? */
-    :b as b=?,
+    ~b as b=?,
     /* () */
     ()) =
   /* 10 */
@@ -140,9 +140,9 @@ let optional
 /*F*/
 let optionalAlias
     /* a::aa */
-   (:a as aa=?,
+   (~a as aa=?,
     /* ?b:bb */
-    :b as bb=?,
+    ~b as bb=?,
     /* () */
     ()) =
   /* 10 */
@@ -151,9 +151,9 @@ let optionalAlias
 /*G*/
 let optionalAnnot
     /* a::(a: option int)=? */
-   (:a: option(int)=?,
+   (~a: option(int)=?,
     /* ?b:(b: option int) */
-    :b: option(int)=?,
+    ~b: option(int)=?,
     /* () */
     ()) =
   /* 10 */
@@ -162,9 +162,9 @@ let optionalAnnot
 /*H*/
 let optionalAliasAnnot
     /* a::(aa: option int)=? */
-   (:a as aa: option(int)=?,
+   (~a as aa: option(int)=?,
     /* b::(bb: option int)=? */
-    :b as bb: option(int)=?,
+    ~b as bb: option(int)=?,
     /* () = */
     ()) =
   /* 10 */
@@ -172,9 +172,9 @@ let optionalAliasAnnot
 /*I: This one is really annoying? Where's the visual label?*/
 let defOptional
     /* a::a=10 */
-   (:a as a=10,
+   (~a as a=10,
     /* b::b=10 */
-    :b as b=10,
+    ~b as b=10,
     /* () = */
     ()) =
   /* 10 */
@@ -183,9 +183,9 @@ let defOptional
 /*J*/
 let defOptionalAlias
     /* a::aa=10 */
-   (:a as aa=10,
+   (~a as aa=10,
     /* b::bb=10 */
-    :b as bb=10,
+    ~b as bb=10,
     /* () = */
     ()) =
   /* 10; */
@@ -194,9 +194,9 @@ let defOptionalAlias
 /*K*/
 let defOptionalAnnot
     /* a::(a:int)=10 */
-   (:a :int=10,
+   (~a :int=10,
     /* b::(b:int)=10 */
-    :b :int=10,
+    ~b :int=10,
     /* () = */
     ()) =
   /* 10; */
@@ -205,9 +205,9 @@ let defOptionalAnnot
 /*L*/
 let defOptionalAliasAnnot
     /* a::(aa:int)=10 */
-   (:a as aa :int=10,
+   (~a as aa :int=10,
     /* b::(bb:int)=10 */
-    :b as bb :int=10,
+    ~b as bb :int=10,
     /* () = */
     ()) =
   /* 10; */
@@ -216,39 +216,39 @@ let defOptionalAliasAnnot
 /* Invoking them */
 named(
   /* a::a */
-  :a=a,
+  ~a=a,
   /* b::b; */
-  :b=b
+  ~b=b
 );
 
 named(
   /* a::a */
-  :a=a,
+  ~a=a,
   /* b::b; */
-  :b=b
+  ~b=b
 );
 
 optional(
   /* a::a */
-  :a=a,
+  ~a=a,
   /* b::b; */
-  :b=b
+  ~b=b
 );
 optional(
   /* a::a */
-  :a=a,
+  ~a=a,
   /* b::b; */
-  :b=b
+  ~b=b
 );
 let explictlyPassed =
   /* optional */
   optional(
     /* a::? */
-    :a=?
+    ~a=?
       /* None */
       None,
     /* b::? */
-    :b=?
+    ~b=?
       /* None; */
       None
 );
@@ -258,14 +258,14 @@ let explictlyPassed =
   /* optional */
   optional(
     /* a::? */
-    :a=?a,
+    ~a=?a,
     /* b::? */
-    :b=?
+    ~b=?
       /* None; */
       None);
 
 
-let complex_default(:callback as callback=(fun(k,d) => 4),x) = 3;
+let complex_default(~callback as callback=(fun(k,d) => 4),x) = 3;
 
 
 let myList = /*CommentAfterEqualBeforeList */[1, 2, 3];
@@ -1289,9 +1289,9 @@ let df_myNonPolyFunc: ('a) => 'a = fun(o) => o;
 type nameBlahType = {nameBlah: int};
 
 let myFunc =
-  fun(:firstArg as firstArg,
-      :another as another,
-      :fl as fl) => {
+  fun(~firstArg as firstArg,
+      ~another as another,
+      ~fl as fl) => {
     nameBlah: 10
   };
 

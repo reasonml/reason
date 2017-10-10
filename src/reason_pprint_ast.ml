@@ -599,6 +599,8 @@ let special_infix_strings =
 let updateToken = "="
 let requireIndentFor = [updateToken; ":="]
 
+let namedArgSym = "~"
+
 
 let getPrintableUnaryIdent s =
   if List.mem s unary_minus_prefix_symbols || List.mem s unary_plus_prefix_symbols then
@@ -2349,12 +2351,12 @@ let format_labeled_argument is_punned term = function
   | Nolabel -> term
   | Labelled lbl ->
     if is_punned lbl
-    then label (atom ":") term
-    else label (atom (":" ^ lbl)) ~space:true term
+    then label (atom namedArgSym) term
+    else label (atom (namedArgSym ^ lbl)) ~space:true term
   | Optional lbl ->
     if is_punned lbl
-    then label (atom ":") (label term (atom "?"))
-    else label (atom (":" ^ lbl ^ "?")) ~space:true term
+    then label (atom namedArgSym) (label term (atom "?"))
+    else label (atom (namedArgSym ^ lbl ^ "?")) ~space:true term
 
 let isLongIdentWithDot = function
   | Ldot _ -> true
@@ -2593,9 +2595,9 @@ class printer  ()= object(self:'self)
     match lbl with
     | Nolabel -> typ
     | Labelled lbl ->
-      makeList ~sep:" " [atom (":" ^ lbl ^ ":"); typ]
+      makeList ~sep:" " [atom (namedArgSym ^ lbl ^ ":"); typ]
     | Optional lbl ->
-      makeList ~sep:" " [atom (":" ^ lbl ^ ":"); label typ (atom "=?")]
+      makeList ~sep:" " [atom (namedArgSym ^ lbl ^ ":"); label typ (atom "=?")]
 
   method type_param (ct, a) =
     makeList [atom (type_variance a); self#core_type ct]
@@ -3334,9 +3336,9 @@ class printer  ()= object(self:'self)
     let param = match lbl with
       | Nolabel -> term
       | Labelled lbl | Optional lbl when is_punned_labelled_pattern pat lbl ->
-        label (atom ":") term
+        label (atom namedArgSym) term
       | Labelled lbl | Optional lbl ->
-          let lblLayout= makeList ~sep:" " ~break:Never [atom (":" ^ lbl); atom "as"] in
+          let lblLayout= makeList ~sep:" " ~break:Never [atom (namedArgSym ^ lbl); atom "as"] in
           label lblLayout ~space:true term
     in
     match opt, lbl with
@@ -6360,13 +6362,13 @@ class printer  ()= object(self:'self)
     let param = match l with
       | Nolabel -> term
       | Labelled lbl when is_punned_labelled_expression e lbl ->
-        label (atom ":") term
+        label (atom namedArgSym) term
       | Optional lbl when is_punned_labelled_expression e lbl ->
-        label (atom ":") (label term (atom "?"))
+        label (atom namedArgSym) (label term (atom "?"))
       | Labelled lbl ->
-        label (atom (":" ^ lbl ^ "=")) term
+        label (atom (namedArgSym ^ lbl ^ "=")) term
       | Optional lbl ->
-        label (atom (":" ^ lbl ^ "=?")) term
+        label (atom (namedArgSym ^ lbl ^ "=?")) term
     in
     SourceMap (e.pexp_loc, param)
 

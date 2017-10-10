@@ -179,13 +179,13 @@ let res = first |> second;
 let res = (|>)(first);
 
 /* Custom infix with labeled args */
-let (|>)(:first as first, :second as second) = first + second;
+let (|>)(~first as first, ~second as second) = first + second;
 
 /* Should NOT reformat named args to actually be placed infix */
-let res = (|>)(:first=first, :second=second);
+let res = (|>)(~first=first, ~second=second);
 
 /* Curried shouldn't place infix */
-let res = (|>)(:first=first);
+let res = (|>)(~first=first);
 
 /* Custom infix accepting *three* without labeled args */
 let (|>)(firsfirst,second,third) = first + second + third;
@@ -203,16 +203,16 @@ let res = (|>)(first);
 
 /* In fact, if even just one of the arguments are named, it shouldn't
  * be formatted or parsed as infix! */
-(|>)(first,:second=second);
+(|>)(first,~second=second);
 
-(|>)(:first=first,second);
+(|>)(~first=first,second);
 
-(|>)(first,second,:third=third);
+(|>)(first,second,~third=third);
 
-(first |> second)(:third=third);
+(first |> second)(~third=third);
 
 /* Infix has lower precedence than function application */
-first |> second(:third=third);
+first |> second(~third=third);
 
 let leftAssocGrouping = first |> second |> third;
 
@@ -230,18 +230,18 @@ let res = blah && DataConstructor(10) && DataConstructor(10) + 10;
 /* Should be parsed as */
 let res = blah && DataConstructor(10) && DataConstructor(10) + 10;
 
-let (++)(:label as label,:label2 as label2) = label + label2;
+let (++)(~label as label,~label2 as label2) = label + label2;
 
-let (++)(:label as label,:label2 as label2) = label + label2;
+let (++)(~label as label,~label2 as label2) = label + label2;
 
 let (++) = (++);
 
 let (++): int = int = (++);
 
-(++)(:label=20, :label2=30) + 40;
+(++)(~label=20, ~label2=30) + 40;
 
 /* Should be parsed as: */
-(++)(:label=20, :label2=30) + 40;
+(++)(~label=20, ~label2=30) + 40;
 
 /* Great idea! */
 let (==)(a,b) = a < 0;
@@ -767,12 +767,12 @@ let code = JSCodegen.Code.(
   create
   |> lines(Requires.(
     create
-    |> import_type(:local="Set", :source="Set")
-    |> import_type(:local="Map", :source="Map")
-    |> import_type(:local="Immutable", :source="immutable")
-    |> require(:local="invariant", :source="invariant")
-    |> require(:local="Image", :source="Image.react")
-    |> side_effect(:source="monkey_patches")
+    |> import_type(~local="Set", ~source="Set")
+    |> import_type(~local="Map", ~source="Map")
+    |> import_type(~local="Immutable", ~source="immutable")
+    |> require(~local="invariant", ~source="invariant")
+    |> require(~local="Image", ~source="Image.react")
+    |> side_effect(~source="monkey_patches")
     |> render_lines
   ))
   |> new_line
@@ -790,9 +790,9 @@ let server = {
   let meth = req |> Request.meth |> Code.string_of_method;
   let headers = req |> Request.headers |> Header.to_string;
   body |> Cohttp_lwt_body.to_string >|= ((body) => {
-  Printf.sprintf("okokok", uri, meth, headers, body)}) >>= ((body) => Server.respond_string(:status, :body, ()));
+  Printf.sprintf("okokok", uri, meth, headers, body)}) >>= ((body) => Server.respond_string(~status, ~body, ()));
   };
-Server.create(:mode, Server.make(:callback, ()));
+Server.create(~mode, Server.make(~callback, ()));
 };
 
 let lijst =
