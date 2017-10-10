@@ -17,17 +17,9 @@ touch $HOME/.utoprc
 touch $HOME/.utop-history
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
-
-if [ ! -f $HOME/.reasoninit ]; then
-    # TODO: ideally we should generate this file by refmtting
-    # .ocamlinit. But refmt doesn't support toplevel formatting yet
-    echo "/* Added by rtop */
-let () =
-  try (Topdirs.dir_directory(Sys.getenv(\"OCAML_TOPLEVEL_PATH\"))) {
-  | Not_found => ()
-  };" > $HOME/.reasoninit
-fi
-
+# intercept the -stdin flag of utop, and preprocess the code into reason code
+# before forwarding it. Afaik currently there's no better way of intercepting
+# the code after urtop receives code from stdin and before it processes it
 if [[ $@ =~ "stdin" ]]; then
     refmt --parse re --print ml --interface false | utop-full $@
 else

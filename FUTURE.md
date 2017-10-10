@@ -1,8 +1,6 @@
 
 ## 3.0.0
 
-TODO: re-enable rtop integration tests in makefile (./miscTests/rtopIntegrationTest.sh) before the release
-
 - Even better infix operators formatting for `==`, `&&`, `>` and the rest (#1380, #1386)
 - Removed `--add-printers` option from refmt; we'll have a better strategy soon.
 - Remove unused binaries: `reup`, etc.

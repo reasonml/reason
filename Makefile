@@ -30,7 +30,7 @@ install:
 	./refmt_impl.native --help=groff > $(shell opam config var man)/man1/refmt.1
 
 test: build clean-tests
-	# ./miscTests/rtopIntegrationTest.sh
+	./miscTests/rtopIntegrationTest.sh
 	./miscTests/jsxPpxTest.sh
 	cd formatTest; ./test.sh
 

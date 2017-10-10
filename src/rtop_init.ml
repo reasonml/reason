@@ -2,8 +2,8 @@
 #load "compiler-libs/ocamlcommon.cma"
 #require "ocaml-migrate-parsetree";;
 #require "menhirLib";;
+let () = try Topdirs.dir_directory (Sys.getenv "OCAML_TOPLEVEL_PATH") with | Not_found -> ();;
 #require "reason";;
-#use ".reasoninit";;
 
 print_string
 "
@@ -12,7 +12,7 @@ print_string
                  / , _/ _// __ |_\\ \\/ /_/ /    /
                 /_/|_/___/_/ |_/___/\\____/_/|_/
 
-  Execute statements/let bindings. Hit <enter> after the semicolon.
+  Execute statements/let bindings. Hit <enter> after the semicolon. Ctrl-d to quit.
 
         >   let myVar = \"Hello Reason!\";
         >   let myList: list string = [\"first\", \"second\"];
