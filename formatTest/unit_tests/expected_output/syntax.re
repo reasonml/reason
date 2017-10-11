@@ -57,68 +57,68 @@ type myRecordType = {
 };
 
 type firstNamedArgShouldBeGroupedInParens =
-  (:first: int => int, :second: int) => int;
+  (~first: int => int, ~second: int) => int;
 
 type allParensCanBeRemoved =
-  (:first: int, :second: int, :third: int) => int;
+  (~first: int, ~second: int, ~third: int) => int;
 
 type firstTwoShouldBeGroupedAndFirstThree =
-  (:first: (int => int) => int) => int;
+  (~first: (int => int) => int) => int;
 
 /* Same thing now, but with type constructors instead of int */
 type firstNamedArgShouldBeGroupedInParens =
   (
-    :first: list(int) => list(int),
-    :second: list(int)
+    ~first: list(int) => list(int),
+    ~second: list(int)
   ) =>
   list(int);
 
 type allParensCanBeRemoved =
   (
-    :first: list(int),
-    :second: list(int),
-    :third: list(int)
+    ~first: list(int),
+    ~second: list(int),
+    ~third: list(int)
   ) =>
   list(int);
 
 type firstTwoShouldBeGroupedAndFirstThree =
   (
-    :first: (list(int) => list(int)) => list(int)
+    ~first: (list(int) => list(int)) => list(int)
   ) =>
   list(int);
 
 type firstNamedArgShouldBeGroupedInParens =
-  (:first: int => int=?, :second: list(int)=?) =>
+  (~first: int => int=?, ~second: list(int)=?) =>
   int;
 
 /* The arrow necessitates parens around the next two args. The ? isn't what
  * makes the parens necessary. */
 type firstNamedArgShouldBeGroupedInParensAndSecondNamedArg =
   (
-    :first: int => int=?,
-    :second: int => int=?
+    ~first: int => int=?,
+    ~second: int => int=?
   ) =>
   int;
 
 type allParensCanBeRemoved =
   (
-    :first: int=?,
-    :second: int=?,
-    :third: int=?
+    ~first: int=?,
+    ~second: int=?,
+    ~third: int=?
   ) =>
   int;
 
 type firstTwoShouldBeGroupedAndFirstThree =
-  (:first: (int => int) => int) => int;
+  (~first: (int => int) => int) => int;
 
 type noParens =
-  (:one: int, int, int, :two: int) => int;
+  (~one: int, int, int, ~two: int) => int;
 
 type noParensNeeded =
-  (:one: int, int, int, :two: int) => int;
+  (~one: int, int, int, ~two: int) => int;
 
 type firstNamedArgNeedsParens =
-  (:one: (int, int) => int, :two: int) => int;
+  (~one: (int, int) => int, ~two: int) => int;
 
 /* Now, let's try type aliasing */
 /* Unless wrapped in parens, types between arrows may not be aliased, may not
@@ -763,92 +763,92 @@ let a = 10;
 let b = 20;
 
 /*A*/
-let named = (:a, :b) => a + b;
+let named = (~a, ~b) => a + b;
 
-type named = (:a: int, :b: int) => int;
+type named = (~a: int, ~b: int) => int;
 
 /*B*/
-let namedAlias = (:a as aa, :b as bb) => aa + bb;
+let namedAlias = (~a as aa, ~b as bb) => aa + bb;
 
-let namedAlias = (:a as aa, :b as bb) => aa + bb;
+let namedAlias = (~a as aa, ~b as bb) => aa + bb;
 
-type namedAlias = (:a: int, :b: int) => int;
+type namedAlias = (~a: int, ~b: int) => int;
 
 /*C*/
-let namedAnnot = (:a: int, :b: int) => 20;
+let namedAnnot = (~a: int, ~b: int) => 20;
 
 /*D*/
 let namedAliasAnnot =
-    (:a as aa: int, :b as bb: int) => 20;
+    (~a as aa: int, ~b as bb: int) => 20;
 
 /*E*/
-let myOptional = (:a=?, :b=?, ()) => 10;
+let myOptional = (~a=?, ~b=?, ()) => 10;
 
-type named = (:a: int=?, :b: int=?, unit) => int;
+type named = (~a: int=?, ~b: int=?, unit) => int;
 
 /*F*/
-let optionalAlias = (:a as aa=?, :b as bb=?, ()) => 10;
+let optionalAlias = (~a as aa=?, ~b as bb=?, ()) => 10;
 
 /*G*/
-let optionalAnnot = (:a: int=?, :b: int=?, ()) => 10;
+let optionalAnnot = (~a: int=?, ~b: int=?, ()) => 10;
 
 /*H*/
 let optionalAliasAnnot =
-    (:a as aa: int=?, :b as bb: int=?, ()) => 10;
+    (~a as aa: int=?, ~b as bb: int=?, ()) => 10;
 
 /*I: */
-let defOptional = (:a=10, :b=10, ()) => 10;
+let defOptional = (~a=10, ~b=10, ()) => 10;
 
-type named = (:a: int=?, :b: int=?, unit) => int;
+type named = (~a: int=?, ~b: int=?, unit) => int;
 
 /*J*/
 let defOptionalAlias =
-    (:a as aa=10, :b as bb=10, ()) => 10;
+    (~a as aa=10, ~b as bb=10, ()) => 10;
 
 /*K*/
 let defOptionalAnnot =
-    (:a: int=10, :b: int=10, ()) => 10;
+    (~a: int=10, ~b: int=10, ()) => 10;
 
 /*L*/
 let defOptionalAliasAnnot =
-    (:a as aa: int=10, :b as bb: int=10, ()) => 10;
+    (~a as aa: int=10, ~b as bb: int=10, ()) => 10;
 
 /*M: Invoking them - Punned */
-let resNotAnnotated = named(:a, :b);
+let resNotAnnotated = named(~a, ~b);
 
 /*N:*/
-let resAnnotated: int = named(:a, :b);
+let resAnnotated: int = named(~a, ~b);
 
 /*O: Invoking them */
-let resNotAnnotated = named(:a, :b);
+let resNotAnnotated = named(~a, ~b);
 
 /*P: Invoking them */
-let resAnnotated: int = named(:a, :b);
+let resAnnotated: int = named(~a, ~b);
 
 /*Q: Here's why "punning" doesn't work!  */
 /* Is b:: punned with a final non-named arg, or is b:: supplied b as one named arg? */
 let b = 20;
 
-let resAnnotated = named(:a, :b);
+let resAnnotated = named(~a, ~b);
 
 /*R: Proof that there are no ambiguities with return values being annotated */
-let resAnnotated: ty = named(:a, b);
+let resAnnotated: ty = named(~a, b);
 
 /*S: Explicitly passed optionals are a nice way to say "use the default value"*/
 let explictlyPassed =
-  myOptional(:a=?None, :b=?None);
+  myOptional(~a=?None, ~b=?None);
 
 /*T: Annotating the return value of the entire function call */
 let explictlyPassedAnnotated: int =
-  myOptional(:a=?None, :b=?None);
+  myOptional(~a=?None, ~b=?None);
 
 /*U: Explicitly passing optional with identifier expression */
 let a = None;
 
-let explictlyPassed = myOptional(:a?, :b=?None);
+let explictlyPassed = myOptional(~a?, ~b=?None);
 
 let explictlyPassedAnnotated: int =
-  myOptional(:a?, :b=?None);
+  myOptional(~a?, ~b=?None);
 
 let nestedLet = {
   let _ = 1;
@@ -875,36 +875,36 @@ let nestedLet = {
  */
 type typeWithNestedNamedArgs =
   (
-    :outerOne: (:innerOne: int, :innerTwo: int) =>
+    ~outerOne: (~innerOne: int, ~innerTwo: int) =>
                int,
-    :outerTwo: int
+    ~outerTwo: int
   ) =>
   int;
 
 type typeWithNestedOptionalNamedArgs =
   (
-    :outerOne: (:innerOne: int, :innerTwo: int) =>
+    ~outerOne: (~innerOne: int, ~innerTwo: int) =>
                int
                  =?,
-    :outerTwo: int=?
+    ~outerTwo: int=?
   ) =>
   int;
 
 type typeWithNestedOptionalNamedArgs =
   (
-    :outerOne: list(string)=?,
-    :outerTwo: int=?
+    ~outerOne: list(string)=?,
+    ~outerTwo: int=?
   ) =>
   int;
 
 let f =
-    (:tuple="long string to trigger line break") =>
+    (~tuple="long string to trigger line break") =>
   ();
 
 let x =
   callSomeFunction(
-    :withArg=10,
-    :andOtherArg=wrappedArg
+    ~withArg=10,
+    ~andOtherArg=wrappedArg
   );
 
 let res = {
@@ -957,7 +957,7 @@ let newRecord = {
   ...(
     youCanEvenCallMethodsHereAndAnnotate(
       them,
-      :named=10
+      ~named=10
     ): someRec
   ),
   blah: 0,
@@ -976,7 +976,7 @@ let something: blah = typeAnnotation(thing);
 
 let newRecord = {
   ...(
-    heresAFunctionWithNamedArgs(:argOne=i): annotatedResult
+    heresAFunctionWithNamedArgs(~argOne=i): annotatedResult
   ),
   soAsToInstill: 0,
   developmentHabbits: 1
@@ -1035,7 +1035,7 @@ let match = "match";
 let method = "method";
 
 let foo =
-    (x, :x as bar, :z, :foo as bar, :foo as z) =>
+    (x, ~x as bar, ~z, ~foo as bar, ~foo as z) =>
   bar + 2;
 
 let zzz = myFunc(1, 2, [||]);

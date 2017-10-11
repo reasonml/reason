@@ -212,13 +212,13 @@ let res = first |> second;
 let res = (|>)(first);
 
 /* Custom infix with labeled args */
-let (|>) = (:first, :second) => first + second;
+let (|>) = (~first, ~second) => first + second;
 
 /* Should NOT reformat named args to actually be placed infix */
-let res = (|>)(:first, :second);
+let res = (|>)(~first, ~second);
 
 /* Curried shouldn't place infix */
-let res = (|>)(:first);
+let res = (|>)(~first);
 
 /* Custom infix accepting *three* without labeled args */
 let (|>) = (firsfirst, second, third) =>
@@ -237,16 +237,16 @@ let res = (|>)(first);
 
 /* In fact, if even just one of the arguments are named, it shouldn't
  * be formatted or parsed as infix! */
-(|>)(first, :second);
+(|>)(first, ~second);
 
-(|>)(:first, second);
+(|>)(~first, second);
 
-(|>)(first, second, :third);
+(|>)(first, second, ~third);
 
-(first |> second)(:third);
+(first |> second)(~third);
 
 /* Infix has lower precedence than function application */
-first |> second(:third);
+first |> second(~third);
 
 let leftAssocGrouping = first |> second |> third;
 
@@ -276,18 +276,18 @@ let res =
   && DataConstructor(10)
   + 10;
 
-let (++) = (:label, :label2) => label + label2;
+let (++) = (~label, ~label2) => label + label2;
 
-let (++) = (:label, :label2) => label + label2;
+let (++) = (~label, ~label2) => label + label2;
 
 let (++) = (++);
 
 let (++): int = int = (++);
 
-(++)(:label=20, :label2=30) + 40;
+(++)(~label=20, ~label2=30) + 40;
 
 /* Should be parsed as: */
-(++)(:label=20, :label2=30) + 40;
+(++)(~label=20, ~label2=30) + 40;
 
 /* Great idea! */
 let (==) = (a, b) => a < 0;
@@ -961,27 +961,27 @@ let code =
          Requires.(
            create
            |> import_type(
-                :local="Set",
-                :source="Set"
+                ~local="Set",
+                ~source="Set"
               )
            |> import_type(
-                :local="Map",
-                :source="Map"
+                ~local="Map",
+                ~source="Map"
               )
            |> import_type(
-                :local="Immutable",
-                :source="immutable"
+                ~local="Immutable",
+                ~source="immutable"
               )
            |> require(
-                :local="invariant",
-                :source="invariant"
+                ~local="invariant",
+                ~source="invariant"
               )
            |> require(
-                :local="Image",
-                :source="Image.react"
+                ~local="Image",
+                ~source="Image.react"
               )
            |> side_effect(
-                :source="monkey_patches"
+                ~source="monkey_patches"
               )
            |> render_lines
          )
@@ -1024,12 +1024,12 @@ let server = {
     )
     >>= (
       (body) =>
-        Server.respond_string(:status, :body, ())
+        Server.respond_string(~status, ~body, ())
     )
   };
   Server.create(
-    :mode,
-    Server.make(:callback, ())
+    ~mode,
+    Server.make(~callback, ())
   )
 };
 

@@ -2372,11 +2372,11 @@ labeled_pattern_constraint:
 
 labeled_pattern:
 as_loc
-   ( COLON as_loc(LIDENT) labeled_pattern_constraint
+   ( TILDE as_loc(LIDENT) labeled_pattern_constraint
     { Term (Labelled $2.txt, None, $3 $2) }
-  | COLON as_loc(LIDENT) labeled_pattern_constraint EQUAL expr
+  | TILDE as_loc(LIDENT) labeled_pattern_constraint EQUAL expr
     { Term (Optional $2.txt, Some $5, $3 $2) }
-  | COLON as_loc(LIDENT) labeled_pattern_constraint EQUAL QUESTION
+  | TILDE as_loc(LIDENT) labeled_pattern_constraint EQUAL QUESTION
     { Term (Optional $2.txt, None, $3 $2) }
   | pattern_optional_constraint
     { Term (Nolabel, None, $1) }
@@ -2898,17 +2898,17 @@ labeled_expr_constraint:
 
 labeled_expr:
   | expr_optional_constraint { (Nolabel, $1) }
-  | COLON as_loc(val_longident)
+  | TILDE as_loc(val_longident)
     { (* add(:a, :b)  -> parses :a & :b *)
       let exp = mkexp (Pexp_ident $2) ~loc:$2.loc in
       (Labelled (String.concat "" (Longident.flatten $2.txt)), exp)
     }
-  | COLON as_loc(val_longident) QUESTION
+  | TILDE as_loc(val_longident) QUESTION
     { (* foo(:a?)  -> parses :a? *)
       let exp = mkexp (Pexp_ident $2) ~loc:$2.loc in
       (Optional (String.concat "" (Longident.flatten $2.txt)), exp)
     }
-  | COLON as_loc(val_longident) EQUAL optional labeled_expr_constraint
+  | TILDE as_loc(val_longident) EQUAL optional labeled_expr_constraint
     { (* foo(:bar=?Some(1)) or add(:x=1, :y=2) -> parses :bar=?Some(1) & :x=1 & :y=1 *)
       ($4 (String.concat "" (Longident.flatten $2.txt)), $5 $2)
     }
@@ -3805,9 +3805,9 @@ unattributed_core_type:
 arrow_type_parameter:
   | only_core_type(core_type)
     { (Nolabel, $1) }
-  | COLON LIDENT COLON only_core_type(core_type)
+  | TILDE LIDENT COLON only_core_type(core_type)
     { ( Labelled $2, $4) }
-  | COLON LIDENT COLON only_core_type(core_type) EQUAL optional
+  | TILDE LIDENT COLON only_core_type(core_type) EQUAL optional
     {($6 $2, $4) }
 ;
 

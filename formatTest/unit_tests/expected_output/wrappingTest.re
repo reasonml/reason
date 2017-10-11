@@ -107,9 +107,9 @@ let b = 20;
 let named =
     /* a::a */
     (
-      :a,
+      ~a,
       /* b::b */
-      :b
+      ~b
     ) =>
   /* a + b */
   a + b;
@@ -118,20 +118,20 @@ let named =
 let namedAlias =
     /* a::aa */
     (
-      :a as aa,
+      ~a as aa,
       /* b::bb */
-      :b as bb
+      ~b as bb
     ) =>
   /* aa + bb */
   aa + bb;
 
 /*C*/
 let namedAnnot =
-    /* :a a: option(int) */
+    /* ~a a: option(int) */
     (
-      :a: option(int),
-      /* :b b: option(int) */
-      :b: option(int)
+      ~a: option(int),
+      /* ~b b: option(int) */
+      ~b: option(int)
     ) =>
   /* 20 */
   20;
@@ -140,9 +140,9 @@ let namedAnnot =
 let namedAliasAnnot =
     /* a::(aa: option int) */
     (
-      :a as aa: option(int),
+      ~a as aa: option(int),
       /* b::(bb: option int) */
-      :b as bb: option(int)
+      ~b as bb: option(int)
     ) =>
   /* 20 */
   20;
@@ -151,9 +151,9 @@ let namedAliasAnnot =
 let optional =
     /* a::a=? */
     (
-      :a=?,
+      ~a=?,
       /* b::b=? */
-      :b=?,
+      ~b=?,
       /* () */
       ()
     ) =>
@@ -164,9 +164,9 @@ let optional =
 let optionalAlias =
     /* a::aa */
     (
-      :a as aa=?,
+      ~a as aa=?,
       /* ?b:bb */
-      :b as bb=?,
+      ~b as bb=?,
       /* () */
       ()
     ) =>
@@ -177,9 +177,9 @@ let optionalAlias =
 let optionalAnnot =
     /* a::(a: option int)=? */
     (
-      :a: option(int)=?,
+      ~a: option(int)=?,
       /* ?b:(b: option int) */
-      :b: option(int)=?,
+      ~b: option(int)=?,
       /* () */
       ()
     ) =>
@@ -190,9 +190,9 @@ let optionalAnnot =
 let optionalAliasAnnot =
     /* a::(aa: option int)=? */
     (
-      :a as aa: option(int)=?,
+      ~a as aa: option(int)=?,
       /* b::(bb: option int)=? */
-      :b as bb: option(int)=?,
+      ~b as bb: option(int)=?,
       /* () = */
       ()
     ) =>
@@ -203,9 +203,9 @@ let optionalAliasAnnot =
 let defOptional =
     /* a::a=10 */
     (
-      :a=10,
+      ~a=10,
       /* b::b=10 */
-      :b=10,
+      ~b=10,
       /* () = */
       ()
     ) =>
@@ -216,9 +216,9 @@ let defOptional =
 let defOptionalAlias =
     /* a::aa=10 */
     (
-      :a as aa=10,
+      ~a as aa=10,
       /* b::bb=10 */
-      :b as bb=10,
+      ~b as bb=10,
       /* () = */
       ()
     ) =>
@@ -229,9 +229,9 @@ let defOptionalAlias =
 let defOptionalAnnot =
     /* a::(a:int)=10 */
     (
-      :a: int=10,
+      ~a: int=10,
       /* b::(b:int)=10 */
-      :b: int=10,
+      ~b: int=10,
       /* () = */
       ()
     ) =>
@@ -242,9 +242,9 @@ let defOptionalAnnot =
 let defOptionalAliasAnnot =
     /* a::(aa:int)=10 */
     (
-      :a as aa: int=10,
+      ~a as aa: int=10,
       /* b::(bb:int)=10 */
-      :b as bb: int=10,
+      ~b as bb: int=10,
       /* () = */
       ()
     ) =>
@@ -255,33 +255,33 @@ let defOptionalAliasAnnot =
 named
   /* a::a */
   (
-    :a,
+    ~a,
     /* b::b; */
-    :b
+    ~b
   );
 
 named
   /* a::a */
   (
-    :a,
+    ~a,
     /* b::b; */
-    :b
+    ~b
   );
 
 optional
   /* a::a */
   (
-    :a,
+    ~a,
     /* b::b; */
-    :b
+    ~b
   );
 
 optional
   /* a::a */
   (
-    :a,
+    ~a,
     /* b::b; */
-    :b
+    ~b
   );
 
 let explictlyPassed =
@@ -290,10 +290,10 @@ let explictlyPassed =
     /* a::? */
     /* None */
     (
-      :a=?None,
+      ~a=?None,
       /* b::? */
       /* None; */
-      :b=?None
+      ~b=?None
     );
 
 let a = None;
@@ -303,13 +303,13 @@ let explictlyPassed =
   optional
     /* a::? */
     (
-      :a?,
+      ~a?,
       /* b::? */
       /* None; */
-      :b=?None
+      ~b=?None
     );
 
-let complex_default = (:callback=(k, d) => 4, x) => 3;
+let complex_default = (~callback=(k, d) => 4, x) => 3;
 
 let myList = /*CommentAfterEqualBeforeList */ [
   1,
@@ -2139,7 +2139,7 @@ let df_myNonPolyFunc: 'a => 'a = (o) => o;
 
 type nameBlahType = {nameBlah: int};
 
-let myFunc = (:firstArg, :another, :fl) => {
+let myFunc = (~firstArg, ~another, ~fl) => {
   nameBlah: 10
 };
 
