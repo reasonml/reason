@@ -4,8 +4,11 @@
 echo "Testing reactjs @JSX ppx..."
 
 testPath="miscTests/reactjs_jsx_ppx_tests"
-
 tempFile="temp_jsx_test.ml"
+
+WARNING='\033[0;31m'
+SUCCESS='\033[0;32m'
+RESET='\033[0m'
 
 # for better visual diffing in the terminal, try https://github.com/jeffkaufman/icdiff
 if hash icdiff 2>/dev/null; then
@@ -31,7 +34,7 @@ do
 
     # if there's an Error/Fatal error, bail early
     if grep -q "rror: " $tempFile; then
-      echo "\033[0;31mV2 behavior $i: error in output after the ppx ran. Here's the content:\033[m"
+      printf "${WARNING}V2 behavior $i: error in output after the ppx ran. Here's the content:${RESET}\n"
       cat $tempFile
       rm $tempFile
       exit 1
@@ -48,9 +51,9 @@ do
     fi
 
     if [[ "$(cat $expected)" = "$(cat $actual)" ]]; then
-      echo "\033[0;32m$version behavior $i: ok\033[m"
+      printf "${SUCCESS}$version behavior $i: ok${RESET}\n"
     else
-      echo "\033[0;31m$version behavior $i: wrong\033[m"
+      printf "${WARNING}$version behavior $i: wrong${RESET}\n"
       # show the error diff
       $DIFF $expected $actual
       exit 1
