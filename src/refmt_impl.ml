@@ -106,9 +106,9 @@ let refmt
           exit 1
 
 let top_level_info =
-  let doc = "Meta language utility" in
-  let man = [`S "DESCRIPTION"; `P "refmt is a parser and pretty-printer"] in
-  let version = "Reason " ^ Package.version ^ " @ " ^ Package.git_short_version
+  let doc = "Reason's Parser & Pretty-printer" in
+  let man = [`S "DESCRIPTION"; `P "refmt lets you format Reason files, parse them, and convert them between OCaml syntax and Reason syntax."] in
+let version = "Reason " ^ Package.version ^ " @ " ^ Package.git_short_version
   in
   Term.info "refmt" ~version ~doc ~man
 
