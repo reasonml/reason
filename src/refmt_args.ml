@@ -56,14 +56,6 @@ let in_place =
   let doc = "reformat a file in-place" in
   Arg.(value & flag & info ["in-place"] ~doc)
 
-let add_printers =
-  let doc = "add auto-printers to user-defined types" in
-  Arg.(value & flag & info ["add-printers"] ~doc)
-
-let add_runtime =
-  let doc = "add runtime for auto-printers is DEPRECATED" in
-  Arg.(value & flag & info ["add-runtime"] ~doc)
-
 let input =
   let docv = "FILENAMES" in
   let doc = "input files; if empty, assume stdin" in
@@ -71,12 +63,10 @@ let input =
 
 (* DEPRECATED *)
 
-let is_interface_pp =
-  let doc = "is-interface-pp is DEPRECATED; use -i or --interface instead" in
-  Arg.(value & flag & info ["is-interface-pp"] ~doc)
+let add_printers =
+  let doc = "add auto-printers to user-defined types" in
+  Arg.(value & flag & info ["add-printers"] ~doc)
 
-let use_stdin =
-  let doc = "use-stdin is DEPRECATED; usage is assumed if not specifying a \
-             filename"
-  in
-  Arg.(value & flag & info ["use-stdin"] ~doc)
+let add_runtime =
+  let doc = "add runtime for auto-printers is DEPRECATED" in
+  Arg.(value & flag & info ["add-runtime"] ~doc)
