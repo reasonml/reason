@@ -585,6 +585,20 @@ let funcWithTypeLocallyAbstractTypes =
     ) =>
   c(a, b);
 
+/* Checks that function types aren't unnecessary wrapped */
+type a = unit => unit;
+
+type b =
+  | Foo(unit => unit)
+  | Bar(unit => unit, unit => unit, (a, b) => c)
+  | Baz(unit => unit, unit => unit, (a, b) => c);
+
+type c =
+  | Foo((a, b) => unit)
+  | Bar((a, b) => unit);
+
+type d = [> | `Foo(unit => unit)];
+
 /**
  * Records:
  *=============================================================================

@@ -2790,7 +2790,7 @@ class printer  ()= object(self:'self)
       let lst = if print_bar then [atom "|"; sourceMappedName] else [sourceMappedName] in
       makeList ~postSpace:true lst in
     let ampersand_helper i arg =
-      let ct = self#non_arrowed_non_simple_core_type arg in
+      let ct = self#core_type arg in
       let ct = match arg.ptyp_desc with
         | Ptyp_tuple _ -> ct
         | _ -> makeTup [ct]
@@ -2804,7 +2804,7 @@ class printer  ()= object(self:'self)
       | Pcstr_record r -> [self#record_declaration r]
       | Pcstr_tuple [] -> []
       | Pcstr_tuple l when polymorphic -> List.mapi ampersand_helper l
-      | Pcstr_tuple l -> [makeTup (List.map self#non_arrowed_non_simple_core_type l)]
+      | Pcstr_tuple l -> [makeTup (List.map self#core_type l)]
     in
     let gadtRes = match pcd_res with
       | None -> None
