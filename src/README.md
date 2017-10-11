@@ -71,6 +71,7 @@ Random Stack Overflow answer: https://stackoverflow.com/questions/9897358/ocaml-
 
 **Want some example pull requests**? Here are a few:
 
+- [Fix outcome printer object printing](https://github.com/facebook/reason/pull/1357)
 - [Add more spacing when printing Ptyp_package](https://github.com/facebook/reason/pull/1430)
 - [Implement spread for jsx3](https://github.com/facebook/reason/pull/1429)
 - [Make deref be a prefix operator](https://github.com/facebook/reason/pull/1463)
@@ -81,6 +82,8 @@ Random Stack Overflow answer: https://stackoverflow.com/questions/9897358/ocaml-
 - [Print functions as javascript](https://github.com/facebook/reason/pull/1469)
 - [Transform ocaml pervasives interfaces to reason correctly](https://github.com/facebook/reason/pull/1474)
 - [Special case printing of foo(bar)##value](https://github.com/facebook/reason/pull/1481)
+- [Use ~ for named args](https://github.com/facebook/reason/pull/1483/)
+- [Bring back parentheses-less `switch foo`](https://github.com/facebook/reason/pull/1476)
 
 ### Debugging Grammar Conflicts
 

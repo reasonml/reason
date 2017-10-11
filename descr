@@ -1,5 +1,5 @@
-Reason: Meta Language Toolchain
+Reason: Syntax & Toolchain for OCaml
 
-reason allows development of Meta Language syntax trees in non-text format. It
-allows a development model that is equivalent to collaborating on syntax trees
-that have been committed to a source code repository.
+Reason gives OCaml a new syntax that is remniscient of languages like
+JavaScript. It's also the umbrella project for a set of tools for the OCaml &
+JavaScript ecosystem.
