@@ -4760,7 +4760,8 @@ class printer  ()= object(self:'self)
             in
             let cases = (self#case_list ~allowUnguardedSequenceBodies:true l) in
             let switchWith = label ~space:true (atom "try")
-                (makeList ~wrap:("(",")") [self#reset#unparseExpr e]) in
+                (self#reset#simplifyUnparseExpr e)
+            in
             Some (
               label
                 ~space:true
@@ -4780,11 +4781,7 @@ class printer  ()= object(self:'self)
              in
              let cases = (self#case_list ~allowUnguardedSequenceBodies:true l) in
              let switchWith =
-               let exp = self#reset#unparseExpr e in
-               let exp = match e.pexp_desc with
-                 | Pexp_tuple _ when e.pexp_attributes = [] -> exp
-                 | _ -> makeList ~wrap:("(",")") [exp]
-               in
+               let exp = self#reset#simplifyUnparseExpr e in
                label ~space:true (atom "switch") exp in
              let lbl =
                label

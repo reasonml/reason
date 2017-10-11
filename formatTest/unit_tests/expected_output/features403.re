@@ -27,7 +27,7 @@ type expr('a) =
 
 let rec eval: type a. expr(a) => a =
   (e) =>
-    switch (e) {
+    switch e {
     | Is0 {test} => eval(test) == 0
     | Val {value} => value
     | Add {left, right} =>

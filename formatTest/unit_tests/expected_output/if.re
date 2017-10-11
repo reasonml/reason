@@ -163,7 +163,7 @@ let result =
  * Try shouldn't be aliased as ternary!
  */
 let res =
-  try (something) {
+  try something {
   | true => "hi"
   | false => "bye"
   };

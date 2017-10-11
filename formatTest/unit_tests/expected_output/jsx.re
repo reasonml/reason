@@ -113,7 +113,7 @@ let tuples =
 let icon =
   <Icon
     name=(
-      switch (state.volume) {
+      switch state.volume {
       | v when v < 0.1 => "sound-off"
       | v when v < 0.11 => "sound-min"
       | v when v < 0.51 => "sound-med"
