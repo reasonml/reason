@@ -67,6 +67,8 @@ let result = myFunction(x(y)##z, a(b)#=c);
 
 (! x)##y##(b##c);
 
+type a = {. "foo": bar};
+
 let a = {"key": 10};
 
 let b = {
@@ -92,3 +94,5 @@ let a = {"/foo": 10};
 let isArrayPolyfill: [@bs] (int => bool) = [%bs.raw
   "function(a) {return Object.prototype.toString.call(a) === '[object Array]'}"
 ];
+
+this#arrayInObject[count] = 1;
