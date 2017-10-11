@@ -31,7 +31,7 @@ holdsABool.contents = holdsAnInt.contents == 100;
 
 let numberToSwitchOn = 100;
 
-switch (numberToSwitchOn) {
+switch numberToSwitchOn {
 | (-3)
 | (-2)
 | (-1) => ()

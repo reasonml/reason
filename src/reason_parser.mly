@@ -1297,16 +1297,13 @@ as_loc
     { (None, Some $1) }
 ) {$1};
 
-module_parameters:
-  parenthesized(lseparated_two_or_more(COMMA, module_parameter)) { $1 };
-
 functor_parameters:
   | LPAREN RPAREN
     { let loc = mklocation $startpos $endpos in
       [mkloc (Some (mkloc "*" loc), None) loc]
     }
-  | module_parameters { $1 }
   | parenthesized(module_parameter) { [$1] }
+  | parenthesized(lseparated_two_or_more(COMMA, module_parameter)) { $1 }
 ;
 
 module_complex_expr:
@@ -1368,8 +1365,15 @@ mark_position_mod
    * Update: In upstream, it *is* possible to annotate return values for
    * lambdas.
    */
-  | either(ES6_FUN,FUN) functor_parameters EQUALGREATER module_expr
-    { mk_functor_mod $2 $4 }
+  | either(ES6_FUN,FUN) functor_parameters preceded(COLON,simple_module_type)? EQUALGREATER module_expr
+    { let me = match $3 with
+        | None -> $5
+        | Some mt ->
+          let loc = mklocation $startpos($3) $endpos in
+          mkmod ~loc (Pmod_constraint($5, mt))
+      in
+      mk_functor_mod $2 me
+    }
   | module_expr module_arguments
     { List.fold_left mkmod_app $1 $2 }
   | module_expr as_loc(LPAREN) module_expr as_loc(error)
@@ -2541,11 +2545,11 @@ mark_position_exp
    */
   | FUN match_cases(expr) %prec below_BAR
     { mkexp (Pexp_function $2) }
-  | SWITCH parenthesized_expr LBRACE match_cases(semi_terminated_seq_expr) RBRACE
+  | SWITCH simple_expr_no_constructor LBRACE match_cases(semi_terminated_seq_expr) RBRACE
     { mkexp (Pexp_match ($2, $4)) }
-  | TRY parenthesized_expr LBRACE match_cases(semi_terminated_seq_expr) RBRACE
+  | TRY simple_expr_no_constructor LBRACE match_cases(semi_terminated_seq_expr) RBRACE
     { mkexp (Pexp_try ($2, $4)) }
-  | TRY parenthesized_expr WITH error
+  | TRY simple_expr_no_constructor WITH error
     { syntax_error_exp (mklocation $startpos($4) $endpos($4)) "Invalid try with"}
   | IF parenthesized_expr simple_expr ioption(preceded(ELSE,expr))
     { mkexp(Pexp_ifthenelse($2, $3, $4)) }
@@ -2680,28 +2684,8 @@ parenthesized_expr:
    * explicit about needing to wait for "as") */
   | as_loc(constr_longident) %prec prec_constant_constructor
     { mkexp (Pexp_construct ($1, None)) }
-  | as_loc(constr_longident)
-    mark_position_exp
-      ( non_labeled_argument_list   { mkexp (Pexp_tuple($1)) }
-      | simple_expr_direct_argument { $1 }
-      )
-    { (*if List.mem (string_of_longident $1.txt)
-         built_in_explicit_arity_constructors then
-        (* unboxing the inner tupple *)
-        match $2 with
-          | [inner] -> mkexp (Pexp_construct($1, Some inner))
-          | _ -> assert false
-      else*)
-      mkExplicitArityTupleExp (Pexp_construct($1, Some $2))
-    }
   | name_tag %prec prec_constant_constructor
     { mkexp (Pexp_variant ($1, None)) }
-  | name_tag
-    mark_position_exp
-      ( non_labeled_argument_list   { mkexp (Pexp_tuple($1)) }
-      | simple_expr_direct_argument { $1 }
-      )
-    { mkexp(Pexp_variant($1, Some $2)) }
   | LPAREN expr_list RPAREN
     { may_tuple $startpos $endpos $2 }
   | as_loc(LPAREN) expr_list as_loc(error)
@@ -2797,8 +2781,36 @@ parenthesized_expr:
 
 %inline simple_expr: simple_expr_call { mkexp_app_rev $startpos $endpos $1 };
 
+simple_expr_no_constructor:
+  mark_position_exp(simple_expr_template(simple_expr_no_constructor)) { $1 };
+
+simple_expr_template_constructor:
+  | as_loc(constr_longident)
+    mark_position_exp
+      ( non_labeled_argument_list   { mkexp (Pexp_tuple($1)) }
+      | simple_expr_direct_argument { $1 }
+      )
+    { (*if List.mem (string_of_longident $1.txt)
+         built_in_explicit_arity_constructors then
+        (* unboxing the inner tupple *)
+        match $2 with
+          | [inner] -> mkexp (Pexp_construct($1, Some inner))
+          | _ -> assert false
+      else*)
+      mkExplicitArityTupleExp (Pexp_construct($1, Some $2))
+    }
+  | name_tag
+    mark_position_exp
+      ( non_labeled_argument_list   { mkexp (Pexp_tuple($1)) }
+      | simple_expr_direct_argument { $1 }
+      )
+    { mkexp(Pexp_variant($1, Some $2)) }
+;
+
 simple_expr_no_call:
-  mark_position_exp(simple_expr_template(simple_expr_no_call)) { $1 };
+  | mark_position_exp(simple_expr_template(simple_expr_no_call)) { $1 }
+  | simple_expr_template_constructor { $1 }
+;
 
 simple_expr_call:
   | mark_position_exp(simple_expr_template(simple_expr)) { $1, [] }
@@ -2809,6 +2821,7 @@ simple_expr_call:
       let loc = mklocation $startpos($2) $endpos($2) in
       (make_real_exp (mktailexp_extension loc seq ext_opt), [])
     }
+  | simple_expr_template_constructor { ($1, []) }
 ;
 
 simple_expr_direct_argument:

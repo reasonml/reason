@@ -80,6 +80,7 @@ Random Stack Overflow answer: https://stackoverflow.com/questions/9897358/ocaml-
 - [Rage implement everything](https://github.com/facebook/reason/pull/1448)
 - [Print functions as javascript](https://github.com/facebook/reason/pull/1469)
 - [Transform ocaml pervasives interfaces to reason correctly](https://github.com/facebook/reason/pull/1474)
+- [Special case printing of foo(bar)##value](https://github.com/facebook/reason/pull/1481)
 
 ### Debugging Grammar Conflicts
 

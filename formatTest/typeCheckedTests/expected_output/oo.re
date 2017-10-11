@@ -7,7 +7,7 @@ class virtual stack ('a) (init) = {
   val mutable v: list('a) = init;
   pub virtual implementMe: int => int;
   pub pop =
-    switch (v) {
+    switch v {
     | [hd, ...tl] =>
       v = tl;
       Some(hd)
@@ -43,7 +43,7 @@ class virtual stackWithAttributes ('a) (init) = {
   val mutable v: list('a) = init;
   pub virtual implementMe: int => int;
   pub pop =
-    switch (v) {
+    switch v {
     | [hd, ...tl] =>
       v = tl;
       Some(hd)

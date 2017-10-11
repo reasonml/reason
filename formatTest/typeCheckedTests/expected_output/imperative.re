@@ -4,41 +4,53 @@
 
  * vim: set ft=reason:
  */
-switch (while (true) {
-          ()
-        }) {
+switch (
+  while (true) {
+    ()
+  }
+) {
 | _ => ()
 };
 
-try (while (true) {
-       ()
-     }) {
+try (
+  while (true) {
+    ()
+  }
+) {
 | _ => ()
 };
 
-switch (for (i in 0 to 10) {
-          ()
-        }) {
+switch (
+  for (i in 0 to 10) {
+    ()
+  }
+) {
 | _ => ()
 };
 
-try (for (i in 0 to 10) {
-       ()
-     }) {
+try (
+  for (i in 0 to 10) {
+    ()
+  }
+) {
 | _ => ()
 };
 
-switch (if (true) {
-          print_string("switching on true")
-        } else {
-          print_string("switching on false")
-        }) {
+switch (
+  if (true) {
+    print_string("switching on true")
+  } else {
+    print_string("switching on false")
+  }
+) {
 | _ => ()
 };
 
-try (for (i in 0 to 10) {
-       ()
-     }) {
+try (
+  for (i in 0 to 10) {
+    ()
+  }
+) {
 | _ => ()
 };
 
@@ -51,11 +63,15 @@ let result =
   == () ?
     false : true;
 
-switch (try (try (()) {
-             | _ => ()
-             }) {
-        | _ => ()
-        }) {
+switch (
+  try (
+    try () {
+    | _ => ()
+    }
+  ) {
+  | _ => ()
+  }
+) {
 | () => ()
 };
 

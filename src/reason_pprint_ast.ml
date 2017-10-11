@@ -4762,7 +4762,8 @@ class printer  ()= object(self:'self)
             in
             let cases = (self#case_list ~allowUnguardedSequenceBodies:true l) in
             let switchWith = label ~space:true (atom "try")
-                (makeList ~wrap:("(",")") [self#reset#unparseExpr e]) in
+                (self#reset#simplifyUnparseExpr e)
+            in
             Some (
               label
                 ~space:true
@@ -4782,11 +4783,7 @@ class printer  ()= object(self:'self)
              in
              let cases = (self#case_list ~allowUnguardedSequenceBodies:true l) in
              let switchWith =
-               let exp = self#reset#unparseExpr e in
-               let exp = match e.pexp_desc with
-                 | Pexp_tuple _ when e.pexp_attributes = [] -> exp
-                 | _ -> makeList ~wrap:("(",")") [exp]
-               in
+               let exp = self#reset#simplifyUnparseExpr e in
                label ~space:true (atom "switch") exp in
              let lbl =
                label
@@ -4950,8 +4947,14 @@ class printer  ()= object(self:'self)
         | UnaryMinusPrefix _
         | UnaryNotPrefix _
         | UnaryPostfix _
-        | Infix _
-        | Normal -> self#simplifyUnparseExpr x
+        | Infix _ -> self#simplifyUnparseExpr x
+        | Normal ->
+          if x.pexp_attributes = [] then
+            (* `let a = foo().bar` instead of `let a = (foo()).bar *)
+            (* same for foo()##bar, foo()#=bar, etc. *)
+            self#unparseExpr x
+          else
+            self#simplifyUnparseExpr x
     )
     | _ -> self#simplifyUnparseExpr x
 
@@ -6056,7 +6059,7 @@ class printer  ()= object(self:'self)
       let (argsList, return) = self#curriedFunctorPatternsAndReturnStruct x in
       (* See #19/20 in syntax.mls - cannot annotate return type at
                the moment. *)
-      self#wrapCurriedFunctionBinding "fun" ~arrow:"=>" (makeTup argsList) []
+      self#wrapCurriedFunctionBinding "fun" ~sweet:true ~arrow:"=>" (makeTup argsList) []
         ([self#moduleExpressionToFormattedApplicationItems return], None)
     | Pmod_apply _ ->
       self#moduleExpressionToFormattedApplicationItems x
@@ -6139,7 +6142,8 @@ class printer  ()= object(self:'self)
                 | Pmod_constraint (me, ct) -> ([makeTup argsList; formatJustTheTypeConstraint (self#non_arrowed_module_type ct)], me)
                 | _ -> ([makeTup argsList], return)
             ) in
-            self#wrapCurriedFunctionBinding prefixText ~arrow:"=" bindingName argsWithConstraint
+            self#wrapCurriedFunctionBinding prefixText ~arrow:"=>"
+              (makeList [bindingName; atom " ="]) argsWithConstraint
               ([self#moduleExpressionToFormattedApplicationItems actualReturn], None)
     )
 

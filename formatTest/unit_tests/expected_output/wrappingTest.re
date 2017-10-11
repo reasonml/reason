@@ -430,7 +430,7 @@ let myList = [
 let myList = [3, 4, 5];
 
 let simpleListPattern = (x) =>
-  switch (x) {
+  switch x {
   | [1, 2, 3] => 0
   | _ => 0
   };
@@ -2435,7 +2435,7 @@ type colors =
   | Green(int);
 
 let blah = (arg) =>
-  switch (arg) {
+  switch arg {
   /* Comment before Bar */
   | /* Comment between bar/pattern */ Red(_) => 1
   /* Comment Before non-first bar */
@@ -2466,7 +2466,7 @@ type reallyLongVariantNames =
   | AnotherReallyLongVariantName2(int, int, int);
 
 let howDoLongMultiBarPatternsWrap = (x) =>
-  switch (x) {
+  switch x {
   | AnotherReallyLongVariantName(_, _, _) => 0
   | AnotherReallyLongVariantName2(_, _, _) => 0
   | ReallyLongVariantName {
@@ -2476,7 +2476,7 @@ let howDoLongMultiBarPatternsWrap = (x) =>
   };
 
 let letsCombineTwoLongPatternsIntoOneCase = (x) =>
-  switch (x) {
+  switch x {
   | AnotherReallyLongVariantName(_, _, _)
   | AnotherReallyLongVariantName2(_, _, _) => 0
   | ReallyLongVariantName {
@@ -2486,7 +2486,7 @@ let letsCombineTwoLongPatternsIntoOneCase = (x) =>
   };
 
 let letsPutAWhereClauseOnTheFirstTwo = (x) =>
-  switch (x) {
+  switch x {
   | AnotherReallyLongVariantName(_, _, _)
   | AnotherReallyLongVariantName2(_, _, _)
       when true => 0
@@ -2497,7 +2497,7 @@ let letsPutAWhereClauseOnTheFirstTwo = (x) =>
   };
 
 let letsPutAWhereClauseOnTheLast = (x) =>
-  switch (x) {
+  switch x {
   | AnotherReallyLongVariantName(_, _, _)
   | AnotherReallyLongVariantName2(_, _, _) => 0
   | ReallyLongVariantName {
@@ -2605,7 +2605,7 @@ module BMod = {
   let b = 10;
 };
 
-module CurriedSugar
+module CurriedSugar =
        /* Commenting before First curried functor arg */
        /* If these comments aren't formatted correctly
         * see how functor args' locations aren't set
@@ -2615,7 +2615,7 @@ module CurriedSugar
          A: ASig,
          /* Commenting before Second curried functor arg */
          B: BSig
-       ) = {
+       ) => {
   let result = A.a + B.b;
   /* Comment at bottom of module expression */
 };
