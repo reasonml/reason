@@ -53,7 +53,7 @@ type a =
   | A(bcd);
 
 let result =
-  switch (B) {
+  switch B {
   | B
   | C
   | D
