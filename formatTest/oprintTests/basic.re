@@ -95,14 +95,8 @@ module MyFunctor = fun (M: HasTT) => {
    */
 module MyFunctorResult = MyFunctor ({type tt = string;});
 
-module LookNoParensNeeded = MyFunctor {type tt = string;};
-
-module type SigResult = {let result:int;};
-
 module type ASig = {let a:int;};
 module type BSig = {let b:int;};
-module AMod = {let a = 10;};
-module BMod = {let b = 10;};
 
 module CurriedSugar (A:ASig, B:BSig) {
   let result = A.a + B.b;
