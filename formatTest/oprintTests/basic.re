@@ -101,3 +101,48 @@ module type BSig = {let b:int;};
 module CurriedSugar (A:ASig, B:BSig) {
   let result = A.a + B.b;
 };
+
+
+let addValues = fun (a:int, b:int) => {
+  a + b;
+};
+
+let myFunction = fun (a : int, b : int) : int => a + b;
+
+let functionReturnValueType (i:int, s:string): (int) => int = fun(x) => x + 1;
+
+let curriedFormOne (i:int, s:string) = s ++ string_of_int(i);
+
+let curriedFormTwo (i:int, x:int) :(int, int) = (i, x);
+/* let nonCurriedFormTwo = fun (i:int, x:int) (:(int, int)) => (i, x); */
+
+let curriedFormThree (i:int, (a:int, b:int):(int, int)) :(int, int, int) = (i, a, b);
+
+type myFuncType = (int, int) => int;
+
+let myFunc: myFuncType = fun (a,b) => a + b;
+
+let funcWithTypeLocallyAbstractTypes (type atype, type btype, a, b, c: (atype, btype) => unit) = c(a,b);
+
+type firstNamedArgShouldBeGroupedInParens =
+    (~first: (int) => int, ~second: int) => int;
+type allParensCanBeRemoved =
+    (~first: int) => ((~second: int) => ((~third: int) => int));
+type firstTwoShouldBeGroupedAndFirstThree =
+    (~first: ((int) => int) => int) => int;
+type firstNamedArgShouldBeGroupedInParensOpt =
+    (~first: ((int) => int)=?, ~second: list(int)=?) => int;
+
+type withThreeFields = {
+  name: string,
+  age: int,
+  occupation: string
+};
+
+let testRecord = {
+  name: "joe",
+  age: 20,
+  occupation: "engineer"
+};
+
+let makeRecordBase () {name: "Joe", age: 30, occupation: "Engineer"};
