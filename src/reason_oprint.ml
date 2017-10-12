@@ -493,7 +493,7 @@ and print_typargs ppf =
       pp_print_space ppf ();
       pp_print_string ppf "(";
       pp_open_box ppf 1;
-      print_typlist print_out_wrap_type "" ppf tyl;
+      print_typlist print_out_wrap_type ", " ppf tyl;
       pp_close_box ppf ();
       pp_print_string ppf ")"
 
@@ -510,8 +510,8 @@ let print_out_class_params ppf =
   function
     [] -> ()
   | tyl ->
-      fprintf ppf "@[<1>%a@]@ "
-        (print_list type_parameter (fun ppf -> fprintf ppf " "))
+      fprintf ppf "(@[<1>%a@])@ "
+        (print_list type_parameter (fun ppf -> fprintf ppf ",@ "))
         tyl
 
 let rec print_out_class_type ppf =
@@ -525,7 +525,7 @@ let rec print_out_class_type ppf =
       in
       fprintf ppf "@[%a%a@]" print_ident id pr_tyl tyl
   | Octy_arrow (lab, ty, cty) ->
-      fprintf ppf "@[%s%a =>@ %a@]" (if lab <> "" then lab ^ ":" else "")
+      fprintf ppf "@[%s(%a) =>@ %a@]" (if lab <> "" then lab ^ ":" else "")
         print_out_type_2 ty print_out_class_type cty
   | Octy_signature (self_ty, csil) ->
       let pr_param ppf =
@@ -746,16 +746,16 @@ and print_out_constr ppf (name, tyl,ret_type_opt) =
       | [] ->
           pp_print_string ppf name
       | _ ->
-          fprintf ppf "@[<2>%s %a@]" name
-            (print_typlist print_simple_out_type "") tyl
+          fprintf ppf "@[<2>%s(%a)@]" name
+            (print_typlist print_simple_out_type ",") tyl
       end
   | Some ret_type ->
       begin match tyl with
       | [] ->
           fprintf ppf "@[<2>%s:@ %a@]" name print_simple_out_type ret_type
       | _ ->
-          fprintf ppf "@[<2>%s %a :%a@]" name
-            (print_typlist print_simple_out_type "") tyl
+          fprintf ppf "@[<2>%s(%a) :%a@]" name
+            (print_typlist print_simple_out_type ",") tyl
             print_simple_out_type ret_type
       end
 

@@ -1,36 +1,43 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
-let run = () => "Basic Structures";
 
-let endOfRangeMustBeSimple = (a, b) => 10;
-let theSame = (a, b, c) => 20;
+let x1 = () => 1;
+let x2 = (a) => 1;
+let x3 = (a: int, b) => 1;
+let x4 = ((a,b)) => 1;
+let x5 = fun (a,b): int => 1;
+let x6 = (~x, ~y) => 1;
+let x7 = (~x: int, ~y: string) => 1;
+let x8 = (~x=5, ~y=?, ~z: option(string)=?, ()) => 1;
 
-type zed = {bar: ref(int)};
-let foo = ref(ref({bar: ref(10)}));
+type a = int;
+type b = float;
+type c = string;
+type t1 = (a) => b;
+type t2 = (a, b) => c;
+type t3 = ((a, b)) => c;
+type t4 = (~x: int, ~y: string) => c;
+type t5 = (~x: a=?) => b;
+
+type t6 = int;
+type t7('a) = list('a);
+type t8('a, 'b) = (list('a), 'b);
+type t9 = t8(string, int);
+
+class type restricted_point_type = {
+  pub get_x: int;
+  pub bump: unit;
+};
+class type t10('a) = {
+  pub thing: 'a;
+};
+class type t11('a, 'b) = {
+  pub thing: ('a, list('b))
+};
 
 module MyFirstModule = {
   let x = 0;
-  let y = x + x;
-  let a = 2
-  and b = 3;
   type i = int
   and n = string;
-};
-
-module type MySecondModuleType = {
-  type someType = int;
-  let x: int;
-  let y: int;
-};
-
-module MyLocalModule = {
-  type i = int;
-  let x:i = 10;
-};
-
-module MyLocalModule2: MySecondModuleType = {
-  type someType = int;
-  let x:someType = 10;
-  let y:someType = 20;
 };
 
 module type HasTT = {
@@ -69,69 +76,22 @@ module EmbedsSubPolyModule: HasSubPolyModule = {
   };
 };
 
-
 module InliningSig: {let x: int; let y:int;} = {
-  /*
-   * Comment inside of signature.
-   */
   let x = 10;
-  /* Inline comment inside signature. */
   let y = 20;
 };
 
 module MyFunctor = fun (M: HasTT) => {
   type reexportedTT = M.tt;
-  /* Inline comment inside module. */
-  /** Following special comment inside module. */
   let someValue = 1000;
 };
 
-/* Notice how
-   - Functors no longer require parens around argument.
-   - A final semicolon is required for module structures.
-   - We should eliminate both those requirements. See action items 13-14 at the
-   bottom of this file. [Actually, forgiving the trailing SEMI might not be
-   such a great idea].
-   */
 module MyFunctorResult = MyFunctor ({type tt = string;});
-
 module type ASig = {let a:int;};
 module type BSig = {let b:int;};
-
 module CurriedSugar (A:ASig, B:BSig) {
   let result = A.a + B.b;
 };
-
-
-let addValues = fun (a:int, b:int) => {
-  a + b;
-};
-
-let myFunction = fun (a : int, b : int) : int => a + b;
-
-let functionReturnValueType (i:int, s:string): (int) => int = fun(x) => x + 1;
-
-let curriedFormOne (i:int, s:string) = s ++ string_of_int(i);
-
-let curriedFormTwo (i:int, x:int) :(int, int) = (i, x);
-/* let nonCurriedFormTwo = fun (i:int, x:int) (:(int, int)) => (i, x); */
-
-let curriedFormThree (i:int, (a:int, b:int):(int, int)) :(int, int, int) = (i, a, b);
-
-type myFuncType = (int, int) => int;
-
-let myFunc: myFuncType = fun (a,b) => a + b;
-
-let funcWithTypeLocallyAbstractTypes (type atype, type btype, a, b, c: (atype, btype) => unit) = c(a,b);
-
-type firstNamedArgShouldBeGroupedInParens =
-    (~first: (int) => int, ~second: int) => int;
-type allParensCanBeRemoved =
-    (~first: int) => ((~second: int) => ((~third: int) => int));
-type firstTwoShouldBeGroupedAndFirstThree =
-    (~first: ((int) => int) => int) => int;
-type firstNamedArgShouldBeGroupedInParensOpt =
-    (~first: ((int) => int)=?, ~second: list(int)=?) => int;
 
 type withThreeFields = {
   name: string,
@@ -146,3 +106,28 @@ let testRecord = {
 };
 
 let makeRecordBase () {name: "Joe", age: 30, occupation: "Engineer"};
+
+
+type t =
+  | A
+  | B(int)
+  | C(int, int)
+  | D((int, int));
+
+
+class aClass(x) {
+  /* one value parameter x */
+  pub a1 = 0;
+  pub a2() = 0;
+  pub a3(x,y) = x + y;
+  pub a4(x,y) {
+    let result = x + y;
+    print_endline(" x + y = " ++ string_of_int(x) ++ " + " ++ string_of_int(y) ++ " = " ++ string_of_int(result));
+    result
+  };
+};
+
+
+
+
+
