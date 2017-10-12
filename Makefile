@@ -34,10 +34,9 @@ install:
 	./refmt_impl.native --help=groff > $(shell opam config var man)/man1/refmt.1
 
 test: build_with_outcome_test clean-tests
+	node ./formatTest/testOprint.js
 	./miscTests/rtopIntegrationTest.sh
 	./miscTests/jsxPpxTest.sh
-	# TODO(jared): enable once these are passing
-	# node ./formatTest/testOprint.js
 	cd formatTest; ./test.sh
 
 clean-tests:
