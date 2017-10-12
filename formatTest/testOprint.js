@@ -1,3 +1,4 @@
+/* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 
 const {exec, spawn} = require('child_process')
 const {promisify} = require('util')

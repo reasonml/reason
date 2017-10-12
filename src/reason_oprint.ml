@@ -378,7 +378,11 @@ and print_simple_out_type ppf =
   | Otyp_constr (id, tyl) ->
       pp_open_box ppf 0;
       print_ident ppf id;
-      print_typargs ppf tyl;
+      begin match tyl with
+      | [] -> ()
+      | _ ->
+        print_typargs ppf tyl;
+      end;
       pp_close_box ppf ()
   | Otyp_object (fields, rest) ->
     let dot = match rest with
@@ -462,17 +466,22 @@ and print_typlist print_elem sep ppf =
 and print_out_wrap_type ppf =
   function
   | (Otyp_constr (id, _::_)) as ty ->
-      fprintf ppf "@[<0>(%a)@]" print_out_type ty
+      print_out_type ppf ty
   | ty -> print_simple_out_type ppf ty
 and print_typargs ppf =
   function
     [] -> ()
-  | [ty1] -> pp_print_space ppf (); print_out_wrap_type ppf ty1
+  | [ty1] ->
+      pp_print_string ppf "(";
+      print_out_wrap_type ppf ty1;
+      pp_print_string ppf ")"
   | tyl ->
       pp_print_space ppf ();
+      pp_print_string ppf "(";
       pp_open_box ppf 1;
       print_typlist print_out_wrap_type "" ppf tyl;
-      pp_close_box ppf ()
+      pp_close_box ppf ();
+      pp_print_string ppf ")"
 
 let out_type = ref print_out_type
 
@@ -631,7 +640,7 @@ and print_out_sig_item ppf =
           fprintf ppf "@ = \"%s\"" s;
           List.iter (fun s -> fprintf ppf "@ \"%s\"" s) sl
     in
-    fprintf ppf "@[<2>%s %a :@ %a%a%a@]" kwd value_ident oval_name
+    fprintf ppf "@[<2>%s %a :@ %a%a%a;@]" kwd value_ident oval_name
         !out_type oval_type pr_prims oval_prims
         (fun ppf -> List.iter (fun a -> fprintf ppf "@ [@@@@%s]" a.oattr_name))
         oval_attributes
@@ -711,7 +720,7 @@ and print_out_type_decl kwd ppf td =
         print_private td.otype_private
         print_out_type ty
   in
-  fprintf ppf "@[<2>@[<hv 2>%t%a@]%t@]"
+  fprintf ppf "@[<2>@[<hv 2>%t%a@]%t;@]"
     print_name_params
     print_out_tkind ty
     print_constraints

@@ -1,3 +1,4 @@
+(* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. *)
 
 module Convert = Migrate_parsetree.Convert (Migrate_parsetree.OCaml_404) (Migrate_parsetree.OCaml_current)
 module ConvertBack = Migrate_parsetree.Convert (Migrate_parsetree.OCaml_current) (Migrate_parsetree.OCaml_404)
