@@ -84,6 +84,7 @@ Random Stack Overflow answer: https://stackoverflow.com/questions/9897358/ocaml-
 - [Special case printing of foo(bar)##value](https://github.com/facebook/reason/pull/1481)
 - [Use ~ for named args](https://github.com/facebook/reason/pull/1483/)
 - [Bring back parentheses-less `switch foo`](https://github.com/facebook/reason/pull/1476)
+- [Remove extra parens printed in `type a = Foo((unit => unit))`](https://github.com/facebook/reason/pull/1491)
 
 ### Debugging Grammar Conflicts
 
