@@ -151,6 +151,8 @@ let parenthesize_if_neg ppf fmt v isneg =
   fprintf ppf fmt v;
   if isneg then pp_print_char ppf ')'
 
+
+
 let print_out_value ppf tree =
   let rec print_tree_1 wrap ppf =
     function
@@ -267,31 +269,39 @@ let rec print_out_type ppf =
   | ty ->
       print_out_type_1 ppf ty
 
+and print_arg ppf (lab, typ) =
+  let suffix =
+    match get_label lab with
+    | Nonlabeled -> ""
+    | Labeled lab ->
+        pp_print_string ppf "~";
+        pp_print_string ppf lab;
+        pp_print_string ppf ": ";
+        ""
+    | Optional lab ->
+        pp_print_string ppf "~";
+        pp_print_string ppf lab;
+        pp_print_string ppf ": ";
+        "=?"
+  in
+  print_out_type_2 ppf typ;
+  pp_print_string ppf suffix;
+
 and print_out_type_1 ppf =
   function
     Otyp_arrow (lab, ty1, ty2) ->
+      let rec collect_args args typ = match typ with
+        | Otyp_arrow (lab, ty1, ty2) -> collect_args (args @ [(lab, ty1)]) ty2
+        | _ -> (args, typ)
+      in
       pp_open_box ppf 0;
       pp_print_string ppf "(";
-      let suffix =
-        match get_label lab with
-        | Nonlabeled -> ""
-        | Labeled lab ->
-            pp_print_string ppf "~";
-            pp_print_string ppf lab;
-            pp_print_string ppf ": ";
-            ""
-        | Optional lab ->
-            pp_print_string ppf "~";
-            pp_print_string ppf lab;
-            pp_print_string ppf ": ";
-            "=?"
-      in
-      print_out_type_2 ppf ty1;
-      pp_print_string ppf suffix;
+      let (args, result) = collect_args [(lab, ty1)] ty2 in
+      print_list print_arg (fun ppf -> fprintf ppf ",@ ") ppf args;
       pp_print_string ppf ")";
       pp_print_string ppf " =>";
       pp_print_space ppf ();
-      print_out_type_1 ppf ty2;
+      print_out_type_1 ppf result;
       pp_close_box ppf ()
   | ty -> print_out_type_2 ppf ty
 and print_out_type_2 ppf =
