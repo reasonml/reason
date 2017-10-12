@@ -2351,11 +2351,11 @@ let format_labeled_argument is_punned term = function
   | Nolabel -> term
   | Labelled lbl ->
     if is_punned lbl
-    then label (atom namedArgSym) term
+    then makeList [atom namedArgSym; term]
     else label (atom (namedArgSym ^ lbl)) ~space:true term
   | Optional lbl ->
     if is_punned lbl
-    then label (atom namedArgSym) (label term (atom "?"))
+    then makeList [atom namedArgSym; label term (atom "?")]
     else label (atom (namedArgSym ^ lbl ^ "?")) ~space:true term
 
 let isLongIdentWithDot = function
@@ -2595,9 +2595,9 @@ class printer  ()= object(self:'self)
     match lbl with
     | Nolabel -> typ
     | Labelled lbl ->
-      makeList ~sep:" " [atom (namedArgSym ^ lbl ^ ":"); typ]
+        makeList ~sep:" " [atom (namedArgSym ^ lbl ^ ":"); typ]
     | Optional lbl ->
-      makeList ~sep:" " [atom (namedArgSym ^ lbl ^ ":"); label typ (atom "=?")]
+        makeList ~sep:" " [atom (namedArgSym ^ lbl ^ ":"); label typ (atom "=?")]
 
   method type_param (ct, a) =
     makeList [atom (type_variance a); self#core_type ct]
@@ -3336,7 +3336,7 @@ class printer  ()= object(self:'self)
     let param = match lbl with
       | Nolabel -> term
       | Labelled lbl | Optional lbl when is_punned_labelled_pattern pat lbl ->
-        label (atom namedArgSym) term
+          makeList [atom namedArgSym; term]
       | Labelled lbl | Optional lbl ->
           let lblLayout= makeList ~sep:" " ~break:Never [atom (namedArgSym ^ lbl); atom "as"] in
           label lblLayout ~space:true term
@@ -6366,9 +6366,9 @@ class printer  ()= object(self:'self)
     let param = match l with
       | Nolabel -> term
       | Labelled lbl when is_punned_labelled_expression e lbl ->
-        label (atom namedArgSym) term
+        makeList [atom namedArgSym; term]
       | Optional lbl when is_punned_labelled_expression e lbl ->
-        label (atom namedArgSym) (label term (atom "?"))
+        makeList [atom namedArgSym; label term (atom "?")]
       | Labelled lbl ->
         label (atom (namedArgSym ^ lbl ^ "=")) term
       | Optional lbl ->

@@ -867,3 +867,12 @@ let foo(x,~x as bar,~z,~foo as bar,~foo as z) {
 };
 
 let zzz = myFunc(1, 2, [||]);
+
+/* 1492 */
+let registerEventHandlers =
+    (
+      ~window: Window.t,
+      ~mouseDown:
+          option(((~button: Events.buttonStateT, ~state: Events.stateT, ~x: int, ~y: int) => unit))=?,
+      ()
+    ) => 1;
