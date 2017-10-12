@@ -2790,7 +2790,7 @@ class printer  ()= object(self:'self)
       let lst = if print_bar then [atom "|"; sourceMappedName] else [sourceMappedName] in
       makeList ~postSpace:true lst in
     let ampersand_helper i arg =
-      let ct = self#non_arrowed_non_simple_core_type arg in
+      let ct = self#core_type arg in
       let ct = match arg.ptyp_desc with
         | Ptyp_tuple _ -> ct
         | _ -> makeTup [ct]
@@ -2804,7 +2804,15 @@ class printer  ()= object(self:'self)
       | Pcstr_record r -> [self#record_declaration r]
       | Pcstr_tuple [] -> []
       | Pcstr_tuple l when polymorphic -> List.mapi ampersand_helper l
-      | Pcstr_tuple l -> [makeTup (List.map self#non_arrowed_non_simple_core_type l)]
+      (* Here's why this works. With the new syntax, all the args, are already inside of
+        a safely guarded place like Constructor(here, andHere). Compare that to the
+        previous syntax Constructor here andHere. In the previous syntax, we needed to
+        require that we print "non-arrowed" types for here, and andHere to avoid
+        something like Constructor a=>b c=>d. In the new syntax, we don't care if here
+        and andHere have unguarded arrow types like a=>b because they're safely
+        separated by commas.
+       *)
+      | Pcstr_tuple l -> [makeTup (List.map self#core_type l)]
     in
     let gadtRes = match pcd_res with
       | None -> None
@@ -3007,6 +3015,16 @@ class printer  ()= object(self:'self)
     let constraints = List.map makeConstraint x.ptype_cstrs in
     (equalInitiatedSegments, constraints)
 
+  (* "non-arrowed" means "a type where all arrows are inside at least one level of parens"
+
+    z => z: not a "non-arrowed" type.
+    (a, b): a "non-arrowed" type.
+    (z=>z): a "non-arrowed" type because the arrows are guarded by parens.
+
+    A "non arrowed, non simple" type would be one that is not-arrowed, and also
+    not "simple". Simple means it is "clearly one unit" like (a, b), identifier,
+    "hello", None.
+  *)
   method non_arrowed_non_simple_core_type x =
     let {stdAttrs} = partitionAttributes x.ptyp_attributes in
     if stdAttrs <> [] then
