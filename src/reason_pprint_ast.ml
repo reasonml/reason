@@ -3092,7 +3092,9 @@ class printer  ()= object(self:'self)
           SourceMap (li.loc, ensureSingleTokenSticksToLabel (self#longident_loc li))
         | Ptyp_constr (li, l) ->
             (match l with
-            | [{ptyp_desc = Ptyp_object (l, o) }] when isJsDotTLongIdent li.txt ->
+            | [{ptyp_desc = Ptyp_object (l, o) }] when isJsDotTLongIdent li.txt && List.length l > 0 ->
+                (* should have one or more rows, Js.t({..}) should print as Js.t({..})
+                 * {..} has a totally different meaning than Js.t({..}) *)
                 self#unparseObject ~withStringKeys:true l o
             | _ ->
               (* The single identifier has to be wrapped in a [ensureSingleTokenSticksToLabel] to
