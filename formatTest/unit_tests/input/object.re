@@ -24,3 +24,7 @@ let five = 2 <..> 3;
 type closedObjSugar = Js.t({. foo: bar, baz: int});
 
 type openObjSugar = Js.t({.. x: int, y: int});
+
+type x = Js.t({.});
+
+type y = Js.t({..});
