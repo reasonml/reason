@@ -85,6 +85,7 @@ Random Stack Overflow answer: https://stackoverflow.com/questions/9897358/ocaml-
 - [Use ~ for named args](https://github.com/facebook/reason/pull/1483/)
 - [Bring back parentheses-less `switch foo`](https://github.com/facebook/reason/pull/1476)
 - [Remove extra parens printed in `type a = Foo((unit => unit))`](https://github.com/facebook/reason/pull/1491)
+- [Don't apply sugar to Js.t({.}) and Js.t({..})](https://github.com/facebook/reason/pull/1502)
 
 ### Debugging Grammar Conflicts
 
