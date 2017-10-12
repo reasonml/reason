@@ -22,7 +22,7 @@ build_without_utop: compile_error setup_convenient_bin_links precompile
 	chmod +x $(shell pwd)/_build/src/*.sh
 
 build: compile_error setup_convenient_bin_links precompile
-	./build.native build --utop true
+	./build.native build --utop true --outcome_test true
 	chmod +x $(shell pwd)/_build/src/*.sh
 
 install:
