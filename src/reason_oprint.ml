@@ -210,7 +210,7 @@ let print_out_value ppf tree =
       [] -> ()
     | (name, tree) :: fields ->
         if not first then fprintf ppf ",@ ";
-        fprintf ppf "@[<1>%a@ :@ %a@]" print_ident name (cautious (print_tree_1 false))
+        fprintf ppf "@[<1>%a@:@ %a@]" print_ident name (cautious (print_tree_1 false))
           tree;
         print_fields false ppf fields
   and print_tree_list print_item sep ppf tree_list =
@@ -528,11 +528,11 @@ and print_out_class_sig_item ppf =
       fprintf ppf "@[<2>as %a =@ %a@]" print_out_type ty1
         print_out_type ty2
   | Ocsg_method (name, priv, virt, ty) ->
-      fprintf ppf "@[<2>%s%s%s :@ %a@]"
+      fprintf ppf "@[<2>%s%s%s:@ %a@]"
         (if priv then "pri " else "pub ") (if virt then "virtual " else "")
         name print_out_type ty
   | Ocsg_value (name, mut, vr, ty) ->
-      fprintf ppf "@[<2>val %s%s%s :@ %a@]"
+      fprintf ppf "@[<2>val %s%s%s:@ %a@]"
         (if mut then "mutable " else "")
         (if vr then "virtual " else "")
         name print_out_type ty
@@ -618,7 +618,7 @@ and print_out_sig_item ppf =
   | Osig_module (name, Omty_alias id, _) ->
       fprintf ppf "@[<2>module %s =@ %a@]" name print_ident id
   | Osig_module (name, mty, rs) ->
-      fprintf ppf "@[<2>%s %s :@ %a@]"
+      fprintf ppf "@[<2>%s %s:@ %a@]"
         (match rs with Orec_not -> "module"
                     | Orec_first -> "module rec"
                     | Orec_next -> "and")
@@ -640,7 +640,7 @@ and print_out_sig_item ppf =
           fprintf ppf "@ = \"%s\"" s;
           List.iter (fun s -> fprintf ppf "@ \"%s\"" s) sl
     in
-    fprintf ppf "@[<2>%s %a :@ %a%a%a;@]" kwd value_ident oval_name
+    fprintf ppf "@[<2>%s %a:@ %a%a%a@]" kwd value_ident oval_name
         !out_type oval_type pr_prims oval_prims
         (fun ppf -> List.iter (fun a -> fprintf ppf "@ [@@@@%s]" a.oattr_name))
         oval_attributes
@@ -664,7 +664,7 @@ and print_out_sig_item ppf =
       (* fprintf ppf "@ \"%s\"" s *)
     (* ) sl *)
     (* in *)
-    (* fprintf ppf "@[<2>%s %a :@ %a%a@]" kwd value_ident oval_name *)
+    (* fprintf ppf "@[<2>%s %a:@ %a%a@]" kwd value_ident oval_name *)
         (* !out_type oval_type pr_prims oval_prims *)
 (* #end *)
 
@@ -679,11 +679,11 @@ and print_out_type_decl kwd ppf td =
   let type_defined ppf =
     match td.otype_params with
       [] -> pp_print_string ppf td.otype_name
-    | [param] -> fprintf ppf "@[%s@ %a@]" td.otype_name type_parameter param
+    | [param] -> fprintf ppf "@[%s(%a)@]" td.otype_name type_parameter param
     | _ ->
-        fprintf ppf "@[%s@ @[%a@]@]"
+        fprintf ppf "@[%s(@[%a@])@]"
           td.otype_name
-          (print_list type_parameter (fun ppf -> fprintf ppf "@ "))
+          (print_list type_parameter (fun ppf -> fprintf ppf ",@ "))
           td.otype_params
   in
   let print_manifest ppf =
@@ -720,7 +720,7 @@ and print_out_type_decl kwd ppf td =
         print_private td.otype_private
         print_out_type ty
   in
-  fprintf ppf "@[<2>@[<hv 2>%t%a@]%t;@]"
+  fprintf ppf "@[<2>@[<hv 2>%t%a@]%t@]"
     print_name_params
     print_out_tkind ty
     print_constraints
@@ -738,7 +738,7 @@ and print_out_constr ppf (name, tyl,ret_type_opt) =
   | Some ret_type ->
       begin match tyl with
       | [] ->
-          fprintf ppf "@[<2>%s :@ %a@]" name print_simple_out_type ret_type
+          fprintf ppf "@[<2>%s:@ %a@]" name print_simple_out_type ret_type
       | _ ->
           fprintf ppf "@[<2>%s %a :%a@]" name
             (print_typlist print_simple_out_type "") tyl
@@ -747,7 +747,7 @@ and print_out_constr ppf (name, tyl,ret_type_opt) =
 
 
 and print_out_label ppf (name, mut, arg) =
-  fprintf ppf "@[<2>%s%s :@ %a@]," (if mut then "mutable " else "") name
+  fprintf ppf "@[<2>%s%s:@ %a@]," (if mut then "mutable " else "") name
     print_out_type arg
 
 and print_out_extension_constructor ppf ext =
@@ -837,9 +837,9 @@ let rec print_items ppf =
   | (tree, valopt) :: items ->
       begin match valopt with
         Some v ->
-          fprintf ppf "@[<2>%a =@ %a@]" print_out_sig_item tree
+          fprintf ppf "@[<2>%a =@ %a;@]" print_out_sig_item tree
             print_out_value v
-      | None -> fprintf ppf "@[%a@]" print_out_sig_item tree
+      | None -> fprintf ppf "@[%a;@]" print_out_sig_item tree
       end;
       if items <> [] then fprintf ppf "@ %a" print_items items
 

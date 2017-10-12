@@ -70,6 +70,7 @@ const main = async () => {
 
     const {result, error} = await outcomePrint(full)
 
+    console.log(result)
     if (error) {
       return `Printing failure ${name}:\n\n${error}`
     }
