@@ -271,20 +271,24 @@ and print_out_type_1 ppf =
   function
     Otyp_arrow (lab, ty1, ty2) ->
       pp_open_box ppf 0;
+      pp_print_string ppf "(";
       let suffix =
         match get_label lab with
         | Nonlabeled -> ""
         | Labeled lab ->
+            pp_print_string ppf "~";
             pp_print_string ppf lab;
-            pp_print_string ppf "::";
+            pp_print_string ppf ": ";
             ""
         | Optional lab ->
+            pp_print_string ppf "~";
             pp_print_string ppf lab;
-            pp_print_string ppf "::";
-            "?"
+            pp_print_string ppf ": ";
+            "=?"
       in
       print_out_type_2 ppf ty1;
       pp_print_string ppf suffix;
+      pp_print_string ppf ")";
       pp_print_string ppf " =>";
       pp_print_space ppf ();
       print_out_type_1 ppf ty2;
