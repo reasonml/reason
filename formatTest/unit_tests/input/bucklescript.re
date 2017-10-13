@@ -73,3 +73,15 @@ let isArrayPolyfill: [@bs] ((int) => bool) = [%bs.raw
 ];
 
 this#arrayInObject[count] = 1;
+
+/* supports trailing comma */
+type stream('a) = {. "observer": ('a => unit) => unit,};
+
+/* #1451: Js.nullable(int) -> ?int  */
+type nullableObjSugar = Js.t({. x: Js.nullable(int)});
+
+type x = {. "x" ? : int};
+
+type y = {. "y"?: string};
+
+type z = {.. "a"?: foo, "x"?: bar, "z": Js.nullable(baz)};

@@ -5059,18 +5059,26 @@ class printer  ()= object(self:'self)
       let l = extractStdAttrs attrs in
       (match l with
        | [] ->
-           let rowKey = if withStringKeys then
-             (makeList ~wrap:("\"", "\"") [atom s])
-           else (atom s)
+           (* Does an object row contain a Js.nullable?
+            * {. "foo": Js.nullable(int) } ?*)
+           let (hasJsNullablePolyType, children) =  (match ct.ptyp_desc with
+              | Ptyp_constr (li, l) when isJsNullableIdent li.txt -> (true, l)
+              | _ -> (false, []))
            in
-           let typ =  (match ct.ptyp_desc with
-            | Ptyp_constr (li, l) when isJsNullableIdent li.txt ->
-                (* prints `Js.nullable(int)`  as `?int` *)
-               makeList [atom "?"; self#core_type (List.hd l)]
-            | _ -> (self#core_type ct))
-          in
+           let rowKey =
+             if withStringKeys then
+               (makeList ~wrap:("\"", "\"") [atom s])
+             else atom s
+           in
+           (* {. "foo": Js.nullable(int) } -> print "foo" as "foo"? *)
+           let key = if hasJsNullablePolyType then makeList [rowKey; atom "?"] else rowKey in
+           (* prints `Js.nullable(int)` as int, if there's a Js.nullable *)
+           let typ =
+             if hasJsNullablePolyType then self#core_type (List.hd children)
+             else self#core_type ct
+           in
            label ~space:true
-                 (label rowKey (atom ":"))
+                 (label key (atom ":"))
                  typ
        | _::_ ->
          makeList

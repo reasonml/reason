@@ -3547,11 +3547,34 @@ label_declaration:
   lseparated_nonempty_list(COMMA, string_literal_lbl) COMMA? { $1 };
 
 string_literal_lbl:
-  | STRING COLON nullable_poly_type
-    {
+  | STRING as_loc(QUESTION?) COLON poly_type
+    { (* Parses `"foo"? :int` & `"foo": int`
+       * Notice the space between `?` and `:`.*)
       let loc = mklocation $symbolstartpos $endpos in
       let (s, _) = $1 in
-      (Type.field (mkloc s loc) $3 ~loc, [])
+      let pt = (match $2.txt with
+        | None -> $4
+        | Some _ ->
+            let { loc } = $2 in
+            let jsNullableCtr = { txt = Longident.parse "Js.nullable"; loc} in
+            mktyp ~loc (Ptyp_constr(jsNullableCtr, [$4]))) in
+      (Type.field (mkloc s loc) pt ~loc, [])
+    }
+  | STRING as_loc(PREFIXOP) poly_type
+    { (* Given {. "foo"?: int}, the lexer will return `?:` as a PREFIXOP at this point.
+       * It will not parse as STRING QUESTION COLON poly_type. *)
+      match $2.txt with
+      | "?:" ->
+        let (s, _) = $1 in
+        let { loc } = $2 in
+        let pt =
+          let jsNullableCtr = { txt = Longident.parse "Js.nullable"; loc} in
+           mktyp ~loc (Ptyp_constr(jsNullableCtr, [$3])) in
+        (Type.field (mkloc s loc) pt ~loc, [])
+      | _ ->
+        Location.raise_errorf ~loc:$2.loc
+          "Are you trying to define a Js.nullable object row, e.g. {. \"foo\": Js.nullable(int)}? Try entering something like {. \"foo\"?: int}"
+
     }
   ;
 
@@ -3641,17 +3664,6 @@ with_constraint:
   | MODULE as_loc(UIDENT) COLONEQUAL as_loc(mod_ext_longident)
       { Pwith_modsubst ($2, $4) }
 ;
-
-(* #1451, use only with object types *)
-nullable_poly_type:
-  | poly_type
-    { $1 }
-  | QUESTION poly_type
-    (* {. "x": ?int } -> ?int, sugar for Js.nullable(int) *)
-    { let loc = mklocation $symbolstartpos $endpos in
-      let jsNullableCtr = { txt = Longident.parse "Js.nullable"; loc} in
-      mktyp ~loc (Ptyp_constr(jsNullableCtr, [$2])) }
-  ;
 
 /* Polymorphic types */
 
