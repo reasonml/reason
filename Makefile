@@ -21,6 +21,10 @@ build_without_utop: compile_error setup_convenient_bin_links precompile
 	./build.native build --utop false
 	chmod +x $(shell pwd)/_build/src/*.sh
 
+build_with_outcome_test: compile_error setup_convenient_bin_links precompile
+	./build.native build --utop true --outcome_test true
+	chmod +x $(shell pwd)/_build/src/*.sh
+
 build: compile_error setup_convenient_bin_links precompile
 	./build.native build --utop true
 	chmod +x $(shell pwd)/_build/src/*.sh
@@ -29,9 +33,11 @@ install:
 	opam pin add reason . -y
 	./refmt_impl.native --help=groff > $(shell opam config var man)/man1/refmt.1
 
-test: build clean-tests
+test: build_with_outcome_test clean-tests
 	./miscTests/rtopIntegrationTest.sh
 	./miscTests/jsxPpxTest.sh
+	# TODO(jared): enable once these are passing
+	# node ./formatTest/testOprint.js
 	cd formatTest; ./test.sh
 
 clean-tests:

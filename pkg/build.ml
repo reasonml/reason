@@ -9,6 +9,7 @@ let menhir_options =
 let utop = Conf.(key "utop" bool ~absent:false)
 let native = Conf.(key "native" bool ~absent:false)
 let native_dynlink = Conf.(key "native-dynlink" bool ~absent:false)
+let outcome_test = Conf.(key "outcome_test" bool ~absent:false)
 let _ = native
 let _ = native_dynlink
 
@@ -45,6 +46,7 @@ let () =
     Pkg.lib ~exts:(Exts.exts [".cmo"]) "src/reason_toploop";
     Pkg.lib ~cond:(Conf.value c utop) ~exts:(Exts.exts [".cmo"]) "src/reason_utop";
     Pkg.bin ~auto:true "src/refmt_impl" ~dst:"refmt";
+    Pkg.bin ~cond:(Conf.value c outcome_test) "src/testOprint" ~dst:"testOprint";
     Pkg.bin ~auto:true "src/ocamlmerlin_reason" ~dst:"ocamlmerlin-reason";
     Pkg.bin ~auto:false "src/rtop.sh" ~dst:"rtop";
     Pkg.bin ~auto:false "src/rtop_init.ml" ~dst:"rtop_init.ml";
