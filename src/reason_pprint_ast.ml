@@ -4998,7 +4998,8 @@ class printer  ()= object(self:'self)
       let theRow = match (e.pexp_desc, shouldPun, allowPunning) with
         (* record value punning. Turns {foo: foo, bar: 1} into {foo, bar: 1} *)
         (* also turns {Foo.bar: bar, baz: 1} into {Foo.bar, baz: 1} *)
-        | (Pexp_ident {txt = ident}, true, true) when Longident.last li.txt = Longident.last ident ->
+        (* don't turn {bar: Foo.bar, baz: 1} into {bar, baz: 1}, naturally *)
+        | (Pexp_ident {txt = Lident value}, true, true) when Longident.last li.txt = value ->
           makeList (maybeQuoteFirstElem li (if appendComma then [comma] else []))
         | _ ->
           let (sweet, argsList, return) = self#curriedPatternsAndReturnVal e in

@@ -731,6 +731,19 @@ module Foo = {
   type bar = {foo: Baz.foo};
 };
 
+/* Don't pun field names that aren't "simple" */
+type foo = {
+  bar: Baz.bar,
+  qux,
+  fooo: Fooo.fooo
+};
+
+let moreFoo = {
+  bar: Baz.bar,
+  qux,
+  fooo: Fooo.fooo
+};
+
 /* record value punning */
 let props = {title: "hi"};
 
