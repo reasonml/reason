@@ -1,4 +1,16 @@
 
+/**
+ * Test our outcome printer!
+ *
+ * For information on what that is, check out the comment at the top of `reason_oprint.ml`.
+ *
+ * What we're doing here is:
+ * -> run `testOprint` on a test file, which then prints out the signature of that file using our outcome printer
+ * -> try to parse what we printed with normal refmt.
+ *
+ * If our outcome printer prints something that's no longer valid syntax, we error!
+ */
+
 const {exec, spawn} = require('child_process')
 const {promisify} = require('util')
 const execPromise = promisify(exec)

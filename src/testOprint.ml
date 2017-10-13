@@ -1,4 +1,17 @@
 
+(**
+ * See `testOprint.js` for how this gets run.
+ *
+ * In order to test our outcome printer, we parse & typecheck the code provided on stin.
+ * That gives us a `Typedtree` (like an AST but with all the types included), which includes
+ * the `signature` type of the module we just processed.
+ * From there, `Printtyp` will helpfully convert the `signature` into something that our
+ * outcome printer can handle.
+ *
+ * Outcome printers are mostly used with Repl's like utop or tools like Merlin, so there's
+ * not a super easy path to "test it out", but this setup is hopefully not too complicated.
+ *)
+
 module Convert = Migrate_parsetree.Convert (Migrate_parsetree.OCaml_404) (Migrate_parsetree.OCaml_current)
 module ConvertBack = Migrate_parsetree.Convert (Migrate_parsetree.OCaml_current) (Migrate_parsetree.OCaml_404)
 
