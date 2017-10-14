@@ -1,0 +1,43 @@
+# Copyright (c) 2015-present, Facebook, Inc. All rights reserved.
+
+version = "%{version}%"
+description = "Reason: Syntax & Toolchain for OCaml"
+error(pkg_camlp4) = "reason is incompatible with camlp4"
+requires = "compiler-libs result menhirLib reason.parser"
+
+# Batch compilation
+archive(syntax, preprocessor, utf8) = "-ignore"
+# This preprocessor doesn't seem to be installed
+preprocessor = "ocamlreason_preprocessor_where_does_this_end_up"
+
+# Toplevel
+archive(byte, toploop, -pkg_utop) += "reason_toploop.cmo"
+archive(byte, toploop, pkg_utop) += "reason_utop.cmo"
+
+archive(byte) = "reason.cma"
+archive(native) = "reason.cmxa"
+
+package "parser" (
+  archive(byte) = "easy_format.cmo reasonparser.cma"
+  archive(native) = "easy_format.cmx reasonparser.cmxa"
+)
+
+package "lib" (
+  version = "%{version}%"
+  description = "Library version of reason"
+  requires = "compiler-libs.common menhirLib reason.parser"
+
+  archive(byte) = "reason.cma"
+  archive(native) = "reason.cmxa"
+  archive(native, plugin) = "reason.cmxs"
+)
+
+package "lib_without_utop" (
+  version = "%{version}%"
+  description = "Library version of reason without utop - suitable for compilation to JS"
+  requires = "compiler-libs.common menhirLib reason.parser"
+
+  archive(byte) = "reason_without_utop.cma"
+  archive(native) = "reason_without_utop.cmxa"
+  archive(native, plugin) = "reason_without_utop.cmxs"
+)

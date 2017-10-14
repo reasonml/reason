@@ -1,0 +1,7 @@
+*.messages binary
+
+docs/highlightJs/** binary
+docs/vendor/** binary
+docs/flatdoc.js binary
+
+bspacks/bspack_source/* binary

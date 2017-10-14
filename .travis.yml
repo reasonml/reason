@@ -1,0 +1,23 @@
+language: objective-c
+osx_image: xcode7.3
+before_install:
+  - nvm install v8.7.0
+  - brew update
+  - brew install opam
+  - opam init
+  - opam switch "$OCAML_VERSION"
+  - eval `opam config env`
+  - opam update
+before_script:
+  - opam pin add -y reason .
+script:
+  - make test
+  - git diff --exit-code
+env:
+  - OCAML_VERSION=4.02.3
+  - OCAML_VERSION=4.03.0
+  - OCAML_VERSION=4.04.0
+notifications:
+  email:
+    - chenglou@fb.com
+    - reason@cloudwalk.me
