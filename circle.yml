@@ -24,5 +24,3 @@ test:
 machine:
   node:
     version: 8.7.0
-  xcode:
-    version: 9.0
