@@ -110,4 +110,4 @@ type x = {. "x"?: int};
 
 type y = {. "y"?: string};
 
-type z = {.. "a"?: foo, "x"?: bar, "z"?: crux};
+type z = {.. "a"?: foo, "x"?: bar, "z"?: baz};
