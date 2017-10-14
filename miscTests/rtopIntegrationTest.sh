@@ -18,7 +18,7 @@ export TERM=
 echo "Testing rtop..."
 echo "let f = (a) => a;" \
 | utop-full -init src/rtop_init.ml -I $HOME \
-| grep "let f : 'a => 'a = <fun>" > /dev/null
+| grep "let f : ('a) => 'a = <fun>" > /dev/null
 if [ $? -ne 0 ]; then
   echo "rtop is failing! Failed to evaluate \`let f = (a) => a;\`"
   exit 1
