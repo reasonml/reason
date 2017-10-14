@@ -160,6 +160,10 @@ As you can see from other parts in the parser, many do have a `~loc` assigned to
       }
 ```
 
+## Testing Rtop
+
+Testing rtop changes is a little bit complicated. You might have seen that your changes of the parser or printer don't affect `rtop` when you run it. Instead, you need to do `opam pin add -y reason .` and _then_ run `rtop` to see the Reason changes reflected.
+
 ## Working With PPX
 
 reactjs_jsx_ppx_v2/v3 uses the ppx system. It works on the AST. It helps being able to see the AST of a particular snippet. Assuming you've written some code in a file `foo.re`, run the following incantation to output the code's AST:
