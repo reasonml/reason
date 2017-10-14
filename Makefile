@@ -38,7 +38,6 @@ test: build_with_outcome_test clean-tests
 	./miscTests/jsxPpxTest.sh
 	# TODO(jared): enable once these are passing
 	# node ./formatTest/testOprint.js
-	node ./test.js
 	cd formatTest; ./test.sh
 
 clean-tests:
