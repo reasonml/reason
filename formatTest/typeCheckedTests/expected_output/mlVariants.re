@@ -4,9 +4,9 @@ type polyVariantsInMl = [
   | `StillAnIntTuple(int, int)
 ];
 
-let intTuple = `IntTuple(1, 2);
+let intTuple = `IntTuple((1, 2));
 
-let stillAnIntTuple = `StillAnIntTuple(4, 5);
+let stillAnIntTuple = `StillAnIntTuple((4, 5));
 
 let sumThem =
   fun

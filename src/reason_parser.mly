@@ -2801,7 +2801,12 @@ simple_expr_template_constructor:
     }
   | name_tag
     mark_position_exp
-      ( non_labeled_argument_list   { mkexp (Pexp_tuple($1)) }
+      ( non_labeled_argument_list
+        { (* only wrap in a tuple if there are more than one arguments *)
+          match $1 with
+          | [x] -> x
+          | l -> mkexp (Pexp_tuple(l))
+        }
       | simple_expr_direct_argument { $1 }
       )
     { mkexp(Pexp_variant($1, Some $2)) }
