@@ -380,3 +380,18 @@ type Graph.node += pri Node = Expr.Node;
 type Graph.node += pri | Node = Expr.Node | Atom = Expr.Atom;
 
 MyConstructorWithSingleUnitArg(());
+
+/* #1510: keep ({ and }) together on the same line when breaking */
+Delete({ uuid: json |> Util.member("uuid") |> Util.to_string });
+Delete((someLongStuf, someOtherLongStuff, okokokok));
+Delete([someLongStuf, someOtherLongStuff, okokokok]);
+Delete([|someLongStuf, someOtherLongStuff, okokokok|]);
+Delete([someLongStuf, someOtherLongStuff, okokokok, ...veryES6]);
+Delete({pub x = methodOne; pub y = methodTwo; pub z = methodThisBreaks});
+
+`Delete({ uuid: json |> Util.member("uuid") |> Util.to_string });
+`Delete((someLongStuf, someOtherLongStuff, okokokok));
+`Delete([someLongStuf, someOtherLongStuff, okokokok]);
+`Delete([|someLongStuf, someOtherLongStuff, okokokok|]);
+`Delete([someLongStuf, someOtherLongStuff, okokokok, ...veryES6]);
+`Delete({pub x = methodOne; pub y = methodTwo; pub z = methodThisBreaks});

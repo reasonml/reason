@@ -2392,6 +2392,28 @@ let is_direct_pattern x = x.ppat_attributes = [] && match x.ppat_desc with
   | Ppat_construct ( {txt= Lident"()"}, None)
   | Ppat_construct ( {txt= Lident"::"}, Some _) -> true
   | _ -> false
+
+(* Some cases require special formatting when there's a function application
+ * with a single argument containing some kind of structure with braces/parens/brackets.
+ * Example: `foo({a: 1, b: 2})` needs to be formatted as
+ *  foo({
+ *    a: 1,
+ *    b: 2
+ *  })
+ *  when the line length dictates breaking. Notice how `({` and `})` 'hug'.
+ *  Also applies to (poly)variants because they can be seen as a form of "function application".
+ *  This function says if a list of expressions fulfills the need to be formatted like
+ *  the example above. *)
+let isSingleArgParenApplication = function
+  | [{pexp_attributes = []; pexp_desc = Pexp_record _}]
+  | [{pexp_attributes = []; pexp_desc = Pexp_tuple _}]
+  | [{pexp_attributes = []; pexp_desc = Pexp_array _}]
+  | [{pexp_attributes = []; pexp_desc = Pexp_object _}] -> true
+  | [{pexp_attributes = []; pexp_desc = Pexp_extension (s, _)}] when s.txt = "bs.obj" -> true
+  | [({pexp_attributes = []; pexp_desc} as exp)] when (is_simple_list_expr exp) -> true
+  | _ -> false
+
+
 (* Flattens a resolvedRule into a list of infixChain nodes.
  * When foo |> f |> z gets parsed, we get the following tree:
  *         |>
@@ -4678,11 +4700,18 @@ class printer  ()= object(self:'self)
       (* special printing: MyConstructor(()) -> MyConstructor() *)
       | Pexp_tuple l when is_single_unit_construct l ->
           (false, atom "()")
+      | Pexp_tuple l when polyVariant == true ->
+          (false, self#unparseSequence ~wrap:("(", ")") ~construct:`Tuple l)
       | Pexp_tuple l ->
         (* There is no ambiguity when the number of tuple components is 1.
              We don't need put implicit_arity in that case *)
-        (List.length l > 1 && not arityIsClear,
-         makeTup (List.map self#unparseConstraintExpr l))
+        (match l with
+        | exprList when isSingleArgParenApplication exprList ->
+            (false, self#singleArgParenApplication exprList)
+        | exprList ->
+            (not arityIsClear, makeTup (List.map self#unparseConstraintExpr l)))
+      | _ when isSingleArgParenApplication [eo] ->
+          (false, self#singleArgParenApplication [eo])
       | _ -> (false, makeTup [self#unparseConstraintExpr eo])
     in
     let construction =
@@ -5130,16 +5159,7 @@ class printer  ()= object(self:'self)
           | Some simpleGet -> Some simpleGet
           | None -> None
         )
-        | Pexp_object cs ->
-          let obj =
-            makeList
-              ~sep:";"
-              ~wrap:("{", "}")
-              ~break:IfNeed
-              ~postSpace:true
-              ~inline:(true, false)
-              (self#class_self_pattern_and_structure cs) in
-          Some obj
+        | Pexp_object cs -> Some (self#classStructure cs)
         | Pexp_override l -> (* FIXME *)
           let string_x_expression (s, e) =
             label ~space:true (atom (s.txt ^ ":")) (self#unparseExpr e)
@@ -5820,6 +5840,17 @@ class printer  ()= object(self:'self)
       | Pcl_let _
       | Pcl_structure _ -> self#simple_class_expr x;
 
+  method classStructure ?(wrap=("", "")) cs =
+    let (left, right) = wrap in
+    let wrap = (left ^ "{", "}" ^ right) in
+    makeList
+      ~sep:";"
+      ~wrap
+      ~break:IfNeed
+      ~postSpace:true
+      ~inline:(true, false)
+      (self#class_self_pattern_and_structure cs)
+
   method signature signatureItems =
     let signatureItems = List.filter self#shouldDisplaySigItem signatureItems in
     if List.length signatureItems == 0 then
@@ -6388,6 +6419,37 @@ class printer  ()= object(self:'self)
     in
     (List.map case_row l)
 
+  (* Formats a list of a single expr param in such a way that the parens of the function or
+   * (poly)-variant application and the wrapping of the param stick together when the layout breaks.
+   *  Example: `foo({a: 1, b: 2})` needs to be formatted as
+   *  foo({
+   *    a: 1,
+   *    b: 2
+   *  })
+   *  when the line length dictates breaking. Notice how `({` and `})` 'hug'.
+   *  Also see "isSingleArgParenApplication" which determines if 
+   *  this kind of formatting should happen. *)
+  method singleArgParenApplication = function
+    | [{pexp_attributes = []; pexp_desc = Pexp_record (l, eo)}] ->
+      self#unparseRecord ~wrap:("(", ")") l eo
+    | [{pexp_attributes = []; pexp_desc = Pexp_tuple l}] ->
+      self#unparseSequence ~wrap:("(", ")") ~construct:`Tuple l
+    | [{pexp_attributes = []; pexp_desc = Pexp_array l}] ->
+      self#unparseSequence ~wrap:("(", ")") ~construct:`Array l
+    | [{pexp_attributes = []; pexp_desc = Pexp_object cs}] ->
+      self#classStructure ~wrap:("(", ")") cs
+    | [{pexp_attributes = []; pexp_desc = Pexp_extension (s, p)}] when s.txt = "bs.obj" ->
+      self#formatBsObjExtensionSugar ~wrap:("(", ")") p
+    | [({pexp_attributes = []; pexp_desc} as exp)] when (is_simple_list_expr exp) ->
+          (match view_expr exp with
+          | `list xs ->
+              self#unparseSequence ~construct:`List ~wrap:("(", ")") xs
+          | `cons xs ->
+              self#unparseSequence ~construct:`ES6List ~wrap:("(", ")") xs
+          | _ -> assert false)
+    | _ -> assert false
+
+
   method label_x_expression_param (l, e) =
     let term = self#unparseConstraintExpr e in
     let param = match l with
@@ -6419,22 +6481,8 @@ class printer  ()= object(self:'self)
        *  })
        *  when the line-length indicates breaking.
        *)
-      | [(Nolabel, ({pexp_attributes = []; pexp_desc = Pexp_record (l, eo)}))] ->
-          [self#unparseRecord ~wrap:("(", ")") l eo]
-      | [(Nolabel, ({pexp_attributes = []; pexp_desc = Pexp_extension (s, p)}))] when s.txt = "bs.obj" ->
-          [self#formatBsObjExtensionSugar ~wrap:("(", ")") p]
-      | [(Nolabel, ({pexp_attributes = []; pexp_desc = Pexp_tuple l}))] ->
-          [self#unparseSequence ~wrap:("(", ")") ~construct:`Tuple l]
-      | [(Nolabel, ({pexp_attributes = []; pexp_desc = Pexp_array l}))] ->
-          [self#unparseSequence ~wrap:("(", ")") ~construct:`Array  l]
-      | [(Nolabel, ({pexp_attributes = []; pexp_desc} as exp))] when (is_simple_list_expr exp) ->
-          (match view_expr exp with
-          | `list xs ->
-              [self#unparseSequence ~construct:`List ~wrap:("(", ")") xs]
-          | `cons xs ->
-              [self#unparseSequence ~construct:`ES6List ~wrap:("(", ")") xs]
-          | _ -> assert false)
-
+      | [(Nolabel, exp)] when isSingleArgParenApplication [exp] ->
+          [self#singleArgParenApplication [exp]]
       | params ->
           [makeTup (List.map self#label_x_expression_param params)])
     in
