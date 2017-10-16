@@ -17,4 +17,6 @@
 - Record field punning for module field prefix now prints well too: `{M.x, y}` is `{M.x: x, y: y}`
 - JSX needs {} like in JS
 - Fix reason-specific keywords printing in interface files (e.g. `==`, `match`, `method`)
+- Record punning with renaming (#1517)
+- The combination of functon label renaming + type annotation + punning is now supported
 - Fix LOTS of bugs regarding parsing & formatting,
