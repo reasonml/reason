@@ -1058,3 +1058,8 @@ let registerEventHandlers =
          )=?,
       ()
     ) => 1;
+
+/* #1320: record destrucuring + renaming */
+let x = ({state as prevState}) => 1;
+
+let x = ({ReasonReact.state as prevState}) => 1;
