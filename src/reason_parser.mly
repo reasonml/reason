@@ -3347,6 +3347,11 @@ lbl_pattern_list:
 lbl_pattern:
   | as_loc(label_longident) COLON pattern { ($1,$3) }
   | as_loc(label_longident)               { ($1, pat_of_label $1) }
+  | as_loc(label_longident) AS as_loc(val_ident)
+    { (* punning with alias eg. {ReasonReact.state as prevState}
+       *  -> {ReasonReact.state: state as prevState} *)
+      ($1, mkpat(Ppat_alias(pat_of_label $1, $3)))
+    }
 ;
 
 /* Primitive declarations */

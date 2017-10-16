@@ -3316,6 +3316,12 @@ class printer  ()= object(self:'self)
                     (* record field punning when destructuring. {x: x, y: y} becomes {x, y} *)
                     (* works with module prefix too: {MyModule.x: x, y: y} becomes {MyModule.x, y} *)
                       self#longident_loc li
+                  | ({txt = ident},
+                     Ppat_alias ({ppat_desc = (Ppat_var {txt = ident2}) }, {txt = aliasIdent}))
+                     when Longident.last ident = ident2 ->
+                    (* record field punning when destructuring with renaming. {state: state as prevState} becomes {state as prevState *)
+                    (* works with module prefix too: {ReasonReact.state: state as prevState} becomes {ReasonReact.state as prevState *)
+                      makeList ~sep:" " [self#longident_loc li; atom "as"; atom aliasIdent]
                   | _ ->
                       label ~space:true (makeList [self#longident_loc li; atom ":"]) (self#pattern p)
               in

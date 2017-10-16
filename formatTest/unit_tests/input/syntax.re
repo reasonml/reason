@@ -876,3 +876,7 @@ let registerEventHandlers =
           option(((~button: Events.buttonStateT, ~state: Events.stateT, ~x: int, ~y: int) => unit))=?,
       ()
     ) => 1;
+
+/* #1320: record destrucuring + renaming */
+let x = ({state: state as prevState}) => 1;
+let x = ({ReasonReact.state: state as prevState}) => 1;
