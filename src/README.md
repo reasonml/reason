@@ -180,3 +180,21 @@ ocamlc -dsource -ppx ../reactjs_jsx_ppx_v2.native -pp "../refmt_impl.native --pr
 ```
 
 (Similar steps for reactjs_jsx_ppx_v3.)
+
+## Testing Two Different Syntax Versions
+
+If you'd like to convert from an old Reason syntax version to the one in master (whether to debug things, or if you're interested in trying out some syntax changes from master and then explaining to us why your perspective on the Reason syntax is the best, lol):
+
+- Revert the repo to the old commit you want
+- Build, through `make build`
+- Move the built refmt binary `./refmt_impl.native` somewhere else
+- Revert back to master
+- `make build` again to get the master binary.
+
+Then do:
+
+```
+/path/to/my_old_refmt_impl.native --parse my_old_syntax_file.re --print binary_reason | ./refmt_impl --parse binary_reason --print re
+```
+
+Basically, turn your old syntax into an AST (which is resilient to syntax changes), then turn it back into the new, textual code. If you're reverting to an old enough version, the old binary's flags and/or the old build instructions might be different. In that case, see `/path/to/my_old_refmt_impl.native -help` and/or the old README.
