@@ -3,7 +3,7 @@
 (**
  * See `testOprint.js` for how this gets run.
  *
- * In order to test our outcome printer, we parse & typecheck the code provided on stin.
+ * In order to test our outcome printer, we parse & typecheck the code provided on stdin.
  * That gives us a `Typedtree` (like an AST but with all the types included), which includes
  * the `signature` type of the module we just processed.
  * From there, `Printtyp` will helpfully convert the `signature` into something that our

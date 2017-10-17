@@ -17,6 +17,11 @@ type t2 = (a, b) => c;
 type t3 = ((a, b)) => c;
 type t4 = (~x: int, ~y: string) => c;
 type t5 = (~x: a=?) => b;
+type tf = (int => int) => string;
+type tNested2 = ((int => int)) => string;
+type tNested3 = ((int => int) => int) => string;
+type tNested4 = (int, int) => string;
+type tNested5 = ((int, int)) => string;
 
 type t6 = int;
 type t7('a) = list('a);
@@ -116,20 +121,3 @@ type t =
 
 type foo = {x:int};
 let result = Some {x:1};
-
-class aClass(x) {
-  /* one value parameter x */
-  pub a1 = 0;
-  pub a2() = 0;
-  pub a3(x,y) = x + y;
-  pub a4(x,y) {
-    let result = x + y;
-    print_endline(" x + y = " ++ string_of_int(x) ++ " + " ++ string_of_int(y) ++ " = " ++ string_of_int(result));
-    result
-  };
-};
-
-
-
-
-
