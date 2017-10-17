@@ -2561,8 +2561,9 @@ class printer  ()= object(self:'self)
       match (x.ptyp_desc) with
         | (Ptyp_arrow (l, ct1, ct2)) ->
           let rec allArrowSegments acc = function
-            | { ptyp_desc = Ptyp_arrow (l, ct1, ct2); _ } ->
+            | { ptyp_desc = Ptyp_arrow (l, ct1, ct2); ptyp_attributes } when List.length ptyp_attributes == 0 ->
               allArrowSegments ((l,ct1) :: acc) ct2
+
             | rhs ->
               let rhs = self#core_type2 rhs in
               let is_tuple typ = match typ.ptyp_desc with
@@ -2570,7 +2571,7 @@ class printer  ()= object(self:'self)
                 | _ -> false
               in
               match acc with
-              | [Nolabel, lhs] when not (is_tuple lhs) ->
+              | [(Nolabel, lhs)] when not (is_tuple lhs) ->
                 (self#non_arrowed_simple_core_type lhs, rhs)
               | acc ->
                 let params = List.rev_map self#type_with_label acc in
@@ -5591,8 +5592,8 @@ class printer  ()= object(self:'self)
     match x.pcty_desc with
     | Pcty_arrow (l, co, cl) ->
       let rec allArrowSegments acc = function
-        | { pcty_desc = Pcty_arrow (l, ct1, ct2); _ } ->
-          allArrowSegments (self#type_with_label (l, ct1) :: acc) ct2
+        | { pcty_desc = Pcty_arrow (l, ct1, ct2); } ->
+            allArrowSegments (self#type_with_label (l, ct1) :: acc) ct2
         (* This "new" is unfortunate. See reason_parser.mly for details. *)
         | xx -> (List.rev acc, self#class_constructor_type xx)
       in
