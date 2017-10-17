@@ -125,3 +125,60 @@ let res =
       | None => 0
     )
   };
+
+/* test (), which is sugar for (()) */
+switch (Some()) {
+| Some () => 1
+};
+
+switch (Some()) {
+| Some () => 1
+};
+
+switch (Some()) {
+| Some () => 1
+};
+
+switch (Some()) {
+| Some () => 1
+};
+
+type foo =
+  | Foo(unit);
+
+switch (Foo()) {
+| Foo () => 1
+};
+
+switch (Foo()) {
+| Foo () => 1
+};
+
+switch (Foo()) {
+| Foo () => 1
+};
+
+switch (Foo()) {
+| Foo () => 1
+};
+
+switch () {
+| () => 1
+};
+
+switch () {
+| () => 1
+};
+
+switch () {
+| () => 1
+};
+
+switch () {
+| () => 1
+};
+
+switch (Some(1)) {
+| Some(1) => 1
+| None => 2
+};
