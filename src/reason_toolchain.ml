@@ -83,6 +83,8 @@ module To_current = Convert(OCaml_404)(OCaml_current)
 
 module S = MenhirLib.General (* Streams *)
 
+open Reason_explain_error
+
 let invalidLex = "invalidCharacter.orComment.orString"
 let syntax_error_str err loc =
     if !Reason_config.recoverable = false then

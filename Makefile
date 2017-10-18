@@ -17,15 +17,19 @@ precompile:
 	cp pkg/META.in pkg/META
 	ocamlbuild -use-ocamlfind -package topkg pkg/build.native
 
-build_without_utop: compile_error setup_convenient_bin_links precompile
+preprocess: precompile
+	./build.native build -r src/reason_parser.ml -r src/menhir_error_processor.native
+	./menhir_error_processor.native _build/src/reason_parser.cmly > src/reason_explain_error.ml
+
+build_without_utop: compile_error setup_convenient_bin_links preprocess
 	./build.native build --utop false
 	chmod +x $(shell pwd)/_build/src/*.sh
 
-build_with_outcome_test: compile_error setup_convenient_bin_links precompile
+build_with_outcome_test: compile_error setup_convenient_bin_links preprocess
 	./build.native build --utop true --outcome_test true
 	chmod +x $(shell pwd)/_build/src/*.sh
 
-build: compile_error setup_convenient_bin_links precompile
+build: compile_error setup_convenient_bin_links preprocess
 	./build.native build --utop true
 	chmod +x $(shell pwd)/_build/src/*.sh
 
