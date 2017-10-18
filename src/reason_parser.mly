@@ -3196,6 +3196,13 @@ mark_position_pat
   | pattern_without_or AS as_loc(error)
     { expecting_pat (with_txt $3 "identifier") }
 
+  /* | Foo () => ... is sugar for | Foo (()) => ...*/
+  /* putting it here instead of in pattern_constructor_argument because that one might cause too many shift/reduce conflicts... */
+  | as_loc(constr_longident) LPAREN RPAREN
+    {
+      let loc = mklocation $startpos $endpos in
+      mkpat (Ppat_construct($1, Some (mkpat_constructor_unit loc loc)))
+    }
   /**
     * Parses a (comma-less) list of patterns into a tuple, or a single pattern
     * (if there is only one item in the list). This is kind of sloppy as there
@@ -3205,6 +3212,13 @@ mark_position_pat
     * semantics (they are not first class).
     */
   | as_loc(constr_longident) pattern_constructor_argument
+    /* the first case is `| Foo(_)` and doesn't need explicit_arity attached. Actually, something like `| Foo(1)` doesn't either, but we 
+      keep explicit_arity on the latter anyways because why not. But for `| Foo(_)` in particular, it's convenient to have explicit_arity 
+      removed, so that you can have the following shortcut:
+      | Foo _ _ _ _ _
+      vs.
+      | Foo _
+    */
     { match is_pattern_list_single_any $2 with
       | Some singleAnyPat ->
         mkpat (Ppat_construct($1, Some singleAnyPat))
