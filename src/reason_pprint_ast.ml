@@ -2561,7 +2561,7 @@ class printer  ()= object(self:'self)
       match (x.ptyp_desc) with
         | (Ptyp_arrow (l, ct1, ct2)) ->
           let rec allArrowSegments acc = function
-            | { ptyp_desc = Ptyp_arrow (l, ct1, ct2); ptyp_attributes } when List.length ptyp_attributes == 0 ->
+            | { ptyp_desc = Ptyp_arrow (l, ct1, ct2); ptyp_attributes = [] } ->
               allArrowSegments ((l,ct1) :: acc) ct2
 
             | rhs ->
