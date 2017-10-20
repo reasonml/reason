@@ -2389,8 +2389,7 @@ let is_unit_pattern x = match x.ppat_desc with
 
 let is_direct_pattern x = x.ppat_attributes = [] && match x.ppat_desc with
   | Ppat_array _ | Ppat_record _
-  | Ppat_construct ( {txt= Lident"()"}, None)
-  | Ppat_construct ( {txt= Lident"::"}, Some _) -> true
+  | Ppat_construct ( {txt= Lident"()"}, None) -> true
   | _ -> false
 
 (* Some cases require special formatting when there's a function application
@@ -3250,7 +3249,6 @@ class printer  ()= object(self:'self)
                 self#constructor_pattern ~arityIsClear liSourceMapped xx
             | None ->
                 liSourceMapped
-
           in
             SourceMap (x.ppat_loc, formattedConstruction)
       | _ -> self#simple_pattern x
@@ -4741,8 +4739,8 @@ class printer  ()= object(self:'self)
       | _ -> (false, [po])
     in
     let space, arguments = match arguments with
-      | [x] when is_direct_pattern x -> true, self#simple_pattern x
-      | xs -> false, makeTup (List.map self#pattern xs)
+      | [x] when is_direct_pattern x -> (true, self#simple_pattern x)
+      | xs -> (false, makeTup (List.map self#pattern xs))
     in
     let construction = label ~space ctor arguments in
     if implicit_arity && (not polyVariant) then
