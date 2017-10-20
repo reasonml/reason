@@ -182,3 +182,12 @@ switch (Some(1)) {
 | Some(1) => 1
 | None => 2
 };
+
+switch None {
+| Some([]) => ()
+| Some([_]) => ()
+| Some([x]) => ()
+| Some([x, ...xs]) => ()
+| Some([x, y, z]) => ()
+| _ => ()
+};
