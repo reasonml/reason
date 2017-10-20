@@ -114,6 +114,8 @@ type t =
   | C(int, int)
   | D((int, int));
 
+type foo = {x:int};
+let result = Some {x:1};
 
 class aClass(x) {
   /* one value parameter x */

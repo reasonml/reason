@@ -212,7 +212,7 @@ let print_out_value ppf tree =
       [] -> ()
     | (name, tree) :: fields ->
         if not first then fprintf ppf ",@ ";
-        fprintf ppf "@[<1>%a@:@ %a@]" print_ident name (cautious (print_tree_1 false))
+        fprintf ppf "@[<1>%a:@ %a@]" print_ident name (cautious (print_tree_1 false))
           tree;
         print_fields false ppf fields
   and print_tree_list print_item sep ppf tree_list =
