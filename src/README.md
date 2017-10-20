@@ -87,6 +87,8 @@ Random Stack Overflow answer: https://stackoverflow.com/questions/9897358/ocaml-
 - [Remove extra parens printed in `type a = Foo((unit => unit))`](https://github.com/facebook/reason/pull/1491)
 - [Don't apply sugar to Js.t({.}) and Js.t({..})](https://github.com/facebook/reason/pull/1502)
 - [Pun record destructuring with renaming](https://github.com/facebook/reason/pull/1517)
+- [Add support for simple pattern direct argument with array, list & record](https://github.com/facebook/reason/pull/1528)
+- [Fix outcome printer record value printing](https://github.com/facebook/reason/pull/1529)
 
 ### Debugging Grammar Conflicts
 
