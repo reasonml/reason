@@ -2295,6 +2295,8 @@ mark_position_exp
     { mkexp (Pexp_sequence($1, $3)) }
   ) {$1};
 
+
+
 /*
 
 
@@ -3186,6 +3188,24 @@ pattern_constructor_argument:
     { $1 }
 ;
 
+/**
+* Provides sugar for pattern matching on a constructor pattern with a 'direct' argument.
+* Example:
+* | Foo () => () is sugar for | Foo(()) => ()
+* | Foo [a, b, c] => () is sugar for | Foo([a, b, c]) => ()
+* | Foo [|x, y|] => () is sugar for | Foo([|x, y|]) => ()
+* }
+*/
+simple_pattern_direct_argument:
+mark_position_pat (
+   as_loc(constr_longident)
+    { mkpat(Ppat_construct(mkloc $1.txt $1.loc, None)) }
+  | record_pattern { $1 }
+  | list_pattern { $1 }
+  | array_pattern { $1 }
+  ) {$1}
+;
+
 pattern_without_or:
 mark_position_pat
   ( simple_pattern { $1 }
@@ -3195,14 +3215,6 @@ mark_position_pat
 
   | pattern_without_or AS as_loc(error)
     { expecting_pat (with_txt $3 "identifier") }
-
-  /* | Foo () => ... is sugar for | Foo (()) => ...*/
-  /* putting it here instead of in pattern_constructor_argument because that one might cause too many shift/reduce conflicts... */
-  | as_loc(constr_longident) LPAREN RPAREN
-    {
-      let loc = mklocation $startpos $endpos in
-      mkpat (Ppat_construct($1, Some (mkpat_constructor_unit loc loc)))
-    }
   /**
     * Parses a (comma-less) list of patterns into a tuple, or a single pattern
     * (if there is only one item in the list). This is kind of sloppy as there
@@ -3319,25 +3331,31 @@ mark_position_pat
     }
   | as_loc(LPAREN) MODULE UIDENT COLON package_type as_loc(error)
     { unclosed_pat (with_txt $1 "(") (with_txt $6 ")") }
-  | simple_pattern_direct_argument
-    { $1 }
-  | LBRACKET pattern_comma_list_extension RBRACKET
-    { make_real_pat (mktailpat_extension (mklocation $startpos($2) $endpos($2)) $2) }
-  | as_loc(LBRACKET) pattern_comma_list_extension as_loc(error)
-    { unclosed_pat (with_txt $1 "[") (with_txt $3 "]") }
-  | LBRACKETBAR loption(terminated(pattern_comma_list,SEMI?)) BARRBRACKET
-    { mkpat (Ppat_array $2) }
+  | record_pattern { $1 }
+  | list_pattern { $1 }
+  | array_pattern { $1 }
   | extension
     { mkpat(Ppat_extension $1) }
   ) {$1};
 
-simple_pattern_direct_argument:
-mark_position_pat
-  ( LBRACE lbl_pattern_list RBRACE
+%inline record_pattern:
+    LBRACE lbl_pattern_list RBRACE
     { let (fields, closed) = $2 in mkpat (Ppat_record (fields, closed)) }
   | as_loc(LBRACE) lbl_pattern_list as_loc(error)
     { unclosed_pat (with_txt $1 "{") (with_txt $3 "}") }
-) {$1};
+;
+
+%inline list_pattern:
+    LBRACKET pattern_comma_list_extension RBRACKET
+    { make_real_pat (mktailpat_extension (mklocation $startpos($2) $endpos($2)) $2) }
+  | as_loc(LBRACKET) pattern_comma_list_extension as_loc(error)
+    { unclosed_pat (with_txt $1 "[") (with_txt $3 "]") }
+;
+
+%inline array_pattern:
+    LBRACKETBAR loption(terminated(pattern_comma_list,SEMI?)) BARRBRACKET
+    { mkpat (Ppat_array $2) }
+;
 
 pattern_optional_constraint:
 mark_position_pat

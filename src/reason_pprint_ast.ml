@@ -2389,7 +2389,9 @@ let is_unit_pattern x = match x.ppat_desc with
 
 let is_direct_pattern x = x.ppat_attributes = [] && match x.ppat_desc with
   | Ppat_array _ | Ppat_record _
-  | Ppat_construct ( {txt= Lident"()"}, None) -> true
+  | Ppat_construct ( {txt= Lident"()"}, None)
+  | Ppat_construct ( {txt= Lident"[]"}, None)
+  | Ppat_construct ( {txt= Lident"::"}, Some _) -> true
   | _ -> false
 
 (* Some cases require special formatting when there's a function application
