@@ -4,8 +4,15 @@ This makes our installation much friendlier to e.g. Windows. BuckleScript curren
 
 ## Build
 
-You need to first run `npm install` at the root of the project to get bs-platform. This is where we get the `bspack` binary. Then, come back in this directory. 
+First, install the dependencies:
 
-The build step requires `ocaml-migrate-parsetree`. You can get it by running `./setupOmp.sh`.
+```sh
+opam install ocaml-migrate-parsetree
+opam install js_of_ocaml.3.0
+cd .. && npm install
+cd ./bspacks && ./downloadSomeDependencies.sh
+```
 
-If things go well, run `./reason_bspack.sh` to pack up Reason into a single file. If not, check the extensive comments in both `sh` files!
+Also, have `java` installed in your system. This is needed to use closure compiler to compress the final `refmt.js`.
+
+Now, run `./reason_bspack.sh` to pack up Reason into a single file. Check the extensive comments in both `sh` files here if something goes wrong.

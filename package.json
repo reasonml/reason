@@ -3,23 +3,23 @@
 	"version": "1.13.7",
 	"description": "Simple, fast & type safe code that leverages the JavaScript & OCaml ecosystems",
 	"repository": {
-	  "type": "git",
-	  "url": "https://github.com/facebook/reason.git"
+		"type": "git",
+		"url": "https://github.com/facebook/reason.git"
 	},
 	"keywords": [
-	  "reason",
-	  "ocaml",
-	  "react",
-	  "javascript",
-    "won't you look at all these nice types"
+		"reason",
+		"ocaml",
+		"react",
+		"javascript",
+		"won't you look at all these nice types"
 	],
 	"license": "BSD",
 	"homepage": "https://github.com/facebook/reason",
-	"dependencies": {
-	},
+	"dependencies": {},
 	"devDependencies": {
-		"bs-platform": "^1.9.1"
+		"bs-platform": "^1.9.3"
 	},
 	"scripts": {
+		"prepublish": "cd ./bspacks && ./downloadSomeDependencies.sh && ./reason_bspack.sh"
 	}
 }
