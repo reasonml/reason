@@ -19,7 +19,7 @@ precompile:
 
 preprocess: precompile
 	./build.native build -r src/reason_parser.ml -r src/menhir_error_processor.native
-	./menhir_error_processor.native _build/src/reason_parser.cmly > src/reason_explain_error.ml
+	./menhir_error_processor.native _build/src/reason_parser.cmly > src/reason_parser_explain_raw.ml
 
 build_without_utop: compile_error setup_convenient_bin_links preprocess
 	./build.native build --utop false
