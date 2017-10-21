@@ -23,10 +23,21 @@ let identlike_keywords =
     | name -> Some name
     | exception Not_found -> None
 
-let confused_with_ident state token =
+let keyword_confused_with_ident state token =
   match identlike_keywords token with
-  | Some name when Raw.transitions_on_ident state ->
+  | Some name when Raw.transitions_on_lident state
+                || Raw.transitions_on_uident state ->
     (name ^ " is a reserved keyword, it cannot be used as an identifier")
+  | _ -> raise Not_found
+
+let uppercased_instead_of_lowercased state token =
+  match token with
+  | Parser.UIDENT name when Raw.transitions_on_lident state ->
+    let name = String.uncapitalize name in
+    if Hashtbl.mem Reason_lexer.keyword_table name then
+      "variables and labels should be lowercased"
+    else
+      Printf.sprintf "variables and labels should be lowercased. Try `%s'" name
   | _ -> raise Not_found
 
 let message env (token, startp, endp) =
@@ -34,8 +45,11 @@ let message env (token, startp, endp) =
   (* Is there a message for this specific state ? *)
   try Reason_parser_message.message state
   with Not_found ->
-    (* Identify a keyword used as an identifier *)
-    try confused_with_ident state token
-    with Not_found ->
-      (* TODO: we don't know what to say *)
-      "<UNKNOWN SYNTAX ERROR>"
+  (* Identify a keyword used as an identifier *)
+  try keyword_confused_with_ident state token
+  with Not_found ->
+  (* Identify an uppercased identifier in a lowercase place *)
+  try uppercased_instead_of_lowercased state token
+  with Not_found ->
+    (* TODO: we don't know what to say *)
+    "<UNKNOWN SYNTAX ERROR>"
