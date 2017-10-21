@@ -358,3 +358,9 @@ external debounce : int => ([@bs.meth] (unit => unit)) => ([@bs.meth] (unit => u
 external debounce : int => ([@bs.meth] (unit => unit)) => ([@bs.meth] (unit => unit)) => ([@bs.meth] (unit => unit)) = "";
 
 external debounce : int => ([@bs.meth] (unit => unit)) => ([@bs.meth] (unit => [@bs.meth] (unit => unit))) => ([@bs.meth] (unit => unit)) = "";
+
+/* Pexp_letexception with attributes */
+let () = {
+  [@attribute] exception E;
+  raise(E)
+};

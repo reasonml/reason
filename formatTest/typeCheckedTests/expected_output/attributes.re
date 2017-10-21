@@ -497,3 +497,10 @@ external debounce :
   ) =>
   [@bs.meth] (unit => unit) =
   "";
+
+/* Pexp_letexception with attributes */
+let () = {
+  [@attribute]
+  exception E;
+  raise(E)
+};

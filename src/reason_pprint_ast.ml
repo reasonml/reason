@@ -4674,6 +4674,9 @@ class printer  ()= object(self:'self)
            * brace {} in the let sequence. *)
           let letModuleSourceMapped = SourceMap (letModuleLoc, letModuleLayout) in
            letModuleSourceMapped::(self#letList e)
+      | ([], Pexp_letexception (extensionConstructor, expr)) ->
+          let exc = self#exception_declaration extensionConstructor in
+          exc::(self#letList expr)
       | ([], Pexp_sequence (({pexp_desc=Pexp_sequence _ }) as e1, e2))
       | ([], Pexp_sequence (({pexp_desc=Pexp_let _      }) as e1, e2))
       | ([], Pexp_sequence (({pexp_desc=Pexp_open _     }) as e1, e2))
@@ -5243,6 +5246,8 @@ class printer  ()= object(self:'self)
         | Pexp_let (rf, l, e) ->
             Some (makeLetSequence (self#letList x))
         | Pexp_letmodule (s, me, e) ->
+            Some (makeLetSequence (self#letList x))
+        | Pexp_letexception _ ->
             Some (makeLetSequence (self#letList x))
         | Pexp_open (ovf, lid, e) ->
             let letItems = (self#letList x) in
