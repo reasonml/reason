@@ -6,6 +6,7 @@
 		"type": "git",
 		"url": "https://github.com/facebook/reason.git"
 	},
+	"main": "refmt.js",
 	"keywords": [
 		"reason",
 		"ocaml",
@@ -20,6 +21,6 @@
 		"bs-platform": "^1.9.3"
 	},
 	"scripts": {
-		"prepublish": "cd ./bspacks && ./downloadSomeDependencies.sh && ./reason_bspack.sh"
+		"prepublishOnly": "cd ./bspacks && ./downloadSomeDependencies.sh && ./reason_bspack.sh"
 	}
 }
