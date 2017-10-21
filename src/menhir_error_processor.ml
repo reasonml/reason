@@ -46,7 +46,9 @@ let terminal_find name =
 
 let () = (
   let lident_term = terminal_find "LIDENT" in
-  let uident_term = terminal_find "UIDENT" in
   print_transitions_on "lident" (fun t -> t = T lident_term);
+  let uident_term = terminal_find "UIDENT" in
   print_transitions_on "uident" (fun t -> t = T uident_term);
+  let semi_term = terminal_find "SEMI" in
+  print_transitions_on "semi" (fun t -> t = T semi_term);
 )

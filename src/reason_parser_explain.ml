@@ -40,6 +40,13 @@ let uppercased_instead_of_lowercased state token =
       Printf.sprintf "variables and labels should be lowercased. Try `%s'" name
   | _ -> raise Not_found
 
+let semicolon_might_be_missing state _token =
+  (*let state = Interp.current_state_number env in*)
+  if Raw.transitions_on_semi state then
+    "syntax error, consider adding a `;' before"
+  else
+    raise Not_found
+
 let message env (token, startp, endp) =
   let state = Interp.current_state_number env in
   (* Is there a message for this specific state ? *)
@@ -50,6 +57,8 @@ let message env (token, startp, endp) =
   with Not_found ->
   (* Identify an uppercased identifier in a lowercase place *)
   try uppercased_instead_of_lowercased state token
+  with Not_found ->
+  try semicolon_might_be_missing state token
   with Not_found ->
     (* TODO: we don't know what to say *)
     "<UNKNOWN SYNTAX ERROR>"
