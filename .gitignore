@@ -20,3 +20,6 @@ node_modules
 /bspacks/build/
 /bspacks/omp/
 /bspacks/closure-compiler/
+# gitignored, but not npmignored. Published by `npm run prepublish`
+refmt.js
+refmt.map

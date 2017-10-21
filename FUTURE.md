@@ -19,4 +19,5 @@
 - Fix reason-specific keywords printing in interface files (e.g. `==`, `match`, `method`)
 - Record punning with renaming (#1517)
 - The combination of functon label renaming + type annotation + punning is now supported
-- Fix LOTS of bugs regarding parsing & formatting,
+- Fix LOTS of bugs regarding parsing & formatting
+- Official refmt.js, with public api

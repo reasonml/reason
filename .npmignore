@@ -1,8 +1,7 @@
 *
 !refmt.js
+!refmt.map
 !README.md
-!bspacks/refmt_main.ml
-!bspacks/refmt_main.mli
 !PATENTS.txt
 !LICENSE.txt
 !HISTORY.md

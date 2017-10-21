@@ -1,4 +1,4 @@
-const refmt = require('./build/refmt')
+const refmt = require('../refmt')
 console.log(refmt)
 
 console.log(refmt.printRE(refmt.parseRE(`let f = (a) => a + 1; print_int(f(5))`)))

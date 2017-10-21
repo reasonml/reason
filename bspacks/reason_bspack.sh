@@ -20,10 +20,12 @@ REFMT_BINARY="$buildDir/refmt_binary"
 REFMT_API="$buildDir/refmt_api"
 REFMT_API_ENTRY="$buildDir/refmt_api_entry"
 REFMT_API_FINAL="$buildDir/refmt_api_final"
-REFMT_CLOSURE="$buildDir/refmt"
 REFMT_PRE_CLOSURE="$buildDir/refmt_pre_closure"
 
+REFMT_CLOSURE="$reasonTargetDir/refmt"
+
 # clean some artifacts
+rm -f "$REFMT_CLOSURE.*"
 rm -rf $buildDir
 mkdir $buildDir
 
