@@ -3,8 +3,10 @@ module Interp = Parser.MenhirInterpreter
 module Raw = Reason_parser_explain_raw
 
 let identlike_keywords = function
-  | Parser.SIG -> Some "sig"
+  | Parser.SIG    -> Some "sig"
   | Parser.MODULE -> Some "module"
+  | Parser.BEGIN  -> Some "begin"
+  | Parser.END    -> Some "end"
   | _ -> None
 
 let confused_with_ident state token =
