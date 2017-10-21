@@ -1,4 +1,11 @@
-/docs/
-_build/
-formatTest
-miscTests
+*
+!refmt.js
+!README.md
+!bspacks/refmt_main.ml
+!bspacks/refmt_main.mli
+!PATENTS.txt
+!LICENSE.txt
+!HISTORY.md
+!FUTURE.md
+!LICENSE.txt
+!ORIGINS.md
