@@ -2,12 +2,26 @@ module Parser = Reason_parser
 module Interp = Parser.MenhirInterpreter
 module Raw = Reason_parser_explain_raw
 
-let identlike_keywords = function
+let identlike_keywords =
+  let reverse_table = lazy (
+    let table = Hashtbl.create 7 in
+    Hashtbl.iter (fun k v -> Hashtbl.add table v k) Reason_lexer.keyword_table;
+    table
+  ) in
+  function
   | Parser.SIG    -> Some "sig"
   | Parser.MODULE -> Some "module"
   | Parser.BEGIN  -> Some "begin"
   | Parser.END    -> Some "end"
-  | _ -> None
+  | Parser.OBJECT -> Some "object"
+  | Parser.SWITCH -> Some "switch"
+  | Parser.TO     -> Some "to"
+  | Parser.THEN   -> Some "then"
+  | Parser.TYPE   -> Some "type"
+  | token ->
+    match Hashtbl.find (Lazy.force reverse_table) token with
+    | name -> Some name
+    | exception Not_found -> None
 
 let confused_with_ident state token =
   match identlike_keywords token with
