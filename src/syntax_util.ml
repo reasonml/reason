@@ -395,9 +395,10 @@ let findMenhirErrorMessage loc =
     in find !menhirMessagesError
 
 let add_error_message err =
-  let msg = if err.msg = "<SYNTAX ERROR>\n" then
-    [MenhirMessagesError {err with msg = "A syntax error occurred. Help to improve this message: https://github.com/facebook/reason/wiki/Add-a-Menhir-error-message"}]
-  else
-    [MenhirMessagesError err]
+  let msg = try
+    ignore (find_substring "SYNTAX ERROR" err.msg 0);
+    [MenhirMessagesError {err with msg = "A syntax error occurred. Help to improve this message: https://github.com/facebook/reason/blob/master/src/README.md#add-a-menhir-error-message"}]
+  with
+  | Not_found -> [MenhirMessagesError err]
   in
   menhirMessagesError := !menhirMessagesError @ msg;
