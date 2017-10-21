@@ -12,9 +12,9 @@ module Reason_interface_printer : Printer_maker.PRINTER =
           let open Reason_toolchain in
           let (theParser, parsedAsML) =
             if Filename.check_suffix filename ".rei"
-            then (JS.canonical_interface_with_comments, false)
+            then (RE.interface_with_comments, false)
             else if Filename.check_suffix filename ".mli"
-            then (ML.canonical_interface_with_comments, true)
+            then (ML.interface_with_comments, true)
             else err ("Cannot determine default interface parser for filename '" ^ filename ^ "'.")
           in
           theParser (setup_lexbuf use_stdin filename), parsedAsML, true
@@ -27,11 +27,11 @@ module Reason_interface_printer : Printer_maker.PRINTER =
             | `Binary -> Printer_maker.ocamlBinaryParser use_stdin filename
             | `ML ->
                     let lexbuf = Reason_toolchain.setup_lexbuf use_stdin filename in
-                    let intf = Reason_toolchain.ML.canonical_interface_with_comments in
+                    let intf = Reason_toolchain.ML.interface_with_comments in
                     ((intf lexbuf), true, true)
             | `Reason ->
                     let lexbuf = Reason_toolchain.setup_lexbuf use_stdin filename in
-                    let intf = Reason_toolchain.JS.canonical_interface_with_comments in
+                    let intf = Reason_toolchain.RE.interface_with_comments in
                     ((intf lexbuf), false, true))
             in
             if not parsedAsInterface then
@@ -63,6 +63,6 @@ module Reason_interface_printer : Printer_maker.PRINTER =
                     (* If you don't wrap the function in parens, it's a totally different
                      * meaning #thanksOCaml *)
                     | `None -> (fun (ast, comments) -> ())
-                    | `ML -> Reason_toolchain.ML.print_canonical_interface_with_comments output_formatter
-                    | `Reason -> Reason_toolchain.JS.print_canonical_interface_with_comments output_formatter
+                    | `ML -> Reason_toolchain.ML.print_interface_with_comments output_formatter
+                    | `Reason -> Reason_toolchain.RE.print_interface_with_comments output_formatter
     end;;

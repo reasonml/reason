@@ -10,7 +10,7 @@ let init_reason () =
   else begin
     let use_file x =
       List.map Reason_toolchain.To_current.copy_toplevel_phrase
-        (Reason_toolchain.JS.canonical_use_file x)
+        (Reason_toolchain.RE.use_file x)
     in
     current_top := RTop;
     UTop.set_phrase_terminator ";";
@@ -19,7 +19,7 @@ let init_reason () =
     UTop.parse_toplevel_phrase := UTop.parse_default (
       Reason_util.correctly_catch_parse_errors
         (fun x -> Reason_toolchain.To_current.copy_toplevel_phrase
-            (Reason_toolchain.JS.canonical_toplevel_phrase x))
+            (Reason_toolchain.RE.toplevel_phrase x))
     );
     UTop.parse_use_file := UTop.parse_default (
       Reason_util.correctly_catch_parse_errors use_file

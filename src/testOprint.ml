@@ -21,7 +21,7 @@ let main () =
   let modulename = "TestTest" in
 
   let lexbuf = Reason_toolchain.setup_lexbuf true filename in
-  let impl = Reason_toolchain.JS.canonical_implementation in
+  let impl = Reason_toolchain.RE.implementation in
 
   Compmisc.init_path false;
   Env.set_unit_name modulename;

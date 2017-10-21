@@ -39,16 +39,16 @@ The `parse*` functions potentially throw an error of this shape:
 ```js
 {
   message: string,
+  // location can be undefined
   location: {
-    startLine: number,
-    startLineStartChar: number,
-    startLineStartChar: number,
-    endLineEndChar: number,
+    // all 1-indexed
+    startLine: number, // inclusive
+    startLineStartChar: number, // inclusive
+    endLine: number, // inclusive
+    endLineEndChar: number, // **exclusive**
   }
 }
 ```
-
-`location` can be `undefined`.
 
 Example usage:
 
@@ -62,26 +62,24 @@ console.log(refmt.printRE(refmt.parseML('let f a = 1')))
 
 We're spoiled with more APIs on the native side. To use Reason from OPAM as a native library, you have [these functions](https://github.com/facebook/reason/blob/5a253048e8077c4597a8935adbed7aa22bfff647/src/reason_toolchain.ml#L141-L157). So:
 
-- `Reason_toolchain.JS.canonical_implementation_with_comments`
-- `Reason_toolchain.JS.canonical_interface_with_comments`
-- `Reason_toolchain.JS.print_canonical_interface_with_comments`
-- `Reason_toolchain.ML.canonical_implementation_with_comments`
+- `Reason_toolchain.RE.implementation_with_comments`
+- `Reason_toolchain.RE.interface_with_comments`
+- `Reason_toolchain.RE.print_interface_with_comments`
+- `Reason_toolchain.ML.implementation_with_comments`
 - etc.
 
-`JS` means "Reason syntax". We're basically ES2050.
-
-The `JS` parsing functions might throw [this](https://github.com/facebook/reason/blob/5a253048e8077c4597a8935adbed7aa22bfff647/src/syntax_util.ml#L301) (docs on `Location.t` [here](https://caml.inria.fr/pub/docs/manual-ocaml/libref/Location.html)). The `ML` parsing functions might throw [`Syntaxerr.Error error`](https://caml.inria.fr/pub/docs/manual-ocaml/libref/Syntaxerr.html).
+The `RE` parsing functions might throw [this](https://github.com/facebook/reason/blob/5a253048e8077c4597a8935adbed7aa22bfff647/src/syntax_util.ml#L301) (docs on `Location.t` [here](https://caml.inria.fr/pub/docs/manual-ocaml/libref/Location.html)). The `ML` parsing functions might throw [`Syntaxerr.Error error`](https://caml.inria.fr/pub/docs/manual-ocaml/libref/Syntaxerr.html).
 
 Example usage:
 
 ```ocaml
 let ast_and_comments =
   Lexing.from_string "let f a => 1"
-  |> Reason_toolchain.JS.canonical_implementation_with_comments
+  |> Reason_toolchain.RE.implementation_with_comments
 
 (* Convert Reason back to OCaml syntax. That'll show these Reason users! *)
 let ocaml_syntax =
-  Reason_toolchain.ML.print_canonical_implementation_with_comments
+  Reason_toolchain.ML.print_implementation_with_comments
     Format.str_formatter
     ast_and_comments;
   Format.flush_str_formatter ()
@@ -95,4 +93,4 @@ Works that are forked from other projects are under their original licenses.
 
 ## Credit
 
-The general structure of `refmt` repo was copied from @whitequark's m17n project, including parts of the `README` that instruct how to use this with the OPAM toolchain. Thank you OCaml!
+The general structure of `refmt` repo was copied from [whitequark's m17n project](https://github.com/whitequark/ocaml-m17n), including parts of the `README` that instruct how to use this with the OPAM toolchain. Thank you OCaml!

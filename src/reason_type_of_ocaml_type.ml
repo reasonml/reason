@@ -14,19 +14,19 @@ let reasonFormatter = Reason_pprint_ast.createFormatter ()
 (* int list *)
 let parseAsCoreType str formatter =
   Lexing.from_string str
-  |> Reason_toolchain.ML.canonical_core_type
+  |> Reason_toolchain.ML.core_type
   |> reasonFormatter#core_type formatter
 
 (* type a = int list *)
 let parseAsImplementation str formatter =
   Lexing.from_string str
-  |> Reason_toolchain.ML.canonical_implementation
+  |> Reason_toolchain.ML.implementation
   |> reasonFormatter#structure [] formatter
 
 (* val a: int list *)
 let parseAsInterface str formatter =
   Lexing.from_string str
-  |> Reason_toolchain.ML.canonical_interface
+  |> Reason_toolchain.ML.interface
   |> reasonFormatter#signature [] formatter
 
 (* sig val a: int list end *)
@@ -34,7 +34,7 @@ let parseAsInterface str formatter =
 But that'd require modifying compiler-libs, which we'll refrain from doing. *)
 let parseAsCoreModuleType str formatter =
   Lexing.from_string ("module X: " ^ str)
-  |> Reason_toolchain.ML.canonical_interface
+  |> Reason_toolchain.ML.interface
   |> reasonFormatter#signature [] formatter
 
 (* Quirky merlin/ocaml output that doesn't really parse. *)
