@@ -2291,11 +2291,11 @@ mark_position_exp
     { mkexp (Pexp_letmodule($2, $3, $5)) }
   | LET? OPEN override_flag as_loc(mod_longident) SEMI semi_terminated_seq_expr
     { mkexp (Pexp_open($3, $4, $6)) }
+  | str_exception_declaration SEMI semi_terminated_seq_expr {
+     mkexp (Pexp_letexception ($1, $3)) }
   | expr SEMI semi_terminated_seq_expr
     { mkexp (Pexp_sequence($1, $3)) }
   ) {$1};
-
-
 
 /*
 
