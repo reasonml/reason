@@ -21,16 +21,16 @@ module Reason_reader = struct
     let buf = Lexing.from_string text in
     Location.init buf (Filename.basename path);
     if l > 0 && path.[l - 1] = 'i' then
-      signature (Reason_toolchain.JS.canonical_interface buf)
+      signature (Reason_toolchain.RE.interface buf)
     else
-      structure (Reason_toolchain.JS.canonical_implementation buf)
+      structure (Reason_toolchain.RE.implementation buf)
 
   let for_completion t _ =
     ({complete_labels = true}, parse t)
 
   let parse_line t pos line =
     let buf = Lexing.from_string line in
-    structure (Reason_toolchain.JS.canonical_implementation buf)
+    structure (Reason_toolchain.RE.implementation buf)
 
   let ident_at t _ = []
 

@@ -1,4 +1,4 @@
-module JS = Refmt_api.Reason_toolchain.JS
+module RE = Refmt_api.Reason_toolchain.RE
 module ML = Refmt_api.Reason_toolchain.ML
 
 let locationToJsObj (loc: Location.t) =
@@ -71,20 +71,20 @@ let parseWith f code =
     in
     Js.Unsafe.fun_call throwAnything [|Js.Unsafe.inject jsError|]
 
-let parseRE = parseWith JS.canonical_implementation_with_comments
-let parseREI = parseWith JS.canonical_interface_with_comments
-let parseML = parseWith ML.canonical_implementation_with_comments
-let parseMLI = parseWith ML.canonical_interface_with_comments
+let parseRE = parseWith RE.implementation_with_comments
+let parseREI = parseWith RE.interface_with_comments
+let parseML = parseWith ML.implementation_with_comments
+let parseMLI = parseWith ML.interface_with_comments
 
 
 let printWith f structureAndComments =
   f Format.str_formatter structureAndComments;
   Format.flush_str_formatter () |> Js.string
 
-let printRE = printWith JS.print_canonical_implementation_with_comments
-let printREI = printWith JS.print_canonical_interface_with_comments
-let printML = printWith ML.print_canonical_implementation_with_comments
-let printMLI = printWith ML.print_canonical_interface_with_comments
+let printRE = printWith RE.print_implementation_with_comments
+let printREI = printWith RE.print_interface_with_comments
+let printML = printWith ML.print_implementation_with_comments
+let printMLI = printWith ML.print_interface_with_comments
 
 let _ = Js.export "parseRE" parseRE
 let _ = Js.export "parseREI" parseREI

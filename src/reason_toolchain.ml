@@ -140,19 +140,19 @@ let setup_lexbuf use_stdin filename =
 
 module type Toolchain = sig
   (* Parsing *)
-  val canonical_core_type_with_comments: Lexing.lexbuf -> (Parsetree.core_type * Reason_pprint_ast.commentWithCategory)
-  val canonical_implementation_with_comments: Lexing.lexbuf -> (Parsetree.structure * Reason_pprint_ast.commentWithCategory)
-  val canonical_interface_with_comments: Lexing.lexbuf -> (Parsetree.signature * Reason_pprint_ast.commentWithCategory)
+  val core_type_with_comments: Lexing.lexbuf -> (Parsetree.core_type * Reason_pprint_ast.commentWithCategory)
+  val implementation_with_comments: Lexing.lexbuf -> (Parsetree.structure * Reason_pprint_ast.commentWithCategory)
+  val interface_with_comments: Lexing.lexbuf -> (Parsetree.signature * Reason_pprint_ast.commentWithCategory)
 
-  val canonical_core_type: Lexing.lexbuf -> Parsetree.core_type
-  val canonical_implementation: Lexing.lexbuf -> Parsetree.structure
-  val canonical_interface: Lexing.lexbuf -> Parsetree.signature
-  val canonical_toplevel_phrase: Lexing.lexbuf -> Parsetree.toplevel_phrase
-  val canonical_use_file: Lexing.lexbuf -> Parsetree.toplevel_phrase list
+  val core_type: Lexing.lexbuf -> Parsetree.core_type
+  val implementation: Lexing.lexbuf -> Parsetree.structure
+  val interface: Lexing.lexbuf -> Parsetree.signature
+  val toplevel_phrase: Lexing.lexbuf -> Parsetree.toplevel_phrase
+  val use_file: Lexing.lexbuf -> Parsetree.toplevel_phrase list
 
   (* Printing *)
-  val print_canonical_interface_with_comments: Format.formatter -> (Parsetree.signature * Reason_pprint_ast.commentWithCategory) -> unit
-  val print_canonical_implementation_with_comments: Format.formatter -> (Parsetree.structure * Reason_pprint_ast.commentWithCategory) -> unit
+  val print_interface_with_comments: Format.formatter -> (Parsetree.signature * Reason_pprint_ast.commentWithCategory) -> unit
+  val print_implementation_with_comments: Format.formatter -> (Parsetree.structure * Reason_pprint_ast.commentWithCategory) -> unit
 
 end
 
@@ -290,22 +290,22 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
    * (nested comments or unbalanced strings in comments) but at least we don't
    * crash the process. TODO: Report more accurate location in those cases.
    *)
-  let canonical_implementation_with_comments lexbuf =
+  let implementation_with_comments lexbuf =
     try wrap_with_comments Toolchain_impl.implementation lexbuf with
     | err -> (syntax_error_str err (Location.curr lexbuf), [])
 
-  let canonical_core_type_with_comments lexbuf =
+  let core_type_with_comments lexbuf =
     try wrap_with_comments Toolchain_impl.core_type lexbuf with
     | err -> (syntax_error_core_type err (Location.curr lexbuf), [])
 
-  let canonical_interface_with_comments lexbuf =
+  let interface_with_comments lexbuf =
     try wrap_with_comments Toolchain_impl.interface lexbuf with
     | err -> (syntax_error_sig err (Location.curr lexbuf), [])
 
-  let canonical_toplevel_phrase_with_comments lexbuf =
+  let toplevel_phrase_with_comments lexbuf =
     wrap_with_comments Toolchain_impl.toplevel_phrase lexbuf
 
-  let canonical_use_file_with_comments lexbuf =
+  let use_file_with_comments lexbuf =
     wrap_with_comments Toolchain_impl.use_file lexbuf
 
   (** [ast_only] wraps a function to return only the ast component
@@ -313,21 +313,21 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
   let ast_only f =
     (fun lexbuf -> lexbuf |> f |> fst)
 
-  let canonical_implementation = ast_only canonical_implementation_with_comments
+  let implementation = ast_only implementation_with_comments
 
-  let canonical_core_type = ast_only canonical_core_type_with_comments
+  let core_type = ast_only core_type_with_comments
 
-  let canonical_interface = ast_only canonical_interface_with_comments
+  let interface = ast_only interface_with_comments
 
-  let canonical_toplevel_phrase = ast_only canonical_toplevel_phrase_with_comments
+  let toplevel_phrase = ast_only toplevel_phrase_with_comments
 
-  let canonical_use_file = ast_only canonical_use_file_with_comments
+  let use_file = ast_only use_file_with_comments
 
   (* Printing *)
-  let print_canonical_interface_with_comments formatter interface =
+  let print_interface_with_comments formatter interface =
     Toolchain_impl.format_interface_with_comments interface formatter
 
-  let print_canonical_implementation_with_comments formatter implementation =
+  let print_implementation_with_comments formatter implementation =
     Toolchain_impl.format_implementation_with_comments implementation formatter
 end
 
@@ -467,7 +467,7 @@ module OCaml_syntax = struct
       (To_current.copy_structure structure)
 end
 
-module JS_syntax = struct
+module Reason_syntax = struct
   module I = Reason_parser.MenhirInterpreter
   module Lexer_impl = Reason_lexer
   type token = Reason_parser.token
@@ -774,4 +774,4 @@ module JS_syntax = struct
 end
 
 module ML = Create_parse_entrypoint (OCaml_syntax)
-module JS = Create_parse_entrypoint (JS_syntax)
+module RE = Create_parse_entrypoint (Reason_syntax)
