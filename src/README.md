@@ -1,18 +1,52 @@
 # Core Reason
 
+**See a list of easy tasks [here](https://github.com/facebook/reason/labels/GOOD%20FIRST%20TASK)**
+
+## Contributor Setup
+
+Thanks for considering contributing to Reason! Here's the setup you need:
+
+```sh
+# On OSX, install opam via Homebrew:
+brew update
+brew install opam
+# On Linux, see here (you will need opam >= 1.2.2): http://opam.ocaml.org/doc/Install.html
+
+opam init
+# Add this to your ~/.bashrc (or ~/.zshrc), then do `source ~/.bashrc`
+#   eval $(opam config env)
+
+opam update
+opam switch 4.04.2
+eval $(opam config env)
+git clone https://github.com/facebook/reason.git
+cd reason
+opam pin add -y reason .
+```
+
+**Note**: during the last `opam pin` step, make sure your local repo is clean. In particular, remove artifacts and `node_modules`. Otherwise the pinning might go stale or stall due to the big `node_modules`.
+
+### Build
+
+`make build`. **If this fails on your machine but master passes**, it means your setup wasn't right. Could you check if you followed the above installation steps? In particular, make sure you did `eval $(opam config env)` and sourced your shell environment (if you don't know how, just open a new shell tab and it'll be sourced usually).
+
+### Test
+
+`make test` (make sure to follow the repo pinning instructions above!). The tests will output the difference between the expected syntax formatting and the actual one, if any.
+
+Small exception: testing your changes in `rtop` is a little complicated, but you usually don't need to test it. If you do, you might have seen that your changes of the parser or printer don't affect `rtop` when you run it. Instead, you need to do `opam pin add -y reason .` and _then_ run `rtop` to see the Reason changes reflected.
+
+## Repo Walkthrough
+
 ![reason_-_bucklescript_in_ocaml](https://user-images.githubusercontent.com/1909539/31158768-0c7e9d04-a879-11e7-9cfb-19780a599231.png)
 
 (_Click to see a larger version_)
 
-Interested in contributing to Reason? The core of it is a parser + a printer, plus other miscellaneous utilities we expose.
-
-**Note** that contributing to a parser or printer is, in general, not that trivial; we'd be as glad seeing you contribute to the Reason ecosystem than Reason core! That being said, there's a [very good section](https://realworldocaml.org/v1/en/html/parsing-with-ocamllex-and-menhir.html) in Real World OCaml on parser and printer, if you do want to check out the codebase. We're currently actively iterating on the codebase, so ping us on our [Discord channel](discord.gg/reasonml)!
-
-## Brief Description of Files
+We're that orange part! The core of the codebase is a parser + a printer, plus other miscellaneous utilities we expose.
 
 Throughout the codebase, you might see mentions of "migrate-parsetree", `Ast_404`, etc. These refer to https://github.com/let-def/ocaml-migrate-parsetree. It's a library that allows you to convert between different versions of the OCaml AST. This way, the Reason repo can be written in OCaml 4.04's AST data structures, while being usable on OCaml 4.02's libraries (BuckleScript's on 4.02 too).
 
-Our lexer & parser use [Menhir](http://gallium.inria.fr/~fpottier/menhir/), a library that helps us with parsing (it's a "parser generator"). Again, more info [here](https://realworldocaml.org/v1/en/html/parsing-with-ocamllex-and-menhir.html)
+Our lexer & parser use [Menhir](http://gallium.inria.fr/~fpottier/menhir/), a library that helps us with parsing (it's a "parser generator"). We **highly recommend** you to read about Menhir [here](https://realworldocaml.org/v1/en/html/parsing-with-ocamllex-and-menhir.html).
 
 ### Core Files
 
@@ -54,9 +88,9 @@ Our lexer & parser use [Menhir](http://gallium.inria.fr/~fpottier/menhir/), a li
 
 Here's a recommended workflow:
 
-- First put your code in the current master syntax in a file
+- First put your code in the current master syntax in a file `test.re`
 - `make build`
-- `./refmt_impl.native --print ast thatFile.re`
+- `./refmt_impl.native --print ast test.re`
 - look closely at the ast, spot the thing you need
 - Search your item in `reason_parser.mly`
 - Change the logic
@@ -163,10 +197,6 @@ As you can see from other parts in the parser, many do have a `~loc` assigned to
       }
 ```
 
-## Testing Rtop
-
-Testing rtop changes is a little bit complicated. You might have seen that your changes of the parser or printer don't affect `rtop` when you run it. Instead, you need to do `opam pin add -y reason .` and _then_ run `rtop` to see the Reason changes reflected.
-
 ## Working With PPX
 
 reactjs_jsx_ppx_v2/v3 uses the ppx system. It works on the AST. It helps being able to see the AST of a particular snippet. Assuming you've written some code in a file `foo.re`, run the following incantation to output the code's AST:
@@ -200,3 +230,38 @@ Then do:
 ```
 
 Basically, turn your old syntax into an AST (which is resilient to syntax changes), then turn it back into the new, textual code. If you're reverting to an old enough version, the old binary's flags and/or the old build instructions might be different. In that case, see `/path/to/my_old_refmt_impl.native -help` and/or the old README.
+
+## Cutting a release
+
+### OPAM
+
+Reason exists on OCaml's package manager OPAM.
+
+- Make sure local changes are properly committed
+- Update remote:
+
+```sh
+git fetch;
+git reset --hard origin/master
+```
+
+- Prerelease:
+
+```sh
+env version=x.y.z make pre_release
+```
+
+- Check everything is ok locally
+- Release!
+
+```sh
+env version=x.y.z make release
+```
+
+- Use [opam-publish](https://github.com/ocaml/opam-publish) to publish the latest version to opam.
+
+### NPM
+
+Reason's also on npm, albeit for a different purpose. The `refmt.js` file is distributed there, for use-cases where the native `refmt` doesn't suffice (e.g. using it on the web).
+
+To publish to npm, get https://github.com/sindresorhus/np and run `np`.
