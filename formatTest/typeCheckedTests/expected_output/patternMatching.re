@@ -185,50 +185,50 @@ switch (Some(1)) {
 
 /* with parens around direct list pattern in constructor pattern */
 switch None {
-| Some [] => ()
-| Some [_] => ()
-| Some [x] => ()
-| Some [x, ...xs] => ()
-| Some [x, y, z] => ()
+| Some([]) => ()
+| Some([_]) => ()
+| Some([x]) => ()
+| Some([x, ...xs]) => ()
+| Some([x, y, z]) => ()
 | _ => ()
 };
 
 /* no parens around direct list pattern in constructor pattern (sugar) */
 switch None {
-| Some [] => ()
-| Some [_] => ()
-| Some [x] => ()
-| Some [x, ...xs] => ()
-| Some [x, y, z] => ()
+| Some([]) => ()
+| Some([_]) => ()
+| Some([x]) => ()
+| Some([x, ...xs]) => ()
+| Some([x, y, z]) => ()
 | _ => ()
 };
 
 /* with parens around direct array pattern in constructor pattern */
 switch None {
-| Some [||] => "empty"
-| Some [|_|] => "one any"
-| Some [|a|] => "one"
-| Some [|a, b|] => "two"
+| Some([||]) => "empty"
+| Some([|_|]) => "one any"
+| Some([|a|]) => "one"
+| Some([|a, b|]) => "two"
 | _ => "many"
 };
 
 /* no parens around direct array pattern in constructor pattern (sugar) */
 switch None {
-| Some [||] => "empty"
-| Some [|_|] => "one any"
-| Some [|a|] => "one"
-| Some [|a, b|] => "two"
+| Some([||]) => "empty"
+| Some([|_|]) => "one any"
+| Some([|a|]) => "one"
+| Some([|a, b|]) => "two"
 | _ => "many"
 };
 
 /* parens around direct record pattern in constructor pattern */
 switch None {
-| Some {x} => ()
-| Some {x, y} => ()
+| Some({x}) => ()
+| Some({x, y}) => ()
 };
 
 /* no parens around direct record pattern in constructor pattern (sugar) */
 switch None {
-| Some {x} => ()
-| Some {x, y} => ()
+| Some({x}) => ()
+| Some({x, y}) => ()
 };
