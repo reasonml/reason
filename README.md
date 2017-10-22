@@ -58,6 +58,8 @@ const refmt = require('refmt')
 console.log(refmt.printRE(refmt.parseML('let f a = 1')))
 ```
 
+`refmt.js` is minified for you through Closure Compiler, with an accompanying `refmt.map`. The size is 2.3MB **but don't get fooled; it gzips down to just 345KB**. This way, you can carry it around in your own blog and use it to create interactive refmt playground, without worrying about imposing bandwidth overhead to your readers. Again, keep our ecosystem fast and lean.
+
 ### Native API
 
 We're spoiled with more APIs on the native side. To use Reason from OPAM as a native library, you have [these functions](https://github.com/facebook/reason/blob/5a253048e8077c4597a8935adbed7aa22bfff647/src/reason_toolchain.ml#L141-L157). So:
