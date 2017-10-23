@@ -27,7 +27,7 @@ let keyword_confused_with_ident state token =
   match identlike_keywords token with
   | Some name when Raw.transitions_on_lident state
                 || Raw.transitions_on_uident state ->
-    (name ^ " is a reserved keyword, it cannot be used as an identifier")
+    (name ^ " is a reserved keyword, it cannot be used as an identifier. Try `" ^ name ^ "_' instead")
   | _ -> raise Not_found
 
 let uppercased_instead_of_lowercased state token =
