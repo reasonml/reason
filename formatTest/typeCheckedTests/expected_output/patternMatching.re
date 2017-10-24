@@ -129,18 +129,22 @@ let res =
 /* test (), which is sugar for (()) */
 switch (Some()) {
 | Some () => 1
+| _ => 2
 };
 
 switch (Some()) {
 | Some () => 1
+| _ => 2
 };
 
 switch (Some()) {
 | Some () => 1
+| _ => 2
 };
 
 switch (Some()) {
 | Some () => 1
+| _ => 2
 };
 
 type foo =
@@ -181,14 +185,15 @@ switch () {
 switch (Some(1)) {
 | Some(1) => 1
 | None => 2
+| _ => 3
 };
 
 /* with parens around direct list pattern in constructor pattern */
 switch None {
 | Some([]) => ()
-| Some([_]) => ()
+| Some([_]) when true => ()
 | Some([x]) => ()
-| Some([x, ...xs]) => ()
+| Some([x, ...xs]) when true => ()
 | Some([x, y, z]) => ()
 | _ => ()
 };
@@ -196,9 +201,9 @@ switch None {
 /* no parens around direct list pattern in constructor pattern (sugar) */
 switch None {
 | Some([]) => ()
-| Some([_]) => ()
+| Some([_]) when true => ()
 | Some([x]) => ()
-| Some([x, ...xs]) => ()
+| Some([x, ...xs]) when true => ()
 | Some([x, y, z]) => ()
 | _ => ()
 };
@@ -206,7 +211,7 @@ switch None {
 /* with parens around direct array pattern in constructor pattern */
 switch None {
 | Some([||]) => "empty"
-| Some([|_|]) => "one any"
+| Some([|_|]) when true => "one any"
 | Some([|a|]) => "one"
 | Some([|a, b|]) => "two"
 | _ => "many"
@@ -215,7 +220,7 @@ switch None {
 /* no parens around direct array pattern in constructor pattern (sugar) */
 switch None {
 | Some([||]) => "empty"
-| Some([|_|]) => "one any"
+| Some([|_|]) when true => "one any"
 | Some([|a|]) => "one"
 | Some([|a, b|]) => "two"
 | _ => "many"
@@ -223,12 +228,14 @@ switch None {
 
 /* parens around direct record pattern in constructor pattern */
 switch None {
-| Some({x}) => ()
+| Some({x}) when true => ()
 | Some({x, y}) => ()
+| _ => ()
 };
 
 /* no parens around direct record pattern in constructor pattern (sugar) */
 switch None {
-| Some({x}) => ()
+| Some({x}) when true => ()
 | Some({x, y}) => ()
+| _ => ()
 };

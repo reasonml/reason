@@ -526,6 +526,7 @@ let myFun = () =>
 let zzz =
   Some("oh hai");
 
+/* this should be the only test that generates a warning. We're explicitly testing for this */
 let optionalCallSite =
   <Optional1 required=?zzz />;
 
