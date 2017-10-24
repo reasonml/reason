@@ -222,10 +222,11 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
     {lexbuf with refill_buff}
 
   let wrap_with_comments parsing_fun lexbuf =
+    let input_copy = Buffer.create 0 in
+    let lexbuf = keep_from_lexbuf input_copy lexbuf in
     Toolchain_impl.safeguard_parsing lexbuf (fun () ->
       let _ = Toolchain_impl.Lexer_impl.init () in
-      let input_copy = Buffer.create 0 in
-      let ast = parsing_fun (keep_from_lexbuf input_copy lexbuf) in
+      let ast = parsing_fun lexbuf in
       let unmodified_comments = Toolchain_impl.Lexer_impl.comments() in
       let contents = Buffer.contents input_copy in
       Buffer.reset input_copy;
