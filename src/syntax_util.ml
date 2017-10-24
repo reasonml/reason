@@ -137,34 +137,88 @@ let syntax_error_extension_node loc message =
  in
  (str, payload)
 
-(** What does this do? Here's an example: Reason code uses `!` for logical not,
-  while ocaml uses `not`. So, for converting between reason and ocaml syntax,
-  ocaml `not` converts to `!`, reason `!` converts to `not`. This table is
-  used later on to do the actual swapping. 
+(** Check to see if the string `s` is made up of `keyword` and zero or more
+    trailing `_` characters. *)
+let potentially_conflicts_with ~keyword s =
+  let s_length = String.length s in
+  let keyword_length = String.length keyword in
+  (* It can't be a match if s is shorter than keyword *)
+  s_length >= keyword_length && (
+    try
+      (* Ensure s starts with keyword... *)
+      for i = 0 to keyword_length - 1 do
+        if keyword.[i] <> s.[i] then raise Exit;
+      done;
+      (* ...and contains nothing else except trailing _ characters *)
+      for i = keyword_length to s_length - 1 do
+        if s.[i] <> '_' then raise Exit;
+      done;
+      (* If we've made it this far there's a potential conflict *)
+      true
+    with
+    | Exit -> false
+  )
 
-  The drawback of this technique is that if you're using an identifier such as
-  `pub` in the ocaml file Foo.ml (say, let pub = 5), for a piece of Reason code
-  to interop with it, said code needs to write `Foo.method` (because of the
-  method <-> pub keyword swap). This is pretty dumb...
+(** Add/remove an appropriate suffix when mangling potential keywords *)
+let string_add_suffix x = x ^ "_"
+let string_drop_suffix x = String.sub x 0 (String.length x - 1)
+
+(** What do these *_swap functions do? Here's an example: Reason code uses `!`
+    for logical not, while ocaml uses `not`. So, for converting between reason
+    and ocaml syntax, ocaml `not` converts to `!`, reason `!` converts to
+    `not`.
+
+    In more complicated cases where a keyword exists in one syntax but not the
+    other these functions translate any potentially conflicting identifier into
+    the same identifier with a suffix attached, or remove the suffix when
+    converting back.
 *)
 
-let reason_to_ml_swapping_alist = [
-  "!"       , "not";
-  "^"       , "!";
-  "++"      , "^";
-  "==="     , "==";
-  "=="      , "=";
+let reason_to_ml_swap = function
+  | "!" -> "not"
+  | "^" -> "!"
+  | "++" -> "^"
+  | "===" -> "=="
+  | "==" -> "="
   (* ===\/ and !==\/ are not representable in OCaml but
    * representable in Reason
    *)
-  "\\!=="   , "!==";
-  "\\==="   , "===";
-  "!="      , "<>";
-  "!=="     , "!=";
-  "match"   , "switch";
-  "method"  , "pub";
-  "private" , "pri";
-]
+  | "\\!==" -> "!=="
+  |  "\\===" -> "==="
+  | "!=" -> "<>"
+  | "!==" -> "!="
+  | x when (
+    potentially_conflicts_with ~keyword:"match" x
+    || potentially_conflicts_with ~keyword:"method" x
+    || potentially_conflicts_with ~keyword:"private" x) -> string_add_suffix x
+  | x when (
+    potentially_conflicts_with ~keyword:"switch_" x
+    || potentially_conflicts_with ~keyword:"pub_" x
+    || potentially_conflicts_with ~keyword:"pri_" x) -> string_drop_suffix x
+  | everything_else -> everything_else
+
+let ml_to_reason_swap = function
+  | "not" -> "!"
+  | "!" -> "^"
+  | "^" -> "++"
+  | "==" -> "==="
+  | "=" -> "=="
+  (* ===\/ and !==\/ are not representable in OCaml but
+   * representable in Reason
+   *)
+  | "!==" -> "\\!=="
+  |  "===" -> "\\==="
+  | "<>" -> "!="
+  | "!=" -> "!=="
+  | x when (
+    potentially_conflicts_with ~keyword:"match_" x
+    || potentially_conflicts_with ~keyword:"method_" x
+    || potentially_conflicts_with ~keyword:"private_" x) -> string_drop_suffix x
+  | x when (
+    potentially_conflicts_with ~keyword:"switch" x
+    || potentially_conflicts_with ~keyword:"pub" x
+    || potentially_conflicts_with ~keyword:"pri" x) -> string_add_suffix x
+  | everything_else -> everything_else
 
 let swap_txt map txt =
   if StringMap.mem txt map then
@@ -230,31 +284,13 @@ let escape_stars_slashes_mapper =
   in
   identifier_mapper escape_stars_slashes
 
-(**
- * swap_operator_mapper is a mapper that swaps two operators at parse/print time.
- * We need this since we want to transform operator such as "=" in Ocaml to "==" in Reason.
- * In this case, in the parser, everytime we see a token "==" in Reason, we transform it into "=";
- * Similarly, in the printer, everytime we see a token "=", we transform it into "==";
- *)
-let swap_operator_mapper map = identifier_mapper (swap_txt map)
-
-let reason_to_ml_swap_map = List.fold_left
-                              (fun map (op1, op2) -> (StringMap.add op1 op2 map))
-                              StringMap.empty
-                              reason_to_ml_swapping_alist
-
-let ml_to_reason_swap_map = List.fold_left
-                              (fun map (op1, op2) -> (StringMap.add op2 op1 map))
-                              StringMap.empty
-                              reason_to_ml_swapping_alist
-
 (* To be used in parser, transform a token into an ast node with different identifier
  *)
-let reason_to_ml_swap_operator_mapper = swap_operator_mapper reason_to_ml_swap_map
+let reason_to_ml_swap_operator_mapper = identifier_mapper reason_to_ml_swap
 
 (* To be used in printer, transform an ast node into a token with different identifier
  *)
-let ml_to_reason_swap_operator_mapper = swap_operator_mapper ml_to_reason_swap_map
+let ml_to_reason_swap_operator_mapper = identifier_mapper ml_to_reason_swap
 
 (* attribute_equals tests an attribute is txt
  *)
