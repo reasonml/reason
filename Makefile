@@ -17,15 +17,19 @@ precompile:
 	cp pkg/META.in pkg/META
 	ocamlbuild -use-ocamlfind -package topkg pkg/build.native
 
-build_without_utop: compile_error setup_convenient_bin_links precompile
+preprocess: precompile
+	./build.native build -r src/reason_parser.ml -r src/menhir_error_processor.native
+	./menhir_error_processor.native _build/src/reason_parser.cmly > src/reason_parser_explain_raw.ml
+
+build_without_utop: compile_error setup_convenient_bin_links
 	./build.native build --utop false
 	chmod +x $(shell pwd)/_build/src/*.sh
 
-build_with_outcome_test: compile_error setup_convenient_bin_links precompile
+build_with_outcome_test: compile_error setup_convenient_bin_links
 	./build.native build --utop true --outcome_test true
 	chmod +x $(shell pwd)/_build/src/*.sh
 
-build: compile_error setup_convenient_bin_links precompile
+build: compile_error setup_convenient_bin_links
 	./build.native build --utop true
 	chmod +x $(shell pwd)/_build/src/*.sh
 
@@ -80,7 +84,7 @@ release: release_check pre_release
 
 # Compile error messages into ml file, checks if the error messages are complete and not redundent
 
-compile_error: update_error
+compile_error: update_error preprocess
 	menhir --explain --strict --unused-tokens src/reason_parser.mly --compile-errors src/reason_parser.messages > src/reason_parser_message.ml
 
 all_errors:

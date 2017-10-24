@@ -601,11 +601,11 @@ module Reason_syntax = struct
       begin match Syntax_util.findMenhirErrorMessage loc with
         | Syntax_util.MenhirMessagesError err -> ()
         | Syntax_util.NoMenhirMessagesError ->
-          let state = state checkpoint in
-          let msg =
-            try Reason_parser_message.message state
-            with Not_found -> "<SYNTAX ERROR>\n"
+          let token = match supplier.last_token with
+            | Some token -> token
+            | None -> assert false
           in
+          let msg = Reason_parser_explain.message env token in
           Syntax_util.add_error_message Syntax_util.{loc = loc; msg = msg};
       end;
       let checkpoint = I.resume checkpoint in
@@ -617,14 +617,15 @@ module Reason_syntax = struct
        * customized Error object
       *)
       let loc = last_token_loc supplier in
-      let state = state checkpoint in
+      let token = match supplier.last_token with
+        | Some token -> token
+        | None -> assert false
+      in
+      let state = I.current_state_number env in
       (* Check the error database to see what's the error message
        * associated with the current parser state
       *)
-      let msg =
-        try Reason_parser_message.message state
-        with Not_found -> "<UNKNOWN SYNTAX ERROR>"
-      in
+      let msg = Reason_parser_explain.message env token in
       let msg_with_state = Printf.sprintf "%d: %s" state msg in
       raise (Syntax_util.Error (loc, (Syntax_util.Syntax_error msg_with_state)))
 

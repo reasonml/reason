@@ -3,8 +3,8 @@
 open Topkg
 
 let menhir_options =
-  let trace = try let _ = Sys.getenv "trace" in "--trace" with | Not_found -> "" in
-  "menhir --strict --unused-tokens --fixed-exception --table " ^ trace
+  let trace = try let _ = Sys.getenv "trace" in " --trace" with | Not_found -> "" in
+  "menhir --strict --unused-tokens --fixed-exception --table --cmly" ^ trace
 
 let utop = Conf.(key "utop" bool ~absent:false)
 let native = Conf.(key "native" bool ~absent:false)
