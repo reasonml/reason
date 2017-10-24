@@ -21,3 +21,5 @@
 - The combination of functon label renaming + type annotation + punning is now supported
 - Fix LOTS of bugs regarding parsing & formatting
 - Official refmt.js, with public api
+- Official refmt native public API too
+- Better keyword swapping behavior (#1539)
