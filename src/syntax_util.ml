@@ -168,10 +168,36 @@ let string_drop_suffix x = String.sub x 0 (String.length x - 1)
     and ocaml syntax, ocaml `not` converts to `!`, reason `!` converts to
     `not`.
 
-    In more complicated cases where a keyword exists in one syntax but not the
-    other these functions translate any potentially conflicting identifier into
-    the same identifier with a suffix attached, or remove the suffix when
-    converting back.
+    In more complicated cases where a reserved keyword exists in one syntax but
+    not the other, these functions translate any potentially conflicting
+    identifier into the same identifier with a suffix attached, or remove the
+    suffix when converting back. Two examples:
+
+    reason to ocaml:
+
+    pub: invalid in reason to begin with
+    pub_: pub
+    pub__: pub_
+
+    ocaml to reason:
+
+    pub: pub_
+    pub_: pub__
+    pub__: pub___
+
+    =====
+
+    reason to ocaml:
+
+    match: match_
+    match_: match__
+    match__: match___
+
+    ocaml to reason:
+
+    match: invalid in ocaml to begin with
+    match_: match
+    match__: match_
 *)
 
 let reason_to_ml_swap = function
@@ -259,8 +285,8 @@ let identifier_mapper f super =
     in
     super.pat mapper pat
   end;
-  signature_item = begin fun mapper signatureItem -> 
-    let signatureItem = 
+  signature_item = begin fun mapper signatureItem ->
+    let signatureItem =
       match signatureItem with
         | {psig_desc=Psig_value ({pval_name} as name);
            psig_loc} ->
