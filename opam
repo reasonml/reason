@@ -25,7 +25,7 @@ depends: [
   "utop"                    {>= "1.17"}
   "merlin-extend"           {>= "0.3"}
   "result"                  {=  "1.2"}
-  "topkg"                   {>=  "0.8.1"}
+  "topkg"                   {>=  "0.9.1"}
   "ocaml-migrate-parsetree"
 ]
 depopts: [
