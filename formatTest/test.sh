@@ -63,7 +63,7 @@ function debug() {
 }
 
 function success() {
-    printf "${SUCCESS}$1${RESET}\n"
+    printf "${SUCCESS}$1${RESET}"
 }
 
 function output() {
