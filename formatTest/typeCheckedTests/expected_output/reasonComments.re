@@ -243,22 +243,18 @@ let res =
  */
 let result =
   switch None {
-  | Some(
-      {
-        fieldOne: 20, /* end of line */
-        fieldA:
-          a /* end of line */
-      }
-    ) =>
+  | Some({
+      fieldOne: 20, /* end of line */
+      fieldA:
+        a /* end of line */
+    }) =>
     let tmp = 0;
     2 + tmp
-  | Some(
-      {
-        fieldOne: n, /* end of line */
-        fieldA:
-          a /* end of line */
-      }
-    ) =>
+  | Some({
+      fieldOne: n, /* end of line */
+      fieldA:
+        a /* end of line */
+    }) =>
     let tmp = n;
     n + tmp
   | None => 20

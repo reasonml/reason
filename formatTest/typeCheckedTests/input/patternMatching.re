@@ -205,3 +205,20 @@ switch None {
 | Some {x, y} => ()
 | _ => ()
 };
+
+switch None {
+| Some([|someSuperLongString, thisShouldBreakTheLine|]) => ()
+| _ => ()
+};
+
+switch None {
+| Some((someSuperLongString, thisShouldBreakTheLine)) => ()
+| _ => ()
+};
+
+switch None {
+| Some([someSuperLongString, thisShouldBreakTheLine]) => ()
+| Some([someSuperLongString, ...es6ListSugarLikeSyntaxWhichIsSuperLong]) when true === true => ()
+| Some([someSuperLongString, ...es6ListSugarLikeSyntaxWhichIsSuperLong]) => ()
+| _ => ()
+}

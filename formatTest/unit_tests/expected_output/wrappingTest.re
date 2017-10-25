@@ -2469,18 +2469,20 @@ let howDoLongMultiBarPatternsWrap = (x) =>
   switch x {
   | AnotherReallyLongVariantName(_, _, _) => 0
   | AnotherReallyLongVariantName2(_, _, _) => 0
-  | ReallyLongVariantName(
-      {someField, anotherField}
-    ) => 0
+  | ReallyLongVariantName({
+      someField,
+      anotherField
+    }) => 0
   };
 
 let letsCombineTwoLongPatternsIntoOneCase = (x) =>
   switch x {
   | AnotherReallyLongVariantName(_, _, _)
   | AnotherReallyLongVariantName2(_, _, _) => 0
-  | ReallyLongVariantName(
-      {someField, anotherField}
-    ) => 0
+  | ReallyLongVariantName({
+      someField,
+      anotherField
+    }) => 0
   };
 
 let letsPutAWhereClauseOnTheFirstTwo = (x) =>
@@ -2488,18 +2490,20 @@ let letsPutAWhereClauseOnTheFirstTwo = (x) =>
   | AnotherReallyLongVariantName(_, _, _)
   | AnotherReallyLongVariantName2(_, _, _)
       when true => 0
-  | ReallyLongVariantName(
-      {someField, anotherField}
-    ) => 0
+  | ReallyLongVariantName({
+      someField,
+      anotherField
+    }) => 0
   };
 
 let letsPutAWhereClauseOnTheLast = (x) =>
   switch x {
   | AnotherReallyLongVariantName(_, _, _)
   | AnotherReallyLongVariantName2(_, _, _) => 0
-  | ReallyLongVariantName(
-      {someField, anotherField}
-    )
+  | ReallyLongVariantName({
+      someField,
+      anotherField
+    })
       when true => 0
   };
 
