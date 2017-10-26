@@ -42,7 +42,6 @@ const refmtInterface = (sourceFile) => {
 }
 
 const checkResult = (text) => new Promise((res, rej) => {
-  const cmd = `echo `
   const proc = spawn(refmt, ['--parse', 're', '-i', 'true', '--print', 're'])
 
   let stdout = ''

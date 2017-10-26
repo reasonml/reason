@@ -84,6 +84,8 @@ Our lexer & parser use [Menhir](http://gallium.inria.fr/~fpottier/menhir/), a li
 
 - `reactjs_jsx_ppx_v2.ml/v3.ml`: our ReactJS interop that translates [Reason JSX](https://reasonml.github.io/guide/language/jsx) into something that ReactJS understands. See the comments in the file and the description in [ReasonReact](https://reasonml.github.io/reason-react/#reason-react-jsx).
 
+- `testOprint.ml`: unit tests for the outcome printer mentioned above. See the file for more info on how outcome printing is tested.
+
 ## Working With Parser
 
 Here's a recommended workflow:
