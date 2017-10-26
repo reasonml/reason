@@ -2411,6 +2411,28 @@ let isSingleArgParenApplication = function
   | [({pexp_attributes = []; pexp_desc} as exp)] when (is_simple_list_expr exp) -> true
   | _ -> false
 
+(*
+ * Determines if the arguments of a constructor pattern match need
+ * special printing. If there's one argument & they have some kind of wrapping,
+ * they're wrapping need to 'hug' the surrounding parens.
+ * Example:
+ *  switch x {
+ *  | Some({
+ *      a,
+ *      b,
+ *    }) => ()
+ *  }
+ *
+ *  Notice how ({ and }) hug.
+ *  This applies for records, arrays, tuples & lists.
+ *  See `singleArgParenPattern` for the acutal formatting
+ *)
+let isSingleArgParenPattern = function
+  | [{ppat_attributes = []; ppat_desc = Ppat_record _}]
+  | [{ppat_attributes = []; ppat_desc = Ppat_array _}]
+  | [{ppat_attributes = []; ppat_desc = Ppat_tuple _}] -> true
+  | [{ppat_attributes = []; ppat_desc = Ppat_construct (({txt=Lident "::"}), _)}] -> true
+  | _ -> false
 
 (* Flattens a resolvedRule into a list of infixChain nodes.
  * When foo |> f |> z gets parsed, we get the following tree:
@@ -3243,9 +3265,9 @@ class printer  ()= object(self:'self)
             (*   ppat_attributes=[{txt="explicit_arity"; loc}] *)
             (* }) -> *)
             (*   label ~space:true (self#longident_loc li) (makeSpacedBreakableInlineList (List.map self#simple_pattern l)) *)
-            | Some xx ->
+            | Some pattern ->
                 let arityIsClear = isArityClear arityAttrs in
-                self#constructor_pattern ~arityIsClear liSourceMapped xx
+                self#constructor_pattern ~arityIsClear liSourceMapped pattern
             | None ->
                 liSourceMapped
           in
@@ -3265,13 +3287,15 @@ class printer  ()= object(self:'self)
         self#or_pattern p1 p2
       | _ -> self#pattern_without_or x
 
-  method pattern_list_helper pat =
+  method patternList ?(wrap=("","")) pat =
+    let (left, right) = wrap in
     let pat_list, pat_last = self#pattern_list_split_cons [] pat in
     match pat_last with
     | {ppat_desc = Ppat_construct ({txt=Lident "[]"},_)} -> (* [x,y,z] *)
-        makeList ~break:IfNeed ~wrap:("[", "]") ~sep:"," ~postSpace:true (List.map self#pattern pat_list)
+        let wrap = (left ^ "[", "]" ^ right) in
+        makeList ~break:IfNeed ~wrap ~sep:"," ~postSpace:true (List.map self#pattern pat_list)
     | _ -> (* x::y *)
-        makeES6List (List.map self#pattern pat_list) (self#pattern pat_last)
+        makeES6List ~wrap (List.map self#pattern pat_list) (self#pattern pat_last)
 
   method constrained_pattern x = match x.ppat_desc with
     | Ppat_constraint (p, ct) ->
@@ -3295,7 +3319,7 @@ class printer  ()= object(self:'self)
 
               SourceMap (loc, (atom x))
           | Ppat_construct (({txt=Lident "::"}), po) ->
-                self#pattern_list_helper x (* LIST PATTERN *)
+                self#patternList x (* LIST PATTERN *)
           | Ppat_construct (({txt} as li), None) ->
               let liSourceMapped = SourceMap (li.loc, (self#longident_loc li)) in
               SourceMap (x.ppat_loc, liSourceMapped)
@@ -3324,35 +3348,15 @@ class printer  ()= object(self:'self)
              *)
               SourceMap (loc, (protectIdentifier txt))
           | Ppat_array l ->
-              makeList ~wrap:("[|", "|]") ~break:IfNeed ~postSpace:true ~sep:"," (List.map self#pattern l)
+              self#patternArray l
           | Ppat_unpack (s) ->
               makeList ~wrap:("(", ")") ~break:IfNeed ~postSpace:true [atom "module"; atom s.txt]
           | Ppat_type li ->
               makeList [atom "#"; self#longident_loc li]
           | Ppat_record (l, closed) ->
-              let longident_x_pattern (li, p) =
-                match (li, p.ppat_desc) with
-                  | ({txt = ident}, Ppat_var {txt}) when Longident.last ident = txt ->
-                    (* record field punning when destructuring. {x: x, y: y} becomes {x, y} *)
-                    (* works with module prefix too: {MyModule.x: x, y: y} becomes {MyModule.x, y} *)
-                      self#longident_loc li
-                  | ({txt = ident},
-                     Ppat_alias ({ppat_desc = (Ppat_var {txt = ident2}) }, {txt = aliasIdent}))
-                     when Longident.last ident = ident2 ->
-                    (* record field punning when destructuring with renaming. {state: state as prevState} becomes {state as prevState *)
-                    (* works with module prefix too: {ReasonReact.state: state as prevState} becomes {ReasonReact.state as prevState *)
-                      makeList ~sep:" " [self#longident_loc li; atom "as"; atom aliasIdent]
-                  | _ ->
-                      label ~space:true (makeList [self#longident_loc li; atom ":"]) (self#pattern p)
-              in
-              let rows = (List.map longident_x_pattern l)@(
-                match closed with
-                  | Closed -> []
-                  | _ -> [atom "_"]
-              ) in
-              makeList ~wrap:("{", "}") ~break:IfNeed ~sep:"," ~postSpace:true rows
+             self#patternRecord l closed
           | Ppat_tuple l ->
-              makeList ~wrap:("(", ")") ~sep:"," ~postSpace:true ~break:IfNeed (List.map self#constrained_pattern l)
+             self#patternTuple l
           | Ppat_constant (c) -> (self#constant c)
           | Ppat_interval (c1, c2) -> makeList [self#constant c1; atom ".."; self#constant c2]
           | Ppat_variant (l, None) -> makeList[atom "`"; atom l]
@@ -4742,6 +4746,7 @@ class printer  ()= object(self:'self)
     in
     let space, arguments = match arguments with
       | [x] when is_direct_pattern x -> (true, self#simple_pattern x)
+      | xs when isSingleArgParenPattern xs -> (false, self#singleArgParenPattern xs)
       | xs -> (false, makeTup (List.map self#pattern xs))
     in
     let construction = label ~space ctor arguments in
@@ -4750,6 +4755,68 @@ class printer  ()= object(self:'self)
         (self#attributes [({txt="implicit_arity"; loc=po.ppat_loc}, PStr [])])
     else
       construction
+
+  (*
+   * Provides special printing for constructor arguments:
+   * iff there's one argument & they have some kind of wrapping,
+   * they're wrapping need to 'hug' the surrounding parens.
+   * Example:
+   *  switch x {
+   *  | Some({
+   *      a,
+   *      b,
+   *    }) => ()
+   *  }
+   *
+   *  Notice how ({ and }) hug.
+   *  This applies for records, arrays, tuples & lists.
+   *  Also see `isSingleArgParenPattern` to determine if this kind of wrapping applies.
+   *)
+  method singleArgParenPattern = function
+    | [{ppat_desc = Ppat_record (l, closed)}] ->
+        self#patternRecord ~wrap:("(", ")") l closed
+    | [{ppat_desc = Ppat_array l}] ->
+        self#patternArray ~wrap:("(", ")") l
+    | [{ppat_desc = Ppat_tuple l}] ->
+        self#patternTuple ~wrap:("(", ")") l
+    | [{ppat_desc = Ppat_construct (({txt=Lident "::"}), po)} as listPattern]  ->
+        self#patternList ~wrap:("(", ")")  listPattern
+    | _ -> assert false
+
+  method patternArray ?(wrap=("","")) l =
+    let (left, right) = wrap in
+    let wrap = (left ^ "[|", "|]" ^ right) in
+    makeList ~wrap ~break:IfNeed ~postSpace:true ~sep:"," (List.map self#pattern l)
+
+  method patternTuple ?(wrap=("","")) l =
+    let (left, right) = wrap in
+    let wrap = (left ^ "(", ")" ^ right) in
+    makeList ~wrap ~sep:"," ~postSpace:true ~break:IfNeed (List.map self#constrained_pattern l)
+
+  method patternRecord ?(wrap=("","")) l closed =
+    let longident_x_pattern (li, p) =
+      match (li, p.ppat_desc) with
+        | ({txt = ident}, Ppat_var {txt}) when Longident.last ident = txt ->
+          (* record field punning when destructuring. {x: x, y: y} becomes {x, y} *)
+          (* works with module prefix too: {MyModule.x: x, y: y} becomes {MyModule.x, y} *)
+            self#longident_loc li
+        | ({txt = ident},
+           Ppat_alias ({ppat_desc = (Ppat_var {txt = ident2}) }, {txt = aliasIdent}))
+           when Longident.last ident = ident2 ->
+          (* record field punning when destructuring with renaming. {state: state as prevState} becomes {state as prevState *)
+          (* works with module prefix too: {ReasonReact.state: state as prevState} becomes {ReasonReact.state as prevState *)
+            makeList ~sep:" " [self#longident_loc li; atom "as"; atom aliasIdent]
+        | _ ->
+            label ~space:true (makeList [self#longident_loc li; atom ":"]) (self#pattern p)
+    in
+    let rows = (List.map longident_x_pattern l)@(
+      match closed with
+        | Closed -> []
+        | _ -> [atom "_"]
+    ) in
+    let (left, right) = wrap in
+    let wrap = (left ^ "{", "}" ^ right) in
+    makeList ~wrap ~break:IfNeed ~sep:"," ~postSpace:true rows
 
   method patternFunction loc l =
     let estimatedFunLocation = {
