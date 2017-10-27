@@ -2,8 +2,13 @@
 
 Our biggest release! **Please see our blog post** on https://reasonml.github.io/community/blog/#reason-3.
 
+Summary: this is, practically speaking, a **non-breaking** change. You can mix and match two projects with different syntax versions in BuckleScript 2 (which just got release too! Go check), and they'll Just Work (tm).
+
+To upgrade your own project, we've released a script, https://github.com/reasonml/upgradeSyntaxFrom2To3
+
 Improvements:
 
+- Much better printing for most common idioms.
 - Even better infix operators formatting for `==`, `&&`, `>` and the rest (#1380, #1386, etc.).
 - More predictable keyword swapping behavior (#1539).
 - BuckleScript's `Js.t {. foo: bar}` now formats to `{. "foo": bar}`, just like its value counterpart (`[%bs.obj {foo: 1}]` to `{"foo": bar}`.
@@ -28,6 +33,7 @@ Breaking Changes:
 - Remove `--use-stdin` and `--is-interface-pp` option from refmt; they've been deprecated for a long time now
 - Remove unused binaries: `reup`, etc.
 - Remove the old `reactjs_jsx_ppx.ml`. You've all been on `reactjs_jsx_ppx_2.ml` for a long time now.
+- Reserved keywords can no longer be used as an `external` declaration's labels.
 
 Deprecated:
 
