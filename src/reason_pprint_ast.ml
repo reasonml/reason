@@ -4702,6 +4702,10 @@ class printer  ()= object(self:'self)
   method constructor_expression ?(polyVariant=false) ~arityIsClear stdAttrs ctor eo =
     let (implicit_arity, arguments) =
       match eo.pexp_desc with
+      | Pexp_construct ( {txt= Lident "()"},_) ->
+          (* `foo() is a polymorphic variant that contains a single unit construct as expression
+           * This requires special formatting: `foo(()) -> `foo() *)
+          (false, atom "()")
       (* special printing: MyConstructor(()) -> MyConstructor() *)
       | Pexp_tuple l when is_single_unit_construct l ->
           (false, atom "()")
