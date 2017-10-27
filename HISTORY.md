@@ -22,11 +22,11 @@ Improvements:
 - JSX needs `{}` like in JS.
 - Fix reason-specific keywords printing in interface files (e.g. `==`, `match`, `method`).
 - Record punning with renaming (#1517).
-- The combination of functon label renaming + type annotation + punning is now supported!
+- The combination of function label renaming + type annotation + punning is now supported!
 - Fix LOTS of bugs regarding parsing & formatting (closing around 100 improvement-related issues!).
-- Official `refmt.js`, with public api. See `README.md`.
+- Official `refmt.js`, with public API. See `README.md`.
 - Official `refmt` native public API too.
-- **New JS application/abstraction syntax**. Yes yes, we know. Despite the 100+ fixes, this one's all you cared about. Modern software engineering ¯\\_(ツ)_/¯. Please do read the blog post though.
+- **New JS application/abstraction syntax**. Yes yes, we know. Despite the 100+ fixes, this one's all you cared about. Modern software engineering ¯\\\_(ツ)\_/¯. Please do read the blog post though.
 
 Breaking Changes:
 
@@ -42,6 +42,7 @@ Deprecated:
 ## 1.13.7
 
 - Much better infix operators (e.g. |>) formatting! (#1259)
+- Official `refmt.js`, with public API. See `README.md`. We've back-ported this into the 1.13.7 release =)
 
 ## 1.13.6
 
