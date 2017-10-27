@@ -74,7 +74,7 @@
 (*
   This file's shared between the Reason repo and the BuckleScript repo. In
   Reason, it's in src/reason_oprint.ml. In BuckleScript, it's in
-  jscomp/reason_outcome_printer/tweaked_reason_oprint.ml. We periodically copy
+  jscomp/outcome_printer/tweaked_reason_oprint.ml. We periodically copy
   this file from Reason (the source of truth) to BuckleScript, then uncomment
   the #if #else #end cppo macros you see in the file. That's because
   BuckleScript's on OCaml 4.02 while Reason's on 4.04; so the #if macros
@@ -99,6 +99,7 @@ let cautious f ppf arg =
   try f ppf arg with
     Ellipsis -> fprintf ppf "..."
 
+(* #if defined BS_NO_COMPILER_PATCH then *)
 let rec print_ident ppf =
   function
     Oide_ident s -> pp_print_string ppf s
@@ -106,6 +107,15 @@ let rec print_ident ppf =
       print_ident ppf id; pp_print_char ppf '.'; pp_print_string ppf s
   | Oide_apply (id1, id2) ->
       fprintf ppf "%a(%a)" print_ident id1 print_ident id2
+(* #else *)
+(* let rec print_ident ppf = *)
+  (* function *)
+    (* Oide_ident s -> !Oprint.out_ident ppf s *)
+  (* | Oide_dot (id, s) -> *)
+      (* print_ident ppf id; pp_print_char ppf '.'; !Oprint.out_ident ppf s *)
+  (* | Oide_apply (id1, id2) -> *)
+      (* fprintf ppf "%a(%a)" print_ident id1 print_ident id2 *)
+(* #end *)
 
 let parenthesized_ident name =
   (List.mem name ["or"; "mod"; "land"; "lor"; "lxor"; "lsl"; "lsr"; "asr"])
