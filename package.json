@@ -1,6 +1,6 @@
 {
 	"name": "reason",
-	"version": "1.13.7",
+	"version": "3.0.0-beta",
 	"description": "Simple, fast & type safe code that leverages the JavaScript & OCaml ecosystems",
 	"repository": {
 		"type": "git",
