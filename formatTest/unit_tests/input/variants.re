@@ -379,7 +379,14 @@ type Graph.node += pri Node = Expr.Node;
 
 type Graph.node += pri | Node = Expr.Node | Atom = Expr.Atom;
 
+/* without single unit arg sugar */
 MyConstructorWithSingleUnitArg(());
+/* with single unit arg sugar */
+MyConstructorWithSingleUnitArg();
+/* without single unit arg sugar */
+`polyVariantWithSingleUnitArg(());
+/* with single unit arg sugar */
+`polyVariantWithSingleUnitArg();
 
 /* #1510: keep ({ and }) together on the same line when breaking */
 Delete({ uuid: json |> Util.member("uuid") |> Util.to_string });
