@@ -1063,3 +1063,12 @@ let registerEventHandlers =
 let x = ({state as prevState}) => 1;
 
 let x = ({ReasonReact.state as prevState}) => 1;
+
+/* 1567: optional parens around expr constraint in constructor expression */
+Some(x: int);
+
+Some(x: int);
+
+Some(x, y: int, b);
+
+Some(x, y: int, b);

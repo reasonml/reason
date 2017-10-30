@@ -880,3 +880,9 @@ let registerEventHandlers =
 /* #1320: record destrucuring + renaming */
 let x = ({state: state as prevState}) => 1;
 let x = ({ReasonReact.state: state as prevState}) => 1;
+
+/* 1567: optional parens around expr constraint in constructor expression */
+Some(x : int);
+Some((x : int));
+Some(x, y: int, b);
+Some(x, (y: int), b);
