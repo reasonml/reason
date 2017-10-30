@@ -2871,7 +2871,7 @@ simple_expr_direct_argument:
 ;
 
 non_labeled_argument_list:
-  | parenthesized(separated_nonempty_list(COMMA, expr)) { $1 }
+  | parenthesized(separated_nonempty_list(COMMA, expr_optional_constraint)) { $1 }
   | LPAREN RPAREN
     { let loc = mklocation $startpos $endpos in
       [mkexp_constructor_unit loc loc] }
