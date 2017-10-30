@@ -23,6 +23,7 @@ Improvements:
 - Fix reason-specific keywords printing in interface files (e.g. `==`, `match`, `method`).
 - Record punning with renaming (#1517).
 - The combination of function label renaming + type annotation + punning is now supported!
+- Label is now changed from `::foo` back to `~foo`, just like for OCaml.
 - Fix LOTS of bugs regarding parsing & formatting (closing around 100 improvement-related issues!).
 - Official `refmt.js`, with public API. See `README.md`.
 - Official `refmt` native public API too.

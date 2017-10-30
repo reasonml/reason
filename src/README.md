@@ -125,6 +125,8 @@ Random Stack Overflow answer: https://stackoverflow.com/questions/9897358/ocaml-
 - [Pun record destructuring with renaming](https://github.com/facebook/reason/pull/1517)
 - [Add support for simple pattern direct argument with array, list & record](https://github.com/facebook/reason/pull/1528)
 - [Fix outcome printer record value printing](https://github.com/facebook/reason/pull/1529)
+- [Print`foo(()) as `foo() + update parser](https://github.com/facebook/reason/pull/1560)
+- [Allow parsing of constraint expressions without parens inside constructor expr](https://github.com/facebook/reason/pull/1576)
 
 ### Debugging Grammar Conflicts
 
