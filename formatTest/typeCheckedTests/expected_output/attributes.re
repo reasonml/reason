@@ -497,8 +497,3 @@ external debounce :
   ) =>
   [@bs.meth] (unit => unit) =
   "";
-/* Pexp_letexception with attributes, TODO enable on 4.04.2 and higher */
-/* let () = { */
-/* [@attribute] exception E; */
-/* raise(E) */
-/* }; */

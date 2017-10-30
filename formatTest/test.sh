@@ -5,6 +5,7 @@ set -eu
 
 WARNING='\033[0;31m'
 SUCCESS='\033[0;32m'
+NOTICE='\033[0;33m'
 INFO=''
 DEBUG=''
 RESET='\033[0m'
@@ -62,6 +63,10 @@ function debug() {
     fi
 }
 
+function notice() {
+    printf "${NOTICE}$1${RESET}\n"
+}
+
 function success() {
     printf "${SUCCESS}$1${RESET}"
 }
@@ -72,6 +77,10 @@ function output() {
 
 function warning() {
     printf "${WARNING}$1${RESET}\n"
+}
+
+function version() {
+    echo "$@" | awk -F . '{ printf("%03d%03d%03d\n", $1, $2, $3); }';
 }
 
 function setup_test_dir() {
@@ -251,16 +260,17 @@ function idempotent_test() {
 }
 
 function typecheck_test() {
-    FILE=$1
+    FILE=$(basename $1)
     INPUT=$2
     OUTPUT=$3
 
-    info "Typecheck Test: $FILE"
-    if [ "$(basename $FILE)" != "$(basename $FILE .ml)" ] || [ "$(basename $FILE)" != "$(basename $FILE .mli)" ]; then
-        if [ "$(basename $FILE)" != "$(basename $FILE .ml)" ]; then
-          REFILE="$(basename $FILE .ml).re"
+    info "Typecheck Test: $1"
+
+    if [ "$FILE" != "$(basename $FILE .ml)" ] || [ "$FILE" != "$(basename $FILE .mli)" ]; then
+        if [ "$FILE" != "$(basename $FILE .ml)" ]; then
+            REFILE="$(basename $FILE .ml).re"
         else
-          REFILE="$(basename $FILE .mli).rei"
+            REFILE="$(basename $FILE .mli).rei"
         fi
         debug "  Converting $FILE to $REFILE:"
         debug "$REFMT --heuristics-file $INPUT/arity.txt --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
@@ -278,17 +288,28 @@ function typecheck_test() {
             return 1
         fi
     fi
-    if [ "$(basename $FILE)" != "$(basename $FILE .re)" ]; then
-      COMPILE_FLAGS="-intf-suffix .rei -impl"
+
+    if [ "$FILE" != "$(basename $FILE .re)" ]; then
+        SUFFIX=".re"
+        COMPILE_FLAGS="-intf-suffix .rei -impl"
     else
-      COMPILE_FLAGS="-intf"
+        SUFFIX=".rei"
+        COMPILE_FLAGS="-intf"
     fi
 
-    debug "  Compiling: ocamlc -c -pp $REFMT $COMPILE_FLAGS $OUTPUT/$FILE"
-    ocamlc -c -pp "$REFMT --print binary" $COMPILE_FLAGS "$OUTPUT/$FILE"
-    if ! [[ $? -eq 0 ]]; then
-        warning "  ⊘ FAILED\n"
-        return 1
+    BASE_NAME=$(echo $FILE | cut -d '.' -f 1)
+    MIN_VERSION=$(basename $FILE $SUFFIX | cut -d '.' -f 2-4)
+
+    if [ "$MIN_VERSION" != "$BASE_NAME" ] && [ "$(version "$OCAML_VERSION")" -lt "$(version "$MIN_VERSION")" ]
+    then
+        notice "  ☒ IGNORED COMPILATION STEP: Requires OCaml >= $MIN_VERSION"
+    else
+        debug "  Compiling: ocamlc -c -pp $REFMT $COMPILE_FLAGS $OUTPUT/$FILE"
+        ocamlc -c -pp "$REFMT --print binary" $COMPILE_FLAGS "$OUTPUT/$FILE"
+        if ! [[ $? -eq 0 ]]; then
+            warning "  ⊘ FAILED\n"
+            return 1
+        fi
     fi
 
     success "  ☑ PASS"
@@ -343,7 +364,8 @@ cd $UNIT_TEST_INPUT && find . -type f \( -name "*.re*" -or -name "*.ml*" \) | wh
         fi
 done
 
-cd $TYPE_TEST_INPUT && find . -type f \( -name "*.re*" -or -name "*.ml*" \) | sort | while read file; do
+cd $TYPE_TEST_INPUT
+find . -type f \( -name "*.re*" -or -name "*.ml*" \) | sort | while read file; do
         typecheck_test $file $TYPE_TEST_INPUT $TYPE_TEST_OUTPUT
         if ! [[ $? -eq 0 ]]; then
             echo "$file -- failed typecheck_test" >> $FAILED_TESTS
