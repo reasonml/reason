@@ -15,7 +15,7 @@ OCAML_VERSION=${OCAML_VERSION:-"4.02.3"}
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-REFMT="$DIR/../refmt_impl.native"
+REFMT="$DIR/../_build/install/default/bin/refmt"
 
 if [[ -f REFMT ]];
 then

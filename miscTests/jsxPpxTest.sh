@@ -28,8 +28,8 @@ do
     # for each test, we're gonna use ocamlc and the ppx to dump the post-ppx ocaml
     # file somewhere
 
-    ocamlc -dsource -ppx "./reactjs_jsx_ppx_${version}.native" \
-      -pp "./refmt_impl.native --print binary" -impl $test \
+    ocamlc -dsource -ppx "./_build/install/default/bin/reactjs_jsx_ppx_${version}" \
+      -pp "./_build/install/default/bin/refmt --print binary" -impl $test \
       2> $tempFile
 
     # if there's an Error/Fatal error, bail early
@@ -40,7 +40,7 @@ do
       exit 1
     fi
     # no error
-    ./refmt_impl.native --print-width 100 --parse ml --print re $tempFile > $actual
+    ./_build/install/default/bin/refmt --print-width 100 --parse ml --print re $tempFile > $actual
 
     rm $tempFile
 

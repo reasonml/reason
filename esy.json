@@ -9,30 +9,20 @@
     "@opam/utop": " >= 1.17.0",
     "@opam/merlin-extend": " >= 0.3.0",
     "@opam/result": "=1.2.0",
-    "@opam/topkg": " >= 0.9.1",
-    "@opam/ocaml-migrate-parsetree": "*"
+    "@opam/ocaml-migrate-parsetree": "*",
+    "@opam/ocamlbuild": "*",
+    "@opam/jbuilder": "*"
   },
   "peerDependencies": {
     "ocaml": " >= 4.2.0  < 4.6.0"
   },
   "devDependencies": {
+    "@opam/merlin": "2.5.4",
     "ocaml": "~4.2.3000"
   },
   "esy": {
     "build": [
-      [ "substs", "pkg/META.in" ],
-      [ "make", "compile_error" ],
-      [ "ocamlbuild", "-use-ocamlfind", "-package", "topkg", "pkg/build.native" ],
-      [
-        "./build.native",
-        "build",
-        "--native",
-        "true",
-        "--native-dynlink",
-        "true",
-        "--utop",
-        "${utop_installed:-false}"
-      ],
+      [ "jbuilder", "build" ],
       [ "sh", "-c", "(esy-installer || true)" ]
     ],
     "buildsInSource": true

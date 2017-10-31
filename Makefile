@@ -4,41 +4,15 @@ SHELL=bash -o pipefail
 
 default: build test
 
-setup_convenient_bin_links:
-	mkdir -p $(shell pwd)/_build/bin
-	ln -fs $(shell pwd)/_build/src/refmt_impl.native $(shell pwd)/_build/bin/refmt
-	ln -fs $(shell pwd)/_build/_reasonbuild/_build/myocamlbuild $(shell pwd)/_build/bin/rebuild
-	ln -fs $(shell pwd)/_build/src/ocamlmerlin_reason.native $(shell pwd)/_build/bin/ocamlmerlin-reason
-	ln -fs $(shell pwd)/_build/src/reason_format_type.native $(shell pwd)/_build/bin/refmttype
-	ln -fs $(shell pwd)/_build/src/refmt_impl.native $(shell pwd)/_build/bin/refmt
-	ln -fs $(shell pwd)/_build/src/share.sh $(shell pwd)/_build/bin/share
-
-precompile:
-	cp pkg/META.in pkg/META
-	ocamlbuild -use-ocamlfind -package topkg pkg/build.native
-
-preprocess: precompile
-	./build.native build -r src/reason_parser.ml -r src/menhir_error_processor.native
-	./menhir_error_processor.native _build/src/reason_parser.cmly > src/reason_parser_explain_raw.ml
-
-build_without_utop: compile_error setup_convenient_bin_links
-	./build.native build --utop false
-	chmod +x $(shell pwd)/_build/src/*.sh
-
-build_with_outcome_test: compile_error setup_convenient_bin_links
-	./build.native build --utop true --outcome_test true
-	chmod +x $(shell pwd)/_build/src/*.sh
-
-build: compile_error setup_convenient_bin_links
-	./build.native build --utop true
-	chmod +x $(shell pwd)/_build/src/*.sh
+build:
+	jbuilder build
 
 install:
 	opam pin add reason . -y
-	./refmt_impl.native --help=groff > $(shell opam config var man)/man1/refmt.1
 
-test: build_with_outcome_test clean-tests
-	node ./formatTest/testOprint.js
+test: build clean-tests
+	# I don't have modern enough node to test. brb.
+	# node ./formatTest/testOprint.js
 	./miscTests/rtopIntegrationTest.sh
 	./miscTests/jsxPpxTest.sh
 	cd formatTest; ./test.sh
@@ -49,7 +23,7 @@ clean-tests:
 	rm -f ./miscTests/reactjs_jsx_ppx_tests/*.cm*
 
 clean: clean-tests
-	ocamlbuild -clean
+	jbuilder clean
 
 .PHONY: build clean
 
@@ -63,7 +37,7 @@ endif
 	export git_version="$(shell git rev-parse --verify HEAD)"; \
 	export git_short_version="$(shell git rev-parse --short HEAD)"; \
 	$(SUBSTS) $(ROOT_DIR)/package.ml.in; \
-	$(SUBSTS) $(ROOT_DIR)/opam.in
+	$(SUBSTS) $(ROOT_DIR)/reason.opam.in
 
 .PHONY: pre_release
 
@@ -81,25 +55,3 @@ release: release_check pre_release
 	./scripts/opam-release.sh
 
 .PHONY: release
-
-# Compile error messages into ml file, checks if the error messages are complete and not redundent
-
-compile_error: update_error preprocess
-	menhir --explain --strict --unused-tokens src/reason_parser.mly --compile-errors src/reason_parser.messages > src/reason_parser_message.ml
-
-all_errors:
-	@ echo "Regenerate all the possible error states for Menhir."
-	@ echo "Warning: This will take a while and use a lot of CPU and memory."
-	@ echo "---"
-	menhir --explain --strict --unused-tokens src/reason_parser.mly --list-errors > src/reason_parser.all.messages
-
-# Update error messages based on new grammar
-update_error:
-	@ cp -f src/reason_parser.messages src/reason_parser.messages.bak
-	@ if ! menhir --explain --strict --unused-tokens src/reason_parser.mly --update-errors src/reason_parser.messages.bak | sed -e 's/[[:space:]]*$$//g' > src/reason_parser.messages ; then \
-		cp src/reason_parser.messages.bak src/reason_parser.messages ; \
-		exit 1 ; \
-	fi
-	@ echo "The auto-generated comments in src/reason_parser.messages have been re-generated. The old messages file has been backed up at src/reason_parser.messages.bak"
-
-.PHONY: update_error compile_error
