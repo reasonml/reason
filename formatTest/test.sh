@@ -27,7 +27,7 @@ fi
 if hash icdiff 2> /dev/null; then
     DIFF="icdiff"
 elif hash git 2> /dev/null; then
-    DIFF="git diff --no-index"
+    DIFF="git --no-pager diff --no-index"
 else
     DIFF="eval diff --unchanged-line-format='' --new-line-format=':%dn: %L' --old-line-format=':%dn: %L'"
 fi
