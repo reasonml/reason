@@ -50,15 +50,16 @@ Our lexer & parser use [Menhir](http://gallium.inria.fr/~fpottier/menhir/), a li
 
 ### Core Files
 
-- `src/reason_lexer.mll`: the lexer that chunks a raw string into tokens. See the file for more comments.
+- `src/reason-parser/reason_lexer.mll`: the lexer that chunks a raw string into tokens. See the file for more comments.
 
-- `reason_parser.mly`: the parser that takes the lexer's result and turns it into a proper AST (abstract syntax tree). See the file for more comments.
+- `src/reason-parser/reason_parser.mly`: the parser that takes the lexer's result and turns it into a proper AST (abstract syntax tree). See the file for more comments.
 
-- `src/reason_pprint_ast.ml`: the pretty-printer! This is the reverse of parsing: it takes in the AST (abstract syntax tree) and prints out the nicely formatted code text.
+- `src/reason-parser/reason_pprint_ast.ml`: the pretty-printer! This is the reverse of parsing: it takes in the AST (abstract syntax tree) and prints out the nicely formatted code text.
 
-`src/reason_parser.messages`: this is the huge table of mostly generated, sometimes hand-written, syntax error messages. When the parser ends up at an invalid parsing state (aka ends up with a syntax error), it'd refer to that file's content and see if that case has a specific error message assigned to it. For an example fix, see [this PR](https://github.com/facebook/reason/pull/1018) and the [follow-up](https://github.com/facebook/reason/pull/1033). To add a syntax error message see [the wiki page](https://github.com/facebook/reason/wiki/Add-a-Menhir-error-message).
+- `src/reason-parser/reason_parser.messages.checked-in`: this is the huge table of mostly generated, sometimes hand-written, syntax error messages. When the parser ends up at an invalid parsing state (aka ends up with a syntax error), it'd refer to that file's content and see if that case has a specific error message assigned to it. For an example fix, see [this PR](https://github.com/facebook/reason/pull/1018) and the [follow-up](https://github.com/facebook/reason/pull/1033). To add a syntax error message see [the wiki page](https://github.com/facebook/reason/wiki/Add-a-Menhir-error-message).
+  - When running `make build`, and a new `reason_parser.messages` file is generated, do a `mv reason_parser.messages reason_parser.messages.checked-in` to persist the updated messages.
 
-- `src/reason_oprint.ml`: the "outcome printer" used by Merlin, rtop and terminal, that prints the errors in Reason syntax. More info in the file itself.
+- `src/reason-parser/reason_oprint.ml`: the "outcome printer" used by Merlin, rtop and terminal, that prints the errors in Reason syntax. More info in the file itself.
 
 ### Miscellaneous Files
 
@@ -66,25 +67,25 @@ Our lexer & parser use [Menhir](http://gallium.inria.fr/~fpottier/menhir/), a li
 
 - `*.mllib`: related: see the [OCaml extensions list](https://github.com/facebook/reason/wiki/OCaml-Ecosystem-Extensions-List). These are generated file from `pkg/build.ml`, which describes the package we distribute. No need to worry about them.
 
-- `src/reason_config.ml`: global configuration that says whether our parser should run in "recoverable" mode. Merlin has a neat feature which lets it continue diagnosing e.g. type errors even when the file is syntactically invalid (at the expense of the accuracy of those type error reports' quality). Searching `reason_config` in our codebase will show you how this is used.
+- `src/reason-parser/reason_config.ml`: global configuration that says whether our parser should run in "recoverable" mode. Merlin has a neat feature which lets it continue diagnosing e.g. type errors even when the file is syntactically invalid (at the expense of the accuracy of those type error reports' quality). Searching `reason_config` in our codebase will show you how this is used.
 
-- `reason_format_type.ml`, `reason_type_of_ocaml_type.ml`: again, see `pkg/build.ml`. These produce the `refmttype` binary, used by [BetterErrors](refmttype) to output compiler errors in Reason syntax rather than the OCaml one.
+- `src/refmttype/reason_format_type.ml`, `reason_type_of_ocaml_type.ml`: again, see `pkg/build.ml`. These produce the `refmttype` binary, used by [BetterErrors](refmttype) to output compiler errors in Reason syntax rather than the OCaml one.
 
-- `src/reason_parser.messages`: auto-generated from parser changes. Menhir generates parsing code that assigns each syntax error to a code, and lets us customize these errors. Syntax errors can be very precisely pinpointed and explained this way.
+- `src/reason-parser/reason_parser.messages`: auto-generated from parser changes. Menhir generates parsing code that assigns each syntax error to a code, and lets us customize these errors. Syntax errors can be very precisely pinpointed and explained this way.
 
-- `src/reason_toolchain.ml`, `refmt_impl.ml`: the entry point that calls the parsing logic.
+- `src/reason-parser/reason_toolchain.ml`, `src/reason-parser/refmt_impl.ml`: the entry point that calls the parsing logic.
 
-- `reason_utop.ml`, `reason_toploop.ml`, `rtop_init.ml`: Reason's [Utop](https://github.com/diml/utop) integration. Utop's the terminal-based REPL you see when executing `utop` (in Reason's case, the wrapper `rtop`).
+- `src/rtop/reason_utop.ml`, `src/rtop/reason_toploop.ml`, `src/rtop/rtop_init.ml`: Reason's [Utop](https://github.com/diml/utop) integration. Utop's the terminal-based REPL you see when executing `utop` (in Reason's case, the wrapper `rtop`).
 
-- `reasonbuild.ml`: our wrapper for [OCamlbuild](https://ocaml.org/learn/tutorials/ocamlbuild/), a simple build system.
+- `src/reasonbuild/myocamlbuild.ml`: our wrapper for [OCamlbuild](https://ocaml.org/learn/tutorials/ocamlbuild/), a simple build system.
 
 - `*.sh`: some of our binaries' entries.
 
-- `reason_util.ml`, `syntax_util.ml`: utils.
+- `src/rtop/reason_util.ml`, `syntax_util.ml`: utils.
 
-- `reactjs_jsx_ppx_v2.ml/v3.ml`: our ReactJS interop that translates [Reason JSX](https://reasonml.github.io/guide/language/jsx) into something that ReactJS understands. See the comments in the file and the description in [ReasonReact](https://reasonml.github.io/reason-react/#reason-react-jsx).
+- `src/reason-parser/reactjs_jsx_ppx_v2.ml/v3.ml`: our ReactJS interop that translates [Reason JSX](https://reasonml.github.io/guide/language/jsx) into something that ReactJS understands. See the comments in the file and the description in [ReasonReact](https://reasonml.github.io/reason-react/#reason-react-jsx).
 
-- `testOprint.ml`: unit tests for the outcome printer mentioned above. See the file for more info on how outcome printing is tested.
+- `src/reason-parser-tests/testOprint.ml`: unit tests for the outcome printer mentioned above. See the file for more info on how outcome printing is tested.
 
 ## Working With Parser
 
@@ -92,7 +93,7 @@ Here's a recommended workflow:
 
 - First put your code in the current master syntax in a file `test.re`
 - `make build`
-- `./refmt_impl.native --print ast test.re`
+- `./_build/install/default/bin/refmt --print ast test.re`
 - look closely at the ast, spot the thing you need
 - Search your item in `reason_parser.mly`
 - Change the logic
@@ -146,7 +147,7 @@ To add a Menhir error message, you first need to know the error code. To find th
 
 ```
 make
-./refmt_impl.native --parse re foo.re
+./_build/install/default/bin/refmt --parse re foo.re
 ```
 
 Where `foo.re` contains a syntax error. This will result in an error message like:
@@ -179,7 +180,7 @@ Before digging into Reason parser, make sure this isn't actually caused by some 
 
 ```
 make
-./refmt_impl.native --parse re --print ast test.re
+./_build/install/default/bin/refmt --parse re --print ast test.re
 ```
 
 Where `test.re` has the code that produces the error message at the wrong location.
@@ -206,13 +207,13 @@ As you can see from other parts in the parser, many do have a `~loc` assigned to
 reactjs_jsx_ppx_v2/v3 uses the ppx system. It works on the AST. It helps being able to see the AST of a particular snippet. Assuming you've written some code in a file `foo.re`, run the following incantation to output the code's AST:
 
 ```
-ocamlc -dparsetree -ppx ../reactjs_jsx_ppx_v2.native -pp "../refmt_impl.native --print binary" -impl foo.re
+ocamlc -dparsetree -ppx ./_build/install/default/bin/reactjs_jsx_ppx_v2.native -pp "./_build/install/default/bin/refmt_impl.native --print binary" -impl foo.re
 ```
 
 That dumps the AST after accepting the ppx and the reason syntax. You can also dump the final code in Reason syntax instead:
 
 ```
-ocamlc -dsource -ppx ../reactjs_jsx_ppx_v2.native -pp "../refmt_impl.native --print binary" -impl foo.re | ../refmt_impl.native --parse ml --print re --interface false
+ocamlc -dsource -ppx ./_build/install/default/bin/reactjs_jsx_ppx_v2.native -pp "./_build/install/default/bin/refmt_impl.native --print binary" -impl foo.re | ./_build/install/default/bin/refmt_impl.native --parse ml --print re --interface false
 ```
 
 (Similar steps for reactjs_jsx_ppx_v3.)
@@ -223,17 +224,17 @@ If you'd like to convert from an old Reason syntax version to the one in master 
 
 - Revert the repo to the old commit you want
 - Build, through `make build`
-- Move the built refmt binary `./refmt_impl.native` somewhere else
+- Move the built refmt binary `./_build/install/default/bin/refmt` somewhere else
 - Revert back to master
 - `make build` again to get the master binary.
 
 Then do:
 
 ```
-/path/to/my_old_refmt_impl.native --parse my_old_syntax_file.re --print binary_reason | ./refmt_impl --parse binary_reason --print re
+./_build/install/default/bin/refmt --parse my_old_syntax_file.re --print binary_reason | ./refmt_impl --parse binary_reason --print re
 ```
 
-Basically, turn your old syntax into an AST (which is resilient to syntax changes), then turn it back into the new, textual code. If you're reverting to an old enough version, the old binary's flags and/or the old build instructions might be different. In that case, see `/path/to/my_old_refmt_impl.native -help` and/or the old README.
+Basically, turn your old syntax into an AST (which is resilient to syntax changes), then turn it back into the new, textual code. If you're reverting to an old enough version, the old binary's flags and/or the old build instructions might be different. In that case, see `./_build/install/default/bin/refmt -help` and/or the old README.
 
 ## Cutting a release
 

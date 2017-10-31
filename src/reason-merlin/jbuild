@@ -1,0 +1,7 @@
+(jbuild_version 1)
+
+(executables
+ ((names (ocamlmerlin_reason))
+  (public_names (ocamlmerlin-reason))
+  (package reason)
+  (libraries (compiler-libs.common merlin_extend reason))))

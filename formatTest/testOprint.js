@@ -21,8 +21,8 @@ const path = require('path')
 const writeFile = promisify(fs.writeFile)
 const readFile = promisify(fs.readFile)
 
-const binary = path.join(__dirname, '..', '_build', 'src', 'testOprint.native')
-const refmt = path.join(__dirname, '..', '_build', 'src', 'refmt_impl.native')
+const binary = path.join(__dirname, '..', '_build', 'install', 'default', 'bin', 'testOprint');
+const refmt = path.join(__dirname, '..', '_build', 'install', 'default', 'bin', 'refmt');
 
 const outcomePrint = async (sourceFile) => {
   let result
