@@ -2368,6 +2368,11 @@ let isJsDotTLongIdent ident = match ident with
   | Ldot (Lident "Js", "t") -> true
   | _ -> false
 
+(* Js.nullable, see #1451, used to check syntax sugar `?int` in `{. "x": int}` *)
+let isJsNullableIdent = function
+  | Ldot (Lident "Js", "nullable") -> true
+  | _ -> false
+
 let recordRowIsPunned pld =
       let name = pld.pld_name.txt in
       (match pld.pld_type with
@@ -5161,13 +5166,27 @@ class printer  ()= object(self:'self)
       let l = extractStdAttrs attrs in
       (match l with
        | [] ->
-           let rowKey = if withStringKeys then
-             (makeList ~wrap:("\"", "\"") [atom s])
-           else (atom s)
+           (* Does an object row contain a Js.nullable?
+            * {. "foo": Js.nullable(int) } ?*)
+           let (hasJsNullablePolyType, children) =  (match ct.ptyp_desc with
+              | Ptyp_constr (li, l) when isJsNullableIdent li.txt -> (true, l)
+              | _ -> (false, []))
+           in
+           let rowKey =
+             if withStringKeys then
+               (makeList ~wrap:("\"", "\"") [atom s])
+             else atom s
+           in
+           (* {. "foo": Js.nullable(int) } -> print "foo" as "foo"? *)
+           let key = if hasJsNullablePolyType then makeList [rowKey; atom "?"] else rowKey in
+           (* prints `Js.nullable(int)` as int, if there's a Js.nullable *)
+           let typ =
+             if hasJsNullablePolyType then self#core_type (List.hd children)
+             else self#core_type ct
            in
            label ~space:true
-                 (label rowKey (atom ":"))
-                 (self#core_type ct)
+                 (label key (atom ":"))
+                 typ
        | _::_ ->
          makeList
            ~postSpace:true
