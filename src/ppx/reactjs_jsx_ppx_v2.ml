@@ -23,7 +23,7 @@
 
 (*
   This file's shared between the Reason repo and the BuckleScript repo. In
-  Reason, it's in src. In BuckleScript, it's in vendor/reason We periodically
+  Reason, it's in src. In BuckleScript, it's in jscomp/bin. We periodically
   copy this file from Reason (the source of truth) to BuckleScript, then
   uncomment the #if #else #end cppo macros you see in the file. That's because
   BuckleScript's on OCaml 4.02 while Reason's on 4.04; so the #if macros
