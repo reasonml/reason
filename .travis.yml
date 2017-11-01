@@ -11,7 +11,7 @@ before_install:
 before_script:
   - opam pin add -y reason .
 script:
-  - make test
+  - make test-ci
   - git diff --exit-code
 env:
   - OCAML_VERSION=4.02.3

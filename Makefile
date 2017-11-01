@@ -10,10 +10,12 @@ build:
 install:
 	opam pin add reason . -y
 
+# CI uses opam. Regular workflow needn't.
+test-ci: install test
+
 test: build clean-tests
 	# I don't have modern enough node to test. brb.
 	node ./formatTest/testOprint.js
-	opam pin add -y reason .
 	./miscTests/rtopIntegrationTest.sh
 	./miscTests/jsxPpxTest.sh
 	cd formatTest; ./test.sh
@@ -44,7 +46,7 @@ ifndef version
 endif
 	export git_version="$(shell git rev-parse --verify HEAD)"; \
 	export git_short_version="$(shell git rev-parse --short HEAD)"; \
-	$(SUBSTS) $(ROOT_DIR)/package.ml.in; \
+	$(SUBSTS) $(ROOT_DIR)/src/refmt/package.ml.in; \
 	$(SUBSTS) $(ROOT_DIR)/reason.opam.in
 
 .PHONY: pre_release
@@ -53,7 +55,7 @@ release_check:
 	./scripts/release-check.sh
 
 release: release_check pre_release
-	git add package.json package.ml opam
+	git add package.json src/refmt/package.ml opam
 	git commit -m "Version $(version)"
 	git tag -a $(version) -m "Version $(version)."
 	# Push first the objects, then the tag.

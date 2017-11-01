@@ -12,5 +12,5 @@ opam install -y jbuilder
 # Our constraints are wrong I believe. We need this version.
 opam install -y menhir.20170712
 opam pin add -y reason .
-make test
+make test-ci
 git diff --exit-code
