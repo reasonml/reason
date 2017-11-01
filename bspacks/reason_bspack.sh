@@ -31,7 +31,7 @@ mkdir $buildDir
 
 # rebuild the project in case it was stale
 make clean -C ../
-make -C ../
+make build -C ../
 
 # =============
 # last step for the first task , we're done generating the single file that'll
@@ -44,9 +44,15 @@ make -C ../
   -prelude-str "$resultStub" \
   -I "$menhirSuggestedLib" \
   -I "$reasonTargetDir" \
-  -I "$reasonTargetDir/_build/src" \
-  -I "$reasonTargetDir/vendor/cmdliner" \
-  -I "$reasonTargetDir/vendor/easy_format" \
+  -I "$reasonTargetDir/_build/default/src/ppx/"                               \
+  -I "$reasonTargetDir/_build/default/src/reason-merlin/"                     \
+  -I "$reasonTargetDir/_build/default/src/reason-parser/"                     \
+  -I "$reasonTargetDir/_build/default/src/reason-parser/vendor/easy_format/"  \
+  -I "$reasonTargetDir/_build/default/src/reason-parser/vendor/cmdliner/"     \
+  -I "$reasonTargetDir/_build/default/src/reason-parser-tests/"               \
+  -I "$reasonTargetDir/_build/default/src/reasonbuild/"                       \
+  -I "$reasonTargetDir/_build/default/src/refmt/"                             \
+  -I "$reasonTargetDir/_build/default/src/refmttype/"                         \
   -I "$ocamlMigrateParseTreeTargetDir" \
   -bs-MD \
   -o "$REFMT_BINARY.ml"
@@ -63,10 +69,15 @@ make -C ../
   -bs-main Reason_toolchain \
   -prelude-str "$resultStub" \
   -I "$menhirSuggestedLib" \
-  -I "$reasonTargetDir" \
-  -I "$reasonTargetDir/_build/src" \
-  -I "$reasonTargetDir/vendor/cmdliner" \
-  -I "$reasonTargetDir/vendor/easy_format" \
+  -I "$reasonTargetDir/_build/default/src/ppx/"                               \
+  -I "$reasonTargetDir/_build/default/src/reason-merlin/"                     \
+  -I "$reasonTargetDir/_build/default/src/reason-parser/"                     \
+  -I "$reasonTargetDir/_build/default/src/reason-parser/vendor/easy_format/"  \
+  -I "$reasonTargetDir/_build/default/src/reason-parser/vendor/cmdliner/"     \
+  -I "$reasonTargetDir/_build/default/src/reason-parser-tests/"               \
+  -I "$reasonTargetDir/_build/default/src/reasonbuild/"                       \
+  -I "$reasonTargetDir/_build/default/src/refmt/"                             \
+  -I "$reasonTargetDir/_build/default/src/refmttype/"                         \
   -I "$ocamlMigrateParseTreeTargetDir" \
   -bs-MD \
   -o "$REFMT_API.ml"
