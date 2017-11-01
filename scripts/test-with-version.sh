@@ -4,7 +4,7 @@ set -e
 
 export OCAML_VERSION="${1}"
 
-make clean
+make clean-for-ci
 opam switch "${OCAML_VERSION}"
 eval `opam config env`
 opam update

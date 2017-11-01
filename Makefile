@@ -12,7 +12,7 @@ install:
 
 test: build clean-tests
 	# I don't have modern enough node to test. brb.
-	# node ./formatTest/testOprint.js
+	node ./formatTest/testOprint.js
 	opam pin add -y reason .
 	./miscTests/rtopIntegrationTest.sh
 	./miscTests/jsxPpxTest.sh
@@ -26,6 +26,11 @@ clean-tests:
 # Not all versions of jbuilder have the clean command.
 # jbuilder clean
 clean: clean-tests
+	jbuilder clean
+
+# The jbuilder that gets installed on CI doesn't have the make clean
+# command yet.
+clean-for-ci: clean-tests
 	rm -rf ./_build
 
 .PHONY: build clean
