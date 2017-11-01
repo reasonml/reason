@@ -18,7 +18,7 @@
 	"homepage": "https://github.com/facebook/reason",
 	"dependencies": {},
 	"devDependencies": {
-		"bs-platform": "^1.9.3"
+		"bs-platform": "1.9.3"
 	},
 	"scripts": {
 		"prepublishOnly": "cd ./bspacks && ./downloadSomeDependencies.sh && ./reason_bspack.sh"

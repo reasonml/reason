@@ -5,4 +5,4 @@
   (public_names (ppx_react reactjs_jsx_ppx_v2 reactjs_jsx_ppx_v3))
   (package reason)
   (libraries
-   (reason ocaml-migrate-parsetree ppx_tools_versioned.metaquot_404))))
+   (reason ocaml-migrate-parsetree ))))

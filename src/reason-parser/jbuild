@@ -59,6 +59,5 @@
     reason_parser_explain))
   (libraries
    (ocaml-migrate-parsetree
-    ppx_tools_versioned.metaquot_404
     menhirLib
     reason.easy_format))))
