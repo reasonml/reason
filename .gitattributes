@@ -1,4 +1,5 @@
 *.messages binary
+*.lock binary
 
 docs/highlightJs/** binary
 docs/vendor/** binary
