@@ -1,10 +1,5 @@
 (jbuild_version 1)
 
-(rule
- ((targets (package.ml))
-  (deps (${ROOT}/package.ml))
-  (action (copy ${<} ${@}))))
-
 (executables
  ((names (refmt_impl))
   (public_names (refmt))
