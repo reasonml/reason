@@ -26,8 +26,7 @@
   (package reason)
   (modules menhir_error_processor)
   (libraries
-     (menhirSdk
-      ))
+     (menhirSdk))
   ))
    
 (rule
