@@ -22,8 +22,10 @@ clean-tests:
 	rm -f ./formatTest/failed_tests
 	rm -f ./miscTests/reactjs_jsx_ppx_tests/*.cm*
 
+# Not all versions of jbuilder have the clean command.
+# jbuilder clean
 clean: clean-tests
-	jbuilder clean
+	rm -rf ./_build
 
 .PHONY: build clean
 
