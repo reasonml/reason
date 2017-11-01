@@ -8,7 +8,7 @@ make clean
 opam switch "${OCAML_VERSION}"
 eval `opam config env`
 opam update
-opam install jbuilder
+opam install -y jbuilder
 opam pin add -y reason .
 make test
 git diff --exit-code
