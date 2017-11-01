@@ -24,10 +24,12 @@ then
 fi
 
 # for better visual diffing in the terminal, try https://github.com/jeffkaufman/icdiff
-if hash icdiff 2>/dev/null; then
-  DIFF="icdiff"
+if hash icdiff 2> /dev/null; then
+    DIFF="icdiff"
+elif hash git 2> /dev/null; then
+    DIFF="git --no-pager diff --no-index"
 else
-  DIFF="eval diff --unchanged-line-format='' --new-line-format=':%dn: %L' --old-line-format=':%dn: %L'"
+    DIFF="eval diff --unchanged-line-format='' --new-line-format=':%dn: %L' --old-line-format=':%dn: %L'"
 fi
 
 UNIT_TEST_INPUT=$DIR/unit_tests/input
