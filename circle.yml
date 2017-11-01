@@ -12,6 +12,7 @@ dependencies:
         - sudo apt-get update -o dir::cache::archives="/home/ubuntu/aptcache" -y
         - sudo apt-get install -o dir::cache::archives="/home/ubuntu/aptcache" -y ocaml ocaml-native-compilers opam
         - opam init --auto-setup --dot-profile=~/.bashrc # Modify dotfiles
+        - opam update
         - opam switch --no-switch 4.02.3 # Download and compile all the versions
         - opam install -y jbuilder
         - opam switch --no-switch 4.03.0
