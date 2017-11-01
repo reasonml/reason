@@ -2,7 +2,7 @@
 
 SHELL=bash -o pipefail
 
-default: build test
+default: build
 
 build:
 	jbuilder build
@@ -13,6 +13,7 @@ install:
 test: build clean-tests
 	# I don't have modern enough node to test. brb.
 	# node ./formatTest/testOprint.js
+	opam pin add -y reason .
 	./miscTests/rtopIntegrationTest.sh
 	./miscTests/jsxPpxTest.sh
 	cd formatTest; ./test.sh
