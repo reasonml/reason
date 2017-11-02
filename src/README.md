@@ -131,6 +131,7 @@ Random Stack Overflow answer: https://stackoverflow.com/questions/9897358/ocaml-
 - [Fix outcome printer record value printing](https://github.com/facebook/reason/pull/1529)
 - [Print`foo(()) as `foo() + update parser](https://github.com/facebook/reason/pull/1560)
 - [Allow parsing of constraint expressions without parens inside constructor expr](https://github.com/facebook/reason/pull/1576)
+- [Don't print fun in record expressions with Pexp_fun values](https://github.com/facebook/reason/pull/1588)
 
 ### Debugging Grammar Conflicts
 
