@@ -619,9 +619,9 @@ module Help = struct
     let args = make_arg_items ei in
     let envs_rev = make_env_items_rev ei in
     let items_rev = List.rev_append cmds (List.rev_append args envs_rev) in
-    let cmp (s, _) (s', _) = match s, s with
+    let cmp (s, _) (s', _) = match s, s' with
     | "ENVIRONMENT VARIABLES", _ -> 1  (* Put env vars at the end. *)
-    | s, "ENVIRONMENT VARIABLES" -> -1
+    | _, "ENVIRONMENT VARIABLES" -> -1
     | s, s' -> compare s s' (* other predefined sec. names order correctly *)
     in
     let items = List.rev (List.stable_sort cmp items_rev) in
