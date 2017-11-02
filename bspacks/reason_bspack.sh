@@ -2,6 +2,8 @@
 # - pack the whole repo into a single refmt file for vendoring into bucklescript
 # - generate the js version of refmt for web usage
 
+THIS_SCRIPT_DIR="$(cd "$( dirname "$0" )" && pwd)"
+
 echo "**This script is switching you to ocaml 4.02.3 for the subsequent bspacking. Please switch back to your own version afterward. Thanks!**\n"
 opam switch 4.02.3
 eval $(opam config env)
@@ -11,10 +13,10 @@ resultStub="module Result = struct type ('a, 'b) result = Ok of 'a | Error of 'b
 
 menhirSuggestedLib=`menhir --suggest-menhirLib`
 
-# generated from the script ./setupOmp.sh
-ocamlMigrateParseTreeTargetDir=./omp/_build/default/src
-reasonTargetDir=../
-buildDir=./build
+# generated from the script ./downloadSomeDependencies.sh
+ocamlMigrateParseTreeTargetDir="$THIS_SCRIPT_DIR/ocaml-migrate-parsetree/_build/default/src"
+reasonTargetDir="$THIS_SCRIPT_DIR/.."
+buildDir="$THIS_SCRIPT_DIR/build"
 
 REFMT_BINARY="$buildDir/refmt_binary"
 REFMT_API="$buildDir/refmt_api"
@@ -29,6 +31,7 @@ rm -f "$REFMT_CLOSURE.*"
 rm -rf $buildDir
 mkdir $buildDir
 
+pushd $THIS_SCRIPT_DIR
 # rebuild the project in case it was stale
 make clean -C ../
 make build -C ../
@@ -85,15 +88,20 @@ make build -C ../
 # the `-no-alias-deps` flag is important. Not sure why...
 # remove warning 40 caused by ocaml-migrate-parsetree
 ocamlc -g -no-alias-deps -w -40 -I +compiler-libs ocamlcommon.cma "$REFMT_API.ml" -o "$REFMT_API.byte"
+# build REFMT_BINARY into an actual binary too. For testing purposes at the end
+ocamlc -g -no-alias-deps -w -40 -I +compiler-libs ocamlcommon.cma "$REFMT_BINARY.ml" -o "$REFMT_BINARY.byte"
 
 # compile refmtJsApi as the final entry file
 ocamlfind ocamlc -bin-annot -g -w -30 -w -40 -package js_of_ocaml,ocaml-migrate-parsetree -o "$REFMT_API_ENTRY" -I $buildDir -c -impl ./refmtJsApi.ml
 # link them together into the final bytecode
 ocamlfind ocamlc -linkpkg -package js_of_ocaml,ocaml-migrate-parsetree -g -o "$REFMT_API_FINAL.byte" "$REFMT_API.cmo" "$REFMT_API_ENTRY.cmo"
 # # use js_of_ocaml to take the compiled bytecode and turn it into a js file
-js_of_ocaml.exe --source-map --no-inline --debug-info --pretty --linkall +weak.js +toplevel.js --opt 3 --disable strict -o "$REFMT_PRE_CLOSURE.js" "$REFMT_API_FINAL.byte"
+js_of_ocaml.exe --source-map --debug-info --pretty --linkall +weak.js +toplevel.js --opt 3 --disable strict -o "$REFMT_PRE_CLOSURE.js" "$REFMT_API_FINAL.byte"
 # # use closure compiler to minify the final file!
 java -jar ./closure-compiler/closure-compiler-v20170910.jar --create_source_map "$REFMT_CLOSURE.map" --language_in ECMASCRIPT6 --compilation_level SIMPLE "$REFMT_PRE_CLOSURE.js" > "$REFMT_CLOSURE.js"
 
 # small integration test to check that the process went well
+# for the native binary
+echo "let f = (a) => 1" | "$REFMT_BINARY.byte" --parse re --print ml
+# for the js bundle
 node ./testRefmtJs.js

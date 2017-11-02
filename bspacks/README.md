@@ -7,7 +7,6 @@ This makes our installation much friendlier to e.g. Windows. BuckleScript curren
 First, install the dependencies:
 
 ```sh
-opam install ocaml-migrate-parsetree
 opam install js_of_ocaml.3.0
 cd .. && npm install
 cd ./bspacks && ./downloadSomeDependencies.sh

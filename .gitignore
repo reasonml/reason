@@ -19,7 +19,7 @@ src/reason_parser_explain_raw.ml
 *~
 node_modules
 /bspacks/build/
-/bspacks/omp/
+/bspacks/ocaml-migrate-parsetree/
 /bspacks/closure-compiler/
 # gitignored, but not npmignored. Published by `npm run prepublish`
 refmt.js

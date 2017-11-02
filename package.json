@@ -21,6 +21,6 @@
 		"bs-platform": "1.9.3"
 	},
 	"scripts": {
-		"prepublishOnly": "cd ./bspacks && ./downloadSomeDependencies.sh && ./reason_bspack.sh"
+		"prepublishOnly": "./bspacks/downloadSomeDependencies.sh && ./bspacks/reason_bspack.sh"
 	}
 }
