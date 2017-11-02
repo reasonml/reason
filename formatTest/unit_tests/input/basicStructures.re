@@ -633,3 +633,6 @@ let () = {
   exception E;
   raise(E)
 };
+
+/* # 1587: don't print fun keyword when printing Pexp_fun in a record expression  */
+{contents: fun () => ((): unit)};

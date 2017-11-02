@@ -4273,7 +4273,7 @@ class printer  ()= object(self:'self)
         | Pexp_newtype (newtype,e) ->
           let sweet, args, ret = extract_args e in
           (sweet, `Type newtype :: args, ret)
-        | Pexp_constraint _ -> (false, [], xx)
+        | Pexp_constraint _ -> (true, [], xx)
         | _ -> (true, [], xx)
     in
     let prepare_arg = function
