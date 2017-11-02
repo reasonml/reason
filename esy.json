@@ -22,7 +22,7 @@
   },
   "esy": {
     "build": [
-      [ "jbuilder", "build" ],
+      [ "jbuilder", "build", "--root", "." ],
       [ "sh", "-c", "(esy-installer || true)" ]
     ],
     "buildsInSource": true
