@@ -65,3 +65,9 @@ release: release_check pre_release
 	./scripts/opam-release.sh
 
 .PHONY: release
+
+all-supported-ocaml-versions:
+# the --dev flag has been omitted here but should be re-introduced eventually
+	jbuilder build @install @runtest --workspace jbuild-workspace.dev --root .
+
+.PHONY: all-supported-ocaml-versions
