@@ -6,6 +6,8 @@
 
 Thanks for considering contributing to Reason! Here's the setup you need:
 
+### With opam
+
 ```sh
 # On OSX, install opam via Homebrew:
 brew update
@@ -23,6 +25,27 @@ git clone https://github.com/facebook/reason.git
 cd reason
 opam pin add -y reason .
 ```
+
+### With esy
+
+The esy workflow is still experimental.
+If you would like to help test, you can try it with the following commands.
+If you already use OPAM for Reason, take care to deactivate OPAM first
+or ensure your node binaries precede OPAM's in your path.
+
+```sh
+npm install -g esy
+git clone https://github.com/facebook/reason.git
+cd reason
+esy install
+esy build
+esy make test
+```
+
+Build commands like `make` that would normally be executed by
+themselves will need to be prefixed with `esy `.
+
+For more, see the [esy documentation](https://github.com/esy-ocaml/esy).
 
 ### Troubleshooting
 
