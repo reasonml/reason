@@ -10,7 +10,7 @@ bug-reports: "https://github.com/facebook/reason/issues"
 dev-repo: "git://github.com/facebook/reason.git"
 tags: [ "syntax" ]
 build: [
-  ["jbuilder" "build"]
+  ["jbuilder" "build" "-p" name "-j" jobs]
 ]
 depends: [
   "jbuilder"                {build}
