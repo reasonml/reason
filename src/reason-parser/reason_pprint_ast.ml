@@ -5122,7 +5122,7 @@ class printer  ()= object(self:'self)
             let upToColon = makeList (maybeQuoteFirstElem li [atom ":"]) in
             let returnedAppTerms = self#unparseExprApplicationItems return in
             let labelExpr = self#wrapCurriedFunctionBinding
-                ~sweet ~attachTo:upToColon "fun" ~arrow:"=>"
+                ~sweet:true ~attachTo:upToColon "fun" ~arrow:"=>"
                 firstArg tl returnedAppTerms
             in
             if appendComma then makeList [labelExpr; comma] else labelExpr
