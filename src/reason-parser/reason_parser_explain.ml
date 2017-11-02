@@ -47,7 +47,7 @@ let semicolon_might_be_missing state _token =
   else
     raise Not_found
 
-let message env (token, startp, endp) =
+let message env (token, _startp, _endp) =
   let state = Interp.current_state_number env in
   (* Is there a message for this specific state ? *)
   try Reason_parser_message.message state

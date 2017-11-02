@@ -441,7 +441,7 @@ module Help = struct
   | `M_main -> str "$(b,%s) $(i,COMMAND) ..." (invocation ei)
   | `Simple | `M_choice ->
       let rev_cmp (p, _) (p', _) = match p', p with        (* best effort. *)
-      | p, All -> -1 | All, p -> 1
+      | p, All -> -1 | All, _ -> 1
       | Left _, Right _ -> -1 | Right _, Left _ -> 1
       | Left (false, k), Nth (false, k')
       | Nth (false, k), Nth (false, k')
@@ -804,7 +804,7 @@ end = struct
         | `Ok a ->
             let value, args = match value, a.o_kind with
             | Some v, Flag when is_short_opt name -> None, ("-" ^ v) :: args
-            | Some v, _ -> value, args
+            | Some _, _ -> value, args
             | None, Flag -> value, args
             | None, _ ->
                 match args with
@@ -1378,7 +1378,7 @@ module Term = struct
 
   let eval_choice ?(help = Format.std_formatter) ?(err = Format.err_formatter)
       ?(catch = true) ?(env = env_default) ?(argv = Sys.argv)
-      (((al, f) as t), ti) choices =
+      (((al, _) as t), ti) choices =
     let ei_choices = List.rev_map (fun ((al, _), ti) -> ti, al) choices in
     let main = (ti, al) in
     let ei = { term = main; main = main; choices = ei_choices; env = env } in
@@ -1404,17 +1404,17 @@ module Term = struct
     try
       let cl = Cmdline.create ~peek_opts:true (snd ei.term) args in
       match help_arg ei cl, vers_arg with
-      | Some fmt, _ ->
-          (try (Some (f ei cl), `Help) with e -> None, `Help)
+      | Some _fmt, _ ->
+          (try (Some (f ei cl), `Help) with _ -> None, `Help)
       | None, Some v_arg when v_arg ei cl ->
-          (try (Some (f ei cl), `Version) with e -> None, `Version)
+          (try (Some (f ei cl), `Version) with _ -> None, `Version)
       | _ ->
           let v = f ei cl in
           Some v, `Ok v
     with
     | Cmdline.Error _ -> None, (`Error `Parse)
     | Term _ -> None, (`Error `Term)
-    | e -> None, (`Error `Exn)
+    | _ -> None, (`Error `Exn)
 end
 
 (*---------------------------------------------------------------------------
