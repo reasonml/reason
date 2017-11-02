@@ -4,6 +4,8 @@
    cmdliner release 0.9.8
   ---------------------------------------------------------------------------*)
 
+[@@@ocaml.warning "-3-27-32-35"]
+
 let str = Printf.sprintf
 
 (* Invalid_arg strings *)

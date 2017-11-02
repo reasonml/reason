@@ -199,8 +199,8 @@ let print_out_value ppf tree =
     | Oval_float f -> pp_print_string ppf (float_repres f)
     | Oval_char c -> fprintf ppf "%C" c
     | Oval_string s ->
-        begin try fprintf ppf "%S" s with
-          Invalid_argument "String.create" -> fprintf ppf "<huge string>"
+        begin try [@ocaml.warning "-52"] fprintf ppf "%S" s with
+          Invalid_argument  "String.create" -> fprintf ppf "<huge string>"
         end
     | Oval_list tl ->
         fprintf ppf "@[<1>[%a]@]" (print_tree_list print_tree_1 ",") tl

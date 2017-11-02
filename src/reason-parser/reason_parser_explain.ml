@@ -1,3 +1,4 @@
+[@@@ocaml.warning "-3"]
 module Parser = Reason_parser
 module Interp = Parser.MenhirInterpreter
 module Raw = Reason_parser_explain_raw
