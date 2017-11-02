@@ -4273,7 +4273,7 @@ class printer  ()= object(self:'self)
         | Pexp_newtype (newtype,e) ->
           let sweet, args, ret = extract_args e in
           (sweet, `Type newtype :: args, ret)
-        | Pexp_constraint _ -> (false, [], xx)
+        | Pexp_constraint _ -> (true, [], xx)
         | _ -> (true, [], xx)
     in
     let prepare_arg = function
@@ -5122,7 +5122,7 @@ class printer  ()= object(self:'self)
             let upToColon = makeList (maybeQuoteFirstElem li [atom ":"]) in
             let returnedAppTerms = self#unparseExprApplicationItems return in
             let labelExpr = self#wrapCurriedFunctionBinding
-                ~sweet:true ~attachTo:upToColon "fun" ~arrow:"=>"
+                ~sweet ~attachTo:upToColon "fun" ~arrow:"=>"
                 firstArg tl returnedAppTerms
             in
             if appendComma then makeList [labelExpr; comma] else labelExpr

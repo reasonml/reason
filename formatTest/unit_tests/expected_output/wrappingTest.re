@@ -2227,7 +2227,7 @@ let df_locallyAbstractFuncAnnotated:
  * Ppat_constraint. In this case, they're not equal!
  */
 let df_locallyAbstractFuncAnnotated: 'figureMeOut =
-  fun (type a, type b) => (
+  (type a, type b) => (
     (input: a, input2: b) => (
       {inputIs: input},
       {inputIs: input2}
