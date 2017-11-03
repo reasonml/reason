@@ -72,7 +72,13 @@ type a = {. "foo": bar};
 let a = {"key": 10};
 
 let b = {
-  "nested": {"objs": {"are": {"nice": "<3"}}}
+  "nested": {
+    "objs": {
+      "are": {
+        "nice": "<3"
+      }
+    }
+  }
 };
 
 let c = {
