@@ -780,3 +780,52 @@ let () = {
 
 /* # 1587: don't print fun keyword when printing Pexp_fun in a record expression  */
 {contents: () => ((): unit)};
+
+/* #1556: Always break nested record/obj */
+let z = {
+  a: {
+    b: c,
+    d: e
+  },
+  f: g
+};
+
+let z = {
+  a: {
+    "b": c,
+    "d": e
+  },
+  f: g
+};
+
+let z = {
+  a: {
+    pub b = c;
+    pub d = e
+  },
+  f: g
+};
+
+let z = {
+  "a": {
+    "b": c,
+    "d": e
+  },
+  "f": g
+};
+
+let z = {
+  "a": {
+    b: c,
+    d: e
+  },
+  "f": g
+};
+
+let z = {
+  "a": {
+    pub b = c;
+    pub d = e
+  },
+  "f": g
+};

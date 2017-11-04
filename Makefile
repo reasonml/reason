@@ -25,6 +25,9 @@ clean-tests:
 	rm -f ./formatTest/failed_tests
 	rm -f ./miscTests/reactjs_jsx_ppx_tests/*.cm*
 
+testFormat: build clean-tests
+	cd formatTest; ./test.sh
+
 # Not all versions of jbuilder have the clean command.
 # jbuilder clean
 clean: clean-tests

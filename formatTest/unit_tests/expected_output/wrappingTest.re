@@ -570,7 +570,10 @@ let result =
       fieldOne: 10,
       fieldtwo: [10, 20],
       fieldThree: ["one", "two"],
-      fieldFour: {age: 20, name: "joe"}
+      fieldFour: {
+        age: 20,
+        name: "joe"
+      }
     }
   );
 

@@ -5088,7 +5088,17 @@ class printer  ()= object(self:'self)
     )
     | _ -> self#simplifyUnparseExpr x
 
-  method unparseRecord ?wrap:(wrap=("", "")) ?withStringKeys:(withStringKeys=false) ?allowPunning:(allowPunning=true) l eo =
+  method unparseRecord
+    ?wrap:(wrap=("", ""))
+    ?withStringKeys:(withStringKeys=false)
+    ?allowPunning:(allowPunning=true)
+    ?forceBreak:(forceBreak=false)
+    l eo =
+    (* forceBreak is a ref which can be set to always break the record rows.
+     * Example, when we have a row which contains a nested record,
+     * this ref can be set to true from inside the printing of that row,
+     * which forces breaks for the outer record structure. *)
+    let forceBreak = ref forceBreak in
     let quote = (atom "\"") in
     let maybeQuoteFirstElem fst rest =
         if withStringKeys then (match fst.txt with
@@ -5111,6 +5121,37 @@ class printer  ()= object(self:'self)
         (* don't turn {bar: Foo.bar, baz: 1} into {bar, baz: 1}, naturally *)
         | (Pexp_ident {txt = Lident value}, true, true) when Longident.last li.txt = value ->
           makeList (maybeQuoteFirstElem li (if appendComma then [comma] else []))
+
+          (* Force breaks for nested records or bs obj sugar
+           * Example:
+           *  let person = {name: {first: "Bob", last: "Zhmith"}, age: 32};
+           * is a lot less readable than
+           *  let person = {
+           *   "name": {
+           *     "first": "Bob",
+           *     "last": "Zhmith"
+           *   },
+           *  "age": 32
+           *  };
+           *)
+        | (Pexp_record (recordRows, optionalGadt), _, _) ->
+            forceBreak := true;
+            let keyWithColon = makeList (maybeQuoteFirstElem li [atom ":"]) in
+            let value = self#unparseRecord ~forceBreak: true recordRows optionalGadt in
+            let row = label ~space:true keyWithColon value in
+            if appendComma then makeList [row; comma] else row
+        | (Pexp_extension (s, p), _, _) when s.txt = "bs.obj" ->
+            forceBreak := true;
+            let keyWithColon = makeList (maybeQuoteFirstElem li [atom ":"]) in
+            let value = self#formatBsObjExtensionSugar ~forceBreak:true p in
+            let row = label ~space:true keyWithColon value in
+            if appendComma then makeList [row; comma] else row
+        | (Pexp_object classStructure, _, _) ->
+            forceBreak := true;
+            let keyWithColon = makeList (maybeQuoteFirstElem li [atom ":"]) in
+            let value = self#classStructure ~forceBreak:true classStructure in
+            let row = label ~space:true keyWithColon value in
+            if appendComma then makeList [row; comma] else row
         | _ ->
           let (sweet, argsList, return) = self#curriedPatternsAndReturnVal e in
           match argsList with
@@ -5156,8 +5197,9 @@ class printer  ()= object(self:'self)
         ) in
         SourceMap (withRecord.pexp_loc, firstRow)::(getRows l)
     in
+    let break = if !forceBreak then Always else IfNeed in
     let (left, right) = wrap in
-      makeList ~wrap:(left ^ "{" ,"}" ^ right) ~break:IfNeed ~preSpace:true allRows
+      makeList ~wrap:(left ^ "{" ,"}" ^ right) ~break ~preSpace:true allRows
 
   method unparseObject ?wrap:(wrap=("", "")) ?(withStringKeys=false) l o =
     let core_field_type (s, attrs, ct) =
@@ -5213,12 +5255,12 @@ class printer  ()= object(self:'self)
         (List.map xf l)
 
 
-  method formatBsObjExtensionSugar ?wrap:(wrap=("", "")) payload =
+  method formatBsObjExtensionSugar ?wrap:(wrap=("", "")) ?(forceBreak=false) payload =
     match payload with
     | PStr [itm] -> (
       match itm with
       | {pstr_desc = Pstr_eval ({ pexp_desc = Pexp_record (l, eo) }, []) } ->
-        self#unparseRecord ~wrap ~withStringKeys:true ~allowPunning:false l eo
+        self#unparseRecord ~forceBreak ~wrap ~withStringKeys:true ~allowPunning:false l eo
       | _ -> assert false)
     | _ -> assert false
 
@@ -5528,10 +5570,6 @@ class printer  ()= object(self:'self)
     (*| Pctf_attribute (s, _) -> (not (s.txt = "ocaml.text") && not (s.txt = "ocaml.doc"))*)
     | _ -> true
 
-  method shouldDisplayClassField x = match x.pcf_desc with
-    (*| Pcf_attribute (s, _) -> (not (s.txt = "ocaml.text") && not (s.txt = "ocaml.doc"))*)
-    | _ -> true
-
   method shouldDisplaySigItem x = match x.psig_desc with
     (*| Psig_attribute (s, _) -> (not (s.txt = "ocaml.text") && not (s.txt = "ocaml.doc"))*)
     | _ -> true
@@ -5697,7 +5735,6 @@ class printer  ()= object(self:'self)
       SourceMap (x.pcty_loc, normalized)
     | _ -> self#class_instance_type x
 
-  (* TODO: TODOATTRIBUTES. *)
   method class_field x =
     let itm =
       match x.pcf_desc with
@@ -5834,14 +5871,14 @@ class printer  ()= object(self:'self)
     SourceMap (x.pcf_loc, itm)
 
   method class_self_pattern_and_structure {pcstr_self = p; pcstr_fields = l} =
-    let fields = (List.map self#class_field (List.filter self#shouldDisplayClassField l)) in
+    let fields = List.map self#class_field l in
     (* Recall that by default self is bound to "this" at parse time. You'd
        have to go out of your way to bind it to "_". *)
     match (p.ppat_attributes, p.ppat_desc) with
       | ([], Ppat_var ({loc; txt = "this"})) -> fields
       | _ ->
-        SourceMap (p.ppat_loc, (label ~space:true (atom "as") (self#pattern p)))
-        ::fields
+          SourceMap (p.ppat_loc, (label ~space:true (atom "as") (self#pattern p)))
+          ::fields
 
   method simple_class_expr x =
     let {stdAttrs} = partitionAttributes x.pcl_attributes in
@@ -5921,13 +5958,14 @@ class printer  ()= object(self:'self)
       | Pcl_let _
       | Pcl_structure _ -> self#simple_class_expr x;
 
-  method classStructure ?(wrap=("", "")) cs =
+  method classStructure ?(forceBreak=false) ?(wrap=("", "")) cs =
     let (left, right) = wrap in
     let wrap = (left ^ "{", "}" ^ right) in
+    let break = if forceBreak then Always else IfNeed in
     makeList
       ~sep:";"
       ~wrap
-      ~break:IfNeed
+      ~break
       ~postSpace:true
       ~inline:(true, false)
       (self#class_self_pattern_and_structure cs)
