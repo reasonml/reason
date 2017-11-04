@@ -3139,6 +3139,9 @@ class printer  ()= object(self:'self)
                 (* should have one or more rows, Js.t({..}) should print as Js.t({..})
                  * {..} has a totally different meaning than Js.t({..}) *)
                 self#unparseObject ~withStringKeys:true l o
+            | [{ptyp_desc = Ptyp_object (l, o) }] when not (isJsDotTLongIdent li.txt) ->
+                label (SourceMap (li.loc, self#longident_loc li))
+                  (self#unparseObject ~wrap:("(",")") l o)
             | _ ->
               (* The single identifier has to be wrapped in a [ensureSingleTokenSticksToLabel] to
                  avoid (@see @avoidSingleTokenWrapping): *)
@@ -5156,7 +5159,7 @@ class printer  ()= object(self:'self)
     let (left, right) = wrap in
       makeList ~wrap:(left ^ "{" ,"}" ^ right) ~break:IfNeed ~preSpace:true allRows
 
-  method unparseObject ?withStringKeys:(withStringKeys=false) l o =
+  method unparseObject ?wrap:(wrap=("", "")) ?(withStringKeys=false) l o =
     let core_field_type (s, attrs, ct) =
       let l = extractStdAttrs attrs in
       (match l with
@@ -5179,8 +5182,12 @@ class printer  ()= object(self:'self)
       | Closed -> [atom "."]
       | Open -> [atom ".."]
     in
-    makeList ~break:IfNeed ~preSpace:(List.length rows > 0) ~wrap:("{", "}")
-      (openness @ [makeList ~break:IfNeed ~inline:(true, (List.length rows > 0)) ~postSpace:true ~sep:"," rows])
+    (* if an object has more than 2 rows, always break for readability *)
+    let break = if List.length rows >= 2 then Always_rec else IfNeed in
+    let (left, right) = wrap in
+    makeList ~break:IfNeed ~preSpace:(List.length rows > 0) ~wrap:(left ^ "{", "}" ^ right)
+      (openness
+       @ [makeList ~break ~inline:(true, (List.length rows > 0)) ~postSpace:true ~sep:"," rows])
 
   method unparseSequence ?wrap:(wrap=("", "")) ~construct l =
     match construct with

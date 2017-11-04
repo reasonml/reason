@@ -28,3 +28,16 @@ type openObjSugar = Js.t({.. x: int, y: int});
 type x = Js.t({.});
 
 type y = Js.t({..});
+
+/* #1595: always break object rows (>= 2) for readability */
+type o = {
+  .
+  a: int,
+  b: int
+};
+
+type o2 = {
+  ..
+  a: int,
+  b: int
+};
