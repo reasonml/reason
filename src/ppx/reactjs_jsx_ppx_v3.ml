@@ -61,24 +61,21 @@ open Asttypes
 open Parsetree
 open Longident
 
-let listToArray ~loc ~mapper theList =
-  let rec listToArray' theList accum =
+let transformChildren ~loc ~mapper theList =
+  let rec transformChildren' theList accum =
     (* not in the sense of converting a list to an array; convert the AST
        reprensentation of a list to the AST reprensentation of an array *)
     match theList with
-    | {pexp_desc = Pexp_construct ({txt = Lident "[]"}, None)} -> 
-      accum 
+    | {pexp_desc = Pexp_construct ({txt = Lident "[]"}, None)} ->
+      List.rev accum |> Exp.array ~loc
     | {pexp_desc = Pexp_construct (
         {txt = Lident "::"},
         Some {pexp_desc = Pexp_tuple (v::acc::[])}
       )} ->
-      listToArray' acc (v::accum)
-    | _ -> raise (
-        Invalid_argument "JSX: the `children` prop must be a literal list (of react elements)."
-      ) in
-  listToArray' theList []
-  |> List.rev_map (fun a -> mapper.expr mapper a)
-  |> Exp.array ~loc
+      transformChildren' acc ((mapper.expr mapper v)::accum)
+    | notAList -> mapper.expr mapper notAList
+  in
+  transformChildren' theList []
 
 let extractChildrenForDOMElements ?(removeLastPositionUnit=false) ~loc propsAndChildren =
   let rec allButLast_ lst acc = match lst with
@@ -119,7 +116,7 @@ let jsxMapper () =
       )} when List.for_all (fun (attribute, _) -> attribute.txt <> "JSX") pexp_attributes ->
       mapper.expr mapper singleItem
     (* if it's a single jsx item, or multiple items, turn list into an array *)
-    | nonEmptyChildren -> listToArray ~loc ~mapper nonEmptyChildren
+    | nonEmptyChildren -> transformChildren ~loc ~mapper nonEmptyChildren
     in
     let recursivelyTransformedArgsForMake = argsForMake |> List.map (fun (label, expression) -> (label, mapper.expr mapper expression)) in
     let args = recursivelyTransformedArgsForMake @ [ (nolabel, childrenExpr) ] in
@@ -140,7 +137,7 @@ let jsxMapper () =
     let (children, argsWithLabels) =
       extractChildrenForDOMElements ~loc ~removeLastPositionUnit:true callArguments in
     let (argsKeyRef, argsForMake) = List.partition argIsKeyRef argsWithLabels in
-    let childrenExpr = listToArray ~loc ~mapper children in
+    let childrenExpr = transformChildren ~loc ~mapper children in
     let recursivelyTransformedArgsForMake = argsForMake |> List.map (fun (label, expression) -> (label, mapper.expr mapper expression)) in
     let args = recursivelyTransformedArgsForMake @ [ (nolabel, childrenExpr) ] in
     let wrapWithReasonReactElement e = (* ReasonReact.element ::key ::ref (...) *)
@@ -160,7 +157,7 @@ let jsxMapper () =
     let (children, propsWithLabels) =
       extractChildrenForDOMElements ~loc callArguments in
     let componentNameExpr = constantString ~loc id in
-    let childrenExpr = listToArray ~loc ~mapper children in
+    let childrenExpr = transformChildren ~loc ~mapper children in
     let args = match propsWithLabels with
       | [theUnitArgumentAtEnd] ->
         [

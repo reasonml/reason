@@ -71,33 +71,37 @@ let divRef = <div />;
 
 <Foo comp=(<Bar> <div /> </Bar>)> <li /> </Foo>;
 
-"=== Special-cased in V3, no wrapping for single child that's not JSX ===";
+"=== No wrapping for single child ===";
 
-<Foo> (() => 1) </Foo>;
+<Foo> ...(() => 1) </Foo>;
 
-<Foo> (() => (<Bar />)) </Foo>;
+<Foo> ...(() => (<Bar />)) </Foo>;
 
-<Foo> (1, 2) </Foo>;
+<Foo> ...(1, 2) </Foo>;
 
-<Foo> [|1|] </Foo>;
+<Foo> ...[|1|] </Foo>;
 
-<Foo> [||] </Foo>;
+<Foo> ...[||] </Foo>;
 
-<Foo> [] </Foo>;
+<Foo> ...[] </Foo>;
 
-<Foo> divRef </Foo>;
+<Foo> ...divRef </Foo>;
 
-<Foo> divRef divRef </Foo>;
+<Foo> ...<div /> </Foo>;
 
-<Foo className="hello"> (() => 1) </Foo>;
+<Foo> ...<Bar /> </Foo>;
 
-<Foo className="hello"> (1, 2) </Foo>;
+<Foo className="hello"> ...(() => 1) </Foo>;
 
-<Foo className="hello"> [|1, 2|] </Foo>;
+<Foo className="hello"> ...(1, 2) </Foo>;
 
-<Foo className="hello"> divRef </Foo>;
+<Foo className="hello"> ...[|1, 2|] </Foo>;
 
-<Foo comp=(<Bar> divRef </Bar>)> <li /> </Foo>;
+<Foo className="hello"> ...divRef </Foo>;
+
+<Foo comp=(<Bar> ...divRef </Bar>)> ...<li /> </Foo>;
+
+<div comp=(<Bar> ...divRef </Bar>)> ...<li /> </div>;
 
 "=== With ref/key ===";
 

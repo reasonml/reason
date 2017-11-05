@@ -128,7 +128,7 @@ ReasonReact.element(
   )
 );
 
-"=== Special-cased in V3, no wrapping for single child that's not JSX ===";
+"=== No wrapping for single child ===";
 
 ReasonReact.element(Foo.make(() => 1));
 
@@ -140,11 +140,13 @@ ReasonReact.element(Foo.make([|1|]));
 
 ReasonReact.element(Foo.make([||]));
 
-ReasonReact.element(Foo.make([]));
+ReasonReact.element(Foo.make([||]));
 
 ReasonReact.element(Foo.make(divRef));
 
-ReasonReact.element(Foo.make([|divRef, divRef|]));
+ReasonReact.element(Foo.make(ReactDOMRe.createElement("div", [||])));
+
+ReasonReact.element(Foo.make(ReasonReact.element(Bar.make([||]))));
 
 ReasonReact.element(Foo.make(~className="hello", () => 1));
 
@@ -155,7 +157,13 @@ ReasonReact.element(Foo.make(~className="hello", [|1, 2|]));
 ReasonReact.element(Foo.make(~className="hello", divRef));
 
 ReasonReact.element(
-  Foo.make(~comp=ReasonReact.element(Bar.make(divRef)), [|ReactDOMRe.createElement("li", [||])|])
+  Foo.make(~comp=ReasonReact.element(Bar.make(divRef)), ReactDOMRe.createElement("li", [||]))
+);
+
+ReactDOMRe.createElement(
+  "div",
+  ~props=ReactDOMRe.props(~comp=ReasonReact.element(Bar.make(divRef)), ()),
+  ReactDOMRe.createElement("li", [||])
 );
 
 "=== With ref/key ===";
