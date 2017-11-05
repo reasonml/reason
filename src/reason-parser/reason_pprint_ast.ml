@@ -675,7 +675,19 @@ let rules = [
        incorrect to use, and instead we need a rule that models what infix
        parsing would use - just the regular token precedence without a custom
        precedence. *)
-    (TokenPrecedence, (fun s -> (Left, s.[0] == '+' )));
+    (TokenPrecedence,
+    (fun s -> (
+      Left,
+      if String.length s > 1 && s.[0] == '+' && s.[1] == '+' then
+        (*
+          Explicitly call this out as false because the other ++ case below
+          should have higher *lexing* priority. ++operator_chars* is considered an
+          entirely different token than +(non_plus_operator_chars)*
+        *)
+        false
+      else
+        s.[0] == '+'
+    )));
     (TokenPrecedence ,(fun s -> (Left, s.[0] == '-' )));
     (TokenPrecedence ,(fun s -> (Left, s = "!" )));
   ];

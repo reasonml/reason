@@ -312,13 +312,11 @@ let includesACommentCloseInIdentifier = ( **\/ );
 let shouldSimplifyAnythingExceptApplicationAndConstruction =
   call("hi")
   ++ (
-    (
-      switch x {
-      | _ => "hi"
-      }
-    )
-    ++ "yo"
-  );
+    switch x {
+    | _ => "hi"
+    }
+  )
+  ++ "yo";
 
 /* Add tests with IF/then mixed with infix/constructor application on left and right sides */
 /**
