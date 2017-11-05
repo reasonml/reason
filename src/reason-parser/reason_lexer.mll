@@ -585,6 +585,8 @@ rule token = parse
               | "^." -> set_lexeme_length lexbuf 1; POSTFIXOP("^")
               | "^" -> POSTFIXOP("^")
               | op -> INFIXOP1(unescape_operator op) }
+  | "++" operator_chars*
+            { INFIXOP1(lexeme_operator lexbuf) }
   | '\\'? ['+' '-'] operator_chars*
             { INFIXOP2(lexeme_operator lexbuf) }
   (* SLASHGREATER is an INFIXOP3 that is handled specially *)
