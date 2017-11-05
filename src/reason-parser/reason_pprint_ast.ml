@@ -685,6 +685,7 @@ let rules = [
   [
     (TokenPrecedence, (fun s -> (Right, s.[0] == '@')));
     (TokenPrecedence, (fun s -> (Right, s.[0] == '^')));
+    (TokenPrecedence, (fun s -> (Right, String.length s > 1 && s.[0] == '+' && s.[1] == '+')));
   ];
   [
     (TokenPrecedence, (fun s -> (Left, s.[0] == '=' && not (s = "=") && not (s = "=>"))));
