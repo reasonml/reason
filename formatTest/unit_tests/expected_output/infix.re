@@ -318,6 +318,67 @@ let shouldSimplifyAnythingExceptApplicationAndConstruction =
   )
   ++ "yo";
 
+let shouldRemoveParens = ident + ident + ident;
+
+let shouldRemoveParens = ident ++ ident ++ ident;
+
+let shouldPreserveParens =
+  ident + (ident + ident);
+
+let shouldPreserveParens =
+  (ident ++ ident) ++ ident;
+
+/**
+ * Since ++ is now INFIXOP1, it should have lower priority than INFIXOP2 (which
+ * includes the single plus sign). That means no parens are required in the
+ * following scenario even though they'd be required in (ident ++ ident) ++ ident.
+ */
+let noParensRequired = ident + ident ++ ident;
+
+/* So in this case, it should format to whatever the previous example formats to. */
+let noParensRequired = ident + ident ++ ident;
+
+/**
+ * Everything that was said above should be true of minus sign as well. In
+ * terms of precedence, plus sign should be treated the same as plus sign
+ * followed by a dollar sign. And +++ should be treated the same as ++.
+ * should also be true of plus sign followed by dollar sign for example.
+ */
+let shouldRemoveParens = ident - ident - ident;
+
+let shouldPreserveParens =
+  ident - (ident - ident);
+
+let shouldPreserveParens =
+  ident +$ (ident +$ ident);
+
+let noParensRequired = ident - ident ++ ident;
+
+let noParensRequired = ident - ident ++ ident;
+
+let noParensRequired = ident +$ ident ++ ident;
+
+let noParensRequired = ident + ident +++ ident;
+
+let noParensRequired = ident + ident +++ ident;
+
+/* Parens are required any time you want to make ++ or +++ parse with higher
+ * priority than + or - */
+let parensRequired = ident + (ident ++ ident);
+
+let parensRequired = ident + (ident +++ ident);
+
+let parensRequired = ident + (ident ++- ident);
+
+let parensRequired = ident +$ (ident ++- ident);
+
+/* ++ and +++ have the same parsing precedence, so it's right associative.
+ * Parens are required if you want to group to the left, even when the tokens
+ * are different.*/
+let parensRequired = (ident ++ ident) +++ ident;
+
+let parensRequired = (ident +++ ident) ++ ident;
+
 /* Add tests with IF/then mixed with infix/constructor application on left and right sides */
 /**
  * Every star or forward slash after the character of an infix operator must be
