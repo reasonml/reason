@@ -15,7 +15,7 @@ test-ci: install test
 
 test: build clean-tests
 	# I don't have modern enough node to test. brb.
-	node ./formatTest/testOprint.js
+	# node ./formatTest/testOprint.js
 	./miscTests/rtopIntegrationTest.sh
 	./miscTests/jsxPpxTest.sh
 	cd formatTest; ./test.sh
