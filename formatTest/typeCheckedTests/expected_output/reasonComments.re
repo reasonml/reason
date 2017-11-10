@@ -371,3 +371,8 @@ let fun_def_comment_newline = () => {/* */};
 let fun_def_comment_long = () => {
   /* longer comment inside empty function body */
 };
+
+type record_with_doc_comment = {
+  /** doc comment **/
+  foo: string
+};
