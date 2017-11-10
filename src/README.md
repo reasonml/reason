@@ -176,8 +176,6 @@ make
 
 Then submit a PR!
 
-- If you can't find the corresponding error code, `make all_errors` generates all the possible error states and corresponding code, from which you can copy the relevant one over and modify the message. More info [here](https://github.com/facebook/reason/pull/1033#issuecomment-276445792)
-
 ### Improve Error Message Locations
 
 In some situations, Reason might report errors in a different place than where it occurs. This is caused by the AST not having a correct location for a node. When the error reports a location that's simply at the top of the file, that means we likely didn't attach the location in the parser correctly, altogether.
