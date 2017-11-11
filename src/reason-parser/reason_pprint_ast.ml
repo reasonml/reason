@@ -3695,7 +3695,7 @@ class printer  ()= object(self:'self)
        * pass through this case. In this context they don't need to be wrapped in extra parens
        * Some((-1)) should be printed as Some(-1). This is in contrast with
        * 1 + (-1) where we print the parens for readability. *)
-      self#constant ~parens:(false || ensureExpr) c
+      self#constant ~parens:ensureExpr c
     | x -> self#unparseExpr x
 
   method simplifyUnparseExpr x =
