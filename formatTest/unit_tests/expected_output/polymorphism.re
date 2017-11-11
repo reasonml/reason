@@ -23,8 +23,7 @@ module HoldsAType = {
 };
 
 type myType2 =
-  myTwoParamType(myType((int => int)), int) =>
-  int;
+  myTwoParamType(myType(int => int), int) => int;
 
 /* Confusing because => looks like part
    of the return type signature. */

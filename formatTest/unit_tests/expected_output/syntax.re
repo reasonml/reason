@@ -1047,14 +1047,12 @@ let registerEventHandlers =
       ~mouseDown:
          option(
            (
-             (
-               ~button: Events.buttonStateT,
-               ~state: Events.stateT,
-               ~x: int,
-               ~y: int
-             ) =>
-             unit
-           )
+             ~button: Events.buttonStateT,
+             ~state: Events.stateT,
+             ~x: int,
+             ~y: int
+           ) =>
+           unit
          )=?,
       ()
     ) => 1;

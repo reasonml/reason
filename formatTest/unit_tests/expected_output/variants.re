@@ -271,8 +271,8 @@ let thisWontCompileButLetsSeeHowItFormats =
  */
 type term(_) =
   | Int(int): term(int)
-  | Add: term(((int, int) => int))
-  | App(term(('b => 'a)), term('b)): term('a);
+  | Add: term((int, int) => int)
+  | App(term('b => 'a), term('b)): term('a);
 
 let rec eval: type a. term(a) => a =
   fun
