@@ -3156,10 +3156,12 @@ class printer  ()= object(self:'self)
                 label (SourceMap (li.loc, self#longident_loc li))
                   (self#unparseObject ~wrap:("(",")") l o)
             | _ ->
+              (* small guidance: in `type foo = bar`, we're now at the `bar` part *)
+
               (* The single identifier has to be wrapped in a [ensureSingleTokenSticksToLabel] to
                  avoid (@see @avoidSingleTokenWrapping): *)
               label (SourceMap (li.loc, self#longident_loc li))
-                (makeTup (List.map self#non_arrowed_non_simple_core_type l)))
+                (makeTup (List.map self#core_type l)))
         | Ptyp_variant (l, closed, low) ->
           let pcd_loc = x.ptyp_loc in
           let pcd_attributes = x.ptyp_attributes in
@@ -6559,7 +6561,7 @@ class printer  ()= object(self:'self)
    *    b: 2
    *  })
    *  when the line length dictates breaking. Notice how `({` and `})` 'hug'.
-   *  Also see "isSingleArgParenApplication" which determines if 
+   *  Also see "isSingleArgParenApplication" which determines if
    *  this kind of formatting should happen. *)
   method singleArgParenApplication = function
     | [{pexp_attributes = []; pexp_desc = Pexp_record (l, eo)}] ->

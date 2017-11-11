@@ -2514,11 +2514,10 @@ type wrappingGadt(_) =
   | ThisIsLongSoTypeWillWrap(int): wrappingGadt(
                                      int
                                    )
-  | Add: wrappingGadt(((int, int) => int))
-  | App(
-         wrappingGadt(('b => 'a)),
-         wrappingGadt('b)
-       ): wrappingGadt('a);
+  | Add: wrappingGadt((int, int) => int)
+  | App(wrappingGadt('b => 'a), wrappingGadt('b)): wrappingGadt(
+                                        'a
+                                        );
 
 type withThreeFields = {
   name: string,
