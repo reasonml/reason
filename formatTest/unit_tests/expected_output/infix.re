@@ -196,7 +196,7 @@ let lessThanAndFunctionCalls = pred(1) < pred(2);
 /* This doesn't type check because it looks like pred - 1 */
 let minusAndInteger = pred - 1;
 
-let passingMinusOneToFunction = pred((-1));
+let passingMinusOneToFunction = pred(-1);
 
 let leadingMinusIsCorrectlyNeg = (-1) + 20;
 
