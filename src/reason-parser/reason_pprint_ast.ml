@@ -5219,20 +5219,22 @@ class printer  ()= object(self:'self)
   method unparseObject ?wrap:(wrap=("", "")) ?(withStringKeys=false) l o =
     let core_field_type (s, attrs, ct) =
       let l = extractStdAttrs attrs in
+      let row =
+         let rowKey = if withStringKeys then
+            (makeList ~wrap:("\"", "\"") [atom s])
+          else (atom s)
+          in
+          label ~space:true
+                (label rowKey (atom ":"))
+                (self#core_type ct)
+      in
       (match l with
-       | [] ->
-           let rowKey = if withStringKeys then
-             (makeList ~wrap:("\"", "\"") [atom s])
-           else (atom s)
-           in
-           label ~space:true
-                 (label rowKey (atom ":"))
-                 (self#core_type ct)
+       | [] -> row
        | _::_ ->
          makeList
            ~postSpace:true
            ~break:IfNeed
-           [self#attributes attrs; atom s; atom ":"; self#core_type ct])
+           [self#attributes attrs; row])
     in
     let rows = List.map core_field_type l in
     let openness = match o with

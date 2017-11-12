@@ -102,3 +102,9 @@ let isArrayPolyfill: [@bs] (int => bool) = [%bs.raw
 ];
 
 this#arrayInObject[count] = 1;
+
+type y = {
+  .
+  [@bs.set no_get] "height": int,
+  [@bs.set no_get] "width": int
+};
