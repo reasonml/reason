@@ -313,6 +313,40 @@ let update_loc lexbuf file line absolute chars =
 let preprocessor = ref None
 
 (* Warn about Latin-1 characters used in idents *)
+(*
+  You may likely use these utilities to make the Reason parser compatible with
+  all versions of OCaml (including 4.06). They are obtained from the master OCaml
+  branch.
+  
+  The warning_printer should be exposed (not sure if exposed in all supported OCaml versions though).
+
+  let print_updating_num_loc_lines ppf f arg =
+    let open Format in
+    let out_functions = pp_get_formatter_out_functions ppf () in
+    let out_string str start len =
+      let rec count i c =
+        if i = start + len then c
+        else if String.get str i = '\n' then count (succ i) (succ c)
+        else count (succ i) c in
+      num_loc_lines := !num_loc_lines + count start 0 ;
+      out_functions.out_string str start len in
+    pp_set_formatter_out_functions ppf
+      { out_functions with out_string } ;
+    f ppf arg ;
+    pp_print_flush ppf ();
+    pp_set_formatter_out_functions ppf out_functions
+
+  let print_warning loc ppf w =
+    print_updating_num_loc_lines ppf (!warning_printer loc) w
+  ;;
+
+  let prerr_warning loc w = print_warning loc !formatter_for_warnings w;;
+
+  let deprecated ?(def = none) ?(use = none) loc msg =
+    prerr_warning loc (Warnings.Deprecated (msg, def, use))
+
+*)
+
 
 let warn_latin1 lexbuf =
   Location.prerr_warning (Location.curr lexbuf)
