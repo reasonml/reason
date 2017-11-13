@@ -5225,7 +5225,7 @@ class printer  ()= object(self:'self)
           else (atom s)
           in
           label ~space:true
-                (label rowKey (atom ":"))
+                (makeList ~break:Never [rowKey; (atom ":")])
                 (self#core_type ct)
       in
       (match l with
@@ -5234,19 +5234,19 @@ class printer  ()= object(self:'self)
          makeList
            ~postSpace:true
            ~break:IfNeed
+           ~inline:(true, true)
            [self#attributes attrs; row])
     in
     let rows = List.map core_field_type l in
     let openness = match o with
-      | Closed -> [atom "."]
-      | Open -> [atom ".."]
+      | Closed -> atom "."
+      | Open -> atom ".."
     in
     (* if an object has more than 2 rows, always break for readability *)
     let break = if List.length rows >= 2 then Always_rec else IfNeed in
     let (left, right) = wrap in
     makeList ~break:IfNeed ~preSpace:(List.length rows > 0) ~wrap:(left ^ "{", "}" ^ right)
-      (openness
-       @ [makeList ~break ~inline:(true, (List.length rows > 0)) ~postSpace:true ~sep:"," rows])
+      (openness::[makeList ~break ~inline:(true, true) ~postSpace:true ~sep:"," rows])
 
   method unparseSequence ?wrap:(wrap=("", "")) ~construct l =
     match construct with

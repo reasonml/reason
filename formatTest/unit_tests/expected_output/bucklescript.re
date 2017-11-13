@@ -108,3 +108,23 @@ type y = {
   [@bs.set no_get] "height": int,
   [@bs.set no_get] "width": int
 };
+
+type y = {
+  .
+  [@foo barbaz]
+  "heightThatIsASuperLongStringForceBreak":
+    int => unit,
+  [@foo barbaz]
+  "widthThatIsASuperLongStringForceBreak":
+    int => unit
+};
+
+type y = {
+  .
+  [@foo barbaz]
+  "width":
+    (int, int, int, float, float, float) => unit,
+  [@foo barbaz]
+  "height":
+    (int, int, int, float, float, float) => unit
+};
