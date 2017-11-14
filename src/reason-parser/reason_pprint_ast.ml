@@ -202,6 +202,7 @@ and listConfig = {
   indent: int;
   sepLeft: bool;
   preSpace: bool;
+  (* Really means space_after_separator *)
   postSpace: bool;
   pad: bool * bool;
   (* A function, because the system might rearrange your previous settings, and
@@ -5596,35 +5597,34 @@ class printer  ()= object(self:'self)
     | _ -> true
 
   (*
+    [@@bs.val] [@@bs.module "react-dom"]                  (* formattedAttrs *)
     external render : reactElement => element => unit =   (* frstHalf *)
-      "render" [@@bs.val] [@@bs.module "react-dom"];      (* sndHalf *)
+      "render";                                           (* sndHalf *)
 
     To improve the formatting with breaking & indentation:
       * consider the part before the '=' as a label
       * combine that label with '=' in a list
       * consider the part after the '=' as a list
       * combine both parts as a label
+      * format the attributes with a ~postSpace:true (inline, inline) list
+      * format everything together in a ~postSpace:true (inline, inline) list
+        for nicer breaking
   *)
   method primitive_declaration vd =
-    let attrs = List.map (fun x -> self#item_attribute x) vd.pval_attributes in
     let lblBefore =
       label ~space:true
-        (makeList ~postSpace:true
-          [atom "external"; protectIdentifier vd.pval_name.txt; atom ":"])
+        (makeList ~postSpace:true [atom "external"; protectIdentifier vd.pval_name.txt; atom ":"])
         (self#core_type vd.pval_type)
     in
     let frstHalf = makeList ~postSpace:true [lblBefore; atom "="] in
-    let frstHalf =
-      if (List.length attrs) == 0 then
-        frstHalf
-      else
-        makeSpacedBreakableInlineList [
-          makeSpacedBreakableInlineList attrs;
-          frstHalf;
-        ] in
-    let sndHalf = makeSpacedBreakableInlineList (List.map self#constant_string vd.pval_prim)
-    in
-    label ~space:true frstHalf sndHalf
+    let sndHalf = makeSpacedBreakableInlineList (List.map self#constant_string vd.pval_prim) in
+    let primDecl = label ~space:true frstHalf sndHalf in
+    match vd.pval_attributes with
+    | [] -> primDecl
+    | attrs ->
+        let attrs = List.map (fun x -> self#item_attribute x) attrs in
+        let formattedAttrs = makeSpacedBreakableInlineList attrs in
+        makeSpacedBreakableInlineList [formattedAttrs; primDecl]
 
   method class_instance_type x =
     match x.pcty_desc with

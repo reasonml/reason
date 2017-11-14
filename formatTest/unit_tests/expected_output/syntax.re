@@ -1023,8 +1023,7 @@ let A | B | C = X;
 /** External function declaration
  *
  */
-external f : int => int =
-  "foo";
+external f : int => int = "foo";
 
 let x = {contents: 0};
 
