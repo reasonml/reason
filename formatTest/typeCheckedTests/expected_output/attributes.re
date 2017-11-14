@@ -372,8 +372,8 @@ let myFun =
    let myFun = fun ((X(hello) | Y(hello)) [@onOrPattern]) => hello;
    */
 /* Bucklescript FFI item attributes */
-[@bs.val] external imul : (int, int) => int =
-  "Math.imul";
+[@bs.val]
+external imul : (int, int) => int = "Math.imul";
 
 module Js = {
   type t('a);
@@ -435,8 +435,7 @@ external add_nat : (int, int) => int =
 [@ocaml.deprecated
   "Use bar instead. It's a much cooler function. This string needs to be a little long"
 ]
-external foo : bool => bool =
-  "";
+external foo : bool => bool = "";
 
 /* Attributes on an entire polymorphic variant leaf */
 [@bs.module "fs"]
