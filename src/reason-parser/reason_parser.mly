@@ -3587,11 +3587,11 @@ label_declaration:
   lseparated_nonempty_list(COMMA, string_literal_lbl) COMMA? { $1 };
 
 string_literal_lbl:
-  | STRING COLON poly_type
+  | item_attributes STRING COLON poly_type
     {
       let loc = mklocation $symbolstartpos $endpos in
-      let (s, _) = $1 in
-      (Type.field (mkloc s loc) $3 ~loc, [])
+      let (s, _) = $2 in
+      (Type.field  (mkloc s loc) $4 ~loc, $1)
     }
   ;
 
