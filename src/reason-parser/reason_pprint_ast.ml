@@ -3127,7 +3127,7 @@ class printer  ()= object(self:'self)
                     (makeList ~postSpace:true [atom "module"; self#longident_loc lid])
                     (makeList
                       ~break:IfNeed
-                      ~sep:" and"
+                      ~sep:" and "
                       ~wrap:("with", "")
                       ~pad:(true, false)
                       (List.map typeConstraint cstrs))
