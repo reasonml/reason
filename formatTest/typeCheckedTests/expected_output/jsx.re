@@ -629,3 +629,10 @@ let g = <Two ?foo />;
 <Foo> ...[|a|] </Foo>;
 
 <Foo> ...(1, 2) </Foo>;
+
+module Foo3 = {
+  let createElement = (~bar, ~children, ()) =>
+    ();
+};
+
+<Foo3 bar=<Foo /> />;
