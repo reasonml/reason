@@ -1089,18 +1089,42 @@ Some(-0.1G, -0.1x, -0.1H);
 
 Some(-0.1G, -0.1x, -0.1H);
 
-Some([@foo] (-1), [@foo] (-1), [@foo] (-1));
+Some([@foo] -1, [@foo] -1, [@foo] -1);
 
-Some([@foo] (-1z), [@foo] (-1z), [@foo] (-1z));
+Some([@foo] -1z, [@foo] -1z, [@foo] -1z);
 
-Some(
-  [@foo] (-0.1),
-  [@foo] (-0.1),
-  [@foo] (-0.1)
+Some([@foo] -0.1, [@foo] -0.1, [@foo] -0.1);
+
+Some([@foo] -0.1m, [@foo] -0.1n, [@foo] -0.1p);
+
+foo(~x=-1, ~y=-2);
+
+foo(~x=-1, ~y=-2);
+
+foo(~x=-. 1, ~y=-. 2);
+
+foo(~x=-. 1, ~y=-. 2);
+
+foo(~x=-1g, ~y=-1G, ~z=-1z);
+
+foo(~x=-1g, ~y=-1G, ~z=-1z);
+
+foo(~x=-0.1G, ~y=-0.1x, ~z=-0.1H);
+
+foo(~x=-0.1G, ~y=-0.1x, ~z=-0.1H);
+
+foo(~x=[@foo] -1, ~y=[@foo] -1, ~z=[@foo] -1);
+
+foo(~x=[@foo] -1z, ~y=[@foo] -1z, ~z=[@foo] -1z);
+
+foo(
+  ~x=[@foo] -0.1,
+  ~y=[@foo] -0.1,
+  ~z=[@foo] -0.1
 );
 
-Some(
-  [@foo] (-0.1m),
-  [@foo] (-0.1n),
-  [@foo] (-0.1p)
+foo(
+  ~x=[@foo] -0.1m,
+  ~y=[@foo] -0.1n,
+  ~z=[@foo] -0.1p
 );

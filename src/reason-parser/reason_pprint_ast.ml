@@ -3533,7 +3533,7 @@ class printer  ()= object(self:'self)
         | _ -> None
       )
     )
-    | _ ->  None
+    | _ -> None
 
   (** Detects "sugar expressions" (sugar for array/string setters) and returns their separate
       parts.  *)
@@ -3690,12 +3690,18 @@ class printer  ()= object(self:'self)
       if ensureExpr then
         makeList ~wrap:("(", ")") children
       else makeList children
-    | { pexp_attributes = [] ; pexp_desc = Pexp_constant c } ->
+    | { pexp_attributes; pexp_desc = Pexp_constant c } ->
       (* When we have Some(-1) or someFunction(-1, -2), the arguments -1 and -2
        * pass through this case. In this context they don't need to be wrapped in extra parens
        * Some((-1)) should be printed as Some(-1). This is in contrast with
        * 1 + (-1) where we print the parens for readability. *)
-      self#constant ~parens:ensureExpr c
+        let constant = self#constant ~parens:ensureExpr c in
+        begin match pexp_attributes with
+        | [] -> constant
+        | attrs ->
+            let formattedAttrs = makeSpacedBreakableInlineList (List.map self#item_attribute attrs) in
+             makeSpacedBreakableInlineList [formattedAttrs; constant]
+        end
     | x -> self#unparseExpr x
 
   method simplifyUnparseExpr x =
