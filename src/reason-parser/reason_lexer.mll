@@ -642,7 +642,7 @@ rule token = parse
   (* The second star must be escaped so that the precedence assumptions for
    * printing match those of parsing. (Imagine what could happen if the other
    * rule beginning with * picked up */*, and we internally escaped it to **.
-   * Whe printing, we have an understanding of the precedence of "**", which
+   * When printing, we have an understanding of the precedence of "**", which
    * enables us to safely print/group it, but that understanding would not
    * match the *actual* precedence that it was parsed at thanks to the *other*
    * rule beginning with *, picking it up instead of the special double ** rule
@@ -670,7 +670,7 @@ rule token = parse
 and enter_comment = parse
   | "/*" ("*" "*"+)?
       { set_lexeme_length lexbuf 2;
-        let start_loc = Location.curr lexbuf  in
+        let start_loc = Location.curr lexbuf in
         comment_start_loc := [start_loc];
         reset_string_buffer ();
         let {Location. loc_end; _} = comment lexbuf in
@@ -692,7 +692,7 @@ and enter_comment = parse
   | "/**/"
       { DOCSTRING "" }
   | "/*/"
-      { let loc = Location.curr lexbuf  in
+      { let loc = Location.curr lexbuf in
         if !print_warnings then
           Location.prerr_warning loc Warnings.Comment_start;
         comment_start_loc := [loc];
@@ -874,7 +874,7 @@ and skip_sharp_bang = parse
 
 {
 
-  (* Filter commnets *)
+  (* Filter comments *)
 
   let token_with_comments lexbuf =
     match !preprocessor with
