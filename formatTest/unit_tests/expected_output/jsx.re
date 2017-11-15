@@ -163,3 +163,10 @@ let z = (
   <Button onClick=handleStaleClick />,
   <Button onClick=handleStaleClick />
 );
+
+let y = [<div />, <div />];
+
+let y = [
+  <Button onClick=handleStaleClick />,
+  <Button onClick=handleStaleClick />
+];

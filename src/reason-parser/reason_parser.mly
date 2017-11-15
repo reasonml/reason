@@ -2439,8 +2439,11 @@ jsx_start_tag_and_args:
 ;
 
 jsx_start_tag_and_args_without_leading_less:
-  mod_longident jsx_arguments
-  { (jsx_component $1 $2, $1) }
+    mod_longident jsx_arguments
+    { (jsx_component $1 $2, $1) }
+  | LIDENT jsx_arguments
+    { let lident = Longident.Lident $1 in
+      (jsx_component lident $2, lident) }
 ;
 
 jsx:
