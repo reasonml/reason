@@ -26,13 +26,26 @@ See the [src folder's README](https://github.com/facebook/reason/tree/master/src
 
 We expose a `refmt.js` for you to use on the web. Again, for local development, please use the native `refmt` that comes with the installation [here](https://reasonml.github.io/guide/editor-tools/global-installation). It's an order of magnitude faster than the JS version. Don't use the JS version unless you know what you're doing. Let's keep our ecosystem fast please.
 
-Aaaanyways, to install `refmt.js`: `npm install reason`. Here's the API:
+Aaaanyways, to install `refmt.js`: `npm install reason`.
 
-- `parseRE(codeString)`: returns an AST + comments info that you'd use for printing
-- `parseREI(codeString)`: same, but for interface
-- `printRE(astAndComments)`: receives the data structure returned by `parseRE` and others
-- `printREI(astAndComments)`: same, but for interface
-- `parseML(codeString)`, `parseMLI(codeString)`, `printML(astAndComments)`, `printMLI(astAndComments)`: the OCaml syntax counterparts.
+Here's the API, with pseudo type annotations:
+
+- `parseRE(code: string): astAndComments`: parse Reason code
+- `parseREI(code: string): astAndComments`: parse Reason interface code
+- `printRE(data: astAndComments): string`: print Reason code
+- `printREI(data: astAndComments): string`: print Reason interface code
+- `parseML(code)`, `parseMLI(code)`, `printML(data)`, `printMLI(data)`: same as above, but for the OCaml syntax
+
+The type `string` is self-descriptive. The type `astAndComments` returned by the `parse*` functions is an opaque data structure; you will only use it as input to the `print*` functions. For example:
+
+```js
+const refmt = require('reason')
+
+// convert the ocaml syntax to reason syntax
+const ast = refmt.parseML('let f a = 1');
+const result = refmt.printRE(ast);
+console.log(result) // prints `let f = (a) => 1`
+```
 
 The `parse*` functions potentially throw an error of this shape:
 
@@ -48,14 +61,6 @@ The `parse*` functions potentially throw an error of this shape:
     endLineEndChar: number, // **exclusive**
   }
 }
-```
-
-Example usage:
-
-```js
-const refmt = require('reason')
-// convert the ocaml syntax to reason syntax
-console.log(refmt.printRE(refmt.parseML('let f a = 1')))
 ```
 
 **NOTE**: `refmt.js` requires the node module `fs`, which of course isn't available on the web. If using webpack, to avoid the missing module error, put `node: { fs: 'empty' }` into `webpack.config.js`. See https://webpack.js.org/configuration/node/#other-node-core-libraries for more information.
