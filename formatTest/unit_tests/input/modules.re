@@ -467,3 +467,5 @@ module X = [%test extension];
 module type T = [%test extension];
 
 let foo (type a, (module X): (module X_t with type t =a)) = X.a;
+
+let f = ((module M): (module M with type x = x and type y = y)) => M.x;

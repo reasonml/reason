@@ -6,4 +6,4 @@
 - Better record & object printing (#1593, #1596)
 - Fewer unnecessary wrappings in type declarations (#1616)
 - Parse and print attributes on object type rows (#1637)
-
+- Better printing for multiple type equations in a module type in a function arg (#1641)
