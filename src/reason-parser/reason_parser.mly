@@ -993,6 +993,7 @@ let doc_attr text loc =
 %token INHERIT
 %token INITIALIZER
 %token <string * char option> INT
+%token <string> LABEL_WITH_EQUAL
 %token LAZY
 %token LBRACE
 %token LBRACELESS
@@ -2380,6 +2381,12 @@ as_loc
     { Term (Optional $2.txt, Some $5, $3 $2) }
   | TILDE as_loc(LIDENT) labeled_pattern_constraint EQUAL QUESTION
     { Term (Optional $2.txt, None, $3 $2) }
+  | as_loc(LABEL_WITH_EQUAL) expr
+    { let loc = (mklocation $symbolstartpos $endpos) in
+      Term (Optional $1.txt, Some $2, pat_of_label (mkloc (Longident.parse $1.txt) loc)) }
+  | as_loc(LABEL_WITH_EQUAL) QUESTION
+    { let loc = (mklocation $symbolstartpos $endpos) in
+      Term (Optional $1.txt, None, pat_of_label (mkloc (Longident.parse $1.txt) loc)) } (* mkpat(Ppat_alias) *)
   | pattern_optional_constraint
     { Term (Nolabel, None, $1) }
   | TYPE LIDENT
@@ -2916,6 +2923,11 @@ labeled_expr:
   | TILDE as_loc(val_longident) EQUAL optional labeled_expr_constraint
     { (* foo(:bar=?Some(1)) or add(:x=1, :y=2) -> parses :bar=?Some(1) & :x=1 & :y=1 *)
       ($4 (String.concat "" (Longident.flatten $2.txt)), $5 $2)
+    }
+  | as_loc(LABEL_WITH_EQUAL) optional labeled_expr_constraint
+    {
+      let loc = (mklocation $symbolstartpos $endpos) in
+      ($2 $1.txt, $3 (mkloc (Longident.parse $1.txt) loc))
     }
 ;
 

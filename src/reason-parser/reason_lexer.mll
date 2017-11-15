@@ -317,7 +317,7 @@ let preprocessor = ref None
   You may likely use these utilities to make the Reason parser compatible with
   all versions of OCaml (including 4.06). They are obtained from the master OCaml
   branch.
-  
+
   The warning_printer should be exposed (not sure if exposed in all supported OCaml versions though).
 
   let print_updating_num_loc_lines ppf f arg =
@@ -485,6 +485,9 @@ rule token = parse
         with Not_found -> LIDENT s }
   | lowercase_latin1 identchar_latin1 *
       { warn_latin1 lexbuf; LIDENT (Lexing.lexeme lexbuf) }
+  | "~" lowercase identchar * "="
+      { let l = Lexing.lexeme lexbuf in
+        LABEL_WITH_EQUAL(String.sub l 1 (String.length l - 2)) }
   | uppercase identchar *
       { UIDENT(Lexing.lexeme lexbuf) }       (* No capitalized keywords *)
   | uppercase_latin1 identchar_latin1 *
