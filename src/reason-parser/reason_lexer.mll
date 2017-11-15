@@ -459,18 +459,6 @@ rule token = parse
       }
   | blank +
       { token lexbuf }
-  | "::" lowercase identchar *
-      {
-        let delim = Lexing.lexeme lexbuf in
-        let delim = String.sub delim 2 (String.length delim - 2) in
-        COLONCOLONLIDENT delim
-      }
-  | lowercase identchar * "::"
-      {
-        let delim = Lexing.lexeme lexbuf in
-        let delim = String.sub delim 0 (String.length delim - 2) in
-        LIDENTCOLONCOLON delim
-      }
   | "_"
       { UNDERSCORE }
   | "~"
@@ -538,6 +526,11 @@ rule token = parse
         let esc = String.sub l 1 (String.length l - 1) in
         raise (Error(Illegal_escape esc, Location.curr lexbuf))
       }
+  | "#=<" {
+    (* Allow parsing of foo#=<bar /> *)
+    set_lexeme_length lexbuf 2;
+    SHARPOP("#=")
+  }
   | "#" operator_chars+
       { SHARPOP(lexeme_operator lexbuf) }
   | "#" [' ' '\t']* (['0'-'9']+ as num) [' ' '\t']*
@@ -567,7 +560,6 @@ rule token = parse
   | ";"  { SEMI }
   | ";;" { SEMISEMI }
   | "<"  { LESS }
-  | "<-" { LESSMINUS }
   | "="  { EQUAL }
   | "["  { LBRACKET }
   | "[|" { LBRACKETBAR }
@@ -595,6 +587,25 @@ rule token = parse
   *)
   | "}"  { RBRACE }
   | ">}" { GREATERRBRACE }
+  | "=<" {
+    (* allow `let x=<div />;` *)
+    set_lexeme_length lexbuf 1;
+    EQUAL
+  }
+  (* jsx in arrays: [|<div />|]*)
+  | "/>|]" {
+    set_lexeme_length lexbuf 2;
+    SLASHGREATER
+  }
+  | "[|<" {
+    set_lexeme_length lexbuf 2;
+    LBRACKETBAR
+  }
+  | "></" uppercase_or_lowercase+ {
+    (* allow parsing of <div asd=1></div> *)
+    set_lexeme_length lexbuf 1;
+    GREATER
+  }
   | "[@" { LBRACKETAT }
   | "[%" { LBRACKETPERCENT }
   | "[%%" { LBRACKETPERCENTPERCENT }

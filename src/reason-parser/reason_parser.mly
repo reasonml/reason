@@ -939,7 +939,6 @@ let doc_attr text loc =
 
 /* Tokens */
 
-%token <string> LIDENTCOLONCOLON
 %token AMPERAMPER
 %token AMPERSAND
 %token AND
@@ -973,7 +972,6 @@ let doc_attr text loc =
 %token EXTERNAL
 %token FALSE
 %token <string * char option> FLOAT
-%token <string> COLONCOLONLIDENT
 %token FOR
 %token FUN ES6_FUN
 %token FUNCTION
@@ -1008,13 +1006,11 @@ let doc_attr text loc =
 %token LESSGREATER
 %token LESSSLASHGREATER
 %token LESSDOTDOTGREATER
-%token LESSMINUS
 %token EQUALGREATER
 %token LET
 %token <string> LIDENT
 %token LPAREN
 %token LBRACKETAT
-%token LESSSLASH
 %token OF
 %token PRI
 %token SWITCH

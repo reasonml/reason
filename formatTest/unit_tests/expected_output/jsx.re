@@ -141,3 +141,25 @@ let icon =
 
 /* don't pun explicitly passed optional with module identifier */
 <Foo bar=?Baz.bar />;
+
+let x = <div />;
+
+<div asd=1 />;
+
+foo#=<bar />;
+
+foo#=<bar />;
+
+let x = [|<div />|];
+
+let x = [|
+  <Button onClick=handleStaleClick />,
+  <Button onClick=handleStaleClick />
+|];
+
+let z = <div />;
+
+let z = (
+  <Button onClick=handleStaleClick />,
+  <Button onClick=handleStaleClick />
+);
