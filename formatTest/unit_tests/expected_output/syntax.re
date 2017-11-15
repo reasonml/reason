@@ -1070,3 +1070,5 @@ Some(x: int);
 Some(x, y: int, b);
 
 Some(x, y: int, b);
+
+foo(~x=-. bar);
