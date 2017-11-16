@@ -442,6 +442,27 @@ let hex_float_literal =
 
 let literal_modifier = ['G'-'Z' 'g'-'z']
 
+(* In some situations the lexing/parsing of jsx conflicts
+ * with infix operators. Example:
+ * let x =<div />;
+ * The author of this code clearly intends to bind
+ * the div-jsx to x. The lexer interprets this as infix operator however.
+ * I.e. you get `let` `x` `=<`, which is not what we want in this case.
+ * To disambiguate the jsx from the infix operator we introduce the
+ * following convention: if an ambigous case like `=<` (is it a infix op
+ * or jsx ?), occurs we say that is categorized as infix operator if it's
+ * followed by a whitespace or newline.
+ * So in let result =< a + b, =< is interpreted as infix op (due to the whitespace).
+ *
+ * The following pattern helps to disambiguate the jsx from the infix op case
+ *)
+let is_jsx_not_infix_operator =
+  [^
+   '\013' '\010' (* newline *)
+   ' ' '\009' '\012' (* whitespace *)
+   ')' (* let (=<) = (a, b) => a + b;, represents right paren after `=<` *)
+  ]
+
 rule token = parse
   | "\\" newline {
       match !preprocessor with
@@ -587,7 +608,7 @@ rule token = parse
   *)
   | "}"  { RBRACE }
   | ">}" { GREATERRBRACE }
-  | "=<" {
+  | "=<" is_jsx_not_infix_operator  {
     (* allow `let x=<div />;` *)
     set_lexeme_length lexbuf 1;
     EQUAL
