@@ -869,3 +869,23 @@ if (List.length(files)
     < 2) {
   ()
 };
+
+/* Don't clash with jsx edge cases */
+let (=<) = (a, b) => a + b;
+let result = x =< y;
+let z = x =<
+y;
+
+let z = x =<
+
+
+y;
+
+let (></) = (a, b) => a - b;
+let result = x ></ b;
+let z = x ></
+b;
+
+let z = x ></
+
+b;
