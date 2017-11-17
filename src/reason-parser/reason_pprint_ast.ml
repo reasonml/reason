@@ -2348,17 +2348,13 @@ let constant ?(parens=true) f = function
   | Pconst_string (i, None) -> pp f "%S" i
   | Pconst_string (i, Some delim) -> pp f "{%s|%s|%s}" delim i delim
   | Pconst_integer (i, None) ->
-      let parens = if parens then (i.[0]='-') else false in
-      paren parens (fun f -> pp f "%s") f i
+      paren (parens && i.[0] = '-') (fun f -> pp f "%s") f i
   | Pconst_integer (i, Some m) ->
-      let parens = if parens then (i.[0]='-') else false in
-      paren parens (fun f (i, m) -> pp f "%s%c" i m) f (i,m)
+      paren (parens && i.[0] = '-') (fun f (i, m) -> pp f "%s%c" i m) f (i,m)
   | Pconst_float (i, None) ->
-      let parens = if parens then (i.[0]='-') else false in
-      paren parens (fun f -> pp f "%s") f i
+      paren (parens && i.[0] = '-') (fun f -> pp f "%s") f i
   | Pconst_float (i, Some m) ->
-      let parens = if parens then (i.[0]='-') else false in
-      paren parens (fun f (i,m) ->
+      paren (parens && i.[0] = '-') (fun f (i,m) ->
       pp f "%s%c" i m) f (i,m)
 
 let is_punned_labelled_expression e lbl = match e.pexp_desc with
