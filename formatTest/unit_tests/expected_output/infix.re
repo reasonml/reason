@@ -1140,3 +1140,11 @@ let result = x ></ b;
 let z = x ></ b;
 
 let z = x ></ b;
+
+let (=</>) = (a, b) => a + b;
+
+let result = x =</> b;
+
+let z = x =</> b;
+
+let z = x =</> b;
