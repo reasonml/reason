@@ -864,13 +864,23 @@ let built_in_explicit_arity_constructors = ["Some"; "Assert_failure"; "Match_fai
 
 let jsx_component module_name attrs children loc =
   let firstPart = (List.hd (Longident.flatten module_name)) in
-  let lident = if String.get firstPart 0 != '_' && firstPart = String.capitalize firstPart then
+  let isComponent = String.get firstPart 0 != '_' && firstPart = String.capitalize firstPart in 
+  let lident = if isComponent then
     (* firstPart will be non-empty so the 0th access is fine. Modules can't start with underscore *)
     Ldot(module_name, "createElement")
   else
     Lident firstPart
   in
   let ident = mkloc lident loc in
+  let children = match children with
+    | None -> if isComponent then [
+        (Labelled "children", mkexp_constructor_unit loc loc);
+        (Nolabel, mkexp_constructor_unit loc loc)
+      ] else [
+        (Labelled "children", mktailexp_extension loc [] None);
+        (Nolabel, mkexp_constructor_unit loc loc)
+      ]
+    | Some l -> l in
   let body = mkexp(Pexp_apply(mkexp(Pexp_ident ident) ~loc, attrs @ children)) ~loc in
   let attribute = ({txt = "JSX"; loc = loc}, PStr []) in
   { body with pexp_attributes = attribute :: body.pexp_attributes }
@@ -2456,10 +2466,7 @@ jsx:
   | jsx_start_tag_and_args SLASHGREATER
     { let (component, _) = $1 in
       let loc = mklocation $symbolstartpos $endpos in
-      component [
-        (Labelled "children", mktailexp_extension loc [] None);
-        (Nolabel, mkexp_constructor_unit loc loc)
-      ] loc
+      component None loc
     }
   | jsx_start_tag_and_args GREATER simple_expr_no_call* LESSSLASHIDENTGREATER
     { let (component, start) = $1 in
@@ -2467,11 +2474,11 @@ jsx:
       (* TODO: Make this tag check simply a warning *)
       let endName = Longident.parse $4 in
       let _ = ensureTagsAreEqual start endName loc in
-      let siblings = if List.length $3 > 0 then $3 else [] in
-      component [
+      let siblings = $3 in
+      component (Some [
         (Labelled "children", mktailexp_extension loc siblings None);
         (Nolabel, mkexp_constructor_unit loc loc)
-      ] loc
+      ]) loc
     }
    | jsx_start_tag_and_args GREATER DOTDOTDOT simple_expr_no_call LESSSLASHIDENTGREATER
      (* <Foo> ...bar </Foo> or <Foo> ...((a) => 1) </Foo> *)
@@ -2481,10 +2488,10 @@ jsx:
       let endName = Longident.parse $5 in
       let _ = ensureTagsAreEqual start endName loc in
       let child = $4 in
-      component [
+      component (Some [
         (Labelled "children", child);
         (Nolabel, mkexp_constructor_unit loc loc)
-      ] loc
+      ]) loc
     }
 ;
 
@@ -2497,10 +2504,7 @@ jsx_without_leading_less:
   | jsx_start_tag_and_args_without_leading_less SLASHGREATER {
     let (component, _) = $1 in
     let loc = mklocation $symbolstartpos $endpos in
-    component [
-      (Labelled "children", mktailexp_extension loc [] None);
-      (Nolabel, mkexp_constructor_unit loc loc)
-    ] loc
+    component None loc
   }
   | jsx_start_tag_and_args_without_leading_less GREATER simple_expr_no_call* LESSSLASHIDENTGREATER {
     let (component, start) = $1 in
@@ -2509,10 +2513,10 @@ jsx_without_leading_less:
     let endName = Longident.parse $4 in
     let _ = ensureTagsAreEqual start endName loc in
     let siblings = if List.length $3 > 0 then $3 else [] in
-    component [
+    component (Some [
       (Labelled "children", mktailexp_extension loc siblings None);
       (Nolabel, mkexp_constructor_unit loc loc)
-    ] loc
+    ]) loc
   }
     | jsx_start_tag_and_args_without_leading_less GREATER DOTDOTDOT simple_expr_no_call LESSSLASHIDENTGREATER {
     let (component, start) = $1 in
@@ -2521,10 +2525,10 @@ jsx_without_leading_less:
     let endName = Longident.parse $5 in
     let _ = ensureTagsAreEqual start endName loc in
     let child = $4 in
-    component [
+    component (Some [
       (Labelled "children", child);
       (Nolabel, mkexp_constructor_unit loc loc)
-    ] loc
+    ]) loc
   }
 ;
 

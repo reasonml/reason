@@ -4021,8 +4021,14 @@ class printer  ()= object(self:'self)
   method formatJSXComponent componentName args =
     let rec processArguments arguments processedAttrs children =
       match arguments with
-      | (Labelled "children", {pexp_desc = Pexp_construct (_, None)}) :: tail ->
+      | (Labelled "children", {pexp_desc = Pexp_construct ({txt = Lident"()"}, None )}) :: tail ->
         processArguments tail processedAttrs None
+      | (Labelled "children", {pexp_desc = Pexp_construct (_, None)}) :: tail ->
+        let children = if componentName = String.capitalize componentName then 
+          (Some []) 
+        else 
+          None in
+        processArguments tail processedAttrs children
       | (Labelled "children", {pexp_desc = Pexp_construct ({txt = Lident"::"}, Some {pexp_desc = Pexp_tuple(components)} )}) :: tail ->
         processArguments tail processedAttrs (self#formatChildren components [])
       | (Labelled "children", expr) :: tail ->
