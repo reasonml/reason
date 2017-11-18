@@ -33,7 +33,11 @@ opam pin add -y reason .
 
 `make build`. **If this fails on your machine but master passes**, it means your setup wasn't right. Could you check if you followed the above installation steps? In particular, make sure you did `eval $(opam config env)` and sourced your shell environment (if you don't know how, just open a new shell tab and it'll be sourced usually).
 
+The generated artifacts are in `_build`. All the binaries are in `_build/install/default/bin`.
+
 ### Test
+
+To do some one-off tests, try `echo "let a = 1" | _build/install/default/bin/refmt`
 
 `make test` (make sure to follow the repo pinning instructions above!). The tests will output the difference between the expected syntax formatting and the actual one, if any.
 
