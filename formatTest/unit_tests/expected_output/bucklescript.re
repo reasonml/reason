@@ -4,7 +4,7 @@ bla#=(Some(10));
 
 bla#=someFunc(Some(10));
 
-test##var#=(Some((-10)));
+test##var#=(Some(-10));
 
 obj##.prop;
 
