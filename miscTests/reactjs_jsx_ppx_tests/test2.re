@@ -25,9 +25,12 @@ module ReasonReact = {
 
 let divRef = <div />;
 
+
 "=== DOM component ===";
 
 <div />;
+
+<div> </div>;
 
 <div className="hello" />;
 
@@ -39,9 +42,12 @@ let divRef = <div />;
 
 <div className="hello" compCallback=(fun () => <Foo bar=1 />)> <li /> ((fun () => <Foo bar=2 />) ()) </div>;
 
+
 "=== Custom component ===";
 
 <Foo />;
+
+<Foo> </Foo>;
 
 <Foo> <div /> </Foo>;
 
@@ -52,6 +58,8 @@ let divRef = <div />;
 <Foo> divRef divRef </Foo>;
 
 <Foo className="hello" />;
+
+<Foo className="hello"> </Foo>;
 
 <Foo className="hello"> <div /> </Foo>;
 
@@ -118,3 +126,4 @@ let divRef = <div />;
   correct ReasonReact-specific call */
 
 ([@JSX] Foo.make(~children=[], ()));
+
