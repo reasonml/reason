@@ -189,7 +189,13 @@ and listConfig = {
    * not forming an actual conceptual sequence of items, then this is often
    * useful. For example, if you're appending a semicolon etc. *)
   interleaveComments: bool;
-  (* Whether or not to render the final separator *)
+  (*
+   * Whether or not to render the final separator. TODO: Add ability to only
+   * render final sep (or first sep in the case of `!sepLeft` when it is next to a
+   * line break (either first or last item (depending on `!sepLeft`)).  Also
+   * control ability to only render the sep if there is more than one item in
+   * list.
+   *)
   renderFinalSep: bool;
   break: whenToDoSomething;
   (* Break setting that becomes activated if a comment becomes interleaved into
@@ -1325,8 +1331,6 @@ let makeEasyList
       ~newlinesAboveComments
       ~newlinesAboveDocComments
       ~interleaveComments
-      (* This is unused at this point - separators are handled by our pretty printer,
-         not Easy_format (so that we can interleave comments intelligently) *)
       ~renderFinalSep
       ~break
       ~wrap
@@ -1683,9 +1687,11 @@ let rec append ?(space=false) txt = function
   | Sequence (config, l) when snd config.wrap <> "" ->
      let sep = if space then " " else "" in
      Sequence ({config with wrap=(fst config.wrap, snd config.wrap ^ sep ^ txt)}, l)
+  (* TODO (perf) match on [] don't use List.length *)
   | Sequence (config, l) when List.length l = 0 ->
      Sequence (config, [atom txt])
   | Sequence (config, l) when config.sep = "" ->
+     (* TODO (perf) compute list length once *)
      let sub = List.mapi (fun i layout ->
                    (* append to the end of the list *)
                    if i + 1 = List.length l then
@@ -1759,9 +1765,11 @@ let consolidateSeparator = preOrderWalk (function
        when listConfig.sep <> ""
          && listConfig.sepLeft
     ->
+     (* TODO: (perf) cache List.length *)
      let layoutsWithSepAndComment =
        List.mapi (fun i layout ->
            (* Do not render the final separator *)
+           (* TODO: Support !sepLeft, and this should apply to the *first* separator if !sepLeft.  *)
            if not listConfig.renderFinalSep && i + 1 = List.length sublayouts then
              flattenCommentAndSep ~spaceBeforeSep:listConfig.preSpace layout
            else
@@ -2110,6 +2118,7 @@ let layoutToEasyFormat layoutNode comments =
   let layout = layoutNode in
   let revComments = List.rev comments in
   let (singleLineComments, nonSingleLineComments) = (List.partition isSingleLineComment revComments) in
+  (* TODO: Stop generating multiple versions of the tree, and instead generate one new tree. *)
   let layout = insertComments layout nonSingleLineComments in
   let layout = consolidateSeparator layout in
   let layout = insertComments layout singleLineComments in
@@ -3663,14 +3672,11 @@ class printer  ()= object(self:'self)
     | PotentiallyLowPrecedence itm -> itm
     | Simple itm -> itm
 
+  (* This method may not even be needed *)
   method unparseUnattributedExpr x =
     match partitionAttributes x.pexp_attributes with
     | {docAttrs = []; stdAttrs = []; _} -> self#unparseExpr x
-    | _ -> match x.pexp_desc with
-      | Pexp_open _ | Pexp_let _ | Pexp_letmodule _ | Pexp_sequence _ ->
-        makeLetSequence (self#letList x)
-      | _ ->
-        makeList ~wrap:("(",")") [self#unparseExpr x]
+    | _ -> makeList ~wrap:("(",")") [self#unparseExpr x]
 
   (* ensureExpr ensures that the expression is wrapped in parens
    * e.g. is necessary in cases like:
@@ -4649,57 +4655,19 @@ class printer  ()= object(self:'self)
          let bindingsLoc = self#bindingsLocationRange l in
          let bindingsSourceMapped = SourceMap (bindingsLoc, bindingsLayout) in
          bindingsSourceMapped::(self#letList e)
-      | ([], Pexp_open (ovf, lid, e)) ->
-        let listItems = (self#letList e) in
-        if (List.length listItems == 1) && ovf == Fresh then
-            (* The following logic is a syntax sugar
-             * for an 'open' expression that has only one let item.
-             *
-             * Instead of printing:
-             * let result =  {
-             *   open Fmt;
-             *   strf
-             *     "-pkgs %a"
-             *     (list sep::(unit ",") string)
-             * }
-             *
-             * We format as:
-             *
-             * let result = Fmt.(strf "-pkgs %a" (list sep::(unit ",") string))
-             *
-             * (Also see https://github.com/facebook/Reason/issues/114)
-             *)
-            let expression = match e.pexp_desc with
-                (* syntax sugar for M.{x:1} *)
-                | Pexp_record _
-                (* syntax sugar for M.(a, b) *)
-                | Pexp_tuple _
-                (* syntax sugar for M.{} *)
-                | Pexp_object {pcstr_fields = []}
-                (* syntax sugar for M.[x,y] *)
-                | Pexp_construct ( {txt= Lident"::"},Some _) ->
-                    (self#simplifyUnparseExpr e)
-                (* syntax sugar for the rest, wrap with parens to avoid ambiguity.
-                 * E.g., avoid M.(M2.v) being printed as M.M2.v
-                 *)
-                | _ ->
-                    (makeList ~wrap:("(",")") ~break:IfNeed listItems)
-            in
-            let openLayout = label
-              (label (self#longident_loc lid) (atom (".")))
-              expression
-            in [openLayout]
-         else
-            let overrideStr = match ovf with | Override -> "!" | Fresh -> "" in
-            let openLayout = label ~space:true
-              (atom ("open" ^ overrideStr))
-              (self#longident_loc lid)
-            in
-            (* Just like the bindings, have to synthesize a location since the
-             * Pexp location is parsed (potentially) beginning with the open
-             * brace {} in the let sequence. *)
-            let openSourceMapped = SourceMap (lid.loc, openLayout) in
-            openSourceMapped::listItems
+      | ([], Pexp_open (ovf, lid, e))
+          (* Add this when check to make sure these are handled as regular "simple expressions" *)
+          when not (self#isSeriesOfOpensFollowedByNonSequencyExpression exprTerm) ->
+        let overrideStr = match ovf with | Override -> "!" | Fresh -> "" in
+        let openLayout = label ~space:true
+          (atom ("open" ^ overrideStr))
+          (self#longident_loc lid)
+        in
+        (* Just like the bindings, have to synthesize a location since the
+         * Pexp location is parsed (potentially) beginning with the open
+         * brace {} in the let sequence. *)
+        let openSourceMapped = SourceMap (lid.loc, openLayout) in
+        openSourceMapped::(self#letList e)
       | ([], Pexp_letmodule (s, me, e)) ->
           let prefixText = "module" in
           let bindingName = atom ~loc:s.loc s.txt in
@@ -5239,6 +5207,16 @@ class printer  ()= object(self:'self)
     let (left, right) = wrap in
       makeList ~wrap:(left ^ "{" ,"}" ^ right) ~break ~preSpace:true allRows
 
+  method isSeriesOfOpensFollowedByNonSequencyExpression expr =
+    match (expr.pexp_attributes, expr.pexp_desc) with
+        | ([], Pexp_let (rf, l, e)) -> false
+        | ([], Pexp_sequence _) -> false
+        | ([], Pexp_letmodule (s, me, e)) -> false
+        | ([], Pexp_open (ovf, lid, e)) ->
+          ovf == Fresh && self#isSeriesOfOpensFollowedByNonSequencyExpression e
+        | ([], Pexp_letexception _) -> false
+        | _ -> true
+
   method unparseObject ?wrap:(wrap=("", "")) ?(withStringKeys=false) l o =
     let core_field_type (s, attrs, ct) =
       let l = extractStdAttrs attrs in
@@ -5407,22 +5385,30 @@ class printer  ()= object(self:'self)
         | Pexp_letexception _ ->
             Some (makeLetSequence (self#letList x))
         | Pexp_open (ovf, lid, e) ->
-            let letItems = (self#letList x) in
-            (match letItems with
-                (* if an open expression has only one letItem in the list,
-                 * we don't wrap it in "{}" so it becomes something like:
-                 *
-                 * let a = Fmt.(strf "-pkgs %a" (list sep::(unit ",") string))
-                 *
-                 * instead of:
-                 *
-                 * let a = {
-                 *   Fmt.(strf "-pkgs %a" (list sep::(unit ",") string))
-                 * }
-                 *)
-                | [item] -> Some item
-                | _ -> Some (makeLetSequence letItems)
-             )
+            if self#isSeriesOfOpensFollowedByNonSequencyExpression x then
+              (*
+               * Instead of printing:
+               *   let result =  { open Fmt; strf(foo);}
+               *
+               * We format as:
+               *   let result = Fmt.(strf(foo))
+               *
+               * (Also see https://github.com/facebook/Reason/issues/114)
+               *)
+              let expression = match e.pexp_desc with
+                  | Pexp_record _ (* syntax sugar for M.{x:1} *)
+                  | Pexp_tuple _ (* syntax sugar for M.(a, b) *)
+                  | Pexp_object {pcstr_fields = []} (* syntax sugar for M.{} *)
+                  | Pexp_construct ( {txt= Lident"::"},Some _) ->
+                     self#simplifyUnparseExpr e (* syntax sugar for M.[x,y] *)
+                  (* syntax sugar for the rest, wrap with parens to avoid ambiguity.
+                   * E.g., avoid M.(M2.v) being printed as M.M2.v
+                   *)
+                  | _ -> makeList ~wrap:("(",")") ~break:IfNeed [self#unparseExpr e]
+              in
+              Some (label (label (self#longident_loc lid) (atom ("."))) expression)
+          else
+            Some (makeLetSequence (self#letList x))
         | Pexp_sequence _ ->
             Some (makeLetSequence (self#letList x))
         | Pexp_field (e, li) ->

@@ -187,6 +187,9 @@ function unit_test() {
         info "  ${INFO}$OUTPUT/$FILE${RESET}"
         info "  doesn't match expected output"
         info "  ${INFO}$EXPECTED_OUTPUT/$OFILE${RESET}"
+        info ""
+        info "  To approve the changes run:"
+        info "    cp $OUTPUT/$FILE $EXPECTED_OUTPUT/$OFILE"
         echo ""
         return 1
     fi
@@ -345,6 +348,9 @@ function error_test() {
         info "  ${INFO}$OUTPUT/$FILE${RESET}"
         info "  doesn't match expected output"
         info "  ${INFO}$EXPECTED_OUTPUT/$FILE${RESET}"
+        info ""
+        info "  To approve the changes run:"
+        info "    cp $OUTPUT/$FILE $EXPECTED_OUTPUT/$FILE"
         echo ""
         return 1
     fi
