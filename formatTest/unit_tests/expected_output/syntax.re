@@ -21,10 +21,10 @@ let matchingFunc = (a) =>
   | `Thingy(x) =>
     print_string("matched thingy x");
     let zz = 10;
-    zz
+    zz;
   | `Other(x) =>
     print_string("matched other x");
-    x
+    x;
   };
 
 type firstTwoShouldBeGroupedInParens =
@@ -285,7 +285,7 @@ let point3D: point3D = {
 
 let printPoint = (p: point) => {
   print_int(p.x);
-  print_int(p.y)
+  print_int(p.y);
 };
 
 let addPoints = (p1: point, p2: point) => {
@@ -346,7 +346,7 @@ let o: person = {name: "bob", age: 10};
 
 let printPerson = (p: person) => {
   let q: person = p;
-  p.name ++ p.name
+  p.name ++ p.name;
 };
 
 /* let dontParseMeBro x y:int = x = y;*/
@@ -385,22 +385,22 @@ module TryToExportTwice = {
 let onlyDoingThisTopLevelLetToBypassTopLevelSequence = {
   let x = {
     print_int(1);
-    print_int(20) /* Missing trailing SEMI */
+    print_int(20); /* Missing trailing SEMI */
   };
   let x = {
     print_int(1);
     print_int(
       20
     ); /* Ensure missing middle SEMI reported well */
-    print_int(20)
+    print_int(20);
   };
   let x = {
     print_int(1);
     print_int(20);
-    10
+    10;
     /* Comment in final position */
   }; /* Missing final SEMI */
-  x + x
+  x + x;
 };
 
 type hasA = {a: int};
@@ -474,7 +474,7 @@ let sameThingInLocal = {
       1 /* With some effort, we can ammend the sugar rule that would */
     | Black(x) => 0 /* Allow us to drop any => fun.. Just need to make pattern matching */
     | Green(x) => 0; /* Support that */
-  blahCurriedX
+  blahCurriedX;
 };
 
 /* This should be parsed/printed exactly as the previous */
@@ -503,9 +503,9 @@ let res = {
   {
     print_string(a);
     let a = 20;
-    print_int(a)
+    print_int(a);
   };
-  print_string(a)
+  print_string(a);
 };
 
 let res = {
@@ -513,14 +513,14 @@ let res = {
   let a = 20;
   print_int(a);
   print_int(a);
-  print_int(a)
+  print_int(a);
 };
 
 let res = {
   let a = "a is always a string";
   print_string(a);
   let b = 30;
-  print_int(b)
+  print_int(b);
 };
 
 /* let result = LyList.map((fun | [] => true | _ => false), []); */
@@ -543,16 +543,16 @@ let blah =
 /* let arrowFunc = fun a b => print_string "returning aplusb from arrow"; a + b;;  */
 let arrowFunc = (a, b) => {
   print_string("returning aplusb from arrow");
-  a + b
+  a + b;
 };
 
 let add = (a, b) => {
   let extra = {
     print_string("adding");
-    0
+    0;
   };
   let anotherExtra = 0;
-  extra + a + b + anotherExtra
+  extra + a + b + anotherExtra;
 };
 
 print_string(string_of_int(add(4, 34)));
@@ -626,7 +626,7 @@ let tupleInsideAParenSequence = {
     "look, a tuple inside a sequence"
   );
   let x = 10;
-  (x, x)
+  (x, x);
 };
 
 let tupleInsideALetSequence = {
@@ -634,7 +634,7 @@ let tupleInsideALetSequence = {
     "look, a tuple inside a sequence"
   );
   let x = 10;
-  (x, x)
+  (x, x);
 };
 
 /* We *require* that function return types be wrapped in
@@ -852,22 +852,22 @@ let explictlyPassedAnnotated: int =
 
 let nestedLet = {
   let _ = 1;
-  ()
+  ();
 };
 
 let nestedLet = {
   let _ = 1;
-  ()
+  ();
 };
 
 let nestedLet = {
   let _ = 1;
-  ()
+  ();
 };
 
 let nestedLet = {
   let _ = 1;
-  2
+  2;
 };
 
 /*
@@ -909,14 +909,16 @@ let x =
 
 let res = {
   (constraintedSequenceItem: string);
-  (dontKnowWheYoudWantToActuallyDoThis: string)
+  (dontKnowWheYoudWantToActuallyDoThis: string);
 };
 
 let res = {
   (
     butTheyWillBePrintedWithAppropriateSpacing: string
   );
-  (soAsToInstillBestDevelopmentPractices: string)
+  (
+    soAsToInstillBestDevelopmentPractices: string
+  );
 };
 
 let x = [

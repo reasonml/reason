@@ -1000,7 +1000,7 @@ let containingObject = {
     [@shouldBeRenderedOnEntireSetField]
     (something.contents = "newvalue");
     something.contents =
-      [@shouldBeRenderedOnString] "newvalue"
+      [@shouldBeRenderedOnString] "newvalue";
   }
 };
 
@@ -1086,12 +1086,12 @@ let server = {
     >>= (
       (body) =>
         Server.respond_string(~status, ~body, ())
-    )
+    );
   };
   Server.create(
     ~mode,
     Server.make(~callback, ())
-  )
+  );
 };
 
 let lijst =
@@ -1121,7 +1121,7 @@ let example =
 
 if (List.length(files) > 0
     && List.length(otherfiles) < 2) {
-  ()
+  ();
 };
 
 /* Don't clash with jsx edge cases */

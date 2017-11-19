@@ -2,5 +2,5 @@
 let () = {
   [@attribute]
   exception E;
-  raise(E)
+  raise(E);
 };

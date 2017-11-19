@@ -151,12 +151,12 @@ let rec accessDeeplyWithArgRecursive = (x, count) =>
   | LocalModule.AccessedThroughModuleWith(x) as entirePattern =>
     /* It captures the whole pattern */
     if (count > 0) {
-      0
+      0;
     } else {
       accessDeeplyWithArgRecursive(
         entirePattern,
         count - 1
-      )
+      );
     }
   | LocalModule.AccessedThroughModuleWithTwo(
       x,
@@ -164,12 +164,12 @@ let rec accessDeeplyWithArgRecursive = (x, count) =>
     ) as entirePattern =>
     /* It captures the whole pattern */
     if (count > 0) {
-      0
+      0;
     } else {
       accessDeeplyWithArgRecursive(
         entirePattern,
         count - 1
-      )
+      );
     }
   };
 
@@ -180,7 +180,7 @@ accessDeeplyWithArgRecursive(
 
 let run = () => {
   TestUtils.printSection("Variants");
-  Printf.printf("%d %d \n", x, y)
+  Printf.printf("%d %d \n", x, y);
 };
 
 type combination('a) =

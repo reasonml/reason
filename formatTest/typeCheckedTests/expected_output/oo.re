@@ -10,7 +10,7 @@ class virtual stack ('a) (init) = {
     switch v {
     | [hd, ...tl] =>
       v = tl;
-      Some(hd)
+      Some(hd);
     | [] => None
     };
   pub push = (hd) => v = [hd, ...v];
@@ -46,7 +46,7 @@ class virtual stackWithAttributes ('a) (init) = {
     switch v {
     | [hd, ...tl] =>
       v = tl;
-      Some(hd)
+      Some(hd);
     | [] => None
     };
   pub push = (hd) => v = [hd, ...v];
@@ -166,7 +166,7 @@ let xs: ref({. x: int}) = {
 
 let coercedReturn = {
   let tmp = anonClosedObject;
-  (tmp :> {. x: int})
+  (tmp :> {. x: int});
 };
 
 let acceptsOpenAnonObjAsArg =
@@ -337,7 +337,7 @@ let incrementMyClassInstance:
   #tupleClass(int, int) =
   (i, inst) => {
     let (x, y) = inst#pr;
-    {pub pr = (x + i, y + i)}
+    {pub pr = (x + i, y + i)};
   };
 
 class myClassWithNoTypeParams = {};

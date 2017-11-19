@@ -74,11 +74,11 @@ let result =
   | X(x) =>
     /* Where does this comment go? */
     let tmp = x;
-    x + tmp
+    x + tmp;
   | Y(x) =>
     /* How about this one */
     let tmp = x;
-    x + tmp
+    x + tmp;
   };
 
 let result =
@@ -86,11 +86,11 @@ let result =
   | Some({fieldOne: 20}) =>
     /* Where does this comment go? */
     let tmp = 0;
-    2 + tmp
+    2 + tmp;
   | Some({fieldOne: n}) =>
     /* How about this one */
     let tmp = n;
-    n + tmp
+    n + tmp;
   | None => 20
   };
 
@@ -130,6 +130,6 @@ let store_attributes = (arg) => {
     /* only overwrite defined procedures */
     Temp.v || ! Temp.v;
   if (should_write) {
-    Temp.logIt(proc_name, ())
-  }
+    Temp.logIt(proc_name, ());
+  };
 };

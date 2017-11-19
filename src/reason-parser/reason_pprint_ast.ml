@@ -2150,7 +2150,7 @@ let makeLetSequence letItems =
     ~newlinesAboveComments:0
     ~newlinesAboveItems:0
     ~newlinesAboveDocComments:1
-    ~renderFinalSep:false
+    ~renderFinalSep:true
     ~postSpace:true
     ~sep:";"
     letItems
@@ -2181,7 +2181,7 @@ let makeUnguardedLetSequence letItems =
     ~indent:0
     ~newlinesAboveItems:0
     ~newlinesAboveDocComments:1
-    ~renderFinalSep:false
+    ~renderFinalSep:true
     ~postSpace:true
     ~sep:";"
     letItems
@@ -5462,7 +5462,7 @@ class printer  ()= object(self:'self)
       | PStr [itm] -> makeList ~break ~wrap ~pad [self#structure_item itm]
       | PStr (_::_ as items) ->
         let rows = (List.map (self#structure_item) items) in
-        makeList ~wrap ~break ~pad ~postSpace ~sep rows
+        makeList ~wrap ~break ~pad ~postSpace ~sep ~renderFinalSep:false rows
       | PTyp x ->
         makeList ~wrap ~break ~pad [label ~space:true (atom ":") (self#core_type x)]
       (* Signatures in attributes were added recently *)

@@ -2,55 +2,55 @@
 let logTSuccess = (self) =>
   if (self > other) {
     print_string("Did T");
-    print_newline()
+    print_newline();
   } else {
-    ()
+    ();
   };
 
 let something =
   if (self.ext.logSuccess) {
     print_string("Did T");
-    print_newline()
+    print_newline();
   };
 
 let logTSuccess = (self) =>
   if (self.ext.logSuccess) {
     print_string("Did T");
-    print_newline()
+    print_newline();
   } else {
-    ()
+    ();
   };
 
 if (if (x) {true} else {false}) {
-  true
+  true;
 } else {
-  false
+  false;
 };
 
 /* Parens are required around if if it's an argument - this is the same as before. */
 if (callSomeFunction(
       if (true) {true} else {false}
     )) {
-  true
+  true;
 } else {
-  false
+  false;
 };
 
 /* Notice that to do something strange, your code must *look* strange. */
 /* That's generally a good thing */
 if (callSomeFunction) {
-  if (true) {true}
+  if (true) {true};
 } else {
-  false
+  false;
 };
 
 if (callSomeFunction(
       {
         thisIsAnArgument;
-        notTheControlFlow
+        notTheControlFlow;
       }
     )) {
-  thisIsTheControlFlow
+  thisIsTheControlFlow;
 };
 
 /* The braces around the test conditions of if statements are not required.
@@ -64,15 +64,15 @@ if (callSomeFunction(
  *
  */
 if (printIfFirstArgGreater) {
-  simpleThen
+  simpleThen;
 } else {
-  thisDoesnt(even, have2, be, simple)
+  thisDoesnt(even, have2, be, simple);
 };
 
 if (if (x) {true} else {false}) {
-  ()
+  ();
 } else {
-  ()
+  ();
 };
 
 /**                            TERNARY
@@ -173,13 +173,13 @@ let res =
  */
 let result =
   if (something) {
-    Console.log("First Branch")
+    Console.log("First Branch");
   } else if (anotherThing) {
-    Console.log("Second Branch")
+    Console.log("Second Branch");
   } else if (yetAnotherThing) {
-    Console.log("Third Branch")
+    Console.log("Third Branch");
   } else {
-    Console.log("Final Case")
+    Console.log("Final Case");
   };
 
 /*

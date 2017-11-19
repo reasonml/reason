@@ -17,7 +17,7 @@ let reasonBarAs =
   fun
   | ((Y(_) | Z(_)) as t, _) => {
       let _ = t;
-      true
+      true;
     }
   | _ => false;
 

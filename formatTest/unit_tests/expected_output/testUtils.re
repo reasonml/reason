@@ -2,7 +2,7 @@
 let printSection = (s) => {
   print_string("\n");
   print_string(s);
-  print_string("\n---------------------\n")
+  print_string("\n---------------------\n");
 };
 
 let printLn = (s) => print_string(s ++ "\n");
