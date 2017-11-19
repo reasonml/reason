@@ -358,3 +358,27 @@ external debounce : int => ([@bs.meth] (unit => unit)) => ([@bs.meth] (unit => u
 external debounce : int => ([@bs.meth] (unit => unit)) => ([@bs.meth] (unit => unit)) => ([@bs.meth] (unit => unit)) = "";
 
 external debounce : int => ([@bs.meth] (unit => unit)) => ([@bs.meth] (unit => [@bs.meth] (unit => unit))) => ([@bs.meth] (unit => unit)) = "";
+
+
+let x = "hi";
+
+let res = switch x {
+| _ =>
+  [@attr]
+  {
+    open String;
+    open Array;
+    concat;
+    index_from;
+  }
+};
+
+let res = switch x {
+| _ =>
+  [@attr]
+  {
+    open String;
+    open Array;
+    concat;
+  }
+};

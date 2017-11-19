@@ -496,3 +496,22 @@ external debounce :
   ) =>
   [@bs.meth] (unit => unit) =
   "";
+
+let x = "hi";
+
+let res =
+  switch x {
+  | _ =>
+    [@attr]
+    {
+      open String;
+      open Array;
+      concat;
+      index_from
+    }
+  };
+
+let res =
+  switch x {
+  | _ => [@attr] String.(Array.(concat))
+  };
