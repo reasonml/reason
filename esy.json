@@ -16,6 +16,12 @@
   "peerDependencies": {
     "ocaml": " >= 4.2.0  < 4.6.0"
   },
+  "HOW-TO-TEST-OCAML-4.04": [
+    "To test with OCaml 4.04:",
+    "1. Change the OCaml devDependency to: esy-ocaml/ocaml#4.4.2+esy instead of ~4.2.3000",
+    "2. Rerun esy install",
+    "3. Rerun esy build"
+  ],
   "devDependencies": {
     "@opam/merlin": "2.5.4",
     "ocaml": "~4.2.3000"
