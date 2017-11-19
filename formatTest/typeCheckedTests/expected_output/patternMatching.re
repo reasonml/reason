@@ -63,20 +63,20 @@ let res =
       HeresTwoConstructorArguments(a, b)
     ) =>
     let ret = (x, y, a, b);
-    ret
+    ret;
   | TwoCombos(_, _) =>
     /**
      * See, no braces required - saves indentation as well!
      */
     let ret = (0, 0, 0, 0);
-    ret
+    ret;
   | Short
   | AlsoHasARecord(300, _, _) =>
     /**
      * And no final semicolon is required.
      */
     let ret = (100000, 100000, 100000, 100000);
-    ret
+    ret;
   | AlsoHasARecord(firstItem, two, {x, y}) =>
     computeTuple(
       firstItem,
@@ -110,7 +110,7 @@ let res =
       | Some(x) => x + 1
       | None => 0
     );
-    x
+    x;
   | Short
   | AlsoHasARecord(300, _, _) =>
     id(

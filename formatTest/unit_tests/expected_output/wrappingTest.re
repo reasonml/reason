@@ -2903,26 +2903,26 @@ let x =
 let onlyDoingThisTopLevelLetToBypassTopLevelSequence = {
   let x = {
     print_int(1);
-    print_int(20) /* Missing trailing SEMI */
+    print_int(20); /* Missing trailing SEMI */
   };
   let x = {
     print_int(1);
     print_int(
       20
     ); /* Ensure missing middle SEMI reported well */
-    print_int(20)
+    print_int(20);
   };
   let x = {
     print_int(1);
     print_int(20);
-    10
+    10;
   }; /* Missing final SEMI */
   let x = {
     print_int(1);
     print_int(20);
-    10
+    10;
   };
-  x + x /* Final item */
+  x + x; /* Final item */
 };
 
 /* With this unification, anywhere eyou see `= fun` you can just ommit it */
@@ -2939,7 +2939,7 @@ let tryingTheSameInLocalScope = {
   let blah = (a) => a; /* Done (almost) */
   let blah = (a, b) => a; /* Done */
   let blah = (a, b) => a;
-  () /* Done (almost) */
+  (); /* Done (almost) */
 };
 
 reallyLongFunctionNameWithArrayThatBreaks([|

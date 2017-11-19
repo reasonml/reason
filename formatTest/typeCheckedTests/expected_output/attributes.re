@@ -242,8 +242,8 @@ let showLets = () =>
     [@onFinalLet]
     {
       let tmpTmp = tmp + tmp;
-      tmpTmp + tmpTmp
-    }
+      tmpTmp + tmpTmp;
+    };
   };
 
 /**
@@ -507,7 +507,7 @@ let res =
       open String;
       open Array;
       concat;
-      index_from
+      index_from;
     }
   };
 

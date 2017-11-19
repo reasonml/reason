@@ -2,14 +2,14 @@ let myComputation =
   lazy {
     let tmp = 10;
     let tmp2 = 20;
-    tmp + tmp2
+    tmp + tmp2;
   };
 
 type myRecord = {myRecordField: int};
 
 let operateOnLazyValue = (lazy {myRecordField}) => {
   let tmp = myRecordField;
-  tmp + tmp
+  tmp + tmp;
 };
 
 let result =

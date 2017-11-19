@@ -5,5 +5,5 @@ let store_attributes = (proc_attributes) => {
   let should_write =
     /* only overwrite defined procedures */ proc_attributes.ProcAttributes.is_defined
     || ! DB.file_exists(attributes_file);
-  should_write
+  should_write;
 };

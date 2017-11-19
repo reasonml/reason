@@ -104,7 +104,7 @@ let opensAModuleLocally = {
     let y: someType = 20;
   };
   let tmp = MyLocalModule.x + 22;
-  tmp + 30
+  tmp + 30;
 };
 
 module type HasTT = {type tt;};
@@ -278,7 +278,7 @@ let letsTryThatSyntaxInLocalModuleBindings = () => {
       AMod,
       BMod
     );
-  TempModule.result + TempModule2.result
+  TempModule.result + TempModule2.result;
 };
 
 module type EmptySig = {};
@@ -534,7 +534,7 @@ module N = {
   let z = {
     open M;
     34;
-    35
+    35;
   };
   let z = M.(34, 35);
   let z = M.(34, 35);
@@ -550,41 +550,41 @@ module N = {
   let z = M.(M2.value);
   let z = {
     open! M;
-    34
+    34;
   };
   let z = {
     open! M;
     34;
-    35
+    35;
   };
   let z = {
     open! M;
-    {}
+    {};
   };
   let z = {
     open! M;
-    {x: 10}
+    {x: 10};
   };
   let z = {
     open! M;
-    [foo, bar]
+    [foo, bar];
   };
   let z = {
     open! M;
-    [foo, bar]
+    [foo, bar];
   };
   let z = {
     open! M;
-    {x: 10, y: 20}
+    {x: 10, y: 20};
   };
   let z = {
     open! M;
     open! M2;
-    value
+    value;
   };
   let z = {
     open! M;
-    M2.value
+    M2.value;
   };
   let y = 44;
 };

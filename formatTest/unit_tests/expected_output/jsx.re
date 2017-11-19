@@ -35,7 +35,7 @@ let y =
                 ),
                 latestComponentBag,
                 ()
-              )
+              );
           },
           ()
         )

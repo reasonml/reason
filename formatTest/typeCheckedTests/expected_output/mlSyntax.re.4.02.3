@@ -81,9 +81,9 @@ let referentialInequality = 2 !== 2;
 
 let equalityInIf =
   if (1 == 1) {
-    true
+    true;
   } else {
-    false
+    false;
   };
 
 let equalityWithIdentifiers =

@@ -4,7 +4,7 @@ let run = () =>
 
 while (something) {
   print_string("You're in a while loop");
-  print_newline()
+  print_newline();
 };
 
 for (i in 0 to 5) {
@@ -14,8 +14,8 @@ for (i in 0 to 5) {
     print_string(
       "Counting in reverse direction"
     );
-    print_newline()
-  }
+    print_newline();
+  };
 };
 
 for (i in
@@ -29,8 +29,8 @@ for (i in
     print_string(
       "Counting in reverse direction"
     );
-    print_newline()
-  }
+    print_newline();
+  };
 };
 
 let x = foo^ ^.bar^;
@@ -130,21 +130,21 @@ let x = arr^[0] = 1;
 let something =
   if (self.ext.logSuccess) {
     print_string("Did tap");
-    print_newline()
+    print_newline();
   };
 
 let logTapSuccess = (self) =>
   if (self.ext.logSuccess) {
     print_string("Did tap");
-    print_newline()
+    print_newline();
   } else {
-    ()
+    ();
   };
 
 let logTapSuccess = (self) =>
   if (self.ext.logSuccess) {
     print_string("Did tap");
-    print_newline()
+    print_newline();
   };
 
 (! data).field = true;
@@ -161,47 +161,47 @@ let loop = (appTime, frameTime) => {
   if (hasSetup.contents) {
     setupScene();
     renderIntoTop();
-    hasSetup.contents = true
+    hasSetup.contents = true;
   };
-  process(appTime, frameTime)
+  process(appTime, frameTime);
 };
 
 /* These parens should be kept around the entire last if/then/else */
 if (something) {
-  if (somethingElse) {()} else {"blah"}
+  if (somethingElse) {()} else {"blah"};
 };
 
 /* These parens should be kept around just the last if/then*/
 if (something) {
-  if (somethingElse) {()} else {"blah"}
+  if (somethingElse) {()} else {"blah"};
 };
 
 /* Parens should be generated to wrap the entire final if then else.
  * To test that it's being parsed correclty, should print "one". */
 if (true) {
   if (true) {
-    print_string("one")
+    print_string("one");
   } else {
-    print_string("two")
-  }
+    print_string("two");
+  };
 };
 
 /* Should print two */
 if (true) {
   if (false) {
-    print_string("one")
+    print_string("one");
   } else {
-    print_string("two")
-  }
+    print_string("two");
+  };
 };
 
 /* Should not print */
 if (false) {
   if (true) {
-    print_string("one")
+    print_string("one");
   } else {
-    print_string("two")
-  }
+    print_string("two");
+  };
 };
 
 /* Should wrap (if a > b then a else b).
@@ -213,20 +213,20 @@ let result =
   if (printIfFirstArgGreater) {
     (a, b) =>
       if (a > b) {
-        print_string("a > b")
+        print_string("a > b");
       } else {
-        print_string("b >= a")
-      }
+        print_string("b >= a");
+      };
   } else if ((a, b) =>
                if (a > b) {
-                 print_string("b < a")
+                 print_string("b < a");
                } else {
-                 print_string("a <= b")
+                 print_string("a <= b");
                }) {
     print_string(
       "That could never possibly type check"
     );
-    print_newline()
+    print_newline();
   };
 
 let myRecord = {
@@ -238,9 +238,9 @@ let myRecord = {
             instaComp.relativeRect,
             displayRect
           )) {
-        IoEligible
+        IoEligible;
       } else {
-        IoInelibleButTryComposition
+        IoInelibleButTryComposition;
       }
   }
 };
@@ -248,61 +248,61 @@ let myRecord = {
 if (printIfFirstArgGreater) {
   (a, b) =>
     if (a > b) {
-      print_string("a > b")
-    }
+      print_string("a > b");
+    };
 } else {
   (a, b) =>
     if (a > b) {
-      print_string("b < a")
-    }
+      print_string("b < a");
+    };
 };
 
 /* Should Be Parsed As: Cleary a type error, but at least the parsing makes that clear */
 if (printIfFirstArgGreater) {
   (a, b) =>
     if (a > b) {
-      print_string("a > b")
+      print_string("a > b");
     } else {
       (a, b) =>
         if (a > b) {
-          print_string("b < a")
-        }
-    }
+          print_string("b < a");
+        };
+    };
 };
 
 (a, b) =>
   if (a > b) {
-    print_string("a > b")
+    print_string("a > b");
   };
 
 /* What you probably wanted was: */
 if (printIfFirstArgGreater) {
   (a, b) =>
     if (a > b) {
-      print_string("a > b")
-    }
+      print_string("a > b");
+    };
 } else {
   (a, b) =>
     if (a > b) {
-      print_string("b < a")
-    }
+      print_string("b < a");
+    };
 };
 
 /* Mutative if statement: Not used to evaluate to something. */
 if (10 < 100) {
   let msg = "If there was any doubt, 10 is in fact less than 100.";
-  print_string(msg)
+  print_string(msg);
 } else {
   let msg = "All bets are off.";
-  print_string(msg)
+  print_string(msg);
 };
 
 if (10 < 100) {
   print_string(
     "If there was any doubt, 10 is in fact less than 100."
-  )
+  );
 } else {
-  print_string("All bets are off.")
+  print_string("All bets are off.");
 };
 
 /**                            TYPE CONSTRAINTS
@@ -355,7 +355,7 @@ let annotatingSingleFuncApplication = {
    * This demonstrates why named arguments cannot simply have the form (func
    * arg:val) - it is indistinguishable from a type constraint.
    */
-  2 + (_dummyFunc(a): int)
+  2 + (_dummyFunc(a): int);
 };
 
 let (
@@ -775,7 +775,7 @@ let break_after_equal =
 /* Pexp_letexception */
 let () = {
   exception E;
-  raise(E)
+  raise(E);
 };
 
 /* # 1587: don't print fun keyword when printing Pexp_fun in a record expression  */

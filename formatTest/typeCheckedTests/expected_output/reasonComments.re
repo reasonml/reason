@@ -221,11 +221,11 @@ let result =
   | Some({fieldOne: 20, fieldA: a}) =>
     /* Where does this comment go? */
     let tmp = 0;
-    2 + tmp
+    2 + tmp;
   | Some({fieldOne: n, fieldA: a}) =>
     /* How about this one */
     let tmp = n;
-    n + tmp
+    n + tmp;
   | None => 20
   };
 
@@ -249,14 +249,14 @@ let result =
         a /* end of line */
     }) =>
     let tmp = 0;
-    2 + tmp
+    2 + tmp;
   | Some({
       fieldOne: n, /* end of line */
       fieldA:
         a /* end of line */
     }) =>
     let tmp = n;
-    n + tmp
+    n + tmp;
   | None => 20
   };
 
@@ -321,7 +321,7 @@ let a = ();
 
 for (i in 0 to 10) {
   /* bla  */
-  a
+  a;
 };
 
 if (true) {

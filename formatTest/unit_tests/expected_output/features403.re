@@ -34,9 +34,9 @@ let rec eval: type a. expr(a) => a =
       eval(left) + eval(right)
     | If({pred, true_branch, false_branch}) =>
       if (eval(pred)) {
-        eval(true_branch)
+        eval(true_branch);
       } else {
-        eval(false_branch)
+        eval(false_branch);
       }
     };
 
