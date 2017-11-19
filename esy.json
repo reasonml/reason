@@ -25,6 +25,6 @@
       [ "jbuilder", "build", "--root", "." ],
       [ "sh", "-c", "(esy-installer || true)" ]
     ],
-    "buildsInSource": true
+    "buildsInSource": "_build"
   }
 }
