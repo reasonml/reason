@@ -1,5 +1,6 @@
 ## 3.0.1
 
+- **JSX**: fix most of the parsing errors (#856 #904 #1181 #1263 #1292)!! Thanks @IwanKaramazow!
 - Polymorphic variants can now parse and print \`foo(()) as \`foo() (#1560)
 - Variant values with annotations like `Some((x: string))` can now be `Some(x: string)` (#1576)
 - Remove few places remaining that accidentally print `fun` for functions (#1588)
