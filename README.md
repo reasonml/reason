@@ -1,6 +1,6 @@
 # Reason
 
-Simple, fast & type safe code that leverages the JavaScript & OCaml ecosystems
+Simple, fast & type safe code that leverages the JavaScript & OCaml ecosystems.
 
 [![Build Status](https://travis-ci.org/facebook/reason.svg?branch=master)](https://travis-ci.org/facebook/reason) [![CircleCI](https://circleci.com/gh/facebook/reason/tree/master.svg?style=svg)](https://circleci.com/gh/facebook/reason/tree/master)
 
