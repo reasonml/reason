@@ -366,7 +366,14 @@ let fun_def_comment_newline = () => {
 
 let fun_def_comment_long = () => { /* longer comment inside empty function body */};
 
-type record_with_doc_comment = {
-  /** doc comment **/
+/** Problems with docstrings in records.
+ * See https://github.com/facebook/reason/issues/1559
+ */
+type record_with_docstring_on_label= {
+  /** docstring */
   foo: string
+};
+
+type record_with_docstring_before_expression = {
+  bar: /** docstring */ int
 };
