@@ -574,12 +574,12 @@ module Reason_syntax = struct
         | Some triple ->
           (* We just recovered from the error state, try the original token again *)
           let checkpoint_with_previous_token = I.offer checkpoint triple in
-          match I.shifts checkpoint_with_previous_token with
-          | None ->
-            (* The original token still fail to be parsed, discard *)
-            handle_inputs_needed supplier [([], checkpoint)]
-          | Some env ->
-            handle_inputs_needed supplier [([], checkpoint_with_previous_token)]
+          let checkpoint = match I.shifts checkpoint_with_previous_token with
+            | None -> checkpoint
+              (* The original token still fail to be parsed, discard *)
+            | Some _ -> normalize_checkpoint checkpoint_with_previous_token
+          in
+          handle_inputs_needed supplier [([], checkpoint)]
       end
 
     | I.HandlingError env when !Reason_config.recoverable ->
@@ -639,8 +639,8 @@ module Reason_syntax = struct
       let process_checkpoint (invalid_docstrings, checkpoint) =
         match offer_normalize checkpoint triple with
         | I.HandlingError _ ->
-          (* DOCSTRING at an invalid position: store it and add it back to comments
-           * if this checkpoint is "committed"
+          (* DOCSTRING at an invalid position: store it and add it back to
+           * comments if this checkpoint is "committed"
            * TODO: print warning? *)
           let invalid_docstring = (text, { Location. loc_ghost = false; loc_start; loc_end }) in
           (invalid_docstring :: invalid_docstrings, checkpoint)
