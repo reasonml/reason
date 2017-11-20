@@ -3111,15 +3111,21 @@ expr_optional_constraint:
 record_expr:
   | DOTDOTDOT expr_optional_constraint lnonempty_list(preceded(COMMA,lbl_expr))
     { (Some $2, $3) }
-  | as_loc(label_longident) COLON expr
-    { (None, [($1, $3)]) }
+  | attribute as_loc(label_longident) COLON expr
+    { let rec_expr = {$4 with pexp_attributes = [$1] @ $4.pexp_attributes} in
+      (None, [($2, rec_expr)])
+    }
   | lseparated_two_or_more(COMMA, lbl_expr) COMMA?
     { (None, $1) }
 ;
 
 lbl_expr:
-  | as_loc(label_longident) COLON expr { ($1, $3) }
-  | as_loc(label_longident)            { ($1, exp_of_label $1) }
+  | attribute as_loc(label_longident) COLON expr
+    { ($2, {$4 with pexp_attributes = [$1] @ $4.pexp_attributes} ) }
+  | attribute as_loc(label_longident)
+    { let exp = exp_of_label $2 in
+      ($2, {exp with pexp_attributes = [$1] @ exp.pexp_attributes})
+    }
 ;
 
 record_expr_with_string_keys:
