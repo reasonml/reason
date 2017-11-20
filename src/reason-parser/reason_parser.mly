@@ -3233,8 +3233,8 @@ mark_position_pat
     * semantics (they are not first class).
     */
   | as_loc(constr_longident) pattern_constructor_argument
-    /* the first case is `| Foo(_)` and doesn't need explicit_arity attached. Actually, something like `| Foo(1)` doesn't either, but we 
-      keep explicit_arity on the latter anyways because why not. But for `| Foo(_)` in particular, it's convenient to have explicit_arity 
+    /* the first case is `| Foo(_)` and doesn't need explicit_arity attached. Actually, something like `| Foo(1)` doesn't either, but we
+      keep explicit_arity on the latter anyways because why not. But for `| Foo(_)` in particular, it's convenient to have explicit_arity
       removed, so that you can have the following shortcut:
       | Foo _ _ _ _ _
       vs.
