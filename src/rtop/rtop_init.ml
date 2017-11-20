@@ -17,6 +17,6 @@ print_string
   Execute statements/let bindings. Hit <enter> after the semicolon. Ctrl-d to quit.
 
         >   let myVar = \"Hello Reason!\";
-        >   let myList: list string = [\"first\", \"second\"];
+        >   let myList: list(string) = [\"first\", \"second\"];
         >   #use \"./src/myFile.re\"; /* loads the file into here */
 "
