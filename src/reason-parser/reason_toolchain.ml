@@ -83,45 +83,6 @@ module To_current = Convert(OCaml_404)(OCaml_current)
 
 module S = MenhirLib.General (* Streams *)
 
-let invalidLex = "invalidCharacter.orComment.orString"
-let syntax_error_str err loc =
-    if !Reason_config.recoverable = false then
-      raise err
-    else
-      match err with
-      | Location.Error err ->
-        [
-          Ast_helper.Str.mk ~loc:err.loc (Parsetree.Pstr_extension (Syntax_util.syntax_error_extension_node err.loc err.msg, []))
-        ]
-      | _ ->
-        let menhirError = Syntax_util.findMenhirErrorMessage loc in
-        match menhirError with
-          | Syntax_util.MenhirMessagesError errMessage ->
-              [Ast_helper.Str.mk ~loc:errMessage.Syntax_util.loc (Parsetree.Pstr_extension (Syntax_util.syntax_error_extension_node errMessage.Syntax_util.loc errMessage.Syntax_util.msg, []))]
-          | _ ->
-              [Ast_helper.Str.mk ~loc:loc (Parsetree.Pstr_extension (Syntax_util.syntax_error_extension_node loc invalidLex, []))]
-
-let syntax_error_core_type err loc =
-  if !Reason_config.recoverable = false then
-    raise err
-  else
-    match err with
-    | Location.Error err ->
-      Ast_helper.Typ.mk ~loc:err.loc (Parsetree.Ptyp_extension (Syntax_util.syntax_error_extension_node err.loc err.msg))
-    | _ ->
-      Ast_helper.Typ.mk ~loc:loc (Parsetree.Ptyp_extension (Syntax_util.syntax_error_extension_node loc invalidLex))
-
-let syntax_error_sig err loc =
-  if !Reason_config.recoverable = false then
-    raise err
-  else
-    match err with
-    | Location.Error err ->
-      [Ast_helper.Sig.mk ~loc:err.loc (Parsetree.Psig_extension (Syntax_util.syntax_error_extension_node err.loc err.msg, []))]
-    | _ ->
-      [Ast_helper.Sig.mk ~loc:loc (Parsetree.Psig_extension (Syntax_util.syntax_error_extension_node loc invalidLex, []))]
-
-
 let setup_lexbuf use_stdin filename =
   (* Use custom method of lexing from the channel to keep track of the input so that we can
      reformat tokens in the toolchain*)
@@ -282,6 +243,8 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
         (ast, modified_and_comment_with_category)
     )
 
+  let invalidLex = "invalidCharacter.orComment.orString"
+
   (*
    * The canonical interface/implementations (with comments) are used with
    * recovering mode for IDE integration. The parser itself likely
@@ -292,16 +255,39 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
    * crash the process. TODO: Report more accurate location in those cases.
    *)
   let implementation_with_comments lexbuf =
-    try wrap_with_comments Toolchain_impl.implementation lexbuf with
-    | err -> (syntax_error_str err (Location.curr lexbuf), [])
+    try wrap_with_comments Toolchain_impl.implementation lexbuf
+    with err when !Reason_config.recoverable ->
+      let loc, msg = match err with
+        | Location.Error err -> (err.loc, err.msg)
+        | _ ->
+          let loc = Location.curr lexbuf in
+          match Syntax_util.findMenhirErrorMessage loc with
+          | Syntax_util.MenhirMessagesError errMessage ->
+            (errMessage.Syntax_util.loc, errMessage.Syntax_util.msg)
+          | _ -> (loc, invalidLex)
+      in
+      let error = Syntax_util.syntax_error_extension_node loc msg in
+      ([Ast_helper.Str.mk ~loc (Parsetree.Pstr_extension (error, []))], [])
 
   let core_type_with_comments lexbuf =
-    try wrap_with_comments Toolchain_impl.core_type lexbuf with
-    | err -> (syntax_error_core_type err (Location.curr lexbuf), [])
+    try wrap_with_comments Toolchain_impl.core_type lexbuf
+    with err when !Reason_config.recoverable ->
+      let loc, msg = match err with
+        | Location.Error err -> (err.loc, err.msg)
+        | _ -> (Location.curr lexbuf, invalidLex)
+      in
+      let error = Syntax_util.syntax_error_extension_node loc msg in
+      (Ast_helper.Typ.mk ~loc (Parsetree.Ptyp_extension error), [])
 
   let interface_with_comments lexbuf =
-    try wrap_with_comments Toolchain_impl.interface lexbuf with
-    | err -> (syntax_error_sig err (Location.curr lexbuf), [])
+    try wrap_with_comments Toolchain_impl.interface lexbuf
+    with err when !Reason_config.recoverable ->
+      let loc, msg = match err with
+        | Location.Error err -> (err.loc, err.msg)
+        | _ -> (Location.curr lexbuf, invalidLex)
+      in
+      let error = Syntax_util.syntax_error_extension_node loc msg in
+      ([Ast_helper.Sig.mk ~loc (Parsetree.Psig_extension (error, []))], [])
 
   let toplevel_phrase_with_comments lexbuf =
     wrap_with_comments Toolchain_impl.toplevel_phrase lexbuf
@@ -588,12 +574,12 @@ module Reason_syntax = struct
         | Some triple ->
           (* We just recovered from the error state, try the original token again *)
           let checkpoint_with_previous_token = I.offer checkpoint triple in
-          match I.shifts checkpoint_with_previous_token with
-          | None ->
-            (* The original token still fail to be parsed, discard *)
-            handle_inputs_needed supplier [([], checkpoint)]
-          | Some env ->
-            handle_inputs_needed supplier [([], checkpoint_with_previous_token)]
+          let checkpoint = match I.shifts checkpoint_with_previous_token with
+            | None -> checkpoint
+              (* The original token still fail to be parsed, discard *)
+            | Some _ -> normalize_checkpoint checkpoint_with_previous_token
+          in
+          handle_inputs_needed supplier [([], checkpoint)]
       end
 
     | I.HandlingError env when !Reason_config.recoverable ->
@@ -614,8 +600,7 @@ module Reason_syntax = struct
 
     | I.HandlingError env ->
       (* If not in a recoverable state, fail early by raising a
-       * customized Error object
-      *)
+       * customized Error object *)
       let loc = last_token_loc supplier in
       let token = match supplier.last_token with
         | Some token -> token
@@ -623,8 +608,7 @@ module Reason_syntax = struct
       in
       let state = I.current_state_number env in
       (* Check the error database to see what's the error message
-       * associated with the current parser state
-      *)
+       * associated with the current parser state *)
       let msg = Reason_parser_explain.message env token in
       let msg_with_state = Printf.sprintf "%d: %s" state msg in
       raise (Syntax_util.Error (loc, (Syntax_util.Syntax_error msg_with_state)))
@@ -655,8 +639,8 @@ module Reason_syntax = struct
       let process_checkpoint (invalid_docstrings, checkpoint) =
         match offer_normalize checkpoint triple with
         | I.HandlingError _ ->
-          (* DOCSTRING at an invalid position: store it and add it back to comments
-           * if this checkpoint is "committed"
+          (* DOCSTRING at an invalid position: store it and add it back to
+           * comments if this checkpoint is "committed"
            * TODO: print warning? *)
           let invalid_docstring = (text, { Location. loc_ghost = false; loc_start; loc_end }) in
           (invalid_docstring :: invalid_docstrings, checkpoint)
