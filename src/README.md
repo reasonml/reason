@@ -102,7 +102,7 @@ Here's a recommended workflow:
 - `make build`
 - `./_build/install/default/bin/refmt --print ast test.re`
 - look closely at the ast, spot the thing you need
-- Search your item in `reason_parser.mly`
+- Search for your item in `reason_parser.mly`
 - Change the logic
 - `make test`
 
@@ -141,7 +141,7 @@ Random Stack Overflow answer: https://stackoverflow.com/questions/9897358/ocaml-
 
 ### Debugging Grammar Conflicts
 
-Run the main parser through Menhir with the `--explain` flag to have it print out details about the conflict. `menhir src/reason_parser.mly --explain`. The debug information can be found at `src/reason_parser.conflicts`.
+Run the main parser through Menhir with the `--explain` flag to have it print out details about the conflict. `menhir --explain src/reason-parser/reason_parser.mly`. The debug information can be found at `src/reason-parser/reason_parser.conflicts`.
 
 ### Debugging the Parser State at Runtime
 
@@ -167,7 +167,7 @@ File "test2.re", line 4, characters 2-6:
 Error: 2665: <UNKNOWN SYNTAX ERROR>
 ```
 
-Here, the error code is 2665. We then search for this code in `src/reason_parser.messages`.
+Here, the error code is 2665. We then search for this code in `src/reason-parser/reason_parser.messages`.
 
 - If you find it, you can add a better error message instead of the not so descriptive `<UNKNOWN SYNTAX ERROR>`.
 
@@ -197,7 +197,7 @@ In the printed AST, you can see nodes such as `Ptyp_constr "int" (test.re[1,0+15
 
 The error message's own location will look like `([0,0+-1]..[0,0+-1])` too.
 
-To fix this, we need to find the AST node in `src/reason_parser.mly`. It's a big file, but if you search for the AST node, you should be able to find the location (if not, bug us on Discord). It will probably involve a `mkexp` or `mkpat` without a proper `~loc` attached to it.
+To fix this, we need to find the AST node in `src/reason-parser/reason_parser.mly`. It's a big file, but if you search for the AST node, you should be able to find the location (if not, bug us on Discord). It will probably involve a `mkexp` or `mkpat` without a proper `~loc` attached to it.
 
 As you can see from other parts in the parser, many do have a `~loc` assigned to it. For example
 
