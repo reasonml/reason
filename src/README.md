@@ -39,7 +39,7 @@ git clone https://github.com/facebook/reason.git
 cd reason
 esy install
 esy build
-esy make test
+esy x make test
 ```
 
 Build commands like `make` that would normally be executed by
