@@ -5279,7 +5279,14 @@ class printer  ()= object(self:'self)
       match itm with
       | {pstr_desc = Pstr_eval ({ pexp_desc = Pexp_record (l, eo) }, []) } ->
         self#unparseRecord ~forceBreak ~wrap ~withStringKeys:true ~allowPunning:false l eo
-      | _ -> assert false)
+      | {pstr_desc = Pstr_eval ({ pexp_desc = Pexp_extension ({txt = "bs.obj"}, payload) }, []) } ->
+        (* some folks write `[%bs.obj [%bs.obj {foo: bar}]]`. This looks improbable but
+          it happens often if you use the sugared version: `[%bs.obj {"foo": bar}]`.
+          We're gonna be lenient here and treat it as if they wanted to just write
+          `{"foo": bar}`. BuckleScript does the same relaxation when parsing bs.obj
+        *)
+        self#formatBsObjExtensionSugar ~wrap ~forceBreak payload
+      | _ -> raise (Invalid_argument "bs.obj only accepts a record. You've passed something else"))
     | _ -> assert false
 
   method simplest_expression x =
