@@ -245,6 +245,7 @@ type infixChain =
   | InfixToken of string
   | Layout of layoutNode
 
+
 let print_comment_type = function
   | Regular -> "Regular"
   | EndOfLine -> "End of Line"
@@ -3818,15 +3819,18 @@ class printer  ()= object(self:'self)
            At this point the bla will be stripped (because it's a visible
            attribute) but the JSX will still be there.
          *)
-        (* If there was a JSX attribute BUT JSX component wasn't detected,
-           that JSX attribute needs to be pretty printed so it doesn't get
-           lost
+
+        (* this case also happens when we have something like:
+         * List.map((a) => a + 1, numbers);
+         * We got two "List.map" as Pexp_ident & a list of arguments:
+         * [`(a) => a + 1`; `numbers`]
+         *
+         * Another possible case is:
+         * describe("App", () =>
+         *   test("math", () =>
+         *     Expect.expect(1 + 2) |> toBe(3)));
          *)
-        let maybeJSXAttr = List.map self#attribute jsxAttrs in
-        let theFunc = SourceMap (e.pexp_loc, self#simplifyUnparseExpr e) in
-        (*reset here only because [function,match,try,sequence] are lower priority*)
-        let theArgs = self#reset#label_x_expression_params ls in
-        FunctionApplication (maybeJSXAttr @ [label theFunc theArgs])
+        FunctionApplication (self#formatFunAppl ~jsxAttrs ~args:ls ~funExpr:e ())
       )
     )
     | Pexp_construct (li, Some eo) when not (is_simple_construct (view_expr x)) -> (
@@ -6649,6 +6653,159 @@ class printer  ()= object(self:'self)
     match xs with
     | [x] -> x
     | xs -> makeBreakableList xs
+
+  method formatFunAppl ~jsxAttrs ~args ~funExpr () =
+    (* If there was a JSX attribute BUT JSX component wasn't detected,
+       that JSX attribute needs to be pretty printed so it doesn't get
+       lost *)
+    let maybeJSXAttr = List.map self#attribute jsxAttrs in
+
+    let categorizeFunApplArgs args =
+      let reverseArgs = List.rev args in
+      match reverseArgs with
+      | (Nolabel, {pexp_desc = Pexp_fun _})::_ -> `LastArgIsCallback reverseArgs
+      | _ -> `NormalFunAppl args
+    in
+    begin match categorizeFunApplArgs args with
+    | `LastArgIsCallback reverseArgs ->
+        (* This is the following case:
+         * Thing.map(foo, bar, baz, (abc, z) =>
+         *   MyModuleBlah.toList(argument)
+         *)
+        let (args, callbackArg) = begin match reverseArgs with
+        | callback::args -> (List.rev args, callback)
+        | [] -> raise (NotPossible "can't partition 0 function expression args")
+        end in
+        (* callback isn't a labelled argument *)
+        let (_, cb) = callbackArg in
+        let (_sweet, cbArgs, retCb) = self#curriedPatternsAndReturnVal cb in
+
+        (* major hack; we manually check the length of `Thing.map(foo, bar,baz`,
+         * because Easyformat doesn't have a hook to change printing when a list breaks *)
+        let estimatedLineLength =
+          let funLen = begin match funExpr.pexp_desc with
+           | Pexp_ident ident ->
+               let identList = Longident.flatten ident.txt in
+               let lengthOfDots = List.length identList - 1 in
+               let len = List.fold_left (fun acc curr ->
+                 acc + (String.length curr)) lengthOfDots identList in
+               len
+           | _ -> 0
+          end in
+          let argsLength = List.fold_left (fun acc curr ->
+            match acc with
+            | None -> None
+            | Some len ->
+              let (_, argExpr) = curr in
+              begin match argExpr with
+              | {pexp_desc = Pexp_ident ident } ->
+                  let identLen = List.fold_left (fun acc curr ->
+                    acc + (String.length curr)
+                  ) len (Longident.flatten ident.txt) in
+                  Some identLen
+              | {pexp_desc = Pexp_constant (Pconst_string (str, _))} ->
+                  Some (len + (String.length str))
+              | _ -> None
+              end
+          ) (Some (((List.length args) - 1) * 2)) args in
+          match argsLength with
+          | Some len -> Some (funLen + len)
+          | None -> None
+         in
+
+        let theFunc = SourceMap (funExpr.pexp_loc, makeList ~wrap:("", "(") [self#simplifyUnparseExpr funExpr]) in
+        let formattedFunAppl = begin match self#letList retCb with
+        | [x] -> 
+          (* force breaks for test assertion style callbacks, e.g.
+           *  describe("App", () => test("math", () => Expect.expect(1 + 2) |> toBe(3)));
+           * should always break for readability of the tests:
+           *  describe("App", () =>
+           *    test("math", () =>
+           *      Expect.expect(1 + 2) |> toBe(3)
+           *    )
+           *  );
+           *)
+          let forceBreak = match funExpr.pexp_desc with
+          | Pexp_ident ident when
+              let lastIdent = Longident.last ident.txt in
+              List.mem lastIdent ["test"; "describe"; "it"; "expect"] -> true
+          | _ -> false
+          in
+          let returnValueCallback = makeList ~break:(if forceBreak then Always else IfNeed) ~wrap:("=> ", ")") [x] in
+          let argsWithCallbackArgs = List.concat [(List.map self#label_x_expression_param args); cbArgs] in
+          let left = label
+            theFunc
+            (makeList ~wrap:("", " ") ~break:IfNeed ~inline:(true, true) ~sep:"," ~postSpace:true
+              argsWithCallbackArgs)
+          in
+          label left returnValueCallback
+        | xs -> begin match estimatedLineLength with
+            | Some len when len < settings.width ->
+            (*
+             * Thing.map(foo, bar, baz, (abc, z) =>
+             *   MyModuleBlah.toList(argument)
+             * )
+             *
+             * To get this kind of formatting we need to construct the following tree:
+             * <Label>
+             * <left>Thing.map(foo, bar, baz, (abc, z)</left><right>=>
+             *   MyModuleBlah.toList(argument)
+             * )</right>
+             * </Label>
+             *
+             * where left is
+             * <Label><left>Thing.map(</left></right>foo, bar, baz, (abc, z) </right></Label>
+             *
+             * The <right> part of that label could be a <List> with wrap:("", " ") break:IfNeed inline:(true, true)
+             * with items: "foo", "bar", "baz", "(abc, z)", separated by commas.
+             *)
+              (* heuristic
+               * if all arguments aside from the final one are either strings or identifiers,
+               * where the sum of the string contents and identifier names are less than the print width
+               *
+               * this is necessary to achieve the following formatting where }) hugs :
+               * test("my test", () => {
+               *   let x = a + b;
+               *   let y = z + c;
+               *   x + y
+               * });
+               *)
+              let right = makeList ~break:Always_rec ~wrap:("=> {", "})") ~sep:";" xs in
+              let argsWithCallbackArgs = List.concat [(List.map self#label_x_expression_param args); cbArgs] in
+              let left = label
+                theFunc
+                (makeList ~wrap:("", " ") ~break:IfNeed ~inline:(true, true) ~sep:"," ~postSpace:true
+                  argsWithCallbackArgs)
+              in
+              label left right
+            | _ ->
+              (* Since the heuristic says the line lenght is exceeded in this case,
+               * we conveniently format everything as
+               * <label><left>Thing.map(</left><right><list>
+               *   foo,
+               *   bar,
+               *   baz,
+               *   <label> <left>(abc) =></left> <right><list> {
+               *     let x = 1;
+               *     let y = 2;
+               *     x + y
+               *   }</list></right></label>
+               * )</list></right></label>
+               *)
+              let args = makeList ~break:Always ~wrap:("", ")") ~sep:"," (
+                (List.map self#label_x_expression_param args)
+                @([label ~space:true (makeList ~wrap:("", " =>") cbArgs) (makeLetSequence xs)])
+              ) in
+              label theFunc args
+            end
+        end in
+        maybeJSXAttr @ [formattedFunAppl]
+    | `NormalFunAppl args ->
+        let theFunc = SourceMap (funExpr.pexp_loc, self#simplifyUnparseExpr funExpr) in
+        (*reset here only because [function,match,try,sequence] are lower priority*)
+        let theArgs = self#reset#label_x_expression_params args in
+        maybeJSXAttr @ [label theFunc theArgs]
+    end 
 end;;
 
 
