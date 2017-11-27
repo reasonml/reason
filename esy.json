@@ -14,7 +14,7 @@
     "@opam/jbuilder": "*"
   },
   "peerDependencies": {
-    "ocaml": " >= 4.2.0  < 4.6.0"
+    "ocaml": " >= 4.2.0  < 4.7.0"
   },
   "HOW-TO-TEST-OCAML-4.04": [
     "To test with OCaml 4.04:",

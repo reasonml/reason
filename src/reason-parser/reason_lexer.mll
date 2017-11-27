@@ -348,10 +348,13 @@ let preprocessor = ref None
 *)
 
 
+let latin1IdentifierMessage =
+  "ISO-Latin1 characters in identifiers - This error is being incorrectly reported as " ^
+  "'unused variable warning' but it's really an issue with the characters in your identifier. "
+
 let warn_latin1 lexbuf =
   Location.prerr_warning (Location.curr lexbuf)
-    (Warnings.Deprecated "ISO-Latin1 characters in identifiers")
-;;
+    (Warnings.Unused_var latin1IdentifierMessage)
 
 (* Error report *)
 
