@@ -30,8 +30,6 @@ opam pin add -y reason .
 
 The esy workflow is still experimental.
 If you would like to help test, you can try it with the following commands.
-If you already use OPAM for Reason, take care to deactivate OPAM first
-or ensure your node binaries precede OPAM's in your path.
 
 ```sh
 npm install -g esy
