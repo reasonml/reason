@@ -26,6 +26,7 @@ test:
         - ./scripts/test-with-version.sh 4.02.3
         - ./scripts/test-with-version.sh 4.03.0
         - ./scripts/test-with-version.sh 4.04.0
+        - ./scripts/test-with-version.sh 4.06.0
         - esy install && esy build && _build/install/default/bin/refmt --version
 machine:
   node:
