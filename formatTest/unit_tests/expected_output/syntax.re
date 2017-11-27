@@ -1129,3 +1129,35 @@ foo(
   ~y=[@foo] -0.1n,
   ~z=[@foo] -0.1p
 );
+
+/* Smooth formatting of functions with callbacks as arguments */
+funWithCb("text", () => doStuff());
+
+test("my test", () => {
+  let x = a + b;
+  let y = z + c;
+  x + y
+});
+
+describe("App", () =>
+  test("math", () =>
+    Expect.expect(1 + 2) |> toBe(3)
+  )
+);
+
+Thing.map(foo, bar, baz, (abc, z) =>
+  MyModuleBlah.toList(argument)
+);
+
+Thing.map(
+  foo,
+  bar,
+  baz,
+  foo2,
+  bakjlksjdf,
+  okokokok,
+  (abc, z) => {
+    let x = 1;
+    MyModuleBlah.toList(x, argument);
+  }
+);
