@@ -128,8 +128,8 @@ function stdin_test() {
         return 1
     fi
 
-    debug "  Comparing --use-stdin results:  diff $OUTPUT_FILE $EXPECTED_OUTPUT_FILE"
-    $DIFF $OUTPUT_FILE $EXPECTED_OUTPUT_FILE
+    debug "  Comparing --use-stdin results:  diff $EXPECTED_OUTPUT_FILE $OUTPUT_FILE"
+    $DIFF $EXPECTED_OUTPUT_FILE $OUTPUT_FILE
 
     if ! [[ $? -eq 0 ]]; then
         warning "  ⊘ FAILED --use-stdin \n"
@@ -178,9 +178,9 @@ function unit_test() {
         OFILE="${VERSION_SPECIFIC_FILE}"
     fi
 
-    debug "  Comparing results:  diff $OUTPUT/$FILE $EXPECTED_OUTPUT/$OFILE"
+    debug "  Comparing results:  diff $EXPECTED_OUTPUT/$OFILE $OUTPUT/$FILE"
 
-    $DIFF $OUTPUT/$FILE $EXPECTED_OUTPUT/$OFILE
+    $DIFF $EXPECTED_OUTPUT/$OFILE $OUTPUT/$FILE
 
     if ! [[ $? -eq 0 ]]; then
         warning "  ⊘ FAILED\n"
@@ -339,9 +339,9 @@ function error_test() {
       cd - > /dev/null
     fi
 
-    debug "  Comparing results:  diff $OUTPUT/$FILE $EXPECTED_OUTPUT/$FILE"
+    debug "  Comparing results:  diff $EXPECTED_OUTPUT/$FILE $OUTPUT/$FILE"
 
-    $DIFF $OUTPUT/$FILE $EXPECTED_OUTPUT/$FILE
+    $DIFF $EXPECTED_OUTPUT/$FILE $OUTPUT/$FILE
 
     if ! [[ $? -eq 0 ]]; then
         warning "  ⊘ FAILED\n"
