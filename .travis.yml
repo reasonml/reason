@@ -4,7 +4,7 @@ before_install:
   - nvm install v8.7.0
   - brew update
   - brew install opam
-  - opam init
+  - opam init -y
   - opam switch "$OCAML_VERSION"
   - eval `opam config env`
   - opam update
