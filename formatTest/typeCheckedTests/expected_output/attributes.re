@@ -210,7 +210,7 @@ let result =
 
 [@onVariantType]
 type variantType =
-  [@onInt] | Foo(int)
+  | [@onInt] Foo(int)
   | Bar([@onInt] int)
   | Baz;
 
@@ -388,6 +388,7 @@ type classAttributesOnKeys = {
   key4: Js.t([@justOnInt] int)
 };
 
+/* extensible variants */
 type attr = ..;
 
 [@block]
@@ -402,9 +403,17 @@ type reconciler('props) +=
   | Foo (int) : [@onFirstRow] reconciler(int)
   | Bar ([@onInt] int) : [@onSecondRow]
                          reconciler(unit)
-  | Baz : [@onThirdRow]
-          reconciler([@onUnit] unit);
+  [@baz] | Baz : [@onThirdRow]
+                 reconciler([@onUnit] unit);
 
+type water = ..;
+
+type water +=
+  pri
+  [@foo] | MineralWater
+  | SpringWater;
+
+/* reasonreact */
 type element;
 
 type reactElement;
@@ -443,7 +452,7 @@ external readFileSync :
   (
     ~name: string,
     [@bs.string]
-    [ | `utf8 [@bs.as "ascii"] | `my_name]
+    [ | `utf8 | [@bs.as "ascii"] `my_name]
   ) =>
   string =
   "";
@@ -454,8 +463,8 @@ external readFileSync2 :
     ~name: string,
     [@bs.string]
     [
-      [@bs.as "ascii"] | `utf8
-      [@bs.as "ascii"] | `my_name
+      | [@bs.as "ascii"] `utf8
+      | [@bs.as "ascii"] `my_name
     ]
   ) =>
   string =
@@ -515,3 +524,8 @@ let res =
   switch x {
   | _ => [@attr] String.(Array.(concat))
   };
+
+/* GADT */
+type value =
+  | [@foo] VBool'(bool): [@bar] value
+  | VInt'(int): value;

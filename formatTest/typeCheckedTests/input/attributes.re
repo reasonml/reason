@@ -290,6 +290,7 @@ type classAttributesOnKeys = {
   key4 : Js.t ([@justOnInt] int)
 };
 
+/* extensible variants */
 type attr = ..;
 
 [@block]
@@ -303,8 +304,13 @@ type reconciler('props) = ..;
 type reconciler('props) +=
  | Foo(int) : [@onFirstRow] reconciler(int)
  | Bar ([@onInt] int) : [@onSecondRow] reconciler(unit)
- | Baz: [@onThirdRow] reconciler ([@onUnit] unit);
+ [@baz] | Baz: [@onThirdRow] reconciler ([@onUnit] unit);
 
+type water = ..;
+
+type water += pri [@foo] | MineralWater | SpringWater;
+
+/* reasonreact */
 type element;
 
 type reactElement;
@@ -382,3 +388,8 @@ let res = switch x {
     concat;
   }
 };
+
+/* GADT */
+type value =
+| [@foo] VBool'(bool): [@bar] value
+| VInt'(int): value;
