@@ -68,7 +68,7 @@ Our lexer & parser use [Menhir](http://gallium.inria.fr/~fpottier/menhir/), a li
 
 - `src/reason-parser/reason_oprint.ml`: the "outcome printer" used by Merlin, rtop and terminal, that prints the errors in Reason syntax. More info in the file itself.
 
-- `src/reason-parser/menhir_error_processor.ml, reason_parser_explain.ml`: menhir_error_processor is run at build time to generate a file called `_build/default/src/reason-parser/reason_parser_explain_raw.ml`
+- `src/reason-parser/menhir_error_processor.ml, reason_parser_explain.ml`: two files that allows us to batch assign a better syntax error message for a category of errors, like accidentally using a reserved token. reason_parser_explain_raw.ml`. More info in the comments of these files.
 
 ### Miscellaneous Files
 
