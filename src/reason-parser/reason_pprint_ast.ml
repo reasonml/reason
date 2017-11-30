@@ -2859,12 +2859,6 @@ class printer  ()= object(self:'self)
   method type_variant_leaf1 opt_ampersand polymorphic print_bar x =
     let {pcd_name; pcd_args; pcd_res; pcd_loc; pcd_attributes} = x in
     let {stdAttrs} = partitionAttributes pcd_attributes in
-    let prefix = if polymorphic then "`" else "" in
-    let sourceMappedName = SourceMap (pcd_name.loc, atom (prefix ^ pcd_name.txt)) in
-    let nameOf = makeList ~postSpace:true [sourceMappedName] in
-    let barName =
-      let lst = if print_bar then [atom "|"; sourceMappedName] else [sourceMappedName] in
-      makeList ~postSpace:true lst in
     let ampersand_helper i arg =
       let ct = self#core_type arg in
       let ct = match arg.ptyp_desc with
@@ -2901,6 +2895,9 @@ class printer  ()= object(self:'self)
       | [hd] -> hd
       | _::_ -> makeList ~inline:(true, true) ~break:IfNeed ~postSpace:true lst
     in
+    let add_bar constructor =
+      makeList ~postSpace:true (if print_bar then [atom "|"; constructor] else [constructor])
+    in
     (* In some cases (e.g. inline records) we want the label with bar & the gadt resolution
      * as a list.
      *   | If {
@@ -2912,30 +2909,34 @@ class printer  ()= object(self:'self)
      * The label & the gadt res form two separate units combined into a list.
      * This is necessary to properly align the closing '}' on the same height as the 'If'.
      *)
-    let add_bar ?gadt name args =
+    let add_bar_2 ?gadt name args =
       let lbl = label name args in
       let fullLbl = match gadt with
         | Some g -> makeList ~inline:(true, true) ~break:IfNeed ~postSpace:true [lbl; g]
         | None -> lbl
       in
-      makeList ~postSpace:true (if print_bar then [atom "|"; fullLbl] else [fullLbl])
+      add_bar fullLbl
     in
+
+    let prefix = if polymorphic then "`" else "" in
+    let sourceMappedName = SourceMap (pcd_name.loc, atom (prefix ^ pcd_name.txt)) in
+    let sourceMappedNameWithAttributes =
+      if stdAttrs = [] then
+        sourceMappedName
+      else
+        formatAttributed sourceMappedName (self#attributes stdAttrs)
+    in
+    let constructorName = makeList ~postSpace:true [sourceMappedNameWithAttributes] in
     let everything = match (args, gadtRes) with
-      | ([], None) -> barName
-      | ([], Some gadt) -> add_bar sourceMappedName gadt
-      | (_::_, None) -> add_bar nameOf (normalize args)
+      | ([], None) -> add_bar sourceMappedNameWithAttributes
+      | ([], Some gadt) -> add_bar_2 sourceMappedNameWithAttributes gadt
+      | (_::_, None) -> add_bar_2 constructorName (normalize args)
       | (_::_, Some gadt) ->
           (match pcd_args with
-            | Pcstr_record _ -> add_bar ~gadt nameOf (normalize args)
-            | _ -> add_bar nameOf (makeList [normalize args; gadt]))
+            | Pcstr_record _ -> add_bar_2 ~gadt constructorName (normalize args)
+            | _ -> add_bar_2 constructorName (makeList [normalize args; gadt]))
     in
-    let everythingWithAttrs =
-      if stdAttrs <> [] then
-        formatAttributed everything (self#attributes stdAttrs)
-      else
-        everything
-    in
-    (SourceMap (pcd_loc, everythingWithAttrs))
+    (SourceMap (pcd_loc, everything))
 
   method record_declaration ?assumeRecordLoc lbls =
     let recordRow pld =
