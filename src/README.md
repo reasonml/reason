@@ -68,6 +68,8 @@ Our lexer & parser use [Menhir](http://gallium.inria.fr/~fpottier/menhir/), a li
 
 - `src/reason-parser/reason_oprint.ml`: the "outcome printer" used by Merlin, rtop and terminal, that prints the errors in Reason syntax. More info in the file itself.
 
+- `src/reason-parser/menhir_error_processor.ml, reason_parser_explain.ml`: menhir_error_processor is run at build time to generate a file called `_build/default/src/reason-parser/reason_parser_explain_raw.ml`
+
 ### Miscellaneous Files
 
 - `ocamlmerlin_reason.ml`: produces the `ocamlmerlin-reason` binary, used in conjunction with [Merlin-extend](https://github.com/let-def/merlin-extend). This is an extension to [Merlin](https://github.com/ocaml/merlin), which picks up this binary from your environment to analyze Reason files when your editor calls Merlin.

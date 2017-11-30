@@ -1,3 +1,5 @@
+(* See the comments in menhir_error_processor.ml *)
+
 module Parser = Reason_parser
 module Interp = Parser.MenhirInterpreter
 module Raw = Reason_parser_explain_raw
