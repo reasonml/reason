@@ -1121,7 +1121,7 @@ let defaultSettings = {
 
   *)
   funcCurriedPatternStyle = NeverWrapFinalItem;
-  width = 100;
+  width = 80;
   assumeExplicitArity = false;
   constructorLists = [];
 }
