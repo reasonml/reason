@@ -3643,7 +3643,15 @@ sig_type_extension:
 ;
 
 %inline attributed_ext_constructor(X):
-  item_attributes BAR X { {$3 with pext_attributes = $1 @ $3.pext_attributes} }
+  item_attributes BAR item_attributes X { {$4 with pext_attributes = List.concat [$1; $3; $4.pext_attributes]} }
+  /* Why is item_attributes duplicated?
+     To be consistent with attributes on (poly)variants/gadts.
+     So we can place the attribute after the BAR.
+     Example:
+      type water +=
+        pri
+        | [@foo] MineralWater;
+  */
 ;
 
 attributed_ext_constructors(X):

@@ -514,22 +514,22 @@ type attr = ..;
 
 /* `of` is optional */
 type attr +=
-  | Str (string);
+  | Str(string);
 
 type attr +=
-  | Point (int, int);
+  | Point(int, int);
 
 type attr +=
-  | Float (float)
-  | Char (char);
+  | Float(float)
+  | Char(char);
 
 type tag('props) = ..;
 
 type titleProps = {title: string};
 
 type tag('props) +=
-  | Title : tag(titleProps)
-  | Count (int) : tag(int);
+  | Title: tag(titleProps)
+  | Count(int): tag(int);
 
 module Graph = {
   type node = ..;

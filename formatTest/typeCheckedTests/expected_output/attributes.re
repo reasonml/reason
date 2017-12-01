@@ -393,25 +393,34 @@ type attr = ..;
 
 [@block]
 type attr +=
-  [@tag1] [@tag2] | Str
-  [@tag3] | Float;
+  | [@tag1] [@tag2] Str
+  | [@tag3] Float;
 
 type reconciler('props) = ..;
 
 [@onVariantType]
 type reconciler('props) +=
-  | Foo (int) : [@onFirstRow] reconciler(int)
-  | Bar ([@onInt] int) : [@onSecondRow]
-                         reconciler(unit)
-  [@baz] | Baz : [@onThirdRow]
-                 reconciler([@onUnit] unit);
+  | Foo(int): [@onFirstRow] reconciler(int)
+  | Bar([@onInt] int): [@onSecondRow]
+                       reconciler(unit)
+  | [@baz]
+    Baz: [@onThirdRow] reconciler([@onUnit] unit);
 
 type water = ..;
 
 type water +=
   pri
-  [@foo] | MineralWater
+  | [@foo] [@foo2] MineralWater
   | SpringWater;
+
+type cloud = string;
+
+type water +=
+  pri
+  | [@h2o] PreparedWater
+  | [@nature] RainWater(cloud)
+  | [@toxic]
+    MeltedSnowWaterFromNuclearWastelandWithALineBreakBecauseTheNameIsSoLong;
 
 /* reasonreact */
 type element;
