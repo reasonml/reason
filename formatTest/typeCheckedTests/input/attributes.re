@@ -308,7 +308,12 @@ type reconciler('props) +=
 
 type water = ..;
 
-type water += pri [@foo] | MineralWater | SpringWater;
+type water += pri [@foo] | [@foo2] MineralWater | SpringWater;
+
+type cloud = string;
+
+type water += pri | [@h2o] PreparedWater | [@nature] RainWater(cloud) | [@toxic] MeltedSnowWaterFromNuclearWastelandWithALineBreakBecauseTheNameIsSoLong;
+
 
 /* reasonreact */
 type element;
