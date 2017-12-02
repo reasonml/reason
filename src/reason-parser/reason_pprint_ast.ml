@@ -60,7 +60,6 @@ open Easy_format
 open Syntax_util
 open Ast_mapper
 
-
 type commentCategory =
   | EndOfLine
   | SingleLine
@@ -6664,55 +6663,30 @@ class printer  ()= object(self:'self)
     let categorizeFunApplArgs args =
       let reverseArgs = List.rev args in
       match reverseArgs with
-      | (Nolabel, {pexp_desc = Pexp_fun _})::_ -> `LastArgIsCallback reverseArgs
+      | ((_, {pexp_desc = Pexp_fun _}) as callback)::args 
+          when let otherCallbacks = 
+            List.filter (fun (_, e) -> match e.pexp_desc with Pexp_fun _ -> true | _ -> false) args
+          in List.length otherCallbacks == 0
+          (* default to normal formatting if there's more than one callback *)
+          -> `LastArgIsCallback(callback, List.rev args)
       | _ -> `NormalFunAppl args
     in
     begin match categorizeFunApplArgs args with
-    | `LastArgIsCallback reverseArgs ->
+    | `LastArgIsCallback(callbackArg, args) ->
         (* This is the following case:
          * Thing.map(foo, bar, baz, (abc, z) =>
          *   MyModuleBlah.toList(argument)
          *)
-        let (args, callbackArg) = begin match reverseArgs with
-        | callback::args -> (List.rev args, callback)
-        | [] -> raise (NotPossible "can't partition 0 function expression args")
-        end in
-        (* callback isn't a labelled argument *)
-        let (_, cb) = callbackArg in
+        let (argLbl, cb) = callbackArg in
         let (_sweet, cbArgs, retCb) = self#curriedPatternsAndReturnVal cb in
-
+        let theCallbackArg = match argLbl with
+          | Optional s -> makeList ([atom namedArgSym; atom s; atom "=?"]@cbArgs)
+          | Labelled s -> makeList ([atom namedArgSym; atom s; atom "="]@cbArgs)
+          | Nolabel -> makeList cbArgs
+        in
         (* major hack; we manually check the length of `Thing.map(foo, bar,baz`,
          * because Easyformat doesn't have a hook to change printing when a list breaks *)
-        let estimatedLineLength =
-          let funLen = begin match funExpr.pexp_desc with
-           | Pexp_ident ident ->
-               let identList = Longident.flatten ident.txt in
-               let lengthOfDots = List.length identList - 1 in
-               let len = List.fold_left (fun acc curr ->
-                 acc + (String.length curr)) lengthOfDots identList in
-               len
-           | _ -> 0
-          end in
-          let argsLength = List.fold_left (fun acc curr ->
-            match acc with
-            | None -> None
-            | Some len ->
-              let (_, argExpr) = curr in
-              begin match argExpr with
-              | {pexp_desc = Pexp_ident ident } ->
-                  let identLen = List.fold_left (fun acc curr ->
-                    acc + (String.length curr)
-                  ) len (Longident.flatten ident.txt) in
-                  Some identLen
-              | {pexp_desc = Pexp_constant (Pconst_string (str, _))} ->
-                  Some (len + (String.length str))
-              | _ -> None
-              end
-          ) (Some (((List.length args) - 1) * 2)) args in
-          match argsLength with
-          | Some len -> Some (funLen + len)
-          | None -> None
-         in
+        let estimatedLineLength = Reason_heuristics.estimateLineLengthForCallback ~args ~funExpr () in
 
         let theFunc = SourceMap (funExpr.pexp_loc, makeList ~wrap:("", "(") [self#simplifyUnparseExpr funExpr]) in
         let formattedFunAppl = begin match self#letList retCb with
@@ -6733,15 +6707,16 @@ class printer  ()= object(self:'self)
           | _ -> false
           in
           let returnValueCallback = makeList ~break:(if forceBreak then Always else IfNeed) ~wrap:("=> ", ")") [x] in
-          let argsWithCallbackArgs = List.concat [(List.map self#label_x_expression_param args); cbArgs] in
+
+          let argsWithCallbackArgs = List.concat [(List.map self#label_x_expression_param args); [theCallbackArg]] in
           let left = label
             theFunc
             (makeList ~wrap:("", " ") ~break:IfNeed ~inline:(true, true) ~sep:"," ~postSpace:true
               argsWithCallbackArgs)
           in
           label left returnValueCallback
-        | xs -> begin match estimatedLineLength with
-            | Some len when len < settings.width ->
+        | xs -> 
+            if estimatedLineLength > 0 && estimatedLineLength < settings.width then
             (*
              * Thing.map(foo, bar, baz, (abc, z) =>
              *   MyModuleBlah.toList(argument)
@@ -6772,14 +6747,14 @@ class printer  ()= object(self:'self)
                * });
                *)
               let right = makeList ~break:Always_rec ~wrap:("=> {", "})") ~sep:";" xs in
-              let argsWithCallbackArgs = List.concat [(List.map self#label_x_expression_param args); cbArgs] in
+              let argsWithCallbackArgs = List.concat [(List.map self#label_x_expression_param args); [theCallbackArg]] in
               let left = label
                 theFunc
                 (makeList ~wrap:("", " ") ~break:IfNeed ~inline:(true, true) ~sep:"," ~postSpace:true
                   argsWithCallbackArgs)
               in
               label left right
-            | _ ->
+            else
               (* Since the heuristic says the line lenght is exceeded in this case,
                * we conveniently format everything as
                * <label><left>Thing.map(</left><right><list>
@@ -6795,10 +6770,9 @@ class printer  ()= object(self:'self)
                *)
               let args = makeList ~break:Always ~wrap:("", ")") ~sep:"," (
                 (List.map self#label_x_expression_param args)
-                @([label ~space:true (makeList ~wrap:("", " =>") cbArgs) (makeLetSequence xs)])
+                @([label ~space:true (makeList ~wrap:("", " =>") [theCallbackArg]) (makeLetSequence xs)])
               ) in
               label theFunc args
-            end
         end in
         maybeJSXAttr @ [formattedFunAppl]
     | `NormalFunAppl args ->

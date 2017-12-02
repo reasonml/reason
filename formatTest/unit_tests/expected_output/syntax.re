@@ -1133,7 +1133,23 @@ foo(
 /* Smooth formatting of functions with callbacks as arguments */
 funWithCb("text", () => doStuff());
 
+funWithCb(~text="text", ~f=() => doStuff());
+
+funWithCb(~text="text", ~f=?() => doStuff());
+
 test("my test", () => {
+  let x = a + b;
+  let y = z + c;
+  x + y
+});
+
+test(~desc="my test", ~f=() => {
+  let x = a + b;
+  let y = z + c;
+  x + y
+});
+
+test(~desc=?"my test", ~f=?() => {
   let x = a + b;
   let y = z + c;
   x + y
@@ -1145,7 +1161,27 @@ describe("App", () =>
   )
 );
 
+describe(~text="App", ~f=() =>
+  test(~text="math", ~f=() =>
+    Expect.expect(1 + 2) |> toBe(3)
+  )
+);
+
+describe(~text=?"App", ~f=?() =>
+  test(~text=?"math", ~f=?() =>
+    Expect.expect(1 + 2) |> toBe(3)
+  )
+);
+
 Thing.map(foo, bar, baz, (abc, z) =>
+  MyModuleBlah.toList(argument)
+);
+
+Thing.map(~a=foo, ~b=bar, ~c=?baz, ~f=(abc, z) =>
+  MyModuleBlah.toList(argument)
+);
+
+Thing.map(~a=foo, ~b=bar, ~c=?baz, ~f=?(abc, z) =>
   MyModuleBlah.toList(argument)
 );
 
@@ -1160,4 +1196,38 @@ Thing.map(
     let x = 1;
     MyModuleBlah.toList(x, argument);
   }
+);
+
+Thing.map(
+  ~a=foo,
+  ~b=bar,
+  ~c=baz,
+  ~d=foo2,
+  ~e=bakjlksjdf,
+  ~f=okokokok,
+  ~cb=(abc, z) => {
+    let x = 1;
+    MyModuleBlah.toList(x, argument);
+  }
+);
+
+Thing.map(
+  ~a=?foo,
+  ~b=?bar,
+  ~c=?baz,
+  ~d=?foo2,
+  ~e=?bakjlksjdf,
+  ~f=?okokokok,
+  ~cb=?(abc, z) => {
+    let x = 1;
+    MyModuleBlah.toList(x, argument);
+  }
+);
+
+Thing.map(
+  foo,
+  bar,
+  baz,
+  (abc, z) => MyModuleBlah.toList(argument),
+  (abc, z) => MyModuleBlah.toList(argument)
 );
