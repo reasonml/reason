@@ -6684,9 +6684,6 @@ class printer  ()= object(self:'self)
           | Labelled s -> makeList ([atom namedArgSym; atom s; atom "="]@cbArgs)
           | Nolabel -> makeList cbArgs
         in
-        (* major hack; we manually check the length of `Thing.map(foo, bar,baz`,
-         * because Easyformat doesn't have a hook to change printing when a list breaks *)
-        let estimatedLineLength = Reason_heuristics.estimateLineLengthForCallback ~args ~funExpr () in
 
         let theFunc = SourceMap (funExpr.pexp_loc, makeList ~wrap:("", "(") [self#simplifyUnparseExpr funExpr]) in
         let formattedFunAppl = begin match self#letList retCb with
@@ -6716,30 +6713,27 @@ class printer  ()= object(self:'self)
           in
           label left returnValueCallback
         | xs -> 
-            if estimatedLineLength > 0 && estimatedLineLength < settings.width then
-            (*
-             * Thing.map(foo, bar, baz, (abc, z) =>
-             *   MyModuleBlah.toList(argument)
-             * )
-             *
-             * To get this kind of formatting we need to construct the following tree:
-             * <Label>
-             * <left>Thing.map(foo, bar, baz, (abc, z)</left><right>=>
-             *   MyModuleBlah.toList(argument)
-             * )</right>
-             * </Label>
-             *
-             * where left is
-             * <Label><left>Thing.map(</left></right>foo, bar, baz, (abc, z) </right></Label>
-             *
-             * The <right> part of that label could be a <List> with wrap:("", " ") break:IfNeed inline:(true, true)
-             * with items: "foo", "bar", "baz", "(abc, z)", separated by commas.
-             *)
-              (* heuristic
-               * if all arguments aside from the final one are either strings or identifiers,
-               * where the sum of the string contents and identifier names are less than the print width
+              let printWidthExceeded = Reason_heuristics.funAppCallbackExceedsWidth ~printWidth:settings.width ~args ~funExpr () in
+              if printWidthExceeded = false then
+              (*
+               * Thing.map(foo, bar, baz, (abc, z) =>
+               *   MyModuleBlah.toList(argument)
+               * )
                *
-               * this is necessary to achieve the following formatting where }) hugs :
+               * To get this kind of formatting we need to construct the following tree:
+               * <Label>
+               * <left>Thing.map(foo, bar, baz, (abc, z)</left><right>=>
+               *   MyModuleBlah.toList(argument)
+               * )</right>
+               * </Label>
+               *
+               * where left is
+               * <Label><left>Thing.map(</left></right>foo, bar, baz, (abc, z) </right></Label>
+               *
+               * The <right> part of that label could be a <List> with wrap:("", " ") break:IfNeed inline:(true, true)
+               * with items: "foo", "bar", "baz", "(abc, z)", separated by commas.
+               *
+               * this is also necessary to achieve the following formatting where }) hugs :
                * test("my test", () => {
                *   let x = a + b;
                *   let y = z + c;
