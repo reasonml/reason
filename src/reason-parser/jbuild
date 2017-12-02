@@ -48,6 +48,7 @@
   (wrapped false)
   (modules
    (syntax_util
+    reason_heuristics
     reason_toolchain
     reason_config
     reason_pprint_ast
