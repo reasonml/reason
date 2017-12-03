@@ -898,3 +898,7 @@ b;
 let z = x =</>
 
 b;
+
+/* #1676: Exponentiation should be right-associative */
+let foo = (100. /. 2.) ** 2. +. (200. /. 2.) ** 2.;
+let foo = 100. /. 2. ** 2. +. 200. /. 2. ** 2.;
