@@ -662,6 +662,7 @@ let rules = [
   ];
   (* Note the special case for "*\*", BARBAR, and LESSMINUS, AMPERSAND(s) *)
   [
+    (TokenPrecedence, (fun s -> (Right, s = "**")));
     (TokenPrecedence, (fun s -> (Right, String.length s > 1 && s.[0] == '*' && s.[1] == '\\' && s.[2] == '*')));
     (TokenPrecedence, (fun s -> (Right, s = "lsl")));
     (TokenPrecedence, (fun s -> (Right, s = "lsr")));
