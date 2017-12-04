@@ -140,6 +140,7 @@ Random Stack Overflow answer: https://stackoverflow.com/questions/9897358/ocaml-
 - [Don't print fun in record expressions with Pexp_fun values](https://github.com/facebook/reason/pull/1588)
 - [Force breaks for nested records](https://github.com/facebook/reason/pull/1593)
 - [Always break object def with two or more rows](https://github.com/facebook/reason/pull/1596)
+- [Make exponentiation operator print with right associativity](https://github.com/facebook/reason/pull/1678)
 
 ### Debugging Grammar Conflicts
 
