@@ -22,8 +22,6 @@
 
 (executables
  ((names (menhir_error_processor))
-  (public_names (menhir_error_processor))
-  (package reason)
   (modules menhir_error_processor)
   (libraries
      (menhirSdk))
@@ -33,7 +31,7 @@
  ((targets (reason_parser_explain_raw.ml))
   (deps ( reason_parser.cmly))
   (action
-   (with-stdout-to ${@} (run menhir_error_processor reason_parser.cmly)))))
+   (with-stdout-to ${@} (run ./menhir_error_processor.exe reason_parser.cmly)))))
 
 ; Previously, make compiler_error
 (rule
