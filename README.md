@@ -77,7 +77,7 @@ We're spoiled with more APIs on the native side. To use Reason from OPAM as a na
 - `Reason_toolchain.ML.implementation_with_comments`
 - etc.
 
-The `RE` parsing functions might throw [this](https://github.com/facebook/reason/blob/5a253048e8077c4597a8935adbed7aa22bfff647/src/syntax_util.ml#L301) (docs on `Location.t` [here](https://caml.inria.fr/pub/docs/manual-ocaml/libref/Location.html)). The `ML` parsing functions might throw [`Syntaxerr.Error error`](https://caml.inria.fr/pub/docs/manual-ocaml/libref/Syntaxerr.html).
+The `ML` parsing functions might throw [`Syntaxerr.Error error`](https://caml.inria.fr/pub/docs/manual-ocaml/libref/Syntaxerr.html). The `RE` parsing functions might throw [this](https://github.com/facebook/reason/blob/5a253048e8077c4597a8935adbed7aa22bfff647/src/syntax_util.ml#L301) (docs on `Location.t` [here](https://caml.inria.fr/pub/docs/manual-ocaml/libref/Location.html)) in addition to `Syntaxerr.Error error`.
 
 Example usage:
 
