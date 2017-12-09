@@ -7,7 +7,7 @@ type color =
   | Black(int) /* After black */
   | Green(int) /* Does not remain here */;
 
-let blahCurriedX = (x) =>
+let blahCurriedX = x =>
   fun
   | Red(10)
   | Black(20)

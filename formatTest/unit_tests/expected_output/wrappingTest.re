@@ -429,7 +429,7 @@ let myList = [
 
 let myList = [3, 4, 5];
 
-let simpleListPattern = (x) =>
+let simpleListPattern = x =>
   switch x {
   | [1, 2, 3] => 0
   | _ => 0
@@ -461,14 +461,14 @@ type functionsInARecord = {
 };
 
 let myFunctionsInARecord = {
-  adder: (x) => x,
-  minuser: (x) => x
+  adder: x => x,
+  minuser: x => x
 };
 
 let myFunctionsInARecordThatMustWrap = {
   /* Desired wrapping */
-  adder: (reallyLongArgument) => reallyLongArgument,
-  minuser: (anotherReallyLongArgument) => anotherReallyLongArgument
+  adder: reallyLongArgument => reallyLongArgument,
+  minuser: anotherReallyLongArgument => anotherReallyLongArgument
   /* Comment at bottom of record */
 };
 
@@ -519,13 +519,13 @@ let myFunctionsInARecordThatMustWrap = {
 };
 
 let oneArgShouldWrapToAlignWith =
-    (theFunctionNameBinding) => theFunctionNameBinding;
+    theFunctionNameBinding => theFunctionNameBinding;
 
 let twoArgsShouldWrapToAlignWith =
     (firstArgHere, secondArgThere) => secondArgThere;
 
 let rec oneArgShouldWrapToAlignWith =
-        (theFunctionNameBinding) => theFunctionNameBinding;
+        theFunctionNameBinding => theFunctionNameBinding;
 
 let rec twoArgsShouldWrapToAlignWith =
         (firstArgHere, secondArgThere) => secondArgThere;
@@ -548,7 +548,7 @@ let result =
     reallyReallyLongVarName
   );
 
-let justReturn = (x) => x;
+let justReturn = x => x;
 
 /* With default formatting settings: Two arguments are special cased in
    function application "justReturn hasABunch" */
@@ -593,7 +593,7 @@ let reallyHowDoesInfixOperatorsWrapWhenYouMustWrapQuestionMark =
     (x, y) =>
   x + y;
 
-let reallyLongFunctionNameThatJustConcats = (a) =>
+let reallyLongFunctionNameThatJustConcats = a =>
   String.concat("-", a);
 
 let seeHowLongValuesWrap = {
@@ -2121,9 +2121,9 @@ let (the, type_, and_, value, should, both, wrap): (
   "wrap"
 );
 
-let myPolyFunc: 'a .'a => 'a = (o) => o;
+let myPolyFunc: 'a .'a => 'a = o => o;
 
-let myNonPolyFunc: 'a => 'a = (o) => o;
+let myNonPolyFunc: 'a => 'a = o => o;
 
 let locallyAbstractFunc = (type a, input: a) => input;
 
@@ -2137,9 +2137,9 @@ let locallyAbstractFuncAnnotated: type a. a => a =
   Examples of how long versions of these should be wrapped: df stands for
   "desired formatting" when the function binding itself must wrap.
  */
-let df_myPolyFunc: 'a .'a => 'a = (o) => o;
+let df_myPolyFunc: 'a .'a => 'a = o => o;
 
-let df_myNonPolyFunc: 'a => 'a = (o) => o;
+let df_myNonPolyFunc: 'a => 'a = o => o;
 
 type nameBlahType = {nameBlah: int};
 
@@ -2262,9 +2262,9 @@ let theTupleTypeAnnotationShouldWrap: (
   "now these tuple values should wrap"
 );
 
-let rec mutuallyRecursiveOne = (x) =>
+let rec mutuallyRecursiveOne = x =>
   mutuallyRecursiveTwo(x + x)
-and mutuallyRecursiveTwo = (y) => print_int(y);
+and mutuallyRecursiveTwo = y => print_int(y);
 
 /* The only downside to this is that now you can't redeclare a binding. */
 /* let newMutualRecursionSyntax x => newMutuallyRecursiveTwo (x + x); */
@@ -2362,10 +2362,10 @@ let funcOnSomeRecord =
 type simpleTupleVariant =
   | SimpleActuallyATuple((int, int));
 
-let returnTheSimpleTupleVariant = (i) =>
+let returnTheSimpleTupleVariant = i =>
   SimpleActuallyATuple(i, i);
 
-let shouldWrapLike = (whenLongArg) =>
+let shouldWrapLike = whenLongArg =>
   SimpleActuallyATuple(whenLongArg, whenLongArg);
 
 type recordWithLong = {
@@ -2438,7 +2438,7 @@ type colors =
   | Black(int)
   | Green(int);
 
-let blah = (arg) =>
+let blah = arg =>
   switch arg {
   /* Comment before Bar */
   | /* Comment between bar/pattern */ Red(_) => 1
@@ -2453,7 +2453,7 @@ let blah =
   | Black(_) => 0
   | Green(_) => 1;
 
-let blahCurriedX = (x) =>
+let blahCurriedX = x =>
   fun
   /* Comment before first bar */
   /* Comment between first bar and OR pattern */
@@ -2469,7 +2469,7 @@ type reallyLongVariantNames =
   | AnotherReallyLongVariantName(int, int, int)
   | AnotherReallyLongVariantName2(int, int, int);
 
-let howDoLongMultiBarPatternsWrap = (x) =>
+let howDoLongMultiBarPatternsWrap = x =>
   switch x {
   | AnotherReallyLongVariantName(_, _, _) => 0
   | AnotherReallyLongVariantName2(_, _, _) => 0
@@ -2479,7 +2479,7 @@ let howDoLongMultiBarPatternsWrap = (x) =>
     }) => 0
   };
 
-let letsCombineTwoLongPatternsIntoOneCase = (x) =>
+let letsCombineTwoLongPatternsIntoOneCase = x =>
   switch x {
   | AnotherReallyLongVariantName(_, _, _)
   | AnotherReallyLongVariantName2(_, _, _) => 0
@@ -2489,7 +2489,7 @@ let letsCombineTwoLongPatternsIntoOneCase = (x) =>
     }) => 0
   };
 
-let letsPutAWhereClauseOnTheFirstTwo = (x) =>
+let letsPutAWhereClauseOnTheFirstTwo = x =>
   switch x {
   | AnotherReallyLongVariantName(_, _, _)
   | AnotherReallyLongVariantName2(_, _, _)
@@ -2500,7 +2500,7 @@ let letsPutAWhereClauseOnTheFirstTwo = (x) =>
     }) => 0
   };
 
-let letsPutAWhereClauseOnTheLast = (x) =>
+let letsPutAWhereClauseOnTheLast = x =>
   switch x {
   | AnotherReallyLongVariantName(_, _, _)
   | AnotherReallyLongVariantName2(_, _, _) => 0
@@ -2701,13 +2701,13 @@ let /*beforePattern2 */ commentingBeforePatternSpecial: withThreeFields = {
   occupation: "programmer"
 };
 
-let produceRecord /*commentBeforeArg*/ = (x) => {
+let produceRecord /*commentBeforeArg*/ = x => {
   name: "hello",
   age: 20,
   occupation: "programmer"
 };
 
-let produceRecord = (x) => /*commentAfterArg*/ {
+let produceRecord = x => /*commentAfterArg*/ {
   name: "hello",
   age: 20,
   occupation: "programmer"
@@ -2717,54 +2717,54 @@ let myPolyFuncCommentBeforeColon /*beforeColon */:
   'a .
   'a => 'a
  =
-  (o) => o;
+  o => o;
 
 let myPolyFuncCommentAfterColon: 'a .'a => 'a =
   /*afterColon */
-  (o) => o;
+  o => o;
 
 let myPolyFuncCommentBeforeArrow: 'a .'a => 'a =
   /*beforeArrow */
-  (o) => o;
+  o => o;
 
 let myPolyFuncCommentAfterArrow:
   'a .
   'a => /*afterArrow */ 'a
  =
-  (o) => o;
+  o => o;
 
 let myPolyFuncCommentBeforeEqual:
   'a .
   'a => 'a /*beforeEqual */
  =
-  (o) => o;
+  o => o;
 
 let myPolyFuncCommentAfterEqual: 'a .'a => 'a =
-  /*afterEqual */ (o) => o;
+  /*afterEqual */ o => o;
 
 let myNonPolyFuncCommentBeforeColon /*BeforeColon */:
   'a => 'a =
-  (o) => o;
+  o => o;
 
 let myNonPolyFuncCommentAfterColon:
   /*AfterColon */ 'a => 'a =
-  (o) => o;
+  o => o;
 
 let myNonPolyFuncCommentBeforeArrow:
   'a => /*BeforeArrow */
   'a =
-  (o) => o;
+  o => o;
 
 let myNonPolyFuncCommentAfterArrow:
   'a => /*AfterArrow */ 'a =
-  (o) => o;
+  o => o;
 
 let myNonPolyFuncCommentBeforeEqual:
   'a => 'a /*BeforeEqual */ =
-  (o) => o;
+  o => o;
 
 let myNonPolyFuncCommentAfterEqual: 'a => 'a =
-  /*AfterEqual */ (o) => o;
+  /*AfterEqual */ o => o;
 
 let lATCurrySugarCommentBeforeType /*BeforeType */ =
     (type a, input: a) => input;
@@ -2927,17 +2927,17 @@ let onlyDoingThisTopLevelLetToBypassTopLevelSequence = {
 };
 
 /* With this unification, anywhere eyou see `= fun` you can just ommit it */
-let blah = (a) => a; /* Done */
+let blah = a => a; /* Done */
 
-let blah = (a) => a; /* Done (almost) */
+let blah = a => a; /* Done (almost) */
 
 let blah = (a, b) => a; /* Done */
 
 let blah = (a, b) => a; /* Done (almost) */
 
 let tryingTheSameInLocalScope = {
-  let blah = (a) => a; /* Done */
-  let blah = (a) => a; /* Done (almost) */
+  let blah = a => a; /* Done */
+  let blah = a => a; /* Done (almost) */
   let blah = (a, b) => a; /* Done */
   let blah = (a, b) => a;
   (); /* Done (almost) */

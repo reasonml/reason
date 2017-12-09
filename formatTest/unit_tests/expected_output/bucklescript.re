@@ -84,15 +84,13 @@ let b = {
 let c = {
   "a": a,
   "b": b,
-  "func": (a) => a##c#=func(10)
+  "func": a => a##c#=func(10)
 };
 
 let d = {
   "a": a2,
   "b": b,
-  "func": (a) => {
-    "a": (arg1, arg2) => arg1 + arg2
-  }
+  "func": a => {"a": (arg1, arg2) => arg1 + arg2}
 };
 
 let a = {"/foo": 10};

@@ -205,7 +205,7 @@ let selfClosing3 =
     b="cause the entire thing to wrap"
   />;
 
-let a = <Foo> <Bar c=((a) => a + 2) /> </Foo>;
+let a = <Foo> <Bar c=(a => a + 2) /> </Foo>;
 
 let a3 = <So> <Much> <Nesting /> </Much> </So>;
 
@@ -268,7 +268,7 @@ let jsxInList7 = [<Foo />, <Foo />];
 
 let jsxInList8 = [<Foo />, <Foo />];
 
-let testFunc = (b) => b;
+let testFunc = b => b;
 
 let jsxInFnCall = testFunc(<Foo />);
 
@@ -622,7 +622,7 @@ let g = <Two ?foo />;
 /* https://github.com/facebook/reason/issues/1428 */
 <Foo> ...element </Foo>;
 
-<Foo> ...((a) => 1) </Foo>;
+<Foo> ...(a => 1) </Foo>;
 
 <Foo> ...<Foo2 /> </Foo>;
 

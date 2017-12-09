@@ -123,7 +123,7 @@ module Temp = {
   let logIt = (str, ()) => print_string(str);
 };
 
-let store_attributes = (arg) => {
+let store_attributes = arg => {
   let attributes_file = "test";
   let proc_name = attributes_file ++ ".proc";
   let should_write =
