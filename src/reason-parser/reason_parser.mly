@@ -875,11 +875,16 @@ let jsx_component module_name attrs children loc =
   let attribute = ({txt = "JSX"; loc = loc}, PStr []) in
   { body with pexp_attributes = attribute :: body.pexp_attributes }
 
+(* We might raise some custom error messages in this file.
+  Do _not_ directly raise a Location.Error. Our public interface guarantees that we only throw Syntaxerr or Syntax_util.Error *)
+let raiseSyntaxErrorFromSyntaxUtils loc message =
+  raise Syntax_util.(Error(loc, (Syntax_error message)))
+
 let ensureTagsAreEqual startTag endTag loc =
   if startTag <> endTag then
      let startTag = (String.concat "" (Longident.flatten startTag)) in
      let endTag = (String.concat "" (Longident.flatten endTag)) in
-     let _ = Location.raise_errorf ~loc "Syntax error: Start tag <%s> does not match end tag </%s>" startTag endTag in
+     let _ = raiseSyntaxErrorFromSyntaxUtils loc "Start tag <%s> does not match end tag </%s>" startTag endTag in
      ()
 
 let prepare_immutable_labels labels =
@@ -904,7 +909,7 @@ let only_core_type t startp endp =
   | Core_type ct -> ct
   | Record_type _ ->
     let loc = mklocation startp endp in
-    Location.raise_errorf ~loc "Record type is not allowed"
+    raiseSyntaxErrorFromSyntaxUtils loc "Record type is not allowed"
 
 let only_labels l =
   let rec loop label_declarations result =
@@ -3252,7 +3257,7 @@ mark_position_pat
   | name_tag simple_pattern { mkpat (Ppat_variant($1, Some $2)) }
 
   | pattern_without_or as_loc(COLONCOLON) pattern_without_or
-    { Location.raise_errorf ~loc:$2.loc
+    { raiseSyntaxErrorFromSyntaxUtils $2.loc
         ":: is not supported in Reason, please use [hd, ...tl] instead" }
 
   | pattern_without_or COLONCOLON as_loc(error)
@@ -3450,8 +3455,8 @@ and_type_declaration:
 
 type_declaration_details:
   | as_loc(UIDENT) type_variables_with_variance type_declaration_kind
-    { Location.raise_errorf ~loc:$1.loc
-        "A type's name need to begin with a lower-case letter or _"
+    { let l = $1.loc in
+      raiseSyntaxErrorFromSyntaxUtils $1.loc "a type name must start with a lower-case letter or an underscore"
     }
   | as_loc(LIDENT) type_variables_with_variance type_declaration_kind
     { let (kind, priv, manifest), constraints, endpos, and_types = $3 in
