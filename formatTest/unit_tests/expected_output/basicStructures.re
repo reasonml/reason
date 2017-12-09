@@ -839,7 +839,7 @@ let identifierLambda = a => ();
 
 it("should remove parens", a => {
   print_string("did it work?");
-  print_string("did it work?")
+  print_string("did it work?");
 });
 
 /**
