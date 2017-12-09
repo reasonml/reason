@@ -6666,8 +6666,8 @@ class printer  ()= object(self:'self)
     let categorizeFunApplArgs args =
       let reverseArgs = List.rev args in
       match reverseArgs with
-      | ((_, {pexp_desc = Pexp_fun _}) as callback)::args 
-          when let otherCallbacks = 
+      | ((_, {pexp_desc = Pexp_fun _}) as callback)::args
+          when let otherCallbacks =
             List.filter (fun (_, e) -> match e.pexp_desc with Pexp_fun _ -> true | _ -> false) args
           in List.length otherCallbacks == 0
           (* default to normal formatting if there's more than one callback *)
@@ -6690,7 +6690,7 @@ class printer  ()= object(self:'self)
 
         let theFunc = SourceMap (funExpr.pexp_loc, makeList ~wrap:("", "(") [self#simplifyUnparseExpr funExpr]) in
         let formattedFunAppl = begin match self#letList retCb with
-        | [x] -> 
+        | [x] ->
           (* force breaks for test assertion style callbacks, e.g.
            *  describe("App", () => test("math", () => Expect.expect(1 + 2) |> toBe(3)));
            * should always break for readability of the tests:
@@ -6715,7 +6715,7 @@ class printer  ()= object(self:'self)
               argsWithCallbackArgs)
           in
           label left returnValueCallback
-        | xs -> 
+        | xs ->
               let printWidthExceeded = Reason_heuristics.funAppCallbackExceedsWidth ~printWidth:settings.width ~args ~funExpr () in
               if printWidthExceeded = false then
               (*
@@ -6777,7 +6777,7 @@ class printer  ()= object(self:'self)
         (*reset here only because [function,match,try,sequence] are lower priority*)
         let theArgs = self#reset#label_x_expression_params args in
         maybeJSXAttr @ [label theFunc theArgs]
-    end 
+    end
 end;;
 
 
