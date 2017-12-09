@@ -4323,29 +4323,28 @@ class printer  ()= object(self:'self)
   method curriedPatternsAndReturnVal x =
     let rec extract_args xx =
       if xx.pexp_attributes <> [] then
-        (true, [], xx)
+        ([], xx)
       else match xx.pexp_desc with
         (* label * expression option * pattern * expression *)
         | Pexp_fun (l, eo, p, e) ->
-          (* sweet determines whether es6 => sugar can be used or not *)
-          let sweet, args, ret = extract_args e in
-          (sweet, `Value (l,eo,p) :: args, ret)
+          let args, ret = extract_args e in
+          (`Value (l,eo,p) :: args, ret)
         | Pexp_newtype (newtype,e) ->
-          let sweet, args, ret = extract_args e in
-          (sweet, `Type newtype :: args, ret)
-        | Pexp_constraint _ -> (true, [], xx)
-        | _ -> (true, [], xx)
+          let args, ret = extract_args e in
+          (`Type newtype :: args, ret)
+        | Pexp_constraint _ -> ([], xx)
+        | _ -> ([], xx)
     in
     let prepare_arg = function
       | `Value (l,eo,p) -> SourceMap (p.ppat_loc, self#label_exp l eo p)
       | `Type nt -> atom ("type " ^ nt)
     in
     match extract_args x with
-    | (sweet, [], ret) -> (sweet, [], ret)
-    | (sweet, [`Value (Nolabel, None, p) as arg], ret) when is_unit_pattern p ->
-      (sweet, [prepare_arg arg], ret)
-    | (sweet, args, ret) ->
-      (sweet, [makeTup (List.map prepare_arg args)], ret)
+    | ([], ret) -> ([], ret)
+    | ([`Value (Nolabel, None, p) as arg], ret) when is_unit_pattern p ->
+      ([prepare_arg arg], ret)
+    | (args, ret) ->
+      ([makeTup (List.map prepare_arg args)], ret)
 
   (* Returns the (curriedModule, returnStructure) for a functor *)
   method curriedFunctorPatternsAndReturnStruct = function
@@ -4451,7 +4450,7 @@ class printer  ()= object(self:'self)
          }
    *)
   method wrappedBinding prefixText ~arrow pattern patternAux expr =
-    let (_sweet, argsList, return) = self#curriedPatternsAndReturnVal expr in
+    let (argsList, return) = self#curriedPatternsAndReturnVal expr in
     let patternList = match patternAux with
       | [] -> pattern
       | _::_ -> makeList ~postSpace:true ~inline:(true, true) ~break:IfNeed (pattern::patternAux)
@@ -4873,7 +4872,7 @@ class printer  ()= object(self:'self)
         let itm = match x.pexp_desc with
           | Pexp_fun _
           | Pexp_newtype _ ->
-            let (sweet, args, ret) = self#curriedPatternsAndReturnVal x in
+            let (args, ret) = self#curriedPatternsAndReturnVal x in
             ( match args with
               | [] -> raise (NotPossible ("no arrow args in unparse "))
               | firstArg::tl ->
@@ -4900,7 +4899,7 @@ class printer  ()= object(self:'self)
                    needed, should we even print them with the minimum amount?  We can
                    instead model everything as "infix" with ranked precedences.  *)
                 let retValUnparsed = self#unparseExprApplicationItems ret in
-                Some (self#wrapCurriedFunctionBinding ~sweet "fun" ~arrow:"=>" firstArg tl retValUnparsed)
+                Some (self#wrapCurriedFunctionBinding ~sweet:true "fun" ~arrow:"=>" firstArg tl retValUnparsed)
             )
           | Pexp_try (e, l) ->
             let estimatedBracePoint = {
@@ -5172,7 +5171,7 @@ class printer  ()= object(self:'self)
             let row = label ~space:true keyWithColon value in
             if appendComma then makeList [row; comma] else row
         | _ ->
-          let (sweet, argsList, return) = self#curriedPatternsAndReturnVal e in
+          let (argsList, return) = self#curriedPatternsAndReturnVal e in
           match argsList with
           | [] ->
             let appTerms = self#unparseExprApplicationItems e in
@@ -5185,7 +5184,7 @@ class printer  ()= object(self:'self)
             let upToColon = makeList (maybeQuoteFirstElem li [atom ":"]) in
             let returnedAppTerms = self#unparseExprApplicationItems return in
             let labelExpr = self#wrapCurriedFunctionBinding
-                ~sweet ~attachTo:upToColon "fun" ~arrow:"=>"
+                ~sweet:true ~attachTo:upToColon "fun" ~arrow:"=>"
                 firstArg tl returnedAppTerms
             in
             if appendComma then makeList [labelExpr; comma] else labelExpr
@@ -6678,7 +6677,7 @@ class printer  ()= object(self:'self)
          *   MyModuleBlah.toList(argument)
          *)
         let (argLbl, cb) = callbackArg in
-        let (_sweet, cbArgs, retCb) = self#curriedPatternsAndReturnVal cb in
+        let (cbArgs, retCb) = self#curriedPatternsAndReturnVal cb in
         let theCallbackArg = match argLbl with
           | Optional s -> makeList ([atom namedArgSym; atom s; atom "=?"]@cbArgs)
           | Labelled s -> makeList ([atom namedArgSym; atom s; atom "="]@cbArgs)
