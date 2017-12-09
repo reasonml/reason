@@ -1,5 +1,5 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
-let logTSuccess = (self) =>
+let logTSuccess = self =>
   if (self > other) {
     print_string("Did T");
     print_newline();
@@ -13,7 +13,7 @@ let something =
     print_newline();
   };
 
-let logTSuccess = (self) =>
+let logTSuccess = self =>
   if (self.ext.logSuccess) {
     print_string("Did T");
     print_newline();
@@ -144,7 +144,7 @@ let ternaryResult =
         /* The final parent don't need to be preserved */
         eeeeeee ? fffffff : x ? y : z;
 
-let addOne = (x) => x + 1;
+let addOne = x => x + 1;
 
 let result =
   addOne(0) + 0 > 1 ?

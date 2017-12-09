@@ -60,14 +60,14 @@ type threeForms =
   | FormTwo(int)
   | FormThree;
 
-let doesntCareWhichForm = (x) =>
+let doesntCareWhichForm = x =>
   switch x {
   | FormOne(q)
   | FormTwo(q) => 10
   | FormThree => 20
   };
 
-let doesntCareWhichFormAs = (x) =>
+let doesntCareWhichFormAs = x =>
   switch x {
   | FormOne(q) as ppp
   | FormTwo(q) as ppp => 10
@@ -107,13 +107,13 @@ let accessDeeplyWithArg =
     ) => x;
 
 /* Destructured matching *not* at function definition */
-let accessDeeply = (x) =>
+let accessDeeply = x =>
   switch x {
   | LocalModule.AccessedThroughModule => 10
   | _ => 0
   };
 
-let accessDeeplyWithArg = (x) =>
+let accessDeeplyWithArg = x =>
   switch x {
   | LocalModule.AccessedThroughModuleWith(x) => 10
   | _ => 0
@@ -127,12 +127,12 @@ let accessDeeplyWithArg = (x) =>
  *
  *   let myFunc x = function | `Blah p as retVal -> retVal`
  */
-let accessDeeply = (x) =>
+let accessDeeply = x =>
   switch x {
   | LocalModule.AccessedThroughModule as ppp => 1
   };
 
-let accessDeeplyWithArg = (x) =>
+let accessDeeplyWithArg = x =>
   switch x {
   | LocalModule.AccessedThroughModuleWith(
       x as retVal
@@ -200,7 +200,7 @@ let howWouldWeMatchFunctionArgs =
     ) =>
   x + y;
 
-let matchingTwoCurriedConstructorsInTuple = (x) =>
+let matchingTwoCurriedConstructorsInTuple = x =>
   switch x {
   | (
       HeresTwoConstructorArguments(x, y),
@@ -216,7 +216,7 @@ type twoCurriedConstructors =
     );
 
 let matchingTwoCurriedConstructorInConstructor =
-    (x) =>
+    x =>
   switch x {
   | TwoCombos(
       HeresTwoConstructorArguments(x, y),
@@ -283,7 +283,7 @@ let rec eval: type a. term(a) => a =
   | App(f, x) => eval(f, eval(x));
 
 let rec eval: type a. term(a) => a =
-  (x) =>
+  x =>
     switch x {
     | Int(n) => n
     /* a = int */
@@ -451,7 +451,7 @@ let res =
 /*
  * Testing explicit arity.
  */
-let rec map = (f) =>
+let rec map = f =>
   fun
   | Node(None, m) => Node(None, M.map(map(f), m))
   | Node(LongModule.Path.None, m) =>
@@ -461,7 +461,7 @@ let rec map = (f) =>
 
 let myFunc = (x, y, None) => "asdf";
 
-let rec map = (f) =>
+let rec map = f =>
   fun
   | Node(None, m) => Node(None, M.map(map(f), m))
   | Node(LongModule.Path.None, m) =>
@@ -477,7 +477,7 @@ let rec map = (f) =>
 
 let myFunc = (x, y, LongModule.Path.None) => "asdf";
 
-let listPatternMembersNeedntBeSimple = (x) =>
+let listPatternMembersNeedntBeSimple = x =>
   switch x {
   | [] => ()
   | [Blah(x, y), Foo(a, b), ...rest] => ()
@@ -485,7 +485,7 @@ let listPatternMembersNeedntBeSimple = (x) =>
   | _ => ()
   };
 
-let listTailPatternNeedntBeSimple = (x) =>
+let listTailPatternNeedntBeSimple = x =>
   switch x {
   | [] => ()
   /* Although this would never typecheck! */
@@ -494,7 +494,7 @@ let listTailPatternNeedntBeSimple = (x) =>
   | _ => ()
   };
 
-let listPatternMayEvenIncludeAliases = (x) =>
+let listPatternMayEvenIncludeAliases = x =>
   switch x {
   | [] => ()
   /* Although this would never typecheck! */

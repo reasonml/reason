@@ -2421,6 +2421,10 @@ let is_unit_pattern x = match x.ppat_desc with
   | Ppat_construct ( {txt= Lident"()"}, None) -> true
   | _ -> false
 
+let is_ident_pattern x = match x.ppat_desc with
+  | Ppat_var _ -> true
+  | _ -> false
+
 let is_direct_pattern x = x.ppat_attributes = [] && match x.ppat_desc with
   | Ppat_construct ( {txt= Lident"()"}, None) -> true
   | _ -> false
@@ -4341,7 +4345,7 @@ class printer  ()= object(self:'self)
     in
     match extract_args x with
     | ([], ret) -> ([], ret)
-    | ([`Value (Nolabel, None, p) as arg], ret) when is_unit_pattern p ->
+    | ([`Value (Nolabel, None, p) as arg], ret) when is_unit_pattern p || is_ident_pattern p ->
       ([prepare_arg arg], ret)
     | (args, ret) ->
       ([makeTup (List.map prepare_arg args)], ret)

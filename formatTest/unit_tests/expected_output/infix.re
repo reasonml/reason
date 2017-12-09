@@ -398,7 +398,7 @@ let ( !=/\* ) = (q, r) => q + r;
 
 let res = q(( !=/\* ), r);
 
-let ( ~* ) = (a) => a + 1;
+let ( ~* ) = a => a + 1;
 
 let res = ~*10;
 
@@ -1074,7 +1074,7 @@ let server = {
     body
     |> Cohttp_lwt_body.to_string
     >|= (
-      (body) =>
+      body =>
         Printf.sprintf(
           "okokok",
           uri,
@@ -1084,7 +1084,7 @@ let server = {
         )
     )
     >>= (
-      (body) =>
+      body =>
         Server.respond_string(~status, ~body, ())
     );
   };
@@ -1097,7 +1097,7 @@ let server = {
 let lijst =
   List.length @@
   List.map(
-    (s) => s ++ " example",
+    s => s ++ " example",
     [
       "one",
       "two",

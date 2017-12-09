@@ -3,7 +3,7 @@ type point = {
   y: int
 };
 
-let id = (x) => x;
+let id = x => x;
 
 type myVariant =
   | TwoCombos(inner, inner)

@@ -334,7 +334,7 @@ type color =
   | Black(int) /* After black end of line */
   | Green(int) /* After green end of line */; /* On next line after color type def */
 
-let blahCurriedX = (x) =>
+let blahCurriedX = x =>
   fun
   | Red(10)
   | Black(20)

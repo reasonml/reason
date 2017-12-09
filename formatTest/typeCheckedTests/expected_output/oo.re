@@ -13,12 +13,12 @@ class virtual stack ('a) (init) = {
       Some(hd);
     | [] => None
     };
-  pub push = (hd) => v = [hd, ...v];
+  pub push = hd => v = [hd, ...v];
   initializer (
     print_string("initializing object")
   );
-  pub explicitOverrideTest = (a) => a + 1;
-  pri explicitOverrideTest2 = (a) => a + 1;
+  pub explicitOverrideTest = a => a + 1;
+  pri explicitOverrideTest2 = a => a + 1;
 };
 
 let tmp = {
@@ -49,7 +49,7 @@ class virtual stackWithAttributes ('a) (init) = {
       Some(hd);
     | [] => None
     };
-  pub push = (hd) => v = [hd, ...v];
+  pub push = hd => v = [hd, ...v];
   initializer (
     print_string("initializing object")
   );
@@ -58,7 +58,7 @@ class virtual stackWithAttributes ('a) (init) = {
 class extendedStack ('a) (init) = {
   inherit (class stack('a))(init);
   val dummy = ();
-  pub implementMe = (i) => i;
+  pub implementMe = i => i;
 };
 
 class extendedStackAcknowledgeOverride
@@ -66,9 +66,9 @@ class extendedStackAcknowledgeOverride
       (init) = {
   inherit (class stack('a))(init);
   val dummy = ();
-  pub implementMe = (i) => i + 1;
-  pub! explicitOverrideTest = (a) => a + 2;
-  pri! explicitOverrideTest2 = (a) => a + 2;
+  pub implementMe = i => i + 1;
+  pub! explicitOverrideTest = a => a + 2;
+  pri! explicitOverrideTest2 = a => a + 2;
 };
 
 let inst = (new extendedStack)([1, 2]);
@@ -407,7 +407,7 @@ module type T = {
   and cl2 : {};
 };
 
-let privacy = {pri x = (c) => 5 + c};
+let privacy = {pri x = c => 5 + c};
 
 module Js = {
   type t('a);

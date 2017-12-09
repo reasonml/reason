@@ -16,7 +16,7 @@ TestUtils.printSection("General Syntax");
 /*   `Thingy x => (print_string "matched thingy x"); x */
 /*   | `Other x => (print_string "matched other x"); x;; */
 /*  */
-let matchingFunc = (a) =>
+let matchingFunc = a =>
   switch a {
   | `Thingy(x) =>
     print_string("matched thingy x");
@@ -351,9 +351,9 @@ let printPerson = (p: person) => {
 
 /* let dontParseMeBro x y:int = x = y;*/
 /* With this unification, anywhere eyou see `= fun` you can just ommit it */
-let blah = (a) => a; /* Done */
+let blah = a => a; /* Done */
 
-let blah = (a) => a; /* Done (almost) */
+let blah = a => a; /* Done (almost) */
 
 let blah = (a, b) => a; /* Done */
 
@@ -427,7 +427,7 @@ Printf.printf(
 );
 
 /* Pattern matching */
-let blah = (arg) =>
+let blah = arg =>
   switch arg {
   /* Comment before Bar */
   | /* Comment between bar/pattern */ Red(_) => 1
@@ -456,7 +456,7 @@ let blah =
 /*   | Black x => 0                       /* Allow us to drop any => fun.. Just need to make pattern matching */ */
 /*   | Green x => 0;                      /* Support that */ */
 /*  */
-let blahCurriedX = (x) =>
+let blahCurriedX = x =>
   fun
   | Red(x)
   | Black(x)
@@ -466,7 +466,7 @@ let blahCurriedX = (x) =>
   | Green(x) => 0; /* Support that */
 
 let sameThingInLocal = {
-  let blahCurriedX = (x) =>
+  let blahCurriedX = x =>
     fun
     | Red(x)
     | Black(x)
@@ -478,7 +478,7 @@ let sameThingInLocal = {
 };
 
 /* This should be parsed/printed exactly as the previous */
-let blahCurriedX = (x) =>
+let blahCurriedX = x =>
   fun
   | Red(x)
   | Black(x)
@@ -570,7 +570,7 @@ let myFun =
     (firstArg, Red(x) | Black(x) | Green(x)) =>
   firstArg + x;
 
-let matchesWithWhen = (a) =>
+let matchesWithWhen = a =>
   switch a {
   | Red(x) when 1 > 0 => 10
   | Red(_) => 10
@@ -640,7 +640,7 @@ let tupleInsideALetSequence = {
 /* We *require* that function return types be wrapped in
    parenthesis. In this example, there's no ambiguity */
 let makeIncrementer = (delta: int) : (int => int) =>
-  (a) => a + delta;
+  a => a + delta;
 
 /* We could even force that consistency with let bindings - it's allowed
       currently but not forced.

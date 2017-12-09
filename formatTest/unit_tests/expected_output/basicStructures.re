@@ -133,7 +133,7 @@ let something =
     print_newline();
   };
 
-let logTapSuccess = (self) =>
+let logTapSuccess = self =>
   if (self.ext.logSuccess) {
     print_string("Did tap");
     print_newline();
@@ -141,7 +141,7 @@ let logTapSuccess = (self) =>
     ();
   };
 
-let logTapSuccess = (self) =>
+let logTapSuccess = self =>
   if (self.ext.logSuccess) {
     print_string("Did tap");
     print_newline();
@@ -334,7 +334,7 @@ let (tupleItem: int, withTypeConstraint: int) = (
 );
 
 /* To make sure that tuple field annotations are annotating the entire field */
-let _dummyFunc = (x) => 10;
+let _dummyFunc = x => 10;
 
 let annotatingFuncApplication = (
   _dummyFunc("a"): int,
@@ -414,7 +414,7 @@ let rec size = (soFar, lst) =>
   | [hd, ...tl] => size(soFar + 1, tl)
   };
 
-let nestedMatch = (lstLst) =>
+let nestedMatch = lstLst =>
   switch lstLst {
   | [hd, ...tl] when false => 10
   | [hd, ...tl] =>
@@ -425,7 +425,7 @@ let nestedMatch = (lstLst) =>
   | [] => 0
   };
 
-let nestedMatchWithWhen = (lstLst) =>
+let nestedMatchWithWhen = lstLst =>
   switch lstLst {
   | [hd, ...tl] when false => 10
   | [hd, ...tl] when true =>
@@ -543,7 +543,7 @@ let myFunction = (a: int, b: int) : int => a + b;
 let functionReturnValueType =
     (i: int, s: string)
     : (int => int) =>
-  (x) => x + 1;
+  x => x + 1;
 
 let curriedFormOne = (i: int, s: string) =>
   s ++ string_of_int(i);

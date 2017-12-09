@@ -120,11 +120,11 @@ let x = [@attrEverything] (true && false);
 /**
  * How attribute parsings respond to other syntactic constructs.
  */
-let add = (a) => [@onRet] a;
+let add = a => [@onRet] a;
 
-let add = (a) => [@onRet] a;
+let add = a => [@onRet] a;
 
-let add = [@onEntireFunction] ((a) => a);
+let add = [@onEntireFunction] (a => a);
 
 let res =
   if (true) {false} else {[@onFalse] false};
@@ -140,7 +140,7 @@ let add = (a, b) =>
 
 let add = (a, b) => a + [@onB] b;
 
-let both = [@onEntireFunction] ((a) => a);
+let both = [@onEntireFunction] (a => a);
 
 let both = (a, b) =>
   [@onEverything] ([@onA] a && b);

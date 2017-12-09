@@ -36,7 +36,7 @@ let myFunc =
 let myFunc =
     (a: int => int, b: int => int)
     : (myType(int) => myType(int)) =>
-  (lst) => lst;
+  lst => lst;
 
 let certainlyRequiresWrapping:
   (
