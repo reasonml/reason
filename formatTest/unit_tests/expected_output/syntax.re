@@ -1140,19 +1140,19 @@ funWithCb(~text="text", ~f=?() => doStuff());
 test("my test", () => {
   let x = a + b;
   let y = z + c;
-  x + y
+  x + y;
 });
 
 test(~desc="my test", ~f=() => {
   let x = a + b;
   let y = z + c;
-  x + y
+  x + y;
 });
 
 test(~desc=?"my test", ~f=?() => {
   let x = a + b;
   let y = z + c;
-  x + y
+  x + y;
 });
 
 describe("App", () =>

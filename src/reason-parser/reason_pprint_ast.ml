@@ -6743,7 +6743,7 @@ class printer  ()= object(self:'self)
                *   x + y
                * });
                *)
-              let right = makeList ~break:Always_rec ~wrap:("=> {", "})") ~sep:";" xs in
+              let right = makeList ~break:Always_rec ~wrap:("=> {", "})") ~sep:";" ~renderFinalSep:true xs in
               let argsWithCallbackArgs = List.concat [(List.map self#label_x_expression_param args); [theCallbackArg]] in
               let left = label
                 theFunc
