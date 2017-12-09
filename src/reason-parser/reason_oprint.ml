@@ -55,9 +55,9 @@
   other printer called reason_pprint_ast, our actual, main pretty-printer. Why
   is this one separated from reason_pprint_ast? Because the outcome printer's
   use-case is a bit different and needs different entry points blablabla...
-  These are mostly excuses. But for example, currently, `Js.t {. foo: bar}` by
+  These are mostly excuses. But for example, currently, `Js.t({. foo: bar})` by
   itself is *invalid syntax* for a pretty printer (the correct, minimal valid
-  code would be `type myObject = Js.t {. foo: bar}`), but the terminal error
+  code would be `type myObject = Js.t({. foo: bar})`), but the terminal error
   report do want to provide just that snippet and have you print it. Hopefully
   OCaml can unify actual code pretty-printing and terminal type info pretty-
   printing one day.
@@ -327,8 +327,8 @@ and print_simple_out_type ppf =
   (* BuckleScript-specific external. See the manual for the usage of [@bs]. This
     [@bs] is processed into a type that looks like `Js.Internal.fn ...`. This
     leaks during error reporting, where the type is printed. Here, we print it
-    back from `Js.Internal.fn [ `Arity_2 ('c, 'd) ] 'e` into `('a => 'b => int) [@bs]` *)
-  (* same for `Js_internal.fn ...`. Either might shown *)
+    back from `Js.Internal.fn([ `Arity_2 ('c, 'd) ], 'e)` into `('a => 'b => int) [@bs]` *)
+  (* same for `Js_internal.fn(...)`. Either might shown *)
   | Otyp_constr (
       (Oide_dot (
         (Oide_dot ((Oide_ident "Js"), "Internal") | Oide_ident "Js_internal"),
@@ -397,6 +397,16 @@ and print_simple_out_type ppf =
       | res ->
         fprintf ppf "@[<0>(%a)@ [@bs.this]@]" print_out_type_1 res
       end
+  (* also BuckleScript-specific. Turns Js.t({. foo: bar}) into {. "foo": bar} *)
+  | Otyp_constr (
+      (Oide_dot ((Oide_ident "Js"), "t")),
+      [Otyp_object (fields, rest)]
+    ) ->
+      let dot = match rest with
+        Some non_gen -> (if non_gen then "_" else "") ^ ".."
+      | None -> "."
+      in
+      fprintf ppf "@[<2>{%s %a}@]" dot (print_object_fields ~quote_fields:true) fields
 
   | Otyp_constr (id, tyl) ->
       pp_open_box ppf 0;
@@ -412,7 +422,7 @@ and print_simple_out_type ppf =
       Some non_gen -> (if non_gen then "_" else "") ^ ".."
     | None -> "."
     in
-    fprintf ppf "@[<2>{%s %a }@]" dot print_object_fields fields
+    fprintf ppf "@[<2>{%s %a}@]" dot (print_object_fields ~quote_fields:false) fields
   | Otyp_stuff s -> pp_print_string ppf s
   | Otyp_var (ng, s) -> fprintf ppf "'%s%s" (if ng then "_" else "") s
   | Otyp_variant (non_gen, row_fields, closed, tags) ->
@@ -456,14 +466,16 @@ and print_simple_out_type ppf =
         fprintf ppf "@[<1>(%a [@@%s])@]" print_out_type t attr.oattr_name
 (* #end *)
 
-and print_object_fields ppf =
+and print_object_fields ~quote_fields ppf =
   function
     [] -> ()
-  | [s, t] ->
-    fprintf ppf "%s : %a" s print_out_type t;
-    print_object_fields ppf []
-  | (s, t) :: l ->
-    fprintf ppf "%s : %a,@ %a" s print_out_type t print_object_fields l
+  | [field, typ] ->
+    let field = (if quote_fields then "\"" ^ field ^ "\"" else field) in
+    fprintf ppf "%s: %a" field print_out_type typ;
+    (print_object_fields ~quote_fields) ppf []
+  | (field, typ) :: rest ->
+    let field = (if quote_fields then "\"" ^ field ^ "\"" else field) in
+    fprintf ppf "%s: %a,@ %a" field print_out_type typ (print_object_fields ~quote_fields) rest
 and print_row_field ppf (l, opt_amp, tyl) =
   let pr_of ppf =
     if opt_amp then fprintf ppf " &@ "
