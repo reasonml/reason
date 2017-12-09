@@ -1,6 +1,6 @@
 {
   "name": "@opam/reason",
-  "version": "3.0.3",
+  "version": "3.0.4",
   "dependencies": {
     "@esy-ocaml/substs": "^0.0.1",
     "@esy-ocaml/esy-installer": "^0.0.0",
