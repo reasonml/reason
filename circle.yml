@@ -19,7 +19,7 @@ dependencies:
         - opam install -y jbuilder
         - opam switch --no-switch 4.04.0
         - opam install -y jbuilder
-        - npm install -g esy
+        - npm install -g esy@next
 
 test:
     override:

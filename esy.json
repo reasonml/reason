@@ -24,12 +24,14 @@
   ],
   "devDependencies": {
     "@opam/merlin": "2.5.4",
-    "ocaml": "~4.2.3000"
+    "ocaml": "~4.2.3004"
   },
   "esy": {
     "build": [
-      [ "jbuilder", "build", "--root", "." ],
-      [ "sh", "-c", "(esy-installer || true)" ]
+      [ "jbuilder", "build", "--root", "." ]
+    ],
+    "install": [
+      ["esy-installer"]
     ],
     "buildsInSource": "_build"
   }
