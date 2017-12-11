@@ -17,4 +17,10 @@ try {
   console.log(e)
 }
 
+try {
+  refmt.parseRE(`type X = Foo`)
+} catch (e) {
+  console.log(e)
+}
+
 console.log("=============== we're good! ===============")

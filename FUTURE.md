@@ -1,3 +1,3 @@
 ## 3.0.5
 
-- Just cut a release. Nothing here yet!
+- Better error report when refmt is used programmatically (#1695)

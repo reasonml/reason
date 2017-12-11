@@ -47,7 +47,7 @@ let parseWith f code =
     |> Lexing.from_string
     |> f)
   with
-  (* from ocaml *)
+  (* from ocaml and reason *)
   | Syntaxerr.Error err ->
     let location = Syntaxerr.location_of_error err in
     let jsLocation = locationToJsObj location in
