@@ -14,7 +14,7 @@
 		"javascript",
 		"won't you look at all these nice types"
 	],
-	"license": "BSD",
+	"license": "MIT",
 	"homepage": "https://github.com/facebook/reason",
 	"dependencies": {},
 	"devDependencies": {

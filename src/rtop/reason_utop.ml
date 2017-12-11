@@ -1,4 +1,13 @@
-(* Portions Copyright (c) 2015-present, Facebook, Inc. All rights reserved. *)
+(**
+ * Some of this was coppied from @whitequark's m17n project.
+ *)
+(*
+ * Portions Copyright (c) 2015-present, Facebook, Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *)
+
 
 type top_kind = RTop | UTop
 let current_top = ref RTop

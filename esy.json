@@ -1,5 +1,6 @@
 {
   "name": "@opam/reason",
+	"license": "MIT",
   "version": "3.0.4",
   "dependencies": {
     "@esy-ocaml/substs": "^0.0.1",
