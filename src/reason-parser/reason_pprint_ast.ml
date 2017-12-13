@@ -4657,6 +4657,13 @@ class printer  ()= object(self:'self)
         ~inline:(true, true)
         (first :: List.map (self#binding "and") rest)
 
+  method item_extension_sugar exprTerm =
+    if exprTerm.pexp_attributes <> [] then None
+    else match exprTerm.pexp_desc with
+      | Pexp_extension (name, PStr [{ pstr_desc = Pstr_eval (expr, [])}]) ->
+        Some (name, expr)
+      | _ -> None
+
   method letList exprTerm =
     match (exprTerm.pexp_attributes, exprTerm.pexp_desc) with
       | ([], Pexp_let (rf, l, e)) ->
@@ -4712,14 +4719,21 @@ class printer  ()= object(self:'self)
           let e1SourceMapped = SourceMap (e1.pexp_loc, e1Layout) in
           e1SourceMapped::(self#letList e2)
       | _ ->
-          let exprTermLayout = (self#unparseExpr exprTerm) in
-          let exprTermSourceMapped = SourceMap (exprTerm.pexp_loc, exprTermLayout) in
+        match self#item_extension_sugar exprTerm with
+        | None ->
           (* Should really do something to prevent infinite loops here. Never
              allowing a top level call into letList to recurse back to
              self#unparseExpr- top level calls into letList *must* be one of the
              special forms above whereas lower level recursive calls may be of
              any form. *)
+          let exprTermLayout = (self#unparseExpr exprTerm) in
+          let exprTermSourceMapped = SourceMap (exprTerm.pexp_loc, exprTermLayout) in
           [exprTermSourceMapped]
+        | Some (extension, expr) ->
+          match self#letList expr with
+          | [] -> []
+          | e1 :: es ->
+            self#attach_std_item_attrs ~extension [] e1 :: es
 
   method constructor_expression ?(polyVariant=false) ~arityIsClear stdAttrs ctor eo =
     let (implicit_arity, arguments) =
@@ -5398,12 +5412,17 @@ class printer  ()= object(self:'self)
         | Pexp_record (l, eo) -> Some (self#unparseRecord l eo)
         | Pexp_array (l) ->
           Some (self#unparseSequence ~construct:`Array l)
-        | Pexp_let (rf, l, e) ->
-            Some (makeLetSequence (self#letList x))
-        | Pexp_letmodule (s, me, e) ->
-            Some (makeLetSequence (self#letList x))
-        | Pexp_letexception _ ->
-            Some (makeLetSequence (self#letList x))
+        | Pexp_let _ | Pexp_sequence _
+        | Pexp_letmodule _ | Pexp_letexception _ ->
+          Some (makeLetSequence (self#letList x))
+        | Pexp_extension e ->
+          begin match self#item_extension_sugar x with
+            | Some (_, { pexp_desc = Pexp_let _ | Pexp_sequence _ |
+                                     Pexp_letmodule _ | Pexp_letexception _
+                       }) ->
+              Some (makeLetSequence (self#letList x))
+            | _ -> Some (self#extension e)
+          end
         | Pexp_open (ovf, lid, e) ->
             if self#isSeriesOfOpensFollowedByNonSequencyExpression x then
               (*
@@ -5429,8 +5448,6 @@ class printer  ()= object(self:'self)
               Some (label (label (self#longident_loc lid) (atom ("."))) expression)
           else
             Some (makeLetSequence (self#letList x))
-        | Pexp_sequence _ ->
-            Some (makeLetSequence (self#letList x))
         | Pexp_field (e, li) ->
           Some (label (makeList [self#simple_enough_to_be_lhs_dot_send e; atom "."]) (self#longident_loc li))
         | Pexp_send (e, s) ->
@@ -5444,7 +5461,6 @@ class printer  ()= object(self:'self)
           let lhs = self#simple_enough_to_be_lhs_dot_send e in
           let lhs = if needparens then makeList ~wrap:("(",")") [lhs] else lhs in
           Some (label (makeList [lhs; atom "#";]) (atom s))
-        | Pexp_extension e -> Some (self#extension e)
         | _ -> None
       in
       match item with
@@ -5533,13 +5549,17 @@ class printer  ()= object(self:'self)
       | [] -> toThis
       | _::_ -> makeList ~postSpace:true [(self#attributes l); toThis]
 
-  method attach_std_item_attrs l toThis =
+  method attach_std_item_attrs ?extension l toThis =
     let l = extractStdAttrs l in
-    match l with
-      | [] -> toThis
-      | _::_ ->
-        makeList ~postSpace:true ~indent:0 ~break:Always ~inline:(true, true)
-          (List.map self#item_attribute l @ [toThis])
+    match extension, l with
+    | None, [] -> toThis
+    | _, _ ->
+      let extension = match extension with
+        | None -> []
+        | Some id -> [atom ("%" ^ id.txt)]
+      in
+      makeList ~postSpace:true ~indent:0 ~break:Always ~inline:(true, true)
+        (extension @ List.map self#item_attribute l @ [toThis])
 
   method exception_declaration ed =
     let pcd_name = ed.pext_name in
@@ -6453,6 +6473,14 @@ class printer  ()= object(self:'self)
             in
             makeNonIndentedBreakingList moduleBindings
         | Pstr_attribute a -> self#floating_attribute a
+        | Pstr_extension ((name,PStr [item] as e), a) ->
+          begin match item.pstr_desc with
+            | Pstr_extension _ ->
+              self#attach_std_item_attrs a (self#item_extension e)
+            | _ ->
+              self#attach_std_item_attrs ~extension:name a
+                (self#structure_item item)
+          end
         | Pstr_extension (e, a) ->
           (* Notice how extensions have attributes - but not every structure
              item does. *)
