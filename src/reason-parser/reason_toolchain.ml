@@ -453,10 +453,10 @@ module OCaml_syntax = struct
   (* Unfortunately we drop the comments because there doesn't exist an ML
    * printer that formats comments *and* line wrapping! (yet) *)
   let format_interface_with_comments (signature, _) formatter =
-    Pprintast.signature formatter
+    Reason_ml_pprintast.signature formatter
       (To_current.copy_signature signature)
   let format_implementation_with_comments (structure, _) formatter =
-    Pprintast.structure formatter
+    Reason_ml_pprintast.structure formatter
       (To_current.copy_structure structure)
 end
 

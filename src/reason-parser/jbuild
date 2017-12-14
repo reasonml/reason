@@ -45,7 +45,8 @@
   (public_name reason)
   (wrapped false)
   (modules
-   (syntax_util
+   (reason_ml_pprintast
+    syntax_util
     reason_heuristics
     reason_toolchain
     reason_config
