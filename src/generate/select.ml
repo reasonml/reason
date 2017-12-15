@@ -25,7 +25,7 @@ let () =
     then failwith "select.exe failed to select a file."
     else
       let file = Sys.argv.(i) in
-      match String.split_on_char '-' file with
+      match Str.split (Str.regexp "-") file with
       | [_; version] ->
         if version_match version
         then dump_file file

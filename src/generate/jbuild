@@ -1,6 +1,6 @@
 (executables
  ((names (select))
-  (libraries ())
+  (libraries (str))
   (preprocess no_preprocessing)))
 
 (jbuild_version 1)
