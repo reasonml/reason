@@ -4456,20 +4456,16 @@ mod_longident:
   | mod_longident DOT UIDENT      { Ldot($1, $3) }
 ;
 
-mod_ext_longident:
+mod_ext_longident: imod_ext_longident { $1 }
+
+%inline imod_ext_longident:
   | UIDENT                        { Lident $1 }
   | mod_ext_longident DOT UIDENT  { Ldot($1, $3) }
-  | mod_ext2                      { $1 }
+  | mod_ext_apply                 { $1 }
 ;
 
-mod_ext2:
-  anonymous( mod_ext_longident DOT UIDENT
-             { Ldot($1, $3) }
-           | mod_ext2
-             { $1 }
-           | UIDENT
-             { Lident($1) }
-           )
+mod_ext_apply:
+  imod_ext_longident
   parenthesized(lseparated_nonempty_list(COMMA, mod_ext_longident))
   { if not !Clflags.applicative_functors then
       raise Syntaxerr.(Error(Applicative_path(mklocation $startpos $endpos)));
