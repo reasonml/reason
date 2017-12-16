@@ -2,11 +2,11 @@
 
 (ocamllex (reason_lexer))
 
-; Use select.exe from janestreet/ppx_ast to choose reason_lexer.mll based on ocaml version
+; Use select.exe from janestreet/ppx_ast to choose lexer_warning.ml based on ocaml version
 (rule
- ((targets (reason_lexer.mll))
-   (deps (../generate/select.exe reason_lexer.mll-4.06 reason_lexer.mll-default))
-   (action (bash "../generate/select.exe reason_lexer.mll-4.06 reason_lexer.mll-default > ${@}"))))
+ ((targets (lexer_warning.ml))
+   (deps (../generate/select.exe lexer_warning.ml-4.06 lexer_warning.ml-default))
+   (action (bash "../generate/select.exe lexer_warning.ml-4.06 lexer_warning.ml-default > ${@}"))))
 
 
 ; Update error messages based on new grammar
@@ -51,7 +51,8 @@
   (public_name reason)
   (wrapped false)
   (modules
-   (syntax_util
+   (lexer_warning
+    syntax_util
     reason_heuristics
     reason_toolchain
     reason_config
