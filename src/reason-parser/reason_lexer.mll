@@ -68,6 +68,7 @@
 {
 open Lexing
 open Reason_parser
+open Lexer_warning
 
 type error =
   | Illegal_character of char
@@ -309,11 +310,6 @@ let update_loc lexbuf file line absolute chars =
 ;;
 
 let preprocessor = ref None
-
-let warn_latin1 lexbuf =
-  Location.prerr_warning (Location.curr lexbuf)
-  (Warnings.Deprecated "ISO-Latin1 characters in identifiers")
-;;
 
 (* Error report *)
 
