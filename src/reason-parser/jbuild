@@ -6,7 +6,7 @@
 (rule
  ((targets (lexer_warning.ml))
    (deps (../generate/select.exe lexer_warning.ml-4.06 lexer_warning.ml-default))
-   (action (bash "../generate/select.exe lexer_warning.ml-4.06 lexer_warning.ml-default > ${@}"))))
+   (action (with-stdout-to ${@} (run ../generate/select.exe lexer_warning.ml-4.06 lexer_warning.ml-default)))))
 
 
 ; Update error messages based on new grammar

@@ -1,3 +1,8 @@
+(*
+ * Originally from https://github.com/janestreet/ppx_ast
+ * Modified to be compatible with pre-4.04 OCaml
+ *)
+
 let dump_file file =
   let buf = Bytes.create 1024 in
   let ic = open_in file in
