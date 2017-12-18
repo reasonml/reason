@@ -3592,7 +3592,7 @@ mark_position_pat
     { mkpat (Ppat_construct ($1, None)) }
   | name_tag
     { mkpat (Ppat_variant ($1, None)) }
-  | SHARP as_loc(type_longident)
+  | SHARP type_longident
     { mkpat (Ppat_type ($2)) }
   | as_loc(LBRACKETBAR) pattern_comma_list SEMI? as_loc(error)
     { unclosed_pat (with_txt $1 "[|") (with_txt $4 "|]") }
@@ -3771,7 +3771,7 @@ type_variables_with_variance_comma_list:
   lseparated_nonempty_list(COMMA, type_variable_with_variance) COMMA? {$1}
 ;
 
-%inline type_variables_with_variance:
+type_variables_with_variance:
   loption(parenthesized(type_variables_with_variance_comma_list))
   { $1 }
 ;
@@ -3806,7 +3806,7 @@ mark_position_typ
   (QUOTE ident { mktyp (Ptyp_var $2) })
   { $1 };
 
-%inline constructor_declarations:
+constructor_declarations:
   either(constructor_declaration,bar_constructor_declaration)
   constructor_declarations_aux
   { let (cstrs, constraints, endpos, and_types) = $2 in
@@ -3828,7 +3828,7 @@ bar_constructor_declaration:
   { {$3 with pcd_attributes = $1 @ $3.pcd_attributes} }
 ;
 
-%inline constructor_declaration:
+constructor_declaration:
   item_attributes as_loc(constr_ident) generalized_constructor_arguments
   { let args, res = $3 in
     let loc = mklocation $symbolstartpos $endpos in
@@ -3883,37 +3883,31 @@ record_declaration:
 
 /* Type Extensions */
 
-potentially_long_ident_and_optional_type_parameters:
-  | LIDENT type_variables_with_variance
-    { let loc = mklocation $startpos($1) $endpos($1) in
-      let lident_lident_loc = mkloc (Lident $1) loc in
-      (lident_lident_loc, $2)
-    }
-  | as_loc(type_strictly_longident) type_variables_with_variance
-    {($1, $2)}
-;
-
 str_type_extension:
-  item_attributes
-  TYPE nonrec_flag potentially_long_ident_and_optional_type_parameters
-  PLUSEQ embedded(private_flag)
-  attributed_ext_constructors(either(extension_constructor_declaration, extension_constructor_rebind))
-  { if $3 <> Recursive then
-      not_expecting $startpos($3) $endpos($3) "nonrec flag";
-    let (potentially_long_ident, params) = $4 in
-    Te.mk potentially_long_ident $7 ~params ~priv:$6 ~attrs:$1
+  attrs = item_attributes
+  TYPE flag = nonrec_flag
+    ident = as_loc(itype_longident)
+    params = type_variables_with_variance
+  PLUSEQ priv = embedded(private_flag)
+  constructors =
+    attributed_ext_constructors(either(extension_constructor_declaration, extension_constructor_rebind))
+  { if flag <> Recursive then
+      not_expecting $startpos(flag) $endpos(flag) "nonrec flag";
+    Te.mk ~params ~priv ~attrs ident constructors
   }
 ;
 
 sig_type_extension:
-  item_attributes
-  TYPE nonrec_flag potentially_long_ident_and_optional_type_parameters
-  PLUSEQ embedded(private_flag)
-  attributed_ext_constructors(extension_constructor_declaration)
-  { if $3 <> Recursive then
-      not_expecting $startpos($3) $endpos($3) "nonrec flag";
-    let (potentially_long_ident, params) = $4 in
-    Te.mk potentially_long_ident $7 ~params ~priv:$6 ~attrs:$1
+  attrs = item_attributes
+  TYPE flag = nonrec_flag
+    ident = as_loc(itype_longident)
+    params = type_variables_with_variance
+  PLUSEQ priv = embedded(private_flag)
+  constructors =
+    attributed_ext_constructors(extension_constructor_declaration)
+  { if flag <> Recursive then
+      not_expecting $startpos(flag) $endpos(flag) "nonrec flag";
+    Te.mk ~params ~priv ~attrs ident constructors
   }
 ;
 
@@ -4218,7 +4212,7 @@ non_arrowed_simple_core_type:
 
 basic_core_type:
 mark_position_typ
-  ( as_loc(type_longident) type_parameters
+  ( type_longident type_parameters
     { mktyp(Ptyp_constr($1, $2)) }
   | SHARP as_loc(class_longident) type_parameters
     { mktyp(Ptyp_class($2, $3)) }
@@ -4228,7 +4222,7 @@ mark_position_typ
     { mktyp(Ptyp_class($2, [])) }
   | UNDERSCORE
     { mktyp(Ptyp_any) }
-  | as_loc(type_longident)
+  | type_longident
     { mktyp(Ptyp_constr($1, [])) }
   | object_record_type
     { $1 }
@@ -4422,20 +4416,11 @@ label_longident:
   | mod_longident DOT LIDENT      { Ldot($1, $3) }
 ;
 
-type_longident:
+type_longident: as_loc(itype_longident) { $1 };
+
+%inline itype_longident:
   | LIDENT                        { Lident $1 }
   | mod_ext_longident DOT LIDENT  { Ldot($1, $3) }
-;
-
-/* Type long identifiers known to be "long". Only needed to resolve shift
- * reduce conflicts between `type myType 'a 'b = ..` and `type
- * Potentially.Long.myType 'a 'b += ..` - we needed to break the parsing of
- * Potentially.Long.myType into two cases, one that is long, and one that is
- * not.
- */
-type_strictly_longident:
-  mod_ext_longident DOT LIDENT
-  { Ldot($1, $3) }
 ;
 
 mod_longident:
