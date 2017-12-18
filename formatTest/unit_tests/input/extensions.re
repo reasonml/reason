@@ -64,3 +64,228 @@ let x = {
     | Invalid_argument(msg) => prerr_endline(msg)
   }
 };
+
+/* At structure level */
+
+try%extend () { | _ => () };
+
+switch%extend () { | _ => () };
+
+if%extend (true) { 1 } else { 2 };
+
+for%extend (i in 1 to 10) { () };
+
+while%extend (false) { () };
+
+fun%extend () => ();
+
+fun%extend
+ | None => ()
+ | Some(1) => ();
+
+ /* In a top-level binding */
+
+let x = try%extend () { | _ => () };
+
+let x = switch%extend () { | _ => () };
+
+let x = if%extend (true) { 1 } else { 2 };
+
+let x = for%extend (i in 1 to 10) { () };
+
+let x = while%extend (false) { () };
+
+let x = fun%extend () => ();
+
+let x = fun%extend
+  | None => ()
+  | Some(1) => ();
+
+ /* With two extensions, alone */
+
+let x = { 
+  %extend1
+  try%extend2 () { | _ => () };
+};
+
+let x = {
+  %extend1
+  switch%extend2 () { | _ => () };
+};
+
+let x = {
+  %extend1
+  if%extend2 (true) { 1 } else { 2 };
+};
+
+let x = {
+  %extend1
+  for%extend2 (i in 1 to 10) { () };
+};
+
+let x = {
+  %extend1
+  while%extend2 (false) { () };
+};
+
+let x = {
+  %extend1
+  fun%extend2 () => ();
+};
+
+let x = {
+  %extend1
+  fun%extend2
+    | None => ()
+    | Some(1) => ();
+};
+
+ /* With two extensions, first in sequence */
+
+let x = { 
+  %extend1
+  try%extend2 () { | _ => () };
+  ignore();
+};
+
+let x = {
+  ignore();
+  %extend1
+  switch%extend2 () { | _ => () };
+  ignore();
+};
+
+let x = {
+  ignore();
+  %extend1
+  if%extend2 (true) { 1 } else { 2 };
+  ignore();
+};
+
+let x = {
+  ignore();
+  %extend1
+  for%extend2 (i in 1 to 10) { () };
+  ignore();
+};
+
+let x = {
+  ignore();
+  %extend1
+  while%extend2 (false) { () };
+  ignore();
+};
+
+let x = {
+  ignore();
+  %extend1
+  fun%extend2 () => ();
+  ignore();
+};
+
+let x = {
+  ignore();
+  %extend1
+  fun%extend2
+    | None => ()
+    | Some(1) => ();
+};
+
+ /* With two extensions, in sequence */
+
+let x = { 
+  ignore();
+  %extend1
+  try%extend2 () { | _ => () };
+  ignore();
+};
+
+let x = {
+  ignore();
+  %extend1
+  switch%extend2 () { | _ => () };
+  ignore();
+};
+
+let x = {
+  ignore();
+  %extend1
+  if%extend2 (true) { 1 } else { 2 };
+  ignore();
+};
+
+let x = {
+  ignore();
+  %extend1
+  for%extend2 (i in 1 to 10) { () };
+  ignore();
+};
+
+let x = {
+  ignore();
+  %extend1
+  while%extend2 (false) { () };
+  ignore();
+};
+
+let x = {
+  ignore();
+  %extend1
+  fun%extend2 () => ();
+  ignore();
+};
+
+let x = {
+  ignore();
+  %extend1
+  fun%extend2
+    | None => ()
+    | Some(1) => ();
+  ignore();
+};
+
+ /* With two extensions, second in sequence */
+
+let x = { 
+  ignore();
+  %extend1
+  try%extend2 () { | _ => () };
+};
+
+let x = {
+  ignore();
+  %extend1
+  switch%extend2 () { | _ => () };
+};
+
+let x = {
+  ignore();
+  %extend1
+  if%extend2 (true) { 1 } else { 2 };
+};
+
+let x = {
+  ignore();
+  %extend1
+  for%extend2 (i in 1 to 10) { () };
+};
+
+let x = {
+  ignore();
+  %extend1
+  while%extend2 (false) { () };
+};
+
+let x = {
+  ignore();
+  %extend1
+  fun%extend2 () => ();
+};
+
+let x = {
+  ignore();
+  %extend1
+  fun%extend2
+    | None => ()
+    | Some(1) => ();
+};
