@@ -8,48 +8,40 @@ module M = {};
 %extend
 module type M = {};
 
-%extend
-let x = "hi";
+let%extend x = "hi";
 
 let x = {
-  %extend
-  let x = ();
+  let%extend x = ();
   ignore();
   %extend
   ignore();
-  %extend
-  let x = ();
+  let%extend x = ();
   %extend
   return("hi");
 };
 
 let x = {
-  %extend
-  if (true) {1} else {2};
-  %extend
-  switch None {
+  if%extend (true) {1} else {2};
+  switch%extend None {
   | Some(x) => assert false
   | None => ()
   };
-  %extend
-  try (raise(Not_found)) {
+  try%extend (raise(Not_found)) {
   | Not_found => ()
   | Invalid_argument(msg) => prerr_endline(msg)
   };
 };
 
-let x = [%extend if (true) {1} else {2}];
+let x = if%extend (true) {1} else {2};
 
-let x = [%extend
-  switch None {
+let x =
+  switch%extend None {
   | Some(x) => assert false
   | None => ()
-  }
-];
+  };
 
-let x = [%extend
-  try (raise(Not_found)) {
+let x =
+  try%extend (raise(Not_found)) {
   | Not_found => ()
   | Invalid_argument(msg) => prerr_endline(msg)
-  }
-];
+  };
