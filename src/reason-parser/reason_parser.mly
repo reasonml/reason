@@ -1817,70 +1817,70 @@ mark_position_mty
 
 signature:
   | /* Empty */ { [] }
-  | signature_item { $1 }
-  | signature_item SEMI signature { $1 @ $3 }
+  | signature_items { $1 }
+  | signature_items SEMI signature { $1 @ $3 }
 ;
 
 signature_item:
-  | mark_position_sig
-    ( item_attributes
-      LET as_loc(val_ident) COLON core_type
-      { let loc = mklocation $symbolstartpos $endpos in
-        mksig(Psig_value (Val.mk $3 $5 ~attrs:$1 ~loc))
-      }
-    | item_attributes
-      EXTERNAL as_loc(val_ident) COLON core_type EQUAL primitive_declaration
-      { let loc = mklocation $symbolstartpos $endpos in
-        mksig(Psig_value (Val.mk $3 $5 ~prim:$7 ~attrs:$1 ~loc))
-      }
-    | type_declarations
-      { let (nonrec_flag, tyl) = $1 in mksig (Psig_type (nonrec_flag, tyl)) }
-    | sig_type_extension
-      { mksig(Psig_typext $1) }
-    | sig_exception_declaration
-      { mksig(Psig_exception $1) }
-    | item_attributes opt_LET_MODULE as_loc(UIDENT) module_declaration
-      { let loc = mklocation $symbolstartpos $endpos in
-        mksig(Psig_module (Md.mk $3 $4 ~attrs:$1 ~loc))
-      }
-    | item_attributes opt_LET_MODULE as_loc(UIDENT) EQUAL as_loc(mod_longident)
-      { let loc = mklocation $symbolstartpos $endpos in
-        let loc_mod = mklocation $startpos($5) $endpos($5) in
-        mksig(
-          Psig_module (
-            Md.mk
-              $3
-              (Mty.alias ~loc:loc_mod $5)
-              ~attrs:$1
-              ~loc
-          )
-        )
-      }
-    | item_attributes opt_LET_MODULE REC as_loc(UIDENT)
-      module_type_body(COLON) and_module_rec_declaration*
-      { let loc = mklocation $symbolstartpos $endpos($5) in
-        mksig (Psig_recmodule (Md.mk $4 $5 ~attrs:$1 ~loc :: $6)) }
-    | item_attributes MODULE TYPE as_loc(ident)
-      { let loc = mklocation $symbolstartpos $endpos in
-        mksig(Psig_modtype (Mtd.mk $4 ~attrs:$1 ~loc))
-      }
-    | item_attributes MODULE TYPE as_loc(ident) module_type_body(EQUAL)
-      { let loc = mklocation $symbolstartpos $endpos in
-        mksig(Psig_modtype (Mtd.mk $4 ~typ:$5 ~loc ~attrs:$1))
-      }
-    | open_statement
-      { mksig(Psig_open $1) }
-    | item_attributes INCLUDE module_type
-      { let loc = mklocation $symbolstartpos $endpos in
-        mksig(Psig_include (Incl.mk $3 ~attrs:$1 ~loc))
-      }
-    | class_descriptions
-      { mksig(Psig_class $1) }
-    | class_type_declarations
-      { mksig(Psig_class_type $1) }
-    | item_attributes item_extension
-      { mksig(Psig_extension ($2, $1)) }
-    ) { [$1] }
+  | item_attributes
+    LET as_loc(val_ident) COLON core_type
+    { let loc = mklocation $symbolstartpos $endpos in
+      Psig_value (Val.mk $3 $5 ~attrs:$1 ~loc)
+    }
+  | item_attributes
+    EXTERNAL as_loc(val_ident) COLON core_type EQUAL primitive_declaration
+    { let loc = mklocation $symbolstartpos $endpos in
+      Psig_value (Val.mk $3 $5 ~prim:$7 ~attrs:$1 ~loc)
+    }
+  | type_declarations
+    { let (nonrec_flag, tyl) = $1 in Psig_type (nonrec_flag, tyl) }
+  | sig_type_extension
+    { Psig_typext $1 }
+  | sig_exception_declaration
+    { Psig_exception $1 }
+  | item_attributes opt_LET_MODULE as_loc(UIDENT) module_declaration
+    { let loc = mklocation $symbolstartpos $endpos in
+      Psig_module (Md.mk $3 $4 ~attrs:$1 ~loc)
+    }
+  | item_attributes opt_LET_MODULE as_loc(UIDENT) EQUAL as_loc(mod_longident)
+    { let loc = mklocation $symbolstartpos $endpos in
+      let loc_mod = mklocation $startpos($5) $endpos($5) in
+      Psig_module (
+        Md.mk
+            $3
+            (Mty.alias ~loc:loc_mod $5)
+            ~attrs:$1
+            ~loc
+            )
+    }
+  | item_attributes opt_LET_MODULE REC as_loc(UIDENT)
+    module_type_body(COLON) and_module_rec_declaration*
+    { let loc = mklocation $symbolstartpos $endpos($5) in
+      Psig_recmodule (Md.mk $4 $5 ~attrs:$1 ~loc :: $6) }
+  | item_attributes MODULE TYPE as_loc(ident)
+    { let loc = mklocation $symbolstartpos $endpos in
+      Psig_modtype (Mtd.mk $4 ~attrs:$1 ~loc)
+    }
+  | item_attributes MODULE TYPE as_loc(ident) module_type_body(EQUAL)
+    { let loc = mklocation $symbolstartpos $endpos in
+      Psig_modtype (Mtd.mk $4 ~typ:$5 ~loc ~attrs:$1)
+    }
+  | open_statement
+    { Psig_open $1 }
+  | item_attributes INCLUDE module_type
+    { let loc = mklocation $symbolstartpos $endpos in
+      Psig_include (Incl.mk $3 ~attrs:$1 ~loc)
+    }
+  | class_descriptions
+    { Psig_class $1 }
+  | class_type_declarations
+    { Psig_class_type $1 }
+  | item_attributes item_extension
+    { Psig_extension ($2, $1) }
+;
+
+signature_items:
+  | as_loc(signature_item) { [mksig ~loc:$1.loc $1.txt] }
   | located_attributes
     { List.map (fun x -> mksig ~loc:x.loc (Psig_attribute x.txt)) $1 }
 ;
@@ -4654,10 +4654,6 @@ optional:
 
 %inline mark_position_mty(X): x = X
   { {x with pmty_loc = {x.pmty_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
-;
-
-%inline mark_position_sig(X): x = X
-  { {x with psig_loc = {x.psig_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
 ;
 
 %inline mark_position_str(X): x = X
