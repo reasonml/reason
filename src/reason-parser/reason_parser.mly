@@ -1584,6 +1584,8 @@ mark_position_mod
 
 structure:
   | (* Empty *) { [] }
+  | structure_item { $1 }
+  | structure_item SEMI structure { $1 @ $3 }
   | as_loc(error) structure
     { let menhirError = Reason_syntax_util.findMenhirErrorMessage $1.loc in
       match menhirError with
@@ -1596,23 +1598,11 @@ structure:
       | MenhirMessagesError errMessage -> (syntax_error_str errMessage.loc errMessage.msg) :: $3
       | _ -> (syntax_error_str $1.loc "Invalid statement") :: $3
     }
-  | structure_item { $1 }
   | as_loc(structure_item) error structure
     { let menhirError = Reason_syntax_util.findMenhirErrorMessage $1.loc in
       match menhirError with
       | MenhirMessagesError errMessage -> (syntax_error_str errMessage.loc errMessage.msg) :: $3
       | _ -> (syntax_error_str $1.loc "Statement has to end with a semicolon") :: $3
-    }
-  | structure_item SEMI structure
-    { let rec prepend = function
-        | [] -> assert false
-        | [x] ->
-           let effective_loc = mklocation x.pstr_loc.loc_start $endpos($1) in
-           let x = set_structure_item_location x effective_loc in
-           x :: $3
-        | x :: xs -> x :: prepend xs
-      in
-      prepend $1
     }
 ;
 
