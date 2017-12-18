@@ -1501,22 +1501,12 @@ structure:
 
 structure_item:
   | mark_position_str
-    ( item_extension_sugar structure_item_without_item_extension_sugar
-      { struct_item_extension $1 $2 }
-      /* Each let binding has its own attribute* */
-    | let_bindings
-      { val_of_let_bindings $1 }
-    ) { [$1] }
-  | structure_item_without_item_extension_sugar
-    { $1 }
-;
-
-structure_item_without_item_extension_sugar:
-  | mark_position_str
     /* We consider a floating expression to be equivalent to a single let binding
        to the "_" (any) pattern.  */
     ( item_attributes unattributed_expr
       { mkstrexp $2 $1 }
+    | item_extension_sugar structure_item
+      { struct_item_extension $1 $2 }
     | item_attributes
       EXTERNAL as_loc(val_ident) COLON only_core_type(core_type) EQUAL primitive_declaration
       { let loc = mklocation $symbolstartpos $endpos in
@@ -1560,6 +1550,8 @@ structure_item_without_item_extension_sugar:
       (* No sense in having item_extension_sugar for something that's already an
        * item_extension *)
       { mkstr(Pstr_extension ($2, $1)) }
+    | let_bindings
+      { val_of_let_bindings $1 }
     ) { [$1] }
  | located_attributes
    { List.map (fun x -> mkstr ~loc:x.loc (Pstr_attribute x.txt)) $1 }
@@ -2223,7 +2215,7 @@ class_type_declaration_details:
  *  };
  *  TODO: Rename to [semi_delimited_block_sequence]
  *
- * Since semi_terminated_seq_expr doesn't require a final SEMI, then without
+ * Since seq_expr doesn't require a final SEMI, then without
  * a final SEMI, a braced sequence with a single identifier is
  * indistinguishable from a punned record.
  *
@@ -2242,9 +2234,9 @@ class_type_declaration_details:
  */
 braced_expr:
 mark_position_exp
-  ( LBRACE semi_terminated_seq_expr RBRACE
+  ( LBRACE seq_expr RBRACE
     { $2 }
-  | LBRACE as_loc(semi_terminated_seq_expr) error
+  | LBRACE as_loc(seq_expr) error
     { syntax_error_exp $2.loc "SyntaxError in block" }
 
   | LBRACE DOTDOTDOT expr_optional_constraint COMMA? RBRACE
@@ -2271,32 +2263,25 @@ mark_position_exp
     { unclosed_exp (with_txt $1 "{") (with_txt $3 "}") }
 ) {$1};
 
-semi_terminated_seq_expr:
+seq_expr:
 mark_position_exp
-  ( item_extension_sugar semi_terminated_seq_expr_row
+  ( item_extension_sugar seq_expr
     { extension_expression $1 $2 }
-  | semi_terminated_seq_expr_row
-    { $1 }
-  /* Let bindings already have their potential item_extension_sugar. */
-  | let_bindings SEMI semi_terminated_seq_expr
+  | expr SEMI? { $1 }
+  | opt_LET_MODULE as_loc(UIDENT) module_binding_body SEMI seq_expr
+    { mkexp (Pexp_letmodule($2, $3, $5)) }
+  | LET? OPEN override_flag as_loc(mod_longident) SEMI seq_expr
+    { mkexp (Pexp_open($3, $4, $6)) }
+  | str_exception_declaration SEMI seq_expr {
+     mkexp (Pexp_letexception ($1, $3)) }
+  | expr SEMI seq_expr
+    { mkexp (Pexp_sequence($1, $3)) }
+  | let_bindings SEMI seq_expr
     { expr_of_let_bindings $1 $3 }
   | let_bindings SEMI?
     { let loc = mklocation $symbolstartpos $endpos in
       expr_of_let_bindings $1 @@ ghunit ~loc ()
     }
-  ) {$1};
-
-semi_terminated_seq_expr_row:
-mark_position_exp
-  ( expr SEMI? { $1 }
-  | opt_LET_MODULE as_loc(UIDENT) module_binding_body SEMI semi_terminated_seq_expr
-    { mkexp (Pexp_letmodule($2, $3, $5)) }
-  | LET? OPEN override_flag as_loc(mod_longident) SEMI semi_terminated_seq_expr
-    { mkexp (Pexp_open($3, $4, $6)) }
-  | str_exception_declaration SEMI semi_terminated_seq_expr {
-     mkexp (Pexp_letexception ($1, $3)) }
-  | expr SEMI semi_terminated_seq_expr
-    { mkexp (Pexp_sequence($1, $3)) }
   ) {$1};
 
 /*
@@ -2558,9 +2543,9 @@ mark_position_exp
    */
   | FUN match_cases(expr) %prec below_BAR
     { mkexp (Pexp_function $2) }
-  | SWITCH simple_expr_no_constructor LBRACE match_cases(semi_terminated_seq_expr) RBRACE
+  | SWITCH simple_expr_no_constructor LBRACE match_cases(seq_expr) RBRACE
     { mkexp (Pexp_match ($2, $4)) }
-  | TRY simple_expr_no_constructor LBRACE match_cases(semi_terminated_seq_expr) RBRACE
+  | TRY simple_expr_no_constructor LBRACE match_cases(seq_expr) RBRACE
     { mkexp (Pexp_try ($2, $4)) }
   | TRY simple_expr_no_constructor WITH error
     { syntax_error_exp (mklocation $startpos($4) $endpos($4)) "Invalid try with"}
@@ -2949,13 +2934,13 @@ let_bindings: let_binding and_let_binding* { addlbs $1 $2 };
 
 let_binding:
   /* Form with item extension sugar */
-  ioption(item_extension_sugar) item_attributes LET rec_flag let_binding_body
-  { let (ext_attrs, ext_id) = match $1 with
+  item_attributes LET item_extension_sugar? rec_flag let_binding_body
+  { let (ext_attrs, ext_id) = match $3 with
       | Some (ext_attrs, ext_id) -> (ext_attrs, Some ext_id)
       | None -> ([], None)
     in
     let loc = mklocation $symbolstartpos $endpos in
-    mklbs (ext_attrs, ext_id) $4 (mklb $5 $2 loc) loc
+    mklbs (ext_attrs, ext_id) $4 (mklb $5 $1 loc) loc
   }
 ;
 
