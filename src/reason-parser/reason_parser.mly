@@ -681,7 +681,8 @@ let struct_item_extension (ext_attrs, ext_id) structure_items =
   mkstr ~ghost:true (Pstr_extension ((ext_id, PStr structure_items), ext_attrs))
 
 let expression_extension (ext_attrs, ext_id) item_expr =
-  mkexp ~ghost:true ~attrs:ext_attrs (Pexp_extension (ext_id, PStr [mkstrexp item_expr []]))
+  mkexp ~ghost:true ~attrs:ext_attrs
+    (Pexp_extension (ext_id, PStr [mkstrexp item_expr []]))
 
 (* There's no more need for these functions - this was for the following:
  *
@@ -2250,26 +2251,34 @@ mark_position_exp
     { unclosed_exp (with_txt $1 "{") (with_txt $3 "}") }
 ) {$1};
 
+seq_expr_no_seq:
+| expr SEMI? { $1 }
+| opt_LET_MODULE as_loc(UIDENT) module_binding_body SEMI seq_expr
+  { mkexp (Pexp_letmodule($2, $3, $5)) }
+| LET? OPEN override_flag as_loc(mod_longident) SEMI seq_expr
+  { mkexp (Pexp_open($3, $4, $6)) }
+| str_exception_declaration SEMI seq_expr {
+   mkexp (Pexp_letexception ($1, $3)) }
+| let_bindings SEMI seq_expr
+  { expr_of_let_bindings $1 $3 }
+| let_bindings SEMI?
+  { let loc = mklocation $symbolstartpos $endpos in
+    expr_of_let_bindings $1 @@ ghunit ~loc ()
+  }
+;
+
 seq_expr:
 mark_position_exp
-  ( item_extension_sugar seq_expr
+  ( seq_expr_no_seq
+    { $1 }
+  | item_extension_sugar mark_position_exp(seq_expr_no_seq)
     { expression_extension $1 $2 }
-  | expr SEMI? { $1 }
-  | opt_LET_MODULE as_loc(UIDENT) module_binding_body SEMI seq_expr
-    { mkexp (Pexp_letmodule($2, $3, $5)) }
-  | LET? OPEN override_flag as_loc(mod_longident) SEMI seq_expr
-    { mkexp (Pexp_open($3, $4, $6)) }
-  | str_exception_declaration SEMI seq_expr {
-     mkexp (Pexp_letexception ($1, $3)) }
   | expr SEMI seq_expr
     { mkexp (Pexp_sequence($1, $3)) }
-  | let_bindings SEMI seq_expr
-    { expr_of_let_bindings $1 $3 }
-  | let_bindings SEMI?
-    { let loc = mklocation $symbolstartpos $endpos in
-      expr_of_let_bindings $1 @@ ghunit ~loc ()
-    }
-  ) {$1};
+  | item_extension_sugar expr SEMI seq_expr
+    { mkexp (Pexp_sequence(expression_extension $1 $2, $4)) }
+  ) { $1 }
+;
 
 /*
 
