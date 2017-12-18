@@ -875,15 +875,17 @@ let jsx_component module_name attrs children loc =
 
 (* We might raise some custom error messages in this file.
   Do _not_ directly raise a Location.Error. Our public interface guarantees that we only throw Syntaxerr or Syntax_util.Error *)
-let raiseSyntaxErrorFromSyntaxUtils loc message =
-  raise Syntax_util.(Error(loc, (Syntax_error message)))
+let raiseSyntaxErrorFromSyntaxUtils loc fmt =
+  Printf.ksprintf
+    (fun msg -> raise Syntax_util.(Error(loc, (Syntax_error msg))))
+    fmt
 
 let ensureTagsAreEqual startTag endTag loc =
   if startTag <> endTag then
      let startTag = (String.concat "" (Longident.flatten startTag)) in
      let endTag = (String.concat "" (Longident.flatten endTag)) in
-     let _ = raiseSyntaxErrorFromSyntaxUtils loc "Start tag <%s> does not match end tag </%s>" startTag endTag in
-     ()
+     raiseSyntaxErrorFromSyntaxUtils loc
+      "Start tag <%s> does not match end tag </%s>" startTag endTag
 
 let prepare_immutable_labels labels =
   let prepare (label, attr) =
@@ -3453,13 +3455,11 @@ and_type_declaration:
 
 type_declaration_details:
   | as_loc(UIDENT) type_variables_with_variance type_declaration_kind
-    { let l = $1.loc in
-      raiseSyntaxErrorFromSyntaxUtils $1.loc "a type name must start with a lower-case letter or an underscore"
-    }
+    { raiseSyntaxErrorFromSyntaxUtils $1.loc
+        "a type name must start with a lower-case letter or an underscore" }
   | as_loc(LIDENT) type_variables_with_variance type_declaration_kind
     { let (kind, priv, manifest), constraints, endpos, and_types = $3 in
-      (($1, $2, constraints, kind, priv, manifest), endpos, and_types)
-    }
+      (($1, $2, constraints, kind, priv, manifest), endpos, and_types) }
 ;
 
 type_declaration_kind:
