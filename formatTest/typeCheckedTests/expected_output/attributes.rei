@@ -28,7 +28,7 @@ external createClassInternalHack :
   t('classSpec) => reactClass =
   "createClass";
 
-[@bs.send.pipe : array('a)]
+[@bs.send.pipe: array('a)]
 external map : [@bs] (('a => 'b) => array('b)) =
   "";
 
