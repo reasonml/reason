@@ -5541,6 +5541,7 @@ class printer  ()= object(self:'self)
 
   method payload ppxToken ppxId e =
     let wrap = ("[" ^ ppxToken ^ ppxId.txt, "]") in
+    let wrap_prefix str (x,y) = (x^str, y) in
     let break = IfNeed in
     let pad = (true, false) in
     let postSpace = true in
@@ -5549,17 +5550,27 @@ class printer  ()= object(self:'self)
       | PStr [] -> atom ("[" ^ ppxToken  ^ ppxId.txt  ^ "]")
       | PStr [itm] -> makeList ~break ~wrap ~pad [self#structure_item itm]
       | PStr (_::_ as items) ->
-        let rows = (List.map (self#structure_item) items) in
+        let rows = List.map self#structure_item items in
         makeList ~wrap ~break ~pad ~postSpace ~sep ~renderFinalSep:false rows
       | PTyp x ->
-        makeList ~wrap ~break ~pad [label ~space:true (atom ":") (self#core_type x)]
+        let wrap = wrap_prefix ":" wrap in
+        makeList ~wrap ~break ~pad [self#core_type x]
       (* Signatures in attributes were added recently *)
-      | PSig x -> makeList [atom ":"; self#signature x]
+      | PSig [] -> atom ("[" ^ ppxToken ^ ppxId.txt ^":]")
+      | PSig [x] ->
+        let wrap = wrap_prefix ":" wrap in
+        makeList ~break ~wrap ~pad [self#signature_item x]
+      | PSig items ->
+        let wrap = wrap_prefix ":" wrap in
+        let rows = List.map self#signature_item items in
+        makeList ~wrap ~break ~pad ~postSpace ~sep ~renderFinalSep:false rows
       | PPat (x, None) ->
-        makeList ~wrap ~break ~pad [label ~space:true (atom "?") (self#pattern x)]
+        let wrap = wrap_prefix "?" wrap in
+        makeList ~wrap ~break ~pad [self#pattern x]
       | PPat (x, Some e) ->
+        let wrap = wrap_prefix "?" wrap in
         makeList ~wrap ~break ~pad ~postSpace [
-          label ~space:true (atom "?") (self#pattern x);
+          self#pattern x;
           label ~space:true (atom "when") (self#unparseExpr e)
         ]
 
