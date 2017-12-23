@@ -29,7 +29,7 @@ let x = {
   %extend
   if (true) { 1 } else { 2 };
   %extend
-  switch None {
+  switch (None) {
     | Some(x) => assert(false)
     | None => ()
   };
@@ -49,7 +49,7 @@ let x = {
 
 let x = {
   %extend
-  switch None {
+  switch (None) {
     | Some(x) => assert(false)
     | None => ()
   };

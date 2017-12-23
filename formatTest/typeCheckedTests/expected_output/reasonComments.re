@@ -217,7 +217,7 @@ and y2 = {
 };
 
 let result =
-  switch None {
+  switch (None) {
   | Some({fieldOne: 20, fieldA: a}) =>
     /* Where does this comment go? */
     let tmp = 0;
@@ -242,7 +242,7 @@ let res =
  * Now these end of line comments *should* be retained.
  */
 let result =
-  switch None {
+  switch (None) {
   | Some({
       fieldOne: 20, /* end of line */
       fieldA:

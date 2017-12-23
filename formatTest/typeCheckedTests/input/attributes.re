@@ -373,7 +373,7 @@ external debounce : int => ([@bs.meth] (unit => unit)) => ([@bs.meth] (unit => [
 
 let x = "hi";
 
-let res = switch x {
+let res = switch (x) {
 | _ =>
   [@attr]
   {
@@ -384,7 +384,7 @@ let res = switch x {
   }
 };
 
-let res = switch x {
+let res = switch (x) {
 | _ =>
   [@attr]
   {

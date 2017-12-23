@@ -82,7 +82,7 @@ let result =
   };
 
 let result =
-  switch None {
+  switch (None) {
   | Some({fieldOne: 20}) =>
     /* Where does this comment go? */
     let tmp = 0;

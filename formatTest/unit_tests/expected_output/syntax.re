@@ -17,7 +17,7 @@ TestUtils.printSection("General Syntax");
 /*   | `Other x => (print_string "matched other x"); x;; */
 /*  */
 let matchingFunc = a =>
-  switch a {
+  switch (a) {
   | `Thingy(x) =>
     print_string("matched thingy x");
     let zz = 10;
@@ -428,7 +428,7 @@ Printf.printf(
 
 /* Pattern matching */
 let blah = arg =>
-  switch arg {
+  switch (arg) {
   /* Comment before Bar */
   | /* Comment between bar/pattern */ Red(_) => 1
   /* Comment Before non-first bar */
@@ -571,7 +571,7 @@ let myFun =
   firstArg + x;
 
 let matchesWithWhen = a =>
-  switch a {
+  switch (a) {
   | Red(x) when 1 > 0 => 10
   | Red(_) => 10
   | Black(x) => 10

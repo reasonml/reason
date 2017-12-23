@@ -4897,6 +4897,12 @@ class printer  ()= object(self:'self)
       ~pad:(false, false)
       ((atom ~loc:estimatedFunLocation (add_extension_sugar "fun" extension)) :: (self#case_list l))
 
+  method parenthesized_expr ?break expr =
+    let result = self#unparseExpr expr in
+    match expr.pexp_attributes, expr.pexp_desc with
+    | [], (Pexp_tuple _ | Pexp_construct ({txt=Lident "()"}, None)) -> result
+    | _ -> makeList ~wrap:("(",")") ?break [self#unparseExpr expr]
+
   (* Expressions requiring parens, in most contexts such as separated by infix *)
   method expression_requiring_parens_in_infix x =
     let {stdAttrs} = partitionAttributes x.pexp_attributes in
@@ -4956,7 +4962,7 @@ class printer  ()= object(self:'self)
             let cases = (self#case_list ~allowUnguardedSequenceBodies:true l) in
             let switchWith = label ~space:true
                 (atom (add_extension_sugar "try" extension))
-                (self#reset#simplifyUnparseExpr e)
+                (self#parenthesized_expr ~break:IfNeed e)
             in
             Some (
               label
@@ -4977,8 +4983,9 @@ class printer  ()= object(self:'self)
              in
              let cases = (self#case_list ~allowUnguardedSequenceBodies:true l) in
              let switchWith =
-               let exp = self#reset#simplifyUnparseExpr e in
-               label ~space:true (atom (add_extension_sugar "switch" extension)) exp in
+               label ~space:true (atom (add_extension_sugar "switch" extension))
+                 (self#parenthesized_expr ~break:IfNeed e)
+             in
              let lbl =
                label
                  ~space:true
@@ -5031,17 +5038,21 @@ class printer  ()= object(self:'self)
                   sequence nextSoFar tl
             ) in
             let init =
-              label
-                ~space:true
-                (SourceMap (e1.pexp_loc, (label ~space:true (atom (add_extension_sugar "if" extension)) (makeList ~wrap:("(",")") [self#unparseExpr e1]))))
-                (makeLetSequence (self#letList e2)) in
+              let if_ = atom (add_extension_sugar "if" extension) in
+              let cond = self#parenthesized_expr e1 in
+              label ~space:true
+                (SourceMap (e1.pexp_loc, (label ~space:true if_ cond)))
+                (makeLetSequence (self#letList e2))
+            in
             Some (sequence init blocks)
           | Pexp_while (e1, e2) ->
             let lbl =
-              label
-                ~space:true
-                (label ~space:true (atom (add_extension_sugar "while" extension)) (makeList ~wrap:("(",")") [self#unparseExpr e1]))
-                (makeLetSequence (self#letList e2)) in
+              let while_ = atom (add_extension_sugar "while" extension) in
+              let cond = self#parenthesized_expr e1 in
+              label ~space:true
+                (label ~space:true while_ cond)
+                (makeLetSequence (self#letList e2))
+            in
             Some lbl
           | Pexp_for (s, e1, e2, df, e3) ->
             (*
