@@ -1018,7 +1018,7 @@ let ensureTagsAreEqual startTag endTag loc =
 (* `{. "foo": bar}` -> `Js.t {. foo: bar}` and {.. "foo": bar} -> `Js.t {.. foo: bar} *)
 let mkBsObjTypeSugar ~loc ~closed rows =
   let obj = mktyp ~loc (Ptyp_object (rows, closed)) in
-  let jsDotTCtor = { txt = Longident.parse "Js.t"; loc } in
+  let jsDotTCtor = { txt = Longident.Ldot (Longident.Lident "Js", "t"); loc } in
   mktyp(Ptyp_constr(jsDotTCtor, [obj]))
 
 let doc_loc = {txt = "ocaml.doc"; loc = Location.none}
@@ -2556,10 +2556,10 @@ as_loc
 
 es6_parameters:
   | labeled_pattern_list { $1 }
-  | as_loc(val_ident)
-    { ([{$1 with txt = Term (Nolabel, None, mkpat ~loc:$1.loc (Ppat_var $1))}], false) }
   | as_loc(UNDERSCORE)
     { ([{$1 with txt = Term (Nolabel, None, mkpat ~loc:$1.loc Ppat_any)}], false) }
+  | simple_pattern_ident
+    { ([Location.mkloc (Term (Nolabel, None, $1)) $1.ppat_loc], false) }
 ;
 
 // TODO: properly fix JSX labelled/optional stuff
@@ -3194,18 +3194,18 @@ let_binding:
 ;
 
 let_binding_body:
-  | with_patvar(val_ident) type_constraint EQUAL expr
+  | simple_pattern_ident type_constraint EQUAL expr
     { let loc = mklocation $symbolstartpos $endpos in
       ($1, ghexp_constraint loc $4 $2) }
-  | with_patvar(val_ident) fun_def(EQUAL,core_type)
+  | simple_pattern_ident fun_def(EQUAL,core_type)
     { ($1, $2) }
-  | with_patvar(val_ident) COLON preceded(QUOTE,ident)+ DOT core_type
+  | simple_pattern_ident COLON preceded(QUOTE,ident)+ DOT core_type
       EQUAL mark_position_exp(expr)
     { let typ = mktyp ~ghost:true (Ptyp_poly($3, $5)) in
       let loc = mklocation $symbolstartpos $endpos in
       (mkpat ~ghost:true ~loc (Ppat_constraint($1, typ)), $7)
     }
-  | with_patvar(val_ident) COLON TYPE LIDENT+ DOT core_type
+  | simple_pattern_ident COLON TYPE LIDENT+ DOT core_type
       EQUAL mark_position_exp(expr)
   /* Because core_type will appear to contain "type constructors" since the
    * type variables listed in LIDENT+ don't have leading single quotes, we
@@ -3572,10 +3572,13 @@ mark_position_pat
  * parens or something.
  */
 simple_pattern:
-mark_position_pat
-  ( as_loc(val_ident)        { mkpat(Ppat_var $1) }
+  | simple_pattern_ident
   | simple_pattern_not_ident { $1 }
-  ) {$1};
+;
+
+simple_pattern_ident:
+  as_loc(val_ident) { mkpat ~loc:$1.loc (Ppat_var $1) }
+;
 
 simple_pattern_not_ident:
 mark_position_pat
@@ -4691,10 +4694,6 @@ optional:
 %inline as_loc(X): x = X
   { mkloc x (mklocation $symbolstartpos $endpos) }
 ;
-
-%inline with_patvar(X): x = X
-  { let loc = mklocation $symbolstartpos $endpos in
-    mkpat ~loc (Ppat_var (mkloc x loc)) }
 
 either(X,Y):
   | X { $1 }
