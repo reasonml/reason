@@ -518,7 +518,7 @@ external debounce :
 let x = "hi";
 
 let res =
-  switch x {
+  switch (x) {
   | _ =>
     [@attr]
     {
@@ -530,7 +530,7 @@ let res =
   };
 
 let res =
-  switch x {
+  switch (x) {
   | _ => [@attr] String.(Array.(concat))
   };
 

@@ -409,16 +409,16 @@ let rec size =
 
 /* Optimize for tail recursion */
 let rec size = (soFar, lst) =>
-  switch lst {
+  switch (lst) {
   | [] => 0
   | [hd, ...tl] => size(soFar + 1, tl)
   };
 
 let nestedMatch = lstLst =>
-  switch lstLst {
+  switch (lstLst) {
   | [hd, ...tl] when false => 10
   | [hd, ...tl] =>
-    switch tl {
+    switch (tl) {
     | [] => 0 + 0
     | [tlHd, ...tlTl] => 0 + 1
     }
@@ -426,10 +426,10 @@ let nestedMatch = lstLst =>
   };
 
 let nestedMatchWithWhen = lstLst =>
-  switch lstLst {
+  switch (lstLst) {
   | [hd, ...tl] when false => 10
   | [hd, ...tl] when true =>
-    switch tl {
+    switch (tl) {
     | [] when false => 0 + 0
     | [] when true => 0 + 0
     | [tlHd, ...tlTl] => 0 + 1
@@ -764,7 +764,7 @@ let bar = {Foo.foo, Bar.bar};
 
 ({M.x, y}) => 1;
 
-switch foo {
+switch (foo) {
 | {y: 1, M.x} => 2
 };
 

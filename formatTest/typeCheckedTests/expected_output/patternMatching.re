@@ -189,7 +189,7 @@ switch (Some(1)) {
 };
 
 /* with parens around direct list pattern in constructor pattern */
-switch None {
+switch (None) {
 | Some([]) => ()
 | Some([_]) when true => ()
 | Some([x]) => ()
@@ -199,7 +199,7 @@ switch None {
 };
 
 /* no parens around direct list pattern in constructor pattern (sugar) */
-switch None {
+switch (None) {
 | Some([]) => ()
 | Some([_]) when true => ()
 | Some([x]) => ()
@@ -209,7 +209,7 @@ switch None {
 };
 
 /* with parens around direct array pattern in constructor pattern */
-switch None {
+switch (None) {
 | Some([||]) => "empty"
 | Some([|_|]) when true => "one any"
 | Some([|a|]) => "one"
@@ -218,7 +218,7 @@ switch None {
 };
 
 /* no parens around direct array pattern in constructor pattern (sugar) */
-switch None {
+switch (None) {
 | Some([||]) => "empty"
 | Some([|_|]) when true => "one any"
 | Some([|a|]) => "one"
@@ -227,20 +227,20 @@ switch None {
 };
 
 /* parens around direct record pattern in constructor pattern */
-switch None {
+switch (None) {
 | Some({x}) when true => ()
 | Some({x, y}) => ()
 | _ => ()
 };
 
 /* no parens around direct record pattern in constructor pattern (sugar) */
-switch None {
+switch (None) {
 | Some({x}) when true => ()
 | Some({x, y}) => ()
 | _ => ()
 };
 
-switch None {
+switch (None) {
 | Some([|
     someSuperLongString,
     thisShouldBreakTheLine
@@ -249,7 +249,7 @@ switch None {
 | _ => ()
 };
 
-switch None {
+switch (None) {
 | Some((
     someSuperLongString,
     thisShouldBreakTheLine
@@ -258,7 +258,7 @@ switch None {
 | _ => ()
 };
 
-switch None {
+switch (None) {
 | Some([
     someSuperLongString,
     thisShouldBreakTheLine

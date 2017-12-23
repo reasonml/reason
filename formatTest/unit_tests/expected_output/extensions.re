@@ -22,7 +22,7 @@ let x = {
 
 let x = {
   if%extend (true) {1} else {2};
-  switch%extend None {
+  switch%extend (None) {
   | Some(x) => assert false
   | None => ()
   };
@@ -35,7 +35,7 @@ let x = {
 let x = if%extend (true) {1} else {2};
 
 let x =
-  switch%extend None {
+  switch%extend (None) {
   | Some(x) => assert false
   | None => ()
   };
