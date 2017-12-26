@@ -680,8 +680,9 @@ let wrap_type_annotation newtypes core_type body =
 let struct_item_extension (ext_attrs, ext_id) structure_items =
   mkstr ~ghost:true (Pstr_extension ((ext_id, PStr structure_items), ext_attrs))
 
-let extension_expression (ext_attrs, ext_id) item_expr =
-  mkexp ~ghost:true ~attrs:ext_attrs (Pexp_extension (ext_id, PStr [mkstrexp item_expr []]))
+let expression_extension (ext_attrs, ext_id) item_expr =
+  mkexp ~ghost:true ~attrs:ext_attrs
+    (Pexp_extension (ext_id, PStr [mkstrexp item_expr []]))
 
 (* There's no more need for these functions - this was for the following:
  *
@@ -726,13 +727,7 @@ type let_binding =
 type let_bindings =
   { lbs_bindings: let_binding list;
     lbs_rec: rec_flag;
-    lbs_extension: string Asttypes.loc option;
-    (* In Reason, we use this field to represent
-       extension attributes attached to the extension on a series of "let/and"
-       bindings As in: let [@extAttrs ] [%id] [@attribute] x = ...; It only
-       makes sense to have [lbs_attributes] when there is an [lbs_extension].
-     *)
-    lbs_attributes: attributes;
+    lbs_extension: (attributes * string Asttypes.loc) option;
     lbs_loc: Location.t }
 
 let mklb (p, e) attrs loc =
@@ -743,11 +738,10 @@ let mklb (p, e) attrs loc =
     lb_attributes = attrs;
     lb_loc = loc; }
 
-let mklbs (extAttrs, extId) rf lb loc =
+let mklbs ext rf lb loc =
   { lbs_bindings = [lb];
     lbs_rec = rf;
-    lbs_extension = extId ;
-    lbs_attributes = extAttrs;
+    lbs_extension = ext;
     lbs_loc = loc; }
 
 let addlbs lbs lbs' =
@@ -763,12 +757,10 @@ let val_of_let_bindings lbs =
            lb.lb_pattern lb.lb_expression)
       lbs.lbs_bindings
   in
-  let str = mkstr(Pstr_value(lbs.lbs_rec, bindings)) in
-  (* Note that for value bindings, when there's an extension, the
-   * lbs_attributes are attributes on the extension *)
-  match (lbs.lbs_extension) with
-    | None -> str
-    | Some ext_id -> struct_item_extension (lbs.lbs_attributes, ext_id) [str]
+  let str = mkstr (Pstr_value(lbs.lbs_rec, bindings)) in
+  match lbs.lbs_extension with
+  | None -> str
+  | Some ext -> struct_item_extension ext [str]
 
 let expr_of_let_bindings lbs body =
   let bindings =
@@ -783,11 +775,9 @@ let expr_of_let_bindings lbs body =
   (* The location of this expression unfortunately includes the entire rule,
    * which will include any preceeding extensions. *)
   let item_expr = mkexp (Pexp_let(lbs.lbs_rec, bindings, body)) in
-  (* Note that for let expression bindings, when there's an extension, the
-   * lbs_attributes are attributes on the entire [let ..in x] expression. *)
   match lbs.lbs_extension with
-    | None -> item_expr
-    | Some ext_id -> extension_expression (lbs.lbs_attributes, ext_id) item_expr
+  | None -> item_expr
+  | Some ext -> expression_extension ext item_expr
 
 let class_of_let_bindings lbs body =
   let bindings =
@@ -800,8 +790,6 @@ let class_of_let_bindings lbs body =
   in
     if lbs.lbs_extension <> None then
       raise Syntaxerr.(Error(Not_expecting(lbs.lbs_loc, "extension")));
-    if lbs.lbs_attributes <> [] then
-      raise Syntaxerr.(Error(Not_expecting(lbs.lbs_loc, "attributes")));
     mkclass(Pcl_let (lbs.lbs_rec, bindings, body))
 
 (*
@@ -875,15 +863,17 @@ let jsx_component module_name attrs children loc =
 
 (* We might raise some custom error messages in this file.
   Do _not_ directly raise a Location.Error. Our public interface guarantees that we only throw Syntaxerr or Syntax_util.Error *)
-let raiseSyntaxErrorFromSyntaxUtils loc message =
-  raise Syntax_util.(Error(loc, (Syntax_error message)))
+let raiseSyntaxErrorFromSyntaxUtils loc fmt =
+  Printf.ksprintf
+    (fun msg -> raise Syntax_util.(Error(loc, (Syntax_error msg))))
+    fmt
 
 let ensureTagsAreEqual startTag endTag loc =
   if startTag <> endTag then
      let startTag = (String.concat "" (Longident.flatten startTag)) in
      let endTag = (String.concat "" (Longident.flatten endTag)) in
-     let _ = raiseSyntaxErrorFromSyntaxUtils loc "Start tag <%s> does not match end tag </%s>" startTag endTag in
-     ()
+     raiseSyntaxErrorFromSyntaxUtils loc
+      "Start tag <%s> does not match end tag </%s>" startTag endTag
 
 let prepare_immutable_labels labels =
   let prepare (label, attr) =
@@ -1499,22 +1489,12 @@ structure:
 
 structure_item:
   | mark_position_str
-    ( item_extension_sugar structure_item_without_item_extension_sugar
-      { struct_item_extension $1 $2 }
-      /* Each let binding has its own attribute* */
-    | let_bindings
-      { val_of_let_bindings $1 }
-    ) { [$1] }
-  | structure_item_without_item_extension_sugar
-    { $1 }
-;
-
-structure_item_without_item_extension_sugar:
-  | mark_position_str
     /* We consider a floating expression to be equivalent to a single let binding
        to the "_" (any) pattern.  */
     ( item_attributes unattributed_expr
       { mkstrexp $2 $1 }
+    | item_extension_sugar structure_item
+      { struct_item_extension $1 $2 }
     | item_attributes
       EXTERNAL as_loc(val_ident) COLON only_core_type(core_type) EQUAL primitive_declaration
       { let loc = mklocation $symbolstartpos $endpos in
@@ -1558,6 +1538,8 @@ structure_item_without_item_extension_sugar:
       (* No sense in having item_extension_sugar for something that's already an
        * item_extension *)
       { mkstr(Pstr_extension ($2, $1)) }
+    | let_bindings
+      { val_of_let_bindings $1 }
     ) { [$1] }
  | located_attributes
    { List.map (fun x -> mkstr ~loc:x.loc (Pstr_attribute x.txt)) $1 }
@@ -2221,7 +2203,7 @@ class_type_declaration_details:
  *  };
  *  TODO: Rename to [semi_delimited_block_sequence]
  *
- * Since semi_terminated_seq_expr doesn't require a final SEMI, then without
+ * Since seq_expr doesn't require a final SEMI, then without
  * a final SEMI, a braced sequence with a single identifier is
  * indistinguishable from a punned record.
  *
@@ -2240,9 +2222,9 @@ class_type_declaration_details:
  */
 braced_expr:
 mark_position_exp
-  ( LBRACE semi_terminated_seq_expr RBRACE
+  ( LBRACE seq_expr RBRACE
     { $2 }
-  | LBRACE as_loc(semi_terminated_seq_expr) error
+  | LBRACE as_loc(seq_expr) error
     { syntax_error_exp $2.loc "SyntaxError in block" }
 
   | LBRACE DOTDOTDOT expr_optional_constraint COMMA? RBRACE
@@ -2269,33 +2251,34 @@ mark_position_exp
     { unclosed_exp (with_txt $1 "{") (with_txt $3 "}") }
 ) {$1};
 
-semi_terminated_seq_expr:
-mark_position_exp
-  ( item_extension_sugar semi_terminated_seq_expr_row
-    { extension_expression $1 $2 }
-  | semi_terminated_seq_expr_row
-    { $1 }
-  /* Let bindings already have their potential item_extension_sugar. */
-  | let_bindings SEMI semi_terminated_seq_expr
-    { expr_of_let_bindings $1 $3 }
-  | let_bindings SEMI?
-    { let loc = mklocation $symbolstartpos $endpos in
-      expr_of_let_bindings $1 @@ ghunit ~loc ()
-    }
-  ) {$1};
+seq_expr_no_seq:
+| expr SEMI? { $1 }
+| opt_LET_MODULE as_loc(UIDENT) module_binding_body SEMI seq_expr
+  { mkexp (Pexp_letmodule($2, $3, $5)) }
+| LET? OPEN override_flag as_loc(mod_longident) SEMI seq_expr
+  { mkexp (Pexp_open($3, $4, $6)) }
+| str_exception_declaration SEMI seq_expr {
+   mkexp (Pexp_letexception ($1, $3)) }
+| let_bindings SEMI seq_expr
+  { expr_of_let_bindings $1 $3 }
+| let_bindings SEMI?
+  { let loc = mklocation $symbolstartpos $endpos in
+    expr_of_let_bindings $1 @@ ghunit ~loc ()
+  }
+;
 
-semi_terminated_seq_expr_row:
+seq_expr:
 mark_position_exp
-  ( expr SEMI? { $1 }
-  | opt_LET_MODULE as_loc(UIDENT) module_binding_body SEMI semi_terminated_seq_expr
-    { mkexp (Pexp_letmodule($2, $3, $5)) }
-  | LET? OPEN override_flag as_loc(mod_longident) SEMI semi_terminated_seq_expr
-    { mkexp (Pexp_open($3, $4, $6)) }
-  | str_exception_declaration SEMI semi_terminated_seq_expr {
-     mkexp (Pexp_letexception ($1, $3)) }
-  | expr SEMI semi_terminated_seq_expr
+  ( seq_expr_no_seq
+    { $1 }
+  | item_extension_sugar mark_position_exp(seq_expr_no_seq)
+    { expression_extension $1 $2 }
+  | expr SEMI seq_expr
     { mkexp (Pexp_sequence($1, $3)) }
-  ) {$1};
+  | item_extension_sugar expr SEMI seq_expr
+    { mkexp (Pexp_sequence(expression_extension $1 $2, $4)) }
+  ) { $1 }
+;
 
 /*
 
@@ -2530,6 +2513,11 @@ jsx_without_leading_less:
   }
 ;
 
+optional_expr_extension:
+  | (* empty *) { fun exp -> exp }
+  | item_extension_sugar { fun exp -> expression_extension $1 exp  }
+;
+
 /*
  * Parsing of expressions is quite involved as it depends on context.
  * At the top-level of a structure, expressions can't have attributes
@@ -2544,8 +2532,8 @@ jsx_without_leading_less:
 mark_position_exp
   ( simple_expr
     { $1 }
-  | FUN fun_def(EQUALGREATER,non_arrowed_core_type)
-    { $2 }
+  | FUN optional_expr_extension fun_def(EQUALGREATER,non_arrowed_core_type)
+    { $2 $3 }
   | ES6_FUN es6_parameters EQUALGREATER expr
     { List.fold_right mkexp_fun $2 $4 }
   | ES6_FUN es6_parameters COLON only_core_type(non_arrowed_core_type) EQUALGREATER expr
@@ -2554,20 +2542,24 @@ mark_position_exp
   /* List style rules like this often need a special precendence
      such as below_BAR in order to let the entire list "build up"
    */
-  | FUN match_cases(expr) %prec below_BAR
-    { mkexp (Pexp_function $2) }
-  | SWITCH simple_expr_no_constructor LBRACE match_cases(semi_terminated_seq_expr) RBRACE
-    { mkexp (Pexp_match ($2, $4)) }
-  | TRY simple_expr_no_constructor LBRACE match_cases(semi_terminated_seq_expr) RBRACE
-    { mkexp (Pexp_try ($2, $4)) }
-  | TRY simple_expr_no_constructor WITH error
-    { syntax_error_exp (mklocation $startpos($4) $endpos($4)) "Invalid try with"}
-  | IF parenthesized_expr simple_expr ioption(preceded(ELSE,expr))
-    { mkexp(Pexp_ifthenelse($2, $3, $4)) }
-  | WHILE parenthesized_expr simple_expr
-    { mkexp (Pexp_while($2, $3)) }
-  | FOR LPAREN pattern IN expr direction_flag expr RPAREN simple_expr
-    { mkexp(Pexp_for($3, $5, $7, $6, $9)) }
+  | FUN optional_expr_extension match_cases(expr) %prec below_BAR
+    { $2 (mkexp (Pexp_function $3)) }
+  | SWITCH optional_expr_extension simple_expr_no_constructor
+    LBRACE match_cases(seq_expr) RBRACE
+    { $2 (mkexp (Pexp_match ($3, $5))) }
+  | TRY optional_expr_extension simple_expr_no_constructor
+    LBRACE match_cases(seq_expr) RBRACE
+    { $2 (mkexp (Pexp_try ($3, $5))) }
+  | TRY optional_expr_extension simple_expr_no_constructor WITH error
+    { syntax_error_exp (mklocation $startpos($5) $endpos($5)) "Invalid try with"}
+  | IF optional_expr_extension parenthesized_expr
+       simple_expr ioption(preceded(ELSE,expr))
+    { $2 (mkexp (Pexp_ifthenelse($3, $4, $5))) }
+  | WHILE optional_expr_extension parenthesized_expr simple_expr
+    { $2 (mkexp (Pexp_while($3, $4))) }
+  | FOR optional_expr_extension LPAREN pattern IN expr direction_flag expr RPAREN
+    simple_expr
+    { $2 (mkexp (Pexp_for($4, $6, $8, $7, $10))) }
   | LPAREN COLONCOLON RPAREN LPAREN expr COMMA expr RPAREN
     { let loc_colon = mklocation $startpos($2) $endpos($2) in
       let loc = mklocation $symbolstartpos $endpos in
@@ -2947,14 +2939,9 @@ let_bindings: let_binding and_let_binding* { addlbs $1 $2 };
 
 let_binding:
   /* Form with item extension sugar */
-  ioption(item_extension_sugar) item_attributes LET rec_flag let_binding_body
-  { let (ext_attrs, ext_id) = match $1 with
-      | Some (ext_attrs, ext_id) -> (ext_attrs, Some ext_id)
-      | None -> ([], None)
-    in
-    let loc = mklocation $symbolstartpos $endpos in
-    mklbs (ext_attrs, ext_id) $4 (mklb $5 $2 loc) loc
-  }
+  item_attributes LET item_extension_sugar? rec_flag let_binding_body
+  { let loc = mklocation $symbolstartpos $endpos in
+    mklbs $3 $4 (mklb $5 $1 loc) loc }
 ;
 
 let_binding_body:
@@ -3453,13 +3440,11 @@ and_type_declaration:
 
 type_declaration_details:
   | as_loc(UIDENT) type_variables_with_variance type_declaration_kind
-    { let l = $1.loc in
-      raiseSyntaxErrorFromSyntaxUtils $1.loc "a type name must start with a lower-case letter or an underscore"
-    }
+    { raiseSyntaxErrorFromSyntaxUtils $1.loc
+        "a type name must start with a lower-case letter or an underscore" }
   | as_loc(LIDENT) type_variables_with_variance type_declaration_kind
     { let (kind, priv, manifest), constraints, endpos, and_types = $3 in
-      (($1, $2, constraints, kind, priv, manifest), endpos, and_types)
-    }
+      (($1, $2, constraints, kind, priv, manifest), endpos, and_types) }
 ;
 
 type_declaration_kind:

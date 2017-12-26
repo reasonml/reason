@@ -241,6 +241,32 @@ type infixChain =
   | InfixToken of string
   | Layout of layoutNode
 
+let expression_extension_sugar x =
+  if x.pexp_attributes <> [] then None
+  else match x.pexp_desc with
+    | Pexp_extension (name, PStr [{pstr_desc = Pstr_eval(expr, [])}]) ->
+      Some (name, expr)
+    | _ -> None
+
+let expression_immediate_extension_sugar x =
+  match expression_extension_sugar x with
+  | None -> (None, x)
+  | Some (name, expr) ->
+    match expr.pexp_desc with
+    | Pexp_for _ | Pexp_while _ | Pexp_ifthenelse _
+    | Pexp_fun _ | Pexp_function _ | Pexp_newtype _
+    | Pexp_try _ | Pexp_match _ ->
+      (Some name, expr)
+    | _ -> (None, x)
+
+let expression_not_immediate_extension_sugar x =
+  match expression_immediate_extension_sugar x with
+  | (Some _, _) -> None
+  | (None, _) -> expression_extension_sugar x
+
+let add_extension_sugar keyword = function
+  | None -> keyword
+  | Some str -> keyword ^ "%" ^ str.txt
 
 let print_comment_type = function
   | Regular -> "Regular"
@@ -4637,14 +4663,15 @@ class printer  ()= object(self:'self)
       loc_ghost = false
     }
 
-  method bindings (rf, l) =
+  method bindings ?extension (rf, l) =
     let first, rest = match l with
       | [] -> raise (NotPossible "no bindings supplied")
       | x :: xs -> x, xs
     in
+    let label = add_extension_sugar "let" extension in
     let label = match rf with
-      | Nonrecursive -> "let"
-      | Recursive -> "let rec"
+      | Nonrecursive -> label
+      | Recursive -> label ^ " rec"
     in
     let first = self#binding label first in
     match rest with
@@ -4657,20 +4684,20 @@ class printer  ()= object(self:'self)
         ~inline:(true, true)
         (first :: List.map (self#binding "and") rest)
 
-  method letList exprTerm =
-    match (exprTerm.pexp_attributes, exprTerm.pexp_desc) with
+  method letList expr =
+    match (expr.pexp_attributes, expr.pexp_desc) with
       | ([], Pexp_let (rf, l, e)) ->
         (* For "letList" bindings, the start/end isn't as simple as with
          * module value bindings. For "let lists", the sequences were formed
          * within braces {}. The parser relocates the first let binding to the
          * first brace. *)
-         let bindingsLayout = (self#bindings (rf, l)) in
+         let bindingsLayout = self#bindings (rf, l) in
          let bindingsLoc = self#bindingsLocationRange l in
          let bindingsSourceMapped = SourceMap (bindingsLoc, bindingsLayout) in
          bindingsSourceMapped::(self#letList e)
       | ([], Pexp_open (ovf, lid, e))
           (* Add this when check to make sure these are handled as regular "simple expressions" *)
-          when not (self#isSeriesOfOpensFollowedByNonSequencyExpression exprTerm) ->
+          when not (self#isSeriesOfOpensFollowedByNonSequencyExpression expr) ->
         let overrideStr = match ovf with | Override -> "!" | Fresh -> "" in
         let openLayout = label ~space:true
           (atom ("open" ^ overrideStr))
@@ -4705,20 +4732,33 @@ class printer  ()= object(self:'self)
       | ([], Pexp_sequence (({pexp_desc=Pexp_open _     }) as e1, e2))
       | ([], Pexp_sequence (({pexp_desc=Pexp_letmodule _}) as e1, e2))
       | ([], Pexp_sequence (e1, e2)) ->
-          let e1Layout = (self#unparseExpr e1) in
+          let e1Layout = match expression_not_immediate_extension_sugar e1 with
+            | Some (extension, expr) ->
+              self#attach_std_item_attrs ~extension [] (self#unparseExpr expr)
+            | None ->self#unparseExpr e1
+          in
           (* It's kind of difficult to synthesize a location here in the case
            * where this is the first expression in the braces. We could consider
            * deeply inspecting the leftmost token/term in the expression. *)
           let e1SourceMapped = SourceMap (e1.pexp_loc, e1Layout) in
-          e1SourceMapped::(self#letList e2)
+          (e1SourceMapped :: self#letList e2)
       | _ ->
-          let exprTermLayout = (self#unparseExpr exprTerm) in
-          let exprTermSourceMapped = SourceMap (exprTerm.pexp_loc, exprTermLayout) in
+        match expression_not_immediate_extension_sugar expr with
+        | Some (extension, {pexp_attributes = []; pexp_desc = Pexp_let (rf, l, e)}) ->
+          let bindingsLayout = self#bindings ~extension (rf, l) in
+          let bindingsLoc = self#bindingsLocationRange l in
+          let bindingsSourceMapped = SourceMap (bindingsLoc, bindingsLayout) in
+          bindingsSourceMapped::(self#letList e)
+        | Some (extension, expr) ->
+          [self#attach_std_item_attrs ~extension [] (self#unparseExpr expr)]
+        | None ->
           (* Should really do something to prevent infinite loops here. Never
              allowing a top level call into letList to recurse back to
              self#unparseExpr- top level calls into letList *must* be one of the
              special forms above whereas lower level recursive calls may be of
              any form. *)
+          let exprTermLayout = self#unparseExpr expr in
+          let exprTermSourceMapped = SourceMap (expr.pexp_loc, exprTermLayout) in
           [exprTermSourceMapped]
 
   method constructor_expression ?(polyVariant=false) ~arityIsClear stdAttrs ctor eo =
@@ -4844,7 +4884,7 @@ class printer  ()= object(self:'self)
     let wrap = (left ^ "{", "}" ^ right) in
     makeList ~wrap ~break:IfNeed ~sep:"," ~postSpace:true rows
 
-  method patternFunction loc l =
+  method patternFunction ?extension loc l =
     let estimatedFunLocation = {
         loc_start = loc.loc_start;
         loc_end = {loc.loc_start with pos_cnum = loc.loc_start.Lexing.pos_cnum + 3};
@@ -4855,18 +4895,19 @@ class printer  ()= object(self:'self)
       ~break:IfNeed
       ~inline:(true, true)
       ~pad:(false, false)
-      ((atom ~loc:estimatedFunLocation "fun") :: (self#case_list l))
+      ((atom ~loc:estimatedFunLocation (add_extension_sugar "fun" extension)) :: (self#case_list l))
 
   (* Expressions requiring parens, in most contexts such as separated by infix *)
   method expression_requiring_parens_in_infix x =
     let {stdAttrs} = partitionAttributes x.pexp_attributes in
     assert (stdAttrs == []);
+    let extension, x = expression_immediate_extension_sugar x in
     match x.pexp_desc with
       (* The only reason Pexp_fun must also be wrapped in parens when under
          pipe, is that its => token will be confused with the match token.
          Simple expression will also invoke `#reset`. *)
       | Pexp_function _ when pipe || semi -> None (* Would be rendered as simplest_expression  *)
-      | Pexp_function l -> Some (self#patternFunction x.pexp_loc l)
+      | Pexp_function l -> Some (self#patternFunction ?extension x.pexp_loc l)
       | _ ->
         (* The Pexp_function cases above don't use location because comment printing
           breaks for them. *)
@@ -4900,7 +4941,10 @@ class printer  ()= object(self:'self)
                    needed, should we even print them with the minimum amount?  We can
                    instead model everything as "infix" with ranked precedences.  *)
                 let retValUnparsed = self#unparseExprApplicationItems ret in
-                Some (self#wrapCurriedFunctionBinding ~sweet:true "fun" ~arrow:"=>" firstArg tl retValUnparsed)
+                Some (self#wrapCurriedFunctionBinding
+                        ~sweet:(extension = None)
+                        (add_extension_sugar "fun" extension)
+                        ~arrow:"=>" firstArg tl retValUnparsed)
             )
           | Pexp_try (e, l) ->
             let estimatedBracePoint = {
@@ -4910,7 +4954,8 @@ class printer  ()= object(self:'self)
             }
             in
             let cases = (self#case_list ~allowUnguardedSequenceBodies:true l) in
-            let switchWith = label ~space:true (atom "try")
+            let switchWith = label ~space:true
+                (atom (add_extension_sugar "try" extension))
                 (self#reset#simplifyUnparseExpr e)
             in
             Some (
@@ -4933,7 +4978,7 @@ class printer  ()= object(self:'self)
              let cases = (self#case_list ~allowUnguardedSequenceBodies:true l) in
              let switchWith =
                let exp = self#reset#simplifyUnparseExpr e in
-               label ~space:true (atom "switch") exp in
+               label ~space:true (atom (add_extension_sugar "switch" extension)) exp in
              let lbl =
                label
                  ~space:true
@@ -4988,14 +5033,14 @@ class printer  ()= object(self:'self)
             let init =
               label
                 ~space:true
-                (SourceMap (e1.pexp_loc, (label ~space:true (atom "if") (makeList ~wrap:("(",")") [self#unparseExpr e1]))))
+                (SourceMap (e1.pexp_loc, (label ~space:true (atom (add_extension_sugar "if" extension)) (makeList ~wrap:("(",")") [self#unparseExpr e1]))))
                 (makeLetSequence (self#letList e2)) in
             Some (sequence init blocks)
           | Pexp_while (e1, e2) ->
             let lbl =
               label
                 ~space:true
-                (label ~space:true (atom "while") (makeList ~wrap:("(",")") [self#unparseExpr e1]))
+                (label ~space:true (atom (add_extension_sugar "while" extension)) (makeList ~wrap:("(",")") [self#unparseExpr e1]))
                 (makeLetSequence (self#letList e2)) in
             Some lbl
           | Pexp_for (s, e1, e2, df, e3) ->
@@ -5018,7 +5063,9 @@ class printer  ()= object(self:'self)
                   (self#unparseExpr e2);
                 ]
             in
-            let upToBody = makeList ~inline:(true, true) ~postSpace:true [atom "for"; dockedToFor] in
+            let upToBody = makeList ~inline:(true, true) ~postSpace:true
+                [atom (add_extension_sugar "for" extension); dockedToFor]
+            in
             Some (label ~space:true upToBody (makeLetSequence (self#letList e3)))
           | Pexp_new (li) ->
             Some (label ~space:true (atom "new") (self#longident_class_or_type_loc li))
@@ -5307,7 +5354,8 @@ class printer  ()= object(self:'self)
     if stdAttrs <> [] then
       None
     else
-      let item = match x.pexp_desc with
+      let item =
+        match x.pexp_desc with
         (* The only reason Pexp_fun must also be wrapped in parens is that its =>
            token will be confused with the match token. *)
         | Pexp_fun _ when pipe || semi -> Some (self#reset#simplifyUnparseExpr x)
@@ -5398,12 +5446,24 @@ class printer  ()= object(self:'self)
         | Pexp_record (l, eo) -> Some (self#unparseRecord l eo)
         | Pexp_array (l) ->
           Some (self#unparseSequence ~construct:`Array l)
-        | Pexp_let (rf, l, e) ->
-            Some (makeLetSequence (self#letList x))
-        | Pexp_letmodule (s, me, e) ->
-            Some (makeLetSequence (self#letList x))
-        | Pexp_letexception _ ->
-            Some (makeLetSequence (self#letList x))
+        | Pexp_let _ | Pexp_sequence _
+        | Pexp_letmodule _ | Pexp_letexception _ ->
+          Some (makeLetSequence (self#letList x))
+        | Pexp_extension e ->
+          begin match expression_immediate_extension_sugar x with
+            | (Some _, _) -> None
+            | (None, _) ->
+              match expression_extension_sugar x with
+              | None -> Some (self#extension e)
+              | Some (extension, x') ->
+                match x'.pexp_desc with
+                | Pexp_let _ ->
+                  Some (makeLetSequence (self#letList x))
+                | Pexp_function l when (pipe || semi) ->
+                  Some (formatPrecedence ~loc:x.pexp_loc
+                          (self#reset#patternFunction ~extension x'.pexp_loc l))
+                | _ -> Some (self#extension e)
+          end
         | Pexp_open (ovf, lid, e) ->
             if self#isSeriesOfOpensFollowedByNonSequencyExpression x then
               (*
@@ -5429,8 +5489,6 @@ class printer  ()= object(self:'self)
               Some (label (label (self#longident_loc lid) (atom ("."))) expression)
           else
             Some (makeLetSequence (self#letList x))
-        | Pexp_sequence _ ->
-            Some (makeLetSequence (self#letList x))
         | Pexp_field (e, li) ->
           Some (label (makeList [self#simple_enough_to_be_lhs_dot_send e; atom "."]) (self#longident_loc li))
         | Pexp_send (e, s) ->
@@ -5444,7 +5502,6 @@ class printer  ()= object(self:'self)
           let lhs = self#simple_enough_to_be_lhs_dot_send e in
           let lhs = if needparens then makeList ~wrap:("(",")") [lhs] else lhs in
           Some (label (makeList [lhs; atom "#";]) (atom s))
-        | Pexp_extension e -> Some (self#extension e)
         | _ -> None
       in
       match item with
@@ -5533,13 +5590,17 @@ class printer  ()= object(self:'self)
       | [] -> toThis
       | _::_ -> makeList ~postSpace:true [(self#attributes l); toThis]
 
-  method attach_std_item_attrs l toThis =
+  method attach_std_item_attrs ?extension l toThis =
     let l = extractStdAttrs l in
-    match l with
-      | [] -> toThis
-      | _::_ ->
-        makeList ~postSpace:true ~indent:0 ~break:Always ~inline:(true, true)
-          (List.map self#item_attribute l @ [toThis])
+    match extension, l with
+    | None, [] -> toThis
+    | _, _ ->
+      let extension = match extension with
+        | None -> []
+        | Some id -> [atom ("%" ^ id.txt)]
+      in
+      makeList ~postSpace:true ~indent:0 ~break:Always ~inline:(true, true)
+        (extension @ List.map self#item_attribute l @ [toThis])
 
   method exception_declaration ed =
     let pcd_name = ed.pext_name in
@@ -6453,6 +6514,12 @@ class printer  ()= object(self:'self)
             in
             makeNonIndentedBreakingList moduleBindings
         | Pstr_attribute a -> self#floating_attribute a
+        | Pstr_extension ((extension, PStr [item]), a) ->
+          begin match item.pstr_desc with
+            | Pstr_value (rf, l) -> self#bindings ~extension (rf, l)
+            | _ -> self#attach_std_item_attrs ~extension a
+                     (self#structure_item item)
+          end
         | Pstr_extension (e, a) ->
           (* Notice how extensions have attributes - but not every structure
              item does. *)
