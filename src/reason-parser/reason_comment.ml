@@ -85,6 +85,8 @@ let align_lines text =
 let wrap t =
   match t.text with
   | "" | "*" -> "/***/"
+  | txt when Syntax_util.is_line_comment txt ->
+    "//" ^ (String.sub txt 0 (String.length txt - 1))
   | txt when txt.[0] = '*' && txt.[1] <> '*' ->
     align_lines ("/**" ^ txt ^ "*/")
   | txt -> align_lines ("/*" ^ txt ^ "*/")
