@@ -1,0 +1,18 @@
+opam-version: "1.2"
+maintainer: "Jordan Walke <jordojw@gmail.com>"
+authors: [ "Jordan Walke <jordojw@gmail.com>" ]
+license: "MIT"
+homepage: "https://github.com/facebook/reason"
+doc: "http://reasonml.github.io/"
+bug-reports: "https://github.com/facebook/reason/issues"
+dev-repo: "git://github.com/facebook/reason.git"
+tags: [ "syntax" ]
+build: [
+  ["jbuilder" "build" "-p" name "-j" jobs]
+]
+build-test: [["jbuilder" "runtest" "-p" name "-j" jobs]]
+depends: [
+  "jbuilder"                {build}
+  "ocamlbuild"
+]
+available: [ ocaml-version >= "4.02" & ocaml-version < "4.07" ]
