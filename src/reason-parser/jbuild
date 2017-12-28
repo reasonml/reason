@@ -29,10 +29,8 @@
 (executables
  ((names (menhir_error_processor))
   (modules menhir_error_processor)
-  (libraries
-     (menhirSdk))
-  ))
-   
+  (libraries (unix menhirSdk))))
+
 (rule
  ((targets (reason_parser_explain_raw.ml))
   (deps ( reason_parser.cmly))
