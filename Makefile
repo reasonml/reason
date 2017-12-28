@@ -49,8 +49,7 @@ ifndef version
 endif
 	export git_version="$(shell git rev-parse --verify HEAD)"; \
 	export git_short_version="$(shell git rev-parse --short HEAD)"; \
-	$(SUBSTS) $(ROOT_DIR)/src/refmt/package.ml.in; \
-	$(SUBSTS) $(ROOT_DIR)/reason.opam.in
+	$(SUBSTS) $(ROOT_DIR)/src/refmt/package.ml.in
 
 .PHONY: pre_release
 
