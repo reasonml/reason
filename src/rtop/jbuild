@@ -2,6 +2,7 @@
 
 (install
  ((section bin)
+  (package reason)
   (files (rtop_init.ml))))
 
 (library

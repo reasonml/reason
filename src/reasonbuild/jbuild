@@ -7,6 +7,7 @@
 
 (install
  ((section bin)
+  (package rebuild)
   ; This is a nested _build directory that running
   ; ocamlbuild -just-plugin generates.
   (files ((myocamlbuild as rebuild)))))
