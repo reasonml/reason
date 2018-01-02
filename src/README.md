@@ -28,20 +28,30 @@ opam pin add -y reason .
 
 ### With esy
 
-The esy workflow is still experimental.
-If you would like to help test, you can try it with the following commands.
+[`esy`](https://github.com/esy/esy) is an `npm`-like workflow for developing and consuming
+opam packages. It is still experimental, but if you're more familiar with `npm` than `opam`,
+`esy` will likely be an easier way to contribute to Reason.
+**Please file issues regarding `esy` at the [esy project](https://github.com/esy/esy) itself.**
 
 ```sh
-npm install -g esy
+# Make sure you have the latest esy 
+npm remove -g esy
+npm install -g esy@next
 git clone https://github.com/facebook/reason.git
 cd reason
 esy install
 esy build
-esy x make test
 ```
 
-Build commands like `make` that would normally be executed by
-themselves will need to be prefixed with `esy `.
+##### Editors
+- To use VSCode, just open the Reason project root, and `ocaml-language-server` automatically
+works with `esy` projects, loading all the right dependencies.
+- To use Vim/Emacs, start your editor using `esy vim` or `esy emacs`.
+
+##### Running tests
+
+You can run commands as if you had installed Reason by prefixing commands with `esy x` ("esy execute").
+For example `esy x make test`
 
 For more, see the [esy documentation](https://github.com/esy-ocaml/esy).
 
