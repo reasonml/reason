@@ -13,9 +13,7 @@ build: [
 build-test: [["jbuilder" "runtest" "-p" name "-j" jobs]]
 depends: [
   "jbuilder"                {build}
-  "ocamlfind"               {build}
-  "menhir"                  {>= "20170418" & <= "20171013"}
-  "result"                  {=  "1.2"}
-  "ocaml-migrate-parsetree"
+  "reason"
+  "merlin-extend"           {>= "0.3"}
 ]
 available: [ ocaml-version >= "4.02" & ocaml-version < "4.07" ]

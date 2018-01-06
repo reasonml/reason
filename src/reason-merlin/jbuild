@@ -3,5 +3,5 @@
 (executables
  ((names (ocamlmerlin_reason))
   (public_names (ocamlmerlin-reason))
-  (package reason)
+  (package reason-merlin)
   (libraries (compiler-libs.common merlin_extend reason))))
