@@ -2544,13 +2544,13 @@ mark_position_exp
    */
   | FUN optional_expr_extension match_cases(expr) %prec below_BAR
     { $2 (mkexp (Pexp_function $3)) }
-  | SWITCH optional_expr_extension parenthesized_expr
+  | SWITCH optional_expr_extension simple_expr_no_constructor
     LBRACE match_cases(seq_expr) RBRACE
     { $2 (mkexp (Pexp_match ($3, $5))) }
-  | TRY optional_expr_extension parenthesized_expr
+  | TRY optional_expr_extension simple_expr_no_constructor
     LBRACE match_cases(seq_expr) RBRACE
     { $2 (mkexp (Pexp_try ($3, $5))) }
-  | TRY optional_expr_extension parenthesized_expr WITH error
+  | TRY optional_expr_extension simple_expr_no_constructor WITH error
     { syntax_error_exp (mklocation $startpos($5) $endpos($5)) "Invalid try with"}
   | IF optional_expr_extension parenthesized_expr
        simple_expr ioption(preceded(ELSE,expr))
@@ -2677,23 +2677,6 @@ parenthesized_expr:
   | constant              { mkexp (Pexp_constant $1) }
   | jsx                   { $1 }
   | simple_expr_direct_argument { $1 }
-  | as_loc(constr_longident)
-    mark_position_exp
-      ( non_labeled_argument_list   { mkexp (Pexp_tuple($1)) }
-      | simple_expr_direct_argument { $1 }
-      )
-    { mkExplicitArityTupleExp (Pexp_construct($1, Some $2)) }
-  | name_tag
-    mark_position_exp
-      ( non_labeled_argument_list
-        { (* only wrap in a tuple if there are more than one arguments *)
-          match $1 with
-          | [x] -> x
-          | l -> mkexp (Pexp_tuple(l))
-        }
-      | simple_expr_direct_argument { $1 }
-      )
-    { mkexp(Pexp_variant($1, Some $2)) }
   | LBRACKETBAR expr_list BARRBRACKET
     { mkexp (Pexp_array $2) }
   | as_loc(LBRACKETBAR) expr_list as_loc(error)
@@ -2801,8 +2784,40 @@ parenthesized_expr:
 
 %inline simple_expr: simple_expr_call { mkexp_app_rev $startpos $endpos $1 };
 
+simple_expr_no_constructor:
+  mark_position_exp(simple_expr_template(simple_expr_no_constructor)) { $1 };
+
+simple_expr_template_constructor:
+  | as_loc(constr_longident)
+    mark_position_exp
+      ( non_labeled_argument_list   { mkexp (Pexp_tuple($1)) }
+      | simple_expr_direct_argument { $1 }
+      )
+    { (*if List.mem (string_of_longident $1.txt)
+         built_in_explicit_arity_constructors then
+        (* unboxing the inner tupple *)
+        match $2 with
+          | [inner] -> mkexp (Pexp_construct($1, Some inner))
+          | _ -> assert false
+      else*)
+      mkExplicitArityTupleExp (Pexp_construct($1, Some $2))
+    }
+  | name_tag
+    mark_position_exp
+      ( non_labeled_argument_list
+        { (* only wrap in a tuple if there are more than one arguments *)
+          match $1 with
+          | [x] -> x
+          | l -> mkexp (Pexp_tuple(l))
+        }
+      | simple_expr_direct_argument { $1 }
+      )
+    { mkexp(Pexp_variant($1, Some $2)) }
+;
+
 simple_expr_no_call:
-  mark_position_exp(simple_expr_template(simple_expr_no_call)) { $1 }
+  | mark_position_exp(simple_expr_template(simple_expr_no_call)) { $1 }
+  | simple_expr_template_constructor { $1 }
 ;
 
 simple_expr_call:
@@ -2814,6 +2829,7 @@ simple_expr_call:
       let loc = mklocation $startpos($2) $endpos($2) in
       (make_real_exp (mktailexp_extension loc seq ext_opt), [])
     }
+  | simple_expr_template_constructor { ($1, []) }
 ;
 
 simple_expr_direct_argument:
