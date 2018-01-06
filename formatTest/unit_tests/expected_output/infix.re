@@ -198,7 +198,7 @@ let minusAndInteger = pred - 1;
 
 let passingMinusOneToFunction = pred(-1);
 
-let leadingMinusIsCorrectlyNeg = (-1) + 20;
+let leadingMinusIsCorrectlyNeg = -1 + 20;
 
 let leadingMinusIsCorrectlyNeg = 3 > (-1);
 
@@ -969,7 +969,7 @@ let containingObject = {
       [@attr] (- something(blah, blah));
     /* Attribute on the regular function application, not prefix */
     let res = [@attr] (- something(blah, blah));
-    let attrOnPrefix = [@ppxOnPrefixApp] (-1);
+    let attrOnPrefix = [@ppxOnPrefixApp] -1;
     let attrOnPrefix = 5 + (-1);
     let result =
       [@ppxAttributeOnSugarGetter] arr.[0];
