@@ -2932,8 +2932,6 @@ let_binding_body:
   | with_patvar(val_ident) type_constraint EQUAL expr
     { let loc = mklocation $symbolstartpos $endpos in
       ($1, ghexp_constraint loc $4 $2) }
-  | with_patvar(val_ident) fun_def(EQUAL,core_type)
-    { ($1, $2) }
   | with_patvar(val_ident) COLON preceded(QUOTE,ident)+ DOT only_core_type(core_type)
       EQUAL mark_position_exp(expr)
     { let typ = mktyp ~ghost:true (Ptyp_poly($3, $5)) in
