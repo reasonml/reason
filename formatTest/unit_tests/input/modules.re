@@ -235,7 +235,7 @@ module CurriedNoSugar = fun (A:ASig) => fun (B:BSig) => {
   let result = A.a + B.b;
 };
 
-let letsTryThatSyntaxInLocalModuleBindings () {
+let letsTryThatSyntaxInLocalModuleBindings = () => {
   module CurriedSugarWithReturnType (A:ASig, B:BSig): SigResult = {
     let result = A.a + B.b;
   };
@@ -323,7 +323,7 @@ module rec A : {
   let compare: (t, t) => int;
 } = {
   type t = Leaf(string) | Node(ASet.t);
-  let compare(t1,t2) = switch (t1, t2) {
+  let compare = (t1,t2) => switch (t1, t2) {
     | (Leaf(s1), Leaf(s2)) => Pervasives.compare(s1, s2)
     | (Leaf(_), Node(_)) => 1
     | (Node(_), Leaf(_)) => -1
@@ -362,7 +362,7 @@ module Example2 (F:(Type)=>Type, X:Type) {
    *   let iso (a:(Compose Id F X).t): (F X).t => a;
    *
    */
-  let iso (a:Compose(Id,F,X).t): F(X).t = a;
+  let iso  = (a:Compose(Id,F,X).t): F(X).t => a;
 };
 
 Printf.printf("\nModules And Functors: %n\n", CurriedNoSugarFunctorResultInline.result);
@@ -386,7 +386,7 @@ Printf.printf("\nModules And Functors: %n\n", CurriedNoSugarFunctorResultInline.
 include YourLib.CreateComponent {
   type thing = blahblahblah;
   type state = unit;
-  let getInitialState(_)= ();
+  let getInitialState = (_) => ();
   let myValue = {
     recordField: "hello"
   };
@@ -401,9 +401,9 @@ let myFirstClass = (module MyModule : HasInt);
 
 let myFirstClassWillBeFormattedAs: (module HasInt) = (module MyModule);
 
-let acceptsAndUnpacksFirstClass ((module M : HasInt)) = M.x + M.x;
+let acceptsAndUnpacksFirstClass  = ((module M : HasInt)) => M.x + M.x;
 
-let acceptsAndUnpacksFirstClass ((module M) : (module HasInt)) = M.x + M.x;
+let acceptsAndUnpacksFirstClass  = ((module M) : (module HasInt)) => M.x + M.x;
 
 module SecondClass = (val myFirstClass);
 
@@ -466,6 +466,6 @@ module type T = (t with type t = a) => a;
 module X = [%test extension];
 module type T = [%test extension];
 
-let foo (type a, (module X): (module X_t with type t =a)) = X.a;
+let foo = (type a, (module X): (module X_t with type t =a)) => X.a;
 
 let f = ((module M): (module M with type x = x and type y = y)) => M.x;

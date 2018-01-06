@@ -94,11 +94,11 @@ let testingEndOfLineComments = [];/* Comment after entire let binding */
 /*   withFirstArg + andSecondArg /* before semi */ ; */
 /* }; */
 
-let myFunction
+let myFunction =
    (/* First arg */
     withFirstArg,
     /* Second Arg */
-    andSecondArg) {
+    andSecondArg) => {
   withFirstArg + andSecondArg
 }; /* After Semi */
 
@@ -331,7 +331,7 @@ type color =
   | Green(int) /* After green end of line */
 ; /* On next line after color type def */
 
-let blahCurriedX(x) =
+let blahCurriedX = (x) =>
   fun
   | Red(10)
   | Black(20)
@@ -341,17 +341,17 @@ let blahCurriedX(x) =
   | Green(x) => 0 /* After second green */
 ; /* On next line after blahCurriedX def */
 
-let name_equal(x,y) { x == y };
+let name_equal = (x,y) => { x == y };
 
-let equal(i1,i2) =
+let equal = (i1,i2) =>
   i1.contents === i2.contents && true; /* most unlikely first */
 
-let equal(i1,i2) =
+let equal = (i1,i2) =>
   compare(compare(0,0),compare(1,1)); /* END OF LINE HERE */
 
-let tuple_equal((i1, i2)) = i1 == i2;
+let tuple_equal = ((i1, i2)) => i1 == i2;
 
-let tuple_equal((csu, mgd)) =
+let tuple_equal = ((csu, mgd)) =>
   /* Some really long comments, see https://github.com/facebook/reason/issues/811 */
   tuple_equal((csu, mgd));
 

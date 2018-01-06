@@ -122,12 +122,12 @@ and secondRecursiveClass(init) {
 
 type closedObj = {.};
 
-let (<..>)(a,b) = a + b;
+let (<..>) = (a,b) => a + b;
 let five = 2 <..> 3;
 
 type nestedObj = {. bar : {. a: int}};
 
-let (>>)(a,b) = a > b;
+let (>>) = (a,b) => a > b;
 
 let bigger = 3 >> 2;
 
@@ -156,8 +156,8 @@ let coercedReturn = {
   (tmp :> {. x: int})
 };
 
-let acceptsOpenAnonObjAsArg (o: {.. x: int, y:int}) = o#x + o#y;
-let acceptsClosedAnonObjAsArg (o: {. x: int, y:int}) = o#x + o#y;
+let acceptsOpenAnonObjAsArg  = (o: {.. x: int, y:int}) => o#x + o#y;
+let acceptsClosedAnonObjAsArg  = (o: {. x: int, y:int}) => o#x + o#y;
 let res = acceptsOpenAnonObjAsArg {
   pub x = 0;
   pub y = 10;

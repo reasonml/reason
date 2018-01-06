@@ -20,7 +20,7 @@ let notTupled: notTupleVariant = NotActuallyATuple(10,10);
 
 /* Doesn't work because we've correctly annotated parse tree nodes with explicit_arity! */
 /* let notTupled: notTupleVariant = NotActuallyATuple (10, 10); */
-let funcOnNotActuallyATuple (NotActuallyATuple(x,y)) = x + y;
+let funcOnNotActuallyATuple  = (NotActuallyATuple(x,y)) => x + y;
 
 /* let funcOnNotActuallyATuple (NotActuallyATuple (x, y)) = x + y; */
 /* let notTupled: notTupleVariant = NotActuallyATuple intTuple; /*Doesn't work! */ */
@@ -31,7 +31,7 @@ let simpleTupled: simpleTupleVariant = SimpleActuallyATuple (10, 10);
 let simpleTupled: simpleTupleVariant = SimpleActuallyATuple (intTuple);
 
 /*Works! */
-let NotActuallyATuple(x,y) = NotActuallyATuple (10, 20);
+let NotActuallyATuple = (x,y) => NotActuallyATuple (10, 20);
 
 /* Doesn't work because we've correctly annotated parse tree nodes with explicit_arity! */
 /* let unfortunatelyThisStillWorks: simpleTupleVariant = SimpleActuallyATuple 10 10; */
@@ -43,13 +43,13 @@ let yesTupled: tupleVariant = ActuallyATuple (intTuple);
 
 type threeForms = | FormOne(int) | FormTwo(int) | FormThree;
 
-let doesntCareWhichForm(x) = switch (x) {
+let doesntCareWhichForm = (x) => switch (x) {
   | FormOne(q)
   | FormTwo(q) => 10
   | FormThree => 20
 };
 
-let doesntCareWhichFormAs(x) = switch (x) {
+let doesntCareWhichFormAs = (x) => switch (x) {
   | FormOne(q) as ppp
   | FormTwo(q) as ppp => 10
   | FormThree => 20
@@ -75,18 +75,18 @@ type colorList = [<
 1 + doesntCareWhichForm(FormThree);
 
 /* Destructured matching at function definition */
-let accessDeeply(LocalModule.AccessedThroughModule) = 10;
+let accessDeeply = (LocalModule.AccessedThroughModule) => 10;
 
 let accessDeeplyWithArg
     (LocalModule.AccessedThroughModuleWith(x) | LocalModule.AccessedThroughModuleWithTwo(_,x)) = x;
 
 /* Destructured matching *not* at function definition */
-let accessDeeply(x) = switch (x) {
+let accessDeeply = (x) => switch (x) {
   | LocalModule.AccessedThroughModule => 10
   | _ => 0
 };
 
-let accessDeeplyWithArg(x) = switch (x) {
+let accessDeeplyWithArg = (x) => switch (x) {
   | LocalModule.AccessedThroughModuleWith(x) => 10
   | _ => 0
 };
@@ -99,17 +99,17 @@ let accessDeeplyWithArg(x) = switch (x) {
  *
  *   let myFunc x = function | `Blah p as retVal -> retVal`
  */
-let accessDeeply(x) = switch (x) {
+let accessDeeply = (x) => switch (x) {
   | LocalModule.AccessedThroughModule as ppp => 1
 };
 
-let accessDeeplyWithArg(x) = switch (x) {
+let accessDeeplyWithArg = (x) => switch (x) {
   | LocalModule.AccessedThroughModuleWith (x as retVal) => retVal + 1
   | LocalModule.AccessedThroughModuleWithTwo((x as retVal1),(y as retVal2)) => retVal1 + retVal2 + 1
 };
 
 /* Just to show that by default `as` captures much less aggresively */
-let rec accessDeeplyWithArgRecursive(x,count) = switch (x) {
+let rec accessDeeplyWithArgRecursive = (x,count) => switch (x) {
   | LocalModule.AccessedThroughModuleWith(x) as entirePattern =>
       /* It captures the whole pattern */
       if (count > 0) {0;} else {accessDeeplyWithArgRecursive(entirePattern, count - 1);}
@@ -120,7 +120,7 @@ let rec accessDeeplyWithArgRecursive(x,count) = switch (x) {
 
 accessDeeplyWithArgRecursive (LocalModule.AccessedThroughModuleWith(10), 10);
 
-let run () {
+let run  = () => {
   TestUtils.printSection("Variants");
   Printf.printf("%d %d \n",x,y);
 };
@@ -129,18 +129,18 @@ type combination('a) = | HeresTwoConstructorArguments(int,int);
 
 /** But then how do we parse matches in function arguments? */
 /* We must require parenthesis around construction matching in function args only*/
-let howWouldWeMatchFunctionArgs (HeresTwoConstructorArguments(x,y)) = x + y;
+let howWouldWeMatchFunctionArgs  = (HeresTwoConstructorArguments(x,y)) => x + y;
 
 /* How would we annotate said arg? */
-let howWouldWeMatchFunctionArgs (HeresTwoConstructorArguments(x,y): combination('wat)) = x + y;
+let howWouldWeMatchFunctionArgs  = (HeresTwoConstructorArguments(x,y): combination('wat)) => x + y;
 
-let matchingTwoCurriedConstructorsInTuple(x) = switch (x) {
+let matchingTwoCurriedConstructorsInTuple = (x) => switch (x) {
   | (HeresTwoConstructorArguments(x,y), HeresTwoConstructorArguments(a,b)) => x + y + a + b
 };
 
 type twoCurriedConstructors = | TwoCombos (combination(int), combination(int));
 
-let matchingTwoCurriedConstructorInConstructor(x) = switch (x) {
+let matchingTwoCurriedConstructorInConstructor = (x) => switch (x) {
   | TwoCombos (HeresTwoConstructorArguments(x,y), HeresTwoConstructorArguments(a,b)) => a + b + x + y
 };
 
@@ -274,7 +274,7 @@ let res = switch (ylw, prp) {
   | (`Yellow (p, p2), `Yellow (y, y2)) => `Purple (y + p, 0)
 };
 
-let rec atLeastOneFlushableChildAndNoWipNoPending(composition,atPriority) = switch (composition) {
+let rec atLeastOneFlushableChildAndNoWipNoPending = (composition,atPriority) => switch (composition) {
   | [] => false
   | [hd, ...tl] =>
       switch (hd) {
@@ -304,36 +304,36 @@ let res = switch (prp) {
 /*
  * Testing explicit arity.
  */
-let rec map(f) =
+let rec map = (f) =>
   fun | Node(None,m) => Node(None, M.map(map(f),m))
       | Node(LongModule.Path.None,m) => Node(None, M.map(map(f),m))
       | Node(LongModule.Path.Some(v),m) => Node(Some(f(v)), M.map(map(f),m));
 
-let myFunc(x,y,None) = "asdf";
+let myFunc = (x,y,None) => "asdf";
 
-let rec map(f) =
+let rec map = (f) =>
   fun | Node(None,m) => Node(None, M.map(map(f),m))
       | Node(LongModule.Path.None,m) => LongModule.Path.Node(LongModule.Path.None, M.map(map(f),m))
       | Node(LongModule.Path.Some(v),m) =>
           LongModule.Path.Node(LongModule.Path.Some(f(v)), M.map(map(f),m));
 
-let myFunc(x,y,LongModule.Path.None) = "asdf";
+let myFunc = (x,y,LongModule.Path.None) => "asdf";
 
-let listPatternMembersNeedntBeSimple(x) = switch (x) {
+let listPatternMembersNeedntBeSimple = (x) => switch (x) {
   | [] => ()
   | [Blah(x,y), Foo(a,b), ...rest] => ()
   | [Blah(x,y), Bar(a,b), ...rest] => ()
   | _ => ()
 };
 
-let listTailPatternNeedntBeSimple(x) = switch (x) {
+let listTailPatternNeedntBeSimple = (x) => switch (x) {
   | [] => ()
   /* Although this would never typecheck! */
   | [Blah(x,y), Foo(a,b), ...Something(x)] => ()
   | _ => ()
 };
 
-let listPatternMayEvenIncludeAliases(x) = switch (x) {
+let listPatternMayEvenIncludeAliases = (x) => switch (x) {
   | [] => ()
   /* Although this would never typecheck! */
   | [Blah(x,y) as head, Foo(a,b) as head2, ...Something(x) as tail] => ()

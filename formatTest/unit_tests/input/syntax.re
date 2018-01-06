@@ -12,7 +12,7 @@ TestUtils.printSection("General Syntax");
 /*   `Thingy x => (print_string "matched thingy x"); x */
 /*   | `Other x => (print_string "matched other x"); x;; */
 /*  */
-let matchingFunc(a) = switch (a) {
+let matchingFunc = (a) => switch (a) {
   | `Thingy x => {
     print_string("matched thingy x");
     let zz = 10;
@@ -199,10 +199,10 @@ let is
 pre-
 fix    /-function binding name---\
 |-\   / is coupled to prefix      \   */
-let desiredFormattingForWrappedSugar
+let desiredFormattingForWrappedSugar =
    (curriedArg,
     anotherArg,
-    lastArg) {
+    lastArg) => {
   nameBlah: 10
 };
 
@@ -211,10 +211,10 @@ let is
 pre-
 fix    /-function binding name---\
 |-\   / is coupled to prefix      \   */
-let desiredFormattingForWrappedSugarReturnOnNewLine
+let desiredFormattingForWrappedSugarReturnOnNewLine =
    (curriedArg,
     anotherArg,
-    lastArg)
+    lastArg) =>
 {
   nameBlah: 10
 };
@@ -239,12 +239,12 @@ let point3D:point3D = {
   z: 80,    /* Optional Comma */
 };
 
-let printPoint (p:point) {
+let printPoint = (p:point) => {
   print_int(p.x);
   print_int(p.y);
 };
 
-let addPoints (p1:point, p2:point) {
+let addPoints = (p1:point, p2:point) => {
   x: p1.x + p2.x,
   y: p1.y + p2.y
 };
@@ -285,7 +285,7 @@ let o: (person) = {name: "bob", age: 10};
 /* Parens needed? Nope! */
 let o: person = {name: "bob", age: 10};
 
-let printPerson (p: person) {
+let printPerson = (p: person) => {
   let q: person = p;
   p.name ++ p.name;
 };
@@ -294,15 +294,15 @@ let printPerson (p: person) {
 
 /* With this unification, anywhere eyou see `= fun` you can just ommit it */
 let blah = fun(a) => a;         /* Done */
-let blah (a) = a;               /* Done (almost) */
+let blah = (a) => a;               /* Done (almost) */
 
 let blah = fun(a,b) => a;       /* Done */
-let blah (a, b) = a;             /* Done (almost) */
+let blah = (a, b) => a;             /* Done (almost) */
 
 /* More than one consecutive pattern must have a single case */
 type blah = {blahBlah: int};
 let blah = fun (a, {blahBlah}) => a;
-let blah (a, {blahBlah}) = a;
+let blah = (a, {blahBlah}) => a;
 
 module TryToExportTwice = {
   let myVal = "hello";
@@ -344,9 +344,9 @@ let onlyDoingThisTopLevelLetToBypassTopLevelSequence = {
 
 type hasA = {a:int};
 let a = 10;
-let returnsASequenceExpressionWithASingleIdentifier () {a};
-let thisReturnsA () {a;};
-let thisReturnsAAsWell () = a;
+let returnsASequenceExpressionWithASingleIdentifier = () => {a};
+let thisReturnsA = () => {a;};
+let thisReturnsAAsWell = () => a;
 
 let recordVal:int = thisReturnsARecord().a;
 Printf.printf("\nproof that thisReturnsARecord: %n\n", recordVal);
@@ -387,7 +387,7 @@ let blah = fun
 /*   | Green x => 0;                      /* Support that */ */
 /*  */
 
-let blahCurriedX(x) =
+let blahCurriedX = (x) =>
   fun
   | Red(x)
   | Black(x)
@@ -396,7 +396,7 @@ let blahCurriedX(x) =
   | Green(x) => 0; /* Support that */
 
 let sameThingInLocal = {
-  let blahCurriedX(x) =
+  let blahCurriedX = (x) =>
     fun
     | Red(x)
     | Black(x)
@@ -408,7 +408,7 @@ let sameThingInLocal = {
 };
 
 /* This should be parsed/printed exactly as the previous */
-let blahCurriedX(x) = fun
+let blahCurriedX = (x) => fun
   | Red(x) | Black(x) | Green(x) => 1
   | Black(x) => 0
   | Green(x) => 0;
@@ -465,7 +465,7 @@ let res = {
 /* let blah a patt => 0 | anotherPatt => 1; */
 
                 /*simple pattern  EQUALGREATER      expr */
-let blah (    a,      {blahBlah})        =             a;
+let blah = (    a,      {blahBlah})        =>             a;
 
                /*            match_case             */
                /*     pattern EQUALGREATER  expr */
@@ -475,7 +475,7 @@ let blah = fun   |Red(_)          =>      1   |Black(_)=> 0 |Green(_)=> 0;
 /* Won't work! */
 /* let arrowFunc = fun a b => print_string "returning aplusb from arrow"; a + b;;  */
 let arrowFunc = fun(a,b)=> {print_string("returning aplusb from arrow"); a + b;};
-let add(a,b) {
+let add = (a,b) => {
   let extra = {print_string("adding"); 0;};
   let anotherExtra = 0;
   extra + a + b + anotherExtra;
@@ -483,15 +483,15 @@ let add(a,b) {
 
 (print_string (string_of_int (add(4,34))));
 
-let dummy(_) = 10;
+let dummy = (_) => 10;
 dummy(res1);
 dummy(res2);
 dummy(res3);
 
 
 /* Some edge cases */
-let myFun (firstArg, Red(x) | Black(x) | Green(x)) = firstArg + x;
-let matchesWithWhen(a) = switch (a) {
+let myFun = (firstArg, Red(x) | Black(x) | Green(x)) => firstArg + x;
+let matchesWithWhen = (a) => switch (a) {
   | Red(x) when 1 > 0 => 10
   | Red(_) => 10
   | Black(x) => 10
@@ -505,7 +505,7 @@ let matchesWithWhen = fun
   | Green(x) => 10;
 
 
-let matchesOne (`Red x) = 10;
+let matchesOne = (`Red x) => 10;
 
 
 /*
@@ -543,7 +543,7 @@ let tupleInsideALetSequence = {
 
 /* We *require* that function return types be wrapped in
   parenthesis. In this example, there's no ambiguity */
-let makeIncrementer (delta:int) : (int)=>int = (a) => a + delta;
+let makeIncrementer = (delta:int) : ((int)=>int) => (a) => a + delta;
 
 /* We could even force that consistency with let bindings - it's allowed
    currently but not forced.
@@ -564,13 +564,13 @@ class classWithNoArg {
   end;
 */
 
-let myFunc (a:int, b:int) : (int, int) = (a, b);
-let myFunc (a:int, b:int) : list(int) = [1];
-let myFunc (a:int, b:int) : point {
+let myFunc = (a:int, b:int) : (int, int) => (a, b);
+let myFunc = (a:int, b:int) : list(int) => [1];
+let myFunc = (a:int, b:int) : point => {
   x: a,
   y: b
 };
-let myFunc (a:int, b:int) : point {
+let myFunc = (a:int, b:int) : point => {
   x: a,
   y: b
 };
@@ -604,7 +604,7 @@ in an extra [], but it doesn't hurt */
 
   /* Currying */
   let lookES6Style = (`Red x) (`Black y) => { };
-  let lookES6Style (`Red x) (`Black y) => { };
+  let lookES6Style = (`Red x) (`Black y) => { };
 
   /* Matching the single argument */
   let lookES6Style = oneArg => match oneArg with
@@ -661,34 +661,34 @@ let a = 10;
 let b = 20;
 
 /*A*/
-let named                (~a as a,   ~b as b)   = a + b;
+let named                = (~a as a,   ~b as b)   => a + b;
 type named =             (~a: int, ~b: int) => int;
 /*B*/
-let namedAlias           (~a as aa,  ~b as bb)  = aa + bb;
-let namedAlias           (~a as aa,  ~b as bb)  = aa + bb;
+let namedAlias           = (~a as aa,  ~b as bb)  => aa + bb;
+let namedAlias           = (~a as aa,  ~b as bb)  => aa + bb;
 type namedAlias =        (~a: int, ~b: int) => int;
 /*C*/
-let namedAnnot           (~a :int, ~b :int)  = 20;
+let namedAnnot           = (~a :int, ~b :int)  => 20;
 /*D*/
-let namedAliasAnnot      (~a as aa:int,~b as bb:int) = 20;
+let namedAliasAnnot      = (~a as aa:int,~b as bb:int) => 20;
 /*E*/
-let myOptional           (~a=?,    ~b=?,      ()) = 10;
+let myOptional           = (~a=?,    ~b=?,      ()) => 10;
 type named =             (~a: int=?, ~b: int=?, unit) => int;
 /*F*/
-let optionalAlias        (~a as aa=?,  ~b as bb=?,  ()) = 10;
+let optionalAlias        = (~a as aa=?,  ~b as bb=?,  ()) => 10;
 /*G*/                       
-let optionalAnnot        (~a as a:int =?, ~b as b:int=?, ()) = 10;
+let optionalAnnot        = (~a as a:int =?, ~b as b:int=?, ()) => 10;
 /*H*/                       
-let optionalAliasAnnot   (~a as aa:int =?, ~b as bb:int=?, ()) = 10;
+let optionalAliasAnnot   = (~a as aa:int =?, ~b as bb:int=?, ()) => 10;
 /*I: */                     
-let defOptional          (~a as a=10, ~b as b=10, ()) = 10;
+let defOptional          = (~a as a=10, ~b as b=10, ()) => 10;
 type named =             (~a: int=?, ~b: int=?, unit) => int;
 /*J*/                       
-let defOptionalAlias     (~a as aa=10, ~b as bb=10, ()) = 10;
+let defOptionalAlias     = (~a as aa=10, ~b as bb=10, ()) => 10;
 /*K*/                       
-let defOptionalAnnot     (~a as a:int=10, ~b as b:int=10, ()) = 10;
+let defOptionalAnnot     = (~a as a:int=10, ~b as b:int=10, ()) => 10;
 /*L*/                       
-let defOptionalAliasAnnot(~a as aa:int=10, ~b as bb:int=10, ()) = 10;
+let defOptionalAliasAnnot = (~a as aa:int=10, ~b as bb:int=10, ()) => 10;
 
 /*M: Invoking them - Punned */
 let resNotAnnotated = named(~a=a,~b=b);
@@ -748,7 +748,7 @@ type typeWithNestedOptionalNamedArgs =
 type typeWithNestedOptionalNamedArgs =
     (~outerOne: list(string)=?, ~outerTwo: int=?) => int;
 
-let f(~tuple="long string to trigger line break") = ();
+let f = (~tuple="long string to trigger line break") => ();
 
 let x =
   callSomeFunction
@@ -862,7 +862,7 @@ let match = "match";
 
 let method = "method";
 
-let foo(x,~x as bar,~z,~foo as bar,~foo as z) {
+let foo = (x,~x as bar,~z,~foo as bar,~foo as z) => {
   bar + 2
 };
 

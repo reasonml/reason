@@ -128,7 +128,7 @@ let logTapSuccess = fun(self) => if (self.ext.logSuccess) {
                             ();
                           };
 
-let logTapSuccess(self) = if (self.ext.logSuccess) {
+let logTapSuccess = (self) => if (self.ext.logSuccess) {
                             print_string("Did tap");
                             print_newline ();
                           };
@@ -139,7 +139,7 @@ let logTapSuccess(self) = if (self.ext.logSuccess) {
 ((!data).field1).field2 = true;
 (!(data.field1)).field2 = true;
 
-let loop(appTime,frameTime) = {
+let loop = (appTime,frameTime) => {
   if (hasSetup.contents) {
     setupScene ();
     renderIntoTop ();
@@ -276,7 +276,7 @@ let (letBindingWithTypeConstraint:int) = 10;
 let ((tupleItem:int), (withTypeConstraint:int)) = (10, 20);
 
 /* To make sure that tuple field annotations are annotating the entire field */
-let _dummyFunc(x) = 10;
+let _dummyFunc = (x) => 10;
 let annotatingFuncApplication = (_dummyFunc("a"):int, _dummyFunc("a"):int);
 
 /* Pretty printer might stick the [int] at the label. */
@@ -328,7 +328,7 @@ let rec size = fun(soFar,lst) => switch (lst) {
   | [hd, ...tl] => size(soFar + 1,tl)
 };
 
-let nestedMatch(lstLst) = switch (lstLst) {
+let nestedMatch = (lstLst) => switch (lstLst) {
   | [hd, ...tl] when false => 10
   | [hd, ...tl] => switch (tl) {
       | [] => 0 + 0
@@ -337,7 +337,7 @@ let nestedMatch(lstLst) = switch (lstLst) {
   | [] => 0
 };
 
-let nestedMatchWithWhen(lstLst) = switch (lstLst) {
+let nestedMatchWithWhen = (lstLst) => switch (lstLst) {
   | [hd, ...tl] when false => 10
   | [hd, ...tl] when true => switch (tl) {
       | [] when false => 0 + 0
@@ -452,14 +452,14 @@ let addValues = fun (a:int, b:int) => {
 
 let myFunction = fun (a : int, b : int) : int => a + b;
 
-let functionReturnValueType (i:int, s:string): (int) => int = fun(x) => x + 1;
+let functionReturnValueType = (i:int, s:string): ((int) => int) => fun(x) => x + 1;
 
-let curriedFormOne (i:int, s:string) = s ++ string_of_int(i);
+let curriedFormOne = (i:int, s:string) => s ++ string_of_int(i);
 
-let curriedFormTwo (i:int, x:int) :(int, int) = (i, x);
+let curriedFormTwo = (i:int, x:int) :(int, int) => (i, x);
 /* let nonCurriedFormTwo = fun (i:int, x:int) (:(int, int)) => (i, x); */
 
-let curriedFormThree (i:int, (a:int, b:int):(int, int)) :(int, int, int) = (i, a, b);
+let curriedFormThree = (i:int, (a:int, b:int):(int, int)) :(int, int, int) => (i, a, b);
 
 /* let nonCurriedFormThree = fun (i:int, (a:int, b:int):(int, int)) (:(int, int, int)) => (i, a, b);  */
 
@@ -474,7 +474,7 @@ type myFuncType = (int, int) => int;
 
 let myFunc: myFuncType = fun (a,b) => a + b;
 
-let funcWithTypeLocallyAbstractTypes (type atype, type btype, a, b, c: (atype, btype) => unit) = c(a,b);
+let funcWithTypeLocallyAbstractTypes = (type atype, type btype, a, b, c: (atype, btype) => unit) => c(a,b);
 
 /* Checks that function types aren't unnecessary wrapped */
 type a = ((unit => unit));
@@ -513,7 +513,7 @@ let anotherRecord = {
   age: testRecord.age + 10
 };
 
-let makeRecordBase () {name: "Joe", age: 30, occupation: "Engineer"};
+let makeRecordBase  = () => {name: "Joe", age: 30, occupation: "Engineer"};
 let anotherRecord = {
   /* These parens should be evaporated. */
   ...(makeRecordBase ()),
