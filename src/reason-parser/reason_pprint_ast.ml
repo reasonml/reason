@@ -3658,7 +3658,7 @@ class printer  ()= object(self:'self)
      a chance to reduce. This function would determine the minimum parens to
      ensure that. *)
   method ensureContainingRule ~withPrecedence ~reducesAfterRight () =
-    match self#unparseExprRecurse reducesAfterRight with
+    match self#unparseExprRecurse ~wrapNegPrefix:true reducesAfterRight with
     | SpecificInfixPrecedence ({reducePrecedence; shiftPrecedence}, rightRecurse)->
       if higherPrecedenceThan shiftPrecedence withPrecedence then begin
         rightRecurse
@@ -3772,7 +3772,7 @@ class printer  ()= object(self:'self)
     | Simple itm -> ([itm], Some x.pexp_loc)
 
 
-  method unparseExprRecurse x =
+  method unparseExprRecurse ?(wrapNegPrefix=false) x =
     (* If there are any attributes, render unary like `(~-) x [@ppx]`, and infix like `(+) x y [@attr]` *)
     let {arityAttrs; stdAttrs; jsxAttrs} = partitionAttributes x.pexp_attributes in
     (* If there's any attributes, recurse without them, then apply them to
@@ -3797,7 +3797,7 @@ class printer  ()= object(self:'self)
           (List.concat [attributesAsList; itms])
       ]
     else
-    match self#simplest_expression x with
+    match self#simplest_expression ~wrapNegPrefix x with
     | Some se -> Simple se
     | None ->
     match x.pexp_desc with
@@ -5349,7 +5349,7 @@ class printer  ()= object(self:'self)
       | _ -> raise (Invalid_argument "bs.obj only accepts a record. You've passed something else"))
     | _ -> assert false
 
-  method simplest_expression x =
+  method simplest_expression ?(wrapNegPrefix=false) x =
     let {stdAttrs; jsxAttrs} = partitionAttributes x.pexp_attributes in
     if stdAttrs <> [] then
       None
@@ -5410,7 +5410,7 @@ class printer  ()= object(self:'self)
             Some (ensureSingleTokenSticksToLabel (self#longident_loc li))
         | Pexp_constant c ->
             (* Constants shouldn't break when to the right of a label *)
-            Some (ensureSingleTokenSticksToLabel (self#constant c))
+            Some (ensureSingleTokenSticksToLabel (self#constant ~parens:wrapNegPrefix c))
         | Pexp_pack me ->
           Some (
             makeList
