@@ -77,8 +77,8 @@ type colorList = [<
 /* Destructured matching at function definition */
 let accessDeeply = (LocalModule.AccessedThroughModule) => 10;
 
-let accessDeeplyWithArg
-    (LocalModule.AccessedThroughModuleWith(x) | LocalModule.AccessedThroughModuleWithTwo(_,x)) = x;
+let accessDeeplyWithArg =
+    (LocalModule.AccessedThroughModuleWith(x) | LocalModule.AccessedThroughModuleWithTwo(_,x)) => x;
 
 /* Destructured matching *not* at function definition */
 let accessDeeply = (x) => switch (x) {

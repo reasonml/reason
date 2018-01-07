@@ -466,9 +466,9 @@ let justReturn = (x) => x;
 
 /* With default formatting settings: Two arguments are special cased in
    function application "justReturn hasABunch" */
-let acceptsTwoThings
+let acceptsTwoThings =
     (nameAge:nameAge,
-     hasABunch:hasABunch) = justReturn(hasABunch);
+     hasABunch:hasABunch) => justReturn(hasABunch);
 
 /*
   Ideally, we'd allow "acceptsTwoThings {age, name}" on the first line, then
@@ -520,9 +520,9 @@ let onlyReturnWraps  = ((a, b, c, d, e, f)) => (
   f
 );
 
-let bothArgsWrapAndIndent
+let bothArgsWrapAndIndent =
    ((a, b, c, d, e, f),
-    (h, i, j, k, l, m)) = (
+    (h, i, j, k, l, m)) => (
   a,
   b,
   c,
@@ -1456,9 +1456,9 @@ let funcOnSomeConstructorHi  = (
   SomeConstructorHi(x,y)
 ) => x + y;
 
-let funcOnSomeConstructorHi
+let funcOnSomeConstructorHi =
     (SomeConstructorHi(x,y),
-     secondArg) = x + y;
+     secondArg) => x + y;
 
 /* With two args */
 let funcOnSomeRecord  = ({
@@ -1466,8 +1466,8 @@ let funcOnSomeRecord  = ({
   secondField
 }) => firstFieldInRecord + secondField;
 
-let funcOnSomeRecord
-    ({firstFieldInRecord, secondField}, secondArg) =
+let funcOnSomeRecord =
+    ({firstFieldInRecord, secondField}, secondArg) =>
    firstFieldInRecord + secondField;
 
 
@@ -1477,20 +1477,20 @@ let funcOnSomeRecord
   terms in the binding/argument pattern list (the name, followed by one
   pattern).
 */
-let funcOnSomeConstructorHi
-    (SomeConstructorHi(x,y)) = x + y;
+let funcOnSomeConstructorHi =
+    (SomeConstructorHi(x,y)) => x + y;
 
-let funcOnSomeRecord
-    ({firstFieldInRecord, secondField}) =
+let funcOnSomeRecord =
+    ({firstFieldInRecord, secondField}) =>
  firstFieldInRecord + secondField;
 
 /* With two args */
-let funcOnSomeConstructorHi
-    (SomeConstructorHi(x,y), secondArg) = 
+let funcOnSomeConstructorHi =
+    (SomeConstructorHi(x,y), secondArg) =>
   x + y;
 
-let funcOnSomeRecord
-    ({firstFieldInRecord, secondField}, secondArg) =
+let funcOnSomeRecord =
+    ({firstFieldInRecord, secondField}, secondArg) =>
   firstFieldInRecord + secondField;
 
 
@@ -1687,13 +1687,13 @@ let testRecordCommented = {
 /*
  * Test comments near the arguments.
  */
-let callMeWithComments
+let callMeWithComments =
     /* Comment before first arg "a" */
     (a:int,
     /* Comment before second arg "b" */
      b:int)
     /* Comment before return type annotation "int" */
-    :int =
+    :int =>
   /* Comment above return value a + b + c */
   a + b + c;
 

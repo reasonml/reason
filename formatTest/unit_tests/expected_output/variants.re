@@ -41,8 +41,8 @@ let simpleTupled: simpleTupleVariant =
   SimpleActuallyATuple(intTuple);
 
 /*Works! */
-let NotActuallyATuple(x, y) =
-  NotActuallyATuple(10, 20);
+let NotActuallyATuple =
+  (x, y) => NotActuallyATuple(10, 20);
 
 /* Doesn't work because we've correctly annotated parse tree nodes with explicit_arity! */
 /* let unfortunatelyThisStillWorks: simpleTupleVariant = SimpleActuallyATuple 10 10; */
