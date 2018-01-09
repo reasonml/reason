@@ -49,8 +49,6 @@
 
 %{
 open Migrate_parsetree.OCaml_404.Ast
-(*open Syntax_util*)
-open Location
 open Asttypes
 open Longident
 open Parsetree
@@ -134,15 +132,15 @@ open Ast_mapper
 
 
 let dummy_loc () = {
-  loc_start = Lexing.dummy_pos;
-  loc_end = Lexing.dummy_pos;
-  loc_ghost = false;
+  Location.loc_start = Lexing.dummy_pos;
+  Location.loc_end = Lexing.dummy_pos;
+  Location.loc_ghost = false;
 }
 
 let mklocation loc_start loc_end = {
-  loc_start = loc_start;
-  loc_end = loc_end;
-  loc_ghost = false;
+  Location.loc_start = loc_start;
+  Location.loc_end = loc_end;
+  Location.loc_ghost = false;
 }
 
 let with_txt a txt = {
@@ -150,11 +148,11 @@ let with_txt a txt = {
 }
 
 let make_real_loc loc = {
-    loc with loc_ghost = false
+    loc with Location.loc_ghost = false
 }
 
 let make_ghost_loc loc = {
-    loc with loc_ghost = true
+    loc with Location.loc_ghost = true
 }
 
 let ghloc ?(loc=dummy_loc ()) d = { txt = d; loc = (make_ghost_loc loc) }
@@ -283,7 +281,7 @@ let is_pattern_list_single_any = function
 let set_structure_item_location x loc = {x with pstr_loc = loc};;
 
 let mkoperator {Location. txt; loc} =
-  Exp.mk ~loc (Pexp_ident(mkloc (Lident txt) loc))
+  Exp.mk ~loc (Pexp_ident(Location.mkloc (Lident txt) loc))
 
 (*
   Ghost expressions and patterns:
@@ -310,7 +308,7 @@ let mkoperator {Location. txt; loc} =
 
 
 let ghunit ?(loc=dummy_loc ()) () =
-  mkexp ~ghost:true ~loc (Pexp_construct (mknoloc (Lident "()"), None))
+  mkexp ~ghost:true ~loc (Pexp_construct (Location.mknoloc (Lident "()"), None))
 
 let mkinfixop arg1 op arg2 =
   mkexp(Pexp_apply(op, [Nolabel, arg1; Nolabel, arg2]))
@@ -336,7 +334,7 @@ let mkuminus name arg =
 let prepare_functor_arg = function
   | Some name, mty -> (name, mty)
   | None, (Some {pmty_loc} as mty) ->
-      (mkloc "_" (make_ghost_loc pmty_loc), mty)
+      (Location.mkloc "_" (make_ghost_loc pmty_loc), mty)
   | None, None -> assert false
 
 let mk_functor_mod args body =
@@ -363,22 +361,22 @@ let mkuplus name arg =
       mkexp(Pexp_apply(mkoperator name, [Nolabel, arg]))
 
 let mkexp_cons consloc args loc =
-  mkexp ~loc (Pexp_construct(mkloc (Lident "::") consloc, Some args))
+  mkexp ~loc (Pexp_construct(Location.mkloc (Lident "::") consloc, Some args))
 
 let mkexp_constructor_unit consloc loc =
-  mkexp ~loc (Pexp_construct(mkloc (Lident "()") consloc, None))
+  mkexp ~loc (Pexp_construct(Location.mkloc (Lident "()") consloc, None))
 
 let ghexp_cons consloc args loc =
-  mkexp ~ghost:true ~loc (Pexp_construct(mkloc (Lident "::") loc, Some args))
+  mkexp ~ghost:true ~loc (Pexp_construct(Location.mkloc (Lident "::") loc, Some args))
 
 let mkpat_cons consloc args loc =
-  mkpat ~loc (Ppat_construct(mkloc (Lident "::") loc, Some args))
+  mkpat ~loc (Ppat_construct(Location.mkloc (Lident "::") loc, Some args))
 
 let ghpat_cons consloc args loc =
-  mkpat ~ghost:true ~loc (Ppat_construct(mkloc (Lident "::") loc, Some args))
+  mkpat ~ghost:true ~loc (Ppat_construct(Location.mkloc (Lident "::") loc, Some args))
 
 let mkpat_constructor_unit consloc loc =
-  mkpat ~loc (Ppat_construct(mkloc (Lident "()") consloc, None))
+  mkpat ~loc (Ppat_construct(Location.mkloc (Lident "()") consloc, None))
 
 let simple_pattern_list_to_tuple ?(loc=dummy_loc ()) = function
   | [] -> assert false
@@ -856,7 +854,7 @@ let jsx_component module_name attrs children loc =
   else
     Lident firstPart
   in
-  let ident = mkloc lident loc in
+  let ident = Location.mkloc lident loc in
   let body = mkexp(Pexp_apply(mkexp(Pexp_ident ident) ~loc, attrs @ children)) ~loc in
   let attribute = ({txt = "JSX"; loc = loc}, PStr []) in
   { body with pexp_attributes = attribute :: body.pexp_attributes }
@@ -1280,7 +1278,7 @@ parse_pattern:
 module_parameter:
 as_loc
   ( LPAREN RPAREN
-    { (Some (mkloc "*" (mklocation $startpos $endpos)), None) }
+    { (Some (Location.mkloc "*" (mklocation $startpos $endpos)), None) }
   | as_loc(UIDENT {$1} | UNDERSCORE {"_"}) COLON module_type
     { (Some $1, Some $3) }
   | module_type
@@ -1290,7 +1288,7 @@ as_loc
 functor_parameters:
   | LPAREN RPAREN
     { let loc = mklocation $startpos $endpos in
-      [mkloc (Some (mkloc "*" loc), None) loc]
+      [Location.mkloc (Some (Location.mkloc "*" loc), None) loc]
     }
   | parenthesized(module_parameter) { [$1] }
   | parenthesized(lseparated_two_or_more(COMMA, module_parameter)) { $1 }
@@ -1820,7 +1818,7 @@ object_body:
       Cstr.mk $2 (attrs @ List.concat $3) }
   | lseparated_list(SEMI, class_field) SEMI?
     { let loc = mklocation $symbolstartpos $symbolstartpos in
-      Cstr.mk (mkpat ~loc (Ppat_var (mkloc "this" loc))) (List.concat $1) }
+      Cstr.mk (mkpat ~loc (Ppat_var (Location.mkloc "this" loc))) (List.concat $1) }
 ;
 
 class_expr:
@@ -2239,7 +2237,7 @@ mark_position_exp
   | LBRACE record_expr_with_string_keys RBRACE
     { let loc = mklocation $symbolstartpos $endpos in
       let (exten, fields) = $2 in
-      mkexp ~loc (Pexp_extension (mkloc ("bs.obj") loc,
+      mkexp ~loc (Pexp_extension (Location.mkloc ("bs.obj") loc,
              PStr [mkstrexp (mkexp ~loc (Pexp_record(fields, exten))) []]))
     }
   | as_loc(LBRACE) record_expr_with_string_keys as_loc(error)
@@ -2365,10 +2363,10 @@ as_loc
     { Term (Optional $2.txt, None, $3 $2) }
   | as_loc(LABEL_WITH_EQUAL) expr
     { let loc = (mklocation $symbolstartpos $endpos) in
-      Term (Optional $1.txt, Some $2, pat_of_label (mkloc (Longident.parse $1.txt) loc)) }
+      Term (Optional $1.txt, Some $2, pat_of_label (Location.mkloc (Longident.parse $1.txt) loc)) }
   | as_loc(LABEL_WITH_EQUAL) QUESTION
     { let loc = (mklocation $symbolstartpos $endpos) in
-      Term (Optional $1.txt, None, pat_of_label (mkloc (Longident.parse $1.txt) loc)) } (* mkpat(Ppat_alias) *)
+      Term (Optional $1.txt, None, pat_of_label (Location.mkloc (Longident.parse $1.txt) loc)) } (* mkpat(Ppat_alias) *)
   | pattern_optional_constraint
     { Term (Nolabel, None, $1) }
   | TYPE LIDENT
@@ -2381,7 +2379,7 @@ as_loc
   { match $1 with
     | [] ->
       let loc = mklocation $startpos $endpos in
-      [mkloc (Term (Nolabel, None, mkpat_constructor_unit loc loc)) loc]
+      [Location.mkloc (Term (Nolabel, None, mkpat_constructor_unit loc loc)) loc]
     | pats -> pats
   }
 ;
@@ -2703,7 +2701,7 @@ parenthesized_expr:
     { mkexp(Pexp_field($1, $3)) }
   | as_loc(mod_longident) DOT LBRACE RBRACE
     { let loc = mklocation $symbolstartpos $endpos in
-      let pat = mkpat (Ppat_var (mkloc "this" loc)) in
+      let pat = mkpat (Ppat_var (Location.mkloc "this" loc)) in
       mkexp(Pexp_open (Fresh, $1,
                        mkexp(Pexp_object(Cstr.mk pat []))))
     }
@@ -2921,7 +2919,7 @@ labeled_expr:
   | as_loc(LABEL_WITH_EQUAL) optional labeled_expr_constraint
     {
       let loc = (mklocation $symbolstartpos $endpos) in
-      ($2 $1.txt, $3 (mkloc (Longident.parse $1.txt) loc))
+      ($2 $1.txt, $3 (Location.mkloc (Longident.parse $1.txt) loc))
     }
 ;
 
@@ -3118,7 +3116,7 @@ record_expr_with_string_keys:
   | STRING COLON expr
     { let loc = mklocation $symbolstartpos $endpos in
       let (s, d) = $1 in
-      let lident_lident_loc = mkloc (Lident s) loc in
+      let lident_lident_loc = Location.mkloc (Lident s) loc in
       (None, [(lident_lident_loc, $3)])
     }
   | string_literal_expr string_literal_exprs
@@ -3132,7 +3130,7 @@ string_literal_expr:
   STRING preceded(COLON, expr)?
   { let loc = mklocation $startpos $endpos in
     let (s, d) = $1 in
-    let lident_lident_loc = mkloc (Lident s) loc in
+    let lident_lident_loc = Location.mkloc (Lident s) loc in
     let exp = match $2 with
       | Some x -> x
       | None -> mkexp (Pexp_ident lident_lident_loc)
@@ -3157,8 +3155,8 @@ field_expr:
    { ($1, $3) }
  | LIDENT
    { let loc = mklocation $symbolstartpos $endpos in
-     let lident_loc = mkloc $1 loc in
-     let lident_lident_loc = mkloc (Lident $1) loc in
+     let lident_loc = Location.mkloc $1 loc in
+     let lident_lident_loc = Location.mkloc (Lident $1) loc in
      (lident_loc, mkexp (Pexp_ident lident_lident_loc))
    }
 ;
@@ -3198,7 +3196,7 @@ pattern_constructor_argument:
 simple_pattern_direct_argument:
 mark_position_pat (
    as_loc(constr_longident)
-    { mkpat(Ppat_construct(mkloc $1.txt $1.loc, None)) }
+    { mkpat(Ppat_construct(Location.mkloc $1.txt $1.loc, None)) }
   | record_pattern { $1 }
   | list_pattern { $1 }
   | array_pattern { $1 }
@@ -3590,7 +3588,7 @@ string_literal_lbl:
     {
       let loc = mklocation $symbolstartpos $endpos in
       let (s, _) = $2 in
-      (Type.field  (mkloc s loc) $4 ~loc, $1)
+      (Type.field (Location.mkloc s loc) $4 ~loc, $1)
     }
   ;
 
@@ -3599,7 +3597,7 @@ string_literal_lbl:
 potentially_long_ident_and_optional_type_parameters:
   | LIDENT type_variables_with_variance
     { let loc = mklocation $startpos($1) $endpos($1) in
-      let lident_lident_loc = mkloc (Lident $1) loc in
+      let lident_lident_loc = Location.mkloc (Lident $1) loc in
       (lident_lident_loc, $2)
     }
   | as_loc(type_strictly_longident) type_variables_with_variance
@@ -4289,7 +4287,7 @@ single_attr_id:
 
 attr_id:
   | as_loc(single_attr_id) { $1 }
-  | single_attr_id DOT attr_id { mkloc ($1 ^ "." ^ $3.txt) (mklocation $symbolstartpos $endpos) }
+  | single_attr_id DOT attr_id { Location.mkloc ($1 ^ "." ^ $3.txt) (mklocation $symbolstartpos $endpos) }
 ;
 
 attribute:
@@ -4386,12 +4384,12 @@ optional:
 ;
 
 %inline as_loc(X): x = X
-  { mkloc x (mklocation $symbolstartpos $endpos) }
+  { Location.mkloc x (mklocation $symbolstartpos $endpos) }
 ;
 
 %inline with_patvar(X): x = X
   { let loc = mklocation $symbolstartpos $endpos in
-    mkpat ~loc (Ppat_var (mkloc x loc)) }
+    mkpat ~loc (Ppat_var (Location.mkloc x loc)) }
 
 either(X,Y):
   | X { $1 }
