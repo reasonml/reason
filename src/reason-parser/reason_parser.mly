@@ -49,7 +49,6 @@
 
 %{
 open Migrate_parsetree.OCaml_404.Ast
-open Asttypes
 
 (*
    TODO:
@@ -140,7 +139,7 @@ let mklocation loc_start loc_end = {
 }
 
 let with_txt a txt = {
-    a with txt=txt;
+    a with Asttypes.txt = txt;
 }
 
 let make_real_loc loc = {
@@ -151,7 +150,7 @@ let make_ghost_loc loc = {
     loc with Location.loc_ghost = true
 }
 
-let ghloc ?(loc=dummy_loc ()) d = { txt = d; loc = (make_ghost_loc loc) }
+let ghloc ?(loc=dummy_loc ()) d = { Asttypes.txt = d; loc = (make_ghost_loc loc) }
 
 (**
   * turn an object into a real
@@ -239,7 +238,7 @@ let may_tuple startp endp = function
   type component = {props, state};
 *)
 let mkct lbl =
-  let lident = Longident.Lident lbl.txt in
+  let lident = Longident.Lident lbl.Asttypes.txt in
   let ttype = Parsetree.Ptyp_constr({txt = lident; loc = lbl.loc}, []) in
   {Parsetree.ptyp_desc = ttype; Parsetree.ptyp_loc = lbl.loc; ptyp_attributes = []}
 
@@ -249,7 +248,7 @@ let mkcf ?(loc=dummy_loc()) ?(ghost=false) d =
 
 let simple_ghost_text_attr ?(loc=dummy_loc ()) txt =
   let loc = set_loc_state true loc in
-  [({txt; loc}, Parsetree.PStr [])]
+  [({Asttypes.txt; loc}, Parsetree.PStr [])]
 
 let mkExplicitArityTuplePat ?(loc=dummy_loc ()) pat =
   (* Tell OCaml type system that what this tuple construction represents is
@@ -276,7 +275,7 @@ let is_pattern_list_single_any = function
 
 let set_structure_item_location x loc = {x with Parsetree.pstr_loc = loc};;
 
-let mkoperator {Location. txt; loc} =
+let mkoperator {Location.txt; loc} =
   Ast_helper.Exp.mk ~loc (Parsetree.Pexp_ident(Location.mkloc (Longident.Lident txt) loc))
 
 (*
@@ -307,7 +306,7 @@ let ghunit ?(loc=dummy_loc ()) () =
   mkexp ~ghost:true ~loc (Pexp_construct (Location.mknoloc (Longident.Lident "()"), None))
 
 let mkinfixop arg1 op arg2 =
-  mkexp(Pexp_apply(op, [Nolabel, arg1; Nolabel, arg2]))
+  mkexp(Pexp_apply(op, [Asttypes.Nolabel, arg1; Asttypes.Nolabel, arg2]))
 
 let mkinfix arg1 name arg2 =
   mkinfixop arg1 (mkoperator name) arg2
@@ -318,13 +317,13 @@ let neg_string f =
   else "-" ^ f
 
 let mkuminus name arg =
-  match name.txt, arg.Parsetree.pexp_desc with
+  match name.Asttypes.txt, arg.Parsetree.pexp_desc with
   | "-", Pexp_constant(Pconst_integer (n,m)) ->
       mkexp(Pexp_constant(Pconst_integer(neg_string n,m)))
   | ("-" | "-."), Pexp_constant(Pconst_float (f, m)) ->
       mkexp(Pexp_constant(Pconst_float(neg_string f, m)))
   | txt, _ ->
-      let name = {name with txt = "~" ^ txt} in
+      let name = {name with Asttypes.txt = "~" ^ txt} in
       mkexp(Pexp_apply(mkoperator name, [Nolabel, arg]))
 
 let prepare_functor_arg = function
@@ -335,25 +334,25 @@ let prepare_functor_arg = function
 
 let mk_functor_mod args body =
   let folder arg acc =
-    let name, mty = prepare_functor_arg arg.txt in
+    let name, mty = prepare_functor_arg arg.Asttypes.txt in
     mkmod ~loc:arg.loc (Pmod_functor(name, mty, acc))
   in
   List.fold_right folder args body
 
 let mk_functor_mty args body =
   let folder arg acc =
-    let name, mty = prepare_functor_arg arg.txt in
+    let name, mty = prepare_functor_arg arg.Asttypes.txt in
     mkmty ~loc:arg.loc (Pmty_functor(name, mty, acc))
   in
   List.fold_right folder args body
 
 let mkuplus name arg =
-  match name.txt, arg.Parsetree.pexp_desc with
+  match name.Asttypes.txt, arg.Parsetree.pexp_desc with
   | "+", Pexp_constant(Pconst_integer _)
   | ("+" | "+."), Pexp_constant(Pconst_float _) ->
       mkexp arg.Parsetree.pexp_desc
   | txt, _ ->
-      let name = {name with txt = "~" ^ txt} in
+      let name = {name with Asttypes.txt = "~" ^ txt} in
       mkexp(Pexp_apply(mkoperator name, [Nolabel, arg]))
 
 let mkexp_cons consloc args loc =
@@ -386,7 +385,7 @@ let mktailexp_extension loc seq ext_opt =
             ext
           | None ->
             let loc = make_ghost_loc loc in
-            let nil = { txt = Longident.Lident "[]"; loc } in
+            let nil = { Asttypes.txt = Longident.Lident "[]"; loc } in
             Ast_helper.Exp.mk ~loc (Pexp_construct (nil, None)) in
         base_case
     | e1 :: el ->
@@ -405,7 +404,7 @@ let mktailpat_extension loc (seq, ext_opt) =
           ext
         | None ->
           let loc = make_ghost_loc loc in
-          let nil = { txt = Longident.Lident "[]"; loc } in
+          let nil = { Asttypes.txt = Longident.Lident "[]"; loc } in
           mkpat ~loc (Ppat_construct (nil, None)) in
       base_case
   | p1 :: pl ->
@@ -416,7 +415,7 @@ let mktailpat_extension loc (seq, ext_opt) =
   handle_seq seq
 
 let makeFrag loc body =
-  let attribute = ({txt = "JSX"; loc = loc}, Parsetree.PStr []) in
+  let attribute = ({Asttypes.txt = "JSX"; loc = loc}, Parsetree.PStr []) in
   { body with Parsetree.pexp_attributes = attribute :: body.Parsetree.pexp_attributes }
 
 
@@ -468,11 +467,11 @@ let syntax_error_mod loc msg =
     syntax_error ()
 
 let unclosed opening closing =
-  raise(Syntaxerr.Error(Syntaxerr.Unclosed(opening.loc, opening.txt,
-                                           closing.loc, closing.txt)))
+  raise(Syntaxerr.Error(Syntaxerr.Unclosed(opening.Asttypes.loc, opening.txt,
+                                           closing.Asttypes.loc, closing.txt)))
 
 let unclosed_extension closing =
-  Syntax_util.syntax_error_extension_node closing.loc ("Expecting \"" ^ closing.txt ^ "\"")
+  Syntax_util.syntax_error_extension_node closing.Asttypes.loc ("Expecting \"" ^ closing.txt ^ "\"")
 
 let unclosed_mod opening closing =
   if !Reason_config.recoverable then
@@ -511,11 +510,11 @@ let unclosed_pat opening closing =
     unclosed opening closing
 
 let expecting nonterm =
-    raise Syntaxerr.(Error(Expecting(nonterm.loc, nonterm.txt)))
+    raise Syntaxerr.(Error(Expecting(nonterm.Asttypes.loc, nonterm.txt)))
 
 let expecting_pat nonterm =
   if !Reason_config.recoverable then
-    mkpat(Ppat_extension (Syntax_util.syntax_error_extension_node nonterm.loc ("Expecting " ^ nonterm.txt)))
+    mkpat(Ppat_extension (Syntax_util.syntax_error_extension_node nonterm.Asttypes.loc ("Expecting " ^ nonterm.txt)))
   else
     expecting nonterm
 
@@ -523,10 +522,10 @@ let not_expecting start_pos end_pos nonterm =
     raise Syntaxerr.(Error(Not_expecting(mklocation start_pos end_pos, nonterm)))
 
 type labelled_parameter =
-  | Term of arg_label * Parsetree.expression option * Parsetree.pattern
+  | Term of Asttypes.arg_label * Parsetree.expression option * Parsetree.pattern
   | Type of string
 
-let mkexp_fun {Location. txt; loc} body =
+let mkexp_fun {Location.txt; loc} body =
   let loc = mklocation loc.loc_start body.Parsetree.pexp_loc.loc_end in
   match txt with
   | Term (label, default_expr, pat) ->
@@ -534,7 +533,7 @@ let mkexp_fun {Location. txt; loc} body =
   | Type str ->
     Ast_helper.Exp.newtype ~loc str body
 
-let mkclass_fun {Location. txt ; loc} body =
+let mkclass_fun {Location.txt ; loc} body =
   let loc = mklocation loc.loc_start body.Parsetree.pcl_loc.loc_end in
   match txt with
   | Term (label, default_expr, pat) ->
@@ -543,11 +542,11 @@ let mkclass_fun {Location. txt ; loc} body =
     let pat = syntax_error_pat loc "(type) not allowed in classes" in
     Ast_helper.Cl.fun_ ~loc Nolabel None pat body
 
-let mktyp_arrow {Location. txt = (label, cod); loc} dom =
+let mktyp_arrow {Location.txt = (label, cod); loc} dom =
   mktyp ~loc:(mklocation loc.loc_start dom.Parsetree.ptyp_loc.loc_end)
     (Ptyp_arrow (label, cod, dom))
 
-let mkcty_arrow {Location. txt = (label, cod); loc} dom =
+let mkcty_arrow {Location.txt = (label, cod); loc} dom =
   mkcty ~loc:(mklocation loc.loc_start dom.Parsetree.pcty_loc.loc_end)
     (Pcty_arrow (label, cod, dom))
 
@@ -602,10 +601,10 @@ let bigarray_set ?(loc=dummy_loc()) arr arg newval =
                         Nolabel, newval]))
 
 let exp_of_label label =
-  mkexp ~loc:label.loc (Parsetree.Pexp_ident {label with txt=Longident.Lident(Longident.last label.txt)})
+  mkexp ~loc:label.Asttypes.loc (Parsetree.Pexp_ident {label with txt=Longident.Lident(Longident.last label.txt)})
 
 let pat_of_label label =
-  mkpat ~loc:label.loc (Parsetree.Ppat_var {label with txt=(Longident.last label.txt)})
+  mkpat ~loc:label.Asttypes.loc (Parsetree.Ppat_var {label with txt=(Longident.last label.txt)})
 
 let check_variable vl loc v =
   if List.mem v vl then
@@ -720,7 +719,7 @@ type let_binding =
 
 type let_bindings =
   { lbs_bindings: let_binding list;
-    lbs_rec: rec_flag;
+    lbs_rec: Asttypes.rec_flag;
     lbs_extension: (Parsetree.attributes * string Asttypes.loc) option;
     lbs_loc: Location.t }
 
@@ -852,7 +851,7 @@ let jsx_component module_name attrs children loc =
   in
   let ident = Location.mkloc lident loc in
   let body = mkexp(Pexp_apply(mkexp(Pexp_ident ident) ~loc, attrs @ children)) ~loc in
-  let attribute = ({txt = "JSX"; loc = loc}, Parsetree.PStr []) in
+  let attribute = ({Asttypes.txt = "JSX"; Asttypes.loc = loc}, Parsetree.PStr []) in
   { body with pexp_attributes = attribute :: body.pexp_attributes }
 
 (* We might raise some custom error messages in this file.
@@ -883,7 +882,7 @@ type core_type_object =
 (* `{. "foo": bar}` -> `Js.t {. foo: bar}` and {.. "foo": bar} -> `Js.t {.. foo: bar} *)
 let mkBsObjTypeSugar ~loc ~closed rows =
   let obj = mktyp ~loc (Ptyp_object (prepare_immutable_labels rows, closed)) in
-  let jsDotTCtor = { txt = Longident.parse "Js.t"; loc } in
+  let jsDotTCtor = { Asttypes.txt = Longident.parse "Js.t"; loc } in
   Core_type(mktyp(Parsetree.Ptyp_constr(jsDotTCtor, [obj])))
 
 let only_core_type t startp endp =
@@ -906,7 +905,7 @@ let only_labels l =
   in
   loop l []
 
-let doc_loc = {txt = "ocaml.doc"; loc = Location.none}
+let doc_loc = {Asttypes.txt = "ocaml.doc"; Asttypes.loc = Location.none}
 
 let doc_attr text loc =
   let open Parsetree in
@@ -1536,7 +1535,7 @@ structure_item:
       { val_of_let_bindings $1 }
     ) { [$1] }
  | located_attributes
-   { List.map (fun x -> mkstr ~loc:x.loc (Pstr_attribute x.txt)) $1 }
+   { List.map (fun x -> mkstr ~loc:x.Asttypes.loc (Pstr_attribute x.txt)) $1 }
 ;
 
 module_binding_body:
@@ -1575,7 +1574,7 @@ mark_position_mty
   ( parenthesized(module_parameter)
     { match $1.txt with
       | (None, Some x) -> x
-      | _ -> syntax_error_mod $1.loc "Expecting a simple module type"
+      | _ -> syntax_error_mod $1.Asttypes.loc "Expecting a simple module type"
     }
   | module_type_signature { $1 }
   | as_loc(LPAREN) module_type as_loc(error)
@@ -1747,7 +1746,7 @@ signature_item:
       { mksig(Psig_extension ($2, $1)) }
     ) { [$1] }
   | located_attributes
-    { List.map (fun x -> mksig ~loc:x.loc (Psig_attribute x.txt)) $1 }
+    { List.map (fun x -> mksig ~loc:x.Asttypes.loc (Psig_attribute x.txt)) $1 }
 ;
 
 open_statement:
@@ -1810,7 +1809,7 @@ object_body:
   | loption(located_attributes)
     mark_position_pat(delimited(AS,pattern,SEMI))
     lseparated_list(SEMI, class_field) SEMI?
-    { let attrs = List.map (fun x -> mkcf ~loc:x.loc (Pcf_attribute x.txt)) $1 in
+    { let attrs = List.map (fun x -> mkcf ~loc:x.Asttypes.loc (Pcf_attribute x.txt)) $1 in
       Ast_helper.Cstr.mk $2 (attrs @ List.concat $3) }
   | lseparated_list(SEMI, class_field) SEMI?
     { let loc = mklocation $symbolstartpos $symbolstartpos in
@@ -1878,7 +1877,7 @@ class_field:
       { mkcf_attrs (Pcf_inherit ($3, $4, $5)) $1 }
     | item_attributes VAL value
       { mkcf_attrs (Pcf_val $3) $1 }
-    | item_attributes either(PUB {Public}, PRI {Private}) method_
+    | item_attributes either(PUB {Asttypes.Public}, PRI {Asttypes.Private}) method_
       { let (a, b) = $3 in mkcf_attrs (Pcf_method (a, $2, b)) $1 }
     | item_attributes CONSTRAINT constrain_field
       { mkcf_attrs (Pcf_constraint $3) $1 }
@@ -1888,7 +1887,7 @@ class_field:
       { mkcf_attrs (Pcf_extension $2) $1 }
     ) { [$1] }
   | located_attributes
-    { List.map (fun x -> mkcf ~loc:x.loc (Pcf_attribute x.txt)) $1 }
+    { List.map (fun x -> mkcf ~loc:x.Asttypes.loc (Pcf_attribute x.Asttypes.txt)) $1 }
 ;
 
 value:
@@ -2119,7 +2118,7 @@ class_sig_field:
       { mkctf_attrs (Pctf_extension $2) $1 }
     ) { [$1] }
   | located_attributes
-    { List.map (fun x -> mkctf ~loc:x.loc (Pctf_attribute x.txt)) $1 }
+    { List.map (fun x -> mkctf ~loc:x.Asttypes.loc (Pctf_attribute x.Asttypes.txt)) $1 }
 ;
 
 value_type:
@@ -2219,7 +2218,7 @@ mark_position_exp
   ( LBRACE seq_expr RBRACE
     { $2 }
   | LBRACE as_loc(seq_expr) error
-    { syntax_error_exp $2.loc "SyntaxError in block" }
+    { syntax_error_exp $2.Asttypes.loc "SyntaxError in block" }
 
   | LBRACE DOTDOTDOT expr_optional_constraint COMMA? RBRACE
     { let loc = mklocation $symbolstartpos $endpos in
@@ -2340,11 +2339,11 @@ labeled_pattern_constraint:
   | AS pattern_optional_constraint { fun _punned -> $2 }
   | preceded(COLON, only_core_type(core_type))?
     { fun punned ->
-      let pat = mkpat (Ppat_var punned) ~loc:punned.loc in
+      let pat = mkpat (Ppat_var punned) ~loc:punned.Asttypes.loc in
       match $1 with
       | None -> pat
       | Some typ ->
-        let loc = mklocation punned.loc.loc_start $endpos in
+        let loc = mklocation punned.Asttypes.loc.loc_start $endpos in
         mkpat ~loc (Ppat_constraint(pat, typ))
     }
 ;
@@ -2352,17 +2351,17 @@ labeled_pattern_constraint:
 labeled_pattern:
 as_loc
    ( TILDE as_loc(LIDENT) labeled_pattern_constraint
-    { Term (Labelled $2.txt, None, $3 $2) }
+    { Term (Asttypes.Labelled $2.txt, None, $3 $2) }
   | TILDE as_loc(LIDENT) labeled_pattern_constraint EQUAL expr
-    { Term (Optional $2.txt, Some $5, $3 $2) }
+    { Term (Asttypes.Optional $2.txt, Some $5, $3 $2) }
   | TILDE as_loc(LIDENT) labeled_pattern_constraint EQUAL QUESTION
-    { Term (Optional $2.txt, None, $3 $2) }
+    { Term (Asttypes.Optional $2.txt, None, $3 $2) }
   | as_loc(LABEL_WITH_EQUAL) expr
     { let loc = (mklocation $symbolstartpos $endpos) in
-      Term (Optional $1.txt, Some $2, pat_of_label (Location.mkloc (Longident.parse $1.txt) loc)) }
+      Term (Asttypes.Optional $1.txt, Some $2, pat_of_label (Location.mkloc (Longident.parse $1.txt) loc)) }
   | as_loc(LABEL_WITH_EQUAL) QUESTION
     { let loc = (mklocation $symbolstartpos $endpos) in
-      Term (Optional $1.txt, None, pat_of_label (Location.mkloc (Longident.parse $1.txt) loc)) } (* mkpat(Ppat_alias) *)
+      Term (Asttypes.Optional $1.txt, None, pat_of_label (Location.mkloc (Longident.parse $1.txt) loc)) } (* mkpat(Ppat_alias) *)
   | pattern_optional_constraint
     { Term (Nolabel, None, $1) }
   | TYPE LIDENT
@@ -2393,21 +2392,21 @@ jsx_arguments:
   /* empty */ { [] }
   | LIDENT EQUAL QUESTION simple_expr jsx_arguments
     { (* a=?b *)
-      [(Optional $1, $4)] @ $5
+      [(Asttypes.Optional $1, $4)] @ $5
     }
   | QUESTION LIDENT jsx_arguments
     { (* <Foo ?bar /> punning with explicitly passed optional *)
       let loc_lident = mklocation $startpos($2) $endpos($2) in
-      [(Optional $2, mkexp (Parsetree.Pexp_ident {txt = Longident.Lident $2; loc = loc_lident}) ~loc:loc_lident)] @ $3
+      [(Asttypes.Optional $2, mkexp (Parsetree.Pexp_ident {txt = Longident.Lident $2; loc = loc_lident}) ~loc:loc_lident)] @ $3
     }
   | LIDENT EQUAL simple_expr jsx_arguments
     { (* a=b *)
-      [(Labelled $1, $3)] @ $4
+      [(Asttypes.Labelled $1, $3)] @ $4
     }
   | LIDENT jsx_arguments
     { (* a (punning) *)
       let loc_lident = mklocation $startpos($1) $endpos($1) in
-      [(Labelled $1, mkexp (Parsetree.Pexp_ident {txt = Longident.Lident $1; loc = loc_lident}) ~loc:loc_lident)] @ $2
+      [(Asttypes.Labelled $1, mkexp (Parsetree.Pexp_ident {txt = Longident.Lident $1; loc = loc_lident}) ~loc:loc_lident)] @ $2
     }
 ;
 
@@ -2436,8 +2435,8 @@ jsx:
     { let (component, _) = $1 in
       let loc = mklocation $symbolstartpos $endpos in
       component [
-        (Labelled "children", mktailexp_extension loc [] None);
-        (Nolabel, mkexp_constructor_unit loc loc)
+        (Asttypes.Labelled "children", mktailexp_extension loc [] None);
+        (Asttypes.Nolabel, mkexp_constructor_unit loc loc)
       ] loc
     }
   | jsx_start_tag_and_args GREATER simple_expr_no_call* LESSSLASHIDENTGREATER
@@ -2448,8 +2447,8 @@ jsx:
       let _ = ensureTagsAreEqual start endName loc in
       let siblings = if List.length $3 > 0 then $3 else [] in
       component [
-        (Labelled "children", mktailexp_extension loc siblings None);
-        (Nolabel, mkexp_constructor_unit loc loc)
+        (Asttypes.Labelled "children", mktailexp_extension loc siblings None);
+        (Asttypes.Nolabel, mkexp_constructor_unit loc loc)
       ] loc
     }
    | jsx_start_tag_and_args GREATER DOTDOTDOT simple_expr_no_call LESSSLASHIDENTGREATER
@@ -2461,8 +2460,8 @@ jsx:
       let _ = ensureTagsAreEqual start endName loc in
       let child = $4 in
       component [
-        (Labelled "children", child);
-        (Nolabel, mkexp_constructor_unit loc loc)
+        (Asttypes.Labelled "children", child);
+        (Asttypes.Nolabel, mkexp_constructor_unit loc loc)
       ] loc
     }
 ;
@@ -2477,8 +2476,8 @@ jsx_without_leading_less:
     let (component, _) = $1 in
     let loc = mklocation $symbolstartpos $endpos in
     component [
-      (Labelled "children", mktailexp_extension loc [] None);
-      (Nolabel, mkexp_constructor_unit loc loc)
+      (Asttypes.Labelled "children", mktailexp_extension loc [] None);
+      (Asttypes.Nolabel, mkexp_constructor_unit loc loc)
     ] loc
   }
   | jsx_start_tag_and_args_without_leading_less GREATER simple_expr_no_call* LESSSLASHIDENTGREATER {
@@ -2489,8 +2488,8 @@ jsx_without_leading_less:
     let _ = ensureTagsAreEqual start endName loc in
     let siblings = if List.length $3 > 0 then $3 else [] in
     component [
-      (Labelled "children", mktailexp_extension loc siblings None);
-      (Nolabel, mkexp_constructor_unit loc loc)
+      (Asttypes.Labelled "children", mktailexp_extension loc siblings None);
+      (Asttypes.Nolabel, mkexp_constructor_unit loc loc)
     ] loc
   }
     | jsx_start_tag_and_args_without_leading_less GREATER DOTDOTDOT simple_expr_no_call LESSSLASHIDENTGREATER {
@@ -2501,8 +2500,8 @@ jsx_without_leading_less:
     let _ = ensureTagsAreEqual start endName loc in
     let child = $4 in
     component [
-      (Labelled "children", child);
-      (Nolabel, mkexp_constructor_unit loc loc)
+      (Asttypes.Labelled "children", child);
+      (Asttypes.Nolabel, mkexp_constructor_unit loc loc)
     ] loc
   }
 ;
@@ -2566,20 +2565,20 @@ mark_position_exp
   | as_loc(additive) expr %prec prec_unary
     { mkuplus $1 $2 }
   | as_loc(BANG {"!"}) expr %prec prec_unary
-    { mkexp(Parsetree.Pexp_apply(mkoperator $1, [Nolabel,$2])) }
+    { mkexp(Parsetree.Pexp_apply(mkoperator $1, [Asttypes.Nolabel,$2])) }
   | simple_expr DOT as_loc(label_longident) EQUAL expr
     { mkexp(Parsetree.Pexp_setfield($1, $3, $5)) }
   | simple_expr LBRACKET expr RBRACKET EQUAL expr
     { let loc = mklocation $symbolstartpos $endpos in
       let exp = Parsetree.Pexp_ident(array_function ~loc "Array" "set") in
       mkexp(Parsetree.Pexp_apply(mkexp ~ghost:true ~loc exp,
-                       [Nolabel,$1; Nolabel,$3; Nolabel,$6]))
+                       [Asttypes.Nolabel,$1; Asttypes.Nolabel,$3; Asttypes.Nolabel,$6]))
     }
   | simple_expr DOT LBRACKET expr RBRACKET EQUAL expr
     { let loc = mklocation $symbolstartpos $endpos in
       let exp = Parsetree.Pexp_ident(array_function ~loc "String" "set") in
       mkexp(Parsetree.Pexp_apply(mkexp ~ghost:true ~loc exp,
-                       [Nolabel,$1; Nolabel,$4; Nolabel,$7]))
+                       [Asttypes.Nolabel,$1; Asttypes.Nolabel,$4; Asttypes.Nolabel,$7]))
     }
   | simple_expr DOT LBRACE expr RBRACE EQUAL expr
     { let loc = mklocation $symbolstartpos $endpos in
@@ -2688,7 +2687,7 @@ parenthesized_expr:
   | as_loc(LPAREN) expr_list as_loc(error)
     { unclosed_exp (with_txt $1 "(") (with_txt $3 ")") }
   | E as_loc(POSTFIXOP)
-    { mkexp(Parsetree.Pexp_apply(mkoperator $2, [Nolabel, $1])) }
+    { mkexp(Parsetree.Pexp_apply(mkoperator $2, [Asttypes.Nolabel, $1])) }
   | as_loc(mod_longident) DOT LPAREN expr_list RPAREN
     { mkexp(Parsetree.Pexp_open(Fresh, $1, may_tuple $startpos($3) $endpos($5) $4)) }
   | mod_longident DOT as_loc(LPAREN) expr_list as_loc(error)
@@ -2704,14 +2703,14 @@ parenthesized_expr:
   | E LBRACKET expr RBRACKET
     { let loc = mklocation $symbolstartpos $endpos in
       let exp = Parsetree.Pexp_ident(array_function ~loc "Array" "get") in
-      mkexp(Parsetree.Pexp_apply(mkexp ~ghost:true ~loc exp, [Nolabel,$1; Nolabel,$3]))
+      mkexp(Parsetree.Pexp_apply(mkexp ~ghost:true ~loc exp, [Asttypes.Nolabel,$1; Asttypes.Nolabel,$3]))
     }
   | E as_loc(LBRACKET) expr as_loc(error)
     { unclosed_exp (with_txt $2 "(") (with_txt $4 ")") }
   | E DOT LBRACKET expr RBRACKET
     { let loc = mklocation $symbolstartpos $endpos in
       let exp = Parsetree.Pexp_ident(array_function ~loc "String" "get") in
-      mkexp(Parsetree.Pexp_apply(mkexp ~ghost:true ~loc exp, [Nolabel,$1; Nolabel,$4]))
+      mkexp(Parsetree.Pexp_apply(mkexp ~ghost:true ~loc exp, [Asttypes.Nolabel,$1; Asttypes.Nolabel,$4]))
     }
   | E DOT as_loc(LBRACKET) expr as_loc(error)
     { unclosed_exp (with_txt $3 "[") (with_txt $5 "]") }
@@ -2742,7 +2741,7 @@ parenthesized_expr:
       mkexp (Pexp_open (Fresh, $1, list_exp))
     }
   | as_loc(PREFIXOP) E %prec below_DOT_AND_SHARP
-    { mkexp(Pexp_apply(mkoperator $1, [Nolabel, $2])) }
+    { mkexp(Pexp_apply(mkoperator $1, [Asttypes.Nolabel, $2])) }
   /**
    * Must be below_DOT_AND_SHARP so that the parser waits for several dots for
    * nested record access that the bang should apply to.
@@ -2874,11 +2873,11 @@ non_labeled_argument_list:
 
 labeled_arguments:
   | mark_position_exp(simple_expr_direct_argument)
-    { [(Nolabel, $1)] }
+    { [(Asttypes.Nolabel, $1)] }
   | parenthesized(separated_list(COMMA, labeled_expr))
     { match $1 with
       | [] -> let loc = mklocation $startpos $endpos in
-              [(Nolabel, mkexp_constructor_unit loc loc)]
+              [(Asttypes.Nolabel, mkexp_constructor_unit loc loc)]
       | xs -> xs
     }
 ;
@@ -2897,7 +2896,7 @@ labeled_expr_constraint:
 ;
 
 labeled_expr:
-  | expr_optional_constraint { (Nolabel, $1) }
+  | expr_optional_constraint { (Asttypes.Nolabel, $1) }
   | TILDE as_loc(val_longident)
     { (* add(:a, :b)  -> parses :a & :b *)
       let exp = mkexp (Pexp_ident $2) ~loc:$2.loc in
@@ -2906,7 +2905,7 @@ labeled_expr:
   | TILDE as_loc(val_longident) QUESTION
     { (* foo(:a?)  -> parses :a? *)
       let exp = mkexp (Pexp_ident $2) ~loc:$2.loc in
-      (Optional (String.concat "" (Longident.flatten $2.txt)), exp)
+      (Asttypes.Optional (String.concat "" (Longident.flatten $2.txt)), exp)
     }
   | TILDE as_loc(val_longident) EQUAL optional labeled_expr_constraint
     { (* foo(:bar=?Some(1)) or add(:x=1, :y=2) -> parses :bar=?Some(1) & :x=1 & :y=1 *)
@@ -3367,9 +3366,9 @@ pattern_comma_list_extension:
 ;
 
 lbl_pattern_list:
-  | lbl_pattern                            { ([$1], Closed) }
-  | lbl_pattern COMMA                      { ([$1], Closed) }
-  | lbl_pattern COMMA UNDERSCORE COMMA?    { ([$1], Open)   }
+  | lbl_pattern                            { ([$1], Asttypes.Closed) }
+  | lbl_pattern COMMA                      { ([$1], Asttypes.Closed) }
+  | lbl_pattern COMMA UNDERSCORE COMMA?    { ([$1], Asttypes.Open)   }
   | lbl_pattern COMMA lbl_pattern_list
     { let (fields, closed) = $3 in $1 :: fields, closed }
 ;
@@ -3480,12 +3479,12 @@ type_other_kind:
 
 type_variable_with_variance:
   embedded
-  ( QUOTE ident       { (mktyp (Ptyp_var $2) , Invariant    ) }
-  | UNDERSCORE        { (mktyp (Parsetree.Ptyp_any)    , Invariant    ) }
-  | PLUS QUOTE ident  { (mktyp (Ptyp_var $3) , Covariant    ) }
-  | PLUS UNDERSCORE   { (mktyp (Parsetree.Ptyp_any)    , Covariant    ) }
-  | MINUS QUOTE ident { (mktyp (Ptyp_var $3) , Contravariant) }
-  | MINUS UNDERSCORE  { (mktyp Parsetree.Ptyp_any      , Contravariant) }
+  ( QUOTE ident       { (mktyp (Ptyp_var $2) , Asttypes.Invariant    ) }
+  | UNDERSCORE        { (mktyp (Parsetree.Ptyp_any)    , Asttypes.Invariant    ) }
+  | PLUS QUOTE ident  { (mktyp (Ptyp_var $3) , Asttypes.Covariant    ) }
+  | PLUS UNDERSCORE   { (mktyp (Parsetree.Ptyp_any)    , Asttypes.Covariant    ) }
+  | MINUS QUOTE ident { (mktyp (Ptyp_var $3) , Asttypes.Contravariant) }
+  | MINUS UNDERSCORE  { (mktyp Parsetree.Ptyp_any      , Asttypes.Contravariant) }
   )
   { let first, second = $1 in
     let ptyp_loc =
@@ -3498,9 +3497,9 @@ type_variable_with_variance:
 type_parameter: type_variance type_variable { ($2, $1) };
 
 type_variance:
-  | /* empty */ { Invariant }
-  | PLUS        { Covariant }
-  | MINUS       { Contravariant }
+  | /* empty */ { Asttypes.Invariant }
+  | PLUS        { Asttypes.Covariant }
+  | MINUS       { Asttypes.Contravariant }
 ;
 
 type_variable:
@@ -3840,14 +3839,14 @@ unattributed_core_type:
   | arrow_type_parameters EQUALGREATER only_core_type(core_type2)
     { Core_type (List.fold_right mktyp_arrow $1 $3) }
   | only_core_type(basic_core_type) EQUALGREATER only_core_type(core_type2)
-    { Core_type (mktyp (Ptyp_arrow (Nolabel, $1, $3))) }
+    { Core_type (mktyp (Ptyp_arrow (Asttypes.Nolabel, $1, $3))) }
 ;
 
 arrow_type_parameter:
   | only_core_type(core_type)
-    { (Nolabel, $1) }
+    { (Asttypes.Nolabel, $1) }
   | TILDE LIDENT COLON only_core_type(core_type)
-    { ( Labelled $2, $4) }
+    { (Asttypes.Labelled $2, $4) }
   | TILDE LIDENT COLON only_core_type(core_type) EQUAL optional
     {($6 $2, $4) }
 ;
@@ -3895,9 +3894,9 @@ type_parameters:
 non_arrowed_simple_core_types:
 mark_position_typ
   ( arrow_type_parameters
-    { let prepare_arg {Location. txt = (label, ct); loc} = match label with
-        | Nolabel -> ct
-        | Optional _ | Labelled _ ->
+    { let prepare_arg {Location.txt = (label, ct); loc} = match label with
+        | Asttypes.Nolabel -> ct
+        | Asttypes.Optional _ | Asttypes.Labelled _ ->
             syntax_error_typ loc "Labels are not allowed inside a tuple"
       in
       match List.map prepare_arg $1 with
@@ -3929,11 +3928,11 @@ mark_position_typ2
   | object_record_type
     { $1 }
   | LBRACKET row_field_list RBRACKET
-    { Core_type(mktyp(Ptyp_variant ($2, Closed, None))) }
+    { Core_type(mktyp(Ptyp_variant ($2, Asttypes.Closed, None))) }
   | LBRACKETGREATER loption(row_field_list) RBRACKET
-    { Core_type(mktyp(Ptyp_variant ($2, Open, None))) }
+    { Core_type(mktyp(Ptyp_variant ($2, Asttypes.Open, None))) }
   | LBRACKETLESS row_field_list loption(preceded(GREATER, name_tag+)) RBRACKET
-    { Core_type(mktyp(Ptyp_variant ($2, Closed, Some $3))) }
+    { Core_type(mktyp(Ptyp_variant ($2, Asttypes.Closed, Some $3))) }
   | LPAREN MODULE package_type RPAREN
     { Core_type(mktyp(Ptyp_package $3)) }
   | extension
@@ -3948,17 +3947,17 @@ object_record_type:
   | LBRACE DOT string_literal_lbls RBRACE
     { (* `{. "foo": bar}` -> `Js.t {. foo: bar}` *)
       let loc = mklocation $symbolstartpos $endpos in
-      mkBsObjTypeSugar ~loc ~closed:Closed $3
+      mkBsObjTypeSugar ~loc ~closed:Asttypes.Closed $3
     }
   | LBRACE DOTDOT string_literal_lbls RBRACE
     { (* `{.. "foo": bar}` -> `Js.t {.. foo: bar}` *)
       let loc = mklocation $symbolstartpos $endpos in
-      mkBsObjTypeSugar ~loc ~closed:Open $3
+      mkBsObjTypeSugar ~loc ~closed:Asttypes.Open $3
     }
   | LBRACE DOT loption(label_declarations) RBRACE
-    { Core_type (mktyp (Ptyp_object (prepare_immutable_labels $3, Closed))) }
+    { Core_type (mktyp (Ptyp_object (prepare_immutable_labels $3, Asttypes.Closed))) }
   | LBRACE DOTDOT loption(label_declarations) RBRACE
-    { Core_type (mktyp (Ptyp_object (prepare_immutable_labels $3, Open))) }
+    { Core_type (mktyp (Ptyp_object (prepare_immutable_labels $3, Asttypes.Open))) }
 ;
 
 %inline label_declarations:
@@ -4177,39 +4176,39 @@ opt_LET_MODULE: MODULE { () } | LET MODULE { () };
 %inline label: LIDENT { $1 };
 
 rec_flag:
-  | /* empty */   { Nonrecursive }
-  | REC           { Recursive }
+  | /* empty */   { Asttypes.Nonrecursive }
+  | REC           { Asttypes.Recursive }
 ;
 
 nonrec_flag:
-  | /* empty */   { Recursive }
-  | NONREC        { Nonrecursive }
+  | /* empty */   { Asttypes.Recursive }
+  | NONREC        { Asttypes.Nonrecursive }
 ;
 
 direction_flag:
-  | TO            { Upto }
-  | DOWNTO        { Downto }
+  | TO            { Asttypes.Upto }
+  | DOWNTO        { Asttypes.Downto }
 ;
 
 %inline private_flag:
-  | /* empty */   { Public }
-  | PRI           { Private }
+  | /* empty */   { Asttypes.Public }
+  | PRI           { Asttypes.Private }
 ;
 
 mutable_flag:
-  | /* empty */   { Immutable }
-  | MUTABLE       { Mutable }
+  | /* empty */   { Asttypes.Immutable }
+  | MUTABLE       { Asttypes.Mutable }
 ;
 
 virtual_flag:
-  | /* empty */   { Concrete }
-  | VIRTUAL       { Virtual }
+  | /* empty */   { Asttypes.Concrete }
+  | VIRTUAL       { Asttypes.Virtual }
 ;
 
 mutable_or_virtual_flags:
-  | /* empty */   { Immutable, Concrete }
-  | VIRTUAL mutable_flag { $2, Virtual }
-  | MUTABLE virtual_flag { Mutable, $2 }
+  | /* empty */   { Asttypes.Immutable, Asttypes.Concrete }
+  | VIRTUAL mutable_flag { $2, Asttypes.Virtual }
+  | MUTABLE virtual_flag { Asttypes.Mutable, $2 }
 ;
 
 override_flag:
@@ -4297,7 +4296,7 @@ attribute:
 (* Inlined to avoid having to deal with buggy $symbolstartpos *)
 %inline item_attributes:
   | { [] }
-  | located_attributes { List.map (fun x -> x.txt) $1 }
+  | located_attributes { List.map (fun x -> x.Asttypes.txt) $1 }
 ;
 
 item_extension_sugar:
@@ -4320,8 +4319,8 @@ payload:
 ;
 
 optional:
-  | { fun x -> Labelled x }
-  | QUESTION { fun x -> Optional x }
+  | { fun x -> Asttypes.Labelled x }
+  | QUESTION { fun x -> Asttypes.Optional x }
 ;
 
 %inline only_core_type(X): X { only_core_type $1 $symbolstartpos $endpos }
