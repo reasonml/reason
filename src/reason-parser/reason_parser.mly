@@ -52,12 +52,9 @@ open Migrate_parsetree.OCaml_404.Ast
 
 (*
    TODO:
-   - Remove all [open]s from the top of this file one by one and fix compilation
-   failures that ensue by specifying the appropriate long identifiers. That
-   will make the parser much easier to reason about.
-   - Go back to trunk, do the same (remove [open]s, and fully specify long
-   idents), to perform a clean diff.
-
+   - Remove open Migrate_parsetree.OCaml_404.Ast of the top of this file and
+   fix all compilation issues. Use long indentifiers to make everything easier
+   to reason about. Do it with care to avoid conflicts.
 *)
 
 (**
