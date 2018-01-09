@@ -52,7 +52,6 @@ open Migrate_parsetree.OCaml_404.Ast
 open Asttypes
 open Longident
 open Parsetree
-open Ast_mapper
 
 (*
    TODO:
@@ -802,7 +801,7 @@ let class_of_let_bindings lbs body =
  *)
 let arity_conflict_resolving_mapper super =
 { super with
-  expr = begin fun mapper expr ->
+  Ast_mapper.expr = begin fun mapper expr ->
     match expr with
       | {pexp_desc=Pexp_construct(lid, args);
          pexp_loc;
@@ -811,7 +810,7 @@ let arity_conflict_resolving_mapper super =
            match args with
              | Some {pexp_desc = Pexp_tuple [sp]} -> Some sp
              | _ -> args in
-         super.expr mapper
+         super.Ast_mapper.expr mapper
          {pexp_desc=Pexp_construct(lid, new_args); pexp_loc; pexp_attributes=
           Syntax_util.normalized_attributes "explicit_arity" pexp_attributes}
       | x -> super.expr mapper x
@@ -833,7 +832,7 @@ let arity_conflict_resolving_mapper super =
 }
 
 let reason_mapper =
-  default_mapper
+  Ast_mapper.default_mapper
   |> Syntax_util.reason_to_ml_swap_operator_mapper
   |> arity_conflict_resolving_mapper
 
