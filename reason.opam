@@ -15,6 +15,7 @@ depends: [
   "jbuilder"                {build}
   "ocamlfind"               {build}
   "menhir"                  {>= "20170418" & <= "20171013"}
+  "merlin-extend"           {>= "0.3"}
   "result"                  {=  "1.2"}
   "ocaml-migrate-parsetree"
 ]
