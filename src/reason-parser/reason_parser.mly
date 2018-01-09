@@ -50,7 +50,6 @@
 %{
 open Migrate_parsetree.OCaml_404.Ast
 open Asttypes
-open Longident
 open Parsetree
 
 (*
@@ -241,7 +240,7 @@ let may_tuple startp endp = function
   type component = {props, state};
 *)
 let mkct lbl =
-  let lident = Lident lbl.txt in
+  let lident = Longident.Lident lbl.txt in
   let ttype = Ptyp_constr({txt = lident; loc = lbl.loc}, []) in
   {ptyp_desc = ttype; ptyp_loc = lbl.loc; ptyp_attributes = []}
 
@@ -279,7 +278,7 @@ let is_pattern_list_single_any = function
 let set_structure_item_location x loc = {x with pstr_loc = loc};;
 
 let mkoperator {Location. txt; loc} =
-  Ast_helper.Exp.mk ~loc (Pexp_ident(Location.mkloc (Lident txt) loc))
+  Ast_helper.Exp.mk ~loc (Pexp_ident(Location.mkloc (Longident.Lident txt) loc))
 
 (*
   Ghost expressions and patterns:
@@ -306,7 +305,7 @@ let mkoperator {Location. txt; loc} =
 
 
 let ghunit ?(loc=dummy_loc ()) () =
-  mkexp ~ghost:true ~loc (Pexp_construct (Location.mknoloc (Lident "()"), None))
+  mkexp ~ghost:true ~loc (Pexp_construct (Location.mknoloc (Longident.Lident "()"), None))
 
 let mkinfixop arg1 op arg2 =
   mkexp(Pexp_apply(op, [Nolabel, arg1; Nolabel, arg2]))
@@ -359,22 +358,22 @@ let mkuplus name arg =
       mkexp(Pexp_apply(mkoperator name, [Nolabel, arg]))
 
 let mkexp_cons consloc args loc =
-  mkexp ~loc (Pexp_construct(Location.mkloc (Lident "::") consloc, Some args))
+  mkexp ~loc (Pexp_construct(Location.mkloc (Longident.Lident "::") consloc, Some args))
 
 let mkexp_constructor_unit consloc loc =
-  mkexp ~loc (Pexp_construct(Location.mkloc (Lident "()") consloc, None))
+  mkexp ~loc (Pexp_construct(Location.mkloc (Longident.Lident "()") consloc, None))
 
 let ghexp_cons consloc args loc =
-  mkexp ~ghost:true ~loc (Pexp_construct(Location.mkloc (Lident "::") loc, Some args))
+  mkexp ~ghost:true ~loc (Pexp_construct(Location.mkloc (Longident.Lident "::") loc, Some args))
 
 let mkpat_cons consloc args loc =
-  mkpat ~loc (Ppat_construct(Location.mkloc (Lident "::") loc, Some args))
+  mkpat ~loc (Ppat_construct(Location.mkloc (Longident.Lident "::") loc, Some args))
 
 let ghpat_cons consloc args loc =
-  mkpat ~ghost:true ~loc (Ppat_construct(Location.mkloc (Lident "::") loc, Some args))
+  mkpat ~ghost:true ~loc (Ppat_construct(Location.mkloc (Longident.Lident "::") loc, Some args))
 
 let mkpat_constructor_unit consloc loc =
-  mkpat ~loc (Ppat_construct(Location.mkloc (Lident "()") consloc, None))
+  mkpat ~loc (Ppat_construct(Location.mkloc (Longident.Lident "()") consloc, None))
 
 let simple_pattern_list_to_tuple ?(loc=dummy_loc ()) = function
   | [] -> assert false
@@ -388,7 +387,7 @@ let mktailexp_extension loc seq ext_opt =
             ext
           | None ->
             let loc = make_ghost_loc loc in
-            let nil = { txt = Lident "[]"; loc } in
+            let nil = { txt = Longident.Lident "[]"; loc } in
             Ast_helper.Exp.mk ~loc (Pexp_construct (nil, None)) in
         base_case
     | e1 :: el ->
@@ -407,7 +406,7 @@ let mktailpat_extension loc (seq, ext_opt) =
           ext
         | None ->
           let loc = make_ghost_loc loc in
-          let nil = { txt = Lident "[]"; loc } in
+          let nil = { txt = Longident.Lident "[]"; loc } in
           mkpat ~loc (Ppat_construct (nil, None)) in
       base_case
   | p1 :: pl ->
@@ -434,7 +433,7 @@ let ghexp_constraint loc e (t1, t2) =
   | None, None -> assert false
 
 let array_function ?(loc=dummy_loc()) str name =
-  ghloc ~loc (Ldot(Lident str, (if !Clflags.fast then "unsafe_" ^ name else name)))
+  ghloc ~loc (Longident.Ldot(Longident.Lident str, (if !Clflags.fast then "unsafe_" ^ name else name)))
 
 let syntax_error_str loc msg =
   if !Reason_config.recoverable then
@@ -563,7 +562,7 @@ let mkmod_app mexp marg =
     (Pmod_apply (mexp, marg))
 
 let bigarray_function ?(loc=dummy_loc()) str name =
-  ghloc ~loc (Ldot(Ldot(Lident "Bigarray", str), name))
+  ghloc ~loc (Longident.Ldot(Longident.Ldot(Longident.Lident "Bigarray", str), name))
 
 let bigarray_untuplify = function
     { pexp_desc = Pexp_tuple explist; pexp_loc = _ } -> explist
@@ -604,7 +603,7 @@ let bigarray_set ?(loc=dummy_loc()) arr arg newval =
                         Nolabel, newval]))
 
 let exp_of_label label =
-  mkexp ~loc:label.loc (Pexp_ident {label with txt=Lident(Longident.last label.txt)})
+  mkexp ~loc:label.loc (Pexp_ident {label with txt=Longident.Lident(Longident.last label.txt)})
 
 let pat_of_label label =
   mkpat ~loc:label.loc (Ppat_var {label with txt=(Longident.last label.txt)})
@@ -624,7 +623,7 @@ let varify_constructors var_names t =
       | Ptyp_arrow (label,core_type,core_type') ->
           Ptyp_arrow(label, loop core_type, loop core_type')
       | Ptyp_tuple lst -> Ptyp_tuple (List.map loop lst)
-      | Ptyp_constr( { txt = Lident s }, []) when List.mem s var_names ->
+      | Ptyp_constr( { txt = Longident.Lident s }, []) when List.mem s var_names ->
           Ptyp_var s
       | Ptyp_constr(longident, lst) ->
           Ptyp_constr(longident, List.map loop lst)
@@ -837,10 +836,10 @@ let reason_mapper =
   |> arity_conflict_resolving_mapper
 
 let rec string_of_longident = function
-    | Lident s -> s
-    | Ldot(longPrefix, s) ->
+    | Longident.Lident s -> s
+    | Longident.Ldot(longPrefix, s) ->
         s
-    | Lapply (y,s) -> string_of_longident s
+    | Longident.Lapply (y,s) -> string_of_longident s
 
 let built_in_explicit_arity_constructors = ["Some"; "Assert_failure"; "Match_failure"]
 
@@ -848,9 +847,9 @@ let jsx_component module_name attrs children loc =
   let firstPart = (List.hd (Longident.flatten module_name)) in
   let lident = if String.get firstPart 0 != '_' && firstPart = String.capitalize firstPart then
     (* firstPart will be non-empty so the 0th access is fine. Modules can't start with underscore *)
-    Ldot(module_name, "createElement")
+    Longident.Ldot(module_name, "createElement")
   else
-    Lident firstPart
+    Longident.Lident firstPart
   in
   let ident = Location.mkloc lident loc in
   let body = mkexp(Pexp_apply(mkexp(Pexp_ident ident) ~loc, attrs @ children)) ~loc in
@@ -2400,7 +2399,7 @@ jsx_arguments:
   | QUESTION LIDENT jsx_arguments
     { (* <Foo ?bar /> punning with explicitly passed optional *)
       let loc_lident = mklocation $startpos($2) $endpos($2) in
-      [(Optional $2, mkexp (Pexp_ident {txt = Lident $2; loc = loc_lident}) ~loc:loc_lident)] @ $3
+      [(Optional $2, mkexp (Pexp_ident {txt = Longident.Lident $2; loc = loc_lident}) ~loc:loc_lident)] @ $3
     }
   | LIDENT EQUAL simple_expr jsx_arguments
     { (* a=b *)
@@ -2409,7 +2408,7 @@ jsx_arguments:
   | LIDENT jsx_arguments
     { (* a (punning) *)
       let loc_lident = mklocation $startpos($1) $endpos($1) in
-      [(Labelled $1, mkexp (Pexp_ident {txt = Lident $1; loc = loc_lident}) ~loc:loc_lident)] @ $2
+      [(Labelled $1, mkexp (Pexp_ident {txt = Longident.Lident $1; loc = loc_lident}) ~loc:loc_lident)] @ $2
     }
 ;
 
@@ -2623,9 +2622,9 @@ mark_position_exp
       let loc_question = mklocation $startpos($2) $endpos($2) in
       let loc_colon = mklocation $startpos($4) $endpos($4) in
       let fauxTruePat =
-        Ast_helper.Pat.mk ~loc:loc_question (Ppat_construct({txt = Lident "true"; loc = loc_question}, None)) in
+        Ast_helper.Pat.mk ~loc:loc_question (Ppat_construct({txt = Longident.Lident "true"; loc = loc_question}, None)) in
       let fauxFalsePat =
-        Ast_helper.Pat.mk ~loc:loc_colon (Ppat_construct({txt = Lident "false"; loc = loc_colon}, None)) in
+        Ast_helper.Pat.mk ~loc:loc_colon (Ppat_construct({txt = Longident.Lident "false"; loc = loc_colon}, None)) in
       let fauxMatchCaseTrue = Ast_helper.Exp.case fauxTruePat $3 in
       let fauxMatchCaseFalse = Ast_helper.Exp.case fauxFalsePat $5 in
       mkexp (Pexp_match ($1, [fauxMatchCaseTrue; fauxMatchCaseFalse]))
@@ -3114,7 +3113,7 @@ record_expr_with_string_keys:
   | STRING COLON expr
     { let loc = mklocation $symbolstartpos $endpos in
       let (s, d) = $1 in
-      let lident_lident_loc = Location.mkloc (Lident s) loc in
+      let lident_lident_loc = Location.mkloc (Longident.Lident s) loc in
       (None, [(lident_lident_loc, $3)])
     }
   | string_literal_expr string_literal_exprs
@@ -3128,7 +3127,7 @@ string_literal_expr:
   STRING preceded(COLON, expr)?
   { let loc = mklocation $startpos $endpos in
     let (s, d) = $1 in
-    let lident_lident_loc = Location.mkloc (Lident s) loc in
+    let lident_lident_loc = Location.mkloc (Longident.Lident s) loc in
     let exp = match $2 with
       | Some x -> x
       | None -> mkexp (Pexp_ident lident_lident_loc)
@@ -3154,7 +3153,7 @@ field_expr:
  | LIDENT
    { let loc = mklocation $symbolstartpos $endpos in
      let lident_loc = Location.mkloc $1 loc in
-     let lident_lident_loc = Location.mkloc (Lident $1) loc in
+     let lident_lident_loc = Location.mkloc (Longident.Lident $1) loc in
      (lident_loc, mkexp (Pexp_ident lident_lident_loc))
    }
 ;
@@ -3595,7 +3594,7 @@ string_literal_lbl:
 potentially_long_ident_and_optional_type_parameters:
   | LIDENT type_variables_with_variance
     { let loc = mklocation $startpos($1) $endpos($1) in
-      let lident_lident_loc = Location.mkloc (Lident $1) loc in
+      let lident_lident_loc = Location.mkloc (Longident.Lident $1) loc in
       (lident_lident_loc, $2)
     }
   | as_loc(type_strictly_longident) type_variables_with_variance
@@ -3673,7 +3672,7 @@ with_constraint:
   | TYPE as_loc(label_longident) type_variables_with_variance
       COLONEQUAL only_core_type(core_type)
     { let last = match $2.txt with
-        | Lident s -> s
+        | Longident.Lident s -> s
         | _ -> not_expecting $startpos($2) $endpos($2) "Long type identifier"
       in
       let loc = mklocation $symbolstartpos $endpos in
@@ -4081,26 +4080,26 @@ operator:
 ;
 
 val_longident:
-  | val_ident                     { Lident $1 }
-  | mod_longident DOT val_ident   { Ldot($1, $3) }
+  | val_ident                     { Longident.Lident $1 }
+  | mod_longident DOT val_ident   { Longident.Ldot($1, $3) }
 ;
 
 constr_longident:
   | mod_longident %prec below_DOT { $1 }
-  | LBRACKET RBRACKET             { Lident "[]" }
-  | LPAREN RPAREN                 { Lident "()" }
-  | FALSE                         { Lident "false" }
-  | TRUE                          { Lident "true" }
+  | LBRACKET RBRACKET             { Longident.Lident "[]" }
+  | LPAREN RPAREN                 { Longident.Lident "()" }
+  | FALSE                         { Longident.Lident "false" }
+  | TRUE                          { Longident.Lident "true" }
 ;
 
 label_longident:
-  | LIDENT                        { Lident $1 }
-  | mod_longident DOT LIDENT      { Ldot($1, $3) }
+  | LIDENT                        { Longident.Lident $1 }
+  | mod_longident DOT LIDENT      { Longident.Ldot($1, $3) }
 ;
 
 type_longident:
-  | LIDENT                        { Lident $1 }
-  | mod_ext_longident DOT LIDENT  { Ldot($1, $3) }
+  | LIDENT                        { Longident.Lident $1 }
+  | mod_ext_longident DOT LIDENT  { Longident.Ldot($1, $3) }
 ;
 
 /* Type long identifiers known to be "long". Only needed to resolve shift
@@ -4111,48 +4110,48 @@ type_longident:
  */
 type_strictly_longident:
   mod_ext_longident DOT LIDENT
-  { Ldot($1, $3) }
+  { Longident.Ldot($1, $3) }
 ;
 
 mod_longident:
-  | UIDENT                        { Lident $1 }
-  | mod_longident DOT UIDENT      { Ldot($1, $3) }
+  | UIDENT                        { Longident.Lident $1 }
+  | mod_longident DOT UIDENT      { Longident.Ldot($1, $3) }
 ;
 
 mod_ext_longident:
-  | UIDENT                        { Lident $1 }
-  | mod_ext_longident DOT UIDENT  { Ldot($1, $3) }
+  | UIDENT                        { Longident.Lident $1 }
+  | mod_ext_longident DOT UIDENT  { Longident.Ldot($1, $3) }
   | mod_ext2                      { $1 }
 ;
 
 mod_ext2:
   anonymous( mod_ext_longident DOT UIDENT
-             { Ldot($1, $3) }
+             { Longident.Ldot($1, $3) }
            | mod_ext2
              { $1 }
            | UIDENT
-             { Lident($1) }
+             { Longident.Lident($1) }
            )
   parenthesized(lseparated_nonempty_list(COMMA, mod_ext_longident))
   { if not !Clflags.applicative_functors then
       raise Syntaxerr.(Error(Applicative_path(mklocation $startpos $endpos)));
-    List.fold_left (fun p1 p2 -> Lapply (p1, p2)) $1 $2
+    List.fold_left (fun p1 p2 -> Longident.Lapply (p1, p2)) $1 $2
   }
 ;
 
 mty_longident:
-  | ident                        { Lident $1 }
-  | mod_ext_longident DOT ident  { Ldot($1, $3) }
+  | ident                        { Longident.Lident $1 }
+  | mod_ext_longident DOT ident  { Longident.Ldot($1, $3) }
 ;
 
 clty_longident:
-  | LIDENT                       { Lident $1 }
-  | mod_ext_longident DOT LIDENT { Ldot($1, $3) }
+  | LIDENT                       { Longident.Lident $1 }
+  | mod_ext_longident DOT LIDENT { Longident.Ldot($1, $3) }
 ;
 
 class_longident:
-  | LIDENT                       { Lident $1 }
-  | mod_longident DOT LIDENT     { Ldot($1, $3) }
+  | LIDENT                       { Longident.Lident $1 }
+  | mod_longident DOT LIDENT     { Longident.Ldot($1, $3) }
 ;
 
 /* Toplevel directives */
