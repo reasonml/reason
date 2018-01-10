@@ -854,29 +854,11 @@ let mkcf_attrs ?(loc=dummy_loc()) d attrs =
 let mkctf_attrs d attrs =
   Ctf.mk ~attrs d
 
-type let_binding =
-  { lb_pattern: pattern;
-    lb_expression: expression;
-    (* The meaning of lb_leading_attributes and lbs_extension are dependent on
-     * the context of the let binding (module/expression etc) *)
-    lb_attributes: attributes;
-    (* lb_docs: docs Lazy.t; *)
-    (* lb_text: text Lazy.t; *)
-    lb_loc: Location.t; }
-
 type let_bindings =
-  { lbs_bindings: let_binding list;
+  { lbs_bindings: Parsetree.value_binding list;
     lbs_rec: rec_flag;
     lbs_extension: (attributes * string Asttypes.loc) option;
     lbs_loc: Location.t }
-
-let mklb (p, e) attrs loc =
-  { lb_pattern = p;
-    lb_expression = e;
-    (* Only some individual let bindings are allowed to have attributes
-     * depending on the context *)
-    lb_attributes = attrs;
-    lb_loc = loc; }
 
 let mklbs ext rf lb loc =
   { lbs_bindings = [lb];
@@ -888,49 +870,23 @@ let addlbs lbs lbs' =
   { lbs with lbs_bindings = lbs.lbs_bindings @ lbs' }
 
 let val_of_let_bindings lbs =
-  let bindings =
-    List.map
-      (fun lb ->
-         Vb.mk ~loc:lb.lb_loc ~attrs:lb.lb_attributes
-           (* ~docs:(Lazy.force lb.lb_docs) *)
-           (* ~text:(Lazy.force lb.lb_text) *)
-           lb.lb_pattern lb.lb_expression)
-      lbs.lbs_bindings
-  in
-  let str = mkstr (Pstr_value(lbs.lbs_rec, bindings)) in
+  let str = Str.value lbs.lbs_rec lbs.lbs_bindings in
   match lbs.lbs_extension with
   | None -> str
   | Some ext -> struct_item_extension ext [str]
 
 let expr_of_let_bindings lbs body =
-  let bindings =
-    List.map
-      (fun lb ->
-         (* Individual let bindings in an *expression* can't have item attributes. *)
-         (*if lb.lb_attributes <> [] then
-           raise Syntaxerr.(Error(Not_expecting(lb.lb_loc, "item attribute")));*)
-         Vb.mk ~attrs:lb.lb_attributes ~loc:lb.lb_loc lb.lb_pattern lb.lb_expression)
-      lbs.lbs_bindings
-  in
   (* The location of this expression unfortunately includes the entire rule,
    * which will include any preceeding extensions. *)
-  let item_expr = mkexp (Pexp_let(lbs.lbs_rec, bindings, body)) in
+  let item_expr = Exp.let_ lbs.lbs_rec lbs.lbs_bindings body in
   match lbs.lbs_extension with
   | None -> item_expr
   | Some ext -> expression_extension ext item_expr
 
 let class_of_let_bindings lbs body =
-  let bindings =
-    List.map
-      (fun lb ->
-         (*if lb.lb_attributes <> [] then
-           raise Syntaxerr.(Error(Not_expecting(lb.lb_loc, "item attribute")));*)
-         Vb.mk ~attrs:lb.lb_attributes ~loc:lb.lb_loc lb.lb_pattern lb.lb_expression)
-      lbs.lbs_bindings
-  in
-    if lbs.lbs_extension <> None then
-      raise Syntaxerr.(Error(Not_expecting(lbs.lbs_loc, "extension")));
-    mkclass(Pcl_let (lbs.lbs_rec, bindings, body))
+  if lbs.lbs_extension <> None then
+    raise Syntaxerr.(Error(Not_expecting(lbs.lbs_loc, "extension")));
+  Cl.let_ lbs.lbs_rec lbs.lbs_bindings body
 
 (*
  * arity_conflict_resolving_mapper is triggered when both "implicit_arity" "explicit_arity"
@@ -3171,7 +3127,8 @@ labeled_expr:
    * attribute* on the structure item for the "and" binding.
    *)
   item_attributes AND let_binding_body
-  { mklb $3 $1 (mklocation $symbolstartpos $endpos) }
+  { let pat, expr = $3 in
+    Vb.mk ~loc:(mklocation $symbolstartpos $endpos) ~attrs:$1 pat expr }
 ;
 
 let_bindings: let_binding and_let_binding* { addlbs $1 $2 };
@@ -3180,7 +3137,8 @@ let_binding:
   (* Form with item extension sugar *)
   item_attributes LET item_extension_sugar? rec_flag let_binding_body
   { let loc = mklocation $symbolstartpos $endpos in
-    mklbs $3 $4 (mklb $5 $1 loc) loc }
+    let pat, expr = $5 in
+    mklbs $3 $4 (Vb.mk ~loc ~attrs:$1 pat expr) loc }
 ;
 
 let_binding_body:
