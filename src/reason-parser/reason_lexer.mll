@@ -564,6 +564,11 @@ rule token = parse
     set_lexeme_length lexbuf 1;
     GREATER
   }
+  | "/>>" {
+    (* allow parsing of <Description term=<Text text="Age" />> *)
+    set_lexeme_length lexbuf 2;
+    SLASHGREATER
+  }
   | "[@" { LBRACKETAT }
   | "[%" { LBRACKETPERCENT }
   | "[%%" { LBRACKETPERCENTPERCENT }

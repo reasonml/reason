@@ -170,3 +170,7 @@ let y = [
   <Button onClick=handleStaleClick />,
   <Button onClick=handleStaleClick />
 ];
+
+<Description term=<Text text="Age" />>
+  child
+</Description>;
