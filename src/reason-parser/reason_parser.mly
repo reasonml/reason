@@ -132,6 +132,7 @@ open Ast_mapper
 
 *)
 
+let bs_payload loc = ({loc; txt = "bs"}, PStr [])
 
 let dummy_loc () = {
   loc_start = Lexing.dummy_pos;
@@ -365,8 +366,9 @@ let mkuplus name arg =
 let mkexp_cons consloc args loc =
   mkexp ~loc (Pexp_construct(mkloc (Lident "::") consloc, Some args))
 
-let mkexp_constructor_unit consloc loc =
-  mkexp ~loc (Pexp_construct(mkloc (Lident "()") consloc, None))
+let mkexp_constructor_unit ?(uncurried=false) consloc loc =
+  let attrs = if uncurried then [bs_payload loc] else [] in
+  mkexp ~attrs ~loc (Pexp_construct(mkloc (Lident "()") consloc, None))
 
 let ghexp_cons consloc args loc =
   mkexp ~ghost:true ~loc (Pexp_construct(mkloc (Lident "::") loc, Some args))
@@ -428,8 +430,29 @@ let makeFrag loc body =
 
 (* Applies attributes to the structure item, not the expression itself. Makes
  * structure item have same location as expression. *)
+
 let mkstrexp e attrs =
-  { pstr_desc = Pstr_eval (e, attrs); pstr_loc = e.pexp_loc }
+  match e with
+  | ({pexp_desc = Pexp_apply (({pexp_attributes} as e1), args); pexp_loc } as eRewrite)
+      when let f = (List.filter (function
+          | ({txt = "bs"}, _) -> true
+          | _ -> false ) e.pexp_attributes)  in
+      List.length f > 0
+    ->
+      let appExprAttrs = List.filter (function
+          | ({txt = "bs"}, PStr []) -> false
+          | _ -> true ) pexp_attributes in
+      let strEvalAttrs = (bs_payload e1.pexp_loc)::(List.filter (function
+        | ({txt = "bs"}, PStr []) -> false
+          | _ -> true ) attrs) in
+      let e = {
+        eRewrite with
+        pexp_desc = (Pexp_apply(e1, args));
+        pexp_attributes = appExprAttrs
+      } in
+      { pstr_desc = Pstr_eval (e, strEvalAttrs); pstr_loc = e.pexp_loc }
+  | _ ->
+      { pstr_desc = Pstr_eval (e, attrs); pstr_loc = e.pexp_loc }
 
 let ghexp_constraint loc e (t1, t2) =
   match t1, t2 with
@@ -532,7 +555,7 @@ type labelled_parameter =
   | Term of arg_label * expression option * pattern
   | Type of string
 
-let mkexp_fun {Location. txt; loc} body =
+let mkexp_fun {Location.txt; loc} body =
   let loc = mklocation loc.loc_start body.pexp_loc.loc_end in
   match txt with
   | Term (label, default_expr, pat) ->
@@ -557,10 +580,12 @@ let mkcty_arrow {Location. txt = (label, cod); loc} dom =
   mkcty ~loc:(mklocation loc.loc_start dom.pcty_loc.loc_end)
     (Pcty_arrow (label, cod, dom))
 
-let mkexp_app_rev startp endp (body, args) =
+
+let mkexp_app_rev startp endp (body, args, uncurried) =
   let loc = mklocation startp endp in
+  let attrs = if uncurried then [bs_payload loc] else [] in
   if args = [] then { body with pexp_loc = loc } else
-    mkexp ~loc (Pexp_apply (body, List.rev args))
+    mkexp ~attrs ~loc (Pexp_apply (body, List.rev args))
 
 let mkmod_app mexp marg =
   mkmod ~loc:(mklocation mexp.pmod_loc.loc_start marg.pmod_loc.loc_end)
@@ -1804,8 +1829,13 @@ and_class_declaration:
 
 class_declaration_details:
   virtual_flag as_loc(LIDENT) ioption(class_type_parameters)
-  loption(labeled_pattern_list) class_declaration_body
-  { let body = List.fold_right mkclass_fun $4 $5 in
+  ioption(labeled_pattern_list) class_declaration_body
+  {
+    let tree = match $4 with
+    | None -> []
+    | Some (lpl, _uncurried) -> lpl
+    in
+    let body = List.fold_right mkclass_fun tree $5 in
     let params = match $3 with None -> [] | Some x -> x in
     ($2, body, $1, params)
   }
@@ -1844,7 +1874,8 @@ mark_position_cl
   ( class_simple_expr
     { $1 }
   | either(ES6_FUN,FUN) labeled_pattern_list EQUALGREATER class_expr
-    { List.fold_right mkclass_fun $2 $4 }
+    { let (lp, _) = $2 in
+      List.fold_right mkclass_fun lp $4 }
   | class_simple_expr labeled_arguments
       /**
        * This is an interesting way to "partially apply" class construction:
@@ -1853,7 +1884,8 @@ mark_position_cl
        * class newclass = oldclass withInitArg;
        * let inst = new newclass;
        */
-    { mkclass(Pcl_apply($1, $2)) }
+    { let (args, _uncurried) = $2 in
+      mkclass(Pcl_apply($1, args)) }
   | attribute class_expr
     { {$2 with pcl_attributes = $1 :: $2.pcl_attributes} }
   /*
@@ -2090,7 +2122,12 @@ method_:
 class_constructor_type:
   | class_instance_type { $1 }
   | arrow_type_parameters EQUALGREATER class_constructor_type
-    { List.fold_right mkcty_arrow $1 $3 }
+    { let (p, uncurried) = $1 in
+      let cty_arrow = List.fold_right mkcty_arrow p $3 in
+      if uncurried then
+        let loc = mklocation $startpos $endpos in
+        { cty_arrow with pcty_attributes = (bs_payload loc)::cty_arrow.pcty_attributes }
+      else cty_arrow }
 ;
 
 class_type_arguments_comma_list:
@@ -2115,6 +2152,12 @@ mark_position_cty
 class_type_body:
   | LBRACE class_sig_body RBRACE
     { mkcty ~loc:(mklocation $startpos $endpos) (Pcty_signature $2) }
+  | LBRACE DOT class_sig_body RBRACE
+    { let ct = mkcty ~loc:(mklocation $startpos $endpos) (Pcty_signature $3) in
+    (* TODO *)
+    let loc = mklocation $startpos $endpos in
+    {ct with pcty_attributes = [bs_payload loc]}
+    }
   | as_loc(LBRACE) class_sig_body as_loc(error)
     { unclosed_cty (with_txt $1 "{") (with_txt $3 "}") }
 ;
@@ -2406,17 +2449,24 @@ as_loc
 %inline labeled_pattern_list:
   | LPAREN RPAREN {
     let loc = mklocation $startpos $endpos in
-    [mkloc (Term (Nolabel, None, mkpat_constructor_unit loc loc)) loc]
+    ([mkloc (Term (Nolabel, None, mkpat_constructor_unit loc loc)) loc], false)
   }
   | parenthesized(labelled_pattern_comma_list) {
-    $1
+    ($1, false)
+  }
+  | LPAREN DOT RPAREN {
+      let loc = mklocation $startpos $endpos in
+      ([mkloc (Term (Nolabel, None, mkpat_constructor_unit loc loc)) loc], true)
+  }
+  | LPAREN DOT labelled_pattern_comma_list RPAREN {
+    ($3, true)
   }
 ;
 
 es6_parameters:
   | labeled_pattern_list { $1 }
   | as_loc(val_ident)
-    { [{$1 with txt = Term (Nolabel, None, mkpat ~loc:$1.loc (Ppat_var $1))}] }
+    { ([{$1 with txt = Term (Nolabel, None, mkpat ~loc:$1.loc (Ppat_var $1))}], false) }
 ;
 
 
@@ -2585,10 +2635,23 @@ mark_position_exp
   | FUN optional_expr_extension fun_def(EQUALGREATER,non_arrowed_core_type)
     { $2 $3 }
   | ES6_FUN es6_parameters EQUALGREATER expr
-    { List.fold_right mkexp_fun $2 $4 }
+    { let (ps, uncurried) = $2 in
+    let exp = List.fold_right mkexp_fun ps $4 in
+    if uncurried then
+      let loc = mklocation $startpos $endpos in
+      {exp with pexp_attributes = (bs_payload loc)::exp.pexp_attributes}
+    else exp
+    }
   | ES6_FUN es6_parameters COLON only_core_type(non_arrowed_core_type) EQUALGREATER expr
-    { List.fold_right mkexp_fun $2
-        (ghexp_constraint (mklocation $startpos($4) $endpos) $6 (Some $4, None)) }
+    { let (ps, uncurried) = $2 in
+    let exp = List.fold_right mkexp_fun ps
+        (ghexp_constraint (mklocation $startpos($4) $endpos) $6 (Some $4, None))  in
+    if uncurried then
+      let loc = mklocation $startpos $endpos in
+      {exp with pexp_attributes = (bs_payload loc)::exp.pexp_attributes}
+    else exp
+    }
+
   /* List style rules like this often need a special precendence
      such as below_BAR in order to let the entire list "build up"
    */
@@ -2707,9 +2770,9 @@ unattributed_expr:
 parenthesized_expr:
   | braced_expr
     { $1 }
-  | LPAREN RPAREN
+  | LPAREN DOT RPAREN
     { let loc = mklocation $startpos $endpos in
-      mkexp_constructor_unit loc loc }
+      mkexp_constructor_unit ~uncurried:true loc loc }
   | LPAREN expr_list RPAREN
     { may_tuple $startpos $endpos $2 }
 ;
@@ -2871,15 +2934,17 @@ simple_expr_no_call:
 ;
 
 simple_expr_call:
-  | mark_position_exp(simple_expr_template(simple_expr)) { $1, [] }
+  | mark_position_exp(simple_expr_template(simple_expr)) { $1, [], false}
   | simple_expr_call labeled_arguments
-    { let body, args = $1 in (body, List.rev_append $2 args) }
+    { let (body, args, _uncurried) = $1 in
+      let (lbled_args, uncurried) = $2 in
+    (body, List.rev_append lbled_args args, uncurried) }
   | LBRACKET expr_comma_seq_extension RBRACKET
     { let seq, ext_opt = $2 in
       let loc = mklocation $startpos($2) $endpos($2) in
-      (make_real_exp (mktailexp_extension loc seq ext_opt), [])
+      (make_real_exp (mktailexp_extension loc seq ext_opt), [], false)
     }
-  | simple_expr_template_constructor { ($1, []) }
+  | simple_expr_template_constructor { ($1, [], false) }
 ;
 
 simple_expr_direct_argument:
@@ -2940,12 +3005,18 @@ non_labeled_argument_list:
 
 labeled_arguments:
   | mark_position_exp(simple_expr_direct_argument)
-    { [(Nolabel, $1)] }
+    { ([(Nolabel, $1)], false) }
   | parenthesized(labelled_expr_comma_list)
     { match $1 with
       | [] -> let loc = mklocation $startpos $endpos in
-              [(Nolabel, mkexp_constructor_unit loc loc)]
-      | xs -> xs
+              ([(Nolabel, mkexp_constructor_unit loc loc)], false)
+      | xs -> (xs, false)
+    }
+  | LPAREN DOT labelled_expr_comma_list RPAREN
+    { match $3 with
+      | [] -> let loc = mklocation $startpos $endpos in
+              ([(Nolabel, mkexp_constructor_unit loc loc)], true)
+      | xs -> (xs, true)
     }
 ;
 
@@ -3110,10 +3181,16 @@ fun_def(DELIM, typ):
   labeled_pattern_list
   preceded(COLON,only_core_type(typ))?
   either(preceded(DELIM, expr), braced_expr)
-  { List.fold_right mkexp_fun $1
+  { let (pl, uncurried) = $1 in
+  let exp = List.fold_right mkexp_fun pl
       (match $2 with
       | None -> $3
       | Some ct -> Exp.constraint_ ~loc:(mklocation $startpos $endpos) $3 ct)
+  in
+  if uncurried then
+    let loc = mklocation $startpos $endpos in
+    {exp with pexp_attributes = (bs_payload loc)::exp.pexp_attributes}
+   else exp
   }
 ;
 
@@ -3789,7 +3866,6 @@ with_constraint:
 ;
 
 /* Polymorphic types */
-
 poly_type:
 mark_position_typ
   ( only_core_type(core_type)
@@ -3908,7 +3984,8 @@ mark_position_typ2
    * even though *nothing* will point towards that.
    * If switching to Menhir, this may not be needed.
    */
-  ( core_type2
+  (
+    core_type2
     { $1 }
   | only_core_type(core_type2) AS QUOTE ident
     { Core_type (mktyp(Ptyp_alias($1, $4))) }
@@ -3943,7 +4020,13 @@ unattributed_core_type:
   | non_arrowed_simple_core_type
     { $1 }
   | arrow_type_parameters EQUALGREATER only_core_type(core_type2)
-    { Core_type (List.fold_right mktyp_arrow $1 $3) }
+    { let (p, uncurried) = $1 in
+      let ct = List.fold_right mktyp_arrow p $3 in
+      let ct = if uncurried then
+        let loc = mklocation $startpos $endpos in
+        { ct with ptyp_attributes = (bs_payload loc)::ct.ptyp_attributes  }
+      else ct in
+      Core_type ct }
   | only_core_type(basic_core_type) EQUALGREATER only_core_type(core_type2)
     { Core_type (mktyp (Ptyp_arrow (Nolabel, $1, $3))) }
 ;
@@ -3961,7 +4044,10 @@ arrow_type_parameter:
     | lseparated_nonempty_list(COMMA, as_loc(arrow_type_parameter)) COMMA? {$1}
 
 arrow_type_parameters:
-  | parenthesized(arrow_type_parameter_comma_list) { $1 }
+  LPAREN DOT arrow_type_parameter_comma_list RPAREN
+  { ($3, true) }
+ | LPAREN arrow_type_parameter_comma_list RPAREN
+  { ($2, false) }
 ;
 
 /* Among other distinctions, "simple" core types can be used in Variant types:
@@ -4011,7 +4097,8 @@ mark_position_typ
         | Optional _ | Labelled _ ->
             syntax_error_typ loc "Labels are not allowed inside a tuple"
       in
-      match List.map prepare_arg $1 with
+      let (p, _uncurried) = $1 in
+      match List.map prepare_arg p with
       | []    -> assert false
       | [one] -> one
       | many  -> mktyp (Ptyp_tuple many)
@@ -4036,7 +4123,7 @@ mark_position_typ2
   | UNDERSCORE
     { Core_type (mktyp(Ptyp_any)) }
   | as_loc(type_longident)
-    { Core_type (mktyp(Ptyp_constr($1, []))) }
+  { Core_type (mktyp(Ptyp_constr($1, []))) }
   | object_record_type
     { $1 }
   | LBRACKET row_field_list RBRACKET
@@ -4057,12 +4144,12 @@ object_record_type:
   | LBRACE label_declarations RBRACE
     { Record_type (only_labels $2) }
   | LBRACE DOT string_literal_lbls RBRACE
-    { (* `{. "foo": bar}` -> `Js.t {. foo: bar}` *)
+    { (* `{. "foo": bar}` -> `Js.t({. foo: bar})` *)
       let loc = mklocation $symbolstartpos $endpos in
       mkBsObjTypeSugar ~loc ~closed:Closed $3
     }
   | LBRACE DOTDOT string_literal_lbls RBRACE
-    { (* `{.. "foo": bar}` -> `Js.t {.. foo: bar}` *)
+    { (* `{.. "foo": bar}` -> `Js.t({.. foo: bar})` *)
       let loc = mklocation $symbolstartpos $endpos in
       mkBsObjTypeSugar ~loc ~closed:Open $3
     }

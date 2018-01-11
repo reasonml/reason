@@ -97,7 +97,7 @@ let d = {
 
 let a = {"/foo": 10};
 
-let isArrayPolyfill: [@bs] (int => bool) = [%bs.raw
+let isArrayPolyfill: (. int) => bool = [%bs.raw
   "function(a) {return Object.prototype.toString.call(a) === '[object Array]'}"
 ];
 

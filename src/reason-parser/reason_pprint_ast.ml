@@ -293,6 +293,17 @@ let print_comment_type = function
   | EndOfLine -> "End of Line"
   | SingleLine -> "SingleLine"
 
+let print_location loc =
+  printf "%d (%d:%d)-%d (%d:%d)\n"
+    loc.loc_start.Lexing.pos_cnum
+    loc.loc_start.Lexing.pos_lnum
+    (loc.loc_start.Lexing.pos_cnum - loc.loc_start.Lexing.pos_bol)
+    loc.loc_end.Lexing.pos_cnum
+    loc.loc_end.Lexing.pos_lnum
+    (loc.loc_end.Lexing.pos_cnum - loc.loc_end.Lexing.pos_bol);
+  flush stdout
+
+
 let rec print_comments = function
   | [] -> ()
   | ((s, t, loc)::tl) ->
@@ -482,14 +493,18 @@ type attributesPartition = {
   arityAttrs : attributes;
   docAttrs : attributes;
   stdAttrs : attributes;
-  jsxAttrs : attributes
+  jsxAttrs : attributes;
+  uncurried : bool
 }
 
 (** Partition attributes into kinds *)
 let rec partitionAttributes attrs : attributesPartition =
   match attrs with
     | [] ->
-        {arityAttrs=[]; docAttrs=[]; stdAttrs=[]; jsxAttrs=[]}
+        {arityAttrs=[]; docAttrs=[]; stdAttrs=[]; jsxAttrs=[]; uncurried = false}
+    | ({txt = "bs"}, PStr [])::atTl ->
+        let partition = partitionAttributes atTl in
+        {partition with uncurried = true}
     | (({txt="JSX"; loc}, _) as jsx)::atTl ->
         let partition = partitionAttributes atTl in
         {partition with jsxAttrs=jsx::partition.jsxAttrs}
@@ -950,6 +965,7 @@ let is_simple_construct :construct -> bool = function
   | `nil | `tuple | `list _ | `simple _ | `cons _  -> true
   | `normal -> false
 
+let uncurriedTable = Hashtbl.create 42
 
 (* Determines if a list of expressions contains a single unit construct
  * e.g. used to check: MyConstructor() -> exprList == [()]
@@ -1428,8 +1444,9 @@ let makeAppList l =
   | hd::[] -> hd
   | _ -> makeList ~inline:(true, true) ~postSpace:true ~break:IfNeed l
 
-let makeTup ?(trailComma=true) l =
-  makeList ~wrap:("(",")") ~sep:(if trailComma then commaTrail else commaSep) ~postSpace:true ~break:IfNeed l
+let makeTup ?(trailComma=true) ?(uncurried = false) l =
+  let lparen = if uncurried then "(. " else "(" in
+  makeList ~wrap:(lparen,")") ~sep:(if trailComma then commaTrail else commaSep) ~postSpace:true ~break:IfNeed l
 
 let ensureSingleTokenSticksToLabel x =
   makeList
@@ -2632,11 +2649,13 @@ class printer  ()= object(self:'self)
 
   method core_type2 x =
     let {stdAttrs} = partitionAttributes x.ptyp_attributes in
+    let uncurried = try Hashtbl.find uncurriedTable x.ptyp_loc with | Not_found -> false in
     if stdAttrs <> [] then
       formatAttributed
         (self#non_arrowed_simple_core_type {x with ptyp_attributes=[]})
         (self#attributes stdAttrs)
     else
+      let x = if uncurried then { x with ptyp_attributes = [] } else x in
       match (x.ptyp_desc) with
         | (Ptyp_arrow (l, ct1, ct2)) ->
           let rec allArrowSegments acc = function
@@ -2651,10 +2670,15 @@ class printer  ()= object(self:'self)
               in
               match acc with
               | [(Nolabel, lhs)] when not (is_tuple lhs) ->
-                (self#non_arrowed_simple_core_type lhs, rhs)
+                  let t = self#non_arrowed_simple_core_type lhs in
+                  let lhs = if uncurried then
+                    makeList ~wrap:("(. ", ")") ~postSpace:true [t]
+                  else t in
+                (lhs, rhs)
               | acc ->
                 let params = List.rev_map self#type_with_label acc in
-                (makeCommaBreakableListSurround "(" ")" params, rhs)
+                let lparen = if uncurried then "(. " else "(" in
+                (makeCommaBreakableListSurround lparen ")" params, rhs)
           in
           let (lhs, rhs) = allArrowSegments [] x in
           let normalized = makeList
@@ -2675,7 +2699,8 @@ class printer  ()= object(self:'self)
 
   (* Same as core_type2 but can be aliased *)
   method core_type x =
-    let {stdAttrs} = partitionAttributes x.ptyp_attributes in
+    let {stdAttrs; uncurried} = partitionAttributes x.ptyp_attributes in
+    if uncurried then Hashtbl.add uncurriedTable x.ptyp_loc true;
     if stdAttrs <> [] then
       formatAttributed
         (self#non_arrowed_simple_core_type {x with ptyp_attributes=[]})
@@ -3396,7 +3421,6 @@ class printer  ()= object(self:'self)
                * context it was parsed in. Therefore, we need to include further
                * information about the contents of the pattern such as tokens etc,
                * in order to get comments to be distributed correctly.*)
-
               SourceMap (loc, (atom x))
           | Ppat_construct (({txt=Lident "::"}), po) ->
                 self#patternList x (* LIST PATTERN *)
@@ -3784,7 +3808,9 @@ class printer  ()= object(self:'self)
 
   method unparseExprRecurse x =
     (* If there are any attributes, render unary like `(~-) x [@ppx]`, and infix like `(+) x y [@attr]` *)
-    let {arityAttrs; stdAttrs; jsxAttrs} = partitionAttributes x.pexp_attributes in
+    let {arityAttrs; stdAttrs; jsxAttrs; uncurried} = partitionAttributes x.pexp_attributes in
+    let () = if uncurried then Hashtbl.add uncurriedTable x.pexp_loc true in
+    let x = {x with pexp_attributes = (arityAttrs @ stdAttrs @ jsxAttrs) } in
     (* If there's any attributes, recurse without them, then apply them to
        the ends of functions, or simplify infix printings then append. *)
     if stdAttrs <> [] then
@@ -3867,9 +3893,8 @@ class printer  ()= object(self:'self)
          *   test("math", () =>
          *     Expect.expect(1 + 2) |> toBe(3)));
          *)
-        let (lastLabel, lastArg) = List.nth ls (List.length ls - 1) in
-        let syntheticApplicationLocation = {e.pexp_loc with loc_end = lastArg.pexp_loc.loc_end} in
-        FunctionApplication (self#formatFunAppl ~jsxAttrs ~args:ls ~applicationExpr:x ~funExpr:e ())
+        let uncurried = try Hashtbl.find uncurriedTable x.pexp_loc with | Not_found -> false in
+        FunctionApplication (self#formatFunAppl ~uncurried ~jsxAttrs ~args:ls ~applicationExpr:x ~funExpr:e ())
       )
     )
     | Pexp_construct (li, Some eo) when not (is_simple_construct (view_expr x)) -> (
@@ -4356,6 +4381,7 @@ class printer  ()= object(self:'self)
     argsAndReturn [] cl
 
 
+
   (*
     Returns the arguments list (if any, that occur before the =>), and the
     final expression (that is either returned from the function (after =>) or
@@ -4363,6 +4389,7 @@ class printer  ()= object(self:'self)
     let pattern binding)).
   *)
   method curriedPatternsAndReturnVal x =
+    let uncurried = try Hashtbl.find uncurriedTable x.pexp_loc with | Not_found -> false in
     let rec extract_args xx =
       if xx.pexp_attributes <> [] then
         ([], xx)
@@ -4383,10 +4410,15 @@ class printer  ()= object(self:'self)
     in
     match extract_args x with
     | ([], ret) -> ([], ret)
-    | ([`Value (Nolabel, None, p) as arg], ret) when is_unit_pattern p || is_ident_pattern p ->
+    | ([`Value (Nolabel, None, p) ], ret) when is_unit_pattern p && uncurried ->
+        ( [atom "(.)"], ret)
+    | ([`Value (Nolabel, None, p) as arg], ret) when (is_unit_pattern p || is_ident_pattern p) && not(uncurried) ->
       ([prepare_arg arg], ret)
     | (args, ret) ->
-      ([makeTup (List.map prepare_arg args)], ret)
+        if uncurried then
+          ([makeTup ~uncurried:true (List.map prepare_arg args)], ret)
+        else
+          ([makeTup (List.map prepare_arg args)], ret)
 
   (* Returns the (curriedModule, returnStructure) for a functor *)
   method curriedFunctorPatternsAndReturnStruct = function
@@ -4504,6 +4536,7 @@ class printer  ()= object(self:'self)
           self#formatSimplePatternBinding prefixText patternList (Some typeLayout) appTerms
       | ([], _) ->
           (* simple let binding, e.g. `let number = 5` *)
+          (* let f = (. a, b) => a + b; *)
           let appTerms = self#unparseExprApplicationItems expr  in
           self#formatSimplePatternBinding prefixText patternList None appTerms
       | (_::_, _) ->
@@ -4951,6 +4984,7 @@ class printer  ()= object(self:'self)
         let itm = match x.pexp_desc with
           | Pexp_fun _
           | Pexp_newtype _ ->
+            (* let uncurried =  *)
             let (args, ret) = self#curriedPatternsAndReturnVal x in
             ( match args with
               | [] -> raise (NotPossible ("no arrow args in unparse "))
@@ -5764,6 +5798,7 @@ class printer  ()= object(self:'self)
         makeSpacedBreakableInlineList [formattedAttrs; primDecl]
 
   method class_instance_type x =
+    let {stdAttrs; uncurried} = partitionAttributes x.pcty_attributes in
     match x.pcty_desc with
     | Pcty_signature cs ->
       let {pcsig_self = ct; pcsig_fields = l} = cs in
@@ -5775,9 +5810,9 @@ class printer  ()= object(self:'self)
           label ~space:true (atom "as") (self#core_type ct) ::
           instTypeFields
       in
-      self#attach_std_item_attrs x.pcty_attributes (
+      self#attach_std_item_attrs stdAttrs (
         makeList
-          ~wrap:("{", "}")
+          ~wrap:((if uncurried then "{." else "{"), "}")
           ~postSpace:true
           ~break:Always_rec
           ~sep:(Sep ";")
@@ -6494,7 +6529,8 @@ class printer  ()= object(self:'self)
     let item = (
       match term.pstr_desc with
         | Pstr_eval (e, attrs) ->
-            let {stdAttrs; jsxAttrs} = partitionAttributes attrs in
+            let {stdAttrs; jsxAttrs; uncurried} = partitionAttributes attrs in
+            if uncurried then Hashtbl.add uncurriedTable e.pexp_loc true;
             let layout = self#attach_std_item_attrs stdAttrs (self#unparseUnattributedExpr e) in
             (* If there was a JSX attribute BUT JSX component wasn't detected,
                that JSX attribute needs to be pretty printed so it doesn't get
@@ -6739,13 +6775,12 @@ class printer  ()= object(self:'self)
     in
     SourceMap (e.pexp_loc, param)
 
-  method label_x_expression_params xs =
+  method label_x_expression_params ?(uncurried=false) xs =
     match xs with
       (* function applications with unit as only argument should be printed differently
        * e.g. print_newline(()) should be printed as print_newline() *)
-      | [(Nolabel, ({pexp_attributes = []; pexp_desc = Pexp_construct ( {txt= Lident "()"}, None)} as x))]
-          -> makeList ~break:Never [self#unparseExpr x]
-
+      | [(Nolabel, {pexp_attributes = []; pexp_desc = Pexp_construct ( {txt= Lident "()"}, None)})]
+          -> makeList ~break:Never [if uncurried then atom "(.)" else atom "()"]
       (* The following cases provide special formatting when there's only one expr_param that is a tuple/array/list/record etc.
        *  e.g. foo({a: 1, b: 2})
        *  becomes ->
@@ -6758,9 +6793,9 @@ class printer  ()= object(self:'self)
       | [(Nolabel, exp)] when isSingleArgParenApplication [exp] ->
           self#singleArgParenApplication [exp]
       | params ->
-          makeTup (List.map self#label_x_expression_param params)
+          makeTup ~uncurried (List.map self#label_x_expression_param params)
 
-  method formatFunAppl ~jsxAttrs ~args ~funExpr ~applicationExpr () =
+  method formatFunAppl ~jsxAttrs ~args ~funExpr ~applicationExpr ?(uncurried=false) () =
     (* If there was a JSX attribute BUT JSX component wasn't detected,
        that JSX attribute needs to be pretty printed so it doesn't get
        lost *)
@@ -6783,7 +6818,9 @@ class printer  ()= object(self:'self)
          *   MyModuleBlah.toList(argument)
          *)
         let (argLbl, cb) = callbackArg in
-        let cbAttrs = cb.pexp_attributes in
+        let {stdAttrs; uncurried} = partitionAttributes cb.pexp_attributes in
+        let cbAttrs = stdAttrs in
+        if uncurried then Hashtbl.add uncurriedTable cb.pexp_loc true;
         let (cbArgs, retCb) = self#curriedPatternsAndReturnVal {cb with pexp_attributes = []} in
         let cbArgs = if List.length cbAttrs > 0 then
           makeList ~break:IfNeed ~inline:(true, true) ~postSpace:true ((List.map self#attribute cbAttrs)@(cbArgs))
@@ -6896,7 +6933,7 @@ class printer  ()= object(self:'self)
           {funExpr.pexp_loc with loc_end = applicationExpr.pexp_loc.loc_end},
           {funExpr.pexp_loc with loc_start = funExpr.pexp_loc.loc_end; loc_end = applicationExpr.pexp_loc.loc_end}
         ) in
-        let theArgs = self#reset#label_x_expression_params args in
+        let theArgs = self#reset#label_x_expression_params ~uncurried args in
         maybeJSXAttr @ [SourceMap(syntheticApplicationLocation, label theFunc (SourceMap(syntheticArgLoc, theArgs)))]
     end
 end;;
