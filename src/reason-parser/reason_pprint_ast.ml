@@ -6741,6 +6741,10 @@ class printer  ()= object(self:'self)
     let categorizeFunApplArgs args =
       let reverseArgs = List.rev args in
       match reverseArgs with
+      | (_, {pexp_desc = Pexp_fun _})::[] ->
+          (* If there's only one arg, should be printed as normal *)
+          (* e.g. Js.Option.andThen([@bs] (w => w#getThing())); *)
+          `NormalFunAppl args
       | ((_, {pexp_desc = Pexp_fun _}) as callback)::args
           when let otherCallbacks =
             List.filter (fun (_, e) -> match e.pexp_desc with Pexp_fun _ -> true | _ -> false) args

@@ -1017,3 +1017,5 @@ Thing.map(
   (abc, z) => MyModuleBlah.toList(argument), 
   (abc, z) => MyModuleBlah.toList(argument)
 );
+
+Js.Option.andThen([@bs] w => w#getThing());

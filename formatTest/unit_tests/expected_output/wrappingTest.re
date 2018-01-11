@@ -766,8 +766,7 @@ echoTheEchoer(
       o,
       p
     )
-  ) =>
-  (
+  ) => (
     a,
     b,
     c,
