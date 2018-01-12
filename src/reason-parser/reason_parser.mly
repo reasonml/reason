@@ -2415,6 +2415,29 @@ jsx_arguments:
       let loc_lident = mklocation $startpos($1) $endpos($1) in
       [(Labelled $1, mkexp (Pexp_ident {txt = Lident $1; loc = loc_lident}) ~loc:loc_lident)] @ $2
     }
+  | as_loc(INFIXOP3)
+    (* extra rule to provide nice error messages in the case someone
+     * wrote: <Description term=<Text text="Age" />> child </Description>
+     * or <Foo bar=<Baz />/>
+     *  />> & />/> are lexed as infix tokens *)
+  {
+    match $1.txt with
+    | "/>>" ->
+     let err = Syntax_util.Syntax_error {|JSX in a JSX-argument needs to be wrapped in braces.
+    If you wrote:
+      <Description term=<Text text="Age" />> child </Description>
+    Try wrapping <Text /> in braces.
+      <Description term={<Text text="Age" />}> child </Description>|} in
+      raise (Syntax_util.Error($1.loc, err))
+    | "/>/>" ->
+     let err = Syntax_util.Syntax_error {|JSX in a JSX-argument needs to be wrapped in braces.
+    If you wrote:
+      <Description term=<Text text="Age" />/>
+    Try wrapping <Text /> in braces.
+      <Description term={<Text text="Age" />} />|} in
+      raise (Syntax_util.Error($1.loc, err))
+    | _ -> syntax_error ()
+  }
 ;
 
 jsx_start_tag_and_args:

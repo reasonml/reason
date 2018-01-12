@@ -635,4 +635,4 @@ module Foo3 = {
     ();
 };
 
-<Foo3 bar=<Foo /> />;
+<Foo3 bar={<Foo />} />;
