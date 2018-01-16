@@ -902,3 +902,10 @@ b;
 /* #1676: Exponentiation should be right-associative */
 let foo = (100. /. 2.) ** 2. +. (200. /. 2.) ** 2.;
 let foo = 100. /. 2. ** 2. +. 200. /. 2. ** 2.;
+
+/* Parens should not be added to negative constants, but should be added in expressions */
+let x = -5;
+
+let x = (-10, -10);
+
+let x = 1 + -1 + 1;
