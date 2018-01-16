@@ -404,7 +404,7 @@ module rec A: {
     | (Leaf(s1), Leaf(s2)) =>
       Pervasives.compare(s1, s2)
     | (Leaf(_), Node(_)) => 1
-    | (Node(_), Leaf(_)) => (-1)
+    | (Node(_), Leaf(_)) => -1
     | (Node(n1), Node(n2)) =>
       ASet.compare(n1, n2)
     };

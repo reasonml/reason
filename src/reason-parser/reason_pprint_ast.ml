@@ -3702,7 +3702,7 @@ class printer  ()= object(self:'self)
       minimizing parenthesis.
   *)
   method unparseExpr x =
-    match self#unparseExprRecurse x with
+    match self#unparseExprRecurse ~parens:false x with
     | SpecificInfixPrecedence ({reducePrecedence; shiftPrecedence}, resolvedRule) ->
         self#unparseResolvedRule resolvedRule
     | FunctionApplication itms -> formatAttachmentApplication applicationFinalWrapping None (itms, Some x.pexp_loc)
@@ -3763,7 +3763,7 @@ class printer  ()= object(self:'self)
 
 
   method unparseExprApplicationItems x =
-    match self#unparseExprRecurse x with
+    match self#unparseExprRecurse ~parens:false x with
     | SpecificInfixPrecedence ({reducePrecedence; shiftPrecedence}, wrappedRule) ->
         let itm = self#unparseResolvedRule wrappedRule in
         ([itm], Some x.pexp_loc)
@@ -3772,7 +3772,7 @@ class printer  ()= object(self:'self)
     | Simple itm -> ([itm], Some x.pexp_loc)
 
 
-  method unparseExprRecurse x =
+  method unparseExprRecurse ?(parens=true) x =
     (* If there are any attributes, render unary like `(~-) x [@ppx]`, and infix like `(+) x y [@attr]` *)
     let {arityAttrs; stdAttrs; jsxAttrs} = partitionAttributes x.pexp_attributes in
     (* If there's any attributes, recurse without them, then apply them to
@@ -3797,7 +3797,7 @@ class printer  ()= object(self:'self)
           (List.concat [attributesAsList; itms])
       ]
     else
-    match self#simplest_expression x with
+    match self#simplest_expression ~parens x with
     | Some se -> Simple se
     | None ->
     match x.pexp_desc with
@@ -5360,7 +5360,7 @@ class printer  ()= object(self:'self)
       | _ -> raise (Invalid_argument "bs.obj only accepts a record. You've passed something else"))
     | _ -> assert false
 
-  method simplest_expression x =
+  method simplest_expression ?(parens=true) x =
     let {stdAttrs; jsxAttrs} = partitionAttributes x.pexp_attributes in
     if stdAttrs <> [] then
       None
@@ -5421,7 +5421,7 @@ class printer  ()= object(self:'self)
             Some (ensureSingleTokenSticksToLabel (self#longident_loc li))
         | Pexp_constant c ->
             (* Constants shouldn't break when to the right of a label *)
-            Some (ensureSingleTokenSticksToLabel (self#constant c))
+            Some (ensureSingleTokenSticksToLabel (self#constant ~parens c))
         | Pexp_pack me ->
           Some (
             makeList
