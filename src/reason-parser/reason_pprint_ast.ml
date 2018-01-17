@@ -57,10 +57,7 @@ open Easy_format
 open Syntax_util
 open Ast_mapper
 
-type commentCategory =
-  | EndOfLine
-  | SingleLine
-  | Regular
+module Comment = Reason_comment
 
 (*
  Modeling separators:
@@ -86,9 +83,6 @@ type separator =
   | NoSep
   | Sep of string
   | SepFinal of string * string
-
-(* (comment text, attachment_location, physical location) *)
-type commentWithCategory = (String.t * commentCategory * Location.t) list
 
 let print_easy easyFormatted =
   match easyFormatted with
@@ -287,24 +281,6 @@ let expression_not_immediate_extension_sugar x =
 let add_extension_sugar keyword = function
   | None -> keyword
   | Some str -> keyword ^ "%" ^ str.txt
-
-let print_comment_type = function
-  | Regular -> "Regular"
-  | EndOfLine -> "End of Line"
-  | SingleLine -> "SingleLine"
-
-let rec print_comments = function
-  | [] -> ()
-  | ((s, t, loc)::tl) ->
-       printf "(%d:%d)-(%d:%d) -- %s:||%s||\n"
-              loc.loc_start.Lexing.pos_lnum
-              (loc.loc_start.Lexing.pos_cnum - loc.loc_start.Lexing.pos_bol)
-              loc.loc_end.Lexing.pos_lnum
-              (loc.loc_end.Lexing.pos_cnum - loc.loc_end.Lexing.pos_bol)
-              (print_comment_type t)
-              s;
-       print_comments tl;
-       ()
 
 let rec print_easy_rec ?(indent=0) easyFormatted =
   let space = Array.fold_left (^) "" (Array.make indent " ") in
@@ -1664,11 +1640,6 @@ let insertBlankLines n term =
 
 let string_after s n = String.sub s n (String.length s - n)
 
-let wrapComment = function
-  | "" | "*" -> "/***/"
-  | txt when txt.[0] = '*' && txt.[1] <> '*' -> "/**" ^ txt ^ "*/"
-  | txt -> "/*" ^ txt ^ "*/"
-
 (* This is a special-purpose functions only used by `formatComment_`. Notice we
 skip a char below during usage because we know the comment starts with `/*` *)
 let rec lineZeroMeaningfulContent_ line length idx accum =
@@ -1682,7 +1653,10 @@ let rec lineZeroMeaningfulContent_ line length idx accum =
 let lineZeroMeaningfulContent line = lineZeroMeaningfulContent_ line (String.length line) 1 0
 
 let formatComment_ txt =
-  let commLines = Syntax_util.split_by ~keep_empty:true (fun x -> x = '\n') (wrapComment txt) in
+  let commLines =
+    Syntax_util.split_by ~keep_empty:true (fun x -> x = '\n')
+      (Comment.wrap txt)
+  in
   match commLines with
   | [] -> atom ""
   | [hd] ->
@@ -1703,13 +1677,13 @@ let formatComment_ txt =
     let lines = zero :: List.map padNonOpeningLine (one::tl) in
     makeList ~inline:(true, true) ~indent:0 ~break:Always_rec (List.map atom lines)
 
-let formatComment ?locOpt txt =
-  let list = formatComment_ txt in
-  match locOpt with
-  | None ->
-     list
-  | Some loc ->
-     SourceMap (loc, list)
+let formatComment comment =
+  let layout = formatComment_ comment in
+  let loc = comment.Comment.location in
+  if loc = Location.none then
+    layout
+  else
+    SourceMap (loc, layout)
 
 let rec append ?(space=false) txt = function
   | SourceMap (loc, sub) -> SourceMap (loc, append ~space txt sub)
@@ -1848,6 +1822,10 @@ let containLoc loc1 loc2 =
 let beforeLoc loc1 loc2 =
   loc1.loc_end.Lexing.pos_cnum <= loc2.loc_start.Lexing.pos_cnum
 
+let layout_is_before ~location layout = match getLocFromLayout layout with
+  | None -> true
+  | Some loc -> beforeLoc loc location
+
 (**
  * Returns true if the layout's location contains loc
  *)
@@ -1863,118 +1841,112 @@ let layoutContainsLoc loc layout =
 let anySublayoutContainLocation loc =
   List.exists (layoutContainsLoc loc)
 
-let isDocComment (c, _, _) = String.length c > 0 && c.[0] == '*'
-
 (**
  * prependSingleLineComment inserts a single line comment right above layout
  *)
 let rec prependSingleLineComment ?newlinesAboveDocComments:(newlinesAboveDocComments=0) comment layout =
-  let (txt, _, loc) = comment in
   match layout with
   | SourceMap (loc, sub) ->
      SourceMap (loc, prependSingleLineComment ~newlinesAboveDocComments comment sub)
   | Sequence (config, hd::tl) when config.break = Always_rec->
      Sequence(config, (prependSingleLineComment ~newlinesAboveDocComments comment hd)::tl)
   | layout ->
-     let withComment = breakline (formatComment ~locOpt:loc txt) layout in
-     if isDocComment comment then
+    let withComment = breakline (formatComment comment) layout in
+     if Comment.is_doc comment then
        insertBlankLines newlinesAboveDocComments withComment
      else
        withComment
 
 
 (* breakAncestors break ancestors above node, but not comment attachment itself.*)
-let appendComment ~breakAncestors layout (txt, _, _) =
+let appendComment ~breakAncestors layout comment =
+  let text = Comment.wrap comment in
+  let layout = makeList ~break:Never ~postSpace:true [layout; atom text] in
   if breakAncestors then
     makeList ~inline:(true, true) ~postSpace:false ~preSpace:true ~indent:0
-      ~break:Always_rec [makeList ~break:Never ~postSpace:true [layout; atom (wrapComment txt)]]
+      ~break:Always_rec [layout]
   else
-    makeList ~break:Never ~postSpace:true [layout; atom (wrapComment txt)]
+    layout
 
 (**
  * [looselyAttachComment layout comment] preorderly walks the layout and
  * find a place where the comment can be loosely attached to
  *)
-let rec looselyAttachComment ~breakAncestors layout ((txt, _, commentLoc) as comment) =
+let rec looselyAttachComment ~breakAncestors layout comment =
+  let location = comment.Comment.location in
   match layout with
   | SourceMap (loc, sub) ->
      SourceMap (loc, looselyAttachComment ~breakAncestors sub comment)
   | Easy e ->
-     inline ~postSpace:true layout (formatComment txt)
-  | Sequence (listConfig, subLayouts) when anySublayoutContainLocation commentLoc subLayouts ->
+     inline ~postSpace:true layout (formatComment comment)
+  | Sequence (listConfig, subLayouts)
+    when anySublayoutContainLocation location subLayouts ->
      (* If any of the subLayout strictly contains this comment, recurse into to it *)
-     let subLayouts = List.map (fun layout ->
-                          if layoutContainsLoc commentLoc layout then
-                            looselyAttachComment ~breakAncestors layout comment
-                          else
-                            layout
-                        ) subLayouts in
-     Sequence (listConfig, subLayouts)
+    let recurse_sublayout layout =
+      if layoutContainsLoc location layout
+      then looselyAttachComment ~breakAncestors layout comment
+      else layout
+    in
+    Sequence (listConfig, List.map recurse_sublayout subLayouts)
   | Sequence (listConfig, subLayouts) when subLayouts == [] ->
     (* If there are no subLayouts (empty body), create a Sequence of just the comment *)
-    Sequence (listConfig, [formatComment txt])
+    Sequence (listConfig, [formatComment comment])
   | Sequence (listConfig, subLayouts) ->
-     let (beforeComment, afterComment) = Syntax_util.pick_while (fun layout ->
-                                             match getLocFromLayout layout with
-                                             | None -> true
-                                             | Some loc -> beforeLoc loc commentLoc
-                                           ) subLayouts in
-     let newSubLayout = match List.rev beforeComment with
-       | [] ->
-          prependSingleLineComment comment (List.hd afterComment) :: (List.tl afterComment)
-       | hd::tl -> (appendComment ~breakAncestors hd comment :: tl |> List.rev) @ afterComment
-     in
-     Sequence (listConfig, newSubLayout)
+    let (beforeComment, afterComment) =
+      Syntax_util.pick_while (layout_is_before ~location) subLayouts in
+    let newSubLayout = match List.rev beforeComment with
+      | [] ->
+        Syntax_util.map_first (prependSingleLineComment comment) afterComment
+      | hd :: tl ->
+        List.rev_append
+          (appendComment ~breakAncestors hd comment :: tl) afterComment
+    in
+    Sequence (listConfig, newSubLayout)
   | Label (formatter, left, right) ->
-     let leftLoc = getLocFromLayout left in
-     let rightLoc = getLocFromLayout right in
-     let newLeft, newRight = match (leftLoc, rightLoc) with
-       | (None, None) ->
-          (left, looselyAttachComment ~breakAncestors right comment)
-       | (_, Some loc2) when containLoc loc2 commentLoc ->
-          (left, looselyAttachComment ~breakAncestors right comment)
-       | (Some loc1, _) when containLoc loc1 commentLoc ->
-          (looselyAttachComment ~breakAncestors left comment, right)
-       | (Some loc1, Some loc2) when beforeLoc commentLoc loc1 ->
-          (prependSingleLineComment comment left, right)
-       | (Some loc1, Some loc2) when beforeLoc commentLoc loc2 ->
-          (left, prependSingleLineComment comment right)
-       | _ -> (left, appendComment ~breakAncestors right comment)
-     in
-     Label (formatter, newLeft, newRight)
+    let newLeft, newRight =
+      match (getLocFromLayout left, getLocFromLayout right) with
+      | (None, None) ->
+        (left, looselyAttachComment ~breakAncestors right comment)
+      | (_, Some loc2) when containLoc loc2 location ->
+        (left, looselyAttachComment ~breakAncestors right comment)
+      | (Some loc1, _) when containLoc loc1 location ->
+        (looselyAttachComment ~breakAncestors left comment, right)
+      | (Some loc1, Some loc2) when beforeLoc location loc1 ->
+        (prependSingleLineComment comment left, right)
+      | (Some loc1, Some loc2) when beforeLoc location loc2 ->
+        (left, prependSingleLineComment comment right)
+      | _ -> (left, appendComment ~breakAncestors right comment)
+    in
+    Label (formatter, newLeft, newRight)
 
 (**
  * [insertSingleLineComment layout comment] preorderly walks the layout and
  * find a place where the SingleLineComment can be fit into
  *)
 let rec insertSingleLineComment layout comment =
-  let (txt, _, commentLoc) = comment in
+  let location = comment.Comment.location in
       match layout with
       | SourceMap (loc, sub) ->
          SourceMap (loc, insertSingleLineComment sub comment)
       | Easy e ->
          prependSingleLineComment comment layout
-      | Sequence (listConfig, subLayouts) when subLayouts == [] ->
+  | Sequence (listConfig, subLayouts) when subLayouts = [] ->
         (* If there are no subLayouts (empty body), create a Sequence of just the comment *)
-        Sequence (listConfig, [formatComment txt])
+        Sequence (listConfig, [formatComment comment])
       | Sequence (listConfig, subLayouts) ->
          let newlinesAboveDocComments = listConfig.newlinesAboveDocComments in
-         let (beforeComment, afterComment) = Syntax_util.pick_while (fun layout ->
-                                                 match getLocFromLayout layout with
-                                                 | None -> true
-                                                 | Some loc -> beforeLoc loc commentLoc
-                                               ) subLayouts in
+    let (beforeComment, afterComment) =
+      Syntax_util.pick_while (layout_is_before ~location) subLayouts in
          begin
            match afterComment with
-           | (* Nothing in the list is after comment, attach comment to the statement before the comment *)
-           [] -> let revBeforeComment = List.rev beforeComment in
-                 let lastItemBeforeComment = List.hd revBeforeComment in
-                 Sequence (listConfig,  (List.rev
-                                           (breakline lastItemBeforeComment (formatComment ~locOpt:commentLoc txt) :: (List.tl revBeforeComment))))
+      (* Nothing in the list is after comment, attach comment to the statement before the comment *)
+      | [] ->
+        let break sublayout = breakline sublayout (formatComment comment) in
+        Sequence (listConfig, Syntax_util.map_last break beforeComment)
            | hd::tl ->
               let afterComment =
                 match getLocFromLayout hd with
-                | Some loc when containLoc loc commentLoc ->
+          | Some loc when containLoc loc location ->
                    insertSingleLineComment hd comment :: tl
                 | Some loc ->
                    SourceMap (loc, (prependSingleLineComment ~newlinesAboveDocComments comment hd)) :: tl
@@ -1989,35 +1961,40 @@ let rec insertSingleLineComment layout comment =
          let newLeft, newRight = match (leftLoc, rightLoc) with
            | (None, None) ->
               (left, insertSingleLineComment right comment)
-           | (_, Some loc2) when containLoc loc2 commentLoc ->
+      | (_, Some loc2) when containLoc loc2 location ->
               (left, insertSingleLineComment right comment)
-           | (Some loc1, _) when containLoc loc1 commentLoc ->
+      | (Some loc1, _) when containLoc loc1 location ->
               (insertSingleLineComment left comment, right)
-           | (Some loc1, Some loc2) when beforeLoc commentLoc loc1 ->
+      | (Some loc1, Some loc2) when beforeLoc location loc1 ->
               (prependSingleLineComment comment left, right)
-           | (Some loc1, Some loc2) when beforeLoc commentLoc loc2 ->
+      | (Some loc1, Some loc2) when beforeLoc location loc2 ->
               (left, prependSingleLineComment comment right)
-           | _ -> (left, breakline right (formatComment ~locOpt:commentLoc txt))
+      | _ ->
+        (left, breakline right (formatComment comment))
          in
          Label (formatter, newLeft, newRight)
 
-let rec attachCommentToNodeRight layout ((txt, t, loc) as comment) =
+let rec attachCommentToNodeRight layout comment =
   match layout with
   | Sequence (config, sub) when snd config.wrap <> "" ->
-     (* jwalke: This is quite the abuse of the "wrap" config *)
-     Sequence ({config with wrap=(fst config.wrap, snd config.wrap ^ " " ^ (wrapComment txt))}, sub)
+    (* jwalke: This is quite the abuse of the "wrap" config *)
+    let lwrap, rwrap = config.wrap in
+    let rwrap = rwrap ^ " " ^ Comment.wrap comment in
+    Sequence ({config with wrap=(lwrap, rwrap)}, sub)
   | SourceMap (loc, sub) ->
-     SourceMap (loc, attachCommentToNodeRight sub comment)
-  | layout -> inline ~postSpace:true layout (formatComment txt)
+    SourceMap (loc, attachCommentToNodeRight sub comment)
+  | layout -> inline ~postSpace:true layout (formatComment comment)
 
-let rec attachCommentToNodeLeft ((txt, _, loc) as comment) layout =
+let rec attachCommentToNodeLeft comment layout =
   match layout with
   | Sequence (config, sub) when snd config.wrap <> "" ->
-     Sequence ({config with wrap=(wrapComment txt ^ " " ^ (fst config.wrap), snd config.wrap)}, sub)
+    let lwrap, rwrap = config.wrap in
+    let lwrap = Comment.wrap comment ^ " " ^ lwrap in
+    Sequence ({config with wrap = (lwrap, rwrap)}, sub)
   | SourceMap (loc, sub) ->
      SourceMap (loc, attachCommentToNodeLeft comment sub )
   | layout ->
-     Label (inlineLabel, (formatComment txt), layout)
+     Label (inlineLabel, formatComment comment, layout)
 
 let isNone opt =
   match opt with
@@ -2046,89 +2023,98 @@ let isNone opt =
  * may be inserted or removed, an we need end-of-line comments to never be
  * impacted by that. Therefore, never try to "perfectly" attach EOL comments.
  *)
-let rec tryPerfectlyAttachComment layout comment =
-  match comment with
-  | None -> layout, comment
-  | Some ((s, t, commLoc) as c)  -> begin
-     match layout with
-     | Sequence (listConfig, subLayouts) ->
-        let distributeCommentIntoSubLayouts (i, processed, newComment) layout =
-          let (layout, newComment) = tryPerfectlyAttachComment layout newComment in
-          i + 1, layout::processed, newComment
-        in
-        let (_, processed, consumed) = List.fold_left distributeCommentIntoSubLayouts
-                                                      (0, [], comment) (List.rev subLayouts) in
-        Sequence (listConfig, processed), consumed
-     | Label (labelFormatter, left, right) ->
-        let (newRight, comment) = tryPerfectlyAttachComment right comment in
-        let (newLeft, comment) = tryPerfectlyAttachComment left comment in
-        Label (labelFormatter, newLeft, newRight), comment
-     | SourceMap (loc, subLayout) ->
-        if loc.loc_end.Lexing.pos_lnum = loc.loc_start.Lexing.pos_lnum &&
-             commLoc.loc_start.Lexing.pos_cnum = loc.loc_end.Lexing.pos_cnum then
-          SourceMap (loc, makeList ~inline:(true, true) ~break:Always
-                                   [unbreaklayout (attachCommentToNodeRight subLayout c)]), None
-        else
-          let (layout, comment) = tryPerfectlyAttachComment subLayout comment in
-          begin
-            match comment with
-            | None -> (SourceMap (loc, layout), None)
-            | Some ((s, t, commLoc) as comment)->
-               if commLoc.loc_end.Lexing.pos_cnum = loc.loc_start.Lexing.pos_cnum  then
-                 SourceMap (loc, attachCommentToNodeLeft comment layout), None
-               else if commLoc.loc_start.Lexing.pos_cnum = loc.loc_end.Lexing.pos_cnum then
-                 SourceMap (loc, attachCommentToNodeRight layout comment), None
-               else
-                 SourceMap (loc, layout), Some comment
-          end
-     | _ -> layout, comment
-     end
+let rec tryPerfectlyAttachComment layout = function
+  | None -> (layout, None)
+  | Some comment -> perfectlyAttachComment comment layout
+
+and perfectlyAttachComment comment = function
+  | Sequence (listConfig, subLayouts) ->
+    let distributeCommentIntoSubLayouts (i, processed, newComment) layout =
+      let (layout, newComment) =
+        tryPerfectlyAttachComment layout newComment in
+      (i + 1, layout::processed, newComment)
+    in
+    let (_, processed, consumed) =
+      List.fold_left
+        distributeCommentIntoSubLayouts
+        (0, [], Some comment) (List.rev subLayouts)
+    in
+    Sequence (listConfig, processed), consumed
+  | Label (labelFormatter, left, right) ->
+    let (newRight, comment) = perfectlyAttachComment comment right in
+    let (newLeft, comment) = tryPerfectlyAttachComment left comment in
+    Label (labelFormatter, newLeft, newRight), comment
+  | SourceMap (loc, subLayout) ->
+    let commloc = comment.Comment.location in
+    if loc.loc_end.Lexing.pos_lnum = loc.loc_start.Lexing.pos_lnum &&
+       commloc.loc_start.Lexing.pos_cnum = loc.loc_end.Lexing.pos_cnum
+    then
+      (SourceMap (loc, makeList ~inline:(true, true) ~break:Always
+                    [unbreaklayout (attachCommentToNodeRight subLayout comment)]),
+       None)
+    else
+      let (layout, comment) = perfectlyAttachComment comment subLayout in
+      begin match comment with
+        | None -> (SourceMap (loc, layout), None)
+        | Some comment ->
+          if commloc.loc_end.Lexing.pos_cnum =
+             loc.loc_start.Lexing.pos_cnum  then
+            (SourceMap (loc, attachCommentToNodeLeft comment layout), None)
+          else if commloc.loc_start.Lexing.pos_cnum = loc.loc_end.Lexing.pos_cnum then
+            (SourceMap (loc, attachCommentToNodeRight layout comment), None)
+          else
+            (SourceMap (loc, layout), Some comment)
+      end
+  | layout -> (layout, Some comment)
 
 let insertRegularComment layout comment =
-     match (tryPerfectlyAttachComment layout (Some comment)) with
-     | (layout, None) -> layout
-     | (layout, Some _) -> looselyAttachComment ~breakAncestors:false layout comment
-let insertEndOfLineComment layout comment = looselyAttachComment ~breakAncestors:true layout comment
+  match perfectlyAttachComment comment layout with
+  | (layout, None) -> layout
+  | (layout, Some _) -> looselyAttachComment ~breakAncestors:false layout comment
 
-let rec partitionComments_ ((singleLines, endOfLines, regulars) as soFar) comments =
-  match comments with
-   | [] -> soFar
-   | (txt, EndOfLine, loc) as com :: tl -> partitionComments_ (singleLines, (com :: endOfLines), regulars) tl
-   | (txt, SingleLine, loc) as com :: tl -> partitionComments_ ((com :: singleLines), endOfLines, regulars) tl
-   | (txt, Regular, loc) as com :: tl -> partitionComments_ (singleLines, endOfLines, (com :: regulars)) tl
+let insertEndOfLineComment layout comment =
+  looselyAttachComment ~breakAncestors:true layout comment
+
+let rec partitionComments_ ((singleLines, endOfLines, regulars) as soFar) = function
+  | [] -> soFar
+  | com :: tl ->
+    match Comment.category com with
+    | Comment.EndOfLine ->
+      partitionComments_ (singleLines, (com :: endOfLines), regulars) tl
+    | Comment.SingleLine ->
+      partitionComments_ ((com :: singleLines), endOfLines, regulars) tl
+    | Comment.Regular ->
+      partitionComments_ (singleLines, endOfLines, (com :: regulars)) tl
 
 let partitionComments comments =
   let (singleLines, endOfLines, regulars) =
     partitionComments_ ([], [], []) comments in
   (singleLines, List.rev endOfLines, regulars)
 
-let rec layoutToEasyFormat_ = function
-  | Sequence (listConfig, subLayouts) ->
-     easyListWithConfig listConfig (List.map layoutToEasyFormat_ subLayouts)
-  | Label (labelFormatter, left, right) ->
-     labelFormatter (layoutToEasyFormat_ left) (layoutToEasyFormat_ right)
-  | SourceMap (_, subLayout) ->
-     layoutToEasyFormat_ subLayout
-  | Easy e -> e
-
-let layoutToEasyFormatNoComments layoutNode =
-  layoutToEasyFormat_ layoutNode
-
+let layoutToEasyFormatNoComments layout =
+  let rec traverse = function
+    | Sequence (listConfig, subLayouts) ->
+      easyListWithConfig listConfig (List.map traverse subLayouts)
+    | Label (labelFormatter, left, right) ->
+      labelFormatter (traverse left) (traverse right)
+    | SourceMap (_, subLayout) ->
+      traverse subLayout
+    | Easy e -> e
+  in
+  traverse layout
 
 let layoutToEasyFormat layoutNode comments =
   let layout = layoutNode in
   let (singleLines, endOfLines, regulars) = partitionComments comments in
   (* TODO: Stop generating multiple versions of the tree, and instead generate one new tree. *)
   (* print_layout layout; *)
-
-
   let layout = List.fold_left insertRegularComment layout regulars in
   let layout = consolidateSeparator layout in
   let layout = List.fold_left insertEndOfLineComment layout endOfLines in
   (* print_layout layout; *)
   let layout = List.fold_left insertSingleLineComment layout singleLines in
   let layout = insertLinesAboveItems layout in
-  let easyFormat= layoutToEasyFormat_ layout in
+  let easyFormat = layoutToEasyFormatNoComments layout in
   (* print_easy_rec easyFormat; *)
   makeEasyList ~break:Always_rec ~indent:0 ~inline:(true, true) [easyFormat]
 
@@ -3868,8 +3854,10 @@ class printer  ()= object(self:'self)
          *     Expect.expect(1 + 2) |> toBe(3)));
          *)
         let (lastLabel, lastArg) = List.nth ls (List.length ls - 1) in
-        let syntheticApplicationLocation = {e.pexp_loc with loc_end = lastArg.pexp_loc.loc_end} in
-        FunctionApplication (self#formatFunAppl ~jsxAttrs ~args:ls ~applicationExpr:x ~funExpr:e ())
+        let syntheticApplicationLocation =
+          {e.pexp_loc with loc_end = lastArg.pexp_loc.loc_end} in
+        FunctionApplication
+          (self#formatFunAppl ~jsxAttrs ~args:ls ~applicationExpr:x ~funExpr:e ())
       )
     )
     | Pexp_construct (li, Some eo) when not (is_simple_construct (view_expr x)) -> (
@@ -6906,9 +6894,9 @@ let easy = new printer ()
 
 let toplevel_phrase f x =
   match x with
-    | Ptop_def (s) ->
-      easyFormatToFormatter f (layoutToEasyFormatNoComments (easy#structure s))
-    | Ptop_dir (s, da) -> print_string "(* top directives not supported *)"
+  | Ptop_def (s) ->
+    easyFormatToFormatter f (layoutToEasyFormatNoComments (easy#structure s))
+  | Ptop_dir (s, da) -> print_string "(* top directives not supported *)"
 
 let case_list f x =
   let l = easy#case_list x in
@@ -7022,9 +7010,9 @@ let core_type f x =
   easyFormatToFormatter f (layoutToEasyFormatNoComments (easy#core_type (apply_mapper_to_type x preprocessing_mapper)))
 let pattern f x =
   easyFormatToFormatter f (layoutToEasyFormatNoComments (easy#pattern (apply_mapper_to_pattern x preprocessing_mapper)))
-let signature (comments : commentWithCategory) f x =
+let signature (comments : Comment.t list) f x =
   easyFormatToFormatter f (layoutToEasyFormat (easy#signature (apply_mapper_to_signature x preprocessing_mapper)) comments)
-let structure (comments : commentWithCategory) f x =
+let structure (comments : Comment.t list) f x =
   easyFormatToFormatter f (layoutToEasyFormat (easy#structure (apply_mapper_to_structure x preprocessing_mapper)) comments)
 let expression f x =
   easyFormatToFormatter f (layoutToEasyFormatNoComments (easy#unparseExpr (apply_mapper_to_expr x preprocessing_mapper)))
