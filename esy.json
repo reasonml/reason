@@ -17,22 +17,17 @@
   "peerDependencies": {
     "ocaml": " >= 4.2.0  < 4.7.0"
   },
-  "HOW-TO-TEST-OCAML-4.04": [
-    "To test with OCaml 4.04:",
-    "1. Change the OCaml devDependency to: ~4.4.2 instead of ~4.2.3000",
-    "2. Rerun esy install",
-    "3. Rerun esy build"
-  ],
   "devDependencies": {
-    "@opam/merlin": "2.5.4",
-    "ocaml": "~4.2.3004"
+    "@opam/merlin": "*",
+    "ocaml": "~4.6.0"
   },
   "esy": {
     "build": [
-      [ "jbuilder", "build", "--root", "." ]
+      [ "jbuilder", "build", "-p", "rebuild,reason"]
     ],
     "install": [
-      ["esy-installer"]
+      ["esy-installer", "rebuild.install"],
+      ["esy-installer", "reason.install"]
     ],
     "buildsInSource": "_build"
   }
