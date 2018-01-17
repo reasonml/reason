@@ -13,7 +13,7 @@ module type PRINTER =
         val parse : use_stdin:bool ->
                     parse_itype ->
                     string ->
-                    ((t * Reason_pprint_ast.commentWithCategory) * bool)
+                    ((t * Reason_comment.t list) * bool)
 
 
         val print : print_itype ->
@@ -21,7 +21,7 @@ module type PRINTER =
                     bool ->
                     out_channel ->
                     Format.formatter ->
-                    ((t * Reason_pprint_ast.commentWithCategory) -> unit)
+                    ((t * Reason_comment.t list) -> unit)
     end
 
 let err s = raise (Invalid_config s)

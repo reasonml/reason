@@ -54,6 +54,7 @@
   (modules
    (lexer_warning
     syntax_util
+    reason_comment
     reason_heuristics
     reason_toolchain
     reason_config
