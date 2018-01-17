@@ -918,11 +918,23 @@ foo(~x=[@foo] (-0.1m), ~y=[@foo] (-0.1n), ~z=[@foo] (-0.1p));
 /* Smooth formatting of functions with callbacks as arguments */
 funWithCb("text", () => doStuff());
 
+funWithCb([@attr] "text", [@myAttr] () => doStuff());
+
 funWithCb(~text="text", ~f=() => doStuff());
+
+funWithCb(~text=[@attr] "text", ~f=[@myAttr] () => doStuff());
 
 funWithCb(~text="text", ~f=?() => doStuff());
 
+funWithCb(~text=[@attr] "text",  ~f=?[@myAttr] () => doStuff());
+
 test("my test", () => {
+ let x = a + b;
+ let y = z + c;
+ x + y
+});
+
+test([@attr] "my test", [@attr] () => {
  let x = a + b;
  let y = z + c;
  x + y
@@ -934,8 +946,19 @@ test(~desc="my test", ~f=() => {
  x + y
 });
 
+test(~desc=[@attr] "my test", ~f=[@myAttr] () => {
+ let x = a + b;
+ let y = z + c;
+ x + y
+});
 
 test(~desc=?"my test", ~f=?() => {
+  let x = a + b;
+  let y = z + c;
+  x + y
+});
+
+test(~desc=?[@attr] "my test", ~f=?[@attr] () => {
   let x = a + b;
   let y = z + c;
   x + y
@@ -947,8 +970,20 @@ describe("App", () => {
   });
 });
 
+describe([@attr] "App", [@attr] () => {
+  test([@attr] "math", [@attr] () => {
+    Expect.expect(1+2) |> toBe(3)
+  });
+});
+
 describe(~text="App", ~f=() =>
   test(~text="math", ~f=() =>
+    Expect.expect(1 + 2) |> toBe(3)
+  )
+);
+
+describe(~text=[@attr] "App", ~f=[@attr] () =>
+  test(~text=[@attr] "math", ~f=[@attr] () =>
     Expect.expect(1 + 2) |> toBe(3)
   )
 );
@@ -959,15 +994,33 @@ describe(~text=?"App", ~f=?() =>
   )
 );
 
+describe(~text=?[@attr] "App", ~f=?[@attr] () =>
+  test(~text=?[@attr] "math", ~f=?[@attr] () =>
+    Expect.expect(1 + 2) |> toBe(3)
+  )
+);
+
 Thing.map(foo, bar, baz, (abc, z) =>
   MyModuleBlah.toList(argument)
 );
 
-Thing.map(~a=foo, ~b=bar, ~c=?baz, ~f=(abc, z) =>
+Thing.map([@attr] foo, bar, baz, [@attr] (abc, z) =>
+  MyModuleBlah.toList(argument)
+);
+
+Thing.map(~a=[@attr] foo, ~b=bar, ~c=?baz, ~f=(abc, z) =>
+  MyModuleBlah.toList(argument)
+);
+
+Thing.map(~a=foo, ~b=bar, ~c=?[@attr] baz, ~f=[@attr] (abc, z) =>
   MyModuleBlah.toList(argument)
 );
 
 Thing.map(~a=foo, ~b=bar, ~c=?baz, ~f=?(abc, z) =>
+  MyModuleBlah.toList(argument)
+);
+
+Thing.map(~a=foo, ~b=bar, ~c=?[@attr] baz, ~f=?[@attr] (abc, z) =>
   MyModuleBlah.toList(argument)
 );
 
@@ -979,6 +1032,19 @@ Thing.map(
   bakjlksjdf,
   okokokok,
   (abc, z) => {
+    let x = 1;
+    MyModuleBlah.toList(x, argument);
+  }
+);
+
+Thing.map(
+  foo,
+  bar,
+  baz,
+  foo2,
+  [@attr] bakjlksjdf,
+  okokokok,
+  [@attr] (abc, z) => {
     let x = 1;
     MyModuleBlah.toList(x, argument);
   }
@@ -998,6 +1064,19 @@ Thing.map(
 );
 
 Thing.map(
+  ~a=foo,
+  ~b=bar,
+  ~c=[@attr] baz,
+  ~d=foo2,
+  ~e=bakjlksjdf,
+  ~f=okokokok,
+  ~cb=[@attr] (abc, z) => {
+    let x = 1;
+    MyModuleBlah.toList(x, argument);
+  }
+);
+
+Thing.map(
   ~a=?foo,
   ~b=?bar,
   ~c=?baz,
@@ -1011,6 +1090,19 @@ Thing.map(
 );
 
 Thing.map(
+  ~a=?foo,
+  ~b=?bar,
+  ~c=?baz,
+  ~d=?foo2,
+  ~e=?[@attr] bakjlksjdf,
+  ~f=?okokokok,
+  ~cb=?[@attr] (abc, z) => {
+    let x = 1;
+    MyModuleBlah.toList(x, argument);
+  }
+);
+
+Thing.map(
   foo, 
   bar, 
   baz, 
@@ -1018,4 +1110,25 @@ Thing.map(
   (abc, z) => MyModuleBlah.toList(argument)
 );
 
+Thing.map(
+  foo, 
+  bar, 
+  baz, 
+  [@attr] (abc, z) => MyModuleBlah.toList(argument), 
+  [@attr] (abc, z) => MyModuleBlah.toList(argument)
+);
+
 Js.Option.andThen([@bs] w => w#getThing());
+
+Thing.map(
+  ~a=?foo,
+  ~b=?bar,
+  ~c=?baz,
+  ~d=?foo2,
+  ~e=?[@attr] bakjlksjdf,
+  ~f=?okokokok,
+  ~cb=?[@attr] [@attr2] [@aslkdfjlsdjf][@sldkfjlksdjflksjdlkjf] [@sldkflskjdf] (abc, z) => {
+    let x = 1;
+    MyModuleBlah.toList(x, argument);
+  }
+);

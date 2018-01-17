@@ -6737,14 +6737,13 @@ class printer  ()= object(self:'self)
        that JSX attribute needs to be pretty printed so it doesn't get
        lost *)
     let maybeJSXAttr = List.map self#attribute jsxAttrs in
-
     let categorizeFunApplArgs args =
       let reverseArgs = List.rev args in
       match reverseArgs with
-      | (_, {pexp_desc = Pexp_fun _})::[] ->
+      (* | (_, {pexp_desc = Pexp_fun _})::[] -> *)
           (* If there's only one arg, should be printed as normal *)
           (* e.g. Js.Option.andThen([@bs] (w => w#getThing())); *)
-          `NormalFunAppl args
+          (* `NormalFunAppl args *)
       | ((_, {pexp_desc = Pexp_fun _}) as callback)::args
           when let otherCallbacks =
             List.filter (fun (_, e) -> match e.pexp_desc with Pexp_fun _ -> true | _ -> false) args
@@ -6760,11 +6759,15 @@ class printer  ()= object(self:'self)
          *   MyModuleBlah.toList(argument)
          *)
         let (argLbl, cb) = callbackArg in
-        let (cbArgs, retCb) = self#curriedPatternsAndReturnVal cb in
+        let cbAttrs = cb.pexp_attributes in
+        let (cbArgs, retCb) = self#curriedPatternsAndReturnVal {cb with pexp_attributes = []} in
+        let cbArgs = if List.length cbAttrs > 0 then
+          makeList ~break:IfNeed ~inline:(true, true) ~postSpace:true ((List.map self#attribute cbAttrs)@(cbArgs))
+        else makeList cbArgs in
         let theCallbackArg = match argLbl with
-          | Optional s -> makeList ([atom namedArgSym; atom s; atom "=?"]@cbArgs)
-          | Labelled s -> makeList ([atom namedArgSym; atom s; atom "="]@cbArgs)
-          | Nolabel -> makeList cbArgs
+          | Optional s -> makeList ([atom namedArgSym; atom s; atom "=?"]@[cbArgs])
+          | Labelled s -> makeList ([atom namedArgSym; atom s; atom "="]@[cbArgs])
+          | Nolabel -> cbArgs
         in
 
         let theFunc = SourceMap (funExpr.pexp_loc, makeList ~wrap:("", "(") [self#simplifyUnparseExpr funExpr]) in
