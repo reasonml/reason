@@ -62,6 +62,31 @@ type commentCategory =
   | SingleLine
   | Regular
 
+(*
+ Modeling separators:
+  Special ability to render the final separator distinctly. This is so we can
+  replace them when they do/don't occur next to newlines.
+
+    If sepLeft:true
+    {
+      final item1
+      sep   item2
+      sep   item3
+    }
+
+    If sepLeft:false
+    {
+      item1 sep
+      item2 sep
+      item3 final
+    }
+*)
+(* You can't determine the final separator unless you specify a separator *)
+type separator =
+  | NoSep
+  | Sep of string
+  | SepFinal of string * string
+
 (* (comment text, attachment_location, physical location) *)
 type commentWithCategory = (String.t * commentCategory * Location.t) list
 
@@ -185,14 +210,6 @@ and listConfig = {
    * not forming an actual conceptual sequence of items, then this is often
    * useful. For example, if you're appending a semicolon etc. *)
   interleaveComments: bool;
-  (*
-   * Whether or not to render the final separator. TODO: Add ability to only
-   * render final sep (or first sep in the case of `!sepLeft` when it is next to a
-   * line break (either first or last item (depending on `!sepLeft`)).  Also
-   * control ability to only render the sep if there is more than one item in
-   * list.
-   *)
-  renderFinalSep: bool;
   break: whenToDoSomething;
   (* Break setting that becomes activated if a comment becomes interleaved into
    * this list. Typically, if not specified, the behavior from [break] will be
@@ -200,7 +217,7 @@ and listConfig = {
    *)
   wrap: string * string;
   inline: bool * bool;
-  sep: string;
+  sep: separator;
   indent: int;
   sepLeft: bool;
   preSpace: bool;
@@ -331,7 +348,11 @@ let rec print_layout ?(indent=0) layout =
        | IfNeed  -> "if need"
        | Always  -> "Always"
        | Always_rec  -> "Always_rec" in
-     printf "%s Sequence of %d, sep: %s, finalSep: %s stick_to_left: %s break: %s\n" space (List.length layout_list) config.sep (string_of_bool config.renderFinalSep) (string_of_bool config.sepLeft) break;
+     let sep = match config.sep with
+     | NoSep -> "NoSep"
+     | Sep s -> "Sep '" ^ s ^ "'"
+     | SepFinal (s, finalSep) -> "SepFinal ('" ^ s ^ "', '" ^ finalSep ^ "')" in
+     printf "%s Sequence of %d, sep: %s, stick_to_left: %s break: %s\n" space (List.length layout_list) sep (string_of_bool config.sepLeft) break;
      let _ = List.map (print_layout ~indent:(indent+2)) layout_list in
      ()
   | WithEOLComment (comment, layout) ->
@@ -1264,12 +1285,17 @@ let easyListSettingsFromListConfig listConfig =
     preSpace;
     postSpace;
     pad;
+    (* TODO: Stop handling separators in Easy_format since we handle most of
+      them before Easy_format anyways. There's just some that we still rely on
+      Easy_format for. Easy_format's sep wasn't powerful enough.
+     *)
     sep;
   } = listConfig in
   let (opn, cls) = wrap in
   let (padOpn, padCls) = pad in
   let (inlineStart, inlineEnd) = inline in
-  (opn, sep, cls, {
+  let sepStr = match sep with NoSep -> "" | Sep s | SepFinal(s, _) -> s in
+  (opn, sepStr, cls, {
     list_settings with
       wrap_body = (
         match break with
@@ -1295,11 +1321,10 @@ let makeListConfig
     ?(interleaveComments=true)
     ?listConfigIfCommentsInterleaved
     ?(listConfigIfEolCommentsInterleaved)
-    ?(renderFinalSep=false)
     ?(break=Never)
     ?(wrap=("", ""))
     ?(inline=(true, false))
-    ?(sep="")
+    ?(sep=NoSep)
     ?(indent=list_settings.indent_body)
     ?(sepLeft=true)
     ?(preSpace=false)
@@ -1313,7 +1338,6 @@ let makeListConfig
     interleaveComments;
     listConfigIfCommentsInterleaved;
     listConfigIfEolCommentsInterleaved;
-    renderFinalSep;
     break;
     wrap;
     inline;
@@ -1335,11 +1359,10 @@ let makeEasyList
     ?(newlinesAboveComments=0)
     ?(newlinesAboveDocComments=0)
     ?(interleaveComments=true)
-    ?(renderFinalSep=false)
     ?(break=Never)
     ?(wrap=("", ""))
     ?(inline=(true, false))
-    ?(sep="")
+    ?sep
     ?(indent=list_settings.indent_body)
     ?(sepLeft=true)
     ?(preSpace=false)
@@ -1351,11 +1374,10 @@ let makeEasyList
       ~newlinesAboveComments
       ~newlinesAboveDocComments
       ~interleaveComments
-      ~renderFinalSep
       ~break
       ~wrap
       ~inline
-      ~sep
+      ?sep
       ~indent
       ~sepLeft
       ~preSpace
@@ -1375,11 +1397,10 @@ let makeList
     ?(interleaveComments=true)
     ?listConfigIfCommentsInterleaved
     ?listConfigIfEolCommentsInterleaved
-    ?(renderFinalSep=false)
     ?(break=Never)
     ?(wrap=("", ""))
     ?(inline=(true, false))
-    ?(sep="")
+    ?sep
     ?(indent=list_settings.indent_body)
     ?(sepLeft=true)
     ?(preSpace=false)
@@ -1393,11 +1414,10 @@ let makeList
       ~interleaveComments
       ?listConfigIfCommentsInterleaved
       ?listConfigIfEolCommentsInterleaved
-      ~renderFinalSep
       ~break
       ~wrap
       ~inline
-      ~sep
+      ?sep
       ~indent
       ~sepLeft
       ~preSpace
@@ -1413,7 +1433,7 @@ let makeAppList l =
   | _ -> makeList ~inline:(true, true) ~postSpace:true ~break:IfNeed l
 
 let makeTup l =
-  makeList ~wrap:("(",")") ~sep:"," ~postSpace:true ~break:IfNeed l
+  makeList ~wrap:("(",")") ~sep:(Sep ",") ~postSpace:true ~break:IfNeed l
 
 let ensureSingleTokenSticksToLabel x =
   makeList
@@ -1496,7 +1516,7 @@ let easyAtom str = Easy_format.Atom(str, labelStringStyle)
 let makeES6List ?wrap:(wrap=("", "")) lst last =
   let (left, right) = wrap in
   let last_dots = makeList [atom "..."; last] in
-  makeList ~wrap:(left ^ "[", "]" ^ right) ~break:IfNeed ~postSpace:true ~sep:"," (lst @ [last_dots])
+  makeList ~wrap:(left ^ "[", "]" ^ right) ~break:IfNeed ~postSpace:true ~sep:(Sep ",") (lst @ [last_dots])
 
 let makeNonIndentedBreakingList lst =
     (* No align closing: So that semis stick to the ends of every break *)
@@ -1515,7 +1535,7 @@ let makeSpacedBreakableInlineList lst =
 let makeCommaBreakableList lst = makeList ~break:IfNeed ~postSpace:true lst
 
 let makeCommaBreakableListSurround opn cls lst =
-  makeList ~break:IfNeed ~postSpace:true ~sep:"," ~wrap:(opn, cls) lst
+  makeList ~break:IfNeed ~postSpace:true ~sep:(Sep ",") ~wrap:(opn, cls) lst
 
 (* TODO: Allow configuration of spacing around colon symbol *)
 
@@ -1542,7 +1562,7 @@ let easyFormatToFormatter f x =
   if debugWithHtml.contents then
     Easy_format.Pretty.define_styles fauxmatter html_escape html_style;
   let _ = Easy_format.Pretty.to_formatter fauxmatter x in
-  let trimmed = Syntax_util.strip_trailing_whitespace (Buffer.contents buf) in
+  let trimmed = Syntax_util.processLineEndingsAndStarts (Buffer.contents buf) in
   Format.fprintf f "%s\n" trimmed;
   pp_print_flush f ()
 
@@ -1710,7 +1730,8 @@ let rec append ?(space=false) txt = function
   (* TODO (perf) match on [] don't use List.length *)
   | Sequence (config, l) when List.length l = 0 ->
      Sequence (config, [atom txt])
-  | Sequence (config, l) when config.sep = "" ->
+  | Sequence ({sep=NoSep} as config, l)
+  | Sequence ({sep=Sep("")} as config, l) ->
      (* TODO (perf) compute list length once *)
      let sub = List.mapi (fun i layout ->
                    (* append to the end of the list *)
@@ -1732,21 +1753,21 @@ let appendSep spaceBeforeSep sep layout =
               sep in
   append sep layout
 
-let rec flattenCommentAndSep ?spaceBeforeSep:(spaceBeforeSep=false) ?sep = function
+let rec flattenCommentAndSep ?spaceBeforeSep:(spaceBeforeSep=false) ?sepStr = function
   | WithEOLComment (txt, sub) ->
      begin
-       match sep with
+       match sepStr with
        | None -> append ~space:true (wrapComment txt) sub
        | Some sep -> append ~space:true (wrapComment txt)
                                    (appendSep spaceBeforeSep sep sub)
      end
   | Sequence (listConfig, [hd]) when hasComment hd ->
-    Sequence (listConfig, [flattenCommentAndSep ~spaceBeforeSep ?sep hd])
+    Sequence (listConfig, [flattenCommentAndSep ~spaceBeforeSep ?sepStr hd])
   | SourceMap (loc, sub) ->
-     SourceMap (loc, flattenCommentAndSep ~spaceBeforeSep ?sep sub)
+     SourceMap (loc, flattenCommentAndSep ~spaceBeforeSep ?sepStr sub)
   | layout ->
      begin
-       match sep with
+       match sepStr with
        | None -> layout
        | Some sep -> appendSep spaceBeforeSep sep layout
      end
@@ -1781,24 +1802,25 @@ let unbreaklayout = preOrderWalk (function
  *  list and insert them into PrintTree as separated items
  *)
 let consolidateSeparator = preOrderWalk (function
-  | Sequence (listConfig, sublayouts)
-       when listConfig.sep <> ""
-         && listConfig.sepLeft
-    ->
-     (* TODO: (perf) cache List.length *)
-     let layoutsWithSepAndComment =
-       List.mapi (fun i layout ->
-           (* Do not render the final separator *)
-           (* TODO: Support !sepLeft, and this should apply to the *first* separator if !sepLeft.  *)
-           if not listConfig.renderFinalSep && i + 1 = List.length sublayouts then
-             flattenCommentAndSep ~spaceBeforeSep:listConfig.preSpace layout
-           else
-             flattenCommentAndSep ~spaceBeforeSep:listConfig.preSpace ~sep:listConfig.sep layout) sublayouts in
+  | Sequence (listConfig, sublayouts) when listConfig.sep != NoSep && listConfig.sepLeft ->
+     (* TODO: Support !sepLeft, and this should apply to the *first* separator if !sepLeft.  *)
+     let sublayoutsLen = List.length sublayouts in
+     let mapSublayout i layout =
+        match (listConfig.sep, (i + 1 = sublayoutsLen)) with
+        | (NoSep, _) -> raise (NotPossible "We already covered this case. This shouldn't happen.")
+        | (Sep sepStr, true) -> layout
+        | (SepFinal (sepStr, _), false)
+        | (Sep sepStr, false) ->
+          flattenCommentAndSep ~spaceBeforeSep:listConfig.preSpace ~sepStr:sepStr layout
+        | (SepFinal (_, finalSepStr), true) ->
+          flattenCommentAndSep ~spaceBeforeSep:listConfig.preSpace ~sepStr:finalSepStr layout
+     in
+     let layoutsWithSepAndComment = List.mapi mapSublayout sublayouts in
      let break = if List.exists hasComment sublayouts then
                    Always_rec
                  else
                    listConfig.break in
-     let sep = "" in
+     let sep = NoSep in
      let preSpace = false in
      Sequence ({listConfig with sep; break; preSpace}, layoutsWithSepAndComment)
   | WithEOLComment _ as layout ->
@@ -2169,9 +2191,8 @@ let makeLetSequence letItems =
     ~newlinesAboveComments:0
     ~newlinesAboveItems:0
     ~newlinesAboveDocComments:1
-    ~renderFinalSep:true
     ~postSpace:true
-    ~sep:";"
+    ~sep:(SepFinal (";", ";"))
     letItems
 
 let makeLetSequenceSingleLine letItems =
@@ -2182,10 +2203,9 @@ let makeLetSequenceSingleLine letItems =
     ~newlinesAboveComments:0
     ~newlinesAboveItems:0
     ~newlinesAboveDocComments:1
-    ~renderFinalSep:false
     ~preSpace:true
     ~postSpace:true
-    ~sep:";"
+    ~sep:(Sep ";")
     letItems
 
 let f = Format.std_formatter
@@ -2200,9 +2220,8 @@ let makeUnguardedLetSequence letItems =
     ~indent:0
     ~newlinesAboveItems:0
     ~newlinesAboveDocComments:1
-    ~renderFinalSep:true
     ~postSpace:true
-    ~sep:";"
+    ~sep:(SepFinal (";", ";"))
     letItems
 
 let formatSimpleAttributed x y =
@@ -2228,7 +2247,7 @@ let formatAttributed x y =
        : retType => blah;
  *)
 let formatJustTheTypeConstraint typ =
-  makeList ~postSpace:false ~sep:" " [atom ":"; typ]
+  makeList ~postSpace:false ~sep:(Sep " ") [atom ":"; typ]
 
 let formatTypeConstraint one two =
   label ~space:true (makeList ~postSpace:false [one; atom ":"]) two
@@ -2555,7 +2574,7 @@ let formatComputedInfixChain infixChainList =
      * |> f
      * |> z *)
     if List.length group < 2 then
-      makeList ~inline:(true, true) ~sep:" " ~break:Never group
+      makeList ~inline:(true, true) ~sep:(Sep " ") ~break:Never group
     (* Basic equality operators require special formatting, we can't give it
      * 'classic' infix operator formatting, otherwise we would get
      * let example =
@@ -2566,8 +2585,8 @@ let formatComputedInfixChain infixChainList =
      *  *)
     else if List.mem currentToken equalityOperators then
       let hd = List.hd group in
-      let tl = makeList ~inline:(true, true) ~sep:" " ~break:Never (List.tl group) in
-      makeList ~inline:(true, true) ~sep:" " ~break:IfNeed [hd; tl]
+      let tl = makeList ~inline:(true, true) ~sep:(Sep " ") ~break:Never (List.tl group) in
+      makeList ~inline:(true, true) ~sep:(Sep " ") ~break:IfNeed [hd; tl]
     else
       (* Represents `|> f` in foo |> f
        * We need a label here to indent possible closing parens
@@ -2585,7 +2604,7 @@ let formatComputedInfixChain infixChainList =
     | x::xs -> (match x with
       | InfixToken t ->
           if List.mem t requireIndentFor then
-            let groupNode = makeList ~inline:(true, true) ~sep:" " ~break:Never (group @ [atom t]) in
+            let groupNode = makeList ~inline:(true, true) ~sep:(Sep " ") ~break:Never (group @ [atom t]) in
             let children = makeList ~inline:(true, true) ~preSpace:true ~break:IfNeed (print [] [] t xs) in
             print (acc @ [label ~space:true groupNode children]) [] t []
           (* Represents:
@@ -2596,7 +2615,7 @@ let formatComputedInfixChain infixChainList =
            * Extra indent puts pressure on the subsequent line lengths
            * *)
           else if t = "@@" then
-            let groupNode = makeList ~inline:(true, true) ~sep:" " ~break:Never (group @ [atom t]) in
+            let groupNode = makeList ~inline:(true, true) ~sep:(Sep " ") ~break:Never (group @ [atom t]) in
             print (acc @ [groupNode]) [] t xs
           else if List.mem t equalityOperators then
             print acc (group @ [atom t]) t xs
@@ -2676,7 +2695,7 @@ class printer  ()= object(self:'self)
           let (lhs, rhs) = allArrowSegments [] x in
           let normalized = makeList
               ~preSpace:true ~postSpace:true ~inline:(true, true)
-              ~break:IfNeed ~sep:"=>" [lhs; rhs]
+              ~break:IfNeed ~sep:(Sep "=>") [lhs; rhs]
           in SourceMap (x.ptyp_loc, normalized)
         | Ptyp_poly (sl, ct) ->
           let poly =
@@ -2714,9 +2733,9 @@ class printer  ()= object(self:'self)
     match lbl with
     | Nolabel -> typ
     | Labelled lbl ->
-        makeList ~sep:" " [atom (namedArgSym ^ lbl ^ ":"); typ]
+        makeList ~sep:(Sep " ") [atom (namedArgSym ^ lbl ^ ":"); typ]
     | Optional lbl ->
-        makeList ~sep:" " [atom (namedArgSym ^ lbl ^ ":"); label typ (atom "=?")]
+        makeList ~sep:(Sep " ") [atom (namedArgSym ^ lbl ^ ":"); label typ (atom "=?")]
 
   method type_param (ct, a) =
     makeList [atom (type_variance a); self#core_type ct]
@@ -2990,7 +3009,7 @@ class printer  ()= object(self:'self)
     (SourceMap (pcd_loc, everything))
 
   method record_declaration ?assumeRecordLoc lbls =
-    let recordRow pld =
+    let recordRow i pld =
       let hasPunning = recordRowIsPunned pld in
       let name = if hasPunning then
           SourceMap (pld.pld_name.loc, makeList [atom pld.pld_name.txt;])
@@ -3009,10 +3028,10 @@ class printer  ()= object(self:'self)
       in
       SourceMap (pld.pld_loc, recordRow)
     in
-    let rows = List.map recordRow lbls in
+    let rows = List.mapi recordRow lbls in
     (* if a record has more than 2 rows, always break *)
     let break = if List.length rows >= 2 then Always_rec else IfNeed in
-    let rowList = makeList ~wrap:("{", "}") ~sep:"," ~postSpace:true ~break rows in
+    let rowList = makeList ~wrap:("{", "}") ~sep:(Sep ",") ~postSpace:true ~break rows in
     match assumeRecordLoc with
     | None -> rowList
     | Some loc -> SourceMap(loc, rowList)
@@ -3199,7 +3218,7 @@ class printer  ()= object(self:'self)
                     (makeList ~postSpace:true [atom "module"; self#longident_loc lid])
                     (makeList
                       ~break:IfNeed
-                      ~sep:" and "
+                      ~sep:(Sep " and ")
                       ~wrap:("with", "")
                       ~pad:(true, false)
                       (List.map typeConstraint cstrs))
@@ -3323,7 +3342,7 @@ class printer  ()= object(self:'self)
     makeList
       ~break:IfNeed
       ~inline:(true, true)
-      ~sep:"|"
+      ~sep:(Sep "|")
       ~postSpace:true
       ~preSpace:true
       [left; right]
@@ -3390,7 +3409,7 @@ class printer  ()= object(self:'self)
     match pat_last with
     | {ppat_desc = Ppat_construct ({txt=Lident "[]"},_)} -> (* [x,y,z] *)
         let wrap = (left ^ "[", "]" ^ right) in
-        makeList ~break:IfNeed ~wrap ~sep:"," ~postSpace:true (List.map self#pattern pat_list)
+        makeList ~break:IfNeed ~wrap ~sep:(Sep ",") ~postSpace:true (List.map self#pattern pat_list)
     | _ -> (* x::y *)
         makeES6List ~wrap (List.map self#pattern pat_list) (self#pattern pat_last)
 
@@ -3485,7 +3504,7 @@ class printer  ()= object(self:'self)
       | Labelled lbl | Optional lbl when is_punned_labelled_pattern pat lbl ->
           makeList [atom namedArgSym; term]
       | Labelled lbl | Optional lbl ->
-          let lblLayout= makeList ~sep:" " ~break:Never [atom (namedArgSym ^ lbl); atom "as"] in
+          let lblLayout= makeList ~sep:(Sep " ") ~break:Never [atom (namedArgSym ^ lbl); atom "as"] in
           label lblLayout ~space:true term
     in
     match opt, lbl with
@@ -3786,7 +3805,7 @@ class printer  ()= object(self:'self)
     | InfixTree _ as infixTree ->
           let infixChainList = computeInfixChain infixTree in
           let l = formatComputedInfixChain infixChainList in
-          makeList ~inline:(true, true) ~sep:" " ~break:IfNeed l
+          makeList ~inline:(true, true) ~sep:(Sep " ") ~break:IfNeed l
 
 
   method unparseExprApplicationItems x =
@@ -3932,7 +3951,7 @@ class printer  ()= object(self:'self)
         ) in
         let withQuestion = SourceMap (e.pexp_loc, makeList ~postSpace:true [testItm; atom "?"]) in
         let trueFalseBranches =
-          makeList ~inline:(true, true) ~break:IfNeed ~sep:":" ~postSpace:true ~preSpace:true [ifTrue; ifFalse]
+          makeList ~inline:(true, true) ~break:IfNeed ~sep:(Sep ":") ~postSpace:true ~preSpace:true [ifTrue; ifFalse]
         in
         let expr = label ~space:true withQuestion trueFalseBranches in
         SpecificInfixPrecedence ({reducePrecedence=Token ":"; shiftPrecedence=Token "?"}, LayoutNode expr)
@@ -4482,7 +4501,7 @@ class printer  ()= object(self:'self)
         ~space:true
         (* TODO: This isn't a correct use of sep! It ruins how
          * comments are interleaved. *)
-        (makeList [makeList ~sep:" " (atom "type"::locallyAbstractTypes); atom "."])
+        (makeList [makeList ~sep:(Sep " ") (atom "type"::locallyAbstractTypes); atom "."])
         typeLayout
       in
     self#formatSimplePatternBinding
@@ -4530,7 +4549,7 @@ class printer  ()= object(self:'self)
           let returnedAppTerms = self#unparseExprApplicationItems actualReturn in
            (* Attaches the `=` to `f` to recreate javascript function syntax in
             * let f = (a, b) => a + b; *)
-          let lbl = makeList ~sep:" " ~break:Never [pattern; atom "="] in
+          let lbl = makeList ~sep:(Sep " ") ~break:Never [pattern; atom "="] in
           self#wrapCurriedFunctionBinding prefixText ~arrow lbl fauxArgs returnedAppTerms
 
   (* Similar to the above method. *)
@@ -4885,12 +4904,12 @@ class printer  ()= object(self:'self)
   method patternArray ?(wrap=("","")) l =
     let (left, right) = wrap in
     let wrap = (left ^ "[|", "|]" ^ right) in
-    makeList ~wrap ~break:IfNeed ~postSpace:true ~sep:"," (List.map self#pattern l)
+    makeList ~wrap ~break:IfNeed ~postSpace:true ~sep:(Sep ",") (List.map self#pattern l)
 
   method patternTuple ?(wrap=("","")) l =
     let (left, right) = wrap in
     let wrap = (left ^ "(", ")" ^ right) in
-    makeList ~wrap ~sep:"," ~postSpace:true ~break:IfNeed (List.map self#constrained_pattern l)
+    makeList ~wrap ~sep:(Sep ",") ~postSpace:true ~break:IfNeed (List.map self#constrained_pattern l)
 
   method patternRecord ?(wrap=("","")) l closed =
     let longident_x_pattern (li, p) =
@@ -4904,7 +4923,7 @@ class printer  ()= object(self:'self)
            when Longident.last ident = ident2 ->
           (* record field punning when destructuring with renaming. {state: state as prevState} becomes {state as prevState *)
           (* works with module prefix too: {ReasonReact.state: state as prevState} becomes {ReasonReact.state as prevState *)
-            makeList ~sep:" " [self#longident_loc li; atom "as"; atom aliasIdent]
+            makeList ~sep:(Sep " ") [self#longident_loc li; atom "as"; atom aliasIdent]
         | _ ->
             label ~space:true (makeList [self#longident_loc li; atom ":"]) (self#pattern p)
     in
@@ -4915,7 +4934,12 @@ class printer  ()= object(self:'self)
     ) in
     let (left, right) = wrap in
     let wrap = (left ^ "{", "}" ^ right) in
-    makeList ~wrap ~break:IfNeed ~sep:"," ~postSpace:true rows
+    makeList
+      ~wrap
+      ~break:IfNeed
+      ~sep:(Sep (","))
+      ~postSpace:true
+      rows
 
   method patternFunction ?extension loc l =
     let estimatedFunLocation = {
@@ -5309,7 +5333,11 @@ class printer  ()= object(self:'self)
     in
     let break = if !forceBreak then Always else IfNeed in
     let (left, right) = wrap in
-      makeList ~wrap:(left ^ "{" ,"}" ^ right) ~break ~preSpace:true allRows
+    makeList
+      ~wrap:(left ^ "{" ,"}" ^ right)
+      ~break
+      ~preSpace:true
+      allRows
 
   method isSeriesOfOpensFollowedByNonSequencyExpression expr =
     match (expr.pexp_attributes, expr.pexp_desc) with
@@ -5351,7 +5379,7 @@ class printer  ()= object(self:'self)
     let break = if List.length rows >= 2 then Always_rec else IfNeed in
     let (left, right) = wrap in
     makeList ~break:IfNeed ~preSpace:(List.length rows > 0) ~wrap:(left ^ "{", "}" ^ right)
-      (openness::[makeList ~break ~inline:(true, true) ~postSpace:true ~sep:"," rows])
+      (openness::[makeList ~break ~inline:(true, true) ~postSpace:true ~sep:(Sep ",") rows])
 
   method unparseSequence ?wrap:(wrap=("", "")) ~construct l =
     match construct with
@@ -5371,7 +5399,7 @@ class printer  ()= object(self:'self)
       let wrap = (left ^ leftDelim, rightDelim ^ right) in
       makeList
         ~wrap
-        ~sep:","
+        ~sep:(Sep ",")
         ~break:IfNeed
         ~postSpace:true
         (List.map xf l)
@@ -5419,7 +5447,7 @@ class printer  ()= object(self:'self)
             makeList
               ~postSpace:true
               ~wrap:("{<", ">}")
-              ~sep:","
+              ~sep:(Sep ",")
               (List.map string_x_expression l)
           )
         | Pexp_construct _  when is_simple_construct (view_expr x) ->
@@ -5578,13 +5606,13 @@ class printer  ()= object(self:'self)
     let break = IfNeed in
     let pad = (true, false) in
     let postSpace = true in
-    let sep = ";" in
+    let sep = Sep ";" in
     match e with
       | PStr [] -> atom ("[" ^ ppxToken  ^ ppxId.txt  ^ "]")
       | PStr [itm] -> makeList ~break ~wrap ~pad [self#structure_item itm]
       | PStr (_::_ as items) ->
         let rows = List.map self#structure_item items in
-        makeList ~wrap ~break ~pad ~postSpace ~sep ~renderFinalSep:false rows
+        makeList ~wrap ~break ~pad ~postSpace ~sep rows
       | PTyp x ->
         let wrap = wrap_prefix ":" wrap in
         makeList ~wrap ~break ~pad [self#core_type x]
@@ -5596,7 +5624,7 @@ class printer  ()= object(self:'self)
       | PSig items ->
         let wrap = wrap_prefix ":" wrap in
         let rows = List.map self#signature_item items in
-        makeList ~wrap ~break ~pad ~postSpace ~sep ~renderFinalSep:false rows
+        makeList ~wrap ~break ~pad ~postSpace ~sep rows
       | PPat (x, None) ->
         let wrap = wrap_prefix "?" wrap in
         makeList ~wrap ~break ~pad [self#pattern x]
@@ -5788,7 +5816,7 @@ class printer  ()= object(self:'self)
           ~wrap:("{", "}")
           ~postSpace:true
           ~break:Always_rec
-          ~sep:";"
+          ~sep:(Sep ";")
           allItems
       )
     | Pcty_constr (li, l) ->
@@ -5798,7 +5826,7 @@ class printer  ()= object(self:'self)
         | _::_ ->
           label
             (self#longident_loc li)
-            (makeList ~wrap:("(", ")") ~sep:"," (List.map self#core_type l))
+            (makeList ~wrap:("(", ")") ~sep:(Sep ",")  (List.map self#core_type l))
       )
     | Pcty_extension e ->
       self#attach_std_item_attrs x.pcty_attributes (self#extension e)
@@ -5879,7 +5907,7 @@ class printer  ()= object(self:'self)
       let (params, return) = allArrowSegments [] x in
       let normalized =
         makeList ~break:IfNeed
-          ~sep:"=>"
+          ~sep:(Sep "=>")
           ~preSpace:true ~postSpace:true ~inline:(true, true)
         [makeCommaBreakableListSurround "(" ")" params; return]
       in
@@ -6124,7 +6152,7 @@ class printer  ()= object(self:'self)
     let wrap = (left ^ "{", "}" ^ right) in
     let break = if forceBreak then Always else IfNeed in
     makeList
-      ~sep:";"
+      ~sep:(Sep ";")
       ~wrap
       ~break
       ~postSpace:true
@@ -6145,12 +6173,11 @@ class printer  ()= object(self:'self)
           ~newlinesAboveComments:1
           ~newlinesAboveItems:1
           ~newlinesAboveDocComments:1
-          ~renderFinalSep:true
           ~postSpace:true
           ~break:Always_rec
           ~indent:0
           ~inline:(true, false)
-          ~sep:";"
+          ~sep:(SepFinal (";", ";"))
           (List.map self#signature_item signatureItems)
       )
 
@@ -6282,9 +6309,8 @@ class printer  ()= object(self:'self)
             ~newlinesAboveComments:0
             ~newlinesAboveItems:0
             ~newlinesAboveDocComments:1
-            ~renderFinalSep:true
             ~postSpace:true
-            ~sep:";"
+            ~sep:(SepFinal (";", ";"))
             (List.map self#signature_item (List.filter self#shouldDisplaySigItem s))
       | Pmty_extension (s, e) -> self#payload "%" s e
       | _ -> makeList ~break:IfNeed ~wrap:("(", ")") [self#module_type x]
@@ -6314,7 +6340,7 @@ class printer  ()= object(self:'self)
             (args, self#module_type xx)
         in
         let args, ret = extract_args [] x in
-        makeList ~break:IfNeed ~sep:"=>" ~preSpace:true ~postSpace:true ~inline:(true, true)
+        makeList ~break:IfNeed ~sep:(Sep "=>") ~preSpace:true ~postSpace:true ~inline:(true, true)
           [makeTup args; ret]
 
       (* See comments in sugar_parser.mly about why WITH constraints aren't "non
@@ -6354,7 +6380,7 @@ class printer  ()= object(self:'self)
                   (makeList
                      ~break:IfNeed
                      ~inline:(true, true)
-                     ~sep:"and"
+                     ~sep:(Sep "and")
                      ~postSpace:true
                      ~preSpace:true
                      (List.map with_constraint l));
@@ -6383,9 +6409,8 @@ class printer  ()= object(self:'self)
           ~newlinesAboveComments:0
           ~newlinesAboveItems:0
           ~newlinesAboveDocComments:1
-          ~renderFinalSep:true
           ~postSpace:true
-          ~sep:";"
+          ~sep:(SepFinal (";", ";"))
           (List.map self#structure_item (List.filter self#shouldDisplayStructureItem s))
     | _ ->
         (* For example, functor application will be wrapped. *)
@@ -6421,12 +6446,11 @@ class printer  ()= object(self:'self)
           ~newlinesAboveComments:1
           ~newlinesAboveItems:1
           ~newlinesAboveDocComments:1
-          ~renderFinalSep:true
           ~postSpace:true
           ~break:Always_rec
           ~indent:0
           ~inline:(true, false)
-          ~sep:";"
+          ~sep:(SepFinal (";", ";"))
           (List.map self#structure_item structureItems)
       )
 
@@ -6515,7 +6539,7 @@ class printer  ()= object(self:'self)
             | [] -> layout
             | _::_ ->
               let jsxAttrNodes = List.map self#attribute jsxAttrs in
-              makeList ~sep:" " (jsxAttrNodes @ [layout]))
+              makeList ~sep:(Sep " ") (jsxAttrNodes @ [layout]))
         | Pstr_type (_, []) -> assert false
         | Pstr_type (rf, l)  -> (self#type_def_list (rf, l))
         | Pstr_value (rf, l) -> (self#bindings (rf, l))
@@ -6829,7 +6853,7 @@ class printer  ()= object(self:'self)
           let argsWithCallbackArgs = List.concat [(List.map self#label_x_expression_param args); [theCallbackArg]] in
           let left = label
             theFunc
-            (makeList ~wrap:("", " ") ~break:IfNeed ~inline:(true, true) ~sep:"," ~postSpace:true
+            (makeList ~wrap:("", " ") ~break:IfNeed ~inline:(true, true) ~sep:(Sep ",") ~postSpace:true
               argsWithCallbackArgs)
           in
           label left returnValueCallback
@@ -6864,12 +6888,12 @@ class printer  ()= object(self:'self)
               let right =
                 SourceMap (
                   retCb.pexp_loc,
-                  makeList ~break:Always_rec ~wrap:("=> {", "})") ~sep:";" ~renderFinalSep:true xs
+                  makeList ~break:Always_rec ~wrap:("=> {", "})") ~sep:(SepFinal (";", ";")) xs
                 ) in
               let argsWithCallbackArgs = List.concat [(List.map self#label_x_expression_param args); [theCallbackArg]] in
               let left = label
                 theFunc
-                (makeList ~wrap:("", " ") ~break:IfNeed ~inline:(true, true) ~sep:"," ~postSpace:true
+                (makeList ~wrap:("", " ") ~break:IfNeed ~inline:(true, true) ~sep:(Sep ",") ~postSpace:true
                   argsWithCallbackArgs)
               in
               label left right
@@ -6887,7 +6911,7 @@ class printer  ()= object(self:'self)
                *   }</list></right></label>
                * )</list></right></label>
                *)
-              let args = makeList ~break:Always ~wrap:("", ")") ~sep:"," (
+              let args = makeList ~break:Always ~wrap:("", ")") ~sep:(Sep ",") (
                 (List.map self#label_x_expression_param args)
                 @([label ~space:true (makeList ~wrap:("", " =>") [theCallbackArg]) (SourceMap (retCb.pexp_loc, makeLetSequence xs))])
               ) in
