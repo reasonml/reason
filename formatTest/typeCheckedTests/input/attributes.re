@@ -398,3 +398,29 @@ let res = switch (x) {
 type value =
 | [@foo] VBool'(bool): [@bar] value
 | VInt'(int): value;
+
+/** Different payloads **/
+
+/* Empty structure */
+[@haha]
+let x = 5;
+
+/* Expression structure */
+[@haha "hello world"]
+let x = 5;
+
+/* structure_item */
+[@haha let x = 5]
+let x = 5;
+
+/* structure */
+[@haha let x = 5; module X = {};]
+let x = 5;
+
+/* Pattern */
+[@haha? Some(_) ]
+let x = 5;
+
+/* Type */
+[@haha: option(int)]
+let x = 5;

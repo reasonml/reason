@@ -4343,6 +4343,7 @@ item_extension:
 
 payload:
   | structure                       { PStr $1 }
+  | COLON signature                 { PSig $2 }
   | COLON only_core_type(core_type) { PTyp $2 }
   | QUESTION pattern                { PPat ($2, None) }
   | QUESTION pattern WHEN expr      { PPat ($2, Some $4) }
