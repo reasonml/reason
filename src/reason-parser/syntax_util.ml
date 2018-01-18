@@ -5,6 +5,43 @@ open Ast_mapper
 open Parsetree
 open Longident
 
+(* Logic for handling special behavior that only happens if things break. We
+  use characters that will never appear in the printed output if actually
+  written in source code. The OCaml formatter will replace them with the escaped
+  versions When moving to a new formatter, the formatter may *not* escape these
+  an in that case we need the formatter to accept blacklists of characters to
+  escape, but more likely is that the new formatter allows us to do these kinds
+  of if-break logic without writing out special characters for post-processing.
+*)
+module TrailingCommaMarker = struct
+  (* A trailing comma will only be rendered if it is not immediately
+   * followed by a closing paren, bracket, or brace *)
+  let char = Char.chr 249 (* ¨ *)
+  let string = String.make 1 char
+end
+module OpenBraceMarker = struct
+  (* An open brace marker will only be rendered if it is immediately
+   * followed by a newline. This should NOT BE USED WITH
+   * anything but inline:(true, false) because the following will cause
+   * OpenBraceMarker to be replaced but not ClosedBraceMarker.
+   *    let x = () => {
+   *      whoops };
+   *)
+  let char = Char.chr 174 (* « *)
+  let string = String.make 1 char
+end
+module ClosedBraceMarker = struct
+  (* An open brace marker will only be rendered if it is immediately
+   * preceeded by white space and a newline. This should NOT BE USED WITH
+   * anything but inline:(true, false) because the following will cause
+   * OpenBraceMarker to be replaced but not ClosedBraceMarker.
+   *    let x = () => {
+   *      whoops };
+   *)
+  let char = Char.chr 175 (* » *)
+  let string = String.make 1 char
+end
+
 
 (** [is_prefixed prefix i str] checks if prefix is the prefix of str
   * starting from position i
@@ -104,12 +141,39 @@ let trim_right str =
   else
     let index = trim_right_idx str (length - 1) in
     if index = 0 then ""
-    else if index = length then str
+    else if index = length then
+      str
     else String.sub str 0 index
 
-let strip_trailing_whitespace str =
+
+let processLine line =
+  let rightTrimmed = trim_right line in
+  let trimmedLen = String.length rightTrimmed in
+  if trimmedLen = 0 then
+    rightTrimmed
+  else
+    let segments =
+      split_by
+        ~keep_empty:false
+        (fun c -> c = TrailingCommaMarker.char)
+        rightTrimmed in
+    (* Now we concat the portions back together without any trailing comma markers
+      - except we detect if there was a final trailing comma marker which we know
+      must be before a newline so we insert a regular comma. This achieves
+      "intelligent" trailing commas. *)
+    let hadTrailingCommaMarkerBeforeNewline =
+      String.get rightTrimmed (trimmedLen - 1) = TrailingCommaMarker.char
+    in
+    let almostEverything = String.concat "" segments in
+    if hadTrailingCommaMarkerBeforeNewline then
+      almostEverything ^ ","
+    else
+      almostEverything
+
+
+let processLineEndingsAndStarts str =
   split_by ~keep_empty:true (fun x -> x = '\n') str
-  |> List.map trim_right
+  |> List.map processLine
   |> String.concat "\n"
   |> String.trim
 

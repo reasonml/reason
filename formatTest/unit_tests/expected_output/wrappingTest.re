@@ -410,7 +410,11 @@ let myRec = {
 };
 
 /* Ensure end of line comments force breaks */
-let myList = [1, 2, 3 /* */];
+let myList = [
+  1,
+  2,
+  3 /* */
+];
 
 let myList = [1, 2, /**/ 3];
 
