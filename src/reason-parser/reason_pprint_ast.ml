@@ -6737,7 +6737,6 @@ class printer  ()= object(self:'self)
        that JSX attribute needs to be pretty printed so it doesn't get
        lost *)
     let maybeJSXAttr = List.map self#attribute jsxAttrs in
-
     let categorizeFunApplArgs args =
       let reverseArgs = List.rev args in
       match reverseArgs with
@@ -6756,11 +6755,15 @@ class printer  ()= object(self:'self)
          *   MyModuleBlah.toList(argument)
          *)
         let (argLbl, cb) = callbackArg in
-        let (cbArgs, retCb) = self#curriedPatternsAndReturnVal cb in
+        let cbAttrs = cb.pexp_attributes in
+        let (cbArgs, retCb) = self#curriedPatternsAndReturnVal {cb with pexp_attributes = []} in
+        let cbArgs = if List.length cbAttrs > 0 then
+          makeList ~break:IfNeed ~inline:(true, true) ~postSpace:true ((List.map self#attribute cbAttrs)@(cbArgs))
+        else makeList cbArgs in
         let theCallbackArg = match argLbl with
-          | Optional s -> makeList ([atom namedArgSym; atom s; atom "=?"]@cbArgs)
-          | Labelled s -> makeList ([atom namedArgSym; atom s; atom "="]@cbArgs)
-          | Nolabel -> makeList cbArgs
+          | Optional s -> makeList ([atom namedArgSym; atom s; atom "=?"]@[cbArgs])
+          | Labelled s -> makeList ([atom namedArgSym; atom s; atom "="]@[cbArgs])
+          | Nolabel -> cbArgs
         in
 
         let theFunc = SourceMap (funExpr.pexp_loc, makeList ~wrap:("", "(") [self#simplifyUnparseExpr funExpr]) in
