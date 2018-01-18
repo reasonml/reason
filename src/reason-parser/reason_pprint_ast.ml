@@ -5709,6 +5709,7 @@ class printer  ()= object(self:'self)
       (self#attach_std_item_attrs x.pctf_attributes m)
     | Pctf_constraint (ct1, ct2) ->
       label
+        ~space:true
         (atom "constraint")
         (label ~space:true
             (makeList ~postSpace:true [self#core_type ct1; atom "="])
