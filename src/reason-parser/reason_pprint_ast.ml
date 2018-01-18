@@ -5787,9 +5787,8 @@ class printer  ()= object(self:'self)
         | [] -> self#longident_loc li
         | _::_ ->
           label
-            ~space:true
-            (makeList ~wrap:("(", ")") ~sep:"," (List.map self#core_type l))
             (self#longident_loc li)
+            (makeList ~wrap:("(", ")") ~sep:"," (List.map self#core_type l))
       )
     | Pcty_extension e ->
       self#attach_std_item_attrs x.pcty_attributes (self#extension e)
