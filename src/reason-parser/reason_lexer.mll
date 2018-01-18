@@ -527,6 +527,11 @@ rule token = parse
     let buf = Lexing.lexeme lexbuf in
     LESSIDENT (String.sub buf 1 (String.length buf - 1))
   }
+  | "{<" uppercase_or_lowercase (identchar | '.') * {
+    (* allows parsing of `{<Text` in <Description term={<Text text="Age" />}> as correct jsx *)
+    set_lexeme_length lexbuf 1;
+    LBRACE
+  }
   | "</" uppercase_or_lowercase (identchar | '.') * ">" {
     let buf = Lexing.lexeme lexbuf in
     LESSSLASHIDENTGREATER (String.sub buf 2 (String.length buf - 2 - 1))

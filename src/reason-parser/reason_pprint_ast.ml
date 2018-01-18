@@ -2452,6 +2452,26 @@ let is_direct_pattern x = x.ppat_attributes = [] && match x.ppat_desc with
   | Ppat_construct ( {txt= Lident"()"}, None) -> true
   | _ -> false
 
+let isJSXComponent loc args =
+  let hasLabelledChildrenLiteral = List.exists (function
+    | (Labelled "children", _) -> true
+    | _ -> false
+  ) args in
+  let rec hasSingleNonLabelledUnitAndIsAtTheEnd l = match l with
+  | [] -> false
+  | (Nolabel, {pexp_desc = Pexp_construct ({txt = Lident "()"}, _)}) :: [] -> true
+  | (Nolabel, _) :: rest -> false
+  | _ :: rest -> hasSingleNonLabelledUnitAndIsAtTheEnd rest
+  in
+  if hasLabelledChildrenLiteral && hasSingleNonLabelledUnitAndIsAtTheEnd args then
+    let moduleNameList = List.rev (List.tl (List.rev (Longident.flatten loc.txt))) in
+    if List.length moduleNameList > 0 && Longident.last loc.txt = "createElement" then
+       true
+    else false
+  else
+    false
+
+
 (* Some cases require special formatting when there's a function application
  * with a single argument containing some kind of structure with braces/parens/brackets.
  * Example: `foo({a: 1, b: 2})` needs to be formatted as
@@ -3481,6 +3501,7 @@ class printer  ()= object(self:'self)
     atom cls;
   ]
 
+
   method simple_get_application x =
     let {stdAttrs; jsxAttrs} = partitionAttributes x.pexp_attributes in
     match (x.pexp_desc, stdAttrs, jsxAttrs) with
@@ -4088,6 +4109,9 @@ class printer  ()= object(self:'self)
          let nextAttr =
            match expression.pexp_desc with
            | Pexp_ident (ident) when isPunnedJsxArg lbl ident -> atom lbl
+           | Pexp_apply ({pexp_desc=Pexp_ident loc}, l) when isJSXComponent loc l ->
+               label (atom (lbl ^ "="))
+                     (makeList ~break:IfNeed ~wrap:("{", "}") [(self#simplifyUnparseExpr expression)])
            | Pexp_record _
            | Pexp_construct _
            | Pexp_array _
