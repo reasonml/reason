@@ -1370,3 +1370,12 @@ Thing.map(
     MyModuleBlah.toList(x, argument);
   }
 );
+
+let result =
+  F.call(x => {
+    let x = 123;
+    let y = 2345;
+    doStuff();
+  });
+
+let result = F.call(x => doStuff(x));
