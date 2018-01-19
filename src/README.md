@@ -34,7 +34,7 @@ opam packages. It is still experimental, but if you're more familiar with `npm` 
 **Please file issues regarding `esy` at the [esy project](https://github.com/esy/esy) itself.**
 
 ```sh
-# Make sure you have the latest esy 
+# Make sure you have the latest esy
 npm remove -g esy
 npm install -g esy@next
 git clone https://github.com/facebook/reason.git
@@ -123,7 +123,7 @@ Our lexer & parser use [Menhir](http://gallium.inria.fr/~fpottier/menhir/), a li
 
 - `src/rtop/reason_util.ml`, `syntax_util.ml`: utils.
 
-- `src/reason-parser/reactjs_jsx_ppx_v2.ml/v3.ml`: our ReactJS interop that translates [Reason JSX](https://reasonml.github.io/guide/language/jsx) into something that ReactJS understands. See the comments in the file and the description in [ReasonReact](https://reasonml.github.io/reason-react/#reason-react-jsx).
+- `src/reason-parser/reactjs_jsx_ppx_v2.ml/v3.ml`: our ReactJS interop that translates [Reason JSX](https://reasonml.github.io/docs/en/jsx.html) into something that ReactJS understands. See the comments in the file and the description in [ReasonReact](https://reasonml.github.io/reason-react/#reason-react-jsx).
 
 - `src/reason-parser-tests/testOprint.ml`: unit tests for the outcome printer mentioned above. See the file for more info on how outcome printing is tested.
 

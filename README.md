@@ -24,7 +24,7 @@ See the [src folder's README](https://github.com/facebook/reason/tree/master/src
 
 ### JavaScript API
 
-We expose a `refmt.js` for you to use on the web. Again, for local development, please use the native `refmt` that comes with the installation [here](https://reasonml.github.io/guide/editor-tools/global-installation). It's an order of magnitude faster than the JS version. Don't use the JS version unless you know what you're doing. Let's keep our ecosystem fast please.
+We expose a `refmt.js` for you to use on the web. Again, for local development, please use the native `refmt` that comes with the installation [here](https://reasonml.github.io/docs/en/global-installation.html). It's an order of magnitude faster than the JS version. Don't use the JS version unless you know what you're doing. Let's keep our ecosystem fast please.
 
 Aaaanyways, to install `refmt.js`: `npm install reason`.
 
