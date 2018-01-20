@@ -276,11 +276,9 @@ let print_comment_type = function
 let rec print_comments = function
   | [] -> ()
   | ((s, t, loc)::tl) ->
-       printf "%d (%d:%d)-%d (%d:%d) -- %s:||%s||\n"
-              loc.loc_start.Lexing.pos_cnum
+       printf "(%d:%d)-(%d:%d) -- %s:||%s||\n"
               loc.loc_start.Lexing.pos_lnum
               (loc.loc_start.Lexing.pos_cnum - loc.loc_start.Lexing.pos_bol)
-              loc.loc_end.Lexing.pos_cnum
               loc.loc_end.Lexing.pos_lnum
               (loc.loc_end.Lexing.pos_cnum - loc.loc_end.Lexing.pos_bol)
               (print_comment_type t)
@@ -321,11 +319,9 @@ let rec print_layout ?(indent=0) layout =
   let space = Array.fold_left (^) "" (Array.make indent " ") in
   match layout with
   | SourceMap (loc, layout) ->
-     printf "%s [%d (%d:%d)-%d (%d:%d)]\n" space
-            loc.loc_start.Lexing.pos_cnum
+     printf "%s SourceMap [(%d:%d)-(%d:%d)]\n" space
             loc.loc_start.Lexing.pos_lnum
             (loc.loc_start.Lexing.pos_cnum - loc.loc_start.Lexing.pos_bol)
-            loc.loc_end.Lexing.pos_cnum
             loc.loc_end.Lexing.pos_lnum
             (loc.loc_end.Lexing.pos_cnum - loc.loc_end.Lexing.pos_bol);
      print_layout ~indent:(indent+2) layout
@@ -341,18 +337,18 @@ let rec print_layout ?(indent=0) layout =
   | WithEOLComment (comment, layout) ->
      printf "%s WithEOLComment: \n" space;
      printf "  %s node \n" space;
-     print_layout ~indent:(indent+2) layout;
+     print_layout ~indent:(indent+4) layout;
      printf "  %s comments : \n" space;
      printf "  %s %s\n" space comment;
      printf "\n";
   | Label (_, left, right) ->
      printf "%s Label: \n" space;
      printf "  %s left \n" space;
-     print_layout ~indent:(indent+2) left;
+     print_layout ~indent:(indent+4) left;
      printf "  %s right \n" space;
-     print_layout ~indent:(indent+2) right;
+     print_layout ~indent:(indent+4) right;
   | Easy e ->
-     printf "%s Easy: %s \n" space (print_easy e)
+     printf "%s Easy: '%s' \n" space (print_easy e)
 
 let rec longIdentSame = function
   | (Lident l1, Lident l2) -> String.compare l1 l2 == 0
