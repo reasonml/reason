@@ -4837,7 +4837,7 @@ class printer  ()= object(self:'self)
     let space, arguments = match arguments with
       | [x] when is_direct_pattern x -> (true, self#simple_pattern x)
       | xs when isSingleArgParenPattern xs -> (false, self#singleArgParenPattern xs)
-      | xs -> (false, makeTup (List.map self#pattern xs))
+      | xs -> (false, SourceMap(po.ppat_loc, makeTup (List.map self#pattern xs)))
     in
     let construction = label ~space ctor arguments in
     if implicit_arity && (not polyVariant) then
@@ -4863,14 +4863,14 @@ class printer  ()= object(self:'self)
    *  Also see `isSingleArgParenPattern` to determine if this kind of wrapping applies.
    *)
   method singleArgParenPattern = function
-    | [{ppat_desc = Ppat_record (l, closed)}] ->
-        self#patternRecord ~wrap:("(", ")") l closed
-    | [{ppat_desc = Ppat_array l}] ->
-        self#patternArray ~wrap:("(", ")") l
-    | [{ppat_desc = Ppat_tuple l}] ->
-        self#patternTuple ~wrap:("(", ")") l
-    | [{ppat_desc = Ppat_construct (({txt=Lident "::"}), po)} as listPattern]  ->
-        self#patternList ~wrap:("(", ")")  listPattern
+    | [{ppat_desc = Ppat_record (l, closed); ppat_loc}] ->
+        SourceMap (ppat_loc, self#patternRecord ~wrap:("(", ")") l closed)
+    | [{ppat_desc = Ppat_array l; ppat_loc}] ->
+        SourceMap (ppat_loc, self#patternArray ~wrap:("(", ")") l)
+    | [{ppat_desc = Ppat_tuple l; ppat_loc}] ->
+        SourceMap (ppat_loc, self#patternTuple ~wrap:("(", ")") l)
+    | [{ppat_desc = Ppat_construct (({txt=Lident "::"}), po); ppat_loc} as listPattern]  ->
+        SourceMap (ppat_loc, self#patternList ~wrap:("(", ")")  listPattern)
     | _ -> assert false
 
   method patternArray ?(wrap=("","")) l =
