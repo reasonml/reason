@@ -569,6 +569,11 @@ rule token = parse
     set_lexeme_length lexbuf 1;
     GREATER
   }
+  | "><" uppercase_or_lowercase+ {
+    (* allow parsing of <div><span> *)
+    set_lexeme_length lexbuf 1;
+    GREATER
+  }
   | "[@" { LBRACKETAT }
   | "[%" { LBRACKETPERCENT }
   | "[%%" { LBRACKETPERCENTPERCENT }

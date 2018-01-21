@@ -194,3 +194,5 @@ let y = [
     />
   }
 />;
+
+<div> <span> (str("hello")) </span> </div>;

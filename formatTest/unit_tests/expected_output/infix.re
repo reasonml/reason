@@ -1162,3 +1162,7 @@ let (/>>) = (a, b) => a + b;
 let x = y />/> f;
 
 let (/>/>) = (a, b) => a + b;
+
+let (><) = (a, b) => a + b;
+
+let x = a >< b;
