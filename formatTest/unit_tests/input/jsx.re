@@ -131,3 +131,5 @@ let y = [<Button onClick=handleStaleClick />, <Button onClick=handleStaleClick /
 <Description term={<Text superLongPunnedProp anotherSuperLongOneCrazyLongThingHere text="Age" />}> child </Description>;
 
 <Foo bar={<Baz superLongPunnedProp anotherSuperLongOneCrazyLongThingHere/>}/>;
+
+<div><span>(str("hello"))</span></div>;
