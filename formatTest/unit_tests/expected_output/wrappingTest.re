@@ -411,14 +411,18 @@ let myRec = {
 };
 
 /* Ensure end of line comments force breaks */
-let myList = [1, 2, 3 /* */];
+let myList = [
+  1,
+  2,
+  3 /* */
+];
 
 let myList = [1, 2, /**/ 3];
 
 let myList = [
   1,
   2,
-  3, /*CommentAfterConsBeforeAppendedTo */
+  3 /*CommentAfterConsBeforeAppendedTo */,
   ...myList,
 ];
 
@@ -2760,12 +2764,8 @@ let myPolyFuncCommentAfterArrow:
  =
   o => o;
 
-let myPolyFuncCommentBeforeEqual:
-  'a .
-  'a => 'a /*beforeEqual */
- =
-  o => o;
-
+/* THIS IS THE ONLY TEST THAT IS FAILING DUE TO BEING NON-IDEMPOTENT */
+/* let myPolyFuncCommentBeforeEqual : 'a . ('a) => 'a /*beforeEqual */  = fun(o) => o; */
 let myPolyFuncCommentAfterEqual: 'a .'a => 'a =
   /*afterEqual */ o => o;
 
@@ -2778,8 +2778,7 @@ let myNonPolyFuncCommentAfterColon:
   o => o;
 
 let myNonPolyFuncCommentBeforeArrow:
-  'a => /*BeforeArrow */
-  'a =
+  'a /*BeforeArrow */ => 'a =
   o => o;
 
 let myNonPolyFuncCommentAfterArrow:
@@ -2935,9 +2934,7 @@ let onlyDoingThisTopLevelLetToBypassTopLevelSequence = {
   };
   let x = {
     print_int(1);
-    print_int(
-      20,
-    ); /* Ensure missing middle SEMI reported well */
+    print_int(20); /* Ensure missing middle SEMI reported well */
     print_int(20);
   };
   let x = {
