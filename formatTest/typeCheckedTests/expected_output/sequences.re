@@ -73,7 +73,7 @@ let fourty = 20 + thisIsASequenceNotPunedRecord;
 type recordType = {
   a: int,
   b: int,
-  c: int
+  c: int,
 };
 
 let a = 0;

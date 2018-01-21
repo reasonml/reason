@@ -22,7 +22,10 @@ let lazy thisIsActuallyAPatternMatch = lazy 200;
 
 let tmp: int = thisIsActuallyAPatternMatch;
 
-let (lazy (Box(i)), x) = (lazy (Box(200)), 100);
+let (lazy (Box(i)), x) = (
+  lazy (Box(200)),
+  100,
+);
 
 let tmp: int = i;
 

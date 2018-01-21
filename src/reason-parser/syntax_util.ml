@@ -14,6 +14,7 @@ open Longident
   of if-break logic without writing out special characters for post-processing.
 *)
 module TrailingCommaMarker = struct
+  (* TODO: You can detect failed parsings by *NOT* omitting the final comma *ever*. *)
   (* A trailing comma will only be rendered if it is not immediately
    * followed by a closing paren, bracket, or brace *)
   let char = Char.chr 249 (* ¨ *)

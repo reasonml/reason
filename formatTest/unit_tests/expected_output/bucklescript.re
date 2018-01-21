@@ -11,7 +11,7 @@ obj##.prop;
 obj##.prod := exp;
 
 preview##style##border#=Js.string(
-  "1px black dashed"
+  "1px black dashed",
 );
 
 preview##(style##border)#=args(somenum);
@@ -90,7 +90,9 @@ let c = {
 let d = {
   "a": a2,
   "b": b,
-  "func": a => {"a": (arg1, arg2) => arg1 + arg2}
+  "func": a => {
+    "a": (arg1, arg2) => arg1 + arg2
+  }
 };
 
 let a = {"/foo": 10};

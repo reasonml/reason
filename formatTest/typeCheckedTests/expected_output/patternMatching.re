@@ -1,6 +1,6 @@
 type point = {
   x: int,
-  y: int
+  y: int,
 };
 
 let id = x => x;
@@ -17,19 +17,19 @@ let computeTuple = (a, b, c, d, e, f, g, h) => (
   a + b,
   c + d,
   e + f,
-  g + h
+  g + h,
 );
 
 let res =
   switch (TwoCombos(Unused, Unused)) {
   | TwoCombos(
       HeresTwoConstructorArguments(x, y),
-      HeresTwoConstructorArguments(a, b)
+      HeresTwoConstructorArguments(a, b),
     ) => (
       x,
       y,
       a,
-      b
+      b,
     )
   | TwoCombos(_, _) => (0, 0, 0, 0)
   | Short
@@ -37,7 +37,7 @@ let res =
       100000,
       100000,
       100000,
-      100000
+      100000,
     )
   | AlsoHasARecord(firstItem, two, {x, y}) =>
     computeTuple(
@@ -48,7 +48,7 @@ let res =
       firstItem,
       two,
       two,
-      two
+      two,
     )
   };
 
@@ -60,7 +60,7 @@ let res =
   switch (TwoCombos(Unused, Unused)) {
   | TwoCombos(
       HeresTwoConstructorArguments(x, y),
-      HeresTwoConstructorArguments(a, b)
+      HeresTwoConstructorArguments(a, b),
     ) =>
     let ret = (x, y, a, b);
     ret;
@@ -86,7 +86,7 @@ let res =
       firstItem,
       two,
       two,
-      two
+      two,
     )
   };
 
@@ -98,7 +98,7 @@ let res =
   switch (TwoCombos(Unused, Unused)) {
   | TwoCombos(
       HeresTwoConstructorArguments(x, y),
-      HeresTwoConstructorArguments(a, b)
+      HeresTwoConstructorArguments(a, b),
     ) => (
       fun
       | Some(x) => x + 1
@@ -116,13 +116,13 @@ let res =
     id(
       fun
       | Some(x) => x + 1
-      | None => 0
+      | None => 0,
     )
   | AlsoHasARecord(firstItem, two, {x, y}) =>
     id(
       fun
       | Some(x) => x + 1
-      | None => 0
+      | None => 0,
     )
   };
 
@@ -243,7 +243,7 @@ switch (None) {
 switch (None) {
 | Some([|
     someSuperLongString,
-    thisShouldBreakTheLine
+    thisShouldBreakTheLine,
   |]) =>
   ()
 | _ => ()
@@ -252,7 +252,7 @@ switch (None) {
 switch (None) {
 | Some((
     someSuperLongString,
-    thisShouldBreakTheLine
+    thisShouldBreakTheLine,
   )) =>
   ()
 | _ => ()
@@ -261,18 +261,18 @@ switch (None) {
 switch (None) {
 | Some([
     someSuperLongString,
-    thisShouldBreakTheLine
+    thisShouldBreakTheLine,
   ]) =>
   ()
 | Some([
     someSuperLongString,
-    ...es6ListSugarLikeSyntaxWhichIsSuperLong
+    ...es6ListSugarLikeSyntaxWhichIsSuperLong,
   ])
     when true === true =>
   ()
 | Some([
     someSuperLongString,
-    ...es6ListSugarLikeSyntaxWhichIsSuperLong
+    ...es6ListSugarLikeSyntaxWhichIsSuperLong,
   ]) =>
   ()
 | _ => ()

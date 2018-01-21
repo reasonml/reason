@@ -25,19 +25,19 @@ let y =
               Routes.hashOfUri(newUrl);
             let pathFromState =
               Routes.stateToPath(
-                latestComponentBag.state
+                latestComponentBag.state,
               );
             currentActualPath == pathFromState ?
               None :
               dispatchEventless(
                 State.UriNavigated(
-                  currentActualPath
+                  currentActualPath,
                 ),
                 latestComponentBag,
-                ()
+                (),
               );
           },
-          ()
+          (),
         )
     )
   />;
@@ -55,7 +55,7 @@ let z =
         ~border,
         ~borderColor,
         ~someOtherAttribute,
-        ()
+        (),
       )
     )
     key=(string_of_int(1))
@@ -72,7 +72,7 @@ let omega =
       padding,
       border,
       borderColor,
-      someOtherAttribute
+      someOtherAttribute,
     ]
     key=(string_of_int(1))
   />;
@@ -88,7 +88,7 @@ let someArray =
       padding,
       border,
       borderColor,
-      someOtherAttribute
+      someOtherAttribute,
     |]
     key=(string_of_int(1))
   />;
@@ -105,7 +105,7 @@ let tuples =
       border,
       borderColor,
       someOtherAttribute,
-      definitelyBreakere
+      definitelyBreakere,
     )
     key=(string_of_int(1))
   />;
@@ -126,7 +126,7 @@ let icon =
   ref=?(
     foo##bar === baz ?
       Some(
-        foooooooooooooooooooooooo(setRefChild)
+        foooooooooooooooooooooooo(setRefChild),
       ) :
       None
   )
@@ -154,21 +154,21 @@ let x = [|<div />|];
 
 let x = [|
   <Button onClick=handleStaleClick />,
-  <Button onClick=handleStaleClick />
+  <Button onClick=handleStaleClick />,
 |];
 
 let z = <div />;
 
 let z = (
   <Button onClick=handleStaleClick />,
-  <Button onClick=handleStaleClick />
+  <Button onClick=handleStaleClick />,
 );
 
 let y = [<div />, <div />];
 
 let y = [
   <Button onClick=handleStaleClick />,
-  <Button onClick=handleStaleClick />
+  <Button onClick=handleStaleClick />,
 ];
 
 <Description term={<Text text="Age" />}>

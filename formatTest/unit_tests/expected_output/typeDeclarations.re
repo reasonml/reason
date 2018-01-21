@@ -12,7 +12,8 @@ type foo = option((int => int, int => int));
 
 type foo = option((int => int, string));
 
-type foo = option((string, int => int, string));
+type foo =
+  option((string, int => int, string));
 
 type foo = option((string, int => int));
 
@@ -29,7 +30,7 @@ type foo = option(string, int => int);
 type foo =
   option(
     (int, string) => int,
-    (int, string) => int
+    (int, string) => int,
   );
 
 type foo = option((int, string) => int, string);
@@ -47,14 +48,14 @@ type foo =
   option(
     string,
     option(option(option(int) => int)),
-    string
+    string,
   );
 
 type foo =
   option(
     string,
     option([@foo] option(option(int) => int)),
-    string
+    string,
   );
 
 /* with attributes */
@@ -74,12 +75,12 @@ type foo = option([@foo] ((int, int) => int));
 type foo =
   option(
     [@foo]
-    ([@bar] (int => int), [@baz] (int => int))
+    ([@bar] (int => int), [@baz] (int => int)),
   );
 
 type foo =
   option(
-    [@foo] ([@bar] (int => int), [@baz] string)
+    [@foo] ([@bar] (int => int), [@baz] string),
   );
 
 type foo =
@@ -88,17 +89,18 @@ type foo =
     (
       [@bar] string,
       [@baz] (int => int),
-      [@qux] string
-    )
+      [@qux] string,
+    ),
   );
 
-type foo = option((string, [@foo] (int => int)));
+type foo =
+  option((string, [@foo] (int => int)));
 
 /* other preceeding/trailing */
 type foo =
   option(
     [@foo] (int => int),
-    [@bar] (int => int)
+    [@bar] (int => int),
   );
 
 type foo =
@@ -108,7 +110,7 @@ type foo =
   option(
     [@foo] string,
     [@bar] (int => int),
-    [@baz] string
+    [@baz] string,
   );
 
 type foo =
@@ -118,25 +120,25 @@ type foo =
 type foo =
   option(
     [@foo] ((int, string) => int),
-    [@bar] ((int, string) => int)
+    [@bar] ((int, string) => int),
   );
 
 type foo =
   option(
     [@foo] ((int, string) => int),
-    [@bar] string
+    [@bar] string,
   );
 
 type foo =
   option(
     [@foo] string,
     [@bar] ((int, string) => int),
-    [@baz] string
+    [@baz] string,
   );
 
 type foo =
   option(
     [@foo] string,
-    [@bar] ((int, string) => int)
+    [@bar] ((int, string) => int),
   );
 /* === end test wrapping for arrows === */

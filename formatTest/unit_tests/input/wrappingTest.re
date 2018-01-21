@@ -1748,6 +1748,8 @@ module CurriedSugarFunctorResultInline =
     /* Commenting before functor arg 2 in app */
     {let b=10;};
 
+
+module type FunctorType = (ASig, ASig, BSig,) => BSig;
 /*
  * Commenting locations
  */

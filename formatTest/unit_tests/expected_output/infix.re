@@ -191,7 +191,8 @@ let greaterThanAndSubtract = 1 - 2 > 4 + 3;
 let greaterThanAndFunctionCalls =
   pred(1) > pred(2);
 
-let lessThanAndFunctionCalls = pred(1) < pred(2);
+let lessThanAndFunctionCalls =
+  pred(1) < pred(2);
 
 /* This doesn't type check because it looks like pred - 1 */
 let minusAndInteger = pred - 1;
@@ -428,7 +429,7 @@ let myFunc =
       bbbb,
       cccc,
       dddd,
-      aaaa
+      aaaa,
     ) => [
   blah(
     aaaa,
@@ -439,9 +440,9 @@ let myFunc =
     bbbb,
     cccc,
     dddd,
-    aaaa
+    aaaa,
   ),
-  ...someType
+  ...someType,
 ];
 
 /**
@@ -1023,29 +1024,29 @@ let code =
            create
            |> import_type(
                 ~local="Set",
-                ~source="Set"
+                ~source="Set",
               )
            |> import_type(
                 ~local="Map",
-                ~source="Map"
+                ~source="Map",
               )
            |> import_type(
                 ~local="Immutable",
-                ~source="immutable"
+                ~source="immutable",
               )
            |> require(
                 ~local="invariant",
-                ~source="invariant"
+                ~source="invariant",
               )
            |> require(
                 ~local="Image",
-                ~source="Image.react"
+                ~source="Image.react",
               )
            |> side_effect(
-                ~source="monkey_patches"
+                ~source="monkey_patches",
               )
            |> render_lines
-         )
+         ),
        )
     |> new_line
     |> new_line
@@ -1080,17 +1081,21 @@ let server = {
           uri,
           meth,
           headers,
-          body
+          body,
         )
     )
     >>= (
       body =>
-        Server.respond_string(~status, ~body, ())
+        Server.respond_string(
+          ~status,
+          ~body,
+          (),
+        )
     );
   };
   Server.create(
     ~mode,
-    Server.make(~callback, ())
+    Server.make(~callback, ()),
   );
 };
 
@@ -1108,8 +1113,8 @@ let lijst =
       "seven",
       "eight",
       "nine",
-      "ten"
-    ]
+      "ten",
+    ],
   );
 
 let example =
