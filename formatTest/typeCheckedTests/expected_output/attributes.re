@@ -48,7 +48,7 @@ type attributedInt = [@onTopLevelTypeDef] int;
 [@itemAttributeOnTypeDef]
 type attributedIntsInTuple = (
   [@onInt] int,
-  [@onFloat] float
+  [@onFloat] float,
 );
 
 type myDataType('x, 'y) =
@@ -58,7 +58,7 @@ type myType =
   [@onEntireType]
   myDataType(
     [@onOptionInt] option(int),
-    [@onOption] option(float)
+    [@onOption] option(float),
   );
 
 let thisInst: myType =
@@ -69,7 +69,7 @@ let thisInst: myType =
   [@attOnEntireDatatype]
   MyDataType(
     [@onFirstParam] Some(10),
-    Some(10.0)
+    Some(10.0),
   );
 
 let x = [@onHello] "hello";
@@ -145,7 +145,8 @@ let both = [@onEntireFunction] (a => a);
 let both = (a, b) =>
   [@onEverything] ([@onA] a && b);
 
-let both = (a, b) => [@onA] a && [@onB] [@onB] b;
+let both = (a, b) =>
+  [@onA] a && [@onB] [@onB] b;
 
 let both = (a, b) => [@onEverything] (a && b);
 
@@ -191,7 +192,7 @@ let result =
 [@onRecordFunctions]
 type recordFunctions = {
   p: unit => [@onUnit] recordFunctions,
-  q: [@onArrow] (unit => unit)
+  q: [@onArrow] (unit => unit),
 }
 [@onUnusedType]
 and unusedType = unit;
@@ -218,7 +219,7 @@ type variantType =
 type gadtType('x) =
   | Foo(int): [@onFirstRow] gadtType(int)
   | Bar([@onInt] int): [@onSecondRow]
-                       gadtType(unit)
+                        gadtType(unit)
   | Baz: [@onThirdRow] gadtType([@onUnit] unit);
 
 [@floatingTopLevelStructureItem hello];
@@ -362,11 +363,13 @@ type xy =
 let myFun =
     (
       [@onConstruction] X(hello) |
-      [@onConstruction] Y(hello)
+      [@onConstruction] Y(hello),
     ) => hello;
 
 let myFun =
-    (X([@onHello] hello) | Y([@onHello] hello)) => hello;
+    (
+      X([@onHello] hello) | Y([@onHello] hello),
+    ) => hello;
 
 /* Another bug: Cannot have an attribute on or pattern
    let myFun = fun ((X(hello) | Y(hello)) [@onOrPattern]) => hello;
@@ -402,9 +405,10 @@ type reconciler('props) = ..;
 type reconciler('props) +=
   | Foo(int): [@onFirstRow] reconciler(int)
   | Bar([@onInt] int): [@onSecondRow]
-                       reconciler(unit)
+                        reconciler(unit)
   | [@baz]
-    Baz: [@onThirdRow] reconciler([@onUnit] unit);
+    Baz: [@onThirdRow]
+         reconciler([@onUnit] unit);
 
 type water = ..;
 

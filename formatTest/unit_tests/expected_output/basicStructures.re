@@ -12,7 +12,7 @@ for (i in 0 to 5) {
   print_newline();
   for (i in 10 downto 0) {
     print_string(
-      "Counting in reverse direction"
+      "Counting in reverse direction",
     );
     print_newline();
   };
@@ -27,7 +27,7 @@ for (i in
        theSame(isTrue, ofThe, startOfRange) downto
        0) {
     print_string(
-      "Counting in reverse direction"
+      "Counting in reverse direction",
     );
     print_newline();
   };
@@ -226,7 +226,7 @@ let result =
                  print_string("a <= b");
                }) {
     print_string(
-      "That could never possibly type check"
+      "That could never possibly type check",
     );
     print_newline();
   };
@@ -238,7 +238,7 @@ let myRecord = {
       if (Graphics.cgRectIntersectsWithSlop(
             defaultCompositeTimerRectSlop,
             instaComp.relativeRect,
-            displayRect
+            displayRect,
           )) {
         IoEligible;
       } else {
@@ -301,7 +301,7 @@ if (10 < 100) {
 
 if (10 < 100) {
   print_string(
-    "If there was any doubt, 10 is in fact less than 100."
+    "If there was any doubt, 10 is in fact less than 100.",
   );
 } else {
   print_string("All bets are off.");
@@ -332,7 +332,7 @@ let letBindingWithTypeConstraint: int = 10;
 
 let (tupleItem: int, withTypeConstraint: int) = (
   10,
-  20
+  20,
 );
 
 /* To make sure that tuple field annotations are annotating the entire field */
@@ -340,7 +340,7 @@ let _dummyFunc = x => 10;
 
 let annotatingFuncApplication = (
   _dummyFunc("a"): int,
-  _dummyFunc("a"): int
+  _dummyFunc("a"): int,
 );
 
 /* Pretty printer might stick the [int] at the label. */
@@ -362,18 +362,18 @@ let annotatingSingleFuncApplication = {
 
 let (
   tupleItem: int,
-  constrainedWithoutGrouping: int
+  constrainedWithoutGrouping: int,
 ) = (
   10,
-  20
+  20,
 );
 
 let (tupleItem, withOutsideTypeConstraint): (
   int,
-  int
+  int,
 ) = (
   10,
-  20
+  20,
 );
 
 /* Trailing commas */
@@ -400,7 +400,7 @@ let result: list(string) = [
   "appendedToHead",
   "listTo",
   "append",
-  "to"
+  "to",
 ];
 
 /* To operate on lists, use pattern matching */
@@ -540,7 +540,8 @@ let addValues = (a: int, b: int) => a + b;
 
 let addValues = (a: int, b: int) => a + b;
 
-let myFunction = (a: int, b: int) : int => a + b;
+let myFunction = (a: int, b: int) : int =>
+  a + b;
 
 let functionReturnValueType =
     (i: int, s: string)
@@ -554,7 +555,7 @@ let curriedFormTwo =
     (i: int, x: int)
     : (int, int) => (
   i,
-  x
+  x,
 );
 
 /* let nonCurriedFormTwo = fun (i:int, x:int) (:(int, int)) => (i, x); */
@@ -563,7 +564,7 @@ let curriedFormThree =
     : (int, int, int) => (
   i,
   a,
-  b
+  b,
 );
 
 /* let nonCurriedFormThree = fun (i:int, (a:int, b:int):(int, int)) (:(int, int, int)) => (i, a, b);  */
@@ -583,7 +584,7 @@ let funcWithTypeLocallyAbstractTypes =
       type btype,
       a,
       b,
-      c: (atype, btype) => unit
+      c: (atype, btype) => unit,
     ) =>
   c(a, b);
 
@@ -593,7 +594,11 @@ type a = unit => unit;
 type b =
   | Foo(unit => unit)
   | Bar(unit => unit, unit => unit, (a, b) => c)
-  | Baz(unit => unit, unit => unit, (a, b) => c);
+  | Baz(
+      unit => unit,
+      unit => unit,
+      (a, b) => c,
+    );
 
 type c =
   | Foo((a, b) => unit)
@@ -609,7 +614,7 @@ type d = [> | `Foo(unit => unit)];
 type withThreeFields = {
   name: string,
   age: int,
-  occupation: string
+  occupation: string,
 };
 
 let testRecord = {
@@ -673,7 +678,7 @@ let anotherRecord = {
   ...
     SomeReally.longFunctionCall(
       withArguments,
-      thatWrap: bool
+      thatWrap: bool,
     ),
   name: "joe++",
   age: testRecord.age + 10
@@ -689,8 +694,8 @@ let anotherRecord = {
         "list",
         "that",
         "should",
-        "break"
-      ]
+        "break",
+      ],
     ),
   name: "joe++",
   age: testRecord.age + 10
@@ -706,12 +711,12 @@ type component = {props};
 type component2 = {
   props,
   state,
-  updater: unit
+  updater: unit,
 };
 
 type component3 = {
   props: M.props,
-  state
+  state,
 };
 
 type mutableComponent = {mutable props};
@@ -719,13 +724,13 @@ type mutableComponent = {mutable props};
 type mutabeleComponent2 = {
   mutable props,
   mutable state,
-  style: int
+  style: int,
 };
 
 /* Don't pun parameterized types */
 type description('props) = {
   element: string,
-  tag: tag('props)
+  tag: tag('props),
 };
 
 /* Don't pun types from other modules */
@@ -737,7 +742,7 @@ module Foo = {
 type foo = {
   bar: Baz.bar,
   qux,
-  fooo: Fooo.fooo
+  fooo: Fooo.fooo,
 };
 
 let moreFoo = {

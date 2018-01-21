@@ -15,7 +15,8 @@ type adders = {
   /*
    * Tuple version of previous function.
    */
-  addThreeNumbersTupled: ((int, int, int)) => int
+  addThreeNumbersTupled:
+    ((int, int, int)) => int,
 };
 
 /**

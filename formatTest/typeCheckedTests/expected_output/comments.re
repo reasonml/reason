@@ -39,7 +39,7 @@ let testingEndOfLineComments = [
   "Item 1", /* Comment For First Item */
   "Item 2", /* Comment For Second Item */
   "Item 3", /* Comment For Third Item */
-  "Item 4" /* Comment For Fourth Item - but before semi */
+  "Item 4" /* Comment For Fourth Item - but before semi */,
   /* Comment after last item in list. */
 ] /* Comment after list bracket */;
 
@@ -62,11 +62,11 @@ type variant =
 /* Comment on entire type def for variant */
 type x = {
   /* not attached *above* x */
-  fieldOne: int
+  fieldOne: int,
 } /* Attached end of line after x */
 and y = {
   /* not attached *above* y */
-  fieldTwo: int
+  fieldTwo: int,
 } /* Attached end of line after y */;
 
 let result =

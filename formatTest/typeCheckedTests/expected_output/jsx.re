@@ -19,7 +19,8 @@ module Much = {
 };
 
 module Foo = {
-  let createElement = (~a=?, ~b=?, ~children, ()) => {
+  let createElement =
+      (~a=?, ~b=?, ~children, ()) => {
     displayName: "test"
   };
 };
@@ -92,7 +93,7 @@ module Namespace = {
           ~intended=?,
           ~anotherOptional as x=100,
           ~children,
-          ()
+          (),
         ) => {
       displayName: "test"
     };
@@ -135,7 +136,7 @@ module LotsOfArguments = {
         ~argument5=?,
         ~argument6=?,
         ~children,
-        ()
+        (),
       ) => {
     displayName: "test"
   };
@@ -379,13 +380,13 @@ let listOfListOfJsx = [<> <Foo /> </>];
 
 let listOfListOfJsx = [
   <> <Foo /> </>,
-  <> <Bar /> </>
+  <> <Bar /> </>,
 ];
 
 let listOfListOfJsx = [
   <> <Foo /> </>,
   <> <Bar /> </>,
-  ...listOfListOfJsx
+  ...listOfListOfJsx,
 ];
 
 let sameButWithSpaces = [<> </>];
@@ -394,13 +395,13 @@ let sameButWithSpaces = [<> <Foo /> </>];
 
 let sameButWithSpaces = [
   <> <Foo /> </>,
-  <> <Bar /> </>
+  <> <Bar /> </>,
 ];
 
 let sameButWithSpaces = [
   <> <Foo /> </>,
   <> <Bar /> </>,
-  ...sameButWithSpaces
+  ...sameButWithSpaces,
 ];
 
 /*
@@ -412,7 +413,11 @@ let listOfJsx = [<Foo />];
 
 let listOfJsx = [<Foo />, <Bar />];
 
-let listOfJsx = [<Foo />, <Bar />, ...listOfJsx];
+let listOfJsx = [
+  <Foo />,
+  <Bar />,
+  ...listOfJsx,
+];
 
 let sameButWithSpaces = [];
 
@@ -423,7 +428,7 @@ let sameButWithSpaces = [<Foo />, <Bar />];
 let sameButWithSpaces = [
   <Foo />,
   <Bar />,
-  ...sameButWithSpaces
+  ...sameButWithSpaces,
 ];
 
 /**
@@ -442,7 +447,7 @@ let asd2 =
   One.createElementobvioustypo(
     ~test=false,
     ~children=["a", "b"],
-    ()
+    (),
   );
 
 let span =
@@ -594,7 +599,7 @@ type style = {
   paddingTop: int,
   paddingLeft: int,
   paddingRight: int,
-  paddingBottom: int
+  paddingBottom: int,
 };
 
 module Window = {

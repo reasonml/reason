@@ -42,7 +42,8 @@ type firstTwoShouldBeGroupedInParens =
   list(int);
 
 type allParensCanBeRemoved =
-  (list(int), list(int), list(int)) => list(int);
+  (list(int), list(int), list(int)) =>
+  list(int);
 
 type firstTwoShouldBeGroupedAndFirstThree =
   ((list(int) => list(int)) => list(int)) =>
@@ -53,7 +54,7 @@ type myRecordType = {
     (int => int, int) => int,
   allParensCanBeRemoved: (int, int, int) => int,
   firstTwoShouldBeGroupedAndFirstThree:
-    ((int => int) => int) => int
+    ((int => int) => int) => int,
 };
 
 type firstNamedArgShouldBeGroupedInParens =
@@ -83,12 +84,16 @@ type allParensCanBeRemoved =
 
 type firstTwoShouldBeGroupedAndFirstThree =
   (
-    ~first: (list(int) => list(int)) => list(int)
+    ~first: (list(int) => list(int)) =>
+            list(int)
   ) =>
   list(int);
 
 type firstNamedArgShouldBeGroupedInParens =
-  (~first: int => int=?, ~second: list(int)=?) =>
+  (
+    ~first: int => int=?,
+    ~second: list(int)=?
+  ) =>
   int;
 
 /* The arrow necessitates parens around the next two args. The ? isn't what
@@ -147,26 +152,26 @@ type instatiatedTypeDef = myTypeDef(int) => int;
  */
 type something = (
   int,
-  [@lookAtThisAttribute] int
+  [@lookAtThisAttribute] int,
 );
 
 type longWrappingTypeDefinitionExample =
   M_RK__G.Types.instance(
     TGRecognizer.tGFields(unit, unit),
-    TGRecognizer.tGMethods(unit, unit)
+    TGRecognizer.tGMethods(unit, unit),
   );
 
 type semiLongWrappingTypeDefinitionExample =
   M_RK__Gesture.Types.instance(
     TGRecognizerFinal.tGFields,
-    TGRecognizerFinal.tGMethods
+    TGRecognizerFinal.tGMethods,
   );
 
 type semiLongWrappingTypeWithConstraint =
   M_RK__Gesture.Types.instance(
     'a,
     TGRecognizerFinal.tGFields,
-    TGRecognizerFinal.tGMethods
+    TGRecognizerFinal.tGMethods,
   )
 constraint 'a = (unit, unit);
 
@@ -266,13 +271,13 @@ let desiredFormattingForWrappedSugarReturnOnNewLine =
  */
 type point = {
   x: int,
-  y: int
+  y: int,
 };
 
 type point3D = {
   x: int,
   y: int,
-  z: int
+  z: int,
 };
 
 let point2D = {x: 20, y: 30};
@@ -324,19 +329,19 @@ let res3 =
   printPoint(
     addPoints(
       point2D,
-      {x: point3D.x, y: point3D.y}
-    )
+      {x: point3D.x, y: point3D.y},
+    ),
   );
 
 type person = {
   age: int,
-  name: string
+  name: string,
 };
 
 type hiredPerson = {
   age: string,
   name: string,
-  dateHired: int
+  dateHired: int,
 };
 
 let o: person = {name: "bob", age: 10};
@@ -390,7 +395,7 @@ let onlyDoingThisTopLevelLetToBypassTopLevelSequence = {
   let x = {
     print_int(1);
     print_int(
-      20
+      20,
     ); /* Ensure missing middle SEMI reported well */
     print_int(20);
   };
@@ -418,12 +423,12 @@ let recordVal: int = thisReturnsARecord().a;
 
 Printf.printf(
   "\nproof that thisReturnsARecord: %n\n",
-  recordVal
+  recordVal,
 );
 
 Printf.printf(
   "\nproof that thisReturnsA: %n\n",
-  thisReturnsA()
+  thisReturnsA(),
 );
 
 /* Pattern matching */
@@ -595,27 +600,29 @@ let matchesOne = (`Red(x)) => 10;
 type adders = {
   addTwoNumbers: (int, int) => int,
   addThreeNumbers: (int, int, int) => int,
-  addThreeNumbersTupled: ((int, int, int)) => int
+  addThreeNumbersTupled:
+    ((int, int, int)) => int,
 };
 
 let myRecordWithFunctions = {
   addTwoNumbers: (a, b) => a + b,
   addThreeNumbers: (a, b, c) => a + b + c,
-  addThreeNumbersTupled: ((a, b, c)) => a + b + c
+  addThreeNumbersTupled: ((a, b, c)) =>
+    a + b + c
 };
 
 let result =
   myRecordWithFunctions.addThreeNumbers(
     10,
     20,
-    30
+    30,
   );
 
 let result =
   myRecordWithFunctions.addThreeNumbersTupled((
     10,
     20,
-    30
+    30,
   ));
 
 let lookTuplesRequireParens = (1, 2);
@@ -623,7 +630,7 @@ let lookTuplesRequireParens = (1, 2);
 /* let thisDoesntParse = 1, 2;  */
 let tupleInsideAParenSequence = {
   print_string(
-    "look, a tuple inside a sequence"
+    "look, a tuple inside a sequence",
   );
   let x = 10;
   (x, x);
@@ -631,7 +638,7 @@ let tupleInsideAParenSequence = {
 
 let tupleInsideALetSequence = {
   print_string(
-    "look, a tuple inside a sequence"
+    "look, a tuple inside a sequence",
   );
   let x = 10;
   (x, x);
@@ -639,7 +646,9 @@ let tupleInsideALetSequence = {
 
 /* We *require* that function return types be wrapped in
    parenthesis. In this example, there's no ambiguity */
-let makeIncrementer = (delta: int) : (int => int) =>
+let makeIncrementer =
+    (delta: int)
+    : (int => int) =>
   a => a + delta;
 
 /* We could even force that consistency with let bindings - it's allowed
@@ -661,10 +670,12 @@ class classWithNoArg = {
    */
 let myFunc = (a: int, b: int) : (int, int) => (
   a,
-  b
+  b,
 );
 
-let myFunc = (a: int, b: int) : list(int) => [1];
+let myFunc = (a: int, b: int) : list(int) => [
+  1,
+];
 
 let myFunc = (a: int, b: int) : point => {
   x: a,
@@ -680,7 +691,7 @@ type myThing = (int, int);
 
 type stillARecord = {
   name: string,
-  age: int
+  age: int,
 };
 
 /* Rebase latest OCaml to get the following: And fixup
@@ -688,7 +699,7 @@ type stillARecord = {
 /* type ('a, 'b) myOtherThing = Leaf {first:'a, second: 'b} | Null; */
 type branch('a, 'b) = {
   first: 'a,
-  second: 'b
+  second: 'b,
 };
 
 type myOtherThing('a, 'b) =
@@ -768,9 +779,11 @@ let named = (~a, ~b) => a + b;
 type named = (~a: int, ~b: int) => int;
 
 /*B*/
-let namedAlias = (~a as aa, ~b as bb) => aa + bb;
+let namedAlias = (~a as aa, ~b as bb) =>
+  aa + bb;
 
-let namedAlias = (~a as aa, ~b as bb) => aa + bb;
+let namedAlias = (~a as aa, ~b as bb) =>
+  aa + bb;
 
 type namedAlias = (~a: int, ~b: int) => int;
 
@@ -904,7 +917,7 @@ let f =
 let x =
   callSomeFunction(
     ~withArg=10,
-    ~andOtherArg=wrappedArg
+    ~andOtherArg=wrappedArg,
   );
 
 let res = {
@@ -926,14 +939,17 @@ let x = [
   (typeConstraints: float),
   (
     tupleConstraints: int,
-    andNotFunctionInvocations: int
-  )
+    andNotFunctionInvocations: int,
+  ),
 ];
 
 let x = [
   (butWeWillPrint: int),
   (themAsSpaceSeparated: float),
-  (toInfluenceYour: int, developmentHabbits: int)
+  (
+    toInfluenceYour: int,
+    developmentHabbits: int,
+  ),
 ];
 
 let newRecord = {
@@ -959,7 +975,7 @@ let newRecord = {
   ...(
     youCanEvenCallMethodsHereAndAnnotate(
       them,
-      ~named=10
+      ~named=10,
     ): someRec
   ),
   blah: 0,
@@ -1053,9 +1069,9 @@ let registerEventHandlers =
              ~x: int,
              ~y: int
            ) =>
-           unit
+           unit,
          )=?,
-      ()
+      (),
     ) => 1;
 
 /* #1320: record destrucuring + renaming */
@@ -1116,18 +1132,22 @@ foo(~x=-0.1G, ~y=-0.1x, ~z=-0.1H);
 
 foo(~x=[@foo] -1, ~y=[@foo] -1, ~z=[@foo] -1);
 
-foo(~x=[@foo] -1z, ~y=[@foo] -1z, ~z=[@foo] -1z);
+foo(
+  ~x=[@foo] -1z,
+  ~y=[@foo] -1z,
+  ~z=[@foo] -1z,
+);
 
 foo(
   ~x=[@foo] -0.1,
   ~y=[@foo] -0.1,
-  ~z=[@foo] -0.1
+  ~z=[@foo] -0.1,
 );
 
 foo(
   ~x=[@foo] -0.1m,
   ~y=[@foo] -0.1n,
-  ~z=[@foo] -0.1p
+  ~z=[@foo] -0.1p,
 );
 
 /* Smooth formatting of functions with callbacks as arguments */
@@ -1265,7 +1285,7 @@ Thing.map(
   (abc, z) => {
     let x = 1;
     MyModuleBlah.toList(x, argument);
-  }
+  },
 );
 
 Thing.map(
@@ -1278,7 +1298,7 @@ Thing.map(
   [@attr] (abc, z) => {
     let x = 1;
     MyModuleBlah.toList(x, argument);
-  }
+  },
 );
 
 Thing.map(
@@ -1291,7 +1311,7 @@ Thing.map(
   ~cb=(abc, z) => {
     let x = 1;
     MyModuleBlah.toList(x, argument);
-  }
+  },
 );
 
 Thing.map(
@@ -1304,7 +1324,7 @@ Thing.map(
   ~cb=[@attr] (abc, z) => {
     let x = 1;
     MyModuleBlah.toList(x, argument);
-  }
+  },
 );
 
 Thing.map(
@@ -1317,7 +1337,7 @@ Thing.map(
   ~cb=?(abc, z) => {
     let x = 1;
     MyModuleBlah.toList(x, argument);
-  }
+  },
 );
 
 Thing.map(
@@ -1330,7 +1350,7 @@ Thing.map(
   ~cb=?[@attr] (abc, z) => {
     let x = 1;
     MyModuleBlah.toList(x, argument);
-  }
+  },
 );
 
 Thing.map(
@@ -1338,7 +1358,7 @@ Thing.map(
   bar,
   baz,
   (abc, z) => MyModuleBlah.toList(argument),
-  (abc, z) => MyModuleBlah.toList(argument)
+  (abc, z) => MyModuleBlah.toList(argument),
 );
 
 Thing.map(
@@ -1348,7 +1368,7 @@ Thing.map(
   [@attr]
   ((abc, z) => MyModuleBlah.toList(argument)),
   [@attr]
-  ((abc, z) => MyModuleBlah.toList(argument))
+  ((abc, z) => MyModuleBlah.toList(argument)),
 );
 
 Js.Option.andThen([@bs] w => w#getThing());
@@ -1368,7 +1388,7 @@ Thing.map(
        (abc, z) => {
     let x = 1;
     MyModuleBlah.toList(x, argument);
-  }
+  },
 );
 
 let result =

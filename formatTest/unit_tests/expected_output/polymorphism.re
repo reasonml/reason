@@ -13,7 +13,8 @@ type myPolymorphicTupleType('a) = ('a, 'a);
 type extensible('a) = 'a
 constraint 'a = [ | `Base(int)];
 
-type intListTranformer = list(int) => list(int);
+type intListTranformer =
+  list(int) => list(int);
 
 type x = list(int, string);
 
@@ -23,14 +24,15 @@ module HoldsAType = {
 };
 
 type myType2 =
-  myTwoParamType(myType(int => int), int) => int;
+  myTwoParamType(myType(int => int), int) =>
+  int;
 
 /* Confusing because => looks like part
    of the return type signature. */
 let myFunc =
     (a: int => int, b: int => int)
     : myType(int) => [
-  a(20) + b(30)
+  a(20) + b(30),
 ];
 
 let myFunc =
@@ -41,24 +43,32 @@ let myFunc =
 let certainlyRequiresWrapping:
   (
     option(
-      (Mod.handler(p, re), Mod.Types.handler)
+      (Mod.handler(p, re), Mod.Types.handler),
     ),
     option(
       (
         Mod.touch(
           props,
           (props, state),
-          resource
+          resource,
         ),
-        (list(Mod.t), list(Mod.t))
-      )
+        (list(Mod.t), list(Mod.t)),
+      ),
     ),
     list(
-      Mod.update(props, (props, state), resource)
+      Mod.update(
+        props,
+        (props, state),
+        resource,
+      ),
     )
   ) =>
   list(
-    Mod.update(props, (props, state), resource)
+    Mod.update(
+      props,
+      (props, state),
+      resource,
+    ),
   ) =
   ();
 

@@ -91,7 +91,7 @@ let testPrintingPrecedence =
   + reallyLongIdent
   * add(
       reallyLongIdent,
-      andYetAnotherReallyLongIdent
+      andYetAnotherReallyLongIdent,
     )
   + reallyLongIdent;
 
@@ -109,7 +109,7 @@ let named =
     (
       ~a,
       /* b::b */
-      ~b
+      ~b,
     ) =>
   /* a + b */
   a + b;
@@ -120,7 +120,7 @@ let namedAlias =
     (
       ~a as aa,
       /* b::bb */
-      ~b as bb
+      ~b as bb,
     ) =>
   /* aa + bb */
   aa + bb;
@@ -131,7 +131,7 @@ let namedAnnot =
     (
       ~a: option(int),
       /* ~b b: option(int) */
-      ~b: option(int)
+      ~b: option(int),
     ) =>
   /* 20 */
   20;
@@ -142,7 +142,7 @@ let namedAliasAnnot =
     (
       ~a as aa: option(int),
       /* b::(bb: option int) */
-      ~b as bb: option(int)
+      ~b as bb: option(int),
     ) =>
   /* 20 */
   20;
@@ -155,7 +155,7 @@ let optional =
       /* b::b=? */
       ~b=?,
       /* () */
-      ()
+      (),
     ) =>
   /* 10 */
   10;
@@ -168,7 +168,7 @@ let optionalAlias =
       /* ?b:bb */
       ~b as bb=?,
       /* () */
-      ()
+      (),
     ) =>
   /* 10 */
   10;
@@ -181,7 +181,7 @@ let optionalAnnot =
       /* ?b:(b: option int) */
       ~b: option(int)=?,
       /* () */
-      ()
+      (),
     ) =>
   /* 10 */
   10;
@@ -194,7 +194,7 @@ let optionalAliasAnnot =
       /* b::(bb: option int)=? */
       ~b as bb: option(int)=?,
       /* () = */
-      ()
+      (),
     ) =>
   /* 10 */
   10;
@@ -207,7 +207,7 @@ let defOptional =
       /* b::b=10 */
       ~b=10,
       /* () = */
-      ()
+      (),
     ) =>
   /* 10 */
   10;
@@ -220,7 +220,7 @@ let defOptionalAlias =
       /* b::bb=10 */
       ~b as bb=10,
       /* () = */
-      ()
+      (),
     ) =>
   /* 10; */
   10;
@@ -233,7 +233,7 @@ let defOptionalAnnot =
       /* b::(b:int)=10 */
       ~b: int=10,
       /* () = */
-      ()
+      (),
     ) =>
   /* 10; */
   10;
@@ -246,7 +246,7 @@ let defOptionalAliasAnnot =
       /* b::(bb:int)=10 */
       ~b as bb: int=10,
       /* () = */
-      ()
+      (),
     ) =>
   /* 10; */
   10;
@@ -256,28 +256,28 @@ named(
   /* a::a */
   ~a,
   /* b::b; */
-  ~b
+  ~b,
 );
 
 named(
   /* a::a */
   ~a,
   /* b::b; */
-  ~b
+  ~b,
 );
 
 optional(
   /* a::a */
   ~a,
   /* b::b; */
-  ~b
+  ~b,
 );
 
 optional(
   /* a::a */
   ~a,
   /* b::b; */
-  ~b
+  ~b,
 );
 
 let explictlyPassed =
@@ -288,7 +288,7 @@ let explictlyPassed =
     ~a=?None,
     /* b::? */
     /* None; */
-    ~b=?None
+    ~b=?None,
   );
 
 let a = None;
@@ -300,63 +300,64 @@ let explictlyPassed =
     ~a?,
     /* b::? */
     /* None; */
-    ~b=?None
+    ~b=?None,
   );
 
-let complex_default = (~callback=(k, d) => 4, x) => 3;
+let complex_default =
+    (~callback=(k, d) => 4, x) => 3;
 
 let myList = /*CommentAfterEqualBeforeList */ [
   1,
   2,
-  3
+  3,
 ];
 
 let myList = [
   /*CommentAfterEqualBefore1 */ 1,
   2,
-  3
+  3,
 ];
 
 let myList = [
   1 /*CommentAfterOneBeforeCons */,
   2,
-  3
+  3,
 ];
 
 let myList = [
   1,
   2 /*CommentAfterTwoBeforeCons */,
-  3
+  3,
 ];
 
 let myList = [
   1,
   2,
-  /*CommentAfterConsBeforeThree */ 3
+  /*CommentAfterConsBeforeThree */ 3,
 ];
 
 let myList = [
   1,
   2,
-  3 /*CommentAfterThreeBeforeCons*/
+  3 /*CommentAfterThreeBeforeCons*/,
 ];
 
 let myList = [
   1,
   2,
-  3 /*same w space after three    */
+  3 /*same w space after three    */,
 ];
 
 let myList = [
   1,
   2,
-  3 /*same w space before rbracket*/
+  3 /*same w space before rbracket*/,
 ];
 
 let myList = [
   1,
   2,
-  3 /*same w both                 */
+  3 /*same w both                 */,
 ];
 
 /* End of line comments */
@@ -375,26 +376,26 @@ let myList = [
 let myList = [
   1,
   2, /*no space after two comma    */
-  3
+  3,
 ];
 
 let myList = [
   1,
   2, /*same w space after two comma    */
-  3
+  3,
 ];
 
 /* End of line comments */
 let myList = [
   1,
   2, /*no space after two comma    */
-  3
+  3,
 ];
 
 let myList = [
   1,
   2, /*same w space after two comma    */
-  3
+  3,
 ];
 
 let myRec = {
@@ -410,11 +411,7 @@ let myRec = {
 };
 
 /* Ensure end of line comments force breaks */
-let myList = [
-  1,
-  2,
-  3 /* */
-];
+let myList = [1, 2, 3 /* */];
 
 let myList = [1, 2, /**/ 3];
 
@@ -422,7 +419,7 @@ let myList = [
   1,
   2,
   3, /*CommentAfterConsBeforeAppendedTo */
-  ...myList
+  ...myList,
 ];
 
 let myList = [3, 4, 5];
@@ -439,7 +436,7 @@ let x: blahType = "asdf";
 
 type nameAge = {
   age: int,
-  name: string
+  name: string,
 };
 
 type hasABunch = {
@@ -449,13 +446,13 @@ type hasABunch = {
   fieldOne: int,
   fieldtwo: list(int),
   fieldThree: list(string),
-  fieldFour: nameAge
+  fieldFour: nameAge,
   /* Comment at bottom of record type def */
 };
 
 type functionsInARecord = {
   adder: int => int,
-  minuser: int => int
+  minuser: int => int,
 };
 
 let myFunctionsInARecord = {
@@ -472,7 +469,7 @@ let myFunctionsInARecordThatMustWrap = {
 
 type twoArgFunctionsInARecord = {
   adder: (int, int) => int,
-  minuser: (int, int) => int
+  minuser: (int, int) => int,
 };
 
 let myFunctionsInARecordThatMustWrap = {
@@ -480,12 +477,12 @@ let myFunctionsInARecordThatMustWrap = {
   adder:
     (
       reallyLongArgument,
-      anotherReallyLongArgument
+      anotherReallyLongArgument,
     ) => reallyLongArgument,
   minuser:
     (
       reallyLongArgument,
-      anotherReallyLongArgument
+      anotherReallyLongArgument,
     ) =>
     reallyLongArgument
     + anotherReallyLongArgument
@@ -493,7 +490,7 @@ let myFunctionsInARecordThatMustWrap = {
 
 type threeArgFunctionsInARecord = {
   adder: (int, int, int) => int,
-  minuser: (int, int, int) => int
+  minuser: (int, int, int) => int,
 };
 
 let myFunctionsInARecordThatMustWrap = {
@@ -504,13 +501,13 @@ let myFunctionsInARecordThatMustWrap = {
       reallyLongArgument,
       /* Or before the first arg */
       anotherReallyLongArgument,
-      yetAnotherReallyLongArgument
+      yetAnotherReallyLongArgument,
     ) => reallyLongArgument,
   minuser:
     (
       reallyLongArgument,
       anotherReallyLongArgument,
-      anotherReallyLongArgument
+      anotherReallyLongArgument,
     ) =>
     reallyLongArgument
     + anotherReallyLongArgument
@@ -537,13 +534,13 @@ let reallyReallyLongVarName = "hello";
 
 let result =
   oneArgShouldWrapToAlignWith(
-    reallyReallyLongVarName
+    reallyReallyLongVarName,
   );
 
 let result =
   twoArgsShouldWrapToAlignWith(
     reallyReallyLongVarName,
-    reallyReallyLongVarName
+    reallyReallyLongVarName,
   );
 
 let justReturn = x => x;
@@ -572,7 +569,7 @@ let result =
         age: 20,
         name: "joe"
       }
-    }
+    },
   );
 
 let howDoesInfixOperatorsWrapWhenYouMustWrapQuestionMark =
@@ -604,7 +601,7 @@ let seeHowLongValuesWrap = {
       "two",
       "two",
       "two",
-      "two"
+      "two",
     ])
 };
 
@@ -618,7 +615,7 @@ let onlyReturnWraps = ((a, b, c, d, e, f)) => (
   c,
   d,
   e,
-  f
+  f,
 );
 
 let bothArgsWrapAndIndent =
@@ -628,7 +625,7 @@ let bothArgsWrapAndIndent =
   c,
   d,
   e,
-  f
+  f,
 );
 
 let result =
@@ -637,7 +634,7 @@ let result =
 let result =
   bothArgsWrapAndIndent(
     (10, 11, 12, 13, 14, 15),
-    (10, 11, 12, 13, 14, 15)
+    (10, 11, 12, 13, 14, 15),
   );
 
 type sixteenTuple = (
@@ -656,7 +653,7 @@ type sixteenTuple = (
   int,
   int,
   int,
-  int
+  int,
 );
 
 /* Nothing annotated */
@@ -678,8 +675,8 @@ let echoTuple =
         m,
         n,
         o,
-        p
-      )
+        p,
+      ),
     ) => (
   a,
   b,
@@ -696,7 +693,7 @@ let echoTuple =
   m,
   n,
   o,
-  p
+  p,
 );
 
 /* Nothing annotated fun */
@@ -718,8 +715,8 @@ let echoTuple =
         m,
         n,
         o,
-        p
-      )
+        p,
+      ),
     ) => (
   a,
   b,
@@ -736,7 +733,7 @@ let echoTuple =
   m,
   n,
   o,
-  p
+  p,
 );
 
 let echoTheEchoer =
@@ -762,8 +759,8 @@ echoTheEchoer(
       m,
       n,
       o,
-      p
-    )
+      p,
+    ),
   ) =>
   (
     a,
@@ -781,7 +778,7 @@ echoTheEchoer(
     m,
     n,
     o,
-    p
+    p,
   )
 );
 
@@ -804,8 +801,8 @@ let echoTuple =
         m,
         n,
         o,
-        p
-      ): sixteenTuple
+        p,
+      ): sixteenTuple,
     ) => (
   a,
   b,
@@ -822,7 +819,7 @@ let echoTuple =
   m,
   n,
   o,
-  p
+  p,
 );
 
 /* Argument annotated fun */
@@ -844,8 +841,8 @@ let echoTuple =
         m,
         n,
         o,
-        p
-      ): sixteenTuple
+        p,
+      ): sixteenTuple,
     ) => (
   a,
   b,
@@ -862,7 +859,7 @@ let echoTuple =
   m,
   n,
   o,
-  p
+  p,
 );
 
 /* Argument annotated, return type annotated */
@@ -884,8 +881,8 @@ let echoTuple =
         m,
         n,
         o,
-        p
-      ): sixteenTuple
+        p,
+      ): sixteenTuple,
     )
     : sixteenTuple => (
   a,
@@ -903,7 +900,7 @@ let echoTuple =
   m,
   n,
   o,
-  p
+  p,
 );
 
 /* Desired formatting if first line fits within margin */
@@ -924,7 +921,7 @@ let makeTuple =
       m,
       n,
       o,
-      p
+      p,
     ) => (
   a,
   b,
@@ -941,7 +938,7 @@ let makeTuple =
   m,
   n,
   o,
-  p
+  p,
 );
 
 /* Desired formatting if first line fits within margin (70) */
@@ -961,7 +958,7 @@ let (
   m,
   n,
   o,
-  p
+  p,
 ) =
   makeTuple(
     0,
@@ -979,7 +976,7 @@ let (
     0,
     0,
     0,
-    0
+    0,
   );
 
 /* Annotated version */
@@ -999,7 +996,7 @@ let (
   m,
   n,
   o,
-  p
+  p,
 ): sixteenTuple =
   makeTuple(
     0,
@@ -1017,7 +1014,7 @@ let (
     0,
     0,
     0,
-    0
+    0,
   );
 
 /* Annotated inline */
@@ -1037,7 +1034,7 @@ let x: (
   int,
   int,
   int,
-  int
+  int,
 ) =
   makeTuple(
     0,
@@ -1055,7 +1052,7 @@ let x: (
     0,
     0,
     0,
-    0
+    0,
   );
 
 let (
@@ -1074,7 +1071,7 @@ let (
   m,
   n,
   o,
-  p
+  p,
 ) =
   echoTuple((
     0,
@@ -1092,7 +1089,7 @@ let (
     0,
     0,
     0,
-    0
+    0,
   ));
 
 /* Annotated version */
@@ -1112,7 +1109,7 @@ let (
   m,
   n,
   o,
-  p
+  p,
 ): sixteenTuple =
   echoTuple((
     0,
@@ -1130,7 +1127,7 @@ let (
     0,
     0,
     0,
-    0
+    0,
   ));
 
 /* Annotated inline */
@@ -1150,7 +1147,7 @@ let x: (
   int,
   int,
   int,
-  int
+  int,
 ) =
   echoTuple((
     0,
@@ -1168,7 +1165,7 @@ let x: (
     0,
     0,
     0,
-    0
+    0,
   ));
 
 /* Desired formatting if pattern does not fit, arguments do (margin 70) */
@@ -1189,7 +1186,7 @@ let (
   mxx,
   nxx,
   oxx,
-  pxx
+  pxx,
 ) =
   makeTuple(
     0,
@@ -1207,7 +1204,7 @@ let (
     0,
     0,
     0,
-    0
+    0,
   );
 
 /* Annotated */
@@ -1228,7 +1225,7 @@ let (
   mxx,
   nxx,
   oxx,
-  pxx
+  pxx,
 ): sixteenTuple =
   makeTuple(
     0,
@@ -1246,7 +1243,7 @@ let (
     0,
     0,
     0,
-    0
+    0,
   );
 
 /* Annotated */
@@ -1268,7 +1265,7 @@ let (
   mxx,
   nxx,
   oxx,
-  pxx
+  pxx,
 ): (
   int,
   int,
@@ -1285,7 +1282,7 @@ let (
   int,
   int,
   int,
-  int
+  int,
 ) =
   makeTuple(
     0,
@@ -1303,7 +1300,7 @@ let (
     0,
     0,
     0,
-    0
+    0,
   );
 
 /* Not-Destructured */
@@ -1324,7 +1321,7 @@ let someResult =
     0,
     0,
     0,
-    0
+    0,
   );
 
 /* Annotated */
@@ -1346,7 +1343,7 @@ let someResult: sixteenTuple =
     0,
     0,
     0,
-    0
+    0,
   );
 
 /* Annotated */
@@ -1368,7 +1365,7 @@ let someResult: (
   int,
   int,
   int,
-  int
+  int,
 ) =
   makeTuple(
     0,
@@ -1386,7 +1383,7 @@ let someResult: (
     0,
     0,
     0,
-    0
+    0,
   );
 
 /* Destructured */
@@ -1406,7 +1403,7 @@ let (
   mxx,
   nxx,
   oxx,
-  pxx
+  pxx,
 ) =
   echoTuple((
     0,
@@ -1424,7 +1421,7 @@ let (
     0,
     0,
     0,
-    0
+    0,
   ));
 
 /* Annotated */
@@ -1444,7 +1441,7 @@ let (
   mxx,
   nxx,
   oxx,
-  pxx
+  pxx,
 ): sixteenTuple =
   echoTuple((
     0,
@@ -1462,7 +1459,7 @@ let (
     0,
     0,
     0,
-    0
+    0,
   ));
 
 /* Annotated Inline */
@@ -1482,7 +1479,7 @@ let (
   mxx,
   nxx,
   oxx,
-  pxx
+  pxx,
 ): (
   int,
   int,
@@ -1499,7 +1496,7 @@ let (
   int,
   int,
   int,
-  int
+  int,
 ) =
   echoTuple((
     0,
@@ -1517,7 +1514,7 @@ let (
     0,
     0,
     0,
-    0
+    0,
   ));
 
 /* Not-Destructured */
@@ -1538,7 +1535,7 @@ let someResult =
     0,
     0,
     0,
-    0
+    0,
   ));
 
 /* Annotated */
@@ -1560,7 +1557,7 @@ let someResult: sixteenTuple =
     0,
     0,
     0,
-    0
+    0,
   ));
 
 /* Annotated Inline */
@@ -1581,7 +1578,7 @@ let someResult: (
   int,
   int,
   int,
-  int
+  int,
 ) =
   echoTuple((
     0,
@@ -1599,7 +1596,7 @@ let someResult: (
     0,
     0,
     0,
-    0
+    0,
   ));
 
 /* Desired formatting if neither fit on one line (margin 70) */
@@ -1620,7 +1617,7 @@ let (
   mxx,
   nxx,
   oxx,
-  pxx
+  pxx,
 ) =
   makeTuple(
     axx,
@@ -1638,7 +1635,7 @@ let (
     mxx,
     nxx,
     oxx,
-    pxx
+    pxx,
   );
 
 /* Annoted */
@@ -1658,7 +1655,7 @@ let (
   mxx,
   nxx,
   oxx,
-  pxx
+  pxx,
 ): sixteenTuple =
   makeTuple(
     axx,
@@ -1676,7 +1673,7 @@ let (
     mxx,
     nxx,
     oxx,
-    pxx
+    pxx,
   );
 
 /* Annoted inline */
@@ -1696,7 +1693,7 @@ let (
   mxx,
   nxx,
   oxx,
-  pxx
+  pxx,
 ): (
   int,
   int,
@@ -1713,7 +1710,7 @@ let (
   int,
   int,
   int,
-  int
+  int,
 ) =
   makeTuple(
     axx,
@@ -1731,7 +1728,7 @@ let (
     mxx,
     nxx,
     oxx,
-    pxx
+    pxx,
   );
 
 /* Not-Destructured */
@@ -1752,7 +1749,7 @@ let someResult =
     mxx,
     nxx,
     oxx,
-    pxx
+    pxx,
   );
 
 /* Not-Destructured */
@@ -1774,7 +1771,7 @@ let someResult: sixteenTuple =
     mxx,
     nxx,
     oxx,
-    pxx
+    pxx,
   );
 
 /* Not-Destructured */
@@ -1795,7 +1792,7 @@ let someResult: (
   int,
   int,
   int,
-  int
+  int,
 ) =
   makeTuple(
     axx,
@@ -1813,7 +1810,7 @@ let someResult: (
     mxx,
     nxx,
     oxx,
-    pxx
+    pxx,
   );
 
 /* Desired formatting if neither fit on one line (margin 70) */
@@ -1834,7 +1831,7 @@ let (
   mxx,
   nxx,
   oxx,
-  pxx
+  pxx,
 ) =
   echoTuple((
     1000,
@@ -1852,7 +1849,7 @@ let (
     10,
     10,
     10,
-    10
+    10,
   ));
 
 /* Annoted */
@@ -1873,7 +1870,7 @@ let (
   mxx,
   nxx,
   oxx,
-  pxx
+  pxx,
 ): sixteenTuple =
   echoTuple((
     1000,
@@ -1891,7 +1888,7 @@ let (
     10,
     10,
     10,
-    10
+    10,
   ));
 
 /* Annoted Inline */
@@ -1912,7 +1909,7 @@ let (
   mxx,
   nxx,
   oxx,
-  pxx
+  pxx,
 ): (
   int,
   int,
@@ -1929,7 +1926,7 @@ let (
   int,
   int,
   int,
-  int
+  int,
 ) =
   echoTuple((
     1000,
@@ -1947,7 +1944,7 @@ let (
     10,
     10,
     10,
-    10
+    10,
   ));
 
 /* Desired formatting if neither fit on one line (margin 70) */
@@ -1969,7 +1966,7 @@ let someResult =
     10,
     10,
     10,
-    10
+    10,
   ));
 
 /* Annoted */
@@ -1991,7 +1988,7 @@ let someResult: sixteenTuple =
     10,
     10,
     10,
-    10
+    10,
   ));
 
 /* Annoted Inline */
@@ -2012,7 +2009,7 @@ let someResult: (
   int,
   int,
   int,
-  int
+  int,
 ) =
   echoTuple((
     1000,
@@ -2030,7 +2027,7 @@ let someResult: (
     10,
     10,
     10,
-    10
+    10,
   ));
 
 /* The rhs of = shouldn't be broken onto its own newline: @see ensureSingleTokenSticksToLabel */
@@ -2050,7 +2047,7 @@ let someResult: (
   int,
   int,
   int,
-  int
+  int,
 ) = someResult;
 
 type sevenStrings = (
@@ -2060,7 +2057,7 @@ type sevenStrings = (
   string,
   string,
   string,
-  string
+  string,
 );
 
 let (only, the, type_, should, have, to_, wrap) = (
@@ -2070,7 +2067,7 @@ let (only, the, type_, should, have, to_, wrap) = (
   "should",
   "have",
   "to",
-  "wrap"
+  "wrap",
 );
 
 let (only, the, type_, should, have, to_, wrap): sevenStrings = (
@@ -2080,7 +2077,7 @@ let (only, the, type_, should, have, to_, wrap): sevenStrings = (
   "should",
   "have",
   "to",
-  "wrap"
+  "wrap",
 );
 
 let ifTheNameIsReallyLongTheTypeAndValueShouldBothWrap: (
@@ -2090,7 +2087,7 @@ let ifTheNameIsReallyLongTheTypeAndValueShouldBothWrap: (
   string,
   string,
   string,
-  string
+  string,
 ) = (
   "only",
   "the",
@@ -2098,17 +2095,25 @@ let ifTheNameIsReallyLongTheTypeAndValueShouldBothWrap: (
   "should",
   "have",
   "to",
-  "wrap"
+  "wrap",
 );
 
-let (the, type_, and_, value, should, both, wrap): (
+let (
+  the,
+  type_,
+  and_,
+  value,
+  should,
+  both,
+  wrap,
+): (
   string,
   string,
   string,
   string,
   string,
   string,
-  string
+  string,
 ) = (
   "but",
   "the",
@@ -2116,7 +2121,7 @@ let (the, type_, and_, value, should, both, wrap): (
   "assignment",
   "should",
   "not",
-  "wrap"
+  "wrap",
 );
 
 let myPolyFunc: 'a .'a => 'a = o => o;
@@ -2219,7 +2224,7 @@ let df_locallyAbstractFuncAnnotated:
     (inputEchoRecord(a), inputEchoRecord(b)) =
   (input: a, input2: b) => (
     {inputIs: input},
-    {inputIs: input2}
+    {inputIs: input2},
   );
 
 /**
@@ -2232,7 +2237,7 @@ let df_locallyAbstractFuncAnnotated: 'figureMeOut =
   (type a, type b) => (
     (input: a, input2: b) => (
       {inputIs: input},
-      {inputIs: input2}
+      {inputIs: input2},
     ):
       (a, b) =>
       (inputEchoRecord(a), inputEchoRecord(b))
@@ -2245,19 +2250,19 @@ let createTuple_thisFuncShouldWrapCorrectlyNow:
   (someVar, someVar2, someVar3) => (
     someVar,
     someVar2,
-    someVar3
+    someVar3,
   );
 
 let theTupleTypeAnnotationShouldWrap: (
   string,
   string,
   string,
-  string
+  string,
 ) = (
   "now these tuple values should wrap",
   "now these tuple values should wrap",
   "now these tuple values should wrap",
-  "now these tuple values should wrap"
+  "now these tuple values should wrap",
 );
 
 let rec mutuallyRecursiveOne = x =>
@@ -2281,20 +2286,20 @@ type doubleEqualsDoublePrivateVariant =
 
 type myRecordWithReallyLongName = {
   xx: int,
-  yy: int
+  yy: int,
 };
 
 type doubleEqualsRecord =
   myRecordWithReallyLongName = {
     xx: int,
-    yy: int
+    yy: int,
   };
 
 type doubleEqualsDoublePrivateRecord =
   myRecordWithReallyLongName =
     pri {
       xx: int,
-      yy: int
+      yy: int,
     };
 
 type someConstructor =
@@ -2302,7 +2307,7 @@ type someConstructor =
 
 type someRecord = {
   firstFieldInRecord: int,
-  secondField: int
+  secondField: int,
 };
 
 /*
@@ -2327,7 +2332,7 @@ let funcOnSomeRecord =
 let funcOnSomeRecord =
     (
       {firstFieldInRecord, secondField},
-      secondArg
+      secondArg,
     ) =>
   firstFieldInRecord + secondField;
 
@@ -2353,7 +2358,7 @@ let funcOnSomeConstructorHi =
 let funcOnSomeRecord =
     (
       {firstFieldInRecord, secondField},
-      secondArg
+      secondArg,
     ) =>
   firstFieldInRecord + secondField;
 
@@ -2364,11 +2369,14 @@ let returnTheSimpleTupleVariant = i =>
   SimpleActuallyATuple(i, i);
 
 let shouldWrapLike = whenLongArg =>
-  SimpleActuallyATuple(whenLongArg, whenLongArg);
+  SimpleActuallyATuple(
+    whenLongArg,
+    whenLongArg,
+  );
 
 type recordWithLong = {
   someField: int,
-  anotherField: string
+  anotherField: string,
 };
 
 /*
@@ -2394,16 +2402,16 @@ and anotherRecursiveType =
 type term(_) =
   /* First variant leaf of GADT */
   | Int /*first var arg */(int): /* First GADT res */ term(
-                                   int
-                                 )
+                                    int,
+                                  )
   /* Second variant leaf of GADT */
   | Float /*second var arg */(int): /* Second GADT res */ term(
-                                      int
-                                    )
+                                       int,
+                                     )
   /* Third variant leaf of GADT */
   | Bool /*third var arg */(int): /* Third GADT res */ term(
-                                    int
-                                  );
+                                     int,
+                                   );
 
 /* Commented colors */
 type commentedTypeDef =
@@ -2415,8 +2423,8 @@ type commentedTypeDef =
         /* First field of tuple in first variant member */
         int,
         /* Second field of tuple in first variant member */
-        int
-      )
+        int,
+      ),
     )
   /*
    * Commenting second variant member.
@@ -2428,7 +2436,7 @@ type commentedTypeDef =
   | Third(
       list
         /* Commenting deep in type def */
-        (list(int))
+        (list(int)),
     );
 
 type colors =
@@ -2465,7 +2473,11 @@ let blahCurriedX = x =>
 type reallyLongVariantNames =
   | ReallyLongVariantName(recordWithLong)
   | AnotherReallyLongVariantName(int, int, int)
-  | AnotherReallyLongVariantName2(int, int, int);
+  | AnotherReallyLongVariantName2(
+      int,
+      int,
+      int,
+    );
 
 let howDoLongMultiBarPatternsWrap = x =>
   switch (x) {
@@ -2473,7 +2485,7 @@ let howDoLongMultiBarPatternsWrap = x =>
   | AnotherReallyLongVariantName2(_, _, _) => 0
   | ReallyLongVariantName({
       someField,
-      anotherField
+      anotherField,
     }) => 0
   };
 
@@ -2483,7 +2495,7 @@ let letsCombineTwoLongPatternsIntoOneCase = x =>
   | AnotherReallyLongVariantName2(_, _, _) => 0
   | ReallyLongVariantName({
       someField,
-      anotherField
+      anotherField,
     }) => 0
   };
 
@@ -2494,7 +2506,7 @@ let letsPutAWhereClauseOnTheFirstTwo = x =>
       when true => 0
   | ReallyLongVariantName({
       someField,
-      anotherField
+      anotherField,
     }) => 0
   };
 
@@ -2504,24 +2516,25 @@ let letsPutAWhereClauseOnTheLast = x =>
   | AnotherReallyLongVariantName2(_, _, _) => 0
   | ReallyLongVariantName({
       someField,
-      anotherField
+      anotherField,
     })
       when true => 0
   };
 
 type wrappingGadt(_) =
   | ThisIsLongSoTypeWillWrap(int): wrappingGadt(
-                                     int
-                                   )
+                                      int,
+                                    )
   | Add: wrappingGadt((int, int) => int)
-  | App(wrappingGadt('b => 'a), wrappingGadt('b)): wrappingGadt(
-                                        'a
-                                        );
+  | App(
+         wrappingGadt('b => 'a),
+         wrappingGadt('b),
+       ): wrappingGadt('a);
 
 type withThreeFields = {
   name: string,
   age: int,
-  occupation: string
+  occupation: string,
 };
 
 let testRecord = {
@@ -2541,7 +2554,7 @@ type polymorphicCommentedType
   (
     'a,
     /* Commenting the second type variable */
-    'b
+    'b,
   ) =
   list('a, 'b);
 
@@ -2554,7 +2567,7 @@ type withThreeFieldsCommented = {
   /* Commenting the second field */
   ageCommented: int,
   /* Commenting the third field */
-  occupationCommented: string
+  occupationCommented: string,
 };
 
 /**
@@ -2577,7 +2590,7 @@ let callMeWithComments =
     (
       a: int,
       /* Comment before second arg "b" */
-      b: int
+      b: int,
     )
     /* Comment before return type annotation "int" */
     : int =>
@@ -2590,8 +2603,8 @@ let callMeWithComments2 =
       (
         a: int,
         /* Comment before second arg "b" */
-        b: int
-      )
+        b: int,
+      ),
     )
     /* Comment before return type annotation "int" */
     : int =>
@@ -2604,7 +2617,7 @@ let result =
     /* Comment before first argument expression */
     1 + 2 + 3 + 3,
     /* Comment before second argument expression */
-    1 + 2 + 3 + 3
+    1 + 2 + 3 + 3,
   );
 
 module type ASig = {let a: int;};
@@ -2628,7 +2641,7 @@ module CurriedSugar =
        (
          A: ASig,
          /* Commenting before Second curried functor arg */
-         B: BSig
+         B: BSig,
        ) => {
   let result = A.a + B.b;
   /* Comment at bottom of module expression */
@@ -2641,7 +2654,7 @@ module CurriedSugarFunctorResult =
     (
       AMod,
       /* Commenting before functor arg 2 in app */
-      BMod
+      BMod,
     );
 
 module CurriedSugarFunctorResultInline =
@@ -2655,8 +2668,11 @@ module CurriedSugarFunctorResultInline =
       {
         /* Commenting before functor arg 2 in app */
         let b = 10;
-      }
+      },
     );
+
+module type FunctorType =
+  (ASig, ASig, BSig) => BSig;
 
 /*
  * Commenting locations
@@ -2908,7 +2924,7 @@ let x =
     a,
     a,
     a,
-    alskdjfalskdjfalsdf
+    alskdjfalskdjfalsdf,
   )
   + reallyReallyLongName;
 
@@ -2920,7 +2936,7 @@ let onlyDoingThisTopLevelLetToBypassTopLevelSequence = {
   let x = {
     print_int(1);
     print_int(
-      20
+      20,
     ); /* Ensure missing middle SEMI reported well */
     print_int(20);
   };
@@ -2961,7 +2977,7 @@ reallyLongFunctionNameWithArrayThatBreaks([|
   "two",
   "two",
   "two",
-  "two"
+  "two",
 |]);
 
 reallyLongFunctionNameWithRecordStringKeys({
@@ -2974,5 +2990,5 @@ reallyLongFunctionNameWithRecordStringKeys({
 fooSpreadES6List([
   "sldkjfklsjdflskjdflksjok",
   "more tests",
-  ...x
+  ...x,
 ]);

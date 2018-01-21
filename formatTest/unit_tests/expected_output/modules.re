@@ -186,14 +186,14 @@ module MyFunctorResult =
   MyFunctor(
     {
       type tt = string;
-    }
+    },
   );
 
 module LookNoParensNeeded =
   MyFunctor(
     {
       type tt = string;
-    }
+    },
   );
 
 module type SigResult = {let result: int;};
@@ -272,11 +272,12 @@ let letsTryThatSyntaxInLocalModuleBindings = () => {
    * let res = Out.x in
    * res;;
    */
-  module TempModule = CurriedNoSugar(AMod, BMod);
+  module TempModule =
+    CurriedNoSugar(AMod, BMod);
   module TempModule2 =
     CurriedSugarWithAnnotatedReturnVal(
       AMod,
-      BMod
+      BMod,
     );
   TempModule.result + TempModule2.result;
 };
@@ -297,7 +298,7 @@ module CurriedSugarFunctorResultInline =
     },
     {
       let b = 10;
-    }
+    },
   );
 
 module CurriedNoSugarFunctorResult =
@@ -310,17 +311,17 @@ module CurriedNoSugarFunctorResultInline =
     },
     {
       let b = 10;
-    }
+    },
   );
 
 module ResultFromNonSimpleFunctorArg =
   CurriedNoSugar(
     (
       MakeAModule(
-        {}
+        {},
       )
     ),
-    BMod
+    BMod,
   );
 
 /* TODO: Functor type signatures should more resemble value signatures */
@@ -446,12 +447,12 @@ module Compose =
        (
          F: (Type) => Type,
          G: (Type) => Type,
-         X: Type
+         X: Type,
        ) =>
   F((G(X)));
 
 let l: Compose(List)(Maybe)(Char).t = [
-  Some('a')
+  Some('a'),
 ];
 
 module Example2 = (F: (Type) => Type, X: Type) => {
@@ -468,7 +469,7 @@ module Example2 = (F: (Type) => Type, X: Type) => {
 
 Printf.printf(
   "\nModules And Functors: %n\n",
-  CurriedNoSugarFunctorResultInline.result
+  CurriedNoSugarFunctorResultInline.result,
 );
 
 /* We would have: */
@@ -492,7 +493,7 @@ include
       type state = unit;
       let getInitialState = (_) => ();
       let myValue = {recordField: "hello"};
-    }
+    },
   );
 
 module type HasInt = {let x: int;};
@@ -618,7 +619,7 @@ module type T = [%test extension];
 let foo =
     (
       type a,
-      (module X): (module X_t with type t = a)
+      (module X): (module X_t with type t = a),
     ) => X.a;
 
 let f =
@@ -626,5 +627,5 @@ let f =
       (module M): (module M with
                      type x = x and
                      type y = y
-                   )
+                   ),
     ) => M.x;

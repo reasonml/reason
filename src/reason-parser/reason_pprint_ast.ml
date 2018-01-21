@@ -119,6 +119,9 @@ let exprDescrString x =
     (string_of_int x.pexp_loc.loc_end.Lexing.pos_lnum) ^
     "]"
 
+let commaTrail = SepFinal (",", Syntax_util.TrailingCommaMarker.string)
+let commaSep = Sep (",")
+
 type ruleInfoData = {
   reducePrecedence: precedence;
   shiftPrecedence: precedence;
@@ -1432,8 +1435,8 @@ let makeAppList l =
   | hd::[] -> hd
   | _ -> makeList ~inline:(true, true) ~postSpace:true ~break:IfNeed l
 
-let makeTup l =
-  makeList ~wrap:("(",")") ~sep:(Sep ",") ~postSpace:true ~break:IfNeed l
+let makeTup ?(trailComma=true) l =
+  makeList ~wrap:("(",")") ~sep:(if trailComma then commaTrail else commaSep) ~postSpace:true ~break:IfNeed l
 
 let ensureSingleTokenSticksToLabel x =
   makeList
@@ -1516,7 +1519,7 @@ let easyAtom str = Easy_format.Atom(str, labelStringStyle)
 let makeES6List ?wrap:(wrap=("", "")) lst last =
   let (left, right) = wrap in
   let last_dots = makeList [atom "..."; last] in
-  makeList ~wrap:(left ^ "[", "]" ^ right) ~break:IfNeed ~postSpace:true ~sep:(Sep ",") (lst @ [last_dots])
+  makeList ~wrap:(left ^ "[", "]" ^ right) ~break:IfNeed ~postSpace:true ~sep:commaTrail (lst @ [last_dots])
 
 let makeNonIndentedBreakingList lst =
     (* No align closing: So that semis stick to the ends of every break *)
@@ -3031,7 +3034,7 @@ class printer  ()= object(self:'self)
     let rows = List.mapi recordRow lbls in
     (* if a record has more than 2 rows, always break *)
     let break = if List.length rows >= 2 then Always_rec else IfNeed in
-    let rowList = makeList ~wrap:("{", "}") ~sep:(Sep ",") ~postSpace:true ~break rows in
+    let rowList = makeList ~wrap:("{", "}") ~sep:commaTrail ~postSpace:true ~break rows in
     match assumeRecordLoc with
     | None -> rowList
     | Some loc -> SourceMap(loc, rowList)
@@ -3409,7 +3412,7 @@ class printer  ()= object(self:'self)
     match pat_last with
     | {ppat_desc = Ppat_construct ({txt=Lident "[]"},_)} -> (* [x,y,z] *)
         let wrap = (left ^ "[", "]" ^ right) in
-        makeList ~break:IfNeed ~wrap ~sep:(Sep ",") ~postSpace:true (List.map self#pattern pat_list)
+        makeList ~break:IfNeed ~wrap ~sep:commaTrail ~postSpace:true (List.map self#pattern pat_list)
     | _ -> (* x::y *)
         makeES6List ~wrap (List.map self#pattern pat_list) (self#pattern pat_last)
 
@@ -4865,6 +4868,16 @@ class printer  ()= object(self:'self)
     let space, arguments = match arguments with
       | [x] when is_direct_pattern x -> (true, self#simple_pattern x)
       | xs when isSingleArgParenPattern xs -> (false, self#singleArgParenPattern xs)
+      (* Optimize the case when it's a variant holding a shot variable - avoid trailing*)
+      | [{ppat_desc=Ppat_constant (Pconst_string (s, None))} as x]
+      | [{ppat_desc=Ppat_construct (({txt=Lident s}), None)} as x]
+      | [{ppat_desc=Ppat_var ({txt = s})} as x]
+        when Reason_heuristics.singleTokenPatternOmmitTrail s ->
+        (false, SourceMap(po.ppat_loc, makeTup ~trailComma:false [self#pattern x]))
+      | [{ppat_desc=Ppat_any} as x]
+      | [{ppat_desc=Ppat_constant (Pconst_char _)} as x]
+      | [{ppat_desc=Ppat_constant (Pconst_integer _)} as x] ->
+        (false, SourceMap(po.ppat_loc, makeTup ~trailComma:false [self#pattern x]))
       | xs -> (false, SourceMap(po.ppat_loc, makeTup (List.map self#pattern xs)))
     in
     let construction = label ~space ctor arguments in
@@ -4904,12 +4917,12 @@ class printer  ()= object(self:'self)
   method patternArray ?(wrap=("","")) l =
     let (left, right) = wrap in
     let wrap = (left ^ "[|", "|]" ^ right) in
-    makeList ~wrap ~break:IfNeed ~postSpace:true ~sep:(Sep ",") (List.map self#pattern l)
+    makeList ~wrap ~break:IfNeed ~postSpace:true ~sep:commaTrail (List.map self#pattern l)
 
   method patternTuple ?(wrap=("","")) l =
     let (left, right) = wrap in
     let wrap = (left ^ "(", ")" ^ right) in
-    makeList ~wrap ~sep:(Sep ",") ~postSpace:true ~break:IfNeed (List.map self#constrained_pattern l)
+    makeList ~wrap ~sep:commaTrail ~postSpace:true ~break:IfNeed (List.map self#constrained_pattern l)
 
   method patternRecord ?(wrap=("","")) l closed =
     let longident_x_pattern (li, p) =
@@ -4937,7 +4950,7 @@ class printer  ()= object(self:'self)
     makeList
       ~wrap
       ~break:IfNeed
-      ~sep:(Sep (","))
+      ~sep:commaTrail
       ~postSpace:true
       rows
 
@@ -5399,7 +5412,7 @@ class printer  ()= object(self:'self)
       let wrap = (left ^ leftDelim, rightDelim ^ right) in
       makeList
         ~wrap
-        ~sep:(Sep ",")
+        ~sep:commaTrail
         ~break:IfNeed
         ~postSpace:true
         (List.map xf l)
@@ -5826,7 +5839,7 @@ class printer  ()= object(self:'self)
         | _::_ ->
           label
             (self#longident_loc li)
-            (makeList ~wrap:("(", ")") ~sep:(Sep ",")  (List.map self#core_type l))
+            (makeList ~wrap:("(", ")") ~sep:commaTrail (List.map self#core_type l))
       )
     | Pcty_extension e ->
       self#attach_std_item_attrs x.pcty_attributes (self#extension e)
@@ -6911,7 +6924,8 @@ class printer  ()= object(self:'self)
                *   }</list></right></label>
                * )</list></right></label>
                *)
-              let args = makeList ~break:Always ~wrap:("", ")") ~sep:(Sep ",") (
+              let args =
+                makeList ~break:Always ~wrap:("", ")") ~sep:commaTrail (
                 (List.map self#label_x_expression_param args)
                 @([label ~space:true (makeList ~wrap:("", " =>") [theCallbackArg]) (SourceMap (retCb.pexp_loc, makeLetSequence xs))])
               ) in

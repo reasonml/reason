@@ -75,5 +75,5 @@ let display =
     (
       ~message=("hello": string),
       ~person: string="Reason",
-      time: float
+      time: float,
     ) => 1;

@@ -142,7 +142,7 @@ let onlyHasX = {pub x = 0};
 
 let xs: list({. x: int}) = [
   onlyHasX,
-  (anonClosedObject :> {. x: int})
+  (anonClosedObject :> {. x: int}),
 ];
 
 let constrainedAndCoerced = (
@@ -175,7 +175,7 @@ let acceptsOpenAnonObjAsArg =
         ..
         x: int,
         y: int
-      }
+      },
     ) =>
   o#x + o#y;
 
@@ -185,7 +185,7 @@ let acceptsClosedAnonObjAsArg =
         .
         x: int,
         y: int
-      }
+      },
     ) =>
   o#x + o#y;
 
@@ -323,7 +323,7 @@ class intTuplesHardcoded =
 class intTuplesTuples =
   class tupleClass(
     tupleClass(int, int),
-    tupleClass(int, int)
+    tupleClass(int, int),
   );
 
 let x: tupleClass(int, int) = {
@@ -381,7 +381,7 @@ class addablePoint:
     pub add =
         (
           one: addablePointClassType,
-          two: addablePointClassType
+          two: addablePointClassType,
         ) =>
       one#x + two#x + one#y + two#x;
     pub x: int = init;
@@ -395,7 +395,7 @@ class addablePoint2:
     pub add =
         (
           one: addablePointClassType,
-          two: addablePointClassType
+          two: addablePointClassType,
         ) =>
       one#x + two#x + one#y + two#x;
     pub x: int = init;

@@ -48,7 +48,7 @@ let testingEndOfLineComments = [
   "Item 1" /* Comment For First Item */,
   "Item 2" /* Comment For Second Item */,
   "Item 3" /* Comment For Third Item */,
-  "Item 4" /* Comment For Fourth Item - but before trailing comma */
+  "Item 4" /* Comment For Fourth Item - but before trailing comma */,
   /* Comment after last item in list. */
 ] /* Comment after rbracket */;
 
@@ -57,7 +57,7 @@ let testingEndOfLineComments = [
   "Item 1", /* Comment For First Item */
   "Item 2", /* Comment For Second Item */
   "Item 3", /* Comment For Third Item */
-  "Item 4" /* Comment For Fourth Item - but before trailing comma */
+  "Item 4" /* Comment For Fourth Item - but before trailing comma */,
   /* Comment after last item in list. */
 ] /* Comment after rbracket */;
 
@@ -97,7 +97,7 @@ let myFunction = /* First arg */
     (
       withFirstArg,
       /* Second Arg */
-      andSecondArg
+      andSecondArg,
     ) =>
   withFirstArg + andSecondArg; /* After Semi */
 
@@ -129,7 +129,7 @@ type typeParamPointWithComments2
   (
     'a,
     /* The b type apram */
-    'b
+    'b,
   ) = {
   /* Line before x */
   x: 'a, /* x field */
@@ -153,7 +153,7 @@ type t2 =
 
 type t3 = (
   int,
-  int
+  int,
 ); /* End of line on (int, int) */
 
 type variant =
@@ -201,21 +201,21 @@ type variant3 =
 type x = {
   /* not attached *above* x */
   fieldOne: int,
-  fieldA: int
+  fieldA: int,
 } /* Attached end of line after x */
 and y = {
   /* not attached *above* y */
-  fieldTwo: int
+  fieldTwo: int,
 } /* Attached end of line after y */;
 
 type x2 = {
   /* not attached *above* x2 */
   fieldOne: int,
-  fieldA: int
+  fieldA: int,
 } /* Attached end of line after x2 */
 and y2 = {
   /* not attached *above* y2 */
-  fieldTwo: int
+  fieldTwo: int,
 };
 
 let result =
@@ -248,14 +248,14 @@ let result =
   | Some({
       fieldOne: 20, /* end of line */
       fieldA:
-        a /* end of line */
+        a /* end of line */,
     }) =>
     let tmp = 0;
     2 + tmp;
   | Some({
       fieldOne: n, /* end of line */
       fieldA:
-        a /* end of line */
+        a /* end of line */,
     }) =>
     let tmp = n;
     n + tmp;
@@ -288,8 +288,8 @@ type optionalTuple =
         (
           int, /* First int */
           int /* Second int */
-        )
-      )
+        ),
+      ),
     );
 
 type optionTuple =
@@ -297,7 +297,7 @@ type optionTuple =
     (
       int, /* First int */
       int /* Second int */
-    )
+    ),
   );
 
 type intPair = (
@@ -309,7 +309,7 @@ type intPair2 = (
   /* First int */
   int,
   /* Second int */
-  int
+  int,
 );
 
 let result = /**/ (2 + 3);
@@ -354,7 +354,7 @@ let equal = (i1, i2) =>
 let equal = (i1, i2) =>
   compare(
     compare(0, 0),
-    compare(1, 1)
+    compare(1, 1),
   ); /* END OF LINE HERE */
 
 let tuple_equal = ((i1, i2)) => i1 == i2;
@@ -551,7 +551,7 @@ while (trueThing) {
     /* c */
     3,
     /* d */
-    4
+    4,
     /* does work */
   );
 };
@@ -570,7 +570,13 @@ while (trueThing) {
 };
 
 ignore(
-  (_really, _long, _printWidth, _exceeded, _here) => {
+  (
+    _really,
+    _long,
+    _printWidth,
+    _exceeded,
+    _here,
+  ) => {
   /* First comment */
   let x = 0;
   x + x;
@@ -618,7 +624,7 @@ let y =
 
 type polyRecord('a, 'b) = {
   fieldOne: 'a,
-  fieldTwo: 'b
+  fieldTwo: 'b,
 };
 
 let r = {
@@ -717,14 +723,14 @@ let y =
   OneTupleArgConstructor((
     identifier: string, /*eol1*/
     identifier:
-      string /* eol2 */
+      string /* eol2 */,
   ));
 
 let y =
   callFunctionOneTuple((
     identifier: string, /*eol1*/
     identifier:
-      string /* eol2 */
+      string /* eol2 */,
   ));
 
 let r = {

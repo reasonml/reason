@@ -62,3 +62,16 @@ let funAppCallbackExceedsWidth ~printWidth ~args ~funExpr () =
     end
   in
   aux (printWidth - funLen) args
+
+(*
+ * Whether or not an identiier is small enough to justify omitting the
+ * trailing comma for single identifier patterns. For single identifier
+ * patterns, usually the identifier is not "far right" in the document, and
+ * is one of the last things to require breaking. We can omit the trailing comma
+ * in these cases because it likely will never render anyways and therefore the
+ * space taken up by the trailing comma doesn't disrupt wrapping length calculations.
+ *
+ * For example, the `X` hardly ever benefits from a trailing comma.
+ * | X(y) =>
+ *)
+let singleTokenPatternOmmitTrail txt = String.length txt < 4

@@ -29,7 +29,7 @@ if (if (x) {true} else {false}) {
 
 /* Parens are required around if if it's an argument - this is the same as before. */
 if (callSomeFunction(
-      if (true) {true} else {false}
+      if (true) {true} else {false},
     )) {
   true;
 } else {
@@ -48,7 +48,7 @@ if (callSomeFunction(
       {
         thisIsAnArgument;
         notTheControlFlow;
-      }
+      },
     )) {
   thisIsTheControlFlow;
 };

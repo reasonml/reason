@@ -116,8 +116,8 @@ let accessDeeplyWithArg =
       LocalModule.AccessedThroughModuleWith(x) |
       LocalModule.AccessedThroughModuleWithTwo(
         _,
-        x
-      )
+        x,
+      ),
     ) => x;
 
 /* Destructured matching *not* at function definition */
@@ -149,18 +149,19 @@ let accessDeeply = x =>
 let accessDeeplyWithArg = x =>
   switch (x) {
   | LocalModule.AccessedThroughModuleWith(
-      x as retVal
+      x as retVal,
     ) =>
     retVal + 1
   | LocalModule.AccessedThroughModuleWithTwo(
       x as retVal1,
-      y as retVal2
+      y as retVal2,
     ) =>
     retVal1 + retVal2 + 1
   };
 
 /* Just to show that by default `as` captures much less aggresively */
-let rec accessDeeplyWithArgRecursive = (x, count) =>
+let rec accessDeeplyWithArgRecursive =
+        (x, count) =>
   switch (x) {
   | LocalModule.AccessedThroughModuleWith(x) as entirePattern =>
     /* It captures the whole pattern */
@@ -169,12 +170,12 @@ let rec accessDeeplyWithArgRecursive = (x, count) =>
     } else {
       accessDeeplyWithArgRecursive(
         entirePattern,
-        count - 1
+        count - 1,
       );
     }
   | LocalModule.AccessedThroughModuleWithTwo(
       x,
-      y
+      y,
     ) as entirePattern =>
     /* It captures the whole pattern */
     if (count > 0) {
@@ -182,14 +183,14 @@ let rec accessDeeplyWithArgRecursive = (x, count) =>
     } else {
       accessDeeplyWithArgRecursive(
         entirePattern,
-        count - 1
+        count - 1,
       );
     }
   };
 
 accessDeeplyWithArgRecursive(
   LocalModule.AccessedThroughModuleWith(10),
-  10
+  10,
 );
 
 let run = () => {
@@ -210,7 +211,7 @@ let howWouldWeMatchFunctionArgs =
 let howWouldWeMatchFunctionArgs =
     (
       HeresTwoConstructorArguments(x, y):
-        combination('wat)
+        combination('wat),
     ) =>
   x + y;
 
@@ -218,7 +219,7 @@ let matchingTwoCurriedConstructorsInTuple = x =>
   switch (x) {
   | (
       HeresTwoConstructorArguments(x, y),
-      HeresTwoConstructorArguments(a, b)
+      HeresTwoConstructorArguments(a, b),
     ) =>
     x + y + a + b
   };
@@ -226,7 +227,7 @@ let matchingTwoCurriedConstructorsInTuple = x =>
 type twoCurriedConstructors =
   | TwoCombos(
       combination(int),
-      combination(int)
+      combination(int),
     );
 
 let matchingTwoCurriedConstructorInConstructor =
@@ -234,18 +235,21 @@ let matchingTwoCurriedConstructorInConstructor =
   switch (x) {
   | TwoCombos(
       HeresTwoConstructorArguments(x, y),
-      HeresTwoConstructorArguments(a, b)
+      HeresTwoConstructorArguments(a, b),
     ) =>
     a + b + x + y
   };
 
 type twoCurriedConstructorsPolyMorphic('a) =
-  | TwoCombos(combination('a), combination('a));
+  | TwoCombos(
+      combination('a),
+      combination('a),
+    );
 
 /* Matching records */
 type pointRecord = {
   x: int,
-  y: int
+  y: int,
 };
 
 type alsoHasARecord =
@@ -253,9 +257,12 @@ type alsoHasARecord =
   | AlsoHasARecord(int, int, pointRecord);
 
 let result =
-  switch (AlsoHasARecord(10, 10, {x: 10, y: 20})) {
+  switch (
+    AlsoHasARecord(10, 10, {x: 10, y: 20})
+  ) {
   | Blah => 1000
-  | AlsoHasARecord(a, b, {x, y}) => a + b + x + y
+  | AlsoHasARecord(a, b, {x, y}) =>
+    a + b + x + y
   };
 
 let rec commentPolymorphicCases:
@@ -309,7 +316,8 @@ let rec eval: type a. term(a) => a =
 /* eval called at types (b=>a) and b for fresh b */
 let evalArg = App(App(Add, Int(1)), Int(1));
 
-let two = eval(App(App(Add, Int(1)), Int(1)));
+let two =
+  eval(App(App(Add, Int(1)), Int(1)));
 
 type someVariant =
   | Purple(int)
@@ -414,10 +422,12 @@ let rec atLeastOneFlushableChildAndNoWipNoPending =
   | [] => false
   | [hd, ...tl] =>
     switch (hd) {
-    | OpaqueGraph({lifecycle: Reconciled(_, [])}) =>
+    | OpaqueGraph({
+        lifecycle: Reconciled(_, []),
+      }) =>
       atLeastOneFlushableChildAndNoWipNoPending(
         tl,
-        atPriority
+        atPriority,
       )
     | OpaqueGraph({
         lifecycle:
@@ -427,8 +437,8 @@ let rec atLeastOneFlushableChildAndNoWipNoPending =
             _,
             _,
             _,
-            _
-          )
+            _,
+          ),
       })
     | OpaqueGraph({
         lifecycle:
@@ -437,8 +447,8 @@ let rec atLeastOneFlushableChildAndNoWipNoPending =
             _,
             _,
             _,
-            _
-          )
+            _,
+          ),
       })
         when priority == AtPriority =>
       noWipNoPending(tl, atPriority)
@@ -467,7 +477,8 @@ let res =
  */
 let rec map = f =>
   fun
-  | Node(None, m) => Node(None, M.map(map(f), m))
+  | Node(None, m) =>
+    Node(None, M.map(map(f), m))
   | Node(LongModule.Path.None, m) =>
     Node(None, M.map(map(f), m))
   | Node(LongModule.Path.Some(v), m) =>
@@ -477,16 +488,17 @@ let myFunc = (x, y, None) => "asdf";
 
 let rec map = f =>
   fun
-  | Node(None, m) => Node(None, M.map(map(f), m))
+  | Node(None, m) =>
+    Node(None, M.map(map(f), m))
   | Node(LongModule.Path.None, m) =>
     LongModule.Path.Node(
       LongModule.Path.None,
-      M.map(map(f), m)
+      M.map(map(f), m),
     )
   | Node(LongModule.Path.Some(v), m) =>
     LongModule.Path.Node(
       LongModule.Path.Some(f(v)),
-      M.map(map(f), m)
+      M.map(map(f), m),
     );
 
 let myFunc = (x, y, LongModule.Path.None) => "asdf";
@@ -515,7 +527,7 @@ let listPatternMayEvenIncludeAliases = x =>
   | [
       Blah(x, y) as head,
       Foo(a, b) as head2,
-      ...Something(x) as tail
+      ...Something(x) as tail,
     ] =>
     ()
   | _ => ()
@@ -589,32 +601,34 @@ MyConstructorWithSingleUnitArg();
 /* #1510: keep ({ and }) together on the same line when breaking */
 Delete({
   uuid:
-    json |> Util.member("uuid") |> Util.to_string
+    json
+    |> Util.member("uuid")
+    |> Util.to_string
 });
 
 Delete((
   someLongStuf,
   someOtherLongStuff,
-  okokokok
+  okokokok,
 ));
 
 Delete([
   someLongStuf,
   someOtherLongStuff,
-  okokokok
+  okokokok,
 ]);
 
 Delete([|
   someLongStuf,
   someOtherLongStuff,
-  okokokok
+  okokokok,
 |]);
 
 Delete([
   someLongStuf,
   someOtherLongStuff,
   okokokok,
-  ...veryES6
+  ...veryES6,
 ]);
 
 Delete({
@@ -625,32 +639,34 @@ Delete({
 
 `Delete({
   uuid:
-    json |> Util.member("uuid") |> Util.to_string
+    json
+    |> Util.member("uuid")
+    |> Util.to_string
 });
 
 `Delete((
   someLongStuf,
   someOtherLongStuff,
-  okokokok
+  okokokok,
 ));
 
 `Delete([
   someLongStuf,
   someOtherLongStuff,
-  okokokok
+  okokokok,
 ]);
 
 `Delete([|
   someLongStuf,
   someOtherLongStuff,
-  okokokok
+  okokokok,
 |]);
 
 `Delete([
   someLongStuf,
   someOtherLongStuff,
   okokokok,
-  ...veryES6
+  ...veryES6,
 ]);
 
 `Delete({
