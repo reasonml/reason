@@ -40,8 +40,7 @@
  **
  */
 module JustString = {
-  include
-    Map.Make(Int32); /* Comment eol include */
+  include Map.Make(Int32); /* Comment eol include */
 };
 
 let testingEndOfLineComments = [
@@ -84,8 +83,7 @@ let testPlacementOfTrailingComment = [
   /* Comment after last item in list. */
 ]; /* Comment after semi */
 
-let testingEndOfLineComments =
-  []; /* Comment after entire let binding */
+let testingEndOfLineComments = []; /* Comment after entire let binding */
 
 /* The following is not yet idempotent */
 /* let myFunction */
@@ -148,17 +146,13 @@ type anotherpoint = {
 
 type t = (int, int); /* End of line on t */
 
-type t2 =
-  (int, int) /* End of line on (int, int) */;
+type t2 = (int, int); /* End of line on (int, int) */
 
-type t3 = (
-  int,
-  int,
-); /* End of line on (int, int) */
+type t3 = (int, int); /* End of line on (int, int) */
 
 type variant =
   | X(int, int) /* End of line on X */
-  | Y(int, int) /* End of line on Y */; /* Comment on entire type def for variant */
+  | Y(int, int); /* End of line on Y */ /* Comment on entire type def for variant */
 
 /* Before let */
 let res =
@@ -175,8 +169,7 @@ let res =
   | X(0, 0) =>
     /* After X arrow */
     "result of X" /* End of X body line */
-  | X(1, 0) /* Before X's arrow */ =>
-    "result of X" /* End of X body line */
+  | X(1, 0) /* Before X's arrow */ => "result of X" /* End of X body line */
   | X(_) =>
     /* After X _ arrow */
     "result of X" /* End of X body line */
@@ -196,7 +189,7 @@ type variant3 =
   /* Comment above X */
   | X(int, int) /* End of line on X */
   /* Comment above Y */
-  | Y(int, int) /* End of line on Y  */;
+  | Y(int, int); /* End of line on Y  */
 
 type x = {
   /* not attached *above* x */
@@ -206,7 +199,7 @@ type x = {
 and y = {
   /* not attached *above* y */
   fieldTwo: int,
-} /* Attached end of line after y */;
+}; /* Attached end of line after y */
 
 type x2 = {
   /* not attached *above* x2 */
@@ -247,15 +240,13 @@ let result =
   switch (None) {
   | Some({
       fieldOne: 20, /* end of line */
-      fieldA:
-        a /* end of line */,
+      fieldA: a /* end of line */
     }) =>
     let tmp = 0;
     2 + tmp;
   | Some({
       fieldOne: n, /* end of line */
-      fieldA:
-        a /* end of line */,
+      fieldA: a /* end of line */
     }) =>
     let tmp = n;
     n + tmp;
@@ -334,17 +325,16 @@ if (true) {
 type color =
   | Red(int) /* After red end of line */
   | Black(int) /* After black end of line */
-  | Green(int) /* After green end of line */; /* On next line after color type def */
+  | Green(int); /* After green end of line */ /* On next line after color type def */
 
 let blahCurriedX = x =>
   fun
   | Red(10)
   | Black(20)
-  | Green(10) =>
-    1 /* After or pattern green */
+  | Green(10) => 1 /* After or pattern green */
   | Red(x) => 0 /* After red */
   | Black(x) => 0 /* After black */
-  | Green(x) => 0 /* After second green */; /* On next line after blahCurriedX def */
+  | Green(x) => 0; /* After second green */ /* On next line after blahCurriedX def */
 
 let name_equal = (x, y) => x == y;
 
@@ -352,10 +342,7 @@ let equal = (i1, i2) =>
   i1.contents === i2.contents && true; /* most unlikely first */
 
 let equal = (i1, i2) =>
-  compare(
-    compare(0, 0),
-    compare(1, 1),
-  ); /* END OF LINE HERE */
+  compare(compare(0, 0), compare(1, 1)); /* END OF LINE HERE */
 
 let tuple_equal = ((i1, i2)) => i1 == i2;
 
@@ -476,7 +463,7 @@ if (trueThing) {
 /* Comment before if test */
 if (trueThing) {
   /* Comment before print */
-  print_newline() /* eol print */;
+  print_newline(); /* eol print */
                /* Comment after print */
 };
 
@@ -498,7 +485,7 @@ if (trueThing) {
 /* Comment before if test */
 if (trueThing) {
   /* Comment before print */
-  print_newline() /* eol print */;
+  print_newline(); /* eol print */
                /* Comment before print */
 } else {
   /* Comment before print */
@@ -520,7 +507,7 @@ while (trueThing) {
 /* Comment before while test */
 while (trueThing) {
   /* Comment before print */
-  print_newline() /* eol */;
+  print_newline(); /* eol */
                /* Comment after final print */
 };
 
@@ -536,7 +523,7 @@ for (i in 0 to 100) {
 /* Comment before for test */
 for (i in 0 to 100) {
   /* Comment before print */
-  print_newline() /* eol */;
+  print_newline(); /* eol */
                /* Comment after final print */
 };
 
@@ -722,15 +709,13 @@ let y =
 let y =
   OneTupleArgConstructor((
     identifier: string, /*eol1*/
-    identifier:
-      string /* eol2 */,
+    identifier: string /* eol2 */
   ));
 
 let y =
   callFunctionOneTuple((
     identifier: string, /*eol1*/
-    identifier:
-      string /* eol2 */,
+    identifier: string /* eol2 */
   ));
 
 let r = {
@@ -740,7 +725,5 @@ let r = {
 
 let r = {
   fieldOne: (identifier: string), /*eol1*/
-  fieldTwo: (
-    identifier: string
-  ) /* eol2 with trailing comma */
+  fieldTwo: (identifier: string) /* eol2 with trailing comma */
 };

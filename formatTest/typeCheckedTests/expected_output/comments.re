@@ -33,7 +33,7 @@ let testingNotQuiteEndOfLineComments = [
   "Item 3" /* Comment For Third Item */,
   "Item 4" /* Comment For Fourth Item - but no semi */
   /* Comment after last item in list. */
-] /* Comment after list bracket */;
+]; /* Comment after list bracket */
 
 let testingEndOfLineComments = [
   "Item 1", /* Comment For First Item */
@@ -41,11 +41,10 @@ let testingEndOfLineComments = [
   "Item 3", /* Comment For Third Item */
   "Item 4" /* Comment For Fourth Item - but before semi */,
   /* Comment after last item in list. */
-] /* Comment after list bracket */;
+]; /* Comment after list bracket */
 
 /* This time no space between bracket and comment */
-let testingEndOfLineComments =
-  [] /* Comment after list bracket */;
+let testingEndOfLineComments = []; /* Comment after list bracket */
 
 type t = (int, int); /* End of line on t */
 
@@ -57,7 +56,7 @@ type variant =
   /* Comment above X */
   | X(int) /* End of line on X */
   /* Comment above Y */
-  | Y(int) /* End of line on Y */;
+  | Y(int); /* End of line on Y */
 
 /* Comment on entire type def for variant */
 type x = {
@@ -67,7 +66,7 @@ type x = {
 and y = {
   /* not attached *above* y */
   fieldTwo: int,
-} /* Attached end of line after y */;
+}; /* Attached end of line after y */
 
 let result =
   switch (X(3)) {
@@ -113,10 +112,10 @@ type typeParamPointWithComments('a) = {
 let name_equal = (x, y) => x == y;
 
 let equal = (i1, i2) =>
-  i1.contents === i2.contents && true /* most unlikely first */;
+  i1.contents === i2.contents && true; /* most unlikely first */
 
 let equal = (i1, i2) =>
-  compare(compare(0, 0), compare(1, 1)) /* END OF LINE HERE */;
+  compare(compare(0, 0), compare(1, 1)); /* END OF LINE HERE */
 
 module Temp = {
   let v = true;
