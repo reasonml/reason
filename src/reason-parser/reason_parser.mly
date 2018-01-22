@@ -1478,7 +1478,7 @@ structure:
     { let rec prepend = function
         | [] -> assert false
         | [x] ->
-           let effective_loc = mklocation x.pstr_loc.loc_start $endpos($2) in
+           let effective_loc = mklocation x.pstr_loc.loc_start $endpos($1) in
            let x = set_structure_item_location x effective_loc in
            x :: $3
         | x :: xs -> x :: prepend xs
