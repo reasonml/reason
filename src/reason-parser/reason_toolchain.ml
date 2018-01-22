@@ -201,8 +201,12 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
           let _  = Parsing.clear_parser() in
           (ast, unmodified_comments |> List.map (fun (txt, phys_loc) -> (txt, Reason_pprint_ast.Regular, phys_loc)))
       else
-        let modified_and_comment_with_category =
-          List.map (fun (str, physical_loc) ->
+        let rec classifyAndNormalizeComments unmodified_comments =
+          match unmodified_comments with
+          | [] -> []
+          | hd :: tl -> (
+              let classifiedTail = classifyAndNormalizeComments tl in
+              let (str, physical_loc) = hd in
               (* When searching for "^" regexp, returns location of newline + 1 *)
               let (stop_char, eol_start, virtual_start_pos) = left_expand_comment false contents physical_loc.loc_start.pos_cnum in
               let one_char_before_stop_char =
@@ -222,7 +226,7 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
                * But we don't want it to extend to next line in this case:
                *
                * true || (* comment *)
-               *   fasle
+               *   false
                *
                *)
               let should_scan_next_line = stop_char = '|' &&
@@ -233,18 +237,30 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
               let end_pos_plus_one = physical_loc.loc_end.pos_cnum in
               let comment_length = (end_pos_plus_one - physical_loc.loc_start.pos_cnum - 4) in
               let original_comment_contents = String.sub contents (physical_loc.loc_start.pos_cnum + 2) comment_length in
-              let t = match (eol_start, eol_end) with
-                | (true, true) -> Reason_pprint_ast.SingleLine
-                | (false, true) -> Reason_pprint_ast.EndOfLine
+              let adjusted_loc = {
+                physical_loc with
+                loc_start = {physical_loc.loc_start with pos_cnum = virtual_start_pos};
+                loc_end = {physical_loc.loc_end with pos_cnum = virtual_end_pos}
+              } in
+              let t = match (eol_start, eol_end, classifiedTail) with
+                | (true, true, _) -> Reason_pprint_ast.SingleLine
+                | (false, true, _) -> Reason_pprint_ast.EndOfLine
+                | (false, false, (_, Reason_pprint_ast.EndOfLine, nextComVirtualLoc) :: _)
+                  (* End of line comment is one that has nothing but newlines or
+                   * other comments its right, and has some AST to the left of it.
+                   * For example, there are two end of line comments in:
+                   *
+                   *    | Y(int, int); /* eol1 */ /* eol2 */
+                   *)
+                  when nextComVirtualLoc.loc_start.pos_cnum == adjusted_loc.loc_end.pos_cnum - 1 &&
+                       nextComVirtualLoc.loc_start.pos_lnum == adjusted_loc.loc_end.pos_lnum ->
+                  Reason_pprint_ast.EndOfLine
                 | _ -> Reason_pprint_ast.Regular
               in
-              let start_pos = virtual_start_pos in
-              (original_comment_contents, t,
-               {physical_loc with loc_start = {physical_loc.loc_start with pos_cnum = start_pos};
-                                  loc_end = {physical_loc.loc_end with pos_cnum = virtual_end_pos}})
+              (original_comment_contents, t, adjusted_loc) :: classifiedTail
             )
-            unmodified_comments
         in
+        let modified_and_comment_with_category = classifyAndNormalizeComments unmodified_comments in
         let _  = Parsing.clear_parser() in
         (ast, modified_and_comment_with_category)
     )
