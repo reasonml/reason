@@ -577,3 +577,137 @@ ignore((_xxx, _yyy) => {
   x + x;
   /* Closing comment */
 });
+
+type tester('a, 'b) = | TwoArgsConstructor('a, 'b) | OneTupleArgConstructor(('a, 'b));
+let callFunctionTwoArgs = (a, b) => ();
+let callFunctionOneTuple = (tuple) => ();
+
+let y = TwoArgsConstructor(
+  1, /*eol1*/
+  2 /* eol2 */
+);
+
+let y = callFunctionTwoArgs(
+  1, /*eol1*/
+  2 /* eol2 */
+);
+
+let y = OneTupleArgConstructor((
+  1, /*eol1*/
+  2 /* eol2 */
+));
+
+let y = callFunctionOneTuple((
+  1, /*eol1*/
+  2 /* eol2 */
+));
+
+
+type polyRecord('a, 'b) = {fieldOne: 'a, fieldTwo: 'b};
+
+let r = {
+  fieldOne: 1, /*eol1*/
+  fieldTwo: 2 /* eol2 */
+};
+
+let r = {
+  fieldOne: 1, /*eol1*/
+  fieldTwo: 2, /* eol2 with trailing comma */
+};
+
+
+let y = TwoArgsConstructor(
+  "1", /*eol1*/
+  "2" /* eol2 */
+);
+
+let y = callFunctionTwoArgs(
+  "1", /*eol1*/
+  "2" /* eol2 */
+);
+
+let y = OneTupleArgConstructor((
+  "1", /*eol1*/
+  "2" /* eol2 */
+));
+
+let y = callFunctionOneTuple((
+  "1", /*eol1*/
+  "2" /* eol2 */
+));
+
+
+let r = {
+  fieldOne: "1", /*eol1*/
+  fieldTwo: "2" /* eol2 */
+};
+
+let r = {
+  fieldOne: "1", /*eol1*/
+  fieldTwo: "2", /* eol2 with trailing comma */
+};
+
+let identifier = "hello";
+
+let y = TwoArgsConstructor(
+  identifier, /*eol1*/
+  identifier /* eol2 */
+);
+
+let y = callFunctionTwoArgs(
+  identifier , /*eol1*/
+  identifier /* eol2 */
+);
+
+let y = OneTupleArgConstructor((
+  identifier , /*eol1*/
+  identifier /* eol2 */
+));
+
+let y = callFunctionOneTuple((
+  identifier , /*eol1*/
+  identifier /* eol2 */
+));
+
+
+let r = {
+  fieldOne: identifier, /*eol1*/
+  fieldTwo: identifier /* eol2 */
+};
+
+let r = {
+  fieldOne: identifier, /*eol1*/
+  fieldTwo: identifier, /* eol2 with trailing comma */
+};
+
+
+let y = TwoArgsConstructor(
+  identifier : string, /*eol1*/
+  identifier : string/* eol2 */
+);
+
+let y = callFunctionTwoArgs(
+  identifier : string , /*eol1*/
+  identifier : string /* eol2 */
+);
+
+let y = OneTupleArgConstructor((
+  identifier : string , /*eol1*/
+  identifier : string /* eol2 */
+));
+
+let y = callFunctionOneTuple((
+  identifier : string , /*eol1*/
+  identifier : string /* eol2 */
+));
+
+
+let r = {
+  fieldOne: (identifier : string), /*eol1*/
+  fieldTwo: (identifier : string) /* eol2 */
+};
+
+let r = {
+  fieldOne: (identifier : string), /*eol1*/
+  fieldTwo: (identifier : string), /* eol2 with trailing comma */
+};

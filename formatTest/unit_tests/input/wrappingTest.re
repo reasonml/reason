@@ -1697,6 +1697,16 @@ let callMeWithComments
   /* Comment above return value a + b + c */
   a + b + c;
 
+let callMeWithComments2 =
+    /* Comment before the only argument */
+    ((a:int,
+    /* Comment before second arg "b" */
+     b:int))
+    /* Comment before return type annotation "int" */
+    :int =>
+  /* Comment above return value a + b + c */
+  a + b + c;
+
 let result =
   /* Comment before function to invoke */
   callMeWithComments
