@@ -268,8 +268,8 @@ let result =
  */
 let res =
   switch (
-    X
-      (2, 3) /* Retain this */
+    /* Retain this */
+    X(2, 3)
   ) {
   /* Above X line */
   | X(
