@@ -40,7 +40,8 @@
  **
  */
 module JustString = {
-  include Map.Make(Int32); /* Comment eol include */
+  include
+    Map.Make(Int32); /* Comment eol include */
 };
 
 let testingEndOfLineComments = [
@@ -83,7 +84,8 @@ let testPlacementOfTrailingComment = [
   /* Comment after last item in list. */
 ]; /* Comment after semi */
 
-let testingEndOfLineComments = []; /* Comment after entire let binding */
+let testingEndOfLineComments =
+  []; /* Comment after entire let binding */
 
 /* The following is not yet idempotent */
 /* let myFunction */
