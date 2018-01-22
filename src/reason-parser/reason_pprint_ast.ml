@@ -3744,26 +3744,30 @@ class printer  ()= object(self:'self)
    * TODO: in the future we should probably use the type ruleCategory
    * to 'automatically' ensure the validity of a constraint expr with parens...
    *)
-  method unparseConstraintExpr ?(ensureExpr=false) e = match e with
-    | { pexp_attributes = []; pexp_desc = Pexp_constraint (x, ct) } ->
-      let x = self#unparseExpr x in
-      let children = [x; label ~space:true (atom ":") (self#core_type ct)] in
-      if ensureExpr then
-        makeList ~wrap:("(", ")") children
-      else makeList children
-    | { pexp_attributes; pexp_desc = Pexp_constant c } ->
-      (* When we have Some(-1) or someFunction(-1, -2), the arguments -1 and -2
-       * pass through this case. In this context they don't need to be wrapped in extra parens
-       * Some((-1)) should be printed as Some(-1). This is in contrast with
-       * 1 + (-1) where we print the parens for readability. *)
-        let constant = self#constant ~parens:ensureExpr c in
-        begin match pexp_attributes with
-        | [] -> constant
-        | attrs ->
-            let formattedAttrs = makeSpacedBreakableInlineList (List.map self#item_attribute attrs) in
-             makeSpacedBreakableInlineList [formattedAttrs; constant]
-        end
-    | x -> self#unparseExpr x
+  method unparseConstraintExpr ?(ensureExpr=false) e =
+    let itm =
+      match e with
+      | { pexp_attributes = []; pexp_desc = Pexp_constraint (x, ct)} ->
+        let x = self#unparseExpr x in
+        let children = [x; label ~space:true (atom ":") (self#core_type ct)] in
+        if ensureExpr then
+          makeList ~wrap:("(", ")") children
+        else makeList children
+      | { pexp_attributes; pexp_desc = Pexp_constant c } ->
+        (* When we have Some(-1) or someFunction(-1, -2), the arguments -1 and -2
+         * pass through this case. In this context they don't need to be wrapped in extra parens
+         * Some((-1)) should be printed as Some(-1). This is in contrast with
+         * 1 + (-1) where we print the parens for readability. *)
+          let constant = self#constant ~parens:ensureExpr c in
+          begin match pexp_attributes with
+          | [] -> constant
+          | attrs ->
+              let formattedAttrs = makeSpacedBreakableInlineList (List.map self#item_attribute attrs) in
+               makeSpacedBreakableInlineList [formattedAttrs; constant]
+          end
+      | x -> self#unparseExpr x
+    in
+    SourceMap(e.pexp_loc, itm)
 
   method simplifyUnparseExpr x =
     match self#unparseExprRecurse x with
@@ -3878,7 +3882,7 @@ class printer  ()= object(self:'self)
          *   test("math", () =>
          *     Expect.expect(1 + 2) |> toBe(3)));
          *)
-        FunctionApplication (self#formatFunAppl ~jsxAttrs ~args:ls ~funExpr:e ())
+        FunctionApplication (self#formatFunAppl ~jsxAttrs ~args:ls ~funExpr:e ~applicationExpr:x ())
       )
     )
     | Pexp_construct (li, Some eo) when not (is_simple_construct (view_expr x)) -> (
@@ -4809,6 +4813,7 @@ class printer  ()= object(self:'self)
           (false, self#singleArgParenApplication [eo])
       | _ -> (false, makeTup [self#unparseConstraintExpr eo])
     in
+    let arguments = SourceMap(eo.pexp_loc, arguments) in
     let construction =
       label ctor (if isSequencey arguments
                   then arguments
@@ -6743,11 +6748,11 @@ class printer  ()= object(self:'self)
     SourceMap (e.pexp_loc, param)
 
   method label_x_expression_params xs =
-    let xs = (match xs with
+    match xs with
       (* function applications with unit as only argument should be printed differently
        * e.g. print_newline(()) should be printed as print_newline() *)
       | [(Nolabel, ({pexp_attributes = []; pexp_desc = Pexp_construct ( {txt= Lident "()"}, None)} as x))]
-          -> [self#unparseExpr x]
+          -> self#unparseExpr x
 
       (* The following cases provide special formatting when there's only one expr_param that is a tuple/array/list/record etc.
        *  e.g. foo({a: 1, b: 2})
@@ -6759,15 +6764,11 @@ class printer  ()= object(self:'self)
        *  when the line-length indicates breaking.
        *)
       | [(Nolabel, exp)] when isSingleArgParenApplication [exp] ->
-          [self#singleArgParenApplication [exp]]
+          self#singleArgParenApplication [exp]
       | params ->
-          [makeTup (List.map self#label_x_expression_param params)])
-    in
-    match xs with
-    | [x] -> x
-    | xs -> makeBreakableList xs
+          makeTup (List.map self#label_x_expression_param params)
 
-  method formatFunAppl ~jsxAttrs ~args ~funExpr () =
+  method formatFunAppl ~jsxAttrs ~args ~applicationExpr ~funExpr () =
     (* If there was a JSX attribute BUT JSX component wasn't detected,
        that JSX attribute needs to be pretty printed so it doesn't get
        lost *)
@@ -6888,8 +6889,19 @@ class printer  ()= object(self:'self)
     | `NormalFunAppl args ->
         let theFunc = SourceMap (funExpr.pexp_loc, self#simplifyUnparseExpr funExpr) in
         (*reset here only because [function,match,try,sequence] are lower priority*)
+        let syntheticArgLoc = match args with
+        | [] -> funExpr.pexp_loc
+        | hd::_ -> (
+          let firstArg = hd in
+          let lastArg = List.nth args (List.length args - 1) in
+          {
+            funExpr.pexp_loc with
+            loc_start = funExpr.pexp_loc.loc_end;
+            loc_end = applicationExpr.pexp_loc.loc_end;
+          }
+        ) in
         let theArgs = self#reset#label_x_expression_params args in
-        maybeJSXAttr @ [label theFunc theArgs]
+        maybeJSXAttr @ [label theFunc (SourceMap(syntheticArgLoc, theArgs))]
     end
 end;;
 

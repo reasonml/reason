@@ -252,62 +252,56 @@ let defOptionalAliasAnnot =
   10;
 
 /* Invoking them */
-named
+named(
   /* a::a */
-  (
-    ~a,
-    /* b::b; */
-    ~b
-  );
+  ~a,
+  /* b::b; */
+  ~b
+);
 
-named
+named(
   /* a::a */
-  (
-    ~a,
-    /* b::b; */
-    ~b
-  );
+  ~a,
+  /* b::b; */
+  ~b
+);
 
-optional
+optional(
   /* a::a */
-  (
-    ~a,
-    /* b::b; */
-    ~b
-  );
+  ~a,
+  /* b::b; */
+  ~b
+);
 
-optional
+optional(
   /* a::a */
-  (
-    ~a,
-    /* b::b; */
-    ~b
-  );
+  ~a,
+  /* b::b; */
+  ~b
+);
 
 let explictlyPassed =
   /* optional */
-  optional
+  optional(
     /* a::? */
     /* None */
-    (
-      ~a=?None,
-      /* b::? */
-      /* None; */
-      ~b=?None
-    );
+    ~a=?None,
+    /* b::? */
+    /* None; */
+    ~b=?None
+  );
 
 let a = None;
 
 let explictlyPassed =
   /* optional */
-  optional
+  optional(
     /* a::? */
-    (
-      ~a?,
-      /* b::? */
-      /* None; */
-      ~b=?None
-    );
+    ~a?,
+    /* b::? */
+    /* None; */
+    ~b=?None
+  );
 
 let complex_default = (~callback=(k, d) => 4, x) => 3;
 
@@ -2588,13 +2582,12 @@ let callMeWithComments =
 
 let result =
   /* Comment before function to invoke */
-  callMeWithComments
+  callMeWithComments(
     /* Comment before first argument expression */
-    (
-      1 + 2 + 3 + 3,
-      /* Comment before second argument expression */
-      1 + 2 + 3 + 3
-    );
+    1 + 2 + 3 + 3,
+    /* Comment before second argument expression */
+    1 + 2 + 3 + 3
+  );
 
 module type ASig = {let a: int;};
 
