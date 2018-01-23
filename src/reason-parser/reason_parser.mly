@@ -1287,13 +1287,26 @@ as_loc
     { (None, Some $1) }
 ) {$1};
 
+%inline two_or_more_module_parameters_comma_list:
+  lseparated_two_or_more(COMMA, module_parameter) COMMA? {$1}
+;
+
 functor_parameters:
   | LPAREN RPAREN
     { let loc = mklocation $startpos $endpos in
       [mkloc (Some (mkloc "*" loc), None) loc]
     }
-  | parenthesized(module_parameter) { [$1] }
-  | parenthesized(lseparated_two_or_more(COMMA, module_parameter)) { $1 }
+  (* This single parameter case needs to be explicitly specified so that
+   * menhir can automatically remove the conflict between sigature:
+   *
+   *   include (X)
+   *   include (X, Y) => Z
+   *
+   * Even though the later is non-sensical (maybe it won't be one day?)
+   *)
+  | LPAREN module_parameter RPAREN {[$2]}
+  | LPAREN module_parameter COMMA RPAREN {[$2]}
+  | parenthesized(two_or_more_module_parameters_comma_list) { $1 }
 ;
 
 module_complex_expr:
@@ -1320,9 +1333,12 @@ mark_position_mod
     }
   ) {$1};
 
+module_arguments_comma_list:
+  lseparated_list(COMMA, module_complex_expr) COMMA? {$1}
+;
 module_arguments:
   | module_expr_structure { [$1] }
-  | parenthesized(separated_list(COMMA, module_complex_expr))
+  | parenthesized(module_arguments_comma_list)
     { match $1 with
       | [] -> [mkmod ~loc:(mklocation $startpos $endpos) (Pmod_structure [])]
       | xs -> xs
@@ -2077,10 +2093,14 @@ class_constructor_type:
     { List.fold_right mkcty_arrow $1 $3 }
 ;
 
+class_type_arguments_comma_list:
+  | lseparated_nonempty_list(COMMA,only_core_type(core_type)) COMMA? {$1}
+;
+
 class_instance_type:
 mark_position_cty
   ( as_loc(clty_longident)
-    loption(parenthesized(separated_nonempty_list(COMMA,only_core_type(core_type))))
+    loption(parenthesized(class_type_arguments_comma_list))
     { mkcty (Pcty_constr ($1, $2)) }
   | attribute class_instance_type
     /* Note that this will compound attributes - so they will become
@@ -2159,8 +2179,11 @@ and_class_description:
   }
 ;
 
+%inline class_type_parameter_comma_list:
+    | lseparated_nonempty_list(COMMA, type_parameter) COMMA? {$1}
+
 %inline class_type_parameters:
-  parenthesized(lseparated_nonempty_list(COMMA, type_parameter))
+  parenthesized(class_type_parameter_comma_list)
   { $1 }
 ;
 
@@ -2376,13 +2399,17 @@ as_loc
   ) { $1 }
 ;
 
+
+%inline labelled_pattern_comma_list:
+  lseparated_nonempty_list(COMMA, labeled_pattern) COMMA? { $1 };
+
 %inline labeled_pattern_list:
-  parenthesized(separated_list(COMMA, labeled_pattern))
-  { match $1 with
-    | [] ->
-      let loc = mklocation $startpos $endpos in
-      [mkloc (Term (Nolabel, None, mkpat_constructor_unit loc loc)) loc]
-    | pats -> pats
+  | LPAREN RPAREN {
+    let loc = mklocation $startpos $endpos in
+    [mkloc (Term (Nolabel, None, mkpat_constructor_unit loc loc)) loc]
+  }
+  | parenthesized(labelled_pattern_comma_list) {
+    $1
   }
 ;
 
@@ -2877,6 +2904,10 @@ simple_expr_direct_argument:
     { let entireLoc = mklocation $startpos($1) $endpos($3) in
       mktailexp_extension entireLoc ($2::[]) None
     }
+  | LBRACKETLESS jsx_without_leading_less COMMA RBRACKET
+    { let entireLoc = mklocation $startpos($1) $endpos($4) in
+      mktailexp_extension entireLoc [$2] None
+    }
   | LBRACELESS field_expr_list COMMA? GREATERRBRACE
     { mkexp (Pexp_override $2) }
   | as_loc(LBRACELESS) field_expr_list COMMA? as_loc(error)
@@ -2894,17 +2925,23 @@ simple_expr_direct_argument:
     { unclosed_exp (with_txt $1 "(") (with_txt $5 ")") }
 ;
 
+%inline non_labelled_expr_comma_list:
+  lseparated_nonempty_list(COMMA, expr_optional_constraint) COMMA? { $1 };
+
 non_labeled_argument_list:
-  | parenthesized(separated_nonempty_list(COMMA, expr_optional_constraint)) { $1 }
+  | parenthesized(non_labelled_expr_comma_list) { $1 }
   | LPAREN RPAREN
     { let loc = mklocation $startpos $endpos in
       [mkexp_constructor_unit loc loc] }
 ;
 
+%inline labelled_expr_comma_list:
+  lseparated_list(COMMA, labeled_expr) COMMA? { $1 };
+
 labeled_arguments:
   | mark_position_exp(simple_expr_direct_argument)
     { [(Nolabel, $1)] }
-  | parenthesized(separated_list(COMMA, labeled_expr))
+  | parenthesized(labelled_expr_comma_list)
     { match $1 with
       | [] -> let loc = mklocation $startpos $endpos in
               [(Nolabel, mkexp_constructor_unit loc loc)]
@@ -3088,7 +3125,7 @@ expr_list:
 
 /* [x, y, z, ...n] --> ([x,y,z], Some n) */
 expr_comma_seq_extension:
-  | DOTDOTDOT expr_optional_constraint
+  | DOTDOTDOT expr_optional_constraint COMMA?
     { ([], Some $2) }
   | expr_optional_constraint COMMA?
     { ([$1], None) }
@@ -3122,17 +3159,25 @@ expr_optional_constraint:
 ;
 
 record_expr:
-  | DOTDOTDOT expr_optional_constraint lnonempty_list(preceded(COMMA,lbl_expr))
+  | DOTDOTDOT expr_optional_constraint lnonempty_list(preceded(COMMA, lbl_expr)) COMMA?
     { (Some $2, $3) }
-  | as_loc(label_longident) COLON expr
-    { (None, [($1, $3)]) }
-  | lseparated_two_or_more(COMMA, lbl_expr) COMMA?
-    { (None, $1) }
+  | non_punned_lbl_expr COMMA?
+    { (None, [$1]) }
+  | lbl_expr lnonempty_list(preceded(COMMA, lbl_expr)) COMMA?
+    { (None, $1 :: $2) }
 ;
 
-lbl_expr:
+%inline non_punned_lbl_expr:
   | as_loc(label_longident) COLON expr { ($1, $3) }
-  | as_loc(label_longident)            { ($1, exp_of_label $1) }
+;
+
+%inline punned_lbl_expr:
+  | as_loc(label_longident) { ($1, exp_of_label $1) }
+;
+
+%inline lbl_expr:
+  | non_punned_lbl_expr {$1}
+  | punned_lbl_expr {$1}
 ;
 
 record_expr_with_string_keys:
@@ -3203,10 +3248,13 @@ pattern:
   | mark_position_pat(pattern BAR pattern { mkpat(Ppat_or($1, $3)) }) { $1 }
 ;
 
+%inline pat_comma_list:
+  lseparated_nonempty_list(COMMA, pattern_optional_constraint) COMMA? { $1 };
+
 pattern_constructor_argument:
   | simple_pattern_direct_argument
     { [$1] }
-  | parenthesized(separated_nonempty_list(COMMA, pattern_optional_constraint))
+  | parenthesized(pat_comma_list)
     { $1 }
 ;
 
@@ -3332,14 +3380,16 @@ mark_position_pat
     { mkpat (Ppat_type ($2)) }
   | as_loc(LBRACKETBAR) pattern_comma_list SEMI? as_loc(error)
     { unclosed_pat (with_txt $1 "[|") (with_txt $4 "|]") }
-  | LPAREN pattern RPAREN
-    { $2 }
-  | LPAREN lseparated_two_or_more(COMMA, pattern_optional_constraint) RPAREN
-    { mkpat (Ppat_tuple $2) }
+  | LPAREN lseparated_nonempty_list(COMMA, pattern_optional_constraint) COMMA? RPAREN
+    { match $2 with
+      | [] -> (* This shouldn't be possible *)
+        let loc = mklocation $startpos $endpos in
+        mkpat_constructor_unit loc loc
+      | [hd] -> hd
+      | hd :: tl -> mkpat (Ppat_tuple $2)
+    }
   | as_loc(LPAREN) pattern as_loc(error)
     { unclosed_pat (with_txt $1 "(") (with_txt $3 ")") }
-  | LPAREN pattern COLON only_core_type(core_type) RPAREN
-    { mkpat(Ppat_constraint($2, $4)) }
   | as_loc(LPAREN) pattern COLON core_type as_loc(error)
     { unclosed_pat (with_txt $1 "(") (with_txt $5 ")") }
   | LPAREN pattern COLON as_loc(error)
@@ -3375,7 +3425,7 @@ mark_position_pat
 ;
 
 %inline array_pattern:
-    LBRACKETBAR loption(terminated(pattern_comma_list,SEMI?)) BARRBRACKET
+    LBRACKETBAR loption(terminated(pattern_comma_list,COMMA?)) BARRBRACKET
     { mkpat (Ppat_array $2) }
 ;
 
@@ -3391,7 +3441,7 @@ mark_position_pat
 
 /* [x, y, z, ...n] --> ([x,y,z], Some n) */
 pattern_comma_list_extension:
-  | pattern_comma_list COMMA DOTDOTDOT pattern { ($1, Some $4) }
+  | pattern_comma_list COMMA DOTDOTDOT pattern COMMA? { ($1, Some $4) }
   | pattern_comma_list COMMA?                  { ($1, None)    }
 ;
 
@@ -3502,8 +3552,12 @@ type_other_kind:
     { (Ptype_record (only_labels $6), $4, Some $2) }
 ;
 
+type_variables_with_variance_comma_list:
+  lseparated_nonempty_list(COMMA, type_variable_with_variance) COMMA? {$1}
+;
+
 %inline type_variables_with_variance:
-  loption(parenthesized(separated_nonempty_list(COMMA, type_variable_with_variance)))
+  loption(parenthesized(type_variables_with_variance_comma_list))
   { $1 }
 ;
 
@@ -3584,13 +3638,17 @@ generalized_constructor_arguments:
   { ((match $1 with None -> Pcstr_tuple [] | Some x -> x), $2) }
 ;
 
+constructor_arguments_comma_list:
+  lseparated_nonempty_list(COMMA, only_core_type(core_type)) COMMA? {$1}
+;
+
 constructor_arguments:
   | object_record_type
     { match $1 with
       | Core_type ct -> Pcstr_tuple [ct]
       | Record_type rt -> Pcstr_record rt
     }
-  | parenthesized(separated_nonempty_list(COMMA, only_core_type(core_type)))
+  | parenthesized(constructor_arguments_comma_list)
     { Pcstr_tuple $1 }
 ;
 
@@ -3881,9 +3939,11 @@ arrow_type_parameter:
     {($6 $2, $4) }
 ;
 
+%inline arrow_type_parameter_comma_list:
+    | lseparated_nonempty_list(COMMA, as_loc(arrow_type_parameter)) COMMA? {$1}
+
 arrow_type_parameters:
-  | parenthesized(lseparated_nonempty_list(COMMA, as_loc(arrow_type_parameter)))
-    { $1 }
+  | parenthesized(arrow_type_parameter_comma_list) { $1 }
 ;
 
 /* Among other distinctions, "simple" core types can be used in Variant types:
@@ -3916,9 +3976,13 @@ non_arrowed_core_type:
     { Core_type {$2 with ptyp_attributes = $1 :: $2.ptyp_attributes} }
 ;
 
+
+%inline type_parameter_comma_list:
+    | lseparated_nonempty_list(COMMA, only_core_type(core_type)) COMMA? {$1}
+;
+
 type_parameters:
-  parenthesized(separated_nonempty_list(COMMA, only_core_type(core_type)))
-  { $1 }
+    | parenthesized(type_parameter_comma_list) { $1 }
 ;
 
 non_arrowed_simple_core_types:
