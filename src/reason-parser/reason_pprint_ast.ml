@@ -2138,7 +2138,6 @@ let layoutToEasyFormatNoComments layoutNode =
 
 
 let layoutToEasyFormat layoutNode comments =
-  (* print_layout layoutNode; *)
   let layout = layoutNode in
   let revComments = List.rev comments in
   let (singleLineComments, nonSingleLineComments) = (List.partition isSingleLineComment revComments) in
@@ -3882,7 +3881,9 @@ class printer  ()= object(self:'self)
          *   test("math", () =>
          *     Expect.expect(1 + 2) |> toBe(3)));
          *)
-        FunctionApplication (self#formatFunAppl ~jsxAttrs ~args:ls ~funExpr:e ~applicationExpr:x ())
+        let (lastLabel, lastArg) = List.nth ls (List.length ls - 1) in
+        let syntheticApplicationLocation = {e.pexp_loc with loc_end = lastArg.pexp_loc.loc_end} in
+        FunctionApplication (self#formatFunAppl ~jsxAttrs ~args:ls ~applicationExpr:x ~funExpr:e ())
       )
     )
     | Pexp_construct (li, Some eo) when not (is_simple_construct (view_expr x)) -> (
@@ -5053,7 +5054,7 @@ class printer  ()= object(self:'self)
                 | ([], None) -> soFar
                 | ([], Some e) ->
                   let soFarWithElseAppended = makeList ~postSpace:true [soFar; atom "else"] in
-                  label ~space:true soFarWithElseAppended (makeLetSequence (self#letList e))
+                  label ~space:true soFarWithElseAppended (SourceMap(e.pexp_loc, makeLetSequence (self#letList e)))
                 | (hd::tl, _) ->
                   let (e1, e2) = hd in
                   let soFarWithElseIfAppended =
@@ -5063,7 +5064,7 @@ class printer  ()= object(self:'self)
                       (makeList ~wrap:("(",")") [self#unparseExpr e1])
                   in
                   let nextSoFar =
-                    label ~space:true soFarWithElseIfAppended (makeLetSequence (self#letList e2)) in
+                    label ~space:true soFarWithElseIfAppended (SourceMap(e2.pexp_loc, makeLetSequence (self#letList e2))) in
                   sequence nextSoFar tl
             ) in
             let init =
@@ -5071,7 +5072,7 @@ class printer  ()= object(self:'self)
               let cond = self#parenthesized_expr e1 in
               label ~space:true
                 (SourceMap (e1.pexp_loc, (label ~space:true if_ cond)))
-                (makeLetSequence (self#letList e2))
+                (SourceMap (e2.pexp_loc, makeLetSequence (self#letList e2)))
             in
             Some (sequence init blocks)
           | Pexp_while (e1, e2) ->
@@ -5080,7 +5081,7 @@ class printer  ()= object(self:'self)
               let cond = self#parenthesized_expr e1 in
               label ~space:true
                 (label ~space:true while_ cond)
-                (makeLetSequence (self#letList e2))
+                (SourceMap (e2.pexp_loc, makeLetSequence (self#letList e2)))
             in
             Some lbl
           | Pexp_for (s, e1, e2, df, e3) ->
@@ -5106,7 +5107,7 @@ class printer  ()= object(self:'self)
             let upToBody = makeList ~inline:(true, true) ~postSpace:true
                 [atom (add_extension_sugar "for" extension); dockedToFor]
             in
-            Some (label ~space:true upToBody (makeLetSequence (self#letList e3)))
+            Some (label ~space:true upToBody (SourceMap(e3.pexp_loc, makeLetSequence (self#letList e3))))
           | Pexp_new (li) ->
             Some (label ~space:true (atom "new") (self#longident_class_or_type_loc li))
           | Pexp_assert e ->
@@ -6752,7 +6753,7 @@ class printer  ()= object(self:'self)
       (* function applications with unit as only argument should be printed differently
        * e.g. print_newline(()) should be printed as print_newline() *)
       | [(Nolabel, ({pexp_attributes = []; pexp_desc = Pexp_construct ( {txt= Lident "()"}, None)} as x))]
-          -> self#unparseExpr x
+          -> makeList ~break:Never [self#unparseExpr x]
 
       (* The following cases provide special formatting when there's only one expr_param that is a tuple/array/list/record etc.
        *  e.g. foo({a: 1, b: 2})
@@ -6768,7 +6769,7 @@ class printer  ()= object(self:'self)
       | params ->
           makeTup (List.map self#label_x_expression_param params)
 
-  method formatFunAppl ~jsxAttrs ~args ~applicationExpr ~funExpr () =
+  method formatFunAppl ~jsxAttrs ~args ~funExpr ~applicationExpr () =
     (* If there was a JSX attribute BUT JSX component wasn't detected,
        that JSX attribute needs to be pretty printed so it doesn't get
        lost *)
@@ -6857,7 +6858,11 @@ class printer  ()= object(self:'self)
                *   x + y
                * });
                *)
-              let right = makeList ~break:Always_rec ~wrap:("=> {", "})") ~sep:";" ~renderFinalSep:true xs in
+              let right =
+                SourceMap (
+                  retCb.pexp_loc,
+                  makeList ~break:Always_rec ~wrap:("=> {", "})") ~sep:";" ~renderFinalSep:true xs
+                ) in
               let argsWithCallbackArgs = List.concat [(List.map self#label_x_expression_param args); [theCallbackArg]] in
               let left = label
                 theFunc
@@ -6881,7 +6886,7 @@ class printer  ()= object(self:'self)
                *)
               let args = makeList ~break:Always ~wrap:("", ")") ~sep:"," (
                 (List.map self#label_x_expression_param args)
-                @([label ~space:true (makeList ~wrap:("", " =>") [theCallbackArg]) (makeLetSequence xs)])
+                @([label ~space:true (makeList ~wrap:("", " =>") [theCallbackArg]) (SourceMap (retCb.pexp_loc, makeLetSequence xs))])
               ) in
               label theFunc args
         end in
@@ -6889,19 +6894,18 @@ class printer  ()= object(self:'self)
     | `NormalFunAppl args ->
         let theFunc = SourceMap (funExpr.pexp_loc, self#simplifyUnparseExpr funExpr) in
         (*reset here only because [function,match,try,sequence] are lower priority*)
-        let syntheticArgLoc = match args with
-        | [] -> funExpr.pexp_loc
+        (* The "expression location" might be different than the location of the actual
+         * function application because things like surrounding { } expand the
+         * parsed location (in body of while loop for example).
+         * We recover the most meaningful function application location we can.*)
+        let (syntheticApplicationLocation, syntheticArgLoc) = match args with
+        | [] -> (funExpr.pexp_loc, funExpr.pexp_loc)
         | hd::_ -> (
-          let firstArg = hd in
-          let lastArg = List.nth args (List.length args - 1) in
-          {
-            funExpr.pexp_loc with
-            loc_start = funExpr.pexp_loc.loc_end;
-            loc_end = applicationExpr.pexp_loc.loc_end;
-          }
+          {funExpr.pexp_loc with loc_end = applicationExpr.pexp_loc.loc_end},
+          {funExpr.pexp_loc with loc_start = funExpr.pexp_loc.loc_end; loc_end = applicationExpr.pexp_loc.loc_end}
         ) in
         let theArgs = self#reset#label_x_expression_params args in
-        maybeJSXAttr @ [label theFunc (SourceMap(syntheticArgLoc, theArgs))]
+        maybeJSXAttr @ [SourceMap(syntheticApplicationLocation, label theFunc (SourceMap(syntheticArgLoc, theArgs)))]
     end
 end;;
 

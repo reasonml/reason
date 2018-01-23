@@ -371,3 +371,213 @@ let fun_def_comment_newline = () => {/* */};
 let fun_def_comment_long = () => {
   /* longer comment inside empty function body */
 };
+
+let trueThing = true;
+
+for (i in 0 to 1) {
+  /* comment */
+  print_newline();
+};
+
+while (trueThing) {
+  /* comment */
+  print_newline();
+};
+
+if (trueThing) {
+  /* comment */
+  print_newline();
+};
+
+/* Comment before if test */
+if (trueThing) {
+  /* Comment before print */
+  print_newline();
+  /* Comment before print */
+  print_newline();
+  /* Comment after final print */
+};
+
+/* Comment before if test */
+if (trueThing) {
+  /* Comment before print */
+  print_newline();
+               /* Comment after final print */
+};
+
+/* Comment before if test */
+if (trueThing) {
+  /* Comment before print */
+  print_newline();
+  /* Comment before print */
+  print_newline();
+  /* Comment after final print */
+} else {
+  /* Comment before print */
+  print_newline();
+  /* Comment before print */
+  print_newline();
+  /* Comment after final print */
+};
+
+/* Comment before if test */
+if (trueThing) {
+  /* Comment before print */
+  print_newline();
+               /* Comment after final print */
+} else {
+  /* Comment before print */
+  print_newline();
+               /* Comment after final print */
+};
+
+/* Comment before while test */
+while (trueThing) {
+  /* Comment before print */
+  print_newline();
+  /* Comment before print */
+  print_newline();
+  /* Comment after final print */
+};
+
+/* Comment before while test */
+while (trueThing) {
+  /* Comment before print */
+  print_newline();
+               /* Comment after final print */
+};
+
+/* Comment before for test */
+for (i in 0 to 100) {
+  /* Comment before print */
+  print_newline();
+  /* Comment before print */
+  print_newline();
+  /* Comment after final print */
+};
+
+/* Comment before for test */
+for (i in 0 to 100) {
+  /* Comment before print */
+  print_newline();
+               /* Comment after final print */
+};
+
+if (trueThing) {
+  /* Comment before print */
+  print_newline(); /* eol print */
+  /* Comment before print */
+  print_newline(); /* eol print */
+  /* Comment after print */
+};
+
+/* Comment before if test */
+if (trueThing) {
+  /* Comment before print */
+  print_newline() /* eol print */;
+               /* Comment after print */
+};
+
+/* Comment before if test */
+if (trueThing) {
+  /* Comment before print */
+  print_newline(); /* eol print */
+  /* Comment before print */
+  print_newline(); /* eol print */
+  /* Comment after print */
+} else {
+  /* Comment before print */
+  print_newline(); /* eol print */
+  /* Comment before print */
+  print_newline(); /* eol print */
+  /* Comment after print */
+};
+
+/* Comment before if test */
+if (trueThing) {
+  /* Comment before print */
+  print_newline() /* eol print */;
+               /* Comment before print */
+} else {
+  /* Comment before print */
+  print_newline(); /* eol print */
+  /* Comment before print */
+  print_newline(); /* eol print */
+  /* Comment after print */
+};
+
+/* Comment before while test */
+while (trueThing) {
+  /* Comment before print */
+  print_newline(); /* eol */
+  /* Comment before print */
+  print_newline(); /* eol */
+  /* Comment after final print */
+};
+
+/* Comment before while test */
+while (trueThing) {
+  /* Comment before print */
+  print_newline() /* eol */;
+               /* Comment after final print */
+};
+
+/* Comment before for test */
+for (i in 0 to 100) {
+  /* Comment before print */
+  print_newline(); /* eol */
+  /* Comment before print */
+  print_newline(); /* eol */
+  /* Comment after final print */
+};
+
+/* Comment before for test */
+for (i in 0 to 100) {
+  /* Comment before print */
+  print_newline() /* eol */;
+               /* Comment after final print */
+};
+
+let f = (a, b, c, d) => a + b + c + d;
+
+while (trueThing) {
+  f(
+    /* a */
+    1,
+    /* b */
+    2,
+    /* c */
+    3,
+    /* d */
+    4
+    /* does work */
+  );
+};
+
+while (trueThing) {
+  f(
+    /* a */
+    1,
+    /* b */
+    2,
+    /* c */
+    3,
+    /* d */
+    4 /* does work */
+  );
+};
+
+ignore(
+  (_really, _long, _printWidth, _exceeded, _here) => {
+  /* First comment */
+  let x = 0;
+  x + x;
+  /* Closing comment */
+});
+
+ignore((_xxx, _yyy) => {
+  /* First comment */
+  let x = 0;
+  x + x;
+  /* Closing comment */
+});
