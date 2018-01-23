@@ -80,6 +80,12 @@ type colorList1 = [
   | `Black
 ];
 
+type colorList2 = [
+  | `Red
+  | `Black
+  | otherThingInheritedFrom
+];
+
 type colorList = [<
   | `Red(int, int) &(int)
   | `Black&(int, int) &(int)

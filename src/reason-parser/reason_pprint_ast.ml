@@ -3238,7 +3238,7 @@ class printer  ()= object(self:'self)
           let pcd_loc = x.ptyp_loc in
           let pcd_attributes = x.ptyp_attributes in
           let pcd_res = None in
-          let variant_helper rf =
+          let variant_helper i rf =
             match rf with
               | Rtag (label, attrs, opt_ampersand, ctl) ->
                 let pcd_name = {
@@ -3248,13 +3248,20 @@ class printer  ()= object(self:'self)
                 let pcd_args = Pcstr_tuple ctl in
                 let all_attrs = List.concat [pcd_attributes; attrs] in
                 self#type_variant_leaf ~opt_ampersand ~polymorphic:true {pcd_name; pcd_args; pcd_res; pcd_loc; pcd_attributes = all_attrs}
-              | Rinherit ct -> self#core_type ct in
+              | Rinherit ct ->
+                (* '| type' is required if the Rinherit is not the first
+                  row_field in the list
+                 *)
+                if i = 0 then
+                  self#core_type ct
+                else
+                  makeList ~postSpace:true [atom "|"; self#core_type ct] in
           let (designator, tl) =
             match (closed,low) with
               | (Closed,None) -> ("", [])
               | (Closed,Some tl) -> ("<", tl)
               | (Open,_) -> (">", []) in
-          let node_list = List.map variant_helper l in
+          let node_list = List.mapi variant_helper l in
           let ll = (List.map (fun t -> atom ("`" ^ t)) tl) in
           let tag_list = makeList ~postSpace:true ~break:IfNeed ((atom ">")::ll) in
           let type_list = if List.length tl != 0 then node_list@[tag_list] else node_list in
