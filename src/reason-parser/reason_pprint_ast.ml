@@ -2390,7 +2390,7 @@ let pp_string_literal f s =
  *)
 let constant ?(parens=true) f = function
   | Pconst_char i -> pp f "%C"  i
-  | Pconst_string (i, None) -> pp f "%a" pp_string_literal i
+  | Pconst_string (i, None) -> pp f "\"%a\"" pp_string_literal i
   | Pconst_string (i, Some delim) -> pp f "{%s|%s|%s}" delim i delim
   | Pconst_integer (i, None) ->
       paren (parens && i.[0] = '-') (fun f -> pp f "%s") f i
