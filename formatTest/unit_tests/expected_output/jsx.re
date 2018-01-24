@@ -8,7 +8,7 @@ let x =
       "paddingLeft": 100,
       "paddingRight": 100,
       "justifyContent": CssJustifySpaceBetween,
-      "flexDirection": CssFlexDirectionRow
+      "flexDirection": CssFlexDirectionRow,
     }
     onKey=(updater(handleInput))
   />;

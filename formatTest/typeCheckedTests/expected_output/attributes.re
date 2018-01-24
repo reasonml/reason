@@ -200,7 +200,7 @@ and unusedType = unit;
 [@onMyRecord]
 let rec myRecord = {
   p: () => myRecord,
-  q: () => ()
+  q: () => (),
 }
 [@onUnused]
 and unused = ();

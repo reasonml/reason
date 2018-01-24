@@ -75,24 +75,24 @@ let b = {
   "nested": {
     "objs": {
       "are": {
-        "nice": "<3"
-      }
-    }
-  }
+        "nice": "<3",
+      },
+    },
+  },
 };
 
 let c = {
   "a": a,
   "b": b,
-  "func": a => a##c#=func(10)
+  "func": a => a##c#=func(10),
 };
 
 let d = {
   "a": a2,
   "b": b,
   "func": a => {
-    "a": (arg1, arg2) => arg1 + arg2
-  }
+    "a": (arg1, arg2) => arg1 + arg2,
+  },
 };
 
 let a = {"/foo": 10};

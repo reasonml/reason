@@ -13,7 +13,9 @@ let operateOnLazyValue = (lazy {myRecordField}) => {
 };
 
 let result =
-  operateOnLazyValue(lazy {myRecordField: 100});
+  operateOnLazyValue(
+    lazy {myRecordField: 100},
+  );
 
 type box('a) =
   | Box('a);

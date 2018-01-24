@@ -2,87 +2,87 @@ type component = {displayName: string};
 
 module Bar = {
   let createElement = (~c=?, ~children, ()) => {
-    displayName: "test"
+    displayName: "test",
   };
 };
 
 module Nesting = {
   let createElement = (~children, ()) => {
-    displayName: "test"
+    displayName: "test",
   };
 };
 
 module Much = {
   let createElement = (~children, ()) => {
-    displayName: "test"
+    displayName: "test",
   };
 };
 
 module Foo = {
   let createElement =
       (~a=?, ~b=?, ~children, ()) => {
-    displayName: "test"
+    displayName: "test",
   };
 };
 
 module One = {
   let createElement =
       (~test=?, ~foo=?, ~children, ()) => {
-    displayName: "test"
+    displayName: "test",
   };
   let createElementobvioustypo =
       (~test, ~children, ()) => {
-    displayName: "test"
+    displayName: "test",
   };
 };
 
 module Two = {
   let createElement = (~foo=?, ~children, ()) => {
-    displayName: "test"
+    displayName: "test",
   };
 };
 
 module Sibling = {
   let createElement =
       (~foo=?, ~children: list(component), ()) => {
-    displayName: "test"
+    displayName: "test",
   };
 };
 
 module Test = {
   let createElement = (~yo=?, ~children, ()) => {
-    displayName: "test"
+    displayName: "test",
   };
 };
 
 module So = {
   let createElement = (~children, ()) => {
-    displayName: "test"
+    displayName: "test",
   };
 };
 
 module Foo2 = {
   let createElement = (~children, ()) => {
-    displayName: "test"
+    displayName: "test",
   };
 };
 
 module Text = {
   let createElement = (~children, ()) => {
-    displayName: "test"
+    displayName: "test",
   };
 };
 
 module Exp = {
   let createElement = (~children, ()) => {
-    displayName: "test"
+    displayName: "test",
   };
 };
 
 module Pun = {
   let createElement =
       (~intended=?, ~children, ()) => {
-    displayName: "test"
+    displayName: "test",
   };
 };
 
@@ -95,7 +95,7 @@ module Namespace = {
           ~children,
           (),
         ) => {
-      displayName: "test"
+      displayName: "test",
     };
   };
 };
@@ -138,40 +138,40 @@ module LotsOfArguments = {
         ~children,
         (),
       ) => {
-    displayName: "test"
+    displayName: "test",
   };
 };
 
 let div = (~argument1=?, ~children, ()) => {
-  displayName: "test"
+  displayName: "test",
 };
 
 module List1 = {
   let createElement = (~children, ()) => {
-    displayName: "test"
+    displayName: "test",
   };
 };
 
 module List2 = {
   let createElement = (~children, ()) => {
-    displayName: "test"
+    displayName: "test",
   };
 };
 
 module List3 = {
   let createElement = (~children, ()) => {
-    displayName: "test"
+    displayName: "test",
   };
 };
 
 module NotReallyJSX = {
   let createElement = (~foo, ~bar, children) => {
-    displayName: "test"
+    displayName: "test",
   };
 };
 
 let notReallyJSX = (~foo, ~bar, children) => {
-  displayName: "test"
+  displayName: "test",
 };
 
 let fakeRender = (el: component) =>
@@ -587,7 +587,7 @@ module Metal = {
 
 module OverEager = {
   let createElement = (~fiber, ~children, ()) => {
-    displayName: "test"
+    displayName: "test",
   };
 };
 
@@ -604,7 +604,7 @@ type style = {
 
 module Window = {
   let createElement = (~style, ~children, ()) => {
-    displayName: "window"
+    displayName: "window",
   };
 };
 
@@ -616,7 +616,7 @@ let w =
       paddingTop: 10,
       paddingLeft: 10,
       paddingRight: 10,
-      paddingBottom: 10
+      paddingBottom: 10,
     }
   />;
 

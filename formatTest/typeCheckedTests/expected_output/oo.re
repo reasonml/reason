@@ -161,7 +161,7 @@ let constrainedAndCoerced = (
  * idempotent test case.
  */
 let xs: ref({. x: int}) = {
-  contents: (anonClosedObject :> {. x: int})
+  contents: (anonClosedObject :> {. x: int}),
 };
 
 let coercedReturn = {

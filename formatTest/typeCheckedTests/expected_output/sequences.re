@@ -60,7 +60,7 @@ let number = 20;
  * be very rare anyways.
  */
 let cannotPunASingleFieldRecord = {
-  number: number
+  number: number,
 };
 
 let fourty =
@@ -91,5 +91,5 @@ let thirdFieldPunned = {a, b, c};
 
 let singlePunAcceptedIfExtended = {
   ...firstFieldPunned,
-  a
+  a,
 };
