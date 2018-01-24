@@ -243,8 +243,8 @@ let myRecord = {
         IoEligible;
       } else {
         IoInelibleButTryComposition;
-      }
-  }
+      },
+  },
 };
 
 if (printIfFirstArgGreater) {
@@ -620,26 +620,26 @@ type withThreeFields = {
 let testRecord = {
   name: "joe",
   age: 20,
-  occupation: "engineer"
+  occupation: "engineer",
 };
 
 let anotherRecord = {
   ...testRecord,
   name: "joe++",
-  age: testRecord.age + 10
+  age: testRecord.age + 10,
 };
 
 let makeRecordBase = () => {
   name: "Joe",
   age: 30,
-  occupation: "Engineer"
+  occupation: "Engineer",
 };
 
 let anotherRecord = {
   /* These parens should be evaporated. */
   ...makeRecordBase(),
   name: "joe++",
-  age: testRecord.age + 10
+  age: testRecord.age + 10,
 };
 
 let anotherRecord = {
@@ -647,31 +647,31 @@ let anotherRecord = {
   ...makeRecordBase(),
   /* Comment after record extension */
   name: "joe++",
-  age: testRecord.age + 10
+  age: testRecord.age + 10,
 };
 
 let anotherRecord = {
   /* Currently, type annotations must be wrapped in parens - that's easy to improve */
   ...(makeRecordBase(): withThreeFields),
   name: "joe++",
-  age: testRecord.age + 10
+  age: testRecord.age + 10,
 };
 
 let anotherRecord = {
   /* This is meaningless, sure */
   ...someArray.[0] = 20,
   name: "joe++",
-  age: testRecord.age + 10
+  age: testRecord.age + 10,
 };
 
 let anotherRecord = {
   ...
     SomeReally.longFunctionCall({
       passingRecordField: 0,
-      andThisOtherRecordField: 10
+      andThisOtherRecordField: 10,
     }),
   name: "joe++",
-  age: testRecord.age + 10
+  age: testRecord.age + 10,
 };
 
 let anotherRecord = {
@@ -681,7 +681,7 @@ let anotherRecord = {
       thatWrap: bool,
     ),
   name: "joe++",
-  age: testRecord.age + 10
+  age: testRecord.age + 10,
 };
 
 let anotherRecord = {
@@ -698,7 +698,7 @@ let anotherRecord = {
       ],
     ),
   name: "joe++",
-  age: testRecord.age + 10
+  age: testRecord.age + 10,
 };
 
 /* Record type punning */
@@ -748,7 +748,7 @@ type foo = {
 let moreFoo = {
   bar: Baz.bar,
   qux,
-  fooo: Fooo.fooo
+  fooo: Fooo.fooo,
 };
 
 /* record value punning */
@@ -792,17 +792,17 @@ let () = {
 let z = {
   a: {
     b: c,
-    d: e
+    d: e,
   },
-  f: g
+  f: g,
 };
 
 let z = {
   a: {
     "b": c,
-    "d": e
+    "d": e,
   },
-  f: g
+  f: g,
 };
 
 let z = {
@@ -810,23 +810,23 @@ let z = {
     pub b = c;
     pub d = e
   },
-  f: g
+  f: g,
 };
 
 let z = {
   "a": {
     "b": c,
-    "d": e
+    "d": e,
   },
-  "f": g
+  "f": g,
 };
 
 let z = {
   "a": {
     b: c,
-    d: e
+    d: e,
   },
-  "f": g
+  "f": g,
 };
 
 let z = {
@@ -834,7 +834,7 @@ let z = {
     pub b = c;
     pub d = e
   },
-  "f": g
+  "f": g,
 };
 
 /**

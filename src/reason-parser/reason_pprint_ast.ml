@@ -5215,8 +5215,7 @@ class printer  ()= object(self:'self)
         else
           (self#longident_loc fst)::rest
     in
-    let makeRow (li, e) appendComma shouldPun =
-      let comma = atom "," in
+    let makeRow (li, e) shouldPun =
       let totalRowLoc = {
         loc_start = li.Asttypes.loc.loc_start;
         loc_end = e.pexp_loc.loc_end;
@@ -5227,7 +5226,7 @@ class printer  ()= object(self:'self)
         (* also turns {Foo.bar: bar, baz: 1} into {Foo.bar, baz: 1} *)
         (* don't turn {bar: Foo.bar, baz: 1} into {bar, baz: 1}, naturally *)
         | (Pexp_ident {txt = Lident value}, true, true) when Longident.last li.txt = value ->
-          makeList (maybeQuoteFirstElem li (if appendComma then [comma] else []))
+          makeList (maybeQuoteFirstElem li [])
 
           (* Force breaks for nested records or bs obj sugar
            * Example:
@@ -5245,45 +5244,37 @@ class printer  ()= object(self:'self)
             forceBreak := true;
             let keyWithColon = makeList (maybeQuoteFirstElem li [atom ":"]) in
             let value = self#unparseRecord ~forceBreak: true recordRows optionalGadt in
-            let row = label ~space:true keyWithColon value in
-            if appendComma then makeList [row; comma] else row
+            label ~space:true keyWithColon value
         | (Pexp_extension (s, p), _, _) when s.txt = "bs.obj" ->
             forceBreak := true;
             let keyWithColon = makeList (maybeQuoteFirstElem li [atom ":"]) in
             let value = self#formatBsObjExtensionSugar ~forceBreak:true p in
-            let row = label ~space:true keyWithColon value in
-            if appendComma then makeList [row; comma] else row
+            label ~space:true keyWithColon value
         | (Pexp_object classStructure, _, _) ->
             forceBreak := true;
             let keyWithColon = makeList (maybeQuoteFirstElem li [atom ":"]) in
             let value = self#classStructure ~forceBreak:true classStructure in
-            let row = label ~space:true keyWithColon value in
-            if appendComma then makeList [row; comma] else row
+            label ~space:true keyWithColon value
         | _ ->
           let (argsList, return) = self#curriedPatternsAndReturnVal e in
           match argsList with
           | [] ->
             let appTerms = self#unparseExprApplicationItems e in
             let upToColon = makeList (maybeQuoteFirstElem li [atom ":"]) in
-            let labelExpr = formatAttachmentApplication
-                applicationFinalWrapping (Some (true, upToColon)) appTerms
-            in
-            if appendComma then makeList [labelExpr; comma] else labelExpr
+            formatAttachmentApplication applicationFinalWrapping (Some (true, upToColon)) appTerms
           | firstArg :: tl ->
             let upToColon = makeList (maybeQuoteFirstElem li [atom ":"]) in
             let returnedAppTerms = self#unparseExprApplicationItems return in
-            let labelExpr = self#wrapCurriedFunctionBinding
-                ~sweet:true ~attachTo:upToColon "fun" ~arrow:"=>"
-                firstArg tl returnedAppTerms
-            in
-            if appendComma then makeList [labelExpr; comma] else labelExpr
+            self#wrapCurriedFunctionBinding
+              ~sweet:true ~attachTo:upToColon "fun" ~arrow:"=>"
+              firstArg tl returnedAppTerms
       in SourceMap (totalRowLoc, theRow)
     in
     let rec getRows l =
       match l with
         | [] -> []
-        | hd::[] -> [makeRow hd false true]
-        | hd::hd2::tl -> (makeRow hd true true)::(getRows (hd2::tl))
+        | hd::[] -> [makeRow hd true]
+        | hd::hd2::tl -> (makeRow hd true)::(getRows (hd2::tl))
     in
 
     let allRows = match eo with
@@ -5291,25 +5282,24 @@ class printer  ()= object(self:'self)
         match l with
           (* No punning (or comma) for records with only a single field. It's ambiguous with an expression in a scope *)
           (* See comment in parser.mly for lbl_expr_list_with_at_least_one_non_punned_field *)
-          | [hd] -> [makeRow hd false false]
+          | [hd] -> [makeRow hd false]
           | _ -> getRows l
         )
       | Some withRecord ->
         let firstRow = (
-          (* Unclear why "sugar_expr" was special cased here. *)
+          (* Unclear why "sugar_expr" was special cased hre. *)
           let appTerms = self#unparseExprApplicationItems withRecord in
-          let firstRowContents =
-            formatAttachmentApplication applicationFinalWrapping (Some (false, (atom "..."))) appTerms in
-          if l == [] then firstRowContents else makeList [firstRowContents; atom ","]
+          formatAttachmentApplication applicationFinalWrapping (Some (false, (atom "..."))) appTerms
         ) in
-        SourceMap (withRecord.pexp_loc, firstRow)::(getRows l)
+        SourceMap (withRecord.pexp_loc, firstRow) :: getRows l
     in
     let break = if !forceBreak then Always else IfNeed in
     let (left, right) = wrap in
     makeList
       ~wrap:(left ^ "{" ,"}" ^ right)
       ~break
-      ~preSpace:true
+      ~sep:commaTrail
+      ~postSpace:true
       allRows
 
   method isSeriesOfOpensFollowedByNonSequencyExpression expr =

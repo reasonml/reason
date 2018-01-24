@@ -201,7 +201,7 @@ let {nameBlah}: nameBlahType = {nameBlah: 20};
 print_int(nameBlah);
 
 let {nameBlah: aliasedToThisVar}: nameBlahType = {
-  nameBlah: 20
+  nameBlah: 20,
 };
 
 print_int(aliasedToThisVar);
@@ -215,7 +215,7 @@ let desiredFormattingForWrappedLambda:
    fix   /-coupled--\
     |-\ /-to-prefix--\       */
   (curriedArg, anotherArg, lastArg) => {
-    nameBlah: 10
+    nameBlah: 10,
   };
 
 type longerInt = int;
@@ -230,7 +230,7 @@ let desiredFormattingForWrappedLambdaWrappedArrow:
    fix   /-coupled--\
     |-\ /-to-prefix--\       */
   (curriedArg, anotherArg, lastArg) => {
-    nameBlah: 10
+    nameBlah: 10,
   };
 
 let desiredFormattingForWrappedLambdaReturnOnNewLine =
@@ -241,7 +241,7 @@ let desiredFormattingForWrappedLambdaReturnOnNewLine =
      fix   /-coupled--\
       |-\ /-to-prefix--\       */
     (curriedArg, anotherArg, lastArg) => {
-  nameBlah: 10
+  nameBlah: 10,
 };
 
 /*
@@ -251,7 +251,7 @@ let desiredFormattingForWrappedLambdaReturnOnNewLine =
  |-\   / is coupled to prefix      \   */
 let desiredFormattingForWrappedSugar =
     (curriedArg, anotherArg, lastArg) => {
-  nameBlah: 10
+  nameBlah: 10,
 };
 
 /*
@@ -261,7 +261,7 @@ let desiredFormattingForWrappedSugar =
  |-\   / is coupled to prefix      \   */
 let desiredFormattingForWrappedSugarReturnOnNewLine =
     (curriedArg, anotherArg, lastArg) => {
-  nameBlah: 10
+  nameBlah: 10,
 };
 
 /*
@@ -295,7 +295,7 @@ let printPoint = (p: point) => {
 
 let addPoints = (p1: point, p2: point) => {
   x: p1.x + p2.x,
-  y: p1.y + p2.y
+  y: p1.y + p2.y,
 };
 
 let res1 = printPoint(point2D);
@@ -604,7 +604,7 @@ let myRecordWithFunctions = {
   addTwoNumbers: (a, b) => a + b,
   addThreeNumbers: (a, b, c) => a + b + c,
   addThreeNumbersTupled: ((a, b, c)) =>
-    a + b + c
+    a + b + c,
 };
 
 let result =
@@ -675,12 +675,12 @@ let myFunc = (a: int, b: int) : list(int) => [
 
 let myFunc = (a: int, b: int) : point => {
   x: a,
-  y: b
+  y: b,
 };
 
 let myFunc = (a: int, b: int) : point => {
   x: a,
-  y: b
+  y: b,
 };
 
 type myThing = (int, int);
@@ -950,13 +950,13 @@ let x = [
 
 let newRecord = {
   ...(annotatedSpreadRecord: someRec),
-  x: y
+  x: y,
 };
 
 let newRecord = {
   ...(annotatedSpreadRecord: someRec),
   blah: 0,
-  foo: 1
+  foo: 1,
 };
 
 let newRecord = {
@@ -964,7 +964,7 @@ let newRecord = {
     youCanEvenCallMethodsHereAndAnnotate(them): someRec
   ),
   blah: 0,
-  foo: 1
+  foo: 1,
 };
 
 let newRecord = {
@@ -975,7 +975,7 @@ let newRecord = {
     ): someRec
   ),
   blah: 0,
-  foo: 1
+  foo: 1,
 };
 
 let something: thing(blah) = aTypeAnnotation;
@@ -993,7 +993,7 @@ let newRecord = {
     heresAFunctionWithNamedArgs(~argOne=i): annotatedResult
   ),
   soAsToInstill: 0,
-  developmentHabbits: 1
+  developmentHabbits: 1,
 };
 
 [@thisIsAThing];

@@ -3181,22 +3181,40 @@ record_expr:
 ;
 
 record_expr_with_string_keys:
-  | DOTDOTDOT expr_optional_constraint string_literal_exprs
-    { (Some $2, $3) }
-  | STRING COLON expr
+  | DOTDOTDOT expr_optional_constraint COMMA string_literal_exprs_maybe_punned
+    { (Some $2, $4) }
+  | STRING COLON expr COMMA?
     { let loc = mklocation $symbolstartpos $endpos in
       let (s, d) = $1 in
       let lident_lident_loc = mkloc (Lident s) loc in
       (None, [(lident_lident_loc, $3)])
     }
-  | string_literal_expr string_literal_exprs
-    { (None, $1 :: $2) }
+  | string_literal_expr_maybe_punned_with_comma string_literal_exprs_maybe_punned {
+    (None, $1 :: $2)
+  }
 ;
 
-%inline string_literal_exprs:
-  lnonempty_list(preceded(COMMA, string_literal_expr)) { $1 };
+string_literal_exprs_maybe_punned:
+  lseparated_nonempty_list(COMMA, string_literal_expr_maybe_punned) COMMA? { $1 };
 
-string_literal_expr:
+(* Had to manually inline these two forms for some reason *)
+string_literal_expr_maybe_punned_with_comma:
+  | STRING COMMA
+  { let loc = mklocation $startpos $endpos in
+    let (s, d) = $1 in
+    let lident_lident_loc = mkloc (Lident s) loc in
+    let exp = mkexp (Pexp_ident lident_lident_loc) in
+    (lident_lident_loc, exp)
+  }
+  | STRING COLON expr COMMA
+  { let loc = mklocation $startpos $endpos in
+    let (s, d) = $1 in
+    let lident_lident_loc = mkloc (Lident s) loc in
+    let exp = $3 in
+    (lident_lident_loc, exp)
+  }
+;
+string_literal_expr_maybe_punned:
   STRING preceded(COLON, expr)?
   { let loc = mklocation $startpos $endpos in
     let (s, d) = $1 in

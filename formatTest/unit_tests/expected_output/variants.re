@@ -603,7 +603,7 @@ Delete({
   uuid:
     json
     |> Util.member("uuid")
-    |> Util.to_string
+    |> Util.to_string,
 });
 
 Delete((
@@ -641,7 +641,7 @@ Delete({
   uuid:
     json
     |> Util.member("uuid")
-    |> Util.to_string
+    |> Util.to_string,
 });
 
 `Delete((

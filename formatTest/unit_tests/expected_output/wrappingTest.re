@@ -401,13 +401,13 @@ let myList = [
 let myRec = {
   x: 1,
   y: 2, /*no space after two    */
-  z: 3
+  z: 3,
 };
 
 let myRec = {
   x: 1,
   y: 2, /*same w space after two    */
-  z: 3
+  z: 3,
 };
 
 /* Ensure end of line comments force breaks */
@@ -461,13 +461,13 @@ type functionsInARecord = {
 
 let myFunctionsInARecord = {
   adder: x => x,
-  minuser: x => x
+  minuser: x => x,
 };
 
 let myFunctionsInARecordThatMustWrap = {
   /* Desired wrapping */
   adder: reallyLongArgument => reallyLongArgument,
-  minuser: anotherReallyLongArgument => anotherReallyLongArgument
+  minuser: anotherReallyLongArgument => anotherReallyLongArgument,
   /* Comment at bottom of record */
 };
 
@@ -489,7 +489,7 @@ let myFunctionsInARecordThatMustWrap = {
       anotherReallyLongArgument,
     ) =>
     reallyLongArgument
-    + anotherReallyLongArgument
+    + anotherReallyLongArgument,
 };
 
 type threeArgFunctionsInARecord = {
@@ -514,7 +514,7 @@ let myFunctionsInARecordThatMustWrap = {
       anotherReallyLongArgument,
     ) =>
     reallyLongArgument
-    + anotherReallyLongArgument
+    + anotherReallyLongArgument,
 };
 
 let oneArgShouldWrapToAlignWith =
@@ -571,8 +571,8 @@ let result =
       fieldThree: ["one", "two"],
       fieldFour: {
         age: 20,
-        name: "joe"
-      }
+        name: "joe",
+      },
     },
   );
 
@@ -606,7 +606,7 @@ let seeHowLongValuesWrap = {
       "two",
       "two",
       "two",
-    ])
+    ]),
 };
 
 /*
@@ -2151,19 +2151,19 @@ let df_myNonPolyFunc: 'a => 'a = o => o;
 type nameBlahType = {nameBlah: int};
 
 let myFunc = (~firstArg, ~another, ~fl) => {
-  nameBlah: 10
+  nameBlah: 10,
 };
 
 type inputEchoRecord('a) = {inputIs: 'a};
 
 let df_locallyAbstractFunc =
     (type a, type b, input: a) => {
-  inputIs: input
+  inputIs: input,
 }; /* With setting ReturnValOnSameLine */
 
 let df_locallyAbstractFuncNotSugared =
     (type a, type b, input: a) => {
-  inputIs: input
+  inputIs: input,
 };
 
 /**
@@ -2544,13 +2544,13 @@ type withThreeFields = {
 let testRecord = {
   name: "joe",
   age: 20,
-  occupation: "engineer"
+  occupation: "engineer",
 };
 
 let anotherRecord = {
   ...testRecord,
   name: "joe++",
-  age: testRecord.age + 10
+  age: testRecord.age + 10,
 };
 
 type polymorphicCommentedType
@@ -2583,7 +2583,7 @@ let testRecordCommented = {
   /* Commenting the second field */
   ageCommented: 20,
   /* Commenting the last field */
-  occupationCommented: "engineer"
+  occupationCommented: "engineer",
 };
 
 /*
@@ -2684,64 +2684,64 @@ module type FunctorType =
 let commentingBeforeEqual /*beforeEqual*/ = {
   name: "hello",
   age: 20,
-  occupation: "programmer"
+  occupation: "programmer",
 };
 
 let commentingAfterEqual = /*afterEqual*/ {
   name: "hello",
   age: 20,
-  occupation: "programmer"
+  occupation: "programmer",
 };
 
 let commentingBeforeEqualBeforeType /*beforeEqualBeforeType*/: withThreeFields = {
   name: "hello",
   age: 20,
-  occupation: "programmer"
+  occupation: "programmer",
 };
 
 let commentingBeforeEqualAfterType:
   withThreeFields /*beforeEqualAfterType*/ = {
   name: "hello",
   age: 20,
-  occupation: "programmer"
+  occupation: "programmer",
 };
 
 let commentingAfterEqualAfterType: withThreeFields = /*afterEqual*/ {
   name: "hello",
   age: 20,
-  occupation: "programmer"
+  occupation: "programmer",
 };
 
 let /*beforePattern*/ commentingBeforePattern: withThreeFields = {
   name: "hello",
   age: 20,
-  occupation: "programmer"
+  occupation: "programmer",
 };
 
 /*beforePattern*/
 let /*beforePattern2 */ commentingBeforePattern2: withThreeFields = {
   name: "hello",
   age: 20,
-  occupation: "programmer"
+  occupation: "programmer",
 };
 
 /*beforePattern*/
 let /*beforePattern2 */ commentingBeforePatternSpecial: withThreeFields = {
   name: "hello",
   age: 20,
-  occupation: "programmer"
+  occupation: "programmer",
 };
 
 let produceRecord /*commentBeforeArg*/ = x => {
   name: "hello",
   age: 20,
-  occupation: "programmer"
+  occupation: "programmer",
 };
 
 let produceRecord = x => /*commentAfterArg*/ {
   name: "hello",
   age: 20,
-  occupation: "programmer"
+  occupation: "programmer",
 };
 
 let myPolyFuncCommentBeforeColon /*beforeColon */:
@@ -2981,7 +2981,7 @@ reallyLongFunctionNameWithRecordStringKeys({
   "one": 2345,
   "two": 2345678,
   "three": 45678,
-  "four": 45678
+  "four": 45678,
 });
 
 fooSpreadES6List([
