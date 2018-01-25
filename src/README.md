@@ -80,7 +80,6 @@ Small exception: testing your changes in `rtop` is a little complicated, but you
 ## Repo Walkthrough
 
 ![reason_-_bucklescript_in_ocaml](https://user-images.githubusercontent.com/1909539/31158768-0c7e9d04-a879-11e7-9cfb-19780a599231.png)
-
 (_Click to see a larger version_)
 
 We're that orange part! The core of the codebase is a parser + a printer, plus other miscellaneous utilities we expose.
@@ -102,7 +101,7 @@ Our lexer & parser use [Menhir](http://gallium.inria.fr/~fpottier/menhir/), a li
 
 - `src/reason-parser/reason_oprint.ml`: the "outcome printer" used by Merlin, rtop and terminal, that prints the errors in Reason syntax. More info in the file itself.
 
-- `src/reason-parser/menhir_error_processor.ml, reason_parser_explain.ml`: two files that allows us to batch assign a better syntax error message for a category of errors, like accidentally using a reserved token. reason_parser_explain_raw.ml`. More info in the comments of these files.
+- `src/reason-parser/menhir_error_processor.ml, reason_parser_explain.ml`: two files that allows us to batch assign a better syntax error message for a category of errors, like accidentally using a reserved token. More info in the comments of these files.
 
 ### Miscellaneous Files
 
