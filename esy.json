@@ -1,6 +1,6 @@
 {
-  "name": "@opam/reason",
-	"license": "MIT",
+  "name": "reason-dev",
+  "license": "MIT",
   "version": "3.0.4",
   "dependencies": {
     "@esy-ocaml/substs": "^0.0.1",
@@ -23,11 +23,12 @@
   },
   "esy": {
     "build": [
-      [ "jbuilder", "build", "-p", "rebuild,reason"]
+      [ "jbuilder", "build", "-p", "rebuild,reason,rtop"]
     ],
     "install": [
       ["esy-installer", "rebuild.install"],
-      ["esy-installer", "reason.install"]
+      ["esy-installer", "reason.install"],
+      ["esy-installer", "rtop.install"]
     ],
     "buildsInSource": "_build"
   }

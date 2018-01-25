@@ -42,6 +42,11 @@ clean-for-ci: clean-tests
 ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 SUBSTS:=$(ROOT_DIR)/pkg/substs
 
+# For publishing esy releases to npm
+esy-prepublish: build clean-tests
+	node ./scripts/esy-prepublish.js
+
+# For OPAM
 pre_release:
 ifndef version
 	$(error environment variable 'version' is undefined)
@@ -52,9 +57,11 @@ endif
 
 .PHONY: pre_release
 
+# For OPAM
 release_check:
 	./scripts/release-check.sh
 
+# For OPAM
 release: release_check pre_release
 	git add package.json src/refmt/package.ml reason.opam
 	git commit -m "Version $(version)"

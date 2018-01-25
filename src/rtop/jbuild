@@ -2,12 +2,12 @@
 
 (install
  ((section bin)
-  (package reason)
+  (package rtop)
   (files (rtop_init.ml))))
 
 (library
- ((name reason.rtop)
-  (public_name reason.rtop)
+ ((name rtop)
+  (public_name rtop)
   (modules (reason_util reason_utop reason_toploop))
   (wrapped false)
   (libraries (menhirLib reason.easy_format reason utop ocaml-migrate-parsetree))))
@@ -15,4 +15,4 @@
 (install
  ((section bin)
   (files ((rtop.sh as rtop)))
-  (package reason)))
+  (package rtop)))
