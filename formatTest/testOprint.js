@@ -65,9 +65,9 @@ const files = fs.readdirSync(base)
 const main = async () => {
   const inputFiles = files.filter(name => name.endsWith('.re'))
   const results = await Promise.all(inputFiles.map(async name => {
-    const full = path.join(base, name)
+    const fullPath = path.join(base, name)
 
-    const {result, error} = await outcomePrint(full)
+    const {result, error} = await outcomePrint(fullPath)
 
     if (error) {
       return `Printing failure ${name}:\n\n${error}`
@@ -76,7 +76,7 @@ const main = async () => {
     const {stdout, stderr, code} = await checkResult(result)
 
     if (code !== 0) {
-      let {stdout: refmtOut, stderr: refmtErr} = await refmtInterface(full)
+      let {stdout: refmtOut, stderr: refmtErr} = await refmtInterface(fullPath)
       return `Output printed for the signature of "${name}" not parseable:
 
 ## Refmt's error:

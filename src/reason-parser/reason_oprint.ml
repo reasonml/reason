@@ -302,10 +302,22 @@ and print_out_type_1 ppf =
         | _ -> (args, typ)
       in
       pp_open_box ppf 0;
-      pp_print_string ppf "(";
-      let (args, result) = collect_args [(lab, ty1)] ty2 in
-      print_list print_arg (fun ppf -> fprintf ppf ",@ ") ppf args;
-      pp_print_string ppf ")";
+      let (args, result) = collect_args [(lab, ty1)] ty2 in begin
+        match args with
+        (* single argument should not be wrapped... *)
+        | [(_, Otyp_tuple _) as arg] ->
+          (* ...unless it's for tuple. ((int, int)) => string *)
+          pp_print_string ppf "(";
+          print_arg ppf arg;
+          pp_print_string ppf ")"
+        | [("", typ) as arg] ->
+          (* see above. Though we only unwrap when there's no label *)
+          print_arg ppf arg
+        | args ->
+          pp_print_string ppf "(";
+          print_list print_arg (fun ppf -> fprintf ppf ",@ ") ppf args;
+          pp_print_string ppf ")"
+      end;
       pp_print_string ppf " =>";
       pp_print_space ppf ();
       print_out_type_1 ppf result;
