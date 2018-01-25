@@ -263,7 +263,8 @@ type infixChain =
 let expression_extension_sugar x =
   if x.pexp_attributes <> [] then None
   else match x.pexp_desc with
-    | Pexp_extension (name, PStr [{pstr_desc = Pstr_eval(expr, [])}]) ->
+    | Pexp_extension (name, PStr [{pstr_desc = Pstr_eval(expr, [])}])
+      when name.txt <> "bs.obj" ->
       Some (name, expr)
     | _ -> None
 
