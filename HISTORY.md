@@ -23,7 +23,7 @@
 
 ## 3.0.0
 
-Our biggest release! **Please see our blog post** on https://reasonml.github.io/community/blog/#reason-3.
+Our biggest release! **Please see our blog post** on https://reasonml.github.io/blog/2017/10/27/reason3.html.
 
 Summary: this is, practically speaking, a **non-breaking** change. You can mix and match two projects with different syntax versions in BuckleScript 2 (which just got release too! Go check), and they'll Just Work (tm).
 
