@@ -6,7 +6,7 @@ Simple, fast & type safe code that leverages the JavaScript & OCaml ecosystems.
 
 ## [Getting Started](https://reasonml.github.io/docs/en/quickstart-javascript.html)
 
-## [Community](https://reasonml.github.io/community/)
+## [Community](https://reasonml.github.io/docs/en/community.html)
 
 ## Contributing
 
