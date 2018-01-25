@@ -679,42 +679,40 @@ and print_out_sig_item ppf =
           | Orec_next  -> "and")
         ppf td
 (* #if defined BS_NO_COMPILER_PATCH then *)
+  | Osig_ellipsis ->
+    fprintf ppf "..."
   | Osig_value {oval_name; oval_type; oval_prims; oval_attributes} ->
-    let kwd = if oval_prims = [] then "let" else "external" in
-    let pr_prims ppf =
+    let printAttributes ppf = List.iter (fun a -> fprintf ppf "[@@%s]" a.oattr_name) in
+(* #else *)
+  (* | Osig_value(oval_name, oval_type, oval_prims) -> *)
+    (* let printAttributes ppf attrs = () in *)
+    (* let oval_attributes = [] in *)
+(* #end *)
+    let keyword = if oval_prims = [] then "let" else "external" in
+    let (hackyBucklescriptExternalAnnotation, rhsValues) = List.partition (fun item ->
+      (* "BS:" is considered as a bucklescript external annotation, `[@bs.module]` and the sort.
+
+        "What's going on here? Isn't [@bs.foo] supposed to be an attribute in oval_attributes?"
+        Usually yes. But here, we're intercepting things a little too late. BuckleScript already
+        finished its pre/post-processing work before we get to print anything. The original
+        attribute is already gone, replaced by a "BS:asdfasdfasd" thing here.
+      *)
+      String.length item >= 3 && item.[0] = 'B' && item.[1] = 'S' && item.[2] = ':'
+    ) oval_prims in
+    let print_right_hand_side ppf =
       function
         [] -> ()
       | s :: sl ->
           fprintf ppf "@ = \"%s\"" s;
           List.iter (fun s -> fprintf ppf "@ \"%s\"" s) sl
     in
-    fprintf ppf "@[<2>%s %a:@ %a%a%a@]" kwd value_ident oval_name
-        !out_type oval_type pr_prims oval_prims
-        (fun ppf -> List.iter (fun a -> fprintf ppf "@ [@@@@%s]" a.oattr_name))
-        oval_attributes
-  | Osig_ellipsis ->
-    fprintf ppf "..."
-(* #else *)
-  (* | Osig_value(oval_name, oval_type, oval_prims) -> *)
-    (* let kwd = if oval_prims = [] then "let" else "external" in *)
-    (* let pr_prims ppf = *)
-      (* function *)
-        (* [] -> () *)
-      (* | s :: sl -> *)
-          (* fprintf ppf "@ = \"%s\"" s; *)
-          (* List.iter (fun s ->  *)
-    (* TODO: in general, we should print bs attributes, some attributes like
-      bs.splice does need it *)
-    (* let len = String.length s in *)
-    (* if len >= 3 && s.[0] = 'B' && s.[1] = 'S' && s.[2] = ':' then *)
-      (* fprintf ppf "@ \"BuckleScript External\""  *)
-    (* else *)
-      (* fprintf ppf "@ \"%s\"" s *)
-    (* ) sl *)
-    (* in *)
-    (* fprintf ppf "@[<2>%s %a:@ %a%a@]" kwd value_ident oval_name *)
-        (* !out_type oval_type pr_prims oval_prims *)
-(* #end *)
+    fprintf ppf "@[<2>%a%a%s %a:@ %a%a@]"
+      (fun ppf -> List.iter (fun _ -> fprintf ppf "[@@bs...]@ ")) hackyBucklescriptExternalAnnotation
+      printAttributes oval_attributes
+      keyword
+      value_ident oval_name
+      !out_type oval_type
+      print_right_hand_side rhsValues
 
 and print_out_type_decl kwd ppf td =
   let print_constraints ppf =
