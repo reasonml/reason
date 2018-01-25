@@ -3,7 +3,7 @@
 **See a list of easy tasks [here](https://github.com/facebook/reason/labels/GOOD%20FIRST%20TASK)**
 
 ## Code of Conduct
-The code of conduct is described in [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md)
+The code of conduct is described in [`CODE_OF_CONDUCT.md`](../CODE_OF_CONDUCT.md)
 
 ## Contributor Setup
 
