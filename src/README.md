@@ -309,6 +309,25 @@ env version=x.y.z make release
 
 - Use [opam-publish](https://github.com/ocaml/opam-publish) to publish the latest version to opam.
 
+### Esy
+
+Cutting a release of esy versions is a good way to get packages out there for
+testing before submitting to opam. This lets you catch bugs quickly without
+having to go through the whole process of re-releasing to opam.
+
+```sh
+esy install
+esy build
+esy make esy-prepublish
+```
+
+Then follow the instructions. You should also `cd` into each
+`_release/xxxx/package` and try `esy install && esy build` to make sure
+everything builds correctly before publishing esy packages.
+
+Note `esy` packages are "published to npm" but that is different than the
+following workflow for publishing to npm.
+
 ### NPM
 
 Reason's also on npm, albeit for a different purpose. The `refmt.js` file is distributed there, for use-cases where the native `refmt` doesn't suffice (e.g. using it on the web).

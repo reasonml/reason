@@ -27,3 +27,4 @@ refmt.map
 _esybuild
 _esyinstall
 .merlin
+_release

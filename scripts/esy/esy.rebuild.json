@@ -1,0 +1,33 @@
+{
+  "name": "@esy-ocaml/rebuild",
+  "version": "3.0.5",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/facebook/reason.git"
+  },
+  "dependencies": {
+    "@esy-ocaml/substs": "^0.0.1",
+    "@esy-ocaml/esy-installer": "^0.0.0",
+    "@opam/ocamlfind": "",
+    "@opam/result": "=1.2.0",
+    "@opam/jbuilder": "*",
+    "@opam/ocamlbuild": "*"
+  },
+  "peerDependencies": {
+    "ocaml": " >= 4.2.0  < 4.7.0"
+  },
+  "devDependencies": {
+    "@esy-ocaml/merlin": "*",
+    "ocaml": "~4.6.0"
+  },
+  "esy": {
+    "build": [
+      [ "jbuilder", "build", "-p", "rebuild"]
+    ],
+    "install": [
+      ["esy-installer"]
+    ],
+    "buildsInSource": "_build"
+  }
+}

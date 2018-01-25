@@ -5,7 +5,7 @@
 let () = try Topdirs.dir_directory (Sys.getenv "OCAML_TOPLEVEL_PATH") with | Not_found -> ();;
 #require "reason.easy_format";;
 #require "reason";;
-#require "reason.rtop";;
+#require "rtop";;
 
 print_string
 "

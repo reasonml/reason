@@ -1,0 +1,29 @@
+{
+  "name": "@esy-ocaml/reason",
+  "version": "3.0.5",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/facebook/reason.git"
+  },
+  "dependencies": {
+    "@esy-ocaml/substs": "^0.0.1",
+    "@esy-ocaml/esy-installer": "^0.0.0",
+    "@opam/ocamlfind": "",
+    "@opam/result": "=1.2.0",
+    "@opam/jbuilder": "*",
+    "@opam/menhir": " >= 20170418.0.0  <= 20171013.0.0",
+    "@opam/utop": " >= 1.17.0",
+    "@opam/merlin-extend": " >= 0.3.0",
+    "@opam/ocaml-migrate-parsetree": "*"
+  },
+  "esy": {
+    "build": [
+      [ "jbuilder", "build", "-p", "reason"]
+    ],
+    "install": [
+      ["esy-installer"]
+    ],
+    "buildsInSource": "_build"
+  }
+}
