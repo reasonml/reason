@@ -132,7 +132,7 @@ open Ast_mapper
 
 *)
 
-let bs_payload loc = ({loc; txt = "bs"}, PStr [])
+let uncurry_payload loc = ({loc; txt = "bs"}, PStr [])
 
 let dummy_loc () = {
   loc_start = Lexing.dummy_pos;
@@ -367,7 +367,7 @@ let mkexp_cons consloc args loc =
   mkexp ~loc (Pexp_construct(mkloc (Lident "::") consloc, Some args))
 
 let mkexp_constructor_unit ?(uncurried=false) consloc loc =
-  let attrs = if uncurried then [bs_payload loc] else [] in
+  let attrs = if uncurried then [uncurry_payload loc] else [] in
   mkexp ~attrs ~loc (Pexp_construct(mkloc (Lident "()") consloc, None))
 
 let ghexp_cons consloc args loc =
@@ -442,7 +442,7 @@ let mkstrexp e attrs =
       let appExprAttrs = List.filter (function
           | ({txt = "bs"}, PStr []) -> false
           | _ -> true ) pexp_attributes in
-      let strEvalAttrs = (bs_payload e1.pexp_loc)::(List.filter (function
+      let strEvalAttrs = (uncurry_payload e1.pexp_loc)::(List.filter (function
         | ({txt = "bs"}, PStr []) -> false
           | _ -> true ) attrs) in
       let e = {
@@ -572,18 +572,19 @@ let mkclass_fun {Location. txt ; loc} body =
     let pat = syntax_error_pat loc "(type) not allowed in classes" in
     Cl.fun_ ~loc Nolabel None pat body
 
-let mktyp_arrow {Location. txt = (label, cod); loc} dom =
-  mktyp ~loc:(mklocation loc.loc_start dom.ptyp_loc.loc_end)
-    (Ptyp_arrow (label, cod, dom))
+let mktyp_arrow ({Location.txt = (label, cod); loc}, uncurried) dom =
+  let loc = mklocation loc.loc_start dom.ptyp_loc.loc_end in
+  let typ = mktyp ~loc (Ptyp_arrow (label, cod, dom)) in
+  {typ with ptyp_attributes = (if uncurried then [uncurry_payload loc] else [])}
 
-let mkcty_arrow {Location. txt = (label, cod); loc} dom =
-  mkcty ~loc:(mklocation loc.loc_start dom.pcty_loc.loc_end)
-    (Pcty_arrow (label, cod, dom))
-
+let mkcty_arrow ({Location.txt = (label, cod); loc}, uncurried) dom =
+  let loc = mklocation loc.loc_start dom.pcty_loc.loc_end in
+  let ct = mkcty ~loc (Pcty_arrow (label, cod, dom)) in
+  {ct with pcty_attributes = (if uncurried then [uncurry_payload loc] else [])}
 
 let mkexp_app_rev startp endp (body, args, uncurried) =
   let loc = mklocation startp endp in
-  let attrs = if uncurried then [bs_payload loc] else [] in
+  let attrs = if uncurried then [uncurry_payload loc] else [] in
   if args = [] then { body with pexp_loc = loc } else
     mkexp ~attrs ~loc (Pexp_apply (body, List.rev args))
 
@@ -2122,12 +2123,7 @@ method_:
 class_constructor_type:
   | class_instance_type { $1 }
   | arrow_type_parameters EQUALGREATER class_constructor_type
-    { let (p, uncurried) = $1 in
-      let cty_arrow = List.fold_right mkcty_arrow p $3 in
-      if uncurried then
-        let loc = mklocation $startpos $endpos in
-        { cty_arrow with pcty_attributes = (bs_payload loc)::cty_arrow.pcty_attributes }
-      else cty_arrow }
+    { List.fold_right mkcty_arrow $1 $3 }
 ;
 
 class_type_arguments_comma_list:
@@ -2153,10 +2149,9 @@ class_type_body:
   | LBRACE class_sig_body RBRACE
     { mkcty ~loc:(mklocation $startpos $endpos) (Pcty_signature $2) }
   | LBRACE DOT class_sig_body RBRACE
-    { let ct = mkcty ~loc:(mklocation $startpos $endpos) (Pcty_signature $3) in
-    (* TODO *)
-    let loc = mklocation $startpos $endpos in
-    {ct with pcty_attributes = [bs_payload loc]}
+    { let loc = mklocation $startpos $endpos in
+      let ct = mkcty ~loc (Pcty_signature $3) in
+      {ct with pcty_attributes = [uncurry_payload loc]}
     }
   | as_loc(LBRACE) class_sig_body as_loc(error)
     { unclosed_cty (with_txt $1 "{") (with_txt $3 "}") }
@@ -2292,7 +2287,6 @@ mark_position_exp
     { $2 }
   | LBRACE as_loc(seq_expr) error
     { syntax_error_exp $2.loc "SyntaxError in block" }
-
   | LBRACE DOTDOTDOT expr_optional_constraint COMMA? RBRACE
     { let loc = mklocation $symbolstartpos $endpos in
       let msg = "Record construction must have at least one field explicitly set" in
@@ -2639,7 +2633,7 @@ mark_position_exp
     let exp = List.fold_right mkexp_fun ps $4 in
     if uncurried then
       let loc = mklocation $startpos $endpos in
-      {exp with pexp_attributes = (bs_payload loc)::exp.pexp_attributes}
+      {exp with pexp_attributes = (uncurry_payload loc)::exp.pexp_attributes}
     else exp
     }
   | ES6_FUN es6_parameters COLON only_core_type(non_arrowed_core_type) EQUALGREATER expr
@@ -2648,7 +2642,7 @@ mark_position_exp
         (ghexp_constraint (mklocation $startpos($4) $endpos) $6 (Some $4, None))  in
     if uncurried then
       let loc = mklocation $startpos $endpos in
-      {exp with pexp_attributes = (bs_payload loc)::exp.pexp_attributes}
+      {exp with pexp_attributes = (uncurry_payload loc)::exp.pexp_attributes}
     else exp
     }
 
@@ -3181,16 +3175,16 @@ fun_def(DELIM, typ):
   labeled_pattern_list
   preceded(COLON,only_core_type(typ))?
   either(preceded(DELIM, expr), braced_expr)
-  { let (pl, uncurried) = $1 in
-  let exp = List.fold_right mkexp_fun pl
-      (match $2 with
-      | None -> $3
-      | Some ct -> Exp.constraint_ ~loc:(mklocation $startpos $endpos) $3 ct)
-  in
-  if uncurried then
-    let loc = mklocation $startpos $endpos in
-    {exp with pexp_attributes = (bs_payload loc)::exp.pexp_attributes}
-   else exp
+  { let loc = mklocation $startpos $endpos in
+    let (pl, uncurried) = $1 in
+    let exp = List.fold_right mkexp_fun pl
+        (match $2 with
+        | None -> $3
+        | Some ct -> Exp.constraint_ ~loc $3 ct)
+    in
+    if uncurried then
+      {exp with pexp_attributes = (uncurry_payload loc)::exp.pexp_attributes}
+    else exp
   }
 ;
 
@@ -4020,12 +4014,7 @@ unattributed_core_type:
   | non_arrowed_simple_core_type
     { $1 }
   | arrow_type_parameters EQUALGREATER only_core_type(core_type2)
-    { let (p, uncurried) = $1 in
-      let ct = List.fold_right mktyp_arrow p $3 in
-      let ct = if uncurried then
-        let loc = mklocation $startpos $endpos in
-        { ct with ptyp_attributes = (bs_payload loc)::ct.ptyp_attributes  }
-      else ct in
+    { let ct = List.fold_right mktyp_arrow $1 $3 in
       Core_type ct }
   | only_core_type(basic_core_type) EQUALGREATER only_core_type(core_type2)
     { Core_type (mktyp (Ptyp_arrow (Nolabel, $1, $3))) }
@@ -4035,19 +4024,25 @@ arrow_type_parameter:
   | only_core_type(core_type)
     { (Nolabel, $1) }
   | TILDE LIDENT COLON only_core_type(core_type)
-    { ( Labelled $2, $4) }
+    { (Labelled $2, $4) }
   | TILDE LIDENT COLON only_core_type(core_type) EQUAL optional
-    {($6 $2, $4) }
+    { ($6 $2, $4) }
 ;
 
+%inline uncurried_arrow_type_parameter:
+    DOT? as_loc(arrow_type_parameter)
+  { let uncurried = match $1 with | Some _ -> true | None -> false in
+    match $2.txt with
+    | (Labelled _, _) when uncurried ->
+        raise Syntax_util.(Error($2.loc, (Syntax_error "An uncurried function type with labelled arguments is not supported at the moment.")))
+    | _ -> ($2, uncurried)
+  }
+
 %inline arrow_type_parameter_comma_list:
-    | lseparated_nonempty_list(COMMA, as_loc(arrow_type_parameter)) COMMA? {$1}
+    | lseparated_nonempty_list(COMMA, uncurried_arrow_type_parameter) COMMA? {$1}
 
 arrow_type_parameters:
-  LPAREN DOT arrow_type_parameter_comma_list RPAREN
-  { ($3, true) }
- | LPAREN arrow_type_parameter_comma_list RPAREN
-  { ($2, false) }
+ | LPAREN arrow_type_parameter_comma_list RPAREN { $2 }
 ;
 
 /* Among other distinctions, "simple" core types can be used in Variant types:
@@ -4092,13 +4087,12 @@ type_parameters:
 non_arrowed_simple_core_types:
 mark_position_typ
   ( arrow_type_parameters
-    { let prepare_arg {Location. txt = (label, ct); loc} = match label with
+    { let prepare_arg ({Location. txt = (label, ct); loc}, _) = match label with
         | Nolabel -> ct
         | Optional _ | Labelled _ ->
             syntax_error_typ loc "Labels are not allowed inside a tuple"
       in
-      let (p, _uncurried) = $1 in
-      match List.map prepare_arg p with
+      match List.map prepare_arg $1 with
       | []    -> assert false
       | [one] -> one
       | many  -> mktyp (Ptyp_tuple many)

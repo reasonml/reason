@@ -111,3 +111,6 @@ Thing.map(
   }
 );
 
+type f = int => (. int) => unit;
+
+type f = (int, . int) => unit;

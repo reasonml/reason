@@ -2648,20 +2648,19 @@ class printer  ()= object(self:'self)
   method non_arrowed_core_type x = self#non_arrowed_non_simple_core_type x
 
   method core_type2 x =
-    let {stdAttrs} = partitionAttributes x.ptyp_attributes in
-    let uncurried = try Hashtbl.find uncurriedTable x.ptyp_loc with | Not_found -> false in
+    let {stdAttrs; uncurried} = partitionAttributes x.ptyp_attributes in
     if stdAttrs <> [] then
       formatAttributed
-        (self#non_arrowed_simple_core_type {x with ptyp_attributes=[]})
+        (self#non_arrowed_simple_core_type {x with ptyp_attributes = []})
         (self#attributes stdAttrs)
     else
-      let x = if uncurried then { x with ptyp_attributes = [] } else x in
       match (x.ptyp_desc) with
         | (Ptyp_arrow (l, ct1, ct2)) ->
           let rec allArrowSegments acc = function
             | { ptyp_desc = Ptyp_arrow (l, ct1, ct2); ptyp_attributes = [] } ->
-              allArrowSegments ((l,ct1) :: acc) ct2
-
+              allArrowSegments ((l,ct1, false) :: acc) ct2
+            | { ptyp_desc = Ptyp_arrow (l, ct1, ct2); ptyp_attributes = [({txt = "bs"}, PStr [])] } ->
+              allArrowSegments ((l,ct1, true) :: acc) ct2
             | rhs ->
               let rhs = self#core_type2 rhs in
               let is_tuple typ = match typ.ptyp_desc with
@@ -2669,7 +2668,7 @@ class printer  ()= object(self:'self)
                 | _ -> false
               in
               match acc with
-              | [(Nolabel, lhs)] when not (is_tuple lhs) ->
+              | [(Nolabel, lhs, uncurried )] when not (is_tuple lhs) ->
                   let t = self#non_arrowed_simple_core_type lhs in
                   let lhs = if uncurried then
                     makeList ~wrap:("(. ", ")") ~postSpace:true [t]
@@ -2677,8 +2676,7 @@ class printer  ()= object(self:'self)
                 (lhs, rhs)
               | acc ->
                 let params = List.rev_map self#type_with_label acc in
-                let lparen = if uncurried then "(. " else "(" in
-                (makeCommaBreakableListSurround lparen ")" params, rhs)
+                (makeCommaBreakableListSurround "(" ")" params, rhs)
           in
           let (lhs, rhs) = allArrowSegments [] x in
           let normalized = makeList
@@ -2700,10 +2698,16 @@ class printer  ()= object(self:'self)
   (* Same as core_type2 but can be aliased *)
   method core_type x =
     let {stdAttrs; uncurried} = partitionAttributes x.ptyp_attributes in
-    if uncurried then Hashtbl.add uncurriedTable x.ptyp_loc true;
     if stdAttrs <> [] then
+      let ptyp_attributes = if uncurried then
+        List.filter (function
+          | ({txt = "bs"}, PStr []) -> true
+          | _ -> false ) x.ptyp_attributes
+      else
+        []
+      in
       formatAttributed
-        (self#non_arrowed_simple_core_type {x with ptyp_attributes=[]})
+        (self#non_arrowed_simple_core_type {x with ptyp_attributes})
         (self#attributes stdAttrs)
     else match (x.ptyp_desc) with
       | (Ptyp_alias (ct, s)) ->
@@ -2717,14 +2721,18 @@ class printer  ()= object(self:'self)
         )
       | _ -> self#core_type2 x
 
-  method type_with_label (lbl, c) =
+  method type_with_label (lbl, c, uncurried) =
     let typ = self#core_type c in
-    match lbl with
+    let t = match lbl with
     | Nolabel -> typ
     | Labelled lbl ->
         makeList ~sep:(Sep " ") [atom (namedArgSym ^ lbl ^ ":"); typ]
     | Optional lbl ->
         makeList ~sep:(Sep " ") [atom (namedArgSym ^ lbl ^ ":"); label typ (atom "=?")]
+    in
+    if uncurried then
+      makeList ~postSpace:true [atom "."; t]
+    else t
 
   method type_param (ct, a) =
     makeList [atom (type_variance a); self#core_type ct]
@@ -5899,7 +5907,7 @@ class printer  ()= object(self:'self)
     | Pcty_arrow (l, co, cl) ->
       let rec allArrowSegments acc = function
         | { pcty_desc = Pcty_arrow (l, ct1, ct2); } ->
-            allArrowSegments (self#type_with_label (l, ct1) :: acc) ct2
+            allArrowSegments (self#type_with_label (l, ct1, false) :: acc) ct2
         (* This "new" is unfortunate. See reason_parser.mly for details. *)
         | xx -> (List.rev acc, self#class_constructor_type xx)
       in

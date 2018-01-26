@@ -113,3 +113,7 @@ Thing.map(
     MyModuleBlah.toList(x, argument);
   }
 );
+
+type f = (int, . int) => unit;
+
+type f = (int, . int) => unit;
