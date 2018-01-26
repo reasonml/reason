@@ -14,23 +14,23 @@ if (fs.existsSync(path.resolve(projectRoot, '_release'))) {
   process.exit(1);
 }
 
-// const head =
-//   cp.spawnSync('git', ['rev-parse', '--verify', 'HEAD']).stdout.toString();
-// const master =
-//   cp.spawnSync('git', ['rev-parse', '--verify', 'master']).stdout.toString();
+const head =
+  cp.spawnSync('git', ['rev-parse', '--verify', 'HEAD']).stdout.toString();
+const master =
+  cp.spawnSync('git', ['rev-parse', '--verify', 'master']).stdout.toString();
 
-// if (master !== head) {
-//   console.log('ERROR: You are not on the master branch');
-//   process.exit(1);
-// }
+if (master !== head) {
+  console.log('ERROR: You are not on the master branch');
+  process.exit(1);
+}
 
-// let uncommitted =
-//   cp.spawnSync('git', ['diff-index', 'HEAD', '--']).stdout.toString();
+let uncommitted =
+  cp.spawnSync('git', ['diff-index', 'HEAD', '--']).stdout.toString();
 
-// if (uncommitted !== "") {
-//   console.log('ERROR: You have uncommitted changes. Please try on a clean master branch');
-//   process.exit(1);
-// }
+if (uncommitted !== "") {
+  console.log('ERROR: You have uncommitted changes. Please try on a clean master branch');
+  process.exit(1);
+}
 
 let backupFiles = {
   '.npmignore': '.backup.npmignore.backup',
