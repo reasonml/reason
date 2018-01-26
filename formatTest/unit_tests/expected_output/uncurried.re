@@ -61,21 +61,25 @@ type z = (. unit) => unit;
 
 type tesla = {. drive: (. int, int) => int};
 
-class type _rect = {.
-  [@bs.set]
-  pub height: int;
-  [@bs.set]
-  pub width: int;
-  pub draw: unit => unit
-};
+class type _rect =
+  [@bs]
+  {
+    [@bs.set]
+    pub height: int;
+    [@bs.set]
+    pub width: int;
+    pub draw: unit => unit
+  };
 
-class type _rect = {.
-  [@bs.set]
-  pub height: int;
-  [@bs.set]
-  pub width: int;
-  pub draw: unit => unit
-};
+class type _rect =
+  [@bs]
+  {
+    [@bs.set]
+    pub height: int;
+    [@bs.set]
+    pub width: int;
+    pub draw: unit => unit
+  };
 
 funWithCb("text", (.) => doStuff());
 

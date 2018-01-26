@@ -498,13 +498,17 @@ type attributesPartition = {
 }
 
 (** Partition attributes into kinds *)
-let rec partitionAttributes attrs : attributesPartition =
+let rec partitionAttributes ?(allowUncurry=true) attrs : attributesPartition =
   match attrs with
     | [] ->
         {arityAttrs=[]; docAttrs=[]; stdAttrs=[]; jsxAttrs=[]; uncurried = false}
-    | ({txt = "bs"}, PStr [])::atTl ->
+    | (({txt = "bs"}, PStr []) as attr)::atTl ->
         let partition = partitionAttributes atTl in
-        {partition with uncurried = true}
+        if allowUncurry then
+          {partition with uncurried = true}
+        else begin
+          {partition with stdAttrs=attr::partition.stdAttrs}
+        end
     | (({txt="JSX"; loc}, _) as jsx)::atTl ->
         let partition = partitionAttributes atTl in
         {partition with jsxAttrs=jsx::partition.jsxAttrs}
@@ -5679,8 +5683,8 @@ class printer  ()= object(self:'self)
       | [] -> toThis
       | _::_ -> makeList ~postSpace:true [(self#attributes l); toThis]
 
-  method attach_std_item_attrs ?extension l toThis =
-    let l = extractStdAttrs l in
+  method attach_std_item_attrs ?(allowUncurry=true) ?extension l toThis =
+    let l = (partitionAttributes ~allowUncurry l).stdAttrs in
     match extension, l with
     | None, [] -> toThis
     | _, _ ->
@@ -5806,21 +5810,20 @@ class printer  ()= object(self:'self)
         makeSpacedBreakableInlineList [formattedAttrs; primDecl]
 
   method class_instance_type x =
-    let {stdAttrs; uncurried} = partitionAttributes x.pcty_attributes in
+    let {stdAttrs} = partitionAttributes ~allowUncurry:false x.pcty_attributes in
     match x.pcty_desc with
     | Pcty_signature cs ->
       let {pcsig_self = ct; pcsig_fields = l} = cs in
-      let instTypeFields =
-        List.map self#class_sig_field (List.filter self#shouldDisplayClassInstTypeItem l) in
+      let instTypeFields = List.map self#class_sig_field l in
       let allItems = match ct.ptyp_desc with
         | Ptyp_any -> instTypeFields
         | _ ->
           label ~space:true (atom "as") (self#core_type ct) ::
           instTypeFields
       in
-      self#attach_std_item_attrs stdAttrs (
+      self#attach_std_item_attrs ~allowUncurry:false x.pcty_attributes (
         makeList
-          ~wrap:((if uncurried then "{." else "{"), "}")
+          ~wrap:("{", "}")
           ~postSpace:true
           ~break:Always_rec
           ~sep:(Sep ";")
