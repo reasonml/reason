@@ -2653,18 +2653,19 @@ class printer  ()= object(self:'self)
 
   method core_type2 x =
     let {stdAttrs; uncurried} = partitionAttributes x.ptyp_attributes in
+    let uncurried = uncurried || try Hashtbl.find uncurriedTable x.ptyp_loc with | Not_found -> false in
     if stdAttrs <> [] then
       formatAttributed
         (self#non_arrowed_simple_core_type {x with ptyp_attributes = []})
         (self#attributes stdAttrs)
     else
+      let x = if uncurried then { x with ptyp_attributes = [] } else x in
       match (x.ptyp_desc) with
         | (Ptyp_arrow (l, ct1, ct2)) ->
-          let rec allArrowSegments acc = function
+          let rec allArrowSegments ?(uncurried=false) acc = function
             | { ptyp_desc = Ptyp_arrow (l, ct1, ct2); ptyp_attributes = [] } ->
-              allArrowSegments ((l,ct1, false) :: acc) ct2
-            | { ptyp_desc = Ptyp_arrow (l, ct1, ct2); ptyp_attributes = [({txt = "bs"}, PStr [])] } ->
-              allArrowSegments ((l,ct1, true) :: acc) ct2
+              allArrowSegments ~uncurried:false
+                ((l,ct1, false || uncurried) :: acc) ct2
             | rhs ->
               let rhs = self#core_type2 rhs in
               let is_tuple typ = match typ.ptyp_desc with
@@ -2682,7 +2683,7 @@ class printer  ()= object(self:'self)
                 let params = List.rev_map self#type_with_label acc in
                 (makeCommaBreakableListSurround "(" ")" params, rhs)
           in
-          let (lhs, rhs) = allArrowSegments [] x in
+          let (lhs, rhs) = allArrowSegments ~uncurried [] x in
           let normalized = makeList
               ~preSpace:true ~postSpace:true ~inline:(true, true)
               ~break:IfNeed ~sep:(Sep "=>") [lhs; rhs]
@@ -2702,16 +2703,10 @@ class printer  ()= object(self:'self)
   (* Same as core_type2 but can be aliased *)
   method core_type x =
     let {stdAttrs; uncurried} = partitionAttributes x.ptyp_attributes in
+    let () = if uncurried then Hashtbl.add uncurriedTable x.ptyp_loc true in
     if stdAttrs <> [] then
-      let ptyp_attributes = if uncurried then
-        List.filter (function
-          | ({txt = "bs"}, PStr []) -> true
-          | _ -> false ) x.ptyp_attributes
-      else
-        []
-      in
       formatAttributed
-        (self#non_arrowed_simple_core_type {x with ptyp_attributes})
+        (self#non_arrowed_simple_core_type {x with ptyp_attributes = []})
         (self#attributes stdAttrs)
     else match (x.ptyp_desc) with
       | (Ptyp_alias (ct, s)) ->
