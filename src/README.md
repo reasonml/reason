@@ -282,7 +282,7 @@ Basically, turn your old syntax into an AST (which is resilient to syntax change
 
 ## Cutting a release
 
-### OPAM
+### OPAM Releases
 
 Reason exists on OCaml's package manager OPAM.
 
@@ -309,7 +309,7 @@ env version=x.y.z make release
 
 - Use [opam-publish](https://github.com/ocaml/opam-publish) to publish the latest version to opam.
 
-### Esy
+### Esy Releases
 
 Cutting a release of esy versions is a good way to get packages out there for
 testing before submitting to opam. This lets you catch bugs quickly without
@@ -321,9 +321,12 @@ esy build
 esy make esy-prepublish
 ```
 
-Then follow the instructions. You should also `cd` into each
+Then follow the instructions. You should also probably `cd` into each
 `_release/xxxx/package` and try `esy install && esy build` to make sure
-everything builds correctly before publishing esy packages.
+everything builds correctly before publishing esy packages. If each of the
+individual packages builds correctly, then `rm` the `_release` directory
+and re-prepare the release by reruning `esy make esy-prepublish`. There's no
+need to test that each package builds correctly - you already did that.
 
 Note `esy` packages are "published to npm" but that is different than the
 following workflow for publishing to npm.
