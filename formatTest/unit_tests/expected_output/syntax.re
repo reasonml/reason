@@ -716,7 +716,7 @@ type yourThing = myOtherThing(int, int);
 
    /* Currying */
    let lookES6Style = (`Red x) (`Black y) => { };
-   let lookES6Style (`Red x) (`Black y) => { };
+   let lookES6Style = (`Red x) (`Black y) => { };
 
    /* Matching the single argument */
    let lookES6Style = oneArg => match oneArg with

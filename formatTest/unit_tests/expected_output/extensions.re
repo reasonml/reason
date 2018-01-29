@@ -8,60 +8,60 @@ module M = {};
 %extend
 module type M = {};
 
-let%extend x = "hi";
+let extend x = "hi";
 
 let x = {
-  let%extend x = ();
+  let extend x = ();
   ignore();
   %extend
   ignore();
-  let%extend x = ();
+  let extend x = ();
   %extend
   return("hi");
 };
 
 let x = {
-  if%extend (true) {1} else {2};
-  switch%extend (None) {
+  if extend (true) {1} else {2};
+  switch extend (None) {
   | Some(x) => assert false
   | None => ()
   };
-  try%extend (raise(Not_found)) {
+  try extend (raise(Not_found)) {
   | Not_found => ()
   | Invalid_argument(msg) => prerr_endline(msg)
   };
 };
 
-let x = if%extend (true) {1} else {2};
+let x = if extend (true) {1} else {2};
 
 let x =
-  switch%extend (None) {
+  switch extend (None) {
   | Some(x) => assert false
   | None => ()
   };
 
 let x =
-  try%extend (raise(Not_found)) {
+  try extend (raise(Not_found)) {
   | Not_found => ()
   | Invalid_argument(msg) => prerr_endline(msg)
   };
 
 /* At structure level */
-try%extend () {
+try extend () {
 | _ => ()
 };
 
-switch%extend () {
+switch extend () {
 | _ => ()
 };
 
-if%extend (true) {1} else {2};
+if extend (true) {1} else {2};
 
-for%extend (i in 1 to 10) {
+for extend (i in 1 to 10) {
   ();
 };
 
-while%extend (false) {
+while extend (false) {
   ();
 };
 
@@ -73,24 +73,24 @@ fun%extend
 
 /* In a top-level binding */
 let x =
-  try%extend () {
+  try extend () {
   | _ => ()
   };
 
 let x =
-  switch%extend () {
+  switch extend () {
   | _ => ()
   };
 
-let x = if%extend (true) {1} else {2};
+let x = if extend (true) {1} else {2};
 
 let x =
-  for%extend (i in 1 to 10) {
+  for extend (i in 1 to 10) {
     ();
   };
 
 let x =
-  while%extend (false) {
+  while extend (false) {
     ();
   };
 
@@ -103,29 +103,29 @@ let x =
 
 /* With two extensions, alone */
 let x = [%extend1
-  try%extend2 () {
+  try extend2 () {
   | _ => ()
   }
 ];
 
 let x = [%extend1
-  switch%extend2 () {
+  switch extend2 () {
   | _ => ()
   }
 ];
 
 let x = [%extend1
-  if%extend2 (true) {1} else {2}
+  if extend2 (true) {1} else {2}
 ];
 
 let x = [%extend1
-  for%extend2 (i in 1 to 10) {
+  for extend2 (i in 1 to 10) {
     ();
   }
 ];
 
 let x = [%extend1
-  while%extend2 (false) {
+  while extend2 (false) {
     ();
   }
 ];
@@ -141,7 +141,7 @@ let x = [%extend1
 /* With two extensions, first in sequence */
 let x = {
   %extend1
-  try%extend2 () {
+  try extend2 () {
   | _ => ()
   };
   ignore();
@@ -150,7 +150,7 @@ let x = {
 let x = {
   ignore();
   %extend1
-  switch%extend2 () {
+  switch extend2 () {
   | _ => ()
   };
   ignore();
@@ -159,14 +159,14 @@ let x = {
 let x = {
   ignore();
   %extend1
-  if%extend2 (true) {1} else {2};
+  if extend2 (true) {1} else {2};
   ignore();
 };
 
 let x = {
   ignore();
   %extend1
-  for%extend2 (i in 1 to 10) {
+  for extend2 (i in 1 to 10) {
     ();
   };
   ignore();
@@ -175,7 +175,7 @@ let x = {
 let x = {
   ignore();
   %extend1
-  while%extend2 (false) {
+  while extend2 (false) {
     ();
   };
   ignore();
@@ -200,7 +200,7 @@ let x = {
 let x = {
   ignore();
   %extend1
-  try%extend2 () {
+  try extend2 () {
   | _ => ()
   };
   ignore();
@@ -209,7 +209,7 @@ let x = {
 let x = {
   ignore();
   %extend1
-  switch%extend2 () {
+  switch extend2 () {
   | _ => ()
   };
   ignore();
@@ -218,14 +218,14 @@ let x = {
 let x = {
   ignore();
   %extend1
-  if%extend2 (true) {1} else {2};
+  if extend2 (true) {1} else {2};
   ignore();
 };
 
 let x = {
   ignore();
   %extend1
-  for%extend2 (i in 1 to 10) {
+  for extend2 (i in 1 to 10) {
     ();
   };
   ignore();
@@ -234,7 +234,7 @@ let x = {
 let x = {
   ignore();
   %extend1
-  while%extend2 (false) {
+  while extend2 (false) {
     ();
   };
   ignore();
@@ -260,7 +260,7 @@ let x = {
 let x = {
   ignore();
   %extend1
-  try%extend2 () {
+  try extend2 () {
   | _ => ()
   };
 };
@@ -268,7 +268,7 @@ let x = {
 let x = {
   ignore();
   %extend1
-  switch%extend2 () {
+  switch extend2 () {
   | _ => ()
   };
 };
@@ -276,13 +276,13 @@ let x = {
 let x = {
   ignore();
   %extend1
-  if%extend2 (true) {1} else {2};
+  if extend2 (true) {1} else {2};
 };
 
 let x = {
   ignore();
   %extend1
-  for%extend2 (i in 1 to 10) {
+  for extend2 (i in 1 to 10) {
     ();
   };
 };
@@ -290,7 +290,7 @@ let x = {
 let x = {
   ignore();
   %extend1
-  while%extend2 (false) {
+  while extend2 (false) {
     ();
   };
 };
@@ -305,6 +305,70 @@ let x = {
   ignore();
   %extend1
   fun%extend2
+  | None => ()
+  | Some(1) => ();
+};
+
+/* Complex attribute identifiers */
+let () = {
+  /* Uppercase */
+  try%Extend () {
+  | _ => ()
+  };
+  switch%Extend () {
+  | _ => ()
+  };
+  if%Extend (true) {1} else {2};
+  for%Extend (i in 1 to 10) {
+    ();
+  };
+  while%Extend (false) {
+    ();
+  };
+  fun%Extend () => ();
+  fun%Extend
+  | None => ()
+  | Some(1) => ();
+};
+
+let () = {
+  /* Path */
+  try%Extend.more () {
+  | _ => ()
+  };
+  switch%Extend.more () {
+  | _ => ()
+  };
+  if%Extend.more (true) {1} else {2};
+  for%Extend.more (i in 1 to 10) {
+    ();
+  };
+  while%Extend.more (false) {
+    ();
+  };
+  fun%Extend.more () => ();
+  fun%Extend.more
+  | None => ()
+  | Some(1) => ();
+};
+
+let () = {
+  /* Keyword */
+  try%rec () {
+  | _ => ()
+  };
+  switch%rec () {
+  | _ => ()
+  };
+  if%rec (true) {1} else {2};
+  for%rec (i in 1 to 10) {
+    ();
+  };
+  while%rec (false) {
+    ();
+  };
+  fun%rec () => ();
+  fun%rec
   | None => ()
   | Some(1) => ();
 };

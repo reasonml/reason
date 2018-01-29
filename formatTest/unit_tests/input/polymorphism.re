@@ -27,10 +27,10 @@ type myType2 = (myTwoParamType(myType((int) => int), int)) => int;
 
                                      /* Confusing because => looks like part
                                      of the return type signature. */
-let myFunc (a:(int)=>int, b:(int)=>int) :myType(int) =
+let myFunc  = (a:(int)=>int, b:(int)=>int) :myType(int) =>
     [a(20) + b(30)];
 
-let myFunc (a:(int)=>int, b:(int)=>int) : ((myType(int)) => myType(int)) =
+let myFunc = (a:(int)=>int, b:(int)=>int) : ((myType(int)) => myType(int)) =>
     fun(lst) => lst;
 
 

@@ -153,6 +153,8 @@ let keyword_table =
     "asr", INFIXOP4("asr")
 ]
 
+let is_keyword str = Hashtbl.mem keyword_table str
+
 (* To buffer string literals *)
 
 let string_buffer = Buffer.create 256

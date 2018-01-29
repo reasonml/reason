@@ -87,7 +87,7 @@ let x = [@attrEverything] (true && false);
 /**
  * How attribute parsings respond to other syntactic constructs.
  */
-let add(a) { [@onRet] a };
+let add = (a) => { [@onRet] a };
 let add = fun(a) => [@onRet] a;
 let add = [@onEntireFunction] (fun(a) => a);
 
@@ -95,13 +95,13 @@ let res = if (true) false else [@onFalse] false;
 let res = [@onEntireIf] (if (true) false else false);
 
 
-let add(a,b) = [@onEverything] ([@onA] a + b);
-let add(a,b) = [@onEverything] ([@onA]a + ([@onB]b));
+let add = (a,b) => [@onEverything] ([@onA] a + b);
+let add = (a,b) => [@onEverything] ([@onA]a + ([@onB]b));
 let add = (a,b) => a + [@onB]b;
 
 let both = [@onEntireFunction](fun(a) => a);
-let both(a,b) = [@onEverything]([@onA]a && b);
-let both(a,b) = [@onA] a && [@onB] ([@onB] b);
+let both = (a,b) => [@onEverything]([@onA]a && b);
+let both = (a,b) => [@onA] a && [@onB] ([@onB] b);
 let both = fun(a,b) => [@onEverything](a && b);
 
 let thisVal = 10;
@@ -111,7 +111,7 @@ let x = - [@onFunctionCall] add(thisVal,thisVal);
 let x = [@onEverything] (- add(thisVal,thisVal));
 
 
-let bothTrue(x,y) = {contents: x && y};
+let bothTrue = (x,y) => {contents: x && y};
 let something = [@onEverythingToRightOfEquals](bothTrue(true,true)^);
 let something = ([@onlyOnArgumentToBang]bothTrue(true,true))^;
 
@@ -168,7 +168,7 @@ and secondBinding = "second";
  * Let bindings.
  * ----------------------
  */
-let showLets () = [@onOuterLet] {
+let showLets  = () => [@onOuterLet] {
   let tmp = 20;
   [@onFinalLet] {
     let tmpTmp = tmp + tmp;

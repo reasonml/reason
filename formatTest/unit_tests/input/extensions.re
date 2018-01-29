@@ -1,4 +1,3 @@
-
 /* Extension sugar */
 
 %extend
@@ -288,4 +287,66 @@ let x = {
   fun%extend2
     | None => ()
     | Some(1) => ();
+};
+
+/* Complex attribute identifiers */
+
+let () = {
+  /* Uppercase */
+  try%Extend () { | _ => () };
+
+  switch%Extend () { | _ => () };
+
+  if%Extend (true) { 1 } else { 2 };
+
+  for%Extend (i in 1 to 10) { () };
+
+  while%Extend (false) { () };
+
+  fun%Extend () => ();
+
+  fun%Extend
+    | None => ()
+    | Some(1) => ();
+
+};
+
+let () = {
+  /* Path */
+  try%Extend.more () { | _ => () };
+
+  switch%Extend.more () { | _ => () };
+
+  if%Extend.more (true) { 1 } else { 2 };
+
+  for%Extend.more (i in 1 to 10) { () };
+
+  while%Extend.more (false) { () };
+
+  fun%Extend.more () => ();
+
+  fun%Extend.more
+    | None => ()
+    | Some(1) => ();
+
+};
+
+let () = {
+  /* Keyword */
+  try%rec () { | _ => () };
+
+  switch%rec () { | _ => () };
+
+  if%rec (true) { 1 } else { 2 };
+
+  for%rec (i in 1 to 10) { () };
+
+  while%rec (false) { () };
+
+  fun%rec () => ();
+
+  fun%rec
+    | None => ()
+    | Some(1) => ();
+
 };

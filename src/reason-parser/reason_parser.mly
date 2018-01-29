@@ -1509,7 +1509,7 @@ structure_item:
        to the "_" (any) pattern.  */
     ( item_attributes unattributed_expr
       { mkstrexp $2 $1 }
-    | item_extension_sugar structure_item
+    | item_extension_sweet structure_item
       { struct_item_extension $1 $2 }
     | item_attributes
       EXTERNAL as_loc(val_ident) COLON only_core_type(core_type) EQUAL primitive_declaration
@@ -1551,7 +1551,7 @@ structure_item:
         mkstr(Pstr_include (Incl.mk $3 ~attrs:$1 ~loc))
       }
     | item_attributes item_extension
-      (* No sense in having item_extension_sugar for something that's already an
+      (* No sense in having item_extension_sweet for something that's already an
        * item_extension *)
       { mkstr(Pstr_extension ($2, $1)) }
     | let_bindings
@@ -2239,7 +2239,7 @@ class_type_declaration_details:
  *
  * For each valid sequence item, we must list three forms:
  *
- *   [item_extension_sugar] [nonempty_item_attributes] ITEM
+ *   [item_extension_sweet] [nonempty_item_attributes] ITEM
  *   [nonempty_item_attributes] ITEM
  *   ITEM
  */
@@ -2294,11 +2294,11 @@ seq_expr:
 mark_position_exp
   ( seq_expr_no_seq
     { $1 }
-  | item_extension_sugar mark_position_exp(seq_expr_no_seq)
+  | item_extension_sweet mark_position_exp(seq_expr_no_seq)
     { expression_extension $1 $2 }
   | expr SEMI seq_expr
     { mkexp (Pexp_sequence($1, $3)) }
-  | item_extension_sugar expr SEMI seq_expr
+  | item_extension_sweet expr SEMI seq_expr
     { mkexp (Pexp_sequence(expression_extension $1 $2, $4)) }
   ) { $1 }
 ;
@@ -2564,8 +2564,8 @@ jsx_without_leading_less:
 ;
 
 optional_expr_extension:
-  | (* empty *) { fun exp -> exp }
-  | item_extension_sugar { fun exp -> expression_extension $1 exp  }
+  | (* empty *)  { fun exp -> exp }
+  | item_extension_sweeter { fun exp -> expression_extension $1 exp  }
 ;
 
 /*
@@ -2999,7 +2999,7 @@ let_bindings: let_binding and_let_binding* { addlbs $1 $2 };
 
 let_binding:
   /* Form with item extension sugar */
-  item_attributes LET item_extension_sugar? rec_flag let_binding_body
+  item_attributes LET ioption(item_extension_sweeter) rec_flag let_binding_body
   { let loc = mklocation $symbolstartpos $endpos in
     mklbs $3 $4 (mklb $5 $1 loc) loc }
 ;
@@ -3008,8 +3008,6 @@ let_binding_body:
   | with_patvar(val_ident) type_constraint EQUAL expr
     { let loc = mklocation $symbolstartpos $endpos in
       ($1, ghexp_constraint loc $4 $2) }
-  | with_patvar(val_ident) fun_def(EQUAL,core_type)
-    { ($1, $2) }
   | with_patvar(val_ident) COLON preceded(QUOTE,ident)+ DOT only_core_type(core_type)
       EQUAL mark_position_exp(expr)
     { let typ = mktyp ~ghost:true (Ptyp_poly($3, $5)) in
@@ -4287,7 +4285,7 @@ opt_LET_MODULE: MODULE { () } | LET MODULE { () };
 
 %inline label: LIDENT { $1 };
 
-rec_flag:
+%inline rec_flag:
   | /* empty */   { Nonrecursive }
   | REC           { Recursive }
 ;
@@ -4411,8 +4409,13 @@ attribute:
   | located_attributes { List.map (fun x -> x.txt) $1 }
 ;
 
-item_extension_sugar:
+item_extension_sweet:
   PERCENT attr_id { ([], $2) }
+;
+
+%inline item_extension_sweeter:
+  | item_extension_sweet { $1 }
+  | as_loc(LIDENT)       { ([], $1) }
 ;
 
 extension:

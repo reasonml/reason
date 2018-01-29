@@ -284,9 +284,30 @@ let expression_not_immediate_extension_sugar x =
   | (Some _, _) -> None
   | (None, _) -> expression_extension_sugar x
 
-let add_extension_sugar keyword = function
+let add_sweet_extension keyword = function
   | None -> keyword
   | Some str -> keyword ^ "%" ^ str.txt
+
+let is_lident str =
+  let len = String.length str in
+  not (Reason_lexer.is_keyword str) && len > 0 &&
+  ((str.[0] >= 'a' && str.[0] <= 'z') || str.[0] = '_') && (
+    try
+      for i = 1 to len - 1 do
+        let c = str.[i] in
+        if not ((c >= 'a' && c <= 'z') ||
+                (c >= 'A' && c <= 'Z') ||
+                (c >= '0' && c <= '9') ||
+                (c = '\'') || (c = '_'))
+        then raise Exit
+      done;
+      true
+    with Exit -> false
+  )
+
+let add_sweeter_extension keyword = function
+  | Some str when is_lident str.txt -> keyword ^ " " ^ str.txt
+  | ext -> add_sweet_extension keyword ext
 
 let print_comment_type = function
   | Regular -> "Regular"
@@ -4683,7 +4704,7 @@ class printer  ()= object(self:'self)
       | [] -> raise (NotPossible "no bindings supplied")
       | x :: xs -> x, xs
     in
-    let label = add_extension_sugar "let" extension in
+    let label = add_sweeter_extension "let" extension in
     let label = match rf with
       | Nonrecursive -> label
       | Recursive -> label ^ " rec"
@@ -4926,7 +4947,7 @@ class printer  ()= object(self:'self)
       ~break:IfNeed
       ~inline:(true, true)
       ~pad:(false, false)
-      ((atom ~loc:estimatedFunLocation (add_extension_sugar "fun" extension)) :: (self#case_list l))
+      ((atom ~loc:estimatedFunLocation (add_sweet_extension "fun" extension)) :: (self#case_list l))
 
   method parenthesized_expr ?break expr =
     let result = self#unparseExpr expr in
@@ -4980,7 +5001,7 @@ class printer  ()= object(self:'self)
                 let retValUnparsed = self#unparseExprApplicationItems ret in
                 Some (self#wrapCurriedFunctionBinding
                         ~sweet:(extension = None)
-                        (add_extension_sugar "fun" extension)
+                        (add_sweet_extension "fun" extension)
                         ~arrow:"=>" firstArg tl retValUnparsed)
             )
           | Pexp_try (e, l) ->
@@ -4992,7 +5013,7 @@ class printer  ()= object(self:'self)
             in
             let cases = (self#case_list ~allowUnguardedSequenceBodies:true l) in
             let switchWith = label ~space:true
-                (atom (add_extension_sugar "try" extension))
+                (atom (add_sweeter_extension "try" extension))
                 (self#parenthesized_expr ~break:IfNeed e)
             in
             Some (
@@ -5014,7 +5035,7 @@ class printer  ()= object(self:'self)
              in
              let cases = (self#case_list ~allowUnguardedSequenceBodies:true l) in
              let switchWith =
-               label ~space:true (atom (add_extension_sugar "switch" extension))
+               label ~space:true (atom (add_sweeter_extension "switch" extension))
                  (self#parenthesized_expr ~break:IfNeed e)
              in
              let lbl =
@@ -5069,7 +5090,7 @@ class printer  ()= object(self:'self)
                   sequence nextSoFar tl
             ) in
             let init =
-              let if_ = atom (add_extension_sugar "if" extension) in
+              let if_ = atom (add_sweeter_extension "if" extension) in
               let cond = self#parenthesized_expr e1 in
               label ~space:true
                 (SourceMap (e1.pexp_loc, (label ~space:true if_ cond)))
@@ -5078,7 +5099,7 @@ class printer  ()= object(self:'self)
             Some (sequence init blocks)
           | Pexp_while (e1, e2) ->
             let lbl =
-              let while_ = atom (add_extension_sugar "while" extension) in
+              let while_ = atom (add_sweeter_extension "while" extension) in
               let cond = self#parenthesized_expr e1 in
               label ~space:true
                 (label ~space:true while_ cond)
@@ -5106,7 +5127,7 @@ class printer  ()= object(self:'self)
                 ]
             in
             let upToBody = makeList ~inline:(true, true) ~postSpace:true
-                [atom (add_extension_sugar "for" extension); dockedToFor]
+                [atom (add_sweeter_extension "for" extension); dockedToFor]
             in
             Some (label ~space:true upToBody (SourceMap(e3.pexp_loc, makeLetSequence (self#letList e3))))
           | Pexp_new (li) ->
