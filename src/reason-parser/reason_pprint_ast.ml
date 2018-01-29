@@ -3097,8 +3097,8 @@ class printer  ()= object(self:'self)
 
       (* EQUAL core_type EQUAL DOTDOT {(Ptype_open, Public, Some $2)} *)
       | (Ptype_open, Public, Some mani) -> [
-          [atom ".."];
           [self#core_type mani];
+          [atom ".."];
         ]
       (* EQUAL core_type EQUAL private_flag LBRACE label_declarations opt_comma RBRACE
            {(Ptype_record _, $4, Some $2)} *)
