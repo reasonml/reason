@@ -2279,6 +2279,8 @@ and mutuallyRecursiveTwo = y => print_int(y);
 /*  */
 type x = pri int;
 
+type y = x = ..;
+
 type myType('a, 'b, 'c) = pri ('a, 'b, 'c);
 
 type privateVariant =
