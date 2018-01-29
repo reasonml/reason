@@ -41,3 +41,5 @@ type o2 = {
   a: int,
   b: int
 };
+
+switch(x) { | _ => {"aria-hidden": 2} };
