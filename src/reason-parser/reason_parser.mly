@@ -2453,6 +2453,14 @@ as_loc
       ([mkloc (Term (Nolabel, None, mkpat_constructor_unit loc loc)) loc], true)
   }
   | LPAREN DOT labelled_pattern_comma_list RPAREN {
+    let () = List.iter (fun p ->
+        match p.txt with
+        | Term (Labelled _, _, _)
+        | Term (Optional _, _, _)  ->
+            raise Syntax_util.(Error(p.loc, (Syntax_error "Uncurried function definition with labelled arguments is not supported at the moment.")));
+            ()
+        | _ -> ()
+      ) $3 in
     ($3, true)
   }
 ;
@@ -2462,8 +2470,6 @@ es6_parameters:
   | as_loc(val_ident)
     { ([{$1 with txt = Term (Nolabel, None, mkpat ~loc:$1.loc (Ppat_var $1))}], false) }
 ;
-
-
 
 // TODO: properly fix JSX labelled/optional stuff
 jsx_arguments:
@@ -3007,10 +3013,15 @@ labeled_arguments:
       | xs -> (xs, false)
     }
   | LPAREN DOT labelled_expr_comma_list RPAREN
-    { match $3 with
-      | [] -> let loc = mklocation $startpos $endpos in
-              ([(Nolabel, mkexp_constructor_unit loc loc)], true)
-      | xs -> (xs, true)
+    { let loc = mklocation $startpos $endpos in 
+      match $3 with
+      | [] -> ([(Nolabel, mkexp_constructor_unit loc loc)], true)
+      | xs -> List.iter (function
+          | (Labelled _, _) ->
+                raise Syntax_util.(Error(loc, (Syntax_error "Uncurried function application with labelled arguments is not supported at the moment.")));
+                ()
+          | _ -> ()) xs;
+        (xs, true)
     }
 ;
 
