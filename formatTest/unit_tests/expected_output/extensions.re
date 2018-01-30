@@ -8,6 +8,8 @@ module M = {};
 %extend
 module type M = {};
 
+type a = [%extend int];
+
 let%extend x = "hi";
 
 let x = {
