@@ -10,6 +10,8 @@ module M = {};
 %extend
 module type M = {};
 
+type a = [%extend int];
+
 %extend
 let x = "hi";
 
