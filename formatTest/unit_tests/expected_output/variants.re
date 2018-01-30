@@ -10,6 +10,18 @@ module LocalModule = {
 type notTupleVariant =
   | NotActuallyATuple(int, int);
 
+type attr =
+  | A(int);
+
+type attr +=
+  | Point(int, int);
+
+type attr +=
+  | PointA{
+      a: int,
+      b: int,
+    };
+
 type notTupleVariantExtraParens =
   | NotActuallyATuple2(int, int);
 
