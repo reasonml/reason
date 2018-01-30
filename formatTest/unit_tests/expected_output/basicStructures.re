@@ -106,6 +106,14 @@ let x = ! (! foo.bar);
 
 let x = ! (! foo#bar);
 
+let x = (-10);
+
+let x = (-5.0);
+
+let x = Some(-10);
+
+let x = Some(-5.0);
+
 /* Test precedence on access sugar */
 let x = arr^[0];
 
