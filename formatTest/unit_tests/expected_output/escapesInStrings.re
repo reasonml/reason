@@ -3,3 +3,5 @@
     let str = "@[.... some formatting ....@\n\010@.";
  */
 let str = "@[.... some formatting ....@\n\n@.";
+
+let str = {abcd|@[.... some formatting ....@\n\010@.|abcd};
