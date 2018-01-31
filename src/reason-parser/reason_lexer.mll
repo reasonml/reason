@@ -195,7 +195,7 @@ let set_lexeme_length buf n = (
 )
 
 (* This cut comment characters of the current buffer.
- * Operators (including "/*" and "*/") are lexed with the same rule, and this
+ * Operators (including "/*" and "//") are lexed with the same rule, and this
  * function cuts the lexeme at the beginning of an operator. *)
 let lexeme_without_comment buf = (
   let lexeme = Lexing.lexeme buf in
@@ -203,7 +203,7 @@ let lexeme_without_comment buf = (
   let found = ref (-1) in
   while !i < len && !found = -1 do
     begin match lexeme.[!i], lexeme.[!i+1] with
-      | ('/', '*') | ('*', '/') ->
+      | ('/', '*') | ('/', '/') | ('*', '/') ->
         found := !i;
       | _ -> ()
     end;

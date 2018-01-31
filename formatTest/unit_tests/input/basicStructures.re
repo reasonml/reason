@@ -134,7 +134,6 @@ let x = arr^[0] = 1;
  *============================================================================
  */;
 
-let (//) = (+); /* // is not a comment */
 
 let something = if (self.ext.logSuccess) {
                             print_string("Did tap");
