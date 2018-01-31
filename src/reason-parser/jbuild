@@ -67,4 +67,5 @@
   (libraries
    (ocaml-migrate-parsetree
     menhirLib
-    reason.easy_format))))
+    reason.easy_format
+    uutf))))

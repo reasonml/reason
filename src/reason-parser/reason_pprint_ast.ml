@@ -2351,13 +2351,29 @@ let constant_string f s = pp f "%S" s
 
 let tyvar f str = pp f "'%s" str
 
+let pp_string_literal f s =
+  let buf = Buffer.create 4 in
+  Uutf.String.fold_utf_8 (
+    fun () _i uc ->
+      match uc with
+      | `Malformed s -> failwith (Format.asprintf "Invalid UTF-8 string literal: %s" s)
+      | `Uchar c ->
+        if Uchar.to_int c <= 255 then
+          pp f "%s" (Char.escaped (Uchar.to_char c))
+        else (
+          Uutf.Buffer.add_utf_8 buf c;
+          pp f "%s" (Buffer.contents buf);
+          Buffer.clear buf
+        )
+  ) () s
+
 (* In some places parens shouldn't be printed for readability:
  * e.g. Some((-1)) should be printed as Some(-1)
  * In `1 + (-1)` -1 should be wrapped in parens for readability
  *)
 let constant ?(parens=true) f = function
   | Pconst_char i -> pp f "%C"  i
-  | Pconst_string (i, None) -> pp f "%S" i
+  | Pconst_string (i, None) -> pp f "\"%a\"" pp_string_literal i
   | Pconst_string (i, Some delim) -> pp f "{%s|%s|%s}" delim i delim
   | Pconst_integer (i, None) ->
       paren (parens && i.[0] = '-') (fun f -> pp f "%s") f i
