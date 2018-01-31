@@ -1210,7 +1210,7 @@ let formatComment_ txt =
     makeList ~inline:(true, true) ~indent:0 ~break:Always_rec (List.map atom lines)
 
 let formatComment comment =
-  source_map ~loc:comment.Comment.location (formatComment_ comment)
+  source_map ~loc:(Comment.location comment) (formatComment_ comment)
 
 let rec append ?(space=false) txt = function
   | Layout.SourceMap (loc, sub) ->
@@ -1341,7 +1341,7 @@ let appendComment ~breakAncestors layout comment =
  * find a place where the comment can be loosely attached to
  *)
 let rec looselyAttachComment ~breakAncestors layout comment =
-  let location = comment.Comment.location in
+  let location = Comment.location comment in
   match layout with
   | Layout.SourceMap (loc, sub) ->
      Layout.SourceMap (loc, looselyAttachComment ~breakAncestors sub comment)
@@ -1392,7 +1392,7 @@ let rec looselyAttachComment ~breakAncestors layout comment =
  * find a place where the SingleLineComment can be fit into
  *)
 let rec insertSingleLineComment layout comment =
-  let location = comment.Comment.location in
+  let location = Comment.location comment in
   match layout with
   | Layout.SourceMap (loc, sub) ->
     Layout.SourceMap (loc, insertSingleLineComment sub comment)
@@ -1507,7 +1507,7 @@ and perfectlyAttachComment comment = function
     let (newLeft, comment) = tryPerfectlyAttachComment left comment in
     Layout.Label (labelFormatter, newLeft, newRight), comment
   | Layout.SourceMap (loc, subLayout) ->
-    let commloc = comment.Comment.location in
+    let commloc = Comment.location comment in
     if loc.loc_end.Lexing.pos_lnum = loc.loc_start.Lexing.pos_lnum &&
        commloc.loc_start.Lexing.pos_cnum = loc.loc_end.Lexing.pos_cnum
     then
