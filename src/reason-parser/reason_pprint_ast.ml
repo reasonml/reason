@@ -696,7 +696,7 @@ let view_expr x =
     if b
     then `list ls
     else `cons ls
-  | Pexp_construct (x,None) -> `simple (x.txt)
+  | Pexp_construct (x,None) -> `simple x.txt
   | _ -> `normal
 
 let is_simple_list_expr x =
@@ -2062,7 +2062,7 @@ let printer = object(self:'self)
         (self#non_arrowed_simple_core_type {x with ptyp_attributes=[]})
         (self#attributes stdAttrs)
     else
-      match (x.ptyp_desc) with
+      match x.ptyp_desc with
         | (Ptyp_arrow (l, ct1, ct2)) ->
           let rec allArrowSegments acc = function
             | { ptyp_desc = Ptyp_arrow (l, ct1, ct2); ptyp_attributes = [] } ->
@@ -2105,7 +2105,7 @@ let printer = object(self:'self)
       formatAttributed
         (self#non_arrowed_simple_core_type {x with ptyp_attributes=[]})
         (self#attributes stdAttrs)
-    else match (x.ptyp_desc) with
+    else match x.ptyp_desc with
       | (Ptyp_alias (ct, s)) ->
         source_map ~loc:x.ptyp_loc
           (label
@@ -2854,7 +2854,7 @@ let printer = object(self:'self)
             source_map ~loc (protectIdentifier txt)
           | Ppat_array l ->
               self#patternArray l
-          | Ppat_unpack (s) ->
+          | Ppat_unpack s ->
               makeList ~wrap:("(", ")") ~break:IfNeed ~postSpace:true [atom "module"; atom s.txt]
           | Ppat_type li ->
               makeList [atom "#"; self#longident_loc li]
@@ -2862,7 +2862,7 @@ let printer = object(self:'self)
              self#patternRecord l closed
           | Ppat_tuple l ->
              self#patternTuple l
-          | Ppat_constant (c) -> (self#constant c)
+          | Ppat_constant c -> (self#constant c)
           | Ppat_interval (c1, c2) -> makeList [self#constant c1; atom ".."; self#constant c2]
           | Ppat_variant (l, None) -> makeList[atom "`"; atom l]
           | Ppat_constraint (p, ct) ->
@@ -3515,7 +3515,7 @@ let printer = object(self:'self)
       match arguments with
       | (Labelled "children", {pexp_desc = Pexp_construct (_, None)}) :: tail ->
         processArguments tail processedAttrs None
-      | (Labelled "children", {pexp_desc = Pexp_construct ({txt = Lident"::"}, Some {pexp_desc = Pexp_tuple(components)} )}) :: tail ->
+      | (Labelled "children", {pexp_desc = Pexp_construct ({txt = Lident"::"}, Some {pexp_desc = Pexp_tuple components} )}) :: tail ->
         processArguments tail processedAttrs (self#formatChildren components [])
       | (Labelled "children", expr) :: tail ->
           let childLayout = self#simplifyUnparseExpr expr in
@@ -3524,7 +3524,7 @@ let printer = object(self:'self)
       | (Optional lbl, expression) :: tail ->
         let nextAttr =
           match expression.pexp_desc with
-          | Pexp_ident (ident) when isPunnedJsxArg lbl ident ->
+          | Pexp_ident ident when isPunnedJsxArg lbl ident ->
               makeList ~break:Layout.Never [atom "?"; atom lbl]
           | _ ->
               label (makeList ~break:Layout.Never [atom lbl; atom "=?"]) (self#simplifyUnparseExpr expression) in
@@ -3533,7 +3533,7 @@ let printer = object(self:'self)
       | (Labelled lbl, expression) :: tail ->
          let nextAttr =
            match expression.pexp_desc with
-           | Pexp_ident (ident) when isPunnedJsxArg lbl ident -> atom lbl
+           | Pexp_ident ident when isPunnedJsxArg lbl ident -> atom lbl
            | Pexp_apply ({pexp_desc=Pexp_ident loc}, l) when isJSXComponent loc l ->
                label (atom (lbl ^ "="))
                      (makeList ~break:IfNeed ~wrap:("{", "}") [(self#simplifyUnparseExpr expression)])
@@ -3650,7 +3650,7 @@ let printer = object(self:'self)
 
    *)
   method wrapCurriedFunctionBinding
-         ?(attachTo)
+         ?attachTo
          ~arrow
          ?(sweet=false)
          prefixText
@@ -4078,7 +4078,7 @@ let printer = object(self:'self)
                 (Some typeLayout)
                 appTerms
         )
-      | (_) ->
+      | _ ->
         let layoutPattern =
           source_map ~loc:x.pvb_pat.ppat_loc (self#pattern x.pvb_pat)
         in
@@ -4558,7 +4558,7 @@ let printer = object(self:'self)
             in
             Some (label ~space:true upToBody
                     (source_map ~loc:e3.pexp_loc (makeLetSequence (self#letList e3))))
-          | Pexp_new (li) ->
+          | Pexp_new li ->
             Some (label ~space:true (atom "new") (self#longident_class_or_type_loc li))
           | Pexp_assert e ->
             Some (
@@ -4566,7 +4566,7 @@ let printer = object(self:'self)
                 (atom "assert")
                 (self#reset#simplifyUnparseExpr e);
             )
-          | Pexp_lazy (e) ->
+          | Pexp_lazy e ->
               Some (label ~space:true (atom "lazy") (self#simplifyUnparseExpr e))
           | Pexp_poly _ ->
             failwith (
@@ -4935,7 +4935,7 @@ let printer = object(self:'self)
         | Pexp_variant (l, None) ->
             Some (ensureSingleTokenSticksToLabel (atom ("`" ^ l)))
         | Pexp_record (l, eo) -> Some (self#unparseRecord l eo)
-        | Pexp_array (l) ->
+        | Pexp_array l ->
           Some (self#unparseSequence ~construct:`Array l)
         | Pexp_let _ | Pexp_sequence _
         | Pexp_letmodule _ | Pexp_letexception _ ->
@@ -5001,9 +5001,9 @@ let printer = object(self:'self)
 
   method formatChildren children processedRev =
     match children with
-    | {pexp_desc = Pexp_constant (constant)} :: remaining ->
+    | {pexp_desc = Pexp_constant constant} :: remaining ->
       self#formatChildren remaining (self#constant constant :: processedRev)
-    | {pexp_desc = Pexp_construct ({txt = Lident "::"}, Some {pexp_desc = Pexp_tuple(children)} )} :: remaining ->
+    | {pexp_desc = Pexp_construct ({txt = Lident "::"}, Some {pexp_desc = Pexp_tuple children} )} :: remaining ->
       self#formatChildren (remaining @ children) processedRev
     | {pexp_desc = Pexp_apply(expr, l); pexp_attributes} :: remaining ->
       self#formatChildren remaining (self#simplifyUnparseExpr (List.hd children) :: processedRev)
@@ -5054,7 +5054,7 @@ let printer = object(self:'self)
       ]
 
   method extension (s, p) =
-    match (s.txt) with
+    match s.txt with
     (* We special case "bs.obj" for now to allow for a nicer interop with
      * BuckleScript. We might be able to generalize to any kind of record
      * looking thing with struct keys. *)
@@ -5134,7 +5134,7 @@ let printer = object(self:'self)
 
   method class_sig_field x =
     match x.pctf_desc with
-    | Pctf_inherit (ct) ->
+    | Pctf_inherit ct ->
       label ~space:true (atom "inherit") (self#class_constructor_type ct)
     | Pctf_val (s, mf, vf, ct) ->
       let valueFlags = self#value_type_flags_for (s ^ ":") (vf, mf) in
@@ -5355,7 +5355,7 @@ let printer = object(self:'self)
           (
             match so with
             | None -> inheritExp;
-            | Some (s) -> label ~space:true inheritExp (atom ("as " ^ s))
+            | Some s -> label ~space:true inheritExp (atom ("as " ^ s))
           )
       | Pcf_val (s, mf, Cfk_concrete (ovf, e)) ->
         let opening = match mf with
@@ -5465,7 +5465,7 @@ let printer = object(self:'self)
               self#core_type ct2
             ]
           )
-      | Pcf_initializer (e) ->
+      | Pcf_initializer e ->
         label
           ~space:true
           (atom "initializer")
@@ -5813,7 +5813,7 @@ let printer = object(self:'self)
   method simple_module_expr x = match x.pmod_desc with
     | Pmod_unpack e ->
         formatPrecedence (makeList ~postSpace:true [atom "val"; self#unparseExpr e])
-    | Pmod_ident (li) ->
+    | Pmod_ident li ->
         ensureSingleTokenSticksToLabel (self#longident_loc li)
     | Pmod_constraint (unconstrainedRet, mt) ->
         formatPrecedence (
@@ -5821,7 +5821,7 @@ let printer = object(self:'self)
             (self#module_expr unconstrainedRet)
             (self#module_type mt)
         )
-    | Pmod_structure (s) ->
+    | Pmod_structure s ->
         makeList
           ~break:Always_rec
           ~inline:(true, false)
@@ -5986,7 +5986,7 @@ let printer = object(self:'self)
             in
             self#attach_std_item_attrs x.pmtd_attributes main
         | Pstr_class l -> self#class_declaration_list l
-        | Pstr_class_type (l) -> self#class_type_declaration_list l
+        | Pstr_class_type l -> self#class_type_declaration_list l
         | Pstr_primitive vd -> self#primitive_declaration vd
         | Pstr_include incl ->
             self#attach_std_item_attrs incl.pincl_attributes @@
@@ -6238,7 +6238,8 @@ let printer = object(self:'self)
         let cbAttrs = cb.pexp_attributes in
         let (cbArgs, retCb) = self#curriedPatternsAndReturnVal {cb with pexp_attributes = []} in
         let cbArgs = if List.length cbAttrs > 0 then
-          makeList ~break:IfNeed ~inline:(true, true) ~postSpace:true ((List.map self#attribute cbAttrs)@(cbArgs))
+            makeList ~break:IfNeed ~inline:(true, true) ~postSpace:true
+              (List.map self#attribute cbAttrs @ cbArgs)
         else makeList cbArgs in
         let theCallbackArg = match argLbl with
           | Optional s -> makeList ([atom namedArgSym; atom s; atom "=?"]@[cbArgs])
@@ -6363,7 +6364,7 @@ end;;
 
 let toplevel_phrase ppf x =
   match x with
-  | Ptop_def (s) -> format_layout ppf (printer#structure s)
+  | Ptop_def s -> format_layout ppf (printer#structure s)
   | Ptop_dir (s, da) -> print_string "(* top directives not supported *)"
 
 let case_list ppf x =
