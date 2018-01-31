@@ -48,14 +48,11 @@
 
 open Ast_404
 open Asttypes
-open Format
 open Location
-open Lexing
 open Longident
 open Parsetree
 open Easy_format
 open Syntax_util
-open Ast_mapper
 
 module Comment = Reason_comment
 module Layout = Reason_layout
@@ -142,6 +139,8 @@ type infixChain =
   | InfixToken of string
   | Layout of Layout.t
 
+(* Helpers for dealing with extension nodes (%expr) *)
+
 let expression_extension_sugar x =
   if x.pexp_attributes <> [] then None
   else match x.pexp_desc with
@@ -170,19 +169,25 @@ let add_extension_sugar keyword = function
   | None -> keyword
   | Some str -> keyword ^ "%" ^ str.txt
 
-let rec longIdentSame = function
-  | (Lident l1, Lident l2) -> String.compare l1 l2 == 0
-  | (Ldot (path1, l1), Ldot (path2, l2)) ->
-    longIdentSame (path1, path2) && String.compare l1 l2 == 0
-  | (Lapply (l11, l12), Lapply (l21, l22)) ->
-    longIdentSame (l11, l21) && longIdentSame (l12, l22)
-  | _ -> false
+let string_equal : string -> string -> bool = (=)
 
-let rec trueForEachPair l1 l2 tester = match (l1, l2) with
-  | ([], []) -> true
-  | ([], _::_) -> false
-  | (_::_, []) -> false
-  | (hd1::tl1, hd2::tl2) -> (tester hd1 hd2 && trueForEachPair tl1 tl2 tester)
+let longident_same l1 l2 =
+  let rec equal l1 l2 =
+    match l1, l2 with
+    | Lident l1, Lident l2 -> string_equal l1 l2
+    | Ldot (path1, l1), Ldot (path2, l2) ->
+      equal path1 path2 && string_equal l1 l2
+    | Lapply (l11, l12), Lapply (l21, l22) ->
+      equal l11 l21 && equal l12 l22
+    | _ -> false
+  in
+  equal l1.txt l2.txt
+
+(* A variant of List.for_all2 that returns false instead of failing on lists
+   of different size *)
+let for_all2' pred l1 l2 =
+  List.length l1 = List.length l2 &&
+  List.for_all2 pred l1 l2
 
 (*
    Checks to see if two types are the same modulo the process of varification
@@ -202,62 +207,61 @@ let same_ast_modulo_varification_and_extensions t1 t2 =
     (* Importantly, cover the case where type constructors (of the form [a])
        are converted to type vars of the form ['a].
      *)
-    | (Ptyp_constr({txt=Lident s1}, []), Ptyp_var s2) -> String.compare s1 s2 == 0
+    | (Ptyp_constr({txt=Lident s1}, []), Ptyp_var s2) -> string_equal s1 s2
     (* Now cover the case where type variables (of the form ['a]) are
        converted to type constructors of the form [a].
      *)
-    | (Ptyp_var s1, Ptyp_constr({txt=Lident s2}, [])) -> String.compare s1 s2 == 0
+    | (Ptyp_var s1, Ptyp_constr({txt=Lident s2}, [])) -> string_equal s1 s2
     (* Now cover the typical case *)
     | (Ptyp_constr(longident1, lst1), Ptyp_constr(longident2, lst2))  ->
-      longIdentSame (longident1.txt, longident2.txt) &&
-      trueForEachPair lst1 lst2 loop
+      longident_same longident1 longident2 &&
+      for_all2' loop lst1 lst2
     | (Ptyp_any, Ptyp_any) -> true
-    | (Ptyp_var x1, Ptyp_var x2) -> String.compare x1 x2 == 0
+    | (Ptyp_var x1, Ptyp_var x2) -> string_equal x1 x2
     | (Ptyp_arrow (label1, core_type1, core_type1'), Ptyp_arrow (label2, core_type2, core_type2')) ->
       begin
          match label1, label2 with
          | Nolabel, Nolabel -> true
-         | Labelled s1, Labelled s2 -> String.compare s1 s2 == 0
-         | Optional s1, Optional s2 -> String.compare s1 s2 == 0
+         | Labelled s1, Labelled s2 -> string_equal s1 s2
+         | Optional s1, Optional s2 -> string_equal s1 s2
          | _ -> false
       end &&
       loop core_type1 core_type2 &&
       loop core_type1' core_type2'
-    | (Ptyp_tuple lst1, Ptyp_tuple lst2) -> trueForEachPair lst1 lst2 loop
+    | (Ptyp_tuple lst1, Ptyp_tuple lst2) -> for_all2' loop lst1 lst2
     | (Ptyp_object (lst1, o1), Ptyp_object (lst2, o2)) ->
       let tester = fun (s1, attrs1, t1) (s2, attrs2, t2) ->
-        String.compare s1 s2 == 0 &&
+        string_equal s1 s2 &&
         loop t1 t2
       in
-      trueForEachPair lst1 lst2 tester &&
-      o1 == o2
+      for_all2' tester lst1 lst2 && o1 = o2
     | (Ptyp_class (longident1, lst1), Ptyp_class (longident2, lst2)) ->
-      longIdentSame (longident1.txt, longident2.txt) &&
-      trueForEachPair lst1 lst2 loop
+      longident_same longident1 longident2 &&
+      for_all2' loop lst1 lst2
     | (Ptyp_alias(core_type1, string1), Ptyp_alias(core_type2, string2)) ->
       loop core_type1 core_type2 &&
-      String.compare string1 string2 == 0
+      string_equal string1 string2
     | (Ptyp_variant(row_field_list1, flag1, lbl_lst_option1), Ptyp_variant(row_field_list2, flag2, lbl_lst_option2)) ->
-      trueForEachPair row_field_list1 row_field_list2 rowFieldEqual &&
-      flag1 == flag2 &&
-      lbl_lst_option1 == lbl_lst_option2
+      for_all2' rowFieldEqual row_field_list1 row_field_list2 &&
+      flag1 = flag2 &&
+      lbl_lst_option1 = lbl_lst_option2
     | (Ptyp_poly (string_lst1, core_type1), Ptyp_poly (string_lst2, core_type2))->
-      trueForEachPair string_lst1 string_lst2 (fun s1 s2 -> String.compare s1 s2 == 0) &&
+      for_all2' string_equal string_lst1 string_lst2 &&
       loop core_type1 core_type2
     | (Ptyp_package(longident1, lst1), Ptyp_package (longident2, lst2)) ->
-      longIdentSame (longident1.txt, longident2.txt) &&
-      trueForEachPair lst1 lst2 testPackageType
+      longident_same longident1 longident2 &&
+      for_all2' testPackageType lst1 lst2
     | (Ptyp_extension (s1, arg1), Ptyp_extension (s2, arg2)) ->
-      String.compare s1.txt s2.txt == 0
+      string_equal s1.txt s2.txt
     | _ -> false
   and testPackageType (lblLongIdent1, ct1) (lblLongIdent2, ct2) =
-    longIdentSame (lblLongIdent1.txt, lblLongIdent2.txt) &&
+    longident_same lblLongIdent1 lblLongIdent2 &&
     loop ct1 ct2
   and rowFieldEqual f1 f2 = match (f1, f2) with
     | ((Rtag(label1, attrs1, flag1, lst1)), (Rtag (label2, attrs2, flag2, lst2))) ->
-      String.compare label1 label2 == 0 &&
-      flag1 == flag2 &&
-      trueForEachPair lst1 lst2 loop
+      string_equal label1 label2 &&
+      flag1 = flag2 &&
+      for_all2' loop lst1 lst2
     | (Rinherit t1, Rinherit t2) -> loop t1 t2
     | _ -> false
   in
@@ -439,12 +443,11 @@ let requireIndentFor = [updateToken; ":="]
 
 let namedArgSym = "~"
 
-
 let getPrintableUnaryIdent s =
-  if List.mem s unary_minus_prefix_symbols || List.mem s unary_plus_prefix_symbols then
-    String.sub s 1 (String.length s -1)
+  if List.mem s unary_minus_prefix_symbols ||
+     List.mem s unary_plus_prefix_symbols
+  then String.sub s 1 (String.length s -1)
   else s
-
 
 (* determines if the string is an infix string.
    checks backwards, first allowing a renaming postfix ("_102") which
@@ -666,14 +669,14 @@ let protect_ident ppf txt =
     if not (needs_parens txt) then "%s"
     else if needs_spaces txt then "(@;%s@;)"
     else "(%s)"
-  in fprintf ppf format txt
+  in Format.fprintf ppf format txt
 
 let protect_longident ppf print_longident longprefix txt =
   let format : (_, _, _) format =
     if not (needs_parens txt) then "%a.%s"
     else if needs_spaces txt then  "(@;%a.%s@;)"
     else "(%a.%s)" in
-  fprintf ppf format print_longident longprefix txt
+  Format.fprintf ppf format print_longident longprefix txt
 
 let rec orList = function (* only consider ((A|B)|C)*)
   | {ppat_desc = Ppat_or (p1, p2)} -> (orList p1) @ (orList p2)
@@ -741,8 +744,6 @@ let is_single_unit_construct exprList =
     | `tuple -> true
     | _ -> false)
   | _ -> false
-
-let pp = fprintf
 
 type funcReturnStyle =
   | ReturnValOnSameLine
@@ -1292,12 +1293,12 @@ let easyFormatToFormatter f x =
   let _ = Easy_format.Pretty.to_formatter fauxmatter x in
   let trimmed = Syntax_util.processLineEndingsAndStarts (Buffer.contents buf) in
   Format.fprintf f "%s\n" trimmed;
-  pp_print_flush f ()
+  Format.pp_print_flush f ()
 
-let wrap fn = fun term ->
-  ignore (flush_str_formatter ());
-  let f = str_formatter in
-  (fn f term; atom (flush_str_formatter ()))
+let wrap fn term =
+  ignore (Format.flush_str_formatter ());
+  fn Format.str_formatter term;
+  atom (Format.flush_str_formatter ())
 
 (* Don't use `trim` since it kills line return too? *)
 let rec beginsWithStar_ line length idx =
@@ -1378,7 +1379,7 @@ let formatComment_ txt =
   match commLines with
   | [] -> atom ""
   | [hd] ->
-    makeList ~inline:(true, true) ~postSpace:true ~preSpace:true ~indent:0 ~break:IfNeed [atom hd]
+    atom hd
   | zero::one::tl ->
     let attemptRemoveCount = (smallestLeadingSpaces (one::tl)) in
     let leftPad =
@@ -2007,33 +2008,40 @@ let protectIdentifier txt =
 let protectLongIdentifier longPrefix txt =
   makeList ~interleaveComments:false [longPrefix; atom "."; protectIdentifier txt]
 
-let paren: 'a . ?first:space_formatter -> ?last:space_formatter ->
-  bool -> (Format.formatter -> 'a -> unit) -> Format.formatter -> 'a -> unit
-  = fun  ?(first=("": _ format6)) ?(last=("": _ format6)) b fu f x ->
-    if b then (pp f "("; pp f first; fu f x; pp f last; pp f ")")
-    else fu f x
+let paren b fu ppf x =
+  if b
+  then Format.fprintf ppf "(%a)" fu x
+  else fu ppf x
 
-let constant_string f s = pp f "%S" s
+let constant_string ppf s =
+  Format.fprintf ppf "%S" s
 
-let tyvar f str = pp f "'%s" str
+let tyvar ppf str =
+  Format.fprintf ppf "'%s" str
 
 (* In some places parens shouldn't be printed for readability:
  * e.g. Some((-1)) should be printed as Some(-1)
  * In `1 + (-1)` -1 should be wrapped in parens for readability
  *)
-let constant ?(parens=true) f = function
-  | Pconst_char i -> pp f "%C"  i
-  | Pconst_string (i, None) -> pp f "%S" i
-  | Pconst_string (i, Some delim) -> pp f "{%s|%s|%s}" delim i delim
+let constant ?(parens=true) ppf = function
+  | Pconst_char i ->
+    Format.fprintf ppf "%C"  i
+  | Pconst_string (i, None) ->
+    Format.fprintf ppf "%S" i
+  | Pconst_string (i, Some delim) ->
+    Format.fprintf ppf "{%s|%s|%s}" delim i delim
   | Pconst_integer (i, None) ->
-      paren (parens && i.[0] = '-') (fun f -> pp f "%s") f i
+    paren (parens && i.[0] = '-')
+      (fun ppf -> Format.fprintf ppf "%s") ppf i
   | Pconst_integer (i, Some m) ->
-      paren (parens && i.[0] = '-') (fun f (i, m) -> pp f "%s%c" i m) f (i,m)
+    paren (parens && i.[0] = '-')
+      (fun ppf (i, m) -> Format.fprintf ppf "%s%c" i m) ppf (i,m)
   | Pconst_float (i, None) ->
-      paren (parens && i.[0] = '-') (fun f -> pp f "%s") f i
+    paren (parens && i.[0] = '-')
+      (fun ppf -> Format.fprintf ppf "%s") ppf i
   | Pconst_float (i, Some m) ->
-      paren (parens && i.[0] = '-') (fun f (i,m) ->
-      pp f "%s%c" i m) f (i,m)
+    paren (parens && i.[0] = '-')
+      (fun ppf (i,m) -> Format.fprintf ppf "%s%c" i m) ppf (i,m)
 
 let is_punned_labelled_expression e lbl = match e.pexp_desc with
   | Pexp_ident { txt; _ }
@@ -2259,7 +2267,7 @@ let formatComputedInfixChain infixChainList =
   print [] [] "" infixChainList
 
 
-class printer  ()= object(self:'self)
+let printer = object(self:'self)
   val pipe = false
   val semi = false
   (* The test and first branch of ternaries must be guarded *)
@@ -4080,7 +4088,7 @@ class printer  ()= object(self:'self)
          leadingAbstractVars
          nonVarifiedType =
       same_ast_modulo_varification_and_extensions polyType nonVarifiedType &&
-      trueForEachPair typeVars leadingAbstractVars (fun x y -> String.compare x y == 0)
+      for_all2' string_equal typeVars leadingAbstractVars
   (* Reinterpret this as a pattern constraint since we don't currently have a
      way to disambiguate. There is currently a way to disambiguate a parsing
      from Ppat_constraint vs.  Pexp_constraint. Currently (and consistent with
@@ -6599,17 +6607,14 @@ class printer  ()= object(self:'self)
     end
 end;;
 
-
-let easy = new printer ()
-
 let toplevel_phrase f x =
   match x with
   | Ptop_def (s) ->
-    easyFormatToFormatter f (layoutToEasyFormatNoComments (easy#structure s))
+    easyFormatToFormatter f (layoutToEasyFormatNoComments (printer#structure s))
   | Ptop_dir (s, da) -> print_string "(* top directives not supported *)"
 
 let case_list f x =
-  let l = easy#case_list x in
+  let l = printer#case_list x in
   (List.iter (fun x -> easyFormatToFormatter f (layoutToEasyFormatNoComments x)) l)
 
 (* Convert a Longident to a list of strings.
@@ -6668,58 +6673,58 @@ let built_in_explicit_arity_constructors = ["Some"; "Assert_failure"; "Match_fai
 let explicit_arity_constructors = StringSet.of_list(built_in_explicit_arity_constructors @ (!configuredSettings).constructorLists)
 
 let add_explicit_arity_mapper super =
-{ super with
-  expr = begin fun mapper expr ->
+  let super_expr = super.Ast_mapper.expr in
+  let super_pat = super.Ast_mapper.pat in
+  let expr mapper expr =
     let expr =
       match expr with
-        | {pexp_desc=Pexp_construct(lid, Some sp);
-           pexp_loc;
-           pexp_attributes} when
-             List.exists
-                (fun c -> StringSet.mem c explicit_arity_constructors)
-                (longident_for_arity lid.txt) &&
-             explicit_arity_not_exists pexp_attributes ->
-           {pexp_desc=Pexp_construct(lid, Some (wrap_expr_with_tuple sp));
-            pexp_loc;
-            pexp_attributes=add_explicit_arity pexp_loc pexp_attributes}
-        | x -> x
+      | {pexp_desc=Pexp_construct(lid, Some sp);
+         pexp_loc;
+         pexp_attributes} when
+          List.exists
+            (fun c -> StringSet.mem c explicit_arity_constructors)
+            (longident_for_arity lid.txt) &&
+          explicit_arity_not_exists pexp_attributes ->
+        {pexp_desc=Pexp_construct(lid, Some (wrap_expr_with_tuple sp));
+         pexp_loc;
+         pexp_attributes=add_explicit_arity pexp_loc pexp_attributes}
+      | x -> x
     in
-    super.expr mapper expr
-  end;
-  pat = begin fun mapper pat ->
+    super_expr mapper expr
+  and pat mapper pat =
     let pat =
       match pat with
-        | {ppat_desc=Ppat_construct(lid, Some sp);
-           ppat_loc;
-           ppat_attributes} when
-              List.exists
-                  (fun c -> StringSet.mem c explicit_arity_constructors)
-                  (longident_for_arity lid.txt) &&
-              explicit_arity_not_exists ppat_attributes ->
-           {ppat_desc=Ppat_construct(lid, Some (wrap_pat_with_tuple sp));
-            ppat_loc;
-            ppat_attributes=add_explicit_arity ppat_loc ppat_attributes}
-        | x -> x
+      | {ppat_desc=Ppat_construct(lid, Some sp);
+         ppat_loc;
+         ppat_attributes} when
+          List.exists
+            (fun c -> StringSet.mem c explicit_arity_constructors)
+            (longident_for_arity lid.txt) &&
+          explicit_arity_not_exists ppat_attributes ->
+        {ppat_desc=Ppat_construct(lid, Some (wrap_pat_with_tuple sp));
+         ppat_loc;
+         ppat_attributes=add_explicit_arity ppat_loc ppat_attributes}
+      | x -> x
     in
-    super.pat mapper pat
-  end;
-}
+    super_pat mapper pat
+  in
+  { super with Ast_mapper. expr; pat }
 
 let preprocessing_mapper =
   ml_to_reason_swap_operator_mapper
     (escape_stars_slashes_mapper
-      (add_explicit_arity_mapper default_mapper))
+      (add_explicit_arity_mapper Ast_mapper.default_mapper))
 
 let core_type f x =
-  easyFormatToFormatter f (layoutToEasyFormatNoComments (easy#core_type (apply_mapper_to_type x preprocessing_mapper)))
+  easyFormatToFormatter f (layoutToEasyFormatNoComments (printer#core_type (apply_mapper_to_type x preprocessing_mapper)))
 let pattern f x =
-  easyFormatToFormatter f (layoutToEasyFormatNoComments (easy#pattern (apply_mapper_to_pattern x preprocessing_mapper)))
+  easyFormatToFormatter f (layoutToEasyFormatNoComments (printer#pattern (apply_mapper_to_pattern x preprocessing_mapper)))
 let signature (comments : Comment.t list) f x =
-  easyFormatToFormatter f (layoutToEasyFormat (easy#signature (apply_mapper_to_signature x preprocessing_mapper)) comments)
+  easyFormatToFormatter f (layoutToEasyFormat (printer#signature (apply_mapper_to_signature x preprocessing_mapper)) comments)
 let structure (comments : Comment.t list) f x =
-  easyFormatToFormatter f (layoutToEasyFormat (easy#structure (apply_mapper_to_structure x preprocessing_mapper)) comments)
+  easyFormatToFormatter f (layoutToEasyFormat (printer#structure (apply_mapper_to_structure x preprocessing_mapper)) comments)
 let expression f x =
-  easyFormatToFormatter f (layoutToEasyFormatNoComments (easy#unparseExpr (apply_mapper_to_expr x preprocessing_mapper)))
+  easyFormatToFormatter f (layoutToEasyFormatNoComments (printer#unparseExpr (apply_mapper_to_expr x preprocessing_mapper)))
 let case_list = case_list
 end
 in
