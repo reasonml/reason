@@ -46,6 +46,9 @@
 
 (library
  ((name reason)
+; Uncomment to allow make coverage target to work
+; requires you to have run $ opam install bisect_ppx
+;  (preprocess (pps (bisect_ppx)))
   (public_name reason)
   (wrapped false)
   (modules
