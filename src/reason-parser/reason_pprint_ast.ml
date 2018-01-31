@@ -1003,7 +1003,6 @@ let isArityClear attrs =
     )
     attrs
 
-
 let list_settings = {
   Easy_format.space_after_opening = false;
   space_after_separator = false;
@@ -1020,8 +1019,6 @@ let list_settings = {
   separator_style = None;
   closing_style = None;
 }
-
-let labelStringStyle = { Easy_format.atom_style = Some "atomClss" }
 
 let easyListSettingsFromListConfig listConfig =
   let { Layout.
@@ -1062,11 +1059,9 @@ let easyListSettingsFromListConfig listConfig =
       align_closing = not inlineEnd;
   })
 
-let makeListConfig
-    ?(newlinesAboveItems=0)
+let makeListConfig ?(newlinesAboveItems=0)
     ?(newlinesAboveComments=0)
     ?(newlinesAboveDocComments=0)
-    ?(interleaveComments=true)
     ?listConfigIfCommentsInterleaved
     ?(listConfigIfEolCommentsInterleaved)
     ?(break=Layout.Never)
@@ -1083,7 +1078,6 @@ let makeListConfig
     newlinesAboveItems;
     newlinesAboveComments;
     newlinesAboveDocComments;
-    interleaveComments;
     listConfigIfCommentsInterleaved;
     listConfigIfEolCommentsInterleaved;
     break;
@@ -1106,7 +1100,6 @@ let makeEasyList
     ?(newlinesAboveItems=0)
     ?(newlinesAboveComments=0)
     ?(newlinesAboveDocComments=0)
-    ?(interleaveComments=true)
     ?(break=Layout.Never)
     ?(wrap=("", ""))
     ?(inline=(true, false))
@@ -1121,7 +1114,6 @@ let makeEasyList
       ~newlinesAboveItems
       ~newlinesAboveComments
       ~newlinesAboveDocComments
-      ~interleaveComments
       ~break
       ~wrap
       ~inline
@@ -1142,7 +1134,6 @@ let makeList
     ?(newlinesAboveItems=0)
     ?(newlinesAboveComments=0)
     ?(newlinesAboveDocComments=0)
-    ?(interleaveComments=true)
     ?listConfigIfCommentsInterleaved
     ?listConfigIfEolCommentsInterleaved
     ?(break=Layout.Never)
@@ -1159,7 +1150,6 @@ let makeList
       ~newlinesAboveItems
       ~newlinesAboveComments
       ~newlinesAboveDocComments
-      ~interleaveComments
       ?listConfigIfCommentsInterleaved
       ?listConfigIfEolCommentsInterleaved
       ~break
@@ -1175,21 +1165,21 @@ let makeList
   in
   Layout.Sequence (config, lst)
 
-let makeAppList l =
-  match l with
-  | hd::[] -> hd
-  | _ -> makeList ~inline:(true, true) ~postSpace:true ~break:IfNeed l
+let makeAppList = function
+  | [hd] -> hd
+  | l -> makeList ~inline:(true, true) ~postSpace:true ~break:IfNeed l
 
 let makeTup ?(trailComma=true) l =
-  makeList ~wrap:("(",")") ~sep:(if trailComma then commaTrail else commaSep) ~postSpace:true ~break:IfNeed l
+  makeList
+    ~wrap:("(",")") ~postSpace:true ~break:IfNeed l
+    ~sep:(if trailComma then commaTrail else commaSep)
 
 let ensureSingleTokenSticksToLabel x =
-  makeList
-    ~interleaveComments:true
-    ~listConfigIfCommentsInterleaved: (
-      fun currentConfig -> {currentConfig with break=Always_rec; postSpace=true; indent=0; inline=(true, true)}
-    )
-    [x]
+  let listConfigIfCommentsInterleaved cfg =
+    let inline = (true, true) and postSpace = true and indent = 0 in
+    {cfg with Layout.break=Always_rec; postSpace; indent; inline}
+  in
+  makeList ~listConfigIfCommentsInterleaved [x]
 
 let unbreakLabelFormatter formatter =
   let newFormatter labelTerm term =
@@ -1253,7 +1243,8 @@ let label ?(break=`Auto) ?(space=false) ?(indent=settings.indentAfterLabels) (la
   )
 
 let atom ?loc str =
-  source_map ?loc (Layout.Easy (Easy_format.Atom(str, labelStringStyle)))
+  let style = { Easy_format.atom_style = Some "atomClss" } in
+  source_map ?loc (Layout.Easy (Easy_format.Atom(str, style)))
 
 (** Take x,y,z and n and generate [x, y, z, ...n] *)
 let makeES6List ?wrap:((lwrap,rwrap)=("", "")) lst last =
@@ -1283,17 +1274,6 @@ let formatPrecedence ?loc formattedTerm =
 let isListy = function
   | Easy_format.List _ -> true
   | _ -> false
-
-let easyFormatToFormatter f x =
-  let buf = Buffer.create 1000 in
-  let fauxmatter = Format.formatter_of_buffer buf in
-  let _ = Format.pp_set_margin fauxmatter settings.width in
-  if debugWithHtml.contents then
-    Easy_format.Pretty.define_styles fauxmatter html_escape html_style;
-  let _ = Easy_format.Pretty.to_formatter fauxmatter x in
-  let trimmed = Syntax_util.processLineEndingsAndStarts (Buffer.contents buf) in
-  Format.fprintf f "%s\n" trimmed;
-  Format.pp_print_flush f ()
 
 let wrap fn term =
   ignore (Format.flush_str_formatter ());
@@ -1800,32 +1780,32 @@ let partitionComments comments =
     partitionComments_ ([], [], []) comments in
   (singleLines, List.rev endOfLines, regulars)
 
-let layoutToEasyFormatNoComments layout =
-  let rec traverse = function
-    | Layout.Sequence (listConfig, subLayouts) ->
-      easyListWithConfig listConfig (List.map traverse subLayouts)
-    | Layout.Label (labelFormatter, left, right) ->
-      labelFormatter (traverse left) (traverse right)
-    | Layout.SourceMap (_, subLayout) ->
-      traverse subLayout
-    | Layout.Easy e -> e
+let format_layout ?comments ppf layout =
+  let easy = match comments with
+    | None -> Layout.to_easy_format layout
+    | Some comments ->
+      let (singleLines, endOfLines, regulars) = partitionComments comments in
+      (* TODO: Stop generating multiple versions of the tree, and instead generate one new tree. *)
+      (* Layout.dump Format.std_formatter layout; *)
+      let layout = List.fold_left insertRegularComment layout regulars in
+      let layout = consolidateSeparator layout in
+      let layout = List.fold_left insertEndOfLineComment layout endOfLines in
+      (* Layout.dump Format.std_formatter layout; *)
+      let layout = List.fold_left insertSingleLineComment layout singleLines in
+      let layout = insertLinesAboveItems layout in
+      let layout = Layout.to_easy_format layout in
+      (* Layout.dump_easy Format.std_formatter easyFormat; *)
+      layout
   in
-  traverse layout
-
-let layoutToEasyFormat layout comments =
-  let (singleLines, endOfLines, regulars) = partitionComments comments in
-  (* TODO: Stop generating multiple versions of the tree, and instead generate one new tree. *)
-  (* Layout.dump Format.std_formatter layout; *)
-  let layout = List.fold_left insertRegularComment layout regulars in
-  let layout = consolidateSeparator layout in
-  let layout = List.fold_left insertEndOfLineComment layout endOfLines in
-  (* Layout.dump Format.std_formatter layout; *)
-  let layout = List.fold_left insertSingleLineComment layout singleLines in
-  let layout = insertLinesAboveItems layout in
-  let layout = layoutToEasyFormatNoComments layout in
-  (* Layout.dump_easy Format.std_formatter easyFormat; *)
-  makeEasyList [layout]
-    ~break:Layout.Always_rec ~indent:0 ~inline:(true, true)
+  let buf = Buffer.create 1000 in
+  let fauxmatter = Format.formatter_of_buffer buf in
+  let _ = Format.pp_set_margin fauxmatter settings.width in
+  if debugWithHtml.contents then
+    Easy_format.Pretty.define_styles fauxmatter html_escape html_style;
+  let _ = Easy_format.Pretty.to_formatter fauxmatter easy in
+  let trimmed = Syntax_util.processLineEndingsAndStarts (Buffer.contents buf) in
+  Format.fprintf ppf "%s\n" trimmed;
+  Format.pp_print_flush ppf ()
 
 let partitionFinalWrapping listTester wrapFinalItemSetting x =
   let rev = List.rev x in
@@ -1838,7 +1818,7 @@ let partitionFinalWrapping listTester wrapFinalItemSetting x =
         else
           Some (List.rev revEverythingButLast, last)
 
-let semiTerminated term = makeList ~interleaveComments:false [term; atom ";"]
+let semiTerminated term = makeList [term; atom ";"]
 
 
 (* postSpace is so that when comments are interleaved, we still use spacing rules. *)
@@ -2002,11 +1982,11 @@ let typeApplicationFinalWrapping typeApplicationItems =
 (* add parentheses to binders when they are in fact infix or prefix operators *)
 let protectIdentifier txt =
   if not (needs_parens txt) then atom txt
-  else if needs_spaces txt then makeList ~interleaveComments:false ~wrap:("(", ")") ~pad:(true, true) [atom txt]
+  else if needs_spaces txt then makeList ~wrap:("(", ")") ~pad:(true, true) [atom txt]
   else atom ("(" ^ txt ^ ")")
 
 let protectLongIdentifier longPrefix txt =
-  makeList ~interleaveComments:false [longPrefix; atom "."; protectIdentifier txt]
+  makeList [longPrefix; atom "."; protectIdentifier txt]
 
 let paren b fu ppf x =
   if b
@@ -2282,7 +2262,7 @@ let printer = object(self:'self)
     | Lident s -> (protectIdentifier s)
     | Ldot(longPrefix, s) ->
         (protectLongIdentifier (self#longident longPrefix) s)
-    | Lapply (y,s) -> makeList ~interleaveComments:false [self#longident y; atom "("; self#longident s; atom ")";]
+    | Lapply (y,s) -> makeList [self#longident y; atom "("; self#longident s; atom ")";]
 
   (* This form allows applicative functors. *)
   method longident_class_or_type_loc x = self#longident x.txt
@@ -3151,7 +3131,7 @@ let printer = object(self:'self)
     | None, _ -> param
     | Some o, _ -> makeList  [param; atom "="; (self#unparseConstraintExpr ~ensureExpr:true o)]
 
-  method access op cls e1 e2 = makeList ~interleaveComments:false [
+  method access op cls e1 e2 = makeList [
     (* Important that this be not breaking - at least to preserve same
        behavior as stock desugarer. It might even be required (double check
        in parser.mly) *)
@@ -3576,7 +3556,7 @@ let printer = object(self:'self)
       ) in
       let leftItm =
         label
-          (makeList ~interleaveComments:false [self#simple_enough_to_be_lhs_dot_send leftExpr; atom "."])
+          (makeList [self#simple_enough_to_be_lhs_dot_send leftExpr; atom "."])
           (self#longident_loc li) in
       let expr = label ~space:true (makeList ~postSpace:true [leftItm; atom updateToken]) rightItm in
       SpecificInfixPrecedence ({reducePrecedence=(Token updateToken); shiftPrecedence=(Token updateToken)}, LayoutNode expr)
@@ -6349,33 +6329,34 @@ let printer = object(self:'self)
       *)
       let bar xx = makeList ~postSpace:true [atom "|"; xx] in
       let appendWhereAndArrow p = match pc_guard with
-          | None -> makeList ~interleaveComments:false ~postSpace:true [p; atom "=>"]
-          | Some g ->
-            (* when x should break as a whole - extra list added around it to make it break as one *)
-            let withWhen = label ~space:true p (makeList ~break:Layout.Never ~inline:(true, true) ~postSpace:true [label ~space:true (atom "when") (self#unparseExpr g)]) in
-            makeList ~interleaveComments:false ~inline:(true, true) ~postSpace:true [withWhen; atom "=>"]
+        | None -> makeList ~postSpace:true [p; atom "=>"]
+        | Some g ->
+          (* when x should break as a whole - extra list added around it to make it break as one *)
+          let withWhen = label ~space:true p
+              (makeList ~break:Layout.Never ~inline:(true, true) ~postSpace:true
+                 [label ~space:true (atom "when") (self#unparseExpr g)])
+          in
+          makeList ~inline:(true, true) ~postSpace:true [withWhen; atom "=>"]
       in
-
       let rec appendWhereAndArrowToLastOr = function
         | [] -> []
-        | hd::tl -> (
-          let formattedHd = match tl with
-            | [] -> appendWhereAndArrow (self#pattern hd)
-            | tl::tlTl -> (self#pattern hd)
+        | hd::tl ->
+          let formattedHd = self#pattern hd in
+          let formattedHd =
+            if tl = [] then appendWhereAndArrow formattedHd else formattedHd
           in
-          formattedHd::(appendWhereAndArrowToLastOr tl)
-        )
+          (formattedHd :: appendWhereAndArrowToLastOr tl)
       in
       let orsWithWhereAndArrowOnLast = appendWhereAndArrowToLastOr theOrs in
       let rhs =
         if allowUnguardedSequenceBodies then
           match (self#under_pipe#letList pc_rhs) with
-            (* TODO: Still render a list with located information here so that
+          (* TODO: Still render a list with located information here so that
                comments (eol) are interleaved *)
-            | [hd] -> hd
-            (* In this case, we don't need any additional indentation, because there aren't
-               wrapping {} which would cause zero indentation to look strange. *)
-            | lst -> makeUnguardedLetSequence lst
+          | [hd] -> hd
+          (* In this case, we don't need any additional indentation, because there aren't
+             wrapping {} which would cause zero indentation to look strange. *)
+          | lst -> makeUnguardedLetSequence lst
         else self#under_pipe#unparseExpr pc_rhs
       in
       source_map
@@ -6389,7 +6370,7 @@ let printer = object(self:'self)
         (makeList ~break:Always_rec ~inline:(true, true)
            (List.map bar (appendLabelToLast orsWithWhereAndArrowOnLast rhs)))
     in
-    (List.map case_row l)
+    List.map case_row l
 
   (* Formats a list of a single expr param in such a way that the parens of the function or
    * (poly)-variant application and the wrapping of the param stick together when the layout breaks.
@@ -6607,15 +6588,13 @@ let printer = object(self:'self)
     end
 end;;
 
-let toplevel_phrase f x =
+let toplevel_phrase ppf x =
   match x with
-  | Ptop_def (s) ->
-    easyFormatToFormatter f (layoutToEasyFormatNoComments (printer#structure s))
+  | Ptop_def (s) -> format_layout ppf (printer#structure s)
   | Ptop_dir (s, da) -> print_string "(* top directives not supported *)"
 
-let case_list f x =
-  let l = printer#case_list x in
-  (List.iter (fun x -> easyFormatToFormatter f (layoutToEasyFormatNoComments x)) l)
+let case_list ppf x =
+  List.iter (format_layout ppf) (printer#case_list x)
 
 (* Convert a Longident to a list of strings.
    E.g. M.Constructor will be ["Constructor"; "M.Constructor"]
@@ -6715,17 +6694,28 @@ let preprocessing_mapper =
     (escape_stars_slashes_mapper
       (add_explicit_arity_mapper Ast_mapper.default_mapper))
 
-let core_type f x =
-  easyFormatToFormatter f (layoutToEasyFormatNoComments (printer#core_type (apply_mapper_to_type x preprocessing_mapper)))
-let pattern f x =
-  easyFormatToFormatter f (layoutToEasyFormatNoComments (printer#pattern (apply_mapper_to_pattern x preprocessing_mapper)))
-let signature (comments : Comment.t list) f x =
-  easyFormatToFormatter f (layoutToEasyFormat (printer#signature (apply_mapper_to_signature x preprocessing_mapper)) comments)
-let structure (comments : Comment.t list) f x =
-  easyFormatToFormatter f (layoutToEasyFormat (printer#structure (apply_mapper_to_structure x preprocessing_mapper)) comments)
-let expression f x =
-  easyFormatToFormatter f (layoutToEasyFormatNoComments (printer#unparseExpr (apply_mapper_to_expr x preprocessing_mapper)))
+let core_type ppf x =
+  format_layout ppf
+    (printer#core_type (apply_mapper_to_type x preprocessing_mapper))
+
+let pattern ppf x =
+  format_layout ppf
+    (printer#pattern (apply_mapper_to_pattern x preprocessing_mapper))
+
+let signature (comments : Comment.t list) ppf x =
+  format_layout ppf ~comments
+    (printer#signature (apply_mapper_to_signature x preprocessing_mapper))
+
+let structure (comments : Comment.t list) ppf x =
+  format_layout ppf ~comments
+    (printer#structure (apply_mapper_to_structure x preprocessing_mapper))
+
+let expression ppf x =
+  format_layout ppf
+    (printer#unparseExpr (apply_mapper_to_expr x preprocessing_mapper))
+
 let case_list = case_list
+
 end
 in
 object
