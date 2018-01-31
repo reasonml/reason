@@ -1,9 +1,6 @@
 module Comment = Reason_comment
 
-type easyFormatLabelFormatter = Easy_format.t -> Easy_format.t -> Easy_format.t
-
-(* Make a standard list *)
-type whenToDoSomething =
+type break_criterion =
   | Never
   | IfNeed
   | Always
@@ -47,7 +44,7 @@ type separator =
 type t =
   | SourceMap of Location.t * t (* a layout with location info *)
   | Sequence of config * (t list)
-  | Label of easyFormatLabelFormatter * t * t
+  | Label of (Easy_format.t -> Easy_format.t -> Easy_format.t) * t * t
   | Easy of Easy_format.t
 
 and config = {
@@ -58,11 +55,7 @@ and config = {
   newlinesAboveComments: int;
   (* Newlines above doc comments *)
   newlinesAboveDocComments: int;
-  (* If you are only grouping something for the sake of visual appearance, and
-   * not forming an actual conceptual sequence of items, then this is often
-   * useful. For example, if you're appending a semicolon etc. *)
-  interleaveComments: bool;
-  break: whenToDoSomething;
+  break: break_criterion;
   (* Break setting that becomes activated if a comment becomes interleaved into
    * this list. Typically, if not specified, the behavior from [break] will be
    * used.
@@ -168,3 +161,62 @@ let dump ppf layout =
 let source_map ?(loc=Location.none) layout =
   if loc = Location.none then layout
   else SourceMap (loc, layout)
+
+let default_list_settings = {
+  Easy_format.space_after_opening = false;
+  space_after_separator = false;
+  space_before_separator = false;
+  separators_stick_left = true;
+  space_before_closing = false;
+  stick_to_label = true;
+  align_closing = true;
+  wrap_body = `No_breaks;
+  indent_body = 0;
+  list_style = Some "list";
+  opening_style = None;
+  body_style = None;
+  separator_style = None;
+  closing_style = None;
+}
+
+let easy_settings_from_config
+    { break; wrap; inline; indent; sepLeft; preSpace; postSpace; pad; sep } =
+  (* TODO: Stop handling separators in Easy_format since we handle most of
+      them before Easy_format anyways. There's just some that we still rely on
+      Easy_format for. Easy_format's sep wasn't powerful enough.
+  *)
+  let (opn, cls) = wrap in
+  let (padOpn, padCls) = pad in
+  let (inlineStart, inlineEnd) = inline in
+  let sepStr = match sep with NoSep -> "" | Sep s | SepFinal(s, _) -> s in
+  (opn, sepStr, cls,
+   { default_list_settings with
+     Easy_format.
+     wrap_body = (match break with
+         | Never -> `No_breaks
+         (* Yes, `Never_wrap is a horrible name - really means "if needed". *)
+         | IfNeed -> `Never_wrap
+         | Always -> `Force_breaks
+         | Always_rec -> `Force_breaks_rec
+       );
+     indent_body = indent;
+     space_after_separator = postSpace;
+     space_before_separator = preSpace;
+     space_after_opening = padOpn;
+     space_before_closing = padCls;
+     stick_to_label = inlineStart;
+     align_closing = not inlineEnd;
+   })
+
+let to_easy_format layout =
+  let rec traverse = function
+    | Sequence (config, sublayouts) ->
+      let items = List.map traverse sublayouts in
+      Easy_format.List (easy_settings_from_config config, items)
+    | Label (labelFormatter, left, right) ->
+      labelFormatter (traverse left) (traverse right)
+    | SourceMap (_, subLayout) ->
+      traverse subLayout
+    | Easy e -> e
+  in
+  traverse layout
