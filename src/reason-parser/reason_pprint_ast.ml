@@ -1003,130 +1003,8 @@ let isArityClear attrs =
     )
     attrs
 
-let list_settings = {
-  Easy_format.space_after_opening = false;
-  space_after_separator = false;
-  space_before_separator = false;
-  separators_stick_left = true;
-  space_before_closing = false;
-  stick_to_label = true;
-  align_closing = true;
-  wrap_body = `No_breaks;
-  indent_body = settings.listsRecordsIndent * settings.space;
-  list_style = Some "list";
-  opening_style = None;
-  body_style = None;
-  separator_style = None;
-  closing_style = None;
-}
-
-let easyListSettingsFromListConfig listConfig =
-  let { Layout.
-    break;
-    wrap;
-    inline;
-    indent;
-    sepLeft;
-    preSpace;
-    postSpace;
-    pad;
-    (* TODO: Stop handling separators in Easy_format since we handle most of
-      them before Easy_format anyways. There's just some that we still rely on
-      Easy_format for. Easy_format's sep wasn't powerful enough.
-     *)
-    sep;
-  } = listConfig in
-  let (opn, cls) = wrap in
-  let (padOpn, padCls) = pad in
-  let (inlineStart, inlineEnd) = inline in
-  let sepStr = match sep with NoSep -> "" | Sep s | SepFinal(s, _) -> s in
-  (opn, sepStr, cls, {
-    list_settings with
-      wrap_body = (
-        match break with
-          | Layout.Never -> `No_breaks
-          (* Yes, `Never_wrap is a horrible name - really means "if needed". *)
-          | Layout.IfNeed -> `Never_wrap
-          | Layout.Always -> `Force_breaks
-          | Layout.Always_rec -> `Force_breaks_rec
-      );
-      indent_body = indent;
-      space_after_separator = postSpace;
-      space_before_separator = preSpace;
-      space_after_opening = padOpn;
-      space_before_closing = padCls;
-      stick_to_label = inlineStart;
-      align_closing = not inlineEnd;
-  })
-
-let makeListConfig ?(newlinesAboveItems=0)
-    ?(newlinesAboveComments=0)
-    ?(newlinesAboveDocComments=0)
-    ?listConfigIfCommentsInterleaved
-    ?(listConfigIfEolCommentsInterleaved)
-    ?(break=Layout.Never)
-    ?(wrap=("", ""))
-    ?(inline=(true, false))
-    ?(sep=Layout.NoSep)
-    ?(indent=list_settings.indent_body)
-    ?(sepLeft=true)
-    ?(preSpace=false)
-    ?(postSpace=false)
-    ?(pad=(false,false))
-    () =
-  { Layout.
-    newlinesAboveItems;
-    newlinesAboveComments;
-    newlinesAboveDocComments;
-    listConfigIfCommentsInterleaved;
-    listConfigIfEolCommentsInterleaved;
-    break;
-    wrap;
-    inline;
-    sep;
-    indent;
-    sepLeft;
-    preSpace;
-    postSpace;
-    pad;
-  }
-
-let easyListWithConfig listConfig easyListItems =
-  let (opn, sep, cls, settings) =
-    easyListSettingsFromListConfig listConfig in
-  Easy_format.List ((opn, sep, cls, settings), easyListItems)
-
-let makeEasyList
-    ?(newlinesAboveItems=0)
-    ?(newlinesAboveComments=0)
-    ?(newlinesAboveDocComments=0)
-    ?(break=Layout.Never)
-    ?(wrap=("", ""))
-    ?(inline=(true, false))
-    ?sep
-    ?(indent=list_settings.indent_body)
-    ?(sepLeft=true)
-    ?(preSpace=false)
-    ?(postSpace=false)
-    ?(pad=(false,false)) easyListItems =
-  let listConfig =
-    makeListConfig
-      ~newlinesAboveItems
-      ~newlinesAboveComments
-      ~newlinesAboveDocComments
-      ~break
-      ~wrap
-      ~inline
-      ?sep
-      ~indent
-      ~sepLeft
-      ~preSpace
-      ~postSpace
-      ~pad
-      ()
-  in
-  let (opn, sep, cls, listSettings) = easyListSettingsFromListConfig listConfig in
-  Easy_format.List ((opn, sep, cls, listSettings), easyListItems)
+let default_indent_body =
+  settings.listsRecordsIndent * settings.space
 
 let makeList
     (* Allows a fallback in the event that comments were interleaved with the
@@ -1139,29 +1017,19 @@ let makeList
     ?(break=Layout.Never)
     ?(wrap=("", ""))
     ?(inline=(true, false))
-    ?sep
-    ?(indent=list_settings.indent_body)
+    ?(sep=Layout.NoSep)
+    ?(indent=default_indent_body)
     ?(sepLeft=true)
     ?(preSpace=false)
     ?(postSpace=false)
-    ?(pad=(false,false)) lst =
+    ?(pad=(false,false))
+    lst =
   let config =
-    makeListConfig
-      ~newlinesAboveItems
-      ~newlinesAboveComments
-      ~newlinesAboveDocComments
-      ?listConfigIfCommentsInterleaved
-      ?listConfigIfEolCommentsInterleaved
-      ~break
-      ~wrap
-      ~inline
-      ?sep
-      ~indent
-      ~sepLeft
-      ~preSpace
-      ~postSpace
-      ~pad
-      ()
+    { Layout.
+      newlinesAboveItems; newlinesAboveComments; newlinesAboveDocComments;
+      listConfigIfCommentsInterleaved; listConfigIfEolCommentsInterleaved;
+      break; wrap; inline; sep; indent; sepLeft; preSpace; postSpace; pad;
+    }
   in
   Layout.Sequence (config, lst)
 
