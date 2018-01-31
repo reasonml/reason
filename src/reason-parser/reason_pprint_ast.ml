@@ -590,33 +590,28 @@ let without_prefixed_backslashes str =
   else str
 
 let indexOfFirstMatch ~prec lst =
-  let rec indexOfFirstMatchN ~prec lst n = match lst with
+  let rec aux n = function
     | [] -> None
-    | []::tl -> indexOfFirstMatchN ~prec tl (n + 1)
-    | (hdHd::hdTl)::tl -> (
-      let (kind, tester) = hdHd in
-      match (prec, kind) with
-      | (Token str, TokenPrecedence)
-      | (Custom str, CustomPrecedence) ->
-        let (associativity, foundMatch) = tester str in
-        if foundMatch then
-          Some (associativity, n)
-        else
-          indexOfFirstMatchN ~prec (hdTl::tl) (n)
-      | _ -> indexOfFirstMatchN ~prec (hdTl::tl) (n)
-    )
+    | [] :: tl -> aux (n + 1) tl
+    | ((kind, tester) :: hdTl) :: tl ->
+      match prec, kind with
+      | Token str, TokenPrecedence | Custom str, CustomPrecedence ->
+        let associativity, foundMatch = tester str in
+        if foundMatch
+        then Some (associativity, n)
+        else aux n (hdTl::tl)
+      | _ -> aux n (hdTl::tl)
   in
-  indexOfFirstMatchN ~prec lst 0
+  aux 0 lst
 
 (* Assuming it's an infix function application. *)
 let precedenceInfo ~prec =
   (* Removes prefixed backslashes in order to do proper conversion *)
-  let normalizedCheck =
-    match prec with
-      | Token str -> Token (without_prefixed_backslashes str)
-      | Custom str -> prec
+  let prec = match prec with
+    | Token str -> Token (without_prefixed_backslashes str)
+    | Custom str -> prec
   in
-  indexOfFirstMatch ~prec:normalizedCheck rules
+  indexOfFirstMatch ~prec rules
 
 let isLeftAssociative ~prec = match precedenceInfo ~prec with
   | None -> false
@@ -642,7 +637,6 @@ let higherPrecedenceThan c1 c2 = match ((precedenceInfo c1), (precedenceInfo c2)
     raise (NotPossible ("Cannot determine precedence of two checks " ^ str1 ^ " vs. " ^ str2))
   | (Some (_, p1), Some (_, p2)) -> p1 < p2
 
-
 let printedStringAndFixityExpr = function
   | {pexp_desc = Pexp_ident {txt=Lident l}} -> printedStringAndFixity l
   | _ -> Normal
@@ -650,39 +644,22 @@ let printedStringAndFixityExpr = function
 (* which identifiers are in fact operators needing parentheses *)
 let needs_parens txt =
   match printedStringAndFixity txt with
-    | Infix _ -> true
-    | UnaryPostfix _ -> true
-    | UnaryPlusPrefix _ -> true
-    | UnaryMinusPrefix _ -> true
-    | UnaryNotPrefix _ -> true
-    | AlmostSimplePrefix _ -> true
-    | Normal -> false
+  | Infix _ -> true
+  | UnaryPostfix _ -> true
+  | UnaryPlusPrefix _ -> true
+  | UnaryMinusPrefix _ -> true
+  | UnaryNotPrefix _ -> true
+  | AlmostSimplePrefix _ -> true
+  | Normal -> false
 
 (* some infixes need spaces around parens to avoid clashes with comment
    syntax. This isn't needed for comment syntax /* */ *)
 let needs_spaces txt =
   txt.[0]='*' || txt.[String.length txt - 1] = '*'
 
-(* add parentheses to binders when they are in fact infix or prefix operators *)
-let protect_ident ppf txt =
-  let format : (_, _, _) format =
-    if not (needs_parens txt) then "%s"
-    else if needs_spaces txt then "(@;%s@;)"
-    else "(%s)"
-  in Format.fprintf ppf format txt
-
-let protect_longident ppf print_longident longprefix txt =
-  let format : (_, _, _) format =
-    if not (needs_parens txt) then "%a.%s"
-    else if needs_spaces txt then  "(@;%a.%s@;)"
-    else "(%a.%s)" in
-  Format.fprintf ppf format print_longident longprefix txt
-
 let rec orList = function (* only consider ((A|B)|C)*)
   | {ppat_desc = Ppat_or (p1, p2)} -> (orList p1) @ (orList p2)
   | x -> [x]
-
-type space_formatter = (unit, Format.formatter, unit) format
 
 let override = function
   | Override -> "!"
@@ -704,33 +681,32 @@ type construct =
 
 let view_expr x =
   match x.pexp_desc with
-    | Pexp_construct ( {txt= Lident "()"; _},_) -> `tuple
-    | Pexp_construct ( {txt= Lident "[]"},_) -> `nil
-    | Pexp_construct ( {txt= Lident"::"},Some _) ->
-        let rec loop exp acc = match exp with
-          | {pexp_desc=Pexp_construct ({txt=Lident "[]"},_)} ->
-              (List.rev acc,true)
-          | {pexp_desc=
-               Pexp_construct ({txt=Lident "::"},
-                 Some ({pexp_desc= Pexp_tuple([e1;e2])}))} ->
-              loop e2 (e1::acc)
-          | e -> (List.rev (e::acc),false) in
-        let (ls,b) = loop x []  in
-        if b then
-          `list ls
-        else `cons ls
-    | Pexp_construct (x,None) -> `simple (x.txt)
-    | _ -> `normal
+  | Pexp_construct ( {txt= Lident "()"; _},_) -> `tuple
+  | Pexp_construct ( {txt= Lident "[]"},_) -> `nil
+  | Pexp_construct ( {txt= Lident"::"},Some _) ->
+    let rec loop exp acc = match exp with
+      | {pexp_desc=Pexp_construct ({txt=Lident "[]"},_)} ->
+        (List.rev acc,true)
+      | {pexp_desc=
+           Pexp_construct ({txt=Lident "::"},
+                           Some ({pexp_desc= Pexp_tuple([e1;e2])}))} ->
+        loop e2 (e1::acc)
+      | e -> (List.rev (e::acc),false) in
+    let (ls,b) = loop x []  in
+    if b
+    then `list ls
+    else `cons ls
+  | Pexp_construct (x,None) -> `simple (x.txt)
+  | _ -> `normal
 
 let is_simple_list_expr x =
   match view_expr x with
   | `list _ | `cons _ -> true
   | _ -> false
 
-let is_simple_construct :construct -> bool = function
+let is_simple_construct : construct -> bool = function
   | `nil | `tuple | `list _ | `simple _ | `cons _  -> true
   | `normal -> false
-
 
 (* Determines if a list of expressions contains a single unit construct
  * e.g. used to check: MyConstructor() -> exprList == [()]
@@ -1083,6 +1059,7 @@ let html_escape_string s =
   Buffer.contents buf
 
 let html_escape = `Escape_string html_escape_string
+
 let html_style = [
   "atom", { Easy_format.tag_open = "<a>"; tag_close = "</a>" };
   "body", { tag_open = "<lb>"; tag_close = "</lb>" };
@@ -1093,8 +1070,9 @@ let html_style = [
   "label", { tag_open = "<la>"; tag_close = "</la>" };
 ]
 
-
-let easyLabel ?(break=`Auto) ?(space=false) ?(indent=settings.indentAfterLabels) labelTerm term =
+let easyLabel
+    ?(break=`Auto) ?(space=false) ?(indent=settings.indentAfterLabels)
+    labelTerm term =
   let settings = {
     label_break = break;
     space_after_label = space;
@@ -1103,12 +1081,8 @@ let easyLabel ?(break=`Auto) ?(space=false) ?(indent=settings.indentAfterLabels)
   } in
   Easy_format.Label ((labelTerm, settings), term)
 
-let label ?(break=`Auto) ?(space=false) ?(indent=settings.indentAfterLabels) (labelTerm:Layout.t) (term:Layout.t) =
-  Layout.Label (
-    (fun x y -> easyLabel ~break ~indent ~space x y),
-    labelTerm,
-    term
-  )
+let label ?break ?space ?indent (labelTerm:Layout.t) (term:Layout.t) =
+  Layout.Label (easyLabel ?break ?indent ?space, labelTerm, term)
 
 let atom ?loc str =
   let style = { Easy_format.atom_style = Some "atomClss" } in
@@ -1139,10 +1113,6 @@ let makeCommaBreakableListSurround opn cls lst =
 let formatPrecedence ?loc formattedTerm =
   source_map ?loc (makeList ~wrap:("(", ")") ~break:IfNeed [formattedTerm])
 
-let isListy = function
-  | Easy_format.List _ -> true
-  | _ -> false
-
 let wrap fn term =
   ignore (Format.flush_str_formatter ());
   fn Format.str_formatter term;
@@ -1150,21 +1120,19 @@ let wrap fn term =
 
 (* Don't use `trim` since it kills line return too? *)
 let rec beginsWithStar_ line length idx =
-  if idx = length then false
-  else
-    let ch = String.get line idx in
-    if ch = '*' then true
-    else if ch = '\t' || ch = ' ' then beginsWithStar_ line length (idx + 1)
-    else false
+  if idx = length then false else
+    match String.get line idx with
+    | '*' -> true
+    | '\t' | ' ' -> beginsWithStar_ line length (idx + 1)
+    | _ -> false
 
 let beginsWithStar line = beginsWithStar_ line (String.length line) 0
 
 let rec numLeadingSpace_ line length idx accum =
-  if idx = length then accum
-  else
-    let ch = String.get line idx in
-    if ch = '\t' || ch = ' ' then numLeadingSpace_ line length (idx + 1) (accum + 1)
-    else accum
+  if idx = length then accum else
+    match String.get line idx with
+    | '\t' | ' ' -> numLeadingSpace_ line length (idx + 1) (accum + 1)
+    | _ -> accum
 
 let numLeadingSpace line = numLeadingSpace_ line (String.length line) 0 0
 
@@ -1172,38 +1140,34 @@ let numLeadingSpace line = numLeadingSpace_ line (String.length line) 0 0
 let smallestLeadingSpaces strs =
   let rec smallestLeadingSpaces curMin strs = match strs with
     | [] -> curMin
+    | ""::tl -> smallestLeadingSpaces curMin tl
     | hd::tl ->
-      if hd = "" then
-        smallestLeadingSpaces curMin tl
-      else
-        let leadingSpace = numLeadingSpace hd in
-        let nextMin = min curMin leadingSpace in
-        smallestLeadingSpaces nextMin tl
+      let leadingSpace = numLeadingSpace hd in
+      let nextMin = min curMin leadingSpace in
+      smallestLeadingSpaces nextMin tl
   in
   smallestLeadingSpaces 99999 strs
 
-let convertIsListyToIsSequencey isListyImpl =
-  let rec isSequencey layoutNode = match layoutNode with
-    | Layout.SourceMap (_, subLayoutNode) -> isSequencey subLayoutNode
-    | Layout.Sequence _ -> true
-    | Layout.Label (_, _, _) -> false
-    | Layout.Easy easy -> isListyImpl easy
-  in
-  isSequencey
-
-let isSequencey = convertIsListyToIsSequencey isListy
+let rec isSequencey = function
+  | Layout.SourceMap (_, sub) -> isSequencey sub
+  | Layout.Sequence _ -> true
+  | Layout.Label (_, _, _) -> false
+  | Layout.Easy (Easy_format.List _) -> true
+  | Layout.Easy _ -> false
 
 let inline ?(preSpace=false) ?(postSpace=false) labelTerm term =
-  makeList ~inline:(true, true) ~postSpace ~preSpace ~indent:0 ~break:Layout.Never [labelTerm; term]
+  makeList [labelTerm; term]
+    ~inline:(true, true) ~postSpace ~preSpace ~indent:0 ~break:Layout.Never
 
 let breakline labelTerm term =
-  makeList ~inline:(true, true) ~indent:0 ~break:Always_rec [labelTerm; term]
+  makeList [labelTerm; term]
+    ~inline:(true, true) ~indent:0 ~break:Always_rec
 
 let insertBlankLines n term =
-  if n = 0 then
-    term
-  else
-    makeList ~inline:(true, true) ~indent:0 ~break:Always_rec (Array.to_list (Array.make n (atom "")) @ [term])
+  if n = 0
+  then term
+  else makeList ~inline:(true, true) ~indent:0 ~break:Always_rec
+      (Array.to_list (Array.make n (atom "")) @ [term])
 
 let string_after s n = String.sub s n (String.length s - n)
 
@@ -1217,7 +1181,8 @@ let rec lineZeroMeaningfulContent_ line length idx accum =
       lineZeroMeaningfulContent_ line length (idx + 1) (accum + 1)
     else Some accum
 
-let lineZeroMeaningfulContent line = lineZeroMeaningfulContent_ line (String.length line) 1 0
+let lineZeroMeaningfulContent line =
+  lineZeroMeaningfulContent_ line (String.length line) 1 0
 
 let formatComment_ txt =
   let commLines =
@@ -1233,14 +1198,14 @@ let formatComment_ txt =
     let leftPad =
       if beginsWithStar one then 1
       else match lineZeroMeaningfulContent zero with
-      | None -> 1
-      | Some num -> num + 1
+        | None -> 1
+        | Some num -> num + 1
     in
     let padNonOpeningLine s =
       let numLeadingSpaceForThisLine = numLeadingSpace s in
       if String.length s == 0 then ""
       else (String.make leftPad ' ') ^
-            (string_after s (min attemptRemoveCount numLeadingSpaceForThisLine)) in
+           (string_after s (min attemptRemoveCount numLeadingSpaceForThisLine)) in
     let lines = zero :: List.map padNonOpeningLine (one::tl) in
     makeList ~inline:(true, true) ~indent:0 ~break:Always_rec (List.map atom lines)
 
@@ -1251,33 +1216,29 @@ let rec append ?(space=false) txt = function
   | Layout.SourceMap (loc, sub) ->
     Layout.SourceMap (loc, append ~space txt sub)
   | Sequence (config, l) when snd config.wrap <> "" ->
-     let sep = if space then " " else "" in
-     Sequence ({config with wrap=(fst config.wrap, snd config.wrap ^ sep ^ txt)}, l)
+    let sep = if space then " " else "" in
+    Sequence ({config with wrap=(fst config.wrap, snd config.wrap ^ sep ^ txt)}, l)
   (* TODO (perf) match on [] don't use List.length *)
   | Sequence (config, l) when List.length l = 0 ->
-     Sequence (config, [atom txt])
+    Sequence (config, [atom txt])
   | Sequence ({sep=NoSep} as config, l)
   | Sequence ({sep=Sep("")} as config, l) ->
-     (* TODO (perf) compute list length once *)
-     let sub = List.mapi (fun i layout ->
-                   (* append to the end of the list *)
-                   if i + 1 = List.length l then
-                     append ~space txt layout
-                   else
-                     layout
-                 ) l in
-     Sequence (config, sub)
+    (* TODO (perf) compute list length once *)
+    let sub = List.mapi (fun i layout ->
+        (* append to the end of the list *)
+        if i + 1 = List.length l then
+          append ~space txt layout
+        else
+          layout
+      ) l in
+    Sequence (config, sub)
   | Label (formatter, left, right) ->
-     Label (formatter, left, append ~space txt right)
+    Label (formatter, left, append ~space txt right)
   | layout ->
-     inline ~postSpace:space layout (atom txt)
+    inline ~postSpace:space layout (atom txt)
 
 let appendSep spaceBeforeSep sep layout =
-  let sep = if spaceBeforeSep then
-              " " ^ sep
-            else
-              sep in
-  append sep layout
+  append (if spaceBeforeSep then " " ^ sep else sep) layout
 
 let rec flattenCommentAndSep ?spaceBeforeSep:(spaceBeforeSep=false) ?sepStr = function
   | Layout.SourceMap (loc, sub) ->
@@ -1349,60 +1310,6 @@ let insertLinesAboveItems = preOrderWalk (function
   | layout -> layout
 )
 
-(** Union of two locations *)
-let unionLoc loc1 loc2 =
-  match (loc1, loc2) with
-  | None, _ -> loc2
-  | _, None -> loc1
-  | Some loc1, Some loc2  -> Some {loc1 with loc_end = loc2.loc_end}
-
-(** [getLocFromLayout] recursively takes the unioned location of its children,
- *  and returns the max one
-*)
-let rec getLocFromLayout = function
-  | Layout.Sequence (listConfig, subLayouts) ->
-    let locs = List.map getLocFromLayout subLayouts in
-    List.fold_left unionLoc None locs
-  | Layout.Label (formatter, left, right) ->
-    let leftLoc = getLocFromLayout left in
-    let rightLoc = getLocFromLayout right in
-    unionLoc leftLoc rightLoc
-  | Layout.SourceMap (loc, _) ->
-    Some loc
-  | _ -> None
-
-(**
- * Returns true if loc1 contains loc2
- *)
-let containLoc loc1 loc2 =
-  loc1.loc_start.Lexing.pos_cnum <= loc2.loc_start.Lexing.pos_cnum &&
-  loc1.loc_end.Lexing.pos_cnum >= loc2.loc_end.Lexing.pos_cnum
-
-(**
- * Returns true if loc1 is before loc2
- *)
-let beforeLoc loc1 loc2 =
-  loc1.loc_end.Lexing.pos_cnum <= loc2.loc_start.Lexing.pos_cnum
-
-let layout_is_before ~location layout = match getLocFromLayout layout with
-  | None -> true
-  | Some loc -> beforeLoc loc location
-
-(**
- * Returns true if the layout's location contains loc
- *)
-let layoutContainsLoc loc layout =
-  match getLocFromLayout layout with
-  | None -> false
-  | Some subLoc -> containLoc subLoc loc
-
-
-(**
- * Returns true if any of the subLayout's location contains loc
- *)
-let anySublayoutContainLocation loc =
-  List.exists (layoutContainsLoc loc)
-
 (**
  * prependSingleLineComment inserts a single line comment right above layout
  *)
@@ -1418,7 +1325,6 @@ let rec prependSingleLineComment ?newlinesAboveDocComments:(newlinesAboveDocComm
        insertBlankLines newlinesAboveDocComments withComment
      else
        withComment
-
 
 (* breakAncestors break ancestors above node, but not comment attachment itself.*)
 let appendComment ~breakAncestors layout comment =
@@ -1442,10 +1348,10 @@ let rec looselyAttachComment ~breakAncestors layout comment =
   | Easy e ->
      inline ~postSpace:true layout (formatComment comment)
   | Sequence (listConfig, subLayouts)
-    when anySublayoutContainLocation location subLayouts ->
+    when List.exists (Layout.contains_location ~location) subLayouts ->
      (* If any of the subLayout strictly contains this comment, recurse into to it *)
     let recurse_sublayout layout =
-      if layoutContainsLoc location layout
+      if Layout.contains_location layout ~location
       then looselyAttachComment ~breakAncestors layout comment
       else layout
     in
@@ -1455,7 +1361,7 @@ let rec looselyAttachComment ~breakAncestors layout comment =
     Sequence (listConfig, [formatComment comment])
   | Sequence (listConfig, subLayouts) ->
     let (beforeComment, afterComment) =
-      Syntax_util.pick_while (layout_is_before ~location) subLayouts in
+      Syntax_util.pick_while (Layout.is_before ~location) subLayouts in
     let newSubLayout = match List.rev beforeComment with
       | [] ->
         Syntax_util.map_first (prependSingleLineComment comment) afterComment
@@ -1466,16 +1372,16 @@ let rec looselyAttachComment ~breakAncestors layout comment =
     Sequence (listConfig, newSubLayout)
   | Label (formatter, left, right) ->
     let newLeft, newRight =
-      match (getLocFromLayout left, getLocFromLayout right) with
+      match (Layout.get_location left, Layout.get_location right) with
       | (None, None) ->
         (left, looselyAttachComment ~breakAncestors right comment)
-      | (_, Some loc2) when containLoc loc2 location ->
+      | (_, Some loc2) when location_contains loc2 location ->
         (left, looselyAttachComment ~breakAncestors right comment)
-      | (Some loc1, _) when containLoc loc1 location ->
+      | (Some loc1, _) when location_contains loc1 location ->
         (looselyAttachComment ~breakAncestors left comment, right)
-      | (Some loc1, Some loc2) when beforeLoc location loc1 ->
+      | (Some loc1, Some loc2) when location_is_before location loc1 ->
         (prependSingleLineComment comment left, right)
-      | (Some loc1, Some loc2) when beforeLoc location loc2 ->
+      | (Some loc1, Some loc2) when location_is_before location loc2 ->
         (left, prependSingleLineComment comment right)
       | _ -> (left, appendComment ~breakAncestors right comment)
     in
@@ -1498,43 +1404,42 @@ let rec insertSingleLineComment layout comment =
   | Sequence (listConfig, subLayouts) ->
     let newlinesAboveDocComments = listConfig.newlinesAboveDocComments in
     let (beforeComment, afterComment) =
-      Syntax_util.pick_while (layout_is_before ~location) subLayouts in
-    begin
-      match afterComment with
+      Syntax_util.pick_while (Layout.is_before ~location) subLayouts in
+    begin match afterComment with
       (* Nothing in the list is after comment, attach comment to the statement before the comment *)
       | [] ->
         let break sublayout = breakline sublayout (formatComment comment) in
         Sequence (listConfig, Syntax_util.map_last break beforeComment)
-           | hd::tl ->
-              let afterComment =
-                match getLocFromLayout hd with
-          | Some loc when containLoc loc location ->
-                   insertSingleLineComment hd comment :: tl
-                | Some loc ->
-                   Layout.SourceMap (loc, (prependSingleLineComment ~newlinesAboveDocComments comment hd)) :: tl
-                | _ ->
-                   prependSingleLineComment ~newlinesAboveDocComments comment hd :: tl
-              in
-              Sequence (listConfig, beforeComment @ afterComment)
-         end
-      | Label (formatter, left, right) ->
-         let leftLoc = getLocFromLayout left in
-         let rightLoc = getLocFromLayout right in
-         let newLeft, newRight = match (leftLoc, rightLoc) with
-           | (None, None) ->
-              (left, insertSingleLineComment right comment)
-      | (_, Some loc2) when containLoc loc2 location ->
-              (left, insertSingleLineComment right comment)
-      | (Some loc1, _) when containLoc loc1 location ->
-              (insertSingleLineComment left comment, right)
-      | (Some loc1, Some loc2) when beforeLoc location loc1 ->
-              (prependSingleLineComment comment left, right)
-      | (Some loc1, Some loc2) when beforeLoc location loc2 ->
-              (left, prependSingleLineComment comment right)
+      | hd::tl ->
+        let afterComment =
+          match Layout.get_location hd with
+          | Some loc when location_contains loc location ->
+            insertSingleLineComment hd comment :: tl
+          | Some loc ->
+            Layout.SourceMap (loc, (prependSingleLineComment ~newlinesAboveDocComments comment hd)) :: tl
+          | _ ->
+            prependSingleLineComment ~newlinesAboveDocComments comment hd :: tl
+        in
+        Sequence (listConfig, beforeComment @ afterComment)
+    end
+  | Label (formatter, left, right) ->
+    let leftLoc = Layout.get_location left in
+    let rightLoc = Layout.get_location right in
+    let newLeft, newRight = match (leftLoc, rightLoc) with
+      | (None, None) ->
+        (left, insertSingleLineComment right comment)
+      | (_, Some loc2) when location_contains loc2 location ->
+        (left, insertSingleLineComment right comment)
+      | (Some loc1, _) when location_contains loc1 location ->
+        (insertSingleLineComment left comment, right)
+      | (Some loc1, Some loc2) when location_is_before location loc1 ->
+        (prependSingleLineComment comment left, right)
+      | (Some loc1, Some loc2) when location_is_before location loc2 ->
+        (left, prependSingleLineComment comment right)
       | _ ->
         (left, breakline right (formatComment comment))
-         in
-         Label (formatter, newLeft, newRight)
+    in
+    Label (formatter, newLeft, newRight)
 
 let rec attachCommentToNodeRight layout comment =
   match layout with

@@ -220,3 +220,34 @@ let to_easy_format layout =
     | Easy e -> e
   in
   traverse layout
+
+(** [getLocFromLayout] recursively takes the unioned location of its children,
+ *  and returns the max one *)
+let get_location layout =
+  let union loc1 loc2 =
+    match (loc1, loc2) with
+    | None, _ -> loc2
+    | _, None -> loc1
+    | Some loc1, Some loc2  ->
+      Some {loc1 with Location.loc_end = loc2.Location.loc_end}
+  in
+  let rec traverse = function
+    | Sequence (listConfig, subLayouts) ->
+      let locs = List.map traverse subLayouts in
+      List.fold_left union None locs
+    | Label (formatter, left, right) ->
+      union (traverse left) (traverse right)
+    | SourceMap (loc, _) -> Some loc
+    | _ -> None
+  in
+  traverse layout
+
+let is_before ~location layout =
+  match get_location layout with
+  | None -> true
+  | Some loc -> Syntax_util.location_is_before loc location
+
+let contains_location layout ~location =
+  match get_location layout with
+  | None -> false
+  | Some layout_loc -> Syntax_util.location_contains layout_loc location
