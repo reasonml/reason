@@ -93,6 +93,7 @@ type escape =
 type styles = (style_name * style) list
 
 let pp_print_multiline ppf str =
+  let last = String.length str - 1 in
   let rec loop i =
     match String.index_from str i '\n' with
     | exception Not_found ->
@@ -109,6 +110,12 @@ let pp_print_multiline ppf str =
       pp_print_as ppf
         (Format.pp_get_margin ppf () + String.length str)
         (String.sub str i (String.length str - i));
+      pp_close_box ppf ()
+    | j when j = last ->
+      (* Same lie but for single line comments *)
+      pp_print_as ppf
+        (Format.pp_get_margin ppf () + String.length str)
+        (String.sub str i (j - i));
       pp_close_box ppf ()
     | j ->
       pp_print_string ppf (String.sub str i (j - i));
