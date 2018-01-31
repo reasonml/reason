@@ -19,6 +19,13 @@ test: build clean-tests
 	./miscTests/jsxPpxTest.sh
 	cd formatTest; ./test.sh
 
+.PHONY: coverage
+coverage:
+	find -iname "bisect*.out" -exec rm {} \;
+	make test
+	bisect-ppx-report -ignore-missing-files -I _build/ -html coverage-after/ bisect*.out ./*/*/*/bisect*.out
+	find -iname "bisect*.out" -exec rm {} \;
+
 clean-tests:
 	rm -rf ./formatTest/**/actual_output
 	rm -f ./formatTest/failed_tests
