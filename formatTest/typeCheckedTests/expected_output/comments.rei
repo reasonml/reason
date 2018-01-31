@@ -34,13 +34,13 @@
 /* comment ****/
 /* comment *****/
 /**
-  * Multiline
-  */;
+ * Multiline
+ */;
 
 /** Multiline
-  *
-  */;
+ *
+ */;
 
 /**
-  **
-  */;
+ **
+ */;

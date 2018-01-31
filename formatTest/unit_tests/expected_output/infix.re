@@ -588,7 +588,8 @@ let containingObject = {
     x + (something := y);
     /**
      * Try with ||
-     */ x.contents
+     */
+    x.contents
     || something
     + 1 ?
       hello : goodbye;
@@ -613,7 +614,8 @@ let containingObject = {
     str.[0] || (something + 1 ? hello : goodbye);
     /**
      * Try with &&
-     */ x.contents
+     */
+    x.contents
     && something
     + 1 ?
       hello : goodbye;
