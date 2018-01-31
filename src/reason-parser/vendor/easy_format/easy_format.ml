@@ -92,6 +92,35 @@ type escape =
 
 type styles = (style_name * style) list
 
+let pp_print_multiline ppf str =
+  let rec loop i =
+    match String.index_from str i '\n' with
+    | exception Not_found ->
+      (* Lie a bit for the last line: fake it being very long to avoid
+         the formatted sticking stuff after.
+         For instance, without this:
+           /* line 1
+              line 2 */ stuff
+         And with:
+           /* line 1
+              line 2 */
+           stuff
+      *)
+      pp_print_as ppf
+        (Format.pp_get_margin ppf () + String.length str)
+        (String.sub str i (String.length str - i));
+      pp_close_box ppf ()
+    | j ->
+      pp_print_string ppf (String.sub str i (j - i));
+      pp_force_newline ppf ();
+      loop (j + 1)
+  in
+  if String.contains str '\n' then (
+    pp_open_vbox ppf 0;
+    loop 0;
+  ) else
+    pp_print_string ppf str
+
 (*
    Transform a tree starting from the leaves, propagating and merging
    accumulators until reaching the root.
@@ -319,10 +348,10 @@ struct
 
   let tag_string fmt o s =
     match o with
-        None -> pp_print_string fmt s
+        None -> pp_print_multiline fmt s
       | Some tag ->
           pp_open_tag fmt tag;
-          pp_print_string fmt s;
+          pp_print_multiline fmt s;
           pp_close_tag fmt ()
 
   let rec fprint_t fmt = function
