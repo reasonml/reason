@@ -8,6 +8,18 @@ f(. a, b, c);
 
 [@attr] f(. a, b, c);
 
+f(. a);
+
+f(. (1, 2));
+
+f(. (1, 2), (3, 4));
+
+f(. "string");
+
+f(. 1);
+
+f(. {a: "supersupersupersupersupersuperlong", b: "supersupersupersupersupersuperlong"});
+
 let f = (. a, b) => a + b;
 
 let f = [@attr] (. a, b) => a + b;

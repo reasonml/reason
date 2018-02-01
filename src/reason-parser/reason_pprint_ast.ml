@@ -6186,23 +6186,25 @@ let printer = object(self:'self)
    *  when the line length dictates breaking. Notice how `({` and `})` 'hug'.
    *  Also see "isSingleArgParenApplication" which determines if
    *  this kind of formatting should happen. *)
-  method singleArgParenApplication = function
+  method singleArgParenApplication ?(uncurried=false) es =
+    let lparen = if uncurried then "(. " else "(" in
+    match es with
     | [{pexp_attributes = []; pexp_desc = Pexp_record (l, eo)}] ->
-      self#unparseRecord ~wrap:("(", ")") l eo
+      self#unparseRecord ~wrap:(lparen, ")") l eo
     | [{pexp_attributes = []; pexp_desc = Pexp_tuple l}] ->
-      self#unparseSequence ~wrap:("(", ")") ~construct:`Tuple l
+      self#unparseSequence ~wrap:(lparen, ")") ~construct:`Tuple l
     | [{pexp_attributes = []; pexp_desc = Pexp_array l}] ->
-      self#unparseSequence ~wrap:("(", ")") ~construct:`Array l
+      self#unparseSequence ~wrap:(lparen, ")") ~construct:`Array l
     | [{pexp_attributes = []; pexp_desc = Pexp_object cs}] ->
-      self#classStructure ~wrap:("(", ")") cs
+      self#classStructure ~wrap:(lparen, ")") cs
     | [{pexp_attributes = []; pexp_desc = Pexp_extension (s, p)}] when s.txt = "bs.obj" ->
-      self#formatBsObjExtensionSugar ~wrap:("(", ")") p
+      self#formatBsObjExtensionSugar ~wrap:(lparen, ")") p
     | [({pexp_attributes = []; pexp_desc} as exp)] when (is_simple_list_expr exp) ->
           (match view_expr exp with
           | `list xs ->
-              self#unparseSequence ~construct:`List ~wrap:("(", ")") xs
+              self#unparseSequence ~construct:`List ~wrap:(lparen, ")") xs
           | `cons xs ->
-              self#unparseSequence ~construct:`ES6List ~wrap:("(", ")") xs
+              self#unparseSequence ~construct:`ES6List ~wrap:(lparen, ")") xs
           | _ -> assert false)
     | _ -> assert false
 
@@ -6239,7 +6241,7 @@ let printer = object(self:'self)
        *  when the line-length indicates breaking.
        *)
       | [(Nolabel, exp)] when isSingleArgParenApplication [exp] ->
-          self#singleArgParenApplication [exp]
+          self#singleArgParenApplication ~uncurried [exp]
       | params ->
           makeTup ~uncurried (List.map self#label_x_expression_param params)
 
