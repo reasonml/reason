@@ -1023,10 +1023,13 @@ let makeAppList = function
   | [hd] -> hd
   | l -> makeList ~inline:(true, true) ~postSpace:true ~break:IfNeed l
 
-let makeTup ?(trailComma=true) l =
-  makeList
-    ~wrap:("(",")") ~postSpace:true ~break:IfNeed l
-    ~sep:(if trailComma then commaTrail else commaSep)
+let makeTup ?(trailComma=true) ?(uncurried = false) l =
+  let lparen = if uncurried then "(. " else "(" in
+  makeList 
+    ~wrap:(lparen,")") 
+    ~sep:(if trailComma then commaTrail else commaSep) 
+    ~postSpace:true 
+    ~break:IfNeed l
 
 let ensureSingleTokenSticksToLabel x =
   let listConfigIfCommentsInterleaved cfg =
@@ -3317,12 +3320,8 @@ let printer = object(self:'self)
          *   test("math", () =>
          *     Expect.expect(1 + 2) |> toBe(3)));
          *)
-        let (lastLabel, lastArg) = List.nth ls (List.length ls - 1) in
-        (* FIXME: something is fishy here *)
-        let _syntheticApplicationLocation =
-          {e.pexp_loc with loc_end = lastArg.pexp_loc.loc_end} in
-        FunctionApplication
-          (self#formatFunAppl ~jsxAttrs ~args:ls ~applicationExpr:x ~funExpr:e ())
+        let uncurried = try Hashtbl.find uncurriedTable x.pexp_loc with | Not_found -> false in
+        FunctionApplication (self#formatFunAppl ~uncurried ~jsxAttrs ~args:ls ~applicationExpr:x ~funExpr:e ())
       )
     )
     | Pexp_construct (li, Some eo) when not (is_simple_construct (view_expr x)) -> (
@@ -5250,7 +5249,6 @@ let printer = object(self:'self)
         makeSpacedBreakableInlineList [formattedAttrs; primDecl]
 
   method class_instance_type x =
-    let {stdAttrs} = partitionAttributes ~allowUncurry:false x.pcty_attributes in
     match x.pcty_desc with
     | Pcty_signature cs ->
       let {pcsig_self = ct; pcsig_fields = l} = cs in
@@ -6390,7 +6388,7 @@ let printer = object(self:'self)
           {funExpr.pexp_loc with loc_end = applicationExpr.pexp_loc.loc_end},
           {funExpr.pexp_loc with loc_start = funExpr.pexp_loc.loc_end; loc_end = applicationExpr.pexp_loc.loc_end}
       in
-      let theArgs = self#reset#label_x_expression_params args in
+      let theArgs = self#reset#label_x_expression_params ~uncurried args in
       maybeJSXAttr @ [source_map ~loc:syntheticApplicationLocation
                         (label theFunc (source_map ~loc:syntheticArgLoc theArgs))]
     end
