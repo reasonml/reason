@@ -1367,7 +1367,7 @@ Thing.map(
   ((abc, z) => MyModuleBlah.toList(argument)),
 );
 
-Js.Option.andThen([@bs] w => w#getThing());
+Js.Option.andThen((. w) => w#getThing());
 
 Thing.map(
   ~a=?foo,

@@ -237,7 +237,7 @@ class type _x = [@bs]{ pub height : int };
 
 class type _y { [@bs.set] pub height : int };
 
-[@bs] class type _z { pub height : int };
+[@attr] class type _z { pub height : int };
 
 module NestedModule {
   [@floatingNestedStructureItem hello];
