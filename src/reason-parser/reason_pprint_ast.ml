@@ -1025,10 +1025,10 @@ let makeAppList = function
 
 let makeTup ?(trailComma=true) ?(uncurried = false) l =
   let lparen = if uncurried then "(. " else "(" in
-  makeList 
-    ~wrap:(lparen,")") 
-    ~sep:(if trailComma then commaTrail else commaSep) 
-    ~postSpace:true 
+  makeList
+    ~wrap:(lparen,")")
+    ~sep:(if trailComma then commaTrail else commaSep)
+    ~postSpace:true
     ~break:IfNeed l
 
 let ensureSingleTokenSticksToLabel x =
@@ -2076,6 +2076,7 @@ let printer = object(self:'self)
         (self#non_arrowed_simple_core_type {x with ptyp_attributes = []})
         (self#attributes stdAttrs)
     else
+      let x = if uncurried then { x with ptyp_attributes = [] } else x in
       match x.ptyp_desc with
         | (Ptyp_arrow (l, ct1, ct2)) ->
           let rec allArrowSegments ?(uncurried=false) acc = function
@@ -6225,8 +6226,8 @@ let printer = object(self:'self)
     match xs with
       (* function applications with unit as only argument should be printed differently
        * e.g. print_newline(()) should be printed as print_newline() *)
-      | [(Nolabel, ({pexp_attributes = []; pexp_desc = Pexp_construct ( {txt= Lident "()"}, None)} as x))]
-          -> makeList ~break:Layout.Never [self#unparseExpr x]
+      | [(Nolabel, {pexp_attributes = []; pexp_desc = Pexp_construct ( {txt= Lident "()"}, None)})]
+          -> makeList ~break:Never [if uncurried then atom "(.)" else atom "()"]
 
       (* The following cases provide special formatting when there's only one expr_param that is a tuple/array/list/record etc.
        *  e.g. foo({a: 1, b: 2})
