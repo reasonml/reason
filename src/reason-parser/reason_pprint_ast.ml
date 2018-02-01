@@ -284,14 +284,22 @@ type attributesPartition = {
   arityAttrs : attributes;
   docAttrs : attributes;
   stdAttrs : attributes;
-  jsxAttrs : attributes
+  jsxAttrs : attributes;
+  uncurried : bool
 }
 
 (** Partition attributes into kinds *)
-let rec partitionAttributes attrs : attributesPartition =
+let rec partitionAttributes ?(allowUncurry=true) attrs : attributesPartition =
   match attrs with
     | [] ->
-        {arityAttrs=[]; docAttrs=[]; stdAttrs=[]; jsxAttrs=[]}
+        {arityAttrs=[]; docAttrs=[]; stdAttrs=[]; jsxAttrs=[]; uncurried = false}
+    | (({txt = "bs"}, PStr []) as attr)::atTl ->
+        let partition = partitionAttributes atTl in
+        if allowUncurry then
+          {partition with uncurried = true}
+        else begin
+          {partition with stdAttrs=attr::partition.stdAttrs}
+        end
     | (({txt="JSX"; loc}, _) as jsx)::atTl ->
         let partition = partitionAttributes atTl in
         {partition with jsxAttrs=jsx::partition.jsxAttrs}
@@ -708,6 +716,8 @@ let is_simple_construct : construct -> bool = function
   | `nil | `tuple | `list _ | `simple _ | `cons _  -> true
   | `normal -> false
 
+let uncurriedTable = Hashtbl.create 42
+
 (* Determines if a list of expressions contains a single unit construct
  * e.g. used to check: MyConstructor() -> exprList == [()]
  * useful to determine if MyConstructor(()) should be printed as MyConstructor()
@@ -1013,10 +1023,13 @@ let makeAppList = function
   | [hd] -> hd
   | l -> makeList ~inline:(true, true) ~postSpace:true ~break:IfNeed l
 
-let makeTup ?(trailComma=true) l =
-  makeList
-    ~wrap:("(",")") ~postSpace:true ~break:IfNeed l
-    ~sep:(if trailComma then commaTrail else commaSep)
+let makeTup ?(trailComma=true) ?(uncurried = false) l =
+  let lparen = if uncurried then "(. " else "(" in
+  makeList 
+    ~wrap:(lparen,")") 
+    ~sep:(if trailComma then commaTrail else commaSep) 
+    ~postSpace:true 
+    ~break:IfNeed l
 
 let ensureSingleTokenSticksToLabel x =
   let listConfigIfCommentsInterleaved cfg =
@@ -2056,18 +2069,19 @@ let printer = object(self:'self)
   method non_arrowed_core_type x = self#non_arrowed_non_simple_core_type x
 
   method core_type2 x =
-    let {stdAttrs} = partitionAttributes x.ptyp_attributes in
+    let {stdAttrs; uncurried} = partitionAttributes x.ptyp_attributes in
+    let uncurried = uncurried || try Hashtbl.find uncurriedTable x.ptyp_loc with | Not_found -> false in
     if stdAttrs <> [] then
       formatAttributed
-        (self#non_arrowed_simple_core_type {x with ptyp_attributes=[]})
+        (self#non_arrowed_simple_core_type {x with ptyp_attributes = []})
         (self#attributes stdAttrs)
     else
       match x.ptyp_desc with
         | (Ptyp_arrow (l, ct1, ct2)) ->
-          let rec allArrowSegments acc = function
+          let rec allArrowSegments ?(uncurried=false) acc = function
             | { ptyp_desc = Ptyp_arrow (l, ct1, ct2); ptyp_attributes = [] } ->
-              allArrowSegments ((l,ct1) :: acc) ct2
-
+              allArrowSegments ~uncurried:false
+                ((l,ct1, false || uncurried) :: acc) ct2
             | rhs ->
               let rhs = self#core_type2 rhs in
               let is_tuple typ = match typ.ptyp_desc with
@@ -2075,13 +2089,17 @@ let printer = object(self:'self)
                 | _ -> false
               in
               match acc with
-              | [(Nolabel, lhs)] when not (is_tuple lhs) ->
-                (self#non_arrowed_simple_core_type lhs, rhs)
+              | [(Nolabel, lhs, uncurried )] when not (is_tuple lhs) ->
+                  let t = self#non_arrowed_simple_core_type lhs in
+                  let lhs = if uncurried then
+                    makeList ~wrap:("(. ", ")") ~postSpace:true [t]
+                  else t in
+                (lhs, rhs)
               | acc ->
                 let params = List.rev_map self#type_with_label acc in
                 (makeCommaBreakableListSurround "(" ")" params, rhs)
           in
-          let (lhs, rhs) = allArrowSegments [] x in
+          let (lhs, rhs) = allArrowSegments ~uncurried [] x in
           let normalized = makeList
               ~preSpace:true ~postSpace:true ~inline:(true, true)
               ~break:IfNeed ~sep:(Sep "=>") [lhs; rhs]
@@ -2100,10 +2118,11 @@ let printer = object(self:'self)
 
   (* Same as core_type2 but can be aliased *)
   method core_type x =
-    let {stdAttrs} = partitionAttributes x.ptyp_attributes in
+    let {stdAttrs; uncurried} = partitionAttributes x.ptyp_attributes in
+    let () = if uncurried then Hashtbl.add uncurriedTable x.ptyp_loc true in
     if stdAttrs <> [] then
       formatAttributed
-        (self#non_arrowed_simple_core_type {x with ptyp_attributes=[]})
+        (self#non_arrowed_simple_core_type {x with ptyp_attributes = []})
         (self#attributes stdAttrs)
     else match x.ptyp_desc with
       | (Ptyp_alias (ct, s)) ->
@@ -2114,14 +2133,18 @@ let printer = object(self:'self)
              (makeList ~postSpace:true [atom "as"; atom ("'" ^ s)]))
       | _ -> self#core_type2 x
 
-  method type_with_label (lbl, c) =
+  method type_with_label (lbl, c, uncurried) =
     let typ = self#core_type c in
-    match lbl with
+    let t = match lbl with
     | Nolabel -> typ
     | Labelled lbl ->
         makeList ~sep:(Sep " ") [atom (namedArgSym ^ lbl ^ ":"); typ]
     | Optional lbl ->
         makeList ~sep:(Sep " ") [atom (namedArgSym ^ lbl ^ ":"); label typ (atom "=?")]
+    in
+    if uncurried then
+      makeList ~postSpace:true [atom "."; t]
+    else t
 
   method type_param (ct, a) =
     makeList [atom (type_variance a); self#core_type ct]
@@ -3212,7 +3235,9 @@ let printer = object(self:'self)
 
   method unparseExprRecurse x =
     (* If there are any attributes, render unary like `(~-) x [@ppx]`, and infix like `(+) x y [@attr]` *)
-    let {arityAttrs; stdAttrs; jsxAttrs} = partitionAttributes x.pexp_attributes in
+    let {arityAttrs; stdAttrs; jsxAttrs; uncurried} = partitionAttributes x.pexp_attributes in
+    let () = if uncurried then Hashtbl.add uncurriedTable x.pexp_loc true in
+    let x = {x with pexp_attributes = (arityAttrs @ stdAttrs @ jsxAttrs) } in
     (* If there's any attributes, recurse without them, then apply them to
        the ends of functions, or simplify infix printings then append. *)
     if stdAttrs <> [] then
@@ -3295,12 +3320,8 @@ let printer = object(self:'self)
          *   test("math", () =>
          *     Expect.expect(1 + 2) |> toBe(3)));
          *)
-        let (lastLabel, lastArg) = List.nth ls (List.length ls - 1) in
-        (* FIXME: something is fishy here *)
-        let _syntheticApplicationLocation =
-          {e.pexp_loc with loc_end = lastArg.pexp_loc.loc_end} in
-        FunctionApplication
-          (self#formatFunAppl ~jsxAttrs ~args:ls ~applicationExpr:x ~funExpr:e ())
+        let uncurried = try Hashtbl.find uncurriedTable x.pexp_loc with | Not_found -> false in
+        FunctionApplication (self#formatFunAppl ~uncurried ~jsxAttrs ~args:ls ~applicationExpr:x ~funExpr:e ())
       )
     )
     | Pexp_construct (li, Some eo) when not (is_simple_construct (view_expr x)) -> (
@@ -3790,6 +3811,7 @@ let printer = object(self:'self)
     argsAndReturn [] cl
 
 
+
   (*
     Returns the arguments list (if any, that occur before the =>), and the
     final expression (that is either returned from the function (after =>) or
@@ -3797,6 +3819,7 @@ let printer = object(self:'self)
     let pattern binding)).
   *)
   method curriedPatternsAndReturnVal x =
+    let uncurried = try Hashtbl.find uncurriedTable x.pexp_loc with | Not_found -> false in
     let rec extract_args xx =
       if xx.pexp_attributes <> [] then
         ([], xx)
@@ -3817,10 +3840,15 @@ let printer = object(self:'self)
     in
     match extract_args x with
     | ([], ret) -> ([], ret)
-    | ([`Value (Nolabel, None, p) as arg], ret) when is_unit_pattern p || is_ident_pattern p ->
+    | ([`Value (Nolabel, None, p) ], ret) when is_unit_pattern p && uncurried ->
+        ( [atom "(.)"], ret)
+    | ([`Value (Nolabel, None, p) as arg], ret) when (is_unit_pattern p || is_ident_pattern p) && not(uncurried) ->
       ([prepare_arg arg], ret)
     | (args, ret) ->
-      ([makeTup (List.map prepare_arg args)], ret)
+        if uncurried then
+          ([makeTup ~uncurried:true (List.map prepare_arg args)], ret)
+        else
+          ([makeTup (List.map prepare_arg args)], ret)
 
   (* Returns the (curriedModule, returnStructure) for a functor *)
   method curriedFunctorPatternsAndReturnStruct = function
@@ -3939,6 +3967,7 @@ let printer = object(self:'self)
           self#formatSimplePatternBinding prefixText patternList (Some typeLayout) appTerms
       | ([], _) ->
           (* simple let binding, e.g. `let number = 5` *)
+          (* let f = (. a, b) => a + b; *)
           let appTerms = self#unparseExprApplicationItems expr  in
           self#formatSimplePatternBinding prefixText patternList None appTerms
       | (_::_, _) ->
@@ -4392,6 +4421,7 @@ let printer = object(self:'self)
         let itm = match x.pexp_desc with
           | Pexp_fun _
           | Pexp_newtype _ ->
+            (* let uncurried =  *)
             let (args, ret) = self#curriedPatternsAndReturnVal x in
             ( match args with
               | [] -> raise (NotPossible ("no arrow args in unparse "))
@@ -5091,8 +5121,8 @@ let printer = object(self:'self)
       | [] -> toThis
       | _::_ -> makeList ~postSpace:true [(self#attributes l); toThis]
 
-  method attach_std_item_attrs ?extension l toThis =
-    let l = extractStdAttrs l in
+  method attach_std_item_attrs ?(allowUncurry=true) ?extension l toThis =
+    let l = (partitionAttributes ~allowUncurry l).stdAttrs in
     match extension, l with
     | None, [] -> toThis
     | _, _ ->
@@ -5222,15 +5252,14 @@ let printer = object(self:'self)
     match x.pcty_desc with
     | Pcty_signature cs ->
       let {pcsig_self = ct; pcsig_fields = l} = cs in
-      let instTypeFields =
-        List.map self#class_sig_field (List.filter self#shouldDisplayClassInstTypeItem l) in
+      let instTypeFields = List.map self#class_sig_field l in
       let allItems = match ct.ptyp_desc with
         | Ptyp_any -> instTypeFields
         | _ ->
           label ~space:true (atom "as") (self#core_type ct) ::
           instTypeFields
       in
-      self#attach_std_item_attrs x.pcty_attributes (
+      self#attach_std_item_attrs ~allowUncurry:false x.pcty_attributes (
         makeList
           ~wrap:("{", "}")
           ~postSpace:true
@@ -5319,7 +5348,7 @@ let printer = object(self:'self)
     | Pcty_arrow (l, co, cl) ->
       let rec allArrowSegments acc = function
         | { pcty_desc = Pcty_arrow (l, ct1, ct2); } ->
-            allArrowSegments (self#type_with_label (l, ct1) :: acc) ct2
+            allArrowSegments (self#type_with_label (l, ct1, false) :: acc) ct2
         (* This "new" is unfortunate. See reason_parser.mly for details. *)
         | xx -> (List.rev acc, self#class_constructor_type xx)
       in
@@ -5949,7 +5978,8 @@ let printer = object(self:'self)
     let item = (
       match term.pstr_desc with
         | Pstr_eval (e, attrs) ->
-            let {stdAttrs; jsxAttrs} = partitionAttributes attrs in
+            let {stdAttrs; jsxAttrs; uncurried} = partitionAttributes attrs in
+            if uncurried then Hashtbl.add uncurriedTable e.pexp_loc true;
             let layout = self#attach_std_item_attrs stdAttrs (self#unparseUnattributedExpr e) in
             (* If there was a JSX attribute BUT JSX component wasn't detected,
                that JSX attribute needs to be pretty printed so it doesn't get
@@ -6191,7 +6221,7 @@ let printer = object(self:'self)
     in
     source_map ~loc:e.pexp_loc param
 
-  method label_x_expression_params xs =
+  method label_x_expression_params ?(uncurried=false) xs =
     match xs with
       (* function applications with unit as only argument should be printed differently
        * e.g. print_newline(()) should be printed as print_newline() *)
@@ -6210,9 +6240,9 @@ let printer = object(self:'self)
       | [(Nolabel, exp)] when isSingleArgParenApplication [exp] ->
           self#singleArgParenApplication [exp]
       | params ->
-          makeTup (List.map self#label_x_expression_param params)
+          makeTup ~uncurried (List.map self#label_x_expression_param params)
 
-  method formatFunAppl ~jsxAttrs ~args ~funExpr ~applicationExpr () =
+  method formatFunAppl ~jsxAttrs ~args ~funExpr ~applicationExpr ?(uncurried=false) () =
     (* If there was a JSX attribute BUT JSX component wasn't detected,
        that JSX attribute needs to be pretty printed so it doesn't get
        lost *)
@@ -6235,7 +6265,9 @@ let printer = object(self:'self)
          *   MyModuleBlah.toList(argument)
          *)
         let (argLbl, cb) = callbackArg in
-        let cbAttrs = cb.pexp_attributes in
+        let {stdAttrs; uncurried} = partitionAttributes cb.pexp_attributes in
+        let cbAttrs = stdAttrs in
+        if uncurried then Hashtbl.add uncurriedTable cb.pexp_loc true;
         let (cbArgs, retCb) = self#curriedPatternsAndReturnVal {cb with pexp_attributes = []} in
         let cbArgs = if List.length cbAttrs > 0 then
             makeList ~break:IfNeed ~inline:(true, true) ~postSpace:true
@@ -6356,7 +6388,7 @@ let printer = object(self:'self)
           {funExpr.pexp_loc with loc_end = applicationExpr.pexp_loc.loc_end},
           {funExpr.pexp_loc with loc_start = funExpr.pexp_loc.loc_end; loc_end = applicationExpr.pexp_loc.loc_end}
       in
-      let theArgs = self#reset#label_x_expression_params args in
+      let theArgs = self#reset#label_x_expression_params ~uncurried args in
       maybeJSXAttr @ [source_map ~loc:syntheticApplicationLocation
                         (label theFunc (source_map ~loc:syntheticArgLoc theArgs))]
     end

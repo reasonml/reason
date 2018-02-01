@@ -323,7 +323,7 @@ class type _y = {
   pub height: int
 };
 
-[@bs]
+[@attr]
 class type _z = {
   pub height: int
 };
