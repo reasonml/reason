@@ -274,7 +274,7 @@ let rec print_out_type ppf =
         pr_vars sl
         print_out_type ty
   | ty ->
-      print_out_type_1 ppf ty
+      print_out_type_1 ~uncurried:false ppf ty
 
 and print_arg ppf (lab, typ) =
   let suffix =
@@ -294,7 +294,7 @@ and print_arg ppf (lab, typ) =
   print_out_type_2 ppf typ;
   pp_print_string ppf suffix;
 
-and print_out_type_1 ppf =
+and print_out_type_1 ~uncurried ppf =
   function
     Otyp_arrow (lab, ty1, ty2) ->
       let rec collect_args args typ = match typ with
@@ -302,25 +302,23 @@ and print_out_type_1 ppf =
         | _ -> (args, typ)
       in
       pp_open_box ppf 0;
-      let (args, result) = collect_args [(lab, ty1)] ty2 in begin
-        match args with
-        (* single argument should not be wrapped... *)
-        | [(_, Otyp_tuple _) as arg] ->
-          (* ...unless it's for tuple. ((int, int)) => string *)
-          pp_print_string ppf "(";
-          print_arg ppf arg;
-          pp_print_string ppf ")"
-        | [("", typ) as arg] ->
-          (* see above. Though we only unwrap when there's no label *)
-          print_arg ppf arg
-        | args ->
-          pp_print_string ppf "(";
-          print_list print_arg (fun ppf -> fprintf ppf ",@ ") ppf args;
-          pp_print_string ppf ")"
-      end;
+      let (args, result) = collect_args [(lab, ty1)] ty2 in
+      let should_wrap_with_parens = match (uncurried, args) with
+      (* single argument should not be wrapped *)
+      (* though uncurried type are always wrapped in parens. `. a => 1` isn't supported *)
+      | (false, [(_, Otyp_tuple _)]) -> true
+      | (false, [("", typ) as arg]) -> false
+      | (_, args) -> true
+      in
+
+      if should_wrap_with_parens then pp_print_string ppf "(";
+      if uncurried then fprintf ppf ".@ ";
+      print_list print_arg (fun ppf -> fprintf ppf ",@ ") ppf args;
+      if should_wrap_with_parens then pp_print_string ppf ")";
+
       pp_print_string ppf " =>";
       pp_print_space ppf ();
-      print_out_type_1 ppf result;
+      print_out_type_1 ~uncurried ppf result;
       pp_close_box ppf ()
   | ty -> print_out_type_2 ppf ty
 and print_out_type_2 ppf =
@@ -372,8 +370,8 @@ and print_simple_out_type ppf =
         end
       | res ->
         begin match name  with
-        | "fn" -> fprintf ppf "@[<0>(%a)@ [@bs]@]" print_out_type_1 res
-        | "meth" -> fprintf ppf "@[<0>(%a)@ [@bs.meth]@]" print_out_type_1 res
+        | "fn" -> print_out_type_1 ~uncurried:true ppf res
+        | "meth" -> fprintf ppf "@[<0>(%a)@ [@bs.meth]@]" (print_out_type_1 ~uncurried:false) res
         | _ -> assert false
         end
       end
@@ -405,7 +403,7 @@ and print_simple_out_type ppf =
           pp_close_box ppf ()
         end
       | res ->
-        fprintf ppf "@[<0>(%a)@ [@bs.this]@]" print_out_type_1 res
+        fprintf ppf "@[<0>(%a)@ [@bs.this]@]" (print_out_type_1 ~uncurried:false) res
       end
   (* also BuckleScript-specific. Turns Js.t({. foo: bar}) into {. "foo": bar} *)
   | Otyp_constr (
