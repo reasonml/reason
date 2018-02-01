@@ -113,3 +113,24 @@ Thing.map(
 type f = int => (. int) => unit;
 
 type f = int => (. int) => unit;
+
+add(. 2);
+
+add(. 2);
+
+add(. 2, . 3);
+
+add(. 2, . 3);
+
+type timerId;
+
+[@bs.val]
+external setTimeout :
+  ((. unit) => unit, int) => timerId =
+  "setTimeout";
+
+let id =
+  setTimeout((.) => Js.log("hello"), 1000);
+
+let id =
+  setTimeout(1000, (.) => Js.log("hello"));

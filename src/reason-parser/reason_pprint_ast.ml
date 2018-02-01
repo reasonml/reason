@@ -6210,16 +6210,30 @@ let printer = object(self:'self)
 
 
   method label_x_expression_param (l, e) =
+    let (uncurried, e) =
+      let {uncurried; stdAttrs} = partitionAttributes e.pexp_attributes in
+      if uncurried then
+        (true, {e with pexp_attributes = stdAttrs})
+      else (false, e)
+    in
     let term = self#unparseConstraintExpr e in
-    let param = match l with
-      | Nolabel -> term
-      | Labelled lbl when is_punned_labelled_expression e lbl ->
+    let param = match (l, e) with
+      (* image `setTimeout((.) => Js.log("hola"), 1000)` 
+       * the first arg is a Pexp_fun, with an attribute [@bs], which flows through this case. 
+       * We want the dot to be formatted inside of the arguments of the callback
+       * Without this pattern match, we would get `setTimeout(. () => Js.log("hola"), 1000)` *)
+      | Nolabel, {pexp_loc; pexp_desc = Pexp_fun _} when uncurried ->
+          Hashtbl.add uncurriedTable pexp_loc true;
+          self#unparseExpr e
+      | (Nolabel, _) ->
+        if uncurried then makeList ~postSpace:true [atom "."; term] else term
+      | (Labelled lbl, _) when is_punned_labelled_expression e lbl ->
         makeList [atom namedArgSym; term]
-      | Optional lbl when is_punned_labelled_expression e lbl ->
+      | (Optional lbl, _) when is_punned_labelled_expression e lbl ->
         makeList [atom namedArgSym; label term (atom "?")]
-      | Labelled lbl ->
+      | (Labelled lbl, _) ->
         label (atom (namedArgSym ^ lbl ^ "=")) term
-      | Optional lbl ->
+      | (Optional lbl, _) ->
         label (atom (namedArgSym ^ lbl ^ "=?")) term
     in
     source_map ~loc:e.pexp_loc param

@@ -582,11 +582,29 @@ let mkcty_arrow ({Location.txt = (label, cod); loc}, uncurried) dom =
   let ct = mkcty ~loc (Pcty_arrow (label, cod, dom)) in
   {ct with pcty_attributes = (if uncurried then [uncurry_payload loc] else [])}
 
-let mkexp_app_rev startp endp (body, args, uncurried) =
+let mkexp_app_rev startp endp (body, args) =
+  let (args, uncurried) =
+    begin match (List.rev args) with
+    (* lifts the uncurried attr to the "top" expression, if the first arg isn't a callback
+     * example:
+     * f(. a, b, c) -> [@bs] f(a, b, c)  (attr sits on the "f" expr)
+     * f((.) => 42, 1000) -> f([@bs] () => 42, 1000) (attr needs to stay on the callback) *)
+    | (Nolabel, ({pexp_attributes; pexp_desc} as e))::tl when
+          match pexp_desc with
+          | Pexp_fun _ -> false
+          | _ -> true
+      ->
+      let (new_attrs, uncurried) = match pexp_attributes with
+      | ({txt = "bs"}, PStr [])::tl -> (tl, true)
+      | attrs -> (attrs, false)
+      in
+      (((Nolabel, {e with pexp_attributes = new_attrs})::tl), uncurried)
+  | xs -> (xs, false)
+  end in
   let loc = mklocation startp endp in
   let attrs = if uncurried then [uncurry_payload loc] else [] in
   if args = [] then { body with pexp_loc = loc } else
-    mkexp ~attrs ~loc (Pexp_apply (body, List.rev args))
+    mkexp ~attrs ~loc (Pexp_apply (body, args))
 
 let mkmod_app mexp marg =
   mkmod ~loc:(mklocation mexp.pmod_loc.loc_start marg.pmod_loc.loc_end)
@@ -1885,8 +1903,7 @@ mark_position_cl
        * class newclass = oldclass withInitArg;
        * let inst = new newclass;
        */
-    { let (args, _uncurried) = $2 in
-      mkclass(Pcl_apply($1, args)) }
+    { mkclass(Pcl_apply($1, $2)) }
   | attribute class_expr
     { {$2 with pcl_attributes = $1 :: $2.pcl_attributes} }
   /*
@@ -2934,17 +2951,16 @@ simple_expr_no_call:
 ;
 
 simple_expr_call:
-  | mark_position_exp(simple_expr_template(simple_expr)) { $1, [], false}
+  | mark_position_exp(simple_expr_template(simple_expr)) { ($1, []) }
   | simple_expr_call labeled_arguments
-    { let (body, args, _uncurried) = $1 in
-      let (lbled_args, uncurried) = $2 in
-    (body, List.rev_append lbled_args args, uncurried) }
+    { let (body, args) = $1 in
+      (body, List.rev_append $2 args) }
   | LBRACKET expr_comma_seq_extension RBRACKET
     { let seq, ext_opt = $2 in
       let loc = mklocation $startpos($2) $endpos($2) in
-      (make_real_exp (mktailexp_extension loc seq ext_opt), [], false)
+      (make_real_exp (mktailexp_extension loc seq ext_opt), [])
     }
-  | simple_expr_template_constructor { ($1, [], false) }
+  | simple_expr_template_constructor { ($1, []) }
 ;
 
 simple_expr_direct_argument:
@@ -3001,27 +3017,20 @@ non_labeled_argument_list:
 ;
 
 %inline labelled_expr_comma_list:
-  lseparated_list(COMMA, labeled_expr) COMMA? { $1 };
+  lseparated_list(COMMA, uncurried_labeled_expr) COMMA? { $1 };
 
 labeled_arguments:
   | mark_position_exp(simple_expr_direct_argument)
-    { ([(Nolabel, $1)], false) }
+    { [(Nolabel, $1)] }
   | parenthesized(labelled_expr_comma_list)
     { match $1 with
       | [] -> let loc = mklocation $startpos $endpos in
-              ([(Nolabel, mkexp_constructor_unit loc loc)], false)
-      | xs -> (xs, false)
+              [(Nolabel, mkexp_constructor_unit loc loc)]
+      | xs -> xs
     }
-  | LPAREN DOT labelled_expr_comma_list RPAREN
-    { let loc = mklocation $startpos $endpos in 
-      match $3 with
-      | [] -> ([(Nolabel, mkexp_constructor_unit loc loc)], true)
-      | xs -> List.iter (function
-          | (Labelled _, _) ->
-                raise Syntax_util.(Error(loc, (Syntax_error "Uncurried function application with labelled arguments is not supported at the moment.")));
-                ()
-          | _ -> ()) xs;
-        (xs, true)
+  | LPAREN DOT RPAREN
+    { let loc = mklocation $startpos $endpos in
+      [(Nolabel, mkexp_constructor_unit ~uncurried:true loc loc)]
     }
 ;
 
@@ -3036,6 +3045,18 @@ labeled_expr_constraint:
         let loc = mklocation punned.loc.loc_start $endpos in
         ghexp_constraint loc exp typ
     }
+;
+
+%inline uncurried_labeled_expr:
+  | DOT? labeled_expr {
+    let uncurried = match $1 with | Some _ -> true | None _ -> false in
+    if uncurried then
+      let (lbl, argExpr) = $2 in
+      let loc = mklocation $startpos $endpos in
+      let up = uncurry_payload loc in
+      (lbl, {argExpr with pexp_attributes = up::argExpr.pexp_attributes})
+    else $2
+  }
 ;
 
 labeled_expr:
