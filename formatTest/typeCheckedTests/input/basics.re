@@ -4,6 +4,8 @@ let l = [1,2,3] |> List.map (i => i+1, ?) |> List.filter (i => i>0, ?);
 
 let l = (i => i+1) |> List.map(?, [1,2,3]);
 
+let l = Some(?) |> List.map(?, [1,2,3]);
+
 type reasonXyz =
   | X
   | Y(int,int,int)

@@ -8,6 +8,10 @@ let l =
   (i => i + 1)
   |> (__x => List.map(__x, [1, 2, 3]));
 
+let l =
+  (__x => Some(__x))
+  |> (__x => List.map(__x, [1, 2, 3]));
+
 type reasonXyz =
   | X
   | Y(int, int, int)

@@ -271,11 +271,38 @@ let mkExplicitArityTuplePat ?(loc=dummy_loc ()) pat =
     ~attrs:(simple_ghost_text_attr ~loc "explicit_arity")
     pat
 
-let mkExplicitArityTupleExp ?(loc=dummy_loc ()) exp =
-  mkexp
-    ~loc
-    ~attrs:(simple_ghost_text_attr ~loc "explicit_arity")
-    exp
+(**
+  * transform unary constructor application C(?) into (__x) => C(x)
+  *)
+let process_question_mark_constructor loc exp =
+  match exp.pexp_desc with
+  | Pexp_construct
+      (lid,
+       Some
+         ({ pexp_desc =
+             Pexp_tuple
+               [
+                 { pexp_desc =
+                   Pexp_construct ({txt = Lident "?"}, None)
+                 }
+                ]
+         } as exp_tuple)) ->
+      let hidden_var = "__x" in
+      let pattern = mkpat (Ppat_var (mkloc  hidden_var loc)) ~loc  in
+      let exp_tuple2 =
+        mkexp (Pexp_ident (mkloc (Lident hidden_var) loc)) ~loc in
+      let exp = mkexp (Pexp_construct (lid, Some exp_tuple2)) ~loc:exp.pexp_loc in
+      mkexp (Pexp_fun (Nolabel, None, pattern, exp)) ~loc
+  | _ ->
+      exp
+
+let mkExplicitArityTupleExp ?(loc=dummy_loc ()) exp_desc =
+  let exp =
+    mkexp
+      ~loc
+      ~attrs:(simple_ghost_text_attr ~loc "explicit_arity")
+      exp_desc in
+  process_question_mark_constructor loc exp
 
 let is_pattern_list_single_any = function
   | [{ppat_desc=Ppat_any; ppat_attributes=[]} as onlyItem] -> Some onlyItem
@@ -588,28 +615,22 @@ let mkcty_arrow ({Location.txt = (label, cod); loc}, uncurried) dom =
   * return a wrapping function that wraps ((__x) => ...) around an expression
   * e.g. foo(?, 3) becomes (__x) => foo(__x, 3)
   *)
-let process_question_mark args =
+let process_question_mark_application args =
   let exp_question = ref None in
   let hidden_var = "__x" in
   let check_arg ((lab, exp) as arg) = match exp.pexp_desc with
     | Pexp_ident ({ txt = Lident "?"} as id) ->
-        let new_id = { id with txt = Lident hidden_var} in
-        let new_exp = {exp with pexp_desc = Pexp_ident new_id} in
+        let new_id = mkloc (Lident hidden_var) id.loc in
+        let new_exp = mkexp (Pexp_ident new_id) ~loc:exp.pexp_loc in
         exp_question := Some new_exp;
         (lab, new_exp)
     | _ ->
         arg in
   let args = List.map check_arg args in
   let wrap exp_apply = match !exp_question with
-    | Some {pexp_loc} ->
-        let pattern = {
-          ppat_desc = Ppat_var { txt = hidden_var; loc = pexp_loc };
-          ppat_loc = pexp_loc;
-          ppat_attributes = []
-        } in
-        { pexp_desc = Pexp_fun (Nolabel, None, pattern, exp_apply);
-          pexp_attributes = [];
-          pexp_loc }
+    | Some {pexp_loc=loc} ->
+        let pattern = mkpat (Ppat_var (mkloc hidden_var loc)) ~loc in
+        mkexp (Pexp_fun (Nolabel, None, pattern, exp_apply)) ~loc
     | None ->
         exp_apply in
   (args, wrap)
@@ -617,7 +638,7 @@ let process_question_mark args =
 let mkexp_app_rev startp endp (body, args, uncurried) =
   let loc = mklocation startp endp in
   let attrs = if uncurried then [uncurry_payload loc] else [] in
-  let (args, wrap) = process_question_mark args in
+  let (args, wrap) = process_question_mark_application args in
   if args = [] then { body with pexp_loc = loc } else
     wrap (mkexp ~attrs ~loc (Pexp_apply (body, List.rev args)))
 
@@ -3028,6 +3049,11 @@ simple_expr_direct_argument:
 
 non_labeled_argument_list:
   | parenthesized(non_labelled_expr_comma_list) { $1 }
+  | LPAREN as_loc(QUESTION) RPAREN
+    {
+      let loc = $2.loc in
+      [mkexp ~loc (Pexp_construct(mkloc (Lident "?") loc, None))]
+    }
   | LPAREN RPAREN
     { let loc = mklocation $startpos $endpos in
       [mkexp_constructor_unit loc loc] }
@@ -3094,7 +3120,8 @@ labeled_expr:
     }
   | as_loc(QUESTION)
     {
-      let exp = mkexp (Pexp_ident ({txt=Lident "?"; loc=$1.loc})) ~loc:$1.loc in
+      let loc = $1.loc in
+      let exp = mkexp (Pexp_ident (mkloc (Lident "?") loc)) ~loc in
       (Nolabel, exp)
     }
 ;
