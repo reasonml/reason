@@ -582,11 +582,44 @@ let mkcty_arrow ({Location.txt = (label, cod); loc}, uncurried) dom =
   let ct = mkcty ~loc (Pcty_arrow (label, cod, dom)) in
   {ct with pcty_attributes = (if uncurried then [uncurry_payload loc] else [])}
 
+(**
+  * process the occurrence of ? in the arguments of a function application
+  * replace ? wiht a new variable, currently __x, in the arguments
+  * return a wrapping function that wraps ((__x) => ...) around an expression
+  * e.g. foo(?, 3) becomes (__x) => foo(__x, 3)
+  *)
+let process_question_mark args =
+  let exp_question = ref None in
+  let hidden_var = "__x" in
+  let check_arg ((lab, exp) as arg) = match exp.pexp_desc with
+    | Pexp_ident ({ txt = Lident "?"} as id) ->
+        let new_id = { id with txt = Lident hidden_var} in
+        let new_exp = {exp with pexp_desc = Pexp_ident new_id} in
+        exp_question := Some new_exp;
+        (lab, new_exp)
+    | _ ->
+        arg in
+  let args = List.map check_arg args in
+  let wrap exp_apply = match !exp_question with
+    | Some {pexp_loc} ->
+        let pattern = {
+          ppat_desc = Ppat_var { txt = hidden_var; loc = pexp_loc };
+          ppat_loc = pexp_loc;
+          ppat_attributes = []
+        } in
+        { pexp_desc = Pexp_fun (Nolabel, None, pattern, exp_apply);
+          pexp_attributes = [];
+          pexp_loc }
+    | None ->
+        exp_apply in
+  (args, wrap)
+
 let mkexp_app_rev startp endp (body, args, uncurried) =
   let loc = mklocation startp endp in
   let attrs = if uncurried then [uncurry_payload loc] else [] in
+  let (args, wrap) = process_question_mark args in
   if args = [] then { body with pexp_loc = loc } else
-    mkexp ~attrs ~loc (Pexp_apply (body, List.rev args))
+    wrap (mkexp ~attrs ~loc (Pexp_apply (body, List.rev args)))
 
 let mkmod_app mexp marg =
   mkmod ~loc:(mklocation mexp.pmod_loc.loc_start marg.pmod_loc.loc_end)
@@ -3058,6 +3091,11 @@ labeled_expr:
     {
       let loc = (mklocation $symbolstartpos $endpos) in
       ($2 $1.txt, $3 (mkloc (Longident.parse $1.txt) loc))
+    }
+  | as_loc(QUESTION)
+    {
+      let exp = mkexp (Pexp_ident ({txt=Lident "?"; loc=$1.loc})) ~loc:$1.loc in
+      (Nolabel, exp)
     }
 ;
 
