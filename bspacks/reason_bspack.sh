@@ -96,9 +96,7 @@ ocamlfind ocamlc -bin-annot -g -w -30 -w -40 -package js_of_ocaml,ocaml-migrate-
 # link them together into the final bytecode
 ocamlfind ocamlc -linkpkg -package js_of_ocaml,ocaml-migrate-parsetree -g -o "$REFMT_API_FINAL.byte" "$REFMT_API.cmo" "$REFMT_API_ENTRY.cmo"
 # # use js_of_ocaml to take the compiled bytecode and turn it into a js file
-js_of_ocaml.exe --source-map --debug-info --pretty --linkall +weak.js +toplevel.js --opt 3 --disable strict -o "$REFMT_PRE_CLOSURE.js" "$REFMT_API_FINAL.byte"
-# # use closure compiler to minify the final file!
-java -jar ./closure-compiler/closure-compiler-v20170910.jar --create_source_map "$REFMT_CLOSURE.map" --language_in ECMASCRIPT6 --compilation_level SIMPLE "$REFMT_PRE_CLOSURE.js" > "$REFMT_CLOSURE.js"
+js_of_ocaml.exe --source-map --debug-info --disable share --linkall +weak.js +toplevel.js --opt 3 --disable strict -o "$REFMT_CLOSURE.js" "$REFMT_API_FINAL.byte"
 
 # small integration test to check that the process went well
 # for the native binary
