@@ -8,6 +8,18 @@ f(. a, b, c);
 
 [@attr] f(. a, b, c);
 
+f(. a);
+
+f(. (1, 2));
+
+f(. (1, 2), (3, 4));
+
+f(. "string");
+
+f(. 1);
+
+f(. {a: "supersupersupersupersupersuperlong", b: "supersupersupersupersupersuperlong"});
+
 let f = (. a, b) => a + b;
 
 let f = [@attr] (. a, b) => a + b;
@@ -93,3 +105,19 @@ Thing.map(
 type f = int => (. int) => unit;
 
 type f = (int, . int) => unit;
+
+add(. 2);
+
+([@bs] add(. 2));
+
+add(. 2, . 3);
+
+([@bs] add(2, [@bs] 3));
+
+type timerId;
+
+[@bs.val] external setTimeout : ([@bs] (unit => unit), int) => timerId = "setTimeout";
+
+let id = setTimeout([@bs] (() => Js.log("hello")), 1000);
+
+let id = setTimeout(1000, [@bs] (() => Js.log("hello")));
