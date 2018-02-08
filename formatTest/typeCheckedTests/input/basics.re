@@ -6,6 +6,12 @@ let l = (i => i+1) |> List.map(?, [1,2,3]);
 
 let l = Some(?) |> List.map(?, [1,2,3]);
 
+let incr = (~v) => v+1;
+
+let l1 = [1,2,3] |> List.map(incr(~v=?)) |> List.length;
+
+let l2 = [1,2,3] |> List.map(incr(~v =?)) |> List.length;
+
 type reasonXyz =
   | X
   | Y(int,int,int)

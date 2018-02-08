@@ -12,6 +12,18 @@ let l =
   (__x => Some(__x))
   |> (__x => List.map(__x, [1, 2, 3]));
 
+let incr = (~v) => v + 1;
+
+let l1 =
+  [1, 2, 3]
+  |> List.map(__x => incr(~v=__x))
+  |> List.length;
+
+let l2 =
+  [1, 2, 3]
+  |> List.map(__x => incr(~v=__x))
+  |> List.length;
+
 type reasonXyz =
   | X
   | Y(int, int, int)

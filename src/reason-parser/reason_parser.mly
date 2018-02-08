@@ -3086,12 +3086,11 @@ labeled_arguments:
 
 labeled_expr_constraint:
   | expr_optional_constraint { fun _punned -> $1 }
-  | type_constraint?
+  | type_constraint
     { fun punned ->
       let exp = mkexp (Pexp_ident punned) ~loc:punned.loc in
       match $1 with
-      | None -> exp
-      | Some typ ->
+      | typ ->
         let loc = mklocation punned.loc.loc_start $endpos in
         ghexp_constraint loc exp typ
     }
@@ -3118,8 +3117,20 @@ labeled_expr:
       let loc = (mklocation $symbolstartpos $endpos) in
       ($2 $1.txt, $3 (mkloc (Longident.parse $1.txt) loc))
     }
+  | TILDE as_loc(val_longident) EQUAL as_loc(QUESTION)
+    { (* foo(~l =?) *)
+      let loc = $4.loc in
+      let exp = mkexp (Pexp_ident (mkloc (Lident "?") loc)) ~loc in
+      (Labelled (String.concat "" (Longident.flatten $2.txt)), exp)
+    }
+  | as_loc(LABEL_WITH_EQUAL) as_loc(QUESTION)
+    { (* foo(~l=?) *)
+      let loc = $2.loc in
+      let exp = mkexp (Pexp_ident (mkloc (Lident "?") loc)) ~loc in
+      (Labelled $1.txt, exp)
+    }
   | as_loc(QUESTION)
-    {
+    { (* foo(?) *)
       let loc = $1.loc in
       let exp = mkexp (Pexp_ident (mkloc (Lident "?") loc)) ~loc in
       (Nolabel, exp)
