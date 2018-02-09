@@ -8,9 +8,7 @@ let l =
   (i => i + 1)
   |> (__x => List.map(__x, [1, 2, 3]));
 
-let l =
-  (__x => Some(__x))
-  |> (__x => List.map(__x, [1, 2, 3]));
+let x = __x => List.length(__x);
 
 let incr = (~v) => v + 1;
 

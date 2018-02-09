@@ -271,38 +271,11 @@ let mkExplicitArityTuplePat ?(loc=dummy_loc ()) pat =
     ~attrs:(simple_ghost_text_attr ~loc "explicit_arity")
     pat
 
-(**
-  * transform unary constructor application C(?) into (__x) => C(x)
-  *)
-let process_question_mark_constructor loc exp =
-  match exp.pexp_desc with
-  | Pexp_construct
-      (lid,
-       Some
-         ({ pexp_desc =
-             Pexp_tuple
-               [
-                 { pexp_desc =
-                   Pexp_construct ({txt = Lident "?"}, None)
-                 }
-                ]
-         } as exp_tuple)) ->
-      let hidden_var = "__x" in
-      let pattern = mkpat (Ppat_var (mkloc  hidden_var loc)) ~loc  in
-      let exp_tuple2 =
-        mkexp (Pexp_ident (mkloc (Lident hidden_var) loc)) ~loc in
-      let exp = mkexp (Pexp_construct (lid, Some exp_tuple2)) ~loc:exp.pexp_loc in
-      mkexp (Pexp_fun (Nolabel, None, pattern, exp)) ~loc
-  | _ ->
-      exp
-
 let mkExplicitArityTupleExp ?(loc=dummy_loc ()) exp_desc =
-  let exp =
-    mkexp
-      ~loc
-      ~attrs:(simple_ghost_text_attr ~loc "explicit_arity")
-      exp_desc in
-  process_question_mark_constructor loc exp
+  mkexp
+    ~loc
+    ~attrs:(simple_ghost_text_attr ~loc "explicit_arity")
+    exp_desc
 
 let is_pattern_list_single_any = function
   | [{ppat_desc=Ppat_any; ppat_attributes=[]} as onlyItem] -> Some onlyItem
@@ -3049,11 +3022,6 @@ simple_expr_direct_argument:
 
 non_labeled_argument_list:
   | parenthesized(non_labelled_expr_comma_list) { $1 }
-  | LPAREN as_loc(QUESTION) RPAREN
-    {
-      let loc = $2.loc in
-      [mkexp ~loc (Pexp_construct(mkloc (Lident "?") loc, None))]
-    }
   | LPAREN RPAREN
     { let loc = mklocation $startpos $endpos in
       [mkexp_constructor_unit loc loc] }
