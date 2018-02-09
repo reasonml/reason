@@ -1,16 +1,16 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 
-let l = [1,2,3] |> List.map (i => i+1, ?) |> List.filter (i => i>0, ?);
+let l = [1,2,3] |> List.map (i => i+1, _) |> List.filter (i => i>0, _);
 
-let l = (i => i+1) |> List.map(?, [1,2,3]);
+let l = (i => i+1) |> List.map(_, [1,2,3]);
 
-let x = List.length(?);
+let x = List.length(_);
 
 let incr = (~v) => v+1;
 
-let l1 = [1,2,3] |> List.map(incr(~v=?)) |> List.length;
+let l1 = [1,2,3] |> List.map(incr(~v=_)) |> List.length;
 
-let l2 = [1,2,3] |> List.map(incr(~v =?)) |> List.length;
+let l2 = [1,2,3] |> List.map(incr(~v =_)) |> List.length;
 
 type reasonXyz =
   | X

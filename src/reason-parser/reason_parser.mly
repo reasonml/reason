@@ -583,16 +583,16 @@ let mkcty_arrow ({Location.txt = (label, cod); loc}, uncurried) dom =
   {ct with pcty_attributes = (if uncurried then [uncurry_payload loc] else [])}
 
 (**
-  * process the occurrence of ? in the arguments of a function application
-  * replace ? wiht a new variable, currently __x, in the arguments
+  * process the occurrence of _ in the arguments of a function application
+  * replace _ with a new variable, currently __x, in the arguments
   * return a wrapping function that wraps ((__x) => ...) around an expression
-  * e.g. foo(?, 3) becomes (__x) => foo(__x, 3)
+  * e.g. foo(_, 3) becomes (__x) => foo(__x, 3)
   *)
-let process_question_mark_application args =
+let process_underscore_application args =
   let exp_question = ref None in
   let hidden_var = "__x" in
   let check_arg ((lab, exp) as arg) = match exp.pexp_desc with
-    | Pexp_ident ({ txt = Lident "?"} as id) ->
+    | Pexp_ident ({ txt = Lident "_"} as id) ->
         let new_id = mkloc (Lident hidden_var) id.loc in
         let new_exp = mkexp (Pexp_ident new_id) ~loc:exp.pexp_loc in
         exp_question := Some new_exp;
@@ -611,7 +611,7 @@ let process_question_mark_application args =
 let mkexp_app_rev startp endp (body, args, uncurried) =
   let loc = mklocation startp endp in
   let attrs = if uncurried then [uncurry_payload loc] else [] in
-  let (args, wrap) = process_question_mark_application args in
+  let (args, wrap) = process_underscore_application args in
   if args = [] then { body with pexp_loc = loc } else
     wrap (mkexp ~attrs ~loc (Pexp_apply (body, List.rev args)))
 
@@ -3085,22 +3085,22 @@ labeled_expr:
       let loc = (mklocation $symbolstartpos $endpos) in
       ($2 $1.txt, $3 (mkloc (Longident.parse $1.txt) loc))
     }
-  | TILDE as_loc(val_longident) EQUAL as_loc(QUESTION)
+  | TILDE as_loc(val_longident) EQUAL as_loc(UNDERSCORE)
     { (* foo(~l =?) *)
       let loc = $4.loc in
-      let exp = mkexp (Pexp_ident (mkloc (Lident "?") loc)) ~loc in
+      let exp = mkexp (Pexp_ident (mkloc (Lident "_") loc)) ~loc in
       (Labelled (String.concat "" (Longident.flatten $2.txt)), exp)
     }
-  | as_loc(LABEL_WITH_EQUAL) as_loc(QUESTION)
+  | as_loc(LABEL_WITH_EQUAL) as_loc(UNDERSCORE)
     { (* foo(~l=?) *)
       let loc = $2.loc in
-      let exp = mkexp (Pexp_ident (mkloc (Lident "?") loc)) ~loc in
+      let exp = mkexp (Pexp_ident (mkloc (Lident "_") loc)) ~loc in
       (Labelled $1.txt, exp)
     }
-  | as_loc(QUESTION)
+  | as_loc(UNDERSCORE)
     { (* foo(?) *)
       let loc = $1.loc in
-      let exp = mkexp (Pexp_ident (mkloc (Lident "?") loc)) ~loc in
+      let exp = mkexp (Pexp_ident (mkloc (Lident "_") loc)) ~loc in
       (Nolabel, exp)
     }
 ;
