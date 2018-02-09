@@ -1,25 +1,23 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 let l =
   [1, 2, 3]
-  |> (__x => List.map(i => i + 1, __x))
-  |> (__x => List.filter(i => i > 0, __x));
+  |> List.map(i => i + 1, _)
+  |> List.filter(i => i > 0, _);
 
-let l =
-  (i => i + 1)
-  |> (__x => List.map(__x, [1, 2, 3]));
+let l = (i => i + 1) |> List.map(_, [1, 2, 3]);
 
-let x = __x => List.length(__x);
+let x = List.length(_);
 
 let incr = (~v) => v + 1;
 
 let l1 =
   [1, 2, 3]
-  |> List.map(__x => incr(~v=__x))
+  |> List.map(incr(~v=_))
   |> List.length;
 
 let l2 =
   [1, 2, 3]
-  |> List.map(__x => incr(~v=__x))
+  |> List.map(incr(~v=_))
   |> List.length;
 
 type reasonXyz =
