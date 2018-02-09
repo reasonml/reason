@@ -1,0 +1,96 @@
+common_steps: &common_steps
+  steps:
+    - checkout
+    - run:
+        name: "Install npm"
+        command: |
+          curl -sL https://deb.nodesource.com/setup_9.x | sudo -E bash -
+          sudo apt-get install -y nodejs
+          mkdir -p ~/.npm-global
+          npm config set prefix $NPM_CONFIG_PREFIX
+    - run:
+        name: "Note OCAML_VERSION for cache"
+        command: echo $OCAML_VERSION > ../ocaml-version
+    - restore_cache:
+        key: dependency-cache-{{ checksum "../ocaml-version" }}-{{ checksum ".circleci/config.yml" }}-{{ checksum "reason.opam" }}-{{ checksum "rebuild.opam" }}-{{ checksum "rtop.opam" }}
+    - run:
+        name: "Initialize opam"
+        command: |
+          opam init --auto-setup --dot-profile=~/.bash_profile
+          opam remote add ocamlorg https://opam.ocaml.org -p 0 || true
+          opam remote remove default || true
+    - run:
+        name: "Install deps"
+        command: |
+          opam update
+          opam install -y jbuilder
+          opam install -y menhir.20170712
+          npm install -g esy@next
+    - run:
+        name: 'Clean'
+        command: make clean-for-ci
+    - run:
+        name: 'opam pin'
+        command: |
+          opam pin add -y reason .
+          opam pin add -y rtop .
+    - save_cache:
+        key: dependency-cache-{{ checksum "../ocaml-version" }}-{{ checksum ".circleci/config.yml" }}-{{ checksum "reason.opam" }}-{{ checksum "rebuild.opam" }}-{{ checksum "rtop.opam" }}
+        paths:
+          - ~/.opam
+          - ~/.npm-global
+    - run:
+        name: 'Test'
+        command: |
+          source ~/.bash_profile
+          eval `opam config env`
+          make test-ci
+    - run:
+        name: 'Check git is clean'
+        command: git diff --exit-code
+
+
+version: 2
+jobs:
+  4.02.3:
+    docker:
+      - image: ocaml/opam:debian-9_ocaml-4.02.3
+    environment:
+      - TERM: dumb
+      - OCAML_VERSION: "4.02.3"
+      - NPM_CONFIG_PREFIX: "~/.npm-global"
+    <<: *common_steps
+  4.03.0:
+    docker:
+      - image: ocaml/opam:debian-9_ocaml-4.03.0
+    environment:
+      - TERM: dumb
+      - OCAML_VERSION: "4.03.0"
+      - NPM_CONFIG_PREFIX: "~/.npm-global"
+    <<: *common_steps
+  4.04.0:
+    docker:
+      - image: ocaml/opam:debian-9_ocaml-4.04.0
+    environment:
+      - TERM: dumb
+      - OCAML_VERSION: "4.04.0"
+      - NPM_CONFIG_PREFIX: "~/.npm-global"
+    <<: *common_steps
+  4.06.0:
+    docker:
+      - image: ocaml/opam:debian-9_ocaml-4.06.0
+    environment:
+      - TERM: dumb
+      - OCAML_VERSION: "4.06.0"
+      - NPM_CONFIG_PREFIX: "~/.npm-global"
+    <<: *common_steps
+
+
+workflows:
+  version: 2
+  build-deploy:
+    jobs:
+      - 4.02.3
+      - 4.03.0
+      - 4.04.0
+      - 4.06.0
