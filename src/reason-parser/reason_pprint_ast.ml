@@ -6228,38 +6228,54 @@ let printer = object(self:'self)
    *  when the line length dictates breaking. Notice how `({` and `})` 'hug'.
    *  Also see "isSingleArgParenApplication" which determines if
    *  this kind of formatting should happen. *)
-  method singleArgParenApplication = function
+  method singleArgParenApplication ?(uncurried=false) es =
+    let lparen = if uncurried then "(. " else "(" in
+    match es with
     | [{pexp_attributes = []; pexp_desc = Pexp_record (l, eo)}] ->
-      self#unparseRecord ~wrap:("(", ")") l eo
+      self#unparseRecord ~wrap:(lparen, ")") l eo
     | [{pexp_attributes = []; pexp_desc = Pexp_tuple l}] ->
-      self#unparseSequence ~wrap:("(", ")") ~construct:`Tuple l
+      self#unparseSequence ~wrap:(lparen, ")") ~construct:`Tuple l
     | [{pexp_attributes = []; pexp_desc = Pexp_array l}] ->
-      self#unparseSequence ~wrap:("(", ")") ~construct:`Array l
+      self#unparseSequence ~wrap:(lparen, ")") ~construct:`Array l
     | [{pexp_attributes = []; pexp_desc = Pexp_object cs}] ->
-      self#classStructure ~wrap:("(", ")") cs
+      self#classStructure ~wrap:(lparen, ")") cs
     | [{pexp_attributes = []; pexp_desc = Pexp_extension (s, p)}] when s.txt = "bs.obj" ->
-      self#formatBsObjExtensionSugar ~wrap:("(", ")") p
+      self#formatBsObjExtensionSugar ~wrap:(lparen, ")") p
     | [({pexp_attributes = []; pexp_desc} as exp)] when (is_simple_list_expr exp) ->
           (match view_expr exp with
           | `list xs ->
-              self#unparseSequence ~construct:`List ~wrap:("(", ")") xs
+              self#unparseSequence ~construct:`List ~wrap:(lparen, ")") xs
           | `cons xs ->
-              self#unparseSequence ~construct:`ES6List ~wrap:("(", ")") xs
+              self#unparseSequence ~construct:`ES6List ~wrap:(lparen, ")") xs
           | _ -> assert false)
     | _ -> assert false
 
 
   method label_x_expression_param (l, e) =
+    let (uncurried, e) =
+      let {uncurried; stdAttrs} = partitionAttributes e.pexp_attributes in
+      if uncurried then
+        (true, {e with pexp_attributes = stdAttrs})
+      else (false, e)
+    in
     let term = self#unparseConstraintExpr e in
-    let param = match l with
-      | Nolabel -> term
-      | Labelled lbl when is_punned_labelled_expression e lbl ->
+    let param = match (l, e) with
+      (* image `setTimeout((.) => Js.log("hola"), 1000)` 
+       * the first arg is a Pexp_fun, with an attribute [@bs], which flows through this case. 
+       * We want the dot to be formatted inside of the arguments of the callback
+       * Without this pattern match, we would get `setTimeout(. () => Js.log("hola"), 1000)` *)
+      | Nolabel, {pexp_loc; pexp_desc = Pexp_fun _} when uncurried ->
+          Hashtbl.add uncurriedTable pexp_loc true;
+          self#unparseExpr e
+      | (Nolabel, _) ->
+        if uncurried then makeList ~postSpace:true [atom "."; term] else term
+      | (Labelled lbl, _) when is_punned_labelled_expression e lbl ->
         makeList [atom namedArgSym; term]
-      | Optional lbl when is_punned_labelled_expression e lbl ->
+      | (Optional lbl, _) when is_punned_labelled_expression e lbl ->
         makeList [atom namedArgSym; label term (atom "?")]
-      | Labelled lbl ->
+      | (Labelled lbl, _) ->
         label (atom (namedArgSym ^ lbl ^ "=")) term
-      | Optional lbl ->
+      | (Optional lbl, _) ->
         label (atom (namedArgSym ^ lbl ^ "=?")) term
     in
     source_map ~loc:e.pexp_loc param
@@ -6281,7 +6297,7 @@ let printer = object(self:'self)
        *  when the line-length indicates breaking.
        *)
       | [(Nolabel, exp)] when isSingleArgParenApplication [exp] ->
-          self#singleArgParenApplication [exp]
+          self#singleArgParenApplication ~uncurried [exp]
       | params ->
           makeTup ~uncurried (List.map self#label_x_expression_param params)
 

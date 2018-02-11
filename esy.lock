@@ -152,7 +152,7 @@
 
 "@opam/lwt@ >= 2.7.0", "@opam/lwt@ >= 3.0.0", "@opam/lwt@*":
   version "3.1.0"
-  uid "386be93f773167d7e97be6e27b773b75"
+  uid c14edb0f1d477b3b0be3602541916626
   resolved "@opam/lwt@3.1.0-386be93f773167d7e97be6e27b773b75.tgz"
   dependencies:
     "@esy-ocaml/esy-installer" "^0.0.0"
@@ -161,7 +161,7 @@
     "@opam/jbuilder" " >= 1.0.0-beta10"
     "@opam/ocaml-migrate-parsetree" "*"
     "@opam/ocamlfind" " >= 1.5.0"
-    "@opam/ppx_tools_versioned" "*"
+    "@opam/ppx_tools_versioned" " >= 5.0.1"
     "@opam/result" "*"
   peerDependencies:
     ocaml " >= 4.2.0"
@@ -181,7 +181,7 @@
 
 "@opam/menhir@ >= 20170418.0.0  <= 20171013.0.0":
   version "20171013.0.0"
-  uid "69db2edf33e616a0fbf62aaa2b5bf518"
+  uid "358990f51123ce9d3629e66b9ead67ee"
   resolved "@opam/menhir@20171013.0.0-69db2edf33e616a0fbf62aaa2b5bf518.tgz"
   dependencies:
     "@esy-ocaml/esy-installer" "^0.0.0"
@@ -274,7 +274,7 @@
   peerDependencies:
     ocaml " >= 4.1.0"
 
-"@opam/result@*", "@opam/result@=1.2.0":
+"@opam/result@*":
   version "1.2.0"
   uid "7ae1525f89c2304e7289f67e37e8409c"
   resolved "@opam/result@1.2.0-7ae1525f89c2304e7289f67e37e8409c.tgz"

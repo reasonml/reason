@@ -1,7 +1,7 @@
 {
   "name": "reason-dev",
   "license": "MIT",
-  "version": "3.0.4",
+  "version": "3.0.5",
   "dependencies": {
     "@esy-ocaml/substs": "^0.0.1",
     "@esy-ocaml/esy-installer": "^0.0.0",
@@ -9,7 +9,7 @@
     "@opam/menhir": " >= 20170418.0.0  <= 20171013.0.0",
     "@opam/utop": " >= 1.17.0",
     "@opam/merlin-extend": " >= 0.3.0",
-    "@opam/result": "=1.2.0",
+    "@opam/result": "*",
     "@opam/ocaml-migrate-parsetree": "*",
     "@opam/ocamlbuild": "*",
     "@opam/jbuilder": "*"
