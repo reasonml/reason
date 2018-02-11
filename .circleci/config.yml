@@ -52,6 +52,7 @@ common_steps: &common_steps
     - run:
         name: 'esy buid'
         command: |
+          source ~/.bash_profile
           esy build
           _build/install/default/bin/refmt --version
     - run:
