@@ -6,6 +6,8 @@ let l = (i => i+1) |> List.map(_, [1,2,3]);
 
 let x = List.length(_);
 
+let nested = x => List.length(_);
+
 let incr = (~v) => v+1;
 
 let l1 = [1,2,3] |> List.map(incr(~v=_)) |> List.length;

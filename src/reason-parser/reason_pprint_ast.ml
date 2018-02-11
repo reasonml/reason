@@ -3264,6 +3264,12 @@ let printer = object(self:'self)
          } as e)) ->
       let e_ = {e_x with pexp_desc = Pexp_ident {id with txt = Lident "_"}} in
       {e with pexp_desc = Pexp_match (e_, ls)}
+    | Pexp_fun (l, eo, p, e) ->
+       let e_processed = self#process_underscore_application e in
+       if e == e_processed then
+         x
+       else
+         {x with pexp_desc = Pexp_fun (l, eo, p, e_processed)}
     | _ ->
       x
 
