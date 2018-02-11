@@ -10,7 +10,7 @@
     "@esy-ocaml/substs": "^0.0.1",
     "@esy-ocaml/esy-installer": "^0.0.0",
     "@opam/ocamlfind": "",
-    "@opam/result": "=1.2.0",
+    "@opam/result": "*",
     "@opam/jbuilder": "*",
     "@opam/menhir": " >= 20170418.0.0  <= 20171013.0.0",
     "@opam/utop": " >= 1.17.0",

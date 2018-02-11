@@ -10,7 +10,7 @@
     "@esy-ocaml/substs": "^0.0.1",
     "@esy-ocaml/esy-installer": "^0.0.0",
     "@opam/ocamlfind": "",
-    "@opam/result": "=1.2.0",
+    "@opam/result": "*",
     "@opam/jbuilder": "*",
     "@esy-ocaml/reason": " >= 1.17.0",
     "@opam/utop": " >= 1.17.0"
