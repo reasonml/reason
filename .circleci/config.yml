@@ -36,7 +36,7 @@ common_steps: &common_steps
           opam pin add -y rtop .
     - run:
         name: 'esy install'
-        command: esy install
+        command: ~/.npm-global/bin/esy install
     - save_cache:
         key: dependency-cache-{{ checksum "../ocaml-version" }}-{{ checksum ".circleci/config.yml" }}-{{ checksum "reason.opam" }}-{{ checksum "rebuild.opam" }}-{{ checksum "rtop.opam" }}
         paths:
@@ -52,8 +52,7 @@ common_steps: &common_steps
     - run:
         name: 'esy buid'
         command: |
-          source ~/.bash_profile
-          esy build
+          ~/.npm-global/bin/esy build
           _build/install/default/bin/refmt --version
     - run:
         name: 'Check git is clean'
