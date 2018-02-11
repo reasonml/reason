@@ -34,17 +34,26 @@ common_steps: &common_steps
         command: |
           opam pin add -y reason .
           opam pin add -y rtop .
+    - run:
+        name: 'esy install'
+        command: esy install
     - save_cache:
         key: dependency-cache-{{ checksum "../ocaml-version" }}-{{ checksum ".circleci/config.yml" }}-{{ checksum "reason.opam" }}-{{ checksum "rebuild.opam" }}-{{ checksum "rtop.opam" }}
         paths:
           - ~/.opam
           - ~/.npm-global
+          - ~/.esy
     - run:
         name: 'Test'
         command: |
           source ~/.bash_profile
           eval `opam config env`
           make test-ci
+    - run:
+        name: 'esy buid'
+        command: |
+          esy build
+          _build/install/default/bin/refmt --version
     - run:
         name: 'Check git is clean'
         command: git diff --exit-code
