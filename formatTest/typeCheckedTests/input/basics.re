@@ -12,6 +12,9 @@ let l1 = [1,2,3] |> List.map(incr(~v=_)) |> List.length;
 
 let l2 = [1,2,3] |> List.map(incr(~v =_)) |> List.length;
 
+let unSomeFun = fun | Some(n) => n | None => 0;
+let unSome = switch _ { | Some(n) => n | None => 0 };
+
 type reasonXyz =
   | X
   | Y(int,int,int)

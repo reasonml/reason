@@ -3234,7 +3234,10 @@ let printer = object(self:'self)
     | Simple itm -> ([itm], Some x.pexp_loc)
 
 
-  (* Replace (__x) => foo(__x) with foo(_) *)
+  (*
+   * Replace (__x) => foo(__x) with foo(_)
+   * And (__x) => switch __x { ... } with swich _ { ... } 
+   *)
   method process_underscore_application x =
     let process_application expr =
       let process_arg (l,e) = match e.pexp_desc with
@@ -3250,8 +3253,17 @@ let printer = object(self:'self)
       | _ ->
         expr in
     match x.pexp_desc with
-    | Pexp_fun (Nolabel, None, {ppat_desc = Ppat_var {txt="__x"}}, ({pexp_desc = Pexp_apply _} as e)) ->
+    | Pexp_fun (Nolabel, None, {ppat_desc = Ppat_var {txt="__x"}},
+        ({pexp_desc = Pexp_apply _} as e)) ->
       process_application e
+    | Pexp_fun (Nolabel, None, {ppat_desc = Ppat_var {txt="__x"}},
+        ({pexp_desc = Pexp_match
+          ({pexp_desc = Pexp_ident
+            ({txt = Lident "__x"} as id)
+           } as e_x, ls)
+         } as e)) ->
+      let e_ = {e_x with pexp_desc = Pexp_ident {id with txt = Lident "_"}} in
+      {e with pexp_desc = Pexp_match (e_, ls)}
     | _ ->
       x
 
@@ -4426,7 +4438,7 @@ let printer = object(self:'self)
   method parenthesized_expr ?break expr =
     let result = self#unparseExpr expr in
     match expr.pexp_attributes, expr.pexp_desc with
-    | [], (Pexp_tuple _ | Pexp_construct ({txt=Lident "()"}, None)) -> result
+    | [], (Pexp_tuple _ | Pexp_construct ({txt=Lident "()"}, None) | Pexp_ident {txt=Lident "_"}) -> result
     | _ -> makeList ~wrap:("(",")") ?break [self#unparseExpr expr]
 
   (* Expressions requiring parens, in most contexts such as separated by infix *)

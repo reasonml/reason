@@ -2687,6 +2687,15 @@ mark_position_exp
   | SWITCH optional_expr_extension simple_expr_no_constructor
     LBRACE match_cases(seq_expr) RBRACE
     { $2 (mkexp (Pexp_match ($3, $5))) }
+  | SWITCH as_loc(UNDERSCORE)
+    LBRACE match_cases(seq_expr) RBRACE
+    { (* switch _ { ... } *)
+      let loc = $2.loc in
+      let exp = mkexp (Pexp_ident (mkloc (Lident "__x") loc)) ~loc in 
+      let exp_match = mkexp (Pexp_match (exp, $4)) in
+      let pattern = mkpat (Ppat_var (mkloc "__x" loc)) ~loc in
+      mkexp (Pexp_fun (Nolabel, None, pattern, exp_match)) ~loc
+    }
   | TRY optional_expr_extension simple_expr_no_constructor
     LBRACE match_cases(seq_expr) RBRACE
     { $2 (mkexp (Pexp_try ($3, $5))) }
@@ -3086,19 +3095,19 @@ labeled_expr:
       ($2 $1.txt, $3 (mkloc (Longident.parse $1.txt) loc))
     }
   | TILDE as_loc(val_longident) EQUAL as_loc(UNDERSCORE)
-    { (* foo(~l =?) *)
+    { (* foo(~l =_) *)
       let loc = $4.loc in
       let exp = mkexp (Pexp_ident (mkloc (Lident "_") loc)) ~loc in
       (Labelled (String.concat "" (Longident.flatten $2.txt)), exp)
     }
   | as_loc(LABEL_WITH_EQUAL) as_loc(UNDERSCORE)
-    { (* foo(~l=?) *)
+    { (* foo(~l=_) *)
       let loc = $2.loc in
       let exp = mkexp (Pexp_ident (mkloc (Lident "_") loc)) ~loc in
       (Labelled $1.txt, exp)
     }
   | as_loc(UNDERSCORE)
-    { (* foo(?) *)
+    { (* foo(_) *)
       let loc = $1.loc in
       let exp = mkexp (Pexp_ident (mkloc (Lident "_") loc)) ~loc in
       (Nolabel, exp)
