@@ -1,5 +1,12 @@
 common_steps: &common_steps
   steps:
+   - run:
+       name: "Install npm"
+       command: |
+         curl -sL https://deb.nodesource.com/setup_9.x | sudo -E bash -
+         sudo apt-get install -y nodejs
+         mkdir -p ~/.npm-global
+         npm config set prefix $NPM_CONFIG_PREFIX
     - checkout
     - run:
         name: "Note OCAML_VERSION for cache"
@@ -49,6 +56,7 @@ jobs:
     environment:
       - TERM: dumb
       - OCAML_VERSION: "4.02.3"
+      - NPM_CONFIG_PREFIX: "~/.npm-global"
     <<: *common_steps
   4.03.0:
     docker:
@@ -56,6 +64,7 @@ jobs:
     environment:
       - TERM: dumb
       - OCAML_VERSION: "4.03.0"
+      - NPM_CONFIG_PREFIX: "~/.npm-global"
     <<: *common_steps
   4.04.0:
     docker:
@@ -63,6 +72,7 @@ jobs:
     environment:
       - TERM: dumb
       - OCAML_VERSION: "4.04.0"
+      - NPM_CONFIG_PREFIX: "~/.npm-global"
     <<: *common_steps
   4.06.0:
     docker:
@@ -70,6 +80,7 @@ jobs:
     environment:
       - TERM: dumb
       - OCAML_VERSION: "4.06.0"
+      - NPM_CONFIG_PREFIX: "~/.npm-global"
     <<: *common_steps
   esy_build:
     docker:
