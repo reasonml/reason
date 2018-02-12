@@ -488,7 +488,7 @@ let syntax_error_typ loc msg =
   if !Reason_config.recoverable then
     Typ.extension ~loc (Syntax_util.syntax_error_extension_node loc msg)
   else
-    syntax_error ()
+    raise (Syntaxerr.Error(Syntaxerr.Not_expecting (loc, msg)))
 
 let syntax_error_mod loc msg =
   if !Reason_config.recoverable then
@@ -920,9 +920,9 @@ let ensureTagsAreEqual startTag endTag loc =
       "Start tag <%s> does not match end tag </%s>" startTag endTag
 
 let prepare_immutable_labels labels =
-  let prepare (label, attr) =
+  let prepare label =
     if label.pld_mutable == Mutable then syntax_error();
-    (label.pld_name.txt, attr, label.pld_type)
+    (label.pld_name.txt, label.pld_attributes, label.pld_type)
   in
   List.map prepare labels
 
@@ -942,19 +942,6 @@ let only_core_type t startp endp =
   | Record_type _ ->
     let loc = mklocation startp endp in
     raiseSyntaxErrorFromSyntaxUtils loc "Record type is not allowed"
-
-let only_labels l =
-  let rec loop label_declarations result =
-    match label_declarations with
-    | hd :: tail ->
-      let (l, a) = hd in
-      if (List.length a > 0) then
-        syntax_error ()
-      else
-        loop tail (result @ [l] )
-    | [] -> result
-  in
-  loop l []
 
 let doc_loc = {txt = "ocaml.doc"; loc = Location.none}
 
@@ -3670,7 +3657,7 @@ type_other_kind:
   | EQUAL only_core_type(core_type) EQUAL DOTDOT
     { (Ptype_open, Public, Some $2) }
   | EQUAL only_core_type(core_type) EQUAL private_flag LBRACE label_declarations RBRACE
-    { (Ptype_record (only_labels $6), $4, Some $2) }
+    { (Ptype_record $6, $4, Some $2) }
 ;
 
 type_variables_with_variance_comma_list:
@@ -3776,11 +3763,11 @@ constructor_arguments:
 label_declaration:
   | item_attributes mutable_flag as_loc(LIDENT)
     { let loc = mklocation $symbolstartpos $endpos in
-      (Type.field $3 (mkct $3) ~mut:$2 ~loc, $1)
+      Type.field $3 (mkct $3) ~attrs:$1 ~mut:$2 ~loc
     }
   | item_attributes mutable_flag as_loc(LIDENT) COLON poly_type
     { let loc = mklocation $symbolstartpos $endpos in
-      (Type.field $3 $5 ~mut:$2 ~loc, $1)
+      Type.field $3 $5 ~attrs:$1 ~mut:$2 ~loc
     }
 ;
 
@@ -3792,7 +3779,7 @@ string_literal_lbl:
     {
       let loc = mklocation $symbolstartpos $endpos in
       let (s, _) = $2 in
-      (Type.field  (mkloc s loc) $4 ~loc, $1)
+      Type.field  (mkloc s loc) $4 ~attrs:$1 ~loc
     }
   ;
 
@@ -4168,7 +4155,7 @@ object_record_type:
   | LBRACE RBRACE
     { syntax_error () }
   | LBRACE label_declarations RBRACE
-    { Record_type (only_labels $2) }
+    { Record_type $2 }
   | LBRACE DOT string_literal_lbls RBRACE
     { (* `{. "foo": bar}` -> `Js.t({. foo: bar})` *)
       let loc = mklocation $symbolstartpos $endpos in

@@ -256,8 +256,7 @@ let showLets = () =>
  */
 [@moduleItemAttribute]
 class boxA ('a) (init: 'a) =
-  [@onReturnClassExpr]
-  {
+  [@onReturnClassExpr] {
     /**Floating comment text should be removed*/;
     /**Floating comment text should be removed*/;
     pub pr = init + init + init;
@@ -267,8 +266,7 @@ class boxA ('a) (init: 'a) =
  * In non-curried sugar, the class_expr still sticks to "the simple thing".
  */
 class boxB ('a) (init: 'a) =
-  [@stillOnTheReturnBecauseItsSimple]
-  {
+  [@stillOnTheReturnBecauseItsSimple] {
     pub pr = init + init + init;
   };
 
@@ -276,11 +274,9 @@ class boxB ('a) (init: 'a) =
  * parens. */
 [@onBoxC x; y]
 class boxC ('a) =
-  [@onEntireFunction]
-  (
+  [@onEntireFunction] (
     fun (init: 'a) =>
-      [@onReturnClassExpr]
-      {
+      [@onReturnClassExpr] {
         pub pr = init + init + init;
       }
   );
@@ -464,8 +460,10 @@ external foo : bool => bool = "";
 external readFileSync :
   (
     ~name: string,
-    [@bs.string]
-    [ | `utf8 | [@bs.as "ascii"] `my_name]
+    [@bs.string] [
+      | `utf8
+      | [@bs.as "ascii"] `my_name
+    ]
   ) =>
   string =
   "";
@@ -474,8 +472,7 @@ external readFileSync :
 external readFileSync2 :
   (
     ~name: string,
-    [@bs.string]
-    [
+    [@bs.string] [
       | [@bs.as "ascii"] `utf8
       | [@bs.as "ascii"] `my_name
     ]
@@ -513,8 +510,9 @@ external debounce :
   (
     int,
     [@bs.meth] (unit => unit),
-    [@bs.meth]
-    (unit => [@bs.meth] (unit => unit))
+    [@bs.meth] (
+      unit => [@bs.meth] (unit => unit)
+    )
   ) =>
   [@bs.meth] (unit => unit) =
   "";
@@ -570,3 +568,53 @@ let x = 5;
 /* Type */
 [@haha: option(int)]
 let x = 5;
+
+/* Record item attributes */
+type t_ = {
+  /** Comment attribute on record item */
+  x: int,
+};
+
+type tt = {
+  [@attr "on record field"]
+  x: int,
+};
+
+type ttt = {
+  [@attr "on record field"]
+  x: [@attr "on type itself"] int,
+};
+
+type tttt = {
+  /** Comment attribute on record item */
+  x: int,
+  [@regularAttribute "on next item"]
+  y: int,
+};
+
+type ttttt = {
+  [@attr "moved to first row"] [@attr]
+  x: int,
+};
+
+type tttttt = {
+  [@attr "testing with mutable field"]
+  mutable x: int,
+};
+
+let tmp =
+  /** On if statement */
+  (if (true) {true} else {false});
+
+type foo =
+  option(
+    [@foo
+      [
+        "how does this break",
+        "when long enough",
+      ]
+    ] (
+      [@bar] (int => int),
+      [@baz] (int => int),
+    ),
+  );

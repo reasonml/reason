@@ -1653,15 +1653,15 @@ let formatSimpleAttributed x y =
     ~break:IfNeed
     ~indent:0
     ~postSpace:true
-    [y; x;]
+    (List.concat [y; [x]])
 
-let formatAttributed x y =
-  makeList
-    ~break:IfNeed
-    ~inline:(true, true)
+let formatAttributed ?(labelBreak=`Auto) x y =
+  label
+    ~break:labelBreak
     ~indent:0
-    ~postSpace:true
-    [y; x]
+    ~space:true
+    (makeList ~inline:(true, true) ~postSpace:true y)
+    x
 
 (* For when the type constraint should be treated as a separate breakable line item itself
    not docked to some value/pattern label.
@@ -2242,7 +2242,17 @@ let printer = object(self:'self)
         end in
         if attrs <> [] then
          label ~space:true
-            (makeList ~postSpace:true [atom "|"; self#attributes attrs])
+            (makeList
+              ~postSpace:true
+              [
+                atom "|";
+                makeList
+                  ~postSpace:true
+                  ~break:Layout.IfNeed
+                  ~inline:(true, true)
+                  (self#attributes attrs)
+              ]
+            )
             lbl
         else
           makeList ~postSpace:true [atom "|"; lbl]
@@ -2437,6 +2447,10 @@ let printer = object(self:'self)
         else
           label ~space:true withMutable (self#core_type pld.pld_type)
       in
+      let recordRow = match pld.pld_attributes with
+      | [] -> recordRow
+      | _::_ as attrs ->
+        formatAttributed ~labelBreak:`Always_rec recordRow (self#attributes attrs) in
       source_map ~loc:pld.pld_loc recordRow
     in
     let rows = List.mapi recordRow lbls in
@@ -4811,7 +4825,7 @@ let printer = object(self:'self)
            ~postSpace:true
            ~break:IfNeed
            ~inline:(true, true)
-           [self#attributes attrs; row])
+           (List.concat [self#attributes attrs; [row]]))
     in
     let rows = List.map core_field_type l in
     let openness = match o with
@@ -5113,14 +5127,13 @@ let printer = object(self:'self)
      Reason. Thank you semicolons. *)
   method floating_attribute = self#item_attribute
 
-  method attributes l =
-	    makeList ~break:IfNeed ~postSpace:true (List.map self#attribute l)
+  method attributes l = List.map self#attribute l
 
   method attach_std_attrs l toThis =
     let l = extractStdAttrs l in
     match l with
       | [] -> toThis
-      | _::_ -> makeList ~postSpace:true [(self#attributes l); toThis]
+      | _::_ -> makeList ~postSpace:true (List.concat [self#attributes l; [toThis]])
 
   method attach_std_item_attrs ?(allowUncurry=true) ?extension l toThis =
     let l = (partitionAttributes ~allowUncurry l).stdAttrs in
