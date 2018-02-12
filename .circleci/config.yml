@@ -1,3 +1,12 @@
+common_cache_key: &common_cache_key
+  key: dependency-cache-{{ checksum "../ocaml-version" }}-{{ checksum ".circleci/config.yml" }}-{{ checksum "reason.opam" }}-{{ checksum "rebuild.opam" }}-{{ checksum "rtop.opam" }}
+
+esy_cache_key: &esy_cache_key
+  key: esy-cache-{{ checksum "esy.json" }}-{{ checksum "esy.lock" }}-{{ checksum ".circleci/config.yml" }}
+
+esy_post_build_cache_key: &esy_post_build_cache_key
+  key: esy-post-build-cache-{{ checksum "esy.json" }}-{{ checksum "esy.lock" }}-{{ checksum ".circleci/config.yml" }}
+
 common_steps: &common_steps
   steps:
     - run:
@@ -12,7 +21,7 @@ common_steps: &common_steps
         name: "Note OCAML_VERSION for cache"
         command: echo $OCAML_VERSION > ../ocaml-version
     - restore_cache:
-        key: dependency-cache-{{ checksum "../ocaml-version" }}-{{ checksum ".circleci/config.yml" }}-{{ checksum "reason.opam" }}-{{ checksum "rebuild.opam" }}-{{ checksum "rtop.opam" }}
+        <<: *common_cache_key
     - run:
         name: "Initialize opam"
         command: |
@@ -34,7 +43,7 @@ common_steps: &common_steps
           opam pin add -y reason .
           opam pin add -y rtop .
     - save_cache:
-        key: dependency-cache-{{ checksum "../ocaml-version" }}-{{ checksum ".circleci/config.yml" }}-{{ checksum "reason.opam" }}-{{ checksum "rebuild.opam" }}-{{ checksum "rtop.opam" }}
+        <<: *common_cache_key
         paths:
           - ~/.opam
           - ~/.npm-global
@@ -87,7 +96,6 @@ jobs:
       - image: ocaml/opam:debian-9_ocaml-4.06.0
     environment:
       - TERM: dumb
-      - OCAML_VERSION: "4.06.0"
       - NPM_CONFIG_PREFIX: "~/.npm-global"
     steps:
       - checkout
@@ -98,11 +106,10 @@ jobs:
             sudo apt-get install -y nodejs
             mkdir -p ~/.npm-global
             npm config set prefix $NPM_CONFIG_PREFIX
-      - run:
-          name: "Note OCAML_VERSION for cache"
-          command: echo $OCAML_VERSION > ../ocaml-version
       - restore_cache:
-          key: dependency-cache-{{ checksum "../ocaml-version" }}-{{ checksum ".circleci/config.yml" }}-{{ checksum "reason.opam" }}-{{ checksum "rebuild.opam" }}-{{ checksum "rtop.opam" }}
+          <<: *esy_cache_key
+      - restore_cache:
+          <<: *esy_post_build_cache_key
       - run:
           name: "Install esy"
           command: npm install -g esy@next
@@ -110,17 +117,11 @@ jobs:
           name: 'Clean'
           command: make clean-for-ci
       - run:
-          name: 'opam pin'
-          command: |
-            opam pin add -y reason .
-            opam pin add -y rtop .
-      - run:
           name: 'esy install'
           command: ~/.npm-global/bin/esy install
       - save_cache:
-          key: dependency-cache-{{ checksum "../ocaml-version" }}-{{ checksum ".circleci/config.yml" }}-{{ checksum "reason.opam" }}-{{ checksum "rebuild.opam" }}-{{ checksum "rtop.opam" }}
+          <<: *esy_cache_key
           paths:
-            - ~/.opam
             - ~/.npm-global
             - ~/.esy
       - run:
@@ -128,6 +129,13 @@ jobs:
           command: |
             ~/.npm-global/bin/esy build
             _build/install/default/bin/refmt --version
+      # Use both pre and post build caches so that we're more likely
+      # to have dependencies cached. `esy build` is more likely to fail,
+      # so this will make the push that fixes the build faster
+      - save_cache:
+          <<: *esy_post_build_cache_key
+          paths:
+            - ~/.esy
 
 workflows:
   version: 2
