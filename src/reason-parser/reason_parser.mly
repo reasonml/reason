@@ -2328,32 +2328,67 @@ mark_position_exp
     { unclosed_exp (with_txt $1 "{") (with_txt $3 "}") }
 ) {$1};
 
-seq_expr_no_seq:
+
+/**
+ * Rules that require semicolons before their occurence.
+ */
+seq_expr_no_seq_no_leading_token:
 | expr SEMI? { $1 }
-| opt_LET_MODULE as_loc(UIDENT) module_binding_body SEMI seq_expr
-  { mkexp (Pexp_letmodule($2, $3, $5)) }
-| LET? OPEN override_flag as_loc(mod_longident) SEMI seq_expr
-  { mkexp (Pexp_open($3, $4, $6)) }
-| str_exception_declaration SEMI seq_expr {
-   mkexp (Pexp_letexception ($1, $3)) }
-| let_bindings SEMI seq_expr
-  { expr_of_let_bindings $1 $3 }
-| let_bindings SEMI?
+| str_exception_declaration_with_attributes seq_expr_continuation {
+   mkexp (Pexp_letexception ($1, $2)) }
+| let_bindings_with_attributes seq_expr_continuation
+  { expr_of_let_bindings $1 $2 }
+| let_bindings_with_attributes SEMI?
   { let loc = mklocation $symbolstartpos $endpos in
     expr_of_let_bindings $1 @@ ghunit ~loc ()
   }
 ;
 
+/**
+ * Rules that do not have leading attributes and have a clear leading token
+ * which do not necessitate a SEMICOLON separator.
+ */
+seq_expr_no_seq_with_leading_token:
+| opt_LET_MODULE as_loc(UIDENT) module_binding_body seq_expr_continuation
+  { mkexp (Pexp_letmodule($2, $3, $4)) }
+| LET? OPEN override_flag as_loc(mod_longident) seq_expr_continuation
+  { mkexp (Pexp_open($3, $4, $5)) }
+| str_exception_declaration_no_attributes seq_expr_continuation {
+   mkexp (Pexp_letexception ($1, $2)) }
+| let_bindings_no_attributes seq_expr_continuation
+  { expr_of_let_bindings $1 $2 }
+| let_bindings_no_attributes SEMI?
+  { let loc = mklocation $symbolstartpos $endpos in
+    expr_of_let_bindings $1 @@ ghunit ~loc ()
+  }
+;
+
+/**
+ * Some rules act as if they have "built in semicolons" at their start.  To
+ * continue a sequence, you can either provide a SEMI followed by pretty much
+ * anything, or if you do not have a SEMI, you may only provide the limited
+ * subset of constructs that we know start with unambiguous tokens (like LET
+ * etc)
+ */
+seq_expr_continuation:
+  | SEMI seq_expr {$2}
+  | seq_expr_no_seq_with_leading_token {$1}
+;
+
 seq_expr:
 mark_position_exp
-  ( seq_expr_no_seq
+  ( seq_expr_no_seq_no_leading_token
     { $1 }
-  | item_extension_sugar mark_position_exp(seq_expr_no_seq)
-    { expression_extension $1 $2 }
-  | expr SEMI seq_expr
-    { mkexp (Pexp_sequence($1, $3)) }
-  | item_extension_sugar expr SEMI seq_expr
-    { mkexp (Pexp_sequence(expression_extension $1 $2, $4)) }
+  | seq_expr_no_seq_with_leading_token
+    { $1 }
+  | expr seq_expr_continuation
+    { mkexp (Pexp_sequence($1, $2)) }
+  | item_extension_sugar mark_position_exp(seq_expr_no_seq_no_leading_token)
+      { expression_extension $1 $2 }
+  | item_extension_sugar mark_position_exp(seq_expr_no_seq_with_leading_token)
+      { expression_extension $1 $2 }
+  | item_extension_sugar expr seq_expr_continuation
+    { mkexp (Pexp_sequence(expression_extension $1 $2, $3)) }
   ) { $1 }
 ;
 
@@ -3092,14 +3127,35 @@ labeled_expr:
   { mklb $3 $1 (mklocation $symbolstartpos $endpos) }
 ;
 
-let_bindings: let_binding and_let_binding* { addlbs $1 $2 };
 
-let_binding:
-  /* Form with item extension sugar */
-  item_attributes LET item_extension_sugar? rec_flag let_binding_body
-  { let loc = mklocation $symbolstartpos $endpos in
-    mklbs $3 $4 (mklb $5 $1 loc) loc }
+let_bindings_with_attributes: let_binding_with_attributes and_let_binding* { addlbs $1 $2 };
+
+let_bindings_no_attributes: let_binding_no_attributes and_let_binding* { addlbs $1 $2 };
+
+let_bindings:
+  | let_bindings_no_attributes {$1}
+  | let_bindings_with_attributes {$1}
 ;
+
+/**
+ * Special rule for let bindings without leading attributes which allow
+ * omitting the semicolon. (Attributes still accepted on the "AND").
+ */
+let_binding_no_attributes:
+  /* Form with item extension sugar */
+  LET item_extension_sugar? rec_flag let_binding_body
+  { let loc = mklocation $symbolstartpos $endpos in
+    mklbs $2 $3 (mklb $4 [] loc) loc }
+;
+
+let_binding_with_attributes:
+   /* Form with item extension sugar */
+  non_empty_item_attributes LET item_extension_sugar? rec_flag let_binding_body
+   { let loc = mklocation $symbolstartpos $endpos in
+    mklbs $3 $4 (mklb $5 $1 loc) loc }
+ ;
+
+
 
 let_binding_body:
   | with_patvar(val_ident) type_constraint EQUAL expr
@@ -3743,7 +3799,18 @@ bar_constructor_declaration:
 
 /* Why are there already attribute* on the extension_constructor_declaration? */
 str_exception_declaration:
-  item_attributes EXCEPTION
+  | str_exception_declaration_no_attributes {$1}
+  | str_exception_declaration_with_attributes {$1}
+;
+
+str_exception_declaration_no_attributes:
+  EXCEPTION
+    either(extension_constructor_declaration, extension_constructor_rebind)
+  { {$2 with pext_attributes = $2.pext_attributes} }
+;
+
+str_exception_declaration_with_attributes:
+  non_empty_item_attributes EXCEPTION
     either(extension_constructor_declaration, extension_constructor_rebind)
   { {$3 with pext_attributes = $3.pext_attributes @ $1} }
 ;
@@ -4341,6 +4408,8 @@ mod_longident:
   | mod_longident DOT UIDENT      { Ldot($1, $3) }
 ;
 
+opt_LET_MODULE: MODULE { () } | LET MODULE { () };
+
 mod_ext_longident:
   | UIDENT                        { Lident $1 }
   | mod_ext_longident DOT UIDENT  { Ldot($1, $3) }
@@ -4393,8 +4462,6 @@ toplevel_directive:
 ;
 
 /* Miscellaneous */
-
-opt_LET_MODULE: MODULE { () } | LET MODULE { () };
 
 %inline name_tag: BACKQUOTE ident { $2 };
 
@@ -4524,6 +4591,10 @@ attribute:
   | located_attributes { List.map (fun x -> x.txt) $1 }
 ;
 
+%inline non_empty_item_attributes:
+  | located_attributes { List.map (fun x -> x.txt) $1 }
+;
+
 item_extension_sugar:
   PERCENT attr_id { ([], $2) }
 ;
@@ -4642,5 +4713,6 @@ lseparated_nonempty_list_aux(sep, X):
   X sep lseparated_nonempty_list(sep, X) { $1 :: $3 };
 
 %inline parenthesized(X): delimited(LPAREN, X, RPAREN) { $1 };
+
 
 %%

@@ -12,13 +12,13 @@
     "@opam/result": "*",
     "@opam/ocaml-migrate-parsetree": "*",
     "@opam/ocamlbuild": "*",
+		"@esy-ocaml/merlin": "*",
     "@opam/jbuilder": "*"
   },
   "peerDependencies": {
     "ocaml": " >= 4.2.0  < 4.7.0"
   },
   "devDependencies": {
-    "@opam/merlin": "*",
     "ocaml": "~4.6.0"
   },
   "esy": {

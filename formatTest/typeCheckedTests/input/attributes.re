@@ -424,3 +424,22 @@ let x = 5;
 /* Type */
 [@haha: option(int)]
 let x = 5;
+
+
+
+[@attributeOnTopLevelExpr] (
+ 4 + 4
+);
+
+[@attributeOnOneNumber] 4 + [@attributeOnAnotherNumber] 4;
+
+
+let f = () => {
+  let tmp = 0;
+  [@attributeOnTopLevelExpr] (tmp + tmp);
+};
+
+let f = () => {
+  let tmp = 0;
+  [@attributeOnOneNumber] tmp + [@attributeOnOneNumber] tmp;
+};
