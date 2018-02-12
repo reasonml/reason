@@ -74,8 +74,10 @@ type foo = option([@foo] ((int, int) => int));
 /* tuple */
 type foo =
   option(
-    [@foo]
-    ([@bar] (int => int), [@baz] (int => int)),
+    [@foo] (
+      [@bar] (int => int),
+      [@baz] (int => int),
+    ),
   );
 
 type foo =
@@ -85,8 +87,7 @@ type foo =
 
 type foo =
   option(
-    [@foo]
-    (
+    [@foo] (
       [@bar] string,
       [@baz] (int => int),
       [@qux] string,

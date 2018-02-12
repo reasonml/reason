@@ -471,6 +471,9 @@ module OCaml_syntax = struct
       when !Location.input_name = "//toplevel//" ->
         maybe_skip_phrase lexbuf;
         raise err
+    (* Escape error is raised as a general catchall when a syntax_error() is
+       thrown in the parser.
+     *)
     | Parsing.Parse_error | Syntaxerr.Escape_error ->
         let loc = Location.curr lexbuf in
         if !Location.input_name = "//toplevel//"

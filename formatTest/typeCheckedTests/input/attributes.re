@@ -424,3 +424,55 @@ let x = 5;
 /* Type */
 [@haha: option(int)]
 let x = 5;
+
+/* Record item attributes */
+
+type t_ = {
+  /** Comment attribute on record item */
+  x: int
+};
+
+type tt = {
+  [@attr "on record field"]
+  x: int
+};
+
+type ttt = {
+  [@attr "on record field"]
+  x: [@attr "on type itself"] int
+};
+
+type tttt = {
+  /** Comment attribute on record item */
+  x: int,
+  [@regularAttribute "on next item"]
+  y: int
+};
+
+type ttttt = [@attr "moved to first row"] {
+  [@attr]
+  x: int
+};
+
+type tttttt = {
+  [@attr "testing with mutable field"]
+  mutable x: int
+};
+
+
+let tmp = {
+  /** On if statement */
+  if (true) {
+    true
+  } else {
+    false
+  };
+};
+
+type foo =
+   option(
+    [@foo ["how does this break", "when long enough"]] (
+      [@bar] (int => int),
+      [@baz] (int => int),
+    ),
+  );

@@ -37,3 +37,33 @@ external createClassInternalHack : (t('classSpec)) => reactClass =
 external createCompositeElementInternalHack :
   (reactClass, t({.. reasonProps : 'props}), array(reactElement)) => reactElement =
   "createElement";
+
+
+/* Record item attributes */
+
+type t_ = {
+  /** Comment attribute on record item */
+  x: int
+};
+
+type tt = {
+  [@attr "on record field"]
+  x: int
+};
+
+type ttt = {
+  [@attr "on record field"]
+  x: [@attr "on type itself"] int
+};
+
+type tttt = {
+  /** Comment attribute on record item */
+  x: int,
+  [@regularAttribute "on next item"]
+  y: int
+};
+
+type ttttt = [@attr "moved to first row"] {
+  [@attr]
+  x: int
+};
