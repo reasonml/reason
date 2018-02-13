@@ -96,7 +96,7 @@ Our lexer & parser use [Menhir](http://gallium.inria.fr/~fpottier/menhir/), a li
 
 - `src/reason-parser/reason_pprint_ast.ml`: the pretty-printer! This is the reverse of parsing: it takes in the AST (abstract syntax tree) and prints out the nicely formatted code text.
 
-- `src/reason-parser/reason_parser.messages.checked-in`: this is the huge table of mostly generated, sometimes hand-written, syntax error messages. When the parser ends up at an invalid parsing state (aka ends up with a syntax error), it'd refer to that file's content and see if that case has a specific error message assigned to it. For an example fix, see [this PR](https://github.com/facebook/reason/pull/1018) and the [follow-up](https://github.com/facebook/reason/pull/1033). To add a syntax error message see [the wiki page](https://github.com/facebook/reason/wiki/Add-a-Menhir-error-message).
+- `src/reason-parser/reason_parser.messages.checked-in`: this is the huge table of mostly generated, sometimes hand-written, syntax error messages. When the parser ends up at an invalid parsing state (aka ends up with a syntax error), it'd refer to that file's content and see if that case has a specific error message assigned to it. For an example fix, see [this PR](https://github.com/facebook/reason/pull/1018) and the [follow-up](https://github.com/facebook/reason/pull/1033). To add a syntax error message see the "Add a Menhir Error Message" section below.
   - When running `make build`, and a new `reason_parser.messages` file is generated, do a `mv reason_parser.messages reason_parser.messages.checked-in` to persist the updated messages.
 
 - `src/reason-parser/reason_oprint.ml`: the "outcome printer" used by Merlin, rtop and terminal, that prints the errors in Reason syntax. More info in the file itself.
@@ -107,7 +107,7 @@ Our lexer & parser use [Menhir](http://gallium.inria.fr/~fpottier/menhir/), a li
 
 - `ocamlmerlin_reason.ml`: produces the `ocamlmerlin-reason` binary, used in conjunction with [Merlin-extend](https://github.com/let-def/merlin-extend). This is an extension to [Merlin](https://github.com/ocaml/merlin), which picks up this binary from your environment to analyze Reason files when your editor calls Merlin.
 
-- `*.mllib`: related: see the [OCaml extensions list](https://github.com/facebook/reason/wiki/OCaml-Ecosystem-Extensions-List). These are generated file from `pkg/build.ml`, which describes the package we distribute. No need to worry about them.
+- `*.mllib`: related: see the [OCaml extensions list](https://reasonml.github.io/docs/en/faq.html#i-m-seeing-a-weird-cmi-cmx-cmj-cma-file-referenced-in-a-compiler-error-where-do-these-files-come-from-). These are generated file from `pkg/build.ml`, which describes the package we distribute. No need to worry about them.
 
 - `src/reason-parser/reason_config.ml`: global configuration that says whether our parser should run in "recoverable" mode. Merlin has a neat feature which lets it continue diagnosing e.g. type errors even when the file is syntactically invalid (at the expense of the accuracy of those type error reports' quality). Searching `reason_config` in our codebase will show you how this is used.
 
