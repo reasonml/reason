@@ -28,7 +28,7 @@ let unSomeFun =
   | None => 0;
 
 let unSome =
-  switch _ {
+  switch (_) {
   | Some(n) => n
   | None => 0
   };

@@ -4444,7 +4444,7 @@ let printer = object(self:'self)
   method parenthesized_expr ?break expr =
     let result = self#unparseExpr expr in
     match expr.pexp_attributes, expr.pexp_desc with
-    | [], (Pexp_tuple _ | Pexp_construct ({txt=Lident "()"}, None) | Pexp_ident {txt=Lident "_"}) -> result
+    | [], (Pexp_tuple _ | Pexp_construct ({txt=Lident "()"}, None)) -> result
     | _ -> makeList ~wrap:("(",")") ?break [self#unparseExpr expr]
 
   (* Expressions requiring parens, in most contexts such as separated by infix *)

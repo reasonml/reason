@@ -2703,15 +2703,16 @@ mark_position_exp
     { $2 (mkexp (Pexp_function $3)) }
   | SWITCH optional_expr_extension simple_expr_no_constructor
     LBRACE match_cases(seq_expr) RBRACE
-    { $2 (mkexp (Pexp_match ($3, $5))) }
-  | SWITCH as_loc(UNDERSCORE)
-    LBRACE match_cases(seq_expr) RBRACE
-    { (* switch _ { ... } *)
-      let loc = $2.loc in
-      let exp = mkexp (Pexp_ident (mkloc (Lident "__x") loc)) ~loc in 
-      let exp_match = mkexp (Pexp_match (exp, $4)) in
-      let pattern = mkpat (Ppat_var (mkloc "__x" loc)) ~loc in
-      mkexp (Pexp_fun (Nolabel, None, pattern, exp_match)) ~loc
+    { let exp_match = $2 (mkexp (Pexp_match ($3, $5))) in
+      match $3.pexp_desc with
+      | Pexp_ident {txt = Lident "_"} -> (* switch (_) {...} *)
+        let loc = $3.pexp_loc in
+        let exp = mkexp (Pexp_ident (mkloc (Lident "__x") loc)) ~loc in 
+        let exp_match = $2 (mkexp (Pexp_match (exp, $5))) in
+        let pattern = mkpat (Ppat_var (mkloc "__x" loc)) ~loc in
+        mkexp (Pexp_fun (Nolabel, None, pattern, exp_match)) ~loc
+      | _ ->
+        $2 (mkexp (Pexp_match ($3, $5)))
     }
   | TRY optional_expr_extension simple_expr_no_constructor
     LBRACE match_cases(seq_expr) RBRACE
@@ -2857,6 +2858,10 @@ parenthesized_expr:
     { mkexp (Pexp_variant ($1, None)) }
   | LPAREN expr_list RPAREN
     { may_tuple $startpos $endpos $2 }
+  | LPAREN as_loc(UNDERSCORE) RPAREN {
+      let loc = $2.loc in
+      mkexp (Pexp_ident (mkloc (Lident "_") loc)) ~loc
+    }
   | as_loc(LPAREN) expr_list as_loc(error)
     { unclosed_exp (with_txt $1 "(") (with_txt $3 ")") }
   | E as_loc(POSTFIXOP)
