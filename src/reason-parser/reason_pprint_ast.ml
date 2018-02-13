@@ -731,9 +731,6 @@ let is_single_unit_construct exprList =
     | _ -> false)
   | _ -> false
 
-type funcReturnStyle =
-  | ReturnValOnSameLine
-
 let detectTernary l = match l with
   | [{
       pc_lhs={ppat_desc=Ppat_construct ({txt=Lident "true"}, _)};
@@ -766,29 +763,6 @@ type funcApplicationLabelStyle =
   *)
   | WrapFinalListyItemIfFewerThan of int
 
-(*
-    space=2, indentWrappedPatternArgs=1, funcReturnStyle=ReturnValOnSameLine
-    ------------------------------------------------------------------------
-    (* When [ReturnValOnSameLine], [indentWrappedPatternArgs] has no effect! *)
-    let myFunc
-        (wrappedArgOne:int)
-        (wrappedArgTwo:int) => {
-      valOne: 10,
-      valTwo: 20
-    };
-
-    space=2, indentWrappedPatternArgs=2, funcReturnStyle=ReturnValOnSameLine
-    ------------------------------------------------------------------------
-    (* When [ReturnValOnSameLine], [indentWrappedPatternArgs] has no effect! *)
-    let myFunc
-        (wrappedArgOne:int)
-        (wrappedArgTwo:int) => {
-      valOne: 10,
-      valTwo: 20
-    };
-
-*)
-
 type formatSettings = {
   (* Whether or not to expect that the original parser that generated the AST
      would have annotated constructor argument tuples with explicit arity to
@@ -797,19 +771,12 @@ type formatSettings = {
   *)
   constructorTupleImplicitArity: bool;
   space: int;
-  (* Whether or not to begin a curried function's return expression immediately
-     after the [=>] without a newline.
-  *)
-  returnStyle: funcReturnStyle;
 
   (* For curried arguments in function *definitions* only: Number of [space]s
      to offset beyond the [let] keyword. Default 1.
   *)
   listsRecordsIndent: int;
 
-  (* When [funcReturnStyle] = [ReturnValOnSameLine],
-     [indentWrappedPatternArgs] is not adjustable - wrapped arguments will
-     always be aligned with the function name. *)
   indentWrappedPatternArgs: int;
 
   indentMatchCases: int;
@@ -885,7 +852,6 @@ type formatSettings = {
 let defaultSettings = {
   constructorTupleImplicitArity = false;
   space = 1;
-  returnStyle = ReturnValOnSameLine;
   listsRecordsIndent = 2;
   indentWrappedPatternArgs = 2;
   indentMatchCases = 2;
@@ -3695,8 +3661,8 @@ let printer = object(self:'self)
          returnedAppTerms =
     let allPatterns = bindingLabel::patternList in
     let partitioning = curriedFunctionFinalWrapping allPatterns in
-    let everythingButReturnVal = match settings.returnStyle with
-        (*
+    let everythingButReturnVal =
+      (*
          Because align_closing is set to false, you get:
 
          (Brackets[] inserted to show boundaries between open/close of pattern list)
@@ -3722,53 +3688,67 @@ let printer = object(self:'self)
          and still have the arrow stuck to the last pattern (which is usually what we
          want) (See modeTwo below).
       *)
-      | ReturnValOnSameLine -> (
-          match partitioning with
-            | None when sweet ->
-              makeList
-                ~pad:(false, true)
-                ~wrap:("", arrow)
-                ~indent:(settings.space * settings.indentWrappedPatternArgs)
-                ~postSpace:true
-                ~inline:(true, true)
-                ~break:IfNeed
-                allPatterns
-            | None ->
-                (* We want the binding label to break *with* the arguments. Again,
-                   there's no apparent way to add additional indenting for the
-                   args with this setting. *)
+      match partitioning with
+        | None when sweet ->
+          makeList
+            ~pad:(false, true)
+            ~wrap:("", arrow)
+            ~indent:(settings.space * settings.indentWrappedPatternArgs)
+            ~postSpace:true
+            ~inline:(true, true)
+            ~break:IfNeed
+            allPatterns
+        | None ->
+            (* We want the binding label to break *with* the arguments. Again,
+               there's no apparent way to add additional indenting for the
+               args with this setting. *)
 
-                (**
-                   Formats lambdas by treating the first pattern as the
-                   "bindingLabel" which is kind of strange in some cases (when
-                   you only have one arg that wraps)...
+            (**
+               Formats lambdas by treating the first pattern as the
+               "bindingLabel" which is kind of strange in some cases (when
+               you only have one arg that wraps)...
 
-                      echoTheEchoer (
-                        fun (
-                              a,
-                              p
-                            ) => (
+                  echoTheEchoer (
+                    fun (
                           a,
-                          b
-                        )
+                          p
+                        ) => (
+                      a,
+                      b
+                    )
 
-                   But it makes sense in others (where you have multiple args):
+               But it makes sense in others (where you have multiple args):
 
-                      echoTheEchoer (
-                        fun (
-                              a,
-                              p
-                            )
-                            mySecondArg
-                            myThirdArg => (
+                  echoTheEchoer (
+                    fun (
                           a,
-                          b
+                          p
                         )
+                        mySecondArg
+                        myThirdArg => (
+                      a,
+                      b
+                    )
 
-                   Try any other convention for wrapping that first arg and it
-                   won't look as balanced when adding multiple args.
+               Try any other convention for wrapping that first arg and it
+               won't look as balanced when adding multiple args.
 
-                *)
+            *)
+          makeList
+            ~pad:(true, true)
+            ~wrap:(prefixText, arrow)
+            ~indent:(settings.space * settings.indentWrappedPatternArgs)
+            ~postSpace:true
+            ~inline:(true, true)
+            ~break:IfNeed
+            allPatterns
+        | Some (attachedList, wrappedListy) ->
+            (* To get *only* the final argument to "break", while not
+               necessarily breaking the prior arguments, we dock everything
+               but the last item to a created label *)
+          label
+            ~space:true
+            (
               makeList
                 ~pad:(true, true)
                 ~wrap:(prefixText, arrow)
@@ -3776,25 +3756,9 @@ let printer = object(self:'self)
                 ~postSpace:true
                 ~inline:(true, true)
                 ~break:IfNeed
-                allPatterns
-            | Some (attachedList, wrappedListy) ->
-                (* To get *only* the final argument to "break", while not
-                   necessarily breaking the prior arguments, we dock everything
-                   but the last item to a created label *)
-              label
-                ~space:true
-                (
-                  makeList
-                    ~pad:(true, true)
-                    ~wrap:(prefixText, arrow)
-                    ~indent:(settings.space * settings.indentWrappedPatternArgs)
-                    ~postSpace:true
-                    ~inline:(true, true)
-                    ~break:IfNeed
-                    attachedList
-                )
-                wrappedListy
-        )
+                attachedList
+            )
+            wrappedListy
     in
 
     let everythingButAppTerms = match attachTo with
