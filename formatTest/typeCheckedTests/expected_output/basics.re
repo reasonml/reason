@@ -22,6 +22,18 @@ let l2 =
   |> List.map(incr(~v=_))
   |> List.length;
 
+let optParam = (~v=?, ()) => v == None ? 0 : 1;
+
+let l1 =
+  [Some(1), None, Some(2)]
+  |> List.map(optParam(~v=?_, ()))
+  |> List.length;
+
+let l2 =
+  [Some(1), None, Some(2)]
+  |> List.map(optParam(~v=?_, ()))
+  |> List.length;
+
 let unSomeFun =
   fun
   | Some(n) => n

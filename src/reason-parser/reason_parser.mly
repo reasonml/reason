@@ -3120,17 +3120,17 @@ labeled_expr:
       let loc = (mklocation $symbolstartpos $endpos) in
       ($2 $1.txt, $3 (mkloc (Longident.parse $1.txt) loc))
     }
-  | TILDE as_loc(val_longident) EQUAL as_loc(UNDERSCORE)
+  | TILDE as_loc(val_longident) EQUAL optional as_loc(UNDERSCORE)
     { (* foo(~l =_) *)
-      let loc = $4.loc in
+      let loc = $5.loc in
       let exp = mkexp (Pexp_ident (mkloc (Lident "_") loc)) ~loc in
-      (Labelled (String.concat "" (Longident.flatten $2.txt)), exp)
+      ($4 (String.concat "" (Longident.flatten $2.txt)), exp)
     }
-  | as_loc(LABEL_WITH_EQUAL) as_loc(UNDERSCORE)
+  | as_loc(LABEL_WITH_EQUAL) optional as_loc(UNDERSCORE)
     { (* foo(~l=_) *)
-      let loc = $2.loc in
+      let loc = $3.loc in
       let exp = mkexp (Pexp_ident (mkloc (Lident "_") loc)) ~loc in
-      (Labelled $1.txt, exp)
+      ($2 $1.txt, exp)
     }
   | as_loc(UNDERSCORE)
     { (* foo(_) *)
