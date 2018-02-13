@@ -3236,7 +3236,6 @@ let printer = object(self:'self)
 
   (*
    * Replace (__x) => foo(__x) with foo(_)
-   * And (__x) => switch __x { ... } with swich _ { ... } 
    *)
   method process_underscore_application x =
     let process_application expr =
@@ -3256,14 +3255,6 @@ let printer = object(self:'self)
     | Pexp_fun (Nolabel, None, {ppat_desc = Ppat_var {txt="__x"}},
         ({pexp_desc = Pexp_apply _} as e)) ->
       process_application e
-    | Pexp_fun (Nolabel, None, {ppat_desc = Ppat_var {txt="__x"}},
-        ({pexp_desc = Pexp_match
-          ({pexp_desc = Pexp_ident
-            ({txt = Lident "__x"} as id)
-           } as e_x, ls)
-         } as e)) ->
-      let e_ = {e_x with pexp_desc = Pexp_ident {id with txt = Lident "_"}} in
-      {e with pexp_desc = Pexp_match (e_, ls)}
     | Pexp_fun (l, eo, p, e) ->
        let e_processed = self#process_underscore_application e in
        if e == e_processed then
