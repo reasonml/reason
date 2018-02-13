@@ -47,7 +47,7 @@ external createCompositeElementInternalHack :
   "createElement";
 
 /* Record item attributes */
-type t = {
+type t_ = {
   /** Comment attribute on record item */
   x: int,
 };
