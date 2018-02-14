@@ -4831,7 +4831,7 @@ let printer = object(self:'self)
     in
     (* if an object has more than 2 rows, always break for readability *)
     let rows_layout = makeList
-        ~inline:(true, true) ~postSpace:true ~sep:(Sep ",") rows
+        ~inline:(true, true) ~postSpace:true ~sep:commaTrail rows
         ~break:(if List.length rows >= 2
                 then Layout.Always_rec
                 else Layout.IfNeed)
