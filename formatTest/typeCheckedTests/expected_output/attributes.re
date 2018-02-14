@@ -384,7 +384,7 @@ type classAttributesOnKeys = {
   /* The follow two are the same */
   [@bs.get null] key2: [@onType2] Js.t(int),
   [@bs.get null] key3: [@onType2] Js.t(int),
-  key4: Js.t([@justOnInt] int)
+  key4: Js.t([@justOnInt] int),
 };
 
 /* extensible variants */

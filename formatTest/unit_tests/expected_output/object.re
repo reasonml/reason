@@ -4,7 +4,7 @@ type t = {.};
 type t = {
   .
   u: int,
-  v: int
+  v: int,
 };
 
 type t = {.. u: int};
@@ -22,13 +22,13 @@ let five = 2 <..> 3;
 type closedObjSugar = {
   .
   "foo": bar,
-  "baz": int
+  "baz": int,
 };
 
 type openObjSugar = {
   ..
   "x": int,
-  "y": int
+  "y": int,
 };
 
 type x = Js.t({.});
@@ -39,11 +39,11 @@ type y = Js.t({..});
 type o = {
   .
   a: int,
-  b: int
+  b: int,
 };
 
 type o2 = {
   ..
   a: int,
-  b: int
+  b: int,
 };

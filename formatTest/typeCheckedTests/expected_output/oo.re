@@ -119,20 +119,20 @@ let bigger = 3 >> 2;
 type typeDefForClosedObj = {
   .
   x: int,
-  y: int
+  y: int,
 };
 
 type typeDefForOpenObj('a) =
   {
     ..
     x: int,
-    y: int
+    y: int,
   } as 'a;
 
 let anonClosedObject: {
   .
   x: int,
-  y: int
+  y: int,
 } = {
   pub x = 0;
   pub y = 0
@@ -150,7 +150,7 @@ let constrainedAndCoerced = (
     list({
       .
       x: int,
-      y: int
+      y: int,
     }) :>
     list({. x: int})
 );
@@ -174,7 +174,7 @@ let acceptsOpenAnonObjAsArg =
       o: {
         ..
         x: int,
-        y: int
+        y: int,
       },
     ) =>
   o#x + o#y;
@@ -184,7 +184,7 @@ let acceptsClosedAnonObjAsArg =
       o: {
         .
         x: int,
-        y: int
+        y: int,
       },
     ) =>
   o#x + o#y;
@@ -416,5 +416,5 @@ module Js = {
 /* supports trailing comma */
 type stream('a) = {
   .
-  "observer": ('a => unit) => unit
+  "observer": ('a => unit) => unit,
 };
