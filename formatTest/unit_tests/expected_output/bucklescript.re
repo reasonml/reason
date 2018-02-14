@@ -106,7 +106,7 @@ this#arrayInObject[count] = 1;
 type y = {
   .
   [@bs.set no_get] "height": int,
-  [@bs.set no_get] "width": int
+  [@bs.set no_get] "width": int,
 };
 
 type y = {
@@ -116,7 +116,7 @@ type y = {
     int => unit,
   [@foo barbaz]
   "widthThatIsASuperLongStringForceBreak":
-    int => unit
+    int => unit,
 };
 
 type y = {
@@ -126,5 +126,5 @@ type y = {
     (int, int, int, float, float, float) => unit,
   [@foo barbaz]
   "height":
-    (int, int, int, float, float, float) => unit
+    (int, int, int, float, float, float) => unit,
 };
