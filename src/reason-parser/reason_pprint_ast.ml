@@ -3214,7 +3214,38 @@ let printer = object(self:'self)
     | Simple itm -> ([itm], Some x.pexp_loc)
 
 
+  (*
+   * Replace (__x) => foo(__x) with foo(_)
+   *)
+  method process_underscore_application x =
+    let process_application expr =
+      let process_arg (l,e) = match e.pexp_desc with
+        | Pexp_ident ({ txt = Lident "__x"} as id) ->
+          let pexp_desc = Pexp_ident {id with txt = Lident "_"} in
+          (l, {e with pexp_desc})
+        | _ ->
+          (l,e) in
+      match expr.pexp_desc with
+      | Pexp_apply (e_fun, args) ->
+        let pexp_desc = Pexp_apply (e_fun, List.map process_arg args) in
+        {expr with pexp_desc}
+      | _ ->
+        expr in
+    match x.pexp_desc with
+    | Pexp_fun (Nolabel, None, {ppat_desc = Ppat_var {txt="__x"}},
+        ({pexp_desc = Pexp_apply _} as e)) ->
+      process_application e
+    | Pexp_fun (l, eo, p, e) ->
+       let e_processed = self#process_underscore_application e in
+       if e == e_processed then
+         x
+       else
+         {x with pexp_desc = Pexp_fun (l, eo, p, e_processed)}
+    | _ ->
+      x
+
   method unparseExprRecurse x =
+    let x = self#process_underscore_application x in
     (* If there are any attributes, render unary like `(~-) x [@ppx]`, and infix like `(+) x y [@attr]` *)
     let {arityAttrs; stdAttrs; jsxAttrs; uncurried} = partitionAttributes x.pexp_attributes in
     let () = if uncurried then Hashtbl.add uncurriedTable x.pexp_loc true in
@@ -3246,6 +3277,7 @@ let printer = object(self:'self)
     | None ->
     match x.pexp_desc with
     | Pexp_apply (e, ls) -> (
+      let ls = List.map (fun (l,expr) -> (l, self#process_underscore_application expr)) ls in
       match (self#sugar_set_expr_parts x) with
       (* Returns None if there's attributes - would render as regular function *)
       (* Format as if it were an infix function application with identifier "=" *)
@@ -3934,6 +3966,7 @@ let printer = object(self:'self)
          }
    *)
   method wrappedBinding prefixText ~arrow pattern patternAux expr =
+    let expr = self#process_underscore_application expr in
     let (argsList, return) = self#curriedPatternsAndReturnVal expr in
     let patternList = match patternAux with
       | [] -> pattern

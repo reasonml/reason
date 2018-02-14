@@ -271,11 +271,11 @@ let mkExplicitArityTuplePat ?(loc=dummy_loc ()) pat =
     ~attrs:(simple_ghost_text_attr ~loc "explicit_arity")
     pat
 
-let mkExplicitArityTupleExp ?(loc=dummy_loc ()) exp =
+let mkExplicitArityTupleExp ?(loc=dummy_loc ()) exp_desc =
   mkexp
     ~loc
     ~attrs:(simple_ghost_text_attr ~loc "explicit_arity")
-    exp
+    exp_desc
 
 let is_pattern_list_single_any = function
   | [{ppat_desc=Ppat_any; ppat_attributes=[]} as onlyItem] -> Some onlyItem
@@ -582,6 +582,32 @@ let mkcty_arrow ({Location.txt = (label, cod); loc}, uncurried) dom =
   let ct = mkcty ~loc (Pcty_arrow (label, cod, dom)) in
   {ct with pcty_attributes = (if uncurried then [uncurry_payload loc] else [])}
 
+(**
+  * process the occurrence of _ in the arguments of a function application
+  * replace _ with a new variable, currently __x, in the arguments
+  * return a wrapping function that wraps ((__x) => ...) around an expression
+  * e.g. foo(_, 3) becomes (__x) => foo(__x, 3)
+  *)
+let process_underscore_application args =
+  let exp_question = ref None in
+  let hidden_var = "__x" in
+  let check_arg ((lab, exp) as arg) = match exp.pexp_desc with
+    | Pexp_ident ({ txt = Lident "_"} as id) ->
+        let new_id = mkloc (Lident hidden_var) id.loc in
+        let new_exp = mkexp (Pexp_ident new_id) ~loc:exp.pexp_loc in
+        exp_question := Some new_exp;
+        (lab, new_exp)
+    | _ ->
+        arg in
+  let args = List.map check_arg args in
+  let wrap exp_apply = match !exp_question with
+    | Some {pexp_loc=loc} ->
+        let pattern = mkpat (Ppat_var (mkloc hidden_var loc)) ~loc in
+        mkexp (Pexp_fun (Nolabel, None, pattern, exp_apply)) ~loc
+    | None ->
+        exp_apply in
+  (args, wrap)
+
 let mkexp_app_rev startp endp (body, args) =
   let (args, uncurried) =
     begin match (List.rev args) with
@@ -603,8 +629,9 @@ let mkexp_app_rev startp endp (body, args) =
   end in
   let loc = mklocation startp endp in
   let attrs = if uncurried then [uncurry_payload loc] else [] in
+  let (args, wrap) = process_underscore_application args in
   if args = [] then { body with pexp_loc = loc } else
-    mkexp ~attrs ~loc (Pexp_apply (body, args))
+    wrap (mkexp ~attrs ~loc (Pexp_apply (body, args)))
 
 let mkmod_app mexp marg =
   mkmod ~loc:(mklocation mexp.pmod_loc.loc_start marg.pmod_loc.loc_end)
@@ -3023,12 +3050,11 @@ labeled_arguments:
 
 labeled_expr_constraint:
   | expr_optional_constraint { fun _punned -> $1 }
-  | type_constraint?
+  | type_constraint
     { fun punned ->
       let exp = mkexp (Pexp_ident punned) ~loc:punned.loc in
       match $1 with
-      | None -> exp
-      | Some typ ->
+      | typ ->
         let loc = mklocation punned.loc.loc_start $endpos in
         ghexp_constraint loc exp typ
     }
@@ -3066,6 +3092,24 @@ labeled_expr:
     {
       let loc = (mklocation $symbolstartpos $endpos) in
       ($2 $1.txt, $3 (mkloc (Longident.parse $1.txt) loc))
+    }
+  | TILDE as_loc(val_longident) EQUAL optional as_loc(UNDERSCORE)
+    { (* foo(~l =_) *)
+      let loc = $5.loc in
+      let exp = mkexp (Pexp_ident (mkloc (Lident "_") loc)) ~loc in
+      ($4 (String.concat "" (Longident.flatten $2.txt)), exp)
+    }
+  | as_loc(LABEL_WITH_EQUAL) optional as_loc(UNDERSCORE)
+    { (* foo(~l=_) *)
+      let loc = $3.loc in
+      let exp = mkexp (Pexp_ident (mkloc (Lident "_") loc)) ~loc in
+      ($2 $1.txt, exp)
+    }
+  | as_loc(UNDERSCORE)
+    { (* foo(_) *)
+      let loc = $1.loc in
+      let exp = mkexp (Pexp_ident (mkloc (Lident "_") loc)) ~loc in
+      (Nolabel, exp)
     }
 ;
 
