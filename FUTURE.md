@@ -1,3 +1,3 @@
-## 3.0.5
+## 3.0.7
 
-- Better error report when refmt is used programmatically (#1695)
+- To be determined!
