@@ -13,12 +13,18 @@ class virtual stack ('a) (init) = {
       Some(hd);
     | [] => None
     };
-  pub push = hd => v = [hd, ...v];
-  initializer (
-    print_string("initializing object")
-  );
-  pub explicitOverrideTest = a => a + 1;
-  pri explicitOverrideTest2 = a => a + 1;
+  pub push = hd => {
+    v = [hd, ...v];
+  };
+  initializer {
+    print_string("initializing object");
+  };
+  pub explicitOverrideTest = a => {
+    a + 1;
+  };
+  pri explicitOverrideTest2 = a => {
+    a + 1;
+  };
 };
 
 let tmp = {
@@ -49,10 +55,12 @@ class virtual stackWithAttributes ('a) (init) = {
       Some(hd);
     | [] => None
     };
-  pub push = hd => v = [hd, ...v];
-  initializer (
-    print_string("initializing object")
-  );
+  pub push = hd => {
+    v = [hd, ...v];
+  };
+  initializer {
+    print_string("initializing object");
+  };
 };
 
 class extendedStack ('a) (init) = {
@@ -66,9 +74,15 @@ class extendedStackAcknowledgeOverride
       (init) = {
   inherit (class stack('a))(init);
   val dummy = ();
-  pub implementMe = i => i + 1;
-  pub! explicitOverrideTest = a => a + 2;
-  pri! explicitOverrideTest2 = a => a + 2;
+  pub implementMe = i => {
+    i + 1;
+  };
+  pub! explicitOverrideTest = a => {
+    a + 2;
+  };
+  pri! explicitOverrideTest2 = a => {
+    a + 2;
+  };
 };
 
 let inst = (new extendedStack)([1, 2]);
@@ -134,8 +148,12 @@ let anonClosedObject: {
   x: int,
   y: int,
 } = {
-  pub x = 0;
-  pub y = 0
+  pub x = {
+    0;
+  };
+  pub y = {
+    0;
+  }
 };
 
 let onlyHasX = {pub x = 0};

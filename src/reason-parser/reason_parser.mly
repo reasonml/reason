@@ -254,6 +254,15 @@ let mkcf ?(loc=dummy_loc()) ?(ghost=false) d =
     let loc = set_loc_state ghost loc in
     Cf.mk ~loc d
 
+(* used for storing stylistic information in the AST *)
+(* As if you had written [@refmt "txt"] *)
+let simple_ghost_refmt_text_attr ?(loc=dummy_loc ()) txt =
+  let loc = set_loc_state true loc in
+  (
+    {txt="refmt"; loc},
+    PStr [{pstr_desc=Pstr_eval(mkexp ~loc (Pexp_constant(Pconst_string(txt, None))), []); pstr_loc=loc}]
+  )
+
 let simple_ghost_text_attr ?(loc=dummy_loc ()) txt =
   let loc = set_loc_state true loc in
   [({txt; loc}, PStr [])]
@@ -2314,8 +2323,17 @@ class_type_declaration_details:
  */
 braced_expr:
 mark_position_exp
-  ( LBRACE seq_expr RBRACE
-    { $2 }
+  ( LBRACE seq_expr RBRACE {
+    (* Among other expressions, a series of open statements without any
+     * let/letmodule/letexception/sequence does not actually need braces, although
+     * you may request them.  *)
+    if Reason_heuristics.astRequiresSequenceBraces $2 then $2
+    else {
+      (* Braces weren't required - interpret this as an explicit request for them *)
+      $2 with
+      pexp_attributes=(simple_ghost_refmt_text_attr "explicitBraces") :: $2.pexp_attributes
+    }
+  }
   | LBRACE as_loc(seq_expr) error
     { syntax_error_exp $2.loc "SyntaxError in block" }
   | LBRACE DOTDOTDOT expr_optional_constraint COMMA? RBRACE
@@ -2840,7 +2858,10 @@ parenthesized_expr:
   | E as_loc(POSTFIXOP)
     { mkexp(Pexp_apply(mkoperator $2, [Nolabel, $1])) }
   | as_loc(mod_longident) DOT LPAREN expr_list RPAREN
-    { mkexp(Pexp_open(Fresh, $1, may_tuple $startpos($3) $endpos($5) $4)) }
+    { mkexp
+        ~attrs:[simple_ghost_refmt_text_attr "inlineOpen"]
+        (Pexp_open(Fresh, $1, may_tuple $startpos($3) $endpos($5) $4))
+    }
   | mod_longident DOT as_loc(LPAREN) expr_list as_loc(error)
     { unclosed_exp (with_txt $3 "(") (with_txt $5 ")") }
   | E DOT as_loc(label_longident)
@@ -2848,8 +2869,9 @@ parenthesized_expr:
   | as_loc(mod_longident) DOT LBRACE RBRACE
     { let loc = mklocation $symbolstartpos $endpos in
       let pat = mkpat (Ppat_var (mkloc "this" loc)) in
-      mkexp(Pexp_open (Fresh, $1,
-                       mkexp(Pexp_object(Cstr.mk pat []))))
+      mkexp
+        ~attrs:[simple_ghost_refmt_text_attr "inlineOpen"]
+        (Pexp_open (Fresh, $1, mkexp(Pexp_object(Cstr.mk pat []))))
     }
   | E LBRACKET expr RBRACKET
     { let loc = mklocation $symbolstartpos $endpos in
@@ -2873,14 +2895,18 @@ parenthesized_expr:
     { let (exten, fields) = $4 in
       let loc = mklocation $symbolstartpos $endpos in
       let rec_exp = mkexp ~loc (Pexp_record (fields, exten)) in
-      mkexp(Pexp_open(Fresh, $1, rec_exp))
+      mkexp
+        ~attrs:[simple_ghost_refmt_text_attr "inlineOpen"]
+        (Pexp_open(Fresh, $1, rec_exp))
     }
   | mod_longident DOT as_loc(LBRACE) record_expr as_loc(error)
     { unclosed_exp (with_txt $3 "{") (with_txt $5 "}") }
   | as_loc(mod_longident) DOT LBRACKETBAR expr_list BARRBRACKET
     { let loc = mklocation $symbolstartpos $endpos in
       let rec_exp = Exp.mk ~loc ~attrs:[] (Pexp_array $4) in
-      mkexp(Pexp_open(Fresh, $1, rec_exp))
+      mkexp
+        ~attrs:[simple_ghost_refmt_text_attr "inlineOpen"]
+        (Pexp_open(Fresh, $1, rec_exp))
     }
   | mod_longident DOT as_loc(LBRACKETBAR) expr_list as_loc(error)
     { unclosed_exp (with_txt $3 "[|") (with_txt $5 "|]") }
@@ -2889,7 +2915,9 @@ parenthesized_expr:
       let loc = mklocation $startpos($4) $endpos($4) in
       let list_exp = make_real_exp (mktailexp_extension loc seq ext_opt) in
       let list_exp = { list_exp with pexp_loc = loc } in
-      mkexp (Pexp_open (Fresh, $1, list_exp))
+      mkexp
+        ~attrs:[simple_ghost_refmt_text_attr "inlineOpen"]
+        (Pexp_open (Fresh, $1, list_exp))
     }
   | as_loc(PREFIXOP) E %prec below_DOT_AND_SHARP
     { mkexp(Pexp_apply(mkoperator $1, [Nolabel, $2])) }
@@ -2906,7 +2934,9 @@ parenthesized_expr:
   | as_loc(mod_longident) DOT LBRACELESS field_expr_list COMMA? GREATERRBRACE
     { let loc = mklocation $symbolstartpos $endpos in
       let exp = Exp.mk ~loc ~attrs:[] (Pexp_override $4) in
-      mkexp (Pexp_open(Fresh, $1, exp))
+      mkexp
+        ~attrs:[simple_ghost_refmt_text_attr "inlineOpen"]
+        (Pexp_open(Fresh, $1, exp))
     }
   | mod_longident DOT as_loc(LBRACELESS) field_expr_list COMMA? as_loc(error)
     { unclosed_exp (with_txt $3 "{<") (with_txt $6 ">}") }
@@ -2916,9 +2946,11 @@ parenthesized_expr:
     { mkinfixop $1 (mkoperator $2) $3 }
   | as_loc(mod_longident) DOT LPAREN MODULE module_expr COLON package_type RPAREN
     { let loc = mklocation $symbolstartpos $endpos in
-      mkexp (Pexp_open(Fresh, $1,
-        mkexp ~loc (Pexp_constraint (mkexp ~ghost:true ~loc (Pexp_pack $5),
-                                     mktyp ~ghost:true ~loc (Ptyp_package $7)))))
+      mkexp
+        ~attrs:[simple_ghost_refmt_text_attr "inlineOpen"]
+        (Pexp_open(Fresh, $1,
+          mkexp ~loc (Pexp_constraint (mkexp ~ghost:true ~loc (Pexp_pack $5),
+                                       mktyp ~ghost:true ~loc (Ptyp_package $7)))))
     }
   | mod_longident DOT as_loc(LPAREN) MODULE module_expr COLON as_loc(error)
     { unclosed_exp (with_txt $3 "(") (with_txt $7 ")")}

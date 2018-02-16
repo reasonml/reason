@@ -1075,14 +1075,15 @@ let server = {
     body
     |> Cohttp_lwt_body.to_string
     >|= (
-      body =>
+      body => {
         Printf.sprintf(
           "okokok",
           uri,
           meth,
           headers,
           body,
-        )
+        );
+      }
     )
     >>= (
       body =>

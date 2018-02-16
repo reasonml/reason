@@ -28,25 +28,37 @@ let x = {
   | Some(x) => assert false
   | None => ()
   };
-  try%extend (raise(Not_found)) {
+  try%extend (
+    {
+      raise(Not_found);
+    }
+  ) {
   | Not_found => ()
   | Invalid_argument(msg) => prerr_endline(msg)
   };
 };
 
-let x = if%extend (true) {1} else {2};
+let x = {
+  if%extend (true) {1} else {2};
+};
 
-let x =
+let x = {
   switch%extend (None) {
   | Some(x) => assert false
   | None => ()
   };
+};
 
-let x =
-  try%extend (raise(Not_found)) {
+let x = {
+  try%extend (
+    {
+      raise(Not_found);
+    }
+  ) {
   | Not_found => ()
   | Invalid_argument(msg) => prerr_endline(msg)
   };
+};
 
 /* At structure level */
 try%extend () {
@@ -104,41 +116,50 @@ let x =
   | Some(1) => ();
 
 /* With two extensions, alone */
-let x = [%extend1
+let x = {
+  %extend1
   try%extend2 () {
   | _ => ()
-  }
-];
+  };
+};
 
-let x = [%extend1
+let x = {
+  %extend1
   switch%extend2 () {
   | _ => ()
-  }
-];
+  };
+};
 
-let x = [%extend1
-  if%extend2 (true) {1} else {2}
-];
+let x = {
+  %extend1
+  if%extend2 (true) {1} else {2};
+};
 
-let x = [%extend1
+let x = {
+  %extend1
   for%extend2 (i in 1 to 10) {
     ();
-  }
-];
+  };
+};
 
-let x = [%extend1
+let x = {
+  %extend1
   while%extend2 (false) {
     ();
-  }
-];
+  };
+};
 
-let x = [%extend1 fun%extend2 () => ()];
+let x = {
+  %extend1
+  fun%extend2 () => ();
+};
 
-let x = [%extend1
+let x = {
+  %extend1
   fun%extend2
   | None => ()
-  | Some(1) => ()
-];
+  | Some(1) => ();
+};
 
 /* With two extensions, first in sequence */
 let x = {
