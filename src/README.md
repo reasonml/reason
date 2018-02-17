@@ -27,6 +27,7 @@ eval $(opam config env)
 git clone https://github.com/facebook/reason.git
 cd reason
 opam pin add -y reason .
+opam pin add -y rtop .
 ```
 
 ### With esy
