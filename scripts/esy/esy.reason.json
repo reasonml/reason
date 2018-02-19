@@ -13,7 +13,6 @@
     "@opam/result": "*",
     "@opam/jbuilder": "*",
     "@opam/menhir": " >= 20170418.0.0  <= 20171013.0.0",
-    "@opam/utop": " >= 1.17.0",
     "@opam/merlin-extend": " >= 0.3.0",
     "@opam/ocaml-migrate-parsetree": "*"
   },
