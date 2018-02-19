@@ -189,9 +189,9 @@ class virtual
   ];
   pub virtual implementMe:
     (int, int) => (int, int);
-  initializer (
-    print_string("initializing object")
-  );
+  initializer {
+    print_string("initializing object");
+  };
 };
 
 class extendedStack

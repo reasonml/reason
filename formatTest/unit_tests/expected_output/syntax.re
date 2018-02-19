@@ -411,9 +411,13 @@ type hasA = {a: int};
 let a = 10;
 
 let returnsASequenceExpressionWithASingleIdentifier =
-    () => a;
+    () => {
+  a;
+};
 
-let thisReturnsA = () => a;
+let thisReturnsA = () => {
+  a;
+};
 
 let thisReturnsAAsWell = () => a;
 
@@ -1048,8 +1052,9 @@ let match = "match";
 let method = "method";
 
 let foo =
-    (x, ~x as bar, ~z, ~foo as bar, ~foo as z) =>
+    (x, ~x as bar, ~z, ~foo as bar, ~foo as z) => {
   bar + 2;
+};
 
 let zzz = myFunc(1, 2, [||]);
 
@@ -1201,17 +1206,17 @@ test(~desc=?[@attr] "my test", ~f=?[@attr] () => {
   x + y;
 });
 
-describe("App", () =>
-  test("math", () =>
-    Expect.expect(1 + 2) |> toBe(3)
-  )
-);
+describe("App", () => {
+  test("math", () => {
+    Expect.expect(1 + 2) |> toBe(3);
+  });
+});
 
-describe([@attr] "App", [@attr] () =>
-  test([@attr] "math", [@attr] () =>
-    Expect.expect(1 + 2) |> toBe(3)
-  )
-);
+describe([@attr] "App", [@attr] () => {
+  test([@attr] "math", [@attr] () => {
+    Expect.expect(1 + 2) |> toBe(3);
+  });
+});
 
 describe(~text="App", ~f=() =>
   test(~text="math", ~f=() =>

@@ -101,29 +101,32 @@ module Namespace = {
 };
 
 module Optional1 = {
-  let createElement = (~required, ~children, ()) =>
+  let createElement = (~required, ~children, ()) => {
     switch (required) {
     | Some(a) => {displayName: a}
     | None => {displayName: "nope"}
     };
+  };
 };
 
 module Optional2 = {
   let createElement =
-      (~optional=?, ~children, ()) =>
+      (~optional=?, ~children, ()) => {
     switch (optional) {
     | Some(a) => {displayName: a}
     | None => {displayName: "nope"}
     };
+  };
 };
 
 module DefaultArg = {
   let createElement =
-      (~default=Some("foo"), ~children, ()) =>
+      (~default=Some("foo"), ~children, ()) => {
     switch (default) {
     | Some(a) => {displayName: a}
     | None => {displayName: "nope"}
     };
+  };
 };
 
 module LotsOfArguments = {
@@ -174,8 +177,9 @@ let notReallyJSX = (~foo, ~bar, children) => {
   displayName: "test",
 };
 
-let fakeRender = (el: component) =>
+let fakeRender = (el: component) => {
   el.displayName;
+};
 
 /* end of setup */
 let (/><) = (a, b) => a + b;
@@ -465,7 +469,7 @@ let div = (~children) => 1;
 
 [@JSX] ((() => div)())(~children=[]);
 
-let myFun = () =>
+let myFun = () => {
   <>
     <Namespace.Foo
       intended=true
@@ -486,10 +490,13 @@ let myFun = () =>
       <Foo />
     </Namespace.Foo>
   </>;
+};
 
-let myFun = () => <> </>;
+let myFun = () => {
+  <> </>;
+};
 
-let myFun = () =>
+let myFun = () => {
   <>
     <Namespace.Foo
       intended=true
@@ -510,6 +517,7 @@ let myFun = () =>
       <Foo />
     </Namespace.Foo>
   </>;
+};
 
 /**
  * Children should wrap without forcing attributes to.

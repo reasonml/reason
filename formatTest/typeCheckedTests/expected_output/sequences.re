@@ -23,9 +23,17 @@ let twenty = 20;
  * printed in reduced form because sequences are a *parse* time construct.
  * To ensure these are parsed correctly, adding to an integer.
  */
-let result = 0 + twenty;
+let result =
+  0
+  + {
+    twenty;
+  };
 
-let result = 0 + twenty;
+let result =
+  0
+  + {
+    twenty;
+  };
 
 let result = 0 + twenty;
 
@@ -66,7 +74,9 @@ let cannotPunASingleFieldRecord = {
 let fourty =
   20 + cannotPunASingleFieldRecord.number;
 
-let thisIsASequenceNotPunedRecord = number;
+let thisIsASequenceNotPunedRecord = {
+  number;
+};
 
 let fourty = 20 + thisIsASequenceNotPunedRecord;
 

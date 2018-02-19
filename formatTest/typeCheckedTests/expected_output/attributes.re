@@ -120,7 +120,11 @@ let x = [@attrEverything] (true && false);
 /**
  * How attribute parsings respond to other syntactic constructs.
  */
-let add = a => [@onRet] a;
+let add = a =>
+  [@onRet]
+  {
+    a;
+  };
 
 let add = a => [@onRet] a;
 
@@ -382,8 +386,18 @@ type classAttributesOnKeys = {
   .
   [@bs.set] key1: string,
   /* The follow two are the same */
-  [@bs.get null] key2: [@onType2] Js.t(int),
-  [@bs.get null] key3: [@onType2] Js.t(int),
+  [@bs.get
+    {
+      null;
+    }
+  ]
+  key2: [@onType2] Js.t(int),
+  [@bs.get
+    {
+      null;
+    }
+  ]
+  key3: [@onType2] Js.t(int),
   key4: Js.t([@justOnInt] int),
 };
 
@@ -533,7 +547,13 @@ let res =
 
 let res =
   switch (x) {
-  | _ => [@attr] String.(Array.(concat))
+  | _ =>
+    [@attr]
+    {
+      open String;
+      open Array;
+      concat;
+    }
   };
 
 /* GADT */
@@ -601,10 +621,6 @@ type tttttt = {
   [@attr "testing with mutable field"]
   mutable x: int,
 };
-
-let tmp =
-  /** On if statement */
-  (if (true) {true} else {false});
 
 type foo =
   option(

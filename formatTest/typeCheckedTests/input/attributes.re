@@ -459,16 +459,6 @@ type tttttt = {
   mutable x: int
 };
 
-
-let tmp = {
-  /** On if statement */
-  if (true) {
-    true
-  } else {
-    false
-  };
-};
-
 type foo =
    option(
     [@foo ["how does this break", "when long enough"]] (

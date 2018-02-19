@@ -1,3 +1,4 @@
+
 let is_punned_labelled_expression e lbl =
   let open Ast_404.Parsetree in
   match e.pexp_desc with
@@ -75,3 +76,25 @@ let funAppCallbackExceedsWidth ~printWidth ~args ~funExpr () =
  * | X(y) =>
  *)
 let singleTokenPatternOmmitTrail txt = String.length txt < 4
+
+(* There may be other reasons why braces are rendered even if they weren't
+ * required. The user might have requested them! *)
+let rec astRequiresSequenceBraces expr =
+  let open Ast_404.Parsetree in
+  let open Ast_404.Asttypes in
+  match expr.pexp_desc with
+  | Pexp_let (rf, l, e) -> true
+  | Pexp_sequence _ -> true
+  | Pexp_letmodule (s, me, e) -> true
+  | Pexp_open (Fresh, lid, e) -> not (List.exists Reason_attrs.isRefmtInlineOpen expr.pexp_attributes)
+  | Pexp_open (Override, lid, e) -> true
+  | Pexp_letexception _ -> true
+  | _ -> false
+
+(* In the event they weren't required - did the user request braces *)
+let rec userRequestedSequenceBraces expr =
+  let open Ast_404.Parsetree in
+  let open Ast_404.Asttypes in
+  List.exists Reason_attrs.isRefmtExplicitBraces expr.pexp_attributes
+
+let requiresSequenceBracesBecauseUserRequested x = false
