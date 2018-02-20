@@ -125,7 +125,7 @@ let parenthesized_ident name =
 
 let value_ident ppf name =
   if parenthesized_ident name then
-    fprintf ppf "( %s )" name
+    fprintf ppf "( %s )" (Syntax_util.ml_to_reason_swap name)
   else
     pp_print_string ppf name
 
@@ -487,11 +487,17 @@ and print_object_fields ~quote_fields ppf =
 and print_row_field ppf (l, opt_amp, tyl) =
   let pr_of ppf =
     if opt_amp then fprintf ppf " &@ "
-    else if tyl <> [] then fprintf ppf " "
-    else fprintf ppf ""
-  in
-  fprintf ppf "@[<hv 2>`%s%t%a@]" l pr_of (print_typlist print_out_type " &")
-    tyl
+    else fprintf ppf "" in
+  let parens = match tyl with
+    | [ (Otyp_tuple _) ] -> false (* tuples already have parentheses *)
+    | [ _ ] -> true
+    | _ -> false in
+  fprintf ppf "@[<hv 2>`%s%t%s%a%s@]"
+    l
+    pr_of
+    (if parens then "(" else "")
+    (print_typlist print_out_type " &") tyl
+    (if parens then ")" else "")
 and print_typlist print_elem sep ppf =
   function
     [] -> ()
