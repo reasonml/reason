@@ -73,6 +73,8 @@ const main = async () => {
       return `Printing failure ${name}:\n\n${error}`
     }
 
+    // return `Result: ${result}`;
+    
     const {stdout, stderr, code} = await checkResult(result)
 
     if (code !== 0) {
