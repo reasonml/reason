@@ -132,7 +132,7 @@ open Ast_mapper
 
 *)
 
-let uncurry_payload loc = ({loc; txt = "bs"}, PStr [])
+let uncurry_payload ?(name="bs") loc = ({loc; txt = name}, PStr [])
 
 let dummy_loc () = {
   loc_start = Lexing.dummy_pos;
@@ -367,7 +367,7 @@ let mkexp_cons consloc args loc =
   mkexp ~loc (Pexp_construct(mkloc (Lident "::") consloc, Some args))
 
 let mkexp_constructor_unit ?(uncurried=false) consloc loc =
-  let attrs = if uncurried then [uncurry_payload loc] else [] in
+  let attrs = if uncurried then [uncurry_payload ~name:"uncurry" loc] else [] in
   mkexp ~attrs ~loc (Pexp_construct(mkloc (Lident "()") consloc, None))
 
 let ghexp_cons consloc args loc =
@@ -608,30 +608,96 @@ let process_underscore_application args =
         exp_apply in
   (args, wrap)
 
+(**
+  * Joins a 'body' and it's 'args' to form a Pexp_apply.
+  * Example:
+  * 'add' (body) and '[1, 2]' (args) become a Pexp_apply representing 'add(1, 2)'
+  *
+  * Note that `add(. 1, 2)(. 3, 4)` & `add(. 1, 2, . 3, 4)` both
+  * give `[[@uncurry] 1, 2, [@uncurry] 3, 4]]` as args.
+  * The dot is parsed as [@uncurry] to distinguish between specific
+  * uncurrying and [@bs]. They can appear in the same arg:
+  * `add(. [@bs] 1)` is a perfectly valid, the dot indicates uncurrying
+  * for the whole application of 'add' and [@bs] sits on the `1`.
+  * Due to the dot of uncurried application possibly appearing in any
+  * position of the args, we need to post-process the args and split
+  * all args in groups that are uncurried (or not).
+  * add(. 1, . 2) should be parsed as (add(. 1))(. 2)
+  * The args can be splitted here in [1] & [2], based on those groups
+  * we can recursively build the correct nested Pexp_apply here.
+  *  -> Pexp_apply (Pexp_apply (add, 1), 2)   (* simplified ast *)
+  *)
 let mkexp_app_rev startp endp (body, args) =
-  let (args, uncurried) =
-    begin match (List.rev args) with
-    (* lifts the uncurried attr to the "top" expression, if the first arg isn't a callback
-     * example:
-     * f(. a, b, c) -> [@bs] f(a, b, c)  (attr sits on the "f" expr)
-     * f((.) => 42, 1000) -> f([@bs] () => 42, 1000) (attr needs to stay on the callback) *)
-    | (Nolabel, ({pexp_attributes; pexp_desc} as e))::tl when
-          match pexp_desc with
-          | Pexp_fun _ -> false
-          | _ -> true
-      ->
-      let (new_attrs, uncurried) = match pexp_attributes with
-      | ({txt = "bs"}, PStr [])::tl -> (tl, true)
-      | attrs -> (attrs, false)
-      in
-      (((Nolabel, {e with pexp_attributes = new_attrs})::tl), uncurried)
-  | xs -> (xs, false)
-  end in
   let loc = mklocation startp endp in
-  let attrs = if uncurried then [uncurry_payload loc] else [] in
-  let (args, wrap) = process_underscore_application args in
-  if args = [] then { body with pexp_loc = loc } else
-    wrap (mkexp ~attrs ~loc (Pexp_apply (body, args)))
+  if args = [] then {body with pexp_loc = loc}
+  else
+  (*
+   * Post process the arguments and transform [@uncurry] into [@bs].
+   * Returns a tuple with a boolean (was it uncurried?) and
+   * the posible rewritten arg.
+   *)
+  let rec process_args acc es =
+    match es with
+    | (lbl, e)::es ->
+        let attrs = e.pexp_attributes in
+        let hasUncurryAttr = ref false in
+        let newAttrs = List.filter (function
+          | ({txt = "uncurry"}, PStr []) ->
+              hasUncurryAttr := true;
+              false
+          | _ -> true) attrs
+        in
+        let uncurried = !hasUncurryAttr in
+        let newArg = (lbl, { e with pexp_attributes = newAttrs }) in
+        process_args ((uncurried, newArg)::acc) es
+    | [] -> acc
+    in
+    (*
+     * Groups all uncurried args falling under the same Pexp_apply
+     * Example:
+     *    add(. 2, 3, . 4, 5) or add(. 2, 3)(. 4, 5)  (equivalent)
+     * This results in two groups: (true, [2, 3]) & (true, [4, 5])
+     * Both groups have 'true' as their first tuple element, because
+     * they are uncurried.
+     * add(2, 3, . 4) results in the groups (false, [2, 3]) & (true, [4])
+     *)
+    let rec group grp acc = function
+    | (uncurried, arg)::xs ->
+        let (_u, grp) = grp in
+        if uncurried = true then begin
+          group (true, [arg]) ((_u, (List.rev grp))::acc) xs
+        end else begin
+          group (_u, (arg::grp)) acc xs
+        end
+    | [] ->
+        let (_u, grp) = grp in
+        List.rev ((_u, (List.rev grp))::acc)
+    in
+    (*
+     * Recursively transforms all groups into a (possibly uncurried)
+     * Pexp_apply
+     *
+     * Example:
+     *   Given the groups (true, [2, 3]) & (true, [4, 5]) and body 'add',
+     *   we get the two nested Pexp_apply associated with
+     *   (add(. 2, 3))(. 4, 5)
+     *)
+    let rec make_appl body = function
+      | args::xs ->
+          let (uncurried, args) = args in
+          let expr = if args = [] then body
+          else
+            let (args, wrap) = process_underscore_application args in
+            let expr = mkexp (Pexp_apply (body, args)) in
+            let expr = if uncurried then {expr with pexp_attributes = [uncurry_payload loc]} else expr in
+            wrap expr
+          in
+            make_appl expr xs
+      | [] -> {body with pexp_loc = loc}
+    in
+    let processed_args = process_args [] args in
+    let groups = group (false, []) [] processed_args in
+    make_appl body groups
 
 let mkmod_app mexp marg =
   mkmod ~loc:(mklocation mexp.pmod_loc.loc_start marg.pmod_loc.loc_end)
@@ -3066,7 +3132,7 @@ labeled_expr_constraint:
     if uncurried then
       let (lbl, argExpr) = $2 in
       let loc = mklocation $startpos $endpos in
-      let up = uncurry_payload loc in
+      let up = uncurry_payload ~name:"uncurry" loc in
       (lbl, {argExpr with pexp_attributes = up::argExpr.pexp_attributes})
     else $2
   }

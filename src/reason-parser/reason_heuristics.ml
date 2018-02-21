@@ -75,3 +75,18 @@ let funAppCallbackExceedsWidth ~printWidth ~args ~funExpr () =
  * | X(y) =>
  *)
 let singleTokenPatternOmmitTrail txt = String.length txt < 4
+
+(* Indicates whether an expression can be printed with the uncurried
+ * dot notation. At the moment uncurried function application & definition
+ * only makes sense in the context of a Pexp_apply or Pexp_fun
+ *
+ * Examples:
+ * [@bs] add(2, 3); -> add(. 2, 3);   (* Pexp_apply *)
+ * setTimeout([@bs] () => Js.log("hola"), 1000);  (* Pexp_fun *)
+ *  -> setTimeout((.) => Js.log("hola"), 1000);
+ *)
+let bsExprCanBeUncurried expr =
+  match Ast_404.Parsetree.(expr.pexp_desc) with
+  | Pexp_fun _
+  | Pexp_apply _ -> true
+  | _ -> false
