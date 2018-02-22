@@ -688,7 +688,10 @@ let mkexp_app_rev startp endp (body, args) =
           let expr = if args = [] then body
           else
             let (args, wrap) = process_underscore_application args in
-            let expr = mkexp (Pexp_apply (body, args)) in
+            let args_loc = match args, List.rev args with
+              | ((_, s)::_), ((_, e)::_) -> mklocation s.pexp_loc.loc_start e.pexp_loc.loc_end
+              | _ -> assert false in
+            let expr = mkexp ~loc:args_loc (Pexp_apply (body, args)) in
             let expr = if uncurried then {expr with pexp_attributes = [uncurry_payload loc]} else expr in
             wrap expr
           in

@@ -157,3 +157,7 @@ let a = [@bs] foo ([@bs] foo(3));
 let a = foo(. foo(. 3));
 
 add(1, 2, . 3, 4);
+
+add(1, . 2, 3, 4);
+
+add(1, 2, 3, . 4);
