@@ -294,25 +294,23 @@ let rec partitionAttributes ?(allowUncurry=true) attrs : attributesPartition =
     | [] ->
         {arityAttrs=[]; docAttrs=[]; stdAttrs=[]; jsxAttrs=[]; uncurried = false}
     | (({txt = "bs"}, PStr []) as attr)::atTl ->
-        let partition = partitionAttributes atTl in
+        let partition = partitionAttributes ~allowUncurry atTl in
         if allowUncurry then
           {partition with uncurried = true}
-        else begin
-          {partition with stdAttrs=attr::partition.stdAttrs}
-        end
+        else {partition with stdAttrs=attr::partition.stdAttrs}
     | (({txt="JSX"; loc}, _) as jsx)::atTl ->
-        let partition = partitionAttributes atTl in
+        let partition = partitionAttributes ~allowUncurry atTl in
         {partition with jsxAttrs=jsx::partition.jsxAttrs}
     | (({txt="explicit_arity"; loc}, _) as arity_attr)::atTl
     | (({txt="implicit_arity"; loc}, _) as arity_attr)::atTl ->
-        let partition = partitionAttributes atTl in
+        let partition = partitionAttributes ~allowUncurry atTl in
         {partition with arityAttrs=arity_attr::partition.arityAttrs}
     (*| (({txt="ocaml.text"; loc}, _) as doc)::atTl
     | (({txt="ocaml.doc"; loc}, _) as doc)::atTl ->
         let partition = partitionAttributes atTl in
         {partition with docAttrs=doc::partition.docAttrs}*)
     | atHd::atTl ->
-        let partition = partitionAttributes atTl in
+        let partition = partitionAttributes ~allowUncurry atTl in
         {partition with stdAttrs=atHd::partition.stdAttrs}
 
 let extractStdAttrs attrs =
@@ -3143,7 +3141,8 @@ let printer = object(self:'self)
     match self#unparseExprRecurse x with
     | SpecificInfixPrecedence ({reducePrecedence; shiftPrecedence}, resolvedRule) ->
         self#unparseResolvedRule resolvedRule
-    | FunctionApplication itms -> formatAttachmentApplication applicationFinalWrapping None (itms, Some x.pexp_loc)
+    | FunctionApplication itms ->
+        formatAttachmentApplication applicationFinalWrapping None (itms, Some x.pexp_loc)
     | PotentiallyLowPrecedence itm -> itm
     | Simple itm -> itm
 
@@ -3247,7 +3246,10 @@ let printer = object(self:'self)
   method unparseExprRecurse x =
     let x = self#process_underscore_application x in
     (* If there are any attributes, render unary like `(~-) x [@ppx]`, and infix like `(+) x y [@attr]` *)
-    let {arityAttrs; stdAttrs; jsxAttrs; uncurried} = partitionAttributes x.pexp_attributes in
+
+    let {arityAttrs; stdAttrs; jsxAttrs; uncurried} =
+      partitionAttributes ~allowUncurry:(Reason_heuristics.bsExprCanBeUncurried x) x.pexp_attributes
+    in
     let () = if uncurried then Hashtbl.add uncurriedTable x.pexp_loc true in
     let x = {x with pexp_attributes = (arityAttrs @ stdAttrs @ jsxAttrs) } in
     (* If there's any attributes, recurse without them, then apply them to
@@ -6220,23 +6222,9 @@ let printer = object(self:'self)
 
 
   method label_x_expression_param (l, e) =
-    let (uncurried, e) =
-      let {uncurried; stdAttrs} = partitionAttributes e.pexp_attributes in
-      if uncurried then
-        (true, {e with pexp_attributes = stdAttrs})
-      else (false, e)
-    in
     let term = self#unparseConstraintExpr e in
     let param = match (l, e) with
-      (* image `setTimeout((.) => Js.log("hola"), 1000)` 
-       * the first arg is a Pexp_fun, with an attribute [@bs], which flows through this case. 
-       * We want the dot to be formatted inside of the arguments of the callback
-       * Without this pattern match, we would get `setTimeout(. () => Js.log("hola"), 1000)` *)
-      | Nolabel, {pexp_loc; pexp_desc = Pexp_fun _} when uncurried ->
-          Hashtbl.add uncurriedTable pexp_loc true;
-          self#unparseExpr e
-      | (Nolabel, _) ->
-        if uncurried then makeList ~postSpace:true [atom "."; term] else term
+      | (Nolabel, _) -> term
       | (Labelled lbl, _) when is_punned_labelled_expression e lbl ->
         makeList [atom namedArgSym; term]
       | (Optional lbl, _) when is_punned_labelled_expression e lbl ->

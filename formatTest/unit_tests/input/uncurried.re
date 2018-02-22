@@ -12,11 +12,27 @@ f(. a);
 
 f(. (1, 2));
 
+f([@bs] (1, 2));
+
+f(. [@bs] (1, 2));
+
 f(. (1, 2), (3, 4));
+
+f(. [@bs] (1, 2), [@bs] (3, 4));
+
+f(. [@bs] (1, 2), . [@bs] (3, 4));
 
 f(. "string");
 
+f(. "string", "2string");
+
+f(. "string", . "2string");
+
+f(. [@bs] "string", . [@bs] "2string");
+
 f(. 1);
+
+f(. [@bs] 1);
 
 f(. {a: "supersupersupersupersupersuperlong", b: "supersupersupersupersupersuperlong"});
 
@@ -108,11 +124,11 @@ type f = (int, . int) => unit;
 
 add(. 2);
 
-([@bs] add(. 2));
-
 add(. 2, . 3);
 
 ([@bs] add(2, [@bs] 3));
+
+add(. 2, 3, 4, . 5, 6, 7, . 8, 9, 10);
 
 type timerId;
 
@@ -121,3 +137,27 @@ type timerId;
 let id = setTimeout([@bs] (() => Js.log("hello")), 1000);
 
 let id = setTimeout(1000, [@bs] (() => Js.log("hello")));
+
+foo([@bs] {val a = 1});
+
+[@bs] foo([@bs] {val a = 1});
+
+foo(. [@bs] {val a = 1});
+
+foo([@attr1][@bs][@attr2] {val a = 1});
+
+add([@attr][@bs][@attr] 1);
+
+[@bs] add([@attr][@bs][@attr] 1);
+
+add(. [@attr][@bs][@attr] 1);
+
+let a = [@bs] foo ([@bs] foo(3));
+
+let a = foo(. foo(. 3));
+
+add(1, 2, . 3, 4);
+
+add(1, . 2, 3, 4);
+
+add(1, 2, 3, . 4);
