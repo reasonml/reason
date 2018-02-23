@@ -618,3 +618,17 @@ type foo =
       [@baz] (int => int),
     ),
   );
+
+module Callbacks = {
+  let cb = () => 1 + 1;
+};
+
+let test = {
+  let x = 1;
+  [@attr1]
+  {
+    open Callbacks;
+    let s = "hello" ++ "!";
+    [@attr2] Callbacks.("hello" ++ "!");
+  };
+};

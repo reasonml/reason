@@ -2415,8 +2415,10 @@ seq_expr_no_seq:
 | expr SEMI? { $1 }
 | opt_LET_MODULE as_loc(UIDENT) module_binding_body SEMI seq_expr
   { mkexp (Pexp_letmodule($2, $3, $5)) }
-| LET? OPEN override_flag as_loc(mod_longident) SEMI seq_expr
-  { mkexp (Pexp_open($3, $4, $6)) }
+| item_attributes LET? OPEN override_flag as_loc(mod_longident) SEMI seq_expr
+  { let exp = mkexp (Pexp_open($4, $5, $7)) in
+    { exp with pexp_attributes = $1 }
+  }
 | str_exception_declaration SEMI seq_expr {
    mkexp (Pexp_letexception ($1, $3)) }
 | let_bindings SEMI seq_expr
