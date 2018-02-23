@@ -123,9 +123,64 @@ let parenthesized_ident name =
         false
     | _ -> true)
 
+(* #if defined BS_NO_COMPILER_PATCH then *)
+let ml_to_reason_swap = Syntax_util.ml_to_reason_swap
+(* #else *)
+
+(* please keep this section in sync with Reason repo's Syntax_util file's
+  helpers of the same names *)
+
+(* let string_add_suffix x = x ^ "_" *)
+(* let string_drop_suffix x = String.sub x 0 (String.length x - 1) *)
+(** Check to see if the string `s` is made up of `keyword` and zero or more
+    trailing `_` characters. *)
+(* let potentially_conflicts_with ~keyword s = *)
+  (* let s_length = String.length s in *)
+  (* let keyword_length = String.length keyword in *)
+  (* It can't be a match if s is shorter than keyword *)
+  (* s_length >= keyword_length && ( *)
+    (* try *)
+      (* Ensure s starts with keyword... *)
+      (* for i = 0 to keyword_length - 1 do *)
+        (* if keyword.[i] <> s.[i] then raise Exit; *)
+      (* done; *)
+      (* ...and contains nothing else except trailing _ characters *)
+      (* for i = keyword_length to s_length - 1 do *)
+        (* if s.[i] <> '_' then raise Exit; *)
+      (* done; *)
+      (* If we've made it this far there's a potential conflict *)
+      (* true *)
+    (* with *)
+    (* | Exit -> false *)
+  (* ) *)
+(* let ml_to_reason_swap = function *)
+  (* | "not" -> "!" *)
+  (* | "!" -> "^" *)
+  (* | "^" -> "++" *)
+  (* | "==" -> "===" *)
+  (* | "=" -> "==" *)
+  (* ===\/ and !==\/ are not representable in OCaml but
+   * representable in Reason
+   *)
+  (* | "!==" -> "\\!==" *)
+  (* |  "===" -> "\\===" *)
+  (* | "<>" -> "!=" *)
+  (* | "!=" -> "!==" *)
+  (* | x when ( *)
+    (* potentially_conflicts_with ~keyword:"match_" x *)
+    (* || potentially_conflicts_with ~keyword:"method_" x *)
+    (* || potentially_conflicts_with ~keyword:"private_" x) -> string_drop_suffix x *)
+  (* | x when ( *)
+    (* potentially_conflicts_with ~keyword:"switch" x *)
+    (* || potentially_conflicts_with ~keyword:"pub" x *)
+    (* || potentially_conflicts_with ~keyword:"pri" x) -> string_add_suffix x *)
+  (* | everything_else -> everything_else *)
+
+(* #end *)
+
 let value_ident ppf name =
   if parenthesized_ident name then
-    fprintf ppf "( %s )" (Syntax_util.ml_to_reason_swap name)
+    fprintf ppf "( %s )" (ml_to_reason_swap name)
   else
     pp_print_string ppf name
 
@@ -307,7 +362,7 @@ and print_out_type_1 ~uncurried ppf =
       (* single argument should not be wrapped *)
       (* though uncurried type are always wrapped in parens. `. a => 1` isn't supported *)
       | (false, [(_, Otyp_tuple _)]) -> true
-      | (false, [("", typ) as arg]) -> false
+      | (false, [("", typ)]) -> false
       | (_, args) -> true
       in
 
