@@ -1,7 +1,7 @@
 ## 3.0.6 (soon to be released)
 
 - **New pipe sugar for function call argument in arbitrary position**: `foo |> map(_, addOne) |> filter(_, isEven)` (#1804).
-- **BuckleScript [@bs] uncurry sugar**: `[@bs] foo(bar, baz)` is now `foo(. bar, baz)`. Same for declaration (#1803).
+- **BuckleScript [@bs] uncurry sugar**: `[@bs] foo(bar, baz)` is now `foo(. bar, baz)`. Same for declaration (#1803, #1832).
 - **Trailing commas** for record, list, array, and everything else (#1775, #1821)!
 - Better comments interleaving (#1769, #1770, #1817)
 - Better JSX printing: `<Foo bar=<Baz />>`, `<div><span></span></div>` (#1745, #1762).
@@ -9,7 +9,7 @@
 - Better OCaml 4.06 support (#1709).
 - Extension points sugar: `let%foo a = 1` (#1703)!
 - Final expression in a function body now also has semicolon. Easier to add new expressions afterward now (#1693)!
-- Better editor printing (outcome printer) of Js.t object types and @bs types (#1688, #1784).
+- Better editor printing (outcome printer) of Js.t object types, @bs types, unary variants and infix operators (#1688, #1784, #1831).
 - Parser doesn't throw Location.Error anymore; easier exception handling when refmt is used programmatically (#1695).
 
 ## 3.0.4
