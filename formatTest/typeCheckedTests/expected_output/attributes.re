@@ -523,12 +523,10 @@ let res =
   switch (x) {
   | _ =>
     [@attr]
-    {
-      open String;
-      open Array;
-      concat;
-      index_from;
-    }
+    open String;
+    open Array;
+    concat;
+    index_from;
   };
 
 let res =
@@ -618,3 +616,15 @@ type foo =
       [@baz] (int => int),
     ),
   );
+
+module Callbacks = {
+  let cb = () => 1 + 1;
+};
+
+let test = {
+  let x = 1;
+  [@attr1]
+  open Callbacks;
+  let s = "hello" ++ "!";
+  [@attr2] Callbacks.("hello" ++ "!");
+};

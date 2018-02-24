@@ -4196,18 +4196,22 @@ let printer = object(self:'self)
          let bindingsLayout = self#bindings (rf, l) in
          let bindingsLoc = self#bindingsLocationRange l in
          (source_map ~loc:bindingsLoc bindingsLayout :: self#letList e)
-      | ([], Pexp_open (ovf, lid, e))
+      | (attrs, Pexp_open (ovf, lid, e))
           (* Add this when check to make sure these are handled as regular "simple expressions" *)
-          when not (self#isSeriesOfOpensFollowedByNonSequencyExpression expr) ->
+          when not (self#isSeriesOfOpensFollowedByNonSequencyExpression {expr with pexp_attributes = []}) ->
         let overrideStr = match ovf with | Override -> "!" | Fresh -> "" in
         let openLayout = label ~space:true
           (atom ("open" ^ overrideStr))
           (self#longident_loc lid)
         in
+        let attrsOnOpen =
+          makeList ~inline:(true, true) ~postSpace:true ~break:Always
+          ((self#attributes attrs)@[openLayout])
+        in
         (* Just like the bindings, have to synthesize a location since the
          * Pexp location is parsed (potentially) beginning with the open
          * brace {} in the let sequence. *)
-        (source_map ~loc:lid.loc openLayout :: self#letList e)
+        (source_map ~loc:lid.loc attrsOnOpen :: self#letList e)
       | ([], Pexp_letmodule (s, me, e)) ->
           let prefixText = "module" in
           let bindingName = atom ~loc:s.loc s.txt in
