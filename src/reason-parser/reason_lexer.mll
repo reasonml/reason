@@ -1006,12 +1006,39 @@ and skip_sharp_bang = parse
       end
     | x :: xs, _ -> queued_tokens := xs; load_triple lexbuf x
 
-  let init () =
+  let completion_ident_offset = ref min_int
+  let completion_ident_pos = ref Lexing.dummy_pos
+
+  let token lexbuf =
+    let before = lexbuf.Lexing.lex_curr_p.Lexing.pos_cnum in
+    let token = token lexbuf in
+    let after = lexbuf.Lexing.lex_start_p.Lexing.pos_cnum in
+    if !completion_ident_offset > min_int &&
+       before <= !completion_ident_offset &&
+       after >= !completion_ident_offset then (
+      match token with
+      | LIDENT _ | UIDENT _ when after = !completion_ident_offset -> token
+      | _ ->
+        queued_tokens := save_triple lexbuf token :: !queued_tokens;
+        completion_ident_offset := min_int;
+        load_triple lexbuf
+          (LIDENT "_", !completion_ident_pos, !completion_ident_pos)
+    ) else
+      token
+
+  let init ?insert_completion_ident () =
     is_in_string := false;
     last_comments := [];
     comment_start_loc := [];
     queued_tokens := [];
     queued_exn := None;
+    begin match insert_completion_ident with
+      | None ->
+        completion_ident_offset := min_int;
+      | Some pos ->
+        completion_ident_offset := pos.Lexing.pos_cnum;
+        completion_ident_pos := pos
+    end;
     match !preprocessor with
     | None -> ()
     | Some (init, _preprocess) -> init ()
