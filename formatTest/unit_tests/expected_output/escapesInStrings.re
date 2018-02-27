@@ -5,3 +5,5 @@
 let str = "@[.... some formatting ....@\n\n@.";
 
 let str = {abcd|@[.... some formatting ....@\n\010@.|abcd};
+
+let utf8_string = "😁";
