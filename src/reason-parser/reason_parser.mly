@@ -1166,7 +1166,7 @@ let doc_attr text loc =
 %token <string> SHARPOP
 %token SIG
 %token STAR
-%token <string * string option> STRING
+%token <string * string option * string option> STRING
 %token STRUCT
 %token THEN
 %token TILDE
@@ -2889,7 +2889,8 @@ parenthesized_expr:
  */
 %inline simple_expr_template(E):
   | as_loc(val_longident) { mkexp (Pexp_ident $1) }
-  | constant              { mkexp (Pexp_constant $1) }
+  | constant
+    { let attrs, cst = $1 in mkexp ~attrs (Pexp_constant cst) }
   | jsx                   { $1 }
   | simple_expr_direct_argument { $1 }
   | LBRACKETBAR expr_list BARRBRACKET
@@ -3390,7 +3391,7 @@ record_expr_with_string_keys:
     { (Some $2, $4) }
   | STRING COLON expr COMMA?
     { let loc = mklocation $symbolstartpos $endpos in
-      let (s, d) = $1 in
+      let (s, _, d) = $1 in
       let lident_lident_loc = mkloc (Lident s) loc in
       (None, [(lident_lident_loc, $3)])
     }
@@ -3406,14 +3407,14 @@ string_literal_exprs_maybe_punned:
 string_literal_expr_maybe_punned_with_comma:
   | STRING COMMA
   { let loc = mklocation $startpos $endpos in
-    let (s, d) = $1 in
+    let (s, _, d) = $1 in
     let lident_lident_loc = mkloc (Lident s) loc in
     let exp = mkexp (Pexp_ident lident_lident_loc) in
     (lident_lident_loc, exp)
   }
   | STRING COLON expr COMMA
   { let loc = mklocation $startpos $endpos in
-    let (s, d) = $1 in
+    let (s, _, d) = $1 in
     let lident_lident_loc = mkloc (Lident s) loc in
     let exp = $3 in
     (lident_lident_loc, exp)
@@ -3422,7 +3423,7 @@ string_literal_expr_maybe_punned_with_comma:
 string_literal_expr_maybe_punned:
   STRING preceded(COLON, expr)?
   { let loc = mklocation $startpos $endpos in
-    let (s, d) = $1 in
+    let (s, _, d) = $1 in
     let lident_lident_loc = mkloc (Lident s) loc in
     let exp = match $2 with
       | Some x -> x
@@ -3592,9 +3593,9 @@ mark_position_pat
   ( UNDERSCORE
     { mkpat (Ppat_any) }
   | signed_constant
-    { mkpat (Ppat_constant $1) }
+    { let attrs, cst = $1 in mkpat ~attrs (Ppat_constant cst) }
   | signed_constant DOTDOT signed_constant
-    { mkpat (Ppat_interval ($1, $3)) }
+    { mkpat (Ppat_interval (snd $1, snd $3)) }
   | as_loc(constr_longident)
     { mkpat (Ppat_construct ($1, None)) }
   | name_tag
@@ -3688,7 +3689,7 @@ lbl_pattern:
 
 /* Primitive declarations */
 
-primitive_declaration: nonempty_list(STRING { fst $1 }) { $1 };
+primitive_declaration: nonempty_list(STRING { let (s, _, _) = $1 in s }) {$1};
 
 /* Type declarations
 
@@ -3893,7 +3894,7 @@ string_literal_lbl:
   | item_attributes STRING COLON poly_type
     {
       let loc = mklocation $symbolstartpos $endpos in
-      let (s, _) = $2 in
+      let (s, _, _) = $2 in
       Type.field  (mkloc s loc) $4 ~attrs:$1 ~loc
     }
   ;
@@ -4333,18 +4334,27 @@ tag_field:
 /* Constants */
 
 constant:
-  | INT          { let (n, m) = $1 in Pconst_integer (n, m) }
-  | CHAR         { Pconst_char $1 }
-  | STRING       { let (s, d) = $1 in Pconst_string (s, d) }
-  | FLOAT        { let (f, m) = $1 in Pconst_float (f, m) }
+  | INT          { let (n, m) = $1 in ([], Pconst_integer (n, m)) }
+  | CHAR         { ([], Pconst_char $1) }
+  | FLOAT        { let (f, m) = $1 in ([], Pconst_float (f, m)) }
+  | STRING       {
+    let (s, raw, d) = $1 in
+    let attr = match raw with
+      | None -> []
+      | Some raw ->
+        let constant = Ast_helper.Exp.constant (Pconst_string (raw, None)) in
+        [Location.mknoloc "reason.raw_literal", PStr [mkstrexp constant []]]
+    in
+    (attr, Pconst_string (s, d))
+  }
 ;
 
 signed_constant:
   | constant     { $1 }
-  | MINUS INT    { let (n, m) = $2 in Pconst_integer("-" ^ n, m) }
-  | MINUS FLOAT  { let (f, m) = $2 in Pconst_float("-" ^ f, m) }
-  | PLUS INT     { let (n, m) = $2 in Pconst_integer (n, m) }
-  | PLUS FLOAT   { let (f, m) = $2 in Pconst_float(f, m) }
+  | MINUS INT    { let (n, m) = $2 in ([], Pconst_integer("-" ^ n, m)) }
+  | MINUS FLOAT  { let (f, m) = $2 in ([], Pconst_float("-" ^ f, m)) }
+  | PLUS INT     { let (n, m) = $2 in ([], Pconst_integer (n, m)) }
+  | PLUS FLOAT   { let (f, m) = $2 in ([], Pconst_float(f, m)) }
 ;
 
 /* Identifiers and long identifiers */
@@ -4484,7 +4494,7 @@ class_longident:
 toplevel_directive:
   SHARP ident embedded
           ( /* empty */   { Pdir_none }
-          | STRING        { Pdir_string (fst $1) }
+          | STRING        { let (s, _, _) = $1 in Pdir_string s }
           | INT           { let (n, m) = $1 in Pdir_int (n, m) }
           | val_longident { Pdir_ident $1 }
           | mod_longident { Pdir_ident $1 }
