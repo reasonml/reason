@@ -1757,7 +1757,7 @@ let constant ?(parens=true) ppf = function
   | Pconst_char i ->
     Format.fprintf ppf "%C"  i
   | Pconst_string (i, None) ->
-    Format.fprintf ppf "%S" i
+    Format.fprintf ppf "\"%s\"" (Syntax_util.escape_string i)
   | Pconst_string (i, Some delim) ->
     Format.fprintf ppf "{%s|%s|%s}" delim i delim
   | Pconst_integer (i, None) ->
