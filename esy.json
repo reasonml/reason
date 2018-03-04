@@ -1,7 +1,8 @@
 {
   "name": "reason-dev",
+  "notes": "This is just the dev package config. See ./scripts/esy/ for release package configs",
   "license": "MIT",
-  "version": "3.0.5",
+  "version": "3.1.0",
   "dependencies": {
     "@esy-ocaml/substs": "^0.0.1",
     "@esy-ocaml/esy-installer": "^0.0.0",
@@ -21,6 +22,14 @@
     "@opam/merlin": "*",
     "ocaml": "~4.6.0"
   },
+  "notes-ctd": [
+    "This is how you make an esy monorepo for development, but then release the monorepo as many individual packages:",
+    "1. Create a packageName-dev esy.json at the root and list the sum of all dependencies",
+    "2. Set the esy.build command to build a comma delimited list of the package names",
+    "3. Set the esy.install command to install each of those packages",
+    "4. Create separate esy.json files for each of those packages (see ./scripts/esy/)",
+    "5. Copy ./scripts/esy-prepublish.js in to your repo and change packages= to your set of packages."
+  ],
   "esy": {
     "build": [
       [ "jbuilder", "build", "-p", "rebuild,reason,rtop"]
