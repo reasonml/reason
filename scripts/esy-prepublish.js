@@ -100,7 +100,7 @@ try {
   for (var i = 0; i < packages.length; i++) {
     var package = packages[i];
     console.log('    cd ' + path.join(projectRoot, '_release', package, 'package'));
-    console.log('    npm publish');
+    console.log('    npm publish --access=public');
   }
 } finally {
   for (var fileName in backupFiles) {
