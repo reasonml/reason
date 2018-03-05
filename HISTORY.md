@@ -1,4 +1,4 @@
-## 3.0.6 (soon to be released)
+## 3.1.0 (soon to be released)
 
 - **New pipe sugar for function call argument in arbitrary position**: `foo |> map(_, addOne) |> filter(_, isEven)` (#1804).
 - **BuckleScript [@bs] uncurry sugar**: `[@bs] foo(bar, baz)` is now `foo(. bar, baz)`. Same for declaration (#1803, #1832).
@@ -6,6 +6,7 @@
 - Better comments interleaving (#1769, #1770, #1817)
 - Better JSX printing: `<Foo bar=<Baz />>`, `<div><span></span></div>` (#1745, #1762).
 - **switch** now mandates parentheses around the value. Non-breaking, as we currently support parentheses-less syntax but print parens (#1720, #1733).
+- Attributes on open expressions (#1833).
 - Better OCaml 4.06 support (#1709).
 - Extension points sugar: `let%foo a = 1` (#1703)!
 - Final expression in a function body now also has semicolon. Easier to add new expressions afterward now (#1693)!
