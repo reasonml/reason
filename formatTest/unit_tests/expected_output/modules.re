@@ -183,18 +183,14 @@ module MyFunctor = (M: HasTT) => {
    such a great idea].
    */
 module MyFunctorResult =
-  MyFunctor(
-    {
-      type tt = string;
-    },
-  );
+  MyFunctor({
+    type tt = string;
+  });
 
 module LookNoParensNeeded =
-  MyFunctor(
-    {
-      type tt = string;
-    },
-  );
+  MyFunctor({
+    type tt = string;
+  });
 
 module type SigResult = {let result: int;};
 
@@ -317,9 +313,7 @@ module CurriedNoSugarFunctorResultInline =
 module ResultFromNonSimpleFunctorArg =
   CurriedNoSugar(
     (
-      MakeAModule(
-        {},
-      )
+      MakeAModule({})
     ),
     BMod,
   );
@@ -486,15 +480,12 @@ Printf.printf(
  </div>;
  };
  */
-include
-  YourLib.CreateComponent(
-    {
-      type thing = blahblahblah;
-      type state = unit;
-      let getInitialState = (_) => ();
-      let myValue = {recordField: "hello"};
-    },
-  );
+include YourLib.CreateComponent({
+  type thing = blahblahblah;
+  type state = unit;
+  let getInitialState = (_) => ();
+  let myValue = {recordField: "hello"};
+});
 
 module type HasInt = {let x: int;};
 

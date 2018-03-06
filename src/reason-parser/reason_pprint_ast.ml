@@ -3622,16 +3622,42 @@ let printer = object(self:'self)
 
   (* Creates a list of simple module expressions corresponding to module
      expression or functor application. *)
-  method moduleExpressionToFormattedApplicationItems x =
-    let rec extract_apps args = function
-      | { pmod_desc = Pmod_apply (me1, me2) } ->
-        let arg = source_map ~loc:me2.pmod_loc (self#simple_module_expr me2) in
-        extract_apps (arg :: args) me1
-      | me ->
-        let head = source_map ~loc:me.pmod_loc (self#module_expr me) in
-        if args = [] then head else label head (makeTup args)
-    in
-    extract_apps [] x
+  method moduleExpressionToFormattedApplicationItems ?(prefix="") x =
+    match x with
+    (* are we formatting a functor application with a module structure as arg?
+     * YourLib.Make({
+     *   type t = int;
+     *   type s = string;
+     * });
+     *
+     * We should "hug" the parens here: ({ & }) should stick together.
+     *)
+    | { pmod_desc = Pmod_apply (
+            ({pmod_desc = Pmod_ident _} as m1),
+            ({pmod_desc = Pmod_structure _} as m2)
+         )
+      } ->
+        let modIdent = source_map ~loc:m1.pmod_loc (self#simple_module_expr m1) in
+        let name = if prefix <> "" then
+          makeList ~postSpace:true[atom prefix; modIdent]
+          else modIdent
+        in
+        let arg = source_map ~loc:m2.pmod_loc (self#simple_module_expr ~hug:true m2) in
+        label name arg
+    | _ ->
+      let rec extract_apps args = function
+        | { pmod_desc = Pmod_apply (me1, me2) } ->
+          let arg = source_map ~loc:me2.pmod_loc (self#simple_module_expr me2) in
+          extract_apps (arg :: args) me1
+        | me ->
+          let head = source_map ~loc:me.pmod_loc (self#module_expr me) in
+          if args = [] then head else label head (makeTup args)
+      in
+      let functor_application = extract_apps [] x in
+      if prefix <> "" then
+        makeList ~postSpace:true [atom prefix; functor_application]
+      else
+        functor_application
 
   (*
 
@@ -5856,7 +5882,7 @@ let printer = object(self:'self)
     in
     source_map ~loc:x.pmty_loc pmty
 
-  method simple_module_expr x = match x.pmod_desc with
+  method simple_module_expr ?(hug=false) x = match x.pmod_desc with
     | Pmod_unpack e ->
         formatPrecedence (makeList ~postSpace:true [atom "val"; self#unparseExpr e])
     | Pmod_ident li ->
@@ -5868,10 +5894,11 @@ let printer = object(self:'self)
             (self#module_type mt)
         )
     | Pmod_structure s ->
+        let wrap = if hug then ("({", "})") else  ("{", "}") in
         makeList
           ~break:Always_rec
           ~inline:(true, false)
-          ~wrap:("{", "}")
+          ~wrap
           ~newlinesAboveComments:0
           ~newlinesAboveItems:0
           ~newlinesAboveDocComments:1
@@ -6039,10 +6066,9 @@ let printer = object(self:'self)
             self#attach_std_item_attrs incl.pincl_attributes @@
             (* Kind of a hack *)
             let moduleExpr = incl.pincl_mod in
-            formatAttachmentApplication
-              applicationFinalWrapping
-              (Some (true, atom "include"))
-              ([self#moduleExpressionToFormattedApplicationItems moduleExpr], None)
+            self#moduleExpressionToFormattedApplicationItems
+              ~prefix:"include"
+              moduleExpr
 
         | Pstr_recmodule decls -> (* 3.07 *)
             let first xx =
