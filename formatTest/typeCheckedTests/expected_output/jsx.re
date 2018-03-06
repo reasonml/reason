@@ -280,7 +280,8 @@ let lotsOfArguments =
     argument3=3
     argument4=4
     argument5=5
-    argument6="test">
+    argument6="test"
+  >
     <Namespace.Foo />
   </LotsOfArguments>;
 
@@ -476,7 +477,8 @@ let myFun = () =>
       anotherOptional=200
     />
     <Namespace.Foo
-      intended=true anotherOptional=200>
+      intended=true anotherOptional=200
+    >
       <Foo />
       <Foo />
       <Foo />
@@ -500,7 +502,8 @@ let myFun = () =>
       anotherOptional=200
     />
     <Namespace.Foo
-      intended=true anotherOptional=200>
+      intended=true anotherOptional=200
+    >
       <Foo />
       <Foo />
       <Foo />
