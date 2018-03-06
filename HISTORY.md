@@ -1,4 +1,4 @@
-## 3.1.0 (soon to be released)
+## 3.1.0
 
 - **New pipe sugar for function call argument in arbitrary position**: `foo |> map(_, addOne) |> filter(_, isEven)` (#1804).
 - **BuckleScript [@bs] uncurry sugar**: `[@bs] foo(bar, baz)` is now `foo(. bar, baz)`. Same for declaration (#1803, #1832).
