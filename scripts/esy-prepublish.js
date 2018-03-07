@@ -20,7 +20,16 @@ const master =
   cp.spawnSync('git', ['rev-parse', '--verify', 'master']).stdout.toString();
 
 if (master !== head) {
-  console.log('ERROR: You are not on the master branch');
+  console.log('');
+  console.log('ERROR: You are not on your local master branch. You should generally keep a local');
+  console.log('master branch in sync with origin/master, and then publish from your local master');
+  console.log('branch without any local changes. This makes sure you publish what has been committed');
+  console.log('');
+  console.log('Make sure origin/master is at the commit you want to publish, then run this command');
+  console.log('to make your local master branch to point to origin/master:');
+  console.log('');
+  console.log('    git branch -f master origin/master');
+  console.log('');
   process.exit(1);
 }
 
@@ -100,7 +109,7 @@ try {
   for (var i = 0; i < packages.length; i++) {
     var package = packages[i];
     console.log('    cd ' + path.join(projectRoot, '_release', package, 'package'));
-    console.log('    npm publish');
+    console.log('    npm publish --access=public');
   }
 } finally {
   for (var fileName in backupFiles) {
