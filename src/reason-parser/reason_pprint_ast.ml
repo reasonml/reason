@@ -3601,13 +3601,14 @@ let printer = object(self:'self)
       let openTagAndAttrs =
         match reversedAttributes with
         | [] -> (atom ("<" ^ componentName ^ ">"))
-        | revAttrHd::revAttrTl ->
-          let finalAttrList = (List.rev (makeList ~break:Layout.Never [revAttrHd; atom ">"] :: revAttrTl)) in
-          let renderedAttrList = (makeList ~inline:(true, true) ~break:IfNeed ~pad:(false, false) ~preSpace:true finalAttrList) in
-          label
-            ~space:true
-            (atom ("<" ^ componentName))
-            renderedAttrList
+        | revAttrs ->
+          let renderedAttrList =
+            makeList ~inline:(true, true) ~break:IfNeed ~pad:(false, false) ~preSpace:true (List.rev revAttrs)
+          in
+          makeList ~inline:(true, true) ~break:IfNeed [
+            label ~space:true (atom ("<" ^ componentName)) renderedAttrList;
+            atom ">"
+          ]
       in
       label
         openTagAndAttrs

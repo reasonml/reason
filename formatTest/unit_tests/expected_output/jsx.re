@@ -182,7 +182,8 @@ let y = [
       anotherSuperLongOneCrazyLongThingHere
       text="Age"
     />
-  }>
+  }
+>
   child
 </Description>;
 
