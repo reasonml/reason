@@ -1836,7 +1836,7 @@ let isJSXComponent expr =
     | (Nolabel, _) :: rest -> false
     | _ :: rest -> hasSingleNonLabelledUnitAndIsAtTheEnd rest
     in
-    if List.length jsxAttrs > 0
+    if jsxAttrs != []
        && hasLabelledChildrenLiteral
        && hasSingleNonLabelledUnitAndIsAtTheEnd args
     then
