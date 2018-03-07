@@ -50,7 +50,7 @@ ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 SUBSTS:=$(ROOT_DIR)/pkg/substs
 
 # For publishing esy releases to npm
-esy-prepublish: build clean-tests
+esy-prepublish: build clean-tests pre_release
 	node ./scripts/esy-prepublish.js
 
 # For OPAM
