@@ -485,3 +485,16 @@ let location_contains loc1 loc2 =
   loc1.loc_start.Lexing.pos_cnum <= loc2.loc_start.Lexing.pos_cnum &&
   loc1.loc_end.Lexing.pos_cnum >= loc2.loc_end.Lexing.pos_cnum
 
+let escape_string str =
+  let buf = Buffer.create (String.length str) in
+  String.iter (fun c ->
+      match c with
+      | '\t' -> Buffer.add_string buf "\\t"
+      | '\r' -> Buffer.add_string buf "\\r"
+      | '\n' -> Buffer.add_string buf "\\n"
+      | '\\' -> Buffer.add_string buf "\\\\"
+      | '"'  -> Buffer.add_string buf "\\\""
+      | c when c < ' ' -> Buffer.add_string buf (Char.escaped c)
+      | c -> Buffer.add_char buf c
+    ) str;
+  Buffer.contents buf

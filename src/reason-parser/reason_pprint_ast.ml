@@ -285,6 +285,7 @@ type attributesPartition = {
   docAttrs : attributes;
   stdAttrs : attributes;
   jsxAttrs : attributes;
+  literalAttrs : attributes;
   uncurried : bool
 }
 
@@ -292,7 +293,7 @@ type attributesPartition = {
 let rec partitionAttributes ?(allowUncurry=true) attrs : attributesPartition =
   match attrs with
     | [] ->
-        {arityAttrs=[]; docAttrs=[]; stdAttrs=[]; jsxAttrs=[]; uncurried = false}
+      {arityAttrs=[]; docAttrs=[]; stdAttrs=[]; jsxAttrs=[]; literalAttrs=[]; uncurried = false}
     | (({txt = "bs"}, PStr []) as attr)::atTl ->
         let partition = partitionAttributes ~allowUncurry atTl in
         if allowUncurry then
@@ -309,12 +310,26 @@ let rec partitionAttributes ?(allowUncurry=true) attrs : attributesPartition =
     | (({txt="ocaml.doc"; loc}, _) as doc)::atTl ->
         let partition = partitionAttributes atTl in
         {partition with docAttrs=doc::partition.docAttrs}*)
-    | atHd::atTl ->
+    | (({txt="reason.raw_literal"; _}, _) as attr) :: atTl ->
+        let partition = partitionAttributes ~allowUncurry atTl in
+        {partition with literalAttrs=attr::partition.literalAttrs}
+    | atHd :: atTl ->
         let partition = partitionAttributes ~allowUncurry atTl in
         {partition with stdAttrs=atHd::partition.stdAttrs}
 
 let extractStdAttrs attrs =
   (partitionAttributes attrs).stdAttrs
+
+let extract_raw_literal attrs =
+  let rec loop acc = function
+    | ({txt="reason.raw_literal"; loc},
+       PStr [{pstr_desc = Pstr_eval({pexp_desc = Pexp_constant(Pconst_string(text, None)); _}, _); _}])
+      :: rest ->
+      (Some text, List.rev_append acc rest)
+    | [] -> (None, List.rev acc)
+    | attr :: rest -> loop (attr :: acc) rest
+  in
+  loop [] attrs
 
 let rec sequentialIfBlocks x =
   match x with
@@ -1753,11 +1768,16 @@ let tyvar ppf str =
  * e.g. Some((-1)) should be printed as Some(-1)
  * In `1 + (-1)` -1 should be wrapped in parens for readability
  *)
-let constant ?(parens=true) ppf = function
+let constant ?raw_literal ?(parens=true) ppf = function
   | Pconst_char i ->
     Format.fprintf ppf "%C"  i
   | Pconst_string (i, None) ->
-    Format.fprintf ppf "%S" i
+    begin match raw_literal with
+      | Some text ->
+        Format.fprintf ppf "\"%s\"" text
+      | None ->
+        Format.fprintf ppf "\"%s\"" (Syntax_util.escape_string i)
+    end
   | Pconst_string (i, Some delim) ->
     Format.fprintf ppf "{%s|%s|%s}" delim i delim
   | Pconst_integer (i, None) ->
@@ -2019,7 +2039,9 @@ let printer = object(self:'self)
   (* TODO: Fail if observing applicative functors for this form. *)
   method longident_loc (x:Longident.t Location.loc) =
     source_map ~loc:x.loc (self#longident x.txt)
-  method constant ?(parens=true) = wrap (constant ~parens)
+
+  method constant ?raw_literal ?(parens=true) =
+    wrap (constant ?raw_literal ~parens)
 
   method constant_string = wrap constant_string
   method tyvar = wrap tyvar
@@ -2864,8 +2886,11 @@ let printer = object(self:'self)
              self#patternRecord l closed
           | Ppat_tuple l ->
              self#patternTuple l
-          | Ppat_constant c -> (self#constant c)
-          | Ppat_interval (c1, c2) -> makeList [self#constant c1; atom ".."; self#constant c2]
+          | Ppat_constant c ->
+            let raw_literal, _ = extract_raw_literal x.ppat_attributes in
+            (self#constant ?raw_literal c)
+          | Ppat_interval (c1, c2) ->
+            makeList [self#constant c1; atom ".."; self#constant c2]
           | Ppat_variant (l, None) -> makeList[atom "`"; atom l]
           | Ppat_constraint (p, ct) ->
               formatPrecedence (formatTypeConstraint (self#pattern p) (self#core_type ct))
@@ -3174,7 +3199,10 @@ let printer = object(self:'self)
          * pass through this case. In this context they don't need to be wrapped in extra parens
          * Some((-1)) should be printed as Some(-1). This is in contrast with
          * 1 + (-1) where we print the parens for readability. *)
-          let constant = self#constant ~parens:ensureExpr c in
+          let raw_literal, pexp_attributes =
+            extract_raw_literal pexp_attributes
+          in
+          let constant = self#constant ?raw_literal ~parens:ensureExpr c in
           begin match pexp_attributes with
           | [] -> constant
           | attrs ->
@@ -3247,11 +3275,11 @@ let printer = object(self:'self)
     let x = self#process_underscore_application x in
     (* If there are any attributes, render unary like `(~-) x [@ppx]`, and infix like `(+) x y [@attr]` *)
 
-    let {arityAttrs; stdAttrs; jsxAttrs; uncurried} =
+    let {arityAttrs; stdAttrs; jsxAttrs; literalAttrs; uncurried} =
       partitionAttributes ~allowUncurry:(Reason_heuristics.bsExprCanBeUncurried x) x.pexp_attributes
     in
     let () = if uncurried then Hashtbl.add uncurriedTable x.pexp_loc true in
-    let x = {x with pexp_attributes = (arityAttrs @ stdAttrs @ jsxAttrs) } in
+    let x = {x with pexp_attributes = (literalAttrs @ arityAttrs @ stdAttrs @ jsxAttrs) } in
     (* If there's any attributes, recurse without them, then apply them to
        the ends of functions, or simplify infix printings then append. *)
     if stdAttrs <> [] then
@@ -4975,7 +5003,9 @@ let printer = object(self:'self)
             Some (ensureSingleTokenSticksToLabel (self#longident_loc li))
         | Pexp_constant c ->
             (* Constants shouldn't break when to the right of a label *)
-            Some (ensureSingleTokenSticksToLabel (self#constant c))
+          let raw_literal, _ = extract_raw_literal x.pexp_attributes in
+            Some (ensureSingleTokenSticksToLabel
+                    (self#constant ?raw_literal c))
         | Pexp_pack me ->
           Some (
             makeList
@@ -5075,8 +5105,9 @@ let printer = object(self:'self)
 
   method formatChildren children processedRev =
     match children with
-    | {pexp_desc = Pexp_constant constant} :: remaining ->
-      self#formatChildren remaining (self#constant constant :: processedRev)
+    | {pexp_desc = Pexp_constant constant} as x :: remaining ->
+      let raw_literal, _ = extract_raw_literal x.pexp_attributes in
+      self#formatChildren remaining (self#constant ?raw_literal constant :: processedRev)
     | {pexp_desc = Pexp_construct ({txt = Lident "::"}, Some {pexp_desc = Pexp_tuple children} )} :: remaining ->
       self#formatChildren (remaining @ children) processedRev
     | {pexp_desc = Pexp_apply(expr, l); pexp_attributes} :: remaining ->

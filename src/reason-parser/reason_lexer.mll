@@ -156,9 +156,11 @@ let keyword_table =
 (* To buffer string literals *)
 
 let string_buffer = Buffer.create 256
+let raw_buffer = Buffer.create 256
 
 let reset_string_buffer () =
-  Buffer.reset string_buffer
+  Buffer.reset string_buffer;
+  Buffer.reset raw_buffer
 
 let store_string_char c =
   Buffer.add_char string_buffer c
@@ -166,13 +168,19 @@ let store_string_char c =
 let store_string s =
   Buffer.add_string string_buffer s
 
-let store_lexeme lexbuf =
-  store_string (Lexing.lexeme lexbuf)
+let store_lexeme buffer lexbuf =
+  Buffer.add_string buffer (Lexing.lexeme lexbuf)
 
 let get_stored_string () =
-  let s = Buffer.contents string_buffer in
+  let str = Buffer.contents string_buffer in
+  let raw =
+    if Buffer.length raw_buffer = 0
+    then None
+    else Some (Buffer.contents raw_buffer)
+  in
   Buffer.reset string_buffer;
-  s
+  Buffer.reset raw_buffer;
+  (str, raw)
 
 (* To store the position of the beginning of a string and comment *)
 let string_start_loc = ref Location.none;;
@@ -453,10 +461,11 @@ rule token = parse
         is_in_string := true;
         let string_start = lexbuf.lex_start_p in
         string_start_loc := Location.curr lexbuf;
-        string lexbuf;
+        string raw_buffer lexbuf;
         is_in_string := false;
         lexbuf.lex_start_p <- string_start;
-        STRING (get_stored_string(), None) }
+        let text, raw = get_stored_string() in
+        STRING (text, raw, None) }
   | "{" lowercase* "|"
       { reset_string_buffer();
         let delim = Lexing.lexeme lexbuf in
@@ -467,7 +476,7 @@ rule token = parse
         quoted_string delim lexbuf;
         is_in_string := false;
         lexbuf.lex_start_p <- string_start;
-        STRING (get_stored_string(), Some delim) }
+        STRING (fst (get_stored_string()), None, Some delim) }
   | "'" newline "'"
       { update_loc lexbuf None 1 false 1;
         CHAR (Lexing.lexeme_char lexbuf 1) }
@@ -642,7 +651,7 @@ and enter_comment = parse
         comment_start_loc := [start_loc];
         reset_string_buffer ();
         let {Location. loc_end; _} = comment lexbuf in
-        let s = get_stored_string () in
+        let s, _ = get_stored_string () in
         reset_string_buffer ();
         COMMENT (s, { start_loc with Location.loc_end })
       }
@@ -652,7 +661,7 @@ and enter_comment = parse
         comment_start_loc := [start_loc];
         reset_string_buffer ();
         let _ = comment lexbuf in
-        let s = get_stored_string () in
+        let s, _ = get_stored_string () in
         reset_string_buffer ();
         lexbuf.Lexing.lex_start_p <- start_p;
         DOCSTRING s
@@ -666,7 +675,7 @@ and enter_comment = parse
         comment_start_loc := [loc];
         reset_string_buffer ();
         let {Location. loc_end; _} = comment lexbuf in
-        let s = get_stored_string () in
+        let s, _ = get_stored_string () in
         reset_string_buffer ();
         COMMENT (s, { loc with Location.loc_end })
       }
@@ -681,7 +690,7 @@ and enter_comment = parse
 and comment = parse
     "/*"
       { comment_start_loc := (Location.curr lexbuf) :: !comment_start_loc;
-        store_lexeme lexbuf;
+        store_lexeme string_buffer lexbuf;
         comment lexbuf;
       }
   | "*/"
@@ -689,7 +698,7 @@ and comment = parse
         | [] -> assert false
         | [_] -> comment_start_loc := []; Location.curr lexbuf
         | _ :: l -> comment_start_loc := l;
-                  store_lexeme lexbuf;
+                  store_lexeme string_buffer lexbuf;
                   comment lexbuf;
        }
   | "\""
@@ -697,7 +706,7 @@ and comment = parse
         string_start_loc := Location.curr lexbuf;
         store_string_char '"';
         is_in_string := true;
-        begin try string lexbuf
+        begin try string string_buffer lexbuf
         with Error (Unterminated_string, str_start) ->
           match !comment_start_loc with
           | [] -> assert false
@@ -715,7 +724,7 @@ and comment = parse
         let delim = Lexing.lexeme lexbuf in
         let delim = String.sub delim 1 (String.length delim - 2) in
         string_start_loc := Location.curr lexbuf;
-        store_lexeme lexbuf;
+        store_lexeme string_buffer lexbuf;
         is_in_string := true;
         begin try quoted_string delim lexbuf
         with Error (Unterminated_string, str_start) ->
@@ -734,20 +743,20 @@ and comment = parse
         comment lexbuf }
 
   | "''"
-      { store_lexeme lexbuf; comment lexbuf }
+      { store_lexeme string_buffer lexbuf; comment lexbuf }
   | "'" newline "'"
       { update_loc lexbuf None 1 false 1;
-        store_lexeme lexbuf;
+        store_lexeme string_buffer lexbuf;
         comment lexbuf
       }
   | "'" [^ '\\' '\'' '\010' '\013' ] "'"
-      { store_lexeme lexbuf; comment lexbuf }
+      { store_lexeme string_buffer lexbuf; comment lexbuf }
   | "'\\" ['\\' '"' '\'' 'n' 't' 'b' 'r' ' '] "'"
-      { store_lexeme lexbuf; comment lexbuf }
+      { store_lexeme string_buffer lexbuf; comment lexbuf }
   | "'\\" ['0'-'9'] ['0'-'9'] ['0'-'9'] "'"
-      { store_lexeme lexbuf; comment lexbuf }
+      { store_lexeme string_buffer lexbuf; comment lexbuf }
   | "'\\" 'x' ['0'-'9' 'a'-'f' 'A'-'F'] ['0'-'9' 'a'-'f' 'A'-'F'] "'"
-      { store_lexeme lexbuf; comment lexbuf }
+      { store_lexeme string_buffer lexbuf; comment lexbuf }
   | eof
       { match !comment_start_loc with
         | [] -> assert false
@@ -758,36 +767,39 @@ and comment = parse
       }
   | newline
       { update_loc lexbuf None 1 false 0;
-        store_lexeme lexbuf;
+        store_lexeme string_buffer lexbuf;
         comment lexbuf
       }
   | _
-      { store_lexeme lexbuf; comment lexbuf }
+      { store_lexeme string_buffer lexbuf; comment lexbuf }
 
-and string = parse
+and string rawbuffer = parse
     '"'
       { () }
   | '\\' newline ([' ' '\t'] * as space)
       { update_loc lexbuf None 1 false (String.length space);
-        if in_comment () then store_lexeme lexbuf;
-        string lexbuf
+        store_lexeme rawbuffer lexbuf;
+        string rawbuffer lexbuf
       }
   | '\\' ['\\' '\'' '"' 'n' 't' 'b' 'r' ' ']
-      { if in_comment () then store_lexeme lexbuf
-        else store_string_char(char_for_backslash(Lexing.lexeme_char lexbuf 1));
-        string lexbuf }
+      { store_lexeme rawbuffer lexbuf;
+        if not (in_comment ()) then
+          store_string_char(char_for_backslash(Lexing.lexeme_char lexbuf 1));
+        string rawbuffer lexbuf }
   | '\\' ['0'-'9'] ['0'-'9'] ['0'-'9']
-      { if in_comment () then store_lexeme lexbuf
-        else store_string_char(char_for_decimal_code lexbuf 1);
-        string lexbuf }
+      { store_lexeme rawbuffer lexbuf;
+        if not (in_comment ()) then
+          store_string_char(char_for_decimal_code lexbuf 1);
+        string rawbuffer lexbuf }
   | '\\' 'x' ['0'-'9' 'a'-'f' 'A'-'F'] ['0'-'9' 'a'-'f' 'A'-'F']
-      { if in_comment () then store_lexeme lexbuf
-        else store_string_char(char_for_hexadecimal_code lexbuf 2);
-        string lexbuf }
+      { store_lexeme rawbuffer lexbuf;
+        if not (in_comment ()) then
+          store_string_char(char_for_hexadecimal_code lexbuf 2);
+        string rawbuffer lexbuf }
   | '\\' _
-      { if in_comment ()
-        then string lexbuf
-        else begin
+      { store_lexeme rawbuffer lexbuf;
+        if not (in_comment ()) then
+        begin
 (*  Should be an error, but we are very lax.
           raise (Error (Illegal_escape (Lexing.lexeme lexbuf),
                         Location.curr lexbuf))
@@ -796,27 +808,31 @@ and string = parse
           Location.prerr_warning loc Warnings.Illegal_backslash;
           store_string_char (Lexing.lexeme_char lexbuf 0);
           store_string_char (Lexing.lexeme_char lexbuf 1);
-          string lexbuf
-        end
+        end;
+        string rawbuffer lexbuf
       }
   | newline
-      { if not (in_comment ()) then
-          Location.prerr_warning (Location.curr lexbuf) Warnings.Eol_in_string;
+      { store_lexeme rawbuffer lexbuf;
+        if not (in_comment ()) then (
+          store_lexeme string_buffer lexbuf;
+          Location.prerr_warning (Location.curr lexbuf) Warnings.Eol_in_string
+        );
         update_loc lexbuf None 1 false 0;
-        store_lexeme lexbuf;
-        string lexbuf
+        string rawbuffer lexbuf
       }
   | eof
       { is_in_string := false;
         raise (Error (Unterminated_string, !string_start_loc)) }
   | _
-      { store_string_char(Lexing.lexeme_char lexbuf 0);
-        string lexbuf }
+      { store_lexeme rawbuffer lexbuf;
+        if not (in_comment ()) then
+          store_string_char(Lexing.lexeme_char lexbuf 0);
+        string rawbuffer lexbuf }
 
 and quoted_string delim = parse
   | newline
       { update_loc lexbuf None 1 false 0;
-        store_lexeme lexbuf;
+        store_lexeme string_buffer lexbuf;
         quoted_string delim lexbuf
       }
   | eof
@@ -827,10 +843,11 @@ and quoted_string delim = parse
         let edelim = Lexing.lexeme lexbuf in
         let edelim = String.sub edelim 1 (String.length edelim - 2) in
         if delim = edelim then ()
-        else (store_lexeme lexbuf; quoted_string delim lexbuf)
+        else (store_lexeme string_buffer lexbuf;
+              quoted_string delim lexbuf)
       }
   | _
-      { store_string_char(Lexing.lexeme_char lexbuf 0);
+      { store_string_char (Lexing.lexeme_char lexbuf 0);
         quoted_string delim lexbuf }
 
 and skip_sharp_bang = parse

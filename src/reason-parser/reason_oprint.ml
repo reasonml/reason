@@ -252,7 +252,7 @@ let print_out_value ppf tree =
     | Oval_float f -> pp_print_string ppf (float_repres f)
     | Oval_char c -> fprintf ppf "%C" c
     | Oval_string s ->
-        begin try fprintf ppf "%S" s with
+        begin try fprintf ppf "\"%s\"" (Syntax_util.escape_string s) with
           Invalid_argument "String.create" -> fprintf ppf "<huge string>"
         end
     | Oval_list tl ->
