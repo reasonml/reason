@@ -127,9 +127,19 @@ let y = [<div />, <div />];
 let y = [<Button onClick=handleStaleClick />, <Button onClick=handleStaleClick />];
 
 <Description term={<Text text="Age" />}> child </Description>;
+<Description term=(Text.createElement(~text="Age", ~children=[], ()))> child </Description>;
+<Description term=([@JSX] Text.createElement(~text="Age", ()))> child </Description>;
 
 <Description term={<Text superLongPunnedProp anotherSuperLongOneCrazyLongThingHere text="Age" />}> child </Description>;
 
 <Foo bar={<Baz superLongPunnedProp anotherSuperLongOneCrazyLongThingHere/>}/>;
 
 <div><span>(str("hello"))</span></div>;
+
+<description term={<text text="Age" />}>child</description>;
+
+<description term=(text(~text="Age",~children=[], ()))>child</description>;
+<description term=([@JSX] text(~text="Age",~children=[]))>child</description>;
+<description term=([@JSX] text(~text="Age", ()))>child</description>;
+
+<description term={<div superLongPunnedProp anotherSuperLongOneCrazyLongThingHere text="Age" />}> child </description>;

@@ -1842,25 +1842,28 @@ let is_direct_pattern x = x.ppat_attributes = [] && match x.ppat_desc with
   | Ppat_construct ( {txt= Lident"()"}, None) -> true
   | _ -> false
 
-let isJSXComponent loc args =
-  let hasLabelledChildrenLiteral = List.exists (function
-    | (Labelled "children", _) -> true
-    | _ -> false
-  ) args in
-  let rec hasSingleNonLabelledUnitAndIsAtTheEnd l = match l with
-  | [] -> false
-  | (Nolabel, {pexp_desc = Pexp_construct ({txt = Lident "()"}, _)}) :: [] -> true
-  | (Nolabel, _) :: rest -> false
-  | _ :: rest -> hasSingleNonLabelledUnitAndIsAtTheEnd rest
-  in
-  if hasLabelledChildrenLiteral && hasSingleNonLabelledUnitAndIsAtTheEnd args then
-    let moduleNameList = List.rev (List.tl (List.rev (Longident.flatten loc.txt))) in
-    if List.length moduleNameList > 0 && Longident.last loc.txt = "createElement" then
-       true
-    else false
-  else
-    false
-
+let isJSXComponent expr =
+  match expr with
+  | ({pexp_desc= Pexp_apply ({pexp_desc=Pexp_ident _}, args); pexp_attributes}) ->
+    let {jsxAttrs} = partitionAttributes pexp_attributes in
+    let hasLabelledChildrenLiteral = List.exists (function
+      | (Labelled "children", _) -> true
+      | _ -> false
+    ) args in
+    let rec hasSingleNonLabelledUnitAndIsAtTheEnd l = match l with
+    | [] -> false
+    | (Nolabel, {pexp_desc = Pexp_construct ({txt = Lident "()"}, _)}) :: [] -> true
+    | (Nolabel, _) :: rest -> false
+    | _ :: rest -> hasSingleNonLabelledUnitAndIsAtTheEnd rest
+    in
+    if jsxAttrs != []
+       && hasLabelledChildrenLiteral
+       && hasSingleNonLabelledUnitAndIsAtTheEnd args
+    then
+      true
+    else
+      false
+  | _ -> false
 
 (* Some cases require special formatting when there's a function application
  * with a single argument containing some kind of structure with braces/parens/brackets.
@@ -3598,7 +3601,7 @@ let printer = object(self:'self)
          let nextAttr =
            match expression.pexp_desc with
            | Pexp_ident ident when isPunnedJsxArg lbl ident -> atom lbl
-           | Pexp_apply ({pexp_desc=Pexp_ident loc}, l) when isJSXComponent loc l ->
+           | _ when isJSXComponent expression  ->
                label (atom (lbl ^ "="))
                      (makeList ~break:IfNeed ~wrap:("{", "}") [(self#simplifyUnparseExpr expression)])
            | Pexp_record _
