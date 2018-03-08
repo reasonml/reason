@@ -47,7 +47,7 @@ let (===) = (=)
 (* Test regression for https://github.com/facebook/Reason/issues/222 *)
 let _ = Pervasives.(=)
 
-let physicalEquality = 1 = 1
+let structuralEquality = 1 = 1
 
 let physicalInequality = 1 <> 2
 
@@ -57,7 +57,7 @@ let referentialInequality = 2 != 2
 
 let equalityInIf = if 1 = 1 then true else false
 
-let equalityWithIdentifiers = physicalEquality = referentialEquality
+let equalityWithIdentifiers = structuralEquality = referentialEquality
 
 let nestedSome = Some (1, 2, Some (1, 2, 3))
 
