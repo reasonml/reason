@@ -2571,6 +2571,8 @@ es6_parameters:
   | labeled_pattern_list { $1 }
   | as_loc(val_ident)
     { ([{$1 with txt = Term (Nolabel, None, mkpat ~loc:$1.loc (Ppat_var $1))}], false) }
+  | as_loc(UNDERSCORE)
+    { ([{$1 with txt = Term (Nolabel, None, mkpat ~loc:$1.loc Ppat_any)}], false) }
 ;
 
 // TODO: properly fix JSX labelled/optional stuff
