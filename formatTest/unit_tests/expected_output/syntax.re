@@ -558,7 +558,7 @@ let add = (a, b) => {
 
 print_string(string_of_int(add(4, 34)));
 
-let dummy = (_) => 10;
+let dummy = _ => 10;
 
 dummy(res1);
 
