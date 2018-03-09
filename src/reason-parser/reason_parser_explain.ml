@@ -49,6 +49,11 @@ let semicolon_might_be_missing state _token =
   else
     raise Not_found
 
+let token_specific_message = function
+  | Parser.UNDERSCORE ->
+    "underscore is not a valid identifier. Use _ only in pattern matching and partial function application"
+  | _ ->
+    raise Not_found
 let message env (token, startp, endp) =
   let state = Interp.current_state_number env in
   (* Is there a message for this specific state ? *)
@@ -61,6 +66,8 @@ let message env (token, startp, endp) =
   try uppercased_instead_of_lowercased state token
   with Not_found ->
   try semicolon_might_be_missing state token
+  with Not_found ->
+  try token_specific_message token
   with Not_found ->
     (* TODO: we don't know what to say *)
     "<UNKNOWN SYNTAX ERROR>"
