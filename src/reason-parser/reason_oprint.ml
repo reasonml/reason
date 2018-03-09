@@ -578,7 +578,7 @@ and print_typargs ppf =
       pp_print_space ppf ();
       pp_print_string ppf "(";
       pp_open_box ppf 1;
-      print_typlist print_out_wrap_type ", " ppf tyl;
+      print_typlist print_out_wrap_type "," ppf tyl;
       pp_close_box ppf ();
       pp_print_string ppf ")"
 
