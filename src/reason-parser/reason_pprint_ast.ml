@@ -1838,6 +1838,8 @@ let is_ident_pattern x = match x.ppat_desc with
   | Ppat_var _ -> true
   | _ -> false
 
+let is_any_pattern x = x.ppat_desc = Ppat_any
+
 let is_direct_pattern x = x.ppat_attributes = [] && match x.ppat_desc with
   | Ppat_construct ( {txt= Lident"()"}, None) -> true
   | _ -> false
@@ -3908,11 +3910,14 @@ let printer = object(self:'self)
       | `Value (l,eo,p) -> source_map ~loc:p.ppat_loc (self#label_exp l eo p)
       | `Type nt -> atom ("type " ^ nt)
     in
+    let single_argument_no_parens p =
+      (is_unit_pattern p || is_ident_pattern p || is_any_pattern p) && not(uncurried)
+    in
     match extract_args x with
     | ([], ret) -> ([], ret)
     | ([`Value (Nolabel, None, p) ], ret) when is_unit_pattern p && uncurried ->
         ( [atom "(.)"], ret)
-    | ([`Value (Nolabel, None, p) as arg], ret) when (is_unit_pattern p || is_ident_pattern p) && not(uncurried) ->
+    | ([`Value (Nolabel, None, p) as arg], ret) when single_argument_no_parens p ->
       ([prepare_arg arg], ret)
     | (args, ret) ->
         if uncurried then

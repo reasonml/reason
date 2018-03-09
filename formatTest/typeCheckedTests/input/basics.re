@@ -22,6 +22,18 @@ let l1 =
 let l2 =
   [Some(1), None, Some(2)] |> List.map(optParam(~v =?_, ())) |> List.length;
 
+let argIsUnderscore1 = _ => 34;
+
+let argIsUnderscore2 = (_ => 34);
+  
+let argIsUnderscore3 = _ : int => 34;
+  
+let argIsUnderscore4 = (_ : int => 34);
+
+let argIsUnderscore5 = (_: int) => 34;
+
+let argIsUnderscore6 = ((_: int) => 34);
+
 type reasonXyz =
   | X
   | Y(int,int,int)

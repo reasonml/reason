@@ -483,7 +483,7 @@ Printf.printf(
 include YourLib.CreateComponent({
   type thing = blahblahblah;
   type state = unit;
-  let getInitialState = (_) => ();
+  let getInitialState = _ => ();
   let myValue = {recordField: "hello"};
 });
 

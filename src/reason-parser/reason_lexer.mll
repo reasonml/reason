@@ -944,7 +944,7 @@ and skip_sharp_bang = parse
         let acc = if is_triggering_token tok' then inject_es6_fun acc else acc in
         lex_balanced_step closing lexbuf (rparen @ acc) tok'
       end
-    | (LIDENT _, _) ->
+    | ((LIDENT _ | UNDERSCORE), _) ->
       begin match token lexbuf with
       | exception exn ->
         raise (Lex_balanced_failed (acc, Some (save_triple lexbuf exn)))
@@ -1004,7 +1004,7 @@ and skip_sharp_bang = parse
       begin match token lexbuf with
       | LPAREN | LBRACE as tok ->
           lookahead_esfun lexbuf (save_triple lexbuf tok)
-      | LIDENT _ as tok ->
+      | (LIDENT _ | UNDERSCORE) as tok ->
           let tok = save_triple lexbuf tok in
           begin match token lexbuf with
           | exception exn ->

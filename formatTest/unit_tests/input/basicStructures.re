@@ -676,14 +676,8 @@ let z = {"a": {pub b = c; pub d = e}, "f": g};
  */
 let unitLambda = (()) => ();
 let identifierLambda = (a) => ();
+let underscoreLambda = (_) => ();
 it("should remove parens", (a) => {
   print_string("did it work?");
   print_string("did it work?");
 });
-
-/**
- * Parens around "any" pattern in lambda should be kept.
- * We should also support removing these parens too, but that requires a parser
- * change.
- */
-let keepTheseParens = (_) => ();
