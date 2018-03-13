@@ -219,6 +219,11 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
                 else
                   String.unsafe_get contents (virtual_start_pos - 2)
               in
+              if Syntax_util.is_line_comment str then
+                Comment.make ~location:physical_loc
+                  (if eol_start then Comment.SingleLine else Comment.EndOfLine)
+                  str :: classifiedTail
+              else
               (*
                *
                * The following logic are designed for cases like:

@@ -419,6 +419,14 @@ let apply_mapper_to_toplevel_phrase toplevel_phrase mapper =
 let apply_mapper_to_use_file use_file mapper =
   List.map (fun x -> apply_mapper_to_toplevel_phrase x mapper) use_file
 
+(* A line comment is a comment that ends with a newline and doesn't contain
+   any other newline characters *)
+let is_line_comment str =
+  (* true iff the first \n is the last character *)
+  match String.index str '\n' with
+  | exception Not_found -> false
+  | n -> n = String.length str - 1
+
 (* The following logic defines our own Error object
  * and register it with ocaml so it knows how to print it
  *)

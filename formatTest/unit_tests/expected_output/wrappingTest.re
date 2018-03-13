@@ -35,7 +35,7 @@ let test = 10;
 let test = 10;
 
 /** This comment will be corrected.
-      when printed. */
+    when printed. */
 let test = 10;
 
 /**  Comments with text on line zero
@@ -2900,7 +2900,7 @@ let test = 10;
 let test = 10;
 
 /** This comment will be corrected.
-      when printed. */
+    when printed. */
 let test = 10;
 
 /**  Comments with text on line zero

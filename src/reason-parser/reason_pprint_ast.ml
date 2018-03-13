@@ -1161,48 +1161,8 @@ let insertBlankLines n term =
   else makeList ~inline:(true, true) ~indent:0 ~break:Always_rec
       (Array.to_list (Array.make n (atom "")) @ [term])
 
-let string_after s n = String.sub s n (String.length s - n)
-
-(* This is a special-purpose functions only used by `formatComment_`. Notice we
-skip a char below during usage because we know the comment starts with `/*` *)
-let rec lineZeroMeaningfulContent_ line length idx accum =
-  if idx = length then None
-  else
-    let ch = String.get line idx in
-    if ch = '\t' || ch = ' ' || ch = '*' then
-      lineZeroMeaningfulContent_ line length (idx + 1) (accum + 1)
-    else Some accum
-
-let lineZeroMeaningfulContent line =
-  lineZeroMeaningfulContent_ line (String.length line) 1 0
-
-let formatComment_ txt =
-  let commLines =
-    Syntax_util.split_by ~keep_empty:true (fun x -> x = '\n')
-      (Comment.wrap txt)
-  in
-  match commLines with
-  | [] -> atom ""
-  | [hd] ->
-    atom hd
-  | zero::one::tl ->
-    let attemptRemoveCount = (smallestLeadingSpaces (one::tl)) in
-    let leftPad =
-      if beginsWithStar one then 1
-      else match lineZeroMeaningfulContent zero with
-        | None -> 1
-        | Some num -> num + 1
-    in
-    let padNonOpeningLine s =
-      let numLeadingSpaceForThisLine = numLeadingSpace s in
-      if String.length s == 0 then ""
-      else (String.make leftPad ' ') ^
-           (string_after s (min attemptRemoveCount numLeadingSpaceForThisLine)) in
-    let lines = zero :: List.map padNonOpeningLine (one::tl) in
-    makeList ~inline:(true, true) ~indent:0 ~break:Always_rec (List.map atom lines)
-
-let formatComment comment =
-  source_map ~loc:(Comment.location comment) (formatComment_ comment)
+let format_comment comment =
+  atom ~loc:(Comment.location comment) (Comment.wrap comment)
 
 let rec append ?(space=false) txt = function
   | Layout.SourceMap (loc, sub) ->
@@ -1312,7 +1272,7 @@ let rec prependSingleLineComment ?newlinesAboveDocComments:(newlinesAboveDocComm
   | Sequence (config, hd::tl) when config.break = Always_rec->
      Sequence(config, (prependSingleLineComment ~newlinesAboveDocComments comment hd)::tl)
   | layout ->
-    let withComment = breakline (formatComment comment) layout in
+    let withComment = breakline (format_comment comment) layout in
      if Comment.is_doc comment then
        insertBlankLines newlinesAboveDocComments withComment
      else
@@ -1338,7 +1298,7 @@ let rec looselyAttachComment ~breakAncestors layout comment =
   | Layout.SourceMap (loc, sub) ->
      Layout.SourceMap (loc, looselyAttachComment ~breakAncestors sub comment)
   | Easy e ->
-     inline ~postSpace:true layout (formatComment comment)
+     inline ~postSpace:true layout (format_comment comment)
   | Sequence (listConfig, subLayouts)
     when List.exists (Layout.contains_location ~location) subLayouts ->
      (* If any of the subLayout strictly contains this comment, recurse into to it *)
@@ -1350,7 +1310,7 @@ let rec looselyAttachComment ~breakAncestors layout comment =
     Sequence (listConfig, List.map recurse_sublayout subLayouts)
   | Sequence (listConfig, subLayouts) when subLayouts == [] ->
     (* If there are no subLayouts (empty body), create a Sequence of just the comment *)
-    Sequence (listConfig, [formatComment comment])
+    Sequence (listConfig, [format_comment comment])
   | Sequence (listConfig, subLayouts) ->
     let (beforeComment, afterComment) =
       Syntax_util.pick_while (Layout.is_before ~location) subLayouts in
@@ -1392,7 +1352,7 @@ let rec insertSingleLineComment layout comment =
     prependSingleLineComment comment layout
   | Sequence (listConfig, subLayouts) when subLayouts = [] ->
     (* If there are no subLayouts (empty body), create a Sequence of just the comment *)
-    Sequence (listConfig, [formatComment comment])
+    Sequence (listConfig, [format_comment comment])
   | Sequence (listConfig, subLayouts) ->
     let newlinesAboveDocComments = listConfig.newlinesAboveDocComments in
     let (beforeComment, afterComment) =
@@ -1400,7 +1360,7 @@ let rec insertSingleLineComment layout comment =
     begin match afterComment with
       (* Nothing in the list is after comment, attach comment to the statement before the comment *)
       | [] ->
-        let break sublayout = breakline sublayout (formatComment comment) in
+        let break sublayout = breakline sublayout (format_comment comment) in
         Sequence (listConfig, Syntax_util.map_last break beforeComment)
       | hd::tl ->
         let afterComment =
@@ -1429,7 +1389,7 @@ let rec insertSingleLineComment layout comment =
       | (Some loc1, Some loc2) when location_is_before location loc2 ->
         (left, prependSingleLineComment comment right)
       | _ ->
-        (left, breakline right (formatComment comment))
+        (left, breakline right (format_comment comment))
     in
     Label (formatter, newLeft, newRight)
 
@@ -1442,7 +1402,7 @@ let rec attachCommentToNodeRight layout comment =
     Layout.Sequence ({config with wrap=(lwrap, rwrap)}, sub)
   | Layout.SourceMap (loc, sub) ->
     Layout.SourceMap (loc, attachCommentToNodeRight sub comment)
-  | layout -> inline ~postSpace:true layout (formatComment comment)
+  | layout -> inline ~postSpace:true layout (format_comment comment)
 
 let rec attachCommentToNodeLeft comment layout =
   match layout with
@@ -1453,7 +1413,7 @@ let rec attachCommentToNodeLeft comment layout =
   | Layout.SourceMap (loc, sub) ->
     Layout.SourceMap (loc, attachCommentToNodeLeft comment sub )
   | layout ->
-    Layout.Label (inlineLabel, formatComment comment, layout)
+    Layout.Label (inlineLabel, format_comment comment, layout)
 
 (** [tryPerfectlyAttachComment layout comment] postorderly walk the [layout] and tries
  *  to perfectly attach a comment with a layout node.
@@ -5183,7 +5143,7 @@ let printer = object(self:'self)
       PStr [{ pstr_desc = Pstr_eval ({ pexp_desc = Pexp_constant (Pconst_string(text, None)); _ } , _);
               pstr_loc; _ }] ->
       let text = if text = "" then "/**/" else "/**" ^ text ^ "*/" in
-      makeList ~inline:(true, true) ~postSpace:true ~preSpace:true ~indent:0 ~break:IfNeed [atom ~loc:pstr_loc text]
+      atom ~loc:pstr_loc (Comment.align_lines text)
     | (s, e) -> self#payload "@" s e
 
   (* [@@ ... ] Attributes that occur after a major item in a structure/class *)

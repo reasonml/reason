@@ -55,7 +55,7 @@ let test: int;
 let test: int;
 
 /** This comment will be corrected.
-      when printed. */
+    when printed. */
 let test: int;
 
 /**  Comments with text on line zero
