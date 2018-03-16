@@ -71,12 +71,12 @@
 
 (*
   This file's shared between the Reason repo and the BuckleScript repo. In
-  Reason, it's in src/reason_oprint.ml. In BuckleScript, it's in
-  jscomp/outcome_printer/tweaked_reason_oprint.ml. We periodically copy
-  this file from Reason (the source of truth) to BuckleScript, then uncomment
-  the #if #else #end cppo macros you see in the file. That's because
-  BuckleScript's on OCaml 4.02 while Reason's on 4.04; so the #if macros
-  surround the pieces of code that are different between the two compilers.
+  Reason, it's in src/reason-parser/. In BuckleScript, it's in
+  jscomp/outcome_printer/. We periodically copy this file from Reason (the
+  source of truth) to BuckleScript, then uncomment the #if #else #end cppo
+  macros you see in the file. That's because BuckleScript's on OCaml 4.02 while
+  Reason's on 4.04; so the #if macros surround the pieces of code that are
+  different between the two compilers.
 
   When you modify this file, please make sure you're not dragging in too many
   things. You don't necessarily have to test the file on both Reason and
