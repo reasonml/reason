@@ -25,7 +25,7 @@ let x = {
 let x = {
   if%extend (true) {1} else {2};
   switch%extend (None) {
-  | Some(x) => assert false
+  | Some(x) => assert(false)
   | None => ()
   };
   try%extend (raise(Not_found)) {
@@ -38,7 +38,7 @@ let x = if%extend (true) {1} else {2};
 
 let x =
   switch%extend (None) {
-  | Some(x) => assert false
+  | Some(x) => assert(false)
   | None => ()
   };
 
