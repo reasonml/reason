@@ -245,9 +245,9 @@ let get_location layout =
 let is_before ~location layout =
   match get_location layout with
   | None -> true
-  | Some loc -> Syntax_util.location_is_before loc location
+  | Some loc -> Reason_syntax_util.location_is_before loc location
 
 let contains_location layout ~location =
   match get_location layout with
   | None -> false
-  | Some layout_loc -> Syntax_util.location_contains layout_loc location
+  | Some layout_loc -> Reason_syntax_util.location_contains layout_loc location

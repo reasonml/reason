@@ -54,5 +54,5 @@ let correctly_catch_parse_errors fn lexbuf =
     raise (match exn with
           | Reason_lexer.Error _ -> transmogrify_exn exn exn_Lexer_Error
           | Syntaxerr.Error _ -> transmogrify_exn exn exn_Syntaxerr_Error
-          | Syntax_util.Error (loc, _) -> transmogrify_exn (Syntaxerr.Error(Syntaxerr.Other loc)) exn_Syntaxerr_Error
+          | Reason_syntax_util.Error (loc, _) -> transmogrify_exn (Syntaxerr.Error(Syntaxerr.Other loc)) exn_Syntaxerr_Error
           | _ -> exn)

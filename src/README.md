@@ -124,7 +124,7 @@ Our lexer & parser use [Menhir](http://gallium.inria.fr/~fpottier/menhir/), a li
 
 - `*.sh`: some of our binaries' entries.
 
-- `src/rtop/reason_util.ml`, `syntax_util.ml`: utils.
+- `src/rtop/reason_util.ml`, `reason_syntax_util.ml`: utils.
 
 - `src/reason-parser/reactjs_jsx_ppx_v2.ml/v3.ml`: our ReactJS interop that translates [Reason JSX](https://reasonml.github.io/docs/en/jsx.html) into something that ReactJS understands. See the comments in the file and the description in [ReasonReact](https://reasonml.github.io/reason-react/#reason-react-jsx).
 

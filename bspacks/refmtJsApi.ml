@@ -61,7 +61,7 @@ let parseWith f code =
     in
     Js.Unsafe.fun_call throwAnything [|Js.Unsafe.inject jsError|]
   (* from reason *)
-  | Refmt_api.Syntax_util.Error (location, Syntax_error err) ->
+  | Refmt_api.Reason_syntax_util.Error (location, Syntax_error err) ->
     let jsLocation = locationToJsObj location in
     let jsError =
       Js.Unsafe.obj [|
