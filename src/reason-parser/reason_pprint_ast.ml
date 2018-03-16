@@ -340,6 +340,23 @@ let rec partitionAttributes ?(partDoc=false) ?(allowUncurry=true) attrs : attrib
         let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
         {partition with stdAttrs=atHd::partition.stdAttrs}
 
+type docAttributesPartition = {
+  docAttrs : attributes;
+  otherAttrs : attributes
+}
+
+let rec partitionDocAttributes attrs : docAttributesPartition =
+  match attrs with
+    | [] ->
+      {docAttrs=[]; otherAttrs=[]}
+    | (({txt="ocaml.text"; loc}, _) as doc)::atTl
+    | (({txt="ocaml.doc"; loc}, _) as doc)::atTl ->
+        let partition = partitionDocAttributes atTl in
+        {partition with docAttrs=doc::partition.docAttrs}
+    | atHd :: atTl ->
+        let partition = partitionDocAttributes atTl in
+        {partition with otherAttrs=atHd::partition.otherAttrs}
+
 let extractStdAttrs attrs =
   (partitionAttributes attrs).stdAttrs
 
@@ -5780,7 +5797,8 @@ let printer = object(self:'self)
     | Pctf_extension e -> self#item_extension e
 
   (*
-    [@@bs.val] [@@bs.module "react-dom"]                  (* formattedAttrs *)
+    /** doc comment */                                    (* formattedDocs *)
+    [@bs.val] [@bs.module "react-dom"]                    (* formattedAttrs *)
     external render : reactElement => element => unit =   (* frstHalf *)
       "render";                                           (* sndHalf *)
 
@@ -5789,6 +5807,7 @@ let printer = object(self:'self)
       * combine that label with '=' in a list
       * consider the part after the '=' as a list
       * combine both parts as a label
+      * format the doc comment with a ~postSpace:true (inline, not inline) list
       * format the attributes with a ~postSpace:true (inline, inline) list
       * format everything together in a ~postSpace:true (inline, inline) list
         for nicer breaking
@@ -5805,9 +5824,16 @@ let printer = object(self:'self)
     match vd.pval_attributes with
     | [] -> primDecl
     | attrs ->
-        let attrs = List.map (fun x -> self#item_attribute x) attrs in
+        let {docAttrs; otherAttrs} = partitionDocAttributes attrs in
+        let docs = List.map self#item_attribute docAttrs in
+        let formattedDocs = makeList ~postSpace:true docs in
+        let attrs = List.map self#item_attribute otherAttrs in
         let formattedAttrs = makeSpacedBreakableInlineList attrs in
-        makeSpacedBreakableInlineList [formattedAttrs; primDecl]
+        let layouts = match (docAttrs, otherAttrs) with
+        | ([], _) -> [formattedAttrs; primDecl]
+        | (_, []) -> [formattedDocs; primDecl]
+        | _ -> [formattedDocs; formattedAttrs; primDecl] in
+        makeSpacedBreakableInlineList layouts
 
   method class_instance_type x =
     match x.pcty_desc with

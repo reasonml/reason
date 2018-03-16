@@ -711,3 +711,20 @@ let r = {
   fieldOne: (identifier : string), /*eol1*/
   fieldTwo: (identifier : string), /* eol2 with trailing comma */
 };
+
+/** doc comment */
+[@bs.send]
+external url : t => string = "";
+
+/**
+ * Short multiline doc comment
+ */
+[@bs.send]
+external url : t => string = "";
+
+/** Longer doc comment before an attribute on an external. */
+[@bs.send]
+external url : t => string = "";
+
+/* normal comment */
+[@bs.send] external url : t => string = "";
