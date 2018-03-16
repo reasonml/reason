@@ -124,7 +124,7 @@ let parenthesized_ident name =
     | _ -> true)
 
 (* #if defined BS_NO_COMPILER_PATCH then *)
-let ml_to_reason_swap = Syntax_util.ml_to_reason_swap
+let ml_to_reason_swap = Reason_syntax_util.ml_to_reason_swap
 (* #else *)
 
 (* please keep this section in sync with Reason repo's Syntax_util file's
@@ -252,7 +252,7 @@ let print_out_value ppf tree =
     | Oval_float f -> pp_print_string ppf (float_repres f)
     | Oval_char c -> fprintf ppf "%C" c
     | Oval_string s ->
-        begin try fprintf ppf "\"%s\"" (Syntax_util.escape_string s) with
+        begin try fprintf ppf "\"%s\"" (Reason_syntax_util.escape_string s) with
           Invalid_argument "String.create" -> fprintf ppf "<huge string>"
         end
     | Oval_list tl ->

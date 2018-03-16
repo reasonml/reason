@@ -440,12 +440,12 @@ let () =
      )
 
 let map_first f = function
-  | [] -> invalid_arg "Syntax_util.map_first: empty list"
+  | [] -> invalid_arg "Reason_syntax_util.map_first: empty list"
   | x :: xs -> f x :: xs
 
 let map_last f l =
   match List.rev l with
-  | [] -> invalid_arg "Syntax_util.map_last: empty list"
+  | [] -> invalid_arg "Reason_syntax_util.map_last: empty list"
   | x :: xs -> List.rev (f x :: xs)
 
 type menhirMessagesError = {

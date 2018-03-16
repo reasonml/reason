@@ -52,7 +52,7 @@ open Location
 open Longident
 open Parsetree
 open Easy_format
-open Syntax_util
+open Reason_syntax_util
 
 module Comment = Reason_comment
 module Layout = Reason_layout
@@ -61,7 +61,7 @@ let source_map = Layout.source_map
 
 exception NotPossible of string
 
-let commaTrail = Layout.SepFinal (",", Syntax_util.TrailingCommaMarker.string)
+let commaTrail = Layout.SepFinal (",", Reason_syntax_util.TrailingCommaMarker.string)
 let commaSep = Layout.Sep (",")
 
 type ruleInfoData = {
@@ -1178,7 +1178,7 @@ let lineZeroMeaningfulContent line =
 
 let formatComment_ txt =
   let commLines =
-    Syntax_util.split_by ~keep_empty:true (fun x -> x = '\n')
+    Reason_syntax_util.split_by ~keep_empty:true (fun x -> x = '\n')
       (Comment.wrap txt)
   in
   match commLines with
@@ -1353,10 +1353,10 @@ let rec looselyAttachComment ~breakAncestors layout comment =
     Sequence (listConfig, [formatComment comment])
   | Sequence (listConfig, subLayouts) ->
     let (beforeComment, afterComment) =
-      Syntax_util.pick_while (Layout.is_before ~location) subLayouts in
+      Reason_syntax_util.pick_while (Layout.is_before ~location) subLayouts in
     let newSubLayout = match List.rev beforeComment with
       | [] ->
-        Syntax_util.map_first (prependSingleLineComment comment) afterComment
+        Reason_syntax_util.map_first (prependSingleLineComment comment) afterComment
       | hd :: tl ->
         List.rev_append
           (appendComment ~breakAncestors hd comment :: tl) afterComment
@@ -1396,12 +1396,12 @@ let rec insertSingleLineComment layout comment =
   | Sequence (listConfig, subLayouts) ->
     let newlinesAboveDocComments = listConfig.newlinesAboveDocComments in
     let (beforeComment, afterComment) =
-      Syntax_util.pick_while (Layout.is_before ~location) subLayouts in
+      Reason_syntax_util.pick_while (Layout.is_before ~location) subLayouts in
     begin match afterComment with
       (* Nothing in the list is after comment, attach comment to the statement before the comment *)
       | [] ->
         let break sublayout = breakline sublayout (formatComment comment) in
-        Sequence (listConfig, Syntax_util.map_last break beforeComment)
+        Sequence (listConfig, Reason_syntax_util.map_last break beforeComment)
       | hd::tl ->
         let afterComment =
           match Layout.get_location hd with
@@ -1568,7 +1568,7 @@ let format_layout ?comments ppf layout =
   if debugWithHtml.contents then
     Easy_format.Pretty.define_styles fauxmatter html_escape html_style;
   let _ = Easy_format.Pretty.to_formatter fauxmatter easy in
-  let trimmed = Syntax_util.processLineEndingsAndStarts (Buffer.contents buf) in
+  let trimmed = Reason_syntax_util.processLineEndingsAndStarts (Buffer.contents buf) in
   Format.fprintf ppf "%s\n" trimmed;
   Format.pp_print_flush ppf ()
 
@@ -1776,7 +1776,7 @@ let constant ?raw_literal ?(parens=true) ppf = function
       | Some text ->
         Format.fprintf ppf "\"%s\"" text
       | None ->
-        Format.fprintf ppf "\"%s\"" (Syntax_util.escape_string i)
+        Format.fprintf ppf "\"%s\"" (Reason_syntax_util.escape_string i)
     end
   | Pconst_string (i, Some delim) ->
     Format.fprintf ppf "{%s|%s|%s}" delim i delim

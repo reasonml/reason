@@ -294,12 +294,12 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
         | Location.Error err -> (err.loc, err.msg)
         | _ ->
           let loc = Location.curr lexbuf in
-          match Syntax_util.findMenhirErrorMessage loc with
-          | Syntax_util.MenhirMessagesError errMessage ->
-            (errMessage.Syntax_util.loc, errMessage.Syntax_util.msg)
+          match Reason_syntax_util.findMenhirErrorMessage loc with
+          | Reason_syntax_util.MenhirMessagesError errMessage ->
+            (errMessage.Reason_syntax_util.loc, errMessage.Reason_syntax_util.msg)
           | _ -> (loc, invalidLex)
       in
-      let error = Syntax_util.syntax_error_extension_node loc msg in
+      let error = Reason_syntax_util.syntax_error_extension_node loc msg in
       ([Ast_helper.Str.mk ~loc (Parsetree.Pstr_extension (error, []))], [])
 
   let core_type_with_comments lexbuf =
@@ -309,7 +309,7 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
         | Location.Error err -> (err.loc, err.msg)
         | _ -> (Location.curr lexbuf, invalidLex)
       in
-      let error = Syntax_util.syntax_error_extension_node loc msg in
+      let error = Reason_syntax_util.syntax_error_extension_node loc msg in
       (Ast_helper.Typ.mk ~loc (Parsetree.Ptyp_extension error), [])
 
   let interface_with_comments lexbuf =
@@ -319,7 +319,7 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
         | Location.Error err -> (err.loc, err.msg)
         | _ -> (Location.curr lexbuf, invalidLex)
       in
-      let error = Syntax_util.syntax_error_extension_node loc msg in
+      let error = Reason_syntax_util.syntax_error_extension_node loc msg in
       ([Ast_helper.Sig.mk ~loc (Parsetree.Psig_extension (error, []))], [])
 
   let toplevel_phrase_with_comments lexbuf =
@@ -441,7 +441,7 @@ module OCaml_syntax = struct
 
   (* Skip tokens to the end of the phrase *)
   (* TODO: consolidate these copy-paste skip/trys into something that works for
-   * every syntax (also see [syntax_util]). *)
+   * every syntax (also see [Reason_syntax_util]). *)
   let rec skip_phrase lexbuf =
     try
       match Lexer.token lexbuf with
@@ -620,15 +620,15 @@ module Reason_syntax = struct
 
     | I.HandlingError env when !Reason_config.recoverable ->
       let loc = last_token_loc supplier in
-      begin match Syntax_util.findMenhirErrorMessage loc with
-        | Syntax_util.MenhirMessagesError err -> ()
-        | Syntax_util.NoMenhirMessagesError ->
+      begin match Reason_syntax_util.findMenhirErrorMessage loc with
+        | Reason_syntax_util.MenhirMessagesError err -> ()
+        | Reason_syntax_util.NoMenhirMessagesError ->
           let token = match supplier.last_token with
             | Some token -> token
             | None -> assert false
           in
           let msg = Reason_parser_explain.message env token in
-          Syntax_util.add_error_message Syntax_util.{loc = loc; msg = msg};
+          Reason_syntax_util.add_error_message Reason_syntax_util.{loc = loc; msg = msg};
       end;
       let checkpoint = I.resume checkpoint in
       (* Enter error recovery state *)
@@ -647,7 +647,7 @@ module Reason_syntax = struct
        * associated with the current parser state *)
       let msg = Reason_parser_explain.message env token in
       let msg_with_state = Printf.sprintf "%d: %s" state msg in
-      raise (Syntax_util.Error (loc, (Syntax_util.Syntax_error msg_with_state)))
+      raise (Reason_syntax_util.Error (loc, (Reason_syntax_util.Syntax_error msg_with_state)))
 
     | I.Rejected ->
       let loc = last_token_loc supplier in

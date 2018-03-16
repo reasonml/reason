@@ -53,7 +53,7 @@
   (wrapped false)
   (modules
    (lexer_warning
-    syntax_util
+    reason_syntax_util
     reason_comment
     reason_layout
     reason_heuristics

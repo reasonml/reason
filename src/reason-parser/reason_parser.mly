@@ -49,7 +49,7 @@
 
 %{
 open Migrate_parsetree.OCaml_404.Ast
-open Syntax_util
+open Reason_syntax_util
 open Location
 open Asttypes
 open Longident
@@ -465,7 +465,7 @@ let array_function ?(loc=dummy_loc()) str name =
 
 let syntax_error_str loc msg =
   if !Reason_config.recoverable then
-    Str.mk ~loc:loc (Pstr_extension (Syntax_util.syntax_error_extension_node loc msg, []))
+    Str.mk ~loc:loc (Pstr_extension (Reason_syntax_util.syntax_error_extension_node loc msg, []))
   else
     raise(Syntaxerr.Error(Syntaxerr.Other loc))
 
@@ -474,25 +474,25 @@ let syntax_error () =
 
 let syntax_error_exp loc msg =
   if !Reason_config.recoverable then
-    Exp.mk ~loc (Pexp_extension (Syntax_util.syntax_error_extension_node loc msg))
+    Exp.mk ~loc (Pexp_extension (Reason_syntax_util.syntax_error_extension_node loc msg))
   else
     syntax_error ()
 
 let syntax_error_pat loc msg =
   if !Reason_config.recoverable then
-    Pat.extension ~loc (Syntax_util.syntax_error_extension_node loc msg)
+    Pat.extension ~loc (Reason_syntax_util.syntax_error_extension_node loc msg)
   else
     syntax_error ()
 
 let syntax_error_typ loc msg =
   if !Reason_config.recoverable then
-    Typ.extension ~loc (Syntax_util.syntax_error_extension_node loc msg)
+    Typ.extension ~loc (Reason_syntax_util.syntax_error_extension_node loc msg)
   else
     raise (Syntaxerr.Error(Syntaxerr.Not_expecting (loc, msg)))
 
 let syntax_error_mod loc msg =
   if !Reason_config.recoverable then
-    Mty.extension ~loc (Syntax_util.syntax_error_extension_node loc msg)
+    Mty.extension ~loc (Reason_syntax_util.syntax_error_extension_node loc msg)
   else
     syntax_error ()
 
@@ -501,7 +501,7 @@ let unclosed opening closing =
                                            closing.loc, closing.txt)))
 
 let unclosed_extension closing =
-  Syntax_util.syntax_error_extension_node closing.loc ("Expecting \"" ^ closing.txt ^ "\"")
+  Reason_syntax_util.syntax_error_extension_node closing.loc ("Expecting \"" ^ closing.txt ^ "\"")
 
 let unclosed_mod opening closing =
   if !Reason_config.recoverable then
@@ -544,7 +544,7 @@ let expecting nonterm =
 
 let expecting_pat nonterm =
   if !Reason_config.recoverable then
-    mkpat(Ppat_extension (Syntax_util.syntax_error_extension_node nonterm.loc ("Expecting " ^ nonterm.txt)))
+    mkpat(Ppat_extension (Reason_syntax_util.syntax_error_extension_node nonterm.loc ("Expecting " ^ nonterm.txt)))
   else
     expecting nonterm
 
@@ -1002,10 +1002,10 @@ let jsx_component module_name attrs children loc =
   { body with pexp_attributes = attribute :: body.pexp_attributes }
 
 (* We might raise some custom error messages in this file.
-  Do _not_ directly raise a Location.Error. Our public interface guarantees that we only throw Syntaxerr or Syntax_util.Error *)
+  Do _not_ directly raise a Location.Error. Our public interface guarantees that we only throw Syntaxerr or Reason_syntax_util.Error *)
 let raiseSyntaxErrorFromSyntaxUtils loc fmt =
   Printf.ksprintf
-    (fun msg -> raise Syntax_util.(Error(loc, (Syntax_error msg))))
+    (fun msg -> raise Reason_syntax_util.(Error(loc, (Syntax_error msg))))
     fmt
 
 let ensureTagsAreEqual startTag endTag loc =
@@ -1599,20 +1599,20 @@ mark_position_mod
 structure:
   | /* Empty */ { [] }
   | as_loc(error) structure
-    { let menhirError = Syntax_util.findMenhirErrorMessage $1.loc in
+    { let menhirError = Reason_syntax_util.findMenhirErrorMessage $1.loc in
       match menhirError with
       | MenhirMessagesError errMessage -> (syntax_error_str errMessage.loc errMessage.msg) :: $2
       | _ -> (syntax_error_str $1.loc "Invalid statement") :: $2
     }
   | as_loc(error) SEMI structure
-    { let menhirError = Syntax_util.findMenhirErrorMessage $1.loc in
+    { let menhirError = Reason_syntax_util.findMenhirErrorMessage $1.loc in
       match menhirError with
       | MenhirMessagesError errMessage -> (syntax_error_str errMessage.loc errMessage.msg) :: $3
       | _ -> (syntax_error_str $1.loc "Invalid statement") :: $3
     }
   | structure_item { $1 }
   | as_loc(structure_item) error structure
-    { let menhirError = Syntax_util.findMenhirErrorMessage $1.loc in
+    { let menhirError = Reason_syntax_util.findMenhirErrorMessage $1.loc in
       match menhirError with
       | MenhirMessagesError errMessage -> (syntax_error_str errMessage.loc errMessage.msg) :: $3
       | _ -> (syntax_error_str $1.loc "Statement has to end with a semicolon") :: $3
@@ -2559,7 +2559,7 @@ as_loc
         match p.txt with
         | Term (Labelled _, _, _)
         | Term (Optional _, _, _)  ->
-            raise Syntax_util.(Error(p.loc, (Syntax_error "Uncurried function definition with labelled arguments is not supported at the moment.")));
+            raise Reason_syntax_util.(Error(p.loc, (Syntax_error "Uncurried function definition with labelled arguments is not supported at the moment.")));
             ()
         | _ -> ()
       ) $3 in
@@ -2604,19 +2604,19 @@ jsx_arguments:
   {
     match $1.txt with
     | "/>>" ->
-     let err = Syntax_util.Syntax_error {|JSX in a JSX-argument needs to be wrapped in braces.
+     let err = Reason_syntax_util.Syntax_error {|JSX in a JSX-argument needs to be wrapped in braces.
     If you wrote:
       <Description term=<Text text="Age" />> child </Description>
     Try wrapping <Text /> in braces.
       <Description term={<Text text="Age" />}> child </Description>|} in
-      raise (Syntax_util.Error($1.loc, err))
+      raise (Reason_syntax_util.Error($1.loc, err))
     | "/>/>" ->
-     let err = Syntax_util.Syntax_error {|JSX in a JSX-argument needs to be wrapped in braces.
+     let err = Reason_syntax_util.Syntax_error {|JSX in a JSX-argument needs to be wrapped in braces.
     If you wrote:
       <Description term=<Text text="Age" />/>
     Try wrapping <Text /> in braces.
       <Description term={<Text text="Age" />} />|} in
-      raise (Syntax_util.Error($1.loc, err))
+      raise (Reason_syntax_util.Error($1.loc, err))
     | _ -> syntax_error ()
   }
 ;
@@ -4171,7 +4171,7 @@ arrow_type_parameter:
   { let uncurried = match $1 with | Some _ -> true | None -> false in
     match $2.txt with
     | (Labelled _, _) when uncurried ->
-        raise Syntax_util.(Error($2.loc, (Syntax_error "An uncurried function type with labelled arguments is not supported at the moment.")))
+        raise Reason_syntax_util.(Error($2.loc, (Syntax_error "An uncurried function type with labelled arguments is not supported at the moment.")))
     | _ -> ($2, uncurried)
   }
 
