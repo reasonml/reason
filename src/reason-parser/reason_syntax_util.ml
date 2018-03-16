@@ -1,9 +1,155 @@
+(* Hello! Welcome to the Reason syntax util logic.
+
+  This file's shared between the Reason repo and the BuckleScript repo. In
+  Reason, it's in src/reason-parser. In BuckleScript, it's in
+  jscomp/outcome_printer. We periodically copy this file from Reason (the source
+  of truth) to BuckleScript, then uncomment the #if #else #end cppo macros you
+  see in the file. That's because BuckleScript's on OCaml 4.02 while Reason's on
+  4.04; so the #if macros surround the pieces of code that are different between
+  the two compilers.
+
+  When you modify this file, please make sure you're not dragging in too many
+  things. You don't necessarily have to test the file on both Reason and
+  BuckleScript; ping @chenglou and a few others and we'll keep them synced up by
+  patching the right parts, through the power of types(tm)
+*)
+
+(* #if defined BS_NO_COMPILER_PATCH then *)
 open Ast_404
+(* #end *)
 
 open Asttypes
 open Ast_mapper
 open Parsetree
 open Longident
+
+(** Check to see if the string `s` is made up of `keyword` and zero or more
+    trailing `_` characters. *)
+let potentially_conflicts_with ~keyword s =
+  let s_length = String.length s in
+  let keyword_length = String.length keyword in
+  (* It can't be a match if s is shorter than keyword *)
+  s_length >= keyword_length && (
+    try
+      (* Ensure s starts with keyword... *)
+      for i = 0 to keyword_length - 1 do
+        if keyword.[i] <> s.[i] then raise Exit;
+      done;
+      (* ...and contains nothing else except trailing _ characters *)
+      for i = keyword_length to s_length - 1 do
+        if s.[i] <> '_' then raise Exit;
+      done;
+      (* If we've made it this far there's a potential conflict *)
+      true
+    with
+    | Exit -> false
+  )
+
+(** Add/remove an appropriate suffix when mangling potential keywords *)
+let string_add_suffix x = x ^ "_"
+let string_drop_suffix x = String.sub x 0 (String.length x - 1)
+
+(** What do these *_swap functions do? Here's an example: Reason code uses `!`
+    for logical not, while ocaml uses `not`. So, for converting between reason
+    and ocaml syntax, ocaml `not` converts to `!`, reason `!` converts to
+    `not`.
+
+    In more complicated cases where a reserved keyword exists in one syntax but
+    not the other, these functions translate any potentially conflicting
+    identifier into the same identifier with a suffix attached, or remove the
+    suffix when converting back. Two examples:
+
+    reason to ocaml:
+
+    pub: invalid in reason to begin with
+    pub_: pub
+    pub__: pub_
+
+    ocaml to reason:
+
+    pub: pub_
+    pub_: pub__
+    pub__: pub___
+
+    =====
+
+    reason to ocaml:
+
+    match: match_
+    match_: match__
+    match__: match___
+
+    ocaml to reason:
+
+    match: invalid in ocaml to begin with
+    match_: match
+    match__: match_
+*)
+
+let reason_to_ml_swap = function
+  | "!" -> "not"
+  | "^" -> "!"
+  | "++" -> "^"
+  | "===" -> "=="
+  | "==" -> "="
+  (* ===\/ and !==\/ are not representable in OCaml but
+   * representable in Reason
+   *)
+  | "\\!==" -> "!=="
+  |  "\\===" -> "==="
+  | "!=" -> "<>"
+  | "!==" -> "!="
+  | x when (
+    potentially_conflicts_with ~keyword:"match" x
+    || potentially_conflicts_with ~keyword:"method" x
+    || potentially_conflicts_with ~keyword:"private" x) -> string_add_suffix x
+  | x when (
+    potentially_conflicts_with ~keyword:"switch_" x
+    || potentially_conflicts_with ~keyword:"pub_" x
+    || potentially_conflicts_with ~keyword:"pri_" x) -> string_drop_suffix x
+  | everything_else -> everything_else
+
+let ml_to_reason_swap = function
+  | "not" -> "!"
+  | "!" -> "^"
+  | "^" -> "++"
+  | "==" -> "==="
+  | "=" -> "=="
+  (* ===\/ and !==\/ are not representable in OCaml but
+   * representable in Reason
+   *)
+  | "!==" -> "\\!=="
+  |  "===" -> "\\==="
+  | "<>" -> "!="
+  | "!=" -> "!=="
+  | x when (
+    potentially_conflicts_with ~keyword:"match_" x
+    || potentially_conflicts_with ~keyword:"method_" x
+    || potentially_conflicts_with ~keyword:"private_" x) -> string_drop_suffix x
+  | x when (
+    potentially_conflicts_with ~keyword:"switch" x
+    || potentially_conflicts_with ~keyword:"pub" x
+    || potentially_conflicts_with ~keyword:"pri" x) -> string_add_suffix x
+  | everything_else -> everything_else
+
+let escape_string str =
+  let buf = Buffer.create (String.length str) in
+  String.iter (fun c ->
+      match c with
+      | '\t' -> Buffer.add_string buf "\\t"
+      | '\r' -> Buffer.add_string buf "\\r"
+      | '\n' -> Buffer.add_string buf "\\n"
+      | '\\' -> Buffer.add_string buf "\\\\"
+      | '"'  -> Buffer.add_string buf "\\\""
+      | c when c < ' ' -> Buffer.add_string buf (Char.escaped c)
+      | c -> Buffer.add_char buf c
+    ) str;
+  Buffer.contents buf
+
+(* the stuff below contains side-effects and are not used by BuckleScript's
+  vendored version of reason_syntax_util.ml. So we can neglect it *)
+
+(* #if defined BS_NO_COMPILER_PATCH then *)
 
 (* Logic for handling special behavior that only happens if things break. We
   use characters that will never appear in the printed output if actually
@@ -180,7 +326,6 @@ let processLineEndingsAndStarts str =
 
 module StringMap = Map.Make (String)
 
-
 (** Generate a suitable extension node for Merlin's consumption,
     for the purposes of reporting a syntax error - only used
     in recovery mode.
@@ -201,115 +346,6 @@ let syntax_error_extension_node loc message =
   }]
  in
  (str, payload)
-
-(** Check to see if the string `s` is made up of `keyword` and zero or more
-    trailing `_` characters. *)
-let potentially_conflicts_with ~keyword s =
-  let s_length = String.length s in
-  let keyword_length = String.length keyword in
-  (* It can't be a match if s is shorter than keyword *)
-  s_length >= keyword_length && (
-    try
-      (* Ensure s starts with keyword... *)
-      for i = 0 to keyword_length - 1 do
-        if keyword.[i] <> s.[i] then raise Exit;
-      done;
-      (* ...and contains nothing else except trailing _ characters *)
-      for i = keyword_length to s_length - 1 do
-        if s.[i] <> '_' then raise Exit;
-      done;
-      (* If we've made it this far there's a potential conflict *)
-      true
-    with
-    | Exit -> false
-  )
-
-(** Add/remove an appropriate suffix when mangling potential keywords *)
-let string_add_suffix x = x ^ "_"
-let string_drop_suffix x = String.sub x 0 (String.length x - 1)
-
-(** What do these *_swap functions do? Here's an example: Reason code uses `!`
-    for logical not, while ocaml uses `not`. So, for converting between reason
-    and ocaml syntax, ocaml `not` converts to `!`, reason `!` converts to
-    `not`.
-
-    In more complicated cases where a reserved keyword exists in one syntax but
-    not the other, these functions translate any potentially conflicting
-    identifier into the same identifier with a suffix attached, or remove the
-    suffix when converting back. Two examples:
-
-    reason to ocaml:
-
-    pub: invalid in reason to begin with
-    pub_: pub
-    pub__: pub_
-
-    ocaml to reason:
-
-    pub: pub_
-    pub_: pub__
-    pub__: pub___
-
-    =====
-
-    reason to ocaml:
-
-    match: match_
-    match_: match__
-    match__: match___
-
-    ocaml to reason:
-
-    match: invalid in ocaml to begin with
-    match_: match
-    match__: match_
-*)
-
-let reason_to_ml_swap = function
-  | "!" -> "not"
-  | "^" -> "!"
-  | "++" -> "^"
-  | "===" -> "=="
-  | "==" -> "="
-  (* ===\/ and !==\/ are not representable in OCaml but
-   * representable in Reason
-   *)
-  | "\\!==" -> "!=="
-  |  "\\===" -> "==="
-  | "!=" -> "<>"
-  | "!==" -> "!="
-  | x when (
-    potentially_conflicts_with ~keyword:"match" x
-    || potentially_conflicts_with ~keyword:"method" x
-    || potentially_conflicts_with ~keyword:"private" x) -> string_add_suffix x
-  | x when (
-    potentially_conflicts_with ~keyword:"switch_" x
-    || potentially_conflicts_with ~keyword:"pub_" x
-    || potentially_conflicts_with ~keyword:"pri_" x) -> string_drop_suffix x
-  | everything_else -> everything_else
-
-let ml_to_reason_swap = function
-  | "not" -> "!"
-  | "!" -> "^"
-  | "^" -> "++"
-  | "==" -> "==="
-  | "=" -> "=="
-  (* ===\/ and !==\/ are not representable in OCaml but
-   * representable in Reason
-   *)
-  | "!==" -> "\\!=="
-  |  "===" -> "\\==="
-  | "<>" -> "!="
-  | "!=" -> "!=="
-  | x when (
-    potentially_conflicts_with ~keyword:"match_" x
-    || potentially_conflicts_with ~keyword:"method_" x
-    || potentially_conflicts_with ~keyword:"private_" x) -> string_drop_suffix x
-  | x when (
-    potentially_conflicts_with ~keyword:"switch" x
-    || potentially_conflicts_with ~keyword:"pub" x
-    || potentially_conflicts_with ~keyword:"pri" x) -> string_add_suffix x
-  | everything_else -> everything_else
 
 let swap_txt map txt =
   if StringMap.mem txt map then
@@ -440,12 +476,12 @@ let () =
      )
 
 let map_first f = function
-  | [] -> invalid_arg "Reason_syntax_util.map_first: empty list"
+  | [] -> invalid_arg "Syntax_util.map_first: empty list"
   | x :: xs -> f x :: xs
 
 let map_last f l =
   match List.rev l with
-  | [] -> invalid_arg "Reason_syntax_util.map_last: empty list"
+  | [] -> invalid_arg "Syntax_util.map_last: empty list"
   | x :: xs -> List.rev (f x :: xs)
 
 type menhirMessagesError = {
@@ -485,16 +521,4 @@ let location_contains loc1 loc2 =
   loc1.loc_start.Lexing.pos_cnum <= loc2.loc_start.Lexing.pos_cnum &&
   loc1.loc_end.Lexing.pos_cnum >= loc2.loc_end.Lexing.pos_cnum
 
-let escape_string str =
-  let buf = Buffer.create (String.length str) in
-  String.iter (fun c ->
-      match c with
-      | '\t' -> Buffer.add_string buf "\\t"
-      | '\r' -> Buffer.add_string buf "\\r"
-      | '\n' -> Buffer.add_string buf "\\n"
-      | '\\' -> Buffer.add_string buf "\\\\"
-      | '"'  -> Buffer.add_string buf "\\\""
-      | c when c < ' ' -> Buffer.add_string buf (Char.escaped c)
-      | c -> Buffer.add_char buf c
-    ) str;
-  Buffer.contents buf
+(* #end *)
