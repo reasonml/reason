@@ -46,6 +46,7 @@ type t =
   | Sequence of config * (t list)
   | Label of (Easy_format.t -> Easy_format.t -> Easy_format.t) * t * t
   | Easy of Easy_format.t
+  | Whitespace of int * t
 
 and config = {
   (* Newlines above items that do not have any comments immediately above it.
@@ -55,6 +56,8 @@ and config = {
   newlinesAboveComments: int;
   (* Newlines above doc comments *)
   newlinesAboveDocComments: int;
+  (* Allow interleaving of whitespace indicated by Whitespace(n, layout) *)
+  allowWhitespace: bool;
   break: break_criterion;
   (* Break setting that becomes activated if a comment becomes interleaved into
    * this list. Typically, if not specified, the behavior from [break] will be
@@ -155,6 +158,9 @@ let dump ppf layout =
       traverse indent' right;
     | Easy e ->
       printf "%s Easy: '%s' \n" indent (string_of_easy e)
+    | Whitespace (n, sublayout) ->
+      printf" %s Whitespace (%d):\n" indent n;
+      (traverse (indent_more indent) sublayout)
   in
   traverse "" layout
 
@@ -218,6 +224,8 @@ let to_easy_format layout =
     | SourceMap (_, subLayout) ->
       traverse subLayout
     | Easy e -> e
+    | Whitespace (_, subLayout) ->
+      traverse subLayout
   in
   traverse layout
 

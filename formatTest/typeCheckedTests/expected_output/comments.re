@@ -119,7 +119,6 @@ let equal = (i1, i2) =>
 
 module Temp = {
   let v = true;
-
   let logIt = (str, ()) => print_string(str);
 };
 

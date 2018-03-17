@@ -15,7 +15,7 @@ test-ci: install test
 
 test: build clean-tests
 	node ./formatTest/testOprint.js
-	./miscTests/rtopIntegrationTest.sh
+	# ./miscTests/rtopIntegrationTest.sh
 	./miscTests/jsxPpxTest.sh
 	cd formatTest; ./test.sh
 
