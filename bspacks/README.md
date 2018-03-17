@@ -9,9 +9,14 @@ First, install the dependencies:
 ```sh
 opam install js_of_ocaml.3.0
 cd .. && npm install
-cd ./bspacks && ./downloadSomeDependencies.sh
 ```
 
 Also, have `java` installed in your system. This is needed to use closure compiler to compress the final `refmt.js`.
 
-Now, run `./reason_bspack.sh` to pack up Reason into a single file. Check the extensive comments in both `sh` files here if something goes wrong.
+Now, go back to project root and run:
+
+```sh
+version=VERSION_NUMBER_HERE npm run prepublishOnly
+```
+
+to pack up Reason into a single file. Check the extensive comments in both `sh` files here if something goes wrong.

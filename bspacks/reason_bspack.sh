@@ -1,3 +1,6 @@
+# exit if anything goes wrong
+set -e
+
 # this script does 2 independent things:
 # - pack the whole repo into a single refmt file for vendoring into bucklescript
 # - generate the js version of refmt for web usage
@@ -34,6 +37,7 @@ mkdir $buildDir
 pushd $THIS_SCRIPT_DIR
 # rebuild the project in case it was stale
 make clean -C ../
+make pre_release -C ../
 make build -C ../
 
 # =============
