@@ -2559,8 +2559,9 @@ as_loc
         match p.txt with
         | Term (Labelled _, _, _)
         | Term (Optional _, _, _)  ->
-            raise Reason_syntax_util.(Error(p.loc, (Syntax_error "Uncurried function definition with labelled arguments is not supported at the moment.")));
-            ()
+            raise Reason_syntax_util.(
+              Error(p.loc, (Syntax_error "Uncurried function definition with labelled arguments is not supported at the moment."))
+            )
         | _ -> ()
       ) $3 in
     ($3, true)
@@ -3136,7 +3137,7 @@ labeled_expr_constraint:
 
 %inline uncurried_labeled_expr:
   | DOT? labeled_expr {
-    let uncurried = match $1 with | Some _ -> true | None _ -> false in
+    let uncurried = match $1 with | Some _ -> true | None -> false in
     if uncurried then
       let (lbl, argExpr) = $2 in
       let loc = mklocation $startpos $endpos in
