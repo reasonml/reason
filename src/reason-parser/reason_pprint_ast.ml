@@ -1429,7 +1429,18 @@ let rec insertSingleLineComment layout comment =
       (* Nothing in the list is after comment, attach comment to the statement before the comment *)
       | [] ->
         let break sublayout = breakline sublayout (formatComment comment) in
-        Sequence (listConfig, Reason_syntax_util.map_last break beforeComment)
+        let items = match List.rev beforeComment with
+        | x :: xs ->
+          let first = begin match x with
+          | Layout.Whitespace(n, sub) ->
+              Layout.Whitespace(n, breakline (formatComment comment) sub)
+          | l -> break l
+          end in
+          List.rev (first :: xs)
+        | [] -> []
+        in
+        (* Sequence (listConfig, Reason_syntax_util.map_last break beforeComment) *)
+        Sequence (listConfig, items)
       | hd::tl ->
         let afterComment =
           match Layout.get_location hd with
