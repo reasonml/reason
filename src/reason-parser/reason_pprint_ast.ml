@@ -1296,9 +1296,23 @@ let insertLinesAboveItems = preOrderWalk (function
   | Sequence (listConfig, sublayouts)
        when listConfig.newlinesAboveItems <> 0
     ->
-     let layoutsWithLinesInjected =
-       List.map (insertBlankLines listConfig.newlinesAboveItems) sublayouts in
-     Sequence ({listConfig with newlinesAboveItems=0}, layoutsWithLinesInjected)
+    let layoutsWithLinesInjected = begin match sublayouts with
+      | [] -> []
+      | first::sublayouts ->
+        (* it doesn't make sense to insert whitespace above the first item in a
+         * sequence. Imagine:
+         * module Piano = {
+         *   
+         *   type t = steinway;
+         *
+         *   let play = () => rachmaninov();
+         * };
+         *
+         * The whitespace above `type t` is unnecessary.
+         *)
+        first::(List.map (insertBlankLines listConfig.newlinesAboveItems) sublayouts)
+    end in
+    Sequence ({listConfig with newlinesAboveItems=0}, layoutsWithLinesInjected)
   | layout -> layout
 )
 
@@ -5939,7 +5953,7 @@ let printer = object(self:'self)
           ~inline:(true, false)
           ~wrap
           ~newlinesAboveComments:0
-          ~newlinesAboveItems:0
+          ~newlinesAboveItems:1
           ~newlinesAboveDocComments:1
           ~postSpace:true
           ~sep:(SepFinal (";", ";"))

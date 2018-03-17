@@ -225,6 +225,7 @@ module type F = (HasType) => HasType2;
 
 module FInstance = (HasType: HasType) => {
   type t = HasType.t;
+
   type q = HasType.t;
 };
 

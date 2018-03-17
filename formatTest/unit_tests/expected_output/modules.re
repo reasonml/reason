@@ -26,6 +26,7 @@ let run = () =>
  */
 module MyFirstModule = {
   let x = 0;
+
   let y = x + x;
 };
 
@@ -43,7 +44,9 @@ let result = MyFirstModule.x + MyFirstModule.y;
  */
 module MySecondModule = {
   type someType = int;
+
   let x = 0;
+
   let y = x + x;
 };
 
@@ -95,12 +98,15 @@ module type MySecondModuleType = {
 let opensAModuleLocally = {
   module MyLocalModule = {
     type i = int;
+
     let x: i = 10;
   };
   /* Notice how local modules names may be used twice and are shadowed */
   module MyLocalModule: MySecondModuleType = {
     type someType = int;
+
     let x: someType = 10;
+
     let y: someType = 20;
   };
   let tmp = MyLocalModule.x + 22;
@@ -164,12 +170,14 @@ module InliningSig: {let x: int; let y: int;} = {
    * Comment inside of signature.
    */
   let x = 10;
+
   /* Inline comment inside signature. */
   let y = 20;
 };
 
 module MyFunctor = (M: HasTT) => {
   type reexportedTT = M.tt;
+
   /* Inline comment inside module. */
   /** Following special comment inside module. */
   let someValue = 1000;
@@ -394,6 +402,7 @@ module rec A: {
   type t =
     | Leaf(string)
     | Node(ASet.t);
+
   let compare = (t1, t2) =>
     switch (t1, t2) {
     | (Leaf(s1), Leaf(s2)) =>
@@ -482,8 +491,11 @@ Printf.printf(
  */
 include YourLib.CreateComponent({
   type thing = blahblahblah;
+
   type state = unit;
+
   let getInitialState = _ => ();
+
   let myValue = {recordField: "hello"};
 });
 
@@ -522,62 +534,86 @@ module M = {
 
 module N = {
   open M;
+
   let z = M.(34);
+
   let z = {
     open M;
     34;
     35;
   };
+
   let z = M.(34, 35);
+
   let z = M.(34, 35);
+
   let z = M.(34, 35);
+
   let z = M.{};
+
   let z = M.{};
+
   let z = M.{};
+
   let z = M.{x: 10};
+
   let z = M.[foo, bar];
+
   let z = M.[foo, bar];
+
   let z = M.{x: 10, y: 20};
+
   let z = M.(M2.(value));
+
   let z = M.(M2.value);
+
   let z = {
     open! M;
     34;
   };
+
   let z = {
     open! M;
     34;
     35;
   };
+
   let z = {
     open! M;
     {};
   };
+
   let z = {
     open! M;
     {x: 10};
   };
+
   let z = {
     open! M;
     [foo, bar];
   };
+
   let z = {
     open! M;
     [foo, bar];
   };
+
   let z = {
     open! M;
     {x: 10, y: 20};
   };
+
   let z = {
     open! M;
     open! M2;
     value;
   };
+
   let z = {
     open! M;
     M2.value;
   };
+
   let y = 44;
 };
 
