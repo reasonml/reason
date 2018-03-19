@@ -246,6 +246,7 @@ let get_location layout =
     | Label (formatter, left, right) ->
       union (traverse left) (traverse right)
     | SourceMap (loc, _) -> Some loc
+    | Whitespace(_, sub) -> traverse sub
     | _ -> None
   in
   traverse layout
