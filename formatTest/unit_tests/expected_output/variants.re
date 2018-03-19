@@ -2,6 +2,7 @@
 module LocalModule = {
   type accessedThroughModule =
     | AccessedThroughModule;
+
   type accessedThroughModuleWithArg =
     | AccessedThroughModuleWith(int)
     | AccessedThroughModuleWithTwo(int, int);

@@ -40,7 +40,7 @@ do
       exit 1
     fi
     # no error
-    ./_build/install/default/bin/refmt --print-width 100 --parse ml --print re $tempFile > $actual
+    ./_build/install/default/bin/refmt --print-width 80 --parse ml --print re $tempFile > $actual
 
     rm $tempFile
 

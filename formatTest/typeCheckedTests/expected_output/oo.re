@@ -303,6 +303,7 @@ module HasTupleClasses: {
    */
   class exportedClass =
     class myClassWithAnnotatedReturnType3;
+
   /**
    * anotherExportedClass.
    */

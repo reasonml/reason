@@ -31,8 +31,10 @@ Some(1);
 module M = {
   type t =
     | TupleConstructorInModule((int, int));
+
   type t2 =
     | TupleConstructor2((int, int));
+
   type t3 =
     | TupleConstructor3((int, int));
 };
