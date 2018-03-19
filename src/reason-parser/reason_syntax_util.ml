@@ -324,8 +324,6 @@ let processLineEndingsAndStarts str =
   |> String.concat "\n"
   |> String.trim
 
-module StringMap = Map.Make (String)
-
 (** Generate a suitable extension node for Merlin's consumption,
     for the purposes of reporting a syntax error - only used
     in recovery mode.
@@ -346,12 +344,6 @@ let syntax_error_extension_node loc message =
   }]
  in
  (str, payload)
-
-let swap_txt map txt =
-  if StringMap.mem txt map then
-    StringMap.find txt map
-  else
-    txt
 
 (** identifier_mapper maps all identifiers in an AST with a mapping function f
   this is used by swap_operator_mapper right below, to traverse the whole AST
