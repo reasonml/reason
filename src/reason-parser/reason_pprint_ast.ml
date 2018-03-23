@@ -57,6 +57,32 @@ open Reason_syntax_util
 module Comment = Reason_comment
 module Layout = Reason_layout
 
+(* TODO: interval tree *)
+let commentDb = ref []
+
+let print_interval (a, b) =
+  let text = "interval: [" ^ (string_of_int a) ^ ", " ^ (string_of_int b) ^ "];" in
+  print_endline text
+
+let store_comment (comment : Comment.t) =
+  let beginLine = comment.location.loc_start.pos_lnum in
+  let endLine = comment.location.loc_end.pos_lnum in
+  let interval = (beginLine, endLine) in
+  (* print_string "storing comment: "; *)
+  (* print_interval interval; *)
+  commentDb := interval::(!commentDb)
+
+let comments_height interval =
+  let (startRange, endRange) = interval in
+  List.fold_left (fun acc curr ->
+    let (startHeight, endHeight) = curr in
+    if startRange < startHeight  && endHeight < endRange then
+      acc + (endHeight - startHeight + 1)
+    else
+      acc
+  ) 0 !commentDb
+
+
 let source_map = Layout.source_map
 
 exception NotPossible of string
@@ -1147,7 +1173,7 @@ let rec isSequencey = function
   | Layout.Label (_, _, _) -> false
   | Layout.Easy (Easy_format.List _) -> true
   | Layout.Easy _ -> false
-  | Layout.Whitespace (_, sub) -> isSequencey sub
+  | Layout.Whitespace (_, _, sub) -> isSequencey sub
 
 let inline ?(preSpace=false) ?(postSpace=false) labelTerm term =
   makeList [labelTerm; term]
@@ -1228,8 +1254,8 @@ let rec append ?(space=false) txt = function
     Sequence (config, sub)
   | Label (formatter, left, right) ->
     Label (formatter, left, append ~space txt right)
-  | Whitespace(n, sub) ->
-      Whitespace(n, append ~space txt sub)
+  | Whitespace(n, interval, sub) ->
+      Whitespace(n, interval, append ~space txt sub)
   | layout ->
     inline ~postSpace:space layout (atom txt)
 
@@ -1239,8 +1265,8 @@ let appendSep spaceBeforeSep sep layout =
 let rec flattenCommentAndSep ?spaceBeforeSep:(spaceBeforeSep=false) ?sepStr = function
   | Layout.SourceMap (loc, sub) ->
      Layout.SourceMap (loc, flattenCommentAndSep ~spaceBeforeSep ?sepStr sub)
-  | Layout.Whitespace(n, sub) ->
-     Layout.Whitespace(n, flattenCommentAndSep ~spaceBeforeSep ?sepStr sub)
+  | Layout.Whitespace(n, interval, sub) ->
+     Layout.Whitespace(n, interval, flattenCommentAndSep ~spaceBeforeSep ?sepStr sub)
   | layout ->
      begin
        match sepStr with
@@ -1260,8 +1286,8 @@ let rec preOrderWalk f layout =
   | Layout.SourceMap (loc, sub) ->
     Layout.SourceMap (loc, preOrderWalk f sub)
   | Layout.Easy _ as layout -> layout
-  | Layout.Whitespace (n, sub) ->
-      Layout.Whitespace(n, preOrderWalk f sub)
+  | Layout.Whitespace (n, interval, sub) ->
+      Layout.Whitespace(n, interval, preOrderWalk f sub)
 
 (** Recursively unbreaks a layout to make sure they stay within the same line *)
 let unbreaklayout = preOrderWalk (function
@@ -1293,8 +1319,8 @@ let rec consolidateSeparator l = preOrderWalk (function
      let sep = Layout.NoSep in
      let preSpace = false in
      Sequence ({listConfig with sep; preSpace}, layoutsWithSepAndComment)
-  | Whitespace(n, sub) ->
-      Layout.Whitespace(n, consolidateSeparator sub)
+  | Whitespace(n, interval, sub) ->
+      Layout.Whitespace(n, interval, consolidateSeparator sub)
   | layout -> layout
 ) l
 
@@ -1308,7 +1334,7 @@ let rec insertLinesAboveItems items = preOrderWalk (function
     ->
       let layoutsWithLinesInjected =
         List.map (function
-          | Layout.Whitespace(n, sub) ->
+          | Layout.Whitespace(n, _interval, sub) ->
               insertBlankLines 1 sub
           | layout ->
               layout) sublayouts in
@@ -1319,7 +1345,7 @@ let rec insertLinesAboveItems items = preOrderWalk (function
      let layoutsWithLinesInjected =
        List.map (insertBlankLines listConfig.newlinesAboveItems) sublayouts in
      Sequence ({listConfig with newlinesAboveItems=0}, layoutsWithLinesInjected)
-  | Whitespace(n, sub) ->
+  | Whitespace(n, _interval, sub) ->
       insertBlankLines n sub
   | layout -> layout
 ) items
@@ -1333,8 +1359,11 @@ let rec prependSingleLineComment ?newlinesAboveDocComments:(newlinesAboveDocComm
      Layout.SourceMap (loc, prependSingleLineComment ~newlinesAboveDocComments comment sub)
   | Sequence (config, hd::tl) when config.break = Always_rec->
      Sequence(config, (prependSingleLineComment ~newlinesAboveDocComments comment hd)::tl)
-  | Whitespace(n, sub) ->
-      Whitespace(n, prependSingleLineComment ~newlinesAboveDocComments comment sub)
+  | Whitespace(n, interval, sub) when
+    let location = Comment.location comment in
+    location.loc_end.pos_lnum = (snd interval)
+  ->
+      Whitespace(n, interval, prependSingleLineComment ~newlinesAboveDocComments comment sub)
   | layout ->
     let withComment = breakline (formatComment comment) layout in
      if Comment.is_doc comment then
@@ -1345,7 +1374,12 @@ let rec prependSingleLineComment ?newlinesAboveDocComments:(newlinesAboveDocComm
 (* breakAncestors break ancestors above node, but not comment attachment itself.*)
 let appendComment ~breakAncestors layout comment =
   let text = Comment.wrap comment in
-  let layout = makeList ~break:Layout.Never ~postSpace:true [layout; atom text] in
+  let layout = match layout with
+  | Layout.Whitespace(n, interval, sublayout) ->
+    Layout.Whitespace(n, interval, makeList ~break:Layout.Never ~postSpace:true [sublayout; atom text])
+  | layout ->
+      makeList ~break:Layout.Never ~postSpace:true [layout; atom text]
+  in
   if breakAncestors then
     makeList ~inline:(true, true) ~postSpace:false ~preSpace:true ~indent:0
       ~break:Always_rec [layout]
@@ -1361,8 +1395,8 @@ let rec looselyAttachComment ~breakAncestors layout comment =
   match layout with
   | Layout.SourceMap (loc, sub) ->
      Layout.SourceMap (loc, looselyAttachComment ~breakAncestors sub comment)
-  | Layout.Whitespace (n, sub) ->
-     Layout.Whitespace(n, looselyAttachComment ~breakAncestors sub comment)
+  | Layout.Whitespace (n, interval, sub) ->
+     Layout.Whitespace(n, interval, looselyAttachComment ~breakAncestors sub comment)
   | Easy e ->
      inline ~postSpace:true layout (formatComment comment)
   | Sequence (listConfig, subLayouts)
@@ -1370,7 +1404,9 @@ let rec looselyAttachComment ~breakAncestors layout comment =
      (* If any of the subLayout strictly contains this comment, recurse into to it *)
     let recurse_sublayout layout =
       if Layout.contains_location layout ~location
-      then looselyAttachComment ~breakAncestors layout comment
+      then begin
+        looselyAttachComment ~breakAncestors layout comment
+      end
       else layout
     in
     Sequence (listConfig, List.map recurse_sublayout subLayouts)
@@ -1414,8 +1450,8 @@ let rec insertSingleLineComment layout comment =
   match layout with
   | Layout.SourceMap (loc, sub) ->
     Layout.SourceMap (loc, insertSingleLineComment sub comment)
-  | Layout.Whitespace (n, sub) ->
-    Layout.Whitespace(n, insertSingleLineComment sub comment)
+  | Layout.Whitespace (n, interval, sub) ->
+    Layout.Whitespace(n, interval, insertSingleLineComment sub comment)
   | Easy e ->
     prependSingleLineComment comment layout
   | Sequence (listConfig, subLayouts) when subLayouts = [] ->
@@ -1425,22 +1461,27 @@ let rec insertSingleLineComment layout comment =
     let newlinesAboveDocComments = listConfig.newlinesAboveDocComments in
     let (beforeComment, afterComment) =
       Reason_syntax_util.pick_while (Layout.is_before ~location) subLayouts in
+
     begin match afterComment with
       (* Nothing in the list is after comment, attach comment to the statement before the comment *)
       | [] ->
         let break sublayout = breakline sublayout (formatComment comment) in
-        let items = match List.rev beforeComment with
-        | x :: xs ->
-          let first = begin match x with
-          | Layout.Whitespace(n, sub) ->
-              Layout.Whitespace(n, breakline (formatComment comment) sub)
-          | l -> break l
-          end in
-          List.rev (first :: xs)
-        | [] -> []
-        in
-        (* Sequence (listConfig, Reason_syntax_util.map_last break beforeComment) *)
-        Sequence (listConfig, items)
+
+        (* let items = match List.rev beforeComment with *)
+        (* | x :: xs -> *)
+            (* print_endline "ok this here"; *)
+          (* let first = begin match x with *)
+          (* | Layout.Whitespace(n, sub) -> *)
+              (* Layout.Whitespace(n, breakline sub (formatComment comment)) *)
+          (* | l ->  *)
+              (* print_endline "general case"; *)
+              (* break l *)
+          (* end in *)
+          (* List.rev (first :: xs) *)
+        (* | [] -> [] *)
+        (* in *)
+        Sequence (listConfig, Reason_syntax_util.map_last break beforeComment)
+        (* Sequence (listConfig, items) *)
       | hd::tl ->
         let afterComment =
           match Layout.get_location hd with
@@ -1481,8 +1522,8 @@ let rec attachCommentToNodeRight layout comment =
     Layout.Sequence ({config with wrap=(lwrap, rwrap)}, sub)
   | Layout.SourceMap (loc, sub) ->
     Layout.SourceMap (loc, attachCommentToNodeRight sub comment)
-  | Whitespace(n, sub) ->
-      Whitespace(n, attachCommentToNodeRight sub comment)
+  | Whitespace(n, interval, sub) ->
+      Whitespace(n, interval, attachCommentToNodeRight sub comment)
   | layout -> inline ~postSpace:true layout (formatComment comment)
 
 let rec attachCommentToNodeLeft comment layout =
@@ -1493,8 +1534,8 @@ let rec attachCommentToNodeLeft comment layout =
     Layout.Sequence ({config with wrap = (lwrap, rwrap)}, sub)
   | Layout.SourceMap (loc, sub) ->
     Layout.SourceMap (loc, attachCommentToNodeLeft comment sub )
-  | Whitespace(n, sub) ->
-      Whitespace(n, attachCommentToNodeRight sub comment)
+  | Whitespace(n, interval, sub) ->
+      Whitespace(n, interval, attachCommentToNodeRight sub comment)
   | layout ->
     Layout.Label (inlineLabel, formatComment comment, layout)
 
@@ -6019,18 +6060,26 @@ let printer = object(self:'self)
               let item = self#structure_item x in
               let l1 = prevLoc.loc_end.pos_lnum in
               let l2 = x.pstr_loc.loc_start.pos_lnum in
-              if l2 - l1 >= 2 then
-                group x.pstr_loc [item] ((List.rev curr)::acc) xs
+              let diffInterval = (l1, l2) in
+              let h = comments_height diffInterval in
+              (* print_string "height: "; *)
+              (* print_string (string_of_int h); *)
+              (* print_newline(); *)
+              (* print_interval diffInterval; *)
+              let intv = (l1 + 1, l2 - 1) in
+              if l2 - l1 - 1 - h >= 1 then
+                group x.pstr_loc [(intv, item)] ((List.rev curr)::acc) xs
               else
-                group x.pstr_loc (item::curr) acc xs
+                group x.pstr_loc ((intv, item)::curr) acc xs
           | [] ->
               let groups = List.rev ((List.rev curr)::acc) in
               List.mapi (fun i group -> match group with
-                | x::xs ->
+                | curr::xs ->
+                    let (intv, x) = curr in
                     let firstLayout =
-                      if (i > 0) then Layout.Whitespace(1, x) else x
+                      if (i > 0) then Layout.Whitespace(1, intv, x) else x
                     in
-                    (firstLayout::xs)
+                    (firstLayout::(List.map snd xs))
                 | [] -> []
               ) groups
         in
@@ -6044,10 +6093,10 @@ let printer = object(self:'self)
           ~break:Always_rec
           ~inline:(true, false)
           ~wrap
-          ~newlinesAboveComments:0
+          (* ~newlinesAboveComments:0 *)
           (* ~newlinesAboveItems:0 *)
           ~allowWhitespace:true
-          ~newlinesAboveDocComments:1
+          (* ~newlinesAboveDocComments:1 *)
           ~postSpace:true
           ~sep:(SepFinal (";", ";"))
           items
@@ -6700,10 +6749,12 @@ let pattern ppf x =
     (printer#pattern (apply_mapper_to_pattern x preprocessing_mapper))
 
 let signature (comments : Comment.t list) ppf x =
+  List.iter (fun comment -> store_comment comment) comments;
   format_layout ppf ~comments
     (printer#signature (apply_mapper_to_signature x preprocessing_mapper))
 
 let structure (comments : Comment.t list) ppf x =
+  List.iter (fun comment -> store_comment comment) comments;
   format_layout ppf ~comments
     (printer#structure (apply_mapper_to_structure x preprocessing_mapper))
 

@@ -164,14 +164,12 @@ module InliningSig: {let x: int; let y: int;} = {
    * Comment inside of signature.
    */
   let x = 10;
-
   /* Inline comment inside signature. */
   let y = 20;
 };
 
 module MyFunctor = (M: HasTT) => {
   type reexportedTT = M.tt;
-
   /* Inline comment inside module. */
   /** Following special comment inside module. */
   let someValue = 1000;

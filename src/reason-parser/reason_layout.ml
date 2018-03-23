@@ -46,7 +46,7 @@ type t =
   | Sequence of config * (t list)
   | Label of (Easy_format.t -> Easy_format.t -> Easy_format.t) * t * t
   | Easy of Easy_format.t
-  | Whitespace of int * t
+  | Whitespace of int * (int * int) * t
 
 and config = {
   (* Newlines above items that do not have any comments immediately above it.
@@ -158,8 +158,8 @@ let dump ppf layout =
       traverse indent' right;
     | Easy e ->
       printf "%s Easy: '%s' \n" indent (string_of_easy e)
-    | Whitespace (n, sublayout) ->
-      printf" %s Whitespace (%d):\n" indent n;
+    | Whitespace (n, interval, sublayout) ->
+      printf" %s Whitespace (%d) [%d %d]:\n" indent n (fst interval) (snd interval);
       (traverse (indent_more indent) sublayout)
   in
   traverse "" layout
@@ -224,7 +224,7 @@ let to_easy_format layout =
     | SourceMap (_, subLayout) ->
       traverse subLayout
     | Easy e -> e
-    | Whitespace (_, subLayout) ->
+    | Whitespace (_, _, subLayout) ->
       traverse subLayout
   in
   traverse layout
@@ -246,7 +246,7 @@ let get_location layout =
     | Label (formatter, left, right) ->
       union (traverse left) (traverse right)
     | SourceMap (loc, _) -> Some loc
-    | Whitespace(_, sub) -> traverse sub
+    | Whitespace(_,_, sub) -> traverse sub
     | _ -> None
   in
   traverse layout
