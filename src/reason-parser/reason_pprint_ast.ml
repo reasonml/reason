@@ -1173,7 +1173,7 @@ let rec isSequencey = function
   | Layout.Label (_, _, _) -> false
   | Layout.Easy (Easy_format.List _) -> true
   | Layout.Easy _ -> false
-  | Layout.Whitespace (_, _, sub) -> isSequencey sub
+  | Layout.Whitespace (_, sub) -> isSequencey sub
 
 let inline ?(preSpace=false) ?(postSpace=false) labelTerm term =
   makeList [labelTerm; term]
@@ -1254,8 +1254,8 @@ let rec append ?(space=false) txt = function
     Sequence (config, sub)
   | Label (formatter, left, right) ->
     Label (formatter, left, append ~space txt right)
-  | Whitespace(n, interval, sub) ->
-      Whitespace(n, interval, append ~space txt sub)
+  | Whitespace(info, sub) ->
+      Whitespace(info, append ~space txt sub)
   | layout ->
     inline ~postSpace:space layout (atom txt)
 
@@ -1265,8 +1265,8 @@ let appendSep spaceBeforeSep sep layout =
 let rec flattenCommentAndSep ?spaceBeforeSep:(spaceBeforeSep=false) ?sepStr = function
   | Layout.SourceMap (loc, sub) ->
      Layout.SourceMap (loc, flattenCommentAndSep ~spaceBeforeSep ?sepStr sub)
-  | Layout.Whitespace(n, interval, sub) ->
-     Layout.Whitespace(n, interval, flattenCommentAndSep ~spaceBeforeSep ?sepStr sub)
+  | Layout.Whitespace(info, sub) ->
+     Layout.Whitespace(info, flattenCommentAndSep ~spaceBeforeSep ?sepStr sub)
   | layout ->
      begin
        match sepStr with
@@ -1286,8 +1286,8 @@ let rec preOrderWalk f layout =
   | Layout.SourceMap (loc, sub) ->
     Layout.SourceMap (loc, preOrderWalk f sub)
   | Layout.Easy _ as layout -> layout
-  | Layout.Whitespace (n, interval, sub) ->
-      Layout.Whitespace(n, interval, preOrderWalk f sub)
+  | Layout.Whitespace (info, sub) ->
+      Layout.Whitespace(info, preOrderWalk f sub)
 
 (** Recursively unbreaks a layout to make sure they stay within the same line *)
 let unbreaklayout = preOrderWalk (function
@@ -1319,8 +1319,8 @@ let rec consolidateSeparator l = preOrderWalk (function
      let sep = Layout.NoSep in
      let preSpace = false in
      Sequence ({listConfig with sep; preSpace}, layoutsWithSepAndComment)
-  | Whitespace(n, interval, sub) ->
-      Layout.Whitespace(n, interval, consolidateSeparator sub)
+  | Whitespace(info, sub) ->
+      Layout.Whitespace(info, consolidateSeparator sub)
   | layout -> layout
 ) l
 
@@ -1334,8 +1334,8 @@ let rec insertLinesAboveItems items = preOrderWalk (function
     ->
       let layoutsWithLinesInjected =
         List.map (function
-          | Layout.Whitespace(n, _interval, sub) ->
-              insertBlankLines 1 sub
+          | Layout.Whitespace({depth}, sub) ->
+              insertBlankLines depth sub
           | layout ->
               layout) sublayouts in
       Sequence(listConfig, layoutsWithLinesInjected)
@@ -1345,8 +1345,8 @@ let rec insertLinesAboveItems items = preOrderWalk (function
      let layoutsWithLinesInjected =
        List.map (insertBlankLines listConfig.newlinesAboveItems) sublayouts in
      Sequence ({listConfig with newlinesAboveItems=0}, layoutsWithLinesInjected)
-  | Whitespace(n, _interval, sub) ->
-      insertBlankLines n sub
+  | Whitespace({depth}, sub) ->
+      insertBlankLines depth sub
   | layout -> layout
 ) items
 
@@ -1359,11 +1359,41 @@ let rec prependSingleLineComment ?newlinesAboveDocComments:(newlinesAboveDocComm
      Layout.SourceMap (loc, prependSingleLineComment ~newlinesAboveDocComments comment sub)
   | Sequence (config, hd::tl) when config.break = Always_rec->
      Sequence(config, (prependSingleLineComment ~newlinesAboveDocComments comment hd)::tl)
-  | Whitespace(n, interval, sub) when
-    let location = Comment.location comment in
-    location.loc_end.pos_lnum = (snd interval)
-  ->
-      Whitespace(n, interval, prependSingleLineComment ~newlinesAboveDocComments comment sub)
+  | Whitespace(info, sub) ->
+    let cl = Comment.location comment in
+    let intv = info.Layout.interval in
+    let nextInfo = Layout.{
+      info with comments = comment::info.comments
+    } in
+    begin match info.Layout.comments with
+    | [] ->
+        if (snd intv) = cl.loc_end.pos_lnum then
+          let sub = breakline (formatComment comment) sub in
+          Whitespace(nextInfo, sub)
+        else if (fst intv) = cl.loc_start.pos_lnum then
+          let sub = breakline (formatComment comment) (insertBlankLines 1 sub) in
+          let nextInfo = Layout.{nextInfo with depth = 0} in
+          Whitespace(nextInfo, sub)
+        else
+          let sub = breakline (formatComment comment) (insertBlankLines 1 sub) in
+          Whitespace(nextInfo, sub)
+    | prevComment::_xs ->
+        let pcl = Comment.location prevComment in
+        let blankLinesAbove = cl.loc_start.pos_lnum + 1 == (fst intv) in
+        let nextInfo = if not blankLinesAbove  then {
+          nextInfo with
+          depth = 0
+        } else nextInfo in
+        if pcl.loc_start.pos_lnum  - cl.loc_end.pos_lnum > 1 then
+          let sub = insertBlankLines 1 sub in
+          let sub = breakline (formatComment comment) sub in
+          let withComment =  Layout.Whitespace(nextInfo, sub) in
+          withComment
+        else
+          let sub = breakline (formatComment comment) sub in
+          let withComment =  Layout.Whitespace(nextInfo, sub) in
+          withComment
+    end
   | layout ->
     let withComment = breakline (formatComment comment) layout in
      if Comment.is_doc comment then
@@ -1375,8 +1405,8 @@ let rec prependSingleLineComment ?newlinesAboveDocComments:(newlinesAboveDocComm
 let appendComment ~breakAncestors layout comment =
   let text = Comment.wrap comment in
   let layout = match layout with
-  | Layout.Whitespace(n, interval, sublayout) ->
-    Layout.Whitespace(n, interval, makeList ~break:Layout.Never ~postSpace:true [sublayout; atom text])
+  | Layout.Whitespace(info, sublayout) ->
+    Layout.Whitespace(info, makeList ~break:Layout.Never ~postSpace:true [sublayout; atom text])
   | layout ->
       makeList ~break:Layout.Never ~postSpace:true [layout; atom text]
   in
@@ -1395,8 +1425,8 @@ let rec looselyAttachComment ~breakAncestors layout comment =
   match layout with
   | Layout.SourceMap (loc, sub) ->
      Layout.SourceMap (loc, looselyAttachComment ~breakAncestors sub comment)
-  | Layout.Whitespace (n, interval, sub) ->
-     Layout.Whitespace(n, interval, looselyAttachComment ~breakAncestors sub comment)
+  | Layout.Whitespace (info, sub) ->
+     Layout.Whitespace(info, looselyAttachComment ~breakAncestors sub comment)
   | Easy e ->
      inline ~postSpace:true layout (formatComment comment)
   | Sequence (listConfig, subLayouts)
@@ -1450,8 +1480,8 @@ let rec insertSingleLineComment layout comment =
   match layout with
   | Layout.SourceMap (loc, sub) ->
     Layout.SourceMap (loc, insertSingleLineComment sub comment)
-  | Layout.Whitespace (n, interval, sub) ->
-    Layout.Whitespace(n, interval, insertSingleLineComment sub comment)
+  | Layout.Whitespace (info, sub) ->
+    Layout.Whitespace(info, insertSingleLineComment sub comment)
   | Easy e ->
     prependSingleLineComment comment layout
   | Sequence (listConfig, subLayouts) when subLayouts = [] ->
@@ -1466,22 +1496,7 @@ let rec insertSingleLineComment layout comment =
       (* Nothing in the list is after comment, attach comment to the statement before the comment *)
       | [] ->
         let break sublayout = breakline sublayout (formatComment comment) in
-
-        (* let items = match List.rev beforeComment with *)
-        (* | x :: xs -> *)
-            (* print_endline "ok this here"; *)
-          (* let first = begin match x with *)
-          (* | Layout.Whitespace(n, sub) -> *)
-              (* Layout.Whitespace(n, breakline sub (formatComment comment)) *)
-          (* | l ->  *)
-              (* print_endline "general case"; *)
-              (* break l *)
-          (* end in *)
-          (* List.rev (first :: xs) *)
-        (* | [] -> [] *)
-        (* in *)
         Sequence (listConfig, Reason_syntax_util.map_last break beforeComment)
-        (* Sequence (listConfig, items) *)
       | hd::tl ->
         let afterComment =
           match Layout.get_location hd with
@@ -1522,8 +1537,8 @@ let rec attachCommentToNodeRight layout comment =
     Layout.Sequence ({config with wrap=(lwrap, rwrap)}, sub)
   | Layout.SourceMap (loc, sub) ->
     Layout.SourceMap (loc, attachCommentToNodeRight sub comment)
-  | Whitespace(n, interval, sub) ->
-      Whitespace(n, interval, attachCommentToNodeRight sub comment)
+  | Whitespace(info, sub) ->
+      Whitespace(info, attachCommentToNodeRight sub comment)
   | layout -> inline ~postSpace:true layout (formatComment comment)
 
 let rec attachCommentToNodeLeft comment layout =
@@ -1534,8 +1549,8 @@ let rec attachCommentToNodeLeft comment layout =
     Layout.Sequence ({config with wrap = (lwrap, rwrap)}, sub)
   | Layout.SourceMap (loc, sub) ->
     Layout.SourceMap (loc, attachCommentToNodeLeft comment sub )
-  | Whitespace(n, interval, sub) ->
-      Whitespace(n, interval, attachCommentToNodeRight sub comment)
+  | Whitespace(info, sub) ->
+      Whitespace(info, attachCommentToNodeRight sub comment)
   | layout ->
     Layout.Label (inlineLabel, formatComment comment, layout)
 
@@ -6077,7 +6092,13 @@ let printer = object(self:'self)
                 | curr::xs ->
                     let (intv, x) = curr in
                     let firstLayout =
-                      if (i > 0) then Layout.Whitespace(1, intv, x) else x
+                      if (i > 0) then
+                        let region = Layout.{
+                          interval = intv;
+                          comments = [];
+                          depth = 1;
+                        } in
+                        Layout.Whitespace(region, x) else x
                     in
                     (firstLayout::(List.map snd xs))
                 | [] -> []

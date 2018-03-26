@@ -52,3 +52,31 @@ module Comments = {
     b: string /* comment2 */,
   };
 };
+
+module FloatingComments = {
+  let a = 1;
+  /* a */
+
+  /* b */
+
+  /* c */
+  let b = 1;
+
+  /* d */
+
+  let c = 1;
+
+  /* e */
+  /* f */
+
+  let d = 1;
+  /* g */
+  /* h */
+
+  /* i */
+  /* j */
+
+  /* k */
+  /* l */
+  let e = 1;
+};
