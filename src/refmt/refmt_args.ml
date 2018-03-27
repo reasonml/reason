@@ -60,13 +60,3 @@ let input =
   let docv = "FILENAMES" in
   let doc = "input files; if empty, assume stdin" in
   Arg.(value & (pos_all non_dir_file []) & info [] ~docv ~doc)
-
-(* DEPRECATED *)
-
-let add_printers =
-  let doc = "add auto-printers to user-defined types" in
-  Arg.(value & flag & info ["add-printers"] ~doc)
-
-let add_runtime =
-  let doc = "add runtime for auto-printers is DEPRECATED" in
-  Arg.(value & flag & info ["add-runtime"] ~doc)
