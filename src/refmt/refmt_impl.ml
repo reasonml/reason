@@ -64,8 +64,8 @@ let refmt
       | (false,   _) -> None
     in
     let (module Printer : Printer_maker.PRINTER) =
-      if interface then (module Reason_interface_printer.Reason_interface_printer)
-      else (module Reason_implementation_printer.Reason_implementation_printer)
+      if interface then (module Reason_interface_printer)
+      else (module Reason_implementation_printer)
     in
     Reason_config.configure ~r:is_recoverable;
     Location.input_name := input_file;
