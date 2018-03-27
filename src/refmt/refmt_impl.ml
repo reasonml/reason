@@ -8,9 +8,6 @@
 open Lexing
 open Cmdliner
 
-exception Invalid_config = Printer_maker.Invalid_config
-let err = Printer_maker.err
-
 let read_lines file =
   let list = ref [] in
   let chan = open_in file in
@@ -23,11 +20,6 @@ let read_lines file =
     close_in chan;
     List.rev !list
 
-let warn s =
-  let red s = "\027[31m" ^ s ^ "\x1b[m" in
-  prerr_endline (red "WARNING:" ^ " " ^ s)
-
-
 let refmt
     interface
     is_recoverable
@@ -35,7 +27,7 @@ let refmt
     parse_ast
     print
     print_width
-    h_file
+    heuristics_file
     in_place
     input_files
   =
@@ -49,7 +41,7 @@ let refmt
       | (None, false) -> `Auto
       | (None, true) -> `Reason (* default *)
     in
-    let constructorLists = match h_file with
+    let constructorLists = match heuristics_file with
       | Some f_name -> read_lines f_name
       | None -> []
     in
@@ -59,7 +51,7 @@ let refmt
     in
     let output_file =
       match in_place, use_stdin with
-      | (true, true) -> err "Cannot write in place to stdin."
+      | (true, true) -> Printer_maker.err "Cannot write in place to stdin."
       | (true,    _) -> Some input_file
       | (false,   _) -> None
     in
@@ -95,7 +87,7 @@ let refmt
     | [] -> `Ok (refmt_single None)
     | ls -> `Ok (List.iter (fun file -> refmt_single (Some file)) input_files)
   with
-  | Invalid_config msg -> `Error (true, msg)
+  | Printer_maker.Invalid_config msg -> `Error (true, msg)
   | exn ->
           Location.report_exception Format.err_formatter exn;
           exit 1
