@@ -38,14 +38,8 @@ let refmt
     h_file
     in_place
     input_files
-    add_printers
-    add_runtime
   =
   let refmt_single input_file =
-    let () =
-      if add_printers then err "--add-printers is deprecated.\n The feature wasn't stable enough; we'll find a better way soon. Sorry about that!"
-      else if add_runtime then err "--add-runtime is deprecated.\n The feature wasn't stable enough; we'll find a better way soon. Sorry about that!"
-    in
     let (use_stdin, input_file) = match input_file with
       | Some name -> (false, name)
       | None -> (true, "")
@@ -125,8 +119,6 @@ let refmt_t =
               $ heuristics_file
               $ in_place
               $ input
-              $ add_runtime
-              $ add_printers
 
 let () =
   match Term.eval ((Term.ret refmt_t), top_level_info) with
