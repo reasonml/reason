@@ -602,7 +602,10 @@ module Reason_syntax = struct
     | Reason_parser.TYPE
     | Reason_parser.MODULE
     | Reason_parser.OPEN
-    | Reason_parser.EXCEPTION -> true
+    | Reason_parser.EXCEPTION
+    | Reason_parser.INCLUDE
+    | Reason_parser.DOCSTRING _
+    | Reason_parser.LBRACKETAT -> true
     | _ -> false
 
   let try_inserting_semi checkpoint ((_, pos, _) as triple) =
