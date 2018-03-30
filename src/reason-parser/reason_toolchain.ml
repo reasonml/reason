@@ -490,9 +490,14 @@ module OCaml_syntax = struct
       (To_current.copy_structure structure)
 end
 
+let insert_completion_ident : Lexing.position option ref = ref None
+
 module Reason_syntax = struct
   module I = Reason_parser.MenhirInterpreter
-  module Lexer_impl = Reason_lexer
+  module Lexer_impl = struct
+    include Reason_lexer
+    let init () = init ?insert_completion_ident:!insert_completion_ident ()
+  end
   type token = Reason_parser.token
 
   (* [tracking_supplier] is a supplier that tracks the last token read *)
