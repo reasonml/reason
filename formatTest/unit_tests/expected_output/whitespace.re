@@ -80,3 +80,41 @@ module FloatingComments = {
   /* l */
   let e = 1;
 };
+
+module FloatingMultiLineComments = {
+  let a = 1;
+  /* 1
+     2 */
+
+  /* ok
+     another one */
+
+  /* wow
+     here */
+  let b = 1;
+
+  /* float
+     -ing */
+  /* here
+     on the second */
+
+  let c = 1;
+
+  /* one
+     two */
+  /* three
+     four */
+
+  /* extreme
+     comment */
+  /* here
+     on two lines */
+
+  /* another
+     one */
+  /* chocolate
+     is
+     good */
+
+  let d = 2;
+};
