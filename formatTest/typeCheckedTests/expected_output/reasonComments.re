@@ -738,3 +738,12 @@ external url : t => string = "";
 
 /* normal comment */
 [@bs.send] external url : t => string = "";
+
+/** doc type */
+type q = {
+  a: int,
+  b: string,
+};
+
+/** doc let */
+let letter: q = {a: 42, b: "answer"};
