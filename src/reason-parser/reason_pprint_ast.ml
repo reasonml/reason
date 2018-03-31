@@ -1390,6 +1390,21 @@ let rec prependSingleLineComment ?newlinesAboveDocComments:(newlinesAboveDocComm
           let withComment =  Layout.Whitespace(nextInfo, sub) in
           withComment
         else
+          let commentsInRange = List.filter (fun (beginLine, endLine) ->
+               beginLine >= (fst intv)
+            && endLine <= (snd intv)
+            && endLine < cl.loc_start.pos_lnum
+          ) !commentDb in
+          let hasCommentAbove = match commentsInRange with
+          | x::_ -> true
+          | [] -> false
+          in
+
+          let nextInfo = { nextInfo with depth =
+            if cl.loc_start.pos_lnum > (fst intv) && not hasCommentAbove then
+              1
+            else nextInfo.depth
+          } in
           let sub = breakline (formatComment comment) sub in
           let withComment =  Layout.Whitespace(nextInfo, sub) in
           withComment
