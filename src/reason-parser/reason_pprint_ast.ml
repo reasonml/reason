@@ -2136,6 +2136,41 @@ let formatComputedInfixChain infixChainList =
   in
   print [] [] "" infixChainList
 
+let groupAndPrint ~xf ~getLoc items =
+  let rec group prevLoc curr acc = function
+    | x::xs ->
+        let item = xf x in
+        let l1 = prevLoc.loc_end.pos_lnum in
+        let l2 = (getLoc x).loc_start.pos_lnum in
+        let diffInterval = (l1, l2) in
+        let h = comments_height diffInterval in
+        let intv = (l1 + 1, l2 - 1) in
+        if l2 - l1 - 1 - h >= 1 then
+          group (getLoc x) [(intv, item)] ((List.rev curr)::acc) xs
+        else
+          group (getLoc x) ((intv, item)::curr) acc xs
+    | [] ->
+        let groups = List.rev ((List.rev curr)::acc) in
+        List.mapi (fun i group -> match group with
+          | curr::xs ->
+              let (intv, x) = curr in
+              let firstLayout =
+                if (i > 0) then
+                  let region = Layout.{
+                    interval = intv;
+                    comments = [];
+                    depth = 1;
+                  } in
+                  Layout.Whitespace(region, x) else x
+              in
+              (firstLayout::(List.map snd xs))
+          | [] -> []
+        ) groups
+  in
+          match items with
+          | first::rest ->
+              List.concat (group (getLoc first) [] [] (first::rest))
+          | [] -> []
 
 let printer = object(self:'self)
   val pipe = false
@@ -5442,10 +5477,6 @@ let printer = object(self:'self)
     (*| Pctf_attribute (s, _) -> (not (s.txt = "ocaml.text") && not (s.txt = "ocaml.doc"))*)
     | _ -> true
 
-  method shouldDisplaySigItem x = match x.psig_desc with
-    (*| Psig_attribute (s, _) -> (not (s.txt = "ocaml.text") && not (s.txt = "ocaml.doc"))*)
-    | _ -> true
-
   method shouldDisplayStructureItem x = match x.pstr_desc with
     (*| Pstr_attribute (s, _) -> (not (s.txt = "ocaml.text") && not (s.txt = "ocaml.doc"))*)
     | _ -> true
@@ -5839,11 +5870,9 @@ let printer = object(self:'self)
       (self#class_self_pattern_and_structure cs)
 
   method signature signatureItems =
-    let signatureItems = List.filter self#shouldDisplaySigItem signatureItems in
     if List.length signatureItems == 0 then
       atom ""
     else
-      let signatureItems = List.filter self#shouldDisplaySigItem signatureItems in
       let first = List.nth signatureItems 0 in
       let last = List.nth signatureItems (List.length signatureItems - 1) in
       let loc_start = first.psig_loc.loc_start in
@@ -5983,16 +6012,19 @@ let printer = object(self:'self)
       | Pmty_ident li ->
           self#longident_loc li;
       | Pmty_signature s ->
+        let items =
+          groupAndPrint ~xf:self#signature_item ~getLoc:(fun x -> x.psig_loc) s
+        in
           makeList
             ~break:IfNeed
             ~inline:(true, false)
             ~wrap:("{", "}")
-            ~newlinesAboveComments:0
-            ~newlinesAboveItems:0
-            ~newlinesAboveDocComments:1
+            (* ~newlinesAboveComments:0 *)
+            (* ~newlinesAboveItems:0 *)
+            (* ~newlinesAboveDocComments:1 *)
             ~postSpace:true
             ~sep:(SepFinal (";", ";"))
-            (List.map self#signature_item (List.filter self#shouldDisplaySigItem s))
+            items
       | Pmty_extension (s, e) -> self#payload "%" s e
       | _ -> makeList ~break:IfNeed ~wrap:("(", ")") [self#module_type x]
 
@@ -6084,46 +6116,8 @@ let printer = object(self:'self)
         )
     | Pmod_structure s ->
         let wrap = if hug then ("({", "})") else ("{", "}") in
-        (* TODO write better code *)
-        let rec group prevLoc curr acc = function
-          | x::xs ->
-              let item = self#structure_item x in
-              let l1 = prevLoc.loc_end.pos_lnum in
-              let l2 = x.pstr_loc.loc_start.pos_lnum in
-              let diffInterval = (l1, l2) in
-              let h = comments_height diffInterval in
-              (* print_string "height: "; *)
-              (* print_string (string_of_int h); *)
-              (* print_newline(); *)
-              (* print_interval diffInterval; *)
-              let intv = (l1 + 1, l2 - 1) in
-              if l2 - l1 - 1 - h >= 1 then
-                group x.pstr_loc [(intv, item)] ((List.rev curr)::acc) xs
-              else
-                group x.pstr_loc ((intv, item)::curr) acc xs
-          | [] ->
-              let groups = List.rev ((List.rev curr)::acc) in
-              List.mapi (fun i group -> match group with
-                | curr::xs ->
-                    let (intv, x) = curr in
-                    let firstLayout =
-                      if (i > 0) then
-                        let region = Layout.{
-                          interval = intv;
-                          comments = [];
-                          depth = 1;
-                        } in
-                        Layout.Whitespace(region, x) else x
-                    in
-                    (firstLayout::(List.map snd xs))
-                | [] -> []
-              ) groups
-        in
         let items =
-          match s with
-          | first::rest ->
-              List.concat (group first.pstr_loc [] [] (first::rest))
-          | [] -> []
+          groupAndPrint ~xf:self#structure_item ~getLoc:(fun x -> x.pstr_loc) s
         in
         makeList
           ~break:Always_rec

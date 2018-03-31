@@ -121,3 +121,14 @@ module FloatingMultiLineComments = {
 
   let d = 2;
 };
+
+module type TestModuleType = {
+  type a = int;
+  type b = string;
+
+
+
+  let x: a;
+  let y: b;
+
+};
