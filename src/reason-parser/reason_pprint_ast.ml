@@ -2136,12 +2136,16 @@ let formatComputedInfixChain infixChainList =
   in
   print [] [] "" infixChainList
 
+let id x = x
+
 let groupAndPrint ~xf ~getLoc items =
   let rec group prevLoc curr acc = function
     | x::xs ->
         let item = xf x in
         let l1 = prevLoc.loc_end.pos_lnum in
+        (* print_endline ("l1: " ^ (string_of_int l1)); *)
         let l2 = (getLoc x).loc_start.pos_lnum in
+        (* print_endline ("l2: " ^ (string_of_int l1)); *)
         let diffInterval = (l1, l2) in
         let h = comments_height diffInterval in
         let intv = (l1 + 1, l2 - 1) in
@@ -2167,10 +2171,10 @@ let groupAndPrint ~xf ~getLoc items =
           | [] -> []
         ) groups
   in
-          match items with
-          | first::rest ->
-              List.concat (group (getLoc first) [] [] (first::rest))
-          | [] -> []
+  match items with
+  | first::rest ->
+      List.concat (group (getLoc first) [] [] (first::rest))
+  | [] -> []
 
 let printer = object(self:'self)
   val pipe = false
@@ -4434,78 +4438,141 @@ let printer = object(self:'self)
         (first :: List.map (self#binding "and") rest)
 
   method letList expr =
-    match (expr.pexp_attributes, expr.pexp_desc) with
-      | ([], Pexp_let (rf, l, e)) ->
-        (* For "letList" bindings, the start/end isn't as simple as with
-         * module value bindings. For "let lists", the sequences were formed
-         * within braces {}. The parser relocates the first let binding to the
-         * first brace. *)
-         let bindingsLayout = self#bindings (rf, l) in
-         let bindingsLoc = self#bindingsLocationRange l in
-         (source_map ~loc:bindingsLoc bindingsLayout :: self#letList e)
-      | (attrs, Pexp_open (ovf, lid, e))
-          (* Add this when check to make sure these are handled as regular "simple expressions" *)
-          when not (self#isSeriesOfOpensFollowedByNonSequencyExpression {expr with pexp_attributes = []}) ->
-        let overrideStr = match ovf with | Override -> "!" | Fresh -> "" in
-        let openLayout = label ~space:true
-          (atom ("open" ^ overrideStr))
-          (self#longident_loc lid)
-        in
-        let attrsOnOpen =
-          makeList ~inline:(true, true) ~postSpace:true ~break:Always
-          ((self#attributes attrs)@[openLayout])
-        in
-        (* Just like the bindings, have to synthesize a location since the
-         * Pexp location is parsed (potentially) beginning with the open
-         * brace {} in the let sequence. *)
-        (source_map ~loc:lid.loc attrsOnOpen :: self#letList e)
-      | ([], Pexp_letmodule (s, me, e)) ->
-          let prefixText = "module" in
-          let bindingName = atom ~loc:s.loc s.txt in
-          let moduleExpr = me in
-          let letModuleLayout =
-            (self#let_module_binding prefixText bindingName moduleExpr) in
-          let letModuleLoc = {
-            loc_start = s.loc.loc_start;
-            loc_end = me.pmod_loc.loc_end;
-            loc_ghost = false
-          } in
+    let rec processLetList acc expr =
+      match (expr.pexp_attributes, expr.pexp_desc) with
+        | ([], Pexp_let (rf, l, e)) ->
+          (* For "letList" bindings, the start/end isn't as simple as with
+           * module value bindings. For "let lists", the sequences were formed
+           * within braces {}. The parser relocates the first let binding to the
+           * first brace. *)
+           let bindingsLayout = self#bindings (rf, l) in
+           let bindingsLoc = self#bindingsLocationRange l in
+           (* (source_map ~loc:bindingsLoc bindingsLayout :: self#letList e) *)
+           let layout = source_map ~loc:bindingsLoc bindingsLayout in
+           processLetList ((bindingsLoc, layout)::acc) e
+        | (attrs, Pexp_open (ovf, lid, e))
+            (* Add this when check to make sure these are handled as regular "simple expressions" *)
+            when not (self#isSeriesOfOpensFollowedByNonSequencyExpression {expr with pexp_attributes = []}) ->
+          let overrideStr = match ovf with | Override -> "!" | Fresh -> "" in
+          let openLayout = label ~space:true
+            (atom ("open" ^ overrideStr))
+            (self#longident_loc lid)
+          in
+          let attrsOnOpen =
+            makeList ~inline:(true, true) ~postSpace:true ~break:Always
+            ((self#attributes attrs)@[openLayout])
+          in
           (* Just like the bindings, have to synthesize a location since the
            * Pexp location is parsed (potentially) beginning with the open
            * brace {} in the let sequence. *)
-           (source_map ~loc:letModuleLoc letModuleLayout :: self#letList e)
-      | ([], Pexp_letexception (extensionConstructor, expr)) ->
-          let exc = self#exception_declaration extensionConstructor in
-          exc::(self#letList expr)
-      | ([], Pexp_sequence (({pexp_desc=Pexp_sequence _ }) as e1, e2))
-      | ([], Pexp_sequence (({pexp_desc=Pexp_let _      }) as e1, e2))
-      | ([], Pexp_sequence (({pexp_desc=Pexp_open _     }) as e1, e2))
-      | ([], Pexp_sequence (({pexp_desc=Pexp_letmodule _}) as e1, e2))
-      | ([], Pexp_sequence (e1, e2)) ->
-          let e1Layout = match expression_not_immediate_extension_sugar e1 with
-            | Some (extension, expr) ->
-              self#attach_std_item_attrs ~extension [] (self#unparseExpr expr)
-            | None ->self#unparseExpr e1
-          in
-          (* It's kind of difficult to synthesize a location here in the case
-           * where this is the first expression in the braces. We could consider
-           * deeply inspecting the leftmost token/term in the expression. *)
-          (source_map ~loc:e1.pexp_loc e1Layout :: self#letList e2)
-      | _ ->
-        match expression_not_immediate_extension_sugar expr with
-        | Some (extension, {pexp_attributes = []; pexp_desc = Pexp_let (rf, l, e)}) ->
-          let bindingsLayout = self#bindings ~extension (rf, l) in
-          let bindingsLoc = self#bindingsLocationRange l in
-          (source_map ~loc:bindingsLoc bindingsLayout :: self#letList e)
-        | Some (extension, expr) ->
-          [self#attach_std_item_attrs ~extension [] (self#unparseExpr expr)]
-        | None ->
-          (* Should really do something to prevent infinite loops here. Never
-             allowing a top level call into letList to recurse back to
-             self#unparseExpr- top level calls into letList *must* be one of the
-             special forms above whereas lower level recursive calls may be of
-             any form. *)
-          [source_map ~loc:expr.pexp_loc (self#unparseExpr expr)]
+          let layout = source_map ~loc:lid.loc attrsOnOpen in
+          let loc = {
+            lid.loc with
+            loc_start = {
+              lid.loc.loc_start with
+              pos_lnum = expr.pexp_loc.loc_start.pos_lnum
+            }
+          } in
+          processLetList ((loc, layout)::acc) e
+          (* (source_map ~loc:lid.loc attrsOnOpen :: self#letList e) *)
+        | ([], Pexp_letmodule (s, me, e)) ->
+            let prefixText = "module" in
+            let bindingName = atom ~loc:s.loc s.txt in
+            let moduleExpr = me in
+            let letModuleLayout =
+              (self#let_module_binding prefixText bindingName moduleExpr) in
+            let letModuleLoc = {
+              loc_start = s.loc.loc_start;
+              loc_end = me.pmod_loc.loc_end;
+              loc_ghost = false
+            } in
+            (* Just like the bindings, have to synthesize a location since the
+             * Pexp location is parsed (potentially) beginning with the open
+             * brace {} in the let sequence. *)
+          let layout = source_map ~loc:letModuleLoc letModuleLayout in
+        let (_, return) = self#curriedFunctorPatternsAndReturnStruct moduleExpr in
+          let loc = {
+            letModuleLoc with
+            loc_end = return.pmod_loc.loc_end
+          } in
+           processLetList ((loc, layout)::acc) e
+             (* (source_map ~loc:letModuleLoc letModuleLayout :: self#letList e) *)
+        | ([], Pexp_letexception (extensionConstructor, expr)) ->
+            let exc = self#exception_declaration extensionConstructor in
+            let layout = source_map ~loc:extensionConstructor.pext_loc exc in
+            processLetList ((extensionConstructor.pext_loc, layout)::acc) expr
+            (* exc::(self#letList expr) *)
+        | ([], Pexp_sequence (({pexp_desc=Pexp_sequence _ }) as e1, e2))
+        | ([], Pexp_sequence (({pexp_desc=Pexp_let _      }) as e1, e2))
+        | ([], Pexp_sequence (({pexp_desc=Pexp_open _     }) as e1, e2))
+        | ([], Pexp_sequence (({pexp_desc=Pexp_letmodule _}) as e1, e2))
+        | ([], Pexp_sequence (e1, e2)) ->
+            let (loc, e1Layout) = match expression_not_immediate_extension_sugar e1 with
+              | Some (extension, e) ->
+                  (expr.pexp_loc, self#attach_std_item_attrs ~extension []
+                    (self#unparseExpr e))
+              | None ->
+                  let loc = match e1.pexp_desc with
+                  | Pexp_extension _ -> expr.pexp_loc
+                  | _ -> e1.pexp_loc
+                  in
+                  (loc, self#unparseExpr e1)
+            in
+            (* It's kind of difficult to synthesize a location here in the case
+             * where this is the first expression in the braces. We could consider
+             * deeply inspecting the leftmost token/term in the expression. *)
+            (* let loc = e1.pexp_loc in *)
+            (* print_endline (string_of_int loc.loc_start.pos_lnum); *)
+            (* print_endline (string_of_int loc.loc_end.pos_lnum); *)
+          let layout = source_map ~loc:e1.pexp_loc e1Layout in
+          processLetList ((loc, layout)::acc) e2
+            (* (source_map ~loc:e1.pexp_loc e1Layout :: self#letList e2) *)
+        | _ ->
+          match expression_not_immediate_extension_sugar expr with
+          | Some (extension, {pexp_attributes = []; pexp_desc = Pexp_let (rf, l, e)}) ->
+              (* print_endline "first case"; *)
+            let bindingsLayout = self#bindings ~extension (rf, l) in
+            let bindingsLoc = self#bindingsLocationRange l in
+            let layout = source_map ~loc:bindingsLoc bindingsLayout in
+            (* let loc = { *)
+               (* with *)
+              (* loc_start = { *)
+                (* bindingsLoc.loc_start with *)
+                (* pos_lnum = expr.pexp_loc.loc_start.pos_lnum *)
+              (* } *)
+            (* } in *)
+    (* let loc = expr.pexp_loc in *)
+            (* print_endline (string_of_int loc.loc_start.pos_lnum); *)
+            (* print_endline (string_of_int loc.loc_end.pos_lnum); *)
+            processLetList ((expr.pexp_loc, layout)::acc) e
+            (* (source_map ~loc:bindingsLoc bindingsLayout :: self#letList e) *)
+          | Some (extension, e) ->
+              (* print_endline "second case";  *)
+            let layout = self#attach_std_item_attrs ~extension [] (self#unparseExpr e) in
+            (expr.pexp_loc, layout)::acc
+            (* [self#attach_std_item_attrs ~extension [] (self#unparseExpr expr)] *)
+          | None ->
+              (* print_endline "third case"; *)
+
+    (* let loc = expr.pexp_loc in *)
+            (* print_endline (string_of_int loc.loc_start.pos_lnum); *)
+            (* print_endline (string_of_int loc.loc_end.pos_lnum); *)
+            (* Should really do something to prevent infinite loops here. Never
+               allowing a top level call into letList to recurse back to
+               self#unparseExpr- top level calls into letList *must* be one of the
+               special forms above whereas lower level recursive calls may be of
+               any form. *)
+            (* print_endline "this here"; *)
+
+    (* let loc = expr.pexp_loc in *)
+            (* print_endline (string_of_int loc.loc_start.pos_lnum); *)
+            (* print_endline (string_of_int loc.loc_end.pos_lnum); *)
+            let layout = source_map ~loc:expr.pexp_loc (self#unparseExpr expr) in
+            (expr.pexp_loc, layout)::acc
+            (* [source_map ~loc:expr.pexp_loc (self#unparseExpr expr)] *)
+    in
+    let es = processLetList [] expr in
+    groupAndPrint ~xf:(fun (_, layout) -> layout) ~getLoc:(fun (loc, _) -> loc) (List.rev es)
 
   method constructor_expression ?(polyVariant=false) ~arityIsClear stdAttrs ctor eo =
     let (implicit_arity, arguments) =
@@ -5889,7 +5956,7 @@ let printer = object(self:'self)
            ~sep:(SepFinal (";", ";"))
            (List.map self#signature_item signatureItems))
 
-  method signature_item x: Layout.t =
+  method signature_item x : Layout.t =
     let item: Layout.t =
       match x.psig_desc with
         | Psig_type (rf, l) ->

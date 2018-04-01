@@ -254,9 +254,11 @@ let letsTryThatSyntaxInLocalModuleBindings = () => {
          : SigResult => {
     let result = A.a + B.b;
   };
+
   module CurriedNoSugar = (A: ASig, B: BSig) => {
     let result = A.a + B.b;
   };
+
   /*
    * The following doesn't work in OCaml (LocalModule (struct end)).x isn't even
    * parsed!
@@ -268,6 +270,7 @@ let letsTryThatSyntaxInLocalModuleBindings = () => {
    * let res = Out.x in
    * res;;
    */
+
   module TempModule =
     CurriedNoSugar(AMod, BMod);
   module TempModule2 =

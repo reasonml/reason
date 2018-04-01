@@ -392,11 +392,13 @@ let onlyDoingThisTopLevelLetToBypassTopLevelSequence = {
     print_int(1);
     print_int(20); /* Missing trailing SEMI */
   };
+
   let x = {
     print_int(1);
     print_int(20); /* Ensure missing middle SEMI reported well */
     print_int(20);
   };
+
   let x = {
     print_int(1);
     print_int(20);
