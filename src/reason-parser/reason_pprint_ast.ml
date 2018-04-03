@@ -1760,6 +1760,8 @@ let typeApplicationFinalWrapping typeApplicationItems =
 
 (* add parentheses to binders when they are in fact infix or prefix operators *)
 let protectIdentifier txt =
+  (* (??) is a typed-hole in Merlin *)
+  if txt = "??" then atom "(??)" else
   if not (needs_parens txt) then atom txt
   else if needs_spaces txt then makeList ~wrap:("(", ")") ~pad:(true, true) [atom txt]
   else atom ("(" ^ txt ^ ")")
