@@ -1395,3 +1395,12 @@ let result =
   });
 
 let result = F.call(x => doStuff(x));
+
+let () =
+  x |> Bigarray.Genarray.get(_, [|1, 2, 3, 4|]);
+
+let () = x |> Bigarray.Array1.get(_, 1);
+
+let () = x |> Bigarray.Array2.get(_, 1, 2);
+
+let () = x |> Bigarray.Array3.get(_, 1, 2, 3);
