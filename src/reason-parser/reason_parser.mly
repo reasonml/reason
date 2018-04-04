@@ -2959,6 +2959,14 @@ parenthesized_expr:
     }
   | mod_longident DOT as_loc(LBRACKETBAR) expr_list as_loc(error)
     { unclosed_exp (with_txt $3 "[|") (with_txt $5 "|]") }
+  (* Parse Module.[<Component> <div/> </Component>] *)
+  | as_loc(mod_longident) DOT LBRACKETLESS jsx_without_leading_less RBRACKET
+    { let seq, ext_opt = [$4], None in
+      let loc = mklocation $startpos($4) $endpos($4) in
+      let list_exp = make_real_exp (mktailexp_extension loc seq ext_opt) in
+      let list_exp = { list_exp with pexp_loc = loc } in
+      mkexp (Pexp_open (Fresh, $1, list_exp))
+    }
   | as_loc(mod_longident) DOT LBRACKET expr_comma_seq_extension RBRACKET
     { let seq, ext_opt = $4 in
       let loc = mklocation $startpos($4) $endpos($4) in

@@ -573,6 +573,12 @@ rule token = parse
     set_lexeme_length lexbuf 2;
     LBRACKETBAR
   }
+    (* allow parsing of <div /></Component> *)
+  | "/></" uppercase_or_lowercase+ {
+    (* allow parsing of <div asd=1></div> *)
+    set_lexeme_length lexbuf 2;
+    SLASHGREATER
+  }
   | "></" uppercase_or_lowercase+ {
     (* allow parsing of <div asd=1></div> *)
     set_lexeme_length lexbuf 1;

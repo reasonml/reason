@@ -244,3 +244,17 @@ let y = [
   }>
   child
 </description>;
+
+Module.[
+  <Component> <div test="asd" /> </Component>,
+];
+
+Module.[<Component> <div /> </Component>];
+
+Module.[<Foo> <Bar /> </Foo>];
+
+Module.[<Component />];
+
+let (/></) = (a, b) => a + b;
+
+let x = foo /></ bar;
