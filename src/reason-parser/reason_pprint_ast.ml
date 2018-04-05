@@ -4721,9 +4721,9 @@ let printer = object(self:'self)
             Some (label ~space:true (atom "new") (self#longident_class_or_type_loc li))
           | Pexp_assert e ->
             Some (
-              label ~space:true
+              label
                 (atom "assert")
-                (self#reset#simplifyUnparseExpr e);
+                (makeTup [(self#unparseExpr e)]);
             )
           | Pexp_lazy e ->
               Some (label ~space:true (atom "lazy") (self#simplifyUnparseExpr e))
