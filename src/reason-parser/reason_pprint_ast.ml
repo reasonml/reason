@@ -1302,7 +1302,7 @@ let insertLinesAboveItems = preOrderWalk (function
         (* it doesn't make sense to insert whitespace above the first item in a
          * sequence. Imagine:
          * module Piano = {
-         *   
+         *
          *   type t = steinway;
          *
          *   let play = () => rachmaninov();
@@ -3041,18 +3041,53 @@ let printer = object(self:'self)
       | (_, _) -> (
         match (eFun, ls) with
         | ({pexp_desc = Pexp_ident {txt = Ldot (Lident ("Array"),"get")}}, [(_,e1);(_,e2)]) ->
-          Some (self#access "[" "]" (self#simple_enough_to_be_lhs_dot_send e1) (self#unparseExpr e2))
+          begin match e1.pexp_desc with
+          | Pexp_ident ({txt = Lident "_"}) ->
+              let k = atom "Array.get" in
+              let v = makeList ~postSpace:true ~sep:(Layout.Sep ",") ~wrap:("(", ")")
+                [atom "_"; self#unparseExpr e2]
+              in
+              Some (label k v)
+          | _ ->
+              Some (self#access "[" "]" (self#simple_enough_to_be_lhs_dot_send e1) (self#unparseExpr e2))
+          end
         | ({pexp_desc = Pexp_ident {txt = Ldot (Lident ("String"),"get")}}, [(_,e1);(_,e2)]) ->
-          Some (self#access ".[" "]" (self#simple_enough_to_be_lhs_dot_send e1) (self#unparseExpr e2))
+          if Reason_heuristics.isUnderscoreIdent e1 then
+            let k = atom "String.get" in
+            let v = makeList ~postSpace:true ~sep:(Layout.Sep ",") ~wrap:("(", ")")
+              [atom "_"; self#unparseExpr e2]
+            in
+            Some (label k v)
+          else
+            Some (self#access ".[" "]" (self#simple_enough_to_be_lhs_dot_send e1) (self#unparseExpr e2))
         | (
             {pexp_desc= Pexp_ident {txt=Ldot (Ldot (Lident "Bigarray", "Genarray" ), "get")}},
-            [(_,a); (_,{pexp_desc=Pexp_array ls})]
+            [(_,e1); (_,({pexp_desc=Pexp_array ls} as e2))]
           ) ->
-          let formattedList = List.map self#simplifyUnparseExpr ls in
-          Some (self#access ".{" "}" (self#simple_enough_to_be_lhs_dot_send a) (makeCommaBreakableList formattedList))
-        | ({pexp_desc= Pexp_ident {txt=Ldot (Ldot (Lident "Bigarray", ("Array1"|"Array2"|"Array3")), "get")}}, (_,a)::rest) ->
-          let formattedList = List.map self#simplifyUnparseExpr (List.map snd rest) in
-          Some (self#access ".{" "}" (self#simple_enough_to_be_lhs_dot_send a) (makeCommaBreakableList formattedList))
+            if (Reason_heuristics.isUnderscoreIdent e1) then
+              let k = atom "Bigarray.Genarray.get" in
+              let v = makeList ~postSpace:true ~sep:(Layout.Sep ",") ~wrap:("(", ")")
+                [atom "_"; self#unparseExpr e2]
+              in
+              Some (label k v)
+            else
+              let formattedList = makeCommaBreakableList (List.map self#simplifyUnparseExpr ls) in
+              Some (self#access ".{" "}" (self#simple_enough_to_be_lhs_dot_send e1) formattedList)
+        | (
+            {pexp_desc= Pexp_ident {txt=
+              Ldot (Ldot (Lident "Bigarray", (("Array1"|"Array2"|"Array3") as arrayIdent)), "get")}
+            },
+            (_,e1)::rest
+          ) ->
+          if Reason_heuristics.isUnderscoreIdent e1 then
+            let k = atom("Bigarray." ^ arrayIdent ^ ".get") in
+            let v = makeList ~postSpace:true ~sep:(Layout.Sep ",") ~wrap:("(", ")")
+              ((atom "_")::(List.map (fun (_, e) -> self#unparseExpr e) rest))
+            in
+            Some (label k v)
+          else
+            let formattedList = List.map self#simplifyUnparseExpr (List.map snd rest) in
+            Some (self#access ".{" "}" (self#simple_enough_to_be_lhs_dot_send e1) (makeCommaBreakableList formattedList))
         | _ -> None
       )
     )
