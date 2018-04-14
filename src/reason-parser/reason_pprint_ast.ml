@@ -305,6 +305,21 @@ let expandLocation pos ~expand:(startPos, endPos) =
     }
   }
 
+let extractLocationFromValBindList expr vbs =
+  let rec extract loc = function
+    | x::xs ->
+        let {pvb_pat; pvb_expr} = x in
+        let loc = {loc with loc_end = pvb_expr.pexp_loc.loc_end} in
+        extract loc xs
+    | [] -> loc
+  in
+  match vbs with
+  | x::xs ->
+      let {pvb_pat; pvb_expr} = x in
+      let loc = {pvb_pat.ppat_loc with loc_end = pvb_expr.pexp_loc.loc_end} in
+      extract loc xs
+  | [] -> expr.pexp_loc
+
 (** Kinds of attributes *)
 type attributesPartition = {
   arityAttrs : attributes;
@@ -4530,7 +4545,6 @@ let printer = object(self:'self)
         | _ ->
           match expression_not_immediate_extension_sugar expr with
           | Some (extension, {pexp_attributes = []; pexp_desc = Pexp_let (rf, l, e)}) ->
-              (* print_endline "first case"; *)
             let bindingsLayout = self#bindings ~extension (rf, l) in
             let bindingsLoc = self#bindingsLocationRange l in
             let layout = source_map ~loc:bindingsLoc bindingsLayout in
@@ -4544,7 +4558,7 @@ let printer = object(self:'self)
     (* let loc = expr.pexp_loc in *)
             (* print_endline (string_of_int loc.loc_start.pos_lnum); *)
             (* print_endline (string_of_int loc.loc_end.pos_lnum); *)
-            processLetList ((expr.pexp_loc, layout)::acc) e
+            processLetList ((extractLocationFromValBindList expr l, layout)::acc) e
             (* (source_map ~loc:bindingsLoc bindingsLayout :: self#letList e) *)
           | Some (extension, e) ->
               (* print_endline "second case";  *)

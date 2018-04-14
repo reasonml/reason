@@ -132,3 +132,14 @@ module type TestModuleType = {
   let y: b;
 
 };
+
+let main = () => {
+  let%lwt tc = tcGetAddr(stdin);
+
+  let a = 1;
+
+  let%lwt () = tcsetattr(stdin, TCSANOW, tc);
+
+  let%lwt _i = write_string(stdout, s, 0, len);
+  ();
+};
