@@ -1,4 +1,5 @@
 module Comment = Reason_comment
+module Easy_format = Reason_easy_format.Easy_format
 
 type break_criterion =
   | Never
