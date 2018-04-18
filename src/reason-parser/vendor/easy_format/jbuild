@@ -1,6 +1,5 @@
 (jbuild_version 1)
 
 (library
- ((name reason.easy_format)
-  (public_name reason.easy_format)
-  (wrapped false)))
+ ((name reason_easy_format)
+  (public_name reason.easy_format)))

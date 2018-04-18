@@ -46,6 +46,7 @@
 
 (* TODO more fine-grained precedence pretty-printing *)
 
+module Easy_format = Reason_easy_format.Easy_format
 open Ast_404
 open Asttypes
 open Location
