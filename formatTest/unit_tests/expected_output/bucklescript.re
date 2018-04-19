@@ -25,42 +25,34 @@ add(zz##yy, xx##ww);
 
 /* These should print the same */
 let res = x##y + z##q; /* AST */
-
 let res = x##y + z##q; /* Minimum parens */
 
 /* These should print the same */
 let res = y + z##q##a; /* AST */
-
 let res = y + z##q##a; /* Min parens */
 
 /* Make sure it's actually parsed as left precedence
  * and that is maintained when printed */
 let res = z##(q##a); /* AST */
-
 let res = z##(q##a); /* Min parens */
 
 /* These should print the same */
 let res = ! x##y; /* AST */
-
 let res = ! x##y; /* Minimum parens */
 
 /* These should print the same */
 let res = ! z##q##a; /* AST */
-
 let res = ! z##q##a; /* Min parens */
 
 /* These should print the same */
 let res = ?!!x##y; /* AST */
-
 let res = ?!!x##y; /* Minimum parens */
 
 /* These should print the same */
 let res = ?!!z##(q##a); /* AST */
-
 let res = ?!!z##(q##a); /* Min parens */
 
 res#=?!!z##q;
-
 res#=?!!z##(q##a);
 
 let result = myFunction(x(y)##z, a(b)#=c);

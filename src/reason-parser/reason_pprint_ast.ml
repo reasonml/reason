@@ -331,31 +331,33 @@ type attributesPartition = {
 }
 
 (** Partition attributes into kinds *)
-let rec partitionAttributes ?(allowUncurry=true) attrs : attributesPartition =
+let rec partitionAttributes ?(partDoc=false) ?(allowUncurry=true) attrs : attributesPartition =
   match attrs with
     | [] ->
       {arityAttrs=[]; docAttrs=[]; stdAttrs=[]; jsxAttrs=[]; literalAttrs=[]; uncurried = false}
     | (({txt = "bs"}, PStr []) as attr)::atTl ->
-        let partition = partitionAttributes ~allowUncurry atTl in
+        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
         if allowUncurry then
           {partition with uncurried = true}
         else {partition with stdAttrs=attr::partition.stdAttrs}
     | (({txt="JSX"; loc}, _) as jsx)::atTl ->
-        let partition = partitionAttributes ~allowUncurry atTl in
+        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
         {partition with jsxAttrs=jsx::partition.jsxAttrs}
     | (({txt="explicit_arity"; loc}, _) as arity_attr)::atTl
     | (({txt="implicit_arity"; loc}, _) as arity_attr)::atTl ->
-        let partition = partitionAttributes ~allowUncurry atTl in
+        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
         {partition with arityAttrs=arity_attr::partition.arityAttrs}
-    (*| (({txt="ocaml.text"; loc}, _) as doc)::atTl
-    | (({txt="ocaml.doc"; loc}, _) as doc)::atTl ->
-        let partition = partitionAttributes atTl in
-        {partition with docAttrs=doc::partition.docAttrs}*)
+    | (({txt="ocaml.text"; loc}, _) as doc)::atTl when partDoc = true ->
+        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
+        {partition with docAttrs=doc::partition.docAttrs}
+    | (({txt="ocaml.doc"; loc}, _) as doc)::atTl when partDoc = true ->
+        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
+        {partition with docAttrs=doc::partition.docAttrs}
     | (({txt="reason.raw_literal"; _}, _) as attr) :: atTl ->
-        let partition = partitionAttributes ~allowUncurry atTl in
+        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
         {partition with literalAttrs=attr::partition.literalAttrs}
     | atHd :: atTl ->
-        let partition = partitionAttributes ~allowUncurry atTl in
+        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
         {partition with stdAttrs=atHd::partition.stdAttrs}
 
 let extractStdAttrs attrs =
@@ -371,6 +373,7 @@ let extract_raw_literal attrs =
     | attr :: rest -> loop (attr :: acc) rest
   in
   loop [] attrs
+
 
 let rec sequentialIfBlocks x =
   match x with
@@ -1018,7 +1021,6 @@ let makeList
     ?(newlinesAboveItems=0)
     ?(newlinesAboveComments=0)
     ?(newlinesAboveDocComments=0)
-    ?(allowWhitespace=false)
     ?listConfigIfCommentsInterleaved
     ?listConfigIfEolCommentsInterleaved
     ?(break=Layout.Never)
@@ -1034,7 +1036,7 @@ let makeList
   let config =
     { Layout.
       newlinesAboveItems; newlinesAboveComments; newlinesAboveDocComments;
-      allowWhitespace; listConfigIfCommentsInterleaved; listConfigIfEolCommentsInterleaved;
+      listConfigIfCommentsInterleaved; listConfigIfEolCommentsInterleaved;
       break; wrap; inline; sep; indent; sepLeft; preSpace; postSpace; pad;
     }
   in
@@ -1077,6 +1079,7 @@ let inlineLabel labelTerm term =
     label_style = Some "inlineLabel";
   } in
   Easy_format.Label ((labelTerm, settings), term)
+
 
 (* Just for debugging: Set debugWithHtml = true *)
 let debugWithHtml = ref false
@@ -1344,16 +1347,16 @@ let rec consolidateSeparator l = preOrderWalk (function
  *  based on the configuration of newlinesAboveItems
  *)
 let rec insertLinesAboveItems items = preOrderWalk (function
-  | Sequence (listConfig, sublayouts)
-      when listConfig.allowWhitespace
-    ->
-      let layoutsWithLinesInjected =
-        List.map (function
-          | Layout.Whitespace({depth}, sub) ->
-              insertBlankLines depth sub
-          | layout ->
-              layout) sublayouts in
-      Sequence(listConfig, layoutsWithLinesInjected)
+  (* | Sequence (listConfig, sublayouts) *)
+      (* when listConfig.allowWhitespace *)
+    (* -> *)
+      (* let layoutsWithLinesInjected = *)
+        (* List.map (function *)
+          (* | Layout.Whitespace({depth}, sub) -> *)
+              (* insertBlankLines depth sub *)
+          (* | layout -> *)
+              (* layout) sublayouts in *)
+      (* Sequence(listConfig, layoutsWithLinesInjected) *)
   | Sequence (listConfig, sublayouts)
        when listConfig.newlinesAboveItems <> 0
     ->
@@ -1393,8 +1396,20 @@ let rec prependSingleLineComment ?newlinesAboveDocComments:(newlinesAboveDocComm
           let sub = breakline (formatComment comment) (insertBlankLines 1 sub) in
           Whitespace(nextInfo, sub)
     | prevComment::_xs ->
+        (* print_endline "this casee"; *)
+        (* print_string "prev: "; *)
+        (* print_endline (Comment.(prevComment.text)); *)
+        (* print_string "current: "; *)
+        (* print_endline (Comment.(comment.text)); *)
+        (* print_interval intv; *)
+        (* print_string "Start heigh of comment: "; *)
+        (* print_int cl.loc_start.pos_lnum; *)
+        (* print_newline(); *)
         let pcl = Comment.location prevComment in
-        let blankLinesAbove = cl.loc_start.pos_lnum + 1 == (fst intv) in
+        let blankLinesAbove = cl.loc_start.pos_lnum > (fst intv) in
+        (* print_string "blank lines above: "; *)
+        (* print_string (string_of_bool blankLinesAbove); *)
+        (* print_newline(); *)
         let nextInfo = if not blankLinesAbove  then {
           nextInfo with
           depth = 0
@@ -1414,6 +1429,8 @@ let rec prependSingleLineComment ?newlinesAboveDocComments:(newlinesAboveDocComm
           | x::_ -> true
           | [] -> false
           in
+          (* print_endline "comments above"; *)
+          (* print_endline (string_of_bool hasCommentAbove); *)
 
           let nextInfo = { nextInfo with depth =
             if cl.loc_start.pos_lnum > (fst intv) && not hasCommentAbove then
@@ -2158,9 +2175,7 @@ let groupAndPrint ~xf ~getLoc items =
     | x::xs ->
         let item = xf x in
         let l1 = prevLoc.loc_end.pos_lnum in
-        (* print_endline ("l1: " ^ (string_of_int l1)); *)
         let l2 = (getLoc x).loc_start.pos_lnum in
-        (* print_endline ("l2: " ^ (string_of_int l1)); *)
         let diffInterval = (l1, l2) in
         let h = comments_height diffInterval in
         let intv = (l1 + 1, l2 - 1) in
@@ -4284,6 +4299,25 @@ let printer = object(self:'self)
           self#wrapCurriedFunctionBinding prefixText ~arrow:"=" pattern fauxArgs
             (self#classExpressionToFormattedApplicationItems actualReturn, None)
 
+  method attachDocAttrsToLayout docAttrs loc layout =
+    let rec aux prevLoc layout = function
+      | ((x, _) as attr : Ast_404.Parsetree.attribute)::xs ->
+        let newLayout = if x.loc.loc_end.pos_lnum < prevLoc.loc_start.pos_lnum - 1 then
+          makeList ~inline:(true, true) ~break:Always [
+            self#attribute attr;
+            atom "";
+            layout
+          ]
+        else
+          makeList ~inline:(true, true) ~break:Always [
+            self#attribute attr;
+            layout
+          ]
+        in aux x.loc newLayout xs
+      | [] -> layout
+    in
+    aux loc layout (List.rev docAttrs)
+
   method binding prefixText x = (* TODO: print attributes *)
     let body = match x.pvb_pat.ppat_desc with
       | (Ppat_var {txt}) ->
@@ -4394,8 +4428,9 @@ let printer = object(self:'self)
         let appTerms = self#unparseExprApplicationItems x.pvb_expr in
         self#formatSimplePatternBinding prefixText layoutPattern None appTerms
     in
-    self#attach_std_item_attrs x.pvb_attributes
-      (source_map ~loc:x.pvb_loc body)
+    let {stdAttrs; docAttrs} = partitionAttributes ~partDoc:true x.pvb_attributes in
+    let layout = self#attach_std_item_attrs stdAttrs (source_map ~loc:x.pvb_loc body) in
+    self#attachDocAttrsToLayout (docAttrs : Ast_404.Parsetree.attributes) x.pvb_pat.ppat_loc layout
 
   (* Ensures that the constraint is formatted properly for sake of function
      binding (formatted without arrows)
@@ -4462,7 +4497,6 @@ let printer = object(self:'self)
            * first brace. *)
            let bindingsLayout = self#bindings (rf, l) in
            let bindingsLoc = self#bindingsLocationRange l in
-           (* (source_map ~loc:bindingsLoc bindingsLayout :: self#letList e) *)
            let layout = source_map ~loc:bindingsLoc bindingsLayout in
            processLetList ((bindingsLoc, layout)::acc) e
         | (attrs, Pexp_open (ovf, lid, e))
@@ -4536,54 +4570,26 @@ let printer = object(self:'self)
             (* It's kind of difficult to synthesize a location here in the case
              * where this is the first expression in the braces. We could consider
              * deeply inspecting the leftmost token/term in the expression. *)
-            (* let loc = e1.pexp_loc in *)
-            (* print_endline (string_of_int loc.loc_start.pos_lnum); *)
-            (* print_endline (string_of_int loc.loc_end.pos_lnum); *)
-          let layout = source_map ~loc:e1.pexp_loc e1Layout in
-          processLetList ((loc, layout)::acc) e2
-            (* (source_map ~loc:e1.pexp_loc e1Layout :: self#letList e2) *)
+            let layout = source_map ~loc:e1.pexp_loc e1Layout in
+            processLetList ((loc, layout)::acc) e2
         | _ ->
           match expression_not_immediate_extension_sugar expr with
           | Some (extension, {pexp_attributes = []; pexp_desc = Pexp_let (rf, l, e)}) ->
             let bindingsLayout = self#bindings ~extension (rf, l) in
             let bindingsLoc = self#bindingsLocationRange l in
             let layout = source_map ~loc:bindingsLoc bindingsLayout in
-            (* let loc = { *)
-               (* with *)
-              (* loc_start = { *)
-                (* bindingsLoc.loc_start with *)
-                (* pos_lnum = expr.pexp_loc.loc_start.pos_lnum *)
-              (* } *)
-            (* } in *)
-    (* let loc = expr.pexp_loc in *)
-            (* print_endline (string_of_int loc.loc_start.pos_lnum); *)
-            (* print_endline (string_of_int loc.loc_end.pos_lnum); *)
             processLetList ((extractLocationFromValBindList expr l, layout)::acc) e
-            (* (source_map ~loc:bindingsLoc bindingsLayout :: self#letList e) *)
           | Some (extension, e) ->
-              (* print_endline "second case";  *)
             let layout = self#attach_std_item_attrs ~extension [] (self#unparseExpr e) in
             (expr.pexp_loc, layout)::acc
-            (* [self#attach_std_item_attrs ~extension [] (self#unparseExpr expr)] *)
           | None ->
-              (* print_endline "third case"; *)
-
-    (* let loc = expr.pexp_loc in *)
-            (* print_endline (string_of_int loc.loc_start.pos_lnum); *)
-            (* print_endline (string_of_int loc.loc_end.pos_lnum); *)
             (* Should really do something to prevent infinite loops here. Never
                allowing a top level call into letList to recurse back to
                self#unparseExpr- top level calls into letList *must* be one of the
                special forms above whereas lower level recursive calls may be of
                any form. *)
-            (* print_endline "this here"; *)
-
-    (* let loc = expr.pexp_loc in *)
-            (* print_endline (string_of_int loc.loc_start.pos_lnum); *)
-            (* print_endline (string_of_int loc.loc_end.pos_lnum); *)
             let layout = source_map ~loc:expr.pexp_loc (self#unparseExpr expr) in
             (expr.pexp_loc, layout)::acc
-            (* [source_map ~loc:expr.pexp_loc (self#unparseExpr expr)] *)
     in
     let es = processLetList [] expr in
     groupAndPrint ~xf:(fun (_, layout) -> layout) ~getLoc:(fun (loc, _) -> loc) (List.rev es)
@@ -5552,16 +5558,6 @@ let printer = object(self:'self)
     | Pctf_attribute a -> self#floating_attribute a
     | Pctf_extension e -> self#item_extension e
 
-
-  (* The type of something returned from a constructor. Formerly [class_signature]  *)
-  method shouldDisplayClassInstTypeItem x = match x.pctf_desc with
-    (*| Pctf_attribute (s, _) -> (not (s.txt = "ocaml.text") && not (s.txt = "ocaml.doc"))*)
-    | _ -> true
-
-  method shouldDisplayStructureItem x = match x.pstr_desc with
-    (*| Pstr_attribute (s, _) -> (not (s.txt = "ocaml.text") && not (s.txt = "ocaml.doc"))*)
-    | _ -> true
-
   (*
     [@@bs.val] [@@bs.module "react-dom"]                  (* formattedAttrs *)
     external render : reactElement => element => unit =   (* frstHalf *)
@@ -6204,10 +6200,6 @@ let printer = object(self:'self)
           ~break:Always_rec
           ~inline:(true, false)
           ~wrap
-          (* ~newlinesAboveComments:0 *)
-          (* ~newlinesAboveItems:0 *)
-          ~allowWhitespace:true
-          (* ~newlinesAboveDocComments:1 *)
           ~postSpace:true
           ~sep:(SepFinal (";", ";"))
           items
@@ -6233,25 +6225,21 @@ let printer = object(self:'self)
 
 
   method structure structureItems =
-    if List.length structureItems == 0 then
-      atom ""
-    else
-      let structureItems = List.filter self#shouldDisplayStructureItem structureItems in
-      let first = List.nth structureItems 0 in
-      let last = List.nth structureItems (List.length structureItems - 1) in
+    match structureItems with
+    | [] -> atom ""
+    | first::_ as structureItems ->
+      let last = match (List.rev structureItems) with | last::_ -> last | [] -> assert false in
       let loc_start = first.pstr_loc.loc_start in
       let loc_end = last.pstr_loc.loc_end in
+      let items = groupAndPrint ~xf:self#structure_item ~getLoc:(fun x -> x.pstr_loc) structureItems in
       source_map ~loc:{loc_start; loc_end; loc_ghost = false}
         (makeList
-           ~newlinesAboveComments:1
-           ~newlinesAboveItems:1
-           ~newlinesAboveDocComments:1
            ~postSpace:true
            ~break:Always_rec
            ~indent:0
            ~inline:(true, false)
            ~sep:(SepFinal (";", ";"))
-           (List.map self#structure_item structureItems))
+           items)
 
   (*
      How do modules become parsed?

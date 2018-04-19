@@ -49,6 +49,7 @@ let x =
   };
 
 /* At structure level */
+
 try%extend () {
 | _ => ()
 };
@@ -74,6 +75,7 @@ fun%extend
 | Some(1) => ();
 
 /* In a top-level binding */
+
 let x =
   try%extend () {
   | _ => ()
@@ -104,6 +106,7 @@ let x =
   | Some(1) => ();
 
 /* With two extensions, alone */
+
 let x = [%extend1
   try%extend2 () {
   | _ => ()
@@ -141,6 +144,7 @@ let x = [%extend1
 ];
 
 /* With two extensions, first in sequence */
+
 let x = {
   %extend1
   try%extend2 () {
@@ -199,6 +203,7 @@ let x = {
 };
 
 /* With two extensions, in sequence */
+
 let x = {
   ignore();
   %extend1
@@ -259,6 +264,7 @@ let x = {
 };
 
 /* With two extensions, second in sequence */
+
 let x = {
   ignore();
   %extend1

@@ -62,8 +62,6 @@ and config = {
   newlinesAboveComments: int;
   (* Newlines above doc comments *)
   newlinesAboveDocComments: int;
-  (* Allow interleaving of whitespace indicated by Whitespace(n, layout) *)
-  allowWhitespace: bool;
   break: break_criterion;
   (* Break setting that becomes activated if a comment becomes interleaved into
    * this list. Typically, if not specified, the behavior from [break] will be

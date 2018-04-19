@@ -107,7 +107,6 @@ and secondRecursiveClass (init) = {
 type closedObj = {.};
 
 let (<..>) = (a, b) => a + b;
-
 let five = 2 <..> 3;
 
 type nestedObj = {. bar: {. a: int}};
@@ -121,14 +120,12 @@ type typeDefForClosedObj = {
   x: int,
   y: int,
 };
-
 type typeDefForOpenObj('a) =
   {
     ..
     x: int,
     y: int,
   } as 'a;
-
 let anonClosedObject: {
   .
   x: int,
@@ -139,7 +136,6 @@ let anonClosedObject: {
 };
 
 let onlyHasX = {pub x = 0};
-
 let xs: list({. x: int}) = [
   onlyHasX,
   (anonClosedObject :> {. x: int}),
@@ -178,7 +174,6 @@ let acceptsOpenAnonObjAsArg =
       },
     ) =>
   o#x + o#y;
-
 let acceptsClosedAnonObjAsArg =
     (
       o: {
@@ -188,7 +183,6 @@ let acceptsClosedAnonObjAsArg =
       },
     ) =>
   o#x + o#y;
-
 let res =
   acceptsOpenAnonObjAsArg({
     pub x = 0;
@@ -218,7 +212,6 @@ class myClassWithAnnotatedReturnType
   pub x: int = init;
   pub y = init;
 };
-
 /**
  * May include a trailing semi after type row.
  */
@@ -342,7 +335,6 @@ let incrementMyClassInstance:
   };
 
 class myClassWithNoTypeParams = {};
-
 /**
  * The #myClassWithNoTypeParams should be treated as "simple"
  */

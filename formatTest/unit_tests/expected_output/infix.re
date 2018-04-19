@@ -16,6 +16,7 @@ let minParens = x > y > z < a < b == c == d;
 let formatted = x > y > z < a < b == c == d;
 
 /* Case with === */
+
 let parseTree = x > y > z < a < b === c === d;
 
 let minParens = x > y > z < a < b === c === d;
@@ -33,6 +34,7 @@ let formatted =
   a1 < a2 < (b1 > b2 > (y == x == z));
 
 /* Case with === */
+
 let parseTree =
   a1 < a2 < (b1 > b2 > (y === x === z));
 
@@ -53,6 +55,7 @@ let formatted =
   a1 := a2 := b1 == b2 == (y != x != z);
 
 /* Case with === */
+
 let parseTree =
   a1 := a2 := b1 === b2 === (y !== x !== z);
 
@@ -73,6 +76,7 @@ let formatted =
   a1 := a2 := b1 == (b2 == y != x != z);
 
 /* Case with === */
+
 let parseTree =
   a1 := a2 := b1 === (b2 === y !== x !== z);
 
@@ -318,17 +322,12 @@ let shouldSimplifyAnythingExceptApplicationAndConstruction =
     }
   )
   ++ "yo";
-
 let shouldRemoveParens = ident + ident + ident;
-
 let shouldRemoveParens = ident ++ ident ++ ident;
-
 let shouldPreserveParens =
   ident + (ident + ident);
-
 let shouldPreserveParens =
   (ident ++ ident) ++ ident;
-
 /**
  * Since ++ is now INFIXOP1, it should have lower priority than INFIXOP2 (which
  * includes the single plus sign). That means no parens are required in the
@@ -345,39 +344,30 @@ let noParensRequired = ident + ident ++ ident;
  * followed by a dollar sign. And +++ should be treated the same as ++.
  * should also be true of plus sign followed by dollar sign for example.
  */
-let shouldRemoveParens = ident - ident - ident;
 
+let shouldRemoveParens = ident - ident - ident;
 let shouldPreserveParens =
   ident - (ident - ident);
-
 let shouldPreserveParens =
   ident +$ (ident +$ ident);
-
 let noParensRequired = ident - ident ++ ident;
-
 let noParensRequired = ident - ident ++ ident;
-
 let noParensRequired = ident +$ ident ++ ident;
 
 let noParensRequired = ident + ident +++ ident;
-
 let noParensRequired = ident + ident +++ ident;
 
 /* Parens are required any time you want to make ++ or +++ parse with higher
  * priority than + or - */
 let parensRequired = ident + (ident ++ ident);
-
 let parensRequired = ident + (ident +++ ident);
-
 let parensRequired = ident + (ident ++- ident);
-
 let parensRequired = ident +$ (ident ++- ident);
 
 /* ++ and +++ have the same parsing precedence, so it's right associative.
  * Parens are required if you want to group to the left, even when the tokens
  * are different.*/
 let parensRequired = (ident ++ ident) +++ ident;
-
 let parensRequired = (ident +++ ident) ++ ident;
 
 /* Add tests with IF/then mixed with infix/constructor application on left and right sides */
@@ -1173,25 +1163,19 @@ if (List.length(files) > 0
 
 /* Don't clash with jsx edge cases */
 let (=<) = (a, b) => a + b;
-
 let result = x =< y;
-
 let z = x =< y;
 
 let z = x =< y;
 
 let (></) = (a, b) => a - b;
-
 let result = x ></ b;
-
 let z = x ></ b;
 
 let z = x ></ b;
 
 let (=</>) = (a, b) => a + b;
-
 let result = x =</> b;
-
 let z = x =</> b;
 
 let z = x =</> b;
@@ -1199,7 +1183,6 @@ let z = x =</> b;
 /* #1676: Exponentiation should be right-associative */
 let foo =
   (100. /. 2.) ** 2. +. (200. /. 2.) ** 2.;
-
 let foo = 100. /. 2. ** 2. +. 200. /. 2. ** 2.;
 
 let x = y />> f;

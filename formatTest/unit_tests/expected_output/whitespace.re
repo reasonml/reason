@@ -137,3 +137,13 @@ let main = () => {
   let%lwt _i = write_string(stdout, s, 0, len);
   ();
 };
+
+module EdgeCase = {
+  let x = 1; /* a */
+
+  /* b */
+
+  /* c */
+
+  let x = 1;
+};

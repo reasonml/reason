@@ -1,32 +1,27 @@
 /* **** comment */
-
 /*** comment */
 /** docstring */;
-
 /* comment */
 /** docstring */;
-
-
 /*** comment */
-
 /**** comment */
-
 /***** comment */
 
 /*** */
-
 /**** */
 
 /***/
-
 /****/
+
 /* (** comment *) */
 /* (*** comment *) */
 /* *(*** comment *) */
+
 /* comment **/
 /* comment ***/
 /* comment ****/
 /* comment *****/
+
 let testingNotQuiteEndOfLineComments = [
   "Item 1" /* Comment For First Item */,
   "Item 2" /* Comment For Second Item */,
@@ -57,8 +52,8 @@ type variant =
   | X(int) /* End of line on X */
   /* Comment above Y */
   | Y(int); /* End of line on Y */
-
 /* Comment on entire type def for variant */
+
 type x = {
   /* not attached *above* x */
   fieldOne: int,

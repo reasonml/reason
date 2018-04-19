@@ -131,17 +131,14 @@ switch (Some()) {
 | Some () => 1
 | _ => 2
 };
-
 switch (Some()) {
 | Some () => 1
 | _ => 2
 };
-
 switch (Some()) {
 | Some () => 1
 | _ => 2
 };
-
 switch (Some()) {
 | Some () => 1
 | _ => 2
@@ -149,19 +146,15 @@ switch (Some()) {
 
 type foo =
   | Foo(unit);
-
 switch (Foo()) {
 | Foo () => 1
 };
-
 switch (Foo()) {
 | Foo () => 1
 };
-
 switch (Foo()) {
 | Foo () => 1
 };
-
 switch (Foo()) {
 | Foo () => 1
 };
@@ -169,15 +162,12 @@ switch (Foo()) {
 switch () {
 | () => 1
 };
-
 switch () {
 | () => 1
 };
-
 switch () {
 | () => 1
 };
-
 switch () {
 | () => 1
 };

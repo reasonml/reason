@@ -3,11 +3,9 @@ let run = () =>
   TestUtils.printSection("Polymorphism");
 
 type myType('a) = list('a);
-
 type myTwoParamType('a, 'b) = ('a, 'b);
 
 type myTupleType = (int, int);
-
 type myPolymorphicTupleType('a) = ('a, 'a);
 
 type extensible('a) = 'a
@@ -103,7 +101,9 @@ let certainlyRequiresWrapping:
          | _ => 0
 
      let myFunc = (a:int) (b:int) => a + b; */
+
 /* Fringe features */
+
 /*
   /* This parses, but doesn't type check */
   module TryExtendingType = {type t = Hello of string;};

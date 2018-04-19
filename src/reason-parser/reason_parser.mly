@@ -1039,7 +1039,7 @@ let only_core_type t startp endp =
     let loc = mklocation startp endp in
     raiseSyntaxErrorFromSyntaxUtils loc "Record type is not allowed"
 
-let doc_loc = {txt = "ocaml.doc"; loc = Location.none}
+let doc_loc loc = {txt = "ocaml.doc"; loc = loc}
 
 let doc_attr text loc =
   let open Parsetree in
@@ -1051,7 +1051,7 @@ let doc_attr text loc =
   let item =
     { pstr_desc = Pstr_eval (exp, []); pstr_loc = exp.pexp_loc }
   in
-    (doc_loc, PStr [item])
+    (doc_loc loc, PStr [item])
 
 %}
 

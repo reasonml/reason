@@ -174,7 +174,6 @@ let y = [
 <Description term={<Text text="Age" />}>
   child
 </Description>;
-
 <Description
   term=(
     Text.createElement(
@@ -185,7 +184,6 @@ let y = [
   )>
   child
 </Description>;
-
 <Description
   term=(
     [@JSX] Text.createElement(~text="Age", ())
@@ -223,12 +221,10 @@ let y = [
   term=(text(~text="Age", ~children=[], ()))>
   child
 </description>;
-
 <description
   term=([@JSX] text(~text="Age", ~children=[]))>
   child
 </description>;
-
 <description
   term=([@JSX] text(~text="Age", ()))>
   child
@@ -248,11 +244,8 @@ let y = [
 Module.[
   <Component> <div test="asd" /> </Component>,
 ];
-
 Module.[<Component> <div /> </Component>];
-
 Module.[<Foo> <Bar /> </Foo>];
-
 Module.[<Component />];
 
 let (/></) = (a, b) => a + b;

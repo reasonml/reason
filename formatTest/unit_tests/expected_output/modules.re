@@ -92,6 +92,7 @@ module type MySecondModuleType = {
  * - Modules can help you achieve higher degrees of polymorphism than the core
  * language.
  */
+
 let opensAModuleLocally = {
   module MyLocalModule = {
     type i = int;
@@ -127,7 +128,6 @@ module type HasDestructivelySubstitutedSubPolyModule = {
   /* module X: HasPolyType with type t := list (int, int); */
   module X: HasDestructivelySubstitutedPolyType;
 };
-
 module type HasSubPolyModule = {
   /* Cannot perform destructive substitution on submodules! */
   /* module X: HasPolyType with type t := list (int, int); */
@@ -195,13 +195,10 @@ module LookNoParensNeeded =
 module type SigResult = {let result: int;};
 
 module type ASig = {let a: int;};
-
 module type BSig = {let b: int;};
-
 module AMod = {
   let a = 10;
 };
-
 module BMod = {
   let b = 10;
 };
@@ -282,14 +279,11 @@ let letsTryThatSyntaxInLocalModuleBindings = () => {
 };
 
 module type EmptySig = {};
-
 module MakeAModule = (X: EmptySig) => {
   let a = 10;
 };
-
 module CurriedSugarFunctorResult =
   CurriedSugar(AMod, BMod);
-
 module CurriedSugarFunctorResultInline =
   CurriedSugar(
     {
@@ -299,10 +293,8 @@ module CurriedSugarFunctorResultInline =
       let b = 10;
     },
   );
-
 module CurriedNoSugarFunctorResult =
   CurriedNoSugar(AMod, BMod);
-
 module CurriedNoSugarFunctorResultInline =
   CurriedNoSugar(
     {
@@ -324,10 +316,8 @@ module ResultFromNonSimpleFunctorArg =
 /* TODO: Functor type signatures should more resemble value signatures */
 let curriedFunc: (int, int) => int =
   (a, b) => a + b;
-
 module type FunctorType =
   (ASig, BSig) => SigResult;
-
 /* Which is sugar for:*/
 module type FunctorType2 =
   (ASig, BSig) => SigResult;
@@ -425,21 +415,16 @@ module type HasRecursiveModules = {
 
 /* From http://stackoverflow.com/questions/1986374/higher-order-type-constructors-and-functors-in-ocaml */
 module type Type = {type t;};
-
 module Char = {
   type t = char;
 };
-
 module List = (X: Type) => {
   type t = list(X.t);
 };
-
 module Maybe = (X: Type) => {
   type t = option(X.t);
 };
-
 module Id = (X: Type) => X;
-
 module Compose =
        (
          F: (Type) => Type,
@@ -447,11 +432,9 @@ module Compose =
          X: Type,
        ) =>
   F((G(X)));
-
 let l: Compose(List)(Maybe)(Char).t = [
   Some('a'),
 ];
-
 module Example2 = (F: (Type) => Type, X: Type) => {
   /**
    * Note: This is the one remaining syntactic issue where
@@ -472,6 +455,7 @@ Printf.printf(
 /* We would have: */
 /* module CurriedSugarWithAnnotation: ASig => BSig => SigResult =
    fun (A:ASig) (B:BSig) => {let result = A.a + B.b;; */
+
 /*
  module Typeahead = React.Create {
  type props = {initialCount: int};
@@ -483,6 +467,7 @@ Printf.printf(
  </div>;
  };
  */
+
 include YourLib.CreateComponent({
   type thing = blahblahblah;
   type state = unit;
@@ -585,9 +570,7 @@ module N = {
 };
 
 open M;
-
 open M.Inner;
-
 open M;
 
 module OldModuleSyntax = {
@@ -601,13 +584,10 @@ module type SigWithModuleTypeOf = {
 };
 
 module type T = t with type t = a => a;
-
 module type T = t with type t = a => a;
-
 module type T = (t with type t = a) => a;
 
 module X = [%test extension];
-
 module type T = [%test extension];
 
 let foo =

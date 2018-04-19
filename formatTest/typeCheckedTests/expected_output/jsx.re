@@ -179,46 +179,33 @@ let fakeRender = (el: component) =>
   el.displayName;
 
 /* end of setup */
+
 let (/><) = (a, b) => a + b;
-
 let (><) = (a, b) => a + b;
-
 let (/>) = (a, b) => a + b;
-
 let (></) = (a, b) => a + b;
 
 let tag1 = 5 />< 6;
-
 let tag2 = 5 >< 7;
-
 let tag3 = 5 /> 7;
-
 let tag4 = 5 ></ 7;
 
 let b = 2;
-
 let selfClosing = <Foo />;
-
 let selfClosing2 = <Foo a=1 b=true />;
-
 let selfClosing3 =
   <Foo
     a="really long values that should"
     b="cause the entire thing to wrap"
   />;
-
 let a = <Foo> <Bar c=(a => a + 2) /> </Foo>;
-
 let a3 = <So> <Much> <Nesting /> </Much> </So>;
-
 let a4 =
   <Sibling>
     <One test=true foo=b />
     <Two foo=b />
   </Sibling>;
-
 let a5 = <Foo> "testing a string here" </Foo>;
-
 let a6 =
   <Foo2>
     <Text> "testing a string here" </Text>
@@ -227,53 +214,31 @@ let a6 =
     <Bar />
     <Exp> (2 + 4) </Exp>
   </Foo2>;
-
 let intended = true;
-
 let punning = <Pun intended />;
-
 let namespace = <Namespace.Foo />;
-
 let c = <Foo />;
-
 let d = <Foo />;
 
 let spaceBefore =
   <So> <Much> <Nesting /> </Much> </So>;
-
 let spaceBefore2 = <So> <Much /> </So>;
-
 let siblingNotSpaced =
   <So> <Much /> <Much /> </So>;
-
 let jsxInList = [<Foo />];
-
 let jsxInList2 = [<Foo />];
-
 let jsxInListA = [<Foo />];
-
 let jsxInListB = [<Foo />];
-
 let jsxInListC = [<Foo />];
-
 let jsxInListD = [<Foo />];
-
 let jsxInList3 = [<Foo />, <Foo />, <Foo />];
-
 let jsxInList4 = [<Foo />, <Foo />, <Foo />];
-
 let jsxInList5 = [<Foo />, <Foo />];
-
 let jsxInList6 = [<Foo />, <Foo />];
-
 let jsxInList7 = [<Foo />, <Foo />];
-
 let jsxInList8 = [<Foo />, <Foo />];
-
 let testFunc = b => b;
-
 let jsxInFnCall = testFunc(<Foo />);
-
 let lotsOfArguments =
   <LotsOfArguments
     argument1=1
@@ -284,59 +249,35 @@ let lotsOfArguments =
     argument6="test">
     <Namespace.Foo />
   </LotsOfArguments>;
-
 let lowerCase = <div argument1=1 />;
 
 let b = 0;
-
 let d = 0;
-
 /*
  * Should pun the first example:
  */
 let a = <Foo a> 5 </Foo>;
-
 let a = <Foo a=b> 5 </Foo>;
-
 let a = <Foo a=b b=d> 5 </Foo>;
-
 let a = <Foo a> 0.55 </Foo>;
-
 let a = <Foo />;
-
 let ident = <Foo> a </Foo>;
-
 let fragment1 = <> <Foo /> <Foo /> </>;
-
 let fragment2 = <> <Foo /> <Foo /> </>;
-
 let fragment3 = <> <Foo /> <Foo /> </>;
-
 let fragment4 = <> <Foo /> <Foo /> </>;
-
 let fragment5 = <> <Foo /> <Foo /> </>;
-
 let fragment6 = <> <Foo /> <Foo /> </>;
-
 let fragment7 = <> <Foo /> <Foo /> </>;
-
 let fragment8 = <> <Foo /> <Foo /> </>;
-
 let fragment9 = <> 2 2 2 2 </>;
-
 let fragment10 = <> 2.2 3.2 4.6 1.2 </>;
-
 let fragment11 = <> "str" </>;
-
 let fragment12 = <> (6 + 2) (6 + 2) (6 + 2) </>;
-
 let fragment13 = <> fragment11 fragment11 </>;
-
 let listOfItems1 = <List1> 1 2 3 4 5 </List1>;
-
 let listOfItems2 =
   <List2> 1.0 2.8 3.8 4.0 5.1 </List2>;
-
 let listOfItems3 =
   <List3> fragment11 fragment11 </List3>;
 
@@ -344,11 +285,8 @@ let listOfItems3 =
  * Several sequential simple jsx expressions must be separated with a space.
  */
 let thisIsRight = (a, b) => ();
-
 let tagOne = (~children, ()) => ();
-
 let tagTwo = (~children, ()) => ();
-
 /* thisIsWrong <tagOne /><tagTwo />; */
 thisIsRight(<tagOne />, <tagTwo />);
 
@@ -356,7 +294,6 @@ thisIsRight(<tagOne />, <tagTwo />);
 thisIsRight(<tagOne />, <tagTwo />);
 
 let a = (~children, ()) => ();
-
 let b = (~children, ()) => ();
 
 let thisIsOkay =
@@ -368,22 +305,17 @@ let thisIsAlsoOkay =
 /* Doesn't make any sense, but suppose you defined an
    infix operator to compare jsx */
 <a /> < <b />;
-
 <a /> > <b />;
 
 <a /> < <b />;
-
 <a /> > <b />;
 
 let listOfListOfJsx = [<> </>];
-
 let listOfListOfJsx = [<> <Foo /> </>];
-
 let listOfListOfJsx = [
   <> <Foo /> </>,
   <> <Bar /> </>,
 ];
-
 let listOfListOfJsx = [
   <> <Foo /> </>,
   <> <Bar /> </>,
@@ -391,14 +323,11 @@ let listOfListOfJsx = [
 ];
 
 let sameButWithSpaces = [<> </>];
-
 let sameButWithSpaces = [<> <Foo /> </>];
-
 let sameButWithSpaces = [
   <> <Foo /> </>,
   <> <Bar /> </>,
 ];
-
 let sameButWithSpaces = [
   <> <Foo /> </>,
   <> <Bar /> </>,
@@ -408,12 +337,10 @@ let sameButWithSpaces = [
 /*
  * Test named tag right next to an open bracket.
  */
+
 let listOfJsx = [];
-
 let listOfJsx = [<Foo />];
-
 let listOfJsx = [<Foo />, <Bar />];
-
 let listOfJsx = [
   <Foo />,
   <Bar />,
@@ -421,11 +348,8 @@ let listOfJsx = [
 ];
 
 let sameButWithSpaces = [];
-
 let sameButWithSpaces = [<Foo />];
-
 let sameButWithSpaces = [<Foo />, <Bar />];
-
 let sameButWithSpaces = [
   <Foo />,
   <Bar />,
@@ -436,12 +360,10 @@ let sameButWithSpaces = [
  * Test no conflict with polymorphic variant types.
  */
 type thisType = [ | `Foo | `Bar];
-
 type t('a) = [< thisType] as 'a;
 
 let asd =
   [@foo] <One test=true foo=2> "a" "b" </One>;
-
 let asd2 =
   [@foo]
   [@JSX]
@@ -453,17 +375,13 @@ let asd2 =
 
 let span =
     (~test: bool, ~foo: int, ~children, ()) => 1;
-
 let asd =
   [@foo] <span test=true foo=2> "a" "b" </span>;
-
 /* "video" call doesn't end with a list, so the expression isn't converted to JSX */
 let video = (~test: bool, children) => children;
-
 let asd2 = [@foo] [@JSX] video(~test=false, 10);
 
 let div = (~children) => 1;
-
 [@JSX] ((() => div)())(~children=[]);
 
 let myFun = () =>
@@ -531,40 +449,27 @@ let myFun = () =>
 /* let res = <Foo a=10 b=(<Foo a=200 />) />; */
 let zzz =
   Some("oh hai");
-
 /* this should be the only test that generates a warning. We're explicitly testing for this */
 let optionalCallSite =
   <Optional1 required=?zzz />;
-
 fakeRender(optionalCallSite);
-
 let optionalArgument = <Optional2 />;
-
 fakeRender(optionalArgument);
-
 let optionalArgument =
   <Optional2 optional=?zzz />;
-
 fakeRender(optionalArgument);
-
 let defaultArg = <DefaultArg />;
-
 fakeRender(defaultArg);
-
 let defaultArg = <DefaultArg default=zzz />;
-
 fakeRender(defaultArg);
 
 ([@bla]
  [@JSX]
  NotReallyJSX.createElement([], ~foo=1, ~bar=2));
-
 ([@bla]
  [@JSX]
  NotReallyJSX.createElement(~foo=1, [], ~bar=2));
-
 ([@bla] [@JSX] notReallyJSX([], ~foo=1));
-
 ([@bla] [@JSX] notReallyJSX(~foo=1, [], ~bar=2));
 
 /* children can be at any position */
@@ -574,11 +479,9 @@ fakeRender(defaultArg);
 
 /* preserve some other attributes too! */
 ([@bla] <span test=true foo=2 />);
-
 ([@bla] <span test=true foo=2 />);
 
 ([@bla] <Optional1 required=(Some("hi")) />);
-
 ([@bla] <Optional1 required=(Some("hi")) />);
 
 /* Overeager JSX punning #1099 */

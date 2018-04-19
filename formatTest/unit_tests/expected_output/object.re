@@ -16,7 +16,6 @@ type t = {..};
 type t = {..};
 
 let (<..>) = (a, b) => a + b;
-
 let five = 2 <..> 3;
 
 type closedObjSugar = {

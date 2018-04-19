@@ -6,7 +6,6 @@ let logTSuccess = self =>
   } else {
     ();
   };
-
 let something =
   if (self.ext.logSuccess) {
     print_string("Did T");
@@ -78,6 +77,7 @@ if (if (x) {true} else {false}) {
 /**                            TERNARY
  *============================================================================
  */
+
 let ternaryResult =
   something ?
     callThisFunction(withThisArg) : thatResult;
@@ -150,7 +150,6 @@ let result =
   addOne(0) + 0 > 1 ?
     print_string("this wont print") :
     print_string("this will");
-
 /*
  * Should be parsed as:
  */

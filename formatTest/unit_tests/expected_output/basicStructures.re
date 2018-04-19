@@ -115,23 +115,14 @@ let x = Some(-10);
 let x = Some(-5.0);
 
 let lazy x = 10;
-
 let lazy (x: int) = 10;
-
 let lazy [] = 10;
-
 let lazy true = 10;
-
 let lazy #x = 10;
-
 let lazy `Variant = 10;
-
 let lazy `variant = 10;
-
 let lazy '0'..'9' = 10;
-
 let lazy (lazy true) = 10;
-
 let lazy [%extend] = 10;
 
 /* Test precedence on access sugar */
@@ -150,7 +141,6 @@ let x = arr^[0] = 1;
 /* Comments */
 /*Below is an empty comment*/
 /**/;
-
 /**                            IF
  *============================================================================
  */;
@@ -178,13 +168,9 @@ let logTapSuccess = self =>
   };
 
 (! data).field = true;
-
 (! data).field1.field2 = true;
-
 (! data.field1).field2 = true;
-
 (! data).field1.field2 = true;
-
 (! data.field1).field2 = true;
 
 let loop = (appTime, frameTime) => {
@@ -238,7 +224,6 @@ if (false) {
  * printer(
  */
 let printIfFirstArgGreater = true;
-
 let result =
   if (printIfFirstArgGreater) {
     (a, b) =>
@@ -286,7 +271,6 @@ if (printIfFirstArgGreater) {
       print_string("b < a");
     };
 };
-
 /* Should Be Parsed As: Cleary a type error, but at least the parsing makes that clear */
 if (printIfFirstArgGreater) {
   (a, b) =>
@@ -338,26 +322,20 @@ if (10 < 100) {
 /**                            TYPE CONSTRAINTS
  *============================================================================
  */;
-
 let x: int = 10;
-
 let x: int = 10;
-
 let x: int = 10;
-
 let x: int = (10: int);
-
 /* let (x:int) = (10:string); */
 /* let (x:string) = ("hello":int); */
+
 /**                            TUPLES
  *============================================================================
  */;
 
 /* In Reason, types look like the data they model! Tuples are no exception. */
 type pairOfInts = (int, int);
-
 let letBindingWithTypeConstraint: int = 10;
-
 let (tupleItem: int, withTypeConstraint: int) = (
   10,
   20,
@@ -365,7 +343,6 @@ let (tupleItem: int, withTypeConstraint: int) = (
 
 /* To make sure that tuple field annotations are annotating the entire field */
 let _dummyFunc = x => 10;
-
 let annotatingFuncApplication = (
   _dummyFunc("a"): int,
   _dummyFunc("a"): int,
@@ -395,7 +372,6 @@ let (
   10,
   20,
 );
-
 let (tupleItem, withOutsideTypeConstraint): (
   int,
   int,
@@ -406,7 +382,6 @@ let (tupleItem, withOutsideTypeConstraint): (
 
 /* Trailing commas */
 let trailingCommaAccepted = (1, 2);
-
 let moreTrailing = (1, 2, 3, 4, 5, 7);
 
 /**                        Immutable Lists
@@ -415,9 +390,7 @@ let moreTrailing = (1, 2, 3, 4, 5, 7);
 
 /* Anatomy:        -Head-      --------- Tail---------  nil: You can't see nil */
 let x: list(int) = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-
 let hd = "appendedToHead";
-
 let tl = ["listTo", "append", "to"];
 
 /* To push *one* and only *one* item to the front of a list - use [hd, ...tl] */
@@ -470,11 +443,9 @@ let nestedMatchWithWhen = lstLst =>
 /**
  * Aliasing with "as" during matches.
  */;
-
 type mine =
   | MyThing(int)
   | YourThing(int);
-
 /*
  * Reason parses "as" aliases differently than OCaml.
  */
@@ -497,11 +468,11 @@ let ppp =
   };
 
 let MyThing(_) as ppp | YourThing(_) as ppp = ppp;
-
 /*
  * But this isn't needed in Reason because OR patterns have much lower
  * precedence - they should be pretty printed in the same way.
  */
+
 /* TODO: */
 /* let rec nestedMatch lstLst => match lstLst with { */
 /*   hd::tl: match tl with { */
@@ -511,25 +482,21 @@ let MyThing(_) as ppp | YourThing(_) as ppp = ppp;
 /*   []: 0 */
 /* }; */
 /*  */
+
 /**                               ARRAYS
  * ============================================================================
  * Arrays are weird looking. Usually you want lists because they support pattern
  * matching - that's why they have nicer syntax - to entice you. But if you want
  * random access and better control over memory layout, use arrays.
  */;
-
 let emptyArray = [||];
-
 let arrayWithOne = [|10|];
-
 let arrayWithTwo = [|10, 10|];
-
 let secondItem = arrayWithTwo[1];
 
 /* Getting And Setting: Yeah, we should really change this */
 /* Get an array item at index 1 */
 let secondItem = arrayWithTwo[1];
-
 /* Set an array item at index 1 */
 arrayWithTwo[1] = 300;
 
@@ -538,26 +505,22 @@ arrayWithTwo[1] = 300;
  *  ============================================================================
  *  The language supports mutating strings, but that should not be depended upon.
  */;
-
 let myString = "asdf";
-
 myString.[2] = '9'; /* Replacing a character: I could do without this sugar */
 
 /*                           FUNCTIONS
  *=============================================================================
  */
+
 /*                           TYPE ANNOTATIONS
  * =============================================================================
  */
+
 let one = 900;
-
 let two = 10000;
-
 /* Tuple expressions can be annotated without additional paren wrapping */
 let myTuple = (one: int, two: int);
-
 type myTupleType = (int, int);
-
 let myTuple: myTupleType = myTuple;
 
 /* Anything *outside* of a tuple, must still be annotated within parens. */
@@ -585,8 +548,8 @@ let curriedFormTwo =
   i,
   x,
 );
-
 /* let nonCurriedFormTwo = fun (i:int, x:int) (:(int, int)) => (i, x); */
+
 let curriedFormThree =
     (i: int, (a: int, b: int): (int, int))
     : (int, int, int) => (
@@ -596,6 +559,7 @@ let curriedFormThree =
 );
 
 /* let nonCurriedFormThree = fun (i:int, (a:int, b:int):(int, int)) (:(int, int, int)) => (i, a, b);  */
+
 /** TODO: But this, however doesn't work.
  *  let (myCurriedFunc: int => int) a => a;
  *  Note: This is likely because only "simple patterns" are accepted as constraints
@@ -650,7 +614,6 @@ let testRecord = {
   age: 20,
   occupation: "engineer",
 };
-
 let anotherRecord = {
   ...testRecord,
   name: "joe++",
@@ -662,7 +625,6 @@ let makeRecordBase = () => {
   age: 30,
   occupation: "Engineer",
 };
-
 let anotherRecord = {
   /* These parens should be evaporated. */
   ...makeRecordBase(),
@@ -780,21 +742,16 @@ let moreFoo = {
 };
 
 /* record value punning */
-let props = {title: "hi"};
 
+let props = {title: "hi"};
 /* no punning available for a single field. Can't tell the difference with a scope + expression */
 let componentA = {props: props};
-
 /* pun for real */
 let componentB = {props, state: ()};
-
 /* pun fields with module prefix too */
 let foo = {Foo.foo: foo};
-
 let bar = {Foo.foo, bar: 1};
-
 let bar = {bar: 1, Foo.foo};
-
 let bar = {Foo.foo, Bar.bar};
 
 ({M.x, y}) => 1;
@@ -869,11 +826,8 @@ let z = {
  * Unnecessary parens should be removed.
  */
 let unitLambda = () => ();
-
 let identifierLambda = a => ();
-
 let underscoreLambda = _ => ();
-
 it("should remove parens", a => {
   print_string("did it work?");
   print_string("did it work?");

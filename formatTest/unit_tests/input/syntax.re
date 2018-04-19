@@ -274,7 +274,6 @@ let res2 = printPoint({x:point3D.x, y:point3D.y});
        let x = {a};    /* Record {a:a} */
        let x = {a;};   /* Single item sequence returning identifier {a} */
 */
-
 let res3 = printPoint (addPoints (point2D, {x:point3D.x, y:point3D.y}));
 
 type person = {age: int, name: string};
