@@ -446,9 +446,9 @@ let myFun = () =>
 /* let res = <Foo a=10 b=(<Foo a=200 />) > */
 /*   <Bar /> */
 /* </Foo>; */
+
 /* let res = <Foo a=10 b=(<Foo a=200 />) />; */
-let zzz =
-  Some("oh hai");
+let zzz = Some("oh hai");
 /* this should be the only test that generates a warning. We're explicitly testing for this */
 let optionalCallSite =
   <Optional1 required=?zzz />;

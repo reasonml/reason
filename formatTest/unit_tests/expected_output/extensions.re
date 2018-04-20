@@ -1,4 +1,5 @@
 /* Extension sugar */
+
 %extend
 open M;
 

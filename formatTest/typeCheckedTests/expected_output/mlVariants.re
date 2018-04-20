@@ -1,4 +1,5 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
+
 type polyVariantsInMl = [
   | `IntTuple(int, int)
   | `StillAnIntTuple(int, int)

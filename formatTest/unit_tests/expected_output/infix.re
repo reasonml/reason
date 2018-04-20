@@ -1,4 +1,5 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
+
 /* - A good way to test if formatting of infix operators groups precedences
    correctly, is to write an expression twice. Once in a form where parenthesis
    explicitly group according to the parse tree and write it another time
@@ -438,6 +439,7 @@ let myFunc =
 /**
  * Testing various fixity.
  */
+
 /**
  * For each of these test cases for imperative updates, we'll test both record
  * update, object member update and array update.
@@ -994,8 +996,7 @@ let containingObject = {
      * TODO: Move all of these test cases to attributes.re.
      */
     /* Attribute on the prefix application */
-    let res =
-      [@attr] (- something(blah, blah));
+    let res = [@attr] (- something(blah, blah));
     /* Attribute on the regular function application, not prefix */
     let res = [@attr] (- something(blah, blah));
     let attrOnPrefix = [@ppxOnPrefixApp] (-1);

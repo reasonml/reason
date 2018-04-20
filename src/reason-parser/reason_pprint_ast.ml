@@ -1396,15 +1396,6 @@ let rec prependSingleLineComment ?newlinesAboveDocComments:(newlinesAboveDocComm
           let sub = breakline (formatComment comment) (insertBlankLines 1 sub) in
           Whitespace(nextInfo, sub)
     | prevComment::_xs ->
-        (* print_endline "this casee"; *)
-        (* print_string "prev: "; *)
-        (* print_endline (Comment.(prevComment.text)); *)
-        (* print_string "current: "; *)
-        (* print_endline (Comment.(comment.text)); *)
-        (* print_interval intv; *)
-        (* print_string "Start heigh of comment: "; *)
-        (* print_int cl.loc_start.pos_lnum; *)
-        (* print_newline(); *)
         let pcl = Comment.location prevComment in
         let blankLinesAbove = cl.loc_start.pos_lnum > (fst intv) in
         (* print_string "blank lines above: "; *)
@@ -1429,8 +1420,6 @@ let rec prependSingleLineComment ?newlinesAboveDocComments:(newlinesAboveDocComm
           | x::_ -> true
           | [] -> false
           in
-          (* print_endline "comments above"; *)
-          (* print_endline (string_of_bool hasCommentAbove); *)
 
           let nextInfo = { nextInfo with depth =
             if cl.loc_start.pos_lnum > (fst intv) && not hasCommentAbove then
@@ -1528,7 +1517,12 @@ let rec insertSingleLineComment layout comment =
   | Layout.SourceMap (loc, sub) ->
     Layout.SourceMap (loc, insertSingleLineComment sub comment)
   | Layout.Whitespace (info, sub) ->
-    Layout.Whitespace(info, insertSingleLineComment sub comment)
+      let (a, b) = info.Layout.interval in
+      if (a <= location.loc_start.pos_lnum) && (b >= location.loc_end.pos_lnum)
+      then
+        prependSingleLineComment comment layout
+      else
+        Layout.Whitespace(info, insertSingleLineComment sub comment)
   | Easy e ->
     prependSingleLineComment comment layout
   | Sequence (listConfig, subLayouts) when subLayouts = [] ->
@@ -1584,8 +1578,8 @@ let rec attachCommentToNodeRight layout comment =
     Layout.Sequence ({config with wrap=(lwrap, rwrap)}, sub)
   | Layout.SourceMap (loc, sub) ->
     Layout.SourceMap (loc, attachCommentToNodeRight sub comment)
-  | Whitespace(info, sub) ->
-      Whitespace(info, attachCommentToNodeRight sub comment)
+  (* | Whitespace(info, sub) -> *)
+      (* Whitespace(info, attachCommentToNodeRight sub comment) *)
   | layout -> inline ~postSpace:true layout (formatComment comment)
 
 let rec attachCommentToNodeLeft comment layout =
@@ -1596,8 +1590,8 @@ let rec attachCommentToNodeLeft comment layout =
     Layout.Sequence ({config with wrap = (lwrap, rwrap)}, sub)
   | Layout.SourceMap (loc, sub) ->
     Layout.SourceMap (loc, attachCommentToNodeLeft comment sub )
-  | Whitespace(info, sub) ->
-      Whitespace(info, attachCommentToNodeRight sub comment)
+  (* | Whitespace(info, sub) -> *)
+      (* Whitespace(info, attachCommentToNodeRight sub comment) *)
   | layout ->
     Layout.Label (inlineLabel, formatComment comment, layout)
 
@@ -1665,12 +1659,18 @@ and perfectlyAttachComment comment = function
           else
             (Layout.SourceMap (loc, layout), Some comment)
       end
+  | Whitespace(info, subLayout) ->
+      begin match perfectlyAttachComment comment subLayout with
+      | (newLayout, None) -> (Whitespace(info, newLayout), None)
+      | (newLayout, Some c) -> (Whitespace(info, newLayout), Some c)
+      end
   | layout -> (layout, Some comment)
 
 let insertRegularComment layout comment =
   match perfectlyAttachComment comment layout with
   | (layout, None) -> layout
-  | (layout, Some _) -> looselyAttachComment ~breakAncestors:false layout comment
+  | (layout, Some _) ->
+      looselyAttachComment ~breakAncestors:false layout comment
 
 let insertEndOfLineComment layout comment =
   looselyAttachComment ~breakAncestors:true layout comment
@@ -2189,13 +2189,12 @@ let groupAndPrint ~xf ~getLoc items =
           | curr::xs ->
               let (intv, x) = curr in
               let firstLayout =
-                if (i > 0) then
-                  let region = Layout.{
-                    interval = intv;
-                    comments = [];
-                    depth = 1;
-                  } in
-                  Layout.Whitespace(region, x) else x
+                let region = Layout.{
+                  interval = intv;
+                  comments = [];
+                  depth = if (i > 0) then 1 else 0;
+                } in
+                Layout.Whitespace(region, x)
               in
               (firstLayout::(List.map snd xs))
           | [] -> []
@@ -4302,17 +4301,28 @@ let printer = object(self:'self)
   method attachDocAttrsToLayout docAttrs loc layout =
     let rec aux prevLoc layout = function
       | ((x, _) as attr : Ast_404.Parsetree.attribute)::xs ->
-        let newLayout = if x.loc.loc_end.pos_lnum < prevLoc.loc_start.pos_lnum - 1 then
-          makeList ~inline:(true, true) ~break:Always [
-            self#attribute attr;
-            atom "";
-            layout
-          ]
-        else
-          makeList ~inline:(true, true) ~break:Always [
-            self#attribute attr;
-            layout
-          ]
+        let newLayout =
+          let l1 = x.loc.loc_end.pos_lnum in
+          let l2 = prevLoc.loc_start.pos_lnum in
+          let diffInterval = (l1, l2) in
+          let h = comments_height diffInterval in
+          let intv = (l1 + 1, l2 - 1) in
+          if l2 -l1 -1 - h >= 1 then
+            let region = Layout.{
+              interval = intv;
+              comments = [];
+              depth = 1;
+            } in
+            let wsRegion = Layout.Whitespace(region, layout) in
+            makeList ~inline:(true, true) ~break:Always [
+              self#attribute attr;
+              wsRegion
+            ]
+          else
+            makeList ~inline:(true, true) ~break:Always [
+              self#attribute attr;
+              layout
+            ]
         in aux x.loc newLayout xs
       | [] -> layout
     in
@@ -4429,8 +4439,15 @@ let printer = object(self:'self)
         self#formatSimplePatternBinding prefixText layoutPattern None appTerms
     in
     let {stdAttrs; docAttrs} = partitionAttributes ~partDoc:true x.pvb_attributes in
+
+    let body = makeList ~inline:(true, true) [body] in
     let layout = self#attach_std_item_attrs stdAttrs (source_map ~loc:x.pvb_loc body) in
-    self#attachDocAttrsToLayout (docAttrs : Ast_404.Parsetree.attributes) x.pvb_pat.ppat_loc layout
+    let startLoc = match stdAttrs with
+    | (astLoc, _)::_ -> astLoc.loc
+    | [] -> x.pvb_pat.ppat_loc
+    in
+    self#attachDocAttrsToLayout (docAttrs : Ast_404.Parsetree.attributes)
+    startLoc layout
 
   (* Ensures that the constraint is formatted properly for sake of function
      binding (formatted without arrows)

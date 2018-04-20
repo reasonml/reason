@@ -166,7 +166,7 @@ let res =
   | X(0, 0) =>
     /* After X arrow */
     "result of X" /* End of X body line */
-  | X(1, 0)/* Before X's arrow */ => "result of X" /* End of X body line */
+  | X(1, 0) /* Before X's arrow */ => "result of X" /* End of X body line */
   | X(_) =>
     /* After X _ arrow */
     "result of X" /* End of X body line */

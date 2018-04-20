@@ -501,8 +501,8 @@ type value =
 
 /** Different payloads **/
 
-[@haha]
 /* Empty structure */
+[@haha]
 let x = 5;
 
 /* Expression structure */

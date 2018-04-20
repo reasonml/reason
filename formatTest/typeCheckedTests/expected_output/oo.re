@@ -1,4 +1,5 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
+
 class virtual stack ('a) (init) = {
   /*
    * The "as this" is implicit and will be formatted away.

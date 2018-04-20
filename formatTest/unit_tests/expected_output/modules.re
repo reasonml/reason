@@ -1,4 +1,5 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
+
 let run = () =>
   TestUtils.printSection("Modules");
 
@@ -78,6 +79,7 @@ module type MySecondModuleType = {
  let y = x + x;
  };
  */
+
 /**
  * - Modules may be artificially "constrained" so that users of a module see
  * fewer details than are actually present.

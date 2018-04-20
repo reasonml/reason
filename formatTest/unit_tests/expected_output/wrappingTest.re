@@ -1,5 +1,7 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
+
 /* Run the formatting pretty printer with width 50 */
+
 /*
  * Testing infix wrapping
  */
@@ -1946,7 +1948,6 @@ let someResult: sixteenTuple =
     10,
     10,
   ));
-
 /* Annoted Inline */
 /* Not-Destructured */
 let someResult: (
@@ -2656,6 +2657,7 @@ let /*beforePattern2 */ commentingBeforePattern2: withThreeFields = {
   age: 20,
   occupation: "programmer",
 };
+
 /*beforePattern*/
 let /*beforePattern2 */ commentingBeforePatternSpecial: withThreeFields = {
   name: "hello",
@@ -2734,6 +2736,7 @@ let lATNotSugaredCommentAfterEqual = /*AfterEqual*/
 let lATNotSugaredCommentBeforeType = /*BeforeType*/
     (type a, input: a) => input;
 let lATNotSugaredCommentAfterType = /*AfterType*/
+    (type a, input: a) => input;
 let lATNotSugaredCommentBeforeArg =
     (type a, /*BeforeArg*/ input: a) => input;
 let lATNotSugaredCommentAfterArg =
@@ -2790,7 +2793,6 @@ let returningATernary = (x, y) =>
    Everything will line up just fine.
    In this form, include the final closing on the last line. */
 let test = 10;
-
 let test =
   /* And if the entire block needs to be re-indented
      such as this case, everything will still look okay. */
