@@ -1,4 +1,5 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
+
 /**
  * Testing pattern matching using ml syntax to exercise nesting of cases.
  */;
@@ -48,10 +49,8 @@ type bcd =
   | C
   | D
   | E;
-
 type a =
   | A(bcd);
-
 let result =
   switch (B) {
   | B
@@ -101,15 +100,9 @@ module EM = {
 exception Ealias = EM.E;
 
 let switc = "match";
-
 let switch_ = "match";
-
 let switch__ = "match";
-
 let pub_ = "method";
-
 let pub__ = "method";
-
 let pri_ = "private";
-
 let pri__ = "private";
