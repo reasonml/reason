@@ -21,6 +21,7 @@ module Bar = {
 };
 module ReasonReact = {
   let element (~key=?, ~ref=?, component) = 1;
+  let stringToElement = (x) => x;
 };
 
 let divRef = <div />;
@@ -118,3 +119,8 @@ let divRef = <div />;
   correct ReasonReact-specific call */
 
 ([@JSX] Foo.make(~children=[], ()));
+
+<div> "hello" </div>;
+<Foo> "hello" </Foo>;
+<Foo> "hello" "world" </Foo>;
+<Foo> ..."hello" </Foo>;

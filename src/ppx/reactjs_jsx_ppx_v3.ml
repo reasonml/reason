@@ -61,6 +61,16 @@ open Asttypes
 open Parsetree
 open Longident
 
+let handleStringLiteral v =
+  match v.pexp_desc with
+  | Pexp_constant (Pconst_string _) ->
+    let loc = v.pexp_loc in
+    Exp.apply
+      ~loc
+      (Exp.ident ~loc {loc; txt = Ldot (Lident "ReasonReact", "stringToElement")})
+      [(nolabel, v)]
+  | _ -> v
+
 let transformChildren ~loc ~mapper theList =
   let rec transformChildren' theList accum =
     (* not in the sense of converting a list to an array; convert the AST
@@ -72,7 +82,7 @@ let transformChildren ~loc ~mapper theList =
         {txt = Lident "::"},
         Some {pexp_desc = Pexp_tuple (v::acc::[])}
       )} ->
-      transformChildren' acc ((mapper.expr mapper v)::accum)
+      transformChildren' acc ((handleStringLiteral (mapper.expr mapper v))::accum)
     | notAList -> mapper.expr mapper notAList
   in
   transformChildren' theList []
@@ -114,7 +124,7 @@ let jsxMapper () =
           {pexp_desc = Pexp_construct ({txt = Lident "[]"}, None)}
         ]}
       )} when List.for_all (fun (attribute, _) -> attribute.txt <> "JSX") pexp_attributes ->
-      mapper.expr mapper singleItem
+      mapper.expr mapper (handleStringLiteral singleItem)
     (* if it's a single jsx item, or multiple items, turn list into an array *)
     | nonEmptyChildren -> transformChildren ~loc ~mapper nonEmptyChildren
     in
