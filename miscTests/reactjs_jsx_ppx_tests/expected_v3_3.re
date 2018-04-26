@@ -244,4 +244,11 @@ ReasonReact.element(
   Foo.make([|ReasonReact.string("hello"), ReasonReact.string("world")|]),
 );
 
+ReasonReact.element(Foo.make(ReasonReact.string({js|unicode|js})));
+
+interpolation =>
+  ReasonReact.element(
+    Foo.make(ReasonReact.string({j|hello, $interpolation|j})),
+  );
+
 ReasonReact.element(Foo.make("hello"));

@@ -123,4 +123,6 @@ let divRef = <div />;
 <div> "hello" </div>;
 <Foo> "hello" </Foo>;
 <Foo> "hello" "world" </Foo>;
+<Foo> {js|unicode|js} </Foo>;
+interpolation => <Foo> {j|hello, $interpolation|j} </Foo>;
 <Foo> ..."hello" </Foo>;

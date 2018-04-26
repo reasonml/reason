@@ -242,4 +242,8 @@ ReasonReact.element(Foo.make("hello"));
 
 ReasonReact.element(Foo.make([|"hello", "world"|]));
 
+ReasonReact.element(Foo.make({js|unicode|js}));
+
+interpolation => ReasonReact.element(Foo.make({j|hello, $interpolation|j}));
+
 ReasonReact.element(Foo.make("hello"));
