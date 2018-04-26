@@ -67,7 +67,7 @@ let handleStringLiteral v =
     let loc = v.pexp_loc in
     Exp.apply
       ~loc
-      (Exp.ident ~loc {loc; txt = Ldot (Lident "ReasonReact", "stringToElement")})
+      (Exp.ident ~loc {loc; txt = Ldot (Lident "ReasonReact", "string")})
       [(nolabel, v)]
   | _ -> v
 

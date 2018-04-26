@@ -21,7 +21,7 @@ module Bar = {
 };
 module ReasonReact = {
   let element (~key=?, ~ref=?, component) = 1;
-  let stringToElement = (x) => x;
+  let string = (x) => x;
 };
 
 let divRef = <div />;

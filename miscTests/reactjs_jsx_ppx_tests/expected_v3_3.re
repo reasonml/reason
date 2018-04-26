@@ -28,7 +28,7 @@ module Bar = {
 module ReasonReact = {
   let element = (~key=?, ~ref=?, component) => 1;
 
-  let stringToElement = x => x;
+  let string = x => x;
 };
 
 let divRef = ReactDOMRe.createElement("div", [||]);
@@ -236,15 +236,12 @@ ReasonReact.element(
 
 ReasonReact.element(Foo.make([||]));
 
-ReactDOMRe.createElement("div", [|ReasonReact.stringToElement("hello")|]);
+ReactDOMRe.createElement("div", [|ReasonReact.string("hello")|]);
 
-ReasonReact.element(Foo.make(ReasonReact.stringToElement("hello")));
+ReasonReact.element(Foo.make(ReasonReact.string("hello")));
 
 ReasonReact.element(
-  Foo.make([|
-    ReasonReact.stringToElement("hello"),
-    ReasonReact.stringToElement("world"),
-  |]),
+  Foo.make([|ReasonReact.string("hello"), ReasonReact.string("world")|]),
 );
 
 ReasonReact.element(Foo.make("hello"));
