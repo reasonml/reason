@@ -57,6 +57,7 @@
     reason_comment
     reason_layout
     reason_heuristics
+    reason_location
     reason_toolchain
     reason_config
     reason_pprint_ast

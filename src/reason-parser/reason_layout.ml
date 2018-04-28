@@ -32,6 +32,32 @@ type separator =
   | Sep of string
   | SepFinal of string * string
 
+module WhitespaceRegion = struct
+  type t = {
+    range: Reason_location.range;
+    comments: Comment.t list;
+    height: int;
+  }
+
+  let make ~range ~height () = {
+    range;
+    comments = [];
+    height;
+  }
+
+  let height t = t.height
+  let range t = t.range
+  let comments t = t.comments
+
+  let markComment t comment = { t with
+    comments = comment::t.comments
+  }
+
+  let modifyHeight t newHeight = { t with
+    height = newHeight
+  }
+end
+
 (**
  * These represent "intent to format" the AST, with some parts being annotated
  * with original source location. The benefit of tracking this in an
@@ -46,13 +72,7 @@ type t =
   | Sequence of config * (t list)
   | Label of (Easy_format.t -> Easy_format.t -> Easy_format.t) * t * t
   | Easy of Easy_format.t
-  | Whitespace of whitespaceRegion * t
-
-and whitespaceRegion = {
-  interval: int * int;
-  comments: Comment.t list;
-  depth: int;
-}
+  | Whitespace of WhitespaceRegion.t * t
 
 and config = {
   (* Newlines above items that do not have any comments immediately above it.
@@ -162,8 +182,9 @@ let dump ppf layout =
       traverse indent' right;
     | Easy e ->
       printf "%s Easy: '%s' \n" indent (string_of_easy e)
-    | Whitespace ({depth; interval}, sublayout) ->
-      printf" %s Whitespace (%d) [%d %d]:\n" indent depth (fst interval) (snd interval);
+    | Whitespace (region, sublayout) ->
+      let open WhitespaceRegion in
+      printf" %s Whitespace (%d) [%d %d]:\n" indent region.height region.range.lnum_start region.range.lnum_end;
       (traverse (indent_more indent) sublayout)
   in
   traverse "" layout

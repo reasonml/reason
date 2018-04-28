@@ -57,32 +57,6 @@ open Reason_syntax_util
 module Comment = Reason_comment
 module Layout = Reason_layout
 
-(* TODO: interval tree *)
-let commentDb = ref []
-
-let print_interval (a, b) =
-  let text = "interval: [" ^ (string_of_int a) ^ ", " ^ (string_of_int b) ^ "];" in
-  print_endline text
-
-let store_comment (comment : Comment.t) =
-  let beginLine = comment.location.loc_start.pos_lnum in
-  let endLine = comment.location.loc_end.pos_lnum in
-  let interval = (beginLine, endLine) in
-  (* print_string "storing comment: "; *)
-  (* print_interval interval; *)
-  commentDb := interval::(!commentDb)
-
-let comments_height interval =
-  let (startRange, endRange) = interval in
-  List.fold_left (fun acc curr ->
-    let (startHeight, endHeight) = curr in
-    if startRange < startHeight  && endHeight < endRange then
-      acc + (endHeight - startHeight + 1)
-    else
-      acc
-  ) 0 !commentDb
-
-
 let source_map = Layout.source_map
 
 exception NotPossible of string
@@ -1347,26 +1321,56 @@ let rec consolidateSeparator l = preOrderWalk (function
  *  based on the configuration of newlinesAboveItems
  *)
 let rec insertLinesAboveItems items = preOrderWalk (function
-  (* | Sequence (listConfig, sublayouts) *)
-      (* when listConfig.allowWhitespace *)
-    (* -> *)
-      (* let layoutsWithLinesInjected = *)
-        (* List.map (function *)
-          (* | Layout.Whitespace({depth}, sub) -> *)
-              (* insertBlankLines depth sub *)
-          (* | layout -> *)
-              (* layout) sublayouts in *)
-      (* Sequence(listConfig, layoutsWithLinesInjected) *)
   | Sequence (listConfig, sublayouts)
        when listConfig.newlinesAboveItems <> 0
     ->
      let layoutsWithLinesInjected =
        List.map (insertBlankLines listConfig.newlinesAboveItems) sublayouts in
      Sequence ({listConfig with newlinesAboveItems=0}, layoutsWithLinesInjected)
-  | Whitespace({depth}, sub) ->
-      insertBlankLines depth sub
+  | Whitespace(region, sub) ->
+      insertBlankLines (Layout.WhitespaceRegion.height region) sub
   | layout -> layout
 ) items
+
+let insertCommentIntoWhitespaceRegion comment info sub =
+  let cl = Comment.location comment in
+  let range = Layout.WhitespaceRegion.range info in
+  let nextInfo = Layout.WhitespaceRegion.markComment info comment in
+  match Layout.WhitespaceRegion.comments info with
+  | [] ->
+      if range.lnum_end = cl.loc_end.pos_lnum then
+        let sub = breakline (formatComment comment) sub in
+        Layout.Whitespace(nextInfo, sub)
+      else if range.lnum_start = cl.loc_start.pos_lnum then
+        let sub = breakline (formatComment comment) (insertBlankLines 1 sub) in
+        let nextInfo = Layout.WhitespaceRegion.modifyHeight nextInfo 0 in
+        Whitespace(nextInfo, sub)
+      else
+        let sub = breakline (formatComment comment) (insertBlankLines 1 sub) in
+        Whitespace(nextInfo, sub)
+  | prevComment::_xs ->
+      let pcl = Comment.location prevComment in
+      let blankLinesAbove = cl.loc_start.pos_lnum > range.lnum_start in
+      let nextInfo = if not blankLinesAbove then
+          Layout.WhitespaceRegion.modifyHeight nextInfo 0
+        else nextInfo in
+      if pcl.loc_start.pos_lnum  - cl.loc_end.pos_lnum > 1 then
+        let sub = insertBlankLines 1 sub in
+        let sub = breakline (formatComment comment) sub in
+        let withComment =  Layout.Whitespace(nextInfo, sub) in
+        withComment
+      else
+        let hasCommentAbove = match (Comment.commentsBefore range comment) with
+        | x::_ -> true
+        | [] -> false
+        in
+        let nextInfo = if cl.loc_start.pos_lnum > range.lnum_start && not hasCommentAbove then
+            Layout.WhitespaceRegion.modifyHeight nextInfo 1
+          else nextInfo
+        in
+        let sub = breakline (formatComment comment) sub in
+        let withComment =  Layout.Whitespace(nextInfo, sub) in
+        withComment
 
 (**
  * prependSingleLineComment inserts a single line comment right above layout
@@ -1378,58 +1382,7 @@ let rec prependSingleLineComment ?newlinesAboveDocComments:(newlinesAboveDocComm
   | Sequence (config, hd::tl) when config.break = Always_rec->
      Sequence(config, (prependSingleLineComment ~newlinesAboveDocComments comment hd)::tl)
   | Whitespace(info, sub) ->
-    let cl = Comment.location comment in
-    let intv = info.Layout.interval in
-    let nextInfo = Layout.{
-      info with comments = comment::info.comments
-    } in
-    begin match info.Layout.comments with
-    | [] ->
-        if (snd intv) = cl.loc_end.pos_lnum then
-          let sub = breakline (formatComment comment) sub in
-          Whitespace(nextInfo, sub)
-        else if (fst intv) = cl.loc_start.pos_lnum then
-          let sub = breakline (formatComment comment) (insertBlankLines 1 sub) in
-          let nextInfo = Layout.{nextInfo with depth = 0} in
-          Whitespace(nextInfo, sub)
-        else
-          let sub = breakline (formatComment comment) (insertBlankLines 1 sub) in
-          Whitespace(nextInfo, sub)
-    | prevComment::_xs ->
-        let pcl = Comment.location prevComment in
-        let blankLinesAbove = cl.loc_start.pos_lnum > (fst intv) in
-        (* print_string "blank lines above: "; *)
-        (* print_string (string_of_bool blankLinesAbove); *)
-        (* print_newline(); *)
-        let nextInfo = if not blankLinesAbove  then {
-          nextInfo with
-          depth = 0
-        } else nextInfo in
-        if pcl.loc_start.pos_lnum  - cl.loc_end.pos_lnum > 1 then
-          let sub = insertBlankLines 1 sub in
-          let sub = breakline (formatComment comment) sub in
-          let withComment =  Layout.Whitespace(nextInfo, sub) in
-          withComment
-        else
-          let commentsInRange = List.filter (fun (beginLine, endLine) ->
-               beginLine >= (fst intv)
-            && endLine <= (snd intv)
-            && endLine < cl.loc_start.pos_lnum
-          ) !commentDb in
-          let hasCommentAbove = match commentsInRange with
-          | x::_ -> true
-          | [] -> false
-          in
-
-          let nextInfo = { nextInfo with depth =
-            if cl.loc_start.pos_lnum > (fst intv) && not hasCommentAbove then
-              1
-            else nextInfo.depth
-          } in
-          let sub = breakline (formatComment comment) sub in
-          let withComment =  Layout.Whitespace(nextInfo, sub) in
-          withComment
-    end
+      insertCommentIntoWhitespaceRegion comment info sub
   | layout ->
     let withComment = breakline (formatComment comment) layout in
      if Comment.is_doc comment then
@@ -1517,10 +1470,9 @@ let rec insertSingleLineComment layout comment =
   | Layout.SourceMap (loc, sub) ->
     Layout.SourceMap (loc, insertSingleLineComment sub comment)
   | Layout.Whitespace (info, sub) ->
-      let (a, b) = info.Layout.interval in
-      if (a <= location.loc_start.pos_lnum) && (b >= location.loc_end.pos_lnum)
-      then
-        prependSingleLineComment comment layout
+      let range = Layout.WhitespaceRegion.range info in
+      if (range.lnum_start <= location.loc_start.pos_lnum) && (range.lnum_end >= location.loc_end.pos_lnum)
+      then insertCommentIntoWhitespaceRegion comment info sub
       else
         Layout.Whitespace(info, insertSingleLineComment sub comment)
   | Easy e ->
@@ -1578,8 +1530,6 @@ let rec attachCommentToNodeRight layout comment =
     Layout.Sequence ({config with wrap=(lwrap, rwrap)}, sub)
   | Layout.SourceMap (loc, sub) ->
     Layout.SourceMap (loc, attachCommentToNodeRight sub comment)
-  (* | Whitespace(info, sub) -> *)
-      (* Whitespace(info, attachCommentToNodeRight sub comment) *)
   | layout -> inline ~postSpace:true layout (formatComment comment)
 
 let rec attachCommentToNodeLeft comment layout =
@@ -1590,8 +1540,6 @@ let rec attachCommentToNodeLeft comment layout =
     Layout.Sequence ({config with wrap = (lwrap, rwrap)}, sub)
   | Layout.SourceMap (loc, sub) ->
     Layout.SourceMap (loc, attachCommentToNodeLeft comment sub )
-  (* | Whitespace(info, sub) -> *)
-      (* Whitespace(info, attachCommentToNodeRight sub comment) *)
   | layout ->
     Layout.Label (inlineLabel, formatComment comment, layout)
 
@@ -2174,28 +2122,20 @@ let groupAndPrint ~xf ~getLoc items =
   let rec group prevLoc curr acc = function
     | x::xs ->
         let item = xf x in
-        let l1 = prevLoc.loc_end.pos_lnum in
-        let l2 = (getLoc x).loc_start.pos_lnum in
-        let diffInterval = (l1, l2) in
-        let h = comments_height diffInterval in
-        let intv = (l1 + 1, l2 - 1) in
-        if l2 - l1 - 1 - h >= 1 then
-          group (getLoc x) [(intv, item)] ((List.rev curr)::acc) xs
+        let loc = getLoc x in
+        let range = Reason_location.makeRangeBetween prevLoc loc in
+        if Reason_heuristics.containsWhitespace range (Comment.getComments ()) then
+          group loc [(range, item)] ((List.rev curr)::acc) xs
         else
-          group (getLoc x) ((intv, item)::curr) acc xs
+          group loc ((range, item)::curr) acc xs
     | [] ->
         let groups = List.rev ((List.rev curr)::acc) in
         List.mapi (fun i group -> match group with
           | curr::xs ->
-              let (intv, x) = curr in
-              let firstLayout =
-                let region = Layout.{
-                  interval = intv;
-                  comments = [];
-                  depth = if (i > 0) then 1 else 0;
-                } in
-                Layout.Whitespace(region, x)
-              in
+              let (range, x) = curr in
+              let height = if i > 0 then 1 else 0 in
+              let region = Layout.WhitespaceRegion.make ~range ~height () in
+              let firstLayout = Layout.Whitespace(region, x) in
               (firstLayout::(List.map snd xs))
           | [] -> []
         ) groups
@@ -4302,27 +4242,18 @@ let printer = object(self:'self)
     let rec aux prevLoc layout = function
       | ((x, _) as attr : Ast_404.Parsetree.attribute)::xs ->
         let newLayout =
-          let l1 = x.loc.loc_end.pos_lnum in
-          let l2 = prevLoc.loc_start.pos_lnum in
-          let diffInterval = (l1, l2) in
-          let h = comments_height diffInterval in
-          let intv = (l1 + 1, l2 - 1) in
-          if l2 -l1 -1 - h >= 1 then
-            let region = Layout.{
-              interval = intv;
-              comments = [];
-              depth = 1;
-            } in
+          let range = Reason_location.makeRangeBetween x.loc prevLoc in
+          if Reason_heuristics.containsWhitespace range (Comment.getComments ()) then
+            let region = Layout.WhitespaceRegion.make ~range ~height:1 () in
             let wsRegion = Layout.Whitespace(region, layout) in
             makeList ~inline:(true, true) ~break:Always [
               self#attribute attr;
               wsRegion
             ]
-          else
-            makeList ~inline:(true, true) ~break:Always [
-              self#attribute attr;
-              layout
-            ]
+          else makeList ~inline:(true, true) ~break:Always [
+            self#attribute attr;
+            layout
+          ]
         in aux x.loc newLayout xs
       | [] -> layout
     in
@@ -6113,9 +6044,6 @@ let printer = object(self:'self)
             ~break:IfNeed
             ~inline:(true, false)
             ~wrap:("{", "}")
-            (* ~newlinesAboveComments:0 *)
-            (* ~newlinesAboveItems:0 *)
-            (* ~newlinesAboveDocComments:1 *)
             ~postSpace:true
             ~sep:(SepFinal (";", ";"))
             items
@@ -6865,12 +6793,12 @@ let pattern ppf x =
     (printer#pattern (apply_mapper_to_pattern x preprocessing_mapper))
 
 let signature (comments : Comment.t list) ppf x =
-  List.iter (fun comment -> store_comment comment) comments;
+  List.iter (fun comment -> Comment.track comment) comments;
   format_layout ppf ~comments
     (printer#signature (apply_mapper_to_signature x preprocessing_mapper))
 
 let structure (comments : Comment.t list) ppf x =
-  List.iter (fun comment -> store_comment comment) comments;
+  List.iter (fun comment -> Comment.track comment) comments;
   format_layout ppf ~comments
     (printer#structure (apply_mapper_to_structure x preprocessing_mapper))
 
