@@ -291,3 +291,11 @@ let x = {
     | None => ()
     | Some(1) => ();
 };
+
+let _ =
+  switch%ext (expr) {
+  | A =>
+    /* Comment under A */
+    ()
+  | B => ()
+  };

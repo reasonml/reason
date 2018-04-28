@@ -4537,6 +4537,11 @@ let printer = object(self:'self)
   method expression_requiring_parens_in_infix x =
     let {stdAttrs} = partitionAttributes x.pexp_attributes in
     assert (stdAttrs == []);
+    (* keep the incoming expression around, an expr with
+     * immediate extension sugar might contain less than perfect location
+     * info in its children (used for comment interleaving), the expression passed to
+     * 'expression_requiring_parens_in_infix' contains the correct location *)
+    let originalExpr = x in
     let extension, x = expression_immediate_extension_sugar x in
     match x.pexp_desc with
       (* The only reason Pexp_fun must also be wrapped in parens when under
@@ -4610,7 +4615,9 @@ let printer = object(self:'self)
           | Pexp_match (e, l) ->
              let estimatedBracePoint = {
                loc_start = e.pexp_loc.loc_end;
-               loc_end = x.pexp_loc.loc_end;
+               (* See originalExpr binding, for more info.
+                * It contains the correct location under immediate extension sugar *)
+               loc_end = originalExpr.pexp_loc.loc_end;
                loc_ghost = false;
              }
              in
