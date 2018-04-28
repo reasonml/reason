@@ -46,6 +46,8 @@
 
 (* TODO more fine-grained precedence pretty-printing *)
 
+module Easy_format = Vendored_easy_format
+
 open Ast_404
 open Asttypes
 open Location

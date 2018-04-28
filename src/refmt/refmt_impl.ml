@@ -6,6 +6,7 @@
  *)
 
 open Lexing
+module Cmdliner = Vendored_cmdliner
 open Cmdliner
 
 let read_lines file =
