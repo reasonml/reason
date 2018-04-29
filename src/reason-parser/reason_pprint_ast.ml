@@ -1639,6 +1639,37 @@ let partitionComments comments =
     partitionComments_ ([], [], []) comments in
   (singleLines, List.rev endOfLines, regulars)
 
+let partitionSingleLineComments loc singleLineComments =
+  let (before, after) = List.fold_left (fun (before, after) comment ->
+    let cl = Comment.location comment in
+    let isAfter = loc.loc_end.pos_lnum < cl.loc_start.pos_lnum in
+    if isAfter then
+      (before, comment::after)
+    else
+      (comment::before, after)
+  ) ([], []) singleLineComments
+  in (List.rev before, after)
+
+let appendSingleLineComments loc layout singleLineComments =
+  let rec aux prevLoc layout i = function
+    | comment::cs ->
+        let loc = Comment.location comment in
+        let formattedComment = formatComment comment in
+        let commentLayout = if loc.loc_start.pos_lnum - prevLoc.loc_end.pos_lnum > 1 then
+          insertBlankLines 1 formattedComment
+        else
+          formattedComment
+        in
+        let newLayout = if i == 0 then
+          makeList ~inline:(true, true) ~break:Never [layout; commentLayout]
+        else
+          breakline layout commentLayout
+        in
+        aux loc newLayout (i + 1) cs
+    | [] -> layout
+  in
+  aux loc layout 0 singleLineComments
+
 let format_layout ?comments ppf layout =
   let easy = match comments with
     | None -> Layout.to_easy_format layout
@@ -1650,7 +1681,16 @@ let format_layout ?comments ppf layout =
       let layout = consolidateSeparator layout in
       let layout = List.fold_left insertEndOfLineComment layout endOfLines in
       (* Layout.dump Format.std_formatter layout; *)
-      let layout = List.fold_left insertSingleLineComment layout singleLines in
+      let layout =
+        begin match layout with
+        | SourceMap(loc, subLayout) ->
+            let (before, after) = partitionSingleLineComments loc singleLines in
+            let layout = List.fold_left insertSingleLineComment subLayout before in
+            appendSingleLineComments loc layout after
+        | _ ->
+          List.fold_left insertSingleLineComment layout singleLines
+        end
+      in
       (* Layout.dump Format.std_formatter layout; *)
       let layout = insertLinesAboveItems layout in
       let layout = Layout.to_easy_format layout in

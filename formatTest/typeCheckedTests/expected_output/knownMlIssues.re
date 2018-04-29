@@ -15,6 +15,7 @@ let blahCurriedX = x =>
   | Black(x) => 0 /* After black */
   | Green(x) => 0; /* After second green */
 /* On next line after blahCurriedX def */
+
 /* EOL comments wrap because other elements break first (in this example
       "mutable" causes breaks. We either need:
       1. To prevent wrapping of anything inside of eol comments attachments.

@@ -147,3 +147,11 @@ module EdgeCase = {
 
   let x = 1;
 };
+
+let f = (a, b) => a + b;
+/* this comment sticks at the end */
+
+/* another one below the structure */
+/* this one should stick */
+
+/* :) */

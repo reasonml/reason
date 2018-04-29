@@ -12,3 +12,10 @@ let b: int;
 
 /* amazing */
 let f: int => int;
+
+/* notice the whitespace after the last signature item */
+
+/* this one has whitespace interleaved */
+/* stick together */
+
+/* :) */

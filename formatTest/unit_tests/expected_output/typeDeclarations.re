@@ -115,4 +115,5 @@ type foo =
     [@foo] string,
     [@bar] ((int, string) => int),
   );
+
 /* === end test wrapping for arrows === */
