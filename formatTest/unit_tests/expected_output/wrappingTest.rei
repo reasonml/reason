@@ -1,4 +1,5 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
+
 let named: (~a: int, ~b: int) => int;
 
 let namedAlias: (~a: int, ~b: int) => int;
@@ -40,7 +41,6 @@ let fun_option_int:
    Everything will line up just fine.
    In this form, include the final closing on the last line. */
 let test: int;
-
 let test:
   /* And if the entire block needs to be re-indented
      such as this case, everything will still look okay. */

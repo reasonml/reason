@@ -1,6 +1,6 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
-/**Floating comment text should be removed*/;
 
+/**Floating comment text should be removed*/;
 let test: int;
 
 /**
@@ -47,6 +47,7 @@ external createCompositeElementInternalHack :
   "createElement";
 
 /* Record item attributes */
+
 type t_ = {
   /** Comment attribute on record item */
   x: int,

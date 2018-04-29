@@ -4377,8 +4377,7 @@ let printer = object(self:'self)
     | (astLoc, _)::_ -> astLoc.loc
     | [] -> x.pvb_pat.ppat_loc
     in
-    self#attachDocAttrsToLayout (docAttrs : Ast_404.Parsetree.attributes)
-    startLoc layout
+    self#attachDocAttrsToLayout (docAttrs : Ast_404.Parsetree.attributes) startLoc layout
 
   (* Ensures that the constraint is formatted properly for sake of function
      binding (formatted without arrows)
@@ -5895,24 +5894,21 @@ let printer = object(self:'self)
       (self#class_self_pattern_and_structure cs)
 
   method signature signatureItems =
-    if List.length signatureItems == 0 then
-      atom ""
-    else
-      let first = List.nth signatureItems 0 in
-      let last = List.nth signatureItems (List.length signatureItems - 1) in
+    match signatureItems with
+    | [] -> atom ""
+    | first::_ as signatureItems ->
+      let last = match (List.rev signatureItems) with | last::_ -> last | [] -> assert false in
       let loc_start = first.psig_loc.loc_start in
       let loc_end = last.psig_loc.loc_end in
+      let items = groupAndPrint ~xf:self#signature_item ~getLoc:(fun x -> x.psig_loc) signatureItems in
       source_map ~loc:{loc_start; loc_end; loc_ghost=false}
         (makeList
-           ~newlinesAboveComments:1
-           ~newlinesAboveItems:1
-           ~newlinesAboveDocComments:1
            ~postSpace:true
            ~break:Layout.Always_rec
            ~indent:0
            ~inline:(true, false)
            ~sep:(SepFinal (";", ";"))
-           (List.map self#signature_item signatureItems))
+           items)
 
   method signature_item x : Layout.t =
     let item: Layout.t =
@@ -5924,12 +5920,19 @@ let printer = object(self:'self)
               self#primitive_declaration vd
             else
               let intro = atom "let" in
-              self#attach_std_item_attrs vd.pval_attributes
-              (formatTypeConstraint
-                 (label ~space:true intro
-                    (source_map ~loc:vd.pval_name.loc
-                       (protectIdentifier vd.pval_name.txt)))
-                (self#core_type vd.pval_type))
+              let {stdAttrs; docAttrs} = partitionAttributes ~partDoc:true vd.pval_attributes in
+              let layout = self#attach_std_item_attrs stdAttrs
+                (formatTypeConstraint
+                   (label ~space:true intro
+                      (source_map ~loc:vd.pval_name.loc
+                         (protectIdentifier vd.pval_name.txt)))
+                  (self#core_type vd.pval_type))
+              in
+              let startLoc = match stdAttrs with
+              | (astLoc, _)::_ -> astLoc.loc
+              | [] -> vd.pval_type.ptyp_loc
+              in
+              self#attachDocAttrsToLayout (docAttrs : Ast_404.Parsetree.attributes) startLoc layout
 
         | Psig_typext te ->
             self#type_extension te
