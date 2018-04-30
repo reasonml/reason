@@ -95,8 +95,3 @@ let isUnderscoreIdent expr =
   match Ast_404.Parsetree.(expr.pexp_desc) with
   | Pexp_ident ({txt = Lident "_"}) -> true
   | _ -> false
-
-
-let containsWhitespace range comments =
-  let h = Reason_comment.heightCommentsForRange range comments in
-  range.lnum_end - range.lnum_start - h >= 0

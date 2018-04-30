@@ -56,6 +56,8 @@ open Reason_syntax_util
 
 module Comment = Reason_comment
 module Layout = Reason_layout
+module WhitespaceRegion = Layout.WhitespaceRegion
+module Range = Reason_location.Range
 
 let source_map = Layout.source_map
 
@@ -990,11 +992,6 @@ let default_indent_body =
   settings.listsRecordsIndent * settings.space
 
 let makeList
-    (* Allows a fallback in the event that comments were interleaved with the
-     * list *)
-    ?(newlinesAboveItems=0)
-    ?(newlinesAboveComments=0)
-    ?(newlinesAboveDocComments=0)
     ?listConfigIfCommentsInterleaved
     ?listConfigIfEolCommentsInterleaved
     ?(break=Layout.Never)
@@ -1009,7 +1006,6 @@ let makeList
     lst =
   let config =
     { Layout.
-      newlinesAboveItems; newlinesAboveComments; newlinesAboveDocComments;
       listConfigIfCommentsInterleaved; listConfigIfEolCommentsInterleaved;
       break; wrap; inline; sep; indent; sepLeft; preSpace; postSpace; pad;
     }
@@ -1317,78 +1313,120 @@ let rec consolidateSeparator l = preOrderWalk (function
 ) l
 
 
-(** [insertLinesAboveItems layout] walkts the [layout] and insert empty lines
- *  based on the configuration of newlinesAboveItems
- *)
+(** [insertLinesAboveItems layout] walks the [layout] and insert empty lines *)
 let rec insertLinesAboveItems items = preOrderWalk (function
-  | Sequence (listConfig, sublayouts)
-       when listConfig.newlinesAboveItems <> 0
-    ->
-     let layoutsWithLinesInjected =
-       List.map (insertBlankLines listConfig.newlinesAboveItems) sublayouts in
-     Sequence ({listConfig with newlinesAboveItems=0}, layoutsWithLinesInjected)
   | Whitespace(region, sub) ->
-      insertBlankLines (Layout.WhitespaceRegion.height region) sub
+      insertBlankLines (WhitespaceRegion.newlines region) sub
   | layout -> layout
 ) items
 
-let insertCommentIntoWhitespaceRegion comment info sub =
+let insertCommentIntoWhitespaceRegion comment region subLayout =
   let cl = Comment.location comment in
-  let range = Layout.WhitespaceRegion.range info in
-  let nextInfo = Layout.WhitespaceRegion.markComment info comment in
-  match Layout.WhitespaceRegion.comments info with
+  let range = WhitespaceRegion.range region in
+  (* append the comment to the list of inserted comments in the whitespace region *)
+  let nextRegion = WhitespaceRegion.addComment region comment in
+  let formattedComment = formatComment comment in
+  match WhitespaceRegion.comments region with
+  (* the comment inserted into the whitespace region is the first in the region *)
   | [] ->
+      (*
+       * 1| let a = 1;
+       * 2|
+       * 3| /* comment at end of whitespace region */
+       * 4| let b = 2;
+       *)
       if range.lnum_end = cl.loc_end.pos_lnum then
-        let sub = breakline (formatComment comment) sub in
-        Layout.Whitespace(nextInfo, sub)
+        let subLayout = breakline formattedComment subLayout in
+        Layout.Whitespace(nextRegion, subLayout)
+
+      (*
+       * 1| let a = 1;
+       * 2| /* comment at start of whitespace region */
+       * 3|
+       * 4| let b = 2;
+       *)
       else if range.lnum_start = cl.loc_start.pos_lnum then
-        let sub = breakline (formatComment comment) (insertBlankLines 1 sub) in
-        let nextInfo = Layout.WhitespaceRegion.modifyHeight nextInfo 0 in
-        Whitespace(nextInfo, sub)
+        let subLayout = breakline formattedComment (insertBlankLines 1 subLayout) in
+        let nextRegion = WhitespaceRegion.modifyNewlines nextRegion 0 in
+        Whitespace(nextRegion, subLayout)
+
+      (*
+       * 1| let a = 1;
+       * 2|
+       * 3| /* comment floats in whitespace region */
+       * 4|
+       * 5| let b = 2;
+       *)
       else
-        let sub = breakline (formatComment comment) (insertBlankLines 1 sub) in
-        Whitespace(nextInfo, sub)
-  | prevComment::_xs ->
+        let subLayout = breakline formattedComment (insertBlankLines 1 subLayout) in
+        Whitespace(nextRegion, subLayout)
+
+  (* The whitespace region contains already inserted comments *)
+  | prevComment::_cs ->
       let pcl = Comment.location prevComment in
-      let blankLinesAbove = cl.loc_start.pos_lnum > range.lnum_start in
-      let nextInfo = if not blankLinesAbove then
-          Layout.WhitespaceRegion.modifyHeight nextInfo 0
-        else nextInfo in
-      if pcl.loc_start.pos_lnum  - cl.loc_end.pos_lnum > 1 then
-        let sub = insertBlankLines 1 sub in
-        let sub = breakline (formatComment comment) sub in
-        let withComment =  Layout.Whitespace(nextInfo, sub) in
+      (* check if the comment is attached to the start of the region *)
+      let attachedToStartRegion = cl.loc_start.pos_lnum = range.lnum_start in
+      let nextRegion =
+        (*
+         * 1| let a = 1;
+         * 2| /* comment sits on the beginning of the region */
+         * 3| /* previous comment */
+         * 4|
+         * 5| let b = 2;
+         *)
+        if attachedToStartRegion then
+          (* we don't want a newline between `let a = 1` and the `comment sits
+           * on the beginning of the region` comment*)
+          WhitespaceRegion.modifyNewlines nextRegion 0
+        (*
+         * 1| let a = 1;
+         * 2|
+         * 3| /* comment isn't located at the beginnin of a region*/
+         * 4| /* previous comment */
+         * 5|
+         * 6| let b = 2;
+         *)
+        else
+          nextRegion
+      in
+      (*
+       * 1| let a = 1;
+       * 2| /* comment */
+       * 3|                      --> whitespace between
+       * 4| /* previous comment */
+       * 5| let b = 1;
+       *)
+      if Reason_location.hasSpaceBetween pcl cl then
+      (* pcl.loc_start.pos_lnum - cl.loc_end.pos_lnum > 1 then *)
+        let subLayout = breakline formattedComment (insertBlankLines 1 subLayout) in
+        let withComment = Layout.Whitespace(nextRegion, subLayout) in
         withComment
+
+      (*
+       * 1| let a = 1;
+       * 2|
+       * 3| /* comment */          | no whitespace between `comment`
+       * 4| /* previous comment */ | and `previous comment`
+       * 5| let b = 1;
+       *)
       else
-        let hasCommentAbove = match (Comment.commentsBefore range comment) with
-        | x::_ -> true
-        | [] -> false
-        in
-        let nextInfo = if cl.loc_start.pos_lnum > range.lnum_start && not hasCommentAbove then
-            Layout.WhitespaceRegion.modifyHeight nextInfo 1
-          else nextInfo
-        in
-        let sub = breakline (formatComment comment) sub in
-        let withComment =  Layout.Whitespace(nextInfo, sub) in
+        let subLayout = breakline formattedComment subLayout in
+        let withComment =  Layout.Whitespace(nextRegion, subLayout) in
         withComment
 
 (**
  * prependSingleLineComment inserts a single line comment right above layout
  *)
-let rec prependSingleLineComment ?newlinesAboveDocComments:(newlinesAboveDocComments=0) comment layout =
+let rec prependSingleLineComment comment layout =
   match layout with
   | Layout.SourceMap (loc, sub) ->
-     Layout.SourceMap (loc, prependSingleLineComment ~newlinesAboveDocComments comment sub)
+     Layout.SourceMap (loc, prependSingleLineComment comment sub)
   | Sequence (config, hd::tl) when config.break = Always_rec->
-     Sequence(config, (prependSingleLineComment ~newlinesAboveDocComments comment hd)::tl)
+     Sequence(config, (prependSingleLineComment comment hd)::tl)
   | Whitespace(info, sub) ->
       insertCommentIntoWhitespaceRegion comment info sub
   | layout ->
-    let withComment = breakline (formatComment comment) layout in
-     if Comment.is_doc comment then
-       insertBlankLines newlinesAboveDocComments withComment
-     else
-       withComment
+      breakline (formatComment comment) layout
 
 (* breakAncestors break ancestors above node, but not comment attachment itself.*)
 let appendComment ~breakAncestors layout comment =
@@ -1470,9 +1508,9 @@ let rec insertSingleLineComment layout comment =
   | Layout.SourceMap (loc, sub) ->
     Layout.SourceMap (loc, insertSingleLineComment sub comment)
   | Layout.Whitespace (info, sub) ->
-      let range = Layout.WhitespaceRegion.range info in
-      if (range.lnum_start <= location.loc_start.pos_lnum) && (range.lnum_end >= location.loc_end.pos_lnum)
-      then insertCommentIntoWhitespaceRegion comment info sub
+      let range = WhitespaceRegion.range info in
+      if Range.containsLoc range location then
+        insertCommentIntoWhitespaceRegion comment info sub
       else
         Layout.Whitespace(info, insertSingleLineComment sub comment)
   | Easy e ->
@@ -1481,10 +1519,8 @@ let rec insertSingleLineComment layout comment =
     (* If there are no subLayouts (empty body), create a Sequence of just the comment *)
     Sequence (listConfig, [formatComment comment])
   | Sequence (listConfig, subLayouts) ->
-    let newlinesAboveDocComments = listConfig.newlinesAboveDocComments in
     let (beforeComment, afterComment) =
       Reason_syntax_util.pick_while (Layout.is_before ~location) subLayouts in
-
     begin match afterComment with
       (* Nothing in the list is after comment, attach comment to the statement before the comment *)
       | [] ->
@@ -1496,9 +1532,9 @@ let rec insertSingleLineComment layout comment =
           | Some loc when location_contains loc location ->
             insertSingleLineComment hd comment :: tl
           | Some loc ->
-            Layout.SourceMap (loc, (prependSingleLineComment ~newlinesAboveDocComments comment hd)) :: tl
+            Layout.SourceMap (loc, (prependSingleLineComment comment hd)) :: tl
           | _ ->
-            prependSingleLineComment ~newlinesAboveDocComments comment hd :: tl
+            prependSingleLineComment comment hd :: tl
         in
         Sequence (listConfig, beforeComment @ afterComment)
     end
@@ -1639,6 +1675,11 @@ let partitionComments comments =
     partitionComments_ ([], [], []) comments in
   (singleLines, List.rev endOfLines, regulars)
 
+(*
+ * Partition single line comments based on a location into two lists:
+ * - one contains the comments before/same height of that location
+ * - the other contains the comments after the location
+ *)
 let partitionSingleLineComments loc singleLineComments =
   let (before, after) = List.fold_left (fun (before, after) comment ->
     let cl = Comment.location comment in
@@ -1650,16 +1691,22 @@ let partitionSingleLineComments loc singleLineComments =
   ) ([], []) singleLineComments
   in (List.rev before, after)
 
-let appendSingleLineComments loc layout singleLineComments =
+(*
+ * appends all [singleLineComments] after the [layout].
+ * [loc] marks the end of [layout]
+ *)
+let appendSingleLineCommentsToEnd loc layout singleLineComments =
   let rec aux prevLoc layout i = function
     | comment::cs ->
         let loc = Comment.location comment in
         let formattedComment = formatComment comment in
-        let commentLayout = if loc.loc_start.pos_lnum - prevLoc.loc_end.pos_lnum > 1 then
+        let commentLayout = if Reason_location.hasSpaceBetween loc prevLoc then
           insertBlankLines 1 formattedComment
         else
           formattedComment
         in
+        (* The initial layout breaks ugly with `breakline`,
+         * an inline list (that never breaks) fixes this *)
         let newLayout = if i == 0 then
           makeList ~inline:(true, true) ~break:Never [layout; commentLayout]
         else
@@ -1669,6 +1716,26 @@ let appendSingleLineComments loc layout singleLineComments =
     | [] -> layout
   in
   aux loc layout 0 singleLineComments
+
+(*
+ * For simplicity, the formatting of comments happens in two parts in context of a source map:
+ * 1) insert the singleLineComments with the interleaving algorithm contained in
+ *    `insertSingleLineComment` for all comments overlapping with the sourcemap.
+ *    A `Layout.Whitespace` node signals an intent to preserve whitespace here.
+ * 2) SingleLineComments after the sourcemap, e.g. at the end of .re/.rei file,
+ *    get attached with `appendSingleLineCommentsToEnd`. Due to the fact there
+ *    aren't any real ocaml ast nodes anymore after the sourcemap (end of a
+ *    file), the printing of the comments can be done in one pass with
+ *    `appendSingleLineCommentsToEnd`. This is more performant and
+ *    simplifies the implementation of comment attachment.
+ *)
+let attachSingleLineComments singleLineComments = function
+  | Layout.SourceMap(loc, subLayout) ->
+      let (before, after) = partitionSingleLineComments loc singleLineComments in
+      let layout = List.fold_left insertSingleLineComment subLayout before in
+      appendSingleLineCommentsToEnd loc layout after
+  | layout ->
+    List.fold_left insertSingleLineComment layout singleLineComments
 
 let format_layout ?comments ppf layout =
   let easy = match comments with
@@ -1681,16 +1748,7 @@ let format_layout ?comments ppf layout =
       let layout = consolidateSeparator layout in
       let layout = List.fold_left insertEndOfLineComment layout endOfLines in
       (* Layout.dump Format.std_formatter layout; *)
-      let layout =
-        begin match layout with
-        | SourceMap(loc, subLayout) ->
-            let (before, after) = partitionSingleLineComments loc singleLines in
-            let layout = List.fold_left insertSingleLineComment subLayout before in
-            appendSingleLineComments loc layout after
-        | _ ->
-          List.fold_left insertSingleLineComment layout singleLines
-        end
-      in
+      let layout = attachSingleLineComments singleLines layout in
       (* Layout.dump Format.std_formatter layout; *)
       let layout = insertLinesAboveItems layout in
       let layout = Layout.to_easy_format layout in
@@ -1727,9 +1785,6 @@ let makeLetSequence letItems =
     ~break:Always_rec
     ~inline:(true, false)
     ~wrap:("{", "}")
-    ~newlinesAboveComments:0
-    ~newlinesAboveItems:0
-    ~newlinesAboveDocComments:1
     ~postSpace:true
     ~sep:(SepFinal (";", ";"))
     letItems
@@ -1739,9 +1794,6 @@ let makeLetSequenceSingleLine letItems =
     ~break:IfNeed
     ~inline:(true, false)
     ~wrap:("{", "}")
-    ~newlinesAboveComments:0
-    ~newlinesAboveItems:0
-    ~newlinesAboveDocComments:1
     ~preSpace:true
     ~postSpace:true
     ~sep:(Sep ";")
@@ -1753,10 +1805,7 @@ let makeUnguardedLetSequence letItems =
     ~break:Always_rec
     ~inline:(true, true)
     ~wrap:("", "")
-    ~newlinesAboveComments:0
     ~indent:0
-    ~newlinesAboveItems:0
-    ~newlinesAboveDocComments:1
     ~postSpace:true
     ~sep:(SepFinal (";", ";"))
     letItems
@@ -2156,26 +2205,78 @@ let formatComputedInfixChain infixChainList =
   in
   print [] [] "" infixChainList
 
-let id x = x
-
-let groupAndPrint ~xf ~getLoc items =
+(**
+ * [groupAndPrint] will print every item in [items] according to the function [xf].
+ * [getLoc] will extract the location from an item. Based on the difference
+ * between the location of two items, if there's whitespace between the two
+ * (taken possible comments into account), items get grouped.
+ * Every group designates a series of layout nodes "in need
+ * of whitespace above". A group gets decorated with a Whitespace node
+ * containing enough info to interleave whitespace at a later time during
+ * printing.
+ *)
+let groupAndPrint ~xf ~getLoc ~comments items =
   let rec group prevLoc curr acc = function
+    (* group items *)
     | x::xs ->
         let item = xf x in
         let loc = getLoc x in
-        let range = Reason_location.makeRangeBetween prevLoc loc in
-        if Reason_heuristics.containsWhitespace range (Comment.getComments ()) then
+        (* Get the range between the current and previous item
+         * Example:
+         * 1| let a = 1;
+         * 2|            --> this is the range between the two
+         * 3| let b = 2;
+         * *)
+        let range = Range.makeRangeBetween prevLoc loc in
+        (* If there's whitespace interleaved, append the new layout node
+         * to a new group, otherwise keep it in the current group.
+         * Takes possible comments interleaved into account.
+         *
+         * Example:
+         * 1| let a = 1;
+         * 2|
+         * 3| let b = 2;
+         * 4| let c = 3;
+         * `let b = 2` will mark the start of a new group
+         * `let c = 3` will be added to the group containing `let b = 2`
+         *)
+        if Range.containsWhitespace ~range ~comments () then
           group loc [(range, item)] ((List.rev curr)::acc) xs
         else
           group loc ((range, item)::curr) acc xs
+    (* convert groups into "Layout.Whitespace" *)
     | [] ->
         let groups = List.rev ((List.rev curr)::acc) in
         List.mapi (fun i group -> match group with
           | curr::xs ->
               let (range, x) = curr in
-              let height = if i > 0 then 1 else 0 in
-              let region = Layout.WhitespaceRegion.make ~range ~height () in
+              (* if this is the first group of all "items", the number of
+               * newlines interleaved should be 0, else we collapse all newlines
+               * to 1.
+               *
+               * Example:
+               * module Abc = {
+               *   let a = 1;
+               *
+               *   let b = 2;
+               * }
+               * `let a = 1` should be wrapped in a `Layout.Whitespace` because a
+               * user might put comments above the `let a = 1`.
+               * e.g.
+               * module Abc = {
+               *   /* comment 1 */
+               *
+               *   /* comment 2 */
+               *   let a = 1;
+               *
+               *  A Whitespace-node will automatically take care of the whitespace
+               *  interleaving between the comments.
+               *)
+              let newlines = if i > 0 then 1 else 0 in
+              let region = WhitespaceRegion.make ~range ~newlines () in
               let firstLayout = Layout.Whitespace(region, x) in
+              (* the first layout node of every group taks care of the
+               * whitespace above a group*)
               (firstLayout::(List.map snd xs))
           | [] -> []
         ) groups
@@ -2188,6 +2289,36 @@ let groupAndPrint ~xf ~getLoc items =
 let printer = object(self:'self)
   val pipe = false
   val semi = false
+
+  (* *Mutable state* in the printer to keep track of all comments
+   * Used when whitespace needs to be interleaved.
+   * The printing algorithm needs to take the comments into account in between
+   * two items, to correctly determine if there's whitespace between two items.
+   * The ast doesn't know if there are comments between two items, since
+   * comments are store separately. The location diff between two items
+   * might indicate whitespace between the two. While in reality there are
+   * comments filling that whitespace. The printer needs access to the comments
+   * for this reason.
+   *
+   * Example:
+   * 1| let a = 1;
+   * 2|
+   * 3|
+   * 4| let b = 2;
+   *  -> here we can just diff the locations between `let a = 1` and `let b = 2`
+   *
+   * 1| let a = 1;
+   * 2| /* a comment */
+   * 3| /* another comment */
+   * 4| let b = 2;
+   *  -> here the location diff will result into false info if we don't include
+   *  the comments in the diffing
+   *)
+  val mutable comments = []
+
+  method comments = comments
+  method trackComment comment = comments <- comment::comments
+
   (* The test and first branch of ternaries must be guarded *)
   method under_pipe = {<pipe=true>}
   method under_semi = {<semi=true>}
@@ -4278,19 +4409,50 @@ let printer = object(self:'self)
           self#wrapCurriedFunctionBinding prefixText ~arrow:"=" pattern fauxArgs
             (self#classExpressionToFormattedApplicationItems actualReturn, None)
 
-  method attachDocAttrsToLayout docAttrs loc layout =
+  (* Attaches doc comments to a layout, with whitespace preserved
+   * Example:
+   * /** Doc comment */
+   *
+   * /* another random comment */
+   * let a = 1;
+   *)
+  method attachDocAttrsToLayout
+    (* all std attributes attached on the ast node backing the layout *)
+    ~stdAttrs:(stdAttrs : Ast_404.Parsetree.attributes)
+    (* all doc comments attached on the ast node backing the layout *)
+    ~docAttrs:(docAttrs : Ast_404.Parsetree.attributes)
+    (* location of the layout *)
+    ~loc
+    (* layout to attach the doc comments to *)
+    ~layout () =
+    (*
+     * compute the correct location of layout
+     * Example:
+     * 1| /** doc-comment */
+     * 2|
+     * 3| [@attribute]
+     * 4| let a = 1;
+     *
+     * The location might indicate a start of line 4 for the ast-node
+     * representing `let a = 1`. The reality is that `[@attribute]` should be
+     * included (start of line 3), to represent the correct start location
+     * of the whole layout.
+     *)
+    let loc = match stdAttrs with
+    | (astLoc, _)::_ -> astLoc.loc
+    | [] -> loc
+    in
     let rec aux prevLoc layout = function
       | ((x, _) as attr : Ast_404.Parsetree.attribute)::xs ->
         let newLayout =
-          let range = Reason_location.makeRangeBetween x.loc prevLoc in
-          if Reason_heuristics.containsWhitespace range (Comment.getComments ()) then
-            let region = Layout.WhitespaceRegion.make ~range ~height:1 () in
-            let wsRegion = Layout.Whitespace(region, layout) in
-            makeList ~inline:(true, true) ~break:Always [
-              self#attribute attr;
-              wsRegion
-            ]
-          else makeList ~inline:(true, true) ~break:Always [
+          let range = Range.makeRangeBetween x.loc prevLoc in
+          let layout =
+            if Range.containsWhitespace ~range ~comments:self#comments () then
+              let region = WhitespaceRegion.make ~range ~newlines:1 () in
+              Layout.Whitespace(region, layout)
+            else layout
+          in
+          makeList ~inline:(true, true) ~break:Always [
             self#attribute attr;
             layout
           ]
@@ -4413,11 +4575,12 @@ let printer = object(self:'self)
 
     let body = makeList ~inline:(true, true) [body] in
     let layout = self#attach_std_item_attrs stdAttrs (source_map ~loc:x.pvb_loc body) in
-    let startLoc = match stdAttrs with
-    | (astLoc, _)::_ -> astLoc.loc
-    | [] -> x.pvb_pat.ppat_loc
-    in
-    self#attachDocAttrsToLayout (docAttrs : Ast_404.Parsetree.attributes) startLoc layout
+    self#attachDocAttrsToLayout
+      ~stdAttrs
+      ~docAttrs
+      ~loc:x.pvb_pat.ppat_loc
+      ~layout
+      ()
 
   (* Ensures that the constraint is formatted properly for sake of function
      binding (formatted without arrows)
@@ -4475,6 +4638,9 @@ let printer = object(self:'self)
         (first :: List.map (self#binding "and") rest)
 
   method letList expr =
+    (* Recursively transform a nested ast of "let-items", into a flat
+     * list containing the location indicating start/end of the "let-item" and
+     * its layout. *)
     let rec processLetList acc expr =
       match (expr.pexp_attributes, expr.pexp_desc) with
         | ([], Pexp_let (rf, l, e)) ->
@@ -4510,7 +4676,6 @@ let printer = object(self:'self)
             }
           } in
           processLetList ((loc, layout)::acc) e
-          (* (source_map ~loc:lid.loc attrsOnOpen :: self#letList e) *)
         | ([], Pexp_letmodule (s, me, e)) ->
             let prefixText = "module" in
             let bindingName = atom ~loc:s.loc s.txt in
@@ -4579,7 +4744,12 @@ let printer = object(self:'self)
             (expr.pexp_loc, layout)::acc
     in
     let es = processLetList [] expr in
-    groupAndPrint ~xf:(fun (_, layout) -> layout) ~getLoc:(fun (loc, _) -> loc) (List.rev es)
+    (* Interleave whitespace between the "let-items" when appropiate *)
+    groupAndPrint
+      ~xf:(fun (_, layout) -> layout)
+      ~getLoc:(fun (loc, _) -> loc)
+      ~comments:self#comments
+      (List.rev es)
 
   method constructor_expression ?(polyVariant=false) ~arityIsClear stdAttrs ctor eo =
     let (implicit_arity, arguments) =
@@ -5940,7 +6110,13 @@ let printer = object(self:'self)
       let last = match (List.rev signatureItems) with | last::_ -> last | [] -> assert false in
       let loc_start = first.psig_loc.loc_start in
       let loc_end = last.psig_loc.loc_end in
-      let items = groupAndPrint ~xf:self#signature_item ~getLoc:(fun x -> x.psig_loc) signatureItems in
+      let items =
+        groupAndPrint
+          ~xf:self#signature_item
+          ~getLoc:(fun x -> x.psig_loc)
+          ~comments:self#comments
+          signatureItems
+      in
       source_map ~loc:{loc_start; loc_end; loc_ghost=false}
         (makeList
            ~postSpace:true
@@ -5968,11 +6144,12 @@ let printer = object(self:'self)
                          (protectIdentifier vd.pval_name.txt)))
                   (self#core_type vd.pval_type))
               in
-              let startLoc = match stdAttrs with
-              | (astLoc, _)::_ -> astLoc.loc
-              | [] -> vd.pval_type.ptyp_loc
-              in
-              self#attachDocAttrsToLayout (docAttrs : Ast_404.Parsetree.attributes) startLoc layout
+              self#attachDocAttrsToLayout
+                ~stdAttrs
+                ~docAttrs
+                ~loc:vd.pval_type.ptyp_loc
+                ~layout
+                ()
 
         | Psig_typext te ->
             self#type_extension te
@@ -6081,15 +6258,19 @@ let printer = object(self:'self)
           self#longident_loc li;
       | Pmty_signature s ->
         let items =
-          groupAndPrint ~xf:self#signature_item ~getLoc:(fun x -> x.psig_loc) s
+          groupAndPrint
+          ~xf:self#signature_item
+          ~getLoc:(fun x -> x.psig_loc)
+          ~comments:self#comments
+          s
         in
-          makeList
-            ~break:IfNeed
-            ~inline:(true, false)
-            ~wrap:("{", "}")
-            ~postSpace:true
-            ~sep:(SepFinal (";", ";"))
-            items
+        makeList
+          ~break:IfNeed
+          ~inline:(true, false)
+          ~wrap:("{", "}")
+          ~postSpace:true
+          ~sep:(SepFinal (";", ";"))
+          items
       | Pmty_extension (s, e) -> self#payload "%" s e
       | _ -> makeList ~break:IfNeed ~wrap:("(", ")") [self#module_type x]
 
@@ -6182,7 +6363,11 @@ let printer = object(self:'self)
     | Pmod_structure s ->
         let wrap = if hug then ("({", "})") else ("{", "}") in
         let items =
-          groupAndPrint ~xf:self#structure_item ~getLoc:(fun x -> x.pstr_loc) s
+          groupAndPrint
+            ~xf:self#structure_item
+            ~getLoc:(fun x -> x.pstr_loc)
+            ~comments:self#comments
+            s
         in
         makeList
           ~break:Always_rec
@@ -6219,7 +6404,13 @@ let printer = object(self:'self)
       let last = match (List.rev structureItems) with | last::_ -> last | [] -> assert false in
       let loc_start = first.pstr_loc.loc_start in
       let loc_end = last.pstr_loc.loc_end in
-      let items = groupAndPrint ~xf:self#structure_item ~getLoc:(fun x -> x.pstr_loc) structureItems in
+      let items =
+        groupAndPrint
+          ~xf:self#structure_item
+          ~getLoc:(fun x -> x.pstr_loc)
+          ~comments:self#comments
+          structureItems
+      in
       source_map ~loc:{loc_start; loc_end; loc_ghost = false}
         (makeList
            ~postSpace:true
@@ -6836,12 +7027,12 @@ let pattern ppf x =
     (printer#pattern (apply_mapper_to_pattern x preprocessing_mapper))
 
 let signature (comments : Comment.t list) ppf x =
-  List.iter (fun comment -> Comment.track comment) comments;
+  List.iter (fun comment -> printer#trackComment comment) comments;
   format_layout ppf ~comments
     (printer#signature (apply_mapper_to_signature x preprocessing_mapper))
 
 let structure (comments : Comment.t list) ppf x =
-  List.iter (fun comment -> Comment.track comment) comments;
+  List.iter (fun comment -> printer#trackComment comment) comments;
   format_layout ppf ~comments
     (printer#structure (apply_mapper_to_structure x preprocessing_mapper))
 

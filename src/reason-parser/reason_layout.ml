@@ -1,4 +1,5 @@
 module Comment = Reason_comment
+module Range = Reason_location.Range
 
 type break_criterion =
   | Never
@@ -32,29 +33,35 @@ type separator =
   | Sep of string
   | SepFinal of string * string
 
+(**
+ * Module concerning info to correctly interleave whitspace above a layout node.
+ *)
 module WhitespaceRegion = struct
   type t = {
-    range: Reason_location.range;
+    (* range of the region *)
+    range: Range.t;
+    (* inserted comments into the whitespace region *)
     comments: Comment.t list;
-    height: int;
+    (* amount of newlines to be interleaved *)
+    newlines: int;
   }
 
-  let make ~range ~height () = {
+  let make ~range ~newlines () = {
     range;
     comments = [];
-    height;
+    newlines;
   }
 
-  let height t = t.height
+  let newlines t = t.newlines
   let range t = t.range
   let comments t = t.comments
 
-  let markComment t comment = { t with
+  let addComment t comment = { t with
     comments = comment::t.comments
   }
 
-  let modifyHeight t newHeight = { t with
-    height = newHeight
+  let modifyNewlines t newNewlines = { t with
+    newlines = newNewlines
   }
 end
 
@@ -72,16 +79,14 @@ type t =
   | Sequence of config * (t list)
   | Label of (Easy_format.t -> Easy_format.t -> Easy_format.t) * t * t
   | Easy of Easy_format.t
+  (* Extra variant representing "intent to interleave whitespace" above a
+   * layout node. Why the extra representation?
+   * Since comments get interleaved after formatting the ast,
+   * the inserting of actual newlines has to happen after the comments
+   * have been formatted/inserted. *)
   | Whitespace of WhitespaceRegion.t * t
 
 and config = {
-  (* Newlines above items that do not have any comments immediately above it.
-     Only really useful when used with break:Always/Always_rec *)
-  newlinesAboveItems: int;
-  (* Newlines above regular comments *)
-  newlinesAboveComments: int;
-  (* Newlines above doc comments *)
-  newlinesAboveDocComments: int;
   break: break_criterion;
   (* Break setting that becomes activated if a comment becomes interleaved into
    * this list. Typically, if not specified, the behavior from [break] will be
@@ -184,7 +189,7 @@ let dump ppf layout =
       printf "%s Easy: '%s' \n" indent (string_of_easy e)
     | Whitespace (region, sublayout) ->
       let open WhitespaceRegion in
-      printf" %s Whitespace (%d) [%d %d]:\n" indent region.height region.range.lnum_start region.range.lnum_end;
+      printf" %s Whitespace (%d) [%d %d]:\n" indent region.newlines region.range.lnum_start region.range.lnum_end;
       (traverse (indent_more indent) sublayout)
   in
   traverse "" layout
