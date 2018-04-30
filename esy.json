@@ -32,10 +32,12 @@
   ],
   "esy": {
     "build": [
-      [ "jbuilder", "build", "-p", "reason"]
+      [ "jbuilder", "build", "-p", "rebuild,reason,rtop"]
     ],
     "install": [
-      ["esy-installer", "reason.install"]
+      ["esy-installer", "rebuild.install"],
+      ["esy-installer", "reason.install"],
+      ["esy-installer", "rtop.install"]
     ],
     "buildsInSource": "_build"
   }
