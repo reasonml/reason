@@ -7,6 +7,7 @@ module ReactDOMRe = {
   let createElement (tag, ~props=?, children) = 1;
   let props (~className=?, ~width=?, ~comp=?, ~compCallback=?, ()) = 1;
 };
+
 module Foo = {
   let make (~className=?, ~width=?, ~comp=?, ~bar=?, children) = 1;
   let createElement (~className=?, ~ref=?, ~key=?, ~width=?, ~comp=?, ~bar=?, ~children, ()) = 1;
@@ -15,10 +16,12 @@ module Foo = {
     let createElement (~className=?, ~ref=?, ~key=?, ~children, ()) = 1;
   };
 };
+
 module Bar = {
   let make (~bar=?, children) = 1;
   let createElement (~bar=?, ~children, ()) = 1;
 };
+
 module ReasonReact = {
   let element (~key=?, ~ref=?, component) = 1;
 };

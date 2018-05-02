@@ -1,4 +1,5 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
+
 let l =
   [1, 2, 3]
   |> List.map(i => i + 1, _)

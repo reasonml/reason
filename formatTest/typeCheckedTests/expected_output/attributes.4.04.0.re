@@ -6,8 +6,10 @@ let () = {
 };
 
 /** Different payloads **/
-[@haha:]
+
 /* Empty signature */
+
+[@haha:]
 let x = 5;
 
 /* signature_item */

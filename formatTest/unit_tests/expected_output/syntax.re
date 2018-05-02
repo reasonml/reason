@@ -1,16 +1,12 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
+
 [@autoFormat let wrap = 80; let shift = 2];
-
 Modules.run();
-
 Polymorphism.run();
-
 Variants.run();
-
 BasicStructures.run();
 
 TestUtils.printSection("General Syntax");
-
 /* Won't work! */
 /* let matchingFunc a = match a with */
 /*   `Thingy x => (print_string "matched thingy x"); x */
@@ -29,22 +25,17 @@ let matchingFunc = a =>
 
 type firstTwoShouldBeGroupedInParens =
   (int => int, int) => int;
-
 type allParensCanBeRemoved =
   (int, int, int) => int;
-
 type firstTwoShouldBeGroupedAndFirstThree =
   ((int => int) => int) => int;
-
 /* Same thing now but with type constructors instead of each int */
 type firstTwoShouldBeGroupedInParens =
   (list(int) => list(int), list(int)) =>
   list(int);
-
 type allParensCanBeRemoved =
   (list(int), list(int), list(int)) =>
   list(int);
-
 type firstTwoShouldBeGroupedAndFirstThree =
   ((list(int) => list(int)) => list(int)) =>
   list(int);
@@ -59,10 +50,8 @@ type myRecordType = {
 
 type firstNamedArgShouldBeGroupedInParens =
   (~first: int => int, ~second: int) => int;
-
 type allParensCanBeRemoved =
   (~first: int, ~second: int, ~third: int) => int;
-
 type firstTwoShouldBeGroupedAndFirstThree =
   (~first: (int => int) => int) => int;
 
@@ -73,7 +62,6 @@ type firstNamedArgShouldBeGroupedInParens =
     ~second: list(int)
   ) =>
   list(int);
-
 type allParensCanBeRemoved =
   (
     ~first: list(int),
@@ -81,7 +69,6 @@ type allParensCanBeRemoved =
     ~third: list(int)
   ) =>
   list(int);
-
 type firstTwoShouldBeGroupedAndFirstThree =
   (
     ~first: (list(int) => list(int)) =>
@@ -95,7 +82,6 @@ type firstNamedArgShouldBeGroupedInParens =
     ~second: list(int)=?
   ) =>
   int;
-
 /* The arrow necessitates parens around the next two args. The ? isn't what
  * makes the parens necessary. */
 type firstNamedArgShouldBeGroupedInParensAndSecondNamedArg =
@@ -104,7 +90,6 @@ type firstNamedArgShouldBeGroupedInParensAndSecondNamedArg =
     ~second: int => int=?
   ) =>
   int;
-
 type allParensCanBeRemoved =
   (
     ~first: int=?,
@@ -112,22 +97,20 @@ type allParensCanBeRemoved =
     ~third: int=?
   ) =>
   int;
-
 type firstTwoShouldBeGroupedAndFirstThree =
   (~first: (int => int) => int) => int;
 
 type noParens =
   (~one: int, int, int, ~two: int) => int;
-
 type noParensNeeded =
   (~one: int, int, int, ~two: int) => int;
-
 type firstNamedArgNeedsParens =
   (~one: (int, int) => int, ~two: int) => int;
 
 /* Now, let's try type aliasing */
 /* Unless wrapped in parens, types between arrows may not be aliased, may not
  * themselves be arrows. */
+
 type parensRequiredAroundFirstArg =
   (list(int) as 'a) => int as 'a;
 
@@ -179,6 +162,7 @@ type onelineConstrain = 'a constraint 'a = int;
 
 /* This must be in trunk but not in this branch of OCaml */
 /* type withNestedRecords = MyConstructor {myField: int} */
+
 type colors =
   | Red(int)
   | Black(int)
@@ -191,19 +175,14 @@ type colors =
 /* This would also lend itself naturally to pattern matching - and avoid having
    to use `.` operator at all since you normally destructure. */
 type nameBlahType = {nameBlah: int};
-
 let myRecord = {nameBlah: 20};
-
 let myRecordName = myRecord.nameBlah;
 
 let {nameBlah}: nameBlahType = {nameBlah: 20};
-
 print_int(nameBlah);
-
 let {nameBlah: aliasedToThisVar}: nameBlahType = {
   nameBlah: 20,
 };
-
 print_int(aliasedToThisVar);
 
 let desiredFormattingForWrappedLambda:
@@ -219,7 +198,6 @@ let desiredFormattingForWrappedLambda:
   };
 
 type longerInt = int;
-
 let desiredFormattingForWrappedLambdaWrappedArrow:
   (longerInt, longerInt, longerInt) =>
   nameBlahType =
@@ -269,17 +247,16 @@ let desiredFormattingForWrappedSugarReturnOnNewLine =
    let rec f : 't1 't2. 't1 * 't2 list -> 't1 =
      fun (type t1) (type t2) -> (... : t1 * t2 list -> t1)
  */
+
 type point = {
   x: int,
   y: int,
 };
-
 type point3D = {
   x: int,
   y: int,
   z: int,
 };
-
 let point2D = {x: 20, y: 30};
 
 let point3D: point3D = {
@@ -299,7 +276,6 @@ let addPoints = (p1: point, p2: point) => {
 };
 
 let res1 = printPoint(point2D);
-
 let res2 =
   printPoint({x: point3D.x, y: point3D.y});
 
@@ -337,7 +313,6 @@ type person = {
   age: int,
   name: string,
 };
-
 type hiredPerson = {
   age: string,
   name: string,
@@ -355,20 +330,17 @@ let printPerson = (p: person) => {
 };
 
 /* let dontParseMeBro x y:int = x = y;*/
+
 /* With this unification, anywhere eyou see `= fun` you can just ommit it */
 let blah = a => a; /* Done */
-
 let blah = a => a; /* Done (almost) */
 
 let blah = (a, b) => a; /* Done */
-
 let blah = (a, b) => a; /* Done (almost) */
 
 /* More than one consecutive pattern must have a single case */
 type blah = {blahBlah: int};
-
 let blah = (a, {blahBlah}) => a;
-
 let blah = (a, {blahBlah}) => a;
 
 module TryToExportTwice = {
@@ -387,16 +359,19 @@ module TryToExportTwice = {
    Wait, where would this ever be valid, even if we continued to support
    `let..in`?
  */
+
 let onlyDoingThisTopLevelLetToBypassTopLevelSequence = {
   let x = {
     print_int(1);
     print_int(20); /* Missing trailing SEMI */
   };
+
   let x = {
     print_int(1);
     print_int(20); /* Ensure missing middle SEMI reported well */
     print_int(20);
   };
+
   let x = {
     print_int(1);
     print_int(20);
@@ -407,23 +382,17 @@ let onlyDoingThisTopLevelLetToBypassTopLevelSequence = {
 };
 
 type hasA = {a: int};
-
 let a = 10;
-
 let returnsASequenceExpressionWithASingleIdentifier =
     () => a;
-
 let thisReturnsA = () => a;
-
 let thisReturnsAAsWell = () => a;
 
 let recordVal: int = thisReturnsARecord().a;
-
 Printf.printf(
   "\nproof that thisReturnsARecord: %n\n",
   recordVal,
 );
-
 Printf.printf(
   "\nproof that thisReturnsA: %n\n",
   thisReturnsA(),
@@ -441,6 +410,7 @@ let blah = arg =>
 
 /* Any function that pattern matches a multicase match is interpretted as a
  * single arg that is then matched on. Instead of the above `blah` example:*/
+
 let blah =
   fun
   | Red(_) => 1
@@ -450,15 +420,18 @@ let blah =
 /* `fun a => a` is read as "a function that maps a to a". Then the */
 /* above example is read: "a function that 'either maps' Red to.. or maps .." */
 /* Thc00f564e first bar is read as "either maps" */
+
 /* Curried form is not supported:
       let blah x | Red _ => 1 | Black _ => 0;
       Theres no sugar rule for dropping => fun, only = fun
    */
+
 /* let blahCurriedX x => fun  /* See, nothing says we can drop the => fun */ */
 /*   |(Red x | Black x | Green x) => 1     /* With some effort, we can ammend the sugar rule that would */ */
 /*   | Black x => 0                       /* Allow us to drop any => fun.. Just need to make pattern matching */ */
 /*   | Green x => 0;                      /* Support that */ */
 /*  */
+
 let blahCurriedX = x =>
   fun
   | Red(x)
@@ -488,17 +461,19 @@ let blahCurriedX = x =>
   | Green(x) => 0;
 
 /* Any time there are multiple match cases we require a leading BAR */
-let v = Red(10);
 
+let v = Red(10);
 let Black(x) | Red(x) | Green(x) = v; /* So this NON-function still parses */
 
 /* This doesn't parse, however (and it doesn't in OCaml either):
      let | Black(x) | Red(x) | Green(x) = v;
    */
+
 print_int(x);
 
 /* Scoping: Let sequences. Familiar syntax for lexical ML style scope and
    sequences. */
+
 let res = {
   let a = "a starts out as";
   {
@@ -525,10 +500,12 @@ let res = {
 };
 
 /* let result = LyList.map((fun | [] => true | _ => false), []); */
+
 /* OTHERWISE: You cannot tell if a is the first match case falling through or
  * a curried first arg */
 /* let blah = fun a | patt => 0 | anotherPatt => 1; */
 /* let blah a patt => 0 | anotherPatt => 1; */
+
 /*simple pattern  EQUALGREATER      expr */
 let blah = (a, {blahBlah}) => a;
 
@@ -546,7 +523,6 @@ let arrowFunc = (a, b) => {
   print_string("returning aplusb from arrow");
   a + b;
 };
-
 let add = (a, b) => {
   let extra = {
     print_string("adding");
@@ -559,18 +535,14 @@ let add = (a, b) => {
 print_string(string_of_int(add(4, 34)));
 
 let dummy = _ => 10;
-
 dummy(res1);
-
 dummy(res2);
-
 dummy(res3);
 
 /* Some edge cases */
 let myFun =
     (firstArg, Red(x) | Black(x) | Green(x)) =>
   firstArg + x;
-
 let matchesWithWhen = a =>
   switch (a) {
   | Red(x) when 1 > 0 => 10
@@ -599,7 +571,6 @@ type adders = {
   addThreeNumbersTupled:
     ((int, int, int)) => int,
 };
-
 let myRecordWithFunctions = {
   addTwoNumbers: (a, b) => a + b,
   addThreeNumbers: (a, b, c) => a + b + c,
@@ -613,7 +584,6 @@ let result =
     20,
     30,
   );
-
 let result =
   myRecordWithFunctions.addThreeNumbersTupled((
     10,
@@ -622,7 +592,6 @@ let result =
   ));
 
 let lookTuplesRequireParens = (1, 2);
-
 /* let thisDoesntParse = 1, 2;  */
 let tupleInsideAParenSequence = {
   print_string(
@@ -653,6 +622,7 @@ let makeIncrementer =
 let myAnnotatedValBinding: int = 10;
 
 /* Class functions (constructors) and methods are unified in the same way */
+
 class classWithNoArg = {
   pub x = 0;
   pub y = 0;
@@ -664,27 +634,24 @@ class classWithNoArg = {
        pub y => init
      end;
    */
+
 let myFunc = (a: int, b: int) : (int, int) => (
   a,
   b,
 );
-
 let myFunc = (a: int, b: int) : list(int) => [
   1,
 ];
-
 let myFunc = (a: int, b: int) : point => {
   x: a,
   y: b,
 };
-
 let myFunc = (a: int, b: int) : point => {
   x: a,
   y: b,
 };
 
 type myThing = (int, int);
-
 type stillARecord = {
   name: string,
   age: int,
@@ -697,7 +664,6 @@ type branch('a, 'b) = {
   first: 'a,
   second: 'b,
 };
-
 type myOtherThing('a, 'b) =
   | Leaf(branch('a, 'b))
   | Null;
@@ -707,10 +673,14 @@ type yourThing = myOtherThing(int, int);
 /* Conveniently - this parses exactly how you would intend! No *need* to wrap
    in an extra [], but it doesn't hurt */
 /* FIXME type lookAtThesePolyVariants = list [`Red] ; */
+
 /* FIXME type bracketsGroupMultipleParamsAndPrecedence = list (list (list [`Red])); */
+
 /* FIXME type youCanWrapExtraIfYouWant = (list [`Red]); */
+
 /* FIXME type hereAreMultiplePolyVariants = list [`Red | `Black]; */
 /* FIXME type hereAreMultiplePolyVariantsWithOptionalWrapping = list ([`Red | `Black]); */
+
 /*
    /* Proposal: ES6 style lambdas: */
 
@@ -735,6 +705,7 @@ type yourThing = myOtherThing(int, int);
      | `Black x => x;
 
  */
+
 /** Current OCaml Named Arguments. Any aliasing is more than just aliasing!
 OCaml allows full on pattern matching of named args. */
 /*
@@ -761,83 +732,64 @@ OCaml allows full on pattern matching of named args. */
                                \        \
                                 \let_pattern: still a useful syntactic building block in SugarML
  */
+
 /**
  * In Reason, the syntax for named args uses double semicolon, since
  * the syntax for lists uses ES6 style [], freeing up the ::.
  */
-let a = 10;
 
+let a = 10;
 let b = 20;
 
 /*A*/
 let named = (~a, ~b) => a + b;
-
 type named = (~a: int, ~b: int) => int;
-
 /*B*/
 let namedAlias = (~a as aa, ~b as bb) =>
   aa + bb;
-
 let namedAlias = (~a as aa, ~b as bb) =>
   aa + bb;
-
 type namedAlias = (~a: int, ~b: int) => int;
-
 /*C*/
 let namedAnnot = (~a: int, ~b: int) => 20;
-
 /*D*/
 let namedAliasAnnot =
     (~a as aa: int, ~b as bb: int) => 20;
-
 /*E*/
 let myOptional = (~a=?, ~b=?, ()) => 10;
-
 type named = (~a: int=?, ~b: int=?, unit) => int;
-
 /*F*/
 let optionalAlias = (~a as aa=?, ~b as bb=?, ()) => 10;
-
 /*G*/
 let optionalAnnot = (~a: int=?, ~b: int=?, ()) => 10;
-
 /*H*/
 let optionalAliasAnnot =
     (~a as aa: int=?, ~b as bb: int=?, ()) => 10;
-
 /*I: */
 let defOptional = (~a=10, ~b=10, ()) => 10;
-
 type named = (~a: int=?, ~b: int=?, unit) => int;
-
 /*J*/
 let defOptionalAlias =
     (~a as aa=10, ~b as bb=10, ()) => 10;
-
 /*K*/
 let defOptionalAnnot =
     (~a: int=10, ~b: int=10, ()) => 10;
-
 /*L*/
 let defOptionalAliasAnnot =
     (~a as aa: int=10, ~b as bb: int=10, ()) => 10;
 
 /*M: Invoking them - Punned */
 let resNotAnnotated = named(~a, ~b);
-
 /*N:*/
 let resAnnotated: int = named(~a, ~b);
-
 /*O: Invoking them */
 let resNotAnnotated = named(~a, ~b);
-
 /*P: Invoking them */
 let resAnnotated: int = named(~a, ~b);
 
 /*Q: Here's why "punning" doesn't work!  */
 /* Is b:: punned with a final non-named arg, or is b:: supplied b as one named arg? */
 let b = 20;
-
 let resAnnotated = named(~a, ~b);
 
 /*R: Proof that there are no ambiguities with return values being annotated */
@@ -846,16 +798,12 @@ let resAnnotated: ty = named(~a, b);
 /*S: Explicitly passed optionals are a nice way to say "use the default value"*/
 let explictlyPassed =
   myOptional(~a=?None, ~b=?None);
-
 /*T: Annotating the return value of the entire function call */
 let explictlyPassedAnnotated: int =
   myOptional(~a=?None, ~b=?None);
-
 /*U: Explicitly passing optional with identifier expression */
 let a = None;
-
 let explictlyPassed = myOptional(~a?, ~b=?None);
-
 let explictlyPassedAnnotated: int =
   myOptional(~a?, ~b=?None);
 
@@ -882,6 +830,7 @@ let nestedLet = {
 /*
  * Showing many combinations of type annotations and named arguments.
  */
+
 type typeWithNestedNamedArgs =
   (
     ~outerOne: (~innerOne: int, ~innerTwo: int) =>
@@ -979,13 +928,11 @@ let newRecord = {
 };
 
 let something: thing(blah) = aTypeAnnotation;
-
 let something: thing(blah) = thisIsANamedArg;
 
 let something: thing(blah) = aTypeAnnotation;
 
 let something: blah = thisIsANamedArg(thing);
-
 let something: blah = typeAnnotation(thing);
 
 let newRecord = {
@@ -997,7 +944,6 @@ let newRecord = {
 };
 
 [@thisIsAThing];
-
 let x = 10;
 
 /* Ensure that the parenthesis are preserved here because they are
@@ -1072,74 +1018,48 @@ let registerEventHandlers =
 
 /* #1320: record destrucuring + renaming */
 let x = ({state as prevState}) => 1;
-
 let x = ({ReasonReact.state as prevState}) => 1;
 
 /* 1567: optional parens around expr constraint in constructor expression */
 Some(x: int);
-
 Some(x: int);
-
 Some(x, y: int, b);
-
 Some(x, y: int, b);
 
 foo(~x=-. bar);
 
 Some(-1, -1, -1);
-
 Some(-1, -1, -1);
-
 Some(-1g, -1G, -1z);
-
 Some(-1g, -1G, -1z);
-
 Some(-0.1, -0.1, -0.1);
-
 Some(-0.1, -0.1, -0.1);
-
 Some(-0.1G, -0.1x, -0.1H);
-
 Some(-0.1G, -0.1x, -0.1H);
-
 Some([@foo] -1, [@foo] -1, [@foo] -1);
-
 Some([@foo] -1z, [@foo] -1z, [@foo] -1z);
-
 Some([@foo] -0.1, [@foo] -0.1, [@foo] -0.1);
-
 Some([@foo] -0.1m, [@foo] -0.1n, [@foo] -0.1p);
 
 foo(~x=-1, ~y=-2);
-
 foo(~x=-1, ~y=-2);
-
 foo(~x=-. 1, ~y=-. 2);
-
 foo(~x=-. 1, ~y=-. 2);
-
 foo(~x=-1g, ~y=-1G, ~z=-1z);
-
 foo(~x=-1g, ~y=-1G, ~z=-1z);
-
 foo(~x=-0.1G, ~y=-0.1x, ~z=-0.1H);
-
 foo(~x=-0.1G, ~y=-0.1x, ~z=-0.1H);
-
 foo(~x=[@foo] -1, ~y=[@foo] -1, ~z=[@foo] -1);
-
 foo(
   ~x=[@foo] -1z,
   ~y=[@foo] -1z,
   ~z=[@foo] -1z,
 );
-
 foo(
   ~x=[@foo] -0.1,
   ~y=[@foo] -0.1,
   ~z=[@foo] -0.1,
 );
-
 foo(
   ~x=[@foo] -0.1m,
   ~y=[@foo] -0.1n,

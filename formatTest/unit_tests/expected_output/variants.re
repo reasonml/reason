@@ -1,8 +1,8 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
+
 module LocalModule = {
   type accessedThroughModule =
     | AccessedThroughModule;
-
   type accessedThroughModuleWithArg =
     | AccessedThroughModuleWith(int)
     | AccessedThroughModuleWithTwo(int, int);
@@ -10,13 +10,10 @@ module LocalModule = {
 
 type notTupleVariant =
   | NotActuallyATuple(int, int);
-
 type attr =
   | A(int);
-
 type attr +=
   | Point(int, int);
-
 type attr +=
   | PointA{
       a: int,
@@ -367,6 +364,7 @@ let res =
   };
 
 /* FIXME type somePolyVariant = [ `Purple int | `Yellow int]; */
+
 let ylw = `Yellow((100, 100));
 
 let prp = `Purple((101, 100));
@@ -601,13 +599,10 @@ type Graph.node +=
 
 /* without single unit arg sugar */
 MyConstructorWithSingleUnitArg();
-
 /* with single unit arg sugar */
 MyConstructorWithSingleUnitArg();
-
 /* without single unit arg sugar */
 `polyVariantWithSingleUnitArg();
-
 /* with single unit arg sugar */
 `polyVariantWithSingleUnitArg();
 
@@ -618,32 +613,27 @@ Delete({
     |> Util.member("uuid")
     |> Util.to_string,
 });
-
 Delete((
   someLongStuf,
   someOtherLongStuff,
   okokokok,
 ));
-
 Delete([
   someLongStuf,
   someOtherLongStuff,
   okokokok,
 ]);
-
 Delete([|
   someLongStuf,
   someOtherLongStuff,
   okokokok,
 |]);
-
 Delete([
   someLongStuf,
   someOtherLongStuff,
   okokokok,
   ...veryES6,
 ]);
-
 Delete({
   pub x = methodOne;
   pub y = methodTwo;
@@ -656,32 +646,27 @@ Delete({
     |> Util.member("uuid")
     |> Util.to_string,
 });
-
 `Delete((
   someLongStuf,
   someOtherLongStuff,
   okokokok,
 ));
-
 `Delete([
   someLongStuf,
   someOtherLongStuff,
   okokokok,
 ]);
-
 `Delete([|
   someLongStuf,
   someOtherLongStuff,
   okokokok,
 |]);
-
 `Delete([
   someLongStuf,
   someOtherLongStuff,
   okokokok,
   ...veryES6,
 ]);
-
 `Delete({
   pub x = methodOne;
   pub y = methodTwo;

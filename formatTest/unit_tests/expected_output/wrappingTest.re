@@ -1,10 +1,11 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
+
 /* Run the formatting pretty printer with width 50 */
+
 /*
  * Testing infix wrapping
  */
 let reallyLongIdent = 100;
-
 let andYetAnotherReallyLongIdent = 30;
 
 let something =
@@ -81,7 +82,6 @@ let testPrintingPrecedence =
   + reallyLongIdent;
 
 let add = (x, y) => x + y;
-
 let testPrintingPrecedence =
   reallyLongIdent
   /*
@@ -94,15 +94,12 @@ let testPrintingPrecedence =
       andYetAnotherReallyLongIdent,
     )
   + reallyLongIdent;
-
 /*
  * Test wrapping every form of named arguments where various parts are
  * commented.
  */
 let a = 10;
-
 let b = 20;
-
 /*A*/
 let named =
     /* a::a */
@@ -198,7 +195,6 @@ let optionalAliasAnnot =
     ) =>
   /* 10 */
   10;
-
 /*I: This one is really annoying? Where's the visual label?*/
 let defOptional =
     /* a::a=10 */
@@ -272,14 +268,12 @@ optional(
   /* b::b; */
   ~b,
 );
-
 optional(
   /* a::a */
   ~a,
   /* b::b; */
   ~b,
 );
-
 let explictlyPassed =
   /* optional */
   optional(
@@ -292,7 +286,6 @@ let explictlyPassed =
   );
 
 let a = None;
-
 let explictlyPassed =
   /* optional */
   optional(
@@ -311,31 +304,26 @@ let myList = /*CommentAfterEqualBeforeList */ [
   2,
   3,
 ];
-
 let myList = [
   /*CommentAfterEqualBefore1 */ 1,
   2,
   3,
 ];
-
 let myList = [
   1 /*CommentAfterOneBeforeCons */,
   2,
   3,
 ];
-
 let myList = [
   1,
   2 /*CommentAfterTwoBeforeCons */,
   3,
 ];
-
 let myList = [
   1,
   2,
   /*CommentAfterConsBeforeThree */ 3,
 ];
-
 let myList = [
   1,
   2,
@@ -347,13 +335,11 @@ let myList = [
   2,
   3 /*same w space after three    */,
 ];
-
 let myList = [
   1,
   2,
   3 /*same w space before rbracket*/,
 ];
-
 let myList = [
   1,
   2,
@@ -366,19 +352,16 @@ let myList = [
   2,
   3 /*no space after three    */
 ];
-
 let myList = [
   1,
   2,
   3 /*same w space after three    */
 ];
-
 let myList = [
   1,
   2, /*no space after two comma    */
   3,
 ];
-
 let myList = [
   1,
   2, /*same w space after two comma    */
@@ -391,19 +374,16 @@ let myList = [
   2, /*no space after two comma    */
   3,
 ];
-
 let myList = [
   1,
   2, /*same w space after two comma    */
   3,
 ];
-
 let myRec = {
   x: 1,
   y: 2, /*no space after two    */
   z: 3,
 };
-
 let myRec = {
   x: 1,
   y: 2, /*same w space after two    */
@@ -416,7 +396,6 @@ let myList = [
   2,
   3 /* */
 ];
-
 let myList = [1, 2, /**/ 3];
 
 let myList = [
@@ -425,7 +404,6 @@ let myList = [
   3 /*CommentAfterConsBeforeAppendedTo */,
   ...myList,
 ];
-
 let myList = [3, 4, 5];
 
 let simpleListPattern = x =>
@@ -535,12 +513,10 @@ let secondArgShouldWrap =
 
 /* Now check that one and two args both indent the same when applying */
 let reallyReallyLongVarName = "hello";
-
 let result =
   oneArgShouldWrapToAlignWith(
     reallyReallyLongVarName,
   );
-
 let result =
   twoArgsShouldWrapToAlignWith(
     reallyReallyLongVarName,
@@ -579,15 +555,12 @@ let result =
 let howDoesInfixOperatorsWrapWhenYouMustWrapQuestionMark =
     (x, y, z) =>
   x + y + z;
-
 let howDoesInfixOperatorsWrapWhenYouMustWrapQuestionMark =
     (x, y) =>
   x + y;
-
 let reallyHowDoesInfixOperatorsWrapWhenYouMustWrapQuestionMark =
     (x, y, z) =>
   x + y + z;
-
 let reallyHowDoesInfixOperatorsWrapWhenYouMustWrapQuestionMark =
     (x, y) =>
   x + y;
@@ -982,7 +955,6 @@ let (
     0,
     0,
   );
-
 /* Annotated version */
 let (
   a,
@@ -1020,7 +992,6 @@ let (
     0,
     0,
   );
-
 /* Annotated inline */
 let x: (
   int,
@@ -1095,7 +1066,6 @@ let (
     0,
     0,
   ));
-
 /* Annotated version */
 let (
   a,
@@ -1133,7 +1103,6 @@ let (
     0,
     0,
   ));
-
 /* Annotated inline */
 let x: (
   int,
@@ -1173,6 +1142,7 @@ let x: (
   ));
 
 /* Desired formatting if pattern does not fit, arguments do (margin 70) */
+
 /* Destructured */
 let (
   axx,
@@ -1210,7 +1180,6 @@ let (
     0,
     0,
   );
-
 /* Annotated */
 /* Destructured */
 let (
@@ -1327,7 +1296,6 @@ let someResult =
     0,
     0,
   );
-
 /* Annotated */
 /* Not-Destructured */
 let someResult: sixteenTuple =
@@ -1349,7 +1317,6 @@ let someResult: sixteenTuple =
     0,
     0,
   );
-
 /* Annotated */
 /* Not-Destructured */
 /* Inline */
@@ -1427,7 +1394,6 @@ let (
     0,
     0,
   ));
-
 /* Annotated */
 let (
   axx,
@@ -1465,7 +1431,6 @@ let (
     0,
     0,
   ));
-
 /* Annotated Inline */
 let (
   axx,
@@ -1520,7 +1485,6 @@ let (
     0,
     0,
   ));
-
 /* Not-Destructured */
 let someResult =
   echoTuple((
@@ -1541,7 +1505,6 @@ let someResult =
     0,
     0,
   ));
-
 /* Annotated */
 /* Not-Destructured */
 let someResult: sixteenTuple =
@@ -1563,7 +1526,6 @@ let someResult: sixteenTuple =
     0,
     0,
   ));
-
 /* Annotated Inline */
 /* Not-Destructured */
 let someResult: (
@@ -1641,7 +1603,6 @@ let (
     oxx,
     pxx,
   );
-
 /* Annoted */
 let (
   axx,
@@ -1679,7 +1640,6 @@ let (
     oxx,
     pxx,
   );
-
 /* Annoted inline */
 let (
   axx,
@@ -1734,7 +1694,6 @@ let (
     oxx,
     pxx,
   );
-
 /* Not-Destructured */
 let someResult =
   makeTuple(
@@ -1755,7 +1714,6 @@ let someResult =
     oxx,
     pxx,
   );
-
 /* Not-Destructured */
 /* Annoted */
 let someResult: sixteenTuple =
@@ -1777,7 +1735,6 @@ let someResult: sixteenTuple =
     oxx,
     pxx,
   );
-
 /* Not-Destructured */
 /* Annoted inline */
 let someResult: (
@@ -1855,7 +1812,6 @@ let (
     10,
     10,
   ));
-
 /* Annoted */
 /* Destructured */
 let (
@@ -1894,7 +1850,6 @@ let (
     10,
     10,
   ));
-
 /* Annoted Inline */
 /* Destructured */
 let (
@@ -1972,7 +1927,6 @@ let someResult =
     10,
     10,
   ));
-
 /* Annoted */
 /* Not-Destructured */
 let someResult: sixteenTuple =
@@ -1994,7 +1948,6 @@ let someResult: sixteenTuple =
     10,
     10,
   ));
-
 /* Annoted Inline */
 /* Not-Destructured */
 let someResult: (
@@ -2063,7 +2016,6 @@ type sevenStrings = (
   string,
   string,
 );
-
 let (only, the, type_, should, have, to_, wrap) = (
   "only",
   "the",
@@ -2101,7 +2053,6 @@ let ifTheNameIsReallyLongTheTypeAndValueShouldBothWrap: (
   "to",
   "wrap",
 );
-
 let (
   the,
   type_,
@@ -2129,14 +2080,11 @@ let (
 );
 
 let myPolyFunc: 'a .'a => 'a = o => o;
-
 let myNonPolyFunc: 'a => 'a = o => o;
 
 let locallyAbstractFunc = (type a, input: a) => input;
-
 let locallyAbstractFuncNotSugared =
     (type a, input: a) => input;
-
 let locallyAbstractFuncAnnotated: type a. a => a =
   (type a, input: a) => input;
 
@@ -2145,7 +2093,6 @@ let locallyAbstractFuncAnnotated: type a. a => a =
   "desired formatting" when the function binding itself must wrap.
  */
 let df_myPolyFunc: 'a .'a => 'a = o => o;
-
 let df_myNonPolyFunc: 'a => 'a = o => o;
 
 type nameBlahType = {nameBlah: int};
@@ -2155,7 +2102,6 @@ let myFunc = (~firstArg, ~another, ~fl) => {
 };
 
 type inputEchoRecord('a) = {inputIs: 'a};
-
 let df_locallyAbstractFunc =
     (type a, type b, input: a) => {
   inputIs: input,
@@ -2209,6 +2155,7 @@ let df_locallyAbstractFuncAnnotatedRef:
  *      inputIs: input
  *    };
  */
+
 /**
  * The following is automatically expanded at the parser level into:
  *
@@ -2277,10 +2224,9 @@ and mutuallyRecursiveTwo = y => print_int(y);
 /* let newMutualRecursionSyntax x => newMutuallyRecursiveTwo (x + x); */
 /* let newMutuallyRecursiveTwo y => print_int y; */
 /*  */
+
 type x = pri int;
-
 type y = x = ..;
-
 type myType('a, 'b, 'c) = pri ('a, 'b, 'c);
 
 type privateVariant =
@@ -2294,13 +2240,11 @@ type myRecordWithReallyLongName = {
   xx: int,
   yy: int,
 };
-
 type doubleEqualsRecord =
   myRecordWithReallyLongName = {
     xx: int,
     yy: int,
   };
-
 type doubleEqualsDoublePrivateRecord =
   myRecordWithReallyLongName =
     pri {
@@ -2310,7 +2254,6 @@ type doubleEqualsDoublePrivateRecord =
 
 type someConstructor =
   | SomeConstructorHi(int, int);
-
 type someRecord = {
   firstFieldInRecord: int,
   secondField: int,
@@ -2548,7 +2491,6 @@ let testRecord = {
   age: 20,
   occupation: "engineer",
 };
-
 let anotherRecord = {
   ...testRecord,
   name: "joe++",
@@ -2627,17 +2569,13 @@ let result =
   );
 
 module type ASig = {let a: int;};
-
 module type BSig = {let b: int;};
-
 module AMod = {
   let a = 10;
 };
-
 module BMod = {
   let b = 10;
 };
-
 module CurriedSugar =
        /* Commenting before First curried functor arg */
        /* If these comments aren't formatted correctly
@@ -2679,7 +2617,6 @@ module CurriedSugarFunctorResultInline =
 
 module type FunctorType =
   (ASig, ASig, BSig) => BSig;
-
 /*
  * Commenting locations
  */
@@ -2688,38 +2625,32 @@ let commentingBeforeEqual /*beforeEqual*/ = {
   age: 20,
   occupation: "programmer",
 };
-
 let commentingAfterEqual = /*afterEqual*/ {
   name: "hello",
   age: 20,
   occupation: "programmer",
 };
-
 let commentingBeforeEqualBeforeType /*beforeEqualBeforeType*/: withThreeFields = {
   name: "hello",
   age: 20,
   occupation: "programmer",
 };
-
 let commentingBeforeEqualAfterType:
   withThreeFields /*beforeEqualAfterType*/ = {
   name: "hello",
   age: 20,
   occupation: "programmer",
 };
-
 let commentingAfterEqualAfterType: withThreeFields = /*afterEqual*/ {
   name: "hello",
   age: 20,
   occupation: "programmer",
 };
-
 let /*beforePattern*/ commentingBeforePattern: withThreeFields = {
   name: "hello",
   age: 20,
   occupation: "programmer",
 };
-
 /*beforePattern*/
 let /*beforePattern2 */ commentingBeforePattern2: withThreeFields = {
   name: "hello",
@@ -2751,21 +2682,17 @@ let myPolyFuncCommentBeforeColon /*beforeColon */:
   'a => 'a
  =
   o => o;
-
 let myPolyFuncCommentAfterColon: 'a .'a => 'a =
   /*afterColon */
   o => o;
-
 let myPolyFuncCommentBeforeArrow: 'a .'a => 'a =
   /*beforeArrow */
   o => o;
-
 let myPolyFuncCommentAfterArrow:
   'a .
   'a => /*afterArrow */ 'a
  =
   o => o;
-
 /* THIS IS THE ONLY TEST THAT IS FAILING DUE TO BEING NON-IDEMPOTENT */
 /* let myPolyFuncCommentBeforeEqual : 'a . ('a) => 'a /*beforeEqual */  = fun(o) => o; */
 let myPolyFuncCommentAfterEqual: 'a .'a => 'a =
@@ -2774,86 +2701,66 @@ let myPolyFuncCommentAfterEqual: 'a .'a => 'a =
 let myNonPolyFuncCommentBeforeColon /*BeforeColon */:
   'a => 'a =
   o => o;
-
 let myNonPolyFuncCommentAfterColon:
   /*AfterColon */ 'a => 'a =
   o => o;
-
 let myNonPolyFuncCommentBeforeArrow:
   'a /*BeforeArrow */ => 'a =
   o => o;
-
 let myNonPolyFuncCommentAfterArrow:
   'a => /*AfterArrow */ 'a =
   o => o;
-
 let myNonPolyFuncCommentBeforeEqual:
   'a => 'a /*BeforeEqual */ =
   o => o;
-
 let myNonPolyFuncCommentAfterEqual: 'a => 'a =
   /*AfterEqual */ o => o;
 
 let lATCurrySugarCommentBeforeType /*BeforeType */ =
     (type a, input: a) => input;
-
 let lATCurrySugarCommentAfterType /*AfterType */ =
     (type a, input: a) => input;
-
 let lATCurrySugarCommentBeforeArg =
     (type a, /*BeforeArg */ input: a) => input;
-
 let lATCurrySugarCommentAfterArg =
     (type a, input: a) =>
   /*AfterArg */
   input;
-
 let lATCurrySugarCommentAfterArrow =
     (type a, input: a) => /*AfterArrow */ input;
 
 let lATNotSugaredCommentBeforeEqual /*BeforeEqual*/ =
     (type a, input: a) => input;
-
 let lATNotSugaredCommentAfterEqual = /*AfterEqual*/
     (type a, input: a) => input;
-
 let lATNotSugaredCommentBeforeType = /*BeforeType*/
     (type a, input: a) => input;
-
 let lATNotSugaredCommentAfterType = /*AfterType*/
     (type a, input: a) => input;
-
 let lATNotSugaredCommentBeforeArg =
     (type a, /*BeforeArg*/ input: a) => input;
-
 let lATNotSugaredCommentAfterArg =
     (type a, input: a) =>
   /*AfterArg*/
   input;
-
 let lATNotSugaredCommentAfterArrow =
     (type a, input: a) => /*AfterArrow*/ input;
 
 let lAtFuncAnnotatedCommentBeforeColon /*BeforeColon*/:
   type a. a => a =
   (type a, input: a) => input;
-
 let lAtFuncAnnotatedCommentAfterColon /*AfterColon*/:
   type a. a => a =
   (type a, input: a) => input;
-
 let lAtFuncAnnotatedCommentBeforeTypeVar /*BeforeTypeVar*/:
   type a. a => a =
   (type a, input: a) => input;
-
 let lAtFuncAnnotatedCommentAfterTypeVar /*AfterTypeVar*/:
   type a. a => a =
   (type a, input: a) => input;
-
 let lAtFuncAnnotatedBeforeEqual:
   type a. a => a /*BeforeEqual*/ =
   (type a, input: a) => input;
-
 let lAtFuncAnnotatedAfterEqual: type a. a => a =
   /*AfterEqual*/ (type a, input: a) => input;
 
@@ -2880,12 +2787,12 @@ let returningATernary = (x, y) =>
   x > y ? "hi" : "by";
 
 /** Testing some special comment alignment features */
+
 /* Comments can be written like this.
    No leading star is required on each line.
    Everything will line up just fine.
    In this form, include the final closing on the last line. */
 let test = 10;
-
 let test =
   /* And if the entire block needs to be re-indented
      such as this case, everything will still look okay. */
@@ -2934,16 +2841,19 @@ let onlyDoingThisTopLevelLetToBypassTopLevelSequence = {
     print_int(1);
     print_int(20); /* Missing trailing SEMI */
   };
+
   let x = {
     print_int(1);
     print_int(20); /* Ensure missing middle SEMI reported well */
     print_int(20);
   };
+
   let x = {
     print_int(1);
     print_int(20);
     10;
   }; /* Missing final SEMI */
+
   let x = {
     print_int(1);
     print_int(20);
@@ -2954,16 +2864,15 @@ let onlyDoingThisTopLevelLetToBypassTopLevelSequence = {
 
 /* With this unification, anywhere eyou see `= fun` you can just ommit it */
 let blah = a => a; /* Done */
-
 let blah = a => a; /* Done (almost) */
 
 let blah = (a, b) => a; /* Done */
-
 let blah = (a, b) => a; /* Done (almost) */
 
 let tryingTheSameInLocalScope = {
   let blah = a => a; /* Done */
   let blah = a => a; /* Done (almost) */
+
   let blah = (a, b) => a; /* Done */
   let blah = (a, b) => a;
   (); /* Done (almost) */

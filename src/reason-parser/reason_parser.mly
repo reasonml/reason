@@ -977,7 +977,7 @@ let mkBsObjTypeSugar ~loc ~closed rows =
   let jsDotTCtor = { txt = Longident.Ldot (Longident.Lident "Js", "t"); loc } in
   mktyp(Ptyp_constr(jsDotTCtor, [obj]))
 
-let doc_loc = {txt = "ocaml.doc"; loc = Location.none}
+let doc_loc loc = {txt = "ocaml.doc"; loc = loc}
 
 let doc_attr text loc =
   let open Parsetree in
@@ -989,7 +989,7 @@ let doc_attr text loc =
   let item =
     { pstr_desc = Pstr_eval (exp, []); pstr_loc = exp.pexp_loc }
   in
-    (doc_loc, PStr [item])
+    (doc_loc loc, PStr [item])
 
 let prepend_attrs_to_labels attrs = function
   | [] -> [] (* not possible for valid inputs *)

@@ -1,4 +1,5 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
+
 type t = {.};
 
 type t = {
@@ -16,7 +17,6 @@ type t = {..};
 type t = {..};
 
 let (<..>) = (a, b) => a + b;
-
 let five = 2 <..> 3;
 
 type closedObjSugar = {

@@ -58,6 +58,8 @@ open Reason_syntax_util
 
 module Comment = Reason_comment
 module Layout = Reason_layout
+module WhitespaceRegion = Layout.WhitespaceRegion
+module Range = Reason_location.Range
 
 let source_map = Layout.source_map
 
@@ -281,6 +283,21 @@ let expandLocation pos ~expand:(startPos, endPos) =
     }
   }
 
+let extractLocationFromValBindList expr vbs =
+  let rec extract loc = function
+    | x::xs ->
+        let {pvb_pat; pvb_expr} = x in
+        let loc = {loc with loc_end = pvb_expr.pexp_loc.loc_end} in
+        extract loc xs
+    | [] -> loc
+  in
+  match vbs with
+  | x::xs ->
+      let {pvb_pat; pvb_expr} = x in
+      let loc = {pvb_pat.ppat_loc with loc_end = pvb_expr.pexp_loc.loc_end} in
+      extract loc xs
+  | [] -> expr.pexp_loc
+
 (** Kinds of attributes *)
 type attributesPartition = {
   arityAttrs : attributes;
@@ -292,31 +309,33 @@ type attributesPartition = {
 }
 
 (** Partition attributes into kinds *)
-let rec partitionAttributes ?(allowUncurry=true) attrs : attributesPartition =
+let rec partitionAttributes ?(partDoc=false) ?(allowUncurry=true) attrs : attributesPartition =
   match attrs with
     | [] ->
       {arityAttrs=[]; docAttrs=[]; stdAttrs=[]; jsxAttrs=[]; literalAttrs=[]; uncurried = false}
     | (({txt = "bs"}, PStr []) as attr)::atTl ->
-        let partition = partitionAttributes ~allowUncurry atTl in
+        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
         if allowUncurry then
           {partition with uncurried = true}
         else {partition with stdAttrs=attr::partition.stdAttrs}
     | (({txt="JSX"; loc}, _) as jsx)::atTl ->
-        let partition = partitionAttributes ~allowUncurry atTl in
+        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
         {partition with jsxAttrs=jsx::partition.jsxAttrs}
     | (({txt="explicit_arity"; loc}, _) as arity_attr)::atTl
     | (({txt="implicit_arity"; loc}, _) as arity_attr)::atTl ->
-        let partition = partitionAttributes ~allowUncurry atTl in
+        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
         {partition with arityAttrs=arity_attr::partition.arityAttrs}
-    (*| (({txt="ocaml.text"; loc}, _) as doc)::atTl
-    | (({txt="ocaml.doc"; loc}, _) as doc)::atTl ->
-        let partition = partitionAttributes atTl in
-        {partition with docAttrs=doc::partition.docAttrs}*)
+    | (({txt="ocaml.text"; loc}, _) as doc)::atTl when partDoc = true ->
+        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
+        {partition with docAttrs=doc::partition.docAttrs}
+    | (({txt="ocaml.doc"; loc}, _) as doc)::atTl when partDoc = true ->
+        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
+        {partition with docAttrs=doc::partition.docAttrs}
     | (({txt="reason.raw_literal"; _}, _) as attr) :: atTl ->
-        let partition = partitionAttributes ~allowUncurry atTl in
+        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
         {partition with literalAttrs=attr::partition.literalAttrs}
     | atHd :: atTl ->
-        let partition = partitionAttributes ~allowUncurry atTl in
+        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
         {partition with stdAttrs=atHd::partition.stdAttrs}
 
 let extractStdAttrs attrs =
@@ -332,6 +351,7 @@ let extract_raw_literal attrs =
     | attr :: rest -> loop (attr :: acc) rest
   in
   loop [] attrs
+
 
 let rec sequentialIfBlocks x =
   match x with
@@ -974,11 +994,6 @@ let default_indent_body =
   settings.listsRecordsIndent * settings.space
 
 let makeList
-    (* Allows a fallback in the event that comments were interleaved with the
-     * list *)
-    ?(newlinesAboveItems=0)
-    ?(newlinesAboveComments=0)
-    ?(newlinesAboveDocComments=0)
     ?listConfigIfCommentsInterleaved
     ?listConfigIfEolCommentsInterleaved
     ?(break=Layout.Never)
@@ -993,7 +1008,6 @@ let makeList
     lst =
   let config =
     { Layout.
-      newlinesAboveItems; newlinesAboveComments; newlinesAboveDocComments;
       listConfigIfCommentsInterleaved; listConfigIfEolCommentsInterleaved;
       break; wrap; inline; sep; indent; sepLeft; preSpace; postSpace; pad;
     }
@@ -1037,6 +1051,7 @@ let inlineLabel labelTerm term =
     label_style = Some "inlineLabel";
   } in
   Easy_format.Label ((labelTerm, settings), term)
+
 
 (* Just for debugging: Set debugWithHtml = true *)
 let debugWithHtml = ref false
@@ -1148,6 +1163,7 @@ let rec isSequencey = function
   | Layout.Label (_, _, _) -> false
   | Layout.Easy (Easy_format.List _) -> true
   | Layout.Easy _ -> false
+  | Layout.Whitespace (_, sub) -> isSequencey sub
 
 let inline ?(preSpace=false) ?(postSpace=false) labelTerm term =
   makeList [labelTerm; term]
@@ -1228,6 +1244,8 @@ let rec append ?(space=false) txt = function
     Sequence (config, sub)
   | Label (formatter, left, right) ->
     Label (formatter, left, append ~space txt right)
+  | Whitespace(info, sub) ->
+      Whitespace(info, append ~space txt sub)
   | layout ->
     inline ~postSpace:space layout (atom txt)
 
@@ -1237,6 +1255,8 @@ let appendSep spaceBeforeSep sep layout =
 let rec flattenCommentAndSep ?spaceBeforeSep:(spaceBeforeSep=false) ?sepStr = function
   | Layout.SourceMap (loc, sub) ->
      Layout.SourceMap (loc, flattenCommentAndSep ~spaceBeforeSep ?sepStr sub)
+  | Layout.Whitespace(info, sub) ->
+     Layout.Whitespace(info, flattenCommentAndSep ~spaceBeforeSep ?sepStr sub)
   | layout ->
      begin
        match sepStr with
@@ -1256,6 +1276,8 @@ let rec preOrderWalk f layout =
   | Layout.SourceMap (loc, sub) ->
     Layout.SourceMap (loc, preOrderWalk f sub)
   | Layout.Easy _ as layout -> layout
+  | Layout.Whitespace (info, sub) ->
+      Layout.Whitespace(info, preOrderWalk f sub)
 
 (** Recursively unbreaks a layout to make sure they stay within the same line *)
 let unbreaklayout = preOrderWalk (function
@@ -1269,7 +1291,7 @@ let unbreaklayout = preOrderWalk (function
 (** [consolidateSeparator layout] walks the [layout], extract separators out of each
  *  list and insert them into PrintTree as separated items
  *)
-let consolidateSeparator = preOrderWalk (function
+let rec consolidateSeparator l = preOrderWalk (function
   | Sequence (listConfig, sublayouts) when listConfig.sep != NoSep && listConfig.sepLeft ->
      (* TODO: Support !sepLeft, and this should apply to the *first* separator if !sepLeft.  *)
      let sublayoutsLen = List.length sublayouts in
@@ -1287,57 +1309,136 @@ let consolidateSeparator = preOrderWalk (function
      let sep = Layout.NoSep in
      let preSpace = false in
      Sequence ({listConfig with sep; preSpace}, layoutsWithSepAndComment)
+  | Whitespace(info, sub) ->
+      Layout.Whitespace(info, consolidateSeparator sub)
   | layout -> layout
-)
+) l
 
 
-(** [insertLinesAboveItems layout] walkts the [layout] and insert empty lines
- *  based on the configuration of newlinesAboveItems
- *)
-let insertLinesAboveItems = preOrderWalk (function
-  | Sequence (listConfig, sublayouts)
-       when listConfig.newlinesAboveItems <> 0
-    ->
-    let layoutsWithLinesInjected = begin match sublayouts with
-      | [] -> []
-      | first::sublayouts ->
-        (* it doesn't make sense to insert whitespace above the first item in a
-         * sequence. Imagine:
-         * module Piano = {
-         *
-         *   type t = steinway;
-         *
-         *   let play = () => rachmaninov();
-         * };
-         *
-         * The whitespace above `type t` is unnecessary.
+(** [insertLinesAboveItems layout] walks the [layout] and insert empty lines *)
+let rec insertLinesAboveItems items = preOrderWalk (function
+  | Whitespace(region, sub) ->
+      insertBlankLines (WhitespaceRegion.newlines region) sub
+  | layout -> layout
+) items
+
+let insertCommentIntoWhitespaceRegion comment region subLayout =
+  let cl = Comment.location comment in
+  let range = WhitespaceRegion.range region in
+  (* append the comment to the list of inserted comments in the whitespace region *)
+  let nextRegion = WhitespaceRegion.addComment region comment in
+  let formattedComment = formatComment comment in
+  match WhitespaceRegion.comments region with
+  (* the comment inserted into the whitespace region is the first in the region *)
+  | [] ->
+      (*
+       * 1| let a = 1;
+       * 2|
+       * 3| /* comment at end of whitespace region */
+       * 4| let b = 2;
+       *)
+      if range.lnum_end = cl.loc_end.pos_lnum then
+        let subLayout = breakline formattedComment subLayout in
+        Layout.Whitespace(nextRegion, subLayout)
+
+      (*
+       * 1| let a = 1;
+       * 2| /* comment at start of whitespace region */
+       * 3|
+       * 4| let b = 2;
+       *)
+      else if range.lnum_start = cl.loc_start.pos_lnum then
+        let subLayout = breakline formattedComment (insertBlankLines 1 subLayout) in
+        let nextRegion = WhitespaceRegion.modifyNewlines nextRegion 0 in
+        Whitespace(nextRegion, subLayout)
+
+      (*
+       * 1| let a = 1;
+       * 2|
+       * 3| /* comment floats in whitespace region */
+       * 4|
+       * 5| let b = 2;
+       *)
+      else
+        let subLayout = breakline formattedComment (insertBlankLines 1 subLayout) in
+        Whitespace(nextRegion, subLayout)
+
+  (* The whitespace region contains already inserted comments *)
+  | prevComment::_cs ->
+      let pcl = Comment.location prevComment in
+      (* check if the comment is attached to the start of the region *)
+      let attachedToStartRegion = cl.loc_start.pos_lnum = range.lnum_start in
+      let nextRegion =
+        (*
+         * 1| let a = 1;
+         * 2| /* comment sits on the beginning of the region */
+         * 3| /* previous comment */
+         * 4|
+         * 5| let b = 2;
          *)
-        first::(List.map (insertBlankLines listConfig.newlinesAboveItems) sublayouts)
-    end in
-    Sequence ({listConfig with newlinesAboveItems=0}, layoutsWithLinesInjected)
-  | layout -> layout
-)
+        if attachedToStartRegion then
+          (* we don't want a newline between `let a = 1` and the `comment sits
+           * on the beginning of the region` comment*)
+          WhitespaceRegion.modifyNewlines nextRegion 0
+        (*
+         * 1| let a = 1;
+         * 2|
+         * 3| /* comment isn't located at the beginnin of a region*/
+         * 4| /* previous comment */
+         * 5|
+         * 6| let b = 2;
+         *)
+        else
+          nextRegion
+      in
+      (*
+       * 1| let a = 1;
+       * 2| /* comment */
+       * 3|                      --> whitespace between
+       * 4| /* previous comment */
+       * 5| let b = 1;
+       *)
+      if Reason_location.hasSpaceBetween pcl cl then
+      (* pcl.loc_start.pos_lnum - cl.loc_end.pos_lnum > 1 then *)
+        let subLayout = breakline formattedComment (insertBlankLines 1 subLayout) in
+        let withComment = Layout.Whitespace(nextRegion, subLayout) in
+        withComment
+
+      (*
+       * 1| let a = 1;
+       * 2|
+       * 3| /* comment */          | no whitespace between `comment`
+       * 4| /* previous comment */ | and `previous comment`
+       * 5| let b = 1;
+       *)
+      else
+        let subLayout = breakline formattedComment subLayout in
+        let withComment =  Layout.Whitespace(nextRegion, subLayout) in
+        withComment
 
 (**
  * prependSingleLineComment inserts a single line comment right above layout
  *)
-let rec prependSingleLineComment ?newlinesAboveDocComments:(newlinesAboveDocComments=0) comment layout =
+let rec prependSingleLineComment comment layout =
   match layout with
   | Layout.SourceMap (loc, sub) ->
-     Layout.SourceMap (loc, prependSingleLineComment ~newlinesAboveDocComments comment sub)
+     Layout.SourceMap (loc, prependSingleLineComment comment sub)
   | Sequence (config, hd::tl) when config.break = Always_rec->
-     Sequence(config, (prependSingleLineComment ~newlinesAboveDocComments comment hd)::tl)
+     Sequence(config, (prependSingleLineComment comment hd)::tl)
+  | Whitespace(info, sub) ->
+      insertCommentIntoWhitespaceRegion comment info sub
   | layout ->
-    let withComment = breakline (formatComment comment) layout in
-     if Comment.is_doc comment then
-       insertBlankLines newlinesAboveDocComments withComment
-     else
-       withComment
+      breakline (formatComment comment) layout
 
 (* breakAncestors break ancestors above node, but not comment attachment itself.*)
 let appendComment ~breakAncestors layout comment =
   let text = Comment.wrap comment in
-  let layout = makeList ~break:Layout.Never ~postSpace:true [layout; atom text] in
+  let layout = match layout with
+  | Layout.Whitespace(info, sublayout) ->
+    Layout.Whitespace(info, makeList ~break:Layout.Never ~postSpace:true [sublayout; atom text])
+  | layout ->
+      makeList ~break:Layout.Never ~postSpace:true [layout; atom text]
+  in
   if breakAncestors then
     makeList ~inline:(true, true) ~postSpace:false ~preSpace:true ~indent:0
       ~break:Always_rec [layout]
@@ -1353,6 +1454,8 @@ let rec looselyAttachComment ~breakAncestors layout comment =
   match layout with
   | Layout.SourceMap (loc, sub) ->
      Layout.SourceMap (loc, looselyAttachComment ~breakAncestors sub comment)
+  | Layout.Whitespace (info, sub) ->
+     Layout.Whitespace(info, looselyAttachComment ~breakAncestors sub comment)
   | Easy e ->
      inline ~postSpace:true layout (formatComment comment)
   | Sequence (listConfig, subLayouts)
@@ -1360,7 +1463,9 @@ let rec looselyAttachComment ~breakAncestors layout comment =
      (* If any of the subLayout strictly contains this comment, recurse into to it *)
     let recurse_sublayout layout =
       if Layout.contains_location layout ~location
-      then looselyAttachComment ~breakAncestors layout comment
+      then begin
+        looselyAttachComment ~breakAncestors layout comment
+      end
       else layout
     in
     Sequence (listConfig, List.map recurse_sublayout subLayouts)
@@ -1404,13 +1509,18 @@ let rec insertSingleLineComment layout comment =
   match layout with
   | Layout.SourceMap (loc, sub) ->
     Layout.SourceMap (loc, insertSingleLineComment sub comment)
+  | Layout.Whitespace (info, sub) ->
+      let range = WhitespaceRegion.range info in
+      if Range.containsLoc range location then
+        insertCommentIntoWhitespaceRegion comment info sub
+      else
+        Layout.Whitespace(info, insertSingleLineComment sub comment)
   | Easy e ->
     prependSingleLineComment comment layout
   | Sequence (listConfig, subLayouts) when subLayouts = [] ->
     (* If there are no subLayouts (empty body), create a Sequence of just the comment *)
     Sequence (listConfig, [formatComment comment])
   | Sequence (listConfig, subLayouts) ->
-    let newlinesAboveDocComments = listConfig.newlinesAboveDocComments in
     let (beforeComment, afterComment) =
       Reason_syntax_util.pick_while (Layout.is_before ~location) subLayouts in
     begin match afterComment with
@@ -1424,9 +1534,9 @@ let rec insertSingleLineComment layout comment =
           | Some loc when location_contains loc location ->
             insertSingleLineComment hd comment :: tl
           | Some loc ->
-            Layout.SourceMap (loc, (prependSingleLineComment ~newlinesAboveDocComments comment hd)) :: tl
+            Layout.SourceMap (loc, (prependSingleLineComment comment hd)) :: tl
           | _ ->
-            prependSingleLineComment ~newlinesAboveDocComments comment hd :: tl
+            prependSingleLineComment comment hd :: tl
         in
         Sequence (listConfig, beforeComment @ afterComment)
     end
@@ -1535,12 +1645,18 @@ and perfectlyAttachComment comment = function
           else
             (Layout.SourceMap (loc, layout), Some comment)
       end
+  | Whitespace(info, subLayout) ->
+      begin match perfectlyAttachComment comment subLayout with
+      | (newLayout, None) -> (Whitespace(info, newLayout), None)
+      | (newLayout, Some c) -> (Whitespace(info, newLayout), Some c)
+      end
   | layout -> (layout, Some comment)
 
 let insertRegularComment layout comment =
   match perfectlyAttachComment comment layout with
   | (layout, None) -> layout
-  | (layout, Some _) -> looselyAttachComment ~breakAncestors:false layout comment
+  | (layout, Some _) ->
+      looselyAttachComment ~breakAncestors:false layout comment
 
 let insertEndOfLineComment layout comment =
   looselyAttachComment ~breakAncestors:true layout comment
@@ -1561,6 +1677,68 @@ let partitionComments comments =
     partitionComments_ ([], [], []) comments in
   (singleLines, List.rev endOfLines, regulars)
 
+(*
+ * Partition single line comments based on a location into two lists:
+ * - one contains the comments before/same height of that location
+ * - the other contains the comments after the location
+ *)
+let partitionSingleLineComments loc singleLineComments =
+  let (before, after) = List.fold_left (fun (before, after) comment ->
+    let cl = Comment.location comment in
+    let isAfter = loc.loc_end.pos_lnum < cl.loc_start.pos_lnum in
+    if isAfter then
+      (before, comment::after)
+    else
+      (comment::before, after)
+  ) ([], []) singleLineComments
+  in (List.rev before, after)
+
+(*
+ * appends all [singleLineComments] after the [layout].
+ * [loc] marks the end of [layout]
+ *)
+let appendSingleLineCommentsToEnd loc layout singleLineComments =
+  let rec aux prevLoc layout i = function
+    | comment::cs ->
+        let loc = Comment.location comment in
+        let formattedComment = formatComment comment in
+        let commentLayout = if Reason_location.hasSpaceBetween loc prevLoc then
+          insertBlankLines 1 formattedComment
+        else
+          formattedComment
+        in
+        (* The initial layout breaks ugly with `breakline`,
+         * an inline list (that never breaks) fixes this *)
+        let newLayout = if i == 0 then
+          makeList ~inline:(true, true) ~break:Never [layout; commentLayout]
+        else
+          breakline layout commentLayout
+        in
+        aux loc newLayout (i + 1) cs
+    | [] -> layout
+  in
+  aux loc layout 0 singleLineComments
+
+(*
+ * For simplicity, the formatting of comments happens in two parts in context of a source map:
+ * 1) insert the singleLineComments with the interleaving algorithm contained in
+ *    `insertSingleLineComment` for all comments overlapping with the sourcemap.
+ *    A `Layout.Whitespace` node signals an intent to preserve whitespace here.
+ * 2) SingleLineComments after the sourcemap, e.g. at the end of .re/.rei file,
+ *    get attached with `appendSingleLineCommentsToEnd`. Due to the fact there
+ *    aren't any real ocaml ast nodes anymore after the sourcemap (end of a
+ *    file), the printing of the comments can be done in one pass with
+ *    `appendSingleLineCommentsToEnd`. This is more performant and
+ *    simplifies the implementation of comment attachment.
+ *)
+let attachSingleLineComments singleLineComments = function
+  | Layout.SourceMap(loc, subLayout) ->
+      let (before, after) = partitionSingleLineComments loc singleLineComments in
+      let layout = List.fold_left insertSingleLineComment subLayout before in
+      appendSingleLineCommentsToEnd loc layout after
+  | layout ->
+    List.fold_left insertSingleLineComment layout singleLineComments
+
 let format_layout ?comments ppf layout =
   let easy = match comments with
     | None -> Layout.to_easy_format layout
@@ -1572,10 +1750,11 @@ let format_layout ?comments ppf layout =
       let layout = consolidateSeparator layout in
       let layout = List.fold_left insertEndOfLineComment layout endOfLines in
       (* Layout.dump Format.std_formatter layout; *)
-      let layout = List.fold_left insertSingleLineComment layout singleLines in
+      let layout = attachSingleLineComments singleLines layout in
+      (* Layout.dump Format.std_formatter layout; *)
       let layout = insertLinesAboveItems layout in
       let layout = Layout.to_easy_format layout in
-      (* Layout.dump_easy Format.std_formatter easyFormat; *)
+      (* Layout.dump_easy Format.std_formatter layout; *)
       layout
   in
   let buf = Buffer.create 1000 in
@@ -1608,9 +1787,6 @@ let makeLetSequence letItems =
     ~break:Always_rec
     ~inline:(true, false)
     ~wrap:("{", "}")
-    ~newlinesAboveComments:0
-    ~newlinesAboveItems:0
-    ~newlinesAboveDocComments:1
     ~postSpace:true
     ~sep:(SepFinal (";", ";"))
     letItems
@@ -1620,9 +1796,6 @@ let makeLetSequenceSingleLine letItems =
     ~break:IfNeed
     ~inline:(true, false)
     ~wrap:("{", "}")
-    ~newlinesAboveComments:0
-    ~newlinesAboveItems:0
-    ~newlinesAboveDocComments:1
     ~preSpace:true
     ~postSpace:true
     ~sep:(Sep ";")
@@ -1634,10 +1807,7 @@ let makeUnguardedLetSequence letItems =
     ~break:Always_rec
     ~inline:(true, true)
     ~wrap:("", "")
-    ~newlinesAboveComments:0
     ~indent:0
-    ~newlinesAboveItems:0
-    ~newlinesAboveDocComments:1
     ~postSpace:true
     ~sep:(SepFinal (";", ";"))
     letItems
@@ -2037,10 +2207,120 @@ let formatComputedInfixChain infixChainList =
   in
   print [] [] "" infixChainList
 
+(**
+ * [groupAndPrint] will print every item in [items] according to the function [xf].
+ * [getLoc] will extract the location from an item. Based on the difference
+ * between the location of two items, if there's whitespace between the two
+ * (taken possible comments into account), items get grouped.
+ * Every group designates a series of layout nodes "in need
+ * of whitespace above". A group gets decorated with a Whitespace node
+ * containing enough info to interleave whitespace at a later time during
+ * printing.
+ *)
+let groupAndPrint ~xf ~getLoc ~comments items =
+  let rec group prevLoc curr acc = function
+    (* group items *)
+    | x::xs ->
+        let item = xf x in
+        let loc = getLoc x in
+        (* Get the range between the current and previous item
+         * Example:
+         * 1| let a = 1;
+         * 2|            --> this is the range between the two
+         * 3| let b = 2;
+         * *)
+        let range = Range.makeRangeBetween prevLoc loc in
+        (* If there's whitespace interleaved, append the new layout node
+         * to a new group, otherwise keep it in the current group.
+         * Takes possible comments interleaved into account.
+         *
+         * Example:
+         * 1| let a = 1;
+         * 2|
+         * 3| let b = 2;
+         * 4| let c = 3;
+         * `let b = 2` will mark the start of a new group
+         * `let c = 3` will be added to the group containing `let b = 2`
+         *)
+        if Range.containsWhitespace ~range ~comments () then
+          group loc [(range, item)] ((List.rev curr)::acc) xs
+        else
+          group loc ((range, item)::curr) acc xs
+    (* convert groups into "Layout.Whitespace" *)
+    | [] ->
+        let groups = List.rev ((List.rev curr)::acc) in
+        List.mapi (fun i group -> match group with
+          | curr::xs ->
+              let (range, x) = curr in
+              (* if this is the first group of all "items", the number of
+               * newlines interleaved should be 0, else we collapse all newlines
+               * to 1.
+               *
+               * Example:
+               * module Abc = {
+               *   let a = 1;
+               *
+               *   let b = 2;
+               * }
+               * `let a = 1` should be wrapped in a `Layout.Whitespace` because a
+               * user might put comments above the `let a = 1`.
+               * e.g.
+               * module Abc = {
+               *   /* comment 1 */
+               *
+               *   /* comment 2 */
+               *   let a = 1;
+               *
+               *  A Whitespace-node will automatically take care of the whitespace
+               *  interleaving between the comments.
+               *)
+              let newlines = if i > 0 then 1 else 0 in
+              let region = WhitespaceRegion.make ~range ~newlines () in
+              let firstLayout = Layout.Whitespace(region, x) in
+              (* the first layout node of every group taks care of the
+               * whitespace above a group*)
+              (firstLayout::(List.map snd xs))
+          | [] -> []
+        ) groups
+  in
+  match items with
+  | first::rest ->
+      List.concat (group (getLoc first) [] [] (first::rest))
+  | [] -> []
 
 let printer = object(self:'self)
   val pipe = false
   val semi = false
+
+  (* *Mutable state* in the printer to keep track of all comments
+   * Used when whitespace needs to be interleaved.
+   * The printing algorithm needs to take the comments into account in between
+   * two items, to correctly determine if there's whitespace between two items.
+   * The ast doesn't know if there are comments between two items, since
+   * comments are store separately. The location diff between two items
+   * might indicate whitespace between the two. While in reality there are
+   * comments filling that whitespace. The printer needs access to the comments
+   * for this reason.
+   *
+   * Example:
+   * 1| let a = 1;
+   * 2|
+   * 3|
+   * 4| let b = 2;
+   *  -> here we can just diff the locations between `let a = 1` and `let b = 2`
+   *
+   * 1| let a = 1;
+   * 2| /* a comment */
+   * 3| /* another comment */
+   * 4| let b = 2;
+   *  -> here the location diff will result into false info if we don't include
+   *  the comments in the diffing
+   *)
+  val mutable comments = []
+
+  method comments = comments
+  method trackComment comment = comments <- comment::comments
+
   (* The test and first branch of ternaries must be guarded *)
   method under_pipe = {<pipe=true>}
   method under_semi = {<semi=true>}
@@ -4131,6 +4411,58 @@ let printer = object(self:'self)
           self#wrapCurriedFunctionBinding prefixText ~arrow:"=" pattern fauxArgs
             (self#classExpressionToFormattedApplicationItems actualReturn, None)
 
+  (* Attaches doc comments to a layout, with whitespace preserved
+   * Example:
+   * /** Doc comment */
+   *
+   * /* another random comment */
+   * let a = 1;
+   *)
+  method attachDocAttrsToLayout
+    (* all std attributes attached on the ast node backing the layout *)
+    ~stdAttrs:(stdAttrs : Ast_404.Parsetree.attributes)
+    (* all doc comments attached on the ast node backing the layout *)
+    ~docAttrs:(docAttrs : Ast_404.Parsetree.attributes)
+    (* location of the layout *)
+    ~loc
+    (* layout to attach the doc comments to *)
+    ~layout () =
+    (*
+     * compute the correct location of layout
+     * Example:
+     * 1| /** doc-comment */
+     * 2|
+     * 3| [@attribute]
+     * 4| let a = 1;
+     *
+     * The location might indicate a start of line 4 for the ast-node
+     * representing `let a = 1`. The reality is that `[@attribute]` should be
+     * included (start of line 3), to represent the correct start location
+     * of the whole layout.
+     *)
+    let loc = match stdAttrs with
+    | (astLoc, _)::_ -> astLoc.loc
+    | [] -> loc
+    in
+    let rec aux prevLoc layout = function
+      | ((x, _) as attr : Ast_404.Parsetree.attribute)::xs ->
+        let newLayout =
+          let range = Range.makeRangeBetween x.loc prevLoc in
+          let layout =
+            if Range.containsWhitespace ~range ~comments:self#comments () then
+              let region = WhitespaceRegion.make ~range ~newlines:1 () in
+              Layout.Whitespace(region, layout)
+            else layout
+          in
+          makeList ~inline:(true, true) ~break:Always [
+            self#attribute attr;
+            layout
+          ]
+        in aux x.loc newLayout xs
+      | [] -> layout
+    in
+    aux loc layout (List.rev docAttrs)
+
   method binding prefixText x = (* TODO: print attributes *)
     let body = match x.pvb_pat.ppat_desc with
       | (Ppat_var {txt}) ->
@@ -4241,8 +4573,16 @@ let printer = object(self:'self)
         let appTerms = self#unparseExprApplicationItems x.pvb_expr in
         self#formatSimplePatternBinding prefixText layoutPattern None appTerms
     in
-    self#attach_std_item_attrs x.pvb_attributes
-      (source_map ~loc:x.pvb_loc body)
+    let {stdAttrs; docAttrs} = partitionAttributes ~partDoc:true x.pvb_attributes in
+
+    let body = makeList ~inline:(true, true) [body] in
+    let layout = self#attach_std_item_attrs stdAttrs (source_map ~loc:x.pvb_loc body) in
+    self#attachDocAttrsToLayout
+      ~stdAttrs
+      ~docAttrs
+      ~loc:x.pvb_pat.ppat_loc
+      ~layout
+      ()
 
   (* Ensures that the constraint is formatted properly for sake of function
      binding (formatted without arrows)
@@ -4300,78 +4640,118 @@ let printer = object(self:'self)
         (first :: List.map (self#binding "and") rest)
 
   method letList expr =
-    match (expr.pexp_attributes, expr.pexp_desc) with
-      | ([], Pexp_let (rf, l, e)) ->
-        (* For "letList" bindings, the start/end isn't as simple as with
-         * module value bindings. For "let lists", the sequences were formed
-         * within braces {}. The parser relocates the first let binding to the
-         * first brace. *)
-         let bindingsLayout = self#bindings (rf, l) in
-         let bindingsLoc = self#bindingsLocationRange l in
-         (source_map ~loc:bindingsLoc bindingsLayout :: self#letList e)
-      | (attrs, Pexp_open (ovf, lid, e))
-          (* Add this when check to make sure these are handled as regular "simple expressions" *)
-          when not (self#isSeriesOfOpensFollowedByNonSequencyExpression {expr with pexp_attributes = []}) ->
-        let overrideStr = match ovf with | Override -> "!" | Fresh -> "" in
-        let openLayout = label ~space:true
-          (atom ("open" ^ overrideStr))
-          (self#longident_loc lid)
-        in
-        let attrsOnOpen =
-          makeList ~inline:(true, true) ~postSpace:true ~break:Always
-          ((self#attributes attrs)@[openLayout])
-        in
-        (* Just like the bindings, have to synthesize a location since the
-         * Pexp location is parsed (potentially) beginning with the open
-         * brace {} in the let sequence. *)
-        (source_map ~loc:lid.loc attrsOnOpen :: self#letList e)
-      | ([], Pexp_letmodule (s, me, e)) ->
-          let prefixText = "module" in
-          let bindingName = atom ~loc:s.loc s.txt in
-          let moduleExpr = me in
-          let letModuleLayout =
-            (self#let_module_binding prefixText bindingName moduleExpr) in
-          let letModuleLoc = {
-            loc_start = s.loc.loc_start;
-            loc_end = me.pmod_loc.loc_end;
-            loc_ghost = false
-          } in
+    (* Recursively transform a nested ast of "let-items", into a flat
+     * list containing the location indicating start/end of the "let-item" and
+     * its layout. *)
+    let rec processLetList acc expr =
+      match (expr.pexp_attributes, expr.pexp_desc) with
+        | ([], Pexp_let (rf, l, e)) ->
+          (* For "letList" bindings, the start/end isn't as simple as with
+           * module value bindings. For "let lists", the sequences were formed
+           * within braces {}. The parser relocates the first let binding to the
+           * first brace. *)
+           let bindingsLayout = self#bindings (rf, l) in
+           let bindingsLoc = self#bindingsLocationRange l in
+           let layout = source_map ~loc:bindingsLoc bindingsLayout in
+           processLetList ((bindingsLoc, layout)::acc) e
+        | (attrs, Pexp_open (ovf, lid, e))
+            (* Add this when check to make sure these are handled as regular "simple expressions" *)
+            when not (self#isSeriesOfOpensFollowedByNonSequencyExpression {expr with pexp_attributes = []}) ->
+          let overrideStr = match ovf with | Override -> "!" | Fresh -> "" in
+          let openLayout = label ~space:true
+            (atom ("open" ^ overrideStr))
+            (self#longident_loc lid)
+          in
+          let attrsOnOpen =
+            makeList ~inline:(true, true) ~postSpace:true ~break:Always
+            ((self#attributes attrs)@[openLayout])
+          in
           (* Just like the bindings, have to synthesize a location since the
            * Pexp location is parsed (potentially) beginning with the open
            * brace {} in the let sequence. *)
-           (source_map ~loc:letModuleLoc letModuleLayout :: self#letList e)
-      | ([], Pexp_letexception (extensionConstructor, expr)) ->
-          let exc = self#exception_declaration extensionConstructor in
-          exc::(self#letList expr)
-      | ([], Pexp_sequence (({pexp_desc=Pexp_sequence _ }) as e1, e2))
-      | ([], Pexp_sequence (({pexp_desc=Pexp_let _      }) as e1, e2))
-      | ([], Pexp_sequence (({pexp_desc=Pexp_open _     }) as e1, e2))
-      | ([], Pexp_sequence (({pexp_desc=Pexp_letmodule _}) as e1, e2))
-      | ([], Pexp_sequence (e1, e2)) ->
-          let e1Layout = match expression_not_immediate_extension_sugar e1 with
-            | Some (extension, expr) ->
-              self#attach_std_item_attrs ~extension [] (self#unparseExpr expr)
-            | None ->self#unparseExpr e1
-          in
-          (* It's kind of difficult to synthesize a location here in the case
-           * where this is the first expression in the braces. We could consider
-           * deeply inspecting the leftmost token/term in the expression. *)
-          (source_map ~loc:e1.pexp_loc e1Layout :: self#letList e2)
-      | _ ->
-        match expression_not_immediate_extension_sugar expr with
-        | Some (extension, {pexp_attributes = []; pexp_desc = Pexp_let (rf, l, e)}) ->
-          let bindingsLayout = self#bindings ~extension (rf, l) in
-          let bindingsLoc = self#bindingsLocationRange l in
-          (source_map ~loc:bindingsLoc bindingsLayout :: self#letList e)
-        | Some (extension, expr) ->
-          [self#attach_std_item_attrs ~extension [] (self#unparseExpr expr)]
-        | None ->
-          (* Should really do something to prevent infinite loops here. Never
-             allowing a top level call into letList to recurse back to
-             self#unparseExpr- top level calls into letList *must* be one of the
-             special forms above whereas lower level recursive calls may be of
-             any form. *)
-          [source_map ~loc:expr.pexp_loc (self#unparseExpr expr)]
+          let layout = source_map ~loc:lid.loc attrsOnOpen in
+          let loc = {
+            lid.loc with
+            loc_start = {
+              lid.loc.loc_start with
+              pos_lnum = expr.pexp_loc.loc_start.pos_lnum
+            }
+          } in
+          processLetList ((loc, layout)::acc) e
+        | ([], Pexp_letmodule (s, me, e)) ->
+            let prefixText = "module" in
+            let bindingName = atom ~loc:s.loc s.txt in
+            let moduleExpr = me in
+            let letModuleLayout =
+              (self#let_module_binding prefixText bindingName moduleExpr) in
+            let letModuleLoc = {
+              loc_start = s.loc.loc_start;
+              loc_end = me.pmod_loc.loc_end;
+              loc_ghost = false
+            } in
+            (* Just like the bindings, have to synthesize a location since the
+             * Pexp location is parsed (potentially) beginning with the open
+             * brace {} in the let sequence. *)
+          let layout = source_map ~loc:letModuleLoc letModuleLayout in
+        let (_, return) = self#curriedFunctorPatternsAndReturnStruct moduleExpr in
+          let loc = {
+            letModuleLoc with
+            loc_end = return.pmod_loc.loc_end
+          } in
+           processLetList ((loc, layout)::acc) e
+             (* (source_map ~loc:letModuleLoc letModuleLayout :: self#letList e) *)
+        | ([], Pexp_letexception (extensionConstructor, expr)) ->
+            let exc = self#exception_declaration extensionConstructor in
+            let layout = source_map ~loc:extensionConstructor.pext_loc exc in
+            processLetList ((extensionConstructor.pext_loc, layout)::acc) expr
+            (* exc::(self#letList expr) *)
+        | ([], Pexp_sequence (({pexp_desc=Pexp_sequence _ }) as e1, e2))
+        | ([], Pexp_sequence (({pexp_desc=Pexp_let _      }) as e1, e2))
+        | ([], Pexp_sequence (({pexp_desc=Pexp_open _     }) as e1, e2))
+        | ([], Pexp_sequence (({pexp_desc=Pexp_letmodule _}) as e1, e2))
+        | ([], Pexp_sequence (e1, e2)) ->
+            let (loc, e1Layout) = match expression_not_immediate_extension_sugar e1 with
+              | Some (extension, e) ->
+                  (expr.pexp_loc, self#attach_std_item_attrs ~extension []
+                    (self#unparseExpr e))
+              | None ->
+                  let loc = match e1.pexp_desc with
+                  | Pexp_extension _ -> expr.pexp_loc
+                  | _ -> e1.pexp_loc
+                  in
+                  (loc, self#unparseExpr e1)
+            in
+            (* It's kind of difficult to synthesize a location here in the case
+             * where this is the first expression in the braces. We could consider
+             * deeply inspecting the leftmost token/term in the expression. *)
+            let layout = source_map ~loc:e1.pexp_loc e1Layout in
+            processLetList ((loc, layout)::acc) e2
+        | _ ->
+          match expression_not_immediate_extension_sugar expr with
+          | Some (extension, {pexp_attributes = []; pexp_desc = Pexp_let (rf, l, e)}) ->
+            let bindingsLayout = self#bindings ~extension (rf, l) in
+            let bindingsLoc = self#bindingsLocationRange l in
+            let layout = source_map ~loc:bindingsLoc bindingsLayout in
+            processLetList ((extractLocationFromValBindList expr l, layout)::acc) e
+          | Some (extension, e) ->
+            let layout = self#attach_std_item_attrs ~extension [] (self#unparseExpr e) in
+            (expr.pexp_loc, layout)::acc
+          | None ->
+            (* Should really do something to prevent infinite loops here. Never
+               allowing a top level call into letList to recurse back to
+               self#unparseExpr- top level calls into letList *must* be one of the
+               special forms above whereas lower level recursive calls may be of
+               any form. *)
+            let layout = source_map ~loc:expr.pexp_loc (self#unparseExpr expr) in
+            (expr.pexp_loc, layout)::acc
+    in
+    let es = processLetList [] expr in
+    (* Interleave whitespace between the "let-items" when appropiate *)
+    groupAndPrint
+      ~xf:(fun (_, layout) -> layout)
+      ~getLoc:(fun (loc, _) -> loc)
+      ~comments:self#comments
+      (List.rev es)
 
   method constructor_expression ?(polyVariant=false) ~arityIsClear stdAttrs ctor eo =
     let (implicit_arity, arguments) =
@@ -5344,20 +5724,6 @@ let printer = object(self:'self)
     | Pctf_attribute a -> self#floating_attribute a
     | Pctf_extension e -> self#item_extension e
 
-
-  (* The type of something returned from a constructor. Formerly [class_signature]  *)
-  method shouldDisplayClassInstTypeItem x = match x.pctf_desc with
-    (*| Pctf_attribute (s, _) -> (not (s.txt = "ocaml.text") && not (s.txt = "ocaml.doc"))*)
-    | _ -> true
-
-  method shouldDisplaySigItem x = match x.psig_desc with
-    (*| Psig_attribute (s, _) -> (not (s.txt = "ocaml.text") && not (s.txt = "ocaml.doc"))*)
-    | _ -> true
-
-  method shouldDisplayStructureItem x = match x.pstr_desc with
-    (*| Pstr_attribute (s, _) -> (not (s.txt = "ocaml.text") && not (s.txt = "ocaml.doc"))*)
-    | _ -> true
-
   (*
     [@@bs.val] [@@bs.module "react-dom"]                  (* formattedAttrs *)
     external render : reactElement => element => unit =   (* frstHalf *)
@@ -5747,28 +6113,29 @@ let printer = object(self:'self)
       (self#class_self_pattern_and_structure cs)
 
   method signature signatureItems =
-    let signatureItems = List.filter self#shouldDisplaySigItem signatureItems in
-    if List.length signatureItems == 0 then
-      atom ""
-    else
-      let signatureItems = List.filter self#shouldDisplaySigItem signatureItems in
-      let first = List.nth signatureItems 0 in
-      let last = List.nth signatureItems (List.length signatureItems - 1) in
+    match signatureItems with
+    | [] -> atom ""
+    | first::_ as signatureItems ->
+      let last = match (List.rev signatureItems) with | last::_ -> last | [] -> assert false in
       let loc_start = first.psig_loc.loc_start in
       let loc_end = last.psig_loc.loc_end in
+      let items =
+        groupAndPrint
+          ~xf:self#signature_item
+          ~getLoc:(fun x -> x.psig_loc)
+          ~comments:self#comments
+          signatureItems
+      in
       source_map ~loc:{loc_start; loc_end; loc_ghost=false}
         (makeList
-           ~newlinesAboveComments:1
-           ~newlinesAboveItems:1
-           ~newlinesAboveDocComments:1
            ~postSpace:true
            ~break:Layout.Always_rec
            ~indent:0
            ~inline:(true, false)
            ~sep:(SepFinal (";", ";"))
-           (List.map self#signature_item signatureItems))
+           items)
 
-  method signature_item x: Layout.t =
+  method signature_item x : Layout.t =
     let item: Layout.t =
       match x.psig_desc with
         | Psig_type (rf, l) ->
@@ -5778,12 +6145,20 @@ let printer = object(self:'self)
               self#primitive_declaration vd
             else
               let intro = atom "let" in
-              self#attach_std_item_attrs vd.pval_attributes
-              (formatTypeConstraint
-                 (label ~space:true intro
-                    (source_map ~loc:vd.pval_name.loc
-                       (protectIdentifier vd.pval_name.txt)))
-                (self#core_type vd.pval_type))
+              let {stdAttrs; docAttrs} = partitionAttributes ~partDoc:true vd.pval_attributes in
+              let layout = self#attach_std_item_attrs stdAttrs
+                (formatTypeConstraint
+                   (label ~space:true intro
+                      (source_map ~loc:vd.pval_name.loc
+                         (protectIdentifier vd.pval_name.txt)))
+                  (self#core_type vd.pval_type))
+              in
+              self#attachDocAttrsToLayout
+                ~stdAttrs
+                ~docAttrs
+                ~loc:vd.pval_type.ptyp_loc
+                ~layout
+                ()
 
         | Psig_typext te ->
             self#type_extension te
@@ -5891,16 +6266,20 @@ let printer = object(self:'self)
       | Pmty_ident li ->
           self#longident_loc li;
       | Pmty_signature s ->
-          makeList
-            ~break:IfNeed
-            ~inline:(true, false)
-            ~wrap:("{", "}")
-            ~newlinesAboveComments:0
-            ~newlinesAboveItems:0
-            ~newlinesAboveDocComments:1
-            ~postSpace:true
-            ~sep:(SepFinal (";", ";"))
-            (List.map self#signature_item (List.filter self#shouldDisplaySigItem s))
+        let items =
+          groupAndPrint
+          ~xf:self#signature_item
+          ~getLoc:(fun x -> x.psig_loc)
+          ~comments:self#comments
+          s
+        in
+        makeList
+          ~break:IfNeed
+          ~inline:(true, false)
+          ~wrap:("{", "}")
+          ~postSpace:true
+          ~sep:(SepFinal (";", ";"))
+          items
       | Pmty_extension (s, e) -> self#payload "%" s e
       | _ -> makeList ~break:IfNeed ~wrap:("(", ")") [self#module_type x]
 
@@ -5991,17 +6370,21 @@ let printer = object(self:'self)
             (self#module_type mt)
         )
     | Pmod_structure s ->
-        let wrap = if hug then ("({", "})") else  ("{", "}") in
+        let wrap = if hug then ("({", "})") else ("{", "}") in
+        let items =
+          groupAndPrint
+            ~xf:self#structure_item
+            ~getLoc:(fun x -> x.pstr_loc)
+            ~comments:self#comments
+            s
+        in
         makeList
           ~break:Always_rec
           ~inline:(true, false)
           ~wrap
-          ~newlinesAboveComments:0
-          ~newlinesAboveItems:1
-          ~newlinesAboveDocComments:1
           ~postSpace:true
           ~sep:(SepFinal (";", ";"))
-          (List.map self#structure_item (List.filter self#shouldDisplayStructureItem s))
+          items
     | _ ->
         (* For example, functor application will be wrapped. *)
         formatPrecedence (self#module_expr x)
@@ -6024,25 +6407,27 @@ let printer = object(self:'self)
 
 
   method structure structureItems =
-    if List.length structureItems == 0 then
-      atom ""
-    else
-      let structureItems = List.filter self#shouldDisplayStructureItem structureItems in
-      let first = List.nth structureItems 0 in
-      let last = List.nth structureItems (List.length structureItems - 1) in
+    match structureItems with
+    | [] -> atom ""
+    | first::_ as structureItems ->
+      let last = match (List.rev structureItems) with | last::_ -> last | [] -> assert false in
       let loc_start = first.pstr_loc.loc_start in
       let loc_end = last.pstr_loc.loc_end in
+      let items =
+        groupAndPrint
+          ~xf:self#structure_item
+          ~getLoc:(fun x -> x.pstr_loc)
+          ~comments:self#comments
+          structureItems
+      in
       source_map ~loc:{loc_start; loc_end; loc_ghost = false}
         (makeList
-           ~newlinesAboveComments:1
-           ~newlinesAboveItems:1
-           ~newlinesAboveDocComments:1
            ~postSpace:true
            ~break:Always_rec
            ~indent:0
            ~inline:(true, false)
            ~sep:(SepFinal (";", ";"))
-           (List.map self#structure_item structureItems))
+           items)
 
   (*
      How do modules become parsed?
@@ -6651,10 +7036,12 @@ let pattern ppf x =
     (printer#pattern (apply_mapper_to_pattern x preprocessing_mapper))
 
 let signature (comments : Comment.t list) ppf x =
+  List.iter (fun comment -> printer#trackComment comment) comments;
   format_layout ppf ~comments
     (printer#signature (apply_mapper_to_signature x preprocessing_mapper))
 
 let structure (comments : Comment.t list) ppf x =
+  List.iter (fun comment -> printer#trackComment comment) comments;
   format_layout ppf ~comments
     (printer#structure (apply_mapper_to_structure x preprocessing_mapper))
 

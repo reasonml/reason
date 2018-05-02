@@ -20,9 +20,7 @@
 [@itemAttributeOnTypeDef]
 /**removed text on type def*/
 type itemText = int;
-
 type nodeText = /**removed text on item*/ int;
-
 [@itemAttributeOnTypeDef]
 /**removed text on type def*/
 type nodeAndItemText =
@@ -31,10 +29,8 @@ type nodeAndItemText =
 [@itemAttributeOnTypeDef]
 /**removed doc on type def*/
 type itemDoc = int;
-
 [@itemAttributeOnTypeDef]
 type nodeDoc = /**removed text on item*/ int;
-
 [@itemAttributeOnTypeDef]
 /**removed doc on type def*/
 type nodeAndItemDoc =
@@ -42,7 +38,6 @@ type nodeAndItemDoc =
 
 [@itemAttributeOnTypeDef]
 type x = int;
-
 type attributedInt = [@onTopLevelTypeDef] int;
 
 [@itemAttributeOnTypeDef]
@@ -73,105 +68,75 @@ let thisInst: myType =
   );
 
 let x = [@onHello] "hello";
-
 let x = [@onHello] "hello";
 
 let x = "hello" ++ [@onGoodbye] "goodbye";
-
 let x = [@onHello] "hello" ++ "goodbye";
-
 let x = [@onHello] "hello" ++ "goodbye";
-
 let x = "hello" ++ [@onGoodbye] "goodbye";
-
 let x = [@onEverything] ("hello" ++ "goodbye");
 
 let x = 10 + [@on20] 20;
-
 let x = 10 + [@on20] 20;
-
 let x = [@on10] 10 + 20;
-
 let x = [@on10] 10 + 20;
-
 let x = [@attrEverything] (10 + 20);
 
 let x = 10 - [@on20] 20;
-
 let x = 10 - [@on20] 20;
-
 let x = [@on10] 10 - 20;
-
 let x = [@on10] 10 - 20;
-
 let x = [@attrEntireEverything] (10 - 20);
 
 let x = true && [@onFalse] false;
-
 let x = true && [@onFalse] false;
-
 let x = [@onTrue] true && false;
-
 let x = [@onTrue] true && false;
-
 let x = [@attrEverything] (true && false);
 
 /* now make sure to try with variants (tagged and `) */
+
 /**
  * How attribute parsings respond to other syntactic constructs.
  */
 let add = a => [@onRet] a;
-
 let add = a => [@onRet] a;
-
 let add = [@onEntireFunction] (a => a);
 
 let res =
   if (true) {false} else {[@onFalse] false};
-
 let res =
   [@onEntireIf] (if (true) {false} else {false});
 
 let add = (a, b) =>
   [@onEverything] ([@onA] a + b);
-
 let add = (a, b) =>
   [@onEverything] ([@onA] a + [@onB] b);
-
 let add = (a, b) => a + [@onB] b;
 
 let both = [@onEntireFunction] (a => a);
-
 let both = (a, b) =>
   [@onEverything] ([@onA] a && b);
-
 let both = (a, b) =>
   [@onA] a && [@onB] [@onB] b;
-
 let both = (a, b) => [@onEverything] (a && b);
 
 let thisVal = 10;
-
 let x =
   20
   + (- [@onFunctionCall] add(thisVal, thisVal));
-
 let x =
   [@onEverything]
   (20 + (- add(thisVal, thisVal)));
-
 let x =
   - [@onFunctionCall] add(thisVal, thisVal);
-
 let x =
   [@onEverything] (- add(thisVal, thisVal));
 
 let bothTrue = (x, y) => {contents: x && y};
-
 let something =
   [@onEverythingToRightOfEquals]
   (bothTrue(true, true))^;
-
 let something =
   ([@onlyOnArgumentToBang] bothTrue(true, true))
     ^;
@@ -179,7 +144,6 @@ let something =
 let res =
   [@appliesToEntireFunctionApplication]
   add(2, 4);
-
 [@appliesToEntireFunctionApplication]
 add(2, 4);
 
@@ -196,7 +160,6 @@ type recordFunctions = {
 }
 [@onUnusedType]
 and unusedType = unit;
-
 [@onMyRecord]
 let rec myRecord = {
   p: () => myRecord,
@@ -204,7 +167,6 @@ let rec myRecord = {
 }
 [@onUnused]
 and unused = ();
-
 let result =
   [@onSecondSend]
   ([@attOnFirstSend] myRecord.p()).q();
@@ -223,7 +185,6 @@ type gadtType('x) =
   | Baz: [@onThirdRow] gadtType([@onUnit] unit);
 
 [@floatingTopLevelStructureItem hello];
-
 [@itemAttributeOnEval]
 print_string("hello");
 
@@ -327,7 +288,6 @@ class type _z = {
 module NestedModule = {
   [@floatingNestedStructureItem hello];
 };
-
 [@structureItem]
 module type HasAttrs = {
   [@onTypeDef]
@@ -348,7 +308,6 @@ type s =
   | S(string);
 
 let S([@onStr] str) = S([@onHello] "hello");
-
 let [@onConstruction] S(str) =
   [@onConstruction] S("hello");
 
@@ -361,7 +320,6 @@ let myFun =
       [@onConstruction] X(hello) |
       [@onConstruction] Y(hello),
     ) => hello;
-
 let myFun =
     (
       X([@onHello] hello) | Y([@onHello] hello),
@@ -370,7 +328,9 @@ let myFun =
 /* Another bug: Cannot have an attribute on or pattern
    let myFun = fun ((X(hello) | Y(hello)) [@onOrPattern]) => hello;
    */
+
 /* Bucklescript FFI item attributes */
+
 [@bs.val]
 external imul : (int, int) => int = "Math.imul";
 
@@ -540,8 +500,9 @@ type value =
   | VInt'(int): value;
 
 /** Different payloads **/
-[@haha]
+
 /* Empty structure */
+[@haha]
 let x = 5;
 
 /* Expression structure */
@@ -568,6 +529,7 @@ let x = 5;
 let x = 5;
 
 /* Record item attributes */
+
 type t_ = {
   /** Comment attribute on record item */
   x: int,

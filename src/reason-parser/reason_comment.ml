@@ -21,7 +21,6 @@ let category t = t.category
 let location t = t.location
 
 let dump ppf t =
-  let open Lexing in
   Format.fprintf ppf "%d (%d:%d)-%d (%d:%d) -- %s:||%s||"
     t.location.loc_start.pos_cnum
     t.location.loc_start.pos_lnum

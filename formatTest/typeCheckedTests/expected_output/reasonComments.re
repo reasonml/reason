@@ -1,13 +1,10 @@
 3; /* - */
-
 3; /*-*/
 
 3; /*-*/
 
 3 /*-*/;
-
 /* **** comment */
-
 /*** comment */
 /** docstring */
 /* comment */
@@ -91,6 +88,7 @@ let testingEndOfLineComments = []; /* Comment after entire let binding */
 /*     andSecondArg  => { /* Second Arg */ */
 /*   withFirstArg + andSecondArg /* before semi */ ; */
 /* }; */
+
 let myFunction = /* First arg */
     (
       withFirstArg,
@@ -145,7 +143,6 @@ type anotherpoint = {
 };
 
 type t = (int, int); /* End of line on t */
-
 type t2 = (int, int); /* End of line on (int, int) */
 
 type t3 = (int, int); /* End of line on (int, int) */
@@ -295,7 +292,6 @@ type intPair = (
   int, /* First int */
   int /* Second int */
 );
-
 type intPair2 = (
   /* First int */
   int,
@@ -310,8 +306,8 @@ let result = /**/ (2 + 3);
 /*   /**/ */
 /*   (+) 2 3 */
 /* }; */
-let a = ();
 
+let a = ();
 for (i in 0 to 10) {
   /* bla  */
   a;
@@ -542,7 +538,6 @@ while (trueThing) {
     /* does work */
   );
 };
-
 while (trueThing) {
   f(
     /* a */
@@ -580,9 +575,7 @@ ignore((_xxx, _yyy) => {
 type tester('a, 'b) =
   | TwoArgsConstructor('a, 'b)
   | OneTupleArgConstructor(('a, 'b));
-
 let callFunctionTwoArgs = (a, b) => ();
-
 let callFunctionOneTuple = tuple => ();
 
 let y =
