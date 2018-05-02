@@ -1,4 +1,5 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
+
 let run = () =>
   TestUtils.printSection("Modules");
 
@@ -26,7 +27,6 @@ let run = () =>
  */
 module MyFirstModule = {
   let x = 0;
-
   let y = x + x;
 };
 
@@ -44,9 +44,7 @@ let result = MyFirstModule.x + MyFirstModule.y;
  */
 module MySecondModule = {
   type someType = int;
-
   let x = 0;
-
   let y = x + x;
 };
 
@@ -81,6 +79,7 @@ module type MySecondModuleType = {
  let y = x + x
  }
  */
+
 /**
  * - Modules may be artificially "constrained" so that users of a module see
  * fewer details than are actually present.
@@ -95,18 +94,16 @@ module type MySecondModuleType = {
  * - Modules can help you achieve higher degrees of polymorphism than the core
  * language.
  */
+
 let opensAModuleLocally = {
   module MyLocalModule = {
     type i = int;
-
     let x: i = 10;
   };
   /* Notice how local modules names may be used twice and are shadowed */
   module MyLocalModule: MySecondModuleType = {
     type someType = int;
-
     let x: someType = 10;
-
     let y: someType = 20;
   };
   let tmp = MyLocalModule.x + 22;
@@ -133,7 +130,6 @@ module type HasDestructivelySubstitutedSubPolyModule = {
   /* module X: HasPolyType with type t := list (int, int) */
   module X: HasDestructivelySubstitutedPolyType;
 };
-
 module type HasSubPolyModule = {
   /* Cannot perform destructive substitution on submodules! */
   /* module X: HasPolyType with type t := list (int, int) */
@@ -170,14 +166,12 @@ module InliningSig: {let x: int; let y: int;} = {
    * Comment inside of signature.
    */
   let x = 10;
-
   /* Inline comment inside signature. */
   let y = 20;
 };
 
 module MyFunctor = (M: HasTT) => {
   type reexportedTT = M.tt;
-
   /* Inline comment inside module. */
   /** Following special comment inside module. */
   let someValue = 1000;
@@ -203,13 +197,10 @@ module LookNoParensNeeded =
 module type SigResult = {let result: int;};
 
 module type ASig = {let a: int;};
-
 module type BSig = {let b: int;};
-
 module AMod = {
   let a = 10;
 };
-
 module BMod = {
   let b = 10;
 };
@@ -262,9 +253,11 @@ let letsTryThatSyntaxInLocalModuleBindings = () => {
          : SigResult => {
     let result = A.a + B.b;
   };
+
   module CurriedNoSugar = (A: ASig, B: BSig) => {
     let result = A.a + B.b;
   };
+
   /*
    * The following doesn't work in OCaml (LocalModule (struct end)).x isn't even
    * parsed!
@@ -276,6 +269,7 @@ let letsTryThatSyntaxInLocalModuleBindings = () => {
    * let res = Out.x in
    * res
    */
+
   module TempModule =
     CurriedNoSugar(AMod, BMod);
   module TempModule2 =
@@ -287,14 +281,11 @@ let letsTryThatSyntaxInLocalModuleBindings = () => {
 };
 
 module type EmptySig = {};
-
 module MakeAModule = (X: EmptySig) => {
   let a = 10;
 };
-
 module CurriedSugarFunctorResult =
   CurriedSugar(AMod, BMod);
-
 module CurriedSugarFunctorResultInline =
   CurriedSugar(
     {
@@ -304,10 +295,8 @@ module CurriedSugarFunctorResultInline =
       let b = 10;
     },
   );
-
 module CurriedNoSugarFunctorResult =
   CurriedNoSugar(AMod, BMod);
-
 module CurriedNoSugarFunctorResultInline =
   CurriedNoSugar(
     {
@@ -329,10 +318,8 @@ module ResultFromNonSimpleFunctorArg =
 /* TODO: Functor type signatures should more resemble value signatures */
 let curriedFunc: (int, int) => int =
   (a, b) => a + b;
-
 module type FunctorType =
   (ASig, BSig) => SigResult;
-
 /* Which is sugar for:*/
 module type FunctorType2 =
   (ASig, BSig) => SigResult;
@@ -402,7 +389,6 @@ module rec A: {
   type t =
     | Leaf(string)
     | Node(ASet.t);
-
   let compare = (t1, t2) =>
     switch (t1, t2) {
     | (Leaf(s1), Leaf(s2)) =>
@@ -431,21 +417,16 @@ module type HasRecursiveModules = {
 
 /* From http://stackoverflow.com/questions/1986374/higher-order-type-constructors-and-functors-in-ocaml */
 module type Type = {type t;};
-
 module Char = {
   type t = char;
 };
-
 module List = (X: Type) => {
   type t = list(X.t);
 };
-
 module Maybe = (X: Type) => {
   type t = option(X.t);
 };
-
 module Id = (X: Type) => X;
-
 module Compose =
        (
          F: (Type) => Type,
@@ -453,11 +434,9 @@ module Compose =
          X: Type,
        ) =>
   F((G(X)));
-
 let l: Compose(List)(Maybe)(Char).t = [
   Some('a'),
 ];
-
 module Example2 = (F: (Type) => Type, X: Type) => {
   /**
    * Note: This is the one remaining syntactic issue where
@@ -478,6 +457,7 @@ Printf.printf(
 /* We would have: */
 /* module CurriedSugarWithAnnotation: ASig => BSig => SigResult =
    fun (A:ASig) (B:BSig) => {let result = A.a + B.b} */
+
 /*
  module Typeahead = React.Create {
  type props = {initialCount: int}
@@ -489,13 +469,11 @@ Printf.printf(
  </div>
  }
  */
+
 include YourLib.CreateComponent({
   type thing = blahblahblah;
-
   type state = unit;
-
   let getInitialState = _ => ();
-
   let myValue = {recordField: "hello"};
 });
 
@@ -534,93 +512,67 @@ module M = {
 
 module N = {
   open M;
-
   let z = M.(34);
-
   let z = {
     open M;
     34;
     35;
   };
-
   let z = M.(34, 35);
-
   let z = M.(34, 35);
-
   let z = M.(34, 35);
-
   let z = M.{};
-
   let z = M.{};
-
   let z = M.{};
-
   let z = M.{x: 10};
-
   let z = M.[foo, bar];
-
   let z = M.[foo, bar];
-
   let z = M.{x: 10, y: 20};
-
   let z = M.(M2.(value));
-
   let z = M.(M2.value);
-
   let z = {
     open! M;
     34;
   };
-
   let z = {
     open! M;
     34;
     35;
   };
-
   let z = {
     open! M;
     {};
   };
-
   let z = {
     open! M;
     {x: 10};
   };
-
   let z = {
     open! M;
     [foo, bar];
   };
-
   let z = {
     open! M;
     [foo, bar];
   };
-
   let z = {
     open! M;
     {x: 10, y: 20};
   };
-
   let z = {
     open! M;
     open! M2;
     value;
   };
-
   let z = {
     open! M;
     M2.value;
   };
-
   let y = 44;
 };
 
 open M;
-
 open M.Inner;
-
 open M;
 
 module OldModuleSyntax = {
@@ -634,13 +586,10 @@ module type SigWithModuleTypeOf = {
 };
 
 module type T = t with type t = a => a;
-
 module type T = t with type t = a => a;
-
 module type T = (t with type t = a) => a;
 
 module X = [%test extension];
-
 module type T = [%test extension];
 
 let foo =
