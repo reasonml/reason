@@ -1,4 +1,4 @@
-/*
+(*
  * Copyright (c) 2015-present, Facebook, Inc.
  *
  * This source code is licensed under the MIT license found in the
@@ -43,9 +43,9 @@
  *  out of the use of this software, even if advised of the possibility of such
  *  damage.
  *
- */
+ *)
 
-/* The parser definition */
+(* The parser definition *)
 
 %{
 open Migrate_parsetree.OCaml_404.Ast
@@ -854,29 +854,11 @@ let mkcf_attrs ?(loc=dummy_loc()) d attrs =
 let mkctf_attrs d attrs =
   Ctf.mk ~attrs d
 
-type let_binding =
-  { lb_pattern: pattern;
-    lb_expression: expression;
-    (* The meaning of lb_leading_attributes and lbs_extension are dependent on
-     * the context of the let binding (module/expression etc) *)
-    lb_attributes: attributes;
-    (* lb_docs: docs Lazy.t; *)
-    (* lb_text: text Lazy.t; *)
-    lb_loc: Location.t; }
-
 type let_bindings =
-  { lbs_bindings: let_binding list;
+  { lbs_bindings: Parsetree.value_binding list;
     lbs_rec: rec_flag;
     lbs_extension: (attributes * string Asttypes.loc) option;
     lbs_loc: Location.t }
-
-let mklb (p, e) attrs loc =
-  { lb_pattern = p;
-    lb_expression = e;
-    (* Only some individual let bindings are allowed to have attributes
-     * depending on the context *)
-    lb_attributes = attrs;
-    lb_loc = loc; }
 
 let mklbs ext rf lb loc =
   { lbs_bindings = [lb];
@@ -888,49 +870,23 @@ let addlbs lbs lbs' =
   { lbs with lbs_bindings = lbs.lbs_bindings @ lbs' }
 
 let val_of_let_bindings lbs =
-  let bindings =
-    List.map
-      (fun lb ->
-         Vb.mk ~loc:lb.lb_loc ~attrs:lb.lb_attributes
-           (* ~docs:(Lazy.force lb.lb_docs) *)
-           (* ~text:(Lazy.force lb.lb_text) *)
-           lb.lb_pattern lb.lb_expression)
-      lbs.lbs_bindings
-  in
-  let str = mkstr (Pstr_value(lbs.lbs_rec, bindings)) in
+  let str = Str.value lbs.lbs_rec lbs.lbs_bindings in
   match lbs.lbs_extension with
   | None -> str
   | Some ext -> struct_item_extension ext [str]
 
 let expr_of_let_bindings lbs body =
-  let bindings =
-    List.map
-      (fun lb ->
-         (* Individual let bindings in an *expression* can't have item attributes. *)
-         (*if lb.lb_attributes <> [] then
-           raise Syntaxerr.(Error(Not_expecting(lb.lb_loc, "item attribute")));*)
-         Vb.mk ~attrs:lb.lb_attributes ~loc:lb.lb_loc lb.lb_pattern lb.lb_expression)
-      lbs.lbs_bindings
-  in
   (* The location of this expression unfortunately includes the entire rule,
    * which will include any preceeding extensions. *)
-  let item_expr = mkexp (Pexp_let(lbs.lbs_rec, bindings, body)) in
+  let item_expr = Exp.let_ lbs.lbs_rec lbs.lbs_bindings body in
   match lbs.lbs_extension with
   | None -> item_expr
   | Some ext -> expression_extension ext item_expr
 
 let class_of_let_bindings lbs body =
-  let bindings =
-    List.map
-      (fun lb ->
-         (*if lb.lb_attributes <> [] then
-           raise Syntaxerr.(Error(Not_expecting(lb.lb_loc, "item attribute")));*)
-         Vb.mk ~attrs:lb.lb_attributes ~loc:lb.lb_loc lb.lb_pattern lb.lb_expression)
-      lbs.lbs_bindings
-  in
-    if lbs.lbs_extension <> None then
-      raise Syntaxerr.(Error(Not_expecting(lbs.lbs_loc, "extension")));
-    mkclass(Pcl_let (lbs.lbs_rec, bindings, body))
+  if lbs.lbs_extension <> None then
+    raise Syntaxerr.(Error(Not_expecting(lbs.lbs_loc, "extension")));
+  Cl.let_ lbs.lbs_rec lbs.lbs_bindings body
 
 (*
  * arity_conflict_resolving_mapper is triggered when both "implicit_arity" "explicit_arity"
@@ -1015,29 +971,11 @@ let ensureTagsAreEqual startTag endTag loc =
      raiseSyntaxErrorFromSyntaxUtils loc
       "Start tag <%s> does not match end tag </%s>" startTag endTag
 
-let prepare_immutable_labels labels =
-  let prepare label =
-    if label.pld_mutable == Mutable then syntax_error();
-    (label.pld_name.txt, label.pld_attributes, label.pld_type)
-  in
-  List.map prepare labels
-
-type core_type_object =
-  | Core_type of core_type
-  | Record_type of label_declaration list
-
 (* `{. "foo": bar}` -> `Js.t {. foo: bar}` and {.. "foo": bar} -> `Js.t {.. foo: bar} *)
 let mkBsObjTypeSugar ~loc ~closed rows =
-  let obj = mktyp ~loc (Ptyp_object (prepare_immutable_labels rows, closed)) in
-  let jsDotTCtor = { txt = Longident.parse "Js.t"; loc } in
-  Core_type(mktyp(Ptyp_constr(jsDotTCtor, [obj])))
-
-let only_core_type t startp endp =
-  match t with
-  | Core_type ct -> ct
-  | Record_type _ ->
-    let loc = mklocation startp endp in
-    raiseSyntaxErrorFromSyntaxUtils loc "Record type is not allowed"
+  let obj = mktyp ~loc (Ptyp_object (rows, closed)) in
+  let jsDotTCtor = { txt = Longident.Ldot (Longident.Lident "Js", "t"); loc } in
+  mktyp(Ptyp_constr(jsDotTCtor, [obj]))
 
 let doc_loc = {txt = "ocaml.doc"; loc = Location.none}
 
@@ -1053,11 +991,15 @@ let doc_attr text loc =
   in
     (doc_loc, PStr [item])
 
+let prepend_attrs_to_labels attrs = function
+  | [] -> [] (* not possible for valid inputs *)
+  | x :: xs -> {x with pld_attributes = attrs @ x.pld_attributes} :: xs
+
 %}
 
 
 
-/* Tokens */
+(* Tokens *)
 
 %token AMPERAMPER
 %token AMPERSAND
@@ -1105,7 +1047,7 @@ let doc_attr text loc =
 %token <string> INFIXOP1
 %token <string> INFIXOP2
 %token <string> INFIXOP3
-/* SLASHGREATER is an INFIXOP3 that is handled specially */
+(* SLASHGREATER is an INFIXOP3 that is handled specially *)
 %token SLASHGREATER
 %token <string> INFIXOP4
 %token INHERIT
@@ -1145,7 +1087,7 @@ let doc_attr text loc =
 %token OBJECT
 %token OPEN
 %token OR
-/* %token PARSER */
+(* %token PARSER *)
 %token PERCENT
 %token PLUS
 %token PLUSDOT
@@ -1186,7 +1128,7 @@ let doc_attr text loc =
 
 %token EOL
 
-/* Precedences and associativities.
+(* Precedences and associativities.
 
 Tokens and rules have precedences and those precedences are used to
 resolve what would otherwise be a conflict in the grammar.
@@ -1201,32 +1143,32 @@ for example, in the rules of the form    expr: expr BINOP expr
 in all other cases, we define two precedences if needed to resolve
 conflicts.
 
-*/
-/* Question: Where is the SEMI explicit precedence? */
+*)
+(* Question: Where is the SEMI explicit precedence? *)
 %nonassoc below_SEMI
-%right    EQUALGREATER                  /* core_type2 (t => t => t) */
+%right    EQUALGREATER                  (* core_type2 (t => t => t) *)
 %right    COLON
-%right    EQUAL                         /* below COLONEQUAL (lbl = x := e) */
-%right    COLONEQUAL                    /* expr (e := e := e) */
+%right    EQUAL                         (* below COLONEQUAL (lbl = x := e) *)
+%right    COLONEQUAL                    (* expr (e := e := e) *)
 %nonassoc QUESTION
-%nonassoc WITH             /* below BAR  (match ... with ...) */
-%nonassoc AND             /* above WITH (module rec A: SIG with ... and ...) */
-%nonassoc ELSE                          /* (if ... then ... else ...) */
+%nonassoc WITH             (* below BAR  (match ... with ...) *)
+%nonassoc AND             (* above WITH (module rec A: SIG with ... and ...) *)
+%nonassoc ELSE                          (* (if ... then ... else ...) *)
 %nonassoc AS
-%nonassoc below_BAR                     /* Allows "building up" of many bars */
-%left     BAR                           /* pattern (p|p|p) */
+%nonassoc below_BAR                     (* Allows "building up" of many bars *)
+%left     BAR                           (* pattern (p|p|p) *)
 
-%right    OR BARBAR                     /* expr (e || e || e) */
-%right    AMPERSAND AMPERAMPER          /* expr (e && e && e) */
-%left     INFIXOP0 LESS GREATER         /* expr (e OP e OP e) */
-%left     LESSDOTDOTGREATER /* expr (e OP e OP e) */
-%right    INFIXOP1                      /* expr (e OP e OP e) */
-%right    COLONCOLON                    /* expr (e :: e :: e) */
-%left     INFIXOP2 PLUS PLUSDOT MINUS MINUSDOT PLUSEQ /* expr (e OP e OP e) */
-%left     PERCENT INFIXOP3 SLASHGREATER STAR          /* expr (e OP e OP e) */
-%right    INFIXOP4                      /* expr (e OP e OP e) */
+%right    OR BARBAR                     (* expr (e || e || e) *)
+%right    AMPERSAND AMPERAMPER          (* expr (e && e && e) *)
+%left     INFIXOP0 LESS GREATER         (* expr (e OP e OP e) *)
+%left     LESSDOTDOTGREATER (* expr (e OP e OP e) *)
+%right    INFIXOP1                      (* expr (e OP e OP e) *)
+%right    COLONCOLON                    (* expr (e :: e :: e) *)
+%left     INFIXOP2 PLUS PLUSDOT MINUS MINUSDOT PLUSEQ (* expr (e OP e OP e) *)
+%left     PERCENT INFIXOP3 SLASHGREATER STAR          (* expr (e OP e OP e) *)
+%right    INFIXOP4                      (* expr (e OP e OP e) *)
 
-/**
+(**
  * With the way attributes are currently parsed, if we want consistent precedence for
  *
  * The OCaml parser parses the following attributes:
@@ -1297,35 +1239,35 @@ conflicts.
  * "not". This is so that you may do !someFunction(arg, arg) and have the
  * entire function application negated. In fact, we may as well just have all
  * of PREFIXOP have the unary precedence parsing behavior for consistency.
- */
+ *)
 
 %nonassoc attribute_precedence
 
-%nonassoc prec_unary /* unary - */
-%nonassoc prec_constant_constructor     /* cf. simple_expr (C versus C x) */
-/* Now that commas require wrapping parens (for tuples), prec_constr_appl no
-* longer needs to be above COMMA, but it doesn't hurt */
-%nonassoc prec_constr_appl              /* above AS BAR COLONCOLON COMMA */
+%nonassoc prec_unary (* unary - *)
+%nonassoc prec_constant_constructor     (* cf. simple_expr (C versus C x) *)
+(* Now that commas require wrapping parens (for tuples), prec_constr_appl no
+* longer needs to be above COMMA, but it doesn't hurt *)
+%nonassoc prec_constr_appl              (* above AS BAR COLONCOLON COMMA *)
 
-/* PREFIXOP and BANG precedence */
-%nonassoc below_DOT_AND_SHARP           /* practically same as below_SHARP but we convey purpose */
-%nonassoc SHARP                         /* simple_expr/toplevel_directive */
+(* PREFIXOP and BANG precedence *)
+%nonassoc below_DOT_AND_SHARP           (* practically same as below_SHARP but we convey purpose *)
+%nonassoc SHARP                         (* simple_expr/toplevel_directive *)
 %left     SHARPOP
 %nonassoc below_DOT
 %nonassoc DOT POSTFIXOP
 
-/* Finally, the first tokens of simple_expr are above everything else. */
+(* Finally, the first tokens of simple_expr are above everything else. *)
 %nonassoc LBRACKETLESS LBRACKET LBRACELESS LBRACE LPAREN
 
-/* Entry points */
+(* Entry points *)
 
-%start implementation                   /* for implementation files */
+%start implementation                   (* for implementation files *)
 %type <Ast_404.Parsetree.structure> implementation
-%start interface                        /* for interface files */
+%start interface                        (* for interface files *)
 %type <Ast_404.Parsetree.signature> interface
-%start toplevel_phrase                  /* for interactive use */
+%start toplevel_phrase                  (* for interactive use *)
 %type <Ast_404.Parsetree.toplevel_phrase> toplevel_phrase
-%start use_file                         /* for the #use directive */
+%start use_file                         (* for the #use directive *)
 %type <Ast_404.Parsetree.toplevel_phrase list> use_file
 %start parse_core_type
 %type <Ast_404.Parsetree.core_type> parse_core_type
@@ -1334,7 +1276,7 @@ conflicts.
 %start parse_pattern
 %type <Ast_404.Parsetree.pattern> parse_pattern
 
-/* Instead of reporting an error directly, productions specified
+(* Instead of reporting an error directly, productions specified
  * below will be reduced first and poped up in the stack to a higher
  * level production.
  *
@@ -1344,7 +1286,7 @@ conflicts.
  * current type definition").
  *
  * See Menhir's manual for more details.
- */
+ *)
 %on_error_reduce structure_item let_binding_body
                  as_loc(attribute)+
                  type_longident
@@ -1359,7 +1301,7 @@ conflicts.
                  expr_optional_constraint
 %%
 
-/* Entry points */
+(* Entry points *)
 
 implementation:
   structure EOF
@@ -1388,7 +1330,7 @@ use_file: embedded
 ;
 
 parse_core_type:
-  only_core_type(core_type) EOF
+  core_type EOF
   { apply_mapper_to_type $1 reason_mapper }
 ;
 
@@ -1402,7 +1344,7 @@ parse_pattern:
   { apply_mapper_to_pattern $1 reason_mapper }
 ;
 
-/* Module expressions */
+(* Module expressions *)
 
 module_parameter:
 as_loc
@@ -1492,12 +1434,12 @@ mark_position_mod
     { mkmod (Pmod_structure []) }
   | extension
     { mkmod (Pmod_extension $1) }
-  /**
+  (**
    * Although it would be nice (and possible) to support annotated return value
    * here, that wouldn't be consistent with what is possible for functions.
    * Update: In upstream, it *is* possible to annotate return values for
    * lambdas.
-   */
+   *)
   | either(ES6_FUN,FUN) functor_parameters preceded(COLON,simple_module_type)? EQUALGREATER module_expr
     { let me = match $3 with
         | None -> $5
@@ -1523,7 +1465,7 @@ mark_position_mod
     { {$2 with pmod_attributes = $1 :: $2.pmod_attributes} }
   ) {$1};
 
-/**
+(**
  * Attributes/Extension points TODO:
  * - Faux-ternary to support extension points (printing/parsing).
  * - Audit to ensure every [item attributes] [item extensions] is supported.
@@ -1533,9 +1475,9 @@ mark_position_mod
  *   4c48d802cb9e8110ab3b57ca0b6a02fdd5655283
  * - Support the Item Extension + Item Attributes pattern/sugar/unification for
  * all items in let sequences (let module etc / let open).
- */
+ *)
 
-/*
+(*
  * In OCaml there are (confusingly) two ways to execute imperitive code at the
  * top level:
  *
@@ -1594,10 +1536,12 @@ mark_position_mod
  *                           { [] }
  *    | SEMISEMI structure   { $2 }
  *    | structure_item SEMI structure_tail { $1 :: $3 }
- */
+ *)
 
 structure:
-  | /* Empty */ { [] }
+  | (* Empty *) { [] }
+  | structure_item { $1 }
+  | structure_item SEMI structure { $1 @ $3 }
   | as_loc(error) structure
     { let menhirError = Reason_syntax_util.findMenhirErrorMessage $1.loc in
       match menhirError with
@@ -1610,36 +1554,24 @@ structure:
       | MenhirMessagesError errMessage -> (syntax_error_str errMessage.loc errMessage.msg) :: $3
       | _ -> (syntax_error_str $1.loc "Invalid statement") :: $3
     }
-  | structure_item { $1 }
   | as_loc(structure_item) error structure
     { let menhirError = Reason_syntax_util.findMenhirErrorMessage $1.loc in
       match menhirError with
       | MenhirMessagesError errMessage -> (syntax_error_str errMessage.loc errMessage.msg) :: $3
       | _ -> (syntax_error_str $1.loc "Statement has to end with a semicolon") :: $3
     }
-  | structure_item SEMI structure
-    { let rec prepend = function
-        | [] -> assert false
-        | [x] ->
-           let effective_loc = mklocation x.pstr_loc.loc_start $endpos($1) in
-           let x = set_structure_item_location x effective_loc in
-           x :: $3
-        | x :: xs -> x :: prepend xs
-      in
-      prepend $1
-    }
 ;
 
 structure_item:
   | mark_position_str
-    /* We consider a floating expression to be equivalent to a single let binding
-       to the "_" (any) pattern.  */
+    (* We consider a floating expression to be equivalent to a single let binding
+       to the "_" (any) pattern.  *)
     ( item_attributes unattributed_expr
       { mkstrexp $2 $1 }
     | item_extension_sugar structure_item
       { struct_item_extension $1 $2 }
     | item_attributes
-      EXTERNAL as_loc(val_ident) COLON only_core_type(core_type) EQUAL primitive_declaration
+      EXTERNAL as_loc(val_ident) COLON core_type EQUAL primitive_declaration
       { let loc = mklocation $symbolstartpos $endpos in
         mkstr (Pstr_primitive (Val.mk $3 $5 ~prim:$7 ~attrs:$1 ~loc)) }
     | type_declarations
@@ -1701,9 +1633,9 @@ and_module_bindings:
   { Mb.mk $3 $4 ~attrs:$1 ~loc:(mklocation $symbolstartpos $endpos) }
 ;
 
-/* Module types */
+(* Module types *)
 
-/*
+(*
 (*
  * For now, WITH constraints on module types shouldn't be considered
  * "non-arrowed" because their WITH constraints themselves might contain arrows.
@@ -1715,9 +1647,9 @@ and_module_bindings:
  * Given this, we can probably take out the below_WITH precedence in the rules
  * down below.
  *)
-*/
+*)
 
-/* Allowed in curried let bidings */
+(* Allowed in curried let bidings *)
 
 simple_module_type:
 mark_position_mty
@@ -1742,7 +1674,7 @@ module_type_signature:
   { mkmty ~loc:(mklocation $startpos $endpos) (Pmty_signature $2) }
 ;
 
-/*
+(*
 (*
  * For module types, we have:
  *
@@ -1754,7 +1686,7 @@ module_type_signature:
  *    (arg : module_type) => module_type
  *    module_type => module_type
  *)
-*/
+*)
 
 module_type:
 mark_position_mty
@@ -1830,71 +1762,71 @@ mark_position_mty
   ) {$1};
 
 signature:
-  | /* Empty */ { [] }
-  | signature_item { $1 }
-  | signature_item SEMI signature { $1 @ $3 }
+  | (* Empty *) { [] }
+  | signature_items { $1 }
+  | signature_items SEMI signature { $1 @ $3 }
 ;
 
 signature_item:
-  | mark_position_sig
-    ( item_attributes
-      LET as_loc(val_ident) COLON only_core_type(core_type)
-      { let loc = mklocation $symbolstartpos $endpos in
-        mksig(Psig_value (Val.mk $3 $5 ~attrs:$1 ~loc))
-      }
-    | item_attributes
-      EXTERNAL as_loc(val_ident) COLON only_core_type(core_type) EQUAL primitive_declaration
-      { let loc = mklocation $symbolstartpos $endpos in
-        mksig(Psig_value (Val.mk $3 $5 ~prim:$7 ~attrs:$1 ~loc))
-      }
-    | type_declarations
-      { let (nonrec_flag, tyl) = $1 in mksig (Psig_type (nonrec_flag, tyl)) }
-    | sig_type_extension
-      { mksig(Psig_typext $1) }
-    | sig_exception_declaration
-      { mksig(Psig_exception $1) }
-    | item_attributes opt_LET_MODULE as_loc(UIDENT) module_declaration
-      { let loc = mklocation $symbolstartpos $endpos in
-        mksig(Psig_module (Md.mk $3 $4 ~attrs:$1 ~loc))
-      }
-    | item_attributes opt_LET_MODULE as_loc(UIDENT) EQUAL as_loc(mod_longident)
-      { let loc = mklocation $symbolstartpos $endpos in
-        let loc_mod = mklocation $startpos($5) $endpos($5) in
-        mksig(
-          Psig_module (
-            Md.mk
-              $3
-              (Mty.alias ~loc:loc_mod $5)
-              ~attrs:$1
-              ~loc
-          )
-        )
-      }
-    | item_attributes opt_LET_MODULE REC as_loc(UIDENT)
-      module_type_body(COLON) and_module_rec_declaration*
-      { let loc = mklocation $symbolstartpos $endpos($5) in
-        mksig (Psig_recmodule (Md.mk $4 $5 ~attrs:$1 ~loc :: $6)) }
-    | item_attributes MODULE TYPE as_loc(ident)
-      { let loc = mklocation $symbolstartpos $endpos in
-        mksig(Psig_modtype (Mtd.mk $4 ~attrs:$1 ~loc))
-      }
-    | item_attributes MODULE TYPE as_loc(ident) module_type_body(EQUAL)
-      { let loc = mklocation $symbolstartpos $endpos in
-        mksig(Psig_modtype (Mtd.mk $4 ~typ:$5 ~loc ~attrs:$1))
-      }
-    | open_statement
-      { mksig(Psig_open $1) }
-    | item_attributes INCLUDE module_type
-      { let loc = mklocation $symbolstartpos $endpos in
-        mksig(Psig_include (Incl.mk $3 ~attrs:$1 ~loc))
-      }
-    | class_descriptions
-      { mksig(Psig_class $1) }
-    | class_type_declarations
-      { mksig(Psig_class_type $1) }
-    | item_attributes item_extension
-      { mksig(Psig_extension ($2, $1)) }
-    ) { [$1] }
+  | item_attributes
+    LET as_loc(val_ident) COLON core_type
+    { let loc = mklocation $symbolstartpos $endpos in
+      Psig_value (Val.mk $3 $5 ~attrs:$1 ~loc)
+    }
+  | item_attributes
+    EXTERNAL as_loc(val_ident) COLON core_type EQUAL primitive_declaration
+    { let loc = mklocation $symbolstartpos $endpos in
+      Psig_value (Val.mk $3 $5 ~prim:$7 ~attrs:$1 ~loc)
+    }
+  | type_declarations
+    { let (nonrec_flag, tyl) = $1 in Psig_type (nonrec_flag, tyl) }
+  | sig_type_extension
+    { Psig_typext $1 }
+  | sig_exception_declaration
+    { Psig_exception $1 }
+  | item_attributes opt_LET_MODULE as_loc(UIDENT) module_declaration
+    { let loc = mklocation $symbolstartpos $endpos in
+      Psig_module (Md.mk $3 $4 ~attrs:$1 ~loc)
+    }
+  | item_attributes opt_LET_MODULE as_loc(UIDENT) EQUAL as_loc(mod_longident)
+    { let loc = mklocation $symbolstartpos $endpos in
+      let loc_mod = mklocation $startpos($5) $endpos($5) in
+      Psig_module (
+        Md.mk
+            $3
+            (Mty.alias ~loc:loc_mod $5)
+            ~attrs:$1
+            ~loc
+            )
+    }
+  | item_attributes opt_LET_MODULE REC as_loc(UIDENT)
+    module_type_body(COLON) and_module_rec_declaration*
+    { let loc = mklocation $symbolstartpos $endpos($5) in
+      Psig_recmodule (Md.mk $4 $5 ~attrs:$1 ~loc :: $6) }
+  | item_attributes MODULE TYPE as_loc(ident)
+    { let loc = mklocation $symbolstartpos $endpos in
+      Psig_modtype (Mtd.mk $4 ~attrs:$1 ~loc)
+    }
+  | item_attributes MODULE TYPE as_loc(ident) module_type_body(EQUAL)
+    { let loc = mklocation $symbolstartpos $endpos in
+      Psig_modtype (Mtd.mk $4 ~typ:$5 ~loc ~attrs:$1)
+    }
+  | open_statement
+    { Psig_open $1 }
+  | item_attributes INCLUDE module_type
+    { let loc = mklocation $symbolstartpos $endpos in
+      Psig_include (Incl.mk $3 ~attrs:$1 ~loc)
+    }
+  | class_descriptions
+    { Psig_class $1 }
+  | class_type_declarations
+    { Psig_class_type $1 }
+  | item_attributes item_extension
+    { Psig_extension ($2, $1) }
+;
+
+signature_items:
+  | as_loc(signature_item) { [mksig ~loc:$1.loc $1.txt] }
   | located_attributes
     { List.map (fun x -> mksig ~loc:x.loc (Psig_attribute x.txt)) $1 }
 ;
@@ -1919,7 +1851,7 @@ and_module_rec_declaration:
   { Md.mk $3 $4 ~attrs:$1 ~loc:(mklocation $symbolstartpos $endpos) }
 ;
 
-/* Class expressions */
+(* Class expressions *)
 
 and_class_declaration:
   item_attributes AND class_declaration_details
@@ -1979,17 +1911,17 @@ mark_position_cl
     { let (lp, _) = $2 in
       List.fold_right mkclass_fun lp $4 }
   | class_simple_expr labeled_arguments
-      /**
+      (**
        * This is an interesting way to "partially apply" class construction:
        *
        * let inst = new oldclass 20;
        * class newclass = oldclass withInitArg;
        * let inst = new newclass;
-       */
+       *)
     { mkclass(Pcl_apply($1, $2)) }
   | attribute class_expr
     { {$2 with pcl_attributes = $1 :: $2.pcl_attributes} }
-  /*
+  (*
     When referring to class expressions (not regular types that happen to be
     classes), you must refer to it as a class. This gives syntactic real estate
     to place type parameters which are distinguished from constructor application
@@ -2000,7 +1932,7 @@ mark_position_cl
        ...
        let myVal: myClass int = new myClass 10;
 
-   */
+   *)
   | CLASS as_loc(class_longident) loption(type_parameters)
     { mkclass(Pcl_constr($2, $3)) }
   | extension
@@ -2047,15 +1979,15 @@ class_field:
 ;
 
 value:
-/* TODO: factorize these rules (also with method): */
-  | override_flag MUTABLE VIRTUAL as_loc(label) COLON only_core_type(core_type)
+(* TODO: factorize these rules (also with method): *)
+  | override_flag MUTABLE VIRTUAL as_loc(label) COLON core_type
     { if $1 = Override
       then not_expecting $symbolstartpos $endpos "members marked virtual may not also be marked overridden"
       else ($4, Mutable, Cfk_virtual $6)
     }
-  | override_flag MUTABLE VIRTUAL label COLON only_core_type(core_type) EQUAL
+  | override_flag MUTABLE VIRTUAL label COLON core_type EQUAL
     { not_expecting $startpos($7) $endpos($7) "not expecting equal - cannot specify value for virtual val" }
-  | VIRTUAL mutable_flag as_loc(label) COLON only_core_type(core_type)
+  | VIRTUAL mutable_flag as_loc(label) COLON core_type
     { ($3, $2, Cfk_virtual $5) }
   | VIRTUAL mutable_flag label COLON core_type EQUAL
     { not_expecting $startpos($6) $endpos($6) "not expecting equal - cannot specify value for virtual val" }
@@ -2068,7 +2000,7 @@ value:
 ;
 
 method_:
-/* TODO: factorize those rules... */
+(* TODO: factorize those rules... *)
   | override_flag VIRTUAL as_loc(label) COLON poly_type
     { if $1 = Override then syntax_error ();
       ($3, Cfk_virtual $5)
@@ -2079,15 +2011,15 @@ method_:
     }
   | override_flag as_loc(label) preceded(COLON,poly_type)?
     either(preceded(EQUAL,expr), braced_expr)
-      /* Without locally abstract types, you'll see a Ptyp_poly in the Pexp_poly */
+      (* Without locally abstract types, you'll see a Ptyp_poly in the Pexp_poly *)
     { let loc = mklocation $symbolstartpos $endpos in
       ($2, Cfk_concrete ($1, mkexp ~ghost:true ~loc (Pexp_poly($4, $3))))
     }
-  | override_flag as_loc(label) COLON TYPE LIDENT+ DOT only_core_type(core_type)
+  | override_flag as_loc(label) COLON TYPE LIDENT+ DOT core_type
     either(preceded(EQUAL,expr), braced_expr)
-    /* WITH locally abstract types, you'll see a Ptyp_poly in the Pexp_poly,
+    (* WITH locally abstract types, you'll see a Ptyp_poly in the Pexp_poly,
        but the expression will be a Pexp_newtype and type vars will be
-       "varified". */
+       "varified". *)
     {
       (* For non, methods we'd create a pattern binding:
          ((Ppat_constraint(mkpatvar ..., Ptyp_poly (typeVars, poly_type_varified))),
@@ -2103,7 +2035,7 @@ method_:
     }
 ;
 
-/* A parsing of class_constructor_type is the type of the class's constructor - and if the
+(* A parsing of class_constructor_type is the type of the class's constructor - and if the
    constructor takes no arguments, then simply the class_instance_type of what is
    returned.
 
@@ -2219,7 +2151,7 @@ method_:
          CLASS TYPE ident = class_instance_type
         "Psig_class_type"
 
- */
+ *)
 class_constructor_type:
   | class_instance_type { $1 }
   | arrow_type_parameters EQUALGREATER class_constructor_type
@@ -2227,7 +2159,7 @@ class_constructor_type:
 ;
 
 class_type_arguments_comma_list:
-  | lseparated_nonempty_list(COMMA,only_core_type(core_type)) COMMA? {$1}
+  | lseparated_nonempty_list(COMMA,core_type) COMMA? {$1}
 ;
 
 class_instance_type:
@@ -2236,8 +2168,8 @@ mark_position_cty
     loption(parenthesized(class_type_arguments_comma_list))
     { mkcty (Pcty_constr ($1, $2)) }
   | attribute class_instance_type
-    /* Note that this will compound attributes - so they will become
-       attached to whatever */
+    (* Note that this will compound attributes - so they will become
+       attached to whatever *)
     { {$2 with pcty_attributes = $1 :: $2.pcty_attributes} }
   | class_type_body
     { $1 }
@@ -2263,8 +2195,8 @@ class_sig_body:
 ;
 
 class_self_type:
-  | AS only_core_type(core_type) SEMI { $2 }
-  | /* empty */ { Typ.mk ~loc:(mklocation $symbolstartpos $endpos) Ptyp_any }
+  | AS core_type SEMI { $2 }
+  | (* empty *) { Typ.mk ~loc:(mklocation $symbolstartpos $endpos) Ptyp_any }
 ;
 
 class_sig_field:
@@ -2287,17 +2219,17 @@ class_sig_field:
 ;
 
 value_type:
-  mutable_or_virtual_flags label COLON only_core_type(core_type)
+  mutable_or_virtual_flags label COLON core_type
   { let (mut, virt) = $1 in ($2, mut, virt, $4) }
 ;
 
 constrain:
-  only_core_type(core_type) EQUAL only_core_type(core_type)
+  core_type EQUAL core_type
   { ($1, $3, mklocation $symbolstartpos $endpos) }
 ;
 
 constrain_field:
-  only_core_type(core_type) EQUAL only_core_type(core_type)
+  core_type EQUAL core_type
   { ($1, $3) }
 ;
 
@@ -2353,9 +2285,9 @@ class_type_declaration_details:
   { ($2, $4, $1, $3) }
 ;
 
-/* Core expressions */
+(* Core expressions *)
 
-/* Note: If we will parse this as Pexp_apply, and it will
+(* Note: If we will parse this as Pexp_apply, and it will
  * not be printed with the braces, except in a couple of cases such as if/while
  * loops.
  *
@@ -2380,7 +2312,7 @@ class_type_declaration_details:
  *   [item_extension_sugar] [nonempty_item_attributes] ITEM
  *   [nonempty_item_attributes] ITEM
  *   ITEM
- */
+ *)
 braced_expr:
 mark_position_exp
   ( LBRACE seq_expr RBRACE
@@ -2404,7 +2336,7 @@ mark_position_exp
     }
   | as_loc(LBRACE) record_expr_with_string_keys as_loc(error)
     { unclosed_exp (with_txt $1 "{") (with_txt $3 "}")}
-  /* Todo: Why is this not a simple_expr? */
+  (* Todo: Why is this not a simple_expr? *)
   | LBRACE object_body RBRACE
     { mkexp (Pexp_object $2) }
   | as_loc(LBRACE) object_body as_loc(error)
@@ -2442,7 +2374,7 @@ mark_position_exp
   ) { $1 }
 ;
 
-/*
+(*
 
 
 A:
@@ -2502,11 +2434,11 @@ let a = None;
 let explicitlyPassed =           myOptional a::?a b::?None;
 let explicitlyPassedAnnotated = (myOptional a::?a b::?None :int);
 
-*/
+*)
 
 labeled_pattern_constraint:
   | AS pattern_optional_constraint { fun _punned -> $2 }
-  | preceded(COLON, only_core_type(core_type))?
+  | preceded(COLON, core_type)?
     { fun punned ->
       let pat = mkpat (Ppat_var punned) ~loc:punned.loc in
       match $1 with
@@ -2570,15 +2502,15 @@ as_loc
 
 es6_parameters:
   | labeled_pattern_list { $1 }
-  | as_loc(val_ident)
-    { ([{$1 with txt = Term (Nolabel, None, mkpat ~loc:$1.loc (Ppat_var $1))}], false) }
   | as_loc(UNDERSCORE)
     { ([{$1 with txt = Term (Nolabel, None, mkpat ~loc:$1.loc Ppat_any)}], false) }
+  | simple_pattern_ident
+    { ([Location.mkloc (Term (Nolabel, None, $1)) $1.ppat_loc], false) }
 ;
 
-// TODO: properly fix JSX labelled/optional stuff
+(* TODO: properly fix JSX labelled/optional stuff *)
 jsx_arguments:
-  /* empty */ { [] }
+  (* empty *) { [] }
   | LIDENT EQUAL QUESTION simple_expr jsx_arguments
     { (* a=?b *)
       [(Optional $1, $4)] @ $5
@@ -2723,7 +2655,7 @@ optional_expr_extension:
   | item_extension_sugar { fun exp -> expression_extension $1 exp  }
 ;
 
-/*
+(*
  * Parsing of expressions is quite involved as it depends on context.
  * At the top-level of a structure, expressions can't have attributes
  * (those are attached to the structure).
@@ -2732,7 +2664,7 @@ optional_expr_extension:
  * The generic parts are represented by unattributed_expr_template(_).
  * Then unattributed_expr represents the concrete unattributed expr
  * while expr adds an attribute rule to unattributed_expr_template.
- */
+ *)
 %inline unattributed_expr_template(E):
 mark_position_exp
   ( simple_expr
@@ -2747,7 +2679,7 @@ mark_position_exp
       {exp with pexp_attributes = (uncurry_payload loc)::exp.pexp_attributes}
     else exp
     }
-  | ES6_FUN es6_parameters COLON only_core_type(non_arrowed_core_type) EQUALGREATER expr
+  | ES6_FUN es6_parameters COLON non_arrowed_core_type EQUALGREATER expr
     { let (ps, uncurried) = $2 in
     let exp = List.fold_right mkexp_fun ps
         (ghexp_constraint (mklocation $startpos($4) $endpos) $6 (Some $4, None))  in
@@ -2757,9 +2689,9 @@ mark_position_exp
     else exp
     }
 
-  /* List style rules like this often need a special precendence
+  (* List style rules like this often need a special precendence
      such as below_BAR in order to let the entire list "build up"
-   */
+   *)
   | FUN optional_expr_extension match_cases(expr) %prec below_BAR
     { $2 (mkexp (Pexp_function $3)) }
   | SWITCH optional_expr_extension simple_expr_no_constructor
@@ -2815,7 +2747,7 @@ mark_position_exp
     { mkexp (Pexp_assert $2) }
   | LAZY simple_expr
     { mkexp (Pexp_lazy $2) }
-  /*
+  (*
    * Ternary is just a shortcut for:
    *
    *     switch expression { | true => expr1 | false => expr2 }
@@ -2838,7 +2770,7 @@ mark_position_exp
    * When a question mark is seen, *this* parsing rule has lower priority so
    * that we, instead, shift the qusetion mark so that the *latter* ternary is
    * recognized first on the top of the stack. (z ? q : r).
-   */
+   *)
   | E QUESTION expr COLON expr
     { (* Should use ghost expressions, but not sure how that would work with source maps *)
       (* So ? will become true and : becomes false for now*)
@@ -2854,12 +2786,12 @@ mark_position_exp
     }
   ) {$1};
 
-/*
+(*
  * Much like how patterns are partitioned into pattern/simple_pattern,
  * expressions are divided into expr/simple_expr.
  * expr: contains function application, but simple_expr doesn't (unless it's
  * wrapped in parens).
- */
+ *)
 expr:
   | unattributed_expr_template(expr) { $1 }
   | mark_position_exp(
@@ -2882,14 +2814,14 @@ parenthesized_expr:
     { may_tuple $startpos $endpos $2 }
 ;
 
-/* The grammar of simple exprs changes slightly according to context:
+(* The grammar of simple exprs changes slightly according to context:
  * - in most cases, calls (like f(x)) are allowed
  * - in some contexts, calls are forbidden
  *   (most notably JSX lists and rhs of a SHARPOP extension).
  *
  * simple_expr_template contains the generic parts,
  * simple_expr and simple_expr_no_call the specialized instances.
- */
+ *)
 %inline simple_expr_template(E):
   | as_loc(val_longident) { mkexp (Pexp_ident $1) }
   | constant
@@ -2902,8 +2834,8 @@ parenthesized_expr:
     { unclosed_exp (with_txt $1 "[|") (with_txt $3 "|]") }
   | LBRACKETBAR BARRBRACKET
     { mkexp (Pexp_array []) }
-  /* Not sure why this couldn't have just been below_SHARP (Answer: Being
-   * explicit about needing to wait for "as") */
+  (* Not sure why this couldn't have just been below_SHARP (Answer: Being
+   * explicit about needing to wait for "as") *)
   | as_loc(constr_longident) %prec prec_constant_constructor
     { mkexp (Pexp_construct ($1, None)) }
   | name_tag %prec prec_constant_constructor
@@ -2976,12 +2908,12 @@ parenthesized_expr:
     }
   | as_loc(PREFIXOP) E %prec below_DOT_AND_SHARP
     { mkexp(Pexp_apply(mkoperator $1, [Nolabel, $2])) }
-  /**
+  (**
    * Must be below_DOT_AND_SHARP so that the parser waits for several dots for
    * nested record access that the bang should apply to.
    *
    * !x.y.z should be parsed as !(((x).y).z)
-   */
+   *)
   (*| as_loc(BANG {"!"}) E %prec below_DOT_AND_SHARP
     { mkexp (Pexp_apply(mkoperator $1, [Nolabel,$2])) }*)
   | NEW as_loc(class_longident)
@@ -3061,7 +2993,7 @@ simple_expr_call:
 ;
 
 simple_expr_direct_argument:
-  /*
+  (*
      Because [< is a special token, the <ident and <> won't be picked up as separate
      tokens, when a list begins witha JSX tag. So we special case it.
      (todo: pick totally different syntax for polymorphic variance types to avoid
@@ -3071,7 +3003,7 @@ simple_expr_direct_argument:
      /\
      [<ident    args />  , remainingitems ]
      [<>                 , remainingitems ]
-   */
+   *)
   | braced_expr { $1 }
   | LBRACKETLESS jsx_without_leading_less COMMA expr_comma_seq_extension RBRACKET
     { let entireLoc = mklocation $startpos($1) $endpos($4) in
@@ -3197,46 +3129,48 @@ labeled_expr:
 ;
 
 %inline and_let_binding:
-  /* AND bindings don't accept a preceeding extension ID, but do accept
+  (* AND bindings don't accept a preceeding extension ID, but do accept
    * preceeding attribute*. These preceeding attribute* will cause an
    * error if this is an *expression * let binding. Otherwise, they become
    * attribute* on the structure item for the "and" binding.
-   */
+   *)
   item_attributes AND let_binding_body
-  { mklb $3 $1 (mklocation $symbolstartpos $endpos) }
+  { let pat, expr = $3 in
+    Vb.mk ~loc:(mklocation $symbolstartpos $endpos) ~attrs:$1 pat expr }
 ;
 
 let_bindings: let_binding and_let_binding* { addlbs $1 $2 };
 
 let_binding:
-  /* Form with item extension sugar */
+  (* Form with item extension sugar *)
   item_attributes LET item_extension_sugar? rec_flag let_binding_body
   { let loc = mklocation $symbolstartpos $endpos in
-    mklbs $3 $4 (mklb $5 $1 loc) loc }
+    let pat, expr = $5 in
+    mklbs $3 $4 (Vb.mk ~loc ~attrs:$1 pat expr) loc }
 ;
 
 let_binding_body:
-  | with_patvar(val_ident) type_constraint EQUAL expr
+  | simple_pattern_ident type_constraint EQUAL expr
     { let loc = mklocation $symbolstartpos $endpos in
       ($1, ghexp_constraint loc $4 $2) }
-  | with_patvar(val_ident) fun_def(EQUAL,core_type)
+  | simple_pattern_ident fun_def(EQUAL,core_type)
     { ($1, $2) }
-  | with_patvar(val_ident) COLON preceded(QUOTE,ident)+ DOT only_core_type(core_type)
+  | simple_pattern_ident COLON preceded(QUOTE,ident)+ DOT core_type
       EQUAL mark_position_exp(expr)
     { let typ = mktyp ~ghost:true (Ptyp_poly($3, $5)) in
       let loc = mklocation $symbolstartpos $endpos in
       (mkpat ~ghost:true ~loc (Ppat_constraint($1, typ)), $7)
     }
-  | with_patvar(val_ident) COLON TYPE LIDENT+ DOT only_core_type(core_type)
+  | simple_pattern_ident COLON TYPE LIDENT+ DOT core_type
       EQUAL mark_position_exp(expr)
-  /* Because core_type will appear to contain "type constructors" since the
+  (* Because core_type will appear to contain "type constructors" since the
    * type variables listed in LIDENT+ don't have leading single quotes, we
    * have to call [varify_constructors] (which is what [wrap_type_annotation]
    * does among other things) to turn those "type constructors" that correspond
    * to LIDENT+ into regular type variables. I don't think this should be
    * done in the parser!
-   */
-  /* In general, this is a very strange transformation that occurs in the
+   *)
+  (* In general, this is a very strange transformation that occurs in the
    * standard OCaml parser, but producing the same strange transformation, and
    * being able to recover original code from the result has the benefit that
    * this syntax will integrate seamlessly with ASTs produced by the standard
@@ -3275,13 +3209,13 @@ let_binding_body:
    *
    *     And in the later case
    *
-   */
+   *)
    { let exp, poly = wrap_type_annotation $4 $6 $8 in
      let loc = mklocation $symbolstartpos $endpos in
      (mkpat ~ghost:true ~loc (Ppat_constraint($1, poly)), exp)
    }
 
-  /* The combination of the following two rules encompass every type of
+  (* The combination of the following two rules encompass every type of
    * pattern *except* val_identifier. The fact that we want handle the
    * val_ident separately as a separate rule in let_binding_body alone justifies the
    * need for the strange structuring of
@@ -3290,16 +3224,16 @@ let_binding_body:
    *
    * TODO:
    * Unfortunately, it means we cannot do: let (myCurriedFunc: int -> int) a -> a;
-   */
+   *)
   | pattern EQUAL expr
     { ($1, $3) }
-  | simple_pattern_not_ident COLON only_core_type(core_type) EQUAL expr
+  | simple_pattern_not_ident COLON core_type EQUAL expr
     { let loc = mklocation $symbolstartpos $endpos in
       (mkpat ~loc (Ppat_constraint($1, $3)), $5)
     }
 ;
 
-/*
+(*
  * TODO:
  * In OCaml, the following function binding would be parsed by the function
  * parsers but would return a non function. Coincidentally, everything just worked.
@@ -3308,7 +3242,7 @@ let_binding_body:
  * on function parsers to return non function bindings:
  *   let x: int -> 10;
  *   let y (:returnType) -> 20;  (* wat *)
- */
+ *)
 
 %inline match_cases(EXPR): lnonempty_list(match_case(EXPR)) { $1 };
 
@@ -3319,7 +3253,7 @@ match_case(EXPR):
 
 fun_def(DELIM, typ):
   labeled_pattern_list
-  preceded(COLON,only_core_type(typ))?
+  preceded(COLON,typ)?
   either(preceded(DELIM, expr), braced_expr)
   { let loc = mklocation $startpos $endpos in
     let (pl, uncurried) = $1 in
@@ -3334,13 +3268,13 @@ fun_def(DELIM, typ):
   }
 ;
 
-/* At least one comma delimited: Each item optionally annotated. */
+(* At least one comma delimited: Each item optionally annotated. *)
 expr_list:
   lseparated_nonempty_list(COMMA, expr_optional_constraint) COMMA?
   { $1 }
 ;
 
-/* [x, y, z, ...n] --> ([x,y,z], Some n) */
+(* [x, y, z, ...n] --> ([x,y,z], Some n) *)
 expr_comma_seq_extension:
   | DOTDOTDOT expr_optional_constraint COMMA?
     { ([], Some $2) }
@@ -3350,7 +3284,7 @@ expr_comma_seq_extension:
     { let seq, ext = $3 in ($1::seq, ext) }
 ;
 
-/* Same as expr_comma_seq_extension but occuring after an item.
+(* Same as expr_comma_seq_extension but occuring after an item.
 
   Used when parsing `[<> </>, remaining]`. We know that there is at
   least one item, so we either should have a comma + more, or nothing.
@@ -3363,12 +3297,13 @@ expr_comma_seq_extension_second_item:
   | expr_optional_constraint COMMA expr_comma_seq_extension
     { let seq, ext = $3 in ($1::seq, ext) }
 ;
+*)
 
-/**
+(**
  * See note about tuple patterns. There are few cases where expressions may be
  * type constrained without requiring additional parens, and inside of tuples
  * are one exception.
- */
+ *)
 expr_optional_constraint:
   | expr { $1 }
   | expr type_constraint
@@ -3444,18 +3379,18 @@ string_literal_expr_maybe_punned:
   }
 ;
 
-/**
+(**
  * field_expr is distinct from record_expr because labels cannot/shouldn't be scoped.
- */
+ *)
 field_expr:
-  /* Using LIDENT instead of label here, because a reduce/reduce conflict occurs on:
+  (* Using LIDENT instead of label here, because a reduce/reduce conflict occurs on:
    *   {blah:x}
    *
    * After `blah`, the parser couldn't tell whether to reduce `label` or
    * `val_ident`. So inlining the terminal here to avoid the whole decision.
    * Another approach would have been to place the `label` rule at at a precedence
    * of below_COLON or something.
-   */
+   *)
  | as_loc(LIDENT) COLON expr
    { ($1, $3) }
  | LIDENT
@@ -3469,14 +3404,14 @@ field_expr:
 %inline field_expr_list: lseparated_nonempty_list(COMMA, field_expr) { $1 };
 
 type_constraint:
-  | COLON only_core_type(core_type)
-      preceded(COLONGREATER,only_core_type(core_type))?
+  | COLON core_type
+      preceded(COLONGREATER,core_type)?
     { (Some $2, $3) }
-  | COLONGREATER only_core_type(core_type)
+  | COLONGREATER core_type
     { (None, Some $2) }
 ;
 
-/* Patterns */
+(* Patterns *)
 
 pattern:
   | pattern_without_or { $1 }
@@ -3493,14 +3428,14 @@ pattern_constructor_argument:
     { $1 }
 ;
 
-/**
+(**
 * Provides sugar for pattern matching on a constructor pattern with a 'direct' argument.
 * Example:
 * | Foo () => () is sugar for | Foo(()) => ()
 * | Foo [a, b, c] => () is sugar for | Foo([a, b, c]) => ()
 * | Foo [|x, y|] => () is sugar for | Foo([|x, y|]) => ()
 * }
-*/
+*)
 simple_pattern_direct_argument:
 mark_position_pat (
    as_loc(constr_longident)
@@ -3520,22 +3455,22 @@ mark_position_pat
 
   | pattern_without_or AS as_loc(error)
     { expecting_pat (with_txt $3 "identifier") }
-  /**
+  (**
     * Parses a (comma-less) list of patterns into a tuple, or a single pattern
     * (if there is only one item in the list). This is kind of sloppy as there
     * should probably be a different AST construct for the syntax construct this
     * is used in (multiple constructor arguments). The things passed to
     * constructors are not actually tuples either in underlying representation or
     * semantics (they are not first class).
-    */
+    *)
   | as_loc(constr_longident) pattern_constructor_argument
-    /* the first case is `| Foo(_)` and doesn't need explicit_arity attached. Actually, something like `| Foo(1)` doesn't either, but we
+    (* the first case is `| Foo(_)` and doesn't need explicit_arity attached. Actually, something like `| Foo(1)` doesn't either, but we
       keep explicit_arity on the latter anyways because why not. But for `| Foo(_)` in particular, it's convenient to have explicit_arity
       removed, so that you can have the following shortcut:
       | Foo _ _ _ _ _
       vs.
       | Foo _
-    */
+    *)
     { match is_pattern_list_single_any $2 with
       | Some singleAnyPat ->
         mkpat (Ppat_construct($1, Some singleAnyPat))
@@ -3569,17 +3504,17 @@ mark_position_pat
 
   | LAZY simple_pattern { mkpat(Ppat_lazy $2) }
 
-  /**
+  (**
    * Attribute "attribute" everything to the left of the attribute,
    * up until the point of to the start of an expression, left paren, left
    * bracket, comma, bar - whichever comes first.
-   */
+   *)
   | attribute pattern_without_or %prec attribute_precedence
     { {$2 with ppat_attributes = $1 :: $2.ppat_attributes} }
 
   ) {$1};
 
-/* A "simple pattern" is either a value identifier, or it is a
+(* A "simple pattern" is either a value identifier, or it is a
  * simple *non*value identifier.
  *
  * A "pattern" (the more general) is the set of all simple patterns,
@@ -3592,12 +3527,15 @@ mark_position_pat
  *
  * But, in all patterns, it seems type constraints must be grouped within some
  * parens or something.
- */
+ *)
 simple_pattern:
-mark_position_pat
-  ( as_loc(val_ident)        { mkpat(Ppat_var $1) }
+  | simple_pattern_ident
   | simple_pattern_not_ident { $1 }
-  ) {$1};
+;
+
+simple_pattern_ident:
+  as_loc(val_ident) { mkpat ~loc:$1.loc (Ppat_var $1) }
+;
 
 simple_pattern_not_ident:
 mark_position_pat
@@ -3611,7 +3549,7 @@ mark_position_pat
     { mkpat (Ppat_construct ($1, None)) }
   | name_tag
     { mkpat (Ppat_variant ($1, None)) }
-  | SHARP as_loc(type_longident)
+  | SHARP type_longident
     { mkpat (Ppat_type ($2)) }
   | as_loc(LBRACKETBAR) pattern_comma_list SEMI? as_loc(error)
     { unclosed_pat (with_txt $1 "[|") (with_txt $4 "|]") }
@@ -3666,15 +3604,15 @@ mark_position_pat
 
 pattern_optional_constraint:
 mark_position_pat
-  ( pattern                                 { $1 }
-  | pattern COLON only_core_type(core_type) { mkpat(Ppat_constraint($1, $3)) }
+  ( pattern                 { $1 }
+  | pattern COLON core_type { mkpat(Ppat_constraint($1, $3)) }
   ) {$1};
 ;
 
 %inline pattern_comma_list:
   lseparated_nonempty_list(COMMA, pattern) { $1 };
 
-/* [x, y, z, ...n] --> ([x,y,z], Some n) */
+(* [x, y, z, ...n] --> ([x,y,z], Some n) *)
 pattern_comma_list_extension:
   | pattern_comma_list COMMA DOTDOTDOT pattern COMMA? { ($1, Some $4) }
   | pattern_comma_list COMMA?                  { ($1, None)    }
@@ -3698,11 +3636,11 @@ lbl_pattern:
     }
 ;
 
-/* Primitive declarations */
+(* Primitive declarations *)
 
 primitive_declaration: nonempty_list(STRING { let (s, _, _) = $1 in s }) {$1};
 
-/* Type declarations
+(* Type declarations
 
    The rule for declaring multiple types, 'type t = ... and u = ...', is
    written in a "continuation-passing-style". In pseudo-code:
@@ -3724,7 +3662,7 @@ primitive_declaration: nonempty_list(STRING { let (s, _, _) = $1 in s }) {$1};
    With style (2), we can inline the relevant part of "one_type"
    (see type_declaration_kind) to parse attributes as needed and take a
    decision only when arriving at AND.
-*/
+*)
 
 type_declarations:
   item_attributes TYPE nonrec_flag type_declaration_details
@@ -3759,7 +3697,7 @@ type_declaration_kind:
   | EQUAL private_flag constructor_declarations
     { let (cstrs, constraints, endpos, and_types) = $3 in
       ((Ptype_variant (cstrs), $2, None), constraints, endpos, and_types) }
-  | EQUAL only_core_type(core_type) EQUAL private_flag constructor_declarations
+  | EQUAL core_type EQUAL private_flag constructor_declarations
     { let (cstrs, constraints, endpos, and_types) = $5 in
       ((Ptype_variant cstrs, $4, Some $2), constraints, endpos, and_types) }
   | type_other_kind constraints and_type_declaration
@@ -3772,26 +3710,25 @@ type_declaration_kind:
 ;
 
 type_other_kind:
-  | /*empty*/
+  | (*empty*)
     { (Ptype_abstract, Public, None) }
   | EQUAL private_flag core_type
-    { match $3 with
-      | Core_type ct -> (Ptype_abstract, $2, Some ct)
-      | Record_type rt -> (Ptype_record rt, $2, None)
-    }
+    { (Ptype_abstract, $2, Some $3) }
+  | EQUAL private_flag item_attributes record_declaration
+    { (Ptype_record (prepend_attrs_to_labels $3 $4), $2, None) }
   | EQUAL DOTDOT
     { (Ptype_open, Public, None) }
-  | EQUAL only_core_type(core_type) EQUAL DOTDOT
+  | EQUAL core_type EQUAL DOTDOT
     { (Ptype_open, Public, Some $2) }
-  | EQUAL only_core_type(core_type) EQUAL private_flag LBRACE label_declarations RBRACE
-    { (Ptype_record $6, $4, Some $2) }
+  | EQUAL core_type EQUAL private_flag item_attributes record_declaration
+    { (Ptype_record (prepend_attrs_to_labels $5 $6), $4, Some $2) }
 ;
 
 type_variables_with_variance_comma_list:
   lseparated_nonempty_list(COMMA, type_variable_with_variance) COMMA? {$1}
 ;
 
-%inline type_variables_with_variance:
+type_variables_with_variance:
   loption(parenthesized(type_variables_with_variance_comma_list))
   { $1 }
 ;
@@ -3816,7 +3753,7 @@ type_variable_with_variance:
 type_parameter: type_variance type_variable { ($2, $1) };
 
 type_variance:
-  | /* empty */ { Invariant }
+  | (* empty *) { Invariant }
   | PLUS        { Covariant }
   | MINUS       { Contravariant }
 ;
@@ -3826,7 +3763,7 @@ mark_position_typ
   (QUOTE ident { mktyp (Ptyp_var $2) })
   { $1 };
 
-%inline constructor_declarations:
+constructor_declarations:
   either(constructor_declaration,bar_constructor_declaration)
   constructor_declarations_aux
   { let (cstrs, constraints, endpos, and_types) = $2 in
@@ -3848,14 +3785,14 @@ bar_constructor_declaration:
   { {$3 with pcd_attributes = $1 @ $3.pcd_attributes} }
 ;
 
-%inline constructor_declaration:
+constructor_declaration:
   item_attributes as_loc(constr_ident) generalized_constructor_arguments
   { let args, res = $3 in
     let loc = mklocation $symbolstartpos $endpos in
     Type.constructor ~attrs:$1 $2 ~args ?res ~loc }
 ;
 
-/* Why are there already attribute* on the extension_constructor_declaration? */
+(* Why are there already attribute* on the extension_constructor_declaration? *)
 str_exception_declaration:
   item_attributes EXCEPTION
     either(extension_constructor_declaration, extension_constructor_rebind)
@@ -3869,25 +3806,22 @@ sig_exception_declaration:
 ;
 
 generalized_constructor_arguments:
-  constructor_arguments? preceded(COLON,only_core_type(core_type))?
+  constructor_arguments? preceded(COLON,core_type)?
   { ((match $1 with None -> Pcstr_tuple [] | Some x -> x), $2) }
 ;
 
 constructor_arguments_comma_list:
-  lseparated_nonempty_list(COMMA, only_core_type(core_type)) COMMA? {$1}
+  lseparated_nonempty_list(COMMA, core_type) COMMA? {$1}
 ;
 
 constructor_arguments:
-  | object_record_type
-    { match $1 with
-      | Core_type ct -> Pcstr_tuple [ct]
-      | Record_type rt -> Pcstr_record rt
-    }
+  | object_record_type { Pcstr_tuple [$1] }
+  | record_declaration { Pcstr_record $1 }
   | parenthesized(constructor_arguments_comma_list)
     { Pcstr_tuple $1 }
 ;
 
-label_declaration:
+record_label_declaration:
   | item_attributes mutable_flag as_loc(LIDENT)
     { let loc = mklocation $symbolstartpos $endpos in
       Type.field $3 (mkct $3) ~attrs:$1 ~mut:$2 ~loc
@@ -3898,64 +3832,52 @@ label_declaration:
     }
 ;
 
-%inline string_literal_lbls:
-  lseparated_nonempty_list(COMMA, string_literal_lbl) COMMA? { $1 };
-
-string_literal_lbl:
-  | item_attributes STRING COLON poly_type
-    {
-      let loc = mklocation $symbolstartpos $endpos in
-      let (s, _, _) = $2 in
-      Type.field  (mkloc s loc) $4 ~attrs:$1 ~loc
-    }
-  ;
-
-/* Type Extensions */
-
-potentially_long_ident_and_optional_type_parameters:
-  | LIDENT type_variables_with_variance
-    { let loc = mklocation $startpos($1) $endpos($1) in
-      let lident_lident_loc = mkloc (Lident $1) loc in
-      (lident_lident_loc, $2)
-    }
-  | as_loc(type_strictly_longident) type_variables_with_variance
-    {($1, $2)}
+record_declaration:
+  LBRACE lseparated_nonempty_list(COMMA, record_label_declaration) COMMA? RBRACE
+  { $2 }
 ;
 
+
+(* Type Extensions *)
+
 str_type_extension:
-  item_attributes
-  TYPE nonrec_flag potentially_long_ident_and_optional_type_parameters
-  PLUSEQ embedded(private_flag)
-  attributed_ext_constructors(either(extension_constructor_declaration, extension_constructor_rebind))
-  { if $3 <> Recursive then
-      not_expecting $startpos($3) $endpos($3) "nonrec flag";
-    let (potentially_long_ident, params) = $4 in
-    Te.mk potentially_long_ident $7 ~params ~priv:$6 ~attrs:$1
+  attrs = item_attributes
+  TYPE flag = nonrec_flag
+    ident = as_loc(itype_longident)
+    params = type_variables_with_variance
+  PLUSEQ priv = embedded(private_flag)
+  constructors =
+    attributed_ext_constructors(either(extension_constructor_declaration, extension_constructor_rebind))
+  { if flag <> Recursive then
+      not_expecting $startpos(flag) $endpos(flag) "nonrec flag";
+    Te.mk ~params ~priv ~attrs ident constructors
   }
 ;
 
 sig_type_extension:
-  item_attributes
-  TYPE nonrec_flag potentially_long_ident_and_optional_type_parameters
-  PLUSEQ embedded(private_flag)
-  attributed_ext_constructors(extension_constructor_declaration)
-  { if $3 <> Recursive then
-      not_expecting $startpos($3) $endpos($3) "nonrec flag";
-    let (potentially_long_ident, params) = $4 in
-    Te.mk potentially_long_ident $7 ~params ~priv:$6 ~attrs:$1
+  attrs = item_attributes
+  TYPE flag = nonrec_flag
+    ident = as_loc(itype_longident)
+    params = type_variables_with_variance
+  PLUSEQ priv = embedded(private_flag)
+  constructors =
+    attributed_ext_constructors(extension_constructor_declaration)
+  { if flag <> Recursive then
+      not_expecting $startpos(flag) $endpos(flag) "nonrec flag";
+    Te.mk ~params ~priv ~attrs ident constructors
   }
 ;
 
 %inline attributed_ext_constructor(X):
   item_attributes BAR item_attributes X { {$4 with pext_attributes = List.concat [$1; $3; $4.pext_attributes]} }
-  /* Why is item_attributes duplicated?
+  (* Why is item_attributes duplicated?
      To be consistent with attributes on (poly)variants/gadts.
      So we can place the attribute after the BAR.
      Example:
       type water +=
         pri
         | [@foo] MineralWater;
-  */
+  *)
 ;
 
 attributed_ext_constructors(X):
@@ -3978,20 +3900,20 @@ extension_constructor_rebind:
   }
 ;
 
-/* "with" constraints (additional type equations over signature components) */
+(* "with" constraints (additional type equations over signature components) *)
 
 with_constraint:
   | TYPE as_loc(label_longident) type_variables_with_variance
-      EQUAL embedded(private_flag) only_core_type(core_type) constraints
+      EQUAL embedded(private_flag) core_type constraints
     { let loc = mklocation $symbolstartpos $endpos in
       let typ = Type.mk {$2 with txt=Longident.last $2.txt}
                   ~params:$3 ~cstrs:$7 ~manifest:$6 ~priv:$5 ~loc in
       Pwith_type ($2, typ)
     }
-    /* used label_longident instead of type_longident to disallow
-       functor applications in type path */
+    (* used label_longident instead of type_longident to disallow
+       functor applications in type path *)
   | TYPE as_loc(label_longident) type_variables_with_variance
-      COLONEQUAL only_core_type(core_type)
+      COLONEQUAL core_type
     { let last = match $2.txt with
         | Lident s -> s
         | _ -> not_expecting $startpos($2) $endpos($2) "Long type identifier"
@@ -4005,16 +3927,16 @@ with_constraint:
       { Pwith_modsubst ($2, $4) }
 ;
 
-/* Polymorphic types */
+(* Polymorphic types *)
 poly_type:
 mark_position_typ
-  ( only_core_type(core_type)
+  ( core_type
     { $1 }
-  | preceded(QUOTE,ident)+ DOT only_core_type(core_type)
+  | preceded(QUOTE,ident)+ DOT core_type
     { mktyp(Ptyp_poly($1, $3)) }
   ) {$1};
 
-/**
+(**
   * OCaml types before:
   * -------------------
   * core_type ::=
@@ -4105,16 +4027,16 @@ mark_position_typ
   *  (module package_type)
   *  [%]
   *  bunch of other stuff
-  */
+  *)
 
-/** Potentially includes:
+(** Potentially includes:
  * - arrows
  * - space separated type applications
  * - "as" aliases
- */
+ *)
 core_type:
-mark_position_typ2
-  /* For some reason, when unifying Functor type syntax (using EQUALGREATER),
+mark_position_typ
+  (* For some reason, when unifying Functor type syntax (using EQUALGREATER),
    * there was a shift reduce conflict likely caused by
    * type module MyFunctor = {type x = blah => foo } => SomeSig
    * That should *not* be a shift reduce conflict (on =>), and it's not clear
@@ -4123,15 +4045,15 @@ mark_position_typ2
    * reduce conflict is actually caused by the new Functor type annotations
    * even though *nothing* will point towards that.
    * If switching to Menhir, this may not be needed.
-   */
+   *)
   (
     core_type2
     { $1 }
-  | only_core_type(core_type2) AS QUOTE ident
-    { Core_type (mktyp(Ptyp_alias($1, $4))) }
+  | core_type2 AS QUOTE ident
+    { mktyp(Ptyp_alias($1, $4)) }
   ) {$1};
 
-/**
+(**
  *
  * core_type is basically just core_type2 but with a single AS x potentially
  * appended.
@@ -4139,39 +4061,34 @@ mark_position_typ2
  * - arrows
  * - space separated type applications
  * - Polymorphic type variable application
- */
+ *)
 core_type2:
-  item_attributes unattributed_core_type
-  { match $1, $2 with
-    | [], result -> result
-    | attrs, Record_type [] -> assert false
-    | attrs, Core_type ct ->
+  item_attributes ct = unattributed_core_type
+  { match $1 with
+    | [] -> ct
+    | attrs ->
       let loc_start = $symbolstartpos and loc_end = $endpos in
       let ptyp_loc = {ct.ptyp_loc with loc_start; loc_end} in
       let ptyp_attributes = attrs @ ct.ptyp_attributes in
-      Core_type {ct with ptyp_attributes; ptyp_loc}
-    | attrs, Record_type (label :: labels) ->
-      let pld_attributes = attrs @ label.pld_attributes in
-      Record_type ({label with pld_attributes} :: labels)
+      {ct with ptyp_attributes; ptyp_loc}
   }
 ;
 
 unattributed_core_type:
   | non_arrowed_simple_core_type
     { $1 }
-  | arrow_type_parameters EQUALGREATER only_core_type(core_type2)
-    { let ct = List.fold_right mktyp_arrow $1 $3 in
-      Core_type ct }
-  | only_core_type(basic_core_type) EQUALGREATER only_core_type(core_type2)
-    { Core_type (mktyp (Ptyp_arrow (Nolabel, $1, $3))) }
+  | arrow_type_parameters EQUALGREATER core_type2
+    { List.fold_right mktyp_arrow $1 $3 }
+  | basic_core_type EQUALGREATER core_type2
+    { mktyp (Ptyp_arrow (Nolabel, $1, $3)) }
 ;
 
 arrow_type_parameter:
-  | only_core_type(core_type)
+  | core_type
     { (Nolabel, $1) }
-  | TILDE LIDENT COLON only_core_type(core_type)
+  | TILDE LIDENT COLON core_type
     { (Labelled $2, $4) }
-  | TILDE LIDENT COLON only_core_type(core_type) EQUAL optional
+  | TILDE LIDENT COLON core_type EQUAL optional
     { ($6 $2, $4) }
 ;
 
@@ -4191,7 +4108,7 @@ arrow_type_parameters:
  | LPAREN arrow_type_parameter_comma_list RPAREN { $2 }
 ;
 
-/* Among other distinctions, "simple" core types can be used in Variant types:
+(* Among other distinctions, "simple" core types can be used in Variant types:
  * type myType = Count of anySimpleCoreType. Core types (and simple core types)
  * don't include variant declarations (`constructor_declarations`) and don't
  * include the "faux curried" variant Constructor arguments list.
@@ -4201,29 +4118,29 @@ arrow_type_parameters:
  *
  * A [simple_core_type] *can* be wrapped in parens, but
  * it doesn't have to be.
- */
+ *)
 
-/* The name [core_type] was taken. [non_arrowed_core_type] is the same as
+(* The name [core_type] was taken. [non_arrowed_core_type] is the same as
  * [simple_core_type] but used in cases
- * where application needn't be wrapped in additional parens */
-/* Typically, other syntax constructs choose to allow either
+ * where application needn't be wrapped in additional parens *)
+(* Typically, other syntax constructs choose to allow either
  * [simple_core_type] or
  * [non_arrowed_non_simple_core_type] depending on whether or not
  * they are in a context that expects space separated lists of types to carry
  * particular meaning outside of type constructor application.
  *
  * type x = SomeConstructor x y;
- */
+ *)
 non_arrowed_core_type:
   | non_arrowed_simple_core_type
     { $1 }
-  | attribute only_core_type(non_arrowed_core_type)
-    { Core_type {$2 with ptyp_attributes = $1 :: $2.ptyp_attributes} }
+  | attribute non_arrowed_core_type
+    { {$2 with ptyp_attributes = $1 :: $2.ptyp_attributes} }
 ;
 
 
 %inline type_parameter_comma_list:
-    | lseparated_nonempty_list(COMMA, only_core_type(core_type)) COMMA? {$1}
+    | lseparated_nonempty_list(COMMA, core_type) COMMA? {$1}
 ;
 
 type_parameters:
@@ -4246,61 +4163,74 @@ mark_position_typ
   ) {$1};
 
 non_arrowed_simple_core_type:
-  | non_arrowed_simple_core_types       { Core_type $1 }
-  | mark_position_typ2(basic_core_type) { $1 }
+  | non_arrowed_simple_core_types       { $1 }
+  | mark_position_typ(basic_core_type) { $1 }
 ;
 
 basic_core_type:
-mark_position_typ2
-  ( as_loc(type_longident) type_parameters
-    { Core_type (mktyp(Ptyp_constr($1, $2))) }
+mark_position_typ
+  ( type_longident type_parameters
+    { mktyp(Ptyp_constr($1, $2)) }
   | SHARP as_loc(class_longident) type_parameters
-    { Core_type (mktyp(Ptyp_class($2, $3))) }
+    { mktyp(Ptyp_class($2, $3)) }
   | QUOTE ident
-    { Core_type (mktyp(Ptyp_var $2)) }
+    { mktyp(Ptyp_var $2) }
   | SHARP as_loc(class_longident)
-    { Core_type (mktyp(Ptyp_class($2, []))) }
+    { mktyp(Ptyp_class($2, [])) }
   | UNDERSCORE
-    { Core_type (mktyp(Ptyp_any)) }
-  | as_loc(type_longident)
-  { Core_type (mktyp(Ptyp_constr($1, []))) }
+    { mktyp(Ptyp_any) }
+  | type_longident
+    { mktyp(Ptyp_constr($1, [])) }
   | object_record_type
     { $1 }
   | LBRACKET row_field_list RBRACKET
-    { Core_type(mktyp(Ptyp_variant ($2, Closed, None))) }
+    { mktyp(Ptyp_variant ($2, Closed, None)) }
   | LBRACKETGREATER loption(row_field_list) RBRACKET
-    { Core_type(mktyp(Ptyp_variant ($2, Open, None))) }
+    { mktyp(Ptyp_variant ($2, Open, None)) }
   | LBRACKETLESS row_field_list loption(preceded(GREATER, name_tag+)) RBRACKET
-    { Core_type(mktyp(Ptyp_variant ($2, Closed, Some $3))) }
+    { mktyp(Ptyp_variant ($2, Closed, Some $3)) }
   | LPAREN MODULE package_type RPAREN
-    { Core_type(mktyp(Ptyp_package $3)) }
+    { mktyp(Ptyp_package $3) }
   | extension
-    { Core_type(mktyp(Ptyp_extension $1)) }
+    { mktyp(Ptyp_extension $1) }
   ) {$1};
 
 object_record_type:
   | LBRACE RBRACE
     { syntax_error () }
-  | LBRACE label_declarations RBRACE
-    { Record_type $2 }
-  | LBRACE DOT string_literal_lbls RBRACE
+  | LBRACE DOT string_literal_labels RBRACE
     { (* `{. "foo": bar}` -> `Js.t({. foo: bar})` *)
       let loc = mklocation $symbolstartpos $endpos in
       mkBsObjTypeSugar ~loc ~closed:Closed $3
     }
-  | LBRACE DOTDOT string_literal_lbls RBRACE
+  | LBRACE DOTDOT string_literal_labels RBRACE
     { (* `{.. "foo": bar}` -> `Js.t({.. foo: bar})` *)
       let loc = mklocation $symbolstartpos $endpos in
       mkBsObjTypeSugar ~loc ~closed:Open $3
     }
-  | LBRACE DOT loption(label_declarations) RBRACE
-    { Core_type (mktyp (Ptyp_object (prepare_immutable_labels $3, Closed))) }
-  | LBRACE DOTDOT loption(label_declarations) RBRACE
-    { Core_type (mktyp (Ptyp_object (prepare_immutable_labels $3, Open))) }
+  | LBRACE DOT loption(object_label_declarations) RBRACE
+    { mktyp (Ptyp_object ($3, Closed)) }
+  | LBRACE DOTDOT loption(object_label_declarations) RBRACE
+    { mktyp (Ptyp_object ($3, Open)) }
 ;
 
-%inline label_declarations:
-  lseparated_nonempty_list(COMMA, label_declaration) COMMA? { $1 };
+object_label_declaration:
+  | item_attributes as_loc(LIDENT)
+    { ($2.txt, $1, mkct $2) }
+  | item_attributes LIDENT COLON poly_type
+    { ($2, $1, $4) }
+;
+
+object_label_declarations:
+  lseparated_nonempty_list(COMMA, object_label_declaration) COMMA? { $1 };
+
+string_literal_label:
+  item_attributes STRING COLON poly_type
+  { let (label, _raw, _delim) = $2 in (label, $1, $4) }
+;
+
+string_literal_labels:
+  lseparated_nonempty_list(COMMA, string_literal_label) COMMA? { $1 };
 
 package_type:
   as_loc(mty_longident)
@@ -4309,7 +4239,7 @@ package_type:
 ;
 
 package_type_cstr:
-  TYPE as_loc(label_longident) EQUAL only_core_type(core_type)
+  TYPE as_loc(label_longident) EQUAL core_type
   { ($2, $4) }
 ;
 
@@ -4319,8 +4249,8 @@ row_field_list:
 ;
 
 row_field:
-  | tag_field                             { $1 }
-  | only_core_type(non_arrowed_core_type) { Rinherit $1 }
+  | tag_field             { $1 }
+  | non_arrowed_core_type { Rinherit $1 }
 ;
 
 bar_row_field:
@@ -4342,7 +4272,7 @@ tag_field:
     { Rtag ($2, $1, true, []) }
 ;
 
-/* Constants */
+(* Constants *)
 
 constant:
   | INT          { let (n, m) = $1 in ([], Pconst_integer (n, m)) }
@@ -4368,7 +4298,7 @@ signed_constant:
   | PLUS FLOAT   { let (f, m) = $2 in ([], Pconst_float(f, m)) }
 ;
 
-/* Identifiers and long identifiers */
+(* Identifiers and long identifiers *)
 
 ident: UIDENT | LIDENT { $1 };
 
@@ -4382,7 +4312,7 @@ val_ident:
   | INFIXOP1          { $1 }
   | INFIXOP2          { $1 }
   | INFIXOP3          { $1 }
-  /* SLASHGREATER is INFIXOP3 but we needed to call it out specially */
+  (* SLASHGREATER is INFIXOP3 but we needed to call it out specially *)
   | SLASHGREATER      { "/>" }
   | INFIXOP4          { $1 }
   | PLUS              { "+" }
@@ -4399,12 +4329,12 @@ val_ident:
   | COLONEQUAL        { ":=" }
   | PLUSEQ            { "+=" }
   | PERCENT           { "%" }
-  /* We don't need to (and don't want to) consider </> an infix operator for now
+  (* We don't need to (and don't want to) consider </> an infix operator for now
      because our lexer requires that "</>" be expressed as "<\/>" because
      every star and slash after the first character must be escaped.
-  */
-  /* Also, we don't want to consider <> an infix operator because the Reason
-     operator swapping requires that we express that as != */
+  *)
+  (* Also, we don't want to consider <> an infix operator because the Reason
+     operator swapping requires that we express that as != *)
   | LESSDOTDOTGREATER { "<..>" }
   | GREATER GREATER   { ">>" }
 ;
@@ -4420,7 +4350,7 @@ operator:
   | LBRACKET RBRACKET { "[]" }
   | LPAREN RPAREN     { "()" }
   | COLONCOLON        { "::" }
-/*  | LPAREN COLONCOLON RPAREN { "::" } */
+(*  | LPAREN COLONCOLON RPAREN { "::" } *)
   | FALSE             { "false" }
   | TRUE              { "true" }
 ;
@@ -4443,20 +4373,11 @@ label_longident:
   | mod_longident DOT LIDENT      { Ldot($1, $3) }
 ;
 
-type_longident:
+type_longident: as_loc(itype_longident) { $1 };
+
+%inline itype_longident:
   | LIDENT                        { Lident $1 }
   | mod_ext_longident DOT LIDENT  { Ldot($1, $3) }
-;
-
-/* Type long identifiers known to be "long". Only needed to resolve shift
- * reduce conflicts between `type myType 'a 'b = ..` and `type
- * Potentially.Long.myType 'a 'b += ..` - we needed to break the parsing of
- * Potentially.Long.myType into two cases, one that is long, and one that is
- * not.
- */
-type_strictly_longident:
-  mod_ext_longident DOT LIDENT
-  { Ldot($1, $3) }
 ;
 
 mod_longident:
@@ -4464,20 +4385,16 @@ mod_longident:
   | mod_longident DOT UIDENT      { Ldot($1, $3) }
 ;
 
-mod_ext_longident:
+mod_ext_longident: imod_ext_longident { $1 }
+
+%inline imod_ext_longident:
   | UIDENT                        { Lident $1 }
   | mod_ext_longident DOT UIDENT  { Ldot($1, $3) }
-  | mod_ext2                      { $1 }
+  | mod_ext_apply                 { $1 }
 ;
 
-mod_ext2:
-  anonymous( mod_ext_longident DOT UIDENT
-             { Ldot($1, $3) }
-           | mod_ext2
-             { $1 }
-           | UIDENT
-             { Lident($1) }
-           )
+mod_ext_apply:
+  imod_ext_longident
   parenthesized(lseparated_nonempty_list(COMMA, mod_ext_longident))
   { if not !Clflags.applicative_functors then
       raise Syntaxerr.(Error(Applicative_path(mklocation $startpos $endpos)));
@@ -4500,11 +4417,11 @@ class_longident:
   | mod_longident DOT LIDENT     { Ldot($1, $3) }
 ;
 
-/* Toplevel directives */
+(* Toplevel directives *)
 
 toplevel_directive:
   SHARP ident embedded
-          ( /* empty */   { Pdir_none }
+          ( (* empty *)   { Pdir_none }
           | STRING        { let (s, _, _) = $1 in Pdir_string s }
           | INT           { let (n, m) = $1 in Pdir_int (n, m) }
           | val_longident { Pdir_ident $1 }
@@ -4515,7 +4432,7 @@ toplevel_directive:
   { Ptop_dir($2, $3) }
 ;
 
-/* Miscellaneous */
+(* Miscellaneous *)
 
 opt_LET_MODULE: MODULE { () } | LET MODULE { () };
 
@@ -4524,12 +4441,12 @@ opt_LET_MODULE: MODULE { () } | LET MODULE { () };
 %inline label: LIDENT { $1 };
 
 rec_flag:
-  | /* empty */   { Nonrecursive }
+  | (* empty *)   { Nonrecursive }
   | REC           { Recursive }
 ;
 
 nonrec_flag:
-  | /* empty */   { Recursive }
+  | (* empty *)   { Recursive }
   | NONREC        { Nonrecursive }
 ;
 
@@ -4539,28 +4456,28 @@ direction_flag:
 ;
 
 %inline private_flag:
-  | /* empty */   { Public }
+  | (* empty *)   { Public }
   | PRI           { Private }
 ;
 
 mutable_flag:
-  | /* empty */   { Immutable }
+  | (* empty *)   { Immutable }
   | MUTABLE       { Mutable }
 ;
 
 virtual_flag:
-  | /* empty */   { Concrete }
+  | (* empty *)   { Concrete }
   | VIRTUAL       { Virtual }
 ;
 
 mutable_or_virtual_flags:
-  | /* empty */   { Immutable, Concrete }
+  | (* empty *)   { Immutable, Concrete }
   | VIRTUAL mutable_flag { $2, Virtual }
   | MUTABLE virtual_flag { Mutable, $2 }
 ;
 
 override_flag:
-  | /* empty */   { Fresh }
+  | (* empty *)   { Fresh }
   | BANG          { Override }
 ;
 
@@ -4625,7 +4542,7 @@ single_attr_id:
   | WHEN        { "when" }
   | WHILE       { "while" }
   | WITH        { "with" }
-/* mod/land/lor/lxor/lsl/lsr/asr are not supported for now */
+(* mod/land/lor/lxor/lsl/lsr/asr are not supported for now *)
 ;
 
 attr_id:
@@ -4662,7 +4579,7 @@ item_extension:
 payload:
   | structure                       { PStr $1 }
   | COLON signature                 { PSig $2 }
-  | COLON only_core_type(core_type) { PTyp $2 }
+  | COLON core_type                 { PTyp $2 }
   | QUESTION pattern                { PPat ($2, None) }
   | QUESTION pattern WHEN expr      { PPat ($2, Some $4) }
 ;
@@ -4671,8 +4588,6 @@ optional:
   | { fun x -> Labelled x }
   | QUESTION { fun x -> Optional x }
 ;
-
-%inline only_core_type(X): X { only_core_type $1 $symbolstartpos $endpos }
 
 %inline mark_position_mod(X): x = X
   { {x with pmod_loc = {x.pmod_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
@@ -4694,21 +4609,8 @@ optional:
   { {x with ptyp_loc = {x.ptyp_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
 ;
 
-%inline mark_position_typ2(X): x = X
-  { match x with
-    | Core_type ct ->
-      let loc_start = $symbolstartpos and loc_end = $endpos in
-      Core_type ({ct with ptyp_loc = {ct.ptyp_loc with loc_start; loc_end}})
-    | Record_type _ -> x
-  }
-;
-
 %inline mark_position_mty(X): x = X
   { {x with pmty_loc = {x.pmty_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
-;
-
-%inline mark_position_sig(X): x = X
-  { {x with psig_loc = {x.psig_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
 ;
 
 %inline mark_position_str(X): x = X
@@ -4731,10 +4633,6 @@ optional:
   { mkloc x (mklocation $symbolstartpos $endpos) }
 ;
 
-%inline with_patvar(X): x = X
-  { let loc = mklocation $symbolstartpos $endpos in
-    mkpat ~loc (Ppat_var (mkloc x loc)) }
-
 either(X,Y):
   | X { $1 }
   | Y { $1 }
@@ -4745,12 +4643,12 @@ either(X,Y):
 %inline llist(X): llist_aux(X) { List.rev $1 };
 
 llist_aux(X):
-  | /* empty */ { [] }
+  | (* empty *) { [] }
   | llist_aux(X) X { $2 :: $1 }
 ;
 
 %inline lseparated_list(sep, X):
-  | /* empty */ { [] }
+  | (* empty *) { [] }
   | lseparated_nonempty_list(sep, X) { $1 };
 
 %inline lseparated_nonempty_list(sep, X):
