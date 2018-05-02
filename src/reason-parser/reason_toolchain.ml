@@ -597,8 +597,46 @@ module Reason_syntax = struct
       normalize_checkpoint (I.resume checkpoint)
     | checkpoint -> checkpoint
 
+  (* Simply submit a token to the parser *)
   let offer_normalize checkpoint triple =
     normalize_checkpoint (I.offer checkpoint triple)
+
+  (* Insert a semicolon before submitting a token to the parser *)
+  let try_inserting_semi_on = function
+    | Reason_parser.LET
+    | Reason_parser.TYPE
+    | Reason_parser.MODULE
+    | Reason_parser.OPEN
+    | Reason_parser.EXCEPTION
+    | Reason_parser.INCLUDE
+    | Reason_parser.DOCSTRING _
+    | Reason_parser.LBRACKETAT -> true
+    | _ -> false
+
+  let try_inserting_semi checkpoint ((_, pos, _) as triple) =
+    match offer_normalize checkpoint (Reason_parser.SEMI, pos, pos) with
+    | I.InputNeeded _ as checkpoint' ->
+      Some (offer_normalize checkpoint' triple)
+    | _ -> None
+
+
+  (* Offer and insert a semicolon in case of failure *)
+  let offer_normalize checkpoint triple =
+    match offer_normalize checkpoint triple with
+    | I.HandlingError _ as error_checkpoint ->
+      (* About to enter error state:
+         if the token is the beginning of an item (LET, TYPE, ...), try
+         inserting a SEMICOLON, otherwise return the checkpoint to the caller.
+      *)
+      begin match triple with
+        | (token, startp, endp) when try_inserting_semi_on token ->
+          begin match try_inserting_semi checkpoint triple with
+            | Some (I.InputNeeded _ as checkpoint') -> checkpoint'
+            | Some _ | None -> error_checkpoint
+          end
+        | _ -> error_checkpoint
+      end
+    | checkpoint -> checkpoint
 
   let commit_invalid_docstrings = function
     | [] -> ()
