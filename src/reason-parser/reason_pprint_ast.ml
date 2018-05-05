@@ -6698,7 +6698,11 @@ let printer = object(self:'self)
         (makeList ~break:Always_rec ~inline:(true, true)
            (List.map bar (appendLabelToLast orsWithWhereAndArrowOnLast rhs)))
     in
-    List.map case_row l
+    groupAndPrint
+      ~xf:case_row
+      ~getLoc:(fun {pc_lhs; pc_rhs} -> {pc_lhs.ppat_loc with loc_end = pc_rhs.pexp_loc.loc_end})
+      ~comments:self#comments
+      l
 
   (* Formats a list of a single expr param in such a way that the parens of the function or
    * (poly)-variant application and the wrapping of the param stick together when the layout breaks.

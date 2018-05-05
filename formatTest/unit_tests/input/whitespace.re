@@ -144,6 +144,39 @@ let main = () => {
   ();
 };
 
+module PatternMatching = {
+  let x = switch(color) {
+  | Black => ()
+
+  | Red => ()
+
+  | White => ()
+  };
+
+  /* with comments */
+  let color = switch (color) {
+  /* c1 */
+
+  /* c2 */
+  | Black =>
+      "black"
+
+  /* c3 */
+
+  /* c4 */
+  /* c5 */
+
+  /* c6 */
+  | Green => "green"
+
+  /* multi
+     line
+     comment */
+
+  | Blue => "blue"
+  };
+};
+
 module EdgeCase = {
   let x = 1; /* a */
 

@@ -266,6 +266,7 @@ let res =
       _, /* retain this */
       _ /* retain this */
     ) => "result of X"
+
   /* Above Y line */
   | Y(_) => "result of Y" /* End of arrow and Y line */
   };

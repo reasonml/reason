@@ -3247,8 +3247,13 @@ let_binding_body:
 %inline match_cases(EXPR): lnonempty_list(match_case(EXPR)) { $1 };
 
 match_case(EXPR):
-  BAR pattern preceded(WHEN,expr)? EQUALGREATER EXPR
-  { Exp.case $2 ?guard:$3 $5 }
+  as_loc(BAR) pattern preceded(WHEN,expr)? EQUALGREATER EXPR
+  { let pat = {$2 with ppat_loc =
+      { $2.ppat_loc with
+        loc_start = $1.loc.loc_start
+      }
+    } in
+    Exp.case pat ?guard:$3 $5 }
 ;
 
 fun_def(DELIM, typ):
