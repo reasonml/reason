@@ -3340,8 +3340,10 @@ efficient read and insert operations at the head of a list.
 [z, ...abc] is very efficient.
 However, when you're not appending to the front of a list, we need to traverse
 the whole list to merge them both. Due to the less than ideal performance
-implications, we don't allow spreading at the front or in the middle of a list.
-[...abc, z] or [x, ...abc, y] is very inefficient and not supported in Reason."
+implications, we don't allow the list spread syntax at the front
+or in the middle of a list.
+[...abc, z] or [x, ...abc, y] is very inefficient and this syntax is
+not supported in Reason."
         in
         raise Reason_syntax_util.(Error(dotdotdotLoc, (Syntax_error msg)))
       | None -> e
