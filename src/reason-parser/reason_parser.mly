@@ -939,21 +939,46 @@ let reason_mapper =
 let rec string_of_longident = function
     | Lident s -> s
     | Ldot(longPrefix, s) ->
-        s
+         s
     | Lapply (y,s) -> string_of_longident s
 
 let built_in_explicit_arity_constructors = ["Some"; "Assert_failure"; "Match_failure"]
 
-let jsx_component module_name attrs children loc =
-  let firstPart = (List.hd (Longident.flatten module_name)) in
-  let lident = if String.get firstPart 0 != '_' && firstPart = String.capitalize firstPart then
-    (* firstPart will be non-empty so the 0th access is fine. Modules can't start with underscore *)
-    Ldot(module_name, "createElement")
+let rewriteFunctorApp module_name elt loc =
+  let rec applies = function
+    | Lident _ -> false
+    | Ldot (m, _) -> applies m
+    | Lapply (_, _) -> true in
+  let rec flattenModName = function
+    | Lident id -> id
+    | Ldot (m, id) -> flattenModName m ^ "." ^ id
+    (* FIXME: Needs some way of generating a unique string *)
+(*    | Lapply (m1, m2) -> "ReasonInternal_" ^ flattenModName m1 ^ "_" ^ flattenModName m2 in*)
+    | Lapply (m1, m2) -> flattenModName m1 ^ "$(" ^ flattenModName m2 ^ ")" in
+  let rec mkModExp = function
+    | Lident id -> mkmod ~loc (Pmod_ident {txt=Lident id; loc})
+    | Ldot (m, id) -> mkmod ~loc (Pmod_ident {txt=Ldot (m, id); loc})
+    | Lapply (m1, m2) -> mkmod ~loc (Pmod_apply (mkModExp m1, mkModExp m2)) in
+  if applies module_name then
+    let flat = flattenModName module_name in
+    mkexp(Pexp_letmodule({txt=flat; loc},
+                         mkModExp module_name,
+                         mkexp(Pexp_ident {txt=Ldot (Lident flat, elt); loc})))
   else
-    Lident firstPart
-  in
-  let ident = mkloc lident loc in
-  let body = mkexp(Pexp_apply(mkexp(Pexp_ident ident) ~loc, attrs @ children)) ~loc in
+    mkexp(Pexp_ident {txt=Ldot (module_name, elt); loc})
+
+let jsx_component module_name attrs children loc =
+  let rec getFirstPart = function
+    | Lident fp -> fp
+    | Ldot (fp, sp) -> getFirstPart fp
+    | Lapply (fp, sp) -> getFirstPart fp in
+  let firstPart = getFirstPart module_name in
+  let element_fn = if String.get firstPart 0 != '_' && firstPart = String.capitalize firstPart then
+    (* firstPart will be non-empty so the 0th access is fine. Modules can't start with underscore *)
+    rewriteFunctorApp module_name "createElement" loc 
+  else
+    mkexp(Pexp_ident(mkloc (Lident firstPart) loc)) in
+  let body = mkexp(Pexp_apply(element_fn, attrs @ children)) ~loc in
   let attribute = ({txt = "JSX"; loc = loc}, PStr []) in
   { body with pexp_attributes = attribute :: body.pexp_attributes }
 
@@ -964,10 +989,22 @@ let raiseSyntaxErrorFromSyntaxUtils loc fmt =
     (fun msg -> raise Reason_syntax_util.(Error(loc, (Syntax_error msg))))
     fmt
 
+let rec ignoreLapply = function
+  | Lident id -> Lident id
+  | Ldot (lid, id) -> Ldot (ignoreLapply lid, id)
+  | Lapply (m1, _) -> ignoreLapply m1
+
+(* Like Longident.flatten, but ignores `Lapply`s. Useful because 1) we don't want to require `Lapply` in
+   closing tags, and 2) Longident.flatten doesn't support `Lapply`. *)
+let rec flattenWithoutLapply = function
+  | Lident id -> [id]
+  | Ldot (lid, id) -> flattenWithoutLapply lid @ [id]
+  | Lapply (m1, _) -> flattenWithoutLapply m1
+
 let ensureTagsAreEqual startTag endTag loc =
-  if startTag <> endTag then
-     let startTag = (String.concat "" (Longident.flatten startTag)) in
-     let endTag = (String.concat "" (Longident.flatten endTag)) in
+  if ignoreLapply startTag <> endTag then
+     let startTag = (String.concat "" (flattenWithoutLapply startTag)) in
+     let endTag = (String.concat "" (flattenWithoutLapply endTag)) in
      raiseSyntaxErrorFromSyntaxUtils loc
       "Start tag <%s> does not match end tag </%s>" startTag endTag
 
@@ -2555,14 +2592,16 @@ jsx_arguments:
 ;
 
 jsx_start_tag_and_args:
-  LESSIDENT jsx_arguments
-  { let name = Longident.parse $1 in
-    (jsx_component name $2, name)
-  }
+    LESSIDENT jsx_arguments
+    { let name = Longident.parse $1 in
+      (jsx_component name $2, name)
+    }
+  | LESS mod_ext_longident jsx_arguments
+    { jsx_component $2 $3, $2 }
 ;
 
 jsx_start_tag_and_args_without_leading_less:
-    mod_longident jsx_arguments
+    mod_ext_longident jsx_arguments
     { (jsx_component $1 $2, $1) }
   | LIDENT jsx_arguments
     { let lident = Longident.Lident $1 in

@@ -532,7 +532,7 @@ rule token = parse
   | "[|" { LBRACKETBAR }
   | "[<" { LBRACKETLESS }
   | "[>" { LBRACKETGREATER }
-  | "<" uppercase_or_lowercase (identchar | '.') * {
+  | "<" lowercase identchar* {
     let buf = Lexing.lexeme lexbuf in
     LESSIDENT (String.sub buf 1 (String.length buf - 1))
   }
