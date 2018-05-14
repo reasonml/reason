@@ -3323,12 +3323,41 @@ expr_list:
 
 (* [x, y, z, ...n] --> ([x,y,z], Some n) *)
 expr_comma_seq_extension:
-  | DOTDOTDOT expr_optional_constraint COMMA?
-    { ([], Some $2) }
-  | expr_optional_constraint COMMA?
-    { ([$1], None) }
-  | expr_optional_constraint COMMA expr_comma_seq_extension
-    { let seq, ext = $3 in ($1::seq, ext) }
+  lseparated_nonempty_list(COMMA, expr_seq_item) COMMA?
+  { match List.rev $1 with
+    (* Check if the last expr has been spread with `...` *)
+    | ((dotdotdot, e) as hd)::es ->
+      let (es, ext) = match dotdotdot with
+      | Some dotdotdotLoc -> (es, Some e)
+      | None -> (hd::es, None)
+      in
+      let exprList = List.map (fun (dotdotdot, e) -> match dotdotdot with
+      | Some dotdotdotLoc ->
+        (* If the `...` appears in any other location then the last,
+         * show a friendly, clear message explaining the consequences. *)
+        let msg = "A list in Reason is a single-linked list providing very
+efficient read and insert operations at the head of a list.
+[z, ...abc] is very efficient.
+However, when you're not appending to the front of a list, we need to traverse
+the whole list to merge them both. Due to the less than ideal performance
+implications, we don't allow spreading at the front or in the middle of a list.
+[...abc, z] or [x, ...abc, y] is very inefficient and not supported in Reason."
+        in
+        raise Reason_syntax_util.(Error(dotdotdotLoc, (Syntax_error msg)))
+      | None -> e
+      ) es in
+      (List.rev exprList, ext)
+    | [] -> [], None
+  }
+;
+
+%inline expr_seq_item:
+  DOTDOTDOT? expr_optional_constraint {
+    let dotdotdot = match $1 with
+    | Some _ -> Some(mklocation $startpos($1) $endpos($2))
+    | None -> None
+    in
+    (dotdotdot, $2) }
 ;
 
 (* Same as expr_comma_seq_extension but occuring after an item.
