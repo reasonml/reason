@@ -2032,7 +2032,8 @@ let is_direct_pattern x = x.ppat_attributes = [] && match x.ppat_desc with
 
 let isJSXComponent expr =
   match expr with
-  | ({pexp_desc= Pexp_apply ({pexp_desc=Pexp_ident _}, args); pexp_attributes}) ->
+  | ({pexp_desc= Pexp_apply ({pexp_desc=Pexp_ident _}, args); pexp_attributes})
+  | ({pexp_desc= Pexp_apply ({pexp_desc=Pexp_letmodule(_,_,_)}, args); pexp_attributes}) ->
     let {jsxAttrs} = partitionAttributes pexp_attributes in
     let hasLabelledChildrenLiteral = List.exists (function
       | (Labelled "children", _) -> true
@@ -3269,6 +3270,38 @@ let printer = object(self:'self)
         if List.length moduleNameList > 0 then
           if Longident.last loc.txt = "createElement" then
             Some (self#formatJSXComponent (String.concat "." moduleNameList) l)
+          else None
+        else Some (self#formatJSXComponent (Longident.last loc.txt) l)
+      else None
+    )
+    | (Pexp_apply ({pexp_desc=Pexp_letmodule(_, {pmod_desc=Pmod_apply(m1, m2)}, {pexp_desc=Pexp_ident loc})}, l), [], _jsx::_) -> (
+      (* TODO: Soon, we will allow the final argument to be an identifier which
+         represents the entire list. This would be written as
+         `<tag>...list</tag>`. If you imagine there being an implicit [] inside
+         the tag, then it would be consistent with array spread:
+         [...list] evaluates to the thing as list.
+      *)
+      let hasLabelledChildrenLiteral = List.exists (function
+        | (Labelled "children", _) -> true
+        | _ -> false
+      ) l in
+      let rec hasSingleNonLabelledUnitAndIsAtTheEnd l = match l with
+      | [] -> false
+      | (Nolabel, {pexp_desc = Pexp_construct ({txt = Lident "()"}, _)}) :: [] -> true
+      | (Nolabel, _) :: rest -> false
+      | _ :: rest -> hasSingleNonLabelledUnitAndIsAtTheEnd rest
+      in
+      if hasLabelledChildrenLiteral && hasSingleNonLabelledUnitAndIsAtTheEnd l then
+        let moduleNameList = List.rev (List.tl (List.rev (Longident.flatten loc.txt))) in
+        if List.length moduleNameList > 0 then
+          if Longident.last loc.txt = "createElement" then
+            begin match (m1, m2) with
+            | {pmod_desc=Pmod_ident loc1}, {pmod_desc=Pmod_ident loc2} ->
+              let moduleName1 = String.concat "." (Longident.flatten loc1.txt)
+              and moduleName2 = String.concat "." (Longident.flatten loc2.txt) in
+              Some (self#formatJSXComponent (moduleName1 ^ "(" ^ moduleName2 ^ ")") l)
+            | _ -> None
+            end
           else None
         else Some (self#formatJSXComponent (Longident.last loc.txt) l)
       else None

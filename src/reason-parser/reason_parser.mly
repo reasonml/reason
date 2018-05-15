@@ -952,11 +952,7 @@ let rewriteFunctorApp module_name elt loc =
   let rec flattenModName = function
     | Lident id -> id
     | Ldot (m, id) -> flattenModName m ^ "." ^ id
-    (* Since the tests/refmt require idempotence, we can't output an unparseable name
-       when generating our unique identifier. As a result, we're simply going to make
-       an identifier that we can be 99% sure the user won't use. The format of this
-       identifier is: M1(M2) => ReasonInternal_{{M1}}_{{M2}}. *)
-    | Lapply (m1, m2) -> "ReasonInternal_" ^ flattenModName m1 ^ "_" ^ flattenModName m2 in
+    | Lapply (m1, m2) -> flattenModName m1 ^ "(" ^ flattenModName m2 ^ ")" in
   let rec mkModExp = function
     | Lident id -> mkmod ~loc (Pmod_ident {txt=Lident id; loc})
     | Ldot (m, id) -> mkmod ~loc (Pmod_ident {txt=Ldot (m, id); loc})
