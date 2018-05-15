@@ -14,4 +14,25 @@ module F = (X: (module type of X)) => {
   let createElement = X.createElement;
 };
 
-let body = <div> <F(X) /> </div>;
+module G =
+       (
+         X: (module type of X),
+         Y: (module type of X),
+       ) => {
+  let createElement = Y.createElement;
+};
+
+let body =
+  <div>
+    <F(X) />
+    (
+      [@JSX]
+        {
+          module G(X)(Y) = G(X, Y);
+          G(X)(Y).createElement;
+        }(
+          ~children=[],
+          (),
+        )
+    )
+  </div>;

@@ -3274,13 +3274,18 @@ let printer = object(self:'self)
         else Some (self#formatJSXComponent (Longident.last loc.txt) l)
       else None
     )
-    | (Pexp_apply ({pexp_desc=Pexp_letmodule(_, {pmod_desc=Pmod_apply(m1, m2)}, {pexp_desc=Pexp_ident loc})}, l), [], _jsx::_) -> (
+    | (Pexp_apply ({pexp_desc=Pexp_letmodule(_, ({pmod_desc=Pmod_apply(m1, m2)} as app), {pexp_desc=Pexp_ident loc})}, l), [], _jsx::_) -> (
       (* TODO: Soon, we will allow the final argument to be an identifier which
          represents the entire list. This would be written as
          `<tag>...list</tag>`. If you imagine there being an implicit [] inside
          the tag, then it would be consistent with array spread:
          [...list] evaluates to the thing as list.
       *)
+      let rec extract_apps args = function
+        | { pmod_desc = Pmod_apply (m1, {pmod_desc=Pmod_ident loc}) } ->
+          let arg = String.concat "." (Longident.flatten loc.txt) in
+          extract_apps (arg :: args) m1
+        | { pmod_desc=Pmod_ident loc } -> (String.concat "." (Longident.flatten loc.txt))::args in
       let hasLabelledChildrenLiteral = List.exists (function
         | (Labelled "children", _) -> true
         | _ -> false
@@ -3292,16 +3297,11 @@ let printer = object(self:'self)
       | _ :: rest -> hasSingleNonLabelledUnitAndIsAtTheEnd rest
       in
       if hasLabelledChildrenLiteral && hasSingleNonLabelledUnitAndIsAtTheEnd l then
-        let moduleNameList = List.rev (List.tl (List.rev (Longident.flatten loc.txt))) in
-        if List.length moduleNameList > 0 then
+        if List.length (Longident.flatten loc.txt) > 1 then
           if Longident.last loc.txt = "createElement" then
-            begin match (m1, m2) with
-            | {pmod_desc=Pmod_ident loc1}, {pmod_desc=Pmod_ident loc2} ->
-              let moduleName1 = String.concat "." (Longident.flatten loc1.txt)
-              and moduleName2 = String.concat "." (Longident.flatten loc2.txt) in
-              Some (self#formatJSXComponent (moduleName1 ^ "(" ^ moduleName2 ^ ")") l)
-            | _ -> None
-            end
+            let ftor::args = extract_apps [] app in
+            let applied = ftor ^ "(" ^ String.concat ", " args ^ ")" in
+            Some (self#formatJSXComponent applied l)
           else None
         else Some (self#formatJSXComponent (Longident.last loc.txt) l)
       else None
