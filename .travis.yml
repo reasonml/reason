@@ -1,8 +1,9 @@
 language: objective-c
 osx_image: xcode7.3
 before_install:
-  - nvm install v8.7.0
   - brew update
+  - brew upgrade python
+  - nvm install v8.7.0
   - brew install opam
   - opam init -y
   - opam switch "$OCAML_VERSION"
