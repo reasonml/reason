@@ -105,6 +105,7 @@ and secondRecursiveClass (init) = {
 /**
  * Anonymous objects.
  */
+
 type closedObj = {.};
 
 let (<..>) = (a, b) => a + b;

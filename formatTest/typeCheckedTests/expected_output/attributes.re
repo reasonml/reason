@@ -17,22 +17,22 @@
 
 /**Floating doc text should be removed*/;
 
-[@itemAttributeOnTypeDef]
 /**removed text on type def*/
+[@itemAttributeOnTypeDef]
 type itemText = int;
 type nodeText = /**removed text on item*/ int;
-[@itemAttributeOnTypeDef]
 /**removed text on type def*/
+[@itemAttributeOnTypeDef]
 type nodeAndItemText =
   /**removed text on item*/ int;
 
-[@itemAttributeOnTypeDef]
 /**removed doc on type def*/
+[@itemAttributeOnTypeDef]
 type itemDoc = int;
 [@itemAttributeOnTypeDef]
 type nodeDoc = /**removed text on item*/ int;
-[@itemAttributeOnTypeDef]
 /**removed doc on type def*/
+[@itemAttributeOnTypeDef]
 type nodeAndItemDoc =
   /**removed text on item*/ int;
 
