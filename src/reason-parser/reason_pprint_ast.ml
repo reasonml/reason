@@ -291,12 +291,14 @@ let extractLocationFromValBindList expr vbs =
         extract loc xs
     | [] -> loc
   in
-  match vbs with
-  | x::xs ->
-      let {pvb_pat; pvb_expr} = x in
-      let loc = {pvb_pat.ppat_loc with loc_end = pvb_expr.pexp_loc.loc_end} in
-      extract loc xs
-  | [] -> expr.pexp_loc
+  let loc = match vbs with
+    | x::xs ->
+        let {pvb_pat; pvb_expr} = x in
+        let loc = {pvb_pat.ppat_loc with loc_end = pvb_expr.pexp_loc.loc_end} in
+        extract loc xs
+    | [] -> expr.pexp_loc
+  in
+  { loc with loc_start = expr.pexp_loc.loc_start }
 
 (** Kinds of attributes *)
 type attributesPartition = {
@@ -4608,9 +4610,12 @@ let printer = object(self:'self)
         (argsList@[formatJustTheTypeConstraint typeLayout], e)
       | _ -> (argsList, return)
 
-  method bindingsLocationRange l =
+  method bindingsLocationRange ?extension l =
     let len = List.length l in
-    let fstLoc = (List.nth l 0).pvb_loc in
+    let fstLoc = match extension with
+    | Some ext when ext.pexp_loc.loc_ghost == false -> ext.pexp_loc
+    | _ -> (List.nth l 0).pvb_loc
+    in
     let lstLoc = (List.nth l (len - 1)).pvb_loc in
     {
       loc_start = fstLoc.loc_start;
@@ -4699,38 +4704,30 @@ let printer = object(self:'self)
             loc_end = return.pmod_loc.loc_end
           } in
            processLetList ((loc, layout)::acc) e
-             (* (source_map ~loc:letModuleLoc letModuleLayout :: self#letList e) *)
         | ([], Pexp_letexception (extensionConstructor, expr)) ->
             let exc = self#exception_declaration extensionConstructor in
             let layout = source_map ~loc:extensionConstructor.pext_loc exc in
             processLetList ((extensionConstructor.pext_loc, layout)::acc) expr
-            (* exc::(self#letList expr) *)
         | ([], Pexp_sequence (({pexp_desc=Pexp_sequence _ }) as e1, e2))
         | ([], Pexp_sequence (({pexp_desc=Pexp_let _      }) as e1, e2))
         | ([], Pexp_sequence (({pexp_desc=Pexp_open _     }) as e1, e2))
         | ([], Pexp_sequence (({pexp_desc=Pexp_letmodule _}) as e1, e2))
         | ([], Pexp_sequence (e1, e2)) ->
-            let (loc, e1Layout) = match expression_not_immediate_extension_sugar e1 with
+            let e1Layout = match expression_not_immediate_extension_sugar e1 with
               | Some (extension, e) ->
-                  (expr.pexp_loc, self#attach_std_item_attrs ~extension []
-                    (self#unparseExpr e))
+                    self#attach_std_item_attrs ~extension []
+                      (self#unparseExpr e)
               | None ->
-                  let loc = match e1.pexp_desc with
-                  | Pexp_extension _ -> expr.pexp_loc
-                  | _ -> e1.pexp_loc
-                  in
-                  (loc, self#unparseExpr e1)
+                  self#unparseExpr e1
             in
-            (* It's kind of difficult to synthesize a location here in the case
-             * where this is the first expression in the braces. We could consider
-             * deeply inspecting the leftmost token/term in the expression. *)
-            let layout = source_map ~loc:e1.pexp_loc e1Layout in
+            let loc = e1.pexp_loc in
+            let layout = source_map ~loc e1Layout in
             processLetList ((loc, layout)::acc) e2
         | _ ->
           match expression_not_immediate_extension_sugar expr with
           | Some (extension, {pexp_attributes = []; pexp_desc = Pexp_let (rf, l, e)}) ->
             let bindingsLayout = self#bindings ~extension (rf, l) in
-            let bindingsLoc = self#bindingsLocationRange l in
+            let bindingsLoc = self#bindingsLocationRange ~extension:expr l in
             let layout = source_map ~loc:bindingsLoc bindingsLayout in
             processLetList ((extractLocationFromValBindList expr l, layout)::acc) e
           | Some (extension, e) ->

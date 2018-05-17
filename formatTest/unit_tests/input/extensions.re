@@ -299,3 +299,25 @@ let _ =
     ()
   | B => ()
   };
+
+/* comments in presence of extension point syntax #1938 */
+let () = {
+  /* 1. comment attached to extension */
+  %defer
+  /* 2. comment attached to expr in extension */
+  cleanup();
+  /* 3. comment attached to next expr */
+  something_else();
+};
+
+/* comments in presence of extension point syntax #1938 */
+let () = {
+  /* random let binding */
+  let x = 1;
+  /* 1. comment attached to extension */
+  %defer
+  /* 2. comment attached to expr in extension */
+  cleanup();
+  /* 3. comment attached to next expr */
+  something_else();
+};
