@@ -820,9 +820,11 @@ let wrap_type_annotation newtypes core_type body =
 let struct_item_extension (ext_attrs, ext_id) structure_items =
   mkstr ~ghost:true (Pstr_extension ((ext_id, PStr structure_items), ext_attrs))
 
-let expression_extension (ext_attrs, ext_id) item_expr =
-  mkexp ~ghost:true ~attrs:ext_attrs
-    (Pexp_extension (ext_id, PStr [mkstrexp item_expr []]))
+let expression_extension ?loc (ext_attrs, ext_id) item_expr =
+  let e = Pexp_extension (ext_id, PStr [mkstrexp item_expr []]) in
+  match loc with
+  | Some loc -> mkexp ~loc ~attrs:ext_attrs e
+  | None -> mkexp ~ghost:true ~attrs:ext_attrs e
 
 (* There's no more need for these functions - this was for the following:
  *
@@ -2369,8 +2371,11 @@ mark_position_exp
     { expression_extension $1 $2 }
   | expr SEMI seq_expr
     { mkexp (Pexp_sequence($1, $3)) }
-  | item_extension_sugar expr SEMI seq_expr
-    { mkexp (Pexp_sequence(expression_extension $1 $2, $4)) }
+  | as_loc(item_extension_sugar) expr SEMI seq_expr
+    { let loc = { $1.loc with
+        loc_end = $2.pexp_loc.loc_end
+      } in
+      mkexp (Pexp_sequence(expression_extension ~loc $1.txt $2, $4)) }
   ) { $1 }
 ;
 
