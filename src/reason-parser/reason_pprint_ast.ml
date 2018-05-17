@@ -3285,7 +3285,8 @@ let printer = object(self:'self)
         | { pmod_desc = Pmod_apply (m1, {pmod_desc=Pmod_ident loc}) } ->
           let arg = String.concat "." (Longident.flatten loc.txt) in
           extract_apps (arg :: args) m1
-        | { pmod_desc=Pmod_ident loc } -> (String.concat "." (Longident.flatten loc.txt))::args in
+        | { pmod_desc=Pmod_ident loc } -> (String.concat "." (Longident.flatten loc.txt))::args
+        | _ -> failwith "Functors in JSX tags support only module names as parameters" in
       let hasLabelledChildrenLiteral = List.exists (function
         | (Labelled "children", _) -> true
         | _ -> false
@@ -3299,9 +3300,12 @@ let printer = object(self:'self)
       if hasLabelledChildrenLiteral && hasSingleNonLabelledUnitAndIsAtTheEnd l then
         if List.length (Longident.flatten loc.txt) > 1 then
           if Longident.last loc.txt = "createElement" then
-            let ftor::args = extract_apps [] app in
-            let applied = ftor ^ "(" ^ String.concat ", " args ^ ")" in
-            Some (self#formatJSXComponent ~closeComponentName:ftor applied l)
+            begin match extract_apps [] app with
+              | ftor::args ->
+                let applied = ftor ^ "(" ^ String.concat ", " args ^ ")" in
+                Some (self#formatJSXComponent ~closeComponentName:ftor applied l)
+              | _ -> None
+            end
           else None
         else Some (self#formatJSXComponent (Longident.last loc.txt) l)
       else None
