@@ -1770,7 +1770,7 @@ signature:
 signature_item:
   | item_attributes
     LET as_loc(val_ident) COLON core_type
-    { let loc = mklocation $symbolstartpos $endpos in
+    { let loc = mklocation $startpos($2) $endpos in
       Psig_value (Val.mk $3 $5 ~attrs:$1 ~loc)
     }
   | item_attributes
@@ -3672,7 +3672,7 @@ primitive_declaration: nonempty_list(STRING { let (s, _, _) = $1 in s }) {$1};
 type_declarations:
   item_attributes TYPE nonrec_flag type_declaration_details
   { let (ident, params, constraints, kind, priv, manifest), endpos, and_types = $4 in
-    let loc = mklocation $symbolstartpos endpos in
+    let loc = mklocation $startpos($2) endpos in
     let ty = Type.mk ident ~params:params ~cstrs:constraints
              ~kind ~priv ?manifest ~attrs:$1 ~loc in
     ($3, ty :: and_types)

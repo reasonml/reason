@@ -2609,7 +2609,14 @@ let printer = object(self:'self)
           (atom "=")
           td
       in
-      self#attach_std_item_attrs td.ptype_attributes itm
+      let {stdAttrs; docAttrs} = partitionAttributes ~partDoc:true td.ptype_attributes in
+      let layout = self#attach_std_item_attrs stdAttrs itm in
+      self#attachDocAttrsToLayout
+        ~stdAttrs
+        ~docAttrs
+        ~loc:td.ptype_loc
+        ~layout
+        ()
     in
 
     match l with
@@ -5664,8 +5671,22 @@ let printer = object(self:'self)
           [self#type_variant_leaf_nobar {pcd_name; pcd_args; pcd_res; pcd_loc; pcd_attributes}]
       | Pext_rebind id ->
           [atom pcd_name.txt; atom "="; (self#longident_loc id)] in
-    self#attach_std_item_attrs ed.pext_attributes
-      (makeList ~postSpace:true ((atom "exception")::exn_arg))
+    let {stdAttrs; docAttrs} =
+      partitionAttributes ~partDoc:true ed.pext_attributes
+    in
+    let layout =
+      self#attach_std_item_attrs
+        stdAttrs
+        (label ~space:true
+          (atom "exception")
+          (makeList ~postSpace:true ~inline:(true, true) exn_arg))
+    in
+    self#attachDocAttrsToLayout
+      ~stdAttrs
+      ~docAttrs
+      ~loc:ed.pext_loc
+      ~layout
+      ()
 
   (*
     Note: that override doesn't appear in class_sig_field, but does occur in
@@ -5810,7 +5831,7 @@ let printer = object(self:'self)
      TODO: TODOATTRIBUTES:
   *)
   method class_type_declaration_list l =
-    let class_type_declaration kwd ({pci_params=ls;pci_name={txt};pci_attributes} as x) =
+    let class_type_declaration kwd ({pci_params=ls;pci_name;pci_attributes} as x) =
       let opener = match x.pci_virt with
         | Virtual -> kwd ^ " " ^ "virtual"
         | Concrete -> kwd
@@ -5818,16 +5839,27 @@ let printer = object(self:'self)
 
       let upToName =
         if ls == [] then
-          label ~space:true (atom opener) (atom txt)
+          label ~space:true (atom opener) (atom pci_name.txt)
         else
           label
             ~space:true
-            (label ~space:true (atom opener) (atom txt))
+            (label ~space:true (atom opener) (atom pci_name.txt))
             (self#class_params_def ls)
       in
       let includingEqual = makeList ~postSpace:true [upToName; atom "="] in
-      self#attach_std_item_attrs pci_attributes @@
-      label ~space:true includingEqual (self#class_instance_type x.pci_expr)
+      let {stdAttrs; docAttrs} =
+        partitionAttributes ~partDoc:true pci_attributes
+      in
+      let layout =
+        self#attach_std_item_attrs stdAttrs @@
+        label ~space:true includingEqual (self#class_instance_type x.pci_expr)
+      in
+      self#attachDocAttrsToLayout
+        ~stdAttrs
+        ~docAttrs
+        ~loc:pci_name.loc
+        ~layout
+        ()
     in
     match l with
     | [] -> failwith "Should not call class_type_declaration with no classes"
@@ -6156,7 +6188,7 @@ let printer = object(self:'self)
               self#attachDocAttrsToLayout
                 ~stdAttrs
                 ~docAttrs
-                ~loc:vd.pval_type.ptyp_loc
+                ~loc:vd.pval_loc
                 ~layout
                 ()
 
@@ -6176,8 +6208,15 @@ let printer = object(self:'self)
                 patternAux
                 ([(self#class_constructor_type x.pci_expr)], None)
               in
+              let {stdAttrs; docAttrs} = partitionAttributes ~partDoc:true x.pci_attributes in
+              let layout = self#attach_std_item_attrs stdAttrs withColon in
               source_map ~loc:pci_loc
-                (self#attach_std_item_attrs x.pci_attributes withColon)
+                (self#attachDocAttrsToLayout
+                  ~stdAttrs
+                  ~docAttrs
+                  ~loc:x.pci_name.loc
+                  ~layout
+                  ())
             in
             makeNonIndentedBreakingList (
               match l with
@@ -6187,31 +6226,76 @@ let printer = object(self:'self)
                  (class_description ~class_keyword:true x)::
                  (List.map class_description xs)
             )
-        | Psig_module {pmd_name; pmd_type={pmty_desc=Pmty_alias alias}; pmd_attributes} ->
-            self#attach_std_item_attrs pmd_attributes @@
-            label ~space:true
-              (makeList ~postSpace:true [
-                 atom "module";
-                 atom pmd_name.txt;
-                 atom "="
-               ])
-              (self#longident_loc alias)
+        | Psig_module {pmd_name; pmd_type={pmty_desc=Pmty_alias alias};
+        pmd_attributes; pmd_loc} ->
+            let {stdAttrs; docAttrs} =
+              partitionAttributes ~partDoc:true pmd_attributes
+            in
+            let layout =
+              self#attach_std_item_attrs stdAttrs @@
+              label ~space:true
+                (makeList ~postSpace:true [
+                   atom "module";
+                   atom pmd_name.txt;
+                   atom "="
+                 ])
+                (self#longident_loc alias)
+            in
+            self#attachDocAttrsToLayout
+              ~stdAttrs
+              ~docAttrs
+              ~loc:pmd_name.loc
+              ~layout
+              ()
         | Psig_module pmd ->
-            self#attach_std_item_attrs pmd.pmd_attributes @@
-            self#formatSimpleSignatureBinding
-              "module"
-              (atom pmd.pmd_name.txt)
-              (self#module_type pmd.pmd_type);
+            let {stdAttrs; docAttrs} =
+              partitionAttributes ~partDoc:true pmd.pmd_attributes
+            in
+            let layout =
+              self#attach_std_item_attrs stdAttrs @@
+              self#formatSimpleSignatureBinding
+                "module"
+                (atom pmd.pmd_name.txt)
+                (self#module_type pmd.pmd_type)
+            in
+            self#attachDocAttrsToLayout
+              ~stdAttrs
+              ~docAttrs
+              ~loc:pmd.pmd_name.loc
+              ~layout
+              ()
         | Psig_open od ->
-            self#attach_std_item_attrs od.popen_attributes @@
+          let {stdAttrs; docAttrs} =
+            partitionAttributes ~partDoc:true od.popen_attributes
+          in
+          let layout =
+            self#attach_std_item_attrs stdAttrs @@
             label ~space:true
               (atom ("open" ^ (override od.popen_override)))
               (self#longident_loc od.popen_lid)
+          in
+          self#attachDocAttrsToLayout
+            ~stdAttrs
+            ~docAttrs
+            ~loc:od.popen_lid.loc
+            ~layout
+            ()
         | Psig_include incl ->
-            self#attach_std_item_attrs incl.pincl_attributes @@
+          let {stdAttrs; docAttrs} =
+            partitionAttributes ~partDoc:true incl.pincl_attributes
+          in
+          let layout =
+            self#attach_std_item_attrs stdAttrs @@
             label ~space:true
               (atom "include")
               (self#module_type incl.pincl_mod)
+          in
+          self#attachDocAttrsToLayout
+            ~stdAttrs
+            ~docAttrs
+            ~loc:incl.pincl_mod.pmty_loc
+            ~layout
+            ()
         | Psig_modtype x ->
           let name = atom x.pmtd_name.txt in
           let main = match x.pmtd_type with
@@ -6221,15 +6305,37 @@ let printer = object(self:'self)
                 (makeList ~postSpace:true [atom "module type"; name; atom "="])
                 (self#module_type mt)
           in
-          self#attach_std_item_attrs x.pmtd_attributes main
+          let {stdAttrs; docAttrs} =
+            partitionAttributes ~partDoc:true x.pmtd_attributes
+          in
+          let layout =
+            self#attach_std_item_attrs stdAttrs main
+          in
+          self#attachDocAttrsToLayout
+            ~stdAttrs
+            ~docAttrs
+            ~loc:x.pmtd_name.loc
+            ~layout
+            ()
         | Psig_class_type l -> self#class_type_declaration_list l
         | Psig_recmodule decls ->
             let first xx =
-              self#attach_std_item_attrs xx.pmd_attributes @@
-              self#formatSimpleSignatureBinding
-                "module rec"
-                (atom xx.pmd_name.txt)
-                (self#module_type xx.pmd_type)
+              let {stdAttrs; docAttrs} =
+                partitionAttributes ~partDoc:true xx.pmd_attributes
+              in
+              let layout =
+                self#attach_std_item_attrs stdAttrs @@
+                self#formatSimpleSignatureBinding
+                  "module rec"
+                  (atom xx.pmd_name.txt)
+                  (self#module_type xx.pmd_type)
+              in
+              self#attachDocAttrsToLayout
+                ~stdAttrs
+                ~docAttrs
+                ~loc:xx.pmd_name.loc
+                ~layout
+                ()
             in
             let notFirst xx =
               self#attach_std_item_attrs xx.pmd_attributes @@
@@ -6244,8 +6350,19 @@ let printer = object(self:'self)
             in
             makeNonIndentedBreakingList moduleBindings
         | Psig_attribute a -> self#floating_attribute a
-        | Psig_extension (e, a) ->
-          self#attach_std_item_attrs a (self#item_extension e)
+        | Psig_extension (({loc}, _) as ext, attrs) ->
+          let {stdAttrs; docAttrs} =
+            partitionAttributes ~partDoc:true attrs
+          in
+          let layout =
+            self#attach_std_item_attrs stdAttrs (self#item_extension ext)
+          in
+          self#attachDocAttrsToLayout
+            ~stdAttrs
+            ~docAttrs
+            ~loc
+            ~layout
+            ()
     in
     source_map ~loc:x.psig_loc item
 
@@ -6584,7 +6701,16 @@ let printer = object(self:'self)
     let formatOneTypeExtStandard prepend ({ptyext_path} as te) =
       let name = self#longident_loc ptyext_path in
       let item = self#formatOneTypeExt prepend name (atom "+=") te in
-      self#attach_std_item_attrs te.ptyext_attributes item
+      let {stdAttrs; docAttrs} =
+        partitionAttributes ~partDoc:true te.ptyext_attributes
+      in
+      let layout = self#attach_std_item_attrs stdAttrs item in
+      self#attachDocAttrsToLayout
+        ~stdAttrs
+        ~docAttrs
+        ~loc:ptyext_path.loc
+        ~layout
+        ()
     in
     formatOneTypeExtStandard (atom "type") te
 
