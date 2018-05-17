@@ -3301,7 +3301,7 @@ let printer = object(self:'self)
           if Longident.last loc.txt = "createElement" then
             let ftor::args = extract_apps [] app in
             let applied = ftor ^ "(" ^ String.concat ", " args ^ ")" in
-            Some (self#formatJSXComponent applied l)
+            Some (self#formatJSXComponent ~closeComponentName:ftor applied l)
           else None
         else Some (self#formatJSXComponent (Longident.last loc.txt) l)
       else None
@@ -3943,7 +3943,7 @@ let printer = object(self:'self)
           +---------+
 
           </tag>           *)
-  method formatJSXComponent componentName args =
+  method formatJSXComponent componentName ?closeComponentName args =
     let rec processArguments arguments processedAttrs children =
       match arguments with
       | (Labelled "children", {pexp_desc = Pexp_construct (_, None)}) :: tail ->
@@ -4009,7 +4009,7 @@ let printer = object(self:'self)
       label
         openTagAndAttrs
         (makeList
-          ~wrap:("", "</" ^ componentName ^ ">")
+          ~wrap:("", "</" ^ (match closeComponentName with None -> componentName | Some close -> close) ^ ">")
           ~inline:(true, false)
           ~break:IfNeed
           ~pad:(true, true)
