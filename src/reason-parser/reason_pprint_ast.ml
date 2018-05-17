@@ -4613,7 +4613,7 @@ let printer = object(self:'self)
   method bindingsLocationRange ?extension l =
     let len = List.length l in
     let fstLoc = match extension with
-    | Some ext when ext.pexp_loc.loc_ghost == false -> ext.pexp_loc
+    | Some ({pexp_loc = {loc_ghost = false}} as ext) -> ext.pexp_loc
     | _ -> (List.nth l 0).pvb_loc
     in
     let lstLoc = (List.nth l (len - 1)).pvb_loc in
