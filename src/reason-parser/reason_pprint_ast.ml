@@ -2034,7 +2034,8 @@ let is_direct_pattern x = x.ppat_attributes = [] && match x.ppat_desc with
 
 let isJSXComponent expr =
   match expr with
-  | ({pexp_desc= Pexp_apply ({pexp_desc=Pexp_ident _}, args); pexp_attributes}) ->
+  | ({pexp_desc= Pexp_apply ({pexp_desc=Pexp_ident _}, args); pexp_attributes})
+  | ({pexp_desc= Pexp_apply ({pexp_desc=Pexp_letmodule(_,_,_)}, args); pexp_attributes}) ->
     let {jsxAttrs} = partitionAttributes pexp_attributes in
     let hasLabelledChildrenLiteral = List.exists (function
       | (Labelled "children", _) -> true
@@ -3282,6 +3283,42 @@ let printer = object(self:'self)
         else Some (self#formatJSXComponent (Longident.last loc.txt) l)
       else None
     )
+    | (Pexp_apply ({pexp_desc=Pexp_letmodule(_, ({pmod_desc=Pmod_apply(m1, m2)} as app), {pexp_desc=Pexp_ident loc})}, l), [], _jsx::_) -> (
+      (* TODO: Soon, we will allow the final argument to be an identifier which
+         represents the entire list. This would be written as
+         `<tag>...list</tag>`. If you imagine there being an implicit [] inside
+         the tag, then it would be consistent with array spread:
+         [...list] evaluates to the thing as list.
+      *)
+      let rec extract_apps args = function
+        | { pmod_desc = Pmod_apply (m1, {pmod_desc=Pmod_ident loc}) } ->
+          let arg = String.concat "." (Longident.flatten loc.txt) in
+          extract_apps (arg :: args) m1
+        | { pmod_desc=Pmod_ident loc } -> (String.concat "." (Longident.flatten loc.txt))::args
+        | _ -> failwith "Functors in JSX tags support only module names as parameters" in
+      let hasLabelledChildrenLiteral = List.exists (function
+        | (Labelled "children", _) -> true
+        | _ -> false
+      ) l in
+      let rec hasSingleNonLabelledUnitAndIsAtTheEnd l = match l with
+      | [] -> false
+      | (Nolabel, {pexp_desc = Pexp_construct ({txt = Lident "()"}, _)}) :: [] -> true
+      | (Nolabel, _) :: rest -> false
+      | _ :: rest -> hasSingleNonLabelledUnitAndIsAtTheEnd rest
+      in
+      if hasLabelledChildrenLiteral && hasSingleNonLabelledUnitAndIsAtTheEnd l then
+        if List.length (Longident.flatten loc.txt) > 1 then
+          if Longident.last loc.txt = "createElement" then
+            begin match extract_apps [] app with
+              | ftor::args ->
+                let applied = ftor ^ "(" ^ String.concat ", " args ^ ")" in
+                Some (self#formatJSXComponent ~closeComponentName:ftor applied l)
+              | _ -> None
+            end
+          else None
+        else Some (self#formatJSXComponent (Longident.last loc.txt) l)
+      else None
+    )
     | (Pexp_apply (eFun, ls), [], []) -> (
       match (printedStringAndFixityExpr eFun, ls) with
       (* We must take care not to print two subsequent prefix operators without
@@ -3919,7 +3956,7 @@ let printer = object(self:'self)
           +---------+
 
           </tag>           *)
-  method formatJSXComponent componentName args =
+  method formatJSXComponent componentName ?closeComponentName args =
     let rec processArguments arguments processedAttrs children =
       match arguments with
       | (Labelled "children", {pexp_desc = Pexp_construct (_, None)}) :: tail ->
@@ -3985,7 +4022,7 @@ let printer = object(self:'self)
       label
         openTagAndAttrs
         (makeList
-          ~wrap:("", "</" ^ componentName ^ ">")
+          ~wrap:("", "</" ^ (match closeComponentName with None -> componentName | Some close -> close) ^ ">")
           ~inline:(true, false)
           ~break:IfNeed
           ~pad:(true, true)
