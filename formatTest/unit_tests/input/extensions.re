@@ -321,3 +321,5 @@ let () = {
   /* 3. comment attached to next expr */
   something_else();
 };
+
+[%bs.raw x => x];
