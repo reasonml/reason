@@ -590,3 +590,6 @@ let test = {
   let s = "hello" ++ "!";
   [@attr2] Callbacks.("hello" ++ "!");
 };
+
+[@test.call string => string]
+let processCommandItem = 12;

@@ -69,7 +69,7 @@ while%extend (false) {
   ();
 };
 
-fun%extend () => ();
+[%extend () => ()];
 
 fun%extend
 | None => ()
@@ -99,7 +99,7 @@ let x =
     ();
   };
 
-let x = fun%extend () => ();
+let x = [%extend () => ()];
 
 let x =
   fun%extend
@@ -136,7 +136,7 @@ let x = [%extend1
   }
 ];
 
-let x = [%extend1 fun%extend2 () => ()];
+let x = [%extend1 [%extend2 () => ()]];
 
 let x = [%extend1
   fun%extend2
@@ -191,7 +191,7 @@ let x = {
 let x = {
   ignore();
   %extend1
-  fun%extend2 () => ();
+  [%extend2 () => ()];
   ignore();
 };
 
@@ -251,7 +251,7 @@ let x = {
 let x = {
   ignore();
   %extend1
-  fun%extend2 () => ();
+  [%extend2 () => ()];
   ignore();
 };
 
@@ -307,7 +307,7 @@ let x = {
 let x = {
   ignore();
   %extend1
-  fun%extend2 () => ();
+  [%extend2 () => ()];
 };
 
 let x = {
@@ -347,3 +347,5 @@ let () = {
   /* 3. comment attached to next expr */
   something_else();
 };
+
+[%bs.raw x => x];

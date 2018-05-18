@@ -2715,11 +2715,11 @@ mark_position_exp
     { $2 $3 }
   | ES6_FUN es6_parameters EQUALGREATER expr
     { let (ps, uncurried) = $2 in
-    let exp = List.fold_right mkexp_fun ps $4 in
-    if uncurried then
-      let loc = mklocation $startpos $endpos in
-      {exp with pexp_attributes = (uncurry_payload loc)::exp.pexp_attributes}
-    else exp
+      let exp = List.fold_right mkexp_fun ps $4 in
+      if uncurried then
+        let loc = mklocation $startpos $endpos in
+        {exp with pexp_attributes = (uncurry_payload loc)::exp.pexp_attributes}
+      else exp
     }
   | ES6_FUN es6_parameters COLON non_arrowed_core_type EQUALGREATER expr
     { let (ps, uncurried) = $2 in
@@ -4654,6 +4654,29 @@ payload:
   | COLON core_type                 { PTyp $2 }
   | QUESTION pattern                { PPat ($2, None) }
   | QUESTION pattern WHEN expr      { PPat ($2, Some $4) }
+
+  (* Allow parsing of [@test.call x => x]
+   * By putting this rule here, a reduce/reduce conflict can be avoided
+   * If we put the "simple_pattern_ident EQUALGREATER expr" inside the
+   * unattributed_expr_template, the following ambiguity pops up:
+   *  BAR pattern option(preceded(WHEN,expr)) EQUALGREATER expr
+   *        WHEN expr
+   *             simple_pattern_ident EQUALGREATER expr // lookahead token appears
+   *             val_ident .
+   *
+   *  BAR pattern option(preceded(WHEN,expr)) EQUALGREATER expr // lookahead token appears
+   *        WHEN expr // lookahead token is inherited
+   *             simple_expr_call // lookahead token is inherited
+   *             val_longident // lookahead token is inherited
+   *             val_ident .
+   *  Since where in a payload here, there's no ambiguity when putting
+   *  the es6-style function (single arg, no parens) at this level.
+   *)
+  | simple_pattern_ident EQUALGREATER expr
+    { let loc = mklocation $symbolstartpos $endpos in
+      let expr = Exp.fun_ ~loc Nolabel None $1 $3 in
+      PStr([mkstrexp expr []])
+    }
 ;
 
 optional:
