@@ -975,7 +975,7 @@ let jsx_component module_name attrs children loc =
   let firstPart = getFirstPart module_name in
   let element_fn = if String.get firstPart 0 != '_' && firstPart = String.capitalize firstPart then
     (* firstPart will be non-empty so the 0th access is fine. Modules can't start with underscore *)
-    rewriteFunctorApp module_name "createElement" loc 
+    rewriteFunctorApp module_name "createElement" loc
   else
     mkexp(Pexp_ident(mkloc (Lident firstPart) loc)) in
   let body = mkexp(Pexp_apply(element_fn, attrs @ children)) ~loc in
@@ -3335,15 +3335,9 @@ expr_comma_seq_extension:
       | Some dotdotdotLoc ->
         (* If the `...` appears in any other location then the last,
          * show a friendly, clear message explaining the consequences. *)
-        let msg = "A list in Reason is a single-linked list providing very
-efficient read and insert operations at the head of a list.
-[z, ...abc] is very efficient.
-However, when you're not appending to the front of a list, we need to traverse
-the whole list to merge them both. Due to the less than ideal performance
-implications, we don't allow the list spread syntax at the front
-or in the middle of a list.
-[...abc, z] or [x, ...abc, y] is very inefficient and this syntax is
-not supported in Reason."
+        let msg = "Lists can only have one `...` spread, and at the end.
+Explanation: lists are singly-linked list, where a node contains a value and points to the next node. `[a, ...bc]` efficiently creates a new item and links `bc` as its next nodes. `[...bc, a]` would be expensive, as it'd need to traverse `bc` and prepend each item to `a` one by one. We therefore disallow such syntax sugar.
+Solution: directly use `concat`."
         in
         raise Reason_syntax_util.(Error(dotdotdotLoc, (Syntax_error msg)))
       | None -> e
