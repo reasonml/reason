@@ -975,7 +975,7 @@ let jsx_component module_name attrs children loc =
   let firstPart = getFirstPart module_name in
   let element_fn = if String.get firstPart 0 != '_' && firstPart = String.capitalize firstPart then
     (* firstPart will be non-empty so the 0th access is fine. Modules can't start with underscore *)
-    rewriteFunctorApp module_name "createElement" loc 
+    rewriteFunctorApp module_name "createElement" loc
   else
     mkexp(Pexp_ident(mkloc (Lident firstPart) loc)) in
   let body = mkexp(Pexp_apply(element_fn, attrs @ children)) ~loc in
@@ -3323,12 +3323,37 @@ expr_list:
 
 (* [x, y, z, ...n] --> ([x,y,z], Some n) *)
 expr_comma_seq_extension:
-  | DOTDOTDOT expr_optional_constraint COMMA?
-    { ([], Some $2) }
-  | expr_optional_constraint COMMA?
-    { ([$1], None) }
-  | expr_optional_constraint COMMA expr_comma_seq_extension
-    { let seq, ext = $3 in ($1::seq, ext) }
+  lseparated_nonempty_list(COMMA, expr_seq_item) COMMA?
+  { match List.rev $1 with
+    (* Check if the last expr has been spread with `...` *)
+    | ((dotdotdot, e) as hd)::es ->
+      let (es, ext) = match dotdotdot with
+      | Some dotdotdotLoc -> (es, Some e)
+      | None -> (hd::es, None)
+      in
+      let exprList = List.map (fun (dotdotdot, e) -> match dotdotdot with
+      | Some dotdotdotLoc ->
+        (* If the `...` appears in any other location then the last,
+         * show a friendly, clear message explaining the consequences. *)
+        let msg = "Lists can only have one `...` spread, and at the end.
+Explanation: lists are singly-linked list, where a node contains a value and points to the next node. `[a, ...bc]` efficiently creates a new item and links `bc` as its next nodes. `[...bc, a]` would be expensive, as it'd need to traverse `bc` and prepend each item to `a` one by one. We therefore disallow such syntax sugar.
+Solution: directly use `concat`."
+        in
+        raise Reason_syntax_util.(Error(dotdotdotLoc, (Syntax_error msg)))
+      | None -> e
+      ) es in
+      (List.rev exprList, ext)
+    | [] -> [], None
+  }
+;
+
+%inline expr_seq_item:
+  DOTDOTDOT? expr_optional_constraint {
+    let dotdotdot = match $1 with
+    | Some _ -> Some(mklocation $startpos($1) $endpos($2))
+    | None -> None
+    in
+    (dotdotdot, $2) }
 ;
 
 (* Same as expr_comma_seq_extension but occuring after an item.
