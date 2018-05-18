@@ -919,6 +919,7 @@ and skip_sharp_bang = parse
 
   let inject_es6_fun = function
     | tok :: acc ->
+        print_endline "INJECTING";
       tok :: fake_triple ES6_FUN tok :: acc
     | _ -> assert false
 

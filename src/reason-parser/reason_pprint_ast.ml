@@ -159,7 +159,7 @@ let expression_immediate_extension_sugar x =
   | Some (name, expr) ->
     match expr.pexp_desc with
     | Pexp_for _ | Pexp_while _ | Pexp_ifthenelse _
-    | Pexp_fun _ | Pexp_function _ | Pexp_newtype _
+    | Pexp_function _ | Pexp_newtype _
     | Pexp_try _ | Pexp_match _ ->
       (Some name, expr)
     | _ -> (None, x)
