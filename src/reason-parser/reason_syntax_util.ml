@@ -401,7 +401,7 @@ let escape_stars_slashes_mapper =
       replace_string "/*" "/\\*" @@
       replace_string "*/" "*\\/" @@
       replace_string "//" "/\\/" @@
-      replace_string "=>" "=\>" @@
+      replace_string "=>" "=\\>" @@
       str
     else
       str
