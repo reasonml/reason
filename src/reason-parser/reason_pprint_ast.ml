@@ -3141,7 +3141,39 @@ let printer = object(self:'self)
 
   method constrained_pattern x = match x.ppat_desc with
     | Ppat_constraint (p, ct) ->
-        formatTypeConstraint (self#pattern p) (self#core_type ct)
+        begin match (p, ct) with
+        | (
+            {ppat_desc = Ppat_unpack(unpack)},
+            {ptyp_desc = Ptyp_package (lid, cstrs)}
+          ) ->
+            let packageIdent =
+              makeList ~postSpace:true [atom ":"; self#longident_loc lid]
+            in
+            let packageType = match cstrs with
+            | [] -> packageIdent
+            | cstrs ->
+                label ~space:true
+                  (makeList ~postSpace:true [packageIdent; atom "with"])
+                  (makeList
+                      ~break:IfNeed
+                      ~sep:(Sep " and ")
+                      ~indent:4
+                      (List.map (fun (s, ct) ->
+                        label ~space:true
+                          (makeList
+                            ~break:IfNeed ~postSpace:true
+                            [atom "type"; self#longident_loc s; atom "="])
+                          (self#core_type ct)
+                      ) cstrs))
+            in
+            let patConstraint =
+              packageType
+            in
+            makeList ~wrap:("(", ")")
+              [label (makeList [atom "module "; atom unpack.txt]) patConstraint]
+        | _ ->
+          formatTypeConstraint (self#pattern p) (self#core_type ct)
+        end
     | _  -> self#pattern x
 
   method simple_pattern x =

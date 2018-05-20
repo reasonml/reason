@@ -490,11 +490,11 @@ let myFirstClassWillBeFormattedAs: (module HasInt) =
   (module MyModule);
 
 let acceptsAndUnpacksFirstClass =
-    ((module M): (module HasInt)) =>
+    ((module M: HasInt)) =>
   M.x + M.x;
 
 let acceptsAndUnpacksFirstClass =
-    ((module M): (module HasInt)) =>
+    ((module M: HasInt)) =>
   M.x + M.x;
 
 module SecondClass = (val myFirstClass);
@@ -593,15 +593,9 @@ module X = [%test extension];
 module type T = [%test extension];
 
 let foo =
-    (
-      type a,
-      (module X): (module X_t with type t = a),
-    ) => X.a;
+    (type a, (module X: X_t with type t = a)) => X.a;
 
 let f =
     (
-      (module M): (module M with
-                     type x = x and
-                     type y = y
-                   ),
+      (module M: M with type x = x and type y = y),
     ) => M.x;

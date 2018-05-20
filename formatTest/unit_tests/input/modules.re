@@ -469,3 +469,10 @@ module type T = [%test extension];
 let foo (type a, (module X): (module X_t with type t =a)) = X.a;
 
 let f = ((module M): (module M with type x = x and type y = y)) => M.x;
+
+let foo =
+   (
+     (module X): (module X_t with type t = a and type s = a and type z = a),
+     (module Y): (module Y_t with type t = a),
+     (module Z): (module Z_t with type t = a),
+   ) => X.a;
