@@ -919,6 +919,7 @@ let (=-) = (a, b) => a + b;
 
 let foo = (a, b) => a =- b;
 
+<<<<<<< HEAD
 let (=><) = (a, b) => a + b;
 let x = a =>< b;
 
@@ -1004,3 +1005,9 @@ let not = (x) => !x;
 let other = (x) => not(x);
 
 let derefInsideArray = [|a^|];
+
+/* #1941: infix `=>` */
+let (=\>) = (a, b) => a + b;
+
+let x = a =\> b;
+
