@@ -431,7 +431,7 @@ rule token = parse
       { TILDE }
   | "?"
       { QUESTION }
-  | "=?"
+  | "=?" | '=' ['-' '+'] | "=-." | "=+."
       { set_lexeme_length lexbuf 1; EQUAL }
   | lowercase identchar *
       { let s = Lexing.lexeme lexbuf in
@@ -439,9 +439,6 @@ rule token = parse
         with Not_found -> LIDENT s }
   | lowercase_latin1 identchar_latin1 *
       { warn_latin1 lexbuf; LIDENT (Lexing.lexeme lexbuf) }
-  | "~" lowercase identchar * "="
-      { let l = Lexing.lexeme lexbuf in
-        LABEL_WITH_EQUAL(String.sub l 1 (String.length l - 2)) }
   | uppercase identchar *
       { UIDENT(Lexing.lexeme lexbuf) }       (* No capitalized keywords *)
   | uppercase_latin1 identchar_latin1 *
