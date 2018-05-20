@@ -396,8 +396,7 @@ let remove_literal_attrs_mapper =
 (** escape_stars_slashes_mapper escapes all stars and slashes in an AST *)
 let escape_stars_slashes_mapper =
   let escape_stars_slashes str =
-    if (String.contains str '/') ||
-       ((String.contains str '=') && (String.contains str '>')) then
+    if (String.contains str '/') || (str = "=>") then
       replace_string "/*" "/\\*" @@
       replace_string "*/" "*\\/" @@
       replace_string "//" "/\\/" @@
