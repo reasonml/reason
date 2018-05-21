@@ -1330,3 +1330,17 @@ let x = (-1);
 let x = 1;
 
 let x = +. 1;
+
+let x = (~a: int=(-1)) => a;
+
+let x = (~a=(-1)) => a;
+
+let x: float = -. 1;
+
+let x: int = (-1);
+
+let x: int = 1;
+
+let x: float = +. 1;
+
+foo(~a=?-1);

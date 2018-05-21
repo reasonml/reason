@@ -353,18 +353,6 @@ let () =
           None
     )
 
-(* To "unlex" a few characters *)
-let set_lexeme_length buf n = (
-  let open Lexing in
-  if n < 0 then
-    invalid_arg "set_lexeme_length: offset should be positive";
-  if n > buf.lex_curr_pos - buf.lex_start_pos then
-    invalid_arg "set_lexeme_length: offset larger than lexeme";
-  buf.lex_curr_pos <- buf.lex_start_pos + n;
-  buf.lex_curr_p <- {buf.lex_start_p
-                     with pos_cnum = buf.lex_abs_pos + buf.lex_curr_pos};
-)
-
 }
 
 
@@ -431,7 +419,7 @@ rule token = parse
       { TILDE }
   | "?"
       { QUESTION }
-  | "=?" | '=' ['-' '+'] | "=-." | "=+."
+  | "=?"
       { set_lexeme_length lexbuf 1; EQUAL }
   | lowercase identchar *
       { let s = Lexing.lexeme lexbuf in
@@ -604,8 +592,14 @@ rule token = parse
   | "<..>" { LESSDOTDOTGREATER }
   | '\\'? ['~' '?' '!'] operator_chars+
             { PREFIXOP(lexeme_operator lexbuf) }
-  | '\\'? ['=' '<' '>' '|' '&' '$'] operator_chars*
-            { INFIXOP0(lexeme_operator lexbuf) }
+  | '\\'? ['<' '>' '|' '&' '$'] operator_chars*
+            {
+              INFIXOP0(lexeme_operator lexbuf)
+            }
+  | "\\=" operator_chars*
+      { INFIXOP0(lexeme_operator lexbuf) }
+  | '=' operator_chars+
+      { INFIXOP_WITH_EQUAL(lexeme_operator lexbuf) }
   | '\\'? '@' operator_chars*
             { INFIXOP1(lexeme_operator lexbuf) }
   | '\\'? '^' ('\\' '.')? operator_chars*
