@@ -919,7 +919,6 @@ let (=-) = (a, b) => a + b;
 
 let foo = (a, b) => a =- b;
 
-<<<<<<< HEAD
 let (=><) = (a, b) => a + b;
 let x = a =>< b;
 
@@ -1011,3 +1010,4 @@ let (=\>) = (a, b) => a + b;
 
 let x = a =\> b;
 
+let (=>>) = (a, b) => a + b;
