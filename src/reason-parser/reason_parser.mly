@@ -1042,6 +1042,7 @@ let parse_infix_with_eql {txt; loc} expr =
   | "-" | "-." -> mkuminus (mkloc s loc) expr
   | _ -> mkuplus (mkloc s loc) expr
 
+<<<<<<< HEAD
 let record_exp_spread_msg =
   "Records can only have one `...` spread, at the beginning.
 Explanation: since records have a known, fixed shape, a spread like `{a, ...b}` wouldn't make sense, as `b` would override every field of `a` anyway."
@@ -1061,6 +1062,40 @@ let filter_raise_spread_syntax msg nodes =
         raise Reason_syntax_util.(Error(dotdotdotLoc, (Syntax_error msg)))
     | None -> node
     ) nodes
+
+let package_type_of_module_type pmty =
+  let err loc s =
+    raise (Syntaxerr.Error (Syntaxerr.Invalid_package_type (loc, s)))
+  in
+  let map_cstr = function
+    | Pwith_type (lid, ptyp) ->
+        let loc = ptyp.ptype_loc in
+        if ptyp.ptype_params <> [] then
+          err loc "parametrized types are not supported";
+        if ptyp.ptype_cstrs <> [] then
+          err loc "constrained types are not supported";
+        if ptyp.ptype_private <> Public then
+          err loc "private types are not supported";
+
+        (* restrictions below are checked by the 'with_constraint' rule *)
+        assert (ptyp.ptype_kind = Ptype_abstract);
+        assert (ptyp.ptype_attributes = []);
+        let ty =
+          match ptyp.ptype_manifest with
+          | Some ty -> ty
+          | None -> assert false
+        in
+        (lid, ty)
+    | _ ->
+        err pmty.pmty_loc "only 'with type t =' constraints are supported"
+  in
+  match pmty with
+  | {pmty_desc = Pmty_ident lid} -> (lid, [])
+  | {pmty_desc = Pmty_with({pmty_desc = Pmty_ident lid}, cstrs)} ->
+      (lid, List.map map_cstr cstrs)
+  | _ ->
+      err pmty.pmty_loc
+        "only module type identifier and 'with type' constraints are supported"
 %}
 
 
@@ -1452,10 +1487,13 @@ mark_position_mod
     { mkmod(Pmod_constraint($1, $3)) }
   | VAL expr
     { mkmod(Pmod_unpack $2) }
+  (* TODO: Iwan *)
   | VAL expr COLON package_type
     { let loc = mklocation $symbolstartpos $endpos in
-      mkmod (Pmod_unpack(
-             mkexp ~ghost:true ~loc (Pexp_constraint($2, mktyp ~ghost:true ~loc (Ptyp_package $4))))) }
+      (* TODO Iwan *)
+        mkmod (Pmod_unpack(
+             mkexp ~ghost:true ~loc (Pexp_constraint($2, (mktyp ~ghost:true ~loc (Ptyp_package $4))))))
+    }
   | VAL expr COLON package_type COLONGREATER package_type
     { let loc = mklocation $symbolstartpos $endpos in
       mkmod (Pmod_unpack(
@@ -3102,10 +3140,14 @@ simple_expr_direct_argument:
     { mkexp (Pexp_override [])}
   | LPAREN MODULE module_expr RPAREN
     { mkexp (Pexp_pack $3) }
-  | LPAREN MODULE module_expr COLON package_type RPAREN
+  (* TODO Iwan clean-up *)
+  (* | LPAREN MODULE module_expr COLON package_type RPAREN *)
+  | LPAREN MODULE module_expr type_constraint RPAREN
     { let loc = mklocation $symbolstartpos $endpos in
-      mkexp (Pexp_constraint (mkexp ~ghost:true ~loc (Pexp_pack $3),
-                              mktyp ~ghost:true ~loc (Ptyp_package $5)))
+      match $4 with
+      | (Some t, _) ->
+        mkexp (Pexp_constraint (mkexp ~ghost:true ~loc (Pexp_pack $3), t))
+      | _ -> assert false
     }
   | as_loc(LPAREN) MODULE module_expr COLON as_loc(error)
     { unclosed_exp (with_txt $1 "(") (with_txt $5 ")") }
@@ -3514,6 +3556,16 @@ type_constraint:
     { (Some $2, $3) }
   | COLONGREATER core_type
     { (None, Some $2) }
+  | COLON as_loc(mod_ext_longident)
+      loption(preceded(WITH, separated_nonempty_list(AND, package_type_cstr)))
+    { let typ = mktyp(Ptyp_package($2, $3)) in
+      (Some typ, None)
+    }
+  | COLON MODULE as_loc(mty_longident)
+      loption(preceded(WITH, separated_nonempty_list(AND, package_type_cstr)))
+    { let typ = mktyp(Ptyp_package($3, $4)) in
+      (Some typ, None)
+    }
 ;
 
 (* Patterns *)
@@ -3672,15 +3724,8 @@ mark_position_pat
     { unclosed_pat (with_txt $1 "(") (with_txt $5 ")") }
   | LPAREN pattern COLON as_loc(error)
     { expecting_pat (with_txt $4 "type") }
-  | LPAREN MODULE as_loc(UIDENT) RPAREN
-    { mkpat(Ppat_unpack $3) }
-  | LPAREN MODULE as_loc(UIDENT) COLON package_type RPAREN
-    { let loc = mklocation $symbolstartpos $endpos in
-      mkpat(Ppat_constraint(mkpat ~ghost:true ~loc (Ppat_unpack $3),
-                            mktyp ~ghost:true ~loc (Ptyp_package $5)))
-    }
-  | as_loc(LPAREN) MODULE UIDENT COLON package_type as_loc(error)
-    { unclosed_pat (with_txt $1 "(") (with_txt $6 ")") }
+  | MODULE as_loc(UIDENT)
+    { mkpat(Ppat_unpack($2)) }
   | record_pattern { $1 }
   | list_pattern { $1 }
   | array_pattern { $1 }
@@ -3707,10 +3752,18 @@ mark_position_pat
     { mkpat (Ppat_array $2) }
 ;
 
+
 pattern_optional_constraint:
 mark_position_pat
   ( pattern                 { $1 }
-  | pattern COLON core_type { mkpat(Ppat_constraint($1, $3)) }
+  | pattern type_constraint
+    {
+      (* TODO *)
+      match $2 with
+      | (Some ct, _) ->
+        mkpat(Ppat_constraint($1, ct))
+      | _ -> assert false
+    }
   ) {$1};
 ;
 
@@ -4361,9 +4414,7 @@ string_literal_labels:
   lseparated_nonempty_list(COMMA, string_literal_label) COMMA? { $1 };
 
 package_type:
-  as_loc(mty_longident)
-    loption(preceded(WITH, separated_nonempty_list(AND, package_type_cstr)))
-  { ($1, $2) }
+  module_type { package_type_of_module_type $1 }
 ;
 
 package_type_cstr:
@@ -4563,7 +4614,8 @@ toplevel_directive:
 
 (* Miscellaneous *)
 
-opt_LET_MODULE: MODULE { () } | LET MODULE { () };
+opt_LET_MODULE: MODULE { () };
+(* opt_LET_MODULE: MODULE { () } | LET MODULE { () }; *)
 
 %inline name_tag: BACKQUOTE ident { $2 };
 

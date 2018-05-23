@@ -275,7 +275,7 @@ let myFun = fun ((X(hello) | Y(hello)) [@onOrPattern]) => hello;
 [@bs.val]
 external imul : (int, int) => int = "Math.imul";
 
-let module Js {
+module Js {
   type t('a);
 };
 
