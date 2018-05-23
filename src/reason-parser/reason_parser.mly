@@ -1043,6 +1043,7 @@ let parse_infix_with_eql {txt; loc} expr =
   | _ -> mkuplus (mkloc s loc) expr
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 let record_exp_spread_msg =
   "Records can only have one `...` spread, at the beginning.
 Explanation: since records have a known, fixed shape, a spread like `{a, ...b}` wouldn't make sense, as `b` would override every field of `a` anyway."
@@ -1063,9 +1064,12 @@ let filter_raise_spread_syntax msg nodes =
     | None -> node
     ) nodes
 
+(* See https://github.com/ocaml/ocaml/commit/e1e03820e5fea322aa3156721bc1cc0231668101 *)
 let package_type_of_module_type pmty =
   let err loc s =
-    raise (Syntaxerr.Error (Syntaxerr.Invalid_package_type (loc, s)))
+    raise Reason_syntax_util.(
+      Error(loc, (Syntax_error s))
+    )
   in
   let map_cstr = function
     | Pwith_type (lid, ptyp) ->
