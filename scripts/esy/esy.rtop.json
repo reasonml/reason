@@ -1,6 +1,6 @@
 {
   "name": "@esy-ocaml/rtop",
-  "version": "3.0.5",
+  "version": "3.2.0",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -12,7 +12,7 @@
     "@opam/ocamlfind": "",
     "@opam/result": "*",
     "@opam/jbuilder": "*",
-    "@esy-ocaml/reason": " >= 1.17.0",
+    "@esy-ocaml/reason": "^3.2.0",
     "@opam/utop": " >= 1.17.0"
   },
   "peerDependencies": {
