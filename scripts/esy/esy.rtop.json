@@ -30,5 +30,10 @@
       ["esy-installer"]
     ],
     "buildsInSource": "_build"
+  },
+  "resolutions": {
+    "**/@opam/result": "1.2.0",
+    "**/@opam/lwt": "3.3.0",
+    "**/@opam/ocaml-migrate-parsetree": "1.0.10"
   }
 }
