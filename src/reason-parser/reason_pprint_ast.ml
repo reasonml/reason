@@ -1989,8 +1989,10 @@ let is_punned_labelled_expression e lbl = match e.pexp_desc with
   | _ -> false
 
 let is_punned_labelled_pattern p lbl = match p.ppat_desc with
-  | Ppat_var { txt; _ }
+  | Ppat_constraint ({ ppat_desc = Ppat_var { txt; _ }; ppat_attributes = _::_ }, _) 
+    -> false
   | Ppat_constraint ({ ppat_desc = Ppat_var { txt; _ }; _ }, _)
+  | Ppat_var { txt; _ }
     -> txt = lbl
   | _ -> false
 
