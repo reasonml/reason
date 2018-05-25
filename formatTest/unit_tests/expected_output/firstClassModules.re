@@ -39,14 +39,18 @@ module T = (
 module Three = (val three: X_int);
 
 /* Uppercase identifier makes it clear that this is a package type */
-let thing: Thing = (module MyModule);
-let thing: Foo.Bar.Thing = (module MyModule);
+let thing: module Thing = (module MyModule);
+let thing: module Thing = (module MyModule);
+let thing: module Foo.Bar.Thing =
+  (module MyModule);
+let thing: module Foo.Bar.Thing =
+  (module MyModule);
 
-/* Package types with lowercase identifiers need to be
-   wrapped in `(module ...)`, conflicts with a core_type otherwise */
-let smallThing: (module lowercase) =
+let smallThing: module lowercase = (module Mod);
+let smallThing: module lowercase = (module Mod);
+let smallThing: module Foo.Bar.lowercase =
   (module Mod);
-let smallThing: (module Foo.Bar.lowercase) =
+let smallThing: module Foo.Bar.lowercase =
   (module Mod);
 
 let f = (module Add: S.Z, x) => Add.add(x);

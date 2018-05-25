@@ -483,9 +483,10 @@ module MyModule = {
   let x = 10;
 };
 
-let myFirstClass: HasInt = (module MyModule);
+let myFirstClass: module HasInt =
+  (module MyModule);
 
-let myFirstClassWillBeFormattedAs: HasInt =
+let myFirstClassWillBeFormattedAs: module HasInt =
   (module MyModule);
 
 let acceptsAndUnpacksFirstClass =

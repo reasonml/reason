@@ -2926,7 +2926,7 @@ let printer = object(self:'self)
         (*         | moreThanOne -> mktyp(Ptyp_tuple(List.rev moreThanOne)) } *)
         | Ptyp_tuple l -> makeTup (List.map self#core_type l)
         | Ptyp_object (l, o) -> self#unparseObject l o
-        | Ptyp_package (lid, cstrs) -> self#typ_package lid cstrs
+        | Ptyp_package (lid, cstrs) -> self#typ_package ~mod_prefix:false lid cstrs
         (*   | QUOTE ident *)
         (*       { mktyp(Ptyp_var $2) } *)
         | Ptyp_var s -> ensureSingleTokenSticksToLabel (self#tyvar s)
@@ -3118,24 +3118,18 @@ let printer = object(self:'self)
     | _ -> (* x::y *)
       makeES6List pat_list (self#pattern pat_last) ~wrap
 
-  method typ_package ?(protect=false) lid cstrs =
-    let isLowercaseIdent =
-      let is = Longident.flatten lid.txt in
-      match List.rev is with
-      | s::_ ->
-        String.length s > 0 && (
-        let c0 = String.get s 0 in
-        Char.code c0 >= 97
-        )
-      | [] -> false
-     in
-    let protect = protect && isLowercaseIdent in
+  method typ_package ?(protect=false) ?(mod_prefix=true) lid cstrs =
     let packageIdent =
       let packageIdent = self#longident_loc lid in
       if protect then
-        makeList ~postSpace:true ~wrap:("(", ")") [atom "module"; packageIdent]
-      else
-        packageIdent
+        makeList ~postSpace:true ~wrap:("(", ")") [
+          if mod_prefix then atom "module" else atom ""; packageIdent
+        ]
+      else begin
+        if mod_prefix then
+          makeList ~postSpace:true [atom "module"; packageIdent]
+        else packageIdent
+      end
     in
     match cstrs with
     | [] -> packageIdent
@@ -3161,7 +3155,7 @@ let printer = object(self:'self)
             {ppat_desc = Ppat_unpack(unpack)},
             {ptyp_desc = Ptyp_package (lid, cstrs)}
           ) ->
-            let patConstraint = self#typ_package lid cstrs in
+            let patConstraint = self#typ_package ~mod_prefix:false lid cstrs in
             label
               (makeList [atom "module "; atom unpack.txt])
               (label ~space:true ~break:`Never (atom ":") patConstraint)
@@ -4445,7 +4439,7 @@ let printer = object(self:'self)
             source_map ~loc:ct.ptyp_loc
               begin match ct.ptyp_desc with
               | Ptyp_package (li, cstrs) ->
-                self#typ_package ~protect:true li cstrs
+                self#typ_package li cstrs
               | _ ->
                 self#core_type ct
               end
@@ -6564,7 +6558,7 @@ let printer = object(self:'self)
               (makeList ~postSpace:true [atom "val"; (self#unparseExpr e)])
               (label ~space:true ~break:`Never
                 (atom ":")
-                (self#typ_package lid cstrs))
+                (self#typ_package ~mod_prefix:false lid cstrs))
         | _ -> makeList ~postSpace:true [atom "val"; (self#unparseExpr e)]
         in formatPrecedence exprLayout
     | Pmod_ident li ->

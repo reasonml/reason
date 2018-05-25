@@ -1042,8 +1042,6 @@ let parse_infix_with_eql {txt; loc} expr =
   | "-" | "-." -> mkuminus (mkloc s loc) expr
   | _ -> mkuplus (mkloc s loc) expr
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 let record_exp_spread_msg =
   "Records can only have one `...` spread, at the beginning.
 Explanation: since records have a known, fixed shape, a spread like `{a, ...b}` wouldn't make sense, as `b` would override every field of `a` anyway."
@@ -1064,13 +1062,13 @@ let filter_raise_spread_syntax msg nodes =
     | None -> node
     ) nodes
 
+let err loc s =
+  raise Reason_syntax_util.(
+    Error(loc, (Syntax_error s))
+  )
+
 (* See https://github.com/ocaml/ocaml/commit/e1e03820e5fea322aa3156721bc1cc0231668101 *)
 let package_type_of_module_type pmty =
-  let err loc s =
-    raise Reason_syntax_util.(
-      Error(loc, (Syntax_error s))
-    )
-  in
   let map_cstr = function
     | Pwith_type (lid, ptyp) ->
         let loc = ptyp.ptype_loc in
@@ -1100,6 +1098,13 @@ let package_type_of_module_type pmty =
   | _ ->
       err pmty.pmty_loc
         "only module type identifier and 'with type' constraints are supported"
+
+let core_type_of_type_constraint type_constraint =
+  match type_constraint with
+  | (Some ct, None) -> ct
+  | (_, Some t) ->
+        err t.ptyp_loc "only 'with type t =' constraints are supported"
+  | None, None -> assert false
 %}
 
 
@@ -1491,10 +1496,8 @@ mark_position_mod
     { mkmod(Pmod_constraint($1, $3)) }
   | VAL expr
     { mkmod(Pmod_unpack $2) }
-  (* TODO: Iwan *)
   | VAL expr COLON package_type
     { let loc = mklocation $symbolstartpos $endpos in
-      (* TODO Iwan *)
         mkmod (Pmod_unpack(
              mkexp ~ghost:true ~loc (Pexp_constraint($2, (mktyp ~ghost:true ~loc (Ptyp_package $4))))))
     }
@@ -1796,9 +1799,12 @@ module_type_signature:
  *)
 *)
 
+%inline with_constraints:
+  WITH lseparated_nonempty_list(AND, with_constraint) { $2 }
+
 module_type:
 mark_position_mty
-  ( module_type WITH lseparated_nonempty_list(AND, with_constraint)
+  ( module_type with_constraints
     (* See note above about why WITH constraints aren't considered
      * non-arrowed.
      * We might just consider unifying the syntax for record extension with
@@ -1814,7 +1820,7 @@ mark_position_mty
      *                  type props = Spec.props and type dependencies = Spec.props} =>
      *
      *)
-    { mkmty (Pmty_with($1, $3)) }
+    { mkmty (Pmty_with($1, $2)) }
   | simple_module_type
     {$1}
   | LPAREN MODULE TYPE OF module_expr RPAREN
@@ -3144,14 +3150,10 @@ simple_expr_direct_argument:
     { mkexp (Pexp_override [])}
   | LPAREN MODULE module_expr RPAREN
     { mkexp (Pexp_pack $3) }
-  (* TODO Iwan clean-up *)
-  (* | LPAREN MODULE module_expr COLON package_type RPAREN *)
-  | LPAREN MODULE module_expr type_constraint RPAREN
+  | LPAREN MODULE module_expr COLON package_type RPAREN
     { let loc = mklocation $symbolstartpos $endpos in
-      match $4 with
-      | (Some t, _) ->
-        mkexp (Pexp_constraint (mkexp ~ghost:true ~loc (Pexp_pack $3), t))
-      | _ -> assert false
+      mkexp (Pexp_constraint (mkexp ~ghost:true ~loc (Pexp_pack $3),
+                              mktyp ~ghost:true ~loc (Ptyp_package $5)))
     }
   | as_loc(LPAREN) MODULE module_expr COLON as_loc(error)
     { unclosed_exp (with_txt $1 "(") (with_txt $5 ")") }
@@ -3554,22 +3556,51 @@ field_expr:
 
 %inline field_expr_list: lseparated_nonempty_list(COMMA, field_expr) { $1 };
 
+(* Allows for Ptyp_package core types without parens in the context
+ * of a "type_constraint":
+ * let x: module Foo.Bar.Baz = (module FirstClass)
+ *        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ *)
+module_constraint_type:
+  mark_position_typ
+  (* This case allows parsing without a `module` keyword starting with a UIDENT.
+   * From a parsing standpoint are
+   *   let x: module Foo = (module MyMod);
+   * and
+   *   let x: Foo = (module MyMod);
+   * completely the same.
+   * Note that this doesn't hold for lowercase identifiers:
+   *  let x: myType = ... -> myType could be a core_type here.
+   * Since core_types can't start with an UIDENT, we can drop the `module`
+   * keyword safely. It's up to the printer to decide if we still print
+   * the `module` keyword for readability.
+   *)
+  (as_loc(mod_ext_longident) with_constraints?
+   {  mktyp(
+        Ptyp_package(
+         begin match $2 with
+          | Some cstrs ->
+            package_type_of_module_type(
+              mkmty (Pmty_with(mkmty (Pmty_ident $1), cstrs))
+            )
+          | None -> $1, []
+          end
+        )
+      )
+    }
+  | MODULE module_type
+    { mktyp(Ptyp_package(package_type_of_module_type($2))) }
+  ) {$1}
+;
+
 type_constraint:
   | COLON core_type
       preceded(COLONGREATER,core_type)?
     { (Some $2, $3) }
   | COLONGREATER core_type
     { (None, Some $2) }
-  | COLON as_loc(mod_ext_longident)
-      loption(preceded(WITH, separated_nonempty_list(AND, package_type_cstr)))
-    { let typ = mktyp(Ptyp_package($2, $3)) in
-      (Some typ, None)
-    }
-  | COLON MODULE as_loc(mty_longident)
-      loption(preceded(WITH, separated_nonempty_list(AND, package_type_cstr)))
-    { let typ = mktyp(Ptyp_package($3, $4)) in
-      (Some typ, None)
-    }
+  | COLON module_constraint_type
+    { (Some $2, None) }
 ;
 
 (* Patterns *)
@@ -3728,8 +3759,8 @@ mark_position_pat
     { unclosed_pat (with_txt $1 "(") (with_txt $5 ")") }
   | LPAREN pattern COLON as_loc(error)
     { expecting_pat (with_txt $4 "type") }
-  | MODULE as_loc(UIDENT)
-    { mkpat(Ppat_unpack($2)) }
+  | LPAREN MODULE as_loc(UIDENT) RPAREN
+    { mkpat(Ppat_unpack($3)) }
   | record_pattern { $1 }
   | list_pattern { $1 }
   | array_pattern { $1 }
@@ -3761,13 +3792,10 @@ pattern_optional_constraint:
 mark_position_pat
   ( pattern                 { $1 }
   | pattern type_constraint
-    {
-      (* TODO *)
-      match $2 with
-      | (Some ct, _) ->
-        mkpat(Ppat_constraint($1, ct))
-      | _ -> assert false
-    }
+    { mkpat(Ppat_constraint($1, core_type_of_type_constraint $2)) }
+  (* if we kill the `let module …` syntax, this can be placed inside pattern *)
+  | MODULE as_loc(UIDENT) type_constraint
+    { mkpat(Ppat_constraint(mkpat(Ppat_unpack($2)), core_type_of_type_constraint $3)) }
   ) {$1};
 ;
 
@@ -4421,11 +4449,6 @@ package_type:
   module_type { package_type_of_module_type $1 }
 ;
 
-package_type_cstr:
-  TYPE as_loc(label_longident) EQUAL core_type
-  { ($2, $4) }
-;
-
 row_field_list:
   | row_field bar_row_field* { $1 :: $2 }
   | bar_row_field bar_row_field* { $1 :: $2 }
@@ -4618,8 +4641,7 @@ toplevel_directive:
 
 (* Miscellaneous *)
 
-opt_LET_MODULE: MODULE { () };
-(* opt_LET_MODULE: MODULE { () } | LET MODULE { () }; *)
+opt_LET_MODULE: MODULE { () } | LET MODULE { () };
 
 %inline name_tag: BACKQUOTE ident { $2 };
 

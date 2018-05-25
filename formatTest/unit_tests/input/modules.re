@@ -448,9 +448,9 @@ open M;
 open M.Inner;
 open M;
 
-module OldModuleSyntax = {
-  module InnerOldModule = {
-  };
+let module OldModuleSyntax = {
+    let module InnerOldModule = {
+    };
 };
 
 module type SigWithModuleTypeOf = {
