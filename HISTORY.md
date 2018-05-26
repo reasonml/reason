@@ -1,3 +1,15 @@
+## 3.2.0
+
+See the blog post [here](https://reasonml.github.io/blog/2018/03/06/reason-3.2.0.html).
+
+- **WHITESPACES IMPROVEMENTS ARE HERE**: empty lines between most things will now be preserved when you format your code! Multiple lines still collapse to one line in most cases ([#1921](https://github.com/facebook/reason/pull/1921), [#1919](https://github.com/facebook/reason/pull/1919), [#1876](https://github.com/facebook/reason/pull/1876)).
+- **Semicolon relaxation**: see blog post ([#1887](https://github.com/facebook/reason/pull/1887)).
+- Fix parsing & printing of es6 function syntax inside attributes ([#1943](https://github.com/facebook/reason/pull/1943)).
+- List spread now has better error ([#1925](https://github.com/facebook/reason/pull/1925)).
+- Functor in JSX tags ([#1927](https://github.com/facebook/reason/pull/1927)).
+- Better comment printing ([#1940](https://github.com/facebook/reason/pull/1940), [#1934](https://github.com/facebook/reason/pull/1934)).
+- Various other printer improvements.
+
 ## 3.1.0
 
 - **New pipe sugar for function call argument in arbitrary position**: `foo |> map(_, addOne) |> filter(_, isEven)` ([#1804](https://github.com/facebook/reason/pull/1804)).
