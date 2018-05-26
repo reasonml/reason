@@ -174,3 +174,10 @@ let a = foo(. foo(. 3));
 (add(1))(. 2, 3, 4);
 
 (add(1, 2, 3))(. 4);
+
+let run =
+    (
+      ~dry as [@attr] dry: bool=false,
+      ~mMap: string=?,
+      logger,
+    ) => {};
