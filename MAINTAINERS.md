@@ -4,7 +4,7 @@ There's a few native `esy` packages included which are released to npm.
 
 - `reason`
 - `rtop`
-- `rebuild`
+
 These are combined together into a separate package `reason-cli` which
 prebuilds those as well as merlin. They can also be used individually from
 `esy` projects without prebuilding, but they are more or less just npm hosted
@@ -22,10 +22,10 @@ versions of the Opam packages.
 Then follow the printed instructions for pushing any of the packages to npm.
 They will show up under `@esy-ocaml/reason` etc.
 
-## Releasing rtop/rebuild
+## Releasing rtop
 
-`rtop` and `rebuild` are also separate `esy` packages hosted on `npm`. You can
-release them in the same way as you released the `reason` package
+`rtop` is also a separate `esy` package hosted on `npm`. You can
+release it in the same way as you released the `reason` package
 
 
 ## When a new version of Reason is pushed, you might like to release some
