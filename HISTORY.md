@@ -1,6 +1,6 @@
 ## 3.2.0
 
-See the blog post [here](https://reasonml.github.io/blog/2018/03/06/reason-3.2.0.html).
+See the blog post [here](https://reasonml.github.io/blog/2018/05/25/reason-3.2.0.html).
 
 - **WHITESPACES IMPROVEMENTS ARE HERE**: empty lines between most things will now be preserved when you format your code! Multiple lines still collapse to one line in most cases ([#1921](https://github.com/facebook/reason/pull/1921), [#1919](https://github.com/facebook/reason/pull/1919), [#1876](https://github.com/facebook/reason/pull/1876)).
 - **Semicolon relaxation**: see blog post ([#1887](https://github.com/facebook/reason/pull/1887)).
