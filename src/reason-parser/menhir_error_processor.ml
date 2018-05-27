@@ -5,7 +5,7 @@
   e.g. accidentally using a reserved keyword as an identifier. Once we get those
   error codes, the file reason_parser_explain.ml is run (at parsing time, aka
   when you run refmt) and provides a more helpful message for these categories
-  of errors, than the default "<UNKNOWN SYNTAX ERROR>".
+  of errors, than the default "<syntax error>".
 
   Why can't we just check in reason_parser_explain_raw.ml and avoid this build-
   time file generation? Because the error code are dependent on the logic
