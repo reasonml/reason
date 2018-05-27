@@ -261,6 +261,11 @@ let x = foo /></ bar;
   <> (foo(bar)) </>
 </div>;
 
+/* function application */
+<div onClick=this##handleClick>
+  <> (foo(bar)) </>
+</div>;
+
 /* tuple, not function application */
 <div onClick=this##handleClick>
   <> foo bar </>

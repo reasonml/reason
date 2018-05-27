@@ -5630,12 +5630,14 @@ let printer = object(self:'self)
       let raw_literal, _ = extract_raw_literal x.pexp_attributes in
       self#formatChildren remaining (self#constant ?raw_literal constant :: processedRev)
     | {pexp_desc = Pexp_construct ({txt = Lident "::"}, Some {pexp_desc = Pexp_tuple children} )} as x :: remaining ->
-      let {jsxAttrs} = partitionAttributes x.pexp_attributes in
-      if jsxAttrs != [] then
-        match self#simplest_expression x with
-        | Some exp -> self#formatChildren remaining (exp :: processedRev)
-        | None -> self#formatChildren (remaining @ children) processedRev
-      else self#formatChildren (remaining @ children) processedRev
+      begin match x.pexp_attributes with
+        | ({txt="JSX"; loc}, PStr []) :: _ ->
+          begin match self#simplest_expression x with
+            | Some r -> self#formatChildren remaining (r :: processedRev)
+            | None -> self#formatChildren (remaining @ children) processedRev
+            end
+        | _ -> self#formatChildren (remaining @ children) processedRev
+      end
     | {pexp_desc = Pexp_apply(expr, l); pexp_attributes} :: remaining ->
       self#formatChildren remaining (self#simplifyUnparseExpr (List.hd children) :: processedRev)
     | {pexp_desc = Pexp_ident li} :: remaining ->
