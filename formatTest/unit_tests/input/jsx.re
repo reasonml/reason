@@ -156,4 +156,13 @@ let x = foo /></ bar;
 /* https://github.com/facebook/reason/issues/870 */
 <div onClick=this##handleClick>
   <>foo</>
-</div>
+</div>;
+
+<div onClick=this##handleClick>
+  <>(foo(bar))</>
+</div>;
+
+/* tuple, not function application */
+<div onClick=this##handleClick>
+  <> foo(bar) </>
+</div>;

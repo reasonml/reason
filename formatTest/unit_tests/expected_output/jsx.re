@@ -256,3 +256,12 @@ let x = foo /></ bar;
 <div onClick=this##handleClick>
   <> foo </>
 </div>;
+
+<div onClick=this##handleClick>
+  <> (foo(bar)) </>
+</div>;
+
+/* tuple, not function application */
+<div onClick=this##handleClick>
+  <> foo bar </>
+</div>;
