@@ -430,3 +430,9 @@ module Foo3 = {
 };
 
 <Foo3 bar=<Foo /> />;
+
+let onClickHandler = () => ();
+
+let div = (~onClick, ~children, ()) => ();
+
+<div onClick=onClickHandler> <> "foobar" </> </div>;

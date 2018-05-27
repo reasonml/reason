@@ -152,3 +152,8 @@ Module.[<Component />];
 let (/></) = (a, b) => a + b;
 
 let x = foo /></ bar;
+
+/* https://github.com/facebook/reason/issues/870 */
+<div onClick=this##handleClick>
+  <>foo</>
+</div>

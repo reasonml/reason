@@ -1989,7 +1989,7 @@ let is_punned_labelled_expression e lbl = match e.pexp_desc with
   | _ -> false
 
 let is_punned_labelled_pattern p lbl = match p.ppat_desc with
-  | Ppat_constraint ({ ppat_desc = Ppat_var { txt; _ }; ppat_attributes = _::_ }, _) 
+  | Ppat_constraint ({ ppat_desc = Ppat_var { txt; _ }; ppat_attributes = _::_ }, _)
     -> false
   | Ppat_constraint ({ ppat_desc = Ppat_var { txt; _ }; _ }, _)
   | Ppat_var { txt; _ }
@@ -5629,8 +5629,13 @@ let printer = object(self:'self)
     | {pexp_desc = Pexp_constant constant} as x :: remaining ->
       let raw_literal, _ = extract_raw_literal x.pexp_attributes in
       self#formatChildren remaining (self#constant ?raw_literal constant :: processedRev)
-    | {pexp_desc = Pexp_construct ({txt = Lident "::"}, Some {pexp_desc = Pexp_tuple children} )} :: remaining ->
-      self#formatChildren (remaining @ children) processedRev
+    | {pexp_desc = Pexp_construct ({txt = Lident "::"}, Some {pexp_desc = Pexp_tuple children} )} as x :: remaining ->
+      let {jsxAttrs} = partitionAttributes x.pexp_attributes in
+      if jsxAttrs != [] then
+        match self#simplest_expression x with
+        | Some exp -> self#formatChildren remaining (exp :: processedRev)
+        | None -> self#formatChildren (remaining @ children) processedRev
+      else self#formatChildren (remaining @ children) processedRev
     | {pexp_desc = Pexp_apply(expr, l); pexp_attributes} :: remaining ->
       self#formatChildren remaining (self#simplifyUnparseExpr (List.hd children) :: processedRev)
     | {pexp_desc = Pexp_ident li} :: remaining ->
