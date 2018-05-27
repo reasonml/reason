@@ -15,7 +15,6 @@ miscTests/reactjs_jsx_ppx_tests/*.cm*
 *.log
 src/reason_parser.messages.bak
 src/reason_parser_message.ml
-src/reason_parser_explain_raw.ml
 *~
 node_modules
 /bspacks/build/

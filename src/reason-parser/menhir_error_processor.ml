@@ -49,7 +49,7 @@ let print_transitions_on name pred =
       List.iter (fun lr1 -> print "  | %d" (Lr1.to_int lr1)) states;
       print "      -> true"
   end;
-  print "  | _ -> false"
+  print "  | _ -> false\n"
 
 let terminal_find name =
   match
