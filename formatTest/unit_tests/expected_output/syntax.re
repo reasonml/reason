@@ -611,9 +611,7 @@ let tupleInsideALetSequence = {
 
 /* We *require* that function return types be wrapped in
    parenthesis. In this example, there's no ambiguity */
-let makeIncrementer =
-    (delta: int)
-    : (int => int) =>
+let makeIncrementer = (delta: int): (int => int) =>
   a => a + delta;
 
 /* We could even force that consistency with let bindings - it's allowed
@@ -635,18 +633,18 @@ class classWithNoArg = {
      end;
    */
 
-let myFunc = (a: int, b: int) : (int, int) => (
+let myFunc = (a: int, b: int): (int, int) => (
   a,
   b,
 );
-let myFunc = (a: int, b: int) : list(int) => [
+let myFunc = (a: int, b: int): list(int) => [
   1,
 ];
-let myFunc = (a: int, b: int) : point => {
+let myFunc = (a: int, b: int): point => {
   x: a,
   y: b,
 };
-let myFunc = (a: int, b: int) : point => {
+let myFunc = (a: int, b: int): point => {
   x: a,
   y: b,
 };

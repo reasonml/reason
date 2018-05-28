@@ -532,20 +532,17 @@ let addValues = (a: int, b: int) => a + b;
 
 let addValues = (a: int, b: int) => a + b;
 
-let myFunction = (a: int, b: int) : int =>
-  a + b;
+let myFunction = (a: int, b: int): int => a + b;
 
 let functionReturnValueType =
-    (i: int, s: string)
-    : (int => int) =>
+    (i: int, s: string): (int => int) =>
   x => x + 1;
 
 let curriedFormOne = (i: int, s: string) =>
   s ++ string_of_int(i);
 
 let curriedFormTwo =
-    (i: int, x: int)
-    : (int, int) => (
+    (i: int, x: int): (int, int) => (
   i,
   x,
 );

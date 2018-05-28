@@ -1989,7 +1989,7 @@ let is_punned_labelled_expression e lbl = match e.pexp_desc with
   | _ -> false
 
 let is_punned_labelled_pattern p lbl = match p.ppat_desc with
-  | Ppat_constraint ({ ppat_desc = Ppat_var { txt; _ }; ppat_attributes = _::_ }, _) 
+  | Ppat_constraint ({ ppat_desc = Ppat_var { txt; _ }; ppat_attributes = _::_ }, _)
     -> false
   | Ppat_constraint ({ ppat_desc = Ppat_var { txt; _ }; _ }, _)
   | Ppat_var { txt; _ }
@@ -4675,7 +4675,10 @@ let printer = object(self:'self)
           source_map ~loc:ct.ptyp_loc
             (self#non_arrowed_non_simple_core_type ct)
         in
-        (argsList@[formatJustTheTypeConstraint typeLayout], e)
+        ([makeList
+           ~break:IfNeed
+           ~inline:(true, true)
+           (argsList@[formatJustTheTypeConstraint typeLayout])], e)
       | _ -> (argsList, return)
 
   method normalizeConstructorArgsConstraint argsList return =

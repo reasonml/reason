@@ -35,7 +35,7 @@ type separator =
   | SepFinal of string * string
 
 (**
- * Module concerning info to correctly interleave whitspace above a layout node.
+ * Module concerning info to correctly interleave whitespace above a layout node.
  *)
 module WhitespaceRegion = struct
   type t = {

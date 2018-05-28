@@ -446,7 +446,7 @@ module Example2 = (F: (Type) => Type, X: Type) => {
    *   let iso (a:(Compose Id F X).t): (F X).t => a;
    *
    */
-  let iso = (a: Compose(Id)(F)(X).t) : F(X).t => a;
+  let iso = (a: Compose(Id)(F)(X).t): F(X).t => a;
 };
 
 Printf.printf(
