@@ -2361,8 +2361,16 @@ mark_position_exp
       let msg = "Record construction must have at least one field explicitly set" in
       syntax_error_exp loc msg
     }
-  | LBRACE record_expr RBRACE
-    { let (exten, fields) = $2 in mkexp (Pexp_record(fields, exten)) }
+  | LBRACE record_expr SEMI? RBRACE
+    { match $3 with
+        | Some semiloc ->
+        (* If the record expr ends with a semicolon, show a friendly,
+         * clear message explaining how to fix. *)
+        let msg = "Records pairs are delimited by commas. An unexpected trailing semicolon was found.
+Solution: remove the trailing semicolon from the record expression."
+        in
+        raise Reason_syntax_util.(Error(mklocation $startpos($3) $endpos($3), (Syntax_error msg)))
+        | None -> let (exten, fields) = $2 in mkexp (Pexp_record(fields, exten)) }
   | as_loc(LBRACE) record_expr as_loc(error)
     { unclosed_exp (with_txt $1 "{") (with_txt $3 "}")}
   | LBRACE record_expr_with_string_keys RBRACE
