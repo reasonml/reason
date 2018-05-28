@@ -251,3 +251,22 @@ Module.[<Component />];
 let (/></) = (a, b) => a + b;
 
 let x = foo /></ bar;
+
+/* https://github.com/facebook/reason/issues/870 */
+<div onClick=this##handleClick>
+  <> foo </>
+</div>;
+
+<div onClick=this##handleClick>
+  <> (foo(bar)) </>
+</div>;
+
+/* function application */
+<div onClick=this##handleClick>
+  <> (foo(bar)) </>
+</div>;
+
+/* tuple, not function application */
+<div onClick=this##handleClick>
+  <> foo bar </>
+</div>;
