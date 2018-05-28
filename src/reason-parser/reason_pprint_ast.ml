@@ -5842,7 +5842,6 @@ let printer = object(self:'self)
       label
         ~space:true
         (makeList
-           ~sepLeft:false
            [(makeList ~postSpace:true [atom "external"; protectIdentifier vd.pval_name.txt]); (atom ":")])
         (self#core_type vd.pval_type)
     in
