@@ -1033,7 +1033,7 @@ let prepend_attrs_to_labels attrs = function
   | x :: xs -> {x with pld_attributes = attrs @ x.pld_attributes} :: xs
 
 let raise_record_trailing_semi_error loc =
-  let msg = "Record entries are separated by comma; we've found a semicolon instead" in
+  let msg = "Record entries are separated by comma; we've found a semicolon instead." in
   raise Reason_syntax_util.(Error(loc, (Syntax_error msg)))
 
 %}
