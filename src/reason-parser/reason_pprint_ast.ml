@@ -4677,7 +4677,6 @@ let printer = object(self:'self)
         in
         ([makeList
            ~break:IfNeed
-           ~indent:(settings.space * settings.indentWrappedPatternArgs)
            ~inline:(true, true)
            (argsList@[formatJustTheTypeConstraint typeLayout])], e)
       | _ -> (argsList, return)
