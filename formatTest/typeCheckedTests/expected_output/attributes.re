@@ -332,7 +332,7 @@ let myFun =
 /* Bucklescript FFI item attributes */
 
 [@bs.val]
-external imul : (int, int) => int = "Math.imul";
+external imul: (int, int) => int = "Math.imul";
 
 module Js = {
   type t('a);
@@ -391,13 +391,13 @@ type reactClass;
 
 /* "react-dom" shouldn't spread the attribute over multiple lines */
 [@bs.val] [@bs.module "react-dom"]
-external render : (reactElement, element) => unit =
+external render: (reactElement, element) => unit =
   "render";
 
-[@bs.module "f"] external f : int => int = "f";
+[@bs.module "f"] external f: int => int = "f";
 
 [@bs.val] [@bs.module "react"] [@bs.splice]
-external createCompositeElementInternalHack :
+external createCompositeElementInternalHack:
   (
     reactClass,
     {.. "reasonProps": 'props},
@@ -406,18 +406,18 @@ external createCompositeElementInternalHack :
   reactElement =
   "createElement";
 
-external add_nat : (int, int) => int =
+external add_nat: (int, int) => int =
   "add_nat_bytecode" "add_nat_native";
 
 [@bs.module "Bar"]
 [@ocaml.deprecated
   "Use bar instead. It's a much cooler function. This string needs to be a little long"
 ]
-external foo : bool => bool = "";
+external foo: bool => bool = "";
 
 /* Attributes on an entire polymorphic variant leaf */
 [@bs.module "fs"]
-external readFileSync :
+external readFileSync:
   (
     ~name: string,
     [@bs.string] [
@@ -429,7 +429,7 @@ external readFileSync :
   "";
 
 [@bs.module "fs"]
-external readFileSync2 :
+external readFileSync2:
   (
     ~name: string,
     [@bs.string] [
@@ -444,20 +444,19 @@ external readFileSync2 :
 [@test [@attr]
        [%%extension]];
 
-external debounce :
-  (int, [@bs.meth] unit) => unit =
+external debounce: (int, [@bs.meth] unit) => unit =
   "";
 
-external debounce :
+external debounce:
   int => [@bs.meth] (unit => unit) =
   "";
 
-external debounce :
+external debounce:
   (int, [@bs.meth] (unit => unit)) =>
   [@bs.meth] (unit => unit) =
   "";
 
-external debounce :
+external debounce:
   (
     int,
     [@bs.meth] (unit => unit),
@@ -466,7 +465,7 @@ external debounce :
   [@bs.meth] (unit => unit) =
   "";
 
-external debounce :
+external debounce:
   (
     int,
     [@bs.meth] (unit => unit),

@@ -141,7 +141,7 @@ add(. 2, [@bs] 3);
 type timerId;
 
 [@bs.val]
-external setTimeout :
+external setTimeout:
   ((. unit) => unit, int) => timerId =
   "setTimeout";
 

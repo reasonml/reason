@@ -5839,8 +5839,11 @@ let printer = object(self:'self)
   *)
   method primitive_declaration vd =
     let lblBefore =
-      label ~space:true
-        (makeList ~postSpace:true [atom "external"; protectIdentifier vd.pval_name.txt; atom ":"])
+      label
+        ~space:true
+        (makeList
+           ~sepLeft:false
+           [(makeList ~postSpace:true [atom "external"; protectIdentifier vd.pval_name.txt]); (atom ":")])
         (self#core_type vd.pval_type)
     in
     let frstHalf = makeList ~postSpace:true [lblBefore; atom "="] in
