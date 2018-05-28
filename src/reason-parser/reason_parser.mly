@@ -1032,6 +1032,10 @@ let prepend_attrs_to_labels attrs = function
   | [] -> [] (* not possible for valid inputs *)
   | x :: xs -> {x with pld_attributes = attrs @ x.pld_attributes} :: xs
 
+let raise_record_trailing_semi_error loc =
+  let msg = "Record entries are separated by comma; we've found a semicolon instead." in
+  raise Reason_syntax_util.(Error(loc, (Syntax_error msg)))
+
 %}
 
 
@@ -2361,6 +2365,9 @@ mark_position_exp
       let msg = "Record construction must have at least one field explicitly set" in
       syntax_error_exp loc msg
     }
+  | LBRACE DOTDOTDOT expr_optional_constraint SEMI RBRACE
+    { let loc = mklocation $startpos($4) $endpos($4) in
+      raise_record_trailing_semi_error loc }
   | LBRACE record_expr RBRACE
     { let (exten, fields) = $2 in mkexp (Pexp_record(fields, exten)) }
   | as_loc(LBRACE) record_expr as_loc(error)
@@ -3385,10 +3392,22 @@ expr_optional_constraint:
 record_expr:
   | DOTDOTDOT expr_optional_constraint lnonempty_list(preceded(COMMA, lbl_expr)) COMMA?
     { (Some $2, $3) }
+  | DOTDOTDOT expr_optional_constraint SEMI lnonempty_list(lbl_expr) COMMA?
+    { let loc = mklocation $startpos($3) $endpos($3) in
+      raise_record_trailing_semi_error loc }
+  | DOTDOTDOT expr_optional_constraint lnonempty_list(preceded(COMMA, lbl_expr)) SEMI
+    { let loc = mklocation $startpos($4) $endpos($4) in
+      raise_record_trailing_semi_error loc }
   | non_punned_lbl_expr COMMA?
     { (None, [$1]) }
+  | non_punned_lbl_expr SEMI
+    { let loc = mklocation $startpos($2) $endpos($2) in
+      raise_record_trailing_semi_error loc }
   | lbl_expr lnonempty_list(preceded(COMMA, lbl_expr)) COMMA?
     { (None, $1 :: $2) }
+  | lbl_expr lnonempty_list(preceded(COMMA, lbl_expr)) SEMI
+    { let loc = mklocation $startpos($3) $endpos($3) in
+      raise_record_trailing_semi_error loc }
 ;
 
 %inline non_punned_lbl_expr:
