@@ -2369,8 +2369,7 @@ mark_position_exp
     }
   | LBRACE DOTDOTDOT expr_optional_constraint SEMI RBRACE
     { let loc = mklocation $startpos($4) $endpos($4) in
-      raise_record_trailing_semi_error loc
-    }
+      raise_record_trailing_semi_error loc }
   | LBRACE record_expr RBRACE
     { let (exten, fields) = $2 in mkexp (Pexp_record(fields, exten)) }
   | as_loc(LBRACE) record_expr as_loc(error)
@@ -3403,8 +3402,14 @@ record_expr:
       raise_record_trailing_semi_error loc }
   | non_punned_lbl_expr COMMA?
     { (None, [$1]) }
+  | non_punned_lbl_expr SEMI
+    { let loc = mklocation $startpos($2) $endpos($2) in
+      raise_record_trailing_semi_error loc }
   | lbl_expr lnonempty_list(preceded(COMMA, lbl_expr)) COMMA?
     { (None, $1 :: $2) }
+  | lbl_expr lnonempty_list(preceded(COMMA, lbl_expr)) SEMI
+    { let loc = mklocation $startpos($3) $endpos($3) in
+      raise_record_trailing_semi_error loc }
 ;
 
 %inline non_punned_lbl_expr:
