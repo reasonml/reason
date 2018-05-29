@@ -330,6 +330,10 @@ let x = foo /></ bar;
   )
 />;
 
+switch (foo) {
+| `Variant => <Component />
+};
+
 /* https://github.com/facebook/reason/issues/2028 */
 <Foo bar=M.[] />;
 
@@ -337,6 +341,4 @@ let x = foo /></ bar;
 
 <Foo bar=M.[]> ...M.[] </Foo>;
 
-switch (foo) {
-| `Variant => <Component />
-};
+<Foo> 1 2 other </Foo>;
