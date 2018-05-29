@@ -1036,12 +1036,29 @@ let raise_record_trailing_semi_error loc =
   let msg = "Record entries are separated by comma; we've found a semicolon instead." in
   raise Reason_syntax_util.(Error(loc, (Syntax_error msg)))
 
+<<<<<<< HEAD
 let parse_infix_with_eql {txt; loc} expr =
   let s = (String.sub txt 1 (String.length txt - 1)) in
   match s with
   | "-" | "-." -> mkuminus (mkloc s loc) expr
   | _ -> mkuplus (mkloc s loc) expr
 
+let record_exp_spread_msg =
+  "Records can only have one `...` spread, at the beginning"
+
+let record_pat_spread_msg =
+  "The `...` spread operator is not supported in record pattern matches"
+
+(* Handles "over"-parsing of spread syntax with `opt_spread`.
+ * The grammar allows a spread operator at every position, when
+ * generating the parsetree we raise a helpful error message. *)
+let filter_raise_spread_syntax msg nodes =
+  List.map (fun (dotdotdot, node) ->
+    match dotdotdot with
+    | Some dotdotdotLoc ->
+        raise Reason_syntax_util.(Error(dotdotdotLoc, (Syntax_error msg)))
+    | None -> node
+    ) nodes
 %}
 
 
@@ -2865,6 +2882,16 @@ parenthesized_expr:
     { may_tuple $startpos $endpos $2 }
 ;
 
+%inline array_expr_list:
+  LBRACKETBAR
+  lseparated_list(COMMA, opt_spread(expr_optional_constraint))
+  COMMA?
+  BARRBRACKET
+  { let msg = "Arrays can not use the `...` spread. Arrays in Reason are fixed length and spreading them would allocate a new array." in
+    filter_raise_spread_syntax msg $2
+  };
+
+
 (* The grammar of simple exprs changes slightly according to context:
  * - in most cases, calls (like f(x)) are allowed
  * - in some contexts, calls are forbidden
@@ -2879,12 +2906,8 @@ parenthesized_expr:
     { let attrs, cst = $1 in mkexp ~attrs (Pexp_constant cst) }
   | jsx                   { $1 }
   | simple_expr_direct_argument { $1 }
-  | LBRACKETBAR expr_list BARRBRACKET
-    { mkexp (Pexp_array $2) }
-  | as_loc(LBRACKETBAR) expr_list as_loc(error)
-    { unclosed_exp (with_txt $1 "[|") (with_txt $3 "|]") }
-  | LBRACKETBAR BARRBRACKET
-    { mkexp (Pexp_array []) }
+  | array_expr_list
+    { mkexp (Pexp_array $1) }
   (* Not sure why this couldn't have just been below_SHARP (Answer: Being
    * explicit about needing to wait for "as") *)
   | as_loc(constr_longident) %prec prec_constant_constructor
@@ -3340,7 +3363,7 @@ expr_list:
 
 (* [x, y, z, ...n] --> ([x,y,z], Some n) *)
 expr_comma_seq_extension:
-  lseparated_nonempty_list(COMMA, expr_seq_item) COMMA?
+  lseparated_nonempty_list(COMMA, opt_spread(expr_optional_constraint)) COMMA?
   { match List.rev $1 with
     (* Check if the last expr has been spread with `...` *)
     | ((dotdotdot, e) as hd)::es ->
@@ -3348,45 +3371,14 @@ expr_comma_seq_extension:
       | Some dotdotdotLoc -> (es, Some e)
       | None -> (hd::es, None)
       in
-      let exprList = List.map (fun (dotdotdot, e) -> match dotdotdot with
-      | Some dotdotdotLoc ->
-        (* If the `...` appears in any other location then the last,
-         * show a friendly, clear message explaining the consequences. *)
-        let msg = "Lists can only have one `...` spread, and at the end.
+      let msg = "Lists can only have one `...` spread, and at the end.
 Explanation: lists are singly-linked list, where a node contains a value and points to the next node. `[a, ...bc]` efficiently creates a new item and links `bc` as its next nodes. `[...bc, a]` would be expensive, as it'd need to traverse `bc` and prepend each item to `a` one by one. We therefore disallow such syntax sugar.
-Solution: directly use `concat`."
-        in
-        raise Reason_syntax_util.(Error(dotdotdotLoc, (Syntax_error msg)))
-      | None -> e
-      ) es in
+Solution: directly use `concat`." in
+      let exprList = filter_raise_spread_syntax msg es in
       (List.rev exprList, ext)
     | [] -> [], None
   }
 ;
-
-%inline expr_seq_item:
-  DOTDOTDOT? expr_optional_constraint {
-    let dotdotdot = match $1 with
-    | Some _ -> Some(mklocation $startpos($1) $endpos($2))
-    | None -> None
-    in
-    (dotdotdot, $2) }
-;
-
-(* Same as expr_comma_seq_extension but occuring after an item.
-
-  Used when parsing `[<> </>, remaining]`. We know that there is at
-  least one item, so we either should have a comma + more, or nothing.
-
-expr_comma_seq_extension_second_item:
-  | DOTDOTDOT expr_optional_constraint RBRACKET
-    { ([], Some $2) }
-  | expr_optional_constraint COMMA? RBRACKET
-    { ([$1], None) }
-  | expr_optional_constraint COMMA expr_comma_seq_extension
-    { let seq, ext = $3 in ($1::seq, ext) }
-;
-*)
 
 (**
  * See note about tuple patterns. There are few cases where expressions may be
@@ -3400,22 +3392,32 @@ expr_optional_constraint:
 ;
 
 record_expr:
-  | DOTDOTDOT expr_optional_constraint lnonempty_list(preceded(COMMA, lbl_expr)) COMMA?
-    { (Some $2, $3) }
-  | DOTDOTDOT expr_optional_constraint SEMI lnonempty_list(lbl_expr) COMMA?
+  | DOTDOTDOT expr_optional_constraint lnonempty_list(preceded(COMMA,
+    opt_spread(lbl_expr))) COMMA?
+    { let exprList = filter_raise_spread_syntax record_exp_spread_msg $3
+      in (Some $2, exprList)
+    }
+  | DOTDOTDOT
+    expr_optional_constraint SEMI
+    lseparated_nonempty_list(COMMA, opt_spread(lbl_expr)) COMMA?
     { let loc = mklocation $startpos($3) $endpos($3) in
-      raise_record_trailing_semi_error loc }
-  | DOTDOTDOT expr_optional_constraint lnonempty_list(preceded(COMMA, lbl_expr)) SEMI
+      raise_record_trailing_semi_error loc
+    }
+  | DOTDOTDOT
+    expr_optional_constraint
+    lnonempty_list(preceded(COMMA, opt_spread(lbl_expr))) SEMI
     { let loc = mklocation $startpos($4) $endpos($4) in
-      raise_record_trailing_semi_error loc }
+      raise_record_trailing_semi_error loc
+    }
   | non_punned_lbl_expr COMMA?
     { (None, [$1]) }
   | non_punned_lbl_expr SEMI
     { let loc = mklocation $startpos($2) $endpos($2) in
       raise_record_trailing_semi_error loc }
-  | lbl_expr lnonempty_list(preceded(COMMA, lbl_expr)) COMMA?
-    { (None, $1 :: $2) }
-  | lbl_expr lnonempty_list(preceded(COMMA, lbl_expr)) SEMI
+  | lbl_expr lnonempty_list(preceded(COMMA, opt_spread(lbl_expr))) COMMA?
+    { let exprList = filter_raise_spread_syntax record_exp_spread_msg $2 in
+      (None, $1 :: exprList) }
+  | lbl_expr lnonempty_list(preceded(COMMA, opt_spread(lbl_expr))) SEMI
     { let loc = mklocation $startpos($3) $endpos($3) in
       raise_record_trailing_semi_error loc }
 ;
@@ -3711,20 +3713,38 @@ mark_position_pat
 ;
 
 %inline pattern_comma_list:
-  lseparated_nonempty_list(COMMA, pattern) { $1 };
+  lseparated_nonempty_list(COMMA, opt_spread(pattern))
+  { let msg = "Pattern matching on arrays can not have a `...` spread. It would allocate a whole new array every time." in
+    filter_raise_spread_syntax msg $1 };
 
 (* [x, y, z, ...n] --> ([x,y,z], Some n) *)
 pattern_comma_list_extension:
-  | pattern_comma_list COMMA DOTDOTDOT pattern COMMA? { ($1, Some $4) }
-  | pattern_comma_list COMMA?                  { ($1, None)    }
+  lseparated_nonempty_list(COMMA, opt_spread(pattern)) COMMA?
+  { match List.rev $1 with
+    (* spread syntax is only allowed at the end *)
+    | ((dotdotdot, p) as hd)::ps ->
+      let (ps, spreadPat) = match dotdotdot with
+      | Some dotdotdotLoc -> (ps, Some p)
+      | None -> (hd::ps, None)
+      in
+      let msg = "Pattern matching on a list can only have one `...` spread, and at the end" in
+      let patList = filter_raise_spread_syntax msg ps in
+      (List.rev patList, spreadPat)
+    | [] -> [], None
+  };
 ;
 
 lbl_pattern_list:
-  | lbl_pattern                            { ([$1], Closed) }
-  | lbl_pattern COMMA                      { ([$1], Closed) }
-  | lbl_pattern COMMA UNDERSCORE COMMA?    { ([$1], Open)   }
-  | lbl_pattern COMMA lbl_pattern_list
-    { let (fields, closed) = $3 in $1 :: fields, closed }
+  | opt_spread(lbl_pattern)
+    { (filter_raise_spread_syntax record_pat_spread_msg [$1], Closed) }
+  | opt_spread(lbl_pattern) COMMA
+    { (filter_raise_spread_syntax record_pat_spread_msg [$1], Closed) }
+  | opt_spread(lbl_pattern) COMMA UNDERSCORE COMMA?
+    { (filter_raise_spread_syntax record_pat_spread_msg [$1], Open) }
+  | opt_spread(lbl_pattern) COMMA lbl_pattern_list
+    { let (fields, closed) = $3 in
+      let hd = filter_raise_spread_syntax record_pat_spread_msg [$1] in
+      hd @ fields, closed }
 ;
 
 lbl_pattern:
@@ -4762,6 +4782,16 @@ either(X,Y):
   | X { $1 }
   | Y { $1 }
 ;
+
+%inline opt_spread(X):
+  | DOTDOTDOT? X
+    { let dotdotdot = match $1 with
+      | Some _ -> Some (mklocation $startpos($1) $endpos($2))
+      | None -> None
+      in
+      (dotdotdot, $2)
+    }
+  ;
 
 %inline lnonempty_list(X): X llist_aux(X) { $1 :: List.rev $2 };
 

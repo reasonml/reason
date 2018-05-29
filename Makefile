@@ -34,6 +34,12 @@ clean-tests:
 testFormat: build clean-tests
 	cd formatTest; ./test.sh
 
+genMessages:
+	menhir --explain --strict --unused-tokens src/reason-parser/reason_parser.mly --list-errors > src/reason-parser/reason_parser.messages.checked-in
+
+explain:
+	menhir --explain src/reason-parser/reason_parser.mly
+
 # Not all versions of jbuilder have the clean command.
 # jbuilder clean
 clean: clean-tests
