@@ -70,4 +70,4 @@ let message env (token, startp, endp) =
   try token_specific_message token
   with Not_found ->
     (* TODO: we don't know what to say *)
-    "<UNKNOWN SYNTAX ERROR>"
+    "<syntax error>"

@@ -201,12 +201,12 @@ Where `foo.re` contains a syntax error. This will result in an error message lik
 
 ```
 File "test2.re", line 4, characters 2-6:
-Error: 2665: <UNKNOWN SYNTAX ERROR>
+Error: 2665: <syntax error>
 ```
 
 Here, the error code is 2665. We then search for this code in `src/reason-parser/reason_parser.messages`.
 
-- If you find it, you can add a better error message instead of the not so descriptive `<UNKNOWN SYNTAX ERROR>`.
+- If you find it, you can add a better error message instead of the not so descriptive `<syntax error>`.
 
 To test the new error message you can run the following commands again:
 
