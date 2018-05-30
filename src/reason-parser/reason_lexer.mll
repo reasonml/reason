@@ -353,18 +353,6 @@ let () =
           None
     )
 
-(* To "unlex" a few characters *)
-let set_lexeme_length buf n = (
-  let open Lexing in
-  if n < 0 then
-    invalid_arg "set_lexeme_length: offset should be positive";
-  if n > buf.lex_curr_pos - buf.lex_start_pos then
-    invalid_arg "set_lexeme_length: offset larger than lexeme";
-  buf.lex_curr_pos <- buf.lex_start_pos + n;
-  buf.lex_curr_p <- {buf.lex_start_p
-                     with pos_cnum = buf.lex_abs_pos + buf.lex_curr_pos};
-)
-
 }
 
 
@@ -439,9 +427,6 @@ rule token = parse
         with Not_found -> LIDENT s }
   | lowercase_latin1 identchar_latin1 *
       { warn_latin1 lexbuf; LIDENT (Lexing.lexeme lexbuf) }
-  | "~" lowercase identchar * "="
-      { let l = Lexing.lexeme lexbuf in
-        LABEL_WITH_EQUAL(String.sub l 1 (String.length l - 2)) }
   | uppercase identchar *
       { UIDENT(Lexing.lexeme lexbuf) }       (* No capitalized keywords *)
   | uppercase_latin1 identchar_latin1 *
@@ -607,8 +592,14 @@ rule token = parse
   | "<..>" { LESSDOTDOTGREATER }
   | '\\'? ['~' '?' '!'] operator_chars+
             { PREFIXOP(lexeme_operator lexbuf) }
-  | '\\'? ['=' '<' '>' '|' '&' '$'] operator_chars*
-            { INFIXOP0(lexeme_operator lexbuf) }
+  | '\\'? ['<' '>' '|' '&' '$'] operator_chars*
+            {
+              INFIXOP0(lexeme_operator lexbuf)
+            }
+  | "\\=" operator_chars*
+      { INFIXOP0(lexeme_operator lexbuf) }
+  | '=' operator_chars+
+      { INFIXOP_WITH_EQUAL(lexeme_operator lexbuf) }
   | '\\'? '@' operator_chars*
             { INFIXOP1(lexeme_operator lexbuf) }
   | '\\'? '^' ('\\' '.')? operator_chars*
