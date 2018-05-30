@@ -1,5 +1,4 @@
 # Do not merge this pull request until the following is done:
-[x] Make sure rebuild actually works.
 [.] Separate rtop repo/package.
    [x] created repo:  https://github.com/reasonml/rtop
    [ ] Move rtop portion there.

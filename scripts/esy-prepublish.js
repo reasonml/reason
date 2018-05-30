@@ -62,7 +62,7 @@ for (var fileName in backupFiles) {
 }
 
 try {
-  let packages = ['reason', 'rtop', 'rebuild'];
+  let packages = ['reason', 'rtop'];
   for (var i = 0; i < packages.length; i++) {
     process.chdir(projectRoot);
     const packageJson =  require('./esy/esy.' + packages[i] + '.json');
