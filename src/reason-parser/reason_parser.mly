@@ -3734,17 +3734,19 @@ pattern_comma_list_extension:
   };
 ;
 
-lbl_pattern_list:
-  | opt_spread(lbl_pattern)
-    { (filter_raise_spread_syntax record_pat_spread_msg [$1], Closed) }
-  | opt_spread(lbl_pattern) COMMA
-    { (filter_raise_spread_syntax record_pat_spread_msg [$1], Closed) }
-  | opt_spread(lbl_pattern) COMMA UNDERSCORE COMMA?
-    { (filter_raise_spread_syntax record_pat_spread_msg [$1], Open) }
-  | opt_spread(lbl_pattern) COMMA lbl_pattern_list
-    { let (fields, closed) = $3 in
-      let hd = filter_raise_spread_syntax record_pat_spread_msg [$1] in
-      hd @ fields, closed }
+_lbl_pattern_list:
+  | opt_spread(lbl_pattern)                            { ([$1], Closed) }
+  | opt_spread(lbl_pattern) COMMA                      { ([$1], Closed) }
+  | opt_spread(lbl_pattern) COMMA UNDERSCORE COMMA?    { ([$1], Open)   }
+  | opt_spread(lbl_pattern) COMMA _lbl_pattern_list
+    { let (fields, closed) = $3 in $1 :: fields, closed }
+;
+
+%inline lbl_pattern_list:
+  _lbl_pattern_list
+  { let (fields, closed) = $1 in
+    (filter_raise_spread_syntax record_pat_spread_msg fields, closed)
+  }
 ;
 
 lbl_pattern:
