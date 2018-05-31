@@ -1036,7 +1036,6 @@ let raise_record_trailing_semi_error loc =
   let msg = "Record entries are separated by comma; we've found a semicolon instead." in
   raise Reason_syntax_util.(Error(loc, (Syntax_error msg)))
 
-<<<<<<< HEAD
 let parse_infix_with_eql {txt; loc} expr =
   let s = (String.sub txt 1 (String.length txt - 1)) in
   match s with
@@ -1044,10 +1043,13 @@ let parse_infix_with_eql {txt; loc} expr =
   | _ -> mkuplus (mkloc s loc) expr
 
 let record_exp_spread_msg =
-  "Records can only have one `...` spread, at the beginning"
+  "Records can only have one `...` spread, at the beginning.
+Explanation: since records have a known, fixed shape, a spread like `{a, ...b}` wouldn't make sense, as `b` would override every field of `a` anyway."
 
 let record_pat_spread_msg =
-  "The `...` spread operator is not supported in record pattern matches"
+  "Record's `...` spread is not supported in pattern matches.
+Explanation: you can't collect a subset of a record's field into its own record, since a record needs an explicit declaration and that subset wouldn't have one.
+Solution: you need to pull out each field you want explicitly."
 
 (* Handles "over"-parsing of spread syntax with `opt_spread`.
  * The grammar allows a spread operator at every position, when
@@ -2887,7 +2889,7 @@ parenthesized_expr:
   lseparated_list(COMMA, opt_spread(expr_optional_constraint))
   COMMA?
   BARRBRACKET
-  { let msg = "Arrays can not use the `...` spread. Arrays in Reason are fixed length and spreading them would allocate a new array." in
+  { let msg = "Arrays can't use the `...` spread currently. Please use `concat` or other Array helpers." in
     filter_raise_spread_syntax msg $2
   };
 
@@ -3371,9 +3373,9 @@ expr_comma_seq_extension:
       | Some dotdotdotLoc -> (es, Some e)
       | None -> (hd::es, None)
       in
-      let msg = "Lists can only have one `...` spread, and at the end.
+      let msg = "Lists can only have one `...` spread, at the end.
 Explanation: lists are singly-linked list, where a node contains a value and points to the next node. `[a, ...bc]` efficiently creates a new item and links `bc` as its next nodes. `[...bc, a]` would be expensive, as it'd need to traverse `bc` and prepend each item to `a` one by one. We therefore disallow such syntax sugar.
-Solution: directly use `concat`." in
+Solution: directly use `concat` or other List helpers." in
       let exprList = filter_raise_spread_syntax msg es in
       (List.rev exprList, ext)
     | [] -> [], None
@@ -3714,7 +3716,9 @@ mark_position_pat
 
 %inline pattern_comma_list:
   lseparated_nonempty_list(COMMA, opt_spread(pattern))
-  { let msg = "Pattern matching on arrays can not have a `...` spread. It would allocate a whole new array every time." in
+  { let msg = "Array's `...` spread is not supported in pattern matches.
+Explanation: such spread would create a subarray; out of performance concern, our pattern matching currently guarantees to never create new intermediate data.
+Solution: if it's to validate the first few elements, use a `when` clause + Array size check + `get` checks on the current pattern. If it's to obtain a subarray, use `Array.sub` or `Belt.Array.slice`." in
     filter_raise_spread_syntax msg $1 };
 
 (* [x, y, z, ...n] --> ([x,y,z], Some n) *)
@@ -3727,7 +3731,8 @@ pattern_comma_list_extension:
       | Some dotdotdotLoc -> (ps, Some p)
       | None -> (hd::ps, None)
       in
-      let msg = "Pattern matching on a list can only have one `...` spread, and at the end" in
+      let msg = "List pattern matches only supports one `...` spread, at the end.
+Explanation: a list spread at the tail is efficient, but a spread in the middle would create new list(s); out of performance concern, our pattern matching currently guarantees to never create new intermediate data." in
       let patList = filter_raise_spread_syntax msg ps in
       (List.rev patList, spreadPat)
     | [] -> [], None
