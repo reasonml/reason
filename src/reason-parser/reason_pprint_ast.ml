@@ -3150,18 +3150,17 @@ let printer = object(self:'self)
 
   method constrained_pattern x = match x.ppat_desc with
     | Ppat_constraint (p, ct) ->
-        begin match (p, ct) with
+        let (pat, typ) = begin match (p, ct) with
         | (
             {ppat_desc = Ppat_unpack(unpack)},
             {ptyp_desc = Ptyp_package (lid, cstrs)}
           ) ->
-            let patConstraint = self#typ_package ~mod_prefix:false lid cstrs in
-            label
-              (makeList [atom "module "; atom unpack.txt])
-              (label ~space:true ~break:`Never (atom ":") patConstraint)
+            (makeList ~postSpace:true [atom "module"; atom unpack.txt],
+             self#typ_package ~mod_prefix:false lid cstrs)
         | _ ->
-          formatTypeConstraint (self#pattern p) (self#core_type ct)
-        end
+          (self#pattern p, self#core_type ct)
+        end in
+        formatTypeConstraint pat typ
     | _  -> self#pattern x
 
   method simple_pattern x =
@@ -6554,11 +6553,9 @@ let printer = object(self:'self)
     | Pmod_unpack e ->
         let exprLayout = match e.pexp_desc with
         | Pexp_constraint (e, {ptyp_desc = Ptyp_package(lid, cstrs)}) ->
-            label
-              (makeList ~postSpace:true [atom "val"; (self#unparseExpr e)])
-              (label ~space:true ~break:`Never
-                (atom ":")
-                (self#typ_package ~mod_prefix:false lid cstrs))
+          formatTypeConstraint
+            (makeList ~postSpace:true [atom "val"; (self#unparseExpr e)])
+            (self#typ_package ~mod_prefix:false lid cstrs)
         | _ -> makeList ~postSpace:true [atom "val"; (self#unparseExpr e)]
         in formatPrecedence exprLayout
     | Pmod_ident li ->

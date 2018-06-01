@@ -1,26 +1,26 @@
 module Modifier = (
-  val Db.Hashtbl.create()
-    : Db.Sig with type t = Mods.t
+  val Db.Hashtbl.create():
+    Db.Sig with type t = Mods.t
 );
 module Modifier = (
-  val Db.Hashtbl.create()
-    : Db.Sig with type t = Mods.t
+  val Db.Hashtbl.create():
+    Db.Sig with type t = Mods.t
 );
 module Modifier = (
-  val Db.Hashtbl.create()
-    : Db.Sig with type t = Mods.t
+  val Db.Hashtbl.create():
+    Db.Sig with type t = Mods.t
 );
 module Modifier = (
-  val Db.Hashtbl.create()
-    : Db.Sig with type t = Mods.t
+  val Db.Hashtbl.create():
+    Db.Sig with type t = Mods.t
 );
 module Modifier = (val Db.Hashtbl.create());
 module Modifier = (
-  val Db.Hashtbl.create()
-    : Db.Sig with
-        type t = Mods.t and
-        type s = Mods.s and
-        type z = Mods.z
+  val Db.Hashtbl.create():
+    Db.Sig with
+      type t = Mods.t and
+      type s = Mods.s and
+      type z = Mods.z
 );
 
 module Lowercase = (val stuff: lowercase);
@@ -28,8 +28,8 @@ module Lowercase = (
   val stuff: Foo.Bar.lowercase
 );
 module Lowercase = (
-  val stuff
-    : Foo.Bar.lowercase with type t = Mods.t
+  val stuff:
+    Foo.Bar.lowercase with type t = Mods.t
 );
 
 module T = (
@@ -62,12 +62,12 @@ let join_iter =
       module A: Sig with type t = ta,
       module B: Sig with type t = tb,
       module C: Sig with type t = tb,
-      module D
-        : Sig with
-            type t = tb and
-            type s = tc and
-            type x = td and
-            type z = te,
+      module D:
+        Sig with
+          type t = tb and
+          type s = tc and
+          type x = td and
+          type z = te,
       fn,
     ) =>
   fn(A.value + B.value);

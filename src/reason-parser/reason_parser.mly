@@ -1498,8 +1498,8 @@ mark_position_mod
     { mkmod(Pmod_unpack $2) }
   | VAL expr COLON package_type
     { let loc = mklocation $symbolstartpos $endpos in
-        mkmod (Pmod_unpack(
-             mkexp ~ghost:true ~loc (Pexp_constraint($2, (mktyp ~ghost:true ~loc (Ptyp_package $4))))))
+      mkmod (Pmod_unpack(
+           mkexp ~ghost:true ~loc (Pexp_constraint($2, (mktyp ~ghost:true ~loc (Ptyp_package $4))))))
     }
   | VAL expr COLON package_type COLONGREATER package_type
     { let loc = mklocation $symbolstartpos $endpos in

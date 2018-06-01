@@ -600,11 +600,11 @@ let f =
 
 let foo =
     (
-      module X
-        : X_t with
-            type t = a and
-            type s = a and
-            type z = a,
+      module X:
+        X_t with
+          type t = a and
+          type s = a and
+          type z = a,
       module Y: Y_t with type t = a,
       module Z: Z_t with type t = a,
     ) => X.a;
