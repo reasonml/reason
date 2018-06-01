@@ -1067,7 +1067,11 @@ let err loc s =
     Error(loc, (Syntax_error s))
   )
 
-(* See https://github.com/ocaml/ocaml/commit/e1e03820e5fea322aa3156721bc1cc0231668101 *)
+(*
+ * See https://github.com/ocaml/ocaml/commit/e1e03820e5fea322aa3156721bc1cc0231668101
+ * Rely on the parsing rules for generic module types, and then
+ * extract a package type, enabling more explicit error messages
+ * *)
 let package_type_of_module_type pmty =
   let map_cstr = function
     | Pwith_type (lid, ptyp) ->
