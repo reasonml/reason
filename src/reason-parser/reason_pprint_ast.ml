@@ -5385,6 +5385,7 @@ let printer = object(self:'self)
         | ([], Pexp_open (ovf, lid, e)) ->
           ovf == Fresh && self#isSeriesOfOpensFollowedByNonSequencyExpression e
         | ([], Pexp_letexception _) -> false
+        | ([], Pexp_extension _) -> false
         | _ -> true
 
   method unparseObject ?wrap:((lwrap,rwrap)=("", "")) ?(withStringKeys=false) l o =
