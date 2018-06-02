@@ -38,11 +38,7 @@ module T = (
 
 module Three = (val three: X_int);
 
-/* Uppercase identifier makes it clear that this is a package type */
 let thing: module Thing = (module MyModule);
-let thing: module Thing = (module MyModule);
-let thing: module Foo.Bar.Thing =
-  (module MyModule);
 let thing: module Foo.Bar.Thing =
   (module MyModule);
 

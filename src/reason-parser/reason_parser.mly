@@ -1102,13 +1102,6 @@ let package_type_of_module_type pmty =
   | _ ->
       err pmty.pmty_loc
         "only module type identifier and 'with type' constraints are supported"
-
-let core_type_of_type_constraint type_constraint =
-  match type_constraint with
-  | (Some ct, None) -> ct
-  | (_, Some t) ->
-        err t.ptyp_loc "only 'with type t =' constraints are supported"
-  | None, None -> assert false
 %}
 
 
@@ -1500,19 +1493,19 @@ mark_position_mod
     { mkmod(Pmod_constraint($1, $3)) }
   | VAL expr
     { mkmod(Pmod_unpack $2) }
-  | VAL expr COLON package_type
+  | VAL expr COLON MODULE? package_type
     { let loc = mklocation $symbolstartpos $endpos in
       mkmod (Pmod_unpack(
-           mkexp ~ghost:true ~loc (Pexp_constraint($2, (mktyp ~ghost:true ~loc (Ptyp_package $4))))))
+           mkexp ~ghost:true ~loc (Pexp_constraint($2, (mktyp ~ghost:true ~loc (Ptyp_package $5))))))
     }
-  | VAL expr COLON package_type COLONGREATER package_type
+  | VAL expr COLON MODULE? package_type COLONGREATER MODULE? package_type
     { let loc = mklocation $symbolstartpos $endpos in
       mkmod (Pmod_unpack(
-             mkexp ~ghost:true ~loc (Pexp_coerce($2, Some(mktyp ~ghost:true ~loc (Ptyp_package $4)),
-                                    mktyp ~ghost:true ~loc (Ptyp_package $6))))) }
-  | VAL expr COLONGREATER package_type
+             mkexp ~ghost:true ~loc (Pexp_coerce($2, Some(mktyp ~ghost:true ~loc (Ptyp_package $5)),
+                                    mktyp ~ghost:true ~loc (Ptyp_package $8))))) }
+  | VAL expr COLONGREATER MODULE? package_type
     { let loc = mklocation $symbolstartpos $endpos and ghost = true in
-      let mty = mktyp ~ghost ~loc (Ptyp_package $4) in
+      let mty = mktyp ~ghost ~loc (Ptyp_package $5) in
       mkmod (Pmod_unpack(mkexp ~ghost ~loc (Pexp_coerce($2, None, mty))))
     }
   ) {$1};
@@ -3563,37 +3556,12 @@ field_expr:
 (* Allows for Ptyp_package core types without parens in the context
  * of a "type_constraint":
  * let x: module Foo.Bar.Baz = (module FirstClass)
- *        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ *        ^^^^^^^^^^^^^^^^^^
  *)
-module_constraint_type:
+%inline module_constraint_type:
   mark_position_typ
-  (* This case allows parsing without a `module` keyword starting with a UIDENT.
-   * From a parsing standpoint are
-   *   let x: module Foo = (module MyMod);
-   * and
-   *   let x: Foo = (module MyMod);
-   * completely the same.
-   * Note that this doesn't hold for lowercase identifiers:
-   *  let x: myType = ... -> myType could be a core_type here.
-   * Since core_types can't start with an UIDENT, we can drop the `module`
-   * keyword safely. It's up to the printer to decide if we still print
-   * the `module` keyword for readability.
-   *)
-  (as_loc(mod_ext_longident) with_constraints?
-   {  mktyp(
-        Ptyp_package(
-         begin match $2 with
-          | Some cstrs ->
-            package_type_of_module_type(
-              mkmty (Pmty_with(mkmty (Pmty_ident $1), cstrs))
-            )
-          | None -> $1, []
-          end
-        )
-      )
-    }
-  | MODULE module_type
-    { mktyp(Ptyp_package(package_type_of_module_type($2))) }
+  (MODULE package_type
+    { mktyp(Ptyp_package($2)) }
   ) {$1}
 ;
 
@@ -3791,15 +3759,27 @@ mark_position_pat
     { mkpat (Ppat_array $2) }
 ;
 
-
 pattern_optional_constraint:
 mark_position_pat
   ( pattern                 { $1 }
-  | pattern type_constraint
-    { mkpat(Ppat_constraint($1, core_type_of_type_constraint $2)) }
-  (* if we kill the `let module …` syntax, this can be placed inside pattern *)
-  | MODULE as_loc(UIDENT) type_constraint
-    { mkpat(Ppat_constraint(mkpat(Ppat_unpack($2)), core_type_of_type_constraint $3)) }
+  | pattern COLON core_type
+    { mkpat(Ppat_constraint($1, $3)) }
+  (* If we kill the `let module …` syntax, this can be placed inside pattern.
+   * Allows parsing of
+   *  let foo = (type a, module X: X_t with type t = a) => X.a;
+   *                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   * The `module` keyword after the colon is optional, because `module X`
+   * clearly indicates that we're dealing with a Ppat_unpack here.
+   *)
+  | MODULE as_loc(UIDENT) COLON MODULE? package_type
+    { mkpat(
+        Ppat_constraint(
+          mkpat(Ppat_unpack($2)),
+          let loc = match $4 with
+          | Some _ -> mklocation $startpos($4) $endpos($5)
+          | None -> mklocation $startpos($5) $endpos($5)
+          in
+          mktyp ~loc (Ptyp_package($5)))) }
   ) {$1};
 ;
 

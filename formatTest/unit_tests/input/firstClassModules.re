@@ -1,6 +1,6 @@
 module Modifier = (val ((Db.Hashtbl.create ()): (module Db.Sig with type t = Mods.t)));
-module Modifier = (val (Db.Hashtbl.create (): Db.Sig with type t = Mods.t));
 module Modifier = (val (Db.Hashtbl.create ()): (Db.Sig with type t = Mods.t));
+module Modifier = (val (Db.Hashtbl.create (): module Db.Sig with type t = Mods.t));
 module Modifier = (val Db.Hashtbl.create (): Db.Sig with type t = Mods.t);
 module Modifier = (val Db.Hashtbl.create ());
 module Modifier = (val Db.Hashtbl.create ():
@@ -15,10 +15,7 @@ module T = (val (module FirstClass): myLowercaseModule);
 
 module Three = (val three: X_int);
 
-/* Uppercase identifier makes it clear that this is a package type */
-let thing: Thing = (module MyModule);
 let thing: module Thing = (module MyModule);
-let thing: Foo.Bar.Thing = (module MyModule);
 let thing: module Foo.Bar.Thing = (module MyModule);
 
 let smallThing: (module lowercase) = (module Mod);
