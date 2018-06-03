@@ -1061,6 +1061,47 @@ let filter_raise_spread_syntax msg nodes =
         raise Reason_syntax_util.(Error(dotdotdotLoc, (Syntax_error msg)))
     | None -> node
     ) nodes
+
+let err loc s =
+  raise Reason_syntax_util.(
+    Error(loc, (Syntax_error s))
+  )
+
+(*
+ * See https://github.com/ocaml/ocaml/commit/e1e03820e5fea322aa3156721bc1cc0231668101
+ * Rely on the parsing rules for generic module types, and then
+ * extract a package type, enabling more explicit error messages
+ * *)
+let package_type_of_module_type pmty =
+  let map_cstr = function
+    | Pwith_type (lid, ptyp) ->
+        let loc = ptyp.ptype_loc in
+        if ptyp.ptype_params <> [] then
+          err loc "parametrized types are not supported";
+        if ptyp.ptype_cstrs <> [] then
+          err loc "constrained types are not supported";
+        if ptyp.ptype_private <> Public then
+          err loc "private types are not supported";
+
+        (* restrictions below are checked by the 'with_constraint' rule *)
+        assert (ptyp.ptype_kind = Ptype_abstract);
+        assert (ptyp.ptype_attributes = []);
+        let ty =
+          match ptyp.ptype_manifest with
+          | Some ty -> ty
+          | None -> assert false
+        in
+        (lid, ty)
+    | _ ->
+        err pmty.pmty_loc "only 'with type t =' constraints are supported"
+  in
+  match pmty with
+  | {pmty_desc = Pmty_ident lid} -> (lid, [])
+  | {pmty_desc = Pmty_with({pmty_desc = Pmty_ident lid}, cstrs)} ->
+      (lid, List.map map_cstr cstrs)
+  | _ ->
+      err pmty.pmty_loc
+        "only module type identifier and 'with type' constraints are supported"
 %}
 
 
@@ -1452,18 +1493,19 @@ mark_position_mod
     { mkmod(Pmod_constraint($1, $3)) }
   | VAL expr
     { mkmod(Pmod_unpack $2) }
-  | VAL expr COLON package_type
+  | VAL expr COLON MODULE? package_type
     { let loc = mklocation $symbolstartpos $endpos in
       mkmod (Pmod_unpack(
-             mkexp ~ghost:true ~loc (Pexp_constraint($2, mktyp ~ghost:true ~loc (Ptyp_package $4))))) }
-  | VAL expr COLON package_type COLONGREATER package_type
+           mkexp ~ghost:true ~loc (Pexp_constraint($2, (mktyp ~ghost:true ~loc (Ptyp_package $5))))))
+    }
+  | VAL expr COLON MODULE? package_type COLONGREATER MODULE? package_type
     { let loc = mklocation $symbolstartpos $endpos in
       mkmod (Pmod_unpack(
-             mkexp ~ghost:true ~loc (Pexp_coerce($2, Some(mktyp ~ghost:true ~loc (Ptyp_package $4)),
-                                    mktyp ~ghost:true ~loc (Ptyp_package $6))))) }
-  | VAL expr COLONGREATER package_type
+             mkexp ~ghost:true ~loc (Pexp_coerce($2, Some(mktyp ~ghost:true ~loc (Ptyp_package $5)),
+                                    mktyp ~ghost:true ~loc (Ptyp_package $8))))) }
+  | VAL expr COLONGREATER MODULE? package_type
     { let loc = mklocation $symbolstartpos $endpos and ghost = true in
-      let mty = mktyp ~ghost ~loc (Ptyp_package $4) in
+      let mty = mktyp ~ghost ~loc (Ptyp_package $5) in
       mkmod (Pmod_unpack(mkexp ~ghost ~loc (Pexp_coerce($2, None, mty))))
     }
   ) {$1};
@@ -1754,9 +1796,12 @@ module_type_signature:
  *)
 *)
 
+%inline with_constraints:
+  WITH lseparated_nonempty_list(AND, with_constraint) { $2 }
+
 module_type:
 mark_position_mty
-  ( module_type WITH lseparated_nonempty_list(AND, with_constraint)
+  ( module_type with_constraints
     (* See note above about why WITH constraints aren't considered
      * non-arrowed.
      * We might just consider unifying the syntax for record extension with
@@ -1772,7 +1817,7 @@ mark_position_mty
      *                  type props = Spec.props and type dependencies = Spec.props} =>
      *
      *)
-    { mkmty (Pmty_with($1, $3)) }
+    { mkmty (Pmty_with($1, $2)) }
   | simple_module_type
     {$1}
   | LPAREN MODULE TYPE OF module_expr RPAREN
@@ -3508,12 +3553,26 @@ field_expr:
 
 %inline field_expr_list: lseparated_nonempty_list(COMMA, field_expr) { $1 };
 
+(* Allows for Ptyp_package core types without parens in the context
+ * of a "type_constraint":
+ * let x: module Foo.Bar.Baz = (module FirstClass)
+ *        ^^^^^^^^^^^^^^^^^^
+ *)
+%inline module_constraint_type:
+  mark_position_typ
+  (MODULE package_type
+    { mktyp(Ptyp_package($2)) }
+  ) {$1}
+;
+
 type_constraint:
   | COLON core_type
       preceded(COLONGREATER,core_type)?
     { (Some $2, $3) }
   | COLONGREATER core_type
     { (None, Some $2) }
+  | COLON module_constraint_type
+    { (Some $2, None) }
 ;
 
 (* Patterns *)
@@ -3673,14 +3732,7 @@ mark_position_pat
   | LPAREN pattern COLON as_loc(error)
     { expecting_pat (with_txt $4 "type") }
   | LPAREN MODULE as_loc(UIDENT) RPAREN
-    { mkpat(Ppat_unpack $3) }
-  | LPAREN MODULE as_loc(UIDENT) COLON package_type RPAREN
-    { let loc = mklocation $symbolstartpos $endpos in
-      mkpat(Ppat_constraint(mkpat ~ghost:true ~loc (Ppat_unpack $3),
-                            mktyp ~ghost:true ~loc (Ptyp_package $5)))
-    }
-  | as_loc(LPAREN) MODULE UIDENT COLON package_type as_loc(error)
-    { unclosed_pat (with_txt $1 "(") (with_txt $6 ")") }
+    { mkpat(Ppat_unpack($3)) }
   | record_pattern { $1 }
   | list_pattern { $1 }
   | array_pattern { $1 }
@@ -3710,7 +3762,24 @@ mark_position_pat
 pattern_optional_constraint:
 mark_position_pat
   ( pattern                 { $1 }
-  | pattern COLON core_type { mkpat(Ppat_constraint($1, $3)) }
+  | pattern COLON core_type
+    { mkpat(Ppat_constraint($1, $3)) }
+  (* If we kill the `let module …` syntax, this can be placed inside pattern.
+   * Allows parsing of
+   *  let foo = (type a, module X: X_t with type t = a) => X.a;
+   *                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   * The `module` keyword after the colon is optional, because `module X`
+   * clearly indicates that we're dealing with a Ppat_unpack here.
+   *)
+  | MODULE as_loc(UIDENT) COLON MODULE? package_type
+    { mkpat(
+        Ppat_constraint(
+          mkpat(Ppat_unpack($2)),
+          let loc = match $4 with
+          | Some _ -> mklocation $startpos($4) $endpos($5)
+          | None -> mklocation $startpos($5) $endpos($5)
+          in
+          mktyp ~loc (Ptyp_package($5)))) }
   ) {$1};
 ;
 
@@ -4361,14 +4430,7 @@ string_literal_labels:
   lseparated_nonempty_list(COMMA, string_literal_label) COMMA? { $1 };
 
 package_type:
-  as_loc(mty_longident)
-    loption(preceded(WITH, separated_nonempty_list(AND, package_type_cstr)))
-  { ($1, $2) }
-;
-
-package_type_cstr:
-  TYPE as_loc(label_longident) EQUAL core_type
-  { ($2, $4) }
+  module_type { package_type_of_module_type $1 }
 ;
 
 row_field_list:
