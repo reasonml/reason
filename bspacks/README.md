@@ -20,9 +20,9 @@ opam install utop
 cd .. && npm install
 ```
 
-Also, have `java` installed in your system. This is needed to use closure compiler to compress the final `refmt.js`. On macOS,  you will need to install the [Java Development Kit](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) to be able to call `java` from the terminal.
+Also, have `java` installed in your system. This is needed to use closure compiler to compress the final `refmt.js`. In most cases, this means installing the [Java Development Kit](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html).
 
-Now, go back to project root and run:
+Now, from the project root run:
 
 ```sh
 version=VERSION_NUMBER_HERE npm run prepublishOnly
