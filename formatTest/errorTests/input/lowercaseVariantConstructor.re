@@ -1,0 +1,3 @@
+type myType =
+  | Uppercase;
+  | lowercase;
