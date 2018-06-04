@@ -4236,6 +4236,19 @@ let printer = object(self:'self)
     let letPattern = (label ~space:true (atom labelOpener) bindingPattern) in
     (formatTypeConstraint letPattern typeConstraint)
 
+  method formatModuleTypeOfSignatureBinding labelOpener bindingPattern typeConstraint =
+    let letPattern = makeList
+        ~break:IfNeed
+        ~inline:(true, true)
+        [(atom labelOpener);
+         makeList
+           ~pad:(true, false)
+           [bindingPattern; atom ":"]]
+    in
+    makeList
+      ~inline:(true, true)
+      ~break:Always
+      [letPattern; makeList ~wrap:("  ", "") [typeConstraint]]
 
   (*
      The [bindingLabel] is either the function name (if let binding) or first
@@ -6438,7 +6451,9 @@ let printer = object(self:'self)
             in
             let layout =
               self#attach_std_item_attrs stdAttrs @@
-              self#formatSimpleSignatureBinding
+              (match pmd.pmd_type.pmty_desc with
+               | Pmty_typeof _ -> self#formatModuleTypeOfSignatureBinding
+               | _ -> self#formatSimpleSignatureBinding)
                 "module"
                 (atom pmd.pmd_name.txt)
                 (self#module_type pmd.pmd_type)
