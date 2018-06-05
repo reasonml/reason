@@ -5818,7 +5818,8 @@ let printer = object(self:'self)
     | Pctf_extension e -> self#item_extension e
 
   (*
-    [@@bs.val] [@@bs.module "react-dom"]                  (* formattedAttrs *)
+    /** doc comment */                                    (* formattedDocs *)
+    [@bs.val] [@bs.module "react-dom"]                    (* formattedAttrs *)
     external render : reactElement => element => unit =   (* frstHalf *)
       "render";                                           (* sndHalf *)
 
@@ -5827,6 +5828,7 @@ let printer = object(self:'self)
       * combine that label with '=' in a list
       * consider the part after the '=' as a list
       * combine both parts as a label
+      * format the doc comment with a ~postSpace:true (inline, not inline) list
       * format the attributes with a ~postSpace:true (inline, inline) list
       * format everything together in a ~postSpace:true (inline, inline) list
         for nicer breaking
@@ -5845,9 +5847,16 @@ let printer = object(self:'self)
     match vd.pval_attributes with
     | [] -> primDecl
     | attrs ->
-        let attrs = List.map (fun x -> self#item_attribute x) attrs in
+        let {stdAttrs; docAttrs} = partitionAttributes ~partDoc:true attrs in
+        let docs = List.map self#item_attribute docAttrs in
+        let formattedDocs = makeList ~postSpace:true docs in
+        let attrs = List.map self#item_attribute stdAttrs in
         let formattedAttrs = makeSpacedBreakableInlineList attrs in
-        makeSpacedBreakableInlineList [formattedAttrs; primDecl]
+        let layouts = match (docAttrs, stdAttrs) with
+        | ([], _) -> [formattedAttrs; primDecl]
+        | (_, []) -> [formattedDocs; primDecl]
+        | _ -> [formattedDocs; formattedAttrs; primDecl] in
+        makeSpacedBreakableInlineList layouts
 
   method class_instance_type x =
     match x.pcty_desc with
