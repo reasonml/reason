@@ -10,6 +10,35 @@ module Test = {
 
 };
 
+/** recursive let bindings */
+
+/* see below */
+
+let foo = "abc"
+and bar = "def"
+and baz = "ghi";
+
+/* with whitespace */
+
+let foo = "abc"
+
+and bar = "def"
+
+and baz = "ghi";
+
+/** with whitespace and attrs */
+
+/* -> */
+
+[@foo]
+let foo = "abc"
+
+[@bar]
+and bar = "def"
+
+[@baz]
+and baz = "ghi";
+
 module Comments = {
 
   let z = 1;
@@ -175,6 +204,61 @@ module PatternMatching = {
 
   | Blue => "blue"
   };
+};
+
+/** recursive modules without whitespace */
+module rec A: {type t; let a_fn: t => B.t; let of_float: float => t;} = {
+  type t = int;
+  let a_fn = x => B.of_int(x);
+  let of_float = x => int_of_float(x);
+}
+/* no whitespace */
+and B: {type t; let another_fn: t => A.t; let of_int: int => t;} = {
+  type t = float;
+  let another_fn = x => A.of_float(x);
+  let of_int = x => float_of_int(x);
+};
+
+/** recursive modules with whitespace */
+
+/* -> below */
+
+module rec A: {type t; let a_fn: t => B.t; let of_float: float => t;} = {
+  type t = int;
+  let a_fn = x => B.of_int(x);
+  let of_float = x => int_of_float(x);
+}
+
+/** okok */
+
+/* lala */
+
+and B: {type t; let another_fn: t => A.t; let of_int: int => t;} = {
+  type t = float;
+  let another_fn = x => A.of_float(x);
+  let of_int = x => float_of_int(x);
+};
+
+/** recursive modules with attrs */
+
+/* -> below */
+
+[@foo1]
+module rec A: {type t; let a_fn: t => B.t; let of_float: float => t;} = {
+  type t = int;
+  let a_fn = x => B.of_int(x);
+  let of_float = x => int_of_float(x);
+}
+
+/** okok */
+
+/* lala */
+
+[@foo2]
+and B: {type t; let another_fn: t => A.t; let of_int: int => t;} = {
+  type t = float;
+  let another_fn = x => A.of_float(x);
+  let of_int = x => float_of_int(x);
 };
 
 module EdgeCase = {

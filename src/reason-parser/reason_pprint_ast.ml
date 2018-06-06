@@ -284,6 +284,23 @@ let expandLocation pos ~expand:(startPos, endPos) =
     }
   }
 
+(* Computes the location of the attribute with the lowest line number
+ * that isn't ghost. Useful to determine the start location of an item
+ * in the parsetree that has attributes.
+ * If there are no valid attributes, defaults to the passed location.
+ * 1| [@attr]           --> notice how the "start" is determined
+ * 2| let f = ...           by the attr on line 1, not the lnum of the `let`
+ *)
+let rec firstAttrLoc loc = function
+  | ((attrLoc, _) : Ast_404.Parsetree.attribute) ::attrs ->
+      if attrLoc.loc.loc_start.pos_lnum < loc.loc_start.pos_lnum
+         && not attrLoc.loc.loc_ghost
+      then
+        firstAttrLoc attrLoc.loc attrs
+      else
+        firstAttrLoc loc attrs
+  | [] -> loc
+
 let extractLocationFromValBindList expr vbs =
   let rec extract loc = function
     | x::xs ->
@@ -300,6 +317,74 @@ let extractLocationFromValBindList expr vbs =
     | [] -> expr.pexp_loc
   in
   { loc with loc_start = expr.pexp_loc.loc_start }
+
+let extractLocValBinding {pvb_pat; pvb_expr; pvb_attributes;} =
+  let estimatedLoc = firstAttrLoc pvb_pat.ppat_loc pvb_attributes in
+  {estimatedLoc with loc_end = pvb_expr.pexp_loc.loc_end}
+
+let extractLocModuleBinding {pmb_expr; pmb_attributes} =
+  let estimatedLoc = firstAttrLoc pmb_expr.pmod_loc pmb_attributes in
+  {estimatedLoc with loc_end = pmb_expr.pmod_loc.loc_end}
+
+let extractLocModDecl {pmd_type; pmd_attributes} =
+  let estimatedLoc = firstAttrLoc pmd_type.pmty_loc pmd_attributes in
+  {estimatedLoc with loc_end = pmd_type.pmty_loc.loc_end}
+
+
+(** Kinds of attributes *)
+type attributesPartition = {
+  arityAttrs : attributes;
+  docAttrs : attributes;
+  stdAttrs : attributes;
+  jsxAttrs : attributes;
+  literalAttrs : attributes;
+  uncurried : bool
+}
+
+(** Partition attributes into kinds *)
+let rec partitionAttributes ?(partDoc=false) ?(allowUncurry=true) attrs : attributesPartition =
+  match attrs with
+    | [] ->
+      {arityAttrs=[]; docAttrs=[]; stdAttrs=[]; jsxAttrs=[]; literalAttrs=[]; uncurried = false}
+    | (({txt = "bs"}, PStr []) as attr)::atTl ->
+        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
+        if allowUncurry then
+          {partition with uncurried = true}
+        else {partition with stdAttrs=attr::partition.stdAttrs}
+    | (({txt="JSX"; loc}, _) as jsx)::atTl ->
+        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
+        {partition with jsxAttrs=jsx::partition.jsxAttrs}
+    | (({txt="explicit_arity"; loc}, _) as arity_attr)::atTl
+    | (({txt="implicit_arity"; loc}, _) as arity_attr)::atTl ->
+        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
+        {partition with arityAttrs=arity_attr::partition.arityAttrs}
+    | (({txt="ocaml.text"; loc}, _) as doc)::atTl when partDoc = true ->
+        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
+        {partition with docAttrs=doc::partition.docAttrs}
+    | (({txt="ocaml.doc"; loc}, _) as doc)::atTl when partDoc = true ->
+        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
+        {partition with docAttrs=doc::partition.docAttrs}
+    | (({txt="reason.raw_literal"; _}, _) as attr) :: atTl ->
+        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
+        {partition with literalAttrs=attr::partition.literalAttrs}
+    | atHd :: atTl ->
+        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
+        {partition with stdAttrs=atHd::partition.stdAttrs}
+
+let extractStdAttrs attrs =
+  (partitionAttributes attrs).stdAttrs
+
+let extract_raw_literal attrs =
+  let rec loop acc = function
+    | ({txt="reason.raw_literal"; loc},
+       PStr [{pstr_desc = Pstr_eval({pexp_desc = Pexp_constant(Pconst_string(text, None)); _}, _); _}])
+      :: rest ->
+      (Some text, List.rev_append acc rest)
+    | [] -> (None, List.rev acc)
+    | attr :: rest -> loop (attr :: acc) rest
+  in
+  loop [] attrs
+
 
 let rec sequentialIfBlocks x =
   match x with
@@ -5277,25 +5362,32 @@ let printer = object(self:'self)
     }
 
   method bindings ?extension (rf, l) =
-    let first, rest = match l with
-      | [] -> raise (NotPossible "no bindings supplied")
-      | x :: xs -> x, xs
-    in
     let label = add_extension_sugar "let" extension in
     let label = match rf with
       | Nonrecursive -> label
       | Recursive -> label ^ " rec"
     in
-    let first = self#binding label first in
-    match rest with
-    | [] -> first
-    | _ ->
+    match l with
+    | [x] -> self#binding label x
+    | l ->
+      let items = List.mapi (fun i x ->
+        let loc = extractLocValBinding x in
+        let layout = self#binding (if i == 0 then label else "and") x in
+        (loc, layout)
+      ) l
+      in
+      let itemsLayout = groupAndPrint
+        ~xf:(fun (_, layout) -> layout)
+        ~getLoc:(fun (loc, _) -> loc)
+        ~comments:self#comments
+        items
+      in
       makeList
         ~postSpace:true
         ~break:Always
         ~indent:0
         ~inline:(true, true)
-        (first :: List.map (self#binding "and") rest)
+        itemsLayout
 
   method letList expr =
     (* Recursively transform a nested ast of "let-items", into a flat
@@ -7013,7 +7105,7 @@ let printer = object(self:'self)
             ()
         | Psig_class_type l -> self#class_type_declaration_list l
         | Psig_recmodule decls ->
-            let first xx =
+            let items = List.mapi (fun i xx ->
               let {stdAttrs; docAttrs} =
                 partitionAttributes ~partDoc:true xx.pmd_attributes
               in
@@ -7024,29 +7116,29 @@ let printer = object(self:'self)
               in
               let layout =
                 self#attach_std_item_attrs stdAttrs @@
-                self#module_type letPattern xx.pmd_type
+                self#formatSimpleSignatureBinding
+                  (if i == 0 then "module rec" else "and")
+                  (atom xx.pmd_name.txt)
+                  (self#module_type xx.pmd_type)
               in
-              self#attachDocAttrsToLayout
-                ~stdAttrs
-                ~docAttrs
-                ~loc:xx.pmd_name.loc
-                ~layout
-                ()
-            in
-            let notFirst xx =
-              let andLetPattern =
-                makeList
-                  [makeList ~postSpace:true [atom "and"; atom xx.pmd_name.txt];
-                   atom ":"]
+              let layoutWithDocAttrs =
+                self#attachDocAttrsToLayout
+                 ~stdAttrs
+                 ~docAttrs
+                 ~loc:xx.pmd_name.loc
+                 ~layout
+                 ()
               in
-              self#attach_std_item_attrs xx.pmd_attributes @@
-              self#module_type andLetPattern xx.pmd_type
+              (extractLocModDecl xx, layoutWithDocAttrs)
+            ) decls
             in
-            let moduleBindings = match decls with
-              | [] -> raise (NotPossible "No recursive module bindings")
-              | hd::tl -> (first hd)::(List.map notFirst tl)
-            in
-            makeNonIndentedBreakingList moduleBindings
+            makeNonIndentedBreakingList
+              (groupAndPrint
+                ~xf:(fun (_, layout) -> layout)
+                ~getLoc:(fun (loc, _) -> loc)
+                ~comments:self#comments
+                items)
+
         | Psig_attribute a -> self#floating_attribute a
         | Psig_extension (({loc}, _) as ext, attrs) ->
           let {stdAttrs; docAttrs} =
@@ -7408,19 +7500,34 @@ let printer = object(self:'self)
               moduleExpr
 
         | Pstr_recmodule decls -> (* 3.07 *)
-            let first xx =
-              self#attach_std_item_attrs xx.pmb_attributes @@
-              self#let_module_binding "module rec" (atom xx.pmb_name.txt) xx.pmb_expr
+            let items = List.mapi (fun i xx ->
+              let {stdAttrs; docAttrs} =
+                partitionAttributes ~partDoc:true xx.pmb_attributes
+              in
+              let layout =
+                self#attach_std_item_attrs stdAttrs @@
+                self#let_module_binding
+                  (if i == 0 then "module rec" else "and")
+                  (atom xx.pmb_name.txt)
+                  xx.pmb_expr
+              in
+              let layoutWithDocAttrs =
+                self#attachDocAttrsToLayout
+                 ~stdAttrs
+                 ~docAttrs
+                 ~loc:xx.pmb_name.loc
+                 ~layout
+                 ()
+              in
+              (extractLocModuleBinding xx, layoutWithDocAttrs)
+            ) decls
             in
-            let notFirst xx =
-              self#attach_std_item_attrs xx.pmb_attributes @@
-              self#let_module_binding "and" (atom xx.pmb_name.txt) xx.pmb_expr
-            in
-            let moduleBindings = match decls with
-              | [] -> raise (NotPossible "No recursive module bindings")
-              | hd::tl -> (first hd)::(List.map notFirst tl)
-            in
-            makeNonIndentedBreakingList moduleBindings
+            makeNonIndentedBreakingList
+              (groupAndPrint
+                ~xf:(fun (_, layout) -> layout)
+                ~getLoc:(fun (loc, _) -> loc)
+                ~comments:self#comments
+                items)
         | Pstr_attribute a -> self#floating_attribute a
         | Pstr_extension ((extension, PStr [item]), a) ->
           begin match item.pstr_desc with
