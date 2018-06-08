@@ -38,4 +38,13 @@ instructions on performing that release.
 
 ## Releasing Native Packages To Opam:
 
-TODO
+*note: it is reccomended to install opam-publish via* `opam-depext -i opam-publish`
+
+*Also, the commands below are exapmples based on specific Reason and rtop versions, the version numbers and possilby source urls will need to be changed to match the relevant release.
+
+1. `cd` into a directory that you don't mind having stuff downloaded into
+2. `opam-publish prepare reason.3.2.0 "https://registry.npmjs.org/@esy-ocaml/reason/-/reason-3.2.0.tgz"`
+3. `opam-publish submit reason.3.2.0`
+4. `opam-publish prepare rtop.3.2.0 "https://registry.npmjs.org/@esy-ocaml/reason/-/reason-3.2.0.tgz"`
+5. `opam-publish rtop.3.2.0`
+
