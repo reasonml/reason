@@ -1267,7 +1267,7 @@ conflicts.
 
 %right    OR BARBAR                     (* expr (e || e || e) *)
 %right    AMPERSAND AMPERAMPER          (* expr (e && e && e) *)
-%left     INFIXOP0 INFIXOP_WITH_EQUAL LESS GREATER (* expr (e OP e OP e) *)
+%left     INFIXOP0 INFIXOP_WITH_EQUAL LESS GREATER MINUSGREATER (* expr (e OP e OP e) *)
 %left     LESSDOTDOTGREATER (* expr (e OP e OP e) *)
 %right    INFIXOP1                      (* expr (e OP e OP e) *)
 %right    COLONCOLON                    (* expr (e :: e :: e) *)
@@ -2831,7 +2831,11 @@ mark_position_exp
       mkexp_cons loc_colon (mkexp ~ghost:true ~loc (Pexp_tuple[$5;$7])) loc
     }
   | E as_loc(infix_operator) expr
-    { mkinfix $1 $2 $3 }
+    { match $2.txt with
+      | "|."
+      | "->" -> Reason_ast.parseFastPipe $1 $3
+      | _ -> mkinfix $1 $2 $3
+    }
   | as_loc(subtractive) expr %prec prec_unary
     { mkuminus $1 $2 }
   | as_loc(additive) expr %prec prec_unary
@@ -4528,6 +4532,7 @@ val_ident:
      operator swapping requires that we express that as != *)
   | LESSDOTDOTGREATER { "<..>" }
   | GREATER GREATER   { ">>" }
+  | MINUSGREATER { "->" }
 ;
 
 operator:

@@ -307,14 +307,16 @@ type attributesPartition = {
   stdAttrs : attributes;
   jsxAttrs : attributes;
   literalAttrs : attributes;
-  uncurried : bool
+  uncurried : bool;
+  fastPipe: bool
 }
 
 (** Partition attributes into kinds *)
 let rec partitionAttributes ?(partDoc=false) ?(allowUncurry=true) attrs : attributesPartition =
   match attrs with
     | [] ->
-      {arityAttrs=[]; docAttrs=[]; stdAttrs=[]; jsxAttrs=[]; literalAttrs=[]; uncurried = false}
+      {arityAttrs=[]; docAttrs=[]; stdAttrs=[]; jsxAttrs=[]; literalAttrs=[];
+      uncurried = false; fastPipe = false}
     | (({txt = "bs"}, PStr []) as attr)::atTl ->
         let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
         if allowUncurry then
@@ -336,6 +338,9 @@ let rec partitionAttributes ?(partDoc=false) ?(allowUncurry=true) attrs : attrib
     | (({txt="reason.raw_literal"; _}, _) as attr) :: atTl ->
         let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
         {partition with literalAttrs=attr::partition.literalAttrs}
+    | ({txt="reason.fast_pipe"; _}, _) :: atTl ->
+        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
+        {partition with fastPipe=true}
     | atHd :: atTl ->
         let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
         {partition with stdAttrs=atHd::partition.stdAttrs}
@@ -3672,7 +3677,12 @@ let printer = object(self:'self)
     | _ ->
       x
 
+  method processFastPipe (e : Ast_404.Parsetree.expression) =
+    let {fastPipe} = partitionAttributes e.pexp_attributes in
+    if fastPipe then Reason_ast.unparseFastPipe e else e
+
   method unparseExprRecurse x =
+    let x =  self#processFastPipe x in
     let x = self#process_underscore_application x in
     (* If there are any attributes, render unary like `(~-) x [@ppx]`, and infix like `(+) x y [@attr]` *)
 
