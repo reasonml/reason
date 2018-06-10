@@ -1024,14 +1024,17 @@ and skip_sharp_bang = parse
   let completion_ident_pos = ref Lexing.dummy_pos
 
   let token lexbuf =
-    let before = lexbuf.Lexing.lex_curr_p.Lexing.pos_cnum in
+    let space_start = lexbuf.Lexing.lex_curr_p.Lexing.pos_cnum in
     let token = token lexbuf in
-    let after = lexbuf.Lexing.lex_start_p.Lexing.pos_cnum in
+    let token_start = lexbuf.Lexing.lex_start_p.Lexing.pos_cnum in
+    let token_stop = lexbuf.Lexing.lex_curr_p.Lexing.pos_cnum in
     if !completion_ident_offset > min_int &&
-       before <= !completion_ident_offset &&
-       after >= !completion_ident_offset then (
+       space_start <= !completion_ident_offset &&
+       token_stop >= !completion_ident_offset then (
       match token with
-      | LIDENT _ | UIDENT _ when after = !completion_ident_offset -> token
+      | LIDENT _ | UIDENT _ when token_start <= !completion_ident_offset ->
+          completion_ident_offset := min_int;
+          token
       | _ ->
         queued_tokens := save_triple lexbuf token :: !queued_tokens;
         completion_ident_offset := min_int;
