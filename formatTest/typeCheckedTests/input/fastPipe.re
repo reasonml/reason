@@ -71,3 +71,13 @@ let f6 = a => a -> Some;
 
 /* let f7 = a => a |. (Some, Some, Some); */
 
+/* fast pipe in combination with underscore sugar */
+let f8 = (a, b, f) => a -> f(b, _);
+let f8 = (a, b, f) => a |. f(b, _);
+
+/* pipe into local fresh open */
+module F = {
+  let f = (a, b, c) => a + b + c;
+};
+1 -> F.(f(2, 3));
+1 |. F.(f(2, 3));

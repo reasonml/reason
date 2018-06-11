@@ -8,7 +8,7 @@ let parseFastPipe e1 e2 =
   let markFastPipe e = { e with pexp_attributes =
     attr::e.pexp_attributes
   } in
-  let e = match e2.pexp_desc with
+  let rec rewrite e = match e.pexp_desc with
   | Pexp_ident _ ->
     Ast_helper.Exp.apply e2 [Nolabel, e1]
   | Pexp_apply(f, args) ->
@@ -20,38 +20,50 @@ let parseFastPipe e1 e2 =
       ~attrs:[Location.mknoloc "explicit_arity", PStr []]
       lident
       (Some (Ast_helper.Exp.tuple (e1::l)))
+  | Pexp_fun(
+      Nolabel,
+      None,
+      {ppat_desc=Ppat_var({txt="__x"} )},
+      {pexp_desc=Pexp_apply(f, args)})
+    ->
+    Ast_helper.Exp.apply e2 [Nolabel, e1]
+  | Pexp_open(Fresh, lident, subExp) ->
+      { e with pexp_desc = Pexp_open(Fresh, lident, rewrite subExp) }
   | _ ->
     let msg = "Unsupported fast pipe expression" in
     raise Reason_syntax_util.(Error(e2.pexp_loc, (Syntax_error msg)))
   in
-  markFastPipe e
+  markFastPipe (rewrite e2)
 
 let unparseFastPipe e =
   let minusGreater = Ast_helper.Exp.ident (Location.mknoloc (Longident.parse "->")) in
-  match e.pexp_desc with
-  | Pexp_apply(f, (Nolabel, e1)::args) ->
-    let f = match args with
-    | [] -> f
-    | args -> Ast_helper.Exp.apply f args
-    in
-    Ast_helper.Exp.apply
-      minusGreater
-      [(Nolabel, e1); (Nolabel, f)]
-  | Pexp_construct(lident, Some tupArg) ->
-      let (tupArg, ctorChild) = match tupArg.pexp_desc with
-        | Pexp_tuple(x::xs) ->
-            begin match xs with
-            | y::_ys -> (x, Some(Ast_helper.Exp.tuple xs))
-            | [] -> (x, None)
-            end
-        | _ -> (tupArg, None)
+  let rec rewrite e = match e.pexp_desc with
+    | Pexp_apply(f, (Nolabel, e1)::args) ->
+      let f = match args with
+      | [] -> f
+      | args -> Ast_helper.Exp.apply f args
       in
-      let ctor =
-        Ast_helper.Exp.construct
-          ~attrs:[Location.mknoloc "explicit_arity", PStr []]
-          lident ctorChild
-      in
-      Ast_helper.Exp.apply
+      Ast_helper.Exp.apply ~attrs:e.pexp_attributes
         minusGreater
-        [(Nolabel, tupArg); (Nolabel, ctor)]
-  | _ -> e
+        [(Nolabel, e1); (Nolabel, f)]
+    | Pexp_construct(lident, Some tupArg) ->
+        let (tupArg, ctorChild) = match tupArg.pexp_desc with
+          | Pexp_tuple(x::xs) ->
+              begin match xs with
+              | y::_ys -> (x, Some(Ast_helper.Exp.tuple xs))
+              | [] -> (x, None)
+              end
+          | _ -> (tupArg, None)
+        in
+        let ctor =
+          Ast_helper.Exp.construct
+            ~attrs:[Location.mknoloc "explicit_arity", PStr []]
+            lident ctorChild
+        in
+        Ast_helper.Exp.apply
+          minusGreater
+          [(Nolabel, tupArg); (Nolabel, ctor)]
+    | Pexp_open(Fresh, lident, subExpr) ->
+      {e with pexp_desc = Pexp_open(Fresh, lident, rewrite subExpr)}
+    | _ -> e
+  in rewrite e
