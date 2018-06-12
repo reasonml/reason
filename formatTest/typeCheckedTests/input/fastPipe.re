@@ -13,24 +13,24 @@ include (
   }
 );
 
-/* let f = (a, b, c) => a |. (b, c); */
+let f = (a, b, c) => a |. (b, c);
 
-/* let f1 = (a, b, c, d) => a(b) |. (c, d); */
+let f1 = (a, b, c, d) => a(b) |. (c, d);
 
-/* let f2 = (a, b, c, d) => { */
-  /* let (u, v) = a(b) |. (c, d); */
-  /* u + v; */
-/* }; */
+let f2 = (a, b, c, d) => {
+  let (u, v) = a(b) |. (c, d);
+  u + v;
+};
 
-/* let f3 = (a, b, c, d, e) => */
-  /* a(b) |. (c(d), d(1, 2), e) |. (((u, v, h)) => u + v + h); */
+let f3 = (a, b, c, d, e) =>
+  a(b) |. (c(d), d(1, 2), e) |. (((u, v, h)) => u + v + h);
 
-/* let f4 = (a, b, c) => a |. (b(c), b(c)); */
+let f4 = (a, b, c) => a |. (b(c), b(c));
 
-/* let f5 = (a, b, c, d) => { */
-  /* let (v0, v1, v2) = a |. (b(c, c), b(c, c), b(d, d)); */
-  /* v0 + v1 + v2; */
-/* }; */
+let f5 = (a, b, c, d) => {
+  let (v0, v1, v2) = a |. (b(c, c), b(c, c), b(d, d));
+  v0 + v1 + v2;
+};
 
 let f6 = a => a |. Some;
 
@@ -48,32 +48,34 @@ include (
   }
 );
 
-/* let f = (a, b, c) => a -> (b, c); */
+let f = (a, b, c) => a -> (b, c);
 
-/* let f1 = (a, b, c, d) => a(b) -> (c, d); */
+let f1 = (a, b, c, d) => a(b) -> (c, d);
 
-/* let f2 = (a, b, c, d) => { */
-/* let (u, v) = a(b) -> (c, d); */
-/* u + v; */
-/* }; */
+let f2 = (a, b, c, d) => {
+  let (u, v) = a(b) -> (c, d);
+  u + v;
+};
 
-/* let f3 = (a, b, c, d, e) => */
-/* a(b) -> (c(d), d(1, 2), e) -> (((u, v, h)) => u + v + h); */
+let f3 = (a, b, c, d, e) =>
+  a(b) -> (c(d), d(1, 2), e) -> (((u, v, h)) => u + v + h);
 
-/* let f4 = (a, b, c) => a -> (b(c), b(c)); */
+let f4 = (a, b, c) => a -> (b(c), b(c));
 
-/* let f5 = (a, b, c, d) => { */
-/* let (v0, v1, v2) = a -> (b(c, c), b(c, c), b(d, d)); */
-/* v0 + v1 + v2; */
-/* }; */
+let f5 = (a, b, c, d) => {
+  let (v0, v1, v2) = a -> (b(c, c), b(c, c), b(d, d));
+  v0 + v1 + v2;
+};
 
 let f6 = a => a -> Some;
 
-/* let f7 = a => a |. (Some, Some, Some); */
+let f7 = a => a |. (Some, Some, Some);
 
 /* fast pipe in combination with underscore sugar */
 let f8 = (a, b, f) => a -> f(b, _);
 let f8 = (a, b, f) => a |. f(b, _);
+let f8 = (a, b, c, f, g) => a -> (f(b, _), g(c, _));
+let f8 = (a, b, c, f, g) => a |. (f(b, _), g(c, _));
 
 /* pipe into local fresh open */
 module F = {

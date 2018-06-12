@@ -2151,7 +2151,7 @@ let formatComputedInfixChain infixChainList =
      * |> f
      * |> z *)
     if List.length group < 2 then
-      makeList ~inline:(true, true) ~sep:(Sep " ") ~break:Layout.Never group
+      makeList ~inline:(true, true) ~sep:(Sep " ") group
     (* Basic equality operators require special formatting, we can't give it
      * 'classic' infix operator formatting, otherwise we would get
      * let example =
@@ -2162,7 +2162,7 @@ let formatComputedInfixChain infixChainList =
      *  *)
     else if List.mem currentToken equalityOperators then
       let hd = List.hd group in
-      let tl = makeList ~inline:(true, true) ~sep:(Sep " ") ~break:Layout.Never (List.tl group) in
+      let tl = makeList ~inline:(true, true) ~sep:(Sep " ") (List.tl group) in
       makeList ~inline:(true, true) ~sep:(Sep " ") ~break:IfNeed [hd; tl]
     else
       (* Represents `|> f` in foo |> f
@@ -2174,7 +2174,8 @@ let formatComputedInfixChain infixChainList =
        *     Printf.sprintf
        *       "okokok" uri meth headers body
        * )   <-- notice how this closing paren is on the same height as >|= *)
-      label ~break:`Never ~space:true (atom currentToken) (List.nth group 1)
+      let space = not (currentToken = "->") in
+      label ~break:`Never ~space (atom currentToken) (List.nth group 1)
   in
   let rec print acc group currentToken l =
     match l with
@@ -2182,8 +2183,7 @@ let formatComputedInfixChain infixChainList =
       | InfixToken t ->
           if List.mem t requireIndentFor then
             let groupNode =
-              makeList ~inline:(true, true) ~sep:(Sep " ") ~break:Layout.Never
-                (group @ [atom t])
+              makeList ~inline:(true, true) ~sep:(Sep " ") (group @ [atom t])
             in
             let children =
               makeList ~inline:(true, true) ~preSpace:true ~break:IfNeed
@@ -3632,9 +3632,9 @@ let printer = object(self:'self)
   method unparseResolvedRule  = function
     | LayoutNode layoutNode -> layoutNode
     | InfixTree _ as infixTree ->
-          let infixChainList = computeInfixChain infixTree in
-          let l = formatComputedInfixChain infixChainList in
-          makeList ~inline:(true, true) ~sep:(Sep " ") ~break:IfNeed l
+        let infixChainList = computeInfixChain infixTree in
+        let l = formatComputedInfixChain infixChainList in
+        makeList ~inline:(true, true) ~sep:(Sep " ") ~break:IfNeed l
 
 
   method unparseExprApplicationItems x =

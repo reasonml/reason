@@ -10,7 +10,7 @@ let parseFastPipe e1 e2 =
   } in
   let rec rewrite e = match e.pexp_desc with
   | Pexp_ident _ ->
-    Ast_helper.Exp.apply e2 [Nolabel, e1]
+    Ast_helper.Exp.apply e [Nolabel, e1]
   | Pexp_apply(f, args) ->
     Ast_helper.Exp.apply f ((Nolabel, e1)::args)
   | Pexp_construct(lident, None) ->
@@ -23,15 +23,17 @@ let parseFastPipe e1 e2 =
   | Pexp_fun(
       Nolabel,
       None,
-      {ppat_desc=Ppat_var({txt="__x"} )},
+      _,
       {pexp_desc=Pexp_apply(f, args)})
     ->
-    Ast_helper.Exp.apply e2 [Nolabel, e1]
+    Ast_helper.Exp.apply e [Nolabel, e1]
   | Pexp_open(Fresh, lident, subExp) ->
       { e with pexp_desc = Pexp_open(Fresh, lident, rewrite subExp) }
+  | Pexp_tuple(expList) ->
+      Ast_helper.Exp.tuple (List.map (fun e -> rewrite e) expList)
   | _ ->
     let msg = "Unsupported fast pipe expression" in
-    raise Reason_syntax_util.(Error(e2.pexp_loc, (Syntax_error msg)))
+    raise Reason_syntax_util.(Error(e.pexp_loc, (Syntax_error msg)))
   in
   markFastPipe (rewrite e2)
 
@@ -65,5 +67,44 @@ let unparseFastPipe e =
           [(Nolabel, tupArg); (Nolabel, ctor)]
     | Pexp_open(Fresh, lident, subExpr) ->
       {e with pexp_desc = Pexp_open(Fresh, lident, rewrite subExpr)}
+    | Pexp_tuple(expList) ->
+      let firstE = ref None in
+      let children = List.map (fun e ->
+        match e.pexp_desc with
+        | Pexp_ident i -> e
+        | Pexp_apply(f, (Nolabel, e1)::args) ->
+          firstE := Some e1;
+          begin match args with
+          | [] -> f
+          | _ -> Ast_helper.Exp.apply f args
+          end
+        | Pexp_construct(lident, Some subExp) ->
+            begin match subExp.pexp_desc with
+            | Pexp_tuple(hd::tail) ->
+                firstE := Some hd;
+                begin match tail with
+                | [] ->
+                  Ast_helper.Exp.ident lident
+                | _ ->
+                  Ast_helper.Exp.construct
+                    ~attrs:[Location.mknoloc "explicit_arity", PStr []]
+                    lident
+                    (Some (Ast_helper.Exp.tuple tail))
+                end
+            | _ ->
+              firstE := Some subExp;
+              Ast_helper.Exp.ident lident
+            end
+        | _ -> e
+      ) expList in
+      begin match !firstE with
+      | Some e1 ->
+          Ast_helper.Exp.apply
+            minusGreater
+            [(Nolabel, e1); (Nolabel, Ast_helper.Exp.tuple children)]
+      | None ->
+        Ast_helper.Exp.tuple children
+      end
     | _ -> e
-  in rewrite e
+  in
+  rewrite e
