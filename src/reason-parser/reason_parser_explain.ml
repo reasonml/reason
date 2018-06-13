@@ -61,7 +61,7 @@ let message env (token, startp, endp) =
     let m = Reason_parser_message.message state in
     if m = "<YOUR SYNTAX ERROR MESSAGE HERE>\n" then
       (* Milder unknown syntax error message *)
-      "<syntax error>"
+      Reason_syntax_util.default_error_message
     else m
   with Not_found ->
   (* Identify a keyword used as an identifier *)
@@ -75,4 +75,4 @@ let message env (token, startp, endp) =
   try token_specific_message token
   with Not_found ->
     (* TODO: we don't know what to say *)
-    "<syntax error>"
+    Reason_syntax_util.default_error_message
