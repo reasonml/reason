@@ -96,6 +96,8 @@ type menhirError =
 
 val findMenhirErrorMessage : Ast_404.Location.t -> menhirError
 
+val default_error_message : string
+
 val add_error_message : menhirMessagesError -> unit
 
 val location_is_before : Ast_404.Location.t -> Ast_404.Location.t -> bool

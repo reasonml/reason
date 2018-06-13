@@ -57,7 +57,12 @@ let token_specific_message = function
 let message env (token, startp, endp) =
   let state = Interp.current_state_number env in
   (* Is there a message for this specific state ? *)
-  try Reason_parser_message.message state
+  try
+    let m = Reason_parser_message.message state in
+    if m = "<YOUR SYNTAX ERROR MESSAGE HERE>\n" then
+      (* Milder unknown syntax error message *)
+      Reason_syntax_util.default_error_message
+    else m
   with Not_found ->
   (* Identify a keyword used as an identifier *)
   try keyword_confused_with_ident state token
@@ -70,4 +75,4 @@ let message env (token, startp, endp) =
   try token_specific_message token
   with Not_found ->
     (* TODO: we don't know what to say *)
-    "<syntax error>"
+    Reason_syntax_util.default_error_message
