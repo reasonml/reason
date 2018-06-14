@@ -521,6 +521,18 @@ rule token = parse
     let buf = Lexing.lexeme lexbuf in
     LESSIDENT (String.sub buf 1 (String.length buf - 1))
   }
+  (* Allow parsing of Pexp_override:
+   * let z = {<state: 0, x: y>};
+   *
+   * Make sure {<state is emitted as LBRACELESS.
+   * This contrasts with jsx:
+   * in a jsx context {<div needs to be LBRACE LESS (two tokens)
+   * for a valid parse.
+   *)
+  | "{<" uppercase_or_lowercase identchar* blank*  ":" {
+    set_lexeme_length lexbuf 2;
+    LBRACELESS
+  }
   | "{<" uppercase_or_lowercase (identchar | '.') * {
     (* allows parsing of `{<Text` in <Description term={<Text text="Age" />}> as correct jsx *)
     set_lexeme_length lexbuf 1;

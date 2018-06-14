@@ -1170,3 +1170,10 @@ let x: int=+1;
 let x: float =+. 1;
 
 foo(~a=?-1);
+
+/*
+  https://github.com/facebook/reason/issues/1992
+  Pexp_override
+*/
+let z = {<state: 0, x: y>};
+let z = {<>};
