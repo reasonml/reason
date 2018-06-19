@@ -2831,10 +2831,10 @@ mark_position_exp
       mkexp_cons loc_colon (mkexp ~ghost:true ~loc (Pexp_tuple[$5;$7])) loc
     }
   | E as_loc(infix_operator) expr
-    { match $2.txt with
-      | "|."
-      | "->" -> Reason_ast.parseFastPipe $1 $3
-      | _ -> mkinfix $1 $2 $3
+    { let op = match $2.txt with
+      | "->" -> {$2 with txt = "|."}
+      | _ -> $2
+      in mkinfix $1 op $3
     }
   | as_loc(subtractive) expr %prec prec_unary
     { mkuminus $1 $2 }

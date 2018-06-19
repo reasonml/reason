@@ -2173,7 +2173,8 @@ let formatComputedInfixChain infixChainList =
        *   fun body =>
        *     Printf.sprintf
        *       "okokok" uri meth headers body
-       * )   <-- notice how this closing paren is on the same height as >|= *)
+       * )   <-- notice how this closing paren is on the same height as >|=
+       * *)
       let space = not (currentToken = "->") in
       label ~break:`Never ~space (atom currentToken) (List.nth group 1)
   in
@@ -2199,8 +2200,7 @@ let formatComputedInfixChain infixChainList =
            * *)
           else if t = "@@" then
             let groupNode =
-              makeList ~inline:(true, true) ~sep:(Sep " ") ~break:Layout.Never
-                (group @ [atom t])
+              makeList ~inline:(true, true) ~sep:(Sep " ") (group @ [atom t])
             in
             print (acc @ [groupNode]) [] t xs
           else if List.mem t equalityOperators then
@@ -2215,7 +2215,8 @@ let formatComputedInfixChain infixChainList =
         else
           acc @ [layout_of_group group currentToken]
   in
-  print [] [] "" infixChainList
+  let l = print [] [] "" infixChainList in
+  makeList ~inline:(true, true) ~sep:(Sep " ") ~break:IfNeed l
 
 (**
  * [groupAndPrint] will print every item in [items] according to the function [xf].
@@ -3632,9 +3633,7 @@ let printer = object(self:'self)
   method unparseResolvedRule  = function
     | LayoutNode layoutNode -> layoutNode
     | InfixTree _ as infixTree ->
-        let infixChainList = computeInfixChain infixTree in
-        let l = formatComputedInfixChain infixChainList in
-        makeList ~inline:(true, true) ~sep:(Sep " ") ~break:IfNeed l
+      formatComputedInfixChain (computeInfixChain infixTree)
 
 
   method unparseExprApplicationItems x =
@@ -3677,12 +3676,8 @@ let printer = object(self:'self)
     | _ ->
       x
 
-  method processFastPipe (e : Ast_404.Parsetree.expression) =
-    let {fastPipe} = partitionAttributes e.pexp_attributes in
-    if fastPipe then Reason_ast.unparseFastPipe e else e
-
   method unparseExprRecurse x =
-    let x =  self#processFastPipe x in
+    let x =  Reason_ast.processFastPipe x in
     let x = self#process_underscore_application x in
     (* If there are any attributes, render unary like `(~-) x [@ppx]`, and infix like `(+) x y [@attr]` *)
 
