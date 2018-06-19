@@ -597,3 +597,33 @@ let foo =
 
 let f =
     (module M: M with type x = x and type y = y) => M.x;
+
+let test = b => {
+  if (b) {
+    ignore();
+  };
+
+  while (x) {
+    compute();
+  };
+
+  try (x()) {
+  | _ => log()
+  };
+
+  switch (test) {
+  | A => ()
+  | B => ()
+  };
+
+  for (x in 0 to 10) {
+    print_int(x);
+    print_string(" ");
+  };
+
+  assert(true);
+
+  lazy true;
+
+  Fun.ignore();
+};
