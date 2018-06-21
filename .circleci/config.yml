@@ -25,6 +25,7 @@ common_steps: &common_steps
     - run:
         name: "Initialize opam"
         command: |
+          sudo apt-get install -y m4
           opam init --auto-setup --dot-profile=~/.bash_profile
           opam remote add ocamlorg https://opam.ocaml.org -p 0 || true
           opam remote remove default || true
