@@ -34,6 +34,7 @@ common_steps: &common_steps
           opam update
           opam install -y jbuilder
           opam install -y menhir.20170712
+          opam pin add -y utop -k git 'https://github.com/hcarty/utop.git#make-it-build-on-4.07'
     - run:
         name: 'Clean'
         command: make clean-for-ci
@@ -91,6 +92,14 @@ jobs:
       - OCAML_VERSION: "4.06.0"
       - NPM_CONFIG_PREFIX: "~/.npm-global"
     <<: *common_steps
+  4.07.0:
+    docker:
+      - image: ocaml/opam2:debian-9-ocaml-4.07
+    environment:
+      - TERM: dumb
+      - OCAML_VERSION: "4.07.x"
+      - NPM_CONFIG_PREFIX: "~/.npm-global"
+    <<: *common_steps
   esy_build:
     docker:
       - image: ocaml/opam:debian-9_ocaml-4.06.0
@@ -145,4 +154,5 @@ workflows:
       - 4.03.0
       - 4.04.0
       - 4.06.0
+      - 4.07.0
       - esy_build
