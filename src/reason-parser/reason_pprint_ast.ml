@@ -2675,9 +2675,9 @@ let printer = object(self:'self)
     in
     let gadtRes = match pcd_res with
       | None -> None
-      | Some x -> Some (makeList ~inline:(true, true) ~break:IfNeed [
+      | Some x -> Some (
           formatJustTheTypeConstraint (self#core_type x)
-        ])
+        )
     in
     let normalize lst = match lst with
       | [] -> raise (NotPossible "should not be called")
@@ -2701,7 +2701,7 @@ let printer = object(self:'self)
     let add_bar_2 ?gadt name args =
       let lbl = label name args in
       let fullLbl = match gadt with
-        | Some g -> makeList ~inline:(true, true) ~break:IfNeed ~postSpace:true [lbl; g]
+        | Some g -> makeList ~inline:(true, true) ~break:IfNeed [lbl; g]
         | None -> lbl
       in
       add_bar fullLbl
@@ -2710,9 +2710,9 @@ let printer = object(self:'self)
     let prefix = if polymorphic then "`" else "" in
     let sourceMappedName = atom ~loc:pcd_name.loc (prefix ^ pcd_name.txt) in
     let sourceMappedNameWithAttributes =
-      if stdAttrs = [] then
-        sourceMappedName
-      else
+      match stdAttrs with
+      | [] -> sourceMappedName
+      | stdAttrs ->
         formatAttributed sourceMappedName (self#attributes stdAttrs)
     in
     let constructorName = makeList ~postSpace:true [sourceMappedNameWithAttributes] in
@@ -2723,7 +2723,7 @@ let printer = object(self:'self)
       | (_::_, Some gadt) ->
           (match pcd_args with
             | Pcstr_record _ -> add_bar_2 ~gadt constructorName (normalize args)
-            | _ -> add_bar_2 constructorName (makeList [normalize args; gadt]))
+            | _ -> add_bar_2 constructorName ~gadt (normalize args))
     in
     source_map ~loc:pcd_loc everything
 
