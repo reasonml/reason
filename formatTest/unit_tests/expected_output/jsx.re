@@ -273,3 +273,7 @@ let x = foo /></ bar;
 
 /* https://github.com/facebook/reason/issues/2020 */
 <div />;
+
+<div> foo </div>;
+
+<div />;
