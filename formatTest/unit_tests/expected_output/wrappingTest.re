@@ -2350,17 +2350,14 @@ and anotherRecursiveType =
  */
 type term(_) =
   /* First variant leaf of GADT */
-  | Int /*first var arg */(int): /* First GADT res */ term(
-                                    int,
-                                  )
+  | Int /*first var arg */(int)
+    : /* First GADT res */ term(int)
   /* Second variant leaf of GADT */
-  | Float /*second var arg */(int): /* Second GADT res */ term(
-                                       int,
-                                     )
+  | Float /*second var arg */(int)
+    : /* Second GADT res */ term(int)
   /* Third variant leaf of GADT */
-  | Bool /*third var arg */(int): /* Third GADT res */ term(
-                                     int,
-                                   );
+  | Bool /*third var arg */(int)
+    : /* Third GADT res */ term(int);
 
 /* Commented colors */
 type commentedTypeDef =
@@ -2471,14 +2468,14 @@ let letsPutAWhereClauseOnTheLast = x =>
   };
 
 type wrappingGadt(_) =
-  | ThisIsLongSoTypeWillWrap(int): wrappingGadt(
-                                      int,
-                                    )
+  | ThisIsLongSoTypeWillWrap(int)
+    : wrappingGadt(int)
   | Add: wrappingGadt((int, int) => int)
   | App(
-         wrappingGadt('b => 'a),
-         wrappingGadt('b),
-       ): wrappingGadt('a);
+      wrappingGadt('b => 'a),
+      wrappingGadt('b),
+    )
+    : wrappingGadt('a);
 
 type withThreeFields = {
   name: string,

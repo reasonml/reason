@@ -11,13 +11,13 @@ type nonrec u('a) =
   | Box('a);
 
 type expr('a) =
-  | Val{value: 'a} : expr('a)
+  | Val{value: 'a}: expr('a)
   | Add{
       left: expr(int),
       right: expr(int),
     }
     : expr(int)
-  | Is0{test: expr(int)} : expr(bool)
+  | Is0{test: expr(int)}: expr(bool)
   | If{
       pred: expr(bool),
       true_branch: expr('a),

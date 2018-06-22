@@ -180,8 +180,8 @@ type variantType =
 [@onVariantType]
 type gadtType('x) =
   | Foo(int): [@onFirstRow] gadtType(int)
-  | Bar([@onInt] int): [@onSecondRow]
-                        gadtType(unit)
+  | Bar([@onInt] int)
+    : [@onSecondRow] gadtType(unit)
   | Baz: [@onThirdRow] gadtType([@onUnit] unit);
 
 [@floatingTopLevelStructureItem hello];
