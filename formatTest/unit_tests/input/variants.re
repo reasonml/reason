@@ -409,3 +409,5 @@ Delete({pub x = methodOne; pub y = methodTwo; pub z = methodThisBreaks});
 `Delete([|someLongStuf, someOtherLongStuff, okokokok|]);
 `Delete([someLongStuf, someOtherLongStuff, okokokok, ...veryES6]);
 `Delete({pub x = methodOne; pub y = methodTwo; pub z = methodThisBreaks});
+
+let x: t = `Poly;

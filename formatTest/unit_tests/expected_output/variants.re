@@ -672,3 +672,5 @@ Delete({
   pub y = methodTwo;
   pub z = methodThisBreaks
 });
+
+let x: t = `Poly;
