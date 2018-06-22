@@ -15,3 +15,13 @@ let sumThem =
 type nonrec t =
   | A(int)
   | B(bool);
+
+type s = [ | `Poly];
+
+let x: s = `Poly;
+
+/* There's a bug in ocaml resulting in a Pexp_constraint on the `Poly
+ * duplicating the core_type.
+ * https://caml.inria.fr/mantis/view.php?id=7758
+ * https://caml.inria.fr/mantis/view.php?id=7344 */
+let x: s = (`Poly: s);

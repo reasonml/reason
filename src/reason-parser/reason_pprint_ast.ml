@@ -2398,13 +2398,16 @@ let printer = object(self:'self)
               ~break:IfNeed ~sep:(Sep "=>") [lhs; rhs]
           in source_map ~loc:x.ptyp_loc normalized
         | Ptyp_poly (sl, ct) ->
-          let poly =
+          let ct = self#core_type ct in
+          let poly = match sl with
+          | [] -> ct
+          | sl ->
             makeList ~break:IfNeed [
               makeList ~postSpace:true [
                 makeList ~postSpace:true (List.map (fun x -> self#tyvar x) sl);
                 atom ".";
               ];
-              self#core_type ct;
+              ct
             ]
           in source_map ~loc:x.ptyp_loc poly
         | _ -> self#non_arrowed_core_type x
