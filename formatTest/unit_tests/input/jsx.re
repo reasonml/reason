@@ -171,3 +171,10 @@ let x = foo /></ bar;
 <div onClick=this##handleClick>
   <> foo(bar) </>
 </div>;
+
+/* https://github.com/facebook/reason/issues/2020 */
+<div></div >;
+
+<div>foo</ div>;
+
+<div> </ div >;

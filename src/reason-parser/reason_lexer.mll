@@ -538,9 +538,9 @@ rule token = parse
     set_lexeme_length lexbuf 1;
     LBRACE
   }
-  | "</" uppercase_or_lowercase (identchar | '.') * ">" {
+  | "</" blank* uppercase_or_lowercase (identchar | '.') * blank* ">" {
     let buf = Lexing.lexeme lexbuf in
-    LESSSLASHIDENTGREATER (String.sub buf 2 (String.length buf - 2 - 1))
+    LESSSLASHIDENTGREATER (String.trim (String.sub buf 2 (String.length buf - 2 - 1)))
   }
   | "]"  { RBRACKET }
   | "{"  { LBRACE }
