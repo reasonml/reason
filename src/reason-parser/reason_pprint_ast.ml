@@ -338,9 +338,6 @@ let rec partitionAttributes ?(partDoc=false) ?(allowUncurry=true) attrs : attrib
     | (({txt="reason.raw_literal"; _}, _) as attr) :: atTl ->
         let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
         {partition with literalAttrs=attr::partition.literalAttrs}
-    | ({txt="reason.fast_pipe"; _}, _) :: atTl ->
-        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
-        {partition with fastPipe=true}
     | atHd :: atTl ->
         let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
         {partition with stdAttrs=atHd::partition.stdAttrs}
@@ -580,7 +577,7 @@ let rules = [
       else
         s.[0] == '+'
     )));
-    (TokenPrecedence ,(fun s -> (Left, s.[0] == '-' )));
+    (TokenPrecedence ,(fun s -> (Left, s.[0] == '-' && s <> "->" )));
     (TokenPrecedence ,(fun s -> (Left, s = "!" )));
   ];
   [
@@ -604,6 +601,7 @@ let rules = [
     (TokenPrecedence, (fun s -> (Left, s.[0] == '|' && not (s = "||"))));
     (TokenPrecedence, (fun s -> (Left, s.[0] == '&' && not (s = "&") && not (s = "&&"))));
     (TokenPrecedence, (fun s -> (Left, s.[0] == '$')));
+    (TokenPrecedence, (fun s -> (Left, s = "->")));
   ];
   [
     (TokenPrecedence, (fun s -> (Right, s = "&")));
@@ -2198,9 +2196,9 @@ let formatComputedInfixChain infixChainList =
       let hd = List.hd group in
       let tl = makeList ~inline:(true, true) ~sep:(Sep " ") (List.tl group) in
       makeList ~inline:(true, true) ~sep:(Sep " ") ~break:IfNeed [hd; tl]
-    else if currentToken = "->"   then begin
+    else if currentToken = "->" then
       formatFastPipeChain group
-    end else
+    else
       (* Represents `|> f` in foo |> f
        * We need a label here to indent possible closing parens
        * on the same height as the infix operator
@@ -2211,14 +2209,13 @@ let formatComputedInfixChain infixChainList =
        *       "okokok" uri meth headers body
        * )   <-- notice how this closing paren is on the same height as >|=
        *)
-      let space = not (currentToken = "->") in
-      label ~break:`Never ~space (atom currentToken) (List.nth group 1)
+      label ~break:`Never ~space:true (atom currentToken) (List.nth group 1)
   in
   let rec print acc group currentToken l =
     match l with
     | x::xs -> (match x with
       | InfixToken t ->
-          (* requireIndentFor examples: = or :=*)
+          (* = or := *)
           if List.mem t requireIndentFor then
             let groupNode =
               makeList ~inline:(true, true) ~sep:(Sep " ") (group @ [atom t])
@@ -2245,7 +2242,23 @@ let formatComputedInfixChain infixChainList =
             print acc (group @ [atom t]) t xs
           else
             begin if t = "->"  then
-              print acc (group@[atom t]) t xs
+              begin if (currentToken = "" || currentToken = "->") then
+                print acc (group@[atom t]) t xs
+              else
+                (* a + b + foo->bar->baz
+                 * `foo` needs to be picked from the current group
+                 * and inserted into a new one. This way `foo`
+                 * gets the special "fast pipe chain"-printing:
+                 * foo->bar->baz. *)
+                 begin match List.rev group with
+                 |  hd::tl ->
+                     let acc =
+                       acc @ [layout_of_group (List.rev tl) currentToken]
+                      in
+                     print acc [hd; atom t] t xs
+                 | [] -> print acc (group@[atom t]) t xs
+                 end
+              end
             else
               print (acc @ [layout_of_group group currentToken]) [(atom t)] t xs
             end
