@@ -2127,6 +2127,40 @@ let rec computeInfixChain = function
 
 let equalityOperators = ["!="; "!=="; "==="; "=="; ">="; "<="; "<"; ">"]
 
+(* Takes a list of layouts and provides beautiful printing for fast pipe.
+ * Prints
+ *  [atom "foo"; atom "->"; atom "f"; atom "->"; atom "g"]
+ * as:
+ *  foo->f->g
+ * or if line-length indicates breaking:
+ *  foo
+ *  ->f
+ *  ->g
+ *)
+let formatFastPipeChain layouts =
+  (* transforms [->; f; ->; g] into [->f; ->g] *)
+  let rec processPipePairs acc = function
+  | pipe::exp::xs ->
+      let layout = label ~break:`Never pipe exp in
+      processPipePairs (layout::acc) xs
+  | [x] -> List.rev (x::acc)
+  | [] -> List.rev acc
+  in match layouts with
+  | hd::tl ->
+    (* process head of the layout list different so all "pipe pairs"
+     * are nicely aligned under the first element when the layout breaks.
+     *  foo->f->g
+     * becomes
+     *  foo
+     *  ->f
+     *  ->g
+     *)
+    let pipes = processPipePairs [] tl in
+    makeList ~break:IfNeed ~inline:(true, true) (hd::pipes)
+  | [] ->
+    atom ""
+
+
 (* Formats a flattened list of infixChain nodes into a list of layoutNodes
  * which allow smooth line-breaking
  * e.g. [LayoutNode foo; InfixToken |>; LayoutNode f; InfixToken |>; LayoutNode z]
@@ -2164,7 +2198,9 @@ let formatComputedInfixChain infixChainList =
       let hd = List.hd group in
       let tl = makeList ~inline:(true, true) ~sep:(Sep " ") (List.tl group) in
       makeList ~inline:(true, true) ~sep:(Sep " ") ~break:IfNeed [hd; tl]
-    else
+    else if currentToken = "->"   then begin
+      formatFastPipeChain group
+    end else
       (* Represents `|> f` in foo |> f
        * We need a label here to indent possible closing parens
        * on the same height as the infix operator
@@ -2174,7 +2210,7 @@ let formatComputedInfixChain infixChainList =
        *     Printf.sprintf
        *       "okokok" uri meth headers body
        * )   <-- notice how this closing paren is on the same height as >|=
-       * *)
+       *)
       let space = not (currentToken = "->") in
       label ~break:`Never ~space (atom currentToken) (List.nth group 1)
   in
@@ -2182,6 +2218,7 @@ let formatComputedInfixChain infixChainList =
     match l with
     | x::xs -> (match x with
       | InfixToken t ->
+          (* requireIndentFor examples: = or :=*)
           if List.mem t requireIndentFor then
             let groupNode =
               makeList ~inline:(true, true) ~sep:(Sep " ") (group @ [atom t])
@@ -2203,10 +2240,15 @@ let formatComputedInfixChain infixChainList =
               makeList ~inline:(true, true) ~sep:(Sep " ") (group @ [atom t])
             in
             print (acc @ [groupNode]) [] t xs
+          (* != !== === == >= <= < > etc *)
           else if List.mem t equalityOperators then
             print acc (group @ [atom t]) t xs
           else
-            print (acc @ [layout_of_group group currentToken]) [(atom t)] t xs
+            begin if t = "->"  then
+              print acc (group@[atom t]) t xs
+            else
+              print (acc @ [layout_of_group group currentToken]) [(atom t)] t xs
+            end
       | Layout layoutNode -> print acc (group @ [layoutNode]) currentToken xs
       )
     | [] ->
