@@ -4012,6 +4012,7 @@ let printer = object(self:'self)
            | Pexp_match _
            | Pexp_extension _
            | Pexp_fun _
+           | Pexp_function _
            | Pexp_apply _ -> label (makeList [atom lbl; atom "="]) (self#simplifyUnparseExpr expression)
            | _ -> makeList ([atom lbl; atom "="; self#simplifyUnparseExpr expression])
          in
