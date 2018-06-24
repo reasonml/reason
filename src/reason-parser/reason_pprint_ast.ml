@@ -536,6 +536,9 @@ let isSimplePrefixToken s = match printedStringAndFixity s with
    using %prec *)
 let rules = [
   [
+    (TokenPrecedence, (fun s -> (Left, s = "->")));
+  ];
+  [
     (TokenPrecedence, (fun s -> (Nonassoc, isSimplePrefixToken s)));
   ];
   [
@@ -601,7 +604,6 @@ let rules = [
     (TokenPrecedence, (fun s -> (Left, s.[0] == '|' && not (s = "||"))));
     (TokenPrecedence, (fun s -> (Left, s.[0] == '&' && not (s = "&") && not (s = "&&"))));
     (TokenPrecedence, (fun s -> (Left, s.[0] == '$')));
-    (TokenPrecedence, (fun s -> (Left, s = "->")));
   ];
   [
     (TokenPrecedence, (fun s -> (Right, s = "&")));

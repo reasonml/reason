@@ -1267,7 +1267,7 @@ conflicts.
 
 %right    OR BARBAR                     (* expr (e || e || e) *)
 %right    AMPERSAND AMPERAMPER          (* expr (e && e && e) *)
-%left     INFIXOP0 INFIXOP_WITH_EQUAL LESS GREATER MINUSGREATER (* expr (e OP e OP e) *)
+%left     INFIXOP0 INFIXOP_WITH_EQUAL LESS GREATER (* expr (e OP e OP e) *)
 %left     LESSDOTDOTGREATER (* expr (e OP e OP e) *)
 %right    INFIXOP1                      (* expr (e OP e OP e) *)
 %right    COLONCOLON                    (* expr (e :: e :: e) *)
@@ -1358,6 +1358,7 @@ conflicts.
 
 (* PREFIXOP and BANG precedence *)
 %nonassoc below_DOT_AND_SHARP           (* practically same as below_SHARP but we convey purpose *)
+%left    MINUSGREATER
 %nonassoc SHARP                         (* simple_expr/toplevel_directive *)
 %left     SHARPOP
 %nonassoc below_DOT
@@ -4532,7 +4533,7 @@ val_ident:
      operator swapping requires that we express that as != *)
   | LESSDOTDOTGREATER { "<..>" }
   | GREATER GREATER   { ">>" }
-  | MINUSGREATER { "->" }
+  | MINUSGREATER      { "->" }
 ;
 
 operator:

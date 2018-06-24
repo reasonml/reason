@@ -36,3 +36,5 @@ x < foo->bar->baz;
 foo !== bar->baz;
 x |> y >>= foo->bar->baz;
 let m = f => foo->bar->f;
+
+obj##x->foo->bar;
