@@ -307,16 +307,14 @@ type attributesPartition = {
   stdAttrs : attributes;
   jsxAttrs : attributes;
   literalAttrs : attributes;
-  uncurried : bool;
-  fastPipe: bool
+  uncurried : bool
 }
 
 (** Partition attributes into kinds *)
 let rec partitionAttributes ?(partDoc=false) ?(allowUncurry=true) attrs : attributesPartition =
   match attrs with
     | [] ->
-      {arityAttrs=[]; docAttrs=[]; stdAttrs=[]; jsxAttrs=[]; literalAttrs=[];
-      uncurried = false; fastPipe = false}
+      {arityAttrs=[]; docAttrs=[]; stdAttrs=[]; jsxAttrs=[]; literalAttrs=[]; uncurried = false}
     | (({txt = "bs"}, PStr []) as attr)::atTl ->
         let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
         if allowUncurry then
