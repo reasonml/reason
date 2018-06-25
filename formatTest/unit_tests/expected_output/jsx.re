@@ -277,3 +277,11 @@ let x = foo /></ bar;
 <div> foo </div>;
 
 <div />;
+
+<Component
+  accept=(
+    fun
+    | Foo => true
+    | Bar => false
+  )
+/>;
