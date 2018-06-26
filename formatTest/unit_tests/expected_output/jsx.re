@@ -319,3 +319,13 @@ let x = foo /></ bar;
     "xxxxxxxxxxxxxxxxxxxxxx",
   )
 />;
+
+<C
+  prop=M.(
+    Foo(
+      "xxxxxxxxxxxxxxxxxxxxxx",
+      "xxxxxxxxxxxxxxxxxxxxxx",
+      "xxxxxxxxxxxxxxxxxxxxxx",
+    )
+  )
+/>;
