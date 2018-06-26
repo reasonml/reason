@@ -3828,6 +3828,27 @@ let printer = object(self:'self)
       | None -> raise (Invalid_argument "No match for unparsing expression")
     )
 
+  method formatNonSequencyExpression e =
+    (*
+     * Instead of printing:
+     *   let result =  { open Fmt; strf(foo);}
+     *
+     * We format as:
+     *   let result = Fmt.(strf(foo))
+     *
+     * (Also see https://github.com/facebook/Reason/issues/114)
+     *)
+    match e.pexp_desc with
+    | Pexp_record _ (* syntax sugar for M.{x:1} *)
+    | Pexp_tuple _ (* syntax sugar for M.(a, b) *)
+    | Pexp_object {pcstr_fields = []} (* syntax sugar for M.{} *)
+    | Pexp_construct ( {txt= Lident"::"},Some _) ->
+      self#simplifyUnparseExpr e (* syntax sugar for M.[x,y] *)
+    (* syntax sugar for the rest, wrap with parens to avoid ambiguity.
+     * E.g., avoid M.(M2.v) being printed as M.M2.v
+    *)
+    | _ -> makeList ~wrap:("(",")") ~break:IfNeed [self#unparseExpr e]
+
   (*
      It's not enough to only check if precedence of an infix left/right is
      greater than the infix itself. We also should likely pay attention to
@@ -4010,7 +4031,7 @@ let printer = object(self:'self)
              label (makeList [atom lbl;
                               atom "=";
                               (label (self#longident_loc lid) (atom "."))])
-                   (self#simplifyUnparseExpr e)
+                   (self#formatNonSequencyExpression e)
            | Pexp_record _
            | Pexp_construct _
            | Pexp_array _
@@ -5589,27 +5610,8 @@ let printer = object(self:'self)
           end
         | Pexp_open (ovf, lid, e) ->
             if self#isSeriesOfOpensFollowedByNonSequencyExpression x then
-              (*
-               * Instead of printing:
-               *   let result =  { open Fmt; strf(foo);}
-               *
-               * We format as:
-               *   let result = Fmt.(strf(foo))
-               *
-               * (Also see https://github.com/facebook/Reason/issues/114)
-               *)
-              let expression = match e.pexp_desc with
-                  | Pexp_record _ (* syntax sugar for M.{x:1} *)
-                  | Pexp_tuple _ (* syntax sugar for M.(a, b) *)
-                  | Pexp_object {pcstr_fields = []} (* syntax sugar for M.{} *)
-                  | Pexp_construct ( {txt= Lident"::"},Some _) ->
-                     self#simplifyUnparseExpr e (* syntax sugar for M.[x,y] *)
-                  (* syntax sugar for the rest, wrap with parens to avoid ambiguity.
-                   * E.g., avoid M.(M2.v) being printed as M.M2.v
-                   *)
-                  | _ -> makeList ~wrap:("(",")") ~break:IfNeed [self#unparseExpr e]
-              in
-              Some (label (label (self#longident_loc lid) (atom ("."))) expression)
+              Some (label (label (self#longident_loc lid) (atom (".")))
+                          (self#formatNonSequencyExpression e))
           else
             Some (makeLetSequence (self#letList x))
         | Pexp_field (e, li) ->
