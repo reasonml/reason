@@ -186,3 +186,43 @@ let x = foo /></ bar;
     | Bar => false
   )
 />;
+
+<C
+  prop=M.{
+         a: "xxxxxxxxxxxxxxxxxxxxxx",
+         b: "xxxxxxxxxxxxxxxxxxxxxx",
+         c: "xxxxxxxxxxxxxxxxxxxxxx",
+       }
+/>;
+
+<C
+  prop=M.[
+         "xxxxxxxxxxxxxxxxxxxxxx",
+         "xxxxxxxxxxxxxxxxxxxxxx",
+         "xxxxxxxxxxxxxxxxxxxxxx",
+       ]
+/>;
+
+<C
+  prop=M.[|
+         "xxxxxxxxxxxxxxxxxxxxxx",
+         "xxxxxxxxxxxxxxxxxxxxxx",
+         "xxxxxxxxxxxxxxxxxxxxxx",
+       |]
+/>;
+
+<C
+  prop=M.(
+    "xxxxxxxxxxxxxxxxxxxxxx",
+    "xxxxxxxxxxxxxxxxxxxxxx",
+    "xxxxxxxxxxxxxxxxxxxxxx",
+  )
+/>;
+
+<C
+  prop=M.(Foo(
+    "xxxxxxxxxxxxxxxxxxxxxx",
+    "xxxxxxxxxxxxxxxxxxxxxx",
+    "xxxxxxxxxxxxxxxxxxxxxx",
+  ))
+/>;
