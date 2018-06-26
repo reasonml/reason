@@ -187,11 +187,34 @@ let x = foo /></ bar;
   )
 />;
 
-/* Actual */
 <C
   prop=M.{
          a: "xxxxxxxxxxxxxxxxxxxxxx",
          b: "xxxxxxxxxxxxxxxxxxxxxx",
          c: "xxxxxxxxxxxxxxxxxxxxxx",
        }
+/>;
+
+<C
+  prop=M.[
+         "xxxxxxxxxxxxxxxxxxxxxx",
+         "xxxxxxxxxxxxxxxxxxxxxx",
+         "xxxxxxxxxxxxxxxxxxxxxx",
+       ]
+/>;
+
+<C
+  prop=M.[|
+         "xxxxxxxxxxxxxxxxxxxxxx",
+         "xxxxxxxxxxxxxxxxxxxxxx",
+         "xxxxxxxxxxxxxxxxxxxxxx",
+       |]
+/>;
+
+<C
+  prop=M.(
+    "xxxxxxxxxxxxxxxxxxxxxx",
+    "xxxxxxxxxxxxxxxxxxxxxx",
+    "xxxxxxxxxxxxxxxxxxxxxx",
+  )
 />;
