@@ -4005,6 +4005,12 @@ let printer = object(self:'self)
            | _ when isJSXComponent expression  ->
                label (atom (lbl ^ "="))
                      (makeList ~break:IfNeed ~wrap:("{", "}") [(self#simplifyUnparseExpr expression)])
+           | Pexp_open (ovf, lid, e)
+             when self#isSeriesOfOpensFollowedByNonSequencyExpression expression ->
+             label (makeList [atom lbl;
+                              atom "=";
+                              (label (self#longident_loc lid) (atom "."))])
+                   (self#simplifyUnparseExpr e)
            | Pexp_record _
            | Pexp_construct _
            | Pexp_array _

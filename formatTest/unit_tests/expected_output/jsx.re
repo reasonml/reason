@@ -285,3 +285,12 @@ let x = foo /></ bar;
     | Bar => false
   )
 />;
+
+/* Actual */
+<C
+  prop=M.{
+    a: "xxxxxxxxxxxxxxxxxxxxxx",
+    b: "xxxxxxxxxxxxxxxxxxxxxx",
+    c: "xxxxxxxxxxxxxxxxxxxxxx",
+  }
+/>;
