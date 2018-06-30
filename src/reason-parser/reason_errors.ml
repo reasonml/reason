@@ -127,7 +127,7 @@ let () =
       | _ -> None
     )
 
-open Migrate_parsetree.Ast_404
+open Migrate_parsetree.Ast_406
 
 let str_eval_message text = {
   Parsetree.

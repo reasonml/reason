@@ -43,11 +43,11 @@
 
 (* #if defined BS_NO_COMPILER_PATCH then *)
 open Migrate_parsetree
-open Ast_404
-module To_current = Convert(OCaml_404)(OCaml_current)
+open Ast_406
+module To_current = Convert(OCaml_406)(OCaml_current)
 
-let nolabel = Ast_404.Asttypes.Nolabel
-let labelled str = Ast_404.Asttypes.Labelled str
+let nolabel = Ast_406.Asttypes.Nolabel
+let labelled str = Ast_406.Asttypes.Labelled str
 let argIsKeyRef = function
   | (Asttypes.Labelled ("key" | "ref"), _) | (Asttypes.Optional ("key" | "ref"), _) -> true
   | _ -> false

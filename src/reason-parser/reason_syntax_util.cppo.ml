@@ -16,7 +16,7 @@
 
 #ifdef BS_NO_COMPILER_PATCH
 open Migrate_parsetree
-open Ast_404
+open Ast_406
 #endif
 
 open Asttypes
@@ -393,7 +393,6 @@ let identifier_mapper f super =
 }
 
 let remove_stylistic_attrs_mapper_maker super =
-  let open Ast_404 in
   let open Ast_mapper in
 { super with
   expr = begin fun mapper expr ->

@@ -1,4 +1,5 @@
 open Migrate_parsetree
+open Ast_406
 
 type parse_itype = [ `ML | `Reason | `Binary | `BinaryReason | `Auto ]
 type print_itype = [ `ML | `Reason | `Binary | `BinaryReason | `AST | `None ]
@@ -47,10 +48,10 @@ let ocamlBinaryParser use_stdin filename =
   match Ast_io.from_channel chan with
   | Result.Error _ -> assert false
   | Result.Ok (_, Ast_io.Impl ((module Version), ast)) ->
-    let module Convert = Convert(Version)(OCaml_404) in
+    let module Convert = Convert(Version)(OCaml_406) in
     ((Obj.magic (Convert.copy_structure ast), []), true, false)
   | Result.Ok (_, Ast_io.Intf ((module Version), ast)) ->
-    let module Convert = Convert(Version)(OCaml_404) in
+    let module Convert = Convert(Version)(OCaml_406) in
     ((Obj.magic (Convert.copy_signature ast), []), true, true)
 
 let reasonBinaryParser use_stdin filename =

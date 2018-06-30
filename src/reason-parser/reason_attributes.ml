@@ -1,5 +1,5 @@
 open Migrate_parsetree
-open Ast_404
+open Ast_406
 open Location
 open Parsetree
 

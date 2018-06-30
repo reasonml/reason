@@ -49,7 +49,7 @@
 module Easy_format = Vendored_easy_format
 
 open Migrate_parsetree
-open Ast_404
+open Ast_406
 open Asttypes
 open Location
 open Longident
@@ -177,6 +177,9 @@ let add_extension_sugar keyword = function
 
 let string_equal : string -> string -> bool = (=)
 
+let string_loc_equal: string Ast_406.Asttypes.loc -> string Ast_406.Asttypes.loc -> bool =
+  fun l1 l2 -> l1.txt = l2.txt
+
 let longident_same l1 l2 =
   let rec equal l1 l2 =
     match l1, l2 with
@@ -236,9 +239,12 @@ let same_ast_modulo_varification_and_extensions t1 t2 =
       loop core_type1' core_type2'
     | (Ptyp_tuple lst1, Ptyp_tuple lst2) -> for_all2' loop lst1 lst2
     | (Ptyp_object (lst1, o1), Ptyp_object (lst2, o2)) ->
-      let tester = fun (s1, _, t1) (s2, _, t2) ->
-        string_equal s1 s2 &&
-        loop t1 t2
+      let tester = fun t1 t2 ->
+        match t1, t2 with
+        | Otag (s1, attrs1, t1), Otag (s2, attrs2, t2) ->
+          string_equal s1.txt s2.txt &&
+          loop t1 t2
+        | _ -> assert false (* TODO(anmonteiro) *)
       in
       for_all2' tester lst1 lst2 && o1 = o2
     | (Ptyp_class (longident1, lst1), Ptyp_class (longident2, lst2)) ->
@@ -252,7 +258,7 @@ let same_ast_modulo_varification_and_extensions t1 t2 =
       flag1 = flag2 &&
       lbl_lst_option1 = lbl_lst_option2
     | (Ptyp_poly (string_lst1, core_type1), Ptyp_poly (string_lst2, core_type2))->
-      for_all2' string_equal string_lst1 string_lst2 &&
+      for_all2' string_loc_equal string_lst1 string_lst2 &&
       loop core_type1 core_type2
     | (Ptyp_package(longident1, lst1), Ptyp_package (longident2, lst2)) ->
       longident_same longident1 longident2 &&
@@ -264,8 +270,8 @@ let same_ast_modulo_varification_and_extensions t1 t2 =
     longident_same lblLongIdent1 lblLongIdent2 &&
     loop ct1 ct2
   and rowFieldEqual f1 f2 = match (f1, f2) with
-    | ((Rtag(label1, _, flag1, lst1)), (Rtag (label2, _, flag2, lst2))) ->
-      string_equal label1 label2 &&
+    | ((Rtag(label1, attrs1, flag1, lst1)), (Rtag (label2, attrs2, flag2, lst2))) ->
+      string_equal label1.txt label2.txt &&
       flag1 = flag2 &&
       for_all2' loop lst1 lst2
     | (Rinherit t1, Rinherit t2) -> loop t1 t2
@@ -293,7 +299,7 @@ let expandLocation pos ~expand:(startPos, endPos) =
  * 2| let f = ...           by the attr on line 1, not the lnum of the `let`
  *)
 let rec firstAttrLoc loc = function
-  | ((attrLoc, _) : Ast_404.Parsetree.attribute) ::attrs ->
+  | ((attrLoc, _) : Ast_406.Parsetree.attribute) ::attrs ->
       if attrLoc.loc.loc_start.pos_lnum < loc.loc_start.pos_lnum
          && not attrLoc.loc.loc_ghost
       then
@@ -2453,7 +2459,7 @@ let printer = object(self:'self)
           | sl ->
             makeList ~break:IfNeed ~postSpace:true [
               makeList [
-                makeList ~postSpace:true (List.map (fun x -> self#tyvar x) sl);
+                makeList ~postSpace:true (List.map (fun {txt} -> self#tyvar txt) sl);
                 atom ".";
               ];
               ct
@@ -3062,7 +3068,7 @@ let printer = object(self:'self)
             match rf with
               | Rtag (label, attrs, opt_ampersand, ctl) ->
                 let pcd_name = {
-                  txt = label;
+                  txt = label.txt;
                   loc = pcd_loc;
                 } in
                 let pcd_args = Pcstr_tuple ctl in
@@ -4909,7 +4915,7 @@ let printer = object(self:'self)
     in
     let prepare_arg = function
       | `Value (l,eo,p) -> source_map ~loc:p.ppat_loc (self#label_exp l eo p)
-      | `Type nt -> atom ("type " ^ nt)
+      | `Type nt -> atom ("type " ^ nt.txt)
     in
     let single_argument_no_parens p ret =
       if uncurried then false
@@ -4952,7 +4958,7 @@ let printer = object(self:'self)
          leadingAbstractVars
          nonVarifiedType =
       same_ast_modulo_varification_and_extensions polyType nonVarifiedType &&
-      for_all2' string_equal typeVars leadingAbstractVars
+      for_all2' string_loc_equal typeVars leadingAbstractVars
 
   (* Reinterpret this as a pattern constraint since we don't currently have a
      way to disambiguate. There is currently a way to disambiguate a parsing
@@ -5003,7 +5009,7 @@ let printer = object(self:'self)
 
   method locallyAbstractPolymorphicFunctionBinding prefixText layoutPattern funWithNewTypes absVars bodyType =
     let appTerms = self#unparseExprApplicationItems funWithNewTypes in
-    let locallyAbstractTypes = (List.map atom absVars) in
+    let locallyAbstractTypes = (List.map (fun x -> atom x.txt) absVars) in
     let typeLayout =
       source_map ~loc:bodyType.ptyp_loc (self#core_type bodyType)
     in
@@ -5106,9 +5112,9 @@ let printer = object(self:'self)
    *)
   method attachDocAttrsToLayout
     (* all std attributes attached on the ast node backing the layout *)
-    ~stdAttrs:(stdAttrs : Ast_404.Parsetree.attributes)
+    ~stdAttrs:(stdAttrs : Ast_406.Parsetree.attributes)
     (* all doc comments attached on the ast node backing the layout *)
-    ~docAttrs:(docAttrs : Ast_404.Parsetree.attributes)
+    ~docAttrs:(docAttrs : Ast_406.Parsetree.attributes)
     (* location of the layout *)
     ~loc
     (* layout to attach the doc comments to *)
@@ -5131,7 +5137,7 @@ let printer = object(self:'self)
     | [] -> loc
     in
     let rec aux prevLoc layout = function
-      | ((x, _) as attr : Ast_404.Parsetree.attribute)::xs ->
+      | ((x, _) as attr : Ast_406.Parsetree.attribute)::xs ->
         let newLayout =
           let range = Range.makeRangeBetween x.loc prevLoc in
           let layout =
@@ -6024,25 +6030,27 @@ let printer = object(self:'self)
         | _ -> true
 
   method unparseObject ?wrap:((lwrap,rwrap)=("", "")) ?(withStringKeys=false) l o =
-    let core_field_type (s, attrs, ct) =
-      let l = extractStdAttrs attrs in
-      let row =
-         let rowKey = if withStringKeys then
-            (makeList ~wrap:("\"", "\"") [atom s])
-          else (atom s)
+    let core_field_type = function
+      | Otag ({txt}, attrs, ct) ->
+        let l = extractStdAttrs attrs in
+        let row =
+          let rowKey = if withStringKeys then
+              (makeList ~wrap:("\"", "\"") [atom txt])
+            else (atom txt)
           in
           label ~space:true
-                (makeList ~break:Layout.Never [rowKey; (atom ":")])
-                (self#core_type ct)
-      in
-      (match l with
-       | [] -> row
-       | _::_ ->
-         makeList
-           ~postSpace:true
-           ~break:IfNeed
-           ~inline:(true, true)
-           (List.concat [self#attributes attrs; [row]]))
+            (makeList ~break:Layout.Never [rowKey; (atom ":")])
+            (self#core_type ct)
+        in
+        (match l with
+         | [] -> row
+         | _::_ ->
+           makeList
+             ~postSpace:true
+             ~break:IfNeed
+             ~inline:(true, true)
+             (List.concat [self#attributes attrs; [row]]))
+      | Oinherit _ -> assert false (* TODO *)
     in
     let rows = List.map core_field_type l in
     let openness = match o with
@@ -6252,7 +6260,7 @@ let printer = object(self:'self)
           in
           let lhs = self#simple_enough_to_be_lhs_dot_send e in
           let lhs = if needparens then makeList ~wrap:("(",")") [lhs] else lhs in
-          Some (label (makeList [lhs; atom "#";]) (atom s))
+          Some (label (makeList [lhs; atom "#";]) (atom s.txt))
         | _ -> None
       in
       match item with
@@ -6438,7 +6446,7 @@ let printer = object(self:'self)
     | Pctf_inherit ct ->
       label ~space:true (atom "inherit") (self#class_constructor_type ct)
     | Pctf_val (s, mf, vf, ct) ->
-      let valueFlags = self#value_type_flags_for (s ^ ":") (vf, mf) in
+      let valueFlags = self#value_type_flags_for (s.txt ^ ":") (vf, mf) in
       label
         ~space:true
         (
@@ -6448,7 +6456,7 @@ let printer = object(self:'self)
         )
         (self#core_type ct)
     | Pctf_method (s, pf, vf, ct) ->
-      let methodFlags = self#method_sig_flags_for (s ^ ":") vf
+      let methodFlags = self#method_sig_flags_for (s.txt ^ ":") vf
       in
       let pubOrPrivate =
         match pf with
@@ -6543,6 +6551,7 @@ let printer = object(self:'self)
             (self#longident_loc li)
             (makeList ~wrap:("(", ")") ~sep:commaTrail (List.map self#core_type l))
       )
+    | Pcty_open _ -> assert false (* TODO(anmonteiro) *)
     | Pcty_extension e ->
       self#attach_std_item_attrs x.pcty_attributes (self#extension e)
     | Pcty_arrow _ -> failwith "class_instance_type should not be printed with Pcty_arrow"
@@ -6662,7 +6671,7 @@ let printer = object(self:'self)
           (
             match so with
             | None -> inheritExp;
-            | Some s -> label ~space:true inheritExp (atom ("as " ^ s))
+            | Some s -> label ~space:true inheritExp (atom ("as " ^ s.txt))
           )
       | Pcf_val (s, mf, Cfk_concrete (ovf, e)) ->
         let opening = match mf with
@@ -6870,6 +6879,7 @@ let printer = object(self:'self)
         label
           (makeList ~postSpace:true [atom "class"; self#longident_loc li])
           (makeTup (List.map self#non_arrowed_non_simple_core_type l))
+      | Pcl_open _ -> assert false (* TODO(anmonteiro) *)
       | Pcl_constraint _
       | Pcl_extension _
       | Pcl_let _
@@ -7220,13 +7230,13 @@ let printer = object(self:'self)
                   td
             | Pwith_module (li, li2) ->
                 modSub (self#longident_loc li) li2 "="
-            | Pwith_typesubst td ->
+            | Pwith_typesubst (loc, td) ->
                 self#formatOneTypeDef
                   typeAtom
                   (atom ~loc:td.ptype_name.loc td.ptype_name.txt)
                   destrAtom
                   td
-            | Pwith_modsubst (s, li2) -> modSub (atom s.txt) li2 ":="
+            | Pwith_modsubst (s, li2) -> modSub (self#longident s.txt) li2 ":="
           in
           (match l with
             | [] -> self#module_type ~space letPattern mt

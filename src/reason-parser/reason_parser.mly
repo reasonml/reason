@@ -49,7 +49,7 @@
 
 %{
 open Migrate_parsetree
-open OCaml_404.Ast
+open OCaml_406.Ast
 open Reason_syntax_util
 open Location
 open Asttypes
@@ -477,7 +477,7 @@ let mkexp_fun {Location.txt; loc} body =
   | Term (label, default_expr, pat) ->
     Exp.fun_ ~loc label default_expr pat body
   | Type str ->
-    Exp.newtype ~loc str body
+    Exp.newtype ~loc (mkloc str loc) body
 
 let mkclass_fun {Location. txt ; loc} body =
   let loc = mklocation loc.loc_start body.pcl_loc.loc_end in
@@ -712,7 +712,10 @@ let varify_constructors var_names t =
           Ptyp_constr(longident, List.map loop lst)
       | Ptyp_object (lst, o) ->
           Ptyp_object
-            (List.map (fun (s, attrs, t) -> (s, attrs, loop t)) lst, o)
+            (List.map
+               (function
+                 | Otag (s, attrs, t) -> Otag (s, attrs, loop t)
+                 | Oinherit _ -> assert false (* TODO(anmonteiro) *)) lst, o)
       | Ptyp_class (longident, lst) ->
           Ptyp_class (longident, List.map loop lst)
       | Ptyp_alias(core_type, string) ->
@@ -722,7 +725,7 @@ let varify_constructors var_names t =
           Ptyp_variant(List.map loop_row_field row_field_list,
                        flag, lbl_lst_option)
       | Ptyp_poly(string_lst, core_type) ->
-          List.iter (check_variable var_names t.ptyp_loc) string_lst;
+          List.iter (fun x -> check_variable var_names t.ptyp_loc x.txt) string_lst;
           Ptyp_poly(string_lst, loop core_type)
       | Ptyp_package(longident,lst) ->
           Ptyp_package(longident,List.map (fun (n,typ) -> (n,loop typ) ) lst)
@@ -751,7 +754,7 @@ let pexp_newtypes ?loc newtypes exp =
 let wrap_type_annotation newtypes core_type body =
   let exp = mkexp(Pexp_constraint(body,core_type)) in
   let exp = pexp_newtypes newtypes exp in
-  let typ = mktyp ~ghost:true (Ptyp_poly(newtypes,varify_constructors newtypes core_type)) in
+  let typ = mktyp ~ghost:true (Ptyp_poly(newtypes,varify_constructors (List.map (fun {txt} -> txt) newtypes) core_type)) in
   (exp, typ)
 
 
@@ -1027,7 +1030,7 @@ let add_brace_attr expr =
 
 %[@recover.prelude
 
-  open Migrate_parsetree.OCaml_404.Ast
+  open Migrate_parsetree.OCaml_406.Ast
   open Parsetree
   open Ast_helper
 
@@ -1320,22 +1323,22 @@ conflicts.
 (* Entry points *)
 
 %start implementation                   (* for implementation files *)
-%type <Migrate_parsetree.Ast_404.Parsetree.structure> implementation
+%type <Migrate_parsetree.Ast_406.Parsetree.structure> implementation
 %start interface                        (* for interface files *)
-%type <Migrate_parsetree.Ast_404.Parsetree.signature> interface
+%type <Migrate_parsetree.Ast_406.Parsetree.signature> interface
 %start toplevel_phrase                  (* for interactive use *)
-%type <Migrate_parsetree.Ast_404.Parsetree.toplevel_phrase> toplevel_phrase
+%type <Migrate_parsetree.Ast_406.Parsetree.toplevel_phrase> toplevel_phrase
 %start use_file                         (* for the #use directive *)
-%type <Migrate_parsetree.Ast_404.Parsetree.toplevel_phrase list> use_file
+%type <Migrate_parsetree.Ast_406.Parsetree.toplevel_phrase list> use_file
 %start parse_core_type
-%type <Migrate_parsetree.Ast_404.Parsetree.core_type> parse_core_type
+%type <Migrate_parsetree.Ast_406.Parsetree.core_type> parse_core_type
 %start parse_expression
-%type <Migrate_parsetree.Ast_404.Parsetree.expression> parse_expression
+%type <Migrate_parsetree.Ast_406.Parsetree.expression> parse_expression
 %start parse_pattern
-%type <Migrate_parsetree.Ast_404.Parsetree.pattern> parse_pattern
+%type <Migrate_parsetree.Ast_406.Parsetree.pattern> parse_pattern
 
 (* Instead of reporting an error directly, productions specified
- * below will be reduced first and poped up in the stack to a higher
+ * below will be reduced first and popped up in the stack to a higher
  * level production.
  *
  * This is essential to error reporting as it is much friendier to provide
@@ -2006,7 +2009,7 @@ mark_position_cl
 
 class_field:
   | mark_position_cf
-    ( item_attributes INHERIT override_flag class_expr preceded(AS,LIDENT)?
+    ( item_attributes INHERIT override_flag class_expr as_loc(preceded(AS,LIDENT))?
       { mkcf_attrs (Pcf_inherit ($3, $4, $5)) $1 }
     | item_attributes VAL value
       { mkcf_attrs (Pcf_val $3) $1 }
@@ -2071,7 +2074,7 @@ method_:
     { let loc = mklocation $symbolstartpos $endpos in
       ($2, Cfk_concrete ($1, mkexp ~ghost:true ~loc (Pexp_poly($4, $3))))
     }
-  | override_flag as_loc(label) COLON TYPE LIDENT+ DOT core_type
+  | override_flag as_loc(label) COLON TYPE as_loc(LIDENT)+ DOT core_type
     either(preceded(EQUAL,expr), braced_expr)
     (* WITH locally abstract types, you'll see a Ptyp_poly in the Pexp_poly,
        but the expression will be a Pexp_newtype and type vars will be
@@ -2265,9 +2268,9 @@ class_sig_field:
       { mkctf_attrs (Pctf_inherit $3) $1 }
     | item_attributes VAL value_type
       { mkctf_attrs (Pctf_val $3) $1 }
-    | item_attributes PRI virtual_flag label COLON poly_type
+    | item_attributes PRI virtual_flag as_loc(label) COLON poly_type
       { mkctf_attrs (Pctf_method ($4, Private, $3, $6)) $1 }
-    | item_attributes PUB virtual_flag label COLON poly_type
+    | item_attributes PUB virtual_flag as_loc(label) COLON poly_type
       { mkctf_attrs (Pctf_method ($4, Public, $3, $6)) $1 }
     | item_attributes CONSTRAINT constrain_field
       { mkctf_attrs (Pctf_constraint $3) $1 }
@@ -2279,7 +2282,7 @@ class_sig_field:
 ;
 
 value_type:
-  mutable_or_virtual_flags label COLON core_type
+  mutable_or_virtual_flags as_loc(label) COLON core_type
   { let (mut, virt) = $1 in ($2, mut, virt, $4) }
 ;
 
@@ -2993,7 +2996,7 @@ parenthesized_expr:
       let exp = Exp.mk ~loc ~attrs:[] (Pexp_override $4) in
       mkexp (Pexp_open(Fresh, $1, exp))
     }
-  | E SHARP label
+  | E SHARP as_loc(label)
     { mkexp (Pexp_send($1, $3)) }
   | E as_loc(SHARPOP) simple_expr_no_call
     { mkinfixop $1 (mkoperator $2) $3 }
@@ -3212,13 +3215,13 @@ let_binding_body:
       ($1, ghexp_constraint loc $4 $2) }
   | simple_pattern_ident fun_def(EQUAL,core_type)
     { ($1, $2) }
-  | simple_pattern_ident COLON preceded(QUOTE,ident)+ DOT core_type
+  | simple_pattern_ident COLON as_loc(preceded(QUOTE,ident))+ DOT core_type
       EQUAL mark_position_exp(expr)
     { let typ = mktyp ~ghost:true (Ptyp_poly($3, $5)) in
       let loc = mklocation $symbolstartpos $endpos in
       (mkpat ~ghost:true ~loc (Ppat_constraint($1, typ)), $7)
     }
-  | simple_pattern_ident COLON TYPE LIDENT+ DOT core_type
+  | simple_pattern_ident COLON TYPE as_loc(LIDENT)+ DOT core_type
       EQUAL mark_position_exp(expr)
   (* Because core_type will appear to contain "type constructors" since the
    * type variables listed in LIDENT+ don't have leading single quotes, we
@@ -4045,12 +4048,13 @@ with_constraint:
           fallback other
       in
       let loc = mklocation $symbolstartpos $endpos in
-      Pwith_typesubst (Type.mk {$2 with txt=last} ~params:$3 ~manifest:$5 ~loc)
+      Pwith_typesubst ($2, Type.mk {$2 with txt=last} ~params:$3 ~manifest:$5 ~loc)
     }
   | MODULE as_loc(mod_longident) EQUAL as_loc(mod_ext_longident)
       { Pwith_module ($2, $4) }
   | MODULE as_loc(UIDENT) COLONEQUAL as_loc(mod_ext_longident)
-      { Pwith_modsubst ($2, $4) }
+      { let lident = {$2 with txt=Lident $2.txt} in
+        Pwith_modsubst (lident, $4) }
 ;
 
 (* Polymorphic types *)
@@ -4058,7 +4062,7 @@ poly_type:
 mark_position_typ
   ( core_type
     { $1 }
-  | preceded(QUOTE,ident)+ DOT core_type
+  | as_loc(preceded(QUOTE,ident))+ DOT core_type
     { mktyp(Ptyp_poly($1, $3)) }
   ) {$1};
 
@@ -4357,9 +4361,9 @@ object_record_type:
 
 object_label_declaration:
   | item_attributes as_loc(LIDENT)
-    { ($2.txt, $1, mkct $2) }
-  | item_attributes LIDENT COLON poly_type
-    { ($2, $1, $4) }
+    { Otag ($2, $1, mkct $2) }
+  | item_attributes as_loc(LIDENT) COLON poly_type
+    { Otag ($2, $1, $4) }
 ;
 
 object_label_declarations:
@@ -4367,7 +4371,9 @@ object_label_declarations:
 
 string_literal_label:
   item_attributes STRING COLON poly_type
-  { let (label, _raw, _delim) = $2 in (label, $1, $4) }
+  { let (label, _raw, _delim) = $2 in
+    let lblloc = mkloc label (mklocation $startpos($2) $endpos($2)) in
+    Otag (lblloc, $1, $4) }
 ;
 
 string_literal_labels:
@@ -4405,11 +4411,11 @@ bar_row_field:
 ;
 
 tag_field:
-  | item_attributes name_tag
+  | item_attributes as_loc(name_tag)
       boption(AMPERSAND)
       separated_nonempty_list(AMPERSAND, non_arrowed_simple_core_types)
     { Rtag ($2, $1, $3, $4) }
-  | item_attributes name_tag
+  | item_attributes as_loc(name_tag)
     { Rtag ($2, $1, true, []) }
 ;
 

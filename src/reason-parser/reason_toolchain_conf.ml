@@ -1,8 +1,8 @@
 open Migrate_parsetree
-include Ast_404
+include Ast_406
 
-module From_current = Convert(OCaml_current)(OCaml_404)
-module To_current = Convert(OCaml_404)(OCaml_current)
+module From_current = Convert(OCaml_current)(OCaml_406)
+module To_current = Convert(OCaml_406)(OCaml_current)
 
 module type Toolchain = sig
   (* Parsing *)

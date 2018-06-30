@@ -8,7 +8,7 @@
      was too fine to be captured by the grammar rules
 *)
 
-open Migrate_parsetree.Ast_404
+open Migrate_parsetree.Ast_406
 
 type lexing_error =
   | Illegal_character of char

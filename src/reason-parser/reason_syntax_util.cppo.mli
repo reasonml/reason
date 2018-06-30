@@ -13,7 +13,7 @@
   BuckleScript; ping @chenglou and a few others and we'll keep them synced up by
   patching the right parts, through the power of types(tm)
 *)
-open Migrate_parsetree.Ast_404
+open Migrate_parsetree.Ast_406
 
 val ml_to_reason_swap : string -> string
 
