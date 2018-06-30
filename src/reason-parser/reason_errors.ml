@@ -127,7 +127,7 @@ let () =
       | _ -> None
     )
 
-open Migrate_parsetree.Ast_404
+open Migrate_parsetree.Ast_408
 
 let str_eval_message text = {
   Parsetree.
@@ -136,6 +136,7 @@ let str_eval_message text = {
       { pexp_loc = Location.none;
         pexp_desc = Pexp_constant (Parsetree.Pconst_string (text, None));
         pexp_attributes = [];
+        pexp_loc_stack = [];
       },
       []
     );

@@ -320,6 +320,10 @@ let operator_chars =
   ['!' '$' '%' '&' '+' '-' ':' '<' '=' '>' '?' '@' '^' '|' '~' '#' '.'] |
   ( '\\'? ['/' '*'] )
 
+let dotsymbolchar =
+  ['!' '$' '%' '&' '*' '+' '-' '/' ':' '=' '>' '?' '@' '^' '|']
+let kwdopchar = ['$' '&' '*' '+' '-' '/' '<' '=' '>' '@' '^' '|']
+
 let decimal_literal = ['0'-'9'] ['0'-'9' '_']*
 
 let hex_literal =
@@ -620,6 +624,10 @@ rule token state = parse
       | op -> INFIXOP3 op }
   | '%' operator_chars*
     { INFIXOP3 (lexeme_operator lexbuf) }
+  | "let" kwdopchar dotsymbolchar * as op
+    { LETOP op }
+  | "and" kwdopchar dotsymbolchar * as op
+    { ANDOP op }
   | eof { EOF }
   | _
     { raise_error

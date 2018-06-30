@@ -420,3 +420,10 @@ type t =
     B
   | /** Some more longer docs over here that make sense to break lines on too */
     C;
+
+/* https://github.com/facebook/reason/issues/1828 */
+type widget_state = [
+    | `DEFAULT /* here */
+    | `HOVER
+    | `ACTIVE
+  ];

@@ -16,7 +16,7 @@
 
 #ifdef BS_NO_COMPILER_PATCH
 open Migrate_parsetree
-open Ast_404
+open Ast_408
 #endif
 
 open Asttypes
@@ -552,7 +552,7 @@ let map_label label = map_arg_label f label in
 }
 
 let remove_stylistic_attrs_mapper_maker super =
-  let open Ast_404 in
+  let open Ast_408 in
   let open Ast_mapper in
 { super with
   expr = begin fun mapper expr ->
@@ -604,7 +604,7 @@ let ml_to_reason_swap_operator_mapper = identifier_mapper ml_to_reason_swap
 (* attribute_equals tests an attribute is txt
  *)
 let attribute_equals to_compare = function
-  | ({txt}, _) -> txt = to_compare
+  | { attr_name = {txt}; _ } -> txt = to_compare
 
 (* attribute_exists tests if an attribute exists in a list
  *)

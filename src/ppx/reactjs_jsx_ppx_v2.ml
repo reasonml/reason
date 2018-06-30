@@ -43,11 +43,11 @@
 
 (* #if defined BS_NO_COMPILER_PATCH then *)
 open Migrate_parsetree
-open Ast_404
-module To_current = Convert(OCaml_404)(OCaml_current)
+open Ast_408
+module To_current = Convert(OCaml_408)(OCaml_current)
 
-let nolabel = Ast_404.Asttypes.Nolabel
-let labelled str = Ast_404.Asttypes.Labelled str
+let nolabel = Ast_408.Asttypes.Nolabel
+let labelled str = Ast_408.Asttypes.Labelled str
 let argIsKeyRef = function
   | (Asttypes.Labelled ("key" | "ref"), _) | (Asttypes.Optional ("key" | "ref"), _) -> true
   | _ -> false
@@ -148,7 +148,7 @@ let jsxMapper () =
       (* [@JSX] div(~children= <div />), coming from <div> ...<div/> </div> *)
       | {
           pexp_attributes
-        } when pexp_attributes |> List.exists (fun (attribute, _) -> attribute.txt = "JSX") ->
+        } when pexp_attributes |> List.exists (fun { attr_name = { txt }; _} -> txt = "JSX") ->
         raise (Invalid_argument "A spread + a JSX literal as a DOM element's \
           children don't make sense written together. You can simply remove the spread.")
       | _ -> "createElementVariadic"
@@ -245,10 +245,10 @@ let jsxMapper () =
       *)
       | {
           pstr_loc;
-          pstr_desc = Pstr_attribute (
-            ({txt = "bs.config"} as bsConfigLabel),
-            PStr [{pstr_desc = Pstr_eval ({pexp_desc = Pexp_record (recordFields, b)} as innerConfigRecord, a)} as configRecord]
-          )
+          pstr_desc = Pstr_attribute {
+            attr_name = ({txt = "bs.config"} as bsConfigLabel);
+            attr_payload = PStr [{pstr_desc = Pstr_eval ({pexp_desc = Pexp_record (recordFields, b)} as innerConfigRecord, a)} as configRecord]
+          }; _
         }::restOfStructure -> begin
           let (jsxField, recordFieldsWithoutJsx) = recordFields |> List.partition (fun ({txt}, _) -> txt = Lident "jsx") in
           match (jsxField, recordFieldsWithoutJsx) with
@@ -272,9 +272,10 @@ let jsxMapper () =
               | fields -> default_mapper.structure mapper ({
                 pstr_loc;
                 pstr_desc = Pstr_attribute (
-                  bsConfigLabel,
-                  PStr [{configRecord with pstr_desc = Pstr_eval ({innerConfigRecord with pexp_desc = Pexp_record (fields, b)}, a)}]
-                )
+                  { attr_name = bsConfigLabel;
+                    attr_payload = PStr [{configRecord with pstr_desc = Pstr_eval ({innerConfigRecord with pexp_desc = Pexp_record (fields, b)}, a)}];
+                    attr_loc = bsConfigLabel.loc
+                  })
               }::restOfStructure)
             end
         | _ -> raise (Invalid_argument "JSX: the file-level bs.config's {jsx: ...} config accepts only a version number")
@@ -289,7 +290,7 @@ let jsxMapper () =
            pexp_desc = Pexp_apply (callExpression, callArguments);
            pexp_attributes
          } ->
-         let (jsxAttribute, nonJSXAttributes) = List.partition (fun (attribute, _) -> attribute.txt = "JSX") pexp_attributes in
+         let (jsxAttribute, nonJSXAttributes) = List.partition (fun { attr_name = {txt}; _} -> txt = "JSX") pexp_attributes in
          (match (jsxAttribute, nonJSXAttributes) with
          (* no JSX attribute *)
          | ([], _) -> default_mapper.expr mapper expression
@@ -302,7 +303,7 @@ let jsxMapper () =
             | Pexp_construct ({txt = Lident "[]"; loc}, None);
            pexp_attributes
          } as listItems ->
-          let (jsxAttribute, nonJSXAttributes) = List.partition (fun (attribute, _) -> attribute.txt = "JSX") pexp_attributes in
+          let (jsxAttribute, nonJSXAttributes) = List.partition (fun {attr_name = {txt}} -> txt = "JSX") pexp_attributes in
           (match (jsxAttribute, nonJSXAttributes) with
           (* no JSX attribute *)
           | ([], _) -> default_mapper.expr mapper expression

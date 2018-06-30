@@ -1,5 +1,5 @@
 open Migrate_parsetree
-open Ast_404
+open Ast_408
 open Location
 open Parsetree
 
@@ -18,28 +18,28 @@ let rec partitionAttributes ?(partDoc=false) ?(allowUncurry=true) attrs : attrib
   match attrs with
   | [] ->
     {arityAttrs=[]; docAttrs=[]; stdAttrs=[]; jsxAttrs=[]; stylisticAttrs=[]; uncurried = false}
-  | (({txt = "bs"}, PStr []) as attr)::atTl ->
+  | ({ attr_name = {txt = "bs"}; attr_payload = PStr []; _ } as attr)::atTl ->
     let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
     if allowUncurry then
       {partition with uncurried = true}
     else {partition with stdAttrs=attr::partition.stdAttrs}
-  | (({txt="JSX"}, _) as jsx)::atTl ->
+  | ({ attr_name = {txt="JSX"}; _ } as jsx)::atTl ->
     let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
     {partition with jsxAttrs=jsx::partition.jsxAttrs}
-  | (({txt="explicit_arity"}, _) as arity_attr)::atTl
-  | (({txt="implicit_arity"}, _) as arity_attr)::atTl ->
+  | ({ attr_name = {txt="explicit_arity"}; _} as arity_attr)::atTl
+  | ({ attr_name = {txt="implicit_arity"}; _} as arity_attr)::atTl ->
     let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
     {partition with arityAttrs=arity_attr::partition.arityAttrs}
-  | (({txt="ocaml.text"}, _) as doc)::atTl when partDoc = true ->
+  | ({ attr_name = {txt="ocaml.text"}; _} as doc)::atTl when partDoc = true ->
     let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
     {partition with docAttrs=doc::partition.docAttrs}
-  | (({txt="ocaml.doc"}, _) as doc)::atTl when partDoc = true ->
+  | ({ attr_name = {txt="ocaml.doc"}; _} as doc)::atTl when partDoc = true ->
     let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
     {partition with docAttrs=doc::partition.docAttrs}
-  | (({txt="reason.raw_literal"}, _) as attr) :: atTl ->
+  | ({ attr_name = {txt="reason.raw_literal"}; _} as attr) :: atTl ->
     let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
     {partition with stylisticAttrs=attr::partition.stylisticAttrs}
-  | (({txt="reason.preserve_braces"}, _) as attr) :: atTl ->
+  | ({ attr_name = {txt="reason.preserve_braces"}; _} as attr) :: atTl ->
     let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
     {partition with stylisticAttrs=attr::partition.stylisticAttrs}
   | atHd :: atTl ->
@@ -51,8 +51,9 @@ let extractStdAttrs attrs =
 
 let extract_raw_literal attrs =
   let rec loop acc = function
-    | ({txt="reason.raw_literal"},
-       PStr [{pstr_desc = Pstr_eval({pexp_desc = Pexp_constant(Pconst_string(text, None))}, _)}])
+    | { attr_name = {txt="reason.raw_literal"};
+        attr_payload =
+          PStr [{pstr_desc = Pstr_eval({pexp_desc = Pexp_constant(Pconst_string(text, None))}, _)}]}
       :: rest ->
       (Some text, List.rev_append acc rest)
     | [] -> (None, List.rev acc)
@@ -69,7 +70,7 @@ let without_stylistic_attrs attrs =
   in
   loop [] attrs
 
-let is_preserve_braces_attr ({txt}, _) =
+let is_preserve_braces_attr { attr_name = {txt}; _} =
   txt = "reason.preserve_braces"
 
 let has_preserve_braces_attrs stylisticAttrs =
@@ -80,6 +81,6 @@ let maybe_remove_stylistic_attrs attrs should_preserve =
     attrs
   else
     List.filter (function
-      | ({txt="reason.raw_literal"}, _) -> true
+      | { attr_name = {txt="reason.raw_literal"}; _} -> true
       | _ -> false)
       attrs

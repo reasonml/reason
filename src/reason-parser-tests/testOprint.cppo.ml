@@ -21,8 +21,8 @@
 
 open Migrate_parsetree
 
-module Convert = Migrate_parsetree.Convert (OCaml_404) (OCaml_current)
-module ConvertBack = Migrate_parsetree.Convert (OCaml_current) (OCaml_404)
+module Convert = Migrate_parsetree.Convert (Migrate_parsetree.OCaml_408) (Migrate_parsetree.OCaml_current)
+module ConvertBack = Migrate_parsetree.Convert (Migrate_parsetree.OCaml_current) (Migrate_parsetree.OCaml_408)
 
 let main () =
   let filename = "./TestTest.ml" in
@@ -43,7 +43,7 @@ let main () =
   let env = Compmisc.initial_env() in
   let (typedtree, _) = Typemod.type_implementation modulename modulename modulename env ast in
   let tree = Printtyp.tree_of_signature typedtree.Typedtree.str_type in
-  let phrase = (Ast_404.Outcometree.Ophr_signature
+  let phrase = (Ast_408.Outcometree.Ophr_signature
     (List.map (fun item -> (ConvertBack.copy_out_sig_item item, None)) tree)
   ) in
   let fmt = Format.str_formatter in

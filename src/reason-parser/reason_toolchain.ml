@@ -79,6 +79,8 @@
  *)
 
 open Reason_toolchain_conf
+open Migrate_parsetree
+open Ast_408
 
 open Location
 open Lexing
