@@ -1183,3 +1183,11 @@ type foo = ~a:bool=? => int;
 
 /* https://github.com/facebook/reason/issues/2070 */
 f(~commit=!build);
+
+/* https://github.com/facebook/reason/issues/2032 */
+let predicate =
+  predicate === Functions.alwaysTrue1 ?
+    defaultPredicate :
+    (fun
+      | None => false
+      | Some(exn) => predicate(exn));

@@ -359,3 +359,11 @@ let work = () => {
 /** header */
 %raw
 "console.log(42)";
+
+/* https://github.com/facebook/reason/issues/2032 */
+let predicate =
+  predicate === Functions.alwaysTrue1 ?
+    defaultPredicate :
+    fun%extend
+    | None => false
+    | Some(exn) => predicate(exn);

@@ -3486,7 +3486,7 @@ let printer = object(self:'self)
      at the proper time when it is reparsed, possibly wrapping it
      in parenthesis if needed. It ensures a rule doesn't reduce
      until *after* `reducesAfterRight` gets a chance to reduce.
-     Example: The addtion rule which has precedence of rightmost
+     Example: The addition rule which has precedence of rightmost
      token "+", in `x + a * b` should not reduce until after the a * b gets
      a chance to reduce. This function would determine the minimum parens to
      ensure that. *)
@@ -4089,7 +4089,7 @@ let printer = object(self:'self)
       )
     | _ -> (
       match self#expression_requiring_parens_in_infix x with
-      | Some e -> PotentiallyLowPrecedence e
+      | Some e -> e
       | None -> raise (Invalid_argument "No match for unparsing expression")
     )
 
@@ -5306,7 +5306,10 @@ let printer = object(self:'self)
          pipe, is that its => token will be confused with the match token.
          Simple expression will also invoke `#reset`. *)
       | Pexp_function _ when pipe || semi -> None (* Would be rendered as simplest_expression  *)
-      | Pexp_function l -> Some (self#patternFunction ?extension x.pexp_loc l)
+      (* Pexp_function, on the other hand, doesn't need wrapping in parens in
+         most cases anymore, since `fun` is not ambiguous anymore (we print Pexp_fun
+         as ES6 functions). *)
+      | Pexp_function l -> Some (FunctionApplication [(self#patternFunction ?extension x.pexp_loc l)])
       | _ ->
         (* The Pexp_function cases above don't use location because comment printing
           breaks for them. *)
@@ -5501,7 +5504,7 @@ let printer = object(self:'self)
         in
         match itm with
           | None -> None
-          | Some i -> Some (source_map ~loc:x.pexp_loc i)
+          | Some i -> Some (PotentiallyLowPrecedence (source_map ~loc:x.pexp_loc i))
 
   method potentiallyConstrainedExpr x =
     match x.pexp_desc with
@@ -5876,9 +5879,6 @@ let printer = object(self:'self)
                 match x'.pexp_desc with
                 | Pexp_let _ ->
                   Some (makeLetSequence (self#letList x))
-                | Pexp_function l when (pipe || semi) ->
-                  Some (formatPrecedence ~loc:x.pexp_loc
-                          (self#reset#patternFunction ~extension x'.pexp_loc l))
                 | _ -> Some (self#extension e)
           end
         | Pexp_open (ovf, lid, e) ->
