@@ -921,3 +921,57 @@ let foo = (a, b) => a =- b;
 
 let (=><) = (a, b) => a + b;
 let x = a =>< b;
+
+let foo =
+  fun
+  | None => x >>= y
+  | Some(x) => x >>= y;
+
+something
+>>= (
+  fun
+  | None => x >>= y
+  | Some(x) => x >>= y
+);
+
+(fun
+| None => x >>= y
+| Some(x) => x >>= y)
+>>= bar ;
+
+something >>=
+  fun
+  | None => x >>= y
+  | Some(x) => x >>= y;
+
+something ?
+a >>= (
+  fun
+  | None => x >>= y
+  | Some(x) => x >>= y
+) : (
+  fun
+  | None => x >>= y
+  | Some(x) => x >>= y
+);
+
+something ?
+a >>= (
+  fun
+  | None => x >>= y
+  | Some(x) => x >>= y
+) : (
+  fun
+  | None => x >>= y
+  | Some(x) => x >>= y
+) >>= b;
+
+let foo =
+fun
+  | None => ()
+  | Some(x) => fun | None => () | Some(_) => ();
+
+let foo =
+fun
+  | Some(x) => (fun | None => () | Some(_) => ())
+  | None => ();

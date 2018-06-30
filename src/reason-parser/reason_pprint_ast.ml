@@ -493,6 +493,8 @@ let namedArgSym = "~"
 let requireNoSpaceFor tok =
   tok = fastPipeToken || (tok.[0] = '#' && tok <> "#=")
 
+let funToken = "fun"
+
 let getPrintableUnaryIdent s =
   if List.mem s unary_minus_prefix_symbols ||
      List.mem s unary_plus_prefix_symbols
@@ -621,6 +623,9 @@ let rules = [
     (TokenPrecedence, (fun s -> (Left, s.[0] == '|' && not (s = "||"))));
     (TokenPrecedence, (fun s -> (Left, s.[0] == '&' && not (s = "&") && not (s = "&&"))));
     (TokenPrecedence, (fun s -> (Left, s.[0] == '$')));
+  ];
+  [
+    (CustomPrecedence, (fun s -> (Left, s = funToken)));
   ];
   [
     (TokenPrecedence, (fun s -> (Right, s = "&")));
@@ -5283,7 +5288,7 @@ let printer = object(self:'self)
       ~break:IfNeed
       ~inline:(true, true)
       ~pad:(false, false)
-      ((atom ~loc:estimatedFunLocation (add_extension_sugar "fun" extension)) :: (self#case_list l))
+      ((atom ~loc:estimatedFunLocation (add_extension_sugar funToken extension)) :: (self#case_list l))
 
   method parenthesized_expr ?break expr =
     let result = self#unparseExpr expr in
@@ -5309,7 +5314,11 @@ let printer = object(self:'self)
       (* Pexp_function, on the other hand, doesn't need wrapping in parens in
          most cases anymore, since `fun` is not ambiguous anymore (we print Pexp_fun
          as ES6 functions). *)
-      | Pexp_function l -> Some (FunctionApplication [(self#patternFunction ?extension x.pexp_loc l)])
+      | Pexp_function l ->
+        let prec = Custom funToken in
+        let expr = self#patternFunction ?extension x.pexp_loc l in
+        Some (SpecificInfixPrecedence
+                ({reducePrecedence=prec; shiftPrecedence=prec}, LayoutNode expr))
       | _ ->
         (* The Pexp_function cases above don't use location because comment printing
           breaks for them. *)
@@ -5346,7 +5355,7 @@ let printer = object(self:'self)
                 let retValUnparsed = self#unparseExprApplicationItems ret in
                 Some (self#wrapCurriedFunctionBinding
                         ~sweet:(extension = None)
-                        (add_extension_sugar "fun" extension)
+                        (add_extension_sugar funToken extension)
                         ~arrow:"=>" firstArg tl retValUnparsed)
             )
           | Pexp_try (e, l) ->
@@ -5643,7 +5652,7 @@ let printer = object(self:'self)
             let upToColon = makeList (maybeQuoteFirstElem li [atom ":"]) in
             let returnedAppTerms = self#unparseExprApplicationItems return in
             self#wrapCurriedFunctionBinding
-              ~sweet:true ~attachTo:upToColon "fun" ~arrow:"=>"
+              ~sweet:true ~attachTo:upToColon funToken ~arrow:"=>"
               firstArg tl returnedAppTerms
       in source_map ~loc:totalRowLoc theRow
     in
@@ -6493,7 +6502,7 @@ let printer = object(self:'self)
          | Some args, e ->
            label ~space:true
              (makeList ~postSpace:true
-                [label ~space:true (atom "fun") args; atom "=>"])
+                [label ~space:true (atom funToken) args; atom "=>"])
              (self#class_expr e))
       | Pcl_apply (ce, l) ->
         formatAttachmentApplication applicationFinalWrapping None
@@ -6921,7 +6930,7 @@ let printer = object(self:'self)
       let (argsList, return) = self#curriedFunctorPatternsAndReturnStruct x in
       (* See #19/20 in syntax.mls - cannot annotate return type at
                the moment. *)
-      self#wrapCurriedFunctionBinding "fun" ~sweet:true ~arrow:"=>" (makeTup argsList) []
+      self#wrapCurriedFunctionBinding funToken ~sweet:true ~arrow:"=>" (makeTup argsList) []
         ([self#moduleExpressionToFormattedApplicationItems return], None)
     | Pmod_apply _ ->
       self#moduleExpressionToFormattedApplicationItems x
