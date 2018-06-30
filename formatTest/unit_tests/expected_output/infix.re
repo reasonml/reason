@@ -1273,3 +1273,30 @@ let foo =
       | Some(_) => ()
     )
   | None => ();
+
+let predicate =
+  predicate === Functions.alwaysTrue1 ?
+    (
+      fun
+      | None => false
+      | Some(exn) => predicate(exn)
+    )
+    >>= foo :
+    fun
+    | None => false
+    | Some(exn) => predicate(exn);
+
+let predicate =
+  predicate === Functions.alwaysTrue1 ?
+    (
+      fun
+      | None => false
+      | Some(exn) => predicate(exn)
+    )
+    >>= foo :
+    bar
+    >>= (
+      fun
+      | None => false
+      | Some(exn) => predicate(exn)
+    );

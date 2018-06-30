@@ -1365,3 +1365,12 @@ let predicate =
     fun
     | None => false
     | Some(exn) => predicate(exn);
+
+let predicate =
+  predicate === Functions.alwaysTrue1 ?
+    fun
+    | None => false
+    | Some(exn) => predicate(exn) :
+    fun
+    | None => false
+    | Some(exn) => predicate(exn);
