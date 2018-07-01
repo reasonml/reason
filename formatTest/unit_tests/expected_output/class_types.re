@@ -1,17 +1,17 @@
 class type _module ('provider_impl) = {};
 type t;
 class type bzz = {
-  inherit _module(t)
+  inherit _module(t);
 };
 
 class type t = {
   as 'a;
-  constraint 'a = #s
+  constraint 'a = #s;
 };
 
 /* https://github.com/facebook/reason/issues/2037 */
 class type xt = {
-  as 'a
+  as 'a;
 };
 
 class x = {
@@ -20,7 +20,7 @@ class x = {
 
 class type classWithNoArgType = {
   pub x: int;
-  pub y: int
+  pub y: int;
 };
 
 class classWithNoArg = {

@@ -261,28 +261,28 @@ class type addablePointClassType = {
       addablePointClassType,
       addablePointClassType
     ) =>
-    int
+    int;
 }
 [@structureItem]
 and anotherClassType = {
   pub foo: int;
-  pub bar: int
+  pub bar: int;
 };
 
 class type _x =
   [@bs]
   {
-    pub height: int
+    pub height: int;
   };
 
 class type _y = {
   [@bs.set]
-  pub height: int
+  pub height: int;
 };
 
 [@attr]
 class type _z = {
-  pub height: int
+  pub height: int;
 };
 
 module NestedModule = {
@@ -296,7 +296,7 @@ module type HasAttrs = {
   [@sigItem]
   class type foo = {
     pub foo: int;
-    pub bar: int
+    pub bar: int;
   };
   [@sigItem]
   class fooBar : (int) => foo;

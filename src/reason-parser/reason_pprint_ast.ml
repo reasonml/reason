@@ -5886,8 +5886,7 @@ let printer = object(self:'self)
           ~wrap:("{", "}")
           ~postSpace:true
           ~break:Layout.Always_rec
-          ~sep:(Sep ";")
-          allItems
+          (List.map semiTerminated allItems)
       )
     | Pcty_constr (li, l) ->
       self#attach_std_attrs x.pcty_attributes (
