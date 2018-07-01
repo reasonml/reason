@@ -3068,13 +3068,12 @@ let printer = object(self:'self)
           let variant_helper i rf =
             match rf with
               | Rtag (label, attrs, opt_ampersand, ctl) ->
-                let pcd_name = {
-                  txt = label.txt;
-                  loc = pcd_loc;
-                } in
                 let pcd_args = Pcstr_tuple ctl in
                 let all_attrs = List.concat [pcd_attributes; attrs] in
-                self#type_variant_leaf ~opt_ampersand ~polymorphic:true {pcd_name; pcd_args; pcd_res; pcd_loc; pcd_attributes = all_attrs}
+                self#type_variant_leaf
+                  ~opt_ampersand
+                  ~polymorphic:true
+                  {pcd_name = label; pcd_args; pcd_res; pcd_loc = label.loc; pcd_attributes = all_attrs}
               | Rinherit ct ->
                 (* '| type' is required if the Rinherit is not the first
                   row_field in the list
