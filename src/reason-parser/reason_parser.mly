@@ -4374,8 +4374,8 @@ object_label_declaration:
     { Otag ($2, $1, mkct $2) }
   | item_attributes as_loc(LIDENT) COLON poly_type
     { Otag ($2, $1, $4) }
-  | DOTDOTDOT poly_type
-    { Oinherit $2 }
+  | DOTDOTDOT as_loc(LIDENT)
+    { Oinherit (mkct $2) }
 ;
 
 object_label_declarations:
