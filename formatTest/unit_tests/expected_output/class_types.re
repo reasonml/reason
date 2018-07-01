@@ -8,3 +8,22 @@ class type t = {
   as 'a;
   constraint 'a = #s
 };
+
+/* https://github.com/facebook/reason/issues/2037 */
+class type xt = {
+  as 'a
+};
+
+class x = {
+  as self;
+};
+
+class type classWithNoArgType = {
+  pub x: int;
+  pub y: int
+};
+
+class classWithNoArg = {
+  pub x = 0;
+  pub y = 0;
+};
