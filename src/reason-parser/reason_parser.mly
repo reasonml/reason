@@ -1934,6 +1934,8 @@ mark_position_cl
   | let_bindings SEMI class_expr_lets_and_rest
     { class_of_let_bindings $1 $3 }
   | object_body { mkclass (Pcl_structure $1) }
+  | LET? OPEN override_flag as_loc(mod_longident) SEMI class_expr_lets_and_rest
+    { mkclass (Pcl_open ($3, $4, $6)) }
   ) {$1};
 
 object_body_class_fields:

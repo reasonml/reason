@@ -6829,9 +6829,12 @@ let printer = object(self:'self)
            objects.
         *)
         | Pcl_let _
-        | Pcl_structure _ ->
-          let rows = (self#classExprLetsAndRest x) in
-          makeList ~wrap:("{", "}") ~inline:(true, false) ~postSpace:true ~break:Always_rec (List.map semiTerminated rows)
+        | Pcl_structure _
+        | Pcl_open _ ->
+          let opens, rest = self#classExprOpens x in
+          let rows = (self#classExprLetsAndRest rest) in
+          makeList ~wrap:("{", "}") ~inline:(true, false) ~postSpace:true ~break:Always_rec
+            (List.map semiTerminated (List.concat [opens; rows]))
         | Pcl_extension e -> self#extension e
         | _ -> formatPrecedence (self#class_expr x)
      in source_map ~loc:x.pcl_loc itm
@@ -6849,7 +6852,22 @@ let printer = object(self:'self)
             (self#bindings (rf, l))
         in
         (binding :: self#classExprLetsAndRest ce)
+      | Pcl_open (_, _, ce) -> self#classExprLetsAndRest ce
       | _ -> [self#class_expr x]
+
+  method classExprOpens x =
+    let rec gatherOpens acc opn =
+      match opn.pcl_desc with
+      | Pcl_open (oflag, li, ce) -> gatherOpens
+                                      (source_map ~loc:li.loc
+                                         (label ~space:true
+                                            (atom ("open" ^ (override oflag)))
+                                            (self#longident_loc li))
+                                       :: acc)
+                                     ce
+      | _ -> List.rev acc, opn
+    in
+    gatherOpens [] x
 
   method class_expr x =
     let {stdAttrs} = partitionAttributes x.pcl_attributes in
@@ -6880,7 +6898,7 @@ let printer = object(self:'self)
         label
           (makeList ~postSpace:true [atom "class"; self#longident_loc li])
           (makeTup (List.map self#non_arrowed_non_simple_core_type l))
-      | Pcl_open _ -> assert false (* TODO(anmonteiro) *)
+      | Pcl_open _
       | Pcl_constraint _
       | Pcl_extension _
       | Pcl_let _

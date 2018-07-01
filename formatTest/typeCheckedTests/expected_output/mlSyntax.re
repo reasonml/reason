@@ -113,3 +113,19 @@ external pri_: unit => unit = "";
 
 type pub_ = int;
 type pub__ = int;
+
+/* Pcl_open */
+class x = {
+  open EM;
+  as self;
+};
+
+module OM = {
+  type t;
+};
+
+class y = {
+  open EM;
+  open OM;
+  as self;
+};
