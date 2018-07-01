@@ -299,7 +299,7 @@ module type HasAttrs = {
     pub bar: int
   };
   [@sigItem]
-  class fooBar : (int) => foo;
+  class fooBar: (int) => foo;
   /**Floating comment text should be removed*/;
   /**Floating comment text should be removed*/;
 };
