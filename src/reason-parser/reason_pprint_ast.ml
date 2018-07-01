@@ -6051,7 +6051,7 @@ let printer = object(self:'self)
              ~break:IfNeed
              ~inline:(true, true)
              (List.concat [self#attributes attrs; [row]]))
-      | Oinherit ct -> self#core_type ct
+      | Oinherit ct -> makeList ~break:Layout.Never [atom "..."; self#core_type ct]
     in
     let rows = List.map core_field_type l in
     let openness = match o with
