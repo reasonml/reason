@@ -715,7 +715,7 @@ let varify_constructors var_names t =
             (List.map
                (function
                  | Otag (s, attrs, t) -> Otag (s, attrs, loop t)
-                 | Oinherit _ -> assert false (* TODO(anmonteiro) *)) lst, o)
+                 | Oinherit t -> Oinherit (loop t)) lst, o)
       | Ptyp_class (longident, lst) ->
           Ptyp_class (longident, List.map loop lst)
       | Ptyp_alias(core_type, string) ->

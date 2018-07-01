@@ -244,7 +244,8 @@ let same_ast_modulo_varification_and_extensions t1 t2 =
         | Otag (s1, attrs1, t1), Otag (s2, attrs2, t2) ->
           string_equal s1.txt s2.txt &&
           loop t1 t2
-        | _ -> assert false (* TODO(anmonteiro) *)
+        | Oinherit t1, Oinherit t2 -> loop t1 t2
+        | _ -> false
       in
       for_all2' tester lst1 lst2 && o1 = o2
     | (Ptyp_class (longident1, lst1), Ptyp_class (longident2, lst2)) ->
@@ -6050,7 +6051,7 @@ let printer = object(self:'self)
              ~break:IfNeed
              ~inline:(true, true)
              (List.concat [self#attributes attrs; [row]]))
-      | Oinherit _ -> assert false (* TODO *)
+      | Oinherit ct -> self#core_type ct
     in
     let rows = List.map core_field_type l in
     let openness = match o with
