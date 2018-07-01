@@ -26,3 +26,12 @@ class classWithNoArg {
   pub x = 0;
   pub y = 0
 };
+
+class type t = {
+  open M;
+  as 'a;
+};
+
+class type t = {
+  open M;
+};

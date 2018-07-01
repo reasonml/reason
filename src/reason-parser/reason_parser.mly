@@ -2239,17 +2239,25 @@ mark_position_cty
   ) {$1};
 
 class_type_body:
-  | LBRACE class_sig_body RBRACE
-    { mkcty ~loc:(mklocation $startpos $endpos) (Pcty_signature $2) }
-  | LBRACE DOT class_sig_body RBRACE
+  | LBRACE class_sig_body_cty RBRACE
+    { mkcty ~loc:(mklocation $startpos $endpos) $2 }
+  | LBRACE DOT class_sig_body_cty RBRACE
     { let loc = mklocation $startpos $endpos in
-      let ct = mkcty ~loc (Pcty_signature $3) in
+      let ct = mkcty ~loc $3 in
       {ct with pcty_attributes = [uncurry_payload loc]}
     }
 ;
 
 class_sig_body_fields:
   lseparated_list(SEMI, class_sig_field) SEMI? { List.concat $1 }
+;
+
+class_sig_body_cty:
+  | class_sig_body { Pcty_signature $1 }
+  | LET? OPEN override_flag as_loc(mod_longident) SEMI as_loc(class_sig_body_cty)
+    { let {txt; loc} = $6 in
+      Pcty_open ($3, $4, mkcty ~loc txt) }
+;
 
 class_sig_body:
   | class_self_type

@@ -6525,7 +6525,7 @@ let printer = object(self:'self)
         | _ -> [formattedDocs; formattedAttrs; primDecl] in
         makeSpacedBreakableInlineList layouts
 
-  method class_instance_type x =
+  method classTypeSigsAndRest x =
     match x.pcty_desc with
     | Pcty_signature cs ->
       let {pcsig_self = ct; pcsig_fields = l} = cs in
@@ -6536,12 +6536,21 @@ let printer = object(self:'self)
           label ~space:true (atom "as") (self#core_type ct) ::
           instTypeFields
       in
+      allItems
+    | _ -> [self#class_instance_type x]
+
+  method class_instance_type x =
+    match x.pcty_desc with
+    | Pcty_signature _
+    | Pcty_open _ ->
+      let opens, rest = self#classTypeOpens x in
+      let cs = self#classTypeSigsAndRest rest in
       self#attach_std_item_attrs ~allowUncurry:false x.pcty_attributes (
         makeList
           ~wrap:("{", "}")
           ~postSpace:true
           ~break:Layout.Always_rec
-          (List.map semiTerminated allItems)
+          (List.map semiTerminated (List.concat [opens; cs]))
       )
     | Pcty_constr (li, l) ->
       self#attach_std_attrs x.pcty_attributes (
@@ -6552,10 +6561,23 @@ let printer = object(self:'self)
             (self#longident_loc li)
             (makeList ~wrap:("(", ")") ~sep:commaTrail (List.map self#core_type l))
       )
-    | Pcty_open _ -> assert false (* TODO(anmonteiro) *)
     | Pcty_extension e ->
       self#attach_std_item_attrs x.pcty_attributes (self#extension e)
     | Pcty_arrow _ -> failwith "class_instance_type should not be printed with Pcty_arrow"
+
+  method classTypeOpens x =
+    let rec gatherOpens acc opn =
+      match opn.pcty_desc with
+      | Pcty_open (oflag, li, ct) -> gatherOpens
+                                      (source_map ~loc:li.loc
+                                         (label ~space:true
+                                            (atom ("open" ^ (override oflag)))
+                                            (self#longident_loc li))
+                                       :: acc)
+                                     ct
+      | _ -> List.rev acc, opn
+    in
+    gatherOpens [] x
 
   method class_declaration_list l =
     let class_declaration ?(class_keyword=false)
@@ -6832,7 +6854,7 @@ let printer = object(self:'self)
         | Pcl_structure _
         | Pcl_open _ ->
           let opens, rest = self#classExprOpens x in
-          let rows = (self#classExprLetsAndRest rest) in
+          let rows = self#classExprLetsAndRest rest in
           makeList ~wrap:("{", "}") ~inline:(true, false) ~postSpace:true ~break:Always_rec
             (List.map semiTerminated (List.concat [opens; rows]))
         | Pcl_extension e -> self#extension e
