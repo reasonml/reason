@@ -82,7 +82,7 @@ class type _rect =
     pub height: int;
     [@bs.set]
     pub width: int;
-    pub draw: unit => unit
+    pub draw: unit => unit;
   };
 
 class type _rect =
@@ -92,7 +92,7 @@ class type _rect =
     pub height: int;
     [@bs.set]
     pub width: int;
-    pub draw: unit => unit
+    pub draw: unit => unit;
   };
 
 funWithCb("text", (.) => doStuff());

@@ -2003,16 +2003,26 @@ mark_position_cl
   | object_body { mkclass (Pcl_structure $1) }
   ) {$1};
 
+object_body_class_fields:
+  | lseparated_list(SEMI, class_field) SEMI? { List.concat $1 }
+
 object_body:
   | loption(located_attributes)
-    mark_position_pat(delimited(AS,pattern,SEMI))
-    lseparated_list(SEMI, class_field) SEMI?
+    mark_position_pat(class_self_expr)
     { let attrs = List.map (fun x -> mkcf ~loc:x.loc (Pcf_attribute x.txt)) $1 in
-      Cstr.mk $2 (attrs @ List.concat $3) }
-  | lseparated_list(SEMI, class_field) SEMI?
+      Cstr.mk $2 attrs }
+  | loption(located_attributes)
+    mark_position_pat(class_self_expr) SEMI
+    object_body_class_fields
+    { let attrs = List.map (fun x -> mkcf ~loc:x.loc (Pcf_attribute x.txt)) $1 in
+      Cstr.mk $2 (attrs @ $4) }
+  | object_body_class_fields
     { let loc = mklocation $symbolstartpos $symbolstartpos in
-      Cstr.mk (mkpat ~loc (Ppat_var (mkloc "this" loc))) (List.concat $1) }
+      Cstr.mk (mkpat ~loc (Ppat_var (mkloc "this" loc))) $1 }
 ;
+
+class_self_expr:
+  | AS pattern { $2 }
 
 class_expr:
 mark_position_cl
@@ -2300,14 +2310,20 @@ class_type_body:
     { unclosed_cty (with_txt $1 "{") (with_txt $3 "}") }
 ;
 
+class_sig_body_fields:
+  lseparated_list(SEMI, class_sig_field) SEMI? { List.concat $1 }
+
 class_sig_body:
-  class_self_type lseparated_list(SEMI, class_sig_field) SEMI?
-  { Csig.mk $1 (List.concat $2) }
+  | class_self_type
+  { Csig.mk $1 [] }
+  | class_self_type SEMI class_sig_body_fields
+  { Csig.mk $1 $3 }
+  | class_sig_body_fields
+  { Csig.mk (Typ.mk ~loc:(mklocation $symbolstartpos $endpos) Ptyp_any) $1 }
 ;
 
 class_self_type:
-  | AS core_type SEMI { $2 }
-  | (* empty *) { Typ.mk ~loc:(mklocation $symbolstartpos $endpos) Ptyp_any }
+  | AS core_type { $2 }
 ;
 
 class_sig_field:

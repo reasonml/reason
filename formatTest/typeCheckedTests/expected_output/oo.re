@@ -209,7 +209,7 @@ class myClassWithAnnotatedReturnType
       (init)
       : {
           pub x: int;
-          pub y: int
+          pub y: int;
         } = {
   pub x: int = init;
   pub y = init;
@@ -221,7 +221,7 @@ class myClassWithAnnotatedReturnType2
       (init)
       : {
           pub x: int;
-          pub y: int
+          pub y: int;
         } = {
   pub x: int = init;
   pub y = init;
@@ -234,7 +234,7 @@ class myClassWithAnnotatedReturnType3
       (init)
       : {
           pub x: int;
-          pub y: int
+          pub y: int;
         } = {
   pub x: int = init;
   pub y: int = init;
@@ -263,7 +263,7 @@ class myClassWithAnnotatedReturnType3_annotated_constructor:
   (int) =>
   {
     pub x: int;
-    pub y: int
+    pub y: int;
   } =
   fun (init) => {
     pub x: int = init;
@@ -282,7 +282,7 @@ module HasTupleClasses: {
     (int) =>
     {
       pub x: int;
-      pub y: int
+      pub y: int;
     };
   /**
    * anotherExportedClass.
@@ -290,7 +290,7 @@ module HasTupleClasses: {
   class anotherExportedClass ('a, 'b):
     (('a, 'b)) =>
     {
-      pub pr: ('a, 'b)
+      pub pr: ('a, 'b);
     };
 } = {
   /**
@@ -363,7 +363,7 @@ class type addablePointClassType = {
       addablePointClassType,
       addablePointClassType
     ) =>
-    int
+    int;
 };
 
 /**
