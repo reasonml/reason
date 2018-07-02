@@ -193,6 +193,11 @@ let make_ghost_pat pat = {
 let set_loc_state is_ghost loc =
     if is_ghost then make_ghost_loc loc else make_real_loc loc
 
+type object_record_declaration =
+  | StringLiteral
+  | Punned
+  | Label
+
 let mktyp ?(loc=dummy_loc()) ?(ghost=false) d =
     let loc = set_loc_state ghost loc in
     Typ.mk ~loc d
@@ -4411,39 +4416,65 @@ mark_position_typ
 object_record_type:
   | LBRACE RBRACE
     { syntax_error () }
-  | LBRACE DOT string_literal_labels RBRACE
-    { (* `{. "foo": bar}` -> `Js.t({. foo: bar})` *)
-      let loc = mklocation $symbolstartpos $endpos in
-      mkBsObjTypeSugar ~loc ~closed:Closed $3
+  | LBRACE DOT object_type_declarations RBRACE
+    { let loc = mklocation $symbolstartpos $endpos in
+      let (decls, typ) = $3 in
+      if typ = Label then
+        mktyp ~loc (Ptyp_object (decls, Closed))
+      else
+        (* `{. "foo": bar}` -> `Js.t({. foo: bar})` *)
+        mkBsObjTypeSugar ~loc ~closed:Closed decls
     }
-  | LBRACE DOTDOT string_literal_labels RBRACE
-    { (* `{.. "foo": bar}` -> `Js.t({.. foo: bar})` *)
-      let loc = mklocation $symbolstartpos $endpos in
-      mkBsObjTypeSugar ~loc ~closed:Open $3
+  | LBRACE DOTDOT object_type_declarations RBRACE
+    { let loc = mklocation $symbolstartpos $endpos in
+      let (decls, typ) = $3 in
+      if typ = Label then
+        mktyp ~loc (Ptyp_object (decls, Open))
+      else
+        (* `{.. "foo": bar}` -> `Js.t({.. foo: bar})` *)
+        mkBsObjTypeSugar ~loc ~closed:Open decls
     }
-  | LBRACE DOT loption(object_label_declarations) RBRACE
-    { mktyp (Ptyp_object ($3, Closed)) }
-  | LBRACE DOTDOT loption(object_label_declarations) RBRACE
-    { mktyp (Ptyp_object ($3, Open)) }
+;
+
+object_type_declaration:
+  | object_label_punning { ($1, Punned) }
+  | object_label_declaration { ($1, Label) }
+  | string_literal_label { ($1, StringLiteral) }
+;
+
+object_type_declarations:
+ | (* empty *)
+   { ([], Label) }
+ |  lseparated_nonempty_list(COMMA, object_type_declaration) COMMA?
+    (* Ideally we wouldn't need this following logic, but having different
+       productions for string literals and label declarations (with punning
+       for both) results in a shift / reduce conflict. Therefore, we overparse
+       label declarations + string literals together but throw a syntax error if
+       they ever appear together. *)
+    { if List.for_all (fun (_, x) -> x = Punned || x = Label) $1 then
+        (List.map fst $1, Label)
+      else if List.for_all (fun (_, x) -> x = Punned || x = StringLiteral) $1 then
+        begin
+          (List.map fst $1, StringLiteral)
+        end
+      else syntax_error ()
+    }
 ;
 
 object_label_declaration:
-  | item_attributes as_loc(LIDENT)
-    { ($2.txt, $1, mkct $2) }
-  | item_attributes LIDENT COLON poly_type
-    { ($2, $1, $4) }
+  item_attributes LIDENT COLON poly_type
+  { ($2, $1, $4) }
 ;
 
-object_label_declarations:
-  lseparated_nonempty_list(COMMA, object_label_declaration) COMMA? { $1 };
+object_label_punning:
+  item_attributes as_loc(LIDENT)
+  { ($2.txt, $1, mkct $2) }
+;
 
 string_literal_label:
-  item_attributes STRING COLON poly_type
-  { let (label, _raw, _delim) = $2 in (label, $1, $4) }
+  | item_attributes STRING COLON poly_type
+    { let (label, _raw, _delim) = $2 in (label, $1, $4) }
 ;
-
-string_literal_labels:
-  lseparated_nonempty_list(COMMA, string_literal_label) COMMA? { $1 };
 
 package_type:
   module_type { package_type_of_module_type $1 }

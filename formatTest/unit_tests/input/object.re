@@ -41,3 +41,15 @@ type o2 = {
   a: int,
   b: int
 };
+
+type string_literal_punned_open = {
+  ..
+  "a": int,
+  b
+};
+
+type string_literal_punned_closed = {
+  .
+  "a": int,
+  b
+};
