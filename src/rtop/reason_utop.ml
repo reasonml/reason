@@ -8,6 +8,16 @@
  * LICENSE file in the root directory of this source tree.
  *)
 
+module ToploopBackup = struct
+  let print_out_value = !Toploop.print_out_value
+  let print_out_type = !Toploop.print_out_type
+  let print_out_class_type = !Toploop.print_out_class_type
+  let print_out_module_type = !Toploop.print_out_module_type
+  let print_out_type_extension = !Toploop.print_out_type_extension
+  let print_out_sig_item = !Toploop.print_out_sig_item
+  let print_out_signature = !Toploop.print_out_signature
+  let print_out_phrase = !Toploop.print_out_phrase
+end
 
 type top_kind = RTop | UTop
 let current_top = ref RTop
@@ -67,7 +77,16 @@ let init_ocaml () =
   UTop.parse_toplevel_phrase := UTop.parse_toplevel_phrase_default;
   UTop.parse_use_file := UTop.parse_use_file_default;
   UTop.history_file_name :=
-      Some (Filename.concat LTerm_resources.home ".utop-history")
+      Some (Filename.concat LTerm_resources.home ".utop-history");
+
+  Toploop.print_out_value := ToploopBackup.print_out_value;
+  Toploop.print_out_type := ToploopBackup.print_out_type;
+  Toploop.print_out_class_type := ToploopBackup.print_out_class_type;
+  Toploop.print_out_module_type := ToploopBackup.print_out_module_type;
+  Toploop.print_out_type_extension := ToploopBackup.print_out_type_extension;
+  Toploop.print_out_sig_item := ToploopBackup.print_out_sig_item;
+  Toploop.print_out_signature := ToploopBackup.print_out_signature;
+  Toploop.print_out_phrase := ToploopBackup.print_out_phrase
 
 let toggle_syntax () =
   match !current_top with
