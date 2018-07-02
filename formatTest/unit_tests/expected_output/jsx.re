@@ -331,6 +331,6 @@ let x = foo /></ bar;
 />;
 
 /* https://github.com/facebook/reason/issues/2028 */
-<Foo bar=M.([]) />;
+<Foo bar=M.[] />;
 
-<Foo bar=M.([])> M.([]) </Foo>;
+<Foo bar=M.[]> M.[] </Foo>;

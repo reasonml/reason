@@ -610,4 +610,4 @@ let foo =
     ) => X.a;
 
 /* https://github.com/facebook/reason/issues/2028 */
-M.([]);
+M.[];
