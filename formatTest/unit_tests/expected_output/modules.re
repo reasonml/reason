@@ -608,3 +608,6 @@ let foo =
       module Y: Y_t with type t = a,
       module Z: Z_t with type t = a,
     ) => X.a;
+
+/* https://github.com/facebook/reason/issues/2028 */
+M.([]);
