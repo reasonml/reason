@@ -334,3 +334,5 @@ let x = foo /></ bar;
 <Foo bar=M.[] />;
 
 <Foo bar=M.[]> M.[] </Foo>;
+
+<Foo bar=M.[]> ...M.[] </Foo>;
