@@ -3380,7 +3380,7 @@ let printer = object(self:'self)
             high enough precedence for the parens to be worth adding back. *)
         let leftItm =
           self#simple_enough_to_be_lhs_dot_send
-            ~except_unary_postfix:true
+            ~infix_context:infixStr
             leftExpr
         in
         let rightItm = (
@@ -5281,22 +5281,22 @@ let printer = object(self:'self)
    * };
    *
    *)
-  method simple_enough_to_be_lhs_dot_send ?(except_unary_postfix=false) x =
+  method simple_enough_to_be_lhs_dot_send ?(infix_context) x =
     match x.pexp_desc with
     | (Pexp_apply (eFun, _)) -> (
-        match printedStringAndFixityExpr eFun with
-        | AlmostSimplePrefix _ ->
+        match printedStringAndFixityExpr eFun, infix_context with
+        | AlmostSimplePrefix _, _ ->
           source_map ~loc:x.pexp_loc
             (formatPrecedence (self#simplifyUnparseExpr x))
-        | UnaryPostfix _ when except_unary_postfix ->
+        | UnaryPostfix _, Some infix_str when infix_str.[0] = '#' ->
           source_map ~loc:x.pexp_loc
             (formatPrecedence (self#simplifyUnparseExpr x))
-        | UnaryPlusPrefix _
-        | UnaryMinusPrefix _
-        | UnaryNotPrefix _
-        | UnaryPostfix _
-        | Infix _ -> self#simplifyUnparseExpr x
-        | Normal ->
+        | UnaryPlusPrefix _, _
+        | UnaryMinusPrefix _, _
+        | UnaryNotPrefix _, _
+        | UnaryPostfix _, _
+        | Infix _, _ -> self#simplifyUnparseExpr x
+        | Normal, _ ->
           if x.pexp_attributes = [] then
             (* `let a = foo().bar` instead of `let a = (foo()).bar *)
             (* same for foo()##bar, foo()#=bar, etc. *)
