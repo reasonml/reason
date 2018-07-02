@@ -226,3 +226,8 @@ let x = foo /></ bar;
     "xxxxxxxxxxxxxxxxxxxxxx",
   ))
 />;
+
+/* https://github.com/facebook/reason/issues/2028 */
+<Foo bar=M.[]></Foo>;
+
+<Foo bar=M.[]> M.[] </Foo>;
