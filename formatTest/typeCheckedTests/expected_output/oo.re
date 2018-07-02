@@ -278,7 +278,7 @@ module HasTupleClasses: {
   /**
    * exportedClass.
    */
-  class exportedClass :
+  class exportedClass:
     (int) =>
     {
       pub x: int;
@@ -287,7 +287,7 @@ module HasTupleClasses: {
   /**
    * anotherExportedClass.
    */
-  class anotherExportedClass ('a, 'b) :
+  class anotherExportedClass ('a, 'b):
     (('a, 'b)) =>
     {
       pub pr: ('a, 'b)
@@ -398,8 +398,8 @@ class addablePoint2:
   };
 
 module type T = {
-  class virtual cl ('a) : {}
-  and cl2 : {};
+  class virtual cl ('a): {}
+  and cl2: {};
 };
 
 let privacy = {pri x = c => 5 + c};

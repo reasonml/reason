@@ -4175,6 +4175,7 @@ let printer = object(self:'self)
          ?attachTo
          ~arrow
          ?(sweet=false)
+         ?(spaceBeforeArrow=true)
          prefixText
          bindingLabel
          patternList
@@ -4211,7 +4212,7 @@ let printer = object(self:'self)
       match partitioning with
         | None when sweet ->
           makeList
-            ~pad:(false, true)
+            ~pad:(false, spaceBeforeArrow)
             ~wrap:("", arrow)
             ~indent:(settings.space * settings.indentWrappedPatternArgs)
             ~postSpace:true
@@ -4255,7 +4256,7 @@ let printer = object(self:'self)
 
             *)
           makeList
-            ~pad:(true, true)
+            ~pad:(true, spaceBeforeArrow)
             ~wrap:(prefixText, arrow)
             ~indent:(settings.space * settings.indentWrappedPatternArgs)
             ~postSpace:true
@@ -4270,7 +4271,7 @@ let printer = object(self:'self)
             ~space:true
             (
               makeList
-                ~pad:(true, true)
+                ~pad:(true, spaceBeforeArrow)
                 ~wrap:(prefixText, arrow)
                 ~indent:(settings.space * settings.indentWrappedPatternArgs)
                 ~postSpace:true
@@ -6298,6 +6299,7 @@ let printer = object(self:'self)
               let (firstToken, pattern, patternAux) = self#class_opening class_keyword txt x.pci_virt ls in
               let withColon = self#wrapCurriedFunctionBinding
                 ~arrow:":"
+                ~spaceBeforeArrow:false
                 firstToken
                 pattern
                 patternAux

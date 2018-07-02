@@ -218,16 +218,16 @@ class type x = {
 [%%obj {a: 1}];
 
 /** doc attached */
-class reason : ocaml;
+class reason: ocaml;
 
 /** doc attached with whitespace */
 
-class reason : ocaml;
+class reason: ocaml;
 
 /** doc attached with whitespace and comment */
 
 /* test */
-class reason : ocaml;
+class reason: ocaml;
 
 /** doc attached */
 module rec X1: Y1
