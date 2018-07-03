@@ -1114,7 +1114,8 @@ let makeNonIndentedBreakingList lst =
 let makeSpacedBreakableInlineList lst =
   makeList ~break:IfNeed ~inline:(true, true) ~postSpace:true lst
 
-let makeCommaBreakableList lst = makeList ~break:IfNeed ~postSpace:true lst
+let makeCommaBreakableList lst =
+  makeList ~break:IfNeed ~postSpace:true ~sep:(Sep ",") lst
 
 let makeCommaBreakableListSurround opn cls lst =
   makeList ~break:IfNeed ~postSpace:true ~sep:(Sep ",") ~wrap:(opn, cls) lst

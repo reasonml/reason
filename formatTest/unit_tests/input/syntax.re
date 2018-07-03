@@ -1177,3 +1177,16 @@ foo(~a=?-1);
 */
 let z = {<state: 0, x: y>};
 let z = {<>};
+
+/* https://github.com/facebook/reason/issues/2038 */
+x.{1, 2};
+
+x.{1};
+
+x.{1, 2, 3};
+
+x.{1} = 1;
+
+x.{1, 2} = 1;
+
+x.{1, 2, 3} = 1;
