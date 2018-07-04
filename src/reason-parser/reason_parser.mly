@@ -709,13 +709,9 @@ let mkmod_app mexp marg =
 let bigarray_function ?(loc=dummy_loc()) str name =
   ghloc ~loc (Ldot(Ldot(Lident "Bigarray", str), name))
 
-let bigarray_untuplify = function
-    { pexp_desc = Pexp_tuple explist; pexp_loc = _ } -> explist
-  | exp -> [exp]
-
 let bigarray_get ?(loc=dummy_loc()) arr arg =
   let get = if !Clflags.fast then "unsafe_get" else "get" in
-  match bigarray_untuplify arg with
+  match arg with
     [c1] ->
       mkexp(Pexp_apply(mkexp ~ghost:true ~loc (Pexp_ident(bigarray_function ~loc "Array1" get)),
                        [Nolabel, arr; Nolabel, c1]))
@@ -731,7 +727,7 @@ let bigarray_get ?(loc=dummy_loc()) arr arg =
 
 let bigarray_set ?(loc=dummy_loc()) arr arg newval =
   let set = if !Clflags.fast then "unsafe_set" else "set" in
-  match bigarray_untuplify arg with
+  match arg with
     [c1] ->
       mkexp(Pexp_apply(mkexp ~ghost:true ~loc (Pexp_ident(bigarray_function ~loc "Array1" set)),
                        [Nolabel, arr; Nolabel, c1; Nolabel, newval]))
@@ -2868,9 +2864,9 @@ mark_position_exp
       mkexp(Pexp_apply(mkexp ~ghost:true ~loc exp,
                        [Nolabel,$1; Nolabel,$4; Nolabel,$7]))
     }
-  | simple_expr DOT LBRACE expr RBRACE EQUAL expr
+  | simple_expr bigarray_access EQUAL expr
     { let loc = mklocation $symbolstartpos $endpos in
-      bigarray_set ~loc $1 $4 $7
+      bigarray_set ~loc $1 $2 $4
     }
   | as_loc(label) EQUAL expr
     { mkexp(Pexp_setinstvar($1, $3)) }
@@ -2954,6 +2950,8 @@ parenthesized_expr:
     filter_raise_spread_syntax msg $2
   };
 
+%inline bigarray_access:
+  DOT LBRACE lseparated_nonempty_list(COMMA, expr) COMMA? RBRACE { $3 }
 
 (* The grammar of simple exprs changes slightly according to context:
  * - in most cases, calls (like f(x)) are allowed
@@ -3009,10 +3007,9 @@ parenthesized_expr:
     }
   | E DOT as_loc(LBRACKET) expr as_loc(error)
     { unclosed_exp (with_txt $3 "[") (with_txt $5 "]") }
-  | E DOT LBRACE expr RBRACE
+  | E bigarray_access
     { let loc = mklocation $symbolstartpos $endpos in
-      bigarray_get ~loc $1 $4
-    }
+      bigarray_get ~loc $1 $2 }
   | as_loc(mod_longident) DOT LBRACE record_expr RBRACE
     { let (exten, fields) = $4 in
       let loc = mklocation $symbolstartpos $endpos in
