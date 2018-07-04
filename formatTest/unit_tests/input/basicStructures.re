@@ -681,3 +681,6 @@ it("should remove parens", (a) => {
   print_string("did it work?");
   print_string("did it work?");
 });
+
+/* https://github.com/facebook/reason/issues/1554 */
+(curNode^)##childNodes;

@@ -499,7 +499,7 @@ let getPrintableUnaryIdent s =
    may have resulted from Pexp -> Texp -> Pexp translation, then checking
    if all the characters in the beginning of the string are valid infix
    characters. *)
-let printedStringAndFixity  = function
+let printedStringAndFixity = function
   | s when List.mem s special_infix_strings -> Infix s
   | "^" -> UnaryPostfix "^"
   | s when List.mem s.[0] infix_symbols -> Infix s
@@ -3379,6 +3379,11 @@ let printer = object(self:'self)
 
             Which seems to indicate that the pretty printer doesn't think `#=` is of
             high enough precedence for the parens to be worth adding back. *)
+        let leftItm =
+          self#simple_enough_to_be_lhs_dot_send
+            ~infix_context:infixStr
+            leftExpr
+        in
         let rightItm = (
           match rightExpr.pexp_desc with
           | Pexp_apply (eFun, ls) -> (
@@ -3388,7 +3393,7 @@ let printer = object(self:'self)
           )
           | _ -> self#simplifyUnparseExpr rightExpr
         ) in
-        Some (makeList [self#simple_enough_to_be_lhs_dot_send leftExpr; atom infixStr; rightItm])
+        Some (makeList [leftItm; atom infixStr; rightItm])
       | (_, _) -> (
         match (eFun, ls) with
         | ({pexp_desc = Pexp_ident {txt = Ldot (Lident ("Array"),"get")}}, [(_,e1);(_,e2)]) ->
@@ -5287,18 +5292,22 @@ let printer = object(self:'self)
    * };
    *
    *)
-  method simple_enough_to_be_lhs_dot_send x = match x.pexp_desc with
+  method simple_enough_to_be_lhs_dot_send ?(infix_context) x =
+    match x.pexp_desc with
     | (Pexp_apply (eFun, _)) -> (
-        match printedStringAndFixityExpr eFun with
-        | AlmostSimplePrefix _ ->
+        match printedStringAndFixityExpr eFun, infix_context with
+        | AlmostSimplePrefix _, _ ->
           source_map ~loc:x.pexp_loc
             (formatPrecedence (self#simplifyUnparseExpr x))
-        | UnaryPlusPrefix _
-        | UnaryMinusPrefix _
-        | UnaryNotPrefix _
-        | UnaryPostfix _
-        | Infix _ -> self#simplifyUnparseExpr x
-        | Normal ->
+        | UnaryPostfix _, Some infix_str when infix_str.[0] = '#' ->
+          source_map ~loc:x.pexp_loc
+            (formatPrecedence (self#simplifyUnparseExpr x))
+        | UnaryPlusPrefix _, _
+        | UnaryMinusPrefix _, _
+        | UnaryNotPrefix _, _
+        | UnaryPostfix _, _
+        | Infix _, _ -> self#simplifyUnparseExpr x
+        | Normal, _ ->
           if x.pexp_attributes = [] then
             (* `let a = foo().bar` instead of `let a = (foo()).bar *)
             (* same for foo()##bar, foo()#=bar, etc. *)
