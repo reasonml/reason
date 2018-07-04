@@ -1008,9 +1008,9 @@ let containingObject = {
      * Unary plus/minus has lower precedence than prefix operators:
      * And unary plus has same precedence as unary minus.
      */
-    let res = - (! record);
+    let res = - (!record);
     /* Should be parsed as: */
-    let res = - (! record);
+    let res = - (!record);
     /* Although that precedence ranking doesn't likely have any effect in that
      * case. */
     /**
@@ -1023,14 +1023,14 @@ let containingObject = {
     /**
      * And this
      */
-    let res = ! (- callThisFunc());
+    let res = !(- callThisFunc());
     /* Should be parsed (and should remain printed as: */
-    let res = ! (- callThisFunc());
+    let res = !(- callThisFunc());
 
-    let res = [@onApplication] (! x);
-    let res = ! [@onX] x;
+    let res = [@onApplication] (!x);
+    let res = ![@onX] x;
 
-    let res = ! [@onX] x;
+    let res = ![@onX] x;
     [@shouldBeRenderedOnEntireSetField]
     (something.contents = "newvalue");
     something.contents =

@@ -514,7 +514,7 @@ let printedStringAndFixity = function
       else if List.mem s unary_minus_prefix_symbols then
         UnaryMinusPrefix (getPrintableUnaryIdent s)
       else if s = "!" then
-        UnaryNotPrefix "!"
+        UnaryNotPrefix s
       else
         AlmostSimplePrefix s
   )
@@ -3754,13 +3754,20 @@ let printer = object(self:'self)
           ) in
           let expr = label ~space:true (atom printedIdent) rightItm in
           SpecificInfixPrecedence ({reducePrecedence=prec; shiftPrecedence=Token printedIdent}, LayoutNode expr)
-        | (UnaryMinusPrefix printedIdent, [(Nolabel, rightExpr)])
-        | (UnaryNotPrefix printedIdent, [(Nolabel, rightExpr)]) ->
+        | (UnaryMinusPrefix printedIdent as x, [(Nolabel, rightExpr)])
+        | (UnaryNotPrefix printedIdent as x, [(Nolabel, rightExpr)]) ->
+          let forceSpace = (match x with
+              | UnaryMinusPrefix _ -> true
+              | _ -> begin match rightExpr.pexp_desc with
+                  | Pexp_apply ({pexp_desc = Pexp_ident {txt = Lident s}}, _) ->
+                    isSimplePrefixToken s
+                  | _ -> false
+                end) in
           let prec = Custom "prec_unary" in
           let rightItm = self#unparseResolvedRule (
             self#ensureContainingRule ~withPrecedence:prec ~reducesAfterRight:rightExpr ()
           ) in
-          let expr = label ~space:true (atom printedIdent) rightItm in
+          let expr = label ~space:forceSpace (atom printedIdent) rightItm in
           SpecificInfixPrecedence ({reducePrecedence=prec; shiftPrecedence=Token printedIdent}, LayoutNode expr)
         (* Will need to be rendered in self#expression as (~-) x y z. *)
         | (_, _) ->
