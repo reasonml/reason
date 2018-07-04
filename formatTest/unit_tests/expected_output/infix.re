@@ -497,8 +497,7 @@ let containingObject = {
     x := something + 1 ? hello : goodbye;
     y = something + 1 ? hello : goodbye;
     arr[0] = something + 1 ? hello : goodbye;
-    bigArr.{0} =
-      something + 1 ? hello : goodbye;
+    bigArr.{0} = something + 1 ? hello : goodbye;
     str.[0] = something + 1 ? hello : goodbye;
 
     (x.contents = something + 1) ?
@@ -514,8 +513,7 @@ let containingObject = {
     x := something + 1 ? hello : goodbye;
     y = something + 1 ? hello : goodbye;
     arr[0] = something + 1 ? hello : goodbye;
-    bigArr.{0} =
-      something + 1 ? hello : goodbye;
+    bigArr.{0} = something + 1 ? hello : goodbye;
     str.[0] = something + 1 ? hello : goodbye;
 
     /**
@@ -897,12 +895,10 @@ let containingObject = {
     /** These should be parsed the same */
     something ?
       somethingElse :
-      bigArr.{0} =
-        somethingElse ? x : bigArr.{0};
+      bigArr.{0} = somethingElse ? x : bigArr.{0};
     something ?
       somethingElse :
-      bigArr.{0} =
-        somethingElse ? x : bigArr.{0};
+      bigArr.{0} = somethingElse ? x : bigArr.{0};
     /* Not: */
     something ?
       somethingElse :

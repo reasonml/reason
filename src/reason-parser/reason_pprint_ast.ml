@@ -3424,7 +3424,7 @@ let printer = object(self:'self)
             else
               let formattedList = List.map self#simplifyUnparseExpr ls in
               let lhs = makeList [(self#simple_enough_to_be_lhs_dot_send e1); atom "."] in
-              let rhs = makeList ~break:IfNeed ~postSpace:true ~sep:commaTrail ~wrap:("{", "}") formattedList in
+              let rhs = makeList ~break:IfNeed ~postSpace:true ~sep:commaSep ~wrap:("{", "}") formattedList in
               Some (label lhs rhs)
         | (
             {pexp_desc= Pexp_ident {txt=
@@ -3441,7 +3441,7 @@ let printer = object(self:'self)
           else
             let formattedList = List.map self#simplifyUnparseExpr (List.map snd rest) in
             let lhs = makeList [(self#simple_enough_to_be_lhs_dot_send e1); atom "."] in
-            let rhs = makeList ~break:IfNeed ~postSpace:true ~sep:commaTrail ~wrap:("{", "}") formattedList in
+            let rhs = makeList ~break:IfNeed ~postSpace:true ~sep:commaSep ~wrap:("{", "}") formattedList in
             Some (label lhs rhs)
         | _ -> None
       )
@@ -3468,7 +3468,7 @@ let printer = object(self:'self)
             | [(_,a);(_,{pexp_desc=Pexp_array ls});(_,c)] ->
               let formattedList = List.map self#simplifyUnparseExpr ls in
               let lhs = makeList [self#simple_enough_to_be_lhs_dot_send a; atom "."] in
-              let rhs = makeList ~break:IfNeed ~postSpace:true ~sep:commaTrail ~wrap:("{", "}") formattedList
+              let rhs = makeList ~break:IfNeed ~postSpace:true ~sep:commaSep ~wrap:("{", "}") formattedList
               in
               Some (label lhs rhs, c)
             | _ -> None
@@ -3481,7 +3481,7 @@ let printer = object(self:'self)
                 let args = List.map snd (List.rev rest) in
                 let formattedList = List.map self#simplifyUnparseExpr args in
                 let lhs = makeList [self#simple_enough_to_be_lhs_dot_send a; atom "."] in
-                let rhs = makeList ~break:IfNeed ~postSpace:true ~sep:commaTrail ~wrap:("{", "}") formattedList in
+                let rhs = makeList ~break:IfNeed ~postSpace:true ~sep:commaSep ~wrap:("{", "}") formattedList in
                 Some (label lhs rhs, v)
               | _ -> assert false
             )

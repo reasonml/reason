@@ -40,11 +40,11 @@ let reallyLongStringThatWillDefinitelyBreakLine = 0;
 my_big_array3.{
   reallyLongStringThatWillDefinitelyBreakLine,
   reallyLongStringThatWillDefinitelyBreakLine,
-  reallyLongStringThatWillDefinitelyBreakLine,
+  reallyLongStringThatWillDefinitelyBreakLine
 };
 
 my_big_array3.{
   reallyLongStringThatWillDefinitelyBreakLine,
   reallyLongStringThatWillDefinitelyBreakLine,
-  reallyLongStringThatWillDefinitelyBreakLine,
+  reallyLongStringThatWillDefinitelyBreakLine
 } = 3.0;
