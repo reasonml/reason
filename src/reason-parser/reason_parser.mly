@@ -1055,6 +1055,9 @@ let filter_raise_spread_syntax msg nodes =
     | None -> node
     ) nodes
 
+let reserved_keyword_err_msg s =
+  Printf.sprintf "%s is a reserved keyword, it cannot be used as an identifier. Try '%s_' instead" s s
+
 let err loc s =
   raise Reason_syntax_util.(
     Error(loc, (Syntax_error s))
@@ -3519,12 +3522,15 @@ record_expr:
       raise_record_trailing_semi_error loc }
 ;
 
-%inline non_punned_lbl_expr:
+non_punned_lbl_expr:
   | as_loc(label_longident) COLON expr { ($1, $3) }
+  | as_loc(reserved) COLON expr
+    { err $1.loc (reserved_keyword_err_msg $1.txt) }
 ;
 
-%inline punned_lbl_expr:
+punned_lbl_expr:
   | as_loc(label_longident) { ($1, exp_of_label $1) }
+  | as_loc(reserved) { err $1.loc (reserved_keyword_err_msg $1.txt) }
 ;
 
 %inline lbl_expr:
@@ -3566,6 +3572,7 @@ string_literal_expr_maybe_punned_with_comma:
     (lident_lident_loc, exp)
   }
 ;
+
 string_literal_expr_maybe_punned:
   STRING preceded(COLON, expr)?
   { let loc = mklocation $startpos $endpos in
@@ -3599,6 +3606,10 @@ field_expr:
      let lident_lident_loc = mkloc (Lident $1) loc in
      (lident_loc, mkexp (Pexp_ident lident_lident_loc))
    }
+ | as_loc(reserved_all)
+    { err $1.loc (reserved_keyword_err_msg $1.txt) }
+ | as_loc(reserved_all) COLON expr
+    { err $1.loc (reserved_keyword_err_msg $1.txt) }
 ;
 
 %inline field_expr_list: lseparated_nonempty_list(COMMA, field_expr) { $1 };
@@ -4076,6 +4087,10 @@ record_label_declaration:
     { let loc = mklocation $symbolstartpos $endpos in
       Type.field $3 $5 ~attrs:$1 ~mut:$2 ~loc
     }
+  | item_attributes as_loc(reserved_all)
+    { err $2.loc (reserved_keyword_err_msg $2.txt) }
+  | item_attributes as_loc(reserved_all) COLON poly_type
+    { err $2.loc (reserved_keyword_err_msg $2.txt) }
 ;
 
 record_declaration:
@@ -4952,4 +4967,63 @@ lseparated_nonempty_list_aux(sep, X):
 
 %inline parenthesized(X): delimited(LPAREN, X, RPAREN) { $1 };
 
-%%
+%inline reserved:
+  | AND { "and" }
+  | ASSERT { "assert" }
+  | BEGIN { "begin" }
+  | CLASS { "class" }
+  | CONSTRAINT { "constraint" }
+  | DO { "do" }
+  | DONE { "done" }
+  | DOWNTO { "downto" }
+  | ELSE { "else" }
+  | END { "end" }
+  | EXCEPTION { "exception" }
+  | EXTERNAL { "external" }
+  | FALSE { "false" }
+  | FOR { "for" }
+  | FUN { "fun" }
+  | FUNCTION { "function" }
+  | FUNCTOR { "functor" }
+  | IF { "if" }
+  | IN { "in" }
+  | INCLUDE { "include" }
+  | INHERIT { "inherit" }
+  | INITIALIZER { "initializer" }
+  | LAZY { "lazy" }
+  | LET { "let" }
+  | SWITCH { "switch" }
+  | MODULE { "module" }
+  | PUB { "pub" }
+  | MUTABLE { "mutable" }
+  | NEW { "new" }
+  | NONREC { "nonrec" }
+  | OBJECT { "object" }
+  | OF { "of" }
+  /* | OPEN { "open" } */
+  | OR { "or" }
+  | PRI { "pri" }
+  | REC { "rec" }
+  | SIG { "sig" }
+  | STRUCT { "struct" }
+  | THEN { "then" }
+  | TO { "to" }
+  | TRUE { "true" }
+  | TRY { "try" }
+  | TYPE { "type" }
+  | VAL { "val" }
+  | VIRTUAL { "virtual" }
+  | WHEN { "when" }
+  | WHILE { "while" }
+  | WITH { "with" }
+  | INFIXOP3 { $1 }
+  | INFIXOP4 { $1 }
+;
+
+%inline reserved_all:
+  | reserved { $1 }
+  | AS { "as" }
+  | OPEN { "open" }
+;
+
+ %%
