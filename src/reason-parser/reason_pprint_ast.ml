@@ -3422,8 +3422,10 @@ let printer = object(self:'self)
               in
               Some (label k v)
             else
-              let formattedList = makeCommaBreakableList (List.map self#simplifyUnparseExpr ls) in
-              Some (self#access ".{" "}" (self#simple_enough_to_be_lhs_dot_send e1) formattedList)
+              let formattedList = List.map self#simplifyUnparseExpr ls in
+              let lhs = makeList [(self#simple_enough_to_be_lhs_dot_send e1); atom "."] in
+              let rhs = makeList ~break:IfNeed ~postSpace:true ~sep:commaTrail ~wrap:("{", "}") formattedList in
+              Some (label lhs rhs)
         | (
             {pexp_desc= Pexp_ident {txt=
               Ldot (Ldot (Lident "Bigarray", (("Array1"|"Array2"|"Array3") as arrayIdent)), "get")}
@@ -3438,7 +3440,9 @@ let printer = object(self:'self)
             Some (label k v)
           else
             let formattedList = List.map self#simplifyUnparseExpr (List.map snd rest) in
-            Some (self#access ".{" "}" (self#simple_enough_to_be_lhs_dot_send e1) (makeCommaBreakableList formattedList))
+            let lhs = makeList [(self#simple_enough_to_be_lhs_dot_send e1); atom "."] in
+            let rhs = makeList ~break:IfNeed ~postSpace:true ~sep:commaTrail ~wrap:("{", "}") formattedList in
+            Some (label lhs rhs)
         | _ -> None
       )
     )
@@ -3463,7 +3467,10 @@ let printer = object(self:'self)
             match label_exprs with
             | [(_,a);(_,{pexp_desc=Pexp_array ls});(_,c)] ->
               let formattedList = List.map self#simplifyUnparseExpr ls in
-              Some (self#access ".{" "}" (self#simple_enough_to_be_lhs_dot_send a) (makeCommaBreakableList formattedList), c)
+              let lhs = makeList [self#simple_enough_to_be_lhs_dot_send a; atom "."] in
+              let rhs = makeList ~break:IfNeed ~postSpace:true ~sep:commaTrail ~wrap:("{", "}") formattedList
+              in
+              Some (label lhs rhs, c)
             | _ -> None
           )
           | ("Array1"|"Array2"|"Array3") -> (
@@ -3473,7 +3480,9 @@ let printer = object(self:'self)
               | (_,v)::rest ->
                 let args = List.map snd (List.rev rest) in
                 let formattedList = List.map self#simplifyUnparseExpr args in
-                Some (self#access ".{" "}" (self#simple_enough_to_be_lhs_dot_send a) (makeCommaBreakableList formattedList), v)
+                let lhs = makeList [self#simple_enough_to_be_lhs_dot_send a; atom "."] in
+                let rhs = makeList ~break:IfNeed ~postSpace:true ~sep:commaTrail ~wrap:("{", "}") formattedList in
+                Some (label lhs rhs, v)
               | _ -> assert false
             )
             | _ -> assert false

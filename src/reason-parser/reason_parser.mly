@@ -2951,7 +2951,7 @@ parenthesized_expr:
   };
 
 %inline bigarray_access:
-  DOT LBRACE lseparated_nonempty_list(COMMA, expr) RBRACE { $3 }
+  DOT LBRACE lseparated_nonempty_list(COMMA, expr) COMMA? RBRACE { $3 }
 
 (* The grammar of simple exprs changes slightly according to context:
  * - in most cases, calls (like f(x)) are allowed
