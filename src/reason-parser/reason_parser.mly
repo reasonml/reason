@@ -2959,7 +2959,7 @@ parenthesized_expr:
  *   (most notably JSX lists and rhs of a SHARPOP extension).
  *
  * simple_expr_template contains the generic parts,
- * simple_expr and simple_expr_no_call the specialized instances.
+ * simple_expr, simple_expr_no_call and simple_expr_no_constructor the specialized instances.
  *)
 %inline simple_expr_template(E):
   | as_loc(val_longident) { mkexp (Pexp_ident $1) }
