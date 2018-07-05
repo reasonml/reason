@@ -481,10 +481,15 @@ rule token = parse
   | "#=<" {
     (* Allow parsing of foo#=<bar /> *)
     set_lexeme_length lexbuf 2;
-    SHARPOP("#=")
+    SHARPOP_WITH_EQUAL
   }
   | "#" operator_chars+
-      { SHARPOP(lexeme_operator lexbuf) }
+      { let l = lexeme_operator lexbuf in
+        if l = "#=" then
+          SHARPOP_WITH_EQUAL
+        else
+          SHARPOP(l)
+      }
   | "#" [' ' '\t']* (['0'-'9']+ as num) [' ' '\t']*
         ("\"" ([^ '\010' '\013' '"' ] * as name) "\"")?
         [^ '\010' '\013'] * newline

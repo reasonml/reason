@@ -146,9 +146,9 @@ let x = <div />;
 
 <div asd=1 />;
 
-foo#=<bar />;
+foo #= <bar />;
 
-foo#=<bar />;
+foo #= <bar />;
 
 let x = [|<div />|];
 

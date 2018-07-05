@@ -484,6 +484,7 @@ let special_infix_strings =
   ["asr"; "land"; "lor"; "lsl"; "lsr"; "lxor"; "mod"; "or"; ":="; "!="; "!=="]
 
 let updateToken = "="
+let sharpOpEqualToken = "#="
 let requireIndentFor = [updateToken; ":="]
 
 let namedArgSym = "~"
@@ -3379,6 +3380,7 @@ let printer = object(self:'self)
 
             Which seems to indicate that the pretty printer doesn't think `#=` is of
             high enough precedence for the parens to be worth adding back. *)
+        let isSharpOpEqual = infixStr = sharpOpEqualToken in
         let leftItm =
           self#simple_enough_to_be_lhs_dot_send
             ~infix_context:infixStr
@@ -3393,7 +3395,7 @@ let printer = object(self:'self)
           )
           | _ -> self#simplifyUnparseExpr rightExpr
         ) in
-        Some (makeList [leftItm; atom infixStr; rightItm])
+        Some (makeList ~postSpace:isSharpOpEqual [leftItm; atom infixStr; rightItm])
       | (_, _) -> (
         match (eFun, ls) with
         | ({pexp_desc = Pexp_ident {txt = Ldot (Lident ("Array"),"get")}}, [(_,e1);(_,e2)]) ->

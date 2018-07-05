@@ -1209,6 +1209,7 @@ let package_type_of_module_type pmty =
 %token SEMISEMI
 %token SHARP
 %token <string> SHARPOP
+%token SHARPOP_WITH_EQUAL
 %token SIG
 %token STAR
 %token <string * string option * string option> STRING
@@ -1358,9 +1359,14 @@ conflicts.
 %nonassoc below_DOT
 %nonassoc DOT POSTFIXOP
 
-(* Finally, the first tokens of simple_expr are above everything else. *)
+(* We need SHARPOP_WITH_EQUAL to have lower precedence than `[` to make e.g.
+   this work: `foo #= bar[0]`. Otherwise it would turn into `(foo#=bar)[0]` *)
+%left     SHARPOP_WITH_EQUAL
+
 %nonassoc LBRACKET
+(* SHARPOP has higher precedence than `[`, see e.g. issue #1507. *)
 %left     SHARPOP
+(* Finally, the first tokens of simple_expr are above everything else. *)
 %nonassoc LBRACKETLESS LBRACELESS LBRACE LPAREN
 
 
@@ -3069,7 +3075,7 @@ parenthesized_expr:
     { unclosed_exp (with_txt $3 "{<") (with_txt $6 ">}") }
   | E SHARP label
     { mkexp (Pexp_send($1, $3)) }
-  | E as_loc(SHARPOP) simple_expr_no_call
+  | E as_loc(sharpop) simple_expr_no_call
     { mkinfixop $1 (mkoperator $2) $3 }
   | as_loc(mod_longident) DOT LPAREN MODULE module_expr COLON package_type RPAREN
     { let loc = mklocation $symbolstartpos $endpos in
@@ -4550,6 +4556,10 @@ val_ident:
   | LESSDOTDOTGREATER { "<..>" }
   | GREATER GREATER   { ">>" }
 ;
+
+%inline sharpop:
+  | SHARPOP { $1 }
+  | SHARPOP_WITH_EQUAL { "#=" }
 
 operator:
   | PREFIXOP          { $1 }
