@@ -1355,12 +1355,14 @@ conflicts.
 (* PREFIXOP and BANG precedence *)
 %nonassoc below_DOT_AND_SHARP           (* practically same as below_SHARP but we convey purpose *)
 %nonassoc SHARP                         (* simple_expr/toplevel_directive *)
-%left     SHARPOP
 %nonassoc below_DOT
 %nonassoc DOT POSTFIXOP
 
 (* Finally, the first tokens of simple_expr are above everything else. *)
-%nonassoc LBRACKETLESS LBRACKET LBRACELESS LBRACE LPAREN
+%nonassoc LBRACKET
+%left     SHARPOP
+%nonassoc LBRACKETLESS LBRACELESS LBRACE LPAREN
+
 
 (* Entry points *)
 
