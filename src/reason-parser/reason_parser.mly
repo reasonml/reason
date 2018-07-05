@@ -2881,10 +2881,20 @@ mark_position_exp
   | simple_expr DOT as_loc(label_longident) EQUAL expr
     { mkexp(Pexp_setfield($1, $3, $5)) }
   | simple_expr LBRACKET expr RBRACKET EQUAL expr
-    { let loc = mklocation $symbolstartpos $endpos in
-      let exp = Pexp_ident(array_function ~loc "Array" "set") in
-      mkexp(Pexp_apply(mkexp ~ghost:true ~loc exp,
-                       [Nolabel,$1; Nolabel,$3; Nolabel,$6]))
+    { let {pexp_attributes;  pexp_desc } = $3 in
+      match pexp_desc with
+      | Pexp_constant(Pconst_string (label,_)) ->
+        let loc = mklocation $startpos($3) $endpos($3) in
+        let label_exp = mkexp ~attrs:pexp_attributes (Pexp_ident (mkloc (Lident label) loc)) ~loc in
+        mkinfixop
+          (mkinfixop $1 (mkoperator (ghloc "##")) label_exp)
+          (mkoperator (ghloc "#="))
+          $6
+      | _ ->
+        let loc = mklocation $symbolstartpos $endpos in
+        let exp = Pexp_ident(array_function ~loc "Array" "set") in
+        mkexp(Pexp_apply(mkexp ~ghost:true ~loc exp,
+                         [Nolabel,$1; Nolabel,$3; Nolabel,$6]))
     }
   | simple_expr DOT LBRACKET expr RBRACKET EQUAL expr
     { let loc = mklocation $symbolstartpos $endpos in
@@ -3022,9 +3032,16 @@ parenthesized_expr:
                        mkexp(Pexp_object(Cstr.mk pat []))))
     }
   | E LBRACKET expr RBRACKET
-    { let loc = mklocation $symbolstartpos $endpos in
-      let exp = Pexp_ident(array_function ~loc "Array" "get") in
-      mkexp(Pexp_apply(mkexp ~ghost:true ~loc exp, [Nolabel,$1; Nolabel,$3]))
+    { let {pexp_attributes;  pexp_desc } = $3 in
+      match pexp_desc with
+      | Pexp_constant(Pconst_string (label,_)) ->
+        let loc = mklocation $startpos($3) $endpos($3) in
+        let label_exp = mkexp ~attrs:pexp_attributes (Pexp_ident (mkloc (Lident label) loc)) ~loc in
+        mkinfixop $1 (mkoperator (ghloc "##")) label_exp
+      | _ ->
+        let loc = mklocation $symbolstartpos $endpos in
+        let exp = Pexp_ident(array_function ~loc "Array" "get") in
+        mkexp(Pexp_apply(mkexp ~ghost:true ~loc exp, [Nolabel,$1; Nolabel,$3]))
     }
   | E as_loc(LBRACKET) expr as_loc(error)
     { unclosed_exp (with_txt $2 "(") (with_txt $4 ")") }

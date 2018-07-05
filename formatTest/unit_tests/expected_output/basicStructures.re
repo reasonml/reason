@@ -832,4 +832,4 @@ it("should remove parens", a => {
 });
 
 /* https://github.com/facebook/reason/issues/1554 */
-(curNode^)##childNodes;
+curNode^["childNodes"];

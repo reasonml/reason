@@ -2049,6 +2049,16 @@ let isSingleArgParenApplication = function
   | [({pexp_attributes = []} as exp)] when (is_simple_list_expr exp) -> true
   | _ -> false
 
+let rec isChainOfSharpOpApplications = function
+  | {pexp_desc = (Pexp_apply (eFun, [(_,e1); (_, e2)]))}
+    when printedStringAndFixityExpr eFun = Infix "##" -> (
+    match e1, e2 with
+      | {pexp_desc = Pexp_ident {txt = Lident _}}, {pexp_desc = Pexp_ident {txt = Lident _}} -> true
+      | _, {pexp_desc = Pexp_ident {txt = Lident _}} -> isChainOfSharpOpApplications e1
+      | _ -> false
+  )
+  | _ -> false
+
 (*
  * Determines if the arguments of a constructor pattern match need
  * special printing. If there's one argument & they have some kind of wrapping,
@@ -3393,6 +3403,8 @@ let printer = object(self:'self)
     if e.pexp_attributes != [] then None
     (* should also check attributes underneath *)
     else match e.pexp_desc with
+      | Pexp_apply ({pexp_desc=Pexp_ident{txt=Lident "#="}}, [(_,e1);(_,e2)]) ->
+        Some (self#simple_enough_to_be_lhs_dot_send e1, e2)
       | Pexp_apply ({pexp_desc=Pexp_ident{txt=Ldot (Lident ("Array"), "set")}}, [(_,e1);(_,e2);(_,e3)]) ->
         let prec = Custom "prec_lbracket" in
         let lhs = self#unparseResolvedRule (
@@ -4004,27 +4016,34 @@ let printer = object(self:'self)
           )
           in
           Simple (label ~space:forceSpace leftItm (atom postfixStr))
-        | (Infix printedIdent, [(Nolabel, leftExpr); (Nolabel, rightExpr)]) ->
-          let infixToken = Token printedIdent in
-          let rightItm = self#ensureContainingRule ~withPrecedence:infixToken ~reducesAfterRight:rightExpr () in
-          let leftItm = self#ensureExpression ~reducesOnToken:infixToken leftExpr in
-          (* Left exprs of infix tokens which we don't print spaces for (e.g. `##`)
-             need to be wrapped in parens in the case of postfix `^`. Otherwise,
-             printing will be ambiguous as `^` is also a valid start of an infix
-             operator. *)
-          let formattedLeftItm = (match leftItm with
-            | LayoutNode x -> begin match leftExpr.pexp_desc with
-                | Pexp_apply (e,_) ->
-                  (match printedStringAndFixityExpr e with
-                   | UnaryPostfix "^" when requireNoSpaceFor printedIdent ->
-                     LayoutNode (formatPrecedence ~loc:leftExpr.pexp_loc x)
-                   | _ -> leftItm)
-                | _ -> leftItm
-              end
-            | InfixTree _ -> leftItm
-          ) in
-          let infixTree = InfixTree (printedIdent, formattedLeftItm, rightItm) in
-          SpecificInfixPrecedence ({reducePrecedence=infixToken; shiftPrecedence=infixToken}, infixTree)
+        | (Infix printedIdent, [(Nolabel, leftExpr); (Nolabel, rightExpr)]) -> (
+          match printedIdent, rightExpr with
+          | "##", {pexp_desc = Pexp_ident({txt = Lident _})} ->
+            Simple (self#access "[" "]"
+                    (self#simple_enough_to_be_lhs_dot_send leftExpr)
+                    (makeList ~wrap:("\"", "\"") [(self#unparseExpr rightExpr)]))
+          | _ ->
+            let infixToken = Token printedIdent in
+            let rightItm = self#ensureContainingRule ~withPrecedence:infixToken ~reducesAfterRight:rightExpr () in
+            let leftItm = self#ensureExpression ~reducesOnToken:infixToken leftExpr in
+            (* Left exprs of infix tokens which we don't print spaces for (e.g. `##`)
+               need to be wrapped in parens in the case of postfix `^`. Otherwise,
+               printing will be ambiguous as `^` is also a valid start of an infix
+               operator. *)
+            let formattedLeftItm = (match leftItm with
+              | LayoutNode x -> begin match leftExpr.pexp_desc with
+                  | Pexp_apply (e,_) ->
+                    (match printedStringAndFixityExpr e with
+                     | UnaryPostfix "^" when requireNoSpaceFor printedIdent ->
+                       LayoutNode (formatPrecedence ~loc:leftExpr.pexp_loc x)
+                     | _ -> leftItm)
+                  | _ -> leftItm
+                end
+              | InfixTree _ -> leftItm
+            ) in
+            let infixTree = InfixTree (printedIdent, formattedLeftItm, rightItm) in
+            SpecificInfixPrecedence ({reducePrecedence=infixToken; shiftPrecedence=infixToken}, infixTree)
+        )
         (* Will be rendered as `(+) a b c` which is parsed with higher precedence than all
            the other forms unparsed here.*)
         | (UnaryPlusPrefix printedIdent, [(Nolabel, rightExpr)]) ->
