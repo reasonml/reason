@@ -23,4 +23,4 @@ let b = false;
 let c = true;
 
 /* parses as !(a->b->c) */
-let t3: bool = ! a->b->c;
+let t3: bool = !a->b->c;
