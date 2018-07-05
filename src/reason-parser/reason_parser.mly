@@ -1355,6 +1355,7 @@ conflicts.
 
 (* PREFIXOP and BANG precedence *)
 %nonassoc below_DOT_AND_SHARP           (* practically same as below_SHARP but we convey purpose *)
+%left    MINUSGREATER
 %nonassoc SHARP                         (* simple_expr/toplevel_directive *)
 %nonassoc below_DOT
 %nonassoc DOT POSTFIXOP
@@ -2851,7 +2852,11 @@ mark_position_exp
       mkexp_cons loc_colon (mkexp ~ghost:true ~loc (Pexp_tuple[$5;$7])) loc
     }
   | E as_loc(infix_operator) expr
-    { mkinfix $1 $2 $3 }
+    { let op = match $2.txt with
+      | "->" -> {$2 with txt = "|."}
+      | _ -> $2
+      in mkinfix $1 op $3
+    }
   | as_loc(subtractive) expr %prec prec_unary
     { mkuminus $1 $2 }
   | as_loc(additive) expr %prec prec_unary
@@ -4555,6 +4560,7 @@ val_ident:
      operator swapping requires that we express that as != *)
   | LESSDOTDOTGREATER { "<..>" }
   | GREATER GREATER   { ">>" }
+  | MINUSGREATER      { "->" }
 ;
 
 %inline sharpop:

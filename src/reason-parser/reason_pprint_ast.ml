@@ -535,6 +535,9 @@ let isSimplePrefixToken s = match printedStringAndFixity s with
    using %prec *)
 let rules = [
   [
+    (TokenPrecedence, (fun s -> (Left, s = "->")));
+  ];
+  [
     (TokenPrecedence, (fun s -> (Nonassoc, isSimplePrefixToken s)));
   ];
   [
@@ -576,7 +579,7 @@ let rules = [
       else
         s.[0] == '+'
     )));
-    (TokenPrecedence ,(fun s -> (Left, s.[0] == '-' )));
+    (TokenPrecedence ,(fun s -> (Left, s.[0] == '-' && s <> "->" )));
     (TokenPrecedence ,(fun s -> (Left, s = "!" )));
   ];
   [
@@ -2124,6 +2127,40 @@ let rec computeInfixChain = function
 
 let equalityOperators = ["!="; "!=="; "==="; "=="; ">="; "<="; "<"; ">"]
 
+(* Takes a list of layouts and provides beautiful printing for fast pipe.
+ * Prints
+ *  [atom "foo"; atom "->"; atom "f"; atom "->"; atom "g"]
+ * as:
+ *  foo->f->g
+ * or if line-length indicates breaking:
+ *  foo
+ *  ->f
+ *  ->g
+ *)
+let formatFastPipeChain layouts =
+  (* transforms [->; f; ->; g] into [->f; ->g] *)
+  let rec processPipePairs acc = function
+  | pipe::exp::xs ->
+      let layout = label ~break:`Never pipe exp in
+      processPipePairs (layout::acc) xs
+  | [x] -> List.rev (x::acc)
+  | [] -> List.rev acc
+  in match layouts with
+  | hd::tl ->
+    (* process head of the layout list different so all "pipe pairs"
+     * are nicely aligned under the first element when the layout breaks.
+     *  foo->f->g
+     * becomes
+     *  foo
+     *  ->f
+     *  ->g
+     *)
+    let pipes = processPipePairs [] tl in
+    makeList ~break:IfNeed ~inline:(true, true) (hd::pipes)
+  | [] ->
+    atom ""
+
+
 (* Formats a flattened list of infixChain nodes into a list of layoutNodes
  * which allow smooth line-breaking
  * e.g. [LayoutNode foo; InfixToken |>; LayoutNode f; InfixToken |>; LayoutNode z]
@@ -2148,7 +2185,7 @@ let formatComputedInfixChain infixChainList =
      * |> f
      * |> z *)
     if List.length group < 2 then
-      makeList ~inline:(true, true) ~sep:(Sep " ") ~break:Layout.Never group
+      makeList ~inline:(true, true) ~sep:(Sep " ") group
     (* Basic equality operators require special formatting, we can't give it
      * 'classic' infix operator formatting, otherwise we would get
      * let example =
@@ -2159,8 +2196,10 @@ let formatComputedInfixChain infixChainList =
      *  *)
     else if List.mem currentToken equalityOperators then
       let hd = List.hd group in
-      let tl = makeList ~inline:(true, true) ~sep:(Sep " ") ~break:Layout.Never (List.tl group) in
+      let tl = makeList ~inline:(true, true) ~sep:(Sep " ") (List.tl group) in
       makeList ~inline:(true, true) ~sep:(Sep " ") ~break:IfNeed [hd; tl]
+    else if currentToken = "->" then
+      formatFastPipeChain group
     else
       (* Represents `|> f` in foo |> f
        * We need a label here to indent possible closing parens
@@ -2170,17 +2209,18 @@ let formatComputedInfixChain infixChainList =
        *   fun body =>
        *     Printf.sprintf
        *       "okokok" uri meth headers body
-       * )   <-- notice how this closing paren is on the same height as >|= *)
+       * )   <-- notice how this closing paren is on the same height as >|=
+       *)
       label ~break:`Never ~space:true (atom currentToken) (List.nth group 1)
   in
   let rec print acc group currentToken l =
     match l with
     | x::xs -> (match x with
       | InfixToken t ->
+          (* = or := *)
           if List.mem t requireIndentFor then
             let groupNode =
-              makeList ~inline:(true, true) ~sep:(Sep " ") ~break:Layout.Never
-                (group @ [atom t])
+              makeList ~inline:(true, true) ~sep:(Sep " ") (group @ [atom t])
             in
             let children =
               makeList ~inline:(true, true) ~preSpace:true ~break:IfNeed
@@ -2196,14 +2236,34 @@ let formatComputedInfixChain infixChainList =
            * *)
           else if t = "@@" then
             let groupNode =
-              makeList ~inline:(true, true) ~sep:(Sep " ") ~break:Layout.Never
-                (group @ [atom t])
+              makeList ~inline:(true, true) ~sep:(Sep " ") (group @ [atom t])
             in
             print (acc @ [groupNode]) [] t xs
+          (* != !== === == >= <= < > etc *)
           else if List.mem t equalityOperators then
             print acc (group @ [atom t]) t xs
           else
-            print (acc @ [layout_of_group group currentToken]) [(atom t)] t xs
+            begin if t = "->"  then
+              begin if (currentToken = "" || currentToken = "->") then
+                print acc (group@[atom t]) t xs
+              else
+                (* a + b + foo->bar->baz
+                 * `foo` needs to be picked from the current group
+                 * and inserted into a new one. This way `foo`
+                 * gets the special "fast pipe chain"-printing:
+                 * foo->bar->baz. *)
+                 begin match List.rev group with
+                 |  hd::tl ->
+                     let acc =
+                       acc @ [layout_of_group (List.rev tl) currentToken]
+                      in
+                     print acc [hd; atom t] t xs
+                 | [] -> print acc (group@[atom t]) t xs
+                 end
+              end
+            else
+              print (acc @ [layout_of_group group currentToken]) [(atom t)] t xs
+            end
       | Layout layoutNode -> print acc (group @ [layoutNode]) currentToken xs
       )
     | [] ->
@@ -2212,7 +2272,8 @@ let formatComputedInfixChain infixChainList =
         else
           acc @ [layout_of_group group currentToken]
   in
-  print [] [] "" infixChainList
+  let l = print [] [] "" infixChainList in
+  makeList ~inline:(true, true) ~sep:(Sep " ") ~break:IfNeed l
 
 (**
  * [groupAndPrint] will print every item in [items] according to the function [xf].
@@ -3647,9 +3708,7 @@ let printer = object(self:'self)
   method unparseResolvedRule  = function
     | LayoutNode layoutNode -> layoutNode
     | InfixTree _ as infixTree ->
-          let infixChainList = computeInfixChain infixTree in
-          let l = formatComputedInfixChain infixChainList in
-          makeList ~inline:(true, true) ~sep:(Sep " ") ~break:IfNeed l
+      formatComputedInfixChain (computeInfixChain infixTree)
 
 
   method unparseExprApplicationItems x =
@@ -3693,6 +3752,7 @@ let printer = object(self:'self)
       x
 
   method unparseExprRecurse x =
+    let x =  Reason_ast.processFastPipe x in
     let x = self#process_underscore_application x in
     (* If there are any attributes, render unary like `(~-) x [@ppx]`, and infix like `(+) x y [@attr]` *)
 
