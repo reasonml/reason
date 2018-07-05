@@ -481,8 +481,9 @@ rule token = parse
   | "#=<" {
     (* Allow parsing of foo#=<bar /> *)
     set_lexeme_length lexbuf 2;
-    SHARPOP("#=")
+    SHARPEQUAL
   }
+  | "#=" { SHARPEQUAL }
   | "#" operator_chars+
       { SHARPOP(lexeme_operator lexbuf) }
   | "#" [' ' '\t']* (['0'-'9']+ as num) [' ' '\t']*

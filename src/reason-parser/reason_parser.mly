@@ -1209,6 +1209,7 @@ let package_type_of_module_type pmty =
 %token SEMISEMI
 %token SHARP
 %token <string> SHARPOP
+%token SHARPEQUAL
 %token SIG
 %token STAR
 %token <string * string option * string option> STRING
@@ -1355,12 +1356,19 @@ conflicts.
 (* PREFIXOP and BANG precedence *)
 %nonassoc below_DOT_AND_SHARP           (* practically same as below_SHARP but we convey purpose *)
 %nonassoc SHARP                         (* simple_expr/toplevel_directive *)
-%left     SHARPOP
 %nonassoc below_DOT
 %nonassoc DOT POSTFIXOP
 
+(* We need SHARPEQUAL to have lower precedence than `[` to make e.g.
+   this work: `foo #= bar[0]`. Otherwise it would turn into `(foo#=bar)[0]` *)
+%left     SHARPEQUAL
+
+%nonassoc LBRACKET
+(* SHARPOP has higher precedence than `[`, see e.g. issue #1507. *)
+%left     SHARPOP
 (* Finally, the first tokens of simple_expr are above everything else. *)
-%nonassoc LBRACKETLESS LBRACKET LBRACELESS LBRACE LPAREN
+%nonassoc LBRACKETLESS LBRACELESS LBRACE LPAREN
+
 
 (* Entry points *)
 
@@ -3067,7 +3075,7 @@ parenthesized_expr:
     { unclosed_exp (with_txt $3 "{<") (with_txt $6 ">}") }
   | E SHARP label
     { mkexp (Pexp_send($1, $3)) }
-  | E as_loc(SHARPOP) simple_expr_no_call
+  | E as_loc(sharpop) simple_expr_no_call
     { mkinfixop $1 (mkoperator $2) $3 }
   | as_loc(mod_longident) DOT LPAREN MODULE module_expr COLON package_type RPAREN
     { let loc = mklocation $symbolstartpos $endpos in
@@ -4548,6 +4556,10 @@ val_ident:
   | LESSDOTDOTGREATER { "<..>" }
   | GREATER GREATER   { ">>" }
 ;
+
+%inline sharpop:
+  | SHARPOP { $1 }
+  | SHARPEQUAL { "#=" }
 
 operator:
   | PREFIXOP          { $1 }
