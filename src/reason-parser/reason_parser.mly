@@ -1209,7 +1209,7 @@ let package_type_of_module_type pmty =
 %token SEMISEMI
 %token SHARP
 %token <string> SHARPOP
-%token SHARPOP_WITH_EQUAL
+%token SHARPEQUAL
 %token SIG
 %token STAR
 %token <string * string option * string option> STRING
@@ -1359,9 +1359,9 @@ conflicts.
 %nonassoc below_DOT
 %nonassoc DOT POSTFIXOP
 
-(* We need SHARPOP_WITH_EQUAL to have lower precedence than `[` to make e.g.
+(* We need SHARPEQUAL to have lower precedence than `[` to make e.g.
    this work: `foo #= bar[0]`. Otherwise it would turn into `(foo#=bar)[0]` *)
-%left     SHARPOP_WITH_EQUAL
+%left     SHARPEQUAL
 
 %nonassoc LBRACKET
 (* SHARPOP has higher precedence than `[`, see e.g. issue #1507. *)
@@ -4559,7 +4559,7 @@ val_ident:
 
 %inline sharpop:
   | SHARPOP { $1 }
-  | SHARPOP_WITH_EQUAL { "#=" }
+  | SHARPEQUAL { "#=" }
 
 operator:
   | PREFIXOP          { $1 }
