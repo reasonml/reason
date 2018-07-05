@@ -19,7 +19,7 @@ preview##(style##border)#=args(somenum);
 x##y##z#=(xxxx##yyyy##zzzz);
 
 let result =
-  js_method_run1((! react)#createElement, foo);
+  js_method_run1((!react)#createElement, foo);
 
 add(zz##yy, xx##ww);
 
@@ -37,12 +37,12 @@ let res = z##(q##a); /* AST */
 let res = z##(q##a); /* Min parens */
 
 /* These should print the same */
-let res = ! x##y; /* AST */
-let res = ! x##y; /* Minimum parens */
+let res = !x##y; /* AST */
+let res = !x##y; /* Minimum parens */
 
 /* These should print the same */
-let res = ! z##q##a; /* AST */
-let res = ! z##q##a; /* Min parens */
+let res = !z##q##a; /* AST */
+let res = !z##q##a; /* Min parens */
 
 /* These should print the same */
 let res = ?!!x##y; /* AST */
@@ -57,7 +57,7 @@ res#=?!!z##(q##a);
 
 let result = myFunction(x(y)##z, a(b)#=c);
 
-(! x)##y##(b##c);
+(!x)##y##(b##c);
 
 type a = {. "foo": bar};
 
