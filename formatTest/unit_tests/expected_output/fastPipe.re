@@ -59,7 +59,7 @@ foo !== bar->baz;
 x |> y >>= foo->bar->baz;
 let m = f => foo->bar->f;
 
-obj##x->foo->bar;
+obj["x"]->foo->bar;
 
 event->target[0];
 
