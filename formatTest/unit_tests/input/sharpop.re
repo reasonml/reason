@@ -21,3 +21,7 @@ foo.[bar + 1] = 1;
 foo.{bar + 1} = 1;
 
 foo[bar + 1] = 1;
+
+bla #= (Constr(x));
+
+bla #= M.(someFunc(Some(10)));

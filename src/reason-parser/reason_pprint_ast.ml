@@ -7570,6 +7570,16 @@ let printer = object(self:'self)
     (* If there was a JSX attribute BUT JSX component wasn't detected,
        that JSX attribute needs to be pretty printed so it doesn't get
        lost *)
+    let isLeftSharpEqual = match funExpr.pexp_desc with
+      | Pexp_apply ({pexp_desc = Pexp_ident {txt = Lident "#="}}, _) -> true
+      | _ -> false
+    in
+    let formattedFunExpr =
+      if isLeftSharpEqual then
+        formatPrecedence ~loc:funExpr.pexp_loc (self#simplifyUnparseExpr funExpr)
+      else
+        self#simplifyUnparseExpr funExpr
+    in
     let maybeJSXAttr = List.map self#attribute jsxAttrs in
     let categorizeFunApplArgs args =
       let reverseArgs = List.rev args in
