@@ -1355,10 +1355,8 @@ conflicts.
 
 (* PREFIXOP and BANG precedence *)
 %nonassoc below_DOT_AND_SHARP           (* practically same as below_SHARP but we convey purpose *)
-%left    MINUSGREATER
 %nonassoc SHARP                         (* simple_expr/toplevel_directive *)
 %nonassoc below_DOT
-%nonassoc DOT POSTFIXOP
 
 (* We need SHARPEQUAL to have lower precedence than `[` to make e.g.
    this work: `foo #= bar[0]`. Otherwise it would turn into `(foo#=bar)[0]` *)
@@ -1366,7 +1364,8 @@ conflicts.
 
 %nonassoc LBRACKET
 (* SHARPOP has higher precedence than `[`, see e.g. issue #1507. *)
-%left     SHARPOP
+%left     SHARPOP MINUSGREATER
+%nonassoc DOT POSTFIXOP
 (* Finally, the first tokens of simple_expr are above everything else. *)
 %nonassoc LBRACKETLESS LBRACELESS LBRACE LPAREN
 
@@ -3082,6 +3081,8 @@ parenthesized_expr:
     { mkexp (Pexp_send($1, $3)) }
   | E as_loc(sharpop) simple_expr_no_call
     { mkinfixop $1 (mkoperator $2) $3 }
+  | E as_loc(MINUSGREATER) simple_expr
+    { mkinfixop $1 (mkoperator {$2 with txt = "|."}) $3 }
   | as_loc(mod_longident) DOT LPAREN MODULE module_expr COLON package_type RPAREN
     { let loc = mklocation $symbolstartpos $endpos in
       mkexp (Pexp_open(Fresh, $1,
@@ -4560,7 +4561,6 @@ val_ident:
      operator swapping requires that we express that as != *)
   | LESSDOTDOTGREATER { "<..>" }
   | GREATER GREATER   { ">>" }
-  | MINUSGREATER      { "->" }
 ;
 
 %inline sharpop:
