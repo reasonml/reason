@@ -2049,14 +2049,26 @@ let isSingleArgParenApplication = function
   | [({pexp_attributes = []} as exp)] when (is_simple_list_expr exp) -> true
   | _ -> false
 
-let rec isChainOfSharpOpApplications = function
-  | {pexp_desc = (Pexp_apply (eFun, [(_,e1); (_, e2)]))}
-    when printedStringAndFixityExpr eFun = Infix "##" -> (
-    match e1, e2 with
-      | {pexp_desc = Pexp_ident {txt = Lident _}}, {pexp_desc = Pexp_ident {txt = Lident _}} -> true
-      | _, {pexp_desc = Pexp_ident {txt = Lident _}} -> isChainOfSharpOpApplications e1
-      | _ -> false
-  )
+let rec isChainOfSugarGetExprs = function
+  | {pexp_desc = (Pexp_apply (eFun, (_,e1)::(_, e2)::xs))} ->
+      if printedStringAndFixityExpr eFun = Infix "##" then begin
+        match e1.pexp_desc, e2.pexp_desc with
+        | Pexp_ident {txt = Lident _}, Pexp_ident {txt = Lident _} -> true
+        | _, Pexp_ident {txt = Lident _} -> isChainOfSugarGetExprs e1
+        | _ -> false
+      end else begin match eFun.pexp_desc with
+        | Pexp_ident ({txt = Ldot (Lident "Array", op)})
+        | Pexp_ident ({txt = Ldot (Lident "String", op)})
+        | Pexp_ident ({txt = Ldot (Ldot (Lident "Bigarray", _), op)})
+          when op = "get" || op = "unsafe_get"
+          -> (
+            match e1.pexp_desc with
+            | Pexp_ident ({txt = Lident _}) -> true
+            | _ -> isChainOfSugarGetExprs e1
+          )
+        | _ -> false
+    end
+  | {pexp_desc = Pexp_field (lhs, _)} -> isChainOfSugarGetExprs lhs
   | _ -> false
 
 (*
