@@ -485,9 +485,13 @@ let special_infix_strings =
 
 let updateToken = "="
 let sharpOpEqualToken = "#="
+let fastPipeToken = "->"
 let requireIndentFor = [updateToken; ":="]
 
 let namedArgSym = "~"
+
+let requireNoSpaceFor tok =
+  tok = fastPipeToken || (tok.[0] = '#' && tok <> "#=")
 
 let getPrintableUnaryIdent s =
   if List.mem s unary_minus_prefix_symbols ||
@@ -535,10 +539,24 @@ let isSimplePrefixToken s = match printedStringAndFixity s with
    using %prec *)
 let rules = [
   [
-    (TokenPrecedence, (fun s -> (Left, s = "->")));
+    (CustomPrecedence, (fun s -> (Nonassoc, s = "prec_postfixop")))
   ];
   [
-    (TokenPrecedence, (fun s -> (Nonassoc, isSimplePrefixToken s)));
+    (TokenPrecedence, (fun s -> (Left, s = fastPipeToken)));
+    (TokenPrecedence, (fun s -> (Left, s.[0] = '#' &&
+                                       s <> sharpOpEqualToken &&
+                                       s <> "#")));
+    (TokenPrecedence, (fun s -> (Left, s = ".")));
+    (CustomPrecedence, (fun s -> (Left, s = "prec_lbracket")));
+  ];
+  [
+    (CustomPrecedence, (fun s -> (Nonassoc, s = "prec_functionAppl")))
+  ];
+  [
+    (TokenPrecedence, (fun s -> (Right, isSimplePrefixToken s)));
+  ];
+  [
+    (TokenPrecedence, (fun s -> (Left, s = sharpOpEqualToken)));
   ];
   [
     (CustomPrecedence, (fun s -> (Nonassoc, s = "prec_unary")));
@@ -579,8 +597,8 @@ let rules = [
       else
         s.[0] == '+'
     )));
-    (TokenPrecedence ,(fun s -> (Left, s.[0] == '-' && s <> "->" )));
-    (TokenPrecedence ,(fun s -> (Left, s = "!" )));
+    (TokenPrecedence, (fun s -> (Left, s.[0] == '-' && s <> fastPipeToken)));
+    (TokenPrecedence, (fun s -> (Left, s = "!" )));
   ];
   [
     (TokenPrecedence, (fun s -> (Right, s = "::")));
@@ -2198,7 +2216,10 @@ let formatComputedInfixChain infixChainList =
       let hd = List.hd group in
       let tl = makeList ~inline:(true, true) ~sep:(Sep " ") (List.tl group) in
       makeList ~inline:(true, true) ~sep:(Sep " ") ~break:IfNeed [hd; tl]
-    else if currentToken = "->" then
+    else if currentToken.[0] = '#' then
+      let isSharpEqual = currentToken = sharpOpEqualToken in
+      makeList ~postSpace:isSharpEqual group
+    else if currentToken = fastPipeToken then
       formatFastPipeChain group
     else
       (* Represents `|> f` in foo |> f
@@ -2220,7 +2241,7 @@ let formatComputedInfixChain infixChainList =
           (* = or := *)
           if List.mem t requireIndentFor then
             let groupNode =
-              makeList ~inline:(true, true) ~sep:(Sep " ") (group @ [atom t])
+              makeList ~inline:(true, true) ~sep:(Sep " ") ((print [] group currentToken []) @ [atom t])
             in
             let children =
               makeList ~inline:(true, true) ~preSpace:true ~break:IfNeed
@@ -2241,10 +2262,10 @@ let formatComputedInfixChain infixChainList =
             print (acc @ [groupNode]) [] t xs
           (* != !== === == >= <= < > etc *)
           else if List.mem t equalityOperators then
-            print acc (group @ [atom t]) t xs
+            print acc ((print [] group currentToken []) @ [atom t]) t xs
           else
-            begin if t = "->"  then
-              begin if (currentToken = "" || currentToken = "->") then
+            begin if requireNoSpaceFor t then
+              begin if (currentToken = "" || requireNoSpaceFor currentToken) then
                 print acc (group@[atom t]) t xs
               else
                 (* a + b + foo->bar->baz
@@ -3404,116 +3425,6 @@ let printer = object(self:'self)
         else Some (self#formatJSXComponent (Longident.last loc.txt) l)
       else None
     )
-    | (Pexp_apply (eFun, ls), [], []) -> (
-      match (printedStringAndFixityExpr eFun, ls) with
-      (* We must take care not to print two subsequent prefix operators without
-         spaces between them (`! !` could become `!!` which is totally
-         different).  *)
-      | (AlmostSimplePrefix prefixStr, [(Nolabel, rightExpr)]) ->
-        let forceSpace = match rightExpr.pexp_desc with
-          | Pexp_apply (ee, lsls) ->
-            (match printedStringAndFixityExpr ee with | AlmostSimplePrefix _ -> true | _ -> false)
-          | _ -> false
-        in
-        let rightItm = self#simplifyUnparseExpr rightExpr in
-        Some (label ~space:forceSpace (atom prefixStr) rightItm)
-      | (UnaryPostfix postfixStr, [(Nolabel, leftExpr)]) ->
-        let forceSpace = match leftExpr.pexp_desc with
-          | Pexp_apply (ee, lsls) ->
-            (match printedStringAndFixityExpr ee with
-             | UnaryPostfix "^" | AlmostSimplePrefix _ -> true
-             | _ -> false)
-          | _ -> false
-        in
-        let leftItm = self#simplifyUnparseExpr leftExpr in
-        Some (label ~space:forceSpace leftItm (atom postfixStr))
-      | (Infix infixStr, [(_, leftExpr); (_, rightExpr)]) when infixStr.[0] = '#' ->
-        (* Little hack. We check the right expression to see if it's also a SHARPOP, if it is
-           we call `formatPrecedence` on the result of `simplifyUnparseExpr` to add the appropriate
-           parens. This is done because `unparseExpr` doesn't seem to be able to handle
-           high enough precedence things. Using the normal precedence handling, something like
-
-              ret #= (Some 10)
-
-            gets pretty printed to
-
-              ret #= Some 10
-
-            Which seems to indicate that the pretty printer doesn't think `#=` is of
-            high enough precedence for the parens to be worth adding back. *)
-        let isSharpOpEqual = infixStr = sharpOpEqualToken in
-        let leftItm =
-          self#simple_enough_to_be_lhs_dot_send
-            ~infix_context:infixStr
-            leftExpr
-        in
-        let rightItm = (
-          match rightExpr.pexp_desc with
-          | Pexp_apply (eFun, ls) -> (
-            match (printedStringAndFixityExpr eFun, ls) with
-              | (Infix infixStr, [(_, _); (_, _)]) when infixStr.[0] = '#' -> formatPrecedence (self#simplifyUnparseExpr rightExpr)
-              | _ -> self#simplifyUnparseExpr rightExpr
-          )
-          | _ -> self#simplifyUnparseExpr rightExpr
-        ) in
-        Some (makeList ~postSpace:isSharpOpEqual [leftItm; atom infixStr; rightItm])
-      | (_, _) -> (
-        match (eFun, ls) with
-        | ({pexp_desc = Pexp_ident {txt = Ldot (Lident ("Array"),"get")}}, [(_,e1);(_,e2)]) ->
-          begin match e1.pexp_desc with
-          | Pexp_ident ({txt = Lident "_"}) ->
-              let k = atom "Array.get" in
-              let v = makeList ~postSpace:true ~sep:(Layout.Sep ",") ~wrap:("(", ")")
-                [atom "_"; self#unparseExpr e2]
-              in
-              Some (label k v)
-          | _ ->
-              Some (self#access "[" "]" (self#simple_enough_to_be_lhs_dot_send e1) (self#unparseExpr e2))
-          end
-        | ({pexp_desc = Pexp_ident {txt = Ldot (Lident ("String"),"get")}}, [(_,e1);(_,e2)]) ->
-          if Reason_heuristics.isUnderscoreIdent e1 then
-            let k = atom "String.get" in
-            let v = makeList ~postSpace:true ~sep:(Layout.Sep ",") ~wrap:("(", ")")
-              [atom "_"; self#unparseExpr e2]
-            in
-            Some (label k v)
-          else
-            Some (self#access ".[" "]" (self#simple_enough_to_be_lhs_dot_send e1) (self#unparseExpr e2))
-        | (
-            {pexp_desc= Pexp_ident {txt=Ldot (Ldot (Lident "Bigarray", "Genarray" ), "get")}},
-            [(_,e1); (_,({pexp_desc=Pexp_array ls} as e2))]
-          ) ->
-            if (Reason_heuristics.isUnderscoreIdent e1) then
-              let k = atom "Bigarray.Genarray.get" in
-              let v = makeList ~postSpace:true ~sep:(Layout.Sep ",") ~wrap:("(", ")")
-                [atom "_"; self#unparseExpr e2]
-              in
-              Some (label k v)
-            else
-              let formattedList = List.map self#simplifyUnparseExpr ls in
-              let lhs = makeList [(self#simple_enough_to_be_lhs_dot_send e1); atom "."] in
-              let rhs = makeList ~break:IfNeed ~postSpace:true ~sep:commaSep ~wrap:("{", "}") formattedList in
-              Some (label lhs rhs)
-        | (
-            {pexp_desc= Pexp_ident {txt=
-              Ldot (Ldot (Lident "Bigarray", (("Array1"|"Array2"|"Array3") as arrayIdent)), "get")}
-            },
-            (_,e1)::rest
-          ) ->
-          if Reason_heuristics.isUnderscoreIdent e1 then
-            let k = atom("Bigarray." ^ arrayIdent ^ ".get") in
-            let v = makeList ~postSpace:true ~sep:(Layout.Sep ",") ~wrap:("(", ")")
-              ((atom "_")::(List.map (fun (_, e) -> self#unparseExpr e) rest))
-            in
-            Some (label k v)
-          else
-            let formattedList = List.map self#simplifyUnparseExpr (List.map snd rest) in
-            let lhs = makeList [(self#simple_enough_to_be_lhs_dot_send e1); atom "."] in
-            let rhs = makeList ~break:IfNeed ~postSpace:true ~sep:commaSep ~wrap:("{", "}") formattedList in
-            Some (label lhs rhs)
-        | _ -> None
-      )
-    )
     | _ -> None
 
   (** Detects "sugar expressions" (sugar for array/string setters) and returns their separate
@@ -3523,9 +3434,17 @@ let printer = object(self:'self)
     (* should also check attributes underneath *)
     else match e.pexp_desc with
       | Pexp_apply ({pexp_desc=Pexp_ident{txt=Ldot (Lident ("Array"), "set")}}, [(_,e1);(_,e2);(_,e3)]) ->
-        Some (self#access "[" "]" (self#simple_enough_to_be_lhs_dot_send e1) (self#unparseExpr e2), e3)
+        let prec = Custom "prec_lbracket" in
+        let lhs = self#unparseResolvedRule (
+            self#ensureExpression ~reducesOnToken:prec e1
+          ) in
+        Some (self#access "[" "]" lhs (self#unparseExpr e2), e3)
       | Pexp_apply ({pexp_desc=Pexp_ident {txt=Ldot (Lident "String", "set")}}, [(_,e1);(_,e2);(_,e3)]) ->
-        Some ((self#access ".[" "]" (self#simple_enough_to_be_lhs_dot_send e1) (self#unparseExpr e2)), e3)
+        let prec = Custom "prec_lbracket" in
+        let lhs = self#unparseResolvedRule (
+            self#ensureExpression ~reducesOnToken:prec e1
+          ) in
+        Some ((self#access ".[" "]" lhs (self#unparseExpr e2)), e3)
       | Pexp_apply (
         {pexp_desc=Pexp_ident {txt = Ldot (Ldot (Lident "Bigarray", array), "set")}},
         label_exprs
@@ -3602,10 +3521,8 @@ let printer = object(self:'self)
      ensure that. *)
   method ensureContainingRule ~withPrecedence ~reducesAfterRight () =
     match self#unparseExprRecurse reducesAfterRight with
-    | SpecificInfixPrecedence ({reducePrecedence; shiftPrecedence}, rightRecurse)->
-      if higherPrecedenceThan shiftPrecedence withPrecedence then begin
-        rightRecurse
-      end
+    | SpecificInfixPrecedence ({reducePrecedence; shiftPrecedence}, rightRecurse) ->
+      if higherPrecedenceThan shiftPrecedence withPrecedence then rightRecurse
       else if (higherPrecedenceThan withPrecedence shiftPrecedence) then
         LayoutNode (formatPrecedence ~loc:reducesAfterRight.pexp_loc (self#unparseResolvedRule rightRecurse))
       else (
@@ -3615,7 +3532,13 @@ let printer = object(self:'self)
           LayoutNode (formatPrecedence ~loc:reducesAfterRight.pexp_loc (self#unparseResolvedRule rightRecurse))
       )
     | FunctionApplication itms ->
-      LayoutNode (formatAttachmentApplication applicationFinalWrapping None (itms, Some reducesAfterRight.pexp_loc))
+      let funApplExpr = formatAttachmentApplication applicationFinalWrapping None (itms, Some reducesAfterRight.pexp_loc)
+      in
+      (* Need to print parens for the `bar` application in e.g. `foo->(bar(baz))` *)
+      if higherPrecedenceThan withPrecedence (Custom "prec_functionAppl") then
+        LayoutNode (formatPrecedence ~loc:reducesAfterRight.pexp_loc funApplExpr)
+        else
+          LayoutNode funApplExpr
     | PotentiallyLowPrecedence itm -> LayoutNode (formatPrecedence ~loc:reducesAfterRight.pexp_loc itm)
     | Simple itm -> LayoutNode itm
 
@@ -3769,7 +3692,10 @@ let printer = object(self:'self)
       let itms = match self#unparseExprRecurse withoutVisibleAttrs with
         | SpecificInfixPrecedence ({reducePrecedence; shiftPrecedence}, wrappedRule) ->
             let itm = self#unparseResolvedRule wrappedRule in
-            [formatPrecedence ~loc:x.pexp_loc itm]
+            (match reducePrecedence with
+             (* doesn't need wrapping; we know how to parse *)
+             | Custom "prec_lbracket" -> [itm]
+             | _ -> [formatPrecedence ~loc:x.pexp_loc itm])
         | FunctionApplication itms -> itms
         | PotentiallyLowPrecedence itm -> [formatPrecedence ~loc:x.pexp_loc itm]
         | Simple itm -> [itm]
@@ -3789,7 +3715,80 @@ let printer = object(self:'self)
     match x.pexp_desc with
     | Pexp_apply (e, ls) -> (
       let ls = List.map (fun (l,expr) -> (l, self#process_underscore_application expr)) ls in
-      match (self#sugar_set_expr_parts x) with
+      match (e, ls) with
+      | ({pexp_desc = Pexp_ident {txt = Ldot (Lident ("Array"),"get")}}, [(_,e1);(_,e2)]) ->
+        begin match e1.pexp_desc with
+          | Pexp_ident ({txt = Lident "_"}) ->
+            let k = atom "Array.get" in
+            let v = makeList ~postSpace:true ~sep:(Layout.Sep ",") ~wrap:("(", ")")
+                [atom "_"; self#unparseExpr e2]
+            in
+            Simple (label k v)
+          | _ ->
+            let prec = Custom "prec_lbracket" in
+            let lhs = self#unparseResolvedRule (
+              self#ensureExpression ~reducesOnToken:prec e1
+            ) in
+            let rhs = self#unparseResolvedRule (
+              self#ensureContainingRule ~withPrecedence:prec ~reducesAfterRight:e2 ()
+            ) in
+            SpecificInfixPrecedence
+              ({reducePrecedence=prec; shiftPrecedence=prec}, LayoutNode (self#access "[" "]" lhs rhs))
+        end
+      | ({pexp_desc = Pexp_ident {txt = Ldot (Lident ("String"),"get")}}, [(_,e1);(_,e2)]) ->
+        if Reason_heuristics.isUnderscoreIdent e1 then
+          let k = atom "String.get" in
+          let v = makeList ~postSpace:true ~sep:(Layout.Sep ",") ~wrap:("(", ")")
+              [atom "_"; self#unparseExpr e2]
+          in
+          Simple (label k v)
+        else
+          let prec = Custom "prec_lbracket" in
+            let lhs = self#unparseResolvedRule (
+              self#ensureExpression ~reducesOnToken:prec e1
+            ) in
+            let rhs = self#unparseResolvedRule (
+              self#ensureContainingRule ~withPrecedence:prec ~reducesAfterRight:e2 ()
+            ) in
+          SpecificInfixPrecedence
+            ({reducePrecedence=prec; shiftPrecedence=prec}, LayoutNode (self#access ".[" "]" lhs rhs))
+      | (
+        {pexp_desc= Pexp_ident {txt=Ldot (Ldot (Lident "Bigarray", "Genarray" ), "get")}},
+        [(_,e1); (_,({pexp_desc=Pexp_array ls} as e2))]
+      ) ->
+        if (Reason_heuristics.isUnderscoreIdent e1) then
+          let k = atom "Bigarray.Genarray.get" in
+          let v = makeList ~postSpace:true ~sep:(Layout.Sep ",") ~wrap:("(", ")")
+              [atom "_"; self#unparseExpr e2]
+          in
+          Simple (label k v)
+        else
+          let formattedList = List.map self#simplifyUnparseExpr ls in
+          let lhs = makeList [(self#simple_enough_to_be_lhs_dot_send e1); atom "."] in
+          let rhs = makeList ~break:IfNeed ~postSpace:true ~sep:commaSep ~wrap:("{", "}") formattedList in
+          let prec = Custom "prec_lbracket" in
+          SpecificInfixPrecedence ({reducePrecedence=prec; shiftPrecedence=prec}, LayoutNode (label lhs rhs))
+      | (
+        {pexp_desc= Pexp_ident {txt=
+                                  Ldot (Ldot (Lident "Bigarray", (("Array1"|"Array2"|"Array3") as arrayIdent)), "get")}
+        },
+        (_,e1)::rest
+      ) ->
+        if Reason_heuristics.isUnderscoreIdent e1 then
+          let k = atom("Bigarray." ^ arrayIdent ^ ".get") in
+          let v = makeList ~postSpace:true ~sep:(Layout.Sep ",") ~wrap:("(", ")")
+              ((atom "_")::(List.map (fun (_, e) -> self#unparseExpr e) rest))
+          in
+          Simple (label k v)
+        else
+          let formattedList = List.map self#simplifyUnparseExpr (List.map snd rest) in
+          let lhs = makeList [(self#simple_enough_to_be_lhs_dot_send e1); atom "."] in
+          let rhs = makeList ~break:IfNeed ~postSpace:true ~sep:commaSep ~wrap:("{", "}") formattedList in
+          let prec = Custom "prec_lbracket" in
+          SpecificInfixPrecedence ({reducePrecedence=prec; shiftPrecedence=prec}, LayoutNode (label lhs rhs))
+      | _ -> (
+
+          match (self#sugar_set_expr_parts x) with
       (* Returns None if there's attributes - would render as regular function *)
       (* Format as if it were an infix function application with identifier "=" *)
       | Some (simplyFormatedLeftItm, rightExpr) -> (
@@ -3801,11 +3800,51 @@ let printer = object(self:'self)
       )
       | None -> (
         match (printedStringAndFixityExpr e, ls) with
+       (* We must take care not to print two subsequent prefix operators without
+         spaces between them (`! !` could become `!!` which is totally
+         different).  *)
+        | (AlmostSimplePrefix prefixStr, [(Nolabel, rightExpr)]) ->
+        let forceSpace = match rightExpr.pexp_desc with
+          | Pexp_apply (ee, lsls) ->
+            (match printedStringAndFixityExpr ee with | AlmostSimplePrefix _ -> true | _ -> false)
+          | _ -> false
+        in
+        let prec = Token prefixStr in
+        let rightItm = self#unparseResolvedRule (
+          self#ensureContainingRule ~withPrecedence:prec ~reducesAfterRight:rightExpr ()
+        ) in
+        SpecificInfixPrecedence
+          ({reducePrecedence=prec; shiftPrecedence = prec}, LayoutNode (label ~space:forceSpace (atom prefixStr) rightItm))
+        | (UnaryPostfix postfixStr, [(Nolabel, leftExpr)]) ->
+          let forceSpace = match leftExpr.pexp_desc with
+            | Pexp_apply (ee, lsls) ->
+              (match printedStringAndFixityExpr ee with
+               | UnaryPostfix "^" | AlmostSimplePrefix _ -> true
+               | _ -> false)
+            | _ -> false
+          in
+          let leftItm = self#simplifyUnparseExpr leftExpr in
+          Simple (label ~space:forceSpace leftItm (atom postfixStr))
         | (Infix printedIdent, [(Nolabel, leftExpr); (Nolabel, rightExpr)]) ->
           let infixToken = Token printedIdent in
           let rightItm = self#ensureContainingRule ~withPrecedence:infixToken ~reducesAfterRight:rightExpr () in
           let leftItm = self#ensureExpression ~reducesOnToken:infixToken leftExpr in
-          let infixTree = InfixTree (printedIdent, leftItm, rightItm) in
+          (* Left exprs of infix tokens which we don't print spaces for (e.g. `##`)
+             need to be wrapped in parens in the case of postfix `^`. Otherwise,
+             printing will be ambiguous as `^` is also a valid start of an infix
+             operator. *)
+          let formattedLeftItm = (match leftItm with
+            | LayoutNode x -> begin match leftExpr.pexp_desc with
+                | Pexp_apply (e,_) ->
+                  (match printedStringAndFixityExpr e with
+                   | UnaryPostfix "^" when requireNoSpaceFor printedIdent ->
+                     LayoutNode (formatPrecedence ~loc:leftExpr.pexp_loc x)
+                   | _ -> leftItm)
+                | _ -> leftItm
+              end
+            | InfixTree _ -> leftItm
+          ) in
+          let infixTree = InfixTree (printedIdent, formattedLeftItm, rightItm) in
           SpecificInfixPrecedence ({reducePrecedence=infixToken; shiftPrecedence=infixToken}, infixTree)
         (* Will be rendered as `(+) a b c` which is parsed with higher precedence than all
            the other forms unparsed here.*)
@@ -3853,7 +3892,7 @@ let printer = object(self:'self)
          *)
         let uncurried = try Hashtbl.find uncurriedTable x.pexp_loc with | Not_found -> false in
         FunctionApplication (self#formatFunAppl ~uncurried ~jsxAttrs ~args:ls ~applicationExpr:x ~funExpr:e ())
-      )
+      ))
     )
     | Pexp_construct (li, Some eo) when not (is_simple_construct (view_expr x)) -> (
         match view_expr x with
@@ -3879,11 +3918,14 @@ let printer = object(self:'self)
       let rightItm = self#unparseResolvedRule (
         self#ensureContainingRule ~withPrecedence:(Token updateToken) ~reducesAfterRight:rightExpr ()
       ) in
-      let leftItm =
+      let leftItm = self#unparseResolvedRule (
+        self#ensureExpression ~reducesOnToken:(Token ".") leftExpr
+      ) in
+      let leftLbl =
         label
-          (makeList [self#simple_enough_to_be_lhs_dot_send leftExpr; atom "."])
+          (makeList [leftItm; atom "."])
           (self#longident_loc li) in
-      let expr = label ~space:true (makeList ~postSpace:true [leftItm; atom updateToken]) rightItm in
+      let expr = label ~space:true (makeList ~postSpace:true [leftLbl; atom updateToken]) rightItm in
       SpecificInfixPrecedence ({reducePrecedence=(Token updateToken); shiftPrecedence=(Token updateToken)}, LayoutNode expr)
     | Pexp_match (e, l) when detectTernary l != None -> (
       match detectTernary l with
@@ -4105,6 +4147,7 @@ let printer = object(self:'self)
         processArguments tail (nextAttr :: processedAttrs) children
 
       | (Labelled lbl, expression) :: tail ->
+         let expression = Reason_ast.processFastPipe expression in
          let nextAttr =
            match expression.pexp_desc with
            | Pexp_ident ident when isPunnedJsxArg lbl ident -> atom lbl
@@ -4117,6 +4160,12 @@ let printer = object(self:'self)
                               atom "=";
                               (label (self#longident_loc lid) (atom "."))])
                    (self#formatNonSequencyExpression e)
+           | Pexp_apply (eFun, _) ->
+             let lhs = (makeList [atom lbl; atom "="]) in
+             let rhs = (match printedStringAndFixityExpr eFun with
+                 | Infix str when requireNoSpaceFor str -> self#unparseExpr expression
+                 | _ -> self#simplifyUnparseExpr expression)
+             in label lhs rhs
            | Pexp_record _
            | Pexp_construct _
            | Pexp_array _
@@ -4124,8 +4173,7 @@ let printer = object(self:'self)
            | Pexp_match _
            | Pexp_extension _
            | Pexp_fun _
-           | Pexp_function _
-           | Pexp_apply _ -> label (makeList [atom lbl; atom "="]) (self#simplifyUnparseExpr expression)
+           | Pexp_function _ -> label (makeList [atom lbl; atom "="]) (self#simplifyUnparseExpr expression)
            | _ -> makeList ([atom lbl; atom "="; self#simplifyUnparseExpr expression])
          in
          processArguments tail (nextAttr :: processedAttrs) children
@@ -5139,7 +5187,7 @@ let printer = object(self:'self)
           | Pexp_newtype _ ->
             (* let uncurried =  *)
             let (args, ret) = self#curriedPatternsAndReturnVal x in
-            ( match args with
+            (match args with
               | [] -> raise (NotPossible ("no arrow args in unparse "))
               | firstArg::tl ->
                 (* Suboptimal printing of parens:
@@ -5373,22 +5421,17 @@ let printer = object(self:'self)
    * };
    *
    *)
-  method simple_enough_to_be_lhs_dot_send ?(infix_context) x =
+  method simple_enough_to_be_lhs_dot_send x =
     match x.pexp_desc with
     | (Pexp_apply (eFun, _)) -> (
-        match printedStringAndFixityExpr eFun, infix_context with
-        | AlmostSimplePrefix _, _ ->
-          source_map ~loc:x.pexp_loc
-            (formatPrecedence (self#simplifyUnparseExpr x))
-        | UnaryPostfix _, Some infix_str when infix_str.[0] = '#' ->
-          source_map ~loc:x.pexp_loc
-            (formatPrecedence (self#simplifyUnparseExpr x))
-        | UnaryPlusPrefix _, _
-        | UnaryMinusPrefix _, _
-        | UnaryNotPrefix _, _
-        | UnaryPostfix _, _
-        | Infix _, _ -> self#simplifyUnparseExpr x
-        | Normal, _ ->
+        match printedStringAndFixityExpr eFun with
+        | AlmostSimplePrefix _
+        | UnaryPlusPrefix _
+        | UnaryMinusPrefix _
+        | UnaryNotPrefix _
+        | UnaryPostfix _
+        | Infix _ -> self#simplifyUnparseExpr x
+        | Normal ->
           if x.pexp_attributes = [] then
             (* `let a = foo().bar` instead of `let a = (foo()).bar *)
             (* same for foo()##bar, foo()#=bar, etc. *)
@@ -7129,6 +7172,12 @@ let printer = object(self:'self)
           -> `LastArgIsCallback(callback, List.rev args)
       | _ -> `NormalFunAppl args
     in
+    let formattedFunExpr = match (Reason_ast.processFastPipe funExpr).pexp_desc with
+      (* fast pipe chain or sharpop chain as funExpr, no parens needed, we know how to parse *)
+      | Pexp_apply ({pexp_desc = Pexp_ident {txt = Lident s}}, _)
+          when requireNoSpaceFor s -> self#unparseExpr funExpr
+      | _ -> self#simplifyUnparseExpr funExpr
+    in
     begin match categorizeFunApplArgs args with
     | `LastArgIsCallback(callbackArg, args) ->
         (* This is the following case:
@@ -7153,7 +7202,7 @@ let printer = object(self:'self)
           source_map ~loc:funExpr.pexp_loc
             (makeList
                ~wrap:("", (if uncurriedApplication then "(." else "("))
-               [self#simplifyUnparseExpr funExpr])
+               [formattedFunExpr])
         in
         let formattedFunAppl = begin match self#letList retCb with
         | [x] ->
@@ -7250,7 +7299,7 @@ let printer = object(self:'self)
         maybeJSXAttr @ [formattedFunAppl]
     | `NormalFunAppl args ->
       let theFunc =
-        source_map ~loc:funExpr.pexp_loc (self#simplifyUnparseExpr funExpr)
+        source_map ~loc:funExpr.pexp_loc formattedFunExpr
       in
       (*reset here only because [function,match,try,sequence] are lower priority*)
       (* The "expression location" might be different than the location of the actual
