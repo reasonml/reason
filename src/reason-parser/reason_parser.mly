@@ -4308,8 +4308,15 @@ unattributed_core_type:
     { $1 }
   | arrow_type_parameters EQUALGREATER core_type2
     { List.fold_right mktyp_arrow $1 $3 }
+  | as_loc(labelled_arrow_type_parameter_optional) EQUALGREATER core_type2
+    { mktyp_arrow ($1, false) $3 }
   | basic_core_type EQUALGREATER core_type2
     { mktyp (Ptyp_arrow (Nolabel, $1, $3)) }
+;
+
+labelled_arrow_type_parameter_optional:
+  | TILDE LIDENT COLON core_type EQUAL optional
+    { ($6 $2, $4) }
 ;
 
 arrow_type_parameter:
@@ -4317,8 +4324,7 @@ arrow_type_parameter:
     { (Nolabel, $1) }
   | TILDE LIDENT COLON core_type
     { (Labelled $2, $4) }
-  | TILDE LIDENT COLON core_type EQUAL optional
-    { ($6 $2, $4) }
+  | labelled_arrow_type_parameter_optional { $1 }
 ;
 
 %inline uncurried_arrow_type_parameter:
