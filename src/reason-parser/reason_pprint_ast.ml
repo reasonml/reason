@@ -4236,6 +4236,20 @@ let printer = object(self:'self)
     let letPattern = (label ~space:true (atom labelOpener) bindingPattern) in
     (formatTypeConstraint letPattern typeConstraint)
 
+  method formatModuleTypeOfSignatureBinding modName mexpr =
+    let letPattern = makeList ~postSpace:true [atom "module"; atom modName] in
+    let letPatternColon = makeList [letPattern; atom ":"] in
+    let labelWithoutFinalWrap =
+      label ~space:true
+        (label ~space:true
+           letPatternColon
+           (makeList
+              ~inline:(false, false)
+              ~wrap:("(","")
+              [atom "module type of"]))
+        (self#module_expr mexpr)
+    in
+    makeList ~wrap:("",")") [labelWithoutFinalWrap]
 
   (*
      The [bindingLabel] is either the function name (if let binding) or first
@@ -6438,10 +6452,13 @@ let printer = object(self:'self)
             in
             let layout =
               self#attach_std_item_attrs stdAttrs @@
-              self#formatSimpleSignatureBinding
-                "module"
-                (atom pmd.pmd_name.txt)
-                (self#module_type pmd.pmd_type)
+              (match pmd.pmd_type.pmty_desc with
+               | Pmty_typeof me ->
+                 self#formatModuleTypeOfSignatureBinding pmd.pmd_name.txt me
+               | _ -> self#formatSimpleSignatureBinding
+                        "module"
+                        (atom pmd.pmd_name.txt)
+                        (self#module_type pmd.pmd_type))
             in
             self#attachDocAttrsToLayout
               ~stdAttrs
