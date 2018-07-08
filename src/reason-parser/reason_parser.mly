@@ -1361,10 +1361,7 @@ conflicts.
 (* We need SHARPEQUAL to have lower precedence than `[` to make e.g.
    this work: `foo #= bar[0]`. Otherwise it would turn into `(foo#=bar)[0]` *)
 %left     SHARPEQUAL
-
-%nonassoc LBRACKET DOT
-(* SHARPOP has higher precedence than `[`, see e.g. issue #1507. *)
-%left     SHARPOP MINUSGREATER
+%left     SHARPOP MINUSGREATER LBRACKET DOT
 %nonassoc POSTFIXOP
 (* Finally, the first tokens of simple_expr are above everything else. *)
 %nonassoc LBRACKETLESS LBRACELESS LBRACE LPAREN
