@@ -611,3 +611,7 @@ let foo =
 
 /* https://github.com/facebook/reason/issues/2028 */
 M.[];
+
+module type Event = (module type of {
+  include ReactEventRe;
+});

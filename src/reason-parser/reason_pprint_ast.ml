@@ -4236,13 +4236,11 @@ let printer = object(self:'self)
     let letPattern = (label ~space:true (atom labelOpener) bindingPattern) in
     (formatTypeConstraint letPattern typeConstraint)
 
-  method formatModuleTypeOfSignatureBinding modName mexpr =
-    let letPattern = makeList ~postSpace:true [atom "module"; atom modName] in
-    let letPatternColon = makeList [letPattern; atom ":"] in
+  method formatModuleTypeOf letPattern mexpr =
     let labelWithoutFinalWrap =
       label ~space:true
         (label ~space:true
-           letPatternColon
+           letPattern
            (makeList
               ~inline:(false, false)
               ~wrap:("(","")
@@ -6454,7 +6452,12 @@ let printer = object(self:'self)
               self#attach_std_item_attrs stdAttrs @@
               (match pmd.pmd_type.pmty_desc with
                | Pmty_typeof me ->
-                 self#formatModuleTypeOfSignatureBinding pmd.pmd_name.txt me
+                 let letPattern =
+                   makeList
+                     [makeList ~postSpace:true [atom "module"; (atom pmd.pmd_name.txt)];
+                      atom ":"]
+                 in
+                 self#formatModuleTypeOf letPattern me
                | _ -> self#formatSimpleSignatureBinding
                         "module"
                         (atom pmd.pmd_name.txt)
@@ -6500,12 +6503,13 @@ let printer = object(self:'self)
             ()
         | Psig_modtype x ->
           let name = atom x.pmtd_name.txt in
+          let letPattern = makeList ~postSpace:true [atom "module type"; name; atom "="] in
           let main = match x.pmtd_type with
             | None -> makeList ~postSpace:true [atom "module type"; name]
             | Some mt ->
-              label ~space:true
-                (makeList ~postSpace:true [atom "module type"; name; atom "="])
-                (self#module_type mt)
+              (match mt.pmty_desc with
+               | Pmty_typeof me -> self#formatModuleTypeOf letPattern me
+               | _ -> label ~space:true letPattern (self#module_type mt))
           in
           let {stdAttrs; docAttrs} =
             partitionAttributes ~partDoc:true x.pmtd_attributes
@@ -6857,13 +6861,14 @@ let printer = object(self:'self)
             ]
         | Pstr_modtype x ->
             let name = atom x.pmtd_name.txt in
+            let letPattern = makeList ~postSpace:true [atom "module type"; name; atom "="] in
             let main = match x.pmtd_type with
               | None ->
                 makeList ~postSpace:true [atom "module type"; name]
               | Some mt ->
-                label ~space:true
-                  (makeList ~postSpace:true [atom "module type"; name; atom "="])
-                  (self#module_type mt)
+                (match mt.pmty_desc with
+                 | Pmty_typeof me -> self#formatModuleTypeOf letPattern me
+                 | _ -> label ~space:true letPattern (self#module_type mt))
             in
             self#attach_std_item_attrs x.pmtd_attributes main
         | Pstr_class l -> self#class_declaration_list l
