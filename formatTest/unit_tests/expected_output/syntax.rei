@@ -30,7 +30,6 @@ let myRecordWithFunctions: adders;
 let result: int;
 
 /* https://github.com/facebook/reason/issues/1614 */
-module Event:
-  (module type of {
-     include ReactEventRe;
-   });
+module Event: (module type of {
+  include ReactEventRe;
+});
