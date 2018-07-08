@@ -5760,7 +5760,15 @@ let printer = object(self:'self)
           else
             Some (makeLetSequence (self#letList x))
         | Pexp_field (e, li) ->
-          Some (label (makeList [self#simple_enough_to_be_lhs_dot_send e; atom "."]) (self#longident_loc li))
+          let leftItm = self#unparseResolvedRule (
+            self#ensureExpression ~reducesOnToken:(Token ".") e
+          ) in
+          let formattedLeftItm = if e.pexp_attributes = [] then
+              leftItm
+            else
+              formatPrecedence ~loc:e.pexp_loc leftItm
+          in
+          Some (label (makeList [formattedLeftItm; atom "."]) (self#longident_loc li))
         | Pexp_send (e, s) ->
           let needparens = match e.pexp_desc with
             | Pexp_apply (ee, _) ->
