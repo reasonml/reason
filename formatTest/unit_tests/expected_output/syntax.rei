@@ -33,3 +33,7 @@ let result: int;
 module Event: (module type of {
   include ReactEventRe;
 });
+
+module type Event = (module type of {
+  include ReactEventRe;
+});
