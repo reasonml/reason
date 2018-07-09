@@ -1047,6 +1047,9 @@ let record_pat_spread_msg =
 Explanation: you can't collect a subset of a record's field into its own record, since a record needs an explicit declaration and that subset wouldn't have one.
 Solution: you need to pull out each field you want explicitly."
 
+let lowercase_module_msg s =
+  Printf.sprintf "Module names must be uppercase identifiers. `%s` is not an uppercase identifier." s
+
 (* Handles "over"-parsing of spread syntax with `opt_spread`.
  * The grammar allows a spread operator at every position, when
  * generating the parsetree we raise a helpful error message. *)
@@ -1676,6 +1679,20 @@ structure:
     }
 ;
 
+opt_LET_MODULE_ident:
+  | opt_LET_MODULE as_loc(UIDENT) { $2 }
+  | opt_LET_MODULE as_loc(LIDENT)
+    { let {loc; txt} = $2 in
+      err loc (lowercase_module_msg txt) }
+;
+
+opt_LET_MODULE_REC_ident:
+  | opt_LET_MODULE REC as_loc(UIDENT) { $3 }
+  | opt_LET_MODULE REC as_loc(LIDENT)
+    { let {loc; txt} = $3 in
+      err loc (lowercase_module_msg txt) }
+;
+
 structure_item:
   | mark_position_str
     (* We consider a floating expression to be equivalent to a single let binding
@@ -1694,13 +1711,13 @@ structure_item:
       { mkstr(Pstr_typext $1) }
     | str_exception_declaration
       { mkstr(Pstr_exception $1) }
-    | item_attributes opt_LET_MODULE as_loc(UIDENT) module_binding_body
+    | item_attributes opt_LET_MODULE_ident module_binding_body
       { let loc = mklocation $symbolstartpos $endpos in
-        mkstr(Pstr_module (Mb.mk $3 $4 ~attrs:$1 ~loc)) }
-    | item_attributes opt_LET_MODULE REC as_loc(UIDENT) module_binding_body
+        mkstr(Pstr_module (Mb.mk $2 $3 ~attrs:$1 ~loc)) }
+    | item_attributes opt_LET_MODULE_REC_ident module_binding_body
       and_module_bindings*
-      { let loc = mklocation $symbolstartpos $endpos($5) in
-        mkstr (Pstr_recmodule ((Mb.mk $4 $5 ~attrs:$1 ~loc) :: $6))
+      { let loc = mklocation $symbolstartpos $endpos($2) in
+        mkstr (Pstr_recmodule ((Mb.mk $2 $3 ~attrs:$1 ~loc) :: $4))
       }
     | item_attributes MODULE TYPE OF? as_loc(ident)
       { let loc = mklocation $symbolstartpos $endpos in
@@ -1901,25 +1918,25 @@ signature_item:
     { Psig_typext $1 }
   | sig_exception_declaration
     { Psig_exception $1 }
-  | item_attributes opt_LET_MODULE as_loc(UIDENT) module_declaration
+  | item_attributes opt_LET_MODULE_ident module_declaration
     { let loc = mklocation $symbolstartpos $endpos in
-      Psig_module (Md.mk $3 $4 ~attrs:$1 ~loc)
+      Psig_module (Md.mk $2 $3 ~attrs:$1 ~loc)
     }
-  | item_attributes opt_LET_MODULE as_loc(UIDENT) EQUAL as_loc(mod_longident)
+  | item_attributes opt_LET_MODULE_ident EQUAL as_loc(mod_longident)
     { let loc = mklocation $symbolstartpos $endpos in
-      let loc_mod = mklocation $startpos($5) $endpos($5) in
+      let loc_mod = mklocation $startpos($4) $endpos($4) in
       Psig_module (
         Md.mk
-            $3
-            (Mty.alias ~loc:loc_mod $5)
+            $2
+            (Mty.alias ~loc:loc_mod $4)
             ~attrs:$1
             ~loc
             )
     }
-  | item_attributes opt_LET_MODULE REC as_loc(UIDENT)
-    module_type_body(COLON) and_module_rec_declaration*
-    { let loc = mklocation $symbolstartpos $endpos($5) in
-      Psig_recmodule (Md.mk $4 $5 ~attrs:$1 ~loc :: $6) }
+  | item_attributes opt_LET_MODULE_REC_ident module_type_body(COLON)
+    and_module_rec_declaration*
+    { let loc = mklocation $symbolstartpos $endpos($3) in
+      Psig_recmodule (Md.mk $2 $3 ~attrs:$1 ~loc :: $4) }
   | item_attributes MODULE TYPE as_loc(ident)
     { let loc = mklocation $symbolstartpos $endpos in
       Psig_modtype (Mtd.mk $4 ~attrs:$1 ~loc)
@@ -2481,8 +2498,8 @@ mark_position_exp
 
 seq_expr_no_seq:
 | expr SEMI? { $1 }
-| opt_LET_MODULE as_loc(UIDENT) module_binding_body SEMI seq_expr
-  { mkexp (Pexp_letmodule($2, $3, $5)) }
+| opt_LET_MODULE_ident module_binding_body SEMI seq_expr
+  { mkexp (Pexp_letmodule($1, $2, $4)) }
 | item_attributes LET? OPEN override_flag as_loc(mod_longident) SEMI seq_expr
   { let exp = mkexp (Pexp_open($4, $5, $7)) in
     { exp with pexp_attributes = $1 }
