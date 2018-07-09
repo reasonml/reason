@@ -197,7 +197,10 @@ class extendedStack
 };
 
 module type HasType = {type t;};
-module type HasType2 = {type t; type q;};
+module type HasType2 = {
+  type t;
+  type q;
+};
 module type ReallyReallyReallyLongIdentifierModuleType = {
   type t;
 };

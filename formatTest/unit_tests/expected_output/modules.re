@@ -161,7 +161,10 @@ module type HasDestructivelySubstitutedMultiPolyType =
     type substituteThat('a, 'b) :=
       Hashtbl.t('a, 'b);
 
-module InliningSig: {let x: int; let y: int;} = {
+module InliningSig: {
+  let x: int;
+  let y: int;
+} = {
   /*
    * Comment inside of signature.
    */

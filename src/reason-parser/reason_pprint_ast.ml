@@ -4236,19 +4236,6 @@ let printer = object(self:'self)
     let letPattern = (label ~space:true (atom labelOpener) bindingPattern) in
     (formatTypeConstraint letPattern typeConstraint)
 
-  method formatModuleTypeOf letPattern mexpr =
-    let labelWithoutFinalWrap =
-      label ~space:true
-        (label ~space:true
-           letPattern
-           (makeList
-              ~inline:(false, false)
-              ~wrap:("(","")
-              [atom "module type of"]))
-        (self#module_expr mexpr)
-    in
-    makeList ~wrap:("",")") [labelWithoutFinalWrap]
-
   (*
      The [bindingLabel] is either the function name (if let binding) or first
      arg (if lambda).
@@ -4457,7 +4444,7 @@ let printer = object(self:'self)
         let firstOne =
           match mt with
             | None -> atom "()"
-            | Some mt' -> formatTypeConstraint (atom s.txt) (self#module_type mt')
+            | Some mt' -> self#module_type (makeList [atom s.txt; atom ":"]) mt'
         in
         let (functorArgsRecurse, returnStructure) = (self#curriedFunctorPatternsAndReturnStruct me2) in
         (firstOne::functorArgsRecurse, returnStructure)
@@ -4957,9 +4944,9 @@ let printer = object(self:'self)
     let (implicit_arity, arguments) =
       match eo.pexp_desc with
       | Pexp_construct ( {txt= Lident "()"},_) ->
-          (* `foo() is a polymorphic variant that contains a single unit construct as expression
-           * This requires special formatting: `foo(()) -> `foo() *)
-          (false, atom "()")
+        (* `foo() is a polymorphic variant that contains a single unit construct as expression
+         * This requires special formatting: `foo(()) -> `foo() *)
+        (false, atom "()")
       (* special printing: MyConstructor(()) -> MyConstructor() *)
       | Pexp_tuple l when is_single_unit_construct l ->
           (false, atom "()")
@@ -6448,20 +6435,14 @@ let printer = object(self:'self)
             let {stdAttrs; docAttrs} =
               partitionAttributes ~partDoc:true pmd.pmd_attributes
             in
+            let letPattern =
+              makeList
+                [makeList ~postSpace:true [atom "module"; (atom pmd.pmd_name.txt)];
+                 atom ":"]
+            in
             let layout =
               self#attach_std_item_attrs stdAttrs @@
-              (match pmd.pmd_type.pmty_desc with
-               | Pmty_typeof me ->
-                 let letPattern =
-                   makeList
-                     [makeList ~postSpace:true [atom "module"; (atom pmd.pmd_name.txt)];
-                      atom ":"]
-                 in
-                 self#formatModuleTypeOf letPattern me
-               | _ -> self#formatSimpleSignatureBinding
-                        "module"
-                        (atom pmd.pmd_name.txt)
-                        (self#module_type pmd.pmd_type))
+              (self#module_type letPattern pmd.pmd_type)
             in
             self#attachDocAttrsToLayout
               ~stdAttrs
@@ -6491,9 +6472,7 @@ let printer = object(self:'self)
           in
           let layout =
             self#attach_std_item_attrs stdAttrs @@
-            label ~space:true
-              (atom "include")
-              (self#module_type incl.pincl_mod)
+            (self#module_type (atom "include") incl.pincl_mod)
           in
           self#attachDocAttrsToLayout
             ~stdAttrs
@@ -6506,10 +6485,7 @@ let printer = object(self:'self)
           let letPattern = makeList ~postSpace:true [atom "module type"; name; atom "="] in
           let main = match x.pmtd_type with
             | None -> makeList ~postSpace:true [atom "module type"; name]
-            | Some mt ->
-              (match mt.pmty_desc with
-               | Pmty_typeof me -> self#formatModuleTypeOf letPattern me
-               | _ -> label ~space:true letPattern (self#module_type mt))
+            | Some mt -> self#module_type letPattern mt
           in
           let {stdAttrs; docAttrs} =
             partitionAttributes ~partDoc:true x.pmtd_attributes
@@ -6529,12 +6505,14 @@ let printer = object(self:'self)
               let {stdAttrs; docAttrs} =
                 partitionAttributes ~partDoc:true xx.pmd_attributes
               in
+              let letPattern =
+                makeList
+                  [makeList ~postSpace:true [atom "module rec"; atom xx.pmd_name.txt];
+                   atom ":"]
+              in
               let layout =
                 self#attach_std_item_attrs stdAttrs @@
-                self#formatSimpleSignatureBinding
-                  "module rec"
-                  (atom xx.pmd_name.txt)
-                  (self#module_type xx.pmd_type)
+                self#module_type letPattern xx.pmd_type
               in
               self#attachDocAttrsToLayout
                 ~stdAttrs
@@ -6544,11 +6522,13 @@ let printer = object(self:'self)
                 ()
             in
             let notFirst xx =
+              let andLetPattern =
+                makeList
+                  [makeList ~postSpace:true [atom "and"; atom xx.pmd_name.txt];
+                   atom ":"]
+              in
               self#attach_std_item_attrs xx.pmd_attributes @@
-              self#formatSimpleSignatureBinding
-                "and"
-                (atom xx.pmd_name.txt)
-                (self#module_type xx.pmd_type)
+              self#module_type andLetPattern xx.pmd_type
             in
             let moduleBindings = match decls with
               | [] -> raise (NotPossible "No recursive module bindings")
@@ -6572,22 +6552,29 @@ let printer = object(self:'self)
     in
     source_map ~loc:x.psig_loc item
 
-  method non_arrowed_module_type x =
+  method non_arrowed_module_type ?(space=true) letPattern x =
     match x.pmty_desc with
       | Pmty_alias li ->
-          formatPrecedence (label ~space:true (atom "module") (self#longident_loc li))
+        label ~space
+          letPattern
+          (formatPrecedence (label ~space:true (atom "module") (self#longident_loc li)))
       | Pmty_typeof me ->
-        makeList ~wrap:("(", ")") [
-          label ~space:true
-            (atom "module type of")
+        let labelWithoutFinalWrap =
+          label ~space
+            (label ~space:true
+               letPattern
+               (makeList
+                  ~inline:(false, false)
+                  ~wrap:("(","")
+                  [atom "module type of"]))
             (self#module_expr me)
-        ]
-      | _ -> self#simple_module_type x
+        in
+        makeList ~wrap:("",")") [labelWithoutFinalWrap]
+      | _ -> self#simple_module_type ~space letPattern x
 
-  method simple_module_type x =
+  method simple_module_type ?(space=true) letPattern x =
     match x.pmty_desc with
-      | Pmty_ident li ->
-          self#longident_loc li;
+      | Pmty_ident li -> label ~space letPattern (self#longident_loc li)
       | Pmty_signature s ->
         let items =
           groupAndPrint
@@ -6596,17 +6583,47 @@ let printer = object(self:'self)
           ~comments:self#comments
           s
         in
-        makeList
-          ~break:IfNeed
-          ~inline:(true, false)
-          ~wrap:("{", "}")
-          ~postSpace:true
-          ~sep:(SepFinal (";", ";"))
-          items
-      | Pmty_extension (s, e) -> self#payload "%" s e
-      | _ -> makeList ~break:IfNeed ~wrap:("(", ")") [self#module_type x]
+        let someSigHasAttrs =
+          List.exists
+            (fun x ->
+               (match x.psig_desc with
+                | Psig_value {pval_attributes} -> pval_attributes <> []
+                | Psig_type (_,l) -> List.exists (fun {ptype_attributes} -> ptype_attributes <> []) l
+                | Psig_typext {ptyext_attributes} -> ptyext_attributes <> []
+                | Psig_exception {pext_attributes} -> pext_attributes <> []
+                | Psig_module {pmd_attributes} -> pmd_attributes <> []
+                | Psig_recmodule l -> List.exists (fun {pmd_attributes} -> pmd_attributes <> []) l
+                | Psig_modtype {pmtd_attributes} -> pmtd_attributes <> []
+                | Psig_open {popen_attributes} -> popen_attributes <> []
+                | Psig_attribute attr -> true
+                | Psig_extension (_,l) -> l <> []
+                | _ -> false))
+            s
+        in
+        label
+          ~indent:0
+          ~break:(if someSigHasAttrs || (List.length s > 1) then `Always else `Auto)
+          (makeList
+            [label
+               ~break:(if someSigHasAttrs || (List.length s > 1) then `Always else `Auto)
+                (makeList
+                  ~postSpace:true
+                  [letPattern; (atom "{")])
+              (source_map
+                 ~loc:x.pmty_loc
+                 (makeList
+                    ~break:(if someSigHasAttrs || (List.length s > 1) then Always else IfNeed)
+                    ~inline:(true, true)
+                    ~postSpace:true
+                    ~sep:(SepFinal (";", ";"))
+                    items))])
+          (atom "}")
+      | Pmty_extension (s, e) -> label ~space letPattern (self#payload "%" s e)
+      | _ ->
+        makeList ~break:IfNeed ~wrap:("", ")")
+          [self#module_type ~space:false (makeList ~pad:(false,true) ~wrap:("","(") [letPattern]) x]
 
-  method module_type x =
+  method module_type ?(space=true) letPattern x =
     let pmty = match x.pmty_desc with
       | Pmty_functor _ ->
         (* The segments that should be separated by arrows. *)
@@ -6615,8 +6632,8 @@ let printer = object(self:'self)
           | Pmty_functor (s, Some mt1, mt2) ->
             let arg =
               if s.txt = "_"
-              then self#module_type mt1
-              else formatTypeConstraint (atom s.txt) (self#module_type mt1)
+              then self#module_type ~space:false (atom "") mt1
+              else self#module_type ~space (makeList [(atom s.txt); atom ":"]) mt1
             in
             extract_args (`Arg arg :: args) mt2
           | _ ->
@@ -6628,11 +6645,16 @@ let printer = object(self:'self)
               | [`Unit] -> []
               | xs -> List.rev_map prepare_arg args
             in
-            (args, self#module_type xx)
+            (args, self#module_type (atom "") xx)
         in
         let args, ret = extract_args [] x in
-        makeList ~break:IfNeed ~sep:(Sep "=>") ~preSpace:true ~postSpace:true ~inline:(true, true)
-          [makeTup args; ret]
+        label ~space letPattern
+          (makeList
+             ~break:IfNeed
+             ~sep:(Sep "=>")
+             ~preSpace:true
+             ~inline:(true, true)
+             [makeTup args; ret])
 
       (* See comments in sugar_parser.mly about why WITH constraints aren't "non
        * arrowed" *)
@@ -6650,7 +6672,7 @@ let printer = object(self:'self)
             | Pwith_type (li, td) ->
                 self#formatOneTypeDef
                   typeAtom
-                  (self#longident_loc li)
+                  (makeList ~preSpace:true [(self#longident_loc li)])
                   eqAtom
                   td
             | Pwith_module (li, li2) ->
@@ -6664,20 +6686,21 @@ let printer = object(self:'self)
             | Pwith_modsubst (s, li2) -> modSub (atom s.txt) li2 ":="
           in
           (match l with
-            | [] -> self#module_type mt
+            | [] -> self#module_type ~space letPattern mt
             | _ ->
-                label ~space:true
-                  (makeList ~postSpace:true [self#module_type mt; atom "with"])
+              label ~space letPattern
+                (label ~space:true
+                  (makeList ~preSpace:true [self#module_type ~space:false (atom "") mt; atom "with"])
                   (makeList
                      ~break:IfNeed
                      ~inline:(true, true)
                      ~sep:(Sep "and")
                      ~postSpace:true
                      ~preSpace:true
-                     (List.map with_constraint l));
+                     (List.map with_constraint l)))
           )
         (* Seems like an infinite loop just waiting to happen. *)
-        | _ -> self#non_arrowed_module_type x
+        | _ -> self#non_arrowed_module_type ~space letPattern x
     in
     source_map ~loc:x.pmty_loc pmty
 
@@ -6693,11 +6716,9 @@ let printer = object(self:'self)
     | Pmod_ident li ->
         ensureSingleTokenSticksToLabel (self#longident_loc li)
     | Pmod_constraint (unconstrainedRet, mt) ->
-        formatPrecedence (
-          formatTypeConstraint
-            (self#module_expr unconstrainedRet)
-            (self#module_type mt)
-        )
+        let letPattern = makeList [(self#module_expr unconstrainedRet); atom ":"]
+        in
+        formatPrecedence (self#module_type letPattern mt)
     | Pmod_structure s ->
         let wrap = if hug then ("({", "})") else ("{", "}") in
         let items =
@@ -6790,8 +6811,17 @@ let printer = object(self:'self)
       match (argsList, return.pmod_desc) with
         (* Simple module with type constraint, no functor args. *)
         | ([], Pmod_constraint (unconstrainedRetTerm, ct)) ->
-          self#formatSimplePatternBinding prefixText bindingName (Some (self#module_type ct))
-            ([self#moduleExpressionToFormattedApplicationItems unconstrainedRetTerm], None)
+            let letPattern =
+              makeList
+                [makeList ~postSpace:true [atom prefixText; bindingName];
+                 atom ":"]
+            in
+            let typeConstraint = self#module_type letPattern ct in
+            let includingEqual = makeList ~postSpace:true [typeConstraint; atom "="]
+            in
+            formatAttachmentApplication applicationFinalWrapping (Some (true, includingEqual))
+              ([self#moduleExpressionToFormattedApplicationItems unconstrainedRetTerm], None)
+
         (* Simple module with type no constraint, no functor args. *)
         | ([], _) ->
           self#formatSimplePatternBinding prefixText bindingName None
@@ -6804,7 +6834,9 @@ let printer = object(self:'self)
                  *
                  * let module X = (A) (B) : Ret => ...
                  * *)
-                | Pmod_constraint (me, ct) -> ([makeTup argsList; formatJustTheTypeConstraint (self#non_arrowed_module_type ct)], me)
+                | Pmod_constraint (me, ct) ->
+                  ([makeTup argsList;
+                    self#non_arrowed_module_type (atom ":") ct], me)
                 | _ -> ([makeTup argsList], return)
             ) in
             self#wrapCurriedFunctionBinding prefixText ~arrow:"=>"
@@ -6863,12 +6895,8 @@ let printer = object(self:'self)
             let name = atom x.pmtd_name.txt in
             let letPattern = makeList ~postSpace:true [atom "module type"; name; atom "="] in
             let main = match x.pmtd_type with
-              | None ->
-                makeList ~postSpace:true [atom "module type"; name]
-              | Some mt ->
-                (match mt.pmty_desc with
-                 | Pmty_typeof me -> self#formatModuleTypeOf letPattern me
-                 | _ -> label ~space:true letPattern (self#module_type mt))
+              | None -> makeList ~postSpace:true [atom "module type"; name]
+              | Some mt -> self#module_type letPattern mt
             in
             self#attach_std_item_attrs x.pmtd_attributes main
         | Pstr_class l -> self#class_declaration_list l

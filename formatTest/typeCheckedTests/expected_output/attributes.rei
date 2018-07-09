@@ -74,3 +74,8 @@ type ttttt = {
   [@attr "moved to first row"] [@attr]
   x: int,
 };
+
+module Foo: {
+  [@someattr]
+  let foo: int => int;
+};
