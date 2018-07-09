@@ -7113,6 +7113,7 @@ let printer = object(self:'self)
           makeTup ~uncurried (List.map self#label_x_expression_param params)
 
   method formatFunAppl ~jsxAttrs ~args ~funExpr ~applicationExpr ?(uncurried=false) () =
+    let uncurriedApplication = uncurried in
     (* If there was a JSX attribute BUT JSX component wasn't detected,
        that JSX attribute needs to be pretty printed so it doesn't get
        lost *)
@@ -7150,7 +7151,9 @@ let printer = object(self:'self)
         in
         let theFunc =
           source_map ~loc:funExpr.pexp_loc
-            (makeList ~wrap:("", "(") [self#simplifyUnparseExpr funExpr])
+            (makeList
+               ~wrap:("", (if uncurriedApplication then "(." else "("))
+               [self#simplifyUnparseExpr funExpr])
         in
         let formattedFunAppl = begin match self#letList retCb with
         | [x] ->
@@ -7174,7 +7177,9 @@ let printer = object(self:'self)
           let argsWithCallbackArgs = List.concat [(List.map self#label_x_expression_param args); [theCallbackArg]] in
           let left = label
             theFunc
-            (makeList ~wrap:("", " ") ~break:IfNeed ~inline:(true, true) ~sep:(Sep ",") ~postSpace:true
+            (makeList
+               ~pad:(uncurriedApplication, false)
+               ~wrap:("", " ") ~break:IfNeed ~inline:(true, true) ~sep:(Sep ",") ~postSpace:true
               argsWithCallbackArgs)
           in
           label left returnValueCallback

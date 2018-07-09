@@ -162,6 +162,12 @@ add(1, . 2, 3, 4);
 
 add(1, 2, 3, . 4);
 
-let run = (~dry as [@attr] dry: bool=false, ~mMap as mMap: string=?, logger) => { 
-  
+let run = (~dry as [@attr] dry: bool=false, ~mMap as mMap: string=?, logger) => {
+
 };
+
+f(. _ => 1);
+
+f(.a, _ => 1);
+
+f(.a, (._) => 1);
