@@ -550,7 +550,7 @@ let rules = [
     (CustomPrecedence, (fun s -> (Left, s = "prec_lbracket")));
   ];
   [
-    (CustomPrecedence, (fun s -> (Nonassoc, s = "prec_functionAppl")))
+    (CustomPrecedence, (fun s -> (Nonassoc, s = "prec_functionAppl")));
   ];
   [
     (TokenPrecedence, (fun s -> (Right, isSimplePrefixToken s)));
@@ -3534,11 +3534,13 @@ let printer = object(self:'self)
     | FunctionApplication itms ->
       let funApplExpr = formatAttachmentApplication applicationFinalWrapping None (itms, Some reducesAfterRight.pexp_loc)
       in
-      (* Need to print parens for the `bar` application in e.g. `foo->(bar(baz))` *)
-      if higherPrecedenceThan withPrecedence (Custom "prec_functionAppl") then
-        LayoutNode (formatPrecedence ~loc:reducesAfterRight.pexp_loc funApplExpr)
-        else
-          LayoutNode funApplExpr
+      (* Little hack: need to print parens for the `bar` application in e.g.
+         `foo->other##(bar(baz))`. The exception to this is the fast pipe
+         operator, which binds tighter to function application. *)
+      if higherPrecedenceThan withPrecedence (Custom "prec_functionAppl") &&
+         withPrecedence <> (Token fastPipeToken)
+      then LayoutNode (formatPrecedence ~loc:reducesAfterRight.pexp_loc funApplExpr)
+      else LayoutNode funApplExpr
     | PotentiallyLowPrecedence itm -> LayoutNode (formatPrecedence ~loc:reducesAfterRight.pexp_loc itm)
     | Simple itm -> LayoutNode itm
 
@@ -7180,10 +7182,12 @@ let printer = object(self:'self)
           -> `LastArgIsCallback(callback, List.rev args)
       | _ -> `NormalFunAppl args
     in
-    let formattedFunExpr = match (Reason_ast.processFastPipe funExpr).pexp_desc with
+    let formattedFunExpr =
+        match (Reason_ast.processFastPipe funExpr).pexp_desc with
       (* fast pipe chain or sharpop chain as funExpr, no parens needed, we know how to parse *)
       | Pexp_apply ({pexp_desc = Pexp_ident {txt = Lident s}}, _)
-          when requireNoSpaceFor s -> self#unparseExpr funExpr
+        when requireNoSpaceFor s && s <> fastPipeToken ->
+        self#unparseExpr funExpr
       | _ -> self#simplifyUnparseExpr funExpr
     in
     begin match categorizeFunApplArgs args with

@@ -1361,6 +1361,11 @@ conflicts.
 (* We need SHARPEQUAL to have lower precedence than `[` to make e.g.
    this work: `foo #= bar[0]`. Otherwise it would turn into `(foo#=bar)[0]` *)
 %left     SHARPEQUAL
+(* LBRACKET and DOT are %nonassoc in OCaml, because the left and right sides
+   are never the same, therefore there doesn't need to be a precedence
+   disambiguation. This could also work in Reason, but by grouping the tokens
+   below into a single precedence rule it becomes clearer that they all have the
+   same precedence. *)
 %left     SHARPOP MINUSGREATER LBRACKET DOT
 %nonassoc POSTFIXOP
 (* Finally, the first tokens of simple_expr are above everything else. *)
@@ -3081,7 +3086,7 @@ parenthesized_expr:
   | E as_loc(SHARPEQUAL) simple_expr
     { let op = { $2 with txt = "#=" } in
       mkinfixop $1 (mkoperator op) $3 }
-  | E as_loc(MINUSGREATER) simple_expr_no_call
+  | E as_loc(MINUSGREATER) simple_expr
     { mkinfixop $1 (mkoperator {$2 with txt = "|."}) $3 }
   | as_loc(mod_longident) DOT LPAREN MODULE module_expr COLON package_type RPAREN
     { let loc = mklocation $symbolstartpos $endpos in

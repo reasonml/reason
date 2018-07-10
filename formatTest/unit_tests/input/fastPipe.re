@@ -59,6 +59,8 @@ event->target(foo);
 
 event->(target(foo));
 
+(event->target)(foo);
+
 event |. target(foo);
 
 foo->bar := baz;
