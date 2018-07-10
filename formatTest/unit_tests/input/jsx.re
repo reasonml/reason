@@ -233,3 +233,7 @@ let x = foo /></ bar;
 <Foo bar=M.[]> M.[] </Foo>;
 
 <Foo bar=M.[]> ...M.[] </Foo>;
+
+switch(foo) {
+| `Variant =><Component />
+};

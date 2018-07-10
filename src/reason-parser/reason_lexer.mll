@@ -502,6 +502,11 @@ rule token = parse
   | ","  { COMMA }
   | "->" { MINUSGREATER }
   | "=>" { EQUALGREATER }
+  (* allow lexing of | `Variant =><Component /> *)
+  | "=><" uppercase_or_lowercase (identchar | '.') * {
+    set_lexeme_length lexbuf 2;
+    EQUALGREATER
+  }
   | "#"  { SHARP }
   | "."  { DOT }
   | ".." { DOTDOT }
