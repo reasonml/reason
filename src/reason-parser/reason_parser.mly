@@ -1355,18 +1355,19 @@ conflicts.
 
 (* PREFIXOP and BANG precedence *)
 %nonassoc below_DOT_AND_SHARP           (* practically same as below_SHARP but we convey purpose *)
-%left    MINUSGREATER
 %nonassoc SHARP                         (* simple_expr/toplevel_directive *)
 %nonassoc below_DOT
-%nonassoc DOT POSTFIXOP
 
 (* We need SHARPEQUAL to have lower precedence than `[` to make e.g.
    this work: `foo #= bar[0]`. Otherwise it would turn into `(foo#=bar)[0]` *)
 %left     SHARPEQUAL
-
-%nonassoc LBRACKET
-(* SHARPOP has higher precedence than `[`, see e.g. issue #1507. *)
-%left     SHARPOP
+(* LBRACKET and DOT are %nonassoc in OCaml, because the left and right sides
+   are never the same, therefore there doesn't need to be a precedence
+   disambiguation. This could also work in Reason, but by grouping the tokens
+   below into a single precedence rule it becomes clearer that they all have the
+   same precedence. *)
+%left     SHARPOP MINUSGREATER LBRACKET DOT
+%nonassoc POSTFIXOP
 (* Finally, the first tokens of simple_expr are above everything else. *)
 %nonassoc LBRACKETLESS LBRACELESS LBRACE LPAREN
 
@@ -3080,8 +3081,13 @@ parenthesized_expr:
     { unclosed_exp (with_txt $3 "{<") (with_txt $6 ">}") }
   | E SHARP label
     { mkexp (Pexp_send($1, $3)) }
-  | E as_loc(sharpop) simple_expr_no_call
+  | E as_loc(SHARPOP) simple_expr_no_call
     { mkinfixop $1 (mkoperator $2) $3 }
+  | E as_loc(SHARPEQUAL) simple_expr
+    { let op = { $2 with txt = "#=" } in
+      mkinfixop $1 (mkoperator op) $3 }
+  | E as_loc(MINUSGREATER) simple_expr
+    { mkinfixop $1 (mkoperator {$2 with txt = "|."}) $3 }
   | as_loc(mod_longident) DOT LPAREN MODULE module_expr COLON package_type RPAREN
     { let loc = mklocation $symbolstartpos $endpos in
       mkexp (Pexp_open(Fresh, $1,
@@ -4560,12 +4566,7 @@ val_ident:
      operator swapping requires that we express that as != *)
   | LESSDOTDOTGREATER { "<..>" }
   | GREATER GREATER   { ">>" }
-  | MINUSGREATER      { "->" }
 ;
-
-%inline sharpop:
-  | SHARPOP { $1 }
-  | SHARPEQUAL { "#=" }
 
 operator:
   | PREFIXOP          { $1 }

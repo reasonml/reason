@@ -1,22 +1,21 @@
 bla #= 10;
 
-bla #= (Some(10));
+bla #= Some(10);
 
 bla #= someFunc(Some(10));
 
-test##var #= (Some(-10));
+test##var #= Some(-10);
 
 obj##.prop;
 
 obj##.prod := exp;
 
-preview##style##border #= Js.string(
-  "1px black dashed",
-);
+preview##style##border
+#= Js.string("1px black dashed");
 
-preview##(style##border) #= args(somenum);
+(preview##(style##border) #= args)(somenum);
 
-x##y##z #= (xxxx##yyyy##zzzz);
+x##y##z #= xxxx##yyyy##zzzz;
 
 let result =
   js_method_run1((!react)#createElement, foo);
