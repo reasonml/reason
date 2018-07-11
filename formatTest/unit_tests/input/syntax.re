@@ -675,18 +675,18 @@ let myOptional           (~a=?,    ~b=?,      ()) = 10;
 type named =             (~a: int=?, ~b: int=?, unit) => int;
 /*F*/
 let optionalAlias        (~a as aa=?,  ~b as bb=?,  ()) = 10;
-/*G*/                       
+/*G*/
 let optionalAnnot        (~a as a:int =?, ~b as b:int=?, ()) = 10;
-/*H*/                       
+/*H*/
 let optionalAliasAnnot   (~a as aa:int =?, ~b as bb:int=?, ()) = 10;
-/*I: */                     
+/*I: */
 let defOptional          (~a as a=10, ~b as b=10, ()) = 10;
 type named =             (~a: int=?, ~b: int=?, unit) => int;
-/*J*/                       
+/*J*/
 let defOptionalAlias     (~a as aa=10, ~b as bb=10, ()) = 10;
-/*K*/                       
+/*K*/
 let defOptionalAnnot     (~a as a:int=10, ~b as b:int=10, ()) = 10;
-/*L*/                       
+/*L*/
 let defOptionalAliasAnnot(~a as aa:int=10, ~b as bb:int=10, ()) = 10;
 
 /*M: Invoking them - Punned */
@@ -1177,3 +1177,6 @@ foo(~a=?-1);
 */
 let z = {<state: 0, x: y>};
 let z = {<>};
+
+/* https://github.com/facebook/reason/issues/2056 */
+type foo = ~a:bool=? => int;
