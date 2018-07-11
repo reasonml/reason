@@ -1047,8 +1047,8 @@ let record_pat_spread_msg =
 Explanation: you can't collect a subset of a record's field into its own record, since a record needs an explicit declaration and that subset wouldn't have one.
 Solution: you need to pull out each field you want explicitly."
 
-let lowercase_module_msg s =
-  Printf.sprintf "Module names must be uppercase identifiers. `%s` is not an uppercase identifier." s
+let lowercase_module_msg =
+  Printf.sprintf "Module names must start with an uppercase letter."
 
 (* Handles "over"-parsing of spread syntax with `opt_spread`.
  * The grammar allows a spread operator at every position, when
@@ -1683,14 +1683,14 @@ opt_LET_MODULE_ident:
   | opt_LET_MODULE as_loc(UIDENT) { $2 }
   | opt_LET_MODULE as_loc(LIDENT)
     { let {loc; txt} = $2 in
-      err loc (lowercase_module_msg txt) }
+      err loc lowercase_module_msg }
 ;
 
 opt_LET_MODULE_REC_ident:
   | opt_LET_MODULE REC as_loc(UIDENT) { $3 }
   | opt_LET_MODULE REC as_loc(LIDENT)
     { let {loc; txt} = $3 in
-      err loc (lowercase_module_msg txt) }
+      err loc lowercase_module_msg }
 ;
 
 structure_item:
