@@ -4149,7 +4149,6 @@ let printer = object(self:'self)
         processArguments tail (nextAttr :: processedAttrs) children
 
       | (Labelled lbl, expression) :: tail ->
-         let expression = Reason_ast.processFastPipe expression in
          let nextAttr =
            match expression.pexp_desc with
            | Pexp_ident ident when isPunnedJsxArg lbl ident -> atom lbl
@@ -7182,8 +7181,7 @@ let printer = object(self:'self)
           -> `LastArgIsCallback(callback, List.rev args)
       | _ -> `NormalFunAppl args
     in
-    let formattedFunExpr =
-        match (Reason_ast.processFastPipe funExpr).pexp_desc with
+    let formattedFunExpr = match funExpr.pexp_desc with
       (* fast pipe chain or sharpop chain as funExpr, no parens needed, we know how to parse *)
       | Pexp_apply ({pexp_desc = Pexp_ident {txt = Lident s}}, _)
         when requireNoSpaceFor s && s <> fastPipeToken ->
