@@ -355,3 +355,7 @@ let work = () => {
   let%bind name = x;
   name;
 };
+
+/** header */
+%raw
+"console.log(42)";
