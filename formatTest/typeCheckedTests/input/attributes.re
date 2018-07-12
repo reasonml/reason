@@ -491,3 +491,5 @@ let test = {
 
 [@test.call string => string]
 let processCommandItem = 12;
+
+module type Foo = { [@someattr] let foo: int => int;};

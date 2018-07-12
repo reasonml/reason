@@ -441,8 +441,10 @@ external readFileSync2:
   "";
 
 /* Ensure that attributes on extensions are printed */
-[@test [@attr]
-       [%%extension]];
+[@test
+  [@attr]
+  [%%extension]
+];
 
 external debounce: (int, [@bs.meth] unit) => unit =
   "";
@@ -592,3 +594,8 @@ let test = {
 
 [@test.call string => string]
 let processCommandItem = 12;
+
+module type Foo = {
+  [@someattr]
+  let foo: int => int;
+};
