@@ -1,6 +1,6 @@
 {
   "name": "@esy-ocaml/reason",
-  "version": "3.2.0",
+  "version": "3.3.0",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -23,6 +23,17 @@
     "install": [
       ["esy-installer"]
     ],
-    "buildsInSource": "_build"
+    "buildsInSource": "_build",
+    "notes": "The following dependencies are merely for compatibility with upcoming esy releases",
+    "_dependenciesForNewEsyInstaller": {
+      "@esy-ocaml/substs": "^0.0.1",
+      "@esy-ocaml/esy-installer": "^0.0.0",
+      "@opam/ocamlfind": "",
+      "@opam/result": "*",
+      "@opam/jbuilder": "*",
+      "@opam/menhir": " >= 20170418.0.0  <= 20171013.0.0",
+      "@opam/merlin-extend": " >= 0.3",
+      "@opam/ocaml-migrate-parsetree": "*"
+    }
   }
 }
