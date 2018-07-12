@@ -324,4 +324,8 @@ let () = {
 
 [%bs.raw x => x];
 
-let work = () => { open Syntax; let%bind name = x; name; }
+let work = () => { open Syntax; let%bind name = x; name; };
+
+/** header */
+%raw
+"console.log(42)";

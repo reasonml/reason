@@ -6952,8 +6952,16 @@ let printer = object(self:'self)
         | Pstr_extension ((extension, PStr [item]), a) ->
           begin match item.pstr_desc with
             | Pstr_value (rf, l) -> self#bindings ~extension (rf, l)
-            | _ -> self#attach_std_item_attrs ~extension a
+            | _ ->
+                let {stdAttrs; docAttrs} =
+                  partitionAttributes ~partDoc:true a
+                in
+                let layout =
+                  self#attach_std_item_attrs ~extension stdAttrs
                      (self#structure_item item)
+                in
+                makeList ~inline:(true, true) ~break:Always
+                  ((List.map self#attribute docAttrs)@[layout])
           end
         | Pstr_extension (e, a) ->
           (* Notice how extensions have attributes - but not every structure

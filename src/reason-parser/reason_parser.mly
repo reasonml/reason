@@ -1699,8 +1699,9 @@ structure_item:
        to the "_" (any) pattern.  *)
     ( item_attributes unattributed_expr
       { mkstrexp $2 $1 }
-    | item_extension_sugar structure_item
-      { struct_item_extension $1 $2 }
+    | item_attributes item_extension_sugar structure_item
+      { let (ext_attrs, ext_id) = $2 in
+        struct_item_extension ($1@ext_attrs, ext_id) $3 }
     | item_attributes
       EXTERNAL as_loc(val_ident) COLON core_type EQUAL primitive_declaration
       { let loc = mklocation $symbolstartpos $endpos in
