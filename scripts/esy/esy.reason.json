@@ -16,6 +16,10 @@
     "@opam/merlin-extend": " >= 0.3.0",
     "@opam/ocaml-migrate-parsetree": "*"
   },
+  "devDependencies": {
+    "@esy-ocaml/merlin": "^3.0.5005",
+    "ocaml": "~4.6.0"
+  },
   "esy": {
     "build": [
       [ "jbuilder", "build", "-p", "reason"]
