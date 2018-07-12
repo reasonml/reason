@@ -15,8 +15,9 @@ versions of the Opam packages.
     git rebase origin/master
     vim -O esy.json scripts/esy/esy.reason.json
     # Then edit the version number accordingly on BOTH files.
+    verson=3.3.0 make pre_release
     git commit - "Bump version"
-    git push origin HEAD:PullRequestForVersion
+    git push origin HEAD:PullRequestForVersion # Commit these version bumps
     node ./scripts/esy-prepublish.js
 
 Then follow the printed instructions for pushing any of the packages to npm.
@@ -45,6 +46,6 @@ instructions on performing that release.
 1. `cd` into a directory that you don't mind having stuff downloaded into
 2. `opam-publish prepare reason.3.2.0 "https://registry.npmjs.org/@esy-ocaml/reason/-/reason-3.2.0.tgz"`
 3. `opam-publish submit reason.3.2.0`
-4. `opam-publish prepare rtop.3.2.0 "https://registry.npmjs.org/@esy-ocaml/reason/-/reason-3.2.0.tgz"`
+4. `opam-publish prepare rtop.3.2.0 "https://registry.npmjs.org/@esy-ocaml/rtop/-/rtop-3.2.0.tgz"`
 5. `opam-publish rtop.3.2.0`
 
