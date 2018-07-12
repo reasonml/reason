@@ -5831,7 +5831,7 @@ let printer = object(self:'self)
         | Some id -> [atom ("%" ^ id.txt)]
       in
       makeList
-        ~postSpace:true ~indent:0 ~break:Layout.Always ~inline:(true, true)
+        ~postSpace:true ~indent:0 ~break:Layout.Always_rec ~inline:(true, true)
         (extension @ List.map self#item_attribute l @ [toThis])
 
   method exception_declaration ed =
@@ -6583,36 +6583,20 @@ let printer = object(self:'self)
           ~comments:self#comments
           s
         in
-        let someSigHasAttrs =
-          List.exists
-            (fun x ->
-               (match x.psig_desc with
-                | Psig_value {pval_attributes} -> pval_attributes <> []
-                | Psig_type (_,l) -> List.exists (fun {ptype_attributes} -> ptype_attributes <> []) l
-                | Psig_typext {ptyext_attributes} -> ptyext_attributes <> []
-                | Psig_exception {pext_attributes} -> pext_attributes <> []
-                | Psig_module {pmd_attributes} -> pmd_attributes <> []
-                | Psig_recmodule l -> List.exists (fun {pmd_attributes} -> pmd_attributes <> []) l
-                | Psig_modtype {pmtd_attributes} -> pmtd_attributes <> []
-                | Psig_open {popen_attributes} -> popen_attributes <> []
-                | Psig_attribute attr -> true
-                | Psig_extension (_,l) -> l <> []
-                | _ -> false))
-            s
-        in
+        let shouldBreakLabel = if List.length s > 1 then `Always else `Auto in
         label
           ~indent:0
-          ~break:(if someSigHasAttrs || (List.length s > 1) then `Always else `Auto)
+          ~break:shouldBreakLabel
           (makeList
             [label
-               ~break:(if someSigHasAttrs || (List.length s > 1) then `Always else `Auto)
+               ~break:shouldBreakLabel
                 (makeList
                   ~postSpace:true
                   [letPattern; (atom "{")])
               (source_map
                  ~loc:x.pmty_loc
                  (makeList
-                    ~break:(if someSigHasAttrs || (List.length s > 1) then Always else IfNeed)
+                    ~break:(if List.length s > 1 then Always else IfNeed)
                     ~inline:(true, true)
                     ~postSpace:true
                     ~sep:(SepFinal (";", ";"))
