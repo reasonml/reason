@@ -29,11 +29,15 @@
     "install": [
       ["esy-installer"]
     ],
-    "buildsInSource": "_build"
-  },
-  "resolutions": {
-    "**/@opam/result": "1.2.0",
-    "**/@opam/lwt": "3.3.0",
-    "**/@opam/ocaml-migrate-parsetree": "1.0.10"
+    "buildsInSource": "_build",
+    "_dependenciesForNewEsyInstaller": {
+      "@esy-ocaml/substs": "^0.0.1",
+      "@esy-ocaml/esy-installer": "^0.0.0",
+      "@opam/ocamlfind": "",
+      "@opam/result": "*",
+      "@opam/jbuilder": "*",
+      "@esy-ocaml/reason": "^3.2.0",
+      "@opam/utop": " >= 1.17"
+    }
   }
 }

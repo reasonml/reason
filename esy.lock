@@ -6,6 +6,17 @@
   version "0.0.0"
   resolved "https://registry.yarnpkg.com/@esy-ocaml/esy-installer/-/esy-installer-0.0.0.tgz#6b0e2bd4ee43531ac74793fe55cfcc3aca197a66"
 
+"@esy-ocaml/merlin@^3.0.5005":
+  version "3.0.5005"
+  resolved "https://registry.yarnpkg.com/@esy-ocaml/merlin/-/merlin-3.0.5005.tgz#4a9e2b4df20672524603b7b1797b7761d5d0d9ad"
+  dependencies:
+    "@esy-ocaml/esy-installer" "^0.0.0"
+    "@esy-ocaml/substs" "^0.0.1"
+    "@opam/ocamlfind" " >= 1.5.2"
+    "@opam/yojson" "*"
+  peerDependencies:
+    ocaml " >= 4.2.1  < 4.7.0"
+
 "@esy-ocaml/substs@^0.0.1":
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/@esy-ocaml/substs/-/substs-0.0.1.tgz#59ebdbbaedcda123fc7ed8fb2b302b7d819e9a46"
@@ -121,7 +132,7 @@
   peerDependencies:
     ocaml " >= 4.2.3000"
 
-"@opam/jbuilder@ >= 1.0.0-beta11", "@opam/jbuilder@ >= 1.0.0-beta14", "@opam/jbuilder@ >= 1.0.0-beta17", "@opam/jbuilder@ >= 1.0.0-beta181", "@opam/jbuilder@ >= 1.0.0-beta7", "@opam/jbuilder@ >= 1.0.0-beta9", "@opam/jbuilder@*":
+"@opam/jbuilder@ >= 1.0.0-beta14", "@opam/jbuilder@ >= 1.0.0-beta17", "@opam/jbuilder@ >= 1.0.0-beta181", "@opam/jbuilder@ >= 1.0.0-beta7", "@opam/jbuilder@ >= 1.0.0-beta9", "@opam/jbuilder@*":
   version "1.0.0-beta20"
   uid "1648206284a54407f6eee01ed950fff7"
   resolved "@opam/jbuilder@1.0.0-beta20-1648206284a54407f6eee01ed950fff7.tgz"
@@ -148,7 +159,7 @@
   peerDependencies:
     ocaml " >= 4.2.3000"
 
-"@opam/lwt@ >= 2.7.0  < 4.0.0", "@opam/lwt@ >= 3.0.0", "@opam/lwt@*", "@opam/lwt@3.3.0":
+"@opam/lwt@ >= 2.7.0  < 4.0.0", "@opam/lwt@ >= 3.0.0", "@opam/lwt@*":
   version "3.3.0"
   uid d6527433462fadf2f1b8168dbb5cf10e
   resolved "@opam/lwt@3.3.0-d6527433462fadf2f1b8168dbb5cf10e.tgz"
@@ -166,12 +177,12 @@
 
 "@opam/lwt_react@*":
   version "1.1.1"
-  uid aa9053f8fd0e2684a474b8dbcc0a30d6
+  uid "50615b081ab21218a614fa9792562c69"
   resolved "@opam/lwt_react@1.1.1-aa9053f8fd0e2684a474b8dbcc0a30d6.tgz"
   dependencies:
     "@esy-ocaml/esy-installer" "^0.0.0"
     "@esy-ocaml/substs" "^0.0.1"
-    "@opam/jbuilder" " >= 1.0.0-beta14"
+    "@opam/jbuilder" " >= 1.0.0-beta10"
     "@opam/lwt" " >= 3.0.0"
     "@opam/react" " >= 1.0.0"
   peerDependencies:
@@ -201,19 +212,7 @@
   peerDependencies:
     ocaml " >= 4.2.3000"
 
-"@opam/merlin@*":
-  version "3.0.5"
-  uid "43a4ee2722d4484e3b65826d613451a7"
-  resolved "@opam/merlin@3.0.5-43a4ee2722d4484e3b65826d613451a7.tgz"
-  dependencies:
-    "@esy-ocaml/esy-installer" "^0.0.0"
-    "@esy-ocaml/substs" "^0.0.1"
-    "@opam/ocamlfind" " >= 1.5.2"
-    "@opam/yojson" "*"
-  peerDependencies:
-    ocaml " >= 4.2.1000  < 4.7.0"
-
-"@opam/ocaml-migrate-parsetree@ >= 1.0.7", "@opam/ocaml-migrate-parsetree@*", "@opam/ocaml-migrate-parsetree@1.0.10":
+"@opam/ocaml-migrate-parsetree@ >= 1.0.7", "@opam/ocaml-migrate-parsetree@*":
   version "1.0.10"
   uid "48723a85ec73e8dc29f6f8710d1178a4"
   resolved "@opam/ocaml-migrate-parsetree@1.0.10-48723a85ec73e8dc29f6f8710d1178a4.tgz"
@@ -272,7 +271,7 @@
   peerDependencies:
     ocaml " >= 4.1.0"
 
-"@opam/result@*", "@opam/result@1.2.0":
+"@opam/result@*":
   version "1.2.0"
   uid "5c62071e67f4a84e28ceeaac2969d1ae"
   resolved "@opam/result@1.2.0-5c62071e67f4a84e28ceeaac2969d1ae.tgz"
