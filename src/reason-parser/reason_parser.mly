@@ -1032,11 +1032,12 @@ let raise_record_trailing_semi_error loc =
   let msg = "Record entries are separated by comma; we've found a semicolon instead." in
   raise Reason_syntax_util.(Error(loc, (Syntax_error msg)))
 
-let parse_infix_with_eql {txt; loc} expr =
+let parse_infix_with_eql ({txt; loc} as op) expr =
   let s = (String.sub txt 1 (String.length txt - 1)) in
   match s with
   | "-" | "-." -> mkuminus (mkloc s loc) expr
-  | _ -> mkuplus (mkloc s loc) expr
+  | "+" | "+." -> mkuplus (mkloc s loc) expr
+  | _ -> mkexp(Pexp_apply(mkoperator {op with txt = s}, [Nolabel, expr]))
 
 let record_exp_spread_msg =
   "Records can only have one `...` spread, at the beginning.

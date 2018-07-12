@@ -1354,3 +1354,6 @@ let z = {<>};
 
 /* https://github.com/facebook/reason/issues/2056 */
 type foo = (~a: bool=?) => int;
+
+/* https://github.com/facebook/reason/issues/2070 */
+f(~commit=!build);
