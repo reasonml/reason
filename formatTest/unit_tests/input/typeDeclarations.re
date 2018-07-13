@@ -53,3 +53,6 @@ type foo = option([@foo]string, [@bar](int => string => int), [@baz]string);
 type foo = option([@foo]string, [@bar](int => string => int));
 
 /* === end test wrapping for arrows === */
+
+/* https://github.com/facebook/reason/issues/2073 */
+type a = array({. "someStringKeyThatCausesLineToBreak": string });

@@ -117,3 +117,10 @@ type foo =
   );
 
 /* === end test wrapping for arrows === */
+
+/* https://github.com/facebook/reason/issues/2073 */
+type a =
+  array({
+    .
+    "someStringKeyThatCausesLineToBreak": string,
+  });
