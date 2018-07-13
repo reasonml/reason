@@ -3037,6 +3037,10 @@ let printer = object(self:'self)
             | [{ptyp_desc = Ptyp_object (l, o) }] when not (isJsDotTLongIdent li.txt) ->
                 label (self#longident_loc li)
                   (self#unparseObject ~wrap:("(",")") l o)
+            | [{ptyp_desc = Ptyp_constr(lii, [{ ptyp_desc = Ptyp_object (ll, o) }])}]
+              when isJsDotTLongIdent lii.txt && List.length ll > 0 ->
+              label (self#longident_loc li)
+                (self#unparseObject ~withStringKeys:true ~wrap:("(",")") ll o)
             | _ ->
               (* small guidance: in `type foo = bar`, we're now at the `bar` part *)
 
