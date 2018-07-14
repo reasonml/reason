@@ -1253,8 +1253,7 @@ let rec append ?(space=false) txt = function
   | Sequence (config, l) when snd config.wrap <> "" ->
     let sep = if space then " " else "" in
     Sequence ({config with wrap=(fst config.wrap, snd config.wrap ^ sep ^ txt)}, l)
-  (* TODO (perf) match on [] don't use List.length *)
-  | Sequence (config, l) when List.length l = 0 ->
+  | Sequence (config, []) ->
     Sequence (config, [atom txt])
   | Sequence ({sep=NoSep} as config, l)
   | Sequence ({sep=Sep("")} as config, l) ->
@@ -2031,13 +2030,17 @@ let isJsDotTLongIdent ident = match ident with
 let recordRowIsPunned pld =
       let name = pld.pld_name.txt in
       (match pld.pld_type with
-        | { ptyp_desc = (Ptyp_constr ({ txt; _ }, args)); _}
+        | { ptyp_desc = (
+            Ptyp_constr (
+              { txt; _ },
+              (* don't pun parameterized types, e.g. {tag: tag 'props} *)
+              [])
+            );
+          _}
             when
             (Longident.last txt = name
               (* Don't pun types from other modules, e.g. type bar = {foo: Baz.foo}; *)
-              && isLongIdentWithDot txt == false
-              (* don't pun parameterized types, e.g. {tag: tag 'props} *)
-              && List.length args == 0) -> true
+              && isLongIdentWithDot txt == false) -> true
         | _ -> false)
 
 let isPunnedJsxArg lbl ident =
@@ -3030,15 +3033,15 @@ let printer = object(self:'self)
             (ensureSingleTokenSticksToLabel (self#longident_loc li))
         | Ptyp_constr (li, l) ->
             (match l with
-            | [{ptyp_desc = Ptyp_object (l, o) }] when isJsDotTLongIdent li.txt && List.length l > 0 ->
+            | [{ptyp_desc = Ptyp_object (_::_ as l, o) }] when isJsDotTLongIdent li.txt ->
                 (* should have one or more rows, Js.t({..}) should print as Js.t({..})
                  * {..} has a totally different meaning than Js.t({..}) *)
                 self#unparseObject ~withStringKeys:true l o
             | [{ptyp_desc = Ptyp_object (l, o) }] when not (isJsDotTLongIdent li.txt) ->
                 label (self#longident_loc li)
                   (self#unparseObject ~wrap:("(",")") l o)
-            | [{ptyp_desc = Ptyp_constr(lii, [{ ptyp_desc = Ptyp_object (ll, o) }])}]
-              when isJsDotTLongIdent lii.txt && List.length ll > 0 ->
+            | [{ptyp_desc = Ptyp_constr(lii, [{ ptyp_desc = Ptyp_object (_::_ as ll, o) }])}]
+              when isJsDotTLongIdent lii.txt ->
               label (self#longident_loc li)
                 (self#unparseObject ~withStringKeys:true ~wrap:("(",")") ll o)
             | _ ->
@@ -3078,7 +3081,7 @@ let printer = object(self:'self)
           let node_list = List.mapi variant_helper l in
           let ll = (List.map (fun t -> atom ("`" ^ t)) tl) in
           let tag_list = makeList ~postSpace:true ~break:IfNeed ((atom ">")::ll) in
-          let type_list = if List.length tl != 0 then node_list@[tag_list] else node_list in
+          let type_list = if tl != [] then node_list@[tag_list] else node_list in
           makeList ~wrap:("[" ^ designator,"]") ~pad:(true, false) ~postSpace:true ~break:IfNeed type_list
         | Ptyp_class (li, []) -> makeList [atom "#"; self#longident_loc li]
         | Ptyp_class (li, l) ->
@@ -3386,7 +3389,7 @@ let printer = object(self:'self)
       in
       if hasLabelledChildrenLiteral && hasSingleNonLabelledUnitAndIsAtTheEnd l then
         let moduleNameList = List.rev (List.tl (List.rev (Longident.flatten loc.txt))) in
-        if List.length moduleNameList > 0 then
+        if moduleNameList != [] then
           if Longident.last loc.txt = "createElement" then
             Some (self#formatJSXComponent (String.concat "." moduleNameList) l)
           else None
@@ -5037,10 +5040,13 @@ let printer = object(self:'self)
   method constructor_pattern ?(polyVariant=false) ~arityIsClear ctor po =
     let (implicit_arity, arguments) =
       match po.ppat_desc with
+      (* There is no ambiguity when the number of tuple components is 1.
+           We don't need put implicit_arity in that case *)
+      | Ppat_tuple (([] | _::[]) as l) ->
+        (false, l)
       | Ppat_tuple l ->
-        (* There is no ambiguity when the number of tuple components is 1.
-             We don't need put implicit_arity in that case *)
-        (List.length l > 1 && not arityIsClear, l)
+        (not arityIsClear, l)
+
       | _ -> (false, [po])
     in
     let space, arguments = match arguments with
@@ -5584,7 +5590,7 @@ let printer = object(self:'self)
     in
     makeList
       ~break:Layout.IfNeed
-      ~preSpace:(List.length rows > 0)
+      ~preSpace:(rows != [])
       ~wrap:(lwrap ^ "{", "}" ^ rwrap)
       (openness::[rows_layout])
 
@@ -7198,9 +7204,8 @@ let printer = object(self:'self)
       let reverseArgs = List.rev args in
       match reverseArgs with
       | ((_, {pexp_desc = Pexp_fun _}) as callback)::args
-          when let otherCallbacks =
-            List.filter (fun (_, e) -> match e.pexp_desc with Pexp_fun _ -> true | _ -> false) args
-          in List.length otherCallbacks == 0
+          when
+            [] == List.filter (fun (_, e) -> match e.pexp_desc with Pexp_fun _ -> true | _ -> false) args
           (* default to normal formatting if there's more than one callback *)
           -> `LastArgIsCallback(callback, List.rev args)
       | _ -> `NormalFunAppl args
@@ -7223,7 +7228,7 @@ let printer = object(self:'self)
         let cbAttrs = stdAttrs in
         if uncurried then Hashtbl.add uncurriedTable cb.pexp_loc true;
         let (cbArgs, retCb) = self#curriedPatternsAndReturnVal {cb with pexp_attributes = []} in
-        let cbArgs = if List.length cbAttrs > 0 then
+        let cbArgs = if cbAttrs != [] then
             makeList ~break:IfNeed ~inline:(true, true) ~postSpace:true
               (List.map self#attribute cbAttrs @ cbArgs)
         else makeList cbArgs in
