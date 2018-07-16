@@ -3542,10 +3542,8 @@ let printer = object(self:'self)
       let funApplExpr = formatAttachmentApplication applicationFinalWrapping None (itms, Some reducesAfterRight.pexp_loc)
       in
       (* Little hack: need to print parens for the `bar` application in e.g.
-         `foo->other##(bar(baz))`. The exception to this is the fast pipe
-         operator, which binds tighter to function application. *)
-      if higherPrecedenceThan withPrecedence (Custom "prec_functionAppl") &&
-         withPrecedence <> (Token fastPipeToken)
+         `foo->other##(bar(baz))` or `foo->other->(bar(baz))`. *)
+      if higherPrecedenceThan withPrecedence (Custom "prec_functionAppl")
       then LayoutNode (formatPrecedence ~loc:reducesAfterRight.pexp_loc funApplExpr)
       else LayoutNode funApplExpr
     | PotentiallyLowPrecedence itm -> LayoutNode (formatPrecedence ~loc:reducesAfterRight.pexp_loc itm)
@@ -7195,6 +7193,7 @@ let printer = object(self:'self)
           makeTup ~uncurried (List.map self#label_x_expression_param params)
 
   method formatFunAppl ~jsxAttrs ~args ~funExpr ~applicationExpr ?(uncurried=false) () =
+    let funExpr = Reason_ast.processFastPipe funExpr in
     let uncurriedApplication = uncurried in
     (* If there was a JSX attribute BUT JSX component wasn't detected,
        that JSX attribute needs to be pretty printed so it doesn't get
@@ -7213,7 +7212,7 @@ let printer = object(self:'self)
     let formattedFunExpr = match funExpr.pexp_desc with
       (* fast pipe chain or sharpop chain as funExpr, no parens needed, we know how to parse *)
       | Pexp_apply ({pexp_desc = Pexp_ident {txt = Lident s}}, _)
-        when requireNoSpaceFor s && s <> fastPipeToken ->
+        when requireNoSpaceFor s ->
         self#unparseExpr funExpr
       | _ -> self#simplifyUnparseExpr funExpr
     in

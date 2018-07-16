@@ -5,7 +5,10 @@ bar->f->g->h;
 compilation
 ->Plugin.buildAssets
 ->Js.Json.stringify
-->Node.Fs.writeFileAsUtf8Sync(_, path);
+->Node.Fs.writeFileAsUtf8Sync(
+  _,
+  path,
+);
 
 foo->bar->baz >>= monadicFunction |> bind;
 
@@ -53,11 +56,11 @@ event->(target##value[0]);
 
 event->target(foo);
 
-event->target(foo);
-
-(event->target)(foo);
+event->(target(foo));
 
 event->target(foo);
+
+event->(target(foo));
 
 foo->bar := baz;
 
