@@ -20,3 +20,11 @@
   (kind ppx_rewriter)
   (modules reactjs_jsx_ppx_v3)
   (libraries (reason ocaml-migrate-parsetree))))
+
+;; compatibility for those that use -ppx manually
+(executable
+ ((name ppx_react_compat)
+  (public_name ppx_react)
+  (modules ppx_react_compat)
+  (package reason)
+  (libraries (reason ocaml-migrate-parsetree ppx_react))))
