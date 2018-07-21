@@ -3830,8 +3830,16 @@ let printer = object(self:'self)
                | _ -> false)
             | _ -> false
           in
-          let leftItm = self#simplifyUnparseExpr leftExpr in
-          Simple (label ~space:forceSpace leftItm (atom postfixStr))
+          let leftItm = (match (Reason_ast.processFastPipe leftExpr).pexp_desc with
+            | Pexp_apply (e,_) ->
+              (match printedStringAndFixityExpr e with
+               | Infix printedIdent when requireNoSpaceFor printedIdent ->
+                 self#unparseExpr leftExpr
+               | _ -> self#simplifyUnparseExpr leftExpr)
+            | _ -> self#simplifyUnparseExpr leftExpr
+          )
+          in
+          Simple label ~space:forceSpace leftItm (atom postfixStr)
         | (Infix printedIdent, [(Nolabel, leftExpr); (Nolabel, rightExpr)]) ->
           let infixToken = Token printedIdent in
           let rightItm = self#ensureContainingRule ~withPrecedence:infixToken ~reducesAfterRight:rightExpr () in

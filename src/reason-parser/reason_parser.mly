@@ -1365,13 +1365,13 @@ conflicts.
 (* We need SHARPEQUAL to have lower precedence than `[` to make e.g.
    this work: `foo #= bar[0]`. Otherwise it would turn into `(foo#=bar)[0]` *)
 %left     SHARPEQUAL
+%nonassoc POSTFIXOP
 (* LBRACKET and DOT are %nonassoc in OCaml, because the left and right sides
    are never the same, therefore there doesn't need to be a precedence
    disambiguation. This could also work in Reason, but by grouping the tokens
    below into a single precedence rule it becomes clearer that they all have the
    same precedence. *)
 %left     SHARPOP MINUSGREATER LBRACKET DOT
-%nonassoc POSTFIXOP
 (* Finally, the first tokens of simple_expr are above everything else. *)
 %nonassoc LBRACKETLESS LBRACELESS LBRACE LPAREN
 

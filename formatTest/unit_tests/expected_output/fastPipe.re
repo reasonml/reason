@@ -73,3 +73,7 @@ event->target##(value(foo));
 (foo^)->bar;
 
 location##streets.foo[1];
+
+(event->target^)##value;
+
+event->target^ #= value;
