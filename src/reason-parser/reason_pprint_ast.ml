@@ -3839,7 +3839,7 @@ let printer = object(self:'self)
             | _ -> self#simplifyUnparseExpr leftExpr
           )
           in
-          Simple label ~space:forceSpace leftItm (atom postfixStr)
+          Simple (label ~space:forceSpace leftItm (atom postfixStr))
         | (Infix printedIdent, [(Nolabel, leftExpr); (Nolabel, rightExpr)]) ->
           let infixToken = Token printedIdent in
           let rightItm = self#ensureContainingRule ~withPrecedence:infixToken ~reducesAfterRight:rightExpr () in
