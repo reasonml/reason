@@ -97,6 +97,10 @@ event->target##(value(foo));
 
 event->target^ #= value;
 
+event##target.{0};
+
+event->target.{0};
+
 foo->f(. a, b);
 foo->f(. a, b)->g(. c, d);
 foo->([@attr] f(. a, b))->([@attr2] f(. a, b));

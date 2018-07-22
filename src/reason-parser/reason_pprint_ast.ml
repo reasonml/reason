@@ -3415,8 +3415,13 @@ let printer = object(self:'self)
     if e.pexp_attributes != [] then None
     (* should also check attributes underneath *)
     else match e.pexp_desc with
-      | Pexp_apply ({pexp_desc=Pexp_ident{txt=Lident "#="}}, [(_,e1);(_,e2)]) ->
-        Some (self#simple_enough_to_be_lhs_dot_send e1, e2)
+      | Pexp_apply ({pexp_desc=Pexp_ident{txt=Lident "#="}}, [(_,e1);(_,e2)])
+        when isChainOfSugarGetExprs e1 ->
+        let token = Token sharpOpEqualToken in
+        let formattedLeftItm = self#unparseResolvedRule (
+          self#ensureExpression ~reducesOnToken:token e1
+        ) in
+        Some (formattedLeftItm, e2)
       | Pexp_apply ({pexp_desc=Pexp_ident{txt=Ldot (Lident ("Array"), "set")}}, [(_,e1);(_,e2);(_,e3)]) ->
         let prec = Custom "prec_lbracket" in
         let lhs = self#unparseResolvedRule (
@@ -3938,10 +3943,10 @@ let printer = object(self:'self)
           Simple (label k v)
         else
           let prec = Custom "prec_lbracket" in
-            let lhs = self#unparseResolvedRule (
-              self#ensureExpression ~reducesOnToken:prec e1
-            ) in
-            let rhs = self#unparseExpr e2 in
+          let lhs = self#unparseResolvedRule (
+            self#ensureExpression ~reducesOnToken:prec e1
+          ) in
+          let rhs = self#unparseExpr e2 in
           SpecificInfixPrecedence
             ({reducePrecedence=prec; shiftPrecedence=prec}, LayoutNode (self#access ".[" "]" lhs rhs))
       | (
@@ -3956,10 +3961,13 @@ let printer = object(self:'self)
           Simple (label k v)
         else
           let formattedList = List.map self#unparseExpr ls in
-          let lhs = makeList [(self#simple_enough_to_be_lhs_dot_send e1); atom "."] in
-          let rhs = makeList ~break:IfNeed ~postSpace:true ~sep:commaSep ~wrap:("{", "}") formattedList in
           let prec = Custom "prec_lbracket" in
-          SpecificInfixPrecedence ({reducePrecedence=prec; shiftPrecedence=prec}, LayoutNode (label lhs rhs))
+          let lhs = self#unparseResolvedRule (
+            self#ensureExpression ~reducesOnToken:prec e1
+          ) in
+          let lhsAndDot = makeList [lhs; atom "."] in
+          let rhs = makeList ~break:IfNeed ~postSpace:true ~sep:commaSep ~wrap:("{", "}") formattedList in
+          SpecificInfixPrecedence ({reducePrecedence=prec; shiftPrecedence=prec}, LayoutNode (label lhsAndDot rhs))
       | (
         {pexp_desc= Pexp_ident {txt=
                                   Ldot (Ldot (Lident "Bigarray", (("Array1"|"Array2"|"Array3") as arrayIdent)), "get")}
@@ -3974,10 +3982,13 @@ let printer = object(self:'self)
           Simple (label k v)
         else
           let formattedList = List.map self#unparseExpr (List.map snd rest) in
-          let lhs = makeList [(self#simple_enough_to_be_lhs_dot_send e1); atom "."] in
-          let rhs = makeList ~break:IfNeed ~postSpace:true ~sep:commaSep ~wrap:("{", "}") formattedList in
           let prec = Custom "prec_lbracket" in
-          SpecificInfixPrecedence ({reducePrecedence=prec; shiftPrecedence=prec}, LayoutNode (label lhs rhs))
+          let lhs = self#unparseResolvedRule (
+            self#ensureExpression ~reducesOnToken:prec e1
+          ) in
+          let lhsAndDot = makeList [lhs; atom "."] in
+          let rhs = makeList ~break:IfNeed ~postSpace:true ~sep:commaSep ~wrap:("{", "}") formattedList in
+          SpecificInfixPrecedence ({reducePrecedence=prec; shiftPrecedence=prec}, LayoutNode (label lhsAndDot rhs))
       | _ -> (
 
           match (self#sugar_set_expr_parts x) with
@@ -4031,9 +4042,15 @@ let printer = object(self:'self)
         | (Infix printedIdent, [(Nolabel, leftExpr); (Nolabel, rightExpr)]) -> (
           match printedIdent, rightExpr with
           | "##", {pexp_desc = Pexp_ident({txt = Lident _})} ->
-            Simple (self#access "[" "]"
-                    (self#simple_enough_to_be_lhs_dot_send leftExpr)
+            let token = Token printedIdent in
+            let lhs = self#unparseResolvedRule (
+              self#ensureExpression ~reducesOnToken:token leftExpr
+          ) in
+            let layout = (self#access "[" "]"
+                    lhs
                     (makeList ~wrap:("\"", "\"") [(self#unparseExpr rightExpr)]))
+            in
+            SpecificInfixPrecedence ({reducePrecedence=token; shiftPrecedence=token}, LayoutNode layout)
           | _ ->
             let infixToken = Token printedIdent in
             let rightItm = self#ensureContainingRule ~withPrecedence:infixToken ~reducesAfterRight:rightExpr () in

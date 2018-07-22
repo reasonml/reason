@@ -65,13 +65,13 @@ event->target[0];
 
 event->target[0];
 
-event->target##value;
+event->target["value"];
 
-event->target##value;
+event->target["value"];
 
-event->target##value[0];
+event->target["value"][0];
 
-event->(target##value[0]);
+event->(target["value"][0]);
 
 event->target(foo);
 
@@ -85,17 +85,21 @@ foo->bar := baz;
 
 foo->bar === baz;
 
-event->target##value(foo);
+event->target["value"](foo);
 
 event->target##(value(foo));
 
 (foo^)->bar;
 
-location##streets.foo[1];
+location["streets"].foo[1];
 
 (event->target^)##value;
 
 event->target^ #= value;
+
+event["target"].{0};
+
+event->target.{0};
 
 foo->f(. a, b);
 foo->f(. a, b)->g(. c, d);
