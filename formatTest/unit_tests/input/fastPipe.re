@@ -4,6 +4,8 @@ bar->f->g->h;
 
 foo(g)->f(a, b)->g(c, d);
 
+foo->f();
+
 compilation
 ->Plugin.buildAssets
 ->Js.Json.stringify

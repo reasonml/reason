@@ -3651,11 +3651,11 @@ let printer = object(self:'self)
         | [] -> self#unparseExpr exp
         | args ->
             let e = self#unparseExpr exp in
-            let wrap = if uncurried then ("(. ", ")") else ("(", ")") in
-            let args = match args with
-            | [{pexp_desc=Pexp_construct({txt = Longident.Lident("()")}, None)}] ->
-                atom "(.)"
-            | _ ->
+            let args = match (uncurried, args) with
+            | uncurried, [{pexp_desc=Pexp_construct({txt = Longident.Lident("()")}, None)}] ->
+                if uncurried then atom "(.)" else atom "()"
+            | uncurried, _ ->
+              let wrap = if uncurried then ("(. ", ")") else ("(", ")") in
               makeList
                 ~postSpace:true ~sep:commaTrail ~break:IfNeed ~wrap
                 (List.map self#unparseExpr args)
