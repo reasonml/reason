@@ -95,3 +95,11 @@ let isUnderscoreIdent expr =
   match Ast_404.Parsetree.(expr.pexp_desc) with
   | Pexp_ident ({txt = Lident "_"}) -> true
   | _ -> false
+
+let isFastPipe e = match Ast_404.Parsetree.(e.pexp_desc) with
+  | Pexp_ident({txt = Longident.Lident("|.")}) -> true
+  | Pexp_apply(
+      {pexp_desc = Pexp_ident({txt = Longident.Lident("|.")})},
+      _
+    ) -> true
+  | _ -> false

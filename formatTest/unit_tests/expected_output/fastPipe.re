@@ -2,13 +2,30 @@ foo->f->g->h;
 
 bar->f->g->h;
 
+foo(g)->f(a, b)->g(c, d);
+
 compilation
 ->Plugin.buildAssets
 ->Js.Json.stringify
-->Node.Fs.writeFileAsUtf8Sync(
-  _,
-  path,
-);
+->Node.Fs.writeFileAsUtf8Sync(_, path);
+
+foo
+->someLongIdentifier
+->otherLongIdentifierWithArgs(a, b, c)
+->longIdentWithVeryLongArgs(
+    aaaaaaaaaaaaaaaaaaaaa,
+    bbbbbbbbbbbbbbbb,
+    ccccccccccccc,
+  );
+
+/* with comments */
+compilation
+/* first */
+->Plugin.buildAssets /* first trail */
+/* second */
+->Js.Json.stringify /* second trail */
+/* last */
+->Node.Fs.writeFileAsUtf8Sync(_, path); /* last trail */
 
 foo->bar->baz >>= monadicFunction |> bind;
 
@@ -77,3 +94,10 @@ location##streets.foo[1];
 (event->target^)##value;
 
 event->target^ #= value;
+
+foo->f(. a, b);
+foo->f(. a, b)->g(. c, d);
+foo->([@attr] f(. a, b))->([@attr2] f(. a, b));
+foo->f(.);
+foo->f(.)->g(.);
+foo->([@attr] f(.))->([@attr] g(.));
