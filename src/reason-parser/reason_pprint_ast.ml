@@ -3508,7 +3508,6 @@ let printer = object(self:'self)
       (* Little hack: need to print parens for the `bar` application in e.g.
          `foo->other##(bar(baz))` or `foo->other->(bar(baz))`. *)
       if higherPrecedenceThan withPrecedence (Custom "prec_functionAppl")
-         (* && withPrecedence <> (Token fastPipeToken) *)
       then LayoutNode (formatPrecedence ~loc:reducesAfterRight.pexp_loc funApplExpr)
       else LayoutNode funApplExpr
     | PotentiallyLowPrecedence itm -> LayoutNode (formatPrecedence ~loc:reducesAfterRight.pexp_loc itm)
@@ -3772,7 +3771,7 @@ let printer = object(self:'self)
      * ->f(a, b)
      * ->g(c, d)
      *)
-    makeList ~break:IfNeed ~inline:(true, true) ~sep:(Sep "") pipeSegments
+    makeList ~break:IfNeed ~inline:(true, true) pipeSegments
 
   (*
    * Replace (__x) => foo(__x) with foo(_)
