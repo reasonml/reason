@@ -3760,8 +3760,8 @@ let printer = object(self:'self)
     let pipeSegments = match pipetree with
     | hd::tl ->
         let hd = Fastpipetree.formatNode ~first:true hd in
-        let tl = List.map (fun flat ->
-          makeList [atom "->"; Fastpipetree.formatNode flat]
+        let tl = List.map (fun node ->
+          makeList [atom "->"; Fastpipetree.formatNode node]
         ) tl in
         hd::tl
     | [] -> []
