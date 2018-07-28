@@ -291,8 +291,7 @@ let jsxMapper () =
   let expr =
     (fun mapper expression -> match expression with
        (* Does the function application have the @JSX attribute? *)
-       |
-         {
+       | {
            pexp_desc = Pexp_apply (callExpression, callArguments);
            pexp_attributes
          } ->
@@ -301,6 +300,34 @@ let jsxMapper () =
          (* no JSX attribute *)
          | ([], _) -> default_mapper.expr mapper expression
          | (_, nonJSXAttributes) -> transformJsxCall mapper callExpression callArguments nonJSXAttributes)
+       (* is it a list with jsx attribute? Reason <>foo</> desugars to [@JSX][foo]*)
+       | {
+           pexp_desc =
+            Pexp_construct ({txt = Lident "::"; loc}, Some {pexp_desc = Pexp_tuple _ })
+            | Pexp_construct ({txt = Lident "[]"; loc}, None);
+           pexp_attributes
+         } as listItems ->
+          let (jsxAttribute, nonJSXAttributes) = List.partition (fun (attribute, _) -> attribute.txt = "JSX") pexp_attributes in
+          (match (jsxAttribute, nonJSXAttributes) with
+          (* no JSX attribute *)
+          | ([], _) -> default_mapper.expr mapper expression
+          | (_, nonJSXAttributes) ->
+            let fragment = Exp.ident ~loc {loc; txt = Ldot (Lident "ReasonReact", "fragment")} in
+            let childrenExpr = transformChildren ~loc ~mapper listItems in
+            let args = [
+              (* "div" *)
+              (nolabel, fragment);
+              (* [|moreCreateElementCallsHere|] *)
+              (nolabel, childrenExpr)
+            ] in
+            Exp.apply
+              ~loc
+              (* throw away the [@JSX] attribute and keep the others, if any *)
+              ~attrs:nonJSXAttributes
+              (* ReactDOMRe.createDOMElement *)
+              (Exp.ident ~loc {loc; txt = Ldot (Lident "ReactDOMRe", "createElement")})
+              args
+         )
        (* Delegate to the default mapper, a deep identity traversal *)
        | e -> default_mapper.expr mapper e) in
 
