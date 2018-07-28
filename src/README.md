@@ -250,13 +250,13 @@ As you can see from other parts in the parser, many do have a `~loc` assigned to
 reactjs_jsx_ppx_v2/v3 uses the ppx system. It works on the AST. It helps being able to see the AST of a particular snippet. Assuming you've written some code in a file `foo.re`, run the following incantation to output the code's AST:
 
 ```
-ocamlc -dparsetree -ppx ./_build/install/default/bin/reactjs_jsx_ppx_v2.native -pp "./_build/install/default/bin/refmt_impl.native --print binary" -impl foo.re
+ocamlc -dparsetree -ppx ./_build/default/src/ppx/reactjs_jsx_ppx_v2.exe -pp "./_build/default/src/refmt/refmt_impl.exe --print binary" -impl foo.re
 ```
 
 That dumps the AST after accepting the ppx and the reason syntax. You can also dump the final code in Reason syntax instead:
 
 ```
-ocamlc -dsource -ppx ./_build/install/default/bin/reactjs_jsx_ppx_v2.native -pp "./_build/install/default/bin/refmt_impl.native --print binary" -impl foo.re | ./_build/install/default/bin/refmt_impl.native --parse ml --print re --interface false
+ocamlc -dsource -ppx ./_build/default/src/ppx/reactjs_jsx_ppx_v2.exe -pp "./_build/default/src/refmt/refmt_impl.exe --print binary" -impl foo.re | ./_build/default/src/refmt/refmt_impl.exe --parse ml --print re --interface false
 ```
 
 (Similar steps for reactjs_jsx_ppx_v3.)
