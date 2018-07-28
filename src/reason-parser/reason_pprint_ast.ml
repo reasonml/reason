@@ -2148,40 +2148,6 @@ let rec computeInfixChain = function
 
 let equalityOperators = ["!="; "!=="; "==="; "=="; ">="; "<="; "<"; ">"]
 
-(* Takes a list of layouts and provides beautiful printing for fast pipe.
- * Prints
- *  [atom "foo"; atom "->"; atom "f"; atom "->"; atom "g"]
- * as:
- *  foo->f->g
- * or if line-length indicates breaking:
- *  foo
- *  ->f
- *  ->g
- *)
-let formatFastPipeChain layouts =
-  (* transforms [->; f; ->; g] into [->f; ->g] *)
-  let rec processPipePairs acc = function
-  | pipe::exp::xs ->
-      let layout = label ~break:`Never pipe exp in
-      processPipePairs (layout::acc) xs
-  | [x] -> List.rev (x::acc)
-  | [] -> List.rev acc
-  in match layouts with
-  | hd::tl ->
-    (* process head of the layout list different so all "pipe pairs"
-     * are nicely aligned under the first element when the layout breaks.
-     *  foo->f->g
-     * becomes
-     *  foo
-     *  ->f
-     *  ->g
-     *)
-    let pipes = processPipePairs [] tl in
-    makeList ~break:IfNeed ~inline:(true, true) (hd::pipes)
-  | [] ->
-    atom ""
-
-
 (* Formats a flattened list of infixChain nodes into a list of layoutNodes
  * which allow smooth line-breaking
  * e.g. [LayoutNode foo; InfixToken |>; LayoutNode f; InfixToken |>; LayoutNode z]
@@ -2222,8 +2188,6 @@ let formatComputedInfixChain infixChainList =
     else if currentToken.[0] = '#' then
       let isSharpEqual = currentToken = sharpOpEqualToken in
       makeList ~postSpace:isSharpEqual group
-    else if currentToken = fastPipeToken then
-      formatFastPipeChain group
     else
       (* Represents `|> f` in foo |> f
        * We need a label here to indent possible closing parens
@@ -2271,11 +2235,11 @@ let formatComputedInfixChain infixChainList =
               begin if (currentToken = "" || requireNoSpaceFor currentToken) then
                 print acc (group@[atom t]) t xs
               else
-                (* a + b + foo->bar->baz
+                (* a + b + foo##bar##baz
                  * `foo` needs to be picked from the current group
                  * and inserted into a new one. This way `foo`
-                 * gets the special "fast pipe chain"-printing:
-                 * foo->bar->baz. *)
+                 * gets the special "chained"-printing:
+                 * foo##bar##baz. *)
                  begin match List.rev group with
                  |  hd::tl ->
                      let acc =
@@ -3651,6 +3615,164 @@ let printer = object(self:'self)
     | Simple itm -> ([itm], Some x.pexp_loc)
 
 
+  (* Provides beautiful printing for fast pipe sugar:
+   * foo
+   * ->f(a, b)
+   * ->g(c, d)
+   *)
+  method formatFastPipe e =
+    let module Fastpipetree = struct
+      type exp = Parsetree.expression
+
+      type flatNode =
+        | Exp of exp
+        | ExpU of exp (* uncurried *)
+        | Args of exp list
+      type flatT = flatNode list
+
+      type node = {
+        exp: exp;
+        args: exp list;
+        uncurried: bool;
+      }
+      type t = node list
+
+      let formatNode ?(first=false) {exp; args; uncurried} =
+        let parens = match (first, exp.pexp_desc) with
+        | true, Pexp_apply ({
+              pexp_desc = Pexp_ident({txt = Longident.Lident("^")})},
+              _
+            ) -> true
+        | true, _ -> false
+        | _, Pexp_apply _ -> true
+        | _, _ -> false
+        in
+        let layout = match args with
+        | [] -> self#unparseExpr exp
+        | args ->
+            let e = self#unparseExpr exp in
+            let args = match (uncurried, args) with
+            | uncurried, [{pexp_desc=Pexp_construct({txt = Longident.Lident("()")}, None)}] ->
+                if uncurried then atom "(.)" else atom "()"
+            | uncurried, _ ->
+              let wrap = if uncurried then ("(. ", ")") else ("(", ")") in
+              makeList
+                ~postSpace:true ~sep:commaTrail ~break:IfNeed ~wrap
+                (List.map self#unparseExpr args)
+            in
+            label e args
+        in
+        if parens then
+          formatPrecedence layout
+        else layout
+    end in
+    (* Imagine: foo->f(a, b)->g(c,d)
+     * The corresponding parsetree looks more like:
+     *   (((foo->f)(a,b))->g)(c, d)
+     * The extra Pexp_apply nodes, e.g. (foo->f), result into a
+     * nested/recursive ast which is pretty inconvenient in terms of printing.
+     * For printing purposes we actually want something more like:
+     *  foo->|f(a,b)|->|g(c, d)|
+     * in order to provide to following printing:
+     *  foo
+     *  ->f(a, b)
+     *  ->g(c, d)
+     * The job of "flatten" is to turn the inconvenient, nested ast
+     *  (((foo->f)(a,b))->g)(c, d)
+     * into
+     *  [Exp foo; Exp f; Args [a; b]; Exp g; Args [c; d]]
+     * which can be processed for printing purposes.
+     *)
+    let rec flatten ?(uncurried=false) acc = function
+      | {pexp_desc = Pexp_apply(
+          {pexp_desc = Pexp_ident({txt = Longident.Lident("|.")})},
+          [Nolabel, arg1; Nolabel, arg2]
+         )} ->
+          flatten ((Fastpipetree.Exp arg2)::acc) arg1
+      | {pexp_attributes;
+         pexp_desc = Pexp_apply(
+          {pexp_desc = Pexp_apply(
+           {pexp_desc = Pexp_ident({txt = Longident.Lident("|.")})},
+             [Nolabel, arg1; Nolabel, arg2]
+           )},
+           args
+         )} as e ->
+          let args = Fastpipetree.Args (List.map snd args) in
+          begin match pexp_attributes with
+          | [{txt = "bs"}, PStr []] ->
+            flatten ((Fastpipetree.ExpU arg2)::args::acc) arg1
+          | [] ->
+              (* the uncurried attribute might sit on the Pstr_eval
+               * enclosing the Pexp_apply*)
+              if uncurried then
+                flatten ((Fastpipetree.ExpU arg2)::args::acc) arg1
+              else
+                flatten ((Fastpipetree.Exp arg2)::args::acc) arg1
+          | _ ->
+            (Fastpipetree.Exp e)::acc
+          end
+      | {pexp_desc = Pexp_ident({txt = Longident.Lident("|.")})} -> acc
+      | arg -> ((Fastpipetree.Exp arg)::acc)
+    in
+    (* Given: foo->f(a, b)->g(c, d)
+     * We get the following Fastpipetree.flatNode list:
+     *   [Exp foo; Exp f; Args [a; b]; Exp g; Args [c; d]]
+     * The job of `parse` is to turn the "flat representation"
+     * (a.k.a. Fastpipetree.flastNode list) into a more convenient structure
+     * that allows us to express the segments: "foo" "f(a, b)" "g(c, d)".
+     * Fastpipetree.t expresses those segments.
+     *  [{exp = foo; args = []}; {exp = f; args = [a; b]}; {exp = g; args = [c; d]}]
+     *)
+    let rec parse acc = function
+    | (Fastpipetree.Exp e)::(Fastpipetree.Args args)::xs ->
+        parse ((Fastpipetree.{exp = e; args; uncurried = false})::acc) xs
+    | (Fastpipetree.ExpU e)::(Fastpipetree.Args args)::xs ->
+        parse ((Fastpipetree.{exp = e; args; uncurried = true})::acc) xs
+    | (Fastpipetree.Exp e)::xs ->
+        parse ((Fastpipetree.{exp = e; args = []; uncurried = false})::acc) xs
+    | _ -> List.rev acc
+    in
+    (* Given: foo->f(. a,b);
+     * The uncurried attribute doesn't sit on the Pexp_apply, but sits on
+     * the top level Pstr_eval. We don't have access to top-level context here,
+     * hence the lookup in the global uncurriedTable to correctly determine
+     * if we need to print uncurried. *)
+    let uncurried = try Hashtbl.find uncurriedTable e.pexp_loc with
+      | Not_found -> false
+    in
+    (* Turn
+     *  foo->f(a, b)->g(c, d)
+     * into
+     *  [Exp foo; Exp f; Args [a; b]; Exp g; Args [c; d]]
+     *)
+    let (flatNodes : Fastpipetree.flatT) = flatten ~uncurried [] e in
+    (* Turn
+     *  [Exp foo; Exp f; Args [a; b]; Exp g; Args [c; d]]
+     * into
+     *  [{exp = foo; args = []}; {exp = f; args = [a; b]}; {exp = g; args = [c; d]}]
+     *)
+    let (pipetree : Fastpipetree.t) = parse [] flatNodes in
+    (* Turn
+     *  [{exp = foo; args = []}; {exp = f; args = [a; b]}; {exp = g; args = [c; d]}]
+     * into
+     *  [foo; ->f(a, b); ->g(c, d)]
+     *)
+    let pipeSegments = match pipetree with
+    | hd::tl ->
+        let hd = Fastpipetree.formatNode ~first:true hd in
+        let tl = List.map (fun node ->
+          makeList [atom "->"; Fastpipetree.formatNode node]
+        ) tl in
+        hd::tl
+    | [] -> []
+    in
+    (* Provide nice breaking for: [foo; ->f(a, b); ->g(c, d)]
+     * foo
+     * ->f(a, b)
+     * ->g(c, d)
+     *)
+    makeList ~break:IfNeed ~inline:(true, true) pipeSegments
+
   (*
    * Replace (__x) => foo(__x) with foo(_)
    *)
@@ -3682,7 +3804,6 @@ let printer = object(self:'self)
       x
 
   method unparseExprRecurse x =
-    let x =  Reason_ast.processFastPipe x in
     let x = self#process_underscore_application x in
     (* If there are any attributes, render unary like `(~-) x [@ppx]`, and infix like `(+) x y [@attr]` *)
 
@@ -3723,6 +3844,10 @@ let printer = object(self:'self)
     | Pexp_apply (e, ls) -> (
       let ls = List.map (fun (l,expr) -> (l, self#process_underscore_application expr)) ls in
       match (e, ls) with
+      | (e, _) when Reason_heuristics.isFastPipe e ->
+          (* Fast pipe can be considered as simple because of the very high
+           * precedence of `->` *)
+          Simple (self#formatFastPipe x)
       | ({pexp_desc = Pexp_ident {txt = Ldot (Lident ("Array"),"get")}}, [(_,e1);(_,e2)]) ->
         begin match e1.pexp_desc with
           | Pexp_ident ({txt = Lident "_"}) ->
@@ -3830,7 +3955,7 @@ let printer = object(self:'self)
                | _ -> false)
             | _ -> false
           in
-          let leftItm = (match (Reason_ast.processFastPipe leftExpr).pexp_desc with
+          let leftItm = (match leftExpr.pexp_desc with
             | Pexp_apply (e,_) ->
               (match printedStringAndFixityExpr e with
                | Infix printedIdent when requireNoSpaceFor printedIdent ->
@@ -7201,7 +7326,6 @@ let printer = object(self:'self)
           makeTup ~uncurried (List.map self#label_x_expression_param params)
 
   method formatFunAppl ~jsxAttrs ~args ~funExpr ~applicationExpr ?(uncurried=false) () =
-    let funExpr = Reason_ast.processFastPipe funExpr in
     let uncurriedApplication = uncurried in
     (* If there was a JSX attribute BUT JSX component wasn't detected,
        that JSX attribute needs to be pretty printed so it doesn't get
@@ -7320,7 +7444,7 @@ let printer = object(self:'self)
             in
             label left right
           else
-            (* Since the heuristic says the line lenght is exceeded in this case,
+            (* Since the heuristic says the line length is exceeded in this case,
              * we conveniently format everything as
              * <label><left>Thing.map(</left><right><list>
              *   foo,
@@ -7347,7 +7471,7 @@ let printer = object(self:'self)
       let theFunc =
         source_map ~loc:funExpr.pexp_loc formattedFunExpr
       in
-      (*reset here only because [function,match,try,sequence] are lower priority*)
+      (* reset here only because [function,match,try,sequence] are lower priority *)
       (* The "expression location" might be different than the location of the actual
        * function application because things like surrounding { } expand the
        * parsed location (in body of while loop for example).
