@@ -17,7 +17,7 @@ else
   DIFF="diff -u"
 fi
 
-for version in v2 v3
+for version in v2
 do
   for i in {1..3}
   do
