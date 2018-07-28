@@ -124,7 +124,7 @@ Our lexer & parser use [Menhir](http://gallium.inria.fr/~fpottier/menhir/), a li
 
 - `src/rtop/reason_util.ml`, `reason_syntax_util.ml`: utils.
 
-- `src/reason-parser/reactjs_jsx_ppx_v2.ml/v3.ml`: our ReactJS interop that translates [Reason JSX](https://reasonml.github.io/docs/en/jsx.html) into something that ReactJS understands. See the comments in the file and the description in [ReasonReact](https://reasonml.github.io/reason-react/#reason-react-jsx).
+- `src/reason-parser/reactjs_jsx_ppx_v2.ml`: our ReactJS interop that translates [Reason JSX](https://reasonml.github.io/docs/en/jsx.html) into something that ReactJS understands. See the comments in the file and the description in [ReasonReact](https://reasonml.github.io/reason-react/#reason-react-jsx).
 
 - `src/reason-parser-tests/testOprint.ml`: unit tests for the outcome printer mentioned above. See the file for more info on how outcome printing is tested.
 
@@ -247,7 +247,7 @@ As you can see from other parts in the parser, many do have a `~loc` assigned to
 
 ## Working With PPX
 
-reactjs_jsx_ppx_v2/v3 uses the ppx system. It works on the AST. It helps being able to see the AST of a particular snippet. Assuming you've written some code in a file `foo.re`, run the following incantation to output the code's AST:
+reactjs_jsx_ppx_v2 uses the ppx system. It works on the AST. It helps being able to see the AST of a particular snippet. Assuming you've written some code in a file `foo.re`, run the following incantation to output the code's AST:
 
 ```
 ocamlc -dparsetree -ppx ./_build/install/default/bin/reactjs_jsx_ppx_v2.native -pp "./_build/install/default/bin/refmt_impl.native --print binary" -impl foo.re
@@ -258,8 +258,6 @@ That dumps the AST after accepting the ppx and the reason syntax. You can also d
 ```
 ocamlc -dsource -ppx ./_build/install/default/bin/reactjs_jsx_ppx_v2.native -pp "./_build/install/default/bin/refmt_impl.native --print binary" -impl foo.re | ./_build/install/default/bin/refmt_impl.native --parse ml --print re --interface false
 ```
-
-(Similar steps for reactjs_jsx_ppx_v3.)
 
 ## Testing Two Different Syntax Versions
 
