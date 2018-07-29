@@ -3640,9 +3640,9 @@ let printer = object(self:'self)
       let formatNode ?(first=false) {exp; args; uncurried} =
         let parens = match (exp.pexp_desc) with
         | Pexp_apply (e,_) -> (match printedStringAndFixityExpr e with
-          | UnaryPostfix "^" -> true
           | Infix printedIdent -> higherPrecedenceThan (Token fastPipeToken) (Token printedIdent)
-          | _ -> not first
+          | Normal -> not first
+          | _ -> true
         )
         | _ -> false
         in
