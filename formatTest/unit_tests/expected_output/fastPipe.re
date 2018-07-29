@@ -103,3 +103,9 @@ foo->([@attr] f(. a, b))->([@attr2] f(. a, b));
 foo->f(.);
 foo->f(.)->g(.);
 foo->([@attr] f(.))->([@attr] g(.));
+
+("some-string" ++ "another")->more;
+(-1)->foo;
+- 1->foo;
+!foo->bar;
+(!foo)->bar;

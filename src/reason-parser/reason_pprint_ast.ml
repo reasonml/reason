@@ -3638,14 +3638,13 @@ let printer = object(self:'self)
       type t = node list
 
       let formatNode ?(first=false) {exp; args; uncurried} =
-        let parens = match (first, exp.pexp_desc) with
-        | true, Pexp_apply ({
-              pexp_desc = Pexp_ident({txt = Longident.Lident("^")})},
-              _
-            ) -> true
-        | true, _ -> false
-        | _, Pexp_apply _ -> true
-        | _, _ -> false
+        let parens = match (exp.pexp_desc) with
+        | Pexp_apply (e,_) -> (match printedStringAndFixityExpr e with
+          | Infix printedIdent -> higherPrecedenceThan (Token fastPipeToken) (Token printedIdent)
+          | Normal -> not first
+          | _ -> true
+        )
+        | _ -> false
         in
         let layout = match args with
         | [] -> self#unparseExpr exp
