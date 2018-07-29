@@ -7239,7 +7239,7 @@ let printer = object(self:'self)
         else self#under_pipe#unparseExpr pc_rhs
       in
       source_map
-        (* Fake shift the location to accomodate for the bar, to make sure
+        (* Fake shift the location to accommodate for the bar, to make sure
            * the wrong comments don't make their way past the next bar. *)
         ~loc:(expandLocation ~expand:(0, 0) {
             loc_start = pc_lhs.ppat_loc.loc_start;
