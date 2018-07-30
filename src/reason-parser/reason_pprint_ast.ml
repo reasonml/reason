@@ -2453,8 +2453,8 @@ let printer = object(self:'self)
           let poly = match sl with
           | [] -> ct
           | sl ->
-            makeList ~break:IfNeed [
-              makeList ~postSpace:true [
+            makeList ~break:IfNeed ~postSpace:true [
+              makeList [
                 makeList ~postSpace:true (List.map (fun x -> self#tyvar x) sl);
                 atom ".";
               ];

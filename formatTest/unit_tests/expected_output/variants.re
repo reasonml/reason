@@ -276,7 +276,7 @@ let result =
   };
 
 let rec commentPolymorphicCases:
-  'a .
+  'a.
   option('a) => int
  =
   fun
