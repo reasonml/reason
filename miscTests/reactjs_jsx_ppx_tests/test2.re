@@ -28,7 +28,7 @@ module ReasonReact = {
 };
 
 let divRef = <div />;
-let divRefs = [|<div />, <div />|];
+let divRefs = [|<div />|];
 
 "=== DOM component ===";
 

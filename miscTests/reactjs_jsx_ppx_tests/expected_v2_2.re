@@ -22,10 +22,7 @@ module ReasonReact = {
   let fragment = (children: array('a)) => 1;
 };
 let divRef = ReactDOMRe.createElement("div", [||]);
-let divRefs = [|
-  ReactDOMRe.createElement("div", [||]),
-  ReactDOMRe.createElement("div", [||]),
-|];
+let divRefs = [|ReactDOMRe.createElement("div", [||])|];
 "=== DOM component ===";
 ReactDOMRe.createElement("div", [||]);
 ReactDOMRe.createElement(
