@@ -12,13 +12,16 @@
 (*
   The actual transform:
 
-  transform `div props1::a props2::b children::[foo, bar] () [@JSX]` into
-  `ReactDOMRe.createElement "div" props::[%bs.obj {props1: 1, props2: b}] [|foo,
-  bar|]`.
+  transform `[@JSX] div(~props1=a, ~props2=b, ~children=[foo, bar], ())` into
+  `ReactDOMRe.createElement("div", ~props={"props1": 1, "props2": b}, [|foo,
+  bar|])`.
 
   transform the upper-cased case
-  `Foo.createElement key::a ref::b foo::bar children::[] () [@JSX]` into
-  `ReasonReact.element key::a ref::b (Foo.make foo::bar [||] [@JSX])`
+  `[@JSX] Foo.createElement(~key=a, ~ref=b, ~foo=bar, ~children=[], ())` into
+  `ReasonReact.element(~key=a, ~ref=b, Foo.make(~foo=bar, [||]))`
+
+  transform `[@JSX] [foo]` into
+  `ReactDOMRe.createElement(ReasonReact.fragment, [|foo|])`
 *)
 
 (*
@@ -102,38 +105,6 @@ let extractChildrenForDOMElements ?(removeLastPositionUnit=false) ~loc propsAndC
 (* TODO: some line number might still be wrong *)
 let jsxMapper () =
 
-  let jsxTransformV3 modulePath mapper loc attrs callExpression callArguments =
-    let (children, argsWithLabels) =
-      extractChildrenForDOMElements ~loc ~removeLastPositionUnit:true callArguments in
-    let (argsKeyRef, argsForMake) = List.partition argIsKeyRef argsWithLabels in
-    let childrenExpr = match children with
-    (* if it's a single, non-jsx item, keep it so (remove the list wrapper, don't add the array wrapper) *)
-    | {pexp_desc = Pexp_construct (
-        {txt = Lident "::"; loc},
-        Some {pexp_desc = Pexp_tuple [
-          ({pexp_attributes} as singleItem);
-          {pexp_desc = Pexp_construct ({txt = Lident "[]"}, None)}
-        ]}
-      )} when List.for_all (fun (attribute, _) -> attribute.txt <> "JSX") pexp_attributes ->
-      mapper.expr mapper singleItem
-    (* if it's a single jsx item, or multiple items, turn list into an array *)
-    | nonEmptyChildren -> transformChildren ~loc ~mapper nonEmptyChildren
-    in
-    let recursivelyTransformedArgsForMake = argsForMake |> List.map (fun (label, expression) -> (label, mapper.expr mapper expression)) in
-    let args = recursivelyTransformedArgsForMake @ [ (nolabel, childrenExpr) ] in
-    let wrapWithReasonReactElement e = (* ReasonReact.element ::key ::ref (...) *)
-      Exp.apply
-        ~loc
-        (Exp.ident ~loc {loc; txt = Ldot (Lident "ReasonReact", "element")})
-        (argsKeyRef @ [(nolabel, e)]) in
-    Exp.apply
-      ~loc
-      ~attrs
-      (* Foo.make *)
-      (Exp.ident ~loc {loc; txt = Ldot (modulePath, "make")})
-      args
-    |> wrapWithReasonReactElement in
-
   let jsxTransformV2 modulePath mapper loc attrs callExpression callArguments =
     let (children, argsWithLabels) =
       extractChildrenForDOMElements ~loc ~removeLastPositionUnit:true callArguments in
@@ -195,7 +166,7 @@ let jsxMapper () =
   let structure =
     (fun mapper structure -> match structure with
       (*
-        match against [@@@bs.config {foo, jsx: ...}] at the file-level. This
+        match against [@bs.config {foo, jsx: ...}] at the file-level. This
         indicates which version of JSX we're using. This code stays here because
         we used to have 2 versions of JSX PPX (and likely will again in the
         future when JSX PPX changes). So the architecture for switching between
@@ -220,19 +191,17 @@ let jsxMapper () =
             match (jsxField, recordFieldsWithoutJsx) with
             (* no file-level jsx config found *)
             | ([], _) -> default_mapper.structure mapper structure
-            (* {jsx: 2 | 3} *)
+            (* {jsx: 2} *)
 (* #if defined BS_NO_COMPILER_PATCH then *)
             | ((_, {pexp_desc = Pexp_constant (Pconst_integer (version, _))})::rest, recordFieldsWithoutJsx) -> begin
                 (match version with
                 | "2" -> jsxVersion := Some 2
-                | "3" -> jsxVersion := Some 3
-                | _ -> raise (Invalid_argument "JSX: the file-level bs.config's jsx version must be either 2 or 3"));
+                | _ -> raise (Invalid_argument "JSX: the file-level bs.config's jsx version must be 2"));
 (* #else *)
             (* | ((_, {pexp_desc = Pexp_constant (Const_int version)})::rest, recordFieldsWithoutJsx) -> begin *)
                 (* (match version with *)
                 (* | 2 -> jsxVersion := Some 2 *)
-                (* | 3 -> jsxVersion := Some 3 *)
-                (* | _ -> raise (Invalid_argument "JSX: the file-level bs.config's jsx version must be either 2 or 3")); *)
+                (* | _ -> raise (Invalid_argument "JSX: the file-level bs.config's jsx version must be 2")); *)
 (* #end *)
                 match recordFieldsWithoutJsx with
                 (* record empty now, remove the whole bs.config attribute *)
@@ -256,16 +225,16 @@ let jsxMapper () =
        (match caller with
         | {txt = Lident "createElement"} ->
           raise (Invalid_argument "JSX: `createElement` should be preceeded by a module name.")
-        (* Foo.createElement prop1::foo prop2:bar children::[] () *)
+        (* Foo.createElement(~prop1=foo, ~prop2=bar, ~children=[], ()) *)
         | {loc; txt = Ldot (modulePath, ("createElement" | "make"))} ->
           let f = match !jsxVersion with
+            | None
             | Some 2 -> jsxTransformV2 modulePath
-            | Some 3 -> jsxTransformV3 modulePath
-            | Some _ -> raise (Invalid_argument "JSX: the JSX version must be either 2 or 3")
-            | None -> jsxTransformV2 modulePath
+            | Some _ -> raise (Invalid_argument "JSX: the JSX version must be 2")
           in f mapper loc attrs callExpression callArguments
-        (* div prop1::foo prop2:bar children::[bla] () *)
-        (* turn that into ReactDOMRe.createElement props::(ReactDOMRe.props props1::foo props2::bar ()) [|bla|] *)
+        (* div(~prop1=foo, ~prop2=bar, ~children=[bla], ()) *)
+        (* turn that into
+          ReactDOMRe.createElement(~props=ReactDOMRe.props(~props1=foo, ~props2=bar, ()), [|bla|]) *)
         | {loc; txt = Lident id} ->
           lowercaseCaller mapper loc attrs callArguments id
         | {txt = Ldot (_, anythingNotCreateElementOrMake)} ->
