@@ -18,6 +18,7 @@ module Bar = {
 };
 module ReasonReact = {
   let element = (~key=?, ~ref=?, component) => 1;
+  let fragment = children => 1;
 };
 let divRef = ReactDOMRe.createElement("div", [||]);
 "=== DOM component ===";
@@ -178,3 +179,34 @@ ReasonReact.element(
   Foo.Bar.make(~className="hello", [|ReasonReact.element(Bar.make([||]))|]),
 );
 ReasonReact.element(Foo.make([||]));
+"=== Fragment ===";
+ReactDOMRe.createElement(ReasonReact.fragment, [||]);
+ReactDOMRe.createElement(ReasonReact.fragment, [|1|]);
+ReactDOMRe.createElement(
+  ReasonReact.fragment,
+  [|
+    ReactDOMRe.createElement(
+      ReasonReact.fragment,
+      [|ReactDOMRe.createElement("div", [||])|],
+    ),
+  |],
+);
+ReactDOMRe.createElement(
+  ReasonReact.fragment,
+  [|ReactDOMRe.createElement(ReasonReact.fragment, [||]), 2|],
+);
+ReactDOMRe.createElement(
+  ReasonReact.fragment,
+  [|ReasonReact.element(Foo.make([|1|]))|],
+);
+ReactDOMRe.createElement(
+  ReasonReact.fragment,
+  [|
+    ReactDOMRe.createElement(
+      "div",
+      ~props=
+        ReactDOMRe.props(~comp=ReasonReact.element(Bar.make(divRef)), ()),
+      ReactDOMRe.createElement("li", [||]),
+    ),
+  |],
+);

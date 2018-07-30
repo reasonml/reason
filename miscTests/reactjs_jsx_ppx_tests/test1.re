@@ -23,6 +23,7 @@ module Bar = {
 
 module ReasonReact = {
   let element (~key=?, ~ref=?, component) = 1;
+  let fragment (children) = 1;
 };
 
 let divRef = <div />;
@@ -121,3 +122,17 @@ let divRef = <div />;
   correct ReasonReact-specific call */
 
 ([@JSX] Foo.make(~children=[], ()));
+
+"=== Fragment ===";
+
+<> </>;
+
+<> 1 </>;
+
+<> <> <div /> </> </>;
+
+<> <> </> 2 </>;
+
+<> <Foo> 1 </Foo> </>;
+
+<> <div comp=(<Bar> ...divRef </Bar>)> ...<li /> </div> </>;
