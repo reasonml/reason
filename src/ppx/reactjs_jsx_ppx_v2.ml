@@ -16,6 +16,9 @@
   `ReactDOMRe.createElement("div", ~props={"props1": 1, "props2": b}, [|foo,
   bar|])`.
 
+  transform `[@JSX] div(~props1=a, ~props2=b, ~children=foo, ())` into
+  `ReactDOMRe.createElementVariadic("div", ~props={"props1": 1, "props2": b}, foo)`.
+
   transform the upper-cased case
   `[@JSX] Foo.createElement(~key=a, ~ref=b, ~foo=bar, ~children=[], ())` into
   `ReasonReact.element(~key=a, ~ref=b, Foo.make(~foo=bar, [||]))`
@@ -65,8 +68,8 @@ open Parsetree
 open Longident
 
 (* if children is a list, convert it to an array while mapping each element. If not, just map over it, as usual *)
-let transformChildren ~loc ~mapper theList =
-  let rec transformChildren' theList accum =
+let transformChildrenIfList ~loc ~mapper theList =
+  let rec transformChildren_ theList accum =
     (* not in the sense of converting a list to an array; convert the AST
        reprensentation of a list to the AST reprensentation of an array *)
     match theList with
@@ -76,12 +79,12 @@ let transformChildren ~loc ~mapper theList =
         {txt = Lident "::"},
         Some {pexp_desc = Pexp_tuple (v::acc::[])}
       )} ->
-      transformChildren' acc ((mapper.expr mapper v)::accum)
+      transformChildren_ acc ((mapper.expr mapper v)::accum)
     | notAList -> mapper.expr mapper notAList
   in
-  transformChildren' theList []
+  transformChildren_ theList []
 
-let extractChildrenForDOMElements ?(removeLastPositionUnit=false) ~loc propsAndChildren =
+let extractChildren ?(removeLastPositionUnit=false) ~loc propsAndChildren =
   let rec allButLast_ lst acc = match lst with
     | [] -> []
 (* #if defined BS_NO_COMPILER_PATCH then *)
@@ -95,24 +98,25 @@ let extractChildrenForDOMElements ?(removeLastPositionUnit=false) ~loc propsAndC
   in
   let allButLast lst = allButLast_ lst [] |> List.rev in
   match (List.partition (fun (label, expr) -> label = labelled "children") propsAndChildren) with
-  | ((label, childrenExpr)::[], props) ->
-    (childrenExpr, if removeLastPositionUnit then allButLast props else props)
   | ([], props) ->
-    (* no children provided? Place a placeholder list (don't forgot we're talking about DOM element conversion here only) *)
+    (* no children provided? Place a placeholder list *)
     (Exp.construct ~loc {loc; txt = Lident "[]"} None, if removeLastPositionUnit then allButLast props else props)
+  | ([(label, childrenExpr)], props) ->
+    (childrenExpr, if removeLastPositionUnit then allButLast props else props)
   | (moreThanOneChild, props) -> raise (Invalid_argument "JSX: somehow there's more than one `children` label")
 
 (* TODO: some line number might still be wrong *)
 let jsxMapper () =
 
-  let jsxTransformV2 modulePath mapper loc attrs callExpression callArguments =
-    let (children, argsWithLabels) =
-      extractChildrenForDOMElements ~loc ~removeLastPositionUnit:true callArguments in
+  let jsxVersion = ref None in
+
+  let transformUppercaseCall modulePath mapper loc attrs callExpression callArguments =
+    let (children, argsWithLabels) = extractChildren ~loc ~removeLastPositionUnit:true callArguments in
     let (argsKeyRef, argsForMake) = List.partition argIsKeyRef argsWithLabels in
-    let childrenExpr = transformChildren ~loc ~mapper children in
+    let childrenExpr = transformChildrenIfList ~loc ~mapper children in
     let recursivelyTransformedArgsForMake = argsForMake |> List.map (fun (label, expression) -> (label, mapper.expr mapper expression)) in
     let args = recursivelyTransformedArgsForMake @ [ (nolabel, childrenExpr) ] in
-    let wrapWithReasonReactElement e = (* ReasonReact.element ::key ::ref (...) *)
+    let wrapWithReasonReactElement e = (* ReasonReact.element(~key, ~ref, ...) *)
       Exp.apply
         ~loc
         (Exp.ident ~loc {loc; txt = Ldot (Lident "ReasonReact", "element")})
@@ -125,13 +129,36 @@ let jsxMapper () =
       args
     |> wrapWithReasonReactElement in
 
-  let lowercaseCaller mapper loc attrs callArguments id  =
-    let (children, propsWithLabels) =
-      extractChildrenForDOMElements ~loc callArguments in
+  let transformLowercaseCall mapper loc attrs callArguments id =
+    let (children, nonChildrenProps) = extractChildren ~loc callArguments in
     let componentNameExpr = constantString ~loc id in
-    let childrenExpr = transformChildren ~loc ~mapper children in
-    let args = match propsWithLabels with
-      | [theUnitArgumentAtEnd] ->
+    let childrenExpr = transformChildrenIfList ~loc ~mapper children in
+    let createElementCall = match children with
+      (* [@JSX] div(~children=[a]), coming from <div> a </div> *)
+      | {
+          pexp_desc =
+           Pexp_construct ({txt = Lident "::"; loc}, Some {pexp_desc = Pexp_tuple _ })
+           | Pexp_construct ({txt = Lident "[]"; loc}, None);
+          pexp_attributes
+        } -> "createElement"
+      (* [@JSX] div(~children=[|a|]), coming from <div> ...[|a|] </div> *)
+      | {
+          pexp_desc = (Pexp_array _);
+          pexp_attributes
+        } ->
+        raise (Invalid_argument "A spread + an array literal as a DOM element's \
+          children would cancel each other out, and thus don't make sense written \
+          together. You can simply remove the spread and the array literal.")
+      (* [@JSX] div(~children= <div />), coming from <div> ...<div/> </div> *)
+      | {
+          pexp_attributes
+        } when pexp_attributes |> List.exists (fun (attribute, _) -> attribute.txt = "JSX") ->
+        raise (Invalid_argument "A spread + a JSX literal as a DOM element's \
+          children don't make sense written together. You can simply remove the spread.")
+      | notAList -> "createElementVariadic"
+    in
+    let args = match nonChildrenProps with
+      | [_justTheUnitArgumentAtEnd] ->
         [
           (* "div" *)
           (nolabel, componentNameExpr);
@@ -148,7 +175,7 @@ let jsxMapper () =
         [
           (* "div" *)
           (nolabel, componentNameExpr);
-          (* ReactDOMRe.props className:blabla foo::bar () *)
+          (* ReactDOMRe.props(~className=blabla, ~foo=bar, ()) *)
           (labelled "props", propsCall);
           (* [|moreCreateElementCallsHere|] *)
           (nolabel, childrenExpr)
@@ -157,11 +184,51 @@ let jsxMapper () =
       ~loc
       (* throw away the [@JSX] attribute and keep the others, if any *)
       ~attrs
-      (* ReactDOMRe.createDOMElement *)
-      (Exp.ident ~loc {loc; txt = Ldot (Lident "ReactDOMRe", "createElement")})
-      args in
+      (* ReactDOMRe.createElement *)
+      (Exp.ident ~loc {loc; txt = Ldot (Lident "ReactDOMRe", createElementCall)})
+      args
+  in
 
-  let jsxVersion = ref None in
+  let transformJsxCall mapper callExpression callArguments attrs =
+    (match callExpression.pexp_desc with
+     | Pexp_ident caller ->
+       (match caller with
+        | {txt = Lident "createElement"} ->
+          raise (Invalid_argument "JSX: `createElement` should be preceeded by a module name.")
+
+        (* Foo.createElement(~prop1=foo, ~prop2=bar, ~children=[], ()) *)
+        | {loc; txt = Ldot (modulePath, ("createElement" | "make"))} ->
+          (match !jsxVersion with
+          | None
+          | Some 2 -> transformUppercaseCall modulePath mapper loc attrs callExpression callArguments
+          | Some _ -> raise (Invalid_argument "JSX: the JSX version must be 2"))
+
+        (* div(~prop1=foo, ~prop2=bar, ~children=[bla], ()) *)
+        (* turn that into
+          ReactDOMRe.createElement(~props=ReactDOMRe.props(~props1=foo, ~props2=bar, ()), [|bla|]) *)
+        | {loc; txt = Lident id} ->
+          transformLowercaseCall mapper loc attrs callArguments id
+
+        | {txt = Ldot (_, anythingNotCreateElementOrMake)} ->
+          raise (
+            Invalid_argument
+              ("JSX: the JSX attribute should be attached to a `YourModuleName.createElement` or `YourModuleName.make` call. We saw `"
+               ^ anythingNotCreateElementOrMake
+               ^ "` instead"
+              )
+          )
+
+        | {txt = Lapply _} ->
+          (* don't think there's ever a case where this is reached *)
+          raise (
+            Invalid_argument "JSX: encountered a weird case while processing the code. Please report this!"
+          )
+       )
+     | anythingElseThanIdent ->
+       raise (
+         Invalid_argument "JSX: `createElement` should be preceeded by a simple, direct module name."
+       )
+    ) in
 
   let structure =
     (fun mapper structure -> match structure with
@@ -181,80 +248,42 @@ let jsxMapper () =
         of JSX
       *)
       | {
-            pstr_loc;
-            pstr_desc = Pstr_attribute (
-              ({txt = "bs.config"} as bsConfigLabel),
-              PStr [{pstr_desc = Pstr_eval ({pexp_desc = Pexp_record (recordFields, b)} as innerConfigRecord, a)} as configRecord]
-            )
-          }::restOfStructure -> begin
-            let (jsxField, recordFieldsWithoutJsx) = recordFields |> List.partition (fun ({txt}, _) -> txt = Lident "jsx") in
-            match (jsxField, recordFieldsWithoutJsx) with
-            (* no file-level jsx config found *)
-            | ([], _) -> default_mapper.structure mapper structure
-            (* {jsx: 2} *)
+          pstr_loc;
+          pstr_desc = Pstr_attribute (
+            ({txt = "bs.config"} as bsConfigLabel),
+            PStr [{pstr_desc = Pstr_eval ({pexp_desc = Pexp_record (recordFields, b)} as innerConfigRecord, a)} as configRecord]
+          )
+        }::restOfStructure -> begin
+          let (jsxField, recordFieldsWithoutJsx) = recordFields |> List.partition (fun ({txt}, _) -> txt = Lident "jsx") in
+          match (jsxField, recordFieldsWithoutJsx) with
+          (* no file-level jsx config found *)
+          | ([], _) -> default_mapper.structure mapper structure
+          (* {jsx: 2} *)
 (* #if defined BS_NO_COMPILER_PATCH then *)
-            | ((_, {pexp_desc = Pexp_constant (Pconst_integer (version, _))})::rest, recordFieldsWithoutJsx) -> begin
-                (match version with
-                | "2" -> jsxVersion := Some 2
-                | _ -> raise (Invalid_argument "JSX: the file-level bs.config's jsx version must be 2"));
+          | ((_, {pexp_desc = Pexp_constant (Pconst_integer (version, _))})::rest, recordFieldsWithoutJsx) -> begin
+              (match version with
+              | "2" -> jsxVersion := Some 2
+              | _ -> raise (Invalid_argument "JSX: the file-level bs.config's jsx version must be 2"));
 (* #else *)
-            (* | ((_, {pexp_desc = Pexp_constant (Const_int version)})::rest, recordFieldsWithoutJsx) -> begin *)
-                (* (match version with *)
-                (* | 2 -> jsxVersion := Some 2 *)
-                (* | _ -> raise (Invalid_argument "JSX: the file-level bs.config's jsx version must be 2")); *)
+          (* | ((_, {pexp_desc = Pexp_constant (Const_int version)})::rest, recordFieldsWithoutJsx) -> begin *)
+              (* (match version with *)
+              (* | 2 -> jsxVersion := Some 2 *)
+              (* | _ -> raise (Invalid_argument "JSX: the file-level bs.config's jsx version must be 2")); *)
 (* #end *)
-                match recordFieldsWithoutJsx with
-                (* record empty now, remove the whole bs.config attribute *)
-                | [] -> default_mapper.structure mapper restOfStructure
-                | fields -> default_mapper.structure mapper ({
-                  pstr_loc;
-                  pstr_desc = Pstr_attribute (
-                    bsConfigLabel,
-                    PStr [{configRecord with pstr_desc = Pstr_eval ({innerConfigRecord with pexp_desc = Pexp_record (fields, b)}, a)}]
-                  )
-                }::restOfStructure)
-              end
-          | (_, recordFieldsWithoutJsx) -> raise (Invalid_argument "JSX: the file-level bs.config's {jsx: ...} config accepts only a version number")
-        end
+              match recordFieldsWithoutJsx with
+              (* record empty now, remove the whole bs.config attribute *)
+              | [] -> default_mapper.structure mapper restOfStructure
+              | fields -> default_mapper.structure mapper ({
+                pstr_loc;
+                pstr_desc = Pstr_attribute (
+                  bsConfigLabel,
+                  PStr [{configRecord with pstr_desc = Pstr_eval ({innerConfigRecord with pexp_desc = Pexp_record (fields, b)}, a)}]
+                )
+              }::restOfStructure)
+            end
+        | (_, recordFieldsWithoutJsx) -> raise (Invalid_argument "JSX: the file-level bs.config's {jsx: ...} config accepts only a version number")
+      end
       | _ -> default_mapper.structure mapper structure
-    ) in
-
-  let transformJsxCall mapper callExpression callArguments attrs =
-    (match callExpression.pexp_desc with
-     | Pexp_ident caller ->
-       (match caller with
-        | {txt = Lident "createElement"} ->
-          raise (Invalid_argument "JSX: `createElement` should be preceeded by a module name.")
-        (* Foo.createElement(~prop1=foo, ~prop2=bar, ~children=[], ()) *)
-        | {loc; txt = Ldot (modulePath, ("createElement" | "make"))} ->
-          let f = match !jsxVersion with
-            | None
-            | Some 2 -> jsxTransformV2 modulePath
-            | Some _ -> raise (Invalid_argument "JSX: the JSX version must be 2")
-          in f mapper loc attrs callExpression callArguments
-        (* div(~prop1=foo, ~prop2=bar, ~children=[bla], ()) *)
-        (* turn that into
-          ReactDOMRe.createElement(~props=ReactDOMRe.props(~props1=foo, ~props2=bar, ()), [|bla|]) *)
-        | {loc; txt = Lident id} ->
-          lowercaseCaller mapper loc attrs callArguments id
-        | {txt = Ldot (_, anythingNotCreateElementOrMake)} ->
-          raise (
-            Invalid_argument
-              ("JSX: the JSX attribute should be attached to a `YourModuleName.createElement` or `YourModuleName.make` call. We saw `"
-               ^ anythingNotCreateElementOrMake
-               ^ "` instead"
-              )
-          )
-        | {txt = Lapply _} ->
-          (* don't think there's ever a case where this is reached *)
-          raise (
-            Invalid_argument "JSX: encountered a weird case while processing the code. Please report this!"
-          )
-       )
-     | anythingElseThanIdent ->
-       raise (
-         Invalid_argument "JSX: `createElement` should be preceeded by a simple, direct module name."
-       )
     ) in
 
   let expr =
@@ -269,6 +298,7 @@ let jsxMapper () =
          (* no JSX attribute *)
          | ([], _) -> default_mapper.expr mapper expression
          | (_, nonJSXAttributes) -> transformJsxCall mapper callExpression callArguments nonJSXAttributes)
+
        (* is it a list with jsx attribute? Reason <>foo</> desugars to [@JSX][foo]*)
        | {
            pexp_desc =
@@ -282,7 +312,7 @@ let jsxMapper () =
           | ([], _) -> default_mapper.expr mapper expression
           | (_, nonJSXAttributes) ->
             let fragment = Exp.ident ~loc {loc; txt = Ldot (Lident "ReasonReact", "fragment")} in
-            let childrenExpr = transformChildren ~loc ~mapper listItems in
+            let childrenExpr = transformChildrenIfList ~loc ~mapper listItems in
             let args = [
               (* "div" *)
               (nolabel, fragment);
@@ -293,7 +323,7 @@ let jsxMapper () =
               ~loc
               (* throw away the [@JSX] attribute and keep the others, if any *)
               ~attrs:nonJSXAttributes
-              (* ReactDOMRe.createDOMElement *)
+              (* ReactDOMRe.createElement *)
               (Exp.ident ~loc {loc; txt = Ldot (Lident "ReactDOMRe", "createElement")})
               args
          )

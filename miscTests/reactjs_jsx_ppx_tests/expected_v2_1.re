@@ -1,5 +1,6 @@
 module ReactDOMRe = {
-  let createElement = (tag, ~props=?, children) => 1;
+  let createElement = (tag, ~props=?, children: array('a)) => 1;
+  let createElementVariadic = (tag, ~props=?, children: array('a)) => 1;
   let props = (~className=?, ~width=?, ~comp=?, ~compCallback=?, ()) => 1;
 };
 module Foo = {
@@ -17,9 +18,13 @@ module Bar = {
 };
 module ReasonReact = {
   let element = (~key=?, ~ref=?, component) => 1;
-  let fragment = children => 1;
+  let fragment = (children: array('a)) => 1;
 };
 let divRef = ReactDOMRe.createElement("div", [||]);
+let divRefs = [|
+  ReactDOMRe.createElement("div", [||]),
+  ReactDOMRe.createElement("div", [||]),
+|];
 "=== DOM component ===";
 ReactDOMRe.createElement("div", [||]);
 ReactDOMRe.createElement(
@@ -158,8 +163,13 @@ ReasonReact.element(
 ReactDOMRe.createElement(
   "div",
   ~props=ReactDOMRe.props(~comp=ReasonReact.element(Bar.make(divRef)), ()),
-  ReactDOMRe.createElement("li", [||]),
+  [||],
 );
+"=== Special transform for DOM component with a single child spread ===";
+ReactDOMRe.createElementVariadic("div", divRefs);
+ReactDOMRe.createElementVariadic("div", (() => divRefs)());
+ReactDOMRe.createElement("div", [||]);
+ReactDOMRe.createElement("div", [|ReactDOMRe.createElement("div", [||])|]);
 "=== With ref/key ===";
 ReasonReact.element(~key="someKey", Foo.make(~className="hello", [||]));
 ReasonReact.element(
@@ -205,7 +215,7 @@ ReactDOMRe.createElement(
       "div",
       ~props=
         ReactDOMRe.props(~comp=ReasonReact.element(Bar.make(divRef)), ()),
-      ReactDOMRe.createElement("li", [||]),
+      [||],
     ),
   |],
 );
