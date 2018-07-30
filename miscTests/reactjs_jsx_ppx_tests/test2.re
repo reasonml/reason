@@ -114,6 +114,10 @@ let divRefs = [|<div />|];
 
 <div> ...((() => divRefs)()) </div>;
 
+<div className="hi"> ...divRefs </div>;
+
+<div className="hi"> ...((() => divRefs)()) </div>;
+
 <div> ...[] </div>;
 
 <div> ...[<div />] </div>;
