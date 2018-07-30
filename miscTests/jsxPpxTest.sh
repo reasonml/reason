@@ -19,7 +19,7 @@ fi
 
 for version in v2
 do
-  for i in {1..3}
+  for i in {1..2}
   do
     test="$testPath/test$i.re"
     expected="$testPath/expected_${version}_${i}.re"
