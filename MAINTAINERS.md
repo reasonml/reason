@@ -34,7 +34,7 @@ prebuilt global installs of refmt, and merlin together in one npm instal.
 `reason-cli` is the project that performs that task, and it packages up
 prebuilts of the packages you already pushed to npm above.
 
-See the [https://github.com/reasonml/reason-cli](reason-cli) page for
+See the [reason-cli](https://github.com/reasonml/reason-cli) page for
 instructions on performing that release.
 
 ## Releasing Native Packages To Opam:
