@@ -166,6 +166,16 @@ ReactDOMRe.createElement(
 "=== Special transform for DOM component with a single child spread ===";
 ReactDOMRe.createElementVariadic("div", divRefs);
 ReactDOMRe.createElementVariadic("div", (() => divRefs)());
+ReactDOMRe.createElementVariadic(
+  "div",
+  ~props=ReactDOMRe.props(~className="hi", ()),
+  divRefs,
+);
+ReactDOMRe.createElementVariadic(
+  "div",
+  ~props=ReactDOMRe.props(~className="hi", ()),
+  (() => divRefs)(),
+);
 ReactDOMRe.createElement("div", [||]);
 ReactDOMRe.createElement("div", [|ReactDOMRe.createElement("div", [||])|]);
 "=== With ref/key ===";
