@@ -805,6 +805,9 @@ and print_out_constr ppf (name, tyl,ret_type_opt) =
       begin match tyl with
       | [] ->
           pp_print_string ppf name
+      | [Otyp_record lbls] ->
+        fprintf ppf "@[<2>%s {%a@;<1 -2>}@]" name
+          (print_list_init print_out_label (fun ppf -> fprintf ppf "@ ")) lbls
       | _ ->
           fprintf ppf "@[<2>%s(%a)@]" name
             (print_typlist print_simple_out_type ",") tyl
@@ -813,6 +816,10 @@ and print_out_constr ppf (name, tyl,ret_type_opt) =
       begin match tyl with
       | [] ->
           fprintf ppf "@[<2>%s:@ %a@]" name print_simple_out_type ret_type
+      | [Otyp_record lbls] ->
+        fprintf ppf "@[<2>%s {%a@;<1 -2>}: %a@]" name
+          (print_list_init print_out_label (fun ppf -> fprintf ppf "@ ")) lbls
+          print_simple_out_type ret_type
       | _ ->
           fprintf ppf "@[<2>%s(%a): %a@]" name
             (print_typlist print_simple_out_type ",") tyl
