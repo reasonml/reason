@@ -3638,18 +3638,22 @@ let printer = object(self:'self)
       type t = node list
 
       let formatNode ?(first=false) {exp; args; uncurried} =
+        let formatLayout expr =
+          let formatted = if first then
+            self#ensureExpression ~reducesOnToken:(Token fastPipeToken) expr
+          else
+            self#ensureContainingRule ~withPrecedence:(Token fastPipeToken) ~reducesAfterRight:expr ()
+          in
+          self#unparseResolvedRule formatted
+        in
         let parens = match (exp.pexp_desc) with
-        | Pexp_apply (e,_) -> (match printedStringAndFixityExpr e with
-          | Infix printedIdent -> higherPrecedenceThan (Token fastPipeToken) (Token printedIdent)
-          | Normal -> not first
-          | _ -> true
-        )
+        | Pexp_apply (e,_) -> printedStringAndFixityExpr e = UnaryPostfix "^"
         | _ -> false
         in
         let layout = match args with
-        | [] -> self#unparseExpr exp
+        | [] -> formatLayout exp
         | args ->
-            let e = self#unparseExpr exp in
+            let e = formatLayout exp  in
             let args = match (uncurried, args) with
             | uncurried, [{pexp_desc=Pexp_construct({txt = Longident.Lident("()")}, None)}] ->
                 if uncurried then atom "(.)" else atom "()"

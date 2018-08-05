@@ -109,3 +109,7 @@ foo->([@attr] f(.))->([@attr] g(.));
 -1->foo;
 !foo->bar;
 (!foo)->bar;
+
+a->(b##c);
+
+(a->b)##c;
