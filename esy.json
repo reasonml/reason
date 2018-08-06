@@ -2,7 +2,7 @@
   "name": "reason-dev",
   "notes": "This is just the dev package config. See ./scripts/esy/ for release package configs",
   "license": "MIT",
-  "version": "3.3.0",
+  "version": "3.3.2",
   "dependencies": {
     "@esy-ocaml/substs": "^0.0.1",
     "@esy-ocaml/esy-installer": "^0.0.0",
