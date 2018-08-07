@@ -21,3 +21,12 @@ let c = true;
 
 /* parses as !(a->b->c) */
 let t3: bool = !a->b->c;
+
+/* parse fast pipe with  underscore application correct */
+let doStuff = (a: int, b: int, c: int): int => {
+  a + 2 * b + 3 * c;
+};
+
+let (|.) = (a, f) => f(a);
+
+let t4: int = 5->doStuff(1, _, 7);
