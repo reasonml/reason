@@ -32,3 +32,5 @@ let doStuff = (a: int, b: int, c: int): int =>
 let (|.) = (a, f) => f(a);
 
 let t4: int = 5->doStuff(1, _, 7);
+let t5: int =
+  5->doStuff(1, _, 7)->doStuff(1, _, 7);
