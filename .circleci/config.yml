@@ -129,7 +129,6 @@ jobs:
           command: |
             ~/.npm-global/bin/esy build
             _build/install/default/bin/refmt --version
-            node scripts/esy-prepublish.js src/refmt src/rtop
       # Use both pre and post build caches so that we're more likely
       # to have dependencies cached. `esy build` is more likely to fail,
       # so this will make the push that fixes the build faster
