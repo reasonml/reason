@@ -15,10 +15,10 @@ versions of the Opam packages.
     git rebase origin/master
     vim -O esy.json scripts/esy/esy.reason.json
     # Then edit the version number accordingly on BOTH files.
-    verson=3.3.0 make pre_release
-    git commit - "Bump version"
+    version=3.3.2 make pre_release
+    git commit -m "Bump version"
     git push origin HEAD:PullRequestForVersion # Commit these version bumps
-    node ./scripts/esy-prepublish.js
+    node ./scripts/esy-prepublish.js scripts/esy-prepublish.js src/refmt src/rtop
 
 Then follow the printed instructions for pushing any of the packages to npm.
 They will show up under `@esy-ocaml/reason` etc.
