@@ -1,6 +1,6 @@
 ## 3.3.2
 
-Big release! No breaking change. Big shout out to @anmonteiro and @iwanKaramazow!
+Big release! No breaking change. Big shout out to [@anmonteiro](https://twitter.com/anmonteiro90) and [@iwanKaramazow](https://twitter.com/_iwan_refmt)!
 
 Major:
 - Fast pipe `|.` now got a Reason sugar, `->`, with better precedence support than the former ([1999](https://github.com/facebook/reason/pull/1999), [2078](https://github.com/facebook/reason/pull/2078), [2092](https://github.com/facebook/reason/pull/2092), [2082](https://github.com/facebook/reason/pull/2082), [2087](https://github.com/facebook/reason/pull/2087), [2055](https://github.com/facebook/reason/pull/2055)).
