@@ -603,7 +603,33 @@ let process_underscore_application args =
   let wrap exp_apply = match !exp_question with
     | Some {pexp_loc=loc} ->
         let pattern = mkpat (Ppat_var (mkloc hidden_var loc)) ~loc in
-        mkexp (Pexp_fun (Nolabel, None, pattern, exp_apply)) ~loc
+        begin match exp_apply.pexp_desc with
+        (* Transform fast pipe with underscore application correct:
+         * 5->doStuff(3, _, 7);
+         * (5 |. doStuff)(3, _, 7)
+         * 5 |. (__x => doStuff(3, __x, 7))
+         *)
+        | Pexp_apply(
+          {pexp_desc= Pexp_apply(
+            {pexp_desc = Pexp_ident({txt = Longident.Lident("|.")})} as pipeExp,
+            [Nolabel, arg1; Nolabel, ({pexp_desc = Pexp_ident(ident)} as arg2)]
+            (*         5                            doStuff                   *)
+          )},
+          args (* [3, __x, 7] *)
+          ) ->
+            (* build `doStuff(3, __x, 7)` *)
+            let innerApply = {arg2 with pexp_desc = Pexp_apply(arg2, args)} in
+            (* build `__x => doStuff(3, __x, 7)` *)
+            let innerFun =
+              mkexp (Pexp_fun (Nolabel, None, pattern, innerApply)) ~loc
+            in
+            (* build `5 |. (__x => doStuff(3, __x, 7))` *)
+            {exp_apply with pexp_desc =
+              Pexp_apply(pipeExp, [Nolabel, arg1; Nolabel, innerFun])
+            }
+        | _ ->
+          mkexp (Pexp_fun (Nolabel, None, pattern, exp_apply)) ~loc
+        end
     | None ->
         exp_apply in
   (args, wrap)
