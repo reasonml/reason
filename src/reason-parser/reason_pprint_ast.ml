@@ -3640,12 +3640,12 @@ let printer = object(self:'self)
       type flatNode =
         | Exp of exp
         | ExpU of exp (* uncurried *)
-        | Args of exp list
+        | Args of (Asttypes.arg_label * exp) list
       type flatT = flatNode list
 
       type node = {
         exp: exp;
-        args: exp list;
+        args: (Asttypes.arg_label *exp) list;
         uncurried: bool;
       }
       type t = node list
@@ -3655,7 +3655,20 @@ let printer = object(self:'self)
           let formatted = if first then
             self#ensureExpression ~reducesOnToken:(Token fastPipeToken) expr
           else
-            self#ensureContainingRule ~withPrecedence:(Token fastPipeToken) ~reducesAfterRight:expr ()
+            match expr with
+            (* a->foo(x, _) and a->(foo(x, _)) are equivalent under fast pipe
+             * (a->foo)(x, _) is unnatural and desugars to
+             *    (__x) => (a |. foo)(x, __x)
+             * Under `->`, it makes more sense to desugar into
+             *  a |. (__x => foo(x, __x))
+             *
+             * Hence we don't need parens in this case.
+             *)
+            | expr when Reason_heuristics.isUnderscoreApplication expr ->
+                LayoutNode (self#unparseExpr expr)
+            | _ ->
+              self#ensureContainingRule
+                ~withPrecedence:(Token fastPipeToken) ~reducesAfterRight:expr ()
           in
           self#unparseResolvedRule formatted
         in
@@ -3666,17 +3679,22 @@ let printer = object(self:'self)
         let layout = match args with
         | [] -> formatLayout exp
         | args ->
-            let e = formatLayout exp  in
-            let args = match (uncurried, args) with
-            | uncurried, [{pexp_desc=Pexp_construct({txt = Longident.Lident("()")}, None)}] ->
-                if uncurried then atom "(.)" else atom "()"
-            | uncurried, _ ->
-              let wrap = if uncurried then ("(. ", ")") else ("(", ")") in
-              makeList
-                ~postSpace:true ~sep:commaTrail ~break:IfNeed ~wrap
-                (List.map self#unparseExpr args)
+            let fakeApplExp =
+              let loc_end = match List.rev args with
+                | (_, e)::_ -> e.pexp_loc.loc_end
+                | _ -> exp.pexp_loc.loc_end
+              in
+              {exp with pexp_loc = { exp.pexp_loc with loc_end = loc_end } }
             in
-            label e args
+            makeList (
+              self#formatFunAppl
+                ~jsxAttrs:[]
+                ~args
+                ~funExpr:exp
+                ~applicationExpr:fakeApplExp
+                ~uncurried
+                ()
+            )
         in
         if parens then
           formatPrecedence layout
@@ -3713,7 +3731,7 @@ let printer = object(self:'self)
            )},
            args
          )} as e ->
-          let args = Fastpipetree.Args (List.map snd args) in
+          let args = Fastpipetree.Args args in
           begin match pexp_attributes with
           | [{txt = "bs"}, PStr []] ->
             flatten ((Fastpipetree.ExpU arg2)::args::acc) arg1
@@ -4048,8 +4066,17 @@ let printer = object(self:'self)
          *     Expect.expect(1 + 2) |> toBe(3)));
          *)
         let uncurried = try Hashtbl.find uncurriedTable x.pexp_loc with | Not_found -> false in
-        FunctionApplication (self#formatFunAppl ~uncurried ~jsxAttrs ~args:ls ~applicationExpr:x ~funExpr:e ())
-      ))
+        FunctionApplication (
+          self#formatFunAppl
+            ~uncurried
+            ~jsxAttrs
+            ~args:ls
+            ~applicationExpr:x
+            ~funExpr:e
+            ()
+          )
+        )
+      )
     )
     | Pexp_field (e, li) ->
         let prec = Token "." in
