@@ -3964,6 +3964,7 @@ let printer = object(self:'self)
                | Infix printedIdent when requireNoSpaceFor printedIdent ->
                  self#unparseExpr leftExpr
                | _ -> self#simplifyUnparseExpr leftExpr)
+            | Pexp_field _ -> self#unparseExpr leftExpr
             | _ -> self#simplifyUnparseExpr leftExpr
           )
           in
@@ -4037,6 +4038,19 @@ let printer = object(self:'self)
         FunctionApplication (self#formatFunAppl ~uncurried ~jsxAttrs ~args:ls ~applicationExpr:x ~funExpr:e ())
       ))
     )
+    | Pexp_field (e, li) ->
+        let prec = Token "." in
+        let leftItm = self#unparseResolvedRule (
+          self#ensureExpression ~reducesOnToken:prec e
+        ) in
+        let {stdAttrs} = partitionAttributes ~partDoc:true e.pexp_attributes in
+        let formattedLeftItm = if stdAttrs = [] then
+            leftItm
+          else
+            formatPrecedence ~loc:e.pexp_loc leftItm
+        in
+        let layout = label (makeList [formattedLeftItm; atom "."]) (self#longident_loc li) in
+        SpecificInfixPrecedence ({reducePrecedence=prec; shiftPrecedence=prec}, LayoutNode layout)
     | Pexp_construct (li, Some eo) when not (is_simple_construct (view_expr x)) -> (
         match view_expr x with
         (* TODO: Explicit arity *)
@@ -5891,16 +5905,6 @@ let printer = object(self:'self)
                           (self#formatNonSequencyExpression e))
           else
             Some (makeLetSequence (self#letList x))
-        | Pexp_field (e, li) ->
-          let leftItm = self#unparseResolvedRule (
-            self#ensureExpression ~reducesOnToken:(Token ".") e
-          ) in
-          let formattedLeftItm = if e.pexp_attributes = [] then
-              leftItm
-            else
-              formatPrecedence ~loc:e.pexp_loc leftItm
-          in
-          Some (label (makeList [formattedLeftItm; atom "."]) (self#longident_loc li))
         | Pexp_send (e, s) ->
           let needparens = match e.pexp_desc with
             | Pexp_apply (ee, _) ->
@@ -7349,6 +7353,7 @@ let printer = object(self:'self)
       | Pexp_apply ({pexp_desc = Pexp_ident {txt = Lident s}}, _)
         when requireNoSpaceFor s ->
         self#unparseExpr funExpr
+      | Pexp_field _ -> self#unparseExpr funExpr
       | _ -> self#simplifyUnparseExpr funExpr
     in
     begin match categorizeFunApplArgs args with
