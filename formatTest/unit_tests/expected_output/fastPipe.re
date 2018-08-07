@@ -113,3 +113,45 @@ foo->([@attr] f(.))->([@attr] g(.));
 a->(b##c);
 
 a->b##c;
+
+(
+  switch (saveStatus) {
+  | Pristine => ""
+  | Saved => "Saved"
+  | Saving => "Saving"
+  | Unsaved => "Unsaved"
+  }
+)
+->str;
+
+<div>
+  (
+    switch (saveStatus) {
+    | Pristine => ""
+    | Saved => "Saved"
+    | Saving => "Saving"
+    | Unsaved => "Unsaved"
+    }
+  )
+  ->str
+</div>;
+
+blocks->(blocks => {"blocks": blocks});
+<div>
+  blocks->(blocks => {"blocks": blocks})
+</div>;
+
+(state.title == "" ? "untitled" : state.title)
+->str;
+
+<title>
+  (state.title == "" ? "untitled" : state.title)
+  ->str
+</title>;
+
+ReasonReact.Router.watchUrl(url =>
+  Route.urlToRoute(url)->ChangeView->self.send
+);
+ReasonReact.Router.watchUrl(url =>
+  Route.urlToRoute(url)->ChangeView->self.send
+);
