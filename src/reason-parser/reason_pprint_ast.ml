@@ -3825,7 +3825,7 @@ let printer = object(self:'self)
             let itm = self#unparseResolvedRule wrappedRule in
             (match reducePrecedence with
              (* doesn't need wrapping; we know how to parse *)
-             | Custom "prec_lbracket" -> [itm]
+             | Custom "prec_lbracket" | Token "." -> [itm]
              | _ -> [formatPrecedence ~loc:x.pexp_loc itm])
         | FunctionApplication itms -> itms
         | PotentiallyLowPrecedence itm -> [formatPrecedence ~loc:x.pexp_loc itm]
@@ -4043,7 +4043,7 @@ let printer = object(self:'self)
         let leftItm = self#unparseResolvedRule (
           self#ensureExpression ~reducesOnToken:prec e
         ) in
-        let {stdAttrs} = partitionAttributes ~partDoc:true e.pexp_attributes in
+        let {stdAttrs} = partitionAttributes e.pexp_attributes in
         let formattedLeftItm = if stdAttrs = [] then
             leftItm
           else
