@@ -3442,7 +3442,7 @@ let printer = object(self:'self)
           | "Genarray" -> (
             match label_exprs with
             | [(_,a);(_,{pexp_desc=Pexp_array ls});(_,c)] ->
-              let formattedList = List.map (self#simplifyUnparseExpr ~wrap:("(", ")")) ls in
+              let formattedList = List.map self#unparseExpr ls in
               let lhs = makeList [self#simple_enough_to_be_lhs_dot_send a; atom "."] in
               let rhs = makeList ~break:IfNeed ~postSpace:true ~sep:commaSep ~wrap:("{", "}") formattedList
               in
@@ -3455,7 +3455,7 @@ let printer = object(self:'self)
               match List.rev rest with
               | (_,v)::rest ->
                 let args = List.map snd (List.rev rest) in
-                let formattedList = List.map self#simplifyUnparseExpr args in
+                let formattedList = List.map self#unparseExpr args in
                 let lhs = makeList [self#simple_enough_to_be_lhs_dot_send a; atom "."] in
                 let rhs = makeList ~break:IfNeed ~postSpace:true ~sep:commaSep ~wrap:("{", "}") formattedList in
                 Some (label lhs rhs, v)
@@ -3900,9 +3900,7 @@ let printer = object(self:'self)
             let lhs = self#unparseResolvedRule (
               self#ensureExpression ~reducesOnToken:prec e1
             ) in
-            let rhs = self#unparseResolvedRule (
-              self#ensureContainingRule ~withPrecedence:prec ~reducesAfterRight:e2 ()
-            ) in
+            let rhs = self#unparseExpr e2 in
             SpecificInfixPrecedence
               ({reducePrecedence=prec; shiftPrecedence=prec}, LayoutNode (self#access "[" "]" lhs rhs))
         end
@@ -3918,9 +3916,7 @@ let printer = object(self:'self)
             let lhs = self#unparseResolvedRule (
               self#ensureExpression ~reducesOnToken:prec e1
             ) in
-            let rhs = self#unparseResolvedRule (
-              self#ensureContainingRule ~withPrecedence:prec ~reducesAfterRight:e2 ()
-            ) in
+            let rhs = self#unparseExpr e2 in
           SpecificInfixPrecedence
             ({reducePrecedence=prec; shiftPrecedence=prec}, LayoutNode (self#access ".[" "]" lhs rhs))
       | (
@@ -3934,7 +3930,7 @@ let printer = object(self:'self)
           in
           Simple (label k v)
         else
-          let formattedList = List.map self#simplifyUnparseExpr ls in
+          let formattedList = List.map self#unparseExpr ls in
           let lhs = makeList [(self#simple_enough_to_be_lhs_dot_send e1); atom "."] in
           let rhs = makeList ~break:IfNeed ~postSpace:true ~sep:commaSep ~wrap:("{", "}") formattedList in
           let prec = Custom "prec_lbracket" in
@@ -3952,7 +3948,7 @@ let printer = object(self:'self)
           in
           Simple (label k v)
         else
-          let formattedList = List.map self#simplifyUnparseExpr (List.map snd rest) in
+          let formattedList = List.map self#unparseExpr (List.map snd rest) in
           let lhs = makeList [(self#simple_enough_to_be_lhs_dot_send e1); atom "."] in
           let rhs = makeList ~break:IfNeed ~postSpace:true ~sep:commaSep ~wrap:("{", "}") formattedList in
           let prec = Custom "prec_lbracket" in
