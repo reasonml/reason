@@ -1143,6 +1143,7 @@ let prepend_attrs_to_labels attrs = function
 %token SEMISEMI
 %token SHARP
 %token <string> SHARPOP
+%token <string> OPTIONALACCESS
 %token SIG
 %token STAR
 %token <string * string option * string option> STRING
@@ -1289,7 +1290,8 @@ conflicts.
 (* PREFIXOP and BANG precedence *)
 %nonassoc below_DOT_AND_SHARP           (* practically same as below_SHARP but we convey purpose *)
 %nonassoc SHARP                         (* simple_expr/toplevel_directive *)
-%left     SHARPOP
+
+%left     SHARPOP OPTIONALACCESS
 %nonassoc below_DOT
 %nonassoc DOT POSTFIXOP
 
@@ -1299,6 +1301,7 @@ conflicts.
 (* Entry points *)
 
 %start implementation                   (* for implementation files *)
+
 %type <Ast_404.Parsetree.structure> implementation
 %start interface                        (* for interface files *)
 %type <Ast_404.Parsetree.signature> interface
@@ -2971,6 +2974,55 @@ parenthesized_expr:
     { mkexp (Pexp_send($1, $3)) }
   | E as_loc(SHARPOP) simple_expr_no_call
     { mkinfixop $1 (mkoperator $2) $3 }
+    (*
+     * let res = a?.b;
+     *
+     * --generates-->
+     *
+     * let res = switch a {
+     *  | Some(a) => Some(a.b)
+     *  | None => None
+     * };
+     *)
+  | E OPTIONALACCESS simple_expr_no_call 
+    {
+      let loc_exp = mklocation $startpos($1) $endpos($1) in
+      let somePat =
+        Pat.mk ~loc:loc_exp (Ppat_construct({ txt = Lident("Some"); loc = loc_exp}, Some({
+              ppat_attributes = [];
+              ppat_loc =  loc_exp;
+              ppat_desc = Ppat_var({
+                txt = (match $1.pexp_desc with Pexp_ident({txt = Lident(str); loc;}) -> str | _ -> "x"); 
+                loc = loc_exp;
+              });
+            }))) in
+      let nonePat = 
+        Pat.mk ~loc:loc_exp (Ppat_construct({ txt = Lident("None"); loc = loc_exp;}, None)) in
+      let someCase = 
+        Exp.case somePat {
+            pexp_attributes = [];
+            pexp_loc = loc_exp;
+            pexp_desc = Pexp_construct({txt = Lident("Some"); loc = loc_exp}, Some({
+              pexp_loc = loc_exp;
+              pexp_attributes = [];
+              pexp_desc = Pexp_field({
+                pexp_loc = loc_exp;
+                pexp_attributes = [];
+                pexp_desc = Pexp_ident({
+                  txt = (match $1.pexp_desc with Pexp_ident({txt = Lident(str); loc;}) -> Lident(str) | _ -> Lident("x"));
+                  loc = loc_exp;
+                });
+              }, {txt = (match $3.pexp_desc with Pexp_ident({txt = Lident(str); loc;}) -> Lident(str) | _ -> Lident("__error__")); loc = loc_exp });
+            }));
+      } in
+      let noneCase =
+       Exp.case nonePat  {
+            pexp_loc = loc_exp;
+            pexp_attributes = [];
+            pexp_desc = Pexp_construct({ txt = Lident("None"); loc = loc_exp;}, None);
+       } in
+      mkexp (Pexp_match ($1, [someCase; noneCase]))
+  }
   | as_loc(mod_longident) DOT LPAREN MODULE module_expr COLON package_type RPAREN
     { let loc = mklocation $symbolstartpos $endpos in
       mkexp (Pexp_open(Fresh, $1,
@@ -3563,6 +3615,7 @@ mark_position_pat
 
   | LPAREN COLONCOLON RPAREN LPAREN pattern_without_or COMMA pattern_without_or RPAREN
     { let loc_coloncolon = mklocation $startpos($2) $endpos($2) in
+
       let loc = mklocation $symbolstartpos $endpos in
       mkpat_cons loc_coloncolon (mkpat ~ghost:true ~loc (Ppat_tuple[$5;$7])) loc
     }
