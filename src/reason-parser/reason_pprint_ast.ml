@@ -1144,8 +1144,8 @@ let makeCommaBreakableListSurround opn cls lst =
 
 (* TODO: Allow configuration of spacing around colon symbol *)
 
-let formatPrecedence ?loc formattedTerm =
-  source_map ?loc (makeList ~wrap:("(", ")") ~break:IfNeed [formattedTerm])
+let formatPrecedence ?(wrap=("(", ")")) ?loc formattedTerm =
+  source_map ?loc (makeList ~wrap ~break:IfNeed [formattedTerm])
 
 let wrap fn term =
   ignore (Format.flush_str_formatter ());
@@ -3437,7 +3437,7 @@ let printer = object(self:'self)
           | "Genarray" -> (
             match label_exprs with
             | [(_,a);(_,{pexp_desc=Pexp_array ls});(_,c)] ->
-              let formattedList = List.map self#simplifyUnparseExpr ls in
+              let formattedList = List.map (self#simplifyUnparseExpr ~wrap:("(", ")")) ls in
               let lhs = makeList [self#simple_enough_to_be_lhs_dot_send a; atom "."] in
               let rhs = makeList ~break:IfNeed ~postSpace:true ~sep:commaSep ~wrap:("{", "}") formattedList
               in
@@ -3602,13 +3602,13 @@ let printer = object(self:'self)
     in
     source_map ~loc:e.pexp_loc itm
 
-  method simplifyUnparseExpr x =
+  method simplifyUnparseExpr ?(wrap=("(", ")")) x =
     match self#unparseExprRecurse x with
     | SpecificInfixPrecedence ({reducePrecedence; shiftPrecedence}, itm) ->
-        formatPrecedence ~loc:x.pexp_loc (self#unparseResolvedRule itm)
+        formatPrecedence ~wrap ~loc:x.pexp_loc (self#unparseResolvedRule itm)
     | FunctionApplication itms ->
-      formatPrecedence ~loc:x.pexp_loc (formatAttachmentApplication applicationFinalWrapping None (itms, Some x.pexp_loc))
-    | PotentiallyLowPrecedence itm -> formatPrecedence ~loc:x.pexp_loc itm
+      formatPrecedence ~wrap ~loc:x.pexp_loc (formatAttachmentApplication applicationFinalWrapping None (itms, Some x.pexp_loc))
+    | PotentiallyLowPrecedence itm -> formatPrecedence ~wrap ~loc:x.pexp_loc itm
     | Simple itm -> itm
 
 
@@ -4286,7 +4286,7 @@ let printer = object(self:'self)
       | (Labelled "children", {pexp_desc = Pexp_construct ({txt = Lident"::"}, Some {pexp_desc = Pexp_tuple components} )}) :: tail ->
         processArguments tail processedAttrs (self#formatChildren components [])
       | (Labelled "children", expr) :: tail ->
-          let childLayout = self#simplifyUnparseExpr expr in
+          let childLayout = self#simplifyUnparseExpr ~wrap:("{", "}") expr in
           let dotdotdotChild = makeList ~break:Layout.Never [atom "..."; childLayout] in
           processArguments tail processedAttrs (Some [dotdotdotChild])
       | (Optional lbl, expression) :: tail ->
@@ -4295,7 +4295,7 @@ let printer = object(self:'self)
           | Pexp_ident ident when isPunnedJsxArg lbl ident ->
               makeList ~break:Layout.Never [atom "?"; atom lbl]
           | _ ->
-              label (makeList ~break:Layout.Never [atom lbl; atom "=?"]) (self#simplifyUnparseExpr expression) in
+              label (makeList ~break:Layout.Never [atom lbl; atom "=?"]) (self#simplifyUnparseExpr ~wrap:("{","}") expression) in
         processArguments tail (nextAttr :: processedAttrs) children
 
       | (Labelled lbl, expression) :: tail ->
@@ -4315,7 +4315,7 @@ let printer = object(self:'self)
              let lhs = (makeList [atom lbl; atom "="]) in
              let rhs = (match printedStringAndFixityExpr eFun with
                  | Infix str when requireNoSpaceFor str -> self#unparseExpr expression
-                 | _ -> self#simplifyUnparseExpr expression)
+                 | _ -> self#simplifyUnparseExpr ~wrap:("{","}") expression)
              in label lhs rhs
            | Pexp_record _
            | Pexp_construct _
@@ -4324,8 +4324,11 @@ let printer = object(self:'self)
            | Pexp_match _
            | Pexp_extension _
            | Pexp_fun _
-           | Pexp_function _ -> label (makeList [atom lbl; atom "="]) (self#simplifyUnparseExpr expression)
-           | _ -> makeList ([atom lbl; atom "="; self#simplifyUnparseExpr expression])
+           | Pexp_function _ ->
+               label
+                (makeList [atom lbl; atom "="])
+                (self#simplifyUnparseExpr ~wrap:("{","}") expression)
+           | _ -> makeList ([atom lbl; atom "="; self#simplifyUnparseExpr ~wrap:("{","}") expression])
          in
          processArguments tail (nextAttr :: processedAttrs) children
       | [] -> (processedAttrs, children)
@@ -5942,11 +5945,11 @@ let printer = object(self:'self)
         | _ -> self#formatChildren (remaining @ children) processedRev
       end
     | {pexp_desc = Pexp_apply(expr, l); pexp_attributes} :: remaining ->
-      self#formatChildren remaining (self#simplifyUnparseExpr (List.hd children) :: processedRev)
+      self#formatChildren remaining (self#simplifyUnparseExpr ~wrap:("{", "}") (List.hd children) :: processedRev)
     | {pexp_desc = Pexp_ident li} :: remaining ->
       self#formatChildren remaining (self#longident_loc li :: processedRev)
     | {pexp_desc = Pexp_construct ({txt = Lident "[]"}, None)} :: remaining -> self#formatChildren remaining processedRev
-    | head :: remaining -> self#formatChildren remaining (self#simplifyUnparseExpr head :: processedRev)
+    | head :: remaining -> self#formatChildren remaining (self#simplifyUnparseExpr ~wrap:("{", "}") head :: processedRev)
     | [] -> match processedRev with
         | [] -> None
         | _::_ -> Some (List.rev processedRev)

@@ -33,6 +33,6 @@ module M =
 let _ =
   Group([
     <M(X, Y) />,
-    <M(X, Y)> (Text("A")) </M>,
+    <M(X, Y)> {Text("A")} </M>,
     <M(X, Y) name="Test" id=10 />,
   ]);
