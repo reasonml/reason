@@ -2987,17 +2987,16 @@ parenthesized_expr:
   | E OPTIONALACCESS simple_expr_no_call 
     {
       let loc_exp = mklocation $startpos($1) $endpos($1) in
-      let pat_record_name = match $1.pexp_desc with Pexp_ident({txt = Lident(str); loc;}) -> str | _ -> "x" in
-      let exp_record_name = match $1.pexp_desc with Pexp_ident({txt = Lident(str); loc;}) -> Lident(str) | _ -> Lident("x") in
-      let exp_prop_name = match $3.pexp_desc with Pexp_ident({txt = Lident(str); loc;}) -> Lident(str) | _ -> syntax_error () in
+      let record_name = match $1.pexp_desc with Pexp_ident({txt = Lident(str); loc;}) -> str | _ -> "x" in
+      let prop_name = match $3.pexp_desc with Pexp_ident({txt = Lident(str); loc;}) -> Lident(str) | _ -> syntax_error () in
       let access_property = match $2 with
         | "?." -> 
           mkexp (Pexp_field (
             mkexp (Pexp_ident({
-              txt = exp_record_name;
+              txt = Lident(record_name);
               loc = loc_exp;
             })), {
-              txt = exp_prop_name; 
+              txt = prop_name; 
               loc = loc_exp;
             }))
         | "?#" -> 
@@ -3006,14 +3005,14 @@ parenthesized_expr:
               txt = Lident("##");
               loc = loc_exp;
             })), [
-              Nolabel, mkexp (Pexp_ident({ txt = exp_record_name; loc = loc_exp}));
-              Nolabel, mkexp (Pexp_ident({ txt = exp_prop_name; loc = loc_exp }));
+              Nolabel, mkexp (Pexp_ident({ txt = Lident(record_name); loc = loc_exp}));
+              Nolabel, mkexp (Pexp_ident({ txt = prop_name; loc = loc_exp }));
             ]
           )) 
         | _ -> syntax_error ()
           in
       let some_pat =
-        Pat.mk ~loc:loc_exp (Ppat_construct({ txt = Lident("Some"); loc = loc_exp}, Some(mkpat (Ppat_var(mkloc pat_record_name loc_exp))))) in
+        Pat.mk ~loc:loc_exp (Ppat_construct({ txt = Lident("Some"); loc = loc_exp}, Some(mkpat (Ppat_var(mkloc record_name loc_exp))))) in
       let none_pat = 
         Pat.mk ~loc:loc_exp (Ppat_construct({ txt = Lident("None"); loc = loc_exp;}, None)) in
       let some_case = 
