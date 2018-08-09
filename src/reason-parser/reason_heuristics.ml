@@ -103,3 +103,18 @@ let isFastPipe e = match Ast_404.Parsetree.(e.pexp_desc) with
       _
     ) -> true
   | _ -> false
+
+let isUnderscoreApplication expr =
+  let open Ast_404.Parsetree in
+  match expr with
+  | {pexp_attributes = []; pexp_desc = Pexp_fun(
+        Nolabel,
+        None,
+        {
+          ppat_desc = Ppat_var({txt = "__x"});
+          ppat_attributes = []
+        },
+        _
+      )
+    } -> true
+  | _ -> false

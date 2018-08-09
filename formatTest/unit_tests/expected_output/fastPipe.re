@@ -155,3 +155,21 @@ ReasonReact.Router.watchUrl(url =>
 ReasonReact.Router.watchUrl(url =>
   Route.urlToRoute(url)->ChangeView->self.send
 );
+
+window
+->Webapi.Dom.Window.open_(
+    ~url,
+    ~name="authWindow",
+    ~features=params,
+  );
+
+window
+->Webapi.Dom.Window.open_(
+    ~url,
+    ~name="authWindow",
+    () => {
+      let x = 1;
+      let y = 2;
+      x + y;
+    },
+  );
