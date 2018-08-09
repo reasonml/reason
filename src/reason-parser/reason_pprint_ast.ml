@@ -2802,8 +2802,21 @@ let printer = object(self:'self)
       in
       let recordRow = match pld.pld_attributes with
       | [] -> recordRow
-      | _::_ as attrs ->
-        formatAttributed ~labelBreak:`Always_rec recordRow (self#attributes attrs) in
+      | attrs ->
+        let {stdAttrs; docAttrs} = partitionAttributes ~partDoc:true attrs in
+        let stdAttrsLayout =
+          makeList ~inline:(true, true) ~postSpace:true (self#attributes stdAttrs)
+        in
+        let docAttrsLayout = makeList ~inline:(true, true) (self#attributes docAttrs) in
+        let children = match (docAttrs, stdAttrs) with
+        | [], [] -> [recordRow]
+        | docAttrs, [] -> [docAttrsLayout; recordRow]
+        | [], stdAttrs -> [stdAttrsLayout; recordRow]
+        | stdAttrs, docAttrs ->
+            [docAttrsLayout; stdAttrsLayout; recordRow]
+        in
+        makeList ~inline:(true, true) ~break:Always_rec children
+      in
       source_map ~loc:pld.pld_loc recordRow
     in
     let rows = List.mapi recordRow lbls in
