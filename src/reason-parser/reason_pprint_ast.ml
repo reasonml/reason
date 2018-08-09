@@ -493,6 +493,8 @@ let namedArgSym = "~"
 let requireNoSpaceFor tok =
   tok = fastPipeToken || (tok.[0] = '#' && tok <> "#=")
 
+let funToken = "fun"
+
 let getPrintableUnaryIdent s =
   if List.mem s unary_minus_prefix_symbols ||
      List.mem s unary_plus_prefix_symbols
@@ -621,6 +623,9 @@ let rules = [
     (TokenPrecedence, (fun s -> (Left, s.[0] == '|' && not (s = "||"))));
     (TokenPrecedence, (fun s -> (Left, s.[0] == '&' && not (s = "&") && not (s = "&&"))));
     (TokenPrecedence, (fun s -> (Left, s.[0] == '$')));
+  ];
+  [
+    (CustomPrecedence, (fun s -> (Left, s = funToken)));
   ];
   [
     (TokenPrecedence, (fun s -> (Right, s = "&")));
@@ -3499,7 +3504,7 @@ let printer = object(self:'self)
      at the proper time when it is reparsed, possibly wrapping it
      in parenthesis if needed. It ensures a rule doesn't reduce
      until *after* `reducesAfterRight` gets a chance to reduce.
-     Example: The addtion rule which has precedence of rightmost
+     Example: The addition rule which has precedence of rightmost
      token "+", in `x + a * b` should not reduce until after the a * b gets
      a chance to reduce. This function would determine the minimum parens to
      ensure that. *)
@@ -4147,7 +4152,7 @@ let printer = object(self:'self)
       )
     | _ -> (
       match self#expression_requiring_parens_in_infix x with
-      | Some e -> PotentiallyLowPrecedence e
+      | Some e -> e
       | None -> raise (Invalid_argument "No match for unparsing expression")
     )
 
@@ -5344,7 +5349,7 @@ let printer = object(self:'self)
       ~break:IfNeed
       ~inline:(true, true)
       ~pad:(false, false)
-      ((atom ~loc:estimatedFunLocation (add_extension_sugar "fun" extension)) :: (self#case_list l))
+      ((atom ~loc:estimatedFunLocation (add_extension_sugar funToken extension)) :: (self#case_list l))
 
   method parenthesized_expr ?break expr =
     let result = self#unparseExpr expr in
@@ -5367,7 +5372,14 @@ let printer = object(self:'self)
          pipe, is that its => token will be confused with the match token.
          Simple expression will also invoke `#reset`. *)
       | Pexp_function _ when pipe || semi -> None (* Would be rendered as simplest_expression  *)
-      | Pexp_function l -> Some (self#patternFunction ?extension x.pexp_loc l)
+      (* Pexp_function, on the other hand, doesn't need wrapping in parens in
+         most cases anymore, since `fun` is not ambiguous anymore (we print Pexp_fun
+         as ES6 functions). *)
+      | Pexp_function l ->
+        let prec = Custom funToken in
+        let expr = self#patternFunction ?extension x.pexp_loc l in
+        Some (SpecificInfixPrecedence
+                ({reducePrecedence=prec; shiftPrecedence=prec}, LayoutNode expr))
       | _ ->
         (* The Pexp_function cases above don't use location because comment printing
           breaks for them. *)
@@ -5404,7 +5416,7 @@ let printer = object(self:'self)
                 let retValUnparsed = self#unparseExprApplicationItems ret in
                 Some (self#wrapCurriedFunctionBinding
                         ~sweet:(extension = None)
-                        (add_extension_sugar "fun" extension)
+                        (add_extension_sugar funToken extension)
                         ~arrow:"=>" firstArg tl retValUnparsed)
             )
           | Pexp_try (e, l) ->
@@ -5562,7 +5574,7 @@ let printer = object(self:'self)
         in
         match itm with
           | None -> None
-          | Some i -> Some (source_map ~loc:x.pexp_loc i)
+          | Some i -> Some (PotentiallyLowPrecedence (source_map ~loc:x.pexp_loc i))
 
   method potentiallyConstrainedExpr x =
     match x.pexp_desc with
@@ -5701,7 +5713,7 @@ let printer = object(self:'self)
             let upToColon = makeList (maybeQuoteFirstElem li [atom ":"]) in
             let returnedAppTerms = self#unparseExprApplicationItems return in
             self#wrapCurriedFunctionBinding
-              ~sweet:true ~attachTo:upToColon "fun" ~arrow:"=>"
+              ~sweet:true ~attachTo:upToColon funToken ~arrow:"=>"
               firstArg tl returnedAppTerms
       in source_map ~loc:totalRowLoc theRow
     in
@@ -5937,9 +5949,6 @@ let printer = object(self:'self)
                 match x'.pexp_desc with
                 | Pexp_let _ ->
                   Some (makeLetSequence (self#letList x))
-                | Pexp_function l when (pipe || semi) ->
-                  Some (formatPrecedence ~loc:x.pexp_loc
-                          (self#reset#patternFunction ~extension x'.pexp_loc l))
                 | _ -> Some (self#extension e)
           end
         | Pexp_open (ovf, lid, e) ->
@@ -6544,7 +6553,7 @@ let printer = object(self:'self)
          | Some args, e ->
            label ~space:true
              (makeList ~postSpace:true
-                [label ~space:true (atom "fun") args; atom "=>"])
+                [label ~space:true (atom funToken) args; atom "=>"])
              (self#class_expr e))
       | Pcl_apply (ce, l) ->
         formatAttachmentApplication applicationFinalWrapping None
@@ -6972,7 +6981,7 @@ let printer = object(self:'self)
       let (argsList, return) = self#curriedFunctorPatternsAndReturnStruct x in
       (* See #19/20 in syntax.mls - cannot annotate return type at
                the moment. *)
-      self#wrapCurriedFunctionBinding "fun" ~sweet:true ~arrow:"=>" (makeTup argsList) []
+      self#wrapCurriedFunctionBinding funToken ~sweet:true ~arrow:"=>" (makeTup argsList) []
         ([self#moduleExpressionToFormattedApplicationItems return], None)
     | Pmod_apply _ ->
       self#moduleExpressionToFormattedApplicationItems x

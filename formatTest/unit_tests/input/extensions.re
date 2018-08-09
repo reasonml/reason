@@ -105,7 +105,7 @@ let x = fun%extend
 
  /* With two extensions, alone */
 
-let x = { 
+let x = {
   %extend1
   try%extend2 () { | _ => () };
 };
@@ -144,7 +144,7 @@ let x = {
 
  /* With two extensions, first in sequence */
 
-let x = { 
+let x = {
   %extend1
   try%extend2 () { | _ => () };
   ignore();
@@ -195,7 +195,7 @@ let x = {
 
  /* With two extensions, in sequence */
 
-let x = { 
+let x = {
   ignore();
   %extend1
   try%extend2 () { | _ => () };
@@ -248,7 +248,7 @@ let x = {
 
  /* With two extensions, second in sequence */
 
-let x = { 
+let x = {
   ignore();
   %extend1
   try%extend2 () { | _ => () };
@@ -329,3 +329,11 @@ let work = () => { open Syntax; let%bind name = x; name; };
 /** header */
 %raw
 "console.log(42)";
+
+/* https://github.com/facebook/reason/issues/2032 */
+let predicate =
+  predicate === Functions.alwaysTrue1 ?
+    defaultPredicate :
+    (fun%extend
+      | None => false
+      | Some(exn) => predicate(exn));
