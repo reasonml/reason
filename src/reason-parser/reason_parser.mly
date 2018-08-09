@@ -2990,12 +2990,8 @@ parenthesized_expr:
       let pat_record_name = match $1.pexp_desc with Pexp_ident({txt = Lident(str); loc;}) -> str | _ -> "x" in
       let exp_record_name = match $1.pexp_desc with Pexp_ident({txt = Lident(str); loc;}) -> Lident(str) | _ -> Lident("x") in
       let exp_prop_name = match $3.pexp_desc with Pexp_ident({txt = Lident(str); loc;}) -> Lident(str) | _ -> Lident("__error__") in
-      let some_pat =
-        Pat.mk ~loc:loc_exp (Ppat_construct({ txt = Lident("Some"); loc = loc_exp}, Some(mkpat (Ppat_var(mkloc pat_record_name loc_exp))))) in
-      let none_pat = 
-        Pat.mk ~loc:loc_exp (Ppat_construct({ txt = Lident("None"); loc = loc_exp;}, None)) in
-      let some_case = 
-        Exp.case some_pat (mkexp (Pexp_construct ({txt = Lident("Some"); loc = loc_exp}, Some(
+      let access_property = match $2 with
+        | "?." -> 
           mkexp (Pexp_field (
             mkexp (Pexp_ident({
               txt = exp_record_name;
@@ -3004,7 +3000,24 @@ parenthesized_expr:
               txt = exp_prop_name; 
               loc = loc_exp;
             }))
-        ))));
+        | "?#" -> 
+          mkexp (Pexp_apply(
+            mkexp (Pexp_ident({
+              txt = Lident("##");
+              loc = loc_exp;
+            })), [
+              Nolabel, mkexp (Pexp_ident({ txt = exp_record_name; loc = loc_exp}));
+              Nolabel, mkexp (Pexp_ident({ txt = exp_prop_name; loc = loc_exp }));
+            ]
+          )) 
+        | _ -> syntax_error ()
+          in
+      let some_pat =
+        Pat.mk ~loc:loc_exp (Ppat_construct({ txt = Lident("Some"); loc = loc_exp}, Some(mkpat (Ppat_var(mkloc pat_record_name loc_exp))))) in
+      let none_pat = 
+        Pat.mk ~loc:loc_exp (Ppat_construct({ txt = Lident("None"); loc = loc_exp;}, None)) in
+      let some_case = 
+        Exp.case some_pat (mkexp (Pexp_construct ({txt = Lident("Some"); loc = loc_exp}, Some(access_property))));
        in
       let none_case =
        Exp.case none_pat (mkexp (Pexp_construct({ txt = Lident("None"); loc = loc_exp;}, None)));
