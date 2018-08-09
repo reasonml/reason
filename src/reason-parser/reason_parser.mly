@@ -2987,41 +2987,29 @@ parenthesized_expr:
   | E OPTIONALACCESS simple_expr_no_call 
     {
       let loc_exp = mklocation $startpos($1) $endpos($1) in
-      let somePat =
-        Pat.mk ~loc:loc_exp (Ppat_construct({ txt = Lident("Some"); loc = loc_exp}, Some({
-              ppat_attributes = [];
-              ppat_loc =  loc_exp;
-              ppat_desc = Ppat_var({
-                txt = (match $1.pexp_desc with Pexp_ident({txt = Lident(str); loc;}) -> str | _ -> "x"); 
-                loc = loc_exp;
-              });
-            }))) in
-      let nonePat = 
+      let pat_record_name = match $1.pexp_desc with Pexp_ident({txt = Lident(str); loc;}) -> str | _ -> "x" in
+      let exp_record_name = match $1.pexp_desc with Pexp_ident({txt = Lident(str); loc;}) -> Lident(str) | _ -> Lident("x") in
+      let exp_prop_name = match $3.pexp_desc with Pexp_ident({txt = Lident(str); loc;}) -> Lident(str) | _ -> Lident("__error__") in
+      let some_pat =
+        Pat.mk ~loc:loc_exp (Ppat_construct({ txt = Lident("Some"); loc = loc_exp}, Some(mkpat (Ppat_var(mkloc pat_record_name loc_exp))))) in
+      let none_pat = 
         Pat.mk ~loc:loc_exp (Ppat_construct({ txt = Lident("None"); loc = loc_exp;}, None)) in
-      let someCase = 
-        Exp.case somePat {
-            pexp_attributes = [];
-            pexp_loc = loc_exp;
-            pexp_desc = Pexp_construct({txt = Lident("Some"); loc = loc_exp}, Some({
-              pexp_loc = loc_exp;
-              pexp_attributes = [];
-              pexp_desc = Pexp_field({
-                pexp_loc = loc_exp;
-                pexp_attributes = [];
-                pexp_desc = Pexp_ident({
-                  txt = (match $1.pexp_desc with Pexp_ident({txt = Lident(str); loc;}) -> Lident(str) | _ -> Lident("x"));
-                  loc = loc_exp;
-                });
-              }, {txt = (match $3.pexp_desc with Pexp_ident({txt = Lident(str); loc;}) -> Lident(str) | _ -> Lident("__error__")); loc = loc_exp });
-            }));
-      } in
-      let noneCase =
-       Exp.case nonePat  {
-            pexp_loc = loc_exp;
-            pexp_attributes = [];
-            pexp_desc = Pexp_construct({ txt = Lident("None"); loc = loc_exp;}, None);
-       } in
-      mkexp (Pexp_match ($1, [someCase; noneCase]))
+      let some_case = 
+        Exp.case some_pat (mkexp (Pexp_construct ({txt = Lident("Some"); loc = loc_exp}, Some(
+          mkexp (Pexp_field (
+            mkexp (Pexp_ident({
+              txt = exp_record_name;
+              loc = loc_exp;
+            })), {
+              txt = exp_prop_name; 
+              loc = loc_exp;
+            }))
+        ))));
+       in
+      let none_case =
+       Exp.case none_pat (mkexp (Pexp_construct({ txt = Lident("None"); loc = loc_exp;}, None)));
+        in
+      mkexp (Pexp_match ($1, [some_case; none_case]))
   }
   | as_loc(mod_longident) DOT LPAREN MODULE module_expr COLON package_type RPAREN
     { let loc = mklocation $symbolstartpos $endpos in
