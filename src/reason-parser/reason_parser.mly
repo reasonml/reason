@@ -2989,7 +2989,7 @@ parenthesized_expr:
       let loc_exp = mklocation $startpos($1) $endpos($1) in
       let pat_record_name = match $1.pexp_desc with Pexp_ident({txt = Lident(str); loc;}) -> str | _ -> "x" in
       let exp_record_name = match $1.pexp_desc with Pexp_ident({txt = Lident(str); loc;}) -> Lident(str) | _ -> Lident("x") in
-      let exp_prop_name = match $3.pexp_desc with Pexp_ident({txt = Lident(str); loc;}) -> Lident(str) | _ -> Lident("__error__") in
+      let exp_prop_name = match $3.pexp_desc with Pexp_ident({txt = Lident(str); loc;}) -> Lident(str) | _ -> syntax_error () in
       let access_property = match $2 with
         | "?." -> 
           mkexp (Pexp_field (
