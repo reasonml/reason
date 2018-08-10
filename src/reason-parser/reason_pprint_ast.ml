@@ -4167,7 +4167,8 @@ let printer = object(self:'self)
     | Pexp_tuple _ (* syntax sugar for M.(a, b) *)
     | Pexp_object {pcstr_fields = []} (* syntax sugar for M.{} *)
     | Pexp_construct ( {txt= Lident"::"},Some _)
-    | Pexp_construct ( {txt= Lident"[]"},_) ->
+    | Pexp_construct ( {txt= Lident"[]"},_)
+    | Pexp_extension ( {txt = "bs.obj"}, _ ) ->
       self#simplifyUnparseExpr e (* syntax sugar for M.[x,y] *)
     (* syntax sugar for the rest, wrap with parens to avoid ambiguity.
      * E.g., avoid M.(M2.v) being printed as M.M2.v

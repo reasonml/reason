@@ -121,4 +121,4 @@ type y = {
 };
 
 /* https://github.com/facebook/reason/issues/2121 */
-Style.({"container": 3});
+Style.{"container": 3};
