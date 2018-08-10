@@ -93,7 +93,7 @@ event->target##(value(foo));
 
 location["streets"].foo[1];
 
-(event->target^)##value;
+event->target^["value"];
 
 event->target^ #= value;
 
@@ -114,9 +114,9 @@ foo->([@attr] f(.))->([@attr] g(.));
 !foo->bar;
 (!foo)->bar;
 
-a->(b##c);
+a->(b["c"]);
 
-a->b##c;
+a->b["c"];
 
 (
   switch (saveStatus) {

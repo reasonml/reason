@@ -7613,10 +7613,7 @@ let printer = object(self:'self)
     let formattedFunExpr = match funExpr.pexp_desc with
       (* fast pipe chain or sharpop chain as funExpr, no parens needed, we know how to parse *)
       | Pexp_apply ({pexp_desc = Pexp_ident {txt = Lident s}}, _)
-        when requireNoSpaceFor s ->
-        self#unparseExpr funExpr
-      | Pexp_apply ({pexp_desc = Pexp_ident {txt = Lident "#="}}, _) ->
-        formatPrecedence ~loc:funExpr.pexp_loc (self#unparseExpr funExpr)
+        when requireNoSpaceFor s -> self#unparseExpr funExpr
       | Pexp_field _ -> self#unparseExpr funExpr
       | _ -> self#simplifyUnparseExpr funExpr
     in
