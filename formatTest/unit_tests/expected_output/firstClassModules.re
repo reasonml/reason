@@ -93,3 +93,5 @@ type tWithAttr = (
   [@foo] (module FirstClass),
   [@bar] (module SecondClass),
 );
+
+type t = {m: (module M)};

@@ -43,3 +43,5 @@ type t = (module FirstClass, module SecondClass);
 type withAttr = ref([@bar] (module Console));
 type withAttrPlatform = Platform.t([@bar] (module Iphone), [@foo] (module Ipad));
 type tWithAttr = ([@foo] (module FirstClass), [@bar] (module SecondClass));
+
+type t = {m: (module M)};
