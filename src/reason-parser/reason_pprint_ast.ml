@@ -2982,6 +2982,11 @@ let printer = object(self:'self)
          Type constructors are no longer simple *)
       | _ -> self#non_arrowed_simple_core_type x
 
+  method type_param_list_element = function
+    | {ptyp_attributes = []; ptyp_desc = Ptyp_package(lid,cstrs)} ->
+        self#typ_package ~mod_prefix:true lid cstrs
+    | t -> self#core_type t
+
   method non_arrowed_simple_core_type x =
     let {stdAttrs} = partitionAttributes x.ptyp_attributes in
     if stdAttrs <> [] then
@@ -2996,9 +3001,10 @@ let printer = object(self:'self)
         (*         | [] -> raise Parse_error *)
         (*         | one::[] -> one *)
         (*         | moreThanOne -> mktyp(Ptyp_tuple(List.rev moreThanOne)) } *)
-        | Ptyp_tuple l -> makeTup (List.map self#core_type l)
+        | Ptyp_tuple l -> makeTup (List.map self#type_param_list_element l)
         | Ptyp_object (l, o) -> self#unparseObject l o
-        | Ptyp_package (lid, cstrs) -> self#typ_package ~mod_prefix:false lid cstrs
+        | Ptyp_package (lid, cstrs) ->
+            self#typ_package ~protect:true ~mod_prefix:true lid cstrs
         (*   | QUOTE ident *)
         (*       { mktyp(Ptyp_var $2) } *)
         | Ptyp_var s -> ensureSingleTokenSticksToLabel (self#tyvar s)
@@ -3031,8 +3037,12 @@ let printer = object(self:'self)
 
               (* The single identifier has to be wrapped in a [ensureSingleTokenSticksToLabel] to
                  avoid (@see @avoidSingleTokenWrapping): *)
-              label (self#longident_loc li)
-                (makeTup (List.map self#core_type l)))
+              label
+                (self#longident_loc li)
+                (makeTup (
+                  List.map self#type_param_list_element l
+                ))
+            )
         | Ptyp_variant (l, closed, low) ->
           let pcd_loc = x.ptyp_loc in
           let pcd_attributes = x.ptyp_attributes in
@@ -3194,6 +3204,17 @@ let printer = object(self:'self)
     | _ -> (* x::y *)
       makeES6List pat_list (self#pattern pat_last) ~wrap
 
+  (* In some contexts the Ptyp_package needs to be protected by parens, or
+   * the `module` keyword needs to be added.
+   * Example: let f = (module Add: S.Z, x) => Add.add(x);
+   *  It's clear that `S.Z` is a module because it constraints the
+   *  `module Add` pattern. No need to add "module" before `S.Z`.
+   *
+   * Example2:
+   *   type t = (module Console);
+   *   In this case the "module" keyword needs to be printed to indicate
+   *   usage of a first-class-module.
+   *)
   method typ_package ?(protect=false) ?(mod_prefix=true) lid cstrs =
     let packageIdent =
       let packageIdent = self#longident_loc lid in

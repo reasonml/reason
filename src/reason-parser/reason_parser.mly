@@ -4371,6 +4371,10 @@ labelled_arrow_type_parameter_optional:
 ;
 
 arrow_type_parameter:
+  | MODULE package_type {
+    let loc = mklocation $symbolstartpos $endpos in
+    (Nolabel, { (mktyp(Ptyp_package $2)) with ptyp_loc = loc })
+  }
   | core_type
     { (Nolabel, $1) }
   | TILDE LIDENT COLON core_type
@@ -4424,9 +4428,16 @@ non_arrowed_core_type:
     { {$2 with ptyp_attributes = $1 :: $2.ptyp_attributes} }
 ;
 
+type_param:
+    | core_type { $1 }
+    | MODULE package_type
+      { let loc = mklocation $symbolstartpos $endpos in
+        { (mktyp(Ptyp_package $2)) with ptyp_loc = loc }
+      }
+;
 
 %inline type_parameter_comma_list:
-    | lseparated_nonempty_list(COMMA, core_type) COMMA? {$1}
+    | lseparated_nonempty_list(COMMA, type_param) COMMA? {$1}
 ;
 
 type_parameters:
@@ -4475,8 +4486,6 @@ mark_position_typ
     { mktyp(Ptyp_variant ($2, Open, None)) }
   | LBRACKETLESS row_field_list loption(preceded(GREATER, name_tag+)) RBRACKET
     { mktyp(Ptyp_variant ($2, Closed, Some $3)) }
-  | LPAREN MODULE package_type RPAREN
-    { mktyp(Ptyp_package $3) }
   | extension
     { mktyp(Ptyp_extension $1) }
   ) {$1};
