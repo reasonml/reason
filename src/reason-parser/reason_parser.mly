@@ -1128,6 +1128,12 @@ let package_type_of_module_type pmty =
   | _ ->
       err pmty.pmty_loc
         "only module type identifier and 'with type' constraints are supported"
+
+let mklist lst startp endp =
+  let seq, ext_opt = lst in
+  let loc = mklocation startp endp in
+  make_real_exp (mktailexp_extension loc seq ext_opt)
+
 %}
 
 
@@ -2751,10 +2757,28 @@ jsx_start_tag_and_args_without_leading_less:
       (jsx_component lident $2, lident) }
 ;
 
+jsx_expr_list:
+  LBRACKET expr_comma_seq_extension RBRACKET
+    { mklist $2 $startpos($2) $endpos($2) }
+
+jsx_children_including_list:
+  | simple_expr_no_call { $1 }
+  | jsx_expr_list { $1 }
+
 jsx:
   | LESSGREATER simple_expr_no_call* LESSSLASHGREATER
     { let loc = mklocation $symbolstartpos $endpos in
       let body = mktailexp_extension loc $2 None in
+      makeFrag loc body
+    }
+  | LESSGREATER jsx_expr_list+ LESSSLASHGREATER
+    { let loc = mklocation $symbolstartpos $endpos in
+      let body = mktailexp_extension loc $2 None in
+      makeFrag loc body
+    }
+  | LESSGREATER DOTDOTDOT jsx_children_including_list LESSSLASHGREATER
+    { let loc = mklocation $symbolstartpos $endpos in
+      let body = $3 (*mktailexp_extension loc $3 None*) in
       makeFrag loc body
     }
   | jsx_start_tag_and_args SLASHGREATER
@@ -2777,7 +2801,18 @@ jsx:
         (Nolabel, mkexp_constructor_unit loc loc)
       ] loc
     }
-   | jsx_start_tag_and_args GREATER DOTDOTDOT simple_expr_no_call LESSSLASHIDENTGREATER
+  | jsx_start_tag_and_args GREATER jsx_expr_list+ LESSSLASHIDENTGREATER
+    { let (component, start) = $1 in
+      let loc = mklocation $symbolstartpos $endpos in
+      (* TODO: Make this tag check simply a warning *)
+      let endName = Longident.parse $4 in
+      let _ = ensureTagsAreEqual start endName loc in
+      component [
+        (Labelled "children", mktailexp_extension loc $3 None);
+        (Nolabel, mkexp_constructor_unit loc loc)
+      ] loc
+    }
+   | jsx_start_tag_and_args GREATER DOTDOTDOT jsx_children_including_list LESSSLASHIDENTGREATER
      (* <Foo> ...bar </Foo> or <Foo> ...((a) => 1) </Foo> *)
     { let (component, start) = $1 in
       let loc = mklocation $symbolstartpos $endpos in
@@ -2798,6 +2833,16 @@ jsx_without_leading_less:
     let body = mktailexp_extension loc $2 None in
     makeFrag loc body
   }
+  | GREATER jsx_expr_list+ LESSSLASHGREATER
+    { let loc = mklocation $symbolstartpos $endpos in
+      let body = mktailexp_extension loc $2 None in
+      makeFrag loc body
+    }
+  | GREATER DOTDOTDOT jsx_children_including_list LESSSLASHGREATER
+    { let loc = mklocation $symbolstartpos $endpos in
+      let body = $3 (*mktailexp_extension loc $3 None*) in
+      makeFrag loc body
+    }
   | jsx_start_tag_and_args_without_leading_less SLASHGREATER {
     let (component, _) = $1 in
     let loc = mklocation $symbolstartpos $endpos in
@@ -2818,7 +2863,18 @@ jsx_without_leading_less:
       (Nolabel, mkexp_constructor_unit loc loc)
     ] loc
   }
-    | jsx_start_tag_and_args_without_leading_less GREATER DOTDOTDOT simple_expr_no_call LESSSLASHIDENTGREATER {
+  | jsx_start_tag_and_args_without_leading_less GREATER jsx_expr_list+ LESSSLASHIDENTGREATER
+    { let (component, start) = $1 in
+      let loc = mklocation $symbolstartpos $endpos in
+      (* TODO: Make this tag check simply a warning *)
+      let endName = Longident.parse $4 in
+      let _ = ensureTagsAreEqual start endName loc in
+      component [
+        (Labelled "children", mktailexp_extension loc $3 None);
+        (Nolabel, mkexp_constructor_unit loc loc)
+      ] loc
+  }
+  | jsx_start_tag_and_args_without_leading_less GREATER DOTDOTDOT jsx_children_including_list LESSSLASHIDENTGREATER {
     let (component, start) = $1 in
     let loc = mklocation $symbolstartpos $endpos in
     (* TODO: Make this tag check simply a warning *)
@@ -3199,10 +3255,7 @@ simple_expr_call:
     { let (body, args) = $1 in
       (body, List.rev_append $2 args) }
   | LBRACKET expr_comma_seq_extension RBRACKET
-    { let seq, ext_opt = $2 in
-      let loc = mklocation $startpos($2) $endpos($2) in
-      (make_real_exp (mktailexp_extension loc seq ext_opt), [])
-    }
+    { (mklist $2 $startpos($2) $endpos($2), []) }
   | simple_expr_template_constructor { ($1, []) }
 ;
 

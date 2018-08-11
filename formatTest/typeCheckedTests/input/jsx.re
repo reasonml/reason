@@ -436,3 +436,12 @@ let onClickHandler = () => ();
 let div = (~onClick, ~children, ()) => ();
 
 <div onClick=onClickHandler> <> "foobar" </> </div>;
+
+/* https://github.com/facebook/reason/issues/1467 */
+<Foo> ...[1, 2] </Foo>;
+
+<Foo> [1, 2] [3,4] </Foo>;
+
+<Foo> <> [1, 2] [3,4] </> </Foo>;
+
+<Foo> <> ...[1, 2, 3] </> </Foo>;

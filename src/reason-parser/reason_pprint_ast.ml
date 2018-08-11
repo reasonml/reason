@@ -5981,9 +5981,9 @@ let printer = object(self:'self)
         | ({txt="JSX"; loc}, PStr []) :: _ ->
           begin match self#simplest_expression x with
             | Some r -> self#formatChildren remaining (r :: processedRev)
-            | None -> self#formatChildren (remaining @ children) processedRev
+            | None -> self#formatChildren (children @ remaining) processedRev
             end
-        | _ -> self#formatChildren (remaining @ children) processedRev
+        | _ -> self#formatChildren (children @ remaining) processedRev
       end
     | {pexp_desc = Pexp_apply(expr, l); pexp_attributes} :: remaining ->
       self#formatChildren remaining (self#simplifyUnparseExpr ~wrap:("{", "}") (List.hd children) :: processedRev)
