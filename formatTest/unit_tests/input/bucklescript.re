@@ -90,3 +90,6 @@ type y = {
   [@foo barbaz] "width": (int, int, int, float, float, float) => unit,
   [@foo barbaz] "height": (int, int, int, float, float, float) => unit,
 };
+
+/* https://github.com/facebook/reason/issues/2121 */
+Style.( { "container": 3 });

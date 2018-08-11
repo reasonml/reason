@@ -3077,6 +3077,16 @@ parenthesized_expr:
     }
   | mod_longident DOT as_loc(LBRACE) record_expr as_loc(error)
     { unclosed_exp (with_txt $3 "{") (with_txt $5 "}") }
+  | as_loc(mod_longident) DOT LBRACE record_expr_with_string_keys RBRACE
+    { let (exten, fields) = $4 in
+      let loc = mklocation $symbolstartpos $endpos in
+      let rec_exp = mkexp ~loc (Pexp_extension (mkloc ("bs.obj") loc,
+             PStr [mkstrexp (mkexp ~loc (Pexp_record(fields, exten))) []]))
+      in
+      mkexp(Pexp_open(Fresh, $1, rec_exp))
+    }
+  | mod_longident DOT as_loc(LBRACE) record_expr_with_string_keys as_loc(error)
+    { unclosed_exp (with_txt $3 "{") (with_txt $5 "}") }
   | as_loc(mod_longident) DOT LBRACKETBAR expr_list BARRBRACKET
     { let loc = mklocation $symbolstartpos $endpos in
       let rec_exp = Exp.mk ~loc ~attrs:[] (Pexp_array $4) in
