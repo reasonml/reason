@@ -3019,6 +3019,7 @@ parenthesized_expr:
       let access_property_exp = match $2 with 
         | "?." | "?#" -> mkexp (Pexp_construct ({txt = Lident("Some"); loc = loc_exp}, Some(access_property)))
         | "?.+" | "?#+" -> access_property
+        | _ -> syntax_error ()
       in
       let some_exp = match $3.pexp_desc with
         | Pexp_ident(_) -> access_property_exp
