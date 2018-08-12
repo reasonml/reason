@@ -1291,7 +1291,8 @@ conflicts.
 %nonassoc below_DOT_AND_SHARP           (* practically same as below_SHARP but we convey purpose *)
 %nonassoc SHARP                         (* simple_expr/toplevel_directive *)
 
-%left     SHARPOP OPTIONALACCESS
+%left     SHARPOP 
+%right    OPTIONALACCESS
 %nonassoc below_DOT
 %nonassoc DOT POSTFIXOP
 
@@ -2988,35 +2989,52 @@ parenthesized_expr:
     {
       let loc_exp = mklocation $startpos($1) $endpos($1) in
       let record_name = match $1.pexp_desc with Pexp_ident({txt = Lident(str); loc;}) -> str | _ -> "x" in
-      let prop_name = match $3.pexp_desc with Pexp_ident({txt = Lident(str); loc;}) -> Lident(str) | _ -> syntax_error () in
+      let prop_name = match $3.pexp_desc with 
+        | Pexp_ident({txt = Lident(str); loc;}) -> str 
+        | Pexp_match({pexp_desc = Pexp_ident({txt = Lident(str); loc;})}, _) -> str
+        | _ -> syntax_error ()
+        in
       let access_property = match $2 with
-        | "?." -> 
+        | "?." | "?.+" -> 
           mkexp (Pexp_field (
             mkexp (Pexp_ident({
               txt = Lident(record_name);
               loc = loc_exp;
             })), {
-              txt = prop_name; 
+              txt = Lident(prop_name); 
               loc = loc_exp;
             }))
-        | "?#" -> 
+        | "?#" | "?#+" -> 
           mkexp (Pexp_apply(
             mkexp (Pexp_ident({
               txt = Lident("##");
               loc = loc_exp;
             })), [
               Nolabel, mkexp (Pexp_ident({ txt = Lident(record_name); loc = loc_exp}));
-              Nolabel, mkexp (Pexp_ident({ txt = prop_name; loc = loc_exp }));
+              Nolabel, mkexp (Pexp_ident({ txt = Lident(prop_name); loc = loc_exp }));
             ]
           )) 
         | _ -> syntax_error ()
           in
+      let access_property_exp = match $2 with 
+        | "?." | "?#" -> mkexp (Pexp_construct ({txt = Lident("Some"); loc = loc_exp}, Some(access_property)))
+        | "?.+" | "?#+" -> access_property
+      in
+      let some_exp = match $3.pexp_desc with
+        | Pexp_ident(_) -> access_property_exp
+        | Pexp_match(_, _) -> mkexp (Pexp_let(Nonrecursive, [{  
+            pvb_pat = mkpat (Ppat_var(mkloc prop_name loc_exp));
+            pvb_expr = access_property_exp;
+            pvb_attributes = [];
+            pvb_loc = loc_exp; 
+          }], $3));
+        | _ -> syntax_error () in
       let some_pat =
         Pat.mk ~loc:loc_exp (Ppat_construct({ txt = Lident("Some"); loc = loc_exp}, Some(mkpat (Ppat_var(mkloc record_name loc_exp))))) in
       let none_pat = 
         Pat.mk ~loc:loc_exp (Ppat_construct({ txt = Lident("None"); loc = loc_exp;}, None)) in
       let some_case = 
-        Exp.case some_pat (mkexp (Pexp_construct ({txt = Lident("Some"); loc = loc_exp}, Some(access_property))));
+        Exp.case some_pat some_exp
        in
       let none_case =
        Exp.case none_pat (mkexp (Pexp_construct({ txt = Lident("None"); loc = loc_exp;}, None)));
