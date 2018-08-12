@@ -32,3 +32,16 @@ let join_iter =
    module C: module Sig with type t=tb,
    module D: Sig with type t=tb and type s =tc and type x = td and type z = te,
    fn)  => fn(A.value + B.value);
+
+type t = ref((module Console));
+type firstClassConsole = (module Console);
+
+type crossPlatform = Platform.t((module Windows), (module Mac), (module Linux));
+
+type t = (module FirstClass, module SecondClass);
+
+type withAttr = ref([@bar] (module Console));
+type withAttrPlatform = Platform.t([@bar] (module Iphone), [@foo] (module Ipad));
+type tWithAttr = ([@foo] (module FirstClass), [@bar] (module SecondClass));
+
+type t = {m: (module M)};
