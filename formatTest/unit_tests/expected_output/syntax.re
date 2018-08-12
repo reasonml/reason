@@ -1374,3 +1374,14 @@ let predicate =
     fun
     | None => false
     | Some(exn) => predicate(exn);
+
+/* https://github.com/facebook/reason/issues/2125 */
+foo(~a);
+
+foo(~a: int);
+
+foo(~a: int);
+
+foo(~(a :> int));
+
+foo(~(a :> int));
