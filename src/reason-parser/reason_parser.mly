@@ -3316,19 +3316,19 @@ labeled_expr:
       | Some typ ->
           ghexp_constraint $2.loc exp typ
       in
-      (Labelled (String.concat "" (Longident.flatten lident_loc.txt)), labeled_exp)
+      (Labelled (Longident.last lident_loc.txt), labeled_exp)
     }
   | TILDE as_loc(val_longident) QUESTION
-    { (* foo(:a?)  -> parses :a? *)
+    { (* foo(~a?)  -> parses ~a? *)
       let exp = mkexp (Pexp_ident $2) ~loc:$2.loc in
-      (Optional (String.concat "" (Longident.flatten $2.txt)), exp)
+      (Optional (Longident.last $2.txt), exp)
     }
-  | TILDE as_loc(val_longident) EQUAL optional labeled_expr_constraint
-    { (* foo(:bar=?Some(1)) or add(:x=1, :y=2) -> parses :bar=?Some(1) & :x=1 & :y=1 *)
-      ($4 (String.concat "" (Longident.flatten $2.txt)), $5 $2)
+  | TILDE as_loc(LIDENT) EQUAL optional labeled_expr_constraint
+    { (* foo(~bar=?Some(1)) or add(~x=1, ~y=2) -> parses ~bar=?Some(1) & ~x=1 & ~y=1 *)
+      ($4 $2.txt, $5 { $2 with txt = Lident $2.txt })
     }
-  | TILDE as_loc(val_longident) as_loc(INFIXOP_WITH_EQUAL) labeled_expr_constraint
-    { (* foo(:bar=?Some(1)) or add(:x=1, :y=2) -> parses :bar=?Some(1) & :x=1 & :y=1 *)
+  | TILDE as_loc(LIDENT) as_loc(INFIXOP_WITH_EQUAL) labeled_expr_constraint
+    { (* foo(~bar=?Some(1)) or add(~x=1, ~y=2) -> parses ~bar=?Some(1) & ~x=1 & ~y=1 *)
       let infix_op = $3.txt in
       (* catch optionals e.g. foo(~a=?-1);
          because we're using `INFIXOP_WITH_EQUAL` to catch all operator chars
@@ -3337,15 +3337,15 @@ labeled_expr:
          `infix_op` can bef "=?-" for instance. *)
       if String.get infix_op 1 == '?' then
         let infix_loc = { $3 with txt = "=" ^ (String.sub infix_op 2 (String.length infix_op - 2))} in
-        (Optional (String.concat "" (Longident.flatten $2.txt)), parse_infix_with_eql infix_loc ($4 $2))
+        (Optional $2.txt, parse_infix_with_eql infix_loc ($4 { $2 with txt = Lident $2.txt }))
       else
-        (Labelled (String.concat "" (Longident.flatten $2.txt)), parse_infix_with_eql $3 ($4 $2))
+        (Labelled $2.txt, parse_infix_with_eql $3 ($4 { $2 with txt = Lident $2.txt }))
     }
-  | TILDE as_loc(val_longident) EQUAL optional as_loc(UNDERSCORE)
+  | TILDE as_loc(LIDENT) EQUAL optional as_loc(UNDERSCORE)
     { (* foo(~l =_) *)
       let loc = $5.loc in
       let exp = mkexp (Pexp_ident (mkloc (Lident "_") loc)) ~loc in
-      ($4 (String.concat "" (Longident.flatten $2.txt)), exp)
+      ($4 $2.txt, exp)
     }
   | as_loc(UNDERSCORE)
     { (* foo(_) *)
