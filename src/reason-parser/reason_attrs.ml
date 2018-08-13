@@ -3,16 +3,19 @@ open Ast_404
 open Parsetree
 open Location
 
-(** Kinds of attributes *)
-type attributesPartition = {
-  arityAttrs : attributes;
-  docAttrs : attributes;
-  stdAttrs : attributes;
-  jsxAttrs : attributes;
-  refmtAttrs : attributes;
-  literalAttrs : attributes;
-  uncurried : bool
-}
+module T = struct
+  (** Kinds of attributes *)
+  type attributesPartition = {
+    arityAttrs : attributes;
+    docAttrs : attributes;
+    stdAttrs : attributes;
+    jsxAttrs : attributes;
+    refmtAttrs : attributes;
+    literalAttrs : attributes;
+    uncurried : bool
+  }
+end
+open T
 
 let isRefmtTag tag attr =
   match attr with
