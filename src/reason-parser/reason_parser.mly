@@ -3301,12 +3301,22 @@ labeled_expr_constraint:
   }
 ;
 
+longident_type_constraint:
+ | as_loc(val_longident) type_constraint?
+ { $1, $2 }
+
 labeled_expr:
   | expr_optional_constraint { (Nolabel, $1) }
-  | TILDE as_loc(val_longident)
-    { (* add(:a, :b)  -> parses :a & :b *)
-      let exp = mkexp (Pexp_ident $2) ~loc:$2.loc in
-      (Labelled (String.concat "" (Longident.flatten $2.txt)), exp)
+  | TILDE as_loc(either(parenthesized(longident_type_constraint), longident_type_constraint))
+    { (* add(~a, ~b) -> parses ~a & ~b *)
+      let lident_loc, maybe_typ = $2.txt in
+      let exp = mkexp (Pexp_ident lident_loc) ~loc:lident_loc.loc in
+      let labeled_exp = match maybe_typ with
+      | None -> exp
+      | Some typ ->
+          ghexp_constraint $2.loc exp typ
+      in
+      (Labelled (String.concat "" (Longident.flatten lident_loc.txt)), labeled_exp)
     }
   | TILDE as_loc(val_longident) QUESTION
     { (* foo(:a?)  -> parses :a? *)
