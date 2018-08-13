@@ -6006,8 +6006,14 @@ let printer = object(self:'self)
             end
         | _ -> self#formatChildren (remaining @ children) processedRev
       end
-    | {pexp_desc = Pexp_apply(expr, l); pexp_attributes} :: remaining ->
-      self#formatChildren remaining (self#simplifyUnparseExpr ~wrap:("{", "}") (List.hd children) :: processedRev)
+    | ({pexp_desc = Pexp_apply(expr, l); pexp_attributes} as e) :: remaining ->
+        (* <div> {items->Belt.Array.map(ReasonReact.string)->ReasonReact.array} </div>; *)
+        let child = if Reason_heuristics.isFastPipeWithApplicationJSXChild e then
+          formatPrecedence ~wrap:("{", "}") (self#formatFastPipe e)
+        else
+          self#simplifyUnparseExpr ~wrap:("{", "}") e
+        in
+        self#formatChildren remaining (child::processedRev)
     | {pexp_desc = Pexp_ident li} :: remaining ->
       self#formatChildren remaining (self#longident_loc li :: processedRev)
     | {pexp_desc = Pexp_construct ({txt = Lident "[]"}, None)} :: remaining -> self#formatChildren remaining processedRev
