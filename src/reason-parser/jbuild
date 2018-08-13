@@ -56,6 +56,7 @@
     reason_syntax_util
     reason_comment
     reason_layout
+    reason_attrs
     reason_heuristics
     reason_location
     reason_toolchain
