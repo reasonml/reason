@@ -111,17 +111,8 @@ let isFastPipe e = match Ast_404.Parsetree.(e.pexp_desc) with
  * preserved in this case. *)
 let isFastPipeWithApplicationJSXChild e = match Ast_404.Parsetree.(e.pexp_desc) with
   | Pexp_apply(
-    {pexp_desc = Pexp_ident({txt = Longident.Lident("|.")})},
-       [Nolabel, {pexp_desc = Pexp_apply(
-        {pexp_desc =
-          Pexp_apply(
-            {pexp_desc = Pexp_ident({txt = Longident.Lident("|.")})},
-            _
-          )
-        },
-        _
-        )};
-      _]
+      {pexp_desc = Pexp_ident({txt = Longident.Lident("|.")})},
+      [Nolabel, {pexp_desc = Pexp_apply(_)}; _]
     ) -> true
   | _ -> false
 

@@ -34,3 +34,139 @@ let (|.) = (a, f) => f(a);
 let t4: int = 5->doStuff(1, _, 7);
 let t5: int =
   5->doStuff(1, _, 7)->doStuff(1, _, 7);
+
+module Foo = {
+  let createElement = (~children, ()) =>
+    List.hd(children) ++ "test";
+
+  let map = (xs, f) => List.map(f, xs);
+
+  let plusOne = x => x + 1;
+
+  let toString = lst =>
+    List.fold_left(
+      (acc, curr) =>
+        acc ++ string_of_int(curr),
+      "",
+      lst,
+    );
+};
+
+let items = [1, 2, 3];
+
+let t6: string =
+  <Foo>
+    {items->Foo.map(Foo.plusOne)->Foo.toString}
+  </Foo>;
+
+type saveStatus =
+  | Pristine
+  | Saved
+  | Saving
+  | Unsaved;
+
+let saveStatus = Pristine;
+
+let t7: string =
+  <Foo>
+    {
+      (
+        switch (saveStatus) {
+        | Pristine => [0]
+        | Saved => [1]
+        | Saving => [2]
+        | Unsaved => [3]
+        }
+      )
+      ->Foo.map(Foo.plusOne)
+      ->Foo.toString
+    }
+  </Foo>;
+
+let genItems = f => List.map(f, items);
+
+let t8: string =
+  <Foo>
+    {genItems(Foo.plusOne)->Foo.toString}
+  </Foo>;
+
+let blocks = [1, 2, 3];
+
+let t9: string =
+  <Foo> blocks->(b => Foo.toString(b)) </Foo>;
+
+let foo = xs => List.concat([xs, xs]);
+
+let t10: string =
+  <Foo>
+    {
+      blocks
+      ->foo
+      ->Foo.map(Foo.plusOne)
+      ->Foo.toString
+    }
+  </Foo>;
+
+let t11: string =
+  <Foo>
+    {
+      blocks
+      ->foo
+      ->Foo.map(Foo.plusOne)
+      ->Foo.map(Foo.plusOne)
+      ->Foo.toString
+    }
+  </Foo>;
+
+let title = "los pilares de la tierra";
+
+let t12: string =
+  <Foo>
+    (title === "" ? [1, 2, 3] : blocks)
+    ->Foo.toString
+  </Foo>;
+
+type change =
+  | Change(list(int));
+
+type this = {send: change => string};
+
+let change = x => Change(x);
+
+let self = {
+  send: x =>
+    switch (x) {
+    | Change(xs) => Foo.toString(xs)
+    },
+};
+
+let urlToRoute = x => [x, x, x];
+
+let t13: string =
+  urlToRoute(1)->change->(self.send);
+
+module FooLabeled = {
+  let createElement = (~children, ()) =>
+    List.hd(children) ++ "test";
+
+  let map = (xs, ~f) => List.map(f, xs);
+
+  let plusOne = x => x + 1;
+
+  let toString = lst =>
+    List.fold_left(
+      (acc, curr) =>
+        acc ++ string_of_int(curr),
+      "",
+      lst,
+    );
+};
+
+let t14: string =
+  <FooLabeled>
+    {
+      items
+      ->FooLabeled.map(~f=FooLabeled.plusOne)
+      ->FooLabeled.toString
+    }
+  </FooLabeled>;
