@@ -882,12 +882,14 @@ type let_bindings =
   { lbs_bindings: Parsetree.value_binding list;
     lbs_rec: rec_flag;
     lbs_extension: (attributes * string Asttypes.loc) option;
+    lbs_bang: Longident.t Asttypes.loc option;
     lbs_loc: Location.t }
 
-let mklbs ext rf lb loc =
+let mklbs bang ext rf lb loc =
   { lbs_bindings = [lb];
     lbs_rec = rf;
     lbs_extension = ext;
+    lbs_bang = bang;
     lbs_loc = loc; }
 
 let addlbs lbs lbs' =
@@ -895,14 +897,27 @@ let addlbs lbs lbs' =
 
 let val_of_let_bindings lbs =
   let str = Str.value lbs.lbs_rec lbs.lbs_bindings in
+  if lbs.lbs_bang <> None then
+    raise Syntaxerr.(Error(Not_expecting(lbs.lbs_loc, "CPS syntax")));
   match lbs.lbs_extension with
   | None -> str
   | Some ext -> struct_item_extension ext [str]
 
+let monad_of_let_bindings attr lbs body =
+    match lbs.lbs_bindings with
+    | [one] ->
+      Exp.apply (Exp.ident attr) [
+        (Nolabel, one.pvb_expr);
+        (Nolabel, Exp.fun_ Nolabel None one.pvb_pat body)
+      ]
+    | _ -> failwith "Only one binding supported just yet"
+
 let expr_of_let_bindings lbs body =
   (* The location of this expression unfortunately includes the entire rule,
    * which will include any preceeding extensions. *)
-  let item_expr = Exp.let_ lbs.lbs_rec lbs.lbs_bindings body in
+  let item_expr = match lbs.lbs_bang with
+    | Some attr -> monad_of_let_bindings attr lbs body
+    | None -> Exp.let_ lbs.lbs_rec lbs.lbs_bindings body in
   match lbs.lbs_extension with
   | None -> item_expr
   | Some ext -> expression_extension ext item_expr
@@ -3360,10 +3375,10 @@ let_bindings: let_binding and_let_binding* { addlbs $1 $2 };
 
 let_binding:
   (* Form with item extension sugar *)
-  item_attributes LET item_extension_sugar? rec_flag let_binding_body
+  item_attributes LET let_bang? item_extension_sugar? rec_flag let_binding_body
   { let loc = mklocation $symbolstartpos $endpos in
-    let pat, expr = $5 in
-    mklbs $3 $4 (Vb.mk ~loc ~attrs:$1 pat expr) loc }
+    let pat, expr = $6 in
+    mklbs $3 $4 $5 (Vb.mk ~loc ~attrs:$1 pat expr) loc }
 ;
 
 let_binding_body:
@@ -4865,6 +4880,10 @@ attribute:
 
 item_extension_sugar:
   PERCENT attr_id { ([], $2) }
+;
+
+let_bang:
+  BANG as_loc(val_longident) { $2 }
 ;
 
 extension:
