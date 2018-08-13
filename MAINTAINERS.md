@@ -18,7 +18,7 @@ versions of the Opam packages.
     version=3.3.3 make pre_release
     git commit -m "Bump version"
     git push origin HEAD:PullRequestForVersion # Commit these version bumps
-    node ./scripts/esy-prepublish.js scripts/esy-prepublish.js src/refmt src/rtop
+    node scripts/esy-prepublish.js src/refmt src/rtop
 
 Then follow the printed instructions for pushing any of the packages to npm.
 They will show up under `@esy-ocaml/reason` etc.
