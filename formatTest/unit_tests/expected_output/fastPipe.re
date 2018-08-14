@@ -150,7 +150,7 @@ blocks->(blocks => {"blocks": blocks});
 </title>;
 
 ReasonReact.Router.watchUrl(url =>
-  Route.urlToRoute(url)->ChangeView->(self.send)
+  Route.urlToRoute(url)->ChangeView->self.send
 );
 ReasonReact.Router.watchUrl(url =>
   Route.urlToRoute(url)->ChangeView->self.send

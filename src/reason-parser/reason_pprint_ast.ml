@@ -641,17 +641,30 @@ let isRightAssociative ~prec = match precedenceInfo ~prec with
   | Some (Nonassoc, _) -> false
 
 let higherPrecedenceThan c1 c2 =
-  match ((precedenceInfo ~prec:c1), (precedenceInfo ~prec:c2)) with
-  | (_, None)
-  | (None, _) ->
-    let (str1, str2) = match (c1, c2) with
-      | (Token s1, Token s2) -> ("Token " ^ s1, "Token " ^ s2)
-      | (Token s1, Custom s2) -> ("Token " ^ s1, "Custom " ^ s2)
-      | (Custom s1, Token s2) -> ("Custom " ^ s1, "Token " ^ s2)
-      | (Custom s1, Custom s2) -> ("Custom " ^ s1, "Custom " ^ s2)
-    in
-    raise (NotPossible ("Cannot determine precedence of two checks " ^ str1 ^ " vs. " ^ str2))
-  | (Some (_, p1), Some (_, p2)) -> p1 < p2
+  match (c1, c2) with
+  (*
+   * In general . and -> belong to the same category of
+   * precedence. However in the context of `foo->x.y`, the
+   * `.` has higher precedence.
+   * This contrasts with `event->target##value` or
+   *  `location##streets.foo[1]` where we read the expression from
+   *  left to right.
+   *  Hence the exception here to simulate dynamic precedence.
+   *)
+  | (Token ".", Token "->") -> true
+  | _ ->
+    begin match ((precedenceInfo ~prec:c1), (precedenceInfo ~prec:c2)) with
+    | (_, None)
+    | (None, _) ->
+      let (str1, str2) = match (c1, c2) with
+        | (Token s1, Token s2) -> ("Token " ^ s1, "Token " ^ s2)
+        | (Token s1, Custom s2) -> ("Token " ^ s1, "Custom " ^ s2)
+        | (Custom s1, Token s2) -> ("Custom " ^ s1, "Token " ^ s2)
+        | (Custom s1, Custom s2) -> ("Custom " ^ s1, "Custom " ^ s2)
+      in
+      raise (NotPossible ("Cannot determine precedence of two checks " ^ str1 ^ " vs. " ^ str2))
+    | (Some (_, p1), Some (_, p2)) -> p1 < p2
+    end
 
 let printedStringAndFixityExpr = function
   | {pexp_desc = Pexp_ident {txt=Lident l}} -> printedStringAndFixity l
@@ -4087,7 +4100,10 @@ let printer = object(self:'self)
           self#ensureExpression ~reducesOnToken:prec e
         ) in
         let {stdAttrs} = partitionAttributes e.pexp_attributes in
-        let formattedLeftItm = if stdAttrs == [] then
+        let formattedLeftItm =
+          if stdAttrs = []
+             && not (Reason_heuristics.isFastPipe e)
+          then
             leftItm
           else
             formatPrecedence ~loc:e.pexp_loc leftItm

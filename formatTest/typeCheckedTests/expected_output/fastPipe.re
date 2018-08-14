@@ -143,7 +143,7 @@ let self = {
 let urlToRoute = x => [x, x, x];
 
 let t13: string =
-  urlToRoute(1)->change->(self.send);
+  urlToRoute(1)->change->self.send;
 
 module FooLabeled = {
   let createElement = (~children, ()) =>

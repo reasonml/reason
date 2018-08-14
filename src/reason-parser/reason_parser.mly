@@ -135,6 +135,8 @@ open Reason_string
 
 let uncurry_payload ?(name="bs") loc = ({loc; txt = name}, PStr [])
 
+let parenthesized_exprs = Hashtbl.create 42
+
 let dummy_loc () = {
   loc_start = Lexing.dummy_pos;
   loc_end = Lexing.dummy_pos;
@@ -218,7 +220,10 @@ let mkctf ?(loc=dummy_loc()) ?(ghost=false) d =
 
 let may_tuple startp endp = function
   | []  -> assert false
-  | [x] -> {x with pexp_loc = mklocation startp endp}
+  | [x] ->
+      let loc = mklocation startp endp in
+      let () = Hashtbl.add parenthesized_exprs loc true in
+      {x with pexp_loc = loc}
   | xs  -> mkexp ~loc:(mklocation startp endp) (Pexp_tuple xs)
 
 (**
@@ -296,6 +301,33 @@ let ghunit ?(loc=dummy_loc ()) () =
 
 let mkinfixop arg1 op arg2 =
   mkexp(Pexp_apply(op, [Nolabel, arg1; Nolabel, arg2]))
+
+let postProcessFastPipePrecedence e =
+  match e.pexp_desc with
+  | Pexp_field(({pexp_desc =
+      Pexp_apply(
+        ({pexp_desc=Pexp_ident({txt = Longident.Lident("|.")})} as pipeExp),
+        [Nolabel, argExp1; Nolabel, argExp2]
+      )
+    } as expApply), lid) ->
+  let parenthesized = try Hashtbl.find parenthesized_exprs expApply.pexp_loc with
+    | Not_found -> false
+  in
+  if parenthesized then
+    e
+  else
+    {expApply with
+      pexp_desc = Pexp_apply(
+        pipeExp,
+        [
+          Nolabel, argExp1;
+          Nolabel, {e with pexp_desc = Pexp_field(argExp2 ,lid)}
+        ]
+      )
+    }
+  | _ -> e
+
+
 
 let mkinfix arg1 name arg2 =
   mkinfixop arg1 (mkoperator name) arg2
@@ -3012,7 +3044,7 @@ parenthesized_expr:
   | mod_longident DOT as_loc(LPAREN) expr_list as_loc(error)
     { unclosed_exp (with_txt $3 "(") (with_txt $5 ")") }
   | E DOT as_loc(label_longident)
-    { mkexp(Pexp_field($1, $3)) }
+    { postProcessFastPipePrecedence (mkexp(Pexp_field($1, $3))) }
   | as_loc(mod_longident) DOT LBRACE RBRACE
     { let loc = mklocation $symbolstartpos $endpos in
       let pat = mkpat (Ppat_var (mkloc "this" loc)) in
