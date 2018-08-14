@@ -258,6 +258,15 @@ let simple_ghost_text_attr ?(loc=dummy_loc ()) txt =
   let loc = set_loc_state true loc in
   [({txt; loc}, PStr [])]
 
+(* used for storing stylistic information in the AST *)
+(* As if you had written [@refmt "txt"] *)
+let simple_ghost_refmt_text_attr ?(loc=dummy_loc ()) txt =
+  let loc = set_loc_state true loc in
+  (
+    {txt="refmt"; loc},
+    PStr [{pstr_desc=Pstr_eval(mkexp ~loc (Pexp_constant(Pconst_string(txt, None))), []); pstr_loc=loc}]
+  )
+
 let mkExplicitArityTuplePat ?(loc=dummy_loc ()) pat =
   (* Tell OCaml type system that what this tuple construction represents is
      not actually a tuple, and should represent several constructor
@@ -906,7 +915,10 @@ let val_of_let_bindings lbs =
 let monad_of_let_bindings attr lbs body =
     match lbs.lbs_bindings with
     | [one] ->
-      Exp.apply (Exp.ident attr) [
+      Exp.apply
+      ~attrs:[simple_ghost_refmt_text_attr "let_bang"]
+      ~loc:one.pvb_loc
+      (Exp.ident attr) [
         (Nolabel, one.pvb_expr);
         (Nolabel, Exp.fun_ Nolabel None one.pvb_pat body)
       ]
