@@ -1300,3 +1300,5 @@ let predicate =
       | None => false
       | Some(exn) => predicate(exn)
     );
+
+let (>...) = (a, b) => a + b;

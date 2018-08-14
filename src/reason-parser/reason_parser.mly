@@ -1173,6 +1173,7 @@ let package_type_of_module_type pmty =
 %token FUNCTOR
 %token GREATER
 %token GREATERRBRACE
+%token GREATERDOTDOTDOT
 %token IF
 %token IN
 %token INCLUDE
@@ -1294,7 +1295,7 @@ conflicts.
 
 %right    OR BARBAR                     (* expr (e || e || e) *)
 %right    AMPERSAND AMPERAMPER          (* expr (e && e && e) *)
-%left     INFIXOP0 INFIXOP_WITH_EQUAL LESS GREATER (* expr (e OP e OP e) *)
+%left     INFIXOP0 INFIXOP_WITH_EQUAL LESS GREATER GREATERDOTDOTDOT (* expr (e OP e OP e) *)
 %left     LESSDOTDOTGREATER (* expr (e OP e OP e) *)
 %right    INFIXOP1                      (* expr (e OP e OP e) *)
 %right    COLONCOLON                    (* expr (e :: e :: e) *)
@@ -2754,6 +2755,10 @@ jsx_start_tag_and_args_without_leading_less:
       (jsx_component lident $2, lident) }
 ;
 
+greater_spread:
+  | GREATERDOTDOTDOT
+  | GREATER DOTDOTDOT { ">..." }
+
 jsx:
   | LESSGREATER simple_expr_no_call* LESSSLASHGREATER
     { let loc = mklocation $symbolstartpos $endpos in
@@ -2780,14 +2785,14 @@ jsx:
         (Nolabel, mkexp_constructor_unit loc loc)
       ] loc
     }
-   | jsx_start_tag_and_args GREATER DOTDOTDOT simple_expr_no_call LESSSLASHIDENTGREATER
+   | jsx_start_tag_and_args greater_spread simple_expr_no_call LESSSLASHIDENTGREATER
      (* <Foo> ...bar </Foo> or <Foo> ...((a) => 1) </Foo> *)
     { let (component, start) = $1 in
       let loc = mklocation $symbolstartpos $endpos in
       (* TODO: Make this tag check simply a warning *)
-      let endName = Longident.parse $5 in
+      let endName = Longident.parse $4 in
       let _ = ensureTagsAreEqual start endName loc in
-      let child = $4 in
+      let child = $3 in
       component [
         (Labelled "children", child);
         (Nolabel, mkexp_constructor_unit loc loc)
@@ -2821,13 +2826,13 @@ jsx_without_leading_less:
       (Nolabel, mkexp_constructor_unit loc loc)
     ] loc
   }
-    | jsx_start_tag_and_args_without_leading_less GREATER DOTDOTDOT simple_expr_no_call LESSSLASHIDENTGREATER {
+    | jsx_start_tag_and_args_without_leading_less greater_spread simple_expr_no_call LESSSLASHIDENTGREATER {
     let (component, start) = $1 in
     let loc = mklocation $symbolstartpos $endpos in
     (* TODO: Make this tag check simply a warning *)
-    let endName = Longident.parse $5 in
+    let endName = Longident.parse $4 in
     let _ = ensureTagsAreEqual start endName loc in
-    let child = $4 in
+    let child = $3 in
     component [
       (Labelled "children", child);
       (Nolabel, mkexp_constructor_unit loc loc)
@@ -4649,6 +4654,7 @@ val_ident:
      operator swapping requires that we express that as != *)
   | LESSDOTDOTGREATER { "<..>" }
   | GREATER GREATER   { ">>" }
+  | GREATERDOTDOTDOT { ">..." }
 ;
 
 operator:

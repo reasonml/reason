@@ -993,3 +993,5 @@ let predicate =
     bar >>= (fun
       | None => false
       | Some(exn) => predicate(exn));
+
+let (>...) = (a, b) => a + b;
