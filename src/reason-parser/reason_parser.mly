@@ -907,7 +907,7 @@ let addlbs lbs lbs' =
 let val_of_let_bindings lbs =
   let str = Str.value lbs.lbs_rec lbs.lbs_bindings in
   if lbs.lbs_bang <> None then
-    raise Syntaxerr.(Error(Not_expecting(lbs.lbs_loc, "CPS syntax")));
+    raise Syntaxerr.(Error(Not_expecting(lbs.lbs_loc, "let!foo is not allowed at the top level")));
   match lbs.lbs_extension with
   | None -> str
   | Some ext -> struct_item_extension ext [str]
@@ -916,7 +916,7 @@ let monad_of_let_bindings attr lbs body =
     match lbs.lbs_bindings with
     | [one] ->
       Exp.apply
-      ~attrs:[simple_ghost_refmt_text_attr "let_bang"]
+      ~attrs:[simple_ghost_refmt_text_attr Reason_attrs.letBangTag]
       ~loc:one.pvb_loc
       (Exp.ident attr) [
         (Nolabel, one.pvb_expr);

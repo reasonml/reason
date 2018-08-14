@@ -17,6 +17,8 @@ module T = struct
 end
 open T
 
+let letBangTag = "let_bang"
+
 let isRefmtTag tag attr =
   match attr with
   | (
