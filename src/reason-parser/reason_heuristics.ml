@@ -104,6 +104,18 @@ let isFastPipe e = match Ast_404.Parsetree.(e.pexp_desc) with
     ) -> true
   | _ -> false
 
+
+(* <div> {items->Belt.Array.map(ReasonReact.string)->ReasonReact.array} </div>;
+ * An application with fast pipe inside jsx children requires special treatment.
+ * Jsx children don't allow expression application, hence we need the braces
+ * preserved in this case. *)
+let isFastPipeWithApplicationJSXChild e = match Ast_404.Parsetree.(e.pexp_desc) with
+  | Pexp_apply(
+      {pexp_desc = Pexp_ident({txt = Longident.Lident("|.")})},
+      [Nolabel, {pexp_desc = Pexp_apply(_)}; _]
+    ) -> true
+  | _ -> false
+
 let isUnderscoreApplication expr =
   let open Ast_404.Parsetree in
   match expr with
