@@ -75,3 +75,22 @@ let singlePunAcceptedIfExtended = {
   ...firstFieldPunned,
   a,
 };
+
+let opt = (value, fn) =>
+  switch (value) {
+  | None => None
+  | Some(x) => fn(x)
+  };
+
+let opt2 = (values, fn) =>
+  switch (values) {
+  | (Some(a), Some(b)) => fn((a, b))
+  | _ => None
+  };
+
+let _ = {
+  let!opt x = Some(10);
+  let!opt2 a = Some(2)
+  and b = Some(5);
+  Some(a + x * b);
+};
