@@ -3847,7 +3847,7 @@ let printer = object(self:'self)
     | Some se -> Simple se
     | None ->
     match x.pexp_desc with
-    | Pexp_apply ({pexp_desc=Pexp_ident lid}, [Nolabel, arg; Nolabel, {pexp_desc=Pexp_fun (Nolabel, None, pat, body)}]) when Reason_attrs.hasRefmtTag Reason_attrs.letBangTag refmtAttrs ->
+    | Pexp_apply ({pexp_desc=Pexp_ident lid}, [Nolabel, arg; Nolabel, {pexp_desc=Pexp_fun (Nolabel, None, pat, body)}]) when Reason_attrs.hasRefmtTag Reason_attrs.letCPSTag refmtAttrs ->
       Simple (makeLetSequence (self#letList {x with pexp_attributes = refmtAttrs @ x.pexp_attributes}))
     | Pexp_apply (e, ls) -> (
       let ls = List.map (fun (l,expr) -> (l, self#process_underscore_application expr)) ls in
@@ -5068,12 +5068,32 @@ let printer = object(self:'self)
            let bindingsLoc = self#bindingsLocationRange l in
            let layout = source_map ~loc:bindingsLoc bindingsLayout in
            processLetList ((bindingsLoc, layout)::acc) e
-        | (attrs, Pexp_apply ({pexp_desc=Pexp_ident lid}, [Nolabel, arg; Nolabel, {pexp_desc=Pexp_fun (Nolabel, None, pat, body)}])) when Reason_attrs.hasRefmtTag Reason_attrs.letBangTag refmtAttrs ->
+        | (attrs, Pexp_apply ({pexp_desc=Pexp_ident lid}, [Nolabel, arg; Nolabel, {pexp_desc=Pexp_fun (Nolabel, None, pat, body)}])) when Reason_attrs.hasRefmtTag Reason_attrs.letCPSTag refmtAttrs ->
           (* let!foo x = y; z   <->   foo(y, x => z) *)
-           let binding = Ast_helper.Vb.mk ~loc:expr.pexp_loc pat arg in
-           let arg = String.concat "." (Longident.flatten lid.txt) in
-           let bindingsLayout = self#binding ("let!" ^ arg) binding in
-           let bindingsLoc = self#bindingsLocationRange [binding] in
+           let fnIdent = String.concat "." (Longident.flatten lid.txt) in
+           let (bindings, bindingsLayout) = match (Reason_attrs.hasRefmtTag Reason_attrs.letCPSMulti refmtAttrs, arg, pat) with
+            | (true, {pexp_desc=Pexp_tuple exprs}, {ppat_desc=Ppat_tuple pats}) ->
+            (* when List.length exprs = List.length pats -> *)
+              let pairs = List.combine exprs pats
+              |> List.map (fun (exp, pat) -> Ast_helper.Vb.mk ~loc:expr.pexp_loc pat exp) in
+              begin
+              match pairs with
+              | [] -> assert(false)
+              | first::rest ->
+                let first = self#binding ("let!" ^ fnIdent) first in
+                (pairs,makeList
+                  ~postSpace:true
+                  ~break:Always
+                  ~indent:0
+                  ~inline:(true, true)
+                  (first :: List.map (self#binding "and") rest))
+              end
+            | _ ->
+              let binding = Ast_helper.Vb.mk ~loc:expr.pexp_loc pat arg in
+              let bindingsLayout = self#binding ("let!" ^ fnIdent) binding in
+              ([binding], bindingsLayout)
+           in
+           let bindingsLoc = self#bindingsLocationRange bindings in
            let layout = source_map ~loc:bindingsLoc bindingsLayout in
            processLetList ((bindingsLoc, layout)::acc) body
         | (attrs, Pexp_open (ovf, lid, e))
@@ -5823,7 +5843,7 @@ let printer = object(self:'self)
            token will be confused with the match token. *)
         | Pexp_fun _ when pipe || semi -> Some (self#reset#simplifyUnparseExpr x)
         | Pexp_function l when pipe || semi -> Some (formatPrecedence ~loc:x.pexp_loc (self#reset#patternFunction x.pexp_loc l))
-        | Pexp_apply ({pexp_desc=Pexp_ident _}, [_, {pexp_desc=Pexp_fun (Nolabel, None, _, _)}]) when (Reason_attrs.hasRefmtTag Reason_attrs.letBangTag refmtAttrs) ->
+        | Pexp_apply ({pexp_desc=Pexp_ident _}, [_, {pexp_desc=Pexp_fun (Nolabel, None, _, _)}]) when (Reason_attrs.hasRefmtTag Reason_attrs.letCPSTag refmtAttrs) ->
           Some (makeLetSequence (self#letList x))
         | Pexp_apply (e, l) -> (
           match self#simple_get_application x with

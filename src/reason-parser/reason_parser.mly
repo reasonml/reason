@@ -912,23 +912,39 @@ let val_of_let_bindings lbs =
   | None -> str
   | Some ext -> struct_item_extension ext [str]
 
-let monad_of_let_bindings attr lbs body =
+let continuation_passing_style_of_let_bindings attr lbs body =
     match lbs.lbs_bindings with
     | [one] ->
       Exp.apply
-      ~attrs:[simple_ghost_refmt_text_attr Reason_attrs.letBangTag]
+      ~attrs:[simple_ghost_refmt_text_attr Reason_attrs.letCPSTag]
       ~loc:one.pvb_loc
-      (Exp.ident attr) [
+      (Exp.ident ~loc:attr.loc attr) [
         (Nolabel, one.pvb_expr);
-        (Nolabel, Exp.fun_ Nolabel None one.pvb_pat body)
+        (Nolabel, Exp.fun_ ~loc:attr.loc Nolabel None one.pvb_pat body)
       ]
-    | _ -> failwith "Only one binding supported just yet"
+    | _ ->
+      let (exprs, pats) = lbs.lbs_bindings
+      |> List.map (fun binding -> (binding.pvb_expr, binding.pvb_pat))
+      |> List.split in
+      let expr = Ast_helper.Exp.tuple ~loc:lbs.lbs_loc exprs in
+      let pat = Ast_helper.Pat.tuple ~loc:lbs.lbs_loc pats in
+      Exp.apply
+      ~attrs:[
+        simple_ghost_refmt_text_attr Reason_attrs.letCPSTag;
+        simple_ghost_refmt_text_attr Reason_attrs.letCPSMulti
+      ]
+      ~loc:lbs.lbs_loc
+      (Exp.ident ~loc:attr.loc attr) [
+        (Nolabel, expr);
+        (Nolabel, Exp.fun_ ~loc:attr.loc Nolabel None pat body)
+      ]
+
 
 let expr_of_let_bindings lbs body =
   (* The location of this expression unfortunately includes the entire rule,
    * which will include any preceeding extensions. *)
   let item_expr = match lbs.lbs_bang with
-    | Some attr -> monad_of_let_bindings attr lbs body
+    | Some attr -> continuation_passing_style_of_let_bindings attr lbs body
     | None -> Exp.let_ lbs.lbs_rec lbs.lbs_bindings body in
   match lbs.lbs_extension with
   | None -> item_expr
