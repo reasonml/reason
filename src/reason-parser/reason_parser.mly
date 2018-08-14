@@ -2984,6 +2984,17 @@ parenthesized_expr:
      *  | Some(a) => Some(a.b)
      *  | None => None
      * };
+     *
+     * let res = c?.+d;
+     *
+     * -generates->
+     *
+     * let res = switch c {
+     *   | Some(c) => c.d <-- assuming d is optional
+     *   | None => None
+     * };
+     *
+     * Same goes for ?# and ?#+ for JS objects
      *)
   | E OPTIONALACCESS simple_expr_no_call 
     {
