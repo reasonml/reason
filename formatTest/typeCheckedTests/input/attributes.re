@@ -491,3 +491,23 @@ let test = {
 
 [@test.call string => string]
 let processCommandItem = 12;
+
+module type Foo = { [@someattr] let foo: int => int;};
+
+
+[@bs.deriving abstract]
+  type t = {
+    /** Position (in the pre-change coordinate system) where the change ended. */
+    [@bs.as "to"] [@bar]
+    to_: string,
+  };
+
+[@bs.deriving abstract]
+type editorConfiguration = {
+  [@bs.optional]
+  /** Determines whether horizontal cursor movement through right-to-left (Arabic, Hebrew) text
+      is visual (pressing the left arrow moves the cursor left)
+      or logical (pressing the left arrow moves to the next lower index in the string, which is visually right in right-to-left text).
+      The default is false on Windows, and true on other platforms. */
+  rtlMoveVisually: bool,
+};

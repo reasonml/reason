@@ -276,7 +276,7 @@ let result =
   };
 
 let rec commentPolymorphicCases:
-  'a .
+  'a.
   option('a) => int
  =
   fun
@@ -672,3 +672,5 @@ Delete({
   pub y = methodTwo;
   pub z = methodThisBreaks
 });
+
+let x: t = `Poly;

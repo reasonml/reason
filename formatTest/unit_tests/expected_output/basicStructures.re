@@ -49,23 +49,23 @@ let x = (foo^)#bar^;
  * lexer).
  * ? or ~ followed by at least one appropriate_operator_suffix_chars.
  */
-let x = ! (! (! foo)).bar;
+let x = !(!(!foo)).bar;
 
-let x = ! foo.bar;
+let x = !foo.bar;
 
-let x = ! foo#bar;
+let x = !foo#bar;
 
-let x = ! (! foo).bar;
+let x = !(!foo).bar;
 
-let x = ! (! foo)#bar;
+let x = !(!foo)#bar;
 
-let x = ! (! foo.bar);
+let x = !(!foo.bar);
 
-let x = ?!(! foo.bar);
+let x = ?!(!foo.bar);
 
 let x = ! ?!foo.bar;
 
-let x = ~!(! foo.bar);
+let x = ~!(!foo.bar);
 
 let x = ! ~!foo.bar;
 
@@ -79,23 +79,23 @@ let x = !~foo.bar;
 
 let x = !~foo#bar;
 
-let noParensNeeded = ! blah.foo.bar;
+let noParensNeeded = !blah.foo.bar;
 
-let parensNeededAroundFirst = (! blah).foo.bar;
+let parensNeededAroundFirst = (!blah).foo.bar;
 
-let parensNeededAroundSecond = (! blah.foo).bar;
+let parensNeededAroundSecond = (!blah.foo).bar;
 
-let noParensNeeded = ! blah#foo#bar;
+let noParensNeeded = !blah#foo#bar;
 
-let parensNeededAroundFirst = (! blah)#foo#bar;
+let parensNeededAroundFirst = (!blah)#foo#bar;
 
-let parensNeededAroundSecond = (! blah#foo)#bar;
+let parensNeededAroundSecond = (!blah#foo)#bar;
 
 let parensWithSpaceNeededAroundFirst =
-  (! (! blah))#foo#bar;
+  (!(!blah))#foo#bar;
 
 let parensWithSpaceNeededAroundSecond =
-  (! (! blah#foo))#bar;
+  (!(!blah#foo))#bar;
 
 let parensWithSpaceNeededAroundFirst =
   (?!(+ blah))#foo#bar;
@@ -103,9 +103,9 @@ let parensWithSpaceNeededAroundFirst =
 let parensWithSpaceNeededAroundSecond =
   (?!(+ blah#foo))#bar;
 
-let x = ! (! foo.bar);
+let x = !(!foo.bar);
 
-let x = ! (! foo#bar);
+let x = !(!foo#bar);
 
 let x = (-10);
 
@@ -168,11 +168,11 @@ let logTapSuccess = self =>
     print_newline();
   };
 
-(! data).field = true;
-(! data).field1.field2 = true;
-(! data.field1).field2 = true;
-(! data).field1.field2 = true;
-(! data.field1).field2 = true;
+(!data).field = true;
+(!data).field1.field2 = true;
+(!data.field1).field2 = true;
+(!data).field1.field2 = true;
+(!data.field1).field2 = true;
 
 let loop = (appTime, frameTime) => {
   if (hasSetup.contents) {
@@ -532,20 +532,17 @@ let addValues = (a: int, b: int) => a + b;
 
 let addValues = (a: int, b: int) => a + b;
 
-let myFunction = (a: int, b: int) : int =>
-  a + b;
+let myFunction = (a: int, b: int): int => a + b;
 
 let functionReturnValueType =
-    (i: int, s: string)
-    : (int => int) =>
+    (i: int, s: string): (int => int) =>
   x => x + 1;
 
 let curriedFormOne = (i: int, s: string) =>
   s ++ string_of_int(i);
 
 let curriedFormTwo =
-    (i: int, x: int)
-    : (int, int) => (
+    (i: int, x: int): (int, int) => (
   i,
   x,
 );
@@ -833,3 +830,6 @@ it("should remove parens", a => {
   print_string("did it work?");
   print_string("did it work?");
 });
+
+/* https://github.com/facebook/reason/issues/1554 */
+(curNode^)##childNodes;

@@ -469,3 +469,33 @@ module type T = [%test extension]
 let foo (type a, (module X): (module X_t with type t =a)) = X.a
 
 let f = ((module M): (module M with type x = x and type y = y)) => M.x
+
+let test = b => {
+  if (b) {
+    ignore();
+  }
+
+  while (x) {
+    compute()
+  }
+
+  try (x()) {
+    | _ => log()
+  }
+
+  switch (test) {
+    | A => ()
+    | B => ()
+  }
+
+  for (x in 0 to 10) {
+    print_int(x)
+    print_string(" ")
+  }
+
+  assert(true)
+
+  lazy true
+
+  Fun.ignore()
+}

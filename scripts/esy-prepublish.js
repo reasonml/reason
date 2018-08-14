@@ -9,8 +9,40 @@ if (process.cwd() !== path.resolve(__dirname, '..')) {
 
 let projectRoot = process.cwd();
 
-if (fs.existsSync(path.resolve(projectRoot, '_release'))) {
-  console.log('YOU NEED TO REMOVE THE _release DIR FIRST!');
+let relativeSubpackages = [];
+for (var i = 2; i < process.argv.length; i++) {
+  let relativeSubpackage = process.argv[i];
+  relativeSubpackages.push(relativeSubpackage);
+}
+
+if (relativeSubpackages.length === 0) {
+  relativeSubpackages = ['.'];
+}
+
+for (var i = 0; i < relativeSubpackages.length; i++) {
+  let relativeSubpackage = relativeSubpackages[i];
+  let subpackageRoot = path.resolve(projectRoot, relativeSubpackage);
+  if (!relativeSubpackage || !fs.existsSync(subpackageRoot)) {
+    console.log(
+      'You specified an invalid release package root (' +
+      subpackageRoot +
+      '). Specify location of packages to release relative to repo root directory.'
+    );
+    process.exit(1);
+  }
+  if (!fs.existsSync(path.resolve(subpackageRoot, 'esy.json'))) {
+    console.log(
+      'You specified a package release root (' +
+      subpackageRoot +
+      ') that does not contain a package.json file'
+    );
+    process.exit(1);
+  }
+}
+
+let releaseRoot = path.resolve(projectRoot, '_release');
+if (fs.existsSync(releaseRoot)) {
+  console.log('YOU NEED TO REMOVE THE ' + releaseRoot + ' DIR FIRST!');
   process.exit(1);
 }
 
@@ -18,20 +50,6 @@ const head =
   cp.spawnSync('git', ['rev-parse', '--verify', 'HEAD']).stdout.toString();
 const master =
   cp.spawnSync('git', ['rev-parse', '--verify', 'master']).stdout.toString();
-
-if (master !== head) {
-  console.log('');
-  console.log('ERROR: You are not on your local master branch. You should generally keep a local');
-  console.log('master branch in sync with origin/master, and then publish from your local master');
-  console.log('branch without any local changes. This makes sure you publish what has been committed');
-  console.log('');
-  console.log('Make sure origin/master is at the commit you want to publish, then run this command');
-  console.log('to make your local master branch to point to origin/master:');
-  console.log('');
-  console.log('    git branch -f master origin/master');
-  console.log('');
-  process.exit(1);
-}
 
 let uncommitted =
   cp.spawnSync('git', ['diff-index', 'HEAD', '--']).stdout.toString();
@@ -41,52 +59,92 @@ if (uncommitted !== "") {
   process.exit(1);
 }
 
-let backupFiles = {
-  '.npmignore': '.backup.npmignore.backup',
-  'package.json': '.backup.package.json.backup',
-  'esy.json': '.backup.esy.json.backup'
+// Files to copy from subpackages to root, and therefore delete if present
+let copyOver = {
+  '.npmignore': '.npmignore',
+  'package.json': 'package.json',
+  'esy.json': 'package.json'
 };
 
-for (var fileName in backupFiles) {
-  var backupName = backupFiles[fileName];
-  let mvResult = cp.spawnSync(
-    'mv',
-    [path.resolve(projectRoot, fileName), backupName]
-  );
-
-  let mvErr = mvResult.stderr.toString();
-  if (mvErr !== '') {
-    console.log('ERROR: Could not back up ' + fileName + ' - ' + mvErr);
-    process.exit(1);
-  }
-}
+process.chdir(projectRoot);
+let tarResult = cp.spawnSync('tar', ['--exclude', 'node_modules', '--exclude', '_build', '--exclude', '.git', '-cf', 'template.tar', '.']);
+let tarErr = tarResult.stderr.toString();
+// if (tarErr !== '') {
+  // console.log('ERROR: Could not create template npm pack for prepublish');
+  // throw new Error('Error:' + tarErr);
+// }
 
 try {
-  let packages = ['reason', 'rtop', 'rebuild'];
-  for (var i = 0; i < packages.length; i++) {
+  let _releaseDir = path.resolve(projectRoot, '_release');
+  cp.spawnSync('mkdir', ['-p', _releaseDir]);
+
+  // For each subpackage, we release the entire source code for all packages, but
+  // with the root package.json swapped out with the esy.json file in the
+  // subpackage.
+  for (var i = 0; i < relativeSubpackages.length; i++) {
     process.chdir(projectRoot);
-    const packageJson =  require('./esy/esy.' + packages[i] + '.json');
-    const packageStr =  JSON.stringify(packageJson, null, 2);
-    let copyFrom = path.resolve(projectRoot, 'scripts', 'esy', 'esy.' + packages[i] + '.json');
-    let copyTo = path.resolve(projectRoot, 'package.json');
-    let cpResult = cp.spawnSync('cp', [copyFrom, copyTo]);
-    let cpErr = cpResult.stderr.toString();
-    if (cpErr !== '') {
-      console.log('ERROR: Could not copy from ' + copyFrom + ' to ' + copyTo);
-      throw new Error('Error:' + cpErr);
+    let relativeSubpackage = relativeSubpackages[i];
+    let subpackageRoot = path.resolve(projectRoot, relativeSubpackage);
+    let subpackageReleaseDir = path.resolve(_releaseDir, relativeSubpackage);
+    let subpackageReleasePrepDir = path.resolve(_releaseDir, path.join(relativeSubpackage), '_prep');
+    cp.spawnSync('mkdir', ['-p', subpackageReleaseDir]);
+    cp.spawnSync('mkdir', ['-p', subpackageReleasePrepDir]);
+    cp.spawnSync(
+      'cp',
+      [
+        path.join(projectRoot, 'template.tar'),
+        path.join(subpackageReleasePrepDir, 'template.tar')
+      ]
+    );
+    process.chdir(subpackageReleasePrepDir);
+    cp.spawnSync('tar', ['-xvf', 'template.tar']);
+    cp.spawnSync('rm', [path.join(subpackageReleasePrepDir, 'template.tar')]);
+    const packageJsonPath = path.resolve(subpackageRoot, 'esy.json');
+    const packageJson = require(packageJsonPath);
+    const packageName = packageJson.name;
+    const packageVersion = packageJson.version;
+
+    // In the process we want to remove any .npmignore/package/esy.json files
+    // that were at the root, before we even copy subpackage files to the root.
+    for (var filename in copyOver) {
+      let destFile = path.resolve(subpackageReleasePrepDir, filename);
+      if (fs.existsSync(destFile)) {
+        let rmResult = cp.spawnSync('rm', [destFile]);
+        let mvErr = rmResult.stderr.toString();
+        if (mvErr !== '') {
+          console.log('ERROR: Could not rm ' + filename + ' - ' + mvErr);
+          process.exit(1);
+        }
+      }
     }
+
+    for (var filename in copyOver) {
+      let originPath = path.resolve(subpackageRoot, filename);
+      let destPath = path.resolve(subpackageReleasePrepDir, copyOver[filename]);
+      if (fs.existsSync(originPath)) {
+        let cpResult = cp.spawnSync('cp', [originPath, destPath]);
+        let mvErr = cpResult.stderr.toString();
+        if (mvErr !== '') {
+          console.log('ERROR: Could not move ' + filename + ' - ' + mvErr);
+          process.exit(1);
+        }
+      }
+    }
+    
+    // Create a npm pack to remove all the stuff in .npmignore.  This would
+    // happen when you publish too, but we'll create a directory ./package that
+    // has all of it removed so you can also easily test linking against it
+    // from other projects.
+    process.chdir(subpackageReleasePrepDir);
+    // Npm pack is just a convenient way to strip out any unnecessary files.
     let packResult = cp.spawnSync('npm', ['pack']);
-    let packErr = cpResult.stderr.toString();
+    let packErr = packResult.stderr.toString();
     if (packErr !== '') {
-      console.log('ERROR: Could not create npm pack for ' + packages[i]);
+      console.log('ERROR: Could not create npm pack for ' + subpackageReleasePrepDir);
       throw new Error('Error:' + packErr);
     }
-    let _releaseDir = path.resolve(projectRoot, '_release');
-    cp.spawnSync('mkdir', ['-p', _releaseDir]);
-    let packageReleaseDir = path.resolve(_releaseDir, packages[i]);
-    cp.spawnSync('mkdir', ['-p', packageReleaseDir]);
-    let mvFrom = 'esy-ocaml-' + packages[i] + '*';
-    let mvTo = packageReleaseDir;
+    let mvFrom = '*.tgz';
+    let mvTo = subpackageReleaseDir;
     let mvResult = cp.spawnSync('mv', [mvFrom, mvTo], {shell: true});
     var mvErr = mvResult.stderr.toString();
     if (mvErr !== '') {
@@ -99,29 +157,15 @@ try {
       console.log('ERROR: Could not untar in ' + mvTo);
       throw new Error('Error:' + tarResult.stderr.toString());
     }
-
-  }
-  console.log('SUCCESS!');
-  console.log('--------');
-  console.log('Now you can cd package && npm publish. That will actually publish to npm so be careful.');
-  console.log('Unfortunately, in the process of preparing for publishing');
-  console.log('we\'ve changed some files locally in the project. Sorry! reset them in git.');
-  for (var i = 0; i < packages.length; i++) {
-    var package = packages[i];
-    console.log('    cd ' + path.join(projectRoot, '_release', package, 'package'));
+    console.log('');
+    console.log(packageName + '@' + packageVersion + ' prepared for publishing at ' + subpackageReleaseDir);
+    console.log('');
+    console.log('To publish the package to npm do:');
+    console.log('');
+    console.log('    cd ' + path.resolve(subpackageReleaseDir, 'package'));
     console.log('    npm publish --access=public');
+    console.log('');
   }
 } finally {
-  for (var fileName in backupFiles) {
-    var backupName = backupFiles[fileName];
-    let mvResult = cp.spawnSync(
-      'mv',
-      [path.resolve(projectRoot, backupName), path.resolve(projectRoot, fileName)]
-    );
-
-    let mvErr = mvResult.stderr.toString();
-    if (mvErr !== '') {
-      console.log('ERROR: Could not restore backup for ' + fileName + ' - ' + mvErr);
-    }
-  }
+  cp.spawnSync('rm', [ path.join(projectRoot, 'template.tar')]);
 }

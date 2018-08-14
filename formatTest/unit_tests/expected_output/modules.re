@@ -161,7 +161,10 @@ module type HasDestructivelySubstitutedMultiPolyType =
     type substituteThat('a, 'b) :=
       Hashtbl.t('a, 'b);
 
-module InliningSig: {let x: int; let y: int;} = {
+module InliningSig: {
+  let x: int;
+  let y: int;
+} = {
   /*
    * Comment inside of signature.
    */
@@ -446,7 +449,7 @@ module Example2 = (F: (Type) => Type, X: Type) => {
    *   let iso (a:(Compose Id F X).t): (F X).t => a;
    *
    */
-  let iso = (a: Compose(Id)(F)(X).t) : F(X).t => a;
+  let iso = (a: Compose(Id)(F)(X).t): F(X).t => a;
 };
 
 Printf.printf(
@@ -483,24 +486,24 @@ module MyModule = {
   let x = 10;
 };
 
-let myFirstClass: (module HasInt) =
+let myFirstClass: module HasInt =
   (module MyModule);
 
-let myFirstClassWillBeFormattedAs: (module HasInt) =
+let myFirstClassWillBeFormattedAs: module HasInt =
   (module MyModule);
 
 let acceptsAndUnpacksFirstClass =
-    ((module M: HasInt)) =>
+    (module M: HasInt) =>
   M.x + M.x;
 
 let acceptsAndUnpacksFirstClass =
-    ((module M: HasInt)) =>
+    (module M: HasInt) =>
   M.x + M.x;
 
 module SecondClass = (val myFirstClass);
 
 module SecondClass2 = (
-  val ((module MyModule): (module HasInt))
+  val (module MyModule): HasInt
 );
 
 let p = SecondClass.x;
@@ -593,21 +596,25 @@ module X = [%test extension];
 module type T = [%test extension];
 
 let foo =
-    (type a, (module X: X_t with type t = a)) => X.a;
+    (type a, module X: X_t with type t = a) => X.a;
 
 let f =
-    (
-      (module M: M with type x = x and type y = y),
-    ) => M.x;
+    (module M: M with type x = x and type y = y) => M.x;
 
 let foo =
     (
-      (module X
-         : X_t with
-             type t = a and
-             type s = a and
-             type z = a
-         ),
-      (module Y: Y_t with type t = a),
-      (module Z: Z_t with type t = a),
+      module X:
+        X_t with
+          type t = a and
+          type s = a and
+          type z = a,
+      module Y: Y_t with type t = a,
+      module Z: Z_t with type t = a,
     ) => X.a;
+
+/* https://github.com/facebook/reason/issues/2028 */
+M.[];
+
+module type Event = (module type of {
+  include ReactEventRe;
+});

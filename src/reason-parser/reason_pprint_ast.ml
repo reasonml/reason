@@ -484,9 +484,16 @@ let special_infix_strings =
   ["asr"; "land"; "lor"; "lsl"; "lsr"; "lxor"; "mod"; "or"; ":="; "!="; "!=="]
 
 let updateToken = "="
+let sharpOpEqualToken = "#="
+let fastPipeToken = "->"
 let requireIndentFor = [updateToken; ":="]
 
 let namedArgSym = "~"
+
+let requireNoSpaceFor tok =
+  tok = fastPipeToken || (tok.[0] = '#' && tok <> "#=")
+
+let funToken = "fun"
 
 let getPrintableUnaryIdent s =
   if List.mem s unary_minus_prefix_symbols ||
@@ -499,7 +506,7 @@ let getPrintableUnaryIdent s =
    may have resulted from Pexp -> Texp -> Pexp translation, then checking
    if all the characters in the beginning of the string are valid infix
    characters. *)
-let printedStringAndFixity  = function
+let printedStringAndFixity = function
   | s when List.mem s special_infix_strings -> Infix s
   | "^" -> UnaryPostfix "^"
   | s when List.mem s.[0] infix_symbols -> Infix s
@@ -514,7 +521,7 @@ let printedStringAndFixity  = function
       else if List.mem s unary_minus_prefix_symbols then
         UnaryMinusPrefix (getPrintableUnaryIdent s)
       else if s = "!" then
-        UnaryNotPrefix "!"
+        UnaryNotPrefix s
       else
         AlmostSimplePrefix s
   )
@@ -534,7 +541,24 @@ let isSimplePrefixToken s = match printedStringAndFixity s with
    using %prec *)
 let rules = [
   [
-    (TokenPrecedence, (fun s -> (Nonassoc, isSimplePrefixToken s)));
+    (CustomPrecedence, (fun s -> (Nonassoc, s = "prec_postfixop")))
+  ];
+  [
+    (TokenPrecedence, (fun s -> (Left, s = fastPipeToken)));
+    (TokenPrecedence, (fun s -> (Left, s.[0] = '#' &&
+                                       s <> sharpOpEqualToken &&
+                                       s <> "#")));
+    (TokenPrecedence, (fun s -> (Left, s = ".")));
+    (CustomPrecedence, (fun s -> (Left, s = "prec_lbracket")));
+  ];
+  [
+    (CustomPrecedence, (fun s -> (Nonassoc, s = "prec_functionAppl")));
+  ];
+  [
+    (TokenPrecedence, (fun s -> (Right, isSimplePrefixToken s)));
+  ];
+  [
+    (TokenPrecedence, (fun s -> (Left, s = sharpOpEqualToken)));
   ];
   [
     (CustomPrecedence, (fun s -> (Nonassoc, s = "prec_unary")));
@@ -575,8 +599,8 @@ let rules = [
       else
         s.[0] == '+'
     )));
-    (TokenPrecedence ,(fun s -> (Left, s.[0] == '-' )));
-    (TokenPrecedence ,(fun s -> (Left, s = "!" )));
+    (TokenPrecedence, (fun s -> (Left, s.[0] == '-' && s <> fastPipeToken)));
+    (TokenPrecedence, (fun s -> (Left, s = "!" )));
   ];
   [
     (TokenPrecedence, (fun s -> (Right, s = "::")));
@@ -599,6 +623,9 @@ let rules = [
     (TokenPrecedence, (fun s -> (Left, s.[0] == '|' && not (s = "||"))));
     (TokenPrecedence, (fun s -> (Left, s.[0] == '&' && not (s = "&") && not (s = "&&"))));
     (TokenPrecedence, (fun s -> (Left, s.[0] == '$')));
+  ];
+  [
+    (CustomPrecedence, (fun s -> (Left, s = funToken)));
   ];
   [
     (TokenPrecedence, (fun s -> (Right, s = "&")));
@@ -1114,15 +1141,16 @@ let makeNonIndentedBreakingList lst =
 let makeSpacedBreakableInlineList lst =
   makeList ~break:IfNeed ~inline:(true, true) ~postSpace:true lst
 
-let makeCommaBreakableList lst = makeList ~break:IfNeed ~postSpace:true lst
+let makeCommaBreakableList lst =
+  makeList ~break:IfNeed ~postSpace:true ~sep:(Sep ",") lst
 
 let makeCommaBreakableListSurround opn cls lst =
   makeList ~break:IfNeed ~postSpace:true ~sep:(Sep ",") ~wrap:(opn, cls) lst
 
 (* TODO: Allow configuration of spacing around colon symbol *)
 
-let formatPrecedence ?loc formattedTerm =
-  source_map ?loc (makeList ~wrap:("(", ")") ~break:IfNeed [formattedTerm])
+let formatPrecedence ?(wrap=("(", ")")) ?loc formattedTerm =
+  source_map ?loc (makeList ~wrap ~break:IfNeed [formattedTerm])
 
 let wrap fn term =
   ignore (Format.flush_str_formatter ());
@@ -1230,8 +1258,7 @@ let rec append ?(space=false) txt = function
   | Sequence (config, l) when snd config.wrap <> "" ->
     let sep = if space then " " else "" in
     Sequence ({config with wrap=(fst config.wrap, snd config.wrap ^ sep ^ txt)}, l)
-  (* TODO (perf) match on [] don't use List.length *)
-  | Sequence (config, l) when List.length l = 0 ->
+  | Sequence (config, []) ->
     Sequence (config, [atom txt])
   | Sequence ({sep=NoSep} as config, l)
   | Sequence ({sep=Sep("")} as config, l) ->
@@ -1989,7 +2016,7 @@ let is_punned_labelled_expression e lbl = match e.pexp_desc with
   | _ -> false
 
 let is_punned_labelled_pattern p lbl = match p.ppat_desc with
-  | Ppat_constraint ({ ppat_desc = Ppat_var { txt; _ }; ppat_attributes = _::_ }, _) 
+  | Ppat_constraint ({ ppat_desc = Ppat_var { txt; _ }; ppat_attributes = _::_ }, _)
     -> false
   | Ppat_constraint ({ ppat_desc = Ppat_var { txt; _ }; _ }, _)
   | Ppat_var { txt; _ }
@@ -2008,13 +2035,17 @@ let isJsDotTLongIdent ident = match ident with
 let recordRowIsPunned pld =
       let name = pld.pld_name.txt in
       (match pld.pld_type with
-        | { ptyp_desc = (Ptyp_constr ({ txt; _ }, args)); _}
+        | { ptyp_desc = (
+            Ptyp_constr (
+              { txt; _ },
+              (* don't pun parameterized types, e.g. {tag: tag 'props} *)
+              [])
+            );
+          _}
             when
             (Longident.last txt = name
               (* Don't pun types from other modules, e.g. type bar = {foo: Baz.foo}; *)
-              && isLongIdentWithDot txt == false
-              (* don't pun parameterized types, e.g. {tag: tag 'props} *)
-              && List.length args == 0) -> true
+              && isLongIdentWithDot txt == false) -> true
         | _ -> false)
 
 let isPunnedJsxArg lbl ident =
@@ -2146,7 +2177,7 @@ let formatComputedInfixChain infixChainList =
      * |> f
      * |> z *)
     if List.length group < 2 then
-      makeList ~inline:(true, true) ~sep:(Sep " ") ~break:Layout.Never group
+      makeList ~inline:(true, true) ~sep:(Sep " ") group
     (* Basic equality operators require special formatting, we can't give it
      * 'classic' infix operator formatting, otherwise we would get
      * let example =
@@ -2157,8 +2188,11 @@ let formatComputedInfixChain infixChainList =
      *  *)
     else if List.mem currentToken equalityOperators then
       let hd = List.hd group in
-      let tl = makeList ~inline:(true, true) ~sep:(Sep " ") ~break:Layout.Never (List.tl group) in
+      let tl = makeList ~inline:(true, true) ~sep:(Sep " ") (List.tl group) in
       makeList ~inline:(true, true) ~sep:(Sep " ") ~break:IfNeed [hd; tl]
+    else if currentToken.[0] = '#' then
+      let isSharpEqual = currentToken = sharpOpEqualToken in
+      makeList ~postSpace:isSharpEqual group
     else
       (* Represents `|> f` in foo |> f
        * We need a label here to indent possible closing parens
@@ -2168,17 +2202,18 @@ let formatComputedInfixChain infixChainList =
        *   fun body =>
        *     Printf.sprintf
        *       "okokok" uri meth headers body
-       * )   <-- notice how this closing paren is on the same height as >|= *)
+       * )   <-- notice how this closing paren is on the same height as >|=
+       *)
       label ~break:`Never ~space:true (atom currentToken) (List.nth group 1)
   in
   let rec print acc group currentToken l =
     match l with
     | x::xs -> (match x with
       | InfixToken t ->
+          (* = or := *)
           if List.mem t requireIndentFor then
             let groupNode =
-              makeList ~inline:(true, true) ~sep:(Sep " ") ~break:Layout.Never
-                (group @ [atom t])
+              makeList ~inline:(true, true) ~sep:(Sep " ") ((print [] group currentToken []) @ [atom t])
             in
             let children =
               makeList ~inline:(true, true) ~preSpace:true ~break:IfNeed
@@ -2194,14 +2229,34 @@ let formatComputedInfixChain infixChainList =
            * *)
           else if t = "@@" then
             let groupNode =
-              makeList ~inline:(true, true) ~sep:(Sep " ") ~break:Layout.Never
-                (group @ [atom t])
+              makeList ~inline:(true, true) ~sep:(Sep " ") (group @ [atom t])
             in
             print (acc @ [groupNode]) [] t xs
+          (* != !== === == >= <= < > etc *)
           else if List.mem t equalityOperators then
-            print acc (group @ [atom t]) t xs
+            print acc ((print [] group currentToken []) @ [atom t]) t xs
           else
-            print (acc @ [layout_of_group group currentToken]) [(atom t)] t xs
+            begin if requireNoSpaceFor t then
+              begin if (currentToken = "" || requireNoSpaceFor currentToken) then
+                print acc (group@[atom t]) t xs
+              else
+                (* a + b + foo##bar##baz
+                 * `foo` needs to be picked from the current group
+                 * and inserted into a new one. This way `foo`
+                 * gets the special "chained"-printing:
+                 * foo##bar##baz. *)
+                 begin match List.rev group with
+                 |  hd::tl ->
+                     let acc =
+                       acc @ [layout_of_group (List.rev tl) currentToken]
+                      in
+                     print acc [hd; atom t] t xs
+                 | [] -> print acc (group@[atom t]) t xs
+                 end
+              end
+            else
+              print (acc @ [layout_of_group group currentToken]) [(atom t)] t xs
+            end
       | Layout layoutNode -> print acc (group @ [layoutNode]) currentToken xs
       )
     | [] ->
@@ -2210,7 +2265,8 @@ let formatComputedInfixChain infixChainList =
         else
           acc @ [layout_of_group group currentToken]
   in
-  print [] [] "" infixChainList
+  let l = print [] [] "" infixChainList in
+  makeList ~inline:(true, true) ~sep:(Sep " ") ~break:IfNeed l
 
 (**
  * [groupAndPrint] will print every item in [items] according to the function [xf].
@@ -2398,13 +2454,16 @@ let printer = object(self:'self)
               ~break:IfNeed ~sep:(Sep "=>") [lhs; rhs]
           in source_map ~loc:x.ptyp_loc normalized
         | Ptyp_poly (sl, ct) ->
-          let poly =
-            makeList ~break:IfNeed [
-              makeList ~postSpace:true [
+          let ct = self#core_type ct in
+          let poly = match sl with
+          | [] -> ct
+          | sl ->
+            makeList ~break:IfNeed ~postSpace:true [
+              makeList [
                 makeList ~postSpace:true (List.map (fun x -> self#tyvar x) sl);
                 atom ".";
               ];
-              self#core_type ct;
+              ct
             ]
           in source_map ~loc:x.ptyp_loc poly
         | _ -> self#non_arrowed_core_type x
@@ -2675,9 +2734,9 @@ let printer = object(self:'self)
     in
     let gadtRes = match pcd_res with
       | None -> None
-      | Some x -> Some (makeList ~inline:(true, true) ~break:IfNeed [
+      | Some x -> Some (
           formatJustTheTypeConstraint (self#core_type x)
-        ])
+        )
     in
     let normalize lst = match lst with
       | [] -> raise (NotPossible "should not be called")
@@ -2701,7 +2760,7 @@ let printer = object(self:'self)
     let add_bar_2 ?gadt name args =
       let lbl = label name args in
       let fullLbl = match gadt with
-        | Some g -> makeList ~inline:(true, true) ~break:IfNeed ~postSpace:true [lbl; g]
+        | Some g -> makeList ~inline:(true, true) ~break:IfNeed [lbl; g]
         | None -> lbl
       in
       add_bar fullLbl
@@ -2710,9 +2769,9 @@ let printer = object(self:'self)
     let prefix = if polymorphic then "`" else "" in
     let sourceMappedName = atom ~loc:pcd_name.loc (prefix ^ pcd_name.txt) in
     let sourceMappedNameWithAttributes =
-      if stdAttrs = [] then
-        sourceMappedName
-      else
+      match stdAttrs with
+      | [] -> sourceMappedName
+      | stdAttrs ->
         formatAttributed sourceMappedName (self#attributes stdAttrs)
     in
     let constructorName = makeList ~postSpace:true [sourceMappedNameWithAttributes] in
@@ -2723,7 +2782,7 @@ let printer = object(self:'self)
       | (_::_, Some gadt) ->
           (match pcd_args with
             | Pcstr_record _ -> add_bar_2 ~gadt constructorName (normalize args)
-            | _ -> add_bar_2 constructorName (makeList [normalize args; gadt]))
+            | _ -> add_bar_2 constructorName ~gadt (normalize args))
     in
     source_map ~loc:pcd_loc everything
 
@@ -2748,8 +2807,21 @@ let printer = object(self:'self)
       in
       let recordRow = match pld.pld_attributes with
       | [] -> recordRow
-      | _::_ as attrs ->
-        formatAttributed ~labelBreak:`Always_rec recordRow (self#attributes attrs) in
+      | attrs ->
+        let {stdAttrs; docAttrs} = partitionAttributes ~partDoc:true attrs in
+        let stdAttrsLayout =
+          makeList ~inline:(true, true) ~postSpace:true (self#attributes stdAttrs)
+        in
+        let docAttrsLayout = makeList ~inline:(true, true) (self#attributes docAttrs) in
+        let children = match (docAttrs, stdAttrs) with
+        | [], [] -> [recordRow]
+        | docAttrs, [] -> [docAttrsLayout; recordRow]
+        | [], stdAttrs -> [stdAttrsLayout; recordRow]
+        | stdAttrs, docAttrs ->
+            [docAttrsLayout; stdAttrsLayout; recordRow]
+        in
+        makeList ~inline:(true, true) ~break:Always_rec children
+      in
       source_map ~loc:pld.pld_loc recordRow
     in
     let rows = List.mapi recordRow lbls in
@@ -2910,6 +2982,11 @@ let printer = object(self:'self)
          Type constructors are no longer simple *)
       | _ -> self#non_arrowed_simple_core_type x
 
+  method type_param_list_element = function
+    | {ptyp_attributes = []; ptyp_desc = Ptyp_package(lid,cstrs)} ->
+        self#typ_package ~mod_prefix:true lid cstrs
+    | t -> self#core_type t
+
   method non_arrowed_simple_core_type x =
     let {stdAttrs} = partitionAttributes x.ptyp_attributes in
     if stdAttrs <> [] then
@@ -2924,32 +3001,10 @@ let printer = object(self:'self)
         (*         | [] -> raise Parse_error *)
         (*         | one::[] -> one *)
         (*         | moreThanOne -> mktyp(Ptyp_tuple(List.rev moreThanOne)) } *)
-        | Ptyp_tuple l -> makeTup (List.map self#core_type l)
+        | Ptyp_tuple l -> makeTup (List.map self#type_param_list_element l)
         | Ptyp_object (l, o) -> self#unparseObject l o
         | Ptyp_package (lid, cstrs) ->
-          let typeConstraint (s, ct) =
-            label ~space:true
-              (makeList ~break:IfNeed ~postSpace:true [atom "type"; self#longident_loc s; atom "="])
-              (self#core_type ct)
-          in
-          (
-            match cstrs with
-              | [] ->
-                makeList ~wrap:("(", ")") [
-                  (makeList ~postSpace:true [atom "module"; self#longident_loc lid])
-                ]
-              | _ ->
-                makeList ~wrap:("(", ")") [
-                  label ~space:true
-                    (makeList ~postSpace:true [atom "module"; self#longident_loc lid])
-                    (makeList
-                      ~break:IfNeed
-                      ~sep:(Sep " and ")
-                      ~wrap:("with", "")
-                      ~pad:(true, false)
-                      (List.map typeConstraint cstrs))
-                ]
-          )
+            self#typ_package ~protect:true ~mod_prefix:true lid cstrs
         (*   | QUOTE ident *)
         (*       { mktyp(Ptyp_var $2) } *)
         | Ptyp_var s -> ensureSingleTokenSticksToLabel (self#tyvar s)
@@ -2966,20 +3021,28 @@ let printer = object(self:'self)
             (ensureSingleTokenSticksToLabel (self#longident_loc li))
         | Ptyp_constr (li, l) ->
             (match l with
-            | [{ptyp_desc = Ptyp_object (l, o) }] when isJsDotTLongIdent li.txt && List.length l > 0 ->
+            | [{ptyp_desc = Ptyp_object (_::_ as l, o) }] when isJsDotTLongIdent li.txt ->
                 (* should have one or more rows, Js.t({..}) should print as Js.t({..})
                  * {..} has a totally different meaning than Js.t({..}) *)
                 self#unparseObject ~withStringKeys:true l o
             | [{ptyp_desc = Ptyp_object (l, o) }] when not (isJsDotTLongIdent li.txt) ->
                 label (self#longident_loc li)
                   (self#unparseObject ~wrap:("(",")") l o)
+            | [{ptyp_desc = Ptyp_constr(lii, [{ ptyp_desc = Ptyp_object (_::_ as ll, o) }])}]
+              when isJsDotTLongIdent lii.txt ->
+              label (self#longident_loc li)
+                (self#unparseObject ~withStringKeys:true ~wrap:("(",")") ll o)
             | _ ->
               (* small guidance: in `type foo = bar`, we're now at the `bar` part *)
 
               (* The single identifier has to be wrapped in a [ensureSingleTokenSticksToLabel] to
                  avoid (@see @avoidSingleTokenWrapping): *)
-              label (self#longident_loc li)
-                (makeTup (List.map self#core_type l)))
+              label
+                (self#longident_loc li)
+                (makeTup (
+                  List.map self#type_param_list_element l
+                ))
+            )
         | Ptyp_variant (l, closed, low) ->
           let pcd_loc = x.ptyp_loc in
           let pcd_attributes = x.ptyp_attributes in
@@ -3010,7 +3073,7 @@ let printer = object(self:'self)
           let node_list = List.mapi variant_helper l in
           let ll = (List.map (fun t -> atom ("`" ^ t)) tl) in
           let tag_list = makeList ~postSpace:true ~break:IfNeed ((atom ">")::ll) in
-          let type_list = if List.length tl != 0 then node_list@[tag_list] else node_list in
+          let type_list = if tl != [] then node_list@[tag_list] else node_list in
           makeList ~wrap:("[" ^ designator,"]") ~pad:(true, false) ~postSpace:true ~break:IfNeed type_list
         | Ptyp_class (li, []) -> makeList [atom "#"; self#longident_loc li]
         | Ptyp_class (li, l) ->
@@ -3141,41 +3204,60 @@ let printer = object(self:'self)
     | _ -> (* x::y *)
       makeES6List pat_list (self#pattern pat_last) ~wrap
 
+  (* In some contexts the Ptyp_package needs to be protected by parens, or
+   * the `module` keyword needs to be added.
+   * Example: let f = (module Add: S.Z, x) => Add.add(x);
+   *  It's clear that `S.Z` is a module because it constraints the
+   *  `module Add` pattern. No need to add "module" before `S.Z`.
+   *
+   * Example2:
+   *   type t = (module Console);
+   *   In this case the "module" keyword needs to be printed to indicate
+   *   usage of a first-class-module.
+   *)
+  method typ_package ?(protect=false) ?(mod_prefix=true) lid cstrs =
+    let packageIdent =
+      let packageIdent = self#longident_loc lid in
+      if protect then
+        makeList ~postSpace:true ~wrap:("(", ")") [
+          if mod_prefix then atom "module" else atom ""; packageIdent
+        ]
+      else begin
+        if mod_prefix then
+          makeList ~postSpace:true [atom "module"; packageIdent]
+        else packageIdent
+      end
+    in
+    match cstrs with
+    | [] -> packageIdent
+    | cstrs ->
+        label ~space:true
+          (makeList ~postSpace:true [packageIdent; atom "with"])
+          (makeList
+            ~inline:(true, true)
+            ~break:IfNeed
+            ~sep:(Sep " and ")
+            (List.map (fun (s, ct) ->
+              label ~space:true
+                (makeList
+                  ~break:IfNeed ~postSpace:true
+                  [atom "type"; self#longident_loc s; atom "="])
+                (self#core_type ct)
+            ) cstrs))
+
   method constrained_pattern x = match x.ppat_desc with
     | Ppat_constraint (p, ct) ->
-        begin match (p, ct) with
+        let (pat, typ) = begin match (p, ct) with
         | (
             {ppat_desc = Ppat_unpack(unpack)},
             {ptyp_desc = Ptyp_package (lid, cstrs)}
           ) ->
-            let packageIdent =
-              makeList ~postSpace:true [atom ":"; self#longident_loc lid]
-            in
-            let packageType = match cstrs with
-            | [] -> packageIdent
-            | cstrs ->
-                label ~space:true
-                  (makeList ~postSpace:true [packageIdent; atom "with"])
-                  (makeList
-                      ~break:IfNeed
-                      ~sep:(Sep " and ")
-                      ~indent:4
-                      (List.map (fun (s, ct) ->
-                        label ~space:true
-                          (makeList
-                            ~break:IfNeed ~postSpace:true
-                            [atom "type"; self#longident_loc s; atom "="])
-                          (self#core_type ct)
-                      ) cstrs))
-            in
-            let patConstraint =
-              packageType
-            in
-            makeList ~wrap:("(", ")")
-              [label (makeList [atom "module "; atom unpack.txt]) patConstraint]
+            (makeList ~postSpace:true [atom "module"; atom unpack.txt],
+             self#typ_package ~mod_prefix:false lid cstrs)
         | _ ->
-          formatTypeConstraint (self#pattern p) (self#core_type ct)
-        end
+          (self#pattern p, self#core_type ct)
+        end in
+        formatTypeConstraint pat typ
     | _  -> self#pattern x
 
   method simple_pattern x =
@@ -3310,7 +3392,7 @@ let printer = object(self:'self)
       in
       if hasLabelledChildrenLiteral && hasSingleNonLabelledUnitAndIsAtTheEnd l then
         let moduleNameList = List.rev (List.tl (List.rev (Longident.flatten loc.txt))) in
-        if List.length moduleNameList > 0 then
+        if moduleNameList != [] then
           if Longident.last loc.txt = "createElement" then
             Some (self#formatJSXComponent (String.concat "." moduleNameList) l)
           else None
@@ -3353,106 +3435,6 @@ let printer = object(self:'self)
         else Some (self#formatJSXComponent (Longident.last loc.txt) l)
       else None
     )
-    | (Pexp_apply (eFun, ls), [], []) -> (
-      match (printedStringAndFixityExpr eFun, ls) with
-      (* We must take care not to print two subsequent prefix operators without
-         spaces between them (`! !` could become `!!` which is totally
-         different).  *)
-      | (AlmostSimplePrefix prefixStr, [(Nolabel, rightExpr)]) ->
-        let forceSpace = match rightExpr.pexp_desc with
-          | Pexp_apply (ee, lsls) ->
-            (match printedStringAndFixityExpr ee with | AlmostSimplePrefix _ -> true | _ -> false)
-          | _ -> false
-        in
-        let rightItm = self#simplifyUnparseExpr rightExpr in
-        Some (label ~space:forceSpace (atom prefixStr) rightItm)
-      | (UnaryPostfix postfixStr, [(Nolabel, leftExpr)]) ->
-        let forceSpace = match leftExpr.pexp_desc with
-          | Pexp_apply (ee, lsls) ->
-            (match printedStringAndFixityExpr ee with
-             | UnaryPostfix "^" | AlmostSimplePrefix _ -> true
-             | _ -> false)
-          | _ -> false
-        in
-        let leftItm = self#simplifyUnparseExpr leftExpr in
-        Some (label ~space:forceSpace leftItm (atom postfixStr))
-      | (Infix infixStr, [(_, leftExpr); (_, rightExpr)]) when infixStr.[0] = '#' ->
-        (* Little hack. We check the right expression to see if it's also a SHARPOP, if it is
-           we call `formatPrecedence` on the result of `simplifyUnparseExpr` to add the appropriate
-           parens. This is done because `unparseExpr` doesn't seem to be able to handle
-           high enough precedence things. Using the normal precedence handling, something like
-
-              ret #= (Some 10)
-
-            gets pretty printed to
-
-              ret #= Some 10
-
-            Which seems to indicate that the pretty printer doesn't think `#=` is of
-            high enough precedence for the parens to be worth adding back. *)
-        let rightItm = (
-          match rightExpr.pexp_desc with
-          | Pexp_apply (eFun, ls) -> (
-            match (printedStringAndFixityExpr eFun, ls) with
-              | (Infix infixStr, [(_, _); (_, _)]) when infixStr.[0] = '#' -> formatPrecedence (self#simplifyUnparseExpr rightExpr)
-              | _ -> self#simplifyUnparseExpr rightExpr
-          )
-          | _ -> self#simplifyUnparseExpr rightExpr
-        ) in
-        Some (makeList [self#simple_enough_to_be_lhs_dot_send leftExpr; atom infixStr; rightItm])
-      | (_, _) -> (
-        match (eFun, ls) with
-        | ({pexp_desc = Pexp_ident {txt = Ldot (Lident ("Array"),"get")}}, [(_,e1);(_,e2)]) ->
-          begin match e1.pexp_desc with
-          | Pexp_ident ({txt = Lident "_"}) ->
-              let k = atom "Array.get" in
-              let v = makeList ~postSpace:true ~sep:(Layout.Sep ",") ~wrap:("(", ")")
-                [atom "_"; self#unparseExpr e2]
-              in
-              Some (label k v)
-          | _ ->
-              Some (self#access "[" "]" (self#simple_enough_to_be_lhs_dot_send e1) (self#unparseExpr e2))
-          end
-        | ({pexp_desc = Pexp_ident {txt = Ldot (Lident ("String"),"get")}}, [(_,e1);(_,e2)]) ->
-          if Reason_heuristics.isUnderscoreIdent e1 then
-            let k = atom "String.get" in
-            let v = makeList ~postSpace:true ~sep:(Layout.Sep ",") ~wrap:("(", ")")
-              [atom "_"; self#unparseExpr e2]
-            in
-            Some (label k v)
-          else
-            Some (self#access ".[" "]" (self#simple_enough_to_be_lhs_dot_send e1) (self#unparseExpr e2))
-        | (
-            {pexp_desc= Pexp_ident {txt=Ldot (Ldot (Lident "Bigarray", "Genarray" ), "get")}},
-            [(_,e1); (_,({pexp_desc=Pexp_array ls} as e2))]
-          ) ->
-            if (Reason_heuristics.isUnderscoreIdent e1) then
-              let k = atom "Bigarray.Genarray.get" in
-              let v = makeList ~postSpace:true ~sep:(Layout.Sep ",") ~wrap:("(", ")")
-                [atom "_"; self#unparseExpr e2]
-              in
-              Some (label k v)
-            else
-              let formattedList = makeCommaBreakableList (List.map self#simplifyUnparseExpr ls) in
-              Some (self#access ".{" "}" (self#simple_enough_to_be_lhs_dot_send e1) formattedList)
-        | (
-            {pexp_desc= Pexp_ident {txt=
-              Ldot (Ldot (Lident "Bigarray", (("Array1"|"Array2"|"Array3") as arrayIdent)), "get")}
-            },
-            (_,e1)::rest
-          ) ->
-          if Reason_heuristics.isUnderscoreIdent e1 then
-            let k = atom("Bigarray." ^ arrayIdent ^ ".get") in
-            let v = makeList ~postSpace:true ~sep:(Layout.Sep ",") ~wrap:("(", ")")
-              ((atom "_")::(List.map (fun (_, e) -> self#unparseExpr e) rest))
-            in
-            Some (label k v)
-          else
-            let formattedList = List.map self#simplifyUnparseExpr (List.map snd rest) in
-            Some (self#access ".{" "}" (self#simple_enough_to_be_lhs_dot_send e1) (makeCommaBreakableList formattedList))
-        | _ -> None
-      )
-    )
     | _ -> None
 
   (** Detects "sugar expressions" (sugar for array/string setters) and returns their separate
@@ -3462,9 +3444,17 @@ let printer = object(self:'self)
     (* should also check attributes underneath *)
     else match e.pexp_desc with
       | Pexp_apply ({pexp_desc=Pexp_ident{txt=Ldot (Lident ("Array"), "set")}}, [(_,e1);(_,e2);(_,e3)]) ->
-        Some (self#access "[" "]" (self#simple_enough_to_be_lhs_dot_send e1) (self#unparseExpr e2), e3)
+        let prec = Custom "prec_lbracket" in
+        let lhs = self#unparseResolvedRule (
+            self#ensureExpression ~reducesOnToken:prec e1
+          ) in
+        Some (self#access "[" "]" lhs (self#unparseExpr e2), e3)
       | Pexp_apply ({pexp_desc=Pexp_ident {txt=Ldot (Lident "String", "set")}}, [(_,e1);(_,e2);(_,e3)]) ->
-        Some ((self#access ".[" "]" (self#simple_enough_to_be_lhs_dot_send e1) (self#unparseExpr e2)), e3)
+        let prec = Custom "prec_lbracket" in
+        let lhs = self#unparseResolvedRule (
+            self#ensureExpression ~reducesOnToken:prec e1
+          ) in
+        Some ((self#access ".[" "]" lhs (self#unparseExpr e2)), e3)
       | Pexp_apply (
         {pexp_desc=Pexp_ident {txt = Ldot (Ldot (Lident "Bigarray", array), "set")}},
         label_exprs
@@ -3473,8 +3463,11 @@ let printer = object(self:'self)
           | "Genarray" -> (
             match label_exprs with
             | [(_,a);(_,{pexp_desc=Pexp_array ls});(_,c)] ->
-              let formattedList = List.map self#simplifyUnparseExpr ls in
-              Some (self#access ".{" "}" (self#simple_enough_to_be_lhs_dot_send a) (makeCommaBreakableList formattedList), c)
+              let formattedList = List.map self#unparseExpr ls in
+              let lhs = makeList [self#simple_enough_to_be_lhs_dot_send a; atom "."] in
+              let rhs = makeList ~break:IfNeed ~postSpace:true ~sep:commaSep ~wrap:("{", "}") formattedList
+              in
+              Some (label lhs rhs, c)
             | _ -> None
           )
           | ("Array1"|"Array2"|"Array3") -> (
@@ -3483,8 +3476,10 @@ let printer = object(self:'self)
               match List.rev rest with
               | (_,v)::rest ->
                 let args = List.map snd (List.rev rest) in
-                let formattedList = List.map self#simplifyUnparseExpr args in
-                Some (self#access ".{" "}" (self#simple_enough_to_be_lhs_dot_send a) (makeCommaBreakableList formattedList), v)
+                let formattedList = List.map self#unparseExpr args in
+                let lhs = makeList [self#simple_enough_to_be_lhs_dot_send a; atom "."] in
+                let rhs = makeList ~break:IfNeed ~postSpace:true ~sep:commaSep ~wrap:("{", "}") formattedList in
+                Some (label lhs rhs, v)
               | _ -> assert false
             )
             | _ -> assert false
@@ -3530,16 +3525,14 @@ let printer = object(self:'self)
      at the proper time when it is reparsed, possibly wrapping it
      in parenthesis if needed. It ensures a rule doesn't reduce
      until *after* `reducesAfterRight` gets a chance to reduce.
-     Example: The addtion rule which has precedence of rightmost
+     Example: The addition rule which has precedence of rightmost
      token "+", in `x + a * b` should not reduce until after the a * b gets
      a chance to reduce. This function would determine the minimum parens to
      ensure that. *)
   method ensureContainingRule ~withPrecedence ~reducesAfterRight () =
     match self#unparseExprRecurse reducesAfterRight with
-    | SpecificInfixPrecedence ({reducePrecedence; shiftPrecedence}, rightRecurse)->
-      if higherPrecedenceThan shiftPrecedence withPrecedence then begin
-        rightRecurse
-      end
+    | SpecificInfixPrecedence ({reducePrecedence; shiftPrecedence}, rightRecurse) ->
+      if higherPrecedenceThan shiftPrecedence withPrecedence then rightRecurse
       else if (higherPrecedenceThan withPrecedence shiftPrecedence) then
         LayoutNode (formatPrecedence ~loc:reducesAfterRight.pexp_loc (self#unparseResolvedRule rightRecurse))
       else (
@@ -3549,7 +3542,13 @@ let printer = object(self:'self)
           LayoutNode (formatPrecedence ~loc:reducesAfterRight.pexp_loc (self#unparseResolvedRule rightRecurse))
       )
     | FunctionApplication itms ->
-      LayoutNode (formatAttachmentApplication applicationFinalWrapping None (itms, Some reducesAfterRight.pexp_loc))
+      let funApplExpr = formatAttachmentApplication applicationFinalWrapping None (itms, Some reducesAfterRight.pexp_loc)
+      in
+      (* Little hack: need to print parens for the `bar` application in e.g.
+         `foo->other##(bar(baz))` or `foo->other->(bar(baz))`. *)
+      if higherPrecedenceThan withPrecedence (Custom "prec_functionAppl")
+      then LayoutNode (formatPrecedence ~loc:reducesAfterRight.pexp_loc funApplExpr)
+      else LayoutNode funApplExpr
     | PotentiallyLowPrecedence itm -> LayoutNode (formatPrecedence ~loc:reducesAfterRight.pexp_loc itm)
     | Simple itm -> LayoutNode itm
 
@@ -3629,22 +3628,20 @@ let printer = object(self:'self)
     in
     source_map ~loc:e.pexp_loc itm
 
-  method simplifyUnparseExpr x =
+  method simplifyUnparseExpr ?(wrap=("(", ")")) x =
     match self#unparseExprRecurse x with
     | SpecificInfixPrecedence ({reducePrecedence; shiftPrecedence}, itm) ->
-        formatPrecedence ~loc:x.pexp_loc (self#unparseResolvedRule itm)
+        formatPrecedence ~wrap ~loc:x.pexp_loc (self#unparseResolvedRule itm)
     | FunctionApplication itms ->
-      formatPrecedence ~loc:x.pexp_loc (formatAttachmentApplication applicationFinalWrapping None (itms, Some x.pexp_loc))
-    | PotentiallyLowPrecedence itm -> formatPrecedence ~loc:x.pexp_loc itm
+      formatPrecedence ~wrap ~loc:x.pexp_loc (formatAttachmentApplication applicationFinalWrapping None (itms, Some x.pexp_loc))
+    | PotentiallyLowPrecedence itm -> formatPrecedence ~wrap ~loc:x.pexp_loc itm
     | Simple itm -> itm
 
 
   method unparseResolvedRule  = function
     | LayoutNode layoutNode -> layoutNode
     | InfixTree _ as infixTree ->
-          let infixChainList = computeInfixChain infixTree in
-          let l = formatComputedInfixChain infixChainList in
-          makeList ~inline:(true, true) ~sep:(Sep " ") ~break:IfNeed l
+      formatComputedInfixChain (computeInfixChain infixTree)
 
 
   method unparseExprApplicationItems x =
@@ -3656,6 +3653,185 @@ let printer = object(self:'self)
     | PotentiallyLowPrecedence itm -> ([itm], Some x.pexp_loc)
     | Simple itm -> ([itm], Some x.pexp_loc)
 
+
+  (* Provides beautiful printing for fast pipe sugar:
+   * foo
+   * ->f(a, b)
+   * ->g(c, d)
+   *)
+  method formatFastPipe e =
+    let module Fastpipetree = struct
+      type exp = Parsetree.expression
+
+      type flatNode =
+        | Exp of exp
+        | ExpU of exp (* uncurried *)
+        | Args of (Asttypes.arg_label * exp) list
+      type flatT = flatNode list
+
+      type node = {
+        exp: exp;
+        args: (Asttypes.arg_label *exp) list;
+        uncurried: bool;
+      }
+      type t = node list
+
+      let formatNode ?(first=false) {exp; args; uncurried} =
+        let formatLayout expr =
+          let formatted = if first then
+            self#ensureExpression ~reducesOnToken:(Token fastPipeToken) expr
+          else
+            match expr with
+            (* a->foo(x, _) and a->(foo(x, _)) are equivalent under fast pipe
+             * (a->foo)(x, _) is unnatural and desugars to
+             *    (__x) => (a |. foo)(x, __x)
+             * Under `->`, it makes more sense to desugar into
+             *  a |. (__x => foo(x, __x))
+             *
+             * Hence we don't need parens in this case.
+             *)
+            | expr when Reason_heuristics.isUnderscoreApplication expr ->
+                LayoutNode (self#unparseExpr expr)
+            | _ ->
+              self#ensureContainingRule
+                ~withPrecedence:(Token fastPipeToken) ~reducesAfterRight:expr ()
+          in
+          self#unparseResolvedRule formatted
+        in
+        let parens = match (exp.pexp_desc) with
+        | Pexp_apply (e,_) -> printedStringAndFixityExpr e = UnaryPostfix "^"
+        | _ -> false
+        in
+        let layout = match args with
+        | [] -> formatLayout exp
+        | args ->
+            let fakeApplExp =
+              let loc_end = match List.rev args with
+                | (_, e)::_ -> e.pexp_loc.loc_end
+                | _ -> exp.pexp_loc.loc_end
+              in
+              {exp with pexp_loc = { exp.pexp_loc with loc_end = loc_end } }
+            in
+            makeList (
+              self#formatFunAppl
+                ~jsxAttrs:[]
+                ~args
+                ~funExpr:exp
+                ~applicationExpr:fakeApplExp
+                ~uncurried
+                ()
+            )
+        in
+        if parens then
+          formatPrecedence layout
+        else layout
+    end in
+    (* Imagine: foo->f(a, b)->g(c,d)
+     * The corresponding parsetree looks more like:
+     *   (((foo->f)(a,b))->g)(c, d)
+     * The extra Pexp_apply nodes, e.g. (foo->f), result into a
+     * nested/recursive ast which is pretty inconvenient in terms of printing.
+     * For printing purposes we actually want something more like:
+     *  foo->|f(a,b)|->|g(c, d)|
+     * in order to provide to following printing:
+     *  foo
+     *  ->f(a, b)
+     *  ->g(c, d)
+     * The job of "flatten" is to turn the inconvenient, nested ast
+     *  (((foo->f)(a,b))->g)(c, d)
+     * into
+     *  [Exp foo; Exp f; Args [a; b]; Exp g; Args [c; d]]
+     * which can be processed for printing purposes.
+     *)
+    let rec flatten ?(uncurried=false) acc = function
+      | {pexp_desc = Pexp_apply(
+          {pexp_desc = Pexp_ident({txt = Longident.Lident("|.")})},
+          [Nolabel, arg1; Nolabel, arg2]
+         )} ->
+          flatten ((Fastpipetree.Exp arg2)::acc) arg1
+      | {pexp_attributes;
+         pexp_desc = Pexp_apply(
+          {pexp_desc = Pexp_apply(
+           {pexp_desc = Pexp_ident({txt = Longident.Lident("|.")})},
+             [Nolabel, arg1; Nolabel, arg2]
+           )},
+           args
+         )} as e ->
+          let args = Fastpipetree.Args args in
+          begin match pexp_attributes with
+          | [{txt = "bs"}, PStr []] ->
+            flatten ((Fastpipetree.ExpU arg2)::args::acc) arg1
+          | [] ->
+              (* the uncurried attribute might sit on the Pstr_eval
+               * enclosing the Pexp_apply*)
+              if uncurried then
+                flatten ((Fastpipetree.ExpU arg2)::args::acc) arg1
+              else
+                flatten ((Fastpipetree.Exp arg2)::args::acc) arg1
+          | _ ->
+            (Fastpipetree.Exp e)::acc
+          end
+      | {pexp_desc = Pexp_ident({txt = Longident.Lident("|.")})} -> acc
+      | arg -> ((Fastpipetree.Exp arg)::acc)
+    in
+    (* Given: foo->f(a, b)->g(c, d)
+     * We get the following Fastpipetree.flatNode list:
+     *   [Exp foo; Exp f; Args [a; b]; Exp g; Args [c; d]]
+     * The job of `parse` is to turn the "flat representation"
+     * (a.k.a. Fastpipetree.flastNode list) into a more convenient structure
+     * that allows us to express the segments: "foo" "f(a, b)" "g(c, d)".
+     * Fastpipetree.t expresses those segments.
+     *  [{exp = foo; args = []}; {exp = f; args = [a; b]}; {exp = g; args = [c; d]}]
+     *)
+    let rec parse acc = function
+    | (Fastpipetree.Exp e)::(Fastpipetree.Args args)::xs ->
+        parse ((Fastpipetree.{exp = e; args; uncurried = false})::acc) xs
+    | (Fastpipetree.ExpU e)::(Fastpipetree.Args args)::xs ->
+        parse ((Fastpipetree.{exp = e; args; uncurried = true})::acc) xs
+    | (Fastpipetree.Exp e)::xs ->
+        parse ((Fastpipetree.{exp = e; args = []; uncurried = false})::acc) xs
+    | _ -> List.rev acc
+    in
+    (* Given: foo->f(. a,b);
+     * The uncurried attribute doesn't sit on the Pexp_apply, but sits on
+     * the top level Pstr_eval. We don't have access to top-level context here,
+     * hence the lookup in the global uncurriedTable to correctly determine
+     * if we need to print uncurried. *)
+    let uncurried = try Hashtbl.find uncurriedTable e.pexp_loc with
+      | Not_found -> false
+    in
+    (* Turn
+     *  foo->f(a, b)->g(c, d)
+     * into
+     *  [Exp foo; Exp f; Args [a; b]; Exp g; Args [c; d]]
+     *)
+    let (flatNodes : Fastpipetree.flatT) = flatten ~uncurried [] e in
+    (* Turn
+     *  [Exp foo; Exp f; Args [a; b]; Exp g; Args [c; d]]
+     * into
+     *  [{exp = foo; args = []}; {exp = f; args = [a; b]}; {exp = g; args = [c; d]}]
+     *)
+    let (pipetree : Fastpipetree.t) = parse [] flatNodes in
+    (* Turn
+     *  [{exp = foo; args = []}; {exp = f; args = [a; b]}; {exp = g; args = [c; d]}]
+     * into
+     *  [foo; ->f(a, b); ->g(c, d)]
+     *)
+    let pipeSegments = match pipetree with
+    | hd::tl ->
+        let hd = Fastpipetree.formatNode ~first:true hd in
+        let tl = List.map (fun node ->
+          makeList [atom "->"; Fastpipetree.formatNode node]
+        ) tl in
+        hd::tl
+    | [] -> []
+    in
+    (* Provide nice breaking for: [foo; ->f(a, b); ->g(c, d)]
+     * foo
+     * ->f(a, b)
+     * ->g(c, d)
+     *)
+    makeList ~break:IfNeed ~inline:(true, true) pipeSegments
 
   (*
    * Replace (__x) => foo(__x) with foo(_)
@@ -3704,7 +3880,10 @@ let printer = object(self:'self)
       let itms = match self#unparseExprRecurse withoutVisibleAttrs with
         | SpecificInfixPrecedence ({reducePrecedence; shiftPrecedence}, wrappedRule) ->
             let itm = self#unparseResolvedRule wrappedRule in
-            [formatPrecedence ~loc:x.pexp_loc itm]
+            (match reducePrecedence with
+             (* doesn't need wrapping; we know how to parse *)
+             | Custom "prec_lbracket" | Token "." -> [itm]
+             | _ -> [formatPrecedence ~loc:x.pexp_loc itm])
         | FunctionApplication itms -> itms
         | PotentiallyLowPrecedence itm -> [formatPrecedence ~loc:x.pexp_loc itm]
         | Simple itm -> [itm]
@@ -3724,7 +3903,80 @@ let printer = object(self:'self)
     match x.pexp_desc with
     | Pexp_apply (e, ls) -> (
       let ls = List.map (fun (l,expr) -> (l, self#process_underscore_application expr)) ls in
-      match (self#sugar_set_expr_parts x) with
+      match (e, ls) with
+      | (e, _) when Reason_heuristics.isFastPipe e ->
+          (* Fast pipe can be considered as simple because of the very high
+           * precedence of `->` *)
+          Simple (self#formatFastPipe x)
+      | ({pexp_desc = Pexp_ident {txt = Ldot (Lident ("Array"),"get")}}, [(_,e1);(_,e2)]) ->
+        begin match e1.pexp_desc with
+          | Pexp_ident ({txt = Lident "_"}) ->
+            let k = atom "Array.get" in
+            let v = makeList ~postSpace:true ~sep:(Layout.Sep ",") ~wrap:("(", ")")
+                [atom "_"; self#unparseExpr e2]
+            in
+            Simple (label k v)
+          | _ ->
+            let prec = Custom "prec_lbracket" in
+            let lhs = self#unparseResolvedRule (
+              self#ensureExpression ~reducesOnToken:prec e1
+            ) in
+            let rhs = self#unparseExpr e2 in
+            SpecificInfixPrecedence
+              ({reducePrecedence=prec; shiftPrecedence=prec}, LayoutNode (self#access "[" "]" lhs rhs))
+        end
+      | ({pexp_desc = Pexp_ident {txt = Ldot (Lident ("String"),"get")}}, [(_,e1);(_,e2)]) ->
+        if Reason_heuristics.isUnderscoreIdent e1 then
+          let k = atom "String.get" in
+          let v = makeList ~postSpace:true ~sep:(Layout.Sep ",") ~wrap:("(", ")")
+              [atom "_"; self#unparseExpr e2]
+          in
+          Simple (label k v)
+        else
+          let prec = Custom "prec_lbracket" in
+            let lhs = self#unparseResolvedRule (
+              self#ensureExpression ~reducesOnToken:prec e1
+            ) in
+            let rhs = self#unparseExpr e2 in
+          SpecificInfixPrecedence
+            ({reducePrecedence=prec; shiftPrecedence=prec}, LayoutNode (self#access ".[" "]" lhs rhs))
+      | (
+        {pexp_desc= Pexp_ident {txt=Ldot (Ldot (Lident "Bigarray", "Genarray" ), "get")}},
+        [(_,e1); (_,({pexp_desc=Pexp_array ls} as e2))]
+      ) ->
+        if (Reason_heuristics.isUnderscoreIdent e1) then
+          let k = atom "Bigarray.Genarray.get" in
+          let v = makeList ~postSpace:true ~sep:(Layout.Sep ",") ~wrap:("(", ")")
+              [atom "_"; self#unparseExpr e2]
+          in
+          Simple (label k v)
+        else
+          let formattedList = List.map self#unparseExpr ls in
+          let lhs = makeList [(self#simple_enough_to_be_lhs_dot_send e1); atom "."] in
+          let rhs = makeList ~break:IfNeed ~postSpace:true ~sep:commaSep ~wrap:("{", "}") formattedList in
+          let prec = Custom "prec_lbracket" in
+          SpecificInfixPrecedence ({reducePrecedence=prec; shiftPrecedence=prec}, LayoutNode (label lhs rhs))
+      | (
+        {pexp_desc= Pexp_ident {txt=
+                                  Ldot (Ldot (Lident "Bigarray", (("Array1"|"Array2"|"Array3") as arrayIdent)), "get")}
+        },
+        (_,e1)::rest
+      ) ->
+        if Reason_heuristics.isUnderscoreIdent e1 then
+          let k = atom("Bigarray." ^ arrayIdent ^ ".get") in
+          let v = makeList ~postSpace:true ~sep:(Layout.Sep ",") ~wrap:("(", ")")
+              ((atom "_")::(List.map (fun (_, e) -> self#unparseExpr e) rest))
+          in
+          Simple (label k v)
+        else
+          let formattedList = List.map self#unparseExpr (List.map snd rest) in
+          let lhs = makeList [(self#simple_enough_to_be_lhs_dot_send e1); atom "."] in
+          let rhs = makeList ~break:IfNeed ~postSpace:true ~sep:commaSep ~wrap:("{", "}") formattedList in
+          let prec = Custom "prec_lbracket" in
+          SpecificInfixPrecedence ({reducePrecedence=prec; shiftPrecedence=prec}, LayoutNode (label lhs rhs))
+      | _ -> (
+
+          match (self#sugar_set_expr_parts x) with
       (* Returns None if there's attributes - would render as regular function *)
       (* Format as if it were an infix function application with identifier "=" *)
       | Some (simplyFormatedLeftItm, rightExpr) -> (
@@ -3736,11 +3988,60 @@ let printer = object(self:'self)
       )
       | None -> (
         match (printedStringAndFixityExpr e, ls) with
+       (* We must take care not to print two subsequent prefix operators without
+         spaces between them (`! !` could become `!!` which is totally
+         different).  *)
+        | (AlmostSimplePrefix prefixStr, [(Nolabel, rightExpr)]) ->
+        let forceSpace = match rightExpr.pexp_desc with
+          | Pexp_apply (ee, lsls) ->
+            (match printedStringAndFixityExpr ee with | AlmostSimplePrefix _ -> true | _ -> false)
+          | _ -> false
+        in
+        let prec = Token prefixStr in
+        let rightItm = self#unparseResolvedRule (
+          self#ensureContainingRule ~withPrecedence:prec ~reducesAfterRight:rightExpr ()
+        ) in
+        SpecificInfixPrecedence
+          ({reducePrecedence=prec; shiftPrecedence = prec}, LayoutNode (label ~space:forceSpace (atom prefixStr) rightItm))
+        | (UnaryPostfix postfixStr, [(Nolabel, leftExpr)]) ->
+          let forceSpace = match leftExpr.pexp_desc with
+            | Pexp_apply (ee, lsls) ->
+              (match printedStringAndFixityExpr ee with
+               | UnaryPostfix "^" | AlmostSimplePrefix _ -> true
+               | _ -> false)
+            | _ -> false
+          in
+          let leftItm = (match leftExpr.pexp_desc with
+            | Pexp_apply (e,_) ->
+              (match printedStringAndFixityExpr e with
+               | Infix printedIdent when requireNoSpaceFor printedIdent ->
+                 self#unparseExpr leftExpr
+               | _ -> self#simplifyUnparseExpr leftExpr)
+            | Pexp_field _ -> self#unparseExpr leftExpr
+            | _ -> self#simplifyUnparseExpr leftExpr
+          )
+          in
+          Simple (label ~space:forceSpace leftItm (atom postfixStr))
         | (Infix printedIdent, [(Nolabel, leftExpr); (Nolabel, rightExpr)]) ->
           let infixToken = Token printedIdent in
           let rightItm = self#ensureContainingRule ~withPrecedence:infixToken ~reducesAfterRight:rightExpr () in
           let leftItm = self#ensureExpression ~reducesOnToken:infixToken leftExpr in
-          let infixTree = InfixTree (printedIdent, leftItm, rightItm) in
+          (* Left exprs of infix tokens which we don't print spaces for (e.g. `##`)
+             need to be wrapped in parens in the case of postfix `^`. Otherwise,
+             printing will be ambiguous as `^` is also a valid start of an infix
+             operator. *)
+          let formattedLeftItm = (match leftItm with
+            | LayoutNode x -> begin match leftExpr.pexp_desc with
+                | Pexp_apply (e,_) ->
+                  (match printedStringAndFixityExpr e with
+                   | UnaryPostfix "^" when requireNoSpaceFor printedIdent ->
+                     LayoutNode (formatPrecedence ~loc:leftExpr.pexp_loc x)
+                   | _ -> leftItm)
+                | _ -> leftItm
+              end
+            | InfixTree _ -> leftItm
+          ) in
+          let infixTree = InfixTree (printedIdent, formattedLeftItm, rightItm) in
           SpecificInfixPrecedence ({reducePrecedence=infixToken; shiftPrecedence=infixToken}, infixTree)
         (* Will be rendered as `(+) a b c` which is parsed with higher precedence than all
            the other forms unparsed here.*)
@@ -3751,13 +4052,20 @@ let printer = object(self:'self)
           ) in
           let expr = label ~space:true (atom printedIdent) rightItm in
           SpecificInfixPrecedence ({reducePrecedence=prec; shiftPrecedence=Token printedIdent}, LayoutNode expr)
-        | (UnaryMinusPrefix printedIdent, [(Nolabel, rightExpr)])
-        | (UnaryNotPrefix printedIdent, [(Nolabel, rightExpr)]) ->
+        | (UnaryMinusPrefix printedIdent as x, [(Nolabel, rightExpr)])
+        | (UnaryNotPrefix printedIdent as x, [(Nolabel, rightExpr)]) ->
+          let forceSpace = (match x with
+              | UnaryMinusPrefix _ -> true
+              | _ -> begin match rightExpr.pexp_desc with
+                  | Pexp_apply ({pexp_desc = Pexp_ident {txt = Lident s}}, _) ->
+                    isSimplePrefixToken s
+                  | _ -> false
+                end) in
           let prec = Custom "prec_unary" in
           let rightItm = self#unparseResolvedRule (
             self#ensureContainingRule ~withPrecedence:prec ~reducesAfterRight:rightExpr ()
           ) in
-          let expr = label ~space:true (atom printedIdent) rightItm in
+          let expr = label ~space:forceSpace (atom printedIdent) rightItm in
           SpecificInfixPrecedence ({reducePrecedence=prec; shiftPrecedence=Token printedIdent}, LayoutNode expr)
         (* Will need to be rendered in self#expression as (~-) x y z. *)
         | (_, _) ->
@@ -3780,9 +4088,31 @@ let printer = object(self:'self)
          *     Expect.expect(1 + 2) |> toBe(3)));
          *)
         let uncurried = try Hashtbl.find uncurriedTable x.pexp_loc with | Not_found -> false in
-        FunctionApplication (self#formatFunAppl ~uncurried ~jsxAttrs ~args:ls ~applicationExpr:x ~funExpr:e ())
+        FunctionApplication (
+          self#formatFunAppl
+            ~uncurried
+            ~jsxAttrs
+            ~args:ls
+            ~applicationExpr:x
+            ~funExpr:e
+            ()
+          )
+        )
       )
     )
+    | Pexp_field (e, li) ->
+        let prec = Token "." in
+        let leftItm = self#unparseResolvedRule (
+          self#ensureExpression ~reducesOnToken:prec e
+        ) in
+        let {stdAttrs} = partitionAttributes e.pexp_attributes in
+        let formattedLeftItm = if stdAttrs = [] then
+            leftItm
+          else
+            formatPrecedence ~loc:e.pexp_loc leftItm
+        in
+        let layout = label (makeList [formattedLeftItm; atom "."]) (self#longident_loc li) in
+        SpecificInfixPrecedence ({reducePrecedence=prec; shiftPrecedence=prec}, LayoutNode layout)
     | Pexp_construct (li, Some eo) when not (is_simple_construct (view_expr x)) -> (
         match view_expr x with
         (* TODO: Explicit arity *)
@@ -3807,11 +4137,14 @@ let printer = object(self:'self)
       let rightItm = self#unparseResolvedRule (
         self#ensureContainingRule ~withPrecedence:(Token updateToken) ~reducesAfterRight:rightExpr ()
       ) in
-      let leftItm =
+      let leftItm = self#unparseResolvedRule (
+        self#ensureExpression ~reducesOnToken:(Token ".") leftExpr
+      ) in
+      let leftLbl =
         label
-          (makeList [self#simple_enough_to_be_lhs_dot_send leftExpr; atom "."])
+          (makeList [leftItm; atom "."])
           (self#longident_loc li) in
-      let expr = label ~space:true (makeList ~postSpace:true [leftItm; atom updateToken]) rightItm in
+      let expr = label ~space:true (makeList ~postSpace:true [leftLbl; atom updateToken]) rightItm in
       SpecificInfixPrecedence ({reducePrecedence=(Token updateToken); shiftPrecedence=(Token updateToken)}, LayoutNode expr)
     | Pexp_match (e, l) when detectTernary l != None -> (
       match detectTernary l with
@@ -3836,9 +4169,32 @@ let printer = object(self:'self)
       )
     | _ -> (
       match self#expression_requiring_parens_in_infix x with
-      | Some e -> PotentiallyLowPrecedence e
+      | Some e -> e
       | None -> raise (Invalid_argument "No match for unparsing expression")
     )
+
+  method formatNonSequencyExpression e =
+    (*
+     * Instead of printing:
+     *   let result =  { open Fmt; strf(foo);}
+     *
+     * We format as:
+     *   let result = Fmt.(strf(foo))
+     *
+     * (Also see https://github.com/facebook/Reason/issues/114)
+     *)
+    match e.pexp_desc with
+    | Pexp_record _ (* syntax sugar for M.{x:1} *)
+    | Pexp_tuple _ (* syntax sugar for M.(a, b) *)
+    | Pexp_object {pcstr_fields = []} (* syntax sugar for M.{} *)
+    | Pexp_construct ( {txt= Lident"::"},Some _)
+    | Pexp_construct ( {txt= Lident"[]"},_)
+    | Pexp_extension ( {txt = "bs.obj"}, _ ) ->
+      self#simplifyUnparseExpr e (* syntax sugar for M.[x,y] *)
+    (* syntax sugar for the rest, wrap with parens to avoid ambiguity.
+     * E.g., avoid M.(M2.v) being printed as M.M2.v
+    *)
+    | _ -> makeList ~wrap:("(",")") ~break:IfNeed [self#unparseExpr e]
 
   (*
      It's not enough to only check if precedence of an infix left/right is
@@ -3998,7 +4354,7 @@ let printer = object(self:'self)
       | (Labelled "children", {pexp_desc = Pexp_construct ({txt = Lident"::"}, Some {pexp_desc = Pexp_tuple components} )}) :: tail ->
         processArguments tail processedAttrs (self#formatChildren components [])
       | (Labelled "children", expr) :: tail ->
-          let childLayout = self#simplifyUnparseExpr expr in
+          let childLayout = self#simplifyUnparseExpr ~wrap:("{", "}") expr in
           let dotdotdotChild = makeList ~break:Layout.Never [atom "..."; childLayout] in
           processArguments tail processedAttrs (Some [dotdotdotChild])
       | (Optional lbl, expression) :: tail ->
@@ -4007,7 +4363,7 @@ let printer = object(self:'self)
           | Pexp_ident ident when isPunnedJsxArg lbl ident ->
               makeList ~break:Layout.Never [atom "?"; atom lbl]
           | _ ->
-              label (makeList ~break:Layout.Never [atom lbl; atom "=?"]) (self#simplifyUnparseExpr expression) in
+              label (makeList ~break:Layout.Never [atom lbl; atom "=?"]) (self#simplifyUnparseExpr ~wrap:("{","}") expression) in
         processArguments tail (nextAttr :: processedAttrs) children
 
       | (Labelled lbl, expression) :: tail ->
@@ -4017,6 +4373,18 @@ let printer = object(self:'self)
            | _ when isJSXComponent expression  ->
                label (atom (lbl ^ "="))
                      (makeList ~break:IfNeed ~wrap:("{", "}") [(self#simplifyUnparseExpr expression)])
+           | Pexp_open (ovf, lid, e)
+             when self#isSeriesOfOpensFollowedByNonSequencyExpression expression ->
+             label (makeList [atom lbl;
+                              atom "=";
+                              (label (self#longident_loc lid) (atom "."))])
+                   (self#formatNonSequencyExpression e)
+           | Pexp_apply (eFun, _) ->
+             let lhs = (makeList [atom lbl; atom "="]) in
+             let rhs = (match printedStringAndFixityExpr eFun with
+                 | Infix str when requireNoSpaceFor str -> self#unparseExpr expression
+                 | _ -> self#simplifyUnparseExpr ~wrap:("{","}") expression)
+             in label lhs rhs
            | Pexp_record _
            | Pexp_construct _
            | Pexp_array _
@@ -4024,8 +4392,11 @@ let printer = object(self:'self)
            | Pexp_match _
            | Pexp_extension _
            | Pexp_fun _
-           | Pexp_apply _ -> label (makeList [atom lbl; atom "="]) (self#simplifyUnparseExpr expression)
-           | _ -> makeList ([atom lbl; atom "="; self#simplifyUnparseExpr expression])
+           | Pexp_function _ ->
+               label
+                (makeList [atom lbl; atom "="])
+                (self#simplifyUnparseExpr ~wrap:("{","}") expression)
+           | _ -> makeList ([atom lbl; atom "="; self#simplifyUnparseExpr ~wrap:("{","}") expression])
          in
          processArguments tail (nextAttr :: processedAttrs) children
       | [] -> (processedAttrs, children)
@@ -4135,7 +4506,6 @@ let printer = object(self:'self)
     let letPattern = (label ~space:true (atom labelOpener) bindingPattern) in
     (formatTypeConstraint letPattern typeConstraint)
 
-
   (*
      The [bindingLabel] is either the function name (if let binding) or first
      arg (if lambda).
@@ -4159,6 +4529,7 @@ let printer = object(self:'self)
          ?attachTo
          ~arrow
          ?(sweet=false)
+         ?(spaceBeforeArrow=true)
          prefixText
          bindingLabel
          patternList
@@ -4195,7 +4566,7 @@ let printer = object(self:'self)
       match partitioning with
         | None when sweet ->
           makeList
-            ~pad:(false, true)
+            ~pad:(false, spaceBeforeArrow)
             ~wrap:("", arrow)
             ~indent:(settings.space * settings.indentWrappedPatternArgs)
             ~postSpace:true
@@ -4239,7 +4610,7 @@ let printer = object(self:'self)
 
             *)
           makeList
-            ~pad:(true, true)
+            ~pad:(true, spaceBeforeArrow)
             ~wrap:(prefixText, arrow)
             ~indent:(settings.space * settings.indentWrappedPatternArgs)
             ~postSpace:true
@@ -4254,7 +4625,7 @@ let printer = object(self:'self)
             ~space:true
             (
               makeList
-                ~pad:(true, true)
+                ~pad:(true, spaceBeforeArrow)
                 ~wrap:(prefixText, arrow)
                 ~indent:(settings.space * settings.indentWrappedPatternArgs)
                 ~postSpace:true
@@ -4343,7 +4714,7 @@ let printer = object(self:'self)
         let firstOne =
           match mt with
             | None -> atom "()"
-            | Some mt' -> formatTypeConstraint (atom s.txt) (self#module_type mt')
+            | Some mt' -> self#module_type (makeList [atom s.txt; atom ":"]) mt'
         in
         let (functorArgsRecurse, returnStructure) = (self#curriedFunctorPatternsAndReturnStruct me2) in
         (firstOne::functorArgsRecurse, returnStructure)
@@ -4449,7 +4820,15 @@ let printer = object(self:'self)
     in
     match (argsList, return.pexp_desc) with
       | ([], Pexp_constraint (e, ct)) ->
-          let typeLayout = source_map ~loc:ct.ptyp_loc (self#core_type ct) in
+          let typeLayout =
+            source_map ~loc:ct.ptyp_loc
+              begin match ct.ptyp_desc with
+              | Ptyp_package (li, cstrs) ->
+                self#typ_package li cstrs
+              | _ ->
+                self#core_type ct
+              end
+          in
           let appTerms = self#unparseExprApplicationItems e in
           self#formatSimplePatternBinding prefixText patternList (Some typeLayout) appTerms
       | ([], _) ->
@@ -4675,7 +5054,10 @@ let printer = object(self:'self)
           source_map ~loc:ct.ptyp_loc
             (self#non_arrowed_non_simple_core_type ct)
         in
-        (argsList@[formatJustTheTypeConstraint typeLayout], e)
+        ([makeList
+           ~break:IfNeed
+           ~inline:(true, true)
+           (argsList@[formatJustTheTypeConstraint typeLayout])], e)
       | _ -> (argsList, return)
 
   method normalizeConstructorArgsConstraint argsList return =
@@ -4832,9 +5214,9 @@ let printer = object(self:'self)
     let (implicit_arity, arguments) =
       match eo.pexp_desc with
       | Pexp_construct ( {txt= Lident "()"},_) ->
-          (* `foo() is a polymorphic variant that contains a single unit construct as expression
-           * This requires special formatting: `foo(()) -> `foo() *)
-          (false, atom "()")
+        (* `foo() is a polymorphic variant that contains a single unit construct as expression
+         * This requires special formatting: `foo(()) -> `foo() *)
+        (false, atom "()")
       (* special printing: MyConstructor(()) -> MyConstructor() *)
       | Pexp_tuple l when is_single_unit_construct l ->
           (false, atom "()")
@@ -4872,10 +5254,13 @@ let printer = object(self:'self)
   method constructor_pattern ?(polyVariant=false) ~arityIsClear ctor po =
     let (implicit_arity, arguments) =
       match po.ppat_desc with
+      (* There is no ambiguity when the number of tuple components is 1.
+           We don't need put implicit_arity in that case *)
+      | Ppat_tuple (([] | _::[]) as l) ->
+        (false, l)
       | Ppat_tuple l ->
-        (* There is no ambiguity when the number of tuple components is 1.
-             We don't need put implicit_arity in that case *)
-        (List.length l > 1 && not arityIsClear, l)
+        (not arityIsClear, l)
+
       | _ -> (false, [po])
     in
     let space, arguments = match arguments with
@@ -4982,7 +5367,7 @@ let printer = object(self:'self)
       ~break:IfNeed
       ~inline:(true, true)
       ~pad:(false, false)
-      ((atom ~loc:estimatedFunLocation (add_extension_sugar "fun" extension)) :: (self#case_list l))
+      ((atom ~loc:estimatedFunLocation (add_extension_sugar funToken extension)) :: (self#case_list l))
 
   method parenthesized_expr ?break expr =
     let result = self#unparseExpr expr in
@@ -5005,7 +5390,14 @@ let printer = object(self:'self)
          pipe, is that its => token will be confused with the match token.
          Simple expression will also invoke `#reset`. *)
       | Pexp_function _ when pipe || semi -> None (* Would be rendered as simplest_expression  *)
-      | Pexp_function l -> Some (self#patternFunction ?extension x.pexp_loc l)
+      (* Pexp_function, on the other hand, doesn't need wrapping in parens in
+         most cases anymore, since `fun` is not ambiguous anymore (we print Pexp_fun
+         as ES6 functions). *)
+      | Pexp_function l ->
+        let prec = Custom funToken in
+        let expr = self#patternFunction ?extension x.pexp_loc l in
+        Some (SpecificInfixPrecedence
+                ({reducePrecedence=prec; shiftPrecedence=prec}, LayoutNode expr))
       | _ ->
         (* The Pexp_function cases above don't use location because comment printing
           breaks for them. *)
@@ -5014,7 +5406,7 @@ let printer = object(self:'self)
           | Pexp_newtype _ ->
             (* let uncurried =  *)
             let (args, ret) = self#curriedPatternsAndReturnVal x in
-            ( match args with
+            (match args with
               | [] -> raise (NotPossible ("no arrow args in unparse "))
               | firstArg::tl ->
                 (* Suboptimal printing of parens:
@@ -5042,7 +5434,7 @@ let printer = object(self:'self)
                 let retValUnparsed = self#unparseExprApplicationItems ret in
                 Some (self#wrapCurriedFunctionBinding
                         ~sweet:(extension = None)
-                        (add_extension_sugar "fun" extension)
+                        (add_extension_sugar funToken extension)
                         ~arrow:"=>" firstArg tl retValUnparsed)
             )
           | Pexp_try (e, l) ->
@@ -5200,7 +5592,7 @@ let printer = object(self:'self)
         in
         match itm with
           | None -> None
-          | Some i -> Some (source_map ~loc:x.pexp_loc i)
+          | Some i -> Some (PotentiallyLowPrecedence (source_map ~loc:x.pexp_loc i))
 
   method potentiallyConstrainedExpr x =
     match x.pexp_desc with
@@ -5248,12 +5640,11 @@ let printer = object(self:'self)
    * };
    *
    *)
-  method simple_enough_to_be_lhs_dot_send x = match x.pexp_desc with
+  method simple_enough_to_be_lhs_dot_send x =
+    match x.pexp_desc with
     | (Pexp_apply (eFun, _)) -> (
         match printedStringAndFixityExpr eFun with
-        | AlmostSimplePrefix _ ->
-          source_map ~loc:x.pexp_loc
-            (formatPrecedence (self#simplifyUnparseExpr x))
+        | AlmostSimplePrefix _
         | UnaryPlusPrefix _
         | UnaryMinusPrefix _
         | UnaryNotPrefix _
@@ -5340,7 +5731,7 @@ let printer = object(self:'self)
             let upToColon = makeList (maybeQuoteFirstElem li [atom ":"]) in
             let returnedAppTerms = self#unparseExprApplicationItems return in
             self#wrapCurriedFunctionBinding
-              ~sweet:true ~attachTo:upToColon "fun" ~arrow:"=>"
+              ~sweet:true ~attachTo:upToColon funToken ~arrow:"=>"
               firstArg tl returnedAppTerms
       in source_map ~loc:totalRowLoc theRow
     in
@@ -5382,6 +5773,7 @@ let printer = object(self:'self)
         | ([], Pexp_open (ovf, lid, e)) ->
           ovf == Fresh && self#isSeriesOfOpensFollowedByNonSequencyExpression e
         | ([], Pexp_letexception _) -> false
+        | ([], Pexp_extension ({txt}, _)) -> txt = "bs.obj"
         | _ -> true
 
   method unparseObject ?wrap:((lwrap,rwrap)=("", "")) ?(withStringKeys=false) l o =
@@ -5419,7 +5811,7 @@ let printer = object(self:'self)
     in
     makeList
       ~break:Layout.IfNeed
-      ~preSpace:(List.length rows > 0)
+      ~preSpace:(rows != [])
       ~wrap:(lwrap ^ "{", "}" ^ rwrap)
       (openness::[rows_layout])
 
@@ -5575,38 +5967,14 @@ let printer = object(self:'self)
                 match x'.pexp_desc with
                 | Pexp_let _ ->
                   Some (makeLetSequence (self#letList x))
-                | Pexp_function l when (pipe || semi) ->
-                  Some (formatPrecedence ~loc:x.pexp_loc
-                          (self#reset#patternFunction ~extension x'.pexp_loc l))
                 | _ -> Some (self#extension e)
           end
         | Pexp_open (ovf, lid, e) ->
             if self#isSeriesOfOpensFollowedByNonSequencyExpression x then
-              (*
-               * Instead of printing:
-               *   let result =  { open Fmt; strf(foo);}
-               *
-               * We format as:
-               *   let result = Fmt.(strf(foo))
-               *
-               * (Also see https://github.com/facebook/Reason/issues/114)
-               *)
-              let expression = match e.pexp_desc with
-                  | Pexp_record _ (* syntax sugar for M.{x:1} *)
-                  | Pexp_tuple _ (* syntax sugar for M.(a, b) *)
-                  | Pexp_object {pcstr_fields = []} (* syntax sugar for M.{} *)
-                  | Pexp_construct ( {txt= Lident"::"},Some _) ->
-                     self#simplifyUnparseExpr e (* syntax sugar for M.[x,y] *)
-                  (* syntax sugar for the rest, wrap with parens to avoid ambiguity.
-                   * E.g., avoid M.(M2.v) being printed as M.M2.v
-                   *)
-                  | _ -> makeList ~wrap:("(",")") ~break:IfNeed [self#unparseExpr e]
-              in
-              Some (label (label (self#longident_loc lid) (atom ("."))) expression)
+              Some (label (label (self#longident_loc lid) (atom (".")))
+                          (self#formatNonSequencyExpression e))
           else
             Some (makeLetSequence (self#letList x))
-        | Pexp_field (e, li) ->
-          Some (label (makeList [self#simple_enough_to_be_lhs_dot_send e; atom "."]) (self#longident_loc li))
         | Pexp_send (e, s) ->
           let needparens = match e.pexp_desc with
             | Pexp_apply (ee, _) ->
@@ -5629,14 +5997,21 @@ let printer = object(self:'self)
     | {pexp_desc = Pexp_constant constant} as x :: remaining ->
       let raw_literal, _ = extract_raw_literal x.pexp_attributes in
       self#formatChildren remaining (self#constant ?raw_literal constant :: processedRev)
-    | {pexp_desc = Pexp_construct ({txt = Lident "::"}, Some {pexp_desc = Pexp_tuple children} )} :: remaining ->
-      self#formatChildren (remaining @ children) processedRev
+    | {pexp_desc = Pexp_construct ({txt = Lident "::"}, Some {pexp_desc = Pexp_tuple children} )} as x :: remaining ->
+      begin match x.pexp_attributes with
+        | ({txt="JSX"; loc}, PStr []) :: _ ->
+          begin match self#simplest_expression x with
+            | Some r -> self#formatChildren remaining (r :: processedRev)
+            | None -> self#formatChildren (remaining @ children) processedRev
+            end
+        | _ -> self#formatChildren (remaining @ children) processedRev
+      end
     | {pexp_desc = Pexp_apply(expr, l); pexp_attributes} :: remaining ->
-      self#formatChildren remaining (self#simplifyUnparseExpr (List.hd children) :: processedRev)
+      self#formatChildren remaining (self#simplifyUnparseExpr ~wrap:("{", "}") (List.hd children) :: processedRev)
     | {pexp_desc = Pexp_ident li} :: remaining ->
       self#formatChildren remaining (self#longident_loc li :: processedRev)
     | {pexp_desc = Pexp_construct ({txt = Lident "[]"}, None)} :: remaining -> self#formatChildren remaining processedRev
-    | head :: remaining -> self#formatChildren remaining (self#simplifyUnparseExpr head :: processedRev)
+    | head :: remaining -> self#formatChildren remaining (self#simplifyUnparseExpr ~wrap:("{", "}") head :: processedRev)
     | [] -> match processedRev with
         | [] -> None
         | _::_ -> Some (List.rev processedRev)
@@ -5726,7 +6101,7 @@ let printer = object(self:'self)
         | Some id -> [atom ("%" ^ id.txt)]
       in
       makeList
-        ~postSpace:true ~indent:0 ~break:Layout.Always ~inline:(true, true)
+        ~postSpace:true ~indent:0 ~break:Layout.Always_rec ~inline:(true, true)
         (extension @ List.map self#item_attribute l @ [toThis])
 
   method exception_declaration ed =
@@ -5814,7 +6189,8 @@ let printer = object(self:'self)
     | Pctf_extension e -> self#item_extension e
 
   (*
-    [@@bs.val] [@@bs.module "react-dom"]                  (* formattedAttrs *)
+    /** doc comment */                                    (* formattedDocs *)
+    [@bs.val] [@bs.module "react-dom"]                    (* formattedAttrs *)
     external render : reactElement => element => unit =   (* frstHalf *)
       "render";                                           (* sndHalf *)
 
@@ -5823,14 +6199,17 @@ let printer = object(self:'self)
       * combine that label with '=' in a list
       * consider the part after the '=' as a list
       * combine both parts as a label
+      * format the doc comment with a ~postSpace:true (inline, not inline) list
       * format the attributes with a ~postSpace:true (inline, inline) list
       * format everything together in a ~postSpace:true (inline, inline) list
         for nicer breaking
   *)
   method primitive_declaration vd =
     let lblBefore =
-      label ~space:true
-        (makeList ~postSpace:true [atom "external"; protectIdentifier vd.pval_name.txt; atom ":"])
+      label
+        ~space:true
+        (makeList
+           [(makeList ~postSpace:true [atom "external"; protectIdentifier vd.pval_name.txt]); (atom ":")])
         (self#core_type vd.pval_type)
     in
     let frstHalf = makeList ~postSpace:true [lblBefore; atom "="] in
@@ -5839,9 +6218,16 @@ let printer = object(self:'self)
     match vd.pval_attributes with
     | [] -> primDecl
     | attrs ->
-        let attrs = List.map (fun x -> self#item_attribute x) attrs in
+        let {stdAttrs; docAttrs} = partitionAttributes ~partDoc:true attrs in
+        let docs = List.map self#item_attribute docAttrs in
+        let formattedDocs = makeList ~postSpace:true docs in
+        let attrs = List.map self#item_attribute stdAttrs in
         let formattedAttrs = makeSpacedBreakableInlineList attrs in
-        makeSpacedBreakableInlineList [formattedAttrs; primDecl]
+        let layouts = match (docAttrs, stdAttrs) with
+        | ([], _) -> [formattedAttrs; primDecl]
+        | (_, []) -> [formattedDocs; primDecl]
+        | _ -> [formattedDocs; formattedAttrs; primDecl] in
+        makeSpacedBreakableInlineList layouts
 
   method class_instance_type x =
     match x.pcty_desc with
@@ -5859,8 +6245,7 @@ let printer = object(self:'self)
           ~wrap:("{", "}")
           ~postSpace:true
           ~break:Layout.Always_rec
-          ~sep:(Sep ";")
-          allItems
+          (List.map semiTerminated allItems)
       )
     | Pcty_constr (li, l) ->
       self#attach_std_attrs x.pcty_attributes (
@@ -6186,7 +6571,7 @@ let printer = object(self:'self)
          | Some args, e ->
            label ~space:true
              (makeList ~postSpace:true
-                [label ~space:true (atom "fun") args; atom "=>"])
+                [label ~space:true (atom funToken) args; atom "=>"])
              (self#class_expr e))
       | Pcl_apply (ce, l) ->
         formatAttachmentApplication applicationFinalWrapping None
@@ -6271,6 +6656,7 @@ let printer = object(self:'self)
               let (firstToken, pattern, patternAux) = self#class_opening class_keyword txt x.pci_virt ls in
               let withColon = self#wrapCurriedFunctionBinding
                 ~arrow:":"
+                ~spaceBeforeArrow:false
                 firstToken
                 pattern
                 patternAux
@@ -6319,12 +6705,14 @@ let printer = object(self:'self)
             let {stdAttrs; docAttrs} =
               partitionAttributes ~partDoc:true pmd.pmd_attributes
             in
+            let letPattern =
+              makeList
+                [makeList ~postSpace:true [atom "module"; (atom pmd.pmd_name.txt)];
+                 atom ":"]
+            in
             let layout =
               self#attach_std_item_attrs stdAttrs @@
-              self#formatSimpleSignatureBinding
-                "module"
-                (atom pmd.pmd_name.txt)
-                (self#module_type pmd.pmd_type)
+              (self#module_type letPattern pmd.pmd_type)
             in
             self#attachDocAttrsToLayout
               ~stdAttrs
@@ -6354,9 +6742,7 @@ let printer = object(self:'self)
           in
           let layout =
             self#attach_std_item_attrs stdAttrs @@
-            label ~space:true
-              (atom "include")
-              (self#module_type incl.pincl_mod)
+            (self#module_type (atom "include") incl.pincl_mod)
           in
           self#attachDocAttrsToLayout
             ~stdAttrs
@@ -6366,12 +6752,10 @@ let printer = object(self:'self)
             ()
         | Psig_modtype x ->
           let name = atom x.pmtd_name.txt in
+          let letPattern = makeList ~postSpace:true [atom "module type"; name; atom "="] in
           let main = match x.pmtd_type with
             | None -> makeList ~postSpace:true [atom "module type"; name]
-            | Some mt ->
-              label ~space:true
-                (makeList ~postSpace:true [atom "module type"; name; atom "="])
-                (self#module_type mt)
+            | Some mt -> self#module_type letPattern mt
           in
           let {stdAttrs; docAttrs} =
             partitionAttributes ~partDoc:true x.pmtd_attributes
@@ -6391,12 +6775,14 @@ let printer = object(self:'self)
               let {stdAttrs; docAttrs} =
                 partitionAttributes ~partDoc:true xx.pmd_attributes
               in
+              let letPattern =
+                makeList
+                  [makeList ~postSpace:true [atom "module rec"; atom xx.pmd_name.txt];
+                   atom ":"]
+              in
               let layout =
                 self#attach_std_item_attrs stdAttrs @@
-                self#formatSimpleSignatureBinding
-                  "module rec"
-                  (atom xx.pmd_name.txt)
-                  (self#module_type xx.pmd_type)
+                self#module_type letPattern xx.pmd_type
               in
               self#attachDocAttrsToLayout
                 ~stdAttrs
@@ -6406,11 +6792,13 @@ let printer = object(self:'self)
                 ()
             in
             let notFirst xx =
+              let andLetPattern =
+                makeList
+                  [makeList ~postSpace:true [atom "and"; atom xx.pmd_name.txt];
+                   atom ":"]
+              in
               self#attach_std_item_attrs xx.pmd_attributes @@
-              self#formatSimpleSignatureBinding
-                "and"
-                (atom xx.pmd_name.txt)
-                (self#module_type xx.pmd_type)
+              self#module_type andLetPattern xx.pmd_type
             in
             let moduleBindings = match decls with
               | [] -> raise (NotPossible "No recursive module bindings")
@@ -6434,22 +6822,29 @@ let printer = object(self:'self)
     in
     source_map ~loc:x.psig_loc item
 
-  method non_arrowed_module_type x =
+  method non_arrowed_module_type ?(space=true) letPattern x =
     match x.pmty_desc with
       | Pmty_alias li ->
-          formatPrecedence (label ~space:true (atom "module") (self#longident_loc li))
+        label ~space
+          letPattern
+          (formatPrecedence (label ~space:true (atom "module") (self#longident_loc li)))
       | Pmty_typeof me ->
-        makeList ~wrap:("(", ")") [
-          label ~space:true
-            (atom "module type of")
+        let labelWithoutFinalWrap =
+          label ~space
+            (label ~space:true
+               letPattern
+               (makeList
+                  ~inline:(false, false)
+                  ~wrap:("(","")
+                  [atom "module type of"]))
             (self#module_expr me)
-        ]
-      | _ -> self#simple_module_type x
+        in
+        makeList ~wrap:("",")") [labelWithoutFinalWrap]
+      | _ -> self#simple_module_type ~space letPattern x
 
-  method simple_module_type x =
+  method simple_module_type ?(space=true) letPattern x =
     match x.pmty_desc with
-      | Pmty_ident li ->
-          self#longident_loc li;
+      | Pmty_ident li -> label ~space letPattern (self#longident_loc li)
       | Pmty_signature s ->
         let items =
           groupAndPrint
@@ -6458,17 +6853,31 @@ let printer = object(self:'self)
           ~comments:self#comments
           s
         in
-        makeList
-          ~break:IfNeed
-          ~inline:(true, false)
-          ~wrap:("{", "}")
-          ~postSpace:true
-          ~sep:(SepFinal (";", ";"))
-          items
-      | Pmty_extension (s, e) -> self#payload "%" s e
-      | _ -> makeList ~break:IfNeed ~wrap:("(", ")") [self#module_type x]
+        let shouldBreakLabel = if List.length s > 1 then `Always else `Auto in
+        label
+          ~indent:0
+          ~break:shouldBreakLabel
+          (makeList
+            [label
+               ~break:shouldBreakLabel
+                (makeList
+                  ~postSpace:true
+                  [letPattern; (atom "{")])
+              (source_map
+                 ~loc:x.pmty_loc
+                 (makeList
+                    ~break:(if List.length s > 1 then Always else IfNeed)
+                    ~inline:(true, true)
+                    ~postSpace:true
+                    ~sep:(SepFinal (";", ";"))
+                    items))])
+          (atom "}")
+      | Pmty_extension (s, e) -> label ~space letPattern (self#payload "%" s e)
+      | _ ->
+        makeList ~break:IfNeed ~wrap:("", ")")
+          [self#module_type ~space:false (makeList ~pad:(false,true) ~wrap:("","(") [letPattern]) x]
 
-  method module_type x =
+  method module_type ?(space=true) letPattern x =
     let pmty = match x.pmty_desc with
       | Pmty_functor _ ->
         (* The segments that should be separated by arrows. *)
@@ -6477,8 +6886,8 @@ let printer = object(self:'self)
           | Pmty_functor (s, Some mt1, mt2) ->
             let arg =
               if s.txt = "_"
-              then self#module_type mt1
-              else formatTypeConstraint (atom s.txt) (self#module_type mt1)
+              then self#module_type ~space:false (atom "") mt1
+              else self#module_type ~space (makeList [(atom s.txt); atom ":"]) mt1
             in
             extract_args (`Arg arg :: args) mt2
           | _ ->
@@ -6490,11 +6899,16 @@ let printer = object(self:'self)
               | [`Unit] -> []
               | xs -> List.rev_map prepare_arg args
             in
-            (args, self#module_type xx)
+            (args, self#module_type (atom "") xx)
         in
         let args, ret = extract_args [] x in
-        makeList ~break:IfNeed ~sep:(Sep "=>") ~preSpace:true ~postSpace:true ~inline:(true, true)
-          [makeTup args; ret]
+        label ~space letPattern
+          (makeList
+             ~break:IfNeed
+             ~sep:(Sep "=>")
+             ~preSpace:true
+             ~inline:(true, true)
+             [makeTup args; ret])
 
       (* See comments in sugar_parser.mly about why WITH constraints aren't "non
        * arrowed" *)
@@ -6512,7 +6926,7 @@ let printer = object(self:'self)
             | Pwith_type (li, td) ->
                 self#formatOneTypeDef
                   typeAtom
-                  (self#longident_loc li)
+                  (makeList ~preSpace:true [(self#longident_loc li)])
                   eqAtom
                   td
             | Pwith_module (li, li2) ->
@@ -6526,34 +6940,39 @@ let printer = object(self:'self)
             | Pwith_modsubst (s, li2) -> modSub (atom s.txt) li2 ":="
           in
           (match l with
-            | [] -> self#module_type mt
+            | [] -> self#module_type ~space letPattern mt
             | _ ->
-                label ~space:true
-                  (makeList ~postSpace:true [self#module_type mt; atom "with"])
+              label ~space letPattern
+                (label ~space:true
+                  (makeList ~preSpace:true [self#module_type ~space:false (atom "") mt; atom "with"])
                   (makeList
                      ~break:IfNeed
                      ~inline:(true, true)
                      ~sep:(Sep "and")
                      ~postSpace:true
                      ~preSpace:true
-                     (List.map with_constraint l));
+                     (List.map with_constraint l)))
           )
         (* Seems like an infinite loop just waiting to happen. *)
-        | _ -> self#non_arrowed_module_type x
+        | _ -> self#non_arrowed_module_type ~space letPattern x
     in
     source_map ~loc:x.pmty_loc pmty
 
   method simple_module_expr ?(hug=false) x = match x.pmod_desc with
     | Pmod_unpack e ->
-        formatPrecedence (makeList ~postSpace:true [atom "val"; self#unparseExpr e])
+        let exprLayout = match e.pexp_desc with
+        | Pexp_constraint (e, {ptyp_desc = Ptyp_package(lid, cstrs)}) ->
+          formatTypeConstraint
+            (makeList ~postSpace:true [atom "val"; (self#unparseExpr e)])
+            (self#typ_package ~mod_prefix:false lid cstrs)
+        | _ -> makeList ~postSpace:true [atom "val"; (self#unparseExpr e)]
+        in formatPrecedence exprLayout
     | Pmod_ident li ->
         ensureSingleTokenSticksToLabel (self#longident_loc li)
     | Pmod_constraint (unconstrainedRet, mt) ->
-        formatPrecedence (
-          formatTypeConstraint
-            (self#module_expr unconstrainedRet)
-            (self#module_type mt)
-        )
+        let letPattern = makeList [(self#module_expr unconstrainedRet); atom ":"]
+        in
+        formatPrecedence (self#module_type letPattern mt)
     | Pmod_structure s ->
         let wrap = if hug then ("({", "})") else ("{", "}") in
         let items =
@@ -6580,7 +6999,7 @@ let printer = object(self:'self)
       let (argsList, return) = self#curriedFunctorPatternsAndReturnStruct x in
       (* See #19/20 in syntax.mls - cannot annotate return type at
                the moment. *)
-      self#wrapCurriedFunctionBinding "fun" ~sweet:true ~arrow:"=>" (makeTup argsList) []
+      self#wrapCurriedFunctionBinding funToken ~sweet:true ~arrow:"=>" (makeTup argsList) []
         ([self#moduleExpressionToFormattedApplicationItems return], None)
     | Pmod_apply _ ->
       self#moduleExpressionToFormattedApplicationItems x
@@ -6646,8 +7065,17 @@ let printer = object(self:'self)
       match (argsList, return.pmod_desc) with
         (* Simple module with type constraint, no functor args. *)
         | ([], Pmod_constraint (unconstrainedRetTerm, ct)) ->
-          self#formatSimplePatternBinding prefixText bindingName (Some (self#module_type ct))
-            ([self#moduleExpressionToFormattedApplicationItems unconstrainedRetTerm], None)
+            let letPattern =
+              makeList
+                [makeList ~postSpace:true [atom prefixText; bindingName];
+                 atom ":"]
+            in
+            let typeConstraint = self#module_type letPattern ct in
+            let includingEqual = makeList ~postSpace:true [typeConstraint; atom "="]
+            in
+            formatAttachmentApplication applicationFinalWrapping (Some (true, includingEqual))
+              ([self#moduleExpressionToFormattedApplicationItems unconstrainedRetTerm], None)
+
         (* Simple module with type no constraint, no functor args. *)
         | ([], _) ->
           self#formatSimplePatternBinding prefixText bindingName None
@@ -6660,7 +7088,9 @@ let printer = object(self:'self)
                  *
                  * let module X = (A) (B) : Ret => ...
                  * *)
-                | Pmod_constraint (me, ct) -> ([makeTup argsList; formatJustTheTypeConstraint (self#non_arrowed_module_type ct)], me)
+                | Pmod_constraint (me, ct) ->
+                  ([makeTup argsList;
+                    self#non_arrowed_module_type (atom ":") ct], me)
                 | _ -> ([makeTup argsList], return)
             ) in
             self#wrapCurriedFunctionBinding prefixText ~arrow:"=>"
@@ -6717,13 +7147,10 @@ let printer = object(self:'self)
             ]
         | Pstr_modtype x ->
             let name = atom x.pmtd_name.txt in
+            let letPattern = makeList ~postSpace:true [atom "module type"; name; atom "="] in
             let main = match x.pmtd_type with
-              | None ->
-                makeList ~postSpace:true [atom "module type"; name]
-              | Some mt ->
-                label ~space:true
-                  (makeList ~postSpace:true [atom "module type"; name; atom "="])
-                  (self#module_type mt)
+              | None -> makeList ~postSpace:true [atom "module type"; name]
+              | Some mt -> self#module_type letPattern mt
             in
             self#attach_std_item_attrs x.pmtd_attributes main
         | Pstr_class l -> self#class_declaration_list l
@@ -6755,8 +7182,16 @@ let printer = object(self:'self)
         | Pstr_extension ((extension, PStr [item]), a) ->
           begin match item.pstr_desc with
             | Pstr_value (rf, l) -> self#bindings ~extension (rf, l)
-            | _ -> self#attach_std_item_attrs ~extension a
+            | _ ->
+                let {stdAttrs; docAttrs} =
+                  partitionAttributes ~partDoc:true a
+                in
+                let layout =
+                  self#attach_std_item_attrs ~extension stdAttrs
                      (self#structure_item item)
+                in
+                makeList ~inline:(true, true) ~break:Always
+                  ((List.map self#attribute docAttrs)@[layout])
           end
         | Pstr_extension (e, a) ->
           (* Notice how extensions have attributes - but not every structure
@@ -6882,7 +7317,7 @@ let printer = object(self:'self)
         else self#under_pipe#unparseExpr pc_rhs
       in
       source_map
-        (* Fake shift the location to accomodate for the bar, to make sure
+        (* Fake shift the location to accommodate for the bar, to make sure
            * the wrong comments don't make their way past the next bar. *)
         ~loc:(expandLocation ~expand:(0, 0) {
             loc_start = pc_lhs.ppat_loc.loc_start;
@@ -6968,6 +7403,7 @@ let printer = object(self:'self)
           makeTup ~uncurried (List.map self#label_x_expression_param params)
 
   method formatFunAppl ~jsxAttrs ~args ~funExpr ~applicationExpr ?(uncurried=false) () =
+    let uncurriedApplication = uncurried in
     (* If there was a JSX attribute BUT JSX component wasn't detected,
        that JSX attribute needs to be pretty printed so it doesn't get
        lost *)
@@ -6976,12 +7412,19 @@ let printer = object(self:'self)
       let reverseArgs = List.rev args in
       match reverseArgs with
       | ((_, {pexp_desc = Pexp_fun _}) as callback)::args
-          when let otherCallbacks =
-            List.filter (fun (_, e) -> match e.pexp_desc with Pexp_fun _ -> true | _ -> false) args
-          in List.length otherCallbacks == 0
+          when
+            [] == List.filter (fun (_, e) -> match e.pexp_desc with Pexp_fun _ -> true | _ -> false) args
           (* default to normal formatting if there's more than one callback *)
           -> `LastArgIsCallback(callback, List.rev args)
       | _ -> `NormalFunAppl args
+    in
+    let formattedFunExpr = match funExpr.pexp_desc with
+      (* fast pipe chain or sharpop chain as funExpr, no parens needed, we know how to parse *)
+      | Pexp_apply ({pexp_desc = Pexp_ident {txt = Lident s}}, _)
+        when requireNoSpaceFor s ->
+        self#unparseExpr funExpr
+      | Pexp_field _ -> self#unparseExpr funExpr
+      | _ -> self#simplifyUnparseExpr funExpr
     in
     begin match categorizeFunApplArgs args with
     | `LastArgIsCallback(callbackArg, args) ->
@@ -6994,7 +7437,7 @@ let printer = object(self:'self)
         let cbAttrs = stdAttrs in
         if uncurried then Hashtbl.add uncurriedTable cb.pexp_loc true;
         let (cbArgs, retCb) = self#curriedPatternsAndReturnVal {cb with pexp_attributes = []} in
-        let cbArgs = if List.length cbAttrs > 0 then
+        let cbArgs = if cbAttrs != [] then
             makeList ~break:IfNeed ~inline:(true, true) ~postSpace:true
               (List.map self#attribute cbAttrs @ cbArgs)
         else makeList cbArgs in
@@ -7005,7 +7448,9 @@ let printer = object(self:'self)
         in
         let theFunc =
           source_map ~loc:funExpr.pexp_loc
-            (makeList ~wrap:("", "(") [self#simplifyUnparseExpr funExpr])
+            (makeList
+               ~wrap:("", (if uncurriedApplication then "(." else "("))
+               [formattedFunExpr])
         in
         let formattedFunAppl = begin match self#letList retCb with
         | [x] ->
@@ -7029,7 +7474,9 @@ let printer = object(self:'self)
           let argsWithCallbackArgs = List.concat [(List.map self#label_x_expression_param args); [theCallbackArg]] in
           let left = label
             theFunc
-            (makeList ~wrap:("", " ") ~break:IfNeed ~inline:(true, true) ~sep:(Sep ",") ~postSpace:true
+            (makeList
+               ~pad:(uncurriedApplication, false)
+               ~wrap:("", " ") ~break:IfNeed ~inline:(true, true) ~sep:(Sep ",") ~postSpace:true
               argsWithCallbackArgs)
           in
           label left returnValueCallback
@@ -7075,7 +7522,7 @@ let printer = object(self:'self)
             in
             label left right
           else
-            (* Since the heuristic says the line lenght is exceeded in this case,
+            (* Since the heuristic says the line length is exceeded in this case,
              * we conveniently format everything as
              * <label><left>Thing.map(</left><right><list>
              *   foo,
@@ -7100,9 +7547,9 @@ let printer = object(self:'self)
         maybeJSXAttr @ [formattedFunAppl]
     | `NormalFunAppl args ->
       let theFunc =
-        source_map ~loc:funExpr.pexp_loc (self#simplifyUnparseExpr funExpr)
+        source_map ~loc:funExpr.pexp_loc formattedFunExpr
       in
-      (*reset here only because [function,match,try,sequence] are lower priority*)
+      (* reset here only because [function,match,try,sequence] are lower priority *)
       (* The "expression location" might be different than the location of the actual
        * function application because things like surrounding { } expand the
        * parsed location (in body of while loop for example).

@@ -57,7 +57,6 @@ make build -C ../
   -I "$reasonTargetDir/_build/default/src/reason-parser/vendor/easy_format/"  \
   -I "$reasonTargetDir/_build/default/src/reason-parser/vendor/cmdliner/"     \
   -I "$reasonTargetDir/_build/default/src/reason-parser-tests/"               \
-  -I "$reasonTargetDir/_build/default/src/reasonbuild/"                       \
   -I "$reasonTargetDir/_build/default/src/refmt/"                             \
   -I "$reasonTargetDir/_build/default/src/refmttype/"                         \
   -I "$ocamlMigrateParseTreeTargetDir" \
@@ -82,7 +81,6 @@ make build -C ../
   -I "$reasonTargetDir/_build/default/src/reason-parser/vendor/easy_format/"  \
   -I "$reasonTargetDir/_build/default/src/reason-parser/vendor/cmdliner/"     \
   -I "$reasonTargetDir/_build/default/src/reason-parser-tests/"               \
-  -I "$reasonTargetDir/_build/default/src/reasonbuild/"                       \
   -I "$reasonTargetDir/_build/default/src/refmt/"                             \
   -I "$reasonTargetDir/_build/default/src/refmttype/"                         \
   -I "$ocamlMigrateParseTreeTargetDir" \
@@ -100,7 +98,7 @@ ocamlfind ocamlc -bin-annot -g -w -30 -w -40 -package js_of_ocaml,ocaml-migrate-
 # link them together into the final bytecode
 ocamlfind ocamlc -linkpkg -package js_of_ocaml,ocaml-migrate-parsetree -g -o "$REFMT_API_FINAL.byte" "$REFMT_API.cmo" "$REFMT_API_ENTRY.cmo"
 # # use js_of_ocaml to take the compiled bytecode and turn it into a js file
-js_of_ocaml.exe --source-map --debug-info --pretty --linkall +weak.js +toplevel.js --opt 3 --disable strict -o "$REFMT_PRE_CLOSURE.js" "$REFMT_API_FINAL.byte"
+js_of_ocaml --source-map --debug-info --pretty --linkall +weak.js +toplevel.js --opt 3 --disable strict -o "$REFMT_PRE_CLOSURE.js" "$REFMT_API_FINAL.byte"
 # # use closure compiler to minify the final file!
 java -jar ./closure-compiler/closure-compiler-v20170910.jar --create_source_map "$REFMT_CLOSURE.map" --language_in ECMASCRIPT6 --compilation_level SIMPLE "$REFMT_PRE_CLOSURE.js" > "$REFMT_CLOSURE.js"
 

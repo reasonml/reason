@@ -82,7 +82,7 @@ class type _rect =
     pub height: int;
     [@bs.set]
     pub width: int;
-    pub draw: unit => unit
+    pub draw: unit => unit;
   };
 
 class type _rect =
@@ -92,7 +92,7 @@ class type _rect =
     pub height: int;
     [@bs.set]
     pub width: int;
-    pub draw: unit => unit
+    pub draw: unit => unit;
   };
 
 funWithCb("text", (.) => doStuff());
@@ -141,7 +141,7 @@ add(. 2, [@bs] 3);
 type timerId;
 
 [@bs.val]
-external setTimeout :
+external setTimeout:
   ((. unit) => unit, int) => timerId =
   "setTimeout";
 
@@ -181,3 +181,9 @@ let run =
       ~mMap: string=?,
       logger,
     ) => {};
+
+f(. _ => 1);
+
+f(. a, _ => 1);
+
+f(. a, (. _) => 1);

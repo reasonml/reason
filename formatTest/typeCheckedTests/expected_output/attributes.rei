@@ -24,20 +24,20 @@ type reactClass;
 type reactElement;
 
 [@bs.val] [@bs.module "React"]
-external createClassInternalHack :
+external createClassInternalHack:
   t('classSpec) => reactClass =
   "createClass";
 
 [@bs.send.pipe: array('a)]
-external map : (. ('a => 'b)) => array('b) = "";
+external map: (. ('a => 'b)) => array('b) = "";
 
 [@bs.val] [@bs.module "react"]
-external createClassInternalHack :
+external createClassInternalHack:
   t('classSpec) => reactClass =
   "createClass";
 
 [@bs.val] [@bs.module "react"] [@bs.splice]
-external createCompositeElementInternalHack :
+external createCompositeElementInternalHack:
   (
     reactClass,
     t({.. reasonProps: 'props}),
@@ -73,4 +73,9 @@ type tttt = {
 type ttttt = {
   [@attr "moved to first row"] [@attr]
   x: int,
+};
+
+module Foo: {
+  [@someattr]
+  let foo: int => int;
 };

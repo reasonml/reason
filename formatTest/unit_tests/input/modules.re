@@ -476,3 +476,10 @@ let foo =
      (module Y): (module Y_t with type t = a),
      (module Z): (module Z_t with type t = a),
    ) => X.a;
+
+/* https://github.com/facebook/reason/issues/2028 */
+M.[];
+
+module type Event = (module type of {
+  include ReactEventRe;
+});

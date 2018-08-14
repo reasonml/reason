@@ -180,8 +180,8 @@ type variantType =
 [@onVariantType]
 type gadtType('x) =
   | Foo(int): [@onFirstRow] gadtType(int)
-  | Bar([@onInt] int): [@onSecondRow]
-                        gadtType(unit)
+  | Bar([@onInt] int)
+    : [@onSecondRow] gadtType(unit)
   | Baz: [@onThirdRow] gadtType([@onUnit] unit);
 
 [@floatingTopLevelStructureItem hello];
@@ -261,28 +261,28 @@ class type addablePointClassType = {
       addablePointClassType,
       addablePointClassType
     ) =>
-    int
+    int;
 }
 [@structureItem]
 and anotherClassType = {
   pub foo: int;
-  pub bar: int
+  pub bar: int;
 };
 
 class type _x =
   [@bs]
   {
-    pub height: int
+    pub height: int;
   };
 
 class type _y = {
   [@bs.set]
-  pub height: int
+  pub height: int;
 };
 
 [@attr]
 class type _z = {
-  pub height: int
+  pub height: int;
 };
 
 module NestedModule = {
@@ -296,10 +296,10 @@ module type HasAttrs = {
   [@sigItem]
   class type foo = {
     pub foo: int;
-    pub bar: int
+    pub bar: int;
   };
   [@sigItem]
-  class fooBar : (int) => foo;
+  class fooBar: (int) => foo;
   /**Floating comment text should be removed*/;
   /**Floating comment text should be removed*/;
 };
@@ -332,7 +332,7 @@ let myFun =
 /* Bucklescript FFI item attributes */
 
 [@bs.val]
-external imul : (int, int) => int = "Math.imul";
+external imul: (int, int) => int = "Math.imul";
 
 module Js = {
   type t('a);
@@ -391,13 +391,13 @@ type reactClass;
 
 /* "react-dom" shouldn't spread the attribute over multiple lines */
 [@bs.val] [@bs.module "react-dom"]
-external render : (reactElement, element) => unit =
+external render: (reactElement, element) => unit =
   "render";
 
-[@bs.module "f"] external f : int => int = "f";
+[@bs.module "f"] external f: int => int = "f";
 
 [@bs.val] [@bs.module "react"] [@bs.splice]
-external createCompositeElementInternalHack :
+external createCompositeElementInternalHack:
   (
     reactClass,
     {.. "reasonProps": 'props},
@@ -406,18 +406,18 @@ external createCompositeElementInternalHack :
   reactElement =
   "createElement";
 
-external add_nat : (int, int) => int =
+external add_nat: (int, int) => int =
   "add_nat_bytecode" "add_nat_native";
 
 [@bs.module "Bar"]
 [@ocaml.deprecated
   "Use bar instead. It's a much cooler function. This string needs to be a little long"
 ]
-external foo : bool => bool = "";
+external foo: bool => bool = "";
 
 /* Attributes on an entire polymorphic variant leaf */
 [@bs.module "fs"]
-external readFileSync :
+external readFileSync:
   (
     ~name: string,
     [@bs.string] [
@@ -429,7 +429,7 @@ external readFileSync :
   "";
 
 [@bs.module "fs"]
-external readFileSync2 :
+external readFileSync2:
   (
     ~name: string,
     [@bs.string] [
@@ -441,23 +441,24 @@ external readFileSync2 :
   "";
 
 /* Ensure that attributes on extensions are printed */
-[@test [@attr]
-       [%%extension]];
+[@test
+  [@attr]
+  [%%extension]
+];
 
-external debounce :
-  (int, [@bs.meth] unit) => unit =
+external debounce: (int, [@bs.meth] unit) => unit =
   "";
 
-external debounce :
+external debounce:
   int => [@bs.meth] (unit => unit) =
   "";
 
-external debounce :
+external debounce:
   (int, [@bs.meth] (unit => unit)) =>
   [@bs.meth] (unit => unit) =
   "";
 
-external debounce :
+external debounce:
   (
     int,
     [@bs.meth] (unit => unit),
@@ -466,7 +467,7 @@ external debounce :
   [@bs.meth] (unit => unit) =
   "";
 
-external debounce :
+external debounce:
   (
     int,
     [@bs.meth] (unit => unit),
@@ -593,3 +594,25 @@ let test = {
 
 [@test.call string => string]
 let processCommandItem = 12;
+
+module type Foo = {
+  [@someattr]
+  let foo: int => int;
+};
+
+[@bs.deriving abstract]
+type t = {
+  /** Position (in the pre-change coordinate system) where the change ended. */
+  [@bs.as "to"] [@bar]
+  to_: string,
+};
+
+[@bs.deriving abstract]
+type editorConfiguration = {
+  /** Determines whether horizontal cursor movement through right-to-left (Arabic, Hebrew) text
+      is visual (pressing the left arrow moves the cursor left)
+      or logical (pressing the left arrow moves to the next lower index in the string, which is visually right in right-to-left text).
+      The default is false on Windows, and true on other platforms. */
+  [@bs.optional]
+  rtlMoveVisually: bool,
+};

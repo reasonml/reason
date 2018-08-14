@@ -177,20 +177,20 @@ module X = MX;
 
 /** doc attr attached */
 class type x = {
-  pub height: int
+  pub height: int;
 };
 
 /** doc attr with newline */
 
 class type x = {
-  pub height: int
+  pub height: int;
 };
 
 /** doc attr with newline and comment */
 
 /* test */
 class type x = {
-  pub height: int
+  pub height: int;
 };
 
 /** doc attr attached */;
@@ -218,16 +218,16 @@ class type x = {
 [%%obj {a: 1}];
 
 /** doc attached */
-class reason : ocaml;
+class reason: ocaml;
 
 /** doc attached with whitespace */
 
-class reason : ocaml;
+class reason: ocaml;
 
 /** doc attached with whitespace and comment */
 
 /* test */
-class reason : ocaml;
+class reason: ocaml;
 
 /** doc attached */
 module rec X1: Y1

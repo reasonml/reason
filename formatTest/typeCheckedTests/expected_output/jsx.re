@@ -198,7 +198,7 @@ let selfClosing3 =
     a="really long values that should"
     b="cause the entire thing to wrap"
   />;
-let a = <Foo> <Bar c=(a => a + 2) /> </Foo>;
+let a = <Foo> <Bar c={a => a + 2} /> </Foo>;
 let a3 = <So> <Much> <Nesting /> </Much> </So>;
 let a4 =
   <Sibling>
@@ -212,7 +212,7 @@ let a6 =
     <Test yo=1 />
     <Text> "another string" </Text>
     <Bar />
-    <Exp> (2 + 4) </Exp>
+    <Exp> {2 + 4} </Exp>
   </Foo2>;
 let intended = true;
 let punning = <Pun intended />;
@@ -273,7 +273,7 @@ let fragment8 = <> <Foo /> <Foo /> </>;
 let fragment9 = <> 2 2 2 2 </>;
 let fragment10 = <> 2.2 3.2 4.6 1.2 </>;
 let fragment11 = <> "str" </>;
-let fragment12 = <> (6 + 2) (6 + 2) (6 + 2) </>;
+let fragment12 = <> {6 + 2} {6 + 2} {6 + 2} </>;
 let fragment13 = <> fragment11 fragment11 </>;
 let listOfItems1 = <List1> 1 2 3 4 5 </List1>;
 let listOfItems2 =
@@ -475,14 +475,14 @@ fakeRender(defaultArg);
 /* children can be at any position */
 <span test=true foo=2 />;
 
-<Optional1 required=(Some("hi")) />;
+<Optional1 required={Some("hi")} />;
 
 /* preserve some other attributes too! */
 ([@bla] <span test=true foo=2 />);
 ([@bla] <span test=true foo=2 />);
 
-([@bla] <Optional1 required=(Some("hi")) />);
-([@bla] <Optional1 required=(Some("hi")) />);
+([@bla] <Optional1 required={Some("hi")} />);
+([@bla] <Optional1 required={Some("hi")} />);
 
 /* Overeager JSX punning #1099 */
 module Metal = {
@@ -531,7 +531,7 @@ let g = <Two ?foo />;
 /* https://github.com/facebook/reason/issues/1428 */
 <Foo> ...element </Foo>;
 
-<Foo> ...(a => 1) </Foo>;
+<Foo> ...{a => 1} </Foo>;
 
 <Foo> ...<Foo2 /> </Foo>;
 
@@ -545,3 +545,11 @@ module Foo3 = {
 };
 
 <Foo3 bar={<Foo />} />;
+
+let onClickHandler = () => ();
+
+let div = (~onClick, ~children, ()) => ();
+
+<div onClick=onClickHandler>
+  <> "foobar" </>
+</div>;

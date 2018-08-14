@@ -611,9 +611,7 @@ let tupleInsideALetSequence = {
 
 /* We *require* that function return types be wrapped in
    parenthesis. In this example, there's no ambiguity */
-let makeIncrementer =
-    (delta: int)
-    : (int => int) =>
+let makeIncrementer = (delta: int): (int => int) =>
   a => a + delta;
 
 /* We could even force that consistency with let bindings - it's allowed
@@ -635,18 +633,18 @@ class classWithNoArg = {
      end;
    */
 
-let myFunc = (a: int, b: int) : (int, int) => (
+let myFunc = (a: int, b: int): (int, int) => (
   a,
   b,
 );
-let myFunc = (a: int, b: int) : list(int) => [
+let myFunc = (a: int, b: int): list(int) => [
   1,
 ];
-let myFunc = (a: int, b: int) : point => {
+let myFunc = (a: int, b: int): point => {
   x: a,
   y: b,
 };
-let myFunc = (a: int, b: int) : point => {
+let myFunc = (a: int, b: int): point => {
   x: a,
   y: b,
 };
@@ -983,7 +981,7 @@ let A | B | C = X;
 /** External function declaration
  *
  */
-external f : int => int = "foo";
+external f: int => int = "foo";
 
 let x = {contents: 0};
 
@@ -1324,3 +1322,66 @@ let () = x |> Bigarray.Array1.get(_, 1);
 let () = x |> Bigarray.Array2.get(_, 1, 2);
 
 let () = x |> Bigarray.Array3.get(_, 1, 2, 3);
+
+let x = -. 1;
+
+let x = (-1);
+
+let x = 1;
+
+let x = +. 1;
+
+let x = (~a: int=(-1)) => a;
+
+let x = (~a=(-1)) => a;
+
+let x: float = -. 1;
+
+let x: int = (-1);
+
+let x: int = 1;
+
+let x: float = +. 1;
+
+foo(~a=?-1);
+
+/*
+   https://github.com/facebook/reason/issues/1992
+   Pexp_override
+ */
+let z = {<state: 0, x: y>};
+let z = {<>};
+
+/* https://github.com/facebook/reason/issues/2056 */
+type foo = (~a: bool=?) => int;
+
+/* https://github.com/facebook/reason/issues/2070 */
+f(~commit=!build);
+
+/* https://github.com/facebook/reason/issues/2032 */
+let predicate =
+  predicate === Functions.alwaysTrue1 ?
+    defaultPredicate :
+    fun
+    | None => false
+    | Some(exn) => predicate(exn);
+
+let predicate =
+  predicate === Functions.alwaysTrue1 ?
+    fun
+    | None => false
+    | Some(exn) => predicate(exn) :
+    fun
+    | None => false
+    | Some(exn) => predicate(exn);
+
+/* https://github.com/facebook/reason/issues/2125 */
+foo(~a);
+
+foo(~a: int);
+
+foo(~a: int);
+
+foo(~(a :> int));
+
+foo(~(a :> int));

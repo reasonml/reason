@@ -122,7 +122,7 @@ let store_attributes = arg => {
   let proc_name = attributes_file ++ ".proc";
   let should_write =
     /* only overwrite defined procedures */
-    Temp.v || ! Temp.v;
+    Temp.v || !Temp.v;
   if (should_write) {
     Temp.logIt(proc_name, ());
   };

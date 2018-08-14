@@ -2,7 +2,7 @@
   "name": "reason-dev",
   "notes": "This is just the dev package config. See ./scripts/esy/ for release package configs",
   "license": "MIT",
-  "version": "3.2.0",
+  "version": "3.3.3",
   "dependencies": {
     "@esy-ocaml/substs": "^0.0.1",
     "@esy-ocaml/esy-installer": "^0.0.0",
@@ -19,7 +19,7 @@
     "ocaml": " >= 4.2.0  < 4.7.0"
   },
   "devDependencies": {
-    "@opam/merlin": "*",
+    "@esy-ocaml/merlin": "^3.0.5005",
     "ocaml": "~4.6.0"
   },
   "notes-ctd": [
@@ -32,18 +32,24 @@
   ],
   "esy": {
     "build": [
-      [ "jbuilder", "build", "-p", "rebuild,reason,rtop"]
+      [ "jbuilder", "build", "-p", "reason,rtop"]
     ],
     "install": [
-      ["esy-installer", "rebuild.install"],
       ["esy-installer", "reason.install"],
       ["esy-installer", "rtop.install"]
     ],
-    "buildsInSource": "_build"
-  },
-  "resolutions": {
-    "**/@opam/result": "1.2.0",
-    "**/@opam/lwt": "3.3.0",
-    "**/@opam/ocaml-migrate-parsetree": "1.0.10"
+    "buildsInSource": "_build",
+    "_dependenciesForNewEsyInstaller": {
+      "@esy-ocaml/substs": "^0.0.1",
+      "@esy-ocaml/esy-installer": "^0.0.0",
+      "@opam/ocamlfind": "",
+      "@opam/menhir": " >= 20170418.0.0  <= 20171013.0.0",
+      "@opam/utop": " >= 1.17",
+      "@opam/merlin-extend": " >= 0.3",
+      "@opam/result": "*",
+      "@opam/ocaml-migrate-parsetree": "*",
+      "@opam/ocamlbuild": "*",
+      "@opam/jbuilder": "*"
+    }
   }
 }

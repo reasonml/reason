@@ -4,7 +4,7 @@ There's a few native `esy` packages included which are released to npm.
 
 - `reason`
 - `rtop`
-- `rebuild`
+
 These are combined together into a separate package `reason-cli` which
 prebuilds those as well as merlin. They can also be used individually from
 `esy` projects without prebuilding, but they are more or less just npm hosted
@@ -13,19 +13,20 @@ versions of the Opam packages.
 
     git checkout -b MYRELEASE origin/master
     git rebase origin/master
-    vim -O esy.json scripts/esy/esy.reason.json
-    # Then edit the version number accordingly on BOTH files.
-    git commit - "Bump version"
-    git push origin HEAD:PullRequestForVersion
-    node ./scripts/esy-prepublish.js
+    vim -O esy.json src/refmt/esy.json
+    # Then edit the version number accordingly on BOTH files. With that same VERSION do:
+    version=3.3.3 make pre_release
+    git commit -m "Bump version"
+    git push origin HEAD:PullRequestForVersion # Commit these version bumps
+    node scripts/esy-prepublish.js src/refmt src/rtop
 
 Then follow the printed instructions for pushing any of the packages to npm.
 They will show up under `@esy-ocaml/reason` etc.
 
-## Releasing rtop/rebuild
+## Releasing rtop
 
-`rtop` and `rebuild` are also separate `esy` packages hosted on `npm`. You can
-release them in the same way as you released the `reason` package
+`rtop` is also a separate `esy` package hosted on `npm`. You can
+release it in the same way as you released the `reason` package
 
 
 ## When a new version of Reason is pushed, you might like to release some
@@ -33,9 +34,18 @@ prebuilt global installs of refmt, and merlin together in one npm instal.
 `reason-cli` is the project that performs that task, and it packages up
 prebuilts of the packages you already pushed to npm above.
 
-See the [https://github.com/reasonml/reason-cli](reason-cli) page for
+See the [reason-cli](https://github.com/reasonml/reason-cli) page for
 instructions on performing that release.
 
 ## Releasing Native Packages To Opam:
 
-TODO
+*note: it is recommended to install opam-publish via* `opam-depext -i opam-publish`
+
+*Also, the commands below are examples based on specific Reason and rtop versions, the version numbers and possibly source urls will need to be changed to match the relevant release.
+
+1. `cd` into a directory that you don't mind having stuff downloaded into
+2. `opam-publish prepare reason.3.2.0 "https://registry.npmjs.org/@esy-ocaml/reason/-/reason-3.2.0.tgz"`
+3. `opam-publish submit reason.3.2.0`
+4. `opam-publish prepare rtop.3.2.0 "https://registry.npmjs.org/@esy-ocaml/rtop/-/rtop-3.2.0.tgz"`
+5. `opam-publish rtop.3.2.0`
+

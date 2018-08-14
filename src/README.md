@@ -120,13 +120,11 @@ Our lexer & parser use [Menhir](http://gallium.inria.fr/~fpottier/menhir/), a li
 
 - `src/rtop/reason_utop.ml`, `src/rtop/reason_toploop.ml`, `src/rtop/rtop_init.ml`: Reason's [Utop](https://github.com/diml/utop) integration. Utop's the terminal-based REPL you see when executing `utop` (in Reason's case, the wrapper `rtop`).
 
-- `src/reasonbuild/myocamlbuild.ml`: our wrapper for [OCamlbuild](https://ocaml.org/learn/tutorials/ocamlbuild/), a simple build system.
-
 - `*.sh`: some of our binaries' entries.
 
 - `src/rtop/reason_util.ml`, `reason_syntax_util.ml`: utils.
 
-- `src/reason-parser/reactjs_jsx_ppx_v2.ml/v3.ml`: our ReactJS interop that translates [Reason JSX](https://reasonml.github.io/docs/en/jsx.html) into something that ReactJS understands. See the comments in the file and the description in [ReasonReact](https://reasonml.github.io/reason-react/#reason-react-jsx).
+- `src/reason-parser/reactjs_jsx_ppx_v2.ml`: our ReactJS interop that translates [Reason JSX](https://reasonml.github.io/docs/en/jsx.html) into something that ReactJS understands. See the comments in the file and the description in [ReasonReact](https://reasonml.github.io/reason-react/#reason-react-jsx).
 
 - `src/reason-parser-tests/testOprint.ml`: unit tests for the outcome printer mentioned above. See the file for more info on how outcome printing is tested.
 
@@ -201,12 +199,12 @@ Where `foo.re` contains a syntax error. This will result in an error message lik
 
 ```
 File "test2.re", line 4, characters 2-6:
-Error: 2665: <UNKNOWN SYNTAX ERROR>
+Error: 2665: <syntax error>
 ```
 
 Here, the error code is 2665. We then search for this code in `src/reason-parser/reason_parser.messages`.
 
-- If you find it, you can add a better error message instead of the not so descriptive `<UNKNOWN SYNTAX ERROR>`.
+- If you find it, you can add a better error message instead of the not so descriptive `<syntax error>`.
 
 To test the new error message you can run the following commands again:
 
@@ -249,19 +247,17 @@ As you can see from other parts in the parser, many do have a `~loc` assigned to
 
 ## Working With PPX
 
-reactjs_jsx_ppx_v2/v3 uses the ppx system. It works on the AST. It helps being able to see the AST of a particular snippet. Assuming you've written some code in a file `foo.re`, run the following incantation to output the code's AST:
+reactjs_jsx_ppx_v2 uses the ppx system. It works on the AST. It helps being able to see the AST of a particular snippet. Assuming you've written some code in a file `foo.re`, run the following incantation to output the code's AST:
 
 ```
-ocamlc -dparsetree -ppx ./_build/install/default/bin/reactjs_jsx_ppx_v2.native -pp "./_build/install/default/bin/refmt_impl.native --print binary" -impl foo.re
+ocamlc -dparsetree -ppx ./_build/default/src/ppx/reactjs_jsx_ppx_v2.exe -pp "./_build/default/src/refmt/refmt_impl.exe --print binary" -impl foo.re
 ```
 
 That dumps the AST after accepting the ppx and the reason syntax. You can also dump the final code in Reason syntax instead:
 
 ```
-ocamlc -dsource -ppx ./_build/install/default/bin/reactjs_jsx_ppx_v2.native -pp "./_build/install/default/bin/refmt_impl.native --print binary" -impl foo.re | ./_build/install/default/bin/refmt_impl.native --parse ml --print re --interface false
+ocamlc -dsource -ppx ./_build/default/src/ppx/reactjs_jsx_ppx_v2.exe -pp "./_build/default/src/refmt/refmt_impl.exe --print binary" -impl foo.re | ./_build/default/src/refmt/refmt_impl.exe --parse ml --print re --interface false
 ```
-
-(Similar steps for reactjs_jsx_ppx_v3.)
 
 ## Testing Two Different Syntax Versions
 

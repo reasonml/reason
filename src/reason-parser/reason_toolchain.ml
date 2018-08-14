@@ -610,6 +610,15 @@ module Reason_syntax = struct
     | Reason_parser.EXCEPTION
     | Reason_parser.INCLUDE
     | Reason_parser.DOCSTRING _
+    | Reason_parser.LIDENT _
+    | Reason_parser.UIDENT _
+    | Reason_parser.IF
+    | Reason_parser.WHILE
+    | Reason_parser.FOR
+    | Reason_parser.SWITCH
+    | Reason_parser.TRY
+    | Reason_parser.ASSERT
+    | Reason_parser.LAZY
     | Reason_parser.LBRACKETAT -> true
     | _ -> false
 

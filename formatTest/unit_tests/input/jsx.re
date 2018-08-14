@@ -152,3 +152,88 @@ Module.[<Component />];
 let (/></) = (a, b) => a + b;
 
 let x = foo /></ bar;
+
+/* https://github.com/facebook/reason/issues/870 */
+<div onClick=this##handleClick>
+  <>foo</>
+</div>;
+
+<div onClick=this##handleClick>
+  <>(foo(bar))</>
+</div>;
+
+/* function application */
+<div onClick=this##handleClick>
+  <>{foo(bar)}</>
+</div>;
+
+/* tuple, not function application */
+<div onClick=this##handleClick>
+  <> foo(bar) </>
+</div>;
+
+/* https://github.com/facebook/reason/issues/2020 */
+<div></div >;
+
+<div>foo</ div>;
+
+<div> </ div >;
+
+<Component
+  accept=(
+    fun
+    | Foo => true
+    | Bar => false
+  )
+/>;
+
+<C
+  prop=M.{
+         a: "xxxxxxxxxxxxxxxxxxxxxx",
+         b: "xxxxxxxxxxxxxxxxxxxxxx",
+         c: "xxxxxxxxxxxxxxxxxxxxxx",
+       }
+/>;
+
+<C
+  prop=M.[
+         "xxxxxxxxxxxxxxxxxxxxxx",
+         "xxxxxxxxxxxxxxxxxxxxxx",
+         "xxxxxxxxxxxxxxxxxxxxxx",
+       ]
+/>;
+
+<C
+  prop=M.[|
+         "xxxxxxxxxxxxxxxxxxxxxx",
+         "xxxxxxxxxxxxxxxxxxxxxx",
+         "xxxxxxxxxxxxxxxxxxxxxx",
+       |]
+/>;
+
+<C
+  prop=M.(
+    "xxxxxxxxxxxxxxxxxxxxxx",
+    "xxxxxxxxxxxxxxxxxxxxxx",
+    "xxxxxxxxxxxxxxxxxxxxxx",
+  )
+/>;
+
+<C
+  prop=M.(Foo(
+    "xxxxxxxxxxxxxxxxxxxxxx",
+    "xxxxxxxxxxxxxxxxxxxxxx",
+    "xxxxxxxxxxxxxxxxxxxxxx",
+  ))
+/>;
+
+/* https://github.com/facebook/reason/issues/2028 */
+<Foo bar=M.[]></Foo>;
+
+<Foo bar=M.[]> M.[] </Foo>;
+
+<Foo bar=M.[]> ...M.[] </Foo>;
+
+switch(foo) {
+| `Variant =><Component />
+};

@@ -353,18 +353,6 @@ let () =
           None
     )
 
-(* To "unlex" a few characters *)
-let set_lexeme_length buf n = (
-  let open Lexing in
-  if n < 0 then
-    invalid_arg "set_lexeme_length: offset should be positive";
-  if n > buf.lex_curr_pos - buf.lex_start_pos then
-    invalid_arg "set_lexeme_length: offset larger than lexeme";
-  buf.lex_curr_pos <- buf.lex_start_pos + n;
-  buf.lex_curr_p <- {buf.lex_start_p
-                     with pos_cnum = buf.lex_abs_pos + buf.lex_curr_pos};
-)
-
 }
 
 
@@ -439,9 +427,6 @@ rule token = parse
         with Not_found -> LIDENT s }
   | lowercase_latin1 identchar_latin1 *
       { warn_latin1 lexbuf; LIDENT (Lexing.lexeme lexbuf) }
-  | "~" lowercase identchar * "="
-      { let l = Lexing.lexeme lexbuf in
-        LABEL_WITH_EQUAL(String.sub l 1 (String.length l - 2)) }
   | uppercase identchar *
       { UIDENT(Lexing.lexeme lexbuf) }       (* No capitalized keywords *)
   | uppercase_latin1 identchar_latin1 *
@@ -496,8 +481,9 @@ rule token = parse
   | "#=<" {
     (* Allow parsing of foo#=<bar /> *)
     set_lexeme_length lexbuf 2;
-    SHARPOP("#=")
+    SHARPEQUAL
   }
+  | "#=" { SHARPEQUAL }
   | "#" operator_chars+
       { SHARPOP(lexeme_operator lexbuf) }
   | "?" operator_chars+
@@ -518,6 +504,11 @@ rule token = parse
   | ","  { COMMA }
   | "->" { MINUSGREATER }
   | "=>" { EQUALGREATER }
+  (* allow lexing of | `Variant =><Component /> *)
+  | "=><" uppercase_or_lowercase (identchar | '.') * {
+    set_lexeme_length lexbuf 2;
+    EQUALGREATER
+  }
   | "#"  { SHARP }
   | "."  { DOT }
   | ".." { DOTDOT }
@@ -538,14 +529,26 @@ rule token = parse
     let buf = Lexing.lexeme lexbuf in
     LESSIDENT (String.sub buf 1 (String.length buf - 1))
   }
+  (* Allow parsing of Pexp_override:
+   * let z = {<state: 0, x: y>};
+   *
+   * Make sure {<state is emitted as LBRACELESS.
+   * This contrasts with jsx:
+   * in a jsx context {<div needs to be LBRACE LESS (two tokens)
+   * for a valid parse.
+   *)
+  | "{<" uppercase_or_lowercase identchar* blank*  ":" {
+    set_lexeme_length lexbuf 2;
+    LBRACELESS
+  }
   | "{<" uppercase_or_lowercase (identchar | '.') * {
     (* allows parsing of `{<Text` in <Description term={<Text text="Age" />}> as correct jsx *)
     set_lexeme_length lexbuf 1;
     LBRACE
   }
-  | "</" uppercase_or_lowercase (identchar | '.') * ">" {
+  | "</" blank* uppercase_or_lowercase (identchar | '.') * blank* ">" {
     let buf = Lexing.lexeme lexbuf in
-    LESSSLASHIDENTGREATER (String.sub buf 2 (String.length buf - 2 - 1))
+    LESSSLASHIDENTGREATER (String.trim (String.sub buf 2 (String.length buf - 2 - 1)))
   }
   | "]"  { RBRACKET }
   | "{"  { LBRACE }
@@ -609,8 +612,14 @@ rule token = parse
   | "<..>" { LESSDOTDOTGREATER }
   | '\\'? ['~' '?' '!'] operator_chars+
             { PREFIXOP(lexeme_operator lexbuf) }
-  | '\\'? ['=' '<' '>' '|' '&' '$'] operator_chars*
-            { INFIXOP0(lexeme_operator lexbuf) }
+  | '\\'? ['<' '>' '|' '&' '$'] operator_chars*
+            {
+              INFIXOP0(lexeme_operator lexbuf)
+            }
+  | "\\=" operator_chars*
+      { INFIXOP0(lexeme_operator lexbuf) }
+  | '=' operator_chars+
+      { INFIXOP_WITH_EQUAL(lexeme_operator lexbuf) }
   | '\\'? '@' operator_chars*
             { INFIXOP1(lexeme_operator lexbuf) }
   | '\\'? '^' ('\\' '.')? operator_chars*
@@ -1035,14 +1044,17 @@ and skip_sharp_bang = parse
   let completion_ident_pos = ref Lexing.dummy_pos
 
   let token lexbuf =
-    let before = lexbuf.Lexing.lex_curr_p.Lexing.pos_cnum in
+    let space_start = lexbuf.Lexing.lex_curr_p.Lexing.pos_cnum in
     let token = token lexbuf in
-    let after = lexbuf.Lexing.lex_start_p.Lexing.pos_cnum in
+    let token_start = lexbuf.Lexing.lex_start_p.Lexing.pos_cnum in
+    let token_stop = lexbuf.Lexing.lex_curr_p.Lexing.pos_cnum in
     if !completion_ident_offset > min_int &&
-       before <= !completion_ident_offset &&
-       after >= !completion_ident_offset then (
+       space_start <= !completion_ident_offset &&
+       token_stop >= !completion_ident_offset then (
       match token with
-      | LIDENT _ | UIDENT _ when after = !completion_ident_offset -> token
+      | LIDENT _ | UIDENT _ when token_start <= !completion_ident_offset ->
+          completion_ident_offset := min_int;
+          token
       | _ ->
         queued_tokens := save_triple lexbuf token :: !queued_tokens;
         completion_ident_offset := min_int;

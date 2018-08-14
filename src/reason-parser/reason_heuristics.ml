@@ -95,3 +95,26 @@ let isUnderscoreIdent expr =
   match Ast_404.Parsetree.(expr.pexp_desc) with
   | Pexp_ident ({txt = Lident "_"}) -> true
   | _ -> false
+
+let isFastPipe e = match Ast_404.Parsetree.(e.pexp_desc) with
+  | Pexp_ident({txt = Longident.Lident("|.")}) -> true
+  | Pexp_apply(
+      {pexp_desc = Pexp_ident({txt = Longident.Lident("|.")})},
+      _
+    ) -> true
+  | _ -> false
+
+let isUnderscoreApplication expr =
+  let open Ast_404.Parsetree in
+  match expr with
+  | {pexp_attributes = []; pexp_desc = Pexp_fun(
+        Nolabel,
+        None,
+        {
+          ppat_desc = Ppat_var({txt = "__x"});
+          ppat_attributes = []
+        },
+        _
+      )
+    } -> true
+  | _ -> false

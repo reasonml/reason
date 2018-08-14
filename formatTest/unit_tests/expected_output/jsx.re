@@ -10,14 +10,14 @@ let x =
       "justifyContent": CssJustifySpaceBetween,
       "flexDirection": CssFlexDirectionRow,
     }
-    onKey=(updater(handleInput))
+    onKey={updater(handleInput)}
   />;
 
 let y =
   <Routes
-    path=(Routes.stateToPath(state))
+    path={Routes.stateToPath(state)}
     isHistorical=true
-    onHashChange=(
+    onHashChange={
       (_oldPath, _oldUrl, newUrl) =>
         updater(
           (latestComponentBag, _) => {
@@ -39,12 +39,12 @@ let y =
           },
           (),
         )
-    )
+    }
   />;
 
 let z =
   <div
-    style=(
+    style={
       ReactDOMRe.Style.make(
         ~width,
         ~height,
@@ -57,8 +57,8 @@ let z =
         ~someOtherAttribute,
         (),
       )
-    )
-    key=(string_of_int(1))
+    }
+    key={string_of_int(1)}
   />;
 
 let omega =
@@ -74,7 +74,7 @@ let omega =
       borderColor,
       someOtherAttribute,
     ]
-    key=(string_of_int(1))
+    key={string_of_int(1)}
   />;
 
 let someArray =
@@ -90,7 +90,7 @@ let someArray =
       borderColor,
       someOtherAttribute,
     |]
-    key=(string_of_int(1))
+    key={string_of_int(1)}
   />;
 
 let tuples =
@@ -107,29 +107,29 @@ let tuples =
       someOtherAttribute,
       definitelyBreakere,
     )
-    key=(string_of_int(1))
+    key={string_of_int(1)}
   />;
 
 let icon =
   <Icon
-    name=(
+    name={
       switch (state.volume) {
       | v when v < 0.1 => "sound-off"
       | v when v < 0.11 => "sound-min"
       | v when v < 0.51 => "sound-med"
       | _ => "sound-max"
       }
-    )
+    }
   />;
 
 <MessengerSharedPhotosAlbumViewPhotoReact
-  ref=?(
+  ref=?{
     foo##bar === baz ?
       Some(
         foooooooooooooooooooooooo(setRefChild),
       ) :
       None
-  )
+  }
   key=node##legacy_attachment_id
 />;
 
@@ -146,9 +146,9 @@ let x = <div />;
 
 <div asd=1 />;
 
-foo#=<bar />;
+foo #= <bar />;
 
-foo#=<bar />;
+foo #= <bar />;
 
 let x = [|<div />|];
 
@@ -175,19 +175,19 @@ let y = [
   child
 </Description>;
 <Description
-  term=(
+  term={
     Text.createElement(
       ~text="Age",
       ~children=[],
       (),
     )
-  )>
+  }>
   child
 </Description>;
 <Description
-  term=(
+  term={
     [@JSX] Text.createElement(~text="Age", ())
-  )>
+  }>
   child
 </Description>;
 
@@ -211,22 +211,22 @@ let y = [
   }
 />;
 
-<div> <span> (str("hello")) </span> </div>;
+<div> <span> {str("hello")} </span> </div>;
 
 <description term={<text text="Age" />}>
   child
 </description>;
 
 <description
-  term=(text(~text="Age", ~children=[], ()))>
+  term={text(~text="Age", ~children=[], ())}>
   child
 </description>;
 <description
-  term=([@JSX] text(~text="Age", ~children=[]))>
+  term={[@JSX] text(~text="Age", ~children=[])}>
   child
 </description>;
 <description
-  term=([@JSX] text(~text="Age", ()))>
+  term={[@JSX] text(~text="Age", ())}>
   child
 </description>;
 
@@ -251,3 +251,92 @@ Module.[<Component />];
 let (/></) = (a, b) => a + b;
 
 let x = foo /></ bar;
+
+/* https://github.com/facebook/reason/issues/870 */
+<div onClick=this##handleClick>
+  <> foo </>
+</div>;
+
+<div onClick=this##handleClick>
+  <> {foo(bar)} </>
+</div>;
+
+/* function application */
+<div onClick=this##handleClick>
+  <> {foo(bar)} </>
+</div>;
+
+/* tuple, not function application */
+<div onClick=this##handleClick>
+  <> foo bar </>
+</div>;
+
+/* https://github.com/facebook/reason/issues/2020 */
+<div />;
+
+<div> foo </div>;
+
+<div />;
+
+<Component
+  accept={
+    fun
+    | Foo => true
+    | Bar => false
+  }
+/>;
+
+<C
+  prop=M.{
+    a: "xxxxxxxxxxxxxxxxxxxxxx",
+    b: "xxxxxxxxxxxxxxxxxxxxxx",
+    c: "xxxxxxxxxxxxxxxxxxxxxx",
+  }
+/>;
+
+<C
+  prop=M.[
+    "xxxxxxxxxxxxxxxxxxxxxx",
+    "xxxxxxxxxxxxxxxxxxxxxx",
+    "xxxxxxxxxxxxxxxxxxxxxx",
+  ]
+/>;
+
+<C
+  prop=M.(
+    [|
+      "xxxxxxxxxxxxxxxxxxxxxx",
+      "xxxxxxxxxxxxxxxxxxxxxx",
+      "xxxxxxxxxxxxxxxxxxxxxx",
+    |]
+  )
+/>;
+
+<C
+  prop=M.(
+    "xxxxxxxxxxxxxxxxxxxxxx",
+    "xxxxxxxxxxxxxxxxxxxxxx",
+    "xxxxxxxxxxxxxxxxxxxxxx",
+  )
+/>;
+
+<C
+  prop=M.(
+    Foo(
+      "xxxxxxxxxxxxxxxxxxxxxx",
+      "xxxxxxxxxxxxxxxxxxxxxx",
+      "xxxxxxxxxxxxxxxxxxxxxx",
+    )
+  )
+/>;
+
+/* https://github.com/facebook/reason/issues/2028 */
+<Foo bar=M.[] />;
+
+<Foo bar=M.[]> M.[] </Foo>;
+
+<Foo bar=M.[]> ...M.[] </Foo>;
+
+switch (foo) {
+| `Variant => <Component />
+};

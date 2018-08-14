@@ -1,8 +1,8 @@
 (jbuild_version 1)
 
 (executables
- ((names (ppx_react reactjs_jsx_ppx_v2 reactjs_jsx_ppx_v3))
-  (public_names (ppx_react reactjs_jsx_ppx_v2 reactjs_jsx_ppx_v3))
+ ((names (reactjs_jsx_ppx_v2))
+  (public_names (reactjs_jsx_ppx_v2))
   (package reason)
   (libraries
-   (reason ocaml-migrate-parsetree ))))
+   (reason ocaml-migrate-parsetree))))

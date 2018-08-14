@@ -2079,7 +2079,7 @@ let (
   "wrap",
 );
 
-let myPolyFunc: 'a .'a => 'a = o => o;
+let myPolyFunc: 'a. 'a => 'a = o => o;
 let myNonPolyFunc: 'a => 'a = o => o;
 
 let locallyAbstractFunc = (type a, input: a) => input;
@@ -2092,7 +2092,7 @@ let locallyAbstractFuncAnnotated: type a. a => a =
   Examples of how long versions of these should be wrapped: df stands for
   "desired formatting" when the function binding itself must wrap.
  */
-let df_myPolyFunc: 'a .'a => 'a = o => o;
+let df_myPolyFunc: 'a. 'a => 'a = o => o;
 let df_myNonPolyFunc: 'a => 'a = o => o;
 
 type nameBlahType = {nameBlah: int};
@@ -2195,7 +2195,7 @@ let df_locallyAbstractFuncAnnotated: 'figureMeOut =
   );
 
 let createTuple_thisFuncShouldWrapCorrectlyNow:
-  'a .
+  'a.
   ('a, 'a, 'a) => ('a, 'a, 'a)
  =
   (someVar, someVar2, someVar3) => (
@@ -2350,17 +2350,14 @@ and anotherRecursiveType =
  */
 type term(_) =
   /* First variant leaf of GADT */
-  | Int /*first var arg */(int): /* First GADT res */ term(
-                                    int,
-                                  )
+  | Int /*first var arg */(int)
+    : /* First GADT res */ term(int)
   /* Second variant leaf of GADT */
-  | Float /*second var arg */(int): /* Second GADT res */ term(
-                                       int,
-                                     )
+  | Float /*second var arg */(int)
+    : /* Second GADT res */ term(int)
   /* Third variant leaf of GADT */
-  | Bool /*third var arg */(int): /* Third GADT res */ term(
-                                     int,
-                                   );
+  | Bool /*third var arg */(int)
+    : /* Third GADT res */ term(int);
 
 /* Commented colors */
 type commentedTypeDef =
@@ -2471,14 +2468,14 @@ let letsPutAWhereClauseOnTheLast = x =>
   };
 
 type wrappingGadt(_) =
-  | ThisIsLongSoTypeWillWrap(int): wrappingGadt(
-                                      int,
-                                    )
+  | ThisIsLongSoTypeWillWrap(int)
+    : wrappingGadt(int)
   | Add: wrappingGadt((int, int) => int)
   | App(
-         wrappingGadt('b => 'a),
-         wrappingGadt('b),
-       ): wrappingGadt('a);
+      wrappingGadt('b => 'a),
+      wrappingGadt('b),
+    )
+    : wrappingGadt('a);
 
 type withThreeFields = {
   name: string,
@@ -2678,24 +2675,24 @@ let produceRecord = x => /*commentAfterArg*/ {
 };
 
 let myPolyFuncCommentBeforeColon /*beforeColon */:
-  'a .
+  'a.
   'a => 'a
  =
   o => o;
-let myPolyFuncCommentAfterColon: 'a .'a => 'a =
+let myPolyFuncCommentAfterColon: 'a. 'a => 'a =
   /*afterColon */
   o => o;
-let myPolyFuncCommentBeforeArrow: 'a .'a => 'a =
+let myPolyFuncCommentBeforeArrow: 'a. 'a => 'a =
   /*beforeArrow */
   o => o;
 let myPolyFuncCommentAfterArrow:
-  'a .
+  'a.
   'a => /*afterArrow */ 'a
  =
   o => o;
 /* THIS IS THE ONLY TEST THAT IS FAILING DUE TO BEING NON-IDEMPOTENT */
 /* let myPolyFuncCommentBeforeEqual : 'a . ('a) => 'a /*beforeEqual */  = fun(o) => o; */
-let myPolyFuncCommentAfterEqual: 'a .'a => 'a =
+let myPolyFuncCommentAfterEqual: 'a. 'a => 'a =
   /*afterEqual */ o => o;
 
 let myNonPolyFuncCommentBeforeColon /*BeforeColon */:

@@ -4,16 +4,25 @@ This makes our installation much friendlier to e.g. Windows. BuckleScript curren
 
 ## Build
 
-First, install the dependencies:
+This whole process needs to happen with OCaml 4.02.3, so make sure you switch to that version first:
+
+```sh
+opam switch 4.02.3
+```
+
+Build / install the main Reason repo. Follow the instructions in https://github.com/facebook/reason/blob/master/src/README.md#contributor-setup.
+
+Then, install the dependencies:
 
 ```sh
 opam install js_of_ocaml.3.0
+opam install utop
 cd .. && npm install
 ```
 
-Also, have `java` installed in your system. This is needed to use closure compiler to compress the final `refmt.js`.
+Also, have `java` installed in your system. This is needed to use closure compiler to compress the final `refmt.js`. In most cases, this means installing the [Java Development Kit](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html).
 
-Now, go back to project root and run:
+Now, from the project root run:
 
 ```sh
 version=VERSION_NUMBER_HERE npm run prepublishOnly

@@ -675,18 +675,18 @@ let myOptional           (~a=?,    ~b=?,      ()) = 10;
 type named =             (~a: int=?, ~b: int=?, unit) => int;
 /*F*/
 let optionalAlias        (~a as aa=?,  ~b as bb=?,  ()) = 10;
-/*G*/                       
+/*G*/
 let optionalAnnot        (~a as a:int =?, ~b as b:int=?, ()) = 10;
-/*H*/                       
+/*H*/
 let optionalAliasAnnot   (~a as aa:int =?, ~b as bb:int=?, ()) = 10;
-/*I: */                     
+/*I: */
 let defOptional          (~a as a=10, ~b as b=10, ()) = 10;
 type named =             (~a: int=?, ~b: int=?, unit) => int;
-/*J*/                       
+/*J*/
 let defOptionalAlias     (~a as aa=10, ~b as bb=10, ()) = 10;
-/*K*/                       
+/*K*/
 let defOptionalAnnot     (~a as a:int=10, ~b as b:int=10, ()) = 10;
-/*L*/                       
+/*L*/
 let defOptionalAliasAnnot(~a as aa:int=10, ~b as bb:int=10, ()) = 10;
 
 /*M: Invoking them - Punned */
@@ -1148,3 +1148,66 @@ let () = x |> Bigarray.Array1.get(_, 1);
 let () = x |> Bigarray.Array2.get(_, 1, 2);
 
 let () = x |> Bigarray.Array3.get(_, 1, 2, 3);
+
+let x=-.1;
+
+let x=-1;
+
+let x=+1;
+
+let x=+.1;
+
+let x = (~a: int=- 1) => a;
+
+let x = (~a=-1) => a;
+
+let x: float=-.1;
+
+let x: int =-1;
+
+let x: int=+1;
+
+let x: float =+. 1;
+
+foo(~a=?-1);
+
+/*
+  https://github.com/facebook/reason/issues/1992
+  Pexp_override
+*/
+let z = {<state: 0, x: y>};
+let z = {<>};
+
+/* https://github.com/facebook/reason/issues/2056 */
+type foo = ~a:bool=? => int;
+
+/* https://github.com/facebook/reason/issues/2070 */
+f(~commit=!build);
+
+/* https://github.com/facebook/reason/issues/2032 */
+let predicate =
+  predicate === Functions.alwaysTrue1 ?
+    defaultPredicate :
+    (fun
+      | None => false
+      | Some(exn) => predicate(exn));
+
+let predicate =
+  predicate === Functions.alwaysTrue1 ?
+    (fun
+      | None => false
+      | Some(exn) => predicate(exn)) :
+    (fun
+      | None => false
+      | Some(exn) => predicate(exn));
+
+/* https://github.com/facebook/reason/issues/2125 */
+foo(~a);
+
+foo(~a: int);
+
+foo(~(a: int));
+
+foo(~(a :> int));
+
+foo(~a :> int);

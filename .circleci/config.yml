@@ -112,7 +112,7 @@ jobs:
           <<: *esy_post_build_cache_key
       - run:
           name: "Install esy"
-          command: npm install -g esy@next
+          command: npm install -g esy@preview
       - run:
           name: 'Clean'
           command: make clean-for-ci

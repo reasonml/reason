@@ -1,32 +1,34 @@
-/* don't auto-format this file until https://github.com/facebook/reason/issues/904 is resolved */
+
 
 /* test setup dummy modules. These are here to make the transform pass the type checker. Also helps validating our transforms thanks to types */
 
 module ReactDOMRe = {
-  let createElement (tag, ~props=?, children) = 1;
-  let props (~className=?, ~width=?, ~comp=?, ~compCallback=?, ()) = 1;
+  let createElement = (tag, ~props=?, children: array('a)) => 1;
+  let createElementVariadic = (tag, ~props=?, children: array('a)) => 1;
+  let props = (~className=?, ~width=?, ~comp=?, ~compCallback=?, ()) => 1;
 };
 
 module Foo = {
-  let make (~className=?, ~width=?, ~comp=?, ~bar=?, children) = 1;
-  let createElement (~className=?, ~ref=?, ~key=?, ~width=?, ~comp=?, ~bar=?, ~children, ()) = 1;
+  let make = (~className=?, ~width=?, ~comp=?, ~bar=?, children) => 1;
+  let createElement = (~className=?, ~ref=?, ~key=?, ~width=?, ~comp=?, ~bar=?, ~children, ()) => 1;
   module Bar = {
-    let make (~className=?, children) = 1;
-    let createElement (~className=?, ~ref=?, ~key=?, ~children, ()) = 1;
+    let make = (~className=?, children) => 1;
+    let createElement = (~className=?, ~ref=?, ~key=?, ~children, ()) => 1;
   };
 };
 
 module Bar = {
-  let make (~bar=?, children) = 1;
-  let createElement (~bar=?, ~children, ()) = 1;
+  let make = (~bar=?, children) => 1;
+  let createElement = (~bar=?, ~children, ()) => 1;
 };
 
 module ReasonReact = {
-  let element (~key=?, ~ref=?, component) = 1;
+  let element = (~key=?, ~ref=?, component) => 1;
+  let fragment = (children: array('a)) => 1;
 };
 
 let divRef = <div />;
-
+let divRefs = [|<div />|];
 
 "=== DOM component ===";
 
@@ -104,7 +106,21 @@ let divRef = <div />;
 
 <Foo comp=(<Bar> ...divRef </Bar>)> ...<li /> </Foo>;
 
-<div comp=(<Bar> ...divRef </Bar>)> ...<li /> </div>;
+<div comp=(<Bar> ...divRef </Bar>)> </div>;
+
+"=== Special transform for DOM component with a single child spread ===";
+
+<div> ...divRefs </div>;
+
+<div> ...((() => divRefs)()) </div>;
+
+<div className="hi"> ...divRefs </div>;
+
+<div className="hi"> ...((() => divRefs)()) </div>;
+
+<div> ...[] </div>;
+
+<div> ...[<div />] </div>;
 
 "=== With ref/key ===";
 
@@ -121,3 +137,17 @@ let divRef = <div />;
   correct ReasonReact-specific call */
 
 ([@JSX] Foo.make(~children=[], ()));
+
+"=== Fragment ===";
+
+<> </>;
+
+<> 1 </>;
+
+<> <> <div /> </> </>;
+
+<> <> </> 2 </>;
+
+<> <Foo> 1 </Foo> </>;
+
+<> <div comp=(<Bar> ...divRef </Bar>)> </div> </>;

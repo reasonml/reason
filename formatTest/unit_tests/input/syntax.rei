@@ -27,3 +27,8 @@ let myRecordWithFunctions: adders;
  * Public result.
  */
 let result: int;
+
+/* https://github.com/facebook/reason/issues/1614 */
+module Event: (module type of { include ReactEventRe; });
+
+module type Event = (module type of { include ReactEventRe; });
