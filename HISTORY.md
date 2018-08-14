@@ -1,3 +1,13 @@
+## 3.3.3
+
+- More fixes for fast pipe ([2120](https://github.com/facebook/reason/pull/2120), [2119](https://github.com/facebook/reason/pull/2119), [2111](https://github.com/facebook/reason/pull/2111)).
+- Fix regressed printing of first-class module ([2124](https://github.com/facebook/reason/pull/2124)).
+- Fix local open printing for `bs.obj` ([2123](https://github.com/facebook/reason/pull/2123)).
+- fix printing of `foo[(bar + 1)]` to `foo[bar + 1]` ([2110](https://github.com/facebook/reason/pull/2110)).
+- Only wrap `fun` in parentheses when necessary ([2033](https://github.com/facebook/reason/pull/2033)).
+- Change all precedence printing to braces for consistency inside JSX ([2106](https://github.com/facebook/reason/pull/2106)).
+- Format docblock comments above std attrs on record rows ([2105](https://github.com/facebook/reason/pull/2105)).
+
 ## 3.3.2
 
 Big release! No breaking change. Big shout out to [@anmonteiro](https://twitter.com/anmonteiro90) and [@iwanKaramazow](https://twitter.com/_iwan_refmt)!
