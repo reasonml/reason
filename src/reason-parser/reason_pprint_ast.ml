@@ -5075,7 +5075,7 @@ let printer = object(self:'self)
             | (true, {pexp_desc=Pexp_tuple exprs}, {ppat_desc=Ppat_tuple pats}) ->
             (* when List.length exprs = List.length pats -> *)
               let pairs = List.combine exprs pats
-              |> List.map (fun (exp, pat) -> Ast_helper.Vb.mk ~loc:expr.pexp_loc pat exp) in
+              |> List.map (fun (exp, pat) -> Ast_helper.Vb.mk ~loc:exp.pexp_loc pat exp) in
               begin
               match pairs with
               | [] -> assert(false)

@@ -923,36 +923,29 @@ let continuation_passing_style_of_let_bindings attr lbs body =
         (Nolabel, Exp.fun_ ~loc:attr.loc Nolabel None one.pvb_pat body)
       ]
     | _ ->
-      let (exprs, pats) = lbs.lbs_bindings
-      |> List.map (fun binding -> (binding.pvb_expr, binding.pvb_pat))
-      |> List.split in
-      let expr = Ast_helper.Exp.tuple ~loc:lbs.lbs_loc exprs in
-      let pat = Ast_helper.Pat.tuple ~loc:lbs.lbs_loc pats in
-      Exp.apply
-      ~attrs:[
-        simple_ghost_refmt_text_attr Reason_attrs.letCPSTag;
-        simple_ghost_refmt_text_attr Reason_attrs.letCPSMulti
-      ]
-      ~loc:lbs.lbs_loc
-      (Exp.ident ~loc:attr.loc attr) [
-        (Nolabel, expr);
-        (Nolabel, Exp.fun_ ~loc:attr.loc Nolabel None pat body)
-      ]
-
+      raise Syntaxerr.(Error(Not_expecting(lbs.lbs_loc, "Cannot have `and` in a `let!foo` construct.")))
 
 let expr_of_let_bindings lbs body =
   (* The location of this expression unfortunately includes the entire rule,
    * which will include any preceeding extensions. *)
-  let item_expr = match lbs.lbs_bang with
-    | Some attr -> continuation_passing_style_of_let_bindings attr lbs body
-    | None -> Exp.let_ lbs.lbs_rec lbs.lbs_bindings body in
-  match lbs.lbs_extension with
-  | None -> item_expr
-  | Some ext -> expression_extension ext item_expr
+  match lbs.lbs_bang with
+  | Some attr ->
+    if lbs.lbs_extension <> None then
+      raise Syntaxerr.(Error(Not_expecting(lbs.lbs_loc, "let!foo cannot be combined with let%foo")));
+    continuation_passing_style_of_let_bindings attr lbs body
+  | None ->
+    let item_expr = Exp.let_ lbs.lbs_rec lbs.lbs_bindings body in
+    begin
+    match lbs.lbs_extension with
+    | None -> item_expr
+    | Some ext -> expression_extension ext item_expr
+    end
 
 let class_of_let_bindings lbs body =
   if lbs.lbs_extension <> None then
     raise Syntaxerr.(Error(Not_expecting(lbs.lbs_loc, "extension")));
+  if lbs.lbs_bang <> None then
+    raise Syntaxerr.(Error(Not_expecting(lbs.lbs_loc, "let!foo is not allowed in class bindings")));
   Cl.let_ lbs.lbs_rec lbs.lbs_bindings body
 
 (*

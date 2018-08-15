@@ -82,15 +82,10 @@ let opt = (value, fn) =>
   | Some(x) => fn(x)
   };
 
-let opt2 = (values, fn) =>
-  switch (values) {
-  | (Some(a), Some(b)) => fn((a, b))
-  | _ => None
-  };
-
 let _ = {
   let!opt x = Some(10);
-  let!opt2 a = Some(2)
-  and b = Some(5);
-  Some(a + x * b);
+  let!opt a = Some(2);
+  print_endline(string_of_int(a));
+
+  Some(a + x);
 };

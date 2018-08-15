@@ -15,7 +15,6 @@ module T = struct
     uncurried : bool
   }
 end
-open T
 
 let letCPSTag = "let_continuation_passing_style"
 let letCPSMulti = "let_continuation_passing_style_multi"
@@ -45,7 +44,8 @@ let isRefmtExplicitBraces = isRefmt ~filter:(Some "explicitBraces")
 let isRefmtInlineOpen = isRefmt ~filter:(Some "inlineOpen")
 
 (** Partition attributes into kinds *)
-let rec partitionAttributes ?(partDoc=false) ?(allowUncurry=true) attrs : attributesPartition =
+let rec partitionAttributes ?(partDoc=false) ?(allowUncurry=true) attrs : T.attributesPartition =
+  let open T in
   match attrs with
     | [] ->
       {arityAttrs=[]; docAttrs=[]; stdAttrs=[]; jsxAttrs=[]; refmtAttrs=[]; literalAttrs=[]; uncurried = false}
