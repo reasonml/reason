@@ -1433,7 +1433,6 @@ conflicts.
 %on_error_reduce structure_item let_binding_body
                  as_loc(attribute)+
                  type_longident
-                 attribute+
                  constr_longident
                  pattern
                  nonrec_flag
