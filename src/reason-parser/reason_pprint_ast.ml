@@ -5071,28 +5071,9 @@ let printer = object(self:'self)
         | (attrs, Pexp_apply ({pexp_desc=Pexp_ident lid}, [Nolabel, arg; Nolabel, {pexp_desc=Pexp_fun (Nolabel, None, pat, body)}])) when Reason_attrs.hasRefmtTag Reason_attrs.letCPSTag refmtAttrs ->
           (* let!foo x = y; z   <->   foo(y, x => z) *)
            let fnIdent = String.concat "." (Longident.flatten lid.txt) in
-           let (bindings, bindingsLayout) = match (Reason_attrs.hasRefmtTag Reason_attrs.letCPSMulti refmtAttrs, arg, pat) with
-            | (true, {pexp_desc=Pexp_tuple exprs}, {ppat_desc=Ppat_tuple pats}) ->
-            (* when List.length exprs = List.length pats -> *)
-              let pairs = List.combine exprs pats
-              |> List.map (fun (exp, pat) -> Ast_helper.Vb.mk ~loc:exp.pexp_loc pat exp) in
-              begin
-              match pairs with
-              | [] -> assert(false)
-              | first::rest ->
-                let first = self#binding ("let!" ^ fnIdent) first in
-                (pairs,makeList
-                  ~postSpace:true
-                  ~break:Always
-                  ~indent:0
-                  ~inline:(true, true)
-                  (first :: List.map (self#binding "and") rest))
-              end
-            | _ ->
-              let binding = Ast_helper.Vb.mk ~loc:expr.pexp_loc pat arg in
-              let bindingsLayout = self#binding ("let!" ^ fnIdent) binding in
-              ([binding], bindingsLayout)
-           in
+           let binding = Ast_helper.Vb.mk ~loc:arg.pexp_loc pat arg in
+           let bindingsLayout = self#binding ("let!" ^ fnIdent) binding in
+           let bindings = [binding] in
            let bindingsLoc = self#bindingsLocationRange bindings in
            let layout = source_map ~loc:bindingsLoc bindingsLayout in
            processLetList ((bindingsLoc, layout)::acc) body

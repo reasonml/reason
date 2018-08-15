@@ -84,6 +84,7 @@ let opt = (value, fn) =>
 
 let _ = {
   let!opt x = Some(10);
+
   let!opt a = Some(2);
   print_endline(string_of_int(a));
 

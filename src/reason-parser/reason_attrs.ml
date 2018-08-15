@@ -17,7 +17,6 @@ module T = struct
 end
 
 let letCPSTag = "let_continuation_passing_style"
-let letCPSMulti = "let_continuation_passing_style_multi"
 
 let isRefmtTag tag attr =
   match attr with
