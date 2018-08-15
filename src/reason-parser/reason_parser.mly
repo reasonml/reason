@@ -1460,16 +1460,20 @@ toplevel_phrase: embedded
   ( EOF                              { raise End_of_file}
   | structure_item     SEMI          { Ptop_def $1 }
   | toplevel_directive SEMI          { $1 }
-  ) {apply_mapper_to_toplevel_phrase $1 reason_mapper }
+  ) { apply_mapper_to_toplevel_phrase $1 reason_mapper }
 ;
 
-use_file: embedded
-  ( EOF                              { [] }
-  | structure_item     SEMI use_file { Ptop_def $1  :: $3 }
-  | toplevel_directive SEMI use_file { $1 :: $3 }
+use_file_no_mapper: embedded
+( EOF                              { [] }
+  | structure_item     SEMI use_file_no_mapper { Ptop_def $1  :: $3 }
+  | toplevel_directive SEMI use_file_no_mapper { $1 :: $3 }
   | structure_item     EOF           { [Ptop_def $1 ] }
   | toplevel_directive EOF           { [$1] }
-  ) {apply_mapper_to_use_file $1 reason_mapper }
+  ) { $1 }
+;
+
+use_file:
+  use_file_no_mapper { apply_mapper_to_use_file $1 reason_mapper }
 ;
 
 parse_core_type:
