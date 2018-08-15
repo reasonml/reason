@@ -697,7 +697,8 @@ let isRightAssociative ~prec = match precedenceInfo ~prec with
   | Some (Left, _) -> false
   | Some (Nonassoc, _) -> false
 
-let higherPrecedenceThan c1 c2 = match ((precedenceInfo c1), (precedenceInfo c2)) with
+let higherPrecedenceThan c1 c2 =
+  match ((precedenceInfo ~prec:c1), (precedenceInfo ~prec:c2)) with
   | (_, None)
   | (None, _) ->
     let (str1, str2) = match (c1, c2) with
@@ -3536,7 +3537,7 @@ let printer = object(self:'self)
       else if (higherPrecedenceThan withPrecedence shiftPrecedence) then
         LayoutNode (formatPrecedence ~loc:reducesAfterRight.pexp_loc (self#unparseResolvedRule rightRecurse))
       else (
-        if isRightAssociative withPrecedence then
+        if isRightAssociative ~prec:withPrecedence then
          rightRecurse
         else
           LayoutNode (formatPrecedence ~loc:reducesAfterRight.pexp_loc (self#unparseResolvedRule rightRecurse))
@@ -3559,7 +3560,7 @@ let printer = object(self:'self)
       else if higherPrecedenceThan reducesOnToken reducePrecedence then
         LayoutNode (formatPrecedence ~loc:expr.pexp_loc (self#unparseResolvedRule leftRecurse))
       else (
-        if isLeftAssociative reducesOnToken then
+        if isLeftAssociative ~prec:reducesOnToken then
           leftRecurse
         else
           LayoutNode (formatPrecedence ~loc:expr.pexp_loc (self#unparseResolvedRule leftRecurse))
