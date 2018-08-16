@@ -148,3 +148,8 @@ module FooLabeled = {
 
 let t14: string =
   <FooLabeled> {items->FooLabeled.map(~f=FooLabeled.plusOne)->FooLabeled.toString} </FooLabeled>;
+
+let c = (a, b) => a + b;
+let a = 1;
+let b = 2;
+let t: int = a->(b->c);

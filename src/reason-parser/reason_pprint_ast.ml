@@ -541,9 +541,6 @@ let isSimplePrefixToken s = match printedStringAndFixity s with
    using %prec *)
 let rules = [
   [
-    (CustomPrecedence, (fun s -> (Nonassoc, s = "prec_postfixop")))
-  ];
-  [
     (TokenPrecedence, (fun s -> (Left, s = fastPipeToken)));
     (TokenPrecedence, (fun s -> (Left, s.[0] = '#' &&
                                        s <> sharpOpEqualToken &&
@@ -3906,9 +3903,9 @@ let printer = object(self:'self)
       let ls = List.map (fun (l,expr) -> (l, self#process_underscore_application expr)) ls in
       match (e, ls) with
       | (e, _) when Reason_heuristics.isFastPipe e ->
-          (* Fast pipe can be considered as simple because of the very high
-           * precedence of `->` *)
-          Simple (self#formatFastPipe x)
+        let prec = Token fastPipeToken in
+          SpecificInfixPrecedence
+            ({reducePrecedence=prec; shiftPrecedence=prec}, LayoutNode (self#formatFastPipe x))
       | ({pexp_desc = Pexp_ident {txt = Ldot (Lident ("Array"),"get")}}, [(_,e1);(_,e2)]) ->
         begin match e1.pexp_desc with
           | Pexp_ident ({txt = Lident "_"}) ->
@@ -4015,7 +4012,9 @@ let printer = object(self:'self)
           let leftItm = (match leftExpr.pexp_desc with
             | Pexp_apply (e,_) ->
               (match printedStringAndFixityExpr e with
-               | Infix printedIdent when requireNoSpaceFor printedIdent ->
+               | Infix printedIdent
+                 when requireNoSpaceFor printedIdent ||
+                      Reason_heuristics.isFastPipe e ->
                  self#unparseExpr leftExpr
                | _ -> self#simplifyUnparseExpr leftExpr)
             | Pexp_field _ -> self#unparseExpr leftExpr
@@ -6008,9 +6007,16 @@ let printer = object(self:'self)
         | _ -> self#formatChildren (remaining @ children) processedRev
       end
     | ({pexp_desc = Pexp_apply(expr, l); pexp_attributes} as e) :: remaining ->
-        (* <div> {items->Belt.Array.map(ReasonReact.string)->ReasonReact.array} </div>; *)
-        let child = if Reason_heuristics.isFastPipeWithApplicationJSXChild e then
-          formatPrecedence ~wrap:("{", "}") (self#formatFastPipe e)
+        let child =
+        (* Fast pipe behaves differently according to the expression on the
+         * right. In example (1) below, it's a `SpecificInfixPrecedence`; in
+         * (2), however, it's `Simple` and doesn't need to be wrapped in parens.
+         *
+         * (1). <div> {items->Belt.Array.map(ReasonReact.string)->ReasonReact.array} </div>;
+         * (2). <Foo> (title === "" ? [1, 2, 3] : blocks)->Foo.toString </Foo>; *)
+        if Reason_heuristics.isFastPipe e &&
+           not (Reason_heuristics.isFastPipeWithApplicationJSXChild e) then
+          self#formatFastPipe e
         else
           self#simplifyUnparseExpr ~wrap:("{", "}") e
         in
