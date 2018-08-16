@@ -1385,3 +1385,7 @@ foo(~a: int);
 foo(~(a :> int));
 
 foo(~(a :> int));
+
+foo(~a=?Foo.a);
+
+foo(~a=Foo.a);

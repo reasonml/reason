@@ -1211,3 +1211,7 @@ foo(~(a: int));
 foo(~(a :> int));
 
 foo(~a :> int);
+
+foo(~Foo.a?);
+
+foo(~Foo.a);
