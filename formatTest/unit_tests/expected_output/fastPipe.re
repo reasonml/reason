@@ -181,3 +181,5 @@ window
     ->ReasonReact.array
   }
 </div>;
+
+a->(b->c);
