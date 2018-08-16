@@ -17,7 +17,15 @@ module ToploopBackup = struct
   let print_out_sig_item = !Toploop.print_out_sig_item
   let print_out_signature = !Toploop.print_out_signature
   let print_out_phrase = !Toploop.print_out_phrase
+  let current_show = Hashtbl.find Toploop.directive_table "show"
 end
+
+let rec lident_operator_map mapper li =
+  let open Longident in
+  match li with
+  | Lident s -> Lident (mapper s)
+  | Ldot (x, s) -> Ldot (x, mapper s)
+  | Lapply (x, y) -> Lapply (lident_operator_map mapper x, lident_operator_map mapper y)
 
 type top_kind = RTop | UTop
 let current_top = ref RTop
@@ -67,6 +75,11 @@ let init_reason () =
       wrap (List.map copy_out_sig_item) Reason_oprint.print_out_signature;
     Toploop.print_out_phrase :=
       wrap copy_out_phrase Reason_oprint.print_out_phrase;
+    let Toploop.Directive_ident current_show_fn = ToploopBackup.current_show in
+    Hashtbl.replace Toploop.directive_table "show"
+      (Toploop.Directive_ident (fun li ->
+           let li' = lident_operator_map Reason_syntax_util.reason_to_ml_swap li in
+           current_show_fn li'));
   end
 
 let init_ocaml () =
@@ -86,7 +99,8 @@ let init_ocaml () =
   Toploop.print_out_type_extension := ToploopBackup.print_out_type_extension;
   Toploop.print_out_sig_item := ToploopBackup.print_out_sig_item;
   Toploop.print_out_signature := ToploopBackup.print_out_signature;
-  Toploop.print_out_phrase := ToploopBackup.print_out_phrase
+  Toploop.print_out_phrase := ToploopBackup.print_out_phrase;
+  Hashtbl.replace Toploop.directive_table "show" ToploopBackup.current_show
 
 let toggle_syntax () =
   match !current_top with

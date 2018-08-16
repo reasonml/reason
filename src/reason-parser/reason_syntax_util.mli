@@ -14,6 +14,8 @@
   patching the right parts, through the power of types(tm)
 *)
 
+val reason_to_ml_swap : string -> string
+
 val ml_to_reason_swap : string -> string
 
 val escape_string : string -> string
