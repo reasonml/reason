@@ -101,8 +101,15 @@ module Option = {
     };
 };
 
-let opt = (Option.flatMap, Option.pair);
-let opt_map = (Option.map, Option.pair);
+module Opt = {
+  let let_ = Option.flatMap;
+  let and_ = Option.pair;
+};
+
+module Opt_map = {
+  let let_ = Option.map;
+  let and_ = Option.pair;
+};
 
 let _ = {
   let!opt x = Some(10);

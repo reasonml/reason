@@ -96,17 +96,21 @@ module Option = {
     };
 };
 
-let opt = (Option.flatMap, Option.pair);
-let opt_map = (Option.map, Option.pair);
+module Opt = {
+  let let_ = Option.flatMap;
+  let and_ = Option.pair;
+};
+
+module Opt_map = {
+  let let_ = Option.map;
+  let and_ = Option.pair;
+};
 
 let _ =
-  (Pervasives.fst(opt))(Some(10), x =>
-    (Pervasives.fst(opt_map))(
-      (Pervasives.snd(opt_map))(
-        (Pervasives.snd(opt_map))(
-          Some(2),
-          Some(5),
-        ),
+  Opt.let_(Some(10), x =>
+    Opt_map.let_(
+      Opt_map.and_(
+        Opt_map.and_(Some(2), Some(5)),
         Some(7),
       ),
       (((a, b), c)) => {

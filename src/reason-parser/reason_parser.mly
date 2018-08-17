@@ -942,21 +942,17 @@ let val_of_let_bindings lbs =
      snd(foo) is generated for each and. *)
 let combinator_call_of_let_bindings combinator let_bindings rest_of_code =
   let combinator_loc = combinator.loc in
-  let combinator = Exp.ident ~loc:combinator_loc combinator in
+  let combinator =
+    String.capitalize (String.concat "." (flatten combinator.txt)) in
   let func =
-    let fst =
-      Exp.ident
-        ~loc:combinator_loc
-        (mkloc (parse "Pervasives.fst") combinator_loc)
-    in
-    Exp.apply ~loc:combinator_loc fst [(Nolabel, combinator)] in
+    Exp.ident
+      ~loc:combinator_loc
+      (mkloc (parse (combinator ^ ".let_")) combinator_loc)
+  in
   let pair and_binding =
-    let snd =
-      Exp.ident
-        ~loc:and_binding.pvb_loc
-        (mkloc (parse "Pervasives.snd") combinator_loc)
-    in
-    Exp.apply ~loc:and_binding.pvb_loc snd [(Nolabel, combinator)]
+    Exp.ident
+      ~loc:and_binding.pvb_loc
+      (mkloc (parse (combinator ^ ".and_")) and_binding.pvb_loc)
   in
 
   match let_bindings.lbs_bindings with
