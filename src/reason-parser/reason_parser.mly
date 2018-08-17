@@ -912,18 +912,98 @@ let val_of_let_bindings lbs =
   | None -> str
   | Some ext -> struct_item_extension ext [str]
 
-let continuation_passing_style_of_let_bindings attr lbs body =
-    match lbs.lbs_bindings with
-    | [one] ->
-      Exp.apply
-      ~attrs:[simple_ghost_refmt_text_attr Reason_attrs.letCPSTag]
-      ~loc:one.pvb_loc
-      (Exp.ident ~loc:attr.loc attr) [
-        (Nolabel, one.pvb_expr);
-        (Nolabel, Exp.fun_ ~loc:attr.loc Nolabel None one.pvb_pat body)
-      ]
-    | _ ->
-      raise Syntaxerr.(Error(Not_expecting(lbs.lbs_loc, "Cannot have `and` in a `let!foo` construct.")))
+(* Transforms
+
+     let!foo x = a
+     and y = b;
+     rest_of_code
+
+   into
+
+     fst(foo)(snd(foo)(a, b), (x, y) => rest_of_code);
+
+   a much easier-to-red verison is with:
+
+     let func = fst(foo)
+     and pair = snd(foo)
+
+   then, the transformation is to:
+
+     func(pair(a, b), (x, y) => rest_of_code);
+
+   foo is the "combinator." It is a pair of two functions:
+
+   - fst(foo) is a monadic bind or functor map operation, like Option.map,
+     Promise.then, etc. It applies a continuation (rest_of_code) to some value,
+     which is unwrapped from an option, promise, etc. fst(foo) corresponds to
+     let.
+   - snd(foo) is a pairing operation, which takes two values, and wraps them in
+     an option, promise, etc. snd(foo) corresponds to and, and a nested call to
+     snd(foo) is generated for each and. *)
+let combinator_call_of_let_bindings combinator let_bindings rest_of_code =
+  let combinator_loc = combinator.loc in
+  let combinator = Exp.ident ~loc:combinator_loc combinator in
+  let func =
+    let fst =
+      Exp.ident
+        ~loc:combinator_loc
+        (mkloc (parse "Pervasives.fst") combinator_loc)
+    in
+    Exp.apply ~loc:combinator_loc fst [(Nolabel, combinator)] in
+  let pair and_binding =
+    let snd =
+      Exp.ident
+        ~loc:and_binding.pvb_loc
+        (mkloc (parse "Pervasives.snd") combinator_loc)
+    in
+    Exp.apply ~loc:and_binding.pvb_loc snd [(Nolabel, combinator)]
+  in
+
+  match let_bindings.lbs_bindings with
+  | [] ->
+    assert false
+
+  | let_binding::and_bindings ->
+    let grow_pair (nested_pair_pattern, pairing_expression) and_binding =
+      let nested_pair_pattern =
+        Pat.tuple
+          ~loc:and_binding.pvb_pat.ppat_loc
+          [nested_pair_pattern; and_binding.pvb_pat]
+      in
+      let pairing_expression =
+        Exp.apply
+          ~loc:and_binding.pvb_loc
+          (pair and_binding)
+          [(Nolabel, pairing_expression); (Nolabel, and_binding.pvb_expr)]
+      in
+      (nested_pair_pattern, pairing_expression)
+    in
+
+    let let_pattern = let_binding.pvb_pat in
+    let let_expression = let_binding.pvb_expr in
+
+    let (nested_pair_pattern, pairing_expression) =
+      List.fold_left grow_pair (let_pattern, let_expression) and_bindings in
+
+    let continuation =
+      Exp.fun_
+        ~loc:combinator_loc Nolabel None nested_pair_pattern rest_of_code
+    in
+
+    let attrs =
+      match and_bindings with
+      | [] ->
+        [simple_ghost_refmt_text_attr Reason_attrs.letCPSTag]
+      | _::_ ->
+        [simple_ghost_refmt_text_attr Reason_attrs.letCPSTag;
+         simple_ghost_refmt_text_attr Reason_attrs.letCPSMulti]
+    in
+
+    Exp.apply
+      ~attrs
+      ~loc:let_bindings.lbs_loc
+      func
+      [(Nolabel, pairing_expression); (Nolabel, continuation)]
 
 let expr_of_let_bindings lbs body =
   (* The location of this expression unfortunately includes the entire rule,
@@ -932,7 +1012,7 @@ let expr_of_let_bindings lbs body =
   | Some attr ->
     if lbs.lbs_extension <> None then
       raise Syntaxerr.(Error(Not_expecting(lbs.lbs_loc, "let!foo cannot be combined with let%foo")));
-    continuation_passing_style_of_let_bindings attr lbs body
+    combinator_call_of_let_bindings attr lbs body
   | None ->
     let item_expr = Exp.let_ lbs.lbs_rec lbs.lbs_bindings body in
     begin

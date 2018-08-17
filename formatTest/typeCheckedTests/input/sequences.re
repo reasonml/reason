@@ -81,16 +81,36 @@ let thirdFieldPunned = {
 let singlePunAcceptedIfExtended = {...firstFieldPunned, a};
 
 
-let opt = (value, fn) => switch value {
-  | None => None
-  | Some(x) => fn(x)
+module Option = {
+  let map = (x, f) =>
+    switch (x) {
+    | Some(x) => Some(f(x))
+    | None => None
+    };
+
+  let flatMap = (x, f) =>
+    switch (x) {
+    | Some(x) => f(x)
+    | None => None
+    };
+
+  let pair = (x, y) =>
+    switch (x, y) {
+    | (Some(x), Some(y)) => Some((x, y))
+    | _ => None
+    };
 };
+
+let opt = (Option.flatMap, Option.pair);
+let opt_map = (Option.map, Option.pair);
 
 let _ = {
   let!opt x = Some(10);
 
-  let!opt a = Some(2);
+  let!opt_map a = Some(2)
+  and b = Some(5)
+  and c = Some(7);
   print_endline(string_of_int(a));
 
-  Some(a + x);
+  a + x * b + c;
 };

@@ -76,17 +76,43 @@ let singlePunAcceptedIfExtended = {
   a,
 };
 
-let opt = (value, fn) =>
-  switch (value) {
-  | None => None
-  | Some(x) => fn(x)
-  };
+module Option = {
+  let map = (x, f) =>
+    switch (x) {
+    | Some(x) => Some(f(x))
+    | None => None
+    };
 
-let _ = {
-  let!opt x = Some(10);
+  let flatMap = (x, f) =>
+    switch (x) {
+    | Some(x) => f(x)
+    | None => None
+    };
 
-  let!opt a = Some(2);
-  print_endline(string_of_int(a));
-
-  Some(a + x);
+  let pair = (x, y) =>
+    switch (x, y) {
+    | (Some(x), Some(y)) => Some((x, y))
+    | _ => None
+    };
 };
+
+let opt = (Option.flatMap, Option.pair);
+let opt_map = (Option.map, Option.pair);
+
+let _ =
+  (Pervasives.fst(opt))(Some(10), x =>
+    (Pervasives.fst(opt_map))(
+      (Pervasives.snd(opt_map))(
+        (Pervasives.snd(opt_map))(
+          Some(2),
+          Some(5),
+        ),
+        Some(7),
+      ),
+      (((a, b), c)) => {
+        print_endline(string_of_int(a));
+
+        a + x * b + c;
+      },
+    )
+  );
