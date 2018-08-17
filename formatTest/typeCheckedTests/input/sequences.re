@@ -112,9 +112,9 @@ module Opt_map = {
 };
 
 let _ = {
-  let!opt x = Some(10);
+  let.opt x = Some(10);
 
-  let!opt_map a = Some(2)
+  let.opt_map a = Some(2)
   and b = Some(5)
   and c = Some(7);
   print_endline(string_of_int(a));

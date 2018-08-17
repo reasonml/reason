@@ -891,14 +891,14 @@ type let_bindings =
   { lbs_bindings: Parsetree.value_binding list;
     lbs_rec: rec_flag;
     lbs_extension: (attributes * string Asttypes.loc) option;
-    lbs_bang: Longident.t Asttypes.loc option;
+    lbs_combinator: Longident.t Asttypes.loc option;
     lbs_loc: Location.t }
 
-let mklbs bang ext rf lb loc =
+let mklbs combinator ext rf lb loc =
   { lbs_bindings = [lb];
     lbs_rec = rf;
     lbs_extension = ext;
-    lbs_bang = bang;
+    lbs_combinator = combinator;
     lbs_loc = loc; }
 
 let addlbs lbs lbs' =
@@ -906,8 +906,8 @@ let addlbs lbs lbs' =
 
 let val_of_let_bindings lbs =
   let str = Str.value lbs.lbs_rec lbs.lbs_bindings in
-  if lbs.lbs_bang <> None then
-    raise Syntaxerr.(Error(Not_expecting(lbs.lbs_loc, "let!foo is not allowed at the top level")));
+  if lbs.lbs_combinator <> None then
+    raise Syntaxerr.(Error(Not_expecting(lbs.lbs_loc, "let.foo is not allowed at the top level")));
   match lbs.lbs_extension with
   | None -> str
   | Some ext -> struct_item_extension ext [str]
@@ -1004,10 +1004,10 @@ let combinator_call_of_let_bindings combinator let_bindings rest_of_code =
 let expr_of_let_bindings lbs body =
   (* The location of this expression unfortunately includes the entire rule,
    * which will include any preceeding extensions. *)
-  match lbs.lbs_bang with
+  match lbs.lbs_combinator with
   | Some attr ->
     if lbs.lbs_extension <> None then
-      raise Syntaxerr.(Error(Not_expecting(lbs.lbs_loc, "let!foo cannot be combined with let%foo")));
+      raise Syntaxerr.(Error(Not_expecting(lbs.lbs_loc, "let.foo cannot be combined with let%foo")));
     combinator_call_of_let_bindings attr lbs body
   | None ->
     let item_expr = Exp.let_ lbs.lbs_rec lbs.lbs_bindings body in
@@ -1020,8 +1020,8 @@ let expr_of_let_bindings lbs body =
 let class_of_let_bindings lbs body =
   if lbs.lbs_extension <> None then
     raise Syntaxerr.(Error(Not_expecting(lbs.lbs_loc, "extension")));
-  if lbs.lbs_bang <> None then
-    raise Syntaxerr.(Error(Not_expecting(lbs.lbs_loc, "let!foo is not allowed in class bindings")));
+  if lbs.lbs_combinator <> None then
+    raise Syntaxerr.(Error(Not_expecting(lbs.lbs_loc, "let.foo is not allowed in class bindings")));
   Cl.let_ lbs.lbs_rec lbs.lbs_bindings body
 
 (*
@@ -3472,7 +3472,7 @@ let_bindings: let_binding and_let_binding* { addlbs $1 $2 };
 
 let_binding:
   (* Form with item extension sugar *)
-  item_attributes LET let_bang? item_extension_sugar? rec_flag let_binding_body
+  item_attributes LET let_combinator? item_extension_sugar? rec_flag let_binding_body
   { let loc = mklocation $symbolstartpos $endpos in
     let pat, expr = $6 in
     mklbs $3 $4 $5 (Vb.mk ~loc ~attrs:$1 pat expr) loc }
@@ -4979,8 +4979,8 @@ item_extension_sugar:
   PERCENT attr_id { ([], $2) }
 ;
 
-let_bang:
-  BANG as_loc(val_longident) { $2 }
+let_combinator:
+  DOT as_loc(val_longident) { $2 }
 ;
 
 extension:
