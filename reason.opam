@@ -14,7 +14,7 @@ build-test: [["jbuilder" "runtest" "-p" name "-j" jobs]]
 depends: [
   "jbuilder"                {build}
   "ocamlfind"               {build}
-  "menhir"                  {>= "20170418" & <= "20171013"}
+  "menhir"                  {>= "20170418"}
   "merlin-extend"           {>= "0.3"}
   "result"
   "ocaml-migrate-parsetree"
