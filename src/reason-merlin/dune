@@ -1,0 +1,5 @@
+(executable
+ (name ocamlmerlin_reason)
+ (public_name ocamlmerlin-reason)
+ (package reason)
+ (libraries compiler-libs.common merlin_extend reason))

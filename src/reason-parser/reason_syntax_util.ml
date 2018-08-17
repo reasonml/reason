@@ -166,29 +166,6 @@ module TrailingCommaMarker = struct
   let char = Char.chr 249 (* ˘ *)
   let string = String.make 1 char
 end
-module OpenBraceMarker = struct
-  (* An open brace marker will only be rendered if it is immediately
-   * followed by a newline. This should NOT BE USED WITH
-   * anything but inline:(true, false) because the following will cause
-   * OpenBraceMarker to be replaced but not ClosedBraceMarker.
-   *    let x = () => {
-   *      whoops };
-   *)
-  let char = Char.chr 174 (* « *)
-  let string = String.make 1 char
-end
-module ClosedBraceMarker = struct
-  (* An open brace marker will only be rendered if it is immediately
-   * preceeded by white space and a newline. This should NOT BE USED WITH
-   * anything but inline:(true, false) because the following will cause
-   * OpenBraceMarker to be replaced but not ClosedBraceMarker.
-   *    let x = () => {
-   *      whoops };
-   *)
-  let char = Char.chr 175 (* » *)
-  let string = String.make 1 char
-end
-
 
 (** [is_prefixed prefix i str] checks if prefix is the prefix of str
   * starting from position i
@@ -354,9 +331,7 @@ let identifier_mapper f super =
   expr = begin fun mapper expr ->
     let expr =
       match expr with
-        | {pexp_desc=Pexp_ident ({txt} as id);
-           pexp_loc;
-           pexp_attributes} ->
+        | {pexp_desc=Pexp_ident ({txt; _} as id); _} ->
              let swapped = match txt with
                | Lident s -> Lident (f s)
                | Ldot(longPrefix, s) -> Ldot(longPrefix, f s)
@@ -370,9 +345,7 @@ let identifier_mapper f super =
   pat = begin fun mapper pat ->
     let pat =
       match pat with
-        | {ppat_desc=Ppat_var ({txt} as id);
-           ppat_loc;
-           ppat_attributes} ->
+        | {ppat_desc=Ppat_var ({txt; _} as id); _} ->
              {pat with ppat_desc=Ppat_var ({id with txt=(f txt)})}
         | _ -> pat
     in
@@ -381,8 +354,7 @@ let identifier_mapper f super =
   signature_item = begin fun mapper signatureItem ->
     let signatureItem =
       match signatureItem with
-        | {psig_desc=Psig_value ({pval_name} as name);
-           psig_loc} ->
+        | {psig_desc=Psig_value ({pval_name; _} as name); _} ->
             {signatureItem with psig_desc=Psig_value ({name with pval_name=({pval_name with txt=(f name.pval_name.txt)})})}
         | _ -> signatureItem
     in
@@ -490,7 +462,7 @@ let menhirMessagesError = ref [NoMenhirMessagesError]
 let findMenhirErrorMessage loc =
     let rec find messages =
       match messages with
-      | MenhirMessagesError err :: tail when err.loc = loc -> MenhirMessagesError err
+      | MenhirMessagesError err :: _ when err.loc = loc -> MenhirMessagesError err
       | _ :: tail -> find tail
       | [] -> NoMenhirMessagesError
     in find !menhirMessagesError

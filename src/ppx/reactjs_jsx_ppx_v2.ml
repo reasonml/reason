@@ -73,12 +73,12 @@ let transformChildrenIfList ~loc ~mapper theList =
     (* not in the sense of converting a list to an array; convert the AST
        reprensentation of a list to the AST reprensentation of an array *)
     match theList with
-    | {pexp_desc = Pexp_construct ({txt = Lident "[]"}, None)} ->
+    | {pexp_desc = Pexp_construct ({txt = Lident "[]"; _}, None); _} ->
       List.rev accum |> Exp.array ~loc
     | {pexp_desc = Pexp_construct (
-        {txt = Lident "::"},
-        Some {pexp_desc = Pexp_tuple (v::acc::[])}
-      )} ->
+        {txt = Lident "::"; _},
+        Some {pexp_desc = Pexp_tuple (v::acc::[]); _}
+      ); _} ->
       transformChildren_ acc ((mapper.expr mapper v)::accum)
     | notAList -> mapper.expr mapper notAList
   in
@@ -88,8 +88,8 @@ let extractChildren ?(removeLastPositionUnit=false) ~loc propsAndChildren =
   let rec allButLast_ lst acc = match lst with
     | [] -> []
 (* #if defined BS_NO_COMPILER_PATCH then *)
-    | (Nolabel, {pexp_desc = Pexp_construct ({txt = Lident "()"}, None)})::[] -> acc
-    | (Nolabel, _)::rest -> raise (Invalid_argument "JSX: found non-labelled argument before the last position")
+    | (Nolabel, {pexp_desc = Pexp_construct ({txt = Lident "()"; _}, None); _})::[] -> acc
+    | (Nolabel, _)::_ -> raise (Invalid_argument "JSX: found non-labelled argument before the last position")
 (* #else
     | ("", {pexp_desc = Pexp_construct ({txt = Lident "()"}, None)})::[] -> acc
     | ("", _)::rest -> raise (Invalid_argument "JSX: found non-labelled argument before the last position")
@@ -97,20 +97,20 @@ let extractChildren ?(removeLastPositionUnit=false) ~loc propsAndChildren =
     | arg::rest -> allButLast_ rest (arg::acc)
   in
   let allButLast lst = allButLast_ lst [] |> List.rev in
-  match (List.partition (fun (label, expr) -> label = labelled "children") propsAndChildren) with
+  match (List.partition (fun (label, _) -> label = labelled "children") propsAndChildren) with
   | ([], props) ->
     (* no children provided? Place a placeholder list *)
     (Exp.construct ~loc {loc; txt = Lident "[]"} None, if removeLastPositionUnit then allButLast props else props)
-  | ([(label, childrenExpr)], props) ->
+  | ([(_, childrenExpr)], props) ->
     (childrenExpr, if removeLastPositionUnit then allButLast props else props)
-  | (moreThanOneChild, props) -> raise (Invalid_argument "JSX: somehow there's more than one `children` label")
+  | _ -> raise (Invalid_argument "JSX: somehow there's more than one `children` label")
 
 (* TODO: some line number might still be wrong *)
 let jsxMapper () =
 
   let jsxVersion = ref None in
 
-  let transformUppercaseCall modulePath mapper loc attrs callExpression callArguments =
+  let transformUppercaseCall modulePath mapper loc attrs _ callArguments =
     let (children, argsWithLabels) = extractChildren ~loc ~removeLastPositionUnit:true callArguments in
     let (argsKeyRef, argsForMake) = List.partition argIsKeyRef argsWithLabels in
     let childrenExpr = transformChildrenIfList ~loc ~mapper children in
@@ -137,25 +137,21 @@ let jsxMapper () =
       (* [@JSX] div(~children=[a]), coming from <div> a </div> *)
       | {
           pexp_desc =
-           Pexp_construct ({txt = Lident "::"; loc}, Some {pexp_desc = Pexp_tuple _ })
-           | Pexp_construct ({txt = Lident "[]"; loc}, None);
-          pexp_attributes
+           Pexp_construct ({txt = Lident "::"; _}, Some {pexp_desc = Pexp_tuple _; _ })
+           | Pexp_construct ({txt = Lident "[]"; _}, None); _
         } -> "createElement"
       (* [@JSX] div(~children=[|a|]), coming from <div> ...[|a|] </div> *)
-      | {
-          pexp_desc = (Pexp_array _);
-          pexp_attributes
-        } ->
+      | { pexp_desc = (Pexp_array _); _ } ->
         raise (Invalid_argument "A spread + an array literal as a DOM element's \
           children would cancel each other out, and thus don't make sense written \
           together. You can simply remove the spread and the array literal.")
       (* [@JSX] div(~children= <div />), coming from <div> ...<div/> </div> *)
       | {
-          pexp_attributes
+          pexp_attributes; _
         } when pexp_attributes |> List.exists (fun (attribute, _) -> attribute.txt = "JSX") ->
         raise (Invalid_argument "A spread + a JSX literal as a DOM element's \
           children don't make sense written together. You can simply remove the spread.")
-      | notAList -> "createElementVariadic"
+      | _ -> "createElementVariadic"
     in
     let args = match nonChildrenProps with
       | [_justTheUnitArgumentAtEnd] ->
@@ -193,7 +189,7 @@ let jsxMapper () =
     (match callExpression.pexp_desc with
      | Pexp_ident caller ->
        (match caller with
-        | {txt = Lident "createElement"} ->
+        | {txt = Lident "createElement"; _} ->
           raise (Invalid_argument "JSX: `createElement` should be preceeded by a module name.")
 
         (* Foo.createElement(~prop1=foo, ~prop2=bar, ~children=[], ()) *)
@@ -209,7 +205,7 @@ let jsxMapper () =
         | {loc; txt = Lident id} ->
           transformLowercaseCall mapper loc attrs callArguments id
 
-        | {txt = Ldot (_, anythingNotCreateElementOrMake)} ->
+        | {txt = Ldot (_, anythingNotCreateElementOrMake); _} ->
           raise (
             Invalid_argument
               ("JSX: the JSX attribute should be attached to a `YourModuleName.createElement` or `YourModuleName.make` call. We saw `"
@@ -218,13 +214,13 @@ let jsxMapper () =
               )
           )
 
-        | {txt = Lapply _} ->
+        | {txt = Lapply _; _} ->
           (* don't think there's ever a case where this is reached *)
           raise (
             Invalid_argument "JSX: encountered a weird case while processing the code. Please report this!"
           )
        )
-     | anythingElseThanIdent ->
+     | _ ->
        raise (
          Invalid_argument "JSX: `createElement` should be preceeded by a simple, direct module name."
        )
@@ -250,17 +246,17 @@ let jsxMapper () =
       | {
           pstr_loc;
           pstr_desc = Pstr_attribute (
-            ({txt = "bs.config"} as bsConfigLabel),
-            PStr [{pstr_desc = Pstr_eval ({pexp_desc = Pexp_record (recordFields, b)} as innerConfigRecord, a)} as configRecord]
+            ({txt = "bs.config"; _} as bsConfigLabel),
+            PStr [{pstr_desc = Pstr_eval ({pexp_desc = Pexp_record (recordFields, b); _} as innerConfigRecord, a); _} as configRecord]
           )
         }::restOfStructure -> begin
-          let (jsxField, recordFieldsWithoutJsx) = recordFields |> List.partition (fun ({txt}, _) -> txt = Lident "jsx") in
+          let (jsxField, recordFieldsWithoutJsx) = recordFields |> List.partition (fun ({txt; _}, _) -> txt = Lident "jsx") in
           match (jsxField, recordFieldsWithoutJsx) with
           (* no file-level jsx config found *)
           | ([], _) -> default_mapper.structure mapper structure
           (* {jsx: 2} *)
 (* #if defined BS_NO_COMPILER_PATCH then *)
-          | ((_, {pexp_desc = Pexp_constant (Pconst_integer (version, _))})::rest, recordFieldsWithoutJsx) -> begin
+          | ((_, {pexp_desc = Pexp_constant (Pconst_integer (version, _)); _})::_, recordFieldsWithoutJsx) -> begin
               (match version with
               | "2" -> jsxVersion := Some 2
               | _ -> raise (Invalid_argument "JSX: the file-level bs.config's jsx version must be 2"));
@@ -281,7 +277,7 @@ let jsxMapper () =
                 )
               }::restOfStructure)
             end
-        | (_, recordFieldsWithoutJsx) -> raise (Invalid_argument "JSX: the file-level bs.config's {jsx: ...} config accepts only a version number")
+        | _ -> raise (Invalid_argument "JSX: the file-level bs.config's {jsx: ...} config accepts only a version number")
       end
       | _ -> default_mapper.structure mapper structure
     ) in
@@ -291,7 +287,7 @@ let jsxMapper () =
        (* Does the function application have the @JSX attribute? *)
        | {
            pexp_desc = Pexp_apply (callExpression, callArguments);
-           pexp_attributes
+           pexp_attributes; _
          } ->
          let (jsxAttribute, nonJSXAttributes) = List.partition (fun (attribute, _) -> attribute.txt = "JSX") pexp_attributes in
          (match (jsxAttribute, nonJSXAttributes) with
@@ -302,9 +298,9 @@ let jsxMapper () =
        (* is it a list with jsx attribute? Reason <>foo</> desugars to [@JSX][foo]*)
        | {
            pexp_desc =
-            Pexp_construct ({txt = Lident "::"; loc}, Some {pexp_desc = Pexp_tuple _ })
+            Pexp_construct ({txt = Lident "::"; loc}, Some {pexp_desc = Pexp_tuple _; _})
             | Pexp_construct ({txt = Lident "[]"; loc}, None);
-           pexp_attributes
+           pexp_attributes; _
          } as listItems ->
           let (jsxAttribute, nonJSXAttributes) = List.partition (fun (attribute, _) -> attribute.txt = "JSX") pexp_attributes in
           (match (jsxAttribute, nonJSXAttributes) with

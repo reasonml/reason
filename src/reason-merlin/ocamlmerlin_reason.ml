@@ -4,8 +4,6 @@ let () =
   Reason_config.recoverable := true
 
 module Reason_reader = struct
-  open Migrate_parsetree
-
   type t = buffer
 
   let load buffer = buffer
@@ -16,7 +14,7 @@ module Reason_reader = struct
   let signature sg =
     Signature (Reason_toolchain.To_current.copy_signature sg)
 
-  let parse {text; path} =
+  let parse {text; path; _} =
     let l = String.length path in
     let buf = Lexing.from_string text in
     Location.init buf (Filename.basename path);
@@ -32,11 +30,11 @@ module Reason_reader = struct
       (fun () -> ({complete_labels = true}, parse t))
       (fun () -> Reason_toolchain.insert_completion_ident := pos')
 
-  let parse_line t pos line =
+  let parse_line _ _ line =
     let buf = Lexing.from_string line in
     structure (Reason_toolchain.RE.implementation buf)
 
-  let ident_at t _ = []
+  let ident_at _ _ = []
 
   let formatter =
      let fmt = lazy (Reason_pprint_ast.createFormatter ()) in
@@ -44,7 +42,6 @@ module Reason_reader = struct
 
   let pretty_print ppf =
     let open Reason_toolchain in
-    let open Reason_pprint_ast in
     function
     | Pretty_core_type x ->
       (formatter ())#core_type ppf (From_current.copy_core_type x)

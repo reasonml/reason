@@ -35,7 +35,7 @@ let main () =
   let ast = impl lexbuf in
   let ast = Convert.copy_structure ast in
   let env = Compmisc.initial_env() in
-  let (typedtree, thing) = Typemod.type_implementation modulename modulename modulename env ast in
+  let (typedtree, _) = Typemod.type_implementation modulename modulename modulename env ast in
   let tree = Printtyp.tree_of_signature typedtree.Typedtree.str_type in
   let phrase = (Ast_404.Outcometree.Ophr_signature
     (List.map (fun item -> (ConvertBack.copy_out_sig_item item, None)) tree)

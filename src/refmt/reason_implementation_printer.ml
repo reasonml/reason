@@ -1,7 +1,6 @@
 open Migrate_parsetree
 open Ast_404
 
-type q = Parsetree.structure_item
 type t = Parsetree.structure
 let err = Printer_maker.err
 
@@ -50,17 +49,17 @@ let print printtype filename parsedAsML output_chan output_formatter =
       Config.ast_impl_magic_number, filename, ast, comments, parsedAsML, false
     );
   )
-  | `Binary -> fun (ast, comments) -> (
+  | `Binary -> fun (ast, _) -> (
      Ast_io.to_channel output_chan filename
        (Ast_io.Impl ((module OCaml_current),
                      Reason_toolchain.To_current.copy_structure ast))
   )
-  | `AST -> fun (ast, comments) -> (
+  | `AST -> fun (ast, _) -> (
     Printast.implementation output_formatter
       (Reason_toolchain.To_current.copy_structure ast)
   )
   (* If you don't wrap the function in parens, it's a totally different
    * meaning #thanksOCaml *)
-  | `None -> (fun (ast, comments) -> ())
+  | `None -> (fun _ -> ())
   | `ML -> Reason_toolchain.ML.print_implementation_with_comments output_formatter
   | `Reason -> Reason_toolchain.RE.print_implementation_with_comments output_formatter

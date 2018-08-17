@@ -8,11 +8,11 @@ bug-reports: "https://github.com/facebook/reason/issues"
 dev-repo: "git://github.com/facebook/reason.git"
 tags: [ "syntax" ]
 build: [
-  ["jbuilder" "build" "-p" name "-j" jobs]
+  ["dune" "build" "-p" name "-j" jobs]
 ]
 build-test: [["jbuilder" "runtest" "-p" name "-j" jobs]]
 depends: [
-  "jbuilder"                {build}
+  "dune"                    {build}
   "ocamlfind"               {build}
   "menhir"                  {>= "20170418"}
   "merlin-extend"           {>= "0.3"}

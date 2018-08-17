@@ -1,0 +1,5 @@
+(executable
+ (name reason_format_type)
+ (public_name refmttype)
+ (package reason)
+ (libraries reason reason.cmdliner))

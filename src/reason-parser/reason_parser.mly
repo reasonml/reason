@@ -169,27 +169,9 @@ let make_real_exp exp = {
 let make_real_pat pat = {
     pat with ppat_loc = make_real_loc pat.ppat_loc
 }
-let make_real_cf cf = {
-    cf with pcf_loc = make_real_loc cf.pcf_loc
-}
-
-(**
-  * turn a object into ghost
-  *)
-let make_ghost_cf cf = {
-    cf with pcf_loc = make_ghost_loc cf.pcf_loc
-}
-let make_ghost_exp exp = {
-    exp with pexp_loc = make_ghost_loc exp.pexp_loc
-}
-
-let make_ghost_pat pat = {
-    pat with ppat_loc = make_ghost_loc pat.ppat_loc
-}
-
-(**
-  * change the location state to be a ghost location or real location
-  *)
+(*
+ * change the location state to be a ghost location or real location
+ *)
 let set_loc_state is_ghost loc =
     if is_ghost then make_ghost_loc loc else make_real_loc loc
 
@@ -278,10 +260,8 @@ let mkExplicitArityTupleExp ?(loc=dummy_loc ()) exp_desc =
     exp_desc
 
 let is_pattern_list_single_any = function
-  | [{ppat_desc=Ppat_any; ppat_attributes=[]} as onlyItem] -> Some onlyItem
+  | [{ppat_desc=Ppat_any; ppat_attributes=[]; _} as onlyItem] -> Some onlyItem
   | _ -> None
-
-let set_structure_item_location x loc = {x with pstr_loc = loc};;
 
 let mkoperator {Location. txt; loc} =
   Exp.mk ~loc (Pexp_ident(mkloc (Lident txt) loc))
@@ -336,7 +316,7 @@ let mkuminus name arg =
 
 let prepare_functor_arg = function
   | Some name, mty -> (name, mty)
-  | None, (Some {pmty_loc} as mty) ->
+  | None, (Some {pmty_loc; _} as mty) ->
       (mkloc "_" (make_ghost_loc pmty_loc), mty)
   | None, None -> assert false
 
@@ -370,13 +350,13 @@ let mkexp_constructor_unit ?(uncurried=false) consloc loc =
   let attrs = if uncurried then [uncurry_payload ~name:"uncurry" loc] else [] in
   mkexp ~attrs ~loc (Pexp_construct(mkloc (Lident "()") consloc, None))
 
-let ghexp_cons consloc args loc =
+let ghexp_cons args loc =
   mkexp ~ghost:true ~loc (Pexp_construct(mkloc (Lident "::") loc, Some args))
 
-let mkpat_cons consloc args loc =
+let mkpat_cons args loc =
   mkpat ~loc (Ppat_construct(mkloc (Lident "::") loc, Some args))
 
-let ghpat_cons consloc args loc =
+let ghpat_cons args loc =
   mkpat ~ghost:true ~loc (Ppat_construct(mkloc (Lident "::") loc, Some args))
 
 let mkpat_constructor_unit consloc loc =
@@ -401,7 +381,7 @@ let mktailexp_extension loc seq ext_opt =
         let exp_el = handle_seq el in
         let loc = mklocation e1.pexp_loc.loc_start exp_el.pexp_loc.loc_end in
         let arg = mkexp ~ghost:true ~loc (Pexp_tuple [e1; exp_el]) in
-        ghexp_cons loc arg loc
+        ghexp_cons arg loc
   in
   handle_seq seq
 
@@ -420,7 +400,7 @@ let mktailpat_extension loc (seq, ext_opt) =
       let pat_pl = handle_seq pl in
       let loc = mklocation p1.ppat_loc.loc_start pat_pl.ppat_loc.loc_end in
       let arg = mkpat ~ghost:true ~loc (Ppat_tuple [p1; pat_pl]) in
-      ghpat_cons loc arg loc in
+      ghpat_cons arg loc in
   handle_seq seq
 
 let makeFrag loc body =
@@ -433,17 +413,17 @@ let makeFrag loc body =
 
 let mkstrexp e attrs =
   match e with
-  | ({pexp_desc = Pexp_apply (({pexp_attributes} as e1), args); pexp_loc } as eRewrite)
+  | ({pexp_desc = Pexp_apply (({pexp_attributes; _} as e1), args); _ } as eRewrite)
       when let f = (List.filter (function
-          | ({txt = "bs"}, _) -> true
+        | ({txt = "bs"; _}, _) -> true
           | _ -> false ) e.pexp_attributes)  in
       List.length f > 0
     ->
       let appExprAttrs = List.filter (function
-          | ({txt = "bs"}, PStr []) -> false
+          | ({txt = "bs"; _}, PStr []) -> false
           | _ -> true ) pexp_attributes in
       let strEvalAttrs = (uncurry_payload e1.pexp_loc)::(List.filter (function
-        | ({txt = "bs"}, PStr []) -> false
+          | ({txt = "bs"; _}, PStr []) -> false
           | _ -> true ) attrs) in
       let e = {
         eRewrite with
@@ -568,7 +548,7 @@ let mkclass_fun {Location. txt ; loc} body =
   match txt with
   | Term (label, default_expr, pat) ->
     Cl.fun_ ~loc label default_expr pat body
-  | Type str ->
+  | Type _ ->
     let pat = syntax_error_pat loc "(type) not allowed in classes" in
     Cl.fun_ ~loc Nolabel None pat body
 
@@ -592,7 +572,7 @@ let process_underscore_application args =
   let exp_question = ref None in
   let hidden_var = "__x" in
   let check_arg ((lab, exp) as arg) = match exp.pexp_desc with
-    | Pexp_ident ({ txt = Lident "_"} as id) ->
+    | Pexp_ident ({ txt = Lident "_"; _} as id) ->
         let new_id = mkloc (Lident hidden_var) id.loc in
         let new_exp = mkexp (Pexp_ident new_id) ~loc:exp.pexp_loc in
         exp_question := Some new_exp;
@@ -601,7 +581,7 @@ let process_underscore_application args =
         arg in
   let args = List.map check_arg args in
   let wrap exp_apply = match !exp_question with
-    | Some {pexp_loc=loc} ->
+    | Some {pexp_loc=loc; _} ->
         let pattern = mkpat (Ppat_var (mkloc hidden_var loc)) ~loc in
         begin match exp_apply.pexp_desc with
         (* Transform fast pipe with underscore application correct:
@@ -611,10 +591,10 @@ let process_underscore_application args =
          *)
         | Pexp_apply(
           {pexp_desc= Pexp_apply(
-            {pexp_desc = Pexp_ident({txt = Longident.Lident("|.")})} as pipeExp,
-            [Nolabel, arg1; Nolabel, ({pexp_desc = Pexp_ident(ident)} as arg2)]
+            {pexp_desc = Pexp_ident({txt = Longident.Lident("|.")}); _} as pipeExp,
+            [Nolabel, arg1; Nolabel, ({pexp_desc = Pexp_ident _; _} as arg2)]
             (*         5                            doStuff                   *)
-          )},
+          ); _},
           args (* [3, __x, 7] *)
           ) ->
             (* build `doStuff(3, __x, 7)` *)
@@ -668,7 +648,7 @@ let mkexp_app_rev startp endp (body, args) =
         let attrs = e.pexp_attributes in
         let hasUncurryAttr = ref false in
         let newAttrs = List.filter (function
-          | ({txt = "uncurry"}, PStr []) ->
+          | ({txt = "uncurry"; _}, PStr []) ->
               hasUncurryAttr := true;
               false
           | _ -> true) attrs
@@ -790,7 +770,7 @@ let varify_constructors var_names t =
       | Ptyp_arrow (label,core_type,core_type') ->
           Ptyp_arrow(label, loop core_type, loop core_type')
       | Ptyp_tuple lst -> Ptyp_tuple (List.map loop lst)
-      | Ptyp_constr( { txt = Lident s }, []) when List.mem s var_names ->
+      | Ptyp_constr( { txt = Lident s ; _}, []) when List.mem s var_names ->
           Ptyp_var s
       | Ptyp_constr(longident, lst) ->
           Ptyp_constr(longident, List.map loop lst)
@@ -932,7 +912,7 @@ let arity_conflict_resolving_mapper super =
          pexp_attributes} when attributes_conflicted "implicit_arity" "explicit_arity" pexp_attributes ->
          let new_args =
            match args with
-             | Some {pexp_desc = Pexp_tuple [sp]} -> Some sp
+             | Some {pexp_desc = Pexp_tuple [sp]; _} -> Some sp
              | _ -> args in
          super.expr mapper
          {pexp_desc=Pexp_construct(lid, new_args); pexp_loc; pexp_attributes=
@@ -946,7 +926,7 @@ let arity_conflict_resolving_mapper super =
          ppat_attributes} when attributes_conflicted "implicit_arity" "explicit_arity" ppat_attributes ->
          let new_args =
            match args with
-             | Some {ppat_desc = Ppat_tuple [sp]} -> Some sp
+             | Some {ppat_desc = Ppat_tuple [sp]; _} -> Some sp
              | _ -> args in
          super.pat mapper
          {ppat_desc=Ppat_construct(lid, new_args); ppat_loc; ppat_attributes=
@@ -959,14 +939,6 @@ let reason_mapper =
   default_mapper
   |> reason_to_ml_swap_operator_mapper
   |> arity_conflict_resolving_mapper
-
-let rec string_of_longident = function
-    | Lident s -> s
-    | Ldot(longPrefix, s) ->
-         s
-    | Lapply (y,s) -> string_of_longident s
-
-let built_in_explicit_arity_constructors = ["Some"; "Assert_failure"; "Match_failure"]
 
 let rewriteFunctorApp module_name elt loc =
   let rec applies = function
@@ -992,10 +964,10 @@ let rewriteFunctorApp module_name elt loc =
 let jsx_component module_name attrs children loc =
   let rec getFirstPart = function
     | Lident fp -> fp
-    | Ldot (fp, sp) -> getFirstPart fp
-    | Lapply (fp, sp) -> getFirstPart fp in
+    | Ldot (fp, _) -> getFirstPart fp
+    | Lapply (fp, _) -> getFirstPart fp in
   let firstPart = getFirstPart module_name in
-  let element_fn = if String.get firstPart 0 != '_' && firstPart = String.capitalize firstPart then
+  let element_fn = if String.get firstPart 0 != '_' && firstPart = String.capitalize_ascii firstPart then
     (* firstPart will be non-empty so the 0th access is fine. Modules can't start with underscore *)
     rewriteFunctorApp module_name "createElement" loc
   else
@@ -1122,8 +1094,8 @@ let package_type_of_module_type pmty =
         err pmty.pmty_loc "only 'with type t =' constraints are supported"
   in
   match pmty with
-  | {pmty_desc = Pmty_ident lid} -> (lid, [])
-  | {pmty_desc = Pmty_with({pmty_desc = Pmty_ident lid}, cstrs)} ->
+  | {pmty_desc = Pmty_ident lid; _} -> (lid, [])
+  | {pmty_desc = Pmty_with({pmty_desc = Pmty_ident lid; _}, cstrs)} ->
       (lid, List.map map_cstr cstrs)
   | _ ->
       err pmty.pmty_loc
@@ -1713,14 +1685,14 @@ structure:
 opt_LET_MODULE_ident:
   | opt_LET_MODULE as_loc(UIDENT) { $2 }
   | opt_LET_MODULE as_loc(LIDENT)
-    { let {loc; txt} = $2 in
+    { let {loc; _} = $2 in
       err loc lowercase_module_msg }
 ;
 
 opt_LET_MODULE_REC_ident:
   | opt_LET_MODULE REC as_loc(UIDENT) { $3 }
   | opt_LET_MODULE REC as_loc(LIDENT)
-    { let {loc; txt} = $3 in
+    { let {loc; _} = $3 in
       err loc lowercase_module_msg }
 ;
 
@@ -3174,14 +3146,7 @@ simple_expr_template_constructor:
       ( non_labeled_argument_list   { mkexp (Pexp_tuple($1)) }
       | simple_expr_direct_argument { $1 }
       )
-    { (*if List.mem (string_of_longident $1.txt)
-         built_in_explicit_arity_constructors then
-        (* unboxing the inner tupple *)
-        match $2 with
-          | [inner] -> mkexp (Pexp_construct($1, Some inner))
-          | _ -> assert false
-      else*)
-      mkExplicitArityTupleExp (Pexp_construct($1, Some $2))
+    { mkExplicitArityTupleExp (Pexp_construct($1, Some $2))
     }
   | name_tag
     mark_position_exp
@@ -3526,7 +3491,7 @@ expr_comma_seq_extension:
     (* Check if the last expr has been spread with `...` *)
     | ((dotdotdot, e) as hd)::es ->
       let (es, ext) = match dotdotdot with
-      | Some dotdotdotLoc -> (es, Some e)
+      | Some _ -> (es, Some e)
       | None -> (hd::es, None)
       in
       let msg = "Lists can only have one `...` spread, at the end.
@@ -3598,7 +3563,7 @@ record_expr_with_string_keys:
     { (Some $2, $4) }
   | STRING COLON expr COMMA?
     { let loc = mklocation $symbolstartpos $endpos in
-      let (s, _, d) = $1 in
+      let (s, _, _) = $1 in
       let lident_lident_loc = mkloc (Lident s) loc in
       (None, [(lident_lident_loc, $3)])
     }
@@ -3614,14 +3579,14 @@ string_literal_exprs_maybe_punned:
 string_literal_expr_maybe_punned_with_comma:
   | STRING COMMA
   { let loc = mklocation $startpos $endpos in
-    let (s, _, d) = $1 in
+    let (s, _, _) = $1 in
     let lident_lident_loc = mkloc (Lident s) loc in
     let exp = mkexp (Pexp_ident lident_lident_loc) in
     (lident_lident_loc, exp)
   }
   | STRING COLON expr COMMA
   { let loc = mklocation $startpos $endpos in
-    let (s, _, d) = $1 in
+    let (s, _, _) = $1 in
     let lident_lident_loc = mkloc (Lident s) loc in
     let exp = $3 in
     (lident_lident_loc, exp)
@@ -3630,7 +3595,7 @@ string_literal_expr_maybe_punned_with_comma:
 string_literal_expr_maybe_punned:
   STRING preceded(COLON, expr)?
   { let loc = mklocation $startpos $endpos in
-    let (s, _, d) = $1 in
+    let (s, _, _) = $1 in
     let lident_lident_loc = mkloc (Lident s) loc in
     let exp = match $2 with
       | Some x -> x
@@ -3765,9 +3730,8 @@ mark_position_pat
     { expecting_pat (with_txt $3 "pattern") }
 
   | LPAREN COLONCOLON RPAREN LPAREN pattern_without_or COMMA pattern_without_or RPAREN
-    { let loc_coloncolon = mklocation $startpos($2) $endpos($2) in
-      let loc = mklocation $symbolstartpos $endpos in
-      mkpat_cons loc_coloncolon (mkpat ~ghost:true ~loc (Ppat_tuple[$5;$7])) loc
+    { let loc = mklocation $symbolstartpos $endpos in
+      mkpat_cons (mkpat ~ghost:true ~loc (Ppat_tuple[$5;$7])) loc
     }
 
   | as_loc(LPAREN) COLONCOLON RPAREN LPAREN
@@ -3834,7 +3798,7 @@ mark_position_pat
         let loc = mklocation $startpos $endpos in
         mkpat_constructor_unit loc loc
       | [hd] -> hd
-      | hd :: tl -> mkpat (Ppat_tuple $2)
+      | _ :: _ -> mkpat (Ppat_tuple $2)
     }
   | as_loc(LPAREN) pattern as_loc(error)
     { unclosed_pat (with_txt $1 "(") (with_txt $3 ")") }
@@ -3908,7 +3872,7 @@ pattern_comma_list_extension:
     (* spread syntax is only allowed at the end *)
     | ((dotdotdot, p) as hd)::ps ->
       let (ps, spreadPat) = match dotdotdot with
-      | Some dotdotdotLoc -> (ps, Some p)
+      | Some _ -> (ps, Some p)
       | None -> (hd::ps, None)
       in
       let msg = "List pattern matches only supports one `...` spread, at the end.

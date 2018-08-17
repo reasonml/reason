@@ -307,8 +307,8 @@ and print_out_type_1 ~uncurried ppf =
       (* single argument should not be wrapped *)
       (* though uncurried type are always wrapped in parens. `. a => 1` isn't supported *)
       | (false, [(_, Otyp_tuple _)]) -> true
-      | (false, [("", typ)]) -> false
-      | (_, args) -> true
+      | (false, [("", _)]) -> false
+      | (_, _) -> true
       in
 
       if should_wrap_with_parens then pp_print_string ppf "(";
@@ -509,7 +509,7 @@ and print_typlist print_elem sep ppf =
       print_typlist print_elem sep ppf tyl
 and print_out_wrap_type ppf =
   function
-  | (Otyp_constr (id, _::_)) as ty ->
+  | (Otyp_constr (_, _::_)) as ty ->
       print_out_type ppf ty
   | ty -> print_simple_out_type ppf ty
 and print_typargs ppf =
@@ -566,7 +566,7 @@ let rec print_out_class_type ppf =
           fprintf ppf "@[%a,@ %a@]"
             print_out_type typ1
             print_class_type_arguments_that_might_be_arrow typ2
-        | Otyp_arrow (actual_label, typ1, typ2) ->
+        | Otyp_arrow (_, typ1, typ2) ->
           fprintf ppf "@[~%s: %a,@ %a@]"
             lab
             print_out_type typ1
@@ -672,7 +672,7 @@ and print_out_sig_item ppf =
   | Osig_typext (ext, Oext_exception) ->
       fprintf ppf "@[<2>exception %a@]"
         print_out_constr (ext.oext_name, ext.oext_args, ext.oext_ret_type)
-  | Osig_typext (ext, es) ->
+  | Osig_typext (ext, _) ->
       print_out_extension_constructor ppf ext
   | Osig_modtype (name, Omty_abstract) ->
       fprintf ppf "@[<2>module type %s@]" name

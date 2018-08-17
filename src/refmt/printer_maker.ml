@@ -1,5 +1,4 @@
 open Migrate_parsetree
-open Ast_404
 
 type parse_itype = [ `ML | `Reason | `Binary | `BinaryReason | `Auto ]
 type print_itype = [ `ML | `Reason | `Binary | `BinaryReason | `AST | `None ]
@@ -45,7 +44,7 @@ let ocamlBinaryParser use_stdin filename =
           file_chan
   in
   match Ast_io.from_channel chan with
-  | Result.Error err -> assert false
+  | Result.Error _ -> assert false
   | Result.Ok (_, Ast_io.Impl ((module Version), ast)) ->
     let module Convert = Convert(Version)(OCaml_404) in
     ((Obj.magic (Convert.copy_structure ast), []), true, false)
@@ -62,5 +61,5 @@ let reasonBinaryParser use_stdin filename =
           seek_in file_chan 0;
           file_chan
   in
-  let (magic_number, filename, ast, comments, parsedAsML, parsedAsInterface) = input_value chan in
+  let (_, _, ast, comments, parsedAsML, parsedAsInterface) = input_value chan in
   ((ast, comments), parsedAsML, parsedAsInterface)

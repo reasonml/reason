@@ -75,7 +75,10 @@ let init_reason () =
       wrap (List.map copy_out_sig_item) Reason_oprint.print_out_signature;
     Toploop.print_out_phrase :=
       wrap copy_out_phrase Reason_oprint.print_out_phrase;
-    let Toploop.Directive_ident current_show_fn = ToploopBackup.current_show in
+    let current_show_fn = match ToploopBackup.current_show with
+    | Toploop.Directive_ident fn -> fn
+    | _ -> assert false
+    in
     Hashtbl.replace Toploop.directive_table "show"
       (Toploop.Directive_ident (fun li ->
            let li' = lident_operator_map Reason_syntax_util.reason_to_ml_swap li in

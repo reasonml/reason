@@ -217,7 +217,7 @@ let default_list_settings = {
 }
 
 let easy_settings_from_config
-    { break; wrap; inline; indent; sepLeft; preSpace; postSpace; pad; sep } =
+    { break; wrap; inline; indent; preSpace; postSpace; pad; sep; _ } =
   (* TODO: Stop handling separators in Easy_format since we handle most of
       them before Easy_format anyways. There's just some that we still rely on
       Easy_format for. Easy_format's sep wasn't powerful enough.
@@ -271,10 +271,10 @@ let get_location layout =
       Some {loc1 with Location.loc_end = loc2.Location.loc_end}
   in
   let rec traverse = function
-    | Sequence (listConfig, subLayouts) ->
+    | Sequence (_, subLayouts) ->
       let locs = List.map traverse subLayouts in
       List.fold_left union None locs
-    | Label (formatter, left, right) ->
+    | Label (_, left, right) ->
       union (traverse left) (traverse right)
     | SourceMap (loc, _) -> Some loc
     | Whitespace(_, sub) -> traverse sub

@@ -1,0 +1,5 @@
+(executable
+ (name reactjs_jsx_ppx_v2)
+ (public_name reactjs_jsx_ppx_v2)
+ (package reason)
+ (libraries reason ocaml-migrate-parsetree))
