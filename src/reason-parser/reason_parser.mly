@@ -914,32 +914,21 @@ let val_of_let_bindings lbs =
 
 (* Transforms
 
-     let!foo x = a
+     let.foo x = a
      and y = b;
      rest_of_code
 
    into
 
-     fst(foo)(snd(foo)(a, b), (x, y) => rest_of_code);
+     Foo.let_(Foo.and_(a, b), (x, y) => rest_of_code);
 
-   a much easier-to-red verison is with:
+   foo is the "combinator." It is a module with two functions:
 
-     let func = fst(foo)
-     and pair = snd(foo)
-
-   then, the transformation is to:
-
-     func(pair(a, b), (x, y) => rest_of_code);
-
-   foo is the "combinator." It is a pair of two functions:
-
-   - fst(foo) is a monadic bind or functor map operation, like Option.map,
+   - Foo.let_ is a monadic bind or functor map operation, like Option.map,
      Promise.then, etc. It applies a continuation (rest_of_code) to some value,
-     which is unwrapped from an option, promise, etc. fst(foo) corresponds to
-     let.
-   - snd(foo) is a pairing operation, which takes two values, and wraps them in
-     an option, promise, etc. snd(foo) corresponds to and, and a nested call to
-     snd(foo) is generated for each and. *)
+     which is unwrapped from an option, promise, etc. It is used to replace let.
+   - Foo.and_ is a pairing operation, which takes two values, and wraps them in
+     an option, promise, etc. Foo.and_ is used to replace and. *)
 let combinator_call_of_let_bindings combinator let_bindings rest_of_code =
   let combinator_loc = combinator.loc in
   let combinator =
