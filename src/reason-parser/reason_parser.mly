@@ -3452,12 +3452,36 @@ labeled_expr:
    * error if this is an *expression * let binding. Otherwise, they become
    * attribute* on the structure item for the "and" binding.
    *)
-  item_attributes AND let_binding_body
-  { let pat, expr = $3 in
-    Vb.mk ~loc:(mklocation $symbolstartpos $endpos) ~attrs:$1 pat expr }
+  item_attributes AND let_combinator? let_binding_body
+  { let pat, expr = $4 in
+    let vb =
+      Vb.mk ~loc:(mklocation $symbolstartpos $endpos) ~attrs:$1 pat expr in
+    (vb, $3) }
 ;
 
-let_bindings: let_binding and_let_binding* { addlbs $1 $2 };
+let_bindings: let_binding and_let_binding*
+  { let let_binding = $1 in
+    let and_bindings = $2 in
+    and_bindings |> List.iter (fun (and_binding, and_combinator) ->
+      match (and_combinator, let_binding.lbs_combinator) with
+      | (None, None) -> ()
+      | (Some a, Some b) when a.txt = b.txt -> ()
+      | _ ->
+        let loc =
+          match and_combinator with
+          | None -> and_binding.pvb_loc
+          | Some identifier -> identifier.loc
+        in
+        let expected =
+          match let_binding.lbs_combinator with
+          | None -> "and"
+          | Some identifier ->
+            "and." ^ (String.concat "." (flatten identifier.txt))
+        in
+        let message = "and.foo must match let.foo, " ^ expected in
+        raise Syntaxerr.(Error (Expecting (loc, message))));
+    let and_bindings = fst (List.split and_bindings) in
+    addlbs let_binding and_bindings };
 
 let_binding:
   (* Form with item extension sugar *)
