@@ -995,3 +995,5 @@ let predicate =
       | Some(exn) => predicate(exn));
 
 let (>...) = (a, b) => a + b;
+
+a >... b;
