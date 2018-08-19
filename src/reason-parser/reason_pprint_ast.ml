@@ -5124,8 +5124,7 @@ let printer = object(self:'self)
 
           let combinator_name =
             match function_name.txt with
-            | Ldot (Lident module_name, "let_") ->
-              String.uncapitalize module_name
+            | Ldot (Lident module_name, "let_") -> module_name
             | _ -> assert false
           in
 

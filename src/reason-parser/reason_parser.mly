@@ -930,17 +930,15 @@ let val_of_let_bindings lbs =
    - Foo.and_ is a pairing operation, which takes two values, and wraps them in
      an option, promise, etc. Foo.and_ is used to replace and. *)
 let combinator_call_of_let_bindings combinator let_bindings rest_of_code =
-  let combinator_loc = combinator.loc in
-  let combinator = String.capitalize combinator.txt in
   let func =
     Exp.ident
-      ~loc:combinator_loc
-      (mkloc (parse (combinator ^ ".let_")) combinator_loc)
+      ~loc:combinator.loc
+      (mkloc (parse (combinator.txt ^ ".let_")) combinator.loc)
   in
   let pair and_binding =
     Exp.ident
       ~loc:and_binding.pvb_loc
-      (mkloc (parse (combinator ^ ".and_")) and_binding.pvb_loc)
+      (mkloc (parse (combinator.txt ^ ".and_")) and_binding.pvb_loc)
   in
 
   match let_bindings.lbs_bindings with
@@ -972,7 +970,7 @@ let combinator_call_of_let_bindings combinator let_bindings rest_of_code =
 
     let continuation =
       Exp.fun_
-        ~loc:combinator_loc Nolabel None nested_pair_pattern rest_of_code
+        ~loc:combinator.loc Nolabel None nested_pair_pattern rest_of_code
     in
 
     Exp.apply
@@ -4986,7 +4984,7 @@ item_extension_sugar:
 ;
 
 let_combinator:
-  DOT as_loc(val_ident) { $2 }
+  DOT as_loc(UIDENT) { $2 }
 ;
 
 extension:
