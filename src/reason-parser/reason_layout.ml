@@ -217,7 +217,7 @@ let default_list_settings = {
 }
 
 let easy_settings_from_config
-    { break; wrap; inline; indent; preSpace; postSpace; pad; sep; _ } =
+    { break; wrap; inline; indent; preSpace; postSpace; pad; sep } =
   (* TODO: Stop handling separators in Easy_format since we handle most of
       them before Easy_format anyways. There's just some that we still rely on
       Easy_format for. Easy_format's sep wasn't powerful enough.

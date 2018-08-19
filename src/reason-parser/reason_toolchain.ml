@@ -360,9 +360,9 @@ module OCaml_syntax = struct
     let open Parsetree in
     let seen = Hashtbl.create 7 in
     let attribute mapper = function
-      | ({ Location. txt = ("ocaml.doc" | "ocaml.text"); _},
-        PStr [{ pstr_desc = Pstr_eval ({ pexp_desc = Pexp_constant (Pconst_string(_text, None)); _ } , _);
-                pstr_loc = loc; _ }]) as attribute ->
+      | ({ Location. txt = ("ocaml.doc" | "ocaml.text")},
+        PStr [{ pstr_desc = Pstr_eval ({ pexp_desc = Pexp_constant (Pconst_string(_text, None)) } , _);
+                pstr_loc = loc }]) as attribute ->
         (* Workaround: OCaml 4.02.3 kept an initial '*' in docstrings.
          * For other versions, we have to put the '*' back. *)
         Hashtbl.add seen loc ();

@@ -1,9 +1,9 @@
 let is_punned_labelled_expression e lbl =
   let open Ast_404.Parsetree in
   match e.pexp_desc with
-  | Pexp_ident { txt; _ }
-  | Pexp_constraint ({pexp_desc = Pexp_ident { txt; _ }; _}, _)
-  | Pexp_coerce ({pexp_desc = Pexp_ident { txt; _ }; _}, _, _)
+  | Pexp_ident { txt }
+  | Pexp_constraint ({pexp_desc = Pexp_ident { txt }}, _)
+  | Pexp_coerce ({pexp_desc = Pexp_ident { txt }}, _, _)
     -> txt = Longident.parse lbl
   | _ -> false
 
@@ -34,7 +34,7 @@ let funAppCallbackExceedsWidth ~printWidth ~args ~funExpr () =
     | [] -> false
     | arg::args ->
       begin match arg with
-      | (label, ({ pexp_desc = Pexp_ident ident; _ } as e)) ->
+      | (label, ({ pexp_desc = Pexp_ident ident } as e)) ->
         let identLen = List.fold_left (fun acc curr ->
           acc + (String.length curr)
         ) len (Longident.flatten ident.txt) in
@@ -47,7 +47,7 @@ let funAppCallbackExceedsWidth ~printWidth ~args ~funExpr () =
         | Optional s ->
             aux (len - (identLen + 3 + String.length s)) args
         end
-      | (label, {pexp_desc = Pexp_constant (Pconst_string (str, _)); _}) ->
+      | (label, {pexp_desc = Pexp_constant (Pconst_string (str, _))}) ->
         let strLen = String.length str in
         begin match label with
         | Nolabel -> aux (len - strLen) args
@@ -93,13 +93,13 @@ let bsExprCanBeUncurried expr =
 
 let isUnderscoreIdent expr =
   match Ast_404.Parsetree.(expr.pexp_desc) with
-  | Pexp_ident ({txt = Lident "_"; _}) -> true
+  | Pexp_ident ({txt = Lident "_"}) -> true
   | _ -> false
 
 let isFastPipe e = match Ast_404.Parsetree.(e.pexp_desc) with
-  | Pexp_ident({txt = Longident.Lident("|."); _}) -> true
+  | Pexp_ident({txt = Longident.Lident("|.")}) -> true
   | Pexp_apply(
-    {pexp_desc = Pexp_ident({txt = Longident.Lident("|."); _}); _},
+    {pexp_desc = Pexp_ident({txt = Longident.Lident("|.")})},
       _
     ) -> true
   | _ -> false
@@ -111,8 +111,8 @@ let isFastPipe e = match Ast_404.Parsetree.(e.pexp_desc) with
  * preserved in this case. *)
 let isFastPipeWithApplicationJSXChild e = match Ast_404.Parsetree.(e.pexp_desc) with
   | Pexp_apply(
-    {pexp_desc = Pexp_ident({txt = Longident.Lident("|."); _}); _},
-      [Nolabel, {pexp_desc = Pexp_apply(_); _}; _]
+    {pexp_desc = Pexp_ident({txt = Longident.Lident("|.")})},
+      [Nolabel, {pexp_desc = Pexp_apply(_)}; _]
     ) -> true
   | _ -> false
 
@@ -123,10 +123,10 @@ let isUnderscoreApplication expr =
         Nolabel,
         None,
         {
-          ppat_desc = Ppat_var({txt = "__x"; _});
-          ppat_attributes = []; _
+          ppat_desc = Ppat_var({txt = "__x"});
+          ppat_attributes = []
         },
         _
-      ); _
+      )
     } -> true
   | _ -> false

@@ -261,7 +261,7 @@ let mkExplicitArityTupleExp ?(loc=dummy_loc ()) exp_desc =
     exp_desc
 
 let is_pattern_list_single_any = function
-  | [{ppat_desc=Ppat_any; ppat_attributes=[]; _} as onlyItem] -> Some onlyItem
+  | [{ppat_desc=Ppat_any; ppat_attributes=[]} as onlyItem] -> Some onlyItem
   | _ -> None
 
 let mkoperator {Location. txt; loc} =
@@ -317,7 +317,7 @@ let mkuminus name arg =
 
 let prepare_functor_arg = function
   | Some name, mty -> (name, mty)
-  | None, (Some {pmty_loc; _} as mty) ->
+  | None, (Some {pmty_loc} as mty) ->
       (mkloc "_" (make_ghost_loc pmty_loc), mty)
   | None, None -> assert false
 
@@ -414,17 +414,17 @@ let makeFrag loc body =
 
 let mkstrexp e attrs =
   match e with
-  | ({pexp_desc = Pexp_apply (({pexp_attributes; _} as e1), args); _ } as eRewrite)
+  | ({pexp_desc = Pexp_apply (({pexp_attributes} as e1), args) } as eRewrite)
       when let f = (List.filter (function
-        | ({txt = "bs"; _}, _) -> true
+        | ({txt = "bs"}, _) -> true
           | _ -> false ) e.pexp_attributes)  in
       List.length f > 0
     ->
       let appExprAttrs = List.filter (function
-          | ({txt = "bs"; _}, PStr []) -> false
+          | ({txt = "bs"}, PStr []) -> false
           | _ -> true ) pexp_attributes in
       let strEvalAttrs = (uncurry_payload e1.pexp_loc)::(List.filter (function
-          | ({txt = "bs"; _}, PStr []) -> false
+          | ({txt = "bs"}, PStr []) -> false
           | _ -> true ) attrs) in
       let e = {
         eRewrite with
@@ -573,7 +573,7 @@ let process_underscore_application args =
   let exp_question = ref None in
   let hidden_var = "__x" in
   let check_arg ((lab, exp) as arg) = match exp.pexp_desc with
-    | Pexp_ident ({ txt = Lident "_"; _} as id) ->
+    | Pexp_ident ({ txt = Lident "_"} as id) ->
         let new_id = mkloc (Lident hidden_var) id.loc in
         let new_exp = mkexp (Pexp_ident new_id) ~loc:exp.pexp_loc in
         exp_question := Some new_exp;
@@ -582,7 +582,7 @@ let process_underscore_application args =
         arg in
   let args = List.map check_arg args in
   let wrap exp_apply = match !exp_question with
-    | Some {pexp_loc=loc; _} ->
+    | Some {pexp_loc=loc} ->
         let pattern = mkpat (Ppat_var (mkloc hidden_var loc)) ~loc in
         begin match exp_apply.pexp_desc with
         (* Transform fast pipe with underscore application correct:
@@ -592,10 +592,10 @@ let process_underscore_application args =
          *)
         | Pexp_apply(
           {pexp_desc= Pexp_apply(
-            {pexp_desc = Pexp_ident({txt = Longident.Lident("|.")}); _} as pipeExp,
-            [Nolabel, arg1; Nolabel, ({pexp_desc = Pexp_ident _; _} as arg2)]
+            {pexp_desc = Pexp_ident({txt = Longident.Lident("|.")})} as pipeExp,
+            [Nolabel, arg1; Nolabel, ({pexp_desc = Pexp_ident _} as arg2)]
             (*         5                            doStuff                   *)
-          ); _},
+          )},
           args (* [3, __x, 7] *)
           ) ->
             (* build `doStuff(3, __x, 7)` *)
@@ -649,7 +649,7 @@ let mkexp_app_rev startp endp (body, args) =
         let attrs = e.pexp_attributes in
         let hasUncurryAttr = ref false in
         let newAttrs = List.filter (function
-          | ({txt = "uncurry"; _}, PStr []) ->
+          | ({txt = "uncurry"}, PStr []) ->
               hasUncurryAttr := true;
               false
           | _ -> true) attrs
@@ -771,7 +771,7 @@ let varify_constructors var_names t =
       | Ptyp_arrow (label,core_type,core_type') ->
           Ptyp_arrow(label, loop core_type, loop core_type')
       | Ptyp_tuple lst -> Ptyp_tuple (List.map loop lst)
-      | Ptyp_constr( { txt = Lident s ; _}, []) when List.mem s var_names ->
+      | Ptyp_constr( { txt = Lident s }, []) when List.mem s var_names ->
           Ptyp_var s
       | Ptyp_constr(longident, lst) ->
           Ptyp_constr(longident, List.map loop lst)
@@ -913,7 +913,7 @@ let arity_conflict_resolving_mapper super =
          pexp_attributes} when attributes_conflicted "implicit_arity" "explicit_arity" pexp_attributes ->
          let new_args =
            match args with
-             | Some {pexp_desc = Pexp_tuple [sp]; _} -> Some sp
+             | Some {pexp_desc = Pexp_tuple [sp]} -> Some sp
              | _ -> args in
          super.expr mapper
          {pexp_desc=Pexp_construct(lid, new_args); pexp_loc; pexp_attributes=
@@ -927,7 +927,7 @@ let arity_conflict_resolving_mapper super =
          ppat_attributes} when attributes_conflicted "implicit_arity" "explicit_arity" ppat_attributes ->
          let new_args =
            match args with
-             | Some {ppat_desc = Ppat_tuple [sp]; _} -> Some sp
+             | Some {ppat_desc = Ppat_tuple [sp]} -> Some sp
              | _ -> args in
          super.pat mapper
          {ppat_desc=Ppat_construct(lid, new_args); ppat_loc; ppat_attributes=
@@ -1095,8 +1095,8 @@ let package_type_of_module_type pmty =
         err pmty.pmty_loc "only 'with type t =' constraints are supported"
   in
   match pmty with
-  | {pmty_desc = Pmty_ident lid; _} -> (lid, [])
-  | {pmty_desc = Pmty_with({pmty_desc = Pmty_ident lid; _}, cstrs)} ->
+  | {pmty_desc = Pmty_ident lid} -> (lid, [])
+  | {pmty_desc = Pmty_with({pmty_desc = Pmty_ident lid}, cstrs)} ->
       (lid, List.map map_cstr cstrs)
   | _ ->
       err pmty.pmty_loc
@@ -1686,14 +1686,14 @@ structure:
 opt_LET_MODULE_ident:
   | opt_LET_MODULE as_loc(UIDENT) { $2 }
   | opt_LET_MODULE as_loc(LIDENT)
-    { let {loc; _} = $2 in
+    { let {loc} = $2 in
       err loc lowercase_module_msg }
 ;
 
 opt_LET_MODULE_REC_ident:
   | opt_LET_MODULE REC as_loc(UIDENT) { $3 }
   | opt_LET_MODULE REC as_loc(LIDENT)
-    { let {loc; _} = $3 in
+    { let {loc} = $3 in
       err loc lowercase_module_msg }
 ;
 

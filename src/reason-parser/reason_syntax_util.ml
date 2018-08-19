@@ -331,7 +331,7 @@ let identifier_mapper f super =
   expr = begin fun mapper expr ->
     let expr =
       match expr with
-        | {pexp_desc=Pexp_ident ({txt; _} as id); _} ->
+        | {pexp_desc=Pexp_ident ({txt} as id)} ->
              let swapped = match txt with
                | Lident s -> Lident (f s)
                | Ldot(longPrefix, s) -> Ldot(longPrefix, f s)
@@ -345,7 +345,7 @@ let identifier_mapper f super =
   pat = begin fun mapper pat ->
     let pat =
       match pat with
-        | {ppat_desc=Ppat_var ({txt; _} as id); _} ->
+        | {ppat_desc=Ppat_var ({txt} as id)} ->
              {pat with ppat_desc=Ppat_var ({id with txt=(f txt)})}
         | _ -> pat
     in
@@ -354,7 +354,7 @@ let identifier_mapper f super =
   signature_item = begin fun mapper signatureItem ->
     let signatureItem =
       match signatureItem with
-        | {psig_desc=Psig_value ({pval_name; _} as name); _} ->
+        | {psig_desc=Psig_value ({pval_name} as name)} ->
             {signatureItem with psig_desc=Psig_value ({name with pval_name=({pval_name with txt=(f name.pval_name.txt)})})}
         | _ -> signatureItem
     in
@@ -386,7 +386,7 @@ let ml_to_reason_swap_operator_mapper = identifier_mapper ml_to_reason_swap
 (* attribute_equals tests an attribute is txt
  *)
 let attribute_equals to_compare = function
-  | ({txt; _}, _) -> txt = to_compare
+  | ({txt}, _) -> txt = to_compare
 
 (* attribute_exists tests if an attribute exists in a list
  *)
