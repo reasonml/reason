@@ -7,6 +7,10 @@
  (deps ../generate/select.exe lexer_warning.ml-4.06 lexer_warning.ml-default)
  (action (with-stdout-to %{targets} (run ../generate/select.exe lexer_warning.ml-4.06 lexer_warning.ml-default))))
 
+(rule
+ (targets reason_string.ml)
+ (deps ../generate/select.exe reason_string.ml-4.02 reason_string.ml-default)
+ (action (with-stdout-to %{targets} (run ../generate/select.exe reason_string.ml-4.02 reason_string.ml-default))))
 
 ; Update error messages based on new grammar
 ; Previously, called update_error in the `Makefile`.
@@ -59,7 +63,7 @@
  ;  (preprocess (pps (bisect_ppx)))
  (public_name reason)
  (wrapped false)
- (flags (:standard -w -9-52))
+ (flags (:standard -w -9-52 -safe-string))
  (modules
   lexer_warning
   reason_syntax_util
@@ -75,7 +79,8 @@
   reason_parser_message
   reason_oprint
   reason_parser_explain_raw
-  reason_parser_explain)
+  reason_parser_explain
+  reason_string)
  (libraries
   ocaml-migrate-parsetree
   menhirLib

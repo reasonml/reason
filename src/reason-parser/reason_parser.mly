@@ -56,6 +56,7 @@ open Longident
 open Parsetree
 open Ast_helper
 open Ast_mapper
+open Reason_string
 
 (*
    TODO:
