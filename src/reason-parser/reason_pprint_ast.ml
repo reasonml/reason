@@ -3847,6 +3847,9 @@ let printer = object(self:'self)
     | Some se -> Simple se
     | None ->
     match x.pexp_desc with
+    | Pexp_apply _ when Reason_attrs.(hasRefmtTag letCombinator) refmtAttrs ->
+      let x = {x with pexp_attributes = refmtAttrs @ x.pexp_attributes} in
+      Simple (makeLetSequence (self#letList x))
     | Pexp_apply (e, ls) -> (
       let ls = List.map (fun (l,expr) -> (l, self#process_underscore_application expr)) ls in
       match (e, ls) with
@@ -5066,6 +5069,83 @@ let printer = object(self:'self)
            let bindingsLoc = self#bindingsLocationRange l in
            let layout = source_map ~loc:bindingsLoc bindingsLayout in
            processLetList ((bindingsLoc, layout)::acc) e
+
+        | (attrs, Pexp_apply (
+            {pexp_desc = Pexp_ident function_name}, [
+              Nolabel, bound_expression;
+              Nolabel, {pexp_desc = Pexp_fun (
+                Nolabel, None, continuation_pattern, continuation_body)}]))
+          when Reason_attrs.(hasRefmtTag letCombinator) refmtAttrs ->
+
+          (* Find all the nested applications that were generated from and.foo
+             bindings. They are tagged with andCombinator. *)
+          let rec find_bindings pattern expr =
+            let (refmtAttrs, otherAttrs) =
+              Reason_attrs.partition
+                (Reason_attrs.isRefmt ~filter:None) expr.pexp_attributes
+            in
+
+            match (otherAttrs, expr.pexp_desc) with
+            | (_, Pexp_apply (
+                {pexp_desc = Pexp_ident function_name}, [
+                  Nolabel, left_expr;
+                  Nolabel, right_expr
+                ]))
+              when Reason_attrs.(hasRefmtTag andCombinator) refmtAttrs ->
+
+              let (left_pattern, right_pattern) =
+                match pattern.ppat_desc with
+                | Ppat_tuple [l; r] -> (l, r)
+                | _ -> assert false
+              in
+
+              let nested_bindings_reversed =
+                find_bindings left_pattern left_expr in
+
+              let this_and_binding =
+                Ast_helper.Vb.mk
+                  ~loc:function_name.loc right_pattern right_expr
+              in
+
+              this_and_binding::nested_bindings_reversed
+
+            | _ ->
+              let let_binding =
+                Ast_helper.Vb.mk
+                  ~loc:function_name.loc pattern expr
+              in
+              [let_binding]
+          in
+
+          let bindings =
+            find_bindings continuation_pattern bound_expression
+            |> List.rev
+          in
+
+          let combinator_name =
+            match function_name.txt with
+            | Ldot (Lident module_name, "let_") ->
+              String.uncapitalize module_name
+            | _ -> assert false
+          in
+
+          let bindings_loc = self#bindingsLocationRange bindings in
+
+          let layout =
+            let let_layout =
+              self#binding ("let." ^ combinator_name) (List.hd bindings) in
+            let and_layouts =
+              List.map
+                (self#binding ("and." ^ combinator_name)) (List.tl bindings)
+            in
+            makeList
+              ~postSpace:true ~break:Always ~indent:0 ~inline:(true, true)
+              (let_layout::and_layouts)
+            |> source_map ~loc:bindings_loc
+          in
+
+          processLetList ((bindings_loc, layout)::acc) continuation_body
+
         | (attrs, Pexp_open (ovf, lid, e))
             (* Add this when check to make sure these are handled as regular "simple expressions" *)
             when not (self#isSeriesOfOpensFollowedByNonSequencyExpression {expr with pexp_attributes = []}) ->
@@ -5813,6 +5893,9 @@ let printer = object(self:'self)
            token will be confused with the match token. *)
         | Pexp_fun _ when pipe || semi -> Some (self#reset#simplifyUnparseExpr x)
         | Pexp_function l when pipe || semi -> Some (formatPrecedence ~loc:x.pexp_loc (self#reset#patternFunction x.pexp_loc l))
+        | Pexp_apply _
+          when Reason_attrs.(hasRefmtTag letCombinator) refmtAttrs ->
+          Some (makeLetSequence (self#letList x))
         | Pexp_apply (e, l) -> (
           match self#simple_get_application x with
           (* If it's the simple form of application. *)

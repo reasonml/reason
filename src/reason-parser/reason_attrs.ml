@@ -16,8 +16,8 @@ module T = struct
   }
 end
 
-let letCPSTag = "let_continuation_passing_style"
-let letCPSMulti = "let_continuation_passing_style_multi"
+let letCombinator = "letCombinator"
+let andCombinator = "andCombinator"
 
 let isRefmtTag tag attr =
   match attr with

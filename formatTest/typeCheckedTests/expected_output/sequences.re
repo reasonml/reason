@@ -106,17 +106,13 @@ module Opt_map = {
   let and_ = Option.pair;
 };
 
-let _ =
-  Opt.let_(Some(10), x =>
-    Opt_map.let_(
-      Opt_map.and_(
-        Opt_map.and_(Some(2), Some(5)),
-        Some(7),
-      ),
-      (((a, b), c)) => {
-        print_endline(string_of_int(a));
+let _ = {
+  let.opt x = Some(10);
 
-        a + x * b + c;
-      },
-    )
-  );
+  let.opt_map a = Some(2)
+  and.opt_map b = Some(5)
+  and.opt_map c = Some(7);
+  print_endline(string_of_int(a));
+
+  a + x * b + c;
+};

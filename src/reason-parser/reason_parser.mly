@@ -956,6 +956,7 @@ let combinator_call_of_let_bindings combinator let_bindings rest_of_code =
       in
       let pairing_expression =
         Exp.apply
+          ~attrs:[simple_ghost_refmt_text_attr Reason_attrs.andCombinator]
           ~loc:and_binding.pvb_loc
           (pair and_binding)
           [(Nolabel, pairing_expression); (Nolabel, and_binding.pvb_expr)]
@@ -974,17 +975,8 @@ let combinator_call_of_let_bindings combinator let_bindings rest_of_code =
         ~loc:combinator_loc Nolabel None nested_pair_pattern rest_of_code
     in
 
-    let attrs =
-      match and_bindings with
-      | [] ->
-        [simple_ghost_refmt_text_attr Reason_attrs.letCPSTag]
-      | _::_ ->
-        [simple_ghost_refmt_text_attr Reason_attrs.letCPSTag;
-         simple_ghost_refmt_text_attr Reason_attrs.letCPSMulti]
-    in
-
     Exp.apply
-      ~attrs
+      ~attrs:[simple_ghost_refmt_text_attr Reason_attrs.letCombinator]
       ~loc:let_bindings.lbs_loc
       func
       [(Nolabel, pairing_expression); (Nolabel, continuation)]
