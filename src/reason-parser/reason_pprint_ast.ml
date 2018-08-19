@@ -3219,17 +3219,11 @@ let printer = object(self:'self)
   method typ_package ?(protect=false) ?(mod_prefix=true) lid cstrs =
     let packageIdent =
       let packageIdent = self#longident_loc lid in
-      if protect then
-        makeList ~postSpace:true ~wrap:("(", ")") [
-          if mod_prefix then atom "module" else atom ""; packageIdent
-        ]
-      else begin
-        if mod_prefix then
-          makeList ~postSpace:true [atom "module"; packageIdent]
-        else packageIdent
-      end
+      if mod_prefix then
+        makeList ~postSpace:true [atom "module"; packageIdent]
+      else packageIdent
     in
-    match cstrs with
+    let unwrapped_layout = match cstrs with
     | [] -> packageIdent
     | cstrs ->
         label ~space:true
@@ -3245,6 +3239,10 @@ let printer = object(self:'self)
                   [atom "type"; self#longident_loc s; atom "="])
                 (self#core_type ct)
             ) cstrs))
+    in
+    if protect then
+      makeList ~postSpace:true ~wrap:("(", ")") [unwrapped_layout ]
+    else unwrapped_layout
 
   method constrained_pattern x = match x.ppat_desc with
     | Ppat_constraint (p, ct) ->
