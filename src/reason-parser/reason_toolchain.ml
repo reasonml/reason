@@ -210,7 +210,7 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
           | [] -> []
           | hd :: tl -> (
               let classifiedTail = classifyAndNormalizeComments tl in
-              let (str, physical_loc) = hd in
+              let (_, physical_loc) = hd in
               (* When searching for "^" regexp, returns location of newline + 1 *)
               let (stop_char, eol_start, virtual_start_pos) = left_expand_comment false contents physical_loc.loc_start.pos_cnum in
               let one_char_before_stop_char =
@@ -237,7 +237,7 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
                                           (one_char_before_stop_char = ' ' ||
                                            one_char_before_stop_char = '\n' ||
                                            one_char_before_stop_char = '\t' ) in
-              let (stop_char, eol_end, virtual_end_pos) = right_expand_comment should_scan_next_line contents physical_loc.loc_end.pos_cnum in
+              let (_, eol_end, virtual_end_pos) = right_expand_comment should_scan_next_line contents physical_loc.loc_end.pos_cnum in
               let end_pos_plus_one = physical_loc.loc_end.pos_cnum in
               let comment_length = (end_pos_plus_one - physical_loc.loc_start.pos_cnum - 4) in
               let original_comment_contents = String.sub contents (physical_loc.loc_start.pos_cnum + 2) comment_length in
@@ -352,8 +352,6 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
 end
 
 module OCaml_syntax = struct
-  open Migrate_parsetree
-
   (* The OCaml parser keep doc strings in the comment list.
      To avoid duplicating comments, we need to filter comments that appear
      as doc strings is the AST out of the comment list. *)
@@ -362,9 +360,9 @@ module OCaml_syntax = struct
     let open Parsetree in
     let seen = Hashtbl.create 7 in
     let attribute mapper = function
-      | ({ Location. txt = ("ocaml.doc" | "ocaml.text") },
-        PStr [{ pstr_desc = Pstr_eval ({ pexp_desc = Pexp_constant (Pconst_string(_text, None)); _ } , _);
-                pstr_loc = loc; _ }]) as attribute ->
+      | ({ Location. txt = ("ocaml.doc" | "ocaml.text")},
+        PStr [{ pstr_desc = Pstr_eval ({ pexp_desc = Pexp_constant (Pconst_string(_text, None)) } , _);
+                pstr_loc = loc }]) as attribute ->
         (* Workaround: OCaml 4.02.3 kept an initial '*' in docstrings.
          * For other versions, we have to put the '*' back. *)
         Hashtbl.add seen loc ();
@@ -638,7 +636,7 @@ module Reason_syntax = struct
          inserting a SEMICOLON, otherwise return the checkpoint to the caller.
       *)
       begin match triple with
-        | (token, startp, endp) when try_inserting_semi_on token ->
+        | (token, _, _) when try_inserting_semi_on token ->
           begin match try_inserting_semi checkpoint triple with
             | Some (I.InputNeeded _ as checkpoint') -> checkpoint'
             | Some _ | None -> error_checkpoint
@@ -673,7 +671,7 @@ module Reason_syntax = struct
     | I.HandlingError env when !Reason_config.recoverable ->
       let loc = last_token_loc supplier in
       begin match Reason_syntax_util.findMenhirErrorMessage loc with
-        | Reason_syntax_util.MenhirMessagesError err -> ()
+        | Reason_syntax_util.MenhirMessagesError _ -> ()
         | Reason_syntax_util.NoMenhirMessagesError ->
           let token = match supplier.last_token with
             | Some token -> token

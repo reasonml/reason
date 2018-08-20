@@ -1,7 +1,0 @@
-(jbuild_version 1)
-
-(executables
- ((names (refmt_impl))
-  (public_names (refmt))
-  (package reason)
-  (libraries (reason reason.cmdliner))))

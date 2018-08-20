@@ -1,8 +1,0 @@
-(jbuild_version 1)
-
-(executables
- ((names (testOprint))
-  (public_names (testOprint))
-  (package reason)
-  (libraries
-   (reason))))

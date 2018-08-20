@@ -31,7 +31,7 @@ let () =
       |> split ~by:'"'
       |> List.map (fun input ->
         try Reason_type_of_ocaml_type.convert input |> String.trim |> String.escaped
-        with Syntaxerr.Error a ->
+        with Syntaxerr.Error _ ->
           (* Can't parse the input for some reason? Return the (slightly modified) result and don't crash. *)
           "ML: " ^ input
       )
@@ -40,5 +40,5 @@ let () =
       that 1 type maps to 1 line. E.g. ["a"] maps to "a" and ["a", ""] maps to
       "a\n" *)
       |> print_string
-    with Syntaxerr.Error a ->
+    with Syntaxerr.Error _ ->
       prerr_endline "Failed to parse the input type(s)."

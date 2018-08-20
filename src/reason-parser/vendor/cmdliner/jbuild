@@ -2,4 +2,5 @@
 
 (library
  ((name reason.cmdliner)
-  (wrapped false)))
+  (wrapped false)
+  (flags (:standard -w -3-27-32-35-50))))
