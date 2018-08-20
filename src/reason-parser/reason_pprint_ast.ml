@@ -5733,7 +5733,7 @@ let printer = object(self:'self)
             self#wrapCurriedFunctionBinding
               ~sweet:true ~attachTo:upToColon funToken ~arrow:"=>"
               firstArg tl returnedAppTerms
-      in source_map ~loc:totalRowLoc theRow
+      in (source_map ~loc:totalRowLoc theRow, totalRowLoc)
     in
     let rec getRows l =
       match l with
@@ -5750,20 +5750,27 @@ let printer = object(self:'self)
           | [hd] -> [makeRow hd false]
           | _ -> getRows l
         )
+      (* This case represents a "spread" being present -> {...x, a: 1, b: 2} *)
       | Some withRecord ->
-        let firstRow = (
-          (* Unclear why "sugar_expr" was special cased hre. *)
-          let appTerms = self#unparseExprApplicationItems withRecord in
-          formatAttachmentApplication applicationFinalWrapping (Some (false, (atom "..."))) appTerms
-        ) in
-        source_map ~loc:withRecord.pexp_loc firstRow :: getRows l
+        let firstRow =
+          let row = (
+            (* Unclear why "sugar_expr" was special cased hre. *)
+            let appTerms = self#unparseExprApplicationItems withRecord in
+            formatAttachmentApplication applicationFinalWrapping (Some (false, (atom "..."))) appTerms
+          )
+          in (
+            source_map ~loc:withRecord.pexp_loc row,
+            withRecord.pexp_loc
+          )
+        in
+        firstRow::(getRows l)
     in
     makeList
       ~wrap:(lwrap ^ "{" ,"}" ^ rwrap)
       ~break:(if !forceBreak then Layout.Always else Layout.IfNeed)
       ~sep:commaTrail
       ~postSpace:true
-      allRows
+      (groupAndPrint ~xf:fst ~getLoc:snd ~comments:self#comments allRows)
 
   method isSeriesOfOpensFollowedByNonSequencyExpression expr =
     match (expr.pexp_attributes, expr.pexp_desc) with
