@@ -4,10 +4,12 @@ set -e
 # this script does 2 independent things:
 # - pack the whole repo into a single refmt file for vendoring into bucklescript
 # - generate the js version of refmt for web usage
+esy i
+esy b
 
 THIS_SCRIPT_DIR="$(cd "$( dirname "$0" )" && pwd)"
 
-command -v dune || { echo "Dune not found. If you're using esy, do 'esy ./reason_bspack.sh'"; exit 1; }
+# command -v dune || { echo "Dune not found. If you're using esy, do 'esy ./reason_bspack.sh'"; exit 1; }
 
 # echo "**This script is switching you to ocaml 4.02.3 for the subsequent bspacking. Please switch back to your own version afterward. Thanks!**\n"
 # opam switch 4.02.3
@@ -15,7 +17,7 @@ command -v dune || { echo "Dune not found. If you're using esy, do 'esy ./reason
 # Because OCaml 4.02 doesn't come with the `Result` module, it also needed stubbing out.
 resultStub="module Result = struct type ('a, 'b) result = Ok of 'a | Error of 'b end open Result"
 
-menhirSuggestedLib=`menhir --suggest-menhirLib`
+menhirSuggestedLib=`esy menhir --suggest-menhirLib`
 
 esy build-env node_modules/@opam/ocaml-migrate-parsetree > _get_root
 echo >> _get_root
@@ -66,7 +68,7 @@ ocamlMigrateParseTreeTargetDir=$THIS_SCRIPT_DIR/build/omp
 if [ ! -f $THIS_SCRIPT_DIR/bspack.exe ]; then
   echo "👉 building bspack.exe"
   cd $THIS_SCRIPT_DIR/bin
-  ocamlopt -g -w -40-30-3 ./ext_basic_hash_stubs.c unix.cmxa ./bspack.ml -o ../bspack.exe
+  esy ocamlopt -g -w -40-30-3 ./ext_basic_hash_stubs.c unix.cmxa ./bspack.ml -o ../bspack.exe
   cd -
 fi
 
@@ -99,7 +101,7 @@ build_js_api () {
 
   # the `-no-alias-deps` flag is important. Not sure why...
   # remove warning 40 caused by ocaml-migrate-parsetree
-  ocamlc -g -no-alias-deps -w -40-3 -I +compiler-libs ocamlcommon.cma "$REFMT_API.ml" -o "$REFMT_API.byte"
+  esy ocamlc -g -no-alias-deps -w -40-3 -I +compiler-libs ocamlcommon.cma "$REFMT_API.ml" -o "$REFMT_API.byte"
 
   # compile refmtJsApi as the final entry file
   esy ocamlfind ocamlc -bin-annot -g -w -30-3-40 -package js_of_ocaml,ocaml-migrate-parsetree -o "$REFMT_API_ENTRY" -I $buildDir -c -impl ./refmtJsApi.ml
@@ -145,9 +147,9 @@ build_refmt () {
 
   echo "👉 compiling refmt"
   # build REFMT_BINARY into an actual binary too. For testing purposes at the end
-  ocamlc -g -no-alias-deps -w -40-3 -I +compiler-libs ocamlcommon.cma "$REFMT_BINARY.ml" -o "$REFMT_BINARY.byte"
+  esy ocamlc -g -no-alias-deps -w -40-3 -I +compiler-libs ocamlcommon.cma "$REFMT_BINARY.ml" -o "$REFMT_BINARY.byte"
   echo "👉 opt compiling refmt"
-  ocamlopt -g -no-alias-deps -w -40-3 -I +compiler-libs ocamlcommon.cmxa "$REFMT_BINARY.ml" -o "$REFMT_BINARY.exe"
+  esy ocamlopt -g -no-alias-deps -w -40-3 -I +compiler-libs ocamlcommon.cmxa "$REFMT_BINARY.ml" -o "$REFMT_BINARY.exe"
 
   # small integration test to check that the process went well
   # for the native binary
@@ -155,5 +157,5 @@ build_refmt () {
   echo "✅ finished building refmt binary"
 }
 
-# build_refmt
+build_refmt
 build_js_api
