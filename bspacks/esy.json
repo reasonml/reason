@@ -2,14 +2,11 @@
   "name": "get-js-of-ocaml",
   "notes": "This is to get js_of_ocaml",
   "private": true,
-  "version": "3.3.3",
+  "version": "xxx",
   "dependencies": {
     "@opam/js_of_ocaml": "*",
     "@opam/menhir": " >= 20170418.0.0  <= 20171013.0.0",
     "@opam/ocaml-migrate-parsetree": "*"
-  },
-  "peerDependencies": {
-    "ocaml": "4.2.3004"
   },
   "devDependencies": {
     "ocaml": "~4.2.3004"
@@ -17,11 +14,6 @@
   "esy": {
     "build": [
       ["echo", "No-op"]
-    ],
-    "_dependenciesForNewEsyInstaller": {
-      "@opam/js_of_ocaml": "*",
-    "@opam/menhir": " >= 20170418.0.0  <= 20171013.0.0",
-      "@opam/ocaml-migrate-parsetree": "*"
-    }
+    ]
   }
 }
