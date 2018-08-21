@@ -4,16 +4,14 @@ set -e
 # this script does 2 independent things:
 # - pack the whole repo into a single refmt file for vendoring into bucklescript
 # - generate the js version of refmt for web usage
-esy i
-esy b
 
 THIS_SCRIPT_DIR="$(cd "$( dirname "$0" )" && pwd)"
 
-# command -v dune || { echo "Dune not found. If you're using esy, do 'esy ./reason_bspack.sh'"; exit 1; }
+cd $THIS_SCRIPT_DIR
 
-# echo "**This script is switching you to ocaml 4.02.3 for the subsequent bspacking. Please switch back to your own version afterward. Thanks!**\n"
-# opam switch 4.02.3
-# eval $(opam config env)
+esy i
+esy b
+
 # Because OCaml 4.02 doesn't come with the `Result` module, it also needed stubbing out.
 resultStub="module Result = struct type ('a, 'b) result = Ok of 'a | Error of 'b end open Result"
 
@@ -22,8 +20,6 @@ menhirSuggestedLib=`esy menhir --suggest-menhirLib`
 esy build-env node_modules/@opam/ocaml-migrate-parsetree > _get_root
 echo >> _get_root
 echo 'echo $cur__root' >> _get_root
-# generated from the script ./downloadSomeDependencies.sh
-# ocamlMigrateParseTreeTargetDir="$THIS_SCRIPT_DIR/ocaml-migrate-parsetree/_build/default/src"
 ocamlMigrateParseTreeTargetDir=`cat _get_root | bash`/_build/default/src
 rm _get_root
 
@@ -44,9 +40,10 @@ rm -rf $buildDir
 mkdir $buildDir
 
 pushd $THIS_SCRIPT_DIR
-# rebuild the project in case it was stale
 
+# rebuild the project in case it was stale
 cd ..
+# We need 4.02 for js_of_ocaml (it has a stack overflow otherwise :/)
 sed -i '' 's/"ocaml": "~4.6.0"/"ocaml": "~4.2.3004"/' ./esy.json
 make pre_release
 esy install
@@ -64,7 +61,7 @@ mv $i ${target}
 done;
 ocamlMigrateParseTreeTargetDir=$THIS_SCRIPT_DIR/build/omp
 
-# Build ourselves a bspack.exe
+# Build ourselves a bspack.exe if we haven't yet
 if [ ! -f $THIS_SCRIPT_DIR/bspack.exe ]; then
   echo "👉 building bspack.exe"
   cd $THIS_SCRIPT_DIR/bin
