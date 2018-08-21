@@ -5071,7 +5071,7 @@ let printer = object(self:'self)
            let layout = source_map ~loc:bindingsLoc bindingsLayout in
            processLetList ((bindingsLoc, layout)::acc) e
 
-        | (attrs, Pexp_apply (
+        | (_attrs, Pexp_apply (
             {pexp_desc = Pexp_ident function_name}, [
               Nolabel, bound_expression;
               Nolabel, {pexp_desc = Pexp_fun (
