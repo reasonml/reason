@@ -17,11 +17,13 @@ resultStub="module Result = struct type ('a, 'b) result = Ok of 'a | Error of 'b
 
 menhirSuggestedLib=`menhir --suggest-menhirLib`
 
+esy build-env node_modules/@opam/ocaml-migrate-parsetree > _get_root
+echo >> _get_root
+echo 'echo $cur__root' >> _get_root
 # generated from the script ./downloadSomeDependencies.sh
 # ocamlMigrateParseTreeTargetDir="$THIS_SCRIPT_DIR/ocaml-migrate-parsetree/_build/default/src"
 ocamlMigrateParseTreeTargetDir=`cat _get_root | bash`/_build/default/src
 rm _get_root
-cd -
 
 reasonTargetDir="$THIS_SCRIPT_DIR/.."
 buildDir="$THIS_SCRIPT_DIR/build"
@@ -41,9 +43,14 @@ mkdir $buildDir
 
 pushd $THIS_SCRIPT_DIR
 # rebuild the project in case it was stale
-make clean -C ../
-make pre_release -C ../
-make build -C ../
+
+cd ..
+sed -i '' 's/"ocaml": "~4.6.0"/"ocaml": "~4.2.3004"/' ./esy.json
+make pre_release
+esy install
+esy build
+git checkout esy.json esy.lock
+cd -
 
 # Get OMP source from esy
 mkdir $THIS_SCRIPT_DIR/build/omp
@@ -94,14 +101,12 @@ build_js_api () {
   # remove warning 40 caused by ocaml-migrate-parsetree
   ocamlc -g -no-alias-deps -w -40-3 -I +compiler-libs ocamlcommon.cma "$REFMT_API.ml" -o "$REFMT_API.byte"
 
-  cd jsoo
   # compile refmtJsApi as the final entry file
-  esy ocamlfind ocamlc -bin-annot -g -w -30-3-40 -package js_of_ocaml,ocaml-migrate-parsetree -o "$REFMT_API_ENTRY" -I $buildDir -c -impl ../refmtJsApi.ml
+  esy ocamlfind ocamlc -bin-annot -g -w -30-3-40 -package js_of_ocaml,ocaml-migrate-parsetree -o "$REFMT_API_ENTRY" -I $buildDir -c -impl ./refmtJsApi.ml
   # link them together into the final bytecode
   esy ocamlfind ocamlc -linkpkg -package js_of_ocaml,ocaml-migrate-parsetree -g -o "$REFMT_API_FINAL.byte" "$REFMT_API.cmo" "$REFMT_API_ENTRY.cmo"
   # # use js_of_ocaml to take the compiled bytecode and turn it into a js file
   esy js_of_ocaml --source-map --debug-info --pretty --linkall +weak.js +toplevel.js --opt 3 --disable strict -o "$REFMT_PRE_CLOSURE.js" "$REFMT_API_FINAL.byte"
-  cd ..
 
   # # use closure compiler to minify the final file!
   java -jar ./closure-compiler/closure-compiler-v20170910.jar --create_source_map "$REFMT_CLOSURE.map" --language_in ECMASCRIPT6 --compilation_level SIMPLE "$REFMT_PRE_CLOSURE.js" > "$REFMT_CLOSURE.js"
