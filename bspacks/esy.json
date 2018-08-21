@@ -5,8 +5,11 @@
   "version": "xxx",
   "dependencies": {
     "@opam/js_of_ocaml": "*",
-    "@opam/menhir": " >= 20170418.0.0  <= 20171013.0.0",
+    "@opam/menhir": "20171013",
     "@opam/ocaml-migrate-parsetree": "*"
+  },
+  "scripts": {
+    "show-omp-dir": "echo #{ocaml-migrate-parsetree.build}"
   },
   "devDependencies": {
     "ocaml": "~4.2.3004"
