@@ -9,6 +9,7 @@ THIS_SCRIPT_DIR="$(cd "$( dirname "$0" )" && pwd)"
 
 cd $THIS_SCRIPT_DIR
 
+# Install & build menhir, omp
 esy i
 esy b
 
@@ -16,12 +17,6 @@ esy b
 resultStub="module Result = struct type ('a, 'b) result = Ok of 'a | Error of 'b end open Result"
 
 menhirSuggestedLib=`esy menhir --suggest-menhirLib`
-
-esy build-env node_modules/@opam/ocaml-migrate-parsetree > _get_root
-echo >> _get_root
-echo 'echo $cur__root' >> _get_root
-ocamlMigrateParseTreeTargetDir=`cat _get_root | bash`/_build/default/src
-rm _get_root
 
 reasonTargetDir="$THIS_SCRIPT_DIR/.."
 buildDir="$THIS_SCRIPT_DIR/build"
@@ -34,6 +29,8 @@ REFMT_PRE_CLOSURE="$buildDir/refmt_pre_closure"
 
 REFMT_CLOSURE="$reasonTargetDir/refmt"
 
+ocamlMigrateParseTreeTargetDir=$THIS_SCRIPT_DIR/build/omp
+
 # clean some artifacts
 rm -f "$REFMT_CLOSURE.*"
 rm -rf $buildDir
@@ -41,33 +38,45 @@ mkdir $buildDir
 
 pushd $THIS_SCRIPT_DIR
 
-# rebuild the project in case it was stale
-cd ..
-# We need 4.02 for js_of_ocaml (it has a stack overflow otherwise :/)
-sed -i '' 's/"ocaml": "~4.6.0"/"ocaml": "~4.2.3004"/' ./esy.json
-make pre_release
-esy install
-esy build
-git checkout esy.json esy.lock
-cd -
+build_reason_402 () {
+  # rebuild the project in case it was stale
+  cd ..
+  # We need 4.02 for js_of_ocaml (it has a stack overflow otherwise :/)
+  sed -i '' 's/"ocaml": "~4.6.0"/"ocaml": "~4.2.3004"/' ./esy.json
+  make pre_release
+  esy install
+  esy build
+  git checkout esy.json esy.lock
+  cd -
+}
 
 # Get OMP source from esy
-mkdir $THIS_SCRIPT_DIR/build/omp
-cp $ocamlMigrateParseTreeTargetDir/*.ml $THIS_SCRIPT_DIR/build/omp
-for i in $(ls build/omp/*.pp.ml); do
-newname=$(basename $i | sed 's/\.pp\././')
-target=${THIS_SCRIPT_DIR}/build/omp/${newname}
-mv $i ${target}
-done;
-ocamlMigrateParseTreeTargetDir=$THIS_SCRIPT_DIR/build/omp
+get_omp () {
+  mkdir $ocamlMigrateParseTreeTargetDir
 
-# Build ourselves a bspack.exe if we haven't yet
-if [ ! -f $THIS_SCRIPT_DIR/bspack.exe ]; then
-  echo "👉 building bspack.exe"
-  cd $THIS_SCRIPT_DIR/bin
-  esy ocamlopt -g -w -40-30-3 ./ext_basic_hash_stubs.c unix.cmxa ./bspack.ml -o ../bspack.exe
-  cd -
-fi
+  esy build-env node_modules/@opam/ocaml-migrate-parsetree > _get_root
+  echo >> _get_root
+  echo 'echo $cur__root' >> _get_root
+  ompSource=`cat _get_root | bash`/_build/default/src
+  rm _get_root
+
+  cp $ompSource/*.ml $THIS_SCRIPT_DIR/build/omp
+  for i in $(ls build/omp/*.pp.ml); do
+  newname=$(basename $i | sed 's/\.pp\././')
+  target=${THIS_SCRIPT_DIR}/build/omp/${newname}
+  mv $i ${target}
+  done;
+}
+
+build_bspack () {
+  # Build ourselves a bspack.exe if we haven't yet
+  if [ ! -f $THIS_SCRIPT_DIR/bspack.exe ]; then
+    echo "👉 building bspack.exe"
+    cd $THIS_SCRIPT_DIR/bin
+    esy ocamlopt -g -w -40-30-3 ./ext_basic_hash_stubs.c unix.cmxa ./bspack.ml -o ../bspack.exe
+    cd -
+  fi
+}
 
 build_js_api () {
   echo "👉 bspacking the js api"
@@ -164,5 +173,8 @@ build_refmt () {
   echo "✅ finished building refmt binary"
 }
 
+build_reason_402
+build_bspack
+get_omp
 build_refmt
 build_js_api
