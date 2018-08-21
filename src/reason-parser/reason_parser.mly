@@ -888,14 +888,14 @@ let addlbs lbs lbs' =
 let val_of_let_bindings lbs =
   let str = Str.value lbs.lbs_rec lbs.lbs_bindings in
   if lbs.lbs_combinator <> None then
-    raise Syntaxerr.(Error(Not_expecting(lbs.lbs_loc, "let.foo is not allowed at the top level")));
+    raise Syntaxerr.(Error(Not_expecting(lbs.lbs_loc, "let!Foo is not allowed at the top level")));
   match lbs.lbs_extension with
   | None -> str
   | Some ext -> struct_item_extension ext [str]
 
 (* Transforms
 
-     let.foo x = a
+     let!Foo x = a
      and y = b;
      rest_of_code
 
@@ -966,7 +966,7 @@ let expr_of_let_bindings lbs body =
   match lbs.lbs_combinator with
   | Some attr ->
     if lbs.lbs_extension <> None then
-      raise Syntaxerr.(Error(Not_expecting(lbs.lbs_loc, "let.foo cannot be combined with let%foo")));
+      raise Syntaxerr.(Error(Not_expecting(lbs.lbs_loc, "let!Foo cannot be combined with let%foo")));
     combinator_call_of_let_bindings attr lbs body
   | None ->
     let item_expr = Exp.let_ lbs.lbs_rec lbs.lbs_bindings body in
@@ -980,7 +980,7 @@ let class_of_let_bindings lbs body =
   if lbs.lbs_extension <> None then
     raise Syntaxerr.(Error(Not_expecting(lbs.lbs_loc, "extension")));
   if lbs.lbs_combinator <> None then
-    raise Syntaxerr.(Error(Not_expecting(lbs.lbs_loc, "let.foo is not allowed in class bindings")));
+    raise Syntaxerr.(Error(Not_expecting(lbs.lbs_loc, "let!Foo is not allowed in class bindings")));
   Cl.let_ lbs.lbs_rec lbs.lbs_bindings body
 
 (*
@@ -2950,9 +2950,9 @@ mark_position_exp
   | SWITCH optional_expr_extension simple_expr_no_constructor
     LBRACE match_cases(seq_expr) RBRACE
     { $2 (mkexp (Pexp_match ($3, $5))) }
-  | TRY optional_expr_extension simple_expr_no_constructor
+  | TRY let_combinator optional_expr_extension simple_expr_no_constructor
     LBRACE match_cases(seq_expr) RBRACE
-    { $2 (mkexp (Pexp_try ($3, $5))) }
+    { $3 (mkexp (Pexp_try ($4, $6))) }
   | TRY optional_expr_extension simple_expr_no_constructor WITH error
     { syntax_error_exp (mklocation $startpos($5) $endpos($5)) "Invalid try with"}
   | IF optional_expr_extension parenthesized_expr
@@ -3436,7 +3436,7 @@ let_bindings: let_binding and_let_binding*
   { let let_binding = $1 in
     let and_bindings = $2 in
     (* Make sure that the and combinators match the let combinators, i.e. if
-       there is let.foo, then if there are ands, they must be and.foo as
+       there is let!Foo, then if there are ands, they must be and.foo as
        well. *)
     and_bindings |> List.iter (fun (and_binding, and_combinator) ->
       match (and_combinator, let_binding.lbs_combinator) with
@@ -3453,7 +3453,7 @@ let_bindings: let_binding and_let_binding*
           | None -> "and"
           | Some identifier -> "and." ^ identifier.txt
         in
-        let message = "and.foo must match let.foo, " ^ expected in
+        let message = "and.foo must match let!Foo, " ^ expected in
         raise Syntaxerr.(Error (Expecting (loc, message))));
     let and_bindings = fst (List.split and_bindings) in
     addlbs let_binding and_bindings };

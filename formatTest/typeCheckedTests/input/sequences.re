@@ -101,23 +101,34 @@ module Option = {
     };
 };
 
-module Opt = {
-  let let_ = Option.flatMap;
-  let and_ = Option.pair;
+let _ = {
+  let!Option x = Some(23)
+  and!Option y = Some(5);
+
+  Some(x + y)
 };
 
-module Opt_map = {
-  let let_ = Option.map;
-  let and_ = Option.pair;
+module Async = {
+  type t('value) = Js.Promise.t('value);
+  let let_: (t('a), 'a => t('b)) => t('b) = Js.Promise.then_;
+  let and_: (t('a), t('b)) => t(('a, 'b)) = Js.Promise.all2;
+  let try_: (t('a), exn => t('a)) => t('a) = Js.Promise.catch;
+  let resolve = Js.Promise.resolve;
+  let reject = Js.Promise.reject;
 };
+
+let getAge = () => Async.reject(Failure("Cannot get age"));
 
 let _ = {
-  let.Opt x = Some(10);
+  let!Async x = try!Async (getAge()) {
+    | Failure(message) => Ok(23)
+    | exn => raise(exn)
+  };
 
-  let.Opt_map a = Some(2)
-  and.Opt_map b = Some(5)
-  and.Opt_map c = Some(7);
+  let!Async a = Async.resolve(2)
+  and!Async b = Async.resolve(5)
+  and!Async c = Async.resolve(7);
   print_endline(string_of_int(a));
 
-  a + x * b + c;
+  Async.resolve(a + x * b + c);
 };
