@@ -5078,7 +5078,7 @@ let printer = object(self:'self)
                 Nolabel, None, continuation_pattern, continuation_body)}]))
           when Reason_attrs.(hasRefmtTag letCombinator) refmtAttrs ->
 
-          (* Find all the nested applications that were generated from and.foo
+          (* Find all the nested applications that were generated from and!Foo
              bindings. They are tagged with andCombinator. *)
           let rec find_bindings pattern expr =
             let (refmtAttrs, otherAttrs) =

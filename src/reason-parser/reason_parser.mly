@@ -3437,7 +3437,7 @@ let_bindings: let_binding and_let_binding*
   { let let_binding = $1 in
     let and_bindings = $2 in
     (* Make sure that the and combinators match the let combinators, i.e. if
-       there is let!Foo, then if there are ands, they must be and.foo as
+       there is let!Foo, then if there are ands, they must be and!Foo as
        well. *)
     and_bindings |> List.iter (fun (and_binding, and_combinator) ->
       match (and_combinator, let_binding.lbs_combinator) with
