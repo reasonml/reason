@@ -5133,10 +5133,10 @@ let printer = object(self:'self)
 
           let layout =
             let let_layout =
-              self#binding ("let." ^ combinator_name) (List.hd bindings) in
+              self#binding ("let!" ^ combinator_name) (List.hd bindings) in
             let and_layouts =
               List.map
-                (self#binding ("and." ^ combinator_name)) (List.tl bindings)
+                (self#binding ("and!" ^ combinator_name)) (List.tl bindings)
             in
             makeList
               ~postSpace:true ~break:Always ~indent:0 ~inline:(true, true)

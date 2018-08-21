@@ -872,7 +872,7 @@ type let_bindings =
   { lbs_bindings: Parsetree.value_binding list;
     lbs_rec: rec_flag;
     lbs_extension: (attributes * string Asttypes.loc) option;
-    lbs_combinator: string Asttypes.loc option;
+    lbs_combinator: Longident.t Asttypes.loc option;
     lbs_loc: Location.t }
 
 let mklbs combinator ext rf lb loc =
@@ -911,15 +911,16 @@ let val_of_let_bindings lbs =
    - Foo.and_ is a pairing operation, which takes two values, and wraps them in
      an option, promise, etc. Foo.and_ is used to replace and. *)
 let combinator_call_of_let_bindings combinator let_bindings rest_of_code =
+  let modulePath = combinator.txt |> Longident.flatten |> String.concat "." in
   let func =
     Exp.ident
       ~loc:combinator.loc
-      (mkloc (parse (combinator.txt ^ ".let_")) combinator.loc)
+      (mkloc (parse (modulePath ^ ".let_")) combinator.loc)
   in
   let pair and_binding =
     Exp.ident
       ~loc:and_binding.pvb_loc
-      (mkloc (parse (combinator.txt ^ ".and_")) and_binding.pvb_loc)
+      (mkloc (parse (modulePath ^ ".and_")) and_binding.pvb_loc)
   in
 
   match let_bindings.lbs_bindings with
@@ -3451,9 +3452,9 @@ let_bindings: let_binding and_let_binding*
         let expected =
           match let_binding.lbs_combinator with
           | None -> "and"
-          | Some identifier -> "and." ^ identifier.txt
+          | Some identifier -> "and!" ^ (Longident.flatten identifier.txt |> String.concat ".")
         in
-        let message = "and.foo must match let!Foo, " ^ expected in
+        let message = "and!Foo must match let!Foo, " ^ expected in
         raise Syntaxerr.(Error (Expecting (loc, message))));
     let and_bindings = fst (List.split and_bindings) in
     addlbs let_binding and_bindings };
@@ -4968,7 +4969,7 @@ item_extension_sugar:
 ;
 
 let_combinator:
-  DOT as_loc(UIDENT) { $2 }
+  DOT as_loc(val_longident) { $2 }
 ;
 
 extension:
