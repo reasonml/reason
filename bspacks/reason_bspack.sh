@@ -107,7 +107,17 @@ build_js_api () {
   # # use js_of_ocaml to take the compiled bytecode and turn it into a js file
   esy js_of_ocaml --source-map --debug-info --pretty --linkall +weak.js +toplevel.js --opt 3 --disable strict -o "$REFMT_PRE_CLOSURE.js" "$REFMT_API_FINAL.byte"
 
-  # # use closure compiler to minify the final file!
+  # Grab the closure compiler if needed
+  CLOSURE_COMPILER_DIR="$THIS_SCRIPT_DIR/closure-compiler"
+  if [ ! -d $CLOSURE_COMPILER_DIR ]; then
+    mkdir -p $CLOSURE_COMPILER_DIR
+    pushd $CLOSURE_COMPILER_DIR
+    curl -O http://dl.google.com/closure-compiler/compiler-20170910.tar.gz
+    tar -xzf compiler-20170910.tar.gz
+    popd
+  fi
+
+  # use closure compiler to minify the final file!
   java -jar ./closure-compiler/closure-compiler-v20170910.jar --create_source_map "$REFMT_CLOSURE.map" --language_in ECMASCRIPT6 --compilation_level SIMPLE "$REFMT_PRE_CLOSURE.js" > "$REFMT_CLOSURE.js"
 
   # for the js bundle
