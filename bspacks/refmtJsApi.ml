@@ -70,6 +70,18 @@ let parseWith f code =
       |]
     in
     Js.Unsafe.fun_call throwAnything [|Js.Unsafe.inject jsError|]
+  | Refmt_api.Reason_lexer.Error (err, loc) ->
+    let reportedError =
+      Location.error_of_printer loc Refmt_api.Reason_lexer.report_error err
+    in
+    let jsLocation = locationToJsObj reportedError.loc in
+    let jsError =
+      Js.Unsafe.obj [|
+        ("message", Js.Unsafe.inject (Js.string reportedError.msg));
+        ("location", Js.Unsafe.inject jsLocation);
+      |]
+    in
+    Js.Unsafe.fun_call throwAnything [|Js.Unsafe.inject jsError|]
 
 let parseRE = parseWith RE.implementation_with_comments
 let parseREI = parseWith RE.interface_with_comments

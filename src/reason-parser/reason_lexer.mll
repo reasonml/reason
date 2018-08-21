@@ -527,6 +527,7 @@ rule token = parse
     let buf = Lexing.lexeme lexbuf in
     LESSIDENT (String.sub buf 1 (String.length buf - 1))
   }
+  | ">..." { GREATERDOTDOTDOT }
   (* Allow parsing of Pexp_override:
    * let z = {<state: 0, x: y>};
    *

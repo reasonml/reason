@@ -173,3 +173,13 @@ window
       x + y;
     },
   );
+
+<div>
+  {
+    items
+    ->Belt.Array.map(ReasonReact.string)
+    ->ReasonReact.array
+  }
+</div>;
+
+a->(b->c);

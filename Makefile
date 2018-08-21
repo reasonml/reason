@@ -5,7 +5,7 @@ SHELL=bash -o pipefail
 default: build
 
 build:
-	jbuilder build
+	dune build
 
 install:
 	opam pin add reason . -y
@@ -43,7 +43,7 @@ all_errors:
 # Not all versions of jbuilder have the clean command.
 # jbuilder clean
 clean: clean-tests
-	jbuilder clean
+	dune clean
 
 # The jbuilder that gets installed on CI doesn't have the make clean
 # command yet.
@@ -89,6 +89,6 @@ release: release_check pre_release
 
 all-supported-ocaml-versions:
 # the --dev flag has been omitted here but should be re-introduced eventually
-	jbuilder build @install @runtest --workspace jbuild-workspace.dev --root .
+	dune build @install @runtest --root .
 
 .PHONY: all-supported-ocaml-versions

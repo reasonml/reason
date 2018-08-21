@@ -5,7 +5,6 @@
  * LICENSE file in the root directory of this source tree.
  *)
 
-open Lexing
 module Cmdliner = Vendored_cmdliner
 open Cmdliner
 
@@ -86,7 +85,7 @@ let refmt
   try
     match input_files with
     | [] -> `Ok (refmt_single None)
-    | ls -> `Ok (List.iter (fun file -> refmt_single (Some file)) input_files)
+    | _ -> `Ok (List.iter (fun file -> refmt_single (Some file)) input_files)
   with
   | Printer_maker.Invalid_config msg -> `Error (true, msg)
   | exn ->
@@ -115,5 +114,5 @@ let refmt_t =
 
 let () =
   match Term.eval ((Term.ret refmt_t), top_level_info) with
-  | `Error s -> exit 1
+  | `Error _ -> exit 1
   | _ -> exit 0

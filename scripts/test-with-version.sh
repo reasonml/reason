@@ -8,9 +8,9 @@ make clean-for-ci
 opam switch "${OCAML_VERSION}"
 eval `opam config env`
 opam update
-opam install -y jbuilder
+opam install -y dune
 # Our constraints are wrong I believe. We need this version.
-opam install -y menhir.20170712
+opam install -y menhir
 opam pin add -y reason .
 opam pin add -y rtop .
 make test-ci

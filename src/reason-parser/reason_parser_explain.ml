@@ -1,5 +1,7 @@
 (* See the comments in menhir_error_processor.ml *)
 
+open Reason_string
+
 module Parser = Reason_parser
 module Interp = Parser.MenhirInterpreter
 module Raw = Reason_parser_explain_raw
@@ -35,7 +37,7 @@ let keyword_confused_with_ident state token =
 let uppercased_instead_of_lowercased state token =
   match token with
   | Parser.UIDENT name when Raw.transitions_on_lident state ->
-    let name = String.uncapitalize name in
+    let name = String.uncapitalize_ascii name in
     if Hashtbl.mem Reason_lexer.keyword_table name then
       "variables and labels should be lowercased"
     else
@@ -54,7 +56,7 @@ let token_specific_message = function
     "underscore is not a valid identifier. Use _ only in pattern matching and partial function application"
   | _ ->
     raise Not_found
-let message env (token, startp, endp) =
+let message env (token, _, _) =
   let state = Interp.current_state_number env in
   (* Is there a message for this specific state ? *)
   try

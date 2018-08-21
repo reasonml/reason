@@ -237,3 +237,5 @@ let x = foo /></ bar;
 switch(foo) {
 | `Variant =><Component />
 };
+
+<div>...c</div>;

@@ -1,9 +1,9 @@
 let is_punned_labelled_expression e lbl =
   let open Ast_404.Parsetree in
   match e.pexp_desc with
-  | Pexp_ident { txt; _ }
-  | Pexp_constraint ({pexp_desc = Pexp_ident { txt; _ }; _}, _)
-  | Pexp_coerce ({pexp_desc = Pexp_ident { txt; _ }; _}, _, _)
+  | Pexp_ident { txt }
+  | Pexp_constraint ({pexp_desc = Pexp_ident { txt }}, _)
+  | Pexp_coerce ({pexp_desc = Pexp_ident { txt }}, _, _)
     -> txt = Longident.parse lbl
   | _ -> false
 
@@ -99,8 +99,20 @@ let isUnderscoreIdent expr =
 let isFastPipe e = match Ast_404.Parsetree.(e.pexp_desc) with
   | Pexp_ident({txt = Longident.Lident("|.")}) -> true
   | Pexp_apply(
-      {pexp_desc = Pexp_ident({txt = Longident.Lident("|.")})},
+    {pexp_desc = Pexp_ident({txt = Longident.Lident("|.")})},
       _
+    ) -> true
+  | _ -> false
+
+
+(* <div> {items->Belt.Array.map(ReasonReact.string)->ReasonReact.array} </div>;
+ * An application with fast pipe inside jsx children requires special treatment.
+ * Jsx children don't allow expression application, hence we need the braces
+ * preserved in this case. *)
+let isFastPipeWithApplicationJSXChild e = match Ast_404.Parsetree.(e.pexp_desc) with
+  | Pexp_apply(
+    {pexp_desc = Pexp_ident({txt = Longident.Lident("|.")})},
+      [Nolabel, {pexp_desc = Pexp_apply(_)}; _]
     ) -> true
   | _ -> false
 
