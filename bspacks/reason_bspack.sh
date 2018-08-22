@@ -42,7 +42,7 @@ build_reason_402 () {
   # rebuild the project in case it was stale
   cd ..
   # We need 4.02 for js_of_ocaml (it has a stack overflow otherwise :/)
-  sed -i '' 's/"ocaml": "~4.6.0"/"ocaml": "~4.2.3004"/' ./esy.json
+  sed -i 's/"ocaml": "~4.6.0"/"ocaml": "~4.2.3004"/' ./esy.json
   if [ -z "$version" ];then
     export version=$(grep version ./esy.json | sed -E 's/.+([0-9]\.[0-9]\.[0-9]).+/\1/')-$(date +%Y.%m.%d)
   fi
