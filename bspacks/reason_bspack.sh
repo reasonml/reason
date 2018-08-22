@@ -57,11 +57,7 @@ build_reason_402 () {
 get_omp () {
   mkdir $ocamlMigrateParseTreeTargetDir
 
-  esy build-env node_modules/@opam/ocaml-migrate-parsetree > _get_root
-  echo >> _get_root
-  echo 'echo $cur__root' >> _get_root
-  ompSource=`cat _get_root | bash`/_build/default/src
-  rm _get_root
+  ompSource=`esy show-omp-dir`/_build/default/src
 
   cp $ompSource/*.ml $THIS_SCRIPT_DIR/build/omp
   for i in $(ls build/omp/*.pp.ml); do

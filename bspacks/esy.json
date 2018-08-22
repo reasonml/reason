@@ -9,7 +9,7 @@
     "@opam/ocaml-migrate-parsetree": "*"
   },
   "scripts": {
-    "show-omp-dir": "echo #{ocaml-migrate-parsetree.build}"
+    "show-omp-dir": "echo #{@opam/ocaml-migrate-parsetree.target_dir}"
   },
   "devDependencies": {
     "ocaml": "~4.2.3004"
