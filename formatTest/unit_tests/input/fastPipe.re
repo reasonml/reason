@@ -149,3 +149,5 @@ window->Webapi.Dom.Window.open_(~url, ~name="authWindow", () => { let x = 1; let
 <div> {items->Belt.Array.map(ReasonReact.string)->ReasonReact.array} </div>;
 
 a->(b->c);
+
+<div> (T.t("value") |. ReasonReact.string) </div>;
