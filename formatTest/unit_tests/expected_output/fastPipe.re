@@ -183,3 +183,5 @@ window
 </div>;
 
 a->(b->c);
+
+<div> {T.t("value")->ReasonReact.string} </div>;
