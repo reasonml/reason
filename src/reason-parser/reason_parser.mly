@@ -3582,7 +3582,7 @@ string_literal_expr_maybe_punned_with_comma:
   { let loc = mklocation $startpos $endpos in
     let (s, _, _) = $1 in
     let lident_lident_loc = mkloc (Lident s) loc in
-    let exp = mkexp (Pexp_ident lident_lident_loc) in
+    let exp = mkexp ~loc (Pexp_ident lident_lident_loc) in
     (lident_lident_loc, exp)
   }
   | STRING COLON expr COMMA
@@ -3600,7 +3600,7 @@ string_literal_expr_maybe_punned:
     let lident_lident_loc = mkloc (Lident s) loc in
     let exp = match $2 with
       | Some x -> x
-      | None -> mkexp (Pexp_ident lident_lident_loc)
+      | None -> mkexp ~loc (Pexp_ident lident_lident_loc)
     in
     (lident_lident_loc, exp)
   }

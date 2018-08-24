@@ -31,7 +31,7 @@ module Comments = {
   /* wow another one below too */
 
   let add = Test.x;
-  
+
 
   /* this
      is
@@ -185,6 +185,137 @@ module EdgeCase = {
   /* c */
 
   let x = 1;
+};
+
+/** Record-like expressions */
+let r = {
+  a: 1,
+
+  b: 2,
+  c: 3,
+};
+
+/* with punning */
+let r = {
+  a,
+
+  b,
+  c,
+};
+
+/* with spread */
+let r = {
+  ...x,
+
+  a: 1,
+
+  b: 2,
+  c: 3,
+};
+
+/* comments */
+let r = {
+  ...x,
+
+  /* a */
+  a: 1,
+
+  /* b */
+  /* c */
+
+  /* d */
+  b: 2,
+  /* e */
+
+  c: 3,
+
+  /* f */
+  d,
+
+  e,
+};
+
+/* string keys */
+let x = {
+  "a": 1,
+
+  "b": 2,
+  "c": 3,
+};
+
+/* string keys punning */
+let x = {
+  "a",
+
+  "b",
+  "c"
+};
+
+/* string keys with spread */
+let x = {
+  ...x,
+
+  "a": 1,
+
+  "b": 2,
+  "c": 3,
+};
+
+/* string keys with comments */
+let x = {
+  ...x,
+
+  /* a */
+  "a": 1,
+
+  /* b */
+  /* c */
+
+  /* d */
+  "b": 2,
+  /* e */
+
+  "c": 3,
+
+  /* f */
+  "d",
+
+  "e",
+};
+
+let make = _children => {
+  ...component,
+
+  initialState: () => {
+    posts: [],
+    activeRoute: urlToRoute(ReasonReact.Router.dangerouslyGetInitialUrl()),
+  },
+
+  didMount: self => {
+    let watcherID =
+      ReasonReact.Router.watchUrl(url =>
+        self.send(ChangeRoute(urlToRoute(url)))
+      );
+    self.onUnmount(() => ReasonReact.Router.unwatchUrl(watcherID));
+  },
+
+  reducer: (action, state) =>
+    switch (action) {
+    | ChangeRoute(activeRoute) =>
+      ReasonReact.Update({...state, activeRoute})
+    | FetchCats => ReasonReact.NoUpdate
+    },
+
+  render: ({state: {posts, activeRoute}}) =>
+    <div>
+      <h1> <a href="/"> {ReasonReact.string("Instagram")} </a> </h1>
+      {
+        switch (activeRoute) {
+        | Default => <Grid posts />
+        | Detail(postId) => <Single posts postId />
+        }
+      }
+    </div>,
 };
 
 let f = (a, b) => a + b;
