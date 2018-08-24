@@ -7,7 +7,7 @@ console.log(refmt.printML(refmt.parseML(`let f a = a + 1 print_int @@ f 5`)))
 console.log(refmt.printMLI(refmt.parseMLI(`val f : a:string -> int`)))
 
 try {
-  refmt.parseRE(`let f = 1111 if (a) {2}`)
+  refmt.parseRE(`let f => =`)
 } catch (e) {
   console.log(e)
 }
