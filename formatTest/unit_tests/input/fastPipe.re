@@ -151,3 +151,6 @@ window->Webapi.Dom.Window.open_(~url, ~name="authWindow", () => { let x = 1; let
 a->(b->c);
 
 <div> (T.t("value") |. ReasonReact.string) </div>;
+
+<div> {url->a(b, _)} </div>;
+<div> {url->a(b, _)->a(b, _)} </div>;

@@ -6021,7 +6021,8 @@ let printer = object(self:'self)
          * (1). <div> {items->Belt.Array.map(ReasonReact.string)->ReasonReact.array} </div>;
          * (2). <Foo> (title === "" ? [1, 2, 3] : blocks)->Foo.toString </Foo>; *)
         if Reason_heuristics.isFastPipe e &&
-           not (Reason_heuristics.isFastPipeWithApplicationJSXChild e) then
+           not (Reason_heuristics.isFastPipeWithNonSimpleJSXChild e)
+        then
           self#formatFastPipe e
         else
           self#simplifyUnparseExpr ~wrap:("{", "}") e

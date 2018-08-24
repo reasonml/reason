@@ -175,3 +175,16 @@ let c = (a, b) => a + b;
 let a = 1;
 let b = 2;
 let t: int = a->(b->c);
+
+module Div = {
+  let createElement = (~children, ()) =>
+    List.hd(children) ++ "test";
+};
+
+let url = "reason";
+let suffix = ".com";
+
+let parse = (a, b) => a ++ b;
+
+let t15: string =
+  <Div> {url->parse(suffix, _)} </Div>;
