@@ -824,10 +824,12 @@ let struct_item_extension (ext_attrs, ext_id) structure_items =
   mkstr ~ghost:true (Pstr_extension ((ext_id, PStr structure_items), ext_attrs))
 
 let expression_extension ?loc (ext_attrs, ext_id) item_expr =
-  let e = Pexp_extension (ext_id, PStr [mkstrexp item_expr []]) in
-  match loc with
-  | Some loc -> mkexp ~loc ~attrs:ext_attrs e
-  | None -> mkexp ~ghost:true ~attrs:ext_attrs e
+  let extension = (ext_id, PStr [mkstrexp item_expr []]) in
+  let loc = match loc with
+    | Some loc -> loc
+    | None -> make_ghost_loc (dummy_loc ())
+  in
+  Exp.extension ~loc ~attrs:ext_attrs extension
 
 (* There's no more need for these functions - this was for the following:
  *
@@ -880,13 +882,11 @@ let val_of_let_bindings lbs =
   | None -> str
   | Some ext -> struct_item_extension ext [str]
 
-let expr_of_let_bindings lbs body =
-  (* The location of this expression unfortunately includes the entire rule,
-   * which will include any preceeding extensions. *)
-  let item_expr = Exp.let_ lbs.lbs_rec lbs.lbs_bindings body in
-  match lbs.lbs_extension with
-  | None -> item_expr
-  | Some ext -> expression_extension ext item_expr
+let expr_of_let_bindings ~loc lbs body =
+    let item_expr = Exp.let_ ~loc lbs.lbs_rec lbs.lbs_bindings body in
+    match lbs.lbs_extension with
+    | None -> item_expr
+    | Some ext -> expression_extension ~loc:(make_ghost_loc loc) ext item_expr
 
 let class_of_let_bindings lbs body =
   if lbs.lbs_extension <> None then
@@ -2512,10 +2512,12 @@ seq_expr_no_seq:
 | str_exception_declaration SEMI seq_expr {
    mkexp (Pexp_letexception ($1, $3)) }
 | let_bindings SEMI seq_expr
-  { expr_of_let_bindings $1 $3 }
+  { let loc = mklocation $startpos($1) $endpos($3) in
+    expr_of_let_bindings ~loc $1 $3
+  }
 | let_bindings SEMI?
   { let loc = mklocation $symbolstartpos $endpos in
-    expr_of_let_bindings $1 @@ ghunit ~loc ()
+    expr_of_let_bindings ~loc $1 (ghunit ~loc ())
   }
 ;
 
@@ -2527,11 +2529,9 @@ mark_position_exp
     { expression_extension $1 $2 }
   | expr SEMI seq_expr
     { mkexp (Pexp_sequence($1, $3)) }
-  | as_loc(item_extension_sugar) expr SEMI seq_expr
-    { let loc = { $1.loc with
-        loc_end = $2.pexp_loc.loc_end
-      } in
-      mkexp (Pexp_sequence(expression_extension ~loc $1.txt $2, $4)) }
+  | item_extension_sugar expr SEMI seq_expr
+    { let loc = mklocation $startpos($1) $endpos($2) in
+      mkexp (Pexp_sequence(expression_extension ~loc $1 $2, $4)) }
   ) { $1 }
 ;
 
