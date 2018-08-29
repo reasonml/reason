@@ -956,23 +956,24 @@ let rewriteFunctorApp module_name elt loc =
     | Lapply (m1, m2) -> mkmod ~loc (Pmod_apply (mkModExp m1, mkModExp m2)) in
   if applies module_name then
     let flat = flattenModName module_name in
-    mkexp(Pexp_letmodule({txt=flat; loc},
+    mkexp ~loc (Pexp_letmodule({txt=flat; loc},
                          mkModExp module_name,
                          mkexp(Pexp_ident {txt=Ldot (Lident flat, elt); loc})))
   else
-    mkexp(Pexp_ident {txt=Ldot (module_name, elt); loc})
+    mkexp ~loc (Pexp_ident {txt=Ldot (module_name, elt); loc})
 
 let jsx_component module_name attrs children loc =
   let rec getFirstPart = function
     | Lident fp -> fp
     | Ldot (fp, _) -> getFirstPart fp
     | Lapply (fp, _) -> getFirstPart fp in
-  let firstPart = getFirstPart module_name in
+  let firstPart = getFirstPart module_name.txt in
   let element_fn = if String.get firstPart 0 != '_' && firstPart = String.capitalize_ascii firstPart then
     (* firstPart will be non-empty so the 0th access is fine. Modules can't start with underscore *)
-    rewriteFunctorApp module_name "createElement" loc
+    rewriteFunctorApp module_name.txt "createElement" module_name.loc
   else
-    mkexp(Pexp_ident(mkloc (Lident firstPart) loc)) in
+    mkexp ~loc:module_name.loc (Pexp_ident(mkloc (Lident firstPart) module_name.loc))
+  in
   let body = mkexp(Pexp_apply(element_fn, attrs @ children)) ~loc in
   let attribute = ({txt = "JSX"; loc = loc}, PStr []) in
   { body with pexp_attributes = attribute :: body.pexp_attributes }
@@ -2712,20 +2713,21 @@ jsx_arguments:
 ;
 
 jsx_start_tag_and_args:
-    LESSIDENT jsx_arguments
-    { let name = Longident.parse $1 in
-      (jsx_component name $2, name)
+    as_loc(LESSIDENT) jsx_arguments
+    { let name = Longident.parse $1.txt in
+      (jsx_component {$1 with txt = name} $2, name)
     }
-  | LESS mod_ext_longident jsx_arguments
-    { jsx_component $2 $3, $2 }
+  | LESS as_loc(mod_ext_longident) jsx_arguments
+    { jsx_component $2 $3, $2.txt }
 ;
 
 jsx_start_tag_and_args_without_leading_less:
-    mod_ext_longident jsx_arguments
-    { (jsx_component $1 $2, $1) }
-  | LIDENT jsx_arguments
-    { let lident = Longident.Lident $1 in
-      (jsx_component lident $2, lident) }
+    as_loc(mod_ext_longident) jsx_arguments
+    { (jsx_component $1 $2, $1.txt) }
+  | as_loc(LIDENT) jsx_arguments
+    { let lident = Longident.Lident $1.txt in
+      (jsx_component {$1 with txt = lident } $2, lident)
+    }
 ;
 
 greater_spread:
