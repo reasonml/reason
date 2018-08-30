@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "@esy-ocaml/substs": "^0.0.1",
-    "@esy-ocaml/esy-installer": "^0.0.0",
+    "@esy-ocaml/esy-installer": "*",
     "@opam/ocamlfind": "",
     "@opam/result": "*",
     "@opam/jbuilder": "*",
