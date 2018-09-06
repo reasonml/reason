@@ -33,7 +33,7 @@ common_steps: &common_steps
         command: |
           opam update
           opam install -y jbuilder
-          opam install -y menhir.20170712
+          opam install -y menhir
     - run:
         name: 'Clean'
         command: make clean-for-ci
