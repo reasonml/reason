@@ -35,7 +35,7 @@ common_steps: &common_steps
           opam update
           opam install -y jbuilder
           opam install -y menhir.20170712
-          opam pin add -y utop --dev-repo
+          opam install -y utop
     - run:
         name: 'Clean'
         command: make clean-for-ci
