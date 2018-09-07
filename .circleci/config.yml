@@ -25,6 +25,7 @@ common_steps: &common_steps
     - run:
         name: "Initialize opam"
         command: |
+          sudo apt-get install -y m4
           opam init --auto-setup --dot-profile=~/.bash_profile
           opam remote add ocamlorg https://opam.ocaml.org -p 0 || true
           opam remote remove default || true
@@ -34,6 +35,7 @@ common_steps: &common_steps
           opam update
           opam install -y jbuilder
           opam install -y menhir.20170712
+          opam install -y utop
     - run:
         name: 'Clean'
         command: make clean-for-ci
@@ -91,6 +93,14 @@ jobs:
       - OCAML_VERSION: "4.06.0"
       - NPM_CONFIG_PREFIX: "~/.npm-global"
     <<: *common_steps
+  4.07.0:
+    docker:
+      - image: ocaml/opam2:debian-9-ocaml-4.07
+    environment:
+      - TERM: dumb
+      - OCAML_VERSION: "4.07.x"
+      - NPM_CONFIG_PREFIX: "~/.npm-global"
+    <<: *common_steps
   esy_build:
     docker:
       - image: ocaml/opam:debian-9_ocaml-4.06.0
@@ -145,4 +155,5 @@ workflows:
       - 4.03.0
       - 4.04.0
       - 4.06.0
+      - 4.07.0
       - esy_build
