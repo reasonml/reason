@@ -30,11 +30,11 @@ Aaaanyways, to install `refmt.js`: `npm install reason`.
 
 Here's the API, with pseudo type annotations:
 
--   `parseRE(code: string): astAndComments`: parse Reason code
--   `parseREI(code: string): astAndComments`: parse Reason interface code
--   `printRE(data: astAndComments): string`: print Reason code
--   `printREI(data: astAndComments): string`: print Reason interface code
--   `parseML(code)`, `parseMLI(code)`, `printML(data)`, `printMLI(data)`: same as above, but for the OCaml syntax
+- `parseRE(code: string): astAndComments`: parse Reason code
+- `parseREI(code: string): astAndComments`: parse Reason interface code
+- `printRE(data: astAndComments): string`: print Reason code
+- `printREI(data: astAndComments): string`: print Reason interface code
+- `parseML(code)`, `parseMLI(code)`, `printML(data)`, `printMLI(data)`: same as above, but for the OCaml syntax
 
 The type `string` is self-descriptive. The type `astAndComments` returned by the `parse*` functions is an opaque data structure; you will only use it as input to the `print*` functions. For example:
 
@@ -71,17 +71,17 @@ The `parse*` functions potentially throw an error of this shape:
 
 We're spoiled with more APIs on the native side. To use Reason from OPAM as a native library, you have [these functions](https://github.com/facebook/reason/blob/5a253048e8077c4597a8935adbed7aa22bfff647/src/reason_toolchain.ml#L141-L157). So:
 
--   `Reason_toolchain.RE.implementation_with_comments`
--   `Reason_toolchain.RE.interface_with_comments`
--   `Reason_toolchain.RE.print_interface_with_comments`
--   `Reason_toolchain.ML.implementation_with_comments`
--   etc.
+- `Reason_toolchain.RE.implementation_with_comments`
+- `Reason_toolchain.RE.interface_with_comments`
+- `Reason_toolchain.RE.print_interface_with_comments`
+- `Reason_toolchain.ML.implementation_with_comments`
+- etc.
 
 The `ML` parsing functions might throw [`Syntaxerr.Error error`](https://caml.inria.fr/pub/docs/manual-ocaml/libref/Syntaxerr.html). The `RE` parsing functions might throw:
 
--   [`Reason_syntax_util.Error`](https://github.com/facebook/reason/blob/6e99ea5aae3791359b1e356060691f7b5b596365/src/reason-parser/reason_syntax_util.ml#L456) (docs on `Location.t` [here](https://caml.inria.fr/pub/docs/manual-ocaml/libref/Location.html))
--   [`Syntaxerr.Error`](https://caml.inria.fr/pub/docs/manual-ocaml/libref/Syntaxerr.html).
--   [`Reason_lexer.Error`](https://github.com/facebook/reason/blob/6e99ea5aae3791359b1e356060691f7b5b596365/src/reason-parser/reason_lexer.mll#L84).
+- [`Reason_syntax_util.Error`](https://github.com/facebook/reason/blob/6e99ea5aae3791359b1e356060691f7b5b596365/src/reason-parser/reason_syntax_util.ml#L456) (docs on `Location.t` [here](https://caml.inria.fr/pub/docs/manual-ocaml/libref/Location.html))
+- [`Syntaxerr.Error`](https://caml.inria.fr/pub/docs/manual-ocaml/libref/Syntaxerr.html).
+- [`Reason_lexer.Error`](https://github.com/facebook/reason/blob/6e99ea5aae3791359b1e356060691f7b5b596365/src/reason-parser/reason_lexer.mll#L84).
 
 Example usage:
 
