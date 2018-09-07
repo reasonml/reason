@@ -24,7 +24,7 @@ See the [src folder's README](https://github.com/facebook/reason/tree/master/src
 
 ### JavaScript API
 
-We expose a `refmt.js` for you to use on the web. Again, for local development, please use the native `refmt` that comes with the installation [here](https://reasonml.github.io/docs/en/global-installation.html). It's an order of magnitude faster than the JS version. Don't use the JS version unless you know what you're doing. Let's keep our ecosystem fast please.
+We expose a `refmt.js` for you to use on the web. Again, for local development, please use the native `refmt` that comes with the installation [here](https://reasonml.github.io/docs/en/installation.html). It's an order of magnitude faster than the JS version. Don't use the JS version unless you know what you're doing. Let's keep our ecosystem fast please.
 
 Aaaanyways, to install `refmt.js`: `npm install reason`.
 
@@ -39,12 +39,12 @@ Here's the API, with pseudo type annotations:
 The type `string` is self-descriptive. The type `astAndComments` returned by the `parse*` functions is an opaque data structure; you will only use it as input to the `print*` functions. For example:
 
 ```js
-const refmt = require('reason')
+const refmt = require('reason');
 
 // convert the ocaml syntax to reason syntax
 const ast = refmt.parseML('let f a = 1');
 const result = refmt.printRE(ast);
-console.log(result) // prints `let f = (a) => 1`
+console.log(result); // prints `let f = (a) => 1`
 ```
 
 The `parse*` functions potentially throw an error of this shape:
@@ -78,6 +78,7 @@ We're spoiled with more APIs on the native side. To use Reason from OPAM as a na
 - etc.
 
 The `ML` parsing functions might throw [`Syntaxerr.Error error`](https://caml.inria.fr/pub/docs/manual-ocaml/libref/Syntaxerr.html). The `RE` parsing functions might throw:
+
 - [`Reason_syntax_util.Error`](https://github.com/facebook/reason/blob/6e99ea5aae3791359b1e356060691f7b5b596365/src/reason-parser/reason_syntax_util.ml#L456) (docs on `Location.t` [here](https://caml.inria.fr/pub/docs/manual-ocaml/libref/Location.html))
 - [`Syntaxerr.Error`](https://caml.inria.fr/pub/docs/manual-ocaml/libref/Syntaxerr.html).
 - [`Reason_lexer.Error`](https://github.com/facebook/reason/blob/6e99ea5aae3791359b1e356060691f7b5b596365/src/reason-parser/reason_lexer.mll#L84).
@@ -102,7 +103,6 @@ let ocaml_syntax =
 See Reason license in [LICENSE.txt](LICENSE.txt).
 
 Works that are forked from other projects are under their original licenses.
-
 
 ## Credit
 
