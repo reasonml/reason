@@ -10,7 +10,9 @@
  (wrapped false)
  (libraries menhirLib reason.easy_format reason utop ocaml-migrate-parsetree))
 
-(install
- (section bin)
- (files (rtop.sh as rtop))
- (package rtop))
+(executable
+ (name rtop)
+ (public_name rtop)
+ (package rtop)
+ (modules rtop)
+ (libraries unix))
