@@ -23,9 +23,9 @@ in
 let args = if Array.length argv == 1 && argv.(0) = "stdin" then
   let refmted = Pervasives.input_line (Unix.open_process_in "refmt --parse re --print ml --interface false") in
 
-  Array.concat [[|"utop";|]; argv; [|refmted|]]
+  Array.concat [[|"utop-full";|]; argv; [|refmted|]]
 else
-  Array.concat [[|"utop"; "-init"; dir ^ "/rtop_init.ml";|]; argv; [|"-I"; home; "-safe-string"|]]
+  Array.concat [[|"utop-full"; "-init"; dir ^ "/rtop_init.ml";|]; argv; [|"-I"; home; "-safe-string"|]]
 in
 
-Unix.execvp "utop" args
+Unix.execvp "utop-full" args
