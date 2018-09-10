@@ -1,6 +1,11 @@
+let getenv_opt env =
+  try Some(Sys.getenv env)
+  with Not_found -> None
+in
+
 (* Try to read the HOME environment
  * if it is not set we assume it's windows and fallback to USERPROFILE *)
-let home = match Sys.getenv_opt "HOME" with
+let home = match getenv_opt "HOME" with
 | Some(p) -> p
 | None -> Sys.getenv "USERPROFILE"
 in
