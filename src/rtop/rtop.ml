@@ -20,7 +20,7 @@ let argv = match Array.length Sys.argv with
 | argLength -> Array.sub Sys.argv 1 argLength
 in
 
-let args = if Array.length argv == 1 && Sys.argv.(0) == "stdin" then
+let args = if Array.length argv == 1 && argv.(0) = "stdin" then
   let refmted = Pervasives.input_line (Unix.open_process_in "refmt --parse re --print ml --interface false") in
 
   Array.concat [[|"utop";|]; argv; [|refmted|]]
