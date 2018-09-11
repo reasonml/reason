@@ -17,7 +17,7 @@ let () = Unix.openfile (home ^ "/.utop-history") [] 0o640
 |> Unix.close in
 
 (* Get the dir of the current executable *)
-let dir = Filename.dirname Sys.argv.(0) in
+let dir = Filename.dirname Sys.executable_name in
 
 (* If there is only 1 arg it's the exeuctable and we can remove that *)
 let argv = match Array.length Sys.argv with
