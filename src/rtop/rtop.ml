@@ -10,10 +10,10 @@ let home = match getenv_opt "HOME" with
 | None -> Sys.getenv "USERPROFILE"
 in
 
-let () = Unix.openfile (home ^ "/.utoprc") [] 0o640
+let () = Unix.openfile (Filename.concat home ".utoprc") [] 0o640
 |> Unix.close in
 
-let () = Unix.openfile (home ^ "/.utop-history") [] 0o640
+let () = Unix.openfile (Filename.concat home ".utop-history") [] 0o640
 |> Unix.close in
 
 (* Get the dir of the current executable *)
@@ -30,7 +30,7 @@ let args = if Array.length argv == 1 && argv.(0) = "stdin" then
 
   Array.concat [[|"utop-full";|]; argv; [|refmted|]]
 else
-  Array.concat [[|"utop-full"; "-init"; dir ^ "/rtop_init.ml";|]; argv; [|"-I"; home; "-safe-string"|]]
+  Array.concat [[|"utop-full"; "-init"; Filename.concat dir "rtop_init.ml";|]; argv; [|"-I"; home; "-safe-string"|]]
 in
 
 Unix.execvp "utop-full" args
