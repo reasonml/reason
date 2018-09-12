@@ -34,7 +34,6 @@ common_steps: &common_steps
         command: |
           opam update
           opam install -y jbuilder
-
           opam install -y menhir
           opam install -y utop
     - run:
