@@ -6855,6 +6855,7 @@ let printer = object(self:'self)
                (makeList
                   ~inline:(false, false)
                   ~wrap:("(","")
+                  ~postSpace:true
                   [atom "module type of"]))
             (self#module_expr me)
         in

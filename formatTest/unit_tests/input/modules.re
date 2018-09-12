@@ -483,3 +483,5 @@ M.[];
 module type Event = (module type of {
   include ReactEventRe;
 });
+
+include (Version2: (module type of Version2));

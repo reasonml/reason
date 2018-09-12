@@ -4,8 +4,8 @@
 ; Use select.exe from janestreet/ppx_ast to choose lexer_warning.ml based on ocaml version
 (rule
  (targets lexer_warning.ml)
- (deps ../generate/select.exe lexer_warning.ml-4.06 lexer_warning.ml-default)
- (action (with-stdout-to %{targets} (run ../generate/select.exe lexer_warning.ml-4.06 lexer_warning.ml-default))))
+ (deps ../generate/select.exe lexer_warning.ml-4.07 lexer_warning.ml-4.06 lexer_warning.ml-default)
+ (action (with-stdout-to %{targets} (run ../generate/select.exe lexer_warning.ml-4.07 lexer_warning.ml-4.06 lexer_warning.ml-default))))
 
 (rule
  (targets reason_string.ml)

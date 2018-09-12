@@ -19,4 +19,4 @@ depends: [
   "result"
   "ocaml-migrate-parsetree"
 ]
-available: [ ocaml-version >= "4.02" & ocaml-version < "4.07" ]
+available: [ ocaml-version >= "4.02" & ocaml-version < "4.08" ]

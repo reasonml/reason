@@ -10,6 +10,7 @@ before_install:
   - eval `opam config env`
   - opam update
 before_script:
+  - opam install -y utop
   - opam pin add -y reason .
   - opam pin add -y rtop .
 script:
@@ -20,6 +21,7 @@ env:
   - OCAML_VERSION=4.03.0
   - OCAML_VERSION=4.04.0
   - OCAML_VERSION=4.06.0
+  - OCAML_VERSION=4.07.0
 notifications:
   email:
     - chenglou@fb.com
