@@ -4,7 +4,7 @@ Simple, fast & type safe code that leverages the JavaScript & OCaml ecosystems.
 
 [![Build Status](https://travis-ci.org/facebook/reason.svg?branch=master)](https://travis-ci.org/facebook/reason) [![CircleCI](https://circleci.com/gh/facebook/reason/tree/master.svg?style=svg)](https://circleci.com/gh/facebook/reason/tree/master)
 
-## [Getting Started](https://reasonml.github.io/docs/en/quickstart-javascript.html)
+## [Getting Started](https://reasonml.github.io/docs/en/installation)
 
 ## [Community](https://reasonml.github.io/docs/en/community.html)
 
