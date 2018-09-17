@@ -296,21 +296,24 @@ and print_arg ppf (lab, typ) =
 
 and print_out_type_1 ~uncurried ppf =
   function
-    Otyp_arrow (lab, ty1, ty2) ->
-      let rec collect_args args typ = match typ with
-        | Otyp_arrow (lab, ty1, ty2) -> collect_args (args @ [(lab, ty1)]) ty2
-        | _ -> (args, typ)
+    (Otyp_arrow _ as x) ->
+      let rec collect_args acc typ = match typ with
+        | Otyp_arrow (lbl, ty1, ty2) ->
+            collect_args ((lbl, ty1)::acc) ty2
+        | _ -> (List.rev acc, typ)
       in
       pp_open_box ppf 0;
-      let (args, result) = collect_args [(lab, ty1)] ty2 in
-      let should_wrap_with_parens = match (uncurried, args) with
-      (* single argument should not be wrapped *)
-      (* though uncurried type are always wrapped in parens. `. a => 1` isn't supported *)
-      | (false, [(_, Otyp_tuple _)]) -> true
-      | (false, [("", _)]) -> false
-      | (_, _) -> true
+      let (args, result) = collect_args [] x  in
+      let should_wrap_with_parens =
+        (* uncurried arguments are always wrapped in parens *)
+        if uncurried then true
+        else match args with
+        | [_, Otyp_tuple _] -> true
+        | [_, Otyp_arrow _] -> true
+        (* single argument should not be wrapped *)
+        | ["", _] -> false
+        | _ -> true
       in
-
       if should_wrap_with_parens then pp_print_string ppf "(";
       if uncurried then fprintf ppf ".@ ";
       print_list print_arg (fun ppf -> fprintf ppf ",@ ") ppf args;
