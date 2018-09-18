@@ -105,15 +105,15 @@ let rec print_ident ppf =
       print_ident ppf id; pp_print_char ppf '.'; pp_print_string ppf s
   | Oide_apply (id1, id2) ->
       fprintf ppf "%a(%a)" print_ident id1 print_ident id2
-(* #else *)
-(* let rec print_ident ppf = *)
-  (* function *)
-    (* Oide_ident s -> !Oprint.out_ident ppf s *)
-  (* | Oide_dot (id, s) -> *)
-      (* print_ident ppf id; pp_print_char ppf '.'; !Oprint.out_ident ppf s *)
-  (* | Oide_apply (id1, id2) -> *)
-      (* fprintf ppf "%a(%a)" print_ident id1 print_ident id2 *)
-(* #end *)
+(* #else
+let rec print_ident ppf =
+  function
+    Oide_ident s -> !Oprint.out_ident ppf s
+  | Oide_dot (id, s) ->
+      print_ident ppf id; pp_print_char ppf '.'; !Oprint.out_ident ppf s
+  | Oide_apply (id1, id2) ->
+      fprintf ppf "%a(%a)" print_ident id1 print_ident id2
+#end *)
 
 let parenthesized_ident name =
   (List.mem name ["or"; "mod"; "land"; "lor"; "lxor"; "lsl"; "lsr"; "asr"])
@@ -701,11 +701,11 @@ and print_out_sig_item ppf =
     fprintf ppf "..."
   | Osig_value {oval_name; oval_type; oval_prims; oval_attributes} ->
     let printAttributes ppf = List.iter (fun a -> fprintf ppf "[@@%s]" a.oattr_name) in
-(* #else *)
-  (* | Osig_value(oval_name, oval_type, oval_prims) -> *)
-    (* let printAttributes ppf attrs = () in *)
-    (* let oval_attributes = [] in *)
-(* #end *)
+(* #else
+  | Osig_value(oval_name, oval_type, oval_prims) ->
+    let printAttributes ppf attrs = () in
+    let oval_attributes = [] in
+#end *)
     let keyword = if oval_prims = [] then "let" else "external" in
     let (hackyBucklescriptExternalAnnotation, rhsValues) = List.partition (fun item ->
       (* "BS:" is considered as a bucklescript external annotation, `[@bs.module]` and the sort.
