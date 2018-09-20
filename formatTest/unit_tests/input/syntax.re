@@ -1215,3 +1215,10 @@ foo(~a :> int);
 foo(~Foo.a?);
 
 foo(~Foo.a);
+
+/* https://github.com/facebook/reason/issues/2155#issuecomment-422077648 */
+true ? (Update({...a, b: 1}), None) : x;
+true ? ({...a, b: 1}) : a;
+true ? (a, {...a, b: 1}) : a;
+
+true ? ([x, ...xs]) => f(x, xs) : a;
