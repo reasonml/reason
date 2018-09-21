@@ -11,8 +11,8 @@
     "@esy-ocaml/esy-installer": "*",
     "@opam/ocamlfind": "",
     "@opam/result": "*",
-    "@opam/jbuilder": "*",
-    "@opam/menhir": " >= 20170418.0.0  <= 20171013.0.0",
+    "@opam/dune": "*",
+    "@opam/menhir": " >= 20170418.0.0",
     "@opam/merlin-extend": " >= 0.3.0",
     "@opam/ocaml-migrate-parsetree": "*"
   },
@@ -22,7 +22,7 @@
   },
   "esy": {
     "build": [
-      [ "jbuilder", "build", "-p", "reason"]
+      [ "dune", "build", "-p", "reason"]
     ],
     "install": [
       ["esy-installer"]
@@ -34,8 +34,8 @@
       "@esy-ocaml/esy-installer": "^0.0.0",
       "@opam/ocamlfind": "",
       "@opam/result": "*",
-      "@opam/jbuilder": "*",
-      "@opam/menhir": " >= 20170418.0.0  <= 20171013.0.0",
+      "@opam/dune": "*",
+      "@opam/menhir": " >= 20170418.0.0",
       "@opam/merlin-extend": " >= 0.3",
       "@opam/ocaml-migrate-parsetree": "*"
     }

@@ -7,7 +7,7 @@
     "@esy-ocaml/substs": "^0.0.1",
     "@esy-ocaml/esy-installer": "^0.0.0",
     "@opam/ocamlfind": "",
-    "@opam/menhir": " >= 20170418.0.0  <= 20171013.0.0",
+    "@opam/menhir": " >= 20170418.0.0",
     "@opam/utop": " >= 1.17.0",
     "@opam/merlin-extend": " >= 0.3.0",
     "@opam/result": "*",
@@ -16,7 +16,7 @@
     "@opam/dune": "*"
   },
   "peerDependencies": {
-    "ocaml": " >= 4.2.0  < 4.7.0"
+    "ocaml": " >= 4.2.0  < 4.8.0"
   },
   "devDependencies": {
     "@esy-ocaml/merlin": "^3.0.5005",
@@ -43,7 +43,7 @@
       "@esy-ocaml/substs": "^0.0.1",
       "@esy-ocaml/esy-installer": "^0.0.0",
       "@opam/ocamlfind": "",
-      "@opam/menhir": " >= 20170418.0.0  <= 20171013.0.0",
+      "@opam/menhir": " >= 20170418.0.0",
       "@opam/utop": " >= 1.17",
       "@opam/merlin-extend": " >= 0.3",
       "@opam/result": "*",

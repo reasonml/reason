@@ -11,12 +11,12 @@
     "@esy-ocaml/esy-installer": "^0.0.0",
     "@opam/ocamlfind": "",
     "@opam/result": "*",
-    "@opam/jbuilder": "*",
+    "@opam/dune": "*",
     "@esy-ocaml/reason": "^3.2.0",
     "@opam/utop": " >= 1.17.0"
   },
   "peerDependencies": {
-    "ocaml": " >= 4.2.0  < 4.7.0"
+    "ocaml": " >= 4.2.0  < 4.8.0"
   },
   "devDependencies": {
     "@esy-ocaml/merlin": "*",
@@ -24,7 +24,7 @@
   },
   "esy": {
     "build": [
-      [ "jbuilder", "build", "-p", "rtop"]
+      [ "dune", "build", "-p", "rtop"]
     ],
     "install": [
       ["esy-installer"]
@@ -35,7 +35,7 @@
       "@esy-ocaml/esy-installer": "^0.0.0",
       "@opam/ocamlfind": "",
       "@opam/result": "*",
-      "@opam/jbuilder": "*",
+      "@opam/dune": "*",
       "@esy-ocaml/reason": "^3.2.0",
       "@opam/utop": " >= 1.17"
     }
