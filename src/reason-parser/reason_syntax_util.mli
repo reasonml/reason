@@ -38,6 +38,8 @@ val syntax_error_extension_node :
 
 val escape_stars_slashes : string -> string
 
+val remove_literal_attrs_mapper : Ast_404.Ast_mapper.mapper
+
 val escape_stars_slashes_mapper :
   Ast_404.Ast_mapper.mapper -> Ast_404.Ast_mapper.mapper
 
