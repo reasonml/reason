@@ -146,6 +146,21 @@ window->Webapi.Dom.Window.open_(~url, ~name="authWindow", ~features=params);
 
 window->Webapi.Dom.Window.open_(~url, ~name="authWindow", () => { let x = 1; let y = 2; x + y; });
 
+reactClass
+->setNavigationOptions(
+    NavigationOptions.t(~title="Title", ~gesturesEnabled=false, ()),
+  );
+
+Foo.Bar.reactClass
+->setNavigationOptions(
+    NavigationOptions.t(~title="Title", ~gesturesEnabled=false, ()),
+  );
+
+foo##bar
+->setNavigationOptions(
+    NavigationOptions.t(~title="Title", ~gesturesEnabled=false, ()),
+  );
+
 <div> {items->Belt.Array.map(ReasonReact.string)->ReasonReact.array} </div>;
 
 a->(b->c);

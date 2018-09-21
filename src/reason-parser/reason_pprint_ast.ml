@@ -3673,7 +3673,7 @@ let printer = object(self:'self)
       }
       type t = node list
 
-      let formatNode ?(first=false) {exp; args; uncurried} =
+      let formatNode ?prefix ?(first=false) {exp; args; uncurried} =
         let formatLayout expr =
           let formatted = if first then
             self#ensureExpression ~reducesOnToken:(Token fastPipeToken) expr
@@ -3700,7 +3700,11 @@ let printer = object(self:'self)
         | _ -> false
         in
         let layout = match args with
-        | [] -> formatLayout exp
+        | [] ->
+          let e = formatLayout exp in
+          (match prefix with
+          | Some l -> makeList [l; e]
+          | None -> e)
         | args ->
             let fakeApplExp =
               let loc_end = match List.rev args with
@@ -3711,6 +3715,7 @@ let printer = object(self:'self)
             in
             makeList (
               self#formatFunAppl
+                ?prefix
                 ~jsxAttrs:[]
                 ~args
                 ~funExpr:exp
@@ -3815,6 +3820,31 @@ let printer = object(self:'self)
      *  [foo; ->f(a, b); ->g(c, d)]
      *)
     let pipeSegments = match pipetree with
+    (* Special case printing of
+     * foo->bar(
+     *  aa,
+     *  bb,
+     * )
+     *
+     *  We don't want
+     *  foo
+     *  ->bar(
+     *      aa,
+     *      bb
+     *    )
+     *
+     *  Notice how `foo->bar` shouldn't break, it wastes space and is
+     *  inconsistent with
+     *  foo.bar(
+     *    aa,
+     *    bb,
+     *  )
+     *)
+    | [({exp = {pexp_desc = Pexp_ident _ }} as hd); last] ->
+        let prefix = Some (
+          makeList [Fastpipetree.formatNode ~first:true hd; atom "->"]
+        ) in
+        [Fastpipetree.formatNode ?prefix last]
     | hd::tl ->
         let hd = Fastpipetree.formatNode ~first:true hd in
         let tl = List.map (fun node ->
@@ -7422,7 +7452,17 @@ let printer = object(self:'self)
       | params ->
           makeTup ~uncurried (List.map self#label_x_expression_param params)
 
-  method formatFunAppl ~jsxAttrs ~args ~funExpr ~applicationExpr ?(uncurried=false) () =
+  (*
+   * Prefix represents an optional layout. When passed it will be "prefixed" to
+   * the funExpr. Example, given `bar(x, y)` with prefix `foo`, we get
+   * foobar(x,y). When the arguments break, the closing `)` is nicely aligned
+   * on the height of the prefix:
+   *  foobar(
+   *    x,
+   *    y,
+   *  )  --> notice how `)` sits on the height of `foo` instead of `bar`
+   *)
+  method formatFunAppl ?(prefix=(atom "")) ~jsxAttrs ~args ~funExpr ~applicationExpr ?(uncurried=false) () =
     let uncurriedApplication = uncurried in
     (* If there was a JSX attribute BUT JSX component wasn't detected,
        that JSX attribute needs to be pretty printed so it doesn't get
@@ -7446,6 +7486,7 @@ let printer = object(self:'self)
       | Pexp_field _ -> self#unparseExpr funExpr
       | _ -> self#simplifyUnparseExpr funExpr
     in
+    let formattedFunExpr = makeList [prefix; formattedFunExpr] in
     begin match categorizeFunApplArgs args with
     | `LastArgIsCallback(callbackArg, args) ->
         (* This is the following case:
