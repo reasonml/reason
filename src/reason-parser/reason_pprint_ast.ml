@@ -1257,10 +1257,10 @@ let rec append ?(space=false) txt = function
     Sequence (config, [atom txt])
   | Sequence ({sep=NoSep} as config, l)
   | Sequence ({sep=Sep("")} as config, l) ->
-    (* TODO (perf) compute list length once *)
+    let len = List.length l in
     let sub = List.mapi (fun i layout ->
         (* append to the end of the list *)
-        if i + 1 = List.length l then
+        if i + 1 = len then
           append ~space txt layout
         else
           layout
@@ -1315,7 +1315,7 @@ let unbreaklayout = preOrderWalk (function
 (** [consolidateSeparator layout] walks the [layout], extract separators out of each
  *  list and insert them into PrintTree as separated items
  *)
-let rec consolidateSeparator l = preOrderWalk (function
+let consolidateSeparator l = preOrderWalk (function
   | Sequence (listConfig, sublayouts) when listConfig.sep != NoSep && listConfig.sepLeft ->
      (* TODO: Support !sepLeft, and this should apply to the *first* separator if !sepLeft.  *)
      let sublayoutsLen = List.length sublayouts in
@@ -1333,8 +1333,6 @@ let rec consolidateSeparator l = preOrderWalk (function
      let sep = Layout.NoSep in
      let preSpace = false in
      Sequence ({listConfig with sep; preSpace}, layoutsWithSepAndComment)
-  | Whitespace(info, sub) ->
-      Layout.Whitespace(info, consolidateSeparator sub)
   | layout -> layout
 ) l
 
