@@ -1304,3 +1304,6 @@ let predicate =
 let (>...) = (a, b) => a + b;
 
 a >... b;
+
+/* https://github.com/facebook/reason/issues/2169 */
+let not = x => !x;

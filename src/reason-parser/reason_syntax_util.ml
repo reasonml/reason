@@ -326,7 +326,7 @@ let syntax_error_extension_node loc message =
   this is used by swap_operator_mapper right below, to traverse the whole AST
   and swapping the symbols listed above.
   *)
-let identifier_mapper f super =
+let identifier_mapper ?(add_attribute=false) f super =
 { super with
   expr = begin fun mapper expr ->
     let expr =
@@ -346,7 +346,17 @@ let identifier_mapper f super =
     let pat =
       match pat with
         | {ppat_desc=Ppat_var ({txt} as id)} ->
-             {pat with ppat_desc=Ppat_var ({id with txt=(f txt)})}
+            let txt' = f txt in
+            let pat' = {pat with ppat_desc=Ppat_var ({id with txt=txt'})} in
+            if txt = txt' && add_attribute then
+              let label = Location.mknoloc "reason.preserve_original" in
+              let payload = PStr [{
+                pstr_desc = Pstr_eval (Ast_helper.Exp.constant (Pconst_string (txt, None)), []);
+                pstr_loc = Location.none
+              }] in
+              {pat' with ppat_attributes= (label, payload) :: pat.ppat_attributes }
+            else
+              pat'
         | _ -> pat
     in
     super.pat mapper pat
@@ -362,22 +372,22 @@ let identifier_mapper f super =
   end;
 }
 
-(** escape_stars_slashes_mapper escapes all stars and slases in an AST *)
+let escape_stars_slashes str =
+  if String.contains str '/' then
+    replace_string "/*" "/\\*" @@
+    replace_string "*/" "*\\/" @@
+    replace_string "//" "/\\/" @@
+    str
+  else
+    str
+
+(** escape_stars_slashes_mapper escapes all stars and slashes in an AST *)
 let escape_stars_slashes_mapper =
-  let escape_stars_slashes str =
-    if String.contains str '/' then
-      replace_string "/*" "/\\*" @@
-      replace_string "*/" "*\\/" @@
-      replace_string "//" "/\\/" @@
-      str
-    else
-      str
-  in
   identifier_mapper escape_stars_slashes
 
 (* To be used in parser, transform a token into an ast node with different identifier
  *)
-let reason_to_ml_swap_operator_mapper = identifier_mapper reason_to_ml_swap
+let reason_to_ml_swap_operator_mapper = identifier_mapper ~add_attribute:true reason_to_ml_swap
 
 (* To be used in printer, transform an ast node into a token with different identifier
  *)

@@ -112,11 +112,14 @@ let isUnderscoreApplication expr =
         None,
         {
           ppat_desc = Ppat_var({txt = "__x"});
-          ppat_attributes = []
+          ppat_attributes
         },
         _
       )
-    } -> true
+    } ->
+      let {Reason_attributes.stdAttrs} = Reason_attributes.partitionAttributes ppat_attributes
+      in
+      stdAttrs == []
   | _ -> false
 
 (* <div> {items->Belt.Array.map(ReasonReact.string)->ReasonReact.array} </div>;

@@ -55,6 +55,7 @@ open Longident
 open Parsetree
 open Easy_format
 open Reason_syntax_util
+open Reason_attributes
 
 module Comment = Reason_comment
 module Layout = Reason_layout
@@ -299,61 +300,6 @@ let extractLocationFromValBindList expr vbs =
     | [] -> expr.pexp_loc
   in
   { loc with loc_start = expr.pexp_loc.loc_start }
-
-(** Kinds of attributes *)
-type attributesPartition = {
-  arityAttrs : attributes;
-  docAttrs : attributes;
-  stdAttrs : attributes;
-  jsxAttrs : attributes;
-  literalAttrs : attributes;
-  uncurried : bool
-}
-
-(** Partition attributes into kinds *)
-let rec partitionAttributes ?(partDoc=false) ?(allowUncurry=true) attrs : attributesPartition =
-  match attrs with
-    | [] ->
-      {arityAttrs=[]; docAttrs=[]; stdAttrs=[]; jsxAttrs=[]; literalAttrs=[]; uncurried = false}
-    | (({txt = "bs"}, PStr []) as attr)::atTl ->
-        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
-        if allowUncurry then
-          {partition with uncurried = true}
-        else {partition with stdAttrs=attr::partition.stdAttrs}
-    | (({txt="JSX"}, _) as jsx)::atTl ->
-        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
-        {partition with jsxAttrs=jsx::partition.jsxAttrs}
-    | (({txt="explicit_arity"}, _) as arity_attr)::atTl
-    | (({txt="implicit_arity"}, _) as arity_attr)::atTl ->
-        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
-        {partition with arityAttrs=arity_attr::partition.arityAttrs}
-    | (({txt="ocaml.text"}, _) as doc)::atTl when partDoc = true ->
-        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
-        {partition with docAttrs=doc::partition.docAttrs}
-    | (({txt="ocaml.doc"}, _) as doc)::atTl when partDoc = true ->
-        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
-        {partition with docAttrs=doc::partition.docAttrs}
-    | (({txt="reason.raw_literal"}, _) as attr) :: atTl ->
-        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
-        {partition with literalAttrs=attr::partition.literalAttrs}
-    | atHd :: atTl ->
-        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
-        {partition with stdAttrs=atHd::partition.stdAttrs}
-
-let extractStdAttrs attrs =
-  (partitionAttributes attrs).stdAttrs
-
-let extract_raw_literal attrs =
-  let rec loop acc = function
-    | ({txt="reason.raw_literal"},
-       PStr [{pstr_desc = Pstr_eval({pexp_desc = Pexp_constant(Pconst_string(text, None))}, _)}])
-      :: rest ->
-      (Some text, List.rev_append acc rest)
-    | [] -> (None, List.rev acc)
-    | attr :: rest -> loop (attr :: acc) rest
-  in
-  loop [] attrs
-
 
 let rec sequentialIfBlocks x =
   match x with
@@ -2009,9 +1955,9 @@ let is_punned_labelled_expression e lbl = match e.pexp_desc with
   | _ -> false
 
 let is_punned_labelled_pattern p lbl = match p.ppat_desc with
-  | Ppat_constraint ({ ppat_desc = Ppat_var _; ppat_attributes = _::_ }, _)
-    -> false
-  | Ppat_constraint ({ ppat_desc = Ppat_var { txt } }, _)
+  | Ppat_constraint ({ ppat_desc = Ppat_var {txt}; ppat_attributes }, _) ->
+    let {stdAttrs} = partitionAttributes ppat_attributes in
+    stdAttrs == [] && txt = lbl
   | Ppat_var { txt }
     -> txt = lbl
   | _ -> false
@@ -3259,7 +3205,7 @@ let printer = object(self:'self)
     | _  -> self#pattern x
 
   method simple_pattern x =
-    let {arityAttrs; stdAttrs} = partitionAttributes x.ppat_attributes in
+    let {arityAttrs; stdAttrs; literalAttrs} = partitionAttributes x.ppat_attributes in
     if stdAttrs <> [] then
       formatSimpleAttributed
         (self#simple_pattern {x with ppat_attributes=arityAttrs})
@@ -3300,7 +3246,12 @@ let printer = object(self:'self)
                  let oneArgShouldWrapToAlignWith theFunctionNameBinding => theFunctionNameBinding;
 
              *)
-            source_map ~loc (protectIdentifier txt)
+            let txt' = match List.filter (fun ({txt}, _) -> txt = "reason.preserve_original") literalAttrs with
+            | (_, PStr [{pstr_desc = Pstr_eval({pexp_desc = Pexp_constant (Pconst_string (txt, _))}, [])}]) :: [] ->
+                Reason_syntax_util.escape_stars_slashes txt
+            | _ -> txt
+            in
+            source_map ~loc (protectIdentifier txt')
           | Ppat_array l ->
               self#patternArray l
           | Ppat_unpack s ->
@@ -6555,10 +6506,11 @@ let printer = object(self:'self)
     source_map ~loc:x.pcf_loc itm
 
   method class_self_pattern_and_structure {pcstr_self = p; pcstr_fields = l} =
+    let {stdAttrs} = partitionAttributes p.ppat_attributes in
     let fields = List.map self#class_field l in
     (* Recall that by default self is bound to "this" at parse time. You'd
        have to go out of your way to bind it to "_". *)
-    match (p.ppat_attributes, p.ppat_desc) with
+    match (stdAttrs, p.ppat_desc) with
       | ([], Ppat_var ({txt = "this"})) -> fields
       | _ ->
         let field = label ~space:true (atom "as") (self#pattern p) in
