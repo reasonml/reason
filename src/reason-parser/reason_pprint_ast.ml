@@ -2701,7 +2701,7 @@ let printer = object(self:'self)
    * not parsed or printed correctly. *)
   method type_variant_leaf1 opt_ampersand polymorphic print_bar x =
     let {pcd_name; pcd_args; pcd_res; pcd_loc; pcd_attributes} = x in
-    let {stdAttrs} = partitionAttributes pcd_attributes in
+    let {stdAttrs; docAttrs} = partitionAttributes ~partDoc:true pcd_attributes in
     let ampersand_helper i arg =
       let ct = self#core_type arg in
       let ct = match arg.ptyp_desc with
@@ -2764,10 +2764,18 @@ let printer = object(self:'self)
     let prefix = if polymorphic then "`" else "" in
     let sourceMappedName = atom ~loc:pcd_name.loc (prefix ^ pcd_name.txt) in
     let sourceMappedNameWithAttributes =
-      match stdAttrs with
+      let layout = match stdAttrs with
       | [] -> sourceMappedName
       | stdAttrs ->
         formatAttributed sourceMappedName (self#attributes stdAttrs)
+      in
+      match docAttrs with
+      | [] -> layout
+      | docAttrs ->
+        makeList ~break:Always ~inline:(true, true) [
+          makeList (self#attributes docAttrs);
+          layout
+        ]
     in
     let constructorName = makeList ~postSpace:true [sourceMappedNameWithAttributes] in
     let everything = match (args, gadtRes) with
