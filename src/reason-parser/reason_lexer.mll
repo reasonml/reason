@@ -968,6 +968,20 @@ and skip_sharp_bang = parse
         let acc = if is_triggering_token tok' then inject_es6_fun acc else acc in
         lex_balanced_step closing lexbuf acc tok'
       end
+    (* `...` with a closing `}` indicates that we're definitely not in an es6_fun
+     * Image the following:
+     *    true ? (Update({...a, b: 1}), None) : x;
+     *    true ? ({...a, b: 1}) : a;
+     *    true ? (a, {...a, b: 1}) : a;
+     * The lookahead_esfun is triggered initiating the lex_balanced procedure.
+     * Since we now "over"-parse spread operators in pattern position (for
+     * better errors), the ... pattern in ({...a, b: 1}) is now a valid path.
+     * This means that the above expression `({...a, b: 1}) :` is seen as a pattern.
+     * I.e. the arguments of an es6 function: (pattern) :type => expr
+     * We exit here, to indicate that an expression needs to be parsed instead
+     * of a pattern.
+     *)
+    | (DOTDOTDOT, RBRACE) -> acc
     | _ -> lex_balanced closing lexbuf acc
 
   and lex_balanced closing lexbuf acc =
