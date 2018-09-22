@@ -129,3 +129,9 @@ let display =
       ~person: string="Reason",
       time: float,
     ) => 1;
+
+let not = (x, y) => x + y;
+
+let added: int = not(1, 2);
+
+let better = foo => !foo ? 42 : not(41, 2);

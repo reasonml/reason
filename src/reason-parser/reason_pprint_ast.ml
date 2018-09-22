@@ -653,18 +653,8 @@ let higherPrecedenceThan c1 c2 =
     raise (NotPossible ("Cannot determine precedence of two checks " ^ str1 ^ " vs. " ^ str2))
   | (Some (_, p1), Some (_, p2)) -> p1 < p2
 
-let printedStringAndFixityExpr exp =
-  let {literalAttrs} = partitionAttributes exp.pexp_attributes in
-  let preserve_attrs = Reason_attributes.extractPreserveAttrs literalAttrs in
-  match exp with
-  | {pexp_desc = Pexp_ident {txt=Lident l}} ->
-      begin match preserve_attrs with
-      | [] -> printedStringAndFixity l
-      | (_, PStr [{pstr_desc=Pstr_eval({pexp_desc=Pexp_constant (Pconst_string (txt, _))}, [])}]) :: []
-          when txt = l ->
-        printedStringAndFixity l
-      | _ -> Normal
-      end
+let printedStringAndFixityExpr = function
+  | {pexp_desc = Pexp_ident {txt=Lident l}} -> printedStringAndFixity l
   | _ -> Normal
 
 (* which identifiers are in fact operators needing parentheses *)
@@ -1917,20 +1907,6 @@ let protectIdentifier txt =
 let protectLongIdentifier longPrefix txt =
   makeList [longPrefix; atom "."; protectIdentifier txt]
 
-let identifier_or_original literalAttrs identifier =
-  match Reason_attributes.extractPreserveAttrs literalAttrs with
-  | (_, PStr [{
-    pstr_desc = Pstr_eval({
-      pexp_desc = Pexp_constant (Pconst_string (txt, _))
-      }, [])
-    }]) :: [] -> txt
-  | _ -> identifier
-
-let identifier_or_original_longident literalAttrs = function
-  | Lident s -> Lident (identifier_or_original literalAttrs s)
-  | Ldot (lp, s) -> Ldot (lp, identifier_or_original literalAttrs s)
-  | Lapply _ as x -> x
-
 let paren b fu ppf x =
   if b
   then Format.fprintf ppf "(%a)" fu x
@@ -1971,26 +1947,19 @@ let constant ?raw_literal ?(parens=true) ppf = function
     paren (parens && i.[0] = '-')
       (fun ppf (i,m) -> Format.fprintf ppf "%s%c" i m) ppf (i,m)
 
-let is_punned_labelled_expression {pexp_desc; pexp_attributes} lbl =
-  match pexp_desc with
-  | Pexp_ident { txt } ->
-      let {literalAttrs} = partitionAttributes pexp_attributes in
-      (identifier_or_original_longident literalAttrs txt) = Longident.parse lbl
-  | Pexp_constraint ({pexp_desc = Pexp_ident { txt }; pexp_attributes}, _)
-  | Pexp_coerce ({pexp_desc = Pexp_ident { txt }; pexp_attributes}, _, _) ->
-      let {literalAttrs} = partitionAttributes pexp_attributes in
-      (identifier_or_original_longident literalAttrs txt) = Longident.parse lbl
+let is_punned_labelled_expression e lbl = match e.pexp_desc with
+  | Pexp_ident { txt }
+  | Pexp_constraint ({pexp_desc = Pexp_ident { txt }}, _)
+  | Pexp_coerce ({pexp_desc = Pexp_ident { txt }}, _, _)
+    -> txt = Longident.parse lbl
   | _ -> false
 
 let is_punned_labelled_pattern p lbl = match p.ppat_desc with
-  | Ppat_constraint ({ ppat_desc = Ppat_var {txt}; ppat_attributes }, _) ->
-    let {stdAttrs; literalAttrs} = partitionAttributes ppat_attributes in
-    let txt' = identifier_or_original literalAttrs txt in
-    stdAttrs == [] && txt' = lbl
-  | Ppat_var { txt } ->
-    let {literalAttrs} = partitionAttributes p.ppat_attributes in
-    let txt' = identifier_or_original literalAttrs txt in
-    txt' = lbl
+  | Ppat_constraint ({ ppat_desc = Ppat_var _; ppat_attributes = _::_ }, _)
+    -> false
+  | Ppat_constraint ({ ppat_desc = Ppat_var { txt } }, _)
+  | Ppat_var { txt }
+    -> txt = lbl
   | _ -> false
 
 let isLongIdentWithDot = function
@@ -3236,7 +3205,7 @@ let printer = object(self:'self)
     | _  -> self#pattern x
 
   method simple_pattern x =
-    let {arityAttrs; stdAttrs; literalAttrs} = partitionAttributes x.ppat_attributes in
+    let {arityAttrs; stdAttrs} = partitionAttributes x.ppat_attributes in
     if stdAttrs != [] then
       formatSimpleAttributed
         (self#simple_pattern {x with ppat_attributes=arityAttrs})
@@ -3277,7 +3246,7 @@ let printer = object(self:'self)
                  let oneArgShouldWrapToAlignWith theFunctionNameBinding => theFunctionNameBinding;
 
              *)
-            source_map ~loc (txt |> identifier_or_original literalAttrs |> protectIdentifier)
+            source_map ~loc (protectIdentifier txt)
           | Ppat_array l ->
               self#patternArray l
           | Ppat_unpack s ->
@@ -5875,7 +5844,7 @@ let printer = object(self:'self)
     | _ -> assert false
 
   method simplest_expression x =
-    let {literalAttrs; stdAttrs; jsxAttrs} = partitionAttributes x.pexp_attributes in
+    let {stdAttrs; jsxAttrs} = partitionAttributes x.pexp_attributes in
     if stdAttrs != [] then
       None
     else
@@ -5932,10 +5901,7 @@ let printer = object(self:'self)
             )
         | Pexp_ident li ->
             (* Lone identifiers shouldn't break when to the right of a label *)
-            Some (ensureSingleTokenSticksToLabel
-                   (self#longident_loc
-                    { li with
-                      txt = identifier_or_original_longident literalAttrs li.txt}))
+            Some (ensureSingleTokenSticksToLabel (self#longident_loc li))
         | Pexp_constant c ->
             (* Constants shouldn't break when to the right of a label *)
           let raw_literal, _ = extract_raw_literal x.pexp_attributes in
@@ -6535,11 +6501,10 @@ let printer = object(self:'self)
     source_map ~loc:x.pcf_loc itm
 
   method class_self_pattern_and_structure {pcstr_self = p; pcstr_fields = l} =
-    let {stdAttrs} = partitionAttributes p.ppat_attributes in
     let fields = List.map self#class_field l in
     (* Recall that by default self is bound to "this" at parse time. You'd
        have to go out of your way to bind it to "_". *)
-    match (stdAttrs, p.ppat_desc) with
+    match (p.ppat_attributes, p.ppat_desc) with
       | ([], Ppat_var ({txt = "this"})) -> fields
       | _ ->
         let field = label ~space:true (atom "as") (self#pattern p) in
@@ -6667,14 +6632,12 @@ let printer = object(self:'self)
               self#primitive_declaration vd
             else
               let intro = atom "let" in
-              let {stdAttrs; docAttrs; literalAttrs} = partitionAttributes ~partDoc:true vd.pval_attributes in
+              let {stdAttrs; docAttrs} = partitionAttributes ~partDoc:true vd.pval_attributes in
               let layout = self#attach_std_item_attrs stdAttrs
                 (formatTypeConstraint
                    (label ~space:true intro
                       (source_map ~loc:vd.pval_name.loc
-                         (vd.pval_name.txt
-                          |> identifier_or_original literalAttrs
-                          |> protectIdentifier)))
+                         (protectIdentifier vd.pval_name.txt)))
                   (self#core_type vd.pval_type))
               in
               self#attachDocAttrsToLayout

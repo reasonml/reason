@@ -38,9 +38,6 @@ let rec partitionAttributes ?(partDoc=false) ?(allowUncurry=true) attrs : attrib
   | (({txt="reason.raw_literal"}, _) as attr) :: atTl ->
     let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
     {partition with literalAttrs=attr::partition.literalAttrs}
-  | (({txt="reason.preserve_original"}, _) as attr) :: atTl ->
-    let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
-    {partition with literalAttrs=attr::partition.literalAttrs}
   | atHd :: atTl ->
     let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
     {partition with stdAttrs=atHd::partition.stdAttrs}
@@ -58,7 +55,4 @@ let extract_raw_literal attrs =
     | attr :: rest -> loop (attr :: acc) rest
   in
   loop [] attrs
-
-let extractPreserveAttrs literalAttrs =
-  List.filter (fun ({txt}, _) -> txt = "reason.preserve_original") literalAttrs
 
