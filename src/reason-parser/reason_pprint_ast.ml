@@ -1926,6 +1926,11 @@ let identifier_or_original literalAttrs identifier =
     }]) :: [] -> txt
   | _ -> identifier
 
+let identifier_or_original_longident literalAttrs = function
+  | Lident s -> Lident (identifier_or_original literalAttrs s)
+  | Ldot (lp, s) -> Ldot (lp, identifier_or_original literalAttrs s)
+  | Lapply _ as x -> x
+
 let paren b fu ppf x =
   if b
   then Format.fprintf ppf "(%a)" fu x
@@ -1970,21 +1975,11 @@ let is_punned_labelled_expression {pexp_desc; pexp_attributes} lbl =
   match pexp_desc with
   | Pexp_ident { txt } ->
       let {literalAttrs} = partitionAttributes pexp_attributes in
-      let txt' = match txt with
-      | Lident s -> Lident (identifier_or_original literalAttrs s)
-      | Ldot (lp, s) -> Ldot (lp, identifier_or_original literalAttrs s)
-      | Lapply _ as x -> x
-      in
-      txt' = Longident.parse lbl
+      (identifier_or_original_longident literalAttrs txt) = Longident.parse lbl
   | Pexp_constraint ({pexp_desc = Pexp_ident { txt }; pexp_attributes}, _)
   | Pexp_coerce ({pexp_desc = Pexp_ident { txt }; pexp_attributes}, _, _) ->
       let {literalAttrs} = partitionAttributes pexp_attributes in
-      let txt' = match txt with
-      | Lident s -> Lident (identifier_or_original literalAttrs s)
-      | Ldot (lp, s) -> Ldot (lp, identifier_or_original literalAttrs s)
-      | Lapply _ as x -> x
-      in
-      txt' = Longident.parse lbl
+      (identifier_or_original_longident literalAttrs txt) = Longident.parse lbl
   | _ -> false
 
 let is_punned_labelled_pattern p lbl = match p.ppat_desc with
@@ -5936,13 +5931,11 @@ let printer = object(self:'self)
               | _ -> assert false
             )
         | Pexp_ident li ->
-            let txt' = match li.txt with
-              | Lident s -> Lident (identifier_or_original literalAttrs s)
-              | Ldot (lp, s) -> Ldot (lp, identifier_or_original literalAttrs s)
-              | Lapply _ as x -> x
-            in
             (* Lone identifiers shouldn't break when to the right of a label *)
-            Some (ensureSingleTokenSticksToLabel (self#longident_loc {li with txt = txt'}))
+            Some (ensureSingleTokenSticksToLabel
+                   (self#longident_loc
+                    { li with
+                      txt = identifier_or_original_longident literalAttrs li.txt}))
         | Pexp_constant c ->
             (* Constants shouldn't break when to the right of a label *)
           let raw_literal, _ = extract_raw_literal x.pexp_attributes in
