@@ -106,8 +106,9 @@ let isFastPipe e = match Ast_404.Parsetree.(e.pexp_desc) with
 
 let isUnderscoreApplication expr =
   let open Ast_404.Parsetree in
+  let open Reason_attributes in
   match expr with
-  | {pexp_attributes = []; pexp_desc = Pexp_fun(
+  | {pexp_attributes; pexp_desc = Pexp_fun(
         Nolabel,
         None,
         {
@@ -117,9 +118,9 @@ let isUnderscoreApplication expr =
         _
       )
     } ->
-      let {Reason_attributes.stdAttrs} = Reason_attributes.partitionAttributes ppat_attributes
-      in
-      stdAttrs == []
+      let {stdAttrs = pexp_stdAttrs} = partitionAttributes pexp_attributes in
+      let {stdAttrs} = partitionAttributes ppat_attributes in
+      pexp_stdAttrs == [] && stdAttrs == []
   | _ -> false
 
 (* <div> {items->Belt.Array.map(ReasonReact.string)->ReasonReact.array} </div>;

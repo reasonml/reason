@@ -322,6 +322,15 @@ let syntax_error_extension_node loc message =
  in
  (str, payload)
 
+let mk_preserve_attr txt =
+  let label = Location.mknoloc "reason.preserve_original" in
+  let payload = PStr [{
+    pstr_desc = Pstr_eval (Ast_helper.Exp.constant (Pconst_string (txt, None)), []);
+    pstr_loc = Location.none
+  }]
+  in
+  label, payload
+
 (** identifier_mapper maps all identifiers in an AST with a mapping function f
   this is used by swap_operator_mapper right below, to traverse the whole AST
   and swapping the symbols listed above.
@@ -331,13 +340,26 @@ let identifier_mapper ?(add_attribute=false) f super =
   expr = begin fun mapper expr ->
     let expr =
       match expr with
-        | {pexp_desc=Pexp_ident ({txt} as id)} ->
-             let swapped = match txt with
-               | Lident s -> Lident (f s)
-               | Ldot(longPrefix, s) -> Ldot(longPrefix, f s)
-               | Lapply (y,s) -> Lapply (y, s)
+        | {pexp_desc=Pexp_ident ({txt} as id); pexp_attributes} ->
+             let swapped, s' = match txt with
+               | Lident s ->
+                   let s' = f s in
+                   Lident s', Some s'
+               | Ldot(longPrefix, s) ->
+                   let s' = f s in
+                   Ldot(longPrefix, s'), Some s'
+               | Lapply (y,s) -> Lapply (y, s), None
              in
-             {expr with pexp_desc=Pexp_ident ({id with txt=swapped})}
+             let expr = {expr with pexp_desc=Pexp_ident ({id with txt=swapped})} in
+             begin match s' with
+               | Some s' ->
+                 if (ml_to_reason_swap s') != s' && txt = swapped && add_attribute then
+                   let attr = mk_preserve_attr s' in
+                   {expr with pexp_attributes = attr :: pexp_attributes }
+                 else
+                   expr
+               | None -> expr
+             end
         | _ -> expr
     in
     super.expr mapper expr
@@ -348,13 +370,10 @@ let identifier_mapper ?(add_attribute=false) f super =
         | {ppat_desc=Ppat_var ({txt} as id)} ->
             let txt' = f txt in
             let pat' = {pat with ppat_desc=Ppat_var ({id with txt=txt'})} in
-            if txt = txt' && add_attribute then
-              let label = Location.mknoloc "reason.preserve_original" in
-              let payload = PStr [{
-                pstr_desc = Pstr_eval (Ast_helper.Exp.constant (Pconst_string (txt, None)), []);
-                pstr_loc = Location.none
-              }] in
-              {pat' with ppat_attributes= (label, payload) :: pat.ppat_attributes }
+            if (ml_to_reason_swap txt') != txt' && txt = txt' && add_attribute then
+              let attr = mk_preserve_attr txt
+              in
+              {pat' with ppat_attributes= attr :: pat.ppat_attributes }
             else
               pat'
         | _ -> pat
@@ -364,8 +383,20 @@ let identifier_mapper ?(add_attribute=false) f super =
   signature_item = begin fun mapper signatureItem ->
     let signatureItem =
       match signatureItem with
-        | {psig_desc=Psig_value ({pval_name} as name)} ->
-            {signatureItem with psig_desc=Psig_value ({name with pval_name=({pval_name with txt=(f name.pval_name.txt)})})}
+        | {psig_desc=Psig_value ({pval_name; pval_attributes} as name)} ->
+            let txt = name.pval_name.txt in
+            let txt' = f txt in
+            let signatureItem = {
+              signatureItem with
+              psig_desc=Psig_value ({name with pval_name=({pval_name with txt=txt'})})
+            } in
+            if (ml_to_reason_swap txt') != txt' && txt = txt' && add_attribute then
+              let attr = mk_preserve_attr txt
+              in
+              { signatureItem with
+                psig_desc=Psig_value ({name with pval_name=({pval_name with txt=txt'}); pval_attributes = attr::pval_attributes}) }
+            else
+              signatureItem
         | _ -> signatureItem
     in
     super.signature_item mapper signatureItem

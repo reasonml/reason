@@ -15,35 +15,35 @@ type attributesPartition = {
 (** Partition attributes into kinds *)
 let rec partitionAttributes ?(partDoc=false) ?(allowUncurry=true) attrs : attributesPartition =
   match attrs with
-    | [] ->
-      {arityAttrs=[]; docAttrs=[]; stdAttrs=[]; jsxAttrs=[]; literalAttrs=[]; uncurried = false}
-    | (({txt = "bs"}, PStr []) as attr)::atTl ->
-        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
-        if allowUncurry then
-          {partition with uncurried = true}
-        else {partition with stdAttrs=attr::partition.stdAttrs}
-    | (({txt="JSX"}, _) as jsx)::atTl ->
-        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
-        {partition with jsxAttrs=jsx::partition.jsxAttrs}
-    | (({txt="explicit_arity"}, _) as arity_attr)::atTl
-    | (({txt="implicit_arity"}, _) as arity_attr)::atTl ->
-        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
-        {partition with arityAttrs=arity_attr::partition.arityAttrs}
-    | (({txt="ocaml.text"}, _) as doc)::atTl when partDoc = true ->
-        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
-        {partition with docAttrs=doc::partition.docAttrs}
-    | (({txt="ocaml.doc"}, _) as doc)::atTl when partDoc = true ->
-        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
-        {partition with docAttrs=doc::partition.docAttrs}
-    | (({txt="reason.raw_literal"}, _) as attr) :: atTl ->
-        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
-        {partition with literalAttrs=attr::partition.literalAttrs}
-    | (({txt="reason.preserve_original"}, _) as attr) :: atTl ->
-        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
-        {partition with literalAttrs=attr::partition.literalAttrs}
-    | atHd :: atTl ->
-        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
-        {partition with stdAttrs=atHd::partition.stdAttrs}
+  | [] ->
+    {arityAttrs=[]; docAttrs=[]; stdAttrs=[]; jsxAttrs=[]; literalAttrs=[]; uncurried = false}
+  | (({txt = "bs"}, PStr []) as attr)::atTl ->
+    let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
+    if allowUncurry then
+      {partition with uncurried = true}
+    else {partition with stdAttrs=attr::partition.stdAttrs}
+  | (({txt="JSX"}, _) as jsx)::atTl ->
+    let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
+    {partition with jsxAttrs=jsx::partition.jsxAttrs}
+  | (({txt="explicit_arity"}, _) as arity_attr)::atTl
+  | (({txt="implicit_arity"}, _) as arity_attr)::atTl ->
+    let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
+    {partition with arityAttrs=arity_attr::partition.arityAttrs}
+  | (({txt="ocaml.text"}, _) as doc)::atTl when partDoc = true ->
+    let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
+    {partition with docAttrs=doc::partition.docAttrs}
+  | (({txt="ocaml.doc"}, _) as doc)::atTl when partDoc = true ->
+    let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
+    {partition with docAttrs=doc::partition.docAttrs}
+  | (({txt="reason.raw_literal"}, _) as attr) :: atTl ->
+    let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
+    {partition with literalAttrs=attr::partition.literalAttrs}
+  | (({txt="reason.preserve_original"}, _) as attr) :: atTl ->
+    let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
+    {partition with literalAttrs=attr::partition.literalAttrs}
+  | atHd :: atTl ->
+    let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
+    {partition with stdAttrs=atHd::partition.stdAttrs}
 
 let extractStdAttrs attrs =
   (partitionAttributes attrs).stdAttrs
@@ -58,4 +58,7 @@ let extract_raw_literal attrs =
     | attr :: rest -> loop (attr :: acc) rest
   in
   loop [] attrs
+
+let extractPreserveAttrs literalAttrs =
+  List.filter (fun ({txt}, _) -> txt = "reason.preserve_original") literalAttrs
 
