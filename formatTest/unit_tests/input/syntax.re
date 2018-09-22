@@ -1222,3 +1222,11 @@ true ? ({...a, b: 1}) : a;
 true ? (a, {...a, b: 1}) : a;
 
 true ? ([x, ...xs]) => f(x, xs) : a;
+
+foo(~not);
+
+let foo = (~not) => ();
+
+let foo = (~not: string) => ();
+
+foo(~not: string);

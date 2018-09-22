@@ -1966,19 +1966,36 @@ let constant ?raw_literal ?(parens=true) ppf = function
     paren (parens && i.[0] = '-')
       (fun ppf (i,m) -> Format.fprintf ppf "%s%c" i m) ppf (i,m)
 
-let is_punned_labelled_expression e lbl = match e.pexp_desc with
-  | Pexp_ident { txt }
-  | Pexp_constraint ({pexp_desc = Pexp_ident { txt }}, _)
-  | Pexp_coerce ({pexp_desc = Pexp_ident { txt }}, _, _)
-    -> txt = Longident.parse lbl
+let is_punned_labelled_expression {pexp_desc; pexp_attributes} lbl =
+  match pexp_desc with
+  | Pexp_ident { txt } ->
+      let {literalAttrs} = partitionAttributes pexp_attributes in
+      let txt' = match txt with
+      | Lident s -> Lident (identifier_or_original literalAttrs s)
+      | Ldot (lp, s) -> Ldot (lp, identifier_or_original literalAttrs s)
+      | Lapply _ as x -> x
+      in
+      txt' = Longident.parse lbl
+  | Pexp_constraint ({pexp_desc = Pexp_ident { txt }; pexp_attributes}, _)
+  | Pexp_coerce ({pexp_desc = Pexp_ident { txt }; pexp_attributes}, _, _) ->
+      let {literalAttrs} = partitionAttributes pexp_attributes in
+      let txt' = match txt with
+      | Lident s -> Lident (identifier_or_original literalAttrs s)
+      | Ldot (lp, s) -> Ldot (lp, identifier_or_original literalAttrs s)
+      | Lapply _ as x -> x
+      in
+      txt' = Longident.parse lbl
   | _ -> false
 
 let is_punned_labelled_pattern p lbl = match p.ppat_desc with
   | Ppat_constraint ({ ppat_desc = Ppat_var {txt}; ppat_attributes }, _) ->
-    let {stdAttrs} = partitionAttributes ppat_attributes in
-    stdAttrs == [] && txt = lbl
-  | Ppat_var { txt }
-    -> txt = lbl
+    let {stdAttrs; literalAttrs} = partitionAttributes ppat_attributes in
+    let txt' = identifier_or_original literalAttrs txt in
+    stdAttrs == [] && txt' = lbl
+  | Ppat_var { txt } ->
+    let {literalAttrs} = partitionAttributes p.ppat_attributes in
+    let txt' = identifier_or_original literalAttrs txt in
+    txt' = lbl
   | _ -> false
 
 let isLongIdentWithDot = function
