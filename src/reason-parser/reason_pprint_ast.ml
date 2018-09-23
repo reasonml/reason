@@ -4372,11 +4372,12 @@ let printer = object(self:'self)
            | Pexp_tuple _
            | Pexp_match _
            | Pexp_extension _
-           | Pexp_fun _
            | Pexp_function _ ->
                label
                 (makeList [atom lbl; atom "="])
                 (self#simplifyUnparseExpr ~wrap:("{","}") expression)
+           | Pexp_fun _ ->
+               self#formatPexpFunProp ~propName:lbl expression
            | _ -> makeList ([atom lbl; atom "="; self#simplifyUnparseExpr ~wrap:("{","}") expression])
          in
          processArguments tail (nextAttr :: processedAttrs) children
@@ -4415,6 +4416,67 @@ let printer = object(self:'self)
           ~postSpace:true
           renderedChildren)
 
+  (*
+   * Format the `onClick` prop with Pexp_fun in
+   *  <div
+   *    onClick={(event) => {
+   *      Js.log(event);
+   *      handleChange(event);
+   *    }}
+   *  />;
+   *
+   *  The arguments of the callback (Pexp_fun) should be inlined as much as
+   *  possible on the same line as `onClick={`.
+   *  Also notice the brace-hugging `}}` at the end.
+   *)
+  method formatPexpFunProp ~propName expression =
+    let {stdAttrs; uncurried} = partitionAttributes expression.pexp_attributes in
+    if uncurried then Hashtbl.add uncurriedTable expression.pexp_loc true;
+
+    let (args, ret) =
+      (* omit attributes here, we're formatting them manually *)
+      self#curriedPatternsAndReturnVal {expression with pexp_attributes = [] }
+    in
+    (* Format `onClick={` *)
+    let propName = makeList ~wrap:("", "{") [atom propName; atom "="] in
+    let argsList =
+      let args = match args with
+      | [argsList] -> argsList
+      | args -> makeList args
+      in
+      match stdAttrs with
+      | [] -> args
+      | attrs ->
+          (* attach attributes to the args of the Pexp_fun: `[@attr] (event)` *)
+          let attrList =
+            makeList ~inline:(true, true) ~break:IfNeed ~postSpace:true
+              (List.map self#attribute attrs)
+          in
+          let all = [attrList; args] in
+          makeList ~break:IfNeed ~inline:(true, true) ~postSpace:true all
+    in
+    (* Format `onClick={(event)` *)
+    let propNameWithArgs = label propName argsList in
+    let returnExpr = match (self#letList ret) with
+    | [x] ->
+      (* Format `=> handleChange(event)}` or
+       * =>
+       *   handleChange(event)
+       * }
+       *)
+       makeList ~break:IfNeed ~wrap:("=> ", "}") [x]
+    | xs ->
+      (* Format `Js.log(event)` and `handleChange(event)` as
+       * => {
+       *   Js.log(event);
+       *   handleChange(event);
+       * }}
+       *)
+        makeList
+          ~break:Always_rec ~sep:(SepFinal (";", ";")) ~wrap:("=> {", "}}")
+          xs
+    in
+    label ~space:true propNameWithArgs returnExpr
 
   (* Creates a list of simple module expressions corresponding to module
      expression or functor application. *)

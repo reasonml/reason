@@ -239,3 +239,41 @@ switch(foo) {
 };
 
 <div>...c</div>;
+
+<div onClick={(event) => handleChange(event)} />;
+<div onClick={(eventWithLongIdent) => handleChange(eventWithLongIdent)} />;
+<div
+  onClick={(event) => {
+    Js.log(event);
+    handleChange(event);
+  }}
+/>;
+
+<UncurriedDiv
+  onClick={(. event) => {
+    Js.logU(. event);
+    handleChange(. event);
+  }}
+/>;
+
+<UncurriedDiv
+  onClick={(. eventUncurried) =>
+    handleChange(. eventUncurried)
+  }
+/>;
+
+<StaticDiv
+  onClick={(foo, bar, baz, lineBreak, identifier) => {
+    doStuff(foo, bar, baz);
+    bar(lineBreak, identifier);
+  }}
+/>;
+
+<StaticDiv
+  onClick={(foo, bar, baz, lineBreak, identifier) => {
+    bar(lineBreak, identifier)
+  }}
+/>;
+
+<AttrDiv onClick={[@bar] (event) => handleChange(event)} />;
+<AttrDiv onClick={[@bar] (eventLongIdentifier) => handleChange(eventLongIdentifier)} />;

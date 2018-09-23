@@ -17,28 +17,27 @@ let y =
   <Routes
     path={Routes.stateToPath(state)}
     isHistorical=true
-    onHashChange={
-      (_oldPath, _oldUrl, newUrl) =>
-        updater(
-          (latestComponentBag, _) => {
-            let currentActualPath =
-              Routes.hashOfUri(newUrl);
-            let pathFromState =
-              Routes.stateToPath(
-                latestComponentBag.state,
-              );
-            currentActualPath == pathFromState ?
-              None :
-              dispatchEventless(
-                State.UriNavigated(
-                  currentActualPath,
-                ),
-                latestComponentBag,
-                (),
-              );
-          },
-          (),
-        )
+    onHashChange={(_oldPath, _oldUrl, newUrl) =>
+      updater(
+        (latestComponentBag, _) => {
+          let currentActualPath =
+            Routes.hashOfUri(newUrl);
+          let pathFromState =
+            Routes.stateToPath(
+              latestComponentBag.state,
+            );
+          currentActualPath == pathFromState ?
+            None :
+            dispatchEventless(
+              State.UriNavigated(
+                currentActualPath,
+              ),
+              latestComponentBag,
+              (),
+            );
+        },
+        (),
+      )
     }
   />;
 
@@ -342,3 +341,63 @@ switch (foo) {
 };
 
 <div> ...c </div>;
+
+<div onClick={event => handleChange(event)} />;
+<div
+  onClick={eventWithLongIdent =>
+    handleChange(eventWithLongIdent)
+  }
+/>;
+<div
+  onClick={event => {
+    Js.log(event);
+    handleChange(event);
+  }}
+/>;
+
+<UncurriedDiv
+  onClick={(. event) => {
+    Js.logU(. event);
+    handleChange(. event);
+  }}
+/>;
+
+<UncurriedDiv
+  onClick={(. eventUncurried) =>
+    handleChange(. eventUncurried)
+  }
+/>;
+
+<StaticDiv
+  onClick={(
+    foo,
+    bar,
+    baz,
+    lineBreak,
+    identifier,
+  ) => {
+    doStuff(foo, bar, baz);
+    bar(lineBreak, identifier);
+  }}
+/>;
+
+<StaticDiv
+  onClick={(
+    foo,
+    bar,
+    baz,
+    lineBreak,
+    identifier,
+  ) =>
+    bar(lineBreak, identifier)
+  }
+/>;
+
+<AttrDiv
+  onClick={[@bar] event => handleChange(event)}
+/>;
+<AttrDiv
+  onClick={[@bar] eventLongIdentifier =>
+    handleChange(eventLongIdentifier)
+  }
+/>;
