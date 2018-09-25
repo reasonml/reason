@@ -277,3 +277,48 @@ switch(foo) {
 
 <AttrDiv onClick={[@bar] (event) => handleChange(event)} />;
 <AttrDiv onClick={[@bar] (eventLongIdentifier) => handleChange(eventLongIdentifier)} />;
+
+<StaticDivNamed
+  onClick={(
+    ~foo,
+    ~bar,
+    ~baz,
+    ~lineBreak,
+    ~identifier,
+    ()
+  ) =>
+    bar(lineBreak, identifier)
+  }
+/>;
+
+<div
+  onClick={(e, e2): event => {
+    doStuff();
+    bar(foo);
+  }}
+/>;
+
+<div
+  onClick={(
+    foo,
+    bar,
+    baz,
+    superLongIdent,
+    breakLine,
+  ): event => {
+    doStuff();
+    bar(foo);
+  }}
+/>;
+
+<div
+  onClick={(
+    foo,
+    bar,
+    baz,
+    superLongIdent,
+    breakLine,
+  ): event =>
+    doStuff()
+  }
+/>;

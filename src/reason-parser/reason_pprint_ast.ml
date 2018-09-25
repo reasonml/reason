@@ -4457,7 +4457,13 @@ let printer = object(self:'self)
     in
     (* Format `onClick={(event)` *)
     let propNameWithArgs = label propName argsList in
-    let returnExpr = match (self#letList ret) with
+    (* Pick constraints: (a, b) :string => ...
+     * :string is the constraint here *)
+    let (return, optConstr) = match ret.pexp_desc with
+      | Pexp_constraint (e, ct) -> (e, Some (self#non_arrowed_core_type ct))
+      | _ -> (ret, None)
+    in
+    let returnExpr = match (self#letList return) with
     | [x] ->
       (* Format `=> handleChange(event)}` or
        * =>
@@ -4476,7 +4482,16 @@ let printer = object(self:'self)
           ~break:Always_rec ~sep:(SepFinal (";", ";")) ~wrap:("=> {", "}}")
           xs
     in
-    label ~space:true propNameWithArgs returnExpr
+    match optConstr with
+    | Some typeConstraint ->
+      let upToConstraint =
+        label ~space:true
+          (makeList ~wrap:("", ":") [propNameWithArgs])
+          typeConstraint
+      in
+      label ~space:true upToConstraint returnExpr
+    | None ->
+      label ~space:true propNameWithArgs returnExpr
 
   (* Creates a list of simple module expressions corresponding to module
      expression or functor application. *)
@@ -4745,10 +4760,7 @@ let printer = object(self:'self)
     | ([`Value (Nolabel, None, p) as arg], ret) when single_argument_no_parens p ->
       ([prepare_arg arg], ret)
     | (args, ret) ->
-        if uncurried then
-          ([makeTup ~uncurried:true (List.map prepare_arg args)], ret)
-        else
-          ([makeTup (List.map prepare_arg args)], ret)
+        ([makeTup ~uncurried (List.map prepare_arg args)], ret)
 
   (* Returns the (curriedModule, returnStructure) for a functor *)
   method curriedFunctorPatternsAndReturnStruct = function
