@@ -1222,3 +1222,8 @@ true ? ({...a, b: 1}) : a;
 true ? (a, {...a, b: 1}) : a;
 
 true ? ([x, ...xs]) => f(x, xs) : a;
+
+/* https://github.com/facebook/reason/issues/2200 */
+foo(~x=-1 + 2);
+
+foo(~x=-1 + 2: int);

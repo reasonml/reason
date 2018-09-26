@@ -1033,11 +1033,19 @@ let raise_record_trailing_semi_error loc =
   raise Reason_syntax_util.(Error(loc, (Syntax_error msg)))
 
 let parse_infix_with_eql ({txt; loc} as op) expr =
+  let rec massage_expr f loc exp = match exp.pexp_desc with
+    | Pexp_apply ({pexp_desc=Pexp_ident _} as x, [Nolabel, arg1; Nolabel, arg2]) ->
+        { exp with pexp_desc = Pexp_apply (x, [Nolabel, f loc arg1; Nolabel, arg2]) }
+    | Pexp_constraint (e, ct) ->
+        { exp with pexp_desc = Pexp_constraint (massage_expr f loc e, ct) }
+    | Pexp_constant _ | Pexp_ident _ -> f loc exp
+    | _ -> exp
+  in
   let s = (String.sub txt 1 (String.length txt - 1)) in
   match s with
-  | "-" | "-." -> mkuminus (mkloc s loc) expr
-  | "+" | "+." -> mkuplus (mkloc s loc) expr
-  | _ -> mkexp(Pexp_apply(mkoperator {op with txt = s}, [Nolabel, expr]))
+    | "-" | "-." -> massage_expr mkuminus (mkloc s loc) expr
+    | "+" | "+." -> mkuplus (mkloc s loc) expr
+    | _ -> mkexp(Pexp_apply(mkoperator {op with txt = s}, [Nolabel, expr]))
 
 let record_exp_spread_msg =
   "Records can only have one `...` spread, at the beginning.
