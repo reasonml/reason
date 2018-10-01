@@ -20,8 +20,7 @@ const fs = require('fs')
 const path = require('path')
 const writeFile = promisify(fs.writeFile)
 const readFile = promisify(fs.readFile)
-
-const binary = path.join(__dirname, '..', '_build', 'install', 'default', 'bin', 'testOprint');
+const binary = `dune exec src/reason-parser-tests/testOprint.exe`;
 const refmt = path.join(__dirname, '..', '_build', 'install', 'default', 'bin', 'refmt');
 
 const outcomePrint = async (sourceFile) => {
