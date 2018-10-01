@@ -14,6 +14,7 @@ install:
 test-ci: install test
 
 test: build clean-tests
+	dune build src/reason-parser-tests/testOprint.exe
 	node ./formatTest/testOprint.js
 	# ./miscTests/rtopIntegrationTest.sh
 	./miscTests/jsxPpxTest.sh
