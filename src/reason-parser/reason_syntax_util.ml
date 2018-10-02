@@ -102,7 +102,8 @@ let reason_to_ml_swap = function
   | x when (
     potentially_conflicts_with ~keyword:"match" x
     || potentially_conflicts_with ~keyword:"method" x
-    || potentially_conflicts_with ~keyword:"private" x) -> string_add_suffix x
+    || potentially_conflicts_with ~keyword:"private" x
+    || potentially_conflicts_with ~keyword:"not" x) -> string_add_suffix x
   | x when (
     potentially_conflicts_with ~keyword:"switch_" x
     || potentially_conflicts_with ~keyword:"pub_" x
@@ -125,7 +126,8 @@ let ml_to_reason_swap = function
   | x when (
     potentially_conflicts_with ~keyword:"match_" x
     || potentially_conflicts_with ~keyword:"method_" x
-    || potentially_conflicts_with ~keyword:"private_" x) -> string_drop_suffix x
+    || potentially_conflicts_with ~keyword:"private_" x
+    || potentially_conflicts_with ~keyword:"not_" x) -> string_drop_suffix x
   | x when (
     potentially_conflicts_with ~keyword:"switch" x
     || potentially_conflicts_with ~keyword:"pub" x
@@ -362,7 +364,36 @@ let identifier_mapper f super =
   end;
 }
 
-(** escape_stars_slashes_mapper escapes all stars and slases in an AST *)
+let remove_literal_attrs_mapper_maker super =
+  let open Ast_404 in
+  let open Ast_mapper in
+{ super with
+  expr = begin fun mapper expr ->
+    let {Reason_attributes.literalAttrs; arityAttrs; docAttrs; stdAttrs; jsxAttrs} =
+      Reason_attributes.partitionAttributes ~allowUncurry:false expr.pexp_attributes
+    in
+    let expr = if literalAttrs != [] then
+      { expr with pexp_attributes = arityAttrs @ docAttrs @ stdAttrs @ jsxAttrs }
+    else expr
+    in
+    super.expr mapper expr
+  end;
+  pat = begin fun mapper pat ->
+    let {Reason_attributes.literalAttrs; arityAttrs; docAttrs; stdAttrs; jsxAttrs} =
+      Reason_attributes.partitionAttributes ~allowUncurry:false pat.ppat_attributes
+    in
+    let pat = if literalAttrs != [] then
+      { pat with ppat_attributes = arityAttrs @ docAttrs @ stdAttrs @ jsxAttrs }
+    else pat
+    in
+    super.pat mapper pat
+  end;
+}
+
+let remove_literal_attrs_mapper =
+  remove_literal_attrs_mapper_maker Ast_mapper.default_mapper
+
+(** escape_stars_slashes_mapper escapes all stars and slashes in an AST *)
 let escape_stars_slashes_mapper =
   let escape_stars_slashes str =
     if String.contains str '/' then

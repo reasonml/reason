@@ -90,3 +90,9 @@ module X: {let x: (~x: unit=?, unit) => unit;} = {
 };
 
 let display (~message=("hello": string), ~person: string="Reason", time: float) = 1;
+
+let not = (x, y) => x + y;
+
+let added: int = not(1, 2);
+
+let better = foo => !foo ? 42 : not(41, 2);

@@ -493,7 +493,9 @@ and print_row_field ppf (l, opt_amp, tyl) =
     else fprintf ppf "" in
   let parens = match tyl with
     | [ (Otyp_tuple _) ] -> false (* tuples already have parentheses *)
-    | [ _ ] -> true
+    (* [< `Ok(string & int) ] ----> string & int
+     * [< `Ok(string) ] -----> string *)
+    | _::_ -> true
     | _ -> false in
   fprintf ppf "@[<hv 2>`%s%t%s%a%s@]"
     l

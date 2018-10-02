@@ -1401,3 +1401,11 @@ true ? ([x, ...xs]) => f(x, xs) : a;
 foo(~x=(-1) + 2);
 
 foo(~x=(-1) + 2: int);
+
+foo(~not);
+
+let foo = (~not) => ();
+
+let foo = (~not: string) => ();
+
+foo(~not: string);
