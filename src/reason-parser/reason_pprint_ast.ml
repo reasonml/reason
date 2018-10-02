@@ -2050,7 +2050,7 @@ let isSingleArgParenApplication = function
   | _ -> false
 
 let rec isChainOfSugarGetExprs = function
-  | {pexp_desc = (Pexp_apply (eFun, (_,e1)::(_, e2)::xs))} ->
+  | {pexp_desc = (Pexp_apply (eFun, (_,e1)::(_, e2)::_))} ->
       if printedStringAndFixityExpr eFun = Infix "##" then begin
         match e1.pexp_desc, e2.pexp_desc with
         | Pexp_ident {txt = Lident _}, Pexp_ident {txt = Lident _} -> true

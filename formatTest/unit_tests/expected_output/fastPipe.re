@@ -192,7 +192,7 @@ Foo.Bar.reactClass->setNavigationOptions(
   ),
 );
 
-foo##bar
+foo["bar"]
 ->setNavigationOptions(
     NavigationOptions.t(
       ~title="Title",
