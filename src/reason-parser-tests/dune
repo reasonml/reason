@@ -1,5 +1,3 @@
 (executable
  (name testOprint)
- (public_name testOprint)
- (package reason)
  (libraries reason))
