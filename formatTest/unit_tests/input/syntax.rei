@@ -32,3 +32,8 @@ let result: int;
 module Event: (module type of { include ReactEventRe; });
 
 module type Event = (module type of { include ReactEventRe; });
+
+/* https://github.com/facebook/reason/issues/2169 */
+let not : string => string;
+
+let other : string => not;

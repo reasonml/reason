@@ -55,6 +55,7 @@ open Longident
 open Parsetree
 open Easy_format
 open Reason_syntax_util
+open Reason_attributes
 
 module Comment = Reason_comment
 module Layout = Reason_layout
@@ -146,7 +147,7 @@ type infixChain =
 (* Helpers for dealing with extension nodes (%expr) *)
 
 let expression_extension_sugar x =
-  if x.pexp_attributes <> [] then None
+  if x.pexp_attributes != [] then None
   else match x.pexp_desc with
     | Pexp_extension (name, PStr [{pstr_desc = Pstr_eval(expr, [])}])
       when name.txt <> "bs.obj" ->
@@ -299,61 +300,6 @@ let extractLocationFromValBindList expr vbs =
     | [] -> expr.pexp_loc
   in
   { loc with loc_start = expr.pexp_loc.loc_start }
-
-(** Kinds of attributes *)
-type attributesPartition = {
-  arityAttrs : attributes;
-  docAttrs : attributes;
-  stdAttrs : attributes;
-  jsxAttrs : attributes;
-  literalAttrs : attributes;
-  uncurried : bool
-}
-
-(** Partition attributes into kinds *)
-let rec partitionAttributes ?(partDoc=false) ?(allowUncurry=true) attrs : attributesPartition =
-  match attrs with
-    | [] ->
-      {arityAttrs=[]; docAttrs=[]; stdAttrs=[]; jsxAttrs=[]; literalAttrs=[]; uncurried = false}
-    | (({txt = "bs"}, PStr []) as attr)::atTl ->
-        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
-        if allowUncurry then
-          {partition with uncurried = true}
-        else {partition with stdAttrs=attr::partition.stdAttrs}
-    | (({txt="JSX"}, _) as jsx)::atTl ->
-        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
-        {partition with jsxAttrs=jsx::partition.jsxAttrs}
-    | (({txt="explicit_arity"}, _) as arity_attr)::atTl
-    | (({txt="implicit_arity"}, _) as arity_attr)::atTl ->
-        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
-        {partition with arityAttrs=arity_attr::partition.arityAttrs}
-    | (({txt="ocaml.text"}, _) as doc)::atTl when partDoc = true ->
-        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
-        {partition with docAttrs=doc::partition.docAttrs}
-    | (({txt="ocaml.doc"}, _) as doc)::atTl when partDoc = true ->
-        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
-        {partition with docAttrs=doc::partition.docAttrs}
-    | (({txt="reason.raw_literal"}, _) as attr) :: atTl ->
-        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
-        {partition with literalAttrs=attr::partition.literalAttrs}
-    | atHd :: atTl ->
-        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
-        {partition with stdAttrs=atHd::partition.stdAttrs}
-
-let extractStdAttrs attrs =
-  (partitionAttributes attrs).stdAttrs
-
-let extract_raw_literal attrs =
-  let rec loop acc = function
-    | ({txt="reason.raw_literal"},
-       PStr [{pstr_desc = Pstr_eval({pexp_desc = Pexp_constant(Pconst_string(text, None))}, _)}])
-      :: rest ->
-      (Some text, List.rev_append acc rest)
-    | [] -> (None, List.rev acc)
-    | attr :: rest -> loop (attr :: acc) rest
-  in
-  loop [] attrs
-
 
 let rec sequentialIfBlocks x =
   match x with
@@ -1539,7 +1485,7 @@ let rec insertSingleLineComment layout comment =
         Layout.Whitespace(info, insertSingleLineComment sub comment)
   | Easy _ ->
     prependSingleLineComment comment layout
-  | Sequence (listConfig, subLayouts) when subLayouts = [] ->
+  | Sequence (listConfig, subLayouts) when subLayouts == [] ->
     (* If there are no subLayouts (empty body), create a Sequence of just the comment *)
     Sequence (listConfig, [formatComment comment])
   | Sequence (listConfig, subLayouts) ->
@@ -2054,7 +2000,7 @@ let is_ident_pattern x = match x.ppat_desc with
 
 let is_any_pattern x = x.ppat_desc = Ppat_any
 
-let is_direct_pattern x = x.ppat_attributes = [] && match x.ppat_desc with
+let is_direct_pattern x = x.ppat_attributes == [] && match x.ppat_desc with
   | Ppat_construct ( {txt= Lident"()"}, None) -> true
   | _ -> false
 
@@ -2412,7 +2358,7 @@ let printer = object(self:'self)
   method core_type2 x =
     let {stdAttrs; uncurried} = partitionAttributes x.ptyp_attributes in
     let uncurried = uncurried || try Hashtbl.find uncurriedTable x.ptyp_loc with | Not_found -> false in
-    if stdAttrs <> [] then
+    if stdAttrs != [] then
       formatAttributed
         (self#non_arrowed_simple_core_type {x with ptyp_attributes = []})
         (self#attributes stdAttrs)
@@ -2465,7 +2411,7 @@ let printer = object(self:'self)
   method core_type x =
     let {stdAttrs; uncurried} = partitionAttributes x.ptyp_attributes in
     let () = if uncurried then Hashtbl.add uncurriedTable x.ptyp_loc true in
-    if stdAttrs <> [] then
+    if stdAttrs != [] then
       formatAttributed
         (self#non_arrowed_simple_core_type {x with ptyp_attributes = []})
         (self#attributes stdAttrs)
@@ -2584,7 +2530,7 @@ let printer = object(self:'self)
         | None -> name
         | Some args -> label name args
         end in
-        if attrs <> [] then
+        if attrs != [] then
          label ~space:true
             (makeList
               ~postSpace:true
@@ -2973,7 +2919,7 @@ let printer = object(self:'self)
   *)
   method non_arrowed_non_simple_core_type x =
     let {stdAttrs} = partitionAttributes x.ptyp_attributes in
-    if stdAttrs <> [] then
+    if stdAttrs != [] then
       formatAttributed
         (self#non_arrowed_simple_core_type {x with ptyp_attributes=[]})
         (self#attributes stdAttrs)
@@ -2990,7 +2936,7 @@ let printer = object(self:'self)
 
   method non_arrowed_simple_core_type x =
     let {stdAttrs} = partitionAttributes x.ptyp_attributes in
-    if stdAttrs <> [] then
+    if stdAttrs != [] then
       formatSimpleAttributed
         (self#non_arrowed_simple_core_type {x with ptyp_attributes=[]})
         (self#attributes stdAttrs)
@@ -3181,7 +3127,7 @@ let printer = object(self:'self)
 
   method pattern x =
     let {arityAttrs; stdAttrs} = partitionAttributes x.ppat_attributes in
-    if stdAttrs <> [] then
+    if stdAttrs != [] then
       formatAttributed
         (* Doesn't need to be simple_pattern because attributes are parse as
          * appyling to the entire "function application style" syntax preceeding them *)
@@ -3260,7 +3206,7 @@ let printer = object(self:'self)
 
   method simple_pattern x =
     let {arityAttrs; stdAttrs} = partitionAttributes x.ppat_attributes in
-    if stdAttrs <> [] then
+    if stdAttrs != [] then
       formatSimpleAttributed
         (self#simple_pattern {x with ppat_attributes=arityAttrs})
         (self#attributes stdAttrs)
@@ -3443,7 +3389,7 @@ let printer = object(self:'self)
   (** Detects "sugar expressions" (sugar for array/string setters) and returns their separate
       parts.  *)
   method sugar_set_expr_parts e =
-    if e.pexp_attributes <> [] then None
+    if e.pexp_attributes != [] then None
     (* should also check attributes underneath *)
     else match e.pexp_desc with
       | Pexp_apply ({pexp_desc=Pexp_ident{txt=Ldot (Lident ("Array"), "set")}}, [(_,e1);(_,e2);(_,e3)]) ->
@@ -3907,7 +3853,7 @@ let printer = object(self:'self)
     let x = {x with pexp_attributes = (literalAttrs @ arityAttrs @ stdAttrs @ jsxAttrs) } in
     (* If there's any attributes, recurse without them, then apply them to
        the ends of functions, or simplify infix printings then append. *)
-    if stdAttrs <> [] then
+    if stdAttrs != [] then
       let withoutVisibleAttrs = {x with pexp_attributes=(arityAttrs @ jsxAttrs)} in
       let attributesAsList = (List.map self#attribute stdAttrs) in
       let itms = match self#unparseExprRecurse withoutVisibleAttrs with
@@ -4141,7 +4087,7 @@ let printer = object(self:'self)
           self#ensureExpression ~reducesOnToken:prec e
         ) in
         let {stdAttrs} = partitionAttributes e.pexp_attributes in
-        let formattedLeftItm = if stdAttrs = [] then
+        let formattedLeftItm = if stdAttrs == [] then
             leftItm
           else
             formatPrecedence ~loc:e.pexp_loc leftItm
@@ -4501,7 +4447,7 @@ let printer = object(self:'self)
           extract_apps (arg :: args) me1
         | me ->
           let head = source_map ~loc:me.pmod_loc (self#module_expr me) in
-          if args = [] then head else label head (makeTup args)
+          if args == [] then head else label head (makeTup args)
       in
       let functor_application = extract_apps [] x in
       if prefix <> "" then
@@ -4695,7 +4641,7 @@ let printer = object(self:'self)
         let arg = source_map ~loc:p.ppat_loc (self#label_exp label eo p) in
         argsAndReturn (arg :: args) e
       | xx ->
-        if args = [] then (None, xx) else (Some (makeTup (List.rev args)), xx)
+        if args == [] then (None, xx) else (Some (makeTup (List.rev args)), xx)
     in
     argsAndReturn [] cl
 
@@ -4710,7 +4656,7 @@ let printer = object(self:'self)
   method curriedPatternsAndReturnVal x =
     let uncurried = try Hashtbl.find uncurriedTable x.pexp_loc with | Not_found -> false in
     let rec extract_args xx =
-      if xx.pexp_attributes <> [] then
+      if xx.pexp_attributes != [] then
         ([], xx)
       else match xx.pexp_desc with
         (* label * expression option * pattern * expression *)
@@ -5097,7 +5043,7 @@ let printer = object(self:'self)
 
   method normalizeConstructorArgsConstraint argsList return =
     match return.pcl_desc with
-      | Pcl_constraint (e, ct) when return.pcl_attributes = [] ->
+      | Pcl_constraint (e, ct) when return.pcl_attributes == [] ->
         let typeLayout =
           source_map ~loc:ct.pcty_loc
             (self#non_arrowed_class_constructor_type ct)
@@ -5686,7 +5632,7 @@ let printer = object(self:'self)
         | UnaryPostfix _
         | Infix _ -> self#simplifyUnparseExpr x
         | Normal ->
-          if x.pexp_attributes = [] then
+          if x.pexp_attributes == [] then
             (* `let a = foo().bar` instead of `let a = (foo()).bar *)
             (* same for foo()##bar, foo()#=bar, etc. *)
             self#unparseExpr x
@@ -5899,7 +5845,7 @@ let printer = object(self:'self)
 
   method simplest_expression x =
     let {stdAttrs; jsxAttrs} = partitionAttributes x.pexp_attributes in
-    if stdAttrs <> [] then
+    if stdAttrs != [] then
       None
     else
       let item =
@@ -6566,7 +6512,7 @@ let printer = object(self:'self)
 
   method simple_class_expr x =
     let {stdAttrs} = partitionAttributes x.pcl_attributes in
-    if stdAttrs <> [] then
+    if stdAttrs != [] then
       formatSimpleAttributed
         (self#simple_class_expr {x with pcl_attributes=[]})
         (self#attributes stdAttrs)
@@ -6612,7 +6558,7 @@ let printer = object(self:'self)
   method class_expr x =
     let {stdAttrs} = partitionAttributes x.pcl_attributes in
     (* We cannot handle the attributes here. Must handle them in each item *)
-    if stdAttrs <> [] then
+    if stdAttrs != [] then
       (* Do not need a "simple" attributes precedence wrapper. *)
       formatAttributed
         (self#simple_class_expr {x with pcl_attributes=[]})
@@ -6682,7 +6628,7 @@ let printer = object(self:'self)
         | Psig_type (rf, l) ->
             self#type_def_list (rf, l)
         | Psig_value vd ->
-            if vd.pval_prim <> [] then
+            if vd.pval_prim != [] then
               self#primitive_declaration vd
             else
               let intro = atom "let" in
@@ -7356,7 +7302,7 @@ let printer = object(self:'self)
         | hd::tl ->
           let formattedHd = self#pattern hd in
           let formattedHd =
-            if tl = [] then appendWhereAndArrow formattedHd else formattedHd
+            if tl == [] then appendWhereAndArrow formattedHd else formattedHd
           in
           (formattedHd :: appendWhereAndArrowToLastOr tl)
       in
