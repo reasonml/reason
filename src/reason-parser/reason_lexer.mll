@@ -611,14 +611,10 @@ rule token = parse
   | "<..>" { LESSDOTDOTGREATER }
   | '\\'? ['~' '?' '!'] operator_chars+
             { PREFIXOP(lexeme_operator lexbuf) }
-  | '\\'? ['<' '>' '|' '&' '$'] operator_chars*
+  | '\\'? ['=' '<' '>' '|' '&' '$'] operator_chars*
             {
               INFIXOP0(lexeme_operator lexbuf)
             }
-  | "\\=" operator_chars*
-      { INFIXOP0(lexeme_operator lexbuf) }
-  | '=' operator_chars+
-      { INFIXOP_WITH_EQUAL(lexeme_operator lexbuf) }
   | '\\'? '@' operator_chars*
             { INFIXOP1(lexeme_operator lexbuf) }
   | '\\'? '^' ('\\' '.')? operator_chars*

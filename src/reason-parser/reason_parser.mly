@@ -1032,13 +1032,6 @@ let raise_record_trailing_semi_error loc =
   let msg = "Record entries are separated by comma; we've found a semicolon instead." in
   raise Reason_syntax_util.(Error(loc, (Syntax_error msg)))
 
-let parse_infix_with_eql ({txt; loc} as op) expr =
-  let s = (String.sub txt 1 (String.length txt - 1)) in
-  match s with
-  | "-" | "-." -> mkuminus (mkloc s loc) expr
-  | "+" | "+." -> mkuplus (mkloc s loc) expr
-  | _ -> mkexp(Pexp_apply(mkoperator {op with txt = s}, [Nolabel, expr]))
-
 let record_exp_spread_msg =
   "Records can only have one `...` spread, at the beginning.
 Explanation: since records have a known, fixed shape, a spread like `{a, ...b}` wouldn't make sense, as `b` would override every field of `a` anyway."
@@ -1152,7 +1145,6 @@ let package_type_of_module_type pmty =
 %token IN
 %token INCLUDE
 %token <string> INFIXOP0
-%token <string> INFIXOP_WITH_EQUAL
 %token <string> INFIXOP1
 %token <string> INFIXOP2
 %token <string> INFIXOP3
@@ -1269,7 +1261,7 @@ conflicts.
 
 %right    OR BARBAR                     (* expr (e || e || e) *)
 %right    AMPERSAND AMPERAMPER          (* expr (e && e && e) *)
-%left     INFIXOP0 INFIXOP_WITH_EQUAL LESS GREATER GREATERDOTDOTDOT (* expr (e OP e OP e) *)
+%left     INFIXOP0 LESS GREATER GREATERDOTDOTDOT (* expr (e OP e OP e) *)
 %left     LESSDOTDOTGREATER (* expr (e OP e OP e) *)
 %right    INFIXOP1                      (* expr (e OP e OP e) *)
 %right    COLONCOLON                    (* expr (e :: e :: e) *)
@@ -2617,8 +2609,6 @@ as_loc
     { Term (Labelled $2.txt, None, $3 $2) }
   | TILDE as_loc(LIDENT) labeled_pattern_constraint EQUAL expr
     { Term (Optional $2.txt, Some $5, $3 $2) }
-  | TILDE as_loc(LIDENT) labeled_pattern_constraint as_loc(INFIXOP_WITH_EQUAL) expr
-    { Term (Optional $2.txt, Some (parse_infix_with_eql $4 $5), $3 $2) }
   | TILDE as_loc(LIDENT) labeled_pattern_constraint EQUAL QUESTION
     { Term (Optional $2.txt, None, $3 $2) }
   | pattern_optional_constraint
@@ -3303,20 +3293,6 @@ labeled_expr:
     { (* foo(~bar=?Some(1)) or add(~x=1, ~y=2) -> parses ~bar=?Some(1) & ~x=1 & ~y=1 *)
       ($4 $2.txt, $5 { $2 with txt = Lident $2.txt })
     }
-  | TILDE as_loc(LIDENT) as_loc(INFIXOP_WITH_EQUAL) labeled_expr_constraint
-    { (* foo(~bar=?Some(1)) or add(~x=1, ~y=2) -> parses ~bar=?Some(1) & ~x=1 & ~y=1 *)
-      let infix_op = $3.txt in
-      (* catch optionals e.g. foo(~a=?-1);
-         because we're using `INFIXOP_WITH_EQUAL` to catch all operator chars
-         after the equals sign, we can't match this case with the `optional`
-         rule as above.
-         `infix_op` can bef "=?-" for instance. *)
-      if String.get infix_op 1 == '?' then
-        let infix_loc = { $3 with txt = "=" ^ (String.sub infix_op 2 (String.length infix_op - 2))} in
-        (Optional $2.txt, parse_infix_with_eql infix_loc ($4 { $2 with txt = Lident $2.txt }))
-      else
-        (Labelled $2.txt, parse_infix_with_eql $3 ($4 { $2 with txt = Lident $2.txt }))
-    }
   | TILDE as_loc(LIDENT) EQUAL optional as_loc(UNDERSCORE)
     { (* foo(~l =_) *)
       let loc = $5.loc in
@@ -3356,9 +3332,6 @@ let_binding_body:
   | simple_pattern_ident type_constraint EQUAL expr
     { let loc = mklocation $symbolstartpos $endpos in
       ($1, ghexp_constraint loc $4 $2) }
-  | simple_pattern_ident type_constraint as_loc(INFIXOP_WITH_EQUAL) expr
-    { let loc = mklocation $symbolstartpos $endpos in
-      ($1, ghexp_constraint loc (parse_infix_with_eql $3 $4) $2) }
   | simple_pattern_ident fun_def(EQUAL,core_type)
     { ($1, $2) }
   | simple_pattern_ident COLON preceded(QUOTE,ident)+ DOT core_type
@@ -3433,8 +3406,6 @@ let_binding_body:
    *)
   | pattern EQUAL expr
     { ($1, $3) }
-  | pattern as_loc(INFIXOP_WITH_EQUAL) expr
-    { ($1, parse_infix_with_eql $2 $3) }
   | simple_pattern_not_ident COLON core_type EQUAL expr
     { let loc = mklocation $symbolstartpos $endpos in
       (mkpat ~loc (Ppat_constraint($1, $3)), $5)
@@ -4592,7 +4563,6 @@ val_ident:
 
 %inline infix_operator:
   | INFIXOP0          { $1 }
-  | INFIXOP_WITH_EQUAL { $1 }
   | INFIXOP1          { $1 }
   | INFIXOP2          { $1 }
   | INFIXOP3          { $1 }

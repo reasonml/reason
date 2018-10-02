@@ -629,6 +629,33 @@ module Reason_syntax = struct
       Some (offer_normalize checkpoint' triple)
     | _ -> None
 
+  let try_inserting_label_on = function
+    | Reason_parser.INFIXOP0 s when s.[0] == '=' ->
+        let is_optional = String.length s > 1 && s.[1] == '?' in
+        let idx = if is_optional then 2 else 1 in
+        let operator = String.sub s idx (String.length s - idx) in
+        let token = match operator with
+        | "-" -> Some Reason_parser.MINUS
+        | "-." -> Some Reason_parser.MINUSDOT
+        | "+" -> Some Reason_parser.PLUS
+        | "+." -> Some Reason_parser.PLUSDOT
+        | "!" -> Some Reason_parser.BANG
+        | _ -> None
+        in
+        token, is_optional
+    | _ -> None, false
+
+  let try_inserting_equal_unary checkpoint (_, pos, _) ~optional token =
+    match offer_normalize checkpoint (Reason_parser.EQUAL, pos, pos) with
+    | I.InputNeeded _ as checkpoint' ->
+        if optional then
+          match offer_normalize checkpoint' (Reason_parser.QUESTION, pos, pos) with
+          | I.InputNeeded _ as checkpoint'' ->
+            Some (offer_normalize checkpoint'' (token, pos, pos))
+          | _ -> None
+        else
+          Some (offer_normalize checkpoint' (token, pos, pos))
+    | _ -> None
 
   (* Offer and insert a semicolon in case of failure *)
   let offer_normalize checkpoint triple =
@@ -638,13 +665,18 @@ module Reason_syntax = struct
          if the token is the beginning of an item (LET, TYPE, ...), try
          inserting a SEMICOLON, otherwise return the checkpoint to the caller.
       *)
-      begin match triple with
-        | (token, _, _) when try_inserting_semi_on token ->
-          begin match try_inserting_semi checkpoint triple with
+      let (token, _, _) = triple in
+      if try_inserting_semi_on token then
+        match try_inserting_semi checkpoint triple with
+          | Some (I.InputNeeded _ as checkpoint') -> checkpoint'
+          | Some _ | None -> error_checkpoint
+      else begin match try_inserting_label_on token with
+        | Some tokn, optional ->
+          begin match try_inserting_equal_unary ~optional checkpoint triple tokn with
             | Some (I.InputNeeded _ as checkpoint') -> checkpoint'
             | Some _ | None -> error_checkpoint
           end
-        | _ -> error_checkpoint
+        | None, _ -> error_checkpoint
       end
     | checkpoint -> checkpoint
 
