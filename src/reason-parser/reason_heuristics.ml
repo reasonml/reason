@@ -136,3 +136,20 @@ let isFastPipeWithNonSimpleJSXChild e = match Ast_404.Parsetree.(e.pexp_desc) wi
       [_; Nolabel, fe]
     ) when isUnderscoreApplication fe -> true
   | _ -> false
+
+(* let testCallNamedArgs = (foo: ((int, ~b: int) => int), a, b) => foo;
+ * until we support the parenless constraint in the parser on foo, this
+ * utility can be used to determine if we need to force parens on a Ptyp_arrow
+ * constraint.
+ * See: https://github.com/facebook/reason/issues/2141
+ *)
+let arrowSegmentsContainsLabel x =
+  let open Ast_404.Parsetree in
+  let rec aux = function
+  | { ptyp_desc = Ptyp_arrow (l, _, ct2)} ->
+      begin match l with
+      | Labelled _ | Optional _ -> true
+      | Nolabel ->  aux ct2
+      end
+  | _ -> false
+  in aux x
