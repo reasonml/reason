@@ -683,3 +683,5 @@ type t =
     B
   | /** Some more longer docs over here that make sense to break lines on too */
     C;
+
+type t = [ | `Something(int & string)];
