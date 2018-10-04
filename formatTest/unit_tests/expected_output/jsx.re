@@ -449,7 +449,44 @@ switch (foo) {
     baz,
     superLongIdent,
     breakLine,
+  ): (
+    event,
+    event2,
+    event3,
+    event4,
+    event5,
+  ) => {
+    doStuff();
+    bar(foo);
+  }}
+/>;
+
+<div
+  onClick={(
+    foo,
+    bar,
+    baz,
+    superLongIdent,
+    breakLine,
   ): event =>
+    doStuff()
+  }
+/>;
+
+<div
+  onClick={(
+    foo,
+    bar,
+    baz,
+    superLongIdent,
+    breakLine,
+  ): (
+    event,
+    event2,
+    event3,
+    event4,
+    event5,
+  ) =>
     doStuff()
   }
 />;
