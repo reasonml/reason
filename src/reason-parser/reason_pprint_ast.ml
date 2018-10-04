@@ -1090,8 +1090,8 @@ let makeCommaBreakableListSurround opn cls lst =
 
 (* TODO: Allow configuration of spacing around colon symbol *)
 
-let formatPrecedence ?(wrap=("(", ")")) ?loc formattedTerm =
-  source_map ?loc (makeList ~wrap ~break:IfNeed [formattedTerm])
+let formatPrecedence ?(inline=false) ?(wrap=("(", ")")) ?loc formattedTerm =
+  source_map ?loc (makeList ~inline:(true, inline) ~wrap ~break:IfNeed [formattedTerm])
 
 let wrap fn term =
   ignore (Format.flush_str_formatter ());
@@ -3587,13 +3587,13 @@ let printer = object(self:'self)
     in
     source_map ~loc:e.pexp_loc itm
 
-  method simplifyUnparseExpr ?(wrap=("(", ")")) x =
+  method simplifyUnparseExpr ?(inline=false) ?(wrap=("(", ")")) x =
     match self#unparseExprRecurse x with
     | SpecificInfixPrecedence (_, itm) ->
-        formatPrecedence ~wrap ~loc:x.pexp_loc (self#unparseResolvedRule itm)
+        formatPrecedence ~inline ~wrap ~loc:x.pexp_loc (self#unparseResolvedRule itm)
     | FunctionApplication itms ->
-      formatPrecedence ~wrap ~loc:x.pexp_loc (formatAttachmentApplication applicationFinalWrapping None (itms, Some x.pexp_loc))
-    | PotentiallyLowPrecedence itm -> formatPrecedence ~wrap ~loc:x.pexp_loc itm
+      formatPrecedence ~inline ~wrap ~loc:x.pexp_loc (formatAttachmentApplication applicationFinalWrapping None (itms, Some x.pexp_loc))
+    | PotentiallyLowPrecedence itm -> formatPrecedence ~inline ~wrap ~loc:x.pexp_loc itm
     | Simple itm -> itm
 
 
@@ -6023,6 +6023,10 @@ let printer = object(self:'self)
     | {pexp_desc = Pexp_ident li} :: remaining ->
       self#formatChildren remaining (self#longident_loc li :: processedRev)
     | {pexp_desc = Pexp_construct ({txt = Lident "[]"}, None)} :: remaining -> self#formatChildren remaining processedRev
+    | {pexp_desc = Pexp_match _ } as head :: remaining ->
+        self#formatChildren
+          remaining
+          (self#simplifyUnparseExpr ~inline:true ~wrap:("{", "}") head :: processedRev)
     | head :: remaining -> self#formatChildren remaining (self#simplifyUnparseExpr ~wrap:("{", "}") head :: processedRev)
     | [] -> match processedRev with
         | [] -> None

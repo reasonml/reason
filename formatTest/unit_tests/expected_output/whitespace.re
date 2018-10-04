@@ -318,13 +318,11 @@ let make = _children => {
           {ReasonReact.string("Instagram")}
         </a>
       </h1>
-      {
-        switch (activeRoute) {
-        | Default => <Grid posts />
-        | Detail(postId) =>
-          <Single posts postId />
-        }
-      }
+      {switch (activeRoute) {
+       | Default => <Grid posts />
+       | Detail(postId) =>
+         <Single posts postId />
+       }}
     </div>,
 };
 

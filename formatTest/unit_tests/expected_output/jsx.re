@@ -342,3 +342,10 @@ switch (foo) {
 };
 
 <div> ...c </div>;
+
+<div>
+  {switch (color) {
+   | Black => ReasonReact.string("black")
+   | Red => ReasonReact.string("red")
+   }}
+</div>;
