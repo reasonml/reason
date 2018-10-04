@@ -240,6 +240,7 @@ switch(foo) {
 
 <div>...c</div>;
 
+<<<<<<< HEAD
 <div onClick={(event) => handleChange(event)} />;
 <div onClick={(eventWithLongIdent) => handleChange(eventWithLongIdent)} />;
 <div
@@ -367,12 +368,15 @@ switch(foo) {
   }
 />;
 
+=======
+>>>>>>> Inline braces surrounding a Pexp_match as jsx child.
 <div>
   {switch(color) {
     | Black => ReasonReact.string("black")
     | Red => ReasonReact.string("red")
     }}
 </div>;
+<<<<<<< HEAD
 
 ReasonReact.(<> {string("Test")} </>);
 

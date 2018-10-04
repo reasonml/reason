@@ -338,6 +338,7 @@ switch (foo) {
 
 <div> ...c </div>;
 
+<<<<<<< HEAD
 <div onClick={event => handleChange(event)} />;
 <div
   onClick={eventWithLongIdent =>
