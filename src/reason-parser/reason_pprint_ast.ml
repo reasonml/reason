@@ -4750,14 +4750,24 @@ let printer = object(self:'self)
       | `Value (l,eo,p) -> source_map ~loc:p.ppat_loc (self#label_exp l eo p)
       | `Type nt -> atom ("type " ^ nt)
     in
-    let single_argument_no_parens p =
-      (is_unit_pattern p || is_ident_pattern p || is_any_pattern p) && not(uncurried)
+    let single_argument_no_parens p ret =
+      if uncurried then false
+      else
+        let isUnitPat = is_unit_pattern p in
+        let isAnyPat = is_any_pattern p in
+        begin match ret.pexp_desc with
+        (* (event) :ReasonReact.event => {...}
+         * The above Pexp_fun with constraint ReasonReact.event requires parens
+         * surrounding the single argument `event`.*)
+        | Pexp_constraint _ when not isUnitPat && not isAnyPat -> false
+        | _ -> isUnitPat || isAnyPat || is_ident_pattern p
+      end
     in
     match extract_args x with
     | ([], ret) -> ([], ret)
     | ([`Value (Nolabel, None, p) ], ret) when is_unit_pattern p && uncurried ->
         ( [atom "(.)"], ret)
-    | ([`Value (Nolabel, None, p) as arg], ret) when single_argument_no_parens p ->
+    | ([`Value (Nolabel, None, p) as arg], ret) when single_argument_no_parens p ret ->
       ([prepare_arg arg], ret)
     | (args, ret) ->
         ([makeTup ~uncurried (List.map prepare_arg args)], ret)

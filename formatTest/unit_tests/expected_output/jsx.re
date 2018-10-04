@@ -416,6 +416,13 @@ switch (foo) {
 />;
 
 <div
+  onClick={(e): event => {
+    doStuff();
+    bar(foo);
+  }}
+/>;
+
+<div
   onClick={(e, e2): event => {
     doStuff();
     bar(foo);
