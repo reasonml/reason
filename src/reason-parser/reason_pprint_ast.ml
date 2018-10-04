@@ -3198,16 +3198,6 @@ let printer = object(self:'self)
           ) ->
             (makeList ~postSpace:true [atom "module"; atom unpack.txt],
              self#typ_package ~mod_prefix:false lid cstrs)
-        | (p, {ptyp_desc = Ptyp_arrow _ }) ->
-            (* https://github.com/facebook/reason/issues/2141 *)
-            let forceParens = Reason_heuristics.arrowSegmentsContainsLabel ct in
-            (
-              self#pattern p,
-              let ctl = self#core_type ct in
-              if forceParens then
-                makeTup [ctl]
-              else ctl
-            )
         | _ ->
           (self#pattern p, self#core_type ct)
         end in

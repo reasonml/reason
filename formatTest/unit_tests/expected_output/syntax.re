@@ -1412,9 +1412,9 @@ foo(~not: string);
 
 /* https://github.com/facebook/reason/issues/2141 */
 let testCallNamedArgs =
-    (foo: ((int, ~b: int) => int), a, b) =>
+    (foo: (~a: int, ~b: int) => int, a, b) =>
   foo(~a, ~b);
 
 let testCallNamedArgs =
-    (foo: ((int, ~b: int=?) => int), a, b) =>
+    (foo: (~a: int, ~b: int=?) => int, a, b) =>
   foo(~a, ~b);
