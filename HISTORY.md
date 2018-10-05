@@ -1,3 +1,28 @@
+## 3.3.4
+
+Fixes:
+
+- Fast pipe braces ([2133](https://github.com/facebook/reason/pull/2133), [2148](https://github.com/facebook/reason/pull/2148)).
+- Better rtop `use` directives ([2146](https://github.com/facebook/reason/pull/2146), [2147](https://github.com/facebook/reason/pull/2147)).
+- `foo(~Foo.a)` becoming `foo(~Fooa=Foo.a)` ([2136](https://github.com/facebook/reason/pull/2136)).
+- Parse `<div> ...c</div>` correctly ([2137](https://github.com/facebook/reason/pull/2137)).
+- Invalid formatting of first-class module with type constraint ([2151](https://github.com/facebook/reason/pull/2151)).
+- Precedence printing of fast pipe with underscore sugar as JSX child ([2159](https://github.com/facebook/reason/pull/2159)).
+- Correct location for JSX name & extension expression ([2166](https://github.com/facebook/reason/pull/2166), [2162](https://github.com/facebook/reason/pull/2162)).
+- Lack of space after `module type of` ([2175](https://github.com/facebook/reason/pull/2175)).
+- Outcome printer (editor & interface generator) function signature ([2185](https://github.com/facebook/reason/pull/2185)).
+- Precedence issue with unary operators and labeled arguments ([2201](https://github.com/facebook/reason/pull/2201)).
+- Type printing of polymorphic variants row fields ([2191](https://github.com/facebook/reason/pull/2191)).
+- Pattern parsing inside ternary expressions ([2188](https://github.com/facebook/reason/pull/2188)).
+
+Improvements:
+
+- Preserve empty lines in records and bs objects ([2152](https://github.com/facebook/reason/pull/2152)).
+- Make `let not = blabla` work (not is a keyword) ([2197](https://github.com/facebook/reason/pull/2197)).
+- Format doc comments on variant leafs with consistency ([2194](https://github.com/facebook/reason/pull/2194))
+- Single fast pipe printing layout ([2193](https://github.com/facebook/reason/pull/2193)).
+- Performance. One case where the printer took exponential time ([2195](https://github.com/facebook/reason/pull/2195)).
+
 ## 3.3.3
 
 - More fixes for fast pipe ([2120](https://github.com/facebook/reason/pull/2120), [2119](https://github.com/facebook/reason/pull/2119), [2111](https://github.com/facebook/reason/pull/2111)).
