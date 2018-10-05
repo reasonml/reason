@@ -1002,3 +1002,5 @@ a >... b;
 let not = (x) => !x;
 
 let other = (x) => not(x);
+
+let derefInsideArray = [|a^|];

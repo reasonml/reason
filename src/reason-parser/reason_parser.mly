@@ -465,12 +465,6 @@ let syntax_error_pat loc msg =
   else
     syntax_error ()
 
-let syntax_error_typ loc msg =
-  if !Reason_config.recoverable then
-    Typ.extension ~loc (Reason_syntax_util.syntax_error_extension_node loc msg)
-  else
-    raise (Syntaxerr.Error(Syntaxerr.Not_expecting (loc, msg)))
-
 let syntax_error_mod loc msg =
   if !Reason_config.recoverable then
     Mty.extension ~loc (Reason_syntax_util.syntax_error_extension_node loc msg)
@@ -4321,10 +4315,15 @@ core_type2:
 ;
 
 unattributed_core_type:
-  | non_arrowed_simple_core_type
-    { $1 }
-  | arrow_type_parameters EQUALGREATER core_type2
-    { List.fold_right mktyp_arrow $1 $3 }
+  | non_arrowed_simple_core_type { $1 }
+  | arrowed_simple_core_type { $1 }
+;
+
+(* arrowed: because it contains =>
+ * simple: it doesn't need to be wrapped in parens *)
+arrowed_simple_core_type:
+  | ES6_FUN arrow_type_parameters EQUALGREATER core_type2
+    { List.fold_right mktyp_arrow $2 $4 }
   | as_loc(labelled_arrow_type_parameter_optional) EQUALGREATER core_type2
     { mktyp_arrow ($1, false) $3 }
   | basic_core_type EQUALGREATER core_type2
@@ -4332,18 +4331,13 @@ unattributed_core_type:
 ;
 
 labelled_arrow_type_parameter_optional:
-  | TILDE LIDENT COLON core_type EQUAL optional
+  | TILDE LIDENT COLON protected_type EQUAL optional
     { ($6 $2, $4) }
 ;
 
 arrow_type_parameter:
-  | MODULE package_type {
-    let loc = mklocation $symbolstartpos $endpos in
-    (Nolabel, { (mktyp(Ptyp_package $2)) with ptyp_loc = loc })
-  }
-  | core_type
-    { (Nolabel, $1) }
-  | TILDE LIDENT COLON core_type
+  | protected_type  { (Nolabel, $1) }
+  | TILDE LIDENT COLON protected_type
     { (Labelled $2, $4) }
   | labelled_arrow_type_parameter_optional { $1 }
 ;
@@ -4394,34 +4388,34 @@ non_arrowed_core_type:
     { {$2 with ptyp_attributes = $1 :: $2.ptyp_attributes} }
 ;
 
-type_param:
-    | core_type { $1 }
-    | MODULE package_type
-      { let loc = mklocation $symbolstartpos $endpos in
-        { (mktyp(Ptyp_package $2)) with ptyp_loc = loc }
-      }
-;
-
 %inline type_parameter_comma_list:
-    | lseparated_nonempty_list(COMMA, type_param) COMMA? {$1}
+  | lseparated_nonempty_list(COMMA, protected_type) COMMA? {$1}
 ;
 
 type_parameters:
-    | parenthesized(type_parameter_comma_list) { $1 }
+  | parenthesized(type_parameter_comma_list) { $1 }
+;
+
+(* "protected" stands for an environment where non-simple grammar
+ * is actually simple. non-simple => parens, simple => no-parens necessary
+ * For examples, in lists the ( and ) combined with , form a "protected"
+ * environment for non-simple types.
+ * in tuples: (int, string, float) ||-> int, string, float are protected
+ * in functions args: (int, string) => float ||-> int, string are protected *)
+protected_type:
+  | MODULE package_type {
+      let loc = mklocation $symbolstartpos $endpos in
+      { (mktyp(Ptyp_package $2)) with ptyp_loc = loc }
+    }
+  | core_type { $1 }
 ;
 
 non_arrowed_simple_core_types:
 mark_position_typ
-  ( arrow_type_parameters
-    { let prepare_arg ({Location. txt = (label, ct); loc}, _) = match label with
-        | Nolabel -> ct
-        | Optional _ | Labelled _ ->
-            syntax_error_typ loc "Labels are not allowed inside a tuple"
-      in
-      match List.map prepare_arg $1 with
-      | []    -> assert false
+  ( type_parameters
+    { match $1 with
       | [one] -> one
-      | many  -> mktyp (Ptyp_tuple many)
+      | many -> mktyp (Ptyp_tuple many)
     }
   ) {$1};
 

@@ -240,6 +240,133 @@ switch(foo) {
 
 <div>...c</div>;
 
+<div onClick={(event) => handleChange(event)} />;
+<div onClick={(eventWithLongIdent) => handleChange(eventWithLongIdent)} />;
+<div
+  onClick={(event) => {
+    Js.log(event);
+    handleChange(event);
+  }}
+/>;
+
+<UncurriedDiv
+  onClick={(. event) => {
+    Js.logU(. event);
+    handleChange(. event);
+  }}
+/>;
+
+<UncurriedDiv
+  onClick={(. eventUncurried) =>
+    handleChange(. eventUncurried)
+  }
+/>;
+
+<StaticDiv
+  onClick={(foo, bar, baz, lineBreak, identifier) => {
+    doStuff(foo, bar, baz);
+    bar(lineBreak, identifier);
+  }}
+/>;
+
+<StaticDiv
+  onClick={(foo, bar, baz, lineBreak, identifier) => {
+    bar(lineBreak, identifier)
+  }}
+/>;
+
+<AttrDiv onClick={[@bar] (event) => handleChange(event)} />;
+<AttrDiv onClick={[@bar] (eventLongIdentifier) => handleChange(eventLongIdentifier)} />;
+
+<StaticDivNamed
+  onClick={(
+    ~foo,
+    ~bar,
+    ~baz,
+    ~lineBreak,
+    ~identifier,
+    ()
+  ) =>
+    bar(lineBreak, identifier)
+  }
+/>;
+
+<div
+  onClick={(e): event => {
+    doStuff();
+    bar(foo);
+  }}
+/>;
+
+<div
+  onClick={(e, e2): event => {
+    doStuff();
+    bar(foo);
+  }}
+/>;
+
+<div
+  onClick={(
+    foo,
+    bar,
+    baz,
+    superLongIdent,
+    breakLine,
+  ): event => {
+    doStuff();
+    bar(foo);
+  }}
+/>;
+
+<div
+  onClick={(
+    foo,
+    bar,
+    baz,
+    superLongIdent,
+    breakLine,
+  ): (
+    event,
+    event2,
+    event3,
+    event4,
+    event5,
+  ) => {
+    doStuff();
+    bar(foo);
+  }}
+/>;
+
+<div
+  onClick={(
+    foo,
+    bar,
+    baz,
+    superLongIdent,
+    breakLine,
+  ): event =>
+    doStuff()
+  }
+/>;
+
+<div
+  onClick={(
+    foo,
+    bar,
+    baz,
+    superLongIdent,
+    breakLine,
+  ): (
+    event,
+    event2,
+    event3,
+    event4,
+    event5,
+  ) =>
+    doStuff()
+  }
+/>;
+
 <div>
   {switch(color) {
     | Black => ReasonReact.string("black")

@@ -620,6 +620,9 @@ rule token = parse
   | '\\'? '^' ('\\' '.')? operator_chars*
             { match lexeme_without_comment lexbuf with
               | "^." -> set_lexeme_length lexbuf 1; POSTFIXOP("^")
+              | "^|" ->
+                  (* ^| is not an infix op in [|a^|] *)
+                  set_lexeme_length lexbuf 1; POSTFIXOP("^")
               | "^" -> POSTFIXOP("^")
               | op -> INFIXOP1(unescape_operator op) }
   | "++" operator_chars*

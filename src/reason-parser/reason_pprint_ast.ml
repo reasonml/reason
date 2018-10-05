@@ -3198,16 +3198,6 @@ let printer = object(self:'self)
           ) ->
             (makeList ~postSpace:true [atom "module"; atom unpack.txt],
              self#typ_package ~mod_prefix:false lid cstrs)
-        | (p, {ptyp_desc = Ptyp_arrow _ }) ->
-            (* https://github.com/facebook/reason/issues/2141 *)
-            let forceParens = Reason_heuristics.arrowSegmentsContainsLabel ct in
-            (
-              self#pattern p,
-              let ctl = self#core_type ct in
-              if forceParens then
-                makeTup [ctl]
-              else ctl
-            )
         | _ ->
           (self#pattern p, self#core_type ct)
         end in
@@ -4382,11 +4372,12 @@ let printer = object(self:'self)
            | Pexp_tuple _
            | Pexp_match _
            | Pexp_extension _
-           | Pexp_fun _
            | Pexp_function _ ->
                label
                 (makeList [atom lbl; atom "="])
                 (self#simplifyUnparseExpr ~wrap:("{","}") expression)
+           | Pexp_fun _ ->
+               self#formatPexpFunProp ~propName:lbl expression
            | _ -> makeList ([atom lbl; atom "="; self#simplifyUnparseExpr ~wrap:("{","}") expression])
          in
          processArguments tail (nextAttr :: processedAttrs) children
@@ -4425,6 +4416,82 @@ let printer = object(self:'self)
           ~postSpace:true
           renderedChildren)
 
+  (*
+   * Format the `onClick` prop with Pexp_fun in
+   *  <div
+   *    onClick={(event) => {
+   *      Js.log(event);
+   *      handleChange(event);
+   *    }}
+   *  />;
+   *
+   *  The arguments of the callback (Pexp_fun) should be inlined as much as
+   *  possible on the same line as `onClick={`.
+   *  Also notice the brace-hugging `}}` at the end.
+   *)
+  method formatPexpFunProp ~propName expression =
+    let {stdAttrs; uncurried} = partitionAttributes expression.pexp_attributes in
+    if uncurried then Hashtbl.add uncurriedTable expression.pexp_loc true;
+
+    let (args, ret) =
+      (* omit attributes here, we're formatting them manually *)
+      self#curriedPatternsAndReturnVal {expression with pexp_attributes = [] }
+    in
+    (* Format `onClick={` *)
+    let propName = makeList ~wrap:("", "{") [atom propName; atom "="] in
+    let argsList =
+      let args = match args with
+      | [argsList] -> argsList
+      | args -> makeList args
+      in
+      match stdAttrs with
+      | [] -> args
+      | attrs ->
+          (* attach attributes to the args of the Pexp_fun: `[@attr] (event)` *)
+          let attrList =
+            makeList ~inline:(true, true) ~break:IfNeed ~postSpace:true
+              (List.map self#attribute attrs)
+          in
+          let all = [attrList; args] in
+          makeList ~break:IfNeed ~inline:(true, true) ~postSpace:true all
+    in
+    (* Format `onClick={(event)` *)
+    let propNameWithArgs = label propName argsList in
+    (* Pick constraints: (a, b) :string => ...
+     * :string is the constraint here *)
+    let (return, optConstr) = match ret.pexp_desc with
+      | Pexp_constraint (e, ct) -> (e, Some (self#non_arrowed_core_type ct))
+      | _ -> (ret, None)
+    in
+    let returnExpr = match (self#letList return) with
+    | [x] ->
+      (* Format `=> handleChange(event)}` or
+       * =>
+       *   handleChange(event)
+       * }
+       *)
+       makeList ~break:IfNeed ~wrap:("=> ", "}") [x]
+    | xs ->
+      (* Format `Js.log(event)` and `handleChange(event)` as
+       * => {
+       *   Js.log(event);
+       *   handleChange(event);
+       * }}
+       *)
+        makeList
+          ~break:Always_rec ~sep:(SepFinal (";", ";")) ~wrap:("=> {", "}}")
+          xs
+    in
+    match optConstr with
+    | Some typeConstraint ->
+      let upToConstraint =
+        label ~space:true
+          (makeList ~wrap:("", ":") [propNameWithArgs])
+          typeConstraint
+      in
+      label ~space:true upToConstraint returnExpr
+    | None ->
+      label ~space:true propNameWithArgs returnExpr
 
   (* Creates a list of simple module expressions corresponding to module
      expression or functor application. *)
@@ -4683,20 +4750,27 @@ let printer = object(self:'self)
       | `Value (l,eo,p) -> source_map ~loc:p.ppat_loc (self#label_exp l eo p)
       | `Type nt -> atom ("type " ^ nt)
     in
-    let single_argument_no_parens p =
-      (is_unit_pattern p || is_ident_pattern p || is_any_pattern p) && not(uncurried)
+    let single_argument_no_parens p ret =
+      if uncurried then false
+      else
+        let isUnitPat = is_unit_pattern p in
+        let isAnyPat = is_any_pattern p in
+        begin match ret.pexp_desc with
+        (* (event) :ReasonReact.event => {...}
+         * The above Pexp_fun with constraint ReasonReact.event requires parens
+         * surrounding the single argument `event`.*)
+        | Pexp_constraint _ when not isUnitPat && not isAnyPat -> false
+        | _ -> isUnitPat || isAnyPat || is_ident_pattern p
+      end
     in
     match extract_args x with
     | ([], ret) -> ([], ret)
     | ([`Value (Nolabel, None, p) ], ret) when is_unit_pattern p && uncurried ->
         ( [atom "(.)"], ret)
-    | ([`Value (Nolabel, None, p) as arg], ret) when single_argument_no_parens p ->
+    | ([`Value (Nolabel, None, p) as arg], ret) when single_argument_no_parens p ret ->
       ([prepare_arg arg], ret)
     | (args, ret) ->
-        if uncurried then
-          ([makeTup ~uncurried:true (List.map prepare_arg args)], ret)
-        else
-          ([makeTup (List.map prepare_arg args)], ret)
+        ([makeTup ~uncurried (List.map prepare_arg args)], ret)
 
   (* Returns the (curriedModule, returnStructure) for a functor *)
   method curriedFunctorPatternsAndReturnStruct = function
