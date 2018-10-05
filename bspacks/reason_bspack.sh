@@ -56,7 +56,6 @@ make build -C ../
   -I "$reasonTargetDir/_build/default/src/reason-parser/"                     \
   -I "$reasonTargetDir/_build/default/src/reason-parser/vendor/easy_format/"  \
   -I "$reasonTargetDir/_build/default/src/reason-parser/vendor/cmdliner/"     \
-  -I "$reasonTargetDir/_build/default/src/reason-parser-tests/"               \
   -I "$reasonTargetDir/_build/default/src/refmt/"                             \
   -I "$reasonTargetDir/_build/default/src/refmttype/"                         \
   -I "$ocamlMigrateParseTreeTargetDir" \
@@ -80,7 +79,6 @@ make build -C ../
   -I "$reasonTargetDir/_build/default/src/reason-parser/"                     \
   -I "$reasonTargetDir/_build/default/src/reason-parser/vendor/easy_format/"  \
   -I "$reasonTargetDir/_build/default/src/reason-parser/vendor/cmdliner/"     \
-  -I "$reasonTargetDir/_build/default/src/reason-parser-tests/"               \
   -I "$reasonTargetDir/_build/default/src/refmt/"                             \
   -I "$reasonTargetDir/_build/default/src/refmttype/"                         \
   -I "$ocamlMigrateParseTreeTargetDir" \
