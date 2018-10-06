@@ -1,3 +1,4 @@
 typeCheckedTests/*.out
 typeCheckedTests/*.cmo
 typeCheckedTests/*.cmi
+oprintTests/**/*.cmi

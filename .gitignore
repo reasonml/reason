@@ -10,6 +10,7 @@ formatTest/customMLFiles/*.ml
 formatTest/customMLFormatOutput.re
 formatTest/failed_tests
 formatTest/**/actual_output/
+formatTest/**/intf_output/
 miscTests/reactjs_jsx_ppx_tests/actual*.re
 miscTests/reactjs_jsx_ppx_tests/*.cm*
 *.log
