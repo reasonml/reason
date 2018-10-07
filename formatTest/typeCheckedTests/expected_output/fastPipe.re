@@ -188,3 +188,8 @@ let parse = (a, b) => a ++ b;
 
 let t15: string =
   <Div> {url->parse(suffix, _)} </Div>;
+
+type t = {fn: (string, int) => string};
+let x = {fn: (s, i) => s ++ i->string_of_int};
+
+1->x.fn("s", _);

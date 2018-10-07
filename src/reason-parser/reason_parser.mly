@@ -615,14 +615,23 @@ let process_underscore_application args =
          * 5->doStuff(3, _, 7);
          * (5 |. doStuff)(3, _, 7)
          * 5 |. (__x => doStuff(3, __x, 7))
+         *
+         * Other example:
+         * 5->x.fn(1, _, 3);
+         * (5 |. x.fn)(1, _, 3);
+         * 5 |. (__x => x.fn(1, __x, 3);
          *)
         | Pexp_apply(
           {pexp_desc= Pexp_apply(
             {pexp_desc = Pexp_ident({txt = Longident.Lident("|.")})} as pipeExp,
-            [Nolabel, arg1; Nolabel, ({pexp_desc = Pexp_ident _} as arg2)]
-            (*         5                            doStuff                   *)
+            [Nolabel, arg1; (* 5 *)
+              Nolabel, ((
+                  {pexp_desc = Pexp_ident _} (* doStuff *)
+                | {pexp_desc = Pexp_field _} (* x.fn *)
+              ) as arg2)
+            ]
           )},
-          args (* [3, __x, 7] *)
+          args (* [3, __x, 7]  or [1, __x, 3] *)
           ) ->
             (* build `doStuff(3, __x, 7)` *)
             let innerApply = {arg2 with pexp_desc = Pexp_apply(arg2, args)} in
