@@ -43,20 +43,18 @@ let y =
 
 let z =
   <div
-    style={
-      ReactDOMRe.Style.make(
-        ~width,
-        ~height,
-        ~color,
-        ~backgroundColor,
-        ~margin,
-        ~padding,
-        ~border,
-        ~borderColor,
-        ~someOtherAttribute,
-        (),
-      )
-    }
+    style={ReactDOMRe.Style.make(
+      ~width,
+      ~height,
+      ~color,
+      ~backgroundColor,
+      ~margin,
+      ~padding,
+      ~border,
+      ~borderColor,
+      ~someOtherAttribute,
+      (),
+    )}
     key={string_of_int(1)}
   />;
 
@@ -174,13 +172,11 @@ let y = [
   child
 </Description>;
 <Description
-  term={
-    Text.createElement(
-      ~text="Age",
-      ~children=[],
-      (),
-    )
-  }>
+  term={Text.createElement(
+    ~text="Age",
+    ~children=[],
+    (),
+  )}>
   child
 </Description>;
 <Description
@@ -499,3 +495,79 @@ switch (foo) {
 </div>;
 
 ReasonReact.(<> {string("Test")} </>);
+
+<div
+  style={
+    [@foo]
+    ReactDOMRe.Style.make(
+      ~width="20px",
+      ~height="20px",
+      ~borderRadius="100%",
+      ~backgroundColor="red",
+    )
+  }
+/>;
+
+<Animated initialValue=0.0 value>
+  ...{ReactDOMRe.Style.make(
+    ~width="20px",
+    ~height="20px",
+    ~borderRadius="100%",
+    ~backgroundColor="red",
+  )}
+</Animated>;
+
+<Animated initialValue=0.0 value>
+  ...{value =>
+    <div
+      style={ReactDOMRe.Style.make(
+        ~width="20px",
+        ~height="20px",
+        ~borderRadius="100%",
+        ~backgroundColor="red",
+      )}
+    />
+  }
+</Animated>;
+
+<Animated initialValue=0.0 value>
+  ...{(value): ReasonReact.element =>
+    <div
+      style={ReactDOMRe.Style.make(
+        ~width="20px",
+        ~height="20px",
+        ~borderRadius="100%",
+        ~backgroundColor="red",
+      )}
+    />
+  }
+</Animated>;
+
+<Animated initialValue=0.0 value>
+  ...{[@foo] value =>
+    <div
+      style={ReactDOMRe.Style.make(
+        ~width="20px",
+        ~height="20px",
+        ~borderRadius="100%",
+        ~backgroundColor="red",
+      )}
+    />
+  }
+</Animated>;
+
+<Animated initialValue=0.0 value>
+  ...{value => {
+    let width = "20px";
+    let height = "20px";
+
+    <div
+      style={ReactDOMRe.Style.make(
+        ~width,
+        ~height,
+        ~borderRadius="100%",
+        ~backgroundColor="red",
+      )}
+    />;
+  }}
+</Animated>;

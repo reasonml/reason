@@ -991,10 +991,11 @@ let makeAppList = function
   | [hd] -> hd
   | l -> makeList ~inline:(true, true) ~postSpace:true ~break:IfNeed l
 
-let makeTup ?(trailComma=true) ?(uncurried = false) l =
-  let lparen = if uncurried then "(. " else "(" in
+let makeTup ?(wrap=("", ""))?(trailComma=true) ?(uncurried = false) l =
+  let (lwrap, rwrap) = wrap in
+  let lparen = lwrap ^ (if uncurried then "(. " else "(") in
   makeList
-    ~wrap:(lparen,")")
+    ~wrap:(lparen, ")" ^ rwrap)
     ~sep:(if trailComma then commaTrail else commaSep)
     ~postSpace:true
     ~break:IfNeed l
@@ -4336,8 +4337,18 @@ let printer = object(self:'self)
       | (Labelled "children", {pexp_desc = Pexp_construct ({txt = Lident"::"}, Some {pexp_desc = Pexp_tuple components} )}) :: tail ->
         processArguments tail processedAttrs (self#formatChildren components [])
       | (Labelled "children", expr) :: tail ->
-          let childLayout = self#simplifyUnparseExpr ~wrap:("{", "}") expr in
-          let dotdotdotChild = makeList ~break:Layout.Never [atom "..."; childLayout] in
+          let dotdotdotChild = match expr with
+            | {pexp_attributes = []; pexp_desc = Pexp_apply (funExpr, args)} when printedStringAndFixityExpr funExpr == Normal ->
+              begin match (self#formatFunAppl ~prefix:(atom "...") ~wrap:("{", "}") ~jsxAttrs:[] ~args ~funExpr ~applicationExpr:expr ()) with
+              | [x] -> x
+              | xs -> makeList xs
+              end
+            | {pexp_desc = Pexp_fun _ } ->
+                self#formatPexpFun ~prefix:(atom "...") ~wrap:("{", "}") expr
+            | _ ->
+              let childLayout = self#simplifyUnparseExpr ~wrap:("{", "}") expr in
+              makeList ~break:Never [atom "..."; childLayout]
+          in
           processArguments tail processedAttrs (Some [dotdotdotChild])
       | (Optional lbl, expression) :: tail ->
         let nextAttr =
@@ -4361,8 +4372,25 @@ let printer = object(self:'self)
                               atom "=";
                               (label (self#longident_loc lid) (atom "."))])
                    (self#formatNonSequencyExpression e)
+           | Pexp_apply ({pexp_desc = Pexp_ident _} as funExpr, args)
+                when printedStringAndFixityExpr funExpr == Normal &&
+                     expression.pexp_attributes == [] ->
+             let lhs = makeList [atom lbl; atom "="] in
+             begin match (
+               self#formatFunAppl
+                ~prefix:lhs
+                ~wrap:("{", "}")
+                ~jsxAttrs:[]
+                ~args
+                ~funExpr
+                ~applicationExpr:expression
+                ())
+             with
+             | [x] -> x
+             | xs -> makeList xs
+             end
            | Pexp_apply (eFun, _) ->
-             let lhs = (makeList [atom lbl; atom "="]) in
+             let lhs = makeList [atom lbl; atom "="] in
              let rhs = (match printedStringAndFixityExpr eFun with
                  | Infix str when requireNoSpaceFor str -> self#unparseExpr expression
                  | _ -> self#simplifyUnparseExpr ~wrap:("{","}") expression)
@@ -4378,7 +4406,8 @@ let printer = object(self:'self)
                 (makeList [atom lbl; atom "="])
                 (self#simplifyUnparseExpr ~wrap:("{","}") expression)
            | Pexp_fun _ ->
-               self#formatPexpFunProp ~propName:lbl expression
+               let propName = makeList [atom lbl; atom "="] in
+               self#formatPexpFun ~wrap:("{", "}") ~prefix:propName expression
            | _ -> makeList ([atom lbl; atom "="; self#simplifyUnparseExpr ~wrap:("{","}") expression])
          in
          processArguments tail (nextAttr :: processedAttrs) children
@@ -4418,7 +4447,8 @@ let printer = object(self:'self)
           renderedChildren)
 
   (*
-   * Format the `onClick` prop with Pexp_fun in
+   * Format Pexp_fun expression: (a, b) => a + b;
+   * Example: the `onClick` prop with Pexp_fun in
    *  <div
    *    onClick={(event) => {
    *      Js.log(event);
@@ -4429,8 +4459,13 @@ let printer = object(self:'self)
    *  The arguments of the callback (Pexp_fun) should be inlined as much as
    *  possible on the same line as `onClick={`.
    *  Also notice the brace-hugging `}}` at the end.
+   *
+   *  ~prefix -> prefixes the Pexp_fun layout, example `onClick=`
+   *  ~wrap -> wraps the `Pexp_fun` in the tuple passed to wrap, e.g. `{` and
+   *  `}` for jsx
    *)
-  method formatPexpFunProp ~propName expression =
+  method formatPexpFun ?(prefix=(atom "")) ?(wrap=("","")) expression =
+    let (lwrap, rwrap) = wrap in
     let {stdAttrs; uncurried} = partitionAttributes expression.pexp_attributes in
     if uncurried then Hashtbl.add uncurriedTable expression.pexp_loc true;
 
@@ -4439,7 +4474,7 @@ let printer = object(self:'self)
       self#curriedPatternsAndReturnVal {expression with pexp_attributes = [] }
     in
     (* Format `onClick={` *)
-    let propName = makeList ~wrap:("", "{") [atom propName; atom "="] in
+    let propName = makeList ~wrap:("", lwrap) [prefix] in
     let argsList =
       let args = match args with
       | [argsList] -> argsList
@@ -4471,7 +4506,7 @@ let printer = object(self:'self)
        *   handleChange(event)
        * }
        *)
-       makeList ~break:IfNeed ~wrap:("=> ", "}") [x]
+       makeList ~break:IfNeed ~wrap:("=> ", rwrap) [x]
     | xs ->
       (* Format `Js.log(event)` and `handleChange(event)` as
        * => {
@@ -4480,7 +4515,7 @@ let printer = object(self:'self)
        * }}
        *)
         makeList
-          ~break:Always_rec ~sep:(SepFinal (";", ";")) ~wrap:("=> {", "}}")
+          ~break:Always_rec ~sep:(SepFinal (";", ";")) ~wrap:("=> {", "}" ^ rwrap)
           xs
     in
     match optConstr with
@@ -7472,7 +7507,7 @@ let printer = object(self:'self)
     in
     source_map ~loc:e.pexp_loc param
 
-  method label_x_expression_params ?(uncurried=false) xs =
+  method label_x_expression_params ?wrap ?(uncurried=false) xs =
     match xs with
       (* function applications with unit as only argument should be printed differently
        * e.g. print_newline(()) should be printed as print_newline() *)
@@ -7491,7 +7526,7 @@ let printer = object(self:'self)
       | [(Nolabel, exp)] when isSingleArgParenApplication [exp] ->
           self#singleArgParenApplication ~uncurried [exp]
       | params ->
-          makeTup ~uncurried (List.map self#label_x_expression_param params)
+          makeTup ?wrap ~uncurried (List.map self#label_x_expression_param params)
 
   (*
    * Prefix represents an optional layout. When passed it will be "prefixed" to
@@ -7502,8 +7537,16 @@ let printer = object(self:'self)
    *    x,
    *    y,
    *  )  --> notice how `)` sits on the height of `foo` instead of `bar`
+   *
+   *  ~wrap -> represents optional "wrapping", might be useful in context of jsx
+   *  where braces are required:
+   * prop={bar(   -> `{` is formatted before the funExpr
+   *   x,
+   *   y,
+   * )}      -> notice how the closing brace hugs: `)}`
    *)
-  method formatFunAppl ?(prefix=(atom "")) ~jsxAttrs ~args ~funExpr ~applicationExpr ?(uncurried=false) () =
+  method formatFunAppl ?(prefix=(atom "")) ?(wrap=("", "")) ~jsxAttrs ~args ~funExpr ~applicationExpr ?(uncurried=false) () =
+    let (leftWrap, rightWrap) = wrap in
     let uncurriedApplication = uncurried in
     (* If there was a JSX attribute BUT JSX component wasn't detected,
        that JSX attribute needs to be pretty printed so it doesn't get
@@ -7527,7 +7570,7 @@ let printer = object(self:'self)
       | Pexp_field _ -> self#unparseExpr funExpr
       | _ -> self#simplifyUnparseExpr funExpr
     in
-    let formattedFunExpr = makeList [prefix; formattedFunExpr] in
+    let formattedFunExpr = makeList [prefix; atom leftWrap; formattedFunExpr] in
     begin match categorizeFunApplArgs args with
     | `LastArgIsCallback(callbackArg, args) ->
         (* This is the following case:
@@ -7612,7 +7655,7 @@ let printer = object(self:'self)
                *)
             let right =
               source_map ~loc:retCb.pexp_loc
-                (makeList ~break:Always_rec ~wrap:("=> {", "})") ~sep:(SepFinal (";", ";")) xs)
+                (makeList ~break:Always_rec ~wrap:("=> {", "})" ^ rightWrap) ~sep:(SepFinal (";", ";")) xs)
             in
             let argsWithCallbackArgs =
               List.map self#label_x_expression_param args @ [theCallbackArg]
@@ -7638,7 +7681,7 @@ let printer = object(self:'self)
              * )</list></right></label>
             *)
             let args =
-              makeList ~break:Always ~wrap:("", ")") ~sep:commaTrail (
+              makeList ~break:Always ~wrap:("", ")" ^ rightWrap) ~sep:commaTrail (
                 (List.map self#label_x_expression_param args) @
                 [label ~space:true (makeList ~wrap:("", " =>") [theCallbackArg])
                    (source_map ~loc:retCb.pexp_loc (makeLetSequence xs))]
@@ -7662,7 +7705,7 @@ let printer = object(self:'self)
           {funExpr.pexp_loc with loc_end = applicationExpr.pexp_loc.loc_end},
           {funExpr.pexp_loc with loc_start = funExpr.pexp_loc.loc_end; loc_end = applicationExpr.pexp_loc.loc_end}
       in
-      let theArgs = self#reset#label_x_expression_params ~uncurried args in
+      let theArgs = self#reset#label_x_expression_params ~wrap:("", rightWrap) ~uncurried args in
       maybeJSXAttr @ [source_map ~loc:syntheticApplicationLocation
                         (label theFunc (source_map ~loc:syntheticArgLoc theArgs))]
     end
