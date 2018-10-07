@@ -4164,17 +4164,18 @@ let printer = object(self:'self)
      *
      * (Also see https://github.com/facebook/Reason/issues/114)
      *)
-    match e.pexp_desc with
-    | Pexp_record _ (* syntax sugar for M.{x:1} *)
-    | Pexp_tuple _ (* syntax sugar for M.(a, b) *)
-    | Pexp_object {pcstr_fields = []} (* syntax sugar for M.{} *)
-    | Pexp_construct ( {txt= Lident"::"},Some _)
-    | Pexp_construct ( {txt= Lident"[]"},_)
-    | Pexp_extension ( {txt = "bs.obj"}, _ ) ->
+    match e.pexp_attributes, e.pexp_desc with
+    | [], Pexp_record _ (* syntax sugar for M.{x:1} *)
+    | [], Pexp_tuple _ (* syntax sugar for M.(a, b) *)
+    | [], Pexp_object {pcstr_fields = []} (* syntax sugar for M.{} *)
+    | [], Pexp_construct ( {txt= Lident"::"},Some _)
+    | [], Pexp_construct ( {txt= Lident"[]"},_)
+    | [], Pexp_extension ( {txt = "bs.obj"}, _ ) ->
       self#simplifyUnparseExpr e (* syntax sugar for M.[x,y] *)
     (* syntax sugar for the rest, wrap with parens to avoid ambiguity.
      * E.g., avoid M.(M2.v) being printed as M.M2.v
-    *)
+     * Or ReasonReact.(<> {string("Test")} </>);
+     *)
     | _ -> makeList ~wrap:("(",")") ~break:IfNeed [self#unparseExpr e]
 
   (*
