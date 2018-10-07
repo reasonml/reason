@@ -624,12 +624,7 @@ let process_underscore_application args =
         | Pexp_apply(
           {pexp_desc= Pexp_apply(
             {pexp_desc = Pexp_ident({txt = Longident.Lident("|.")})} as pipeExp,
-            [Nolabel, arg1; (* 5 *)
-              Nolabel, ((
-                  {pexp_desc = Pexp_ident _} (* doStuff *)
-                | {pexp_desc = Pexp_field _} (* x.fn *)
-              ) as arg2)
-            ]
+            [Nolabel, arg1 (* 5 *);  Nolabel, arg2 (* doStuff or x.fn *)]
           )},
           args (* [3, __x, 7]  or [1, __x, 3] *)
           ) ->

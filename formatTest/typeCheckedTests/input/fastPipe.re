@@ -171,3 +171,8 @@ type t = {fn: (string, int) => string};
 let x = {fn: (s, i) => s ++ i->string_of_int};
 
 1->x.fn("s", _);
+
+let addCurried = (n) => (a, b) => n + a + b;
+
+let t16: int =
+  1->(addCurried(2))(2, _);
