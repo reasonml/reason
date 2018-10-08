@@ -56,16 +56,9 @@ let token_specific_message = function
     "underscore is not a valid identifier. Use _ only in pattern matching and partial function application"
   | _ ->
     raise Not_found
+
 let message env (token, _, _) =
   let state = Interp.current_state_number env in
-  (* Is there a message for this specific state ? *)
-  try
-    let m = Reason_parser_message.message state in
-    if m = "<YOUR SYNTAX ERROR MESSAGE HERE>\n" then
-      (* Milder unknown syntax error message *)
-      Reason_syntax_util.default_error_message
-    else m
-  with Not_found ->
   (* Identify a keyword used as an identifier *)
   try keyword_confused_with_ident state token
   with Not_found ->
@@ -75,6 +68,14 @@ let message env (token, _, _) =
   try semicolon_might_be_missing state token
   with Not_found ->
   try token_specific_message token
+  with Not_found ->
+  (* Is there a message for this specific state ? *)
+  try
+    let m = Reason_parser_message.message state in
+    if m = "<YOUR SYNTAX ERROR MESSAGE HERE>\n" then
+      (* Milder unknown syntax error message *)
+      Reason_syntax_util.default_error_message
+    else m
   with Not_found ->
     (* TODO: we don't know what to say *)
     Reason_syntax_util.default_error_message
