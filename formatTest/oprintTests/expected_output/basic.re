@@ -58,4 +58,4 @@ let ( == ): int;
 let ( === ): int;
 let ( != ): int;
 let ( !== ): int;
-type foobar(_) = Foo('a) :foobar(unit);
+type foobar(_) = Foo('a): foobar(unit);
