@@ -616,3 +616,15 @@ type editorConfiguration = {
   [@bs.optional]
   rtlMoveVisually: bool,
 };
+
+module Fmt = {
+  let barBaz = () => ();
+
+  type record = {x: int};
+};
+
+Fmt.([@foo] barBaz());
+Fmt.([@foo] {x: 1});
+Fmt.([@foo] [1, 2, 3]);
+Fmt.([@foo] (1, 2, 3));
+Fmt.([@foo] {val x = 10});

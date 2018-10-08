@@ -373,3 +373,5 @@ switch(foo) {
     | Red => ReasonReact.string("red")
     }}
 </div>;
+
+ReasonReact.(<> {string("Test")} </>);
