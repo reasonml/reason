@@ -139,3 +139,4 @@ let (!=) = 0;
 
 let (!==) = 0;
 
+type foobar(_) = | Foo('a): foobar(unit);
