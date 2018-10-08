@@ -15,7 +15,6 @@ test-ci: install test
 
 test: build clean-tests
 	dune build src/reason-parser-tests/testOprint.exe
-	node ./formatTest/testOprint.js
 	# ./miscTests/rtopIntegrationTest.sh
 	./miscTests/jsxPpxTest.sh
 	cd formatTest; ./test.sh
@@ -29,6 +28,8 @@ coverage:
 
 clean-tests:
 	rm -rf ./formatTest/**/actual_output
+	rm -rf ./formatTest/**/intf_output
+	rm -rf ./formatTest/**/**/TestTest.cmi
 	rm -f ./formatTest/failed_tests
 	rm -f ./miscTests/reactjs_jsx_ppx_tests/*.cm*
 
