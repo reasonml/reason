@@ -1,19 +1,19 @@
 {
-  "hash": "8ee1dccffdc407912f8839ca20f741c4",
-  "root": "reason@path:.",
+  "hash": "94a3b43d759ba118b9643a91ccfbd059",
+  "root": "root@path:./esy.json",
   "node": {
-    "reason@path:.": {
+    "root@path:./esy.json": {
       "record": {
-        "name": "reason",
-        "version": "path:.",
-        "source": "path:.",
+        "name": "root",
+        "version": "path:./esy.json",
+        "source": "path:./esy.json",
         "files": [],
         "opam": null
       },
       "dependencies": [
-        "@esy-ocaml/esy-installer@0.0.0", "@esy-ocaml/merlin@3.0.5005",
-        "@esy-ocaml/substs@0.0.1", "@opam/dune@opam:1.3.0",
-        "@opam/menhir@opam:20180905", "@opam/merlin-extend@opam:0.3",
+        "@esy-ocaml/merlin@3.0.5005", "@esy-ocaml/substs@0.0.1",
+        "@opam/dune@opam:1.3.0", "@opam/menhir@opam:20181006",
+        "@opam/merlin-extend@opam:0.3",
         "@opam/ocaml-migrate-parsetree@opam:1.1.0",
         "@opam/ocamlbuild@opam:0.12.0", "@opam/ocamlfind@opam:1.8.0",
         "@opam/result@opam:1.3", "@opam/utop@opam:2.2.0", "ocaml@4.6.6"
@@ -226,7 +226,8 @@
             "exportedEnv": {
               "OCAML_TOPLEVEL_PATH": {
                 "val": "#{self.toplevel}",
-                "scope": "global"
+                "scope": "global",
+                "exclusive": false
               }
             }
           }
@@ -332,18 +333,18 @@
         "@opam/ocamlfind@opam:1.8.0", "ocaml@4.6.6"
       ]
     },
-    "@opam/menhir@opam:20180905": {
+    "@opam/menhir@opam:20181006": {
       "record": {
         "name": "@opam/menhir",
-        "version": "opam:20180905",
+        "version": "opam:20181006",
         "source":
-          "archive:http://gallium.inria.fr/~fpottier/menhir/menhir-20180905.tar.gz#md5:1271e9ce3d3cb56581fa45e990b70679",
+          "archive:http://gallium.inria.fr/~fpottier/menhir/menhir-20181006.tar.gz#md5:d2174b0d4bd8feb66a7484be6f1eed14",
         "files": [],
         "opam": {
           "name": "menhir",
-          "version": "20180905",
+          "version": "20181006",
           "opam":
-            "opam-version: \"2.0\"\nname: \"menhir\"\nversion: \"20180905\"\nsynopsis: \"LR(1) parser generator\"\nmaintainer: \"francois.pottier@inria.fr\"\nauthors: [\n  \"François Pottier <francois.pottier@inria.fr>\"\n  \"Yann Régis-Gianas <yrg@pps.univ-paris-diderot.fr>\"\n]\nhomepage: \"http://gallium.inria.fr/~fpottier/menhir/\"\nbug-reports: \"menhir@inria.fr\"\ndepends: [\n  \"ocaml\" {>= \"4.02\"}\n  \"ocamlfind\" {build}\n  \"ocamlbuild\" {build}\n]\nbuild: [\n  make\n  \"-f\"\n  \"Makefile\"\n  \"PREFIX=%{prefix}%\"\n  \"USE_OCAMLFIND=true\"\n  \"docdir=%{doc}%/menhir\"\n  \"libdir=%{lib}%/menhir\"\n  \"mandir=%{man}%/man1\"\n]\ninstall: [\n  make\n  \"-f\"\n  \"Makefile\"\n  \"install\"\n  \"PREFIX=%{prefix}%\"\n  \"docdir=%{doc}%/menhir\"\n  \"libdir=%{lib}%/menhir\"\n  \"mandir=%{man}%/man1\"\n]\nremove: [\n  make\n  \"-f\"\n  \"Makefile\"\n  \"uninstall\"\n  \"PREFIX=%{prefix}%\"\n  \"docdir=%{doc}%/menhir\"\n  \"libdir=%{lib}%/menhir\"\n  \"mandir=%{man}%/man1\"\n]\ndev-repo: \"git+https://gitlab.inria.fr/fpottier/menhir.git\"\nurl {\n  src: \"http://gallium.inria.fr/~fpottier/menhir/menhir-20180905.tar.gz\"\n  checksum: \"md5=1271e9ce3d3cb56581fa45e990b70679\"\n}",
+            "opam-version: \"2.0\"\nname: \"menhir\"\nversion: \"20181006\"\nsynopsis: \"LR(1) parser generator\"\nmaintainer: \"francois.pottier@inria.fr\"\nauthors: [\n  \"François Pottier <francois.pottier@inria.fr>\"\n  \"Yann Régis-Gianas <yrg@pps.univ-paris-diderot.fr>\"\n]\nhomepage: \"http://gallium.inria.fr/~fpottier/menhir/\"\nbug-reports: \"menhir@inria.fr\"\ndepends: [\n  \"ocaml\" {>= \"4.02\"}\n  \"ocamlfind\" {build}\n  \"ocamlbuild\" {build}\n]\nbuild: [\n  make\n  \"-f\"\n  \"Makefile\"\n  \"PREFIX=%{prefix}%\"\n  \"USE_OCAMLFIND=true\"\n  \"docdir=%{doc}%/menhir\"\n  \"libdir=%{lib}%/menhir\"\n  \"mandir=%{man}%/man1\"\n]\ninstall: [\n  make\n  \"-f\"\n  \"Makefile\"\n  \"install\"\n  \"PREFIX=%{prefix}%\"\n  \"docdir=%{doc}%/menhir\"\n  \"libdir=%{lib}%/menhir\"\n  \"mandir=%{man}%/man1\"\n]\nremove: [\n  make\n  \"-f\"\n  \"Makefile\"\n  \"uninstall\"\n  \"PREFIX=%{prefix}%\"\n  \"docdir=%{doc}%/menhir\"\n  \"libdir=%{lib}%/menhir\"\n  \"mandir=%{man}%/man1\"\n]\ndev-repo: \"git+https://gitlab.inria.fr/fpottier/menhir.git\"\nurl {\n  src: \"http://gallium.inria.fr/~fpottier/menhir/menhir-20181006.tar.gz\"\n  checksum: \"md5=d2174b0d4bd8feb66a7484be6f1eed14\"\n}",
           "override": null
         }
       },
@@ -674,16 +675,16 @@
         "opam": null
       },
       "dependencies": [
-        "@esy-ocaml/esy-installer@0.0.0", "@esy-ocaml/substs@0.0.1",
+        "@esy-ocaml/esy-installer@0.0.1", "@esy-ocaml/substs@0.0.1",
         "@opam/ocamlfind@opam:1.8.0", "@opam/yojson@opam:1.4.1"
       ]
     },
-    "@esy-ocaml/esy-installer@0.0.0": {
+    "@esy-ocaml/esy-installer@0.0.1": {
       "record": {
         "name": "@esy-ocaml/esy-installer",
-        "version": "0.0.0",
+        "version": "0.0.1",
         "source":
-          "archive:https://registry.npmjs.org/@esy-ocaml/esy-installer/-/esy-installer-0.0.0.tgz#sha1:6b0e2bd4ee43531ac74793fe55cfcc3aca197a66",
+          "archive:https://registry.npmjs.org/@esy-ocaml/esy-installer/-/esy-installer-0.0.1.tgz#sha1:420c65f7e5f9bafa3da578532c352acdf00837aa",
         "files": [],
         "opam": null
       },
