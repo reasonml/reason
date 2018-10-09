@@ -12,6 +12,8 @@
     "@opam/merlin-extend": " >= 0.3.0",
     "@opam/result": "*",
     "@opam/ocaml-migrate-parsetree": "*",
+    "@opam/cmdliner": "*",
+    "@opam/easy-format": "*",
     "@opam/ocamlbuild": "*",
     "@opam/dune": "*"
   },
@@ -47,6 +49,8 @@
       "@opam/utop": " >= 1.17",
       "@opam/merlin-extend": " >= 0.3",
       "@opam/result": "*",
+      "@opam/cmdliner": "*",
+      "@opam/easy-format": "*",
       "@opam/ocaml-migrate-parsetree": "*",
       "@opam/ocamlbuild": "*",
       "@opam/dune": "*"
