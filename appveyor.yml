@@ -11,5 +11,9 @@ install:
 
 build_script:
     - esy build
+    - esy b dune build src/reason-parser-tests/testOprint.exe
+    # Tests blocked by #2224
+    # - esy b ./miscTests/jsxPpxTest.sh
+    # - esy b bash -c "cd formatTest; ./test.sh"
 
 test: off
