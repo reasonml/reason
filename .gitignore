@@ -24,6 +24,7 @@ node_modules
 # gitignored, but not npmignored. Published by `npm run prepublish`
 refmt.js
 refmt.map
+_esy
 _esybuild
 _esyinstall
 .merlin
