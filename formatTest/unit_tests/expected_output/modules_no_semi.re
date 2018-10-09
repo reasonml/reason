@@ -1,7 +1,8 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 
-let run = () =>
+let run = () => {
   TestUtils.printSection("Modules");
+};
 
 /**
  * Modules:
@@ -515,24 +516,42 @@ module M = {
 
 module N = {
   open M;
-  let z = M.(34);
+  let z = {
+    M.(34);
+  };
   let z = {
     open M;
     34;
     35;
   };
+  let z = {
+    M.(34, 35);
+  };
   let z = M.(34, 35);
   let z = M.(34, 35);
-  let z = M.(34, 35);
+  let z = {
+    M.{};
+  };
   let z = M.{};
   let z = M.{};
-  let z = M.{};
-  let z = M.{x: 10};
-  let z = M.[foo, bar];
-  let z = M.[foo, bar];
-  let z = M.{x: 10, y: 20};
-  let z = M.(M2.(value));
-  let z = M.(M2.value);
+  let z = {
+    M.{x: 10};
+  };
+  let z = {
+    M.[foo, bar];
+  };
+  let z = {
+    M.[foo, bar];
+  };
+  let z = {
+    M.{x: 10, y: 20};
+  };
+  let z = {
+    M.(M2.(value));
+  };
+  let z = {
+    M.(M2.value);
+  };
   let z = {
     open! M;
     34;

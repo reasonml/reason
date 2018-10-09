@@ -1089,6 +1089,12 @@ let package_type_of_module_type pmty =
   | _ ->
       err pmty.pmty_loc
         "only module type identifier and 'with type' constraints are supported"
+
+let add_brace_attr expr =
+  let label = Location.mknoloc "reason.preserve_braces" in
+  let payload = PStr [] in
+  {expr with pexp_attributes= (label, payload) :: expr.pexp_attributes }
+
 %}
 
 
@@ -2458,7 +2464,7 @@ class_type_declaration_details:
 braced_expr:
 mark_position_exp
   ( LBRACE seq_expr RBRACE
-    { $2 }
+    { add_brace_attr $2 }
   | LBRACE as_loc(seq_expr) error
     { syntax_error_exp $2.loc "SyntaxError in block" }
   | LBRACE DOTDOTDOT expr_optional_constraint COMMA? RBRACE
