@@ -1,7 +1,0 @@
-(jbuild_version 1)
-
-(library
- ((name reason.easy_format)
-  (public_name reason.easy_format)
-  (wrapped false)
-  (flags (:standard -w -9-27))))

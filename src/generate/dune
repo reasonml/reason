@@ -1,0 +1,4 @@
+(executables
+ (names select)
+ (libraries str))
+

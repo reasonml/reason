@@ -85,4 +85,4 @@
  (libraries
   ocaml-migrate-parsetree
   menhirLib
-  reason.easy_format))
+  easy-format))

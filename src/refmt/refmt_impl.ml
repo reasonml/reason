@@ -5,7 +5,6 @@
  * LICENSE file in the root directory of this source tree.
  *)
 
-module Cmdliner = Vendored_cmdliner
 open Cmdliner
 
 let read_lines file =

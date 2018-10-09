@@ -1,4 +1,3 @@
-module Cmdliner = Vendored_cmdliner
 open Cmdliner
 
 let interface =

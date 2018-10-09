@@ -1,4 +1,3 @@
-module Easy_format = Vendored_easy_format
 module Comment = Reason_comment
 module Range = Reason_location.Range
 
