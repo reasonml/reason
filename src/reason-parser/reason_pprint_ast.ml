@@ -4370,7 +4370,9 @@ let printer = object(self:'self)
         processArguments tail processedAttrs (self#formatChildren components [])
       | (Labelled "children", expr) :: tail ->
           let dotdotdotChild = match expr with
-            | {pexp_attributes = []; pexp_desc = Pexp_apply (funExpr, args)} when printedStringAndFixityExpr funExpr == Normal ->
+            | {pexp_desc = Pexp_apply (funExpr, args)}
+              when printedStringAndFixityExpr funExpr == Normal &&
+                   Reason_attributes.without_literal_attrs expr.pexp_attributes == [] ->
               begin match (self#formatFunAppl ~prefix:(atom "...") ~wrap:("{", "}") ~jsxAttrs:[] ~args ~funExpr ~applicationExpr:expr ()) with
               | [x] -> x
               | xs -> makeList xs
@@ -4408,7 +4410,7 @@ let printer = object(self:'self)
                    (self#formatNonSequencyExpression e)
            | Pexp_apply ({pexp_desc = Pexp_ident _} as funExpr, args)
                 when printedStringAndFixityExpr funExpr == Normal &&
-                     expression.pexp_attributes == [] ->
+                     Reason_attributes.without_literal_attrs expression.pexp_attributes == [] ->
              let lhs = makeList [atom lbl; atom "="] in
              begin match (
                self#formatFunAppl

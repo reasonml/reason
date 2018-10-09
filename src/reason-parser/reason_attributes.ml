@@ -59,6 +59,15 @@ let extract_raw_literal attrs =
   in
   loop [] attrs
 
+let without_literal_attrs attrs =
+  let rec loop acc = function
+    | attr :: rest when (partitionAttributes [attr]).literalAttrs != [] ->
+        loop acc rest
+    | [] -> List.rev acc
+    | attr :: rest -> loop (attr :: acc) rest
+  in
+  loop [] attrs
+
 let is_preserve_braces_attr ({txt}, _) =
   txt = "reason.preserve_braces"
 
