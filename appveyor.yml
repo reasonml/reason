@@ -1,0 +1,15 @@
+platform:
+    - x64
+
+cache:
+    - C:\Users\appveyor\.esy\3_\i
+    - C:\Users\appveyor\.esy\source-tarballs
+
+install:
+    - npm install -g esy@0.3.0
+    - appveyor-retry esy install
+
+build_script:
+    - esy build
+
+test: off
