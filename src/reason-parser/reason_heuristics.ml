@@ -102,13 +102,6 @@ let isFastPipe e = match Ast_404.Parsetree.(e.pexp_desc) with
     {pexp_desc = Pexp_ident({txt = Longident.Lident("|.")})},
       _
     ) -> true
-  (* | Pexp_apply(
-    {pexp_desc = Pexp_apply(
-      {pexp_desc = Pexp_ident({txt = Longident.Lident("|.")})},
-        _
-      )},
-      _
-  ) -> Printf.eprintf "YEP\n%!";true *)
   | _ -> false
 
 let isUnderscoreApplication expr =

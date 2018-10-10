@@ -1756,15 +1756,6 @@ let should_preserve_requested_braces expr =
 
 let semiTerminated term = makeList [term; atom ";"]
 
-let makeBreakableBlock ?(inline=false) letItems =
-  makeList
-    ~break:(if inline then Always else Always_rec)
-    ~inline:(true, inline)
-    ~wrap:("{", "}")
-    ~postSpace:true
-    ~sep:(if inline then NoSep else (SepFinal (";", ";")))
-    letItems
-
 (* postSpace is so that when comments are interleaved, we still use spacing rules. *)
 let makeLetSequence letItems =
   makeList
@@ -3595,26 +3586,25 @@ let printer = object(self:'self)
 
   method simplifyUnparseExpr
     ?(skip_brace_check=false)
-    ?(inline_precedence=false)
     ?(inline=false)
     ?(wrap=("(", ")"))
     x =
     match self#unparseExprRecurse ~skip_brace_check ~inline x with
     | SpecificInfixPrecedence (_, itm) ->
         formatPrecedence
-          ~inline:inline_precedence
+          ~inline
           ~wrap
           ~loc:x.pexp_loc
           (self#unparseResolvedRule itm)
     | FunctionApplication itms ->
       formatPrecedence
-        ~inline:inline_precedence
+        ~inline
         ~wrap
         ~loc:x.pexp_loc
         (formatAttachmentApplication applicationFinalWrapping None (itms, Some x.pexp_loc))
     | PotentiallyLowPrecedence itm ->
         formatPrecedence
-          ~inline:inline_precedence
+          ~inline
           ~wrap
           ~loc:x.pexp_loc
           itm
@@ -6012,7 +6002,16 @@ let printer = object(self:'self)
     if stdAttrs != [] then
       None
     else if not skip_brace_check && should_preserve_requested_braces x then
-      Some (makeBreakableBlock ~inline (self#letList x))
+      let layout =
+        makeList
+          ~break:(if inline then Always else Always_rec)
+          ~inline:(true, inline)
+          ~wrap:("{", "}")
+          ~postSpace:true
+          ~sep:(if inline then NoSep else (SepFinal (";", ";")))
+          (self#letList x)
+      in
+      Some layout
     else
       let item =
         match x.pexp_desc with
@@ -6181,7 +6180,7 @@ let printer = object(self:'self)
     | {pexp_desc = Pexp_match _ } as head :: remaining ->
         self#formatChildren
           remaining
-          (self#simplifyUnparseExpr ~inline_precedence:true ~inline:true ~wrap:("{", "}") head :: processedRev)
+          (self#simplifyUnparseExpr ~inline:true ~wrap:("{", "}") head :: processedRev)
     | head :: remaining ->
         self#formatChildren
           remaining
