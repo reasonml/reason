@@ -1,5 +1,5 @@
 {
-  "hash": "94a3b43d759ba118b9643a91ccfbd059",
+  "hash": "132f2af2a4437c5f9a606e4fba0f9054",
   "root": "root@path:./esy.json",
   "node": {
     "root@path:./esy.json": {
@@ -11,20 +11,20 @@
         "opam": null
       },
       "dependencies": [
-        "@esy-ocaml/merlin@3.0.5005", "@esy-ocaml/substs@0.0.1",
-        "@opam/dune@opam:1.3.0", "@opam/menhir@opam:20181006",
+        "@esy-ocaml/substs@0.0.1", "@opam/dune@opam:1.3.0",
+        "@opam/menhir@opam:20181006", "@opam/merlin@opam:3.2.1",
         "@opam/merlin-extend@opam:0.3",
         "@opam/ocaml-migrate-parsetree@opam:1.1.0",
         "@opam/ocamlbuild@opam:0.12.0", "@opam/ocamlfind@opam:1.8.0",
-        "@opam/result@opam:1.3", "@opam/utop@opam:2.2.0", "ocaml@4.6.6"
+        "@opam/result@opam:1.3", "@opam/utop@opam:2.2.0", "ocaml@4.6.7"
       ]
     },
-    "ocaml@4.6.6": {
+    "ocaml@4.6.7": {
       "record": {
         "name": "ocaml",
-        "version": "4.6.6",
+        "version": "4.6.7",
         "source":
-          "archive:https://registry.npmjs.org/ocaml/-/ocaml-4.6.6.tgz#sha1:769f01e91dd1492b17420fdb00be14dda3451134",
+          "archive:https://registry.npmjs.org/ocaml/-/ocaml-4.6.7.tgz#sha1:5bfdf7f9b7752646c2a5ad3c9e4021180eeab704",
         "files": [],
         "opam": null
       },
@@ -48,7 +48,7 @@
       "dependencies": [
         "@esy-ocaml/substs@0.0.1", "@opam/base-bytes@opam:base",
         "@opam/camomile@opam:1.0.1", "@opam/jbuilder@opam:transition",
-        "@opam/react@opam:1.2.1", "ocaml@4.6.6"
+        "@opam/react@opam:1.2.1", "ocaml@4.6.7"
       ]
     },
     "@opam/yojson@opam:1.4.1": {
@@ -69,7 +69,7 @@
       "dependencies": [
         "@esy-ocaml/substs@0.0.1", "@opam/biniou@opam:1.2.0",
         "@opam/cppo@opam:1.6.5", "@opam/easy-format@opam:1.3.1",
-        "@opam/jbuilder@opam:transition", "ocaml@4.6.6"
+        "@opam/jbuilder@opam:transition", "ocaml@4.6.7"
       ]
     },
     "@opam/utop@opam:2.2.0": {
@@ -107,7 +107,7 @@
         "@opam/cppo@opam:1.6.5", "@opam/jbuilder@opam:transition",
         "@opam/lambda-term@opam:1.13", "@opam/lwt@opam:4.1.0",
         "@opam/lwt_react@opam:1.1.1", "@opam/ocamlfind@opam:1.8.0",
-        "@opam/react@opam:1.2.1", "ocaml@4.6.6"
+        "@opam/react@opam:1.2.1", "ocaml@4.6.7"
       ]
     },
     "@opam/topkg@opam:0.9.1": {
@@ -127,7 +127,7 @@
       },
       "dependencies": [
         "@esy-ocaml/substs@0.0.1", "@opam/ocamlbuild@opam:0.12.0",
-        "@opam/ocamlfind@opam:1.8.0", "@opam/result@opam:1.3", "ocaml@4.6.6"
+        "@opam/ocamlfind@opam:1.8.0", "@opam/result@opam:1.3", "ocaml@4.6.7"
       ]
     },
     "@opam/result@opam:1.3": {
@@ -147,7 +147,7 @@
       },
       "dependencies": [
         "@esy-ocaml/substs@0.0.1", "@opam/jbuilder@opam:transition",
-        "ocaml@4.6.6"
+        "ocaml@4.6.7"
       ]
     },
     "@opam/react@opam:1.2.1": {
@@ -167,7 +167,7 @@
       },
       "dependencies": [
         "@esy-ocaml/substs@0.0.1", "@opam/ocamlbuild@opam:0.12.0",
-        "@opam/ocamlfind@opam:1.8.0", "@opam/topkg@opam:0.9.1", "ocaml@4.6.6"
+        "@opam/ocamlfind@opam:1.8.0", "@opam/topkg@opam:0.9.1", "ocaml@4.6.7"
       ]
     },
     "@opam/ocamlfind@opam:1.8.0": {
@@ -234,7 +234,7 @@
         }
       },
       "dependencies": [
-        "@esy-ocaml/substs@0.0.1", "@opam/conf-m4@opam:1", "ocaml@4.6.6"
+        "@esy-ocaml/substs@0.0.1", "@opam/conf-m4@opam:1", "ocaml@4.6.7"
       ]
     },
     "@opam/ocamlbuild@opam:0.12.0": {
@@ -277,7 +277,7 @@
           }
         }
       },
-      "dependencies": [ "@esy-ocaml/substs@0.0.1", "ocaml@4.6.6" ]
+      "dependencies": [ "@esy-ocaml/substs@0.0.1", "ocaml@4.6.7" ]
     },
     "@opam/ocaml-migrate-parsetree@opam:1.1.0": {
       "record": {
@@ -296,7 +296,7 @@
       },
       "dependencies": [
         "@esy-ocaml/substs@0.0.1", "@opam/dune@opam:1.3.0",
-        "@opam/result@opam:1.3", "ocaml@4.6.6"
+        "@opam/result@opam:1.3", "ocaml@4.6.7"
       ]
     },
     "@opam/merlin-extend@opam:0.3": {
@@ -330,7 +330,28 @@
       },
       "dependencies": [
         "@esy-ocaml/substs@0.0.1", "@opam/cppo@opam:1.6.5",
-        "@opam/ocamlfind@opam:1.8.0", "ocaml@4.6.6"
+        "@opam/ocamlfind@opam:1.8.0", "ocaml@4.6.7"
+      ]
+    },
+    "@opam/merlin@opam:3.2.1": {
+      "record": {
+        "name": "@opam/merlin",
+        "version": "opam:3.2.1",
+        "source":
+          "archive:https://github.com/ocaml/merlin/releases/download/v3.2.1/merlin-v3.2.1.tbz#md5:d8fd6f9b3addf8d92bfc28277b04a6ba",
+        "files": [],
+        "opam": {
+          "name": "merlin",
+          "version": "3.2.1",
+          "opam":
+            "opam-version: \"2.0\"\nname: \"merlin\"\nversion: \"3.2.1\"\nsynopsis: \"Installation with Opam\"\ndescription: \"\"\"\nIf you have a working [Opam](https://opam.ocaml.org/) installation, Merlin is only two commands away:\n\n```shell\nopam install merlin\nopam user-setup install\n```\n\n[opam-user-setup](https://github.com/OCamlPro/opam-user-setup) takes care of configuring Emacs and Vim to make best use of your current install.\n\nYou can also [configure the editor](#editor-setup) yourself, if you prefer.\"\"\"\nmaintainer: \"defree@gmail.com\"\nauthors: \"The Merlin team\"\nhomepage: \"https://github.com/ocaml/merlin\"\nbug-reports: \"https://github.com/ocaml/merlin/issues\"\ndepends: [\n  \"ocaml\" {>= \"4.02.1\" & < \"4.08\"}\n  \"dune\" {build}\n  \"ocamlfind\" {>= \"1.5.2\"}\n  \"yojson\"\n  \"craml\" {with-test}\n]\nbuild: [\n  [\"dune\" \"subst\"] {pinned}\n  [\"dune\" \"build\" \"-p\" name \"-j\" jobs]\n  [\"dune\" \"runtest\" \"-p\" name \"-j\" jobs] {with-test}\n]\npost-messages:\n  \"\"\"\nmerlin installed.\n\nQuick setup for VIM\n-------------------\nAppend this to your .vimrc to add merlin to vim's runtime-path:\n  let g:opamshare = substitute(system('opam config var share'),'\\\\n$','','''')\n  execute \"set rtp+=\" . g:opamshare . \"/merlin/vim\"\n\nAlso run the following line in vim to index the documentation:\n  :execute \"helptags \" . g:opamshare . \"/merlin/vim/doc\"\n\nQuick setup for EMACS\n-------------------\nAdd opam emacs directory to your load-path by appending this to your .emacs:\n  (let ((opam-share (ignore-errors (car (process-lines \"opam\" \"config\" \"var\" \"share\")))))\n   (when (and opam-share (file-directory-p opam-share))\n    ;; Register Merlin\n    (add-to-list 'load-path (expand-file-name \"emacs/site-lisp\" opam-share))\n    (autoload 'merlin-mode \"merlin\" nil t nil)\n    ;; Automatically start it in OCaml buffers\n    (add-hook 'tuareg-mode-hook 'merlin-mode t)\n    (add-hook 'caml-mode-hook 'merlin-mode t)\n    ;; Use opam switch to lookup ocamlmerlin binary\n    (setq merlin-command 'opam)))\n\nTake a look at https://github.com/ocaml/merlin for more information\n\nQuick setup with opam-user-setup\n--------------------------------\n\nOpam-user-setup support Merlin.\n\n  $ opam user-setup install\n\nshould take care of basic setup.\nSee https://github.com/OCamlPro/opam-user-setup\"\"\"\n    {success & !user-setup:installed}\ndev-repo: \"git+https://github.com/ocaml/merlin.git\"\nurl {\n  src:\n    \"https://github.com/ocaml/merlin/releases/download/v3.2.1/merlin-v3.2.1.tbz\"\n  checksum: \"md5=d8fd6f9b3addf8d92bfc28277b04a6ba\"\n}",
+          "override": null
+        }
+      },
+      "dependencies": [
+        "@esy-ocaml/substs@0.0.1", "@opam/dune@opam:1.3.0",
+        "@opam/ocamlfind@opam:1.8.0", "@opam/yojson@opam:1.4.1",
+        "ocaml@4.6.7"
       ]
     },
     "@opam/menhir@opam:20181006": {
@@ -350,7 +371,7 @@
       },
       "dependencies": [
         "@esy-ocaml/substs@0.0.1", "@opam/ocamlbuild@opam:0.12.0",
-        "@opam/ocamlfind@opam:1.8.0", "ocaml@4.6.6"
+        "@opam/ocamlfind@opam:1.8.0", "ocaml@4.6.7"
       ]
     },
     "@opam/lwt_react@opam:1.1.1": {
@@ -370,7 +391,7 @@
       },
       "dependencies": [
         "@esy-ocaml/substs@0.0.1", "@opam/jbuilder@opam:transition",
-        "@opam/lwt@opam:4.1.0", "@opam/react@opam:1.2.1", "ocaml@4.6.6"
+        "@opam/lwt@opam:4.1.0", "@opam/react@opam:1.2.1", "ocaml@4.6.7"
       ]
     },
     "@opam/lwt_log@opam:1.1.0": {
@@ -390,7 +411,7 @@
       },
       "dependencies": [
         "@esy-ocaml/substs@0.0.1", "@opam/jbuilder@opam:transition",
-        "@opam/lwt@opam:4.1.0", "ocaml@4.6.6"
+        "@opam/lwt@opam:4.1.0", "ocaml@4.6.7"
       ]
     },
     "@opam/lwt@opam:4.1.0": {
@@ -411,7 +432,7 @@
       "dependencies": [
         "@esy-ocaml/substs@0.0.1", "@opam/cppo@opam:1.6.5",
         "@opam/jbuilder@opam:transition", "@opam/ocamlfind@opam:1.8.0",
-        "@opam/result@opam:1.3", "ocaml@4.6.6"
+        "@opam/result@opam:1.3", "ocaml@4.6.7"
       ]
     },
     "@opam/lambda-term@opam:1.13": {
@@ -447,7 +468,7 @@
         "@esy-ocaml/substs@0.0.1", "@opam/camomile@opam:1.0.1",
         "@opam/jbuilder@opam:transition", "@opam/lwt@opam:4.1.0",
         "@opam/lwt_log@opam:1.1.0", "@opam/lwt_react@opam:1.1.1",
-        "@opam/react@opam:1.2.1", "@opam/zed@opam:1.6", "ocaml@4.6.6"
+        "@opam/react@opam:1.2.1", "@opam/zed@opam:1.6", "ocaml@4.6.7"
       ]
     },
     "@opam/jbuilder@opam:transition": {
@@ -465,7 +486,7 @@
         }
       },
       "dependencies": [
-        "@esy-ocaml/substs@0.0.1", "@opam/dune@opam:1.3.0", "ocaml@4.6.6"
+        "@esy-ocaml/substs@0.0.1", "@opam/dune@opam:1.3.0", "ocaml@4.6.7"
       ]
     },
     "@opam/easy-format@opam:1.3.1": {
@@ -485,7 +506,7 @@
       },
       "dependencies": [
         "@esy-ocaml/substs@0.0.1", "@opam/jbuilder@opam:transition",
-        "ocaml@4.6.6"
+        "ocaml@4.6.7"
       ]
     },
     "@opam/dune@opam:1.3.0": {
@@ -508,7 +529,7 @@
           }
         }
       },
-      "dependencies": [ "@esy-ocaml/substs@0.0.1", "ocaml@4.6.6" ]
+      "dependencies": [ "@esy-ocaml/substs@0.0.1", "ocaml@4.6.7" ]
     },
     "@opam/cppo@opam:1.6.5": {
       "record": {
@@ -527,7 +548,7 @@
       },
       "dependencies": [
         "@esy-ocaml/substs@0.0.1", "@opam/base-unix@opam:base",
-        "@opam/jbuilder@opam:transition", "ocaml@4.6.6"
+        "@opam/jbuilder@opam:transition", "ocaml@4.6.7"
       ]
     },
     "@opam/conf-which@opam:1": {
@@ -579,7 +600,7 @@
       },
       "dependencies": [
         "@esy-ocaml/substs@0.0.1", "@opam/jbuilder@opam:transition",
-        "ocaml@4.6.6"
+        "ocaml@4.6.7"
       ]
     },
     "@opam/biniou@opam:1.2.0": {
@@ -600,7 +621,7 @@
       "dependencies": [
         "@esy-ocaml/substs@0.0.1", "@opam/conf-which@opam:1",
         "@opam/easy-format@opam:1.3.1", "@opam/jbuilder@opam:transition",
-        "ocaml@4.6.6"
+        "ocaml@4.6.7"
       ]
     },
     "@opam/base-unix@opam:base": {
@@ -651,7 +672,7 @@
       },
       "dependencies": [
         "@esy-ocaml/substs@0.0.1", "@opam/ocamlfind@opam:1.8.0",
-        "ocaml@4.6.6"
+        "ocaml@4.6.7"
       ]
     },
     "@esy-ocaml/substs@0.0.1": {
@@ -660,31 +681,6 @@
         "version": "0.0.1",
         "source":
           "archive:https://registry.npmjs.org/@esy-ocaml/substs/-/substs-0.0.1.tgz#sha1:59ebdbbaedcda123fc7ed8fb2b302b7d819e9a46",
-        "files": [],
-        "opam": null
-      },
-      "dependencies": []
-    },
-    "@esy-ocaml/merlin@3.0.5005": {
-      "record": {
-        "name": "@esy-ocaml/merlin",
-        "version": "3.0.5005",
-        "source":
-          "archive:https://registry.npmjs.org/@esy-ocaml/merlin/-/merlin-3.0.5005.tgz#sha1:4a9e2b4df20672524603b7b1797b7761d5d0d9ad",
-        "files": [],
-        "opam": null
-      },
-      "dependencies": [
-        "@esy-ocaml/esy-installer@0.0.1", "@esy-ocaml/substs@0.0.1",
-        "@opam/ocamlfind@opam:1.8.0", "@opam/yojson@opam:1.4.1"
-      ]
-    },
-    "@esy-ocaml/esy-installer@0.0.1": {
-      "record": {
-        "name": "@esy-ocaml/esy-installer",
-        "version": "0.0.1",
-        "source":
-          "archive:https://registry.npmjs.org/@esy-ocaml/esy-installer/-/esy-installer-0.0.1.tgz#sha1:420c65f7e5f9bafa3da578532c352acdf00837aa",
         "files": [],
         "opam": null
       },

@@ -17,11 +17,8 @@
   "peerDependencies": {
     "ocaml": " >= 4.2.0  < 4.8.0"
   },
-  "resolutions": {
-    "@esy-ocaml/esy-installer": "0.0.1"
-  },
   "devDependencies": {
-    "@esy-ocaml/merlin": "^3.0.5005",
+    "@opam/merlin": "*",
     "ocaml": "~4.6.0"
   },
   "notes-ctd": [
