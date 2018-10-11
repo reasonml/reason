@@ -1,5 +1,4 @@
 open Migrate_parsetree
-open Ast_406
 
 type parse_itype = [ `ML | `Reason | `Binary | `BinaryReason | `Auto ]
 type print_itype = [ `ML | `Reason | `Binary | `BinaryReason | `AST | `None ]

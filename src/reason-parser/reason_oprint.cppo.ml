@@ -198,7 +198,7 @@ let print_out_value ppf tree =
     | Oval_float f -> pp_print_string ppf (float_repres f)
     | Oval_char c -> fprintf ppf "%C" c
 #if OCAML_VERSION >= (4,3,0) && not defined BS_NO_COMPILER_PATCH
-    | Oval_string (s,_,_) ->
+    | Oval_string (s, _, _) ->
 #else
     | Oval_string s ->
 #endif

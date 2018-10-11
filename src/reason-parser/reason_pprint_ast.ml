@@ -241,7 +241,7 @@ let same_ast_modulo_varification_and_extensions t1 t2 =
     | (Ptyp_object (lst1, o1), Ptyp_object (lst2, o2)) ->
       let tester = fun t1 t2 ->
         match t1, t2 with
-        | Otag (s1, attrs1, t1), Otag (s2, attrs2, t2) ->
+        | Otag (s1, _, t1), Otag (s2, _, t2) ->
           string_equal s1.txt s2.txt &&
           loop t1 t2
         | Oinherit t1, Oinherit t2 -> loop t1 t2
@@ -271,7 +271,7 @@ let same_ast_modulo_varification_and_extensions t1 t2 =
     longident_same lblLongIdent1 lblLongIdent2 &&
     loop ct1 ct2
   and rowFieldEqual f1 f2 = match (f1, f2) with
-    | ((Rtag(label1, attrs1, flag1, lst1)), (Rtag (label2, attrs2, flag2, lst2))) ->
+    | ((Rtag(label1, _, flag1, lst1)), (Rtag (label2, _, flag2, lst2))) ->
       string_equal label1.txt label2.txt &&
       flag1 = flag2 &&
       for_all2' loop lst1 lst2
@@ -3062,7 +3062,6 @@ let printer = object(self:'self)
                 ))
             )
         | Ptyp_variant (l, closed, low) ->
-          let pcd_loc = x.ptyp_loc in
           let pcd_attributes = x.ptyp_attributes in
           let pcd_res = None in
           let variant_helper i rf =
@@ -7270,7 +7269,7 @@ let printer = object(self:'self)
                   td
             | Pwith_module (li, li2) ->
                 modSub (self#longident_loc li) li2 "="
-            | Pwith_typesubst (loc, td) ->
+            | Pwith_typesubst (_, td) ->
                 self#formatOneTypeDef
                   typeAtom
                   (atom ~loc:td.ptype_name.loc td.ptype_name.txt)
