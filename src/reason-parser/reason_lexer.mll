@@ -613,10 +613,6 @@ rule token = parse
             { PREFIXOP(lexeme_operator lexbuf) }
   | '\\'? ['=' '<' '>' '|' '&' '$'] operator_chars*
             { INFIXOP0(lexeme_operator lexbuf) }
-  (* `=\>` is treated especially due to conflicts with the function declaration
-     syntax *)
-  | '\\'? "=\\>"
-            { INFIXOP0(lexeme_operator lexbuf) }
   | '\\'? '@' operator_chars*
             { INFIXOP1(lexeme_operator lexbuf) }
   | '\\'? '^' ('\\' '.')? operator_chars*

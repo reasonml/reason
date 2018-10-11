@@ -484,8 +484,10 @@ module OCaml_syntax = struct
     Pprintast.signature formatter
       (To_current.copy_signature signature)
   let format_implementation_with_comments (structure, _) formatter =
+    let mapper = Reason_syntax_util.(remove_literal_attrs_mapper |> remove_backslashes_for_ml_mapper)
+    in
     let structure =
-      Reason_syntax_util.(apply_mapper_to_structure structure remove_literal_attrs_mapper)
+      Reason_syntax_util.(apply_mapper_to_structure structure mapper)
     in
     Pprintast.structure formatter
       (To_current.copy_structure structure)

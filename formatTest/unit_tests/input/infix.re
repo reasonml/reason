@@ -1006,8 +1006,8 @@ let other = (x) => not(x);
 let derefInsideArray = [|a^|];
 
 /* #1941: infix `=>` */
-let (=\>) = (a, b) => a + b;
+let (\=>) = (a, b) => a + b;
 
-let x = a =\> b;
+let x = a \=> b;
 
 let (=>>) = (a, b) => a + b;
