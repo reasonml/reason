@@ -1747,13 +1747,6 @@ let partitionFinalWrapping listTester wrapFinalItemSetting x =
         else
           Some (List.rev revEverythingButLast, last)
 
-let should_preserve_requested_braces expr =
-  let {literalAttrs} = partitionAttributes expr.pexp_attributes in
-  match expr.pexp_desc with
-  | Pexp_ifthenelse _
-  | Pexp_try _ -> false
-  | _ -> Reason_attributes.has_preserve_braces_attrs literalAttrs
-
 let semiTerminated term = makeList [term; atom ";"]
 
 (* postSpace is so that when comments are interleaved, we still use spacing rules. *)
@@ -2299,6 +2292,9 @@ let printer = object(self:'self)
   val pipe = false
   val semi = false
 
+  val inline_braces = false
+  val preserve_braces = true
+
   (* *Mutable state* in the printer to keep track of all comments
    * Used when whitespace needs to be interleaved.
    * The printing algorithm needs to take the comments into account in between
@@ -2334,6 +2330,10 @@ let printer = object(self:'self)
   method reset_semi = {<semi=false>}
   method reset_pipe = {<pipe=false>}
   method reset = {<pipe=false;semi=false>}
+
+  method inline_braces = {<inline_braces=true>}
+  method dont_preserve_braces = {<preserve_braces=false>}
+  method reset_request_braces = {<inline_braces=false; preserve_braces=true>}
 
 
   method longident = function
@@ -3584,12 +3584,8 @@ let printer = object(self:'self)
     in
     source_map ~loc:e.pexp_loc itm
 
-  method simplifyUnparseExpr
-    ?(skip_brace_check=false)
-    ?(inline=false)
-    ?(wrap=("(", ")"))
-    x =
-    match self#unparseExprRecurse ~skip_brace_check ~inline x with
+  method simplifyUnparseExpr ?(inline=false) ?(wrap=("(", ")")) x =
+    match self#unparseExprRecurse x with
     | SpecificInfixPrecedence (_, itm) ->
         formatPrecedence
           ~inline
@@ -3865,7 +3861,7 @@ let printer = object(self:'self)
     | _ ->
       x
 
-  method unparseExprRecurse ?(skip_brace_check=false) ?(inline=false) x =
+  method unparseExprRecurse x =
     let x = self#process_underscore_application x in
     (* If there are any attributes, render unary like `(~-) x [@ppx]`, and infix like `(+) x y [@attr]` *)
 
@@ -3879,7 +3875,7 @@ let printer = object(self:'self)
     if stdAttrs != [] then
       let withoutVisibleAttrs = {x with pexp_attributes=(literalAttrs @ arityAttrs @ jsxAttrs)} in
       let attributesAsList = (List.map self#attribute stdAttrs) in
-      let itms = match self#unparseExprRecurse ~skip_brace_check ~inline withoutVisibleAttrs with
+      let itms = match self#unparseExprRecurse withoutVisibleAttrs with
         | SpecificInfixPrecedence ({reducePrecedence}, wrappedRule) ->
             let itm = self#unparseResolvedRule wrappedRule in
             (match reducePrecedence with
@@ -3899,7 +3895,7 @@ let printer = object(self:'self)
           (List.concat [attributesAsList; itms])
       ]
     else
-    match self#simplest_expression ~skip_brace_check ~inline x with
+    match self#simplest_expression x with
     | Some se -> Simple se
     | None ->
     match x.pexp_desc with
@@ -4370,7 +4366,7 @@ let printer = object(self:'self)
             | {pexp_desc = Pexp_fun _ } ->
                 self#formatPexpFun ~prefix:(atom "...") ~wrap:("{", "}") expr
             | _ ->
-              let childLayout = self#simplifyUnparseExpr ~skip_brace_check:true ~wrap:("{", "}") expr in
+              let childLayout = self#dont_preserve_braces#simplifyUnparseExpr ~wrap:("{", "}") expr in
               makeList ~break:Never [atom "..."; childLayout]
           in
           processArguments tail processedAttrs (Some [dotdotdotChild])
@@ -4382,7 +4378,7 @@ let printer = object(self:'self)
           | _ ->
               label
                 (makeList ~break:Layout.Never [atom lbl; atom "=?"])
-                (self#simplifyUnparseExpr ~skip_brace_check:true ~wrap:("{","}") expression) in
+                (self#dont_preserve_braces#simplifyUnparseExpr ~wrap:("{","}") expression) in
         processArguments tail (nextAttr :: processedAttrs) children
 
       | (Labelled lbl, expression) :: tail ->
@@ -4391,7 +4387,8 @@ let printer = object(self:'self)
            | Pexp_ident ident when isPunnedJsxArg lbl ident -> atom lbl
            | _ when isJSXComponent expression  ->
                label (atom (lbl ^ "="))
-                     (makeList ~break:IfNeed ~wrap:("{", "}") [self#simplifyUnparseExpr ~skip_brace_check:true expression])
+                     (makeList ~break:IfNeed ~wrap:("{", "}")
+                       [self#dont_preserve_braces#simplifyUnparseExpr expression])
            | Pexp_open (_, lid, e)
              when self#isSeriesOfOpensFollowedByNonSequencyExpression expression ->
              label (makeList [atom lbl;
@@ -4419,7 +4416,7 @@ let printer = object(self:'self)
              let lhs = makeList [atom lbl; atom "="] in
              let rhs = (match printedStringAndFixityExpr eFun with
                  | Infix str when requireNoSpaceFor str -> self#unparseExpr expression
-                 | _ -> self#simplifyUnparseExpr ~skip_brace_check:true ~wrap:("{","}") expression)
+                 | _ -> self#dont_preserve_braces#simplifyUnparseExpr ~wrap:("{","}") expression)
              in label lhs rhs
            | Pexp_record _
            | Pexp_construct _
@@ -4430,11 +4427,15 @@ let printer = object(self:'self)
            | Pexp_function _ ->
                label
                 (makeList [atom lbl; atom "="])
-                (self#simplifyUnparseExpr ~skip_brace_check:true ~wrap:("{","}") expression)
+                (self#dont_preserve_braces#simplifyUnparseExpr ~wrap:("{","}") expression)
            | Pexp_fun _ ->
                let propName = makeList [atom lbl; atom "="] in
                self#formatPexpFun ~wrap:("{", "}") ~prefix:propName expression
-           | _ -> makeList ([atom lbl; atom "="; self#simplifyUnparseExpr ~skip_brace_check:true ~wrap:("{","}") expression])
+           | _ -> makeList [
+                    atom lbl;
+                    atom "=";
+                    self#dont_preserve_braces#simplifyUnparseExpr ~wrap:("{","}") expression
+                  ]
          in
          processArguments tail (nextAttr :: processedAttrs) children
       | [] -> (processedAttrs, children)
@@ -5238,7 +5239,7 @@ let printer = object(self:'self)
      * list containing the location indicating start/end of the "let-item" and
      * its layout. *)
     let rec processLetList acc expr =
-      let {stdAttrs} = partitionAttributes expr.pexp_attributes in
+      let {stdAttrs; arityAttrs; jsxAttrs} = partitionAttributes ~allowUncurry:false expr.pexp_attributes in
       match (stdAttrs, expr.pexp_desc) with
         | ([], Pexp_let (rf, l, e)) ->
           (* For "letList" bindings, the start/end isn't as simple as with
@@ -5314,10 +5315,7 @@ let printer = object(self:'self)
             let layout = source_map ~loc e1Layout in
             processLetList ((loc, layout)::acc) e2
         | _ ->
-          let without_preserve_braces_attrs =
-            List.filter (fun x -> not (Reason_attributes.is_preserve_braces_attr x)) expr.pexp_attributes
-          in
-          let expr = { expr with pexp_attributes = without_preserve_braces_attrs }
+          let expr = { expr with pexp_attributes = (arityAttrs @ stdAttrs @ jsxAttrs) }
           in
           match expression_not_immediate_extension_sugar expr with
           | Some (extension, {pexp_attributes = []; pexp_desc = Pexp_let (rf, l, e)}) ->
@@ -5338,7 +5336,7 @@ let printer = object(self:'self)
             (expr.pexp_loc, layout)::acc
     in
     let es = processLetList [] expr in
-    (* Interleave whitespace between the "let-items" when appropiate *)
+    (* Interleave whitespace between the "let-items" when appropriate *)
     groupAndPrint
       ~xf:(fun (_, layout) -> layout)
       ~getLoc:(fun (loc, _) -> loc)
@@ -5997,18 +5995,27 @@ let printer = object(self:'self)
       | _ -> raise (Invalid_argument "bs.obj only accepts a record. You've passed something else"))
     | _ -> assert false
 
-  method simplest_expression ?(skip_brace_check=false) ?(inline=false) x =
+  method should_preserve_requested_braces expr =
+    let {literalAttrs} = partitionAttributes expr.pexp_attributes in
+    match expr.pexp_desc with
+    | Pexp_ifthenelse _
+    | Pexp_try _ -> false
+    | _ ->
+        preserve_braces &&
+        Reason_attributes.has_preserve_braces_attrs literalAttrs
+
+  method simplest_expression x =
     let {stdAttrs; jsxAttrs} = partitionAttributes x.pexp_attributes in
     if stdAttrs != [] then
       None
-    else if not skip_brace_check && should_preserve_requested_braces x then
+    else if self#should_preserve_requested_braces x then
       let layout =
         makeList
-          ~break:(if inline then Always else Always_rec)
-          ~inline:(true, inline)
+          ~break:(if inline_braces then Always else Always_rec)
+          ~inline:(true, inline_braces)
           ~wrap:("{", "}")
           ~postSpace:true
-          ~sep:(if inline then NoSep else (SepFinal (";", ";")))
+          ~sep:(if inline_braces then NoSep else (SepFinal (";", ";")))
           (self#letList x)
       in
       Some layout
@@ -6171,7 +6178,7 @@ let printer = object(self:'self)
         then
           self#formatFastPipe e
         else
-          self#simplifyUnparseExpr ~inline:true ~wrap:("{", "}") e
+          self#inline_braces#simplifyUnparseExpr ~inline:true ~wrap:("{", "}") e
         in
         self#formatChildren remaining (child::processedRev)
     | {pexp_desc = Pexp_ident li} :: remaining ->
@@ -6180,11 +6187,11 @@ let printer = object(self:'self)
     | {pexp_desc = Pexp_match _ } as head :: remaining ->
         self#formatChildren
           remaining
-          (self#simplifyUnparseExpr ~inline:true ~wrap:("{", "}") head :: processedRev)
+          (self#inline_braces#simplifyUnparseExpr ~inline:true ~wrap:("{", "}") head :: processedRev)
     | head :: remaining ->
         self#formatChildren
           remaining
-          (self#simplifyUnparseExpr ~inline:true ~wrap:("{", "}") head :: processedRev)
+          (self#inline_braces#simplifyUnparseExpr ~inline:true ~wrap:("{", "}") head :: processedRev)
     | [] -> match processedRev with
         | [] -> None
         | _::_ -> Some (List.rev processedRev)
