@@ -33,7 +33,7 @@ common_steps: &common_steps
         name: "Install deps"
         command: |
           opam update
-          opam install -y jbuilder
+          opam install -y dune
           opam install -y menhir
           opam install -y utop
     - run:
