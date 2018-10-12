@@ -12,7 +12,7 @@ build: [
 ]
 build-test: [["dune" "runtest" "-p" name "-j" jobs]]
 depends: [
-  "dune"                    {build}
+  "dune"                    {build & >= "1.4"}
   "ocamlfind"               {build}
   "menhir"                  {>= "20170418"}
   "merlin-extend"           {>= "0.3"}
