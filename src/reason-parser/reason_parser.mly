@@ -444,6 +444,11 @@ let ghexp_constraint loc e (t1, t2) =
 let array_function ?(loc=dummy_loc()) str name =
   ghloc ~loc (Ldot(Lident str, (if !Clflags.fast then "unsafe_" ^ name else name)))
 
+let err loc s =
+  raise Reason_syntax_util.(
+    Error(loc, (Syntax_error s))
+  )
+
 let syntax_error_str loc msg =
   if !Reason_config.recoverable then
     Str.mk ~loc:loc (Pstr_extension (Reason_syntax_util.syntax_error_extension_node loc msg, []))
@@ -457,19 +462,19 @@ let syntax_error_exp loc msg =
   if !Reason_config.recoverable then
     Exp.mk ~loc (Pexp_extension (Reason_syntax_util.syntax_error_extension_node loc msg))
   else
-    syntax_error ()
+    err loc msg
 
 let syntax_error_pat loc msg =
   if !Reason_config.recoverable then
     Pat.extension ~loc (Reason_syntax_util.syntax_error_extension_node loc msg)
   else
-    syntax_error ()
+    err loc msg
 
 let syntax_error_mod loc msg =
   if !Reason_config.recoverable then
     Mty.extension ~loc (Reason_syntax_util.syntax_error_extension_node loc msg)
   else
-    syntax_error ()
+    err loc msg
 
 let unclosed opening closing =
   raise(Syntaxerr.Error(Syntaxerr.Unclosed(opening.loc, opening.txt,
@@ -1048,11 +1053,6 @@ let filter_raise_spread_syntax msg nodes =
         raise Reason_syntax_util.(Error(dotdotdotLoc, (Syntax_error msg)))
     | None -> node
     ) nodes
-
-let err loc s =
-  raise Reason_syntax_util.(
-    Error(loc, (Syntax_error s))
-  )
 
 (*
  * See https://github.com/ocaml/ocaml/commit/e1e03820e5fea322aa3156721bc1cc0231668101
