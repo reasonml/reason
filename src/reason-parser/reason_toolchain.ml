@@ -686,19 +686,35 @@ module Reason_syntax = struct
       let process_invalid_docstring (text, loc) = Reason_lexer.add_invalid_docstring text loc in
       List.iter process_invalid_docstring (List.rev docstrings)
 
+  let custom_error supplier env =
+    let loc = last_token_loc supplier in
+    let token = match supplier.last_token with
+      | Some token -> token
+      | None -> assert false
+    in
+    let state = I.current_state_number env in
+    (* Check the error database to see what's the error message
+    associated with the current parser state  *)
+    let msg = Reason_parser_explain.message env token in
+    let msg_with_state = Printf.sprintf "%d: %s" state msg in
+    raise (Reason_syntax_util.Error (loc, (Reason_syntax_util.Syntax_error msg_with_state)))
+
   let rec handle_other supplier checkpoint =
     match checkpoint with
-    | I.InputNeeded _ ->
+    | I.InputNeeded env ->
       (* An input needed in the "other" case means we are recovering from an error *)
       begin match supplier.last_token with
         | None -> assert false
         | Some triple ->
           (* We just recovered from the error state, try the original token again *)
           let checkpoint_with_previous_token = I.offer checkpoint triple in
-          let checkpoint = match I.shifts checkpoint_with_previous_token with
+          let checkpoint = try match I.shifts checkpoint_with_previous_token with
             | None -> checkpoint
               (* The original token still fail to be parsed, discard *)
             | Some _ -> normalize_checkpoint checkpoint_with_previous_token
+          with
+          | Syntaxerr.Error _ as exn -> raise exn
+          | Syntaxerr.Escape_error -> custom_error supplier env
           in
           handle_inputs_needed supplier [([], checkpoint)]
       end
@@ -719,21 +735,11 @@ module Reason_syntax = struct
       (* Enter error recovery state *)
       handle_other supplier checkpoint
 
-    | I.HandlingError env ->
-      (* If not in a recoverable state, fail early by raising a
-       * customized Error object *)
-      let loc = last_token_loc supplier in
-      let token = match supplier.last_token with
-        | Some token -> token
-        | None -> assert false
-      in
-      let state = I.current_state_number env in
-      (* Check the error database to see what's the error message
-       * associated with the current parser state *)
-      let msg = Reason_parser_explain.message env token in
-      let msg_with_state = Printf.sprintf "%d: %s" state msg in
-      raise (Reason_syntax_util.Error (loc, (Reason_syntax_util.Syntax_error msg_with_state)))
-
+    | I.HandlingError _env as error_checkpoint ->
+      (* If not in a recoverable state, resume just enough to be able to
+       * catch a nice error message above. *)
+      let cp = I.resume error_checkpoint in
+      handle_other supplier (normalize_checkpoint cp)
     | I.Rejected ->
       let loc = last_token_loc supplier in
       raise Syntaxerr.(Error(Syntaxerr.Other loc))

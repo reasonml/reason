@@ -2870,6 +2870,8 @@ mark_position_exp
       | _ -> $2
       in mkinfix $1 op $3
     }
+  | E as_loc(infix_operator) error
+    { expecting (with_txt $2 "expression after infix operator") }
   | as_loc(subtractive) expr %prec prec_unary
     { mkuminus $1 $2 }
   | as_loc(additive) expr %prec prec_unary
