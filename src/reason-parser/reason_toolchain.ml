@@ -542,6 +542,11 @@ module Reason_syntax = struct
     supplier.last_token <- Some t;
     t
 
+  let last_token supplier =
+    match supplier.last_token with
+    | Some (t, _, _) -> t
+    | None -> assert false
+
   (* read last token's location from a supplier *)
   let last_token_loc supplier =
     match supplier.last_token with
@@ -735,11 +740,15 @@ module Reason_syntax = struct
       (* Enter error recovery state *)
       handle_other supplier checkpoint
 
-    | I.HandlingError _env as error_checkpoint ->
+    | I.HandlingError env as error_checkpoint ->
       (* If not in a recoverable state, resume just enough to be able to
        * catch a nice error message above. *)
-      let cp = I.resume error_checkpoint in
-      handle_other supplier (normalize_checkpoint cp)
+      let token = last_token supplier in
+      if Hashtbl.mem Reason_lexer.reverse_keyword_table token then
+        custom_error supplier env
+      else
+        let cp = I.resume error_checkpoint in
+        handle_other supplier (normalize_checkpoint cp)
     | I.Rejected ->
       let loc = last_token_loc supplier in
       raise Syntaxerr.(Error(Syntaxerr.Other loc))
