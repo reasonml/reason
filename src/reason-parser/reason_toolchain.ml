@@ -662,6 +662,12 @@ module Reason_syntax = struct
           Some (offer_normalize checkpoint' (token, pos, pos))
     | _ -> None
 
+  let try_inserting_postfix checkpoint ((_, pos, _) as triple) =
+    match offer_normalize checkpoint (Reason_parser.POSTFIXOP("^"), pos, pos) with
+    | I.InputNeeded _ as checkpoint' ->
+        Some (offer_normalize checkpoint' triple)
+    | _ -> None
+
   (* Offer and insert a semicolon in case of failure *)
   let offer_normalize checkpoint triple =
     match offer_normalize checkpoint triple with
@@ -783,6 +789,37 @@ module Reason_syntax = struct
         | checkpoint' -> (invalid_docstrings, checkpoint')
       in
       handle_inputs_needed supplier (List.map process_checkpoint checkpoints)
+
+      (* TODO: add comment! *)
+    | Reason_parser.INFIXOP1 op, _, _ as triple
+      when List.for_all (fun x -> x == '^') (Reason_syntax_util.explode_str op) ->
+      let rec process_checkpoints inputs_needed checkpoints =
+        match checkpoints with
+        | [] -> handle_inputs_needed supplier inputs_needed
+        | (invalid_docstrings, checkpoint) :: tl ->
+          begin match offer_normalize checkpoint triple with
+          | I.InputNeeded _ as checkpoint' ->
+            let tok, _, _ as next_triple = read supplier in
+            begin match offer_normalize checkpoint' next_triple with
+            | I.HandlingError _ ->
+              begin match try_inserting_postfix checkpoint next_triple with
+              | Some cp ->
+                  if tok == Reason_parser.EOF then
+                    handle_other supplier cp
+                  else
+                    process_checkpoints ((invalid_docstrings, cp) :: inputs_needed) tl
+              | None ->
+                process_checkpoints ((invalid_docstrings, checkpoint') :: inputs_needed) tl
+              end
+            | checkpoint'' ->
+              process_checkpoints ((invalid_docstrings, checkpoint'') :: inputs_needed) tl
+            end
+          | checkpoint' ->
+              (* don't actually fork *)
+              process_checkpoints ((invalid_docstrings, checkpoint') :: inputs_needed) tl
+          end
+      in
+      process_checkpoints [] checkpoints
 
     | triple ->
       begin match checkpoints with
