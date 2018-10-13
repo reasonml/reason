@@ -607,6 +607,17 @@ module Reason_syntax = struct
   let offer_normalize checkpoint triple =
     normalize_checkpoint (I.offer checkpoint triple)
 
+  let offer_normalize_many checkpoint triples =
+    let rec loop acc xs = match xs with
+    | [] -> Some acc
+    | triple :: xs ->
+      begin match normalize_checkpoint (I.offer acc triple) with
+      | I.InputNeeded _ as checkpoint' -> loop checkpoint' xs
+      | _ -> None
+      end
+    in
+    loop checkpoint triples
+
   (* Insert a semicolon before submitting a token to the parser *)
   let try_inserting_semi_on = function
     | Reason_parser.LET
@@ -662,9 +673,18 @@ module Reason_syntax = struct
           Some (offer_normalize checkpoint' (token, pos, pos))
     | _ -> None
 
-  let try_inserting_postfix checkpoint ((_, pos, _) as triple) =
-    match offer_normalize checkpoint (Reason_parser.POSTFIXOP("^"), pos, pos) with
-    | I.InputNeeded _ as checkpoint' ->
+  let try_inserting_postfix checkpoint infix ((_, pos, _) as triple) =
+    (* we know that the infix was exclusively composed of '^' *)
+    let rec mk_postfixes acc i =
+      if i < 0 then
+        acc
+      else
+        let triple = (Reason_parser.POSTFIXOP "^", pos, pos) in
+        mk_postfixes (triple :: acc) (i - 1)
+    in
+    let infixes = mk_postfixes [] (String.length infix - 1) in
+    match offer_normalize_many checkpoint infixes with
+    | Some (I.InputNeeded _ as checkpoint') ->
         Some (offer_normalize checkpoint' triple)
     | _ -> None
 
@@ -790,7 +810,13 @@ module Reason_syntax = struct
       in
       handle_inputs_needed supplier (List.map process_checkpoint checkpoints)
 
-      (* TODO: add comment! *)
+    (*
+     * This catches the `foo^^` case (which the parser thinks is an error – infix
+     * without 2nd operand) and inserts as many postfix ops as there are carets
+     * in the operator. We catch the token here and don't actually fork checkpoints
+     * because catching this in `handle_other` would be too late – we would only
+     * see the token where the error was (e.g. semicolon).
+     *)
     | Reason_parser.INFIXOP1 op, _, _ as triple
       when List.for_all (fun x -> x == '^') (Reason_syntax_util.explode_str op) ->
       let rec process_checkpoints inputs_needed checkpoints =
@@ -799,15 +825,13 @@ module Reason_syntax = struct
         | (invalid_docstrings, checkpoint) :: tl ->
           begin match offer_normalize checkpoint triple with
           | I.InputNeeded _ as checkpoint' ->
-            let tok, _, _ as next_triple = read supplier in
+            let next_triple = read supplier in
             begin match offer_normalize checkpoint' next_triple with
             | I.HandlingError _ ->
-              begin match try_inserting_postfix checkpoint next_triple with
+              begin match try_inserting_postfix checkpoint op next_triple with
+              | Some (I.Accepted _ as cp) -> handle_other supplier cp
               | Some cp ->
-                  if tok == Reason_parser.EOF then
-                    handle_other supplier cp
-                  else
-                    process_checkpoints ((invalid_docstrings, cp) :: inputs_needed) tl
+                process_checkpoints ((invalid_docstrings, cp) :: inputs_needed) tl
               | None ->
                 process_checkpoints ((invalid_docstrings, checkpoint') :: inputs_needed) tl
               end
@@ -815,7 +839,6 @@ module Reason_syntax = struct
               process_checkpoints ((invalid_docstrings, checkpoint'') :: inputs_needed) tl
             end
           | checkpoint' ->
-              (* don't actually fork *)
               process_checkpoints ((invalid_docstrings, checkpoint') :: inputs_needed) tl
           end
       in
