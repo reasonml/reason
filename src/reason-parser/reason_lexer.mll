@@ -85,11 +85,15 @@ exception Error of error * Location.t;;
 
 (* The table of keywords *)
 
-let keyword_table =
+let keyword_table, reverse_keyword_table =
   let create_hashtable n l =
     let t = Hashtbl.create n in
-    List.iter (fun (k, v) -> Hashtbl.add t k v) l;
-    t
+    let rev_t = Hashtbl.create n in
+    List.iter (fun (k, v) ->
+      Hashtbl.add t k v;
+      Hashtbl.add rev_t v k;
+    ) l;
+    t, rev_t
   in
   create_hashtable 149 [
     "and", AND;
