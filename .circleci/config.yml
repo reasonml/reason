@@ -27,7 +27,7 @@ common_steps: &common_steps
         command: |
           sudo apt-get install -y m4
           opam init --auto-setup --dot-profile=~/.bash_profile
-          opam remote add ocamlorg https://opam.ocaml.org -p 0 || true
+          opam remote add ocamlorg https://opam.ocaml.org || true
           opam remote remove default || true
     - run:
         name: "Install deps"
@@ -63,7 +63,7 @@ version: 2
 jobs:
   4.02.3:
     docker:
-      - image: ocaml/opam:debian-9_ocaml-4.02.3
+      - image: ocaml/opam2:debian-9-ocaml-4.02.3
     environment:
       - TERM: dumb
       - OCAML_VERSION: "4.02.3"
@@ -71,7 +71,7 @@ jobs:
     <<: *common_steps
   4.03.0:
     docker:
-      - image: ocaml/opam:debian-9_ocaml-4.03.0
+      - image: ocaml/opam2:debian-9-ocaml-4.03
     environment:
       - TERM: dumb
       - OCAML_VERSION: "4.03.0"
@@ -79,7 +79,7 @@ jobs:
     <<: *common_steps
   4.04.0:
     docker:
-      - image: ocaml/opam:debian-9_ocaml-4.04.0
+      - image: ocaml/opam2:debian-9-ocaml-4.04
     environment:
       - TERM: dumb
       - OCAML_VERSION: "4.04.0"
@@ -87,7 +87,7 @@ jobs:
     <<: *common_steps
   4.06.0:
     docker:
-      - image: ocaml/opam:debian-9_ocaml-4.06.0
+      - image: ocaml/opam2:debian-9-ocaml-4.06
     environment:
       - TERM: dumb
       - OCAML_VERSION: "4.06.0"
@@ -103,7 +103,7 @@ jobs:
     <<: *common_steps
   esy_build:
     docker:
-      - image: ocaml/opam:debian-9_ocaml-4.06.0
+      - image: ocaml/opam2:debian-9-ocaml-4.06
     environment:
       - TERM: dumb
       - NPM_CONFIG_PREFIX: "~/.npm-global"
@@ -116,6 +116,10 @@ jobs:
             sudo apt-get install -y nodejs
             mkdir -p ~/.npm-global
             npm config set prefix $NPM_CONFIG_PREFIX
+      - run:
+          name: "Install m4"
+          command: |
+            sudo apt-get install -y m4
       - restore_cache:
           <<: *esy_cache_key
       - restore_cache:
