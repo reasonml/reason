@@ -1,5 +1,5 @@
 {
-  "hash": "2229fa410396269c5af8cedd6bfa493c",
+  "hash": "af23e4b097dab9418dd65b8da739c788",
   "root": "root@path:./esy.json",
   "node": {
     "root@path:./esy.json": {
@@ -11,8 +11,8 @@
         "opam": null
       },
       "dependencies": [
-        "@esy-ocaml/merlin@3.0.5005", "@opam/dune@opam:1.4.0",
-        "@opam/menhir@opam:20181006", "@opam/merlin-extend@opam:0.3",
+        "@opam/dune@opam:1.4.0", "@opam/menhir@opam:20181006",
+        "@opam/merlin@opam:3.2.2", "@opam/merlin-extend@opam:0.3",
         "@opam/ocaml-migrate-parsetree@opam:1.1.0",
         "@opam/ocamlfind@opam:1.8.0", "@opam/result@opam:1.3",
         "@opam/utop@opam:2.2.0", "ocaml@4.6.7"
@@ -330,6 +330,27 @@
       "dependencies": [
         "@esy-ocaml/substs@0.0.1", "@opam/cppo@opam:1.6.5",
         "@opam/ocamlfind@opam:1.8.0", "ocaml@4.6.7"
+      ]
+    },
+    "@opam/merlin@opam:3.2.2": {
+      "record": {
+        "name": "@opam/merlin",
+        "version": "opam:3.2.2",
+        "source":
+          "archive:https://github.com/ocaml/merlin/releases/download/v3.2.2/merlin-v3.2.2.tbz#md5:ede35b65f8ac9c440cfade5445662c54",
+        "files": [],
+        "opam": {
+          "name": "merlin",
+          "version": "3.2.2",
+          "opam":
+            "opam-version: \"2.0\"\nname: \"merlin\"\nversion: \"3.2.2\"\nsynopsis: \"Installation with Opam\"\ndescription: \"\"\"\nIf you have a working [Opam](https://opam.ocaml.org/) installation, Merlin is only two commands away:\n\n```shell\nopam install merlin\nopam user-setup install\n```\n\n[opam-user-setup](https://github.com/OCamlPro/opam-user-setup) takes care of configuring Emacs and Vim to make best use of your current install.\n\nYou can also [configure the editor](#editor-setup) yourself, if you prefer.\"\"\"\nmaintainer: \"defree@gmail.com\"\nauthors: \"The Merlin team\"\nhomepage: \"https://github.com/ocaml/merlin\"\nbug-reports: \"https://github.com/ocaml/merlin/issues\"\ndepends: [\n  \"ocaml\" {>= \"4.02.1\" & < \"4.08\"}\n  \"dune\" {build}\n  \"ocamlfind\" {>= \"1.5.2\"}\n  \"yojson\"\n  \"craml\" {with-test}\n]\nbuild: [\n  [\"dune\" \"subst\"] {pinned}\n  [\"dune\" \"build\" \"-p\" name \"-j\" jobs]\n]\npost-messages:\n  \"\"\"\nmerlin installed.\n\nQuick setup for VIM\n-------------------\nAppend this to your .vimrc to add merlin to vim's runtime-path:\n  let g:opamshare = substitute(system('opam config var share'),'\\\\n$','','''')\n  execute \"set rtp+=\" . g:opamshare . \"/merlin/vim\"\n\nAlso run the following line in vim to index the documentation:\n  :execute \"helptags \" . g:opamshare . \"/merlin/vim/doc\"\n\nQuick setup for EMACS\n-------------------\nAdd opam emacs directory to your load-path by appending this to your .emacs:\n  (let ((opam-share (ignore-errors (car (process-lines \"opam\" \"config\" \"var\" \"share\")))))\n   (when (and opam-share (file-directory-p opam-share))\n    ;; Register Merlin\n    (add-to-list 'load-path (expand-file-name \"emacs/site-lisp\" opam-share))\n    (autoload 'merlin-mode \"merlin\" nil t nil)\n    ;; Automatically start it in OCaml buffers\n    (add-hook 'tuareg-mode-hook 'merlin-mode t)\n    (add-hook 'caml-mode-hook 'merlin-mode t)\n    ;; Use opam switch to lookup ocamlmerlin binary\n    (setq merlin-command 'opam)))\n\nTake a look at https://github.com/ocaml/merlin for more information\n\nQuick setup with opam-user-setup\n--------------------------------\n\nOpam-user-setup support Merlin.\n\n  $ opam user-setup install\n\nshould take care of basic setup.\nSee https://github.com/OCamlPro/opam-user-setup\"\"\"\n    {success & !user-setup:installed}\ndev-repo: \"git+https://github.com/ocaml/merlin.git\"\nurl {\n  src:\n    \"https://github.com/ocaml/merlin/releases/download/v3.2.2/merlin-v3.2.2.tbz\"\n  checksum: \"md5=ede35b65f8ac9c440cfade5445662c54\"\n}",
+          "override": null
+        }
+      },
+      "dependencies": [
+        "@esy-ocaml/substs@0.0.1", "@opam/dune@opam:1.4.0",
+        "@opam/ocamlfind@opam:1.8.0", "@opam/yojson@opam:1.4.1",
+        "ocaml@4.6.7"
       ]
     },
     "@opam/menhir@opam:20181006": {
@@ -659,31 +680,6 @@
         "version": "0.0.1",
         "source":
           "archive:https://registry.npmjs.org/@esy-ocaml/substs/-/substs-0.0.1.tgz#sha1:59ebdbbaedcda123fc7ed8fb2b302b7d819e9a46",
-        "files": [],
-        "opam": null
-      },
-      "dependencies": []
-    },
-    "@esy-ocaml/merlin@3.0.5005": {
-      "record": {
-        "name": "@esy-ocaml/merlin",
-        "version": "3.0.5005",
-        "source":
-          "archive:https://registry.npmjs.org/@esy-ocaml/merlin/-/merlin-3.0.5005.tgz#sha1:4a9e2b4df20672524603b7b1797b7761d5d0d9ad",
-        "files": [],
-        "opam": null
-      },
-      "dependencies": [
-        "@esy-ocaml/esy-installer@0.0.0", "@esy-ocaml/substs@0.0.1",
-        "@opam/ocamlfind@opam:1.8.0", "@opam/yojson@opam:1.4.1"
-      ]
-    },
-    "@esy-ocaml/esy-installer@0.0.0": {
-      "record": {
-        "name": "@esy-ocaml/esy-installer",
-        "version": "0.0.0",
-        "source":
-          "archive:https://registry.npmjs.org/@esy-ocaml/esy-installer/-/esy-installer-0.0.0.tgz#sha1:6b0e2bd4ee43531ac74793fe55cfcc3aca197a66",
         "files": [],
         "opam": null
       },
