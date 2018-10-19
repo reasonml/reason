@@ -148,6 +148,11 @@ let escape_string str =
     ) str;
   Buffer.contents buf
 
+let remove_backslashes_for_ml s =
+  if s.[0] == '\\' then
+    String.sub s 1 (String.length s - 1)
+  else s
+
 (* the stuff below contains side-effects and are not used by BuckleScript's
   vendored version of reason_syntax_util.ml. So we can neglect it *)
 
@@ -392,6 +397,8 @@ let remove_literal_attrs_mapper_maker super =
 
 let remove_literal_attrs_mapper =
   remove_literal_attrs_mapper_maker Ast_mapper.default_mapper
+
+let remove_backslashes_for_ml_mapper = identifier_mapper remove_backslashes_for_ml
 
 (** escape_stars_slashes_mapper escapes all stars and slashes in an AST *)
 let escape_stars_slashes_mapper =

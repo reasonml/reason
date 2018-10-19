@@ -47,6 +47,9 @@ val reason_to_ml_swap_operator_mapper :
 val ml_to_reason_swap_operator_mapper :
   Ast_404.Ast_mapper.mapper -> Ast_404.Ast_mapper.mapper
 
+val remove_backslashes_for_ml_mapper :
+  Ast_404.Ast_mapper.mapper -> Ast_404.Ast_mapper.mapper
+
 val attribute_exists : 'a -> ('a Ast_404.Asttypes.loc * 'b) list -> bool
 
 val attributes_conflicted :

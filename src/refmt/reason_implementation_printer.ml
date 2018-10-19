@@ -50,8 +50,10 @@ let print printtype filename parsedAsML output_chan output_formatter =
     );
   )
   | `Binary -> fun (ast, _) ->
+    let mapper = Reason_syntax_util.(remove_literal_attrs_mapper |> remove_backslashes_for_ml_mapper)
+    in
     let ast =
-      Reason_syntax_util.(apply_mapper_to_structure ast remove_literal_attrs_mapper)
+      Reason_syntax_util.(apply_mapper_to_structure ast mapper)
     in
     Ast_io.to_channel output_chan filename
       (Ast_io.Impl ((module OCaml_current),
