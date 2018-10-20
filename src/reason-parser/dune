@@ -23,14 +23,15 @@
  ))
 
 ; Previously, make preprocess.
-(menhir
- (modules reason_parser reason_parser.messages)
- (infer true)
- (flags --strict
-        --unused-tokens
-        --fixed-exception
-        --table
-        --cmly))
+(rule
+ (targets reason_parser.cmly reason_parser.ml reason_parser.mli)
+ (deps reason_parser.mly reason_parser.messages)
+ (action
+  (run menhir --strict
+       --unused-tokens
+       --fixed-exception
+       --table
+       --cmly reason_parser.mly)))
 
 ; (menhir
  ; ; (targets reason_parser.cmly reason_parser.ml reason_parser.mli)
