@@ -2,7 +2,7 @@
   "name": "reason-dev",
   "notes": "This is just the dev package config. See ./scripts/esy/ for release package configs",
   "license": "MIT",
-  "version": "3.3.5",
+  "version": "3.3.6",
   "dependencies": {
     "ocaml": " >= 4.2.0  < 4.8.0",
     "@opam/ocamlfind": "*",
