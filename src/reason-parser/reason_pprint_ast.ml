@@ -7614,8 +7614,12 @@ let printer = object(self:'self)
               List.mem lastIdent ["test"; "describe"; "it"; "expect"] -> true
           | _ -> false
           in
-          let returnValueCallback = makeList ~break:(if forceBreak then Always else IfNeed) ~wrap:("=> ", ")") [x] in
-
+          let returnValueCallback =
+            makeList
+              ~break:(if forceBreak then Always else IfNeed)
+              ~wrap:("=> ", ")" ^ rightWrap)
+              [x]
+          in
           let argsWithCallbackArgs = List.concat [(List.map self#label_x_expression_param args); [theCallbackArg]] in
           let left = label
             theFunc
