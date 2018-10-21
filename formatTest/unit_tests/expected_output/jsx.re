@@ -571,3 +571,5 @@ ReasonReact.(<> {string("Test")} </>);
     />;
   }}
 </Animated>;
+
+<div callback={reduce(() => !state)} />;
