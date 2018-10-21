@@ -1,4 +1,4 @@
 
-let version = "3.3.6"
-let git_version = "71d70bcf0d9799e3ec199c3a202cd20d9e979c06"
-let git_short_version = "71d70bc"
+let version = "3.3.7"
+let git_version = "43efc14a3630d02e96f4be346dcceaf4432754c0"
+let git_short_version = "43efc14"
