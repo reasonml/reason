@@ -518,4 +518,9 @@ let location_contains loc1 loc2 =
   loc1.loc_start.Lexing.pos_cnum <= loc2.loc_start.Lexing.pos_cnum &&
   loc1.loc_end.Lexing.pos_cnum >= loc2.loc_end.Lexing.pos_cnum
 
+let explode_str str =
+  let rec loop acc i =
+    if i < 0 then acc else loop (str.[i] :: acc) (i - 1)
+  in
+    loop [] (String.length str - 1)
 (* #end *)
