@@ -8,7 +8,7 @@ Simple, fast & type safe code that leverages the JavaScript & OCaml ecosystems.
 
 ## [Community](https://reasonml.github.io/docs/en/community.html)
 
-## Contributing
+## [Roadmap & Contribution](https://reasonml.github.io/docs/en/roadmap)
 
 ### Documentations
 
