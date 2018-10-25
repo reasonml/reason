@@ -87,7 +87,7 @@ foo->bar === baz;
 
 event->target##value(foo);
 
-event->target##(value(foo));
+/* event->target##(value(foo)); */
 
 (foo^)->bar;
 
@@ -127,17 +127,17 @@ a->(b##c);
               ->str;
 
 <div>
- (switch (saveStatus) {
+{(switch (saveStatus) {
                 | Pristine => ""
                 | Saved => "Saved"
                 | Saving => "Saving"
                 | Unsaved => "Unsaved"
                 })
-              ->str
+              ->str}
 </div>;
 
 blocks->(blocks => {"blocks": blocks});
-<div> blocks->(blocks => {"blocks": blocks}) </div>;
+<div> {blocks->(blocks => {"blocks": blocks})} </div>;
 
 (state.title == "" ? "untitled" : state.title)->str;
 

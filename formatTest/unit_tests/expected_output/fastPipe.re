@@ -75,11 +75,11 @@ event->(target["value"][0]);
 
 event->target(foo);
 
-event->(target(foo));
-
 event->target(foo);
 
-event->(target(foo));
+(event->target)(foo);
+
+event->target(foo);
 
 foo->bar := baz;
 
@@ -87,7 +87,7 @@ foo->bar === baz;
 
 event->target["value"](foo);
 
-event->target##(value(foo));
+/* event->target##(value(foo)); */
 
 (foo^)->bar;
 
@@ -129,28 +129,28 @@ a->b["c"];
 ->str;
 
 <div>
-  (
-    switch (saveStatus) {
-    | Pristine => ""
-    | Saved => "Saved"
-    | Saving => "Saving"
-    | Unsaved => "Unsaved"
-    }
-  )
-  ->str
+  {(
+     switch (saveStatus) {
+     | Pristine => ""
+     | Saved => "Saved"
+     | Saving => "Saving"
+     | Unsaved => "Unsaved"
+     }
+   )
+   ->str}
 </div>;
 
 blocks->(blocks => {"blocks": blocks});
 <div>
-  blocks->(blocks => {"blocks": blocks})
+  {blocks->(blocks => {"blocks": blocks})}
 </div>;
 
 (state.title == "" ? "untitled" : state.title)
 ->str;
 
 <title>
-  (state.title == "" ? "untitled" : state.title)
-  ->str
+  {(state.title == "" ? "untitled" : state.title)
+   ->str}
 </title>;
 
 ReasonReact.Router.watchUrl(url =>
@@ -202,11 +202,9 @@ foo["bar"]
   );
 
 <div>
-  {
-    items
-    ->Belt.Array.map(ReasonReact.string)
-    ->ReasonReact.array
-  }
+  {items
+   ->Belt.Array.map(ReasonReact.string)
+   ->ReasonReact.array}
 </div>;
 
 a->(b->c);

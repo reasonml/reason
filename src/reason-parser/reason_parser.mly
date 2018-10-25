@@ -3127,7 +3127,7 @@ parenthesized_expr:
   | E as_loc(SHARPEQUAL) simple_expr
     { let op = { $2 with txt = "#=" } in
       mkinfixop $1 (mkoperator op) $3 }
-  | E as_loc(MINUSGREATER) simple_expr_no_call
+  | E as_loc(MINUSGREATER) simple_expr
     { mkinfixop $1 (mkoperator {$2 with txt = "|."}) $3 }
   | as_loc(mod_longident) DOT LPAREN MODULE module_expr COLON package_type RPAREN
     { let loc = mklocation $symbolstartpos $endpos in
