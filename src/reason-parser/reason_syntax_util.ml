@@ -303,6 +303,12 @@ let processLineEndingsAndStarts str =
   |> String.concat "\n"
   |> String.trim
 
+let isLineComment str =
+  (* true iff the first \n is the last character *)
+  match String.index str '\n' with
+  | exception Not_found -> false
+  | n -> n = String.length str - 1
+
 (** Generate a suitable extension node for Merlin's consumption,
     for the purposes of reporting a syntax error - only used
     in recovery mode.

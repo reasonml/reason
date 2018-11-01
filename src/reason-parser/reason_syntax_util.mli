@@ -32,6 +32,8 @@ val split_by : ?keep_empty:bool -> (char -> bool) -> string -> string list
 
 val processLineEndingsAndStarts : string -> string
 
+val isLineComment : string -> bool
+
 val syntax_error_extension_node :
   Ast_404.Location.t ->
   string -> string Ast_404.Location.loc * Ast_404.Parsetree.payload
