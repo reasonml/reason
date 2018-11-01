@@ -127,9 +127,9 @@ type tt1 = A(int) | B(bool, string);
 
 type tt2 = A(int) | B((bool, string));
 
-type tt3 = [ `A(int) | `B(bool, string) | `C];
+type tt3 = [ | `A(int) | `B((bool, string)) | `C];
 
-type tt4 = [ `A(int) | `B((bool, string)) | `C];
+type tt4 = [ | `A(int) | `B((bool, string)) | `C];
 
 let (==) = 0;
 
