@@ -4519,11 +4519,11 @@ bar_row_field:
 
 tag_field:
   | item_attributes name_tag
-      LPAREN
       boption(AMPERSAND)
+      LPAREN
       separated_nonempty_list(AMPERSAND, core_type)
       RPAREN
-    { Rtag ($2, $1, $4, $5) }
+    { Rtag ($2, $1, $3, $5) }
   | item_attributes name_tag
     { Rtag ($2, $1, true, []) }
 ;

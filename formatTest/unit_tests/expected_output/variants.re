@@ -105,8 +105,8 @@ type colorList3 = [
 ];
 
 type colorList = [<
-  | `Red(int, int) &(int)
-  | `Black&(int, int) &(int)
+  | `Red((int, int) & int)
+  | `Black&((int, int) & int)
   | `Blue
   > `Red `Black
 ];

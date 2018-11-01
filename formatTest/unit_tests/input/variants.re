@@ -69,8 +69,8 @@ type colorList2 = [ | `Red | `Black | otherThingInheritedFrom ];
 type colorList3 = [ bar | foo | `Red  | `Black | foo ];
 
 type colorList = [<
-  | `Red (int, int) &(int)
-  | `Black &(int, int) &(int)
+  | `Red ((int, int) & int)
+  | `Black &((int, int) & int)
   | `Blue
   > `Red `Black
 ];

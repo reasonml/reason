@@ -2643,22 +2643,25 @@ let printer = object(self:'self)
 
   (* TODOATTRIBUTES: Attributes on the entire variant leaf are likely
    * not parsed or printed correctly. *)
-  method type_variant_leaf1 _opt_ampersand polymorphic print_bar x =
+  method type_variant_leaf1 opt_ampersand polymorphic print_bar x =
     let {pcd_name; pcd_args; pcd_res; pcd_loc; pcd_attributes} = x in
     let {stdAttrs; docAttrs} = partitionAttributes ~partDoc:true pcd_attributes in
     let ampersand_helper arg = self#core_type arg in
     let args = match pcd_args with
       | Pcstr_record r -> [self#record_declaration r]
       | Pcstr_tuple [] -> []
-      | Pcstr_tuple [x] when polymorphic -> [self#core_type x]
+      | Pcstr_tuple [x] when polymorphic -> [makeList ~wrap:("(", ")") [self#core_type x]]
       | Pcstr_tuple l when polymorphic ->
-        [makeList
-          ~sep:(Sep("&"))
-          ~preSpace:true
-          ~postSpace:true
-          ~wrap:("(", ")")
-          ~break:IfNeed
-          (List.map ampersand_helper l)]
+        [makeList[
+          atom (if opt_ampersand then "&" else "");
+          makeList
+            ~sep:(Sep("&"))
+            ~preSpace:true
+            ~postSpace:true
+            ~wrap:("(", ")")
+            ~break:IfNeed
+            (List.map ampersand_helper l)
+        ]]
       (* Here's why this works. With the new syntax, all the args, are already inside of
         a safely guarded place like Constructor(here, andHere). Compare that to the
         previous syntax Constructor here andHere. In the previous syntax, we needed to
