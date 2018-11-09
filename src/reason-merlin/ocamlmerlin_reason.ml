@@ -84,6 +84,12 @@ end
 
 let () =
   let open Extend_main in
+  let _ = match Sys.win32 with
+  | true ->
+    set_binary_mode_in stdin true;
+    set_binary_mode_out stdout true;
+  | _ -> ()
+  in
   extension_main
     ~reader:(Reader.make_v0 (module Reason_reader : V0))
     (Description.make_v0 ~name:"reason" ~version:"0.1")
