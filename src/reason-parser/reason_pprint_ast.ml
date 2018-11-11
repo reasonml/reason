@@ -1487,7 +1487,22 @@ let rec insertSingleLineComment layout comment =
   | Easy _ ->
     prependSingleLineComment comment layout
   | Sequence (listConfig, subLayouts) when subLayouts == [] ->
-    (* If there are no subLayouts (empty body), create a Sequence of just the comment *)
+    (* If there are no subLayouts (empty body), create a Sequence of just the
+     * comment. We need to be careful when the empty body contains a //-style
+     * comment. Example:
+     *   let make = () => {
+     *     //
+     *   };
+     * It is clear that the sequence needs to always break here, otherwise
+     * we get a parse error: let make = () => { // };
+     * The closing brace and semicolon `};` would become part of the comment…
+     *)
+    let listConfig =
+      if Reason_comment.isLineComment comment then
+        {listConfig with break = Always_rec}
+      else
+        listConfig
+    in
     Sequence (listConfig, [formatComment comment])
   | Sequence (listConfig, subLayouts) ->
     let (beforeComment, afterComment) =

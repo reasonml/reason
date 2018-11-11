@@ -48,3 +48,7 @@ let is_doc t =
 
 let make ~location category text =
   { text; category; location }
+
+let isLineComment {category; text} = match category with
+  | SingleLine -> Reason_syntax_util.isLineComment text
+  | EndOfLine | Regular -> false

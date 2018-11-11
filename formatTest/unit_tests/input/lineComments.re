@@ -361,6 +361,10 @@ let tuple_equal((csu, mgd)) =
  */
 let fun_def_comment_inline = () => { /* */ };
 
+let fun_def_comment_newline = () => {
+  //
+};
+
 let fun_def_comment_long = () => { /* longer comment inside empty function body */};
 
 let trueThing = true;
