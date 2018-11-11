@@ -1,0 +1,5 @@
+(library
+ (name ReasonCmdliner)
+ (public_name reason.cmdliner)
+  (wrapped false)
+  (flags :standard -w -3-27-32-35-50))

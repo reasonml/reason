@@ -8,7 +8,7 @@
  (public_name rtop)
  (modules reason_util reason_utop reason_toploop)
  (wrapped false)
- (libraries menhirLib reason.easy_format reason utop ocaml-migrate-parsetree))
+ (libraries compiler-libs.common menhirLib reason.easy_format reason utop ocaml-migrate-parsetree))
 
 (executable
  (name rtop)
