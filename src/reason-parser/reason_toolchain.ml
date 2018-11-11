@@ -723,11 +723,10 @@ module Reason_syntax = struct
       | Some token -> token
       | None -> assert false
     in
-    let state = I.current_state_number env in
     (* Check the error database to see what's the error message
     associated with the current parser state  *)
     let msg = Reason_parser_explain.message env token in
-    let msg_with_state = Printf.sprintf "%d: %s" state msg in
+    let msg_with_state = Printf.sprintf "%s" msg in
     raise (Reason_syntax_util.Error (loc, (Reason_syntax_util.Syntax_error msg_with_state)))
 
   let rec handle_other supplier checkpoint =

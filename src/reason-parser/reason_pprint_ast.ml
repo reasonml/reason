@@ -487,11 +487,11 @@ let isSimplePrefixToken s = match printedStringAndFixity s with
    using %prec *)
 let rules = [
   [
+    (TokenPrecedence, (fun s -> (Left, s = ".")));
     (TokenPrecedence, (fun s -> (Left, s = fastPipeToken)));
     (TokenPrecedence, (fun s -> (Left, s.[0] = '#' &&
                                        s <> sharpOpEqualToken &&
                                        s <> "#")));
-    (TokenPrecedence, (fun s -> (Left, s = ".")));
     (CustomPrecedence, (fun s -> (Left, s = "prec_lbracket")));
   ];
   [
@@ -2115,6 +2115,39 @@ let rec computeInfixChain = function
 
 let equalityOperators = ["!="; "!=="; "==="; "=="; ">="; "<="; "<"; ">"]
 
+(* Takes a list of layouts and provides beautiful printing for fast pipe.
+ * Prints
+ *  [atom "foo"; atom "->"; atom "f"; atom "->"; atom "g"]
+ * as:
+ *  foo->f->g
+ * or if line-length indicates breaking:
+ *  foo
+ *  ->f
+ *  ->g
+ *)
+let formatFastPipeChain layouts =
+  (* transforms [->; f; ->; g] into [->f; ->g] *)
+  let rec processPipePairs acc = function
+  | pipe::exp::xs ->
+      let layout = label ~break:`Never pipe exp in
+      processPipePairs (layout::acc) xs
+  | [x] -> List.rev (x::acc)
+  | [] -> List.rev acc
+  in match layouts with
+  | hd::tl ->
+    (* process head of the layout list different so all "pipe pairs"
+     * are nicely aligned under the first element when the layout breaks.
+     *  foo->f->g
+     * becomes
+     *  foo
+     *  ->f
+     *  ->g
+     *)
+    let pipes = processPipePairs [] tl in
+    makeList ~break:IfNeed ~inline:(true, true) (hd::pipes)
+  | [] ->
+    atom ""
+
 (* Formats a flattened list of infixChain nodes into a list of layoutNodes
  * which allow smooth line-breaking
  * e.g. [LayoutNode foo; InfixToken |>; LayoutNode f; InfixToken |>; LayoutNode z]
@@ -2152,6 +2185,8 @@ let formatComputedInfixChain infixChainList =
       let hd = List.hd group in
       let tl = makeList ~inline:(true, true) ~sep:(Sep " ") (List.tl group) in
       makeList ~inline:(true, true) ~sep:(Sep " ") ~break:IfNeed [hd; tl]
+    else if currentToken = fastPipeToken then
+      formatFastPipeChain group
     else if currentToken.[0] = '#' then
       let isSharpEqual = currentToken = sharpOpEqualToken in
       makeList ~postSpace:isSharpEqual group
@@ -3521,13 +3556,18 @@ let printer = object(self:'self)
           LayoutNode (formatPrecedence ~loc:reducesAfterRight.pexp_loc (self#unparseResolvedRule rightRecurse))
       )
     | FunctionApplication itms ->
-      let funApplExpr = formatAttachmentApplication applicationFinalWrapping None (itms, Some reducesAfterRight.pexp_loc)
+      let funApplExpr =
+        formatAttachmentApplication applicationFinalWrapping None (itms, Some reducesAfterRight.pexp_loc)
       in
       (* Little hack: need to print parens for the `bar` application in e.g.
          `foo->other##(bar(baz))` or `foo->other->(bar(baz))`. *)
-      if higherPrecedenceThan withPrecedence (Custom "prec_functionAppl")
-      then LayoutNode (formatPrecedence ~loc:reducesAfterRight.pexp_loc funApplExpr)
-      else LayoutNode funApplExpr
+      (* if higherPrecedenceThan withPrecedence (Custom "prec_functionAppl") *)
+      (* then LayoutNode (formatPrecedence ~loc:reducesAfterRight.pexp_loc funApplExpr) *)
+      let {stdAttrs} = partitionAttributes reducesAfterRight.pexp_attributes in
+      begin match stdAttrs, withPrecedence with
+      | _::_, Token "->" -> LayoutNode (formatPrecedence ~loc:reducesAfterRight.pexp_loc funApplExpr)
+      | _ -> LayoutNode funApplExpr
+      end
     | PotentiallyLowPrecedence itm -> LayoutNode (formatPrecedence ~loc:reducesAfterRight.pexp_loc itm)
     | Simple itm -> LayoutNode itm
 
@@ -3632,216 +3672,6 @@ let printer = object(self:'self)
     | PotentiallyLowPrecedence itm -> ([itm], Some x.pexp_loc)
     | Simple itm -> ([itm], Some x.pexp_loc)
 
-
-  (* Provides beautiful printing for fast pipe sugar:
-   * foo
-   * ->f(a, b)
-   * ->g(c, d)
-   *)
-  method formatFastPipe e =
-    let module Fastpipetree = struct
-      type exp = Parsetree.expression
-
-      type flatNode =
-        | Exp of exp
-        | ExpU of exp (* uncurried *)
-        | Args of (Asttypes.arg_label * exp) list
-      type flatT = flatNode list
-
-      type node = {
-        exp: exp;
-        args: (Asttypes.arg_label *exp) list;
-        uncurried: bool;
-      }
-      type t = node list
-
-      let formatNode ?prefix ?(first=false) {exp; args; uncurried} =
-        let formatLayout expr =
-          let formatted = if first then
-            self#ensureExpression ~reducesOnToken:(Token fastPipeToken) expr
-          else
-            match expr with
-            (* a->foo(x, _) and a->(foo(x, _)) are equivalent under fast pipe
-             * (a->foo)(x, _) is unnatural and desugars to
-             *    (__x) => (a |. foo)(x, __x)
-             * Under `->`, it makes more sense to desugar into
-             *  a |. (__x => foo(x, __x))
-             *
-             * Hence we don't need parens in this case.
-             *)
-            | expr when Reason_heuristics.isUnderscoreApplication expr ->
-                LayoutNode (self#unparseExpr expr)
-            | _ ->
-              self#ensureContainingRule
-                ~withPrecedence:(Token fastPipeToken) ~reducesAfterRight:expr ()
-          in
-          self#unparseResolvedRule formatted
-        in
-        let parens = match (exp.pexp_desc) with
-        | Pexp_apply (e,_) -> printedStringAndFixityExpr e = UnaryPostfix "^"
-        | _ -> false
-        in
-        let layout = match args with
-        | [] ->
-          let e = formatLayout exp in
-          (match prefix with
-          | Some l -> makeList [l; e]
-          | None -> e)
-        | args ->
-            let fakeApplExp =
-              let loc_end = match List.rev args with
-                | (_, e)::_ -> e.pexp_loc.loc_end
-                | _ -> exp.pexp_loc.loc_end
-              in
-              {exp with pexp_loc = { exp.pexp_loc with loc_end = loc_end } }
-            in
-            makeList (
-              self#formatFunAppl
-                ?prefix
-                ~jsxAttrs:[]
-                ~args
-                ~funExpr:exp
-                ~applicationExpr:fakeApplExp
-                ~uncurried
-                ()
-            )
-        in
-        if parens then
-          formatPrecedence layout
-        else layout
-    end in
-    (* Imagine: foo->f(a, b)->g(c,d)
-     * The corresponding parsetree looks more like:
-     *   (((foo->f)(a,b))->g)(c, d)
-     * The extra Pexp_apply nodes, e.g. (foo->f), result into a
-     * nested/recursive ast which is pretty inconvenient in terms of printing.
-     * For printing purposes we actually want something more like:
-     *  foo->|f(a,b)|->|g(c, d)|
-     * in order to provide to following printing:
-     *  foo
-     *  ->f(a, b)
-     *  ->g(c, d)
-     * The job of "flatten" is to turn the inconvenient, nested ast
-     *  (((foo->f)(a,b))->g)(c, d)
-     * into
-     *  [Exp foo; Exp f; Args [a; b]; Exp g; Args [c; d]]
-     * which can be processed for printing purposes.
-     *)
-    let rec flatten ?(uncurried=false) acc = function
-      | {pexp_desc = Pexp_apply(
-          {pexp_desc = Pexp_ident({txt = Longident.Lident("|.")})},
-          [Nolabel, arg1; Nolabel, arg2]
-         )} ->
-          flatten ((Fastpipetree.Exp arg2)::acc) arg1
-      | {pexp_attributes;
-         pexp_desc = Pexp_apply(
-          {pexp_desc = Pexp_apply(
-           {pexp_desc = Pexp_ident({txt = Longident.Lident("|.")})},
-             [Nolabel, arg1; Nolabel, arg2]
-           )},
-           args
-         )} as e ->
-          let args = Fastpipetree.Args args in
-          begin match pexp_attributes with
-          | [{txt = "bs"}, PStr []] ->
-            flatten ((Fastpipetree.ExpU arg2)::args::acc) arg1
-          | [] ->
-              (* the uncurried attribute might sit on the Pstr_eval
-               * enclosing the Pexp_apply*)
-              if uncurried then
-                flatten ((Fastpipetree.ExpU arg2)::args::acc) arg1
-              else
-                flatten ((Fastpipetree.Exp arg2)::args::acc) arg1
-          | _ ->
-            (Fastpipetree.Exp e)::acc
-          end
-      | {pexp_desc = Pexp_ident({txt = Longident.Lident("|.")})} -> acc
-      | arg -> ((Fastpipetree.Exp arg)::acc)
-    in
-    (* Given: foo->f(a, b)->g(c, d)
-     * We get the following Fastpipetree.flatNode list:
-     *   [Exp foo; Exp f; Args [a; b]; Exp g; Args [c; d]]
-     * The job of `parse` is to turn the "flat representation"
-     * (a.k.a. Fastpipetree.flastNode list) into a more convenient structure
-     * that allows us to express the segments: "foo" "f(a, b)" "g(c, d)".
-     * Fastpipetree.t expresses those segments.
-     *  [{exp = foo; args = []}; {exp = f; args = [a; b]}; {exp = g; args = [c; d]}]
-     *)
-    let rec parse acc = function
-    | (Fastpipetree.Exp e)::(Fastpipetree.Args args)::xs ->
-        parse ((Fastpipetree.{exp = e; args; uncurried = false})::acc) xs
-    | (Fastpipetree.ExpU e)::(Fastpipetree.Args args)::xs ->
-        parse ((Fastpipetree.{exp = e; args; uncurried = true})::acc) xs
-    | (Fastpipetree.Exp e)::xs ->
-        parse ((Fastpipetree.{exp = e; args = []; uncurried = false})::acc) xs
-    | _ -> List.rev acc
-    in
-    (* Given: foo->f(. a,b);
-     * The uncurried attribute doesn't sit on the Pexp_apply, but sits on
-     * the top level Pstr_eval. We don't have access to top-level context here,
-     * hence the lookup in the global uncurriedTable to correctly determine
-     * if we need to print uncurried. *)
-    let uncurried = try Hashtbl.find uncurriedTable e.pexp_loc with
-      | Not_found -> false
-    in
-    (* Turn
-     *  foo->f(a, b)->g(c, d)
-     * into
-     *  [Exp foo; Exp f; Args [a; b]; Exp g; Args [c; d]]
-     *)
-    let (flatNodes : Fastpipetree.flatT) = flatten ~uncurried [] e in
-    (* Turn
-     *  [Exp foo; Exp f; Args [a; b]; Exp g; Args [c; d]]
-     * into
-     *  [{exp = foo; args = []}; {exp = f; args = [a; b]}; {exp = g; args = [c; d]}]
-     *)
-    let (pipetree : Fastpipetree.t) = parse [] flatNodes in
-    (* Turn
-     *  [{exp = foo; args = []}; {exp = f; args = [a; b]}; {exp = g; args = [c; d]}]
-     * into
-     *  [foo; ->f(a, b); ->g(c, d)]
-     *)
-    let pipeSegments = match pipetree with
-    (* Special case printing of
-     * foo->bar(
-     *  aa,
-     *  bb,
-     * )
-     *
-     *  We don't want
-     *  foo
-     *  ->bar(
-     *      aa,
-     *      bb
-     *    )
-     *
-     *  Notice how `foo->bar` shouldn't break, it wastes space and is
-     *  inconsistent with
-     *  foo.bar(
-     *    aa,
-     *    bb,
-     *  )
-     *)
-    | [({exp = {pexp_desc = Pexp_ident _ }} as hd); last] ->
-        let prefix = Some (
-          makeList [Fastpipetree.formatNode ~first:true hd; atom "->"]
-        ) in
-        [Fastpipetree.formatNode ?prefix last]
-    | hd::tl ->
-        let hd = Fastpipetree.formatNode ~first:true hd in
-        let tl = List.map (fun node ->
-          makeList [atom "->"; Fastpipetree.formatNode node]
-        ) tl in
-        hd::tl
-    | [] -> []
-    in
-    (* Provide nice breaking for: [foo; ->f(a, b); ->g(c, d)]
-     * foo
-     * ->f(a, b)
-     * ->g(c, d)
-     *)
-    makeList ~break:IfNeed ~inline:(true, true) pipeSegments
-
   (*
    * Replace (__x) => foo(__x) with foo(_)
    *)
@@ -3872,7 +3702,20 @@ let printer = object(self:'self)
     | _ ->
       x
 
+  method processFastPipe e =
+    match e.pexp_desc with
+    | Pexp_apply(
+        {pexp_desc = Pexp_ident({txt = Longident.Lident("|."); loc})} as identExp,
+        args
+      ) ->
+      let pipe = {identExp with pexp_desc =
+        Pexp_ident {txt = Longident.Lident("->"); loc}
+      } in
+      {e with pexp_desc = Pexp_apply(pipe, args) }
+    | _ -> e
+
   method unparseExprRecurse x =
+    let x = self#processFastPipe x in
     let x = self#process_underscore_application x in
     (* If there are any attributes, render unary like `(~-) x [@ppx]`, and infix like `(+) x y [@attr]` *)
 
@@ -3913,10 +3756,6 @@ let printer = object(self:'self)
     | Pexp_apply (e, ls) -> (
       let ls = List.map (fun (l,expr) -> (l, self#process_underscore_application expr)) ls in
       match (e, ls) with
-      | (e, _) when Reason_heuristics.isFastPipe e ->
-        let prec = Token fastPipeToken in
-          SpecificInfixPrecedence
-            ({reducePrecedence=prec; shiftPrecedence=prec}, LayoutNode (self#formatFastPipe x))
       | ({pexp_desc = Pexp_ident {txt = Ldot (Lident ("Array"),"get")}}, [(_,e1);(_,e2)]) ->
         begin match e1.pexp_desc with
           | Pexp_ident ({txt = Lident "_"}) ->
@@ -4045,7 +3884,7 @@ let printer = object(self:'self)
             let token = Token printedIdent in
             let lhs = self#unparseResolvedRule (
               self#ensureExpression ~reducesOnToken:token leftExpr
-          ) in
+            ) in
             let layout = (self#access "[" "]"
                     lhs
                     (makeList ~wrap:("\"", "\"") [(self#unparseExpr rightExpr)]))
@@ -6164,18 +6003,7 @@ let printer = object(self:'self)
       end
     | ({pexp_desc = Pexp_apply _} as e) :: remaining ->
         let child =
-        (* Fast pipe behaves differently according to the expression on the
-         * right. In example (1) below, it's a `SpecificInfixPrecedence`; in
-         * (2), however, it's `Simple` and doesn't need to be wrapped in parens.
-         *
-         * (1). <div> {items->Belt.Array.map(ReasonReact.string)->ReasonReact.array} </div>;
-         * (2). <Foo> (title === "" ? [1, 2, 3] : blocks)->Foo.toString </Foo>; *)
-        if Reason_heuristics.isFastPipe e &&
-           not (Reason_heuristics.isFastPipeWithNonSimpleJSXChild e)
-        then
-          self#formatFastPipe e
-        else
-          self#simplifyUnparseExpr ~wrap:("{", "}") e
+          self#simplifyUnparseExpr ~inline:true ~wrap:("{", "}") e
         in
         self#formatChildren remaining (child::processedRev)
     | {pexp_desc = Pexp_ident li} :: remaining ->
