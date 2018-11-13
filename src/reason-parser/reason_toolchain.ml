@@ -210,9 +210,19 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
           | [] -> []
           | hd :: tl -> (
               let classifiedTail = classifyAndNormalizeComments tl in
-              let (_, physical_loc) = hd in
+              let (txt, physical_loc) = hd in
               (* When searching for "^" regexp, returns location of newline + 1 *)
-              let (stop_char, eol_start, virtual_start_pos) = left_expand_comment false contents physical_loc.loc_start.pos_cnum in
+              let (stop_char, eol_start, virtual_start_pos) =
+                left_expand_comment false contents physical_loc.loc_start.pos_cnum
+              in
+              if Reason_syntax_util.isLineComment txt then
+                let comment = Comment.make
+                  ~location:physical_loc
+                  (if eol_start then SingleLine else EndOfLine)
+                  txt
+                in
+                comment :: classifiedTail
+              else
               let one_char_before_stop_char =
                 if virtual_start_pos <= 1 then
                   ' '

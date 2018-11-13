@@ -37,6 +37,9 @@ let dump_list ppf list =
 let wrap t =
   match t.text with
   | "" | "*" -> "/***/"
+  | txt when Reason_syntax_util.isLineComment txt ->
+    (* single line comments of the form `// comment` have a `\n` at the end *)
+    "//" ^ (String.sub txt 0 (String.length txt - 1))
   | txt when txt.[0] = '*' && txt.[1] <> '*' -> "/**" ^ txt ^ "*/"
   | txt -> "/*" ^ txt ^ "*/"
 
@@ -45,3 +48,7 @@ let is_doc t =
 
 let make ~location category text =
   { text; category; location }
+
+let isLineComment {category; text} = match category with
+  | SingleLine -> Reason_syntax_util.isLineComment text
+  | EndOfLine | Regular -> false

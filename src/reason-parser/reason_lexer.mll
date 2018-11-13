@@ -207,7 +207,7 @@ let set_lexeme_length buf n = (
 )
 
 (* This cut comment characters of the current buffer.
- * Operators (including "/*" and "*/") are lexed with the same rule, and this
+ * Operators (including "/*" and "//") are lexed with the same rule, and this
  * function cuts the lexeme at the beginning of an operator. *)
 let lexeme_without_comment buf = (
   let lexeme = Lexing.lexeme buf in
@@ -215,7 +215,7 @@ let lexeme_without_comment buf = (
   let found = ref (-1) in
   while !i < len && !found = -1 do
     begin match lexeme.[!i], lexeme.[!i+1] with
-      | ('/', '*') | ('*', '/') ->
+      | ('/', '*') | ('/', '/') | ('*', '/') ->
         found := !i;
       | _ -> ()
     end;
@@ -664,6 +664,24 @@ rule token = parse
       }
 
 and enter_comment = parse
+  | "//" ([^'\010']* newline as line)
+      { update_loc lexbuf None 1 false 0;
+        let physical_loc = Location.curr lexbuf in
+        let location = { physical_loc with
+          loc_end = { physical_loc.loc_end with
+            (* Don't track trailing `\n` in the location
+             * 1| // comment
+             * 2| let x = 1;
+             * By omitting the `\n` at the end of line 1, the location of the
+             * comment spans line 1. Otherwise the comment on line 1 would end
+             * on the second line. The printer looks at the closing pos_lnum
+             * location to interleave whitespace correct. It needs to align
+             * with what we visually see (i.e. it ends on line 1) *)
+            pos_lnum = physical_loc.loc_end.pos_lnum - 1;
+            pos_cnum = physical_loc.loc_end.pos_cnum + 1;
+        }} in
+        COMMENT (line, location)
+      }
   | "/*" ("*" "*"+)?
       { set_lexeme_length lexbuf 2;
         let start_loc = Location.curr lexbuf  in
