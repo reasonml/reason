@@ -30,7 +30,7 @@ release it in the same way as you released the `reason` package
 
 
 ## When a new version of Reason is pushed, you might like to release some
-prebuilt global installs of refmt, and merlin together in one npm instal.
+prebuilt global installs of refmt, and merlin together in one npm install.
 `reason-cli` is the project that performs that task, and it packages up
 prebuilts of the packages you already pushed to npm above.
 
