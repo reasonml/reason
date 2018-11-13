@@ -384,8 +384,12 @@ let onlyDoingThisTopLevelLetToBypassTopLevelSequence = {
 type hasA = {a: int};
 let a = 10;
 let returnsASequenceExpressionWithASingleIdentifier =
-    () => a;
-let thisReturnsA = () => a;
+    () => {
+  a;
+};
+let thisReturnsA = () => {
+  a;
+};
 let thisReturnsAAsWell = () => a;
 
 let recordVal: int = thisReturnsARecord().a;
@@ -992,8 +996,9 @@ let match = "match";
 let method = "method";
 
 let foo =
-    (x, ~x as bar, ~z, ~foo as bar, ~foo as z) =>
+    (x, ~x as bar, ~z, ~foo as bar, ~foo as z) => {
   bar + 2;
+};
 
 let zzz = myFunc(1, 2, [||]);
 

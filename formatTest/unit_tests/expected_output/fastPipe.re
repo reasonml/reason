@@ -202,11 +202,9 @@ foo["bar"]
   );
 
 <div>
-  {
-    items
-    ->Belt.Array.map(ReasonReact.string)
-    ->ReasonReact.array
-  }
+  {items
+   ->Belt.Array.map(ReasonReact.string)
+   ->ReasonReact.array}
 </div>;
 
 a->(b->c);

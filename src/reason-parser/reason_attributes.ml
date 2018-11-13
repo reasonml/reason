@@ -38,6 +38,9 @@ let rec partitionAttributes ?(partDoc=false) ?(allowUncurry=true) attrs : attrib
   | (({txt="reason.raw_literal"}, _) as attr) :: atTl ->
     let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
     {partition with literalAttrs=attr::partition.literalAttrs}
+  | (({txt="reason.preserve_braces"}, _) as attr) :: atTl ->
+    let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
+    {partition with literalAttrs=attr::partition.literalAttrs}
   | atHd :: atTl ->
     let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
     {partition with stdAttrs=atHd::partition.stdAttrs}
@@ -55,4 +58,19 @@ let extract_raw_literal attrs =
     | attr :: rest -> loop (attr :: acc) rest
   in
   loop [] attrs
+
+let without_literal_attrs attrs =
+  let rec loop acc = function
+    | attr :: rest when (partitionAttributes [attr]).literalAttrs != [] ->
+        loop acc rest
+    | [] -> List.rev acc
+    | attr :: rest -> loop (attr :: acc) rest
+  in
+  loop [] attrs
+
+let is_preserve_braces_attr ({txt}, _) =
+  txt = "reason.preserve_braces"
+
+let has_preserve_braces_attrs literalAttrs =
+  (List.filter is_preserve_braces_attr literalAttrs) != []
 

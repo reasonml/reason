@@ -1,7 +1,8 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 
-let run = () =>
+let run = () => {
   TestUtils.printSection("Polymorphism");
+};
 
 type myType('a) = list('a);
 type myTwoParamType('a, 'b) = ('a, 'b);

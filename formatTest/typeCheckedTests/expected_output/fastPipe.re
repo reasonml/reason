@@ -26,8 +26,9 @@ let c = true;
 let t3: bool = !a->b->c;
 
 /* parse fast pipe with  underscore application correct */
-let doStuff = (a: int, b: int, c: int): int =>
+let doStuff = (a: int, b: int, c: int): int => {
   a + 2 * b + 3 * c;
+};
 
 let (|.) = (a, f) => f(a);
 
@@ -69,18 +70,16 @@ let saveStatus = Pristine;
 
 let t7: string =
   <Foo>
-    {
-      (
-        switch (saveStatus) {
-        | Pristine => [0]
-        | Saved => [1]
-        | Saving => [2]
-        | Unsaved => [3]
-        }
-      )
-      ->Foo.map(Foo.plusOne)
-      ->Foo.toString
-    }
+    {(
+       switch (saveStatus) {
+       | Pristine => [0]
+       | Saved => [1]
+       | Saving => [2]
+       | Unsaved => [3]
+       }
+     )
+     ->Foo.map(Foo.plusOne)
+     ->Foo.toString}
   </Foo>;
 
 let genItems = f => List.map(f, items);
@@ -99,23 +98,19 @@ let foo = xs => List.concat([xs, xs]);
 
 let t10: string =
   <Foo>
-    {
-      blocks
-      ->foo
-      ->Foo.map(Foo.plusOne)
-      ->Foo.toString
-    }
+    {blocks
+     ->foo
+     ->Foo.map(Foo.plusOne)
+     ->Foo.toString}
   </Foo>;
 
 let t11: string =
   <Foo>
-    {
-      blocks
-      ->foo
-      ->Foo.map(Foo.plusOne)
-      ->Foo.map(Foo.plusOne)
-      ->Foo.toString
-    }
+    {blocks
+     ->foo
+     ->Foo.map(Foo.plusOne)
+     ->Foo.map(Foo.plusOne)
+     ->Foo.toString}
   </Foo>;
 
 let title = "los pilares de la tierra";
@@ -164,11 +159,9 @@ module FooLabeled = {
 
 let t14: string =
   <FooLabeled>
-    {
-      items
-      ->FooLabeled.map(~f=FooLabeled.plusOne)
-      ->FooLabeled.toString
-    }
+    {items
+     ->FooLabeled.map(~f=FooLabeled.plusOne)
+     ->FooLabeled.toString}
   </FooLabeled>;
 
 let c = (a, b) => a + b;
