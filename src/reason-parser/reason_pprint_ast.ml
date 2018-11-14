@@ -330,62 +330,6 @@ let extractLocModDecl {pmd_type; pmd_attributes} =
   let estimatedLoc = firstAttrLoc pmd_type.pmty_loc pmd_attributes in
   {estimatedLoc with loc_end = pmd_type.pmty_loc.loc_end}
 
-
-(** Kinds of attributes *)
-type attributesPartition = {
-  arityAttrs : attributes;
-  docAttrs : attributes;
-  stdAttrs : attributes;
-  jsxAttrs : attributes;
-  literalAttrs : attributes;
-  uncurried : bool
-}
-
-(** Partition attributes into kinds *)
-let rec partitionAttributes ?(partDoc=false) ?(allowUncurry=true) attrs : attributesPartition =
-  match attrs with
-    | [] ->
-      {arityAttrs=[]; docAttrs=[]; stdAttrs=[]; jsxAttrs=[]; literalAttrs=[]; uncurried = false}
-    | (({txt = "bs"}, PStr []) as attr)::atTl ->
-        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
-        if allowUncurry then
-          {partition with uncurried = true}
-        else {partition with stdAttrs=attr::partition.stdAttrs}
-    | (({txt="JSX"; loc}, _) as jsx)::atTl ->
-        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
-        {partition with jsxAttrs=jsx::partition.jsxAttrs}
-    | (({txt="explicit_arity"; loc}, _) as arity_attr)::atTl
-    | (({txt="implicit_arity"; loc}, _) as arity_attr)::atTl ->
-        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
-        {partition with arityAttrs=arity_attr::partition.arityAttrs}
-    | (({txt="ocaml.text"; loc}, _) as doc)::atTl when partDoc = true ->
-        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
-        {partition with docAttrs=doc::partition.docAttrs}
-    | (({txt="ocaml.doc"; loc}, _) as doc)::atTl when partDoc = true ->
-        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
-        {partition with docAttrs=doc::partition.docAttrs}
-    | (({txt="reason.raw_literal"; _}, _) as attr) :: atTl ->
-        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
-        {partition with literalAttrs=attr::partition.literalAttrs}
-    | atHd :: atTl ->
-        let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
-        {partition with stdAttrs=atHd::partition.stdAttrs}
-
-let extractStdAttrs attrs =
-  (partitionAttributes attrs).stdAttrs
-
-let extract_raw_literal attrs =
-  let rec loop acc = function
-    | ({txt="reason.raw_literal"; loc},
-       PStr [{pstr_desc = Pstr_eval({pexp_desc = Pexp_constant(Pconst_string(text, None)); _}, _); _}])
-      :: rest ->
-      (Some text, List.rev_append acc rest)
-    | [] -> (None, List.rev acc)
-    | attr :: rest -> loop (attr :: acc) rest
-  in
-  loop [] attrs
-
-
 let rec sequentialIfBlocks x =
   match x with
     | Some ({pexp_desc=Pexp_ifthenelse (e1, e2, els)}) -> (
@@ -4770,11 +4714,6 @@ let printer = object(self:'self)
     let includingEqual = makeList ~postSpace:true [upUntilEqual; atom "="] in
     formatAttachmentApplication applicationFinalWrapping (Some (true, includingEqual)) appTerms
 
-  (* Only formats a type annotation for a value binding. *)
-  method formatSimpleSignatureBinding labelOpener bindingPattern typeConstraint =
-    let letPattern = (label ~space:true (atom labelOpener) bindingPattern) in
-    (formatTypeConstraint letPattern typeConstraint)
-
   (*
      The [bindingLabel] is either the function name (if let binding) or first
      arg (if lambda).
@@ -7110,16 +7049,17 @@ let printer = object(self:'self)
                 partitionAttributes ~partDoc:true xx.pmd_attributes
               in
               let letPattern =
-                makeList
-                  [makeList ~postSpace:true [atom "module rec"; atom xx.pmd_name.txt];
-                   atom ":"]
+                makeList [
+                  makeList ~postSpace:true [
+                    atom (if i == 0 then "module rec" else "and");
+                    atom xx.pmd_name.txt
+                  ];
+                 atom ":"
+                ]
               in
               let layout =
-                self#attach_std_item_attrs stdAttrs @@
-                self#formatSimpleSignatureBinding
-                  (if i == 0 then "module rec" else "and")
-                  (atom xx.pmd_name.txt)
-                  (self#module_type xx.pmd_type)
+                self#attach_std_item_attrs stdAttrs
+                  (self#module_type ~space:true letPattern xx.pmd_type)
               in
               let layoutWithDocAttrs =
                 self#attachDocAttrsToLayout
