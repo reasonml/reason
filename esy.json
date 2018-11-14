@@ -32,7 +32,6 @@
     "install": [
       ["esy-installer", "reason.install"],
       ["esy-installer", "rtop.install"]
-    ],
-    "buildsInSource": "_build"
+    ]
   }
 }
