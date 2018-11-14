@@ -326,6 +326,59 @@ let make = _children => {
     </div>,
 };
 
+// Recursive types
+// Also create another form for splicing in nodes into otherwise fixed length sets.
+type elem('t) =
+  | Empty: elem(empty)
+constraint 't = ('st, 'a) => 'subtree
+and subtree('t) =
+  | EmptyInstance: subtree(empty);
+
+// Also create another form for splicing in nodes into otherwise fixed length sets.
+type elem('t) =
+  | Empty: elem(empty)
+constraint 't = ('st, 'a) => 'subtree
+
+and subtree('t) =
+  | EmptyInstance: subtree(empty);
+
+type elem('t) =
+  | Empty: elem(empty)
+constraint 't = ('st, 'a) => 'subtree
+// trailing comment
+
+// leading comment
+and subtree('t) =
+  | EmptyInstance: subtree(empty);
+
+type elem('t) =
+  | Empty: elem(empty)
+constraint 't = ('st, 'a) => 'subtree
+// trailing comment
+
+// in between
+
+// leading comment
+and subtree('t) =
+  | EmptyInstance: subtree(empty);
+
+// with attrs
+type elem('t) =
+  | Empty: elem(empty)
+constraint 't = ('st, 'a) => 'subtree
+[@attr]
+and subtree('t) =
+  | EmptyInstance: subtree(empty);
+
+// with attrs
+type elem('t) =
+  | Empty: elem(empty)
+constraint 't = ('st, 'a) => 'subtree
+
+[@attr]
+and subtree('t) =
+  | EmptyInstance: subtree(empty);
+
 let f = (a, b) => a + b;
 /* this comment sticks at the end */
 

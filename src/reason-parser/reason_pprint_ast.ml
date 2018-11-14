@@ -2678,9 +2678,18 @@ let printer = object(self:'self)
           match tl with
             (* Exactly one type *)
             | [] -> first
-            | tlhd::tltl -> makeList ~indent:0 ~inline:(true, true) ~break:Always_rec (
-                first::(List.map (formatOneTypeDefStandard (atom "and")) (tlhd::tltl))
-              )
+            | _::_ as typeList ->
+                let items = (hd.ptype_loc, first)::(List.map (fun ptyp ->
+                    (ptyp.ptype_loc, formatOneTypeDefStandard (atom "and") ptyp)
+                  ) typeList
+                ) in
+                makeList ~indent:0 ~inline:(true, true) ~break:Always_rec (
+                  groupAndPrint
+                    ~xf:snd
+                    ~getLoc:fst
+                    ~comments:self#comments
+                    items
+                )
 
   method type_variant_leaf ?opt_ampersand:(a=false) ?polymorphic:(p=false) = self#type_variant_leaf1 a p true
   method type_variant_leaf_nobar ?opt_ampersand:(a=false) ?polymorphic:(p=false) = self#type_variant_leaf1 a p false

@@ -2336,6 +2336,7 @@ type recursiveType =
   | Blah
   /* Second variant of first mutually recursive */
   | Another(option(anotherRecursiveType))
+
 /*
  * Commenting second of two mutually recursive types.
  */
