@@ -3341,10 +3341,16 @@ let_bindings: let_binding and_let_binding* { addlbs $1 $2 };
 
 let_binding:
   (* Form with item extension sugar *)
-  item_attributes LET item_extension_sugar? rec_flag let_binding_body
+  item_attributes LET let_combinator? item_extension_sugar? rec_flag let_binding_body
   { let loc = mklocation $symbolstartpos $endpos in
-    let pat, expr = $5 in
-    mklbs $3 $4 (Vb.mk ~loc ~attrs:$1 pat expr) loc }
+    let pat, expr = $6 in
+    let ext = match ($4, $3) with
+    | (None, None) -> None
+    | (Some ext, None) -> Some ext
+    | (None, Some ident) -> Some ([], Location.mkloc ("refmt.let_combinator." ^ (String.concat "." (Longident.flatten ident.txt))) ident.loc)
+    | (Some _, Some _) -> raise Syntaxerr.(Error(Not_expecting(loc, "let!Foo cannot be combined with let%Foo")))
+    in
+    mklbs ext $5 (Vb.mk ~loc ~attrs:$1 pat expr) loc }
 ;
 
 let_binding_body:
@@ -4840,6 +4846,10 @@ attribute:
 
 item_extension_sugar:
   PERCENT attr_id { ([], $2) }
+;
+
+let_combinator:
+  BANG as_loc(mod_longident) { $2 }
 ;
 
 extension:
