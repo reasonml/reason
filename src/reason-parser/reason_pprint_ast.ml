@@ -170,9 +170,21 @@ let expression_not_immediate_extension_sugar x =
   | (Some _, _) -> None
   | (None, _) -> expression_extension_sugar x
 
+let string_cut_prefix str prefix =
+  let len = (String.length prefix) in
+  if (String.sub str 0 len = prefix) then
+    Some (String.sub str len ((String.length str) - len))
+  else
+    None
+
 let add_extension_sugar keyword = function
   | None -> keyword
-  | Some str -> keyword ^ "%" ^ str.txt
+  | Some str ->
+    begin
+      match (keyword, string_cut_prefix str.txt "refmt.let_combinator.") with
+      | ("let", Some suffix) -> keyword ^ "!" ^ suffix
+      | _ -> keyword ^ "%" ^ str.txt
+    end
 
 let string_equal : string -> string -> bool = (=)
 
