@@ -4110,7 +4110,7 @@ let printer = object(self:'self)
           ) in
             let layout = (self#access "[" "]"
                     lhs
-                    (makeList ~wrap:("\"", "\"") [(self#unparseExpr rightExpr)]))
+                    (makeList ~wrap:("'", "'") [(self#unparseExpr rightExpr)]))
             in
             SpecificInfixPrecedence ({reducePrecedence=token; shiftPrecedence=token}, LayoutNode layout)
           | _ ->
