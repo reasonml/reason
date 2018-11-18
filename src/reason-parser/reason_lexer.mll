@@ -471,6 +471,11 @@ rule token = parse
         CHAR (Lexing.lexeme_char lexbuf 1) }
   | "'" [^ '\\' '\'' '\010' '\013'] "'"
       { CHAR(Lexing.lexeme_char lexbuf 1) }
+  (* # is the difference of regexes *)
+  | "'" (identchar # ['\''])+ "'"
+      { let l = Lexing.lexeme lexbuf in
+        let s = String.sub l 1 (String.length l - 2) in
+        STATIC_IDENT(s) }
   | "'\\" ['\\' '\'' '"' 'n' 't' 'b' 'r' ' '] "'"
       { CHAR(char_for_backslash (Lexing.lexeme_char lexbuf 2)) }
   | "'\\" ['0'-'9'] ['0'-'9'] ['0'-'9'] "'"

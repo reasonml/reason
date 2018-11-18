@@ -1226,6 +1226,7 @@ let add_brace_attr expr =
 %token WITH
 %token <string * Location.t> COMMENT
 %token <string> DOCSTRING
+%token <string> STATIC_IDENT
 
 %token EOL
 
@@ -2886,17 +2887,13 @@ mark_position_exp
     { mkexp(Pexp_apply(mkoperator $1, [Nolabel,$2])) }
   | simple_expr DOT as_loc(label_longident) EQUAL expr
     { mkexp(Pexp_setfield($1, $3, $5)) }
-  | simple_expr LBRACKET QUOTE as_loc(ident) RBRACKET EQUAL expr
-    { let {loc; txt} = $4 in
-      match txt.[String.length txt - 1] with
-      | '\'' ->
-        let label = String.sub txt 0 (String.length txt - 1) in
-        let label_exp = mkexp (Pexp_ident (mkloc (Lident label) loc)) ~loc in
-        mkinfixop
-          (mkinfixop $1 (mkoperator (ghloc "##")) label_exp)
-          (mkoperator (ghloc "#="))
-          $7
-      | _ -> expecting (with_txt $4 "quote (')")
+  | simple_expr LBRACKET as_loc(STATIC_IDENT) RBRACKET EQUAL expr
+    { let {loc; txt} = $3 in
+      let label_exp = mkexp (Pexp_ident (mkloc (Lident txt) loc)) ~loc in
+      mkinfixop
+        (mkinfixop $1 (mkoperator (ghloc "##")) label_exp)
+        (mkoperator (ghloc "#="))
+        $6
     }
   | simple_expr LBRACKET expr RBRACKET EQUAL expr
     { let {pexp_attributes;  pexp_desc } = $3 in
@@ -3049,14 +3046,10 @@ parenthesized_expr:
       mkexp(Pexp_open (Fresh, $1,
                        mkexp(Pexp_object(Cstr.mk pat []))))
     }
-  | E LBRACKET QUOTE as_loc(ident) RBRACKET
-    { let {loc; txt} = $4 in
-      match txt.[String.length txt - 1] with
-      | '\'' ->
-        let label = String.sub txt 0 (String.length txt - 1) in
-        let label_exp = mkexp (Pexp_ident (mkloc (Lident label) loc)) ~loc in
-        (mkinfixop $1 (mkoperator (ghloc "##")) label_exp)
-      | _ -> expecting (with_txt $4 "quote (')")
+  | E LBRACKET as_loc(STATIC_IDENT) RBRACKET
+    { let {loc; txt} = $3 in
+      let label_exp = mkexp (Pexp_ident (mkloc (Lident txt) loc)) ~loc in
+      (mkinfixop $1 (mkoperator (ghloc "##")) label_exp)
     }
   | E LBRACKET expr RBRACKET
     { let {pexp_attributes;  pexp_desc } = $3 in
