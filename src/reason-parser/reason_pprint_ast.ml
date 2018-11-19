@@ -2092,28 +2092,6 @@ let isSingleArgParenApplication = function
   | [({pexp_attributes = []} as exp)] when (is_simple_list_expr exp) -> true
   | _ -> false
 
-let rec isChainOfSugarGetExprs = function
-  | {pexp_desc = (Pexp_apply (eFun, (_,e1)::(_, e2)::_))} ->
-      if printedStringAndFixityExpr eFun = Infix "##" then begin
-        match e1.pexp_desc, e2.pexp_desc with
-        | Pexp_ident {txt = Lident _}, Pexp_ident {txt = Lident _} -> true
-        | _, Pexp_ident {txt = Lident _} -> isChainOfSugarGetExprs e1
-        | _ -> false
-      end else begin match eFun.pexp_desc with
-        | Pexp_ident ({txt = Ldot (Lident "Array", op)})
-        | Pexp_ident ({txt = Ldot (Lident "String", op)})
-        | Pexp_ident ({txt = Ldot (Ldot (Lident "Bigarray", _), op)})
-          when op = "get" || op = "unsafe_get"
-          -> (
-            match e1.pexp_desc with
-            | Pexp_ident ({txt = Lident _}) -> true
-            | _ -> isChainOfSugarGetExprs e1
-          )
-        | _ -> false
-    end
-  | {pexp_desc = Pexp_field (lhs, _)} -> isChainOfSugarGetExprs lhs
-  | _ -> false
-
 (*
  * Determines if the arguments of a constructor pattern match need
  * special printing. If there's one argument & they have some kind of wrapping,
@@ -3465,13 +3443,6 @@ let printer = object(self:'self)
     if e.pexp_attributes != [] then None
     (* should also check attributes underneath *)
     else match e.pexp_desc with
-      | Pexp_apply ({pexp_desc=Pexp_ident{txt=Lident "#="}}, [(_,e1);(_,e2)])
-        when isChainOfSugarGetExprs e1 ->
-        let token = Token sharpOpEqualToken in
-        let formattedLeftItm = self#unparseResolvedRule (
-          self#ensureExpression ~reducesOnToken:token e1
-        ) in
-        Some (formattedLeftItm, e2)
       | Pexp_apply ({pexp_desc=Pexp_ident{txt=Ldot (Lident ("Array"), "set")}}, [(_,e1);(_,e2);(_,e3)]) ->
         let prec = Custom "prec_lbracket" in
         let lhs = self#unparseResolvedRule (
@@ -4005,10 +3976,10 @@ let printer = object(self:'self)
           Simple (label k v)
         else
           let prec = Custom "prec_lbracket" in
-          let lhs = self#unparseResolvedRule (
-            self#ensureExpression ~reducesOnToken:prec e1
-          ) in
-          let rhs = self#unparseExpr e2 in
+            let lhs = self#unparseResolvedRule (
+              self#ensureExpression ~reducesOnToken:prec e1
+            ) in
+            let rhs = self#unparseExpr e2 in
           SpecificInfixPrecedence
             ({reducePrecedence=prec; shiftPrecedence=prec}, LayoutNode (self#access ".[" "]" lhs rhs))
       | (
@@ -4023,13 +3994,10 @@ let printer = object(self:'self)
           Simple (label k v)
         else
           let formattedList = List.map self#unparseExpr ls in
-          let prec = Custom "prec_lbracket" in
-          let lhs = self#unparseResolvedRule (
-            self#ensureExpression ~reducesOnToken:prec e1
-          ) in
-          let lhsAndDot = makeList [lhs; atom "."] in
+          let lhs = makeList [(self#simple_enough_to_be_lhs_dot_send e1); atom "."] in
           let rhs = makeList ~break:IfNeed ~postSpace:true ~sep:commaSep ~wrap:("{", "}") formattedList in
-          SpecificInfixPrecedence ({reducePrecedence=prec; shiftPrecedence=prec}, LayoutNode (label lhsAndDot rhs))
+          let prec = Custom "prec_lbracket" in
+          SpecificInfixPrecedence ({reducePrecedence=prec; shiftPrecedence=prec}, LayoutNode (label lhs rhs))
       | (
         {pexp_desc= Pexp_ident {txt=
                                   Ldot (Ldot (Lident "Bigarray", (("Array1"|"Array2"|"Array3") as arrayIdent)), "get")}
@@ -4044,13 +4012,10 @@ let printer = object(self:'self)
           Simple (label k v)
         else
           let formattedList = List.map self#unparseExpr (List.map snd rest) in
-          let prec = Custom "prec_lbracket" in
-          let lhs = self#unparseResolvedRule (
-            self#ensureExpression ~reducesOnToken:prec e1
-          ) in
-          let lhsAndDot = makeList [lhs; atom "."] in
+          let lhs = makeList [(self#simple_enough_to_be_lhs_dot_send e1); atom "."] in
           let rhs = makeList ~break:IfNeed ~postSpace:true ~sep:commaSep ~wrap:("{", "}") formattedList in
-          SpecificInfixPrecedence ({reducePrecedence=prec; shiftPrecedence=prec}, LayoutNode (label lhsAndDot rhs))
+          let prec = Custom "prec_lbracket" in
+          SpecificInfixPrecedence ({reducePrecedence=prec; shiftPrecedence=prec}, LayoutNode (label lhs rhs))
       | _ -> (
 
           match (self#sugar_set_expr_parts x) with
@@ -4101,40 +4066,27 @@ let printer = object(self:'self)
           )
           in
           Simple (label ~space:forceSpace leftItm (atom postfixStr))
-        | (Infix printedIdent, [(Nolabel, leftExpr); (Nolabel, rightExpr)]) -> (
-          match printedIdent, rightExpr with
-          | "##", {pexp_desc = Pexp_ident({txt = Lident _})} ->
-            let token = Token printedIdent in
-            let lhs = self#unparseResolvedRule (
-              self#ensureExpression ~reducesOnToken:token leftExpr
+        | (Infix printedIdent, [(Nolabel, leftExpr); (Nolabel, rightExpr)]) ->
+          let infixToken = Token printedIdent in
+          let rightItm = self#ensureContainingRule ~withPrecedence:infixToken ~reducesAfterRight:rightExpr () in
+          let leftItm = self#ensureExpression ~reducesOnToken:infixToken leftExpr in
+          (* Left exprs of infix tokens which we don't print spaces for (e.g. `##`)
+             need to be wrapped in parens in the case of postfix `^`. Otherwise,
+             printing will be ambiguous as `^` is also a valid start of an infix
+             operator. *)
+          let formattedLeftItm = (match leftItm with
+            | LayoutNode x -> begin match leftExpr.pexp_desc with
+                | Pexp_apply (e,_) ->
+                  (match printedStringAndFixityExpr e with
+                   | UnaryPostfix "^" when requireNoSpaceFor printedIdent ->
+                     LayoutNode (formatPrecedence ~loc:leftExpr.pexp_loc x)
+                   | _ -> leftItm)
+                | _ -> leftItm
+              end
+            | InfixTree _ -> leftItm
           ) in
-            let layout = (self#access "[" "]"
-                    lhs
-                    (makeList ~wrap:("\"", "\"") [(self#unparseExpr rightExpr)]))
-            in
-            SpecificInfixPrecedence ({reducePrecedence=token; shiftPrecedence=token}, LayoutNode layout)
-          | _ ->
-            let infixToken = Token printedIdent in
-            let rightItm = self#ensureContainingRule ~withPrecedence:infixToken ~reducesAfterRight:rightExpr () in
-            let leftItm = self#ensureExpression ~reducesOnToken:infixToken leftExpr in
-            (* Left exprs of infix tokens which we don't print spaces for (e.g. `##`)
-               need to be wrapped in parens in the case of postfix `^`. Otherwise,
-               printing will be ambiguous as `^` is also a valid start of an infix
-               operator. *)
-            let formattedLeftItm = (match leftItm with
-              | LayoutNode x -> begin match leftExpr.pexp_desc with
-                  | Pexp_apply (e,_) ->
-                    (match printedStringAndFixityExpr e with
-                     | UnaryPostfix "^" when requireNoSpaceFor printedIdent ->
-                       LayoutNode (formatPrecedence ~loc:leftExpr.pexp_loc x)
-                     | _ -> leftItm)
-                  | _ -> leftItm
-                end
-              | InfixTree _ -> leftItm
-            ) in
-            let infixTree = InfixTree (printedIdent, formattedLeftItm, rightItm) in
-            SpecificInfixPrecedence ({reducePrecedence=infixToken; shiftPrecedence=infixToken}, infixTree)
-        )
+          let infixTree = InfixTree (printedIdent, formattedLeftItm, rightItm) in
+          SpecificInfixPrecedence ({reducePrecedence=infixToken; shiftPrecedence=infixToken}, infixTree)
         (* Will be rendered as `(+) a b c` which is parsed with higher precedence than all
            the other forms unparsed here.*)
         | (UnaryPlusPrefix printedIdent, [(Nolabel, rightExpr)]) ->
@@ -7729,7 +7681,8 @@ let printer = object(self:'self)
     let formattedFunExpr = match funExpr.pexp_desc with
       (* fast pipe chain or sharpop chain as funExpr, no parens needed, we know how to parse *)
       | Pexp_apply ({pexp_desc = Pexp_ident {txt = Lident s}}, _)
-        when requireNoSpaceFor s -> self#unparseExpr funExpr
+        when requireNoSpaceFor s ->
+        self#unparseExpr funExpr
       | Pexp_field _ -> self#unparseExpr funExpr
       | _ -> self#simplifyUnparseExpr funExpr
     in
