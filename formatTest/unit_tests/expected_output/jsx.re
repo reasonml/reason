@@ -121,13 +121,13 @@ let icon =
 
 <MessengerSharedPhotosAlbumViewPhotoReact
   ref=?{
-    foo["bar"] === baz ?
+    foo##bar === baz ?
       Some(
         foooooooooooooooooooooooo(setRefChild),
       ) :
       None
   }
-  key=node["legacy_attachment_id"]
+  key=node##legacy_attachment_id
 />;
 
 /* punning */
@@ -248,21 +248,21 @@ let (/></) = (a, b) => a + b;
 let x = foo /></ bar;
 
 /* https://github.com/facebook/reason/issues/870 */
-<div onClick=this["handleClick"]>
+<div onClick=this##handleClick>
   <> foo </>
 </div>;
 
-<div onClick=this["handleClick"]>
+<div onClick=this##handleClick>
   <> {foo(bar)} </>
 </div>;
 
 /* function application */
-<div onClick=this["handleClick"]>
+<div onClick=this##handleClick>
   <> {foo(bar)} </>
 </div>;
 
 /* tuple, not function application */
-<div onClick=this["handleClick"]>
+<div onClick=this##handleClick>
   <> foo bar </>
 </div>;
 
