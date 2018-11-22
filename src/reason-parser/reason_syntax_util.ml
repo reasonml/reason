@@ -153,6 +153,17 @@ let escape_string str =
 
 (* #if defined BS_NO_COMPILER_PATCH then *)
 
+(*
+    UTF-8 characters are encoded like this (most editors are UTF-8)
+    0xxxxxxx (length 1)
+    110xxxxx 10xxxxxx (length 2)
+    1110xxxx 10xxxxxx 10xxxxxx (length 3)
+    11110xxx 10xxxxxx 10xxxxxx 10xxxxxx (length 4)
+   Numbers over 127 cannot be encoded in UTF in a single byte, so they use two
+  bytes. That means we can use any characters between 128-255 to encode special
+  characters that would never be written by the user and thus never be confused
+  for our special formatting characters.
+*)
 (* Logic for handling special behavior that only happens if things break. We
   use characters that will never appear in the printed output if actually
   written in source code. The OCaml formatter will replace them with the escaped
@@ -166,6 +177,16 @@ module TrailingCommaMarker = struct
   (* A trailing comma will only be rendered if it is not immediately
    * followed by a closing paren, bracket, or brace *)
   let char = Char.chr 249 (* ˘ *)
+  let string = String.make 1 char
+end
+
+(* Special character marking the end of a line. Nothing should be printed
+ * after this marker. Example usage: // comments shouldn't have content printed
+ * at the end of the comment. By attaching an EOLMarker.string at the end of the
+ * comment our postprocessing step will ensure a linebreak at the position
+ * of the marker. *)
+module EOLMarker = struct
+  let char = Char.chr 248
   let string = String.make 1 char
 end
 
@@ -291,11 +312,15 @@ let processLine line =
       String.get rightTrimmed (trimmedLen - 1) = TrailingCommaMarker.char
     in
     let almostEverything = String.concat "" segments in
-    if hadTrailingCommaMarkerBeforeNewline then
+    let lineBuilder = if hadTrailingCommaMarkerBeforeNewline then
       almostEverything ^ ","
     else
       almostEverything
-
+    in
+    (* Ensure EOLMarker.char is replaced by a newline *)
+    split_by ~keep_empty:false (fun c -> c = EOLMarker.char) lineBuilder
+    |> List.map trim_right
+    |> String.concat "\n"
 
 let processLineEndingsAndStarts str =
   split_by ~keep_empty:true (fun x -> x = '\n') str
