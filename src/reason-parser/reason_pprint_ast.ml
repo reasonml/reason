@@ -3351,7 +3351,7 @@ let printer = object(self:'self)
     match opt, lbl with
     | None, Optional _ -> makeList [param; atom "=?"]
     | None, _ -> param
-    | Some o, _ -> makeList  [param; atom "="; (self#unparseConstraintExpr ~ensureExpr:true o)]
+    | Some o, _ -> makeList [param; atom "="; (self#unparseProtectedExpr ~forceParens:true o)]
 
   method access op cls e1 e2 = makeList [
     (* Important that this be not breaking - at least to preserve same
@@ -3600,13 +3600,13 @@ let printer = object(self:'self)
    * TODO: in the future we should probably use the type ruleCategory
    * to 'automatically' ensure the validity of a constraint expr with parens...
    *)
-  method unparseConstraintExpr ?(ensureExpr=false) e =
+  method unparseProtectedExpr ?(forceParens=false) e =
     let itm =
       match e with
       | { pexp_attributes = []; pexp_desc = Pexp_constraint (x, ct)} ->
         let x = self#unparseExpr x in
         let children = [x; label ~space:true (atom ":") (self#core_type ct)] in
-        if ensureExpr then
+        if forceParens then
           makeList ~wrap:("(", ")") children
         else makeList children
       | { pexp_attributes; pexp_desc = Pexp_constant c } ->
@@ -3617,13 +3617,14 @@ let printer = object(self:'self)
           let raw_literal, pexp_attributes =
             extract_raw_literal pexp_attributes
           in
-          let constant = self#constant ?raw_literal ~parens:ensureExpr c in
+          let constant = self#constant ?raw_literal ~parens:forceParens c in
           begin match pexp_attributes with
           | [] -> constant
           | attrs ->
               let formattedAttrs = makeSpacedBreakableInlineList (List.map self#item_attribute attrs) in
                makeSpacedBreakableInlineList [formattedAttrs; constant]
           end
+      | {pexp_desc = Pexp_fun _ } -> self#formatPexpFun e
       | x -> self#unparseExpr x
     in
     source_map ~loc:e.pexp_loc itm
@@ -4572,21 +4573,29 @@ let printer = object(self:'self)
     in
     let returnExpr = match (self#letList return) with
     | [x] ->
-      (* Format `=> handleChange(event)}` or
-       * =>
-       *   handleChange(event)
+      (* Format `handleChange(event)}` or
+       *  handleChange(event)
        * }
+       *
+       * If the closing rwrap is empty, we need it to be inline, otherwise
+       * we get a empty newline when the layout breaks:
+       * ```
+       *  handleChange(event)
+       *
+       * ```
+       * (Notice to nonsense newline)
        *)
-       makeList ~break:IfNeed ~wrap:("=> ", rwrap) [x]
+       let inlineClosing = rwrap = "" in
+       makeList ~break:IfNeed ~inline:(true, inlineClosing) ~wrap:("", rwrap) [x]
     | xs ->
       (* Format `Js.log(event)` and `handleChange(event)` as
-       * => {
+       * {
        *   Js.log(event);
        *   handleChange(event);
        * }}
        *)
         makeList
-          ~break:Always_rec ~sep:(SepFinal (";", ";")) ~wrap:("=> {", "}" ^ rwrap)
+          ~break:Always_rec ~sep:(SepFinal (";", ";")) ~wrap:("{", "}" ^ rwrap)
           xs
     in
     match optConstr with
@@ -4596,9 +4605,13 @@ let printer = object(self:'self)
           (makeList ~wrap:("", ":") [propNameWithArgs])
           typeConstraint
       in
-      label ~space:true upToConstraint returnExpr
+      label ~space:true
+        (makeList ~wrap:("", " =>") [upToConstraint])
+        returnExpr
     | None ->
-      label ~space:true propNameWithArgs returnExpr
+      label ~space:true
+        (makeList ~wrap:("", " =>") [propNameWithArgs])
+        returnExpr
 
   (* Creates a list of simple module expressions corresponding to module
      expression or functor application. *)
@@ -5408,10 +5421,11 @@ let printer = object(self:'self)
         | exprList when isSingleArgParenApplication exprList ->
             (false, self#singleArgParenApplication exprList)
         | _ ->
-            (not arityIsClear, makeTup (List.map self#unparseConstraintExpr l)))
+            (not arityIsClear, makeTup (List.map self#unparseProtectedExpr l)))
       | _ when isSingleArgParenApplication [eo] ->
           (false, self#singleArgParenApplication [eo])
-      | _ -> (false, makeTup [self#unparseConstraintExpr eo])
+      | _ ->
+          (false, makeTup [self#unparseProtectedExpr eo])
     in
     let arguments = source_map ~loc:eo.pexp_loc arguments in
     let construction =
@@ -7609,7 +7623,7 @@ let printer = object(self:'self)
 
 
   method label_x_expression_param (l, e) =
-    let term = self#unparseConstraintExpr e in
+    let term = self#unparseProtectedExpr e in
     let param = match (l, e) with
       | (Nolabel, _) -> term
       | (Labelled lbl, _) when is_punned_labelled_expression e lbl ->
