@@ -25,6 +25,7 @@ val escape_string : string -> string
 (* #if defined BS_NO_COMPILER_PATCH then *)
 
 module TrailingCommaMarker : sig val char : char val string : string end
+module EOLMarker : sig val char : char val string : string end
 
 val pick_while : ('a -> bool) -> 'a list -> 'a list * 'a list
 

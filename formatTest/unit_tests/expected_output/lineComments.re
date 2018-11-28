@@ -150,7 +150,8 @@ type t3 = (int, int); // End of line on (int, int)
 
 type variant =
   | X(int, int) // End of line on X
-  | Y(int, int); // End of line on Y // Comment on entire type def for variant
+  | Y(int, int); // End of line on Y
+// Comment on entire type def for variant
 
 // Before let
 let res =
@@ -328,7 +329,8 @@ if (true) {
 type color =
   | Red(int) // After red end of line
   | Black(int) // After black end of line
-  | Green(int); // After green end of line // On next line after color type def
+  | Green(int); // After green end of line
+// On next line after color type def
 
 let blahCurriedX = x =>
   fun
@@ -337,7 +339,8 @@ let blahCurriedX = x =>
   | Green(10) => 1 // After or pattern green
   | Red(x) => 0 // After red
   | Black(x) => 0 // After black
-  | Green(x) => 0; // After second green // On next line after blahCurriedX def
+  | Green(x) => 0; // After second green
+// On next line after blahCurriedX def
 
 let name_equal = (x, y) => {
   x == y;
