@@ -69,7 +69,16 @@ let refmt
     let (ast, parsedAsML) =
       Printer.parse ~use_stdin parse_ast input_file
     in
-    let output_chan = Printer_maker.prepare_output_file output_file in
+    let force_binary =
+        (* For Windows, when printing non-binary values, we need to use the non-binary I/O 
+           methods in order to get proper newline treatment. More info in ocaml/ocaml#2172. *)
+        match (Sys.win32, print) with
+        | (true, `ML) -> false
+        | (true, `Reason) -> false
+        (* For all non-Windows and non-text cases, we need to force binary channel mode *)
+        | _ -> true
+    in
+    let output_chan = Printer_maker.prepare_output_file output_file force_binary in
     (* If you run into trouble with this (or need to use std_formatter by
        itself at the same time for some reason), try breaking this out so that
        it's not possible to call Format.formatter_of_out_channel on stdout. *)

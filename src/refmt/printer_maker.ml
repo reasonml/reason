@@ -25,9 +25,13 @@ module type PRINTER =
 
 let err s = raise (Invalid_config s)
 
-let prepare_output_file = function
-    | Some name -> open_out_bin name
-    | None -> set_binary_mode_out stdout true; stdout
+let prepare_output_file name force_binary =
+    match (name, force_binary) with
+    (* Workaround for ocaml/ocaml#2172 *)
+    (* Note that the open_out/open_out_bin differentation only matters on Windows *)
+    | (Some name, true) -> open_out_bin name
+    | (Some name, false) -> open_out name
+    | (None, x) -> set_binary_mode_out stdout x; stdout
 
 let close_output_file output_file output_chan =
     match output_file with
