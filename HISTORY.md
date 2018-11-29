@@ -1,6 +1,7 @@
-## Next
+## Next Release
 
 - Support for `//Rest Of Line comments` ([2268](https://github.com/facebook/reason/pull/2146))
+- Allow Reason to be used with Merlin Natively on Windows [2256](https://github.com/facebook/reason/pull/2256)
 
 ## 3.3.4
 
