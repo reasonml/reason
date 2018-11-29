@@ -1,3 +1,7 @@
+## Next
+
+- Support for `//Rest Of Line comments` ([2268](https://github.com/facebook/reason/pull/2146))
+
 ## 3.3.4
 
 Fixes:
