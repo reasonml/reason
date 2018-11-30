@@ -26,8 +26,6 @@ jobs:
     OCAML_VERSION: 4.02.3
 
   steps:
-  - script: sudo apt-get update
-  - script: sudo apt-get opam
   - template: opam-build-steps.yml
 
 - job: MacOS_esy

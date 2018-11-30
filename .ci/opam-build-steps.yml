@@ -4,6 +4,10 @@ steps:
   - task: NodeTool@0
     inputs:
       versionSpec: '8.9'
+  - script: sudo apt-get update
+    displayName: 'sudo apt-get update'
+  - script: sudo apt install opam
+    displayName: 'sudo apt install opam'
   - script: opam init --auto-setup --dot-profile=~/.bash_profile
     displayName: 'opam init'
   - script: opam remote add ocamlorg https://opam.ocaml.org || true
