@@ -17,6 +17,18 @@ jobs:
   - template: esy-build-steps.yml
   # - template: publish-build-cache.yml
 
+- job: Linux_opam_4060
+  timeoutInMinutes: 0
+  pool:
+    vmImage: 'Ubuntu 16.04'
+
+  variables:
+    OCAML_VERSION: 4.06.0
+
+  steps:
+  - template: opam-build-steps.yml
+
+
 - job: Linux_opam_4023
   timeoutInMinutes: 0
   pool:
