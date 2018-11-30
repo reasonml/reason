@@ -22,6 +22,8 @@ steps:
     displayName: 'opam install -y menhir'
   - script: opam install -y utop
     displayName: 'opam install -y utop'
+  - script: ocaml --version
+    displayName: 'Check ocaml version'
   - script: make clean-for-ci
     displayName: 'make clean-for-ci'
   - script: opam pin add -y reason .
