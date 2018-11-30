@@ -10,7 +10,7 @@ open Cmdliner
 
 let read_lines file =
   let list = ref [] in
-  let chan = open_in file in
+  let chan = open_in_bin file in
   try
     while true do
       list := input_line chan :: !list
@@ -19,6 +19,20 @@ let read_lines file =
   with End_of_file ->
     close_in chan;
     List.rev !list
+
+let get_line_ending s =
+    let r = Str.regexp ".*\r\n$" in
+    try ignore (Str.search_forward r s 0); "\r\n"
+    with Not_found -> "\n"
+
+let get_eol lines =
+    match lines with
+    | [] -> 
+            print_endline "empty list";
+            "\n"
+    | hd :: tl -> 
+            print_endline "hd";
+            get_line_ending hd
 
 let refmt
     interface
@@ -44,6 +58,11 @@ let refmt
     let constructorLists = match heuristics_file with
       | Some f_name -> read_lines f_name
       | None -> []
+    in
+    let eol = get_eol constructorLists in
+    let _ = match eol with
+    | "\n" -> print_endline("LF");
+    | "\r\n" -> print_endline("CRLF");
     in
     let interface = match interface with
       | true -> true
