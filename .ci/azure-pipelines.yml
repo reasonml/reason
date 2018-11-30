@@ -1,11 +1,8 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
+# Reason build pipeline
 
 name: $(Build.SourceVersion)
 jobs:
-- job: Linux
+- job: Linux (esy)
   timeoutInMinutes: 0
   pool:
     vmImage: 'Ubuntu 16.04'
@@ -20,7 +17,20 @@ jobs:
   - template: esy-build-steps.yml
   # - template: publish-build-cache.yml
 
-- job: MacOS
+- job: Linux (opam+ocaml@4.02.3)
+  timeoutInMinutes: 0
+  pool:
+    vmImage: 'Ubuntu 16.04'
+
+  variables:
+    OCAML_VERSION: 4.02.3
+
+  steps:
+  - script: sudo apt-get update
+  - script: sudo apt-get opam
+  - template: opam-build-steps.yml
+
+- job: MacOS (esy)
   timeoutInMinutes: 0
   pool:
     vmImage: 'macOS 10.13'
@@ -35,7 +45,7 @@ jobs:
   - template: esy-build-steps.yml
   # - template: publish-build-cache.yml
 
-- job: Windows
+- job: Windows -esy
   timeoutInMinutes: 0
   pool:
     vmImage: 'vs2017-win2016'
