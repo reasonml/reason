@@ -20,3 +20,11 @@ steps:
     displayName: 'opam install -y utop'
   - script: make clean-for-ci
     displayName: 'make clean-for-ci'
+  - script: opam pin add -y reason .
+    displayName: "opam pin add -y reason ."
+  - script: opam pin add -y rtop .
+    displayName: "opam pin add -y rtop ."
+  - script: make test-ci
+    displayName: "make test-ci"
+  - script: git diff --exit-code
+    displayName: "Check git is clean"

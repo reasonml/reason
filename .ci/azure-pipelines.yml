@@ -2,7 +2,7 @@
 
 name: $(Build.SourceVersion)
 jobs:
-- job: Linux (esy)
+- job: Linux_esy
   timeoutInMinutes: 0
   pool:
     vmImage: 'Ubuntu 16.04'
@@ -17,7 +17,7 @@ jobs:
   - template: esy-build-steps.yml
   # - template: publish-build-cache.yml
 
-- job: Linux (opam+ocaml@4.02.3)
+- job: Linux_opam_4023
   timeoutInMinutes: 0
   pool:
     vmImage: 'Ubuntu 16.04'
@@ -30,7 +30,7 @@ jobs:
   - script: sudo apt-get opam
   - template: opam-build-steps.yml
 
-- job: MacOS (esy)
+- job: MacOS_esy
   timeoutInMinutes: 0
   pool:
     vmImage: 'macOS 10.13'
@@ -45,7 +45,7 @@ jobs:
   - template: esy-build-steps.yml
   # - template: publish-build-cache.yml
 
-- job: Windows -esy
+- job: Windows_esy
   timeoutInMinutes: 0
   pool:
     vmImage: 'vs2017-win2016'
@@ -58,20 +58,3 @@ jobs:
   - template: restore-build-cache.yml
   - template: esy-build-steps.yml
   - template: publish-build-cache.yml
-
-- job: Release
-  timeoutInMinutes: 0
-  displayName: Release
-  dependsOn:
-      - Linux
-      - MacOS
-      - Windows
-  condition: succeeded()
-  pool:
-     vmImage: ubuntu-16.04
-  steps:
-    - task: PublishBuildArtifacts@1
-      displayName: 'Release Package'
-      inputs:
-          PathtoPublish: '.'
-          ArtifactName: npm-package
