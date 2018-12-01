@@ -50,6 +50,10 @@ let refmt
       | Some name -> (false, name)
       | None -> (true, "")
     in
+    let eol = match use_stdin, input_file with
+      | (true, _) -> Eol_detect.default_eol
+      | (false, name) -> Eol_detect.get_eol_for_file name
+    in
     let parse_ast = match parse_ast, use_stdin with
       | (Some x, _) -> x
       | (None, false) -> `Auto
@@ -58,11 +62,6 @@ let refmt
     let constructorLists = match heuristics_file with
       | Some f_name -> read_lines f_name
       | None -> []
-    in
-    let eol = get_eol constructorLists in
-    let _ = match eol with
-    | "\n" -> print_endline("LF");
-    | "\r\n" -> print_endline("CRLF");
     in
     let interface = match interface with
       | true -> true
@@ -89,11 +88,15 @@ let refmt
       Printer.parse ~use_stdin parse_ast input_file
     in
     let force_binary =
-        (* For Windows, when printing non-binary values, we need to use the non-binary I/O 
-           methods in order to get proper newline treatment. More info in ocaml/ocaml#2172. *)
-        match (Sys.win32, print) with
-        | (true, `ML) -> false
-        | (true, `Reason) -> false
+        (* If we require CRLF endings, we need text mode - 'open_out' 
+           If we require LF endings, we need binary mode - 'open_out_bin
+           NOTE: There is one gap in this logic - if we process a CRLF
+           file on Mac/Linux, both 'open_out' text mode does no conversion,
+           therefore CRLF will still be converted to LF in that case.
+           We would need an additional conversion step to handle this case *)
+        match (eol, print) with
+        | (CRLF, `ML) -> false
+        | (CRLF, `Reason) -> false
         (* For all non-Windows and non-text cases, we need to force binary channel mode *)
         | _ -> true
     in
