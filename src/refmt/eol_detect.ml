@@ -34,14 +34,3 @@ with
     close_in ic;
     !eol_char;
 ;;
-
-let () =
-    print_endline (show (get_eol_from_string "\r\n"));
-    print_endline (show (get_eol_from_string "test2\r\n"));
-    print_endline (show (get_eol_from_string "\r\ntest2\n"));
-    print_endline (show (get_eol_from_string ""));
-    print_endline (show (get_eol_from_string "\n"));
-    print_endline (show (get_eol_from_string "test\n"));
-    print_endline (show (get_eol_for_file "test.lf"));
-    print_endline (show (get_eol_for_file "test.crlf"));
-    ();
