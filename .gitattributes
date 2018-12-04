@@ -5,3 +5,6 @@ docs/vendor/** binary
 docs/flatdoc.js binary
 
 bspacks/bspack_source/* binary
+
+formatTest/unit_tests/input/assert.crlf.re text eol=crlf
+formatTest/unit_tests/expected_output/assert.crlf.re text eol=crlf
