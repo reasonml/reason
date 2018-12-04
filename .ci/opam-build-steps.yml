@@ -4,8 +4,12 @@ steps:
   - task: NodeTool@0
     inputs:
       versionSpec: '8.9'
-  - script: sh <(curl -sL https://raw.githubusercontent.com/ocaml/opam/master/shell/install.sh)
-    displayName: "Install OPAM via shell script"
+  - script: curl https://github.com/ocaml/opam/releases/download/2.0.1/opam-2.0.1-x86_64-linux -o /usr/local/bin/opam
+    displayName: "Download 2.0.1 opam release"
+  - script: sudo chmod a+x /usr/local/bin/opam
+    displayName: "Set executable permission"
+  - script: opam --version
+    displayName: 'Check opam version'
   - script: opam init --auto-setup --dot-profile=~/.bash_profile
     displayName: 'opam init'
   - script: opam remote add ocamlorg https://opam.ocaml.org || true
@@ -14,8 +18,6 @@ steps:
     displayName: 'opam remove default'
   - script: opam update
     displayName: 'opam update'
-  - script: opam --version
-    displayName: 'Check opam version'
   - script: opam switch create $(OCAML_VERSION)
     displayName: 'Use OCaml version: $(OCAML_VERSION)'
   - script: opam install -y dune
