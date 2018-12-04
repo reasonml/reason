@@ -4,7 +4,7 @@ steps:
   - task: NodeTool@0
     inputs:
       versionSpec: '8.9'
-  - script: sudo curl https://github.com/ocaml/opam/releases/download/2.0.1/opam-2.0.1-x86_64-linux -o /usr/local/bin/opam
+  - script: sudo curl -L https://github.com/ocaml/opam/releases/download/2.0.1/opam-2.0.1-x86_64-linux -o /usr/local/bin/opam
     displayName: "Download 2.0.1 opam release"
   - script: sudo chmod a+x /usr/local/bin/opam
     displayName: "Set executable permission"
