@@ -17,6 +17,17 @@ jobs:
   - template: esy-build-steps.yml
   # - template: publish-build-cache.yml
 
+- job: Mac_opam_4071
+  timeoutInMinutes: 0
+  pool:
+    vmImage: 'macOS 10.13'
+
+  variables:
+    OCAML_VERSION: 4.07.1
+
+  steps:
+  - template: opam-build-steps.yml
+
 - job: Mac_opam_4061
   timeoutInMinutes: 0
   pool:
@@ -27,7 +38,6 @@ jobs:
 
   steps:
   - template: opam-build-steps.yml
-
 
 - job: Mac_opam_4023
   timeoutInMinutes: 0
