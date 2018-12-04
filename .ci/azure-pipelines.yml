@@ -17,10 +17,10 @@ jobs:
   - template: esy-build-steps.yml
   # - template: publish-build-cache.yml
 
-- job: Linux_opam_4061
+- job: Mac_opam_4061
   timeoutInMinutes: 0
   pool:
-    vmImage: 'Ubuntu 16.04'
+    vmImage: 'macOS 10.13'
 
   variables:
     OCAML_VERSION: 4.06.1
@@ -29,10 +29,10 @@ jobs:
   - template: opam-build-steps.yml
 
 
-- job: Linux_opam_4023
+- job: Mac_opam_4023
   timeoutInMinutes: 0
   pool:
-    vmImage: 'Ubuntu 16.04'
+    vmImage: 'macOS 10.13'
 
   variables:
     OCAML_VERSION: 4.02.3
