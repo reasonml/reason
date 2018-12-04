@@ -4,8 +4,8 @@
   "license": "MIT",
   "version": "3.3.7",
   "dependencies": {
-    "ocaml": " >= 4.2.0  < 4.8.0",
-    "@opam/ocamlfind": "*",
+    "@esy-ocaml/substs": "^0.0.1",
+    "@opam/ocamlfind": "",
     "@opam/menhir": " >= 20170418.0.0",
     "@opam/utop": " >= 1.17.0",
     "@opam/merlin-extend": " >= 0.3",
@@ -32,6 +32,18 @@
     "install": [
       ["esy-installer", "reason.install"],
       ["esy-installer", "rtop.install"]
-    ]
+    ],
+    "buildsInSource": "_build",
+    "_dependenciesForNewEsyInstaller": {
+      "@esy-ocaml/substs": "^0.0.1",
+      "@opam/ocamlfind": "",
+      "@opam/menhir": " >= 20170418.0.0",
+      "@opam/utop": " >= 1.17",
+      "@opam/merlin-extend": " >= 0.3",
+      "@opam/result": "*",
+      "@opam/ocaml-migrate-parsetree": "*",
+      "@opam/ocamlbuild": "*",
+      "@opam/dune": "*"
+    }
   }
 }
