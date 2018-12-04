@@ -16,14 +16,16 @@ steps:
     displayName: 'opam remove default'
   - script: opam update
     displayName: 'opam update'
+  - script: opam --version
+    displayName: 'Check opam version'
+  - script: opam switch create $(OCAML_VERSION)
+    displayName: 'Use OCaml version: $(OCAML_VERSION)'
   - script: opam install -y dune
     displayName: 'opam install -y dune'
   - script: opam install -y menhir
     displayName: 'opam install -y menhir'
   - script: opam install -y utop
     displayName: 'opam install -y utop'
-  - script: opam --version
-    displayName: 'Check opam version'
   - script: ocaml -vnum
     displayName: 'Check ocaml version'
   - script: make clean-for-ci
