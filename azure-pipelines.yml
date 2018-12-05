@@ -1,18 +1,80 @@
-# Node.js with React
-# Build a Node.js project that uses React.
-# Add steps that analyze code, save build artifacts, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
+# Reason build pipeline
 
-pool:
-  vmImage: 'Ubuntu 16.04'
+name: $(Build.SourceVersion)
+jobs:
+- job: Linux_esy
+  timeoutInMinutes: 0
+  pool:
+    vmImage: 'Ubuntu 16.04'
 
-steps:
-- task: NodeTool@0
-  inputs:
-    versionSpec: '8.x'
-  displayName: 'Install Node.js'
+  variables:
+    ESY__CACHE_INSTALL_PATH: /home/vsts/.esy/3_____________________________________________________________________/i/
+    ESY__CACHE_SOURCE_TARBALL_PATH: /home/vsts/.esy/source-tarballs
 
-- script: |
-    npm install
-    npm run build
-  displayName: 'npm install and build'
+  steps:
+  # TODO: Uncomment this when you have a green build, to enable caching
+  # - template: restore-build-cache.yml
+  - template: .ci/esy-build-steps.yml
+  # - template: publish-build-cache.yml
+
+- job: Mac_opam_4071
+  timeoutInMinutes: 0
+  pool:
+    vmImage: 'macOS 10.13'
+
+  variables:
+    OCAML_VERSION: 4.07.1
+
+  steps:
+  - template: .ci/opam-build-steps.yml
+
+- job: Mac_opam_4061
+  timeoutInMinutes: 0
+  pool:
+    vmImage: 'macOS 10.13'
+
+  variables:
+    OCAML_VERSION: 4.06.1
+
+  steps:
+  - template: .ci/opam-build-steps.yml
+
+- job: Mac_opam_4023
+  timeoutInMinutes: 0
+  pool:
+    vmImage: 'macOS 10.13'
+
+  variables:
+    OCAML_VERSION: 4.02.3
+
+  steps:
+  - template: .ci/opam-build-steps.yml
+
+- job: MacOS_esy
+  timeoutInMinutes: 0
+  pool:
+    vmImage: 'macOS 10.13'
+
+  variables:
+    ESY__CACHE_INSTALL_PATH: /Users/vsts/.esy/3____________________________________________________________________/i/
+    ESY__CACHE_SOURCE_TARBALL_PATH: /Users/vsts/.esy/source-tarballs
+
+  steps:
+  # TODO: Uncomment this when you have a green build, to enable caching
+  # - template: restore-build-cache.yml
+  - template: .ci/esy-build-steps.yml
+  # - template: publish-build-cache.yml
+
+- job: Windows_esy
+  timeoutInMinutes: 0
+  pool:
+    vmImage: 'vs2017-win2016'
+
+  variables:
+    ESY__CACHE_INSTALL_PATH: C:\Users\VssAdministrator\.esy\3_\i
+    ESY__CACHE_SOURCE_TARBALL_PATH: C:\Users\VssAdministrator\.esy\source-tarballs
+
+  steps:
+  - template: .ci/restore-build-cache.yml
+  - template: .ci/esy-build-steps.yml
+  - template: .ci/publish-build-cache.yml
