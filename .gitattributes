@@ -6,6 +6,6 @@ docs/flatdoc.js binary
 
 bspacks/bspack_source/* binary
 
-formatTest/unit_tests/input/assert.crlf.re text eol=crlf
-formatTest/unit_tests/expected_output/assert.crlf.re text eol=crlf
-formatTest/unit_tests/actual_output/assert.crlf.re text eol=crlf
+formatTest/idempotentTests/input/assert.crlf.re text eol=crlf
+formatTest/idempotentTests/expected_output/assert.crlf.re text eol=crlf
+formatTest/idempotentTests/actual_output/assert.crlf.re text eol=crlf
