@@ -1284,10 +1284,10 @@ Thing.map(
   foo,
   bar,
   baz,
-  [@attr]
-  ((abc, z) => MyModuleBlah.toList(argument)),
-  [@attr]
-  ((abc, z) => MyModuleBlah.toList(argument)),
+  [@attr] (abc, z) =>
+    MyModuleBlah.toList(argument),
+  [@attr] (abc, z) =>
+    MyModuleBlah.toList(argument),
 );
 
 Js.Option.andThen((. w) => w#getThing());
