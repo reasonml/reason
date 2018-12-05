@@ -32,6 +32,7 @@ common_steps: &common_steps
     - run:
         name: "Install deps"
         command: |
+          sudo apt-get install -y pkg-config
           opam update
           opam install -y dune
           opam install -y menhir
