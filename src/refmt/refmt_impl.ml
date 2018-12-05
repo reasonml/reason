@@ -73,24 +73,11 @@ let refmt
     let (ast, parsedAsML) =
       Printer.parse ~use_stdin parse_ast input_file
     in
-    let force_binary =
-        (* If we require CRLF endings, we need text mode - 'open_out' 
-           If we require LF endings, we need binary mode - 'open_out_bin
-           NOTE: There is one gap in this logic - if we process a CRLF
-           file on Mac/Linux, both 'open_out' text mode does no conversion,
-           therefore CRLF will still be converted to LF in that case.
-           We would need an additional conversion step to handle this case *)
-        match (eol, print) with
-        | (CRLF, `ML) -> false
-        | (CRLF, `Reason) -> false
-        (* For all non-Windows and non-text cases, we need to force binary channel mode *)
-        | _ -> true
-    in
-    let output_chan = Printer_maker.prepare_output_file output_file force_binary in
+    let output_chan = Printer_maker.prepare_output_file output_file in
     (* If you run into trouble with this (or need to use std_formatter by
        itself at the same time for some reason), try breaking this out so that
        it's not possible to call Format.formatter_of_out_channel on stdout. *)
-    let output_formatter = Format.formatter_of_out_channel output_chan in
+    let output_formatter = Eol_convert.get_formatter output_chan eol in
     (
       Printer.print print input_file parsedAsML output_chan output_formatter ast;
       (* Also closes all open boxes. *)
