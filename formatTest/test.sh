@@ -102,7 +102,7 @@ function version() {
 
 function setup_test_dir() {
     echo "Setting up test dirs actual_output alongside the tests' expected_output"
-    mkdir -p $UNIT_TEST_OUTPUT $TYPE_TEST_OUTPUT $ERROR_TEST_OUTPUT $OPRINT_TEST_OUTPUT $OPRINT_TEST_INTF_OUTPUT
+    mkdir -p $UNIT_TEST_OUTPUT $IDEMPOTENT_TEST_OUTPUT $TYPE_TEST_OUTPUT $ERROR_TEST_OUTPUT $OPRINT_TEST_OUTPUT $OPRINT_TEST_INTF_OUTPUT
     touch $FAILED_TESTS
 }
 
