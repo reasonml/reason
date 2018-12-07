@@ -8,14 +8,17 @@ jobs:
     vmImage: 'Ubuntu 16.04'
 
   variables:
-    ESY__CACHE_INSTALL_PATH: /home/vsts/.esy/3_____________________________________________________________________/i/
-    ESY__CACHE_SOURCE_TARBALL_PATH: /home/vsts/.esy/source-tarballs
+    STAGING_DIRECTORY: /home/vsts/STAGING
+    STAGING_DIRECTORY_UNIX: /home/vsts/STAGING
+    ESY__CACHE_INSTALL_PATH: /home/vsts/.esy/3_____________________________________________________________________/i
+    ESY__CACHE_SOURCE_TARBALL_PATH: /home/vsts/.esy/source/i
+    # ESY__NPM_ROOT: /opt/hostedtoolcache/node/8.14.0/x64/lib/node_modules/esy
 
   steps:
-  # TODO: Uncomment this when you have a green build, to enable caching
-  # - template: restore-build-cache.yml
+  - template: .ci/use-node.yml
+  - template: .ci/restore-build-cache.yml
   - template: .ci/esy-build-steps.yml
-  # - template: publish-build-cache.yml
+  - template: .ci/publish-build-cache.yml
 
 - job: Mac_opam_4071
   timeoutInMinutes: 0
@@ -56,14 +59,17 @@ jobs:
     vmImage: 'macOS 10.13'
 
   variables:
-    ESY__CACHE_INSTALL_PATH: /Users/vsts/.esy/3____________________________________________________________________/i/
-    ESY__CACHE_SOURCE_TARBALL_PATH: /Users/vsts/.esy/source-tarballs
+    STAGING_DIRECTORY: /Users/vsts/STAGING
+    STAGING_DIRECTORY_UNIX: /Users/vsts/STAGING
+    ESY__CACHE_INSTALL_PATH: /Users/vsts/.esy/3____________________________________________________________________/i
+    ESY__CACHE_SOURCE_TARBALL_PATH: /Users/vsts/.esy/source/i
+    # ESY__NPM_ROOT: /usr/local/lib/node_modules/esy
 
   steps:
-  # TODO: Uncomment this when you have a green build, to enable caching
-  # - template: restore-build-cache.yml
+  - template: .ci/use-node.yml
+  - template: .ci/restore-build-cache.yml
   - template: .ci/esy-build-steps.yml
-  # - template: publish-build-cache.yml
+  - template: .ci/publish-build-cache.yml
 
 - job: Windows_esy
   timeoutInMinutes: 0
@@ -71,10 +77,14 @@ jobs:
     vmImage: 'vs2017-win2016'
 
   variables:
-    ESY__CACHE_INSTALL_PATH: C:\Users\VssAdministrator\.esy\3_\i
-    ESY__CACHE_SOURCE_TARBALL_PATH: C:\Users\VssAdministrator\.esy\source-tarballs
+    STAGING_DIRECTORY: C:\Users\VssAdministrator\STAGING
+    STAGING_DIRECTORY_UNIX: /C/Users/VssAdministrator/STAGING
+    ESY__CACHE_INSTALL_PATH: /C/Users/VssAdministrator/.esy/3_/i
+    ESY__CACHE_SOURCE_TARBALL_PATH: /C/Users/VssAdministrator/.esy/source/i
+    # ESY__NPM_ROOT: /C/npm/prefix/node_modules/esy
 
   steps:
+  - template: .ci/use-node.yml
   - template: .ci/restore-build-cache.yml
   - template: .ci/esy-build-steps.yml
   - template: .ci/publish-build-cache.yml
