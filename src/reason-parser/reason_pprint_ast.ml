@@ -3923,7 +3923,9 @@ let printer = object(self:'self)
       partitionAttributes ~allowUncurry:(Reason_heuristics.bsExprCanBeUncurried x) x.pexp_attributes
     in
     let () = if uncurried then Hashtbl.add uncurriedTable x.pexp_loc true in
-    let x = {x with pexp_attributes = (literalAttrs @ arityAttrs @ stdAttrs @ jsxAttrs) } in
+    let x = {x with pexp_attributes = (
+      (if preserve_braces then literalAttrs else [])
+      @ arityAttrs @ stdAttrs @ jsxAttrs) } in
     (* If there's any attributes, recurse without them, then apply them to
        the ends of functions, or simplify infix printings then append. *)
     if stdAttrs != [] then

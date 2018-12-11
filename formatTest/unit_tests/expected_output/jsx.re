@@ -573,3 +573,6 @@ ReasonReact.(<> {string("Test")} </>);
 </Animated>;
 
 <div callback={reduce(() => !state)} />;
+
+// shouldn't result in a stack overflow
+<X y={z->Belt.Option.getWithDefault("")} />;
