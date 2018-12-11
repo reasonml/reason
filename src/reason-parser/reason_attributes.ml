@@ -8,7 +8,7 @@ type attributesPartition = {
   docAttrs : attributes;
   stdAttrs : attributes;
   jsxAttrs : attributes;
-  literalAttrs : attributes;
+  stylisticAttrs : attributes;
   uncurried : bool
 }
 
@@ -16,7 +16,7 @@ type attributesPartition = {
 let rec partitionAttributes ?(partDoc=false) ?(allowUncurry=true) attrs : attributesPartition =
   match attrs with
   | [] ->
-    {arityAttrs=[]; docAttrs=[]; stdAttrs=[]; jsxAttrs=[]; literalAttrs=[]; uncurried = false}
+    {arityAttrs=[]; docAttrs=[]; stdAttrs=[]; jsxAttrs=[]; stylisticAttrs=[]; uncurried = false}
   | (({txt = "bs"}, PStr []) as attr)::atTl ->
     let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
     if allowUncurry then
@@ -37,10 +37,10 @@ let rec partitionAttributes ?(partDoc=false) ?(allowUncurry=true) attrs : attrib
     {partition with docAttrs=doc::partition.docAttrs}
   | (({txt="reason.raw_literal"}, _) as attr) :: atTl ->
     let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
-    {partition with literalAttrs=attr::partition.literalAttrs}
+    {partition with stylisticAttrs=attr::partition.stylisticAttrs}
   | (({txt="reason.preserve_braces"}, _) as attr) :: atTl ->
     let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
-    {partition with literalAttrs=attr::partition.literalAttrs}
+    {partition with stylisticAttrs=attr::partition.stylisticAttrs}
   | atHd :: atTl ->
     let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
     {partition with stdAttrs=atHd::partition.stdAttrs}
@@ -59,9 +59,9 @@ let extract_raw_literal attrs =
   in
   loop [] attrs
 
-let without_literal_attrs attrs =
+let without_stylistic_attrs attrs =
   let rec loop acc = function
-    | attr :: rest when (partitionAttributes [attr]).literalAttrs != [] ->
+    | attr :: rest when (partitionAttributes [attr]).stylisticAttrs != [] ->
         loop acc rest
     | [] -> List.rev acc
     | attr :: rest -> loop (attr :: acc) rest
@@ -71,6 +71,14 @@ let without_literal_attrs attrs =
 let is_preserve_braces_attr ({txt}, _) =
   txt = "reason.preserve_braces"
 
-let has_preserve_braces_attrs literalAttrs =
-  (List.filter is_preserve_braces_attr literalAttrs) != []
+let has_preserve_braces_attrs stylisticAttrs =
+  (List.filter is_preserve_braces_attr stylisticAttrs) != []
 
+let maybe_remove_stylistic_attrs attrs should_preserve =
+  if should_preserve then
+    attrs
+  else
+    List.filter (function
+      | ({txt="reason.raw_literal"}, _) -> true
+      | _ -> false)
+      attrs
