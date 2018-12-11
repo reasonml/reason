@@ -25,7 +25,8 @@ module type PRINTER =
 
 let err s = raise (Invalid_config s)
 
-let prepare_output_file = function
+let prepare_output_file name =
+    match name with
     | Some name -> open_out_bin name
     | None -> set_binary_mode_out stdout true; stdout
 

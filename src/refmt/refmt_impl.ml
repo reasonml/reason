@@ -10,7 +10,7 @@ open Cmdliner
 
 let read_lines file =
   let list = ref [] in
-  let chan = open_in file in
+  let chan = open_in_bin file in
   try
     while true do
       list := input_line chan :: !list
@@ -35,6 +35,10 @@ let refmt
     let (use_stdin, input_file) = match input_file with
       | Some name -> (false, name)
       | None -> (true, "")
+    in
+    let eol = match use_stdin, input_file with
+      | (true, _) -> Eol_detect.default_eol
+      | (false, name) -> Eol_detect.get_eol_for_file name
     in
     let parse_ast = match parse_ast, use_stdin with
       | (Some x, _) -> x
@@ -73,7 +77,7 @@ let refmt
     (* If you run into trouble with this (or need to use std_formatter by
        itself at the same time for some reason), try breaking this out so that
        it's not possible to call Format.formatter_of_out_channel on stdout. *)
-    let output_formatter = Format.formatter_of_out_channel output_chan in
+    let output_formatter = Eol_convert.get_formatter output_chan eol in
     (
       Printer.print print input_file parsedAsML output_chan output_formatter ast;
       (* Also closes all open boxes. *)

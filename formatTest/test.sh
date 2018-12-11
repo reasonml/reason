@@ -39,6 +39,11 @@ UNIT_TEST_OUTPUT=$DIR/unit_tests/actual_output
 
 UNIT_TEST_EXPECTED_OUTPUT=$DIR/unit_tests/expected_output
 
+IDEMPOTENT_TEST_INPUT=$DIR/idempotentTests/input
+
+IDEMPOTENT_TEST_OUTPUT=$DIR/idempotentTests/actual_output
+
+IDEMPOTENT_TEST_EXPECTED_OUTPUT=$DIR/idempotentTests/expected_output
 
 TYPE_TEST_INPUT=$DIR/typeCheckedTests/input
 
@@ -97,7 +102,7 @@ function version() {
 
 function setup_test_dir() {
     echo "Setting up test dirs actual_output alongside the tests' expected_output"
-    mkdir -p $UNIT_TEST_OUTPUT $TYPE_TEST_OUTPUT $ERROR_TEST_OUTPUT $OPRINT_TEST_OUTPUT $OPRINT_TEST_INTF_OUTPUT
+    mkdir -p $UNIT_TEST_OUTPUT $IDEMPOTENT_TEST_OUTPUT $TYPE_TEST_OUTPUT $ERROR_TEST_OUTPUT $OPRINT_TEST_OUTPUT $OPRINT_TEST_INTF_OUTPUT
     touch $FAILED_TESTS
 }
 
@@ -446,6 +451,13 @@ cd $UNIT_TEST_INPUT && find . -type f \( -name "*.re*" -or -name "*.ml*" \) | wh
         fi
 
         idempotent_test $file $UNIT_TEST_INPUT $UNIT_TEST_OUTPUT $UNIT_TEST_EXPECTED_OUTPUT
+        if ! [[ $? -eq 0 ]]; then
+            echo "$file -- failed idempotent_test" >> $FAILED_TESTS
+        fi
+done
+
+cd $IDEMPOTENT_TEST_INPUT && find . -type f \( -name "*.re*" -or -name "*.ml*" \) | while read file; do
+        idempotent_test $file $IDEMPOTENT_TEST_INPUT $IDEMPOTENT_TEST_OUTPUT $IDEMPOTENT_TEST_EXPECTED_OUTPUT
         if ! [[ $? -eq 0 ]]; then
             echo "$file -- failed idempotent_test" >> $FAILED_TESTS
         fi
