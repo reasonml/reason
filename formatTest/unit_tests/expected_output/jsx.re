@@ -573,3 +573,42 @@ ReasonReact.(<> {string("Test")} </>);
 </Animated>;
 
 <div callback={reduce(() => !state)} />;
+
+<button
+  ?id
+  className={Cn.make([
+    "button",
+    "is-fullwidth",
+  ])}
+  onClick>
+  {"Submit" |> ste}
+</button>;
+
+<button
+  ?id
+  className={Cn.make([|
+    "button",
+    "is-fullwidth",
+  |])}
+  onClick>
+  {"Submit" |> ste}
+</button>;
+
+<button
+  ?id
+  className={Cn.make((
+    "button",
+    "is-fullwidth",
+  ))}
+  onClick>
+  {"Submit" |> ste}
+</button>;
+
+<button ?id className={Cn.make({a: b})} onClick>
+  {"Submit" |> ste}
+</button>;
+
+<button
+  ?id className={Cn.make({"a": b})} onClick>
+  {"Submit" |> ste}
+</button>;

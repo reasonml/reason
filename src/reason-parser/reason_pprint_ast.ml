@@ -7608,25 +7608,27 @@ let printer = object(self:'self)
    *  when the line length dictates breaking. Notice how `({` and `})` 'hug'.
    *  Also see "isSingleArgParenApplication" which determines if
    *  this kind of formatting should happen. *)
-  method singleArgParenApplication ?(uncurried=false) es =
-    let lparen = if uncurried then "(. " else "(" in
+  method singleArgParenApplication ?(wrap=("", "")) ?(uncurried=false) es =
+    let (lwrap, rwrap) = wrap in
+    let lparen = lwrap ^ (if uncurried then  "(. " else "(") in
+    let rparen = ")" ^ rwrap in
     match es with
     | [{pexp_attributes = []; pexp_desc = Pexp_record (l, eo)}] ->
-      self#unparseRecord ~wrap:(lparen, ")") l eo
+      self#unparseRecord ~wrap:(lparen, rparen) l eo
     | [{pexp_attributes = []; pexp_desc = Pexp_tuple l}] ->
-      self#unparseSequence ~wrap:(lparen, ")") ~construct:`Tuple l
+      self#unparseSequence ~wrap:(lparen, rparen) ~construct:`Tuple l
     | [{pexp_attributes = []; pexp_desc = Pexp_array l}] ->
-      self#unparseSequence ~wrap:(lparen, ")") ~construct:`Array l
+      self#unparseSequence ~wrap:(lparen, rparen) ~construct:`Array l
     | [{pexp_attributes = []; pexp_desc = Pexp_object cs}] ->
-      self#classStructure ~wrap:(lparen, ")") cs
+      self#classStructure ~wrap:(lparen, rparen) cs
     | [{pexp_attributes = []; pexp_desc = Pexp_extension (s, p)}] when s.txt = "bs.obj" ->
-      self#formatBsObjExtensionSugar ~wrap:(lparen, ")") p
+      self#formatBsObjExtensionSugar ~wrap:(lparen, rparen) p
     | [({pexp_attributes = []} as exp)] when (is_simple_list_expr exp) ->
           (match view_expr exp with
           | `list xs ->
-              self#unparseSequence ~construct:`List ~wrap:(lparen, ")") xs
+              self#unparseSequence ~construct:`List ~wrap:(lparen, rparen) xs
           | `cons xs ->
-              self#unparseSequence ~construct:`ES6List ~wrap:(lparen, ")") xs
+              self#unparseSequence ~construct:`ES6List ~wrap:(lparen, rparen) xs
           | _ -> assert false)
     | _ -> assert false
 
@@ -7663,7 +7665,7 @@ let printer = object(self:'self)
        *  when the line-length indicates breaking.
        *)
       | [(Nolabel, exp)] when isSingleArgParenApplication [exp] ->
-          self#singleArgParenApplication ~uncurried [exp]
+          self#singleArgParenApplication ?wrap ~uncurried [exp]
       | params ->
           makeTup ?wrap ~uncurried (List.map self#label_x_expression_param params)
 
