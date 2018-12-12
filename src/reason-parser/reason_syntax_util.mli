@@ -14,8 +14,6 @@
   patching the right parts, through the power of types(tm)
 *)
 
-val reason_to_ml_swap : string -> string
-
 val ml_to_reason_swap : string -> string
 
 val escape_string : string -> string
@@ -23,6 +21,8 @@ val escape_string : string -> string
 (* Everything below is used by reason repo but not the BuckleScript repo *)
 
 (* #if defined BS_NO_COMPILER_PATCH then *)
+
+val reason_to_ml_swap : string -> string
 
 module TrailingCommaMarker : sig val char : char val string : string end
 module EOLMarker : sig val char : char val string : string end
