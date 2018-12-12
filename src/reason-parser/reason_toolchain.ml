@@ -495,7 +495,7 @@ module OCaml_syntax = struct
       (To_current.copy_signature signature)
   let format_implementation_with_comments (structure, _) formatter =
     let structure =
-      Reason_syntax_util.(apply_mapper_to_structure structure remove_literal_attrs_mapper)
+      Reason_syntax_util.(apply_mapper_to_structure structure remove_stylistic_attrs_mapper)
     in
     Pprintast.structure formatter
       (To_current.copy_structure structure)

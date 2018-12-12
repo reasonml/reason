@@ -3919,15 +3919,16 @@ let printer = object(self:'self)
     let x = self#process_underscore_application x in
     (* If there are any attributes, render unary like `(~-) x [@ppx]`, and infix like `(+) x y [@attr]` *)
 
-    let {arityAttrs; stdAttrs; jsxAttrs; literalAttrs; uncurried} =
+    let {arityAttrs; stdAttrs; jsxAttrs; stylisticAttrs; uncurried} =
       partitionAttributes ~allowUncurry:(Reason_heuristics.bsExprCanBeUncurried x) x.pexp_attributes
     in
+    let stylisticAttrs = Reason_attributes.maybe_remove_stylistic_attrs stylisticAttrs preserve_braces in
     let () = if uncurried then Hashtbl.add uncurriedTable x.pexp_loc true in
-    let x = {x with pexp_attributes = (literalAttrs @ arityAttrs @ stdAttrs @ jsxAttrs) } in
+    let x = {x with pexp_attributes = (stylisticAttrs @ arityAttrs @ stdAttrs @ jsxAttrs) } in
     (* If there's any attributes, recurse without them, then apply them to
        the ends of functions, or simplify infix printings then append. *)
     if stdAttrs != [] then
-      let withoutVisibleAttrs = {x with pexp_attributes=(literalAttrs @ arityAttrs @ jsxAttrs)} in
+      let withoutVisibleAttrs = {x with pexp_attributes=(stylisticAttrs @ arityAttrs @ jsxAttrs)} in
       let attributesAsList = (List.map self#attribute stdAttrs) in
       let itms = match self#unparseExprRecurse withoutVisibleAttrs with
         | SpecificInfixPrecedence ({reducePrecedence}, wrappedRule) ->
@@ -4412,7 +4413,7 @@ let printer = object(self:'self)
           let dotdotdotChild = match expr with
             | {pexp_desc = Pexp_apply (funExpr, args)}
               when printedStringAndFixityExpr funExpr == Normal &&
-                   Reason_attributes.without_literal_attrs expr.pexp_attributes == [] ->
+                   Reason_attributes.without_stylistic_attrs expr.pexp_attributes == [] ->
               begin match (self#formatFunAppl ~prefix:(atom "...") ~wrap:("{", "}") ~jsxAttrs:[] ~args ~funExpr ~applicationExpr:expr ()) with
               | [x] -> x
               | xs -> makeList xs
@@ -4451,7 +4452,7 @@ let printer = object(self:'self)
                    (self#formatNonSequencyExpression e)
            | Pexp_apply ({pexp_desc = Pexp_ident _} as funExpr, args)
                 when printedStringAndFixityExpr funExpr == Normal &&
-                     Reason_attributes.without_literal_attrs expression.pexp_attributes == [] ->
+                     Reason_attributes.without_stylistic_attrs expression.pexp_attributes == [] ->
              let lhs = makeList [atom lbl; atom "="] in
              begin match (
                self#formatFunAppl
@@ -6065,13 +6066,13 @@ let printer = object(self:'self)
     | _ -> assert false
 
   method should_preserve_requested_braces expr =
-    let {literalAttrs} = partitionAttributes expr.pexp_attributes in
+    let {stylisticAttrs} = partitionAttributes expr.pexp_attributes in
     match expr.pexp_desc with
     | Pexp_ifthenelse _
     | Pexp_try _ -> false
     | _ ->
         preserve_braces &&
-        Reason_attributes.has_preserve_braces_attrs literalAttrs
+        Reason_attributes.has_preserve_braces_attrs stylisticAttrs
 
   method simplest_expression x =
     let {stdAttrs; jsxAttrs} = partitionAttributes x.pexp_attributes in

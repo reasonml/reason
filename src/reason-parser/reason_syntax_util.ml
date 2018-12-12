@@ -395,25 +395,25 @@ let identifier_mapper f super =
   end;
 }
 
-let remove_literal_attrs_mapper_maker super =
+let remove_stylistic_attrs_mapper_maker super =
   let open Ast_404 in
   let open Ast_mapper in
 { super with
   expr = begin fun mapper expr ->
-    let {Reason_attributes.literalAttrs; arityAttrs; docAttrs; stdAttrs; jsxAttrs} =
+    let {Reason_attributes.stylisticAttrs; arityAttrs; docAttrs; stdAttrs; jsxAttrs} =
       Reason_attributes.partitionAttributes ~allowUncurry:false expr.pexp_attributes
     in
-    let expr = if literalAttrs != [] then
+    let expr = if stylisticAttrs != [] then
       { expr with pexp_attributes = arityAttrs @ docAttrs @ stdAttrs @ jsxAttrs }
     else expr
     in
     super.expr mapper expr
   end;
   pat = begin fun mapper pat ->
-    let {Reason_attributes.literalAttrs; arityAttrs; docAttrs; stdAttrs; jsxAttrs} =
+    let {Reason_attributes.stylisticAttrs; arityAttrs; docAttrs; stdAttrs; jsxAttrs} =
       Reason_attributes.partitionAttributes ~allowUncurry:false pat.ppat_attributes
     in
-    let pat = if literalAttrs != [] then
+    let pat = if stylisticAttrs != [] then
       { pat with ppat_attributes = arityAttrs @ docAttrs @ stdAttrs @ jsxAttrs }
     else pat
     in
@@ -421,8 +421,8 @@ let remove_literal_attrs_mapper_maker super =
   end;
 }
 
-let remove_literal_attrs_mapper =
-  remove_literal_attrs_mapper_maker Ast_mapper.default_mapper
+let remove_stylistic_attrs_mapper =
+  remove_stylistic_attrs_mapper_maker Ast_mapper.default_mapper
 
 (** escape_stars_slashes_mapper escapes all stars and slashes in an AST *)
 let escape_stars_slashes_mapper =

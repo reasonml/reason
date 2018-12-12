@@ -489,3 +489,6 @@ ReasonReact.(<> {string("Test")} </>);
 <button ?id className={Cn.make({"a": b})} onClick>
   {"Submit" |> ste}
 </button>;
+
+// shouldn't result in a stack overflow
+<X y={z->Belt.Option.getWithDefault("")} />;
