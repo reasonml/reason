@@ -615,3 +615,5 @@ ReasonReact.(<> {string("Test")} </>);
 
 // shouldn't result in a stack overflow
 <X y={z->Belt.Option.getWithDefault("")} />;
+
+<div style={getStyle()}> {ReasonReact.string("BugTest")} </div>;
