@@ -61,8 +61,8 @@ let result =
       ();
     }
   )
-  == () ?
-    false : true;
+  == ()
+    ? false : true;
 
 switch (
   try (

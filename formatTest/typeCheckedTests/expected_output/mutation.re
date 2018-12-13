@@ -39,13 +39,13 @@ switch (numberToSwitchOn) {
 | 0 => holdsAUnit.contents = ()
 | 1 => holdsAUnit.contents = holdsAnInt := 0
 | 2 =>
-  true ?
-    holdsAUnit.contents = () :
-    holdsABool.contents ? () : ()
+  true
+    ? holdsAUnit.contents = ()
+    : holdsABool.contents ? () : ()
 | 3 =>
-  true ?
-    holdsAUnit := () :
-    holdsABool.contents ? () : ()
+  true
+    ? holdsAUnit := ()
+    : holdsABool.contents ? () : ()
 | 4 => true ? holdsAnInt := 40 : ()
 | 5 => holdsAnInt := 40
 | _ => ()
