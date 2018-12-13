@@ -1365,20 +1365,20 @@ f(~commit=!build);
 
 /* https://github.com/facebook/reason/issues/2032 */
 let predicate =
-  predicate === Functions.alwaysTrue1 ?
-    defaultPredicate :
-    fun
-    | None => false
-    | Some(exn) => predicate(exn);
+  predicate === Functions.alwaysTrue1
+    ? defaultPredicate
+    : fun
+      | None => false
+      | Some(exn) => predicate(exn);
 
 let predicate =
-  predicate === Functions.alwaysTrue1 ?
-    fun
-    | None => false
-    | Some(exn) => predicate(exn) :
-    fun
-    | None => false
-    | Some(exn) => predicate(exn);
+  predicate === Functions.alwaysTrue1
+    ? fun
+      | None => false
+      | Some(exn) => predicate(exn)
+    : fun
+      | None => false
+      | Some(exn) => predicate(exn);
 
 /* https://github.com/facebook/reason/issues/2125 */
 foo(~a);

@@ -2765,21 +2765,21 @@ let lAtFuncAnnotatedAfterEqual: type a. a => a =
 /* Ternary wrapping comments */
 let ternaryResult =
   /* Before Test */
-  something ?
+  something
     /* Before ifTrue */
-    callThisFunction(withThisArg) :
+    ? callThisFunction(withThisArg)
     /* Before ifFalse */
-    thatResult;
+    : thatResult;
 
 let ternaryResult =
   /* Before Test */
-  something ?
+  something
     /* Before ifTrue */
-    callThisFunction(withThisArg) :
+    ? callThisFunction(withThisArg)
     /* Before ifFalse */
-    trailingTest ?
-      /* before nested ifTrue */ true :
-      /* before nested ifFalse */ false;
+    : trailingTest
+        ? /* before nested ifTrue */ true
+        : /* before nested ifFalse */ false;
 
 let returningATernary = (x, y) =>
   x > y ? "hi" : "by";
