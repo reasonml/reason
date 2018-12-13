@@ -24,5 +24,4 @@ env:
   - OCAML_VERSION=ocaml-base-compiler.4.07.1
 notifications:
   email:
-    - chenglou@fb.com
     - jordanjcw@fb.com
