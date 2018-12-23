@@ -615,3 +615,5 @@ ReasonReact.(<> {string("Test")} </>);
 
 // shouldn't result in a stack overflow
 <X y={z->Belt.Option.getWithDefault("")} />;
+
+<view style={Style.make()}> ...items </view>;

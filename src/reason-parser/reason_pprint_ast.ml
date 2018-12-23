@@ -7654,7 +7654,7 @@ let printer = object(self:'self)
       (* function applications with unit as only argument should be printed differently
        * e.g. print_newline(()) should be printed as print_newline() *)
       | [(Nolabel, {pexp_attributes = []; pexp_desc = Pexp_construct ( {txt= Lident "()"}, None)})]
-          -> makeList ~break:Never [if uncurried then atom "(.)" else atom "()"]
+          -> makeList ?wrap ~break:Never [if uncurried then atom "(.)" else atom "()"]
 
       (* The following cases provide special formatting when there's only one expr_param that is a tuple/array/list/record etc.
        *  e.g. foo({a: 1, b: 2})
