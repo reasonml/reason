@@ -111,6 +111,30 @@ let whatShouldThisBeParsedAs =
   )
     ? true : false;
 
+/* the following shoud be... */
+let ternaryFormatting =
+  something
+    ? notLongEnoughToCauseTwoLineBreaks : other;
+
+/* ideally formatted as
+   let ternaryFormatting =
+     something
+     ? notLongEnoughToCauseTwoLineBreaks
+     : other
+   */
+let ternaryFormatting =
+  something
+    ? notLongEnoughToCauseTwoLineBreaks : other;
+
+/* but is currently formatted as the following (which is less than desirable)
+   let ternaryFormatting =
+     something
+     ? notLongEnoughToCauseTwoLineBreaks : other
+    */
+let ternaryFormatting =
+  something
+    ? notLongEnoughToCauseTwoLineBreaks : other;
+
 let ternaryResult =
   aaaaaa
     ? bbbbbbb
