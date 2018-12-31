@@ -460,13 +460,13 @@ let special_infix_strings =
 
 let updateToken = "="
 let sharpOpEqualToken = "#="
-let fastPipeToken = "->"
+let pipeFirstToken = "->"
 let requireIndentFor = [updateToken; ":="]
 
 let namedArgSym = "~"
 
 let requireNoSpaceFor tok =
-  tok = fastPipeToken || (tok.[0] = '#' && tok <> "#=")
+  tok = pipeFirstToken || (tok.[0] = '#' && tok <> "#=")
 
 let funToken = "fun"
 
@@ -516,7 +516,7 @@ let isSimplePrefixToken s = match printedStringAndFixity s with
    using %prec *)
 let rules = [
   [
-    (TokenPrecedence, (fun s -> (Left, s = fastPipeToken)));
+    (TokenPrecedence, (fun s -> (Left, s = pipeFirstToken)));
     (TokenPrecedence, (fun s -> (Left, s.[0] = '#' &&
                                        s <> sharpOpEqualToken &&
                                        s <> "#")));
@@ -571,7 +571,7 @@ let rules = [
       else
         s.[0] == '+'
     )));
-    (TokenPrecedence, (fun s -> (Left, s.[0] == '-' && s <> fastPipeToken)));
+    (TokenPrecedence, (fun s -> (Left, s.[0] == '-' && s <> pipeFirstToken)));
     (TokenPrecedence, (fun s -> (Left, s = "!" )));
   ];
   [
@@ -3681,8 +3681,8 @@ let printer = object(self:'self)
    * ->f(a, b)
    * ->g(c, d)
    *)
-  method formatFastPipe e =
-    let module Fastpipetree = struct
+  method formatPipeFirst e =
+    let module PipeFirstTree = struct
       type exp = Parsetree.expression
 
       type flatNode =
@@ -3701,7 +3701,7 @@ let printer = object(self:'self)
       let formatNode ?prefix ?(first=false) {exp; args; uncurried} =
         let formatLayout expr =
           let formatted = if first then
-            self#ensureExpression ~reducesOnToken:(Token fastPipeToken) expr
+            self#ensureExpression ~reducesOnToken:(Token pipeFirstToken) expr
           else
             match expr with
             (* a->foo(x, _) and a->(foo(x, _)) are equivalent under fast pipe
@@ -3716,7 +3716,7 @@ let printer = object(self:'self)
                 LayoutNode (self#unparseExpr expr)
             | _ ->
               self#ensureContainingRule
-                ~withPrecedence:(Token fastPipeToken) ~reducesAfterRight:expr ()
+                ~withPrecedence:(Token pipeFirstToken) ~reducesAfterRight:expr ()
           in
           self#unparseResolvedRule formatted
         in
@@ -3775,7 +3775,7 @@ let printer = object(self:'self)
           {pexp_desc = Pexp_ident({txt = Longident.Lident("|.")})},
           [Nolabel, arg1; Nolabel, arg2]
          )} ->
-          flatten ((Fastpipetree.Exp arg2)::acc) arg1
+          flatten ((PipeFirstTree.Exp arg2)::acc) arg1
       | {pexp_attributes;
          pexp_desc = Pexp_apply(
           {pexp_desc = Pexp_apply(
@@ -3784,39 +3784,39 @@ let printer = object(self:'self)
            )},
            args
          )} as e ->
-          let args = Fastpipetree.Args args in
+          let args = PipeFirstTree.Args args in
           begin match pexp_attributes with
           | [{txt = "bs"}, PStr []] ->
-            flatten ((Fastpipetree.ExpU arg2)::args::acc) arg1
+            flatten ((PipeFirstTree.ExpU arg2)::args::acc) arg1
           | [] ->
               (* the uncurried attribute might sit on the Pstr_eval
                * enclosing the Pexp_apply*)
               if uncurried then
-                flatten ((Fastpipetree.ExpU arg2)::args::acc) arg1
+                flatten ((PipeFirstTree.ExpU arg2)::args::acc) arg1
               else
-                flatten ((Fastpipetree.Exp arg2)::args::acc) arg1
+                flatten ((PipeFirstTree.Exp arg2)::args::acc) arg1
           | _ ->
-            (Fastpipetree.Exp e)::acc
+            (PipeFirstTree.Exp e)::acc
           end
       | {pexp_desc = Pexp_ident({txt = Longident.Lident("|.")})} -> acc
-      | arg -> ((Fastpipetree.Exp arg)::acc)
+      | arg -> ((PipeFirstTree.Exp arg)::acc)
     in
     (* Given: foo->f(a, b)->g(c, d)
-     * We get the following Fastpipetree.flatNode list:
+     * We get the following PipeFirstTree.flatNode list:
      *   [Exp foo; Exp f; Args [a; b]; Exp g; Args [c; d]]
      * The job of `parse` is to turn the "flat representation"
-     * (a.k.a. Fastpipetree.flastNode list) into a more convenient structure
+     * (a.k.a. PipeFirstTree.flastNode list) into a more convenient structure
      * that allows us to express the segments: "foo" "f(a, b)" "g(c, d)".
-     * Fastpipetree.t expresses those segments.
+     * PipeFirstTree.t expresses those segments.
      *  [{exp = foo; args = []}; {exp = f; args = [a; b]}; {exp = g; args = [c; d]}]
      *)
     let rec parse acc = function
-    | (Fastpipetree.Exp e)::(Fastpipetree.Args args)::xs ->
-        parse ((Fastpipetree.{exp = e; args; uncurried = false})::acc) xs
-    | (Fastpipetree.ExpU e)::(Fastpipetree.Args args)::xs ->
-        parse ((Fastpipetree.{exp = e; args; uncurried = true})::acc) xs
-    | (Fastpipetree.Exp e)::xs ->
-        parse ((Fastpipetree.{exp = e; args = []; uncurried = false})::acc) xs
+    | (PipeFirstTree.Exp e)::(PipeFirstTree.Args args)::xs ->
+        parse ((PipeFirstTree.{exp = e; args; uncurried = false})::acc) xs
+    | (PipeFirstTree.ExpU e)::(PipeFirstTree.Args args)::xs ->
+        parse ((PipeFirstTree.{exp = e; args; uncurried = true})::acc) xs
+    | (PipeFirstTree.Exp e)::xs ->
+        parse ((PipeFirstTree.{exp = e; args = []; uncurried = false})::acc) xs
     | _ -> List.rev acc
     in
     (* Given: foo->f(. a,b);
@@ -3832,13 +3832,13 @@ let printer = object(self:'self)
      * into
      *  [Exp foo; Exp f; Args [a; b]; Exp g; Args [c; d]]
      *)
-    let (flatNodes : Fastpipetree.flatT) = flatten ~uncurried [] e in
+    let (flatNodes : PipeFirstTree.flatT) = flatten ~uncurried [] e in
     (* Turn
      *  [Exp foo; Exp f; Args [a; b]; Exp g; Args [c; d]]
      * into
      *  [{exp = foo; args = []}; {exp = f; args = [a; b]}; {exp = g; args = [c; d]}]
      *)
-    let (pipetree : Fastpipetree.t) = parse [] flatNodes in
+    let (pipetree : PipeFirstTree.t) = parse [] flatNodes in
     (* Turn
      *  [{exp = foo; args = []}; {exp = f; args = [a; b]}; {exp = g; args = [c; d]}]
      * into
@@ -3867,13 +3867,13 @@ let printer = object(self:'self)
      *)
     | [({exp = {pexp_desc = Pexp_ident _ }} as hd); last] ->
         let prefix = Some (
-          makeList [Fastpipetree.formatNode ~first:true hd; atom "->"]
+          makeList [PipeFirstTree.formatNode ~first:true hd; atom "->"]
         ) in
-        [Fastpipetree.formatNode ?prefix last]
+        [PipeFirstTree.formatNode ?prefix last]
     | hd::tl ->
-        let hd = Fastpipetree.formatNode ~first:true hd in
+        let hd = PipeFirstTree.formatNode ~first:true hd in
         let tl = List.map (fun node ->
-          makeList [atom "->"; Fastpipetree.formatNode node]
+          makeList [atom "->"; PipeFirstTree.formatNode node]
         ) tl in
         hd::tl
     | [] -> []
@@ -3957,10 +3957,10 @@ let printer = object(self:'self)
     | Pexp_apply (e, ls) -> (
       let ls = List.map (fun (l,expr) -> (l, self#process_underscore_application expr)) ls in
       match (e, ls) with
-      | (e, _) when Reason_heuristics.isFastPipe e ->
-        let prec = Token fastPipeToken in
+      | (e, _) when Reason_heuristics.isPipeFirst e ->
+        let prec = Token pipeFirstToken in
           SpecificInfixPrecedence
-            ({reducePrecedence=prec; shiftPrecedence=prec}, LayoutNode (self#formatFastPipe x))
+            ({reducePrecedence=prec; shiftPrecedence=prec}, LayoutNode (self#formatPipeFirst x))
       | ({pexp_desc = Pexp_ident {txt = Ldot (Lident ("Array"),"get")}}, [(_,e1);(_,e2)]) ->
         begin match e1.pexp_desc with
           | Pexp_ident ({txt = Lident "_"}) ->
@@ -4069,7 +4069,7 @@ let printer = object(self:'self)
               (match printedStringAndFixityExpr e with
                | Infix printedIdent
                  when requireNoSpaceFor printedIdent ||
-                      Reason_heuristics.isFastPipe e ->
+                      Reason_heuristics.isPipeFirst e ->
                  self#unparseExpr leftExpr
                | _ -> self#simplifyUnparseExpr leftExpr)
             | Pexp_field _ -> self#unparseExpr leftExpr
@@ -6243,10 +6243,10 @@ let printer = object(self:'self)
          *
          * (1). <div> {items->Belt.Array.map(ReasonReact.string)->ReasonReact.array} </div>;
          * (2). <Foo> (title === "" ? [1, 2, 3] : blocks)->Foo.toString </Foo>; *)
-        if Reason_heuristics.isFastPipe e &&
-           not (Reason_heuristics.isFastPipeWithNonSimpleJSXChild e)
+        if Reason_heuristics.isPipeFirst e &&
+           not (Reason_heuristics.isPipeFirstWithNonSimpleJSXChild e)
         then
-          self#formatFastPipe e
+          self#formatPipeFirst e
         else
           self#inline_braces#simplifyUnparseExpr ~inline:true ~wrap:("{", "}") e
         in

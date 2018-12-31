@@ -25,7 +25,7 @@ let c = true;
 /* parses as !(a->b->c) */
 let t3: bool = !a->b->c;
 
-/* parse fast pipe with  underscore application correct */
+/* parse pipe first with  underscore application correct */
 let doStuff = (a: int, b: int, c: int): int => {
   a + 2 * b + 3 * c;
 };

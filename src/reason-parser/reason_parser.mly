@@ -584,7 +584,7 @@ let process_underscore_application args =
     | Some {pexp_loc=loc} ->
         let pattern = mkpat (Ppat_var (mkloc hidden_var loc)) ~loc in
         begin match exp_apply.pexp_desc with
-        (* Transform fast pipe with underscore application correct:
+        (* Transform pipe first with underscore application correct:
          * 5->doStuff(3, _, 7);
          * (5 |. doStuff)(3, _, 7)
          * 5 |. (__x => doStuff(3, __x, 7))
