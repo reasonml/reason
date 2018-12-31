@@ -3676,7 +3676,7 @@ let printer = object(self:'self)
     | Simple itm -> ([itm], Some x.pexp_loc)
 
 
-  (* Provides beautiful printing for fast pipe sugar:
+  (* Provides beautiful printing for pipe first sugar:
    * foo
    * ->f(a, b)
    * ->g(c, d)
@@ -3704,7 +3704,7 @@ let printer = object(self:'self)
             self#ensureExpression ~reducesOnToken:(Token pipeFirstToken) expr
           else
             match expr with
-            (* a->foo(x, _) and a->(foo(x, _)) are equivalent under fast pipe
+            (* a->foo(x, _) and a->(foo(x, _)) are equivalent under pipe first
              * (a->foo)(x, _) is unnatural and desugars to
              *    (__x) => (a |. foo)(x, __x)
              * Under `->`, it makes more sense to desugar into
@@ -6237,7 +6237,7 @@ let printer = object(self:'self)
         self#formatChildren (remaining @ children) processedRev
     | ({pexp_desc = Pexp_apply _} as e) :: remaining ->
         let child =
-        (* Fast pipe behaves differently according to the expression on the
+        (* Pipe first behaves differently according to the expression on the
          * right. In example (1) below, it's a `SpecificInfixPrecedence`; in
          * (2), however, it's `Simple` and doesn't need to be wrapped in parens.
          *
@@ -7708,7 +7708,7 @@ let printer = object(self:'self)
       | _ -> `NormalFunAppl args
     in
     let formattedFunExpr = match funExpr.pexp_desc with
-      (* fast pipe chain or sharpop chain as funExpr, no parens needed, we know how to parse *)
+      (* pipe first chain or sharpop chain as funExpr, no parens needed, we know how to parse *)
       | Pexp_apply ({pexp_desc = Pexp_ident {txt = Lident s}}, _)
         when requireNoSpaceFor s ->
         self#unparseExpr funExpr
