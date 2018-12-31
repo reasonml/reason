@@ -65,7 +65,7 @@ The `parse*` functions potentially throw an error of this shape:
 
 **NOTE**: `refmt.js` requires the node module `fs`, which of course isn't available on the web. If using webpack, to avoid the missing module error, put `node: { fs: 'empty' }` into `webpack.config.js`. See https://webpack.js.org/configuration/node/#other-node-core-libraries for more information.
 
-`refmt.js` is minified for you through Closure Compiler, with an accompanying `refmt.map`. The size is 2.3MB **but don't get fooled; it gzips down to just 345KB**. This way, you can carry it around in your own blog and use it to create interactive refmt playground, without worrying about imposing bandwidth overhead to your readers. Again, keep our ecosystem fast and lean.
+`refmt.js` is minified for you through Closure Compiler, with an accompanying `refmt.map`. The size is 2.3MB **but don't get fooled; it gzips down to just 345KB**. This way, you can carry it around in your own blog and use it to create an interactive refmt playground, without worrying about imposing bandwidth overhead to your readers. Again, keep our ecosystem fast and lean.
 
 ### Native API
 
