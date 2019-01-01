@@ -96,7 +96,7 @@ let isUnderscoreIdent expr =
   | Pexp_ident ({txt = Lident "_"}) -> true
   | _ -> false
 
-let isFastPipe e = match Ast_404.Parsetree.(e.pexp_desc) with
+let isPipeFirst e = match Ast_404.Parsetree.(e.pexp_desc) with
   | Pexp_ident({txt = Longident.Lident("|.")}) -> true
   | Pexp_apply(
     {pexp_desc = Pexp_ident({txt = Longident.Lident("|.")})},
@@ -120,10 +120,10 @@ let isUnderscoreApplication expr =
   | _ -> false
 
 (* <div> {items->Belt.Array.map(ReasonReact.string)->ReasonReact.array} </div>;
- * An application with fast pipe inside jsx children requires special treatment.
+ * An application with pipe first inside jsx children requires special treatment.
  * Jsx children don't allow expression application, hence we need the braces
  * preserved in this case. *)
-let isFastPipeWithNonSimpleJSXChild e = match Ast_404.Parsetree.(e.pexp_desc) with
+let isPipeFirstWithNonSimpleJSXChild e = match Ast_404.Parsetree.(e.pexp_desc) with
   | Pexp_apply(
     {pexp_desc = Pexp_ident({txt = Longident.Lident("|.")})},
       [Nolabel, {pexp_desc = Pexp_apply(_)}; _]
