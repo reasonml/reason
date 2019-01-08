@@ -42,3 +42,7 @@ module type Event = (module type of {
 let not: string => string;
 
 let other: string => not;
+
+include
+   (module type of Bos.Cmd) with
+    type t = Bos.Cmd.t;

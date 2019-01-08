@@ -37,3 +37,5 @@ module type Event = (module type of { include ReactEventRe; });
 let not : string => string;
 
 let other : string => not;
+
+include (module type of Bos.Cmd) with type t = Bos.Cmd.t;
