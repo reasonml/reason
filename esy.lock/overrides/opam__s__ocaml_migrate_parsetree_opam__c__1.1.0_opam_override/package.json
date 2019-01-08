@@ -1,0 +1,17 @@
+{
+  "build": [ 
+    [
+      "bash",
+      "-c",
+      "#{os == 'windows' ? 'patch -p1 < ocaml-migrate-parsetree.1.1.0.patch' : 'true'}"
+    ],
+    [
+      "jbuilder",
+      "build",
+      "-p",
+      "ocaml-migrate-parsetree",
+      "-j",
+      "4"
+    ]
+  ]
+}
