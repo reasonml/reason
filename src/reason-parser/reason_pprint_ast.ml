@@ -7080,7 +7080,7 @@ let printer = object(self:'self)
           (formatPrecedence (label ~space:true (atom "module") (self#longident_loc li)))
       | Pmty_typeof me ->
         let labelWithoutFinalWrap =
-          label ~space
+          label ~space:true
             (label ~space:true
                letPattern
                (makeList
