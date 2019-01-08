@@ -77,3 +77,9 @@ let pub = "method"
 let pub_ = "method"
 let pri = "private"
 let pri_ = "private"
+
+module Foo = struct
+  type t = { name: string }
+end
+
+let foo Foo.{name} = ()

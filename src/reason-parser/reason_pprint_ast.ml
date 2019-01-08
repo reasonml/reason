@@ -3313,6 +3313,11 @@ let printer = object(self:'self)
               self#patternArray l
           | Ppat_unpack s ->
               makeList ~wrap:("(", ")") ~break:IfNeed ~postSpace:true [atom "module"; atom s.txt]
+          | Ppat_open (lid, pat) ->
+            (* let someFn Qualified.{ record } = ... *)
+            label
+              (label (self#longident_loc lid) (atom (".")))
+              (self#simple_pattern pat)
           | Ppat_type li ->
               makeList [atom "#"; self#longident_loc li]
           | Ppat_record (l, closed) ->

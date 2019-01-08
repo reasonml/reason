@@ -3784,6 +3784,10 @@ mark_position_pat
     { expecting_pat (with_txt $4 "type") }
   | LPAREN MODULE as_loc(UIDENT) RPAREN
     { mkpat(Ppat_unpack($3)) }
+  | as_loc(mod_longident) DOT record_pattern
+    { let loc = mklocation $symbolstartpos $endpos in
+      mkpat ~loc (Ppat_open ($1, $3))
+    }
   | record_pattern { $1 }
   | list_pattern { $1 }
   | array_pattern { $1 }
