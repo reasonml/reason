@@ -2,10 +2,10 @@ common_cache_key: &common_cache_key
   key: dependency-cache-{{ checksum "../ocaml-version" }}-{{ checksum ".circleci/config.yml" }}-{{ checksum "reason.opam" }}-{{ checksum "rtop.opam" }}
 
 esy_cache_key: &esy_cache_key
-  key: esy-cache-{{ checksum "esy.json" }}-{{ checksum "esy.lock" }}-{{ checksum ".circleci/config.yml" }}
+  key: esy-cache-{{ checksum "esy.json" }}-{{ checksum "esy.lock/index.json" }}-{{ checksum ".circleci/config.yml" }}
 
 esy_post_build_cache_key: &esy_post_build_cache_key
-  key: esy-post-build-cache-{{ checksum "esy.json" }}-{{ checksum "esy.lock" }}-{{ checksum ".circleci/config.yml" }}
+  key: esy-post-build-cache-{{ checksum "esy.json" }}-{{ checksum "esy.lock/index.json" }}-{{ checksum ".circleci/config.yml" }}
 
 common_steps: &common_steps
   steps:
