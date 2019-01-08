@@ -294,18 +294,30 @@ function typecheck_test() {
 
     if [ "$FILE" != "$(basename $FILE .ml)" ] || [ "$FILE" != "$(basename $FILE .mli)" ]; then
         if [ "$FILE" != "$(basename $FILE .ml)" ]; then
-            REFILE="$(basename $FILE .ml).re"
+            SUFFIX=".re"
+            REFILE="$(basename $FILE .ml)$SUFFIX"
         else
-            REFILE="$(basename $FILE .mli).rei"
+            SUFFIX=".rei"
+            REFILE="$(basename $FILE .mli)$SUFFIX"
         fi
-        debug "  Converting $FILE to $REFILE:"
-        debug "$REFMT --heuristics-file $INPUT/arity.txt --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
-        $REFMT --heuristics-file $INPUT/arity.txt --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE
-        if ! [[ $? -eq 0 ]]; then
-            warning "  ⊘ FAILED\n"
-            return 1
+
+
+        BASE_NAME=$(echo $FILE | cut -d '.' -f 1)
+        MIN_VERSION=$(basename $FILE $SUFFIX | cut -d '.' -f 2-4)
+
+        if [ "$MIN_VERSION" != "$BASE_NAME" ] && [ "$(version "$OCAML_VERSION")" -lt "$(version "$MIN_VERSION")" ]
+        then
+            notice "  ☒ IGNORED REFMT STEP: Requires OCaml >= $MIN_VERSION"
+        else
+            debug "  Converting $FILE to $REFILE:"
+            debug "$REFMT --heuristics-file $INPUT/arity.txt --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
+            $REFMT --heuristics-file $INPUT/arity.txt --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE
+            if ! [[ $? -eq 0 ]]; then
+                warning "  ⊘ FAILED\n"
+                return 1
+            fi
+            FILE=$REFILE
         fi
-        FILE=$REFILE
     else
         debug "  Formatting: $REFMT --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE"
         $REFMT --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE

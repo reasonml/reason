@@ -107,9 +107,3 @@ let pub_ = "method";
 let pub__ = "method";
 let pri_ = "private";
 let pri__ = "private";
-
-module Foo = {
-  type t = {name: string};
-};
-
-let foo = (Foo.{name}) => ();
