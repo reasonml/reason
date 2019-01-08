@@ -500,13 +500,13 @@ let containingObject = {
     bigArr.{0} = something + 1 ? hello : goodbye;
     str.[0] = something + 1 ? hello : goodbye;
 
-    (x.contents = something + 1) ?
-      hello : goodbye;
+    (x.contents = something + 1)
+      ? hello : goodbye;
     (x := something + 1) ? hello : goodbye;
     (y = something + 1) ? hello : goodbye;
     (arr[0] = something + 1) ? hello : goodbye;
-    (bigArr.{0} = something + 1) ?
-      hello : goodbye;
+    (bigArr.{0} = something + 1)
+      ? hello : goodbye;
     (str.[0] = something + 1) ? hello : goodbye;
 
     x.contents = something + 1 ? hello : goodbye;
@@ -591,20 +591,20 @@ let containingObject = {
      * Try with ||
      */ x.contents
     || something
-    + 1 ?
-      hello : goodbye;
+    + 1
+      ? hello : goodbye;
     y || something + 1 ? hello : goodbye;
     arr[0] || something + 1 ? hello : goodbye;
-    bigArr.{0} || something + 1 ?
-      hello : goodbye;
+    bigArr.{0} || something + 1
+      ? hello : goodbye;
     str.[0] || something + 1 ? hello : goodbye;
 
-    x.contents || something + 1 ?
-      hello : goodbye;
+    x.contents || something + 1
+      ? hello : goodbye;
     y || something + 1 ? hello : goodbye;
     arr[0] || something + 1 ? hello : goodbye;
-    bigArr.{0} || something + 1 ?
-      hello : goodbye;
+    bigArr.{0} || something + 1
+      ? hello : goodbye;
     str.[0] || something + 1 ? hello : goodbye;
 
     x.contents
@@ -619,20 +619,20 @@ let containingObject = {
      * Try with &&
      */ x.contents
     && something
-    + 1 ?
-      hello : goodbye;
+    + 1
+      ? hello : goodbye;
     y && something + 1 ? hello : goodbye;
     arr[0] && something + 1 ? hello : goodbye;
-    bigArr.{0} && something + 1 ?
-      hello : goodbye;
+    bigArr.{0} && something + 1
+      ? hello : goodbye;
     str.[0] && something + 1 ? hello : goodbye;
 
-    x.contents && something + 1 ?
-      hello : goodbye;
+    x.contents && something + 1
+      ? hello : goodbye;
     y && something + 1 ? hello : goodbye;
     arr[0] && something + 1 ? hello : goodbye;
-    bigArr.{0} && something + 1 ?
-      hello : goodbye;
+    bigArr.{0} && something + 1
+      ? hello : goodbye;
     str.[0] && something + 1 ? hello : goodbye;
 
     x.contents
@@ -707,250 +707,255 @@ let containingObject = {
        * The following
        */
       x.contents =
-        something ?
-          x.contents = somethingElse : goodbye
+        something
+          ? x.contents = somethingElse : goodbye
     );
     y = something ? y = somethingElse : goodbye;
     arr[0] =
-      something ?
-        arr[0] = somethingElse : goodbye;
+      something
+        ? arr[0] = somethingElse : goodbye;
     bigArr.{0} =
-      something ?
-        bigArr.{0} = somethingElse : goodbye;
+      something
+        ? bigArr.{0} = somethingElse : goodbye;
     str.[0] =
-      something ?
-        str.[0] = somethingElse : goodbye;
+      something
+        ? str.[0] = somethingElse : goodbye;
     /*
      * Should be parsed as
      */
     x.contents =
-      something ?
-        x.contents = somethingElse : goodbye;
+      something
+        ? x.contents = somethingElse : goodbye;
     y = something ? y = somethingElse : goodbye;
     arr[0] =
-      something ?
-        arr[0] = somethingElse : goodbye;
+      something
+        ? arr[0] = somethingElse : goodbye;
     bigArr.{0} =
-      something ?
-        bigArr.{0} = somethingElse : goodbye;
+      something
+        ? bigArr.{0} = somethingElse : goodbye;
     str.[0] =
-      something ?
-        str.[0] = somethingElse : goodbye;
+      something
+        ? str.[0] = somethingElse : goodbye;
 
     /** And this */ y :=
       something ? y := somethingElse : goodbye;
     arr[0] :=
-      something ?
-        arr[0] := somethingElse : goodbye;
+      something
+        ? arr[0] := somethingElse : goodbye;
     bigArr.{0} :=
-      something ?
-        bigArr.{0} := somethingElse : goodbye;
+      something
+        ? bigArr.{0} := somethingElse : goodbye;
     str.[0] :=
-      something ?
-        str.[0] := somethingElse : goodbye;
+      something
+        ? str.[0] := somethingElse : goodbye;
 
     /* Should be parsed as */
     y := something ? y := somethingElse : goodbye;
     arr[0] :=
-      something ?
-        arr[0] := somethingElse : goodbye;
+      something
+        ? arr[0] := somethingElse : goodbye;
     bigArr.{0} :=
-      something ?
-        bigArr.{0} := somethingElse : goodbye;
+      something
+        ? bigArr.{0} := somethingElse : goodbye;
     str.[0] :=
-      something ?
-        str.[0] := somethingElse : goodbye;
+      something
+        ? str.[0] := somethingElse : goodbye;
 
     /* The following */
     x :=
-      something ?
-        x.contents =
-          somethingElse ? goodbye : goodbye :
-        goodbye;
+      something
+        ? x.contents =
+            somethingElse ? goodbye : goodbye
+        : goodbye;
     x :=
-      something ?
-        arr[0] =
-          somethingElse ? goodbye : goodbye :
-        goodbye;
+      something
+        ? arr[0] =
+            somethingElse ? goodbye : goodbye
+        : goodbye;
     x :=
-      something ?
-        bigArr.{0} =
-          somethingElse ? goodbye : goodbye :
-        goodbye;
+      something
+        ? bigArr.{0} =
+            somethingElse ? goodbye : goodbye
+        : goodbye;
     x :=
-      something ?
-        str.[0] =
-          somethingElse ? goodbye : goodbye :
-        goodbye;
+      something
+        ? str.[0] =
+            somethingElse ? goodbye : goodbye
+        : goodbye;
     /* Is parsed as */
     x :=
-      something ?
-        x.contents =
-          somethingElse ? goodbye : goodbye :
-        goodbye;
+      something
+        ? x.contents =
+            somethingElse ? goodbye : goodbye
+        : goodbye;
     x :=
-      something ?
-        arr[0] =
-          somethingElse ? goodbye : goodbye :
-        goodbye;
+      something
+        ? arr[0] =
+            somethingElse ? goodbye : goodbye
+        : goodbye;
     x :=
-      something ?
-        bigArr.{0} =
-          somethingElse ? goodbye : goodbye :
-        goodbye;
+      something
+        ? bigArr.{0} =
+            somethingElse ? goodbye : goodbye
+        : goodbye;
     x :=
-      something ?
-        str.[0] =
-          somethingElse ? goodbye : goodbye :
-        goodbye;
+      something
+        ? str.[0] =
+            somethingElse ? goodbye : goodbye
+        : goodbye;
     /* is not the same as */
     x :=
-      something ?
-        (x.contents = somethingElse) ?
-          goodbye : goodbye :
-        goodbye;
+      something
+        ? (x.contents = somethingElse)
+            ? goodbye : goodbye
+        : goodbye;
     x :=
-      something ?
-        (arr[0] = somethingElse) ?
-          goodbye : goodbye :
-        goodbye;
+      something
+        ? (arr[0] = somethingElse)
+            ? goodbye : goodbye
+        : goodbye;
     x :=
-      something ?
-        (bigArr.{0} = somethingElse) ?
-          goodbye : goodbye :
-        goodbye;
+      something
+        ? (bigArr.{0} = somethingElse)
+            ? goodbye : goodbye
+        : goodbye;
     x :=
-      something ?
-        (str.[0] = somethingElse) ?
-          goodbye : goodbye :
-        goodbye;
+      something
+        ? (str.[0] = somethingElse)
+            ? goodbye : goodbye
+        : goodbye;
 
     /**
      * And
      */
     /** These should be parsed the same */
-    something ?
-      somethingElse :
-      x.contents = somethingElse ? x : z;
-    something ?
-      somethingElse :
-      x.contents = somethingElse ? x : z;
+    something
+      ? somethingElse
+      : x.contents = somethingElse ? x : z;
+    something
+      ? somethingElse
+      : x.contents = somethingElse ? x : z;
     /* Not: */
-    something ?
-      somethingElse :
-      (x.contents = somethingElse) ? x : z;
+    something
+      ? somethingElse
+      : (x.contents = somethingElse) ? x : z;
     (
-      something ?
-        somethingElse :
-        x.contents = somethingElse
-    ) ?
-      x : z;
+      something
+        ? somethingElse
+        : x.contents = somethingElse
+    )
+      ? x : z;
 
     /* These should be parsed the same */
-    something ?
-      somethingElse : x := somethingElse ? x : z;
-    something ?
-      somethingElse : x := somethingElse ? x : z;
+    something
+      ? somethingElse
+      : x := somethingElse ? x : z;
+    something
+      ? somethingElse
+      : x := somethingElse ? x : z;
     /* Not: */
-    something ?
-      somethingElse :
-      (x := somethingElse) ? x : z;
+    something
+      ? somethingElse
+      : (x := somethingElse) ? x : z;
     (
-      something ?
-        somethingElse : x := somethingElse
-    ) ?
-      x : z;
+      something
+        ? somethingElse : x := somethingElse
+    )
+      ? x : z;
 
     /** These should be parsed the same */
-    something ?
-      somethingElse : y = somethingElse ? x : z;
-    something ?
-      somethingElse : y = somethingElse ? x : z;
+    something
+      ? somethingElse : y = somethingElse ? x : z;
+    something
+      ? somethingElse : y = somethingElse ? x : z;
     /* Not: */
-    something ?
-      somethingElse : (y = somethingElse) ? x : z;
+    something
+      ? somethingElse
+      : (y = somethingElse) ? x : z;
     (
-      something ?
-        somethingElse : y = somethingElse
-    ) ?
-      x : z;
+      something
+        ? somethingElse : y = somethingElse
+    )
+      ? x : z;
 
     /** These should be parsed the same */
-    something ?
-      somethingElse :
-      arr[0] = somethingElse ? x : arr[0];
-    something ?
-      somethingElse :
-      arr[0] = somethingElse ? x : arr[0];
+    something
+      ? somethingElse
+      : arr[0] = somethingElse ? x : arr[0];
+    something
+      ? somethingElse
+      : arr[0] = somethingElse ? x : arr[0];
     /* Not: */
-    something ?
-      somethingElse :
-      (arr[0] = somethingElse) ? x : z;
+    something
+      ? somethingElse
+      : (arr[0] = somethingElse) ? x : z;
     (
-      something ?
-        somethingElse : arr[0] = somethingElse
-    ) ?
-      x : z;
+      something
+        ? somethingElse : arr[0] = somethingElse
+    )
+      ? x : z;
 
     /** These should be parsed the same */
-    something ?
-      somethingElse :
-      bigArr.{0} = somethingElse ? x : bigArr.{0};
-    something ?
-      somethingElse :
-      bigArr.{0} = somethingElse ? x : bigArr.{0};
+    something
+      ? somethingElse
+      : bigArr.{0} =
+          somethingElse ? x : bigArr.{0};
+    something
+      ? somethingElse
+      : bigArr.{0} =
+          somethingElse ? x : bigArr.{0};
     /* Not: */
-    something ?
-      somethingElse :
-      (bigArr.{0} = somethingElse) ? x : z;
+    something
+      ? somethingElse
+      : (bigArr.{0} = somethingElse) ? x : z;
     (
-      something ?
-        somethingElse :
-        bigArr.{0} = somethingElse
-    ) ?
-      x : z;
+      something
+        ? somethingElse
+        : bigArr.{0} = somethingElse
+    )
+      ? x : z;
 
     /** These should be parsed the same */
-    something ?
-      somethingElse :
-      arr.[0] = somethingElse ? x : arr.[0];
-    something ?
-      somethingElse :
-      arr.[0] = somethingElse ? x : arr.[0];
+    something
+      ? somethingElse
+      : arr.[0] = somethingElse ? x : arr.[0];
+    something
+      ? somethingElse
+      : arr.[0] = somethingElse ? x : arr.[0];
     /* Not: */
-    something ?
-      somethingElse :
-      (str.[0] = somethingElse) ? x : z;
+    something
+      ? somethingElse
+      : (str.[0] = somethingElse) ? x : z;
     (
-      something ?
-        somethingElse : str.[0] = somethingElse
-    ) ?
-      x : z;
+      something
+        ? somethingElse : str.[0] = somethingElse
+    )
+      ? x : z;
 
     /**
      * It creates a totally different meaning when parens group the :
      */
     (
       x.contents =
-        something ?
-          (x.contents = somethingElse: x) : z
+        something
+          ? (x.contents = somethingElse: x) : z
     );
     y = something ? (y = somethingElse: x) : z;
     arr[0] =
-      something ?
-        (arr[0] = somethingElse: x) : z;
+      something
+        ? (arr[0] = somethingElse: x) : z;
     bigArr.{0} =
-      something ?
-        (bigArr.{0} = somethingElse: x) : z;
+      something
+        ? (bigArr.{0} = somethingElse: x) : z;
     str.[0] =
-      something ?
-        (str.[0] = somethingElse: x) : z;
+      something
+        ? (str.[0] = somethingElse: x) : z;
 
     /**
      * Various precedence groupings.
      */
-    true ?
-      true ? false : false : false;
+    true
+      ? true ? false : false : false;
     /* Is the same as */
     true ? true ? false : false : false;
     /*
@@ -964,10 +969,10 @@ let containingObject = {
     x + (- (something = y));
     x + (- something.contents) := y;
     x + (- something) := y;
-    x.contents || something + 1 ?
-      - hello : goodbye;
-    bigArr.{0} || - something + 1 ?
-      hello : goodbye;
+    x.contents || something + 1
+      ? - hello : goodbye;
+    bigArr.{0} || - something + 1
+      ? hello : goodbye;
     let result = - x + (something.contents = y);
 
     /* Prefix minus is actually sugar for regular function identifier ~-*/
@@ -1232,30 +1237,30 @@ something
   | Some(x) => x >>= y
 );
 
-something ?
-  a
-  >>= (
-    fun
+something
+  ? a
+    >>= (
+      fun
+      | None => x >>= y
+      | Some(x) => x >>= y
+    )
+  : fun
     | None => x >>= y
-    | Some(x) => x >>= y
-  ) :
-  fun
-  | None => x >>= y
-  | Some(x) => x >>= y;
+    | Some(x) => x >>= y;
 
-something ?
-  a
-  >>= (
-    fun
-    | None => x >>= y
-    | Some(x) => x >>= y
-  ) :
-  (
-    fun
-    | None => x >>= y
-    | Some(x) => x >>= y
-  )
-  >>= b;
+something
+  ? a
+    >>= (
+      fun
+      | None => x >>= y
+      | Some(x) => x >>= y
+    )
+  : (
+      fun
+      | None => x >>= y
+      | Some(x) => x >>= y
+    )
+    >>= b;
 
 let foo =
   fun
@@ -1276,31 +1281,31 @@ let foo =
   | None => ();
 
 let predicate =
-  predicate === Functions.alwaysTrue1 ?
-    (
-      fun
+  predicate === Functions.alwaysTrue1
+    ? (
+        fun
+        | None => false
+        | Some(exn) => predicate(exn)
+      )
+      >>= foo
+    : fun
       | None => false
-      | Some(exn) => predicate(exn)
-    )
-    >>= foo :
-    fun
-    | None => false
-    | Some(exn) => predicate(exn);
+      | Some(exn) => predicate(exn);
 
 let predicate =
-  predicate === Functions.alwaysTrue1 ?
-    (
-      fun
-      | None => false
-      | Some(exn) => predicate(exn)
-    )
-    >>= foo :
-    bar
-    >>= (
-      fun
-      | None => false
-      | Some(exn) => predicate(exn)
-    );
+  predicate === Functions.alwaysTrue1
+    ? (
+        fun
+        | None => false
+        | Some(exn) => predicate(exn)
+      )
+      >>= foo
+    : bar
+      >>= (
+        fun
+        | None => false
+        | Some(exn) => predicate(exn)
+      );
 
 let (>...) = (a, b) => a + b;
 

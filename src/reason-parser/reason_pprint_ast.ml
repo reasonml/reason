@@ -4206,20 +4206,18 @@ let printer = object(self:'self)
       | None -> raise (Invalid_argument "Impossible")
       | Some (tt, ff) ->
         let ifTrue = self#unparseExpr tt in
-        let testItm = self#unparseResolvedRule (
+        let testItem = self#unparseResolvedRule (
           self#ensureExpression e ~reducesOnToken:(Token "?")
         ) in
         let ifFalse = self#unparseResolvedRule (
           self#ensureContainingRule ~withPrecedence:(Token ":") ~reducesAfterRight:ff ()
         ) in
-        let withQuestion =
-          source_map ~loc:e.pexp_loc
-            (makeList ~postSpace:true [testItm; atom "?"])
+        let trueBranch = label ~space:true ~break:`Never (atom "?") ifTrue
         in
-        let trueFalseBranches =
-          makeList ~inline:(true, true) ~break:IfNeed ~sep:(Sep ":") ~postSpace:true ~preSpace:true [ifTrue; ifFalse]
+        let falseBranch = label ~space:true ~break:`Never (atom ":") ifFalse
         in
-        let expr = label ~space:true withQuestion trueFalseBranches in
+        let expr = label ~space:true testItem (makeList ~break:IfNeed ~sep:(Sep " ") ~inline:(true, true) [trueBranch; falseBranch])
+        in
         SpecificInfixPrecedence ({reducePrecedence=Token ":"; shiftPrecedence=Token "?"}, LayoutNode expr)
       )
     | _ -> (

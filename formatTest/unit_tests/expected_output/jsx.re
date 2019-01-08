@@ -26,15 +26,15 @@ let y =
             Routes.stateToPath(
               latestComponentBag.state,
             );
-          currentActualPath == pathFromState ?
-            None :
-            dispatchEventless(
-              State.UriNavigated(
-                currentActualPath,
-              ),
-              latestComponentBag,
-              (),
-            );
+          currentActualPath == pathFromState
+            ? None
+            : dispatchEventless(
+                State.UriNavigated(
+                  currentActualPath,
+                ),
+                latestComponentBag,
+                (),
+              );
         },
         (),
       )
@@ -121,11 +121,13 @@ let icon =
 
 <MessengerSharedPhotosAlbumViewPhotoReact
   ref=?{
-    foo##bar === baz ?
-      Some(
-        foooooooooooooooooooooooo(setRefChild),
-      ) :
-      None
+    foo##bar === baz
+      ? Some(
+          foooooooooooooooooooooooo(
+            setRefChild,
+          ),
+        )
+      : None
   }
   key=node##legacy_attachment_id
 />;

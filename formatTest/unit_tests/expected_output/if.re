@@ -80,8 +80,8 @@ if (if (x) {true} else {false}) {
  */
 
 let ternaryResult =
-  something ?
-    callThisFunction(withThisArg) : thatResult;
+  something
+    ? callThisFunction(withThisArg) : thatResult;
 
 let annotatedTernary =
   true && (something ? true : false: bool);
@@ -92,72 +92,97 @@ let annotatedBranch =
 
 /* The following should be... */
 let whatShouldThisBeParsedAs =
-  something ?
-    callThisFunction(withThisArg) :
-    trailingTest ? true : false;
+  something
+    ? callThisFunction(withThisArg)
+    : trailingTest ? true : false;
 
 /* ... it should be parsed as */
 let whatShouldThisBeParsedAs =
-  something ?
-    callThisFunction(withThisArg) :
-    trailingTest ? true : false;
+  something
+    ? callThisFunction(withThisArg)
+    : trailingTest ? true : false;
 
 /* Should *not* be parsed as */
 let whatShouldThisBeParsedAs =
   (
-    something ?
-      callThisFunction(withThisArg) :
-      trailingTest
-  ) ?
-    true : false;
+    something
+      ? callThisFunction(withThisArg)
+      : trailingTest
+  )
+    ? true : false;
+
+/* the following shoud be... */
+let ternaryFormatting =
+  something
+    ? notLongEnoughToCauseTwoLineBreaks : other;
+
+/* ideally formatted as
+   let ternaryFormatting =
+     something
+     ? notLongEnoughToCauseTwoLineBreaks
+     : other
+   */
+let ternaryFormatting =
+  something
+    ? notLongEnoughToCauseTwoLineBreaks : other;
+
+/* but is currently formatted as the following (which is less than desirable)
+   let ternaryFormatting =
+     something
+     ? notLongEnoughToCauseTwoLineBreaks : other
+    */
+let ternaryFormatting =
+  something
+    ? notLongEnoughToCauseTwoLineBreaks : other;
 
 let ternaryResult =
-  aaaaaa ?
-    bbbbbbb :
-    ccccc ? ddddddd : eeeee ? fffffff : ggggg;
+  aaaaaa
+    ? bbbbbbb
+    : ccccc ? ddddddd : eeeee ? fffffff : ggggg;
 
 /* Should be parsed as: */
 let ternaryResult =
-  aaaaaa ?
-    bbbbbbb :
-    ccccc ? ddddddd : eeeee ? fffffff : ggggg;
+  aaaaaa
+    ? bbbbbbb
+    : ccccc ? ddddddd : eeeee ? fffffff : ggggg;
 
 let ternaryResult =
   /* The first Parens *must* be preserved! */
-  (x ? y : z) ?
-    bbbbbbb :
-    ccccccc ? ddddddd : eeeeeee ? fffffff : ggggg;
+  (x ? y : z)
+    ? bbbbbbb
+    : ccccccc
+        ? ddddddd : eeeeeee ? fffffff : ggggg;
 
 let ternaryResult =
-  aaaaaaa ?
-    bbbbbbb :
+  aaaaaaa
+    ? bbbbbbb
     /* The second Parens *must* be preserved! */
-    (x ? y : z) ?
-      ddddddd : eeeeeee ? fffffff : ggggg;
+    : (x ? y : z)
+        ? ddddddd : eeeeeee ? fffffff : ggggg;
 
 let ternaryResult =
-  aaaaaaa ?
-    bbbbbbb :
-    x ?
-      y :
-      z ?
-        ddddddd :
-        /* The final parent don't need to be preserved */
-        eeeeeee ? fffffff : x ? y : z;
+  aaaaaaa
+    ? bbbbbbb
+    : x
+        ? y
+        : z
+            ? ddddddd
+            /* The final parent don't need to be preserved */
+            : eeeeeee ? fffffff : x ? y : z;
 
 let addOne = x => x + 1;
 
 let result =
-  addOne(0) + 0 > 1 ?
-    print_string("this wont print") :
-    print_string("this will");
+  addOne(0) + 0 > 1
+    ? print_string("this wont print")
+    : print_string("this will");
 /*
  * Should be parsed as:
  */
 let result =
-  addOne(0) + 0 > 1 ?
-    print_string("this wont print") :
-    print_string("this will");
+  addOne(0) + 0 > 1
+    ? print_string("this wont print")
+    : print_string("this will");
 
 /*
  * Try shouldn't be aliased as ternary!
@@ -192,6 +217,6 @@ let result =
 let res = someExpression ? "true" : "false";
 
 let pngSuffix =
-  pixRation > 1 ?
-    "@" ++ string_of_int(pixRation) ++ "x.png" :
-    ".png";
+  pixRation > 1
+    ? "@" ++ string_of_int(pixRation) ++ "x.png"
+    : ".png";
