@@ -249,21 +249,32 @@ function idempotent_test() {
     info "Idempotent Test: $FILE"
     if [ "$(basename $FILE)" != "$(basename $FILE .ml)" ] || [ "$(basename $FILE)" != "$(basename $FILE .mli)" ]; then
         if [ "$(basename $FILE)" != "$(basename $FILE .ml)" ]; then
-          REFILE="$(basename $FILE .ml).re"
+          SUFFIX=".re"
+          REFILE="$(basename $FILE .ml)$SUFFIX"
         else
-          REFILE="$(basename $FILE .mli).rei"
+          SUFFIX=".rei"
+          REFILE="$(basename $FILE .mli)$SUFFIX"
         fi
-        debug "  Converting $FILE to $REFILE:"
 
-        debug "  Formatting Once: $REFMT $EXTRA_FLAGS --heuristics-file $INPUT/arity.txt --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
-        $REFMT --heuristics-file $INPUT/arity.txt --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE
-        if ! [[ $? -eq 0 ]]; then
-            warning "⊘ FAILED\n"
-            return 1
+        BASE_NAME=$(echo $FILE | cut -d '.' -f 1)
+        MIN_VERSION=$(basename $FILE $SUFFIX | cut -d '.' -f 2-4)
+
+        if [ "$MIN_VERSION" != "$BASE_NAME" ] && [ "$(version "$OCAML_VERSION")" -lt "$(version "$MIN_VERSION")" ]
+        then
+            notice "  ☒ IGNORED REFMT STEP: Requires OCaml >= $MIN_VERSION"
+        else
+          debug "  Converting $FILE to $REFILE:"
+
+          debug "  Formatting Once: $REFMT $EXTRA_FLAGS --heuristics-file $INPUT/arity.txt --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
+          $REFMT --heuristics-file $INPUT/arity.txt --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE
+          if ! [[ $? -eq 0 ]]; then
+              warning "⊘ FAILED\n"
+              return 1
+          fi
+          FILE=$REFILE
+          debug "  Generating output again: $REFMT $EXTRA_FLAGS --print-width 50 --print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted"
+          $REFMT --print-width 50 --print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted
         fi
-        FILE=$REFILE
-        debug "  Generating output again: $REFMT $EXTRA_FLAGS --print-width 50 --print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted"
-        $REFMT --print-width 50 --print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted
     else
       debug "  Formatting Once: '$REFMT $EXTRA_FLAGS --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE'"
       $REFMT $EXTRA_FLAGS --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE
