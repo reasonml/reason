@@ -201,39 +201,39 @@ function unit_test() {
     else
       debug "  '$REFMT --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE'"
       $REFMT --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE
-    fi
 
-    OFILE="${FILE}"
-    VERSION_SPECIFIC_FILE="${FILE}.${OCAML_VERSION}"
-    if [ -f "${EXPECTED_OUTPUT}/${VERSION_SPECIFIC_FILE}" ]; then
-        echo "Found test file specific to version ${OCAML_VERSION}..."
-        OFILE="${VERSION_SPECIFIC_FILE}"
-    fi
+      OFILE="${FILE}"
+      VERSION_SPECIFIC_FILE="${FILE}.${OCAML_VERSION}"
+      if [ -f "${EXPECTED_OUTPUT}/${VERSION_SPECIFIC_FILE}" ]; then
+          echo "Found test file specific to version ${OCAML_VERSION}..."
+          OFILE="${VERSION_SPECIFIC_FILE}"
+      fi
 
-    debug "  Comparing results:  diff $EXPECTED_OUTPUT/$OFILE $OUTPUT/$FILE"
+      debug "  Comparing results:  diff $EXPECTED_OUTPUT/$OFILE $OUTPUT/$FILE"
 
-    $DIFF $EXPECTED_OUTPUT/$OFILE $OUTPUT/$FILE
+      $DIFF $EXPECTED_OUTPUT/$OFILE $OUTPUT/$FILE
 
-    if ! [[ $? -eq 0 ]]; then
-        warning "  ⊘ FAILED\n"
-        info "  ${INFO}$OUTPUT/$FILE${RESET}"
-        info "  doesn't match expected output"
-        info "  ${INFO}$EXPECTED_OUTPUT/$OFILE${RESET}"
-        info ""
-        info "  To approve the changes run:"
-        info "    cp $OUTPUT/$FILE $EXPECTED_OUTPUT/$OFILE"
-        echo ""
+      if ! [[ $? -eq 0 ]]; then
+          warning "  ⊘ FAILED\n"
+          info "  ${INFO}$OUTPUT/$FILE${RESET}"
+          info "  doesn't match expected output"
+          info "  ${INFO}$EXPECTED_OUTPUT/$OFILE${RESET}"
+          info ""
+          info "  To approve the changes run:"
+          info "    cp $OUTPUT/$FILE $EXPECTED_OUTPUT/$OFILE"
+          echo ""
+          return 1
+      fi
+
+      debug "Testing --use-stdin"
+      stdin_test $INPUT/$1 $OUTPUT/$FILE $EXPECTED_OUTPUT/$OFILE $INPUT/arity.txt
+
+      if ! [[ $? -eq 0 ]]; then
         return 1
-    fi
-
-    debug "Testing --use-stdin"
-    stdin_test $INPUT/$1 $OUTPUT/$FILE $EXPECTED_OUTPUT/$OFILE $INPUT/arity.txt
-
-    if ! [[ $? -eq 0 ]]; then
-      return 1
-    else
-      success "  ☑ PASS"
-      echo
+      else
+        success "  ☑ PASS"
+        echo
+      fi
     fi
 }
 
@@ -281,29 +281,29 @@ function idempotent_test() {
 
       debug "  Generating output again: $REFMT $EXTRA_FLAGS --print-width 50 --print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted"
       $REFMT $EXTRA_FLAGS --print-width 50 --print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted
-    fi
 
-    $DIFF $OUTPUT/$FILE $OUTPUT/$FILE.formatted
-    if ! [[ $? -eq 0 ]]; then
-        warning "⊘ FAILED\n"
-        info "  ${INFO}$OUTPUT/$FILE.formatted${RESET}\n"
-        info "  is not same as"
-        info "  ${INFO}$OUTPUT/$FILE${RESET}"
-        return 1
-    fi
+      $DIFF $OUTPUT/$FILE $OUTPUT/$FILE.formatted
+      if ! [[ $? -eq 0 ]]; then
+          warning "⊘ FAILED\n"
+          info "  ${INFO}$OUTPUT/$FILE.formatted${RESET}\n"
+          info "  is not same as"
+          info "  ${INFO}$OUTPUT/$FILE${RESET}"
+          return 1
+      fi
 
-    debug "Testing --use-stdin"
-    stdin_test $INPUT/$1 $OUTPUT/$FILE $OUTPUT/$FILE $INPUT/arity.txt "$EXTRA_FLAGS"
+      debug "Testing --use-stdin"
+      stdin_test $INPUT/$1 $OUTPUT/$FILE $OUTPUT/$FILE $INPUT/arity.txt "$EXTRA_FLAGS"
 
-    if ! [[ $? -eq 0 ]]; then
-      return 1
-    else
-      stdin_test $OUTPUT/$FILE $OUTPUT/$FILE.formatted $OUTPUT/$FILE $INPUT/arity.txt "$EXTRA_FLAGS"
       if ! [[ $? -eq 0 ]]; then
         return 1
       else
-        success "  ☑ PASS"
-        echo
+        stdin_test $OUTPUT/$FILE $OUTPUT/$FILE.formatted $OUTPUT/$FILE $INPUT/arity.txt "$EXTRA_FLAGS"
+        if ! [[ $? -eq 0 ]]; then
+          return 1
+        else
+          success "  ☑ PASS"
+          echo
+        fi
       fi
     fi
 }
