@@ -187,7 +187,8 @@ function unit_test() {
 
         if [ "$MIN_VERSION" != "$BASE_NAME" ] && [ "$(version "$OCAML_VERSION")" -lt "$(version "$MIN_VERSION")" ]
         then
-            notice "  ☒ IGNORED REFMT STEP: Requires OCaml >= $MIN_VERSION"
+          notice "  ☒ IGNORED REFMT STEP: Requires OCaml >= $MIN_VERSION"
+          OUTPUT_NOT_GENERATED=1
         else
           debug "$REFMT --heuristics-file $INPUT/arity.txt --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
           $REFMT --heuristics-file $INPUT/arity.txt --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE
@@ -210,30 +211,32 @@ function unit_test() {
         OFILE="${VERSION_SPECIFIC_FILE}"
     fi
 
-    debug "  Comparing results:  diff $EXPECTED_OUTPUT/$OFILE $OUTPUT/$FILE"
+    if [[ -z ${OUTPUT_NOT_GENERATED+x} ]]; then
+      debug "  Comparing results:  diff $EXPECTED_OUTPUT/$OFILE $OUTPUT/$FILE"
 
-    $DIFF $EXPECTED_OUTPUT/$OFILE $OUTPUT/$FILE
+      $DIFF $EXPECTED_OUTPUT/$OFILE $OUTPUT/$FILE
 
-    if ! [[ $? -eq 0 ]]; then
-        warning "  ⊘ FAILED\n"
-        info "  ${INFO}$OUTPUT/$FILE${RESET}"
-        info "  doesn't match expected output"
-        info "  ${INFO}$EXPECTED_OUTPUT/$OFILE${RESET}"
-        info ""
-        info "  To approve the changes run:"
-        info "    cp $OUTPUT/$FILE $EXPECTED_OUTPUT/$OFILE"
-        echo ""
+      if ! [[ $? -eq 0 ]]; then
+          warning "  ⊘ FAILED\n"
+          info "  ${INFO}$OUTPUT/$FILE${RESET}"
+          info "  doesn't match expected output"
+          info "  ${INFO}$EXPECTED_OUTPUT/$OFILE${RESET}"
+          info ""
+          info "  To approve the changes run:"
+          info "    cp $OUTPUT/$FILE $EXPECTED_OUTPUT/$OFILE"
+          echo ""
+          return 1
+      fi
+
+      debug "Testing --use-stdin"
+      stdin_test $INPUT/$1 $OUTPUT/$FILE $EXPECTED_OUTPUT/$OFILE $INPUT/arity.txt
+
+      if ! [[ $? -eq 0 ]]; then
         return 1
-    fi
-
-    debug "Testing --use-stdin"
-    stdin_test $INPUT/$1 $OUTPUT/$FILE $EXPECTED_OUTPUT/$OFILE $INPUT/arity.txt
-
-    if ! [[ $? -eq 0 ]]; then
-      return 1
-    else
-      success "  ☑ PASS"
-      echo
+      else
+        success "  ☑ PASS"
+        echo
+      fi
     fi
 }
 
@@ -261,7 +264,8 @@ function idempotent_test() {
 
         if [ "$MIN_VERSION" != "$BASE_NAME" ] && [ "$(version "$OCAML_VERSION")" -lt "$(version "$MIN_VERSION")" ]
         then
-            notice "  ☒ IGNORED REFMT STEP: Requires OCaml >= $MIN_VERSION"
+          notice "  ☒ IGNORED REFMT STEP: Requires OCaml >= $MIN_VERSION"
+          OUTPUT_NOT_GENERATED=1
         else
           debug "  Converting $FILE to $REFILE:"
 
@@ -283,27 +287,29 @@ function idempotent_test() {
       $REFMT $EXTRA_FLAGS --print-width 50 --print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted
     fi
 
-    $DIFF $OUTPUT/$FILE $OUTPUT/$FILE.formatted
-    if ! [[ $? -eq 0 ]]; then
-        warning "⊘ FAILED\n"
-        info "  ${INFO}$OUTPUT/$FILE.formatted${RESET}\n"
-        info "  is not same as"
-        info "  ${INFO}$OUTPUT/$FILE${RESET}"
-        return 1
-    fi
+    if [[ -z ${OUTPUT_NOT_GENERATED+x} ]]; then
+      $DIFF $OUTPUT/$FILE $OUTPUT/$FILE.formatted
+      if ! [[ $? -eq 0 ]]; then
+          warning "⊘ FAILED\n"
+          info "  ${INFO}$OUTPUT/$FILE.formatted${RESET}\n"
+          info "  is not same as"
+          info "  ${INFO}$OUTPUT/$FILE${RESET}"
+          return 1
+      fi
 
-    debug "Testing --use-stdin"
-    stdin_test $INPUT/$1 $OUTPUT/$FILE $OUTPUT/$FILE $INPUT/arity.txt "$EXTRA_FLAGS"
+      debug "Testing --use-stdin"
+      stdin_test $INPUT/$1 $OUTPUT/$FILE $OUTPUT/$FILE $INPUT/arity.txt "$EXTRA_FLAGS"
 
-    if ! [[ $? -eq 0 ]]; then
-      return 1
-    else
-      stdin_test $OUTPUT/$FILE $OUTPUT/$FILE.formatted $OUTPUT/$FILE $INPUT/arity.txt "$EXTRA_FLAGS"
       if ! [[ $? -eq 0 ]]; then
         return 1
       else
-        success "  ☑ PASS"
-        echo
+        stdin_test $OUTPUT/$FILE $OUTPUT/$FILE.formatted $OUTPUT/$FILE $INPUT/arity.txt "$EXTRA_FLAGS"
+        if ! [[ $? -eq 0 ]]; then
+          return 1
+        else
+          success "  ☑ PASS"
+          echo
+        fi
       fi
     fi
 }
