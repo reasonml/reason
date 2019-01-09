@@ -7,10 +7,9 @@ let foo = (Foo.{name}) => ();
 let f =
   fun
   | Foo.{name} => ()
-  | _ => ()
+  | _ => ();
 
-let x = { Foo.name = "Reason" }
-let Foo.{name} = x
+let x = {Foo.name: "Reason"};
+let Foo.{name} = x;
 
-let Foo.{name}, _ = x, ()
-
+let (Foo.{name}, _) = (x, ());
