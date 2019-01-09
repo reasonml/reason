@@ -124,3 +124,5 @@ type a =
     .
     "someStringKeyThatCausesLineToBreak": string,
   });
+
+type b = {punned: [@with_attribute] punned};

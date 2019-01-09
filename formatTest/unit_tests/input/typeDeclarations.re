@@ -56,3 +56,7 @@ type foo = option([@foo]string, [@bar](int => string => int));
 
 /* https://github.com/facebook/reason/issues/2073 */
 type a = array({. "someStringKeyThatCausesLineToBreak": string });
+
+type b = {
+  punned: [@with_attribute] punned
+};

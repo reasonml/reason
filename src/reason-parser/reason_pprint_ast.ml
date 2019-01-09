@@ -2024,6 +2024,8 @@ let recordRowIsPunned pld =
               (* don't pun parameterized types, e.g. {tag: tag 'props} *)
               [])
             );
+            (* Don't pun types that have attributes attached, e.g. { foo: [@bar] foo } *)
+            ptyp_attributes = [];
           _}
             when
             (Longident.last txt = name
