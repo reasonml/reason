@@ -1,7 +1,14 @@
-## Next Release
+## 3.4.0
 
-- Support for `//Rest Of Line comments` ([2268](https://github.com/facebook/reason/pull/2146))
+- Support for `//Rest Of Line comments`! ([2268](https://github.com/facebook/reason/pull/2146))
+  - Make sure that your constraints on `refmt` versions for native projects
+    specify a version >= `3.4.0` if you use `//` comments in your Reason code.
+    (specifiy ranges like `3.4.0-3.5.0`)
 - Allow Reason to be used with Merlin Natively on Windows [2256](https://github.com/facebook/reason/pull/2256)
+- [Improved Ternary Formatting](https://github.com/facebook/reason/pull/2294)
+- Many formatting improvements and fixes.
+  - [https://github.com/facebook/reason/pull/2316](Don't pun record types if they contain attributes)
+  - [https://github.com/facebook/reason/pull/1990](Better whitespace interleaving)
 
 ## 3.3.4
 
