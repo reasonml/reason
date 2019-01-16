@@ -17,7 +17,7 @@ depends: [
   "reason"
   "utop"   {>= "1.17"}
 ]
-synopsis: "rtop: Reason toplevel"
+synopsis: "Reason toplevel"
 description:
   "rtop is the toplevel (or REPL) for Reason, based on utop (https://github.com/diml/utop)."
 
