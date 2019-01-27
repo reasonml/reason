@@ -1423,3 +1423,17 @@ let testCallNamedArgs =
 let testCallNamedArgs =
     (foo: (~a: int, ~b: int=?) => int, a, b) =>
   foo(~a, ~b);
+
+let Foo.{name} = bar;
+let Foo.Bar.{name} = bar;
+
+let Foo.[name] = bar;
+let Foo.Bar.[name] = bar;
+
+let Foo.Bar.[] = bar;
+let Foo.Bar.[||] = bar;
+let Foo.() = foo;
+
+/* let Foo.(bar, baz) = foo; */
+
+let Foo.(exception bar) = baz;

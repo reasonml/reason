@@ -3313,6 +3313,16 @@ let printer = object(self:'self)
               self#patternArray l
           | Ppat_unpack s ->
               makeList ~wrap:("(", ")") ~break:IfNeed ~postSpace:true [atom "module"; atom s.txt]
+          | Ppat_open (lid, pat) ->
+            (* let someFn Qualified.{ record } = ... *)
+            let needsParens = match pat.ppat_desc with
+              | Ppat_exception _ -> true
+              | _ -> false
+            in
+            let pat = self#simple_pattern pat in
+            label
+              (label (self#longident_loc lid) (atom (".")))
+              (if needsParens then formatPrecedence pat else pat)
           | Ppat_type li ->
               makeList [atom "#"; self#longident_loc li]
           | Ppat_record (l, closed) ->
@@ -3341,7 +3351,7 @@ let printer = object(self:'self)
                   | Sys_error _ as exc => raise exc
                  results in incorrect parsing with type error otherwise.
               *)
-               makeList ~postSpace:true [atom "exception"; self#simple_pattern p]
+               (makeList ~postSpace:true [atom "exception"; self#simple_pattern p])
           | _ -> formatPrecedence (self#pattern x) (* May have a redundant sourcemap *)
         in
         source_map ~loc:x.ppat_loc itm

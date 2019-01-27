@@ -3656,9 +3656,7 @@ simple_pattern_direct_argument:
 mark_position_pat (
    as_loc(constr_longident)
     { mkpat(Ppat_construct(mkloc $1.txt $1.loc, None)) }
-  | record_pattern { $1 }
-  | list_pattern { $1 }
-  | array_pattern { $1 }
+  | simple_delimited_pattern { $1 }
   ) {$1}
 ;
 
@@ -3784,12 +3782,33 @@ mark_position_pat
     { expecting_pat (with_txt $4 "type") }
   | LPAREN MODULE as_loc(UIDENT) RPAREN
     { mkpat(Ppat_unpack($3)) }
-  | record_pattern { $1 }
-  | list_pattern { $1 }
-  | array_pattern { $1 }
+  | simple_pattern_not_ident_
+    { $1 }
   | extension
     { mkpat(Ppat_extension $1) }
   ) {$1};
+
+simple_pattern_not_ident_:
+  | simple_delimited_pattern
+    { $1 }
+  | as_loc(mod_longident) DOT simple_delimited_pattern
+    { let loc = mklocation $symbolstartpos $endpos in
+      mkpat ~loc (Ppat_open ($1, $3))
+    }
+  | as_loc(mod_longident) DOT LPAREN pattern RPAREN
+    { let loc = mklocation $symbolstartpos $endpos in
+      mkpat ~loc (Ppat_open ($1, $4)) }
+  | as_loc(mod_longident) DOT as_loc(LBRACKET RBRACKET {Lident "[]"})
+    { let loc = mklocation $symbolstartpos $endpos in
+      mkpat ~loc (Ppat_open($1, mkpat ~loc:$3.loc (Ppat_construct($3, None)))) }
+  | as_loc(mod_longident) DOT as_loc(LPAREN RPAREN {Lident "()"})
+    { let loc = mklocation $symbolstartpos $endpos in
+      mkpat ~loc (Ppat_open($1, mkpat ~loc:$3.loc (Ppat_construct($3, None)))) }
+
+%inline simple_delimited_pattern:
+  | record_pattern { $1 }
+  | list_pattern   { $1 }
+  | array_pattern  { $1 }
 
 %inline record_pattern:
     LBRACE lbl_pattern_list RBRACE
