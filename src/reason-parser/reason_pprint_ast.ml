@@ -6271,7 +6271,11 @@ let printer = object(self:'self)
     | head :: remaining ->
         self#formatChildren
           remaining
-          (self#inline_braces#simplifyUnparseExpr ~inline:true ~wrap:("{", "}") head :: processedRev)
+          (self
+            #dont_preserve_braces (* the brace logic is handled here *)
+            #simplifyUnparseExpr ~inline:true ~wrap:("{", "}")
+            head
+           :: processedRev)
     | [] -> match processedRev with
         | [] -> None
         | _::_ -> Some (List.rev processedRev)

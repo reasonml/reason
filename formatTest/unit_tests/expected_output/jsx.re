@@ -621,3 +621,21 @@ ReasonReact.(<> {string("Test")} </>);
 <div style={getStyle()}>
   {ReasonReact.string("BugTest")}
 </div>;
+
+<div>
+  {
+    let left = limit->Int.toString;
+    {j|$left characters left|j}->React.string;
+  }
+</div>;
+
+<View style=styles##backgroundImageWrapper>
+  {
+    let uri = "/images/header-background.png";
+    <Image
+      resizeMode=`contain
+      style=styles##backgroundImage
+      uri
+    />;
+  }
+</View>;
