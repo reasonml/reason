@@ -393,6 +393,15 @@ let identifier_mapper f super =
     in
     super.signature_item mapper signatureItem
   end;
+  value_description = begin fun mapper desc ->
+    let desc =
+      match desc with
+        | {pval_name = ({txt} as id); pval_prim } when pval_prim != [] ->
+          {desc with pval_name = { id with txt = f txt }}
+        | _ -> desc
+    in
+    super.value_description mapper desc
+  end;
 }
 
 let remove_stylistic_attrs_mapper_maker super =

@@ -78,3 +78,4 @@ let pub_ = "method"
 let pri = "private"
 let pri_ = "private"
 
+external private_ : unit -> unit = ""
