@@ -56,6 +56,11 @@
  (action
   (with-stdout-to %{targets} (run menhir --explain --strict --unused-tokens reason_parser.mly --compile-errors reason_parser.messages))))
 
+(rule
+ (targets reason_oprint.ml)
+ (deps    (:first-dep reason_oprint.cppo.ml))
+ (action  (run %{bin:cppo} -V OCAML:%{ocaml_version} -D BS_NO_COMPILER_PATCH %{first-dep} -o %{targets})))
+
 (library
  (name reason)
  ; Uncomment to allow make coverage target to work
