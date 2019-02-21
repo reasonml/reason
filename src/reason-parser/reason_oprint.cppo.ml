@@ -84,9 +84,9 @@
   patching the right parts, through the power of types(tm)
 *)
 
-(* #if defined BS_NO_COMPILER_PATCH then *)
+#ifdef BS_NO_COMPILER_PATCH
 open Ast_404
-(* #end *)
+#endif
 
 open Format
 open Outcometree
@@ -97,7 +97,7 @@ let cautious f ppf arg =
   try f ppf arg with
     Ellipsis -> fprintf ppf "..."
 
-(* #if defined BS_NO_COMPILER_PATCH then *)
+#ifdef BS_NO_COMPILER_PATCH
 let rec print_ident ppf =
   function
     Oide_ident s -> pp_print_string ppf s
@@ -105,7 +105,7 @@ let rec print_ident ppf =
       print_ident ppf id; pp_print_char ppf '.'; pp_print_string ppf s
   | Oide_apply (id1, id2) ->
       fprintf ppf "%a(%a)" print_ident id1 print_ident id2
-(* #else
+#else
 let rec print_ident ppf =
   function
     Oide_ident s -> !Oprint.out_ident ppf s
@@ -113,7 +113,7 @@ let rec print_ident ppf =
       print_ident ppf id; pp_print_char ppf '.'; !Oprint.out_ident ppf s
   | Oide_apply (id1, id2) ->
       fprintf ppf "%a(%a)" print_ident id1 print_ident id2
-#end *)
+#endif
 
 let parenthesized_ident name =
   (List.mem name ["or"; "mod"; "land"; "lor"; "lxor"; "lsl"; "lsr"; "asr"])
@@ -196,11 +196,11 @@ let print_out_value ppf tree =
     | Oval_nativeint i -> fprintf ppf "%nin" i
     | Oval_float f -> pp_print_string ppf (float_repres f)
     | Oval_char c -> fprintf ppf "%C" c
-(* #if OCAML_VERSION =~ ">4.03.0" then
+#if OCAML_VERSION >= (4,3,0) && not defined BS_NO_COMPILER_PATCH
     | Oval_string (s,_,_) ->
-#else *)
+#else
     | Oval_string s ->
-(* #end *)
+#endif
         begin try fprintf ppf "\"%s\"" (Reason_syntax_util.escape_string s) with
           Invalid_argument s when s = "String.create" -> fprintf ppf "<huge string>"
         end
@@ -451,12 +451,12 @@ and print_simple_out_type ppf =
           Ovar_fields fields ->
             print_list print_row_field (fun ppf -> fprintf ppf "@;<1 -2>| ")
               ppf fields
-(* #if OCAML_VERSION =~ ">4.03.0" then
+#if OCAML_VERSION >= (4,3,0) && not defined BS_NO_COMPILER_PATCH
         | Ovar_typ typ -> print_simple_out_type ppf typ
-#else *)
+#else
         | Ovar_name (id, tyl) ->
             fprintf ppf "@[%a%a@]" print_typargs tyl print_ident id
-(* #end *)
+#endif
       in
       fprintf ppf "%s[%s@[<hv>@[<hv>%a@]%a ]@]" (if non_gen then "_" else "")
         (if closed then if tags = None then " " else "< "
@@ -480,10 +480,10 @@ and print_simple_out_type ppf =
         )
         n tyl;
       fprintf ppf ")@]"
-(* #if OCAML_VERSION =~ ">4.03.0" then *)
+#if OCAML_VERSION >= (4,3,0) || defined BS_NO_COMPILER_PATCH
   | Otyp_attribute (t, attr) ->
         fprintf ppf "@[<1>(%a [@@%s])@]" print_out_type t attr.oattr_name
-(* #end *)
+#endif
 
 and print_object_fields ~quote_fields ppf =
   function
@@ -706,16 +706,16 @@ and print_out_sig_item ppf =
           | Orec_first -> "type"
           | Orec_next  -> "and")
         ppf td
-(* #if OCAML_VERSION =~ ">4.03.0" then *)
+#if OCAML_VERSION >= (4,3,0) || defined BS_NO_COMPILER_PATCH
   | Osig_ellipsis ->
     fprintf ppf "..."
   | Osig_value {oval_name; oval_type; oval_prims; oval_attributes} ->
     let printAttributes ppf = List.iter (fun a -> fprintf ppf "[@@%s]" a.oattr_name) in
-(* #else
+#else
   | Osig_value(oval_name, oval_type, oval_prims) ->
     let printAttributes ppf attrs = () in
     let oval_attributes = [] in
-#end *)
+#endif
     let keyword = if oval_prims = [] then "let" else "external" in
     let (hackyBucklescriptExternalAnnotation, rhsValues) = List.partition (fun item ->
       (* "BS:" is considered as a bucklescript external annotation, `[@bs.module]` and the sort.
