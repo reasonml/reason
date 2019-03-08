@@ -402,6 +402,14 @@ let identifier_mapper f super =
     in
     super.value_description mapper desc
   end;
+  type_declaration = begin fun mapper type_decl ->
+    let type_decl' =
+      { type_decl with ptype_name =
+        { type_decl.ptype_name with txt = f type_decl.ptype_name.txt }
+      }
+    in
+    super.type_declaration mapper type_decl'
+  end;
 }
 
 let remove_stylistic_attrs_mapper_maker super =

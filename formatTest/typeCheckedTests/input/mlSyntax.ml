@@ -80,3 +80,6 @@ let pri_ = "private"
 
 external private_ : unit -> unit = ""
 external pri : unit -> unit = ""
+
+type pub = int
+type pub_ = int
