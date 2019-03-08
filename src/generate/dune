@@ -1,0 +1,4 @@
+(executable
+ (name select)
+ (libraries str)
+ (preprocess no_preprocessing))
