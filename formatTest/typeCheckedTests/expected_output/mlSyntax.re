@@ -110,3 +110,6 @@ let pri__ = "private";
 
 external private: unit => unit = "";
 external pri_: unit => unit = "";
+
+type pub_ = int;
+type pub__ = int;
