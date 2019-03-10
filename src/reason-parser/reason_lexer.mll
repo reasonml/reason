@@ -327,7 +327,7 @@ let preprocessor = ref None
 
 open Format
 
-let report_error ppf = function
+let format_error ppf = function
   | Illegal_character c ->
       fprintf ppf "Illegal character (%s)" (Char.escaped c)
   | Illegal_escape s ->
@@ -348,14 +348,9 @@ let report_error ppf = function
   | Invalid_literal s ->
       fprintf ppf "Invalid literal %s" s
 
-let () =
-  Location.register_error_of_exn
-    (function
-      | Error (err, loc) ->
-          Some (Location.error_of_printer loc report_error err)
-      | _ ->
-          None
-    )
+let report_error ppf ~loc err =
+  Format.fprintf ppf "@[%a@]@." Location.report_error
+    (Location.error_of_printer loc format_error err)
 
 }
 

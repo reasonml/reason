@@ -489,17 +489,11 @@ type error = Syntax_error of string
 
 exception Error of Location.t * error
 
-let report_error ppf (Syntax_error err) =
-  Format.(fprintf ppf "%s" err)
-
-let () =
-  Location.register_error_of_exn
-    (function
-     | Error (loc, err) ->
-        Some (Location.error_of_printer loc report_error err)
-     | _ ->
-        None
-     )
+let report_error ppf ~loc (Syntax_error err) =
+  Format.fprintf ppf "@[%a@]@." Location.report_error
+    (Location.error_of_printer loc (fun ppf e ->
+      Format.(fprintf ppf "%s" e))
+      err)
 
 let map_first f = function
   | [] -> invalid_arg "Syntax_util.map_first: empty list"
