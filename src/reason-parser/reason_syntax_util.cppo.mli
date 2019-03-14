@@ -20,7 +20,7 @@ val escape_string : string -> string
 
 (* Everything below is used by reason repo but not the BuckleScript repo *)
 
-(* #if defined BS_NO_COMPILER_PATCH then *)
+#ifdef BS_NO_COMPILER_PATCH
 
 val reason_to_ml_swap : string -> string
 
@@ -112,4 +112,4 @@ val location_is_before : Ast_404.Location.t -> Ast_404.Location.t -> bool
 val location_contains : Ast_404.Location.t -> Ast_404.Location.t -> bool
 
 val explode_str : string -> char list
-(* #end *)
+#endif
