@@ -61,6 +61,16 @@
  (deps    (:first-dep reason_oprint.cppo.ml))
  (action  (run %{bin:cppo} -V OCAML:%{ocaml_version} -D BS_NO_COMPILER_PATCH %{first-dep} -o %{targets})))
 
+(rule
+ (targets reason_syntax_util.ml)
+ (deps    (:first-dep reason_syntax_util.cppo.ml))
+ (action  (run %{bin:cppo} -V OCAML:%{ocaml_version} -D BS_NO_COMPILER_PATCH %{first-dep} -o %{targets})))
+
+(rule
+ (targets reason_syntax_util.mli)
+ (deps    (:first-dep reason_syntax_util.cppo.mli))
+ (action  (run %{bin:cppo} -V OCAML:%{ocaml_version} -D BS_NO_COMPILER_PATCH %{first-dep} -o %{targets})))
+
 (library
  (name reason)
  ; Uncomment to allow make coverage target to work
