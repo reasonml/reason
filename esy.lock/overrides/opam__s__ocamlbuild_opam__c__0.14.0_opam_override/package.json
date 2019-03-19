@@ -3,7 +3,7 @@
     [
       "bash",
       "-c",
-      "#{os == 'windows' ? 'patch -p1 < ocamlbuild-0.12.0.patch' : 'true'}"
+      "#{os == 'windows' ? 'patch -p1 < ocamlbuild-0.14.0.patch' : 'true'}"
     ],
     [
       "make",

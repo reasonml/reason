@@ -42,6 +42,6 @@ packages across several versions of OCaml and gives cross-compilation
 for free.
 """
 url {
-  src: "https://github.com/ocaml/dune/releases/download/1.6.2/dune-1.6.2.tbz"
-  checksum: "md5=e628e3903d2418d410e058ca49938a5d"
+  src: "https://github.com/ocaml/dune/releases/download/1.8.2/dune-1.8.2.tbz"
+  checksum: "md5=2b7f45a6e14865f2318d34f12221ec1e"
 }
