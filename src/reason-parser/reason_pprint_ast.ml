@@ -4217,12 +4217,12 @@ let printer = object(self:'self)
       match detectTernary l with
       | None -> raise (Invalid_argument "Impossible")
       | Some (tt, ff) ->
-        let ifTrue = self#unparseExpr tt in
+        let ifTrue = self#reset_request_braces#unparseExpr tt in
         let testItem = self#unparseResolvedRule (
-          self#ensureExpression e ~reducesOnToken:(Token "?")
+          self#reset_request_braces#ensureExpression e ~reducesOnToken:(Token "?")
         ) in
         let ifFalse = self#unparseResolvedRule (
-          self#ensureContainingRule ~withPrecedence:(Token ":") ~reducesAfterRight:ff ()
+          self#reset_request_braces#ensureContainingRule ~withPrecedence:(Token ":") ~reducesAfterRight:ff ()
         ) in
         let trueBranch = label ~space:true ~break:`Never (atom "?") ifTrue
         in
