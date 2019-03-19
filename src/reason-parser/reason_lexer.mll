@@ -682,6 +682,16 @@ and enter_comment = parse
         }} in
         COMMENT (line, location)
       }
+  | "//" ([^'\010']* eof as line)
+      { update_loc lexbuf None 1 false 0;
+        let physical_loc = Location.curr lexbuf in
+        let location = { physical_loc with
+          loc_end = { physical_loc.loc_end with
+            pos_lnum = physical_loc.loc_end.pos_lnum - 1;
+            pos_cnum = physical_loc.loc_end.pos_cnum + 1;
+        }} in
+        COMMENT (line, location)
+      }
   | "/*" ("*" "*"+)?
       { set_lexeme_length lexbuf 2;
         let start_loc = Location.curr lexbuf  in
