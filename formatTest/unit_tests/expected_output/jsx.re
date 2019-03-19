@@ -639,3 +639,14 @@ ReasonReact.(<> {string("Test")} </>);
     />;
   }
 </View>;
+
+<div>
+  {true
+     ? {
+       let foo = "foo"; // don't remove semi
+       <span> {ReasonReact.string(foo)} </span>;
+     }
+     : <span>
+         {ReasonReact.string("bar")}
+       </span>}
+</div>;
