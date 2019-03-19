@@ -20,7 +20,7 @@ build: [
 ]
 
 depends: [
-  "ocaml" {>= "4.02.0"}
+  "ocaml" {>= "4.02.0" & < "4.08.0"}
   "cppo" {build & >= "1.1.0"}
   "jbuilder" {build & >= "1.0+beta14"}
   "ocamlfind" {build & >= "1.7.3-1"}

@@ -12,7 +12,7 @@ build: [
 ]
 depends: [
   "ocaml" {>= "4.02.3"}
-  "lwt" {>= "2.7.0"}
+  "lwt" {>= "4.0.0"}
   "lwt_log"
   "react"
   "zed" {>= "1.2"}
