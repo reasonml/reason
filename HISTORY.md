@@ -1,3 +1,9 @@
+## 3.4.1
+
+Fixes:
+- Don't remove semis in blocks inside ternary expressions as jsx children ([2352](https://github.com/facebook/reason/pull/2352)).
+- Handle single line comments ending with end-of-file ([2353](https://github.com/facebook/reason/pull/2353)).
+
 ## 3.4.0
 
 Fixes:
