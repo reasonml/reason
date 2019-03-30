@@ -4083,7 +4083,11 @@ constructor_arguments_comma_list:
 
 constructor_arguments:
   | object_record_type { Pcstr_tuple [$1] }
+    (* XXX(anmonteiro): parse both parenthesized and non-parenthesized record
+     * declaration for backwards compatibility. This could probably be removed
+     * in a later (major) version if properly documented. *)
   | record_declaration { Pcstr_record $1 }
+  | parenthesized(record_declaration) { Pcstr_record $1 }
   | parenthesized(constructor_arguments_comma_list)
     { Pcstr_tuple $1 }
 ;
