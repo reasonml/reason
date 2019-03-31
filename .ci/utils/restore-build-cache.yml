@@ -7,7 +7,7 @@ steps:
     inputs:
         buildType: 'specific'
         project: '$(System.TeamProject)'
-        pipeline: 'facebook_reason'
+        pipeline: '$(Build.DefinitionName)'
         branchName: 'refs/heads/master'
         buildVersionToDownload: 'latestFromBranch'
         downloadType: 'single'
