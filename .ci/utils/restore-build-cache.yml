@@ -7,7 +7,7 @@ steps:
     inputs:
         buildType: 'specific'
         project: '$(System.TeamProject)'
-        pipelineId: '2'
+        definitionId: '2'
         branchName: 'refs/heads/master'
         buildVersionToDownload: 'latestFromBranch'
         downloadType: 'single'
