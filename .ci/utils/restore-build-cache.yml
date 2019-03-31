@@ -12,12 +12,12 @@ steps:
     inputs:
       targetType: 'inline' # Optional. Options: filePath, inline
       script: |
-
-        ORG="$SYSTEM_COLLECTIONID"
+        # If org name is reasonml then REST_BASE will be: https://dev.azure.com/reasonml/
+        REST_BASE="${SYSTEM_TEAMFOUNDATIONCOLLECTIONURI}"
         PROJ="$SYSTEM_TEAMPROJECT"
         ART_NAME="cache-${AGENT_OS}-install"
         fetchLatestBuild() {
-          REST_BUILDS="https://dev.azure.com/$ORG/$PROJ/"'_apis/build/builds?deletedFilter=excludeDeleted&statusFilter=completed&resultFilter=succeeded&queryOrder=finishTimeDescending&$top=1&api-version=4.1'
+          REST_BUILDS="$REST_BASE/$PROJ/"'_apis/build/builds?deletedFilter=excludeDeleted&statusFilter=completed&resultFilter=succeeded&queryOrder=finishTimeDescending&$top=1&api-version=4.1'
           echo "Rest call for builds: $REST_BUILDS"
           REST_BUILDS_RESP=$(curl "$REST_BUILDS")
           if [[ $REST_BUILDS_RESP =~ (\"web\":\{\"href\":\")([^\"]*) ]]; then LATEST_BUILD_PAGE="${BASH_REMATCH[2]}"; else LATEST_BUILD_PAGE=""; fi
@@ -26,7 +26,7 @@ steps:
         }
         fetchLatestBuild
         fetchArtifactURL() {
-          REST_ART="https://dev.azure.com/$ORG/$PROJ/_apis/build/builds/$LATEST_BUILD_ID/artifacts?artifactName=$ART_NAME&api-version=4.1"
+          REST_ART="$REST_BASE/$PROJ/_apis/build/builds/$LATEST_BUILD_ID/artifacts?artifactName=$ART_NAME&api-version=4.1"
           echo "Rest call for artifacts: $REST_ART"
           if [[ $(curl $REST_ART) =~ (downloadUrl\":\")([^\"]*) ]]; then LATEST_ART_URL="${BASH_REMATCH[2]}"; else LATEST_ART_URL=""; fi
         }
