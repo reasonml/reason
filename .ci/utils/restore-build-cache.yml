@@ -1,13 +1,39 @@
 # Steps for restoring project cache
 
 steps:
+  - task: Bash@3
+    inputs:
+      targetType: 'inline' # Optional. Options: filePath, inline
+      script: |
+        ORG="reasonml"
+        REST_BUILDS="https://dev.azure.com/$ORG/$SYSTEM_TEAMPROJECT/"'_apis/build/builds?deletedFilter=excludeDeleted&statusFilter=completed&resultFilter=succeeded&queryOrder=finishTimeDescending&$top=1&api-version=4.1'
+        REST_BUILDS_RESP=$(curl "$REST_BUILDS")
+
+        if [[ $REST_BUILDS_RESP =~ (\"web\":\{\"href\":\")([^\"]*) ]]; then BUILD_PAGE="${BASH_REMATCH[2]}"; else BUILD_PAGE=""; fi
+        if [[ $REST_BUILDS_RESP =~ (\"badge\":\{\"href\":\")([^\"]*) ]]; then BUILD_BADGE="${BASH_REMATCH[2]}"; else BUILD_BADGE=""; fi
+        if [[ $REST_BUILDS_RESP =~ (\"id\":)([^,]*) ]]; then BUILD_ID="${BASH_REMATCH[2]}"; else BUILD_ID=""; fi
+
+
+
+        REST_ART="https://dev.azure.com/$ORG/$SYSTEM_TEAMPROJECT/_apis/build/builds/$BUILD_ID/artifacts?artifactName=$ART&api-version=4.1"
+        ART="cache-${AGENT_OS}-install"
+        if [[ $(curl $REST_ART) =~ (downloadUrl\":\")([^\"]*) ]]; then ART_URL="${BASH_REMATCH[2]}"; else ART_URL=""; fi
+
+
+        echo "Build ID: $BUILD_ID"
+        echo "Build Page: $BUILD_PAGE"
+        echo "Build Badge: $BUILD_BADGE"
+        echo "Build Artifact: $REST_ART"
+        
+      
+  
   - task: DownloadBuildArtifacts@0
     condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
     displayName: '[Cache][Restore] Restore install'
     inputs:
         buildType: 'specific'
         project: '$(System.TeamProject)'
-        definitionId: '2'
+        pipeline: '$(Build.DefinitionName)'
         branchName: 'refs/heads/master'
         buildVersionToDownload: 'latestFromBranch'
         downloadType: 'single'
