@@ -24,7 +24,6 @@ steps:
           if [[ $REST_BUILDS_RESP =~ (\"id\":)([^,]*) ]]; then LATEST_BUILD_ID="${BASH_REMATCH[2]}"; else LATEST_BUILD_ID=""; fi
         }
         fetchLatestBuild
-        printLatestBuild
         fetchArtifactURLFor() {
           BUILD_ID="$1"
           REST_ART="https://dev.azure.com/$ORG/$PROJ/_apis/build/builds/$BUILD_ID/artifacts?artifactName=$ART_NAME&api-version=4.1"
