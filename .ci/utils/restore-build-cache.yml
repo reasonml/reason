@@ -32,7 +32,7 @@ steps:
         echo "Build badge for build that produced the cache: $BUILD_BADGE"
         echo "Build artifact from build that produced the cache: $ART_URL"
 
-        curl "$ART_URL" > "${STAGING_DIRECTORY_UNIX}/cache-${AGENT_OS}-install.zip
+        curl "$ART_URL" > "${STAGING_DIRECTORY_UNIX}/cache-${AGENT_OS}-install.zip"
         cd $STAGING_DIRECTORY_UNIX
         unzip "cache-${AGENT_OS}-install.zip"
         
