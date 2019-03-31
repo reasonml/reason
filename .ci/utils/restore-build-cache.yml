@@ -24,23 +24,21 @@ steps:
           if [[ $REST_BUILDS_RESP =~ (\"id\":)([^,]*) ]]; then LATEST_BUILD_ID="${BASH_REMATCH[2]}"; else LATEST_BUILD_ID=""; fi
         }
         fetchLatestBuild
-        fetchArtifactURLFor() {
-          BUILD_ID="$1"
-          REST_ART="https://dev.azure.com/$ORG/$PROJ/_apis/build/builds/$BUILD_ID/artifacts?artifactName=$ART_NAME&api-version=4.1"
+        fetchArtifactURL() {
+          REST_ART="https://dev.azure.com/$ORG/$PROJ/_apis/build/builds/$LATEST_BUILD_ID/artifacts?artifactName=$ART_NAME&api-version=4.1"
           if [[ $(curl $REST_ART) =~ (downloadUrl\":\")([^\"]*) ]]; then LATEST_ART_URL="${BASH_REMATCH[2]}"; else LATEST_ART_URL=""; fi
         }
-        downloadArtifactFor() {
-          ART_URL="$1"
+        downloadArtifact() {
           curl "$LATEST_ART_URL" > "${STAGING_DIRECTORY_UNIX}/$ART_NAME.zip"
           cd $STAGING_DIRECTORY_UNIX
           unzip "$ART_NAME.zip"
         }
-        fetchArtifactURLFor "$LATEST_BUILD_ID"
+        fetchArtifactURL
         echo "Using Dependency cache for buildID: $LATEST_BUILD_ID"
         echo "Build log for build that produced the cache: $LATEST_BUILD_PAGE"
         echo "Build badge for build that produced the cache: $LATEST_BUILD_BADGE"
         echo "Build artifact from build that produced the cache: $LATEST_ART_URL"
-        downloadArtifactFor "$LATEST_ART_URL"
+        downloadArtifact
       
 
   - bash: 'mkdir -p $(ESY__CACHE_INSTALL_PATH)'
