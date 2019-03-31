@@ -2,6 +2,10 @@
 
 steps:
   - task: Bash@3
+    condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
+    displayName: '[Cache][Restore] Restoring build cache using REST API'
+    continueOnError: true
+    workingDirectory: '$(STAGING_DIRECTORY)'
     inputs:
       targetType: 'inline' # Optional. Options: filePath, inline
       script: |
@@ -13,8 +17,6 @@ steps:
         if [[ $REST_BUILDS_RESP =~ (\"badge\":\{\"href\":\")([^\"]*) ]]; then BUILD_BADGE="${BASH_REMATCH[2]}"; else BUILD_BADGE=""; fi
         if [[ $REST_BUILDS_RESP =~ (\"id\":)([^,]*) ]]; then BUILD_ID="${BASH_REMATCH[2]}"; else BUILD_ID=""; fi
 
-
-
         REST_ART="https://dev.azure.com/$ORG/$SYSTEM_TEAMPROJECT/_apis/build/builds/$BUILD_ID/artifacts?artifactName=$ART&api-version=4.1"
         ART="cache-${AGENT_OS}-install"
         if [[ $(curl $REST_ART) =~ (downloadUrl\":\")([^\"]*) ]]; then ART_URL="${BASH_REMATCH[2]}"; else ART_URL=""; fi
@@ -23,23 +25,12 @@ steps:
         echo "Build ID: $BUILD_ID"
         echo "Build Page: $BUILD_PAGE"
         echo "Build Badge: $BUILD_BADGE"
-        echo "Build Artifact: $REST_ART"
+        echo "Build Artifact: $ART_URL"
+
+        curl "$ART_URL" > ./cache-$(Agent.OS)-install.zip
+        gunzip cache-$(Agent.OS)-install.zip
         
       
-  
-  - task: DownloadBuildArtifacts@0
-    condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
-    displayName: '[Cache][Restore] Restore install'
-    inputs:
-        buildType: 'specific'
-        project: '$(System.TeamProject)'
-        pipeline: '$(Build.DefinitionName)'
-        branchName: 'refs/heads/master'
-        buildVersionToDownload: 'latestFromBranch'
-        downloadType: 'single'
-        artifactName: 'cache-$(Agent.OS)-install'
-        downloadPath: '$(STAGING_DIRECTORY)'
-    continueOnError: true
 
   - bash: 'mkdir -p $(ESY__CACHE_INSTALL_PATH)'
     condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
