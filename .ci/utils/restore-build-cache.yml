@@ -22,8 +22,8 @@ steps:
 
 
 
-        REST_ART="https://dev.azure.com/$ORG/$SYSTEM_TEAMPROJECT/_apis/build/builds/$BUILD_ID/artifacts?artifactName=$ART&api-version=4.1"
-        ART="cache-${AGENT_OS}-install"
+        ART_NAME="cache-${AGENT_OS}-install"
+        REST_ART="https://dev.azure.com/$ORG/$SYSTEM_TEAMPROJECT/_apis/build/builds/$BUILD_ID/artifacts?artifactName=$ART_NAME&api-version=4.1"
         if [[ $(curl $REST_ART) =~ (downloadUrl\":\")([^\"]*) ]]; then ART_URL="${BASH_REMATCH[2]}"; else ART_URL=""; fi
 
 
@@ -32,9 +32,9 @@ steps:
         echo "Build badge for build that produced the cache: $BUILD_BADGE"
         echo "Build artifact from build that produced the cache: $ART_URL"
 
-        curl "$ART_URL" > "${STAGING_DIRECTORY_UNIX}/cache-${AGENT_OS}-install.zip"
+        curl "$ART_URL" > "${STAGING_DIRECTORY_UNIX}/$ART_NAME.zip"
         cd $STAGING_DIRECTORY_UNIX
-        unzip "cache-${AGENT_OS}-install.zip"
+        unzip "$ART_NAME.zip"
         ls $STAGING_DIRECTORY_UNIX
         
       
