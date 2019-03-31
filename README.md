@@ -101,7 +101,6 @@ let ocaml_syntax =
 ## License
 
 See Reason license in [LICENSE.txt](LICENSE.txt).
-
 Works that are forked from other projects are under their original licenses.
 
 ## Credit
