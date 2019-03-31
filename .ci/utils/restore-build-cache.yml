@@ -1,23 +1,51 @@
 # Steps for restoring project cache
 
 steps:
-  - task: DownloadBuildArtifacts@0
+  - bash: 'mkdir -p $(STAGING_DIRECTORY_UNIX)'
     condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
-    displayName: '[Cache][Restore] Restore install'
-    inputs:
-        buildType: 'specific'
-        project: '$(System.TeamProject)'
-        pipeline: '$(Build.DefinitionName)'
-        branchName: 'refs/heads/master'
-        buildVersionToDownload: 'latestFromBranch'
-        downloadType: 'single'
-        artifactName: 'cache-$(Agent.OS)-install'
-        downloadPath: '$(STAGING_DIRECTORY)'
+    displayName: '[Cache][Publish] Create cache directory'
+
+  - task: Bash@3
+    condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
+    displayName: '[Cache][Restore] Restoring build cache using REST API'
     continueOnError: true
+    inputs:
+      targetType: 'inline' # Optional. Options: filePath, inline
+      script: |
+        # If org name is reasonml then REST_BASE will be: https://dev.azure.com/reasonml/
+        REST_BASE="${SYSTEM_TEAMFOUNDATIONCOLLECTIONURI}"
+        PROJ="$SYSTEM_TEAMPROJECT"
+        ART_NAME="cache-${AGENT_OS}-install"
+        fetchLatestBuild() {
+          REST_BUILDS="$REST_BASE/$PROJ/"'_apis/build/builds?deletedFilter=excludeDeleted&statusFilter=completed&resultFilter=succeeded&queryOrder=finishTimeDescending&$top=1&api-version=4.1'
+          echo "Rest call for builds: $REST_BUILDS"
+          REST_BUILDS_RESP=$(curl "$REST_BUILDS")
+          if [[ $REST_BUILDS_RESP =~ (\"web\":\{\"href\":\")([^\"]*) ]]; then LATEST_BUILD_PAGE="${BASH_REMATCH[2]}"; else LATEST_BUILD_PAGE=""; fi
+          if [[ $REST_BUILDS_RESP =~ (\"badge\":\{\"href\":\")([^\"]*) ]]; then LATEST_BUILD_BADGE="${BASH_REMATCH[2]}"; else LATEST_BUILD_BADGE=""; fi
+          if [[ $REST_BUILDS_RESP =~ (\"id\":)([^,]*) ]]; then LATEST_BUILD_ID="${BASH_REMATCH[2]}"; else LATEST_BUILD_ID=""; fi
+        }
+        fetchLatestBuild
+        fetchArtifactURL() {
+          REST_ART="$REST_BASE/$PROJ/_apis/build/builds/$LATEST_BUILD_ID/artifacts?artifactName=$ART_NAME&api-version=4.1"
+          echo "Rest call for artifacts: $REST_ART"
+          if [[ $(curl $REST_ART) =~ (downloadUrl\":\")([^\"]*) ]]; then LATEST_ART_URL="${BASH_REMATCH[2]}"; else LATEST_ART_URL=""; fi
+        }
+        downloadArtifact() {
+          curl "$LATEST_ART_URL" > "${STAGING_DIRECTORY_UNIX}/$ART_NAME.zip"
+          cd $STAGING_DIRECTORY_UNIX
+          unzip "$ART_NAME.zip"
+        }
+        fetchArtifactURL
+        echo "Using Dependency cache for buildID: $LATEST_BUILD_ID"
+        echo "Build log for build that produced the cache: $LATEST_BUILD_PAGE"
+        echo "Build badge for build that produced the cache: $LATEST_BUILD_BADGE"
+        echo "Build artifact from build that produced the cache: $LATEST_ART_URL"
+        downloadArtifact
+      
 
   - bash: 'mkdir -p $(ESY__CACHE_INSTALL_PATH)'
     condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
-    displayName: '[Cache][Restore] Create cache directory'
+    displayName: '[Cache][Restore] Create esy cache directory'
 
   # - bash: 'cd $(ESY__NPM_ROOT) && tar -xf $(STAGING_DIRECTORY_UNIX)/cache-$(Agent.OS)-install/npm-cache.tar -C .'
   #   continueOnError: true
