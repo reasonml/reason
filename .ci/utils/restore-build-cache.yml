@@ -30,7 +30,7 @@ steps:
 
         curl "$ART_URL" > $(STAGING_DIRECTORY_UNIX)/cache-$(Agent.OS)-install.zip
         cd $(STAGING_DIRECTORY_UNIX)
-        gunzip cache-$(Agent.OS)-install.zip
+        unzip cache-$(Agent.OS)-install.zip
         
       
 
