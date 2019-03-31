@@ -35,12 +35,13 @@ steps:
         curl "$ART_URL" > "${STAGING_DIRECTORY_UNIX}/cache-${AGENT_OS}-install.zip"
         cd $STAGING_DIRECTORY_UNIX
         unzip "cache-${AGENT_OS}-install.zip"
+        ls $STAGING_DIRECTORY_UNIX
         
       
 
   - bash: 'mkdir -p $(ESY__CACHE_INSTALL_PATH)'
     condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
-    displayName: '[Cache][Restore] Create cache directory'
+    displayName: '[Cache][Restore] Create esy cache directory'
 
   # - bash: 'cd $(ESY__NPM_ROOT) && tar -xf $(STAGING_DIRECTORY_UNIX)/cache-$(Agent.OS)-install/npm-cache.tar -C .'
   #   continueOnError: true
