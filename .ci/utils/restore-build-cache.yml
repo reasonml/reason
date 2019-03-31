@@ -5,14 +5,14 @@ steps:
     condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
     displayName: '[Cache][Restore] Restore install'
     inputs:
-        buildType: 'specific'
-        project: '$(System.TeamProject)'
-        definition: '$(Build.DefinitionName)'
+        buildType: specific'
+        project: $(System.TeamProject)
+        pipelineId: $(System.DefinitionId)
         branchName: 'refs/heads/master'
         buildVersionToDownload: 'latestFromBranch'
         downloadType: 'single'
         artifactName: 'cache-$(Agent.OS)-install'
-        downloadPath: '$(STAGING_DIRECTORY)'
+        downloadPath: $(STAGING_DIRECTORY)
     continueOnError: true
 
   - bash: 'mkdir -p $(ESY__CACHE_INSTALL_PATH)'
@@ -31,6 +31,6 @@ steps:
 
   - bash: 'rm -rf *'
     continueOnError: true
-    workingDirectory: '$(STAGING_DIRECTORY)'
+    workingDirectory: $(STAGING_DIRECTORY)
     condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
     displayName: '[Cache][Restore] Clean up'
