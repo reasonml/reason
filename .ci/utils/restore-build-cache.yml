@@ -2,7 +2,7 @@
 
 steps:
   - bash: 'mkdir -p $(STAGING_DIRECTORY_UNIX)'
-    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+    condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
     displayName: '[Cache][Publish] Create cache directory'
 
   - task: Bash@3
@@ -27,14 +27,14 @@ steps:
         if [[ $(curl $REST_ART) =~ (downloadUrl\":\")([^\"]*) ]]; then ART_URL="${BASH_REMATCH[2]}"; else ART_URL=""; fi
 
 
-        echo "Build ID: $BUILD_ID"
-        echo "Build Page: $BUILD_PAGE"
-        echo "Build Badge: $BUILD_BADGE"
-        echo "Build Artifact: $ART_URL"
+        echo "Using Dependency cache for buildID: $BUILD_ID"
+        echo "Build log for build that produced the cache: $BUILD_PAGE"
+        echo "Build badge for build that produced the cache: $BUILD_BADGE"
+        echo "Build artifact from build that produced the cache: $ART_URL"
 
-        curl "$ART_URL" > $(STAGING_DIRECTORY_UNIX)/cache-$(Agent.OS)-install.zip
-        cd $(STAGING_DIRECTORY_UNIX)
-        unzip cache-$(Agent.OS)-install.zip
+        curl "$ART_URL" > "${STAGING_DIRECTORY_UNIX}/cache-${AGENT_OS}-install.zip
+        cd $STAGING_DIRECTORY_UNIX
+        unzip "cache-${AGENT_OS}-install.zip"
         
       
 
