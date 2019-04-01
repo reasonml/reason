@@ -109,3 +109,4 @@ let pri_ = "private";
 let pri__ = "private";
 
 external private: unit => unit = "";
+external pri_: unit => unit = "";

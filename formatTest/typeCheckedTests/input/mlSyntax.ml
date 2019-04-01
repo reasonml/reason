@@ -79,3 +79,4 @@ let pri = "private"
 let pri_ = "private"
 
 external private_ : unit -> unit = ""
+external pri : unit -> unit = ""
