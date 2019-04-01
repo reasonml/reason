@@ -1,3 +1,8 @@
+## Next
+
+- Parse and print parens around inline record declarations ([2363](https://github.com/facebook/reason/pull/2363))
+- Properly print outcomes of inline records ([2336](https://github.com/facebook/reason/pull/2336))
+
 ## 3.4.1
 
 Fixes:
