@@ -2,7 +2,7 @@
 
 - Parse and print parens around inline record declarations ([2363](https://github.com/facebook/reason/pull/2363))
 - Properly print outcomes of inline records ([2336](https://github.com/facebook/reason/pull/2336))
-
+- Properly print outcomes of types with inline records(parens) ([2370](https://github.com/facebook/reason/pull/2370))
 ## 3.4.1
 
 Fixes:
