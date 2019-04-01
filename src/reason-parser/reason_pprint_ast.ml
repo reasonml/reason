@@ -2606,7 +2606,7 @@ let printer = object(self:'self)
         let formattedArgs = match ctor_args with
           | Pcstr_tuple [] -> []
           | Pcstr_tuple args -> [makeTup (List.map self#non_arrowed_non_simple_core_type args)]
-          | Pcstr_record r -> [self#record_declaration r]
+          | Pcstr_record r -> [self#record_declaration ~wrap:("({", "})") r]
         in
         let formattedGadt = match gadt with
         | None -> None
@@ -2720,7 +2720,8 @@ let printer = object(self:'self)
         label (atom "&") ct
     in
     let args = match pcd_args with
-      | Pcstr_record r -> [self#record_declaration r]
+      | Pcstr_record r ->
+          [self#record_declaration ~wrap:("({", "})") r]
       | Pcstr_tuple [] -> []
       | Pcstr_tuple l when polymorphic -> List.mapi ampersand_helper l
       (* Here's why this works. With the new syntax, all the args, are already inside of
@@ -2795,7 +2796,7 @@ let printer = object(self:'self)
     in
     source_map ~loc:pcd_loc everything
 
-  method record_declaration ?assumeRecordLoc lbls =
+  method record_declaration ?(wrap=("{", "}")) ?assumeRecordLoc lbls =
     let recordRow pld =
       let hasPunning = recordRowIsPunned pld in
       let name =
@@ -2841,7 +2842,7 @@ let printer = object(self:'self)
       else Layout.IfNeed
     in
     source_map ?loc:assumeRecordLoc
-      (makeList ~wrap:("{", "}") ~sep:commaTrail ~postSpace:true ~break rows)
+      (makeList ~wrap ~sep:commaTrail ~postSpace:true ~break rows)
 
   (* Returns the type declaration partitioned into three segments - one
      suitable for appending to a label, the actual type manifest
