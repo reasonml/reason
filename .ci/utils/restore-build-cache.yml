@@ -17,7 +17,10 @@ steps:
         PROJ="$SYSTEM_TEAMPROJECT"
         ART_NAME="cache-${AGENT_OS}-install"
         fetchLatestBuild() {
-          REST_BUILDS="$REST_BASE/$PROJ/"'_apis/build/builds?deletedFilter=excludeDeleted&statusFilter=completed&resultFilter=succeeded&queryOrder=finishTimeDescending&$top=1&api-version=4.1'
+          MASTER='branchName=refs%2Fheads%2Fmaster'
+          FILTER='deletedFilter=excludeDeleted&statusFilter=completed&resultFilter=succeeded'
+          LATEST='queryOrder=finishTimeDescending&$top=1'
+          REST_BUILDS="$REST_BASE/$PROJ/_apis/build/builds?${FILTER}&${MASTER}&${LATEST}&api-version=4.1"
           echo "Rest call for builds: $REST_BUILDS"
           REST_BUILDS_RESP=$(curl "$REST_BUILDS")
           if [[ $REST_BUILDS_RESP =~ (\"web\":\{\"href\":\")([^\"]*) ]]; then LATEST_BUILD_PAGE="${BASH_REMATCH[2]}"; else LATEST_BUILD_PAGE=""; fi
