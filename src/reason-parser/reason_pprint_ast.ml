@@ -2925,6 +2925,9 @@ let printer = object(self:'self)
       | (Ptype_open, Public, None) -> [
           [atom ".."]
         ]
+      | (Ptype_open, Private, None) -> [
+          [privateAtom; atom ".."]
+        ]
       (* Super confusing how record/variants' manifest is not actually the
          description of the structure. What's in the manifest in that case is
          the *second* EQUALS asignment. *)

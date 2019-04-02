@@ -92,3 +92,8 @@ module OM = struct
 end
 
 class y = let open EM in let open OM in object (self) end
+
+module type S = sig
+  type t = private ..
+  type t += Foo
+end

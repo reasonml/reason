@@ -3844,8 +3844,8 @@ type_other_kind:
     { (Ptype_abstract, $2, Some $3) }
   | EQUAL private_flag item_attributes record_declaration
     { (Ptype_record (prepend_attrs_to_labels $3 $4), $2, None) }
-  | EQUAL DOTDOT
-    { (Ptype_open, Public, None) }
+  | EQUAL private_flag DOTDOT
+    { (Ptype_open, $2, None) }
   | EQUAL core_type EQUAL DOTDOT
     { (Ptype_open, Public, Some $2) }
   | EQUAL core_type EQUAL private_flag item_attributes record_declaration

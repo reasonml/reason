@@ -129,3 +129,9 @@ class y = {
   open OM;
   as self;
 };
+
+module type S = {
+  type t = pri ..;
+  type t +=
+    | Foo;
+};
