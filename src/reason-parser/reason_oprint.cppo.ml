@@ -197,7 +197,7 @@ let print_out_value ppf tree =
     | Oval_nativeint i -> fprintf ppf "%nin" i
     | Oval_float f -> pp_print_string ppf (float_repres f)
     | Oval_char c -> fprintf ppf "%C" c
-#if OCAML_VERSION >= (4,3,0) && not defined BS_NO_COMPILER_PATCH
+#if OCAML_VERSION >= (4,3,0)
     | Oval_string (s, _, _) ->
 #else
     | Oval_string s ->
@@ -452,7 +452,7 @@ and print_simple_out_type ppf =
           Ovar_fields fields ->
             print_list print_row_field (fun ppf -> fprintf ppf "@;<1 -2>| ")
               ppf fields
-#if OCAML_VERSION >= (4,3,0) && not defined BS_NO_COMPILER_PATCH
+#if OCAML_VERSION >= (4,3,0)
         | Ovar_typ typ -> print_simple_out_type ppf typ
 #else
         | Ovar_name (id, tyl) ->
