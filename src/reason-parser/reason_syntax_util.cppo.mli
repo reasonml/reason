@@ -91,6 +91,8 @@ type error = Syntax_error of string
 
 exception Error of Ast_404.Location.t * error
 
+val report_error : Format.formatter -> loc:Location.t -> error -> unit
+
 val map_first : ('a -> 'a) -> 'a list -> 'a list
 
 val map_last : ('a -> 'a) -> 'a list -> 'a list
