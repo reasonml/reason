@@ -1794,20 +1794,20 @@ let partitionFinalWrapping listTester wrapFinalItemSetting x =
 let semiTerminated term = makeList [term; atom ";"]
 
 (* postSpace is so that when comments are interleaved, we still use spacing rules. *)
-let makeLetSequence letItems =
+let makeLetSequence ?(wrap=("{", "}")) letItems =
   makeList
     ~break:Always_rec
     ~inline:(true, false)
-    ~wrap:("{", "}")
+    ~wrap
     ~postSpace:true
     ~sep:(SepFinal (";", ";"))
     letItems
 
-let makeLetSequenceSingleLine letItems =
+let makeLetSequenceSingleLine ?(wrap=("{", "}")) letItems =
   makeList
     ~break:IfNeed
     ~inline:(true, false)
-    ~wrap:("{", "}")
+    ~wrap
     ~preSpace:true
     ~postSpace:true
     ~sep:(Sep ";")
@@ -5796,7 +5796,16 @@ let printer = object(self:'self)
                 (makeTup [(self#unparseExpr e)]);
             )
           | Pexp_lazy e ->
-              Some (label ~space:true (atom "lazy") (self#simplifyUnparseExpr e))
+            let lazy_atom = atom "lazy" in
+            let layout_right = match e with
+            | {pexp_desc = Pexp_let _} ->
+              makeLetSequence ~wrap:("({", "})") (self#letList e)
+            | e when isSingleArgParenApplication [e] ->
+              self#singleArgParenApplication [e]
+            | _ ->
+              formatPrecedence (self#unparseExpr e)
+            in
+            Some (label lazy_atom layout_right)
           | Pexp_poly _ ->
             failwith (
               "This version of the pretty printer assumes it is impossible to " ^
