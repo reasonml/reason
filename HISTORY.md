@@ -4,6 +4,7 @@ Improvements:
 - Parse and print parentheses around inline record declarations ([2363](https://github.com/facebook/reason/pull/2363))
 - Proper outcome printing (for editor and build) of inline records ([2336](https://github.com/facebook/reason/pull/2336))
 - Proper outcome printing of types with inline records (parentheses) ([2370](https://github.com/facebook/reason/pull/2370))
+- changes for OCaml 4.08 compatibility ([2345](https://github.com/facebook/reason/pull/2345))
 
 ## 3.4.1
 

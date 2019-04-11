@@ -2,9 +2,9 @@
   "name": "reason-dev",
   "notes": "This is just the dev package config. See ./scripts/esy/ for release package configs",
   "license": "MIT",
-  "version": "3.4.0",
+  "version": "3.4.2",
   "dependencies": {
-    "ocaml": " >= 4.2.0 < 4.8.0",
+    "ocaml": " >= 4.2.0 < 4.9.0",
     "@opam/ocamlfind": "*",
     "@opam/menhir": " >= 20170418.0.0",
     "@opam/utop": " >= 1.17.0 < 2.3.0",
@@ -31,5 +31,8 @@
       ["esy-installer", "reason.install"],
       ["esy-installer", "rtop.install"]
     ]
+  },
+  "scripts": {
+    "test": "esy x make test"
   }
 }

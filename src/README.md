@@ -45,6 +45,7 @@ git clone https://github.com/facebook/reason.git
 cd reason
 esy install
 esy build
+esy test
 ```
 
 ##### Editors
@@ -56,6 +57,8 @@ works with `esy` projects, loading all the right dependencies.
 
 You can run commands as if you had installed Reason by prefixing commands with `esy x` ("esy execute").
 For example `esy x make test`
+
+Tests specifically can also be run via the `esy test` (which is configured via the scripts field in esy.json file in the repository root)
 
 For more, see the [esy documentation](https://github.com/esy-ocaml/esy).
 
@@ -74,7 +77,7 @@ The generated artifacts are in `_build`. All the binaries are in `_build/install
 
 To do some one-off tests, try `echo "let a = 1" | _build/install/default/bin/refmt`
 
-`make test` (make sure to follow the repo pinning instructions above!). The tests will output the difference between the expected syntax formatting and the actual one, if any.
+`make test` or if using esy, `esy test` (make sure to follow the repo pinning instructions above!). The tests will output the difference between the expected syntax formatting and the actual one, if any.
 
 Small exception: testing your changes in `rtop` is a little complicated, but you usually don't need to test it. If you do, you might have seen that your changes of the parser or printer don't affect `rtop` when you run it. Instead, you need to do `opam pin add -y reason .` and _then_ run `rtop` to see the Reason changes reflected.
 
