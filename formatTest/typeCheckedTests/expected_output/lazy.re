@@ -1,9 +1,9 @@
 let myComputation =
-  lazy {
+  lazy({
     let tmp = 10;
     let tmp2 = 20;
     tmp + tmp2;
-  };
+  });
 
 type myRecord = {myRecordField: int};
 
@@ -14,18 +14,25 @@ let operateOnLazyValue = (lazy {myRecordField}) => {
 
 let result =
   operateOnLazyValue(
-    lazy {myRecordField: 100},
+    lazy({myRecordField: 100}),
   );
 
 type box('a) =
   | Box('a);
 
-let lazy thisIsActuallyAPatternMatch = lazy 200;
+let lazy thisIsActuallyAPatternMatch = lazy(200);
 let tmp: int = thisIsActuallyAPatternMatch;
 let (lazy (Box(i)), x) = (
-  lazy (Box(200)),
+  lazy(Box(200)),
   100,
 );
 let tmp: int = i;
 
-let myComputation = lazy 200;
+let myComputation = lazy(200);
+
+let reallyLoooooooooooooongIdentifierThatSpansMoreThan50Cols = 200;
+
+let foo =
+  lazy(
+    reallyLoooooooooooooongIdentifierThatSpansMoreThan50Cols
+  );

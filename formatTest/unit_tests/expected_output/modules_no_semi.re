@@ -645,7 +645,7 @@ let test = b => {
 
   assert(true);
 
-  lazy true;
+  lazy(true);
 
   Fun.ignore();
 };
