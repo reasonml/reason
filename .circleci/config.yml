@@ -86,12 +86,12 @@ jobs:
       - OCAML_VERSION: "4.04.0"
       - NPM_CONFIG_PREFIX: "~/.npm-global"
     <<: *common_steps
-  4.06.0:
+  4.06.1:
     docker:
       - image: ocaml/opam2:debian-9-ocaml-4.06
     environment:
       - TERM: dumb
-      - OCAML_VERSION: "4.06.0"
+      - OCAML_VERSION: "4.06.1"
       - NPM_CONFIG_PREFIX: "~/.npm-global"
     <<: *common_steps
   4.07.0:
@@ -159,6 +159,6 @@ workflows:
       - 4.02.3
       - 4.03.0
       - 4.04.0
-      - 4.06.0
+      - 4.06.1
       - 4.07.0
       - esy_build
