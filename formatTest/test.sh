@@ -451,18 +451,25 @@ function error_test() {
       cd - > /dev/null
     fi
 
-    debug "  Comparing results:  diff $EXPECTED_OUTPUT/$FILE $OUTPUT/$FILE"
+    OFILE="${FILE}"
+    VERSION_SPECIFIC_FILE="${FILE}.${OCAML_VERSION}"
+    if [ -f "${EXPECTED_OUTPUT}/${VERSION_SPECIFIC_FILE}" ]; then
+        echo "Found test file specific to version ${OCAML_VERSION}..."
+        OFILE="${VERSION_SPECIFIC_FILE}"
+    fi
 
-    $DIFF $EXPECTED_OUTPUT/$FILE $OUTPUT/$FILE
+    debug "  Comparing results:  diff $EXPECTED_OUTPUT/$OFILE $OUTPUT/$FILE"
+
+    $DIFF $EXPECTED_OUTPUT/$OFILE $OUTPUT/$FILE
 
     if ! [[ $? -eq 0 ]]; then
         warning "  ⊘ FAILED\n"
         info "  ${INFO}$OUTPUT/$FILE${RESET}"
         info "  doesn't match expected output"
-        info "  ${INFO}$EXPECTED_OUTPUT/$FILE${RESET}"
+        info "  ${INFO}$EXPECTED_OUTPUT/$OFILE${RESET}"
         info ""
         info "  To approve the changes run:"
-        info "    cp $OUTPUT/$FILE $EXPECTED_OUTPUT/$FILE"
+        info "    cp $OUTPUT/$FILE $EXPECTED_OUTPUT/$OFILE"
         echo ""
         return 1
     fi
