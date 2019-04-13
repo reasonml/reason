@@ -29,11 +29,7 @@ let x = {
   | Some(x) => assert(false)
   | None => ()
   };
-  try%extend (
-    {
-      raise(Not_found);
-    }
-  ) {
+  try%extend(raise(Not_found)) {
   | Not_found => ()
   | Invalid_argument(msg) => prerr_endline(msg)
   };
@@ -51,11 +47,7 @@ let x = {
 };
 
 let x = {
-  try%extend (
-    {
-      raise(Not_found);
-    }
-  ) {
+  try%extend(raise(Not_found)) {
   | Not_found => ()
   | Invalid_argument(msg) => prerr_endline(msg)
   };
@@ -63,7 +55,7 @@ let x = {
 
 /* At structure level */
 
-try%extend () {
+try%extend() {
 | _ => ()
 };
 
@@ -90,7 +82,7 @@ fun%extend
 /* In a top-level binding */
 
 let x =
-  try%extend () {
+  try%extend() {
   | _ => ()
   };
 
@@ -122,7 +114,7 @@ let x =
 
 let x = {
   %extend1
-  try%extend2 () {
+  try%extend2() {
   | _ => ()
   };
 };
@@ -169,7 +161,7 @@ let x = {
 
 let x = {
   %extend1
-  try%extend2 () {
+  try%extend2() {
   | _ => ()
   };
   ignore();
@@ -229,7 +221,7 @@ let x = {
 let x = {
   ignore();
   %extend1
-  try%extend2 () {
+  try%extend2() {
   | _ => ()
   };
   ignore();
@@ -290,7 +282,7 @@ let x = {
 let x = {
   ignore();
   %extend1
-  try%extend2 () {
+  try%extend2() {
   | _ => ()
   };
 };
