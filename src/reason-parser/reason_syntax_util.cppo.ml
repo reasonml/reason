@@ -498,11 +498,21 @@ type error = Syntax_error of string
 
 exception Error of Location.t * error
 
-let report_error ppf ~loc (Syntax_error err) =
-  Format.fprintf ppf "@[%a@]@." Location.report_error
-    (Location.error_of_printer loc (fun ppf e ->
-      Format.(fprintf ppf "%s" e))
-      err)
+let report_error ppf error =
+  let pp = match error with
+  | Error (loc, (Syntax_error err)) ->
+    Location.error_of_printer loc (fun ppf e ->
+      Format.(fprintf ppf "%s" e)) err
+  | Syntaxerr.Error(err) ->
+    Location.error_of_printer
+      (Syntaxerr.location_of_error err)
+      Syntaxerr.report_error err
+  | _ ->
+    Format.eprintf
+      "Unknown error: please file an issue at github.com/facebook/reason@.";
+    exit 1
+  in
+  Format.fprintf ppf "@[%a@]@." Location.report_error pp
 
 let map_first f = function
   | [] -> invalid_arg "Syntax_util.map_first: empty list"
