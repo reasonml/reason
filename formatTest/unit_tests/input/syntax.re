@@ -1256,3 +1256,11 @@ let Foo.() = foo;
 /* let Foo.(bar, baz) = foo; */
 
 let Foo.(exception bar) = baz;
+
+try({
+  let this = try_exp;
+  let has = hugged;
+  parens;
+}) {
+  | _ => ()
+};
