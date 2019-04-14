@@ -335,6 +335,39 @@ let isLineComment str =
   | exception Not_found -> false
   | n -> n = String.length str - 1
 
+let map_lident f lid =
+  let swapped = match lid.txt with
+    | Lident s -> Lident (f s)
+    | Ldot(longPrefix, s) -> Ldot(longPrefix, f s)
+    | Lapply (y,s) -> Lapply (y, s)
+  in
+  { lid with txt = swapped }
+
+let map_arg_label f = function
+  | Nolabel -> Nolabel
+  | Labelled lbl ->
+    Labelled (f lbl)
+  | Optional lbl ->
+    Optional (f lbl)
+
+let map_class_expr f class_expr =
+  { class_expr
+  with pcl_desc = match class_expr.pcl_desc with
+    | Pcl_constr (lid, ts) ->
+      Pcl_constr (map_lident f lid, ts)
+    | e -> e
+  }
+
+let map_class_type f class_type =
+  { class_type
+  with pcty_desc = match class_type.pcty_desc with
+  | Pcty_constr (lid, ct) ->
+    Pcty_constr (map_lident f lid, ct)
+  | Pcty_arrow (arg_lbl, ct, cls_type) ->
+    Pcty_arrow (map_arg_label f arg_lbl, ct, cls_type)
+  | x -> x
+  }
+
 (** identifier_mapper maps all identifiers in an AST with a mapping function f
   this is used by swap_operator_mapper right below, to traverse the whole AST
   and swapping the symbols listed above.
@@ -344,13 +377,16 @@ let identifier_mapper f super =
   expr = begin fun mapper expr ->
     let expr =
       match expr with
-        | {pexp_desc=Pexp_ident ({txt} as id)} ->
-             let swapped = match txt with
-               | Lident s -> Lident (f s)
-               | Ldot(longPrefix, s) -> Ldot(longPrefix, f s)
-               | Lapply (y,s) -> Lapply (y, s)
-             in
-             {expr with pexp_desc=Pexp_ident ({id with txt=swapped})}
+        | {pexp_desc=Pexp_ident lid} ->
+           {expr with pexp_desc=Pexp_ident (map_lident f lid)}
+        | {pexp_desc= Pexp_record (lst, o)} ->
+          let xs = List.map (fun (lid, e) ->
+            (map_lident f lid, e))
+            lst
+          in
+          { expr with pexp_desc = Pexp_record (xs, o) }
+        | {pexp_desc= Pexp_fun (arg_lbl, eo, pat, e) } ->
+          { expr with pexp_desc = Pexp_fun (map_arg_label f arg_lbl, eo, pat, e) }
         | _ -> expr
     in
     super.expr mapper expr
@@ -388,7 +424,82 @@ let identifier_mapper f super =
         { type_decl.ptype_name with txt = f type_decl.ptype_name.txt }
       }
     in
-    super.type_declaration mapper type_decl'
+    let type_decl'' = match type_decl'.ptype_kind with
+    | Ptype_record lst ->
+      { type_decl'
+        with ptype_kind = Ptype_record (List.map (fun lbl ->
+          { lbl
+          with pld_name =
+            { lbl.pld_name
+            with txt = f lbl.pld_name.txt } })
+        lst) }
+    | Ptype_abstract ->
+      begin match type_decl'.ptype_manifest with
+      | Some ({ ptyp_desc = Ptyp_variant (rfs, closed, lbls) } as m) ->
+        { type_decl'
+        with ptype_manifest = Some { m with ptyp_desc =
+          Ptyp_variant (List.map (function
+             | Rtag (lbl, attrs, b, cts) ->
+               Rtag (f lbl, attrs, b, cts)
+             | t -> t) rfs, closed, lbls) } }
+      | _ -> type_decl'
+      end
+    | _ -> type_decl'
+    in
+    super.type_declaration mapper type_decl''
+  end;
+  class_declaration = begin fun mapper class_decl ->
+    let class_decl' =
+      { class_decl
+      with pci_name =
+        { class_decl.pci_name with txt = f class_decl.pci_name.txt }
+        ; pci_expr = map_class_expr f class_decl.pci_expr
+         }
+    in
+    super.class_declaration mapper class_decl'
+  end;
+  class_field = begin fun mapper class_field ->
+    let class_field_desc' = match class_field.pcf_desc with
+    | Pcf_inherit (ovf, e, lo) ->
+      Pcf_inherit (ovf, map_class_expr f e, lo)
+    | Pcf_val (lbl, mut, kind) ->
+      Pcf_val ({lbl with txt = f lbl.txt}, mut, kind)
+    | Pcf_method (lbl, priv, kind) ->
+      Pcf_method ({lbl with txt = f lbl.txt}, priv, kind)
+    | x -> x
+    in
+    super.class_field mapper { class_field with pcf_desc = class_field_desc' }
+  end;
+  class_type_field = begin fun mapper class_type_field ->
+    let class_type_field_desc' = match class_type_field.pctf_desc with
+    | Pctf_inherit class_type ->
+      Pctf_inherit (map_class_type f class_type)
+    | Pctf_val (lbl, mut, vf, ct) ->
+      Pctf_val (f lbl, mut, vf, ct)
+    | Pctf_method (lbl, pf, vf, ct) ->
+      Pctf_method (f lbl, pf, vf, ct)
+    | x -> x
+    in
+    super.class_type_field mapper
+      { class_type_field
+      with pctf_desc = class_type_field_desc' }
+  end;
+  class_type_declaration = begin fun mapper class_type_decl ->
+    let class_type_decl' =
+      { class_type_decl
+      with pci_name =
+        { class_type_decl.pci_name with txt = f class_type_decl.pci_name.txt } }
+    in
+    super.class_type_declaration mapper class_type_decl'
+  end;
+  module_type_declaration = begin fun mapper module_type_decl ->
+    let module_type_decl' =
+      { module_type_decl
+        with pmtd_name =
+          { module_type_decl.pmtd_name
+          with txt = f module_type_decl.pmtd_name.txt } }
+    in
+    super.module_type_declaration mapper module_type_decl'
   end;
 }
 
