@@ -352,7 +352,7 @@ let myTuple = OneTuple(20, 30);
 let res =
   switch (myTuple) {
   | Two(x, y) =>
-    try (Two(x, y)) {
+    try(Two(x, y)) {
     | One => "hi"
     | Two => "bye"
     }

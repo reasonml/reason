@@ -629,7 +629,7 @@ let test = b => {
     compute();
   };
 
-  try (x()) {
+  try(x()) {
   | _ => log()
   };
 

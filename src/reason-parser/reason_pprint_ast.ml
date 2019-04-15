@@ -5659,9 +5659,9 @@ let printer = object(self:'self)
             }
             in
             let cases = (self#case_list ~allowUnguardedSequenceBodies:true l) in
-            let switchWith = label ~space:true
-                (atom (add_extension_sugar "try" extension))
-                (self#parenthesized_expr ~break:IfNeed e)
+            let switchWith = self#dont_preserve_braces#formatSingleArgLabelApplication
+              (atom (add_extension_sugar "try" extension))
+              e
             in
             Some (
               label
@@ -5796,16 +5796,7 @@ let printer = object(self:'self)
                 (makeTup [(self#unparseExpr e)]);
             )
           | Pexp_lazy e ->
-            let lazy_atom = atom "lazy" in
-            let layout_right = match e with
-            | {pexp_desc = Pexp_let _} ->
-              makeLetSequence ~wrap:("({", "})") (self#letList e)
-            | e when isSingleArgParenApplication [e] ->
-              self#singleArgParenApplication [e]
-            | _ ->
-              formatPrecedence (self#unparseExpr e)
-            in
-            Some (label lazy_atom layout_right)
+            Some (self#formatSingleArgLabelApplication (atom "lazy") e)
           | Pexp_poly _ ->
             failwith (
               "This version of the pretty printer assumes it is impossible to " ^
@@ -7657,6 +7648,19 @@ let printer = object(self:'self)
           | _ -> assert false)
     | _ -> assert false
 
+  method formatSingleArgLabelApplication labelTerm rightExpr =
+    let layout_right = match rightExpr with
+    | {pexp_desc = Pexp_let _} ->
+      makeLetSequence ~wrap:("({", "})") (self#letList rightExpr)
+    | e when isSingleArgParenApplication [rightExpr] ->
+      self#singleArgParenApplication [e]
+    | {pexp_desc = Pexp_construct ( {txt= Lident"()"},_)} ->
+      (* special case unit such that we don't end up with double parens *)
+      self#simplifyUnparseExpr rightExpr
+    | _ ->
+      formatPrecedence (self#unparseExpr rightExpr)
+    in
+    label labelTerm layout_right
 
   method label_x_expression_param (l, e) =
     let term = self#unparseProtectedExpr e in
