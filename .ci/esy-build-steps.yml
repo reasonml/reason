@@ -11,7 +11,7 @@ steps:
   - template: utils/publish-build-cache.yml
   - script: esy x refmt --version
     displayName: 'esy x refmt --version'
-  - script: esy x refmt --version
+  - script: esy x make test
     displayName: 'esy x make test'
   # Run tests or any additional steps here
   # - script: esy b dune runtest
