@@ -4068,7 +4068,7 @@ let printer = object(self:'self)
           self#ensureContainingRule ~withPrecedence:prec ~reducesAfterRight:rightExpr ()
         ) in
         SpecificInfixPrecedence
-          ({reducePrecedence=prec; shiftPrecedence = prec}, LayoutNode (label ~space:forceSpace (atom prefixStr) rightItm))
+          ({reducePrecedence=prec; shiftPrecedence = prec}, LayoutNode (label ~indent:0 ~break:`Never ~space:forceSpace (atom prefixStr) rightItm))
         | (UnaryPostfix postfixStr, [(Nolabel, leftExpr)]) ->
           let forceSpace = match leftExpr.pexp_desc with
             | Pexp_apply (ee, _) ->
@@ -4118,7 +4118,7 @@ let printer = object(self:'self)
           let rightItm = self#unparseResolvedRule (
             self#ensureContainingRule ~withPrecedence:prec ~reducesAfterRight:rightExpr ()
           ) in
-          let expr = label ~space:true (atom printedIdent) rightItm in
+          let expr = label ~indent:0 ~break:`Never ~space:true (atom printedIdent) rightItm in
           SpecificInfixPrecedence ({reducePrecedence=prec; shiftPrecedence=Token printedIdent}, LayoutNode expr)
         | (UnaryMinusPrefix printedIdent as x, [(Nolabel, rightExpr)])
         | (UnaryNotPrefix printedIdent as x, [(Nolabel, rightExpr)]) ->
@@ -4133,7 +4133,7 @@ let printer = object(self:'self)
           let rightItm = self#unparseResolvedRule (
             self#ensureContainingRule ~withPrecedence:prec ~reducesAfterRight:rightExpr ()
           ) in
-          let expr = label ~space:forceSpace (atom printedIdent) rightItm in
+          let expr = label ~break:`Never ~indent:0 ~space:forceSpace (atom printedIdent) rightItm in
           SpecificInfixPrecedence ({reducePrecedence=prec; shiftPrecedence=Token printedIdent}, LayoutNode expr)
         (* Will need to be rendered in self#expression as (~-) x y z. *)
         | (_, _) ->
