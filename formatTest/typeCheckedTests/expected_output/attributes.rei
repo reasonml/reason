@@ -40,7 +40,7 @@ external createClassInternalHack:
 external createCompositeElementInternalHack:
   (
     reactClass,
-    t({.. reasonProps: 'props}),
+    t({.. reasonProps: 'props }),
     array(reactElement)
   ) =>
   reactElement =
