@@ -13,6 +13,9 @@
     "@opam/ocaml-migrate-parsetree": "*",
     "@opam/dune": "*"
   },
+  "resolutions": {
+    "@opam/utop": "ocaml-community/utop:utop.opam#5637c67a"
+  },
   "devDependencies": {
     "@opam/merlin": "*",
     "ocaml": "~4.6.0"
