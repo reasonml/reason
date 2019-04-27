@@ -116,11 +116,30 @@
  ;  (preprocess (pps (bisect_ppx)))
  (public_name reason)
  (wrapped false)
- (flags
-  (:standard -w -9-52 -safe-string))
- (modules lexer_warning reason_syntax_util reason_comment reason_attributes
-   reason_layout reason_heuristics reason_location reason_toolchain
-   reason_config reason_pprint_ast reason_parser reason_lexer
-   reason_parser_message reason_oprint reason_parser_explain_raw
-   reason_parser_explain reason_string lexer_report_error)
- (libraries ocaml-migrate-parsetree menhirLib reason.easy_format))
+ (flags (:standard -w -9-52 -safe-string))
+ (modules
+  lexer_warning
+  lexer_report_error
+  reason_syntax_util
+  reason_comment
+  reason_attributes
+  reason_layout
+  reason_heuristics
+  reason_location
+  reason_toolchain_conf
+  reason_toolchain_reason
+  reason_toolchain_ocaml
+  reason_toolchain
+  reason_config
+  reason_pprint_ast
+  reason_parser
+  reason_lexer
+  reason_parser_message
+  reason_oprint
+  reason_parser_explain_raw
+  reason_parser_explain
+  reason_string)
+ (libraries
+  ocaml-migrate-parsetree
+  menhirLib
+  reason.easy_format))
