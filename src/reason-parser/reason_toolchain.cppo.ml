@@ -244,7 +244,8 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
     if !Reason_config.recoverable then
       let loc, msg = match err with
         | Location.Error err -> (err.loc, err.msg)
-        | _ -> (Location.curr lexbuf, "FIXME :P")
+        | exn ->
+          (Location.curr lexbuf, "default_error: " ^ Printexc.to_string exn)
       in
       (loc, Reason_syntax_util.syntax_error_extension_node loc msg)
     else
