@@ -70,12 +70,5 @@ let message env (token, _, _) =
   try token_specific_message token
   with Not_found ->
   (* Is there a message for this specific state ? *)
-  try
-    let m = Reason_parser_message.message state in
-    if m = "<YOUR SYNTAX ERROR MESSAGE HERE>\n" then
-      (* Milder unknown syntax error message *)
-      Reason_syntax_util.default_error_message
-    else m
-  with Not_found ->
     (* TODO: we don't know what to say *)
     Reason_syntax_util.default_error_message
