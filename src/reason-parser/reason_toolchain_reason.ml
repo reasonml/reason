@@ -225,7 +225,7 @@ let rec handle_other supplier checkpoint =
         handle_inputs_needed supplier [([], checkpoint)]
      end
 
-  | I.HandlingError env when !Reason_config.recoverable ->
+  (*| I.HandlingError env when !Reason_config.recoverable ->
      let loc = last_token_loc supplier in
      begin match Reason_syntax_util.findMenhirErrorMessage loc with
      | Reason_syntax_util.MenhirMessagesError _ -> ()
@@ -239,7 +239,7 @@ let rec handle_other supplier checkpoint =
      end;
      let checkpoint = I.resume checkpoint in
      (* Enter error recovery state *)
-     handle_other supplier checkpoint
+     handle_other supplier checkpoint*)
 
   | I.HandlingError env as error_checkpoint ->
      (* If not in a recoverable state, resume just enough to be able to

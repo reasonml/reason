@@ -31,32 +31,14 @@
    (run ../generate/select.exe lexer_report_error.ml-4.08
      lexer_report_error.ml-default))))
 
-; Update error messages based on new grammar
-; Previously, called update_error in the `Makefile`.
-; TODO: Get rid of bash-isms here to support cross-platform.
-
-(rule
- (targets reason_parser.messages)
- (deps reason_parser.mly reason_parser.messages.checked-in)
- (action
-  (with-stdout-to
-   %{targets}
-   (bash
-     "menhir --explain --strict --unused-tokens ./reason_parser.mly --update-errors ./reason_parser.messages.checked-in | sed -e 's/[[:space:]]*$$//g'"))))
-
 ; Previously, make preprocess.
 
 (rule
  (targets reason_parser.cmly reason_parser.ml reason_parser.mli)
- (deps reason_parser.mly reason_parser.messages)
+ (deps reason_parser.mly)
  (action
   (run menhir --strict --unused-tokens --fixed-exception --table --cmly
     reason_parser.mly)))
-
-; (menhir
-; ; (targets reason_parser.cmly reason_parser.ml reason_parser.mli)
-; (modules reason_parser reason_parser.messages)
-; (flags (:standard --strict --unused-tokens --fixed-exception --table --cmly)))
 
 (executables
  (names menhir_error_processor)
@@ -70,17 +52,6 @@
   (with-stdout-to
    %{targets}
    (run ./menhir_error_processor.exe reason_parser.cmly))))
-
-; Previously, make compiler_error
-
-(rule
- (targets reason_parser_message.ml)
- (deps reason_parser.mly reason_parser.messages)
- (action
-  (with-stdout-to
-   %{targets}
-   (run menhir --explain --strict --unused-tokens reason_parser.mly
-     --compile-errors reason_parser.messages))))
 
 (rule
  (targets reason_oprint.ml)
@@ -134,7 +105,6 @@
   reason_pprint_ast
   reason_parser
   reason_lexer
-  reason_parser_message
   reason_oprint
   reason_parser_explain_raw
   reason_parser_explain
