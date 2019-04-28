@@ -103,6 +103,7 @@
   reason_toolchain
   reason_config
   reason_pprint_ast
+  reason_errors
   reason_parser
   reason_lexer
   reason_oprint

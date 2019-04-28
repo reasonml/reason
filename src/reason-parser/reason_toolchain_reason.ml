@@ -1,4 +1,5 @@
 open Reason_toolchain_conf
+open Reason_errors
 
 module I = Reason_parser.MenhirInterpreter
 module Lexer_impl = struct
@@ -225,22 +226,6 @@ let rec handle_other supplier checkpoint =
         handle_inputs_needed supplier [([], checkpoint)]
      end
 
-  (*| I.HandlingError env when !Reason_config.recoverable ->
-     let loc = last_token_loc supplier in
-     begin match Reason_syntax_util.findMenhirErrorMessage loc with
-     | Reason_syntax_util.MenhirMessagesError _ -> ()
-     | Reason_syntax_util.NoMenhirMessagesError ->
-        let token = match supplier.last_token with
-          | Some token -> token
-          | None -> assert false
-        in
-        let msg = Reason_parser_explain.message env token in
-        Reason_syntax_util.add_error_message Reason_syntax_util.{loc = loc; msg = msg};
-     end;
-     let checkpoint = I.resume checkpoint in
-     (* Enter error recovery state *)
-     handle_other supplier checkpoint*)
-
   | I.HandlingError env as error_checkpoint ->
      (* If not in a recoverable state, resume just enough to be able to
       * catch a nice error message above. *)
@@ -384,11 +369,11 @@ let rec skip_phrase lexbuf =
     match Lexer_impl.token lexbuf with
       Reason_parser.SEMI | Reason_parser.EOF -> ()
       | _ -> skip_phrase lexbuf
-  with
-  | Lexer_impl.Error (Lexer_impl.Unterminated_comment _, _)
-    | Lexer_impl.Error (Lexer_impl.Unterminated_string, _)
-    | Lexer_impl.Error (Lexer_impl.Unterminated_string_in_comment _, _)
-    | Lexer_impl.Error (Lexer_impl.Illegal_character _, _) -> skip_phrase lexbuf
+  with Reason_error (Lexing_error ( Unterminated_comment _
+                                  | Unterminated_string
+                                  | Unterminated_string_in_comment _
+                                  | Illegal_character _) , _ ) ->
+    skip_phrase lexbuf
 
 let maybe_skip_phrase lexbuf =
   if Parsing.is_current_lookahead Reason_parser.SEMI
@@ -399,10 +384,10 @@ let maybe_skip_phrase lexbuf =
 let safeguard_parsing lexbuf fn =
   try fn ()
   with
-  | Lexer_impl.Error(Lexer_impl.Illegal_character _, _) as err
-       when !Location.input_name = "//toplevel//"->
-     skip_phrase lexbuf;
-     raise err
+  | Reason_error (Lexing_error (Illegal_character _), _) as err
+    when !Location.input_name = "//toplevel//"->
+    skip_phrase lexbuf;
+    raise err
   | Syntaxerr.Error _ as err
        when !Location.input_name = "//toplevel//" ->
      maybe_skip_phrase lexbuf;
