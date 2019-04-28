@@ -1,0 +1,27 @@
+Fix error recovery & error reporting
+
+Step 1: remove existing implementation
+
+OK  * Put reason parser in its own file
+OK  * Remove menhir error management:
+OK    - remove "error" token 
+OK    - remove error messages infrastructure
+OK    Now message defaults to "Syntax error"
+    * Fix reported error location (when recovering or not)
+
+Step 2: reintroduce recovery
+    * Preprocess grammar:
+      - check exhaustivity of recovery
+      - produce a mapping of automaton states to automaton-items suitable for
+        recovery
+    * Instrument parser:
+      - first, always complete the AST and drop user input (":'(")
+      - second, introduce an heuristic for recovering based on location
+
+Step 3: reintroduce error messages
+    * Ask the crowd: 
+        What should messages look like? 
+        Which situations are tricky or counter-intuitive?
+    * Make a testsuite representative of common syntax errors 
+    * ... Design an analysis sufficient to produce the messages automatically
+          :P
