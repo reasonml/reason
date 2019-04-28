@@ -551,36 +551,6 @@ let map_last f l =
   | [] -> invalid_arg "Syntax_util.map_last: empty list"
   | x :: xs -> List.rev (f x :: xs)
 
-type menhirMessagesError = {
-  msg: string;
-  loc: Location.t;
-}
-
-type menhirError =
-  | NoMenhirMessagesError
-  | MenhirMessagesError of menhirMessagesError
-
-let menhirMessagesError = ref [NoMenhirMessagesError]
-
-let findMenhirErrorMessage loc =
-    let rec find messages =
-      match messages with
-      | MenhirMessagesError err :: _ when err.loc = loc -> MenhirMessagesError err
-      | _ :: tail -> find tail
-      | [] -> NoMenhirMessagesError
-    in find !menhirMessagesError
-
-let default_error_message = "<syntax error>"
-
-let add_error_message err =
-  let msg = try
-    ignore (find_substring default_error_message err.msg 0);
-    [MenhirMessagesError {err with msg = "A syntax error occurred. Help us improve this message: https://github.com/facebook/reason/blob/master/src/README.md#add-a-menhir-error-message"}]
-  with
-  | Not_found -> [MenhirMessagesError err]
-  in
-  menhirMessagesError := !menhirMessagesError @ msg
-
 let location_is_before loc1 loc2 =
   let open Location in
   loc1.loc_end.Lexing.pos_cnum <= loc2.loc_start.Lexing.pos_cnum

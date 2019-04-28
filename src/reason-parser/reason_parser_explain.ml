@@ -71,4 +71,4 @@ let message env (token, _, _) =
   with Not_found ->
   (* Is there a message for this specific state ? *)
     (* TODO: we don't know what to say *)
-    Reason_syntax_util.default_error_message
+    "Syntax error"

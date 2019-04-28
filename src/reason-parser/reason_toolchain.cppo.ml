@@ -240,7 +240,15 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
         (ast, modified_and_comment_with_category)
     )
 
-  let invalidLex = "invalidCharacter.orComment.orString"
+  let default_error lexbuf err =
+    if !Reason_config.recoverable then
+      let loc, msg = match err with
+        | Location.Error err -> (err.loc, err.msg)
+        | _ -> (Location.curr lexbuf, "FIXME :P")
+      in
+      (loc, Reason_syntax_util.syntax_error_extension_node loc msg)
+    else
+      raise err
 
   (*
    * The canonical interface/implementations (with comments) are used with
@@ -253,49 +261,20 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
    *)
   let implementation_with_comments lexbuf =
     try wrap_with_comments Toolchain_impl.implementation lexbuf
-    with err when !Reason_config.recoverable ->
-      let loc, msg = match err with
-#if OCAML_VERSION >= (4, 8, 0)
-        | Location.Error err -> (err.main.loc, Format.asprintf "%t" err.main.txt)
-#else
-        | Location.Error err -> (err.loc, err.msg)
-#endif
-        | _ ->
-          let loc = Location.curr lexbuf in
-          match Reason_syntax_util.findMenhirErrorMessage loc with
-          | Reason_syntax_util.MenhirMessagesError errMessage ->
-            (errMessage.Reason_syntax_util.loc, errMessage.Reason_syntax_util.msg)
-          | _ -> (loc, invalidLex)
-      in
-      let error = Reason_syntax_util.syntax_error_extension_node loc msg in
+    with err ->
+      let loc, error = default_error lexbuf err in
       ([Ast_helper.Str.mk ~loc (Parsetree.Pstr_extension (error, []))], [])
 
   let core_type_with_comments lexbuf =
     try wrap_with_comments Toolchain_impl.core_type lexbuf
-    with err when !Reason_config.recoverable ->
-      let loc, msg = match err with
-#if OCAML_VERSION >= (4, 8, 0)
-        | Location.Error err -> (err.main.loc, Format.asprintf "%t" err.main.txt)
-#else
-        | Location.Error err -> (err.loc, err.msg)
-#endif
-        | _ -> (Location.curr lexbuf, invalidLex)
-      in
-      let error = Reason_syntax_util.syntax_error_extension_node loc msg in
+    with err ->
+      let loc, error = default_error lexbuf err in
       (Ast_helper.Typ.mk ~loc (Parsetree.Ptyp_extension error), [])
 
   let interface_with_comments lexbuf =
     try wrap_with_comments Toolchain_impl.interface lexbuf
-    with err when !Reason_config.recoverable ->
-      let loc, msg = match err with
-#if OCAML_VERSION >= (4, 8, 0)
-        | Location.Error err -> (err.main.loc, Format.asprintf "%t" err.main.txt)
-#else
-        | Location.Error err -> (err.loc, err.msg)
-#endif
-        | _ -> (Location.curr lexbuf, invalidLex)
-      in
-      let error = Reason_syntax_util.syntax_error_extension_node loc msg in
+    with err ->
+      let loc, error = default_error lexbuf err in
       ([Ast_helper.Sig.mk ~loc (Parsetree.Psig_extension (error, []))], [])
 
   let toplevel_phrase_with_comments lexbuf =
