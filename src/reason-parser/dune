@@ -31,14 +31,21 @@
    (run ../generate/select.exe lexer_report_error.ml-4.08
      lexer_report_error.ml-default))))
 
-; Previously, make preprocess.
+(menhir
+  (flags --strict --inspection --unused-tokens
+         --fixed-exception --table --cmly)
+  (modules reason_parser))
 
-(rule
- (targets reason_parser.cmly reason_parser.ml reason_parser.mli)
- (deps reason_parser.mly)
- (action
-  (run menhir --strict --unused-tokens --fixed-exception --table --cmly
-    reason_parser.mly)))
+; Previously, make preprocess.
+; (rule
+;  (targets reason_parser.cmly reason_parser.ml reason_parser.mli)
+;  (deps reason_parser.mly)
+;  (action
+;   (run menhir --strict --inspection --infer
+;        --unused-tokens
+;        --fixed-exception
+;        --table
+;        --cmly reason_parser.mly)))
 
 (executables
  (names menhir_error_processor)
@@ -52,6 +59,12 @@
   (with-stdout-to
    %{targets}
    (run ./menhir_error_processor.exe reason_parser.cmly))))
+
+(rule
+ (targets reason_parser_recover.ml)
+ (deps reason_parser.cmly)
+ (action
+  (with-stdout-to %{targets} (run ../menhir-recover/main.exe reason_parser.cmly))))
 
 (rule
  (targets reason_oprint.ml)
@@ -104,11 +117,13 @@
   reason_config
   reason_pprint_ast
   reason_errors
+  reason_parser_def
   reason_parser
   reason_lexer
   reason_oprint
   reason_parser_explain_raw
   reason_parser_explain
+  reason_parser_recover
   reason_string)
  (libraries
   ocaml-migrate-parsetree
