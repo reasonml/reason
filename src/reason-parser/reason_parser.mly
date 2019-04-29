@@ -57,6 +57,7 @@ open Longident
 open Parsetree
 open Ast_helper
 open Ast_mapper
+open Reason_parser_def
 open Reason_string
 open Reason_errors
 
@@ -470,10 +471,6 @@ let not_expecting start_pos end_pos nonterm =
   let location = mklocation start_pos end_pos in
   raise_error (Not_expecting (location, nonterm)) location
 
-type labelled_parameter =
-  | Term of arg_label * expression option * pattern
-  | Type of string
-
 let mkexp_fun {Location.txt; loc} body =
   let loc = mklocation loc.loc_start body.pexp_loc.loc_end in
   match txt with
@@ -799,12 +796,6 @@ let mkcf_attrs ?(loc=dummy_loc()) d attrs =
 let mkctf_attrs d attrs =
   Ctf.mk ~attrs d
 
-type let_bindings =
-  { lbs_bindings: Parsetree.value_binding list;
-    lbs_rec: rec_flag;
-    lbs_extension: (attributes * string Asttypes.loc) option;
-    lbs_loc: Location.t }
-
 let mklbs ext rf lb loc =
   { lbs_bindings = [lb];
     lbs_rec = rf;
@@ -1035,6 +1026,7 @@ let add_brace_attr expr =
 
 %[@recover.prelude
 
+  open Migrate_parsetree.OCaml_404.Ast
   open Parsetree
   open Ast_helper
 
@@ -3049,7 +3041,7 @@ simple_expr_no_call [@recover.expr default_expr ()]:
   | simple_expr_template_constructor { $1 }
 ;
 
-simple_expr_call [@recover.expr default_expr ()]:
+simple_expr_call [@recover.expr (default_expr (), [])]:
   | mark_position_exp(simple_expr_template(simple_expr)) { ($1, []) }
   | simple_expr_call labeled_arguments
     { let (body, args) = $1 in
