@@ -24,9 +24,11 @@ type ast_error =
   | Variable_in_scope of Location.t * string
   | Applicative_path of Location.t
 
+type parsing_error
+
 type reason_error =
   | Lexing_error of lexing_error
-  | Parsing_error (* FIXME: attach some information to parsing errors *)
+  | Parsing_error of parsing_error
   | Ast_error of ast_error
 
 exception Reason_error of reason_error * Location.t

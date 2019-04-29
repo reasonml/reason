@@ -37,7 +37,9 @@ let lexbuf_to_supplier lexbuf =
         let _ = eof_met := true in
         (token, s, e)
       else
-        raise(Syntaxerr.Error(Syntaxerr.Other (Location.curr lexbuf)))
+        raise_fatal_error
+          (Ast_error (Syntax_error "Reading past EOF"))
+          (Location.curr lexbuf)
     else
       (token, s, e)
   in
@@ -204,24 +206,22 @@ let custom_error supplier env =
     associated with the current parser state  *)
   let msg = Reason_parser_explain.message env token in
   let msg_with_state = Printf.sprintf "%d: %s" state msg in
-  raise (Reason_syntax_util.Error (loc, (Reason_syntax_util.Syntax_error msg_with_state)))
+  raise_fatal_error (Ast_error (Syntax_error msg_with_state)) loc
 
 let rec handle_other supplier checkpoint =
   match checkpoint with
-  | I.InputNeeded env ->
+  | I.InputNeeded _env ->
      (* An input needed in the "other" case means we are recovering from an error *)
      begin match supplier.last_token with
      | None -> assert false
      | Some triple ->
         (* We just recovered from the error state, try the original token again *)
         let checkpoint_with_previous_token = I.offer checkpoint triple in
-        let checkpoint = try match I.shifts checkpoint_with_previous_token with
-                             | None -> checkpoint
-                             (* The original token still fail to be parsed, discard *)
-                             | Some _ -> normalize_checkpoint checkpoint_with_previous_token
-                         with
-                         | Syntaxerr.Error _ as exn -> raise exn
-                         | Syntaxerr.Escape_error -> custom_error supplier env
+        let checkpoint =
+          match I.shifts checkpoint_with_previous_token with
+          | None -> checkpoint
+          (* The original token still fail to be parsed, discard *)
+          | Some _ -> normalize_checkpoint checkpoint_with_previous_token
         in
         handle_inputs_needed supplier [([], checkpoint)]
      end
@@ -237,7 +237,7 @@ let rec handle_other supplier checkpoint =
        handle_other supplier (normalize_checkpoint cp)
   | I.Rejected ->
      let loc = last_token_loc supplier in
-     raise Syntaxerr.(Error(Syntaxerr.Other loc))
+     raise_fatal_error (Ast_error (Syntax_error "Syntax error")) loc
 
   | I.Accepted v ->
      (* The parser has succeeded and produced a semantic value. *)
@@ -385,15 +385,14 @@ let safeguard_parsing lexbuf fn =
   try fn ()
   with
   | Reason_error (Lexing_error (Illegal_character _), _) as err
-    when !Location.input_name = "//toplevel//"->
-    skip_phrase lexbuf;
-    raise err
-  | Syntaxerr.Error _ as err
+       when !Location.input_name = "//toplevel//"->
+     skip_phrase lexbuf;
+     raise err
+  | Reason_error (Ast_error _, _) as err
        when !Location.input_name = "//toplevel//" ->
      maybe_skip_phrase lexbuf;
      raise err
-  | Parsing.Parse_error | Syntaxerr.Escape_error ->
-     let loc = Location.curr lexbuf in
+  | Reason_error (Parsing_error _, loc) ->
      if !Location.input_name = "//toplevel//"
      then maybe_skip_phrase lexbuf;
      raise(Syntaxerr.Error(Syntaxerr.Other loc))
