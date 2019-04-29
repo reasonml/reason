@@ -987,7 +987,7 @@ let filter_raise_spread_syntax msg nodes =
       begin match dotdotdot with
         | Some dotdotdotLoc -> syntax_error dotdotdotLoc msg
         | None -> ()
-      end; 
+      end;
       node
     ) nodes
 
@@ -1033,7 +1033,23 @@ let add_brace_attr expr =
 
 %}
 
+%[@recover.prelude
 
+  open Parsetree
+  open Ast_helper
+
+  let default_loc = ref Location.none
+
+  let default_expr () =
+    let id = Location.mkloc "merlin.hole" !default_loc in
+    Exp.mk ~loc:!default_loc (Pexp_extension (id, PStr []))
+
+  let default_pattern () = Pat.any ~loc:!default_loc ()
+
+  let default_module_expr () = Mod.structure ~loc:!default_loc[]
+  let default_module_type () = Mty.signature ~loc:!default_loc[]
+
+]
 
 (* Tokens *)
 
@@ -1070,6 +1086,7 @@ let add_brace_attr expr =
 %token EXTERNAL
 %token FALSE
 %token <string * char option> FLOAT
+  [@recover.expr ("0.0", None)] [@recover.cost 2]
 %token FOR
 %token FUN ES6_FUN
 %token FUNCTION
@@ -1080,16 +1097,17 @@ let add_brace_attr expr =
 %token IF
 %token IN
 %token INCLUDE
-%token <string> INFIXOP0
-%token <string> INFIXOP1
-%token <string> INFIXOP2
-%token <string> INFIXOP3
+%token <string> INFIXOP0 [@recover.expr ""] [@recover.cost 2]
+%token <string> INFIXOP1 [@recover.expr ""] [@recover.cost 2]
+%token <string> INFIXOP2 [@recover.expr ""] [@recover.cost 2]
+%token <string> INFIXOP3 [@recover.expr ""] [@recover.cost 2]
 (* SLASHGREATER is an INFIXOP3 that is handled specially *)
 %token SLASHGREATER
 %token <string> INFIXOP4
 %token INHERIT
 %token INITIALIZER
 %token <string * char option> INT
+  [@recover.expr ("0", None)] [@recover.cost 2]
 %token LAZY
 %token LBRACE
 %token LBRACELESS
@@ -1100,13 +1118,13 @@ let add_brace_attr expr =
 %token LBRACKETPERCENT
 %token LBRACKETPERCENTPERCENT
 %token LESS
-%token <string> LESSIDENT
+%token <string> LESSIDENT [@recover.expr ""] [@recover.cost 2]
 %token LESSGREATER
 %token LESSSLASHGREATER
 %token LESSDOTDOTGREATER
 %token EQUALGREATER
 %token LET
-%token <string> LIDENT
+%token <string> LIDENT [@recover.expr ""] [@recover.cost 2]
 %token LPAREN
 %token LBRACKETAT
 %token OF
@@ -1117,7 +1135,7 @@ let add_brace_attr expr =
 %token MINUSGREATER
 %token MODULE
 %token MUTABLE
-%token <nativeint> NATIVEINT
+%token <nativeint> NATIVEINT [@recover.expr 0n] [@recover.cost 2]
 %token NEW
 %token NONREC
 %token OBJECT
@@ -1128,8 +1146,8 @@ let add_brace_attr expr =
 %token PLUS
 %token PLUSDOT
 %token PLUSEQ
-%token <string> PREFIXOP
-%token <string> POSTFIXOP
+%token <string> PREFIXOP [@recover.expr ""] [@recover.cost 2]
+%token <string> POSTFIXOP [@recover.expr ""] [@recover.cost 2]
 %token PUB
 %token QUESTION
 %token QUOTE
@@ -1137,7 +1155,7 @@ let add_brace_attr expr =
 %token RBRACKET
 %token REC
 %token RPAREN
-%token <string> LESSSLASHIDENTGREATER
+%token <string> LESSSLASHIDENTGREATER [@recover.expr ""] [@recover.cost 2]
 %token SEMI
 %token SEMISEMI
 %token SHARP
@@ -1146,6 +1164,7 @@ let add_brace_attr expr =
 %token SIG
 %token STAR
 %token <string * string option * string option> STRING
+  [@recover.expr ("", None, None)] [@recover.cost 2]
 %token STRUCT
 %token THEN
 %token TILDE
@@ -1153,7 +1172,7 @@ let add_brace_attr expr =
 %token TRUE
 %token TRY
 %token TYPE
-%token <string> UIDENT
+%token <string> UIDENT [@recover.expr ""] [@recover.cost 2]
 %token UNDERSCORE
 %token VAL
 %token VIRTUAL
@@ -2385,7 +2404,7 @@ mark_position_exp
     { mkexp (Pexp_object $2) }
 ) {$1};
 
-seq_expr_no_seq:
+seq_expr_no_seq [@recover.expr default_expr ()]:
 | expr SEMI? { $1 }
 | opt_LET_MODULE_ident module_binding_body SEMI seq_expr
   { mkexp (Pexp_letmodule($1, $2, $4)) }
@@ -2577,14 +2596,14 @@ jsx_arguments:
   {
     begin match $1.txt with
       | "/>>" ->
-         syntax_error $1.loc 
+         syntax_error $1.loc
           {|JSX in a JSX-argument needs to be wrapped in braces.
       If you wrote:
         <Description term=<Text text="Age" />> child </Description>
       Try wrapping <Text /> in braces.
         <Description term={<Text text="Age" />}> child </Description>|}
       | "/>/>" ->
-         syntax_error $1.loc 
+         syntax_error $1.loc
            {|JSX in a JSX-argument needs to be wrapped in braces.
       If you wrote:
         <Description term=<Text text="Age" />/>
@@ -2843,7 +2862,7 @@ mark_position_exp
  * expr: contains function application, but simple_expr doesn't (unless it's
  * wrapped in parens).
  *)
-expr:
+expr [@recover.expr default_expr ()]:
   | unattributed_expr_template(expr) { $1 }
   | mark_position_exp(
       attribute expr { {$2 with pexp_attributes = $1 :: $2.pexp_attributes} }
@@ -3001,7 +3020,7 @@ parenthesized_expr:
 
 %inline simple_expr: simple_expr_call { mkexp_app_rev $startpos $endpos $1 };
 
-simple_expr_no_constructor:
+simple_expr_no_constructor [@recover.expr default_expr ()]:
   mark_position_exp(simple_expr_template(simple_expr_no_constructor)) { $1 };
 
 simple_expr_template_constructor:
@@ -3025,12 +3044,12 @@ simple_expr_template_constructor:
     { mkexp(Pexp_variant($1, Some $2)) }
 ;
 
-simple_expr_no_call:
+simple_expr_no_call [@recover.expr default_expr ()]:
   | mark_position_exp(simple_expr_template(simple_expr_no_call)) { $1 }
   | simple_expr_template_constructor { $1 }
 ;
 
-simple_expr_call:
+simple_expr_call [@recover.expr default_expr ()]:
   | mark_position_exp(simple_expr_template(simple_expr)) { ($1, []) }
   | simple_expr_call labeled_arguments
     { let (body, args) = $1 in
