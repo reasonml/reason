@@ -96,7 +96,8 @@ let refmt
     Reason_errors.report_error Format.err_formatter ~loc error;
     exit 1
   | exn ->
-    Reason_syntax_util.report_error Format.err_formatter exn;
+    prerr_endline (Printexc.to_string exn);
+     (* FIXME: Reason_syntax_util.report_error Format.err_formatter exn; *)
     exit 1
 
 let top_level_info =
