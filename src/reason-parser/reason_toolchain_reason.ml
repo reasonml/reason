@@ -6,74 +6,26 @@ module Lexer_impl = struct
   include Reason_lexer
   let init () = init ?insert_completion_ident:!insert_completion_ident ()
 end
+
+(* From Reason source text to OCaml AST
+
+   1. Make a lexbuf from source text
+   2. Reason_lexer:
+      a. Using OCamllex:
+         extract one token from stream of characters
+      b. post-process token:
+         - store comments separately
+         - insert ES6_FUN token
+         - insert completion identifier
+   3. Reason_parser, using Menhir:
+      A parser with explicit continuations, which take a new token and return:
+      - an AST when parse succeeded
+      - a new continuation if more tokens are needed
+      - nothing, if the parser got stuck (token is invalid in current state)
+   4. Reason_toolchain connect lexer and parser:
+*)
+
 type token = Reason_parser.token
-
-(* [tracking_supplier] is a supplier that tracks the last token read *)
-type tracking_supplier = {
-    (* The last token that was obtained from the lexer, together with its start
-       and end positions. Warning: before the first call to the lexer has taken
-       place, a None value is stored here. *)
-
-    mutable last_token: (token * Lexing.position * Lexing.position) option;
-
-    (* A supplier function that returns one token at a time*)
-    get_token: unit -> (token * Lexing.position * Lexing.position)
-  }
-
-(* [lexbuf_to_supplier] returns a supplier to be feed into Menhir's incremental API.
- * Each time the supplier is called, a new token in the lexbuf is returned.
- * If the supplier is called after an EOF is already returned, a syntax error will be raised.
- *
- * This makes sure at most one EOF token is returned by supplier, which
- * is the default behavior of ocamlyacc.
- *)
-let lexbuf_to_supplier lexbuf =
-  let s = I.lexer_lexbuf_to_supplier Reason_lexer.token lexbuf in
-  let eof_met = ref false in
-  let get_token = fun () ->
-    let (token, s, e) = s () in
-    if token = Reason_parser.EOF then
-      if not !eof_met then
-        let _ = eof_met := true in
-        (token, s, e)
-      else
-        raise_fatal_error
-          (Ast_error (Syntax_error "Reading past EOF"))
-          (Location.curr lexbuf)
-    else
-      (token, s, e)
-  in
-  let last_token = None in
-  {last_token; get_token}
-
-let read supplier =
-  let t = supplier.get_token () in
-  supplier.last_token <- Some t;
-  t
-
-let last_token supplier =
-  match supplier.last_token with
-  | Some (t, _, _) -> t
-  | None -> assert false
-
-(* read last token's location from a supplier *)
-let last_token_loc supplier =
-  match supplier.last_token with
-  | Some (_, s, e) ->
-     { Location.
-       loc_start = s;
-       loc_end = e;
-       loc_ghost = false;
-     }
-  | None -> assert false
-
-(* get the stack of a checkpoint *)
-let stack checkpoint =
-  match checkpoint with
-  | I.HandlingError env ->
-     I.stack env
-  | _ ->
-     assert false
 
 let rec normalize_checkpoint = function
   | I.Shifting _ | I.AboutToReduce _ as checkpoint ->
@@ -194,19 +146,6 @@ let commit_invalid_docstrings = function
   | docstrings ->
      let process_invalid_docstring (text, loc) = Reason_lexer.add_invalid_docstring text loc in
      List.iter process_invalid_docstring (List.rev docstrings)
-
-let custom_error supplier env =
-  let loc = last_token_loc supplier in
-  let token = match supplier.last_token with
-    | Some token -> token
-    | None -> assert false
-  in
-  let state = I.current_state_number env in
-  (* Check the error database to see what's the error message
-    associated with the current parser state  *)
-  let msg = Reason_parser_explain.message env token in
-  let msg_with_state = Printf.sprintf "%d: %s" state msg in
-  raise_fatal_error (Ast_error (Syntax_error msg_with_state)) loc
 
 let rec handle_other supplier checkpoint =
   match checkpoint with
