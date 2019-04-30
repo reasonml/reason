@@ -1,5 +1,5 @@
 (ocamllex
- (modules reason_lexer))
+ (modules reason_declarative_lexer))
 
 ; Use select.exe from janestreet/ppx_ast to choose lexer_warning.ml based on ocaml version
 
@@ -119,6 +119,7 @@
   reason_errors
   reason_parser_def
   reason_parser
+  reason_declarative_lexer
   reason_lexer
   reason_oprint
   reason_parser_explain_raw
