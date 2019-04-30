@@ -145,69 +145,37 @@ let keyword_table, reverse_keyword_table =
     "asr", INFIXOP4("asr")
 ]
 
-(* Specialize raise_error for lexing errors *)
-
-let raise_error error loc = raise_error (Lexing_error error) loc
-
-(* Internal exception to escape from core lexer loop when a string is not
- * terminated *)
-
-exception Unterminated of Location.t
-
-(* Reify internal state of the lexer *)
+(* The only internal state of the lexer is two scratch buffers. 
+   They could be allocated everytime they are needed, but
+   for better performance (FIXME: does this really matter?)
+   they are preallocated.*)
 
 type state = {
-  string_buffer: Buffer.t;
-  raw_buffer: Buffer.t;
-  mutable string_start_loc: Location.t;
-  mutable comment_start_loc: Location.t list;
+  raw_buffer : Buffer.t;
+  txt_buffer : Buffer.t;
 }
+ 
+let get_scratch_buffers { raw_buffer; txt_buffer } =
+  Buffer.reset raw_buffer;
+  Buffer.reset txt_buffer;
+  ( raw_buffer, txt_buffer )
 
-type string_context = {
-  string_start_loc: Location.t;
-  string_delim: string;
-  string_in_comment: bool;
-  string_buffer: Buffer.t;
-  string_raw_buffer: Buffer.t;
-}
+let flush_buffer buffer =
+  let result = Buffer.contents buffer in
+  Buffer.reset buffer;
+  result
 
 let make () = {
-  string_buffer = Buffer.create 256;
-  raw_buffer = Buffer.create 256;
-  (* To store the position of the beginning of a string and comment *)
-  string_start_loc = Location.none;
-  comment_start_loc = [];
+  raw_buffer = Buffer.create 255;
+  txt_buffer = Buffer.create 255;
 }
 
-let store_string_char buffer c =
-  Buffer.add_char buffer c
+(* Specialize raise_error for lexing errors *)
 
-let store_string state s =
-  Buffer.add_string state.string_buffer s
+let raise_error loc error = raise_error (Lexing_error error) loc
 
 let store_lexeme buffer lexbuf =
   Buffer.add_string buffer (Lexing.lexeme lexbuf)
-
-let get_stored_string state =
-  let str = Buffer.contents state.string_buffer in
-  let raw =
-    if Buffer.length state.raw_buffer = 0
-    then None
-    else Some (Buffer.contents state.raw_buffer)
-  in
-  Buffer.reset state.string_buffer;
-  Buffer.reset state.raw_buffer;
-  (str, raw)
-
-let list_first_last = function
-  | [] -> invalid_arg "list_first_last: argument cannot be the empty list"
-  | (first :: _) as list ->
-    let rec aux = function
-      | [] -> assert false
-      | [last] -> last
-      | _ :: xs -> aux xs
-    in
-    (first, aux list)
 
 (* To "unlex" a few characters *)
 let set_lexeme_length buf n = (
@@ -277,8 +245,8 @@ let char_for_decimal_code lexbuf i =
                 (Char.code(Lexing.lexeme_char lexbuf (i+2)) - 48) in
   if (c < 0 || c > 255) then (
     raise_error
-        (Illegal_escape (Lexing.lexeme lexbuf))
-        (Location.curr lexbuf);
+        (Location.curr lexbuf)
+        (Illegal_escape (Lexing.lexeme lexbuf));
     'x'
   ) else Char.chr c
 
@@ -381,8 +349,8 @@ let literal_modifier = ['G'-'Z' 'g'-'z']
 rule token state = parse
   | "\\" newline {
       raise_error
-        (Illegal_character (Lexing.lexeme_char lexbuf 0))
-        (Location.curr lexbuf);
+        (Location.curr lexbuf)
+        (Illegal_character (Lexing.lexeme_char lexbuf 0));
       update_loc lexbuf None 1 false 0;
       token state lexbuf
     }
@@ -421,34 +389,43 @@ rule token state = parse
     { FLOAT (lit, Some modif) }
   | ((float_literal | hex_float_literal) as lit) identchar+
     { raise_error
-        (Invalid_literal (Lexing.lexeme lexbuf))
-        (Location.curr lexbuf);
+        (Location.curr lexbuf)
+        (Invalid_literal (Lexing.lexeme lexbuf));
       FLOAT (lit, None)
     }
   | (int_literal as lit) identchar+
     { raise_error
-        (Invalid_literal (Lexing.lexeme lexbuf))
-        (Location.curr lexbuf);
+        (Location.curr lexbuf)
+        (Invalid_literal (Lexing.lexeme lexbuf));
       INT (lit, None)
     }
   | "\""
     { let string_start = lexbuf.lex_start_p in
-      state.string_start_loc <- Location.curr lexbuf;
-      string false state.raw_buffer lexbuf;
+      let start_loc = Location.curr lexbuf in
+      let raw_buffer, txt_buffer = get_scratch_buffers state in
+      if not (string raw_buffer (Some txt_buffer) lexbuf) then
+        raise_error start_loc Unterminated_string;
       lexbuf.lex_start_p <- string_start;
-      let text, raw = get_stored_string state in
-      STRING (text, raw, None)
+      let txt = flush_buffer txt_buffer in
+      let raw = flush_buffer raw_buffer in
+      STRING (txt, Some raw, None)
     }
   | "{" (lowercase* as delim) "|"
     { let string_start = lexbuf.lex_start_p in
-      state.string_start_loc <- Location.curr lexbuf;
-      quoted_string delim lexbuf;
+      let start_loc = Location.curr lexbuf in
+      let raw_buffer, _ = get_scratch_buffers state in
+      if not (quoted_string raw_buffer delim lexbuf) then
+        raise_error start_loc Unterminated_string;
       lexbuf.lex_start_p <- string_start;
-      STRING (fst (get_stored_string state), None, Some delim)
+      let txt = flush_buffer raw_buffer in
+      STRING (txt, None, Some delim)
     }
-  | "'" (newline as c) "'"
-    { update_loc lexbuf None 1 false 1;
-      CHAR c
+  | "'" newline "'"
+    { (* newline can span multiple characters 
+         (if the newline starts with \13)
+         Only the first one is returned, maybe we should warn? *)
+      update_loc lexbuf None 1 false 1;
+      CHAR (Lexing.lexeme_char lexbuf 1)
     }
   | "'" ([^ '\\' '\'' '\010' '\013'] as c) "'"
     { CHAR c }
@@ -459,7 +436,7 @@ rule token state = parse
   | "'\\" 'x' ['0'-'9' 'a'-'f' 'A'-'F'] ['0'-'9' 'a'-'f' 'A'-'F'] "'"
     { CHAR (char_for_hexadecimal_code lexbuf 3) }
   | "'" (("\\" _) as esc)
-    { raise_error (Illegal_escape esc) (Location.curr lexbuf);
+    { raise_error (Location.curr lexbuf) (Illegal_escape esc);
       token state lexbuf
     }
   | "#=<"
@@ -470,7 +447,7 @@ rule token state = parse
   | "#="
     { SHARPEQUAL }
   | "#" operator_chars+
-    { SHARPOP(lexeme_operator lexbuf) }
+    { SHARPOP (lexeme_operator lexbuf) }
   | "#" [' ' '\t']* (['0'-'9']+ as num) [' ' '\t']*
         ("\"" ([^ '\010' '\013' '"' ] * as name) "\"")?
         [^ '\010' '\013'] * newline
@@ -508,10 +485,8 @@ rule token state = parse
   | "[|" { LBRACKETBAR }
   | "[<" { LBRACKETLESS }
   | "[>" { LBRACKETGREATER }
-  | "<" (uppercase identchar* '.')* lowercase identchar* {
-    let buf = Lexing.lexeme lexbuf in
-    LESSIDENT (String.sub buf 1 (String.length buf - 1))
-  }
+  | "<" (((uppercase identchar* '.')* lowercase identchar*) as tag)
+    { LESSIDENT tag }
   | ">..." { GREATERDOTDOTDOT }
   (* Allow parsing of Pexp_override:
    * let z = {<state: 0, x: y>};
@@ -521,19 +496,19 @@ rule token state = parse
    * in a jsx context {<div needs to be LBRACE LESS (two tokens)
    * for a valid parse.
    *)
-  | "{<" uppercase_or_lowercase identchar* blank*  ":" {
-    set_lexeme_length lexbuf 2;
-    LBRACELESS
-  }
-  | "{<" uppercase_or_lowercase (identchar | '.') * {
-    (* allows parsing of `{<Text` in <Description term={<Text text="Age" />}> as correct jsx *)
-    set_lexeme_length lexbuf 1;
-    LBRACE
-  }
-  | "</" blank* uppercase_or_lowercase (identchar | '.') * blank* ">" {
-    let buf = Lexing.lexeme lexbuf in
-    LESSSLASHIDENTGREATER (String.trim (String.sub buf 2 (String.length buf - 2 - 1)))
-  }
+  | "{<" uppercase_or_lowercase identchar* blank*  ":"
+    { set_lexeme_length lexbuf 2;
+      LBRACELESS
+    }
+  | "{<" uppercase_or_lowercase (identchar | '.') *
+    { (* allows parsing of `{<Text` in <Description term={<Text text="Age" />}> 
+         as correct jsx 
+       *)
+      set_lexeme_length lexbuf 1;
+      LBRACE
+    }
+  | "</" blank* ((uppercase_or_lowercase (identchar|'.')* ) as tag) blank* ">"
+    { LESSSLASHIDENTGREATER tag }
   | "]"  { RBRACKET }
   | "{"  { LBRACE }
   | "{<" { LBRACELESS }
@@ -548,36 +523,36 @@ rule token state = parse
   *)
   | "}"  { RBRACE }
   | ">}" { GREATERRBRACE }
-  | "=<" uppercase_or_lowercase+ {
-    (* allow `let x=<div />;` *)
-    set_lexeme_length lexbuf 1;
-    EQUAL
-  }
-  (* jsx in arrays: [|<div />|]*)
-  | "/>|]" {
-    set_lexeme_length lexbuf 2;
-    SLASHGREATER
-  }
-  | "[|<" {
-    set_lexeme_length lexbuf 2;
-    LBRACKETBAR
-  }
+  | "=<" uppercase_or_lowercase+
+    { (* allow `let x=<div />;` *)
+      set_lexeme_length lexbuf 1;
+      EQUAL
+    }
+  | "/>|]"
+    { (* jsx in arrays: [|<div />|]*)
+      set_lexeme_length lexbuf 2;
+      SLASHGREATER
+    }
+  | "[|<"
+    { set_lexeme_length lexbuf 2;
+      LBRACKETBAR
+    }
     (* allow parsing of <div /></Component> *)
-  | "/></" uppercase_or_lowercase+ {
-    (* allow parsing of <div asd=1></div> *)
-    set_lexeme_length lexbuf 2;
-    SLASHGREATER
-  }
-  | "></" uppercase_or_lowercase+ {
-    (* allow parsing of <div asd=1></div> *)
-    set_lexeme_length lexbuf 1;
-    GREATER
-  }
-  | "><" uppercase_or_lowercase+ {
-    (* allow parsing of <div><span> *)
-    set_lexeme_length lexbuf 1;
-    GREATER
-  }
+  | "/></" uppercase_or_lowercase+
+    { (* allow parsing of <div asd=1></div> *)
+      set_lexeme_length lexbuf 2;
+      SLASHGREATER
+    }
+  | "></" uppercase_or_lowercase+
+    { (* allow parsing of <div asd=1></div> *)
+      set_lexeme_length lexbuf 1;
+      GREATER
+    }
+  | "><" uppercase_or_lowercase+
+    { (* allow parsing of <div><span> *)
+      set_lexeme_length lexbuf 1;
+      GREATER
+    }
   | "[@" { LBRACKETAT }
   | "[%" { LBRACKETPERCENT }
   | "[%%" { LBRACKETPERCENTPERCENT }
@@ -595,25 +570,25 @@ rule token state = parse
   | "</>" { LESSSLASHGREATER }
   | "<..>" { LESSDOTDOTGREATER }
   | '\\'? ['~' '?' '!'] operator_chars+
-            { PREFIXOP(lexeme_operator lexbuf) }
+    { PREFIXOP (lexeme_operator lexbuf) }
   | '\\'? ['=' '<' '>' '|' '&' '$'] operator_chars*
-            {
-              INFIXOP0(lexeme_operator lexbuf)
-            }
+    { INFIXOP0 (lexeme_operator lexbuf) }
   | '\\'? '@' operator_chars*
-            { INFIXOP1(lexeme_operator lexbuf) }
+    { INFIXOP1 (lexeme_operator lexbuf) }
   | '\\'? '^' ('\\' '.')? operator_chars*
-            { match lexeme_without_comment lexbuf with
-              | "^." -> set_lexeme_length lexbuf 1; POSTFIXOP("^")
-              | "^|" ->
-                  (* ^| is not an infix op in [|a^|] *)
-                  set_lexeme_length lexbuf 1; POSTFIXOP("^")
-              | "^" -> POSTFIXOP("^")
-              | op -> INFIXOP1(unescape_operator op) }
+    { match lexeme_without_comment lexbuf with
+      | "^." | "^|" ->
+        (* ^| is not an infix op in [|a^|] *)
+        set_lexeme_length lexbuf
+          (if Lexing.lexeme_char lexbuf 0 = '\\' then 2 else 1);
+        POSTFIXOP "^"
+      | "^" -> POSTFIXOP "^"
+      | op -> INFIXOP1 (unescape_operator op)
+    }
   | "++" operator_chars*
-            { INFIXOP1(lexeme_operator lexbuf) }
+    { INFIXOP1 (lexeme_operator lexbuf) }
   | '\\'? ['+' '-'] operator_chars*
-            { INFIXOP2(lexeme_operator lexbuf) }
+    { INFIXOP2 (lexeme_operator lexbuf) }
   (* SLASHGREATER is an INFIXOP3 that is handled specially *)
   | "/>" { SLASHGREATER }
   (* The second star must be escaped so that the precedence assumptions for
@@ -626,27 +601,27 @@ rule token state = parse
    * below.
    *)
   | '\\'? '*' '\\'? '*' operator_chars*
-            { INFIXOP4(lexeme_operator lexbuf) }
-  | '%'     { PERCENT }
+    { INFIXOP4 (lexeme_operator lexbuf) }
+  | '%' { PERCENT }
   | '\\'? ['/' '*'] operator_chars*
-            { match lexeme_operator lexbuf with
-              | "" ->
-                  (* If the operator is empty, it means the lexeme is beginning
-                   * by a comment sequence: we let the comment lexer handle
-                   * the case. *)
-                  enter_comment lexbuf
-              | op -> INFIXOP3 op }
+    { match lexeme_operator lexbuf with
+      | "" ->
+          (* If the operator is empty, it means the lexeme is beginning
+           * by a comment sequence: we let the comment lexer handle
+           * the case. *)
+          enter_comment state lexbuf
+      | op -> INFIXOP3 op }
   | '%' operator_chars*
-            { INFIXOP3(lexeme_operator lexbuf) }
+    { INFIXOP3 (lexeme_operator lexbuf) }
   | eof { EOF }
   | _
     { raise_error
-        (Illegal_character (Lexing.lexeme_char lexbuf 0))
-        (Location.curr lexbuf);
+        (Location.curr lexbuf)
+        (Illegal_character (Lexing.lexeme_char lexbuf 0));
       token state lexbuf
     }
 
-and enter_comment buffer = parse
+and enter_comment state = parse
   | "//" ([^'\010']* newline as line)
     { update_loc lexbuf None 1 false 0;
       let physical_loc = Location.curr lexbuf in
@@ -677,35 +652,31 @@ and enter_comment buffer = parse
     }
   | "/*" ("*" "*"+)?
     { set_lexeme_length lexbuf 2;
-      let start_loc = Location.curr lexbuf in
-      Buffer.reset buffer;
-      let {Location. loc_end; _} = comment buffer [start_loc] lexbuf in
-      let text = Buffer.contents buffer in
-      Buffer.reset buffer;
-      COMMENT (text, { start_loc with Location.loc_end })
+      let loc = Location.curr lexbuf in
+      let raw_buffer, _ = get_scratch_buffers state in
+      ignore (comment raw_buffer loc loc lexbuf : bool);
+      lexbuf.Lexing.lex_start_p <- loc.Location.loc_start;
+      let loc_end = lexbuf.Lexing.lex_curr_p in
+      COMMENT (flush_buffer raw_buffer,
+               {loc with Location.loc_end})
     }
   | "/**"
-    { let start_p = lexbuf.Lexing.lex_start_p in
-      let start_loc = Location.curr lexbuf in
-      comment_start_loc := [start_loc];
-      reset_string_buffer ();
-      let _ = comment lexbuf in
-      let s, _ = get_stored_string () in
-      reset_string_buffer ();
-      lexbuf.Lexing.lex_start_p <- start_p;
-      DOCSTRING s
+    { let loc = Location.curr lexbuf in
+      let raw_buffer, _ = get_scratch_buffers state in
+      ignore (comment raw_buffer loc loc lexbuf : bool);
+      lexbuf.Lexing.lex_start_p <- loc.Location.loc_start;
+      DOCSTRING (flush_buffer raw_buffer)
     }
   | "/**/"
     { DOCSTRING "" }
   | "/*/"
-    { let loc = Location.curr lexbuf  in
+    { let loc = Location.curr lexbuf in
       Location.prerr_warning loc Warnings.Comment_start;
-      comment_start_loc := [loc];
-      reset_string_buffer ();
-      let {Location. loc_end; _} = comment lexbuf in
-      let s, _ = get_stored_string () in
-      reset_string_buffer ();
-      COMMENT (s, { loc with Location.loc_end })
+      let raw_buffer, _ = get_scratch_buffers state in
+      ignore (comment raw_buffer loc loc lexbuf : bool);
+      let loc_end = lexbuf.Lexing.lex_curr_p in
+      COMMENT (flush_buffer raw_buffer,
+               {loc with Location.loc_end})
     }
   | "*/"
     { let loc = Location.curr lexbuf in
@@ -715,165 +686,190 @@ and enter_comment buffer = parse
     }
   | _ { assert false }
 
-(* [comment buffer locs lexbuf] will lex a comment from [lexbuf] and
+(** [comment buffer locs lexbuf] will lex a comment from [lexbuf] and
    stores its raw text in [buffer], without the /* and */ delimiters.
    [locs] is a non-empty list of locations that saves the beginning
    position of each nested comments.
  *)
-and comment buffer locs = parse
+and comment buffer firstloc nestedloc = parse
   | "/*"
     { store_lexeme buffer lexbuf;
-      comment buffer (Location.curr lexbuf :: locs) lexbuf;
+      if comment buffer firstloc (Location.curr lexbuf) lexbuf then (
+        store_lexeme buffer lexbuf;
+        comment buffer firstloc nestedloc lexbuf 
+      )
+      else
+        false
     }
   | "*/"
-    { match locs with
-      | [] -> assert false
-      | [_] -> Location.curr lexbuf
-      | _ :: locs ->
-         store_lexeme buffer lexbuf;
-         comment buffer locs lexbuf;
-    }
+    { true }
   | "\""
-    { let start_loc = Location.curr lexbuf in
+    { Buffer.add_char buffer '"';
+      let string_start = Location.curr lexbuf in
+      let terminated_string = string buffer None lexbuf in
       Buffer.add_char buffer '"';
-      begin
-        try string true buffer lexbuf
-        with Unterminated str_start ->
-          let loc, start = list_first_last locs in
-          raise_error
-            (Unterminated_string_in_comment (start, str_start)) loc
-      end;
-      Buffer.add_char buffer '"';
-      comment buffer locs lexbuf
+      if terminated_string then
+        comment buffer firstloc nestedloc lexbuf
+      else (
+        raise_error nestedloc
+          (Unterminated_string_in_comment (firstloc, string_start));
+        false
+      )
     }
   | "{" (lowercase* as delim) "|"
     { store_lexeme buffer lexbuf;
-      string_start_loc := Location.curr lexbuf;
-      begin
-        try quoted_string delim lexbuf
-        with Unterminated str_start ->
-          let loc, start = list_first_last locs in
-          comment_start_loc := [];
-          raise_error (Unterminated_string_in_comment (start, str_start)) loc
-      end;
-      store_string_char buffer '|';
-      store_string delim;
-      store_string_char buffer '}';
-      comment buffer locs lexbuf
+      let stringloc = Location.curr lexbuf in
+      let terminated_string = quoted_string buffer delim lexbuf in
+      Buffer.add_char buffer '|';
+      Buffer.add_string buffer delim;
+      Buffer.add_char buffer '}';
+      if terminated_string then
+        comment buffer firstloc nestedloc lexbuf
+      else (
+        raise_error nestedloc
+          (Unterminated_string_in_comment (firstloc, stringloc));
+        false
+      )
     }
   | "''"
     { store_lexeme buffer lexbuf;
-      comment buffer locs lexbuf
+      comment buffer firstloc nestedloc lexbuf
     }
   | "'" newline "'"
-    { update_loc lexbuf None 1 false 1;
-      store_lexeme buffer lexbuf;
-      comment lexbuf
+    { store_lexeme buffer lexbuf;
+      update_loc lexbuf None 1 false 1;
+      comment buffer firstloc nestedloc lexbuf
     }
   | "'" [^ '\\' '\'' '\010' '\013' ] "'"
-      { store_lexeme string_buffer lexbuf; comment lexbuf }
   | "'\\" ['\\' '"' '\'' 'n' 't' 'b' 'r' ' '] "'"
-      { store_lexeme string_buffer lexbuf; comment lexbuf }
   | "'\\" ['0'-'9'] ['0'-'9'] ['0'-'9'] "'"
-      { store_lexeme string_buffer lexbuf; comment lexbuf }
   | "'\\" 'x' ['0'-'9' 'a'-'f' 'A'-'F'] ['0'-'9' 'a'-'f' 'A'-'F'] "'"
-      { store_lexeme string_buffer lexbuf; comment lexbuf }
-  | eof
-      { let loc, start = list_first_last !comment_start_loc in
-        comment_start_loc := [];
-        raise_error (Unterminated_comment start) loc;
-        loc
-      }
-  | newline
-      { update_loc lexbuf None 1 false 0;
-        store_lexeme string_buffer lexbuf;
-        comment lexbuf
-      }
-  | _
-      { store_lexeme string_buffer lexbuf; comment lexbuf }
-
-and string context = parse
-  | '"'
-    { () }
-  | '\\' newline ([' ' '\t'] * as space)
-    { update_loc lexbuf None 1 false (String.length space);
-      store_lexeme rawbuffer lexbuf;
-      string context lexbuf
+    { store_lexeme buffer lexbuf;
+      comment buffer firstloc nestedloc lexbuf
     }
-  | '\\' ['\\' '\'' '"' 'n' 't' 'b' 'r' ' ']
-    { store_lexeme rawbuffer lexbuf;
-      if not context.string_in_comment then
-        store_string_char (char_for_backslash(Lexing.lexeme_char lexbuf 1));
-      string context lexbuf
+  | eof
+    { raise_error nestedloc (Unterminated_comment firstloc);
+      false
+    }
+  | newline
+    { store_lexeme buffer lexbuf;
+      update_loc lexbuf None 1 false 0;
+      comment buffer firstloc nestedloc lexbuf
+    }
+  | _
+    { store_lexeme buffer lexbuf;
+      comment buffer firstloc nestedloc lexbuf
+    }
+
+(** [string rawbuf txtbuf lexbuf] parses a string from [lexbuf].
+    The string contents is stored in two buffers:
+    - [rawbuf] for the text as it literally appear in the source
+    - [txtbuf] for the processed, unescaped contents.
+    [txtbuf] is optional. If it is omitted, contents is not unescaped.
+    The call returns [true] iff the string was properly terminated.
+    It does not register an error if the string is unterminated, this
+    is the responsibility of the caller.
+ *)
+and string rawbuf txtbuf = parse
+  | '"'
+    { true }
+  | '\\' newline ([' ' '\t'] * as space)
+    { store_lexeme rawbuf lexbuf;
+      update_loc lexbuf None 1 false (String.length space);
+      string rawbuf txtbuf lexbuf
+    }
+  | '\\' (['\\' '\'' '"' 'n' 't' 'b' 'r' ' '] as c)
+    { store_lexeme rawbuf lexbuf;
+      begin match txtbuf with
+      | None -> ()
+      | Some buf -> Buffer.add_char buf (char_for_backslash c);
+      end;
+      string rawbuf txtbuf lexbuf
     }
   | '\\' ['0'-'9'] ['0'-'9'] ['0'-'9']
-    { store_lexeme rawbuffer lexbuf;
-      if not context.string_in_comment then
-        store_string_char (char_for_decimal_code lexbuf 1);
-      string context lexbuf
+    { store_lexeme rawbuf lexbuf;
+      begin match txtbuf with
+      | None -> ()
+      | Some buf -> Buffer.add_char buf (char_for_decimal_code lexbuf 1);
+      end;
+      string rawbuf txtbuf lexbuf
     }
   | '\\' 'x' ['0'-'9' 'a'-'f' 'A'-'F'] ['0'-'9' 'a'-'f' 'A'-'F']
-    { store_lexeme context.string_buffer lexbuf;
-      if not context.string_in_comment then
-        store_string_char(char_for_hexadecimal_code lexbuf 2);
-      string context lexbuf
+    { store_lexeme rawbuf lexbuf;
+      begin match txtbuf with
+      | None -> ()
+      | Some buf -> Buffer.add_char buf (char_for_hexadecimal_code lexbuf 2);
+      end;
+      string rawbuf txtbuf lexbuf
     }
   | '\\' _
-    { store_lexeme rawbuffer lexbuf;
-      if not context.string_in_comment then begin
-        (*  FIXME: Warnings should probably go in Reason_errors
+    { store_lexeme rawbuf lexbuf;
+      begin match txtbuf with
+      | None -> ()
+      | Some buf ->
+         store_lexeme buf lexbuf;
+         (*  FIXME: Warnings should probably go in Reason_errors
             Should be an error, but we are very lax.
               raise (Error (Illegal_escape (Lexing.lexeme lexbuf),
                         Location.curr lexbuf))
            FIXME Using Location relies too much on compiler internals 
-         *)
-        Location.prerr_warning (Location.curr lexbuf)
-          Warnings.Illegal_backslash;
-        store_lexeme context.string_buffer lexbuf;
+          *)
+         Location.prerr_warning (Location.curr lexbuf)
+           Warnings.Illegal_backslash;
       end;
-      string context lexbuf
+      string rawbuf txtbuf lexbuf
     }
   | newline
-    { store_lexeme context.string_raw_buffer lexbuf;
-      if not context.string_in_comment then begin
-        store_lexeme context.string_buffer lexbuf;
-        Location.prerr_warning (Location.curr lexbuf) Warnings.Eol_in_string
+    { store_lexeme rawbuf lexbuf;
+      begin match txtbuf with
+      | None -> ()
+      | Some buf ->
+        store_lexeme buf lexbuf;
+        Location.prerr_warning (Location.curr lexbuf)
+          Warnings.Eol_in_string
       end;
       update_loc lexbuf None 1 false 0;
-      string context lexbuf
+      string rawbuf txtbuf lexbuf
     }
   | eof
-    { if context.string_in_comment then
-        raise (Unterminated context.string_start_loc);
-      raise_error Unterminated_string context.string_start_loc
-    }
+    { false }
   | _
-    { store_lexeme rawbuffer lexbuf;
-      if not context.string_in_comment then
-        store_string_char (Lexing.lexeme_char lexbuf 0);
-      string context lexbuf
+    { store_lexeme rawbuf lexbuf;
+      begin match txtbuf with
+      | None -> ()
+      | Some buf -> Buffer.add_char buf (Lexing.lexeme_char lexbuf 0);
+      end;
+      string rawbuf txtbuf lexbuf
     }
 
-and quoted_string context = parse
+(** [quoted_string buffer delim lexbuf] parses a quoted string
+    delimited by [delim] from [lexbuf] and stores the literal text in
+    [buffer].
+    It returns:
+    - true if the string was properly delimited and 
+    - false if EOF was reached before finding "|delim}".
+    It does not register an error if the string is unterminated, this
+    is the responsibility of the caller.
+ *)
+and quoted_string buffer delim = parse
   | newline
-    { update_loc lexbuf None 1 false 0;
-      store_lexeme context.string_buffer lexbuf;
-      quoted_string context lexbuf
+    { store_lexeme buffer lexbuf;
+      update_loc lexbuf None 1 false 0;
+      quoted_string buffer delim lexbuf
     }
   | eof
-    { if context.string_in_comment then
-        raise (Unterminated context.string_start_loc);
-      raise_error Unterminated_string context.string_start_loc
-    }
-  | "|" (lowercase* as delim) "}"
-    { if context.string_delim = delim then () else (
-        store_lexeme context.string_buffer lexbuf;
-        quoted_string context lexbuf
+    { false }
+  | "|" (lowercase* as edelim) "}"
+    { if delim = edelim then
+        true 
+      else (
+        store_lexeme buffer lexbuf;
+        quoted_string buffer delim lexbuf
       )
     }
   | _ as c
-    { Buffer.add_char context.string_buffer c;
-      quoted_string context lexbuf
+    { Buffer.add_char buffer c;
+      quoted_string buffer delim lexbuf
     }
 
 and skip_sharp_bang = parse
