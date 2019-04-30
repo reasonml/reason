@@ -1,32 +1,25 @@
-let getenv_opt env =
-  try Some(Sys.getenv env)
-  with Not_found -> None
+let () = UTop.require ["ocaml-migrate-parsetree"; "menhirLib";]
 
-(* Try to read the HOME environment
- * if it is not set we assume it's windows and fallback to USERPROFILE *)
-let home = match getenv_opt "HOME" with
-  | Some(p) -> p
-  | None -> Sys.getenv "USERPROFILE"
+let () = try Topdirs.dir_directory (Sys.getenv "OCAML_TOPLEVEL_PATH") with | Not_found -> ();;
 
-let () = Unix.openfile (Filename.concat home ".utoprc") [] 0o640
-         |> Unix.close
+let () = UTop.require ["reason.easy_format"; "reason";]
 
-let () = Unix.openfile (Filename.concat home ".utop-history") [] 0o640
-         |> Unix.close
+let () = Reason_toploop.main ()
 
-(* Get the dir of the current executable *)
-let dir = Filename.dirname Sys.executable_name
+let () = Reason_utop.init_reason ()
 
-(* If there is only 1 arg it's the exeuctable and we can remove that *)
-let argv = match Array.length Sys.argv with
-  | 1 -> [||]
-  | argLength -> Array.sub Sys.argv 1 argLength
+let () = print_string
+"
+                   ___  _______   ________  _  __
+                  / _ \\/ __/ _ | / __/ __ \\/ |/ /
+                 / , _/ _// __ |_\\ \\/ /_/ /    /
+                /_/|_/___/_/ |_/___/\\____/_/|_/
 
-let args = if Array.length argv == 1 && argv.(0) = "stdin" then
-    let refmted = Pervasives.input_line (Unix.open_process_in "refmt --parse re --print ml --interface false") in
+  Execute statements/let bindings. Hit <enter> after the semicolon. Ctrl-d to quit.
 
-    Array.concat [[|"utop-full";|]; argv; [|refmted|]]
-  else
-    Array.concat [[|"utop-full"; "-init"; Filename.concat dir "rtop_init.ml";|]; argv; [|"-I"; home; "-safe-string"|]];;
+        >   let myVar = \"Hello Reason!\";
+        >   let myList: list(string) = [\"first\", \"second\"];
+        >   #use \"./src/myFile.re\"; /* loads the file into here */
+"
 
-Unix.execvp "utop-full" args
+let () = UTop_main.main ()
