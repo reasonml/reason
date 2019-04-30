@@ -5,22 +5,27 @@ type token = Reason_parser.token
 type invalid_docstrings = Reason_lexer.invalid_docstrings
 
 module Step : sig
-  type 'a parser =
-    private 'a I.checkpoint * invalid_docstrings
-  type 'a erroneous_parser =
-    private 'a I.checkpoint * invalid_docstrings
-
+  type 'a parser
+  type 'a erroneous_parser
   type 'a step =
     | Intermediate of 'a parser
-    | Success of 'a * invalid_docstrings 
+    | Success of 'a * invalid_docstrings
     | Error of 'a erroneous_parser
 
-  val step : invalid_docstrings -> 'a I.checkpoint -> 'a step
   val offer : 'a parser -> token Reason_lexer.positioned -> 'a step
   val add_docstring : 'a parser -> Reason_lexer.comment -> 'a parser
+  val initialize : 'a I.checkpoint -> 'a step
 end = struct
   type 'a parser =
-    'a I.checkpoint * invalid_docstrings
+    | Normal of 'a I.checkpoint * invalid_docstrings
+    | After_potential_postfix of {
+        checkpoint: 'a I.checkpoint;
+        docstrings: invalid_docstrings;
+        fallback: 'a I.checkpoint;
+        postfix_ops: int;
+        postfix_pos: Lexing.position;
+      }
+
   type 'a erroneous_parser =
     'a I.checkpoint * invalid_docstrings
 
@@ -29,20 +34,83 @@ end = struct
     | Success of 'a * invalid_docstrings
     | Error of 'a erroneous_parser
 
-  let rec step docstrings = function
+  let mark_potential_postfix token fallback =
+    let string_forall f s =
+      let i = ref 0 in
+      let len = String.length s in
+      let valid = ref true in
+      while !i < len && !valid do
+        valid := f s.[!i];
+        incr i;
+      done;
+      !valid
+    in
+    match token with
+    | (Reason_parser.INFIXOP1 s, pos, _)
+      when string_forall ((=) '^') s ->
+      (fun checkpoint docstrings ->
+         After_potential_postfix {
+           checkpoint; fallback; docstrings;
+           postfix_ops = String.length s;
+           postfix_pos = pos;
+         })
+    | _ ->
+      (fun checkpoint docstrings ->
+         Normal (checkpoint, docstrings))
+
+  let rec offer_postfix count pos = function
     | I.Shifting _ | I.AboutToReduce _ as checkpoint ->
-       step docstrings (I.resume checkpoint)
+      offer_postfix count pos (I.resume checkpoint)
     | I.InputNeeded _ as checkpoint ->
-       Intermediate (checkpoint, docstrings)
+      if count <= 0 then checkpoint else (
+        let pos_cnum = pos.Lexing.pos_cnum in
+        let pos' = {pos with Lexing.pos_cnum = pos_cnum + 1} in
+        offer_postfix (count - 1) pos'
+          (I.offer checkpoint (Reason_parser.POSTFIXOP "^", pos, pos'))
+      )
+    | other -> other
+
+  let rec step mark_potential_postfix docstrings = function
+    | I.Shifting _ | I.AboutToReduce _ as checkpoint ->
+       step mark_potential_postfix docstrings (I.resume checkpoint)
+    | I.InputNeeded _ as checkpoint ->
+      Intermediate (mark_potential_postfix checkpoint docstrings)
     | I.Accepted x -> Success (x, docstrings)
     | I.Rejected | I.HandlingError _ as checkpoint ->
        Error (checkpoint, docstrings)
 
-  let offer (checkpoint, docstrings) token =
-    step docstrings (I.offer checkpoint token)
+  let offer parser token =
+    match parser with
+    | Normal (checkpoint, docstrings) ->
+      step (mark_potential_postfix token checkpoint)
+        docstrings (I.offer checkpoint token)
+    | After_potential_postfix r ->
+      match step (mark_potential_postfix token r.checkpoint)
+              r.docstrings (I.offer r.checkpoint token)
+      with
+      | Error _ as result ->
+        begin (* Try applying postfix operators on fallback parser *)
+          match offer_postfix r.postfix_ops r.postfix_pos r.fallback with
+          | I.InputNeeded _ as checkpoint ->
+            step (mark_potential_postfix token checkpoint)
+              r.docstrings (I.offer checkpoint token)
+          | _ -> result
+        end
+      | result -> result
 
-  let add_docstring (parser, docstrings) comment =
-    (parser, Reason_lexer.add_invalid_docstring comment docstrings)
+  let add_docstring parser comment =
+    match parser with
+    | Normal (checkpoint, docstrings) ->
+      let docstrings = Reason_lexer.add_invalid_docstring comment docstrings in
+      Normal (checkpoint, docstrings)
+    | After_potential_postfix r ->
+      let docstrings =
+        Reason_lexer.add_invalid_docstring comment r.docstrings in
+      After_potential_postfix {r with docstrings}
+
+  let initialize checkpoint =
+    step (fun parser ds -> Normal (parser, ds))
+      Reason_lexer.empty_invalid_docstrings checkpoint
 end
 
 type 'a entry_point =
@@ -68,9 +136,7 @@ type 'a step = 'a Step.step =
   | Error of 'a erroneous_parser
 
 let initial entry position =
-  match
-    Step.step Reason_lexer.empty_invalid_docstrings (entry position)
-  with
+  match Step.initialize (entry position) with
   | Step.Intermediate parser -> parser
   | _ -> assert false
 
@@ -105,7 +171,7 @@ let token_for_label_operator = function
   | "!" -> Some Reason_parser.BANG
   | _ -> None
 
-let split_label s = 
+let split_label s =
   let is_optional = String.length s > 1 && s.[1] == '?' in
   let idx = if is_optional then 2 else 1 in
   let operator = String.sub s idx (String.length s - idx) in
@@ -127,10 +193,10 @@ let try_split_label (tok_kind, pos0, posn) =
         [token0; token1; token2]
       else
         [token0; token2]
-    end 
+    end
   | _ -> []
 
-(* Logic for attempting to consume a token 
+(* Logic for attempting to consume a token
    and try alternatives on failure *)
 
 let step parser token =
@@ -144,7 +210,7 @@ let step parser token =
           | (Step.Intermediate _ | Step.Success _) as result -> result
           (* Alternative failed... Return original failure *)
           | Step.Error _ -> erroneous
-     in 
+     in
      match token with
      | Reason_parser.DOCSTRING text, loc_start, loc_end ->
        let loc = {Location. loc_start; loc_end; loc_ghost = false} in
