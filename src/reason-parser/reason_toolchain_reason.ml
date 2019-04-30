@@ -4,7 +4,8 @@ open Reason_errors
 module I = Reason_parser.MenhirInterpreter
 module Lexer_impl = struct
   include Reason_lexer
-  let init () = init ?insert_completion_ident:!insert_completion_ident ()
+  let init lexbuf =
+    init ?insert_completion_ident:!insert_completion_ident lexbuf 
 end
 
 (* From Reason source text to OCaml AST

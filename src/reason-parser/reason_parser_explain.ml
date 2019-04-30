@@ -9,7 +9,8 @@ module Raw = Reason_parser_explain_raw
 let identlike_keywords =
   let reverse_table = lazy (
     let table = Hashtbl.create 7 in
-    Hashtbl.iter (fun k v -> Hashtbl.add table v k) Reason_lexer.keyword_table;
+    let flip_add k v = Hashtbl.add table v k in
+    Hashtbl.iter flip_add Reason_declarative_lexer.keyword_table;
     table
   ) in
   function
@@ -38,7 +39,7 @@ let uppercased_instead_of_lowercased state token =
   match token with
   | Parser.UIDENT name when Raw.transitions_on_lident state ->
     let name = String.uncapitalize_ascii name in
-    if Hashtbl.mem Reason_lexer.keyword_table name then
+    if Hashtbl.mem Reason_declarative_lexer.keyword_table name then
       "variables and labels should be lowercased"
     else
       Printf.sprintf "variables and labels should be lowercased. Try `%s'" name
