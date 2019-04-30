@@ -1,47 +1,55 @@
-(* Filter commnets *)
+open Reason_parser
 
-let token_with_comments =
-  Reason_declarative_lexer.token
-
-let last_comments = ref []
-
-let rec token lexbuf =
-  match token_with_comments lexbuf with
-      COMMENT (s, comment_loc) ->
-        last_comments := (s, comment_loc) :: !last_comments;
-        token lexbuf
-    | tok -> tok
-
-let add_invalid_docstring text loc =
-  let open Location in
-  let rec aux = function
-    | ((_, loc') as x) :: xs
-      when loc'.loc_start.pos_cnum > loc.loc_start.pos_cnum ->
-      x :: aux xs
-    | xs -> (text, loc) :: xs
+type 'a positioned = 'a * Lexing.position * Lexing.position
+                   
+type state = {
+  declarative_lexer_state: Reason_declarative_lexer.state;
+  lexbuf: Lexing.lexbuf;
+  mutable comments: (string * Location.t) list;
+  mutable queued_tokens: token positioned list;
+  mutable queued_exn: exn option;
+  mutable last_cnum: int;
+  mutable completion_ident_offset: int;
+  completion_ident_pos: Lexing.position
+}
+           
+let init ?insert_completion_ident lexbuf =
+  let declarative_lexer_state = Reason_declarative_lexer.make () in
+  let completion_ident_offset, completion_ident_pos =
+    match insert_completion_ident with
+    | None -> (min_int, Lexing.dummy_pos)
+    | Some pos -> (pos.Lexing.pos_cnum, pos)
   in
-  last_comments := aux !last_comments
+  { declarative_lexer_state; lexbuf;
+    comments = [];
+    queued_tokens = [];
+    queued_exn = None;
+    last_cnum = -1;
+    completion_ident_offset;
+    completion_ident_pos;
+  }
 
-let comments () = List.rev !last_comments
+let rec token state =
+  match
+    Reason_declarative_lexer.token
+      state.declarative_lexer_state state.lexbuf
+  with
+  | COMMENT (s, comment_loc) ->
+     state.comments <- (s, comment_loc) :: state.comments;
+     token state
+  | tok -> tok
 
 (* Routines for manipulating lexer state *)
 
 let save_triple lexbuf tok =
-  (tok, lexbuf.lex_start_p, lexbuf.lex_curr_p)
-
-let load_triple lexbuf (tok, p1, p2) = (
-  lexbuf.lex_start_p <- p1;
-  lexbuf.lex_curr_p <- p2;
-  tok
-)
+  (tok, lexbuf.Lexing.lex_start_p, lexbuf.Lexing.lex_curr_p)
 
 let fake_triple t (_, pos, _) =
   (t, pos, pos)
 
 (* insert ES6_FUN *)
 
-exception Lex_balanced_failed of (token * position * position) list *
-                                 (exn * position * position) option
+exception Lex_balanced_failed of token positioned list * exn option
 
 let closing_of = function
   | LPAREN -> RPAREN
@@ -57,7 +65,8 @@ let is_triggering_token = function
   | EQUALGREATER | COLON -> true
   | _ -> false
 
-let rec lex_balanced_step closing lexbuf acc tok =
+let rec lex_balanced_step state closing acc tok =
+  let lexbuf = state.lexbuf in
   let acc = save_triple lexbuf tok :: acc in
   match tok, closing with
   | (RPAREN, RPAREN) | (RBRACE, RBRACE) | (RBRACKET, RBRACKET) ->
@@ -67,27 +76,27 @@ let rec lex_balanced_step closing lexbuf acc tok =
   | (( LBRACKET | LBRACKETLESS | LBRACKETGREATER
      | LBRACKETAT
      | LBRACKETPERCENT | LBRACKETPERCENTPERCENT ), _) ->
-    lex_balanced closing lexbuf (lex_balanced RBRACKET lexbuf acc)
+    lex_balanced state closing (lex_balanced state RBRACKET acc)
   | ((LPAREN | LBRACE), _) ->
     let rparen =
-      try lex_balanced (closing_of tok) lexbuf []
+      try lex_balanced state (closing_of tok) []
       with (Lex_balanced_failed (rparen, None)) ->
         raise (Lex_balanced_failed (rparen @ acc, None))
     in
-    begin match token lexbuf with
+    begin match token state with
     | exception exn ->
-      raise (Lex_balanced_failed (rparen @ acc, Some (save_triple lexbuf exn)))
+      raise (Lex_balanced_failed (rparen @ acc, Some exn))
     | tok' ->
       let acc = if is_triggering_token tok' then inject_es6_fun acc else acc in
-      lex_balanced_step closing lexbuf (rparen @ acc) tok'
+      lex_balanced_step state closing (rparen @ acc) tok'
     end
   | ((LIDENT _ | UNDERSCORE), _) ->
-    begin match token lexbuf with
+    begin match token state with
     | exception exn ->
-      raise (Lex_balanced_failed (acc, Some (save_triple lexbuf exn)))
+      raise (Lex_balanced_failed (acc, Some exn))
     | tok' ->
       let acc = if is_triggering_token tok' then inject_es6_fun acc else acc in
-      lex_balanced_step closing lexbuf acc tok'
+      lex_balanced_step state closing acc tok'
     end
   (* `...` with a closing `}` indicates that we're definitely not in an es6_fun
    * Image the following:
@@ -103,110 +112,107 @@ let rec lex_balanced_step closing lexbuf acc tok =
    * of a pattern.
    *)
   | (DOTDOTDOT, RBRACE) -> acc
-  | _ -> lex_balanced closing lexbuf acc
+  | _ -> lex_balanced state closing acc
 
-and lex_balanced closing lexbuf acc =
-  match token lexbuf with
+and lex_balanced state closing acc =
+  match token state with
   | exception exn ->
-    raise (Lex_balanced_failed (acc, Some (save_triple lexbuf exn)))
-  | tok -> lex_balanced_step closing lexbuf acc tok
+    raise (Lex_balanced_failed (acc, Some exn))
+  | tok -> lex_balanced_step state closing acc tok
 
-let queued_tokens = ref []
-let queued_exn = ref None
-
-let lookahead_esfun lexbuf (tok, _, _ as lparen) =
-  let triple =
-    match lex_balanced (closing_of tok) lexbuf [] with
-    | exception (Lex_balanced_failed (tokens, exn)) ->
-      queued_tokens := List.rev tokens;
-      queued_exn := exn;
-      lparen
-    | tokens ->
-      begin match token lexbuf with
-        | exception exn ->
-          queued_tokens := List.rev tokens;
-          queued_exn := Some (save_triple lexbuf exn);
+let lookahead_esfun state (tok, _, _ as lparen) =
+  match lex_balanced state (closing_of tok) [] with
+  | exception (Lex_balanced_failed (tokens, exn)) ->
+     state.queued_tokens <- List.rev tokens;
+     state.queued_exn <- exn;
+     lparen
+  | tokens ->
+     begin match token state with
+     | exception exn ->
+        state.queued_tokens <- List.rev tokens;
+        state.queued_exn <- Some exn;
+        lparen
+     | token ->
+        let tokens = save_triple state.lexbuf token :: tokens in
+        if is_triggering_token token then (
+          state.queued_tokens <- lparen :: List.rev tokens;
+          fake_triple ES6_FUN lparen
+        ) else (
+          state.queued_tokens <- List.rev tokens;
           lparen
-        | token ->
-          let tokens = save_triple lexbuf token :: tokens in
-          if is_triggering_token token then (
-            queued_tokens := lparen :: List.rev tokens;
-            fake_triple ES6_FUN lparen
-          ) else (
-            queued_tokens := List.rev tokens;
-            lparen
-          )
-      end
-  in
-  load_triple lexbuf triple
+        )
+     end
 
-let token lexbuf =
-  match !queued_tokens, !queued_exn with
+let token state =
+  let lexbuf = state.lexbuf in
+  match state.queued_tokens, state.queued_exn with
   | [], Some exn ->
-    queued_exn := None;
-    raise (load_triple lexbuf exn)
+    state.queued_exn <- None;
+    raise exn
   | [(LPAREN, _, _) as lparen], None ->
-    let _ = load_triple lexbuf lparen in
-    lookahead_esfun lexbuf lparen
+    lookahead_esfun state lparen
   | [(LBRACE, _, _) as lparen], None ->
-    let _ = load_triple lexbuf lparen in
-    lookahead_esfun lexbuf lparen
+    lookahead_esfun state lparen
   | [], None ->
-    begin match token lexbuf with
+    begin match token state with
     | LPAREN | LBRACE as tok ->
-        lookahead_esfun lexbuf (save_triple lexbuf tok)
+        lookahead_esfun state (save_triple state.lexbuf tok)
     | (LIDENT _ | UNDERSCORE) as tok ->
         let tok = save_triple lexbuf tok in
-        begin match token lexbuf with
+        begin match token state with
         | exception exn ->
-            queued_exn := Some (save_triple lexbuf exn);
-            load_triple lexbuf tok
+           state.queued_exn <- Some exn;
+           tok
         | tok' ->
           if is_triggering_token tok' then (
-            queued_tokens := [tok; save_triple lexbuf tok'];
-            load_triple lexbuf (fake_triple ES6_FUN tok)
+            state.queued_tokens <- [tok; save_triple lexbuf tok'];
+            fake_triple ES6_FUN tok
           ) else (
-            queued_tokens := [save_triple lexbuf tok'];
-            load_triple lexbuf tok
+            state.queued_tokens <- [save_triple lexbuf tok'];
+            tok
           )
         end
-    | token -> token
+    | token -> save_triple lexbuf token
     end
-  | x :: xs, _ -> queued_tokens := xs; load_triple lexbuf x
+  | x :: xs, _ ->
+    state.queued_tokens <- xs; x
 
-let completion_ident_offset = ref min_int
-let completion_ident_pos = ref Lexing.dummy_pos
-
-let token lexbuf =
-  let space_start = lexbuf.Lexing.lex_curr_p.Lexing.pos_cnum in
-  let token = token lexbuf in
-  let token_start = lexbuf.Lexing.lex_start_p.Lexing.pos_cnum in
-  let token_stop = lexbuf.Lexing.lex_curr_p.Lexing.pos_cnum in
-  if !completion_ident_offset > min_int &&
-     space_start <= !completion_ident_offset &&
-     token_stop >= !completion_ident_offset then (
-    match token with
-    | LIDENT _ | UIDENT _ when token_start <= !completion_ident_offset ->
-        completion_ident_offset := min_int;
-        token
+let token state =
+  let space_start = state.last_cnum in
+  let (token', start_p, curr_p) as token = token state in
+  let token_start = start_p.Lexing.pos_cnum in
+  let token_stop = curr_p.Lexing.pos_cnum in
+  state.last_cnum <- token_stop;
+  if state.completion_ident_offset > min_int &&
+     space_start <= state.completion_ident_offset &&
+     token_stop >= state.completion_ident_offset then (
+    match token' with
+    | LIDENT _ | UIDENT _
+      when token_start <= state.completion_ident_offset ->
+      state.completion_ident_offset <- min_int;
+      token
     | _ ->
-      queued_tokens := save_triple lexbuf token :: !queued_tokens;
-      completion_ident_offset := min_int;
-      load_triple lexbuf
-        (LIDENT "_", !completion_ident_pos, !completion_ident_pos)
+      state.queued_tokens <- token :: state.queued_tokens;
+      state.completion_ident_offset <- min_int;
+      (LIDENT "_", state.completion_ident_pos, state.completion_ident_pos)
   ) else
     token
 
-let init ?insert_completion_ident () =
-  is_in_string := false;
-  last_comments := [];
-  comment_start_loc := [];
-  queued_tokens := [];
-  queued_exn := None;
-  begin match insert_completion_ident with
-    | None ->
-      completion_ident_offset := min_int;
-    | Some pos ->
-      completion_ident_offset := pos.Lexing.pos_cnum;
-      completion_ident_pos := pos
-  end
+type comment = string * Location.t
+type invalid_docstrings = comment list
+
+let empty_invalid_docstrings = []
+
+let add_invalid_docstring docstring invalid_docstrings =
+  (docstring :: invalid_docstrings)
+
+let get_comments state invalid_docstrings =
+  let cnum (_, loc) = loc.Location.loc_start.Lexing.pos_cnum in
+  let rec merge_comments = function
+    | [], xs | xs, [] -> List.rev xs
+    | ((x :: _) as xs), (y :: ys) when cnum x >= cnum y ->
+      y :: merge_comments (xs, ys)
+    | x :: xs, ys ->
+      x :: merge_comments (xs, ys)
+  in 
+  merge_comments (state.comments, invalid_docstrings)
