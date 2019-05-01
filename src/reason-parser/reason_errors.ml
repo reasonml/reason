@@ -28,7 +28,7 @@ type ast_error =
   | Variable_in_scope of Location.t * string
   | Applicative_path of Location.t
 
-type parsing_error
+type parsing_error = unit
 
 type reason_error =
   | Lexing_error of lexing_error

@@ -22,16 +22,19 @@ let doc_comments_filter () =
   (mapper, filter)
 
 module Lexer_impl = struct
-  let init = Lexer.init
+  type t = Lexing.lexbuf
+  let init ?insert_completion_ident:_ lexbuf =
+    Lexer.init (); lexbuf
   let token = Lexer.token
 
   let filtered_comments = ref []
   let filter_comments filter =
     filtered_comments := List.filter filter (Lexer.comments ())
-  let comments () = !filtered_comments
+  let get_comments _lexbuf _docstrings = !filtered_comments
 end
 module OCaml_parser = Parser
 type token = OCaml_parser.token
+type invalid_docstrings = unit
 
 (* OCaml parser parses into compiler-libs version of Ast.
      Parsetrees are converted to Reason version on the fly. *)
@@ -41,8 +44,7 @@ let parse_and_filter_doc_comments iter fn lexbuf=
   let result = fn lexbuf in
   ignore (iter it result);
   Lexer_impl.filter_comments filter;
-  result
-
+  (result, ())
 
 let implementation lexbuf =
   parse_and_filter_doc_comments
@@ -137,3 +139,5 @@ let format_implementation_with_comments (structure, _) formatter =
   in
   Pprintast.structure formatter
     (To_current.copy_structure structure)
+
+module Lexer = Lexer_impl

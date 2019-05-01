@@ -1,8 +1,8 @@
 open Reason_parser
 
 type 'a positioned = 'a * Lexing.position * Lexing.position
-                   
-type state = {
+
+type t = {
   declarative_lexer_state: Reason_declarative_lexer.state;
   lexbuf: Lexing.lexbuf;
   mutable comments: (string * Location.t) list;
@@ -12,7 +12,7 @@ type state = {
   mutable completion_ident_offset: int;
   completion_ident_pos: Lexing.position
 }
-           
+
 let init ?insert_completion_ident lexbuf =
   let declarative_lexer_state = Reason_declarative_lexer.make () in
   let completion_ident_offset, completion_ident_pos =
@@ -28,6 +28,8 @@ let init ?insert_completion_ident lexbuf =
     completion_ident_offset;
     completion_ident_pos;
   }
+
+let lexbuf state = state.lexbuf
 
 let rec token state =
   match
@@ -214,5 +216,5 @@ let get_comments state invalid_docstrings =
       y :: merge_comments (xs, ys)
     | x :: xs, ys ->
       x :: merge_comments (xs, ys)
-  in 
+  in
   merge_comments (state.comments, invalid_docstrings)

@@ -1,10 +1,11 @@
 open Reason_parser
- 
-type state
+
+type t
 type 'a positioned = 'a * Lexing.position * Lexing.position
 
-val init : ?insert_completion_ident:Lexing.position -> Lexing.lexbuf -> state
-val token : state -> token positioned
+val init : ?insert_completion_ident:Lexing.position -> Lexing.lexbuf -> t
+val token : t -> token positioned
+val lexbuf : t -> Lexing.lexbuf
 
 type comment = string * Location.t
 
@@ -14,4 +15,4 @@ type invalid_docstrings
 val empty_invalid_docstrings : invalid_docstrings
 val add_invalid_docstring : comment -> invalid_docstrings -> invalid_docstrings
 
-val get_comments : state -> invalid_docstrings -> comment list
+val get_comments : t -> invalid_docstrings -> comment list

@@ -148,9 +148,15 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
     let input_copy = Buffer.create 0 in
     let lexbuf = keep_from_lexbuf input_copy lexbuf in
     Toolchain_impl.safeguard_parsing lexbuf (fun () ->
-      let _ = Toolchain_impl.Lexer_impl.init () in
-      let ast = parsing_fun lexbuf in
-      let unmodified_comments = Toolchain_impl.Lexer_impl.comments() in
+      let lexer =
+        let insert_completion_ident =
+          !Reason_toolchain_conf.insert_completion_ident in
+        Toolchain_impl.Lexer.init ?insert_completion_ident lexbuf
+      in
+      let ast, invalid_docstrings = parsing_fun lexer in
+      let unmodified_comments =
+        Toolchain_impl.Lexer.get_comments lexer invalid_docstrings
+      in
       let contents = Buffer.contents input_copy in
       Buffer.reset input_copy;
       if contents = "" then

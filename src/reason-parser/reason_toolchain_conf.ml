@@ -27,18 +27,20 @@ module type Toolchain_spec = sig
     (unit -> ('a * Reason_comment.t list)) -> ('a * Reason_comment.t list)
 
   type token
+  type invalid_docstrings
 
-  module Lexer_impl: sig
-    val init: unit -> unit
-    val token: Lexing.lexbuf -> token
-    val comments: unit -> (String.t * Location.t) list
+  module Lexer : sig
+    type t
+    val init: ?insert_completion_ident:Lexing.position ->
+              Lexing.lexbuf -> t
+    val get_comments: t -> invalid_docstrings -> (string * Location.t) list
   end
 
-  val core_type: Lexing.lexbuf -> Parsetree.core_type
-  val implementation: Lexing.lexbuf -> Parsetree.structure
-  val interface: Lexing.lexbuf -> Parsetree.signature
-  val toplevel_phrase: Lexing.lexbuf -> Parsetree.toplevel_phrase
-  val use_file: Lexing.lexbuf -> Parsetree.toplevel_phrase list
+  val core_type: Lexer.t -> Parsetree.core_type * invalid_docstrings
+  val implementation: Lexer.t -> Parsetree.structure * invalid_docstrings
+  val interface: Lexer.t -> Parsetree.signature * invalid_docstrings
+  val toplevel_phrase: Lexer.t -> Parsetree.toplevel_phrase * invalid_docstrings
+  val use_file: Lexer.t -> Parsetree.toplevel_phrase list * invalid_docstrings
 
   val format_interface_with_comments: (Parsetree.signature * Reason_comment.t list) -> Format.formatter -> unit
   val format_implementation_with_comments: (Parsetree.structure * Reason_comment.t list) -> Format.formatter -> unit
