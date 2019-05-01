@@ -6,7 +6,7 @@
  *)
 
 (* this file's triggered by utop/rtop *)
-let () =
+let main () =
   if List.exists ((=) "camlp4o") !Topfind.predicates ||
      List.exists ((=) "camlp4r") !Topfind.predicates then
     print_endline "Reason is incompatible with camlp4!"

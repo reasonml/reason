@@ -1,18 +1,8 @@
-(install
- (section bin)
- (package rtop)
- (files rtop_init.ml))
-
-(library
- (name rtop)
- (public_name rtop)
- (modules reason_util reason_utop reason_toploop)
- (wrapped false)
- (libraries compiler-libs.common menhirLib reason.easy_format reason utop ocaml-migrate-parsetree))
-
 (executable
  (name rtop)
  (public_name rtop)
  (package rtop)
- (modules rtop)
- (libraries unix))
+ (modules rtop reason_util reason_utop reason_toploop)
+ (link_flags -linkall)
+ (modes byte)
+ (libraries compiler-libs.common menhirLib reason.easy_format reason utop ocaml-migrate-parsetree))
