@@ -1,4 +1,3 @@
-open Ast_404.Parsetree
 module I = Reason_parser.MenhirInterpreter
 
 type token = Reason_parser.token
@@ -113,21 +112,6 @@ end = struct
       Reason_lexer.empty_invalid_docstrings checkpoint
 end
 
-type 'a entry_point =
-  Lexing.position -> 'a I.checkpoint
-let entry_implementation : structure entry_point =
-  Reason_parser.Incremental.implementation
-let entry_interface : signature entry_point =
-  Reason_parser.Incremental.interface
-let entry_expression : expression entry_point =
-  Reason_parser.Incremental.parse_expression
-let entry_core_type : core_type entry_point =
-  Reason_parser.Incremental.parse_core_type
-let entry_toplevel_phrase : toplevel_phrase entry_point =
-  Reason_parser.Incremental.toplevel_phrase
-let entry_use_file : toplevel_phrase list entry_point =
-  Reason_parser.Incremental.use_file
-
 type 'a parser = 'a Step.parser
 type 'a erroneous_parser = 'a Step.erroneous_parser
 type 'a step = 'a Step.step =
@@ -158,7 +142,8 @@ let try_insert_semi_on = function
   | Reason_parser.IF | Reason_parser.WHILE
   | Reason_parser.FOR | Reason_parser.SWITCH
   | Reason_parser.TRY | Reason_parser.ASSERT
-  | Reason_parser.LAZY | Reason_parser.LBRACKETAT -> true
+  | Reason_parser.EXTERNAL | Reason_parser.LAZY
+  | Reason_parser.LBRACKETAT -> true
   | _ -> false
 
 (* Logic for splitting '=?...' operators into '=' '?' '...' *)

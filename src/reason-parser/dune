@@ -120,6 +120,7 @@
   reason_parser_def
   reason_parser
   reason_single_parser
+  reason_multi_parser
   reason_declarative_lexer
   reason_lexer
   reason_oprint
