@@ -211,11 +211,11 @@ let add_invalid_docstring text loc_start loc_end invalid_docstrings =
 
 let get_comments state invalid_docstrings =
   let cnum (_, loc) = loc.Location.loc_start.Lexing.pos_cnum in
-  let rec merge_comments = function
-    | [], xs | xs, [] -> List.rev xs
+  let rec merge_comments acc = function
+    | [], xs | xs, [] -> List.rev_append xs acc
     | ((x :: _) as xs), (y :: ys) when cnum x >= cnum y ->
-      y :: merge_comments (xs, ys)
+      merge_comments (y :: acc) (xs, ys)
     | x :: xs, ys ->
-      x :: merge_comments (xs, ys)
+      merge_comments (x :: acc) (xs, ys)
   in
-  merge_comments (state.comments, invalid_docstrings)
+  merge_comments [] (state.comments, invalid_docstrings)
