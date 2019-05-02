@@ -1,7 +1,6 @@
 module S = Reason_single_parser
 
 type 'a parser = 'a S.parser list
-type 'a erroneous_parser = 'a S.erroneous_parser
 
 let initial entry_point position =
   [S.initial entry_point position]
@@ -9,7 +8,7 @@ let initial entry_point position =
 type 'a step =
   | Intermediate of 'a parser
   | Success of 'a * Reason_lexer.invalid_docstrings
-  | Error of 'a erroneous_parser
+  | Error
 
 let rec fork token = function
   | [] -> []
@@ -25,7 +24,7 @@ let rec progress_successful token acc = function
     begin match S.step x token with
       | S.Intermediate p ->
         progress_successful token (p :: acc) xs
-      | S.Error _ ->
+      | S.Error ->
         progress_successful token acc xs
       | S.Success (result, ds) -> Success (result, ds)
     end
@@ -43,18 +42,27 @@ let step parsers token =
       begin match S.step x token with
         | S.Intermediate parser -> Intermediate [parser]
         | S.Success (result, ds) -> Success (result, ds)
-        | S.Error erroneous -> Error erroneous
+        | S.Error -> Error
       end
     (* Parallel parsing case *)
     | x :: xs ->
       begin match S.step x token with
         | S.Intermediate p -> progress_successful token [p] xs
         | S.Success (result, ds) -> Success (result, ds)
-        | S.Error erroneous ->
+        | S.Error ->
           begin match progress_successful token [] xs with
-            | Intermediate [] -> Error erroneous
+            | Intermediate [] -> Error
             | result -> result
           end
       end
     (* Impossible case *)
     | [] -> assert false
+
+(* Interface for recovery *)
+
+let recover cp ds =
+  [S.recover cp ds]
+
+let recovery_env = function
+  | [] -> assert false
+  | x :: _xs -> S.recovery_env x

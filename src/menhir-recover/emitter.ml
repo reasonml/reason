@@ -285,12 +285,41 @@ in
 
     fprintf ppf "  | _ -> raise Not_found\n"
 
+  let emit_token_of_terminal ppf =
+    let case t =
+      match Terminal.kind t with
+      | `REGULAR | `EOF ->
+        fprintf ppf "  | %s.T_%s -> %s%s\n"
+          menhir (Terminal.name t)
+          (Terminal.name t) (if Terminal.typ t <> None then " v" else "")
+      | `ERROR ->
+        fprintf ppf "  | %s.T_%s -> assert false\n"
+          menhir (Terminal.name t)
+      | `PSEUDO -> ()
+    in
+    fprintf ppf
+      "let token_of_terminal (type a) (t : a %s.terminal) (v : a) : token =\n\
+      \  match t with\n"
+      menhir;
+    Terminal.iter case
+
+  let emit_nullable ppf =
+    let print_n n =
+      if Nonterminal.nullable n then
+        fprintf ppf "  | N_%s -> true\n" (Nonterminal.mangled_name n)
+    in
+    fprintf ppf "let nullable (type a) : a MenhirInterpreter.nonterminal -> bool =\n\
+           \  let open MenhirInterpreter in function\n";
+    Nonterminal.iter print_n;
+    fprintf ppf "  | _ -> false\n"
 
   let emit ppf =
     emit_default_value ppf;
     emit_defs ppf;
     emit_depth ppf;
     emit_can_pop ppf;
-    emit_recoveries ppf
+    emit_recoveries ppf;
+    emit_token_of_terminal ppf;
+    emit_nullable ppf
 
 end

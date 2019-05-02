@@ -205,8 +205,9 @@ type invalid_docstrings = comment list
 
 let empty_invalid_docstrings = []
 
-let add_invalid_docstring docstring invalid_docstrings =
-  (docstring :: invalid_docstrings)
+let add_invalid_docstring text loc_start loc_end invalid_docstrings =
+  let loc = {Location. loc_start; loc_end; loc_ghost = false} in
+  ((text, loc) :: invalid_docstrings)
 
 let get_comments state invalid_docstrings =
   let cnum (_, loc) = loc.Location.loc_start.Lexing.pos_cnum in
