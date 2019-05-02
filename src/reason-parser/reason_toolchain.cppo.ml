@@ -155,8 +155,10 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
       in
       let ast, invalid_docstrings =
         let (result, _errors) =
-          Reason_errors.recover_non_fatal_errors
-            (fun () -> parsing_fun lexer)
+          if !Reason_config.recoverable
+          then Reason_errors.recover_non_fatal_errors
+              (fun () -> parsing_fun lexer)
+          else (Ok (parsing_fun lexer), [])
         in
         match result with
         | Ok x -> x
