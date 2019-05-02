@@ -32,8 +32,7 @@
      lexer_report_error.ml-4.08 lexer_report_error.ml-default))))
 
 (menhir
-  (flags --strict --inspection --unused-tokens
-         --fixed-exception --table --cmly)
+  (flags --strict --inspection --unused-tokens --table --cmly)
   (modules reason_parser))
 
 ; Previously, make preprocess.
@@ -121,6 +120,8 @@
   reason_parser
   reason_single_parser
   reason_multi_parser
+  merlin_recovery
+  reason_recover_parser
   reason_declarative_lexer
   reason_lexer
   reason_oprint

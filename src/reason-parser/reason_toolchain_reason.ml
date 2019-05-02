@@ -1,7 +1,7 @@
 open Reason_toolchain_conf
 open Reason_errors
 
-module P = Reason_multi_parser
+module P = Reason_recover_parser
 module Lexer = Reason_lexer
 
 (* From Reason source text to OCaml AST
@@ -30,7 +30,7 @@ let rec loop lexer parser =
   match P.step parser token with
   | P.Intermediate parser' ->
     loop lexer parser'
-  | P.Error _err ->
+  | P.Error ->
     let _, loc_start, loc_end = token in
     let loc = {Location. loc_start; loc_end; loc_ghost = false} in
     raise_fatal_error (Parsing_error ()) loc

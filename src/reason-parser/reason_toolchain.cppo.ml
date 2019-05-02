@@ -153,7 +153,15 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
           !Reason_toolchain_conf.insert_completion_ident in
         Toolchain_impl.Lexer.init ?insert_completion_ident lexbuf
       in
-      let ast, invalid_docstrings = parsing_fun lexer in
+      let ast, invalid_docstrings =
+        let (result, _errors) =
+          Reason_errors.recover_non_fatal_errors
+            (fun () -> parsing_fun lexer)
+        in
+        match result with
+        | Ok x -> x
+        | Error exn -> raise exn
+      in
       let unmodified_comments =
         Toolchain_impl.Lexer.get_comments lexer invalid_docstrings
       in
