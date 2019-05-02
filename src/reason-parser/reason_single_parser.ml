@@ -213,13 +213,16 @@ let step parser token =
           (* Alternative failed... Return original failure *)
           | Step.Error -> Error
      in
-     match token with
-     | Reason_parser.DOCSTRING text, startp, endp ->
+     let alternative =
+       match token with
+       | tok_kind, pos, _ when try_insert_semi_on tok_kind ->
+         try_alternative_tokens [(Reason_parser.SEMI, pos, pos); token]
+       | _ -> try_alternative_tokens (try_split_label token)
+     in
+     match alternative, token with
+     | Error, (Reason_parser.DOCSTRING text, startp, endp) ->
        Intermediate (Step.add_docstring text startp endp parser)
-     | tok_kind, pos, _ when try_insert_semi_on tok_kind ->
-       try_alternative_tokens [(Reason_parser.SEMI, pos, pos); token]
-     | _ -> try_alternative_tokens (try_split_label token)
-
+     | _ -> alternative
 
 (* Interface for recovery *)
 
