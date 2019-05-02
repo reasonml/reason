@@ -144,7 +144,16 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
     let refill_buff = refill_buff buffer lexbuf.Lexing.refill_buff in
     {lexbuf with refill_buff}
 
-  let wrap_with_comments parsing_fun lexbuf =
+  let extensions_of_errors errors =
+    ignore (Format.flush_str_formatter () : string);
+    let error_extension (err, loc) =
+      Reason_errors.report_error Format.str_formatter ~loc err;
+      let msg = Format.flush_str_formatter () in
+      Reason_syntax_util.syntax_error_extension_node loc msg
+    in
+    List.map error_extension errors
+
+  let wrap_with_comments parsing_fun attach_fun lexbuf =
     let input_copy = Buffer.create 0 in
     let lexbuf = keep_from_lexbuf input_copy lexbuf in
     Toolchain_impl.safeguard_parsing lexbuf (fun () ->
@@ -154,15 +163,16 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
         Toolchain_impl.Lexer.init ?insert_completion_ident lexbuf
       in
       let ast, invalid_docstrings =
-        let (result, _errors) =
+        let result =
           if !Reason_config.recoverable
           then Reason_errors.recover_non_fatal_errors
               (fun () -> parsing_fun lexer)
           else (Ok (parsing_fun lexer), [])
         in
         match result with
-        | Ok x -> x
-        | Error exn -> raise exn
+        | Ok x, [] -> x
+        | Ok (x, ds), errors -> (attach_fun x (extensions_of_errors errors), ds)
+        | Error exn, _ -> raise exn
       in
       let unmodified_comments =
         Toolchain_impl.Lexer.get_comments lexer invalid_docstrings
@@ -270,6 +280,9 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
     else
       raise err
 
+  let ignore_attach_errors x _extensions =
+    (* FIXME: attach errors in AST *) x
+
   (*
    * The canonical interface/implementations (with comments) are used with
    * recovering mode for IDE integration. The parser itself likely
@@ -280,28 +293,35 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
    * crash the process. TODO: Report more accurate location in those cases.
    *)
   let implementation_with_comments lexbuf =
-    try wrap_with_comments Toolchain_impl.implementation lexbuf
+    let attach impl extensions =
+      (impl @ List.map Ast_helper.Str.extension extensions)
+    in
+    try wrap_with_comments Toolchain_impl.implementation attach lexbuf
     with err ->
       let loc, error = default_error lexbuf err in
       ([Ast_helper.Str.mk ~loc (Parsetree.Pstr_extension (error, []))], [])
 
   let core_type_with_comments lexbuf =
-    try wrap_with_comments Toolchain_impl.core_type lexbuf
+    try wrap_with_comments Toolchain_impl.core_type ignore_attach_errors lexbuf
     with err ->
       let loc, error = default_error lexbuf err in
       (Ast_helper.Typ.mk ~loc (Parsetree.Ptyp_extension error), [])
 
   let interface_with_comments lexbuf =
-    try wrap_with_comments Toolchain_impl.interface lexbuf
+    let attach impl extensions =
+      (impl @ List.map Ast_helper.Sig.extension extensions)
+    in
+    try wrap_with_comments Toolchain_impl.interface attach lexbuf
     with err ->
       let loc, error = default_error lexbuf err in
       ([Ast_helper.Sig.mk ~loc (Parsetree.Psig_extension (error, []))], [])
 
   let toplevel_phrase_with_comments lexbuf =
-    wrap_with_comments Toolchain_impl.toplevel_phrase lexbuf
+    wrap_with_comments
+      Toolchain_impl.toplevel_phrase ignore_attach_errors lexbuf
 
   let use_file_with_comments lexbuf =
-    wrap_with_comments Toolchain_impl.use_file lexbuf
+    wrap_with_comments Toolchain_impl.use_file ignore_attach_errors lexbuf
 
   (** [ast_only] wraps a function to return only the ast component
    *)
