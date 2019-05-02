@@ -44,7 +44,7 @@ let step parser token =
       | _ ->
         match R.attempt candidates token with
         | `Ok (cp, _) -> Intermediate (Correct (M.recover cp ds))
-        | `Fail -> Error
+        | `Fail -> Intermediate parser
         | `Accept x -> Success (x, ds)
     end
 
