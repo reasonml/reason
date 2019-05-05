@@ -1,5 +1,5 @@
 common_cache_key: &common_cache_key
-  key: 1-dependency-cache-{{ checksum "../ocaml-version" }}-{{ checksum ".circleci/config.yml" }}-{{ checksum "reason.opam" }}-{{ checksum "rtop.opam" }}
+  key: dependency-cache-{{ checksum "../ocaml-version" }}-{{ checksum ".circleci/config.yml" }}-{{ checksum "reason.opam" }}-{{ checksum "rtop.opam" }}
 
 esy_cache_key: &esy_cache_key
   key: esy-cache-{{ checksum "esy.json" }}-{{ checksum "esy.lock/index.json" }}-{{ checksum ".circleci/config.yml" }}
@@ -40,16 +40,16 @@ common_steps: &common_steps
     - run:
         name: 'Clean'
         command: make clean-for-ci
-    - run:
-        name: 'opam pin'
-        command: |
-          opam pin add -y reason .
-          opam pin add -y rtop .
     - save_cache:
         <<: *common_cache_key
         paths:
           - ~/.opam
           - ~/.npm-global
+    - run:
+        name: 'opam pin'
+        command: |
+          opam pin add -y reason .
+          opam pin add -y rtop .
     - run:
         name: 'Test'
         command: |
