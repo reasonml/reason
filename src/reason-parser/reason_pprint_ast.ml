@@ -4592,7 +4592,7 @@ let printer = object(self:'self)
       | Pexp_constraint (e, ct) -> (e, Some (self#non_arrowed_core_type ct))
       | _ -> (ret, None)
     in
-    let returnExpr = match (self#letList return) with
+    let returnExpr, leftWrap = match (self#letList return) with
     | [x] ->
       (* Format `handleChange(event)}` or
        *  handleChange(event)
@@ -4606,8 +4606,17 @@ let printer = object(self:'self)
        * ```
        * (Notice to nonsense newline)
        *)
+       let shouldPreserveBraces = self#should_preserve_requested_braces return in
+       let rwrap = if shouldPreserveBraces then
+         "}" ^ rwrap
+       else
+         rwrap
+       in
        let inlineClosing = rwrap = "" in
-       makeList ~break:IfNeed ~inline:(true, inlineClosing) ~wrap:("", rwrap) [x]
+       let layout =
+         makeList ~break:IfNeed ~inline:(true, inlineClosing) ~wrap:("", rwrap) [x]
+       in
+       layout, if shouldPreserveBraces then "{" else ""
     | xs ->
       (* Format `Js.log(event)` and `handleChange(event)` as
        * {
@@ -4615,9 +4624,11 @@ let printer = object(self:'self)
        *   handleChange(event);
        * }}
        *)
-        makeList
+      let layout = makeList
           ~break:Always_rec ~sep:(SepFinal (";", ";")) ~wrap:("{", "}" ^ rwrap)
           xs
+      in
+      layout, ""
     in
     match optConstr with
     | Some typeConstraint ->
@@ -4626,12 +4637,12 @@ let printer = object(self:'self)
           (makeList ~wrap:("", ":") [propNameWithArgs])
           typeConstraint
       in
-      label ~space:true
-        (makeList ~wrap:("", " =>") [upToConstraint])
+      label
+        (makeList ~wrap:("", " => " ^ leftWrap) [upToConstraint])
         returnExpr
     | None ->
-      label ~space:true
-        (makeList ~wrap:("", " =>") [propNameWithArgs])
+      label
+        (makeList ~wrap:("", " => " ^ leftWrap) [propNameWithArgs])
         returnExpr
 
   (* Creates a list of simple module expressions corresponding to module
@@ -5319,7 +5330,9 @@ let printer = object(self:'self)
      * list containing the location indicating start/end of the "let-item" and
      * its layout. *)
     let rec processLetList acc expr =
-      let {stdAttrs; arityAttrs; jsxAttrs} = partitionAttributes ~allowUncurry:false expr.pexp_attributes in
+      let {stdAttrs; arityAttrs; jsxAttrs} =
+        partitionAttributes ~allowUncurry:false expr.pexp_attributes
+      in
       match (stdAttrs, expr.pexp_desc) with
         | ([], Pexp_let (rf, l, e)) ->
           (* For "letList" bindings, the start/end isn't as simple as with
@@ -5369,11 +5382,11 @@ let printer = object(self:'self)
              * Pexp location is parsed (potentially) beginning with the open
              * brace {} in the let sequence. *)
           let layout = source_map ~loc:letModuleLoc letModuleLayout in
-        let (_, return) = self#curriedFunctorPatternsAndReturnStruct moduleExpr in
-          let loc = {
-            letModuleLoc with
-            loc_end = return.pmod_loc.loc_end
-          } in
+          let (_, return) = self#curriedFunctorPatternsAndReturnStruct moduleExpr in
+            let loc = {
+              letModuleLoc with
+              loc_end = return.pmod_loc.loc_end
+            } in
            processLetList ((loc, layout)::acc) e
         | ([], Pexp_letexception (extensionConstructor, expr)) ->
             let exc = self#exception_declaration extensionConstructor in
@@ -7787,10 +7800,16 @@ let printer = object(self:'self)
               List.mem lastIdent ["test"; "describe"; "it"; "expect"] -> true
           | _ -> false
           in
+          let (leftWrap, rightWrap) as wrap = ("=> ", ")" ^ rightWrap) in
+          let wrap = if self#should_preserve_requested_braces retCb then
+            (leftWrap ^ "{", "}" ^ rightWrap)
+          else
+            wrap
+          in
           let returnValueCallback =
             makeList
               ~break:(if forceBreak then Always else IfNeed)
-              ~wrap:("=> ", ")" ^ rightWrap)
+              ~wrap
               [x]
           in
           let argsWithCallbackArgs = List.concat [(List.map self#label_x_expression_param args); [theCallbackArg]] in
@@ -7804,7 +7823,7 @@ let printer = object(self:'self)
           label left returnValueCallback
         | xs ->
           let printWidthExceeded = Reason_heuristics.funAppCallbackExceedsWidth ~printWidth:settings.width ~args ~funExpr () in
-          if printWidthExceeded = false then
+          if not printWidthExceeded then
               (*
                * Thing.map(foo, bar, baz, (abc, z) =>
                *   MyModuleBlah.toList(argument)
@@ -7830,9 +7849,15 @@ let printer = object(self:'self)
                *   x + y
                * });
                *)
+            let (leftWrap, rightWrap) as wrap = ("=> ", ")" ^ rightWrap) in
+            let wrap = if self#should_preserve_requested_braces retCb then
+              (leftWrap ^ "{", "}" ^ rightWrap)
+            else
+              wrap
+            in
             let right =
               source_map ~loc:retCb.pexp_loc
-                (makeList ~break:Always_rec ~wrap:("=> {", "})" ^ rightWrap) ~sep:(SepFinal (";", ";")) xs)
+                (makeList ~break:Always_rec ~wrap ~sep:(SepFinal (";", ";")) xs)
             in
             let argsWithCallbackArgs =
               List.map self#label_x_expression_param args @ [theCallbackArg]

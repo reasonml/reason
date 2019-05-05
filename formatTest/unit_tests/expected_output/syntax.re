@@ -1124,17 +1124,17 @@ test(~desc=?[@attr] "my test", ~f=?[@attr] () => {
   x + y;
 });
 
-describe("App", () =>
-  test("math", () =>
+describe("App", () => {
+  test("math", () => {
     Expect.expect(1 + 2) |> toBe(3)
-  )
-);
+  })
+});
 
-describe([@attr] "App", [@attr] () =>
-  test([@attr] "math", [@attr] () =>
+describe([@attr] "App", [@attr] () => {
+  test([@attr] "math", [@attr] () => {
     Expect.expect(1 + 2) |> toBe(3)
-  )
-);
+  })
+});
 
 describe(~text="App", ~f=() =>
   test(~text="math", ~f=() =>

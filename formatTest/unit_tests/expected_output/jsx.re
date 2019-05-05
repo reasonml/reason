@@ -386,9 +386,9 @@ switch (foo) {
     baz,
     lineBreak,
     identifier,
-  ) =>
+  ) => {
     bar(lineBreak, identifier)
-  }
+  }}
 />;
 
 <AttrDiv
@@ -546,7 +546,7 @@ ReasonReact.(<> {string("Test")} </>);
 </Animated>;
 
 <Animated initialValue=0.0 value>
-  ...{[@foo] value =>
+  ...{[@foo] value => {
     <div
       style={ReactDOMRe.Style.make(
         ~width="20px",
@@ -555,7 +555,7 @@ ReasonReact.(<> {string("Test")} </>);
         ~backgroundColor="red",
       )}
     />
-  }
+  }}
 </Animated>;
 
 <Animated initialValue=0.0 value>
