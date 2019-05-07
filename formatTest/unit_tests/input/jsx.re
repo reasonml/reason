@@ -519,3 +519,16 @@ ReasonReact.(<> {string("Test")} </>);
       <span> {ReasonReact.string(foo)} </span>}
     : <span> {ReasonReact.string("bar")} </span>}
 </div>;
+
+let v =
+  <A>
+    <B>
+      ...{_ => {
+        let renderX = x => {
+          let y = x ++ x;
+          <div key=y />;
+        };
+        renderX("foo");
+      }}
+    </B>
+  </A>;
