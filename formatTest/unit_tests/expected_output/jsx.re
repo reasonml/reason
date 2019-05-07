@@ -623,21 +623,17 @@ ReasonReact.(<> {string("Test")} </>);
 </div>;
 
 <div>
-  {
-    let left = limit->Int.toString;
-    {j|$left characters left|j}->React.string;
-  }
+  {let left = limit->Int.toString;
+   {j|$left characters left|j}->React.string}
 </div>;
 
 <View style=styles##backgroundImageWrapper>
-  {
-    let uri = "/images/header-background.png";
-    <Image
-      resizeMode=`contain
-      style=styles##backgroundImage
-      uri
-    />;
-  }
+  {let uri = "/images/header-background.png";
+   <Image
+     resizeMode=`contain
+     style=styles##backgroundImage
+     uri
+   />}
 </View>;
 
 <div>
@@ -650,3 +646,15 @@ ReasonReact.(<> {string("Test")} </>);
          {ReasonReact.string("bar")}
        </span>}
 </div>;
+
+let v =
+  <A>
+    <B>
+      ...{_ => {
+        let renderX = x =>
+          {let y = x ++ x;
+           <div key=y />};
+        renderX("foo");
+      }}
+    </B>
+  </A>;

@@ -6096,7 +6096,7 @@ let printer = object(self:'self)
           ~inline:(true, inline_braces)
           ~wrap:("{", "}")
           ~postSpace:true
-          ~sep:(if inline_braces then NoSep else (SepFinal (";", ";")))
+          ~sep:(if inline_braces then (Sep ";") else (SepFinal (";", ";")))
           (self#letList x)
       in
       Some layout
@@ -6272,11 +6272,7 @@ let printer = object(self:'self)
     | head :: remaining ->
         self#formatChildren
           remaining
-          (self
-            #dont_preserve_braces (* the brace logic is handled here *)
-            #simplifyUnparseExpr ~inline:true ~wrap:("{", "}")
-            head
-           :: processedRev)
+          (self#inline_braces#simplifyUnparseExpr ~inline:true ~wrap:("{", "}") head :: processedRev)
     | [] -> match processedRev with
         | [] -> None
         | _::_ -> Some (List.rev processedRev)
