@@ -15,6 +15,7 @@
 *)
 
 #ifdef BS_NO_COMPILER_PATCH
+open Migrate_parsetree
 open Ast_404
 #endif
 

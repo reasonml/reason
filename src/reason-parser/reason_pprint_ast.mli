@@ -1,3 +1,4 @@
+open Migrate_parsetree
 open Ast_404.Parsetree
 
 val configure :
