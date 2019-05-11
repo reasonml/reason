@@ -4,9 +4,15 @@ This makes our installation much friendlier to e.g. Windows. BuckleScript curren
 
 ## Build
 
-This whole process needs to happen with OCaml 4.02.3, so make sure you switch to that version first:
+This whole process needs to happen with OCaml 4.02.3, so make sure you have a switch for this version first:
 
-```sh
+```console
+opam switch create 4.02.3
+```
+
+If you already have the proper switch, you can do
+
+```console
 opam switch 4.02.3
 ```
 
@@ -14,9 +20,9 @@ Build / install the main Reason repo. Follow the instructions in https://github.
 
 Then, install the dependencies:
 
-```sh
+```console
 opam install js_of_ocaml.3.0
-opam install utop
+opam install utop menhir merlin-extend
 cd .. && npm install
 ```
 
@@ -24,7 +30,7 @@ Also, have `java` installed in your system. This is needed to use closure compil
 
 Now, from the project root run:
 
-```sh
+```console
 version=VERSION_NUMBER_HERE npm run prepublishOnly
 ```
 
