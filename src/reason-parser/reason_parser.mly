@@ -453,7 +453,7 @@ let array_function ?(loc=dummy_loc()) str name =
   ghloc ~loc (Ldot(Lident str, (if !Clflags.fast then "unsafe_" ^ name else name)))
 
 let syntax_error loc s =
-  raise_error (Syntax_error s) loc
+  raise_error (Other_syntax_error s) loc
 
 let syntax_error_exp loc msg =
   Exp.extension ~loc (Reason_syntax_util.syntax_error_extension_node loc msg)

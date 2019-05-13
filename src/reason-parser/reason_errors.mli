@@ -20,7 +20,7 @@ type lexing_error =
 
 type ast_error =
   | Not_expecting of Location.t * string
-  | Syntax_error of string
+  | Other_syntax_error of string
   | Variable_in_scope of Location.t * string
   | Applicative_path of Location.t
 
