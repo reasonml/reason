@@ -24,7 +24,7 @@ type lexing_error =
 
 type ast_error =
   | Not_expecting of Location.t * string
-  | Syntax_error of string
+  | Other_syntax_error of string
   | Variable_in_scope of Location.t * string
   | Applicative_path of Location.t
 
@@ -84,11 +84,31 @@ let format_lexing_error ppf = function
   | Invalid_literal s ->
       fprintf ppf "Invalid literal %s" s
 
-let report_lexing_error ppf ~loc err =
-  Format.fprintf ppf "@[%a@]@." Location.report_error
-    (Location.error_of_printer loc format_lexing_error err)
+let format_parsing_error ppf () =
+  fprintf ppf "Syntax error"
 
-let report_error ppf ~loc = function
-  | Lexing_error err -> report_lexing_error ppf ~loc err
-  | _ -> Format.fprintf ppf "@[%s@]@."
-           "TODO: implement error reporting in Reason_errors"
+let format_ast_error ppf = function
+  | Not_expecting (loc, nonterm) ->
+    fprintf ppf
+      "Syntax error: %a%s not expected."
+      Location.print_error loc nonterm
+  | Applicative_path loc ->
+    fprintf ppf
+      "Syntax error: %aapplicative paths of the form F(X).t \
+       are not supported when the option -no-app-func is set."
+      Location.print_error loc
+  | Variable_in_scope (loc, var) ->
+    fprintf ppf "%aIn this scoped type, variable '%s \
+                 is reserved for the local type %s."
+      Location.print_error loc var var
+  | Other_syntax_error msg ->
+    fprintf ppf "%s" msg
+
+let report_error ppf ~loc err =
+  let mk_error f x = Location.error_of_printer loc f x in
+  let error = match err with
+    | Lexing_error err -> mk_error format_lexing_error err
+    | Parsing_error err -> mk_error format_parsing_error err
+    | Ast_error err -> mk_error format_ast_error err
+  in
+  Format.fprintf ppf "@[%a@]@." Location.report_error error

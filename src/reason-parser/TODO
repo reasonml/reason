@@ -16,4 +16,3 @@ Error messages (Medium-term):
 Completion (Long-term):
 * Introduce merlin.location when there is ambiguity between concrete and
   abstract locations
-
