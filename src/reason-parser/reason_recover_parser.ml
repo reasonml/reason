@@ -42,9 +42,18 @@ let step parser token =
         let ds = Reason_lexer.add_invalid_docstring text startp endp ds in
         Intermediate (Recovering (candidates, ds))
       | _ ->
-        match R.attempt candidates token with
-        | `Ok (cp, _) -> Intermediate (Correct (M.recover cp ds))
-        | `Fail -> Intermediate parser
-        | `Accept x -> Success (x, ds)
+        begin match R.attempt candidates token with
+          | `Ok (cp, _) -> Intermediate (Correct (M.recover cp ds))
+          | `Accept x -> Success (x, ds)
+          | `Fail ->
+            begin match token with
+              | Reason_parser.EOF, _, _ ->
+                begin match candidates.final with
+                  | None -> Error
+                  | Some x -> Success (x, ds)
+                end
+              | _ -> Intermediate parser
+            end
+        end
     end
 
