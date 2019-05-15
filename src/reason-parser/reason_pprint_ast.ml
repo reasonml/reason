@@ -48,6 +48,7 @@
 
 module Easy_format = Vendored_easy_format
 
+open Migrate_parsetree
 open Ast_404
 open Asttypes
 open Location

@@ -1,3 +1,5 @@
+open Migrate_parsetree
+
 let is_punned_labelled_expression e lbl =
   let open Ast_404.Parsetree in
   match e.pexp_desc with

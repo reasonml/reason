@@ -19,6 +19,8 @@
  * not a super easy path to "test it out", but this setup is hopefully not too complicated.
  *)
 
+open Migrate_parsetree
+
 module Convert = Migrate_parsetree.Convert (Migrate_parsetree.OCaml_404) (Migrate_parsetree.OCaml_current)
 module ConvertBack = Migrate_parsetree.Convert (Migrate_parsetree.OCaml_current) (Migrate_parsetree.OCaml_404)
 
@@ -46,4 +48,3 @@ let main () =
   print_string result
 
 let () = main ()
-
