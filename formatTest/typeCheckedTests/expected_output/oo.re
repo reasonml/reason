@@ -46,8 +46,8 @@ class virtual stackWithAttributes ('a) (init) = {
   /* Before floatting attribute */
   [@floatingAttribute];
   /* Virtual member */
-  val virtual dummy: unit;
-  val mutable v: list('a) = init;
+  [@itemAttr1] val virtual dummy: unit;
+  [@itemAttr2] val mutable v: list('a) = init;
   pub virtual implementMe: int => int;
   pub pop =
     switch (v) {

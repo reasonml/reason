@@ -6771,7 +6771,8 @@ let printer = object(self:'self)
            this case *)
         self#item_extension e
     in
-    source_map ~loc:x.pcf_loc itm
+    let layout = self#attach_std_attrs x.pcf_attributes itm in
+    source_map ~loc:x.pcf_loc layout
 
   method class_self_pattern_and_structure {pcstr_self = p; pcstr_fields = l} =
     let fields = List.map self#class_field l in
