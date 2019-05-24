@@ -28,7 +28,7 @@ type ast_error =
   | Variable_in_scope of Location.t * string
   | Applicative_path of Location.t
 
-type parsing_error = unit
+type parsing_error = string
 
 type reason_error =
   | Lexing_error of lexing_error
@@ -84,8 +84,8 @@ let format_lexing_error ppf = function
   | Invalid_literal s ->
       fprintf ppf "Invalid literal %s" s
 
-let format_parsing_error ppf () =
-  fprintf ppf "Syntax error"
+let format_parsing_error ppf msg =
+  fprintf ppf "%s" msg
 
 let format_ast_error ppf = function
   | Not_expecting (loc, nonterm) ->

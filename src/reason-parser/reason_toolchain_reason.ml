@@ -31,9 +31,10 @@ let rec loop lexer parser =
   | P.Intermediate parser' ->
     loop lexer parser'
   | P.Error ->
+    (* Impossible to reach this case? *)
     let _, loc_start, loc_end = token in
     let loc = {Location. loc_start; loc_end; loc_ghost = false} in
-    raise_fatal_error (Parsing_error ()) loc
+    raise_fatal_error (Parsing_error "Syntax error") loc
   | P.Success (x, docstrings) ->
     (x, docstrings)
 

@@ -32,8 +32,10 @@ let step parser token =
       | M.Error ->
         let (_, loc_start, loc_end) = token in
         let loc = {Location. loc_start; loc_end; loc_ghost = false} in
-        Reason_errors.raise_error (Reason_errors.Parsing_error ()) loc;
         let env, ds = M.recovery_env parser in
+        let message = Reason_parser_explain.message env token in
+        Reason_errors.raise_error
+          (Reason_errors.Parsing_error message) loc;
         Intermediate (Recovering (R.generate env, ds))
     end
   | Recovering (candidates, ds) ->
