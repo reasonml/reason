@@ -58,9 +58,63 @@ let token_specific_message = function
   | _ ->
     raise Not_found
 
+let unclosed_parenthesis is_opening_symbol check_function env =
+  let state = Interp.current_state_number env in
+  if check_function state then
+    let rec find_opening_location = function
+      | None -> None
+      | Some env ->
+        let found =
+          match Interp.top env with
+          | Some (Interp.Element (state, _, startp, endp))
+            when (is_opening_symbol (Interp.X (Interp.incoming_symbol state))) ->
+            Some (startp, endp)
+          | _ -> None
+        in
+        match found with
+        | Some _ -> found
+        | _ -> find_opening_location (Interp.pop env)
+    in
+    find_opening_location (Some env)
+  else
+    None
+
+let check_unclosed env =
+  let check (message, opening_symbols, check_function) =
+    match
+      unclosed_parenthesis (fun x -> List.mem x opening_symbols)
+        check_function env
+    with
+    | None -> None
+    | Some (loc_start, _) ->
+      Some (Format.asprintf "Unclosed %S (opened line %d, column %d)"
+              message loc_start.pos_lnum
+              (loc_start.pos_cnum - loc_start.pos_bol))
+  in
+  let rec check_list = function
+    | [] -> raise Not_found
+    | x :: xs ->
+      match check x with
+      | None -> check_list xs
+      | Some result -> result
+  in
+  check_list [
+    ("(", Interp.[X (T T_LPAREN)],
+     Raw.transitions_on_rparen);
+    ("{", Interp.[X (T T_LBRACE); X (T T_LBRACELESS)],
+     Raw.transitions_on_rbrace);
+    ("[", Interp.[ X (T T_LBRACKET); X (T T_LBRACKETAT);
+                   X (T T_LBRACKETBAR); X (T T_LBRACKETGREATER);
+                   X (T T_LBRACKETLESS); X (T T_LBRACKETPERCENT);
+                   X (T T_LBRACKETPERCENTPERCENT); ],
+     Raw.transitions_on_rbracket);
+  ]
+
 let message env (token, _, _) =
   let state = Interp.current_state_number env in
   (* Identify a keyword used as an identifier *)
+  try check_unclosed env
+  with Not_found ->
   try keyword_confused_with_ident state token
   with Not_found ->
   (* Identify an uppercased identifier in a lowercase place *)
