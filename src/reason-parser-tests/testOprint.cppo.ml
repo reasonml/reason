@@ -21,8 +21,8 @@
 
 open Migrate_parsetree
 
-module Convert = Migrate_parsetree.Convert (Migrate_parsetree.OCaml_404) (Migrate_parsetree.OCaml_current)
-module ConvertBack = Migrate_parsetree.Convert (Migrate_parsetree.OCaml_current) (Migrate_parsetree.OCaml_404)
+module Convert = Migrate_parsetree.Convert (OCaml_404) (OCaml_current)
+module ConvertBack = Migrate_parsetree.Convert (OCaml_current) (OCaml_404)
 
 let main () =
   let filename = "./TestTest.ml" in
