@@ -58,11 +58,10 @@ let terminal_find name =
   | Some term -> term
   | None -> failwith ("Unkown terminal " ^ name)
 
-let () = (
-  let lident_term = terminal_find "LIDENT" in
-  print_transitions_on "lident" (fun t -> t = T lident_term);
-  let uident_term = terminal_find "UIDENT" in
-  print_transitions_on "uident" (fun t -> t = T uident_term);
-  let semi_term = terminal_find "SEMI" in
-  print_transitions_on "semi" (fun t -> t = T semi_term);
-)
+let () =
+  List.iter
+    (fun term ->
+       let symbol = T (terminal_find term) in
+       let name = (String.lowercase term) [@ocaml.warning "-3"] in
+       print_transitions_on name ((=) symbol))
+    [ "LIDENT"; "UIDENT"; "SEMI"; "RBRACKET"; "RPAREN"; "RBRACE" ]
