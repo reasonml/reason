@@ -923,6 +923,7 @@ let ensureTagsAreEqual startTag endTag loc =
   if ignoreLapply startTag <> endTag then
     let startTag = String.concat "" (flattenWithoutLapply startTag) in
     let endTag = String.concat "" (flattenWithoutLapply endTag) in
+    if endTag <> "" then
     Printf.ksprintf (syntax_error loc)
       "Start tag <%s> does not match end tag </%s>" startTag endTag
 
@@ -2645,7 +2646,7 @@ jsx:
     }
   | jsx_start_tag_and_args GREATER simple_expr_no_call* LESSSLASHIDENTGREATER
     { let (component, start) = $1 in
-      let loc = mklocation $symbolstartpos $endpos in
+      let loc = mklocation $startpos($4) $endpos in
       (* TODO: Make this tag check simply a warning *)
       let endName = Longident.parse $4 in
       let _ = ensureTagsAreEqual start endName loc in
