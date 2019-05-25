@@ -58,7 +58,7 @@ let token_specific_message = function
   | _ ->
     raise Not_found
 
-let unclosed_parenthesis is_opening_symbol check_function env =
+let unclosed_parenthesis is_opening_symbol closing_symbol check_function env =
   let state = Interp.current_state_number env in
   if check_function state then
     let rec find_opening_location = function
@@ -69,21 +69,25 @@ let unclosed_parenthesis is_opening_symbol check_function env =
           | Some (Interp.Element (state, _, startp, endp))
             when (is_opening_symbol (Interp.X (Interp.incoming_symbol state))) ->
             Some (startp, endp)
+          | Some (Interp.Element (state, _, _, _))
+            when (Interp.X (Interp.incoming_symbol state) = closing_symbol) ->
+            raise Not_found
           | _ -> None
         in
         match found with
         | Some _ -> found
         | _ -> find_opening_location (Interp.pop env)
     in
-    find_opening_location (Some env)
+    try find_opening_location (Some env)
+    with Not_found -> None
   else
     None
 
 let check_unclosed env =
-  let check (message, opening_symbols, check_function) =
+  let check (message, opening_symbols, closing_symbol, check_function) =
     match
       unclosed_parenthesis (fun x -> List.mem x opening_symbols)
-        check_function env
+        closing_symbol check_function env
     with
     | None -> None
     | Some (loc_start, _) ->
@@ -100,13 +104,16 @@ let check_unclosed env =
   in
   check_list [
     ("(", Interp.[X (T T_LPAREN)],
+     Interp.X (T T_RPAREN),
      Raw.transitions_on_rparen);
     ("{", Interp.[X (T T_LBRACE); X (T T_LBRACELESS)],
+     Interp.X (T T_RBRACE),
      Raw.transitions_on_rbrace);
     ("[", Interp.[ X (T T_LBRACKET); X (T T_LBRACKETAT);
                    X (T T_LBRACKETBAR); X (T T_LBRACKETGREATER);
                    X (T T_LBRACKETLESS); X (T T_LBRACKETPERCENT);
                    X (T T_LBRACKETPERCENTPERCENT); ],
+     Interp.X (T T_RBRACKET),
      Raw.transitions_on_rbracket);
   ]
 
