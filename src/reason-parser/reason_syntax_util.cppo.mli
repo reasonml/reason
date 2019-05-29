@@ -36,7 +36,11 @@ val processLineEndingsAndStarts : string -> string
 
 val isLineComment : string -> bool
 
-val syntax_error_extension_node :
+val error_extension_node_from_recovery :
+  Ast_404.Location.t ->
+  string -> string Ast_404.Location.loc * Ast_404.Parsetree.payload
+
+val error_extension_node :
   Ast_404.Location.t ->
   string -> string Ast_404.Location.loc * Ast_404.Parsetree.payload
 

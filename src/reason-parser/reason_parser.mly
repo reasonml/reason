@@ -456,16 +456,16 @@ let syntax_error loc s =
   raise_error (Other_syntax_error s) loc
 
 let syntax_error_exp loc msg =
-  Exp.extension ~loc (Reason_syntax_util.syntax_error_extension_node loc msg)
+  Exp.extension ~loc (Reason_syntax_util.error_extension_node loc msg)
 
 let syntax_error_pat loc msg =
-  Pat.extension ~loc (Reason_syntax_util.syntax_error_extension_node loc msg)
+  Pat.extension ~loc (Reason_syntax_util.error_extension_node loc msg)
 
 let syntax_error_mty loc msg =
-  Mty.extension ~loc (Reason_syntax_util.syntax_error_extension_node loc msg)
+  Mty.extension ~loc (Reason_syntax_util.error_extension_node loc msg)
 
 let syntax_error_typ loc msg =
-  Typ.extension ~loc (Reason_syntax_util.syntax_error_extension_node loc msg)
+  Typ.extension ~loc (Reason_syntax_util.error_extension_node loc msg)
 
 let not_expecting start_pos end_pos nonterm =
   let location = mklocation start_pos end_pos in
