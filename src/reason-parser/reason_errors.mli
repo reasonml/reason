@@ -39,4 +39,7 @@ val raise_fatal_error : reason_error -> Location.t -> 'a
 val recover_non_fatal_errors : (unit -> 'a) ->
   ('a, exn) result * (reason_error * Location.t) list
 
+val recover_parser_error :
+  (Location.t -> string -> 'a) -> Location.t -> string -> 'a
+
 val report_error : Format.formatter -> loc:Warnings.loc -> reason_error -> unit

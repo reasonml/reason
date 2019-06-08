@@ -112,3 +112,8 @@ let report_error ppf ~loc err =
     | Ast_error err -> mk_error format_ast_error err
   in
   Format.fprintf ppf "@[%a@]@." Location.report_error error
+
+let recover_parser_error f loc msg =
+  match !catch_errors with
+  | None -> raise_fatal_error (Parsing_error msg) loc
+  | Some _ -> f loc msg
