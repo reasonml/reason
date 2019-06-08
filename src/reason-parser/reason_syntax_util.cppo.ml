@@ -353,11 +353,13 @@ let str_eval_message text = {
     might be due wrong recovery decisions and will confuse the user.
  *)
 let error_extension_node_from_recovery loc msg =
-  let str = { loc; txt = "merlin.syntax-error" } in
-  let payload = [
-    str_eval_message msg;
-  ] in
-  (str, PStr payload)
+  Reason_errors.recover_parser_error (fun loc msg ->
+    let str = { loc; txt = "merlin.syntax-error" } in
+    let payload = [
+      str_eval_message msg;
+    ] in
+    (str, PStr payload)
+  ) loc msg
 
 (** Generate a suitable extension node for OCaml consumption,
     for the purposes of reporting a syntax error.
@@ -365,13 +367,15 @@ let error_extension_node_from_recovery loc msg =
     OCaml and with Merlin.
  *)
 let error_extension_node loc msg =
-  let str = { loc; txt = "ocaml.error" } in
-  let payload = [
-    str_eval_message msg;
-    (* if_highlight *)
-    str_eval_message msg;
-  ] in
-  (str, PStr payload)
+  Reason_errors.recover_parser_error (fun loc msg ->
+    let str = { loc; txt = "ocaml.error" } in
+    let payload = [
+      str_eval_message msg;
+      (* if_highlight *)
+      str_eval_message msg;
+    ] in
+    (str, PStr payload)
+  ) loc msg
 
 (** identifier_mapper maps all identifiers in an AST with a mapping function f
   this is used by swap_operator_mapper right below, to traverse the whole AST
