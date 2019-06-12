@@ -117,3 +117,12 @@ let recover_parser_error f loc msg =
   match !catch_errors with
   | None -> raise_fatal_error (Parsing_error msg) loc
   | Some _ -> f loc msg
+
+let () =
+  Printexc.register_printer (function
+      | Reason_error (err, loc) ->
+        let _ = Format.flush_str_formatter () in
+        report_error Format.str_formatter ~loc err;
+        Some (Format.flush_str_formatter ())
+      | _ -> None
+    )
