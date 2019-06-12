@@ -114,9 +114,9 @@ let report_error ppf ~loc err =
   Format.fprintf ppf "@[%a@]@." Location.report_error error
 
 let recover_parser_error f loc msg =
-  match !catch_errors with
-  | None -> raise_fatal_error (Parsing_error msg) loc
-  | Some _ -> f loc msg
+  if !Reason_config.recoverable
+  then f loc msg
+  else raise_fatal_error (Parsing_error msg) loc
 
 let () =
   Printexc.register_printer (function
