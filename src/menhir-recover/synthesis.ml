@@ -228,8 +228,26 @@ struct
         )
 
   let solve =
-    let module Solver = Fix.Fix.ForType (struct
-        type t = variable
+    (*  For > 4.02
+        let module Solver = Fix.Fix.ForType (struct
+          type t = variable
+        end) (struct
+          type property = Cost.t * action list
+          let bottom = (Cost.infinite, [Abort])
+          let equal (x, _ : property) (y, _ : property) : bool =
+            Cost.compare x y = 0
+          let is_maximal _ = false
+        end)
+        in
+    *)
+    let module Solver = Fix.Make (struct
+        type key = variable
+        type 'data t = (key, 'data) Hashtbl.t
+        let create () = Hashtbl.create 97
+        let clear tbl = Hashtbl.clear tbl
+        let add key value tbl = Hashtbl.add tbl key value
+        let find key tbl = Hashtbl.find tbl key
+        let iter f tbl = Hashtbl.iter f tbl
       end) (struct
         type property = Cost.t * action list
         let bottom = (Cost.infinite, [Abort])

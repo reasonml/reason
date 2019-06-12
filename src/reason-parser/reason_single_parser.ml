@@ -18,15 +18,18 @@ module Step : sig
   val recover : 'a I.checkpoint -> invalid_docstrings -> 'a parser
   val recovery_env : 'a parser -> 'a I.env * invalid_docstrings
 end = struct
+
+  type 'a postfix_state = {
+    checkpoint: 'a I.checkpoint;
+    docstrings: invalid_docstrings;
+    fallback: 'a I.checkpoint;
+    postfix_ops: int;
+    postfix_pos: Lexing.position;
+  }
+
   type 'a parser =
     | Normal of 'a I.checkpoint * invalid_docstrings
-    | After_potential_postfix of {
-        checkpoint: 'a I.checkpoint;
-        docstrings: invalid_docstrings;
-        fallback: 'a I.checkpoint;
-        postfix_ops: int;
-        postfix_pos: Lexing.position;
-      }
+    | After_potential_postfix of 'a postfix_state
 
   type 'a step =
     | Intermediate of 'a parser
