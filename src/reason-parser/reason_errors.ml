@@ -55,8 +55,8 @@ let recover_non_fatal_errors f =
   catch_errors := Some errors;
   let result =
     match f () with
-    | x -> Ok x
-    | exception exn -> Error exn
+    | x -> Result.Ok x
+    | exception exn -> Result.Error exn
   in
   catch_errors := catch_errors0;
   (result, List.rev !errors)

@@ -42,15 +42,15 @@ struct
     cases: (G.lr1 option * item list) list;
   }
 
-  type trace = Trace of { cost : Cost.t; items : item list }
+  type trace = { cost : Cost.t; items : item list }
 
   module Trace = struct
     type t = trace
     let min tr1 tr2 =
-      Cost.arg_min (fun (Trace t) -> t.cost) tr1 tr2
+      Cost.arg_min (fun t -> t.cost) tr1 tr2
 
-    let cat (Trace tr1) (Trace tr2) =
-      Trace { cost = Cost.add tr1.cost tr2.cost; items = tr1.items @ tr2.items }
+    let cat tr1 tr2 =
+      { cost = Cost.add tr1.cost tr2.cost; items = tr1.items @ tr2.items }
   end
 
   module State = struct
@@ -97,7 +97,7 @@ struct
           | _ :: xs -> xs
         in
         let rec aux stack = function
-          | 0 -> add_nt (Trace {cost; items = [item]}) (Production.lhs prod)
+          | 0 -> add_nt {cost; items = [item]} (Production.lhs prod)
                    (stack_hd stack) :: stack_tl stack
           | n -> stack_hd stack :: aux (stack_tl stack) (n - 1)
         in
@@ -232,7 +232,7 @@ struct
       List.flatten @@ List.map (fun trace ->
           List.fold_right
             (fun (st, tr') acc -> match tr' with
-              | Some (Trace { items ; _ }) -> (st, items) :: acc
+              | Some { items ; _ } -> (st, items) :: acc
               | None -> acc)
             (process_trace trace) []
         ) traces;
