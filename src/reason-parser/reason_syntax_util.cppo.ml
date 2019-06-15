@@ -577,3 +577,13 @@ let explode_str str =
   in
     loop [] (String.length str - 1)
 #endif
+
+
+module Clflags = struct
+  include Clflags
+
+#if OCAML_VERSION >= (4, 8, 0)
+  let fast = unsafe
+#endif
+end
+
