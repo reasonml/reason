@@ -301,7 +301,11 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
     try wrap_with_comments Toolchain_impl.implementation lexbuf
     with err when !Reason_config.recoverable ->
       let loc, msg = match err with
+#if OCAML_VERSION >= (4, 8, 0)
         | Location.Error err -> (err.main.loc, Format.asprintf "%t" err.main.txt)
+#else
+        | Location.Error err -> (err.loc, err.msg)
+#endif
         | _ ->
           let loc = Location.curr lexbuf in
           match Reason_syntax_util.findMenhirErrorMessage loc with
@@ -316,7 +320,11 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
     try wrap_with_comments Toolchain_impl.core_type lexbuf
     with err when !Reason_config.recoverable ->
       let loc, msg = match err with
+#if OCAML_VERSION >= (4, 8, 0)
         | Location.Error err -> (err.main.loc, Format.asprintf "%t" err.main.txt)
+#else
+        | Location.Error err -> (err.loc, err.msg)
+#endif
         | _ -> (Location.curr lexbuf, invalidLex)
       in
       let error = Reason_syntax_util.syntax_error_extension_node loc msg in
@@ -326,7 +334,11 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
     try wrap_with_comments Toolchain_impl.interface lexbuf
     with err when !Reason_config.recoverable ->
       let loc, msg = match err with
+#if OCAML_VERSION >= (4, 8, 0)
         | Location.Error err -> (err.main.loc, Format.asprintf "%t" err.main.txt)
+#else
+        | Location.Error err -> (err.loc, err.msg)
+#endif
         | _ -> (Location.curr lexbuf, invalidLex)
       in
       let error = Reason_syntax_util.syntax_error_extension_node loc msg in

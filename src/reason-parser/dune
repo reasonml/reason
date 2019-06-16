@@ -1,3 +1,9 @@
+(rule
+ (targets reason_lexer.mll)
+ (deps reason_lexer.cppo.mll)
+ (action
+  (run %{bin:cppo} -V OCAML:%{ocaml_version} %{deps} -o %{targets})))
+
 (ocamllex
  (modules reason_lexer))
 
@@ -74,27 +80,30 @@
 
 (rule
  (targets reason_oprint.ml)
- (deps
-  (:first-dep reason_oprint.cppo.ml))
+ (deps reason_oprint.cppo.ml)
  (action
-  (run %{bin:cppo} -V OCAML:%{ocaml_version} -D BS_NO_COMPILER_PATCH
-    %{first-dep} -o %{targets})))
+  (run %{bin:cppo} -V OCAML:%{ocaml_version} -D BS_NO_COMPILER_PATCH %{deps}
+    -o %{targets})))
 
 (rule
  (targets reason_syntax_util.ml)
- (deps
-  (:first-dep reason_syntax_util.cppo.ml))
+ (deps reason_syntax_util.cppo.ml)
  (action
-  (run %{bin:cppo} -V OCAML:%{ocaml_version} -D BS_NO_COMPILER_PATCH
-    %{first-dep} -o %{targets})))
+  (run %{bin:cppo} -V OCAML:%{ocaml_version} -D BS_NO_COMPILER_PATCH %{deps}
+    -o %{targets})))
 
 (rule
  (targets reason_syntax_util.mli)
- (deps
-  (:first-dep reason_syntax_util.cppo.mli))
+ (deps reason_syntax_util.cppo.mli)
  (action
-  (run %{bin:cppo} -V OCAML:%{ocaml_version} -D BS_NO_COMPILER_PATCH
-    %{first-dep} -o %{targets})))
+  (run %{bin:cppo} -V OCAML:%{ocaml_version} -D BS_NO_COMPILER_PATCH %{deps}
+    -o %{targets})))
+
+(rule
+ (targets reason_toolchain.ml)
+ (deps reason_toolchain.cppo.ml)
+ (action
+  (run %{bin:cppo} -V OCAML:%{ocaml_version} %{deps} -o %{targets})))
 
 (library
  (name reason)

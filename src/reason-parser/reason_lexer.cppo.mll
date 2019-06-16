@@ -349,8 +349,14 @@ let format_error ppf = function
       fprintf ppf "Invalid literal %s" s
 
 let report_error ppf ~loc err =
-  Format.fprintf ppf "@[%a@]@." Location.print_report
+  Format.fprintf ppf "@[%a@]@."
+#if OCAML_VERSION >= (4, 8, 0)
+    Location.print_report
     (Location.error_of_printer ~loc format_error err)
+#else
+    Location.report_error
+    (Location.error_of_printer loc format_error err)
+#endif
 
 }
 
