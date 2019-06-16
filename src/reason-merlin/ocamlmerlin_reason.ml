@@ -28,7 +28,7 @@ module Reason_reader = struct
     Reason_toolchain.insert_completion_ident := Some pos;
     Misc.try_finally
       (fun () -> ({complete_labels = true}, parse t))
-      (fun () -> Reason_toolchain.insert_completion_ident := pos')
+      ~always:(fun () -> Reason_toolchain.insert_completion_ident := pos')
 
   let parse_line _ _ line =
     let buf = Lexing.from_string line in

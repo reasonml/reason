@@ -339,7 +339,7 @@ let format_error ppf = function
   | Unterminated_string_in_comment (_, loc) ->
       fprintf ppf "This comment contains an unterminated string literal@.\
                    %aString literal begins here"
-              Location.print_error loc
+              Location.print_loc loc
   | Keyword_as_label kwd ->
       fprintf ppf "`%s' is a keyword, it cannot be used as label name" kwd
   | Literal_overflow ty ->
@@ -349,8 +349,8 @@ let format_error ppf = function
       fprintf ppf "Invalid literal %s" s
 
 let report_error ppf ~loc err =
-  Format.fprintf ppf "@[%a@]@." Location.report_error
-    (Location.error_of_printer loc format_error err)
+  Format.fprintf ppf "@[%a@]@." Location.print_report
+    (Location.error_of_printer ~loc format_error err)
 
 }
 
