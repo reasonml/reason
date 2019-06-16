@@ -251,7 +251,7 @@ class tupleClass ('a, 'b) (init: ('a, 'b)) = {
   let one = [@exprAttr ten] 10;
   let two = [@exprAttr twenty] 20
   and three = [@exprAttr thirty] 30;
-  pub pr = one + two + three;
+  [@pr prMember] pub pr = one + two + three;
 };
 
 [@structureItem]

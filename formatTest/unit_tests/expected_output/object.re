@@ -47,3 +47,5 @@ type o2 = {
   a: int,
   b: int,
 };
+
+let obj = {as _; [@foo] val a = 1};
