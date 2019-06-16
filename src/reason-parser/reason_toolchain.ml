@@ -646,6 +646,7 @@ module Reason_syntax = struct
     | Reason_parser.TRY
     | Reason_parser.ASSERT
     | Reason_parser.LAZY
+    | Reason_parser.EXTERNAL
     | Reason_parser.LBRACKETAT -> true
     | _ -> false
 
