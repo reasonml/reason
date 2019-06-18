@@ -13,6 +13,8 @@ VERBOSE=${VERBOSE:-}
 OCAML_VERSION=`echo $(ocaml -version) | egrep -o '[0-9]+.[0-9]+.[0-9]+' | head -1`
 OCAML_VERSION=${OCAML_VERSION:-"4.02.3"}
 
+echo "Testing with OCaml Version: $OCAML_VERSION"
+
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 REFMT="$DIR/../_build/install/default/bin/refmt"
