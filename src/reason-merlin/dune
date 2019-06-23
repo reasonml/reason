@@ -10,4 +10,4 @@
  (package reason)
  (flags
   (:standard -w -9))
- (libraries compiler-libs.common merlin_extend reason))
+ (libraries compiler-libs.common merlin-extend reason))
