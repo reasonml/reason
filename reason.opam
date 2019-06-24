@@ -16,7 +16,7 @@ depends: [
   "dune"          {build & >= "1.4"}
   "ocamlfind"     {build}
   "menhir"        {>= "20170418"}
-  "merlin-extend" {>= "0.3"}
+  "merlin-extend" {>= "0.4"}
   "result"
   "ocaml-migrate-parsetree"
 ]
