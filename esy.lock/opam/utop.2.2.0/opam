@@ -11,11 +11,11 @@ build: [
   ["jbuilder" "runtest" "-p" name "-j" jobs] {with-test}
 ]
 depends: [
-  "ocaml" {>= "4.02.3"}
+  "ocaml" {>= "4.02.3" & < "4.08.0"}
   "base-unix"
   "base-threads"
   "ocamlfind" {>= "1.7.2"}
-  "lambda-term" {>= "1.2"}
+  "lambda-term" {>= "1.2" & < "2.0"}
   "lwt"
   "lwt_react"
   "camomile"
