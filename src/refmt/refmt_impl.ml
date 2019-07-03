@@ -93,7 +93,7 @@ let refmt
   with
   | Printer_maker.Invalid_config msg -> `Error (true, msg)
   | Reason_lexer.Error (error, loc) ->
-    Reason_lexer.report_error Format.err_formatter ~loc error;
+    Lexer_report_error.report_error Format.err_formatter ~loc error;
     exit 1
   | exn ->
     Reason_syntax_util.report_error Format.err_formatter exn;

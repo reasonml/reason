@@ -1,9 +1,3 @@
-(rule
- (targets reason_lexer.mll)
- (deps reason_lexer.cppo.mll)
- (action
-  (run %{bin:cppo} -V OCAML:%{ocaml_version} %{deps} -o %{targets})))
-
 (ocamllex
  (modules reason_lexer))
 
@@ -26,6 +20,16 @@
   (with-stdout-to
    %{targets}
    (run ../generate/select.exe reason_string.ml-4.02 reason_string.ml-default))))
+
+(rule
+ (targets lexer_report_error.ml)
+ (deps ../generate/select.exe lexer_report_error.ml-4.08
+   lexer_report_error.ml-default)
+ (action
+  (with-stdout-to
+   %{targets}
+   (run ../generate/select.exe lexer_report_error.ml-4.08
+     lexer_report_error.ml-default))))
 
 ; Update error messages based on new grammar
 ; Previously, called update_error in the `Makefile`.
@@ -118,5 +122,5 @@
    reason_layout reason_heuristics reason_location reason_toolchain
    reason_config reason_pprint_ast reason_parser reason_lexer
    reason_parser_message reason_oprint reason_parser_explain_raw
-   reason_parser_explain reason_string)
+   reason_parser_explain reason_string lexer_report_error)
  (libraries ocaml-migrate-parsetree menhirLib reason.easy_format))
