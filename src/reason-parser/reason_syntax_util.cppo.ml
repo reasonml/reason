@@ -496,6 +496,14 @@ let location_contains loc1 loc2 =
   loc1.loc_start.Lexing.pos_cnum <= loc2.loc_start.Lexing.pos_cnum &&
   loc1.loc_end.Lexing.pos_cnum >= loc2.loc_end.Lexing.pos_cnum
 
+#if OCAML_VERSION >= (4, 8, 0)
+let split_compiler_error (err : Location.error) =
+  (err.main.loc, Format.asprintf "%t" err.main.txt)
+#else
+let split_compiler_error (err : Location.error) =
+  (err.loc, err.msg)
+#endif
+
 let explode_str str =
   let rec loop acc i =
     if i < 0 then acc else loop (str.[i] :: acc) (i - 1)

@@ -278,8 +278,7 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
     if !Reason_config.recoverable then
       let loc, msg = match err with
         | Location.Error err ->
-          err.main.txt Format.str_formatter;
-          (err.main.loc, Format.flush_str_formatter ())
+          Reason_syntax_util.split_compiler_error err
         | Reason_errors.Reason_error (e, loc) ->
           Reason_errors.report_error Format.str_formatter ~loc e;
           (loc, Format.flush_str_formatter ())
