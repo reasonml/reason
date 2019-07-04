@@ -155,9 +155,9 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
         | Reason_errors.Ast_error _ -> false
       in
       if due_to_recovery then
-        Reason_syntax_util.error_extension_node_from_recovery loc msg
+        Reason_errors.error_extension_node_from_recovery loc msg
       else
-        Reason_syntax_util.error_extension_node loc msg
+        Reason_errors.error_extension_node loc msg
     in
     List.map error_extension errors
 
@@ -286,7 +286,7 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
         | exn ->
           (Location.curr lexbuf, "default_error: " ^ Printexc.to_string exn)
       in
-      (loc, Reason_syntax_util.error_extension_node loc msg)
+      (loc, Reason_errors.error_extension_node loc msg)
     else
       raise err
 

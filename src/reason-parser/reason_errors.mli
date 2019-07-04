@@ -8,6 +8,8 @@
      was too fine to be captured by the grammar rules
 *)
 
+open Migrate_parsetree.Ast_404
+
 type lexing_error =
   | Illegal_character of char
   | Illegal_escape of string
@@ -43,3 +45,10 @@ val recover_parser_error :
   (Location.t -> string -> 'a) -> Location.t -> string -> 'a
 
 val report_error : Format.formatter -> loc:Location.t -> reason_error -> unit
+
+val error_extension_node_from_recovery :
+  Location.t -> string -> string Location.loc * Parsetree.payload
+
+val error_extension_node :
+  Location.t -> string -> string Location.loc * Parsetree.payload
+
