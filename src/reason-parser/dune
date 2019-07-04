@@ -76,12 +76,6 @@
   (run %{bin:cppo} -V OCAML:%{ocaml_version} -D BS_NO_COMPILER_PATCH %{deps}
     -o %{targets})))
 
-(rule
- (targets reason_toolchain.ml)
- (deps reason_toolchain.cppo.ml)
- (action
-  (run %{bin:cppo} -V OCAML:%{ocaml_version} %{deps} -o %{targets})))
-
 (library
  (name reason)
  ; Uncomment to allow make coverage target to work

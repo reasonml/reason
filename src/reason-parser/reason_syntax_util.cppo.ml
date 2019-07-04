@@ -335,48 +335,6 @@ let isLineComment str =
   | exception Not_found -> false
   | n -> n = String.length str - 1
 
-let str_eval_message text = {
-  pstr_loc = Location.none;
-  pstr_desc = Pstr_eval (
-      { pexp_loc = Location.none;
-        pexp_desc = Pexp_constant (Parsetree.Pconst_string (text, None));
-        pexp_attributes = [];
-      },
-      []
-    );
-}
-
-(** Generate a suitable extension node for Merlin's consumption,
-    for the purposes of reporting a parse error - only used
-    in recovery mode.
-    Parse error will prevent Merlin from reporting subsequent errors, as they
-    might be due wrong recovery decisions and will confuse the user.
- *)
-let error_extension_node_from_recovery loc msg =
-  Reason_errors.recover_parser_error (fun loc msg ->
-    let str = { loc; txt = "merlin.syntax-error" } in
-    let payload = [
-      str_eval_message msg;
-    ] in
-    (str, PStr payload)
-  ) loc msg
-
-(** Generate a suitable extension node for OCaml consumption,
-    for the purposes of reporting a syntax error.
-    Contrary to [error_extension_node_from_recovery], these work both with
-    OCaml and with Merlin.
- *)
-let error_extension_node loc msg =
-  Reason_errors.recover_parser_error (fun loc msg ->
-    let str = { loc; txt = "ocaml.error" } in
-    let payload = [
-      str_eval_message msg;
-      (* if_highlight *)
-      str_eval_message msg;
-    ] in
-    (str, PStr payload)
-  ) loc msg
-
 (** identifier_mapper maps all identifiers in an AST with a mapping function f
   this is used by swap_operator_mapper right below, to traverse the whole AST
   and swapping the symbols listed above.
