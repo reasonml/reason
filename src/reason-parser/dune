@@ -21,19 +21,9 @@
    %{targets}
    (run ../generate/select.exe reason_string.ml-4.02 reason_string.ml-default))))
 
-(rule
- (targets lexer_report_error.ml)
- (deps ../generate/select.exe lexer_report_error.ml-4.09
-   lexer_report_error.ml-4.08 lexer_report_error.ml-default)
- (action
-  (with-stdout-to
-   %{targets}
-   (run ../generate/select.exe lexer_report_error.ml-4.09
-     lexer_report_error.ml-4.08 lexer_report_error.ml-default))))
-
 (menhir
-  (flags --strict --inspection --unused-tokens --table --cmly)
-  (modules reason_parser))
+ (flags --strict --inspection --unused-tokens --table --cmly)
+ (modules reason_parser))
 
 ; Previously, make preprocess.
 ; (rule
@@ -63,7 +53,9 @@
  (targets reason_parser_recover.ml)
  (deps reason_parser.cmly)
  (action
-  (with-stdout-to %{targets} (run ../menhir-recover/main.exe reason_parser.cmly))))
+  (with-stdout-to
+   %{targets}
+   (run ../menhir-recover/main.exe reason_parser.cmly))))
 
 (rule
  (targets reason_oprint.ml)
@@ -99,37 +91,14 @@
  ;  (preprocess (pps (bisect_ppx)))
  (public_name reason)
  (wrapped false)
- (flags (:standard -w -9-52 -safe-string))
- (modules
-  lexer_warning
-  lexer_report_error
-  reason_syntax_util
-  reason_comment
-  reason_attributes
-  reason_layout
-  reason_heuristics
-  reason_location
-  reason_toolchain_conf
-  reason_toolchain_reason
-  reason_toolchain_ocaml
-  reason_toolchain
-  reason_config
-  reason_pprint_ast
-  reason_errors
-  reason_parser_def
-  reason_parser
-  reason_single_parser
-  reason_multi_parser
-  merlin_recovery
-  reason_recover_parser
-  reason_declarative_lexer
-  reason_lexer
-  reason_oprint
-  reason_parser_explain_raw
-  reason_parser_explain
-  reason_parser_recover
-  reason_string)
- (libraries
-  ocaml-migrate-parsetree
-  menhirLib
-  reason.easy_format))
+ (flags
+  (:standard -w -9-52 -safe-string))
+ (modules lexer_warning reason_syntax_util reason_comment reason_attributes
+   reason_layout reason_heuristics reason_location reason_toolchain_conf
+   reason_toolchain_reason reason_toolchain_ocaml reason_toolchain
+   reason_config reason_pprint_ast reason_errors reason_parser_def
+   reason_parser reason_single_parser reason_multi_parser merlin_recovery
+   reason_recover_parser reason_declarative_lexer reason_lexer reason_oprint
+   reason_parser_explain_raw reason_parser_explain reason_parser_recover
+   reason_string)
+ (libraries ocaml-migrate-parsetree menhirLib reason.easy_format))
