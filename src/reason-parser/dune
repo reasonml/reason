@@ -21,16 +21,6 @@
    %{targets}
    (run ../generate/select.exe reason_string.ml-4.02 reason_string.ml-default))))
 
-(rule
- (targets lexer_report_error.ml)
- (deps ../generate/select.exe lexer_report_error.ml-4.08
-   lexer_report_error.ml-default)
- (action
-  (with-stdout-to
-   %{targets}
-   (run ../generate/select.exe lexer_report_error.ml-4.08
-     lexer_report_error.ml-default))))
-
 (menhir
   (flags --strict --inspection --unused-tokens --table --cmly)
   (modules reason_parser))
@@ -102,7 +92,6 @@
  (flags (:standard -w -9-52 -safe-string))
  (modules
   lexer_warning
-  lexer_report_error
   reason_syntax_util
   reason_comment
   reason_attributes
