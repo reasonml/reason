@@ -12,7 +12,7 @@ build: [
   ["dune" "runtest" "-p" name "-j" jobs] {with-test}
 ]
 depends: [
-  "ocaml"  {>= "4.02" & < "4.08"}
+  "ocaml"  {>= "4.02" & < "4.09"}
   "dune"   {build}
   "reason"
   "utop"   {>= "1.17"}

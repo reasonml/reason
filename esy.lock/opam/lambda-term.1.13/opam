@@ -15,7 +15,7 @@ depends: [
   "lwt" {>= "4.0.0"}
   "lwt_log"
   "react"
-  "zed" {>= "1.2"}
+  "zed" {>= "1.2" & < "2.0"}
   "camomile" {>= "0.8.6"}
   "lwt_react"
   "jbuilder" {build & >= "1.0+beta9"}

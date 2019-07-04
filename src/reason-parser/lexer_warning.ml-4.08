@@ -1,0 +1,3 @@
+let warn_latin1 lexbuf =
+  Location.deprecated (Location.curr lexbuf) "ISO-Latin1 characters in identifiers"
+;;

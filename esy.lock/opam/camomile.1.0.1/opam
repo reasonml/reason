@@ -8,7 +8,7 @@ dev-repo: "git+https://github.com/yoriyuki/Camomile.git"
 build: [
   ["ocaml" "configure.ml" "--share" "%{share}%/camomile"]
   ["jbuilder" "subst" "-p" name] {pinned}
-  ["jbuilder" "build" "-p" name "-j" jobs]
+  ["jbuilder" "build" "-p" name "-j" "1"]
 ]
 depends: [
   "ocaml" {>= "4.02.3"}

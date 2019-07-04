@@ -59,6 +59,7 @@ open Ast_helper
 open Ast_mapper
 open Reason_string
 
+module Clflags = Reason_syntax_util.Clflags
 (*
    TODO:
    - Remove all [open]s from the top of this file one by one and fix compilation

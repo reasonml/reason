@@ -116,3 +116,11 @@ val location_contains : Ast_404.Location.t -> Ast_404.Location.t -> bool
 
 val explode_str : string -> char list
 #endif
+
+module Clflags : sig
+  include module type of Clflags
+
+#if OCAML_VERSION >= (4, 8, 0)
+  val fast : bool ref
+#endif
+end

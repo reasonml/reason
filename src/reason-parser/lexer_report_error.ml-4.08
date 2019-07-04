@@ -1,0 +1,4 @@
+let report_error ppf ~loc err =
+  Format.fprintf ppf "@[%a@]@."
+    Location.print_report
+    (Location.error_of_printer ~loc Reason_lexer.format_error err)

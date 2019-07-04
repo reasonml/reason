@@ -211,7 +211,7 @@ struct
   *)
   let set_escape fmt escape =
     let print0, flush0 = pp_get_formatter_output_functions fmt () in
-    let tagf0 = pp_get_formatter_tag_functions fmt () in
+    let tagf0 = (pp_get_formatter_tag_functions [@warning "-3"]) fmt () in
 
     let is_tag = ref false in
 
@@ -240,7 +240,7 @@ struct
     }
     in
     pp_set_formatter_output_functions fmt print flush0;
-    pp_set_formatter_tag_functions fmt tagf
+    (pp_set_formatter_tag_functions [@warning "-3"]) fmt tagf
 
 
   let set_escape_string fmt esc =
@@ -272,12 +272,12 @@ struct
       in
 
       let tagf = {
-        (pp_get_formatter_tag_functions fmt ()) with
+        ((pp_get_formatter_tag_functions [@warning "-3"]) fmt ()) with
           mark_open_tag = mark_open_tag;
           mark_close_tag = mark_close_tag
       }
       in
-      pp_set_formatter_tag_functions fmt tagf
+      (pp_set_formatter_tag_functions [@warning "-3"]) fmt tagf
     );
 
     (match escape with
@@ -330,19 +330,19 @@ struct
 
   let open_tag fmt = function
       None -> ()
-    | Some s -> pp_open_tag fmt s
+    | Some s -> (pp_open_tag [@warning "-3"]) fmt s
 
   let close_tag fmt = function
       None -> ()
-    | Some _ -> pp_close_tag fmt ()
+    | Some _ -> (pp_close_tag [@warning "-3"]) fmt ()
 
   let tag_string fmt o s =
     match o with
         None -> pp_print_string fmt s
       | Some tag ->
-          pp_open_tag fmt tag;
+          (pp_open_tag [@warning "-3"]) fmt tag;
           pp_print_string fmt s;
-          pp_close_tag fmt ()
+          (pp_close_tag [@warning "-3"]) fmt ()
 
   let rec fprint_t fmt = function
       Atom (s, p) ->

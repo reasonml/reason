@@ -4,11 +4,11 @@
   "license": "MIT",
   "version": "3.4.0",
   "dependencies": {
-    "ocaml": " >= 4.2.0 < 4.8.0",
+    "ocaml": " >= 4.2.0 < 4.9.0",
     "@opam/ocamlfind": "*",
     "@opam/menhir": " >= 20170418.0.0",
     "@opam/utop": " >= 1.17.0 < 2.3.0",
-    "@opam/merlin-extend": " >= 0.3",
+    "@opam/merlin-extend": " >= 0.4",
     "@opam/result": "*",
     "@opam/ocaml-migrate-parsetree": "*",
     "@opam/dune": "*"
