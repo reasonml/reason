@@ -61,6 +61,9 @@ let recover_non_fatal_errors f =
   catch_errors := catch_errors0;
   (result, List.rev !errors)
 
+let location_print_error _ppf _loc =
+  failwith "TODO"
+
 (* Report lexing errors *)
 
 let format_lexing_error ppf = function
@@ -75,7 +78,7 @@ let format_lexing_error ppf = function
   | Unterminated_string_in_comment (_, loc) ->
       fprintf ppf "This comment contains an unterminated string literal@.\
                    %aString literal begins here"
-              Location.print_error loc
+        (*FIXME Location.print_error*) (failwith "TODO") loc
   | Keyword_as_label kwd ->
       fprintf ppf "`%s' is a keyword, it cannot be used as label name" kwd
   | Literal_overflow ty ->
@@ -91,27 +94,27 @@ let format_ast_error ppf = function
   | Not_expecting (loc, nonterm) ->
     fprintf ppf
       "Syntax error: %a%s not expected."
-      Location.print_error loc nonterm
+      location_print_error loc nonterm
   | Applicative_path loc ->
     fprintf ppf
       "Syntax error: %aapplicative paths of the form F(X).t \
        are not supported when the option -no-app-func is set."
-      Location.print_error loc
+      location_print_error loc
   | Variable_in_scope (loc, var) ->
     fprintf ppf "%aIn this scoped type, variable '%s \
                  is reserved for the local type %s."
-      Location.print_error loc var var
+      location_print_error loc var var
   | Other_syntax_error msg ->
     fprintf ppf "%s" msg
 
-let report_error ppf ~loc err =
-  let mk_error f x = Location.error_of_printer loc f x in
+let report_error ppf ~loc:_ err =
+  let mk_error _f _x = failwith "TODO" (*Location.error_of_printer loc f x*) in
   let error = match err with
     | Lexing_error err -> mk_error format_lexing_error err
     | Parsing_error err -> mk_error format_parsing_error err
     | Ast_error err -> mk_error format_ast_error err
   in
-  Format.fprintf ppf "@[%a@]@." Location.report_error error
+  Format.fprintf ppf "@[%a@]@." (failwith "TODO") (*Location.report_error*) error
 
 let recover_parser_error f loc msg =
   if !Reason_config.recoverable
