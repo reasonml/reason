@@ -233,8 +233,12 @@ struct
     Nonterminal.iter (symbol G.Nonterminal.attributes);
     Terminal.iter (symbol G.Terminal.attributes);
     Production.iter (fun p ->
-      validate_attributes
-        ["recover.cost"] "production attributes"
+        validate_attributes
+          [ "recover.cost";
+            (* recover.expr: a lie to prevent warnings on an unfortunate
+               interaction between menhir inlining and attributes *)
+            "recover.expr"
+          ] "production attributes"
         (Production.attributes p);
       Array.iter
         (fun (_,_,attrs) ->
