@@ -20,6 +20,10 @@ versions of the Opam packages.
     git push origin HEAD:PullRequestForVersion # Commit these version bumps
     node scripts/esy-prepublish.js src/refmt src/rtop
 
+    # Then publish. For example:
+    # cd _release/src/refmt/package/
+    # npm publish --access=public
+
 Then follow the printed instructions for pushing any of the packages to npm.
 They will show up under `@esy-ocaml/reason` etc.
 
