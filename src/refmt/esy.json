@@ -1,13 +1,13 @@
 {
   "name": "@esy-ocaml/reason",
-  "version": "3.4.0",
+  "version": "3.4.4",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/facebook/reason.git"
   },
   "dependencies": {
-    "ocaml": " >= 4.2.0  < 4.8.0",
+    "ocaml": " >= 4.2.0 < 4.9.0",
     "@opam/ocamlfind": "*",
     "@opam/menhir": " >= 20170418.0.0",
     "@opam/merlin-extend": " >= 0.3",

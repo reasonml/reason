@@ -1,3 +1,15 @@
+## 3.4.3
+Improvements:
+- Support OCaml 4.08 ([2426](https://github.com/facebook/reason/pull/2426)).
+
+Fixes:
+- Print attributes in class fields [2414](https://github.com/facebook/reason/pull/2414).
+- Preserve function body braces when Pexp_fun is an argument to a function [commit](https://github.com/facebook/reason/commit/f8eb7b1c1f3bc93883b663bb6b7fc0552e7b1791)
+- Prettify try to hug braces [2378](https://github.com/facebook/reason/pull/2378)
+- Fix operator swap for type declarations [commit](https://github.com/facebook/reason/commit/d4516beaceb1fa1fa53b9d1c30565c7e7cacd39b)
+- Fix JSX removing semicolons [commit](https://github.com/facebook/reason/commit/ab4bf53ab1a76d7ead7e634489a2a1fcbb7cf817)
+- Better formatting of Pexp_lazy [commit](https://github.com/facebook/reason/commit/46bffd1590a4f19a72a9c6e8d754bb47fb63fa4b)
+
 ## 3.4.2
 
 Improvements:
