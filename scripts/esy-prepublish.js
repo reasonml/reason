@@ -138,11 +138,18 @@ try {
     process.chdir(subpackageReleasePrepDir);
     // Npm pack is just a convenient way to strip out any unnecessary files.
     let packResult = cp.spawnSync('npm', ['pack']);
+    let packStatus = packResult.status;
     let packErr = packResult.stderr.toString();
-    if (packErr !== '') {
+    if (packStatus !== 0) {
       console.log('ERROR: Could not create npm pack for ' + subpackageReleasePrepDir);
       throw new Error('Error:' + packErr);
+    } else {
+      if (packErr !== "") {
+        console.warn('INFO: stderr output while running npm pack for ' + subpackageReleasePrepDir);
+        console.log(packErr);
+      }
     }
+    
     let mvFrom = '*.tgz';
     let mvTo = subpackageReleaseDir;
     let mvResult = cp.spawnSync('mv', [mvFrom, mvTo], {shell: true});
