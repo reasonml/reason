@@ -1,4 +1,4 @@
-## 3.4.3
+## 3.5.0
 Improvements:
 - Support OCaml 4.08 ([2426](https://github.com/facebook/reason/pull/2426)).
 
@@ -11,6 +11,9 @@ Fixes:
 - Better formatting of Pexp_lazy [commit](https://github.com/facebook/reason/commit/46bffd1590a4f19a72a9c6e8d754bb47fb63fa4b)
 
 ## 3.4.2
+
+Not released to @esy-ocaml/reason - would have required a major version bump.
+These features will be released in 3.5.0.
 
 Improvements:
 - Parse and print parentheses around inline record declarations ([2363](https://github.com/facebook/reason/pull/2363))

@@ -15,7 +15,7 @@ versions of the Opam packages.
     git rebase origin/master
     vim -O esy.json src/refmt/esy.json
     # Then edit the version number accordingly on BOTH files. With that same VERSION do:
-    version=3.3.4 make pre_release
+    version=3.5.0 make pre_release
     git commit -m "Bump version"
     git push origin HEAD:PullRequestForVersion # Commit these version bumps
     node scripts/esy-prepublish.js src/refmt src/rtop
