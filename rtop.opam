@@ -13,7 +13,7 @@ build: [
 ]
 depends: [
   "ocaml"  {>= "4.02" & < "4.09"}
-  "dune"   {build}
+  "dune"   {>= "1.4"}
   "reason"
   "utop"   {>= "1.17"}
 ]
