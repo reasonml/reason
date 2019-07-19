@@ -1,4 +1,5 @@
-## 👋🏻👋🏻 [Reason Conf US](https://www.reason-conf.us) is happening October 7-8th in Chicago 🎉 Our very own [Jordan Walke](https://www.twitter.com/jordwalke) will be keynoting 😃 Submit a talk, buy tickets or sponsor us by visiting [https://www.reason-conf.us](https://www.reason-conf.us)
+## 👋🏻👋🏻 [Reason Conf US](https://www.reason-conf.us) is happening October 7-8th in Chicago 🎉 
+Buy tickets or sponsor the event by visiting [https://www.reason-conf.us](https://www.reason-conf.us)
 
 # Reason
 
