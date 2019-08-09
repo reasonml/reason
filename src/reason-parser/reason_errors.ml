@@ -61,8 +61,8 @@ let recover_non_fatal_errors f =
   catch_errors := catch_errors0;
   (result, List.rev !errors)
 
-let location_print_error _ppf _loc =
-  failwith "TODO"
+let location_print_error ppf loc =
+  Location.print_error ppf loc
 
 (* Report lexing errors *)
 
@@ -78,7 +78,7 @@ let format_lexing_error ppf = function
   | Unterminated_string_in_comment (_, loc) ->
       fprintf ppf "This comment contains an unterminated string literal@.\
                    %aString literal begins here"
-        (*FIXME Location.print_error*) (failwith "TODO") loc
+        location_print_error loc
   | Keyword_as_label kwd ->
       fprintf ppf "`%s' is a keyword, it cannot be used as label name" kwd
   | Literal_overflow ty ->
@@ -107,14 +107,14 @@ let format_ast_error ppf = function
   | Other_syntax_error msg ->
     fprintf ppf "%s" msg
 
-let report_error ppf ~loc:_ err =
-  let mk_error _f _x = failwith "TODO" (*Location.error_of_printer loc f x*) in
+let report_error ppf ~loc err =
+  let mk_error f x = Location.error_of_printer loc f x in
   let error = match err with
     | Lexing_error err -> mk_error format_lexing_error err
     | Parsing_error err -> mk_error format_parsing_error err
     | Ast_error err -> mk_error format_ast_error err
   in
-  Format.fprintf ppf "@[%a@]@." (failwith "TODO") (*Location.report_error*) error
+  Format.fprintf ppf "@[%a@]@." Location.report_error error
 
 let recover_parser_error f loc msg =
   if !Reason_config.recoverable
