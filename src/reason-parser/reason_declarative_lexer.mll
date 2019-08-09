@@ -69,7 +69,6 @@
 open Lexing
 open Reason_parser
 open Reason_errors
-open Lexer_warning
 
 (* The table of keywords *)
 
@@ -145,7 +144,7 @@ let keyword_table, reverse_keyword_table =
     "asr", INFIXOP4("asr")
 ]
 
-(* The only internal state of the lexer is two scratch buffers. 
+(* The only internal state of the lexer is two scratch buffers.
    They could be allocated everytime they are needed, but
    for better performance (FIXME: does this really matter?)
    they are preallocated.*)
@@ -154,7 +153,7 @@ type state = {
   raw_buffer : Buffer.t;
   txt_buffer : Buffer.t;
 }
- 
+
 let get_scratch_buffers { raw_buffer; txt_buffer } =
   Buffer.reset raw_buffer;
   Buffer.reset txt_buffer;
@@ -374,11 +373,11 @@ rule token state = parse
       with Not_found -> LIDENT s
     }
   | lowercase_latin1 identchar_latin1 *
-    { warn_latin1 lexbuf; LIDENT (Lexing.lexeme lexbuf) }
+    { Ocaml_util.warn_latin1 lexbuf; LIDENT (Lexing.lexeme lexbuf) }
   | uppercase identchar *
     { UIDENT(Lexing.lexeme lexbuf) }       (* No capitalized keywords *)
   | uppercase_latin1 identchar_latin1 *
-    { warn_latin1 lexbuf; UIDENT(Lexing.lexeme lexbuf) }
+    { Ocaml_util.warn_latin1 lexbuf; UIDENT(Lexing.lexeme lexbuf) }
   | int_literal
     { INT (Lexing.lexeme lexbuf, None) }
   | (int_literal as lit) (literal_modifier as modif)
@@ -421,7 +420,7 @@ rule token state = parse
       STRING (txt, None, Some delim)
     }
   | "'" newline "'"
-    { (* newline can span multiple characters 
+    { (* newline can span multiple characters
          (if the newline starts with \13)
          Only the first one is returned, maybe we should warn? *)
       update_loc lexbuf None 1 false 1;
@@ -501,8 +500,8 @@ rule token state = parse
       LBRACELESS
     }
   | "{<" uppercase_or_lowercase (identchar | '.') *
-    { (* allows parsing of `{<Text` in <Description term={<Text text="Age" />}> 
-         as correct jsx 
+    { (* allows parsing of `{<Text` in <Description term={<Text text="Age" />}>
+         as correct jsx
        *)
       set_lexeme_length lexbuf 1;
       LBRACE
@@ -696,7 +695,7 @@ and comment buffer firstloc nestedloc = parse
     { store_lexeme buffer lexbuf;
       if comment buffer firstloc (Location.curr lexbuf) lexbuf then (
         store_lexeme buffer lexbuf;
-        comment buffer firstloc nestedloc lexbuf 
+        comment buffer firstloc nestedloc lexbuf
       )
       else
         false
@@ -812,7 +811,7 @@ and string rawbuf txtbuf = parse
             Should be an error, but we are very lax.
               raise (Error (Illegal_escape (Lexing.lexeme lexbuf),
                         Location.curr lexbuf))
-           FIXME Using Location relies too much on compiler internals 
+           FIXME Using Location relies too much on compiler internals
           *)
          Location.prerr_warning (Location.curr lexbuf)
            Warnings.Illegal_backslash;
@@ -846,7 +845,7 @@ and string rawbuf txtbuf = parse
     delimited by [delim] from [lexbuf] and stores the literal text in
     [buffer].
     It returns:
-    - true if the string was properly delimited and 
+    - true if the string was properly delimited and
     - false if EOF was reached before finding "|delim}".
     It does not register an error if the string is unterminated, this
     is the responsibility of the caller.
@@ -861,7 +860,7 @@ and quoted_string buffer delim = parse
     { false }
   | "|" (lowercase* as edelim) "}"
     { if delim = edelim then
-        true 
+        true
       else (
         store_lexeme buffer lexbuf;
         quoted_string buffer delim lexbuf

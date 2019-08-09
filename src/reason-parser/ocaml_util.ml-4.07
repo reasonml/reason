@@ -1,0 +1,10 @@
+let warn_latin1 lexbuf =
+  Location.deprecated (Location.curr lexbuf) 
+    "ISO-Latin1 characters in identifiers"
+
+let print_loc ppf loc =
+  Location.print_error ppf loc
+
+let print_error loc f ppf x =
+  let error = Location.error_of_printer loc f x in
+  Location.report_error ppf error
