@@ -120,9 +120,9 @@ let check_unclosed env =
 let message env (token, _, _) =
   let state = Interp.current_state_number env in
   (* Identify a keyword used as an identifier *)
-  try check_unclosed env
-  with Not_found ->
   try keyword_confused_with_ident state token
+  with Not_found ->
+  try check_unclosed env
   with Not_found ->
   (* Identify an uppercased identifier in a lowercase place *)
   try uppercased_instead_of_lowercased state token
