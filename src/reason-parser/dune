@@ -1,17 +1,17 @@
 (ocamllex
  (modules reason_declarative_lexer))
 
-; Use select.exe from janestreet/ppx_ast to choose lexer_warning.ml based on ocaml version
+; Use select.exe from janestreet/ppx_ast to choose ocaml_util.ml based on ocaml version
 
 (rule
- (targets lexer_warning.ml)
- (deps ../generate/select.exe lexer_warning.ml-4.09 lexer_warning.ml-4.08
-   lexer_warning.ml-4.07 lexer_warning.ml-4.06 lexer_warning.ml-default)
+ (targets ocaml_util.ml)
+ (deps ../generate/select.exe ocaml_util.ml-4.09 ocaml_util.ml-4.08
+   ocaml_util.ml-4.07 ocaml_util.ml-4.06 ocaml_util.ml-default)
  (action
   (with-stdout-to
    %{targets}
-   (run ../generate/select.exe lexer_warning.ml-4.09 lexer_warning.ml-4.08
-     lexer_warning.ml-4.07 lexer_warning.ml-4.06 lexer_warning.ml-default))))
+   (run ../generate/select.exe ocaml_util.ml-4.09 ocaml_util.ml-4.08
+     ocaml_util.ml-4.07 ocaml_util.ml-4.06 ocaml_util.ml-default))))
 
 (rule
  (targets reason_string.ml)
@@ -87,7 +87,7 @@
  (wrapped false)
  (flags
   (:standard -w -9-52 -safe-string))
- (modules lexer_warning reason_syntax_util reason_comment reason_attributes
+ (modules ocaml_util reason_syntax_util reason_comment reason_attributes
    reason_layout reason_heuristics reason_location reason_toolchain_conf
    reason_toolchain_reason reason_toolchain_ocaml reason_toolchain
    reason_config reason_pprint_ast reason_errors reason_parser_def
