@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "ocaml": " >= 4.2.0 < 4.9.0",
+    "@opam/fix": "*",
     "@opam/ocamlfind": "*",
     "@opam/menhir": " >= 20170418.0.0",
     "@opam/merlin-extend": " >= 0.3",
