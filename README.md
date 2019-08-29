@@ -5,7 +5,7 @@ Buy tickets or sponsor the event by visiting [https://www.reason-conf.us](https:
 
 Simple, fast & type safe code that leverages the JavaScript & OCaml ecosystems.
 
-[![Build Status](https://dev.azure.com/reasonml/reason/_apis/build/status/facebook.reason?branchName=master)](https://dev.azure.com/reasonml/reason/_build/latest?definitionId=2?branchName=master) [![Build Status](https://travis-ci.org/facebook/reason.svg?branch=master)](https://travis-ci.org/facebook/reason) [![CircleCI](https://circleci.com/gh/facebook/reason/tree/master.svg?style=svg)](https://circleci.com/gh/facebook/reason/tree/master)
+[![Build Status](https://dev.azure.com/reasonml/reason/_apis/build/status/facebook.reason?branchName=master)](https://dev.azure.com/reasonml/reason/_build/latest?definitionId=2?branchName=master) [![Build Status](https://travis-ci.org/facebook/reason.svg?branch=master)](https://travis-ci.org/facebook/reason) [![CircleCI](https://circleci.com/gh/facebook/reason/tree/master.svg?style=svg)](https://circleci.com/gh/facebook/reason/tree/master) [![Chat](https://img.shields.io/discord/235176658175262720.svg?logo=discord&colorb=blue)](https://discord.gg/reasonml)
 
 ## [Getting Started](https://reasonml.github.io/docs/en/installation)
 
