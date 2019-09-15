@@ -1,3 +1,21 @@
+/**
+ * Copyright 2004-present Facebook. All Rights Reserved.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+//this file was copied from https://github.com/facebook/reason/blob/master/scripts/esy-prepublish.js
+//
+//  Usage: Run from the repo root:
+//
+//    node scripts/esy-prepublish.js relative/path/to/some-package-name.json
+//  The script will copy relative/path/to/some-package-name.json into
+//  ./package.json and delete any remaining esy.json at the root. It will also
+//  search for relative/path/to/some-package-name.README.md (or if that is not
+//  found, then relative/path/to/README.md) and copy it to ./README.md at the
+//  repo root so that the published package has its appropriate README on the
+//  npm page.
 const fs = require('fs');
 const cp = require('child_process');
 const path = require('path');
@@ -9,41 +27,35 @@ if (process.cwd() !== path.resolve(__dirname, '..')) {
 
 let projectRoot = process.cwd();
 
-let relativeSubpackages = [];
+let relativeJsonPaths = [];
 for (var i = 2; i < process.argv.length; i++) {
-  let relativeSubpackage = process.argv[i];
-  relativeSubpackages.push(relativeSubpackage);
+  let jsonRelativePath = process.argv[i];
+  relativeJsonPaths.push(jsonRelativePath);
 }
 
-if (relativeSubpackages.length === 0) {
-  relativeSubpackages = ['.'];
+if (relativeJsonPaths.length === 0) {
+  relativeJsonPaths = ['esy.json'];
 }
 
-for (var i = 0; i < relativeSubpackages.length; i++) {
-  let relativeSubpackage = relativeSubpackages[i];
-  let subpackageRoot = path.resolve(projectRoot, relativeSubpackage);
-  if (!relativeSubpackage || !fs.existsSync(subpackageRoot)) {
+for (var i = 0; i < relativeJsonPaths.length; i++) {
+  let jsonRelativePath = relativeJsonPaths[i];
+  let subpackageJson = path.resolve(projectRoot, jsonRelativePath);
+  if (path.extname(jsonRelativePath) !== '.json') {
+    console.log(
+      'You specified an relative path to something that isn\'t a json file (' +
+      subpackageJson +
+      '). Specify location of json files relative to repo root.'
+    );
+    process.exit(1);
+  }
+  if (!jsonRelativePath || !fs.existsSync(subpackageJson)) {
     console.log(
       'You specified an invalid release package root (' +
-      subpackageRoot +
+      subpackageJson +
       '). Specify location of packages to release relative to repo root directory.'
     );
     process.exit(1);
   }
-  if (!fs.existsSync(path.resolve(subpackageRoot, 'esy.json'))) {
-    console.log(
-      'You specified a package release root (' +
-      subpackageRoot +
-      ') that does not contain a package.json file'
-    );
-    process.exit(1);
-  }
-}
-
-let releaseRoot = path.resolve(projectRoot, '_release');
-if (fs.existsSync(releaseRoot)) {
-  console.log('YOU NEED TO REMOVE THE ' + releaseRoot + ' DIR FIRST!');
-  process.exit(1);
 }
 
 const head =
@@ -59,107 +71,102 @@ if (uncommitted !== "") {
   process.exit(1);
 }
 
-// Files to copy from subpackages to root, and therefore delete if present
-let copyOver = {
-  '.npmignore': '.npmignore',
-  'package.json': 'package.json',
-  'esy.json': 'package.json'
-};
-
 process.chdir(projectRoot);
 let tarResult = cp.spawnSync('tar', ['--exclude', 'node_modules', '--exclude', '_build', '--exclude', '.git', '-cf', 'template.tar', '.']);
 let tarErr = tarResult.stderr.toString();
 // if (tarErr !== '') {
-  // console.log('ERROR: Could not create template npm pack for prepublish');
-  // throw new Error('Error:' + tarErr);
+// console.log('ERROR: Could not create template npm pack for prepublish');
+// throw new Error('Error:' + tarErr);
 // }
 
 try {
   let _releaseDir = path.resolve(projectRoot, '_release');
-  cp.spawnSync('mkdir', ['-p', _releaseDir]);
 
   // For each subpackage, we release the entire source code for all packages, but
   // with the root package.json swapped out with the esy.json file in the
   // subpackage.
-  for (var i = 0; i < relativeSubpackages.length; i++) {
+  for (var i = 0; i < relativeJsonPaths.length; i++) {
     process.chdir(projectRoot);
-    let relativeSubpackage = relativeSubpackages[i];
-    let subpackageRoot = path.resolve(projectRoot, relativeSubpackage);
-    let subpackageReleaseDir = path.resolve(_releaseDir, relativeSubpackage);
-    let subpackageReleasePrepDir = path.resolve(_releaseDir, path.join(relativeSubpackage), '_prep');
-    cp.spawnSync('mkdir', ['-p', subpackageReleaseDir]);
-    cp.spawnSync('mkdir', ['-p', subpackageReleasePrepDir]);
-    cp.spawnSync(
-      'cp',
-      [
-        path.join(projectRoot, 'template.tar'),
-        path.join(subpackageReleasePrepDir, 'template.tar')
-      ]
+    let jsonRelativePath = relativeJsonPaths[i];
+    let jsonResolvedPath = path.resolve(projectRoot, jsonRelativePath);
+
+    let subpackageReleaseDir = path.resolve(_releaseDir, jsonRelativePath);
+    if (fs.existsSync(subpackageReleaseDir)) {
+      console.log('YOU NEED TO REMOVE THE ' + subpackageReleaseDir + ' DIR FIRST!');
+      process.exit(1);
+    }
+    if (!fs.existsSync(_releaseDir)) {
+      fs.mkdirSync(_releaseDir);
+    }
+    fs.mkdirSync(subpackageReleaseDir);
+    let subpackageReleasePrepDir = path.resolve(_releaseDir, path.join(jsonRelativePath), '_prep');
+    fs.mkdirSync(subpackageReleasePrepDir);
+    fs.copyFileSync(
+      path.join(projectRoot, 'template.tar'),
+      path.join(subpackageReleasePrepDir, 'template.tar')
     );
     process.chdir(subpackageReleasePrepDir);
     cp.spawnSync('tar', ['-xvf', 'template.tar']);
-    cp.spawnSync('rm', [path.join(subpackageReleasePrepDir, 'template.tar')]);
-    const packageJsonPath = path.resolve(subpackageRoot, 'esy.json');
-    const packageJson = require(packageJsonPath);
+    fs.unlinkSync(path.join(subpackageReleasePrepDir, 'template.tar'));
+    const packageJson = require(jsonResolvedPath);
     const packageName = packageJson.name;
     const packageVersion = packageJson.version;
 
-    // In the process we want to remove any .npmignore/package/esy.json files
-    // that were at the root, before we even copy subpackage files to the root.
-    for (var filename in copyOver) {
-      let destFile = path.resolve(subpackageReleasePrepDir, filename);
-      if (fs.existsSync(destFile)) {
-        let rmResult = cp.spawnSync('rm', [destFile]);
-        let mvErr = rmResult.stderr.toString();
-        if (mvErr !== '') {
-          console.log('ERROR: Could not rm ' + filename + ' - ' + mvErr);
-          process.exit(1);
-        }
+    let readmePath = path.resolve(subpackageReleasePrepDir, 'README.md');
+    let readmePkgPath =
+      path.resolve(
+        subpackageReleasePrepDir,
+        path.join('src', path.basename(jsonRelativePath, '.json'), 'README.md')
+      );
+    let readmeResolvedPath =
+      fs.existsSync(readmePkgPath) ? readmePkgPath :
+        fs.existsSync(readmePath) ? readmePath :
+          null;
+
+    let toCopy = [
+      {
+        originPath: path.resolve(subpackageReleasePrepDir, jsonRelativePath),
+        destPath: path.resolve(subpackageReleasePrepDir, 'package.json')
+      },
+      {
+        originPath: readmeResolvedPath,
+        destPath: path.resolve(subpackageReleasePrepDir, 'README.md')
+      }
+    ];
+    for (var i = 0; i < toCopy.length; i++) {
+      let originPath = toCopy[i].originPath;
+      let destPath = toCopy[i].destPath;
+      if (originPath !== null && fs.existsSync(originPath) && destPath !== originPath) {
+        fs.renameSync(originPath, destPath);
       }
     }
 
-    for (var filename in copyOver) {
-      let originPath = path.resolve(subpackageRoot, filename);
-      let destPath = path.resolve(subpackageReleasePrepDir, copyOver[filename]);
-      if (fs.existsSync(originPath)) {
-        let cpResult = cp.spawnSync('cp', [originPath, destPath]);
-        let mvErr = cpResult.stderr.toString();
-        if (mvErr !== '') {
-          console.log('ERROR: Could not move ' + filename + ' - ' + mvErr);
-          process.exit(1);
-        }
-      }
+    // If an esy.json file remains, we need to remove it so that it isn't
+    // picked up as the default by esy (it gives priority to esy.json over
+    // package.json). But this has to be done _after_ the `mv` above, in case
+    // the json file that someone published _was_ the esy.json file.
+    let esyFile = path.resolve(subpackageReleasePrepDir, 'esy.json');
+    if (fs.existsSync(esyFile)) {
+      fs.unlinkSync(esyFile);
     }
-    
+
     // Create a npm pack to remove all the stuff in .npmignore.  This would
     // happen when you publish too, but we'll create a directory ./package that
     // has all of it removed so you can also easily test linking against it
     // from other projects.
     process.chdir(subpackageReleasePrepDir);
     // Npm pack is just a convenient way to strip out any unnecessary files.
-    let packResult = cp.spawnSync('npm', ['pack']);
-    let packStatus = packResult.status;
-    let packErr = packResult.stderr.toString();
-    if (packStatus !== 0) {
+    const packResult = cp.spawnSync(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['pack']);
+    if (packResult.status !== 0) {
       console.log('ERROR: Could not create npm pack for ' + subpackageReleasePrepDir);
-      throw new Error('Error:' + packErr);
-    } else {
-      if (packErr !== "") {
-        console.warn('INFO: stderr output while running npm pack for ' + subpackageReleasePrepDir);
-        console.log(packErr);
-      }
+      throw new Error('Error:' + packResult.stderr.toString());
     }
-    
-    let mvFrom = '*.tgz';
-    let mvTo = subpackageReleaseDir;
-    let mvResult = cp.spawnSync('mv', [mvFrom, mvTo], {shell: true});
-    var mvErr = mvResult.stderr.toString();
-    if (mvErr !== '') {
-      console.log('ERROR: Could not move from ' + mvFrom + ' to ' + mvTo);
-      throw new Error('Error:' + mvErr);
-    }
+    const mvTo = subpackageReleaseDir;
+    fs.readdirSync(subpackageReleasePrepDir).filter(fn => fn.endsWith('.tgz')).forEach(fn => {
+      fs.renameSync(fn, path.join(mvTo, fn));
+    });
     process.chdir(mvTo);
-    let tarResult = cp.spawnSync('tar', ['-xvf', '*.tgz'], {shell: true});
+    const tarResult = cp.spawnSync('tar', ['-xvf', '*.tgz'], { shell: true });
     if (tarResult.error) {
       console.log('ERROR: Could not untar in ' + mvTo);
       throw new Error('Error:' + tarResult.stderr.toString());
@@ -174,5 +181,6 @@ try {
     console.log('');
   }
 } finally {
-  cp.spawnSync('rm', [ path.join(projectRoot, 'template.tar')]);
+  fs.unlinkSync(path.join(projectRoot, 'template.tar'));
 }
+
