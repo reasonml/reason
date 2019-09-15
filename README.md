@@ -21,7 +21,7 @@ Go to https://github.com/reasonml/reasonml.github.io to contribute to the Reason
 
 See the [src folder's README](https://github.com/facebook/reason/tree/master/src/README.md).
 
-## Installation for Programmatic Usage
+## Programmatically Using Reason Parser From JavaScript:
 
 **If you're not using Reason programmatically**, disregard this section and see the Getting Started guide above. This is for using Reason's `refmt` as a third-party library.
 
