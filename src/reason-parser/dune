@@ -5,13 +5,13 @@
 
 (rule
  (targets lexer_warning.ml)
- (deps ../generate/select.exe lexer_warning.ml-4.08 lexer_warning.ml-4.07
-   lexer_warning.ml-4.06 lexer_warning.ml-default)
+ (deps ../generate/select.exe lexer_warning.ml-4.09 lexer_warning.ml-4.08
+   lexer_warning.ml-4.07 lexer_warning.ml-4.06 lexer_warning.ml-default)
  (action
   (with-stdout-to
    %{targets}
-   (run ../generate/select.exe lexer_warning.ml-4.08 lexer_warning.ml-4.07
-     lexer_warning.ml-4.06 lexer_warning.ml-default))))
+   (run ../generate/select.exe lexer_warning.ml-4.09 lexer_warning.ml-4.08
+     lexer_warning.ml-4.07 lexer_warning.ml-4.06 lexer_warning.ml-default))))
 
 (rule
  (targets reason_string.ml)
@@ -23,13 +23,13 @@
 
 (rule
  (targets lexer_report_error.ml)
- (deps ../generate/select.exe lexer_report_error.ml-4.08
-   lexer_report_error.ml-default)
+ (deps ../generate/select.exe lexer_report_error.ml-4.09
+   lexer_report_error.ml-4.08 lexer_report_error.ml-default)
  (action
   (with-stdout-to
    %{targets}
-   (run ../generate/select.exe lexer_report_error.ml-4.08
-     lexer_report_error.ml-default))))
+   (run ../generate/select.exe lexer_report_error.ml-4.09
+     lexer_report_error.ml-4.08 lexer_report_error.ml-default))))
 
 ; Update error messages based on new grammar
 ; Previously, called update_error in the `Makefile`.

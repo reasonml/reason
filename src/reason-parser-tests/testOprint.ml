@@ -31,7 +31,7 @@ let main () =
   let lexbuf = Reason_toolchain.setup_lexbuf true filename in
   let impl = Reason_toolchain.RE.implementation in
 
-  Compmisc.init_path false;
+  Compmisc.init_path ();
   Env.set_unit_name modulename;
 
   let ast = impl lexbuf in
