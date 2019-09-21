@@ -1,3 +1,9 @@
+(rule
+ (targets testOprint.ml)
+ (deps testOprint.cppo.ml)
+ (action
+  (run %{bin:cppo} -V OCAML:%{ocaml_version} %{deps} -o %{targets})))
+
 (executable
  (name testOprint)
  (libraries reason))
