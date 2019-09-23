@@ -31,7 +31,11 @@ let main () =
   let lexbuf = Reason_toolchain.setup_lexbuf true filename in
   let impl = Reason_toolchain.RE.implementation in
 
+#if OCAML_VERSION >= (4,9,0)
+  Compmisc.init_path ();
+#else
   Compmisc.init_path false;
+#endif
   Env.set_unit_name modulename;
 
   let ast = impl lexbuf in
