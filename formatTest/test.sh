@@ -33,17 +33,12 @@ else
     DIFF="eval diff --unchanged-line-format='' --new-line-format=':%dn: %L' --old-line-format=':%dn: %L'"
 fi
 
-UNIT_TEST_INPUT=$DIR/unit_tests/input
-
-UNIT_TEST_OUTPUT=$DIR/unit_tests/actual_output
-
-UNIT_TEST_EXPECTED_OUTPUT=$DIR/unit_tests/expected_output
-
 IDEMPOTENT_TEST_INPUT=$DIR/idempotentTests/input
 
 IDEMPOTENT_TEST_OUTPUT=$DIR/idempotentTests/actual_output
 
 IDEMPOTENT_TEST_EXPECTED_OUTPUT=$DIR/idempotentTests/expected_output
+
 
 TYPE_TEST_INPUT=$DIR/typeCheckedTests/input
 
@@ -102,7 +97,7 @@ function version() {
 
 function setup_test_dir() {
     echo "Setting up test dirs actual_output alongside the tests' expected_output"
-    mkdir -p $UNIT_TEST_OUTPUT $IDEMPOTENT_TEST_OUTPUT $TYPE_TEST_OUTPUT $ERROR_TEST_OUTPUT $OPRINT_TEST_OUTPUT $OPRINT_TEST_INTF_OUTPUT
+    mkdir -p $IDEMPOTENT_TEST_OUTPUT $TYPE_TEST_OUTPUT $ERROR_TEST_OUTPUT $OPRINT_TEST_OUTPUT $OPRINT_TEST_INTF_OUTPUT
     touch $FAILED_TESTS
 }
 
@@ -160,84 +155,6 @@ function stdin_test() {
         return 1
     fi
     return 0
-}
-
-function unit_test() {
-    FILE=$1
-    INPUT=$2
-    OUTPUT=$3
-    EXPECTED_OUTPUT=$4
-
-    FILENAME=$(basename $FILE)
-    FILEEXT="${FILENAME##*.}"
-
-
-    info "Unit Test: $FILE"
-    if [ "$(basename $FILE)" != "$(basename $FILE .ml)" ] || [ "$(basename $FILE)" != "$(basename $FILE .mli)" ]; then
-        if [ "$(basename $FILE)" != "$(basename $FILE .ml)" ]; then
-          SUFFIX=".re"
-          REFILE="$(basename $FILE .ml)$SUFFIX"
-        else
-          SUFFIX=".rei"
-          REFILE="$(basename $FILE .mli)$SUFFIX"
-        fi
-
-        BASE_NAME=$(echo $FILE | cut -d '.' -f 1)
-        MIN_VERSION=$(basename $FILE $SUFFIX | cut -d '.' -f 2-4)
-
-        if [ "$MIN_VERSION" != "$BASE_NAME" ] && [ "$(version "$OCAML_VERSION")" -lt "$(version "$MIN_VERSION")" ]
-        then
-          notice "  ☒ IGNORED REFMT STEP: Requires OCaml >= $MIN_VERSION"
-          OUTPUT_NOT_GENERATED=1
-        else
-          debug "$REFMT --heuristics-file $INPUT/arity.txt --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
-          $REFMT --heuristics-file $INPUT/arity.txt --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE
-          if ! [[ $? -eq 0 ]]; then
-              warning "  ⊘ TEST FAILED CONVERTING ML TO RE\n"
-              return 1
-          fi
-          FILE=$REFILE
-        fi
-
-    else
-      debug "  '$REFMT --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE'"
-      $REFMT --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE
-    fi
-
-    OFILE="${FILE}"
-    VERSION_SPECIFIC_FILE="${FILE}.${OCAML_VERSION}"
-    if [ -f "${EXPECTED_OUTPUT}/${VERSION_SPECIFIC_FILE}" ]; then
-        echo "Found test file specific to version ${OCAML_VERSION}..."
-        OFILE="${VERSION_SPECIFIC_FILE}"
-    fi
-
-    if [[ -z ${OUTPUT_NOT_GENERATED+x} ]]; then
-      debug "  Comparing results:  diff $EXPECTED_OUTPUT/$OFILE $OUTPUT/$FILE"
-
-      $DIFF $EXPECTED_OUTPUT/$OFILE $OUTPUT/$FILE
-
-      if ! [[ $? -eq 0 ]]; then
-          warning "  ⊘ FAILED\n"
-          info "  ${INFO}$OUTPUT/$FILE${RESET}"
-          info "  doesn't match expected output"
-          info "  ${INFO}$EXPECTED_OUTPUT/$OFILE${RESET}"
-          info ""
-          info "  To approve the changes run:"
-          info "    cp $OUTPUT/$FILE $EXPECTED_OUTPUT/$OFILE"
-          echo ""
-          return 1
-      fi
-
-      debug "Testing --use-stdin"
-      stdin_test $INPUT/$1 $OUTPUT/$FILE $EXPECTED_OUTPUT/$OFILE $INPUT/arity.txt
-
-      if ! [[ $? -eq 0 ]]; then
-        return 1
-      else
-        success "  ☑ PASS"
-        echo
-      fi
-    fi
 }
 
 function idempotent_test() {
@@ -482,22 +399,10 @@ function error_test() {
 cd $OPRINT_TEST_INPUT && find . -type f \( -name "*.re*" -or -name "*.ml*" \) | while read file; do
         oprint_test $file $OPRINT_TEST_INPUT $OPRINT_TEST_OUTPUT $OPRINT_TEST_EXPECTED_OUTPUT $OPRINT_TEST_INTF_OUTPUT
         if ! [[ $? -eq 0 ]]; then
-            echo "$file -- failed unit_test" >> $FAILED_TESTS
+            echo "$file -- failed oprint_test" >> $FAILED_TESTS
         fi
 
         idempotent_test $file $OPRINT_TEST_OUTPUT $OPRINT_TEST_INTF_OUTPUT $OPRINT_TEST_EXPECTED_OUTPUT '-i true --parse re'
-        if ! [[ $? -eq 0 ]]; then
-            echo "$file -- failed idempotent_test" >> $FAILED_TESTS
-        fi
-done
-
-cd $UNIT_TEST_INPUT && find . -type f \( -name "*.re*" -or -name "*.ml*" \) | while read file; do
-        unit_test $file $UNIT_TEST_INPUT $UNIT_TEST_OUTPUT $UNIT_TEST_EXPECTED_OUTPUT
-        if ! [[ $? -eq 0 ]]; then
-            echo "$file -- failed unit_test" >> $FAILED_TESTS
-        fi
-
-        idempotent_test $file $UNIT_TEST_INPUT $UNIT_TEST_OUTPUT $UNIT_TEST_EXPECTED_OUTPUT
         if ! [[ $? -eq 0 ]]; then
             echo "$file -- failed idempotent_test" >> $FAILED_TESTS
         fi
@@ -515,10 +420,6 @@ find . -type f \( -name "*.re*" -or -name "*.ml*" \) | sort | while read file; d
         typecheck_test $file $TYPE_TEST_INPUT $TYPE_TEST_OUTPUT
         if ! [[ $? -eq 0 ]]; then
             echo "$file -- failed typecheck_test" >> $FAILED_TESTS
-        fi
-        unit_test $file $TYPE_TEST_INPUT $TYPE_TEST_OUTPUT $TYPE_TEST_EXPECTED_OUTPUT
-        if ! [[ $? -eq 0 ]]; then
-            echo "$file -- failed unit_test" >> $FAILED_TESTS
         fi
         idempotent_test $file $TYPE_TEST_INPUT $TYPE_TEST_OUTPUT $TYPE_TEST_EXPECTED_OUTPUT
         if ! [[ $? -eq 0 ]]; then

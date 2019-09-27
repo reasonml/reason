@@ -18,6 +18,7 @@ test: build clean-tests
 	# ./miscTests/rtopIntegrationTest.sh
 	./miscTests/jsxPpxTest.sh
 	cd formatTest; ./test.sh
+	esy test
 
 .PHONY: coverage
 coverage:
