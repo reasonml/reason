@@ -15,4 +15,4 @@ let syscall = cmd => {
   Buffer.contents(buf);
 };
 
-let refmtBin = "./_build/install/default/bin/refmt";
+let refmtBin = "_esy/default/build/install/default/bin/refmt";
