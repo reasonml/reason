@@ -1,3 +1,4 @@
+formatTest › typeCheckedTests › ./formatTest/typeCheckedTests/input/basics_no_semi.re
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 
 let l =
@@ -103,17 +104,17 @@ let reasonDoubleBarNestedAnyPatterns =
   | Q => true
   | _ => false;
 
-let (\+) = (+);
+let (\\+) = (+);
 
 let a = 2.0 ** 4.0;
 
-let (\===) = (===);
+let (\\===) = (===);
 
 let expectedPrecendence =
-  1 + 1 \=== 1 + 1 && 1 + 1 !== 1 + 1;
+  1 + 1 \\=== 1 + 1 && 1 + 1 !== 1 + 1;
 
 let expectedPrecendence =
-  1 \+ 1 \=== 1 \+ 1 && 1 \+ 1 !== 1 \+ 1;
+  1 \\+ 1 \\=== 1 \\+ 1 && 1 \\+ 1 !== 1 \\+ 1;
 
 module X: {let x: (~x: unit=?, unit) => unit;} = {
   let x = (~x=(), ()) => ();
@@ -121,7 +122,8 @@ module X: {let x: (~x: unit=?, unit) => unit;} = {
 
 let display =
     (
-      ~message=("hello": string),
-      ~person: string="Reason",
+      ~message=(\"hello\": string),
+      ~person: string=\"Reason\",
       time: float,
     ) => 1;
+

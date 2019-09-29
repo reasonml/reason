@@ -1,3 +1,4 @@
+formatTest › typeCheckedTests › ./formatTest/typeCheckedTests/input/attributes.re
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 /**
  * Generally, dangling attributes [@..] apply to everything to the left of it,
@@ -67,14 +68,14 @@ let thisInst: myType =
     Some(10.0),
   );
 
-let x = [@onHello] "hello";
-let x = [@onHello] "hello";
+let x = [@onHello] \"hello\";
+let x = [@onHello] \"hello\";
 
-let x = "hello" ++ [@onGoodbye] "goodbye";
-let x = [@onHello] "hello" ++ "goodbye";
-let x = [@onHello] "hello" ++ "goodbye";
-let x = "hello" ++ [@onGoodbye] "goodbye";
-let x = [@onEverything] ("hello" ++ "goodbye");
+let x = \"hello\" ++ [@onGoodbye] \"goodbye\";
+let x = [@onHello] \"hello\" ++ \"goodbye\";
+let x = [@onHello] \"hello\" ++ \"goodbye\";
+let x = \"hello\" ++ [@onGoodbye] \"goodbye\";
+let x = [@onEverything] (\"hello\" ++ \"goodbye\");
 
 let x = 10 + [@on20] 20;
 let x = 10 + [@on20] 20;
@@ -190,12 +191,12 @@ type gadtType('x) =
 
 [@floatingTopLevelStructureItem hello];
 [@itemAttributeOnEval]
-print_string("hello");
+print_string(\"hello\");
 
 [@itemAttrOnFirst]
-let firstBinding = "first"
+let firstBinding = \"first\"
 [@itemAttrOnSecond]
-and secondBinding = "second";
+and secondBinding = \"second\";
 
 /**
  * Let bindings.
@@ -228,7 +229,7 @@ class boxA ('a) (init: 'a) =
   };
 
 /**
- * In non-curried sugar, the class_expr still sticks to "the simple thing".
+ * In non-curried sugar, the class_expr still sticks to \"the simple thing\".
  */
 class boxB ('a) (init: 'a) =
   [@stillOnTheReturnBecauseItsSimple] {
@@ -311,9 +312,9 @@ module type HasAttrs = {
 type s =
   | S(string);
 
-let S([@onStr] str) = S([@onHello] "hello");
+let S([@onStr] str) = S([@onHello] \"hello\");
 let [@onConstruction] S(str) =
-  [@onConstruction] S("hello");
+  [@onConstruction] S(\"hello\");
 
 type xy =
   | X(string)
@@ -336,7 +337,7 @@ let myFun =
 /* Bucklescript FFI item attributes */
 
 [@bs.val]
-external imul: (int, int) => int = "Math.imul";
+external imul: (int, int) => int = \"Math.imul\";
 
 module Js = {
   type t('a);
@@ -403,56 +404,56 @@ type reactElement;
 
 type reactClass;
 
-/* "react-dom" shouldn't spread the attribute over multiple lines */
-[@bs.val] [@bs.module "react-dom"]
+/* \"react-dom\" shouldn't spread the attribute over multiple lines */
+[@bs.val] [@bs.module \"react-dom\"]
 external render: (reactElement, element) => unit =
-  "render";
+  \"render\";
 
-[@bs.module "f"] external f: int => int = "f";
+[@bs.module \"f\"] external f: int => int = \"f\";
 
-[@bs.val] [@bs.module "react"] [@bs.splice]
+[@bs.val] [@bs.module \"react\"] [@bs.splice]
 external createCompositeElementInternalHack:
   (
     reactClass,
-    {.. "reasonProps": 'props},
+    {.. \"reasonProps\": 'props},
     array(reactElement)
   ) =>
   reactElement =
-  "createElement";
+  \"createElement\";
 
 external add_nat: (int, int) => int =
-  "add_nat_bytecode" "add_nat_native";
+  \"add_nat_bytecode\" \"add_nat_native\";
 
-[@bs.module "Bar"]
+[@bs.module \"Bar\"]
 [@ocaml.deprecated
-  "Use bar instead. It's a much cooler function. This string needs to be a little long"
+  \"Use bar instead. It's a much cooler function. This string needs to be a little long\"
 ]
-external foo: bool => bool = "";
+external foo: bool => bool = \"\";
 
 /* Attributes on an entire polymorphic variant leaf */
-[@bs.module "fs"]
+[@bs.module \"fs\"]
 external readFileSync:
   (
     ~name: string,
     [@bs.string] [
       | `utf8
-      | [@bs.as "ascii"] `my_name
+      | [@bs.as \"ascii\"] `my_name
     ]
   ) =>
   string =
-  "";
+  \"\";
 
-[@bs.module "fs"]
+[@bs.module \"fs\"]
 external readFileSync2:
   (
     ~name: string,
     [@bs.string] [
-      | [@bs.as "ascii"] `utf8
-      | [@bs.as "ascii"] `my_name
+      | [@bs.as \"ascii\"] `utf8
+      | [@bs.as \"ascii\"] `my_name
     ]
   ) =>
   string =
-  "";
+  \"\";
 
 /* Ensure that attributes on extensions are printed */
 [@test
@@ -461,16 +462,16 @@ external readFileSync2:
 ];
 
 external debounce: (int, [@bs.meth] unit) => unit =
-  "";
+  \"\";
 
 external debounce:
   int => [@bs.meth] (unit => unit) =
-  "";
+  \"\";
 
 external debounce:
   (int, [@bs.meth] (unit => unit)) =>
   [@bs.meth] (unit => unit) =
-  "";
+  \"\";
 
 external debounce:
   (
@@ -479,7 +480,7 @@ external debounce:
     [@bs.meth] (unit => unit)
   ) =>
   [@bs.meth] (unit => unit) =
-  "";
+  \"\";
 
 external debounce:
   (
@@ -490,9 +491,9 @@ external debounce:
     )
   ) =>
   [@bs.meth] (unit => unit) =
-  "";
+  \"\";
 
-let x = "hi";
+let x = \"hi\";
 
 let res =
   switch (x) {
@@ -521,7 +522,7 @@ type value =
 let x = 5;
 
 /* Expression structure */
-[@haha "hello world"]
+[@haha \"hello world\"]
 let x = 5;
 
 /* structure_item */
@@ -551,29 +552,29 @@ type t_ = {
 };
 
 type tt = {
-  [@attr "on record field"]
+  [@attr \"on record field\"]
   x: int,
 };
 
 type ttt = {
-  [@attr "on record field"]
-  x: [@attr "on type itself"] int,
+  [@attr \"on record field\"]
+  x: [@attr \"on type itself\"] int,
 };
 
 type tttt = {
   /** Comment attribute on record item */
   x: int,
-  [@regularAttribute "on next item"]
+  [@regularAttribute \"on next item\"]
   y: int,
 };
 
 type ttttt = {
-  [@attr "moved to first row"] [@attr]
+  [@attr \"moved to first row\"] [@attr]
   x: int,
 };
 
 type tttttt = {
-  [@attr "testing with mutable field"]
+  [@attr \"testing with mutable field\"]
   mutable x: int,
 };
 
@@ -585,8 +586,8 @@ type foo =
   option(
     [@foo
       [
-        "how does this break",
-        "when long enough",
+        \"how does this break\",
+        \"when long enough\",
       ]
     ] (
       [@bar] (int => int),
@@ -602,8 +603,8 @@ let test = {
   let x = 1;
   [@attr1]
   open Callbacks;
-  let s = "hello" ++ "!";
-  [@attr2] Callbacks.("hello" ++ "!");
+  let s = \"hello\" ++ \"!\";
+  [@attr2] Callbacks.(\"hello\" ++ \"!\");
 };
 
 [@test.call string => string]
@@ -617,7 +618,7 @@ module type Foo = {
 [@bs.deriving abstract]
 type t = {
   /** Position (in the pre-change coordinate system) where the change ended. */
-  [@bs.as "to"] [@bar]
+  [@bs.as \"to\"] [@bar]
   to_: string,
 };
 
@@ -642,3 +643,4 @@ Fmt.([@foo] {x: 1});
 Fmt.([@foo] [1, 2, 3]);
 Fmt.([@foo] (1, 2, 3));
 Fmt.([@foo] {val x = 10});
+

@@ -1,3 +1,4 @@
+formatTest › typeCheckedTests › ./formatTest/typeCheckedTests/input/knownReIssues.re
 /**
    Issue 940: https://github.com/facebook/reason/issues/940
    The parens in the exception match case with an alias,
@@ -6,7 +7,7 @@
    The latter doesn't type-check with Error: Unbound value exc.
    Warning 11 (unused match case) is also triggered.
  */
-let f = () => raise(Sys_error("error"));
+let f = () => raise(Sys_error(\"error\"));
 
 switch (f()) {
 | x => ()
@@ -15,9 +16,10 @@ switch (f()) {
 
 exception Foo(string);
 
-let g = () => raise(Foo("bar errors"));
+let g = () => raise(Foo(\"bar errors\"));
 
 switch (g()) {
 | x => ()
 | exception (Foo(f)) => raise(Foo(f))
 };
+

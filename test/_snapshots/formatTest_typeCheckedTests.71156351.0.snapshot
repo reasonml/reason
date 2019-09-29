@@ -1,3 +1,4 @@
+formatTest › typeCheckedTests › ./formatTest/typeCheckedTests/input/mlVariants.ml
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 
 type polyVariantsInMl = [
@@ -25,3 +26,4 @@ let x: s = `Poly;
  * https://caml.inria.fr/mantis/view.php?id=7758
  * https://caml.inria.fr/mantis/view.php?id=7344 */
 let x: s = (`Poly: s);
+

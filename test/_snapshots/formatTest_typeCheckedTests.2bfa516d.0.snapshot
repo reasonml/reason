@@ -1,3 +1,4 @@
+formatTest › typeCheckedTests › ./formatTest/typeCheckedTests/input/bigarraySyntax.re
 /* https://github.com/facebook/reason/issues/2038 */
 let my_big_array1 =
   Bigarray.Array1.create(
@@ -48,3 +49,4 @@ my_big_array3.{
   reallyLongStringThatWillDefinitelyBreakLine,
   reallyLongStringThatWillDefinitelyBreakLine
 } = 3.0;
+

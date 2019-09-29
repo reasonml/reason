@@ -1,3 +1,4 @@
+formatTest › typeCheckedTests › ./formatTest/typeCheckedTests/input/comments.ml
 /* **** comment */
 /*** comment */
 /** docstring */;
@@ -23,18 +24,18 @@
 /* comment *****/
 
 let testingNotQuiteEndOfLineComments = [
-  "Item 1" /* Comment For First Item */,
-  "Item 2" /* Comment For Second Item */,
-  "Item 3" /* Comment For Third Item */,
-  "Item 4" /* Comment For Fourth Item - but no semi */
+  \"Item 1\" /* Comment For First Item */,
+  \"Item 2\" /* Comment For Second Item */,
+  \"Item 3\" /* Comment For Third Item */,
+  \"Item 4\" /* Comment For Fourth Item - but no semi */
   /* Comment after last item in list. */
 ]; /* Comment after list bracket */
 
 let testingEndOfLineComments = [
-  "Item 1", /* Comment For First Item */
-  "Item 2", /* Comment For Second Item */
-  "Item 3", /* Comment For Third Item */
-  "Item 4" /* Comment For Fourth Item - but before semi */,
+  \"Item 1\", /* Comment For First Item */
+  \"Item 2\", /* Comment For Second Item */
+  \"Item 3\", /* Comment For Third Item */
+  \"Item 4\" /* Comment For Fourth Item - but before semi */,
   /* Comment after last item in list. */
 ]; /* Comment after list bracket */
 
@@ -118,8 +119,8 @@ module Temp = {
 };
 
 let store_attributes = arg => {
-  let attributes_file = "test";
-  let proc_name = attributes_file ++ ".proc";
+  let attributes_file = \"test\";
+  let proc_name = attributes_file ++ \".proc\";
   let should_write =
     /* only overwrite defined procedures */
     Temp.v || !Temp.v;
@@ -127,3 +128,4 @@ let store_attributes = arg => {
     Temp.logIt(proc_name, ());
   };
 };
+

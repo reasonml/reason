@@ -1,12 +1,13 @@
+formatTest › typeCheckedTests › ./formatTest/typeCheckedTests/input/trailing.re
 let x = 0;
 let y = 0;
 
-[@warning "-8"]
+[@warning \"-8\"]
 let [|x, y|] = [|0, y|];
-[@warning "-8"]
+[@warning \"-8\"]
 let [|x, y|] = [|0, y|];
 
-[@warning "-8"]
+[@warning \"-8\"]
 let [|
   reallyLongIdentifier,
   reallyLongIdentifier2,
@@ -14,7 +15,7 @@ let [|
   0,
   1,
 |];
-[@warning "-8"]
+[@warning \"-8\"]
 let [|
   reallyLongIdentifier_,
   reallyLongIdentifier2_,
@@ -173,7 +174,7 @@ class virtual
   pub virtual implementMe:
     (int, int) => (int, int);
   initializer {
-    print_string("initializing object");
+    print_string(\"initializing object\");
   };
 };
 
@@ -224,23 +225,15 @@ module Component = {
 };
 
 let componentList = [<Component arg=1 />];
-let componentList = [<Component arg="2" />];
+let componentList = [<Component arg=\"2\" />];
 let componentList = [<Component arg=1 />];
-let componentList = [<Component arg="2" />];
+let componentList = [<Component arg=\"2\" />];
 let componentList = [
   <Component arg=1 />,
   <Component arg=0 />,
 ];
 let componentList = [
-  <Component arg="2" />,
-  <Component arg=0 />,
-];
-let componentList = [
-  <Component arg=1 />,
-  <Component arg=0 />,
-];
-let componentList = [
-  <Component arg="2" />,
+  <Component arg=\"2\" />,
   <Component arg=0 />,
 ];
 let componentList = [
@@ -248,28 +241,28 @@ let componentList = [
   <Component arg=0 />,
 ];
 let componentList = [
-  <Component arg="2" />,
+  <Component arg=\"2\" />,
+  <Component arg=0 />,
+];
+let componentList = [
+  <Component arg=1 />,
+  <Component arg=0 />,
+];
+let componentList = [
+  <Component arg=\"2\" />,
   <Component arg=0 />,
 ];
 
 let componentList = [|<Component arg=1 />|];
-let componentList = [|<Component arg="2" />|];
+let componentList = [|<Component arg=\"2\" />|];
 let componentList = [|<Component arg=1 />|];
-let componentList = [|<Component arg="2" />|];
+let componentList = [|<Component arg=\"2\" />|];
 let componentList = [|
   <Component arg=1 />,
   <Component arg=0 />,
 |];
 let componentList = [|
-  <Component arg="2" />,
-  <Component arg=0 />,
-|];
-let componentList = [|
-  <Component arg=1 />,
-  <Component arg=0 />,
-|];
-let componentList = [|
-  <Component arg="2" />,
+  <Component arg=\"2\" />,
   <Component arg=0 />,
 |];
 let componentList = [|
@@ -277,6 +270,15 @@ let componentList = [|
   <Component arg=0 />,
 |];
 let componentList = [|
-  <Component arg="2" />,
+  <Component arg=\"2\" />,
   <Component arg=0 />,
 |];
+let componentList = [|
+  <Component arg=1 />,
+  <Component arg=0 />,
+|];
+let componentList = [|
+  <Component arg=\"2\" />,
+  <Component arg=0 />,
+|];
+

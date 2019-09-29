@@ -33,13 +33,6 @@ else
     DIFF="eval diff --unchanged-line-format='' --new-line-format=':%dn: %L' --old-line-format=':%dn: %L'"
 fi
 
-TYPE_TEST_INPUT=$DIR/typeCheckedTests/input
-
-TYPE_TEST_OUTPUT=$DIR/typeCheckedTests/actual_output
-
-TYPE_TEST_EXPECTED_OUTPUT=$DIR/typeCheckedTests/expected_output
-
-
 ERROR_TEST_INPUT=$DIR/errorTests/input
 
 ERROR_TEST_OUTPUT=$DIR/errorTests/actual_output
@@ -90,7 +83,7 @@ function version() {
 
 function setup_test_dir() {
     echo "Setting up test dirs actual_output alongside the tests' expected_output"
-    mkdir -p $TYPE_TEST_OUTPUT $ERROR_TEST_OUTPUT $OPRINT_TEST_OUTPUT $OPRINT_TEST_INTF_OUTPUT
+    mkdir -p $ERROR_TEST_OUTPUT $OPRINT_TEST_OUTPUT $OPRINT_TEST_INTF_OUTPUT
     touch $FAILED_TESTS
 }
 
@@ -148,74 +141,6 @@ function stdin_test() {
         return 1
     fi
     return 0
-}
-
-function typecheck_test() {
-    FILE=$(basename $1)
-    INPUT=$2
-    OUTPUT=$3
-
-    info "Typecheck Test: $1"
-
-    if [ "$FILE" != "$(basename $FILE .ml)" ] || [ "$FILE" != "$(basename $FILE .mli)" ]; then
-        if [ "$FILE" != "$(basename $FILE .ml)" ]; then
-            SUFFIX=".re"
-            REFILE="$(basename $FILE .ml)$SUFFIX"
-        else
-            SUFFIX=".rei"
-            REFILE="$(basename $FILE .mli)$SUFFIX"
-        fi
-
-        BASE_NAME=$(echo $FILE | cut -d '.' -f 1)
-        MIN_VERSION=$(basename $FILE $SUFFIX | cut -d '.' -f 2-4)
-
-        if [ "$MIN_VERSION" != "$BASE_NAME" ] && [ "$(version "$OCAML_VERSION")" -lt "$(version "$MIN_VERSION")" ]
-        then
-            notice "  ☒ IGNORED REFMT STEP: Requires OCaml >= $MIN_VERSION"
-        else
-            debug "  Converting $FILE to $REFILE:"
-            debug "$REFMT --heuristics-file $INPUT/arity.txt --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
-            $REFMT --heuristics-file $INPUT/arity.txt --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE
-            if ! [[ $? -eq 0 ]]; then
-                warning "  ⊘ FAILED\n"
-                return 1
-            fi
-            FILE=$REFILE
-        fi
-    else
-        debug "  Formatting: $REFMT --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE"
-        $REFMT --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE
-        if ! [[ $? -eq 0 ]]; then
-            warning "  ⊘ FAILED\n"
-            return 1
-        fi
-    fi
-
-    if [ "$FILE" != "$(basename $FILE .re)" ]; then
-        SUFFIX=".re"
-        COMPILE_FLAGS="-intf-suffix .rei -impl"
-    else
-        SUFFIX=".rei"
-        COMPILE_FLAGS="-intf"
-    fi
-
-    BASE_NAME=$(echo $FILE | cut -d '.' -f 1)
-    MIN_VERSION=$(basename $FILE $SUFFIX | cut -d '.' -f 2-4)
-
-    if [ "$MIN_VERSION" != "$BASE_NAME" ] && [ "$(version "$OCAML_VERSION")" -lt "$(version "$MIN_VERSION")" ]
-    then
-        notice "  ☒ IGNORED COMPILATION STEP: Requires OCaml >= $MIN_VERSION"
-    else
-        debug "  Compiling: ocamlc -c -pp $REFMT $COMPILE_FLAGS $OUTPUT/$FILE"
-        ocamlc -c -pp "$REFMT --print binary" $COMPILE_FLAGS "$OUTPUT/$FILE"
-        if ! [[ $? -eq 0 ]]; then
-            warning "  ⊘ FAILED\n"
-            return 1
-        fi
-    fi
-
-    success "  ☑ PASS"
-    echo
 }
 
 function oprint_test() {
@@ -324,18 +249,6 @@ cd $OPRINT_TEST_INPUT && find . -type f \( -name "*.re*" -or -name "*.ml*" \) | 
         oprint_test $file $OPRINT_TEST_OUTPUT $OPRINT_TEST_INTF_OUTPUT $OPRINT_TEST_EXPECTED_OUTPUT '-i true --parse re'
         if ! [[ $? -eq 0 ]]; then
             echo "$file -- failed oprint_test" >> $FAILED_TESTS
-        fi
-done
-
-cd $TYPE_TEST_INPUT
-find . -type f \( -name "*.re*" -or -name "*.ml*" \) | sort | while read file; do
-        typecheck_test $file $TYPE_TEST_INPUT $TYPE_TEST_OUTPUT
-        if ! [[ $? -eq 0 ]]; then
-            echo "$file -- failed typecheck_test" >> $FAILED_TESTS
-        fi
-        typecheck_test $file $TYPE_TEST_INPUT $TYPE_TEST_OUTPUT $TYPE_TEST_EXPECTED_OUTPUT
-        if ! [[ $? -eq 0 ]]; then
-            echo "$file -- failed typecheck_test" >> $FAILED_TESTS
         fi
 done
 

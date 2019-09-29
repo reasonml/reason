@@ -1,3 +1,4 @@
+formatTest › typeCheckedTests › ./formatTest/typeCheckedTests/input/pipeFirst.re
 let (|.) = (x, y) => x + y;
 
 let a = 1;
@@ -38,7 +39,7 @@ let t5: int =
 
 module Foo = {
   let createElement = (~children, ()) =>
-    List.hd(children) ++ "test";
+    List.hd(children) ++ \"test\";
 
   let map = (xs, f) => List.map(f, xs);
 
@@ -48,7 +49,7 @@ module Foo = {
     List.fold_left(
       (acc, curr) =>
         acc ++ string_of_int(curr),
-      "",
+      \"\",
       lst,
     );
 };
@@ -113,11 +114,11 @@ let t11: string =
      ->Foo.toString}
   </Foo>;
 
-let title = "los pilares de la tierra";
+let title = \"los pilares de la tierra\";
 
 let t12: string =
   <Foo>
-    (title === "" ? [1, 2, 3] : blocks)
+    (title === \"\" ? [1, 2, 3] : blocks)
     ->Foo.toString
   </Foo>;
 
@@ -142,7 +143,7 @@ let t13: string =
 
 module FooLabeled = {
   let createElement = (~children, ()) =>
-    List.hd(children) ++ "test";
+    List.hd(children) ++ \"test\";
 
   let map = (xs, ~f) => List.map(f, xs);
 
@@ -152,7 +153,7 @@ module FooLabeled = {
     List.fold_left(
       (acc, curr) =>
         acc ++ string_of_int(curr),
-      "",
+      \"\",
       lst,
     );
 };
@@ -171,13 +172,14 @@ let t: int = a->(b->c);
 
 module Div = {
   let createElement = (~children, ()) =>
-    List.hd(children) ++ "test";
+    List.hd(children) ++ \"test\";
 };
 
-let url = "reason";
-let suffix = ".com";
+let url = \"reason\";
+let suffix = \".com\";
 
 let parse = (a, b) => a ++ b;
 
 let t15: string =
   <Div> {url->parse(suffix, _)} </Div>;
+

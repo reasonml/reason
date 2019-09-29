@@ -1,3 +1,4 @@
+formatTest › typeCheckedTests › ./formatTest/typeCheckedTests/input/reasonComments.re
 3; /* - */
 3; /*-*/
 
@@ -41,42 +42,42 @@ module JustString = {
 };
 
 let testingEndOfLineComments = [
-  "Item 1" /* Comment For First Item */,
-  "Item 2" /* Comment For Second Item */,
-  "Item 3" /* Comment For Third Item */,
-  "Item 4" /* Comment For Fourth Item - but before trailing comma */,
+  \"Item 1\" /* Comment For First Item */,
+  \"Item 2\" /* Comment For Second Item */,
+  \"Item 3\" /* Comment For Third Item */,
+  \"Item 4\" /* Comment For Fourth Item - but before trailing comma */,
   /* Comment after last item in list. */
 ] /* Comment after rbracket */;
 
 /* But if you place them after the comma at eol, they're preserved as such */
 let testingEndOfLineComments = [
-  "Item 1", /* Comment For First Item */
-  "Item 2", /* Comment For Second Item */
-  "Item 3", /* Comment For Third Item */
-  "Item 4" /* Comment For Fourth Item - but before trailing comma */,
+  \"Item 1\", /* Comment For First Item */
+  \"Item 2\", /* Comment For Second Item */
+  \"Item 3\", /* Comment For Third Item */
+  \"Item 4\" /* Comment For Fourth Item - but before trailing comma */,
   /* Comment after last item in list. */
 ] /* Comment after rbracket */;
 
 /* The space between ; and comment shoudn't matter */
 let testPlacementOfTrailingComment = [
-  "Item 0" /* */
+  \"Item 0\" /* */
   /* Comment after last item in list. */
 ]; /* Comment after semi */
 
 /* The space between ; and comment shoudn't matter */
 let testPlacementOfTrailingComment = [
-  "Item 0" /* */
+  \"Item 0\" /* */
   /* Comment after last item in list. */
 ]; /* Comment after semi */
 
 /* Try again but without other things in the list */
 let testPlacementOfTrailingComment = [
-  "Item 0" /* */
+  \"Item 0\" /* */
 ]; /* Comment after semi */
 
 /* The space between ; and comment shoudn't matter */
 let testPlacementOfTrailingComment = [
-  "Item 0" /* */
+  \"Item 0\" /* */
   /* Comment after last item in list. */
 ]; /* Comment after semi */
 
@@ -157,24 +158,24 @@ let res =
   /* Before switch */
   switch (X(2, 3)) {
   /* Above X line */
-  | X(_) => "result of X" /* End of arrow and X line */
+  | X(_) => \"result of X\" /* End of arrow and X line */
   /* Above Y line */
-  | Y(_) => "result of Y" /* End of arrow and Y line */
+  | Y(_) => \"result of Y\" /* End of arrow and Y line */
   }; /* After final semi in switch */
 
 let res =
   switch (X(2, 3)) {
   | X(0, 0) =>
     /* After X arrow */
-    "result of X" /* End of X body line */
-  | X(1, 0) /* Before X's arrow */ => "result of X" /* End of X body line */
+    \"result of X\" /* End of X body line */
+  | X(1, 0) /* Before X's arrow */ => \"result of X\" /* End of X body line */
   | X(_) =>
     /* After X _ arrow */
-    "result of X" /* End of X body line */
+    \"result of X\" /* End of X body line */
   /* Above Y line */
   | Y(_) =>
     /* Comment above Y body */
-    "result of Y"
+    \"result of Y\"
   };
 
 type variant2 =
@@ -226,9 +227,9 @@ let res =
   /* Before switch */
   switch (X(2, 3)) {
   /* Above X line */
-  | X(_) => "result of X" /* End of arrow and X line */
+  | X(_) => \"result of X\" /* End of arrow and X line */
   /* Above Y line */
-  | Y(_) => "result of Y" /* End of arrow and Y line */
+  | Y(_) => \"result of Y\" /* End of arrow and Y line */
   };
 
 /*
@@ -266,10 +267,10 @@ let res =
   | X(
       _, /* retain this */
       _ /* retain this */
-    ) => "result of X"
+    ) => \"result of X\"
 
   /* Above Y line */
-  | Y(_) => "result of Y" /* End of arrow and Y line */
+  | Y(_) => \"result of Y\" /* End of arrow and Y line */
   };
 
 type optionalTuple =
@@ -627,39 +628,39 @@ let r = {
 
 let y =
   TwoArgsConstructor(
-    "1", /*eol1*/
-    "2" /* eol2 */
+    \"1\", /*eol1*/
+    \"2\" /* eol2 */
   );
 
 let y =
   callFunctionTwoArgs(
-    "1", /*eol1*/
-    "2" /* eol2 */
+    \"1\", /*eol1*/
+    \"2\" /* eol2 */
   );
 
 let y =
   OneTupleArgConstructor((
-    "1", /*eol1*/
-    "2" /* eol2 */
+    \"1\", /*eol1*/
+    \"2\" /* eol2 */
   ));
 
 let y =
   callFunctionOneTuple((
-    "1", /*eol1*/
-    "2" /* eol2 */
+    \"1\", /*eol1*/
+    \"2\" /* eol2 */
   ));
 
 let r = {
-  fieldOne: "1", /*eol1*/
-  fieldTwo: "2" /* eol2 */
+  fieldOne: \"1\", /*eol1*/
+  fieldTwo: \"2\" /* eol2 */
 };
 
 let r = {
-  fieldOne: "1", /*eol1*/
-  fieldTwo: "2" /* eol2 with trailing comma */
+  fieldOne: \"1\", /*eol1*/
+  fieldTwo: \"2\" /* eol2 with trailing comma */
 };
 
-let identifier = "hello";
+let identifier = \"hello\";
 
 let y =
   TwoArgsConstructor(
@@ -731,20 +732,20 @@ let r = {
 
 /** doc comment */
 [@bs.send]
-external url: t => string = "";
+external url: t => string = \"\";
 
 /**
  * Short multiline doc comment
  */
 [@bs.send]
-external url: t => string = "";
+external url: t => string = \"\";
 
 /** Longer doc comment before an attribute on an external. */
 [@bs.send]
-external url: t => string = "";
+external url: t => string = \"\";
 
 /* normal comment */
-[@bs.send] external url: t => string = "";
+[@bs.send] external url: t => string = \"\";
 
 /** doc type */
 type q = {
@@ -753,4 +754,5 @@ type q = {
 };
 
 /** doc let */
-let letter: q = {a: 42, b: "answer"};
+let letter: q = {a: 42, b: \"answer\"};
+

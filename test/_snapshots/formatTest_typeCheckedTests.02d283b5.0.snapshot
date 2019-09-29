@@ -1,3 +1,4 @@
+formatTest › typeCheckedTests › ./formatTest/typeCheckedTests/input/patternMatching.re
 type point = {
   x: int,
   y: int,
@@ -200,20 +201,20 @@ switch (None) {
 
 /* with parens around direct array pattern in constructor pattern */
 switch (None) {
-| Some([||]) => "empty"
-| Some([|_|]) when true => "one any"
-| Some([|a|]) => "one"
-| Some([|a, b|]) => "two"
-| _ => "many"
+| Some([||]) => \"empty\"
+| Some([|_|]) when true => \"one any\"
+| Some([|a|]) => \"one\"
+| Some([|a, b|]) => \"two\"
+| _ => \"many\"
 };
 
 /* no parens around direct array pattern in constructor pattern (sugar) */
 switch (None) {
-| Some([||]) => "empty"
-| Some([|_|]) when true => "one any"
-| Some([|a|]) => "one"
-| Some([|a, b|]) => "two"
-| _ => "many"
+| Some([||]) => \"empty\"
+| Some([|_|]) when true => \"one any\"
+| Some([|a|]) => \"one\"
+| Some([|a, b|]) => \"two\"
+| _ => \"many\"
 };
 
 /* parens around direct record pattern in constructor pattern */
@@ -267,3 +268,4 @@ switch (None) {
   ()
 | _ => ()
 };
+

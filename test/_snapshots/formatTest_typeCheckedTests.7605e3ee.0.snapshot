@@ -1,3 +1,4 @@
+formatTest › typeCheckedTests › ./formatTest/typeCheckedTests/input/sequences.re
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 
 /**
@@ -36,19 +37,19 @@ let result =
 let result = 0 + twenty;
 
 let unitValue = ();
-/* While loops/for loops merely accept a "simple expression" (which means
+/* While loops/for loops merely accept a \"simple expression\" (which means
  * it is either a simple token or balanced with parens/braces). However,
- * the formatter ensures that the bodies are printed in "sequence" form even if
+ * the formatter ensures that the bodies are printed in \"sequence\" form even if
  * it's not required.
  */
 while (false) {
   unitValue;
 };
 while (false) {
-  print_string("test");
+  print_string(\"test\");
 };
 while (false) {
-  print_string("test");
+  print_string(\"test\");
 };
 
 type myRecord = {number: int};
@@ -56,7 +57,7 @@ let x = {number: 20};
 let number = 20;
 /*
  * The (mild) consequence of not requiring a final semi in a sequence,
- * is that we can no longer "pun" a single field record (which would)
+ * is that we can no longer \"pun\" a single field record (which would)
  * be very rare anyways.
  */
 let cannotPunASingleFieldRecord = {
@@ -85,3 +86,4 @@ let singlePunAcceptedIfExtended = {
   ...firstFieldPunned,
   a,
 };
+

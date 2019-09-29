@@ -1,3 +1,4 @@
+formatTest › typeCheckedTests › ./formatTest/typeCheckedTests/input/basics.re
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 
 let l =
@@ -25,7 +26,7 @@ let l2 =
 
 let a1 = [|1, 2, 3|] |> Array.get(_, 1);
 
-let s1 = "roses are red" |> String.get(_, 4);
+let s1 = \"roses are red\" |> String.get(_, 4);
 
 let optParam = (~v=?, ()) => v == None ? 0 : 1;
 
@@ -107,17 +108,17 @@ let reasonDoubleBarNestedAnyPatterns =
   | Q => true
   | _ => false;
 
-let (\+) = (+);
+let (\\+) = (+);
 
 let a = 2.0 ** 4.0;
 
-let (\===) = (===);
+let (\\===) = (===);
 
 let expectedPrecendence =
-  1 + 1 \=== 1 + 1 && 1 + 1 !== 1 + 1;
+  1 + 1 \\=== 1 + 1 && 1 + 1 !== 1 + 1;
 
 let expectedPrecendence =
-  1 \+ 1 \=== 1 \+ 1 && 1 \+ 1 !== 1 \+ 1;
+  1 \\+ 1 \\=== 1 \\+ 1 && 1 \\+ 1 !== 1 \\+ 1;
 
 module X: {let x: (~x: unit=?, unit) => unit;} = {
   let x = (~x=(), ()) => ();
@@ -125,8 +126,8 @@ module X: {let x: (~x: unit=?, unit) => unit;} = {
 
 let display =
     (
-      ~message=("hello": string),
-      ~person: string="Reason",
+      ~message=(\"hello\": string),
+      ~person: string=\"Reason\",
       time: float,
     ) => 1;
 
@@ -135,3 +136,4 @@ let not = (x, y) => x + y;
 let added: int = not(1, 2);
 
 let better = foo => !foo ? 42 : not(41, 2);
+

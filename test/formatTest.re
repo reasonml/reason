@@ -4,7 +4,7 @@ open TestUtils;
 let buildArgs = filename =>
   refmtBin ++ " --print-width 50 --print re " ++ filename;
 
-let refmTestFolders = ["idempotentTests", "unit_tests"];
+let refmTestFolders = ["idempotentTests", "typeCheckedTests", "unit_tests"];
 
 describe("formatTest", ({describe, _}) =>
   refmTestFolders

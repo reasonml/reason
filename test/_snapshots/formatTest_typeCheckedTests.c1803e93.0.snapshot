@@ -1,3 +1,4 @@
+formatTest › typeCheckedTests › ./formatTest/typeCheckedTests/input/attributes.rei
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 
 /**Floating comment text should be removed*/;
@@ -23,20 +24,20 @@ type reactClass;
 
 type reactElement;
 
-[@bs.val] [@bs.module "React"]
+[@bs.val] [@bs.module \"React\"]
 external createClassInternalHack:
   t('classSpec) => reactClass =
-  "createClass";
+  \"createClass\";
 
 [@bs.send.pipe: array('a)]
-external map: (. ('a => 'b)) => array('b) = "";
+external map: (. ('a => 'b)) => array('b) = \"\";
 
-[@bs.val] [@bs.module "react"]
+[@bs.val] [@bs.module \"react\"]
 external createClassInternalHack:
   t('classSpec) => reactClass =
-  "createClass";
+  \"createClass\";
 
-[@bs.val] [@bs.module "react"] [@bs.splice]
+[@bs.val] [@bs.module \"react\"] [@bs.splice]
 external createCompositeElementInternalHack:
   (
     reactClass,
@@ -44,7 +45,7 @@ external createCompositeElementInternalHack:
     array(reactElement)
   ) =>
   reactElement =
-  "createElement";
+  \"createElement\";
 
 /* Record item attributes */
 
@@ -54,24 +55,24 @@ type t_ = {
 };
 
 type tt = {
-  [@attr "on record field"]
+  [@attr \"on record field\"]
   x: int,
 };
 
 type ttt = {
-  [@attr "on record field"]
-  x: [@attr "on type itself"] int,
+  [@attr \"on record field\"]
+  x: [@attr \"on type itself\"] int,
 };
 
 type tttt = {
   /** Comment attribute on record item */
   x: int,
-  [@regularAttribute "on next item"]
+  [@regularAttribute \"on next item\"]
   y: int,
 };
 
 type ttttt = {
-  [@attr "moved to first row"] [@attr]
+  [@attr \"moved to first row\"] [@attr]
   x: int,
 };
 
@@ -79,3 +80,4 @@ module Foo: {
   [@someattr]
   let foo: int => int;
 };
+

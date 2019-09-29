@@ -1,3 +1,4 @@
+formatTest › typeCheckedTests › ./formatTest/typeCheckedTests/input/mlSyntax.ml
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 
 /**
@@ -65,7 +66,7 @@ let nested_match =
 
 let some = Some((1, 2, 3));
 
-let (\===) = (==);
+let (\\===) = (==);
 
 /* Test regression for https://github.com/facebook/Reason/issues/222 */
 let _ = Pervasives.(==);
@@ -100,16 +101,17 @@ module EM = {
 
 exception Ealias = EM.E;
 
-let switc = "match";
-let switch_ = "match";
-let switch__ = "match";
-let pub_ = "method";
-let pub__ = "method";
-let pri_ = "private";
-let pri__ = "private";
+let switc = \"match\";
+let switch_ = \"match\";
+let switch__ = \"match\";
+let pub_ = \"method\";
+let pub__ = \"method\";
+let pri_ = \"private\";
+let pri__ = \"private\";
 
-external private: unit => unit = "";
-external pri_: unit => unit = "";
+external private: unit => unit = \"\";
+external pri_: unit => unit = \"\";
 
 type pub_ = int;
 type pub__ = int;
+
