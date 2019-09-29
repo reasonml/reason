@@ -33,13 +33,6 @@ else
     DIFF="eval diff --unchanged-line-format='' --new-line-format=':%dn: %L' --old-line-format=':%dn: %L'"
 fi
 
-IDEMPOTENT_TEST_INPUT=$DIR/idempotentTests/input
-
-IDEMPOTENT_TEST_OUTPUT=$DIR/idempotentTests/actual_output
-
-IDEMPOTENT_TEST_EXPECTED_OUTPUT=$DIR/idempotentTests/expected_output
-
-
 TYPE_TEST_INPUT=$DIR/typeCheckedTests/input
 
 TYPE_TEST_OUTPUT=$DIR/typeCheckedTests/actual_output
@@ -97,7 +90,7 @@ function version() {
 
 function setup_test_dir() {
     echo "Setting up test dirs actual_output alongside the tests' expected_output"
-    mkdir -p $IDEMPOTENT_TEST_OUTPUT $TYPE_TEST_OUTPUT $ERROR_TEST_OUTPUT $OPRINT_TEST_OUTPUT $OPRINT_TEST_INTF_OUTPUT
+    mkdir -p $TYPE_TEST_OUTPUT $ERROR_TEST_OUTPUT $OPRINT_TEST_OUTPUT $OPRINT_TEST_INTF_OUTPUT
     touch $FAILED_TESTS
 }
 
@@ -155,80 +148,6 @@ function stdin_test() {
         return 1
     fi
     return 0
-}
-
-function idempotent_test() {
-    FILE=$1
-    INPUT=$2
-    OUTPUT=$3
-    EXTRA_FLAGS=${5-}
-
-    FILENAME=$(basename $FILE)
-    FILEEXT="${FILENAME##*.}"
-
-    info "Idempotent Test: $FILE"
-    if [ "$(basename $FILE)" != "$(basename $FILE .ml)" ] || [ "$(basename $FILE)" != "$(basename $FILE .mli)" ]; then
-        if [ "$(basename $FILE)" != "$(basename $FILE .ml)" ]; then
-          SUFFIX=".re"
-          REFILE="$(basename $FILE .ml)$SUFFIX"
-        else
-          SUFFIX=".rei"
-          REFILE="$(basename $FILE .mli)$SUFFIX"
-        fi
-
-        BASE_NAME=$(echo $FILE | cut -d '.' -f 1)
-        MIN_VERSION=$(basename $FILE $SUFFIX | cut -d '.' -f 2-4)
-
-        if [ "$MIN_VERSION" != "$BASE_NAME" ] && [ "$(version "$OCAML_VERSION")" -lt "$(version "$MIN_VERSION")" ]
-        then
-          notice "  ☒ IGNORED REFMT STEP: Requires OCaml >= $MIN_VERSION"
-          OUTPUT_NOT_GENERATED=1
-        else
-          debug "  Converting $FILE to $REFILE:"
-
-          debug "  Formatting Once: $REFMT $EXTRA_FLAGS --heuristics-file $INPUT/arity.txt --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
-          $REFMT --heuristics-file $INPUT/arity.txt --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE
-          if ! [[ $? -eq 0 ]]; then
-              warning "⊘ FAILED\n"
-              return 1
-          fi
-          FILE=$REFILE
-          debug "  Generating output again: $REFMT $EXTRA_FLAGS --print-width 50 --print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted"
-          $REFMT --print-width 50 --print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted
-        fi
-    else
-      debug "  Formatting Once: '$REFMT $EXTRA_FLAGS --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE'"
-      $REFMT $EXTRA_FLAGS --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE
-
-      debug "  Generating output again: $REFMT $EXTRA_FLAGS --print-width 50 --print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted"
-      $REFMT $EXTRA_FLAGS --print-width 50 --print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted
-    fi
-
-    if [[ -z ${OUTPUT_NOT_GENERATED+x} ]]; then
-      $DIFF $OUTPUT/$FILE $OUTPUT/$FILE.formatted
-      if ! [[ $? -eq 0 ]]; then
-          warning "⊘ FAILED\n"
-          info "  ${INFO}$OUTPUT/$FILE.formatted${RESET}\n"
-          info "  is not same as"
-          info "  ${INFO}$OUTPUT/$FILE${RESET}"
-          return 1
-      fi
-
-      debug "Testing --use-stdin"
-      stdin_test $INPUT/$1 $OUTPUT/$FILE $OUTPUT/$FILE $INPUT/arity.txt "$EXTRA_FLAGS"
-
-      if ! [[ $? -eq 0 ]]; then
-        return 1
-      else
-        stdin_test $OUTPUT/$FILE $OUTPUT/$FILE.formatted $OUTPUT/$FILE $INPUT/arity.txt "$EXTRA_FLAGS"
-        if ! [[ $? -eq 0 ]]; then
-          return 1
-        else
-          success "  ☑ PASS"
-          echo
-        fi
-      fi
-    fi
 }
 
 function typecheck_test() {
@@ -402,16 +321,9 @@ cd $OPRINT_TEST_INPUT && find . -type f \( -name "*.re*" -or -name "*.ml*" \) | 
             echo "$file -- failed oprint_test" >> $FAILED_TESTS
         fi
 
-        idempotent_test $file $OPRINT_TEST_OUTPUT $OPRINT_TEST_INTF_OUTPUT $OPRINT_TEST_EXPECTED_OUTPUT '-i true --parse re'
+        oprint_test $file $OPRINT_TEST_OUTPUT $OPRINT_TEST_INTF_OUTPUT $OPRINT_TEST_EXPECTED_OUTPUT '-i true --parse re'
         if ! [[ $? -eq 0 ]]; then
-            echo "$file -- failed idempotent_test" >> $FAILED_TESTS
-        fi
-done
-
-cd $IDEMPOTENT_TEST_INPUT && find . -type f \( -name "*.re*" -or -name "*.ml*" \) | while read file; do
-        idempotent_test $file $IDEMPOTENT_TEST_INPUT $IDEMPOTENT_TEST_OUTPUT $IDEMPOTENT_TEST_EXPECTED_OUTPUT
-        if ! [[ $? -eq 0 ]]; then
-            echo "$file -- failed idempotent_test" >> $FAILED_TESTS
+            echo "$file -- failed oprint_test" >> $FAILED_TESTS
         fi
 done
 
@@ -421,9 +333,9 @@ find . -type f \( -name "*.re*" -or -name "*.ml*" \) | sort | while read file; d
         if ! [[ $? -eq 0 ]]; then
             echo "$file -- failed typecheck_test" >> $FAILED_TESTS
         fi
-        idempotent_test $file $TYPE_TEST_INPUT $TYPE_TEST_OUTPUT $TYPE_TEST_EXPECTED_OUTPUT
+        typecheck_test $file $TYPE_TEST_INPUT $TYPE_TEST_OUTPUT $TYPE_TEST_EXPECTED_OUTPUT
         if ! [[ $? -eq 0 ]]; then
-            echo "$file -- failed idempotent_test" >> $FAILED_TESTS
+            echo "$file -- failed typecheck_test" >> $FAILED_TESTS
         fi
 done
 

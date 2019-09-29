@@ -4,17 +4,22 @@ open TestUtils;
 let buildArgs = filename =>
   refmtBin ++ " --print-width 50 --print re " ++ filename;
 
+let refmTestFolders = ["idempotentTests", "unit_tests"];
+
 describe("formatTest", ({describe, _}) =>
-  describe("unit_tests", ({test, _}) =>
-    lsDir("./formatTest/unit_tests/input")
-    |> List.iter(filename =>
-         test(
-           filename,
-           ({expect}) => {
-             let result = syscall(buildArgs(filename));
-             expect.string(result).toMatchSnapshot();
-           },
-         )
+  refmTestFolders
+  |> List.iter(folder =>
+       describe(folder, ({test, _}) =>
+         lsDir("./formatTest/" ++ folder ++ "/input")
+         |> List.iter(filename =>
+              test(
+                filename,
+                ({expect}) => {
+                  let result = syscall(buildArgs(filename));
+                  expect.string(result).toMatchSnapshot();
+                },
+              )
+            )
        )
-  )
+     )
 );
