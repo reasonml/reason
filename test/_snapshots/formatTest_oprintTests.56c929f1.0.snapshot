@@ -1,3 +1,4 @@
+formatTest › oprintTests › ./formatTest/oprintTests/input/class.re
 class aClass1 :
   ('a) =>
   {
@@ -18,3 +19,4 @@ class labeledClass3 : (~x: int, int, int) => {  };
 class labeledClass4 : (~x: int, int, int) => {  };
 class labeledClass5 : ((~y: int) => int, int) => {  };
 class labeledClass6 : (~x: (int, int), int) => {  };
+

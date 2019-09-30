@@ -1,3 +1,4 @@
+formatTest › oprintTests › ./formatTest/oprintTests/input/basic.re
 let x1: unit => int;
 let x2: 'a => int;
 let x3: (int, 'a) => int;
@@ -59,3 +60,4 @@ let ( === ): int;
 let ( != ): int;
 let ( !== ): int;
 type foobar(_) = Foo('a): foobar(unit);
+

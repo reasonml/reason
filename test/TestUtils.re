@@ -24,3 +24,4 @@ let syscall = (~env=[||], cmd) => {
 };
 
 let refmtBin = "_esy/default/build/install/default/bin/refmt";
+let oprintTestBin = "_esy/default/build/install/default/bin/testOprint.exe";

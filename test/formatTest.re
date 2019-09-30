@@ -1,13 +1,13 @@
 open TestFramework;
 open TestUtils;
 
-let buildArgs = filename =>
+let buildRefmtArgs = filename =>
   refmtBin ++ " --print-width 50 --print re " ++ filename;
 
-let refmTestFolders = ["idempotentTests", "typeCheckedTests", "unit_tests"];
+let buildOprintArgs = filename => "cat " ++ filename ++ " | " ++ oprintTestBin;
 
 describe("formatTest", ({describe, _}) => {
-  refmTestFolders
+  ["idempotentTests", "typeCheckedTests", "unit_tests"]
   |> List.iter(folder =>
        describe(folder, ({test, _}) =>
          lsDir("./formatTest/" ++ folder ++ "/input")
@@ -15,7 +15,7 @@ describe("formatTest", ({describe, _}) => {
               test(
                 filename,
                 ({expect}) => {
-                  let (stdOut, stdErr) = syscall(buildArgs(filename));
+                  let (stdOut, stdErr) = syscall(buildRefmtArgs(filename));
                   expect.string(stdOut).toMatchSnapshot();
                   expect.string(stdErr).toBeEmpty();
                 },
@@ -30,9 +30,23 @@ describe("formatTest", ({describe, _}) => {
          test(
            filename,
            ({expect}) => {
-             let (stdOut, stdErr) = syscall(buildArgs(filename));
+             let (stdOut, stdErr) = syscall(buildRefmtArgs(filename));
              expect.string(stdErr).toMatchSnapshot();
              expect.string(stdOut).toBeEmpty();
+           },
+         )
+       )
+  );
+
+  describe("oprintTests", ({test, _}) =>
+    lsDir("./formatTest/oprintTests/input")
+    |> List.iter(filename =>
+         test(
+           filename,
+           ({expect}) => {
+             let (stdOut, stdErr) = syscall(buildOprintArgs(filename));
+             expect.string(stdOut).toMatchSnapshot();
+             expect.string(stdErr).toBeEmpty();
            },
          )
        )
