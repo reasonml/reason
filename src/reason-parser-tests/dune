@@ -7,5 +7,5 @@
 (executable
  (name testOprint)
  (public_name testOprint.exe)
- (package reason-parser-tests)
+ (package reason-dev)
  (libraries reason))

@@ -32,7 +32,7 @@
         "dune",
         "build",
         "-p",
-        "reason,rtop,reason-parser-tests,reason-dev"
+        "reason,rtop,reason-dev"
       ]
     ],
     "install": [
@@ -43,10 +43,6 @@
       [
         "esy-installer",
         "rtop.install"
-      ],
-      [
-        "esy-installer",
-        "reason-parser-tests.install"
       ],
       [
         "esy-installer",
