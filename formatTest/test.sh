@@ -33,13 +33,6 @@ else
     DIFF="eval diff --unchanged-line-format='' --new-line-format=':%dn: %L' --old-line-format=':%dn: %L'"
 fi
 
-ERROR_TEST_INPUT=$DIR/errorTests/input
-
-ERROR_TEST_OUTPUT=$DIR/errorTests/actual_output
-
-ERROR_TEST_EXPECTED_OUTPUT=$DIR/errorTests/expected_output
-
-
 OPRINT_TEST_INPUT=$DIR/oprintTests/input
 
 OPRINT_TEST_OUTPUT=$DIR/oprintTests/actual_output
@@ -83,7 +76,7 @@ function version() {
 
 function setup_test_dir() {
     echo "Setting up test dirs actual_output alongside the tests' expected_output"
-    mkdir -p $ERROR_TEST_OUTPUT $OPRINT_TEST_OUTPUT $OPRINT_TEST_INTF_OUTPUT
+    mkdir -p $OPRINT_TEST_OUTPUT $OPRINT_TEST_INTF_OUTPUT
     touch $FAILED_TESTS
 }
 
@@ -194,52 +187,6 @@ function oprint_test() {
     fi
 }
 
-function error_test() {
-    FILE=$1
-    INPUT=$2
-    OUTPUT=$3
-    EXPECTED_OUTPUT=$4
-
-    info "Error Test: $FILE"
-    if [ "$(basename $FILE)" != "$(basename $FILE .ml)" ] || [ "$(basename $FILE)" != "$(basename $FILE .mli)" ]; then
-      warning "  ⊘ FAILED: .ml files should not need to be run against error tests. \n"
-      return 1
-    else
-      debug "  '$REFMT --print-width 50 --print re $INPUT/$FILE &> $OUTPUT/$FILE'"
-      # ensure errors are not absolute filepaths
-      cd $INPUT
-      $REFMT --print-width 50 --print re $(basename $FILE) &> $OUTPUT/$FILE
-      cd - > /dev/null
-    fi
-
-    OFILE="${FILE}"
-    VERSION_SPECIFIC_FILE="${FILE}.${OCAML_VERSION}"
-    if [ -f "${EXPECTED_OUTPUT}/${VERSION_SPECIFIC_FILE}" ]; then
-        echo "Found test file specific to version ${OCAML_VERSION}..."
-        OFILE="${VERSION_SPECIFIC_FILE}"
-    fi
-
-    debug "  Comparing results:  diff $EXPECTED_OUTPUT/$OFILE $OUTPUT/$FILE"
-
-    $DIFF $EXPECTED_OUTPUT/$OFILE $OUTPUT/$FILE
-
-    if ! [[ $? -eq 0 ]]; then
-        warning "  ⊘ FAILED\n"
-        info "  ${INFO}$OUTPUT/$FILE${RESET}"
-        info "  doesn't match expected output"
-        info "  ${INFO}$EXPECTED_OUTPUT/$OFILE${RESET}"
-        info ""
-        info "  To approve the changes run:"
-        info "    cp $OUTPUT/$FILE $EXPECTED_OUTPUT/$OFILE"
-        echo ""
-        return 1
-    fi
-
-    success "  ☑ PASS"
-    echo
-}
-
-
 cd $OPRINT_TEST_INPUT && find . -type f \( -name "*.re*" -or -name "*.ml*" \) | while read file; do
         oprint_test $file $OPRINT_TEST_INPUT $OPRINT_TEST_OUTPUT $OPRINT_TEST_EXPECTED_OUTPUT $OPRINT_TEST_INTF_OUTPUT
         if ! [[ $? -eq 0 ]]; then
@@ -249,13 +196,6 @@ cd $OPRINT_TEST_INPUT && find . -type f \( -name "*.re*" -or -name "*.ml*" \) | 
         oprint_test $file $OPRINT_TEST_OUTPUT $OPRINT_TEST_INTF_OUTPUT $OPRINT_TEST_EXPECTED_OUTPUT '-i true --parse re'
         if ! [[ $? -eq 0 ]]; then
             echo "$file -- failed oprint_test" >> $FAILED_TESTS
-        fi
-done
-
-cd $ERROR_TEST_INPUT && find . -type f \( -name "*.re*" -or -name "*.ml*" \) | while read file; do
-        error_test $file $ERROR_TEST_INPUT $ERROR_TEST_OUTPUT $ERROR_TEST_EXPECTED_OUTPUT
-        if ! [[ $? -eq 0 ]]; then
-            echo "$file -- failed error_test" >> $FAILED_TESTS
         fi
 done
 
