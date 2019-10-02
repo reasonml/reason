@@ -1,3 +1,8 @@
+## 3.5.1
+- Support OCaml 4.09 ([2450](https://github.com/facebook/reason/pull/2450)).
+- Improve opam packaging config ([2431](https://github.com/facebook/reason/pull/2431)).
+- Improve repo to support esy resolutions to master branch ([31225fc0](https://github.co(https://github.com/facebook/reason/commit/31225fc066731075b6fa695e555f65ffcc172bcf))
+
 ## 3.5.0
 Improvements:
 - Support OCaml 4.08 ([2426](https://github.com/facebook/reason/pull/2426)).
