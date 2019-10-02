@@ -8,15 +8,12 @@
   },
   "dependencies": {
     "@esy-ocaml/substs": "^0.0.1",
-    "@esy-ocaml/esy-installer": "^0.0.0",
-    "@opam/ocamlfind": "",
+    "@opam/ocamlfind": "*",
     "@opam/result": "*",
     "@opam/dune": "*",
     "@esy-ocaml/reason": "^3.2.0",
-    "@opam/utop": " >= 1.17.0"
-  },
-  "peerDependencies": {
-    "ocaml": " >= 4.2.0  < 4.8.0"
+    "@opam/utop": " >= 1.17.0",
+    "ocaml": ">= 4.2.0  < 4.10.0"
   },
   "devDependencies": {
     "@esy-ocaml/merlin": "*",
@@ -25,19 +22,6 @@
   "esy": {
     "build": [
       [ "dune", "build", "-p", "rtop"]
-    ],
-    "install": [
-      ["esy-installer"]
-    ],
-    "buildsInSource": "_build",
-    "_dependenciesForNewEsyInstaller": {
-      "@esy-ocaml/substs": "^0.0.1",
-      "@esy-ocaml/esy-installer": "^0.0.0",
-      "@opam/ocamlfind": "",
-      "@opam/result": "*",
-      "@opam/dune": "*",
-      "@esy-ocaml/reason": "^3.2.0",
-      "@opam/utop": " >= 1.17"
-    }
+    ]
   }
 }
