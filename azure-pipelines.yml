@@ -30,7 +30,7 @@ stages:
     strategy:
         matrix: {
           "linux": {
-            vmImages: ubuntu-latest,
+            vmImage: ubuntu-latest,
             STAGING_DIRECTORY: /home/vsts/STAGING,
             STAGING_DIRECTORY_UNIX: /home/vsts/STAGING,
             ESY__CACHE_INSTALL_PATH: /home/vsts/.esy/3_____________________________________________________________________/i,
