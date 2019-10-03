@@ -1,103 +1,70 @@
 # Reason build pipeline
 
 name: $(Build.SourceVersion)
-jobs:
-- job: Linux_esy
-  timeoutInMinutes: 0
-  pool:
-    vmImage: 'Ubuntu 16.04'
+stages:
+- stage: Build_opam
+  displayName: Build with opam
+  jobs:
+  - job: Mac
+    strategy:
+      matrix: {
+        "opam_4090": { OCAML_VERSION: 4.09.0 },
+        "opam_4081": { OCAML_VERSION: 4.08.1 },
+        "opam_4071": { OCAML_VERSION: 4.07.1 },
+        "opam_4061": { OCAML_VERSION: 4.06.1 },
+        "opam_4023": { OCAML_VERSION: 4.02.3 }
+      }
+    timeoutInMinutes: 0
+    pool:
+      vmImage: 'macOS-latest'
 
-  variables:
-    STAGING_DIRECTORY: /home/vsts/STAGING
-    STAGING_DIRECTORY_UNIX: /home/vsts/STAGING
-    ESY__CACHE_INSTALL_PATH: /home/vsts/.esy/3_____________________________________________________________________/i
-    ESY__CACHE_SOURCE_TARBALL_PATH: /home/vsts/.esy/source/i
-    # ESY__NPM_ROOT: /opt/hostedtoolcache/node/8.14.0/x64/lib/node_modules/esy
+    steps:
+    - template: .ci/opam-build-steps.yml
 
-  steps:
-  - template: .ci/esy-build-steps.yml
+- stage: Build_esy
+  displayName: Build with esy
+  jobs:  
+  - job: Linux_esy
+    timeoutInMinutes: 0
+    pool:
+      vmImage: 'Ubuntu 16.04'
 
-- job: Mac_opam_4090
-  timeoutInMinutes: 0
-  pool:
-    vmImage: 'macOS 10.13'
+    variables:
+      STAGING_DIRECTORY: /home/vsts/STAGING
+      STAGING_DIRECTORY_UNIX: /home/vsts/STAGING
+      ESY__CACHE_INSTALL_PATH: /home/vsts/.esy/3_____________________________________________________________________/i
+      ESY__CACHE_SOURCE_TARBALL_PATH: /home/vsts/.esy/source/i
+      # ESY__NPM_ROOT: /opt/hostedtoolcache/node/8.14.0/x64/lib/node_modules/esy
 
-  variables:
-    OCAML_VERSION: 4.09.0
+    steps:
+    - template: .ci/esy-build-steps.yml
 
-  steps:
-  - template: .ci/opam-build-steps.yml
+  - job: MacOS_esy
+    timeoutInMinutes: 0
+    pool:
+      vmImage: 'macOS 10.13'
 
-- job: Mac_opam_4080
-  timeoutInMinutes: 0
-  pool:
-    vmImage: 'macOS 10.13'
+    variables:
+      STAGING_DIRECTORY: /Users/vsts/STAGING
+      STAGING_DIRECTORY_UNIX: /Users/vsts/STAGING
+      ESY__CACHE_INSTALL_PATH: /Users/vsts/.esy/3____________________________________________________________________/i
+      ESY__CACHE_SOURCE_TARBALL_PATH: /Users/vsts/.esy/source/i
+      # ESY__NPM_ROOT: /usr/local/lib/node_modules/esy
 
-  variables:
-    OCAML_VERSION: 4.08.0
+    steps:
+    - template: .ci/esy-build-steps.yml
 
-  steps:
-  - template: .ci/opam-build-steps.yml
+  - job: Windows_esy
+    timeoutInMinutes: 0
+    pool:
+      vmImage: 'vs2017-win2016'
 
-- job: Mac_opam_4071
-  timeoutInMinutes: 0
-  pool:
-    vmImage: 'macOS 10.13'
+    variables:
+      STAGING_DIRECTORY: C:\Users\VssAdministrator\STAGING
+      STAGING_DIRECTORY_UNIX: /C/Users/VssAdministrator/STAGING
+      ESY__CACHE_INSTALL_PATH: /C/Users/VssAdministrator/.esy/3_/i
+      ESY__CACHE_SOURCE_TARBALL_PATH: /C/Users/VssAdministrator/.esy/source/i
+      # ESY__NPM_ROOT: /C/npm/prefix/node_modules/esy
 
-  variables:
-    OCAML_VERSION: 4.07.1
-
-  steps:
-  - template: .ci/opam-build-steps.yml
-
-- job: Mac_opam_4061
-  timeoutInMinutes: 0
-  pool:
-    vmImage: 'macOS 10.13'
-
-  variables:
-    OCAML_VERSION: 4.06.1
-
-  steps:
-  - template: .ci/opam-build-steps.yml
-
-- job: Mac_opam_4023
-  timeoutInMinutes: 0
-  pool:
-    vmImage: 'macOS 10.13'
-
-  variables:
-    OCAML_VERSION: 4.02.3
-
-  steps:
-  - template: .ci/opam-build-steps.yml
-
-- job: MacOS_esy
-  timeoutInMinutes: 0
-  pool:
-    vmImage: 'macOS 10.13'
-
-  variables:
-    STAGING_DIRECTORY: /Users/vsts/STAGING
-    STAGING_DIRECTORY_UNIX: /Users/vsts/STAGING
-    ESY__CACHE_INSTALL_PATH: /Users/vsts/.esy/3____________________________________________________________________/i
-    ESY__CACHE_SOURCE_TARBALL_PATH: /Users/vsts/.esy/source/i
-    # ESY__NPM_ROOT: /usr/local/lib/node_modules/esy
-
-  steps:
-  - template: .ci/esy-build-steps.yml
-
-- job: Windows_esy
-  timeoutInMinutes: 0
-  pool:
-    vmImage: 'vs2017-win2016'
-
-  variables:
-    STAGING_DIRECTORY: C:\Users\VssAdministrator\STAGING
-    STAGING_DIRECTORY_UNIX: /C/Users/VssAdministrator/STAGING
-    ESY__CACHE_INSTALL_PATH: /C/Users/VssAdministrator/.esy/3_/i
-    ESY__CACHE_SOURCE_TARBALL_PATH: /C/Users/VssAdministrator/.esy/source/i
-    # ESY__NPM_ROOT: /C/npm/prefix/node_modules/esy
-
-  steps:
-  - template: .ci/esy-build-steps.yml
+    steps:
+    - template: .ci/esy-build-steps.yml
