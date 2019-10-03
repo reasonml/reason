@@ -23,48 +23,33 @@ stages:
 
 - stage: Build_esy
   displayName: Build with esy
-  jobs:  
-  - job: Linux_esy
-    timeoutInMinutes: 0
+  jobs:
+  - job: esy
+    strategy:
+        matrix: {
+          "linux": {
+            vmImages: ubuntu-latest,
+            STAGING_DIRECTORY: /home/vsts/STAGING,
+            STAGING_DIRECTORY_UNIX: /home/vsts/STAGING,
+            ESY__CACHE_INSTALL_PATH: /home/vsts/.esy/3_____________________________________________________________________/i,
+            ESY__CACHE_SOURCE_TARBALL_PATH: /home/vsts/.esy/source/i
+          },
+          "mac": {
+            vmImage: macOS-latest,
+            STAGING_DIRECTORY: /Users/vsts/STAGING,
+            STAGING_DIRECTORY_UNIX: /Users/vsts/STAGING,
+            ESY__CACHE_INSTALL_PATH: /Users/vsts/.esy/3____________________________________________________________________/i,
+            ESY__CACHE_SOURCE_TARBALL_PATH: /Users/vsts/.esy/source/i
+          },
+          "windows": {
+            vmImage: windows-latest,
+            STAGING_DIRECTORY: "C:\\Users\\VssAdministrator\\STAGING",
+            STAGING_DIRECTORY_UNIX: /C/Users/VssAdministrator/STAGING,
+            ESY__CACHE_INSTALL_PATH: /C/Users/VssAdministrator/.esy/3_/i,
+            ESY__CACHE_SOURCE_TARBALL_PATH: /C/Users/VssAdministrator/.esy/source/i
+          }
+        }
     pool:
-      vmImage: 'Ubuntu 16.04'
-
-    variables:
-      STAGING_DIRECTORY: /home/vsts/STAGING
-      STAGING_DIRECTORY_UNIX: /home/vsts/STAGING
-      ESY__CACHE_INSTALL_PATH: /home/vsts/.esy/3_____________________________________________________________________/i
-      ESY__CACHE_SOURCE_TARBALL_PATH: /home/vsts/.esy/source/i
-      # ESY__NPM_ROOT: /opt/hostedtoolcache/node/8.14.0/x64/lib/node_modules/esy
-
-    steps:
-    - template: .ci/esy-build-steps.yml
-
-  - job: MacOS_esy
-    timeoutInMinutes: 0
-    pool:
-      vmImage: 'macOS 10.13'
-
-    variables:
-      STAGING_DIRECTORY: /Users/vsts/STAGING
-      STAGING_DIRECTORY_UNIX: /Users/vsts/STAGING
-      ESY__CACHE_INSTALL_PATH: /Users/vsts/.esy/3____________________________________________________________________/i
-      ESY__CACHE_SOURCE_TARBALL_PATH: /Users/vsts/.esy/source/i
-      # ESY__NPM_ROOT: /usr/local/lib/node_modules/esy
-
-    steps:
-    - template: .ci/esy-build-steps.yml
-
-  - job: Windows_esy
-    timeoutInMinutes: 0
-    pool:
-      vmImage: 'vs2017-win2016'
-
-    variables:
-      STAGING_DIRECTORY: C:\Users\VssAdministrator\STAGING
-      STAGING_DIRECTORY_UNIX: /C/Users/VssAdministrator/STAGING
-      ESY__CACHE_INSTALL_PATH: /C/Users/VssAdministrator/.esy/3_/i
-      ESY__CACHE_SOURCE_TARBALL_PATH: /C/Users/VssAdministrator/.esy/source/i
-      # ESY__NPM_ROOT: /C/npm/prefix/node_modules/esy
-
+      vmImage: $(vmImage)
     steps:
     - template: .ci/esy-build-steps.yml
