@@ -10,7 +10,7 @@ stages:
     strategy:
       matrix: {
         "opam_4090": { OCAML_VERSION: 4.09.0 },
-        "opam_4081": { OCAML_VERSION: 4.08.1 },
+        "opam_4080": { OCAML_VERSION: 4.08.0 },
         "opam_4071": { OCAML_VERSION: 4.07.1 },
         "opam_4061": { OCAML_VERSION: 4.06.1 },
         "opam_4023": { OCAML_VERSION: 4.02.3 }
