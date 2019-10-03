@@ -4,6 +4,7 @@ name: $(Build.SourceVersion)
 stages:
 - stage: Build_opam
   displayName: Build with opam
+  dependsOn: []
   jobs:
   - job: Mac
     strategy:
@@ -23,6 +24,7 @@ stages:
 
 - stage: Build_esy
   displayName: Build with esy
+  dependsOn: []
   jobs:
   - job: esy
     strategy:
