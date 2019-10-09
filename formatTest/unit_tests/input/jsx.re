@@ -562,3 +562,5 @@ let v =
     name: x |> Option.map(x => {let y = x; y ++ y})
   }}
 />;
+
+<A someProp={ <> {React.string("Hello")} </> } />;
