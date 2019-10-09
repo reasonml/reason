@@ -711,3 +711,5 @@ let v =
 />;
 
 <A someProp={<> {React.string("Hello")} </>} />;
+
+<A someProp=?{<> {React.string("Hi")} </>} />;
