@@ -23,17 +23,17 @@ const path = require('path');
 const quote = s => '"' + s + '"';
 const opamifyName = name => {
   if(name.indexOf("@opam/") === 0) {
-    return name.substr(6);
+    return '"' + name.substr(6) + '"';
   } else if(name === '@esy-ocaml/reason') {
-    return "reason";
+    return '"reason"';
   } else {
     if(name.indexOf('@') === 0) {
       var scopeAndPackage = name.substr(1).split('/');
       // return 'npm--' + scopeAndPackage[0] + '--' + scopeAndPackage[1];
       // Assumes the packages have name.opam files, without the scope.
-      return scopeAndPackage[1];
+      return '"' + scopeAndPackage[1] + '"';
     } else {
-      return name;
+      return '"' + name + '"';
     }
   }
 };
@@ -88,7 +88,8 @@ const createOpamText = package => {
     'depends: [',
   ].concat(depMap(package.dependencies).map(s=>'  ' + s)).concat([
     ']',
-    'synopsis: ' + quote(package.description),
+    'synopsis: ' +
+      quote(package.description.charAt(0).toUpperCase() + package.description.substr(1)),
     'description: ' + quote(package.description)
   ]);
   return opamTemplate.join('\n') + '\n';
