@@ -81,7 +81,7 @@ const createOpamText = package => {
       ('bug-reports: ' + quote(package.repository.url)) :
       '',
     package.repository && package.repository.url ?
-      ('dev-repo: ' + quote(package.repository.url)) :
+      ('dev-repo: ' + quote(package.repository.url.replace('https', 'git').replace('http', 'git'))) :
       '',
     'tags: [' + (package.keywords ? package.keywords.map(quote).join(' ') : '') + ']',
     'build: [ [' + package.esy.build.split(' ').map(quote).join(' ') + ' ] ]',
