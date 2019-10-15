@@ -71,7 +71,7 @@ const depMap = (o) => {
 };
 const createOpamText = package => {
   const opamTemplate = [
-    'opam-version: ' + quote(package.version),
+    'opam-version: ' + quote("2.0"),
     'maintainer: ' + quote(package.author),
     'authors: [' + quote(package.author) + ']',
     'license: ' + quote(package.license),
