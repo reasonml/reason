@@ -34,7 +34,7 @@ steps:
           if [[ $(curl $REST_ART) =~ (downloadUrl\":\")([^\"]*) ]]; then LATEST_ART_URL="${BASH_REMATCH[2]}"; else LATEST_ART_URL=""; fi
         }
         downloadArtifact() {
-          curl "$LATEST_ART_URL" > "${Build.StagingDirectory}/$ART_NAME.zip"
+          curl "$LATEST_ART_URL" > "$(Build.StagingDirectory)/$ART_NAME.zip"
           cd $(Build.StagingDirectory)
           unzip "$ART_NAME.zip"
         }
