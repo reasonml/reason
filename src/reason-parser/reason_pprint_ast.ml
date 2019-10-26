@@ -7848,11 +7848,7 @@ let printer = object(self:'self)
                * });
                *)
             let (leftWrap, rightWrap) as wrap = ("=> ", ")" ^ rightWrap) in
-            let wrap = if self#should_preserve_requested_braces retCb then
-              (leftWrap ^ "{", "}" ^ rightWrap)
-            else
-              wrap
-            in
+            let wrap =  (leftWrap ^ "{", "}" ^ rightWrap) in
             let right =
               source_map ~loc:retCb.pexp_loc
                 (makeList ~break:Always_rec ~wrap ~sep:(SepFinal (";", ";")) xs)

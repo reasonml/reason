@@ -532,3 +532,9 @@ let v =
       }}
     </B>
   </A>;
+
+<Component
+  prop={
+    x->Option.map(x => {let y = x; y ++ y})
+  }
+/>
