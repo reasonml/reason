@@ -46,9 +46,9 @@ steps:
         downloadArtifact
       
 
-  - bash: 'mkdir -p $(ESY__CACHE_INSTALL_PATH)'
-    condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
-    displayName: '[Cache][Restore] Create esy cache directory'
+  # - bash: 'mkdir -p $(ESY__CACHE_INSTALL_PATH)'
+  #   condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
+  #   displayName: '[Cache][Restore] Create esy cache directory'
 
   # - bash: 'cd $(ESY__NPM_ROOT) && tar -xf $(Build.StagingDirectory)/cache-$(Agent.OS)-install/npm-cache.tar -C .'
   #   continueOnError: true
