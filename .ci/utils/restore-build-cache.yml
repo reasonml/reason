@@ -1,7 +1,7 @@
 # Steps for restoring project cache
 
 steps:
-  - bash: 'mkdir -p $(STAGING_DIRECTORY_UNIX)'
+  - bash: 'mkdir -p $(Build.StagingDirectory)'
     condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
     displayName: '[Cache][Publish] Create cache directory'
 
@@ -34,8 +34,8 @@ steps:
           if [[ $(curl $REST_ART) =~ (downloadUrl\":\")([^\"]*) ]]; then LATEST_ART_URL="${BASH_REMATCH[2]}"; else LATEST_ART_URL=""; fi
         }
         downloadArtifact() {
-          curl "$LATEST_ART_URL" > "${STAGING_DIRECTORY_UNIX}/$ART_NAME.zip"
-          cd $STAGING_DIRECTORY_UNIX
+          curl "$LATEST_ART_URL" > "${Build.StagingDirectory}/$ART_NAME.zip"
+          cd $(Build.StagingDirectory)
           unzip "$ART_NAME.zip"
         }
         fetchArtifactURL
@@ -50,18 +50,18 @@ steps:
     condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
     displayName: '[Cache][Restore] Create esy cache directory'
 
-  # - bash: 'cd $(ESY__NPM_ROOT) && tar -xf $(STAGING_DIRECTORY_UNIX)/cache-$(Agent.OS)-install/npm-cache.tar -C .'
+  # - bash: 'cd $(ESY__NPM_ROOT) && tar -xf $(Build.StagingDirectory)/cache-$(Agent.OS)-install/npm-cache.tar -C .'
   #   continueOnError: true
   #   condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
   #   displayName: '[Cache][Restore] Untar npm cache directory'
 
-  - bash: 'cd $(ESY__CACHE_INSTALL_PATH) && tar -xf $(STAGING_DIRECTORY_UNIX)/cache-$(Agent.OS)-install/esy-cache.tar -C .'
+  - bash: 'cd $(ESY__CACHE_INSTALL_PATH) && tar -xf $(Build.StagingDirectory)/cache-$(Agent.OS)-install/esy-cache.tar -C .'
     continueOnError: true
     condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
     displayName: '[Cache][Restore] Untar esy cache directory'
 
   - bash: 'rm -rf *'
     continueOnError: true
-    workingDirectory: '$(STAGING_DIRECTORY)'
+    workingDirectory: '$(Build.StagingDirectory)'
     condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
     displayName: '[Cache][Restore] Clean up'
