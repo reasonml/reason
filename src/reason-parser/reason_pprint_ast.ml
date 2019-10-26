@@ -3753,7 +3753,7 @@ let printer = object(self:'self)
               {exp with pexp_loc = { exp.pexp_loc with loc_end = loc_end } }
             in
             makeList (
-              self#formatFunAppl
+              self#reset_request_braces#formatFunAppl
                 ?prefix
                 ~jsxAttrs:[]
                 ~args
