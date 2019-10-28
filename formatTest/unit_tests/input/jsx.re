@@ -537,4 +537,10 @@ let v =
   prop={
     x->Option.map(x => {let y = x; y ++ y})
   }
-/>
+/>;
+
+<Component
+  prop={{
+    name: x->Option.map(x => {let y = x; y ++ y})
+  }}
+/>;

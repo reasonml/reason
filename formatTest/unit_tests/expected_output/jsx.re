@@ -667,3 +667,13 @@ let v =
     })
   }
 />;
+
+<Component
+  prop={
+    name:
+      x->Option.map(x => {
+        let y = x;
+        y ++ y;
+      }),
+  }
+/>;
