@@ -1,0 +1,16 @@
+# These steps are only run on Linux
+steps:
+  - script: "esy doc"
+    displayName: "Build docs"
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
+
+  - script: echo '##vso[task.setvariable variable=docsPath]'$(esy echo '#{self.target_dir}/default/_doc/_html')
+    displayName: "Save docsPath in variable"
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
+
+  - task: PublishBuildArtifacts@1
+    displayName: "Publish Artifact: Docs"
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
+    inputs:
+      PathtoPublish: $(docsPath)
+      ArtifactName: Docs

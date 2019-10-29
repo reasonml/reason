@@ -1,5 +1,5 @@
 {
-  "name": "reason-dev",
+  "name": "reason-cli",
   "notes": "This is just the dev package config. See ./scripts/esy/ for release package configs",
   "license": "MIT",
   "version": "3.5.1",
@@ -16,6 +16,7 @@
   },
   "devDependencies": {
     "@opam/merlin": "*",
+    "@opam/odoc": "*",
     "ocaml": "~4.6.0"
   },
   "notes-ctd": [
@@ -31,6 +32,46 @@
     "install": [
       ["esy-installer", "reason.install"],
       ["esy-installer", "rtop.install"]
-    ]
+    ],
+    "release": {
+      "bin": {
+        "rtop": "rtop",
+        "refmt-cli": "refmt"
+      },
+      "includePackages": [
+        "root",
+        "@opam/base-bytes",
+        "@opam/base-threads",
+        "@opam/base-unix",
+        "@opam/camomile",
+        "@opam/lambda-term",
+        "@opam/lwt",
+        "@opam/lwt_log",
+        "@opam/lwt_react",
+        "@opam/menhir",
+        "@opam/mmap",
+        "@opam/ocplib-endian",
+        "@opam/ocaml-migrate-parsetree",
+        "@opam/ocamlfind",
+        "@opam/ppx_derivers",
+        "@opam/react",
+        "@opam/result",
+        "@opam/seq",
+        "@opam/utop",
+        "@opam/zed",
+        "ocaml"
+      ],
+      "rewritePrefix": true
+    }
+  },
+  "scripts": {
+    "//": "sanity test. Expected by ci.",
+    "test": "esy x refmt --version",
+
+    "//": "Actual test.",
+    "tests": "esy x make test",
+
+    "//": "Required by CI",
+    "doc": "esy dune build @doc"
   }
 }

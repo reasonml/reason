@@ -1,0 +1,82 @@
+parameters:
+  platform: "macOS"
+  vmImage: "macOS-10.13"
+
+jobs:
+  - job: ${{ parameters.platform }}
+    pool:
+      vmImage: ${{ parameters.vmImage }}
+      demands: node.js
+    timeoutInMinutes: 120 # This is mostly for Windows
+    steps: 
+      - powershell: $Env:Path
+        continueOnError: true
+        condition: and(eq(variables['AGENT.OS'], 'Windows_NT'), and(eq(variables['Build.Reason'], 'PullRequest'), and(succeeded(), ne(variables['Build.SourceBranch'], variables['System.PullRequest.TargetBranch']))))
+        displayName: "Print env in powershell"
+      # Needed so that the mingw tar doesn't shadow the system tar. See
+      # pipelines.yaml. We need windows bsdtar from system32, not the mingw
+      # one. Note powershell doesn't need escaping of backslashes.
+      - powershell: Write-Host "##vso[task.setvariable variable=PATH;]C:\Windows\system32;${env:PATH}"
+        continueOnError: true
+        condition: eq(variables['AGENT.OS'], 'Windows_NT')
+        displayName: "Make sure windows/system32 is at front of path if windows"
+      - powershell: $Env:Path
+        continueOnError: true
+        condition: and(eq(variables['AGENT.OS'], 'Windows_NT'), and(eq(variables['Build.Reason'], 'PullRequest'), and(succeeded(), ne(variables['Build.SourceBranch'], variables['System.PullRequest.TargetBranch']))))
+        displayName: "Print env in powershell"
+      - powershell: get-command tar
+        continueOnError: true
+        condition: and(eq(variables['AGENT.OS'], 'Windows_NT'), and(eq(variables['Build.Reason'], 'PullRequest'), and(succeeded(), ne(variables['Build.SourceBranch'], variables['System.PullRequest.TargetBranch']))))
+        displayName: "Print where tar is located"
+      - powershell: tar --help
+        continueOnError: true
+        condition: and(eq(variables['AGENT.OS'], 'Windows_NT'), and(eq(variables['Build.Reason'], 'PullRequest'), and(succeeded(), ne(variables['Build.SourceBranch'], variables['System.PullRequest.TargetBranch']))))
+        displayName: "Print tar help"
+      - bash: |
+          # COMPUTE THE ESY INSTALL CACHE LOCATION AHEAD OF TIME
+          DESIRED_LEN="86"
+          # Note: This will need to change when upgrading esy version
+          # that reenables long paths on windows.
+          if [ "$AGENT_OS" == "Windows_NT" ]; then
+            DESIRED_LEN="33"
+          fi
+          HOME_ESY3="$HOME/.esy/3"
+          HOME_ESY3_LEN=${#HOME_ESY3}
+          NUM_UNDERS=$(echo "$(($DESIRED_LEN-$HOME_ESY3_LEN))")
+          UNDERS=$(printf "%-${NUM_UNDERS}s" "_")
+          UNDERS="${UNDERS// /_}"
+          THE_ESY__CACHE_INSTALL_PATH=${HOME_ESY3}${UNDERS}/i
+          if [ "$AGENT_OS" == "Windows_NT" ]; then
+            THE_ESY__CACHE_INSTALL_PATH=$( cygpath --mixed --absolute "$THE_ESY__CACHE_INSTALL_PATH")
+          fi
+          echo "THE_ESY__CACHE_INSTALL_PATH: $THE_ESY__CACHE_INSTALL_PATH"
+          # This will be exposed as an env var ESY__CACHE_INSTALL_PATH, or an
+          # Azure var esy__cache_install_path
+          echo "##vso[task.setvariable variable=esy__cache_install_path]$THE_ESY__CACHE_INSTALL_PATH"
+      # - bash: |
+      #     which esy
+      #     echo "$( which esy )"
+      #     echo "##vso[task.setvariable variable=esy_bin_location]$(which esy)"
+      #   displayName: "Find esy binary"
+      # - bash: echo ${ESY_BIN_LOCATION}
+      # displayName: "Print esy bin location"
+      - bash: env
+        displayName: "Print environment"
+      - template: utils/use-node.yml
+      - template: utils/use-esy.yml
+      - script: "esy install"
+        displayName: "esy install"
+      - template: utils/restore-build-cache.yml
+      - script: "esy build"
+        displayName: "esy build"
+      - template: utils/create-docs.yml
+      - script: "esy test"
+        displayName: "Test command"
+      - script: "esy release"
+        displayName: "esy release"
+      - template: utils/publish-build-cache.yml
+      - task: PublishBuildArtifacts@1
+        displayName: "Publish Artifact: ${{ parameters.platform }}"
+        inputs:
+          PathtoPublish: "_release"
+          ArtifactName: ${{ parameters.platform }}
