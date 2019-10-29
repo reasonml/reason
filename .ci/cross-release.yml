@@ -1,0 +1,34 @@
+steps:
+  - template: utils/use-node.yml
+
+  - script: "mkdir _release"
+    displayName: "Create _release dir"
+
+  - template: release-platform-setup.yml
+    parameters:
+      platform: "Linux"
+      folder: "platform-linux"
+
+  - template: release-platform-setup.yml
+    parameters:
+      platform: "macOS"
+      folder: "platform-darwin"
+
+  - template: release-platform-setup.yml
+    parameters:
+      platform: "Windows"
+      folder: "platform-windows-x64"
+
+  - script: "node .ci/pipelines-release.js"
+    displayName: "node .ci/pipelines-release.js"
+    continueOnError: true
+
+  - script: "npm pack ."
+    displayName: "npm pack"
+    workingDirectory: "_release"
+
+  - task: PublishBuildArtifacts@1
+    displayName: "Publish Artifact: Release"
+    inputs:
+      PathtoPublish: "_release"
+      ArtifactName: Release

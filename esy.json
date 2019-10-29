@@ -30,6 +30,45 @@
     "install": [
       ["esy-installer", "reason.install"],
       ["esy-installer", "rtop.install"]
-    ]
+    ],
+    "release": {
+      "bin": [
+        "rtop",
+        "refmt"
+      ],
+      "includePackages": [
+        "root",
+        "@opam/base-bytes",
+        "@opam/base-threads",
+        "@opam/base-unix",
+        "@opam/camomile",
+        "@opam/lambda-term",
+        "@opam/lwt",
+        "@opam/lwt_log",
+        "@opam/lwt_react",
+        "@opam/menhir",
+        "@opam/mmap",
+        "@opam/ocaml-migrate-parsetree",
+        "@opam/ocamlfind",
+        "@opam/ppx_derivers",
+        "@opam/react",
+        "@opam/result",
+        "@opam/seq",
+        "@opam/utop",
+        "@opam/zed",
+        "**ocaml**"
+      ],
+      "rewritePrefix": true
+    }
+  },
+  "scripts": {
+    "//": "sanity test. Expected by ci.",
+    "test": "esy x refmt --version",
+
+    "//": "Actual test.",
+    "tests": "esy x make test",
+
+    "//": "Required by CI",
+    "doc": "esy dune build @doc"
   }
 }

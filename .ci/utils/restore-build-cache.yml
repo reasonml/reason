@@ -2,11 +2,13 @@
 
 steps:
   - bash: 'mkdir -p $(Build.StagingDirectory)'
-    condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
+    condition: and(eq(variables['Build.Reason'], 'PullRequest'), and(succeeded(), ne(variables['Build.SourceBranch'], variables['System.PullRequest.TargetBranch'])))
     displayName: '[Cache][Publish] Create cache directory'
 
+  # TODO: This can be done in parallel with installing node, and esy
+  # (which would save a bunch of time on windows)
   - task: Bash@3
-    condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
+    condition: and(eq(variables['Build.Reason'], 'PullRequest'), and(succeeded(), ne(variables['Build.SourceBranch'], variables['System.PullRequest.TargetBranch'])))
     displayName: '[Cache][Restore] Restoring build cache using REST API'
     continueOnError: true
     inputs:
@@ -17,10 +19,11 @@ steps:
         PROJ="$SYSTEM_TEAMPROJECT"
         ART_NAME="cache-${AGENT_OS}-install"
         fetchLatestBuild() {
-          MASTER='branchName=refs%2Fheads%2Fmaster'
+          PREFIX="branchName=refs%2Fheads%2F"
+          BRANCH=${PREFIX}${SYSTEM_PULLREQUEST_TARGETBRANCH}
           FILTER='deletedFilter=excludeDeleted&statusFilter=completed&resultFilter=succeeded'
           LATEST='queryOrder=finishTimeDescending&$top=1'
-          REST_BUILDS="$REST_BASE/$PROJ/_apis/build/builds?${FILTER}&${MASTER}&${LATEST}&api-version=4.1"
+          REST_BUILDS="$REST_BASE/$PROJ/_apis/build/builds?${FILTER}&${BRANCH}&${LATEST}&api-version=4.1"
           echo "Rest call for builds: $REST_BUILDS"
           REST_BUILDS_RESP=$(curl "$REST_BUILDS")
           if [[ $REST_BUILDS_RESP =~ (\"web\":\{\"href\":\")([^\"]*) ]]; then LATEST_BUILD_PAGE="${BASH_REMATCH[2]}"; else LATEST_BUILD_PAGE=""; fi
@@ -33,35 +36,56 @@ steps:
           echo "Rest call for artifacts: $REST_ART"
           if [[ $(curl $REST_ART) =~ (downloadUrl\":\")([^\"]*) ]]; then LATEST_ART_URL="${BASH_REMATCH[2]}"; else LATEST_ART_URL=""; fi
         }
-        downloadArtifact() {
-          curl "$LATEST_ART_URL" > "$(Build.StagingDirectory)/$ART_NAME.zip"
-          cd $(Build.StagingDirectory)
-          unzip "$ART_NAME.zip"
+        downloadArtifactAndContinue() {
+          if [ -z "$LATEST_ART_URL" ]
+          then
+            echo "No latest artifact for merge-target branch found at URL $REST_ART"
+          else
+            curl "$LATEST_ART_URL" > "${BUILD_STAGINGDIRECTORY}/$ART_NAME.zip"
+            PROJECT_DIR=$PWD
+            cd $BUILD_STAGINGDIRECTORY
+            unzip "$ART_NAME.zip"
+            echo "Using Dependency cache for buildID: $LATEST_BUILD_ID"
+            echo "Build log for build that produced the cache: $LATEST_BUILD_PAGE"
+            echo "Build badge for build that produced the cache: $LATEST_BUILD_BADGE"
+            echo "Build artifact from build that produced the cache: $LATEST_ART_URL"
+            echo "Restoring build cache into:"
+            mkdir -p $ESY__CACHE_INSTALL_PATH
+            echo $ESY__CACHE_INSTALL_PATH
+            echo "##vso[task.setvariable variable=esy_export_dir_to_import]${BUILD_STAGINGDIRECTORY}/${ART_NAME}/_export"
+            if [[ -d ${ART_NAME}/_export ]]; then
+              echo "Cached builds to import from ${ART_NAME}/_export in next CI step"
+              ls ${ART_NAME}/_export
+              mv ${ART_NAME}/_export ${PROJECT_DIR}/_export
+            else
+              echo "No _export directory to import from build cache"
+              echo "Here's the contents of build cache:"
+              find ${BUILD_STAGINGDIRECTORY}
+            fi
+          fi
         }
         fetchArtifactURL
-        echo "Using Dependency cache for buildID: $LATEST_BUILD_ID"
-        echo "Build log for build that produced the cache: $LATEST_BUILD_PAGE"
-        echo "Build badge for build that produced the cache: $LATEST_BUILD_BADGE"
-        echo "Build artifact from build that produced the cache: $LATEST_ART_URL"
-        downloadArtifact
+        downloadArtifactAndContinue
       
-
-  # - bash: 'mkdir -p $(ESY__CACHE_INSTALL_PATH)'
-  #   condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
-  #   displayName: '[Cache][Restore] Create esy cache directory'
-
-  # - bash: 'cd $(ESY__NPM_ROOT) && tar -xf $(Build.StagingDirectory)/cache-$(Agent.OS)-install/npm-cache.tar -C .'
+  # Uncomment as soon as https://github.com/esy/esy/pull/969 is resolved.
+  # For now, windows won't use build cache.
+  # - powershell: esy.cmd import-dependencies
   #   continueOnError: true
-  #   condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
-  #   displayName: '[Cache][Restore] Untar npm cache directory'
-
-  - bash: 'cd $(ESY__CACHE_INSTALL_PATH) && tar -xf $(Build.StagingDirectory)/cache-$(Agent.OS)-install/esy-cache.tar -C .'
+  #   condition: and(eq(variables['AGENT.OS'], 'Windows_NT'), and(eq(variables['Build.Reason'], 'PullRequest'), and(succeeded(), ne(variables['Build.SourceBranch'], variables['System.PullRequest.TargetBranch']))))
+  #   displayName: "esy import-dependencies if windows (build cache from CI cache)"
+    
+  - bash: esy import-dependencies
     continueOnError: true
-    condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
-    displayName: '[Cache][Restore] Untar esy cache directory'
+    condition: and(ne(variables['AGENT.OS'], 'Windows_NT'), and(eq(variables['Build.Reason'], 'PullRequest'), and(succeeded(), ne(variables['Build.SourceBranch'], variables['System.PullRequest.TargetBranch']))))
+    displayName: "esy import-dependencies if not windows (build cache from CI cache)"
+
+  - bash: 'rm -rf _import'
+    continueOnError: true
+    condition: and(eq(variables['Build.Reason'], 'PullRequest'), and(succeeded(), ne(variables['Build.SourceBranch'], variables['System.PullRequest.TargetBranch'])))
+    displayName: 'Remove import directory'
 
   - bash: 'rm -rf *'
     continueOnError: true
     workingDirectory: '$(Build.StagingDirectory)'
-    condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
-    displayName: '[Cache][Restore] Clean up'
+    condition: and(eq(variables['Build.Reason'], 'PullRequest'), and(succeeded(), ne(variables['Build.SourceBranch'], variables['System.PullRequest.TargetBranch'])))
+    displayName: '[Cache][Restore] Clean up staging dir'
