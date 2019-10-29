@@ -89,13 +89,18 @@ fs.mkdirSync(path.join(__dirname, "..", "_release", "bin"));
 
 Object.keys(bins).forEach(
   name => {
-    const binPath = path.join(
-      __dirname,
-      "..",
-      "_release",
-      bins[name]
-    );
-    fs.writeFileSync(binPath, placeholderFile);
-    fs.chmodSync(binPath, 0777);
+    if(bins[name]) {
+      const binPath = path.join(
+        __dirname,
+        "..",
+        "_release",
+        bins[name]
+      );
+      fs.writeFileSync(binPath, placeholderFile);
+      fs.chmodSync(binPath, 0777);
+    } else {
+      console.log("bins[name] name=" + name + " was empty. Weird.");
+      console.log(bins);
+    }
   }
 );
