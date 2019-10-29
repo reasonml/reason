@@ -79,10 +79,15 @@ steps:
     
   # Remove as soon as https://github.com/esy/esy/pull/969 is resolved.
   # For now, windows won't use build cache for problematic package.
-  - bash: ls ${ESY__CACHE_INSTALL_PATH} && ls $ESY__CACHE_INSTALL_PATH && rm -r ${ESY__CACHE_INSTALL_PATH}/opam__s__ocamlfind*
+  - task: Bash@3
     continueOnError: true
     condition: and(eq(variables['AGENT.OS'], 'Windows_NT'), and(eq(variables['Build.Reason'], 'PullRequest'), and(succeeded(), ne(variables['Build.SourceBranch'], variables['System.PullRequest.TargetBranch']))))
     displayName: 'Remove ocamlfind prebuilts if on Windows'
+    inputs:
+      targetType: 'inline' # Optional. Options: filePath, inline
+      script: |
+        ls ${ESY__CACHE_INSTALL_PATH}
+        rm -r ${ESY__CACHE_INSTALL_PATH}/opam__s__ocamlfind*
 
   - bash: 'rm -rf _import'
     continueOnError: true
