@@ -1,17 +1,17 @@
 (ocamllex
- (modules reason_lexer))
+ (modules reason_declarative_lexer))
 
-; Use select.exe from janestreet/ppx_ast to choose lexer_warning.ml based on ocaml version
+; Use select.exe from janestreet/ppx_ast to choose ocaml_util.ml based on ocaml version
 
 (rule
- (targets lexer_warning.ml)
- (deps ../generate/select.exe lexer_warning.ml-4.09 lexer_warning.ml-4.08
-   lexer_warning.ml-4.07 lexer_warning.ml-4.06 lexer_warning.ml-default)
+ (targets ocaml_util.ml)
+ (deps ../generate/select.exe ocaml_util.ml-4.09 ocaml_util.ml-4.08
+   ocaml_util.ml-4.07 ocaml_util.ml-4.06 ocaml_util.ml-default)
  (action
   (with-stdout-to
    %{targets}
-   (run ../generate/select.exe lexer_warning.ml-4.09 lexer_warning.ml-4.08
-     lexer_warning.ml-4.07 lexer_warning.ml-4.06 lexer_warning.ml-default))))
+   (run ../generate/select.exe ocaml_util.ml-4.09 ocaml_util.ml-4.08
+     ocaml_util.ml-4.07 ocaml_util.ml-4.06 ocaml_util.ml-default))))
 
 (rule
  (targets reason_string.ml)
@@ -21,42 +21,20 @@
    %{targets}
    (run ../generate/select.exe reason_string.ml-4.02 reason_string.ml-default))))
 
-(rule
- (targets lexer_report_error.ml)
- (deps ../generate/select.exe lexer_report_error.ml-4.09
-   lexer_report_error.ml-4.08 lexer_report_error.ml-default)
- (action
-  (with-stdout-to
-   %{targets}
-   (run ../generate/select.exe lexer_report_error.ml-4.09
-     lexer_report_error.ml-4.08 lexer_report_error.ml-default))))
-
-; Update error messages based on new grammar
-; Previously, called update_error in the `Makefile`.
-; TODO: Get rid of bash-isms here to support cross-platform.
-
-(rule
- (targets reason_parser.messages)
- (deps reason_parser.mly reason_parser.messages.checked-in)
- (action
-  (with-stdout-to
-   %{targets}
-   (bash
-     "menhir --explain --strict --unused-tokens ./reason_parser.mly --update-errors ./reason_parser.messages.checked-in | sed -e 's/[[:space:]]*$$//g'"))))
+(menhir
+ (flags --strict --inspection --unused-tokens --table --cmly)
+ (modules reason_parser))
 
 ; Previously, make preprocess.
-
-(rule
- (targets reason_parser.cmly reason_parser.ml reason_parser.mli)
- (deps reason_parser.mly reason_parser.messages)
- (action
-  (run menhir --strict --unused-tokens --fixed-exception --table --cmly
-    reason_parser.mly)))
-
-; (menhir
-; ; (targets reason_parser.cmly reason_parser.ml reason_parser.mli)
-; (modules reason_parser reason_parser.messages)
-; (flags (:standard --strict --unused-tokens --fixed-exception --table --cmly)))
+; (rule
+;  (targets reason_parser.cmly reason_parser.ml reason_parser.mli)
+;  (deps reason_parser.mly)
+;  (action
+;   (run menhir --strict --inspection --infer
+;        --unused-tokens
+;        --fixed-exception
+;        --table
+;        --cmly reason_parser.mly)))
 
 (executables
  (names menhir_error_processor)
@@ -71,16 +49,13 @@
    %{targets}
    (run ./menhir_error_processor.exe reason_parser.cmly))))
 
-; Previously, make compiler_error
-
 (rule
- (targets reason_parser_message.ml)
- (deps reason_parser.mly reason_parser.messages)
+ (targets reason_parser_recover.ml)
+ (deps reason_parser.cmly)
  (action
   (with-stdout-to
    %{targets}
-   (run menhir --explain --strict --unused-tokens reason_parser.mly
-     --compile-errors reason_parser.messages))))
+   (run ../menhir-recover/main.exe reason_parser.cmly))))
 
 (rule
  (targets reason_oprint.ml)
@@ -103,12 +78,6 @@
   (run %{bin:cppo} -V OCAML:%{ocaml_version} -D BS_NO_COMPILER_PATCH %{deps}
     -o %{targets})))
 
-(rule
- (targets reason_toolchain.ml)
- (deps reason_toolchain.cppo.ml)
- (action
-  (run %{bin:cppo} -V OCAML:%{ocaml_version} %{deps} -o %{targets})))
-
 (library
  (name reason)
  ; Uncomment to allow make coverage target to work
@@ -118,9 +87,12 @@
  (wrapped false)
  (flags
   (:standard -w -9-52 -safe-string))
- (modules lexer_warning reason_syntax_util reason_comment reason_attributes
-   reason_layout reason_heuristics reason_location reason_toolchain
-   reason_config reason_pprint_ast reason_parser reason_lexer
-   reason_parser_message reason_oprint reason_parser_explain_raw
-   reason_parser_explain reason_string lexer_report_error)
+ (modules ocaml_util reason_syntax_util reason_comment reason_attributes
+   reason_layout reason_heuristics reason_location reason_toolchain_conf
+   reason_toolchain_reason reason_toolchain_ocaml reason_toolchain
+   reason_config reason_pprint_ast reason_errors reason_parser_def
+   reason_parser reason_single_parser reason_multi_parser merlin_recovery
+   reason_recover_parser reason_declarative_lexer reason_lexer reason_oprint
+   reason_parser_explain_raw reason_parser_explain reason_parser_recover
+   reason_string)
  (libraries ocaml-migrate-parsetree menhirLib reason.easy_format))

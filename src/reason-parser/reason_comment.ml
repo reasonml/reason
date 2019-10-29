@@ -42,7 +42,18 @@ let wrap t =
     (* single line comments of the form `// comment` have a `\n` at the end *)
     ^ (String.sub txt 0 (String.length txt - 1))
     ^ Reason_syntax_util.EOLMarker.string
-  | txt when txt.[0] = '*' && txt.[1] <> '*' -> "/**" ^ txt ^ "*/"
+  | txt when txt.[0] = '*' && txt.[1] <> '*' ->
+    (*CHECK: this comment printing seems fishy.
+      It apply to invalid docstrings.
+      In this case, it will add a spurious '*'.
+      E.g. /**
+            * bla */
+      In an invalid context is turned into
+           /***
+            * bla */
+      I think this case should be removed.
+    *)
+    "/**" ^ txt ^ "*/"
   | txt -> "/*" ^ txt ^ "*/"
 
 let is_doc t =

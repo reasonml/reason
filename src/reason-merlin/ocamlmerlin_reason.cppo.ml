@@ -24,14 +24,14 @@ module Reason_reader = struct
       structure (Reason_toolchain.RE.implementation buf)
 
   let for_completion t pos =
-    let pos' = !Reason_toolchain.insert_completion_ident in
-    Reason_toolchain.insert_completion_ident := Some pos;
+    let pos' = !Reason_toolchain_conf.insert_completion_ident in
+    Reason_toolchain_conf.insert_completion_ident := Some pos;
     Misc.try_finally
       (fun () -> ({complete_labels = true}, parse t))
 #if OCAML_VERSION >= (4, 8, 0)
       ~always:
 #endif
-      (fun () -> Reason_toolchain.insert_completion_ident := pos')
+      (fun () -> Reason_toolchain_conf.insert_completion_ident := pos')
 
   let parse_line _ _ line =
     let buf = Lexing.from_string line in

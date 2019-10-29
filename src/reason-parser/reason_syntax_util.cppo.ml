@@ -335,27 +335,6 @@ let isLineComment str =
   | exception Not_found -> false
   | n -> n = String.length str - 1
 
-(** Generate a suitable extension node for Merlin's consumption,
-    for the purposes of reporting a syntax error - only used
-    in recovery mode.
- *)
-let syntax_error_extension_node loc message =
-  let str = Location.mkloc "merlin.syntax-error" loc in
-  let payload = PStr [{
-    pstr_loc = Location.none;
-    pstr_desc =
-      Pstr_eval (
-        {
-          pexp_loc = Location.none;
-          pexp_desc = Pexp_constant (Parsetree.Pconst_string (message, None));
-          pexp_attributes = [];
-        },
-        []
-      );
-  }]
- in
- (str, payload)
-
 (** identifier_mapper maps all identifiers in an AST with a mapping function f
   this is used by swap_operator_mapper right below, to traverse the whole AST
   and swapping the symbols listed above.
@@ -499,49 +478,6 @@ let apply_mapper_to_toplevel_phrase toplevel_phrase mapper =
 let apply_mapper_to_use_file use_file mapper =
   List.map (fun x -> apply_mapper_to_toplevel_phrase x mapper) use_file
 
-(* The following logic defines our own Error object
- * and register it with ocaml so it knows how to print it
- *)
-
-type error = Syntax_error of string
-
-exception Error of Location.t * error
-
-let location_print_error =
-#if OCAML_VERSION >= (4, 8, 0)
-  Location.print_report
-#else
-  Location.report_error
-#endif
-
-let report_error ppf error =
-  match error with
-  | Error (loc, (Syntax_error err)) ->
-    let pp =
-      Location.error_of_printer
-#if OCAML_VERSION >= (4, 8, 0)
-      ~loc
-#else
-      loc
-#endif
-      (fun ppf e -> Format.(fprintf ppf "%s" e)) err
-    in
-    Format.fprintf ppf "@[%a@]@." location_print_error pp
-  | Syntaxerr.Error _ as exn ->
-    begin match Location.error_of_exn exn with
-#if OCAML_VERSION >= (4, 6, 0)
-    | Some (`Ok err) ->
-#else
-    | Some err ->
-#endif
-      Format.(fprintf ppf "@[%a@]@." location_print_error err)
-    | _ -> assert false
-    end
-  | _ ->
-    Format.eprintf
-      "Unknown error: please file an issue at github.com/facebook/reason@.";
-    exit 1
-
 let map_first f = function
   | [] -> invalid_arg "Syntax_util.map_first: empty list"
   | x :: xs -> f x :: xs
@@ -551,36 +487,6 @@ let map_last f l =
   | [] -> invalid_arg "Syntax_util.map_last: empty list"
   | x :: xs -> List.rev (f x :: xs)
 
-type menhirMessagesError = {
-  msg: string;
-  loc: Location.t;
-}
-
-type menhirError =
-  | NoMenhirMessagesError
-  | MenhirMessagesError of menhirMessagesError
-
-let menhirMessagesError = ref [NoMenhirMessagesError]
-
-let findMenhirErrorMessage loc =
-    let rec find messages =
-      match messages with
-      | MenhirMessagesError err :: _ when err.loc = loc -> MenhirMessagesError err
-      | _ :: tail -> find tail
-      | [] -> NoMenhirMessagesError
-    in find !menhirMessagesError
-
-let default_error_message = "<syntax error>"
-
-let add_error_message err =
-  let msg = try
-    ignore (find_substring default_error_message err.msg 0);
-    [MenhirMessagesError {err with msg = "A syntax error occurred. Help us improve this message: https://github.com/facebook/reason/blob/master/src/README.md#add-a-menhir-error-message"}]
-  with
-  | Not_found -> [MenhirMessagesError err]
-  in
-  menhirMessagesError := !menhirMessagesError @ msg
-
 let location_is_before loc1 loc2 =
   let open Location in
   loc1.loc_end.Lexing.pos_cnum <= loc2.loc_start.Lexing.pos_cnum
@@ -589,6 +495,14 @@ let location_contains loc1 loc2 =
   let open Location in
   loc1.loc_start.Lexing.pos_cnum <= loc2.loc_start.Lexing.pos_cnum &&
   loc1.loc_end.Lexing.pos_cnum >= loc2.loc_end.Lexing.pos_cnum
+
+#if OCAML_VERSION >= (4, 8, 0)
+let split_compiler_error (err : Location.error) =
+  (err.main.loc, Format.asprintf "%t" err.main.txt)
+#else
+let split_compiler_error (err : Location.error) =
+  (err.loc, err.msg)
+#endif
 
 let explode_str str =
   let rec loop acc i =

@@ -92,11 +92,12 @@ let refmt
     | _ -> `Ok (List.iter (fun file -> refmt_single (Some file)) input_files)
   with
   | Printer_maker.Invalid_config msg -> `Error (true, msg)
-  | Reason_lexer.Error (error, loc) ->
-    Lexer_report_error.report_error Format.err_formatter ~loc error;
+  | Reason_errors.Reason_error (error, loc) ->
+    Reason_errors.report_error Format.err_formatter ~loc error;
     exit 1
   | exn ->
-    Reason_syntax_util.report_error Format.err_formatter exn;
+    prerr_endline (Printexc.to_string exn);
+     (* FIXME: Reason_syntax_util.report_error Format.err_formatter exn; *)
     exit 1
 
 let top_level_info =

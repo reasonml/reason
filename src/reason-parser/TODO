@@ -1,0 +1,18 @@
+Recovery (Urgent):
+* Not clear what the pipeline for errors should be
+* Find better names for the many modules
+* If necessary, tune performance
+* What is the licensing situation?
+
+Error messages (Medium-term):
+* Agree on a strategy with other people: what should messages look like?
+  What should they do: describe the context? suggest common corrections?
+  Point people to grammar documentation?
+* To learn what correct files look like we can probably data-mine public reason
+  repositories. 
+* To learn what incorrect files look like, we need some way to collect common
+  errors!!!!
+
+Completion (Long-term):
+* Introduce merlin.location when there is ambiguity between concrete and
+  abstract locations

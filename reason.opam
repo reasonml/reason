@@ -17,6 +17,7 @@ depends: [
   "ocamlfind"     {build}
   "menhir"        {>= "20170418"}
   "merlin-extend" {>= "0.4"}
+  "fix"
   "result"
   "ocaml-migrate-parsetree"
 ]
