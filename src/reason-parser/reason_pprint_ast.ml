@@ -3753,7 +3753,7 @@ let printer = object(self:'self)
               {exp with pexp_loc = { exp.pexp_loc with loc_end = loc_end } }
             in
             makeList (
-              self#reset_request_braces#formatFunAppl
+              self#formatFunAppl
                 ?prefix
                 ~jsxAttrs:[]
                 ~args
@@ -3967,6 +3967,7 @@ let printer = object(self:'self)
     match self#simplest_expression x with
     | Some se -> Simple se
     | None ->
+    let self = self#reset_request_braces in
     match x.pexp_desc with
     | Pexp_apply (e, ls) -> (
       let ls = List.map (fun (l,expr) -> (l, self#process_underscore_application expr)) ls in
