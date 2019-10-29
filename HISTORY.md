@@ -1,4 +1,15 @@
-## 3.5.1
+## 3.5.3
+- 🎉 MUCH better parsing error locations - more reliable autocomplete 🎉 (@let-def)[https://github.com/let-def] ([#2439](https://github.com/facebook/reason/pull/2439))
+- Rebased the better error recovery diff onto 4.09 OCaml [@anmonteiro](https://github.com/anmonteiro) ([#2480](https://github.com/facebook/reason/pull/2480))
+- Fix printing of fragments inside JSX props [@anmonteiro](https://github.com/anmonteiro) ([#2463](https://github.com/facebook/reason/pull/2463))
+- Modernize CI based on latest hello-reason CI [@jordwalke](https://github.com/jordwalke) ([#2479](https://github.com/facebook/reason/pull/2479))
+- Fix bug that caused necessary braces to be removed [@anmonteiro](https://github.com/anmonteiro) ([#2481](https://github.com/facebook/reason/pull/2481))
+- Make prepublish script auto-generate opam files [@jordwalke](https://github.com/jordwalke) ([#2468](https://github.com/facebook/reason/pull/2468))
+- Fix brace removal with pipe-first in JSX attributes [@bloodyowl](https://github.com/bloodyowl) ([#2474](https://github.com/facebook/reason/pull/2474))
+- CI Improvements [@ulrikstrid](https://github.com/ulrikstrid) ([#2459](https://github.com/facebook/reason/pull/2459))
+- Make sure you can still include rtop from inside utop [@sync ](https://github.com/sync ) ([#2466](https://github.com/facebook/reason/pull/2466))
+
+## 3.5.2
 - Support OCaml 4.09 ([2450](https://github.com/facebook/reason/pull/2450)).
 - Improve opam packaging config ([2431](https://github.com/facebook/reason/pull/2431)).
 - Improve repo to support esy resolutions to master branch ([31225fc0](https://github.co(https://github.com/facebook/reason/commit/31225fc066731075b6fa695e555f65ffcc172bcf))
