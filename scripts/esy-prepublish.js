@@ -20,6 +20,82 @@ const fs = require('fs');
 const cp = require('child_process');
 const path = require('path');
 
+const quote = s => '"' + s + '"';
+const opamifyName = name => {
+  if(name.indexOf("@opam/") === 0) {
+    return '"' + name.substr(6) + '"';
+  } else if(name === '@esy-ocaml/reason') {
+    return '"reason"';
+  } else {
+    if(name.indexOf('@') === 0) {
+      var scopeAndPackage = name.substr(1).split('/');
+      // return 'npm--' + scopeAndPackage[0] + '--' + scopeAndPackage[1];
+      // Assumes the packages have name.opam files, without the scope.
+      return '"' + scopeAndPackage[1] + '"';
+    } else {
+      return '"' + name + '"';
+    }
+  }
+};
+const opamifyVersion = v => {
+  var v = v.trim();
+  if(v.charAt(0) === '^') {
+    var postCaret = v.substr(1);
+    var nextDotIndex = postCaret.indexOf('.');
+    if(nextDotIndex !== -1) {
+      var major = postCaret.substr(0, nextDotIndex);
+      var rest = postCaret.substr(nextDotIndex + 1);
+      return '>= "' + postCaret + '" & < "' + (parseInt(major) + 1) + '.0.0"';
+    } else {
+      var major = postCaret.substr(0, nextDotIndex);
+      return '>= "' + postCaret + '" & < "' + (parseInt(postCaret) + 1) + '"';
+    }
+  } else {
+    return v.replace(/\s+<\s+/g, s => '" & < "')
+        .replace(/\s+<=\s*/g, s => '" & <= "')
+        .replace(/^<\s+/g, s => '< "')
+        .replace(/^<=\s*/g, s => '<= "')
+
+        .replace(/\s+>\s+/g, s => '" & > "')
+        .replace(/\s+>=/g, s => '" & >= "')
+        .replace(/^>\s+/g, s => '> "')
+        .replace(/^>=\s*/g, s => '>= "')
+        + '"';
+  }
+};
+const depMap = (o) => {
+  return Object.entries(o).map(([name, vers]) =>
+    opamifyName(name) +
+      (vers === '*' ? '' : '   {' + opamifyVersion(vers) + '}')
+  )
+};
+const createOpamText = package => {
+  const opamTemplate = [
+    'opam-version: ' + quote("2.0"),
+    'maintainer: ' + quote(package.author),
+    'authors: [' + quote(package.author) + ']',
+    'license: ' + quote(package.license),
+    'homepage: ' + quote(package.homepage),
+    'doc: ' + quote(package.homepage),
+    package.repository && package.repository.url ?
+      ('bug-reports: ' + quote(package.repository.url)) :
+      '',
+    package.repository && package.repository.url ?
+      ('dev-repo: ' + quote(package.repository.url.replace('https', 'git').replace('http', 'git'))) :
+      '',
+    'tags: [' + (package.keywords ? package.keywords.map(quote).join(' ') : '') + ']',
+    'build: [ [' + package.esy.build.split(' ').map(quote).join(' ') + ' ] ]',
+    'depends: [',
+  ].concat(depMap(package.dependencies).map(s=>'  ' + s)).concat([
+    ']',
+    'synopsis: ' +
+      quote(package.description.charAt(0).toUpperCase() + package.description.substr(1)),
+    'description: ' + quote(package.description)
+  ]);
+  return opamTemplate.join('\n') + '\n';
+};
+
+
 if (process.cwd() !== path.resolve(__dirname, '..')) {
   console.log("ERROR: Must run `make esy-prepublish` from project root.");
   process.exit(1);
@@ -63,16 +139,32 @@ const head =
 const master =
   cp.spawnSync('git', ['rev-parse', '--verify', 'master']).stdout.toString();
 
-let uncommitted =
-  cp.spawnSync('git', ['diff-index', 'HEAD', '--']).stdout.toString();
+// Since we generate opam files, don't check for uncommitted.
+// let uncommitted =
+//   cp.spawnSync('git', ['diff-index', 'HEAD', '--']).stdout.toString();
 
-if (uncommitted !== "") {
-  console.log('ERROR: You have uncommitted changes. Please try on a clean master branch');
-  process.exit(1);
-}
+// if (uncommitted !== "") {
+//   console.log('ERROR: You have uncommitted changes. Please try on a clean master branch');
+//   process.exit(1);
+// }
 
 process.chdir(projectRoot);
-let tarResult = cp.spawnSync('tar', ['--exclude', 'node_modules', '--exclude', '_build', '--exclude', '.git', '-cf', 'template.tar', '.']);
+let tarResult = cp.spawnSync(
+  'tar',
+  [
+    '--exclude',
+    '_esy',
+    '--exclude',
+    'node_modules',
+    '--exclude',
+    '_build',
+    '--exclude',
+    '.git',
+    '-cf',
+    'template.tar',
+    '.'
+  ]
+);
 let tarErr = tarResult.stderr.toString();
 // if (tarErr !== '') {
 // console.log('ERROR: Could not create template npm pack for prepublish');
@@ -89,6 +181,12 @@ try {
     process.chdir(projectRoot);
     let jsonRelativePath = relativeJsonPaths[i];
     let jsonResolvedPath = path.resolve(projectRoot, jsonRelativePath);
+    const packageJson = require(jsonResolvedPath);
+    const packageName = packageJson.name;
+    const packageVersion = packageJson.version;
+    console.log('');
+    console.log('Preparing: ' + jsonRelativePath + ' ' + packageName + '@' + packageVersion);
+    console.log('-----------------------------------------------------------------------------');
 
     let subpackageReleaseDir = path.resolve(_releaseDir, jsonRelativePath);
     if (fs.existsSync(subpackageReleaseDir)) {
@@ -108,9 +206,6 @@ try {
     process.chdir(subpackageReleasePrepDir);
     cp.spawnSync('tar', ['-xvf', 'template.tar']);
     fs.unlinkSync(path.join(subpackageReleasePrepDir, 'template.tar'));
-    const packageJson = require(jsonResolvedPath);
-    const packageName = packageJson.name;
-    const packageVersion = packageJson.version;
 
     let readmePath = path.resolve(subpackageReleasePrepDir, 'README.md');
     let readmePkgPath =
@@ -133,9 +228,9 @@ try {
         destPath: path.resolve(subpackageReleasePrepDir, 'README.md')
       }
     ];
-    for (var i = 0; i < toCopy.length; i++) {
-      let originPath = toCopy[i].originPath;
-      let destPath = toCopy[i].destPath;
+    for (var j = 0; j < toCopy.length; j++) {
+      let originPath = toCopy[j].originPath;
+      let destPath = toCopy[j].destPath;
       if (originPath !== null && fs.existsSync(originPath) && destPath !== originPath) {
         fs.renameSync(originPath, destPath);
       }
@@ -171,16 +266,32 @@ try {
       console.log('ERROR: Could not untar in ' + mvTo);
       throw new Error('Error:' + tarResult.stderr.toString());
     }
-    console.log('');
-    console.log(packageName + '@' + packageVersion + ' prepared for publishing at ' + subpackageReleaseDir);
-    console.log('');
+    console.log('Prepared for publishing at: ');
+    console.log('  ' + subpackageReleaseDir);
+    if(packageJson['esy-prepublish-generate-opam']) {
+      try {
+        const opamText = createOpamText(packageJson);
+        const opamFileName = path.basename(jsonRelativePath, '.json') + '.opam';
+        let opamResolvedPath = path.resolve(projectRoot, opamFileName);
+        fs.writeFileSync(opamResolvedPath, opamText);
+        console.log("Opam file generated. Commit it. Or don't:");
+        console.log('  ' + opamResolvedPath);
+      } catch(e) {
+        console.log("Could not generate opam file. See error below.");
+        console.log(
+          "To disable opam file generation, remove `\"esy-prepublish-generate-opam\": true` from " +
+          jsonRelativePath
+        );
+        console.log('  ' + e.toString());
+      }
+    } else {
+      console.log("To generate opam file, add `\"esy-prepublish-generate-opam\": true` to " + jsonRelativePath);
+    }
     console.log('To publish the package to npm do:');
-    console.log('');
-    console.log('    cd ' + path.resolve(subpackageReleaseDir, 'package'));
-    console.log('    npm publish --access=public');
+    console.log('  cd ' + path.resolve(subpackageReleaseDir, 'package'));
+    console.log('  npm publish --access=public');
     console.log('');
   }
 } finally {
   fs.unlinkSync(path.join(projectRoot, 'template.tar'));
 }
-
