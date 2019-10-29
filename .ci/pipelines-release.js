@@ -15,6 +15,18 @@ if (!exists) {
 }
 // Now require from this script's location.
 const mainPackageJson = require(path.join('..', mainPackageJsonPath));
+const bins =
+  Array.isArray(mainPackageJson.esy.release.bin) ?
+  mainPackageJson.esy.release.bin.reduce(
+    (acc, curr) => Object.assign({ [curr]: "bin/" + curr }, acc),
+    {}
+  ) :
+  Object.keys(mainPackageJson.esy.release.bin).reduce(
+    (acc, currKey) => Object.assign({ [currKey]: "bin/" + mainPackageJson.esy.release.bin[currKey] }, acc),
+    {}
+  );
+  
+console.log(bins);
 const packageJson = JSON.stringify(
   {
     name: mainPackageJson.name,
@@ -25,9 +37,7 @@ const packageJson = JSON.stringify(
     scripts: {
       postinstall: "node ./postinstall.js"
     },
-    bin: mainPackageJson.esy.release.bin.reduce((acc, curr) => {
-      return Object.assign({ [curr]: "bin/" + curr }, acc);
-    }, {}),
+    bin: bins,
     files: [
       "_export/",
       "bin/",

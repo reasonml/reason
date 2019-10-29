@@ -1,5 +1,5 @@
 {
-  "name": "reason-dev",
+  "name": "reason-cli",
   "notes": "This is just the dev package config. See ./scripts/esy/ for release package configs",
   "license": "MIT",
   "version": "3.5.1",
@@ -33,10 +33,10 @@
       ["esy-installer", "rtop.install"]
     ],
     "release": {
-      "bin": [
-        "rtop",
-        "refmt"
-      ],
+      "bin": {
+        "rtop": "rtop",
+        "refmt-cli": "refmt"
+      },
       "includePackages": [
         "root",
         "@opam/base-bytes",
@@ -49,6 +49,7 @@
         "@opam/lwt_react",
         "@opam/menhir",
         "@opam/mmap",
+        "@opam/ocplib-endian",
         "@opam/ocaml-migrate-parsetree",
         "@opam/ocamlfind",
         "@opam/ppx_derivers",
@@ -57,7 +58,7 @@
         "@opam/seq",
         "@opam/utop",
         "@opam/zed",
-        "**ocaml**"
+        "ocaml"
       ],
       "rewritePrefix": true
     }
