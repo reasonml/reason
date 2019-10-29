@@ -506,6 +506,14 @@ rule token state = parse
       set_lexeme_length lexbuf 1;
       LBRACE
     }
+  | "{<>" {
+    set_lexeme_length lexbuf 1;
+    LBRACE
+  }
+  | "{<>}" {
+    set_lexeme_length lexbuf 2;
+    LBRACELESS
+  }
   | "</" blank* ((uppercase_or_lowercase (identchar|'.')* ) as tag) blank* ">"
     { LESSSLASHIDENTGREATER tag }
   | "]"  { RBRACKET }

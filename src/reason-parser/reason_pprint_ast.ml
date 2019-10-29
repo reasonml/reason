@@ -4439,17 +4439,24 @@ let printer = object(self:'self)
           in
           processArguments tail processedAttrs (Some [dotdotdotChild])
       | (Optional lbl, expression) :: tail ->
+        let {jsxAttrs; _} = partitionAttributes expression.pexp_attributes in
+        let value_has_jsx = jsxAttrs != [] in
         let nextAttr =
           match expression.pexp_desc with
           | Pexp_ident ident when isPunnedJsxArg lbl ident ->
               makeList ~break:Layout.Never [atom "?"; atom lbl]
+           | Pexp_construct _ when value_has_jsx ->
+               label
+                (makeList ~break:Layout.Never [atom lbl; atom "=?"])
+                (self#inline_braces#simplifyUnparseExpr ~wrap:("{","}") expression)
           | _ ->
               label
                 (makeList ~break:Layout.Never [atom lbl; atom "=?"])
                 (self#dont_preserve_braces#simplifyUnparseExpr ~wrap:("{","}") expression) in
         processArguments tail (nextAttr :: processedAttrs) children
-
       | (Labelled lbl, expression) :: tail ->
+         let {jsxAttrs; _} = partitionAttributes expression.pexp_attributes in
+         let value_has_jsx = jsxAttrs != [] in
          let nextAttr =
            match expression.pexp_desc with
            | Pexp_ident ident when isPunnedJsxArg lbl ident -> atom lbl
@@ -4486,6 +4493,10 @@ let printer = object(self:'self)
                  | Infix str when requireNoSpaceFor str -> self#unparseExpr expression
                  | _ -> self#dont_preserve_braces#simplifyUnparseExpr ~wrap:("{","}") expression)
              in label lhs rhs
+           | Pexp_construct _ when value_has_jsx ->
+               label
+                (makeList [atom lbl; atom "="])
+                (self#inline_braces#simplifyUnparseExpr ~wrap:("{","}") expression)
            | Pexp_record _
            | Pexp_construct _
            | Pexp_array _
