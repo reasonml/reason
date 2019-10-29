@@ -67,17 +67,27 @@ steps:
         fetchArtifactURL
         downloadArtifactAndContinue
       
-  # Uncomment as soon as https://github.com/esy/esy/pull/969 is resolved.
-  # For now, windows won't use build cache.
-  # - powershell: esy.cmd import-dependencies
-  #   continueOnError: true
-  #   condition: and(eq(variables['AGENT.OS'], 'Windows_NT'), and(eq(variables['Build.Reason'], 'PullRequest'), and(succeeded(), ne(variables['Build.SourceBranch'], variables['System.PullRequest.TargetBranch']))))
-  #   displayName: "esy import-dependencies if windows (build cache from CI cache)"
-    
+  - powershell: esy.cmd import-dependencies
+    continueOnError: true
+    condition: and(eq(variables['AGENT.OS'], 'Windows_NT'), and(eq(variables['Build.Reason'], 'PullRequest'), and(succeeded(), ne(variables['Build.SourceBranch'], variables['System.PullRequest.TargetBranch']))))
+    displayName: "esy import-dependencies if windows (build cache from CI cache)"
+
   - bash: esy import-dependencies
     continueOnError: true
     condition: and(ne(variables['AGENT.OS'], 'Windows_NT'), and(eq(variables['Build.Reason'], 'PullRequest'), and(succeeded(), ne(variables['Build.SourceBranch'], variables['System.PullRequest.TargetBranch']))))
     displayName: "esy import-dependencies if not windows (build cache from CI cache)"
+    
+  # Remove as soon as https://github.com/esy/esy/pull/969 is resolved.
+  # For now, windows won't use build cache for problematic package.
+  - task: Bash@3
+    continueOnError: true
+    condition: and(eq(variables['AGENT.OS'], 'Windows_NT'), and(eq(variables['Build.Reason'], 'PullRequest'), and(succeeded(), ne(variables['Build.SourceBranch'], variables['System.PullRequest.TargetBranch']))))
+    displayName: 'Remove ocamlfind prebuilts if on Windows'
+    inputs:
+      targetType: 'inline' # Optional. Options: filePath, inline
+      script: |
+        ls ${ESY__CACHE_INSTALL_PATH}
+        rm -r ${ESY__CACHE_INSTALL_PATH}/opam__s__ocamlfind*
 
   - bash: 'rm -rf _import'
     continueOnError: true

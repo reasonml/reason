@@ -25,8 +25,7 @@ const bins =
     (acc, currKey) => Object.assign({ [currKey]: "bin/" + mainPackageJson.esy.release.bin[currKey] }, acc),
     {}
   );
-  
-console.log(bins);
+
 const packageJson = JSON.stringify(
   {
     name: mainPackageJson.name,
@@ -87,13 +86,21 @@ const placeholderFile = `:; echo "You need to have postinstall enabled"; exit $?
 @ECHO OFF
 ECHO You need to have postinstall enabled`;
 fs.mkdirSync(path.join(__dirname, "..", "_release", "bin"));
-const binPath = path.join(
-  __dirname,
-  "..",
-  "_release",
-  "bin",
-  mainPackageJson.esy.release.bin[0]
-);
 
-fs.writeFileSync(binPath, placeholderFile);
-fs.chmodSync(binPath, 0777);
+Object.keys(bins).forEach(
+  name => {
+    if(bins[name]) {
+      const binPath = path.join(
+        __dirname,
+        "..",
+        "_release",
+        bins[name]
+      );
+      fs.writeFileSync(binPath, placeholderFile);
+      fs.chmodSync(binPath, 0777);
+    } else {
+      console.log("bins[name] name=" + name + " was empty. Weird.");
+      console.log(bins);
+    }
+  }
+);
