@@ -15,6 +15,7 @@
   },
   "devDependencies": {
     "@opam/merlin": "*",
+    "@opam/odoc": "*",
     "ocaml": "~4.6.0"
   },
   "notes-ctd": [
