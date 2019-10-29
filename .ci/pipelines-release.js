@@ -95,7 +95,7 @@ Object.keys(bins).forEach(
       "_release",
       bins[name]
     );
+    fs.writeFileSync(binPath, placeholderFile);
+    fs.chmodSync(binPath, 0777);
   }
-  fs.writeFileSync(binPath, placeholderFile);
-  fs.chmodSync(binPath, 0777);
 );
