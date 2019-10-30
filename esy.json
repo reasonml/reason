@@ -36,7 +36,7 @@
     "release": {
       "bin": {
         "rtop": "rtop",
-        "refmt-cli": "refmt"
+        "refmt": "refmt-cli"
       },
       "includePackages": [
         "root",
