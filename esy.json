@@ -1,6 +1,6 @@
 {
   "name": "reason-cli",
-  "notes": "This is just the dev package config. See ./scripts/esy/ for release package configs",
+  "notes": "This is just the dev package config (also built as globally installable reason-cli). See ./refmt.json ./rtop.json for individual release package configs.",
   "license": "MIT",
   "version": "3.5.1",
   "dependencies": {
@@ -36,7 +36,7 @@
     "release": {
       "bin": {
         "rtop": "rtop",
-        "refmt": "refmt-cli"
+        "refmt": "refmt"
       },
       "includePackages": [
         "root",
