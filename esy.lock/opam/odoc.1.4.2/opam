@@ -29,7 +29,7 @@ depends: [
   "alcotest" {dev & >= "0.8.3"}
   "markup" {dev & >= "0.8.0"}
   "ocamlfind" {dev}
-  "sexplib" {dev & >= "113.33.00"}
+  "sexplib" {dev & >= "113.33.00" & < "v0.13"}
 
   "bisect_ppx" {with-test & >= "1.3.0"}
 ]

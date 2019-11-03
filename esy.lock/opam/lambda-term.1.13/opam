@@ -18,7 +18,7 @@ depends: [
   "zed" {>= "1.2" & < "2.0"}
   "camomile" {>= "0.8.6"}
   "lwt_react"
-  "jbuilder" {build & >= "1.0+beta9"}
+  "jbuilder" {>= "1.0+beta9"}
 ]
 synopsis: "Terminal manipulation library for OCaml"
 description: """
