@@ -21,7 +21,7 @@ depends: [
   "camomile"
   "react" {>= "1.0.0"}
   "cppo" {build & >= "1.1.2"}
-  "jbuilder" {build & >= "1.0+beta9"}
+  "jbuilder" {>= "1.0+beta9"}
 ]
 synopsis: "Universal toplevel for OCaml"
 description: """
