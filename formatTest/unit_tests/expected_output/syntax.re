@@ -1444,6 +1444,7 @@ try({
   parens;
 }) {
 | _ => ()
+};
 
 /* Pcl_open (4.06+) */
 class x = {
