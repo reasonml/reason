@@ -7108,7 +7108,9 @@ let printer = object(self:'self)
         | Psig_typext te ->
             self#type_extension te
         | Psig_exception ed ->
-            self#exception_declaration ed.ptyexn_constructor
+          self#exception_declaration
+            { ed.ptyexn_constructor
+              with pext_attributes = ed.ptyexn_attributes @ ed.ptyexn_constructor.pext_attributes}
         | Psig_class l ->
             let class_description
                 ?(class_keyword=false)
@@ -7614,7 +7616,10 @@ let printer = object(self:'self)
         | Pstr_type (rf, l)  -> (self#type_def_list (rf, l))
         | Pstr_value (rf, l) -> (self#bindings (rf, l))
         | Pstr_typext te -> (self#type_extension te)
-        | Pstr_exception ed -> (self#exception_declaration ed.ptyexn_constructor)
+        | Pstr_exception ed ->
+          self#exception_declaration
+            { ed.ptyexn_constructor
+              with pext_attributes = ed.ptyexn_attributes @ ed.ptyexn_constructor.pext_attributes}
         | Pstr_module x ->
             let bindingName = atom ~loc:x.pmb_name.loc x.pmb_name.txt in
             self#attach_std_item_attrs x.pmb_attributes @@
