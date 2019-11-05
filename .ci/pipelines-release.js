@@ -29,7 +29,7 @@ const bins =
 const rewritePrefix =
   mainPackageJson.esy &&
   mainPackageJson.esy.release &&
-  mainPackage.json.esy.release.rewritePrefix;
+  mainPackageJson.esy.release.rewritePrefix;
 
 const packageJson = JSON.stringify(
   {
