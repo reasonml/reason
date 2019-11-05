@@ -26,6 +26,11 @@ const bins =
     {}
   );
 
+const rewritePrefix =
+  mainPackageJson.esy &&
+  mainPackageJson.esy.release &&
+  mainPackageJson.esy.release.rewritePrefix;
+
 const packageJson = JSON.stringify(
   {
     name: mainPackageJson.name,
@@ -34,7 +39,10 @@ const packageJson = JSON.stringify(
     description: mainPackageJson.description,
     repository: mainPackageJson.repository,
     scripts: {
-      postinstall: "node ./postinstall.js"
+      postinstall:
+        rewritePrefix ?
+        "ESY_RELEASE_REWRITE_PREFIX=true node ./postinstall.js" :
+        "node ./postinstall.js"
     },
     bin: bins,
     files: [
