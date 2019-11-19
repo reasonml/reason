@@ -1,8 +1,14 @@
 THIS_SCRIPT_DIR="$(cd "$( dirname "$0" )" && pwd)"
 
-echo "**This script is switching you to ocaml 4.02.3 for the subsequent bspacking. Please switch back to your own version afterward. Thanks!**\n"
-# switch to 4.02.3. Bspacking means we're sending the final bundle to BuckleScript, which is still on 4.02
-opam switch 4.02.3
+if [ -z ${OCAML_VERSION+x} ]; then
+  echo "OCAML_VERSION not defined, defaulting to '4.06.1'..."
+  OCAML_VERSION=4.06.1
+fi
+
+echo "**This script is switching you to ocaml ${OCAML_VERSION} for the subsequent bspacking. Please switch back to your own version afterward. Thanks!**\n"
+
+# switch to 4.06.1. Bspacking means we're sending the final bundle to BuckleScript, which is still on 4.02
+opam switch $OCAML_VERSION 
 
 # =============
 # first step, build ocaml-migrate-parsetree
