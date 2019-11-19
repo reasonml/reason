@@ -1,3 +1,9 @@
+(*
+ * Note: This file is currently broken, since Reason removed
+ * Refmt_api.Reason_syntax_util.Error in favor of Reerror's `Printexc.to_string e`
+*)
+open Js_of_ocaml
+
 module RE = Refmt_api.Reason_toolchain.RE
 module ML = Refmt_api.Reason_toolchain.ML
 
