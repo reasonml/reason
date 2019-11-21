@@ -29,7 +29,10 @@ external createClassInternalHack:
   "createClass";
 
 [@bs.send.pipe: array('a)]
-external map: (. ('a => 'b)) => array('b) = "";
+external map: (. ('a => 'b)) => array('b);
+
+[@bs.send.pipe: array('a)]
+external map: (. ('a => 'b)) => array('b);
 
 [@bs.val] [@bs.module "react"]
 external createClassInternalHack:

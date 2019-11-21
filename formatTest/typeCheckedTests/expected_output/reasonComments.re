@@ -731,20 +731,20 @@ let r = {
 
 /** doc comment */
 [@bs.send]
-external url: t => string = "";
+external url: t => string;
 
 /**
  * Short multiline doc comment
  */
 [@bs.send]
-external url: t => string = "";
+external url: t => string;
 
 /** Longer doc comment before an attribute on an external. */
 [@bs.send]
-external url: t => string = "";
+external url: t => string;
 
 /* normal comment */
-[@bs.send] external url: t => string = "";
+[@bs.send] external url: t => string;
 
 /** doc type */
 type q = {

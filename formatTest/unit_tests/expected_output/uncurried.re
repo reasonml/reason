@@ -142,8 +142,7 @@ type timerId;
 
 [@bs.val]
 external setTimeout:
-  ((. unit) => unit, int) => timerId =
-  "setTimeout";
+  ((. unit) => unit, int) => timerId;
 
 let id =
   setTimeout((.) => Js.log("hello"), 1000);
