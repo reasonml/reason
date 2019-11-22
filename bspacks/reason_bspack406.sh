@@ -129,7 +129,7 @@ $BSPACK_EXE \
 
 
 # This hack is required since the emitted code by bspack somehow adds 
-# 'Migrate_parsetree__Ast...' instead of 'Migrate_parsetree_Ast...'
+# 'Migrate_parsetree_Ast...' instead of 'Migrate_parsetree__Ast...'
 sed -i'.bak' -e 's/Migrate_parsetree__Ast_404/Migrate_parsetree.Ast_404/' build/*.ml
 
 # the `-no-alias-deps` flag is important. Not sure why...
